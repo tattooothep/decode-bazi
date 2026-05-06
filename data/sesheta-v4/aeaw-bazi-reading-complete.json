@@ -1,0 +1,252 @@
+{
+  "metadata": {
+    "name": "Aeaw / ไนท์",
+    "birth_date": "1984-12-31",
+    "birth_time_local": "13:15",
+    "engine": "Decode v1.0 — Sesheta engine + Decode extensions",
+    "computed_at": "2026-05-05"
+  },
+  "four_pillars": {
+    "year": {
+      "stem": "甲",
+      "branch": "子",
+      "ten_god_stem": "DO Direct Officer"
+    },
+    "month": {
+      "stem": "丙",
+      "branch": "子",
+      "ten_god_stem": "DR Direct Resource"
+    },
+    "day": {
+      "stem": "己",
+      "branch": "亥",
+      "is_day_master": true
+    },
+    "hour": {
+      "stem": "辛",
+      "branch": "未",
+      "ten_god_stem": "EG Eating God"
+    }
+  },
+  "day_master": {
+    "stem": "己",
+    "element": "Earth",
+    "polarity": "Yin",
+    "meaning": "Yin Earth — cultivated field, fertile soil, patient wealth-builder"
+  },
+  "strength_analysis": {
+    "method": "Sesheta 12 Phases verified",
+    "calculations": [
+      {
+        "position": "Year 甲子",
+        "branch": "子",
+        "phase": "絕 Extinction",
+        "mult": 0.5,
+        "pos_w": 0.8,
+        "contribution": 0.4
+      },
+      {
+        "position": "Month 丙子",
+        "branch": "子",
+        "phase": "絕 Extinction",
+        "mult": 0.5,
+        "pos_w": 1.6,
+        "contribution": 0.8
+      },
+      {
+        "position": "Day 己亥",
+        "branch": "亥",
+        "phase": "胎 Conception",
+        "mult": 0.6,
+        "pos_w": 1.0,
+        "contribution": 0.6
+      },
+      {
+        "position": "Hour 辛未",
+        "branch": "未",
+        "phase": "冠帶 Adolescence",
+        "mult": 1.2,
+        "pos_w": 0.9,
+        "contribution": 1.08
+      }
+    ],
+    "total_phase_strength": 2.88,
+    "verdict": "Weak Day Master",
+    "strength_percentage": 30,
+    "diagnosis": "Frozen Winter Chart. Born in 子 month (mid-winter). Day Master 己 has zero root in cold Water-dominant pillars. Only 未 hour gives any rooting. Needs Fire heat + Earth companionship."
+  },
+  "structure": {
+    "code": "DR Direct Resource",
+    "title_th": "โครงสร้างตราตรงประทับ",
+    "category": "normal",
+    "reasoning": "Month stem 丙 = Direct Resource for 己. Pattern: study/wisdom/legitimate authority drives life."
+  },
+  "useful_god": {
+    "priority": "regulating",
+    "crisis_type": "Frozen Crisis 寒凍格",
+    "crisis_tier": "SSS",
+    "best_element": "Fire",
+    "ranked": [
+      {
+        "element": "Fire",
+        "tier": "SSS",
+        "category": "Regulating",
+        "reason": "Frozen Crisis — chart needs warmth"
+      },
+      {
+        "element": "Earth",
+        "tier": "S",
+        "category": "Companion",
+        "reason": "Strengthens weak DM"
+      },
+      {
+        "element": "Wood",
+        "tier": "B",
+        "category": "Influence",
+        "reason": "Provides structure"
+      },
+      {
+        "element": "Water",
+        "tier": "F",
+        "category": "Wealth",
+        "reason": "Already overflowing"
+      },
+      {
+        "element": "Metal",
+        "tier": "F",
+        "category": "Output",
+        "reason": "Drains weak DM"
+      }
+    ],
+    "implementation_note": "2026 turning point: Luck Pillar 辛巳 (age 42-52) brings Fire 巳 — addresses Frozen Crisis. THIS decade is the breakthrough window."
+  },
+  "five_elements_distribution": {
+    "Wood": 10.5,
+    "Fire": 8.2,
+    "Earth": 21.3,
+    "Metal": 13.0,
+    "Water": 47.0,
+    "diagnosis": "Water dominant 47% confirms Frozen. Fire only 8.2% confirms crisis."
+  },
+  "primary_archetype": {
+    "archetype": "Thinker",
+    "element_variant": "Earth Thinker",
+    "title_th": "นักคิด ธาตุดิน — การสะสมและวางฐาน",
+    "deep_dive": "Mind works like vast library or secure vault. Values history, data, proven facts. Builds knowledge slowly and methodically. Once you learn, you never forget. Keeper of records, knows context behind every decision.",
+    "mindset_shift": {
+      "quote_th": "ห้องสมุดที่ล็อกประตู ไม่มีประโยชน์กับใคร",
+      "warning_th": "อาจดื้อในความคิด ยึดวิธีเก่าเพราะ 'เราทำแบบนี้มาตลอด'"
+    },
+    "awakening_question_th": "คุณเก็บข้อมูลนี้เพื่อสนับสนุนอนาคต หรือยึดติดอดีตเพราะรู้สึกปลอดภัย?"
+  },
+  "personal_stars_active": [
+    {
+      "star": "Heavenly Wealth (Year)",
+      "interpretation": "Wealth from ancestral connections — aluminum business inherited/built"
+    },
+    {
+      "star": "Sky Horse 驛馬 (Day)",
+      "interpretation": "Day branch 亥 = mobile lifestyle, partner from outside hometown (Mai from Chon Buri, Aeaw in Nonthaburi)"
+    },
+    {
+      "star": "Kong Wang 空亡 voids 辰巳",
+      "interpretation": "Belongs to 甲午旬. Voids 辰巳 — 巳 is also yongshen Fire. Current 辛巳 luck pillar activates this void: career feels both 'fated' and 'unrooted'"
+    },
+    {
+      "star": "Eating God 辛 (Hour)",
+      "interpretation": "Output channel — Aeaw uses ERP/AI building (Jarvis) as this output"
+    }
+  ],
+  "kong_wang": {
+    "xun_group": "甲午旬",
+    "void_branches": [
+      "辰",
+      "巳"
+    ],
+    "interpretation": "辰+巳 are 'empty'. CRITICAL: 巳 is PRIMARY YONGSHEN. Current 辛巳 luck pillar activates this dual reading."
+  },
+  "six_destructions_active": [
+    {
+      "pair": "子-酉",
+      "in_chart": "子 in Year+Month, 酉 not in natal",
+      "activation_risk": "Annual 酉 will activate. Watch year 2029.",
+      "watch_year": 2029
+    },
+    {
+      "pair": "寅-亥",
+      "in_chart": "亥 in Day, 寅 not in natal",
+      "activation_risk": "Paradox — resolves into 六合 Wood if conditions met",
+      "watch_year": 2034
+    }
+  ],
+  "luck_pillars_forward": [
+    {
+      "ages": "2-12",
+      "pillar": "丁丑",
+      "verdict": "Mixed — Fire helpful but 丑 brings water"
+    },
+    {
+      "ages": "12-22",
+      "pillar": "戊寅",
+      "verdict": "Education years — Wood activates 寅亥 paradox"
+    },
+    {
+      "ages": "22-32",
+      "pillar": "己卯",
+      "verdict": "Career foundation — own element"
+    },
+    {
+      "ages": "32-42",
+      "pillar": "庚辰",
+      "verdict": "Wealth structure — but 辰 is void"
+    },
+    {
+      "ages": "42-52",
+      "pillar": "辛巳",
+      "verdict": "★ BREAKTHROUGH ★ Fire 巳 = primary yongshen. 2026 critical year"
+    },
+    {
+      "ages": "52-62",
+      "pillar": "壬午",
+      "verdict": "Continuation — 午 Fire strong"
+    },
+    {
+      "ages": "62-72",
+      "pillar": "癸未",
+      "verdict": "Wealth accumulation"
+    },
+    {
+      "ages": "72-82",
+      "pillar": "甲申",
+      "verdict": "寅亥 paradox reverse activation"
+    },
+    {
+      "ages": "82-92",
+      "pillar": "乙酉",
+      "verdict": "Late legacy"
+    }
+  ],
+  "current_situation_2026": {
+    "current_age": 41,
+    "active_luck_pillar": "庚辰 → transitioning to 辛巳 at age 42",
+    "annual_2026": "丙午 (Fire+Fire = MEGA FIRE)",
+    "synthesis": "2026 is THE pivotal Fire year. Annual 丙午 brings strongest Fire support. Combined with upcoming 辛巳 luck pillar, this is the optimal window for: Horizon House (Fire activates Earth), aluminum expansion (Earth wealth through Fire), BTC strategy timing.",
+    "risks": [
+      "Plan respects no-BTC-sell Jun-Jul (clash months) — correct",
+      "Money flow concentration in May, August, October (Earth peak)",
+      "Mai 辛 Metal supports — Hour 辛 resonates with her DM"
+    ]
+  },
+  "decode_recommendations": {
+    "horizon_house": "Pile-driving started Apr 23, 2026 — strong choice. Foundation milestones on Fire days (巳/午).",
+    "wewealth_aluminum": "Aluminum = Metal industry, Eating God output. Drains excess Earth into wealth. Wood-grain finishes align with controlled Wood (Influence) — premium positioning correct.",
+    "btc_strategy": "Water-dominant chart should NOT add more Water through trading. BTC = Water energy. Plan to sell during Fire-favorable months (May, Aug, Oct, Nov) is alchemically sound.",
+    "qmdj_decode_platform": "Building Decode = Eating God output (creativity through 辛). Hour pillar 辛未 is the strongest natural channel. This work is karmically aligned.",
+    "fitness_hyrox": "Hyrox = Fire activation (cardio + heat). Directly addresses Frozen Crisis. Continue."
+  },
+  "longevity_health": {
+    "tcm_focus": "Earth Day Master in Water-flooded chart → Spleen-Stomach (己=Spleen) under stress from Kidney-Bladder (子亥=Water). Watch digestion, blood sugar, dampness.",
+    "amlodipine_context": "Hypertension med appropriate. Cold-Water excess manifests as cardiovascular tension.",
+    "supplement_alignment": "D3+K2 is Fire energy supplement — therapeutic for chart. Excellent choice."
+  }
+}

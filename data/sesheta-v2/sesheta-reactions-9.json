@@ -1,0 +1,153 @@
+{
+  "reactions_9": {
+    "1_sanHui (三會)": {
+      "description": "Three-direction directional harmony (strongest)",
+      "priority": 5,
+      "energy_mult": 1.35,
+      "examples": [
+        "寅卯辰 → Wood (Eastern direction)",
+        "巳午未 → Fire (Southern direction)",
+        "申酉戌 → Metal (Western direction)",
+        "亥子丑 → Water (Northern direction)"
+      ]
+    },
+    "2_sanHe (三合)": {
+      "description": "Three-trinity combination",
+      "priority": 4,
+      "energy_mult": 1.25,
+      "examples": [
+        "申子辰 → Water trinity",
+        "寅午戌 → Fire trinity",
+        "巳酉丑 → Metal trinity",
+        "亥卯未 → Wood trinity"
+      ]
+    },
+    "3_liuHe (六合)": {
+      "description": "Six-pair harmony (binary fusion)",
+      "priority": 3,
+      "energy_mult": 1.2,
+      "pairs": {
+        "子": "丑",
+        "寅": "亥",
+        "卯": "戌",
+        "辰": "酉",
+        "巳": "申",
+        "午": "未"
+      }
+    },
+    "4_banSanHe (半三合)": {
+      "description": "Half-trinity (2 of 3 trinity members)",
+      "priority": 2,
+      "energy_mult_peak": 1.15,
+      "energy_mult_no_peak": 1.05
+    },
+    "5_liuChong (六沖) - Clash": {
+      "description": "Six clashes (opposites destroy each other)",
+      "priority": 1,
+      "pairs": {
+        "子": "午",
+        "丑": "未",
+        "寅": "申",
+        "卯": "酉",
+        "辰": "戌",
+        "巳": "亥"
+      }
+    },
+    "6_liuHai (六害) - Six Harms": {
+      "description": "Six harms (passive aggression / hidden conflict)",
+      "priority": 1,
+      "pairs": {
+        "子": "未",
+        "丑": "午",
+        "寅": "巳",
+        "卯": "辰",
+        "申": "亥",
+        "酉": "戌"
+      }
+    },
+    "7_ziXing (自刑) - Self Punishment": {
+      "description": "Self-punishing branches (toxic self-loop)",
+      "priority": 1,
+      "branches": [
+        "辰",
+        "午",
+        "酉",
+        "亥"
+      ]
+    },
+    "8_shiShi (恃勢) - Power Punishment": {
+      "description": "Power-trust punishment (寅巳申 trinity)",
+      "priority": 1,
+      "pattern": "寅巳申 - all three create disaster"
+    },
+    "9_wuEn (無恩) - Ungrateful Punishment": {
+      "description": "Ungrateful punishment (丑戌未 trinity)",
+      "priority": 1,
+      "pattern": "丑戌未 - earth siblings turn against each other"
+    }
+  },
+  "physics_engine": {
+    "priority_levels": {
+      "sanHui": 5,
+      "sanHe": 4,
+      "liuHe": 3,
+      "banSanHe": 2,
+      "clash": 1,
+      "punishment": 1
+    },
+    "energy_multipliers": {
+      "sanHui": 1.35,
+      "sanHe": 1.25,
+      "liuHe": 1.2,
+      "tianGanHe": 1.15,
+      "banSanHe_Peak": 1.15,
+      "banSanHe_NoPeak": 1.05
+    },
+    "individual_branch_boost": 1.03,
+    "sanHui_3_direction_branches": {
+      "full": 1.25,
+      "partial": 1.1,
+      "binding": 0.9
+    },
+    "clash_dynamics": {
+      "equalDistance": 0.75,
+      "loser": 1.03
+    },
+    "liuHe_dynamics": {
+      "winner": 0.8,
+      "loser": 0.5,
+      "earth": {
+        "mainQi_boost": 1.15,
+        "hiddenQi_penalty": 0.6
+      }
+    },
+    "sixHarm_dynamics": {
+      "controller": 0.85,
+      "controlled": 0.55
+    },
+    "punishment_dynamics": {
+      "self": 0.9,
+      "pair": 0.9,
+      "earth_pair": {
+        "earthBoost": 1.2,
+        "otherPenalty": 0.7
+      },
+      "earth_complete": {
+        "earthBoost": 1.35,
+        "otherPenalty": 0.6
+      },
+      "ungrateful_pair": 0.85,
+      "ungrateful_complete": {
+        "mainPenalty": 0.75,
+        "hiddenRelease": true
+      }
+    },
+    "qi_strength_multipliers": {
+      "mainQi": 0.92,
+      "hiddenQi": 0.88
+    },
+    "tian_gan_he_clash": {
+      "subject_to_clash": true
+    }
+  }
+}

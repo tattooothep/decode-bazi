@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "name": "Aeaw / ไนท์",
+    "natal": "甲子/丙子/己亥/辛未",
+    "computed_at": "2026-05-05",
+    "engine": "Decode 25-Stars Detector v1.0"
+  },
+  "natal_pillars": {
+    "year": {
+      "stem": "甲",
+      "branch": "子"
+    },
+    "month": {
+      "stem": "丙",
+      "branch": "子"
+    },
+    "day": {
+      "stem": "己",
+      "branch": "亥"
+    },
+    "hour": {
+      "stem": "辛",
+      "branch": "未"
+    }
+  },
+  "three_combo_groups": {
+    "day": "wood",
+    "year": "water"
+  },
+  "stars_detected": {
+    "tian_yi_nobleman_天乙貴人": [
+      "year",
+      "month",
+      "hour"
+    ],
+    "wen_chang_文昌": [],
+    "tao_hua_桃花": [
+      "year",
+      "month"
+    ],
+    "yi_ma_驛馬": [],
+    "hua_gai_華蓋": [
+      "hour"
+    ],
+    "jiang_xing_將星": [
+      "year",
+      "month"
+    ],
+    "tian_de_天德貴人": [],
+    "yue_de_月德貴人": [],
+    "lu_shen_祿神": [],
+    "yang_ren_羊刃": [],
+    "kong_wang_空亡_voids": [
+      "辰",
+      "巳"
+    ],
+    "kong_wang_active_in_natal": [],
+    "hong_yan_紅艷煞": [],
+    "tian_xi_天喜": [],
+    "hong_luan_紅鸞": [],
+    "gu_chen_孤辰": [],
+    "gua_su_寡宿": [],
+    "sang_men_喪門": [],
+    "diao_ke_弔客": [],
+    "jie_sha_劫煞": [],
+    "wang_shen_亡神": [
+      "day"
+    ],
+    "xian_chi_鹹池": [
+      "year",
+      "month"
+    ],
+    "jin_yu_金輿": []
+  },
+  "active_count": 7,
+  "interpretations": {
+    "tian_yi_nobleman_天乙貴人": "★★★ STRONG: 3 positions (year, month, hour). Multi-source mentor protection. Year+Month branches 子 are noblemen for Day Master 己; Hour branch 未 is nobleman for Year stem 甲. Aeaw has career mentors at multiple life stages.",
+    "tao_hua_桃花": "★★ MODERATE: 2 positions (year, month). Branches 子 = peach blossom for water-group day branch 亥. Year/Month placement = social charm, networking advantage (good for business). Not in day/hour = no marriage scandal risk.",
+    "hua_gai_華蓋": "★★ Hour position. Branch 未 = elegant seal for wood-group year. Hour placement = legacy through artistic/spiritual depth. Aligns with Aeaw's metaphysics interest (Decode platform).",
+    "jiang_xing_將星": "★★★ STRONG: Year+Month positions. 子 is peak of water group. Natural leadership in family business and early career — manifests as WeWealth aluminum business leadership.",
+    "lu_shen_祿神": "Not active in natal. Day stem 己 → 午 = lu shen, but no 午 in natal. Will activate during 午-month/午-year transits (e.g., June 2026 = 甲午 month brings strong career income flow).",
+    "yang_ren_羊刃": "Not applicable (己 is Yin stem). Aeaw doesn't carry blade energy.",
+    "kong_wang_空亡": "Voids 辰巳. PARADOX: 巳 is yongshen (Fire). When 辛巳 luck pillar arrives (age 42-52, current), Aeaw experiences breakthrough but with 'unrooted' feeling — fated success that doesn't feel like one's own.",
+    "tian_xi_天喜": "Not active in natal. Activates in 酉 transits.",
+    "hong_luan_紅鸞": "Not active in natal. Activates in 卯 transits — marriage timing was 卯 year (verify with Mai's 2014 timing if applicable)."
+  },
+  "transit_predictions_2026": {
+    "active_year_pillar_2026": "丙午",
+    "transit_stars_2026": "丙 stem matches Wen Chang for 丙 day master (not Aeaw's 己), but as resonance check: 丙 is Direct Resource for 己 = academic/teaching/wisdom amplified. 午 branch = Lu Shen (祿神) for 己! → CAREER WEALTH ACTIVATION 2026.",
+    "key_2026_stars_activating": [
+      "Lu Shen 祿神 (午 transit) — career income flow",
+      "Tian Xi 天喜 (午-related)",
+      "BTC plan respects 午 sell timing — alchemically aligned"
+    ]
+  }
+}

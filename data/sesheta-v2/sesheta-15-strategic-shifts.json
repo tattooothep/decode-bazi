@@ -1,0 +1,167 @@
+[
+  {
+    "archetype": "Influence",
+    "title": "1. The Responsibility Shift (Carrying > Building)",
+    "titleTh": "1. เปลี่ยนมุมมองเรื่องความรับผิดชอบ (แบกรับ → สร้างคน)",
+    "stop": "The \"Atlas Complex\" (Thinking the world will collapse without you).",
+    "stopTh": "\"โรคแบกโลก\" — คิดว่าถ้าไม่มีคุณ ทุกอย่างจะพัง",
+    "start": "**Letting go.** Allow others to carry the weight, even if they stumble at first.",
+    "startTh": "**ปล่อยวาง** ให้คนอื่นแบกรับบ้าง แม้ว่าตอนแรกจะสะดุดก็ตาม",
+    "insight": "You don't build a legacy by being the strongest lifter; you build it by training others to lift.",
+    "insightTh": "คุณไม่ได้สร้างมรดกด้วยการเป็นคนที่แข็งแกร่งที่สุด แต่ด้วยการฝึกให้คนอื่นแข็งแกร่งตาม"
+  },
+  {
+    "archetype": "Influence",
+    "title": "2. The Coaching Shift (Fixing > Asking)",
+    "titleTh": "2. เปลี่ยนจากแก้ปัญหาเอง → สอนให้คิดเอง",
+    "stop": "Being the \"Chief Fixer\" who solves every crisis instantly.",
+    "stopTh": "การเป็น \"หัวหน้าซ่อมบำรุง\" ที่แก้ทุกวิกฤตด้วยตัวเอง",
+    "start": "**Ask, Don't Tell.** When they bring you a problem, ask: \"How would you handle this?\"",
+    "startTh": "**ถามแทนสั่ง** เมื่อมีคนมาปรึกษา ลองถามว่า: \"ถ้าเป็นคุณจะจัดการยังไง?\"",
+    "insight": "If you solve it, you own it. If they solve it, they grow.",
+    "insightTh": "ถ้าคุณแก้ให้ คุณก็ต้องรับผิดชอบตลอด ถ้าเขาแก้เอง เขาก็เติบโต"
+  },
+  {
+    "archetype": "Influence",
+    "title": "3. The Connection Shift (Perfection > Humanity)",
+    "titleTh": "3. เปลี่ยนจากสมบูรณ์แบบ → เป็นมนุษย์",
+    "stop": "Hiding your struggles to appear invincible.",
+    "stopTh": "ซ่อนความทุกข์ เพื่อให้ดูเหมือนไม่มีวันพ่ายแพ้",
+    "start": "**Showing your cracks.** Admitting when you are tired or need help makes you real.",
+    "startTh": "**เผยจุดอ่อน** การยอมรับว่าเหนื่อยหรือต้องการความช่วยเหลือ ทำให้คุณ 'จริง' มากขึ้น",
+    "insight": "People admire perfection, but they *trust* and *connect* with humanity.",
+    "insightTh": "คนชื่นชมความสมบูรณ์แบบ แต่คน *ไว้วางใจ* และ *ผูกพัน* กับความเป็นมนุษย์"
+  },
+  {
+    "archetype": "Achiever",
+    "title": "1. The Leverage Shift (Who > How)",
+    "titleTh": "1. เปลี่ยนจาก \"ทำยังไง\" → \"ใครทำได้\"",
+    "stop": "Asking \"How can I finish this?\"",
+    "stopTh": "ถามตัวเองว่า \"จะทำให้เสร็จยังไงดี?\"",
+    "start": "Asking \"Who is the best person to do this for me?\"",
+    "startTh": "ถามว่า \"ใครทำเรื่องนี้ได้ดีที่สุด?\"",
+    "insight": "\"How\" adds work to your plate. \"Who\" builds your empire.",
+    "insightTh": "\"ทำยังไง\" เพิ่มงานให้คุณ \"ใครทำได้\" สร้างอาณาจักรให้คุณ"
+  },
+  {
+    "archetype": "Achiever",
+    "title": "2. The Efficiency Trap (Value > Volume)",
+    "titleTh": "2. กับดักความขยัน (คุณค่า > ปริมาณ)",
+    "stop": "Being proud of \"being busy.\" Busy is not the same as productive.",
+    "stopTh": "ภูมิใจที่ \"ยุ่งตลอด\" — ยุ่งไม่ได้แปลว่ามีผลงาน",
+    "start": "**Ruthless 80/20.** Eliminate the 80% of tasks that create low value.",
+    "startTh": "**ตัดทิ้งแบบไม่เกรงใจ** กำจัด 80% ของงานที่สร้างคุณค่าต่ำออกไป",
+    "insight": "Being busy is often a sign of laziness—lazy thinking about what truly matters.",
+    "insightTh": "ความยุ่งมักเป็นสัญญาณของความขี้เกียจ — ขี้เกียจคิดว่าอะไรสำคัญจริงๆ"
+  },
+  {
+    "archetype": "Achiever",
+    "title": "3. The Asset Mindset (Rest > Grind)",
+    "titleTh": "3. มองตัวเองเป็นสินทรัพย์ (พักผ่อน > หามรุ่งหามค่ำ)",
+    "stop": "Treating rest as \"wasting time.\"",
+    "stopTh": "มองการพักผ่อนว่าเป็น \"การเสียเวลา\"",
+    "start": "**Strategic Recovery.** Treat sleep and play as \"sharpening the axe.\"",
+    "startTh": "**พักอย่างมีกลยุทธ์** มองการนอนและการเล่นว่าเป็น \"การลับขวาน\"",
+    "insight": "You are the most expensive asset in this business. If you burn out, the whole operation crashes.",
+    "insightTh": "คุณคือสินทรัพย์ที่มีค่าที่สุดของธุรกิจนี้ ถ้าคุณหมดไฟ ทุกอย่างก็พังทลาย"
+  },
+  {
+    "archetype": "Thinker",
+    "title": "1. The Action Shift (Thinking > Doing)",
+    "titleTh": "1. เปลี่ยนจากคิด → ลงมือทำ",
+    "stop": "\"Analysis Paralysis\" (Waiting for 100% certainty).",
+    "stopTh": "\"โรคคิดวนไม่จบ\" — รอจนข้อมูลครบ 100% ก่อนค่อยทำ",
+    "start": "**The 70% Rule.** Move when you are 70% sure. Correct the course as you go.",
+    "startTh": "**กฎ 70%** เริ่มเมื่อมั่นใจ 70% แล้วค่อยปรับทิศระหว่างทาง",
+    "insight": "A good plan executed today is better than a perfect plan executed next week.",
+    "insightTh": "แผนที่ดีที่ทำวันนี้ ดีกว่าแผนที่สมบูรณ์แบบที่ทำสัปดาห์หน้า"
+  },
+  {
+    "archetype": "Thinker",
+    "title": "2. The Value Shift (Hoarding > Sharing)",
+    "titleTh": "2. เปลี่ยนจากสะสม → แบ่งปัน",
+    "stop": "Collecting certificates and knowledge without using them.",
+    "stopTh": "สะสมใบเซอร์กับความรู้โดยไม่เคยนำมาใช้",
+    "start": "**Publish Your Wisdom.** Turn your knowledge into a product, a system, or advice.",
+    "startTh": "**เผยแพร่ปัญญาของคุณ** เปลี่ยนความรู้เป็นผลิตภัณฑ์ ระบบ หรือคำแนะนำ",
+    "insight": "Knowledge is only \"potential\" power. It becomes real power when applied.",
+    "insightTh": "ความรู้เป็นแค่พลัง \"แฝง\" — มันจะกลายเป็นพลังจริงก็ต่อเมื่อนำมาใช้"
+  },
+  {
+    "archetype": "Thinker",
+    "title": "3. The Communication Shift (Complexity > Clarity)",
+    "titleTh": "3. เปลี่ยนจากซับซ้อน → ชัดเจน",
+    "stop": "Drowning people in details and theories.",
+    "stopTh": "ถล่มคนฟังด้วยรายละเอียดและทฤษฎีมากเกินไป",
+    "start": "**Be The Translator.** Your value lies in simplifying the complex for others.",
+    "startTh": "**เป็นนักแปลความ** คุณค่าของคุณอยู่ที่การทำเรื่องยากให้เข้าใจง่ายสำหรับคนอื่น",
+    "insight": "If you can't explain it simply, you don't understand it well enough.",
+    "insightTh": "ถ้าอธิบายง่ายๆ ไม่ได้ แสดงว่ายังเข้าใจไม่ดีพอ"
+  },
+  {
+    "archetype": "Connector",
+    "title": "1. The Prosperity Shift (Popularity > Profit)",
+    "titleTh": "1. เปลี่ยนจากเป็นที่รัก → สร้างรายได้",
+    "stop": "Thinking that mixing friendship and business is \"dirty.\"",
+    "stopTh": "คิดว่าการผสมมิตรภาพกับธุรกิจเป็นเรื่อง \"สกปรก\"",
+    "start": "**Leveraging your Network.** Dare to ask for the sale, the intro, or the deal.",
+    "startTh": "**ใช้ประโยชน์จากเครือข่าย** กล้าที่จะขอขาย ขอแนะนำ หรือขอดีล",
+    "insight": "True connection is a two-way street. If you only give and never receive, it's not a relationship; it's charity.",
+    "insightTh": "ความสัมพันธ์ที่แท้จริงเป็นถนนสองทาง ถ้าคุณแค่ให้โดยไม่เคยรับ มันไม่ใช่ความสัมพันธ์ แต่เป็นการทำบุญ"
+  },
+  {
+    "archetype": "Connector",
+    "title": "2. The Boundary Shift (Access > Value)",
+    "titleTh": "2. เปลี่ยนจากเปิดรับทุกคน → รักษาคุณค่าตัวเอง",
+    "stop": "Being available 24/7 for everyone's emotional crises.",
+    "stopTh": "พร้อมให้คนอื่นมาระบายปัญหาได้ตลอด 24 ชั่วโมง",
+    "start": "**The Velvet Rope.** Make your time exclusive. Learn to say \"Let me get back to you.\"",
+    "startTh": "**ตั้งขอบเขต** ทำให้เวลาของคุณมีค่า หัดพูดว่า \"ขอกลับไปตอบทีหลังนะ\"",
+    "insight": "People value what is scarce. If you are always available, you become cheap.",
+    "insightTh": "คนให้คุณค่ากับสิ่งที่หายาก ถ้าคุณว่างตลอด คุณก็ถูกลง"
+  },
+  {
+    "archetype": "Connector",
+    "title": "3. The Identity Shift (Pleasing > Leading)",
+    "titleTh": "3. เปลี่ยนจากเอาใจคน → นำทาง",
+    "stop": "Being a chameleon who agrees with everyone just to keep the peace.",
+    "stopTh": "เป็นกิ้งก่าที่เห็นดีเห็นงามกับทุกคนเพื่อรักษาสันติ",
+    "start": "**Kind Honesty.** Don't be afraid to state your true opinion, even if it differs.",
+    "startTh": "**พูดตรงอย่างมีน้ำใจ** อย่ากลัวที่จะบอกความคิดเห็นจริงๆ แม้จะแตกต่าง",
+    "insight": "People may *like* a Yes-Man, but they only *trust* and *follow* someone with conviction.",
+    "insightTh": "คนอาจ *ชอบ* คนที่เห็นด้วยตลอด แต่จะ *ไว้วางใจ* และ *ตามผู้นำ* ที่มีจุดยืน"
+  },
+  {
+    "archetype": "Creator",
+    "title": "1. The Completion Shift (Finishing > Starting)",
+    "titleTh": "1. เปลี่ยนจากเริ่มต้น → ทำให้เสร็จ",
+    "stop": "Getting high on starting new projects and abandoning old ones (Shiny Object Syndrome).",
+    "stopTh": "เสพติดการเริ่มโปรเจกต์ใหม่แล้วทิ้งโปรเจกต์เก่า (โรคของใหม่)",
+    "start": "**The \"Ship It\" Rule.** You are forbidden from starting Project B until Project A is launched.",
+    "startTh": "**กฎ \"ปล่อยของ\"** ห้ามเริ่มโปรเจกต์ B จนกว่าโปรเจกต์ A จะเปิดตัวเสร็จ",
+    "insight": "The world rewards \"Finished,\" not \"Perfect.\" An incomplete masterpiece has zero value.",
+    "insightTh": "โลกให้รางวัลกับ \"เสร็จแล้ว\" ไม่ใช่ \"สมบูรณ์แบบ\" — ผลงานชิ้นเอกที่ยังไม่เสร็จ มีค่าเท่ากับศูนย์"
+  },
+  {
+    "archetype": "Creator",
+    "title": "2. The Discipline Shift (Routine > Mood)",
+    "titleTh": "2. เปลี่ยนจากรอแรงบันดาลใจ → สร้างวินัย",
+    "stop": "Waiting for \"inspiration\" to strike before you work.",
+    "stopTh": "รอ \"แรงบันดาลใจ\" มาก่อนค่อยทำงาน",
+    "start": "**Creative Rituals.** Schedule your creation time like a dentist appointment. Show up even if you don't feel like it.",
+    "startTh": "**สร้างพิธีกรรมสร้างสรรค์** จัดตารางเวลาสร้างงานเหมือนนัดหมอฟัน ไปให้ตรงเวลาแม้ไม่อยากไป",
+    "insight": "Inspiration exists, but it has to find you working.",
+    "insightTh": "แรงบันดาลใจมีจริง แต่มันต้องมาเจอคุณตอนที่กำลังทำงานอยู่"
+  },
+  {
+    "archetype": "Creator",
+    "title": "3. The Perfection Trap (Version 1 > None)",
+    "titleTh": "3. กับดักความสมบูรณ์แบบ (เวอร์ชัน 1 > ไม่มีเลย)",
+    "stop": "Hoarding your work because \"it's not ready yet.\"",
+    "stopTh": "เก็บผลงานไว้กับตัวเพราะ \"ยังไม่พร้อม\"",
+    "start": "**Publishing Imperfection.** Launch fast, fail fast, and iterate.",
+    "startTh": "**ปล่อยของแม้ไม่สมบูรณ์** เปิดตัวเร็ว ล้มเร็ว แล้วปรับปรุง",
+    "insight": "Perfectionism is just fear in a fancy dress. Don't let your high standards become your prison.",
+    "insightTh": "ความสมบูรณ์แบบนิยมก็แค่ความกลัวที่แต่งตัวสวย อย่าให้มาตรฐานสูงของคุณกลายเป็นคุก"
+  }
+]

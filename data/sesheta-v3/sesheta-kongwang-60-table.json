@@ -1,0 +1,482 @@
+{
+  "甲子": {
+    "index": 0,
+    "voids": [
+      "戌",
+      "亥"
+    ],
+    "group_xun": 0
+  },
+  "乙丑": {
+    "index": 1,
+    "voids": [
+      "戌",
+      "亥"
+    ],
+    "group_xun": 0
+  },
+  "丙寅": {
+    "index": 2,
+    "voids": [
+      "戌",
+      "亥"
+    ],
+    "group_xun": 0
+  },
+  "丁卯": {
+    "index": 3,
+    "voids": [
+      "戌",
+      "亥"
+    ],
+    "group_xun": 0
+  },
+  "戊辰": {
+    "index": 4,
+    "voids": [
+      "戌",
+      "亥"
+    ],
+    "group_xun": 0
+  },
+  "己巳": {
+    "index": 5,
+    "voids": [
+      "戌",
+      "亥"
+    ],
+    "group_xun": 0
+  },
+  "庚午": {
+    "index": 6,
+    "voids": [
+      "戌",
+      "亥"
+    ],
+    "group_xun": 0
+  },
+  "辛未": {
+    "index": 7,
+    "voids": [
+      "戌",
+      "亥"
+    ],
+    "group_xun": 0
+  },
+  "壬申": {
+    "index": 8,
+    "voids": [
+      "戌",
+      "亥"
+    ],
+    "group_xun": 0
+  },
+  "癸酉": {
+    "index": 9,
+    "voids": [
+      "戌",
+      "亥"
+    ],
+    "group_xun": 0
+  },
+  "甲戌": {
+    "index": 10,
+    "voids": [
+      "申",
+      "酉"
+    ],
+    "group_xun": 1
+  },
+  "乙亥": {
+    "index": 11,
+    "voids": [
+      "申",
+      "酉"
+    ],
+    "group_xun": 1
+  },
+  "丙子": {
+    "index": 12,
+    "voids": [
+      "申",
+      "酉"
+    ],
+    "group_xun": 1
+  },
+  "丁丑": {
+    "index": 13,
+    "voids": [
+      "申",
+      "酉"
+    ],
+    "group_xun": 1
+  },
+  "戊寅": {
+    "index": 14,
+    "voids": [
+      "申",
+      "酉"
+    ],
+    "group_xun": 1
+  },
+  "己卯": {
+    "index": 15,
+    "voids": [
+      "申",
+      "酉"
+    ],
+    "group_xun": 1
+  },
+  "庚辰": {
+    "index": 16,
+    "voids": [
+      "申",
+      "酉"
+    ],
+    "group_xun": 1
+  },
+  "辛巳": {
+    "index": 17,
+    "voids": [
+      "申",
+      "酉"
+    ],
+    "group_xun": 1
+  },
+  "壬午": {
+    "index": 18,
+    "voids": [
+      "申",
+      "酉"
+    ],
+    "group_xun": 1
+  },
+  "癸未": {
+    "index": 19,
+    "voids": [
+      "申",
+      "酉"
+    ],
+    "group_xun": 1
+  },
+  "甲申": {
+    "index": 20,
+    "voids": [
+      "午",
+      "未"
+    ],
+    "group_xun": 2
+  },
+  "乙酉": {
+    "index": 21,
+    "voids": [
+      "午",
+      "未"
+    ],
+    "group_xun": 2
+  },
+  "丙戌": {
+    "index": 22,
+    "voids": [
+      "午",
+      "未"
+    ],
+    "group_xun": 2
+  },
+  "丁亥": {
+    "index": 23,
+    "voids": [
+      "午",
+      "未"
+    ],
+    "group_xun": 2
+  },
+  "戊子": {
+    "index": 24,
+    "voids": [
+      "午",
+      "未"
+    ],
+    "group_xun": 2
+  },
+  "己丑": {
+    "index": 25,
+    "voids": [
+      "午",
+      "未"
+    ],
+    "group_xun": 2
+  },
+  "庚寅": {
+    "index": 26,
+    "voids": [
+      "午",
+      "未"
+    ],
+    "group_xun": 2
+  },
+  "辛卯": {
+    "index": 27,
+    "voids": [
+      "午",
+      "未"
+    ],
+    "group_xun": 2
+  },
+  "壬辰": {
+    "index": 28,
+    "voids": [
+      "午",
+      "未"
+    ],
+    "group_xun": 2
+  },
+  "癸巳": {
+    "index": 29,
+    "voids": [
+      "午",
+      "未"
+    ],
+    "group_xun": 2
+  },
+  "甲午": {
+    "index": 30,
+    "voids": [
+      "辰",
+      "巳"
+    ],
+    "group_xun": 3
+  },
+  "乙未": {
+    "index": 31,
+    "voids": [
+      "辰",
+      "巳"
+    ],
+    "group_xun": 3
+  },
+  "丙申": {
+    "index": 32,
+    "voids": [
+      "辰",
+      "巳"
+    ],
+    "group_xun": 3
+  },
+  "丁酉": {
+    "index": 33,
+    "voids": [
+      "辰",
+      "巳"
+    ],
+    "group_xun": 3
+  },
+  "戊戌": {
+    "index": 34,
+    "voids": [
+      "辰",
+      "巳"
+    ],
+    "group_xun": 3
+  },
+  "己亥": {
+    "index": 35,
+    "voids": [
+      "辰",
+      "巳"
+    ],
+    "group_xun": 3
+  },
+  "庚子": {
+    "index": 36,
+    "voids": [
+      "辰",
+      "巳"
+    ],
+    "group_xun": 3
+  },
+  "辛丑": {
+    "index": 37,
+    "voids": [
+      "辰",
+      "巳"
+    ],
+    "group_xun": 3
+  },
+  "壬寅": {
+    "index": 38,
+    "voids": [
+      "辰",
+      "巳"
+    ],
+    "group_xun": 3
+  },
+  "癸卯": {
+    "index": 39,
+    "voids": [
+      "辰",
+      "巳"
+    ],
+    "group_xun": 3
+  },
+  "甲辰": {
+    "index": 40,
+    "voids": [
+      "寅",
+      "卯"
+    ],
+    "group_xun": 4
+  },
+  "乙巳": {
+    "index": 41,
+    "voids": [
+      "寅",
+      "卯"
+    ],
+    "group_xun": 4
+  },
+  "丙午": {
+    "index": 42,
+    "voids": [
+      "寅",
+      "卯"
+    ],
+    "group_xun": 4
+  },
+  "丁未": {
+    "index": 43,
+    "voids": [
+      "寅",
+      "卯"
+    ],
+    "group_xun": 4
+  },
+  "戊申": {
+    "index": 44,
+    "voids": [
+      "寅",
+      "卯"
+    ],
+    "group_xun": 4
+  },
+  "己酉": {
+    "index": 45,
+    "voids": [
+      "寅",
+      "卯"
+    ],
+    "group_xun": 4
+  },
+  "庚戌": {
+    "index": 46,
+    "voids": [
+      "寅",
+      "卯"
+    ],
+    "group_xun": 4
+  },
+  "辛亥": {
+    "index": 47,
+    "voids": [
+      "寅",
+      "卯"
+    ],
+    "group_xun": 4
+  },
+  "壬子": {
+    "index": 48,
+    "voids": [
+      "寅",
+      "卯"
+    ],
+    "group_xun": 4
+  },
+  "癸丑": {
+    "index": 49,
+    "voids": [
+      "寅",
+      "卯"
+    ],
+    "group_xun": 4
+  },
+  "甲寅": {
+    "index": 50,
+    "voids": [
+      "子",
+      "丑"
+    ],
+    "group_xun": 5
+  },
+  "乙卯": {
+    "index": 51,
+    "voids": [
+      "子",
+      "丑"
+    ],
+    "group_xun": 5
+  },
+  "丙辰": {
+    "index": 52,
+    "voids": [
+      "子",
+      "丑"
+    ],
+    "group_xun": 5
+  },
+  "丁巳": {
+    "index": 53,
+    "voids": [
+      "子",
+      "丑"
+    ],
+    "group_xun": 5
+  },
+  "戊午": {
+    "index": 54,
+    "voids": [
+      "子",
+      "丑"
+    ],
+    "group_xun": 5
+  },
+  "己未": {
+    "index": 55,
+    "voids": [
+      "子",
+      "丑"
+    ],
+    "group_xun": 5
+  },
+  "庚申": {
+    "index": 56,
+    "voids": [
+      "子",
+      "丑"
+    ],
+    "group_xun": 5
+  },
+  "辛酉": {
+    "index": 57,
+    "voids": [
+      "子",
+      "丑"
+    ],
+    "group_xun": 5
+  },
+  "壬戌": {
+    "index": 58,
+    "voids": [
+      "子",
+      "丑"
+    ],
+    "group_xun": 5
+  },
+  "癸亥": {
+    "index": 59,
+    "voids": [
+      "子",
+      "丑"
+    ],
+    "group_xun": 5
+  }
+}

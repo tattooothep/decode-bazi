@@ -1,0 +1,1333 @@
+{
+  "metadata": {
+    "title": "Decode Interaction Matrix",
+    "title_th": "เมทริกซ์ปฏิสัมพันธ์ Decode",
+    "title_zh": "解碼互動矩陣",
+    "description": "Cross-pillar interaction taxonomy: 4 natal pillars × 5 transit layers = 20 base cases + multi-layer stack detection. Maps each activation to verdict, intensity, domain, affected pillar, and tri-lingual narrative.",
+    "version": "1.1",
+    "created": "2026-05-06",
+    "scope": "Decode v2 BaZi engine — replaces Sesheta's free-text approach with structured detection",
+    "natal_positions": [
+      "year",
+      "month",
+      "day",
+      "hour"
+    ],
+    "transit_layers": [
+      "da_yun",
+      "liu_nian",
+      "liu_yue",
+      "liu_ri",
+      "liu_shi"
+    ],
+    "scoring_weights": {
+      "da_yun": 0.3,
+      "liu_nian": 0.25,
+      "liu_yue": 0.2,
+      "liu_ri": 0.15,
+      "liu_shi": 0.1
+    },
+    "domain_palette": [
+      "career",
+      "wealth",
+      "spouse",
+      "children",
+      "elders",
+      "health",
+      "education",
+      "relocation",
+      "reputation",
+      "team",
+      "litigation",
+      "creativity",
+      "spirituality"
+    ],
+    "changelog": [
+      "v1.0 — initial 11 interactions, 7 stacks, 9 templates",
+      "v1.1 — expanded to 27 verdict-intensity-style templates, 3-language coverage"
+    ]
+  },
+  "natal_position_meanings": {
+    "year": {
+      "primary": "elders",
+      "secondary": [
+        "ancestry",
+        "first 16 years",
+        "social standing",
+        "elder generation karma"
+      ]
+    },
+    "month": {
+      "primary": "career",
+      "secondary": [
+        "parents (alive era)",
+        "youth 17-32",
+        "main job",
+        "structure of life"
+      ]
+    },
+    "day": {
+      "primary": "spouse",
+      "secondary": [
+        "self",
+        "marriage",
+        "age 33-48",
+        "core identity",
+        "private life"
+      ]
+    },
+    "hour": {
+      "primary": "children",
+      "secondary": [
+        "age 49+",
+        "team/subordinates",
+        "creative output",
+        "legacy"
+      ]
+    }
+  },
+  "transit_layer_durations": {
+    "da_yun": {
+      "duration_years": 10,
+      "weight": 0.3,
+      "manifestation": "macro life chapter"
+    },
+    "liu_nian": {
+      "duration_years": 1,
+      "weight": 0.25,
+      "manifestation": "annual events"
+    },
+    "liu_yue": {
+      "duration_months": 1,
+      "weight": 0.2,
+      "manifestation": "monthly opportunities"
+    },
+    "liu_ri": {
+      "duration_days": 1,
+      "weight": 0.15,
+      "manifestation": "daily action gates"
+    },
+    "liu_shi": {
+      "duration_hours": 2,
+      "weight": 0.1,
+      "manifestation": "tactical 2-hour windows"
+    }
+  },
+  "interaction_types_taxonomy": {
+    "stem_level": [
+      {
+        "type": "stem_he",
+        "label_zh": "天干合",
+        "label_en": "stem combination",
+        "default_verdict": "positive",
+        "default_intensity": "moderate"
+      },
+      {
+        "type": "stem_clash",
+        "label_zh": "天干冲",
+        "label_en": "stem clash",
+        "default_verdict": "negative",
+        "default_intensity": "strong"
+      },
+      {
+        "type": "stem_god",
+        "label_zh": "十神生",
+        "label_en": "ten god generation",
+        "default_verdict": "context_dependent",
+        "default_intensity": "moderate"
+      }
+    ],
+    "branch_level": [
+      {
+        "type": "san_he",
+        "label_zh": "三合",
+        "label_en": "triangle combination",
+        "default_verdict": "positive",
+        "default_intensity": "strong"
+      },
+      {
+        "type": "ban_san_he",
+        "label_zh": "半三合",
+        "label_en": "half triangle",
+        "default_verdict": "positive",
+        "default_intensity": "moderate"
+      },
+      {
+        "type": "san_hui",
+        "label_zh": "三會",
+        "label_en": "directional combination",
+        "default_verdict": "positive",
+        "default_intensity": "strong"
+      },
+      {
+        "type": "liu_he",
+        "label_zh": "六合",
+        "label_en": "six combination",
+        "default_verdict": "positive",
+        "default_intensity": "moderate"
+      },
+      {
+        "type": "liu_chong",
+        "label_zh": "六冲",
+        "label_en": "branch clash",
+        "default_verdict": "negative",
+        "default_intensity": "strong"
+      },
+      {
+        "type": "liu_hai",
+        "label_zh": "六害",
+        "label_en": "harm",
+        "default_verdict": "negative",
+        "default_intensity": "moderate"
+      },
+      {
+        "type": "liu_po",
+        "label_zh": "六破",
+        "label_en": "destruction",
+        "default_verdict": "negative",
+        "default_intensity": "moderate"
+      },
+      {
+        "type": "san_xing",
+        "label_zh": "三刑",
+        "label_en": "punishment",
+        "default_verdict": "negative",
+        "default_intensity": "strong"
+      },
+      {
+        "type": "zi_xing",
+        "label_zh": "自刑",
+        "label_en": "self-punishment",
+        "default_verdict": "negative",
+        "default_intensity": "moderate"
+      }
+    ],
+    "yin_level": [
+      {
+        "type": "fan_yin",
+        "label_zh": "反吟",
+        "label_en": "full opposition",
+        "default_verdict": "negative",
+        "default_intensity": "critical"
+      },
+      {
+        "type": "fu_yin",
+        "label_zh": "伏吟",
+        "label_en": "full repetition",
+        "default_verdict": "negative",
+        "default_intensity": "critical"
+      },
+      {
+        "type": "half_fan_yin",
+        "label_zh": "半反吟",
+        "label_en": "half opposition",
+        "default_verdict": "negative",
+        "default_intensity": "moderate"
+      },
+      {
+        "type": "half_fu_yin",
+        "label_zh": "半伏吟",
+        "label_en": "half repetition",
+        "default_verdict": "negative",
+        "default_intensity": "moderate"
+      }
+    ],
+    "void_level": [
+      {
+        "type": "kong_wang_hit",
+        "label_zh": "空亡",
+        "label_en": "void activation",
+        "default_verdict": "neutral",
+        "default_intensity": "moderate",
+        "note": "voids the OTHER pillar's effect"
+      }
+    ],
+    "useful_god_level": [
+      {
+        "type": "yongshen_arrival",
+        "label_zh": "用神到",
+        "label_en": "useful god arrival",
+        "default_verdict": "positive",
+        "default_intensity": "strong"
+      },
+      {
+        "type": "jishen_arrival",
+        "label_zh": "忌神到",
+        "label_en": "unfavorable element arrival",
+        "default_verdict": "negative",
+        "default_intensity": "strong"
+      }
+    ]
+  },
+  "interactions": [
+    {
+      "id": "natal_year_x_da_yun",
+      "name_zh": "年柱遇大運",
+      "name_th": "เสาปีพบต้าวิ่น",
+      "name_en": "Year pillar meets luck pillar",
+      "natal_position": "year",
+      "transit_layer": "da_yun",
+      "primary_domains": [
+        "elders",
+        "ancestry",
+        "social_standing"
+      ],
+      "secondary_domains": [
+        "career",
+        "reputation"
+      ],
+      "duration_relevance": "Long arc — affects the entire 10-year chapter",
+      "trigger_rules": [
+        {
+          "type": "stem_clash",
+          "verdict": "negative",
+          "intensity": "strong",
+          "domains": [
+            "elders",
+            "career"
+          ],
+          "narrative_th": "เสาปีปะทะกับสเต็มต้าวิ่น 10 ปี — ผู้ใหญ่ ผู้นำ หรือผู้สนับสนุนเดิมจะแยกทาง สถานะทางสังคมเปลี่ยน เป็นช่วงสร้างเอกลักษณ์ใหม่",
+          "narrative_en": "Year stem clashes with luck pillar stem — long-term separation from elders, mentors, or sponsors. Social standing shifts. A decade for forging new identity.",
+          "narrative_zh": "年干與大運天干相冲 — 與長輩、導師或贊助者長期分離。社會地位變遷，是十年重塑自我的時期"
+        },
+        {
+          "type": "branch_clash",
+          "verdict": "negative",
+          "intensity": "strong",
+          "domains": [
+            "ancestry",
+            "relocation"
+          ],
+          "narrative_th": "กิ่งปีปะทะต้าวิ่น — ย้ายถิ่น เปลี่ยนสังกัด ตัดขาดจากรากเหง้าเดิม 10 ปีแห่งการสร้างใหม่",
+          "narrative_en": "Year branch clashes luck — major relocation, institutional change, severance from roots. A decade of rebuilding.",
+          "narrative_zh": "年支與大運相冲 — 遷徙、改變所屬、與根源切割。十年重建"
+        },
+        {
+          "type": "stem_he",
+          "verdict": "positive",
+          "intensity": "moderate",
+          "domains": [
+            "elders",
+            "reputation"
+          ],
+          "narrative_th": "สเต็มปีรวมกับต้าวิ่น — ผู้ใหญ่ช่วย ชื่อเสียงดีในวงสังคม โอกาสสืบทอดมรดกหรือความรับผิดชอบ",
+          "narrative_en": "Year stem combines with luck stem — elder support flows in, reputation rises, possible inheritance or succession of responsibility.",
+          "narrative_zh": "年干與大運合化 — 長輩助力，名聲提升，可能繼承遺產或承擔家族責任"
+        },
+        {
+          "type": "liu_he",
+          "verdict": "positive",
+          "intensity": "moderate",
+          "domains": [
+            "ancestry",
+            "social_standing"
+          ],
+          "narrative_th": "กิ่งปีรวมกับต้าวิ่น — กลับสู่รากเหง้า เครือข่ายเดิมเปิดประตูใหม่ ทำงานเชื่อมรุ่นเก่ารุ่นใหม่",
+          "narrative_en": "Year branch combines with luck — return to roots, old network reopens doors, bridging generations.",
+          "narrative_zh": "年支與大運六合 — 回歸根源，舊網絡開啓新門，承上啟下"
+        },
+        {
+          "type": "fu_yin",
+          "verdict": "negative",
+          "intensity": "critical",
+          "domains": [
+            "elders",
+            "ancestry"
+          ],
+          "narrative_th": "ต้าวิ่นเสาเดียวกับเสาปี — ภาพชะตาวัยเด็กกลับมาในวัยผู้ใหญ่ บางอย่างที่เคยเรียนรู้ตั้งแต่เด็กกลับมาทดสอบอีก",
+          "narrative_en": "Luck pillar identical to year pillar — childhood themes return for adult re-examination. Karmic loop activates.",
+          "narrative_zh": "大運與年柱伏吟 — 童年主題在成年期重現，業力循環啓動"
+        }
+      ]
+    },
+    {
+      "id": "natal_month_x_da_yun",
+      "name_zh": "月柱遇大運",
+      "name_th": "เสาเดือนพบต้าวิ่น",
+      "name_en": "Month pillar meets luck pillar",
+      "natal_position": "month",
+      "transit_layer": "da_yun",
+      "primary_domains": [
+        "career",
+        "structure"
+      ],
+      "secondary_domains": [
+        "parents",
+        "youth_authority"
+      ],
+      "duration_relevance": "Most powerful natal-transit interaction — month pillar IS the structure root",
+      "trigger_rules": [
+        {
+          "type": "stem_clash",
+          "verdict": "negative",
+          "intensity": "critical",
+          "domains": [
+            "career",
+            "structure"
+          ],
+          "narrative_th": "สเต็มเดือนปะทะต้าวิ่น — โครงสร้างชีวิตเดิมแตก อาชีพปัจจุบันถูกท้าทายระดับรากฐาน 10 ปีนี้คือยุคพลิกอาชีพ",
+          "narrative_en": "Month stem clashes luck — life structure breaks, current career challenged at root level. A decade-long career pivot.",
+          "narrative_zh": "月干與大運相冲 — 生活結構破裂，當前事業根基受挑戰。十年職業轉型"
+        },
+        {
+          "type": "branch_clash",
+          "verdict": "negative",
+          "intensity": "critical",
+          "domains": [
+            "career",
+            "parents"
+          ],
+          "narrative_th": "กิ่งเดือนปะทะต้าวิ่น — เปลี่ยนอุตสาหกรรม ออกจากบริษัท หรือพ่อแม่มีปัญหาสุขภาพใหญ่",
+          "narrative_en": "Month branch clashes luck — industry change, leaving company, OR major parental health event.",
+          "narrative_zh": "月支與大運相冲 — 行業變動、離開公司，或父母重大健康事件"
+        },
+        {
+          "type": "yongshen_arrival",
+          "verdict": "positive",
+          "intensity": "critical",
+          "domains": [
+            "career",
+            "wealth",
+            "structure"
+          ],
+          "narrative_th": "ต้าวิ่นนำธาตุยงเสินมาถึงเสาเดือน — ทศวรรษทอง ทุกอย่างที่เคยติดขัดด้านอาชีพคลี่คลาย รากฐานชีวิตแข็งแรงสุดในรอบชีวิต",
+          "narrative_en": "Luck pillar brings useful god element to month — golden decade. Career obstructions clear. Strongest life-foundation period.",
+          "narrative_zh": "大運帶用神到月柱 — 黃金十年，事業阻礙化解，人生根基最強時期"
+        },
+        {
+          "type": "liu_he",
+          "verdict": "positive",
+          "intensity": "strong",
+          "domains": [
+            "career",
+            "structure"
+          ],
+          "narrative_th": "กิ่งเดือนรวมกับต้าวิ่น — โครงสร้างใหม่ทับโครงสร้างเดิม สร้างรายได้สายที่สอง partnership ระยะยาว",
+          "narrative_en": "Month branch combines with luck — new structure overlays old. Second income stream, long-term partnership.",
+          "narrative_zh": "月支與大運六合 — 新結構疊加舊結構，第二收入流，長期合作"
+        },
+        {
+          "type": "fu_yin",
+          "verdict": "negative",
+          "intensity": "critical",
+          "domains": [
+            "career"
+          ],
+          "narrative_th": "ต้าวิ่นซ้ำเสาเดือน — เหตุการณ์อาชีพในวัยเยาว์กลับมาเล่นซ้ำในรูปแบบใหม่ การงานเดิมที่ค้างไว้ต้องสะสางให้จบ",
+          "narrative_en": "Luck identical to month pillar — youth-era career patterns replay. Unfinished professional business demands closure.",
+          "narrative_zh": "大運與月柱伏吟 — 早年職業主題重演，未完成的事業需了結"
+        },
+        {
+          "type": "half_fan_yin",
+          "verdict": "negative",
+          "intensity": "moderate",
+          "domains": [
+            "career"
+          ],
+          "narrative_th": "ต้าวิ่นกึ่งฝ่าวินกับเสาเดือน — สเต็มซ้ำกิ่งปะทะ หรือสเต็มปะทะกิ่งซ้ำ ต้องตอบโจทย์เดิมในสภาพแวดล้อมใหม่",
+          "narrative_en": "Half opposition with month — same stem with branch clash, or same branch with stem clash. Same questions in new context.",
+          "narrative_zh": "大運與月柱半反吟 — 干同支冲或支同干冲，舊課題新環境"
+        }
+      ]
+    },
+    {
+      "id": "natal_day_x_da_yun",
+      "name_zh": "日柱遇大運",
+      "name_th": "เสาวันพบต้าวิ่น",
+      "name_en": "Day pillar meets luck pillar",
+      "natal_position": "day",
+      "transit_layer": "da_yun",
+      "primary_domains": [
+        "spouse",
+        "self"
+      ],
+      "secondary_domains": [
+        "health",
+        "private_life",
+        "core_identity"
+      ],
+      "duration_relevance": "Day pillar = self. Da Yun touching day = identity-level shift",
+      "trigger_rules": [
+        {
+          "type": "branch_clash",
+          "verdict": "negative",
+          "intensity": "critical",
+          "domains": [
+            "spouse",
+            "health"
+          ],
+          "narrative_th": "ต้าวิ่นกระแทกกิ่งวัน — ชีวิตคู่สั่นสะเทือนระดับตัวตน อาจหย่า แยก หรือคู่ครองชีวิตเปลี่ยน สุขภาพเสาเดิมเสื่อม",
+          "narrative_en": "Luck branch clashes day — marriage shaken at identity level. Possible divorce/separation/spouse change. Foundational health declines.",
+          "narrative_zh": "大運冲日支 — 婚姻在自我層面震盪，可能離異、分居或配偶變動。根本健康下滑"
+        },
+        {
+          "type": "stem_he",
+          "verdict": "context_dependent",
+          "intensity": "strong",
+          "domains": [
+            "self",
+            "spouse",
+            "career"
+          ],
+          "narrative_th": "ต้าวิ่นรวมสเต็มวัน — เปลี่ยนเอกลักษณ์ ลงนามครั้งใหญ่ คู่ครองมาเปิดประตูชีวิต ถ้าธาตุที่เกิดเป็นยงเสิน = บวกแรง ถ้าเป็นจี้เสิน = ละทิ้งตัวตน",
+          "narrative_en": "Luck combines day stem — identity shift, major signing, spouse opens new door. If transformation produces useful god = strongly positive; if unfavorable element = self-betrayal.",
+          "narrative_zh": "大運合日干 — 自我蛻變、重大簽約、配偶開啓新局。化用神則大吉，化忌神則迷失"
+        },
+        {
+          "type": "yongshen_arrival",
+          "verdict": "positive",
+          "intensity": "strong",
+          "domains": [
+            "self",
+            "health",
+            "spouse"
+          ],
+          "narrative_th": "ยงเสินมาถึงเสาวัน — สุขภาพ ตัวตน คู่ครอง ทุกมิติส่วนตัวแข็งแรง 10 ปีแห่งความมั่นใจในตัวเอง",
+          "narrative_en": "Useful god lands on day — health, identity, spouse all strengthen. A decade of self-confidence.",
+          "narrative_zh": "用神到日柱 — 健康、自我、配偶全方位強化。十年自信"
+        },
+        {
+          "type": "fan_yin",
+          "verdict": "negative",
+          "intensity": "critical",
+          "domains": [
+            "self",
+            "spouse"
+          ],
+          "narrative_th": "ต้าวิ่นฝ่าวินเสาวัน — ตัวตนถูกท้าทายเต็มรูปแบบ ทศวรรษแห่งการพลิกชีวิตจากภายใน คู่ครองอาจเป็นผู้ทำให้ตื่นรู้ผ่านความขัดแย้ง",
+          "narrative_en": "Luck full-opposes day — identity totally challenged. A decade of inside-out transformation. Spouse may catalyze awakening through conflict.",
+          "narrative_zh": "大運與日柱反吟 — 自我全面受挑戰，由内而外蛻變的十年。配偶或藉衝突喚醒覺知"
+        }
+      ]
+    },
+    {
+      "id": "natal_hour_x_da_yun",
+      "name_zh": "時柱遇大運",
+      "name_th": "เสาชั่วโมงพบต้าวิ่น",
+      "name_en": "Hour pillar meets luck pillar",
+      "natal_position": "hour",
+      "transit_layer": "da_yun",
+      "primary_domains": [
+        "children",
+        "team",
+        "legacy"
+      ],
+      "secondary_domains": [
+        "creativity",
+        "old_age"
+      ],
+      "duration_relevance": "Hour pillar dominant from age 49+ but team/output activation can occur earlier",
+      "trigger_rules": [
+        {
+          "type": "branch_clash",
+          "verdict": "negative",
+          "intensity": "strong",
+          "domains": [
+            "children",
+            "team"
+          ],
+          "narrative_th": "ต้าวิ่นปะทะกิ่งชั่วโมง — ลูกออกจากบ้าน ทีมหลักแยกย้าย หรือผลงานเดิมหมดอายุต้องสร้างใหม่",
+          "narrative_en": "Luck clashes hour branch — children leave nest, core team disbands, legacy work expires.",
+          "narrative_zh": "大運冲時支 — 子女離家、核心團隊解散、舊作品到期需新生"
+        },
+        {
+          "type": "yongshen_arrival",
+          "verdict": "positive",
+          "intensity": "strong",
+          "domains": [
+            "creativity",
+            "team",
+            "legacy"
+          ],
+          "narrative_th": "ยงเสินมาถึงเสาชั่วโมง — ผลงานชั่วชีวิตเริ่มเห็นรูปร่าง ทีมเข้มแข็ง ลูกหรือลูกศิษย์เป็นปัญญา",
+          "narrative_en": "Useful god to hour pillar — life's work crystallizes, team strengthens, children/students manifest brilliance.",
+          "narrative_zh": "用神到時柱 — 畢生作品成形，團隊堅固，子女徒弟顯才"
+        }
+      ]
+    },
+    {
+      "id": "natal_year_x_liu_nian",
+      "name_zh": "年柱遇流年",
+      "name_th": "เสาปีพบหลิวเหนียน",
+      "name_en": "Year pillar meets annual pillar",
+      "natal_position": "year",
+      "transit_layer": "liu_nian",
+      "primary_domains": [
+        "elders",
+        "annual_reputation"
+      ],
+      "trigger_rules": [
+        {
+          "type": "branch_clash",
+          "verdict": "negative",
+          "intensity": "moderate",
+          "domains": [
+            "elders",
+            "ancestry"
+          ],
+          "narrative_th": "หลิวเหนียนปะทะกิ่งปี — ปีนี้ผู้ใหญ่ในครอบครัวมีเหตุ การจัดการมรดก พิธี งานบุญสำคัญ",
+          "narrative_en": "Annual branch clashes year — elder family events, inheritance matters, important rites this year.",
+          "narrative_zh": "流年冲年支 — 今年家中長輩有事、繼承事務、重要禮儀"
+        },
+        {
+          "type": "yongshen_arrival",
+          "verdict": "positive",
+          "intensity": "moderate",
+          "domains": [
+            "reputation",
+            "elders"
+          ],
+          "narrative_th": "หลิวเหนียนเป็นยงเสินกระทบเสาปี — ปีแห่งเกียรติยศและการได้รับการยอมรับจากผู้ใหญ่",
+          "narrative_en": "Annual useful god touches year — year of honor and recognition by elders.",
+          "narrative_zh": "流年用神到年柱 — 榮譽之年，受長輩肯定"
+        }
+      ]
+    },
+    {
+      "id": "natal_month_x_liu_nian",
+      "name_zh": "月柱遇流年",
+      "name_th": "เสาเดือนพบหลิวเหนียน",
+      "name_en": "Month pillar meets annual pillar",
+      "natal_position": "month",
+      "transit_layer": "liu_nian",
+      "primary_domains": [
+        "career",
+        "annual_career_event"
+      ],
+      "trigger_rules": [
+        {
+          "type": "stem_he",
+          "verdict": "positive",
+          "intensity": "strong",
+          "domains": [
+            "career",
+            "wealth"
+          ],
+          "narrative_th": "หลิวเหนียนรวมสเต็มเดือน — ปีเซ็นสัญญาใหญ่ ขึ้นตำแหน่ง โปรโมชั่น หรือเปิดสายธุรกิจใหม่",
+          "narrative_en": "Annual stem combines month — year of major signing, promotion, or new business line.",
+          "narrative_zh": "流年合月干 — 大簽約之年、升職、新業務開展"
+        },
+        {
+          "type": "branch_clash",
+          "verdict": "negative",
+          "intensity": "strong",
+          "domains": [
+            "career",
+            "structure"
+          ],
+          "narrative_th": "หลิวเหนียนปะทะกิ่งเดือน — เปลี่ยนงาน ลาออก ปรับโครงสร้างองค์กร ปีไม่เหมาะลงทุนใหม่",
+          "narrative_en": "Annual clashes month branch — job change, resignation, restructure. Year unfavorable for new investments.",
+          "narrative_zh": "流年冲月支 — 換工作、辭職、組織重組。不利新投資"
+        },
+        {
+          "type": "half_fan_yin",
+          "verdict": "negative",
+          "intensity": "moderate",
+          "domains": [
+            "career"
+          ],
+          "narrative_th": "หลิวเหนียนกึ่งฝ่าวินเสาเดือน — เนื้องานเดิมในกรอบใหม่ คนเดิมตำแหน่งใหม่ ระวังทำซ้ำผิดพลาดเดิม",
+          "narrative_en": "Annual half-opposition with month — same work in new frame, same people new positions. Beware repeating old mistakes.",
+          "narrative_zh": "流年與月柱半反吟 — 舊事新框、舊人新職，慎防重蹈覆轍"
+        }
+      ]
+    },
+    {
+      "id": "natal_day_x_liu_nian",
+      "name_zh": "日柱遇流年",
+      "name_th": "เสาวันพบหลิวเหนียน",
+      "name_en": "Day pillar meets annual pillar",
+      "natal_position": "day",
+      "transit_layer": "liu_nian",
+      "primary_domains": [
+        "spouse",
+        "marriage_events",
+        "self_health"
+      ],
+      "trigger_rules": [
+        {
+          "type": "stem_he",
+          "verdict": "positive",
+          "intensity": "strong",
+          "domains": [
+            "spouse",
+            "marriage"
+          ],
+          "narrative_th": "หลิวเหนียนรวมสเต็มวัน (โสด) — ปีพบคู่ พิธีหมั้น/แต่ง (มีคู่) — ความสัมพันธ์ลึกซึ้งขึ้น เปิดบทใหม่ร่วมกัน",
+          "narrative_en": "Annual stem combines day (single) — meet partner, engagement, wedding. (Married) — deeper bond, new chapter together.",
+          "narrative_zh": "流年合日干 — 單身者遇緣訂婚成婚，已婚者情更深開新篇"
+        },
+        {
+          "type": "branch_clash",
+          "verdict": "negative",
+          "intensity": "strong",
+          "domains": [
+            "spouse",
+            "health"
+          ],
+          "narrative_th": "หลิวเหนียนปะทะกิ่งวัน — ปีนี้คู่ครองห่างเหิน ทะเลาะ หรือสุขภาพร่างกายส่วนกลาง (กระดูกสันหลัง อวัยวะหลัก) ต้องเช็ค",
+          "narrative_en": "Annual clashes day branch — spouse distance/conflict, OR core-body health (spine, vital organs) needs checking.",
+          "narrative_zh": "流年冲日支 — 配偶疏離爭執，或核心身體健康（脊柱、主要器官）需檢查"
+        },
+        {
+          "type": "fan_yin",
+          "verdict": "negative",
+          "intensity": "critical",
+          "domains": [
+            "self",
+            "spouse",
+            "health"
+          ],
+          "narrative_th": "หลิวเหนียนฝ่าวินเสาวัน — ปีพลิกตัวตน ทุกมิติส่วนตัวสะเทือน ต้องสำรวจตัวเองอย่างหนักก่อนตัดสินใจ",
+          "narrative_en": "Annual full-opposition day — self-pivot year, all personal dimensions shaken. Heavy introspection before decisions.",
+          "narrative_zh": "流年反吟日柱 — 自我翻轉之年，私生活全面震盪。三思後行"
+        }
+      ]
+    },
+    {
+      "id": "natal_hour_x_liu_nian",
+      "name_zh": "時柱遇流年",
+      "name_th": "เสาชั่วโมงพบหลิวเหนียน",
+      "name_en": "Hour pillar meets annual pillar",
+      "natal_position": "hour",
+      "transit_layer": "liu_nian",
+      "primary_domains": [
+        "children",
+        "team",
+        "creative_output"
+      ],
+      "trigger_rules": [
+        {
+          "type": "yongshen_arrival",
+          "verdict": "positive",
+          "intensity": "strong",
+          "domains": [
+            "creativity",
+            "team",
+            "children"
+          ],
+          "narrative_th": "หลิวเหนียนเป็นยงเสินกระทบเสาชั่วโมง — ปีผลงานเปล่งประกาย ทีมเดินคล่อง ลูกหรือลูกศิษย์มีข่าวดี",
+          "narrative_en": "Annual useful god to hour — work shines, team flows, children/students bring good news.",
+          "narrative_zh": "流年用神到時柱 — 作品出彩、團隊順暢、子女徒弟報佳音"
+        },
+        {
+          "type": "branch_clash",
+          "verdict": "negative",
+          "intensity": "moderate",
+          "domains": [
+            "children",
+            "team"
+          ],
+          "narrative_th": "หลิวเหนียนปะทะกิ่งชั่วโมง — ลูกหรือทีมมีปัญหา การส่งมอบงานล่าช้า ผลงานต้องรีไรท์",
+          "narrative_en": "Annual clashes hour — children/team issues, delivery delays, work needs rewriting.",
+          "narrative_zh": "流年冲時支 — 子女團隊有事，交付延遲，作品需重寫"
+        }
+      ]
+    },
+    {
+      "id": "natal_x_liu_yue_universal",
+      "name_zh": "本命遇流月",
+      "name_th": "ดวงเดิมพบหลิวเย่ว",
+      "name_en": "Natal meets monthly pillar",
+      "natal_position": "any",
+      "transit_layer": "liu_yue",
+      "primary_domains": [
+        "monthly_opportunity",
+        "monthly_obstacle"
+      ],
+      "duration_relevance": "Monthly pillar triggers what annual pillar promised — the 'when' of the year",
+      "trigger_rules": [
+        {
+          "type": "stack_with_liu_nian",
+          "verdict": "amplifier",
+          "intensity": "doubles_underlying",
+          "domains": [
+            "follows_underlying"
+          ],
+          "narrative_th": "หลิวเย่วเสริมแรงหลิวเหนียน — เหตุการณ์ปีนี้ลงเดือนนี้แน่นอน",
+          "narrative_en": "Monthly reinforces annual — annual event materializes this month.",
+          "narrative_zh": "流月助流年 — 今年事件落實於此月"
+        },
+        {
+          "type": "stack_against_liu_nian",
+          "verdict": "delayer",
+          "intensity": "softens_underlying",
+          "domains": [
+            "follows_underlying"
+          ],
+          "narrative_th": "หลิวเย่วต้านหลิวเหนียน — เดือนนี้เหตุการณ์ปีถูกชะลอ ใช้รอจังหวะ",
+          "narrative_en": "Monthly opposes annual — annual event delayed this month, use the pause strategically.",
+          "narrative_zh": "流月反流年 — 此月年事被延宕，借勢蓄力"
+        }
+      ]
+    },
+    {
+      "id": "natal_x_liu_ri",
+      "name_zh": "本命遇流日",
+      "name_th": "ดวงเดิมพบหลิวรื่อ",
+      "name_en": "Natal meets daily pillar",
+      "natal_position": "any",
+      "transit_layer": "liu_ri",
+      "primary_domains": [
+        "daily_action",
+        "tactical_decision"
+      ],
+      "duration_relevance": "Daily pillar = the 'go/no-go' gate for action mode",
+      "trigger_rules": [
+        {
+          "type": "yongshen_arrival",
+          "verdict": "positive",
+          "intensity": "moderate",
+          "domains": [
+            "daily_action"
+          ],
+          "narrative_th": "หลิวรื่อนำยงเสินมา — วันที่เหมาะลงมือ กระทำตัดสินใจสำคัญ",
+          "narrative_en": "Daily brings useful god — auspicious day to act, decide, sign.",
+          "narrative_zh": "流日帶用神 — 宜行動決策簽約之日"
+        },
+        {
+          "type": "branch_clash_with_day",
+          "verdict": "negative",
+          "intensity": "strong",
+          "domains": [
+            "daily_action",
+            "self"
+          ],
+          "narrative_th": "หลิวรื่อปะทะกิ่งวันเกิด — วันคำนึงตัวเองให้มาก ระวังอุบัติเหตุเล็ก หลีกเลี่ยงดีลใหญ่",
+          "narrative_en": "Daily clashes natal day — high self-care day, watch minor accidents, avoid major deals.",
+          "narrative_zh": "流日冲日柱 — 重自我關照、防小傷、避大事"
+        }
+      ]
+    },
+    {
+      "id": "natal_x_liu_shi",
+      "name_zh": "本命遇流時",
+      "name_th": "ดวงเดิมพบหลิวสือ",
+      "name_en": "Natal meets hourly pillar",
+      "natal_position": "any",
+      "transit_layer": "liu_shi",
+      "primary_domains": [
+        "tactical_window"
+      ],
+      "duration_relevance": "2-hour resolution — for surgery, contracts, major calls, market entry",
+      "trigger_rules": [
+        {
+          "type": "yongshen_arrival_with_useful_god",
+          "verdict": "positive",
+          "intensity": "moderate",
+          "domains": [
+            "tactical_window"
+          ],
+          "narrative_th": "หลิวสือนำยงเสินถึงเสาวัน — 2 ชั่วโมงทองสำหรับลงมือ ตัดสินใจ ส่งงาน",
+          "narrative_en": "Hourly brings useful god to day — golden 2-hour window for action.",
+          "narrative_zh": "流時用神到日柱 — 黃金兩小時宜行動"
+        }
+      ]
+    }
+  ],
+  "multi_layer_stack": [
+    {
+      "id": "triple_resonance_positive",
+      "name_zh": "三層共振吉",
+      "name_th": "สามชั้นกำเนิดเสริมกัน",
+      "name_en": "Triple resonance — positive",
+      "layers": [
+        "da_yun",
+        "liu_nian",
+        "liu_yue"
+      ],
+      "rule": "all_3_carry_useful_god_element",
+      "verdict": "positive",
+      "intensity": "critical",
+      "confidence_modifier": 1.4,
+      "domains": [
+        "wealth",
+        "career"
+      ],
+      "narrative_th": "สามชั้น (ต้าวิ่น+หลิวเหนียน+หลิวเย่ว) นำยงเสินพร้อมกัน — โอกาสครั้งใหญ่ที่สุดในรอบทศวรรษ ทำดีลใหญ่ พลิกธุรกิจ ใช้เลเวอเรจสูงได้",
+      "narrative_en": "All 3 transit layers carry useful god — biggest opportunity of the decade. Major deals, business pivot, high-leverage moves justified.",
+      "narrative_zh": "三層皆帶用神 — 十年最大機遇，可成大事業、大投資"
+    },
+    {
+      "id": "triple_resonance_negative",
+      "name_zh": "三層共振凶",
+      "name_th": "สามชั้นกำเนิดร้าย",
+      "name_en": "Triple resonance — negative",
+      "layers": [
+        "da_yun",
+        "liu_nian",
+        "liu_yue"
+      ],
+      "rule": "all_3_carry_unfavorable_element_or_clash",
+      "verdict": "negative",
+      "intensity": "critical",
+      "confidence_modifier": 1.4,
+      "domains": [
+        "health",
+        "wealth",
+        "stability"
+      ],
+      "narrative_th": "สามชั้นนำธาตุร้ายหรือปะทะพร้อมกัน — เลี่ยงตัดสินใจใหญ่ ระงับการลงทุน ลด leverage รักษาสภาพคล่อง",
+      "narrative_en": "All 3 layers carry unfavorable or clash — postpone major decisions, suspend investments, reduce leverage, preserve liquidity.",
+      "narrative_zh": "三層皆帶忌神或相冲 — 緩重大決策、停投資、減槓桿、保流動性"
+    },
+    {
+      "id": "yongshen_pierce",
+      "name_zh": "用神貫通",
+      "name_th": "ยงเสินทะลุ 4 ชั้น",
+      "name_en": "Useful god pierces 4 layers",
+      "layers": [
+        "da_yun",
+        "liu_nian",
+        "liu_yue",
+        "liu_ri"
+      ],
+      "rule": "all_4_carry_useful_god_element_landing_on_same_natal_pillar",
+      "verdict": "positive",
+      "intensity": "critical",
+      "confidence_modifier": 1.6,
+      "domains": [
+        "legacy",
+        "breakthrough"
+      ],
+      "narrative_th": "ยงเสินทะลุ 4 ชั้น (ต้าวิ่น+หลิวเหนียน+หลิวเย่ว+หลิวรื่อ) ลงเสาเดียวกัน — วันแห่งจุดเปลี่ยนชีวิต ทำพิธี ลงนาม กดปุ่ม start",
+      "narrative_en": "Useful god pierces 4 layers landing on same natal pillar — life-pivot day. Ceremony, signing, pressing start.",
+      "narrative_zh": "用神貫通四層落同柱 — 命運轉捩日，宜典禮、簽約、啟動"
+    },
+    {
+      "id": "fan_yin_cascade",
+      "name_zh": "反吟連鎖",
+      "name_th": "ฝ่าวินลูกโซ่",
+      "name_en": "Fan Yin cascade",
+      "layers": [
+        "da_yun",
+        "liu_nian"
+      ],
+      "rule": "both_layers_form_fan_yin_with_same_natal_pillar",
+      "verdict": "negative",
+      "intensity": "critical",
+      "confidence_modifier": 1.5,
+      "domains": [
+        "upheaval",
+        "transformation"
+      ],
+      "narrative_th": "ฝ่าวินซ้อนชั้น (ต้าวิ่น+หลิวเหนียน ฝ่าวินเสาเดียวกัน) — ปีพลิกชะตาในทศวรรษพลิกชะตา ระวังเหตุการณ์ใหญ่ที่ตัวตนถูกท้าทายเต็มรูปแบบ",
+      "narrative_en": "Stacked Fan Yin — pivotal year within pivotal decade. Major identity-challenging event likely. Prepare emotionally and logistically.",
+      "narrative_zh": "反吟疊加 — 命運十年中的關鍵年，重大自我挑戰事件，宜預作準備"
+    },
+    {
+      "id": "kong_wang_void_collision",
+      "name_zh": "空亡相撞",
+      "name_th": "คงหวางชนกัน",
+      "name_en": "Kong Wang collision",
+      "layers": [
+        "liu_nian",
+        "liu_yue"
+      ],
+      "rule": "transit_branch_lands_on_natal_kong_wang_branch",
+      "verdict": "neutral",
+      "intensity": "moderate",
+      "confidence_modifier": 0.7,
+      "domains": [
+        "surreal",
+        "delayed_manifestation"
+      ],
+      "narrative_th": "หลิวเหนียน/หลิวเย่วลงในกิ่งคงหวาง — เหตุการณ์รู้สึกห่างไกล ไม่จริง สิ่งที่คาดว่าจะเกิดถูกเลื่อน หรือเกิดในรูปแบบที่ไม่คาดคิด",
+      "narrative_en": "Annual/monthly lands on natal Kong Wang branch — events feel surreal, unreal. Expected outcomes delayed or arrive in unexpected forms.",
+      "narrative_zh": "流年流月落空亡支 — 事件感虛幻，預期被延或以意外形式呈現"
+    },
+    {
+      "id": "san_he_activation",
+      "name_zh": "三合啓動",
+      "name_th": "สามรวมเปิดใช้งาน",
+      "name_en": "San He triple combo activation",
+      "layers": [
+        "natal",
+        "da_yun_or_liu_nian",
+        "liu_yue"
+      ],
+      "rule": "two_external_branches_complete_natal_san_he_set",
+      "verdict": "positive",
+      "intensity": "strong",
+      "confidence_modifier": 1.3,
+      "domains": [
+        "alliance",
+        "consolidation",
+        "wealth_if_element_matches"
+      ],
+      "narrative_th": "สามรวม (申子辰/亥卯未/寅午戌/巳酉丑) ครบ ผ่านต้าวิ่น+หลิวเหนียน/หลิวเย่ว — พันธมิตรเชื่อมตัวจริง โครงการรวมพลังคนเข้าถึงเป้าหมาย ถ้าธาตุที่ก่อตัวเป็นยงเสิน = หาเงินก้อนใหญ่",
+      "narrative_en": "Three combo completes via transits — alliance crystallizes, collaborative project reaches goal. If formed element = useful god, major wealth.",
+      "narrative_zh": "三合通過大運+流年/流月構成 — 同盟成形、合作達標。所合元素為用神時主大財"
+    },
+    {
+      "id": "star_swarm",
+      "name_zh": "群星齊到",
+      "name_th": "ดาวฝูงรวมตัว",
+      "name_en": "Star swarm convergence",
+      "layers": [
+        "da_yun",
+        "liu_nian",
+        "liu_yue"
+      ],
+      "rule": "3_or_more_auspicious_stars_activate_simultaneously_via_transits",
+      "verdict": "positive",
+      "intensity": "strong",
+      "confidence_modifier": 1.25,
+      "domains": [
+        "fame",
+        "opportunity"
+      ],
+      "narrative_th": "ดาวมงคลตั้งแต่ 3 ดวงขึ้นไป (เทียนอี+ลู่เสิน+เหวินชาง+เถาฮัว ฯลฯ) เปิดใช้งานพร้อมกันผ่าน transit — ปีดาวพราว แสงตกใส่งาน เกียรติ ความรัก โอกาส",
+      "narrative_en": "3+ auspicious stars activate via transits — radiant year for fame, recognition, romance, and opportunities.",
+      "narrative_zh": "三顆以上吉星經運年月同時激活 — 光彩之年，名譽、桃花、機遇齊至"
+    }
+  ],
+  "verdict_taxonomy": {
+    "verdicts": [
+      "positive",
+      "negative",
+      "neutral",
+      "context_dependent",
+      "amplifier",
+      "delayer"
+    ],
+    "intensities": [
+      "mild",
+      "moderate",
+      "strong",
+      "critical"
+    ],
+    "intensity_score_map": {
+      "mild": 0.3,
+      "moderate": 0.6,
+      "strong": 0.85,
+      "critical": 1.0
+    }
+  },
+  "confidence_score_formula": {
+    "base_factors": [
+      {
+        "name": "interaction_count",
+        "weight": 0.2,
+        "scale": "0-100 from 1-10 simultaneous interactions"
+      },
+      {
+        "name": "root_strength",
+        "weight": 0.2,
+        "scale": "0-100 from natal pillar's qi phase × position weight"
+      },
+      {
+        "name": "useful_god_alignment",
+        "weight": 0.25,
+        "scale": "0-100 from how directly transit hits useful god"
+      },
+      {
+        "name": "intensity_aggregate",
+        "weight": 0.15,
+        "scale": "0-100 from sum of trigger intensity scores"
+      },
+      {
+        "name": "layer_resonance",
+        "weight": 0.1,
+        "scale": "0-100 from how many layers stack same direction"
+      },
+      {
+        "name": "void_modifier",
+        "weight": 0.05,
+        "scale": "-30 to 0 if Kong Wang dampens"
+      },
+      {
+        "name": "yin_modifier",
+        "weight": 0.05,
+        "scale": "+10 to +30 if Fan/Fu Yin sharpens narrative"
+      }
+    ],
+    "formula": "confidence = clamp(0, 100, sum(weight_i * scale_value_i) * stack_modifier)",
+    "stack_modifier_examples": {
+      "single_layer": 1.0,
+      "double_stack": 1.15,
+      "triple_stack": 1.3,
+      "quadruple_stack": 1.5
+    },
+    "interpretation_thresholds": {
+      "high": "≥ 75 — narrative ใช้คำมั่นใจ ('แน่นอน', 'definite')",
+      "medium": "50-74 — narrative ใช้คำมีโอกาสสูง ('high probability', 'likely')",
+      "low": "25-49 — narrative ใช้คำเป็นไปได้ ('possible', 'watch for')",
+      "very_low": "< 25 — narrative ใช้คำเฉพาะถ้ามีตัวเร่ง"
+    }
+  },
+  "verdict_templates_27_base": {
+    "structure": "verdict (3) × intensity (4) × narrative_style (3) — 27 patterns delivered (with mild collapsed for neutral). Each pattern has TH+EN+ZH.",
+    "templates": [
+      {
+        "verdict": "positive",
+        "intensity": "mild",
+        "style": "concise",
+        "th": "{layer}{transit_pillar} เสริม{element_or_god}เบาๆ ที่{natal_position} — {domain}ดีขึ้นเล็กน้อย",
+        "en": "{layer} {transit_pillar} mildly supports {element_or_god} on {natal_position} — small uptick in {domain}.",
+        "zh": "{layer}{transit_pillar}輕扶{element_or_god}於{natal_position} — {domain}小利"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "mild",
+        "style": "detailed",
+        "th": "ในชั้น{layer} ผ่านเสา{transit_pillar} พลัง{element_or_god}เคลื่อนเข้าหา{natal_position} อย่างนิ่มนวล โอกาสเล็กๆ ใน{domain}เปิดให้สำรวจ",
+        "en": "At {layer} layer, pillar {transit_pillar} sends gentle {element_or_god} energy toward {natal_position}. Small windows of {domain} opportunity open for exploration.",
+        "zh": "於{layer}層，{transit_pillar}柔和傳{element_or_god}至{natal_position}，{domain}小窗口開啓可探索"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "mild",
+        "style": "advisory",
+        "th": "แนะนำ: {layer}{transit_pillar} เปิดช่อง{domain}เบาๆ — ทดลองสิ่งใหม่ขนาดเล็ก ไม่ลงทุนใหญ่",
+        "en": "Advice: {layer} {transit_pillar} opens light {domain} channel — experiment small, don't commit big capital.",
+        "zh": "建議：{layer}{transit_pillar}輕開{domain}通道，宜小試不宜大投"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "moderate",
+        "style": "concise",
+        "th": "{layer}{transit_pillar} หนุน{element_or_god}ให้{natal_position} — เปิดประตู{domain}",
+        "en": "{layer} {transit_pillar} reinforces {element_or_god} on {natal_position} — {domain} door opens.",
+        "zh": "{layer}{transit_pillar}助{element_or_god}於{natal_position} — {domain}開門"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "moderate",
+        "style": "detailed",
+        "th": "{layer}{transit_pillar} นำ{element_or_god}ลงเสา{natal_position} ทำให้{domain}มีจังหวะที่ชัดเจน รับโอกาสที่เข้ามาด้วยความตั้งใจ",
+        "en": "{layer} {transit_pillar} brings {element_or_god} to {natal_position} pillar, giving {domain} a clear rhythm. Receive incoming opportunities deliberately.",
+        "zh": "{layer}{transit_pillar}領{element_or_god}至{natal_position}柱，{domain}節奏明確，宜用心承接機遇"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "moderate",
+        "style": "advisory",
+        "th": "แนะนำ: {natal_position}เปิด{domain} — เริ่มลงมือกึ่งทดลอง กึ่งจริงจัง ใช้ทุน 30-50%",
+        "en": "Advice: {natal_position} opens {domain} — semi-commit, deploy 30-50% capital, scale on confirmation.",
+        "zh": "建議：{natal_position}啓{domain} — 半投入，調動三五成資金，視驗證再加碼"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "strong",
+        "style": "concise",
+        "th": "{layer}{transit_pillar} กระทบ{natal_position} ผ่าน{element_or_god} — {domain}เปล่งประกาย ลงมือเลย",
+        "en": "{layer} {transit_pillar} hits {natal_position} via {element_or_god} — {domain} radiates. Act now.",
+        "zh": "{layer}{transit_pillar}經{element_or_god}臨{natal_position} — {domain}光彩，宜行動"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "strong",
+        "style": "detailed",
+        "th": "พลัง{element_or_god}จาก{layer}{transit_pillar} ลงตรงเสา{natal_position} อย่างชัดเจน {domain}อยู่ในยุคทอง — เปิดดีลใหญ่ ลงนามสัญญาสำคัญ ขยับตำแหน่ง",
+        "en": "{element_or_god} energy from {layer} {transit_pillar} lands squarely on {natal_position} pillar. {domain} is in golden phase — open major deals, sign key contracts, move position.",
+        "zh": "{layer}{transit_pillar}帶{element_or_god}直入{natal_position}柱，{domain}進入黃金期 — 宜開大局、簽要約、晉升位"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "strong",
+        "style": "advisory",
+        "th": "แนะนำ: ใช้โอกาส — เซ็นสัญญา ขยายธุรกิจ ลงทุนใหญ่ใน{domain} ทุน 70-100% เหตุการณ์เด่นชัด",
+        "en": "Advice: Seize the moment — sign, expand, invest heavily in {domain}. Deploy 70-100% capital. Outcome high-clarity.",
+        "zh": "建議：把握良機 — 簽約、擴張、重投{domain}，七至全力資金，結果明朗"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "critical",
+        "style": "concise",
+        "th": "{layer}{transit_pillar} เปิด{natal_position} เต็มแรงด้วย{element_or_god} — โอกาสครั้งสำคัญใน{domain}",
+        "en": "{layer} {transit_pillar} fully opens {natal_position} with {element_or_god} — pivotal {domain} window.",
+        "zh": "{layer}{transit_pillar}全力激活{natal_position}({element_or_god}) — {domain}關鍵機遇"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "critical",
+        "style": "detailed",
+        "th": "จุดบรรจบในรอบทศวรรษ — {layer}{transit_pillar} เปิดเสา{natal_position}ด้วย{element_or_god}เต็มกำลัง {domain}อยู่ในยุครุ่งโรจน์ที่หาได้ยาก ลงทุนระยะยาว วางรากฐานใหญ่ที่สร้างผลกระทบยาวนาน",
+        "en": "Decadal convergence — {layer} {transit_pillar} fully opens {natal_position} via {element_or_god}. {domain} enters its rare apex phase. Make long-term commitments, lay foundations that compound for years.",
+        "zh": "十年一遇之合 — {layer}{transit_pillar}以{element_or_god}全開{natal_position}，{domain}進入罕見頂峰期。宜長期承諾，奠百年基"
+      },
+      {
+        "verdict": "positive",
+        "intensity": "critical",
+        "style": "advisory",
+        "th": "แนะนำ: ครั้งสำคัญในรอบ 10 ปี — ลงนามสัญญาที่จะกินยาว เซ็น JV ขนาดใหญ่ ทำพิธีเปิด ใช้ทุนเต็มที่ใน{domain}",
+        "en": "Advice: Once-in-a-decade window — sign long-tail contracts, JVs, ceremonial launches. Full capital commitment to {domain}.",
+        "zh": "建議：十年一見之窗 — 簽長線合約、合資、開幕典禮，全力投入{domain}"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "mild",
+        "style": "concise",
+        "th": "{layer}{transit_pillar} ขัดเล็กน้อยที่{natal_position} — {domain}สะดุด ไม่หยุด",
+        "en": "{layer} {transit_pillar} mildly conflicts {natal_position} — {domain} bumps, not blocking.",
+        "zh": "{layer}{transit_pillar}輕克{natal_position} — {domain}小阻無大礙"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "mild",
+        "style": "detailed",
+        "th": "{layer}{transit_pillar} สร้างแรงเสียดทานเล็กๆ ที่{natal_position} {domain}อาจช้ากว่าที่คาด หรือมีค่าใช้จ่ายเพิ่มที่ไม่ใหญ่ — บริหารคาดหวังให้ดี",
+        "en": "{layer} {transit_pillar} creates light friction on {natal_position}. {domain} may run slower than expected or carry minor extra costs. Manage expectations.",
+        "zh": "{layer}{transit_pillar}於{natal_position}輕摩擦，{domain}進度或慢，雜費或增 — 宜管預期"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "mild",
+        "style": "advisory",
+        "th": "แนะนำ: เผื่อเวลาให้{domain} เพิ่ม 20-30% buffer งบประมาณ ลดการ commit ใหญ่",
+        "en": "Advice: Buffer {domain} timeline +20-30%, hold off major commits, expect slowdowns.",
+        "zh": "建議：{domain}時間留二三成緩衝，暫緩重大承諾"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "moderate",
+        "style": "concise",
+        "th": "{layer}{transit_pillar} กระทบ{natal_position} ผ่าน{interaction_type} — ระวัง{domain}ช่วงนี้",
+        "en": "{layer} {transit_pillar} impacts {natal_position} via {interaction_type} — caution in {domain}.",
+        "zh": "{layer}{transit_pillar}經{interaction_type}沖{natal_position} — 留意{domain}"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "moderate",
+        "style": "detailed",
+        "th": "{layer}{transit_pillar} กระทบ{natal_position} ใน{domain}อย่างน่าสังเกต — มีเหตุการณ์ที่ทำให้ต้องทบทวนแผน อาจมีคนสำคัญถอนตัว หรือเงื่อนไขเปลี่ยน — เก็บ option ไว้หลายทาง",
+        "en": "{layer} {transit_pillar} affects {natal_position} {domain} in noticeable ways. Plans need revision, key people may withdraw, conditions may change — keep multiple options open.",
+        "zh": "{layer}{transit_pillar}沖{natal_position}{domain}明顯 — 計劃需修，要員或退，條件或變 — 留多選擇"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "moderate",
+        "style": "advisory",
+        "th": "แนะนำ: รอให้ผ่าน{layer} ก่อนลงทุนใหญ่ใน{domain} ใช้ช่วงนี้ปรับโครงสร้างภายในและสร้างความสัมพันธ์",
+        "en": "Advice: Wait out {layer} before major {domain} commits. Use the window for internal restructuring and relationship building.",
+        "zh": "建議：候{layer}過再重投{domain}，此時宜内整外連"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "strong",
+        "style": "concise",
+        "th": "{layer}{transit_pillar} ปะทะ{natal_position} แรง — {domain}ต้องเลื่อนหรือเปลี่ยนกลยุทธ์",
+        "en": "{layer} {transit_pillar} strongly clashes {natal_position} — postpone or pivot {domain}.",
+        "zh": "{layer}{transit_pillar}強冲{natal_position} — {domain}宜延或改策"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "strong",
+        "style": "detailed",
+        "th": "การปะทะระดับโครงสร้าง — {layer}{transit_pillar} ชนเสา{natal_position}อย่างแรง {domain}ต้องเปลี่ยนแนวทาง คนสำคัญอาจหายไป สัญญาอาจถูกยกเลิก — เน้นปกป้องสภาพคล่อง",
+        "en": "Structural clash — {layer} {transit_pillar} hits {natal_position} hard. {domain} requires pivot, key people may leave, contracts may be voided — prioritize liquidity preservation.",
+        "zh": "結構性沖擊 — {layer}{transit_pillar}重擊{natal_position}，{domain}需轉向，要員或離，合約或廢 — 守流動性"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "strong",
+        "style": "advisory",
+        "th": "แนะนำ: ห้ามเริ่มดีลใหม่ ปกป้องเงินสด ตัดของไม่จำเป็น สื่อสารกับคู่ค้าก่อนรอเข้าสถานการณ์",
+        "en": "Advice: Halt new deals. Protect cash, cut non-essentials, proactively communicate with partners before issues escalate.",
+        "zh": "建議：止新單，守現金，斷非要，主動溝通免事態惡化"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "critical",
+        "style": "concise",
+        "th": "{layer}{transit_pillar} ฝ่าวิน/พังยับ{natal_position} — {domain}จุดเปลี่ยน หยุดดูภาพรวม",
+        "en": "{layer} {transit_pillar} full-opposes/breaks {natal_position} — {domain} pivot point. Halt and reassess.",
+        "zh": "{layer}{transit_pillar}反吟/破{natal_position} — {domain}臨界，止觀全局"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "critical",
+        "style": "detailed",
+        "th": "จุดวิกฤต — {layer}{transit_pillar} ฝ่าวินเสา{natal_position}อย่างเต็มรูปแบบ ยุคเดิมจบลง สิ่งที่เคยใช้ได้ใช้ไม่ได้แล้ว {domain}กำลังถูกบังคับให้พลิกตัว — ใช้ความเงียบและการถอย เป็นกลยุทธ์",
+        "en": "Crisis point — {layer} {transit_pillar} fully opposes {natal_position}. The old era ends, what worked stops working. {domain} is being forced into transformation — silence and retreat are valid strategies.",
+        "zh": "危急點 — {layer}{transit_pillar}全反{natal_position}柱，舊紀元終，舊法不通，{domain}被迫蛻變 — 沉默退守為策"
+      },
+      {
+        "verdict": "negative",
+        "intensity": "critical",
+        "style": "advisory",
+        "th": "แนะนำ: STAND ASIDE 🛑 — ห้ามตัดสินใจใหญ่ ห้ามเซ็นสัญญา ห้ามลงทุน ใช้ช่วงนี้รักษาสุขภาพและสำรองทรัพยากร รอ{layer}ผ่านพ้น",
+        "en": "Advice: STAND ASIDE — no major decisions, no signings, no investments. Preserve health and resources. Wait for {layer} to pass.",
+        "zh": "建議：止步觀望 — 不重大決，不簽約，不投資，保健存資，候{layer}過"
+      },
+      {
+        "verdict": "neutral",
+        "intensity": "moderate",
+        "style": "concise",
+        "th": "{layer}{transit_pillar} กระทบ{natal_position}เงียบๆ — เหตุการณ์ดูเฉย ผลตามมาทีหลัง",
+        "en": "{layer} {transit_pillar} touches {natal_position} quietly — events seem flat, effects emerge later.",
+        "zh": "{layer}{transit_pillar}靜觸{natal_position} — 表面平淡，效應延遲"
+      },
+      {
+        "verdict": "neutral",
+        "intensity": "moderate",
+        "style": "detailed",
+        "th": "{layer}{transit_pillar} ปะทะ{natal_position}แบบไม่หวือหวา — เหตุการณ์อาจดูธรรมดาในตอนนั้นแต่ส่งผลในระยะถัดไป จดบันทึก สังเกต รอความชัดเจน",
+        "en": "{layer} {transit_pillar} encounters {natal_position} undramatically — events may seem ordinary in the moment but echo later. Record, observe, await clarity.",
+        "zh": "{layer}{transit_pillar}靜會{natal_position} — 當下平凡，後勢有迴音，宜記宜觀候明朗"
+      },
+      {
+        "verdict": "neutral",
+        "intensity": "moderate",
+        "style": "advisory",
+        "th": "แนะนำ: สังเกตการณ์ ไม่บังคับให้เกิด — ปล่อยให้{domain}คลี่คลายเอง อย่ารีบสรุป",
+        "en": "Advice: Observe, don't force. Let {domain} unfold naturally. Avoid premature conclusions.",
+        "zh": "建議：觀察不強為，{domain}自然展開，勿急論斷"
+      }
+    ],
+    "styles": {
+      "concise": "1-line for dashboard tiles, mobile alerts",
+      "detailed": "2-3 sentence for chart detail page",
+      "advisory": "Decode-style action prompt — what to DO, with capital sizing"
+    }
+  },
+  "domain_to_pillar_mapping_for_advice": {
+    "career": [
+      "month",
+      "hour"
+    ],
+    "wealth": [
+      "wealth_god_position",
+      "month"
+    ],
+    "spouse": [
+      "day_branch"
+    ],
+    "children": [
+      "hour"
+    ],
+    "elders": [
+      "year"
+    ],
+    "health": [
+      "day_stem",
+      "useful_god_position"
+    ],
+    "education": [
+      "month_resource_god"
+    ],
+    "relocation": [
+      "year_branch",
+      "yi_ma_star"
+    ],
+    "reputation": [
+      "year",
+      "fame_star"
+    ],
+    "team": [
+      "hour"
+    ],
+    "litigation": [
+      "officer_god_position"
+    ],
+    "creativity": [
+      "output_god_position",
+      "hour"
+    ],
+    "spirituality": [
+      "hua_gai_star",
+      "year_or_hour_resource"
+    ]
+  }
+}

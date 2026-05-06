@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# session backup files (ห้าม commit)
+*.bak
+*.bak.*
+
+# archives + databases
+*.tar.gz
+*.zip
+*.db
+*.sqlite
+*.sqlite3
+
+# editor/OS
+.vscode/
+.idea/
+*.swp

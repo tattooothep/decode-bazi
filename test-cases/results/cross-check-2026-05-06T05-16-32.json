@@ -1,0 +1,127 @@
+{
+  "ran_at": "2026-05-06T05:16:32.553Z",
+  "summary": {
+    "pass4": 0,
+    "pass3": 0,
+    "partial": 0,
+    "error": 5,
+    "total": 5
+  },
+  "results": [
+    {
+      "id": "asia01",
+      "name": "毛澤東 Mao Zedong",
+      "date": "1893-12-26",
+      "time": "07:30",
+      "lng": 113,
+      "gmt": 8,
+      "gender": "M",
+      "city": "Shaoshan, Hunan",
+      "decode": {
+        "year": "癸巳",
+        "month": "甲子",
+        "day": "丁酉",
+        "hour": "甲辰",
+        "tst": {
+          "appliedHour": 7,
+          "appliedMinute": 2,
+          "dayOffset": 0,
+          "totalShiftMin": -27.6
+        }
+      },
+      "error": "parsed only 0 tokens"
+    },
+    {
+      "id": "asia02",
+      "name": "鄧小平 Deng Xiaoping",
+      "date": "1904-08-22",
+      "time": "12:00",
+      "lng": 105.6,
+      "gmt": 8,
+      "gender": "M",
+      "city": "Sichuan",
+      "decode": {
+        "year": "甲辰",
+        "month": "壬申",
+        "day": "戊子",
+        "hour": "丁巳",
+        "tst": {
+          "appliedHour": 10,
+          "appliedMinute": 59,
+          "dayOffset": 0,
+          "totalShiftMin": -60.7
+        }
+      },
+      "error": "parsed only 0 tokens"
+    },
+    {
+      "id": "asia03",
+      "name": "李嘉誠 Li Ka-shing",
+      "date": "1928-07-29",
+      "time": "06:00",
+      "lng": 116.6,
+      "gmt": 8,
+      "gender": "M",
+      "city": "Chaozhou",
+      "decode": {
+        "year": "戊辰",
+        "month": "己未",
+        "day": "庚午",
+        "hour": "己卯",
+        "tst": {
+          "appliedHour": 5,
+          "appliedMinute": 39,
+          "dayOffset": 0,
+          "totalShiftMin": -20.2
+        }
+      },
+      "error": "parsed only 0 tokens"
+    },
+    {
+      "id": "asia04",
+      "name": "馬雲 Jack Ma",
+      "date": "1964-09-10",
+      "time": "12:00",
+      "lng": 120.2,
+      "gmt": 8,
+      "gender": "M",
+      "city": "Hangzhou",
+      "decode": {
+        "year": "甲辰",
+        "month": "癸酉",
+        "day": "壬戌",
+        "hour": "丙午",
+        "tst": {
+          "appliedHour": 12,
+          "appliedMinute": 3,
+          "dayOffset": 0,
+          "totalShiftMin": 4
+        }
+      },
+      "error": "parsed only 0 tokens"
+    },
+    {
+      "id": "asia05",
+      "name": "李小龍 Bruce Lee",
+      "date": "1940-11-27",
+      "time": "07:12",
+      "lng": 122.4,
+      "gmt": -8,
+      "gender": "M",
+      "city": "San Francisco",
+      "decode": {
+        "year": "庚辰",
+        "month": "丁亥",
+        "day": "乙亥",
+        "hour": "丙子",
+        "tst": {
+          "appliedHour": 23,
+          "appliedMinute": 33,
+          "dayOffset": 0,
+          "totalShiftMin": 981.4
+        }
+      },
+      "error": "parsed only 0 tokens"
+    }
+  ]
+}

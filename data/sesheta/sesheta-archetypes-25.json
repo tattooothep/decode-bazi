@@ -1,0 +1,266 @@
+[
+  {
+    "archetype": "Connector",
+    "element": "Water",
+    "title": "The Elemental Style: Water Connector",
+    "titleTh": "สไตล์ธาตุ: ผู้ประสาน ธาตุน้ำ",
+    "connectionStyle": "Osmosis",
+    "connectionStyleTh": "ซึมซับ",
+    "deepDive": "You possess a fluid and shapeshifting nature that allows you to blend seamlessly into any environment. You don't just 'enter' a room; you permeate it. Your energy naturally seeks the deepest level of connection, bypassing surface-level talk to understand the core emotions of those around you. You connect by listening, absorbing, and reflecting, making others feel completely understood without resistance.",
+    "deepDiveTh": "คุณมีธรรมชาติที่ไหลลื่นและปรับเปลี่ยนรูปร่างได้ ทำให้กลมกลืนกับทุกสภาพแวดล้อมอย่างไร้รอยต่อ คุณไม่ได้แค่ 'เข้า' ห้อง คุณ 'แทรกซึม' เข้าไป พลังงานของคุณมุ่งหาการเชื่อมต่อในระดับลึกที่สุดโดยธรรมชาติ ข้ามการสนทนาผิวเผินไปจับแก่นอารมณ์ของคนรอบข้าง คุณเชื่อมต่อด้วยการฟัง ซึมซับ และสะท้อนกลับ ทำให้คนอื่นรู้สึกว่าถูกเข้าใจอย่างสมบูรณ์โดยไม่มีแรงต้าน",
+    "awakeningQuestion": "When you leave a conversation, are you carrying their heavy energy home with you, or did you leave it where it belongs?",
+    "awakeningQuestionTh": "เมื่อจบบทสนทนา คุณแบกพลังงานหนักๆ ของเขากลับบ้านด้วยหรือเปล่า หรือคุณทิ้งมันไว้ในที่ที่มันควรอยู่?"
+  },
+  {
+    "archetype": "Connector",
+    "element": "Fire",
+    "title": "The Elemental Style: Fire Connector",
+    "titleTh": "สไตล์ธาตุ: ผู้ประสาน ธาตุไฟ",
+    "connectionStyle": "Attraction",
+    "connectionStyleTh": "แรงดึงดูด",
+    "deepDive": "You possess a natural radiance that acts as social gravity. Like a bonfire in the dark, your energy is visible and felt before you even speak. You don't need to chase interaction; your presence alone invites it. You connect by emitting warmth, enthusiasm, and light, acting as a spark that wakes people up and makes them feel alive.",
+    "deepDiveTh": "คุณมีรัศมีโดยธรรมชาติที่ทำหน้าที่เหมือนแรงโน้มถ่วงทางสังคม เหมือนกองไฟในความมืด พลังงานของคุณมองเห็นได้และรู้สึกได้ก่อนที่คุณจะเอ่ยปาก คุณไม่ต้องไล่ตามปฏิสัมพันธ์ แค่การปรากฏตัวก็เป็นคำเชิญแล้ว คุณเชื่อมต่อด้วยการส่งความอบอุ่น ความกระตือรือร้น และแสงสว่าง เหมือนประกายไฟที่ปลุกให้คนรู้สึกมีชีวิตชีวา",
+    "awakeningQuestion": "Are you connecting with people authentically, or are you just performing for them to gain their approval?",
+    "awakeningQuestionTh": "คุณกำลังเชื่อมต่อกับคนอย่างจริงใจ หรือแค่แสดงเพื่อเอาใจเขา?"
+  },
+  {
+    "archetype": "Connector",
+    "element": "Earth",
+    "title": "The Elemental Style: Earth Connector",
+    "titleTh": "สไตล์ธาตุ: ผู้ประสาน ธาตุดิน",
+    "connectionStyle": "Solidity",
+    "connectionStyleTh": "ความมั่นคง",
+    "deepDive": "You offer a grounding presence that others instinctively lean on. While others may move fast, you offer the stillness and stability that people secretly crave. You connect by providing a safe, consistent space where trust can take root. Your relationships are built on a bedrock of reliability—you are the one constant in a changing world.",
+    "deepDiveTh": "คุณให้ความรู้สึกหนักแน่นที่คนอื่นพิงพาได้โดยสัญชาตญาณ ในขณะที่คนอื่นเคลื่อนที่เร็ว คุณให้ความสงบและเสถียรภาพที่คนแอบโหยหา คุณเชื่อมต่อด้วยการสร้างพื้นที่ปลอดภัยและสม่ำเสมอ ที่ความไว้วางใจสามารถหยั่งราก ความสัมพันธ์ของคุณสร้างบนฐานของความน่าเชื่อถือ — คุณคือสิ่งเดียวที่ไม่เปลี่ยนในโลกที่เปลี่ยนแปลง",
+    "awakeningQuestion": "Are these people leaning on you for support, or are they just walking all over you because you never set a boundary?",
+    "awakeningQuestionTh": "คนเหล่านี้พิงพาคุณเพื่อขอกำลังใจ หรือแค่เหยียบย่ำคุณเพราะคุณไม่เคยตั้งขอบเขต?"
+  },
+  {
+    "archetype": "Connector",
+    "element": "Metal",
+    "title": "The Elemental Style: Metal Connector",
+    "titleTh": "สไตล์ธาตุ: ผู้ประสาน ธาตุทอง",
+    "connectionStyle": "Precision",
+    "connectionStyleTh": "ความแม่นยำ",
+    "deepDive": "You value clarity, quality, and strength in every interaction. Like a forged chain, you seek relationships that are durable and defined. You connect through shared standards, honor, and mutual respect. You have an innate ability to cut through the noise and identify 'who really matters,' building bonds that are few in number but unbreakable in nature.",
+    "deepDiveTh": "คุณให้คุณค่ากับความชัดเจน คุณภาพ และความแข็งแกร่งในทุกปฏิสัมพันธ์ เหมือนโซ่ที่ถูกตีขึ้นรูป คุณแสวงหาความสัมพันธ์ที่ทนทานและชัดเจน คุณเชื่อมต่อผ่านมาตรฐานร่วม เกียรติยศ และการเคารพซึ่งกันและกัน คุณมีความสามารถโดยธรรมชาติในการตัดเสียงรบกวนออก และระบุว่า 'ใครสำคัญจริงๆ' สร้างสายสัมพันธ์ที่จำนวนน้อยแต่แข็งแกร่งไม่มีวันแตกหัก",
+    "awakeningQuestion": "Are you keeping people at a distance because they don't meet your standards, or because you are afraid of being hurt?",
+    "awakeningQuestionTh": "คุณกันคนออกไปเพราะเขาไม่ผ่านมาตรฐานของคุณ หรือเพราะคุณกลัวถูกทำร้าย?"
+  },
+  {
+    "archetype": "Connector",
+    "element": "Wood",
+    "title": "The Elemental Style: Wood Connector",
+    "titleTh": "สไตล์ธาตุ: ผู้ประสาน ธาตุไม้",
+    "connectionStyle": "Expansion",
+    "connectionStyleTh": "การขยายตัว",
+    "deepDive": "You have a natural instinct to reach out, grow, and interweave. Like a complex root system or spreading vines, you see the potential in how people and ideas can link together. You connect by fostering growth and opportunity, naturally weaving individual threads into a larger, thriving ecosystem where everyone supports everyone.",
+    "deepDiveTh": "คุณมีสัญชาตญาณในการเอื้อมออกไป เติบโต และประสานกัน เหมือนระบบรากที่ซับซ้อนหรือเถาวัลย์ที่แผ่กิ่ง คุณมองเห็นศักยภาพในการเชื่อมโยงคนและไอเดียเข้าด้วยกัน คุณเชื่อมต่อด้วยการส่งเสริมการเติบโตและโอกาส ถักทอเส้นด้ายแต่ละเส้นเป็นระบบนิเวศที่ใหญ่กว่าและเจริญงอกงามอย่างเป็นธรรมชาติ",
+    "awakeningQuestion": "Are you building a network that supports you, or are you just suffocating yourself by trying to maintain too many shallow connections?",
+    "awakeningQuestionTh": "คุณกำลังสร้างเครือข่ายที่หนุนคุณ หรือแค่บีบคั้นตัวเองด้วยการพยายามรักษาความสัมพันธ์ตื้นๆ มากเกินไป?"
+  },
+  {
+    "archetype": "Influence",
+    "element": "Earth",
+    "title": "The Elemental Style: Earth Influence",
+    "titleTh": "สไตล์ธาตุ: อิทธิพล ธาตุดิน",
+    "leadershipStyle": "Development",
+    "leadershipStyleTh": "การพัฒนา",
+    "deepDive": "You command respect through vision, benevolence, and progressive thinking. You naturally look upward and outward, focusing on the long game. You influence not by enforcing control, but by empowering others to grow. You are the 'Architect of Talent' who sees not just who people are today, but who they have the potential to become tomorrow.",
+    "deepDiveTh": "คุณได้รับความเคารพผ่านวิสัยทัศน์ ความเมตตา และการคิดก้าวหน้า คุณมองไปข้างหน้าและไกลออกไปโดยธรรมชาติ เน้นเกมระยะยาว คุณสร้างอิทธิพลไม่ใช่ด้วยการบังคับ แต่ด้วยการส่งเสริมให้คนอื่นเติบโต คุณคือ 'สถาปนิกแห่งพรสวรรค์' ที่มองเห็นไม่ใช่แค่ว่าคนเป็นอะไรวันนี้ แต่เขามีศักยภาพจะเป็นอะไรพรุ่งนี้",
+    "awakeningQuestion": "Are you nurturing your team's potential, or are you choking them with your impatience for results?",
+    "awakeningQuestionTh": "คุณกำลังบ่มเพาะศักยภาพของทีม หรือกำลังบีบคอเขาด้วยความใจร้อนที่อยากเห็นผลลัพธ์?"
+  },
+  {
+    "archetype": "Influence",
+    "element": "Metal",
+    "title": "The Elemental Style: Metal Influence",
+    "titleTh": "สไตล์ธาตุ: อิทธิพล ธาตุทอง",
+    "leadershipStyle": "Inspiration",
+    "leadershipStyleTh": "การสร้างแรงบันดาลใจ",
+    "deepDive": "You command respect through charisma, energy, and the ability to ignite hope. You are the 'Spark' that sets the organization in motion. You don't lead by pushing from behind; you lead by shining from the front. You influence others by making them feel visible, valued, and excited about the future. Your presence wakes people up and transforms apathy into action.",
+    "deepDiveTh": "คุณได้รับความเคารพผ่านเสน่ห์ พลังงาน และความสามารถในการจุดประกายความหวัง คุณคือ 'ประกายไฟ' ที่ทำให้องค์กรเคลื่อนตัว คุณไม่ได้นำจากด้านหลัง แต่นำด้วยการเปล่งแสงจากด้านหน้า คุณสร้างอิทธิพลโดยทำให้คนรู้สึกว่าถูกมองเห็น มีคุณค่า และตื่นเต้นกับอนาคต การปรากฏตัวของคุณปลุกคนให้ตื่นและเปลี่ยนความเฉื่อยชาเป็นการลงมือทำ",
+    "awakeningQuestion": "Are you lighting the way for others, or are you just burning brightly to get attention for yourself?",
+    "awakeningQuestionTh": "คุณกำลังส่องทางให้คนอื่น หรือแค่ลุกโชนเพื่อเรียกร้องความสนใจให้ตัวเอง?"
+  },
+  {
+    "archetype": "Influence",
+    "element": "Water",
+    "title": "The Elemental Style: Water Influence",
+    "titleTh": "สไตล์ธาตุ: อิทธิพล ธาตุน้ำ",
+    "leadershipStyle": "Stability",
+    "leadershipStyleTh": "ความมั่นคง",
+    "deepDive": "You command respect not through aggression or speed, but through immovable presence. Like a mountain, you offer the solid ground that others build upon. In times of crisis, you remain grounded and practical. You influence by being the 'Eye of the Storm'—the calm center that creates order out of chaos simply by refusing to be shaken.",
+    "deepDiveTh": "คุณได้รับความเคารพไม่ใช่ด้วยความก้าวร้าวหรือความเร็ว แต่ด้วยการปรากฏตัวที่ไม่หวั่นไหว เหมือนภูเขา คุณเป็นพื้นที่มั่นคงที่คนอื่นสร้างสิ่งต่างๆ บนนั้น ในยามวิกฤต คุณยังคงหนักแน่นและปฏิบัติได้จริง คุณสร้างอิทธิพลด้วยการเป็น 'ตาพายุ' — ศูนย์กลางความสงบที่สร้างระเบียบจากความวุ่นวาย เพียงแค่ปฏิเสธที่จะถูกสั่นคลอน",
+    "awakeningQuestion": "Are you acting as the foundation that supports your team's growth, or are you the ceiling that limits it because every decision must wait for you?",
+    "awakeningQuestionTh": "คุณเป็นฐานรากที่หนุนการเติบโตของทีม หรือเป็นเพดานที่จำกัดเขา เพราะทุกการตัดสินใจต้องรอคุณ?"
+  },
+  {
+    "archetype": "Influence",
+    "element": "Wood",
+    "title": "The Elemental Style: Wood Influence",
+    "titleTh": "สไตล์ธาตุ: อิทธิพล ธาตุไม้",
+    "leadershipStyle": "Precision",
+    "leadershipStyleTh": "ความแม่นยำ",
+    "deepDive": "You command respect through clarity, logic, and high standards. Like a sharp sword or a finely tuned instrument, you have little patience for ambiguity. You influence others by cutting through the noise to find the truth. You don't sugarcoat reality; you present it exactly as it is. Your team trusts you because you are fair, objective, and decisively clear.",
+    "deepDiveTh": "คุณได้รับความเคารพผ่านความชัดเจน ตรรกะ และมาตรฐานสูง เหมือนดาบคมหรือเครื่องดนตรีที่ปรับจูนมาอย่างดี คุณไม่อดทนกับความคลุมเครือ คุณสร้างอิทธิพลด้วยการตัดเสียงรบกวนเพื่อหาความจริง คุณไม่เคลือบน้ำตาลความจริง แต่นำเสนอมันตรงๆ ทีมไว้ใจคุณเพราะคุณยุติธรรม เป็นกลาง และตัดสินใจชัดเจน",
+    "awakeningQuestion": "Are you using your sharp words to sculpt your team into excellence, or are you just cutting them down?",
+    "awakeningQuestionTh": "คุณกำลังใช้คำพูดคมเพื่อสลักทีมให้เป็นเลิศ หรือแค่ฟันเขาลง?"
+  },
+  {
+    "archetype": "Influence",
+    "element": "Fire",
+    "title": "The Elemental Style: Fire Influence",
+    "titleTh": "สไตล์ธาตุ: อิทธิพล ธาตุไฟ",
+    "leadershipStyle": "Strategy",
+    "leadershipStyleTh": "กลยุทธ์",
+    "deepDive": "You command respect through wisdom, adaptability, and vision. You possess a tactical mind that naturally finds the path of least resistance to the goal. You influence others not by force, but by maneuvering. You are a leader who knows when to advance, when to retreat, and how to change shape to fit the situation. You don't break obstacles; you flow around them.",
+    "deepDiveTh": "คุณได้รับความเคารพผ่านปัญญา ความยืดหยุ่น และวิสัยทัศน์ คุณมีจิตใจเชิงยุทธวิธีที่หาเส้นทางที่มีแรงต้านน้อยที่สุดสู่เป้าหมายได้โดยธรรมชาติ คุณสร้างอิทธิพลไม่ใช่ด้วยแรง แต่ด้วยการวางหมาก คุณคือผู้นำที่รู้ว่าเมื่อไหร่ควรรุก เมื่อไหร่ควรถอย และจะเปลี่ยนรูปร่างให้เข้ากับสถานการณ์อย่างไร คุณไม่ทุบอุปสรรค คุณไหลอ้อมมัน",
+    "awakeningQuestion": "Are you navigating the team through the storm, or are you just drifting wherever the wind blows?",
+    "awakeningQuestionTh": "คุณกำลังนำทีมฝ่าพายุ หรือแค่ลอยไปตามลม?"
+  },
+  {
+    "archetype": "Thinker",
+    "element": "Metal",
+    "title": "The Elemental Style: Metal Thinker",
+    "titleTh": "สไตล์ธาตุ: นักคิด ธาตุทอง",
+    "deepDive": "**Your unique style of thinking is Structural Logic.**\nYou possess a sharp, analytical mind that seeks to organize the chaos of the world into clear, usable systems. You don't just absorb information; you filter, refine, and categorize it. You value precision and facts over speculation. Like a master architect, you build mental frameworks that are durable, logical, and based on principles that stand the test of time.",
+    "deepDiveTh": "**สไตล์การคิดเฉพาะตัวของคุณคือ ตรรกะเชิงโครงสร้าง**\nคุณมีจิตใจที่คมและวิเคราะห์ได้ดี มุ่งจัดระเบียบความวุ่นวายของโลกให้เป็นระบบที่ชัดเจนและใช้งานได้ คุณไม่ได้แค่ดูดซับข้อมูล แต่กรอง คัดสรร และจัดหมวดหมู่ คุณให้คุณค่ากับความแม่นยำและข้อเท็จจริงมากกว่าการคาดเดา เหมือนสถาปนิกระดับปรมาจารย์ คุณสร้างกรอบความคิดที่ทนทาน มีเหตุผล และตั้งอยู่บนหลักการที่ผ่านการพิสูจน์แล้ว",
+    "awakeningQuestion": "Are you gathering more information to make a better decision, or are you just using research to delay the uncomfortable act of choosing?",
+    "awakeningQuestionTh": "คุณกำลังเก็บข้อมูลเพิ่มเพื่อตัดสินใจให้ดีขึ้น หรือแค่ใช้การวิจัยเป็นข้ออ้างเพื่อเลื่อนการตัดสินใจที่อึดอัด?"
+  },
+  {
+    "archetype": "Thinker",
+    "element": "Water",
+    "title": "The Elemental Style: Water Thinker",
+    "titleTh": "สไตล์ธาตุ: นักคิด ธาตุน้ำ",
+    "deepDive": "**Your unique style of thinking is Deep Intuition.**\nYour mind works like the ocean—vast, deep, and capable of absorbing everything. You don't just learn with your logic; you learn with your intuition. You pick up on the unseen currents, the subtext, and the hidden patterns that others miss. Your wisdom comes from a place of deep reflection and understanding the underlying flow of life.",
+    "deepDiveTh": "**สไตล์การคิดเฉพาะตัวของคุณคือ สัญชาตญาณเชิงลึก**\nจิตใจของคุณทำงานเหมือนมหาสมุทร — กว้างใหญ่ ลึก และสามารถดูดซับทุกอย่าง คุณไม่ได้เรียนรู้ด้วยตรรกะเท่านั้น แต่ด้วยสัญชาตญาณ คุณจับกระแสที่มองไม่เห็น ความหมายแฝง และรูปแบบที่ซ่อนอยู่ที่คนอื่นพลาด ปัญญาของคุณมาจากการไตร่ตรองอย่างลึกซึ้งและการเข้าใจกระแสใต้ของชีวิต",
+    "awakeningQuestion": "Are you using your wisdom to navigate the world, or are you using it to hide from the world?",
+    "awakeningQuestionTh": "คุณใช้ปัญญาเพื่อนำทางในโลก หรือใช้มันเพื่อซ่อนตัวจากโลก?"
+  },
+  {
+    "archetype": "Thinker",
+    "element": "Wood",
+    "title": "The Elemental Style: Wood Thinker",
+    "titleTh": "สไตล์ธาตุ: นักคิด ธาตุไม้",
+    "deepDive": "**Your unique style of thinking is Growth & Curiosity.**\nYour mind works like a complex root system—constantly reaching out, expanding, and connecting new ideas. You have an insatiable curiosity. You don't just want to know 'what'; you want to know 'why' and 'what's next.' You excel at cross-pollinating ideas, taking a concept from one field and applying it to another to create something entirely new.",
+    "deepDiveTh": "**สไตล์การคิดเฉพาะตัวของคุณคือ การเติบโตและความอยากรู้**\nจิตใจของคุณทำงานเหมือนระบบรากที่ซับซ้อน — เอื้อมออกไป ขยายตัว และเชื่อมต่อไอเดียใหม่ๆ อยู่ตลอดเวลา คุณมีความอยากรู้ที่ไม่มีวันอิ่ม คุณไม่ได้แค่อยากรู้ 'อะไร' แต่อยากรู้ 'ทำไม' และ 'แล้วต่อไปล่ะ?' คุณเก่งในการผสมข้ามสาขา นำแนวคิดจากสาขาหนึ่งไปใช้กับอีกสาขาหนึ่ง สร้างสิ่งใหม่ทั้งหมด",
+    "awakeningQuestion": "Are you truly learning, or are you just addicted to the feeling of collecting new information?",
+    "awakeningQuestionTh": "คุณกำลังเรียนรู้จริงๆ หรือแค่เสพติดความรู้สึกของการสะสมข้อมูลใหม่?"
+  },
+  {
+    "archetype": "Thinker",
+    "element": "Fire",
+    "title": "The Elemental Style: Fire Thinker",
+    "titleTh": "สไตล์ธาตุ: นักคิด ธาตุไฟ",
+    "deepDive": "**Your unique style of thinking is Insight & Illumination.**\nYour mind works in flashes of brilliance. You don't plod through data slowly; you leap to the truth. You seek knowledge that enlightens, inspires, and reveals. You are not a hoarder of facts; you are a seeker of truth. When you understand something, you want to shout it from the rooftops. Your wisdom is meant to be seen and shared.",
+    "deepDiveTh": "**สไตล์การคิดเฉพาะตัวของคุณคือ การหยั่งรู้และการส่องสว่าง**\nจิตใจของคุณทำงานเป็นแฟลชแห่งความเฉลียวฉลาด คุณไม่ค่อยๆ ไล่ข้อมูล แต่กระโดดไปหาความจริง คุณแสวงหาความรู้ที่ให้แสงสว่าง สร้างแรงบันดาลใจ และเปิดเผย คุณไม่ได้สะสมข้อเท็จจริง แต่แสวงหาความจริง เมื่อเข้าใจอะไรสักอย่าง คุณอยากตะโกนบอกให้โลกรู้ ปัญญาของคุณถูกสร้างมาให้ถูกมองเห็นและแบ่งปัน",
+    "awakeningQuestion": "Are you looking for the truth, or are you just looking for the next exciting idea to entertain your mind?",
+    "awakeningQuestionTh": "คุณกำลังมองหาความจริง หรือแค่มองหาไอเดียน่าตื่นเต้นถัดไปเพื่อเลี้ยงสมอง?"
+  },
+  {
+    "archetype": "Thinker",
+    "element": "Earth",
+    "title": "The Elemental Style: Earth Thinker",
+    "titleTh": "สไตล์ธาตุ: นักคิด ธาตุดิน",
+    "deepDive": "**Your unique style of thinking is Accumulation & Foundation.**\nYour mind works like a vast library or a secure vault. You value history, data, and proven facts. You are not easily swayed by trends. You build your knowledge base slowly and methodically, layer by layer. Once you learn something, you never forget it. You are the keeper of records, the one who knows the context and the history behind every decision.",
+    "deepDiveTh": "**สไตล์การคิดเฉพาะตัวของคุณคือ การสะสมและวางฐาน**\nจิตใจของคุณทำงานเหมือนห้องสมุดขนาดใหญ่หรือห้องนิรภัย คุณให้คุณค่ากับประวัติศาสตร์ ข้อมูล และข้อเท็จจริงที่ได้รับการพิสูจน์แล้ว คุณไม่ถูกเทรนด์ชักจูงง่ายๆ คุณสร้างคลังความรู้อย่างช้าๆ เป็นระบบ ทีละชั้น เมื่อเรียนรู้อะไรแล้วไม่มีวันลืม คุณคือผู้รักษาบันทึก คนที่รู้บริบทและประวัติเบื้องหลังทุกการตัดสินใจ",
+    "awakeningQuestion": "Are you holding onto this information to support the future, or are you just clinging to the past because it feels safe?",
+    "awakeningQuestionTh": "คุณเก็บข้อมูลนี้ไว้เพื่อสนับสนุนอนาคต หรือแค่ยึดติดกับอดีตเพราะรู้สึกปลอดภัย?"
+  },
+  {
+    "archetype": "Creator",
+    "element": "Wood",
+    "title": "The Elemental Style: Wood Creator",
+    "titleTh": "สไตล์ธาตุ: นักสร้างสรรค์ ธาตุไม้",
+    "deepDive": "**Your unique style of creation is Growth & Innovation.**\nYou don't just create; you propagate. Your mind is constantly generating new ideas, branches, and possibilities. You are the quintessential 'Idea Generator.' You excel at starting things—launching new projects, brainstorming fresh concepts, and opening doors that didn't exist before. Your creativity is expansive, seeking to cover as much ground as possible.",
+    "deepDiveTh": "**สไตล์การสร้างสรรค์เฉพาะตัวของคุณคือ การเติบโตและนวัตกรรม**\nคุณไม่ได้แค่สร้าง คุณแพร่ขยาย จิตใจของคุณผลิตไอเดียใหม่ กิ่งก้าน และความเป็นไปได้อยู่ตลอดเวลา คุณคือ 'เครื่องปั่นไอเดีย' ตัวจริง คุณเก่งในการเริ่มต้น — เปิดตัวโปรเจกต์ใหม่ ระดมสมองแนวคิดสด และเปิดประตูที่ไม่เคยมีมาก่อน ความคิดสร้างสรรค์ของคุณแผ่ขยาย มุ่งครอบคลุมพื้นที่ให้มากที่สุด",
+    "awakeningQuestion": "Are you truly being creative, or are you just running away from the hard work of finishing what you started?",
+    "awakeningQuestionTh": "คุณกำลังสร้างสรรค์จริงๆ หรือแค่หนีงานหนักของการทำสิ่งที่เริ่มไว้ให้เสร็จ?"
+  },
+  {
+    "archetype": "Creator",
+    "element": "Fire",
+    "title": "The Elemental Style: Fire Creator",
+    "titleTh": "สไตล์ธาตุ: นักสร้างสรรค์ ธาตุไฟ",
+    "deepDive": "**Your unique style of creation is Expression & Performance.**\nYou don't just create; you broadcast. Your creativity is visual, loud, and impactful. You have a natural flair for presentation and storytelling. Whether you are speaking, designing, or leading, you put on a show. You understand that the best idea in the world is useless if no one sees it. You bring energy and passion that makes people stop and look.",
+    "deepDiveTh": "**สไตล์การสร้างสรรค์เฉพาะตัวของคุณคือ การแสดงออกและการแสดง**\nคุณไม่ได้แค่สร้าง คุณถ่ายทอด ความคิดสร้างสรรค์ของคุณเป็นภาพ ดัง และทรงพลัง คุณมีพรสวรรค์ในการนำเสนอและเล่าเรื่อง ไม่ว่าจะพูด ออกแบบ หรือนำ คุณจัดแสดง คุณเข้าใจว่าไอเดียที่ดีที่สุดในโลกก็ไร้ประโยชน์ถ้าไม่มีใครเห็น คุณนำพลังงานและความหลงใหลที่ทำให้คนหยุดมอง",
+    "awakeningQuestion": "Would you still create this work if you knew that no one would ever see it?",
+    "awakeningQuestionTh": "ถ้ารู้ว่าจะไม่มีใครเห็นผลงานนี้เลย คุณจะยังสร้างมันอยู่ไหม?"
+  },
+  {
+    "archetype": "Creator",
+    "element": "Earth",
+    "title": "The Elemental Style: Earth Creator",
+    "titleTh": "สไตล์ธาตุ: นักสร้างสรรค์ ธาตุดิน",
+    "deepDive": "**Your unique style of creation is Manifestation & Tangibility.**\nYou don't deal in fluff; you deal in products. Your creativity is grounded and practical. You take abstract energy and mold it into something solid—a product, a pottery piece, a written report, a completed building. You are a craftsman who enjoys the process of making things real. You are patient, thorough, and focused on utility.",
+    "deepDiveTh": "**สไตล์การสร้างสรรค์เฉพาะตัวของคุณคือ การทำให้เป็นรูปธรรม**\nคุณไม่ทำงานกับสิ่งลอยๆ คุณทำงานกับผลิตภัณฑ์ ความคิดสร้างสรรค์ของคุณหนักแน่นและปฏิบัติได้จริง คุณเอาพลังงานนามธรรมมาปั้นเป็นสิ่งที่จับต้องได้ — ผลิตภัณฑ์ ชิ้นงานเซรามิก รายงาน อาคาร คุณเป็นช่างฝีมือที่สนุกกับกระบวนการทำให้สิ่งต่างๆ เป็นจริง คุณอดทน ถี่ถ้วน และเน้นประโยชน์ใช้สอย",
+    "awakeningQuestion": "Are you refining this to make it better, or are you just using perfectionism as an excuse to hide it from the world?",
+    "awakeningQuestionTh": "คุณกำลังปรับปรุงเพื่อให้ดีขึ้น หรือแค่ใช้ความสมบูรณ์แบบเป็นข้ออ้างเพื่อซ่อนมันจากโลก?"
+  },
+  {
+    "archetype": "Creator",
+    "element": "Metal",
+    "title": "The Elemental Style: Metal Creator",
+    "titleTh": "สไตล์ธาตุ: นักสร้างสรรค์ ธาตุทอง",
+    "deepDive": "**Your unique style of creation is Refinement & Definition.**\nYou don't just create; you sculpt. Your creativity works by subtraction—taking a rough idea and cutting away the excess until only the masterpiece remains. You are excellent at styling, editing, critiquing, and defining unique value propositions. Your output is sharp, distinctive, and high-quality. You give things a 'Name' and a 'Shape'.",
+    "deepDiveTh": "**สไตล์การสร้างสรรค์เฉพาะตัวของคุณคือ การกลั่นกรองและการให้คำนิยาม**\nคุณไม่ได้แค่สร้าง คุณสลัก ความคิดสร้างสรรค์ของคุณทำงานด้วยการลบออก — เอาไอเดียดิบๆ มาตัดส่วนเกินออกจนเหลือแต่ผลงานชิ้นเอก คุณเก่งในการจัดสไตล์ ตัดต่อ วิจารณ์ และกำหนดจุดขายเฉพาะตัว ผลงานของคุณคม โดดเด่น และคุณภาพสูง คุณให้ 'ชื่อ' และ 'รูปร่าง' กับสิ่งต่างๆ",
+    "awakeningQuestion": "Are you using your sharp eye to improve the work, or are you just using it to feel superior to the work?",
+    "awakeningQuestionTh": "คุณกำลังใช้สายตาคมเพื่อปรับปรุงงาน หรือแค่ใช้มันเพื่อรู้สึกเหนือกว่างาน?"
+  },
+  {
+    "archetype": "Creator",
+    "element": "Water",
+    "title": "The Elemental Style: Water Creator",
+    "titleTh": "สไตล์ธาตุ: นักสร้างสรรค์ ธาตุน้ำ",
+    "deepDive": "**Your unique style of creation is Flow & Depth.**\nYou create from a place of deep emotion and intellect. Your output is fluid—it might be writing, music, or strategy—but it always carries a current of wisdom. You don't force creativity; you channel it. When you are in the 'zone,' your work pours out of you effortlessly. You are capable of profound expression that touches the subconscious mind of others.",
+    "deepDiveTh": "**สไตล์การสร้างสรรค์เฉพาะตัวของคุณคือ การไหลลื่นและความลึก**\nคุณสร้างจากจุดที่มีอารมณ์และปัญญาลึกซึ้ง ผลงานของคุณไหลลื่น — อาจเป็นการเขียน ดนตรี หรือกลยุทธ์ — แต่มันมีกระแสแห่งปัญญาอยู่เสมอ คุณไม่บังคับความคิดสร้างสรรค์ แต่เป็นช่องทางให้มัน เมื่ออยู่ใน 'โซน' งานจะไหลออกมาจากคุณอย่างไม่ต้องใช้แรง คุณสามารถแสดงออกอย่างลึกซึ้งที่สัมผัสจิตใต้สำนึกของคนอื่นได้",
+    "awakeningQuestion": "Are you waiting for the 'right mood' to create, or are you disciplined enough to create even when the waters are still?",
+    "awakeningQuestionTh": "คุณกำลังรอ 'อารมณ์ที่ใช่' เพื่อสร้างงาน หรือมีวินัยพอที่จะสร้างแม้ในวันที่น้ำนิ่ง?"
+  },
+  {
+    "archetype": "Achiever",
+    "element": "Fire",
+    "title": "The Elemental Style: Fire Achiever",
+    "titleTh": "สไตล์ธาตุ: นักจัดการ ธาตุไฟ",
+    "deepDive": "**Your unique style of achievement is Momentum & Visibility.**\nYou don't chase results slowly; you ignite them. Your approach to success is explosive and energetic. You excel at spotting trends, creating hype, and seizing opportunities before others even wake up. You understand that in the modern world, attention is currency. You achieve by being faster, brighter, and more visible than the competition.",
+    "deepDiveTh": "**สไตล์ความสำเร็จเฉพาะตัวของคุณคือ โมเมนตัมและการมองเห็น**\nคุณไม่ไล่ล่าผลลัพธ์แบบช้าๆ คุณจุดมัน แนวทางสู่ความสำเร็จของคุณระเบิดและเต็มพลัง คุณเก่งในการจับเทรนด์ สร้างกระแส และคว้าโอกาสก่อนที่คนอื่นจะตื่น คุณเข้าใจว่าในโลกยุคใหม่ ความสนใจคือสกุลเงิน คุณประสบความสำเร็จด้วยการเร็วกว่า สว่างกว่า และเห็นได้ชัดกว่าคู่แข่ง",
+    "awakeningQuestion": "Are you building a sustainable legacy, or are you just chasing the next shiny object?",
+    "awakeningQuestionTh": "คุณกำลังสร้างมรดกที่ยั่งยืน หรือแค่ไล่ตามของเล่นชิ้นต่อไป?"
+  },
+  {
+    "archetype": "Achiever",
+    "element": "Earth",
+    "title": "The Elemental Style: Earth Achiever",
+    "titleTh": "สไตล์ธาตุ: นักจัดการ ธาตุดิน",
+    "deepDive": "**Your unique style of achievement is Accumulation & Stability.**\nYou play the long game. You don't gamble; you build. Your path to success involves acquiring tangible assets—property, savings, loyal customers, or reliable systems. You are the master of 'Compound Interest.' You achieve not by taking massive risks, but by being consistently reliable and slowly gathering resources until you are an immovable force.",
+    "deepDiveTh": "**สไตล์ความสำเร็จเฉพาะตัวของคุณคือ การสะสมและเสถียรภาพ**\nคุณเล่นเกมระยะยาว คุณไม่เสี่ยง คุณสร้าง เส้นทางสู่ความสำเร็จของคุณเกี่ยวกับการได้มาซึ่งสินทรัพย์ที่จับต้องได้ — อสังหาริมทรัพย์ เงินออม ลูกค้าประจำ หรือระบบที่เชื่อถือได้ คุณคือเจ้าแห่ง 'ดอกเบี้ยทบต้น' คุณประสบความสำเร็จไม่ใช่ด้วยการเสี่ยงใหญ่ แต่ด้วยการเป็นคนที่เชื่อถือได้อย่างสม่ำเสมอ ค่อยๆ สะสมทรัพยากรจนกลายเป็นพลังที่ไม่มีใครเขยื้อนได้",
+    "awakeningQuestion": "Are you managing your wealth to grow it, or are you just hiding it under the mattress out of fear?",
+    "awakeningQuestionTh": "คุณบริหารความมั่งคั่งเพื่อให้เติบโต หรือแค่ซ่อนมันไว้ใต้ที่นอนเพราะกลัว?"
+  },
+  {
+    "archetype": "Achiever",
+    "element": "Metal",
+    "title": "The Elemental Style: Metal Achiever",
+    "titleTh": "สไตล์ธาตุ: นักจัดการ ธาตุทอง",
+    "deepDive": "**Your unique style of achievement is Precision & Efficiency.**\nYou treat success like a mathematical equation. You focus on ROI (Return on Investment), KPIs, and the bottom line. You have zero tolerance for waste—whether it's wasted time, wasted money, or wasted effort. You achieve by cutting out the fluff and focusing 100% on the activities that actually generate high value.",
+    "deepDiveTh": "**สไตล์ความสำเร็จเฉพาะตัวของคุณคือ ความแม่นยำและประสิทธิภาพ**\nคุณปฏิบัติกับความสำเร็จเหมือนสมการคณิตศาสตร์ คุณโฟกัสที่ ROI, KPI และบรรทัดสุดท้าย คุณไม่ยอมรับความสูญเปล่า — ไม่ว่าจะเสียเวลา เสียเงิน หรือเสียแรง คุณประสบความสำเร็จด้วยการตัดสิ่งไร้สาระออกและโฟกัส 100% กับกิจกรรมที่สร้างมูลค่าสูงจริงๆ",
+    "awakeningQuestion": "Are you optimizing for short-term profit at the cost of long-term reputation?",
+    "awakeningQuestionTh": "คุณกำลังปรับปรุงเพื่อกำไรระยะสั้น โดยแลกกับชื่อเสียงระยะยาวหรือเปล่า?"
+  },
+  {
+    "archetype": "Achiever",
+    "element": "Water",
+    "title": "The Elemental Style: Water Achiever",
+    "titleTh": "สไตล์ธาตุ: นักจัดการ ธาตุน้ำ",
+    "deepDive": "**Your unique style of achievement is Circulation & Flow.**\nYou understand that money is energy—it needs to move to be alive. You excel in environments of trade, logistics, retail, or fast-moving markets. You don't try to hold onto wealth; you try to keep it flowing through you. You are the master of 'Cash Flow.' You achieve by being the conduit that connects supply with demand effortlessly.",
+    "deepDiveTh": "**สไตล์ความสำเร็จเฉพาะตัวของคุณคือ การหมุนเวียนและกระแส**\nคุณเข้าใจว่าเงินคือพลังงาน — มันต้องเคลื่อนที่เพื่อมีชีวิต คุณเก่งในสภาพแวดล้อมของการค้า โลจิสติกส์ ค้าปลีก หรือตลาดที่เคลื่อนไหวเร็ว คุณไม่พยายามยึดความมั่งคั่งไว้ แต่พยายามให้มันไหลผ่านคุณ คุณคือเจ้าแห่ง 'กระแสเงินสด' คุณประสบความสำเร็จด้วยการเป็นท่อเชื่อมอุปทานกับอุปสงค์อย่างไม่ต้องออกแรง",
+    "awakeningQuestion": "Are you actually making money, or are you just busy moving money around?",
+    "awakeningQuestionTh": "คุณกำลังทำเงินจริงๆ หรือแค่ยุ่งกับการย้ายเงินไปมา?"
+  },
+  {
+    "archetype": "Achiever",
+    "element": "Wood"
+  }
+]

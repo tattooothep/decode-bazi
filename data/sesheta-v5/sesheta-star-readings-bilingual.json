@@ -1,0 +1,324 @@
+{
+  "Nobleman Star": {
+    "favorable": {
+      "en": "You naturally attract helpful people and opportunities, smoothing your path to success with genuine support.",
+      "th": "คุณดึงดูดคนที่มีประโยชน์และโอกาสได้อย่างเป็นธรรมชาติ ปูทางสู่ความสำเร็จด้วยการสนับสนุนที่แท้จริง"
+    },
+    "unfavorable": {
+      "en": "You have support, but it often comes as \"tough love\" or high pressure that forces you to grow.",
+      "th": "คุณมีการสนับสนุน แต่มักมาในรูปแบบ \"ความรักที่เข้มงวด\" หรือแรงกดดันสูงที่บังคับให้คุณเติบโต"
+    },
+    "mixed": {
+      "en": "You have a versatile advantage, capable of thriving with both supportive mentors and demanding leaders.",
+      "th": "คุณมีข้อได้เปรียบที่หลากหลาย สามารถเจริญรุ่งเรืองได้ทั้งกับที่ปรึกษาที่สนับสนุนและผู้นำที่เข้มงวด"
+    }
+  },
+  "Peach Blossom": {
+    "favorable": {
+      "en": "You are a natural magnet for people, effortlessly winning hearts and opening doors for connections.",
+      "th": "คุณเป็นแม่เหล็กธรรมชาติสำหรับผู้คน ชนะใจและเปิดประตูสู่การเชื่อมต่อได้อย่างง่ายดาย"
+    },
+    "unfavorable": {
+      "en": "You attract attention easily, but must manage it carefully to avoid distractions and unnecessary drama.",
+      "th": "คุณดึงดูดความสนใจได้ง่าย แต่ต้องจัดการอย่างระมัดระวังเพื่อหลีกเลี่ยงสิ่งรบกวนและเรื่องวุ่นวายที่ไม่จำเป็น"
+    },
+    "mixed": {
+      "en": "You possess broad appeal that attracts all kinds of people, requiring you to filter connections wisely.",
+      "th": "คุณมีเสน่ห์ดึงดูดคนหลากหลายประเภท ต้องกรองการเชื่อมต่ออย่างชาญฉลาด"
+    }
+  },
+  "Sky Horse": {
+    "favorable": {
+      "en": "The further you go, the more you grow; travel and change bring you wealth and career advancement.",
+      "th": "ยิ่งไปไกล ยิ่งเติบโต การเดินทางและการเปลี่ยนแปลงนำความมั่งคั่งและความก้าวหน้าในอาชีพมาให้คุณ"
+    },
+    "unfavorable": {
+      "en": "You have boundless energy for movement, but must set clear goals to avoid burnout from aimless wandering.",
+      "th": "คุณมีพลังงานไม่จำกัดสำหรับการเคลื่อนไหว แต่ต้องตั้งเป้าหมายที่ชัดเจนเพื่อหลีกเลี่ยงความเหนื่อยล้าจากการเร่ร่อนไร้จุดหมาย"
+    },
+    "mixed": {
+      "en": "Movement brings you opportunities, but you must strategically choose which trips yield results versus mere fatigue.",
+      "th": "การเคลื่อนไหวนำโอกาสมาให้คุณ แต่คุณต้องเลือกอย่างมีกลยุทธ์ว่าการเดินทางใดให้ผลลัพธ์ ไม่ใช่แค่ความเหนื่อยล้า"
+    }
+  },
+  "Intelligence": {
+    "favorable": {
+      "en": "You learn faster than others, turning knowledge into brilliant strategies and academic success.",
+      "th": "คุณเรียนรู้ได้เร็วกว่าคนอื่น เปลี่ยนความรู้เป็นกลยุทธ์อันยอดเยี่ยมและความสำเร็จทางวิชาการ"
+    },
+    "unfavorable": {
+      "en": "You have a sharp mind, but must beware of overthinking or perfectionism slowing down your action.",
+      "th": "คุณมีจิตใจที่เฉียบแหลม แต่ต้องระวังการคิดมากเกินไปหรือความสมบูรณ์แบบที่ทำให้การกระทำช้าลง"
+    },
+    "mixed": {
+      "en": "You are a versatile thinker, capable of both deep analysis and quick problem-solving depending on the need.",
+      "th": "คุณเป็นนักคิดที่หลากหลาย สามารถวิเคราะห์เชิงลึกและแก้ปัญหาได้รวดเร็วตามความจำเป็น"
+    }
+  },
+  "Kong Wang": {
+    "favorable": {
+      "en": "The void removes an unfavorable element from your chart — like clearing a burden, freeing you from negative influence.",
+      "th": "ความว่างเปล่ากำจัดธาตุที่ไม่ดีออกจากดวง — เหมือนปลดภาระ ปลดปล่อยคุณจากอิทธิพลเชิงลบ"
+    },
+    "unfavorable": {
+      "en": "The void hollows out a favorable element, weakening support that your chart needs most. Seek resolution through clash or combine.",
+      "th": "ความว่างเปล่าทำให้ธาตุที่ดีอ่อนกำลัง สูญเสียพลังสนับสนุนที่ดวงต้องการ ควรหาทางแก้ผ่านการชนหรือรวม"
+    },
+    "mixed": {
+      "en": "The void removes both good and bad — some pillars benefit from the clearing while others lose valuable support.",
+      "th": "ความว่างเปล่ากำจัดทั้งดีและไม่ดี — บางเสาได้ประโยชน์จากการล้าง แต่บางเสาสูญเสียพลังที่มีค่า"
+    }
+  },
+  "Salty Pool": {
+    "favorable": {
+      "en": "\"Star Power\" - You channel this intense attraction into fame and wealth, using your star power to open doors. Your ability to captivate others becomes a lucrative tool for professional success.",
+      "th": "\"เสน่ห์ดาราพาโชค\" - คุณสามารถเปลี่ยนแรงดึงดูดนี้ให้กลายเป็นชื่อเสียงและเงินทอง ใช้เสน่ห์เปิดประตูโอกาสทางธุรกิจ ความสามารถในการมัดใจผู้คนจะกลายเป็นเครื่องมือสร้างความสำเร็จที่ยอดเยี่ยม"
+    },
+    "unfavorable": {
+      "en": "\"Scandal Risk\" - You are prone to scandals or short-term flings that can damage your reputation and finances. Indulgence in fleeting pleasures often leads to emotional chaos rather than lasting happiness.",
+      "th": "\"เสี่ยงเรื่องชู้สาว\" - คุณมีเกณฑ์เสี่ยงต่อข่าวฉาวหรือความสัมพันธ์ฉาบฉวยที่อาจทำลายชื่อเสียงและการเงิน การหลงระเริงในความสุขชั่วคราวอาจนำมาซึ่งความวุ่นวายใจมากกว่าความสุขที่ยั่งยืน"
+    },
+    "mixed": {
+      "en": "Your charm is a double-edged sword. While it opens doors professionally, you must be vigilant about maintaining boundaries to avoid complications.",
+      "th": "เสน่ห์ของคุณเป็นดาบสองคม เปิดประตูโอกาสทางอาชีพได้ แต่ต้องระวังรักษาขอบเขตเพื่อหลีกเลี่ยงความยุ่งยาก"
+    }
+  },
+  "Thriving": {
+    "favorable": {
+      "en": "\"Wealth & Status\" - Your stability transforms into prosperity. You enjoy a high income, professional respect, and a life of material comfort. You build wealth steadily and surely, minimizing risk while maximizing long-term gains.",
+      "th": "\"มั่งคั่งและมีเกียรติ\" - ความมั่นคงจะแปรเปลี่ยนเป็นความร่ำรวย คุณจะมีรายได้สูง มีเกียรติในสังคม และมีชีวิตความเป็นอยู่ที่สุขสบาย เป็นความรวยที่ยั่งยืนและปลอดภัยจากการวางแผนที่รัดกุม"
+    },
+    "unfavorable": {
+      "en": "\"Conservative Stagnation\" - Your desire for security may become a hindrance. You might work hard for a limited salary or become too risk-averse, missing out on bigger opportunities because you fear losing what you already have.",
+      "th": "\"ยึดติดจนไม่โต\" - ความต้องการความชัวร์อาจกลายเป็นอุปสรรค คุณอาจต้องทำงานหนักแลกเงินเดือนที่ไม่สูงนัก หรือเป็นคน \"เพลย์เซฟ\" เกินไปจนพลาดโอกาสรวยก้อนโต เพราะกลัวความเสี่ยงมากเกินไป"
+    },
+    "mixed": {
+      "en": "Your stability provides a solid foundation, but you must balance security with calculated risks to maximize your potential.",
+      "th": "ความมั่นคงของคุณเป็นรากฐานที่แข็งแกร่ง แต่ต้องสมดุลระหว่างความปลอดภัยกับความเสี่ยงที่คำนวณแล้วเพื่อเพิ่มศักยภาพ"
+    }
+  },
+  "Goat Blade": {
+    "favorable": {
+      "en": "\"Supreme Authority\" - You channel this intensity into explosive leadership. Your decisiveness commands respect, allowing you to conquer obstacles and execute difficult tasks that others cannot handle.",
+      "th": "\"ดาบอาญาสิทธิ์\" - คุณสามารถเปลี่ยนความดุดันให้เป็นบารมีผู้นำ ความกล้าหาญและเด็ดขาดของคุณจะพาให้คุณฝ่าฟันวิกฤตยากๆ และได้รับการยอมรับในฐานะผู้ที่ \"สั่งแล้วต้องได้\""
+    },
+    "unfavorable": {
+      "en": "\"Conflict & Injury\" - Your aggression often backfires, leading to reckless decisions. You are prone to severe conflicts, legal disputes, or physical injuries (surgeries) caused by impatience and a bad temper.",
+      "th": "\"ภัยจากอารมณ์\" - ความใจร้อนมุทะลุจะกลายเป็นมีดที่กลับมาแทงตัวเอง คุณมีความเสี่ยงสูงที่จะเกิดความขัดแย้งรุนแรง คดีความ หรืออุบัติเหตุเจ็บตัวจากการตัดสินใจที่วู่วามขาดสติ"
+    },
+    "mixed": {
+      "en": "Your intensity is powerful but volatile. Success requires channeling your drive into constructive action while managing your temper.",
+      "th": "ความเข้มข้นของคุณทรงพลังแต่ผันผวน ความสำเร็จต้องอาศัยการนำพลังขับเคลื่อนไปสู่การกระทำที่สร้างสรรค์พร้อมควบคุมอารมณ์"
+    }
+  },
+  "Red Chamber": {
+    "favorable": {
+      "en": "\"Magnetic Charisma\" - Your charm is sophisticated and captivating. People are naturally drawn to help you, and you can leverage this \"fan base\" into a successful public-facing career or a high-status marriage.",
+      "th": "\"เสน่ห์ตราตรึงใจ\" - เสน่ห์ของคุณดูแพงและน่าหลงใหล ผู้คนพร้อมจะสนับสนุนคุณด้วยความเต็มใจ คุณสามารถเปลี่ยนความนิยมนี้ให้เป็นชื่อเสียง หรือดึงดูดคู่ครองที่มีฐานะดีมาช่วยส่งเสริมชีวิต"
+    },
+    "unfavorable": {
+      "en": "\"Fatal Attraction\" - Your passion often overrides your logic. You are prone to getting entangled in complicated love triangles or scandalous affairs that bring emotional distress and damage your reputation.",
+      "th": "\"กับดักรักซ้อน\" - อารมณ์มักอยู่เหนือเหตุผล คุณมีเกณฑ์จะถลำลึกในความสัมพันธ์ที่ผิดศีลธรรมหรือรักสามเส้าได้ง่าย ซึ่งจะนำมาซึ่งความทุกข์ใจและข่าวฉาวที่ทำลายเกียรติยศของคุณ"
+    },
+    "mixed": {
+      "en": "Your romantic nature attracts both admirers and complications. Wisdom lies in discerning genuine connections from fleeting infatuations.",
+      "th": "ธรรมชาติโรแมนติกของคุณดึงดูดทั้งผู้ชื่นชมและความยุ่งยาก ความฉลาดอยู่ที่การแยกแยะความสัมพันธ์แท้จริงจากความหลงใหลชั่วคราว"
+    }
+  },
+  "Study Hall": {
+    "favorable": {
+      "en": "\"Academic Excellence\" - Your intelligence leads directly to high status and success. You grasp complex concepts easily and can monetize your knowledge effectively, often achieving fame as a scholar or expert.",
+      "th": "\"ปราชญ์ผู้รุ่งโรจน์\" - ความรู้คือขุมทรัพย์ของคุณ คุณมีความสามารถในการวิเคราะห์และเรียนรู้ที่ยอดเยี่ยม ซึ่งจะนำพาเกียรติยศชื่อเสียงและความสำเร็จระดับสูงมาให้"
+    },
+    "unfavorable": {
+      "en": "\"Impractical Theory\" - You may be \"book smart\" but lack practical application. There is a risk of over-analyzing situations, getting stuck in theory, or becoming disconnected from real-world solutions.",
+      "th": "\"ความรู้ท่วมหัว\" - คุณอาจเก่งแค่ในตำราแต่ขาดทักษะการเอาตัวรอดจริง (Book smart) หรือมักคิดวิเคราะห์ซับซ้อนเกินไปจนไม่กล้าตัดสินใจ ทำให้พลาดโอกาสในทางปฏิบัติ"
+    },
+    "mixed": {
+      "en": "Your intellect is your greatest asset, but balancing theoretical knowledge with practical application will maximize your success.",
+      "th": "สติปัญญาของคุณเป็นทรัพย์สินที่ยิ่งใหญ่ที่สุด แต่การสมดุลความรู้ทฤษฎีกับการประยุกต์ใช้จริงจะเพิ่มความสำเร็จสูงสุด"
+    }
+  },
+  "Cascading Clouds": {
+    "favorable": {
+      "en": "\"Artistic Flow\" - Your instability transforms into artistic genius. You possess a unique eloquence and a flowing creativity that captivates others. You are likely a gifted speaker, writer, or artist whose work stands out for its distinct style.",
+      "th": "\"ศิลปินเอก\" - ความไม่หยุดนิ่งกลายเป็นพรสวรรค์ คุณจะมีความคิดสร้างสรรค์ที่ลื่นไหล พูดจาโน้มน้าวใจคนเก่ง (Flow ดี) และมีความสามารถทางศิลปะที่โดดเด่นไม่เหมือนใคร"
+    },
+    "unfavorable": {
+      "en": "\"Blood Sha (The Crimson Cloud)\" - The \"Blood Demon\" aspect dominates. This is a classical warning for physical injury, surgery, or accidents involving metal and blood. It also indicates emotional volatility, where your \"wandering mind\" leads to a lack of focus or direction.",
+      "th": "\"อสูรโลหิต\" - ความหมายด้านลบของดาวนี้คือ \"เลือด\" คุณมีความเสี่ยงสูงต่ออุบัติเหตุ การผ่าตัด หรือการบาดเจ็บทางร่างกาย รวมถึงภาวะอารมณ์ที่แปรปรวน ล่องลอย และขาดความมั่นคงในชีวิต"
+    },
+    "mixed": {
+      "en": "Your artistic soul is both a gift and a challenge. Channel your creative energy productively while being mindful of health and stability.",
+      "th": "จิตวิญญาณศิลปินของคุณเป็นทั้งพรและความท้าทาย นำพลังสร้างสรรค์ไปใช้อย่างมีประสิทธิภาพพร้อมใส่ใจสุขภาพและความมั่นคง"
+    }
+  },
+  "Flying Blade": {
+    "favorable": {
+      "en": "\"Lightning Reflexes\" - Your speed is an asset. You solve problems instantly and excel in high-pressure situations (like sports, trading, or emergency services) where agility and decisiveness are required to win.",
+      "th": "\"เสือปืนไว\" - เปลี่ยนความเร็วให้เป็นความสำเร็จ คุณมีไหวพริบเป็นเลิศและตัดสินใจเด็ดขาด เหมาะอย่างยิ่งกับงานที่ต้องแข่งกับเวลา งานเสี่ยงภัย หรือการกู้สถานการณ์วิกฤตที่คนอื่นทำไม่ได้"
+    },
+    "unfavorable": {
+      "en": "\"Accident Prone\" - Speed leads to errors. You are reckless, impulsive, and prone to physical injuries from sharp objects or machinery. Your tendency to \"act without thinking\" often sabotages your own efforts.",
+      "th": "\"ภัยจากความประมาท\" - ความเร็วกลายเป็นความสะเพร่า คุณมีความเสี่ยงสูงต่ออุบัติเหตุจากของมีคม การขับรถเร็ว หรือความผิดพลาดใหญ่หลวงที่เกิดจากการทำก่อนคิด (Impulsive Actions)"
+    },
+    "mixed": {
+      "en": "Your quick reflexes can be a superpower or a liability. Success comes from harnessing your speed while practicing patience in critical moments.",
+      "th": "ความไวของคุณสามารถเป็นพลังพิเศษหรือข้อเสียได้ ความสำเร็จมาจากการใช้ความเร็วพร้อมฝึกความอดทนในช่วงเวลาสำคัญ"
+    }
+  },
+  "Gold Carriage": {
+    "favorable": {
+      "en": "\"The Golden Life\" - You enjoy a life of comfort and high status with minimal struggle. Wealth comes easily, often through marriage or inheritance. You are likely to own luxury cars and prime real estate, living effortlessly.",
+      "th": "\"นั่งกินนอนกิน\" - ชีวิตของคุณเต็มไปด้วยความสะดวกสบายและสินทรัพย์ คุณมักได้ลาภยศเงินทองมาโดยง่าย (มักได้จากคนอื่นหรือคู่ครอง) มีบ้านสวย รถหรู และได้รับการปรนนิบัติอย่างดี"
+    },
+    "unfavorable": {
+      "en": "\"Materialistic Dependency\" - You may become overly dependent on external wealth or your spouse's money. There is a risk of being \"flashy\" without substance, spending too much on luxury items (especially cars) to maintain an image you cannot afford.",
+      "th": "\"ติดหรูแต่เปลือก\" - คุณอาจเสพติดวัตถุนิยมหรือชอบอวดรวยเกินตัว มักสิ้นเปลืองเงินไปกับรถยนต์หรือของแบรนด์เนมเพื่อสร้างภาพลักษณ์ หรือมีชีวิตที่ต้องพึ่งพาจมูกคนอื่นหายใจจนยืนด้วยตัวเองไม่ได้"
+    },
+    "mixed": {
+      "en": "Material comfort comes to you naturally, but true wealth lies in building independence alongside the privileges you receive.",
+      "th": "ความสะดวกสบายทางวัตถุมาหาคุณเองตามธรรมชาติ แต่ความมั่งคั่งที่แท้จริงอยู่ที่การสร้างความเป็นอิสระควบคู่กับสิทธิพิเศษที่ได้รับ"
+    }
+  },
+  "Heavenly Wealth": {
+    "favorable": {
+      "en": "\"The Windfall King\" - Money flows to you easily. You are prone to winning lotteries, successful stock picks, or receiving unexpected assets. You amass wealth through \"smart work\" and timing rather than hard labor.",
+      "th": "\"ราชาโชคลาภ\" - เงินทองไหลมาเทมาแบบไม่ต้องออกแรงเยอะ คุณมักถูกหวย รวยหุ้น หรือจับอะไรก็เป็นเงินเป็นทอง (Midas Touch) รวยจากโอกาสและจังหวะเวลามากกว่าการทำงานหนัก"
+    },
+    "unfavorable": {
+      "en": "\"Easy Come, Easy Go\" - Money leaves as fast as it arrives. You may rely too much on luck, leading to gambling addictions, risky investments, or squandering wealth because you didn't earn it through discipline.",
+      "th": "\"ทุกขลาภ\" - เงินร้อนที่อยู่กับตัวไม่ได้นาน คุณอาจเสพติดการพนันหรือการเก็งกำไรที่มีความเสี่ยงสูง เพราะหวังรวยทางลัด ทำให้ทรัพย์สินที่ได้มาง่ายๆ หมดไปอย่างรวดเร็ว"
+    },
+    "mixed": {
+      "en": "Fortune favors you, but lasting wealth requires discipline to preserve what comes easily.",
+      "th": "โชคเข้าข้างคุณ แต่ความมั่งคั่งที่ยั่งยืนต้องอาศัยวินัยในการรักษาสิ่งที่ได้มาง่ายไว้"
+    }
+  },
+  "Elegant Seal": {
+    "favorable": {
+      "en": "\"The Venerated Expert\" - Your solitude breeds genius. You channel your depth into mastery, becoming a respected authority, artist, or spiritual leader. Your unique perspective and creativity bring you fame and admiration, even if you remain somewhat elusive.",
+      "th": "\"ปราชญ์ผู้ลึกล้ำ\" - ความสันโดษจะเจียระไนให้คุณกลายเป็นผู้เชี่ยวชาญระดับสูง คุณจะนำพรสวรรค์ด้านศิลปะหรือปรัชญามาสร้างชื่อเสียงและความสำเร็จ ได้รับการยกย่องในความรู้ที่ลึกซึ้ง และมีเอกลักษณ์เฉพาะตัวที่ไม่เหมือนใคร"
+    },
+    "unfavorable": {
+      "en": "\"Isolation & Melancholy\" - Your tendency to withdraw becomes problematic. You may feel cut off from society, struggling with loneliness, depression, or being misunderstood. You risk retreating too far into your own world, rejecting help and opportunities.",
+      "th": "\"โดดเดี่ยวอ้างว้าง\" - การเก็บตัวอาจกลายเป็นการตัดขาดจากโลกภายนอก คุณเสี่ยงต่อภาวะซึมเศร้า หรือการหมกมุ่นอยู่กับความคิดฟุ้งซ่านของตัวเองจนเข้ากับคนอื่นไม่ได้ ทำให้ขาดคนช่วยเหลือเกื้อกูลและรู้สึกโดดเดี่ยวในสังคม"
+    },
+    "mixed": {
+      "en": "Your introspective nature is both a gift and a challenge. Success comes from balancing your need for solitude with meaningful connections.",
+      "th": "ธรรมชาติที่ชอบครุ่นคิดของคุณเป็นทั้งพรและความท้าทาย ความสำเร็จมาจากการสมดุลความต้องการความสันโดษกับการเชื่อมต่อที่มีความหมาย"
+    }
+  },
+  "The General Star": {
+    "favorable": {
+      "en": "\"The Great Commander\" - Your authority leads to genuine respect and high status. You climb the corporate or social ladder swiftly, handling power with wisdom. People willingly follow your lead because they trust your capability and vision.",
+      "th": "\"แม่ทัพผู้เกรียงไกร\" - อำนาจของคุณนำมาซึ่งเกียรติยศและความศรัทธา คุณจะได้รับการเลื่อนยศเลื่อนตำแหน่งอย่างรวดเร็ว บริวารให้ความเคารพยำเกรง และสามารถนำพาทีมหรือองค์กรไปสู่ความสำเร็จที่ยิ่งใหญ่"
+    },
+    "unfavorable": {
+      "en": "\"The Rigid Tyrant\" - Your desire for control becomes excessive. You may be seen as domineering, stubborn, or a \"dictator\" who refuses to listen to others. This rigidity can lead to power struggles, isolation, or conflicts with subordinates.",
+      "th": "\"จอมเผด็จการ\" - การใช้อำนาจที่มากเกินไปอาจสร้างศัตรู คุณอาจกลายเป็นคนดื้อรั้น ไม่ฟังใคร หรือบ้าอำนาจจนลูกน้องเอือมระอา ซึ่งนำไปสู่ความขัดแย้งภายในและการถูกเลื่อยขาเก้าอี้ได้"
+    },
+    "mixed": {
+      "en": "Your leadership potential is immense, but success requires balancing authority with humility and openness to others' input.",
+      "th": "ศักยภาพความเป็นผู้นำของคุณสูงมาก แต่ความสำเร็จต้องสมดุลอำนาจกับความอ่อนน้อมถ่อมตนและเปิดรับความคิดเห็นของผู้อื่น"
+    }
+  },
+  "Blood Knife": {
+    "favorable": {
+      "en": "\"The Life-Saving Blade\" - You are the one who \"holds the knife,\" not the victim. This star enhances careers involving sharp tools: surgeons, chefs, hairdressers, or dentists. You transform dangerous energy into expertise that saves lives and generates income.",
+      "th": "\"มีดหมอช่วยชีวิต\" - คุณคือผู้ \"ถือมีด\" ไม่ใช่ผู้ถูกกระทำ ดาวนี้จะส่งเสริมอาชีพที่ต้องใช้ของมีคม เช่น ศัลยแพทย์ เชฟ ช่างตัดผม หรือทันตแพทย์ คุณสามารถเปลี่ยนพลังร้ายให้กลายเป็นความชำนาญในการใช้เครื่องมือเพื่อสร้างรายได้และช่วยเหลือผู้อื่น"
+    },
+    "unfavorable": {
+      "en": "\"The Blade That Cuts Itself\" - The energy turns against you. You face high risk of car accidents, assaults, or illnesses requiring surgery (Blood Disaster). This is a star that demands constant vigilance regarding physical safety.",
+      "th": "\"คมมีดทำร้ายตน\" - พลังของดาวจะย้อนกลับมาทำร้ายคุณ คุณมีความเสี่ยงสูงต่ออุบัติเหตุทางรถยนต์ การถูกทำร้าย หรือโรคภัยที่ต้องรักษาด้วยการผ่าตัด (Blood Disaster) เป็นดวงที่ต้องหมั่นระวังเรื่องความปลอดภัยทางกายภาพเสมอ"
+    },
+    "mixed": {
+      "en": "The knife can heal or harm depending on how you wield it. Channel this energy into skilled professions while remaining cautious about physical safety.",
+      "th": "มีดสามารถรักษาหรือทำร้ายได้ขึ้นอยู่กับวิธีใช้ นำพลังงานนี้ไปสู่อาชีพที่ต้องใช้ทักษะพร้อมระวังความปลอดภัยทางกายภาพ"
+    }
+  },
+  "Solitary": {
+    "favorable": {
+      "en": "\"The Lonely Hermit\" - Your independence turns into isolation. You push people away unintentionally, leading to a life lacking in warmth and support. You risk becoming socially awkward or emotionally cold, making it difficult to maintain any long-term relationships.",
+      "th": "\"ยอดคนผู้พึ่งพาตนเอง\" - ความสันโดษคือพลังขับเคลื่อน คุณเป็นคนเข้มแข็ง พึ่งพาตัวเองได้ 100% และมีสมาธิในการทำงานสูงมาก เหมาะกับอาชีพที่ต้องใช้ความคิดลำพัง ชีวิตของคุณจะสงบสุข เรียบง่าย และปราศจากดราม่าความวุ่นวาย"
+    },
+    "unfavorable": {
+      "en": "\"The Lonely Hermit\" - Your independence turns into isolation. You push people away unintentionally, leading to a life lacking in warmth and support. You risk becoming socially awkward or emotionally cold, making it difficult to maintain any long-term relationships.",
+      "th": "\"ฤาษีผู้เดียวดาย\" - ความรักอิสระกลายเป็นกำแพงกั้น คุณมักผลักไสคนรอบข้างออกไปโดยไม่รู้ตัว ทำให้ชีวิตขาดความอบอุ่นและไร้ที่พึ่งทางใจ เสี่ยงต่อการเป็นคนขวางโลกและไม่สามารถรักษาความสัมพันธ์ระยะยาวกับใครได้เลย"
+    },
+    "mixed": {
+      "en": "Your self-reliance is admirable, but lasting happiness requires balancing independence with meaningful human connections.",
+      "th": "การพึ่งพาตนเองของคุณน่าชื่นชม แต่ความสุขที่ยั่งยืนต้องสมดุลความเป็นอิสระกับการเชื่อมต่อที่มีความหมายกับผู้คน"
+    }
+  },
+  "Lonesome": {
+    "favorable": {
+      "en": "\"Inner Peace\" - You find strength in silence. You are not lonely; you are self-contained. You enjoy your own company and use your solitude for spiritual cultivation, deep rest, or artistic pursuits. You are emotionally self-sufficient and do not need others to make you happy.",
+      "th": "\"ความสงบภายใน\" - ความเงียบคือเพื่อนแท้ของคุณ คุณไม่ได้เหงาแต่ \"รักสันโดษ\" อย่างมีความสุข คุณสามารถอยู่ได้ด้วยตัวเองอย่างเข้มแข็ง ใช้เวลาไปกับการพักผ่อนทางจิตวิญญาณ และมีความสุขได้โดยไม่ต้องพึ่งพาคนอื่น"
+    },
+    "unfavorable": {
+      "en": "\"Deep Melancholy\" - Your solitude turns into sadness. You may suffer from chronic loneliness, depression, or an inability to trust others. This emotional barrier prevents you from forming the close bonds you secretly crave, leading to a sense of abandonment.",
+      "th": "\"ความตรอมใจ\" - ความเงียบกลายเป็นความเศร้า คุณอาจจมอยู่กับความเหงาจับใจและภาวะซึมเศร้า กำแพงที่คุณสร้างขึ้นจะขังตัวคุณไว้ ทำให้ไม่สามารถเปิดใจรับความรักความอบอุ่นจากใครได้ แม้ในใจลึกๆ จะโหยหาแค่ไหนก็ตาม"
+    },
+    "mixed": {
+      "en": "Your capacity for solitude can be peaceful or painful. The key is ensuring your alone time is restorative rather than isolating.",
+      "th": "ความสามารถในการอยู่คนเดียวของคุณอาจสงบสุขหรือเจ็บปวด กุญแจสำคัญคือทำให้เวลาอยู่คนเดียวเป็นการฟื้นฟู ไม่ใช่การโดดเดี่ยว"
+    }
+  },
+  "Funeral Door": {
+    "favorable": {
+      "en": "\"The Compassionate Guardian\" - You turn the energy of loss into a profession. You excel in careers dealing with life and death, such as a doctor, hospice worker, funeral director, or insurance agent. You thrive by managing crises and helping others navigate their most difficult times.",
+      "th": "\"ผู้คุ้มกันความตาย\" - คุณสามารถทำงานกับความสูญเสียได้ดีและรุ่งเรือง เหมาะกับอาชีพ แพทย์ พยาบาล สัปเหร่อ ประกันชีวิต หรือมูลนิธิกู้ภัย คุณเปลี่ยนความน่ากลัวให้เป็นอาชีพที่สร้างรายได้และกุศลผลบุญจากการช่วยเหลือผู้อื่น"
+    },
+    "unfavorable": {
+      "en": "\"The Mourner\" - The negative aspect manifests as actual loss. You are prone to frequent sickness or receiving bad news about relatives. You are advised to avoid visiting hospitals or attending funerals (unless necessary), as these environments drain your luck and energy.",
+      "th": "\"ทุกข์โศกโรคภัย\" - คุณจะได้รับผลกระทบจากพลังงานลบได้ง่าย การไปงานศพหรือเยี่ยมคนป่วยจะทำให้คุณดวงตก หรือป่วยตามไปด้วย (อุปทาน) ชีวิตมักมีข่าวร้ายเกี่ยวกับความเจ็บป่วยของญาติพี่น้องเข้ามารบกวนจิตใจเสมอ"
+    },
+    "mixed": {
+      "en": "Your sensitivity to life and death can be channeled into compassionate service or become a source of constant worry. Choose how you engage with this energy.",
+      "th": "ความอ่อนไหวต่อชีวิตและความตายของคุณสามารถนำไปสู่การรับใช้ด้วยความเมตตาหรือกลายเป็นแหล่งความกังวลตลอดเวลา เลือกวิธีที่คุณมีส่วนร่วมกับพลังงานนี้"
+    }
+  },
+  "Robbery Sha": {
+    "favorable": {
+      "en": "\"The Sharp Strategist\" - You use the energy of \"taking\" to your advantage. You are an aggressive and decisive businessperson who knows how to seize market share, spot undervalued assets, and \"snatch\" opportunities before anyone else sees them.",
+      "th": "\"นักฉกฉวยโอกาส\" - คุณคือผู้คุมเกมที่ \"แย่งชิง\" เก่ง คุณมีสายตาเฉียบคมในการมองเห็นช่องทางทำกำไรที่คนอื่นมองข้าม และสามารถเทคโอเวอร์กิจการหรือแย่งชิงส่วนแบ่งการตลาดมาเป็นของตนเองได้อย่างรวดเร็ว"
+    },
+    "unfavorable": {
+      "en": "\"The Victim of Theft\" - You are a magnet for loss. You are highly prone to theft, burglary, fraud, or unexpected expenses that drain your bank account. Money tends to leave your hand as soon as you get it, making wealth accumulation difficult.",
+      "th": "\"เหยื่อโจรกรรม\" - คุณมักตกเป็นเป้าของการสูญเสีย ชีวิตเต็มไปด้วยรายจ่ายฉุกเฉินที่ไม่คาดคิด ถูกล้วงกระเป๋า ถูกยกเค้า หรือลงทุนอะไรก็มักจะขาดทุนแบบเจ็บตัว (Money flows out uncontrollably)"
+    },
+    "mixed": {
+      "en": "The energy of competition and taking can work for or against you. Success comes from being the hunter, not the hunted.",
+      "th": "พลังงานของการแข่งขันและการแย่งชิงสามารถทำงานให้หรือต่อต้านคุณ ความสำเร็จมาจากการเป็นนักล่า ไม่ใช่เหยื่อ"
+    }
+  },
+  "Separating Edge": {
+    "favorable": {
+      "en": "\"The Family Mediator\" - You turn domestic challenges into wisdom. You are excellent at resolving family disputes or managing crises. Alternatively, this star can manifest as a career in counseling, social work, or even styling/barbering (as \"Pi Tou\" literally relates to \"draped hair\"), using the energy of \"tidying up mess\" productively.",
+      "th": "\"ผู้ไกล่เกลี่ยประจำตระกูล\" - คุณสามารถจัดการกับความวุ่นวายได้ดี คุณอาจทำหน้าที่เป็นกาวใจที่ช่วยประสานรอยร้าวในครอบครัว หรือเปลี่ยนพลังงานนี้เป็นอาชีพ เช่น นักสังคมสงเคราะห์ ที่ปรึกษาปัญหาครอบครัว หรือช่างผม/สไตลิสต์ (แก้ \"หัวยุ่ง\" ให้เรียบร้อย)"
+    },
+    "unfavorable": {
+      "en": "\"The Broken Home\" - The energy manifests as chaos and mourning. You are prone to experiencing a \"broken home\" situation, severe conflict between family members, or wearing mourning clothes for elders more frequently than average.",
+      "th": "\"บ้านแตกสาแหรกขาด\" - คุณมีเกณฑ์ต้องเผชิญกับความสูญเสียในครอบครัวบ่อยครั้ง (การไว้ทุกข์) หรือสภาพครอบครัวที่แตกแยก หย่าร้าง และเต็มไปด้วยความขัดแย้งที่ไม่จบสิ้น นำมาซึ่งความเศร้าหมองภายในจิตใจ"
+    },
+    "mixed": {
+      "en": "Family challenges will arise, but your response determines the outcome. You can become the glue that holds everyone together or a victim of domestic strife.",
+      "th": "ความท้าทายในครอบครัวจะเกิดขึ้น แต่การตอบสนองของคุณเป็นตัวกำหนดผลลัพธ์ คุณสามารถเป็นกาวใจที่ยึดทุกคนไว้ด้วยกัน หรือเป็นเหยื่อของความขัดแย้งในบ้าน"
+    }
+  },
+  "Death God": {
+    "favorable": {
+      "en": "\"The Strategic Mastermind\" - Your \"hidden\" nature becomes strategic depth. You are a deep thinker who plans several steps ahead. You excel in behind-the-scenes roles, strategy, or investigative work, outsmarting opponents with wisdom that others cannot see.",
+      "th": "\"เสนาธิการเงา\" - ความลึกลับซับซ้อนกลายเป็นปัญญาที่แยบยล คุณเป็นจอมวางแผนที่อ่านเกมขาด มองเห็นสิ่งที่คนอื่นไม่เห็น เหมาะกับงานวางกลยุทธ์ งานสืบสวนสอบสวน หรือการทำงานเบื้องหลังที่ต้องใช้ความรอบคอบขั้นสูง"
+    },
+    "unfavorable": {
+      "en": "\"The Paranoid Victim\" - You are trapped in your own head. You suffer from severe anxiety, absent-mindedness (losing items frequently), or legal disasters. You are prone to getting sued or making costly mistakes because your mind is wandering elsewhere.",
+      "th": "\"กับดักทางจิตและคดีความ\" - จิตใจไม่อยู่กับเนื้อกับตัว คุณมักทำของหาย ลืมเรื่องสำคัญ หรือตัดสินใจผิดพลาดเพราะความกังวล นอกจากนี้ยังเป็นดาวที่ดึงดูด \"คดีความ\" และการถูกฟ้องร้อง หากประมาทอาจสูญเสียทรัพย์สินเพราะข้อกฎหมาย"
+    },
+    "mixed": {
+      "en": "Your hidden depths can be a source of wisdom or anxiety. Success comes from channeling your introspection into strategic thinking rather than paranoid worry.",
+      "th": "ความลึกซึ้งที่ซ่อนเร้นของคุณสามารถเป็นแหล่งปัญญาหรือความวิตกกังวล ความสำเร็จมาจากการนำการทบทวนตนเองไปสู่การคิดเชิงกลยุทธ์แทนที่จะเป็นความกังวลที่หวาดระแวง"
+    }
+  }
+}

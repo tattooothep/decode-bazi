@@ -1,0 +1,147 @@
+{
+  "metadata": {
+    "title": "Voytek Features Decode Should Port",
+    "title_th": "ฟีเจอร์ Voytek ที่ Decode ควรเอามา",
+    "source": "Reverse-engineered from bazi-calculator.com HTML (logged in user, Premium account)",
+    "test_chart_used": "Birth: 2026-05-05 19:34 Nonthaburi GMT+7 100.3947°E",
+    "computed_RST": "19:19 (correction -15.19 min)",
+    "version": "1.0"
+  },
+
+  "verified_features_from_html": {
+    "1_true_solar_time_with_border_detection": {
+      "priority": "P0",
+      "status": "Decode has TST, missing border detection",
+      "voytek_output": "Minutes correction: -15.19 (Longitude: -18.42 + EoT: 3.23); RST=19:19; Month begins: 2026-05-05 18:46 GMT+7 (18:27 LMT). Border case - some pillars are on borderline (Month).",
+      "logic": "If birth_time within ±60 minutes of solar term boundary, flag as border case. User must verify with classical reference.",
+      "decode_action": "Add `border_case` flag + tolerance window to true-solar-time.js",
+      "implementation": "function checkBorderCase(birthTime, tolerance_min = 60) { const nearestTerm = getNearestSolarTerm(birthTime); const distMin = Math.abs(birthTime - nearestTerm.time) / 60000; return { is_border: distMin < tolerance_min, distance_min: distMin, term: nearestTerm.name, warning: distMin < tolerance_min ? 'pillars are on borderline' : null }; }"
+    },
+
+    "2_fan_yin_fu_yin_detection": {
+      "priority": "P0",
+      "status": "Decode missing — Voytek has",
+      "definition_zh": "反吟 (Fan Yin) = full clash; 伏吟 (Fu Yin) = full repeat",
+      "voytek_output": "Fan Yin (Bing Wu), Fu Yin (Gui Si)",
+      "fan_yin_logic": "Both stem AND branch clash with target pillar. e.g. Bing Wu vs Ren Zi = stem clash + branch clash = Fan Yin",
+      "fu_yin_logic": "Both stem AND branch identical to target pillar. e.g. Gui Si vs Gui Si = full Fu Yin = same energy hits twice (often distressing)",
+      "interpretation": {
+        "fan_yin": "Total opposition. Major upheaval, role reversal, identity crisis during this transit",
+        "fu_yin": "Total repetition. Stagnation despite effort, dejavu situations, karmic loops"
+      },
+      "implementation": "function detectFanFuYin(natal_pillar, transit_pillar) {\n  const stemClash = STEM_CLASH[natal_pillar.stem] === transit_pillar.stem;\n  const branchClash = BRANCH_CLASH[natal_pillar.branch] === transit_pillar.branch;\n  const stemSame = natal_pillar.stem === transit_pillar.stem;\n  const branchSame = natal_pillar.branch === transit_pillar.branch;\n  if (stemClash && branchClash) return 'fan_yin';\n  if (stemSame && branchSame) return 'fu_yin';\n  return null;\n}"
+    },
+
+    "3_heaven_void_with_pillar_origin": {
+      "priority": "P1",
+      "status": "Decode has Kong Wang basics, missing pillar attribution",
+      "voytek_innovation": "Tracks WHICH pillar is voiding the transit",
+      "voytek_output": "heaven void (YP) — Year Pillar voids; heaven void (DP) — Day Pillar voids",
+      "logic_extension": "Standard Kong Wang uses Day Pillar's Xun. Voytek ALSO computes Year Pillar's Xun voids. Two voids = double effect.",
+      "decode_action": "Extend kong_wang detector to compute both DP and YP void branches, label which voided which"
+    },
+
+    "4_HHS_dominant_qi_DHHS": {
+      "priority": "P1",
+      "status": "Decode missing entirely",
+      "definition_zh": "藏干司令 Dominant Hidden Heavenly Stem",
+      "concept": "Within the month branch, ONE hidden stem 'rules' based on the 30-day sub-period (initial qi 7-9 days, middle qi 5-7 days, residual qi 16-18 days)",
+      "voytek_output": "DHHS' qi phase",
+      "purpose": "Determines TRUE day master strength — born in 子 month (癸 main qi), but if born in initial 9 days, the residual 戊 from previous 亥 month still rules!",
+      "implementation": "function getDHHS(birthDate, monthBranch) {\n  const monthStart = getMonthSolarTermBoundary(birthDate);\n  const daysIntoMonth = (birthDate - monthStart) / 86400000;\n  const hidden = HIDDEN_STEMS[monthBranch];\n  // Find which sub-period\n  if (daysIntoMonth < hidden[0].days) return hidden[0].stem; // residual qi\n  if (daysIntoMonth < hidden[0].days + hidden[1].days) return hidden[1].stem; // middle qi\n  return hidden[2].stem; // main qi\n}"
+    },
+
+    "5_qi_phase_per_pillar": {
+      "priority": "P2",
+      "status": "Decode missing",
+      "concept": "Each pillar has its OWN 12 phases reading (not just Day Master)",
+      "voytek_output": "DM Qi phase + DHHS Qi phase + Pillar Qi phase",
+      "use_case": "Tells if each pillar's stem is rooted/dying/peak in its own branch — micro-level chart strength analysis"
+    },
+
+    "6_HS_HHS_combination": {
+      "priority": "P1",
+      "status": "Decode missing",
+      "voytek_output": "HS+HHS combination: fire / earth",
+      "definition": "When natal Heavenly Stem combines with the Hidden Heavenly Stem in luck pillar (or vice versa), forming a TRANSFORMATION when conditions support it",
+      "example_aeaw_2026": "甲(year HS) + 己(LP HHS hidden in 巳 from 辛巳 LP) = combine → Earth (good for 己 weak DM!)",
+      "implementation": "Check 5 stem combos against any hidden stem in transit branch"
+    },
+
+    "7_navigation_views": {
+      "priority": "P0 for trader UX",
+      "status": "Decode has Action Mode but lacks views",
+      "voytek_views": [
+        "BaZi chart (full view)",
+        "Compact view (collapse to luck-pillar focus)",
+        "Day view (zoom to single day with hours)",
+        "Month view (30 days lined up)",
+        "Year view (12 months lined up)",
+        "10 Years view (focus on current LP)",
+        "100 Years view (ALL 10 LPs in one table)",
+        "Ming Gong (Life Palace)",
+        "Energy finder (search for specific patterns)"
+      ],
+      "decode_action": "Build view-toggle component. 100 Years view is killer — entire life on one screen"
+    },
+
+    "8_chart_type_classification": {
+      "priority": "P1",
+      "status": "Decode missing",
+      "voytek_output": "Chart type (approximation): Strong / Possible special chart: Transformation type (earth)",
+      "logic": "Auto-classify into 16 normal + special types (Follow Wealth, Follow Power, Solo Strength, Transformation Earth/Metal/Water/Wood/Fire)",
+      "decode_action": "Already have structures-16.json — just connect to runtime detection"
+    },
+
+    "9_fan_yin_in_luck_pillars": {
+      "priority": "P0",
+      "status": "Decode missing critical alert",
+      "voytek_output_for_aeaw_LP_癸巳": "Fu Yin (Gui Si)",
+      "implication": "When luck pillar is identical to a natal pillar, that natal pillar's themes REPEAT. Fan Yin in LP = 10 years of opposition.",
+      "trader_application": "MAJOR red flag for entering Fan Yin LP — restructure life BEFORE pillar transitions"
+    },
+
+    "10_interactive_hover_highlighting": {
+      "priority": "P2 UX",
+      "status": "Decode can do better with React",
+      "voytek_implementation": "show3('p1','p6','x','p5') = highlight stem-1 + stem-6 + transformation product stem-5 on hover",
+      "decode_advantage": "React state can show MORE — not just highlight but show the formula and impact score"
+    }
+  },
+
+  "premium_features_decode_should_NOT_skip": {
+    "100_year_view": {
+      "voytek_premium": true,
+      "value": "Entire life trajectory on one screen — 10 LPs × 10 years each = 100 years all at once",
+      "decode_strategy": "Make this FREE in Decode (Voytek charges for it). Massive differentiator."
+    },
+    "famous_charts_database": {
+      "voytek_premium": false,
+      "voytek_count": "10,000+ celebrities",
+      "decode_strategy": "Build similar but with TRADER focus — 100 famous traders/CEOs (Buffett, Soros, Dalio, Musk, etc.). Compare your chart to successful market figures."
+    },
+    "search_by_pillar_combination": {
+      "voytek_premium": true,
+      "voytek_use": "Find all celebrities with 己亥 day pillar, etc.",
+      "decode_strategy": "Add same — 'Find traders with similar charts to mine' = retention hook"
+    },
+    "search_by_chart_type": {
+      "voytek_premium": true,
+      "examples": "Search Three Marvel (San Qi), Commander Nobleman (Kui Gang), Follow Wealth charts",
+      "decode_strategy": "Decode-exclusive: Search by Action Mode pattern (e.g., 'Show charts that consistently L1 EXECUTE in Fire years')"
+    }
+  },
+
+  "voytek_weaknesses_decode_can_exploit": {
+    "1_no_AI_layer": "Voytek shows raw symbols/codes (HS, EB, HHS, Fr, EG, IR, RW...) — beginners can't decode. Decode has AI translation.",
+    "2_dated_UI": "2010-era PHP design, Monda font, table-based layouts. Decode = 2026 Bloomberg aesthetic.",
+    "3_no_action_mode": "Voytek is descriptive ('here's what happened') not prescriptive ('here's what to do'). Decode L1-L6 fills this gap.",
+    "4_no_hourly_scoring": "Voytek shows hour pillars but no scoring. Decode scores every 2-hour window with go/no-go.",
+    "5_no_multi_chart_compatibility": "Can't compare 2 people's charts side-by-side automatically. Decode compatibility scoring is unique.",
+    "6_no_QMDJ_BaZi_integration": "QMDJ and BaZi are separate calculators. Decode unifies them in one decision engine.",
+    "7_no_real_time_dashboard": "Static PHP page — no live updates. Decode = real-time with WebSocket-driven Liu Shi updates.",
+    "8_no_mobile_first": "Desktop-only design with awkward mobile fallback. Decode = mobile-native PWA.",
+    "9_no_export_to_trading": "Cannot export 'good Fire days' to trading calendar/Outlook. Decode = export to Apple Calendar / Google Calendar / Notion.",
+    "10_polish_solo_dev_no_team": "14 years run by Voytek alone. No content marketing, no community, no influencers. Decode + Aeaw's metaphysics network = community moat."
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "_note": "TEST FIXTURE ONLY · ห้ามใช้กับ user จริง · ห้าม insert DB จนกว่าจะขออนุมัติ",
+  "_purpose": "regression test สำหรับ Step 3 verification",
+  "profiles": {
+    "Mai": {
+      "name": "Mai",
+      "birth_date": "1986-04-12",
+      "birth_time": "16:42",
+      "birth_lng": 100.5018,
+      "gmt": 7,
+      "gender": "F",
+      "expected_pillars": { "hour": "丙申", "day": "丙戌", "month": "壬辰", "year": "丙寅" },
+      "voytek_element_pct": null,
+      "voytek_10gods_pct": null,
+      "_status": "ขอ Voytek copy"
+    },
+    "Keng": {
+      "name": "เค็ง",
+      "birth_date": "1987-07-28",
+      "birth_time": "22:00",
+      "birth_lng": 100.5018,
+      "gmt": 7,
+      "gender": "M",
+      "expected_pillars": { "hour": "癸亥", "day": "戊寅", "month": "丁未", "year": "丁卯" },
+      "voytek_element_pct": null,
+      "voytek_10gods_pct": null,
+      "_status": "ขอ Voytek copy"
+    }
+  }
+}

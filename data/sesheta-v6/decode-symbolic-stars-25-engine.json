@@ -1,0 +1,448 @@
+{
+  "metadata": {
+    "title": "Decode Symbolic Stars Engine — 25 Stars Complete",
+    "title_th": "เครื่องยนต์ดวงดาวเชิงสัญลักษณ์ — 25 ดวง ครบสมบูรณ์",
+    "title_zh": "符号星完整引擎 — 25 颗星",
+    "description": "Complete detection algorithms + interpretation for all 25 classical Chinese metaphysics symbolic stars. Sesheta only implements 4 (Nobleman, Peach Blossom, Sky Horse, Intelligence) but has text readings for 23. Decode adds detection logic for ALL 25 + activation conditions.",
+    "source": "Classical 子平真詮 + 滴天髓 + 三命通會 + Joey Yap + verified algorithms",
+    "decode_advantage": "First Chinese metaphysics platform with full 25-star detection engine",
+    "version": "1.0",
+    "created": "2026-05-05"
+  },
+
+  "stars": [
+    {
+      "id": 1,
+      "name_en": "Tian Yi Nobleman",
+      "name_zh": "天乙貴人",
+      "name_th": "เทียนอี๋ขุนนาง",
+      "category": "Auspicious",
+      "luck_polarity": "positive",
+      "anchor_type": "day_or_year_stem",
+      "lookup_table": {
+        "甲": ["丑", "未"], "戊": ["丑", "未"], "庚": ["丑", "未"],
+        "乙": ["申", "子"], "己": ["申", "子"],
+        "丙": ["酉", "亥"], "丁": ["酉", "亥"],
+        "辛": ["寅", "午"],
+        "壬": ["卯", "巳"], "癸": ["卯", "巳"]
+      },
+      "detection": "Find 4 pillar branches matching lookup[day_stem] OR lookup[year_stem]",
+      "verbose_logic": "function detectTianYi(pillars, day_stem, year_stem) {\n  const targets = [...lookup[day_stem], ...lookup[year_stem]];\n  return ['year','month','day','hour'].filter(p => targets.includes(pillars[p]?.branch));\n}",
+      "interpretation_summary": "Heavenly mentor protection. Help arrives in crisis from unexpected sources.",
+      "interpretation_th": "ผู้ช่วยจากเทพ ขุนนางช่วยในยามวิกฤต"
+    },
+    {
+      "id": 2,
+      "name_en": "Wen Chang (Intelligence)",
+      "name_zh": "文昌",
+      "name_th": "เหวินชาง / ดาวการศึกษา",
+      "category": "Auspicious",
+      "luck_polarity": "positive",
+      "anchor_type": "day_stem",
+      "lookup_table": {
+        "甲": "巳", "乙": "午", "丙": "申", "戊": "申", "丁": "酉", "己": "酉",
+        "庚": "亥", "辛": "子", "壬": "寅", "癸": "卯"
+      },
+      "detection": "Find any of 4 branches equaling lookup[day_stem]",
+      "verbose_logic": "function detectWenChang(pillars, day_stem) {\n  const target = lookup[day_stem];\n  return ['year','month','day','hour'].filter(p => pillars[p]?.branch === target);\n}",
+      "interpretation_summary": "Academic excellence, writing talent, exam success, scholarly fame.",
+      "interpretation_th": "ความเป็นเลิศทางวิชาการ ความสำเร็จด้านการสอบ ชื่อเสียงทางปัญญา"
+    },
+    {
+      "id": 3,
+      "name_en": "Tao Hua (Peach Blossom)",
+      "name_zh": "桃花",
+      "name_th": "เถาฮัว / ดอกท้อ",
+      "category": "Mixed",
+      "luck_polarity": "neutral",
+      "anchor_type": "day_or_year_branch",
+      "lookup_table": {
+        "申": "酉", "子": "酉", "辰": "酉",
+        "寅": "卯", "午": "卯", "戌": "卯",
+        "巳": "午", "酉": "午", "丑": "午",
+        "亥": "子", "卯": "子", "未": "子"
+      },
+      "detection": "Find branch matching lookup based on Three Combo group of day/year branch",
+      "interpretation_summary": "Romance, charisma, sensuality. Year/Month = social peach blossom (good). Day/Hour = wall-breaking peach blossom (risky for marriage).",
+      "interpretation_th": "ความโรแมนติก เสน่ห์ ปี/เดือน = ดอกท้อสังคม (ดี) วัน/ชั่วโมง = ดอกท้อทะลุกำแพง (เสี่ยงต่อการแต่งงาน)"
+    },
+    {
+      "id": 4,
+      "name_en": "Yi Ma (Sky Horse / Travel)",
+      "name_zh": "驛馬",
+      "name_th": "อี้หม่า / ม้าสายลม",
+      "category": "Mobility",
+      "luck_polarity": "neutral",
+      "anchor_type": "day_or_year_branch",
+      "lookup_table": {
+        "申": "寅", "子": "寅", "辰": "寅",
+        "寅": "申", "午": "申", "戌": "申",
+        "巳": "亥", "酉": "亥", "丑": "亥",
+        "亥": "巳", "卯": "巳", "未": "巳"
+      },
+      "detection": "Find branch matching lookup based on Three Combo group",
+      "interpretation_summary": "Movement, travel, relocation, career mobility. Activated by transits brings sudden change.",
+      "interpretation_th": "การเคลื่อนที่ การเดินทาง การย้ายถิ่น เปลี่ยนงาน เมื่อถูก transit กระตุ้นจะนำการเปลี่ยนแปลงกะทันหัน"
+    },
+    {
+      "id": 5,
+      "name_en": "Hua Gai (Elegant Seal / Solitary Crown)",
+      "name_zh": "華蓋",
+      "name_th": "ฮัวก่าย / มงกุฎโดดเดี่ยว",
+      "category": "Spiritual",
+      "luck_polarity": "mixed",
+      "anchor_type": "day_or_year_branch",
+      "lookup_table": {
+        "申": "辰", "子": "辰", "辰": "辰",
+        "寅": "戌", "午": "戌", "戌": "戌",
+        "巳": "丑", "酉": "丑", "丑": "丑",
+        "亥": "未", "卯": "未", "未": "未"
+      },
+      "detection": "Find any branch in 4 pillars equal to lookup[day_branch] OR lookup[year_branch]",
+      "interpretation_summary": "Artistic genius, religious devotion, solitary brilliance. Often found in monks, artists, philosophers.",
+      "interpretation_th": "อัจฉริยะทางศิลปะ ความศรัทธาทางศาสนา ความฉลาดที่โดดเดี่ยว มักพบในนักบวช ศิลปิน นักปรัชญา"
+    },
+    {
+      "id": 6,
+      "name_en": "Jiang Xing (General Star)",
+      "name_zh": "將星",
+      "name_th": "เจียงซิ่ง / ดาวแม่ทัพ",
+      "category": "Power",
+      "luck_polarity": "positive",
+      "anchor_type": "day_or_year_branch",
+      "lookup_table": {
+        "申": "子", "子": "子", "辰": "子",
+        "寅": "午", "午": "午", "戌": "午",
+        "巳": "酉", "酉": "酉", "丑": "酉",
+        "亥": "卯", "卯": "卯", "未": "卯"
+      },
+      "detection": "Find peak branch of Three Combo group",
+      "interpretation_summary": "Leadership, command authority, military/executive power.",
+      "interpretation_th": "ความเป็นผู้นำ อำนาจสั่งการ กำลังทหาร/ผู้บริหาร"
+    },
+    {
+      "id": 7,
+      "name_en": "Tian De (Heavenly Virtue)",
+      "name_zh": "天德貴人",
+      "name_th": "เทียนเต๋อ / คุณงามจากฟ้า",
+      "category": "Auspicious",
+      "luck_polarity": "positive",
+      "anchor_type": "month_branch",
+      "lookup_table": {
+        "寅": "丁", "卯": "申", "辰": "壬",
+        "巳": "辛", "午": "亥", "未": "甲",
+        "申": "癸", "酉": "寅", "戌": "丙",
+        "亥": "乙", "子": "巳", "丑": "庚"
+      },
+      "detection": "Check if lookup[month_branch] appears in 4 stems (or 4 branches if it's a branch)",
+      "interpretation_summary": "Heavenly blessing, protection from accidents, naturally lucky person.",
+      "interpretation_th": "พรจากฟ้า ปกป้องจากอุบัติเหตุ คนโชคดีโดยธรรมชาติ"
+    },
+    {
+      "id": 8,
+      "name_en": "Yue De (Monthly Virtue)",
+      "name_zh": "月德貴人",
+      "name_th": "เยฺว่เต๋อ / คุณงามรายเดือน",
+      "category": "Auspicious",
+      "luck_polarity": "positive",
+      "anchor_type": "month_branch",
+      "lookup_table": {
+        "寅": "丙", "午": "丙", "戌": "丙",
+        "亥": "甲", "卯": "甲", "未": "甲",
+        "申": "壬", "子": "壬", "辰": "壬",
+        "巳": "庚", "酉": "庚", "丑": "庚"
+      },
+      "detection": "Check if lookup[month_branch] appears in 4 stems",
+      "interpretation_summary": "Monthly merit, kindness rewarded, protection in personal matters.",
+      "interpretation_th": "บุญประจำเดือน ความเมตตาได้รางวัล ปกป้องในเรื่องส่วนตัว"
+    },
+    {
+      "id": 9,
+      "name_en": "Lu Shen (Prosperity Star)",
+      "name_zh": "祿神",
+      "name_th": "ลู่เสิน / ดาวความเจริญ",
+      "category": "Wealth",
+      "luck_polarity": "positive",
+      "anchor_type": "day_stem",
+      "lookup_table": {
+        "甲": "寅", "乙": "卯", "丙": "巳", "戊": "巳",
+        "丁": "午", "己": "午", "庚": "申", "辛": "酉",
+        "壬": "亥", "癸": "子"
+      },
+      "detection": "Find any branch equaling lookup[day_stem]",
+      "interpretation_summary": "Prosperity through career, salary, official income, stable wealth.",
+      "interpretation_th": "ความเจริญผ่านอาชีพ เงินเดือน รายได้ทางการ ความมั่งคั่งมั่นคง"
+    },
+    {
+      "id": 10,
+      "name_en": "Yang Ren (Goat Blade)",
+      "name_zh": "羊刃",
+      "name_th": "หยางเหริน / มีดแกะ",
+      "category": "Aggression",
+      "luck_polarity": "negative",
+      "anchor_type": "day_stem",
+      "lookup_table": {
+        "甲": "卯", "丙": "午", "戊": "午",
+        "庚": "酉", "壬": "子"
+      },
+      "detection": "Yang stems only. Find branch equaling lookup[day_stem]. Position matters: Day Branch = strongest activation.",
+      "interpretation_summary": "Sharp aggressive energy. Channel into competition/surgery/military = positive. Unchanneled = accidents, conflicts, divorce.",
+      "interpretation_th": "พลังก้าวร้าวคม ปล่อยเข้าการแข่งขัน/ผ่าตัด/ทหาร = บวก ไม่มีทางออก = อุบัติเหตุ ขัดแย้ง หย่า"
+    },
+    {
+      "id": 11,
+      "name_en": "Kong Wang (Void)",
+      "name_zh": "空亡",
+      "name_th": "คงหวาง / ความว่างเปล่า",
+      "category": "Void",
+      "luck_polarity": "neutral",
+      "anchor_type": "day_pillar",
+      "calculation": "Based on 60 Jia Zi cycle. Day pillar belongs to one of 6 Xun (10-day groups). Each Xun has 2 void branches.",
+      "lookup_xun_voids": {
+        "甲子_xun": ["戌", "亥"],
+        "甲戌_xun": ["申", "酉"],
+        "甲申_xun": ["午", "未"],
+        "甲午_xun": ["辰", "巳"],
+        "甲辰_xun": ["寅", "卯"],
+        "甲寅_xun": ["子", "丑"]
+      },
+      "detection": "function getKongWang(day_stem, day_branch) {\n  const dayIdx = jiaZi60.indexOf(day_stem + day_branch);\n  const xunIdx = Math.floor(dayIdx / 10);\n  return xunVoids[xunIdx];\n}",
+      "interpretation_summary": "Hollow/empty branches. Activates on transits to feel surreal, disconnected. Can VOID negative stars or DRAIN positive ones.",
+      "interpretation_th": "เสาที่ 'ว่างเปล่า' เมื่อถูก transit จะรู้สึกเหนือจริง ขาดรากฐาน อาจ ลบ ดาวร้าย หรือ ระบาย ดาวดี"
+    },
+    {
+      "id": 12,
+      "name_en": "Tian Yi (Heavenly Doctor)",
+      "name_zh": "天醫",
+      "name_th": "เทียนอี / หมอจากฟ้า",
+      "category": "Healing",
+      "luck_polarity": "positive",
+      "anchor_type": "month_branch",
+      "lookup_table": {
+        "寅": "丑", "卯": "寅", "辰": "卯",
+        "巳": "辰", "午": "巳", "未": "午",
+        "申": "未", "酉": "申", "戌": "酉",
+        "亥": "戌", "子": "亥", "丑": "子"
+      },
+      "detection": "Find branch equaling lookup[month_branch] (one position before month branch)",
+      "interpretation_summary": "Healing power, medical aptitude, recovery from illness.",
+      "interpretation_th": "พลังการรักษา ความสามารถทางการแพทย์ การฟื้นจากความเจ็บป่วย"
+    },
+    {
+      "id": 13,
+      "name_en": "Hong Yan (Red Beauty)",
+      "name_zh": "紅艷煞",
+      "name_th": "หงเยี่ยน / ความงามสีแดง",
+      "category": "Romance",
+      "luck_polarity": "mixed",
+      "anchor_type": "day_stem",
+      "lookup_table": {
+        "甲": "午", "乙": "申", "丙": "寅", "丁": "未",
+        "戊": "辰", "己": "辰", "庚": "戌",
+        "辛": "酉", "壬": "子", "癸": "申"
+      },
+      "detection": "Find branch matching lookup[day_stem]",
+      "interpretation_summary": "Striking physical beauty, magnetic charm. Can attract wrong attention/scandals.",
+      "interpretation_th": "ความงามทางกายภาพที่โดดเด่น เสน่ห์แม่เหล็ก อาจดึงความสนใจที่ไม่พึงประสงค์"
+    },
+    {
+      "id": 14,
+      "name_en": "Tian Xi (Heavenly Joy)",
+      "name_zh": "天喜",
+      "name_th": "เทียนสี่ / ความยินดีจากฟ้า",
+      "category": "Auspicious",
+      "luck_polarity": "positive",
+      "anchor_type": "year_branch",
+      "lookup_table": {
+        "子": "酉", "丑": "申", "寅": "未", "卯": "午",
+        "辰": "巳", "巳": "辰", "午": "卯", "未": "寅",
+        "申": "丑", "酉": "子", "戌": "亥", "亥": "戌"
+      },
+      "detection": "Find branch matching lookup[year_branch]",
+      "interpretation_summary": "Joyful events: marriage, birth, promotions. Activated in transits brings celebrations.",
+      "interpretation_th": "เหตุการณ์น่ายินดี: แต่งงาน คลอด เลื่อนตำแหน่ง เมื่อถูก transit นำการเฉลิมฉลอง"
+    },
+    {
+      "id": 15,
+      "name_en": "Hong Luan (Red Phoenix / Red Bird)",
+      "name_zh": "紅鸞",
+      "name_th": "หงหลวน / นกแดง",
+      "category": "Romance",
+      "luck_polarity": "positive",
+      "anchor_type": "year_branch",
+      "lookup_table": {
+        "子": "卯", "丑": "寅", "寅": "丑", "卯": "子",
+        "辰": "亥", "巳": "戌", "午": "酉", "未": "申",
+        "申": "未", "酉": "午", "戌": "巳", "亥": "辰"
+      },
+      "detection": "Find branch matching lookup[year_branch]. Activates in transit years for marriage timing.",
+      "interpretation_summary": "Marriage timing star. When activated by transit, signals romantic union or wedding.",
+      "interpretation_th": "ดาวเวลาแต่งงาน เมื่อถูก transit กระตุ้น ชี้การรวมตัวโรแมนติกหรืองานแต่ง"
+    },
+    {
+      "id": 16,
+      "name_en": "Gu Chen (Solitary)",
+      "name_zh": "孤辰",
+      "name_th": "กู่เฉิน / ตอนเช้าโดดเดี่ยว",
+      "category": "Isolation",
+      "luck_polarity": "negative",
+      "anchor_type": "year_branch",
+      "lookup_table": {
+        "亥子丑": "寅", "寅卯辰": "巳",
+        "巳午未": "申", "申酉戌": "亥"
+      },
+      "detection": "Find branch matching lookup based on year_branch's seasonal group (next directional group after current)",
+      "interpretation_summary": "Loneliness for males primarily. Difficulty maintaining relationships, prefers solo work.",
+      "interpretation_th": "ความเหงาโดยเฉพาะชาย ลำบากรักษาความสัมพันธ์ ชอบทำงานคนเดียว"
+    },
+    {
+      "id": 17,
+      "name_en": "Gua Su (Lonesome Widow)",
+      "name_zh": "寡宿",
+      "name_th": "กว่าซู่ / หญิงม่ายเหงา",
+      "category": "Isolation",
+      "luck_polarity": "negative",
+      "anchor_type": "year_branch",
+      "lookup_table": {
+        "亥子丑": "戌", "寅卯辰": "丑",
+        "巳午未": "辰", "申酉戌": "未"
+      },
+      "detection": "Find branch matching lookup (previous directional group)",
+      "interpretation_summary": "Loneliness for females primarily. Late marriage, widowhood patterns.",
+      "interpretation_th": "ความเหงาโดยเฉพาะหญิง แต่งงานช้า รูปแบบเป็นม่าย"
+    },
+    {
+      "id": 18,
+      "name_en": "Sang Men (Funeral Door)",
+      "name_zh": "喪門",
+      "name_th": "ซางเหมิน / ประตูงานศพ",
+      "category": "Loss",
+      "luck_polarity": "negative",
+      "anchor_type": "year_branch",
+      "lookup_table": {
+        "子": "寅", "丑": "卯", "寅": "辰", "卯": "巳",
+        "辰": "午", "巳": "未", "午": "申", "未": "酉",
+        "申": "戌", "酉": "亥", "戌": "子", "亥": "丑"
+      },
+      "detection": "Find branch matching lookup[year_branch] (2 positions forward)",
+      "interpretation_summary": "Death/loss in family, funeral attendance, inheritance complications.",
+      "interpretation_th": "การตาย/สูญเสียในครอบครัว เข้าร่วมงานศพ ความซับซ้อนในมรดก"
+    },
+    {
+      "id": 19,
+      "name_en": "Diao Ke (Hanging Guest)",
+      "name_zh": "弔客",
+      "name_th": "เตี้ยวเค่อ / แขกแขวน",
+      "category": "Loss",
+      "luck_polarity": "negative",
+      "anchor_type": "year_branch",
+      "lookup_table": {
+        "子": "戌", "丑": "亥", "寅": "子", "卯": "丑",
+        "辰": "寅", "巳": "卯", "午": "辰", "未": "巳",
+        "申": "午", "酉": "未", "戌": "申", "亥": "酉"
+      },
+      "detection": "Find branch matching lookup (2 positions backward from year branch)",
+      "interpretation_summary": "Mourning energy, sympathy events, attending sad gatherings.",
+      "interpretation_th": "พลังการไว้อาลัย เหตุการณ์เห็นใจ เข้าร่วมการรวมตัวเศร้า"
+    },
+    {
+      "id": 20,
+      "name_en": "Jie Sha (Robbery Sha)",
+      "name_zh": "劫煞",
+      "name_th": "เจี๋ยซา / ซาปล้น",
+      "category": "Loss",
+      "luck_polarity": "negative",
+      "anchor_type": "day_or_year_branch",
+      "lookup_table": {
+        "申子辰": "巳", "寅午戌": "亥",
+        "巳酉丑": "寅", "亥卯未": "申"
+      },
+      "detection": "Find branch matching lookup based on Three Combo group (opposite of Yi Ma)",
+      "interpretation_summary": "Theft, fraud, betrayal by trusted persons, sudden financial loss.",
+      "interpretation_th": "การโจรกรรม การฉ้อโกง การทรยศจากคนไว้วางใจ การสูญเสียทางการเงินกะทันหัน"
+    },
+    {
+      "id": 21,
+      "name_en": "Wang Shen (Death God)",
+      "name_zh": "亡神",
+      "name_th": "หวางเสิน / เทพมรณะ",
+      "category": "Loss",
+      "luck_polarity": "negative",
+      "anchor_type": "day_or_year_branch",
+      "lookup_table": {
+        "申子辰": "亥", "寅午戌": "巳",
+        "巳酉丑": "申", "亥卯未": "寅"
+      },
+      "detection": "Find branch matching lookup based on Three Combo group",
+      "interpretation_summary": "Mental traps, paranoia, accidents from carelessness, sudden mishaps.",
+      "interpretation_th": "กับดักทางจิต หวาดระแวง อุบัติเหตุจากความประมาท เหตุไม่คาดคิดกะทันหัน"
+    },
+    {
+      "id": 22,
+      "name_en": "Xian Chi (Salty Pool)",
+      "name_zh": "鹹池",
+      "name_th": "เซียนฉือ / สระน้ำเค็ม",
+      "category": "Romance",
+      "luck_polarity": "negative",
+      "anchor_type": "day_or_year_branch",
+      "lookup_table": {
+        "申子辰": "酉", "寅午戌": "卯",
+        "巳酉丑": "午", "亥卯未": "子"
+      },
+      "detection": "Same as Tao Hua (Peach Blossom) — same calculation, considered alternate name with deeper sensual meaning",
+      "interpretation_summary": "Sensual indulgence, addiction patterns, drowning in pleasure.",
+      "interpretation_th": "ความหลงไหลทางเพศ รูปแบบเสพติด การจมในความสุข"
+    },
+    {
+      "id": 23,
+      "name_en": "Jin Yu (Gold Carriage)",
+      "name_zh": "金輿",
+      "name_th": "จินอวี้ / รถทองคำ",
+      "category": "Wealth",
+      "luck_polarity": "positive",
+      "anchor_type": "day_stem",
+      "lookup_table": {
+        "甲": "辰", "乙": "巳", "丙": "未", "丁": "申",
+        "戊": "未", "己": "申", "庚": "戌", "辛": "亥",
+        "壬": "丑", "癸": "寅"
+      },
+      "detection": "Find branch equaling lookup[day_stem]. Two positions ahead of Lu Shen.",
+      "interpretation_summary": "Marriage to wealthy spouse, luxury inheritance, transportation in style.",
+      "interpretation_th": "แต่งกับคู่สมรสร่ำรวย มรดกหรู การเดินทางอย่างมีระดับ"
+    },
+    {
+      "id": 24,
+      "name_en": "Jiang Du (Cascading Clouds)",
+      "name_zh": "將都 / 學堂",
+      "name_th": "เจียงตู / กลุ่มเมฆไหล",
+      "category": "Academic",
+      "luck_polarity": "positive",
+      "anchor_type": "day_stem_combo",
+      "lookup_table": {
+        "甲": "亥", "丙": "寅", "戊": "寅",
+        "庚": "巳", "壬": "申",
+        "乙": "午", "丁": "酉", "己": "酉",
+        "辛": "子", "癸": "卯"
+      },
+      "detection": "Combines Wen Chang + Lu Shen. Branch must match Wen Chang for stem AND be Long Sheng (long-life) phase.",
+      "interpretation_summary": "Study Hall — academic mastery, teaching ability, intellectual fame.",
+      "interpretation_th": "ห้องเรียน — ความเชี่ยวชาญทางวิชาการ ความสามารถสอน ชื่อเสียงทางปัญญา"
+    },
+    {
+      "id": 25,
+      "name_en": "Fei Ren (Flying Blade)",
+      "name_zh": "飛刃",
+      "name_th": "เฟยเหริน / มีดบิน",
+      "category": "Aggression",
+      "luck_polarity": "negative",
+      "anchor_type": "day_stem",
+      "lookup_table": {
+        "甲": "酉", "丙": "子", "戊": "子",
+        "庚": "卯", "壬": "午"
+      },
+      "detection": "Yang stems only. Find branch matching lookup (opposite of Yang Ren / clash of Yang Ren)",
+      "interpretation_summary": "Long-distance harm, betrayal from afar, accidents involving sharp objects/vehicles.",
+      "interpretation_th": "ภัยระยะไกล การทรยศจากที่ไกล อุบัติเหตุที่เกี่ยวข้องของแหลม/ยานพาหนะ"
+    }
+  ]
+}

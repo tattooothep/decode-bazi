@@ -1,0 +1,52 @@
+[
+  {
+    "chinese": "偏財",
+    "english": "The Pioneer (Indirect Wealth)",
+    "abbr": "IW"
+  },
+  {
+    "chinese": "七殺",
+    "english": "The Warrior (Seven Killings)",
+    "abbr": "7K"
+  },
+  {
+    "chinese": "正財",
+    "english": "The Director (Direct Wealth)",
+    "abbr": "DW"
+  },
+  {
+    "chinese": "傷官",
+    "english": "The Performer (Hurting Officer)",
+    "abbr": "HO"
+  },
+  {
+    "chinese": "食神",
+    "english": "The Artist (Eating God)",
+    "abbr": "EG"
+  },
+  {
+    "chinese": "比肩",
+    "english": "The Friend (Friend)",
+    "abbr": "Rob"
+  },
+  {
+    "chinese": "劫財",
+    "english": "The Leader (Rob Wealth)",
+    "abbr": "RW"
+  },
+  {
+    "chinese": "正印",
+    "english": "The Analyzer (Direct Resource)",
+    "abbr": "DR"
+  },
+  {
+    "chinese": "正官",
+    "english": "The Diplomat (Direct Officer)",
+    "abbr": "DO"
+  },
+  {
+    "chinese": "偏印",
+    "english": "The Philosopher (Indirect Resource)",
+    "abbr": "IR"
+  }
+]

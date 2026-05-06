@@ -1,0 +1,168 @@
+{
+  "stem_combinations_and_transformations": {
+    "甲": {
+      "partner": "己",
+      "element": "Earth",
+      "allowedBranches": [
+        "辰",
+        "午",
+        "戌"
+      ]
+    },
+    "己": {
+      "partner": "甲",
+      "element": "Earth"
+    },
+    "乙": {
+      "partner": "庚",
+      "element": "Metal",
+      "allowedBranches": [
+        "丑",
+        "未",
+        "酉"
+      ]
+    },
+    "庚": {
+      "partner": "乙",
+      "element": "Metal"
+    },
+    "丙": {
+      "partner": "辛",
+      "element": "Water",
+      "allowedBranches": [
+        "子",
+        "辰",
+        "申"
+      ]
+    },
+    "辛": {
+      "partner": "丙",
+      "element": "Water",
+      "allowedBranches": [
+        "亥"
+      ]
+    },
+    "丁": {
+      "partner": "壬",
+      "element": "Wood",
+      "allowedBranches": [
+        "亥",
+        "卯"
+      ]
+    },
+    "壬": {
+      "partner": "丁",
+      "element": "Wood",
+      "allowedBranches": [
+        "寅",
+        "辰"
+      ]
+    },
+    "戊": {
+      "partner": "癸",
+      "element": "Fire",
+      "allowedBranches": [
+        "寅",
+        "午"
+      ]
+    },
+    "癸": {
+      "partner": "戊",
+      "element": "Fire",
+      "allowedBranches": [
+        "卯",
+        "巳"
+      ]
+    }
+  },
+  "element_supporting_branches": {
+    "Earth": [
+      "辰",
+      "戌",
+      "丑",
+      "未",
+      "巳",
+      "午"
+    ],
+    "Fire": [
+      "巳",
+      "午",
+      "未",
+      "寅",
+      "卯"
+    ],
+    "Metal": [
+      "申",
+      "酉",
+      "戌",
+      "辰",
+      "丑"
+    ],
+    "Water": [
+      "亥",
+      "子",
+      "丑",
+      "申",
+      "酉"
+    ],
+    "Wood": [
+      "寅",
+      "卯",
+      "辰",
+      "亥",
+      "子"
+    ]
+  },
+  "three_branch_directional": {
+    "Earth": [],
+    "Fire": [
+      "巳",
+      "午",
+      "未"
+    ],
+    "Metal": [
+      "申",
+      "酉",
+      "戌"
+    ],
+    "Water": [
+      "亥",
+      "子",
+      "丑"
+    ],
+    "Wood": [
+      "寅",
+      "卯",
+      "辰"
+    ]
+  },
+  "three_branch_trinity": {
+    "Earth": [],
+    "Fire": [
+      [
+        "午",
+        "寅",
+        "戌"
+      ]
+    ],
+    "Metal": [
+      [
+        "丑",
+        "酉"
+      ]
+    ],
+    "Water": [
+      [
+        "申",
+        "子"
+      ]
+    ],
+    "Wood": [
+      [
+        "卯",
+        "亥",
+        "未"
+      ]
+    ]
+  }
+}

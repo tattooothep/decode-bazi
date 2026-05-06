@@ -1,0 +1,61 @@
+{
+  "phase_12_order": [
+    "長生",
+    "沐浴",
+    "冠帶",
+    "臨官",
+    "帝旺",
+    "衰",
+    "病",
+    "死",
+    "墓",
+    "絕",
+    "胎",
+    "養"
+  ],
+  "phase_12_th": [
+    "ฟื้นฟู",
+    "อาบน้ำ",
+    "สวมหมวก",
+    "รับตำแหน่ง",
+    "รุ่งเรือง",
+    "เสื่อม",
+    "ป่วย",
+    "ตาย",
+    "ฝัง",
+    "ดับสูญ",
+    "ตั้งครรภ์",
+    "บำรุง"
+  ],
+  "phase_12_multipliers": {
+    "帝旺": 1.5,
+    "臨官": 1.4,
+    "長生": 1.3,
+    "冠帶": 1.2,
+    "沐浴": 1.1,
+    "衰": 0.9,
+    "病": 0.8,
+    "死": 0.7,
+    "墓": 0.6,
+    "絕": 0.5,
+    "胎": 0.6,
+    "養": 0.7
+  },
+  "rooting_count_multipliers": {
+    "0": 1.0,
+    "1": 1.0,
+    "2": 0.6,
+    "3": 0.25
+  },
+  "position_weights": {
+    "year": 0.8,
+    "month": 1.6,
+    "day": 1.0,
+    "hour": 0.9
+  },
+  "thresholds": {
+    "follower": 0.8,
+    "fake_follower": 0.5
+  },
+  "notes": "Sesheta uses these to calculate Day Master strength percentage. Month pillar is strongest (1.6x) which matches BaZi tradition."
+}

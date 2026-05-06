@@ -1,0 +1,115 @@
+{
+  "metadata": {
+    "title": "六破 Six Destructions",
+    "title_th": "ลิ่วโผ่ การทำลายหก",
+    "description": "Six pairs of branches that destabilize each other through mutual undermining. Sesheta does NOT track this; Decode-exclusive feature.",
+    "source": "Classical BaZi 子平真詮",
+    "decoded_by": "Aeaw + Claude (Decode v1)",
+    "version": "1.0"
+  },
+
+  "destruction_pairs": [
+    {
+      "id": 1,
+      "branches": ["子", "酉"],
+      "animals": ["Rat", "Rooster"],
+      "elements": ["Water", "Metal"],
+      "type": "Resource-Destruction",
+      "domain_primary": "Career & Status",
+      "domain_secondary": "Mentor relationships",
+      "intensity": "Moderate-High",
+      "trigger_condition": "Both branches present in 4 pillars",
+      "interpretation_en": "Career instability through unreliable mentors. Wisdom (Metal) attempts to nourish ambition (Water) but the relationship sours — guidance becomes criticism. Promotions delayed by political infighting.",
+      "interpretation_th": "อาชีพไม่มั่นคงจากที่ปรึกษาที่ไว้ใจไม่ได้ ปัญญา (โลหะ) พยายามหล่อเลี้ยงความทะเยอทะยาน (น้ำ) แต่ความสัมพันธ์เปรี้ยว — คำแนะนำกลายเป็นคำวิจารณ์ การเลื่อนตำแหน่งล่าช้าจากการเมืองภายใน",
+      "remediation": "Strengthen Wood (output) to drain excess Water; honor mentors with formal gratitude rituals",
+      "strength_modifier": -0.15
+    },
+    {
+      "id": 2,
+      "branches": ["丑", "辰"],
+      "animals": ["Ox", "Dragon"],
+      "elements": ["Earth (cold/wet)", "Earth (warm/wet)"],
+      "type": "Wealth-Destruction",
+      "domain_primary": "Wealth & Inheritance",
+      "domain_secondary": "Family property",
+      "intensity": "High",
+      "trigger_condition": "Both branches present, especially in Year-Month or Day-Hour",
+      "interpretation_en": "Earth-on-Earth wealth disputes. Two storage branches with different temperatures — money comes through family but creates conflict over inheritance, property division, or business partnership splits. Real estate transactions delayed.",
+      "interpretation_th": "ดิน-ต่อ-ดิน ข้อพิพาททรัพย์สิน เสาเก็บกักสองเสาที่อุณหภูมิต่างกัน — เงินมาจากครอบครัวแต่สร้างความขัดแย้งเรื่องมรดก การแบ่งทรัพย์สิน หรือการแยกหุ้นส่วนทางธุรกิจ ธุรกรรมอสังหาริมทรัพย์ล่าช้า",
+      "remediation": "Add Metal element to mediate (forms 三會 with neighbors); avoid joint property ownership",
+      "strength_modifier": -0.20
+    },
+    {
+      "id": 3,
+      "branches": ["寅", "亥"],
+      "animals": ["Tiger", "Pig"],
+      "elements": ["Wood (Yang)", "Water (Yin)"],
+      "type": "Combine-Destroy Paradox",
+      "domain_primary": "Mentor & Resource",
+      "domain_secondary": "Education & Authority",
+      "intensity": "Low (paradoxical — also forms 六合)",
+      "trigger_condition": "Both present AND blocked by clash with 申 or 巳",
+      "interpretation_en": "Paradoxical pair — normally form 六合 Six Combination producing Wood, but if blocked, the destruction pattern emerges instead. Mentor relationship that should nourish becomes obstructive. Studies interrupted by authority figures.",
+      "interpretation_th": "คู่ขัดแย้ง — โดยปกติเป็น 六合 รวมหกผลิตไม้ แต่หากถูกขัด รูปแบบการทำลายจะเกิดแทน ความสัมพันธ์ที่ปรึกษาที่ควรหล่อเลี้ยงกลับขัดขวาง การศึกษาถูกขัดจังหวะโดยผู้มีอำนาจ",
+      "remediation": "Remove blockers (申 Monkey or 巳 Snake) through timing; ensure clear seasonal Wood support",
+      "strength_modifier": -0.10
+    },
+    {
+      "id": 4,
+      "branches": ["卯", "午"],
+      "animals": ["Rabbit", "Horse"],
+      "elements": ["Wood (Yin)", "Fire (Yang)"],
+      "type": "Burnout Destruction",
+      "domain_primary": "Output & Creativity",
+      "domain_secondary": "Health (heart/eyes)",
+      "intensity": "High",
+      "trigger_condition": "Both present, especially when Day Master is Wood or weak",
+      "interpretation_en": "Wood feeds Fire excessively — creative burnout. The yin Wood (Rabbit) burns itself out fueling yang Fire (Horse). Manifests as exhaustion, eye strain, heart palpitations, creative depletion. Common in artists, performers, public-facing professionals.",
+      "interpretation_th": "ไม้เลี้ยงไฟมากเกินไป — หมดไฟสร้างสรรค์ ไม้หยิน (กระต่าย) เผาตัวเองเลี้ยงไฟหยาง (ม้า) แสดงเป็นความอ่อนล้า ตาเครียด ใจสั่น ความคิดสร้างสรรค์หมด พบบ่อยในศิลปิน นักแสดง คนทำงานหน้าสาธารณะ",
+      "remediation": "Add Water (rest, reflection) to balance; reduce screen time; protect creative output by enforcing rest periods",
+      "strength_modifier": -0.18
+    },
+    {
+      "id": 5,
+      "branches": ["巳", "申"],
+      "animals": ["Snake", "Monkey"],
+      "elements": ["Fire (Yin)", "Metal (Yang)"],
+      "type": "Self-Defeating Ambition",
+      "domain_primary": "Wealth & Authority",
+      "domain_secondary": "Legal/contractual",
+      "intensity": "High (also paradoxical — forms 六合 producing Water)",
+      "trigger_condition": "Both present, especially in Day-Hour or Month-Year",
+      "interpretation_en": "Fire melts Metal but Metal cuts Fire's source — self-defeating ambition. The pair can also COMBINE into Water, creating a paradox where ambition either transforms (good) or destroys (bad). Legal disputes, contract reversals, ambition that backfires.",
+      "interpretation_th": "ไฟละลายโลหะแต่โลหะตัดต้นกำเนิดไฟ — ความทะเยอทะยานทำลายตัวเอง คู่นี้สามารถ รวม เป็นน้ำได้ สร้างความขัดแย้งที่ความทะเยอทะยานอาจแปรเปลี่ยน (ดี) หรือทำลาย (เลว) ข้อพิพาททางกฎหมาย การกลับสัญญา ความทะเยอทะยานย้อนกลับมาทำร้าย",
+      "remediation": "If Water is favorable element: encourage 六合 transformation. If unfavorable: break apart with 寅 (Tiger) clash",
+      "strength_modifier": -0.15
+    },
+    {
+      "id": 6,
+      "branches": ["未", "戌"],
+      "animals": ["Goat", "Dog"],
+      "elements": ["Earth (warm/dry)", "Earth (warm/dry)"],
+      "type": "Earth-Inheritance Destruction",
+      "domain_primary": "Inheritance & Legacy",
+      "domain_secondary": "Family business succession",
+      "intensity": "Moderate-High",
+      "trigger_condition": "Both present (also part of 三刑 Earth Punishment with 丑)",
+      "interpretation_en": "Two dry-Earth storage branches collide — inheritance disputes. Family business succession battles, generational property fights, sibling rivalry over parental assets. If 丑 also present, escalates to full 三刑 Earth Punishment (severe).",
+      "interpretation_th": "เสาเก็บกักดินแห้งสองเสาชนกัน — ข้อพิพาทมรดก การสืบทอดธุรกิจครอบครัว การต่อสู้ทรัพย์สินข้ามรุ่น พี่น้องแย่งทรัพย์สินผู้ปกครอง หากมี 丑 (วัว) ด้วย ยกระดับเป็น 三刑 ดินลงโทษเต็มรูปแบบ (รุนแรง)",
+      "remediation": "Add Water to soften dry Earth; formal succession planning; mediator (Metal element)",
+      "strength_modifier": -0.17
+    }
+  ],
+
+  "calculation_logic": {
+    "detection_function": "function detectSixDestructions(pillars) {\n  const branches = [pillars.year.branch, pillars.month.branch, pillars.day.branch, pillars.hour.branch];\n  const destructions = [];\n  for (const pair of DESTRUCTION_PAIRS) {\n    if (branches.includes(pair.branches[0]) && branches.includes(pair.branches[1])) {\n      destructions.push(pair);\n    }\n  }\n  return destructions;\n}",
+    "intensity_modifier": "Each destruction reduces overall chart harmony by strength_modifier. Sum total caps at -0.50 to prevent over-penalty.",
+    "interaction_with_sesheta": "Apply AFTER Sesheta's 9 reactions (sanHui, sanHe, liuHe, etc.) since destructions are weaker than combinations. If a destruction branch is also locked in a combination, the destruction is suppressed."
+  },
+
+  "decode_advantage": {
+    "competitive_edge": "Sesheta's vendor-bazi-engine.js does NOT include 六破 Six Destructions logic. Verified by searching for keywords: '破', 'destruction', 'sixDestruction' — all absent.",
+    "why_it_matters": "六破 catches subtle dysfunctions that 沖 (Clash) and 害 (Harm) miss. Particularly important for Aeaw's chart (己亥 Day): 亥 paired with 寅 in luck cycles activates Pair #3 paradox.",
+    "implementation": "Add as 10th branch reaction layer in scoring-engine.js; integrate into Daily Trader Engine for finer-grained risk detection."
+  }
+}

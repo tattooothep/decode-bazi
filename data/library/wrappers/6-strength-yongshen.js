@@ -1,0 +1,227 @@
+/**
+ * Wrapper 6 · Strength Scoring + Yongshen Bridge
+ *
+ * รวม:
+ *   - 12 phases multiplier (帝旺 · 臨官 · ...)
+ *   - Position weights (Month 1.6 · Day 1.0 · Hour 0.9 · Year 0.8)
+ *   - Rooting count
+ *   - Useful god alignment (จาก Wrapper 4)
+ *   - Crisis bridge (จาก Wrapper 5)
+ *
+ * Output:
+ *   { strength: {percent, level, polarity}, yongshenFinal: [...], confidence }
+ */
+
+const S = require('./shared');
+const { getUsefulGod } = require('./4-useful-god');
+const { tiaoHouAnalysis } = require('./5-tiao-hou');
+const { STRENGTH_LABEL, ELEMENT_NAME } = require('./narrative');
+
+const STRENGTH_LEVELS = [
+  { code: 'extremely_weak',   min: 0,   max: 20  },
+  { code: 'very_weak',        min: 20,  max: 35  },
+  { code: 'weak',             min: 35,  max: 45  },
+  { code: 'slightly_weak',    min: 45,  max: 50  },
+  { code: 'balanced',         min: 50,  max: 55  },
+  { code: 'slightly_strong',  min: 55,  max: 65  },
+  { code: 'strong',           min: 65,  max: 80  },
+  { code: 'very_strong',      min: 80,  max: 92  },
+  { code: 'extremely_strong', min: 92,  max: 101 },
+];
+
+function levelFromPercent(p) {
+  for (const l of STRENGTH_LEVELS) {
+    if (p >= l.min && p < l.max) return l.code;
+  }
+  return 'balanced';
+}
+
+function rootCount(stem, natal) {
+  // Count how many branches contain hidden stems of same element as DM stem
+  const dmEl = S.STEM_ELEMENT[stem];
+  const positions = ['year','month','day','hour'];
+  let count = 0;
+  for (const pos of positions) {
+    const branchEl = S.BRANCH_ELEMENT[natal[pos].branch];
+    if (branchEl === dmEl) count++;
+    // Check hidden stems too
+    const hs = S.HIDDEN_STEMS[natal[pos].branch];
+    if (hs?.middle && S.STEM_ELEMENT[hs.middle] === dmEl) count += 0.5;
+    if (hs?.residual && S.STEM_ELEMENT[hs.residual] === dmEl) count += 0.3;
+  }
+  return Math.round(count * 10) / 10;
+}
+
+function computeStrength(natal) {
+  const dm = natal.day.stem;
+  const dmEl = S.STEM_ELEMENT[dm];
+  const positions = ['year','month','day','hour'];
+
+  // 1. Phase score (DM in each branch)
+  let phaseScore = 0;
+  for (const pos of positions) {
+    const branch = natal[pos].branch;
+    const phase = S.twelvePhase(dm, branch);
+    const mult = S.TWELVE_PHASE_MULT[phase] || 1.0;
+    const posWeight = S.POSITION_WEIGHT[pos];
+    phaseScore += mult * posWeight;
+  }
+  // Normalize: max ~7.5 (1.5*4 weights) → /7.5*100
+  const phasePct = (phaseScore / 7.5) * 100;
+
+  // 2. Element ratio
+  const counts = { wood:0, fire:0, earth:0, metal:0, water:0 };
+  for (const pos of positions) {
+    counts[S.STEM_ELEMENT[natal[pos].stem]]++;
+    counts[S.BRANCH_ELEMENT[natal[pos].branch]]++;
+    const hs = S.HIDDEN_STEMS[natal[pos].branch];
+    if (hs?.main) counts[S.STEM_ELEMENT[hs.main]] += 0.5;
+  }
+  const total = Object.values(counts).reduce((a,b) => a+b, 0);
+  const friendlyElements = [dmEl, S.ELEMENT_PRODUCES[Object.keys(S.ELEMENT_PRODUCES).find(k => S.ELEMENT_PRODUCES[k] === dmEl)]];
+  const friendlyShare = friendlyElements.reduce((s, el) => s + (counts[el] || 0), 0);
+  const friendlyPct = (friendlyShare / total) * 100;
+
+  // 3. Roots
+  const roots = rootCount(dm, natal);
+  const rootMult = roots === 0 ? 0.6 : roots <= 1 ? 1.0 : roots <= 2.5 ? 1.15 : 1.25;
+
+  // Combine: weighted average
+  const rawPct = (phasePct * 0.4 + friendlyPct * 0.4 + roots * 10 * 0.2) * rootMult;
+  const percent = Math.round(Math.max(0, Math.min(100, rawPct)));
+  const level = levelFromPercent(percent);
+
+  // Polarity
+  const polarity = percent >= 50 ? 'strong-side' : 'weak-side';
+
+  return {
+    percent,
+    level,
+    levelLabel: STRENGTH_LABEL[level],
+    polarity,
+    detail: {
+      phaseScore: Math.round(phaseScore * 100) / 100,
+      phasePct: Math.round(phasePct),
+      friendlyPct: Math.round(friendlyPct),
+      roots,
+      rootMult,
+      counts,
+    },
+  };
+}
+
+function bridgeYongshen(natal) {
+  // 1. Get base 5-rank
+  const dm = natal.day.stem;
+  const ug = getUsefulGod(dm);
+  // 2. Get climate adjustment
+  const climate = tiaoHouAnalysis(natal);
+  // 3. Get strength (อ่อน → ใช้ resource/parallel · แกร่ง → ใช้ wealth/officer/output)
+  const strength = computeStrength(natal);
+
+  // Adjust ranking based on strength + climate
+  const adjusted = ug.ranks.map(r => ({ ...r, finalScore: 5 - r.rank, reason: ['base rank'] }));
+
+  // Boost climate regulator
+  if (climate.regulator) {
+    for (const r of adjusted) {
+      if (r.element === climate.regulator) {
+        r.finalScore += 3;
+        r.reason.push(`climate ${climate.climate} → ${climate.regulator}`);
+      }
+      if (r.element === climate.bridge) {
+        r.finalScore += 1.5;
+        r.reason.push(`climate bridge ${climate.bridge}`);
+      }
+    }
+  }
+
+  // Strength adjustment
+  if (strength.polarity === 'weak-side') {
+    // boost resource (produces DM) + parallel (same as DM)
+    const dmEl = S.STEM_ELEMENT[dm];
+    const resourceEl = Object.keys(S.ELEMENT_PRODUCES).find(k => S.ELEMENT_PRODUCES[k] === dmEl);
+    for (const r of adjusted) {
+      if (r.element === dmEl) { r.finalScore += 1; r.reason.push('boost DM (weak)'); }
+      if (r.element === resourceEl) { r.finalScore += 1.5; r.reason.push('boost resource (weak)'); }
+    }
+  } else {
+    // boost wealth/officer/output
+    const dmEl = S.STEM_ELEMENT[dm];
+    const wealthEl = S.ELEMENT_CONTROLS[dmEl];
+    const officerEl = Object.keys(S.ELEMENT_CONTROLS).find(k => S.ELEMENT_CONTROLS[k] === dmEl);
+    const outputEl = S.ELEMENT_PRODUCES[dmEl];
+    for (const r of adjusted) {
+      if (r.element === wealthEl)  { r.finalScore += 1.2; r.reason.push('boost wealth (strong)'); }
+      if (r.element === officerEl) { r.finalScore += 1;   r.reason.push('boost officer (strong)'); }
+      if (r.element === outputEl)  { r.finalScore += 0.8; r.reason.push('boost output (strong)'); }
+    }
+  }
+
+  adjusted.sort((a,b) => b.finalScore - a.finalScore);
+
+  return {
+    dayMaster: dm,
+    strength,
+    climate,
+    yongshenFinal: adjusted.slice(0, 3).map(r => ({
+      stem: r.stem,
+      element: r.element,
+      elementName: r.elementName,
+      finalScore: Math.round(r.finalScore * 10) / 10,
+      reason: r.reason,
+    })),
+    confidence: strength.detail.roots > 0 ? 'high' : 'moderate',
+  };
+}
+
+// ─── unit tests ──────────────────────────────────────────────
+function testCases() {
+  console.log('=== Strength + Yongshen Bridge unit tests ===');
+
+  // Aeaw 己 (cold winter chart · weak)
+  const aeaw = {year:{stem:'甲',branch:'子'},month:{stem:'丙',branch:'子'},day:{stem:'己',branch:'亥'},hour:{stem:'辛',branch:'未'}};
+  const r1 = bridgeYongshen(aeaw);
+  console.log('\n  Aeaw 己:');
+  console.log('    strength:', r1.strength.percent, '% ·', r1.strength.level);
+  console.log('    climate :', r1.climate.climate, '·', r1.climate.regulator);
+  console.log('    top 3 yongshen:', r1.yongshenFinal.map(y => `${y.stem}(${y.element})`).join(' · '));
+
+  // Mai 丙 (damp earth · strong fire dominant)
+  const mai = {year:{stem:'丙',branch:'寅'},month:{stem:'壬',branch:'辰'},day:{stem:'丙',branch:'戌'},hour:{stem:'丙',branch:'申'}};
+  const r2 = bridgeYongshen(mai);
+  console.log('\n  Mai 丙:');
+  console.log('    strength:', r2.strength.percent, '% ·', r2.strength.level);
+  console.log('    climate :', r2.climate.climate, '·', r2.climate.regulator);
+  console.log('    top 3 yongshen:', r2.yongshenFinal.map(y => `${y.stem}(${y.element})`).join(' · '));
+
+  // 2026-05-06 庚 (scorched summer · should be balanced/strong)
+  const today = {year:{stem:'丙',branch:'午'},month:{stem:'癸',branch:'巳'},day:{stem:'庚',branch:'辰'},hour:{stem:'庚',branch:'辰'}};
+  const r3 = bridgeYongshen(today);
+  console.log('\n  2026-05-06 庚:');
+  console.log('    strength:', r3.strength.percent, '% ·', r3.strength.level);
+  console.log('    climate :', r3.climate.climate, '·', r3.climate.regulator);
+  console.log('    top 3 yongshen:', r3.yongshenFinal.map(y => `${y.stem}(${y.element})`).join(' · '));
+
+  // Sanity: scores ใน range
+  const okRange = r1.strength.percent >= 0 && r1.strength.percent <= 100 &&
+                  r2.strength.percent >= 0 && r2.strength.percent <= 100 &&
+                  r3.strength.percent >= 0 && r3.strength.percent <= 100;
+  console.log('\n  All percents in [0,100]:', okRange ? '✓' : '✗');
+
+  // Sanity: yongshen returned 3 items
+  const ok3 = r1.yongshenFinal.length === 3 && r2.yongshenFinal.length === 3 && r3.yongshenFinal.length === 3;
+  console.log('  Top 3 yongshen returned:', ok3 ? '✓' : '✗');
+
+  return okRange && ok3;
+}
+
+function runAll() {
+  const ok = testCases();
+  console.log('\n→ Wrapper 6 tests:', ok ? '✅ ALL PASS' : '❌ FAIL');
+  return ok;
+}
+
+module.exports = { computeStrength, bridgeYongshen, runAll };
+
+if (require.main === module) runAll();

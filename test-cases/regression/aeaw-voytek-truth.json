@@ -1,0 +1,10 @@
+{
+  "name": "Aeaw 1984-12-31 13:15 BKK",
+  "voytek_pillars": { "hour": "庚午", "day": "己亥", "month": "丙子", "year": "甲子" },
+  "voytek_element_pct": { "wood": 12, "fire": 24, "earth": 4, "metal": 9, "water": 51 },
+  "voytek_10gods_pct": {
+    "DirOfficer": 12, "QiSha": 0, "DirResource": 14, "IndResource": 10,
+    "Friends": 4, "RobWealth": 0, "EatingGod": 0, "HurtingOff": 9,
+    "DirWealth": 13, "IndWealth": 37
+  }
+}

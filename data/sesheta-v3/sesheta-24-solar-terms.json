@@ -1,0 +1,177 @@
+{
+  "jie_qi_12_start_of_month": {
+    "寅": {
+      "chinese": "立春",
+      "english": "Li Chun",
+      "meaning": "Start of Spring",
+      "date_approx": "Feb 4"
+    },
+    "卯": {
+      "chinese": "驚蟄",
+      "english": "Jing Zhe",
+      "meaning": "Awakening of Insects",
+      "date_approx": "Mar 6"
+    },
+    "辰": {
+      "chinese": "清明",
+      "english": "Qing Ming",
+      "meaning": "Pure Brightness",
+      "date_approx": "Apr 5"
+    },
+    "巳": {
+      "chinese": "立夏",
+      "english": "Li Xia",
+      "meaning": "Start of Summer",
+      "date_approx": "May 6"
+    },
+    "午": {
+      "chinese": "芒種",
+      "english": "Mang Zhong",
+      "meaning": "Grain in Ear",
+      "date_approx": "Jun 6"
+    },
+    "未": {
+      "chinese": "小暑",
+      "english": "Xiao Shu",
+      "meaning": "Minor Heat",
+      "date_approx": "Jul 7"
+    },
+    "申": {
+      "chinese": "立秋",
+      "english": "Li Qiu",
+      "meaning": "Start of Autumn",
+      "date_approx": "Aug 8"
+    },
+    "酉": {
+      "chinese": "白露",
+      "english": "Bai Lu",
+      "meaning": "White Dew",
+      "date_approx": "Sep 8"
+    },
+    "戌": {
+      "chinese": "寒露",
+      "english": "Han Lu",
+      "meaning": "Cold Dew",
+      "date_approx": "Oct 8"
+    },
+    "亥": {
+      "chinese": "立冬",
+      "english": "Li Dong",
+      "meaning": "Start of Winter",
+      "date_approx": "Nov 7"
+    },
+    "子": {
+      "chinese": "大雪",
+      "english": "Da Xue",
+      "meaning": "Major Snow",
+      "date_approx": "Dec 7"
+    },
+    "丑": {
+      "chinese": "小寒",
+      "english": "Xiao Han",
+      "meaning": "Minor Cold",
+      "date_approx": "Jan 6"
+    }
+  },
+  "zhong_qi_12_middle_of_month": {
+    "寅": {
+      "chinese": "雨水",
+      "english": "Yu Shui",
+      "meaning": "Rain Water",
+      "date_approx": "Feb 19"
+    },
+    "卯": {
+      "chinese": "春分",
+      "english": "Chun Fen",
+      "meaning": "Spring Equinox",
+      "date_approx": "Mar 21"
+    },
+    "辰": {
+      "chinese": "穀雨",
+      "english": "Gu Yu",
+      "meaning": "Grain Rain",
+      "date_approx": "Apr 20"
+    },
+    "巳": {
+      "chinese": "小滿",
+      "english": "Xiao Man",
+      "meaning": "Grain Full",
+      "date_approx": "May 21"
+    },
+    "午": {
+      "chinese": "夏至",
+      "english": "Xia Zhi",
+      "meaning": "Summer Solstice",
+      "date_approx": "Jun 21"
+    },
+    "未": {
+      "chinese": "大暑",
+      "english": "Da Shu",
+      "meaning": "Major Heat",
+      "date_approx": "Jul 23"
+    },
+    "申": {
+      "chinese": "處暑",
+      "english": "Chu Shu",
+      "meaning": "End of Heat",
+      "date_approx": "Aug 23"
+    },
+    "酉": {
+      "chinese": "秋分",
+      "english": "Qiu Fen",
+      "meaning": "Autumn Equinox",
+      "date_approx": "Sep 23"
+    },
+    "戌": {
+      "chinese": "霜降",
+      "english": "Shuang Jiang",
+      "meaning": "Frost Descent",
+      "date_approx": "Oct 23"
+    },
+    "亥": {
+      "chinese": "小雪",
+      "english": "Xiao Xue",
+      "meaning": "Minor Snow",
+      "date_approx": "Nov 22"
+    },
+    "子": {
+      "chinese": "冬至",
+      "english": "Dong Zhi",
+      "meaning": "Winter Solstice",
+      "date_approx": "Dec 22"
+    },
+    "丑": {
+      "chinese": "大寒",
+      "english": "Da Han",
+      "meaning": "Major Cold",
+      "date_approx": "Jan 20"
+    }
+  },
+  "order_24_in_year": [
+    "小寒",
+    "大寒",
+    "立春",
+    "雨水",
+    "驚蟄",
+    "春分",
+    "清明",
+    "穀雨",
+    "立夏",
+    "小滿",
+    "芒種",
+    "夏至",
+    "小暑",
+    "大暑",
+    "立秋",
+    "處暑",
+    "白露",
+    "秋分",
+    "寒露",
+    "霜降",
+    "立冬",
+    "小雪",
+    "大雪",
+    "冬至"
+  ],
+  "note": "Sesheta uses these to determine month pillar boundaries. Year pillar changes at 立春, NOT at 1 Jan."
+}

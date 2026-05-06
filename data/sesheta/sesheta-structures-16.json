@@ -1,0 +1,380 @@
+[
+  {
+    "key": "Direct Resource Structure",
+    "title": "Direct Resource Structure (正印格)",
+    "titleTh": "โครงสร้างบ่มเพาะ",
+    "description": "Your chart is anchored by the Direct Resource star in the month pillar. This represents nurturing energy, knowledge, and support from proper channels.",
+    "descriptionTh": "ดวงของคุณยึดโยงด้วยดาวอิ่นเจิ้งในเสาเดือน นี่แทนพลังงานบ่มเพาะ ความรู้ และการสนับสนุนจากช่องทางที่ถูกต้อง",
+    "characteristics": [
+      "Natural inclination toward learning and education",
+      "Benefits from mentorship and supportive relationships",
+      "Attracts help and resources through integrity",
+      "Gains reputation through knowledge and wisdom"
+    ],
+    "characteristicsTh": [
+      "มีแนวโน้มธรรมชาติต่อการเรียนรู้และการศึกษา",
+      "ได้ประโยชน์จากการมีที่ปรึกษาและความสัมพันธ์ที่สนับสนุน",
+      "ดึงดูดความช่วยเหลือและทรัพยากรผ่านความซื่อสัตย์",
+      "ได้ชื่อเสียงผ่านความรู้และปัญญา"
+    ],
+    "strategy": "Cultivate knowledge and seek proper mentorship. Your success comes through education, certifications, and building expertise in your field.",
+    "strategyTh": "บ่มเพาะความรู้และแสวงหาที่ปรึกษาที่เหมาะสม ความสำเร็จของคุณมาจากการศึกษา ใบรับรอง และการสร้างความเชี่ยวชาญในสาขาของคุณ"
+  },
+  {
+    "key": "Indirect Resource Structure",
+    "title": "Indirect Resource Structure (偏印格)",
+    "titleTh": "โครงสร้างตกผลึก",
+    "description": "Your chart features the Indirect Resource star prominently. This represents unconventional wisdom, intuition, and alternative learning paths.",
+    "descriptionTh": "ดวงของคุณมีดาวเพียนอิ่นโดดเด่น นี่แทนปัญญาที่ไม่ธรรมดา สัญชาตญาณ และเส้นทางการเรียนรู้ทางเลือก",
+    "characteristics": [
+      "Attracted to esoteric or unconventional knowledge",
+      "Strong intuition and pattern recognition",
+      "May excel in specialized or niche fields",
+      "Creative problem-solving abilities"
+    ],
+    "characteristicsTh": [
+      "ดึงดูดต่อความรู้ลึกลับหรือไม่ธรรมดา",
+      "สัญชาตญาณแข็งแกร่งและจดจำแบบแผนได้ดี",
+      "อาจเก่งในสาขาเฉพาะทางหรือกลุ่มเฉพาะ",
+      "ความสามารถในการแก้ปัญหาอย่างสร้างสรรค์"
+    ],
+    "strategy": "Trust your intuition and explore unconventional paths. Your unique perspective is your greatest asset.",
+    "strategyTh": "เชื่อสัญชาตญาณและสำรวจเส้นทางที่ไม่ธรรมดา มุมมองที่ไม่เหมือนใครของคุณคือทรัพย์สินที่ยิ่งใหญ่ที่สุด"
+  },
+  {
+    "key": "Direct Officer Structure",
+    "title": "Direct Officer Structure (正官格)",
+    "titleTh": "โครงสร้างแบบแผน",
+    "description": "Your chart is governed by the Direct Officer star. This represents legitimate authority, structure, and recognition through proper channels.",
+    "descriptionTh": "ดวงของคุณถูกปกครองโดยดาวเจิ้งกวน นี่แทนอำนาจที่ถูกต้องตามกฎหมาย โครงสร้าง และการยอมรับผ่านช่องทางที่เหมาะสม",
+    "characteristics": [
+      "Natural respect for rules and hierarchy",
+      "Attracts recognition through proper conduct",
+      "Benefits from working within established systems",
+      "Gains status through official positions"
+    ],
+    "characteristicsTh": [
+      "ความเคารพตามธรรมชาติต่อกฎและลำดับชั้น",
+      "ดึงดูดการยอมรับผ่านความประพฤติที่เหมาะสม",
+      "ได้ประโยชน์จากการทำงานภายในระบบที่มีอยู่",
+      "ได้สถานะผ่านตำแหน่งอย่างเป็นทางการ"
+    ],
+    "strategy": "Work within established systems and earn recognition through merit. Your path to success is through legitimate authority.",
+    "strategyTh": "ทำงานภายในระบบที่มีอยู่และได้รับการยอมรับผ่านคุณธรรม เส้นทางสู่ความสำเร็จของคุณคือผ่านอำนาจที่ถูกต้อง"
+  },
+  {
+    "key": "Seven Killings Structure",
+    "title": "Seven Killings Structure (七殺格)",
+    "titleTh": "โครงสร้างเด็ดขาด",
+    "description": "Your chart is driven by the Seven Killings star. This represents power, pressure, competition, and the ability to overcome adversity.",
+    "descriptionTh": "ดวงของคุณถูกขับเคลื่อนโดยดาวชีซา นี่แทนอำนาจ แรงกดดัน การแข่งขัน และความสามารถในการเอาชนะความยากลำบาก",
+    "characteristics": [
+      "Thrives under pressure and competition",
+      "Natural leadership in crisis situations",
+      "Ability to face and overcome powerful opposition",
+      "Gains strength through challenges"
+    ],
+    "characteristicsTh": [
+      "เติบโตภายใต้แรงกดดันและการแข่งขัน",
+      "ผู้นำโดยธรรมชาติในสถานการณ์วิกฤต",
+      "ความสามารถในการเผชิญหน้าและเอาชนะฝ่ายตรงข้ามที่มีอำนาจ",
+      "ได้รับความแข็งแกร่งผ่านความท้าทาย"
+    ],
+    "strategy": "Channel competitive energy constructively. Your power grows when you face and overcome obstacles.",
+    "strategyTh": "นำพลังงานแข่งขันไปใช้อย่างสร้างสรรค์ พลังของคุณเติบโตเมื่อคุณเผชิญหน้าและเอาชนะอุปสรรค"
+  },
+  {
+    "key": "Direct Wealth Structure",
+    "title": "Direct Wealth Structure (正財格)",
+    "titleTh": "โครงสร้างสะสม",
+    "description": "Your chart is anchored by the Direct Wealth star. This represents steady income, tangible assets, and wealth through proper effort.",
+    "descriptionTh": "ดวงของคุณยึดโยงด้วยดาวเจิ้งไฉ นี่แทนรายได้มั่นคง สินทรัพย์จับต้องได้ และความมั่งคั่งผ่านความพยายามที่เหมาะสม",
+    "characteristics": [
+      "Natural ability to accumulate steady wealth",
+      "Benefits from traditional career paths",
+      "Gains through consistent effort and integrity",
+      "Attracts stable financial opportunities"
+    ],
+    "characteristicsTh": [
+      "ความสามารถธรรมชาติในการสะสมความมั่งคั่งอย่างมั่นคง",
+      "ได้ประโยชน์จากเส้นทางอาชีพแบบดั้งเดิม",
+      "ได้รับผ่านความพยายามสม่ำเสมอและความซื่อสัตย์",
+      "ดึงดูดโอกาสทางการเงินที่มั่นคง"
+    ],
+    "strategy": "Build wealth through steady effort and proper channels. Your fortune comes through consistent work and integrity.",
+    "strategyTh": "สร้างความมั่งคั่งผ่านความพยายามมั่นคงและช่องทางที่เหมาะสม โชคลาภของคุณมาจากการทำงานสม่ำเสมอและความซื่อสัตย์"
+  },
+  {
+    "key": "Indirect Wealth Structure",
+    "title": "Indirect Wealth Structure (偏財格)",
+    "titleTh": "โครงสร้างแสวงหา",
+    "description": "Your chart features the Indirect Wealth star prominently. This represents windfall gains, unexpected opportunities, and wealth through unconventional means.",
+    "descriptionTh": "ดวงของคุณมีดาวเพียนไฉโดดเด่น นี่แทนลาภลอย โอกาสที่ไม่คาดคิด และความมั่งคั่งผ่านวิธีที่ไม่ธรรมดา",
+    "characteristics": [
+      "Attracts unexpected financial opportunities",
+      "Benefits from calculated risks and investments",
+      "Natural luck with speculative ventures",
+      "Gains through social connections and generosity"
+    ],
+    "characteristicsTh": [
+      "ดึงดูดโอกาสทางการเงินที่ไม่คาดคิด",
+      "ได้ประโยชน์จากความเสี่ยงและการลงทุนที่คำนวณแล้ว",
+      "โชคดีธรรมชาติกับการเก็งกำไร",
+      "ได้รับผ่านความสัมพันธ์ทางสังคมและความใจกว้าง"
+    ],
+    "strategy": "Stay open to unexpected opportunities. Your fortune often comes through social connections and calculated risks.",
+    "strategyTh": "เปิดใจรับโอกาสที่ไม่คาดคิด โชคลาภของคุณมักมาจากความสัมพันธ์ทางสังคมและความเสี่ยงที่คำนวณแล้ว"
+  },
+  {
+    "key": "Eating God Structure",
+    "title": "Eating God Structure (食神格)",
+    "titleTh": "โครงสร้างเรียบเรียง",
+    "description": "Your chart is blessed by the Eating God star. This represents gentle creative expression, contentment, and the joy of creation.",
+    "descriptionTh": "ดวงของคุณได้รับพรจากดาวซื่อเสิน นี่แทนการแสดงออกสร้างสรรค์อย่างอ่อนโยน ความพึงพอใจ และความสุขของการสร้างสรรค์",
+    "characteristics": [
+      "Natural creative and artistic abilities",
+      "Brings joy and pleasure to others",
+      "Benefits from expressing talents gently",
+      "Attracts abundance through creation"
+    ],
+    "characteristicsTh": [
+      "ความสามารถสร้างสรรค์และศิลปะโดยธรรมชาติ",
+      "นำความสุขและความพึงพอใจมาให้ผู้อื่น",
+      "ได้ประโยชน์จากการแสดงพรสวรรค์อย่างอ่อนโยน",
+      "ดึงดูดความอุดมสมบูรณ์ผ่านการสร้างสรรค์"
+    ],
+    "strategy": "Express your creativity freely and joyfully. Your path to success is through what you create and share with others.",
+    "strategyTh": "แสดงความคิดสร้างสรรค์อย่างอิสระและสนุกสนาน เส้นทางสู่ความสำเร็จของคุณคือผ่านสิ่งที่คุณสร้างและแบ่งปันกับผู้อื่น"
+  },
+  {
+    "key": "Hurting Officer Structure",
+    "title": "Hurting Officer Structure (傷官格)",
+    "titleTh": "โครงสร้างปลดปล่อย",
+    "description": "Your chart is marked by the Hurting Officer star. This represents bold innovation, unconventional expression, and the courage to challenge norms.",
+    "descriptionTh": "ดวงของคุณถูกทำเครื่องหมายด้วยดาวซางกวน นี่แทนนวัตกรรมที่กล้าหาญ การแสดงออกที่ไม่ธรรมดา และความกล้าที่จะท้าทายบรรทัดฐาน",
+    "characteristics": [
+      "Strong drive for innovation and change",
+      "Challenges authority and conventional thinking",
+      "Bold and unconventional creative expression",
+      "Gains through disruption and new ideas"
+    ],
+    "characteristicsTh": [
+      "แรงขับเคลื่อนที่แข็งแกร่งสำหรับนวัตกรรมและการเปลี่ยนแปลง",
+      "ท้าทายอำนาจและความคิดแบบธรรมดา",
+      "การแสดงออกสร้างสรรค์ที่กล้าหาญและไม่ธรรมดา",
+      "ได้รับผ่านการเปลี่ยนแปลงและไอเดียใหม่"
+    ],
+    "strategy": "Channel your rebellious energy into constructive innovation. Your success comes through daring to be different.",
+    "strategyTh": "นำพลังงานกบฏไปสู่นวัตกรรมที่สร้างสรรค์ ความสำเร็จของคุณมาจากการกล้าที่จะแตกต่าง"
+  },
+  {
+    "key": "Friend Structure",
+    "title": "Friend Structure (比肩格)",
+    "titleTh": "โครงสร้างเสมอภาค",
+    "description": "Your chart is supported by the Friend star. This represents camaraderie, cooperation, and strength through alliances.",
+    "descriptionTh": "ดวงของคุณได้รับการสนับสนุนจากดาวปี่เจียน นี่แทนมิตรภาพ ความร่วมมือ และความแข็งแกร่งผ่านพันธมิตร",
+    "characteristics": [
+      "Natural ability to form partnerships",
+      "Benefits from teamwork and collaboration",
+      "Gains strength from peer support",
+      "Attracts like-minded allies"
+    ],
+    "characteristicsTh": [
+      "ความสามารถธรรมชาติในการสร้างความร่วมมือ",
+      "ได้ประโยชน์จากการทำงานเป็นทีมและการร่วมมือ",
+      "ได้รับความแข็งแกร่งจากการสนับสนุนของเพื่อนร่วมงาน",
+      "ดึงดูดพันธมิตรที่มีความคิดเหมือนกัน"
+    ],
+    "strategy": "Build strong partnerships and alliances. Your success is amplified when working alongside peers who share your vision.",
+    "strategyTh": "สร้างความร่วมมือและพันธมิตรที่แข็งแกร่ง ความสำเร็จของคุณถูกขยายเมื่อทำงานร่วมกับเพื่อนที่มีวิสัยทัศน์เดียวกัน"
+  },
+  {
+    "key": "Rob Wealth Structure",
+    "title": "Rob Wealth Structure (劫財格)",
+    "titleTh": "โครงสร้างแข่งขัน",
+    "description": "Your chart is driven by the Rob Wealth star. This represents competition, rivalry, and the drive to compete for resources.",
+    "descriptionTh": "ดวงของคุณถูกขับเคลื่อนโดยดาวเจี๋ยไฉ นี่แทนการแข่งขัน การเป็นคู่แข่ง และแรงขับเคลื่อนในการแข่งขันเพื่อทรัพยากร",
+    "characteristics": [
+      "Thrives in competitive environments",
+      "Strong drive to win and succeed",
+      "Benefits from healthy rivalry",
+      "Gains motivation from competition"
+    ],
+    "characteristicsTh": [
+      "เติบโตในสภาพแวดล้อมที่แข่งขัน",
+      "แรงขับเคลื่อนที่แข็งแกร่งในการชนะและประสบความสำเร็จ",
+      "ได้ประโยชน์จากการแข่งขันที่ดีต่อสุขภาพ",
+      "ได้รับแรงจูงใจจากการแข่งขัน"
+    ],
+    "strategy": "Channel competitive energy positively. Your drive to win can lead to great achievements when directed constructively.",
+    "strategyTh": "นำพลังงานแข่งขันไปในทางบวก แรงขับเคลื่อนในการชนะของคุณสามารถนำไปสู่ความสำเร็จที่ยิ่งใหญ่เมื่อถูกนำไปใช้อย่างสร้างสรรค์"
+  },
+  {
+    "key": "Transformation into Wood Structure",
+    "title": "Transformation into Wood Structure (化木格)",
+    "titleTh": "โครงสร้างแปรเป็นไม้ (化木格)",
+    "description": "Your Day Master has transformed into Wood through a heavenly stem combination. Your original identity has been reborn with Wood qualities—growth, kindness, and expansion.",
+    "descriptionTh": "ธาตุประจำตัวของคุณได้แปรเป็นไม้ผ่านการรวมกันของกิ่งสวรรค์ ตัวตนเดิมของคุณได้เกิดใหม่ด้วยคุณสมบัติไม้—การเติบโต ความเมตตา และการขยาย",
+    "characteristics": [
+      "Original elemental identity has been replaced by Wood",
+      "Must live according to Wood element principles",
+      "Thrives through growth, education, and benevolence",
+      "Success comes from nurturing and expanding"
+    ],
+    "characteristicsTh": [
+      "ตัวตนธาตุเดิมถูกแทนที่ด้วยไม้",
+      "ต้องใช้ชีวิตตามหลักการธาตุไม้",
+      "เติบโตผ่านการเติบโต การศึกษา และความเมตตา",
+      "ความสำเร็จมาจากการบ่มเพาะและขยาย"
+    ],
+    "strategy": "Embrace your new Wood identity completely. Pursue growth, learning, and helping others grow. Avoid anything that conflicts with Wood energy.",
+    "strategyTh": "โอบรับตัวตนไม้ใหม่ของคุณอย่างเต็มที่ ไล่ตามการเติบโต การเรียนรู้ และการช่วยให้ผู้อื่นเติบโต หลีกเลี่ยงสิ่งที่ขัดแย้งกับพลังงานไม้"
+  },
+  {
+    "key": "Transformation into Fire Structure",
+    "title": "Transformation into Fire Structure (化火格)",
+    "titleTh": "โครงสร้างแปรเป็นไฟ (化火格)",
+    "description": "Your Day Master has transformed into Fire through a heavenly stem combination. Your original identity has been reborn with Fire qualities—expression, visibility, and warmth.",
+    "descriptionTh": "ธาตุประจำตัวของคุณได้แปรเป็นไฟผ่านการรวมกันของกิ่งสวรรค์ ตัวตนเดิมของคุณได้เกิดใหม่ด้วยคุณสมบัติไฟ—การแสดงออก ความโดดเด่น และความอบอุ่น",
+    "characteristics": [
+      "Original elemental identity has been replaced by Fire",
+      "Must live according to Fire element principles",
+      "Thrives through expression, visibility, and leadership",
+      "Success comes from inspiring and illuminating"
+    ],
+    "characteristicsTh": [
+      "ตัวตนธาตุเดิมถูกแทนที่ด้วยไฟ",
+      "ต้องใช้ชีวิตตามหลักการธาตุไฟ",
+      "เติบโตผ่านการแสดงออก ความโดดเด่น และการเป็นผู้นำ",
+      "ความสำเร็จมาจากการสร้างแรงบันดาลใจและการส่องสว่าง"
+    ],
+    "strategy": "Embrace your new Fire identity completely. Seek visibility, express yourself boldly, and inspire others. Avoid anything that dampens your flame.",
+    "strategyTh": "โอบรับตัวตนไฟใหม่ของคุณอย่างเต็มที่ แสวงหาความโดดเด่น แสดงออกอย่างกล้าหาญ และสร้างแรงบันดาลใจให้ผู้อื่น หลีกเลี่ยงสิ่งที่ทำให้เปลวไฟของคุณมืดลง"
+  },
+  {
+    "key": "Transformation into Earth Structure",
+    "title": "Transformation into Earth Structure (化土格)",
+    "titleTh": "โครงสร้างแปรเป็นดิน (化土格)",
+    "description": "Your Day Master has transformed into Earth through a heavenly stem combination. Your original identity has been reborn with Earth qualities—stability, trust, and groundedness.",
+    "descriptionTh": "ธาตุประจำตัวของคุณได้แปรเป็นดินผ่านการรวมกันของกิ่งสวรรค์ ตัวตนเดิมของคุณได้เกิดใหม่ด้วยคุณสมบัติดิน—ความมั่นคง ความไว้วางใจ และความหนักแน่น",
+    "characteristics": [
+      "Original elemental identity has been replaced by Earth",
+      "Must live according to Earth element principles",
+      "Thrives through stability, reliability, and trustworthiness",
+      "Success comes from grounding and supporting"
+    ],
+    "characteristicsTh": [
+      "ตัวตนธาตุเดิมถูกแทนที่ด้วยดิน",
+      "ต้องใช้ชีวิตตามหลักการธาตุดิน",
+      "เติบโตผ่านความมั่นคง ความน่าเชื่อถือ และความน่าไว้วางใจ",
+      "ความสำเร็จมาจากการหนักแน่นและการสนับสนุน"
+    ],
+    "strategy": "Embrace your new Earth identity completely. Build stable foundations, be reliable, and support others. Avoid instability and constant change.",
+    "strategyTh": "โอบรับตัวตนดินใหม่ของคุณอย่างเต็มที่ สร้างรากฐานที่มั่นคง เชื่อถือได้ และสนับสนุนผู้อื่น หลีกเลี่ยงความไม่มั่นคงและการเปลี่ยนแปลงตลอดเวลา"
+  },
+  {
+    "key": "Transformation into Metal Structure",
+    "title": "Transformation into Metal Structure (化金格)",
+    "titleTh": "โครงสร้างแปรเป็นโลหะ (化金格)",
+    "description": "Your Day Master has transformed into Metal through a heavenly stem combination. Your original identity has been reborn with Metal qualities—precision, discipline, and refinement.",
+    "descriptionTh": "ธาตุประจำตัวของคุณได้แปรเป็นโลหะผ่านการรวมกันของกิ่งสวรรค์ ตัวตนเดิมของคุณได้เกิดใหม่ด้วยคุณสมบัติโลหะ—ความแม่นยำ วินัย และความประณีต",
+    "characteristics": [
+      "Original elemental identity has been replaced by Metal",
+      "Must live according to Metal element principles",
+      "Thrives through discipline, precision, and justice",
+      "Success comes from refining and perfecting"
+    ],
+    "characteristicsTh": [
+      "ตัวตนธาตุเดิมถูกแทนที่ด้วยโลหะ",
+      "ต้องใช้ชีวิตตามหลักการธาตุโลหะ",
+      "เติบโตผ่านวินัย ความแม่นยำ และความยุติธรรม",
+      "ความสำเร็จมาจากการขัดเกลาและทำให้สมบูรณ์แบบ"
+    ],
+    "strategy": "Embrace your new Metal identity completely. Pursue excellence, maintain discipline, and uphold justice. Avoid chaos and lack of structure.",
+    "strategyTh": "โอบรับตัวตนโลหะใหม่ของคุณอย่างเต็มที่ ไล่ตามความเป็นเลิศ รักษาวินัย และยึดมั่นในความยุติธรรม หลีกเลี่ยงความวุ่นวายและการขาดโครงสร้าง"
+  },
+  {
+    "key": "Transformation into Water Structure",
+    "title": "Transformation into Water Structure (化水格)",
+    "titleTh": "โครงสร้างแปรเป็นน้ำ (化水格)",
+    "description": "Your Day Master has transformed into Water through a heavenly stem combination. Your original identity has been reborn with Water qualities—wisdom, flow, and adaptability.",
+    "descriptionTh": "ธาตุประจำตัวของคุณได้แปรเป็นน้ำผ่านการรวมกันของกิ่งสวรรค์ ตัวตนเดิมของคุณได้เกิดใหม่ด้วยคุณสมบัติน้ำ—ปัญญา การไหล และการปรับตัว",
+    "characteristics": [
+      "Original elemental identity has been replaced by Water",
+      "Must live according to Water element principles",
+      "Thrives through wisdom, adaptability, and flow",
+      "Success comes from navigating and connecting"
+    ],
+    "characteristicsTh": [
+      "ตัวตนธาตุเดิมถูกแทนที่ด้วยน้ำ",
+      "ต้องใช้ชีวิตตามหลักการธาตุน้ำ",
+      "เติบโตผ่านปัญญา การปรับตัว และการไหล",
+      "ความสำเร็จมาจากการนำทางและการเชื่อมต่อ"
+    ],
+    "strategy": "Embrace your new Water identity completely. Flow with circumstances, gather wisdom, and connect with others. Avoid rigidity and stagnation.",
+    "strategyTh": "โอบรับตัวตนน้ำใหม่ของคุณอย่างเต็มที่ ไหลไปตามสถานการณ์ รวบรวมปัญญา และเชื่อมต่อกับผู้อื่น หลีกเลี่ยงความแข็งกระด้างและความซบเซา"
+  },
+  {
+    "key": "Follow the Output",
+    "title": "Follow the Output (從兒格)",
+    "titleTh": "โครงสร้างตามผลผลิต (從兒格)",
+    "description": "Your Day Master is weak and surrenders to the Output element. Your path is through creation, expression, and letting your ideas flow.",
+    "descriptionTh": "ธาตุประจำตัวของคุณอ่อนและยอมจำนนต่อธาตุผลผลิต เส้นทางของคุณคือผ่านการสร้างสรรค์ การแสดงออก และการปล่อยให้ไอเดียของคุณไหล",
+    "characteristics": [
+      "Day Master is very weak with no root",
+      "Output element (what you produce) is dominant",
+      "Natural talent for creativity, teaching, and expression",
+      "Success through letting go rather than holding on"
+    ],
+    "characteristicsTh": [
+      "ธาตุประจำตัวอ่อนมากไม่มีราก",
+      "ธาตุผลผลิต (สิ่งที่คุณผลิต) เป็นตัวครอบงำ",
+      "พรสวรรค์ธรรมชาติสำหรับความคิดสร้างสรรค์ การสอน และการแสดงออก",
+      "ความสำเร็จผ่านการปล่อยวางมากกว่าการยึดติด"
+    ],
+    "strategy": "Follow the flow of Output. Support elements that enhance production and expression. Avoid trying to strengthen yourself.",
+    "strategyTh": "ตามกระแสของผลผลิต สนับสนุนธาตุที่เพิ่มการผลิตและการแสดงออก หลีกเลี่ยงการพยายามเสริมความแข็งแกร่งตนเอง"
+  },
+  {
+    "key": "Follow the Wealth",
+    "title": "Follow the Wealth (從財格)",
+    "titleTh": "โครงสร้างตามทรัพย์ (從財格)",
+    "description": "Your Day Master surrenders to Wealth. Your path is aligned with resource acquisition, management, and material success.",
+    "descriptionTh": "ธาตุประจำตัวของคุณยอมจำนนต่อทรัพย์ เส้นทางของคุณสอดคล้องกับการได้มาซึ่งทรัพยากร การจัดการ และความสำเร็จทางวัตถุ",
+    "characteristics": [
+      "Day Master is very weak with no support",
+      "Wealth element dominates the chart",
+      "Natural ability to attract and manage resources",
+      "Success through service and providing value"
+    ],
+    "characteristicsTh": [
+      "ธาตุประจำตัวอ่อนมากไม่มีการสนับสนุน",
+      "ธาตุทรัพย์ครอบงำดวง",
+      "ความสามารถธรรมชาติในการดึงดูดและจัดการทรัพยากร",
+      "ความสำเร็จผ่านการบริการและการให้คุณค่า"
+    ],
+    "strategy": "Follow the Wealth. Support elements that enhance your ability to create and manage value. Avoid independence.",
+    "strategyTh": "ตามทรัพย์ สนับสนุนธาตุที่เพิ่มความสามารถในการสร้างและจัดการคุณค่า หลีกเลี่ยงความเป็นอิสระ"
+  },
+  {
+    "key": "Follow the Influence",
+    "title": "Follow the Influence (從殺格)",
+    "titleTh": "โครงสร้างตามอำนาจ (從殺格)",
+    "description": "Your Day Master surrenders to the Influence element. Your path is through power, authority, and structured systems.",
+    "descriptionTh": "ธาตุประจำตัวของคุณยอมจำนนต่อธาตุอำนาจ เส้นทางของคุณคือผ่านอำนาจ ผู้มีอำนาจ และระบบที่มีโครงสร้าง",
+    "characteristics": [
+      "Day Master is very weak with no root",
+      "Authority/Power element dominates",
+      "Natural fit for leadership in established hierarchies",
+      "Success through discipline and following strong leaders"
+    ],
+    "characteristicsTh": [
+      "ธาตุประจำตัวอ่อนมากไม่มีราก",
+      "ธาตุอำนาจ/พลังครอบงำ",
+      "เหมาะสมธรรมชาติสำหรับการเป็นผู้นำในลำดับชั้นที่มั่นคง",
+      "ความสำเร็จผ่านวินัยและการติดตามผู้นำที่แข็งแกร่ง"
+    ],
+    "strategy": "Follow the Power. Align with authority figures and structured systems. Avoid rebellion or independence.",
+    "strategyTh": "ตามอำนาจ ปรับตัวให้สอดคล้องกับผู้มีอำนาจและระบบที่มีโครงสร้าง หลีกเลี่ยงการกบฏหรือความเป็นอิสระ"
+  }
+]

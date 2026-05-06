@@ -1,0 +1,82 @@
+[
+  {
+    "archetype": "Architect_Influence",
+    "points_count": 1,
+    "points": [
+      {
+        "title": "1. The Responsibility Shift (Carrying > Building)",
+        "titleTh": "1. เปลี่ยนมุมมองเรื่องความรับผิดชอบ (แบกรับ → สร้างคน)",
+        "stop": "The ",
+        "stopTh": "",
+        "start": "**Letting go.** Allow others to carry the weight, even if they stumble at first.",
+        "startTh": "**ปล่อยวาง** ให้คนอื่นแบกรับบ้าง แม้ว่าตอนแรกจะสะดุดก็ตาม",
+        "insight": "You don't build a legacy by being the strongest lifter; you build it by training others to lift.",
+        "insightTh": "คุณไม่ได้สร้างมรดกด้วยการเป็นคนที่แข็งแกร่งที่สุด แต่ด้วยการฝึกให้คนอื่นแข็งแกร่งตาม"
+      }
+    ]
+  },
+  {
+    "archetype": "Achiever",
+    "points_count": 1,
+    "points": [
+      {
+        "title": "1. The Leverage Shift (Who > How)",
+        "titleTh": "",
+        "stop": "Asking ",
+        "stopTh": "ถามตัวเองว่า ",
+        "start": "Asking ",
+        "startTh": "ถามว่า ",
+        "insight": "",
+        "insightTh": ""
+      }
+    ]
+  },
+  {
+    "archetype": "Thinker",
+    "points_count": 1,
+    "points": [
+      {
+        "title": "1. The Action Shift (Thinking > Doing)",
+        "titleTh": "1. เปลี่ยนจากคิด → ลงมือทำ",
+        "stop": "",
+        "stopTh": "",
+        "start": "**The 70% Rule.** Move when you are 70% sure. Correct the course as you go.",
+        "startTh": "**กฎ 70%** เริ่มเมื่อมั่นใจ 70% แล้วค่อยปรับทิศระหว่างทาง",
+        "insight": "A good plan executed today is better than a perfect plan executed next week.",
+        "insightTh": "แผนที่ดีที่ทำวันนี้ ดีกว่าแผนที่สมบูรณ์แบบที่ทำสัปดาห์หน้า"
+      }
+    ]
+  },
+  {
+    "archetype": "Connector",
+    "points_count": 1,
+    "points": [
+      {
+        "title": "1. The Prosperity Shift (Popularity > Profit)",
+        "titleTh": "1. เปลี่ยนจากเป็นที่รัก → สร้างรายได้",
+        "stop": "Thinking that mixing friendship and business is ",
+        "stopTh": "คิดว่าการผสมมิตรภาพกับธุรกิจเป็นเรื่อง ",
+        "start": "**Leveraging your Network.** Dare to ask for the sale, the intro, or the deal.",
+        "startTh": "**ใช้ประโยชน์จากเครือข่าย** กล้าที่จะขอขาย ขอแนะนำ หรือขอดีล",
+        "insight": "True connection is a two-way street. If you only give and never receive, it's not a relationship; it's charity.",
+        "insightTh": "ความสัมพันธ์ที่แท้จริงเป็นถนนสองทาง ถ้าคุณแค่ให้โดยไม่เคยรับ มันไม่ใช่ความสัมพันธ์ แต่เป็นการทำบุญ"
+      }
+    ]
+  },
+  {
+    "archetype": "Creator",
+    "points_count": 1,
+    "points": [
+      {
+        "title": "1. The Completion Shift (Finishing > Starting)",
+        "titleTh": "1. เปลี่ยนจากเริ่มต้น → ทำให้เสร็จ",
+        "stop": "Getting high on starting new projects and abandoning old ones (Shiny Object Syndrome).",
+        "stopTh": "เสพติดการเริ่มโปรเจกต์ใหม่แล้วทิ้งโปรเจกต์เก่า (โรคของใหม่)",
+        "start": "**The ",
+        "startTh": "**กฎ ",
+        "insight": "",
+        "insightTh": ""
+      }
+    ]
+  }
+]

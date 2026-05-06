@@ -1,0 +1,201 @@
+{
+  "metadata": {
+    "title": "Decode Luck Cycles & Transit Pillars Engine",
+    "title_th": "เครื่องยนต์รอบโชคและเสาเดินผ่าน",
+    "title_zh": "运行周期和过路柱引擎",
+    "description": "Complete algorithm suite for Da Yun (大運 luck pillars), Liu Nian (流年 annual), Liu Yue (流月 monthly), Liu Ri (流日 daily), Liu Shi (流時 hourly). Sesheta has Da Yun + direction but NOT Liu Yue/Ri/Shi as separate algorithms. Decode adds full transit cycle.",
+    "version": "1.0",
+    "verified": "Algorithms tested against Aeaw chart 甲子/丙子/己亥/辛未"
+  },
+
+  "1_da_yun_luck_pillars": {
+    "name": "大運 Da Yun (10-year Luck Cycles)",
+    "name_th": "ต้าวิ่น / รอบโชค 10 ปี",
+    "description": "Each pillar lasts 10 years. Direction depends on Year Stem polarity × Gender.",
+    "direction_logic": {
+      "rule": "Yang year stem + Male = Forward; Yin year stem + Female = Forward; otherwise Reverse",
+      "yang_stems": ["甲", "丙", "戊", "庚", "壬"],
+      "yin_stems": ["乙", "丁", "己", "辛", "癸"]
+    },
+    "starting_age_calculation": {
+      "method": "Distance from birth to nearest Solar Term boundary, divided by 4320 minutes",
+      "formula": "starting_age = (minutes_to_nearest_solar_term / 4320)\n// Where 4320 minutes = 3 days = 1 luck year",
+      "direction_solar_term": {
+        "forward": "Next solar term AFTER birth",
+        "reverse": "Previous solar term BEFORE birth"
+      }
+    },
+    "pillars_progression": "From birth month pillar, increment/decrement by 1 in Jia Zi cycle for each 10-year period (max 10 pillars covering ~100 years)",
+    "implementation_pseudo": "function getDaYun(natal, gender) {\n  const direction = isForward(natal.year.stem, gender) ? 'forward' : 'reverse';\n  const startAge = calcStartAge(natal.birthDate, direction);\n  const monthIdx = jiaZi60.indexOf(natal.month.stem + natal.month.branch);\n  const pillars = [];\n  for (let i = 0; i < 10; i++) {\n    const idx = direction === 'forward' \n      ? (monthIdx + i + 1) % 60\n      : (monthIdx - i - 1 + 60) % 60;\n    pillars.push({\n      pillar: jiaZi60[idx],\n      startAge: startAge + (i * 10),\n      endAge: startAge + ((i+1) * 10) - 1\n    });\n  }\n  return { direction, startAge, pillars };\n}",
+    "aeaw_verification": {
+      "chart": "甲子/丙子/己亥/辛未, male, born 1984-12-31",
+      "year_stem": "甲 (Yang)",
+      "gender": "male",
+      "direction": "forward",
+      "starting_age_approx": 2,
+      "pillars_forward": ["丁丑(2-12)","戊寅(12-22)","己卯(22-32)","庚辰(32-42)","辛巳(42-52)","壬午(52-62)","癸未(62-72)","甲申(72-82)","乙酉(82-92)","丙戌(92-102)"]
+    }
+  },
+
+  "2_liu_nian_annual_pillar": {
+    "name": "流年 Liu Nian (Annual Pillar)",
+    "name_th": "หลิวเหนียน / เสาประจำปี",
+    "description": "The Year Pillar of any given year. Calculated using Sesheta's c2() function with ANY date.",
+    "calculation_function": "function getLiuNian(year) {\n  // Get year stem-branch using Jia Zi cycle\n  // Anchor: 1900 = 庚子 (year stem 庚 idx=6, branch 子 idx=0)\n  // Or use 立春 boundary check via solar term table\n  const date = new Date(year, 1, 5); // Feb 5 = past 立春\n  return c2(date); // Sesheta's verified function\n}",
+    "boundary_rule": "Year changes at 立春 (Start of Spring, ~Feb 4). NOT January 1. Critical for late Jan/early Feb births.",
+    "interpretation_layers": [
+      "1. Compare Liu Nian stem-branch with each natal pillar (year/month/day/hour)",
+      "2. Apply 9 reactions (sanHe/sanHui/liuHe/banSanHe/clash/punishment/etc) between Liu Nian and natal",
+      "3. Apply 6 destructions (Decode-exclusive)",
+      "4. Calculate Useful God score: does Liu Nian element strengthen or weaken yongshen?",
+      "5. Identify activated stars (transit may activate dormant natal stars)",
+      "6. Generate annual reading with action_mode level"
+    ],
+    "aeaw_2026": {
+      "year": 2026,
+      "liu_nian": "丙午",
+      "interpretation": "丙 Fire = Direct Resource (echoes natal Month stem 丙). 午 Fire = Strong Fire = Activates Aeaw's Frozen Crisis fix. MEGA FIRE YEAR.",
+      "action_mode_indicator": "L1_strong_execute for Fire-favorable activities"
+    }
+  },
+
+  "3_liu_yue_monthly_pillar": {
+    "name": "流月 Liu Yue (Monthly Pillar)",
+    "name_th": "หลิวเย่ว / เสาประจำเดือน",
+    "description": "Month Pillar of any given month. Calculated using Sesheta's Er() function.",
+    "calculation_function": "function getLiuYue(year, month) {\n  // Month boundary follows solar terms (jie qi)\n  // Use mid-month date to be safe\n  const date = new Date(year, month - 1, 15);\n  return Er(date);\n}",
+    "boundary_rule": "Month changes at 節 (jie) solar terms — 立春/驚蟄/清明/立夏/芒種/小暑/立秋/白露/寒露/立冬/大雪/小寒",
+    "month_branch_table": {
+      "寅": "Month 1 (Feb)", "卯": "Month 2 (Mar)", "辰": "Month 3 (Apr)",
+      "巳": "Month 4 (May)", "午": "Month 5 (Jun)", "未": "Month 6 (Jul)",
+      "申": "Month 7 (Aug)", "酉": "Month 8 (Sep)", "戌": "Month 9 (Oct)",
+      "亥": "Month 10 (Nov)", "子": "Month 11 (Dec)", "丑": "Month 12 (Jan)"
+    },
+    "month_stem_formula": {
+      "rule": "五虎遁元 (Five Tiger Drilling)",
+      "table": {
+        "甲己": "丙寅 (start month is 丙寅)",
+        "乙庚": "戊寅",
+        "丙辛": "庚寅",
+        "丁壬": "壬寅",
+        "戊癸": "甲寅"
+      },
+      "logic": "Year stem determines starting month stem at 寅 month, then increment for each subsequent month"
+    },
+    "interpretation_layers": [
+      "1. Apply same 9 reactions as Liu Nian, but with month pillar",
+      "2. Particularly important for: business meetings, contracts, travel",
+      "3. Liu Yue triggers Liu Nian potential (annual events tend to manifest in specific months)",
+      "4. Critical for Aeaw: 巳/午 months in 2026 amplify Fire Year benefits"
+    ],
+    "aeaw_2026_critical_months": [
+      {"month": "May 2026", "pillar": "癸巳", "note": "Fire 巳 + Hidden 庚 wealth — best month for major moves"},
+      {"month": "June 2026", "pillar": "甲午", "note": "Wood feeds Fire + 午 Fire peak — but BTC sale plan blocks (clash with Day 亥 weakly)"},
+      {"month": "July 2026", "pillar": "乙未", "note": "Earth-Fire storage — neutral; reserve building"},
+      {"month": "August 2026", "pillar": "丙申", "note": "Fire stem + Metal branch — output activation"},
+      {"month": "October 2026", "pillar": "戊戌", "note": "Earth + dry Earth — Aeaw chart strength period"}
+    ]
+  },
+
+  "4_liu_ri_daily_pillar": {
+    "name": "流日 Liu Ri (Daily Pillar)",
+    "name_th": "หลิวรื่อ / เสาประจำวัน",
+    "description": "Day Pillar of any given day. Calculated using Sesheta's g2() function.",
+    "calculation_function": "function getLiuRi(date) {\n  // Anchor: 1900-01-01 = 甲戌 day\n  // Day pillar advances by 1 each day in Jia Zi cycle\n  return g2(date);\n}",
+    "verified_anchor": {
+      "date": "1900-01-01",
+      "stem": "甲",  
+      "branch": "戌",
+      "comment": "Verified in Sesheta's vendor-bazi-engine.js function g2()"
+    },
+    "boundary_rule": "Day changes at 子 hour (23:00). Births at 23:00-00:59 use NEXT day's pillar but PREVIOUS day's date for hour calculation.",
+    "interpretation_layers": [
+      "1. Daily reading of Personal Resonance (5 levels)",
+      "2. Daily Elemental Alignment (5 levels)",  
+      "3. Daily Officer (12-day cycle)",
+      "4. Pillar Echo with each natal pillar",
+      "5. Action Mode L1-L6 score for the day",
+      "6. Hour-by-hour breakdown via Liu Shi"
+    ],
+    "daily_reading_factors": {
+      "personal_resonance": "Direct interaction between Day stem-branch and natal Day pillar",
+      "elemental_alignment": "Day's element vs Useful God",
+      "day_officer_12_day_cycle": [
+        "建 Establish", "除 Remove", "滿 Full", "平 Balance",
+        "定 Stable", "執 Initiate", "破 Destruction", "危 Danger",
+        "成 Success", "收 Receive", "開 Open", "閉 Close"
+      ],
+      "useful_god_alignment": "If day's element matches yongshen → favorable. Else neutral/unfavorable."
+    },
+    "aeaw_today_example": {
+      "date": "2026-05-05",
+      "liu_ri_pillar": "戊午 (sample)",
+      "vs_aeaw_己亥": {
+        "stem_relation": "戊 Yang Earth + 己 Yin Earth = Companion (Friend) — boost",
+        "branch_relation": "午 Fire vs 亥 Water = Clash but Fire = yongshen → activation",
+        "verdict": "Caution + Active (mixed but tends positive)",
+        "action_mode": "L2_conditional"
+      }
+    }
+  },
+
+  "5_liu_shi_hourly_pillar": {
+    "name": "流時 Liu Shi (Hourly Pillar)",
+    "name_th": "หลิวสือ / เสาประจำชั่วโมง",
+    "description": "Hour Pillar at any given moment. Each hour pillar covers 2 hours. Calculated using Sesheta's Dr() function.",
+    "calculation_function": "function getLiuShi(date) {\n  // Hour branch determined by 2-hour blocks\n  // Hour stem = (day_stem_index * 2 + hour_branch_index) % 10\n  return Dr(date);\n}",
+    "two_hour_blocks": {
+      "子": "23:00-00:59",
+      "丑": "01:00-02:59",
+      "寅": "03:00-04:59",
+      "卯": "05:00-06:59",
+      "辰": "07:00-08:59",
+      "巳": "09:00-10:59",
+      "午": "11:00-12:59",
+      "未": "13:00-14:59",
+      "申": "15:00-16:59",
+      "酉": "17:00-18:59",
+      "戌": "19:00-20:59",
+      "亥": "21:00-22:59"
+    },
+    "hour_stem_formula": {
+      "rule": "五鼠遁元 (Five Rat Drilling) — based on Day Stem",
+      "table": {
+        "甲己": "甲子 (start at 甲子 hour)",
+        "乙庚": "丙子",
+        "丙辛": "戊子",
+        "丁壬": "庚子",
+        "戊癸": "壬子"
+      },
+      "formula": "hour_stem_index = (day_stem_index * 2 + hour_branch_index) % 10"
+    },
+    "use_cases": [
+      "Trading timing (BTC, stocks) — ride favorable hours",
+      "Meeting scheduling — pick auspicious 2-hour window",
+      "Surgery timing (medical traditional Chinese)",
+      "Travel start time",
+      "Childbirth timing (when partial control possible)",
+      "Important phone calls / negotiations"
+    ],
+    "scoring_method": "Same as Daily but with Hour pillar. Each day has 12 hour scores. Best 2-3 hours can be identified.",
+    "decode_advantage": "Sesheta only shows daily reading. Decode shows hour-by-hour for trading-grade timing.",
+    "aeaw_optimal_hours_general": {
+      "best_hours": ["巳 (9-11am) — Fire + Hidden 庚 wealth", "午 (11am-1pm) — Fire peak"],
+      "avoid_hours": ["子 (11pm-1am) — Water peak, freezes chart", "亥 (9-11pm) — Water + clash with self"],
+      "neutral": ["未 (1-3pm) — own element area", "辰 (7-9am) — void"]
+    }
+  },
+
+  "6_unified_transit_function": {
+    "description": "Master function returning ALL 5 transit layers for any moment",
+    "implementation": "function getAllTransits(birthDate, currentDate, gender) {\n  const natal = calculateNatal(birthDate);\n  const daYun = getDaYun(natal, gender);\n  const liuNian = getLiuNian(currentDate.getFullYear());\n  const liuYue = getLiuYue(currentDate.getFullYear(), currentDate.getMonth() + 1);\n  const liuRi = getLiuRi(currentDate);\n  const liuShi = getLiuShi(currentDate);\n  \n  return {\n    da_yun: daYun.pillars[getCurrentPillarIndex(daYun, currentDate)],\n    liu_nian: liuNian,\n    liu_yue: liuYue,\n    liu_ri: liuRi,\n    liu_shi: liuShi,\n    \n    // Combined scoring\n    natal: natal,\n    transit_score: calculateTransitScore(natal, daYun, liuNian, liuYue, liuRi, liuShi),\n    action_mode: determineActionMode(transit_score),\n    activated_stars: detectActivatedStars(natal, [daYun, liuNian, liuYue, liuRi, liuShi]),\n    activated_destructions: detect6Destructions([natal, daYun, liuNian, liuYue, liuRi, liuShi])\n  };\n}",
+    "scoring_weights": {
+      "da_yun":    0.30,
+      "liu_nian":  0.25,
+      "liu_yue":   0.20,
+      "liu_ri":    0.15,
+      "liu_shi":   0.10,
+      "rationale": "Weighted by duration of influence — longer-lasting cycles weight more in long-term decisions; for hour-by-hour decisions, invert weights"
+    }
+  }
+}

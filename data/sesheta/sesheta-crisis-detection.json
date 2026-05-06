@@ -1,0 +1,111 @@
+{
+  "tier_values": {
+    "SSS": 1,
+    "SS": 2,
+    "S": 3,
+    "A+": 4,
+    "A": 5,
+    "B": 6,
+    "F": 7
+  },
+  "tier_meaning": {
+    "SSS": "Critical priority - chart cannot function without this",
+    "SS": "Strong priority - significantly improves chart",
+    "S": "Useful - good support",
+    "A+": "Beneficial in specific contexts",
+    "A": "Mildly helpful",
+    "B": "Neutral",
+    "F": "Avoid - worsens chart"
+  },
+  "frozen_chart": {
+    "season": "冬季 (winter months 子,亥,丑)",
+    "crisis_check": "cold intensity > threshold",
+    "recommended_element": "Fire (火)",
+    "tier_when_critical": "SSS",
+    "description": "Chart needs WARMTH - too much water/cold"
+  },
+  "damp_chart": {
+    "season": "Wet earth: 辰,丑",
+    "crisis_check": "dampness intensity from water + wet earth",
+    "recommended_element": "Fire (火)",
+    "tier_when_critical": "SSS",
+    "description": "Chart needs DRY HEAT to evaporate moisture"
+  },
+  "scorched_chart": {
+    "season": "夏季 (summer months 巳,午,未)",
+    "crisis_check": "heat intensity > threshold",
+    "recommended_element": "Water (水)",
+    "tier_when_critical": "SSS",
+    "description": "Chart needs COOLING - too much fire"
+  },
+  "dry_chart": {
+    "season": "秋季 with dry earth: 戌,未",
+    "crisis_check": "dryness intensity",
+    "recommended_element": "Water (水)",
+    "tier_when_critical": "SSS",
+    "description": "Chart needs MOISTURE"
+  },
+  "heater_list": {
+    "stems": [
+      "丙",
+      "丁"
+    ],
+    "branches": [
+      "巳",
+      "午"
+    ],
+    "aux_branches": [
+      "未",
+      "戌"
+    ],
+    "aux_stems": [
+      "己"
+    ]
+  },
+  "cooler_list": {
+    "stems": [
+      "壬",
+      "癸"
+    ],
+    "branches": [
+      "子",
+      "亥"
+    ],
+    "aux_branches": [
+      "丑",
+      "辰"
+    ],
+    "metal_aux_stems": [
+      "庚",
+      "辛"
+    ],
+    "metal_aux_branches": [
+      "申",
+      "酉"
+    ]
+  },
+  "branch_opposites_for_crisis_block": {
+    "巳": "亥",
+    "午": "子",
+    "未": "丑",
+    "戌": "辰"
+  },
+  "bridge_element": {
+    "rule": "Generates element that bridges two opposing forces",
+    "mapping": {
+      "Wood": "Fire",
+      "Fire": "Earth",
+      "Earth": "Metal",
+      "Metal": "Water",
+      "Water": "Wood"
+    }
+  },
+  "detection_priority": [
+    "1. Special pattern (Follower / Vibrant)",
+    "2. Crisis detection (Frozen/Damp/Scorched/Dry → SSS recommendation)",
+    "3. Regulating (control excess element)",
+    "4. Arbitrating (bridge between two clashing elements)",
+    "5. Medicating (fix specific weakness)",
+    "6. Normal (Useful God = element that supports DM)"
+  ]
+}

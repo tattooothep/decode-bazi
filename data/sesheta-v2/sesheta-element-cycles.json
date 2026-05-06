@@ -1,0 +1,59 @@
+{
+  "generation_cycle (相生)": {
+    "description": "Sheng cycle - one element generates the next",
+    "mapping": {
+      "Wood": "Fire",
+      "Fire": "Earth",
+      "Earth": "Metal",
+      "Metal": "Water",
+      "Water": "Wood"
+    }
+  },
+  "control_cycle (相剋)": {
+    "description": "Ke cycle - one element controls/destroys another",
+    "mapping": {
+      "Wood": "Earth",
+      "Earth": "Water",
+      "Water": "Fire",
+      "Fire": "Metal",
+      "Metal": "Wood"
+    }
+  },
+  "ten_gods_logic": {
+    "rule": "Calculated based on (DM, target_stem, polarity_match)",
+    "cases": {
+      "same_polarity_same_element": "比肩 (F - Friend)",
+      "diff_polarity_same_element": "劫財 (RW - Rob Wealth/Leader)",
+      "same_polarity_DM_generates": "食神 (EG - Eating God/Artist)",
+      "diff_polarity_DM_generates": "傷官 (HO - Hurting Officer/Performer)",
+      "same_polarity_DM_controls": "偏財 (IW - Indirect Wealth/Pioneer)",
+      "diff_polarity_DM_controls": "正財 (DW - Direct Wealth/Director)",
+      "same_polarity_controls_DM": "七殺 (7K - Seven Killings/Warrior)",
+      "diff_polarity_controls_DM": "正官 (DO - Direct Officer/Diplomat)",
+      "same_polarity_generates_DM": "偏印 (IR - Indirect Resource/Philosopher)",
+      "diff_polarity_generates_DM": "正印 (DR - Direct Resource/Analyzer)"
+    }
+  },
+  "archetype_to_god_mapping": {
+    "Achiever (Wealth)": [
+      "偏財 IW",
+      "正財 DW"
+    ],
+    "Influence (Officer)": [
+      "七殺 7K",
+      "正官 DO"
+    ],
+    "Thinker (Resource)": [
+      "偏印 IR",
+      "正印 DR"
+    ],
+    "Connector (Companion)": [
+      "比肩 F",
+      "劫財 RW"
+    ],
+    "Creator (Output)": [
+      "食神 EG",
+      "傷官 HO"
+    ]
+  }
+}

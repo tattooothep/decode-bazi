@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "title": "12 Phases of Life — Sesheta's Verified Algorithm",
+    "title_th": "สิบสองช่วงชีวิต ตำราเซเชต้า ที่ยืนยันแล้ว",
+    "source": "Decoded from vendor-bazi-engine.js function e3()",
+    "verification": "100% match with Aeaw's chart 甲子/丙子/己亥/辛未"
+  },
+  "phase_order_12": [
+    {"id": 0,  "chinese": "長生", "pinyin": "Cháng Shēng",  "english": "Birth"},
+    {"id": 1,  "chinese": "沐浴", "pinyin": "Mù Yù",         "english": "Bath"},
+    {"id": 2,  "chinese": "冠帶", "pinyin": "Guān Dài",      "english": "Adolescence"},
+    {"id": 3,  "chinese": "臨官", "pinyin": "Lín Guān",      "english": "Career"},
+    {"id": 4,  "chinese": "帝旺", "pinyin": "Dì Wàng",       "english": "Peak"},
+    {"id": 5,  "chinese": "衰",   "pinyin": "Shuāi",         "english": "Decline"},
+    {"id": 6,  "chinese": "病",   "pinyin": "Bìng",          "english": "Illness"},
+    {"id": 7,  "chinese": "死",   "pinyin": "Sǐ",            "english": "Death"},
+    {"id": 8,  "chinese": "墓",   "pinyin": "Mù",            "english": "Tomb"},
+    {"id": 9,  "chinese": "絕",   "pinyin": "Jué",           "english": "Extinction"},
+    {"id": 10, "chinese": "胎",   "pinyin": "Tāi",           "english": "Conception"},
+    {"id": 11, "chinese": "養",   "pinyin": "Yǎng",          "english": "Nurturing"}
+  ],
+  "phase_multipliers": {
+    "帝旺": 1.5, "臨官": 1.4, "長生": 1.3, "冠帶": 1.2, "沐浴": 1.1,
+    "衰": 0.9, "病": 0.8, "死": 0.7, "墓": 0.6, "絕": 0.5, "胎": 0.6, "養": 0.7
+  },
+  "rooting_weights": {
+    "0_roots": 1.0, "1_root": 1.0, "2_roots": 0.6, "3_plus_roots": 0.25
+  },
+  "position_weights": {
+    "year": 0.8, "month": 1.6, "day": 1.0, "hour": 0.9
+  },
+  "stem_anchor_indices_Ze": {
+    "甲": 11, "乙": 6, "丙": 2, "丁": 9, "戊": 2,
+    "己": 9, "庚": 5, "辛": 0, "壬": 8, "癸": 3
+  },
+  "stem_directions_n3": {
+    "甲": 1, "丙": 1, "戊": 1, "庚": 1, "壬": 1,
+    "乙": -1, "丁": -1, "己": -1, "辛": -1, "癸": -1
+  },
+  "branch_order": ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"],
+  "calculation_formula": {
+    "function": "e3(stem, branch)",
+    "pseudocode": "r = Ze[stem]; t = n3[stem]; o = branches.indexOf(branch); a = ((o - r) * t % 12 + 12) % 12; return phaseOrder[a]",
+    "interpretation": "Yang stems traverse phases forward (clockwise), Yin stems reverse (counterclockwise). Anchor index Ze[stem] is the branch position where 長生 (Birth phase) starts."
+  },
+  "stem_floating_thresholds": {
+    "normal_threshold": 0.8,
+    "critical_threshold": 0.5
+  },
+  "verified_with_aeaw": {
+    "day_master": "己",
+    "calculations": [
+      {"branch": "子", "phase": "絕", "expected_mult": 0.5},
+      {"branch": "亥", "phase": "胎", "expected_mult": 0.6},
+      {"branch": "未", "phase": "冠帶", "expected_mult": 1.2}
+    ],
+    "total": 2.88,
+    "result": "Weak Day Master — confirmed Frozen Winter Chart"
+  }
+}
