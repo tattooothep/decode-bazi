@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>hourkey · วางฤกษ์ · 擇吉</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  [data-theme="dark"]{
+    --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.32);
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12);
+    --gold-line:rgba(200,164,77,.22);
+    --tile:rgba(38,42,50,.55); --tile-bd:rgba(246,241,230,.10);
+    --good:#8fc37c; --bad:#e26b5d; --neutral:#c8b88a;
+    --good-bg:rgba(143,195,124,.14); --bad-bg:rgba(226,107,93,.14); --neut-bg:rgba(200,184,138,.14);
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#ebe5d6; --bg-3:#dfd9c8;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.65); --fg-faint:rgba(26,22,18,.4);
+    --gold:#8a6d2a; --gold-deep:#5e4a1a; --gold-soft:rgba(138,109,42,.1);
+    --gold-line:rgba(138,109,42,.28);
+    --tile:rgba(255,250,238,.65); --tile-bd:rgba(26,22,18,.12);
+    --good:#5a8a48; --bad:#a8483a; --neutral:#7a6f4a;
+    --good-bg:rgba(90,138,72,.1); --bad-bg:rgba(168,72,58,.1); --neut-bg:rgba(122,111,74,.1);
+  }
+  :root{
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);font-family:var(--thai);color:var(--fg);min-height:100vh;transition:background .35s, color .35s;}
+  body{background:radial-gradient(circle at 80% 10%, var(--gold-soft), transparent 60%), var(--bg);}
+  button,input,select,textarea{font-family:inherit;color:inherit;}
+
+  /* topbar */
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:color-mix(in srgb, var(--bg) 78%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .nav{display:flex;gap:24px;}
+  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
+  .nav a.on{color:var(--gold);}
+  .top-r{display:flex;align-items:center;gap:14px;}
+  .theme-switch{display:flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .theme-switch button{width:32px;height:32px;border:none;background:transparent;color:var(--fg-soft);font-size:14px;border-radius:50%;cursor:pointer;}
+  .theme-switch button.on{background:var(--gold);color:var(--bg);}
+  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, #d4a85a, var(--gold));display:flex;align-items:center;justify-content:center;color:var(--bg);font-family:var(--tc);font-size:14px;font-weight:700;}
+
+  .stage{max-width:1400px;margin:0 auto;padding:32px 40px 80px;}
+  .crumb{display:flex;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-faint);margin-bottom:18px;}
+  .crumb a{color:var(--fg-soft);text-decoration:none;}
+
+  /* hero */
+  .hero{margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--gold-line);}
+  .hero .label{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;}
+  .hero h1{font-family:var(--serif);font-size:60px;font-weight:300;line-height:1.02;letter-spacing:-.02em;}
+  .hero h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .hero h1 i{font-style:italic;color:var(--gold);font-weight:300;}
+  .hero .lede{font-size:14px;color:var(--fg-soft);margin-top:14px;line-height:1.65;max-width:720px;}
+  .hero .lede b{color:var(--gold);}
+  .hero .badges{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .hero .badges span{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:6px 12px;border:1px solid var(--gold-line);border-radius:99px;color:var(--fg-soft);}
+  .hero .badges span b{color:var(--gold);}
+
+  /* layout */
+  .picker-grid{display:grid;grid-template-columns:380px 1fr;gap:22px;}
+  .config-col{display:flex;flex-direction:column;gap:18px;}
+
+  .card{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;padding:22px;}
+  .card h3{font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+  .card h3 .tc{font-family:var(--tc);font-size:18px;letter-spacing:0;}
+  .card h3 .num{margin-left:auto;font-family:var(--serif);font-size:28px;font-style:italic;color:var(--gold);font-weight:300;}
+
+  /* category tabs */
+  .cat-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:14px;background:var(--bg-2);padding:4px;border-radius:10px;}
+  .cat-tabs button{background:transparent;border:none;color:var(--fg-soft);padding:10px 6px;border-radius:7px;font-family:var(--thai);font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:.2s;}
+  .cat-tabs button.on{background:var(--gold-soft);color:var(--gold);}
+  .cat-tabs button .tc{font-family:var(--tc);font-size:14px;font-weight:700;}
+
+  /* mission grid */
+  .missions{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:300px;overflow-y:auto;padding-right:4px;}
+  .missions::-webkit-scrollbar{width:4px;}
+  .missions::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:2px;}
+  .mission{background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:.18s;text-align:left;}
+  .mission:hover{border-color:var(--gold-line);}
+  .mission.on{background:var(--gold-soft);border-color:var(--gold);}
+  .mission .nm{font-size:12px;font-weight:600;color:var(--fg);display:flex;align-items:center;gap:6px;}
+  .mission .nm .tc{font-family:var(--tc);font-size:14px;color:var(--gold);font-weight:700;}
+  .mission .desc{font-size:10px;color:var(--fg-faint);line-height:1.3;}
+
+  /* mission custom name */
+  .mission-name{margin-top:14px;padding-top:14px;border-top:1px dashed var(--tile-bd);display:flex;flex-direction:column;gap:8px;}
+  .mission-name label{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;}
+  .mission-name input{background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:8px;padding:11px;font-size:13px;}
+  .mission-name input:focus{border-color:var(--gold);outline:none;}
+
+  /* range */
+  .range-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .range-row label{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;display:block;margin-bottom:6px;}
+  .range-row input{background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:8px;padding:11px;font-family:var(--mono);font-size:12px;width:100%;}
+  .range-row input:focus{border-color:var(--gold);outline:none;}
+  .quick-range{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;}
+  .quick-range button{background:var(--bg-2);border:1px solid var(--tile-bd);color:var(--fg-soft);padding:6px 11px;border-radius:99px;font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;}
+  .quick-range button:hover, .quick-range button.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+
+  /* weights */
+  .weights{display:flex;flex-direction:column;gap:14px;}
+  .w-row{display:grid;grid-template-columns:auto 1fr 36px;gap:12px;align-items:center;}
+  .w-row .lbl{display:flex;align-items:center;gap:8px;}
+  .w-row .lbl .tc{font-family:var(--tc);font-size:18px;font-weight:700;color:var(--gold);}
+  .w-row .lbl .nm{display:flex;flex-direction:column;line-height:1.2;}
+  .w-row .lbl .nm small{font-family:var(--mono);font-size:8px;color:var(--fg-faint);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+  .w-row input[type="range"]{accent-color:var(--gold);width:100%;}
+  .w-row .val{font-family:var(--mono);font-size:11px;color:var(--gold);text-align:right;font-weight:700;}
+
+  /* relations toggle */
+  .rel-list{display:flex;flex-direction:column;gap:6px;}
+  .rel-row{display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:8px;}
+  .rel-row .who{display:flex;align-items:center;gap:10px;font-size:12px;}
+  .rel-row .who .ava{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-weight:700;font-size:14px;border:1px solid;background:var(--neut-bg);border-color:var(--neutral);color:var(--neutral);}
+  .rel-row .who .role{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.15em;color:var(--fg-faint);text-transform:uppercase;margin-top:2px;}
+  .switch{position:relative;display:inline-block;width:36px;height:20px;cursor:pointer;}
+  .switch input{opacity:0;width:0;height:0;}
+  .slider{position:absolute;inset:0;background:var(--bg-3);border-radius:99px;transition:.3s;}
+  .slider:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:var(--fg-faint);border-radius:50%;transition:.3s;}
+  .switch input:checked + .slider{background:var(--gold-soft);}
+  .switch input:checked + .slider:before{transform:translateX(16px);background:var(--gold);}
+
+  .rel-add{margin-top:8px;background:transparent;border:1px dashed var(--gold-line);color:var(--gold);padding:11px;border-radius:8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;width:100%;}
+  .rel-add:hover{background:var(--gold-soft);}
+
+  /* search button */
+  .search-btn{background:var(--gold);color:var(--bg);border:none;padding:18px;border-radius:12px;font-family:var(--mono);font-size:12px;letter-spacing:.25em;font-weight:700;text-transform:uppercase;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;transition:.2s;box-shadow:0 8px 24px var(--gold-soft);}
+  .search-btn:hover{background:var(--gold-deep);transform:translateY(-1px);}
+  .search-btn .tc{font-family:var(--tc);font-size:18px;letter-spacing:0;}
+
+  /* result column */
+  .result-col{display:flex;flex-direction:column;gap:14px;}
+  .result-head{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;padding:20px 22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
+  .result-head .info .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;}
+  .result-head .info h2{font-family:var(--serif);font-size:26px;font-weight:400;margin-top:4px;}
+  .result-head .info h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-right:6px;}
+  .result-head .info h2 b{color:var(--gold);font-weight:500;font-style:italic;}
+  .result-head .sort{display:flex;background:var(--bg-2);border-radius:99px;padding:4px;}
+  .result-head .sort button{background:transparent;border:none;color:var(--fg-soft);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;}
+  .result-head .sort button.on{background:var(--gold);color:var(--bg);font-weight:700;}
+
+  /* time card */
+  .time-card{background:linear-gradient(160deg, var(--tile), var(--bg-2));border:1px solid var(--tile-bd);border-radius:14px;padding:20px;position:relative;overflow:hidden;cursor:pointer;transition:.25s;}
+  .time-card:hover{border-color:var(--gold-line);transform:translateY(-2px);}
+  .time-card.r1{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold-soft), 0 12px 32px rgba(0,0,0,.25);}
+  .time-card.r1::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg, var(--gold), var(--good));}
+
+  .tc-head{display:grid;grid-template-columns:60px 1fr auto auto;gap:18px;align-items:center;margin-bottom:16px;}
+  .tc-rank{font-family:var(--serif);font-size:48px;font-style:italic;font-weight:300;color:var(--gold);line-height:1;letter-spacing:-.02em;display:flex;align-items:baseline;}
+  .tc-rank .star{font-size:14px;font-style:normal;margin-left:2px;}
+  .tc-when .date{font-family:var(--serif);font-size:22px;font-weight:500;line-height:1.1;}
+  .tc-when .date .day{color:var(--gold);}
+  .tc-when .time{font-family:var(--mono);font-size:13px;color:var(--fg-soft);letter-spacing:.08em;margin-top:3px;}
+  .tc-when .lunar{font-family:var(--tc);font-size:11px;color:var(--fg-faint);margin-top:2px;}
+  .tc-pillar{display:flex;flex-direction:column;align-items:center;font-family:var(--tc);font-weight:700;line-height:1;}
+  .tc-pillar .stem{font-size:18px;color:var(--gold);}
+  .tc-pillar .branch{font-size:18px;color:var(--fg);}
+  .tc-pillar small{font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-top:4px;font-weight:400;}
+  .tc-score{text-align:right;}
+  .tc-score .num{font-family:var(--serif);font-size:42px;font-style:italic;font-weight:300;color:var(--good);letter-spacing:-.02em;line-height:1;}
+  .tc-score.bad .num{color:var(--bad);}
+  .tc-score.mid .num{color:var(--neutral);}
+  .tc-score .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-top:4px;}
+
+  /* score breakdown */
+  .bd-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+  .bd-cell{padding:10px 12px;background:var(--bg-2);border-radius:8px;border-left:2px solid;}
+  .bd-cell.good{border-color:var(--good);}
+  .bd-cell.bad{border-color:var(--bad);}
+  .bd-cell.mid{border-color:var(--neutral);}
+  .bd-cell .src{font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;display:flex;align-items:center;gap:5px;}
+  .bd-cell .src .tc{font-family:var(--tc);font-size:11px;letter-spacing:0;color:var(--gold);}
+  .bd-cell .v{display:flex;align-items:baseline;gap:6px;margin-top:5px;}
+  .bd-cell .v .n{font-family:var(--serif);font-size:22px;font-weight:500;font-style:italic;letter-spacing:-.02em;}
+  .bd-cell.good .v .n{color:var(--good);}
+  .bd-cell.bad .v .n{color:var(--bad);}
+  .bd-cell.mid .v .n{color:var(--neutral);}
+  .bd-cell .v .l{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--fg-soft);text-transform:uppercase;}
+
+  /* tags */
+  .tc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
+  .tc-tag{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:4px 8px;border-radius:99px;border:1px solid;}
+  .tc-tag.good{color:var(--good);border-color:var(--good);background:var(--good-bg);}
+  .tc-tag.bad{color:var(--bad);border-color:var(--bad);background:var(--bad-bg);}
+  .tc-tag.mid{color:var(--neutral);border-color:var(--neutral);}
+  .tc-tag .tc{font-family:var(--tc);margin-right:3px;font-weight:700;}
+
+  /* poem */
+  .tc-poem{padding:12px 14px;background:var(--bg-2);border-radius:8px;border-left:3px solid var(--gold);margin-bottom:14px;}
+  .tc-poem .verse{font-family:var(--tc);font-size:13px;font-weight:600;line-height:1.5;color:var(--fg);}
+  .tc-poem .trans{font-family:var(--thai);font-size:12px;color:var(--fg-soft);margin-top:4px;line-height:1.5;}
+
+  /* actions */
+  .tc-actions{display:flex;gap:8px;}
+  .tc-actions button{flex:1;background:var(--bg-2);border:1px solid var(--tile-bd);color:var(--fg-soft);padding:11px;border-radius:8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .tc-actions button:hover{border-color:var(--gold);color:var(--gold);}
+  .tc-actions button.primary{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700;}
+  .tc-actions button.primary:hover{background:var(--gold-deep);color:var(--bg);}
+
+  /* responsive */
+  @media (max-width:1100px){
+    .picker-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:980px){
+    .stage{padding:22px 18px 60px;}
+    .topbar{padding:14px 18px;}
+    .nav{display:none;}
+    .hero h1{font-size:38px;}
+    .tc-head{grid-template-columns:50px 1fr;}
+    .tc-pillar, .tc-score{grid-column:span 2;display:flex;justify-content:flex-end;align-items:center;gap:14px;}
+    .tc-pillar{flex-direction:row;}
+    .tc-score{text-align:left;}
+    .bd-row{grid-template-columns:1fr;}
+    .cat-tabs{grid-template-columns:1fr 1fr;}
+  }
+
+  /* PHONE (≤640px) — picker mobile-friendly */
+  @media (max-width:640px){
+    .topbar{padding:10px 14px;flex-wrap:wrap;gap:8px;}
+    .logo{font-size:18px;}
+    .top-r{gap:8px;}
+    .stage{padding:14px 12px 80px;}
+
+    .hero{margin-bottom:22px;padding-bottom:18px;}
+    .hero h1{font-size:28px;line-height:1.1;}
+    .hero .lede{font-size:13px;}
+    .hero .badges{gap:5px;}
+    .hero .badges span{font-size:8px;padding:5px 9px;letter-spacing:.15em;}
+
+    .picker-grid{gap:14px;}
+
+    .card{padding:16px 14px;border-radius:12px;}
+    .card h3{font-size:10px;margin-bottom:14px;}
+    .card h3 .num{font-size:22px;}
+
+    /* category tabs */
+    .cat-tabs{grid-template-columns:repeat(2,1fr);gap:4px;}
+    .cat-tabs button{padding:9px 4px;font-size:10px;}
+    .cat-tabs button .tc{font-size:13px;}
+
+    /* missions list — 1 column, scrollable */
+    .missions{grid-template-columns:1fr;max-height:280px;}
+    .mission{padding:11px 12px;}
+    .mission .nm{font-size:13px;}
+    .mission .desc{font-size:11px;}
+
+    /* range row */
+    .range-row{gap:8px;}
+    .range-row input{padding:10px;font-size:13px;}
+
+    .quick-range button{padding:7px 10px;font-size:9px;}
+
+    /* weights */
+    .weights{gap:12px;}
+    .w-row{gap:10px;}
+    .w-row .lbl .tc{font-size:16px;}
+    .w-row .lbl .nm{font-size:12px;}
+    .w-row .lbl .nm small{font-size:7px;}
+    .w-row input[type="range"]{height:24px;}
+    .w-row .val{font-size:10px;}
+
+    .rel-row{padding:8px 10px;}
+    .rel-row .who{font-size:12px;}
+    .rel-row .ava{width:28px;height:28px;font-size:13px;}
+
+    .search-btn{padding:14px;font-size:11px;letter-spacing:.18em;}
+
+    /* result */
+    .result-head{padding:14px 16px;flex-direction:column;align-items:flex-start;gap:10px;}
+    .result-head .info h2{font-size:18px;}
+    .result-head .sort{align-self:stretch;}
+    .result-head .sort button{padding:7px 10px;font-size:8px;flex:1;}
+
+    .time-card{padding:16px 14px;}
+    .tc-head{grid-template-columns:44px 1fr;gap:10px;margin-bottom:12px;}
+    .tc-rank{font-size:36px;}
+    .tc-when .date{font-size:18px;}
+    .tc-when .time{font-size:11px;}
+    .tc-pillar{grid-column:span 2;flex-direction:row;justify-content:flex-start;gap:8px;align-items:center;padding-top:8px;border-top:1px dashed var(--tile-bd);}
+    .tc-pillar .stem,.tc-pillar .branch{font-size:16px;}
+    .tc-pillar small{margin-top:0;}
+    .tc-score{grid-column:span 2;display:flex;justify-content:space-between;align-items:center;}
+    .tc-score .num{font-size:32px;}
+
+    .bd-row{grid-template-columns:1fr;gap:6px;margin-bottom:12px;}
+    .bd-cell{padding:9px 11px;}
+    .bd-cell .v .n{font-size:18px;}
+
+    .tc-tags{gap:4px;margin-bottom:12px;}
+    .tc-tag{font-size:8px;padding:3px 7px;}
+
+    .tc-poem{padding:10px 12px;}
+    .tc-poem .verse{font-size:12px;}
+    .tc-poem .trans{font-size:11px;}
+
+    .tc-actions{flex-wrap:wrap;gap:6px;}
+    .tc-actions button{padding:9px 8px;font-size:9px;flex:1 1 calc(50% - 3px);min-width:0;}
+    .tc-actions button.primary{flex-basis:100%;}
+  }
+
+  @media (max-width:380px){
+    .hero h1{font-size:24px;}
+    .cat-tabs{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
+  <nav class="nav">
+    <a href="/chart">ดวงของฉัน</a>
+    <a href="/today">วันนี้</a>
+    <a href="/calendar">ปฏิทิน</a>
+    <a href="/picker" class="on">วางฤกษ์</a>
+    <a href="/qimen">ฉีเหมิน</a>
+    <a href="/network">เครือข่าย</a>
+  </nav>
+  <div class="top-r">
+    <div class="theme-switch">
+      <button class="on" data-theme="dark">☾</button>
+      <button data-theme="light">☀</button>
+    </div>
+    <div class="avatar">น</div>
+  </div>
+</header>
+
+<div class="stage">
+  <div class="crumb"><a href="/">หน้าหลัก</a> <span>/</span> <span>วางฤกษ์ · 擇吉 AUSPICIOUS PICKER</span></div>
+
+  <div class="hero">
+    <div class="label">擇吉 · CHOOSE YOUR HOUR</div>
+    <h1>เลือก<i>ฤกษ์</i> <span class="tc">擇日</span><br/>ก่อนจะ<i>ก้าว</i>สำคัญ</h1>
+    <p class="lede">บอก<b>ภารกิจ</b>และ<b>ช่วงเวลา</b>ที่ต้องการ — ระบบหา<b>ฤกษ์ที่ผ่านทั้ง 3 ระบบ</b>: 黃曆 ปฏิทินมงคล + 用神 ดวงคุณ + 奇門 ฉีเหมิน · จัดอันดับให้คุณเลือก · บันทึกแล้วโผล่เตือนใน "วันนี้"</p>
+    <div class="badges">
+      <span><b>3</b> SYSTEMS · 三盤合參</span>
+      <span><b>20</b> ภารกิจ CEO</span>
+      <span><b>±2hr</b> precision</span>
+      <span>Save → 我志 myGoals</span>
+    </div>
+  </div>
+
+  <div class="picker-grid">
+
+    <!-- ── CONFIG COL ── -->
+    <div class="config-col">
+
+      <!-- mission -->
+      <div class="card">
+        <h3><span class="tc">事</span> ภารกิจ · MISSION <span class="num">1</span></h3>
+
+        <!-- category tabs -->
+        <div class="cat-tabs" id="cat-tabs">
+          <button class="on" data-cat="doc"><span class="tc">文</span>เอกสาร</button>
+          <button data-cat="talk"><span class="tc">談</span>เจรจา</button>
+          <button data-cat="trade"><span class="tc">交</span>ธุรกรรม</button>
+          <button data-cat="biz"><span class="tc">經</span>องค์กร</button>
+        </div>
+
+        <!-- missions list (filtered by category) -->
+        <div class="missions" id="missions">
+          <!-- injected by JS -->
+        </div>
+
+        <div class="mission-name">
+          <label>ชื่อภารกิจของคุณ · LABEL</label>
+          <input type="text" id="mission-label" value="เซ็นสัญญากับ Fara — Anhui Hongyu" placeholder="เช่น เซ็นสัญญากับ Fara"/>
+        </div>
+      </div>
+
+      <!-- date range -->
+      <div class="card">
+        <h3><span class="tc">期</span> ช่วงเวลา · WHEN <span class="num">2</span></h3>
+        <div class="range-row">
+          <div>
+            <label>เริ่ม · FROM</label>
+            <input type="date" value="2026-05-07"/>
+          </div>
+          <div>
+            <label>ถึง · TO</label>
+            <input type="date" value="2026-05-21"/>
+          </div>
+        </div>
+        <div class="quick-range" id="qr">
+          <button>3 วัน</button>
+          <button class="on">1-2 สัปดาห์</button>
+          <button>เดือน</button>
+          <button>ก่อน 31 พ.ค.</button>
+        </div>
+      </div>
+
+      <!-- weights -->
+      <div class="card">
+        <h3><span class="tc">權</span> น้ำหนัก · WEIGHTS <span class="num">3</span></h3>
+        <div class="weights">
+          <div class="w-row">
+            <div class="lbl"><span class="tc">黃</span><span class="nm">ปฏิทินมงคล<small>TONGSHU</small></span></div>
+            <input type="range" min="0" max="100" value="35"/>
+            <span class="val">35%</span>
+          </div>
+          <div class="w-row">
+            <div class="lbl"><span class="tc">用</span><span class="nm">ดวงคุณ<small>YONGSHEN</small></span></div>
+            <input type="range" min="0" max="100" value="40"/>
+            <span class="val">40%</span>
+          </div>
+          <div class="w-row">
+            <div class="lbl"><span class="tc">奇</span><span class="nm">ฉีเหมิน<small>QIMEN</small></span></div>
+            <input type="range" min="0" max="100" value="25"/>
+            <span class="val">25%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- relations -->
+      <div class="card">
+        <h3><span class="tc">關</span> รวมดวงคู่ค้า · OPPONENT <span class="num">4</span></h3>
+        <div class="rel-list">
+          <div class="rel-row">
+            <div class="who">
+              <div class="ava" style="background:rgba(200,184,138,.14);border-color:#c8b88a;color:#c8b88a;">辛</div>
+              <div>
+                <div>Fara Zhang</div>
+                <span class="role">SUPPLIER · 中国</span>
+              </div>
+            </div>
+            <label class="switch"><input type="checkbox" checked/><span class="slider"></span></label>
+          </div>
+          <div class="rel-row">
+            <div class="who">
+              <div class="ava" style="background:rgba(123,168,200,.14);border-color:#7ba8c8;color:#7ba8c8;">壬</div>
+              <div>
+                <div>พีท · Co-founder</div>
+                <span class="role">WORK · พันธมิตร</span>
+              </div>
+            </div>
+            <label class="switch"><input type="checkbox"/><span class="slider"></span></label>
+          </div>
+          <button class="rel-add">+ เพิ่มจากเครือข่าย</button>
+        </div>
+      </div>
+
+      <button class="search-btn">
+        <span class="tc">擇</span>
+        ค้นหาฤกษ์มงคล
+      </button>
+    </div>
+
+    <!-- ── RESULT COL ── -->
+    <div class="result-col">
+
+      <div class="result-head">
+        <div class="info">
+          <div class="lbl">RESULT · 結果</div>
+          <h2><span class="tc">擇</span>พบ <b>14 ฤกษ์</b> ใน 14 วัน · <b>3 ฤกษ์มงคลสูงสุด</b></h2>
+        </div>
+        <div class="sort">
+          <button class="on">SCORE</button>
+          <button>เร็วสุด</button>
+          <button>ทุก slot</button>
+        </div>
+      </div>
+
+      <!-- TOP RANK 1 -->
+      <div class="time-card r1">
+        <div class="tc-head">
+          <div class="tc-rank">1<span class="star">★</span></div>
+          <div class="tc-when">
+            <div class="date"><span class="day">พุธ</span> · 13 พ.ค. 2569</div>
+            <div class="time">⏰ 14:00 — 15:30 · 未時</div>
+            <div class="lunar">三月廿四 · 立夏 → 小滿</div>
+          </div>
+          <div class="tc-pillar">
+            <span class="stem">癸</span>
+            <span class="branch">巳</span>
+            <small>DAY</small>
+          </div>
+          <div class="tc-score">
+            <div class="num">+92</div>
+            <div class="lbl">Composite</div>
+          </div>
+        </div>
+
+        <div class="bd-row">
+          <div class="bd-cell good">
+            <div class="src"><span class="tc">黃</span>TONGSHU 黃曆</div>
+            <div class="v"><span class="n">+85</span><span class="l">宜:納財·議事·結交</span></div>
+          </div>
+          <div class="bd-cell good">
+            <div class="src"><span class="tc">用</span>YONGSHEN 用神</div>
+            <div class="v"><span class="n">+95</span><span class="l">癸 = 偏財 · 巳 = 用神</span></div>
+          </div>
+          <div class="bd-cell good">
+            <div class="src"><span class="tc">奇</span>QIMEN 奇門</div>
+            <div class="v"><span class="n">+88</span><span class="l">直符 + 開門 · SW</span></div>
+          </div>
+        </div>
+
+        <div class="tc-tags">
+          <span class="tc-tag good"><span class="tc">合</span>三合 巳酉丑</span>
+          <span class="tc-tag good"><span class="tc">用</span>正財 透干</span>
+          <span class="tc-tag good"><span class="tc">門</span>開門</span>
+          <span class="tc-tag good"><span class="tc">星</span>天心</span>
+          <span class="tc-tag good"><span class="tc">合</span>Fara 辛 + 巳酉合</span>
+          <span class="tc-tag mid">SW direction</span>
+        </div>
+
+        <div class="tc-poem">
+          <div class="verse">癸水通根 · 開門納財 · 三合相迎</div>
+          <div class="trans"><b>"น้ำเดินทางมาถึงต้นกำเนิด · ประตูเปิดรับทรัพย์ · สามพันธมิตรคล้องกัน"</b> — เหมาะ <b>เซ็นสัญญาเงินก้อนใหญ่</b> · มีคนหนุน · ทิศ SW เป็นทิศโชคลาภ</div>
+        </div>
+
+        <div class="tc-actions">
+          <button>📋 รายละเอียด</button>
+          <button>🗓 +Calendar</button>
+          <button>🔮 ฉีเหมิน</button>
+          <button class="primary">★ บันทึกฤกษ์นี้</button>
+        </div>
+      </div>
+
+      <!-- RANK 2 -->
+      <div class="time-card">
+        <div class="tc-head">
+          <div class="tc-rank">2</div>
+          <div class="tc-when">
+            <div class="date"><span class="day">ศุกร์</span> · 15 พ.ค. 2569</div>
+            <div class="time">⏰ 09:00 — 11:00 · 巳時</div>
+            <div class="lunar">三月廿六</div>
+          </div>
+          <div class="tc-pillar">
+            <span class="stem">乙</span>
+            <span class="branch">未</span>
+            <small>DAY</small>
+          </div>
+          <div class="tc-score">
+            <div class="num">+78</div>
+            <div class="lbl">Composite</div>
+          </div>
+        </div>
+
+        <div class="bd-row">
+          <div class="bd-cell good">
+            <div class="src"><span class="tc">黃</span>TONGSHU 黃曆</div>
+            <div class="v"><span class="n">+72</span><span class="l">宜:立券·交易</span></div>
+          </div>
+          <div class="bd-cell good">
+            <div class="src"><span class="tc">用</span>YONGSHEN 用神</div>
+            <div class="v"><span class="n">+82</span><span class="l">未土 = 比肩</span></div>
+          </div>
+          <div class="bd-cell mid">
+            <div class="src"><span class="tc">奇</span>QIMEN 奇門</div>
+            <div class="v"><span class="n">+70</span><span class="l">生門 · 天輔 · SE</span></div>
+          </div>
+        </div>
+
+        <div class="tc-tags">
+          <span class="tc-tag good"><span class="tc">門</span>生門</span>
+          <span class="tc-tag good"><span class="tc">用</span>比劫</span>
+          <span class="tc-tag mid"><span class="tc">沖</span>未-丑 沖เล็ก</span>
+        </div>
+
+        <div class="tc-actions">
+          <button>📋 รายละเอียด</button>
+          <button>🗓 +Calendar</button>
+          <button>🔮 ฉีเหมิน</button>
+          <button class="primary">★ บันทึก</button>
+        </div>
+      </div>
+
+      <!-- RANK 3 -->
+      <div class="time-card">
+        <div class="tc-head">
+          <div class="tc-rank">3</div>
+          <div class="tc-when">
+            <div class="date"><span class="day">จันทร์</span> · 18 พ.ค. 2569</div>
+            <div class="time">⏰ 13:00 — 15:00 · 未時</div>
+            <div class="lunar">三月廿九</div>
+          </div>
+          <div class="tc-pillar">
+            <span class="stem">戊</span>
+            <span class="branch">戌</span>
+            <small>DAY</small>
+          </div>
+          <div class="tc-score">
+            <div class="num">+71</div>
+            <div class="lbl">Composite</div>
+          </div>
+        </div>
+
+        <div class="bd-row">
+          <div class="bd-cell good">
+            <div class="src"><span class="tc">黃</span>TONGSHU</div>
+            <div class="v"><span class="n">+68</span><span class="l">天德合</span></div>
+          </div>
+          <div class="bd-cell good">
+            <div class="src"><span class="tc">用</span>YONGSHEN</div>
+            <div class="v"><span class="n">+75</span><span class="l">戊土 ดิน-ดิน</span></div>
+          </div>
+          <div class="bd-cell mid">
+            <div class="src"><span class="tc">奇</span>QIMEN</div>
+            <div class="v"><span class="n">+70</span><span class="l">休門 · 太陰 · NE</span></div>
+          </div>
+        </div>
+
+        <div class="tc-tags">
+          <span class="tc-tag good"><span class="tc">煞</span>天德合</span>
+          <span class="tc-tag good"><span class="tc">門</span>休門</span>
+          <span class="tc-tag mid"><span class="tc">支</span>戌 — 庫</span>
+        </div>
+
+        <div class="tc-actions">
+          <button>📋 รายละเอียด</button>
+          <button>🗓 +Calendar</button>
+          <button>🔮 ฉีเหมิน</button>
+          <button class="primary">★ บันทึก</button>
+        </div>
+      </div>
+
+      <!-- divider -->
+      <div style="text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--fg-faint);text-transform:uppercase;padding:10px;">
+        ─── ฤกษ์ระดับรอง · ALSO CONSIDER ───
+      </div>
+
+      <!-- RANK 4 - shorter card -->
+      <div class="time-card">
+        <div class="tc-head">
+          <div class="tc-rank">4</div>
+          <div class="tc-when">
+            <div class="date"><span class="day">อังคาร</span> · 19 พ.ค. 2569</div>
+            <div class="time">⏰ 09:00 — 11:00 · 巳時</div>
+            <div class="lunar">四月初二</div>
+          </div>
+          <div class="tc-pillar">
+            <span class="stem">己</span>
+            <span class="branch">亥</span>
+            <small>DAY</small>
+          </div>
+          <div class="tc-score mid">
+            <div class="num">+58</div>
+            <div class="lbl">Composite</div>
+          </div>
+        </div>
+        <div class="tc-tags">
+          <span class="tc-tag mid"><span class="tc">日</span>己 = ตัวคุณ</span>
+          <span class="tc-tag good"><span class="tc">門</span>景門</span>
+          <span class="tc-tag bad"><span class="tc">沖</span>己-亥 อ่อนนิด</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // missions data
+  const MISSIONS = {
+    doc: [
+      {nm:'เซ็นสัญญา', tc:'簽約', desc:'เซ็นเอกสารผูกพัน · ขายซื้อ ขอกู้'},
+      {nm:'ปิดดีล/ปิดการขาย', tc:'立券交易', desc:'จบการเจรจา ตกลงราคา'},
+      {nm:'ขอใบอนุญาต', tc:'上書', desc:'ยื่นเอกสารราชการ · ขอ License'},
+      {nm:'ขอกู้/ขอเครดิต', tc:'求財', desc:'ยื่นกู้ · ขอวงเงินธนาคาร'},
+      {nm:'พิธีเปิด/ฤกษ์', tc:'開光', desc:'พิธีมงคล · launch ผลิตภัณฑ์'}
+    ],
+    talk: [
+      {nm:'เจรจา/ต่อรอง', tc:'議事', desc:'นั่งโต๊ะคุยเงื่อนไข · ต่อรอง'},
+      {nm:'พบที่ปรึกษา/ผู้ใหญ่', tc:'見貴', desc:'นั่งคุยกับ Senior · Mentor'},
+      {nm:'ขอความช่วยเหลือ', tc:'求人', desc:'ขอ favor · ขอ intro'},
+      {nm:'พบพันธมิตร', tc:'結交', desc:'ดื่มกาแฟพันธมิตรใหม่'},
+      {nm:'Pitch / นำเสนอ', tc:'上陳', desc:'Present ต่อ Board · นักลงทุน'}
+    ],
+    trade: [
+      {nm:'รับเงิน/เก็บเงิน', tc:'納財', desc:'รับชำระ · เก็บกระแสเงินสด'},
+      {nm:'ทวงหนี้/ตามเงิน', tc:'索債', desc:'ตามลูกหนี้ · เร่งจ่าย'},
+      {nm:'จ่ายเงิน/โอน', tc:'出財', desc:'จ่าย Supplier · โอนใหญ่'},
+      {nm:'ลงทุน/ซื้อหุ้น', tc:'入貨', desc:'ลงทุนเงินก้อน · ซื้อทรัพย์สิน'},
+      {nm:'ออกของ/ส่งของ', tc:'出行', desc:'ส่งสินค้า · เปิด shipment'}
+    ],
+    biz: [
+      {nm:'เปิดร้าน/ตั้งกิจการ', tc:'開市', desc:'จดทะเบียน · เปิดสาขาใหม่'},
+      {nm:'จ้าง/รับพนักงาน', tc:'受聘', desc:'เซ็นสัญญาจ้าง · onboard'},
+      {nm:'ย้ายออฟฟิศ', tc:'移徙', desc:'ย้ายสำนักงาน · ขนของ'},
+      {nm:'รีโนเวท/ปรับปรุง', tc:'修飾', desc:'ปรับปรุงพื้นที่งาน · ตกแต่ง'},
+      {nm:'ประชุมใหญ่/Board', tc:'會親友', desc:'AGM · Board Meeting · town hall'}
+    ]
+  };
+
+  let state = {cat:'doc', selected:0};
+
+  function renderMissions(){
+    const list = document.getElementById('missions');
+    const items = MISSIONS[state.cat] || [];
+    list.innerHTML = items.map((m,i)=>`
+      <div class="mission ${i===state.selected?'on':''}" data-idx="${i}">
+        <div class="nm"><span class="tc">${m.tc}</span>${m.nm}</div>
+        <div class="desc">${m.desc}</div>
+      </div>
+    `).join('');
+  }
+
+  // theme
+  document.querySelectorAll('.theme-switch button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.documentElement.setAttribute('data-theme', btn.dataset.theme);
+      document.querySelectorAll('.theme-switch button').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+    });
+  });
+
+  // category
+  document.getElementById('cat-tabs').addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-cat]');
+    if(!btn) return;
+    document.querySelectorAll('#cat-tabs button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    state.cat = btn.dataset.cat;
+    state.selected = 0;
+    renderMissions();
+  });
+
+  // mission select
+  document.getElementById('missions').addEventListener('click', e=>{
+    const m = e.target.closest('.mission');
+    if(!m) return;
+    state.selected = parseInt(m.dataset.idx);
+    document.querySelectorAll('#missions .mission').forEach(x=>x.classList.remove('on'));
+    m.classList.add('on');
+  });
+
+  // quick range
+  document.getElementById('qr').addEventListener('click', e=>{
+    const b = e.target.closest('button');
+    if(!b) return;
+    document.querySelectorAll('#qr button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+  });
+
+  // weight slider live update
+  document.querySelectorAll('.w-row input[type="range"]').forEach(slider=>{
+    slider.addEventListener('input', e=>{
+      e.target.parentElement.querySelector('.val').textContent = e.target.value + '%';
+    });
+  });
+
+  // sort
+  document.querySelectorAll('.result-head .sort button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.result-head .sort button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+    });
+  });
+
+  renderMissions();
+</script>
+
+<style>
+.hk-tabbar{position:fixed;bottom:14px;left:8px;right:8px;z-index:80;display:flex;justify-content:space-around;align-items:center;background:rgba(20,23,28,.92);backdrop-filter:blur(20px);border:1px solid rgba(200,164,77,.22);border-radius:99px;padding:5px;box-shadow:0 14px 40px rgba(0,0,0,.4);overflow-x:auto;}
+[data-theme="light"] .hk-tabbar{background:rgba(255,250,238,.92);border-color:rgba(138,109,42,.3);}
+.hk-tabbar a{flex:1;min-width:auto;text-align:center;padding:8px 4px;font-family:'Noto Serif Thai',serif;font-size:10px;color:rgba(246,241,230,.65);text-decoration:none;border-radius:99px;transition:all .25s;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1;white-space:nowrap;}
+[data-theme="light"] .hk-tabbar a{color:rgba(26,22,18,.65);}
+.hk-tabbar a .glyph{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:#c8a44d;line-height:1;}
+.hk-tabbar a:hover{color:#f6f1e6;background:rgba(200,164,77,.1);}
+[data-theme="light"] .hk-tabbar a:hover{color:#1a1612;background:rgba(138,109,42,.1);}
+.hk-tabbar a.active{background:#c8a44d;color:#0d0f12;}
+.hk-tabbar a.active .glyph{color:#0d0f12;}
+[data-theme="light"] .hk-tabbar a.active{color:#f5efe2;}
+[data-theme="light"] .hk-tabbar a.active .glyph{color:#f5efe2;}
+@media (max-width:480px){.hk-tabbar a{font-size:9px;padding:6px 2px;} .hk-tabbar a .glyph{font-size:14px;}}
+@media (max-width:360px){.hk-tabbar a{font-size:8px;} .hk-tabbar a .glyph{font-size:13px;}}
+.hk-bottom-pad{height:90px;}
+</style>
+<nav class="hk-tabbar" id="hk-tabbar">
+  <a href="/chart" data-r="/chart"><span class="glyph">命</span>ดวง</a>
+  <a href="/today" data-r="/today"><span class="glyph">日</span>วันนี้</a>
+  <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span>ปฏิทิน</a>
+  <a href="/yongsennetwork" data-r="/yongsennetwork"><span class="glyph">人</span>เครือข่าย</a>
+  <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span>ฉีเหมิน</a>
+  <a href="/master" data-r="/master"><span class="glyph">師</span>ซินแส</a>
+  <a href="/picker" data-r="/picker"><span class="glyph">擇</span>วางฤกษ์</a>
+  <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span>เป้าหมาย</a>
+</nav>
+<div class="hk-bottom-pad"></div>
+<script>
+(function(){
+  try {
+    var p = window.location.pathname.replace(/\/$/,'') || '/chart';
+    p = p.replace(/-m$/, '');
+    document.querySelectorAll('#hk-tabbar a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+  } catch(e){}
+})();
+</script>
+
+
+</body>
+</html>
