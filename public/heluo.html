@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>hourkey · 河洛 · He Luo</title>
+<meta name="description" content="河圖 He Tu + 洛書 Luo Shu · รากของศาสตร์จีน 5,000 ปี"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Serif+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  [data-theme="dark"]{
+    --bg:#0d0f12; --bg-2:#161b22; --bg-3:#1c2229;
+    --fg:#f3ebd9; --fg-soft:rgba(243,235,217,.65); --fg-faint:rgba(243,235,217,.4); --fg-mute:rgba(243,235,217,.22);
+    --gold:#c8a44d; --gold-bright:#e6c068; --gold-deep:#8a6d2a;
+    --gold-soft:rgba(200,164,77,.10); --gold-line:rgba(200,164,77,.22);
+    --line:rgba(243,235,217,.08);
+    --water:#5a8aa8; --fire:#c95c4a; --wood:#7fa869; --metal:#b9aa78; --earth:#c4994a;
+    --paper:#1c1812;
+    --shadow-strong:rgba(0,0,0,.85);
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#ebe5d0; --bg-3:#dfd9c2;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.7); --fg-faint:rgba(26,22,18,.45); --fg-mute:rgba(26,22,18,.25);
+    --gold:#8a6d2a; --gold-bright:#a8852f; --gold-deep:#5e4a1a;
+    --gold-soft:rgba(138,109,42,.12); --gold-line:rgba(138,109,42,.32);
+    --line:rgba(26,22,18,.1);
+    --water:#3d6e8d; --fire:#a83a2c; --wood:#3f6b54; --metal:#7a6b3a; --earth:#8a6d2a;
+    --paper:#fff8e5;
+    --shadow-strong:rgba(255,250,238,.85);
+  }
+  :root{
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+
+  html,body{background:var(--bg);color:var(--fg);font-family:var(--thai);min-height:100vh;-webkit-font-smoothing:antialiased;transition:background .4s, color .4s;}
+  body{overflow-x:hidden;line-height:1.5;}
+  ::selection{background:var(--gold-soft);color:var(--gold);}
+
+  /* NAV */
+  nav{position:sticky;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);}
+  nav .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  nav .logo .seal{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  nav .breadcrumb{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-soft);text-transform:uppercase;}
+  nav .breadcrumb a{color:var(--fg-soft);text-decoration:none;}
+  nav .breadcrumb .sep{color:var(--gold);margin:0 8px;}
+  nav .breadcrumb .cur{color:var(--gold);}
+  .theme-toggle{display:flex;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .theme-toggle button{width:28px;height:28px;border:none;background:transparent;color:var(--fg-soft);font-size:12px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+  [data-theme="dark"] .theme-toggle button[data-mode="dark"]{background:var(--gold);color:var(--bg);}
+  [data-theme="light"] .theme-toggle button[data-mode="light"]{background:var(--gold);color:var(--bg);}
+
+  /* HERO */
+  .hero{padding:80px 32px 50px;text-align:center;position:relative;}
+  .hero .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:24px;display:inline-flex;align-items:center;gap:14px;}
+  .hero .eyebrow::before, .hero .eyebrow::after{content:'';width:32px;height:1px;background:var(--gold);}
+  .hero h1{font-family:var(--serif);font-size:clamp(40px, 7vw, 88px);font-weight:300;line-height:1.05;letter-spacing:-.02em;margin-bottom:22px;}
+  .hero h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .hero h1 i{font-style:italic;color:var(--gold);}
+  .hero .sub{font-family:var(--thai);font-size:16px;line-height:1.7;color:var(--fg-soft);max-width:580px;margin:0 auto;}
+  .hero .sub i{font-style:italic;color:var(--gold-bright);}
+
+  /* TAB SWITCHER */
+  .tab-row{display:flex;justify-content:center;gap:8px;margin:40px auto 0;max-width:600px;padding:0 24px;}
+  .tab-btn{flex:1;padding:14px 16px;background:var(--bg-2);border:1px solid var(--line);color:var(--fg-soft);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;border-radius:10px;transition:.25s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .tab-btn .han{font-family:var(--tc);font-size:18px;color:var(--gold);font-weight:700;letter-spacing:0;}
+  .tab-btn:hover{border-color:var(--gold-line);color:var(--fg);}
+  .tab-btn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+
+  section{padding:60px 32px;position:relative;}
+  .container{max-width:1100px;margin:0 auto;}
+  .panel{display:none;animation:fadeIn .4s ease-out;}
+  .panel.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+  .sec-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px;margin-bottom:36px;}
+  .sec-head .l{flex:1;min-width:280px;}
+  .sec-head .label{font-family:var(--mono);font-size:10px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+  .sec-head h2{font-family:var(--serif);font-size:clamp(34px, 5vw, 56px);font-weight:300;line-height:1.1;letter-spacing:-.02em;}
+  .sec-head h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .sec-head h2 i{font-style:italic;color:var(--gold);}
+  .sec-head .legend{font-family:var(--thai);font-size:14px;line-height:1.7;color:var(--fg-soft);max-width:380px;}
+  .sec-head .legend i{font-style:italic;color:var(--gold-bright);}
+
+  /* ═══════════════════════════════════════════════════════════
+     HE TU — visual diagram                                     
+     ═══════════════════════════════════════════════════════════ */
+  .hetu-stage{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+  @media(max-width:880px){ .hetu-stage{grid-template-columns:1fr;} }
+
+  .hetu-diagram{position:relative;aspect-ratio:1;background:radial-gradient(circle at center, var(--bg-2) 0%, var(--bg) 90%);border:1px solid var(--gold-line);border-radius:18px;padding:40px;display:grid;place-items:center;}
+  .hetu-svg{width:100%;height:auto;max-width:480px;}
+
+  .hetu-info{display:flex;flex-direction:column;gap:10px;}
+  .pair-card{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:16px 20px;transition:.25s;cursor:pointer;}
+  .pair-card:hover, .pair-card.hovered{border-color:var(--gold);background:var(--gold-soft);}
+  .pair-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .pair-card .nums{font-family:var(--mono);font-size:18px;color:var(--gold);font-weight:700;letter-spacing:.05em;}
+  .pair-card .nums b{color:var(--gold-bright);}
+  .pair-card .han{font-family:var(--tc);font-size:18px;font-weight:700;}
+  .pair-card .desc{font-size:13px;color:var(--fg-soft);line-height:1.6;}
+  .pair-card .desc b{color:var(--fg);}
+
+  .pair-card[data-element="water"]{border-left:3px solid var(--water);}
+  .pair-card[data-element="water"] .han{color:var(--water);}
+  .pair-card[data-element="fire"]{border-left:3px solid var(--fire);}
+  .pair-card[data-element="fire"] .han{color:var(--fire);}
+  .pair-card[data-element="wood"]{border-left:3px solid var(--wood);}
+  .pair-card[data-element="wood"] .han{color:var(--wood);}
+  .pair-card[data-element="metal"]{border-left:3px solid var(--metal);}
+  .pair-card[data-element="metal"] .han{color:var(--metal);}
+  .pair-card[data-element="earth"]{border-left:3px solid var(--earth);}
+  .pair-card[data-element="earth"] .han{color:var(--earth);}
+
+  /* dots in svg */
+  .dot{transition:transform .3s, opacity .3s;}
+  .dot.yang{fill:var(--paper);stroke:var(--gold);stroke-width:1.5;}
+  .dot.yin{fill:transparent;stroke:var(--gold);stroke-width:1.5;}
+  [data-theme="light"] .dot.yang{fill:var(--gold);stroke:var(--gold-deep);}
+  [data-theme="light"] .dot.yin{fill:transparent;stroke:var(--gold-deep);}
+  .dot-group{transition:opacity .3s, transform .3s;cursor:pointer;}
+  .dot-group:hover .dot{transform:scale(1.15);}
+  .dot-group.dimmed{opacity:.18;}
+  .dot-group.highlighted .dot{stroke:var(--gold-bright);stroke-width:2.2;filter:drop-shadow(0 0 6px var(--gold));}
+  .dir-label{font-family:var(--tc);font-size:14px;font-weight:700;fill:var(--gold);}
+  .num-label{font-family:var(--mono);font-size:11px;font-weight:700;fill:var(--gold-bright);}
+
+  /* HE TU formula */
+  .hetu-formula{margin-top:30px;padding:22px;background:var(--bg-2);border:1px dashed var(--gold-line);border-radius:12px;font-family:var(--mono);font-size:13px;line-height:1.9;text-align:center;color:var(--fg-soft);}
+  .hetu-formula b{color:var(--gold);}
+  .hetu-formula .han{font-family:var(--tc);color:var(--gold);font-size:16px;}
+
+  /* ═══════════════════════════════════════════════════════════
+     LUO SHU — 9-palace magic square                            
+     ═══════════════════════════════════════════════════════════ */
+  .luoshu-row{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+  @media(max-width:880px){ .luoshu-row{grid-template-columns:1fr;} }
+
+  .luoshu-grid-wrap{position:relative;aspect-ratio:1;background:radial-gradient(circle at center, var(--bg-2) 0%, var(--bg) 90%);border:1px solid var(--gold-line);border-radius:18px;padding:24px;display:grid;place-items:center;}
+  .luoshu-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:6px;width:100%;height:100%;max-width:460px;max-height:460px;aspect-ratio:1;}
+  .palace{position:relative;background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:.3s;overflow:hidden;}
+  .palace::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg, var(--accent-bg, transparent) 0%, transparent 60%);opacity:0;transition:.3s;}
+  .palace:hover::before, .palace.active::before{opacity:1;}
+  .palace:hover, .palace.active{border-color:var(--gold);transform:translateY(-2px);}
+  .palace .num{font-family:var(--tc);font-size:38px;font-weight:700;color:var(--gold);line-height:1;position:relative;z-index:2;}
+  .palace .star{font-family:var(--tc);font-size:13px;font-weight:600;color:var(--fg-soft);margin-top:4px;position:relative;z-index:2;}
+  .palace .dir{font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-faint);text-transform:uppercase;margin-top:2px;position:relative;z-index:2;}
+  .palace .trigram{font-family:var(--tc);font-size:11px;color:var(--gold-deep);margin-top:2px;position:relative;z-index:2;}
+  
+  .palace[data-num="1"]{--accent-bg:rgba(90,138,168,.2);}
+  .palace[data-num="2"]{--accent-bg:rgba(80,80,80,.18);}
+  .palace[data-num="3"]{--accent-bg:rgba(127,168,105,.2);}
+  .palace[data-num="4"]{--accent-bg:rgba(143,194,124,.2);}
+  .palace[data-num="5"]{--accent-bg:rgba(196,153,74,.25);border:2px solid var(--gold);}
+  .palace[data-num="6"]{--accent-bg:rgba(243,235,217,.12);}
+  .palace[data-num="7"]{--accent-bg:rgba(201,92,74,.2);}
+  .palace[data-num="8"]{--accent-bg:rgba(243,235,217,.12);border:1px solid var(--gold);}
+  .palace[data-num="9"]{--accent-bg:rgba(168,90,168,.2);}
+
+  .palace.active{box-shadow:0 0 0 2px var(--gold);}
+
+  /* magic square sums */
+  .magic-sums{position:absolute;inset:24px;display:none;pointer-events:none;}
+  .magic-sums.show{display:block;}
+  .magic-sums .sum-line{position:absolute;background:var(--gold);height:2px;opacity:.6;animation:scan 2s ease-in-out;border-radius:2px;}
+
+  /* Luo Shu detail panel */
+  .luoshu-detail{display:flex;flex-direction:column;gap:14px;}
+  .ls-info{background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:24px;}
+  .ls-info-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .ls-info-head .num{font-family:var(--tc);font-size:48px;color:var(--gold);font-weight:700;line-height:1;}
+  .ls-info-head .meta{flex:1;}
+  .ls-info-head .meta h3{font-family:var(--serif);font-size:24px;font-weight:400;line-height:1.1;margin-bottom:4px;}
+  .ls-info-head .meta h3 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-right:8px;}
+  .ls-info-head .meta .tag{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
+  .ls-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+  .ls-info-cell{padding:10px 12px;background:var(--bg-3);border-radius:8px;font-size:12px;}
+  .ls-info-cell b{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:3px;}
+  .ls-info-cell span{color:var(--fg);}
+  .ls-info-cell .han{font-family:var(--tc);font-size:14px;font-weight:600;color:var(--gold);}
+  .ls-meaning{margin-top:14px;font-size:13px;line-height:1.65;color:var(--fg-soft);padding-top:14px;border-top:1px solid var(--line);}
+  .ls-meaning i{color:var(--gold-bright);font-style:italic;}
+
+  /* Year switcher */
+  .year-switcher{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:24px;flex-wrap:wrap;}
+  .year-switcher label{font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;}
+  .year-switcher input[type="number"]{background:var(--bg-2);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:14px;font-weight:600;padding:8px 12px;border-radius:8px;width:90px;text-align:center;outline:none;transition:.25s;}
+  .year-switcher input:focus{border-color:var(--gold);}
+  .year-switcher .ys-row{display:flex;align-items:center;gap:6px;}
+  .year-switcher button{background:var(--bg-2);border:1px solid var(--gold-line);color:var(--fg-soft);font-family:var(--mono);font-size:11px;letter-spacing:.18em;padding:8px 14px;border-radius:8px;cursor:pointer;transition:.25s;}
+  .year-switcher button:hover, .year-switcher button.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+  .year-info{padding:18px 22px;background:var(--bg-2);border:1px dashed var(--gold-line);border-radius:12px;margin-top:20px;font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:var(--fg-soft);text-align:center;line-height:1.8;}
+  .year-info b{color:var(--gold);}
+  .year-info .han{font-family:var(--tc);color:var(--gold);font-size:14px;font-weight:600;}
+
+  /* USE CASE EXAMPLES */
+  .usecase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px;}
+  @media(max-width:880px){.usecase-grid{grid-template-columns:1fr;}}
+  .usecase{background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:22px;transition:.25s;}
+  .usecase:hover{border-color:var(--gold-line);}
+  .usecase .ic{font-family:var(--tc);font-size:32px;color:var(--gold);font-weight:700;margin-bottom:10px;line-height:1;}
+  .usecase h4{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:8px;}
+  .usecase p{font-size:13px;line-height:1.7;color:var(--fg-soft);}
+  .usecase code{background:var(--bg-3);padding:1px 6px;border-radius:4px;font-family:var(--mono);font-size:11px;color:var(--gold-bright);}
+
+  /* combined / personal section */
+  .personal-card{background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border:1px solid var(--gold-line);border-radius:18px;padding:32px;margin-top:24px;}
+  .personal-card h3{font-family:var(--serif);font-size:24px;font-weight:400;margin-bottom:8px;}
+  .personal-card h3 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .personal-card .lead{font-size:13px;color:var(--fg-soft);margin-bottom:20px;line-height:1.6;}
+  .personal-form{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;}
+  @media(max-width:680px){.personal-form{grid-template-columns:1fr 1fr;}}
+  .pf-field label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;}
+  .pf-field input, .pf-field select{width:100%;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:13px;padding:10px 12px;border-radius:8px;outline:none;}
+  .pf-go{background:var(--gold);color:var(--bg);border:none;padding:12px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;border-radius:8px;cursor:pointer;}
+  .pf-go:hover{background:var(--gold-bright);}
+
+  .personal-result{margin-top:24px;display:none;animation:fadeIn .5s ease-out;}
+  .personal-result.show{display:block;}
+  .pr-grid{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;}
+  @media(max-width:680px){.pr-grid{grid-template-columns:1fr;}}
+  .pr-trigram{text-align:center;padding:16px 24px;background:var(--bg-3);border-radius:12px;}
+  .pr-trigram .symbol{font-family:var(--tc);font-size:48px;color:var(--gold);line-height:1;}
+  .pr-trigram .han{font-family:var(--tc);font-size:20px;color:var(--gold);font-weight:700;margin-top:6px;}
+  .pr-trigram .name{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-soft);margin-top:4px;text-transform:uppercase;}
+  .pr-trigram .kua{font-family:var(--mono);font-size:11px;color:var(--gold-bright);margin-top:8px;padding-top:8px;border-top:1px solid var(--gold-line);}
+  .pr-detail h4{font-family:var(--serif);font-size:18px;margin-bottom:10px;}
+  .pr-detail h4 .tc{font-family:var(--tc);color:var(--gold);}
+  .pr-dirs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+  .pr-dirs > div{padding:12px 14px;border-radius:8px;font-size:12px;}
+  .pr-dirs .good{background:rgba(127,168,105,.12);border:1px solid rgba(127,168,105,.4);}
+  .pr-dirs .bad{background:rgba(201,92,74,.10);border:1px solid rgba(201,92,74,.4);}
+  .pr-dirs b{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px;}
+  .pr-dirs .good b{color:var(--wood);}
+  .pr-dirs .bad b{color:var(--fire);}
+  .pr-dirs span{font-family:var(--mono);font-size:11px;color:var(--fg);}
+
+  /* footer */
+  footer{padding:50px 32px;border-top:1px solid var(--line);text-align:center;background:var(--bg-2);}
+  footer p{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;}
+  footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
+
+  /* ═══════════ ZE JI · เลือกฤกษ์ ═══════════ */
+  .zeji-card{background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border:1px solid var(--gold-line);border-radius:18px;padding:32px;}
+  .zeji-form .zf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  @media(max-width:680px){.zeji-form .zf-row{grid-template-columns:1fr;}}
+  .zeji-form .pf-field{margin-bottom:14px;}
+  .zeji-form input[type="date"], .zeji-form input[type="time"], .zeji-form input[type="text"]{
+    width:100%;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);
+    font-family:var(--mono);font-size:13px;padding:11px 13px;border-radius:8px;outline:none;
+    transition:border-color .25s;
+  }
+  .zeji-form input:focus{border-color:var(--gold);}
+  .zeji-presets{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;padding-top:14px;border-top:1px dashed var(--line);}
+  .preset-btn{background:var(--bg-3);border:1px solid var(--line);color:var(--fg-soft);
+    font-family:var(--thai);font-size:11px;padding:6px 10px;border-radius:99px;cursor:pointer;transition:.2s;}
+  .preset-btn:hover, .preset-btn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+
+  .zeji-result{display:none;margin-top:24px;padding-top:24px;border-top:1px solid var(--gold-line);animation:fadeIn .5s ease-out;}
+  .zeji-result.show{display:block;}
+
+  .zr-header{text-align:center;margin-bottom:24px;}
+  .zr-header .meta{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-soft);text-transform:uppercase;margin-bottom:8px;}
+  .zr-header .meta b{color:var(--gold);}
+  .zr-header .question{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--fg);}
+  .zr-header .question::before{content:'"';color:var(--gold);font-size:24px;}
+  .zr-header .question::after{content:'"';color:var(--gold);font-size:24px;}
+
+  .zr-hex-row{display:flex;gap:32px;align-items:center;justify-content:center;margin:24px 0;flex-wrap:wrap;}
+  .zr-hex{text-align:center;}
+  .zr-hex .symbol{font-family:var(--tc);font-size:84px;line-height:1;color:var(--gold);font-weight:700;text-shadow:0 0 30px rgba(200,164,77,.3);}
+  .zr-hex .num{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;margin-top:6px;}
+  .zr-hex .name{font-family:var(--serif);font-size:20px;font-weight:400;margin:6px 0 4px;}
+  .zr-hex .name .zh{font-family:var(--tc);color:var(--gold);font-weight:700;margin-right:6px;}
+  .zr-hex .thai{font-size:13px;color:var(--fg-soft);font-style:italic;}
+  .zr-arrow{font-size:28px;color:var(--gold);opacity:.6;}
+
+  .zr-verdict{padding:20px 24px;border-radius:12px;margin:24px 0;text-align:center;border:2px solid;}
+  .zr-verdict.go{background:rgba(127,168,105,.10);border-color:var(--wood);}
+  .zr-verdict.wait{background:rgba(196,153,74,.10);border-color:var(--earth);}
+  .zr-verdict.no{background:rgba(201,92,74,.08);border-color:var(--fire);}
+  .zr-verdict .label{font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;font-weight:700;}
+  .zr-verdict.go .label{color:var(--wood);}
+  .zr-verdict.wait .label{color:var(--earth);}
+  .zr-verdict.no .label{color:var(--fire);}
+  .zr-verdict .head{font-family:var(--serif);font-size:24px;font-weight:400;margin:8px 0;}
+  .zr-verdict .reason{font-size:13px;color:var(--fg-soft);line-height:1.7;}
+  .zr-verdict .reason b{color:var(--gold);}
+
+  .zr-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+  @media(max-width:680px){.zr-actions{grid-template-columns:1fr;}}
+  .zr-action{padding:16px 18px;border-radius:10px;font-size:13px;line-height:1.7;}
+  .zr-action.do{background:rgba(127,168,105,.08);border:1px solid rgba(127,168,105,.3);}
+  .zr-action.dont{background:rgba(201,92,74,.06);border:1px solid rgba(201,92,74,.3);}
+  .zr-action b{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px;}
+  .zr-action.do b{color:var(--wood);}
+  .zr-action.dont b{color:var(--fire);}
+  .zr-action ul{list-style:none;padding:0;margin:0;}
+  .zr-action li{padding:3px 0;}
+  .zr-action li::before{content:'· ';color:var(--gold);}
+
+  .zr-changing{margin-top:20px;padding:16px 20px;background:var(--bg-3);border-radius:10px;font-size:12px;color:var(--fg-soft);}
+  .zr-changing .han{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .zr-changing b{color:var(--gold);}
+
+  /* 12 shichen quick scan grid */
+  .shichen-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:24px;}
+  @media(max-width:880px){.shichen-grid{grid-template-columns:repeat(4,1fr);}}
+  @media(max-width:560px){.shichen-grid{grid-template-columns:repeat(3,1fr);}}
+  .shi-cell{position:relative;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:14px 8px;text-align:center;cursor:pointer;transition:.25s;overflow:hidden;}
+  .shi-cell::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);}
+  .shi-cell:hover{transform:translateY(-2px);border-color:var(--gold-line);}
+  .shi-cell.go{--accent:var(--wood);background:rgba(127,168,105,.06);}
+  .shi-cell.wait{--accent:var(--earth);background:rgba(196,153,74,.06);}
+  .shi-cell.no{--accent:var(--fire);background:rgba(201,92,74,.06);}
+  .shi-cell.now{box-shadow:0 0 0 2px var(--gold);}
+  .shi-cell .han{font-family:var(--tc);font-size:24px;color:var(--gold);font-weight:700;line-height:1;}
+  .shi-cell .time{font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.05em;margin-top:4px;}
+  .shi-cell .verdict{font-family:var(--mono);font-size:10px;letter-spacing:.15em;margin-top:6px;text-transform:uppercase;font-weight:700;}
+  .shi-cell.go .verdict{color:var(--wood);}
+  .shi-cell.wait .verdict{color:var(--earth);}
+  .shi-cell.no .verdict{color:var(--fire);}
+  .shi-cell .hex-mini{font-family:var(--tc);font-size:18px;color:var(--fg-soft);margin-top:4px;}
+  .shi-cell.now .han{color:var(--gold-bright);text-shadow:0 0 12px var(--gold);}
+
+  @media(max-width:680px){
+    nav{padding:12px 16px;}
+    nav .breadcrumb{display:none;}
+    .hero{padding:50px 16px 30px;}
+    section{padding:40px 16px;}
+    .tab-row{padding:0 16px;}
+    .tab-btn{font-size:9px;padding:11px 8px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HK Navbar (8 ปุ่ม + lang + theme) · 3-language ═══════════ -->
+<style>
+.hk-topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb, var(--bg, #0d0f12) 88%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line, rgba(200,164,77,.22));font-family:'Noto Serif Thai',serif;}
+.hk-topbar .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:'Cormorant Garamond','Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--fg, #f6f1e6);text-decoration:none;}
+.hk-topbar .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold, #c8a44d);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:13px;color:var(--gold, #c8a44d);}
+.hk-topbar nav.hk-nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+.hk-topbar nav.hk-nav a{color:var(--fg-soft, rgba(246,241,230,.62));text-decoration:none;font-family:'Noto Serif Thai',serif;font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+.hk-topbar nav.hk-nav a .glyph{font-family:'Noto Serif TC',serif;font-size:16px;color:var(--gold, #c8a44d);font-weight:700;line-height:1;}
+.hk-topbar nav.hk-nav a .lbl{font-size:12px;}
+.hk-topbar nav.hk-nav a.active,.hk-topbar nav.hk-nav a:hover{color:var(--gold, #c8a44d);}
+.hk-topbar .hk-top-r{display:flex;align-items:center;gap:14px;}
+.hk-topbar .hk-lang-switch{display:inline-flex;background:rgba(38,42,50,.5);border:1px solid var(--gold-line, rgba(200,164,77,.3));border-radius:99px;padding:3px;}
+.hk-topbar .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft, rgba(246,241,230,.55));font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+.hk-topbar .hk-lang-switch button.on{background:var(--gold, #c8a44d);color:var(--bg, #0d0f12);}
+.hk-topbar .hk-theme-switch{display:inline-flex;background:rgba(38,42,50,.5);border:1px solid var(--gold-line, rgba(200,164,77,.3));border-radius:99px;padding:3px;}
+.hk-topbar .hk-theme-switch button{width:28px;height:28px;border:none;background:transparent;color:var(--fg-soft, rgba(246,241,230,.55));font-size:13px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+.hk-topbar .hk-theme-switch button.on{background:var(--gold, #c8a44d);color:var(--bg, #0d0f12);}
+@media(max-width:980px){
+  .hk-topbar{padding:12px 14px;flex-wrap:wrap;gap:10px;}
+  .hk-topbar nav.hk-nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line, rgba(200,164,77,.22));}
+  .hk-topbar nav.hk-nav::-webkit-scrollbar{display:none;}
+  .hk-topbar nav.hk-nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
+  .hk-topbar nav.hk-nav a .glyph{font-size:14px;}
+  .hk-topbar .hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}
+}
+</style>
+<header class="hk-topbar">
+  <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
+  <nav class="hk-nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="hk.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="hk.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="hk.nav.calendar">ปฏิทิน</span></a>
+    <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="hk.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="hk.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="hk.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="hk.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="hk.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="hk.nav.goal">เป้าหมาย</span></a>
+  </nav>
+  <div class="hk-top-r">
+    <div class="hk-lang-switch" id="hk-lang-switch">
+      <button data-lang="en" title="English">EN</button>
+      <button data-lang="zh" title="中文">中</button>
+      <button data-lang="th" class="on" title="ไทย">TH</button>
+    </div>
+    <div class="hk-theme-switch" id="hk-theme-switch">
+      <button class="on" data-theme="dark" title="Dark">☾</button>
+      <button data-theme="light" title="Light">☀</button>
+    </div>
+  </div>
+</header>
+
+
+<nav>
+  <a href="/" class="logo"><span class="seal">時</span> hourkey</a>
+  <div class="breadcrumb">
+    <a href="/">Home</a>
+    <span class="sep">/</span>
+    <span class="cur">河洛 He Luo</span>
+  </div>
+  <div class="theme-toggle">
+    <button data-mode="dark">☾</button>
+    <button data-mode="light">☀</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">河洛 · COSMIC FOUNDATIONS · 5,000 ปี</div>
+  <h1>เลข <span class="tc">河圖</span> · <span class="tc">洛書</span> · <i>รากของศาสตร์จีน</i></h1>
+  <p class="sub">
+    ก่อนจะมีปาจื้อ · ฉีเหมิน · ฮวงจุ้ย · I Ching — มีแค่<i>สอง diagram นี้</i><br/>
+    <b>河圖 He Tu</b> = ก่อนเกิด · จักรวาลในสภาพสมบูรณ์<br/>
+    <b>洛書 Luo Shu</b> = หลังเกิด · จักรวาลในสภาพเปลี่ยนแปลง
+  </p>
+
+  <div class="tab-row">
+    <button class="tab-btn active" data-tab="hetu">
+      <span class="han">河圖</span>
+      <span>He Tu · ก่อนเกิด</span>
+    </button>
+    <button class="tab-btn" data-tab="luoshu">
+      <span class="han">洛書</span>
+      <span>Luo Shu · หลังเกิด</span>
+    </button>
+    <button class="tab-btn" data-tab="combined">
+      <span class="han">合用</span>
+      <span>ใช้คู่กัน</span>
+    </button>
+    <button class="tab-btn" data-tab="zeji">
+      <span class="han">擇吉</span>
+      <span>เลือกฤกษ์</span>
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════════════════ HE TU PANEL ═══════════════════════ -->
+<section>
+  <div class="container">
+    <div class="panel active" data-panel="hetu">
+
+      <div class="sec-head">
+        <div class="l">
+          <div class="label">先天 · PRE-HEAVEN · COSMIC POTENTIAL</div>
+          <h2><span class="tc">河圖</span> <em>He Tu</em><br/>แผนภูมิแม่น้ำฟ้า</h2>
+        </div>
+        <div class="legend">
+          ตำนาน — <i>มังกรม้า</i> โผล่จากแม่น้ำหวงเหอ บนหลังมีลายจุด · ฤๅษี <i>Fu Xi 伏羲</i> ใช้สร้าง <i>Pre-Heaven Bagua</i><br/>
+          5 คู่ตัวเลข · 5 ธาตุ · 5 ทิศ · ผลรวม <b>55</b> = ตัวเลขฟ้าดิน
+        </div>
+      </div>
+
+      <div class="hetu-stage">
+        <!-- LEFT: SVG diagram of He Tu -->
+        <div class="hetu-diagram">
+          <svg class="hetu-svg" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg" id="hetuSvg">
+            <!-- Direction labels -->
+            <text x="240" y="25" text-anchor="middle" class="dir-label">南 South</text>
+            <text x="240" y="470" text-anchor="middle" class="dir-label">北 North</text>
+            <text x="20" y="245" text-anchor="middle" class="dir-label" transform="rotate(-90 20 245)">東 East</text>
+            <text x="460" y="245" text-anchor="middle" class="dir-label" transform="rotate(90 460 245)">西 West</text>
+
+            <!-- SOUTH (top): 2 + 7 → Fire -->
+            <g class="dot-group" data-pair="fire">
+              <!-- 2 yin dots (horizontal) -->
+              <circle class="dot yin" cx="220" cy="78" r="8"/>
+              <circle class="dot yin" cx="260" cy="78" r="8"/>
+              <text x="180" y="83" class="num-label" text-anchor="end">2</text>
+              <!-- 7 yang dots -->
+              <circle class="dot yang" cx="160" cy="115" r="7"/>
+              <circle class="dot yang" cx="190" cy="115" r="7"/>
+              <circle class="dot yang" cx="220" cy="115" r="7"/>
+              <circle class="dot yang" cx="250" cy="115" r="7"/>
+              <circle class="dot yang" cx="280" cy="115" r="7"/>
+              <circle class="dot yang" cx="310" cy="115" r="7"/>
+              <circle class="dot yang" cx="340" cy="115" r="7"/>
+              <text x="125" y="120" class="num-label" text-anchor="end">7</text>
+            </g>
+
+            <!-- NORTH (bottom): 1 + 6 → Water -->
+            <g class="dot-group" data-pair="water">
+              <!-- 1 yang dot -->
+              <circle class="dot yang" cx="240" cy="395" r="8"/>
+              <text x="220" y="400" class="num-label" text-anchor="end">1</text>
+              <!-- 6 yin dots -->
+              <circle class="dot yin" cx="170" cy="430" r="7"/>
+              <circle class="dot yin" cx="200" cy="430" r="7"/>
+              <circle class="dot yin" cx="230" cy="430" r="7"/>
+              <circle class="dot yin" cx="260" cy="430" r="7"/>
+              <circle class="dot yin" cx="290" cy="430" r="7"/>
+              <circle class="dot yin" cx="320" cy="430" r="7"/>
+              <text x="135" y="435" class="num-label" text-anchor="end">6</text>
+            </g>
+
+            <!-- EAST (left): 3 + 8 → Wood -->
+            <g class="dot-group" data-pair="wood">
+              <!-- 3 yang dots -->
+              <circle class="dot yang" cx="80" cy="200" r="7"/>
+              <circle class="dot yang" cx="80" cy="225" r="7"/>
+              <circle class="dot yang" cx="80" cy="250" r="7"/>
+              <text x="60" y="230" class="num-label" text-anchor="end">3</text>
+              <!-- 8 yin dots -->
+              <circle class="dot yin" cx="115" cy="180" r="7"/>
+              <circle class="dot yin" cx="115" cy="205" r="7"/>
+              <circle class="dot yin" cx="115" cy="230" r="7"/>
+              <circle class="dot yin" cx="115" cy="255" r="7"/>
+              <circle class="dot yin" cx="115" cy="280" r="7"/>
+              <circle class="dot yin" cx="115" cy="305" r="7"/>
+              <circle class="dot yin" cx="115" cy="330" r="7"/>
+              <circle class="dot yin" cx="115" cy="355" r="7"/>
+              <text x="140" y="265" class="num-label">8</text>
+            </g>
+
+            <!-- WEST (right): 4 + 9 → Metal -->
+            <g class="dot-group" data-pair="metal">
+              <!-- 4 yin dots -->
+              <circle class="dot yin" cx="400" cy="195" r="7"/>
+              <circle class="dot yin" cx="400" cy="220" r="7"/>
+              <circle class="dot yin" cx="400" cy="245" r="7"/>
+              <circle class="dot yin" cx="400" cy="270" r="7"/>
+              <text x="420" y="240" class="num-label">4</text>
+              <!-- 9 yang dots -->
+              <circle class="dot yang" cx="365" cy="150" r="7"/>
+              <circle class="dot yang" cx="365" cy="175" r="7"/>
+              <circle class="dot yang" cx="365" cy="200" r="7"/>
+              <circle class="dot yang" cx="365" cy="225" r="7"/>
+              <circle class="dot yang" cx="365" cy="250" r="7"/>
+              <circle class="dot yang" cx="365" cy="275" r="7"/>
+              <circle class="dot yang" cx="365" cy="300" r="7"/>
+              <circle class="dot yang" cx="365" cy="325" r="7"/>
+              <circle class="dot yang" cx="365" cy="350" r="7"/>
+              <text x="345" y="260" class="num-label" text-anchor="end">9</text>
+            </g>
+
+            <!-- CENTER: 5 + 10 → Earth -->
+            <g class="dot-group" data-pair="earth">
+              <!-- 5 yang dots (cross) -->
+              <circle class="dot yang" cx="240" cy="220" r="7"/>
+              <circle class="dot yang" cx="220" cy="240" r="7"/>
+              <circle class="dot yang" cx="240" cy="240" r="7"/>
+              <circle class="dot yang" cx="260" cy="240" r="7"/>
+              <circle class="dot yang" cx="240" cy="260" r="7"/>
+              <text x="195" y="245" class="num-label" text-anchor="end">5</text>
+              <!-- 10 yin dots arranged around -->
+              <circle class="dot yin" cx="180" cy="200" r="6"/>
+              <circle class="dot yin" cx="200" cy="190" r="6"/>
+              <circle class="dot yin" cx="180" cy="280" r="6"/>
+              <circle class="dot yin" cx="200" cy="290" r="6"/>
+              <circle class="dot yin" cx="280" cy="190" r="6"/>
+              <circle class="dot yin" cx="300" cy="200" r="6"/>
+              <circle class="dot yin" cx="280" cy="290" r="6"/>
+              <circle class="dot yin" cx="300" cy="280" r="6"/>
+              <circle class="dot yin" cx="160" cy="240" r="6"/>
+              <circle class="dot yin" cx="320" cy="240" r="6"/>
+              <text x="335" y="245" class="num-label">10</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- RIGHT: Pair cards -->
+        <div class="hetu-info">
+          <div class="pair-card" data-pair="water" data-element="water">
+            <div class="pair-card-head">
+              <span class="nums">1 <b>—</b> 6</span>
+              <span class="han">水 ไม้</span>
+            </div>
+            <div class="desc">
+              <b>เหนือ 北 · ธาตุน้ำ</b> · คู่ <b>Yang(1) + Yin(6)</b><br/>
+              พลังต้นกำเนิด · ความเริ่มต้น · ปัญญา · ความลึก
+            </div>
+          </div>
+          <div class="pair-card" data-pair="fire" data-element="fire">
+            <div class="pair-card-head">
+              <span class="nums">7 <b>—</b> 2</span>
+              <span class="han">火 ไฟ</span>
+            </div>
+            <div class="desc">
+              <b>ใต้ 南 · ธาตุไฟ</b> · คู่ <b>Yang(7) + Yin(2)</b><br/>
+              พลังขับเคลื่อน · ชีวิต · ความสว่าง · เสน่ห์
+            </div>
+          </div>
+          <div class="pair-card" data-pair="wood" data-element="wood">
+            <div class="pair-card-head">
+              <span class="nums">3 <b>—</b> 8</span>
+              <span class="han">木 ไม้</span>
+            </div>
+            <div class="desc">
+              <b>ตะวันออก 東 · ธาตุไม้</b> · คู่ <b>Yang(3) + Yin(8)</b><br/>
+              เติบโต · ขยาย · ความคิดริเริ่ม · ฤดูใบไม้ผลิ
+            </div>
+          </div>
+          <div class="pair-card" data-pair="metal" data-element="metal">
+            <div class="pair-card-head">
+              <span class="nums">9 <b>—</b> 4</span>
+              <span class="han">金 ทอง</span>
+            </div>
+            <div class="desc">
+              <b>ตะวันตก 西 · ธาตุทอง</b> · คู่ <b>Yang(9) + Yin(4)</b><br/>
+              ตัดสินใจ · ระเบียบ · ความคม · ฤดูใบไม้ร่วง
+            </div>
+          </div>
+          <div class="pair-card" data-pair="earth" data-element="earth">
+            <div class="pair-card-head">
+              <span class="nums">5 <b>—</b> 10</span>
+              <span class="han">土 ดิน</span>
+            </div>
+            <div class="desc">
+              <b>กลาง 中 · ธาตุดิน</b> · คู่ <b>Yang(5) + Yin(10)</b><br/>
+              สมดุล · เชื่อมต่อ · ความซื่อตรง · จุดศูนย์กลาง
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hetu-formula">
+        <span class="han">天數</span> <b>Yang (ฟ้า)</b> = 1 + 3 + 5 + 7 + 9 = <b>25</b> &nbsp;·&nbsp; <span class="han">地數</span> <b>Yin (ดิน)</b> = 2 + 4 + 6 + 8 + 10 = <b>30</b><br/>
+        <span class="han">天地之數</span> <b>รวมฟ้าดิน</b> = 25 + 30 = <b>55</b> ← ตัวเลขศักดิ์สิทธิ์ที่ฤๅษี Fu Xi เห็น
+      </div>
+
+      <div style="margin-top:50px;">
+        <div class="sec-head">
+          <div class="l">
+            <div class="label">USE CASES · ใช้งานจริง</div>
+            <h2>3 วิธีใช้ <span class="tc">河圖</span> ในชีวิตประจำวัน</h2>
+          </div>
+        </div>
+        <div class="usecase-grid">
+          <div class="usecase">
+            <div class="ic">①</div>
+            <h4>เลขมงคลคู่</h4>
+            <p>เลือกเบอร์ · ทะเบียนรถ · เลขบ้าน — ถ้ามีคู่ <code>1+6</code> · <code>3+8</code> · <code>4+9</code> = พลังเสริมตามธาตุนั้นๆ</p>
+          </div>
+          <div class="usecase">
+            <div class="ic">②</div>
+            <h4>วันดี · resonance check</h4>
+            <p>ใน Sesheta engine มี <code>z1()</code> ตรวจคู่ He Tu ระหว่าง Day & Year — ถ้าเจอ = วัน <i>resonance</i> เกิด</p>
+          </div>
+          <div class="usecase">
+            <div class="ic">③</div>
+            <h4>คู่คน · ธาตุเสริม</h4>
+            <p>ดวงสองคน — ถ้าธาตุของ Day Master จับคู่ He Tu ได้ = <i>ส่งกัน</i> เป็นพิเศษ (ไม่ใช่แค่ generative)</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════ LUO SHU PANEL ═══════════════════════ -->
+    <div class="panel" data-panel="luoshu">
+
+      <div class="sec-head">
+        <div class="l">
+          <div class="label">後天 · POST-HEAVEN · COSMIC MOVEMENT</div>
+          <h2><span class="tc">洛書</span> <em>Luo Shu</em><br/>กระดองเต่ามหัศจรรย์</h2>
+        </div>
+        <div class="legend">
+          ตำนาน — <i>เต่าศักดิ์สิทธิ์</i> โผล่จากแม่น้ำลั่ว · บนกระดองมีจุด 9 ตำแหน่ง · <i>Yu the Great 大禹</i> ใช้สร้าง <i>Post-Heaven Bagua</i><br/>
+          จัตุรัสมหัศจรรย์ <b>3×3</b> · ทุกแถว/คอลัมน์/ทแยง = <b>15</b>
+        </div>
+      </div>
+
+      <!-- Year Switcher -->
+      <div class="year-switcher">
+        <span class="ys-row"><label>ปี</label> <input type="number" id="yearInput" value="2026" min="1900" max="2100"/></span>
+        <button data-year="2024">2024</button>
+        <button data-year="2025">2025</button>
+        <button data-year="2026" class="active">2026</button>
+        <button data-year="2027">2027</button>
+        <button data-year="reset">⟲ Static</button>
+      </div>
+
+      <div class="luoshu-row">
+        <!-- LEFT: 9-grid -->
+        <div class="luoshu-grid-wrap">
+          <div class="luoshu-grid" id="luoshuGrid">
+            <!-- positions filled by JS -->
+          </div>
+        </div>
+
+        <!-- RIGHT: detail of clicked palace -->
+        <div class="luoshu-detail">
+          <div class="ls-info" id="lsInfo">
+            <!-- filled by JS -->
+          </div>
+          <div class="year-info" id="yearInfo">
+            ดวง <span class="han">流年</span> <b id="yiYear">2026</b> · ดาวกลาง = <span class="han" id="yiCenter">一白</span> <b id="yiNum">1</b>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:50px;">
+        <div class="sec-head">
+          <div class="l">
+            <div class="label">USE CASES · 玄空飛星</div>
+            <h2>Flying Star · ใช้ <span class="tc">洛書</span> วางผังบ้าน</h2>
+          </div>
+        </div>
+        <div class="usecase-grid">
+          <div class="usecase">
+            <div class="ic">①</div>
+            <h4>ดาว 8 — ตำแหน่งทรัพย์</h4>
+            <p>ในปีนั้น <i>ดาว 八白</i> หมุนไปอยู่ palace ไหน · วางตู้เซฟ · ของมีค่า · พื้นที่ทำธุรกรรม ที่ทิศนั้น</p>
+          </div>
+          <div class="usecase">
+            <div class="ic">②</div>
+            <h4>ดาว 5 — เคราะห์ใหญ่</h4>
+            <p><i>ดาว 五黃</i> ห้ามรบกวน · ห้ามขุด · ห้ามตอกตะปู · ใช้โลหะ (กระดิ่ง·นาฬิกา) ลด</p>
+          </div>
+          <div class="usecase">
+            <div class="ic">③</div>
+            <h4>ดาว 6 — ผู้ใหญ่ช่วย</h4>
+            <p><i>ดาว 六白</i> = noble person · เซ็นสัญญา/ประชุมที่ทิศนั้น · ดึงดูดผู้สนับสนุน</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════ COMBINED PANEL ═══════════════════════ -->
+    <div class="panel" data-panel="combined">
+
+      <div class="sec-head">
+        <div class="l">
+          <div class="label">合用 · USED TOGETHER</div>
+          <h2>คำนวณ <span class="tc">本命卦</span> · <em>Life Gua ของคุณ</em></h2>
+        </div>
+        <div class="legend">
+          จาก <b>วันเกิด + เพศ</b> → ได้ <i>Kua Number 1-9</i> (ไม่มี 5)<br/>
+          แบ่งเป็น <i>East Group</i> (1·3·4·9) และ <i>West Group</i> (2·6·7·8) — แต่ละกลุ่มมี <b>4 ทิศดี · 4 ทิศแย่</b>
+        </div>
+      </div>
+
+      <div class="personal-card">
+        <h3><span class="tc">本命卦</span> Life Gua Calculator</h3>
+        <div class="lead">ใส่ปีเกิด (สุริยคติ · ถ้าเกิดก่อน Li Chun ใช้ปีก่อนหน้า)</div>
+
+        <div class="personal-form">
+          <div class="pf-field">
+            <label>ปีเกิด (Solar)</label>
+            <input type="number" id="birthYear" value="1984" min="1900" max="2100"/>
+          </div>
+          <div class="pf-field">
+            <label>เพศ</label>
+            <select id="gender">
+              <option value="male">Male · 男</option>
+              <option value="female">Female · 女</option>
+            </select>
+          </div>
+          <button class="pf-go" id="calcGua">Calculate →</button>
+        </div>
+
+        <div class="personal-result" id="guaResult"></div>
+      </div>
+
+      <div style="margin-top:40px;">
+        <div class="sec-head">
+          <div class="l">
+            <div class="label">EXAMPLE · Aeaw (1984-12-31 male)</div>
+            <h2>ผลของ <span class="tc">時鑰</span> เจ้าของแบรนด์</h2>
+          </div>
+        </div>
+        <div class="usecase-grid">
+          <div class="usecase" style="border-color:var(--gold-line);">
+            <div class="ic">時</div>
+            <h4>Aeaw · Kua 7 (兌 Lake)</h4>
+            <p><b>West Group</b> · ดี: <code>NW · SW · NE · W</code> · แย่: <code>E · N · S · SE</code></p>
+          </div>
+          <div class="usecase" style="border-color:var(--gold-line);">
+            <div class="ic">辛</div>
+            <h4>Mai (1986 female) · Kua 1 (坎 Water)</h4>
+            <p><b>East Group</b> · ดี: <code>SE · E · S · N</code> · แย่: <code>SW · NE · NW · W</code></p>
+          </div>
+          <div class="usecase" style="border-color:var(--fire);">
+            <div class="ic">⚠</div>
+            <h4>Conflict</h4>
+            <p>2 คนคนละกลุ่ม → ทิศดีของหนึ่ง = แย่ของอีก<br/>ต้องวางผังบ้านแบบ <i>compromise</i></p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════════════ ZE JI · เลือกฤกษ์ ═══════════════════════ -->
+    <div class="panel" data-panel="zeji">
+
+      <div class="sec-head">
+        <div class="l">
+          <div class="label">擇吉 · DATE PICKING · 64卦</div>
+          <h2><span class="tc">擇吉</span> <em>เลือกฤกษ์</em><br/>ดูดวงวัน · ก่อนตัดสินใจ</h2>
+        </div>
+        <div class="legend">
+          ใส่ <i>วัน + เวลา + คำถาม/งาน</i> → ระบบสุ่ม hexagram แบบ <b>deterministic</b><br/>
+          วัน-เวลาเดียวกัน · คำถามเดียวกัน → ได้ดวงเดิมเสมอ
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="zeji-card">
+        <div class="zeji-form">
+          <div class="zf-row">
+            <div class="pf-field">
+              <label>วันที่ (วัน-เดือน-ปี)</label>
+              <input type="date" id="zejiDate"/>
+            </div>
+            <div class="pf-field">
+              <label>เวลา (TST recommended)</label>
+              <input type="time" id="zejiTime"/>
+            </div>
+          </div>
+          <div class="pf-field">
+            <label>งานที่จะทำ / คำถาม</label>
+            <input type="text" id="zejiAction" placeholder="เช่น เซ็นสัญญา DWN งวด 2 / ขายBTC / ขึ้นบ้าน"/>
+          </div>
+          <div class="zeji-presets">
+            <span style="font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-right:8px;">PRESETS:</span>
+            <button class="preset-btn" data-action="เซ็นสัญญา">เซ็นสัญญา</button>
+            <button class="preset-btn" data-action="ขายBTC">ขาย BTC</button>
+            <button class="preset-btn" data-action="ประชุมเจรจา">เจรจา</button>
+            <button class="preset-btn" data-action="ขึ้นบ้านใหม่">ขึ้นบ้าน</button>
+            <button class="preset-btn" data-action="เริ่มงาน">เริ่มงาน</button>
+            <button class="preset-btn" data-action="แต่งงาน">แต่งงาน</button>
+            <button class="preset-btn" data-action="เดินทางไกล">เดินทาง</button>
+          </div>
+          <button class="pf-go" id="castZeji" style="width:100%;margin-top:18px;padding:16px;font-size:12px;">
+            🔮 ปลดล็อกฤกษ์ →
+          </button>
+        </div>
+
+        <!-- Result -->
+        <div class="zeji-result" id="zejiResult"></div>
+      </div>
+
+      <!-- Quick scan: 12 shichen of TODAY -->
+      <div style="margin-top:50px;">
+        <div class="sec-head">
+          <div class="l">
+            <div class="label">QUICK SCAN · 12 ชั่วยามวันนี้</div>
+            <h2>ชั่วยามไหน <em>ทำได้</em> · ชั่วยามไหน <em>อย่าทำ</em></h2>
+          </div>
+          <div class="legend">
+            ใส่งานเดียวกัน → ระบบสุ่มดวงสำหรับทั้ง 12 ชั่วยาม → เห็นภาพรวม timing ทันที
+          </div>
+        </div>
+        <div class="shichen-grid" id="shichenGrid">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+    </div>
+    <!-- ═══════════════════════ END ZE JI ═══════════════════════ -->
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 hourkey · made in Bangkok <span class="han">河洛</span> 5,000 ปี</p>
+</footer>
+
+<script>
+// ─── THEME ──────────────────────────────────────────
+const root = document.documentElement;
+function setTheme(t){ root.setAttribute('data-theme', t); localStorage.setItem('hk-theme', t);
+  document.querySelectorAll('.theme-toggle button').forEach(b=>b.classList.toggle('on', b.dataset.mode===t)); }
+const saved = localStorage.getItem('hk-theme'); if(saved) setTheme(saved);
+document.querySelectorAll('.theme-toggle button').forEach(b=>b.addEventListener('click', ()=>setTheme(b.dataset.mode)));
+
+// ─── TABS ───────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.querySelector(`.panel[data-panel="${tab}"]`).classList.add('active');
+  });
+});
+
+// ─── HE TU · pair card ↔ svg dots highlighting ──────
+document.querySelectorAll('.pair-card').forEach(card=>{
+  card.addEventListener('mouseenter', ()=>{
+    const pair = card.dataset.pair;
+    document.querySelectorAll('.dot-group').forEach(g=>{
+      g.classList.toggle('highlighted', g.dataset.pair===pair);
+      g.classList.toggle('dimmed', g.dataset.pair!==pair);
+    });
+  });
+  card.addEventListener('mouseleave', ()=>{
+    document.querySelectorAll('.dot-group').forEach(g=>{
+      g.classList.remove('highlighted', 'dimmed');
+    });
+  });
+});
+document.querySelectorAll('.dot-group').forEach(g=>{
+  g.addEventListener('mouseenter', ()=>{
+    const pair = g.dataset.pair;
+    document.querySelectorAll('.pair-card').forEach(c=>{
+      c.classList.toggle('hovered', c.dataset.pair===pair);
+    });
+    document.querySelectorAll('.dot-group').forEach(o=>{
+      o.classList.toggle('dimmed', o.dataset.pair!==pair);
+    });
+  });
+  g.addEventListener('mouseleave', ()=>{
+    document.querySelectorAll('.pair-card').forEach(c=>c.classList.remove('hovered'));
+    document.querySelectorAll('.dot-group').forEach(o=>o.classList.remove('dimmed'));
+  });
+});
+
+// ─── LUO SHU DATA ──────────────────────────────────
+const LUO_SHU_BASE = [
+  [4, 9, 2],
+  [3, 5, 7],
+  [8, 1, 6]
+];
+const PALACE_INFO = {
+  1: { trigram:'坎', pinyin:'Kǎn',  dir:'N',  element:'water', star:'一白', color:'ขาว',     meaning:'อาชีพ · ปัญญา · บุตรชายกลาง' },
+  2: { trigram:'坤', pinyin:'Kūn',  dir:'SW', element:'earth', star:'二黑', color:'ดำ',      meaning:'⚠️ ป่วย · มารดา · ภรรยา' },
+  3: { trigram:'震', pinyin:'Zhèn', dir:'E',  element:'wood',  star:'三碧', color:'เขียวหยก', meaning:'ทะเลาะ · เคลื่อน · บุตรชายโต' },
+  4: { trigram:'巽', pinyin:'Xùn',  dir:'SE', element:'wood',  star:'四綠', color:'เขียว',    meaning:'ความรัก · ปัญญา · ลม · บุตรสาวโต' },
+  5: { trigram:'中', pinyin:'Zhōng',dir:'C',  element:'earth', star:'五黃', color:'เหลือง',   meaning:'☠️ เคราะห์ใหญ่ · ห้ามรบกวน' },
+  6: { trigram:'乾', pinyin:'Qián', dir:'NW', element:'metal', star:'六白', color:'ขาว',     meaning:'ผู้ใหญ่ช่วย · ฟ้า · บิดา' },
+  7: { trigram:'兌', pinyin:'Duì',  dir:'W',  element:'metal', star:'七赤', color:'แดง',     meaning:'ความรัก · ⚠️ ขโมย · บุตรสาวเล็ก' },
+  8: { trigram:'艮', pinyin:'Gèn',  dir:'NE', element:'earth', star:'八白', color:'ขาว',     meaning:'💰 ทรัพย์ · ภูเขา · บุตรชายเล็ก' },
+  9: { trigram:'離', pinyin:'Lí',   dir:'S',  element:'fire',  star:'九紫', color:'ม่วง',     meaning:'ชื่อเสียง · อนาคต · บุตรสาวกลาง' }
+};
+
+// Position in grid: [row, col]
+const NUM_POSITIONS = {
+  4:[0,0], 9:[0,1], 2:[0,2],
+  3:[1,0], 5:[1,1], 7:[1,2],
+  8:[2,0], 1:[2,1], 6:[2,2]
+};
+
+function getYearStar(year){
+  let s = year;
+  while(s > 9){
+    s = String(s).split('').reduce((a,c)=>a+Number(c), 0);
+  }
+  let star = (11 - s) % 9;
+  if(star <= 0) star += 9;
+  return star;
+}
+
+function rotateGrid(centerStar){
+  const shift = centerStar - 5;
+  return LUO_SHU_BASE.map(row => row.map(n => {
+    let v = ((n + shift - 1) % 9) + 1;
+    if(v <= 0) v += 9;
+    return v;
+  }));
+}
+
+// ─── LUO SHU GRID render ─────────────────────────────
+let currentYear = null;
+let activePalaceNum = 5;
+
+function renderGrid(year){
+  const grid = year ? rotateGrid(getYearStar(year)) : LUO_SHU_BASE;
+  const gridEl = document.getElementById('luoshuGrid');
+  gridEl.innerHTML = '';
+  
+  for(let r=0; r<3; r++){
+    for(let c=0; c<3; c++){
+      const num = grid[r][c];
+      const info = PALACE_INFO[num];
+      // Position in classical layout (4-9-2 / 3-5-7 / 8-1-6) — keep palace position same, swap numbers
+      // But the DIRECTIONS stay fixed in their positions (NW NW NW etc)
+      // Each cell shows: number = flying star at this position, direction = the direction of this cell
+      // So: cell[0][0] is always SE (4 originally). After year shift, the NUMBER changes but direction stays.
+      const baseNum = LUO_SHU_BASE[r][c];
+      const fixedDir = PALACE_INFO[baseNum].dir;
+      const fixedTri = PALACE_INFO[baseNum].trigram;
+      
+      const cell = document.createElement('div');
+      cell.className = 'palace';
+      cell.dataset.num = num;
+      cell.dataset.baseNum = baseNum;
+      cell.dataset.dir = fixedDir;
+      
+      cell.innerHTML = `
+        <div class="num">${num}</div>
+        <div class="star">${info.star}</div>
+        <div class="dir">${fixedDir}</div>
+        <div class="trigram">${fixedTri}</div>
+      `;
+      
+      cell.addEventListener('click', ()=>{
+        activePalaceNum = num;
+        document.querySelectorAll('.palace').forEach(p=>p.classList.remove('active'));
+        cell.classList.add('active');
+        renderPalaceInfo(num);
+      });
+      
+      if(num === activePalaceNum) cell.classList.add('active');
+      gridEl.appendChild(cell);
+    }
+  }
+}
+
+function renderPalaceInfo(num){
+  const info = PALACE_INFO[num];
+  document.getElementById('lsInfo').innerHTML = `
+    <div class="ls-info-head">
+      <div class="num">${num}</div>
+      <div class="meta">
+        <h3><span class="tc">${info.trigram}</span> ${info.pinyin}</h3>
+        <div class="tag">${info.star} · สี${info.color} · ธาตุ${({water:'น้ำ',fire:'ไฟ',wood:'ไม้',metal:'ทอง',earth:'ดิน'})[info.element]}</div>
+      </div>
+    </div>
+    <div class="ls-info-grid">
+      <div class="ls-info-cell"><b>ทิศ</b><span>${info.dir}</span></div>
+      <div class="ls-info-cell"><b>ธาตุ</b><span>${info.element}</span></div>
+      <div class="ls-info-cell"><b>ดาว</b><span class="han">${info.star}</span></div>
+      <div class="ls-info-cell"><b>Trigram</b><span class="han">${info.trigram} ${info.pinyin}</span></div>
+    </div>
+    <div class="ls-meaning"><i>ความหมาย:</i> ${info.meaning}</div>
+  `;
+}
+
+function updateYearInfo(year){
+  const star = year ? getYearStar(year) : 5;
+  const info = PALACE_INFO[star];
+  document.getElementById('yiYear').textContent = year || 'Static';
+  document.getElementById('yiNum').textContent = star;
+  document.getElementById('yiCenter').textContent = info.star;
+}
+
+// initial
+renderGrid(2026);
+renderPalaceInfo(5);
+updateYearInfo(2026);
+currentYear = 2026;
+
+// year input
+document.getElementById('yearInput').addEventListener('change', e=>{
+  const y = parseInt(e.target.value);
+  if(y && y >= 1900 && y <= 2100){
+    currentYear = y;
+    renderGrid(y);
+    updateYearInfo(y);
+    document.querySelectorAll('.year-switcher button').forEach(b=>b.classList.remove('active'));
+  }
+});
+document.querySelectorAll('.year-switcher button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.year-switcher button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    if(btn.dataset.year === 'reset'){
+      currentYear = null;
+      renderGrid(null);
+      updateYearInfo(null);
+      document.getElementById('yearInput').value = '';
+    } else {
+      const y = parseInt(btn.dataset.year);
+      currentYear = y;
+      document.getElementById('yearInput').value = y;
+      renderGrid(y);
+      updateYearInfo(y);
+    }
+  });
+});
+
+// ─── LIFE GUA Calculator ───────────────────────────
+const KUA_TO_TRI = {
+  1: { sym:'☵', han:'坎', name:'Kǎn (Water · Middle Son)', group:'East', best:['SE','E','S','N'], worst:['SW','NE','NW','W'] },
+  2: { sym:'☷', han:'坤', name:'Kūn (Earth · Mother)', group:'West', best:['NE','W','NW','SW'], worst:['N','S','SE','E'] },
+  3: { sym:'☳', han:'震', name:'Zhèn (Thunder · Eldest Son)', group:'East', best:['S','N','SE','E'], worst:['W','NE','SW','NW'] },
+  4: { sym:'☴', han:'巽', name:'Xùn (Wind · Eldest Daughter)', group:'East', best:['N','S','E','SE'], worst:['NE','W','NW','SW'] },
+  6: { sym:'☰', han:'乾', name:'Qián (Heaven · Father)', group:'West', best:['W','NE','SW','NW'], worst:['S','SE','N','E'] },
+  7: { sym:'☱', han:'兌', name:'Duì (Lake · Youngest Daughter)', group:'West', best:['NW','SW','NE','W'], worst:['E','N','S','SE'] },
+  8: { sym:'☶', han:'艮', name:'Gèn (Mountain · Youngest Son)', group:'West', best:['SW','NW','W','NE'], worst:['E','SE','N','S'] },
+  9: { sym:'☲', han:'離', name:'Lí (Fire · Middle Daughter)', group:'East', best:['E','SE','N','S'], worst:['NW','W','NE','SW'] }
+};
+
+function calcKua(year, gender){
+  const last2 = year % 100;
+  let s = last2;
+  while(s > 9){ s = String(s).split('').reduce((a,c)=>a+Number(c), 0); }
+  let kua;
+  if(year < 2000){
+    kua = gender === 'male' ? (10 - s) : (5 + s);
+  } else {
+    kua = gender === 'male' ? (9 - s) : (6 + s);
+  }
+  while(kua > 9){ kua = String(kua).split('').reduce((a,c)=>a+Number(c), 0); }
+  if(kua === 0) kua = 9;
+  if(kua === 5) kua = gender === 'male' ? 2 : 8;
+  return kua;
+}
+
+document.getElementById('calcGua').addEventListener('click', ()=>{
+  const year = parseInt(document.getElementById('birthYear').value);
+  const gender = document.getElementById('gender').value;
+  if(!year || year < 1900 || year > 2100) return;
+  
+  const kua = calcKua(year, gender);
+  const info = KUA_TO_TRI[kua];
+  const last2 = year % 100;
+  let s = last2;
+  while(s > 9){ s = String(s).split('').reduce((a,c)=>a+Number(c), 0); }
+  
+  const formula = year < 2000
+    ? (gender === 'male' ? `10 - ${s} = ${10 - s}` : `5 + ${s} = ${5 + s}`)
+    : (gender === 'male' ? `9 - ${s} = ${9 - s}` : `6 + ${s} = ${6 + s}`);
+  
+  const resEl = document.getElementById('guaResult');
+  resEl.innerHTML = `
+    <div class="pr-grid">
+      <div class="pr-trigram">
+        <div class="symbol">${info.sym}</div>
+        <div class="han">${info.han}</div>
+        <div class="name">${info.name.split('(')[0]}</div>
+        <div class="kua">Kua ${kua}</div>
+      </div>
+      <div class="pr-detail">
+        <h4><span class="tc">${info.han}</span> ${info.name}</h4>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--fg-soft);line-height:1.7;margin-bottom:14px;">
+          <b>Group:</b> <span style="color:var(--gold-bright)">${info.group} ${info.group === 'East' ? '東四命' : '西四命'}</span><br/>
+          <b>Formula:</b> ${last2} → ${s} → ${formula}<br/>
+          ${kua === (gender==='male'?2:8) && (year<2000?(10-s):(year>=2000?(9-s):0))===5 ? '<b>Special:</b> Kua 5 → '+kua+'<br/>' : ''}
+        </div>
+        <div class="pr-dirs">
+          <div class="good">
+            <b>✓ 4 ทิศดี</b>
+            <span>${info.best.join(' · ')}</span>
+          </div>
+          <div class="bad">
+            <b>✗ 4 ทิศแย่</b>
+            <span>${info.worst.join(' · ')}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  resEl.classList.add('show');
+});
+
+// initial calc for default values
+document.getElementById('calcGua').click();
+
+// ═══════════════════════════════════════════════════════
+//  ZE JI · 64 HEXAGRAM DATE PICKING
+// ═══════════════════════════════════════════════════════
+
+// 64 hexagrams (compressed — name, theme, action verdict)
+// verdict: 'go' (mostly favorable), 'wait' (caution / mixed), 'no' (avoid)
+// Action keywords mapped to context-specific outcomes
+const HEX64 = [
+  { n:1,  sym:'䷀', zh:'乾',   pn:'Qián',     th:'พลังสร้างสรรค์', verdict:'go',   theme:'leadership·initiation' },
+  { n:2,  sym:'䷁', zh:'坤',   pn:'Kūn',      th:'แผ่นดินรองรับ',   verdict:'wait', theme:'yielding·support' },
+  { n:3,  sym:'䷂', zh:'屯',   pn:'Zhūn',     th:'ยากเริ่มต้น',     verdict:'wait', theme:'birth·struggle' },
+  { n:4,  sym:'䷃', zh:'蒙',   pn:'Méng',     th:'ความไม่รู้',       verdict:'wait', theme:'learning·humility' },
+  { n:5,  sym:'䷄', zh:'需',   pn:'Xū',       th:'รอคอย',           verdict:'wait', theme:'patience·timing' },
+  { n:6,  sym:'䷅', zh:'訟',   pn:'Sòng',     th:'ขัดแย้ง',         verdict:'no',   theme:'dispute·pause' },
+  { n:7,  sym:'䷆', zh:'師',   pn:'Shī',      th:'กองทัพ',          verdict:'wait', theme:'discipline·leader' },
+  { n:8,  sym:'䷇', zh:'比',   pn:'Bǐ',       th:'รวมพลัง',         verdict:'go',   theme:'union·alliance' },
+  { n:9,  sym:'䷈', zh:'小畜', pn:'Xiǎo Chù', th:'การสะสมน้อย',    verdict:'wait', theme:'restraint·gathering' },
+  { n:10, sym:'䷉', zh:'履',   pn:'Lǚ',       th:'ก้าวเดิน',        verdict:'wait', theme:'careful walking' },
+  { n:11, sym:'䷊', zh:'泰',   pn:'Tài',      th:'สงบเจริญ',       verdict:'go',   theme:'harmony·prosperity' },
+  { n:12, sym:'䷋', zh:'否',   pn:'Pǐ',       th:'อับเสีย',         verdict:'no',   theme:'stagnation' },
+  { n:13, sym:'䷌', zh:'同人', pn:'Tóng Rén', th:'มิตรเสมือนพี่น้อง', verdict:'go', theme:'community·alliance' },
+  { n:14, sym:'䷍', zh:'大有', pn:'Dà Yǒu',   th:'ครอบครองใหญ่',   verdict:'go',   theme:'abundance·success' },
+  { n:15, sym:'䷎', zh:'謙',   pn:'Qiān',     th:'ถ่อมตัว',         verdict:'go',   theme:'humility·virtue' },
+  { n:16, sym:'䷏', zh:'豫',   pn:'Yù',       th:'ความเริงร่า',     verdict:'go',   theme:'inspiration·readiness' },
+  { n:17, sym:'䷐', zh:'隨',   pn:'Suí',      th:'การติดตาม',       verdict:'go',   theme:'flexibility·following' },
+  { n:18, sym:'䷑', zh:'蠱',   pn:'Gǔ',       th:'ฟื้นฟู',          verdict:'wait', theme:'restoration·repair' },
+  { n:19, sym:'䷒', zh:'臨',   pn:'Lín',      th:'การเข้าใกล้',     verdict:'go',   theme:'opportunity·timing' },
+  { n:20, sym:'䷓', zh:'觀',   pn:'Guān',     th:'พิจารณา',        verdict:'wait', theme:'observation·insight' },
+  { n:21, sym:'䷔', zh:'噬嗑', pn:'Shì Kè',   th:'กัดทะลุ',         verdict:'wait', theme:'breakthrough·decision' },
+  { n:22, sym:'䷕', zh:'賁',   pn:'Bì',       th:'ความสง่างาม',    verdict:'wait', theme:'beauty·form' },
+  { n:23, sym:'䷖', zh:'剝',   pn:'Bō',       th:'การแตกสลาย',    verdict:'no',   theme:'collapse·decline' },
+  { n:24, sym:'䷗', zh:'復',   pn:'Fù',       th:'การกลับคืน',     verdict:'go',   theme:'recovery·new cycle' },
+  { n:25, sym:'䷘', zh:'無妄', pn:'Wú Wàng',  th:'ความบริสุทธิ์',  verdict:'go',   theme:'spontaneity·purity' },
+  { n:26, sym:'䷙', zh:'大畜', pn:'Dà Chù',   th:'การสะสมใหญ่',   verdict:'go',   theme:'storing·strength' },
+  { n:27, sym:'䷚', zh:'頤',   pn:'Yí',       th:'การหล่อเลี้ยง',  verdict:'wait', theme:'sustenance·care' },
+  { n:28, sym:'䷛', zh:'大過', pn:'Dà Guò',   th:'ขีดสุดใหญ่',     verdict:'no',   theme:'overload·crisis' },
+  { n:29, sym:'䷜', zh:'坎',   pn:'Kǎn',      th:'เหวลึก',          verdict:'no',   theme:'danger·persistence' },
+  { n:30, sym:'䷝', zh:'離',   pn:'Lí',       th:'ไฟส่องสว่าง',     verdict:'go',   theme:'clarity·attachment' },
+  { n:31, sym:'䷞', zh:'咸',   pn:'Xián',     th:'กระทบใจ',         verdict:'go',   theme:'attraction·courtship' },
+  { n:32, sym:'䷟', zh:'恆',   pn:'Héng',     th:'ยั่งยืน',         verdict:'go',   theme:'endurance·constancy' },
+  { n:33, sym:'䷠', zh:'遯',   pn:'Dùn',      th:'การถอย',          verdict:'no',   theme:'strategic withdrawal' },
+  { n:34, sym:'䷡', zh:'大壯', pn:'Dà Zhuàng',th:'พลังเข้มแข็ง',   verdict:'wait', theme:'strength·force' },
+  { n:35, sym:'䷢', zh:'晉',   pn:'Jìn',      th:'ก้าวหน้า',        verdict:'go',   theme:'advancement·promotion' },
+  { n:36, sym:'䷣', zh:'明夷', pn:'Míng Yí',  th:'แสงถูกบดบัง',    verdict:'no',   theme:'concealment·survival' },
+  { n:37, sym:'䷤', zh:'家人', pn:'Jiā Rén',  th:'ครอบครัว',        verdict:'go',   theme:'home·order' },
+  { n:38, sym:'䷥', zh:'睽',   pn:'Kuí',      th:'ความขัดแย้ง',     verdict:'wait', theme:'misunderstanding·discord' },
+  { n:39, sym:'䷦', zh:'蹇',   pn:'Jiǎn',     th:'อุปสรรค',         verdict:'no',   theme:'difficulty·withdraw' },
+  { n:40, sym:'䷧', zh:'解',   pn:'Xiè',      th:'ปลดเปลื้อง',      verdict:'go',   theme:'release·breakthrough' },
+  { n:41, sym:'䷨', zh:'損',   pn:'Sǔn',      th:'การลด',           verdict:'wait', theme:'sacrifice·simplicity' },
+  { n:42, sym:'䷩', zh:'益',   pn:'Yì',       th:'การเพิ่มพูน',     verdict:'go',   theme:'expansion·gain' },
+  { n:43, sym:'䷪', zh:'夬',   pn:'Guài',     th:'การฟันฝ่า',       verdict:'go',   theme:'resoluteness·decision' },
+  { n:44, sym:'䷫', zh:'姤',   pn:'Gòu',      th:'พบโดยบังเอิญ',   verdict:'no',   theme:'encounter·temptation' },
+  { n:45, sym:'䷬', zh:'萃',   pn:'Cuì',      th:'การรวมกัน',       verdict:'go',   theme:'assembly·prosperity' },
+  { n:46, sym:'䷭', zh:'升',   pn:'Shēng',    th:'การเลื่อนขึ้น',   verdict:'go',   theme:'ascent·growth' },
+  { n:47, sym:'䷮', zh:'困',   pn:'Kùn',      th:'ถูกบีบคั้น',      verdict:'no',   theme:'exhaustion·trial' },
+  { n:48, sym:'䷯', zh:'井',   pn:'Jǐng',     th:'บ่อน้ำ',          verdict:'wait', theme:'source·shared' },
+  { n:49, sym:'䷰', zh:'革',   pn:'Gé',       th:'การปฏิวัติ',      verdict:'wait', theme:'change·molting' },
+  { n:50, sym:'䷱', zh:'鼎',   pn:'Dǐng',     th:'หม้อสามขา',       verdict:'go',   theme:'culture·transformation' },
+  { n:51, sym:'䷲', zh:'震',   pn:'Zhèn',     th:'ฟ้าผ่า',          verdict:'wait', theme:'shock·awakening' },
+  { n:52, sym:'䷳', zh:'艮',   pn:'Gèn',      th:'นิ่งเช่นภูเขา',   verdict:'wait', theme:'stillness·meditation' },
+  { n:53, sym:'䷴', zh:'漸',   pn:'Jiàn',     th:'ก้าวทีละขั้น',    verdict:'go',   theme:'patience·development' },
+  { n:54, sym:'䷵', zh:'歸妹', pn:'Guī Mèi',  th:'หญิงสาวแต่งงาน', verdict:'no',   theme:'subordinate·position' },
+  { n:55, sym:'䷶', zh:'豐',   pn:'Fēng',     th:'ความอุดม',        verdict:'go',   theme:'peak·zenith' },
+  { n:56, sym:'䷷', zh:'旅',   pn:'Lǚ',       th:'ผู้เดินทาง',      verdict:'wait', theme:'travel·transience' },
+  { n:57, sym:'䷸', zh:'巽',   pn:'Xùn',      th:'ลมแทรกซึม',       verdict:'wait', theme:'penetration·influence' },
+  { n:58, sym:'䷹', zh:'兌',   pn:'Duì',      th:'ทะเลสาบเริงร่า',  verdict:'go',   theme:'joy·encouragement' },
+  { n:59, sym:'䷺', zh:'渙',   pn:'Huàn',     th:'การกระจาย',       verdict:'wait', theme:'dissolution·dispersal' },
+  { n:60, sym:'䷻', zh:'節',   pn:'Jié',      th:'ความพอเพียง',     verdict:'wait', theme:'discipline·boundary' },
+  { n:61, sym:'䷼', zh:'中孚', pn:'Zhōng Fú', th:'ความจริงภายใน',   verdict:'go',   theme:'sincerity·trust' },
+  { n:62, sym:'䷽', zh:'小過', pn:'Xiǎo Guò', th:'ขีดสุดเล็ก',      verdict:'wait', theme:'small·excess·care' },
+  { n:63, sym:'䷾', zh:'既濟', pn:'Jì Jì',    th:'ลุล่วงแล้ว',      verdict:'go',   theme:'achievement·caution' },
+  { n:64, sym:'䷿', zh:'未濟', pn:'Wèi Jì',   th:'ยังไม่สำเร็จ',    verdict:'wait', theme:'transition·almost' }
+];
+
+// Deterministic seeded PRNG (Mulberry32)
+function makeRng(seed){
+  let h = 0;
+  for(let i = 0; i < seed.length; i++){
+    h = (h << 5) - h + seed.charCodeAt(i);
+    h |= 0;
+  }
+  let state = h >>> 0;
+  return function(){
+    state |= 0; state = (state + 0x6D2B79F5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Cast hexagram from seed string (deterministic)
+function castFromSeed(seed){
+  const rng = makeRng(seed);
+  // pick a hexagram 1-64 + 0-2 changing lines
+  const primary = Math.floor(rng() * 64) + 1;
+  const numChanging = Math.floor(rng() * 4); // 0-3
+  const changing = [];
+  while(changing.length < numChanging){
+    const pos = Math.floor(rng() * 6) + 1;
+    if(!changing.includes(pos)) changing.push(pos);
+  }
+  changing.sort();
+  
+  // Resulting hex via simple bit flip of primary index
+  let resulting = null;
+  if(changing.length > 0){
+    // simulate by picking another deterministic hex
+    const offset = changing.reduce((s,c)=>s+c, 0);
+    let rIdx = ((primary + offset) % 64);
+    if(rIdx === 0) rIdx = 64;
+    if(rIdx !== primary) resulting = rIdx;
+  }
+  return { primary, changing, resulting };
+}
+
+// Get shichen index from hour (0=子, 1=丑, ..., 11=亥)
+function getShichenIdx(hour){
+  if(hour === 23 || hour === 0) return 0;
+  return Math.floor((hour + 1) / 2);
+}
+
+const SHICHEN = [
+  { han:'子', name:'Zǐ',  range:'23–01' },
+  { han:'丑', name:'Chǒu',range:'01–03' },
+  { han:'寅', name:'Yín', range:'03–05' },
+  { han:'卯', name:'Mǎo', range:'05–07' },
+  { han:'辰', name:'Chén',range:'07–09' },
+  { han:'巳', name:'Sì',  range:'09–11' },
+  { han:'午', name:'Wǔ',  range:'11–13' },
+  { han:'未', name:'Wèi', range:'13–15' },
+  { han:'申', name:'Shēn',range:'15–17' },
+  { han:'酉', name:'Yǒu', range:'17–19' },
+  { han:'戌', name:'Xū',  range:'19–21' },
+  { han:'亥', name:'Hài', range:'21–23' }
+];
+
+// Action-specific verdict reasons
+const VERDICT_REASONS = {
+  go: {
+    head: 'ทำได้ · ฤกษ์ดี',
+    label: '✓ GO',
+    intros: [
+      'ดวง <b>{primary}</b> เปิดทาง — ทำเลย แต่ห้าม overcommit',
+      'พลังของวันนี้คือ <b>{theme}</b> — ลงตัวกับงานที่จะทำ',
+      'ฟ้าและดินสมดุล — เคลื่อนไปไม่ผิดแน่'
+    ]
+  },
+  wait: {
+    head: 'รอ · ดูสัญญาณก่อน',
+    label: '⏳ WAIT',
+    intros: [
+      'ดวง <b>{primary}</b> มี momentum แต่ยังไม่ครบ — รอ 2-3 วัน',
+      'พลังคือ <b>{theme}</b> — ฟังให้มากกว่าพูด · เก็บข้อมูลเพิ่ม',
+      'ทำได้ครึ่งทาง — แบ่ง action เป็นส่วนเล็กๆ'
+    ]
+  },
+  no: {
+    head: 'อย่าทำ · ฤกษ์ไม่ใช่',
+    label: '✗ NO',
+    intros: [
+      'ดวง <b>{primary}</b> ปิด — ฝืนเปลืองแรง · เลือกวันใหม่',
+      'พลัง <b>{theme}</b> ขัดกับงาน — เลื่อนหรือเปลี่ยนแผน',
+      'ฟ้าและดินไม่เชื่อม — ไม่มีจุดเข้า · ถอยก่อน'
+    ]
+  }
+};
+
+const ACTION_DOS = {
+  go: ['เริ่มได้เลย — แต่จัดเอกสารให้พร้อม', 'แจ้งคนที่เกี่ยวข้องล่วงหน้า', 'ทำตาม checklist · อย่าลัด'],
+  wait: ['ทบทวน contract / data ก่อน', 'หา 2nd opinion · คุยกับผู้รู้', 'จัดเตรียมไว้ · cast ใหม่พรุ่งนี้'],
+  no:  ['เลื่อนเป็นวันอื่น', 'หาทิศทางใหม่ของแผน', 'ฟังเสียงรอบข้าง · อย่าคิดเอง']
+};
+const ACTION_DONTS = {
+  go:   ['ลังเล / รอการอนุมัติเพิ่ม', 'เปลี่ยน scope กลางทาง', 'ทำเกินกำลัง'],
+  wait: ['รีบสรุป / เซ็น', 'ตัดสินใจคนเดียว', 'ใช้ emotion'],
+  no:   ['ฝืนทำ', 'ใช้แรงกาย/วาจา', 'สัญญาเรื่องใหญ่']
+};
+
+function pickRandom(arr, rng){
+  return arr[Math.floor(rng() * arr.length)];
+}
+
+// Render result panel
+function renderZejiResult(seed, dateStr, timeStr, action){
+  const { primary, changing, resulting } = castFromSeed(seed);
+  const hex = HEX64[primary - 1];
+  const resultingHex = resulting ? HEX64[resulting - 1] : null;
+  const verdict = hex.verdict;
+  const v = VERDICT_REASONS[verdict];
+  const rng = makeRng(seed + '_pick');
+  const intro = pickRandom(v.intros, rng)
+    .replace('{primary}', `${hex.zh} ${hex.th}`)
+    .replace('{theme}', hex.theme);
+
+  const dos = ACTION_DOS[verdict];
+  const donts = ACTION_DONTS[verdict];
+
+  const resultEl = document.getElementById('zejiResult');
+  resultEl.innerHTML = `
+    <div class="zr-header">
+      <div class="meta">
+        <b>${dateStr}</b> · <b>${timeStr}</b> · ฤกษ์
+      </div>
+      <div class="question">${action || 'งานทั่วไป'}</div>
+    </div>
+
+    <div class="zr-hex-row">
+      <div class="zr-hex">
+        <div class="symbol">${hex.sym}</div>
+        <div class="num">PRIMARY · #${hex.n}</div>
+        <div class="name"><span class="zh">${hex.zh}</span>${hex.th}</div>
+        <div class="thai">${hex.pn}</div>
+      </div>
+      ${resultingHex ? `
+      <div class="zr-arrow">→</div>
+      <div class="zr-hex">
+        <div class="symbol">${resultingHex.sym}</div>
+        <div class="num">RESULTING · #${resultingHex.n}</div>
+        <div class="name"><span class="zh">${resultingHex.zh}</span>${resultingHex.th}</div>
+        <div class="thai">${resultingHex.pn}</div>
+      </div>` : ''}
+    </div>
+
+    <div class="zr-verdict ${verdict}">
+      <div class="label">${v.label}</div>
+      <div class="head">${v.head}</div>
+      <div class="reason">${intro}</div>
+    </div>
+
+    <div class="zr-actions">
+      <div class="zr-action do">
+        <b>✓ ทำได้</b>
+        <ul>${dos.map(d=>`<li>${d}</li>`).join('')}</ul>
+      </div>
+      <div class="zr-action dont">
+        <b>✗ อย่าทำ</b>
+        <ul>${donts.map(d=>`<li>${d}</li>`).join('')}</ul>
+      </div>
+    </div>
+
+    ${changing.length > 0 ? `
+    <div class="zr-changing">
+      <span class="han">變爻</span> <b>เส้นแปร:</b> เส้นที่ ${changing.join(', ')} แปรพลัง
+      ${resultingHex ? ` → ดวงกำลังเคลื่อนไปทาง <b>${resultingHex.zh} ${resultingHex.th}</b>` : ''}
+    </div>` : `
+    <div class="zr-changing">
+      <span class="han">不動</span> <b>ดวงนิ่ง:</b> ไม่มีเส้นแปร · primary คือคำตอบทั้งหมด
+    </div>`}
+  `;
+  resultEl.classList.add('show');
+}
+
+// Init defaults
+function initZeji(){
+  const today = new Date();
+  document.getElementById('zejiDate').value = today.toISOString().split('T')[0];
+  document.getElementById('zejiTime').value = `${String(today.getHours()).padStart(2,'0')}:${String(today.getMinutes()).padStart(2,'0')}`;
+}
+initZeji();
+
+// Preset buttons
+document.querySelectorAll('.preset-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.getElementById('zejiAction').value = btn.dataset.action;
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+// Cast button
+document.getElementById('castZeji').addEventListener('click', ()=>{
+  const date = document.getElementById('zejiDate').value;
+  const time = document.getElementById('zejiTime').value;
+  const action = document.getElementById('zejiAction').value.trim() || 'งานทั่วไป';
+  if(!date || !time) return;
+  
+  const seed = `${date}_${time}_${action}`;
+  const dateObj = new Date(`${date}T${time}`);
+  const dateStr = dateObj.toLocaleDateString('th-TH', { day:'numeric', month:'short', year:'numeric' });
+  const timeStr = `${time} น.`;
+  renderZejiResult(seed, dateStr, timeStr, action);
+});
+
+// 12-shichen quick scan
+function render12Shichen(){
+  const grid = document.getElementById('shichenGrid');
+  const today = new Date();
+  const dateKey = today.toISOString().split('T')[0];
+  const action = document.getElementById('zejiAction')?.value.trim() || 'งานทั่วไป';
+  const currentShi = getShichenIdx(today.getHours());
+  
+  grid.innerHTML = '';
+  SHICHEN.forEach((shi, idx) => {
+    const seed = `${dateKey}_shi${idx}_${action}`;
+    const { primary } = castFromSeed(seed);
+    const hex = HEX64[primary - 1];
+    const isNow = idx === currentShi;
+    
+    const cell = document.createElement('div');
+    cell.className = `shi-cell ${hex.verdict}${isNow ? ' now' : ''}`;
+    cell.innerHTML = `
+      <div class="han">${shi.han}</div>
+      <div class="time">${shi.range}</div>
+      <div class="verdict">${hex.verdict === 'go' ? '✓' : hex.verdict === 'wait' ? '⏳' : '✗'} ${hex.verdict.toUpperCase()}</div>
+      <div class="hex-mini">${hex.sym}</div>
+    `;
+    cell.title = `${shi.han}時 (${shi.range}): ${hex.zh} ${hex.th}`;
+    cell.addEventListener('click', ()=>{
+      // simulate cast for this shichen
+      const [hStart] = shi.range.split('–');
+      const t = hStart === '23' ? '23:00' : `${hStart.padStart(2,'0')}:00`;
+      document.getElementById('zejiTime').value = t;
+      document.getElementById('castZeji').click();
+      // scroll to result
+      document.getElementById('zejiResult').scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+    grid.appendChild(cell);
+  });
+}
+
+// re-scan when action changes
+document.getElementById('zejiAction').addEventListener('change', render12Shichen);
+
+// Initial render
+render12Shichen();
+
+console.log('🐢 He Luo loaded · 河圖 5 pairs · 洛書 9 palaces');
+</script>
+
+
+<script>
+/* HK Navbar · auto-active link · pattern เดียวกับ chart/today/network/qimen */
+(function(){
+  try {
+    var p = window.location.pathname.replace(/\/$/,'');
+    if (p === '/yongsennetwork') p = '/network';
+    document.querySelectorAll('#hk-topnav a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+  } catch(e){}
+})();
+</script>
+
+<script>
+/* hourkey · 3-language i18n pattern · TH/EN/ZH · ทุกหน้าใช้ key เดียวกัน */
+window.HK_I18N = window.HK_I18N || {};
+Object.assign(window.HK_I18N, {
+  'hk.nav.chart':   { th:'ดวง',       en:'Chart',    zh:'命盤' },
+  'hk.nav.today':   { th:'วันนี้',     en:'Today',    zh:'今日' },
+  'hk.nav.calendar':{ th:'ปฏิทิน',    en:'Calendar', zh:'吉曆' },
+  'hk.nav.network': { th:'เครือข่าย',  en:'Network',  zh:'人脈' },
+  'hk.nav.qimen':   { th:'ฉีเหมิน',   en:'Qi Men',   zh:'奇門' },
+  'hk.nav.master':  { th:'ซินแส',    en:'Sifu',     zh:'老師' },
+  'hk.nav.picker':  { th:'วางฤกษ์',   en:'Picker',   zh:'擇日' },
+  'hk.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  'hk.nav.goal':    { th:'เป้าหมาย',   en:'Goals',    zh:'志向' }
+});
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+    document.querySelectorAll('[data-i18n-ph="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) el.setAttribute('placeholder', t[lang].replace(/<[^>]+>/g,''));
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+(function(){
+  var sw = document.getElementById('hk-theme-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(t){
+    document.documentElement.setAttribute('data-theme', t);
+    document.body.classList.toggle('light', t === 'light');
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.theme === t); });
+    try{ localStorage.setItem('hk-theme', t); }catch(e){}
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.theme); }); });
+  try{ var s = localStorage.getItem('hk-theme'); if (s) apply(s); else apply('dark'); }catch(e){ apply('dark'); }
+})();
+</script>
+
+</body>
+</html>

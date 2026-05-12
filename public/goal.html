@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>hourkey · เป้าหมายของคุณ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root, [data-theme="dark"]{
+    --bg:#0a0c10;
+    --paper:#f6f1e6; --paper-dim:rgba(246,241,230,.6); --paper-soft:rgba(246,241,230,.35);
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12);
+    --wood:#8fc37c; --fire:#e26b5d; --earth:#d4a85a; --metal:#c8b88a; --water:#7ba8c8;
+    --card-bg-1:rgba(28,32,40,.85); --card-bg-2:rgba(14,17,22,.85);
+    --line:rgba(246,241,230,.12); --line-soft:rgba(246,241,230,.08); --line-faint:rgba(246,241,230,.06);
+    --field:rgba(255,255,255,.02); --field-2:rgba(0,0,0,.3);
+    --ring:rgba(200,164,77,.08);
+    --shine:rgba(255,255,255,.4);
+    --on-gold:#0d0f12;
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2;
+    --paper:#1a1612; --paper-dim:rgba(26,22,18,.65); --paper-soft:rgba(26,22,18,.4);
+    --gold:#8a6d2a; --gold-deep:#5e4a1a; --gold-soft:rgba(138,109,42,.1);
+    --wood:#5a8a48; --fire:#a8483a; --earth:#9a7d3a; --metal:#7a6f4a; --water:#3f6688;
+    --card-bg-1:rgba(255,250,238,.85); --card-bg-2:rgba(248,242,225,.85);
+    --line:rgba(26,22,18,.18); --line-soft:rgba(26,22,18,.1); --line-faint:rgba(26,22,18,.06);
+    --field:rgba(26,22,18,.03); --field-2:rgba(255,250,238,.6);
+    --ring:rgba(138,109,42,.06);
+    --shine:rgba(255,255,255,.6);
+    --on-gold:#f5efe2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--paper);font-family:'Noto Serif Thai',serif;min-height:100vh;overflow-x:hidden;cursor:none;transition:background .4s, color .4s;}
+  .cursor{position:fixed;left:0;top:0;width:24px;height:24px;border:1px solid var(--gold);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:9999;mix-blend-mode:difference;transition:width .2s, height .2s;}
+  .cursor.hot{width:48px;height:48px;background:var(--gold-soft);}
+  .cursor-dot{position:fixed;left:0;top:0;width:4px;height:4px;background:var(--gold);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:9999;}
+
+  /* ── ambient bg ─────────────────────────────── */
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .bg::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 30%, var(--ring), transparent 50%), radial-gradient(circle at 80% 80%, rgba(123,168,200,.05), transparent 50%);}
+  .compass{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:1100px;height:1100px;}
+  .compass .ring{position:absolute;inset:0;border:1px solid var(--ring);border-radius:50%;animation:rot 200s linear infinite;}
+  .compass .ring.dash{inset:8%;border-style:dashed;animation-duration:140s;animation-direction:reverse;}
+  .compass .ring.dot{inset:18%;border-style:dotted;animation-duration:90s;}
+  @keyframes rot{to{transform:rotate(360deg);}}
+
+  /* ── layout ─────────────────────────────────── */
+  .topbar{position:relative;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:24px 56px;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;}
+  .logo .seal{width:26px;height:26px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:12px;color:var(--gold);}
+  .progress{display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--paper-dim);text-transform:uppercase;}
+  .progress .dots{display:flex;gap:6px;}
+  .progress .dots i{width:24px;height:2px;background:var(--line);}
+  .progress .dots i.on{background:var(--gold);}
+  .progress .dots i.cur{background:var(--gold);box-shadow:0 0 0 2px var(--gold-soft);}
+  .hk-top-right{display:flex;align-items:center;gap:10px;}
+  .hk-lang-switch{display:inline-flex;background:var(--field);border:1px solid var(--line);border-radius:99px;padding:3px;}
+  .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--paper-soft);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+  .hk-lang-switch button.on{background:var(--gold);color:var(--on-gold,#0d0f12);}
+  .theme-toggle{display:flex;align-items:center;border:1px solid var(--line);border-radius:99px;padding:3px;background:var(--field);}
+  .theme-toggle button{cursor:none;background:transparent;border:none;width:30px;height:30px;border-radius:99px;display:flex;align-items:center;justify-content:center;color:var(--paper-soft);transition:.25s;font-size:13px;}
+  .theme-toggle button.on{background:var(--gold);color:var(--on-gold);}
+
+  .stage{position:relative;z-index:5;padding:20px 56px 60px;max-width:1400px;margin:0 auto;}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1.05fr 1fr;gap:50px;margin-bottom:48px;align-items:end;}
+  .step-num{font-family:'Cormorant Garamond',serif;font-size:200px;font-weight:300;line-height:.9;font-style:italic;letter-spacing:-.04em;font-variant-numeric:lining-nums tabular-nums;font-feature-settings:"lnum" 1,"tnum" 1;background:linear-gradient(180deg, var(--gold) 0%, var(--gold-soft) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  /* ตัวเลขใหญ่ทุกที่ใช้ lining-nums + tabular-nums */
+  .horizon-stop .yr,
+  .horizon-head h2,
+  .notify-card .body h4{font-variant-numeric:lining-nums tabular-nums;font-feature-settings:"lnum" 1,"tnum" 1;}
+  .step-of{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.3em;color:var(--paper-soft);text-transform:uppercase;margin-top:-20px;margin-bottom:24px;}
+  .hero h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:64px;line-height:1.05;letter-spacing:-.02em;}
+  .hero h1 .tc{font-family:'Noto Serif TC',serif;color:var(--gold);font-weight:700;font-style:normal;}
+  .hero h1 i{color:var(--gold);}
+  .hero .lede{font-size:14px;line-height:1.7;color:var(--paper-dim);max-width:440px;margin-top:20px;}
+  .hero .lede b{color:var(--paper);font-weight:500;}
+
+  /* compass-of-aims (right) */
+  .aim-compass{position:relative;width:100%;aspect-ratio:1/1;max-width:460px;margin-left:auto;}
+  .aim-compass svg{position:absolute;inset:0;}
+  .aim-compass .center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:120px;height:120px;border:1.5px solid var(--gold);border-radius:50%;background:var(--gold-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .aim-compass .center .tc{font-family:'Noto Serif TC',serif;font-size:36px;font-weight:700;color:var(--gold);line-height:1;}
+  .aim-compass .center .lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--paper-dim);text-transform:uppercase;margin-top:6px;}
+  .aim-compass .pt{position:absolute;width:64px;height:64px;border-radius:50%;border:1.5px solid var(--line);background:var(--field);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--paper-dim);transform:translate(-50%,-50%);transition:.3s;text-align:center;line-height:1.1;padding:4px;}
+  .aim-compass .pt.small{width:54px;height:54px;font-size:13px;}
+  [data-lang="th"] .aim-compass .pt{font-family:'Noto Serif Thai',serif;font-size:11px;font-weight:600;}
+  [data-lang="th"] .aim-compass .pt.small{font-size:10px;}
+  [data-lang="en"] .aim-compass .pt{font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:600;letter-spacing:.02em;}
+  [data-lang="en"] .aim-compass .pt.small{font-size:11px;}
+  .aim-compass .pt.on{border-color:var(--gold);background:var(--gold-soft);color:var(--gold);box-shadow:0 0 0 4px var(--gold-soft);transform:translate(-50%,-50%) scale(1.1);}
+
+  /* ── aim grid ───────────────────────────────── */
+  .section-eyebrow{display:flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:16px;}
+  .section-eyebrow::before{content:'◇';color:var(--gold);}
+  .section-eyebrow::after{content:'';flex:1;height:1px;background:var(--line);}
+
+  .aims{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:48px;}
+  .aim{position:relative;background:linear-gradient(160deg, var(--card-bg-1) 0%, var(--card-bg-2) 100%);border:1px solid var(--line);border-radius:14px;padding:24px;cursor:none;overflow:hidden;transition:.3s;backdrop-filter:blur(10px);}
+  .aim::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg, transparent, var(--gold), transparent);opacity:0;transition:.3s;}
+  .aim:hover{transform:translateY(-4px);border-color:var(--gold);}
+  .aim:hover::before{opacity:1;}
+  .aim.on{border-color:var(--gold);background:linear-gradient(160deg, var(--gold-soft) 0%, var(--card-bg-2) 100%);box-shadow:0 0 0 1px var(--gold), 0 12px 32px rgba(0,0,0,.2);}
+  .aim.on::before{opacity:1;}
+  .aim .glyph{font-family:'Noto Serif TC',serif;font-size:44px;font-weight:700;color:var(--gold);line-height:1;margin-bottom:12px;}
+  .aim h3{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:24px;line-height:1.2;margin-bottom:6px;}
+  .aim h3 .th{font-family:'Noto Serif Thai',serif;font-weight:500;font-size:18px;color:var(--paper);display:block;margin-top:2px;}
+  .aim p{font-size:12px;line-height:1.6;color:var(--paper-dim);margin-bottom:16px;}
+  .aim .meta{display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--paper-soft);text-transform:uppercase;border-top:1px solid var(--line-faint);padding-top:12px;}
+  .aim .meta b{color:var(--gold);font-weight:400;}
+  .aim .check{position:absolute;top:18px;right:18px;width:22px;height:22px;border:1.5px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;transition:.25s;}
+  .aim.on .check{background:var(--gold);border-color:var(--gold);color:var(--on-gold);font-weight:700;font-size:12px;}
+  .aim.on .check::after{content:'✓';}
+
+  /* horizon — depth slider */
+  .horizon{display:grid;grid-template-columns:1fr;gap:24px;background:linear-gradient(160deg, var(--card-bg-1), var(--card-bg-2));border:1px solid var(--line);border-radius:14px;padding:32px;margin-bottom:48px;backdrop-filter:blur(10px);}
+  .horizon-head{display:flex;justify-content:space-between;align-items:baseline;}
+  .horizon-head h2{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:32px;}
+  .horizon-head h2 .tc{font-family:'Noto Serif TC',serif;color:var(--gold);font-weight:700;}
+  .horizon-head .pick{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;}
+  .horizon-track{position:relative;height:80px;display:flex;align-items:center;}
+  .horizon-track::before{content:'';position:absolute;left:8%;right:8%;top:50%;height:2px;background:linear-gradient(90deg,var(--line) 0%,var(--line) 100%);transform:translateY(-50%);border-radius:99px;}
+  .horizon-track::after{content:'';position:absolute;left:8%;width:0;top:50%;height:2px;background:linear-gradient(90deg,var(--gold-deep),var(--gold));transform:translateY(-50%);border-radius:99px;transition:width .5s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 8px var(--gold-soft);}
+  .horizon-track[data-cur="0"]::after{width:0;}
+  .horizon-track[data-cur="1"]::after{width:calc((100% - 16%) * 0.2);}
+  .horizon-track[data-cur="2"]::after{width:calc((100% - 16%) * 0.4);}
+  .horizon-track[data-cur="3"]::after{width:calc((100% - 16%) * 0.6);}
+  .horizon-track[data-cur="4"]::after{width:calc((100% - 16%) * 0.8);}
+  .horizon-track[data-cur="5"]::after{width:calc(100% - 16%);}
+  .hk-horizon-axis{display:flex;justify-content:space-between;margin-top:-6px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--paper-soft);text-transform:uppercase;padding:0 4px;}
+  .hk-horizon-axis span:last-child{text-align:right;}
+  .horizon-stop{flex:1;display:flex;flex-direction:column;align-items:center;cursor:none;position:relative;z-index:2;}
+  .horizon-stop .dot{width:14px;height:14px;border-radius:50%;background:var(--bg);border:1.5px solid var(--line);transition:.25s;}
+  .horizon-stop.passed .dot{border-color:var(--gold);background:var(--gold);}
+  .horizon-stop.cur .dot{border-color:var(--gold);background:var(--gold);box-shadow:0 0 0 4px var(--gold-soft);width:18px;height:18px;}
+  .horizon-stop .label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--paper-soft);text-transform:uppercase;margin-top:14px;text-align:center;}
+  .horizon-stop .tc{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--paper-soft);margin-top:2px;}
+  .horizon-stop.cur .label{color:var(--gold);}
+  .horizon-stop:hover .dot{transform:scale(1.25);box-shadow:0 0 0 6px var(--gold-soft);}
+  .horizon-stop:hover .label{color:var(--gold);}
+  .hk-horizon-tip{margin-top:18px;padding:14px 18px;background:var(--field);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:8px;font-family:'Noto Serif Thai',serif;font-size:13px;line-height:1.65;color:var(--paper-dim);min-height:54px;transition:all .35s;}
+  .hk-horizon-tip b{color:var(--gold);font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.05em;}
+  .hk-horizon-tip .tc{font-family:'Noto Serif TC',serif;color:var(--gold);font-weight:700;margin-right:4px;}
+  .horizon-stop.cur .tc{color:var(--gold);}
+
+  /* notify card */
+  .notify{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:36px;}
+  @media(min-width:980px){.notify{grid-template-columns:repeat(4,1fr);}}
+  .notify-card{background:var(--field);border:1px dashed var(--line);border-radius:14px;padding:22px 24px;display:flex;align-items:center;gap:16px;}
+  .notify-card .ico{width:48px;height:48px;border:1px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:22px;color:var(--gold);flex-shrink:0;}
+  .notify-card .body h4{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;}
+  .notify-card .body h4 .tc{font-family:'Noto Serif TC',serif;color:var(--gold);font-weight:700;}
+  .notify-card .body p{font-size:11px;color:var(--paper-dim);margin-top:2px;}
+  .notify-card .toggle{margin-left:auto;width:40px;height:22px;background:var(--line);border-radius:99px;position:relative;cursor:none;flex-shrink:0;transition:.25s;}
+  .notify-card .toggle::after{content:'';position:absolute;left:2px;top:2px;width:18px;height:18px;background:var(--paper);border-radius:50%;transition:.25s;}
+  .notify-card.on .toggle{background:var(--gold);}
+  .notify-card.on .toggle::after{left:20px;background:var(--on-gold);}
+
+  /* CTA */
+  .cta-row{display:flex;justify-content:space-between;align-items:center;padding:24px 0 8px;border-top:1px solid var(--line);}
+  .ghost{padding:14px 22px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.2em;color:var(--paper-dim);text-transform:uppercase;background:transparent;border:1px solid var(--line);border-radius:99px;cursor:none;transition:.25s;}
+  .ghost:hover{border-color:var(--paper);color:var(--paper);}
+  .primary{position:relative;padding:18px 40px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--on-gold);background:var(--gold);border:none;border-radius:99px;cursor:none;overflow:hidden;transition:.25s;}
+  .primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,164,77,.3);}
+  .primary::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg, transparent, var(--shine), transparent);transform:translateX(-100%);transition:.6s;}
+  .primary:hover::before{transform:translateX(100%);}
+
+  /* ─────────────── MOBILE PHONE (≤767px) ─────────────── */
+  @media (max-width: 767px){
+    html, body{cursor:auto !important;}
+    .cursor, .cursor-dot{display:none !important;}
+
+    .compass{width:600px;height:600px;}
+
+    /* topbar */
+    .topbar{padding:12px 14px;flex-wrap:wrap;gap:8px;}
+    .logo{font-size:16px;gap:6px;}
+    .logo .seal{width:22px;height:22px;font-size:11px;}
+    .progress{gap:8px;font-size:9px;letter-spacing:.12em;flex:1;justify-content:center;}
+    .progress .dots{gap:4px;}
+    .progress .dots i{width:14px;}
+    .theme-toggle button{width:28px;height:28px;font-size:13px;}
+
+    /* stage */
+    .stage{padding:14px 16px 40px;}
+
+    /* hero */
+    .hero{grid-template-columns:1fr;gap:18px;margin-bottom:28px;}
+    .step-num{font-size:96px;line-height:1;}
+    .step-of{font-size:9px;letter-spacing:.22em;margin-top:-12px;margin-bottom:14px;}
+    .hero h1{font-size:30px;line-height:1.1;}
+    .lede{font-size:13px;line-height:1.65;}
+
+    /* compass — center on small screen */
+    .aim-compass{max-width:260px;margin:18px auto 0;width:100%;}
+    .aim-compass .center{width:80px;height:80px;}
+    .aim-compass .center .tc{font-size:24px;}
+    .aim-compass .center .lbl{font-size:8px;letter-spacing:.15em;}
+    .aim-compass .pt{width:38px;height:38px;font-size:16px;}
+
+    /* aims grid — 2 cols ใหญ่ขึ้นแต่ยัง grid เพื่อ scan ได้เร็ว */
+    .aims{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:28px;}
+    .aim{padding:14px 12px;border-radius:12px;}
+    .aim .glyph{font-size:30px;margin-bottom:8px;}
+    .aim h3{font-size:14px;line-height:1.2;margin-bottom:4px;}
+    .aim h3 .th{font-size:12px;margin-top:1px;}
+    .aim p{font-size:10px;line-height:1.45;margin-bottom:10px;}
+    .aim .meta{font-size:8px;letter-spacing:.1em;padding-top:8px;gap:6px;flex-wrap:wrap;}
+
+    /* horizon */
+    .horizon{padding:18px 14px;margin-bottom:24px;}
+    .horizon-head{flex-direction:column;gap:4px;align-items:flex-start;}
+    .horizon-head h2{font-size:22px;}
+    .horizon-head h2 .tc{font-size:24px;}
+    .horizon-head .pick{font-size:9px;}
+    .horizon-track{height:64px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    .horizon-stop{flex:0 0 auto;min-width:60px;}
+    .horizon-stop .lbl{font-size:8px;letter-spacing:.05em;}
+    .horizon-stop .lbl .tc{font-size:10px;}
+    .horizon-stop .yr{font-size:8px;}
+
+    /* notify */
+    .notify{grid-template-columns:1fr;gap:8px;margin-bottom:20px;}
+    .notify-item{padding:14px;}
+    .notify-item .glyph{font-size:22px;}
+    .notify-item h3{font-size:13px;}
+    .notify-item p{font-size:11px;line-height:1.5;}
+
+    /* tip */
+    .tip-box{padding:14px;font-size:11px;line-height:1.55;}
+    .tip-box::before{font-size:14px;}
+
+    /* cta */
+    .cta-row{flex-direction:column-reverse;gap:8px;margin-top:18px;}
+    .cta-row button{width:100%;padding:14px;font-size:11px;letter-spacing:.18em;}
+
+    /* extra small phones */
+    @media (max-width: 360px){
+      .aim h3{font-size:13px;}
+      .aim p{font-size:9px;}
+      .aim .meta{display:none;}
+      .step-num{font-size:80px;}
+      .hero h1{font-size:26px;}
+    }
+  }
+</style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<div class="bg">
+  <div class="compass">
+    <div class="ring"></div>
+    <div class="ring dash"></div>
+    <div class="ring dot"></div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="logo"><span class="seal">時</span>hourkey</div>
+  <div class="progress">
+    <span data-i18n="g.step.label">STEP 03 / 03</span>
+    <div class="dots"><i class="on"></i><i class="on"></i><i class="cur"></i></div>
+    <span data-i18n="g.step.title">เป้าหมาย · 志</span>
+  </div>
+  <div class="hk-top-right top-r">
+    <div id="hk-user-menu-mount"></div>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="hero">
+    <div>
+      <div class="step-num">03</div>
+      <div class="step-of" data-i18n="g.step.of">of three steps · 之三</div>
+      <h1 data-i18n="g.h1">คุณ <i>กำลังตามหา</i><br/>อะไร<span class="tc">志</span>?</h1>
+      <p class="lede" data-i18n="g.lede">การตีความปาจื้อ <b>เริ่มจากเป้าหมาย</b> — เลือกได้สูงสุด <b>3 อย่าง</b> เราจะเน้นชั่วโมงและคนที่ตอบโจทย์คุณก่อน · เปลี่ยนได้ทุกเมื่อ</p>
+    </div>
+    <div class="aim-compass">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+        <line x1="50" y1="22" x2="50" y2="50" stroke="var(--gold)" stroke-width=".4"/>
+        <line x1="50" y1="50" x2="78" y2="50" stroke="var(--gold)" stroke-width=".4"/>
+        <line x1="50" y1="50" x2="22" y2="35" stroke="var(--paper-soft)" stroke-width=".25" stroke-dasharray="2 1.5"/>
+        <line x1="50" y1="50" x2="68" y2="78" stroke="var(--paper-soft)" stroke-width=".25" stroke-dasharray="2 1.5"/>
+      </svg>
+      <div class="center"><div class="tc">志</div><div class="lbl" data-i18n="g.compass.lbl">your aims</div></div>
+      <div class="pt on"   style="left:50%;top:13%;" data-i18n="g.compass.wealth">財</div>
+      <div class="pt on"   style="left:87%;top:50%;" data-i18n="g.compass.career">業</div>
+      <div class="pt"      style="left:50%;top:87%;" data-i18n="g.compass.rel">情</div>
+      <div class="pt"      style="left:13%;top:50%;" data-i18n="g.compass.fam">家</div>
+      <div class="pt small" style="left:78%;top:18%;" data-i18n="g.compass.hlt">健</div>
+      <div class="pt small" style="left:78%;top:82%;" data-i18n="g.compass.knw">學</div>
+      <div class="pt small" style="left:22%;top:82%;" data-i18n="g.compass.move">遷</div>
+      <div class="pt small" style="left:22%;top:18%;" data-i18n="g.compass.fame">名</div>
+    </div>
+  </div>
+
+  <div class="section-eyebrow" data-i18n="g.eyebrow.aim">เลือกได้สูงสุด 3 อย่าง · 2/3 selected</div>
+  <div class="aims">
+    <div class="aim on">
+      <div class="check"></div>
+      <div class="glyph">財</div>
+      <h3 data-i18n="g.aim.wealth.h">Wealth & Finance<span class="th">การเงิน · ความมั่งคั่ง</span></h3>
+      <p data-i18n="g.aim.wealth.p">หาช่วงดวงเปิดประตูเรื่องเงิน · ตัดสินใจลงทุน · เลือกหุ้นส่วนที่หนุนทรัพย์</p>
+      <div class="meta"><span data-i18n="g.aim.wealth.focus">FOCUS · ตาม Day Master ของคุณ</span><span data-i18n="g.aim.wealth.gods">10 神 · <b>偏財·正財</b></span></div>
+    </div>
+    <div class="aim on">
+      <div class="check"></div>
+      <div class="glyph">業</div>
+      <h3 data-i18n="g.aim.career.h">Career & Influence<span class="th">การงาน · อิทธิพล</span></h3>
+      <p data-i18n="g.aim.career.p">เวลาเหมาะเปิด-ปิดดีล · ขึ้นเวที · ตำแหน่งใหม่ · เจรจาผู้มีอำนาจ</p>
+      <div class="meta"><span data-i18n="g.aim.career.focus">FOCUS · ตาม Day Master ของคุณ</span><span data-i18n="g.aim.career.gods">10 神 · <b>正官·七殺</b></span></div>
+    </div>
+    <div class="aim">
+      <div class="check"></div>
+      <div class="glyph">情</div>
+      <h3 data-i18n="g.aim.rel.h">Relationships<span class="th">คู่ครอง · ความสัมพันธ์</span></h3>
+      <p data-i18n="g.aim.rel.p">วิเคราะห์คู่หนุน-คู่ชน · ช่วงดีคุย-ดีลใจ · จังหวะเริ่ม-จบ</p>
+      <div class="meta"><span data-i18n="g.aim.rel.focus">FOCUS · ตามเพศ + Day Master</span><span data-i18n="g.aim.rel.gods">10 神 · <b>桃花 + 男:財 / 女:官</b></span></div>
+    </div>
+    <div class="aim">
+      <div class="check"></div>
+      <div class="glyph">家</div>
+      <h3 data-i18n="g.aim.fam.h">Family & Home<span class="th">ครอบครัว · ฐาน</span></h3>
+      <p data-i18n="g.aim.fam.p">เวลาเหมาะตัดสินใจเรื่องบ้าน · ลูก · มรดก · ย้ายถิ่นฐาน</p>
+      <div class="meta"><span data-i18n="g.aim.fam.focus">FOCUS · ตาม Day Master ของคุณ</span><span data-i18n="g.aim.fam.gods">10 神 · <b>正印·偏印·比肩</b></span></div>
+    </div>
+    <div class="aim">
+      <div class="check"></div>
+      <div class="glyph">健</div>
+      <h3 data-i18n="g.aim.hlt.h">Health & Energy<span class="th">สุขภาพ · พลังงาน</span></h3>
+      <p data-i18n="g.aim.hlt.p">ธาตุไหนของคุณอ่อน · เวลาไหนต้องระวัง · เคลื่อนไหวด้านไหน</p>
+      <div class="meta"><span data-i18n="g.aim.hlt.focus">FOCUS · 用神 · ตามดวงคุณ</span><span data-i18n="g.aim.hlt.gods">調候·寒·暖</span></div>
+    </div>
+    <div class="aim">
+      <div class="check"></div>
+      <div class="glyph">學</div>
+      <h3 data-i18n="g.aim.knw.h">Knowledge & Craft<span class="th">การเรียน · ฝีมือ</span></h3>
+      <p data-i18n="g.aim.knw.p">เวลาเหมาะเริ่มเรียน · สอบ · เปิดตัวงาน · ฝึกทักษะใหม่</p>
+      <div class="meta"><span data-i18n="g.aim.knw.focus">FOCUS · ตาม Day Master ของคุณ</span><span data-i18n="g.aim.knw.gods">10 神 · <b>正印·食神·傷官</b></span></div>
+    </div>
+    <div class="aim">
+      <div class="check"></div>
+      <div class="glyph">遷</div>
+      <h3 data-i18n="g.aim.move.h">Travel & Move<span class="th">เดินทาง · ย้ายถิ่น</span></h3>
+      <p data-i18n="g.aim.move.p">เวลาเหมาะเดินทางไกล · ย้ายบ้าน · ย้ายงาน · เปลี่ยนเมือง</p>
+      <div class="meta"><span data-i18n="g.aim.move.focus">FOCUS · ตาม Day Master ของคุณ</span><span data-i18n="g.aim.move.gods">10 神 · <b>驛馬·七殺·偏財</b></span></div>
+    </div>
+    <div class="aim">
+      <div class="check"></div>
+      <div class="glyph">名</div>
+      <h3 data-i18n="g.aim.fame.h">Fame & Reputation<span class="th">ชื่อเสียง · บารมี</span></h3>
+      <p data-i18n="g.aim.fame.p">เวลาเหมาะเปิดตัว · ออกสื่อ · เปิดบริษัท · สร้างชื่อให้คนจำ</p>
+      <div class="meta"><span data-i18n="g.aim.fame.focus">FOCUS · ตาม Day Master ของคุณ</span><span data-i18n="g.aim.fame.gods">10 神 · <b>正官·食神·文昌</b></span></div>
+    </div>
+  </div>
+
+  <div class="section-eyebrow" data-i18n="g.eyebrow.horizon">ตัดสินใจในกรอบเวลาแบบไหน · 大運 · 流年 · 流月</div>
+  <div class="horizon">
+    <div class="horizon-head">
+      <h2 data-i18n="g.horizon.h2">มองไปข้างหน้า <span class="tc">大運</span></h2>
+      <span class="pick" data-i18n="g.horizon.pick">ปัจจุบัน · 6 เดือน</span>
+    </div>
+    <div class="horizon-track" id="hk-horizon-track" data-cur="2">
+      <div class="horizon-stop passed" data-tip="g.tip.shi" data-idx="0"><div class="dot"></div><div class="label" data-i18n="g.horizon.shi">ชั่วโมงนี้</div><div class="tc">流時</div></div>
+      <div class="horizon-stop passed" data-tip="g.tip.ri" data-idx="1"><div class="dot"></div><div class="label" data-i18n="g.horizon.ri">วันนี้</div><div class="tc">流日</div></div>
+      <div class="horizon-stop cur" data-tip="g.tip.yue" data-idx="2"><div class="dot"></div><div class="label" data-i18n="g.horizon.yue">เดือนนี้</div><div class="tc">流月</div></div>
+      <div class="horizon-stop" data-tip="g.tip.nian" data-idx="3"><div class="dot"></div><div class="label" data-i18n="g.horizon.nian">ปีนี้</div><div class="tc">流年</div></div>
+      <div class="horizon-stop" data-tip="g.tip.dayun" data-idx="4"><div class="dot"></div><div class="label" data-i18n="g.horizon.dayun">10 ปี</div><div class="tc">大運</div></div>
+      <div class="horizon-stop" data-tip="g.tip.life" data-idx="5"><div class="dot"></div><div class="label" data-i18n="g.horizon.life">ทั้งชีวิต</div><div class="tc">一生</div></div>
+    </div>
+    <div class="hk-horizon-axis">
+      <span data-i18n="g.axis.near">← ใกล้ตัว</span>
+      <span data-i18n="g.axis.far">ไกลออกไป →</span>
+    </div>
+    <div id="hk-horizon-tip" class="hk-horizon-tip" data-i18n="g.tip.empty">คลิกที่จุดเพื่อดูคำอธิบาย · 大運/流年/流月/流日/流時 · 5 ระดับตามตำราโบราณ</div>
+  </div>
+
+  <div class="notify">
+    <div class="notify-card on">
+      <div class="ico">吉</div>
+      <div class="body">
+        <h4 data-i18n="g.notify.good.h">เตือนชั่วโมงดี · <span class="tc">吉時</span></h4>
+        <p data-i18n="g.notify.good.p">ส่งเฉพาะวันที่มีชั่วโมงเด่น · ก่อนชั่วยามมงคล 30 นาที</p>
+      </div>
+      <div class="toggle"></div>
+    </div>
+    <div class="notify-card">
+      <div class="ico">凶</div>
+      <div class="body">
+        <h4 data-i18n="g.notify.warnhour.h">เตือนชั่วโมงต้องเลี่ยง · <span class="tc">凶時</span></h4>
+        <p data-i18n="g.notify.warnhour.p">ชั่วยามแรง · ปะทะดวงคุณ — แจ้งล่วงหน้า 30 นาที</p>
+      </div>
+      <div class="toggle"></div>
+    </div>
+    <div class="notify-card">
+      <div class="ico">日</div>
+      <div class="body">
+        <h4 data-i18n="g.notify.goodday.h">เตือนวันเด่น · <span class="tc">吉日</span></h4>
+        <p data-i18n="g.notify.goodday.p">วันมงคลของดวงคุณ · เริ่มงานใหญ่ · เซ็นสัญญา — แจ้งล่วงหน้า 1 วัน</p>
+      </div>
+      <div class="toggle"></div>
+    </div>
+    <div class="notify-card">
+      <div class="ico">忌</div>
+      <div class="body">
+        <h4 data-i18n="g.notify.bad.h">เตือนวันต้องระวัง · <span class="tc">忌日</span></h4>
+        <p data-i18n="g.notify.bad.p">วันปะทะ 沖/破/害/刑 ดวงคุณ — แจ้งล่วงหน้า 1 วัน</p>
+      </div>
+      <div class="toggle"></div>
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <button class="ghost" data-i18n="g.cta.back" onclick="window.location.href='/input'">← ย้อนกลับ</button>
+    <button class="primary" data-i18n="g.cta.next" onclick="window.location.href='/chart'">เปิดดวงของฉัน →</button>
+  </div>
+</div>
+
+<script>
+  const c = document.getElementById('cursor'), cd = document.getElementById('cursorDot');
+  let mx=0,my=0,cx=0,cy=0;
+  document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; cd.style.left=mx+'px'; cd.style.top=my+'px'; });
+  function tick(){ cx+=(mx-cx)*.15; cy+=(my-cy)*.15; c.style.left=cx+'px'; c.style.top=cy+'px'; requestAnimationFrame(tick); } tick();
+  document.querySelectorAll('button, .aim, .horizon-stop, .notify-card .toggle, .aim-compass .pt').forEach(el=>{
+    el.addEventListener('mouseenter', ()=>c.classList.add('hot'));
+    el.addEventListener('mouseleave', ()=>c.classList.remove('hot'));
+  });
+
+  // toggle aims (max 3)
+  document.querySelectorAll('.aim').forEach(a=>{
+    a.addEventListener('click', ()=>{
+      const onCount = document.querySelectorAll('.aim.on').length;
+      if (a.classList.contains('on')) a.classList.remove('on');
+      else if (onCount<3) a.classList.add('on');
+      const n = document.querySelectorAll('.aim.on').length;
+      var l = document.documentElement.getAttribute('data-lang')||'th';
+      var labels = { th:'เลือกได้สูงสุด 3 อย่าง · '+n+'/3 selected', en:'Pick up to 3 · '+n+'/3 selected', zh:'最多選 3 項 · '+n+'/3 已選' };
+      document.querySelector('.section-eyebrow').textContent = labels[l]||labels.th;
+    });
+  });
+  // notify toggles
+  document.querySelectorAll('.notify-card .toggle').forEach(t=>{
+    t.addEventListener('click', e=>{ t.parentElement.classList.toggle('on'); e.stopPropagation(); });
+  });
+  // horizon
+  document.querySelectorAll('.horizon-stop').forEach((s,i,all)=>{
+    s.addEventListener('click', ()=>{
+      all.forEach((x,j)=>{ x.classList.remove('cur','passed'); if (j<i) x.classList.add('passed'); });
+      s.classList.add('cur');
+      document.querySelector('.horizon-head .pick').textContent = 'ปัจจุบัน · ' + s.querySelector('.label').textContent;
+    });
+  });
+  // theme
+  const tL = document.getElementById('t-light'), tD = document.getElementById('t-dark');
+  function setTheme(m){ document.documentElement.setAttribute('data-theme', m); tL.classList.toggle('on', m==='light'); tD.classList.toggle('on', m==='dark'); try{localStorage.setItem('hourkey-theme', m);}catch(e){} }
+  tL.addEventListener('click', ()=>setTheme('light'));
+  tD.addEventListener('click', ()=>setTheme('dark'));
+  try{ const s=localStorage.getItem('hourkey-theme'); if (s) setTheme(s); }catch(e){}
+</script>
+
+<script>
+/* hourkey · wire goal form (save aim list → /chart) */
+(function wireGoal(){
+  try {
+    const next = document.querySelector('button.primary');
+    if (!next) return;
+    next.removeAttribute('onclick');
+    next.addEventListener('click', async function(e){
+      e.preventDefault();
+      try {
+        const aims = Array.from(document.querySelectorAll('.aim.on')).map(function(el){
+          const h = el.querySelector('h3');
+          return h ? h.textContent.trim() : '';
+        }).filter(Boolean);
+        localStorage.setItem('hk_goal', JSON.stringify(aims));
+
+        /* attempt save via API (logged-in only · graceful fail) */
+        const birthRaw = localStorage.getItem('hk_birth');
+        if (birthRaw) {
+          const birth = JSON.parse(birthRaw);
+          fetch('/api/profile', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: localStorage.getItem('hk_email') || 'me',
+              birthDate: birth.date,
+              birthTime: birth.time,
+              birthPlace: birth.place,
+              longitude: birth.longitude,
+              goals: aims,
+            }),
+          }).catch(function(){});
+        }
+      } catch(_) {}
+      window.location.href = '/chart';
+    });
+  } catch(e) {}
+})();
+</script>
+<script>
+window.HK_I18N = {
+  'g.step.label':  { th:'STEP 03 / 03', en:'STEP 03 / 03', zh:'步驟 03 / 03' },
+  'g.step.title':  { th:'เป้าหมาย · 志', en:'Goals · 志', zh:'目標 · 志' },
+  'g.step.of':     { th:'of three steps · 之三', en:'of three steps · 之三', zh:'三步驟之終 · 之三' },
+  'g.h1':          { th:'คุณ <i>กำลังตามหา</i><br/>อะไร<span class="tc">志</span>?', en:'What are you <i>seeking</i><br/><span class="tc">志</span>?', zh:'您正在<i>追尋</i>什麼<span class="tc">志</span>？' },
+  'g.lede':        { th:'การตีความปาจื้อ <b>เริ่มจากเป้าหมาย</b> — เลือกได้สูงสุด <b>3 อย่าง</b> เราจะเน้นชั่วโมงและคนที่ตอบโจทย์คุณก่อน · เปลี่ยนได้ทุกเมื่อ',
+                     en:'BaZi reading <b>starts from intention</b> — pick up to <b>3 aims</b>. We highlight hours and people that answer your goals first · change anytime',
+                     zh:'八字解讀<b>始於意圖</b> — 最多選 <b>3 項</b>。我們將優先呈現符合您目標的時辰與人脈 · 隨時可改' },
+  'g.compass.lbl': { th:'your aims', en:'your aims', zh:'您的目標' },
+  'g.compass.wealth': { th:'ทรัพย์', en:'Wealth', zh:'財' },
+  'g.compass.career': { th:'งาน',   en:'Career', zh:'業' },
+  'g.compass.rel':    { th:'คู่',    en:'Love',   zh:'情' },
+  'g.compass.fam':    { th:'บ้าน',  en:'Home',   zh:'家' },
+  'g.compass.hlt':    { th:'สุขภาพ',en:'Health', zh:'健' },
+  'g.compass.knw':    { th:'เรียน',en:'Study',  zh:'學' },
+  'g.compass.move':   { th:'เดินทาง',en:'Move',  zh:'遷' },
+  'g.compass.fame':   { th:'ชื่อ',   en:'Fame',  zh:'名' },
+  'g.eyebrow.aim': { th:'เลือกได้สูงสุด 3 อย่าง · 2/3 selected', en:'Pick up to 3 · 2/3 selected', zh:'最多選 3 項 · 2/3 已選' },
+  'g.aim.wealth.h':{ th:'Wealth & Finance<span class="th">การเงิน · ความมั่งคั่ง</span>', en:'Wealth & Finance<span class="th">Money · Prosperity</span>', zh:'財富 · 財運<span class="th">金錢 · 富足</span>' },
+  'g.aim.wealth.p':{ th:'หาช่วงดวงเปิดประตูเรื่องเงิน · ตัดสินใจลงทุน · เลือกหุ้นส่วนที่หนุนทรัพย์', en:'Find money-opening windows · investment decisions · pick wealth-boosting partners', zh:'尋財運大開之時 · 投資決策 · 選擇助財夥伴' },
+  'g.aim.career.h':{ th:'Career & Influence<span class="th">การงาน · อิทธิพล</span>', en:'Career & Influence<span class="th">Work · Authority</span>', zh:'事業 · 權威<span class="th">工作 · 影響力</span>' },
+  'g.aim.career.p':{ th:'เวลาเหมาะเปิด-ปิดดีล · ขึ้นเวที · ตำแหน่งใหม่ · เจรจาผู้มีอำนาจ', en:'Right timing for closing deals · taking the stage · new roles · power negotiations', zh:'簽約 · 登台 · 升職 · 與權威談判之吉時' },
+  'g.aim.rel.h':   { th:'Relationships<span class="th">คู่ครอง · ความสัมพันธ์</span>', en:'Relationships<span class="th">Partner · Bonds</span>', zh:'感情 · 關係<span class="th">伴侶 · 緣分</span>' },
+  'g.aim.rel.p':   { th:'วิเคราะห์คู่หนุน-คู่ชน · ช่วงดีคุย-ดีลใจ · จังหวะเริ่ม-จบ', en:'Analyze supportive vs. clashing partners · best times to talk and bond · start/end timing', zh:'解析助緣與相剋 · 談心吉時 · 開始 · 結束之時機' },
+  'g.aim.fam.h':   { th:'Family & Home<span class="th">ครอบครัว · ฐาน</span>', en:'Family & Home<span class="th">Family · Foundation</span>', zh:'家庭 · 根基<span class="th">家人 · 基業</span>' },
+  'g.aim.fam.p':   { th:'เวลาเหมาะตัดสินใจเรื่องบ้าน · ลูก · มรดก · ย้ายถิ่นฐาน', en:'Right timing for home, children, inheritance, relocation', zh:'宅 · 子女 · 繼承 · 遷居之吉時' },
+  'g.aim.hlt.h':   { th:'Health & Energy<span class="th">สุขภาพ · พลังงาน</span>', en:'Health & Energy<span class="th">Body · Vitality</span>', zh:'健康 · 元氣<span class="th">身心 · 活力</span>' },
+  'g.aim.hlt.p':   { th:'ธาตุไหนของคุณอ่อน · เวลาไหนต้องระวัง · เคลื่อนไหวด้านไหน', en:'Which element you lack · when to be careful · which direction to move', zh:'何元素虛弱 · 何時當心 · 行於何方' },
+  'g.aim.knw.h':   { th:'Knowledge & Craft<span class="th">การเรียน · ฝีมือ</span>', en:'Knowledge & Craft<span class="th">Learning · Skill</span>', zh:'學識 · 工藝<span class="th">學習 · 技藝</span>' },
+  'g.aim.knw.p':   { th:'เวลาเหมาะเริ่มเรียน · สอบ · เปิดตัวงาน · ฝึกทักษะใหม่', en:'Right timing for learning, exams, debut works, new skills', zh:'學習 · 考試 · 發表 · 練新技之吉時' },
+  /* aim meta · focus + 10 gods (6 aims × 2) */
+  'g.aim.wealth.focus':{ th:'FOCUS · ตาม Day Master ของคุณ', en:'FOCUS · per your Day Master', zh:'重點 · 依您日主' },
+  'g.aim.wealth.gods': { th:'10 神 · <b>偏財·正財</b>', en:'10 Gods · <b>Indirect/Direct Wealth</b>', zh:'十神 · <b>偏財 · 正財</b>' },
+  'g.aim.career.focus':{ th:'FOCUS · ตาม Day Master ของคุณ', en:'FOCUS · per your Day Master', zh:'重點 · 依您日主' },
+  'g.aim.career.gods': { th:'10 神 · <b>正官·七殺</b>', en:'10 Gods · <b>Officer/Seven Killings</b>', zh:'十神 · <b>正官 · 七殺</b>' },
+  'g.aim.rel.focus':   { th:'FOCUS · ตามเพศ + Day Master', en:'FOCUS · per gender + Day Master', zh:'重點 · 依性別與日主' },
+  'g.aim.rel.gods':    { th:'10 神 · <b>桃花 · 男:財 / 女:官</b>', en:'10 Gods · <b>Peach Blossom · M:Wealth / F:Officer</b>', zh:'十神 · <b>桃花 · 男:財 / 女:官</b>' },
+  'g.aim.fam.focus':   { th:'FOCUS · ตาม Day Master ของคุณ', en:'FOCUS · per your Day Master', zh:'重點 · 依您日主' },
+  'g.aim.fam.gods':    { th:'10 神 · <b>正印·偏印·比肩</b>', en:'10 Gods · <b>Resource & Friend</b>', zh:'十神 · <b>正印 · 偏印 · 比肩</b>' },
+  'g.aim.hlt.focus':   { th:'FOCUS · 用神 · ตามดวงคุณ', en:'FOCUS · Useful God · per your chart', zh:'重點 · 用神 · 依您命盤' },
+  'g.aim.hlt.gods':    { th:'調候·寒·暖', en:'Climate · Hot/Cold balance', zh:'調候 · 寒 · 暖' },
+  'g.aim.knw.focus':   { th:'FOCUS · ตาม Day Master ของคุณ', en:'FOCUS · per your Day Master', zh:'重點 · 依您日主' },
+  'g.aim.knw.gods':    { th:'10 神 · <b>正印·食神·傷官</b>', en:'10 Gods · <b>Direct Resource / Eating God / Hurting Officer</b>', zh:'十神 · <b>正印 · 食神 · 傷官</b>' },
+  'g.aim.move.h':      { th:'Travel & Move<span class="th">เดินทาง · ย้ายถิ่น</span>', en:'Travel & Move<span class="th">Journey · Relocation</span>', zh:'遷徙 · 旅行<span class="th">出行 · 遷居</span>' },
+  'g.aim.move.p':      { th:'เวลาเหมาะเดินทางไกล · ย้ายบ้าน · ย้ายงาน · เปลี่ยนเมือง', en:'Right timing for long journeys · moving home · changing jobs · relocation', zh:'遠行 · 遷居 · 換職 · 移城之吉時' },
+  'g.aim.move.focus':  { th:'FOCUS · ตาม Day Master ของคุณ', en:'FOCUS · per your Day Master', zh:'重點 · 依您日主' },
+  'g.aim.move.gods':   { th:'10 神 · <b>驛馬·七殺·偏財</b>', en:'10 Gods · <b>Travel Horse / Seven Killings / Indirect Wealth</b>', zh:'十神 · <b>驛馬 · 七殺 · 偏財</b>' },
+  'g.aim.fame.h':      { th:'Fame & Reputation<span class="th">ชื่อเสียง · บารมี</span>', en:'Fame & Reputation<span class="th">Name · Influence</span>', zh:'名望 · 聲譽<span class="th">名聲 · 威望</span>' },
+  'g.aim.fame.p':      { th:'เวลาเหมาะเปิดตัว · ออกสื่อ · เปิดบริษัท · สร้างชื่อให้คนจำ', en:'Right timing for debut · media · launching company · building memorable name', zh:'發表 · 上媒 · 創業 · 揚名之吉時' },
+  'g.aim.fame.focus':  { th:'FOCUS · ตาม Day Master ของคุณ', en:'FOCUS · per your Day Master', zh:'重點 · 依您日主' },
+  'g.aim.fame.gods':   { th:'10 神 · <b>正官·食神·文昌</b>', en:'10 Gods · <b>Direct Officer / Eating God / Literary Star</b>', zh:'十神 · <b>正官 · 食神 · 文昌</b>' },
+  'g.eyebrow.horizon':{ th:'ตัดสินใจในกรอบเวลาแบบไหน · 大運 · 流年 · 流月', en:'Decisions in what timeframe · 大運 · 流年 · 流月', zh:'決策時程 · 大運 · 流年 · 流月' },
+  'g.horizon.h2':  { th:'มองไปข้างหน้า <span class="tc">大運</span>', en:'Looking ahead <span class="tc">大運</span>', zh:'展望 <span class="tc">大運</span>' },
+  'g.horizon.pick':{ th:'ปัจจุบัน · 6 เดือน', en:'Current · 6 months', zh:'目前 · 半年' },
+  /* horizon · 5 ระดับตำรา · 流時 流日 流月 流年 大運 + 一生 */
+  'g.horizon.shi':  { th:'ชั่วโมงนี้', en:'this hour', zh:'此時' },
+  'g.horizon.ri':   { th:'วันนี้', en:'today', zh:'今日' },
+  'g.horizon.yue':  { th:'เดือนนี้', en:'this month', zh:'本月' },
+  'g.horizon.nian': { th:'ปีนี้', en:'this year', zh:'本年' },
+  'g.horizon.dayun':{ th:'10 ปี', en:'10 years', zh:'十年大運' },
+  'g.horizon.life': { th:'ทั้งชีวิต', en:'lifetime', zh:'一生' },
+  'g.axis.near':    { th:'← ใกล้ตัว', en:'← near', zh:'← 近' },
+  'g.axis.far':     { th:'ไกลออกไป →', en:'far →', zh:'遠 →' },
+  /* tooltip text · กดที่ stop เพื่อดูรายละเอียด */
+  'g.tip.empty': { th:'คลิกที่จุดเพื่อดูคำอธิบาย · <b>大運/流年/流月/流日/流時</b> · 5 ระดับตามตำราโบราณ',
+                   en:'Tap a stop to learn · <b>大運/流年/流月/流日/流時</b> · 5 classical levels',
+                   zh:'點選時間點查看 · <b>大運/流年/流月/流日/流時</b> · 古法五階' },
+  'g.tip.shi':   { th:'<span class="tc">流時</span> <b>Liu Shi · 2 ชั่วโมง</b> — ชั่วยามมงคล (shichen) · ใช้กับชั่วโมงประชุม · เวลาเซ็นเอกสาร · ตัดสินใจด่วน',
+                   en:'<span class="tc">流時</span> <b>Liu Shi · 2 hours</b> — auspicious shichen · meeting hours · signing time · urgent decisions',
+                   zh:'<span class="tc">流時</span> <b>流時 · 兩小時</b> — 吉時辰 · 會議 · 簽約 · 急斷之時' },
+  'g.tip.ri':    { th:'<span class="tc">流日</span> <b>Liu Ri · 1 วัน</b> — ดวงประจำวัน · ใช้นัดประชุม · เซ็นสัญญา · เริ่มงานใหญ่',
+                   en:'<span class="tc">流日</span> <b>Liu Ri · 1 day</b> — daily transit · meetings · signing · starting big work',
+                   zh:'<span class="tc">流日</span> <b>流日 · 一日</b> — 日運 · 會議 · 簽約 · 啟新業' },
+  'g.tip.yue':   { th:'<span class="tc">流月</span> <b>Liu Yue · 1 เดือน</b> — ดวงประจำเดือน · ใช้กับโครงการ · ปิดดีลใหญ่ · เลือกเดือนเริ่มต้น',
+                   en:'<span class="tc">流月</span> <b>Liu Yue · 1 month</b> — monthly transit · projects · closing big deals · launch month',
+                   zh:'<span class="tc">流月</span> <b>流月 · 一月</b> — 月運 · 專案 · 大案落地 · 起手之月' },
+  'g.tip.nian':  { th:'<span class="tc">流年</span> <b>Liu Nian · 1 ปี</b> — ดวงประจำปี · ภาพรวมประจำปี · ทิศทางการตัดสินใจประจำปี',
+                   en:'<span class="tc">流年</span> <b>Liu Nian · 1 year</b> — annual transit · year overview · yearly direction',
+                   zh:'<span class="tc">流年</span> <b>流年 · 一年</b> — 年運 · 年度概觀 · 全年抉擇方向' },
+  'g.tip.dayun': { th:'<span class="tc">大運</span> <b>Da Yun · 10 ปี</b> — Luck Pillar · ใช้กับการตัดสินใจช่วงชีวิตใหญ่ · เปลี่ยนงาน · ย้ายบ้าน · เปลี่ยนทาง',
+                   en:'<span class="tc">大運</span> <b>Da Yun · 10 years</b> — Luck Pillar · life-altering decisions · career change · moving · pivoting',
+                   zh:'<span class="tc">大運</span> <b>大運 · 十年</b> — 大運柱 · 人生大抉擇 · 轉職 · 遷居 · 變道' },
+  'g.tip.life':  { th:'<span class="tc">一生</span> <b>Lifetime</b> — รวมทุก大運 8-10 หลัก · ภาพรวมตลอดชีวิต · เห็นจังหวะใหญ่ของชะตา',
+                   en:'<span class="tc">一生</span> <b>Lifetime</b> — all 8-10 luck pillars · whole-life overview · grand rhythm of destiny',
+                   zh:'<span class="tc">一生</span> <b>一生</b> — 八至十柱大運合觀 · 一生概觀 · 命之大節奏' },
+  'g.notify.good.h':    { th:'เตือนชั่วโมงดี · <span class="tc">吉時</span>', en:'Auspicious hour alerts · <span class="tc">吉時</span>', zh:'吉時提醒 · <span class="tc">吉時</span>' },
+  'g.notify.good.p':    { th:'ส่งเฉพาะวันที่มีชั่วโมงเด่น · ก่อนชั่วยามมงคล 30 นาที',
+                          en:'Only on days with notable hours · 30 min before',
+                          zh:'僅於有顯著時辰之日 · 吉時前 30 分鐘' },
+  'g.notify.warnhour.h':{ th:'เตือนชั่วโมงต้องเลี่ยง · <span class="tc">凶時</span>',
+                          en:'Caution hour alerts · <span class="tc">凶時</span>',
+                          zh:'凶時警示 · <span class="tc">凶時</span>' },
+  'g.notify.warnhour.p':{ th:'ชั่วยามแรง · ปะทะดวงคุณ — แจ้งล่วงหน้า 30 นาที',
+                          en:'Intense hours clashing with your chart — 30 min advance',
+                          zh:'強烈時辰 · 與命盤相沖 — 提前 30 分鐘' },
+  'g.notify.goodday.h': { th:'เตือนวันเด่น · <span class="tc">吉日</span>',
+                          en:'Auspicious day alerts · <span class="tc">吉日</span>',
+                          zh:'吉日提醒 · <span class="tc">吉日</span>' },
+  'g.notify.goodday.p': { th:'วันมงคลของดวงคุณ · เริ่มงานใหญ่ · เซ็นสัญญา — แจ้งล่วงหน้า 1 วัน',
+                          en:'Auspicious days for your chart · launch · sign — 1-day advance',
+                          zh:'命盤吉日 · 啟動大事 · 簽約 — 提前一日告知' },
+  'g.notify.bad.h':     { th:'เตือนวันต้องระวัง · <span class="tc">忌日</span>',
+                          en:'Caution day alerts · <span class="tc">忌日</span>',
+                          zh:'忌日警示 · <span class="tc">忌日</span>' },
+  'g.notify.bad.p':     { th:'วันปะทะ 沖/破/害/刑 ดวงคุณ — แจ้งล่วงหน้า 1 วัน',
+                          en:'Days of 沖/破/害/刑 clashes — 1-day advance notice',
+                          zh:'與您命盤 沖/破/害/刑 之日 — 提前一日告知' },
+  'g.cta.back':    { th:'← ย้อนกลับ', en:'← Back', zh:'← 返回' },
+  'g.cta.next':    { th:'เปิดดวงของฉัน →', en:'Open my chart →', zh:'開啟我的命盤 →' }
+};
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+
+/* horizon stop · click → update tip + bar width + passed/cur ตาม index */
+(function(){
+  var tip = document.getElementById('hk-horizon-tip');
+  var track = document.getElementById('hk-horizon-track');
+  if (!tip || !track) return;
+  var stops = document.querySelectorAll('.horizon-stop');
+  stops.forEach(function(stop){
+    stop.addEventListener('click', function(){
+      var key = stop.getAttribute('data-tip');
+      var idx = parseInt(stop.getAttribute('data-idx')||'0',10);
+      if (key && window.HK_I18N && window.HK_I18N[key]) {
+        var lang = document.documentElement.getAttribute('data-lang')||'th';
+        var t = window.HK_I18N[key];
+        tip.innerHTML = t[lang] || t.th || '';
+        tip.setAttribute('data-i18n', key);
+      }
+      track.setAttribute('data-cur', String(idx));
+      stops.forEach(function(s, i){
+        s.classList.remove('cur','passed');
+        if (i < idx) s.classList.add('passed');
+        else if (i === idx) s.classList.add('cur');
+      });
+    });
+  });
+})();
+</script>
+<script src="/js/hk-user-menu.js?v=9" defer></script>
+</body>
+</html>

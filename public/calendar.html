@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>hourkey · ปฏิทินมงคล · 黃曆</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  [data-theme="dark"]{
+    --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.32);
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12);
+    --gold-line:rgba(200,164,77,.22);
+    --tile:rgba(38,42,50,.55); --tile-bd:rgba(246,241,230,.10);
+    --wood:#8fc37c; --wood-bg:rgba(143,195,124,.14);
+    --fire:#e26b5d; --fire-bg:rgba(226,107,93,.14);
+    --earth:#d4a85a; --earth-bg:rgba(212,168,90,.14);
+    --metal:#c8b88a; --metal-bg:rgba(200,184,138,.14);
+    --water:#7ba8c8; --water-bg:rgba(123,168,200,.14);
+    --good:#8fc37c; --bad:#e26b5d; --neutral:#c8b88a;
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#ebe5d6; --bg-3:#dfd9c8;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.65); --fg-faint:rgba(26,22,18,.4);
+    --gold:#8a6d2a; --gold-deep:#5e4a1a; --gold-soft:rgba(138,109,42,.1);
+    --gold-line:rgba(138,109,42,.28);
+    --tile:rgba(255,250,238,.65); --tile-bd:rgba(26,22,18,.12);
+    --wood:#5a8a48; --wood-bg:rgba(90,138,72,.1);
+    --fire:#a8483a; --fire-bg:rgba(168,72,58,.1);
+    --earth:#9a7d3a; --earth-bg:rgba(154,125,58,.1);
+    --metal:#7a6f4a; --metal-bg:rgba(122,111,74,.1);
+    --water:#3f6688; --water-bg:rgba(63,102,136,.1);
+    --good:#5a8a48; --bad:#a8483a; --neutral:#7a6f4a;
+  }
+  :root{
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);font-family:var(--thai);color:var(--fg);min-height:100vh;transition:background .35s, color .35s;}
+  body{background:radial-gradient(circle at 80% 10%, var(--gold-soft), transparent 60%), var(--bg);}
+  button,input,select{font-family:inherit;}
+
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:color-mix(in srgb, var(--bg) 78%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--thai);font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+  .nav a .glyph{font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:700;line-height:1;}
+  .nav a .lbl{font-size:12px;}
+  .nav a.on,.nav a.active{color:var(--gold);}
+  .nav a:hover{color:var(--fg);}
+  .nav a:hover .glyph{color:var(--gold-deep);}
+  .hk-lang-switch{display:inline-flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+  .hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
+  .nav a.on{color:var(--gold);}
+  .top-r{display:flex;align-items:center;gap:14px;}
+  .theme-switch{display:flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .theme-switch button{width:32px;height:32px;border:none;background:transparent;color:var(--fg-soft);font-size:14px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+  .theme-switch button.on{background:var(--gold);color:var(--bg);}
+  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, var(--earth), var(--gold));display:flex;align-items:center;justify-content:center;color:var(--bg);font-family:var(--tc);font-size:14px;font-weight:700;}
+
+  .stage{max-width:1400px;margin:0 auto;padding:32px 40px 80px;}
+  .crumb{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-faint);margin-bottom:18px;}
+  .crumb a{color:var(--fg-soft);text-decoration:none;}
+
+  /* hero head */
+  .hero-head{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--gold-line);}
+  .hero-head .label{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+  .hero-head h1{font-family:var(--serif);font-size:56px;font-weight:300;line-height:1;letter-spacing:-.02em;}
+  .hero-head h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .hero-head .lede{font-size:14px;color:var(--fg-soft);margin-top:12px;line-height:1.65;max-width:560px;}
+  .stats{display:flex;gap:18px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-faint);text-align:right;}
+  .stats b{display:block;font-family:var(--serif);font-size:32px;font-style:italic;color:var(--gold);font-weight:300;margin-bottom:4px;letter-spacing:0;}
+
+  /* control bar */
+  .control-bar{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:14px 18px;background:var(--tile);border:1px solid var(--gold-line);border-radius:12px;margin-bottom:18px;}
+  .month-nav{display:flex;align-items:center;gap:14px;}
+  .month-nav button{background:var(--bg-2);border:1px solid var(--gold-line);color:var(--fg);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:16px;}
+  .month-nav button:hover{border-color:var(--gold);color:var(--gold);}
+  .month-title{font-family:var(--serif);font-size:24px;font-weight:400;}
+  .month-title .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-right:8px;}
+  .month-meta{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;text-align:center;}
+  .month-meta b{color:var(--gold);}
+  .toggle-group{display:flex;background:var(--bg-2);border-radius:99px;padding:4px;}
+  .toggle-group button{background:transparent;border:none;color:var(--fg-soft);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;transition:.2s;}
+  .toggle-group button.on{background:var(--gold);color:var(--bg);font-weight:700;}
+
+  /* goal filter */
+  .goal-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;padding:0 4px;}
+  .goal-bar .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;}
+  .goal-bar button{background:var(--tile);border:1px solid var(--tile-bd);color:var(--fg-soft);padding:8px 14px;border-radius:99px;font-family:var(--thai);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.2s;}
+  .goal-bar button:hover{border-color:var(--gold);color:var(--fg);}
+  .goal-bar button.on{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);font-weight:600;}
+  .goal-bar button .gly{font-family:var(--tc);font-weight:700;color:var(--gold);}
+
+  /* layout: calendar + side */
+  .calendar-layout{display:grid;grid-template-columns:1fr 380px;gap:18px;}
+
+  /* calendar grid */
+  .cal-wrap{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;overflow:hidden;}
+  .weekdays{display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg-2);border-bottom:1px solid var(--gold-line);}
+  .weekdays div{padding:14px 8px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-align:center;text-transform:uppercase;}
+  .weekdays div.weekend{color:var(--fire);}
+  .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+  .day-cell{aspect-ratio:1/1.05;border-right:1px solid var(--tile-bd);border-bottom:1px solid var(--tile-bd);padding:10px;cursor:pointer;position:relative;display:flex;flex-direction:column;gap:6px;transition:background .2s;background:var(--bg-2);}
+  .day-cell:hover{background:var(--bg-3);}
+  .day-cell.other-month{opacity:.35;background:var(--bg);}
+  .day-cell.is-today{background:var(--gold-soft);box-shadow:inset 0 0 0 2px var(--gold);}
+  .day-cell.is-today .d-num{color:var(--gold);}
+  .day-cell.selected{background:var(--gold-soft);box-shadow:inset 0 0 0 1px var(--gold);}
+
+  .d-head{display:flex;justify-content:space-between;align-items:flex-start;}
+  .d-num{font-family:var(--serif);font-size:22px;font-weight:500;line-height:1;}
+  .d-lunar{font-family:var(--tc);font-size:10px;color:var(--fg-faint);text-align:right;line-height:1.2;}
+
+  .d-pillar{display:flex;align-items:center;gap:4px;font-family:var(--tc);font-size:11px;font-weight:600;}
+  .d-pillar .stem{padding:2px 4px;border-radius:3px;}
+  .d-pillar .branch{padding:2px 4px;border-radius:3px;}
+  .d-pillar .e-wood{background:var(--wood-bg);color:var(--wood);}
+  .d-pillar .e-fire{background:var(--fire-bg);color:var(--fire);}
+  .d-pillar .e-earth{background:var(--earth-bg);color:var(--earth);}
+  .d-pillar .e-metal{background:var(--metal-bg);color:var(--metal);}
+  .d-pillar .e-water{background:var(--water-bg);color:var(--water);}
+
+  /* personal verdict bar (gradient based on score) */
+  .d-verdict{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;margin-top:auto;}
+  .d-verdict .vbar{flex:1;height:3px;background:var(--bg);border-radius:2px;overflow:hidden;position:relative;}
+  .d-verdict .vbar::after{content:'';position:absolute;left:0;top:0;bottom:0;background:var(--score-color, var(--neutral));width:var(--score-pct, 50%);}
+  .d-verdict .vlabel{font-weight:700;letter-spacing:.05em;color:var(--score-color, var(--neutral));}
+
+  .d-tags{display:flex;gap:3px;flex-wrap:wrap;}
+  .d-tag{font-family:var(--mono);font-size:8px;padding:1px 4px;border-radius:2px;letter-spacing:.05em;}
+  .d-tag.good{background:var(--wood-bg);color:var(--good);}
+  .d-tag.bad{background:var(--fire-bg);color:var(--bad);}
+  .d-tag.special{background:var(--gold-soft);color:var(--gold);}
+
+  .d-stars{position:absolute;bottom:6px;right:8px;display:flex;gap:2px;}
+  .d-stars span{width:5px;height:5px;border-radius:50%;}
+  .d-stars span.good{background:var(--good);}
+  .d-stars span.bad{background:var(--bad);}
+  .d-stars span.spec{background:var(--gold);}
+
+  /* side panel - selected day detail */
+  .side-panel{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;padding:24px;position:sticky;top:96px;max-height:calc(100vh - 116px);overflow-y:auto;align-self:start;}
+  .sp-head{padding-bottom:18px;border-bottom:1px solid var(--gold-line);margin-bottom:18px;}
+  .sp-date{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+  .sp-date .day{font-family:var(--serif);font-size:48px;font-weight:300;line-height:1;letter-spacing:-.02em;}
+  .sp-date .meta{text-align:right;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-faint);}
+  .sp-date .meta .lunar{font-family:var(--tc);color:var(--gold);font-size:13px;letter-spacing:.05em;margin-bottom:4px;}
+  .sp-pillar-row{display:flex;gap:6px;justify-content:flex-start;margin-top:14px;}
+  .sp-pi{padding:8px 12px;border-radius:8px;font-family:var(--tc);font-weight:700;text-align:center;background:var(--bg-2);border:1px solid var(--tile-bd);min-width:54px;}
+  .sp-pi .yi{font-family:var(--mono);font-size:8px;color:var(--fg-faint);letter-spacing:.18em;text-transform:uppercase;display:block;margin-bottom:3px;}
+  .sp-pi .stem{font-size:18px;line-height:1;}
+  .sp-pi .branch{font-size:18px;line-height:1;color:var(--gold);}
+
+  .sp-verdict{padding:14px;background:var(--bg-2);border-radius:10px;margin-bottom:18px;border-left:3px solid var(--gold);}
+  .sp-verdict .vh{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+  .sp-verdict .vt{font-family:var(--serif);font-size:18px;font-weight:500;line-height:1.35;}
+  .sp-verdict .vtc{font-family:var(--tc);color:var(--gold);}
+  .sp-score{display:flex;align-items:center;gap:10px;margin-top:10px;}
+  .sp-score .num{font-family:var(--serif);font-size:32px;font-style:italic;font-weight:300;letter-spacing:-.02em;color:var(--good);}
+  .sp-score.neg .num{color:var(--bad);}
+  .sp-score.mid .num{color:var(--neutral);}
+  .sp-score .scale{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;position:relative;}
+  .sp-score .scale-fill{position:absolute;top:0;bottom:0;background:var(--good);}
+  .sp-score.neg .scale-fill{background:var(--bad);}
+  .sp-score.mid .scale-fill{background:var(--neutral);}
+
+  .sp-section{margin-bottom:18px;}
+  .sp-section h4{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+  .sp-section h4 .tc{font-family:var(--tc);font-size:14px;color:var(--gold);letter-spacing:0;}
+
+  /* yi/ji lists */
+  .yi-ji{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .yi-box, .ji-box{padding:12px;border-radius:8px;background:var(--bg-2);border-top:2px solid;}
+  .yi-box{border-color:var(--good);}
+  .ji-box{border-color:var(--bad);}
+  .yi-box h5, .ji-box h5{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;}
+  .yi-box h5{color:var(--good);}
+  .ji-box h5{color:var(--bad);}
+  .yi-box ul, .ji-box ul{list-style:none;display:flex;flex-direction:column;gap:4px;}
+  .yi-box li, .ji-box li{font-size:11px;line-height:1.4;color:var(--fg-soft);}
+  .yi-box li b, .ji-box li b{color:var(--fg);}
+
+  /* hour grid - shichen */
+  .hour-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;}
+  .hour-cell{padding:8px 4px;background:var(--bg-2);border-radius:5px;text-align:center;border:1px solid transparent;font-family:var(--mono);font-size:9px;cursor:pointer;}
+  .hour-cell:hover{border-color:var(--gold-line);}
+  .hour-cell .gly{font-family:var(--tc);font-size:14px;font-weight:700;}
+  .hour-cell .tm{color:var(--fg-faint);font-size:8px;letter-spacing:.05em;}
+  .hour-cell.good{background:var(--wood-bg);}
+  .hour-cell.good .gly{color:var(--good);}
+  .hour-cell.bad{background:var(--fire-bg);}
+  .hour-cell.bad .gly{color:var(--bad);}
+  .hour-cell.spec{background:var(--gold-soft);}
+  .hour-cell.spec .gly{color:var(--gold);}
+
+  /* stars / 神煞 */
+  .star-list{display:flex;flex-wrap:wrap;gap:5px;}
+  .star{font-family:var(--tc);font-size:11px;padding:4px 8px;border-radius:99px;border:1px solid;font-weight:600;}
+  .star.good{color:var(--good);border-color:var(--good);background:var(--wood-bg);}
+  .star.bad{color:var(--bad);border-color:var(--bad);background:var(--fire-bg);}
+  .star.mid{color:var(--neutral);border-color:var(--neutral);}
+
+  /* directions */
+  .dir-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;font-family:var(--tc);font-size:11px;text-align:center;}
+  .dir-grid div{padding:8px 4px;background:var(--bg-2);border-radius:4px;}
+  .dir-grid div.good{background:var(--wood-bg);color:var(--good);font-weight:700;}
+  .dir-grid div.bad{background:var(--fire-bg);color:var(--bad);font-weight:700;}
+  .dir-grid div.center{background:var(--gold-soft);color:var(--gold);}
+
+  /* link to deeper */
+  .deep-link{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-2);border:1px dashed var(--gold-line);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;cursor:pointer;margin-top:14px;text-decoration:none;}
+  .deep-link:hover{background:var(--gold-soft);}
+
+  /* responsive */
+  @media (max-width:1100px){
+    .calendar-layout{grid-template-columns:1fr;}
+    .side-panel{position:static;max-height:none;}
+  }
+  @media (max-width:980px){
+    .stage{padding:22px 18px 60px;}
+    .topbar{padding:14px 18px;}
+    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
+    .nav::-webkit-scrollbar{display:none;}
+    .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
+    .nav a .glyph{font-size:14px;}
+    .nav a .lbl{font-size:11px;}
+    .hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}
+    .hero-head{grid-template-columns:1fr;align-items:flex-start;}
+    .hero-head h1{font-size:36px;}
+    .stats{justify-content:flex-start;gap:12px;}
+    .stats b{font-size:24px;}
+    .control-bar{grid-template-columns:1fr;gap:10px;}
+    .month-nav{justify-content:center;}
+    .toggle-group{justify-content:center;width:100%;}
+    .day-cell{padding:6px;font-size:10px;}
+    .d-num{font-size:14px;}
+    .d-lunar{font-size:8px;}
+    .d-pillar{font-size:9px;}
+    .d-tags{display:none;}
+    .yi-ji{grid-template-columns:1fr;}
+    .hour-grid{grid-template-columns:repeat(4,1fr);}
+  }
+  @media (max-width:560px){
+    .day-cell{padding:4px;}
+    .d-num{font-size:13px;}
+    .d-pillar{display:none;}
+    .d-stars{bottom:3px;right:4px;}
+    .weekdays div{padding:8px 2px;font-size:8px;letter-spacing:.1em;}
+  }
+</style>
+<script>if(typeof window!=="undefined"&&window.innerWidth<768&&!location.search.match(/force=d/)){location.replace(location.pathname+"-m"+location.search);}</script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
+  <nav class="nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="cal.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="cal.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="cal.nav.calendar">ปฏิทิน</span></a>
+    <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="cal.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="cal.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="cal.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="cal.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="cal.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="cal.nav.goal">เป้าหมาย</span></a>
+  </nav>
+  <div class="top-r">
+    <div id="hk-user-menu-mount"></div>
+  </div>
+</header>
+
+<div class="stage">
+  <div class="crumb"><a href="/">หน้าหลัก</a> <span>/</span> <span>ปฏิทินมงคล · 黃曆 TONGSHU</span></div>
+
+  <div class="hero-head">
+    <div>
+      <div class="label">黃曆 · TONGSHU CALENDAR</div>
+      <h1>ปฏิทินมงคล <span class="tc">擇日</span></h1>
+      <p class="lede">ปฏิทินจีนโบราณ <b>+</b> ดวงส่วนตัวของคุณ — ทุกวันมีคะแนน <b>มงคล/ห้าม</b> · เห็นทั้ง <b>เดือน</b> ในมุมเดียว · เลือกเป้าหมายเพื่อเห็นวันที่ <b>"เปิดดวง"</b> สำหรับเรื่องที่คุณสนใจ</p>
+    </div>
+    <div class="stats">
+      <div><b>14</b>เปิดดวง</div>
+      <div><b>9</b>กลาง</div>
+      <div><b>8</b>เลี่ยง</div>
+    </div>
+  </div>
+
+  <!-- control bar -->
+  <div class="control-bar">
+    <div class="month-nav">
+      <button id="prev-m">‹</button>
+      <div>
+        <div class="month-title"><span class="tc" id="m-tc">三月</span><span id="m-th">พฤษภาคม 2569</span></div>
+        <div class="month-meta">月柱 <b id="m-pillar">癸巳</b> · 節氣 <b id="m-jq">立夏</b> → 芒種</div>
+      </div>
+      <button id="next-m">›</button>
+    </div>
+    <div></div>
+    <div class="toggle-group" id="overlay-toggle">
+      <button class="on" data-mode="personal">ดวงฉัน · 我</button>
+      <button data-mode="tongshu">ทั่วไป · 黃曆</button>
+    </div>
+  </div>
+
+  <!-- goal filter -->
+  <div class="goal-bar" id="goal-bar">
+    <span class="lbl">เป้าหมาย:</span>
+    <button class="on" data-goal="all">ทั้งหมด</button>
+    <button data-goal="wealth"><span class="gly">財</span>เงิน</button>
+    <button data-goal="career"><span class="gly">業</span>งาน</button>
+    <button data-goal="love"><span class="gly">情</span>รัก</button>
+    <button data-goal="family"><span class="gly">家</span>ครอบครัว</button>
+    <button data-goal="health"><span class="gly">健</span>สุขภาพ</button>
+    <button data-goal="travel"><span class="gly">出</span>เดินทาง</button>
+  </div>
+
+  <div class="calendar-layout">
+    <!-- calendar grid -->
+    <div class="cal-wrap">
+      <div class="weekdays">
+        <div>SUN · 日</div>
+        <div>MON · 月</div>
+        <div>TUE · 火</div>
+        <div>WED · 水</div>
+        <div>THU · 木</div>
+        <div>FRI · 金</div>
+        <div class="weekend">SAT · 土</div>
+      </div>
+      <div class="calendar-grid" id="cal-grid"></div>
+    </div>
+
+    <!-- side panel -->
+    <div class="side-panel" id="side-panel">
+      <!-- dynamic -->
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─── DATA ───
+  // sample month: May 2026 (Thai 2569)
+  // Day pillar generated from JD; here we hardcode for the demo
+  const STEM_ELEM = {'甲':'wood','乙':'wood','丙':'fire','丁':'fire','戊':'earth','己':'earth','庚':'metal','辛':'metal','壬':'water','癸':'water'};
+  const BRANCH_ELEM = {'子':'water','丑':'earth','寅':'wood','卯':'wood','辰':'earth','巳':'fire','午':'fire','未':'earth','申':'metal','酉':'metal','戌':'earth','亥':'water'};
+  const BRANCH_HOUR = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const HOUR_LABEL = ['23-1','1-3','3-5','5-7','7-9','9-11','11-13','13-15','15-17','17-19','19-21','21-23'];
+
+  // self DM
+  const SELF_DM = '己'; // earth
+
+  // mock 31 days for May 2026
+  const MAY_2026 = Array.from({length:31}, (_,i)=>{
+    const d = i+1;
+    // pillar generation - pseudo (real should use solar calendar)
+    const stems = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+    const branches = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+    const offset = 19; // arbitrary anchor
+    const stem = stems[(d+offset)%10];
+    const branch = branches[(d+offset)%12];
+    // verdict score - deterministic mock based on stem-DM relation
+    const stemElem = STEM_ELEM[stem];
+    const branchElem = BRANCH_ELEM[branch];
+    const helpsDM = (stemElem==='fire' || stemElem==='earth') ? 1 : -1;
+    const helpsB = (branchElem==='fire' || branchElem==='wood') ? 1 : -1;
+    let score = 25*helpsDM + 25*helpsB + ((d*7) % 30 - 15);
+    score = Math.max(-95, Math.min(95, score));
+
+    // lunar date approx
+    const lunarDays = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+    const lunar = lunarDays[(d+5)%30];
+
+    return {
+      day:d, stem, branch, stemElem, branchElem, score, lunar,
+      goals: {
+        wealth: score + (stemElem==='metal'?20:0) + (branchElem==='metal'||branchElem==='earth'?15:-5),
+        career: score + (stemElem==='fire'?15:0) + (branchElem==='wood'||branchElem==='fire'?10:0),
+        love:   score + (branchElem==='water'?10:-5) + ((d*3)%20-10),
+        family: score + (branchElem==='earth'?15:0),
+        health: score + (stemElem==='water'?-15:5),
+        travel: score + (branchElem==='wood'||branchElem==='fire'?10:-10)
+      },
+      isToday: d===7 // demo: today
+    };
+  });
+
+  let state = {
+    selected: 7,
+    overlay: 'personal',
+    goal: 'all',
+    theme: 'dark'
+  };
+
+  // sample yi/ji per day
+  const YI_JI = {
+    7:  {yi:['解除·ตัดเรื่องเก่า','掃舍·ทำความสะอาด','納財·รับเงิน','會親友·พบเพื่อน','修飾·เสริมสวย'], ji:['嫁娶·แต่งงาน','動土·ขุดดิน','安葬·ฝังศพ']},
+    default: {yi:['結交·ผูกมิตร','整理·จัดระเบียบ','學習·เรียนรู้'], ji:['遠行·เดินทางไกล','大事·ตัดสินใจใหญ่']}
+  };
+  const STARS = {
+    7: {good:['天德','月德','吉慶','解神','文昌'], bad:['五黃','劫煞']},
+    default: {good:['天德','月德'], bad:['月破']}
+  };
+
+  // ─── HELPERS ───
+  function scoreColor(s){ return s>=20?'var(--good)':s<=-20?'var(--bad)':'var(--neutral)'; }
+  function scoreClass(s){ return s>=20?'pos':s<=-20?'neg':'mid'; }
+  function scoreLabel(s){ return s>=50?'★ ใช้':s>=20?'用 ใช้':s>=-20?'平 กลาง':s>=-50?'慎 ระวัง':'凶 ห้าม'; }
+
+  // ─── RENDER CALENDAR ───
+  function renderCal(){
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML='';
+
+    // May 1 2026 = Friday → first row offset 5 (sun=0, mon=1, ..., fri=5)
+    const firstDay = 5; // friday
+    const totalCells = 35; // 5 rows
+    
+    for(let i=0;i<firstDay;i++){
+      // prev month tail (April had 30)
+      const day = 30 - (firstDay-1-i);
+      grid.insertAdjacentHTML('beforeend', `<div class="day-cell other-month"><div class="d-head"><div class="d-num">${day}</div></div></div>`);
+    }
+
+    MAY_2026.forEach(d=>{
+      const score = state.goal==='all' ? d.score : (d.goals[state.goal]||d.score);
+      const sClass = scoreClass(score);
+      const colorVar = scoreColor(score);
+      const fillPct = Math.abs(score)/2 + 50; // 0-100
+      const isToday = d.isToday;
+      const isSelected = d.day===state.selected;
+
+      let tags = '';
+      if(state.overlay==='personal'){
+        if(score>=50) tags = '<span class="d-tag good">用神</span>';
+        else if(score<=-50) tags = '<span class="d-tag bad">忌神</span>';
+      } else {
+        // tongshu mode - jianchu special days
+        if([3,7,15,21,28].includes(d.day)) tags = '<span class="d-tag special">建</span>';
+        if([5,11,17,23,29].includes(d.day)) tags = '<span class="d-tag good">破</span>';
+      }
+
+      const stars = state.overlay==='personal' && Math.abs(score)>=40
+        ? `<div class="d-stars">${score>=40?'<span class="good"></span>'.repeat(Math.min(3,Math.floor(score/30))):'<span class="bad"></span>'.repeat(Math.min(3,Math.floor(-score/30)))}</div>`
+        : '';
+
+      grid.insertAdjacentHTML('beforeend', `
+        <div class="day-cell ${isToday?'is-today':''} ${isSelected?'selected':''}" data-day="${d.day}"
+             style="--score-color:${colorVar};--score-pct:${fillPct}%;">
+          <div class="d-head">
+            <div class="d-num">${d.day}</div>
+            <div class="d-lunar">${d.lunar}</div>
+          </div>
+          <div class="d-pillar">
+            <span class="stem e-${d.stemElem}">${d.stem}</span>
+            <span class="branch e-${d.branchElem}">${d.branch}</span>
+          </div>
+          <div class="d-tags">${tags}</div>
+          <div class="d-verdict">
+            <div class="vbar"></div>
+            <span class="vlabel">${score>0?'+':''}${score}</span>
+          </div>
+          ${stars}
+        </div>
+      `);
+    });
+
+    // remaining cells
+    const filled = firstDay + 31;
+    for(let i=filled;i<totalCells;i++){
+      const day = i - filled + 1;
+      grid.insertAdjacentHTML('beforeend', `<div class="day-cell other-month"><div class="d-head"><div class="d-num">${day}</div></div></div>`);
+    }
+  }
+
+  // ─── RENDER SIDE PANEL ───
+  function renderSide(){
+    const d = MAY_2026.find(x=>x.day===state.selected);
+    if(!d) return;
+    const score = state.goal==='all' ? d.score : (d.goals[state.goal]||d.score);
+    const sClass = scoreClass(score);
+    const sLabel = scoreLabel(score);
+
+    // Verdict text
+    let vText = '';
+    if(score>=50)      vText = `วัน <span class="vtc">用神</span> ตรง — ${state.goal==='all'?'เหมาะตัดสินใจสำคัญ':'เหมาะเรื่อง'+goalLabel(state.goal)}`;
+    else if(score>=20) vText = `วัน <span class="vtc">平順</span> — ${state.goal==='all'?'งานปกติ ทำได้ดี':'พอเดินไป'+goalLabel(state.goal)+'ได้'}`;
+    else if(score>=-20)vText = `วัน <span class="vtc">中和</span> — ทำงานได้ ไม่ใช่จังหวะใหญ่`;
+    else if(score>=-50)vText = `วัน <span class="vtc">慎</span> — ระวัง${state.goal==='all'?'การตัดสินใจ':goalLabel(state.goal)}`;
+    else               vText = `วัน <span class="vtc">忌</span> — เลี่ยง${state.goal==='all'?'เรื่องสำคัญ':goalLabel(state.goal)}`;
+
+    const yj = YI_JI[d.day] || YI_JI.default;
+    const stars = STARS[d.day] || STARS.default;
+
+    // hour cells: 12 shichen with score relative to day
+    const hours = BRANCH_HOUR.map((h,i)=>{
+      const elem = BRANCH_ELEM[h];
+      let hScore = elem==='fire'||elem==='wood' ? 1 : elem==='water' ? -1 : 0;
+      hScore += (i*7+d.day*3) % 5 - 2;
+      const cls = hScore>=2?'good':hScore<=-2?'bad':'';
+      return `<div class="hour-cell ${cls}"><div class="gly">${h}</div><div class="tm">${HOUR_LABEL[i]}</div></div>`;
+    }).join('');
+
+    const sp = document.getElementById('side-panel');
+    sp.innerHTML = `
+      <div class="sp-head">
+        <div class="sp-date">
+          <div>
+            <div class="day">${d.day}</div>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--fg-faint);text-transform:uppercase;margin-top:2px;">
+              ${['SUN','MON','TUE','WED','THU','FRI','SAT'][(d.day+4)%7]} · พ.ค. 2569
+            </div>
+          </div>
+          <div class="meta">
+            <div class="lunar">三月 · ${d.lunar}</div>
+            <div>WEEK ${Math.ceil((d.day+5)/7)} · 立夏</div>
+          </div>
+        </div>
+        <div class="sp-pillar-row">
+          <div class="sp-pi"><span class="yi">YEAR</span><span class="stem">丙</span><span class="branch">午</span></div>
+          <div class="sp-pi"><span class="yi">MONTH</span><span class="stem">癸</span><span class="branch">巳</span></div>
+          <div class="sp-pi" style="border-color:var(--gold);background:var(--gold-soft);"><span class="yi" style="color:var(--gold);">DAY</span><span class="stem">${d.stem}</span><span class="branch">${d.branch}</span></div>
+        </div>
+      </div>
+
+      <div class="sp-verdict">
+        <div class="vh">VERDICT · 日運 · ${sLabel}</div>
+        <div class="vt">${vText}</div>
+        <div class="sp-score ${sClass}">
+          <span class="num">${score>0?'+':''}${score}</span>
+          <div class="scale"><div class="scale-fill" style="width:${Math.abs(score)}%;"></div></div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <h4><span>宜 / 忌 · ทำได้ / ห้ามทำ</span><span class="tc">黃曆</span></h4>
+        <div class="yi-ji">
+          <div class="yi-box">
+            <h5>宜 ทำได้ (${yj.yi.length})</h5>
+            <ul>${yj.yi.map(x=>{const [t,th]=x.split('·');return `<li><b>${t}</b> ${th||''}</li>`}).join('')}</ul>
+          </div>
+          <div class="ji-box">
+            <h5>忌 ห้ามทำ (${yj.ji.length})</h5>
+            <ul>${yj.ji.map(x=>{const [t,th]=x.split('·');return `<li><b>${t}</b> ${th||''}</li>`}).join('')}</ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <h4><span>時辰 · ชั่วยามวันนี้</span><span class="tc">12時</span></h4>
+        <div class="hour-grid">${hours}</div>
+      </div>
+
+      <div class="sp-section">
+        <h4><span>神煞 · ดาวประจำวัน</span><span class="tc">${stars.good.length+stars.bad.length}</span></h4>
+        <div class="star-list">
+          ${stars.good.map(s=>`<span class="star good">${s}</span>`).join('')}
+          ${stars.bad.map(s=>`<span class="star bad">${s}</span>`).join('')}
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <h4><span>八方 · 8 ทิศมงคล</span><span class="tc">方位</span></h4>
+        <div class="dir-grid">
+          <div class="bad">NW · 沖</div>
+          <div>N</div>
+          <div class="good">NE · 喜</div>
+          <div>W</div>
+          <div class="center">${d.stem}${d.branch}</div>
+          <div class="good">E · 財</div>
+          <div>SW</div>
+          <div class="bad">S · 凶</div>
+          <div>SE</div>
+        </div>
+      </div>
+
+      <a href="/today" class="deep-link">
+        <span>→ ดู today's pillar เต็ม</span>
+        <span>奇</span>
+      </a>
+      <a href="/qimen" class="deep-link" style="margin-top:8px;">
+        <span>→ ตั้งคำถาม ฉีเหมิน</span>
+        <span>遁</span>
+      </a>
+    `;
+  }
+
+  function goalLabel(g){
+    return ({wealth:'การเงิน',career:'การงาน',love:'ความรัก',family:'ครอบครัว',health:'สุขภาพ',travel:'การเดินทาง'})[g] || '';
+  }
+
+  function render(){ renderCal(); renderSide(); }
+
+  // ─── EVENTS ───
+  document.querySelectorAll('.theme-switch button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.documentElement.setAttribute('data-theme', btn.dataset.theme);
+      document.querySelectorAll('.theme-switch button').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+    });
+  });
+
+  document.getElementById('cal-grid').addEventListener('click', e=>{
+    const cell = e.target.closest('.day-cell[data-day]');
+    if(!cell) return;
+    state.selected = parseInt(cell.dataset.day);
+    render();
+  });
+
+  document.getElementById('overlay-toggle').addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-mode]');
+    if(!btn) return;
+    document.querySelectorAll('#overlay-toggle button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    state.overlay = btn.dataset.mode;
+    renderCal();
+  });
+
+  document.getElementById('goal-bar').addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-goal]');
+    if(!btn) return;
+    document.querySelectorAll('#goal-bar button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    state.goal = btn.dataset.goal;
+    render();
+  });
+
+  // initial render
+  render();
+</script>
+
+
+<script>
+/* hilite active link */
+(function(){
+  try {
+    var p = window.location.pathname.replace(/\/$/,'') || '/calendar';
+    p = p.replace(/-m$/, '');
+    if (p === '/yongsennetwork') p = '/network';
+    document.querySelectorAll('#hk-topnav a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+  } catch(e){}
+})();
+</script>
+
+<script>
+/* hourkey · cal · 3-language i18n (TH/EN/ZH) */
+window.HK_I18N = {
+  'cal.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
+  'cal.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
+  'cal.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
+  'cal.nav.network': { th:'เครือข่าย', en:'Network', zh:'人脈' },
+  'cal.nav.qimen':   { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門' },
+  'cal.nav.master':  { th:'ซินแส', en:'Sifu', zh:'老師' },
+  'cal.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
+  'cal.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  'cal.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' }
+};
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+</script>
+
+<script src="/js/hk-user-menu.js?v=9" defer></script>
+</body>
+</html>

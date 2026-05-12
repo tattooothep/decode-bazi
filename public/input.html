@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>hourkey · กรอกข้อมูลเกิด</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root, [data-theme="dark"]{
+    --bg:#0a0c10;
+    --ink:#0d0f12; --ink-2:#14171d; --ink-3:#1c2028;
+    --paper:#f6f1e6; --paper-dim:rgba(246,241,230,.6); --paper-soft:rgba(246,241,230,.35);
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12);
+    --wood:#8fc37c; --fire:#e26b5d; --earth:#d4a85a; --metal:#c8b88a; --water:#7ba8c8;
+    --card-bg-1:rgba(28,32,40,.85); --card-bg-2:rgba(14,17,22,.85);
+    --line:rgba(246,241,230,.12); --line-soft:rgba(246,241,230,.08); --line-faint:rgba(246,241,230,.06);
+    --field:rgba(255,255,255,.02); --field-2:rgba(0,0,0,.3);
+    --ring:rgba(200,164,77,.08);
+    --shine:rgba(255,255,255,.4);
+    --serif:'Cormorant Garamond', 'Noto Serif TC', serif;
+    --tc:'Noto Serif TC', serif;
+    --thai:'Noto Serif Thai', serif;
+    --mono:'JetBrains Mono', monospace;
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2;
+    --ink:#1a1612;
+    --paper:#1a1612; --paper-dim:rgba(26,22,18,.65); --paper-soft:rgba(26,22,18,.4);
+    --gold:#8a6d2a; --gold-deep:#5e4a1a; --gold-soft:rgba(138,109,42,.1);
+    --wood:#5a8a48; --fire:#a8483a; --earth:#9a7d3a; --metal:#7a6f4a; --water:#3f6688;
+    --card-bg-1:rgba(255,250,238,.85); --card-bg-2:rgba(248,242,225,.85);
+    --line:rgba(26,22,18,.18); --line-soft:rgba(26,22,18,.1); --line-faint:rgba(26,22,18,.06);
+    --field:rgba(26,22,18,.03); --field-2:rgba(255,250,238,.6);
+    --ring:rgba(138,109,42,.06);
+    --shine:rgba(255,255,255,.6);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--paper);font-family:var(--thai);min-height:100vh;overflow-x:hidden;cursor:none;transition:background .4s ease, color .4s ease;}
+  a{color:inherit;}
+
+  /* custom cursor */
+  .cursor{position:fixed;left:0;top:0;width:24px;height:24px;border:1px solid var(--gold);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:9999;mix-blend-mode:difference;transition:width .2s, height .2s, border-color .2s;}
+  .cursor.hot{width:48px;height:48px;background:rgba(200,164,77,.1);}
+  .cursor-dot{position:fixed;left:0;top:0;width:4px;height:4px;background:var(--gold);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:9999;}
+
+  /* ── Background ambient ─────────────────────────────────── */
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .bg::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 70% 30%, var(--ring), transparent 50%), radial-gradient(circle at 20% 80%, rgba(123,168,200,.05), transparent 50%);}
+  [data-theme="light"] .bg::before{background:radial-gradient(circle at 70% 30%, rgba(138,109,42,.08), transparent 50%), radial-gradient(circle at 20% 80%, rgba(63,102,136,.05), transparent 50%);}
+  .rings{position:absolute;left:78%;top:50%;transform:translate(-50%,-50%);width:920px;height:920px;}
+  .rings .r{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid var(--ring);border-radius:50%;}
+  .rings .r1{width:240px;height:240px;animation:spin 50s linear infinite;}
+  .rings .r2{width:460px;height:460px;border-style:dashed;animation:spin 90s linear infinite reverse;}
+  .rings .r3{width:680px;height:680px;border-style:dotted;animation:spin 140s linear infinite;}
+  .rings .r4{width:920px;height:920px;animation:spin 200s linear infinite reverse;}
+  @keyframes spin{from{transform:translate(-50%,-50%) rotate(0);}to{transform:translate(-50%,-50%) rotate(360deg);}}
+
+  .zod{position:absolute;left:78%;top:50%;transform:translate(-50%,-50%);width:560px;height:560px;animation:spin 80s linear infinite;}
+  .zod span{position:absolute;left:50%;top:0;font-family:var(--tc);font-size:18px;color:var(--gold);opacity:.42;transform-origin:50% 280px;}
+  .zod span:nth-child(1){transform:translateX(-50%) rotate(0deg);}
+  .zod span:nth-child(2){transform:translateX(-50%) rotate(30deg);}
+  .zod span:nth-child(3){transform:translateX(-50%) rotate(60deg);}
+  .zod span:nth-child(4){transform:translateX(-50%) rotate(90deg);}
+  .zod span:nth-child(5){transform:translateX(-50%) rotate(120deg);}
+  .zod span:nth-child(6){transform:translateX(-50%) rotate(150deg);}
+  .zod span:nth-child(7){transform:translateX(-50%) rotate(180deg);}
+  .zod span:nth-child(8){transform:translateX(-50%) rotate(210deg);}
+  .zod span:nth-child(9){transform:translateX(-50%) rotate(240deg);}
+  .zod span:nth-child(10){transform:translateX(-50%) rotate(270deg);}
+  .zod span:nth-child(11){transform:translateX(-50%) rotate(300deg);}
+  .zod span:nth-child(12){transform:translateX(-50%) rotate(330deg);}
+
+  /* tiny stars */
+  .stars{position:absolute;inset:0;}
+  .stars i{position:absolute;width:2px;height:2px;background:var(--gold);border-radius:50%;opacity:.4;animation:twinkle 3s ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.2;}50%{opacity:.8;}}
+
+  /* ── Top bar ────────────────────────────────────────────── */
+  .topbar{position:relative;z-index:1000;display:flex;justify-content:space-between;align-items:center;padding:24px 56px;}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;}
+  .logo .seal{width:26px;height:26px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:12px;color:var(--gold);}
+  .progress-pill{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--paper-dim);text-transform:uppercase;}
+  .progress-pill .dots{display:flex;gap:6px;}
+  .progress-pill .dots i{width:24px;height:2px;background:var(--line);}
+  .progress-pill .dots i.on{background:var(--gold);}
+  .progress-pill .dots i.cur{background:var(--gold);box-shadow:0 0 0 2px rgba(200,164,77,.2);position:relative;}
+  .progress-pill .dots i.cur::after{content:'';position:absolute;left:0;right:0;top:0;bottom:0;background:var(--gold);animation:pulse 1.5s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.5;}50%{opacity:1;}}
+
+  /* ── Main 2-column layout ────────────────────────────────── */
+  .stage{position:relative;z-index:5;display:grid;grid-template-columns:1.05fr 1fr;gap:40px;padding:14px 56px 40px;min-height:calc(100vh - 84px);align-items:start;}
+
+  /* ── LEFT · poetic side ─────────────────────────────────── */
+  .poem{position:sticky;top:32px;padding:32px 0;}
+  .step-num{font-family:var(--serif);font-size:200px;font-weight:300;line-height:.9;color:var(--gold);font-style:italic;letter-spacing:-.04em;font-variant-numeric:lining-nums tabular-nums;font-feature-settings:"lnum" 1,"tnum" 1;background:linear-gradient(180deg, var(--gold) 0%, var(--gold-soft) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:slideIn 1s .1s ease-out backwards;}
+  /* ตัวเลขใหญ่ทุกที่ใช้ lining-nums + tabular-nums (ตัวเลขสมัยใหม่ + เท่ากัน) */
+  .hk-num-input,
+  .hk-num-input.hk-select-input,
+  .input-glyph .num,
+  .time-big,
+  .progress-pill,
+  .step-tab .n{font-variant-numeric:lining-nums tabular-nums;font-feature-settings:"lnum" 1,"tnum" 1;}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-30px);}to{opacity:1;transform:translateX(0);}}
+  .step-of{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--paper-soft);text-transform:uppercase;margin-top:-20px;margin-bottom:32px;}
+  .poem h1{font-family:var(--serif);font-weight:300;font-size:64px;line-height:1.05;letter-spacing:-.02em;margin-bottom:16px;}
+  .poem h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;font-style:normal;}
+  .poem h1 i{color:var(--gold);font-style:italic;}
+  .poem .lede{font-size:14px;line-height:1.7;color:var(--paper-dim);max-width:440px;margin-bottom:36px;}
+  .poem .quote{padding:24px 0 24px 24px;border-left:1px solid var(--gold);}
+  .poem .quote p{font-family:var(--serif);font-style:italic;font-size:18px;line-height:1.5;color:var(--paper);margin-bottom:8px;}
+  .poem .quote p .tc{font-family:var(--tc);color:var(--gold);font-style:normal;font-weight:700;}
+  .poem .quote cite{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--paper-soft);text-transform:uppercase;font-style:normal;}
+
+  .step-tabs{display:flex;gap:0;margin-top:48px;border-top:1px solid var(--line);padding-top:18px;}
+  .step-tab{flex:1;padding:18px 12px 14px;border-top:2px solid transparent;cursor:pointer;text-align:left;transition:all .3s ease;}
+  .step-tab.on{border-top-color:var(--gold);background:var(--gold-soft);margin-top:-19px;padding-top:19px;}
+  .step-tab .n{font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--paper-soft);text-transform:uppercase;}
+  .step-tab .t{font-family:var(--thai);font-size:16px;font-weight:500;margin-top:4px;color:var(--paper-soft);transition:color .3s;}
+  .step-tab.on .t,.step-tab.done .t{color:var(--paper);}
+  .step-tab.done .n{color:var(--gold);}
+  .step-tab.done .n::before{content:'✓ ';}
+
+  /* ── RIGHT · the form ───────────────────────────────────── */
+  .form-card{background:linear-gradient(160deg, var(--card-bg-1) 0%, var(--card-bg-2) 100%);backdrop-filter:blur(14px);border:1px solid var(--gold-soft);border-radius:18px;padding:40px;position:relative;overflow:hidden;animation:slideIn 1s .3s ease-out backwards;}
+  .form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg, transparent, var(--gold), transparent);}
+  .form-card::after{content:'時';position:absolute;right:-30px;bottom:-50px;font-family:var(--tc);font-size:280px;color:var(--gold);opacity:.04;font-weight:700;line-height:1;pointer-events:none;}
+  .card-eyebrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+  .card-eyebrow .l{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
+  .card-eyebrow .r{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--paper-soft);}
+
+  .card-title{font-family:var(--serif);font-size:32px;font-weight:400;line-height:1.1;margin-bottom:8px;}
+  .card-title .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .card-sub{font-size:13px;color:var(--paper-dim);margin-bottom:32px;}
+
+  /* ── Typeable date inputs · font stack รวมไทย ใช้ฟอนต์เดียว ── */
+  .hk-num-input{width:100%;background:transparent;border:none;outline:none;color:var(--paper);font-family:'Cormorant Garamond','Noto Serif Thai','Noto Serif TC',serif;font-size:36px;font-weight:300;text-align:center;line-height:1;padding:0;margin:0;-moz-appearance:textfield;letter-spacing:0;}
+  .hk-num-input::-webkit-outer-spin-button,.hk-num-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .hk-num-input.hk-select-input{font-size:28px;cursor:pointer;text-align-last:center;font-family:var(--thai);font-weight:500;-webkit-appearance:none;-moz-appearance:none;appearance:none;}
+  .hk-num-input.hk-select-input option{font-family:var(--thai);font-size:16px;font-weight:500;background:#14171c;color:var(--paper);}
+  [data-theme="light"] .hk-num-input.hk-select-input option{background:#f9f4e6;color:#1a1612;}
+  .hk-num-input:focus{color:var(--gold);}
+
+  /* ── Name field (ชื่อดวง) · ใช้ฟอนต์เดียวกับ num · pixel-perfect uniform ── */
+  .hk-name-field{margin-bottom:24px;}
+  .hk-name-field label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--paper-soft);text-transform:uppercase;margin-bottom:8px;}
+  .hk-name-field label b{color:var(--gold);font-family:var(--tc);font-weight:400;}
+  .hk-name-field input{width:100%;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:14px 16px;color:var(--paper);font-family:'Cormorant Garamond','Noto Serif Thai','Noto Serif TC',serif;font-size:20px;font-weight:400;outline:none;cursor:none;transition:all .2s;}
+  .hk-name-field input:focus{border-color:var(--gold);background:var(--gold-soft);}
+  .hk-name-field input::placeholder{color:var(--paper-soft);font-weight:300;}
+  .hk-name-hint{margin-top:8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--paper-soft);text-transform:none;}
+
+  /* ── Date glyph picker ──────────────────────────────────── */
+  .date-row{display:grid;grid-template-columns:90px 1fr 110px;gap:14px;align-items:end;margin-bottom:32px;}
+  .field{position:relative;}
+  .field label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--paper-soft);text-transform:uppercase;margin-bottom:8px;}
+  .field label b{color:var(--gold);font-weight:400;}
+  .input-glyph{position:relative;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:center;transition:all .25s ease;cursor:none;}
+  .input-glyph:hover{border-color:var(--gold);background:var(--gold-soft);}
+  .input-glyph.on{border-color:var(--gold);background:var(--gold-soft);box-shadow:0 0 0 3px var(--gold-soft);}
+  .input-glyph .num{font-family:var(--serif);font-size:36px;font-weight:300;line-height:1;color:var(--paper);}
+  .input-glyph .glyph{position:absolute;top:6px;right:8px;font-family:var(--tc);font-size:10px;color:var(--gold);opacity:.7;}
+  .input-glyph .label{font-family:var(--mono);font-size:9px;color:var(--paper-soft);letter-spacing:.15em;text-transform:uppercase;margin-top:6px;}
+
+  /* ── Time wheel ──────────────────────────────────────────── */
+  .time-section{margin-bottom:28px;}
+  .time-display{display:flex;align-items:center;gap:24px;margin-bottom:18px;}
+  .time-big{font-family:var(--serif);font-size:96px;font-weight:300;line-height:.9;letter-spacing:-.02em;color:var(--paper);position:relative;}
+  .time-big .colon{color:var(--gold);animation:blink 1s steps(2) infinite;}
+  @keyframes blink{50%{opacity:.2;}}
+  .time-meta{flex:1;}
+  .time-shichen{display:inline-flex;align-items:center;gap:10px;padding:8px 14px;border:1px solid var(--gold);border-radius:99px;background:var(--gold-soft);}
+  .time-shichen .branch{font-family:var(--tc);font-size:24px;font-weight:700;color:var(--gold);}
+  .time-shichen .name{font-family:var(--serif);font-size:13px;color:var(--paper);}
+  .time-shichen .name b{color:var(--gold);}
+  .time-meta .range{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--paper-soft);text-transform:uppercase;margin-top:8px;}
+
+  .shichen-bar{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-bottom:8px;}
+  .sh-cell{aspect-ratio:1;border-radius:6px;background:var(--field);border:1px solid var(--line-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:none;transition:all .2s;position:relative;overflow:hidden;}
+  .sh-cell:hover{background:var(--gold-soft);border-color:var(--gold);transform:translateY(-2px);}
+  .sh-cell.on{background:var(--gold-soft);border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
+  .sh-cell.on::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 100%, var(--gold-soft), transparent 70%);}
+  .sh-cell .br{font-family:var(--tc);font-size:18px;font-weight:700;color:var(--paper);position:relative;}
+  .sh-cell.on .br{color:var(--gold);}
+  .sh-cell .h{font-family:var(--mono);font-size:8px;color:var(--paper-soft);margin-top:2px;position:relative;}
+  .sh-cell .th{font-family:var(--thai);font-size:9px;color:var(--paper-dim);margin-top:1px;position:relative;font-weight:500;line-height:1;}
+  .sh-cell.on .th{color:var(--gold);}
+  .sh-cell:hover .th{color:var(--paper);}
+  /* ลบ @media 560 font 8px · ตอนนี้ใช้ 4 cols กว้างพอที่ 11px แล้ว */
+
+  .sh-row-labels{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-bottom:24px;}
+  .sh-row-labels span{text-align:center;font-family:var(--mono);font-size:8px;color:var(--paper-soft);letter-spacing:.05em;}
+
+  /* ── PILLAR CARD · 2-layer subtle · 5 element themes (ธรรมชาติ) ── */
+  .hk-pillars-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px;}
+  @media(max-width:767px){.hk-pillars-row{grid-template-columns:repeat(2,1fr);gap:10px;}}
+  @media(max-width:400px){
+    .hk-pillars-row{gap:8px;}
+    .pillar.hk-pillar{padding:20px 6px 12px !important;min-width:0;}
+    .hk-pillar-orb{width:60px !important;height:60px !important;margin-bottom:10px !important;}
+    .hk-pillar-stem{font-size:28px !important;}
+    .hk-pillar-branch{width:22px !important;height:22px !important;font-size:13px !important;}
+    .hk-pillar-yy{font-size:9px !important;padding:4px 8px !important;}
+    .hk-pillar-col{font-size:8px !important;letter-spacing:.2em !important;margin-bottom:10px !important;}
+    .hk-pillar-ribbon{font-size:6px !important;padding:2px 6px !important;}
+  }
+  .pillar.hk-pillar{position:relative;padding:24px 10px 14px;background:rgba(38,42,50,.4);border:1px solid rgba(200,164,77,.15);border-radius:12px;text-align:center;transition:border-color .3s,background .3s;overflow:visible;min-width:0;}
+  .pillar.hk-pillar:hover{border-color:rgba(200,164,77,.3);}
+  [data-theme="light"] .pillar.hk-pillar{background:rgba(255,250,238,.65);border-color:rgba(138,109,42,.2);}
+  .hk-pillar-col{font-family:var(--mono);font-size:9px;letter-spacing:.28em;color:rgba(246,241,230,.5);text-transform:uppercase;margin-bottom:12px;}
+  [data-theme="light"] .hk-pillar-col{color:rgba(26,22,18,.5);}
+  .hk-pillar-orb{position:relative;width:72px;height:72px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;}
+  .hk-pillar-glow{position:absolute;inset:-4px;border-radius:50%;filter:blur(8px);opacity:.22;}
+  .hk-pillar-ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid;background:rgba(255,255,255,.02);}
+  .hk-pillar-stem{position:relative;font-family:var(--tc);font-size:34px;font-weight:700;line-height:1;z-index:2;width:auto;height:auto;border:0;background:transparent;}
+  .hk-pillar-branch{position:absolute;bottom:-8px;right:-4px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:15px;font-weight:700;border-radius:50%;border:1px solid;background:rgba(13,15,18,.92);z-index:3;margin:0;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  [data-theme="light"] .hk-pillar-branch{background:rgba(255,250,238,.98);}
+  .hk-pillar-yy{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:rgba(246,241,230,.85);font-weight:600;padding:6px 10px;background:rgba(0,0,0,.25);border:1px solid rgba(200,164,77,.15);border-radius:99px;display:inline-block;margin-top:4px;}
+  [data-theme="light"] .hk-pillar-yy{color:rgba(26,22,18,.85);background:rgba(255,250,238,.6);border-color:rgba(138,109,42,.2);}
+  .hk-yy-th{font-family:var(--thai);font-size:11px;}
+  .hk-yy-zh{font-family:var(--tc);font-size:12px;}
+  .hk-yy-en,.hk-yy-zh{display:none;}
+  [data-lang="en"] .hk-yy-th,[data-lang="en"] .hk-yy-zh{display:none;}
+  [data-lang="en"] .hk-yy-en{display:inline;}
+  [data-lang="zh"] .hk-yy-th,[data-lang="zh"] .hk-yy-en{display:none;}
+  [data-lang="zh"] .hk-yy-zh{display:inline;}
+  .hk-pillar.wood .hk-pillar-glow{background:radial-gradient(circle,#8fc37c,transparent 65%);}
+  .hk-pillar.wood .hk-pillar-ring{border-color:rgba(143,195,124,.55);background-color:rgba(63,107,47,.14);}
+  .hk-pillar.wood .hk-pillar-stem{color:#a8d098;}
+  .hk-pillar.wood .hk-pillar-branch{color:#8fc37c;border-color:rgba(143,195,124,.55);}
+  .hk-pillar.fire .hk-pillar-glow{background:radial-gradient(circle,#e26b5d,transparent 65%);}
+  .hk-pillar.fire .hk-pillar-ring{border-color:rgba(226,107,93,.55);background-color:rgba(176,58,46,.14);}
+  .hk-pillar.fire .hk-pillar-stem{color:#e89c92;}
+  .hk-pillar.fire .hk-pillar-branch{color:#e26b5d;border-color:rgba(226,107,93,.55);}
+  .hk-pillar.earth .hk-pillar-glow{background:radial-gradient(circle,#d4a85a,transparent 65%);}
+  .hk-pillar.earth .hk-pillar-ring{border-color:rgba(212,168,90,.55);background-color:rgba(138,109,42,.14);}
+  .hk-pillar.earth .hk-pillar-stem{color:#dec48a;}
+  .hk-pillar.earth .hk-pillar-branch{color:#d4a85a;border-color:rgba(212,168,90,.55);}
+  .hk-pillar.metal .hk-pillar-glow{background:radial-gradient(circle,#c8b88a,transparent 65%);}
+  .hk-pillar.metal .hk-pillar-ring{border-color:rgba(200,184,138,.55);background-color:rgba(110,98,68,.12);}
+  .hk-pillar.metal .hk-pillar-stem{color:#d6c9a4;}
+  .hk-pillar.metal .hk-pillar-branch{color:#c8b88a;border-color:rgba(200,184,138,.55);}
+  .hk-pillar.water .hk-pillar-glow{background:radial-gradient(circle,#7ba8c8,transparent 65%);}
+  .hk-pillar.water .hk-pillar-ring{border-color:rgba(123,168,200,.55);background-color:rgba(58,90,114,.14);}
+  .hk-pillar.water .hk-pillar-stem{color:#9fc1d6;}
+  .hk-pillar.water .hk-pillar-branch{color:#7ba8c8;border-color:rgba(123,168,200,.55);}
+  [data-theme="light"] .hk-pillar.wood .hk-pillar-stem,[data-theme="light"] .hk-pillar.wood .hk-pillar-branch{color:#3f6b2f;}
+  [data-theme="light"] .hk-pillar.fire .hk-pillar-stem,[data-theme="light"] .hk-pillar.fire .hk-pillar-branch{color:#a8483a;}
+  [data-theme="light"] .hk-pillar.earth .hk-pillar-stem,[data-theme="light"] .hk-pillar.earth .hk-pillar-branch{color:#8a6d2a;}
+  [data-theme="light"] .hk-pillar.metal .hk-pillar-stem,[data-theme="light"] .hk-pillar.metal .hk-pillar-branch{color:#7a6f4a;}
+  [data-theme="light"] .hk-pillar.water .hk-pillar-stem,[data-theme="light"] .hk-pillar.water .hk-pillar-branch{color:#3a5a72;}
+  .hk-pillar-ribbon{display:none;}
+  .pillar.hk-pillar.dm{border-color:rgba(200,164,77,.55);background:rgba(200,164,77,.06);}
+  .pillar.hk-pillar.dm .hk-pillar-ribbon{display:block;position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:#c8a44d;color:#0d0f12;font-family:var(--mono);font-size:7px;letter-spacing:.18em;font-weight:700;padding:2px 10px;border-radius:99px;white-space:nowrap;}
+  [data-theme="light"] .pillar.hk-pillar.dm{background:rgba(138,109,42,.08);border-color:rgba(138,109,42,.5);}
+  [data-theme="light"] .pillar.hk-pillar.dm .hk-pillar-ribbon{background:#8a6d2a;color:#f5efe2;}
+  .pillar.hk-pillar.dm .hk-pillar-glow{opacity:.32;}
+
+  /* unsure toggle */
+  .unsure{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--field);border:1px dashed var(--line);border-radius:10px;margin-bottom:28px;font-size:13px;color:var(--paper-dim);}
+  .unsure .check{width:18px;height:18px;border:1.5px solid var(--line);border-radius:4px;flex-shrink:0;cursor:none;transition:all .2s;}
+  .unsure .check.on{background:var(--gold);border-color:var(--gold);position:relative;}
+  .unsure .check.on::after{content:'✓';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:12px;color:#fff;font-weight:700;}
+  [data-theme="light"] .unsure .check.on::after{color:#f5efe2;}
+  .unsure b{color:var(--paper);font-weight:400;}
+
+  /* place input */
+  .place{position:relative;margin-bottom:28px;}
+  .place input{width:100%;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:16px 16px 16px 50px;color:var(--paper);font-family:var(--thai);font-size:15px;outline:none;cursor:none;transition:all .2s;}
+  .place input:focus{border-color:var(--gold);background:var(--gold-soft);}
+  .place .pin{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-family:var(--tc);font-size:16px;color:var(--gold);}
+  .place .coord{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10px;color:var(--paper-soft);letter-spacing:.1em;}
+
+  /* live preview · 4 pillars */
+  .preview{padding:22px;background:var(--field-2);border:1px solid var(--gold-soft);border-radius:12px;margin-bottom:28px;position:relative;}
+  .preview .lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+  .preview .lab .live{display:inline-flex;align-items:center;gap:6px;color:var(--paper-soft);}
+  .preview .lab .live::before{content:'';width:6px;height:6px;background:var(--wood);border-radius:50%;animation:livepulse 1.5s ease-in-out infinite;}
+  @keyframes livepulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(143,195,124,.4);}50%{opacity:.6;box-shadow:0 0 0 6px rgba(143,195,124,0);}}
+  .pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .pillar{text-align:center;padding:10px 6px;border-radius:8px;background:var(--field);border:1px solid var(--line-soft);position:relative;}
+  .pillar.dm{border-color:var(--gold);background:var(--gold-soft);}
+  .pillar.dm::after{content:'DM';position:absolute;top:-7px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.15em;color:#0d0f12;background:var(--gold);padding:2px 5px;border-radius:3px;}
+  .pillar .col{font-family:var(--mono);font-size:8px;color:var(--paper-soft);letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px;}
+  .pillar .gz{display:flex;flex-direction:column;gap:3px;align-items:center;}
+  .pillar .stem,.pillar .branch{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:18px;font-weight:700;border-radius:5px;border:1px solid;}
+  .s-fire .stem{background:rgba(226,107,93,.1);color:var(--fire);border-color:rgba(226,107,93,.4);}
+  .s-earth .stem{background:rgba(212,168,90,.1);color:var(--earth);border-color:rgba(212,168,90,.4);}
+  .s-water .stem{background:rgba(123,168,200,.1);color:var(--water);border-color:rgba(123,168,200,.4);}
+  .s-metal .stem{background:rgba(200,184,138,.08);color:var(--metal);border-color:rgba(200,184,138,.4);}
+  .b-earth .branch{background:rgba(212,168,90,.1);color:var(--earth);border-color:rgba(212,168,90,.4);}
+  .b-wood .branch{background:rgba(143,195,124,.1);color:var(--wood);border-color:rgba(143,195,124,.4);}
+  .b-water .branch{background:rgba(123,168,200,.1);color:var(--water);border-color:rgba(123,168,200,.4);}
+  .b-fire .branch{background:rgba(226,107,93,.1);color:var(--fire);border-color:rgba(226,107,93,.4);}
+
+  /* CTA row */
+  .cta-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+  .ghost{padding:14px 22px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--paper-dim);text-transform:uppercase;background:transparent;border:1px solid var(--line);border-radius:99px;cursor:none;transition:all .25s;}
+  .ghost:hover{border-color:var(--paper);color:var(--paper);}
+  .primary{position:relative;padding:16px 36px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:#0d0f12;background:var(--gold);border:none;border-radius:99px;cursor:none;overflow:hidden;transition:all .25s;}
+  [data-theme="light"] .primary{color:#f5efe2;}
+  .primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,164,77,.3);}
+  .primary .arrow{display:inline-block;margin-left:8px;transition:transform .25s;}
+  .primary:hover .arrow{transform:translateX(4px);}
+  .primary::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg, transparent, var(--shine), transparent);transform:translateX(-100%);transition:transform .6s;}
+  .primary:hover::before{transform:translateX(100%);}
+
+  /* fine print */
+  .fine{font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--paper-soft);text-transform:uppercase;text-align:center;margin-top:24px;padding-top:20px;border-top:1px solid var(--line-faint);}
+
+  /* ── Theme toggle ────────────────────────────────────────── */
+  .theme-toggle{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:99px;padding:3px;background:var(--field);}
+  .theme-toggle button{cursor:none;background:transparent;border:none;width:30px;height:28px;border-radius:99px;display:flex;align-items:center;justify-content:center;color:var(--paper-soft);transition:all .25s;font-size:11px;}
+  .theme-toggle button.on{background:var(--gold);color:#0d0f12;}
+  [data-theme="light"] .theme-toggle button.on{color:#f5efe2;}
+  .fine .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+
+
+  /* ─────────────── MOBILE PHONE (≤640px) ─────────────── */
+  @media (max-width: 767px){
+    html, body{cursor:auto !important;}
+    .cursor, .cursor-dot{display:none !important;}
+    .hk-autosave-label{display:none;}
+    /* ซ่อน hero copy บน mobile · เหลือเฉพาะ form ทางขวา + step-tabs ภายใน */
+    .poem .step-num,
+    .poem .step-of,
+    .poem h1,
+    .poem .lede,
+    .poem .quote{display:none;}
+
+    .stage{grid-template-columns:1fr;gap:24px;padding:14px 18px 32px;}
+
+    .progress-pill{padding:10px 16px;flex-wrap:wrap;gap:8px;font-size:9px;}
+    .progress-pill .label{font-size:9px;}
+    .progress-pill .step-name{font-size:10px;}
+
+    .left{padding:8px 0;}
+    .step-num{font-size:120px;}
+    .left h1{font-size:30px;line-height:1.15;}
+    .left p{font-size:13px;}
+    .quote{font-size:13px;padding:18px;}
+
+    .step-tabs{flex-wrap:wrap;gap:6px;margin-top:24px;}
+    .step-tab{padding:10px 12px;font-size:9px;flex:1;min-width:0;}
+    .step-tab .step-tab-num{font-size:14px;}
+
+    .form-card{padding:22px 18px;border-radius:14px;}
+    .form-card::after{font-size:160px;right:-15px;bottom:-30px;}
+
+    .form-label{font-size:10px;margin-bottom:10px;}
+    .glyph-row{grid-template-columns:1fr 1fr 1fr;gap:8px;}
+    .input-glyph{padding:10px 8px;}
+    .input-glyph .num{font-size:24px;}
+    .input-glyph .glyph{font-size:9px;}
+    .input-glyph .label{font-size:8px;}
+
+    .time-display{font-size:64px;}
+    .time-shichen{font-size:11px;padding:6px 10px;gap:8px;}
+
+    /* 12 ยาม · mobile = 4 cols × 3 rows · cell กว้างพอใส่ตัวอักษรไทย */
+    .sh-grid{grid-template-columns:repeat(4, 1fr);gap:8px;}
+    .sh-cell{aspect-ratio:auto;padding:10px 6px;min-height:64px;}
+    .sh-cell .br{font-size:20px;}
+    .sh-cell .th{font-size:11px;line-height:1.2;margin-top:3px;white-space:nowrap;}
+    .sh-cell .h{font-size:9px;margin-top:2px;}
+
+    .uncertain{padding:12px 14px;font-size:11px;}
+
+    .place-input{padding:12px 14px;font-size:13px;}
+    .place-meta{font-size:9px;flex-wrap:wrap;gap:6px;}
+
+    .preview{padding:16px;margin-bottom:18px;}
+    .preview .lab{font-size:8px;letter-spacing:.18em;}
+    .pillar-mini-row{gap:6px;}
+    .pillar-mini{padding:8px 4px;}
+    .pillar-mini .stem, .pillar-mini .branch{font-size:18px;width:30px;height:30px;}
+
+    .cta-row{flex-direction:column-reverse;gap:8px;margin-top:14px;}
+    .cta-row button{width:100%;padding:14px;font-size:11px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<div class="bg">
+  <div class="rings"><div class="r r1"></div><div class="r r2"></div><div class="r r3"></div><div class="r r4"></div></div>
+  <div class="zod">
+    <span>子</span><span>丑</span><span>寅</span><span>卯</span><span>辰</span><span>巳</span>
+    <span>午</span><span>未</span><span>申</span><span>酉</span><span>戌</span><span>亥</span>
+  </div>
+  <div class="stars" id="stars"></div>
+</div>
+
+<div class="topbar">
+  <div class="logo"><span class="seal">時</span>hourkey</div>
+  <div class="progress-pill">
+    <span data-i18n="in.step.label">STEP 02 / 03</span>
+    <div class="dots"><i class="on"></i><i class="cur"></i><i></i></div>
+    <span data-i18n="in.step.title">กรอกข้อมูลเกิด</span>
+  </div>
+  <div class="top-r" style="display:flex;align-items:center;gap:14px;">
+    <span class="hk-autosave-label" style="font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--paper-soft);" data-i18n="in.autosave">บันทึกอัตโนมัติ ●</span>
+    <div id="hk-user-menu-mount"></div>
+  </div>
+<style>
+.hk-lang-switch{display:inline-flex;background:var(--field);border:1px solid var(--line);border-radius:99px;padding:3px;}
+.hk-lang-switch button{min-width:30px;height:28px;padding:0 8px;border:none;background:transparent;color:var(--paper-soft);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+.hk-lang-switch button.on{background:var(--gold);color:#0d0f12;}
+[data-theme="light"] .hk-lang-switch button.on{color:#f5efe2;}
+</style>
+</div>
+
+<div class="stage">
+  <!-- LEFT -->
+  <div class="poem">
+    <div class="step-num">02</div>
+    <div class="step-of" data-i18n="in.left.of">of three steps · 之三</div>
+    <h1 data-i18n="in.left.h1">เพราะ<span class="tc">時</span><br/>คือ<i>กุญแจ</i>.</h1>
+    <p class="lede" data-i18n="in.left.lede">บอกเราว่าคุณเกิด <b style="color:var(--paper)">วัน เวลา และที่ไหน</b> — ดวง 4 หลักของคุณจะเริ่มก่อตัวขึ้นทันทีในกรอบขวามือ</p>
+
+    <div class="quote">
+      <p>"ดวงเกิดเริ่มที่<span class="tc">時辰</span> — สองชั่วโมง คือหนึ่งหลัก หนึ่งหลักคือทั้งชีวิต"</p>
+      <cite>— โบราณว่า · 古曰</cite>
+    </div>
+
+    <div class="step-tabs">
+      <div class="step-tab done"><div class="n">01</div><div class="t" data-i18n="in.tab.signup">สมัคร</div></div>
+      <div class="step-tab on"><div class="n" data-i18n="in.tab.now">02 · ตอนนี้</div><div class="t" data-i18n="in.tab.input">วัน-เวลา-ที่</div></div>
+      <div class="step-tab"><div class="n">03</div><div class="t" data-i18n="in.tab.goal">เป้าหมาย</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="form-card">
+    <div class="card-eyebrow">
+      <span class="l">◇ NATAL DATA · 生辰</span>
+      <span class="r">ใช้เวลา · 30 วินาที</span>
+    </div>
+    <h2 class="card-title" data-i18n="in.card.h2">เกิดเมื่อไหร่ <span class="tc">何時</span></h2>
+    <p class="card-sub" data-i18n="in.card.sub">เลือกวัน · เวลา · สถานที่ — ปาจื้อจะคำนวณทันทีระหว่างที่กรอก</p>
+
+    <!-- Name (ชื่อดวง) -->
+    <div class="hk-name-field">
+      <label data-i18n="in.name.label">ชื่อดวง · <b>名字</b></label>
+      <input type="text" id="hk-profile-name" placeholder="เช่น ตัวเอง · เอ๋ · แฟน · ป๊า · หุ้นส่วน" />
+      <div class="hk-name-hint" data-i18n="in.name.hint">เก็บไว้เรียกในกล่องเครือข่าย · เพิ่มดวงคนอื่นได้ทีหลังที่หน้าเครือข่าย</div>
+    </div>
+
+    <!-- Date -->
+    <div class="date-row">
+      <div class="field">
+        <label data-i18n="in.day.label">วัน · <b>日</b></label>
+        <div class="input-glyph on">
+          <span class="glyph">日</span>
+          <input type="number" id="hk-day" class="hk-num-input" min="1" max="31" maxlength="2" placeholder="07" value="07" inputmode="numeric"/>
+          <div class="label" id="hk-day-label">SUN</div>
+        </div>
+      </div>
+      <div class="field">
+        <label data-i18n="in.month.label">เดือน · <b>月</b></label>
+        <div class="input-glyph on">
+          <span class="glyph">月</span>
+          <select id="hk-month" class="hk-num-input hk-select-input">
+            <option value="1">ม.ค.</option>
+            <option value="2">ก.พ.</option>
+            <option value="3">มี.ค.</option>
+            <option value="4">เม.ย.</option>
+            <option value="5" selected>พ.ค.</option>
+            <option value="6">มิ.ย.</option>
+            <option value="7">ก.ค.</option>
+            <option value="8">ส.ค.</option>
+            <option value="9">ก.ย.</option>
+            <option value="10">ต.ค.</option>
+            <option value="11">พ.ย.</option>
+            <option value="12">ธ.ค.</option>
+          </select>
+          <div class="label" id="hk-month-label">MAY · 巳</div>
+        </div>
+      </div>
+      <div class="field">
+        <label data-i18n="in.year.label">ปี · พ.ศ./ค.ศ. · <b>年</b></label>
+        <div class="input-glyph on">
+          <span class="glyph">年</span>
+          <input type="number" id="hk-year" class="hk-num-input" min="1" max="2700" maxlength="4" placeholder="พิมพ์ปี" value="2569" inputmode="numeric"/>
+          <div class="label" id="hk-year-label">丙午 · พ.ศ.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Time -->
+    <div class="time-section">
+      <div class="field"><label data-i18n="in.time.label">เวลาเกิด · <b>時辰</b></label></div>
+      <div class="time-display">
+        <div class="time-big">02<span class="colon">:</span>35</div>
+        <div class="time-meta">
+          <div class="time-shichen">
+            <span class="branch">丑</span>
+            <span class="name" data-i18n="in.time.shichen"><b>ฉ่อ-ฉือ</b> · ชั่วยามวัว</span>
+          </div>
+          <div class="range" data-i18n="in.time.range">01:00 — 03:00 · 牛時</div>
+        </div>
+      </div>
+      <div class="shichen-bar">
+        <div class="sh-cell"><div class="br">子</div><div class="th" data-i18n="in.zod.rat">หนู</div><div class="h">23-01</div></div>
+        <div class="sh-cell on"><div class="br">丑</div><div class="th" data-i18n="in.zod.ox">วัว</div><div class="h">01-03</div></div>
+        <div class="sh-cell"><div class="br">寅</div><div class="th" data-i18n="in.zod.tiger">เสือ</div><div class="h">03-05</div></div>
+        <div class="sh-cell"><div class="br">卯</div><div class="th" data-i18n="in.zod.rabbit">กระต่าย</div><div class="h">05-07</div></div>
+        <div class="sh-cell"><div class="br">辰</div><div class="th" data-i18n="in.zod.dragon">มังกร</div><div class="h">07-09</div></div>
+        <div class="sh-cell"><div class="br">巳</div><div class="th" data-i18n="in.zod.snake">งู</div><div class="h">09-11</div></div>
+        <div class="sh-cell"><div class="br">午</div><div class="th" data-i18n="in.zod.horse">ม้า</div><div class="h">11-13</div></div>
+        <div class="sh-cell"><div class="br">未</div><div class="th" data-i18n="in.zod.goat">แพะ</div><div class="h">13-15</div></div>
+        <div class="sh-cell"><div class="br">申</div><div class="th" data-i18n="in.zod.monkey">ลิง</div><div class="h">15-17</div></div>
+        <div class="sh-cell"><div class="br">酉</div><div class="th" data-i18n="in.zod.rooster">ไก่</div><div class="h">17-19</div></div>
+        <div class="sh-cell"><div class="br">戌</div><div class="th" data-i18n="in.zod.dog">หมา</div><div class="h">19-21</div></div>
+        <div class="sh-cell"><div class="br">亥</div><div class="th" data-i18n="in.zod.pig">หมู</div><div class="h">21-23</div></div>
+      </div>
+      <div class="sh-row-labels" style="display:none;">
+        <span>หนู</span><span>วัว</span><span>เสือ</span><span>กระต่าย</span><span>มังกร</span><span>งู</span>
+        <span>ม้า</span><span>แพะ</span><span>ลิง</span><span>ไก่</span><span>หมา</span><span>หมู</span>
+      </div>
+    </div>
+
+    <div class="unsure">
+      <div class="check"></div>
+      <div data-i18n="in.unsure">ไม่แน่ใจเวลาเกิด? — เราจะคำนวณ <b>3 ดวง</b> ที่เป็นไปได้ ให้คุณเลือกอันที่ใกล้เคียงที่สุด</div>
+    </div>
+
+    <!-- Place · Google Places Autocomplete · Hi-fi card -->
+    <div class="hk-place-card">
+      <div class="hk-place-head">
+        <div class="hk-place-title">
+          <span class="hk-place-glyph">地</span>
+          <div>
+            <div class="hk-place-label" data-i18n="in.place.label">สถานที่เกิด · <b>出生地</b></div>
+            <div class="hk-place-hint" data-i18n="in.place.hint">พิมพ์จังหวัด/เมือง · ระบบหาพิกัดให้</div>
+          </div>
+        </div>
+        <div class="hk-place-coord-box">
+          <div class="hk-place-coord-num"><span class="hk-coord-lat">13.7°N</span> · <span class="hk-coord-lng">100.5°E</span></div>
+          <div class="hk-place-coord-lbl">TST · เส้นแวง</div>
+        </div>
+      </div>
+      <div class="hk-place-input-row">
+        <svg class="hk-place-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+        <input type="text" id="hk-place-input" placeholder="พิมพ์ชื่อ เช่น กรุงเทพ, เชียงใหม่, Tokyo" autocomplete="off" />
+      </div>
+      <input type="hidden" id="hk-place-lat" value="13.7563"/>
+      <input type="hidden" id="hk-place-lng" value="100.5018"/>
+      <input type="hidden" id="hk-place-name" value="Bangkok"/>
+      <div class="hk-place-note" data-i18n="in.place.note">
+        <span class="hk-place-note-i">ⓘ</span>
+        <span>กรุณาเลือกจังหวัดที่เกิด · ระบบใช้พิกัดเพื่อคำนวณ <b>เวลาเกิดจริง (True Solar Time)</b> · ต่างจังหวัดเวลาเกิดอาจต่างได้ถึง <b>ครึ่งชั่วโมง</b> · ผลต่อชั่วยามที่แม่นยำ</span>
+      </div>
+    </div>
+    <style>
+    .hk-place-card{background:linear-gradient(160deg, var(--card-bg-1) 0%, var(--card-bg-2) 100%);border:1px solid var(--gold-soft);border-radius:14px;padding:20px;margin-bottom:18px;position:relative;overflow:hidden;backdrop-filter:blur(12px);}
+    .hk-place-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+    .hk-place-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+    .hk-place-title{display:flex;align-items:flex-start;gap:12px;}
+    .hk-place-glyph{font-family:var(--tc);font-size:30px;font-weight:700;color:var(--gold);line-height:1;text-shadow:0 2px 8px var(--gold-soft);}
+    .hk-place-label{font-family:var(--serif);font-size:16px;font-weight:500;color:var(--paper);letter-spacing:.01em;}
+    .hk-place-label b{font-family:var(--tc);color:var(--gold);font-weight:700;margin-left:4px;}
+    .hk-place-hint{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:var(--paper-soft);margin-top:4px;line-height:1.5;}
+    .hk-place-coord-box{text-align:right;padding:8px 14px;background:var(--gold-soft);border:1px solid var(--gold);border-radius:8px;min-width:140px;}
+    .hk-place-coord-num{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--gold);letter-spacing:.02em;font-variant-numeric:tabular-nums;transition:color .2s;}
+    .hk-place-coord-num.updated{color:var(--paper);text-shadow:0 0 12px var(--gold);}
+    .hk-place-coord-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.22em;color:var(--paper-soft);text-transform:uppercase;margin-top:2px;}
+    .hk-place-input-row{position:relative;display:flex;align-items:center;gap:0;}
+    .hk-place-input-row .hk-place-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--gold);pointer-events:none;}
+    .hk-place-input-row input{width:100%;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:14px 16px 14px 42px;color:var(--paper);font-family:var(--thai);font-size:14px;outline:none;transition:all .2s;}
+    .hk-place-input-row input:focus{border-color:var(--gold);background:var(--gold-soft);}
+    .hk-place-input-row input::placeholder{color:var(--paper-soft);}
+    .hk-place-note{display:flex;align-items:flex-start;gap:8px;margin-top:14px;padding:12px 14px;background:var(--gold-soft);border:1px dashed var(--gold-line, rgba(200,164,77,.3));border-radius:8px;font-family:var(--thai);font-size:12px;line-height:1.6;color:var(--paper-dim);}
+    .hk-place-note b{color:var(--gold);font-weight:600;}
+    .hk-place-note-i{color:var(--gold);font-size:14px;line-height:1.5;flex-shrink:0;}
+    @media(max-width:480px){.hk-place-note{font-size:11px;padding:10px 12px;}.hk-place-note-i{font-size:13px;}}
+    /* PAC (Google Autocomplete dropdown) · ปรับให้เข้าธีม Hi-fi */
+    .pac-container{background:rgba(15,17,21,.97);border:1px solid var(--gold-line, rgba(200,164,77,.3));border-radius:10px;margin-top:6px;box-shadow:0 12px 30px rgba(0,0,0,.5);font-family:var(--thai),'Noto Serif Thai',serif;backdrop-filter:blur(20px);overflow:hidden;}
+    .pac-item{padding:10px 14px;border-top:1px solid rgba(200,164,77,.1);color:#f6f1e6;font-size:13px;cursor:pointer;}
+    .pac-item:hover,.pac-item.pac-item-selected{background:rgba(200,164,77,.12);}
+    .pac-item:first-child{border-top:none;}
+    .pac-icon{filter:brightness(0) invert(72%) sepia(54%) saturate(440%) hue-rotate(7deg);opacity:.8;}
+    .pac-item-query{color:#c8a44d;font-weight:600;}
+    .pac-matched{color:#c8a44d;}
+    [data-theme="light"] .pac-container{background:rgba(255,250,238,.97);border-color:rgba(138,109,42,.3);}
+    [data-theme="light"] .pac-item{color:#1a1612;border-top-color:rgba(138,109,42,.12);}
+    [data-theme="light"] .pac-item:hover{background:rgba(138,109,42,.1);}
+    [data-theme="light"] .pac-item-query,[data-theme="light"] .pac-matched{color:#8a6d2a;}
+    .pac-logo:after{filter:brightness(.6);}
+    </style>
+    <script>
+      window.hkInitPlaces = function(){
+        var inp = document.getElementById('hk-place-input');
+        if (!inp || !window.google || !window.google.maps || !window.google.maps.places) return;
+        var ac = new google.maps.places.Autocomplete(inp, {
+          types: ['(cities)'],
+          fields: ['name','geometry','formatted_address','place_id'],
+        });
+        ac.addListener('place_changed', function(){
+          var p = ac.getPlace();
+          if (!p.geometry || !p.geometry.location) return;
+          var lat = p.geometry.location.lat();
+          var lng = p.geometry.location.lng();
+          document.getElementById('hk-place-lat').value = lat.toFixed(4);
+          document.getElementById('hk-place-lng').value = lng.toFixed(4);
+          document.getElementById('hk-place-name').value = p.name || p.formatted_address || '';
+          var latEl = document.querySelector('.hk-coord-lat');
+          var lngEl = document.querySelector('.hk-coord-lng');
+          var box = document.querySelector('.hk-place-coord-num');
+          var NS = lat >= 0 ? 'N' : 'S';
+          var EW = lng >= 0 ? 'E' : 'W';
+          if (latEl) latEl.textContent = Math.abs(lat).toFixed(2)+'°'+NS;
+          if (lngEl) lngEl.textContent = Math.abs(lng).toFixed(2)+'°'+EW;
+          if (box) {
+            box.classList.add('updated');
+            setTimeout(function(){ box.classList.remove('updated'); }, 1500);
+          }
+        });
+      };
+    </script>
+    <script async src="/api/maps-script?callback=hkInitPlaces"></script>
+
+    <!-- Live preview -->
+    <div class="preview">
+      <div class="lab">
+        <span data-i18n="in.preview.label">◇ ดวงตัวอย่าง · LIVE</span>
+        <span class="live" data-i18n="in.preview.live">กำลังคำนวณ</span>
+      </div>
+      <div class="pillars hk-pillars-row">
+        <div class="pillar hk-pillar fire">
+          <div class="hk-pillar-ribbon">DAY MASTER · 日主</div>
+          <div class="col hk-pillar-col">時 HOUR</div>
+          <div class="hk-pillar-orb">
+            <div class="hk-pillar-glow"></div>
+            <div class="hk-pillar-ring"></div>
+            <div class="stem hk-pillar-stem">丁</div>
+            <div class="branch hk-pillar-branch">丑</div>
+          </div>
+          <div class="hk-pillar-yy">
+            <span class="hk-yy-th">หยินไฟ</span><span class="hk-yy-en">Yin Fire</span><span class="hk-yy-zh">陰火</span>
+          </div>
+        </div>
+        <div class="pillar dm hk-pillar earth">
+          <div class="hk-pillar-ribbon">DAY MASTER · 日主</div>
+          <div class="col hk-pillar-col">日 DAY</div>
+          <div class="hk-pillar-orb">
+            <div class="hk-pillar-glow"></div>
+            <div class="hk-pillar-ring"></div>
+            <div class="stem hk-pillar-stem">己</div>
+            <div class="branch hk-pillar-branch">寅</div>
+          </div>
+          <div class="hk-pillar-yy">
+            <span class="hk-yy-th">หยินดิน</span><span class="hk-yy-en">Yin Earth</span><span class="hk-yy-zh">陰土</span>
+          </div>
+        </div>
+        <div class="pillar hk-pillar water">
+          <div class="hk-pillar-ribbon">DAY MASTER · 日主</div>
+          <div class="col hk-pillar-col">月 MONTH</div>
+          <div class="hk-pillar-orb">
+            <div class="hk-pillar-glow"></div>
+            <div class="hk-pillar-ring"></div>
+            <div class="stem hk-pillar-stem">壬</div>
+            <div class="branch hk-pillar-branch">子</div>
+          </div>
+          <div class="hk-pillar-yy">
+            <span class="hk-yy-th">หยางน้ำ</span><span class="hk-yy-en">Yang Water</span><span class="hk-yy-zh">陽水</span>
+          </div>
+        </div>
+        <div class="pillar hk-pillar metal">
+          <div class="hk-pillar-ribbon">DAY MASTER · 日主</div>
+          <div class="col hk-pillar-col">年 YEAR</div>
+          <div class="hk-pillar-orb">
+            <div class="hk-pillar-glow"></div>
+            <div class="hk-pillar-ring"></div>
+            <div class="stem hk-pillar-stem">庚</div>
+            <div class="branch hk-pillar-branch">午</div>
+          </div>
+          <div class="hk-pillar-yy">
+            <span class="hk-yy-th">หยางทอง</span><span class="hk-yy-en">Yang Metal</span><span class="hk-yy-zh">陽金</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <button class="ghost" data-i18n="in.cta.back" onclick="window.location.href='/signup'">← ย้อนกลับ</button>
+      <button class="primary" data-i18n="in.cta.next" onclick="window.location.href='/goal'">ต่อไป · เป้าหมาย <span class="arrow">→</span></button>
+    </div>
+
+    <div class="fine">
+      ◇ <span class="tc">秘</span> ข้อมูลของคุณเข้ารหัส · ใช้เพื่อคำนวณดวงเท่านั้น
+    </div>
+  </div>
+</div>
+
+<script>
+  // cursor
+  const c = document.getElementById('cursor'), cd = document.getElementById('cursorDot');
+  let mx=0,my=0,cx=0,cy=0;
+  document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; cd.style.left=mx+'px'; cd.style.top=my+'px'; });
+  function tick(){ cx+=(mx-cx)*.15; cy+=(my-cy)*.15; c.style.left=cx+'px'; c.style.top=cy+'px'; requestAnimationFrame(tick); }
+  tick();
+  document.querySelectorAll('button, .sh-cell, .input-glyph, .check, input, .step-tab').forEach(el=>{
+    el.addEventListener('mouseenter', ()=>c.classList.add('hot'));
+    el.addEventListener('mouseleave', ()=>c.classList.remove('hot'));
+  });
+
+  // stars
+  const stars = document.getElementById('stars');
+  for (let i=0;i<40;i++){
+    const s = document.createElement('i');
+    s.style.left = Math.random()*100+'%';
+    s.style.top  = Math.random()*100+'%';
+    s.style.animationDelay = (Math.random()*3)+'s';
+    stars.appendChild(s);
+  }
+
+  // shichen click
+  const cells = document.querySelectorAll('.sh-cell');
+  const branches=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const ranges=['23:00','01:00','03:00','05:00','07:00','09:00','11:00','13:00','15:00','17:00','19:00','21:00'];
+  const names=['ฉื่อ-ฉือ · หนู','ฉ่อ-ฉือ · วัว','ยิ่น-ฉือ · เสือ','เหมา-ฉือ · กระต่าย','เฉิน-ฉือ · มังกร','ซื่อ-ฉือ · งู','อู๋-ฉือ · ม้า','เว่ย-ฉือ · แพะ','เซิน-ฉือ · ลิง','โหย่ว-ฉือ · ไก่','ซวี-ฉือ · หมา','ไห้-ฉือ · หมู'];
+  const tBig = document.querySelector('.time-big');
+  const tBranch = document.querySelector('.time-shichen .branch');
+  const tName = document.querySelector('.time-shichen .name');
+  const tRange = document.querySelector('.time-meta .range');
+  cells.forEach((el,i)=>{
+    el.addEventListener('click', ()=>{
+      cells.forEach(c=>c.classList.remove('on'));
+      el.classList.add('on');
+      const start = ranges[i], end = ranges[(i+1)%12];
+      const h = (parseInt(start)+1)%24;
+      tBig.innerHTML = String(h).padStart(2,'0')+'<span class="colon">:</span>00';
+      tBranch.textContent = branches[i];
+      tName.innerHTML = '<b>'+names[i].split(' · ')[0]+'</b> · ชั่วยาม'+names[i].split(' · ')[1];
+      tRange.textContent = start+' — '+end+' · '+branches[i]+'時';
+    });
+  });
+
+  // unsure check
+  const ck = document.querySelector('.unsure .check');
+  ck.addEventListener('click', ()=>ck.classList.toggle('on'));
+
+  // theme toggle
+  const tLight = document.getElementById('t-light');
+  const tDark  = document.getElementById('t-dark');
+  function setTheme(mode){
+    document.documentElement.setAttribute('data-theme', mode);
+    tLight.classList.toggle('on', mode==='light');
+    tDark.classList.toggle('on', mode==='dark');
+    try{ localStorage.setItem('hourkey-theme', mode); }catch(e){}
+  }
+  tLight.addEventListener('click', ()=>setTheme('light'));
+  tDark.addEventListener('click', ()=>setTheme('dark'));
+  try{
+    const saved = localStorage.getItem('hourkey-theme');
+    if (saved) setTheme(saved);
+  }catch(e){}
+</script>
+
+<script>
+/* hourkey · wire input form · name pre-fill + date picker + save → /goal */
+(function wireInput(){
+  /* ── pre-fill name from session/email ── */
+  try {
+    const nameEl = document.getElementById('hk-profile-name');
+    if (nameEl) {
+      const fillFromMe = async function(){
+        try {
+          const r = await fetch('/api/auth/me');
+          const d = await r.json();
+          if (d?.user?.name) { nameEl.value = d.user.name; return; }
+        } catch(_) {}
+        try {
+          const email = localStorage.getItem('hk_email');
+          if (email) nameEl.value = email.split('@')[0];
+        } catch(_) {}
+      };
+      fillFromMe();
+    }
+  } catch(_) {}
+  /* ── Typeable inputs · sync labels (จันทร์/MAY/Year-GZ) ── */
+  try {
+    const dayEl = document.getElementById('hk-day');
+    const monthEl = document.getElementById('hk-month');
+    const yearEl = document.getElementById('hk-year');
+    const dayLab = document.getElementById('hk-day-label');
+    const monthLab = document.getElementById('hk-month-label');
+    const yearLab = document.getElementById('hk-year-label');
+    const wkArr = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const moEnArr = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    const moBranch = ['','寅','卯','辰','巳','午','未','申','酉','戌','亥','子','丑'];
+    const yearStems = ['庚','辛','壬','癸','甲','乙','丙','丁','戊','己'];
+    const yearBranches = ['申','酉','戌','亥','子','丑','寅','卯','辰','巳','午','未'];
+    /* smart detect ปี · ถ้า ≥ 2200 = พ.ศ. (-543) · ถ้า < 2200 = ค.ศ. */
+    function smartYear(Y){
+      if (!Y || isNaN(Y)) return { ad: 0, era: '?' };
+      if (Y >= 2200) return { ad: Y - 543, era: 'พ.ศ.' };
+      return { ad: Y, era: 'ค.ศ.' };
+    }
+    function syncLabels(){
+      try {
+        const D = parseInt(dayEl.value,10);
+        const M = parseInt(monthEl.value,10);
+        const Yraw = parseInt(yearEl.value,10);
+        const sy = smartYear(Yraw);
+        const Yc = sy.ad;
+        if (D >=1 && D<=31 && M>=1 && M<=12 && Yc>=1900 && Yc<=2100) {
+          const dt = new Date(Yc, M-1, D);
+          if (dt.getFullYear() === Yc) {
+            if (dayLab) dayLab.textContent = wkArr[dt.getDay()];
+          }
+        }
+        if (M>=1 && M<=12 && monthLab) monthLab.textContent = moEnArr[M] + ' · ' + moBranch[M];
+        if (Yc>=1900 && Yc<=2100 && yearLab) {
+          const stemIdx = Yc % 10;
+          const branchIdx = Yc % 12;
+          yearLab.textContent = yearStems[stemIdx] + yearBranches[branchIdx] + ' · ' + sy.era;
+        } else if (yearLab) {
+          yearLab.textContent = '— ใส่ปีเกิด —';
+        }
+      } catch(_) {}
+    }
+    [dayEl, monthEl, yearEl].forEach(function(el){
+      if (el) el.addEventListener('input', syncLabels);
+      if (el) el.addEventListener('change', syncLabels);
+    });
+    setTimeout(syncLabels, 100);
+  } catch(_) {}
+
+  /* ── Live preview · debounce → POST /api/chart → update 4 pillars ── */
+  try {
+    const STEM_EL = { '甲':'wood','乙':'wood','丙':'fire','丁':'fire','戊':'earth','己':'earth','庚':'metal','辛':'metal','壬':'water','癸':'water' };
+    const STEM_YY = { '甲':'yang','乙':'yin','丙':'yang','丁':'yin','戊':'yang','己':'yin','庚':'yang','辛':'yin','壬':'yang','癸':'yin' };
+    const YY_TXT = {
+      'yang.wood':  { th:'หยางไม้',  en:'Yang Wood',  zh:'陽木' },
+      'yin.wood':   { th:'หยินไม้',  en:'Yin Wood',   zh:'陰木' },
+      'yang.fire':  { th:'หยางไฟ',  en:'Yang Fire',   zh:'陽火' },
+      'yin.fire':   { th:'หยินไฟ',  en:'Yin Fire',    zh:'陰火' },
+      'yang.earth': { th:'หยางดิน', en:'Yang Earth',  zh:'陽土' },
+      'yin.earth':  { th:'หยินดิน', en:'Yin Earth',   zh:'陰土' },
+      'yang.metal': { th:'หยางทอง', en:'Yang Metal',  zh:'陽金' },
+      'yin.metal':  { th:'หยินทอง', en:'Yin Metal',   zh:'陰金' },
+      'yang.water': { th:'หยางน้ำ', en:'Yang Water',  zh:'陽水' },
+      'yin.water':  { th:'หยินน้ำ', en:'Yin Water',   zh:'陰水' }
+    };
+    const BRANCH_EL = { '子':'water','丑':'earth','寅':'wood','卯':'wood','辰':'earth','巳':'fire','午':'fire','未':'earth','申':'metal','酉':'metal','戌':'earth','亥':'water' };
+    /* re-declare (scope ของ block ใหม่) · เลี่ยง undefined */
+    const lpDay = document.getElementById('hk-day');
+    const lpMonth = document.getElementById('hk-month');
+    const lpYear = document.getElementById('hk-year');
+    let liveTimer = null;
+    function getCurrentInput(){
+      const D = String(parseInt((document.getElementById('hk-day')||{}).value || '07', 10)).padStart(2,'0');
+      const M = String(parseInt((document.getElementById('hk-month')||{}).value || '5', 10)).padStart(2,'0');
+      const Yraw = parseInt((document.getElementById('hk-year')||{}).value || '2569', 10);
+      const Y = Yraw >= 2200 ? Yraw - 543 : Yraw;
+      const tBig = document.querySelector('.time-big');
+      const T = tBig ? tBig.textContent.replace(/[^0-9:]/g,'').slice(0,5) : '13:15';
+      return { date: Y + '-' + M + '-' + D, time: T };
+    }
+    async function refreshPreview(){
+      try {
+        const inp = getCurrentInput();
+        const live = document.querySelector('.preview .lab .live');
+        if (live) live.textContent = 'กำลังคำนวณ';
+        const r = await fetch('/api/chart', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: inp.date, time: inp.time, longitude: 100.5018 }),
+        });
+        if (!r.ok) { if (live) live.textContent = 'ตัวอย่าง'; return; }
+        const d = await r.json();
+        if (!d || !d.pillars) return;
+        const order = ['hour','day','month','year']; /* ตรงกับ DOM .pillar 4 ใบ (時·日·月·年) */
+        const pills = document.querySelectorAll('.preview .pillar');
+        order.forEach(function(k, i){
+          const p = d.pillars[k];
+          const el = pills[i];
+          if (!p || !el) return;
+          const stemEl = el.querySelector('.stem');
+          const brEl = el.querySelector('.branch');
+          if (stemEl) stemEl.textContent = p.stem;
+          if (brEl) brEl.textContent = p.branch;
+          el.classList.remove('s-fire','s-earth','s-water','s-metal','s-wood','b-fire','b-earth','b-water','b-metal','b-wood','wood','fire','earth','metal','water');
+          if (k === 'day') el.classList.add('dm'); else el.classList.remove('dm');
+          if (STEM_EL[p.stem]) el.classList.add(STEM_EL[p.stem]); /* hk-pillar element class */
+          /* update Yin/Yang text · 3 lang */
+          const yyKey = (STEM_YY[p.stem]||'yang') + '.' + (STEM_EL[p.stem]||'earth');
+          const tx = YY_TXT[yyKey] || { th:'?', en:'?', zh:'?' };
+          const yyTh = el.querySelector('.hk-yy-th');
+          const yyEn = el.querySelector('.hk-yy-en');
+          const yyZh = el.querySelector('.hk-yy-zh');
+          if (yyTh) yyTh.textContent = tx.th;
+          if (yyEn) yyEn.textContent = tx.en;
+          if (yyZh) yyZh.textContent = tx.zh;
+        });
+        if (live) live.textContent = '✓ live';
+      } catch(_) {}
+    }
+    function debounceRefresh(){
+      if (liveTimer) clearTimeout(liveTimer);
+      liveTimer = setTimeout(refreshPreview, 500);
+    }
+    [lpDay, lpMonth, lpYear].forEach(function(el){
+      if (el) el.addEventListener('input', debounceRefresh);
+      if (el) el.addEventListener('change', debounceRefresh);
+    });
+    /* time picker change · ผูกหลังสร้าง overlay */
+    const tmObserver = new MutationObserver(function(){
+      const tBig = document.querySelector('.time-big');
+      if (tBig && !tBig.dataset.hkBound) {
+        tBig.dataset.hkBound = '1';
+        new MutationObserver(debounceRefresh).observe(tBig, { childList: true, characterData: true, subtree: true });
+      }
+    });
+    tmObserver.observe(document.body, { childList: true, subtree: true });
+    setTimeout(refreshPreview, 800);
+  } catch(_) {}
+
+  /* ── inject native <input type="date" + time"> overlay (legacy · ปุ่มเล็ก opt-in) ── */
+  try {
+    const dateRow = null; /* disable overlay · ใช้ typeable แทน */
+    if (dateRow) {
+      /* overlay date input · ครอบทั้ง row · invisible แต่ click-able + showPicker() */
+      const dateInput = document.createElement('input');
+      dateInput.type = 'date';
+      dateInput.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:5;border:0;background:transparent;font-size:16px;';
+      dateInput.value = (function(){
+        try {
+          const g = document.querySelectorAll('.input-glyph .num');
+          const day = (g[0]?.textContent||'07').trim().padStart(2,'0');
+          const moTh = (g[1]?.textContent||'พ.ค.').trim();
+          const yr = parseInt((g[2]?.textContent||'2569').trim(),10) - 543;
+          const moMap = { 'ม.ค.':'01','ก.พ.':'02','มี.ค.':'03','เม.ย.':'04','พ.ค.':'05','มิ.ย.':'06','ก.ค.':'07','ส.ค.':'08','ก.ย.':'09','ต.ค.':'10','พ.ย.':'11','ธ.ค.':'12' };
+          return yr + '-' + (moMap[moTh]||'05') + '-' + day;
+        } catch(_){ return '1990-01-01'; }
+      })();
+      dateRow.style.position = 'relative';
+      dateRow.appendChild(dateInput);
+
+      /* เพิ่ม showPicker() trigger ตอน focus (browser desktop รองรับดีกว่า click overlay เปล่าๆ) */
+      dateInput.addEventListener('focus', function(){
+        try { if (typeof dateInput.showPicker === 'function') dateInput.showPicker(); } catch(_){}
+      });
+      dateInput.addEventListener('click', function(){
+        try { if (typeof dateInput.showPicker === 'function') dateInput.showPicker(); } catch(_){}
+      });
+
+      dateInput.addEventListener('change', function(){
+        const v = dateInput.value;
+        if (!v) return;
+        const [Y,M,D] = v.split('-');
+        const moThArr = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+        const branchYear = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+        const stems = ['庚','辛','壬','癸','甲','乙','丙','丁','戊','己'];
+        const yi = parseInt(Y,10);
+        const yearGz = stems[yi%10] + branchYear[yi%12];
+        const g = document.querySelectorAll('.input-glyph .num');
+        if (g[0]) g[0].textContent = String(parseInt(D,10)).padStart(2,'0');
+        if (g[1]) g[1].textContent = moThArr[parseInt(M,10)];
+        if (g[2]) g[2].textContent = String(yi+543);
+        const lab = document.querySelectorAll('.input-glyph .label');
+        if (lab[2]) lab[2].textContent = yearGz;
+      });
+    }
+  } catch(_) {}
+
+  /* ── inject native <input type="time"> overlay over time-display ── */
+  try {
+    const timeBox = document.querySelector('.time-display');
+    if (timeBox) {
+      const ti = document.createElement('input');
+      ti.type = 'time';
+      ti.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:5;border:0;background:transparent;font-size:16px;';
+      const tBig = document.querySelector('.time-big');
+      ti.value = tBig ? tBig.textContent.replace(/[^0-9:]/g,'').slice(0,5) : '13:15';
+      timeBox.style.position = 'relative';
+      timeBox.appendChild(ti);
+      ti.addEventListener('focus', function(){
+        try { if (typeof ti.showPicker === 'function') ti.showPicker(); } catch(_){}
+      });
+      ti.addEventListener('click', function(){
+        try { if (typeof ti.showPicker === 'function') ti.showPicker(); } catch(_){}
+      });
+
+      ti.addEventListener('change', function(){
+        const v = ti.value; if (!v) return;
+        if (tBig) tBig.innerHTML = v.slice(0,2) + '<span class="colon">:</span>' + v.slice(3,5);
+        /* update shichen */
+        const h = parseInt(v.slice(0,2),10);
+        const idx = Math.floor(((h+1)%24)/2);
+        const cells = document.querySelectorAll('.sh-cell');
+        cells.forEach(function(c){ c.classList.remove('on'); });
+        if (cells[idx]) cells[idx].classList.add('on');
+        const branches = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+        const tBranch = document.querySelector('.time-shichen .branch');
+        if (tBranch) tBranch.textContent = branches[idx];
+      });
+    }
+  } catch(_) {}
+
+  try {
+    /* override "ต่อไป" button */
+    const next = document.querySelector('button.primary');
+    if (!next) return;
+    next.removeAttribute('onclick');
+    next.addEventListener('click', function(e){
+      e.preventDefault();
+      try {
+        /* อ่านค่าจาก input · smart detect พ.ศ./ค.ศ. */
+        const day = String(parseInt((document.getElementById('hk-day')||{}).value || '07', 10)).padStart(2,'0');
+        const moNum = parseInt((document.getElementById('hk-month')||{}).value || '5', 10);
+        const mo = String(moNum).padStart(2,'0');
+        const yrRaw = parseInt((document.getElementById('hk-year')||{}).value || '2569', 10);
+        const yyyy = String(yrRaw >= 2200 ? yrRaw - 543 : yrRaw); /* smart พ.ศ./ค.ศ. */
+
+        const tBig = document.querySelector('.time-big');
+        const time = tBig ? tBig.textContent.replace(/[^0-9:]/g,'').slice(0,5) : '02:35';
+
+        const place = (document.querySelector('.place input') || {}).value || 'กรุงเทพมหานคร';
+        const profileName = (document.getElementById('hk-profile-name')||{}).value?.trim() || 'ตัวเอง';
+
+        const birth = { name: profileName, date: yyyy + '-' + mo + '-' + String(day).padStart(2,'0'), time: time, place: place, longitude: 100.5018 };
+        localStorage.setItem('hk_birth', JSON.stringify(birth));
+        localStorage.setItem('hk_profile_name', profileName);
+      } catch(_) {}
+      window.location.href = '/goal';
+    });
+  } catch(e) {}
+})();
+</script>
+
+<script>
+window.HK_I18N = {
+  'in.autosave':    { th:'บันทึกอัตโนมัติ ●', en:'Auto-save ●', zh:'自動儲存 ●' },
+  'in.step.label':  { th:'STEP 02 / 03', en:'STEP 02 / 03', zh:'步驟 02 / 03' },
+  'in.step.title':  { th:'กรอกข้อมูลเกิด', en:'Birth data', zh:'生辰資料' },
+  'in.left.of':     { th:'of three steps · 之三', en:'of three steps · 之三', zh:'三步驟之二 · 之三' },
+  'in.left.h1':     { th:'เพราะ<span class="tc">時</span><br/>คือ<i>กุญแจ</i>.', en:'Because <span class="tc">時</span><br/>is the<i> key</i>.', zh:'因<span class="tc">時</span><br/>即<i>鑰匙</i>。' },
+  'in.left.lede':   { th:'บอกเราว่าคุณเกิด <b style="color:var(--paper)">วัน เวลา และที่ไหน</b> — ดวง 4 หลักของคุณจะเริ่มก่อตัวขึ้นทันทีในกรอบขวามือ',
+                      en:'Tell us <b style="color:var(--paper)">when and where you were born</b> — your 4 pillars will appear instantly in the box on the right',
+                      zh:'告訴我們您的<b style="color:var(--paper)">出生年月日時與地點</b> — 四柱命盤即時出現於右側' },
+  'in.tab.signup':  { th:'สมัคร', en:'Sign up', zh:'註冊' },
+  'in.tab.now':     { th:'02 · ตอนนี้', en:'02 · now', zh:'02 · 現在' },
+  'in.tab.input':   { th:'วัน-เวลา-ที่', en:'date-time-place', zh:'日 · 時 · 地' },
+  'in.tab.goal':    { th:'เป้าหมาย', en:'goal', zh:'目標' },
+  'in.card.h2':     { th:'เกิดเมื่อไหร่ <span class="tc">何時</span>', en:'Born when <span class="tc">何時</span>', zh:'生於<span class="tc">何時</span>' },
+  'in.card.sub':    { th:'เลือกวัน · เวลา · สถานที่ — ปาจื้อจะคำนวณทันทีระหว่างที่กรอก',
+                      en:'Pick date · time · place — BaZi calculates as you type',
+                      zh:'選擇日期 · 時間 · 地點 — 八字即時計算' },
+  'in.name.label':  { th:'ชื่อดวง · <b>名字</b>', en:'Name · <b>名字</b>', zh:'命盤名稱 · <b>名字</b>' },
+  'in.name.hint':   { th:'เก็บไว้เรียกในกล่องเครือข่าย · เพิ่มดวงคนอื่นได้ทีหลังที่หน้าเครือข่าย',
+                      en:'Saved to your network · add others later in the network page',
+                      zh:'存於人脈中 · 之後可在網絡頁面新增他人命盤' },
+  'in.day.label':   { th:'วัน · <b>日</b>', en:'Day · <b>日</b>', zh:'日 · <b>日</b>' },
+  'in.month.label': { th:'เดือน · <b>月</b>', en:'Month · <b>月</b>', zh:'月 · <b>月</b>' },
+  'in.year.label':  { th:'ปี · พ.ศ./ค.ศ. · <b>年</b>', en:'Year · BE/CE · <b>年</b>', zh:'年 · 公元/佛曆 · <b>年</b>' },
+  'in.time.label':  { th:'เวลาเกิด · <b>時辰</b>', en:'Birth time · <b>時辰</b>', zh:'出生時辰 · <b>時辰</b>' },
+  'in.place.label': { th:'สถานที่เกิด · <b>出生地</b>', en:'Place of birth · <b>出生地</b>', zh:'出生地 · <b>出生地</b>' },
+  'in.place.hint':  { th:'พิมพ์จังหวัด/เมือง · ระบบหาพิกัดให้', en:'Type city/province · we fetch coordinates', zh:'輸入城市/省份 · 系統自動取得座標' },
+  'in.place.note':  { th:'<span class="hk-place-note-i">ⓘ</span><span>กรุณาเลือกจังหวัดที่เกิด · ระบบใช้พิกัดเพื่อคำนวณ <b>เวลาเกิดจริง (True Solar Time)</b> · ต่างจังหวัดเวลาเกิดอาจต่างได้ถึง <b>ครึ่งชั่วโมง</b> · ผลต่อชั่วยามที่แม่นยำ</span>', en:'<span class="hk-place-note-i">ⓘ</span><span>Please pick your birth city · we use coordinates to compute <b>True Solar Time</b> · cities can differ by up to <b>30 minutes</b> · affects accurate shichen</span>', zh:'<span class="hk-place-note-i">ⓘ</span><span>請選擇出生城市 · 系統依座標計算 <b>真太陽時</b> · 各城市出生時間可相差達 <b>半小時</b> · 影響時辰精度</span>' },
+  'in.cta.back':    { th:'← ย้อนกลับ', en:'← Back', zh:'← 返回' },
+  'in.cta.next':    { th:'ต่อไป · เป้าหมาย <span class="arrow">→</span>', en:'Next · goal <span class="arrow">→</span>', zh:'下一步 · 目標 <span class="arrow">→</span>' },
+  'in.zod.rat':     { th:'หนู', en:'Rat', zh:'鼠' },
+  'in.zod.ox':      { th:'วัว', en:'Ox', zh:'牛' },
+  'in.zod.tiger':   { th:'เสือ', en:'Tiger', zh:'虎' },
+  'in.zod.rabbit':  { th:'กระต่าย', en:'Rabbit', zh:'兔' },
+  'in.zod.dragon':  { th:'มังกร', en:'Dragon', zh:'龍' },
+  'in.zod.snake':   { th:'งู', en:'Snake', zh:'蛇' },
+  'in.zod.horse':   { th:'ม้า', en:'Horse', zh:'馬' },
+  'in.zod.goat':    { th:'แพะ', en:'Goat', zh:'羊' },
+  'in.zod.monkey':  { th:'ลิง', en:'Monkey', zh:'猴' },
+  'in.zod.rooster': { th:'ไก่', en:'Rooster', zh:'雞' },
+  'in.zod.dog':     { th:'หมา', en:'Dog', zh:'狗' },
+  'in.zod.pig':     { th:'หมู', en:'Pig', zh:'豬' },
+  'in.unsure':      { th:'ไม่แน่ใจเวลาเกิด? — เราจะคำนวณ <b>3 ดวง</b> ที่เป็นไปได้ ให้คุณเลือกอันที่ใกล้เคียงที่สุด',
+                      en:'Not sure about birth time? — we will calculate <b>3 possible charts</b> for you to pick the closest',
+                      zh:'不確定出生時辰？ — 我們將計算<b>三種可能命盤</b>讓您挑選最接近者' },
+  'in.preview.label':{ th:'◇ ดวงตัวอย่าง · LIVE', en:'◇ Sample chart · LIVE', zh:'◇ 命盤示例 · LIVE' },
+  'in.preview.live':{ th:'กำลังคำนวณ', en:'computing', zh:'計算中' },
+  'in.time.shichen':{ th:'<b>ฉ่อ-ฉือ</b> · ชั่วยามวัว', en:'<b>Chou-shi</b> · Hour of the Ox', zh:'<b>丑時</b> · 牛之時辰' },
+  'in.time.range':  { th:'01:00 — 03:00 · 牛時', en:'01:00 — 03:00 · 牛時', zh:'01:00 — 03:00 · 牛時' }
+};
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch');
+  if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+</script>
+<script src="/js/hk-user-menu.js?v=9" defer></script>
+</body>
+</html>

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>hourkey · ซินแสวันนี้ · 師父</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  [data-theme="dark"]{
+    --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.32);
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12);
+    --gold-line:rgba(200,164,77,.22);
+    --tile:rgba(38,42,50,.55); --tile-bd:rgba(246,241,230,.10);
+    --good:#8fc37c; --bad:#e26b5d; --neutral:#c8b88a;
+    --good-bg:rgba(143,195,124,.14); --bad-bg:rgba(226,107,93,.14); --neut-bg:rgba(200,184,138,.14);
+    --master-glow:rgba(200,164,77,.4);
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#ebe5d6; --bg-3:#dfd9c8;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.65); --fg-faint:rgba(26,22,18,.4);
+    --gold:#8a6d2a; --gold-deep:#5e4a1a; --gold-soft:rgba(138,109,42,.1);
+    --gold-line:rgba(138,109,42,.28);
+    --tile:rgba(255,250,238,.65); --tile-bd:rgba(26,22,18,.12);
+    --good:#5a8a48; --bad:#a8483a; --neutral:#7a6f4a;
+    --good-bg:rgba(90,138,72,.1); --bad-bg:rgba(168,72,58,.1); --neut-bg:rgba(122,111,74,.1);
+    --master-glow:rgba(138,109,42,.3);
+  }
+  :root{
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);font-family:var(--thai);color:var(--fg);min-height:100vh;transition:background .35s, color .35s;overflow-x:hidden;}
+
+  /* ─── ambient bg with stars ─── */
+  .ambient{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+  .ambient::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, var(--gold-soft) 0%, transparent 60%);}
+  .stars{position:absolute;inset:0;}
+  .stars i{position:absolute;width:2px;height:2px;background:var(--gold);border-radius:50%;animation:twinkle 3s ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.2;}50%{opacity:.9;}}
+  .qi-line{position:absolute;left:50%;top:50%;width:1px;background:linear-gradient(180deg, transparent, var(--gold), transparent);transform-origin:0 0;}
+
+  /* topbar */
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:color-mix(in srgb, var(--bg) 78%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .nav{display:flex;gap:24px;}
+  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
+  .nav a.on{color:var(--gold);}
+  .top-r{display:flex;align-items:center;gap:14px;}
+    .hk-lang-switch{display:inline-flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+  .hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
+  .theme-switch{display:flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .theme-switch button{width:32px;height:32px;border:none;background:transparent;color:var(--fg-soft);font-size:14px;border-radius:50%;cursor:pointer;}
+  .theme-switch button.on{background:var(--gold);color:var(--bg);}
+  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, #d4a85a, var(--gold));display:flex;align-items:center;justify-content:center;color:var(--bg);font-family:var(--tc);font-size:14px;font-weight:700;}
+
+  .stage{max-width:1100px;margin:0 auto;padding:32px 40px 80px;}
+
+  /* ═══════════ MASTER ENTRANCE SECTION ═══════════ */
+  .master-section{display:grid;grid-template-columns:380px 1fr;gap:32px;align-items:center;min-height:60vh;margin-bottom:48px;position:relative;}
+
+  /* Master orb (animated portrait) */
+  .master-orb{position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;}
+  .orb-rings{position:absolute;inset:0;}
+  .orb-rings .ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:1px solid var(--gold-line);}
+  .orb-rings .ring.r1{width:60%;height:60%;border-style:dashed;animation:rot 60s linear infinite;}
+  .orb-rings .ring.r2{width:80%;height:80%;border-style:dotted;animation:rot 100s linear infinite reverse;}
+  .orb-rings .ring.r3{width:100%;height:100%;border-color:var(--gold);opacity:.4;animation:rot 140s linear infinite;}
+  @keyframes rot{to{transform:translate(-50%,-50%) rotate(360deg);}}
+
+  /* zodiac on outer ring */
+  .orb-zodiac{position:absolute;inset:0;animation:rot 120s linear infinite reverse;pointer-events:none;}
+  .orb-zodiac span{position:absolute;left:50%;top:0;font-family:var(--tc);font-size:14px;color:var(--gold);opacity:.5;font-weight:700;}
+  .orb-zodiac span:nth-child(1){transform:translate(-50%,0) rotate(0deg) translateY(0);}
+  .orb-zodiac span:nth-child(2){transform:translate(-50%,0) rotate(30deg) translateY(0);}
+  .orb-zodiac span:nth-child(3){transform:translate(-50%,0) rotate(60deg) translateY(0);}
+  .orb-zodiac span:nth-child(4){transform:translate(-50%,0) rotate(90deg) translateY(0);}
+  .orb-zodiac span:nth-child(5){transform:translate(-50%,0) rotate(120deg) translateY(0);}
+  .orb-zodiac span:nth-child(6){transform:translate(-50%,0) rotate(150deg) translateY(0);}
+  .orb-zodiac span:nth-child(7){transform:translate(-50%,0) rotate(180deg) translateY(0);}
+  .orb-zodiac span:nth-child(8){transform:translate(-50%,0) rotate(210deg) translateY(0);}
+  .orb-zodiac span:nth-child(9){transform:translate(-50%,0) rotate(240deg) translateY(0);}
+  .orb-zodiac span:nth-child(10){transform:translate(-50%,0) rotate(270deg) translateY(0);}
+  .orb-zodiac span:nth-child(11){transform:translate(-50%,0) rotate(300deg) translateY(0);}
+  .orb-zodiac span:nth-child(12){transform:translate(-50%,0) rotate(330deg) translateY(0);}
+
+  /* core - master glyph */
+  .orb-core{position:relative;width:55%;height:55%;border-radius:50%;background:radial-gradient(circle at 30% 30%, var(--gold) 0%, var(--gold-deep) 60%, transparent 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 0 60px var(--master-glow), inset 0 0 30px rgba(0,0,0,.4);animation:breathe 4s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{box-shadow:0 0 40px var(--master-glow), inset 0 0 30px rgba(0,0,0,.4);transform:scale(1);}50%{box-shadow:0 0 80px var(--master-glow), inset 0 0 30px rgba(0,0,0,.4);transform:scale(1.03);}}
+
+  .orb-core .glyph{font-family:var(--tc);font-size:120px;color:var(--bg);font-weight:700;line-height:1;text-shadow:0 0 20px var(--master-glow);animation:glyphFade 1.2s ease-out;}
+  @keyframes glyphFade{from{opacity:0;transform:scale(.5);}to{opacity:1;transform:scale(1);}}
+
+  /* trigrams floating */
+  .trigrams{position:absolute;inset:0;pointer-events:none;}
+  .trigrams span{position:absolute;font-family:var(--tc);font-size:18px;color:var(--gold);opacity:.4;animation:floatup 8s ease-in-out infinite;}
+  .trigrams span:nth-child(1){top:5%;left:8%;animation-delay:0s;}
+  .trigrams span:nth-child(2){top:18%;right:6%;animation-delay:1s;}
+  .trigrams span:nth-child(3){bottom:8%;left:6%;animation-delay:2s;}
+  .trigrams span:nth-child(4){bottom:18%;right:8%;animation-delay:3s;}
+  .trigrams span:nth-child(5){top:50%;left:0;animation-delay:4s;}
+  .trigrams span:nth-child(6){top:50%;right:0;animation-delay:5s;}
+  @keyframes floatup{0%,100%{transform:translateY(0);opacity:.3;}50%{transform:translateY(-12px);opacity:.7;}}
+
+  /* greeting text */
+  .master-greeting{display:flex;flex-direction:column;gap:18px;}
+  .master-greeting .salute{font-family:var(--mono);font-size:11px;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;animation:slideRight 1s .3s both ease-out;}
+  @keyframes slideRight{from{opacity:0;transform:translateX(-20px);}to{opacity:1;transform:none;}}
+  .master-greeting h1{font-family:var(--serif);font-size:60px;font-weight:300;line-height:1.05;letter-spacing:-.02em;animation:slideRight 1s .5s both ease-out;}
+  .master-greeting h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .master-greeting h1 i{font-style:italic;color:var(--gold);}
+  .master-greeting .name{font-family:var(--serif);font-size:18px;color:var(--fg-soft);font-style:italic;animation:slideRight 1s .8s both ease-out;}
+  .master-greeting .name b{color:var(--gold);font-style:normal;font-weight:500;}
+
+  /* day pills */
+  .day-pills{display:flex;flex-wrap:wrap;gap:8px;animation:slideRight 1s 1s both ease-out;}
+  .day-pills .pill{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:7px 14px;border:1px solid var(--gold-line);border-radius:99px;color:var(--fg-soft);background:var(--tile);}
+  .day-pills .pill .tc{font-family:var(--tc);font-size:13px;letter-spacing:0;color:var(--gold);margin-right:5px;}
+  .day-pills .pill.gold{border-color:var(--gold);background:var(--gold-soft);color:var(--gold);}
+
+  /* opening verdict */
+  .verdict-line{padding:20px 24px;background:linear-gradient(135deg, var(--gold-soft), var(--bg-2));border-left:3px solid var(--gold);border-radius:10px;font-family:var(--serif);font-size:22px;font-weight:400;line-height:1.45;font-style:italic;animation:slideRight 1s 1.2s both ease-out;}
+  .verdict-line .tc{font-family:var(--tc);color:var(--gold);font-weight:700;font-style:normal;margin-right:6px;}
+  .verdict-line b{color:var(--gold);font-weight:500;font-style:normal;}
+
+  /* ═══════════ FORECAST CARDS ═══════════ */
+  .section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--gold-line);flex-wrap:wrap;gap:14px;}
+  .section-head .label{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
+  .section-head h2{font-family:var(--serif);font-size:36px;font-weight:300;line-height:1;letter-spacing:-.02em;margin-top:8px;}
+  .section-head h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-right:6px;}
+  .section-head .right{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;}
+
+  .forecast-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:48px;}
+  .fc-card{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;padding:22px;position:relative;overflow:hidden;animation:fadeUp 1s both ease-out;}
+  .fc-card:nth-child(1){animation-delay:1.4s;}
+  .fc-card:nth-child(2){animation-delay:1.6s;}
+  .fc-card:nth-child(3){animation-delay:1.8s;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:none;}}
+
+  .fc-card.now{border-color:var(--gold);background:linear-gradient(135deg, var(--gold-soft), var(--bg-2));}
+  .fc-card.now::before{content:'NOW · 此時';position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:8px;letter-spacing:.3em;color:var(--gold);background:var(--gold-soft);padding:3px 8px;border-radius:99px;border:1px solid var(--gold);}
+
+  .fc-when{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;}
+  .fc-when .tc{font-family:var(--tc);font-size:36px;font-weight:700;color:var(--gold);line-height:1;}
+  .fc-when .label{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--fg-faint);text-transform:uppercase;}
+  .fc-when .label small{display:block;color:var(--gold);font-family:var(--serif);font-size:14px;letter-spacing:.05em;text-transform:none;font-style:italic;margin-top:3px;}
+
+  .fc-headline{font-family:var(--serif);font-size:18px;font-weight:500;line-height:1.4;margin-bottom:12px;}
+  .fc-headline b{color:var(--gold);}
+
+  .fc-detail{font-size:13px;line-height:1.6;color:var(--fg-soft);margin-bottom:14px;}
+  .fc-detail b{color:var(--fg);}
+
+  .fc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+  .fc-tags span{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:3px 8px;border-radius:99px;border:1px solid;}
+  .fc-tags .good{color:var(--good);border-color:var(--good);background:var(--good-bg);}
+  .fc-tags .bad{color:var(--bad);border-color:var(--bad);background:var(--bad-bg);}
+  .fc-tags .mid{color:var(--neutral);border-color:var(--neutral);}
+
+  .fc-meta{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;padding-top:12px;border-top:1px dashed var(--tile-bd);}
+  .fc-meta b{color:var(--gold);}
+
+  /* ═══════════ CHAT SECTION ═══════════ */
+  .chat-section{background:var(--tile);border:1px solid var(--gold-line);border-radius:18px;padding:32px;animation:fadeUp 1s 2s both ease-out;}
+  .chat-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;gap:14px;}
+  .chat-head h2{font-family:var(--serif);font-size:32px;font-weight:300;letter-spacing:-.02em;}
+  .chat-head h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-right:6px;}
+  .chat-head h2 i{color:var(--gold);font-style:italic;}
+  .chat-head .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold-deep);text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+  .chat-head .lbl::before{content:'';width:8px;height:8px;background:var(--good);border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.5;}50%{opacity:1;}}
+
+  /* messages */
+  .messages{display:flex;flex-direction:column;gap:14px;margin-bottom:18px;max-height:420px;overflow-y:auto;padding-right:6px;}
+  .messages::-webkit-scrollbar{width:4px;}
+  .messages::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:2px;}
+
+  .msg{display:flex;gap:12px;animation:fadeIn .5s ease-out;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  .msg.user{flex-direction:row-reverse;}
+  .msg-ava{flex-shrink:0;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-weight:700;font-size:16px;}
+  .msg.master .msg-ava{background:radial-gradient(circle at 30% 30%, var(--gold), var(--gold-deep));color:var(--bg);box-shadow:0 0 20px var(--gold-soft);}
+  .msg.user .msg-ava{background:linear-gradient(135deg, #d4a85a, var(--gold));color:var(--bg);}
+  .msg-bubble{max-width:75%;padding:14px 18px;border-radius:14px;font-size:14px;line-height:1.6;}
+  .msg.master .msg-bubble{background:var(--bg-2);border:1px solid var(--gold-line);border-top-left-radius:4px;}
+  .msg.user .msg-bubble{background:var(--gold-soft);border:1px solid var(--gold-line);border-top-right-radius:4px;}
+  .msg-bubble b{color:var(--gold);}
+  .msg-bubble .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .msg-bubble .quote{display:block;font-family:var(--serif);font-size:16px;font-style:italic;color:var(--fg);padding:8px 12px;background:var(--gold-soft);border-left:2px solid var(--gold);margin:8px 0;border-radius:4px;}
+
+  /* typing indicator */
+  .typing{display:inline-flex;gap:4px;align-items:center;}
+  .typing span{width:6px;height:6px;background:var(--gold);border-radius:50%;animation:typing 1.4s ease-in-out infinite;}
+  .typing span:nth-child(2){animation-delay:.2s;}
+  .typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes typing{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-4px);}}
+
+  /* suggestion chips */
+  .suggest-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+  .suggest-chips button{background:var(--bg-2);border:1px solid var(--tile-bd);color:var(--fg-soft);padding:8px 14px;border-radius:99px;font-family:var(--thai);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.2s;}
+  .suggest-chips button:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+  .suggest-chips button .tc{font-family:var(--tc);font-weight:700;color:var(--gold);}
+
+  /* input */
+  .chat-input{display:flex;gap:8px;align-items:flex-end;}
+  .chat-input textarea{flex:1;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:12px;padding:14px 16px;font-family:var(--thai);font-size:14px;line-height:1.5;resize:none;min-height:52px;max-height:120px;}
+  .chat-input textarea:focus{outline:none;border-color:var(--gold);}
+  .send-btn{background:var(--gold);color:var(--bg);border:none;padding:14px 20px;border-radius:12px;cursor:pointer;font-family:var(--tc);font-size:18px;font-weight:700;transition:.2s;}
+  .send-btn:hover{background:var(--gold-deep);}
+
+  /* responsive */
+  @media (max-width:980px){
+    .stage{padding:22px 18px 60px;}
+    .topbar{padding:14px 18px;}
+    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
+    .nav::-webkit-scrollbar{display:none;}
+    .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
+    .nav a .glyph{font-size:14px;}
+    .nav a .lbl{font-size:11px;}
+    .hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}
+    .master-section{grid-template-columns:1fr;text-align:center;gap:24px;}
+    .master-orb{max-width:280px;margin:0 auto;}
+    .master-greeting h1{font-size:38px;}
+    .day-pills{justify-content:center;}
+    .verdict-line{font-size:18px;text-align:left;}
+    .forecast-grid{grid-template-columns:1fr;}
+    .chat-section{padding:22px;}
+    .chat-head h2{font-size:24px;}
+  }
+</style>
+<script>if(typeof window!=="undefined"&&window.innerWidth<768&&!location.search.match(/force=d/)){location.replace(location.pathname+"-m"+location.search);}</script>
+</head>
+<body>
+
+<!-- ambient background -->
+<div class="ambient">
+  <div class="stars" id="stars"></div>
+</div>
+
+<header class="topbar">
+  <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
+  <nav class="nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="mst.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="mst.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="mst.nav.calendar">ปฏิทิน</span></a>
+    <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="mst.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="mst.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="mst.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="mst.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="mst.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="mst.nav.goal">เป้าหมาย</span></a>
+  </nav>
+  <div class="top-r">
+    <div id="hk-user-menu-mount"></div>
+  </div>
+</header>
+
+<div class="stage">
+
+  <!-- ═══════════ MASTER ENTRANCE ═══════════ -->
+  <div class="master-section">
+
+    <!-- Animated master orb -->
+    <div class="master-orb">
+      <div class="orb-rings">
+        <div class="ring r3"></div>
+        <div class="ring r2"></div>
+        <div class="ring r1"></div>
+      </div>
+      <div class="orb-zodiac">
+        <span>子</span><span>丑</span><span>寅</span><span>卯</span><span>辰</span><span>巳</span>
+        <span>午</span><span>未</span><span>申</span><span>酉</span><span>戌</span><span>亥</span>
+      </div>
+      <div class="trigrams">
+        <span>☰</span><span>☱</span><span>☲</span>
+        <span>☳</span><span>☴</span><span>☵</span>
+      </div>
+      <div class="orb-core">
+        <div class="glyph">師</div>
+      </div>
+    </div>
+
+    <!-- Greeting text -->
+    <div class="master-greeting">
+      <div class="salute">時 SINSAE · DAILY ORACLE</div>
+      <h1>สวัสดีตอนบ่าย<br/><i>คุณไนท์</i> <span class="tc">敬</span></h1>
+      <div class="name">วันนี้คือ <b>พฤหัส 7 พ.ค. 2569</b> · 三月廿三 · ชั่วยาม <b>未時 </b>ตอนนี้</div>
+
+      <div class="day-pills">
+        <span class="pill"><span class="tc">日</span>辛巳</span>
+        <span class="pill"><span class="tc">月</span>癸巳</span>
+        <span class="pill"><span class="tc">年</span>丙午</span>
+        <span class="pill gold"><span class="tc">運</span>72/100 OPEN</span>
+      </div>
+
+      <div class="verdict-line">
+        <span class="tc">告</span>วันนี้ <b>ทรัพย์ไหลมา</b> · เหมาะ <b>ปิดดีล · ทวงเงิน · ตามหนี้</b><br/>
+        จงระวัง <b>คนที่เกิดวันชง 亥 — มิ้นท์, อรุณ</b> · เลี่ยง <b>ตัดสินใจหลัง 17:00</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ FORECAST GRID ═══════════ -->
+  <div class="section-head">
+    <div>
+      <div class="label">FORECAST · 預言 · เห็นล่วงหน้า</div>
+      <h2><span class="tc">前</span>เห็นไกล<i>ก่อน</i>ก้าว</h2>
+    </div>
+    <div class="right">3 ช่วงเวลา · 流時 流日 流月</div>
+  </div>
+
+  <div class="forecast-grid">
+
+    <!-- NOW -->
+    <div class="fc-card now">
+      <div class="fc-when">
+        <div class="tc">未</div>
+        <div class="label">SHICHEN<small>13:00 — 15:00</small></div>
+      </div>
+      <div class="fc-headline">2 ชั่วโมงนี้ · <b>นั่งวิเคราะห์</b> · ไม่เหมาะเจรจา</div>
+      <div class="fc-detail">未時 ดิน·ดิน — สงบ · เหมาะ <b>review เอกสาร</b> · <b>เก็บข้อมูล</b> · <b>เตรียมพรีเซน</b> ให้เสร็จก่อน <b>17:00</b> ก่อนเข้าชั่วยาม 申 ที่ห้ามตัดสินใจ</div>
+      <div class="fc-tags">
+        <span class="mid">นั่งคิด</span>
+        <span class="good">วินัย</span>
+        <span class="bad">ห้ามเจรจา</span>
+      </div>
+      <div class="fc-meta">SCORE <b>+45</b> · 比肩 · 平和</div>
+    </div>
+
+    <!-- TODAY -->
+    <div class="fc-card">
+      <div class="fc-when">
+        <div class="tc">日</div>
+        <div class="label">ทั้งวัน<small>วันนี้</small></div>
+      </div>
+      <div class="fc-headline">วัน <b>正財透干</b> · <b>เปิดดวงเงิน</b></div>
+      <div class="fc-detail">辛巳 · ทอง·ไฟ — ทรัพย์ไหลมาทาง <b>ดีลที่ค้าง</b> · ช่วงทอง <b>09:00-13:00</b> · มี <b>3 คนสำคัญ</b> ตอบรับวันนี้: <b>ใหม่ · พีท · ก้อง</b></div>
+      <div class="fc-tags">
+        <span class="good">正財</span>
+        <span class="good">納財</span>
+        <span class="mid">沖 子</span>
+      </div>
+      <div class="fc-meta">SCORE <b>+72</b> · DM <b>己</b> · 開門</div>
+    </div>
+
+    <!-- THIS MONTH -->
+    <div class="fc-card">
+      <div class="fc-when">
+        <div class="tc">月</div>
+        <div class="label">เดือน<small>พฤษภาคม 2569</small></div>
+      </div>
+      <div class="fc-headline">月柱 <b>癸巳</b> · <b>ตั้งหลัก-วาง基</b></div>
+      <div class="fc-detail">เดือนหน้าฤกษ์ใหญ่: <b>13 พ.ค.</b> เซ็นสัญญา (★★★) · <b>15 พ.ค.</b> เจรจา · ระวัง <b>22-24 พ.ค.</b> ดวงตก · ไม่ตัดสินใจใหญ่</div>
+      <div class="fc-tags">
+        <span class="good">14 ฤกษ์ดี</span>
+        <span class="bad">3 วันตก</span>
+        <span class="mid">立夏 → 小滿</span>
+      </div>
+      <div class="fc-meta">AVG <b>+58</b> · BEST DAY <b>13 พ.ค.</b></div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ CHAT WITH MASTER ═══════════ -->
+  <div class="section-head">
+    <div>
+      <div class="label">ASK · 問師 · ถามซินแส</div>
+      <h2><span class="tc">問</span>ถาม<i>อะไรก็ได้</i></h2>
+    </div>
+    <div class="right">SINSAE AI · 神算</div>
+  </div>
+
+  <div class="chat-section">
+    <div class="chat-head">
+      <h2><span class="tc">師</span>ซินแส<i>กล่าว</i></h2>
+      <div class="lbl">ออนไลน์ · LISTENING</div>
+    </div>
+
+    <!-- messages -->
+    <div class="messages" id="messages">
+
+      <div class="msg master">
+        <div class="msg-ava">師</div>
+        <div class="msg-bubble">
+          <span class="tc">告 ·</span> วันนี้คือวัน <b>辛巳 正財透干</b> — ทรัพย์เปิดประตู<br/>
+          <span class="quote">"巳火生土 · 辛金成器" — ไฟใต้ดินงอกขึ้น · ทองเหล็กกลายเป็นเครื่องมือ</span>
+          ลองถามผมเรื่อง <b>ปิดดีล</b> · <b>คนที่จะคุย</b> · <b>ทิศที่นั่ง</b> หรือ <b>ฤกษ์ที่ค้างไว้</b> ครับ
+        </div>
+      </div>
+
+      <div class="msg user">
+        <div class="msg-ava">น</div>
+        <div class="msg-bubble">
+          วันนี้ควรโทรหา Fara เลยมั้ย เรื่องสัญญาแอ่ลูมิเนียม?
+        </div>
+      </div>
+
+      <div class="msg master">
+        <div class="msg-ava">師</div>
+        <div class="msg-bubble">
+          <b>ควรครับ — แต่จงใจ</b><br/><br/>
+          <span class="tc">時 ·</span> ตอนนี้ <b>未時</b> เป็นช่วง <b>นั่งวิเคราะห์</b> ไม่ใช่เจรจา · รอ <b>17:00 (酉時)</b> หลังจากนั้น金 ขึ้น พลังของ Fara (辛金) จะแรง · พูดน้อยฟังมาก · ขอเสนอเป็นลายลักษณ์<br/><br/>
+          <span class="tc">日 ·</span> Fara เป็น <b>辛金</b> ตรงกับ <b>用神</b> ของคุณ — เป็นคนที่ "ตัดสินใจให้คุณรวยขึ้น" · แต่<b>วันนี้ห้ามรีบ</b><br/><br/>
+          <span class="quote">"金能生水 · 但需火煉" — ทองหลอมต้องผ่านไฟก่อน</span>
+          ผมเห็นในระบบคุณวางฤกษ์ <b>13 พ.ค. 14:00 (★★★ +92)</b> ไว้แล้ว · <b>เลื่อนการเซ็นไปวันนั้น</b> · วันนี้แค่ <b>"ส่งสัญญาณ"</b> ว่าพร้อม
+        </div>
+      </div>
+
+      <div class="msg user">
+        <div class="msg-ava">น</div>
+        <div class="msg-bubble">
+          ใครเป็นคนที่ควรพากันไปด้วย?
+        </div>
+      </div>
+
+      <div class="msg master">
+        <div class="msg-ava">師</div>
+        <div class="msg-bubble">
+          <span class="tc">人 ·</span> ในเครือข่ายคุณวันนี้ <b>3 คนคะแนนสูง</b>:<br/><br/>
+          ⭐ <b>ใหม่ (辛金)</b> +82 — Spouse · <b>用神 ตรง</b> · ใหม่หาคำที่ Fara เข้าใจได้<br/>
+          ⭐ <b>พีท (壬水)</b> +71 — Co-founder · 三合 หนุน · พูดเรื่องตัวเลขดี<br/>
+          ⭐ <b>ก้อง (庚金)</b> +45 — CTO · 用神金 อีกตัว · เก่งเรื่องสเปค<br/><br/>
+          <b>เลือก 1 คน</b> ไปด้วย — ผมแนะ <b>ใหม่</b> เพราะ Fara เป็นผู้หญิง 辛金 พูดกันรู้เรื่องที่สุด · นั่งหันหน้า <b>ทิศ SW</b>
+        </div>
+      </div>
+
+      <!-- typing indicator (show when waiting) -->
+      <div class="msg master" id="typing-row" style="display:none;">
+        <div class="msg-ava">師</div>
+        <div class="msg-bubble">
+          <div class="typing"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- suggestions -->
+    <div class="suggest-chips">
+      <button><span class="tc">財</span>เรื่องเงินวันนี้</button>
+      <button><span class="tc">業</span>งานที่ค้างอยู่</button>
+      <button><span class="tc">人</span>คนที่ต้องคุย</button>
+      <button><span class="tc">忌</span>วันนี้เลี่ยงอะไร</button>
+      <button><span class="tc">時</span>ชั่วยามที่ดีที่สุด</button>
+      <button><span class="tc">方</span>ทิศที่ควรนั่ง</button>
+    </div>
+
+    <!-- input -->
+    <div class="chat-input">
+      <textarea id="chat-input" placeholder="ถามซินแส... เช่น 'พรุ่งนี้ควรประชุมตอนไหน', 'ใครเป็นคนของฉันสัปดาห์นี้'"></textarea>
+      <button class="send-btn" id="send">送 →</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // theme
+  document.querySelectorAll('.theme-switch button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.documentElement.setAttribute('data-theme', btn.dataset.theme);
+      document.querySelectorAll('.theme-switch button').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+    });
+  });
+
+  // generate stars
+  const stars = document.getElementById('stars');
+  for(let i=0;i<60;i++){
+    const s = document.createElement('i');
+    s.style.left = Math.random()*100 + '%';
+    s.style.top = Math.random()*100 + '%';
+    s.style.animationDelay = Math.random()*3 + 's';
+    s.style.opacity = Math.random()*0.6 + 0.2;
+    stars.appendChild(s);
+  }
+
+  // chat send
+  const messages = document.getElementById('messages');
+  const input = document.getElementById('chat-input');
+  const send = document.getElementById('send');
+  const typing = document.getElementById('typing-row');
+
+  function addMsg(who, text){
+    const m = document.createElement('div');
+    m.className = 'msg ' + who;
+    m.innerHTML = `
+      <div class="msg-ava">${who==='user'?'น':'師'}</div>
+      <div class="msg-bubble">${text}</div>
+    `;
+    messages.insertBefore(m, typing);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function masterReply(){
+    typing.style.display='flex';
+    messages.scrollTop = messages.scrollHeight;
+    setTimeout(()=>{
+      typing.style.display='none';
+      addMsg('master', `<span class="tc">告 ·</span> เป็นคำถามที่ดี · <b>ผมต้องตรวจดวงคุณกับเวลานี้ก่อน</b><br/>(ในเวอร์ชั่น production จะต่อ AI API · ตอนนี้เป็น mockup เพื่อให้เห็น UX)`);
+    }, 1800);
+  }
+
+  send.addEventListener('click', ()=>{
+    const v = input.value.trim();
+    if(!v) return;
+    addMsg('user', v);
+    input.value='';
+    masterReply();
+  });
+  input.addEventListener('keydown', e=>{
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send.click(); }
+  });
+
+  // suggest chips
+  document.querySelectorAll('.suggest-chips button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      input.value = b.textContent.trim().replace(/^[^\s]+\s*/, '');
+      input.focus();
+    });
+  });
+
+  /* ── Wire OpenRouter (gpt-5) via /api/sifu ── */
+  (function wireSifu(){
+    const sendBtn = document.getElementById('send');
+    const inputEl = document.getElementById('chat-input');
+    const msgBox = document.getElementById('messages');
+    if (!sendBtn || !inputEl || !msgBox) return;
+    const history = [];
+
+    function addMsg(role, text){
+      const div = document.createElement('div');
+      div.className = 'msg ' + (role === 'user' ? 'user' : 'sifu');
+      div.style.cssText = role === 'user'
+        ? 'margin:14px 0;padding:12px 16px;background:rgba(200,164,77,.14);border:1px solid rgba(200,164,77,.3);border-radius:14px 14px 4px 14px;align-self:flex-end;max-width:85%;margin-left:auto;font-family:var(--thai,"Noto Serif Thai");font-size:14px;line-height:1.6;'
+        : 'margin:14px 0;padding:14px 18px;background:rgba(38,42,50,.5);border:1px solid rgba(246,241,230,.1);border-radius:14px 14px 14px 4px;max-width:90%;font-family:var(--thai,"Noto Serif Thai");font-size:14px;line-height:1.7;color:var(--fg,#f6f1e6);white-space:pre-wrap;';
+      div.textContent = text;
+      msgBox.appendChild(div);
+      msgBox.scrollTop = msgBox.scrollHeight;
+      return div;
+    }
+
+    async function send(){
+      const text = inputEl.value.trim();
+      if (!text) return;
+      inputEl.value = '';
+      sendBtn.disabled = true;
+      addMsg('user', text);
+      const placeholder = addMsg('sifu', 'ซินแสกำลังคิด ...');
+      try {
+        const r = await fetch('/api/sifu', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            history: history,
+            profileId: localStorage.getItem('hk_profile_id') || undefined,
+          }),
+        });
+        const d = await r.json();
+        if (r.ok && d.reply) {
+          placeholder.textContent = d.reply;
+          history.push({ role: 'user', content: text });
+          history.push({ role: 'assistant', content: d.reply });
+        } else {
+          placeholder.textContent = '⚠ ขัดข้อง: ' + (d.error || r.status) + (d.detail ? '\n' + d.detail : '');
+        }
+      } catch (e) {
+        placeholder.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+      } finally {
+        sendBtn.disabled = false;
+        inputEl.focus();
+      }
+    }
+
+    sendBtn.addEventListener('click', send);
+    inputEl.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+  })();
+</script>
+
+
+<script>
+/* hilite active link */
+(function(){
+  try {
+    var p = window.location.pathname.replace(/\/$/,'') || '/master';
+    p = p.replace(/-m$/, '');
+    if (p === '/yongsennetwork') p = '/network';
+    document.querySelectorAll('#hk-topnav a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+  } catch(e){}
+})();
+</script>
+
+<script>
+/* hourkey · mst · 3-language i18n (TH/EN/ZH) */
+window.HK_I18N = {
+  'mst.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
+  'mst.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
+  'mst.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
+  'mst.nav.network': { th:'เครือข่าย', en:'Network', zh:'人脈' },
+  'mst.nav.qimen':   { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門' },
+  'mst.nav.master':  { th:'ซินแส', en:'Sifu', zh:'老師' },
+  'mst.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
+  'mst.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  'mst.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' }
+};
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+</script>
+
+<script src="/js/hk-user-menu.js?v=9" defer></script>
+</body>
+</html>
