@@ -40,6 +40,9 @@ export async function POST(req: Request) {
     const usefulGod  = w4.getUsefulGod(natal.day.stem);
     const tiaoHou    = w5.tiaoHouAnalysis(natal);
 
+    const { buildChartExtensions } = await import("@/lib/chart-extensions");
+    const ext = buildChartExtensions(natal, new Date());
+
     return NextResponse.json({
       input: { date, time, longitude, gender },
       pillars: natal,
@@ -53,6 +56,14 @@ export async function POST(req: Request) {
         strength_yongshen: { strength: calc.strength, yongshenFinal: calc.yongshen, climate: { climate: calc.climate } },
         hs_hhs: hsHhs,
         matrix_summary: matrix.summary,
+        element_counts: ext.element_counts,
+        ten_gods_map: ext.ten_gods_map,
+        qi_phases: ext.qi_phases,
+        interactions: ext.interactions,
+        punishments: ext.punishments,
+        combinations: ext.combinations,
+        jishen: ext.jishen,
+        today_overlay: ext.today_overlay,
       },
     });
   } catch (e: unknown) {

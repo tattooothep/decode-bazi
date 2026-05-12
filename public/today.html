@@ -657,6 +657,164 @@
     </div>
   </section>
 
+  <!-- §X BASIC BAZI · ปาจื้อพื้นฐาน (live data จาก /api/chart) -->
+  <section class="sec" id="hk-basic-bazi" style="margin-top:30px">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">基礎</span>
+        <h2><span class="tc">基礎八字</span>ปาจื้อพื้นฐาน · Basic BaZi</h2>
+        <span class="sub">ข้อมูลซินแสตรวจสอบ · TH / EN / ZH</span>
+      </div>
+    </div>
+    <style>
+      #hk-basic-bazi .bb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px;}
+      #hk-basic-bazi .bb-card{background:var(--tile,#1a1a1a);border:1px solid var(--tile-bd,#333);border-radius:14px;padding:18px;}
+      #hk-basic-bazi .bb-card h4{font-size:13px;letter-spacing:.18em;color:var(--gold,#b89a5e);text-transform:uppercase;margin-bottom:12px;font-family:var(--mono,monospace);}
+      #hk-basic-bazi .bb-card .lab{font-size:10px;color:var(--fg-soft,#888);margin-top:4px;}
+      #hk-basic-bazi .bb-pill{display:inline-block;padding:4px 10px;margin:2px;border-radius:8px;font-size:13px;background:var(--bg,#0a0a0a);border:1px solid var(--tile-bd,#333);font-family:var(--tc,serif);}
+      #hk-basic-bazi .bb-pill.good{border-color:#7c9e5a;color:#9bbf76;}
+      #hk-basic-bazi .bb-pill.bad{border-color:#c66;color:#e88;}
+      #hk-basic-bazi .bb-pill.neutral{border-color:var(--gold-line,#665533);color:var(--gold,#b89a5e);}
+      #hk-basic-bazi .bb-bar{display:grid;grid-template-columns:60px 1fr 36px;gap:8px;align-items:center;margin:6px 0;font-size:13px;}
+      #hk-basic-bazi .bb-bar .name{font-family:var(--tc,serif);}
+      #hk-basic-bazi .bb-bar .track{height:8px;background:var(--bg,#0a0a0a);border-radius:4px;overflow:hidden;border:1px solid var(--tile-bd,#333);}
+      #hk-basic-bazi .bb-bar .fill{height:100%;border-radius:4px;}
+      #hk-basic-bazi .bb-bar .num{text-align:right;font-family:var(--mono,monospace);color:var(--fg-soft,#aaa);font-size:11px;}
+      #hk-basic-bazi .bb-bar.wood .fill{background:#7c9e5a;}
+      #hk-basic-bazi .bb-bar.fire .fill{background:#c66;}
+      #hk-basic-bazi .bb-bar.earth .fill{background:#b89a5e;}
+      #hk-basic-bazi .bb-bar.metal .fill{background:#bbb;}
+      #hk-basic-bazi .bb-bar.water .fill{background:#5a8ec9;}
+      #hk-basic-bazi .bb-tg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+      #hk-basic-bazi .bb-tg .col{text-align:center;padding:8px;background:var(--bg,#0a0a0a);border-radius:8px;border:1px solid var(--tile-bd,#333);}
+      #hk-basic-bazi .bb-tg .col .pos{font-size:10px;color:var(--fg-soft,#888);text-transform:uppercase;letter-spacing:.18em;}
+      #hk-basic-bazi .bb-tg .col .stem{font-family:var(--tc,serif);font-size:22px;color:var(--gold,#b89a5e);margin:4px 0;}
+      #hk-basic-bazi .bb-tg .col .god{font-family:var(--tc,serif);font-size:12px;color:var(--fg-soft,#aaa);}
+      #hk-basic-bazi .bb-tg .col .phase{font-family:var(--tc,serif);font-size:11px;color:var(--fg-soft,#888);margin-top:3px;}
+      #hk-basic-bazi .bb-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+      #hk-basic-bazi .bb-today{padding:12px;background:linear-gradient(135deg,rgba(184,154,94,.1),transparent);border:1px solid var(--gold-line,#665533);border-radius:10px;}
+      #hk-basic-bazi .bb-today .today-pill{font-family:var(--tc,serif);font-size:28px;color:var(--gold,#b89a5e);text-align:center;letter-spacing:.06em;}
+      #hk-basic-bazi .bb-today .today-vs{text-align:center;margin-top:6px;font-size:12px;color:var(--fg-soft,#aaa);}
+      [data-theme="light"] #hk-basic-bazi .bb-bar.earth .fill{background:#8b7332;}
+      [data-theme="light"] #hk-basic-bazi .bb-bar.metal .fill{background:#888;}
+    </style>
+    <div class="bb-grid">
+      <div class="bb-card" style="grid-column:1/-1">
+        <h4>四柱 · Four Pillars · ดวงเกิด</h4>
+        <div class="bb-tg" id="bb-pillars">
+          <div class="col"><div class="pos">年 · YEAR</div><div class="stem" id="bb-yp-stem">—</div><div class="god" id="bb-yp-god">—</div><div class="phase" id="bb-yp-phase">—</div></div>
+          <div class="col"><div class="pos">月 · MONTH</div><div class="stem" id="bb-mp-stem">—</div><div class="god" id="bb-mp-god">—</div><div class="phase" id="bb-mp-phase">—</div></div>
+          <div class="col" style="border-color:var(--gold,#b89a5e);background:linear-gradient(135deg,rgba(184,154,94,.12),transparent)"><div class="pos">日主 · DM</div><div class="stem" id="bb-dp-stem">—</div><div class="god">—</div><div class="phase" id="bb-dp-phase">—</div></div>
+          <div class="col"><div class="pos">時 · HOUR</div><div class="stem" id="bb-hp-stem">—</div><div class="god" id="bb-hp-god">—</div><div class="phase" id="bb-hp-phase">—</div></div>
+        </div>
+        <div class="lab">บรรทัด: 干支 · 十神 · 十二長生</div>
+      </div>
+      <div class="bb-card">
+        <h4>五行 · Five Elements</h4>
+        <div id="bb-elements">
+          <div class="bb-bar wood"><span class="name">木 ไม้</span><div class="track"><div class="fill" id="bb-el-wood" style="width:0%"></div></div><span class="num" id="bb-el-wood-n">—</span></div>
+          <div class="bb-bar fire"><span class="name">火 ไฟ</span><div class="track"><div class="fill" id="bb-el-fire" style="width:0%"></div></div><span class="num" id="bb-el-fire-n">—</span></div>
+          <div class="bb-bar earth"><span class="name">土 ดิน</span><div class="track"><div class="fill" id="bb-el-earth" style="width:0%"></div></div><span class="num" id="bb-el-earth-n">—</span></div>
+          <div class="bb-bar metal"><span class="name">金 ทอง</span><div class="track"><div class="fill" id="bb-el-metal" style="width:0%"></div></div><span class="num" id="bb-el-metal-n">—</span></div>
+          <div class="bb-bar water"><span class="name">水 น้ำ</span><div class="track"><div class="fill" id="bb-el-water" style="width:0%"></div></div><span class="num" id="bb-el-water-n">—</span></div>
+        </div>
+      </div>
+      <div class="bb-card">
+        <h4>用神 / 忌神</h4>
+        <div style="font-size:11px;color:var(--fg-soft,#888);margin-bottom:4px">用神 (favorable)</div>
+        <div class="bb-row" id="bb-yongshen"></div>
+        <div style="font-size:11px;color:var(--fg-soft,#888);margin:10px 0 4px">忌神 (unfavorable)</div>
+        <div class="bb-row" id="bb-jishen"></div>
+        <div class="lab" id="bb-wealth-role">บทบาทดาวทรัพย์</div>
+      </div>
+      <div class="bb-card">
+        <h4>沖 / 合 / 刑 / 害 / 破</h4>
+        <div style="font-size:11px;color:var(--fg-soft,#888);margin-bottom:4px">ภายในดวง</div>
+        <div class="bb-row" id="bb-interactions"></div>
+        <div style="font-size:11px;color:var(--fg-soft,#888);margin:10px 0 4px">三合 / 三會</div>
+        <div class="bb-row" id="bb-combinations"></div>
+        <div style="font-size:11px;color:var(--fg-soft,#888);margin:10px 0 4px">刑</div>
+        <div class="bb-row" id="bb-punishments"></div>
+      </div>
+      <div class="bb-card">
+        <h4>今日 · Today vs Natal</h4>
+        <div class="bb-today">
+          <div class="today-pill" id="bb-today-pill">—</div>
+          <div class="today-vs" id="bb-today-vs">กำลังโหลด ...</div>
+        </div>
+        <div class="lab">เทียบกับ 日支 ของคุณ</div>
+      </div>
+      <div class="bb-card" style="grid-column:1/-1">
+        <h4>🔍 Debug · ?debug=1</h4>
+        <pre id="bb-debug" style="font-size:10px;color:var(--fg-soft,#888);overflow:auto;max-height:200px;display:none;font-family:var(--mono,monospace);">—</pre>
+        <div class="lab" id="bb-debug-toggle" style="cursor:pointer;text-decoration:underline">แสดง raw data</div>
+      </div>
+    </div>
+    <script>
+    (function(){
+      const PHASE_TH = {'長生':'แรกเกิด','沐浴':'อาบ','冠帶':'ตั้งตน','臨官':'ขึ้น','帝旺':'รุ่งโรจน์','衰':'เสื่อม','病':'ป่วย','死':'ดับ','墓':'สุสาน','絕':'ขาด','胎':'ก่อตัว','養':'ครรภ์'};
+      const ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+      const INTERACTION_COLOR = {'六沖':'bad','六合':'good','六害':'bad','六破':'bad','三刑':'bad','自刑':'bad','子卯刑':'bad'};
+      function getBirth(){
+        try{ const raw = localStorage.getItem('hk_birth')||sessionStorage.getItem('hk_birth'); if(raw){ const p=JSON.parse(raw); if(p.date&&p.time) return {date:p.date,time:p.time}; } } catch(_){}
+        return {date:'1984-12-31',time:'13:15'};
+      }
+      async function loadBasic(){
+        const b=getBirth();
+        try{
+          const r=await fetch('/api/chart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:b.date,time:b.time,longitude:100.5018})});
+          if(!r.ok) return;
+          const d=await r.json();
+          if(!d||!d.pillars) return;
+          render(d);
+        } catch(e){ console.warn('basic bazi load fail',e); }
+      }
+      function render(d){
+        const a=d.analysis||{}, p=d.pillars||{}, tg=a.ten_gods_map||{}, qp=a.qi_phases||{}, ec=a.element_counts||{}, ji=a.jishen||{elements:[],wealth_role:'neutral'}, ug=a.useful_god||{}, it=a.interactions||[], cb=a.combinations||{san_he:[],san_hui:[]}, pn=a.punishments||[], to=a.today_overlay||null;
+        ['y','m','d','h'].forEach((k,i)=>{
+          const key=['year','month','day','hour'][i], pp=p[key]||{stem:'—',branch:'—'}, tgInfo=tg[key]||{};
+          document.getElementById(`bb-${k}p-stem`).textContent=pp.stem+pp.branch;
+          if(k!=='d') document.getElementById(`bb-${k}p-god`).textContent=tgInfo.ten_god||'—';
+          const ph=qp[key]; document.getElementById(`bb-${k}p-phase`).textContent=ph?`${ph} · ${PHASE_TH[ph]||ph}`:'—';
+        });
+        const total=Object.values(ec).reduce((s,v)=>s+v,0)||1;
+        ['wood','fire','earth','metal','water'].forEach(e=>{
+          const v=ec[e]||0, pct=Math.round(v/total*100);
+          document.getElementById(`bb-el-${e}`).style.width=pct+'%';
+          document.getElementById(`bb-el-${e}-n`).textContent=v;
+        });
+        const ysEl=document.getElementById('bb-yongshen'); ysEl.innerHTML='';
+        if(ug.ranks&&ug.ranks.length){ ug.ranks.slice(0,3).forEach(r=>{ const el=document.createElement('span'); el.className='bb-pill good'; el.textContent=`${r.stem} · ${r.element} · ${r.tenGod||''}`; ysEl.appendChild(el); }); }
+        const jiEl=document.getElementById('bb-jishen'); jiEl.innerHTML='';
+        (ji.elements||[]).forEach(e=>{ const el=document.createElement('span'); el.className='bb-pill bad'; el.textContent=`${ELEMENT_TH[e]||e} · ${e}`; jiEl.appendChild(el); });
+        document.getElementById('bb-wealth-role').textContent=`บทบาทดาวทรัพย์: ${ji.wealth_role||'neutral'}`;
+        const itEl=document.getElementById('bb-interactions'); itEl.innerHTML='';
+        if(it.length===0) itEl.innerHTML='<span class="lab">ไม่มี</span>';
+        it.forEach(f=>{ const el=document.createElement('span'); el.className='bb-pill '+(INTERACTION_COLOR[f.type]||'neutral'); el.textContent=`${f.type} · ${f.pair.join('')} (${f.pillars_pair.join('↔')})`; itEl.appendChild(el); });
+        const cbEl=document.getElementById('bb-combinations'); cbEl.innerHTML='';
+        (cb.san_he||[]).forEach(s=>{ const el=document.createElement('span'); el.className='bb-pill good'; el.textContent='三合 · '+s.join(''); cbEl.appendChild(el); });
+        (cb.san_hui||[]).forEach(s=>{ const el=document.createElement('span'); el.className='bb-pill good'; el.textContent='三會 · '+s.join(''); cbEl.appendChild(el); });
+        if(cbEl.children.length===0) cbEl.innerHTML='<span class="lab">ไม่มี</span>';
+        const pnEl=document.getElementById('bb-punishments'); pnEl.innerHTML='';
+        if(pn.length===0) pnEl.innerHTML='<span class="lab">ไม่มี</span>';
+        pn.forEach(f=>{ const el=document.createElement('span'); el.className='bb-pill bad'; el.textContent=`${f.type} · ${f.branches.join('')}`; pnEl.appendChild(el); });
+        if(to&&to.today_pillar){
+          document.getElementById('bb-today-pill').textContent=to.today_pillar.stem+to.today_pillar.branch;
+          const types=(to.vs_day_branch||[]).filter(x=>x);
+          document.getElementById('bb-today-vs').textContent=types.length?`วันนี้ vs 日支(${p.day?.branch}) → ${types.join(' · ')}`:`วันนี้ vs 日支(${p.day?.branch}) → ไม่มีปะทะ/รวม`;
+        }
+        const dbg=document.getElementById('bb-debug');
+        dbg.textContent=JSON.stringify({pillars:p,element_counts:ec,ten_gods_map:tg,qi_phases:qp,jishen:ji,interactions:it,combinations:cb,punishments:pn,today_overlay:to},null,2);
+        const params=new URLSearchParams(location.search);
+        if(params.get('debug')==='1') dbg.style.display='block';
+        document.getElementById('bb-debug-toggle').addEventListener('click',function(){ dbg.style.display=dbg.style.display==='none'?'block':'none'; });
+      }
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',loadBasic);
+      else loadBasic();
+    })();
+    </script>
+  </section>
+
   <!-- §5+§6 row: people + color -->
   <div class="row2">
     <div class="people">
