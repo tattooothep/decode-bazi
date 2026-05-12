@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>hourkey · ดวงของคุณ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12);
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+    --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.32);
+    --tile:rgba(38,42,50,.55); --tile-bd:rgba(246,241,230,.10);
+    --gold-line:rgba(200,164,77,.22);
+    --wood:#8fc37c; --wood-deep:#3f6b2f; --wood-bg:rgba(143,195,124,.14);
+    --fire:#e26b5d; --fire-deep:#b03a2e; --fire-bg:rgba(226,107,93,.14);
+    --earth:#d4a85a; --earth-deep:#8a6d2a; --earth-bg:rgba(212,168,90,.14);
+    --metal:#c8b88a; --metal-deep:#9a8e6a; --metal-bg:rgba(200,184,138,.14);
+    --water:#7ba8c8; --water-deep:#3a5a72; --water-bg:rgba(123,168,200,.14);
+    --red:#b03a2e;
+  }
+  body.light{
+    --bg:#f6f1e6; --bg-2:#ede5d2; --bg-3:#f9f4e6;
+    --fg:#1a1d24; --fg-soft:rgba(26,29,36,.7); --fg-faint:rgba(26,29,36,.36);
+    --tile:rgba(255,253,247,.7); --tile-bd:rgba(26,29,36,.12);
+    --gold-line:rgba(138,109,42,.3); --gold:#a8842d; --gold-soft:rgba(168,132,45,.12);
+    --wood-bg:rgba(63,107,47,.10);
+    --fire-bg:rgba(176,58,46,.10);
+    --earth-bg:rgba(138,109,42,.10);
+    --metal-bg:rgba(154,142,106,.12);
+    --water-bg:rgba(58,90,114,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);font-family:var(--thai);color:var(--fg);transition:background .35s, color .35s;min-height:100vh;}
+
+  /* topbar */
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(13,15,18,.78);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  body.light .topbar{background:rgba(246,241,230,.85);}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--thai);font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+  .nav a .glyph{font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:700;line-height:1;}
+  .nav a .lbl{font-size:12px;}
+  .nav a.on,.nav a.active{color:var(--gold);}
+  .nav a:hover{color:var(--fg);}
+  .nav a:hover .glyph{color:var(--gold-deep);}
+  .top-r{display:flex;align-items:center;gap:14px;}
+  .theme-switch{display:flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .theme-switch button{width:30px;height:30px;border:none;background:transparent;color:var(--fg-soft);font-size:13px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+  .theme-switch button.on{background:var(--gold);color:var(--bg);}
+  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, var(--earth), var(--gold));display:flex;align-items:center;justify-content:center;color:var(--bg);font-family:var(--tc);font-size:14px;font-weight:700;border:1px solid var(--gold-line);}
+
+  /* layout */
+  .stage{max-width:1280px;margin:0 auto;padding:32px 40px 80px;}
+  .crumb{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-faint);margin-bottom:14px;}
+  .crumb a{color:var(--fg-soft);text-decoration:none;}
+  .crumb a:hover{color:var(--gold);}
+
+  /* §1 Hero summary */
+  .hero{position:relative;background:linear-gradient(140deg, var(--bg-2) 0%, var(--bg-3) 100%);border:1px solid var(--gold-line);border-radius:18px;padding:40px;overflow:hidden;}
+  .hero::before{content:'';position:absolute;right:-100px;top:-100px;width:480px;height:480px;border:1px solid var(--gold-line);border-radius:50%;}
+  .hero::after{content:'';position:absolute;right:-40px;top:-40px;width:360px;height:360px;border:1px dashed var(--gold-line);border-radius:50%;animation:spin 80s linear infinite;}
+  @keyframes spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+  .hero-grid{position:relative;display:grid;grid-template-columns:1.4fr 1fr;gap:40px;z-index:2;}
+  .hero-l .label{font-family:var(--mono);font-size:11px;letter-spacing:.32em;color:var(--gold);margin-bottom:14px;text-transform:uppercase;}
+  .hero-l h1{font-family:var(--serif);font-size:64px;font-weight:300;line-height:1;letter-spacing:-.02em;margin-bottom:6px;}
+  .hero-l h1 .name{font-family:var(--thai);font-weight:600;}
+  .hero-meta{display:flex;gap:16px;font-family:var(--mono);font-size:11px;color:var(--fg-soft);margin-bottom:24px;letter-spacing:.06em;}
+  .hero-meta span+span::before{content:'·';margin-right:16px;color:var(--gold-line);}
+  .hero-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+  .tag{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--fg);}
+  .tag .glyph{font-family:var(--tc);color:var(--gold);font-size:13px;font-weight:700;}
+  .lede{font-size:15px;line-height:1.75;color:var(--fg-soft);max-width:560px;}
+  .lede b{color:var(--fg);font-weight:600;}
+
+  .dm-card{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;padding:28px;text-align:center;backdrop-filter:blur(8px);}
+  .dm-card .dm-label{font-family:var(--mono);font-size:10px;letter-spacing:.32em;color:var(--gold);margin-bottom:12px;text-transform:uppercase;}
+  .dm-glyph{display:inline-flex;align-items:center;justify-content:center;width:128px;height:128px;background:var(--earth-bg);border:2px solid var(--earth);border-radius:14px;font-family:var(--tc);font-size:84px;font-weight:700;color:var(--earth);box-shadow:0 6px 0 var(--earth-deep);margin-bottom:14px;}
+  .dm-name{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--earth);margin-bottom:4px;}
+  .dm-th{font-family:var(--thai);font-size:13px;color:var(--fg-soft);margin-bottom:14px;}
+  .strength{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px;}
+  .strength b{font-family:var(--mono);font-size:18px;color:var(--fg);}
+  .strength .lvl{padding:3px 10px;border-radius:99px;background:var(--fire-bg);color:var(--fire);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;}
+  .meter{width:100%;height:6px;background:var(--bg);border-radius:99px;overflow:hidden;border:1px solid var(--tile-bd);}
+  .meter span{display:block;height:100%;width:25%;background:linear-gradient(90deg, var(--fire), var(--gold));border-radius:99px;}
+  .conf{margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--fg-soft);letter-spacing:.18em;text-transform:uppercase;}
+  .conf .dots{display:flex;gap:3px;}
+  .conf .dots i{width:14px;height:5px;background:var(--gold-line);border-radius:1px;}
+  .conf .dots i.on{background:var(--gold);}
+
+  /* section heading */
+  .sec{margin-top:48px;}
+  .sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;border-bottom:1px solid var(--gold-line);padding-bottom:14px;}
+  .sec-head .l{display:flex;align-items:baseline;gap:14px;}
+  .sec-head .num{font-family:var(--mono);font-size:11px;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;}
+  .sec-head h2{font-family:var(--serif);font-size:32px;font-weight:400;letter-spacing:-.01em;}
+  .sec-head h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;font-size:24px;margin-right:8px;}
+  .sec-head .sub{font-size:13px;color:var(--fg-soft);}
+
+  /* §2 elements */
+  .el-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:24px;}
+  .el-list{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:24px;}
+  .el-row{display:grid;grid-template-columns:64px 90px 1fr 60px 70px;align-items:center;gap:14px;padding:10px 0;border-bottom:1px dashed var(--tile-bd);}
+  .el-row:last-child{border-bottom:none;}
+  .el-glyph{font-family:var(--tc);font-size:32px;text-align:center;}
+  .el-name{font-family:var(--thai);font-size:14px;}
+  .el-name b{display:block;font-size:13px;color:var(--fg);}
+  .el-name span{font-size:11px;color:var(--fg-soft);}
+  .el-bar{height:10px;background:var(--bg);border-radius:99px;overflow:hidden;border:1px solid var(--tile-bd);}
+  .el-bar i{display:block;height:100%;border-radius:99px;}
+  .el-pct{font-family:var(--mono);font-size:14px;font-weight:600;text-align:right;}
+  .el-tag{display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:6px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;font-weight:700;text-transform:uppercase;}
+  .el-tag.use{background:var(--wood-bg);color:var(--wood);border:1px solid var(--wood);}
+  .el-tag.av{background:var(--fire-bg);color:var(--fire);border:1px solid var(--fire);}
+  .el-tag.neutral{color:var(--fg-faint);}
+
+  .yong-card{background:linear-gradient(160deg, var(--gold-soft), transparent);border:1px solid var(--gold-line);border-radius:14px;padding:24px;}
+  .yong-card h3{font-family:var(--serif);font-size:22px;font-weight:500;margin-bottom:6px;}
+  .yong-card .ty{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+  .yong-list{display:flex;flex-direction:column;gap:12px;}
+  .yong-item{display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:10px;}
+  body.light .yong-item{background:var(--bg-3);}
+  .yong-glyph{flex-shrink:0;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:26px;font-weight:700;border-radius:8px;}
+  .yong-glyph.fire{background:var(--fire-bg);color:var(--fire);border:1px solid var(--fire);}
+  .yong-glyph.wood{background:var(--wood-bg);color:var(--wood);border:1px solid var(--wood);}
+  .yong-glyph.water{background:var(--water-bg);color:var(--water);border:1px solid var(--water);}
+  .yong-glyph.metal{background:var(--metal-bg);color:var(--metal);border:1px solid var(--metal);}
+  .yong-glyph.earth{background:var(--earth-bg);color:var(--earth);border:1px solid var(--earth);}
+  .yong-text{flex:1;}
+  .yong-text b{display:block;font-family:var(--thai);font-size:14px;color:var(--fg);margin-bottom:3px;}
+  .yong-text span{font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.6;}
+  .yong-card .av-row{margin-top:14px;padding-top:14px;border-top:1px dashed var(--tile-bd);}
+  .yong-card .av-row .ty{color:var(--fire);}
+
+  /* §3 ten gods radar */
+  .gods-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:32px;align-items:center;}
+  .radar-wrap{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:24px;display:flex;justify-content:center;align-items:center;}
+  .radar{width:100%;max-width:380px;aspect-ratio:1/1;}
+  .gods-list{display:flex;flex-direction:column;gap:14px;}
+  .god-row{display:grid;grid-template-columns:140px 1fr 60px;align-items:center;gap:14px;padding:14px 18px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:10px;}
+  .god-row b{font-family:var(--thai);font-size:14px;color:var(--fg);display:block;}
+  .god-row span{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-soft);text-transform:uppercase;}
+  .god-bar{height:8px;background:var(--bg);border-radius:99px;overflow:hidden;}
+  .god-bar i{display:block;height:100%;background:linear-gradient(90deg, var(--gold-deep), var(--gold));border-radius:99px;}
+  .god-lvl{text-align:right;font-family:var(--mono);font-size:11px;font-weight:700;}
+  .god-lvl.high{color:var(--gold);}
+  .god-lvl.mid{color:var(--fg);}
+  .god-lvl.low{color:var(--fg-faint);}
+
+  /* §4 strengths/weak/advice */
+  .swa{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;}
+  .swa-card{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:24px;border-top:3px solid;}
+  .swa-card.s{border-top-color:var(--wood);}
+  .swa-card.w{border-top-color:var(--fire);}
+  .swa-card.a{border-top-color:var(--gold);}
+  .swa-card .h{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .swa-card .h .ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:18px;font-weight:700;}
+  .swa-card.s .h .ico{background:var(--wood-bg);color:var(--wood);}
+  .swa-card.w .h .ico{background:var(--fire-bg);color:var(--fire);}
+  .swa-card.a .h .ico{background:var(--gold-soft);color:var(--gold);}
+  .swa-card .h h3{font-family:var(--serif);font-size:20px;font-weight:500;}
+  .swa-card ul{list-style:none;padding:0;}
+  .swa-card li{position:relative;padding-left:18px;font-size:13px;line-height:1.7;color:var(--fg-soft);margin-bottom:10px;}
+  .swa-card li::before{content:'';position:absolute;left:0;top:9px;width:6px;height:6px;border-radius:50%;background:var(--gold);opacity:.6;}
+  .swa-card li b{color:var(--fg);font-weight:600;}
+
+  /* §5 four pillars */
+  .pillars{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;}
+  .pillar{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:20px;position:relative;overflow:hidden;}
+  .pillar.dm{border-color:var(--gold);background:linear-gradient(180deg, var(--gold-soft), var(--tile));}
+  .pillar .col{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--fg-soft);text-transform:uppercase;text-align:center;}
+  .pillar.dm .col{color:var(--gold);font-weight:700;}
+  .pillar .col-th{font-family:var(--thai);font-size:11px;color:var(--fg-faint);text-align:center;margin-bottom:14px;}
+  .gz-stack{display:flex;flex-direction:column;gap:6px;align-items:center;margin-bottom:14px;}
+  .gz{width:72px;height:72px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:42px;font-weight:700;border:1.5px solid;border-radius:8px;}
+  .gz.wood{background:var(--wood-bg);color:var(--wood);border-color:var(--wood);}
+  .gz.fire{background:var(--fire-bg);color:var(--fire);border-color:var(--fire);}
+  .gz.earth{background:var(--earth-bg);color:var(--earth);border-color:var(--earth);}
+  .gz.metal{background:var(--metal-bg);color:var(--metal);border-color:var(--metal);}
+  .gz.water{background:var(--water-bg);color:var(--water);border-color:var(--water);}
+  .gz.dm{box-shadow:0 0 0 3px var(--bg), 0 0 0 5px var(--gold);}
+  .pillar .ten-god{text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-soft);margin-bottom:6px;text-transform:uppercase;padding:4px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--tile-bd);}
+  .pillar .qi{text-align:center;font-family:var(--thai);font-size:11px;color:var(--fg-soft);}
+  .pillar .qi b{color:var(--fg);font-family:var(--tc);font-size:13px;}
+  .pillar .pillar-toggle{margin-top:12px;text-align:center;font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;cursor:pointer;padding-top:10px;border-top:1px dashed var(--tile-bd);}
+
+  /* §6 interactions */
+  .inter-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .inter-card{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:22px;border-left:3px solid var(--fire);}
+  .inter-card.good{border-left-color:var(--wood);}
+  .inter-card .ty{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--fire);text-transform:uppercase;margin-bottom:8px;}
+  .inter-card.good .ty{color:var(--wood);}
+  .inter-card h4{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:6px;}
+  .inter-card p{font-size:13px;color:var(--fg-soft);line-height:1.7;}
+  .inter-card .glyphs{display:flex;gap:6px;margin-top:10px;font-family:var(--tc);font-size:14px;color:var(--gold);}
+  .inter-card .glyphs span{padding:3px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--tile-bd);}
+
+  /* advanced */
+  .advanced{margin-top:64px;padding:32px;background:var(--bg-2);border:1px dashed var(--gold-line);border-radius:18px;}
+  body.light .advanced{background:var(--bg-3);}
+  .advanced summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;list-style:none;}
+  .advanced summary::-webkit-details-marker{display:none;}
+  .advanced summary::after{content:'+';width:24px;height:24px;display:flex;align-items:center;justify-content:center;border:1px solid var(--gold);border-radius:50%;color:var(--gold);}
+  .advanced[open] summary::after{content:'−';}
+  .advanced .a-body{margin-top:24px;}
+  .a-grid{display:grid;grid-template-columns:repeat(4, 1fr);gap:12px;}
+  .a-tile{background:var(--tile);border:1px solid var(--tile-bd);border-radius:10px;padding:16px;}
+  .a-tile .num{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--gold);}
+  .a-tile h5{font-family:var(--tc);font-size:18px;font-weight:700;margin:6px 0 4px;color:var(--fg);}
+  .a-tile p{font-family:var(--thai);font-size:11px;color:var(--fg-soft);line-height:1.5;}
+  .a-tile.disabled{opacity:.5;}
+
+  /* footer cta */
+  .footer-cta{margin-top:64px;background:linear-gradient(135deg, var(--bg-2), var(--bg-3));border:1px solid var(--gold-line);border-radius:18px;padding:40px;display:flex;justify-content:space-between;align-items:center;}
+  .footer-cta h3{font-family:var(--serif);font-size:28px;font-weight:400;}
+  .footer-cta h3 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .footer-cta p{font-size:13px;color:var(--fg-soft);margin-top:6px;}
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;}
+
+  /* §10 Luck Pillars · 8 รอบโชค */
+  .hk-luck-row{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-top:18px;}
+  @media(max-width:980px){.hk-luck-row{grid-template-columns:repeat(4,1fr);}}
+  @media(max-width:480px){.hk-luck-row{grid-template-columns:repeat(2,1fr);}}
+  .hk-luck-card{padding:14px 8px 10px;background:rgba(38,42,50,.4);border:1px solid rgba(200,164,77,.15);border-radius:10px;text-align:center;transition:.3s;}
+  .hk-luck-card.cur{border-color:var(--gold);background:rgba(200,164,77,.08);box-shadow:0 0 0 1px var(--gold) inset;}
+  body.light .hk-luck-card{background:rgba(255,250,238,.65);}
+  .hk-luck-card .age{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+  .hk-luck-card .hk-pillar{padding:6px 0;background:transparent !important;border:0 !important;}
+  .hk-luck-card .hk-pillar-orb{width:54px;height:54px;margin:0 auto;}
+  .hk-luck-card .hk-pillar-stem{font-size:24px;}
+  .hk-luck-card .hk-pillar-branch{width:22px;height:22px;font-size:13px;bottom:-6px;right:-2px;}
+  .hk-luck-card .hk-pillar-glow{filter:blur(6px);opacity:.18;inset:-2px;}
+  .hk-luck-card .hk-pillar-ring{border-width:1.5px;}
+  .hk-luck-card .phase{font-family:var(--tc);font-size:13px;color:var(--fg-soft);margin-top:8px;font-weight:700;}
+  .hk-luck-card.cur .phase{color:var(--gold);}
+  .hk-pillar.wood .hk-pillar-glow{background:radial-gradient(circle,#8fc37c,transparent 65%);}
+  .hk-pillar.wood .hk-pillar-ring{border-color:rgba(143,195,124,.55);background-color:rgba(63,107,47,.14);}
+  .hk-pillar.wood .hk-pillar-stem{color:#a8d098;}
+  .hk-pillar.wood .hk-pillar-branch{color:#8fc37c;border-color:rgba(143,195,124,.55);}
+  .hk-pillar.fire .hk-pillar-glow{background:radial-gradient(circle,#e26b5d,transparent 65%);}
+  .hk-pillar.fire .hk-pillar-ring{border-color:rgba(226,107,93,.55);background-color:rgba(176,58,46,.14);}
+  .hk-pillar.fire .hk-pillar-stem{color:#e89c92;}
+  .hk-pillar.fire .hk-pillar-branch{color:#e26b5d;border-color:rgba(226,107,93,.55);}
+  .hk-pillar.earth .hk-pillar-glow{background:radial-gradient(circle,#d4a85a,transparent 65%);}
+  .hk-pillar.earth .hk-pillar-ring{border-color:rgba(212,168,90,.55);background-color:rgba(138,109,42,.14);}
+  .hk-pillar.earth .hk-pillar-stem{color:#dec48a;}
+  .hk-pillar.earth .hk-pillar-branch{color:#d4a85a;border-color:rgba(212,168,90,.55);}
+  .hk-pillar.metal .hk-pillar-glow{background:radial-gradient(circle,#c8b88a,transparent 65%);}
+  .hk-pillar.metal .hk-pillar-ring{border-color:rgba(200,184,138,.55);background-color:rgba(110,98,68,.12);}
+  .hk-pillar.metal .hk-pillar-stem{color:#d6c9a4;}
+  .hk-pillar.metal .hk-pillar-branch{color:#c8b88a;border-color:rgba(200,184,138,.55);}
+  .hk-pillar.water .hk-pillar-glow{background:radial-gradient(circle,#7ba8c8,transparent 65%);}
+  .hk-pillar.water .hk-pillar-ring{border-color:rgba(123,168,200,.55);background-color:rgba(58,90,114,.14);}
+  .hk-pillar.water .hk-pillar-stem{color:#9fc1d6;}
+  .hk-pillar.water .hk-pillar-branch{color:#7ba8c8;border-color:rgba(123,168,200,.55);}
+  .hk-pillar-orb{position:relative;display:flex;align-items:center;justify-content:center;}
+  .hk-pillar-glow{position:absolute;inset:0;border-radius:50%;}
+  .hk-pillar-ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid;background:rgba(255,255,255,.02);}
+  .hk-pillar-stem{position:relative;font-family:var(--tc);font-weight:700;line-height:1;z-index:2;}
+  .hk-pillar-branch{position:absolute;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-weight:700;border-radius:50%;border:1px solid;background:rgba(13,15,18,.92);z-index:3;}
+  body.light .hk-pillar-branch{background:rgba(255,250,238,.98);}
+  .hk-luck-note{margin-top:18px;padding:14px 18px;background:var(--tile);border:1px solid var(--gold-line);border-left:3px solid var(--gold);border-radius:8px;font-family:var(--thai);font-size:13px;line-height:1.65;color:var(--fg-soft);}
+  .hk-luck-note b{color:var(--gold);font-family:var(--mono);font-weight:700;letter-spacing:.04em;}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:99px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;text-decoration:none;cursor:pointer;border:1px solid;}
+  .btn.gold{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+  .btn.line{background:transparent;color:var(--fg);border-color:var(--gold-line);}
+  .btn.gold:hover{background:var(--gold-deep);}
+
+  /* ─────────────── §02 ภาพรวม 2026 + ซินแสตอบ (เรียบ minimal) ─────────────── */
+  .hk-sifu{margin-top:48px;background:transparent;border:1px solid var(--gold-line);border-radius:14px;padding:32px;position:relative;}
+  body.light .hk-sifu{background:transparent;}
+  .hk-sifu-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;border-bottom:1px solid var(--gold-line);padding-bottom:18px;}
+  .hk-sifu-head .l{flex:1;}
+  .hk-sifu-head .num{font-family:var(--mono);font-size:10px;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;}
+  .hk-sifu-head h2{font-family:var(--serif);font-size:26px;font-weight:400;margin-top:6px;line-height:1.2;}
+  .hk-sifu-head h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-right:6px;}
+  .hk-sifu-head .sub{display:block;font-size:12px;color:var(--fg-soft);margin-top:6px;}
+  .hk-sifu-head .yr{font-family:var(--mono);font-size:34px;color:var(--gold);letter-spacing:.04em;line-height:1;align-self:flex-end;opacity:.85;font-weight:300;}
+
+  /* ปุ่ม preset · เรียบ */
+  .hk-sifu-presets{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:18px;}
+  .hk-sifu-preset{padding:14px 8px;background:transparent;border:1px solid var(--gold-line);border-radius:10px;text-align:center;cursor:pointer;transition:.2s;font-family:var(--thai);}
+  .hk-sifu-preset:hover{border-color:var(--gold);background:rgba(200,164,77,.05);}
+  .hk-sifu-preset.on{border-color:var(--gold);background:rgba(200,164,77,.08);}
+  .hk-sifu-preset .ico{font-size:20px;display:block;margin-bottom:4px;opacity:.9;}
+  .hk-sifu-preset .lbl{font-size:12px;color:var(--fg);font-weight:600;}
+  .hk-sifu-preset .lbl .tc{font-family:var(--tc);color:var(--gold);margin-left:4px;font-size:10px;}
+
+  /* output area · เรียบ */
+  .hk-sifu-output{min-height:120px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:10px;padding:22px;font-family:var(--thai);font-size:14px;line-height:1.8;color:var(--fg);}
+  .hk-sifu-output .placeholder{color:var(--fg-soft);font-style:italic;text-align:center;padding:30px 10px;}
+  .hk-sifu-output p{margin:0 0 12px;}
+  .hk-sifu-output b{color:var(--gold);}
+  .hk-sifu-output .cursor{display:inline-block;width:8px;height:18px;background:var(--gold);margin-left:2px;animation:hkBlink 1s step-end infinite;vertical-align:text-bottom;}
+  @keyframes hkBlink{50%{opacity:0;}}
+
+  /* loading: spinning key */
+  .hk-sifu-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:30px 10px;}
+  .hk-sifu-key{width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:46px;color:var(--gold);animation:hkSpin 2.4s linear infinite;filter:drop-shadow(0 0 16px rgba(200,164,77,.6));}
+  @keyframes hkSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  .hk-sifu-loading .ttl{font-family:var(--mono);font-size:11px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;}
+  .hk-sifu-loading .sub{font-size:12px;color:var(--fg-soft);}
+
+  /* follow-up input · เรียบ */
+  .hk-sifu-ask{margin-top:14px;display:flex;gap:8px;}
+  .hk-sifu-ask input{flex:1;padding:12px 16px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:8px;font-family:var(--thai);font-size:13px;color:var(--fg);outline:none;}
+  .hk-sifu-ask input:focus{border-color:var(--gold);}
+  .hk-sifu-ask input::placeholder{color:var(--fg-soft);}
+  .hk-sifu-ask button{padding:12px 22px;background:var(--gold);color:var(--bg);border:none;border-radius:8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;cursor:pointer;transition:.2s;}
+  .hk-sifu-ask button:hover{background:var(--gold-deep);}
+  .hk-sifu-ask button:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* history · เรียบ */
+  .hk-sifu-history{margin-top:14px;}
+  .hk-sifu-history summary{cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;list-style:none;padding:8px 0;display:flex;align-items:center;gap:10px;}
+  .hk-sifu-history summary::-webkit-details-marker{display:none;}
+  .hk-sifu-history summary::after{content:'+';width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--gold);border-radius:50%;color:var(--gold);font-size:14px;}
+  .hk-sifu-history[open] summary::after{content:'−';}
+  .hk-sifu-history .h-list{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;padding-right:4px;}
+  .hk-sifu-history .h-item{padding:10px 14px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:8px;font-family:var(--thai);}
+  .hk-sifu-history .h-q{font-size:12px;color:var(--gold);font-weight:600;margin-bottom:6px;}
+  .hk-sifu-history .h-q::before{content:'問 · ';font-family:var(--tc);}
+  .hk-sifu-history .h-a{font-size:12px;color:var(--fg-soft);line-height:1.6;}
+  .hk-sifu-history .h-a::before{content:'答 · ';font-family:var(--tc);color:var(--gold);}
+  .hk-sifu-history .h-empty{font-size:12px;color:var(--fg-soft);font-style:italic;padding:8px 0;}
+  .hk-sifu-history .h-clear{margin-top:10px;background:transparent;border:1px solid rgba(200,164,77,.2);color:var(--fg-soft);padding:6px 14px;border-radius:99px;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;}
+  .hk-sifu-history .h-clear:hover{border-color:var(--gold);color:var(--gold);}
+
+  /* ─────────────── MOBILE RESPONSIVE ─────────────── */
+  @media (max-width: 767px){
+    /* topbar — ให้ nav ลงไปบรรทัดสองและเลื่อนซ้ายขวาได้ */
+    .topbar{padding:14px 14px;flex-wrap:wrap;gap:10px;}
+    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
+    .nav::-webkit-scrollbar{display:none;}
+    .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
+    .nav a .glyph{font-size:14px;}
+    .nav a .lbl{font-size:11px;}
+    .logo{font-size:18px;}
+    .logo .seal{width:26px;height:26px;font-size:12px;}
+    .top-r{gap:10px;}
+    .theme-switch{padding:2px;}
+    .theme-switch button{width:26px;height:26px;font-size:12px;}
+    .avatar{width:30px;height:30px;font-size:12px;}
+
+    /* stage */
+    .stage{padding:20px 16px 60px;}
+    .crumb{font-size:9px;letter-spacing:.18em;}
+
+    /* hero — column ซ้อนแทนข้าง */
+    .hero-grid{grid-template-columns:1fr;gap:24px;}
+    .hero h1, .hero-l h1{font-size:36px;line-height:1.1;}
+    .hero-tags{flex-wrap:wrap;gap:6px;}
+    .hero-tag{font-size:10px;padding:6px 10px;}
+    .lede{font-size:14px;line-height:1.65;max-width:none;}
+
+    /* DM card */
+    .dm-card{padding:24px 18px;}
+    .dm-glyph{font-size:80px;}
+    .dm-name{font-size:16px;}
+    .dm-strength{font-size:24px;}
+
+    /* section heads */
+    .sec-head{flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:24px;}
+    .sec-num{font-size:24px;}
+    .sec-title h2{font-size:24px;line-height:1.2;}
+    .sec-sub{font-size:12px;}
+
+    /* §2 elements */
+    .el-grid{grid-template-columns:1fr;gap:18px;}
+    .el-row{grid-template-columns:36px 70px 1fr 40px;gap:8px;font-size:12px;padding:8px 0;}
+    .el-row .el-glyph{font-size:24px;}
+    .el-row .el-pct{font-size:12px;}
+    .el-row .el-tag{font-size:9px;padding:3px 6px;}
+    .yongshen-box{padding:18px 14px;}
+    .ys-row{padding:12px;gap:10px;}
+    .ys-glyph{font-size:24px;width:36px;height:36px;}
+    .ys-text{font-size:12px;line-height:1.5;}
+
+    /* §3 ten gods */
+    .gods-grid{grid-template-columns:1fr;gap:18px;}
+    .radar{max-width:280px;margin:0 auto;}
+    .god-row{grid-template-columns:1fr 60px;gap:8px;padding:10px 12px;}
+    .god-row .god-name{font-size:12px;}
+    .god-row .god-bar{grid-column:1/-1;}
+    .god-row .god-val{font-size:10px;}
+
+    /* §4 SWA — 3 columns → 1 column */
+    .swa{grid-template-columns:1fr;gap:14px;}
+    .swa-card{padding:18px 14px;}
+    .swa-card h3{font-size:16px;}
+    .swa-card li{font-size:13px;line-height:1.6;}
+
+    /* §5 pillars — 4 col → 2 col */
+    .pillars{grid-template-columns:repeat(2, 1fr);gap:10px;}
+    .pillar-card{padding:14px 10px;}
+    .pillar-stem, .pillar-branch{font-size:32px;width:48px;height:48px;}
+    .pillar-meta{font-size:9px;}
+
+    /* §6 interactions */
+    .inter-grid{grid-template-columns:1fr;gap:14px;}
+    .inter-card{padding:18px 14px;}
+    .inter-card h4{font-size:14px;}
+    .inter-card p{font-size:12px;line-height:1.55;}
+
+    /* §deep — 4 col → 2 col */
+    .a-grid{grid-template-columns:repeat(2, 1fr);gap:10px;}
+    .a-card{padding:14px 10px;}
+    .a-card .num{font-size:10px;}
+    .a-card h5{font-size:12px;}
+    .a-card p{font-size:11px;}
+
+    /* CTA bottom */
+    .cta-bottom{padding:32px 18px;}
+    .cta-bottom h3{font-size:20px;}
+    .cta-row{flex-direction:column;gap:10px;width:100%;}
+    .cta-row a{width:100%;text-align:center;}
+  }
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const saved = localStorage.getItem('hk-theme') || 'dark';
+    if(saved==='light') document.body.classList.add('light');
+    document.querySelectorAll('.theme-switch button').forEach(b=>{
+      b.classList.toggle('on', b.dataset.theme===saved);
+      b.addEventListener('click', ()=>{
+        const t = b.dataset.theme;
+        document.body.classList.toggle('light', t==='light');
+        localStorage.setItem('hk-theme', t);
+        document.querySelectorAll('.theme-switch button').forEach(x=>x.classList.toggle('on', x.dataset.theme===t));
+      });
+    });
+  });
+</script>
+</head>
+<body>
+
+<!-- ═══════ View-as banner (เปิดจาก /network · sessionStorage hk_view_as) ═══════ -->
+<style>
+.hk-viewas-bar{display:none;background:linear-gradient(90deg, var(--gold-soft, rgba(200,164,77,.12)), rgba(200,164,77,.06));border-bottom:1px solid var(--gold-line);padding:10px 24px;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;}
+.hk-viewas-bar.show{display:flex;}
+.hk-viewas-bar .info{display:flex;align-items:center;gap:12px;flex:1;min-width:0;}
+.hk-viewas-bar .glyph{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:18px;font-weight:700;border:1.5px solid var(--gold);background:var(--gold-soft);color:var(--gold);flex-shrink:0;}
+.hk-viewas-bar .label{font-family:var(--thai);font-size:13px;color:var(--fg);}
+.hk-viewas-bar .label b{color:var(--gold);font-weight:600;margin:0 4px;}
+.hk-viewas-bar .label .role{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-left:8px;}
+.hk-viewas-bar .back{padding:6px 14px;background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;text-decoration:none;}
+.hk-viewas-bar .back:hover{background:var(--gold);color:var(--bg);}
+@media(max-width:640px){.hk-viewas-bar{padding:8px 14px;}.hk-viewas-bar .label{font-size:12px;}.hk-viewas-bar .glyph{width:26px;height:26px;font-size:14px;}}
+</style>
+<div class="hk-viewas-bar" id="hk-viewas-bar">
+  <div class="info">
+    <div class="glyph" id="va-glyph">人</div>
+    <div class="label">
+      <span data-i18n="c.va.prefix">กำลังดูดวงปาจื้อของ</span> <b id="va-name">—</b>
+      <span class="role" id="va-role"></span>
+    </div>
+  </div>
+  <a href="/network" class="back" data-i18n="c.va.back">← กลับ</a>
+</div>
+<script>
+/* read view-as · ถ้ามี → override hk_birth ก่อน wireChart รัน */
+(function(){
+  try {
+    const params = new URLSearchParams(location.search);
+    if (!params.get('as')) return;
+    const raw = sessionStorage.getItem('hk_view_as');
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    if (!p || !p.name) return;
+    const bar = document.getElementById('hk-viewas-bar');
+    document.getElementById('va-glyph').textContent = p.glyph || '人';
+    document.getElementById('va-name').textContent = p.name;
+    document.getElementById('va-role').textContent = p.role || '';
+    bar.classList.add('show');
+    document.documentElement.setAttribute('data-view-as', p.id);
+    /* override hk_birth · ให้ wireChart() ดึงดวงคนนี้ */
+    if (p.birthDate && p.birthTime) {
+      sessionStorage.setItem('hk_birth_backup', localStorage.getItem('hk_birth')||'');
+      const fakeBirth = JSON.stringify({
+        date: p.birthDate, time: p.birthTime, gender: p.gender||'M',
+        longitude: 100.5, _viewAs: true
+      });
+      localStorage.setItem('hk_birth', fakeBirth);
+    }
+  } catch(e){}
+})();
+window.addEventListener('beforeunload', function(){
+  try {
+    if (sessionStorage.getItem('hk_birth_backup') !== null) {
+      const orig = sessionStorage.getItem('hk_birth_backup');
+      if (orig) localStorage.setItem('hk_birth', orig); else localStorage.removeItem('hk_birth');
+      sessionStorage.removeItem('hk_birth_backup');
+    }
+  } catch(e){}
+});
+</script>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
+  <nav class="nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="c.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="c.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="c.nav.calendar">ปฏิทิน</span></a>
+    <a href="/yongsennetwork" data-r="/yongsennetwork"><span class="glyph">人</span><span class="lbl" data-i18n="c.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="c.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="c.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="c.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="c.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="c.nav.goal">เป้าหมาย</span></a>
+  </nav>
+  <div class="top-r">
+    <div id="hk-user-menu-mount"></div>
+  </div>
+<style>
+.hk-lang-switch{display:inline-flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+.hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+.hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
+@media(max-width:768px){.hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}}
+</style>
+</header>
+
+<div class="stage">
+  <div class="crumb"><a href="/" data-i18n="c.crumb.home">หน้าหลัก</a> <span>/</span> <span data-i18n="c.crumb.chart">ดวงของคุณ · BAZI CHART</span></div>
+
+  <!-- §1 HERO SUMMARY -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="hero-l">
+        <div class="label">01 · สรุปภาพรวม · YOUR CHART AT A GLANCE</div>
+        <h1><span class="name">ไนท์</span></h1>
+        <div class="hero-meta">
+          <span>📅 7 พ.ค. 2569</span>
+          <span>🕐 02:35</span>
+          <span>📍 Bangkok</span>
+        </div>
+        <div class="hero-tags">
+          <span class="tag"><span class="glyph">己</span>Yin Earth · ดินอ่อน</span>
+          <span class="tag"><span class="glyph">從財</span>Follow Wealth · ตามทรัพย์</span>
+          <span class="tag"><span class="glyph">土</span>The Connector · นักเชื่อมต่อ</span>
+          <span class="tag"><span class="glyph">水</span>Water 5型 · ลื่นไหล</span>
+        </div>
+        <p class="lede">คุณเป็น <b>ดินอ่อน</b> ในฤดูหนาว — สงบ ไม่แข่ง แต่อ่านคนแม่น มีพรสวรรค์ <b>เชื่อมต่อโอกาสและคน</b> เข้าด้วยกัน · ดวงของคุณ <b>ตามทรัพย์</b> หมายความว่า <b>ลื่นไหลตามกระแสได้ดีกว่าฝืนทาง</b> — เมื่อรู้จักเลือกคลื่น คุณจะไปได้ไกล</p>
+      </div>
+      <div class="dm-card">
+        <div class="dm-label" data-i18n="c.dm.label">DAY MASTER · 日主</div>
+        <div class="dm-glyph">己</div>
+        <div class="dm-name">Yin Earth · 己土</div>
+        <div class="dm-th" data-i18n="c.dm.th">ดินอ่อน · ดินไร่นา · เพาะปลูก</div>
+        <div class="strength">
+          <b>25/100</b>
+          <span class="lvl">อ่อน · WEAK</span>
+        </div>
+        <div class="meter"><span></span></div>
+        <div class="conf">
+          <span>ความมั่นใจ:</span>
+          <span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span>
+          <span>moderate</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §2 ELEMENTS + YONGSHEN -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">02 · ELEMENTS</span>
+        <h2 data-i18n="c.sec1.h2"><span class="tc">五行</span>ธาตุที่เด่น · ขาด · ควรเสริม</h2>
+      </div>
+      <span class="sub" data-i18n="c.sec1.sub">ใช้ตอบ "อะไรช่วยฉัน อะไรควรระวัง"</span>
+    </div>
+    <div class="el-grid">
+      <div class="el-list">
+        <div class="el-row">
+          <span class="el-glyph" style="color:var(--wood)">木</span>
+          <div class="el-name"><b>ไม้ · WOOD</b><span>เริ่มต้น · เติบโต</span></div>
+          <div class="el-bar"><i style="width:12%;background:var(--wood)"></i></div>
+          <span class="el-pct" style="color:var(--wood)">12%</span>
+          <span class="el-tag use">★ ใช้</span>
+        </div>
+        <div class="el-row">
+          <span class="el-glyph" style="color:var(--fire)">火</span>
+          <div class="el-name"><b>ไฟ · FIRE</b><span>พลัง · ตัดสินใจ</span></div>
+          <div class="el-bar"><i style="width:25%;background:var(--fire)"></i></div>
+          <span class="el-pct" style="color:var(--fire)">25%</span>
+          <span class="el-tag use">★ ใช้</span>
+        </div>
+        <div class="el-row">
+          <span class="el-glyph" style="color:var(--earth)">土</span>
+          <div class="el-name"><b>ดิน · EARTH</b><span>ตัวคุณ · ฐาน</span></div>
+          <div class="el-bar"><i style="width:4%;background:var(--earth)"></i></div>
+          <span class="el-pct" style="color:var(--earth)">4%</span>
+          <span class="el-tag neutral">DM</span>
+        </div>
+        <div class="el-row">
+          <span class="el-glyph" style="color:var(--metal)">金</span>
+          <div class="el-name"><b>ทอง · METAL</b><span>ตัด · กฎเกณฑ์</span></div>
+          <div class="el-bar"><i style="width:9%;background:var(--metal)"></i></div>
+          <span class="el-pct" style="color:var(--metal)">9%</span>
+          <span class="el-tag av">忌 หลีก</span>
+        </div>
+        <div class="el-row">
+          <span class="el-glyph" style="color:var(--water)">水</span>
+          <div class="el-name"><b>น้ำ · WATER</b><span>คิด · ลื่นไหล</span></div>
+          <div class="el-bar"><i style="width:49%;background:var(--water)"></i></div>
+          <span class="el-pct" style="color:var(--water)">49%</span>
+          <span class="el-tag av">忌 หลีก</span>
+        </div>
+      </div>
+      <aside class="yong-card">
+        <div class="ty">用神 · YONGSHEN</div>
+        <h3 data-i18n="c.sec1.help">ธาตุที่ช่วยคุณ</h3>
+        <div class="yong-list">
+          <div class="yong-item">
+            <div class="yong-glyph fire">火</div>
+            <div class="yong-text">
+              <b>ไฟ · ใช้เมื่อต้องการพลัง</b>
+              <span>ตัดสินใจเร็ว · เพิ่มความมั่นใจ · ใส่สีแดง/ส้มให้ในห้อง · ออกแดดเช้า</span>
+            </div>
+          </div>
+          <div class="yong-item">
+            <div class="yong-glyph wood">木</div>
+            <div class="yong-text">
+              <b>ไม้ · ใช้เพื่อเติบโต</b>
+              <span>เริ่มสิ่งใหม่ · งานสร้างสรรค์ · พืชสีเขียวในบ้าน · เดินป่า</span>
+            </div>
+          </div>
+        </div>
+        <div class="av-row">
+          <div class="ty">忌神 · AVOID</div>
+          <div class="yong-list" style="margin-top:10px">
+            <div class="yong-item" style="opacity:.78">
+              <div class="yong-glyph water">水</div>
+              <div class="yong-text">
+                <b>น้ำ · มากแล้วจะคิดเยอะ ลังเล</b>
+                <span>เลี่ยงการตัดสินใจตอนเย็น/ดึก · ลด screen time · อย่าใส่สีดำเข้ม</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- §3 TEN GODS RADAR -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">03 · LIFE DOMAINS</span>
+        <h2 data-i18n="c.sec2.h2"><span class="tc">十神</span>5 ด้านในชีวิตของคุณ</h2>
+      </div>
+      <span class="sub" data-i18n="c.sec2.sub">10 gods แปลเป็นโดเมนที่ใช้จริง</span>
+    </div>
+    <div class="gods-grid">
+      <div class="radar-wrap">
+        <svg class="radar" viewBox="0 0 400 400">
+          <!-- pentagon rings -->
+          <g fill="none" stroke="rgba(200,164,77,.18)" stroke-width="1">
+            <polygon points="200,80 314,162 270,296 130,296 86,162"/>
+            <polygon points="200,116 280,178 248,278 152,278 120,178"/>
+            <polygon points="200,152 246,194 226,260 174,260 154,194"/>
+            <polygon points="200,188 212,210 204,242 196,242 188,210"/>
+          </g>
+          <!-- spokes -->
+          <g stroke="rgba(200,164,77,.16)" stroke-width="1">
+            <line x1="200" y1="200" x2="200" y2="80"/>
+            <line x1="200" y1="200" x2="314" y2="162"/>
+            <line x1="200" y1="200" x2="270" y2="296"/>
+            <line x1="200" y1="200" x2="130" y2="296"/>
+            <line x1="200" y1="200" x2="86" y2="162"/>
+          </g>
+          <!-- data: career(high), money(high), creative(high), relations(mid), discipline(mid) -->
+          <polygon points="200,90 304,168 246,278 158,272 110,170"
+                   fill="rgba(200,164,77,.28)" stroke="var(--gold)" stroke-width="2"/>
+          <!-- dots at vertices -->
+          <g fill="var(--gold)">
+            <circle cx="200" cy="90" r="4"/>
+            <circle cx="304" cy="168" r="4"/>
+            <circle cx="246" cy="278" r="4"/>
+            <circle cx="158" cy="272" r="4"/>
+            <circle cx="110" cy="170" r="4"/>
+          </g>
+          <!-- labels -->
+          <g font-family="var(--mono)" font-size="11" fill="currentColor" text-anchor="middle">
+            <text x="200" y="60">งาน · 正官</text>
+            <text x="338" y="158">เงิน · 正財</text>
+            <text x="288" y="320">ความรัก · 七殺</text>
+            <text x="112" y="320">สร้างสรรค์ · 食神</text>
+            <text x="62" y="158">วินัย · 比肩</text>
+          </g>
+          <g font-family="var(--serif)" font-size="13" fill="var(--gold)" text-anchor="middle" font-weight="600">
+            <text x="200" y="76">สูง</text>
+            <text x="324" y="180">สูง</text>
+            <text x="266" y="298">กลาง</text>
+            <text x="142" y="292">สูง</text>
+            <text x="92" y="186">กลาง</text>
+          </g>
+        </svg>
+      </div>
+      <div class="gods-list">
+        <div class="god-row">
+          <div><b>งาน / อำนาจ</b><span>正官 · OFFICIAL</span></div>
+          <div class="god-bar"><i style="width:75%"></i></div>
+          <div class="god-lvl high">สูง</div>
+        </div>
+        <div class="god-row">
+          <div><b>เงิน / ทรัพย์</b><span>正財 · WEALTH</span></div>
+          <div class="god-bar"><i style="width:80%"></i></div>
+          <div class="god-lvl high">สูง</div>
+        </div>
+        <div class="god-row">
+          <div><b>ความสัมพันธ์</b><span>七殺 · KILLING</span></div>
+          <div class="god-bar"><i style="width:48%"></i></div>
+          <div class="god-lvl mid">กลาง</div>
+        </div>
+        <div class="god-row">
+          <div><b>ความคิดสร้างสรรค์</b><span>食神 · ARTS</span></div>
+          <div class="god-bar"><i style="width:72%"></i></div>
+          <div class="god-lvl high">สูง</div>
+        </div>
+        <div class="god-row">
+          <div><b>วินัย / ตัวตน</b><span>比肩 · SELF</span></div>
+          <div class="god-bar"><i style="width:42%"></i></div>
+          <div class="god-lvl mid">กลาง</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- §4 STRENGTHS / WEAKNESSES / ADVICE -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">04 · INSIGHTS</span>
+        <h2 data-i18n="c.sec3.h2"><span class="tc">解</span>จุดแข็ง · จุดที่ควรระวัง · คำแนะนำ</h2>
+      </div>
+      <span class="sub" data-i18n="c.sec3.sub">เอาไปใช้กับชีวิตได้ทันที</span>
+    </div>
+    <div class="swa">
+      <article class="swa-card s">
+        <div class="h"><span class="ico">強</span><h3 data-i18n="c.sec3.strong">จุดแข็ง</h3></div>
+        <ul>
+          <li><b>ตัดสินใจเร็ว</b> เมื่อมีเป้าหมายชัด — เพราะ 正官 + 正財 ทั้งคู่สูง</li>
+          <li><b>เหมาะกับงานวางระบบ</b> · ควบคุมคุณภาพ · เชื่อมคนเป็นทีม</li>
+          <li><b>อ่านคนแม่น</b> — น้ำมาก ทำให้ไหวกับ subtext และอารมณ์รอบตัว</li>
+          <li>ทำงานได้ดี <b>ภายใต้กระแส</b> — ตามทรัพย์ คือไหลตามคลื่นที่ถูกต้อง</li>
+        </ul>
+      </article>
+      <article class="swa-card w">
+        <div class="h"><span class="ico">慎</span><h3 data-i18n="c.sec3.warn">ควรระวัง</h3></div>
+        <ul>
+          <li><b>เครียดง่าย</b> เมื่อมีแรงกดดันซ้อน — DM อ่อน ไฟไม่พอจะเผาน้ำ</li>
+          <li>ถ้าน้ำมากเกินไป อาจ <b>คิดเยอะจนตัดสินใจไม่ได้</b></li>
+          <li>โลหะมาก อาจกลายเป็น <b>ดื้อ / over-control</b> ไม่ยืดหยุ่น</li>
+          <li>เลี่ยง <b>ตัดสินใจตอนอารมณ์แกว่ง</b> โดยเฉพาะช่วงเย็น/ดึก</li>
+        </ul>
+      </article>
+      <article class="swa-card a">
+        <div class="h"><span class="ico">用</span><h3 data-i18n="c.sec3.advice">คำแนะนำ</h3></div>
+        <ul>
+          <li>วาง <b>routine แสงแดดเช้า</b> 15 นาที · ช่วยจุดไฟ DM</li>
+          <li>วางแผน <b>รายสัปดาห์</b> ไม่ใช่รายวัน — ให้ดินมีเวลาตั้งตัว</li>
+          <li>ใส่ <b>สีแดง/ส้ม/เขียว</b> อย่างน้อย 1 ชิ้นในชุด</li>
+          <li>เก็บการตัดสินใจสำคัญไว้ <b>ช่วง 09:00-13:00</b> (ชั่วยามไฟ)</li>
+          <li>เปิดดูชั่วโมงดีในปฏิทินก่อนประชุมสำคัญทุกครั้ง</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- §5 FOUR PILLARS -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">05 · STRUCTURE</span>
+        <h2 data-i18n="c.sec4.h2"><span class="tc">四柱</span>โครงดวง 4 เสา</h2>
+      </div>
+      <span class="sub" data-i18n="c.sec4.sub">หลักของชะตา · กดเสาเพื่อดูรายละเอียด</span>
+    </div>
+    <div class="pillars">
+      <article class="pillar">
+        <div class="col">YEAR</div>
+        <div class="col-th">เสาปี · บรรพบุรุษ</div>
+        <div class="gz-stack">
+          <div class="gz metal">庚</div>
+          <div class="gz fire">午</div>
+        </div>
+        <div class="ten-god">傷官 · OUTPUT</div>
+        <div class="qi">12 Qi · <b>絕</b> · พลังไหลออก</div>
+        <div class="pillar-toggle">+ hidden · 納音</div>
+      </article>
+      <article class="pillar">
+        <div class="col">MONTH</div>
+        <div class="col-th">เสาเดือน · พ่อแม่ / งาน</div>
+        <div class="gz-stack">
+          <div class="gz water">壬</div>
+          <div class="gz water">子</div>
+        </div>
+        <div class="ten-god">正財 · WEALTH</div>
+        <div class="qi">12 Qi · <b>絕</b> · ทรัพย์มา</div>
+        <div class="pillar-toggle">+ hidden · 納音</div>
+      </article>
+      <article class="pillar dm">
+        <div class="col">DAY · DM</div>
+        <div class="col-th">เสาวัน · ตัวคุณ / คู่ครอง</div>
+        <div class="gz-stack">
+          <div class="gz earth dm">己</div>
+          <div class="gz wood">寅</div>
+        </div>
+        <div class="ten-god">正官 · OFFICIAL</div>
+        <div class="qi">12 Qi · <b>胎</b> · เริ่มก่อตัว</div>
+        <div class="pillar-toggle">+ hidden · 納音</div>
+      </article>
+      <article class="pillar">
+        <div class="col">HOUR</div>
+        <div class="col-th">เสาชั่วโมง · ลูก / บั้นปลาย</div>
+        <div class="gz-stack">
+          <div class="gz fire">丁</div>
+          <div class="gz earth">丑</div>
+        </div>
+        <div class="ten-god">偏印 · INSIGHT</div>
+        <div class="qi">12 Qi · <b>臨官</b> · พลังเต็ม</div>
+        <div class="pillar-toggle">+ hidden · 納音</div>
+      </article>
+    </div>
+  </section>
+
+  <!-- §6 INTERACTIONS -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">06 · INTERACTIONS</span>
+        <h2><span class="tc">關係</span>ปฏิกิริยาในดวง</h2>
+      </div>
+      <span class="sub" data-i18n="c.sec5.sub">แรงปะทะและการเสริมในชะตา</span>
+    </div>
+    <div class="inter-grid">
+      <article class="inter-card good">
+        <div class="ty">六合 · HARMONY (4)</div>
+        <h4>มีคู่สนับสนุนในดวง</h4>
+        <p>เสาเดือนกับเสาวันมีความสัมพันธ์แบบ <b>合 (harmony)</b> — งานกับชีวิตส่วนตัวไม่ขัดกัน คุณ <b>เลือกคนที่ใช่ได้แม่น</b> และมักได้ทีมที่ทำงานเข้าขา</p>
+        <div class="glyphs"><span>丑↔子</span><span>寅↔亥</span></div>
+      </article>
+      <article class="inter-card">
+        <div class="ty">六沖 · CLASH (1)</div>
+        <h4>มีจุดต้องระวัง: ความเร็ว ↔ การพัก</h4>
+        <p>เสาชั่วโมง <b>沖</b> เสาปี — ตัดสินใจเร็วบางครั้งขัดกับโครงสร้างเดิม · ต้อง <b>ฟังคนรุ่นก่อน</b> ก่อนเปลี่ยนทิศทางใหญ่</p>
+        <div class="glyphs"><span>子→午</span></div>
+      </article>
+      <article class="inter-card good">
+        <div class="ty">三會 · ALLIANCE</div>
+        <h4>มีพันธมิตรน้ำในดวง</h4>
+        <p>子·丑·亥 รวมเป็นพลังน้ำ — ทำให้คุณ <b>เก่งเรื่องวิเคราะห์</b> และ <b>คนรอบตัวมักเสริมกัน</b></p>
+        <div class="glyphs"><span>子+丑+亥 → 水</span></div>
+      </article>
+      <article class="inter-card">
+        <div class="ty">空亡 · VOID</div>
+        <h4>จุดว่าง: 辰 · 巳</h4>
+        <p>มี <b>เรื่องที่ต้องใช้เวลาเห็นผล</b> — โดยเฉพาะการลงทุนระยะยาวและการสร้างชื่อ · อย่ารีบร้อน</p>
+        <div class="glyphs"><span>辰</span><span>巳</span></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- §10 LUCK PILLARS · 大運 ─────────────────── -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">07 · 大運</span>
+        <h2 data-i18n="c.sec7.h2"><span class="tc">大運</span>คลื่นโชค 8 รอบ · ตลอดชีวิต</h2>
+        <span class="sub" data-i18n="c.sec7.sub">รอบละ 10 ปี · กดดูรายละเอียดแต่ละรอบ</span>
+      </div>
+    </div>
+    <div class="hk-luck-row">
+      <div class="hk-luck-card"><div class="age">0-9</div><div class="hk-pillar earth"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">己</div><div class="hk-pillar-branch">丑</div></div></div><div class="phase">沐浴</div></div>
+      <div class="hk-luck-card cur"><div class="age">10-19</div><div class="hk-pillar earth"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">戊</div><div class="hk-pillar-branch">子</div></div></div><div class="phase">冠帶</div></div>
+      <div class="hk-luck-card"><div class="age">20-29</div><div class="hk-pillar fire"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">丁</div><div class="hk-pillar-branch">亥</div></div></div><div class="phase">臨官</div></div>
+      <div class="hk-luck-card"><div class="age">30-39</div><div class="hk-pillar fire"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">丙</div><div class="hk-pillar-branch">戌</div></div></div><div class="phase">帝旺</div></div>
+      <div class="hk-luck-card"><div class="age">40-49</div><div class="hk-pillar wood"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">乙</div><div class="hk-pillar-branch">酉</div></div></div><div class="phase">衰</div></div>
+      <div class="hk-luck-card"><div class="age">50-59</div><div class="hk-pillar wood"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">甲</div><div class="hk-pillar-branch">申</div></div></div><div class="phase">病</div></div>
+      <div class="hk-luck-card"><div class="age">60-69</div><div class="hk-pillar water"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">癸</div><div class="hk-pillar-branch">未</div></div></div><div class="phase">死</div></div>
+      <div class="hk-luck-card"><div class="age">70-79</div><div class="hk-pillar water"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">壬</div><div class="hk-pillar-branch">午</div></div></div><div class="phase">墓</div></div>
+    </div>
+    <p class="hk-luck-note" data-i18n="c.sec7.note">รอบโชคปัจจุบัน <b>10-19 ปี · 戊子 (Yang Earth + Water)</b> · ช่วงเริ่มสะสม · ระวังน้ำท่วมความคิด · ใช้ดินสร้างฐาน</p>
+  </section>
+
+  <!-- §08 ภาพรวม 2026 + ซินแสตอบ ─────────── -->
+  <section class="sec hk-sifu" id="hk-sifu-box">
+    <div class="hk-sifu-head">
+      <div class="l">
+        <span class="num">08 · 流年 2026</span>
+        <h2 data-i18n="c.sifu.h2"><span class="tc">流年</span>ภาพรวมปี 2026 · ซินแสตอบ</h2>
+        <span class="sub" data-i18n="c.sifu.sub">เลือกเรื่องที่อยากรู้ · ซินแสจะอ่านดวงคุณให้</span>
+      </div>
+      <div class="yr">2026</div>
+    </div>
+
+    <div class="hk-sifu-presets" id="hk-sifu-presets">
+      <button class="hk-sifu-preset" data-topic="overview"><span class="ico">✨</span><span class="lbl" data-i18n="c.sifu.p.overview">ภาพรวม<span class="tc">概</span></span></button>
+      <button class="hk-sifu-preset" data-topic="career"><span class="ico">💼</span><span class="lbl" data-i18n="c.sifu.p.career">การงาน<span class="tc">業</span></span></button>
+      <button class="hk-sifu-preset" data-topic="wealth"><span class="ico">💰</span><span class="lbl" data-i18n="c.sifu.p.wealth">การเงิน<span class="tc">財</span></span></button>
+      <button class="hk-sifu-preset" data-topic="love"><span class="ico">❤</span><span class="lbl" data-i18n="c.sifu.p.love">ความรัก<span class="tc">情</span></span></button>
+      <button class="hk-sifu-preset" data-topic="health"><span class="ico">🌿</span><span class="lbl" data-i18n="c.sifu.p.health">สุขภาพ<span class="tc">健</span></span></button>
+      <button class="hk-sifu-preset" data-topic="study"><span class="ico">📚</span><span class="lbl" data-i18n="c.sifu.p.study">การเรียน<span class="tc">學</span></span></button>
+    </div>
+
+    <div class="hk-sifu-output" id="hk-sifu-output">
+      <div class="placeholder" data-i18n="c.sifu.placeholder">กดเลือกหัวข้อด้านบน · ซินแสจะอ่านดวงคุณตามตำราคลาสสิก</div>
+    </div>
+
+    <div class="hk-sifu-ask" id="hk-sifu-ask" style="display:none;">
+      <input type="text" id="hk-sifu-input" data-i18n-ph="c.sifu.askPh" placeholder="ถามต่อให้ลึกขึ้น เช่น 'ช่วงไหนเหมาะเปลี่ยนงาน?'">
+      <button id="hk-sifu-send" data-i18n="c.sifu.send">ส่ง · 問</button>
+    </div>
+
+    <details class="hk-sifu-history" id="hk-sifu-history-box">
+      <summary><span data-i18n="c.sifu.histTtl">ประวัติคำถาม</span> <span class="hk-hist-count">(0)</span></summary>
+      <div class="h-list" id="hk-sifu-h-list">
+        <div class="h-empty" data-i18n="c.sifu.histEmpty">ยังไม่มีประวัติ · เริ่มถามได้เลย</div>
+      </div>
+      <button class="h-clear" id="hk-sifu-clear" data-i18n="c.sifu.histClear">ลบทั้งหมด</button>
+    </details>
+  </section>
+
+  <!-- FOOTER CTA -->
+  <div class="footer-cta">
+    <div>
+      <h3>พร้อมใช้ <span class="tc">解</span> ดวงในชีวิตจริง?</h3>
+      <p>ดูชั่วโมงมงคลของวันนี้ · ตรวจคนรอบตัว · บันทึกการตัดสินใจ</p>
+    </div>
+    <div class="btn-row">
+      <a href="/chart-print" class="btn line" data-i18n="c.cta.deep" target="_blank">📜 ดูเชิงลึก 38 หมวด · 詳細</a>
+      <a href="/chart-print" class="btn line" data-i18n="c.cta.print" target="_blank">🖨 พิมพ์ดวง · 印刷</a>
+      <a href="/today" class="btn gold" data-i18n="c.cta.calendar">ปฏิทินมงคลของฉัน →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* hourkey · wire chart from birth data (graceful · ถ้าไม่มี birth → คง sample) */
+(async function wireChart(){
+  try {
+    const raw = localStorage.getItem('hk_birth');
+    if (!raw) return; /* keep sample */
+    const birth = JSON.parse(raw);
+    if (!birth || !birth.date) return;
+
+    const r = await fetch('/api/chart', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: birth.date, time: birth.time || '12:00', longitude: birth.longitude || 100.5018 }),
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d || !d.pillars) return;
+
+    const stems   = ['hour','day','month','year'].map(function(k){ return d.pillars[k]?.stem; });
+    const branches= ['hour','day','month','year'].map(function(k){ return d.pillars[k]?.branch; });
+    const dayStem = d.pillars.day?.stem;
+
+    /* DM glyph + name */
+    const dmGlyph = document.querySelector('.dm-glyph');
+    if (dmGlyph && dayStem) dmGlyph.textContent = dayStem;
+    const dmName = document.querySelector('.dm-name');
+    if (dmName && dayStem) {
+      const stemMap = { '甲':'Yang Wood · 甲木','乙':'Yin Wood · 乙木','丙':'Yang Fire · 丙火','丁':'Yin Fire · 丁火','戊':'Yang Earth · 戊土','己':'Yin Earth · 己土','庚':'Yang Metal · 庚金','辛':'Yin Metal · 辛金','壬':'Yang Water · 壬水','癸':'Yin Water · 癸水' };
+      dmName.textContent = stemMap[dayStem] || dayStem;
+    }
+
+    /* hero name */
+    const email = localStorage.getItem('hk_email');
+    if (email) {
+      const nm = document.querySelector('h1 .name');
+      if (nm) nm.textContent = email.split('@')[0];
+    }
+
+    /* small DM marker */
+    const gzDm = document.querySelector('.gz.dm');
+    if (gzDm && dayStem) gzDm.textContent = dayStem;
+
+    /* mark live */
+    document.documentElement.setAttribute('data-live','1');
+  } catch(e) { /* silent */ }
+})();
+</script>
+
+<script>
+/* hilite active link ใน topnav ตาม pathname */
+(function(){
+  try {
+    var p = window.location.pathname.replace(/\/$/,'') || '/chart';
+    p = p.replace(/-m$/, '');
+    document.querySelectorAll('#hk-topnav a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+  } catch(e){}
+})();
+</script>
+
+
+<script>
+window.HK_I18N = {
+  /* view-as banner */
+  'c.va.prefix': { th:'กำลังดูดวงปาจื้อของ', en:'Viewing chart of', zh:'查看其命盤' },
+  'c.va.back':   { th:'← กลับ', en:'← Back', zh:'← 返回' },
+  'c.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
+  'c.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
+  'c.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
+  'c.nav.network': { th:'เครือข่าย', en:'Network', zh:'人脈' },
+  'c.nav.qimen':   { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門' },
+  'c.nav.master':  { th:'ซินแส', en:'Sifu', zh:'老師' },
+  'c.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
+  'c.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  'c.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
+  'c.crumb.home':  { th:'หน้าหลัก', en:'Home', zh:'首頁' },
+  'c.crumb.chart': { th:'ดวงของคุณ · BAZI CHART', en:'Your chart · BAZI', zh:'您的命盤 · 八字' },
+  'c.dm.label':    { th:'DAY MASTER · 日主', en:'DAY MASTER · 日主', zh:'日主 · 日柱天干' },
+  'c.dm.th':       { th:'ดินอ่อน · ดินไร่นา · เพาะปลูก', en:'Yin Earth · garden soil · cultivation', zh:'陰土 · 田園土 · 栽培之質' },
+  'c.sec1.h2':     { th:'<span class="tc">五行</span>ธาตุที่เด่น · ขาด · ควรเสริม', en:'<span class="tc">五行</span>Strong · weak · supportive elements', zh:'<span class="tc">五行</span>偏旺 · 偏弱 · 助補之元素' },
+  'c.sec1.sub':    { th:'ใช้ตอบ "อะไรช่วยฉัน อะไรควรระวัง"', en:'Answers "what helps me, what to watch"', zh:'回答 「何者助我、何者當避」' },
+  'c.sec1.help':   { th:'ธาตุที่ช่วยคุณ', en:'Elements that help you', zh:'助您之元素' },
+  'c.sec2.h2':     { th:'<span class="tc">十神</span>5 ด้านในชีวิตของคุณ', en:'<span class="tc">十神</span>5 dimensions of your life', zh:'<span class="tc">十神</span>人生五大面向' },
+  'c.sec2.sub':    { th:'10 gods แปลเป็นโดเมนที่ใช้จริง', en:'10 Gods translated into real-life domains', zh:'十神對映實際生活領域' },
+  'c.sec3.h2':     { th:'<span class="tc">解</span>จุดแข็ง · จุดที่ควรระวัง · คำแนะนำ', en:'<span class="tc">解</span>Strengths · cautions · advice', zh:'<span class="tc">解</span>強項 · 當慎 · 建言' },
+  'c.sec3.sub':    { th:'เอาไปใช้กับชีวิตได้ทันที', en:'Apply to your life immediately', zh:'即時應用於生活' },
+  'c.sec3.strong': { th:'จุดแข็ง', en:'Strengths', zh:'強項' },
+  'c.sec3.warn':   { th:'ควรระวัง', en:'Cautions', zh:'當慎' },
+  'c.sec3.advice': { th:'คำแนะนำ', en:'Advice', zh:'建言' },
+  'c.sec4.h2':     { th:'<span class="tc">四柱</span>โครงดวง 4 เสา', en:'<span class="tc">四柱</span>Four Pillars frame', zh:'<span class="tc">四柱</span>命局四柱' },
+  'c.sec4.sub':    { th:'หลักของชะตา · กดเสาเพื่อดูรายละเอียด', en:'The chart frame · tap a pillar for detail', zh:'命之主軸 · 點選柱以查看詳情' },
+  'c.sec5.sub':    { th:'แรงปะทะและการเสริมในชะตา', en:'Clashes and combinations in your chart', zh:'命局沖合化合' },
+  'c.cta.calendar':{ th:'ปฏิทินมงคลของฉัน →', en:'My auspicious calendar →', zh:'我的吉曆 →' },
+  'c.cta.print':   { th:'🖨 พิมพ์ดวง · 印刷', en:'🖨 Print chart · 印刷', zh:'🖨 列印命盤' },
+  'c.cta.deep':    { th:'📜 ดูเชิงลึก 38 หมวด · 詳細', en:'📜 Full 38 sections · 詳細', zh:'📜 詳細 38 項' },
+  'c.sec7.h2':     { th:'<span class="tc">大運</span>คลื่นโชค 8 รอบ · ตลอดชีวิต', en:'<span class="tc">大運</span>8 Luck Pillars · lifetime', zh:'<span class="tc">大運</span>八大運 · 一生流轉' },
+  'c.sec7.sub':    { th:'รอบละ 10 ปี · กดดูรายละเอียดแต่ละรอบ', en:'10 years per pillar · tap to expand', zh:'每柱十年 · 點選展開' },
+  'c.sec7.note':   { th:'รอบโชคปัจจุบัน <b>10-19 ปี · 戊子 (Yang Earth + Water)</b> · ช่วงเริ่มสะสม · ระวังน้ำท่วมความคิด · ใช้ดินสร้างฐาน',
+                     en:'Current pillar <b>10-19 yrs · 戊子 (Yang Earth + Water)</b> · accumulation phase · watch for over-thinking · use Earth to build foundation',
+                     zh:'目前大運 <b>10-19 歲 · 戊子（陽土+水）</b> · 蓄積階段 · 慎防思慮過多 · 以土築基' },
+  /* §08 sifu */
+  'c.sifu.h2':     { th:'<span class="tc">流年</span>ภาพรวมปี 2026 · ซินแสตอบ', en:'<span class="tc">流年</span>Year 2026 Overview · Sifu Answers', zh:'<span class="tc">流年</span>2026年運 · 老師解答' },
+  'c.sifu.sub':    { th:'เลือกเรื่องที่อยากรู้ · ซินแสจะอ่านดวงคุณให้', en:'Pick a topic · Sifu will read your chart', zh:'選擇主題 · 老師為您解讀命盤' },
+  'c.sifu.p.overview':{ th:'ภาพรวม<span class="tc">概</span>', en:'Overview<span class="tc">概</span>', zh:'總覽<span class="tc">概</span>' },
+  'c.sifu.p.career':{ th:'การงาน<span class="tc">業</span>', en:'Career<span class="tc">業</span>', zh:'事業<span class="tc">業</span>' },
+  'c.sifu.p.wealth':{ th:'การเงิน<span class="tc">財</span>', en:'Wealth<span class="tc">財</span>', zh:'財運<span class="tc">財</span>' },
+  'c.sifu.p.love': { th:'ความรัก<span class="tc">情</span>', en:'Love<span class="tc">情</span>', zh:'感情<span class="tc">情</span>' },
+  'c.sifu.p.health':{ th:'สุขภาพ<span class="tc">健</span>', en:'Health<span class="tc">健</span>', zh:'健康<span class="tc">健</span>' },
+  'c.sifu.p.study':{ th:'การเรียน<span class="tc">學</span>', en:'Study<span class="tc">學</span>', zh:'學業<span class="tc">學</span>' },
+  'c.sifu.placeholder':{ th:'กดเลือกหัวข้อด้านบน · ซินแสจะอ่านดวงคุณตามตำราคลาสสิก', en:'Tap a topic above · Sifu will read your chart from classical texts', zh:'點選上方主題 · 老師依古籍為您解讀' },
+  'c.sifu.askPh':  { th:'ถามต่อให้ลึกขึ้น เช่น "ช่วงไหนเหมาะเปลี่ยนงาน?"', en:'Ask deeper, e.g. "When should I change jobs?"', zh:'追問更深 · 例如「何時宜換工作?」' },
+  'c.sifu.send':   { th:'ส่ง · 問', en:'Ask · 問', zh:'發問 · 問' },
+  'c.sifu.histTtl':{ th:'ประวัติคำถาม', en:'Question History', zh:'問答記錄' },
+  'c.sifu.histEmpty':{ th:'ยังไม่มีประวัติ · เริ่มถามได้เลย', en:'No history yet · start asking', zh:'暫無記錄 · 開始發問' },
+  'c.sifu.histClear':{ th:'ลบทั้งหมด', en:'Clear all', zh:'清除全部' },
+  'c.sifu.loadTtl':{ th:'กำลังอ่านดวง', en:'Reading your chart', zh:'解讀命盤中' },
+  'c.sifu.loadSub':{ th:'ซินแสกำลังเทียบกับตำรา · รอสักครู่', en:'Sifu cross-checks classical texts · please wait', zh:'老師正核對古籍 · 請稍候' },
+  'c.sifu.errMsg': { th:'ขออภัย ตอนนี้ติดต่อซินแสไม่ได้ · ลองใหม่อีกครั้ง', en:'Sorry, cannot reach Sifu · please try again', zh:'抱歉 · 暫時無法連繫老師 · 請重試' }
+};
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+    document.querySelectorAll('[data-i18n-ph="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) el.setAttribute('placeholder', t[lang].replace(/<[^>]+>/g,''));
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+
+/* §08 ซินแสตอบ · AI overview + follow-up + history (3 ภาษา) */
+(function(){
+  var box = document.getElementById('hk-sifu-box'); if (!box) return;
+  var output = document.getElementById('hk-sifu-output');
+  var ask = document.getElementById('hk-sifu-ask');
+  var input = document.getElementById('hk-sifu-input');
+  var sendBtn = document.getElementById('hk-sifu-send');
+  var presets = document.getElementById('hk-sifu-presets');
+  var hList = document.getElementById('hk-sifu-h-list');
+  var hCount = box.querySelector('.hk-hist-count');
+  var hClear = document.getElementById('hk-sifu-clear');
+  var STORAGE_KEY = 'hk_sifu_chart_history';
+  var conv = []; /* current conversation: [{role,content},...] */
+
+  /* topic prompts (3 lang) */
+  var TOPICS = {
+    overview: { th:'ขอภาพรวมปี 2026 ของฉัน · ดูทั้งภาพรวม เรื่องสำคัญที่ต้องระวัง · จุดได้เปรียบ · ช่วงเวลาทอง',
+                en:'Give me my Year 2026 overview · key things to watch · advantages · golden windows',
+                zh:'請為我解讀 2026 年運 · 須留意之事 · 優勢 · 吉利時段' },
+    career: { th:'ปี 2026 เรื่องการงานของฉันเป็นอย่างไร · ควรเปลี่ยนงานหรือไม่ · ช่วงไหนเป็นโอกาส',
+              en:'How is my Year 2026 career · should I change jobs · when are the opportunities',
+              zh:'2026 年事業如何 · 是否應換工作 · 何時為良機' },
+    wealth: { th:'ปี 2026 การเงินและการลงทุนของฉันเป็นอย่างไร · ระวังอะไร · ช่วงไหนเหมาะลงทุน',
+              en:'How is my Year 2026 wealth and investments · what to avoid · best investment windows',
+              zh:'2026 年財運與投資如何 · 須避之事 · 何時宜投資' },
+    love: { th:'ปี 2026 ความรักและความสัมพันธ์ของฉันเป็นอย่างไร · คนรอบตัว · ช่วงเวลามงคล',
+            en:'How is my Year 2026 love and relationships · people around me · auspicious timing',
+            zh:'2026 年感情與人際如何 · 周遭之人 · 吉利時機' },
+    health: { th:'ปี 2026 สุขภาพของฉันเป็นอย่างไร · จุดที่ต้องระวัง · ฤดูที่อ่อนแอ · วิธีเสริม',
+              en:'How is my Year 2026 health · areas to watch · weak seasons · how to strengthen',
+              zh:'2026 年健康如何 · 須留意之處 · 虛弱季節 · 補益之法' },
+    study: { th:'ปี 2026 การเรียนและการพัฒนาตนของฉันเป็นอย่างไร · เรื่องไหนควรเรียนรู้ · ช่วงเวลาดี',
+             en:'How is my Year 2026 study and self-development · what to learn · best timing',
+             zh:'2026 年學業與自我成長如何 · 宜學何事 · 良時' }
+  };
+
+  function curLang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
+  function tx(key){ var t = window.HK_I18N && window.HK_I18N[key]; return t ? (t[curLang()]||t.th||'') : ''; }
+  function getProfileId(){ try { return localStorage.getItem('hk_profile_id') || ''; } catch(e){ return ''; } }
+
+  /* render history list */
+  function loadHist(){
+    var arr = []; try { arr = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch(e){}
+    return Array.isArray(arr) ? arr : [];
+  }
+  function saveHist(arr){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr.slice(-20))); }catch(e){} }
+  function renderHist(){
+    var arr = loadHist();
+    hCount.textContent = '('+arr.length+')';
+    if (!arr.length){
+      hList.innerHTML = '<div class="h-empty">'+tx('c.sifu.histEmpty')+'</div>';
+      return;
+    }
+    hList.innerHTML = arr.slice().reverse().map(function(it){
+      var q = (it.q||'').replace(/</g,'&lt;');
+      var a = (it.a||'').replace(/</g,'&lt;').slice(0,200);
+      return '<div class="h-item"><div class="h-q">'+q+'</div><div class="h-a">'+a+(it.a&&it.a.length>200?'…':'')+'</div></div>';
+    }).join('');
+  }
+
+  /* typewriter */
+  var typingTimer = null;
+  function typewrite(text, done){
+    if (typingTimer) clearInterval(typingTimer);
+    output.innerHTML = '<p></p><span class="cursor"></span>';
+    var p = output.querySelector('p'); var i = 0;
+    var step = Math.max(8, Math.min(28, Math.floor(1200/Math.max(text.length,40))));
+    typingTimer = setInterval(function(){
+      i += 2;
+      var slice = text.slice(0, i);
+      p.innerHTML = slice
+        .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
+        .replace(/\n\n/g,'</p><p>')
+        .replace(/\n/g,'<br>');
+      output.scrollTop = output.scrollHeight;
+      if (i >= text.length){
+        clearInterval(typingTimer); typingTimer = null;
+        var c = output.querySelector('.cursor'); if (c) c.remove();
+        if (done) done();
+      }
+    }, step);
+  }
+
+  /* show loading */
+  function showLoading(){
+    output.innerHTML =
+      '<div class="hk-sifu-loading">'+
+        '<div class="hk-sifu-key">鑰</div>'+
+        '<div class="ttl">'+tx('c.sifu.loadTtl')+'</div>'+
+        '<div class="sub">'+tx('c.sifu.loadSub')+'</div>'+
+      '</div>';
+  }
+
+  /* ask sifu */
+  async function askSifu(message){
+    showLoading();
+    sendBtn && (sendBtn.disabled = true);
+    try {
+      var profileId = getProfileId();
+      var body = { message: message, history: conv.slice(-10) };
+      if (profileId) body.profileId = profileId;
+      var r = await fetch('/api/sifu', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      var data = await r.json().catch(function(){ return {}; });
+      if (!r.ok || !data.reply){
+        output.innerHTML = '<p style="color:#c66">'+tx('c.sifu.errMsg')+'</p>';
+        return;
+      }
+      var reply = data.reply;
+      conv.push({ role:'user', content: message });
+      conv.push({ role:'assistant', content: reply });
+      var arr = loadHist();
+      arr.push({ q: message, a: reply, ts: Date.now() });
+      saveHist(arr);
+      typewrite(reply, function(){
+        ask.style.display = 'flex';
+        renderHist();
+      });
+    } catch(e){
+      output.innerHTML = '<p style="color:#c66">'+tx('c.sifu.errMsg')+'</p>';
+    } finally {
+      sendBtn && (sendBtn.disabled = false);
+    }
+  }
+
+  /* preset click */
+  presets.addEventListener('click', function(e){
+    var btn = e.target.closest('.hk-sifu-preset'); if (!btn) return;
+    presets.querySelectorAll('.hk-sifu-preset').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    var topic = btn.dataset.topic; var prompt = TOPICS[topic] && TOPICS[topic][curLang()];
+    if (!prompt) prompt = TOPICS[topic] && TOPICS[topic].th;
+    conv = []; /* reset for new topic */
+    askSifu(prompt);
+  });
+
+  /* follow-up send */
+  function sendFollow(){
+    var v = (input.value||'').trim(); if (!v) return;
+    input.value = '';
+    askSifu(v);
+  }
+  sendBtn && sendBtn.addEventListener('click', sendFollow);
+  input && input.addEventListener('keydown', function(e){ if (e.key==='Enter') sendFollow(); });
+
+  /* clear history */
+  hClear && hClear.addEventListener('click', function(){
+    saveHist([]);
+    renderHist();
+  });
+
+  renderHist();
+})();
+</script>
+<script src="/js/hk-user-menu.js?v=9" defer></script>
+</body>
+</html>
