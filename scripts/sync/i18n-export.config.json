@@ -1,0 +1,28 @@
+{
+  "spreadsheet_id": "10Spi6Xkeu9m7v1TDmHoTkyahU0g62NlgfI7vDqnAX_s",
+  "version_prefix": "decode-i18n",
+  "source_sheets": [
+    {
+      "name": "07 · Frontend_Text 💬",
+      "header_row": 4,
+      "kind": "frontend_text"
+    },
+    {
+      "name": "29 · GPT_Rewrite_Batch_09",
+      "header_row": 4,
+      "kind": "rewrite_batch"
+    },
+    {
+      "name": "Production_Ready_Text",
+      "header_row": 1,
+      "kind": "future",
+      "optional": true
+    }
+  ],
+  "outputs": {
+    "decode_production": "data/i18n/decode.production.json",
+    "decode_staging": "data/i18n/decode.staging.json",
+    "qimen_production": "data/i18n/qimen.production.json",
+    "qimen_staging": "data/i18n/qimen.staging.json"
+  }
+}

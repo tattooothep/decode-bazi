@@ -1,0 +1,2160 @@
+{
+  "_meta": {
+    "version": "decode-i18n.20260512T034002Z",
+    "generated_at": "2026-05-12T03:40:02.183720+00:00",
+    "source_sheet_id": "10Spi6Xkeu9m7v1TDmHoTkyahU0g62NlgfI7vDqnAX_s",
+    "checksum": "6cc69ab1c261ffd7a3c55793297c1a2e176ebec0158dd9720ca8c55886e6d5b0",
+    "export_profile": "staging",
+    "review_mode": true,
+    "entries_count": 74,
+    "warning": "review copy only; not production-approved"
+  },
+  "entries": {
+    "三會": {
+      "module_id": "§7",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลังรวมกลุ่มชัดเจน เหมาะกับการรวมทีม วางแผนใหญ่ และทำเรื่องที่ต้องอาศัยแรงสนับสนุนหลายฝ่าย",
+        "short": "พลังรวมกลุ่มชัดเจน เหมาะกับการรวมทีม วางแผนใหญ่ และทำเรื่องที่ต้องอาศัยแรงสนับสน…",
+        "long": "พลังรวมกลุ่มชัดเจน เหมาะกับการรวมทีม วางแผนใหญ่ และทำเรื่องที่ต้องอาศัยแรงสนับสนุนหลายฝ่าย",
+        "advice": "ใช้พลังนี้กับงานที่ต้องรวมคน รวมข้อมูล หรือรวมทรัพยากรให้เป็นทิศเดียวกัน",
+        "warning": "อย่าคิดว่าทุกฝ่ายจะพร้อมเท่ากัน ควรกำหนดบทบาทและขอบเขตให้ชัดก่อนเริ่ม"
+      },
+      "en": {
+        "main": "Strong seasonal alliance. Good for teamwork, major planning, and actions that need support from multiple sides.",
+        "short": "Strong seasonal alliance. Good for teamwork, major planning, and actions that ne…",
+        "long": "Strong seasonal alliance. Good for teamwork, major planning, and actions that need support from multiple sides.",
+        "advice": "Use this energy for aligning people, information, or resources toward one direction.",
+        "warning": "Do not assume everyone is equally ready. Define roles and boundaries before starting."
+      },
+      "zh": {
+        "main": "三會成局，氣勢集中，利於合作、規劃大事與整合資源。",
+        "short": "三會成局，氣勢集中，利於合作、規劃大事與整合資源。",
+        "long": "三會成局，氣勢集中，利於合作、規劃大事與整合資源。",
+        "advice": "宜用於整合人、資訊與資源，使力量歸於同一方向。",
+        "warning": "勿以為各方皆已就緒，宜先明確角色與界線。"
+      }
+    },
+    "三合": {
+      "module_id": "§7",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลังประสานเป็นรูปเป็นร่าง เหมาะกับการเริ่มสิ่งสำคัญ ทำสัญญา หรือผลักดันเรื่องที่ต้องการผลลัพธ์ชัด",
+        "short": null,
+        "long": null,
+        "advice": "เหมาะกับเริ่มเรื่องสำคัญหลังเตรียมเงื่อนไขครบ โดยเฉพาะงานที่ต้องมีผลลัพธ์วัดได้",
+        "warning": "อย่ารีบประกาศหรือเซ็นก่อนเช็กเงื่อนไขแฝง เพราะแรงประสานต้องมีฐานรองรับ"
+      },
+      "en": {
+        "main": "A productive harmony pattern. Good for important starts, agreements, and actions that need a clear outcome.",
+        "short": null,
+        "long": null,
+        "advice": "Good for important starts after conditions are ready, especially measurable outcomes.",
+        "warning": "Avoid announcing or signing before checking hidden conditions; harmony needs support."
+      },
+      "zh": {
+        "main": "三合成勢，利於啟動重要事項、訂立合作與推進成果。",
+        "short": null,
+        "long": null,
+        "advice": "宜在條件具足後啟動重要事項，尤利可衡量之成果。",
+        "warning": "忌未查隱含條件即公布或簽訂，合局仍需根基。"
+      }
+    },
+    "半三合_生地": {
+      "module_id": "§7",
+      "severity": "slightly_good",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "มีแรงเสริมบางส่วน เหมาะกับการเริ่มต้นแบบค่อยเป็นค่อยไป ยังไม่ควรเร่งให้สุดในครั้งเดียว",
+        "short": null,
+        "long": null,
+        "advice": "ใช้เป็นจังหวะทดลอง วางฐาน หรือเปิดบทสนทนา ยังไม่ต้องกดดันให้สำเร็จทันที",
+        "warning": "ระวังคาดหวังผลเต็มรูปแบบเร็วเกินไป เพราะพลังยังเป็นเพียงครึ่งวง"
+      },
+      "en": {
+        "main": "Partial harmony with growth potential. Good for gradual starts, but avoid forcing everything at once.",
+        "short": null,
+        "long": null,
+        "advice": "Use it for testing, grounding, or opening conversations without forcing immediate completion.",
+        "warning": "Do not expect full results too early; the pattern is only partially formed."
+      },
+      "zh": {
+        "main": "半合得生地，有助力但未成全局，宜循序漸進。",
+        "short": null,
+        "long": null,
+        "advice": "宜試行、奠基、開啟對話，不必急求立成。",
+        "warning": "慎勿過早期待全局成果，因勢尚未全成。"
+      }
+    },
+    "半三合_墓地": {
+      "module_id": "§7",
+      "severity": "neutral_good",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "แรงประสานยังไม่เต็ม มีพลังเก็บสะสมมากกว่าเปิดเผย เหมาะกับเตรียมข้อมูล สำรองแผน และรอจังหวะ",
+        "short": null,
+        "long": null,
+        "advice": "เหมาะกับเก็บข้อมูล ปิดช่องโหว่ และเตรียมทรัพยากรไว้ก่อน ยังไม่ใช่จังหวะเปิดหน้าเต็มแรง",
+        "warning": "อย่าฝืนให้เรื่องเดินเร็ว เพราะพลังบางส่วนยังซ่อนอยู่และต้องรอจังหวะเปิด"
+      },
+      "en": {
+        "main": "Partial stored harmony. Better for preparation, backup plans, and waiting for the right timing.",
+        "short": null,
+        "long": null,
+        "advice": "Good for collecting data, closing gaps, and preparing resources before a full launch.",
+        "warning": "Avoid forcing speed; part of the energy is still hidden and needs timing."
+      },
+      "zh": {
+        "main": "半合入墓，力量偏藏，宜準備資料、蓄勢待時。",
+        "short": null,
+        "long": null,
+        "advice": "宜收集資料、補漏洞、備資源，未宜全面開展。",
+        "warning": "忌強行求快，因部分氣機尚藏，須待時而發。"
+      }
+    },
+    "六合_化": {
+      "module_id": "§7",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "มีแรงผูกพันและเปลี่ยนทิศพลัง เหมาะกับการเจรจา ปรับความสัมพันธ์ หรือเปลี่ยนแผนให้เข้าทาง",
+        "short": null,
+        "long": null,
+        "advice": "ใช้จังหวะนี้เจรจา ปรับเงื่อนไข หรือเปลี่ยนความตึงให้เป็นทางออกที่ทั้งสองฝ่ายรับได้",
+        "warning": "อย่าพึ่งพาความสัมพันธ์อย่างเดียว ต้องมีข้อตกลงและหลักฐานที่จับต้องได้"
+      },
+      "en": {
+        "main": "A transforming union. Good for negotiation, relationship repair, and redirecting a plan into a better path.",
+        "short": null,
+        "long": null,
+        "advice": "Use this timing to negotiate, adjust terms, or turn tension into an acceptable solution.",
+        "warning": "Do not rely only on rapport; use clear terms and tangible proof."
+      },
+      "zh": {
+        "main": "六合化氣，利於協調關係、轉換方向與化解僵局。",
+        "short": null,
+        "long": null,
+        "advice": "宜協商、調整條件，化僵局為雙方可受之解。",
+        "warning": "勿只憑情面，仍需明確條款與實證。"
+      }
+    },
+    "六合_no_化": {
+      "module_id": "§7",
+      "severity": "neutral_good",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "มีแรงประสานระดับอ่อน ช่วยให้คุยง่ายขึ้น แต่ยังต้องใช้เหตุผลและเงื่อนไขจริงประกอบ",
+        "short": null,
+        "long": null,
+        "advice": "เหมาะกับคุยให้เปิดใจ ลดแรงต้าน และหาข้อตกลงเบื้องต้นก่อนลงรายละเอียดจริง",
+        "warning": "อย่าตีความว่าเรื่องลงตัวแล้ว เพราะยังเป็นเพียงแรงประสาน ไม่ใช่การเปลี่ยนสภาพเต็มรูป"
+      },
+      "en": {
+        "main": "Soft harmony. Communication becomes easier, but results still need facts, terms, and real effort.",
+        "short": null,
+        "long": null,
+        "advice": "Good for opening dialogue, lowering resistance, and forming preliminary agreement.",
+        "warning": "Do not assume the matter is settled; this is harmony, not full transformation."
+      },
+      "zh": {
+        "main": "六合未化，和氣有餘但力量較輕，仍需條件配合。",
+        "short": null,
+        "long": null,
+        "advice": "宜開放心意、降低阻力、先成初步共識。",
+        "warning": "勿視為已定局，此為和氣，非全然化氣。"
+      }
+    },
+    "六沖": {
+      "module_id": "§7",
+      "severity": "caution",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลังปะทะชัด ระวังการตัดสินใจเร็ว อารมณ์แรง การเปลี่ยนแผนกะทันหัน หรือการชนกับคนตรงหน้า",
+        "short": null,
+        "long": null,
+        "advice": "ชะลอการตัดสินใจใหญ่ ตรวจข้อมูลซ้ำ และเลือกวิธีเลี่ยงการปะทะตรง ๆ",
+        "warning": "ระวังคำพูดเร็ว การเดินทางเร่ง และการเปลี่ยนแผนทันทีโดยไม่มีแผนสำรอง"
+      },
+      "en": {
+        "main": "Direct clash energy. Be careful with rushed decisions, strong emotions, sudden changes, and direct conflict.",
+        "short": null,
+        "long": null,
+        "advice": "Slow major decisions, verify details, and avoid direct confrontation.",
+        "warning": "Watch fast speech, rushed travel, and sudden plan changes without backup."
+      },
+      "zh": {
+        "main": "六沖主動盪與衝突，宜慢決策、避衝動與防突發變化。",
+        "short": null,
+        "long": null,
+        "advice": "宜放慢重大決策，覆核細節，避正面衝突。",
+        "warning": "慎言語急躁、趕行程、無備案而驟改計畫。"
+      }
+    },
+    "六害": {
+      "module_id": "§7",
+      "severity": "caution",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "มีพลังแทรกแซงหรือทำให้เข้าใจผิด ระวังคำพูด คนกลาง เรื่องเล็กที่บานปลาย และความรู้สึกไม่สบายใจ",
+        "short": null,
+        "long": null,
+        "advice": "รักษาความชัดเจนในการสื่อสาร ใช้หลักฐานมากกว่าความรู้สึก และลดบทบาทคนกลางที่ไม่จำเป็น",
+        "warning": "ระวังเรื่องเล็กที่ถูกตีความผิด หรือคำพูดอ้อมที่ทำให้คนเข้าใจคนละทาง"
+      },
+      "en": {
+        "main": "Interference energy. Watch words, middlemen, small issues that grow, and uneasy emotional undercurrents.",
+        "short": null,
+        "long": null,
+        "advice": "Keep communication clear, use evidence over feelings, and reduce unnecessary intermediaries.",
+        "warning": "Watch small issues being misread or indirect words causing divergent interpretations."
+      },
+      "zh": {
+        "main": "六害主暗中牽制與誤會，慎言語、人際與小事擴大。",
+        "short": null,
+        "long": null,
+        "advice": "宜清楚溝通，以證據勝於情緒，減少不必要中間人。",
+        "warning": "慎小事誤解、含糊其辭致各方解讀不同。"
+      }
+    },
+    "六破": {
+      "module_id": "§7",
+      "severity": "caution",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลังบั่นทอนหรือทำให้แผนรั่ว ระวังข้อตกลงหลวม รายละเอียดพลาด และการเสียแรงโดยไม่จำเป็น",
+        "short": null,
+        "long": null,
+        "advice": "ใช้วันนี้ตรวจสัญญา รายละเอียด ระบบเงิน และช่องรั่วของงานก่อนขยายต่อ",
+        "warning": "อย่าทำข้อตกลงแบบหลวม ๆ หรือปล่อยรายละเอียดเล็กให้ค้าง เพราะจะบั่นทอนผลลัพธ์"
+      },
+      "en": {
+        "main": "Breaking energy. Watch weak agreements, missing details, and wasted effort.",
+        "short": null,
+        "long": null,
+        "advice": "Use today to review contracts, details, money flow, and operational leaks before expansion.",
+        "warning": "Avoid loose agreements or leaving small details unresolved; they can weaken outcomes."
+      },
+      "zh": {
+        "main": "六破主破耗與鬆動，宜檢查細節、合約與資源流失。",
+        "short": null,
+        "long": null,
+        "advice": "宜檢查合約、細節、財流與流程漏洞，再談擴張。",
+        "warning": "忌契約鬆散或小節懸而未決，恐破耗成果。"
+      }
+    },
+    "無禮之刑": {
+      "module_id": "§7",
+      "severity": "caution",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลังขัดมารยาทหรือชนความรู้สึก ระวังพูดตรงเกินไป ไม่อ่านบรรยากาศ หรือทำให้ความสัมพันธ์เสียโดยไม่ตั้งใจ",
+        "short": null,
+        "long": null,
+        "advice": "พูดให้นุ่มลง อ่านบรรยากาศก่อนตอบ และให้เกียรติรูปแบบความสัมพันธ์มากกว่าปกติ",
+        "warning": "ระวังความตรงเกินไป การประชด หรือการทำให้คนเสียหน้าโดยไม่ตั้งใจ"
+      },
+      "en": {
+        "main": "Rude penalty energy. Avoid being too blunt, missing social cues, or hurting relationships unintentionally.",
+        "short": null,
+        "long": null,
+        "advice": "Soften your words, read the room before responding, and respect relational etiquette.",
+        "warning": "Watch bluntness, sarcasm, or causing someone to lose face unintentionally."
+      },
+      "zh": {
+        "main": "無禮之刑，易失禮傷和，宜謹慎言行與顧全情面。",
+        "short": null,
+        "long": null,
+        "advice": "宜語氣柔和，先察氣氛再回應，重視人情禮節。",
+        "warning": "慎過直、反諷，或無意使人失面子。"
+      }
+    },
+    "無恩之刑": {
+      "module_id": "§7",
+      "severity": "caution",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลังตอบแทนไม่สมดุล ระวังช่วยแล้วเหนื่อย ความคาดหวังผิดกัน หรือรู้สึกไม่ได้รับความยุติธรรม",
+        "short": null,
+        "long": null,
+        "advice": "ตั้งขอบเขตให้ชัดก่อนช่วยใคร และตกลงความคาดหวังให้เห็นตรงกันตั้งแต่ต้น",
+        "warning": "ระวังช่วยแล้วเหนื่อย หรือให้มากเกินจนรู้สึกไม่ได้รับความยุติธรรม"
+      },
+      "en": {
+        "main": "Ungrateful penalty energy. Watch unequal exchange, unmet expectations, and feelings of unfairness.",
+        "short": null,
+        "long": null,
+        "advice": "Set boundaries before helping others and align expectations from the start.",
+        "warning": "Watch over-giving, fatigue, or feeling unfairly treated."
+      },
+      "zh": {
+        "main": "無恩之刑，主回報不平、期待落差，宜明確界線。",
+        "short": null,
+        "long": null,
+        "advice": "助人前宜先立界線，並先對齊彼此期待。",
+        "warning": "慎過度付出而疲憊，或心生不平。"
+      }
+    },
+    "恃勢之刑": {
+      "module_id": "§7",
+      "severity": "caution",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลังอำนาจชนกัน ระวังการแข่งขัน การกดดัน การใช้อีโก้ และการปะทะกับผู้มีอำนาจ",
+        "short": null,
+        "long": null,
+        "advice": "ลดเกมอำนาจ ใช้เหตุผลและขั้นตอนแทนอีโก้ โดยเฉพาะเมื่อต้องคุยกับผู้มีอำนาจ",
+        "warning": "ระวังการแข่งขันที่กลายเป็นศึกศักดิ์ศรี หรือการกดดันจนฝ่ายตรงข้ามต้านแรงขึ้น"
+      },
+      "en": {
+        "main": "Power-struggle penalty. Be careful with competition, pressure, ego, and conflict with authority.",
+        "short": null,
+        "long": null,
+        "advice": "Lower power games; use reason and process over ego, especially with authority.",
+        "warning": "Watch competition turning into pride battles or pressure that increases resistance."
+      },
+      "zh": {
+        "main": "恃勢之刑，權勢相逼，慎競爭、壓力與上位衝突。",
+        "short": null,
+        "long": null,
+        "advice": "宜少權力角力，以理性與程序代替自我，尤慎上位者。",
+        "warning": "慎競爭變成意氣之爭，或逼迫過度反生阻力。"
+      }
+    },
+    "自刑": {
+      "module_id": "§7",
+      "severity": "caution",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลังวนซ้ำกับตัวเอง ระวังคิดมาก โทษตัวเอง ตัดสินใจซ้ำไปมา หรือทำเรื่องเดิมให้เหนื่อยกว่าเดิม",
+        "short": null,
+        "long": null,
+        "advice": "หยุดคิดเป็นรอบ ๆ เขียนสิ่งที่กังวลออกมา และตัดสินใจทีละเรื่องแทนการวนอยู่ในหัว",
+        "warning": "ระวังโทษตัวเองหรือแก้เรื่องเดิมซ้ำจนเสียแรงโดยไม่ได้ผลลัพธ์ใหม่"
+      },
+      "en": {
+        "main": "Self-penalty energy. Watch overthinking, self-blame, repeated decisions, and tiring loops.",
+        "short": null,
+        "long": null,
+        "advice": "Pause looping thoughts, write worries down, and decide one issue at a time.",
+        "warning": "Watch self-blame or repeatedly fixing the same issue without new results."
+      },
+      "zh": {
+        "main": "自刑主內耗反覆，宜放慢、整理情緒與避免鑽牛角尖。",
+        "short": null,
+        "long": null,
+        "advice": "宜止內耗，寫下所憂，一事一決，不困於心。",
+        "warning": "慎自責與反覆修補同一事，耗力而無新果。"
+      }
+    },
+    "拱合": {
+      "module_id": "§7",
+      "severity": "neutral_good",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "มีแรงเชื่อมแบบขาดตัวกลาง เหมาะกับการปูทาง นัดหมาย หรือสร้างสะพานก่อนลงมือจริง",
+        "short": null,
+        "long": null,
+        "advice": "ใช้วันนี้สร้างสะพานก่อนลงมือจริง นัดหมาย แนะนำคน หรือเตรียมเงื่อนไขให้เจอกัน",
+        "warning": "อย่าคาดหวังผลทันที เพราะพลังนี้เหมาะกับการเชื่อม ไม่ใช่การปิดดีลทันที"
+      },
+      "en": {
+        "main": "Hidden bridge energy. Good for paving the way, arranging meetings, and building links before action.",
+        "short": null,
+        "long": null,
+        "advice": "Use today to build bridges: arrange meetings, introduce people, or prepare conditions.",
+        "warning": "Do not expect instant results; this energy connects more than it closes."
+      },
+      "zh": {
+        "main": "拱合有引合之意，宜牽線、鋪路、先建立連結。",
+        "short": null,
+        "long": null,
+        "advice": "宜先搭橋牽線，約見、引薦，或備條件使其相合。",
+        "warning": "勿急求即成，此氣宜牽引，不宜急於成交。"
+      }
+    },
+    "暗合": {
+      "module_id": "§7",
+      "severity": "neutral_good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "มีแรงผูกพันในชั้นลึก เรื่องบางอย่างเดินอยู่ใต้ผิว เหมาะกับงานเบื้องหลัง การอ่านใจคน และการคุยแบบส่วนตัว",
+        "short": null,
+        "long": null,
+        "advice": "เหมาะกับงานเบื้องหลัง การคุยส่วนตัว และการอ่านเจตนาที่ไม่ได้พูดออกมาตรง ๆ",
+        "warning": "ระวังความสัมพันธ์หรือดีลที่ไม่ชัดเจนเกินไป ควรมีขอบเขตและหลักฐานเสมอ"
+      },
+      "en": {
+        "main": "Deep hidden union. Good for behind-the-scenes work, reading intentions, and private conversations.",
+        "short": null,
+        "long": null,
+        "advice": "Good for behind-the-scenes work, private talks, and reading unspoken intentions.",
+        "warning": "Watch overly hidden relationships or deals; keep boundaries and evidence."
+      },
+      "zh": {
+        "main": "暗合藏於內，利幕後運作、私下溝通與洞察人心。",
+        "short": null,
+        "long": null,
+        "advice": "利幕後運作、私下談話，並洞察未明言之意。",
+        "warning": "慎關係或交易過於隱晦，仍需界線與憑據。"
+      }
+    },
+    "五合_甲己": {
+      "module_id": "§36",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ไม้รวมดิน: พลังเติบโตผ่านระบบและความรับผิดชอบ เหมาะกับวางรากฐาน จัดระเบียบ และสร้างผลระยะยาว",
+        "short": null,
+        "long": null,
+        "advice": "ใช้จังหวะนี้วางระบบ รับผิดชอบเรื่องสำคัญ และทำให้การเติบโตมีฐานมั่นคง",
+        "warning": "อย่าแบกทุกอย่างคนเดียว ต้องแยกระหว่างความรับผิดชอบกับภาระเกินจำเป็น"
+      },
+      "en": {
+        "main": "Wood joins Earth: growth through structure and responsibility. Good for foundations, order, and long-term results.",
+        "short": null,
+        "long": null,
+        "advice": "Use this timing to build systems, take responsibility, and ground growth.",
+        "warning": "Do not carry everything alone; separate responsibility from unnecessary burden."
+      },
+      "zh": {
+        "main": "甲己合土，木入土局，利奠基、整理制度與承擔責任。",
+        "short": null,
+        "long": null,
+        "advice": "宜立制度、承責任，使成長有根基。",
+        "warning": "勿獨自承擔一切，應分清責任與過重負擔。"
+      }
+    },
+    "五合_乙庚": {
+      "module_id": "§36",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ไม้หยินรวมโลหะ: พลังปรับแต่งให้คมขึ้น เหมาะกับเจรจา แก้รายละเอียด ทำข้อตกลง และเปลี่ยนความคิดให้เป็นรูปธรรม",
+        "short": null,
+        "long": null,
+        "advice": "เหมาะกับปรับรายละเอียด เจรจาให้คมขึ้น และเปลี่ยนไอเดียให้เป็นข้อสรุปที่ใช้ได้จริง",
+        "warning": "ระวังตัดสินใจแข็งเกินไปจนเสียความยืดหยุ่นของความสัมพันธ์"
+      },
+      "en": {
+        "main": "Yin Wood joins Metal: refinement and precision. Good for negotiation, details, agreements, and practical decisions.",
+        "short": null,
+        "long": null,
+        "advice": "Good for refining details, sharpening negotiation, and turning ideas into practical terms.",
+        "warning": "Avoid becoming so rigid that the relationship loses flexibility."
+      },
+      "zh": {
+        "main": "乙庚合金，柔木得金，利談判、修正細節與落實決策。",
+        "short": null,
+        "long": null,
+        "advice": "宜修細節、利談判，使想法落成可用條款。",
+        "warning": "慎判斷過硬，使關係失去彈性。"
+      }
+    },
+    "五合_丙辛": {
+      "module_id": "§36",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ไฟรวมโลหะ: พลังจากแสงสว่างสู่ความคมชัด เหมาะกับนำเสนอ สื่อสาร และทำให้คุณค่าถูกมองเห็น",
+        "short": null,
+        "long": null,
+        "advice": "ใช้จังหวะนี้นำเสนอ สื่อสารคุณค่า และทำให้สิ่งที่ดีอยู่แล้วถูกมองเห็นชัดขึ้น",
+        "warning": "อย่าโชว์มากเกินจนสาระถูกกลบด้วยภาพลักษณ์"
+      },
+      "en": {
+        "main": "Fire joins Metal: visibility becomes precision. Good for presentation, communication, and making value seen.",
+        "short": null,
+        "long": null,
+        "advice": "Use this timing to present, communicate value, and make existing strengths visible.",
+        "warning": "Avoid over-showing until appearance overwhelms substance."
+      },
+      "zh": {
+        "main": "丙辛合水，光華入形，利展示、表達與讓價值被看見。",
+        "short": null,
+        "long": null,
+        "advice": "宜展示、表達價值，使原有優勢更被看見。",
+        "warning": "忌過度展示，以致形象掩蓋實質。"
+      }
+    },
+    "五合_丁壬": {
+      "module_id": "§36",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ไฟหยินรวมน้ำ: พลังอารมณ์และปัญญาเชื่อมกัน เหมาะกับคุยลึก วางกลยุทธ์ และเปลี่ยนความรู้สึกเป็นความเข้าใจ",
+        "short": null,
+        "long": null,
+        "advice": "เหมาะกับคุยลึก วางกลยุทธ์ และเปลี่ยนอารมณ์ซับซ้อนให้เป็นความเข้าใจที่ใช้ต่อได้",
+        "warning": "ระวังใช้อารมณ์นำเหตุผล หรืออ่านใจคนมากเกินจนคิดซับซ้อน"
+      },
+      "en": {
+        "main": "Yin Fire joins Water: emotion meets insight. Good for deep talks, strategy, and turning feelings into understanding.",
+        "short": null,
+        "long": null,
+        "advice": "Good for deep conversations, strategy, and turning complex feelings into usable insight.",
+        "warning": "Watch emotion leading reason, or over-reading people until things become too complex."
+      },
+      "zh": {
+        "main": "丁壬合木，情智相通，利深談、謀略與化情為悟。",
+        "short": null,
+        "long": null,
+        "advice": "利深談、謀略，化複雜情緒為可用之悟。",
+        "warning": "慎以情領理，或過度揣測而使事複雜。"
+      }
+    },
+    "五合_戊癸": {
+      "module_id": "§36",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ดินรวมน้ำ: พลังจัดการทรัพยากร เหมาะกับเงิน งานระบบ การวางแผน และการเปลี่ยนภาระเป็นประโยชน์",
+        "short": null,
+        "long": null,
+        "advice": "ใช้จังหวะนี้จัดการเงิน ทรัพยากร ระบบงาน และเปลี่ยนภาระให้กลายเป็นประโยชน์",
+        "warning": "ระวังรับภาระเพราะเห็นโอกาสทางเงิน ต้องดูต้นทุนแฝงให้ครบ"
+      },
+      "en": {
+        "main": "Earth joins Water: resource management. Good for money, systems, planning, and turning burdens into value.",
+        "short": null,
+        "long": null,
+        "advice": "Use this timing for money, resources, systems, and turning burdens into value.",
+        "warning": "Watch taking burdens for financial opportunity; check hidden costs fully."
+      },
+      "zh": {
+        "main": "戊癸合火，資源交融，利財務、規劃、系統與化負擔為用。",
+        "short": null,
+        "long": null,
+        "advice": "宜理財、資源、系統，化負擔為可用之利。",
+        "warning": "慎因財機而承負擔，須查隱性成本。"
+      }
+    },
+    "element_wood_good": {
+      "module_id": "§2",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "วันนี้ธาตุไม้หนุนคุณ เหมาะกับการเริ่มต้น เรียนรู้ ขยายแผน และทำเรื่องที่ต้องใช้การเติบโต",
+        "short": null,
+        "long": null,
+        "advice": "ใช้วันนี้เริ่มสิ่งที่ต้องการการเติบโต เช่น เรียนรู้ สร้างเครือข่าย หรือเปิดแผนใหม่อย่างมีทิศทาง",
+        "warning": "อย่าเริ่มหลายเรื่องพร้อมกันเกินไป เพราะพลังไม้ดีเมื่อมีทิศ ไม่ใช่แตกกิ่งไร้ระบบ"
+      },
+      "en": {
+        "main": "Wood supports you today. Good for starting, learning, expanding plans, and growth-oriented actions.",
+        "short": null,
+        "long": null,
+        "advice": "Use today to start growth tasks: learning, networking, or opening a directed plan.",
+        "warning": "Avoid starting too many things at once; Wood works best with direction, not scattered growth."
+      },
+      "zh": {
+        "main": "今日木氣助你，利開始、學習、拓展與成長之事。",
+        "short": null,
+        "long": null,
+        "advice": "宜啟動成長之事，如學習、人脈與有方向的新計畫。",
+        "warning": "忌多頭並進，木宜有向，不宜枝蔓散亂。"
+      }
+    },
+    "element_fire_good": {
+      "module_id": "§2",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "วันนี้ธาตุไฟหนุนคุณ เหมาะกับการแสดงออก เปิดตัว สื่อสาร สร้างชื่อเสียง และทำให้คนเห็นคุณค่า",
+        "short": null,
+        "long": null,
+        "advice": "ใช้วันนี้เปิดตัว นำเสนอ ติดต่อคน และทำให้ผลงานของคุณถูกเห็นอย่างเหมาะสม",
+        "warning": "ระวังใช้พลังมากเกินหรือพูดเร็วเกิน จนความร้อนกลายเป็นความกดดัน"
+      },
+      "en": {
+        "main": "Fire supports you today. Good for expression, launch, communication, visibility, and recognition.",
+        "short": null,
+        "long": null,
+        "advice": "Use today to launch, present, connect, and make your work properly visible.",
+        "warning": "Watch overexertion or speaking too fast; warmth can become pressure."
+      },
+      "zh": {
+        "main": "今日火氣助你，利表達、亮相、傳播與提升能見度。",
+        "short": null,
+        "long": null,
+        "advice": "宜亮相、展示、聯絡，使成果被恰當看見。",
+        "warning": "慎耗力過多或語速過急，熱氣易成壓力。"
+      }
+    },
+    "element_earth_good": {
+      "module_id": "§2",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "วันนี้ธาตุดินหนุนคุณ เหมาะกับจัดระบบ วางแผน เก็บรายละเอียด ดูแลทรัพย์สิน และทำเรื่องให้มั่นคง",
+        "short": null,
+        "long": null,
+        "advice": "เหมาะกับวางระบบ จัดบ้าน งาน เงิน และเอกสารให้มั่นคงก่อนเดินขั้นต่อไป",
+        "warning": "อย่ายึดติดรายละเอียดจนช้าเกินไป ให้ตั้งเส้นตายและตัดสินใจเมื่อข้อมูลพอ"
+      },
+      "en": {
+        "main": "Earth supports you today. Good for structure, planning, details, assets, and stabilizing matters.",
+        "short": null,
+        "long": null,
+        "advice": "Good for structuring home, work, money, and documents before the next step.",
+        "warning": "Do not get stuck in details; set a deadline and decide once data is enough."
+      },
+      "zh": {
+        "main": "今日土氣助你，利規劃、整理、穩定與資產相關事。",
+        "short": null,
+        "long": null,
+        "advice": "宜整理家宅、工作、財務與文件，使根基穩固。",
+        "warning": "忌困於細節而過慢，宜設期限，資料足則決。"
+      }
+    },
+    "element_metal_good": {
+      "module_id": "§2",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "วันนี้ธาตุโลหะหนุนคุณ เหมาะกับตัดสินใจ วางกฎ เจรจาเรื่องสำคัญ ตรวจงาน และทำสิ่งที่ต้องการความคมชัด",
+        "short": null,
+        "long": null,
+        "advice": "ใช้วันนี้ตัดสินใจ ตรวจเอกสาร วางกฎ หรือทำงานที่ต้องการความแม่นและความชัด",
+        "warning": "ระวังคำพูดคมเกินไปหรือยึดหลักจนคนอื่นรู้สึกถูกกด"
+      },
+      "en": {
+        "main": "Metal supports you today. Good for decisions, rules, important negotiation, review, and precision work.",
+        "short": null,
+        "long": null,
+        "advice": "Use today for decisions, document review, rules, and precision work.",
+        "warning": "Watch words becoming too sharp or principles feeling oppressive to others."
+      },
+      "zh": {
+        "main": "今日金氣助你，利決策、規範、談判、檢查與精準執行。",
+        "short": null,
+        "long": null,
+        "advice": "宜決策、審文件、立規矩，做需精準清晰之事。",
+        "warning": "慎言語太鋒利，或守則過硬使人受壓。"
+      }
+    },
+    "element_water_good": {
+      "module_id": "§2",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "วันนี้ธาตุน้ำหนุนคุณ เหมาะกับคิดลึก วางกลยุทธ์ เดินทาง เรียนรู้ข้อมูล และคุยเรื่องที่ต้องใช้ไหวพริบ",
+        "short": null,
+        "long": null,
+        "advice": "ใช้วันนี้วางกลยุทธ์ ค้นข้อมูล คุยเรื่องซับซ้อน หรือเดินทางที่ต้องใช้ไหวพริบ",
+        "warning": "ระวังข้อมูลมากเกินจนลังเล ให้เลือกแหล่งข้อมูลหลักและตัดสินใจเป็นช่วง"
+      },
+      "en": {
+        "main": "Water supports you today. Good for deep thinking, strategy, travel, research, and adaptive conversations.",
+        "short": null,
+        "long": null,
+        "advice": "Use today for strategy, research, complex conversations, or adaptive travel.",
+        "warning": "Watch information overload causing hesitation; choose key sources and decide in stages."
+      },
+      "zh": {
+        "main": "今日水氣助你，利思考、策略、流動、學習與機變溝通。",
+        "short": null,
+        "long": null,
+        "advice": "宜謀略、查資料、談複雜之事，或機動出行。",
+        "warning": "慎資訊過量而猶豫，宜取主源，分段決策。"
+      }
+    },
+    "element_wood_bad": {
+      "module_id": "§2",
+      "severity": "caution",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "วันนี้ไม้มากไปหรือไม่ถูกกับดวง ระวังใจร้อนอยากโตเร็ว ตัดสินใจจากความหวัง และรับภาระเพิ่มเกินจำเป็น",
+        "short": null,
+        "long": null,
+        "advice": "ลดการขยายตัวเกินจำเป็น เลือกเรื่องสำคัญเพียงไม่กี่เรื่อง และตัดสิ่งที่โตเร็วแต่ไม่มั่นคง",
+        "warning": "ระวังรับงานเพิ่มเพราะมองโลกดีเกินไป หรือเริ่มก่อนมีฐานรองรับ"
+      },
+      "en": {
+        "main": "Wood may be excessive or unfavorable today. Avoid rushing growth, wishful decisions, and taking on too much.",
+        "short": null,
+        "long": null,
+        "advice": "Reduce unnecessary expansion, choose only key matters, and cut unstable fast growth.",
+        "warning": "Watch taking on more from optimism or starting before the foundation is ready."
+      },
+      "zh": {
+        "main": "今日木氣不宜或過旺，慎急於擴張、理想化決策與承擔過多。",
+        "short": null,
+        "long": null,
+        "advice": "宜減少無謂擴張，取要事，斷不穩之速長。",
+        "warning": "慎因過度樂觀而多承事，或未立基先啟動。"
+      }
+    },
+    "element_fire_bad": {
+      "module_id": "§2",
+      "severity": "caution",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "วันนี้ไฟไม่เกื้อคุณ ระวังอารมณ์แรง พูดเร็วเกินไป เปิดเผยมากเกิน และใช้พลังจนหมดเร็ว",
+        "short": null,
+        "long": null,
+        "advice": "ลดการเปิดเผย ลดการปะทะทางอารมณ์ และพักเป็นช่วงเพื่อไม่ให้พลังหมดเร็ว",
+        "warning": "ระวังพูดเร็ว ตัดสินใจจากความร้อน หรือทำให้เรื่องเล็กกลายเป็นประเด็นใหญ่"
+      },
+      "en": {
+        "main": "Fire may not support you today. Watch strong emotions, fast speech, overexposure, and quick burnout.",
+        "short": null,
+        "long": null,
+        "advice": "Reduce exposure and emotional confrontation; take breaks to avoid quick burnout.",
+        "warning": "Watch fast speech, heated decisions, or turning small matters into big issues."
+      },
+      "zh": {
+        "main": "今日火氣不宜，慎情緒過熱、言語太急、曝光過度與耗氣。",
+        "short": null,
+        "long": null,
+        "advice": "宜少曝光、降情緒對抗，分段休息免耗氣。",
+        "warning": "慎語急、熱中決斷，使小事成大事。"
+      }
+    },
+    "element_earth_bad": {
+      "module_id": "§2",
+      "severity": "caution",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "วันนี้ดินกดพลังคุณ ระวังคิดหนัก ยึดติด รายละเอียดถ่วงเวลา และเรื่องภาระหรือทรัพย์สินทำให้ช้า",
+        "short": null,
+        "long": null,
+        "advice": "จัดลำดับภาระใหม่ ทำเฉพาะสิ่งที่จำเป็น และขยับทีละก้าวแทนการแบกทุกอย่าง",
+        "warning": "ระวังคิดหนักเกินจริง หรือปล่อยรายละเอียดทำให้ทั้งวันช้า"
+      },
+      "en": {
+        "main": "Earth may weigh you down today. Watch overthinking, rigidity, slow details, burdens, and asset-related delays.",
+        "short": null,
+        "long": null,
+        "advice": "Reorder your burdens, do only what is necessary, and move step by step.",
+        "warning": "Watch overthinking or details slowing down the whole day."
+      },
+      "zh": {
+        "main": "今日土氣壓身，慎思慮過重、固執、細節拖延與負擔。",
+        "short": null,
+        "long": null,
+        "advice": "宜重排負擔，只行必要之事，循序推進。",
+        "warning": "慎思慮過重，或細節拖慢全日。"
+      }
+    },
+    "element_metal_bad": {
+      "module_id": "§2",
+      "severity": "caution",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "วันนี้โลหะไม่เกื้อคุณ ระวังคำพูดแข็ง การตัดสินใจเด็ดเกินไป ความขัดแย้งเรื่องกฎ และแรงกดดันจากมาตรฐาน",
+        "short": null,
+        "long": null,
+        "advice": "ใช้ความชัดแบบนุ่มนวล ตรวจงานโดยไม่ตัดสินคน และเลี่ยงการปะทะเรื่องกฎ",
+        "warning": "ระวังคำพูดแข็ง การตัดสินใจเด็ดเกิน หรือกดมาตรฐานจนคนอื่นถอย"
+      },
+      "en": {
+        "main": "Metal may be unfavorable today. Watch harsh words, overly rigid decisions, rule conflicts, and pressure from standards.",
+        "short": null,
+        "long": null,
+        "advice": "Use gentle clarity, review work without judging people, and avoid rule conflicts.",
+        "warning": "Watch harsh words, overly final decisions, or standards that push people away."
+      },
+      "zh": {
+        "main": "今日金氣不宜，慎言語鋒利、判斷過硬、規則衝突與壓力。",
+        "short": null,
+        "long": null,
+        "advice": "宜柔中有明，審事不責人，避規則衝突。",
+        "warning": "慎言辭剛硬、決斷過絕，或標準逼人退避。"
+      }
+    },
+    "element_water_bad": {
+      "module_id": "§2",
+      "severity": "caution",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "วันนี้น้ำไม่เกื้อคุณ ระวังลังเล คิดวน ข่าวสารมากเกิน เดินทางสะดุด หรือแผนเปลี่ยนจนเสียจังหวะ",
+        "short": null,
+        "long": null,
+        "advice": "ลดข้อมูล ลดตัวเลือก และทำแผนให้เรียบง่ายพอจะลงมือได้จริง",
+        "warning": "ระวังลังเล เดินทางสะดุด หรือเปลี่ยนแผนบ่อยจนเสียจังหวะ"
+      },
+      "en": {
+        "main": "Water may not support you today. Watch hesitation, overthinking, information overload, travel issues, and shifting plans.",
+        "short": null,
+        "long": null,
+        "advice": "Reduce information and choices; make the plan simple enough to act on.",
+        "warning": "Watch hesitation, travel disruption, or too many plan changes."
+      },
+      "zh": {
+        "main": "今日水氣不宜，慎猶豫、多思、資訊過量、行程變動與失序。",
+        "short": null,
+        "long": null,
+        "advice": "宜減資訊、減選項，使計畫簡明可行。",
+        "warning": "慎猶豫、行程受阻，或頻繁變計而失序。"
+      }
+    },
+    "正官": {
+      "module_id": "§9",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลัง正官เด่น วันนี้เหมาะกับความรับผิดชอบ กฎระเบียบ งานทางการ และการทำให้คนเชื่อถือ",
+        "short": null,
+        "long": null,
+        "advice": "เหมาะกับงานทางการ การรับผิดชอบ และการสร้างความน่าเชื่อถือผ่านความถูกต้อง",
+        "warning": "ระวังเคร่งเกินไปหรือกดดันตัวเองด้วยมาตรฐานที่สูงเกินจำเป็น"
+      },
+      "en": {
+        "main": "Direct Officer is active today. Good for responsibility, rules, formal work, and building trust.",
+        "short": null,
+        "long": null,
+        "advice": "Good for formal work, responsibility, and building credibility through correctness.",
+        "warning": "Watch becoming too strict or pressuring yourself with excessive standards."
+      },
+      "zh": {
+        "main": "正官當令，利責任、規範、公務與建立信任。",
+        "short": null,
+        "long": null,
+        "advice": "利公務、責任，以正當與準確建立信任。",
+        "warning": "慎過於嚴苛，或以過高標準自壓。"
+      }
+    },
+    "七殺": {
+      "module_id": "§9",
+      "severity": "mixed",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลัง七殺เด่น วันนี้มีแรงแข่งขันและแรงกดดัน เหมาะกับงานท้าทาย แต่ต้องคุมความเร็วและอารมณ์",
+        "short": null,
+        "long": null,
+        "advice": "ใช้กับงานยาก งานแข่งขัน หรือเรื่องที่ต้องตัดสินใจเร็ว แต่ต้องมีวินัยคุมแรง",
+        "warning": "ระวังความกดดันทำให้ใจร้อน หรือเปลี่ยนความกล้าเป็นการชนโดยไม่จำเป็น"
+      },
+      "en": {
+        "main": "Seven Killings is active today. Strong pressure and competition; good for challenges, but control speed and emotion.",
+        "short": null,
+        "long": null,
+        "advice": "Use for difficult tasks, competition, or fast decisions, but control the force with discipline.",
+        "warning": "Watch pressure turning into impatience, or courage becoming unnecessary confrontation."
+      },
+      "zh": {
+        "main": "七殺當令，有壓力與競爭，利攻堅但須控速控情緒。",
+        "short": null,
+        "long": null,
+        "advice": "宜攻堅、競爭與速決，但須以紀律控其勢。",
+        "warning": "慎壓力化為急躁，或勇氣變成無謂衝撞。"
+      }
+    },
+    "正印": {
+      "module_id": "§9",
+      "severity": "good",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลัง正印เด่น วันนี้เหมาะกับเรียนรู้ ขอคำปรึกษา พักใจ จัดระบบความคิด และรับการสนับสนุนจากผู้ใหญ่",
+        "short": null,
+        "long": null,
+        "advice": "เหมาะกับเรียนรู้ ขอคำแนะนำ จัดระบบความคิด และรับแรงสนับสนุนจากผู้ใหญ่",
+        "warning": "ระวังพึ่งคำแนะนำมากเกินจนไม่ลงมือเอง"
+      },
+      "en": {
+        "main": "Direct Resource is active today. Good for learning, advice, reflection, mental order, and support from mentors.",
+        "short": null,
+        "long": null,
+        "advice": "Good for learning, advice, mental organization, and support from mentors.",
+        "warning": "Watch relying on advice so much that you delay action."
+      },
+      "zh": {
+        "main": "正印當令，利學習、請教、養心、整理思路與得貴人扶持。",
+        "short": null,
+        "long": null,
+        "advice": "利學習、請教、理清思路，並得長上扶持。",
+        "warning": "慎過度倚賴建議而遲於行動。"
+      }
+    },
+    "偏印": {
+      "module_id": "§9",
+      "severity": "mixed",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลัง偏印เด่น วันนี้เหมาะกับคิดนอกกรอบ งานลึก งานวิจัย และสัญชาตญาณ แต่ระวังคิดซับซ้อนเกินไป",
+        "short": null,
+        "long": null,
+        "advice": "ใช้กับงานวิจัย ความคิดสร้างสรรค์เฉพาะทาง หรือการมองปัญหาจากมุมที่คนอื่นไม่เห็น",
+        "warning": "ระวังคิดซับซ้อนจนหลุดจากความจริง หรืออยู่กับตัวเองมากเกินไป"
+      },
+      "en": {
+        "main": "Indirect Resource is active today. Good for unconventional thinking, research, intuition, but avoid overcomplication.",
+        "short": null,
+        "long": null,
+        "advice": "Use for research, specialized creativity, or seeing problems from uncommon angles.",
+        "warning": "Watch overcomplication or retreating too far into your own mind."
+      },
+      "zh": {
+        "main": "偏印當令，利靈感、研究、非典型思維，但慎過度複雜。",
+        "short": null,
+        "long": null,
+        "advice": "利研究、特殊創意，從非常角度觀事。",
+        "warning": "慎過度複雜，或過於沉入自我心境。"
+      }
+    },
+    "正財": {
+      "module_id": "§9",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลัง正財เด่น วันนี้เหมาะกับรายได้จริง งานมั่นคง การจัดงบ และเรื่องที่ต้องใช้ความรับผิดชอบด้านเงิน",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Direct Wealth is active today. Good for steady income, budgeting, practical work, and financial responsibility.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "正財當令，利穩定收入、預算、實務工作與財務責任。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "偏財": {
+      "module_id": "§9",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลัง偏財เด่น วันนี้เหมาะกับโอกาสใหม่ การค้าขาย connection และการขยับเงิน แต่ต้องคุมความเสี่ยง",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Indirect Wealth is active today. Good for new opportunities, sales, networks, and moving money; manage risk.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "偏財當令，利機會、銷售、人脈與資金流動，但須控風險。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "食神": {
+      "module_id": "§9",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลัง食神เด่น วันนี้เหมาะกับความสุข สุขภาพ การกิน การสร้างสรรค์แบบนุ่มนวล และการทำสิ่งที่ไหลลื่น",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Eating God is active today. Good for joy, health, food, gentle creativity, and smooth execution.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "食神當令，利愉悅、健康、飲食、溫和創造與順勢而行。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "傷官": {
+      "module_id": "§9",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลัง傷官เด่น วันนี้เหมาะกับไอเดีย การพูด การขายความสามารถ และการท้าทายกรอบเดิม แต่ระวังชนผู้ใหญ่",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Hurting Officer is active today. Good for ideas, expression, showing talent, and challenging norms; avoid offending authority.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "傷官當令，利表達、才華、創意與破框，但慎衝撞權威。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "比肩": {
+      "module_id": "§9",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลัง比肩เด่น วันนี้เหมาะกับยืนด้วยตัวเอง ตั้งหลัก ตัดสินใจเอง และทำเรื่องที่ต้องใช้ความมั่นใจ",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Peer energy is active today. Good for independence, grounding, self-decisions, and confidence-based action.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "比肩當令，利自立、定心、自主決策與建立信心。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "劫財": {
+      "module_id": "§9",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "พลัง劫財เด่น วันนี้มีแรงเพื่อน คู่แข่ง และการแบ่งทรัพยากร เหมาะกับลุยร่วมกัน แต่ระวังเงินรั่ว",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Rob Wealth is active today. Strong peer and competition energy; good for joint action, but watch resource loss.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "劫財當令，同伴與競爭並起，利共同行動但慎破財。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "長生": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "長生คือพลังเริ่มเกิด เหมาะกับเริ่มแผนใหม่ เรียนรู้ ทดลอง และวางเมล็ดพันธุ์ของสิ่งสำคัญ",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Birth phase: good for new starts, learning, testing, and planting seeds for important matters.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "長生主初生之氣，利開始、學習、試行與播種。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "沐浴": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "沐浴คือพลังเปิดรับและดึงดูด เหมาะกับภาพลักษณ์ ความสัมพันธ์ และงานสร้างเสน่ห์ แต่ระวังใจแกว่ง",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Bath phase: attraction and openness. Good for image, relationships, and charm; watch emotional fluctuation.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "沐浴主感受與魅力，利形象、人緣，但慎情緒浮動。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "冠帶": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "冠帶คือพลังแต่งตัวขึ้นเวที เหมาะกับเตรียมความพร้อม ปรับภาพลักษณ์ เสนอผลงาน และวางมาตรฐาน",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Crowning phase: readiness and presentation. Good for preparation, image refinement, presenting work, and setting standards.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "冠帶主成形與儀表，利準備、修飾、展示與立規矩。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "臨官": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "臨官คือพลังเข้าตำแหน่ง เหมาะกับรับผิดชอบ งานจริง การบริหาร และการแสดงความสามารถอย่างมั่นคง",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Officer phase: capable and steady. Good for responsibility, real work, management, and reliable performance.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "臨官主就位與能力，利承擔、管理、實幹與穩定發揮。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "帝旺": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "帝旺คือพลังพีค เหมาะกับผลักดันเรื่องใหญ่ แสดงศักยภาพ และตัดสินใจสำคัญ แต่ต้องไม่ใช้อีโก้นำ",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Peak phase: strong power. Good for major pushes, showing capability, and key decisions; avoid ego-driven action.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "帝旺主極盛，利推大事、展實力、作決斷，但忌自滿。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "衰": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "衰คือพลังเริ่มลด เหมาะกับทบทวน ลดภาระ ปรับแผน และใช้ประสบการณ์มากกว่าฝืนบุก",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Decline phase: review and adjustment. Good for reducing load, revising plans, and using experience over force.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "衰主氣勢漸退，宜檢討、減負、調整與以經驗行事。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "病": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "病คือพลังอ่อนและต้องดูแล เหมาะกับเช็กสุขภาพ แก้จุดเสีย พักฟื้น และไม่ฝืนงานหนัก",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Sickness phase: care and repair. Good for health checks, fixing weak points, recovery, and avoiding overload.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "病地主照護與修補，宜養身、查漏、修復，忌過勞。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "死": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "死คือพลังหยุดนิ่ง เหมาะกับปิดเรื่องเก่า ตัดสิ่งไม่จำเป็น และพักการตัดสินใจใหญ่",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Death phase: stillness and closure. Good for ending old matters, cutting waste, and pausing major decisions.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "死地主止息，宜了結舊事、斷捨離，慎作重大決策。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "墓": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "墓คือพลังเก็บเข้าคลัง เหมาะกับเก็บเงิน เก็บข้อมูล วางของให้เป็นระบบ และทำงานเบื้องหลัง",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Tomb phase: storage and consolidation. Good for saving money, storing data, organizing, and behind-the-scenes work.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "墓地主收藏，利儲蓄、歸檔、整理與幕後沉澱。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "絕": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "絕คือพลังตัดขาด เหมาะกับจบวงจรเก่า ล้างระบบ และเว้นระยะจากสิ่งที่ทำให้หมดแรง",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Extinction phase: cutting off. Good for ending cycles, clearing systems, and distancing from draining matters.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "絕地主斷絕，宜結束舊循環、清理系統、遠離耗能之事。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "胎": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "胎คือพลังตั้งครรภ์ของสิ่งใหม่ เหมาะกับคิดไอเดีย วางต้นแบบ และยังไม่ต้องรีบเปิดเผย",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Conception phase: new potential. Good for ideas, prototypes, and keeping plans private until ready.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "胎地主孕育，利構思、原型、內部準備，未宜急於公開。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "養": {
+      "module_id": "§18",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "養คือพลังเลี้ยงดู เหมาะกับบำรุงความสัมพันธ์ ฟื้นแรง ดูแลบ้าน ครอบครัว และสิ่งที่ต้องค่อย ๆ โต",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Nourishment phase: care and growth. Good for relationships, recovery, home, family, and gradual development.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "養地主滋養，利關係、修復、家庭與長期培育。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "palace_year": {
+      "module_id": "§23",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "เรือนปีถูกกระตุ้น วันนี้เกี่ยวกับผู้ใหญ่ ตระกูล ภาพลักษณ์วงกว้าง หรือเรื่องที่ส่งผลต่อเครือญาติ",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Year palace is activated: elders, ancestry, public image, and matters affecting the wider family line.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "年宮被引動，主長輩、家族、外在名聲與宗親脈絡。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "palace_month": {
+      "module_id": "§23",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "เรือนเดือนถูกกระตุ้น วันนี้เกี่ยวกับพ่อแม่ งาน อาชีพ หัวหน้า ระบบองค์กร และความรับผิดชอบหลัก",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Month palace is activated: parents, career, bosses, organization, and core responsibilities.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "月宮被引動，主父母、事業、上司、組織與主要責任。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "palace_day": {
+      "module_id": "§23",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "เรือนวันถูกกระตุ้น วันนี้เกี่ยวกับตัวคุณ คู่ครอง ความสัมพันธ์ใกล้ชิด และการตัดสินใจที่สะท้อนตัวตน",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Day palace is activated: self, spouse/partner, close relationships, and decisions that reflect who you are.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "日宮被引動，主自身、伴侶、親密關係與自我選擇。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "palace_hour": {
+      "module_id": "§23",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "เรือนชั่วโมงถูกกระตุ้น วันนี้เกี่ยวกับลูก ลูกน้อง โปรเจกต์อนาคต ความคิดปลายทาง และผลลัพธ์ที่กำลังจะเกิด",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Hour palace is activated: children, subordinates, future projects, later-life direction, and coming results.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "時宮被引動，主子女、部屬、未來計畫、晚運與成果。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "天乙貴人": {
+      "module_id": "§20",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "天乙貴人เด่น มีโอกาสได้ผู้ช่วย คนเมตตา หรือทางออกจากปัญหา เหมาะกับขอคำปรึกษาและเข้าหาผู้ใหญ่",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Heavenly Nobleman is active: help, kindness, and solutions may appear. Good for advice and approaching mentors.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "天乙貴人臨，易得助力、善緣與解困之道，宜請教貴人。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "桃花": {
+      "module_id": "§20",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "桃花เด่น เสน่ห์และแรงดึงดูดสูง เหมาะกับพบปะ สื่อสาร ภาพลักษณ์ และความรัก แต่ระวังใจวอกแวก",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Peach Blossom is active: charm and attraction rise. Good for meetings, image, communication, and romance; watch distraction.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "桃花臨，魅力人緣增，利社交、形象與感情，但慎分心。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "驛馬": {
+      "module_id": "§20",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "驛馬เด่น วันนี้พลังเคลื่อนไหวสูง เหมาะกับเดินทาง ย้ายที่ ติดต่อไกล และเร่งเรื่องที่ต้องขยับ",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Traveling Horse is active: movement is strong. Good for travel, relocation, distant contact, and fast-moving tasks.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "驛馬臨，動象明顯，利出行、搬動、遠方聯絡與推進變化。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "華蓋": {
+      "module_id": "§20",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "華蓋เด่น เหมาะกับงานลึก ศิลปะ วิชาเฉพาะ สมาธิ และอยู่กับตัวเอง แต่ระวังรู้สึกโดดเดี่ยว",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Elegant Canopy is active: good for deep work, art, specialized study, and solitude; watch isolation.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "華蓋臨，利深研、藝術、專業與獨處，但慎孤高孤立。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "空亡": {
+      "module_id": "§20",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "空亡เด่น เรื่องบางอย่างยังไม่เต็มรูป ระวังความคาดหวังลอย ๆ ข้อมูลไม่ครบ หรือผลลัพธ์ว่างเปล่า",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Void is active: some matters lack form. Watch empty expectations, incomplete information, or results that do not land.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "空亡臨，事有虛空未實，慎期待落空、資料不足與結果不著地。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "羊刃": {
+      "module_id": "§20",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "羊刃เด่น พลังคมและแรง เหมาะกับลุยงานยาก ตัดสินใจเด็ดขาด แต่ต้องระวังอุบัติเหตุ คำพูด และความใจร้อน",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Goat Blade is active: sharp and forceful. Good for tough tasks and firm decisions; watch accidents, words, and impatience.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "羊刃臨，氣勢剛烈，利攻堅決斷，但慎傷災、口舌與衝動。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "hero_dm": {
+      "module_id": "§1",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ก้านวันคือแกนตัวตนของคุณ บอกวิธีใช้พลัง วิธีตัดสินใจ และลายเซ็นพื้นฐานที่ดวงนี้แสดงออก",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Your Day Master is the core of your chart: how you use energy, make decisions, and express your basic signature.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "日主為命盤核心，主能量使用、決策方式與個人本質。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "tengods_dominant": {
+      "module_id": "§3",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "เทพเด่นในดวงบอกบทบาทหลักของชีวิต เช่น งาน เงิน ความรู้ อำนาจ ความสัมพันธ์ และวิธีสร้างคุณค่า",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Dominant Ten Gods show your main life roles: career, wealth, knowledge, authority, relationships, and value creation.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "命中主導十神，顯示事業、財富、學習、權力、人際與價值創造方式。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "archetype_summary": {
+      "module_id": "§15",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "Archetype สรุปบุคลิกหลักของดวง ช่วยให้เข้าใจจุดแข็ง วิธีเติบโต และสไตล์การใช้ชีวิตของคุณ",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "The archetype summarizes your core personality, strengths, growth path, and natural life style.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "人格原型總結命局性格、優勢、成長方式與生活風格。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "structure_summary": {
+      "module_id": "§16",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "โครงสร้างดวงคือ pattern ใหญ่ของชีวิต บอกว่าคุณควรใช้พลังแบบไหนจึงจะเดินได้ถูกทาง",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Chart structure is the major life pattern. It shows what kind of energy use keeps you aligned with your path.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "格局為命盤大架構，指示如何用力才順勢得位。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "nayin_summary": {
+      "module_id": "§17",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "Na Yin เพิ่มมิติเชิงสัญลักษณ์ของดวง เหมือนเสียงธาตุที่ช่วยขยายบุคลิก บรรยากาศ และความหมายลึก",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Na Yin adds a symbolic layer to the chart, like an elemental tone that enriches personality and deeper meaning.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "納音為命局之象徵音色，補充性格氣質與深層意涵。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "personal_star_overall": {
+      "module_id": "§37",
+      "severity": null,
+      "tone": null,
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ดาวส่วนตัวช่วยชี้พรสวรรค์ เงื่อนไขเฉพาะ และจุดที่ทำให้ดวงนี้ไม่เหมือนใคร",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "en": {
+        "main": "Personal stars reveal talents, special conditions, and the unique features that make this chart distinct.",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      },
+      "zh": {
+        "main": "個人星曜顯示天賦、特殊條件與命盤獨特之處。",
+        "short": null,
+        "long": null,
+        "advice": null,
+        "warning": null
+      }
+    },
+    "activity_work": {
+      "module_id": "§11",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ชั่วยามนี้เหมาะกับงานที่ต้องใช้สมาธิ ความต่อเนื่อง และการปิดงานให้เห็นผลชัดเจน",
+        "short": "เหมาะกับงานจริงและการปิดงาน",
+        "long": "ใช้ช่วงเวลานี้กับงานที่ต้องทำให้เสร็จ ตรวจรายละเอียด หรือขยับงานสำคัญให้มีผลลัพธ์จับต้องได้",
+        "advice": "ตั้งเป้างานหนึ่งเรื่องให้ชัด แล้วทำให้จบก่อนเริ่มเรื่องใหม่",
+        "warning": "ระวังเปิดหลายงานพร้อมกันจนสมาธิกระจาย"
+      },
+      "en": {
+        "main": "This hour supports focused work, steady execution, and closing tasks with clear results.",
+        "short": "Good for focused work and completion",
+        "long": "Use this period for finishing tasks, reviewing details, or moving important work toward a tangible result.",
+        "advice": "Choose one clear work target and complete it before starting another.",
+        "warning": "Avoid opening too many tasks at once and scattering your focus."
+      },
+      "zh": {
+        "main": "此時辰利專注工作、穩定執行，並完成可見成果。",
+        "short": "利專注辦事與收尾",
+        "long": "宜用於完成事項、覆核細節，或推進重要工作至可見成果。",
+        "advice": "宜定一事為目標，先完成再啟新事。",
+        "warning": "忌多事並開，使心力分散。"
+      }
+    },
+    "activity_money": {
+      "module_id": "§11",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ชั่วยามนี้เหมาะกับการจัดการเงิน ตรวจตัวเลข วางงบ หรือคุยเรื่องผลประโยชน์อย่างมีหลักฐาน",
+        "short": "เหมาะกับเงินและตัวเลข",
+        "long": "ใช้ช่วงนี้ทบทวนรายรับรายจ่าย เช็กเงื่อนไขราคา หรือจัดลำดับทรัพยากรให้คุ้มที่สุด",
+        "advice": "คุยเรื่องเงินด้วยตัวเลขจริง ไม่ใช่ความรู้สึกหรือความหวัง",
+        "warning": "ระวังตัดสินใจจากความโลภหรือโอกาสที่ยังไม่พิสูจน์"
+      },
+      "en": {
+        "main": "This hour supports money management, number checks, budgeting, and evidence-based benefit discussions.",
+        "short": "Good for money and numbers",
+        "long": "Use this time to review income and expenses, check pricing terms, or prioritize resources efficiently.",
+        "advice": "Discuss money with real numbers, not feelings or hopes.",
+        "warning": "Watch decisions driven by greed or unproven opportunity."
+      },
+      "zh": {
+        "main": "此時辰利理財、核數、預算與有憑據之利益商議。",
+        "short": "利財務與數字",
+        "long": "宜檢視收支、價格條件，並善排資源。",
+        "advice": "談財宜憑實數，不憑情緒或願望。",
+        "warning": "慎因貪念或未證之機會而決。"
+      }
+    },
+    "activity_meeting": {
+      "module_id": "§11",
+      "severity": "good",
+      "tone": "premium",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ชั่วยามนี้เหมาะกับการประชุม เจรจา นัดหมาย หรือเปิดบทสนทนาที่ต้องการความเข้าใจร่วมกัน",
+        "short": "เหมาะกับประชุมและเจรจา",
+        "long": "ใช้ช่วงนี้เปิดประเด็นสำคัญ ฟังให้ครบ และสรุปข้อตกลงเป็นขั้นตอนที่ทุกฝ่ายเข้าใจตรงกัน",
+        "advice": "เตรียม agenda และผลลัพธ์ที่ต้องการก่อนเข้าคุย",
+        "warning": "ระวังคุยนานแต่ไม่สรุป หรือให้ความสัมพันธ์กลบเงื่อนไขจริง"
+      },
+      "en": {
+        "main": "This hour supports meetings, negotiation, appointments, and conversations that need shared understanding.",
+        "short": "Good for meetings and negotiation",
+        "long": "Use this time to open key topics, listen fully, and turn agreements into clear next steps.",
+        "advice": "Prepare the agenda and desired outcome before the discussion.",
+        "warning": "Avoid long talks without conclusion, or letting rapport hide real terms."
+      },
+      "zh": {
+        "main": "此時辰利會議、協商、約見與建立共識之談話。",
+        "short": "利會議與協商",
+        "long": "宜提出要點、充分聆聽，並將共識化為清楚步驟。",
+        "advice": "會前宜備議程與所求成果。",
+        "warning": "忌久談無結，或以情面遮掩實際條件。"
+      }
+    },
+    "activity_health": {
+      "module_id": "§11",
+      "severity": "neutral_good",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ชั่วยามนี้เหมาะกับการพัก ฟื้นแรง ดูแลร่างกาย หายใจช้า ๆ หรือปรับสมดุลก่อนกลับไปลุยต่อ",
+        "short": "เหมาะกับพักและฟื้นแรง",
+        "long": "ใช้ช่วงนี้ลดความเร่ง เช็กสัญญาณร่างกาย ดื่มน้ำ เดินเบา ๆ หรือทำสิ่งที่ทำให้ระบบประสาทสงบ",
+        "advice": "เลือกกิจกรรมที่เติมพลัง ไม่ใช่กิจกรรมที่เผาพลังเพิ่ม",
+        "warning": "ระวังฝืนงานหนักหรือใช้คาเฟอีนแทนการพักจริง"
+      },
+      "en": {
+        "main": "This hour supports rest, recovery, body care, slow breathing, and restoring balance before action.",
+        "short": "Good for rest and recovery",
+        "long": "Use this time to slow down, check body signals, hydrate, walk lightly, or calm the nervous system.",
+        "advice": "Choose activities that restore energy, not ones that burn more energy.",
+        "warning": "Avoid forcing heavy work or replacing real rest with caffeine."
+      },
+      "zh": {
+        "main": "此時辰利休息、復元、養身、緩息，先調平衡再行動。",
+        "short": "利休息與復元",
+        "long": "宜放慢、察身體訊號、補水、輕行，安定神經。",
+        "advice": "宜選補氣之事，勿再耗氣。",
+        "warning": "慎強撐重務，或以咖啡因代替真正休息。"
+      }
+    },
+    "activity_travel": {
+      "module_id": "§11",
+      "severity": "good",
+      "tone": "direct",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ชั่วยามนี้เหมาะกับการเดินทาง ติดต่อคนไกล ย้ายจุด ทำธุระนอกสถานที่ หรือเร่งเรื่องที่ต้องขยับ",
+        "short": "เหมาะกับเดินทางและขยับเรื่อง",
+        "long": "ใช้ช่วงนี้จัดเส้นทาง ติดต่อก่อนออกเดินทาง และขยับเรื่องที่ค้างเพราะต้องมีการเคลื่อนที่",
+        "advice": "เช็กเวลา เส้นทาง เอกสาร และแผนสำรองก่อนออกตัว",
+        "warning": "ระวังรีบจนตกหล่น หรือเปลี่ยนแผนโดยไม่แจ้งคนเกี่ยวข้อง"
+      },
+      "en": {
+        "main": "This hour supports travel, distant contact, relocation, errands, and tasks that need movement.",
+        "short": "Good for travel and movement",
+        "long": "Use this time to plan routes, contact people before leaving, and move matters stuck by distance.",
+        "advice": "Check timing, route, documents, and backup plans before moving.",
+        "warning": "Watch rushing and missing details, or changing plans without informing others."
+      },
+      "zh": {
+        "main": "此時辰利出行、遠聯、移動、外務與需變動之事。",
+        "short": "利出行與變動",
+        "long": "宜排路線、出行前聯絡，推動因距離而滯之事。",
+        "advice": "動身前宜查時間、路線、文件與備案。",
+        "warning": "慎匆忙遺漏，或改計畫而未告知相關人。"
+      }
+    },
+    "activity_rest": {
+      "module_id": "§11",
+      "severity": "neutral",
+      "tone": "soft",
+      "_source": {
+        "sheet": "07 · Frontend_Text 💬"
+      },
+      "th": {
+        "main": "ชั่วยามนี้เหมาะกับการชะลอ จัดใจ ทบทวนแผน เก็บแรง และไม่ฝืนเรื่องที่ยังไม่ถึงจังหวะ",
+        "short": "เหมาะกับชะลอและทบทวน",
+        "long": "ใช้ช่วงนี้ตัดเสียงรบกวน ทบทวนสิ่งที่เกิดขึ้น และเลือกว่าจะเดินต่อเมื่อไรอย่างมีสติ",
+        "advice": "พักแบบมีเป้าหมาย เช่น ปิดงานเล็ก จดบทเรียน หรือเตรียมตัวก่อนรอบถัดไป",
+        "warning": "ระวังใช้คำว่า “พัก” เพื่อผัดวันหรือเลี่ยงเรื่องที่ควรตัดสินใจ"
+      },
+      "en": {
+        "main": "This hour supports slowing down, centering yourself, reviewing plans, saving energy, and not forcing timing.",
+        "short": "Good for slowing down and review",
+        "long": "Use this time to reduce noise, review what happened, and choose when to move next with clarity.",
+        "advice": "Rest with purpose: close small tasks, record lessons, or prepare for the next round.",
+        "warning": "Watch using “rest” as a way to delay or avoid a decision that should be made."
+      },
+      "zh": {
+        "main": "此時辰利放慢、定心、檢討計畫、養力，不強求未到之時。",
+        "short": "利放慢與檢討",
+        "long": "宜減雜音，回顧所發生之事，清醒選擇再行之時。",
+        "advice": "宜有目的地休息，如收小事、記得失、備下一輪。",
+        "warning": "慎以休息為名拖延，逃避應決之事。"
+      }
+    }
+  }
+}
