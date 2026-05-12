@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>hourkey · ฉีเหมิน · 奇門遁甲</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  [data-theme="dark"]{
+    --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.32);
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12);
+    --gold-line:rgba(200,164,77,.22);
+    --tile:rgba(38,42,50,.55); --tile-bd:rgba(246,241,230,.10);
+    --wood:#8fc37c; --wood-bg:rgba(143,195,124,.14);
+    --fire:#e26b5d; --fire-bg:rgba(226,107,93,.14);
+    --earth:#d4a85a; --earth-bg:rgba(212,168,90,.14);
+    --metal:#c8b88a; --metal-bg:rgba(200,184,138,.14);
+    --water:#7ba8c8; --water-bg:rgba(123,168,200,.14);
+    --good:#8fc37c; --bad:#e26b5d; --neutral:#c8b88a;
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#ebe5d6; --bg-3:#dfd9c8;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.65); --fg-faint:rgba(26,22,18,.4);
+    --gold:#8a6d2a; --gold-deep:#5e4a1a; --gold-soft:rgba(138,109,42,.1);
+    --gold-line:rgba(138,109,42,.28);
+    --tile:rgba(255,250,238,.65); --tile-bd:rgba(26,22,18,.12);
+    --wood:#5a8a48; --wood-bg:rgba(90,138,72,.1);
+    --fire:#a8483a; --fire-bg:rgba(168,72,58,.1);
+    --earth:#9a7d3a; --earth-bg:rgba(154,125,58,.1);
+    --metal:#7a6f4a; --metal-bg:rgba(122,111,74,.1);
+    --water:#3f6688; --water-bg:rgba(63,102,136,.1);
+    --good:#5a8a48; --bad:#a8483a; --neutral:#7a6f4a;
+  }
+  :root{
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);font-family:var(--thai);color:var(--fg);min-height:100vh;transition:background .35s, color .35s;;overflow-x:hidden}
+  body{background:radial-gradient(circle at 20% 50%, var(--gold-soft), transparent 50%), radial-gradient(circle at 80% 80%, rgba(123,168,200,.06), transparent 60%), var(--bg);}
+  button,input,select,textarea{font-family:inherit;color:inherit;}
+
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:color-mix(in srgb, var(--bg) 78%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--thai);font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+  .nav a .glyph{font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:700;line-height:1;}
+  .nav a .lbl{font-size:12px;}
+  .nav a.on,.nav a.active{color:var(--gold);}
+  .nav a:hover{color:var(--fg);}
+  .nav a:hover .glyph{color:var(--gold-deep);}
+  .hk-lang-switch{display:inline-flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+  .hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
+  .nav a.on{color:var(--gold);}
+  .top-r{display:flex;align-items:center;gap:14px;}
+  .theme-switch{display:flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .theme-switch button{width:32px;height:32px;border:none;background:transparent;color:var(--fg-soft);font-size:14px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+  .theme-switch button.on{background:var(--gold);color:var(--bg);}
+  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, var(--earth), var(--gold));display:flex;align-items:center;justify-content:center;color:var(--bg);font-family:var(--tc);font-size:14px;font-weight:700;}
+
+  .stage{max-width:1400px;margin:0 auto;padding:32px 40px 80px;}
+  .crumb{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-faint);margin-bottom:18px;}
+  .crumb a{color:var(--fg-soft);text-decoration:none;}
+
+  /* hero head */
+  .hero-head{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--gold-line);}
+  .hero-head .label{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+  .hero-head h1{font-family:var(--serif);font-size:56px;font-weight:300;line-height:1;letter-spacing:-.02em;}
+  .hero-head h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .hero-head .lede{font-size:14px;color:var(--fg-soft);margin-top:12px;line-height:1.65;max-width:580px;}
+  .stats{display:flex;gap:18px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-faint);text-align:right;}
+  .stats b{display:block;font-family:var(--serif);font-size:32px;font-style:italic;color:var(--gold);font-weight:300;margin-bottom:4px;letter-spacing:0;}
+
+  /* config bar */
+  .config-bar{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;padding:22px;margin-bottom:24px;}
+  .config-row{display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;}
+  .config-row + .config-row{margin-top:18px;padding-top:18px;border-top:1px dashed var(--gold-line);}
+  .cfg-label{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+  .cfg-label .tc{font-family:var(--tc);font-size:18px;font-weight:700;letter-spacing:0;}
+
+  .school-toggle{display:flex;gap:0;background:var(--bg-2);border-radius:10px;padding:4px;}
+  .school-toggle button{flex:1;background:transparent;border:none;color:var(--fg-soft);padding:12px 18px;border-radius:8px;font-family:var(--thai);font-size:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:.2s;}
+  .school-toggle button.on{background:var(--gold-soft);color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
+  .school-toggle button .tc{font-family:var(--tc);font-size:18px;font-weight:700;}
+  .school-toggle button .en{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;margin-top:2px;}
+  .school-toggle button.on .en{color:var(--gold);}
+
+  .school-info{padding:14px 16px;background:var(--bg-2);border-radius:8px;font-size:12px;line-height:1.55;color:var(--fg-soft);}
+  .school-info b{color:var(--gold);}
+
+  /* time picker */
+  .time-grid{display:grid;grid-template-columns:auto auto auto auto auto;gap:8px;align-items:center;}
+  .time-grid select, .time-grid input{background:var(--bg-2);border:1px solid var(--tile-bd);color:var(--fg);padding:10px 12px;border-radius:8px;font-family:var(--mono);font-size:12px;letter-spacing:.05em;}
+  .time-grid select:focus, .time-grid input:focus{border-color:var(--gold);outline:none;}
+  .time-grid .sep{color:var(--fg-faint);font-family:var(--mono);font-size:10px;}
+
+  .quick-times{display:flex;gap:6px;flex-wrap:wrap;}
+  .quick-times button{background:var(--bg-2);border:1px solid var(--tile-bd);color:var(--fg-soft);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;}
+  .quick-times button:hover, .quick-times button.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+
+  /* current chart info */
+  .chart-meta{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:10px;color:var(--fg-faint);letter-spacing:.18em;flex-wrap:wrap;}
+  .chart-meta .pill{padding:6px 12px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:99px;}
+  .chart-meta .pill b{color:var(--gold);font-family:var(--tc);font-size:14px;letter-spacing:0;margin-right:4px;}
+  .chart-meta .pill.special{border-color:var(--gold);background:var(--gold-soft);}
+
+  /* layout: 9-palace + side */
+  .qmdj-layout{display:grid;grid-template-columns:1fr 380px;gap:18px;}
+
+  /* 9-palace chart */
+  .palace-wrap{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;padding:24px;}
+  .palace-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+  .palace-head h3{font-family:var(--serif);font-size:24px;font-weight:400;}
+  .palace-head h3 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .palace-head .yuanju{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;}
+  .palace-head .yuanju b{font-family:var(--tc);font-size:16px;letter-spacing:0;}
+
+  .palace-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;aspect-ratio:1/1;}
+  .palace{position:relative;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:.25s;overflow:hidden;}
+  .palace:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .palace.is-center{background:var(--gold-soft);border-color:var(--gold);}
+  .palace.is-shi{box-shadow:0 0 0 2px var(--good);}
+  .palace.is-ying{box-shadow:0 0 0 2px var(--bad);}
+
+  .palace .num{position:absolute;top:8px;right:10px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--fg-faint);}
+  .palace .pos{position:absolute;top:8px;left:10px;font-family:var(--tc);font-size:11px;color:var(--gold-deep);font-weight:700;}
+
+  .palace .stem-row{display:flex;justify-content:space-around;font-family:var(--tc);font-weight:700;line-height:1;margin-top:14px;margin-bottom:8px;}
+  .palace .stem-row .top{font-size:24px;color:var(--gold);}
+  .palace .stem-row .bot{font-size:16px;color:var(--fg-soft);position:relative;}
+  .palace .stem-row .bot::before{content:'';position:absolute;left:-6px;right:-6px;top:-3px;height:1px;background:var(--gold-line);}
+
+  .palace .gate{padding:3px 6px;background:var(--bg);border-radius:4px;font-family:var(--tc);font-size:13px;font-weight:700;text-align:center;margin:3px 0;}
+  .palace .gate.good{background:var(--wood-bg);color:var(--good);}
+  .palace .gate.bad{background:var(--fire-bg);color:var(--bad);}
+  .palace .gate.mid{background:var(--metal-bg);color:var(--neutral);}
+
+  .palace .star{padding:2px 5px;font-family:var(--tc);font-size:11px;font-weight:700;text-align:center;border-radius:3px;}
+  .palace .star.good{background:var(--wood-bg);color:var(--good);}
+  .palace .star.bad{background:var(--fire-bg);color:var(--bad);}
+  .palace .star.mid{color:var(--fg-soft);}
+
+  .palace .deity{font-family:var(--tc);font-size:10px;color:var(--fg-faint);text-align:center;margin-top:4px;letter-spacing:.05em;}
+  .palace .deity.spec{color:var(--gold);font-weight:700;}
+
+  .palace .marker{position:absolute;bottom:6px;right:8px;display:flex;gap:3px;}
+  .palace .marker .m{font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.05em;padding:1px 4px;border-radius:99px;}
+  .palace .marker .m.shi{background:var(--good);color:var(--bg);}
+  .palace .marker .m.ying{background:var(--bad);color:var(--bg);}
+  .palace .marker .m.dm{background:var(--gold);color:var(--bg);}
+
+  /* legend */
+  .palace-legend{display:flex;gap:14px;justify-content:center;margin-top:18px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;flex-wrap:wrap;}
+  .palace-legend span{display:inline-flex;align-items:center;gap:5px;}
+  .palace-legend i{width:10px;height:10px;border-radius:50%;display:inline-block;}
+
+  /* side: detail or forecast */
+  .side-pane{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;padding:22px;align-self:start;position:sticky;top:96px;max-height:calc(100vh - 116px);overflow-y:auto;}
+
+  /* tabs */
+  .side-tabs{display:flex;gap:0;border-bottom:1px solid var(--gold-line);margin-bottom:18px;}
+  .side-tabs button{flex:1;background:transparent;border:none;color:var(--fg-soft);padding:12px 8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;}
+  .side-tabs button.on{color:var(--gold);border-bottom-color:var(--gold);}
+
+  .side-panel{display:none;}
+  .side-panel.on{display:block;animation:fade .3s;}
+  @keyframes fade{from{opacity:0;}to{opacity:1;}}
+
+  /* detail content */
+  .detail-head{padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--tile-bd);}
+  .detail-head .pos-name{font-family:var(--serif);font-size:32px;font-weight:300;letter-spacing:-.02em;}
+  .detail-head .pos-name .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-right:8px;}
+  .detail-head .pos-meta{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-top:4px;}
+
+  .detail-row{display:grid;grid-template-columns:80px 1fr;gap:12px;padding:12px 0;border-bottom:1px dashed var(--tile-bd);font-size:13px;}
+  .detail-row .k{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;align-self:center;}
+  .detail-row .v{color:var(--fg-soft);line-height:1.55;}
+  .detail-row .v b{color:var(--fg);}
+  .detail-row .v .tc{font-family:var(--tc);font-weight:700;color:var(--gold);font-size:16px;margin-right:6px;}
+
+  .verdict-card{padding:14px;background:var(--bg-2);border-radius:10px;margin-top:16px;border-left:3px solid var(--good);}
+  .verdict-card.bad{border-color:var(--bad);}
+  .verdict-card.mid{border-color:var(--neutral);}
+  .verdict-card h5{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--good);text-transform:uppercase;margin-bottom:8px;}
+  .verdict-card.bad h5{color:var(--bad);}
+  .verdict-card.mid h5{color:var(--neutral);}
+  .verdict-card p{font-size:13px;line-height:1.55;color:var(--fg-soft);}
+  .verdict-card p b{color:var(--fg);}
+
+  /* forecast */
+  .ask-types{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px;}
+  .ask-types button{background:var(--bg-2);border:1px solid var(--tile-bd);color:var(--fg-soft);padding:12px 6px;border-radius:8px;font-family:var(--thai);font-size:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:.2s;}
+  .ask-types button:hover{border-color:var(--gold);color:var(--fg);}
+  .ask-types button.on{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+  .ask-types button .gly{font-family:var(--tc);font-size:20px;font-weight:700;color:var(--gold);}
+
+  .ask-input{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+  .ask-input label{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;}
+  .ask-input textarea{background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:8px;padding:12px;font-family:var(--thai);font-size:13px;line-height:1.5;resize:vertical;min-height:80px;}
+  .ask-input textarea:focus{border-color:var(--gold);outline:none;}
+
+  .ask-btn{background:var(--gold);color:var(--bg);border:none;padding:14px;border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;font-weight:700;text-transform:uppercase;cursor:pointer;width:100%;}
+  .ask-btn:hover{background:var(--gold-deep);}
+
+  /* forecast result */
+  .forecast-result{margin-top:16px;padding:18px;background:var(--bg-2);border:1px solid var(--gold);border-radius:10px;}
+  .forecast-result.empty{border-style:dashed;border-color:var(--tile-bd);text-align:center;padding:40px 18px;color:var(--fg-faint);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
+  .forecast-result.empty .gly{font-family:var(--tc);font-size:36px;color:var(--gold);margin-bottom:10px;}
+
+  .fr-verdict{display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--tile-bd);margin-bottom:14px;}
+  .fr-verdict .num{font-family:var(--serif);font-size:48px;font-style:italic;font-weight:300;letter-spacing:-.02em;color:var(--good);line-height:1;}
+  .fr-verdict.bad .num{color:var(--bad);}
+  .fr-verdict.mid .num{color:var(--neutral);}
+  .fr-verdict .label{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;}
+  .fr-verdict .label b{display:block;font-family:var(--serif);font-size:18px;letter-spacing:-.01em;color:var(--fg);font-weight:500;font-style:normal;text-transform:none;margin-top:4px;}
+
+  .fr-section{margin-bottom:14px;}
+  .fr-section h6{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+  .fr-section p{font-size:13px;line-height:1.6;color:var(--fg-soft);}
+  .fr-section p b{color:var(--fg);}
+  .fr-section ul{list-style:none;display:flex;flex-direction:column;gap:6px;}
+  .fr-section li{font-size:13px;line-height:1.5;color:var(--fg-soft);padding-left:14px;position:relative;}
+  .fr-section li::before{content:'•';position:absolute;left:0;color:var(--gold);}
+
+  .fr-meta{display:flex;flex-wrap:wrap;gap:6px;}
+  .fr-meta .b{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:4px 8px;border-radius:99px;border:1px solid var(--tile-bd);color:var(--fg-soft);}
+  .fr-meta .b.gold{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+
+  /* responsive */
+  @media (max-width:1100px){
+    .qmdj-layout{grid-template-columns:1fr;}
+    .side-pane{position:static;max-height:none;}
+  }
+  @media (max-width:980px){
+    .stage{padding:22px 18px 60px;}
+    .topbar{padding:14px 18px;}
+    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
+    .nav::-webkit-scrollbar{display:none;}
+    .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
+    .nav a .glyph{font-size:14px;}
+    .nav a .lbl{font-size:11px;}
+    .hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}
+    .hero-head{grid-template-columns:1fr;align-items:flex-start;}
+    .hero-head h1{font-size:36px;}
+    .stats{justify-content:flex-start;gap:12px;}
+    .stats b{font-size:24px;}
+    .config-row{grid-template-columns:1fr;gap:12px;}
+    .school-toggle button{padding:10px 6px;font-size:11px;}
+    .palace{padding:8px;}
+    .palace .stem-row .top{font-size:18px;}
+    .palace .stem-row .bot{font-size:13px;}
+    .palace .gate{font-size:11px;padding:2px 4px;}
+    .palace .star{font-size:9px;}
+    .palace .deity{font-size:8px;}
+    .palace .num, .palace .pos{font-size:8px;}
+    .ask-types{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:560px){
+    .palace-grid{gap:5px;}
+    .palace{padding:5px;}
+    .palace .num, .palace .pos{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
+  <nav class="nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="q.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="q.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="q.nav.calendar">ปฏิทิน</span></a>
+    <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="q.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="q.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="q.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="q.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="q.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="q.nav.goal">เป้าหมาย</span></a>
+  </nav>
+  <div class="top-r">
+    <div id="hk-user-menu-mount"></div>
+  </div>
+</header>
+
+<div class="stage">
+  <div class="crumb"><a href="/">หน้าหลัก</a> <span>/</span> <span>奇門遁甲 · QI MEN DUN JIA</span></div>
+
+  <div class="hero-head">
+    <div>
+      <div class="label">奇門遁甲 · QI MEN DUN JIA</div>
+      <h1>ฉีเหมิน <span class="tc">遁甲</span> · ผังเวลา</h1>
+      <p class="lede">ระบบพยากรณ์ <b>9 ช่อง</b> ที่เปลี่ยนตามชั่วยาม-วัน-เดือน-ปี · เลือก <b>สำนัก 拆補 / 置閏</b> แล้วตั้งคำถามเฉพาะหน้า — ฉีเหมินตอบเรื่อง <b>ทิศ จังหวะ คน และผลลัพธ์</b></p>
+    </div>
+    <div class="stats">
+      <div><b>陽 8</b>หยางจวี 8</div>
+      <div><b>遁三</b>ตุ้นซาน</div>
+      <div><b>72</b>เปลี่ยนผังต่อวัน</div>
+    </div>
+  </div>
+
+  <!-- CONFIG: school + time -->
+  <div class="config-bar">
+    <!-- row 1: school selector -->
+    <div class="config-row">
+      <div class="cfg-label"><span class="tc">局</span> สำนัก · SCHOOL</div>
+      <div class="school-toggle" id="school-toggle">
+        <button class="on" data-school="zhirun">
+          <span class="tc">置閏</span>
+          <span>จื้อรุ่น</span>
+          <span class="en">ZHIRUN · LEAP</span>
+        </button>
+        <button data-school="chaibu">
+          <span class="tc">拆補</span>
+          <span>ฉาบู่</span>
+          <span class="en">CHAIBU · PATCH</span>
+        </button>
+        <button data-school="maoshan">
+          <span class="tc">茅山</span>
+          <span>เหมาซาน</span>
+          <span class="en">MAOSHAN · TAOIST</span>
+        </button>
+      </div>
+      <div class="school-info" id="school-info">
+        <b>置閏 · ZhiRun</b> — สำนักดั้งเดิม ใช้ <b>節氣ตรง</b> เป็นจุดเปลี่ยน 局 · เหมาะวิเคราะห์ <b>เหตุการณ์ใหญ่</b> · ใช้ในตำรา 煙波釣叟賦
+      </div>
+    </div>
+
+    <!-- row 2: time picker -->
+    <div class="config-row">
+      <div class="cfg-label"><span class="tc">時</span> เวลา · TIME</div>
+      <div class="time-grid">
+        <select id="t-year">
+          <option>2569 / 2026</option>
+          <option>2568 / 2025</option>
+        </select>
+        <select id="t-month">
+          <option>5 พ.ค.</option>
+        </select>
+        <select id="t-day">
+          <option>7</option>
+        </select>
+        <span class="sep">·</span>
+        <select id="t-hour">
+          <option>未時 13-15</option>
+          <option>子時 23-1</option>
+          <option>丑時 1-3</option>
+          <option>寅時 3-5</option>
+          <option>卯時 5-7</option>
+          <option>辰時 7-9</option>
+          <option>巳時 9-11</option>
+          <option>午時 11-13</option>
+          <option>申時 15-17</option>
+          <option>酉時 17-19</option>
+          <option>戌時 19-21</option>
+          <option>亥時 21-23</option>
+        </select>
+      </div>
+      <div class="quick-times">
+        <button class="on">ตอนนี้</button>
+        <button>วันนี้</button>
+        <button>+ ปฏิทิน</button>
+      </div>
+    </div>
+
+    <!-- row 3: chart meta -->
+    <div class="config-row">
+      <div class="cfg-label"><span class="tc">局</span> ผังที่ใช้</div>
+      <div class="chart-meta">
+        <span class="pill"><b>陽八局</b>YANG YUAN-JU 8</span>
+        <span class="pill"><b>戊</b>FU TOU · 戊</span>
+        <span class="pill special"><b>直符</b>天心</span>
+        <span class="pill special"><b>直使</b>開門</span>
+        <span class="pill"><b>旬</b>甲申旬</span>
+        <span class="pill"><b>空</b>午未</span>
+      </div>
+      <button class="ctrl-btn" style="background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;">↻ คำนวณใหม่</button>
+    </div>
+  </div>
+
+  <!-- main: 9-palace + side -->
+  <div class="qmdj-layout">
+
+    <!-- 9-palace chart -->
+    <div class="palace-wrap">
+      <div class="palace-head">
+        <h3>九宮 <span class="tc">奇門盤</span></h3>
+        <div class="yuanju">YUAN-JU · <b>陽八局</b> · YANG 8</div>
+      </div>
+
+      <div class="palace-grid" id="palace-grid">
+        <!-- 4 SE 巽 -->
+        <div class="palace" data-pos="4">
+          <div class="pos">巽 SE</div>
+          <div class="num">4</div>
+          <div>
+            <div class="stem-row"><span class="top">壬</span></div>
+            <div class="stem-row"><span class="bot">辛</span></div>
+            <div class="gate bad">杜門</div>
+            <div class="star bad">天輔</div>
+            <div class="deity">六合</div>
+          </div>
+          <div class="marker"></div>
+        </div>
+        <!-- 9 S 離 -->
+        <div class="palace" data-pos="9">
+          <div class="pos">離 S</div>
+          <div class="num">9</div>
+          <div>
+            <div class="stem-row"><span class="top">乙</span></div>
+            <div class="stem-row"><span class="bot">丙</span></div>
+            <div class="gate good">景門</div>
+            <div class="star bad">天英</div>
+            <div class="deity">太陰</div>
+          </div>
+          <div class="marker"></div>
+        </div>
+        <!-- 2 SW 坤 -->
+        <div class="palace is-shi" data-pos="2">
+          <div class="pos">坤 SW</div>
+          <div class="num">2</div>
+          <div>
+            <div class="stem-row"><span class="top">丁</span></div>
+            <div class="stem-row"><span class="bot">癸</span></div>
+            <div class="gate good">死門</div>
+            <div class="star good">天芮</div>
+            <div class="deity spec">直符 天心</div>
+          </div>
+          <div class="marker"><span class="m shi">使</span></div>
+        </div>
+
+        <!-- 3 E 震 -->
+        <div class="palace" data-pos="3">
+          <div class="pos">震 E</div>
+          <div class="num">3</div>
+          <div>
+            <div class="stem-row"><span class="top">庚</span></div>
+            <div class="stem-row"><span class="bot">丁</span></div>
+            <div class="gate bad">傷門</div>
+            <div class="star mid">天沖</div>
+            <div class="deity">勾陳</div>
+          </div>
+          <div class="marker"></div>
+        </div>
+        <!-- 5 CENTER (no gate, 中宮 not used) -->
+        <div class="palace is-center" data-pos="5">
+          <div class="pos">中 中宮</div>
+          <div class="num">5</div>
+          <div style="text-align:center;">
+            <div style="font-family:var(--tc);font-size:36px;color:var(--gold);font-weight:700;line-height:1;margin:14px 0;">中</div>
+            <div style="font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--gold-deep);text-transform:uppercase;">寄 坤宮</div>
+            <div style="font-family:var(--thai);font-size:11px;color:var(--fg-soft);margin-top:8px;">ศูนย์กลาง · ไม่ใช้</div>
+          </div>
+          <div class="marker"><span class="m dm">己</span></div>
+        </div>
+        <!-- 7 W 兌 -->
+        <div class="palace" data-pos="7">
+          <div class="pos">兌 W</div>
+          <div class="num">7</div>
+          <div>
+            <div class="stem-row"><span class="top">辛</span></div>
+            <div class="stem-row"><span class="bot">乙</span></div>
+            <div class="gate mid">驚門</div>
+            <div class="star mid">天柱</div>
+            <div class="deity">朱雀</div>
+          </div>
+          <div class="marker"></div>
+        </div>
+
+        <!-- 8 NE 艮 -->
+        <div class="palace is-ying" data-pos="8">
+          <div class="pos">艮 NE</div>
+          <div class="num">8</div>
+          <div>
+            <div class="stem-row"><span class="top">癸</span></div>
+            <div class="stem-row"><span class="bot">壬</span></div>
+            <div class="gate bad">休門</div>
+            <div class="star bad">天任</div>
+            <div class="deity">九地</div>
+          </div>
+          <div class="marker"><span class="m ying">影</span></div>
+        </div>
+        <!-- 1 N 坎 -->
+        <div class="palace" data-pos="1">
+          <div class="pos">坎 N</div>
+          <div class="num">1</div>
+          <div>
+            <div class="stem-row"><span class="top">己</span></div>
+            <div class="stem-row"><span class="bot">戊</span></div>
+            <div class="gate good">開門</div>
+            <div class="star good">天蓬</div>
+            <div class="deity">九天</div>
+          </div>
+          <div class="marker"></div>
+        </div>
+        <!-- 6 NW 乾 -->
+        <div class="palace" data-pos="6">
+          <div class="pos">乾 NW</div>
+          <div class="num">6</div>
+          <div>
+            <div class="stem-row"><span class="top">戊</span></div>
+            <div class="stem-row"><span class="bot">庚</span></div>
+            <div class="gate mid">生門</div>
+            <div class="star good">天心</div>
+            <div class="deity">值符</div>
+          </div>
+          <div class="marker"></div>
+        </div>
+      </div>
+
+      <div class="palace-legend">
+        <span><i style="background:var(--good);"></i>三吉門 開·休·生</span>
+        <span><i style="background:var(--bad);"></i>五凶門 死·驚·杜·傷·景</span>
+        <span><i style="background:var(--gold);"></i>使 = 直使 · 影 = ตรงข้าม</span>
+      </div>
+    </div>
+
+    <!-- side: detail / forecast -->
+    <div class="side-pane">
+      <div class="side-tabs" id="side-tabs">
+        <button class="on" data-tab="detail">PALACE DETAIL · 詳</button>
+        <button data-tab="forecast">FORECAST · 占</button>
+      </div>
+
+      <!-- DETAIL -->
+      <div class="side-panel on" id="panel-detail">
+        <div class="detail-head">
+          <div class="pos-name"><span class="tc">坤</span>SW · 2宮</div>
+          <div class="pos-meta">PALACE 2 · 直符 STAR</div>
+        </div>
+
+        <div class="verdict-card">
+          <h5>★ ตำแหน่งดี · 大吉</h5>
+          <p><b>直符</b> เคลื่อนเข้าตรงนี้พร้อม <b>死門</b> และ <b>天芮星</b> — โดยปกติ 死門 + 芮 ไม่ดี <b>แต่</b> เมื่อ 直符 หนุนให้กลายเป็น <b>"伏吟轉佳"</b> = เหมาะ <b>ปิดเรื่องเก่าให้จบ</b> · ทวงหนี้ · เก็บข้อมูลคู่แข่ง</p>
+        </div>
+
+        <div class="detail-row">
+          <span class="k">天干</span>
+          <span class="v"><span class="tc">丁</span> ไฟอ่อน บน <span class="tc">癸</span> น้ำอ่อน · <b>丁奇 หนึ่งในสามวิเศษ</b></span>
+        </div>
+        <div class="detail-row">
+          <span class="k">八門</span>
+          <span class="v"><span class="tc">死門</span> ตามทฤษฎีคือ凶 · บัดนี้ผสมกับ 直符 = <b>เหมาะปิดเรื่อง</b> ไม่เหมาะเริ่มเรื่อง</span>
+        </div>
+        <div class="detail-row">
+          <span class="k">九星</span>
+          <span class="v"><span class="tc">天芮</span> ดาวหาความรู้ · <b>เหมาะการเรียน วินิจฉัย</b> · ไม่ดีเรื่องสุขภาพ</span>
+        </div>
+        <div class="detail-row">
+          <span class="k">八神</span>
+          <span class="v"><span class="tc">直符</span> ดาวเอกของผังนี้ · <b>มีคนใหญ่หนุน</b> · ทิศนี้ = ทิศมงคล</span>
+        </div>
+        <div class="detail-row">
+          <span class="k">ทิศ</span>
+          <span class="v">ตะวันตก<b>เฉียงใต้ (SW)</b> · เดินทางทิศนี้ = ทำธุรกรรม · พบที่ปรึกษา · ไม่เหมาะเยี่ยมไข้</span>
+        </div>
+        <div class="detail-row">
+          <span class="k">เวลา</span>
+          <span class="v"><b>未時</b> 13:00–15:00 · ตอนนี้ดวงเปิดที่ตำแหน่งนี้ ใช้ภายใน 2 ชม.</span>
+        </div>
+        <div class="detail-row">
+          <span class="k">用法</span>
+          <span class="v"><b>เหมาะ:</b> ปิดดีล · เก็บเงิน · ตามหนี้ · ทำพิธีปิด<br/><b>หลีก:</b> เริ่มงาน · เปิดร้าน · เยี่ยมคนเจ็บ</span>
+        </div>
+
+        <a href="/today" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-2);border:1px dashed var(--gold-line);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;cursor:pointer;margin-top:18px;text-decoration:none;">
+          <span>→ ไปดูชั่วยามอื่นวันนี้</span>
+          <span class="tc" style="font-size:14px;">時</span>
+        </a>
+      </div>
+
+      <!-- FORECAST -->
+      <div class="side-panel" id="panel-forecast">
+        <div style="margin-bottom:14px;">
+          <h4 style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;">เลือกประเภทคำถาม · 問</h4>
+          <div class="ask-types" id="ask-types">
+            <button class="on" data-q="wealth"><span class="gly">財</span><span>การเงิน</span></button>
+            <button data-q="career"><span class="gly">業</span><span>การงาน</span></button>
+            <button data-q="love"><span class="gly">情</span><span>ความรัก</span></button>
+            <button data-q="travel"><span class="gly">出</span><span>เดินทาง</span></button>
+            <button data-q="negotiate"><span class="gly">談</span><span>เจรจา</span></button>
+            <button data-q="health"><span class="gly">疾</span><span>สุขภาพ</span></button>
+          </div>
+        </div>
+
+        <div class="ask-input">
+          <label>คำถาม · QUESTION</label>
+          <textarea id="ask-q" placeholder="เช่น: ควรปิดดีลกับคู่ค้าจีนภายใน 7 วันนี้ไหม?">ควรเซ็นสัญญากับ Fara วันนี้ตอนเย็น 18:00 ดีไหม?</textarea>
+        </div>
+
+        <button class="ask-btn" id="ask-btn">→ พยากรณ์ ตอนนี้ 占之</button>
+
+        <div class="forecast-result" id="forecast-result">
+          <div class="fr-verdict">
+            <div class="num">+72</div>
+            <div class="label">VERDICT<b>"จังหวะดี · ปิดได้"</b></div>
+          </div>
+
+          <div class="fr-section">
+            <h6>ผังที่ใช้ · CHART</h6>
+            <p>ตอน 18:00 (酉時) ของ 7 พ.ค. ผังจะเปลี่ยนเป็น <b>陽八局 → 戌</b> · <b>用神 (ตัวคุณ)</b> ตกที่ <b>2宮 (SW)</b> ร่วมกับ <b>直符</b> · <b>應 (อีกฝ่าย)</b> ตกที่ <b>8宮 (NE)</b> = <b>沖กัน</b> · 2-8 ปะทะ</p>
+          </div>
+
+          <div class="fr-section">
+            <h6>ตีความ · INTERPRETATION</h6>
+            <ul>
+              <li><b>用神 + 直符</b> = คุณมีอำนาจในการตัดสินใจ · มีคนหนุน</li>
+              <li><b>沖 2-8</b> = อีกฝ่ายอาจจะเสนอเงื่อนไขแย้งครั้งสุดท้าย — <b>เตรียมเงื่อนไขสำรอง</b></li>
+              <li><b>丁奇 อยู่ที่ 用神</b> = สื่อสารชัด เป็นทางการ มีเอกสาร</li>
+              <li><b>死門ที่ 用神</b> = "ปิดเรื่อง" — สัญญานี้จะเป็นจุดจบของการเจรจา ไม่ต้องคุยต่อ</li>
+            </ul>
+          </div>
+
+          <div class="fr-section">
+            <h6>สิ่งที่ควรทำ · ACTION</h6>
+            <ul>
+              <li>เริ่มประชุม <b>หลัง 18:30</b> ให้ผังเข้าที่</li>
+              <li>นั่งหันหน้า <b>ทิศตะวันตกเฉียงใต้</b> (SW) — รับ 直符</li>
+              <li>เตรียม <b>2 เงื่อนไขสำรอง</b> ไว้ — รับมือ沖</li>
+              <li>ใส่ <b>สีทอง</b> หรือ <b>แดงเข้ม</b> ช่วย用神 (ดิน·ไฟ)</li>
+            </ul>
+          </div>
+
+          <div class="fr-section">
+            <h6>คนที่ช่วย · PEOPLE</h6>
+            <p>ดวงในเครือข่ายที่หนุนคุณวันนี้: <b>ใหม่ (辛金)</b> · <b>ก้อง (庚金)</b> · ทั้งคู่เป็น金 หนุน用神 ดิน · พาคนใดคนหนึ่งไปด้วยเป็น <b>ที่ปรึกษา</b></p>
+          </div>
+
+          <div class="fr-meta">
+            <span class="b gold">直符</span>
+            <span class="b gold">丁奇</span>
+            <span class="b">死門 (เหมาะปิด)</span>
+            <span class="b">沖 2-8</span>
+            <span class="b">SW direction</span>
+            <span class="b">未-酉時</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ─── theme toggle ───
+  document.querySelectorAll('.theme-switch button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.documentElement.setAttribute('data-theme', btn.dataset.theme);
+      document.querySelectorAll('.theme-switch button').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+    });
+  });
+
+  // ─── school selector ───
+  const SCHOOL_INFO = {
+    zhirun: '<b>置閏 · ZhiRun</b> — สำนักดั้งเดิม ใช้ <b>節氣ตรง</b> เป็นจุดเปลี่ยน 局 · เหมาะวิเคราะห์ <b>เหตุการณ์ใหญ่</b> · ใช้ในตำรา 煙波釣叟賦',
+    chaibu:  '<b>拆補 · ChaiBu</b> — สำนักสมัยใหม่ ใช้ <b>วันตรง 甲己</b> เป็นจุดเปลี่ยน 局 · เหมาะ <b>วิเคราะห์รายวัน</b> และ <b>เหตุการณ์เร่งด่วน</b> · ผังเปลี่ยนช้ากว่า ZhiRun เล็กน้อย',
+    maoshan: '<b>茅山 · MaoShan</b> — สำนักนักพรต/ไสยศาสตร์ ใช้ <b>圖法</b> ภาพและสัญลักษณ์เพิ่มเติม · เหมาะเรื่อง <b>คน · พิธีกรรม · ดวงตก</b> · มี神煞พิเศษ'
+  };
+  document.getElementById('school-toggle').addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-school]');
+    if(!btn) return;
+    document.querySelectorAll('#school-toggle button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('school-info').innerHTML = SCHOOL_INFO[btn.dataset.school];
+  });
+
+  // ─── side tabs ───
+  document.getElementById('side-tabs').addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-tab]');
+    if(!btn) return;
+    document.querySelectorAll('#side-tabs button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.querySelectorAll('.side-panel').forEach(p=>p.classList.remove('on'));
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('on');
+  });
+
+  // ─── ask types ───
+  document.getElementById('ask-types').addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-q]');
+    if(!btn) return;
+    document.querySelectorAll('#ask-types button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    // (in real app, would change forecast logic)
+  });
+
+  // ─── palace click ───
+  const PALACE_DATA = {
+    1: {pos:'坎 N', name:'坎 N · 1宮', star:'天蓬', gate:'開門', deity:'九天', verdict:'good', text:'三吉門 + 天蓬星 อยู่ในตำแหน่งดี — 北 N เหมาะเดินทางหา <b>ที่ปรึกษา</b> · เริ่มต้นโครงการใหม่'},
+    2: {pos:'坤 SW', name:'坤 SW · 2宮 · 直符', star:'天芮', gate:'死門', deity:'直符', verdict:'good', text:'<b>直符</b> เคลื่อนเข้าตรงนี้พร้อม <b>死門</b> = เหมาะปิดเรื่องเก่า · ทวงหนี้ · เก็บข้อมูล'},
+    3: {pos:'震 E', name:'震 E · 3宮', star:'天沖', gate:'傷門', deity:'勾陳', verdict:'bad', text:'<b>傷門</b> + 勾陳 = ตำแหน่ง <b>ขัดแย้ง</b> · เลี่ยงการเจรจา · ระวังคดีความ'},
+    4: {pos:'巽 SE', name:'巽 SE · 4宮', star:'天輔', gate:'杜門', deity:'六合', verdict:'mid', text:'杜門ปิด · เหมาะเก็บความลับ ทำงานเงียบๆ · 六合หนุนงานคู่'},
+    5: {pos:'中 中宮', name:'中宮 · 5宮', star:'(寄2宮)', gate:'(無)', deity:'-', verdict:'mid', text:'ศูนย์กลาง <b>ไม่ใช้</b> — ฝากเข้า坤宮 · ใช้คู่กับ 2宮 · DM ของคุณอยู่ที่นี่'},
+    6: {pos:'乾 NW', name:'乾 NW · 6宮', star:'天心', gate:'生門', deity:'值符', verdict:'good', text:'<b>生門</b> + 天心 = <b>เปิดดวง</b> · เหมาะเริ่มเรื่องใหม่ · ขอคนใหญ่ช่วย'},
+    7: {pos:'兌 W', name:'兌 W · 7宮', star:'天柱', gate:'驚門', deity:'朱雀', verdict:'mid', text:'驚門 · ระวังเรื่องเอกสารและคำพูด · 朱雀 = สื่อสาร · เหมาะ marketing แต่ระวังพลาด'},
+    8: {pos:'艮 NE', name:'艮 NE · 8宮 · 直使', star:'天任', gate:'休門', deity:'九地', verdict:'mid', text:'<b>直使</b>อยู่ที่นี่ · 休門พักผ่อน · ทิศนี้ = ตอบรับ ไม่ริเริ่ม'},
+    9: {pos:'離 S', name:'離 S · 9宮', star:'天英', gate:'景門', deity:'太陰', verdict:'good', text:'<b>景門</b> + 天英 = ตำแหน่งงานสร้างชื่อ · presentation · ขึ้นเวที · 太陰หนุนผู้หญิง'}
+  };
+
+  document.getElementById('palace-grid').addEventListener('click', e=>{
+    const palace = e.target.closest('.palace[data-pos]');
+    if(!palace) return;
+    const pos = parseInt(palace.dataset.pos);
+    const d = PALACE_DATA[pos];
+    if(!d) return;
+    
+    // switch to detail tab
+    document.querySelectorAll('#side-tabs button').forEach(b=>b.classList.remove('on'));
+    document.querySelector('#side-tabs button[data-tab="detail"]').classList.add('on');
+    document.querySelectorAll('.side-panel').forEach(p=>p.classList.remove('on'));
+    document.getElementById('panel-detail').classList.add('on');
+
+    const detail = document.getElementById('panel-detail');
+    detail.querySelector('.pos-name').innerHTML = `<span class="tc">${d.pos.split(' ')[0]}</span>${d.pos.split(' ').slice(1).join(' ')}`;
+    detail.querySelector('.pos-meta').textContent = d.name;
+    const v = detail.querySelector('.verdict-card');
+    v.className = 'verdict-card '+d.verdict;
+    v.querySelector('h5').textContent = d.verdict==='good'?'★ ตำแหน่งดี · 吉':d.verdict==='bad'?'⚠ ตำแหน่งระวัง · 凶':'· ตำแหน่งกลาง · 平';
+    v.querySelector('p').innerHTML = d.text;
+  });
+</script>
+
+
+<script>
+/* hilite active link · /yongsennetwork → /qimen pathname active */
+(function(){
+  try {
+    var p = window.location.pathname.replace(/\/$/,'') || '/qimen';
+    p = p.replace(/-m$/, '');
+    if (p === '/yongsennetwork') p = '/network';
+    document.querySelectorAll('#hk-topnav a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+  } catch(e){}
+})();
+</script>
+
+<script>
+/* hourkey · qimen · 3-language i18n (TH/EN/ZH) */
+window.HK_I18N = {
+  'q.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
+  'q.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
+  'q.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
+  'q.nav.network': { th:'เครือข่าย', en:'Network', zh:'人脈' },
+  'q.nav.qimen':   { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門' },
+  'q.nav.master':  { th:'ซินแส', en:'Sifu', zh:'老師' },
+  'q.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
+  'q.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  'q.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' }
+};
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+</script>
+
+<script src="/js/hk-user-menu.js?v=9" defer></script>
+</body>
+</html>

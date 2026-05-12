@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>hourkey · sign up</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --gold:#c8a44d; --gold-deep:#8a6d2a;
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+    --bg:#0d0f12; --bg-2:#14171c;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.32);
+    --tile-bg:rgba(38,42,50,.5); --tile-bd:rgba(246,241,230,.12);
+    --gold-line:rgba(200,164,77,.22);
+  }
+  body.light{
+    --bg:#f6f1e6; --bg-2:#ede5d2;
+    --fg:#1a1d24; --fg-soft:rgba(26,29,36,.7); --fg-faint:rgba(26,29,36,.35);
+    --tile-bg:rgba(255,253,247,.7); --tile-bd:rgba(26,29,36,.12);
+    --gold-line:rgba(138,109,42,.3); --gold:#a8842d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);font-family:var(--thai);min-height:100vh;color:var(--fg);transition:background .35s, color .35s;overflow-x:hidden;}
+
+  .theme-switch{position:fixed;top:24px;right:24px;z-index:200;display:flex;background:var(--tile-bg);border:1px solid var(--gold-line);border-radius:99px;padding:3px;backdrop-filter:blur(10px);}
+  .theme-switch button{width:30px;height:28px;border:none;background:transparent;color:var(--fg-soft);font-size:11px;border-radius:99px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+  .theme-switch button.on{background:var(--gold);color:var(--bg);}
+
+  .topbar{position:fixed;top:24px;left:32px;z-index:100;display:flex;align-items:center;gap:10px;}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:24px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .logo .seal{width:32px;height:32px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:14px;color:var(--gold);}
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--fg-soft);font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-decoration:none;text-transform:uppercase;margin-left:24px;}
+  .back:hover{color:var(--gold);}
+
+  .stage{min-height:100vh;display:grid;grid-template-columns:1.05fr 1fr;}
+  @media (max-width: 1024px){.stage{grid-template-columns:1fr;}.left{display:none !important;}}
+
+  /* LEFT — poetic side */
+  .left{position:relative;background:linear-gradient(160deg, var(--bg) 0%, var(--bg-2) 100%);overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:80px 80px;border-right:1px solid var(--gold-line);}
+  .left .rings{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:720px;height:720px;pointer-events:none;}
+  .left .rings .r{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid rgba(200,164,77,.13);border-radius:50%;}
+  .left .rings .r1{width:240px;height:240px;animation:spin 50s linear infinite;}
+  .left .rings .r2{width:440px;height:440px;border-style:dashed;animation:spin 90s linear infinite reverse;}
+  .left .rings .r3{width:640px;height:640px;border-style:dotted;animation:spin 140s linear infinite;}
+  .left .zod{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:520px;height:520px;animation:spin 60s linear infinite;pointer-events:none;}
+  .left .zod span{position:absolute;left:50%;top:0;font-family:var(--tc);font-size:18px;color:rgba(200,164,77,.4);}
+  .left .zod span:nth-child(1){transform:translate(-50%,0) rotate(0deg)   translateY(-260px);}
+  .left .zod span:nth-child(2){transform:translate(-50%,0) rotate(30deg)  translateY(-260px);}
+  .left .zod span:nth-child(3){transform:translate(-50%,0) rotate(60deg)  translateY(-260px);}
+  .left .zod span:nth-child(4){transform:translate(-50%,0) rotate(90deg)  translateY(-260px);}
+  .left .zod span:nth-child(5){transform:translate(-50%,0) rotate(120deg) translateY(-260px);}
+  .left .zod span:nth-child(6){transform:translate(-50%,0) rotate(150deg) translateY(-260px);}
+  .left .zod span:nth-child(7){transform:translate(-50%,0) rotate(180deg) translateY(-260px);}
+  .left .zod span:nth-child(8){transform:translate(-50%,0) rotate(210deg) translateY(-260px);}
+  .left .zod span:nth-child(9){transform:translate(-50%,0) rotate(240deg) translateY(-260px);}
+  .left .zod span:nth-child(10){transform:translate(-50%,0) rotate(270deg) translateY(-260px);}
+  .left .zod span:nth-child(11){transform:translate(-50%,0) rotate(300deg) translateY(-260px);}
+  .left .zod span:nth-child(12){transform:translate(-50%,0) rotate(330deg) translateY(-260px);}
+  @keyframes spin{from{transform:translate(-50%,-50%) rotate(0deg);}to{transform:translate(-50%,-50%) rotate(360deg);}}
+  .left .stem{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--tc);font-size:280px;color:var(--gold);opacity:.16;font-weight:700;animation:breathe 4s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{opacity:.16;}50%{opacity:.26;}}
+
+  .left .copy{position:relative;z-index:5;}
+  .left .num{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:var(--gold);margin-bottom:20px;text-transform:uppercase;}
+  .left h2{font-family:var(--serif);font-size:80px;font-weight:300;line-height:.95;letter-spacing:-.02em;color:var(--fg);margin-bottom:18px;}
+  .left h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .left h2 i{color:var(--gold);}
+  .left .lede{font-size:15px;line-height:1.7;color:var(--fg-soft);max-width:440px;margin-bottom:44px;}
+  .left .quote{border-left:2px solid var(--gold);padding:8px 0 8px 18px;font-family:var(--serif);font-style:italic;font-size:18px;color:var(--fg-soft);max-width:380px;line-height:1.55;}
+  .left .quote .at{display:block;font-family:var(--mono);font-style:normal;font-size:10px;letter-spacing:.25em;color:var(--gold);margin-top:10px;text-transform:uppercase;}
+
+  /* RIGHT — form */
+  .right{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:80px 32px;position:relative;}
+  .card{width:100%;max-width:440px;}
+  .right .num{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:var(--gold);margin-bottom:14px;text-transform:uppercase;}
+  .right h1{font-family:var(--serif);font-size:44px;font-weight:300;line-height:1.05;color:var(--fg);margin-bottom:8px;}
+  .right h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .right .sub{font-size:13px;color:var(--fg-soft);line-height:1.6;margin-bottom:32px;}
+
+  .tabs{display:flex;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:99px;padding:4px;margin-bottom:24px;}
+  .tabs .t{flex:1;text-align:center;padding:12px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-soft);border-radius:99px;cursor:pointer;transition:.2s;}
+  .tabs .t.on{background:var(--gold);color:var(--bg);font-weight:700;}
+
+  .social{display:flex;flex-direction:column;gap:10px;margin-bottom:22px;}
+  .social .b{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:99px;color:var(--fg);font-family:var(--mono);font-size:12px;font-weight:600;text-decoration:none;letter-spacing:.06em;transition:.2s;}
+  .social .b:hover{border-color:var(--gold);transform:translateY(-1px);}
+  .social .b .ico{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--serif);}
+  .social .b.line .ico{background:#06c755;color:#fff;}
+  .social .b.apple .ico{background:var(--fg);color:var(--bg);}
+  .social .b.google .ico{background:#fff;color:#1a1d24;border:1px solid #ddd;}
+
+  .divide{display:flex;align-items:center;gap:12px;color:var(--fg-faint);font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:18px;}
+  .divide::before,.divide::after{content:'';flex:1;height:1px;background:var(--tile-bd);}
+
+  .form{display:flex;flex-direction:column;gap:14px;}
+  .field label{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--fg-soft);text-transform:uppercase;margin-bottom:6px;display:block;}
+  .field input{width:100%;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:10px;padding:14px 16px;color:var(--fg);font-family:var(--mono);font-size:14px;outline:none;transition:.2s;}
+  .field input:focus{border-color:var(--gold);}
+  .hk-pw-wrap{position:relative;}
+  .hk-pw-wrap input{padding-right:46px;}
+  .hk-pw-eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;cursor:pointer;padding:8px;color:var(--fg-soft);opacity:.6;transition:opacity .2s, color .2s;display:flex;align-items:center;justify-content:center;}
+  .hk-pw-eye:hover{opacity:1;color:var(--gold);}
+  .hk-pw-eye svg{display:block;}
+  .mode-tabs{display:flex;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:99px;padding:3px;margin-bottom:14px;gap:0;}
+  .mode-tabs .m{flex:1;text-align:center;padding:9px 12px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--fg-soft);border-radius:99px;cursor:pointer;transition:.2s;}
+  .mode-tabs .m.on{background:var(--gold);color:var(--bg);font-weight:700;}
+  .field .hk-field-error{display:none;color:#e26b5d;font-family:var(--thai);font-size:12px;margin-top:6px;line-height:1.4;align-items:center;gap:6px;}
+  .field .hk-field-error::before{content:'⚠';font-size:11px;}
+  .field.error input{border-color:#e26b5d;background:rgba(226,107,93,.06);}
+  .field.error .hk-field-error{display:flex;}
+  .cta{margin-top:10px;padding:17px;background:var(--gold);color:var(--bg);font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;border:none;border-radius:99px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden;}
+  .cta::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg, transparent, rgba(255,255,255,.3), transparent);transform:translateX(-100%);transition:.6s;}
+  .cta:hover::after{transform:translateX(100%);}
+  .fine{font-size:11px;color:var(--fg-faint);text-align:center;margin-top:18px;line-height:1.6;}
+  .fine a{color:var(--gold);text-decoration:none;}
+
+  /* ─────────────── MOBILE PHONE (≤640px) ─────────────── */
+  @media (max-width: 640px){
+    .right{padding:48px 22px;}
+    .right h1{font-size:32px;line-height:1.1;}
+    .right .sub{font-size:13px;margin-bottom:24px;line-height:1.55;}
+    .right .num{font-size:10px;letter-spacing:.3em;margin-bottom:12px;}
+
+    .tabs{margin-bottom:18px;}
+    .tabs .t{padding:10px;font-size:10px;letter-spacing:.15em;}
+
+    .social{gap:8px;margin-bottom:16px;}
+    .social .b{padding:12px;font-size:11px;}
+    .social .b .ico{width:18px;height:18px;font-size:10px;}
+
+    .form{gap:10px;}
+    .field input{padding:12px 14px;font-size:13px;}
+    .cta{padding:14px;font-size:11px;letter-spacing:.18em;}
+    .fine{font-size:10px;line-height:1.5;}
+
+    .topbar-mobile{padding:14px 18px;}
+    .back{font-size:10px;}
+  }
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const saved = localStorage.getItem('hk-theme') || 'dark';
+    if(saved==='light') document.body.classList.add('light');
+    document.querySelectorAll('.theme-switch button').forEach(b=>{
+      b.classList.toggle('on', b.dataset.theme===saved);
+      b.addEventListener('click', ()=>{
+        const t = b.dataset.theme;
+        document.body.classList.toggle('light', t==='light');
+        localStorage.setItem('hk-theme', t);
+        document.querySelectorAll('.theme-switch button').forEach(x=>x.classList.toggle('on', x.dataset.theme===t));
+      });
+    });
+    document.querySelectorAll('.tabs .t').forEach(t=>{
+      t.addEventListener('click', ()=>{
+        document.querySelectorAll('.tabs .t').forEach(x=>x.classList.remove('on'));
+        t.classList.add('on');
+        const isLogin = t.dataset.tab==='login';
+        document.querySelector('.cta').textContent = isLogin ? 'เข้าสู่ระบบ →' : 'สร้างบัญชี →';
+        document.querySelector('.right h1').innerHTML = isLogin
+          ? 'ยินดีต้อนรับ<span class="tc">回</span>'
+          : 'เริ่ม<span class="tc">解</span>ดวงคุณ';
+        document.querySelector('.sub').innerHTML = isLogin
+          ? 'เข้าสู่ดวงของคุณ — รหัสผ่านที่ตั้งไว้ครั้งสุดท้าย'
+          : 'กรอกอีเมลหรือเข้าผ่านโซเชียล · ใช้เวลา 30 วินาที · ฟรี';
+        var cf = document.querySelector('.hk-confirm-field');
+        if (cf) cf.style.display = isLogin ? 'none' : '';
+      });
+    });
+    // เปิดแท็บตามพารามิเตอร์ ?tab=login หรือ ?tab=signup
+    // forgot password submit
+    window.hkForgotSubmit = async function(e){
+      e.preventDefault();
+      var form = e.target;
+      var input = form.querySelector('input');
+      var msg = form.querySelector('.hk-forgot-msg');
+      var email = (input.value || '').trim();
+      if (!email || email.indexOf('@') < 0) { input.focus(); return false; }
+      msg.textContent = 'กำลังส่ง...';
+      msg.className = 'hk-forgot-msg';
+      try {
+        var r = await fetch('/api/auth/forgot-password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email })
+        });
+        if (r.ok) {
+          msg.textContent = '✓ ส่งลิงก์เรียบร้อย · ตรวจกล่องอีเมลของคุณ (อายุลิงก์ 1 ชม.)';
+          msg.classList.add('ok');
+        } else {
+          msg.textContent = '⚠ ส่งไม่สำเร็จ · ลองใหม่หรือติดต่อ LINE @hourkey';
+        }
+      } catch(_) {
+        msg.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+      }
+      return false;
+    };
+
+    var urlTab = new URLSearchParams(location.search).get('tab');
+    if (urlTab === 'login' || urlTab === 'signup') {
+      var btn = document.querySelector('.tabs .t[data-tab="'+urlTab+'"]');
+      if (btn) btn.click();
+    }
+  });
+</script>
+</head>
+<body>
+
+<div class="hk-lang-switch" id="hk-lang-switch">
+  <button data-lang="en" title="English">EN</button>
+  <button data-lang="zh" title="中文">中</button>
+  <button data-lang="th" class="on" title="ไทย">TH</button>
+</div>
+<div class="theme-switch">
+  <button class="on" data-theme="dark" title="Dark">☾</button>
+  <button data-theme="light" title="Light">☀</button>
+</div>
+<style>
+.hk-lang-switch{position:fixed;top:24px;right:120px;z-index:200;display:inline-flex;background:var(--tile-bg,rgba(38,42,50,.5));border:1px solid var(--gold-line,rgba(200,164,77,.3));border-radius:99px;padding:3px;backdrop-filter:blur(10px);}
+.hk-lang-switch button{min-width:30px;height:28px;padding:0 8px;border:none;background:transparent;color:var(--fg-soft,rgba(246,241,230,.55));font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+.hk-lang-switch button.on{background:var(--gold,#c8a44d);color:var(--bg,#0d0f12);}
+@media(max-width:560px){.hk-lang-switch{right:88px;}}
+</style>
+
+<div class="topbar">
+  <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
+  <a href="/" class="back" data-i18n="su.back">← กลับ</a>
+</div>
+
+<div class="stage">
+  <!-- LEFT: poetic ─────────────────────────────────────── -->
+  <div class="left">
+    <div class="rings"><div class="r r1"></div><div class="r r2"></div><div class="r r3"></div></div>
+    <div class="zod">
+      <span>子</span><span>丑</span><span>寅</span><span>卯</span><span>辰</span><span>巳</span>
+      <span>午</span><span>未</span><span>申</span><span>酉</span><span>戌</span><span>亥</span>
+    </div>
+    <div class="stem">時</div>
+    <div class="copy">
+      <div class="num" data-i18n="su.left.num">01 / three · เริ่มต้น</div>
+      <h2 data-i18n="su.left.h2">กุญแจ<span class="tc">時</span><br/>คือ<i> ตัวคุณ </i>เอง</h2>
+      <p class="lede" data-i18n="su.left.lede">สร้างบัญชีเพื่อบันทึกดวงของคุณ และคนที่คุณดูแล — ทุกชั่วโมงดี-ห้าม จะถูกคำนวณให้ทุกวัน</p>
+      <div class="quote" data-i18n="su.left.quote">知人者智 · 自知者明<br/>รู้คนคือฉลาด · รู้ตน คือสว่าง<span class="at">— เล่าจื๊อ</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: form ─────────────────────────────────────── -->
+  <div class="right">
+    <div class="card">
+      <div class="num" data-i18n="su.right.num">step 01 / 03</div>
+      <h1 data-i18n="su.right.h1">เริ่ม<span class="tc">解</span>ดวงคุณ</h1>
+      <p class="sub" data-i18n="su.right.sub">กรอกอีเมลหรือเข้าผ่านโซเชียล · ใช้เวลา 30 วินาที · ฟรี</p>
+
+      <div class="tabs">
+        <div class="t" data-tab="login" data-i18n="su.tab.login">Login</div>
+        <div class="t on" data-tab="signup" data-i18n="su.tab.signup">Sign up</div>
+      </div>
+
+      <div class="social">
+        <a href="/api/auth/line" class="b line"><span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="#fff" d="M12,2C6.48,2,2,5.85,2,10.59c0,4.27,3.55,7.85,8.32,8.55c.33,.06,.77,.21,.88,.49c.1,.25,.06,.65,.03,.91l-.14,.85c-.04,.25-.2,1,.87,.54c1.07-.45,5.74-3.39,7.84-5.81C21.36,13.89,22,12.31,22,10.59C22,5.85,17.52,2,12,2zM8.5,13.25H7c-.14,0-.25-.11-.25-.25V9c0-.14,.11-.25,.25-.25h.5c.14,0,.25,.11,.25,.25v3.25h.75c.14,0,.25,.11,.25,.25S8.64,13.25,8.5,13.25zM10.25,13c0,.14-.11,.25-.25,.25h-.5c-.14,0-.25-.11-.25-.25V9c0-.14,.11-.25,.25-.25h.5c.14,0,.25,.11,.25,.25V13zM14.75,13c0,.11-.07,.21-.18,.24c-.03,.01-.05,.01-.07,.01c-.08,0-.16-.04-.2-.1L12.5,10.39V13c0,.14-.11,.25-.25,.25h-.5c-.14,0-.25-.11-.25-.25V9c0-.11,.07-.21,.18-.24c.02-.01,.05-.01,.07-.01c.08,0,.16,.04,.21,.11L13.75,11.6V9c0-.14,.11-.25,.25-.25h.5c.14,0,.25,.11,.25,.25V13zM17.5,13.25h-2.5c-.14,0-.25-.11-.25-.25V9c0-.14,.11-.25,.25-.25h2.5c.14,0,.25,.11,.25,.25v.5c0,.14-.11,.25-.25,.25h-1.75v.75h1.75c.14,0,.25,.11,.25,.25v.5c0,.14-.11,.25-.25,.25h-1.75v.75h1.75c.14,0,.25,.11,.25,.25v.5C17.75,13.14,17.64,13.25,17.5,13.25z"/></svg></span><span data-i18n="su.line">เข้าด้วย LINE</span></a>
+        <a href="#" class="b apple" style="display:none"><span class="ico"></span><span data-i18n="su.apple">Continue with Apple</span></a>
+        <a href="/api/auth/google" class="b google"><span class="ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="16" height="16" aria-hidden="true"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg></span><span data-i18n="su.google">Continue with Google</span></a>
+      </div>
+
+      <div class="divide" data-i18n="su.divide">หรือกรอก</div>
+
+      <div class="mode-tabs">
+        <div class="m on" data-mode="email" data-i18n="su.mode.email">📧 อีเมล</div>
+        <div class="m" data-mode="phone" data-i18n="su.mode.phone">📱 เบอร์โทร</div>
+      </div>
+
+      <div class="form">
+        <div class="field hk-email-field" data-field="email">
+          <label data-i18n="su.email.label">อีเมล · email</label>
+          <input type="email" value="you@hourkey.io"/>
+          <div class="hk-field-error" data-i18n="su.err.email">กรุณากรอกอีเมลที่ถูกต้อง</div>
+        </div>
+        <div class="field hk-phone-field" data-field="phone" style="display:none">
+          <label data-i18n="su.phone.label">เบอร์โทร · phone</label>
+          <input type="tel" class="hk-phone-input" placeholder="08x-xxx-xxxx" autocomplete="tel" inputmode="tel"/>
+          <div class="hk-field-error" data-i18n="su.err.phone">เบอร์โทรไม่ถูกต้อง (06/08/09 · 10 หลัก)</div>
+        </div>
+        <div class="field" data-field="password">
+          <div class="hk-label-row">
+            <label data-i18n="su.pass.label">รหัสผ่าน · password</label>
+            <a href="#" class="hk-forgot" data-i18n="su.forgot" onclick="document.getElementById('hk-forgot-modal').classList.add('show');return false;">ลืมรหัส?</a>
+          </div>
+          <div class="hk-pw-wrap">
+            <input type="password" value="••••••••"/>
+            <button type="button" class="hk-pw-eye" aria-label="แสดง/ซ่อนรหัสผ่าน">
+              <svg class="i-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <svg class="i-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" width="18" height="18" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+            </button>
+          </div>
+          <div class="hk-field-error" data-i18n="su.err.password">กรุณากรอกรหัสผ่าน (อย่างน้อย 6 ตัว)</div>
+        </div>
+        <div class="field hk-confirm-field" data-field="confirm">
+          <label data-i18n="su.confirm.label">ยืนยันรหัสผ่าน · confirm password</label>
+          <div class="hk-pw-wrap">
+            <input type="password" class="hk-confirm-input" placeholder="พิมพ์ซ้ำอีกครั้ง"/>
+            <button type="button" class="hk-pw-eye" aria-label="แสดง/ซ่อนรหัสผ่าน">
+              <svg class="i-on" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <svg class="i-off" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" width="18" height="18" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+            </button>
+          </div>
+          <div class="hk-field-error" data-i18n="su.err.confirm">รหัสผ่านไม่ตรงกัน</div>
+        </div>
+        <button class="cta" data-i18n="su.cta" onclick="window.location.href='/input'">สร้างบัญชี →</button>
+      </div>
+      <div class="fine" data-i18n="su.fine">การสร้างบัญชี = ยอมรับ <a href="#">เงื่อนไข</a> · <a href="#">Privacy</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* hourkey · wire signup form (graceful) */
+(function wireSignup(){
+  try {
+    const cta = document.querySelector('button.cta');
+    if (!cta) return;
+    const emailEl = document.querySelector('input[type="email"]');
+    const passEl  = document.querySelector('input[type="password"]');
+    if (!emailEl || !passEl) return;
+
+    [emailEl, passEl].forEach(function(el){
+      el.addEventListener('focus', function(){ if (!el.dataset.cleared) { el.value=''; el.dataset.cleared='1'; } }, { once: true });
+    });
+
+    // wire ปุ่มเปิด/ปิดรหัสผ่าน (SVG icon: eye / eye-slash)
+    document.querySelectorAll('.hk-pw-eye').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var inp = btn.previousElementSibling;
+        if (!inp) return;
+        var on = btn.querySelector('.i-on');
+        var off = btn.querySelector('.i-off');
+        if (inp.type === 'password') {
+          inp.type = 'text';
+          if (on) on.style.display = 'none';
+          if (off) off.style.display = 'block';
+        } else {
+          inp.type = 'password';
+          if (on) on.style.display = 'block';
+          if (off) off.style.display = 'none';
+        }
+      });
+    });
+
+    // ลบ error เมื่อเริ่มพิมพ์ในช่อง
+    function clearErr(el){ var f = el.closest('.field'); if (f) f.classList.remove('error'); }
+    function setErr(el){ var f = el.closest('.field'); if (f) f.classList.add('error'); }
+    [emailEl, passEl].forEach(function(el){ el.addEventListener('input', function(){ clearErr(el); }); });
+    var _cf = document.querySelector('.hk-confirm-input');
+    if (_cf) _cf.addEventListener('input', function(){ clearErr(_cf); });
+
+    cta.removeAttribute('onclick');
+    cta.addEventListener('click', async function(e){
+      e.preventDefault();
+      const password = passEl.value;
+      const mode = (window.hkGetMode && window.hkGetMode()) || 'email';
+      var activeTab = document.querySelector('.tabs .t.on');
+      var isSignup = !activeTab || activeTab.dataset.tab !== 'login';
+      var phoneEl = document.querySelector('.hk-phone-input');
+
+      // เคลียร์ error เก่าทุกครั้งก่อนตรวจใหม่
+      document.querySelectorAll('.field.error').forEach(function(f){ f.classList.remove('error'); });
+      var hasErr = false;
+      var email = '', phone = '';
+      if (mode === 'email') {
+        email = emailEl.value.trim();
+        if (!email || email.indexOf('@') < 0) { setErr(emailEl); hasErr = true; }
+      } else {
+        phone = ((phoneEl && phoneEl.value) || '').replace(/[\s-]/g, '');
+        if (!/^0[689]\d{8}$/.test(phone)) { setErr(phoneEl); hasErr = true; }
+      }
+      if (!password || password.length < 6 || password.indexOf('•') === 0) {
+        setErr(passEl);
+        if (!hasErr) passEl.focus();
+        hasErr = true;
+      }
+      if (hasErr) {
+        if (mode === 'email' && (!email || email.indexOf('@') < 0)) emailEl.focus();
+        else if (mode === 'phone' && phoneEl && !/^0[689]\d{8}$/.test(phone)) phoneEl.focus();
+        return;
+      }
+      if (isSignup) {
+        var confirmEl = document.querySelector('.hk-confirm-input');
+        if (confirmEl) {
+          var confirmVal = confirmEl.value;
+          if (!confirmVal || confirmVal !== password) {
+            setErr(confirmEl);
+            confirmEl.focus();
+            return;
+          }
+        }
+      }
+      cta.disabled = true; cta.style.opacity = '.6';
+      try {
+        /* ── PHONE mode ── */
+        if (mode === 'phone') {
+          if (isSignup) {
+            const r = await fetch('/api/auth/signup-phone', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone: phone, password: password }),
+            });
+            const j = await r.json().catch(function(){ return {}; });
+            cta.disabled = false; cta.style.opacity = '1';
+            if (r.ok && j.need_verify) {
+              window.hkOtpShow && window.hkOtpShow(phone);
+              return;
+            }
+            if (r.status === 409) {
+              alert(j.error || 'เบอร์นี้สมัครแล้ว · ลองเข้าสู่ระบบ');
+              return;
+            }
+            alert(j.error || 'สมัครไม่สำเร็จ');
+            return;
+          } else {
+            const r = await fetch('/api/auth/login-phone', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone: phone, password: password }),
+            });
+            const j = await r.json().catch(function(){ return {}; });
+            if (r.ok) {
+              window.location.href = j.has_profile ? '/today' : '/input';
+              return;
+            }
+            if (j.need_verify) {
+              // เบอร์ยังไม่ verify · ขอ OTP ใหม่ + แสดง modal
+              await fetch('/api/auth/resend-otp', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phone })
+              });
+              window.hkOtpShow && window.hkOtpShow(phone);
+              cta.disabled = false; cta.style.opacity = '1';
+              return;
+            }
+            cta.disabled = false; cta.style.opacity = '1';
+            alert(j.error || 'เบอร์โทรหรือรหัสผ่านไม่ถูกต้อง');
+            return;
+          }
+        }
+
+        /* ── EMAIL mode (ของเดิม) ── */
+        if (!isSignup) {
+          const lr = await fetch('/api/auth/login', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password }),
+          });
+          if (lr.ok) {
+            try { localStorage.setItem('hk_email', email); } catch(_) {}
+            const lj = await lr.json().catch(function(){ return {}; });
+            window.location.href = lj.has_profile ? '/today' : '/input';
+            return;
+          }
+          const lj = await lr.json().catch(function(){ return {}; });
+          cta.disabled = false; cta.style.opacity = '1';
+          alert(lj.error || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+          return;
+        }
+        const r = await fetch('/api/auth/signup', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: password, name: email.split('@')[0] }),
+        });
+        if (r.ok) {
+          try { localStorage.setItem('hk_email', email); } catch(_) {}
+          window.location.href = '/input';
+        } else {
+          const j = await r.json().catch(function(){ return {}; });
+          if (r.status === 409) {
+            const lr = await fetch('/api/auth/login', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: email, password: password }),
+            });
+            if (lr.ok) {
+              const lj = await lr.json().catch(function(){ return {}; });
+              window.location.href = lj.has_profile ? '/today' : '/input';
+              return;
+            }
+          }
+          cta.disabled = false; cta.style.opacity = '1';
+          alert(j.error || 'สมัครไม่สำเร็จ · ลองใหม่');
+        }
+      } catch (err) {
+        cta.disabled = false; cta.style.opacity = '1';
+        alert('เครือข่ายขัดข้อง · ลองใหม่');
+      }
+    });
+  } catch (e) { /* silent · ปุ่มเดิมยัง redirect ไป /input */ }
+})();
+
+/* ── i18n TH/EN/ZH ── */
+window.HK_I18N = {
+  'su.back':       { th:'← กลับ', en:'← Back', zh:'← 返回' },
+  'su.left.num':   { th:'01 / three · เริ่มต้น', en:'01 / three · begin', zh:'01 / 三 · 起始' },
+  'su.left.h2':    { th:'กุญแจ<span class="tc">時</span><br/>คือ<i> ตัวคุณ </i>เอง',
+                     en:'<span class="tc">時</span> the key<br/>is<i> you </i>yourself',
+                     zh:'<span class="tc">時</span> 之鑰<br/>即<i>您</i>自身' },
+  'su.left.lede':  { th:'สร้างบัญชีเพื่อบันทึกดวงของคุณ และคนที่คุณดูแล — ทุกชั่วโมงดี-ห้าม จะถูกคำนวณให้ทุกวัน',
+                     en:'Create an account to save your chart and those you care for — every auspicious & forbidden hour computed daily',
+                     zh:'建立帳號保存您與所關懷者的命盤 — 每日吉時忌時自動計算' },
+  'su.left.quote': { th:'知人者智 · 自知者明<br/>รู้คนคือฉลาด · รู้ตน คือสว่าง<span class="at">— เล่าจื๊อ</span>',
+                     en:'知人者智 · 自知者明<br/>Knowing others is wisdom · knowing oneself is enlightenment<span class="at">— Lao Tzu</span>',
+                     zh:'知人者智 · 自知者明<br/>知人為智 · 自知為明<span class="at">— 老子</span>' },
+  'su.right.num':  { th:'step 01 / 03', en:'step 01 / 03', zh:'步驟 01 / 03' },
+  'su.right.h1':   { th:'เริ่ม<span class="tc">解</span>ดวงคุณ', en:'Start <span class="tc">解</span>your chart', zh:'開始<span class="tc">解</span>讀您的命盤' },
+  'su.right.sub':  { th:'กรอกอีเมลหรือเข้าผ่านโซเชียล · ใช้เวลา 30 วินาที · ฟรี',
+                     en:'Email or social login · 30 seconds · free',
+                     zh:'電郵或社交帳號 · 約 30 秒 · 免費' },
+  'su.tab.login':  { th:'Login', en:'Login', zh:'登入' },
+  'su.tab.signup': { th:'Sign up', en:'Sign up', zh:'註冊' },
+  'su.line':       { th:'เข้าด้วย LINE', en:'Continue with LINE', zh:'以 LINE 登入' },
+  'su.apple':      { th:'Continue with Apple', en:'Continue with Apple', zh:'以 Apple 登入' },
+  'su.google':     { th:'Continue with Google', en:'Continue with Google', zh:'以 Google 登入' },
+  'su.divide':     { th:'หรือกรอกอีเมล', en:'or use email', zh:'或使用電郵' },
+  'su.email.label':{ th:'อีเมล · email', en:'email', zh:'電郵' },
+  'su.pass.label': { th:'รหัสผ่าน · password', en:'password', zh:'密碼' },
+  'su.confirm.label':{ th:'ยืนยันรหัสผ่าน · confirm password', en:'confirm password', zh:'確認密碼' },
+  'su.err.email':  { th:'กรุณากรอกอีเมลที่ถูกต้อง', en:'Please enter a valid email', zh:'請輸入正確的電子郵件' },
+  'su.err.password':{ th:'กรุณากรอกรหัสผ่าน (อย่างน้อย 6 ตัว)', en:'Password required (≥ 6 chars)', zh:'請輸入密碼 (至少 6 個字元)' },
+  'su.err.confirm':{ th:'รหัสผ่านไม่ตรงกัน', en:'Passwords do not match', zh:'密碼不一致' },
+  'su.mode.email': { th:'📧 อีเมล', en:'📧 Email', zh:'📧 電郵' },
+  'su.mode.phone': { th:'📱 เบอร์โทร', en:'📱 Phone', zh:'📱 手機' },
+  'su.phone.label':{ th:'เบอร์โทร · phone', en:'phone', zh:'手機號碼' },
+  'su.err.phone':  { th:'เบอร์โทรไม่ถูกต้อง (06/08/09 · 10 หลัก)', en:'Invalid phone (06/08/09 · 10 digits)', zh:'手機號碼格式錯誤' },
+  'su.otp.title':  { th:'ยืนยันเบอร์โทร', en:'Verify Phone', zh:'驗證手機' },
+  'su.otp.sub':    { th:'เราส่งรหัส 6 หลักไปที่ ', en:'We sent a 6-digit code to ', zh:'我們已將 6 位數碼傳送至 ' },
+  'su.otp.cta':    { th:'ยืนยัน →', en:'Verify →', zh:'驗證 →' },
+  'su.otp.resend': { th:'ส่งรหัสใหม่', en:'Resend code', zh:'重新發送' },
+  'su.forgot':     { th:'ลืมรหัส?', en:'Forgot?', zh:'忘記密碼？' },
+  'su.cta':        { th:'สร้างบัญชี →', en:'Create account →', zh:'建立帳號 →' },
+  'su.fine':       { th:'การสร้างบัญชี = ยอมรับ <a href="#">เงื่อนไข</a> · <a href="#">Privacy</a>',
+                     en:'By signing up you accept <a href="#">Terms</a> · <a href="#">Privacy</a>',
+                     zh:'註冊即表示同意 <a href="#">條款</a> · <a href="#">隱私</a>' },
+  'fp.eye':        { th:'RESET PASSWORD · 重設密碼', en:'RESET PASSWORD · 重設密碼', zh:'重設密碼' },
+  'fp.h3':         { th:'ลืมรหัสผ่าน?', en:'Forgot password?', zh:'忘記密碼？' },
+  'fp.sub':        { th:'กรอกอีเมลที่ใช้สมัคร · เราจะส่งลิงก์รีเซ็ตรหัสให้ในไม่กี่นาที',
+                     en:'Enter your registered email · we\'ll send a reset link in minutes',
+                     zh:'輸入註冊電郵 · 數分鐘內發送重設連結' },
+  'fp.submit':     { th:'ส่งลิงก์รีเซ็ต →', en:'Send reset link →', zh:'發送重設連結 →' },
+  'fp.or':         { th:'หรือ', en:'or', zh:'或' },
+  'fp.line':       { th:'📱 ติดต่อทีมที่ LINE @hourkey', en:'📱 Contact us on LINE @hourkey', zh:'📱 LINE @hourkey 聯絡' }
+};
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch');
+  if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+</script>
+<div id="hk-forgot-modal" class="hk-forgot-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="hk-forgot-card">
+    <button class="hk-forgot-close" onclick="document.getElementById('hk-forgot-modal').classList.remove('show')">×</button>
+    <div class="hk-forgot-eye" data-i18n="fp.eye">RESET PASSWORD · 重設密碼</div>
+    <h3 data-i18n="fp.h3">ลืมรหัสผ่าน?</h3>
+    <p data-i18n="fp.sub">กรอกอีเมลที่ใช้สมัคร · เราจะส่งลิงก์รีเซ็ตรหัสให้ในไม่กี่นาที</p>
+    <form class="hk-forgot-form" id="hk-forgot-form" onsubmit="return hkForgotSubmit(event);">
+      <input type="email" placeholder="อีเมลที่สมัครไว้ · you@hourkey.io" required/>
+      <button type="submit" data-i18n="fp.submit">ส่งลิงก์รีเซ็ต →</button>
+      <div class="hk-forgot-msg"></div>
+    </form>
+    <div class="hk-forgot-divide" data-i18n="fp.or">หรือ</div>
+    <a href="https://line.me/R/ti/p/@hourkey" target="_blank" class="hk-forgot-line"><span data-i18n="fp.line">📱 ติดต่อทีมที่ LINE @hourkey</span></a>
+  </div>
+</div>
+<style>
+.hk-label-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.hk-label-row label{margin-bottom:0 !important;}
+.hk-forgot{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;color:#c8a44d;text-decoration:none;text-transform:uppercase;transition:.2s;}
+.hk-forgot:hover{color:#e8d8a8;}
+[data-theme="light"] .hk-forgot{color:#8a6d2a;}
+[data-theme="light"] .hk-forgot:hover{color:#5e4a1a;}
+
+.hk-forgot-modal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;}
+.hk-forgot-modal.show{display:flex;}
+.hk-forgot-card{background:linear-gradient(160deg,#14171c 0%,#0d0f12 100%);border:1px solid rgba(200,164,77,.3);border-radius:18px;padding:32px 28px;max-width:440px;width:100%;position:relative;color:#f6f1e6;font-family:'Noto Serif Thai',serif;}
+[data-theme="light"] .hk-forgot-card{background:linear-gradient(160deg,#f9f4e6 0%,#f5efe2 100%);border-color:rgba(138,109,42,.35);color:#1a1612;}
+.hk-forgot-close{position:absolute;top:14px;right:18px;background:transparent;border:none;color:#c8a44d;font-size:28px;cursor:pointer;line-height:1;}
+.hk-forgot-eye{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.32em;color:#c8a44d;text-transform:uppercase;margin-bottom:10px;}
+.hk-forgot-card h3{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;margin-bottom:6px;}
+.hk-forgot-card p{font-size:13px;color:rgba(246,241,230,.65);margin-bottom:22px;line-height:1.6;}
+[data-theme="light"] .hk-forgot-card p{color:rgba(26,22,18,.65);}
+.hk-forgot-form{display:flex;flex-direction:column;gap:10px;}
+.hk-forgot-form input{background:rgba(38,42,50,.5);border:1px solid rgba(200,164,77,.22);border-radius:10px;padding:14px 16px;color:#f6f1e6;font-family:'Noto Serif Thai',serif;font-size:14px;outline:none;}
+[data-theme="light"] .hk-forgot-form input{background:rgba(255,250,238,.7);border-color:rgba(138,109,42,.3);color:#1a1612;}
+.hk-forgot-form input:focus{border-color:#c8a44d;}
+.hk-forgot-form button{padding:14px;background:#c8a44d;color:#0d0f12;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border:none;border-radius:99px;cursor:pointer;transition:.2s;}
+.hk-forgot-form button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,164,77,.3);}
+[data-theme="light"] .hk-forgot-form button{background:#8a6d2a;color:#f5efe2;}
+.hk-forgot-msg{font-size:12px;color:rgba(246,241,230,.55);min-height:18px;line-height:1.5;}
+.hk-forgot-msg.ok{color:#8fc37c;}
+[data-theme="light"] .hk-forgot-msg.ok{color:#5a8a48;}
+.hk-forgot-divide{text-align:center;margin:18px 0 14px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.25em;color:rgba(246,241,230,.4);text-transform:uppercase;position:relative;}
+.hk-forgot-divide::before,.hk-forgot-divide::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:rgba(200,164,77,.15);}
+.hk-forgot-divide::before{left:0;}
+.hk-forgot-divide::after{right:0;}
+.hk-forgot-line{display:block;text-align:center;padding:12px;background:rgba(143,195,124,.12);border:1px solid rgba(143,195,124,.4);border-radius:99px;color:#8fc37c;text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;transition:.2s;}
+.hk-forgot-line:hover{background:rgba(143,195,124,.2);}
+[data-theme="light"] .hk-forgot-line{background:rgba(90,138,72,.12);border-color:rgba(90,138,72,.4);color:#5a8a48;}
+</style>
+
+<!-- OTP Verify Modal -->
+<div id="hk-otp-modal" class="hk-otp-modal" onclick="if(event.target===this)hkOtpHide()">
+  <div class="hk-otp-card">
+    <button class="hk-otp-close" type="button" onclick="hkOtpHide()" aria-label="ปิด">×</button>
+    <div class="hk-otp-eye">VERIFY PHONE · 驗證手機</div>
+    <h3 data-i18n="su.otp.title">ยืนยันเบอร์โทร</h3>
+    <p class="hk-otp-sub"><span data-i18n="su.otp.sub">เราส่งรหัส 6 หลักไปที่ </span><b class="hk-otp-phone"></b></p>
+    <input type="text" maxlength="6" inputmode="numeric" pattern="[0-9]*" class="hk-otp-input" placeholder="• • • • • •" autocomplete="one-time-code"/>
+    <button class="hk-otp-cta" type="button" onclick="hkOtpVerify()" data-i18n="su.otp.cta">ยืนยัน →</button>
+    <a href="#" class="hk-otp-resend" onclick="hkOtpResend();return false;" data-i18n="su.otp.resend">ส่งรหัสใหม่</a>
+    <div class="hk-otp-msg"></div>
+  </div>
+</div>
+<style>
+.hk-otp-modal{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;}
+.hk-otp-modal.show{display:flex;}
+.hk-otp-card{background:linear-gradient(160deg,#14171c 0%,#0d0f12 100%);border:1px solid rgba(200,164,77,.3);border-radius:18px;padding:36px 28px;max-width:380px;width:100%;position:relative;color:#f6f1e6;text-align:center;}
+[data-theme="light"] .hk-otp-card{background:linear-gradient(160deg,#f9f4e6 0%,#f5efe2 100%);border-color:rgba(138,109,42,.35);color:#1a1612;}
+.hk-otp-close{position:absolute;top:14px;right:18px;background:transparent;border:none;color:#c8a44d;font-size:26px;cursor:pointer;line-height:1;}
+.hk-otp-eye{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.32em;color:#c8a44d;text-transform:uppercase;margin-bottom:8px;}
+.hk-otp-card h3{font-family:'Cormorant Garamond','Noto Serif Thai',serif;font-size:26px;font-weight:400;margin-bottom:10px;}
+.hk-otp-sub{font-size:13px;color:rgba(246,241,230,.65);margin-bottom:22px;line-height:1.5;}
+.hk-otp-sub b{color:#c8a44d;}
+[data-theme="light"] .hk-otp-sub{color:rgba(26,22,18,.7);}
+.hk-otp-input{width:100%;background:rgba(38,42,50,.6);border:1px solid rgba(200,164,77,.3);border-radius:10px;padding:18px;color:#f6f1e6;font-family:'JetBrains Mono',monospace;font-size:24px;letter-spacing:.4em;text-align:center;outline:none;transition:.2s;margin-bottom:14px;}
+[data-theme="light"] .hk-otp-input{background:rgba(255,250,238,.5);color:#1a1612;}
+.hk-otp-input:focus{border-color:#c8a44d;}
+.hk-otp-cta{width:100%;padding:14px;background:#c8a44d;color:#0d0f12;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;border:none;border-radius:99px;cursor:pointer;margin-bottom:14px;transition:.2s;}
+.hk-otp-cta:hover{background:#8a6d2a;}
+.hk-otp-cta:disabled{opacity:.5;cursor:wait;}
+.hk-otp-resend{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:rgba(246,241,230,.6);text-decoration:none;text-transform:uppercase;transition:.2s;}
+.hk-otp-resend:hover{color:#c8a44d;}
+.hk-otp-msg{margin-top:14px;font-size:13px;color:rgba(246,241,230,.7);font-family:'Noto Serif Thai',serif;min-height:18px;}
+.hk-otp-msg.ok{color:#9ad07a;}
+.hk-otp-msg.err{color:#e26b5d;}
+[data-theme="light"] .hk-otp-msg{color:rgba(26,22,18,.7);}
+</style>
+
+<script>
+/* hourkey · mode toggle + OTP flow */
+(function(){
+  var mode = 'email';  // 'email' | 'phone'
+  var pendingPhone = '';
+
+  function getMode(){ return mode; }
+  function setMode(m){
+    mode = m;
+    document.querySelectorAll('.mode-tabs .m').forEach(function(b){
+      b.classList.toggle('on', b.dataset.mode === m);
+    });
+    var eF = document.querySelector('.hk-email-field');
+    var pF = document.querySelector('.hk-phone-field');
+    if (eF) eF.style.display = (m === 'email') ? '' : 'none';
+    if (pF) pF.style.display = (m === 'phone') ? '' : 'none';
+  }
+  window.hkGetMode = getMode;
+
+  document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('.mode-tabs .m').forEach(function(b){
+      b.addEventListener('click', function(){ setMode(b.dataset.mode); });
+    });
+  });
+
+  /* OTP modal */
+  window.hkOtpShow = function(phone){
+    pendingPhone = phone;
+    var modal = document.getElementById('hk-otp-modal');
+    var phoneEl = modal.querySelector('.hk-otp-phone');
+    var input = modal.querySelector('.hk-otp-input');
+    var msg = modal.querySelector('.hk-otp-msg');
+    phoneEl.textContent = phone;
+    input.value = '';
+    msg.textContent = '';
+    msg.className = 'hk-otp-msg';
+    modal.classList.add('show');
+    setTimeout(function(){ input.focus(); }, 100);
+  };
+  window.hkOtpHide = function(){
+    document.getElementById('hk-otp-modal').classList.remove('show');
+  };
+  window.hkOtpVerify = async function(){
+    var modal = document.getElementById('hk-otp-modal');
+    var input = modal.querySelector('.hk-otp-input');
+    var msg = modal.querySelector('.hk-otp-msg');
+    var btn = modal.querySelector('.hk-otp-cta');
+    var code = (input.value || '').trim();
+    if (!/^\d{6}$/.test(code)) {
+      msg.textContent = 'รหัสต้องเป็น 6 หลัก';
+      msg.className = 'hk-otp-msg err';
+      return;
+    }
+    btn.disabled = true; msg.textContent = 'กำลังตรวจสอบ...'; msg.className = 'hk-otp-msg';
+    try {
+      var r = await fetch('/api/auth/verify-phone', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: pendingPhone, code: code })
+      });
+      var j = await r.json().catch(function(){ return {}; });
+      if (r.ok) {
+        msg.textContent = '✓ ยืนยันสำเร็จ · กำลังเข้าระบบ';
+        msg.className = 'hk-otp-msg ok';
+        setTimeout(function(){ window.location.href = j.has_profile ? '/today' : '/input'; }, 600);
+      } else {
+        msg.textContent = '⚠ ' + (j.error || 'รหัสไม่ถูกต้อง');
+        msg.className = 'hk-otp-msg err';
+        btn.disabled = false;
+      }
+    } catch(_) {
+      msg.textContent = '⚠ เครือข่ายขัดข้อง';
+      msg.className = 'hk-otp-msg err';
+      btn.disabled = false;
+    }
+  };
+  window.hkOtpResend = async function(){
+    var modal = document.getElementById('hk-otp-modal');
+    var msg = modal.querySelector('.hk-otp-msg');
+    msg.textContent = 'กำลังส่งใหม่...'; msg.className = 'hk-otp-msg';
+    try {
+      var r = await fetch('/api/auth/resend-otp', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: pendingPhone })
+      });
+      if (r.ok) { msg.textContent = '✓ ส่งรหัสใหม่แล้ว'; msg.className = 'hk-otp-msg ok'; }
+      else { msg.textContent = '⚠ ส่งใหม่ไม่สำเร็จ'; msg.className = 'hk-otp-msg err'; }
+    } catch(_) { msg.textContent = '⚠ เครือข่ายขัดข้อง'; msg.className = 'hk-otp-msg err'; }
+  };
+})();
+</script>
+
+</body>
+</html>

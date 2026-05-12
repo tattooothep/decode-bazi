@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>hourkey · เครือข่าย · 用神 Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  /* ─────────── DESIGN TOKENS ─────────── */
+  [data-theme="dark"]{
+    --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.32);
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12);
+    --gold-line:rgba(200,164,77,.22);
+    --tile:rgba(38,42,50,.55); --tile-bd:rgba(246,241,230,.10);
+    --wood:#8fc37c; --wood-bg:rgba(143,195,124,.14);
+    --fire:#e26b5d; --fire-bg:rgba(226,107,93,.14);
+    --earth:#d4a85a; --earth-bg:rgba(212,168,90,.14);
+    --metal:#c8b88a; --metal-bg:rgba(200,184,138,.14);
+    --water:#7ba8c8; --water-bg:rgba(123,168,200,.14);
+    --good:#8fc37c; --bad:#e26b5d; --neutral:#c8b88a;
+    --solar-glow:rgba(200,164,77,.25);
+    --shadow-card:0 12px 32px rgba(0,0,0,.3);
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#ebe5d6; --bg-3:#dfd9c8;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.65); --fg-faint:rgba(26,22,18,.4);
+    --gold:#8a6d2a; --gold-deep:#5e4a1a; --gold-soft:rgba(138,109,42,.1);
+    --gold-line:rgba(138,109,42,.28);
+    --tile:rgba(255,250,238,.65); --tile-bd:rgba(26,22,18,.12);
+    --wood:#5a8a48; --wood-bg:rgba(90,138,72,.1);
+    --fire:#a8483a; --fire-bg:rgba(168,72,58,.1);
+    --earth:#9a7d3a; --earth-bg:rgba(154,125,58,.1);
+    --metal:#7a6f4a; --metal-bg:rgba(122,111,74,.1);
+    --water:#3f6688; --water-bg:rgba(63,102,136,.1);
+    --good:#5a8a48; --bad:#a8483a; --neutral:#7a6f4a;
+    --solar-glow:rgba(138,109,42,.2);
+    --shadow-card:0 12px 32px rgba(26,22,18,.08);
+  }
+  :root{
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);font-family:var(--thai);color:var(--fg);min-height:100vh;transition:background .35s, color .35s;;overflow-x:hidden}
+  body{background:radial-gradient(circle at 70% 20%, var(--solar-glow), transparent 50%), radial-gradient(circle at 20% 80%, rgba(123,168,200,.06), transparent 50%), var(--bg);}
+  button{font-family:inherit;}
+
+  /* ─────────── topbar ─────────── */
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:color-mix(in srgb, var(--bg) 78%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--thai);font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+  .nav a .glyph{font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:700;line-height:1;}
+  .nav a .lbl{font-size:12px;}
+  .nav a.on,.nav a.active{color:var(--gold);}
+  .nav a:hover{color:var(--fg);}
+  .nav a:hover .glyph{color:var(--gold-deep);}
+  .top-r{display:flex;align-items:center;gap:14px;}
+  .hk-lang-switch{display:inline-flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+  .hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
+  .theme-switch{display:flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .theme-switch button{width:32px;height:32px;border:none;background:transparent;color:var(--fg-soft);font-size:14px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+  .theme-switch button.on{background:var(--gold);color:var(--bg);}
+  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, var(--earth), var(--gold));display:flex;align-items:center;justify-content:center;color:var(--bg);font-family:var(--tc);font-size:14px;font-weight:700;}
+
+  /* ─────────── stage ─────────── */
+  .stage{max-width:1400px;margin:0 auto;padding:32px 40px 80px;}
+  .crumb{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-faint);margin-bottom:18px;}
+  .crumb a{color:var(--fg-soft);text-decoration:none;}
+
+  /* ─────────── hero head ─────────── */
+  .hero-head{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;margin-bottom:32px;padding-bottom:28px;border-bottom:1px solid var(--gold-line);}
+  .hero-head .label{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+  .hero-head h1{font-family:var(--serif);font-size:56px;font-weight:300;line-height:1;letter-spacing:-.02em;}
+  .hero-head h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .hero-head .lede{font-size:14px;color:var(--fg-soft);margin-top:12px;line-height:1.65;max-width:560px;}
+  .hero-head .stats{display:flex;gap:24px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-faint);}
+  .hero-head .stats b{display:block;font-family:var(--serif);font-size:32px;font-style:italic;color:var(--gold);font-weight:300;margin-bottom:4px;letter-spacing:0;}
+
+  /* ─────────── filter bar ─────────── */
+  .filter-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:var(--tile);border:1px solid var(--gold-line);border-radius:12px;margin-bottom:24px;flex-wrap:wrap;gap:14px;}
+  .filter-bar .label{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;}
+  .time-pills{display:flex;gap:6px;background:var(--bg-2);border-radius:99px;padding:4px;}
+  .time-pills button{background:transparent;border:none;color:var(--fg-soft);padding:8px 16px;border-radius:99px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;transition:.2s;}
+  .time-pills button.on{background:var(--gold);color:var(--bg);font-weight:700;}
+  .time-pills button:hover:not(.on){color:var(--fg);}
+  .filter-meta{font-family:var(--mono);font-size:10px;color:var(--fg-faint);letter-spacing:.18em;}
+  .filter-meta b{color:var(--gold);}
+
+  /* ─────────── view tabs ─────────── */
+  .view-tabs{display:flex;gap:0;border-bottom:1px solid var(--gold-line);margin-bottom:32px;}
+  .view-tabs button{flex:1;background:transparent;border:none;color:var(--fg-soft);padding:18px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .view-tabs button.on{color:var(--gold);border-bottom-color:var(--gold);}
+  .view-tabs button:hover:not(.on){color:var(--fg);}
+  .view-tabs .tc{font-family:var(--tc);font-size:18px;font-weight:700;letter-spacing:0;}
+
+  /* ─────────── view panels ─────────── */
+  .view-panel{display:none;animation:fadeIn .4s ease-out;}
+  .view-panel.on{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  /* ──────── SOLAR SYSTEM ──────── */
+  .solar{position:relative;height:720px;background:radial-gradient(circle at center, var(--solar-glow), transparent 70%);border:1px solid var(--gold-line);border-radius:18px;overflow:hidden;}
+  .orbit{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px dashed var(--gold-line);border-radius:50%;pointer-events:none;}
+  .orbit.o1{width:220px;height:220px;animation:rot 80s linear infinite;}
+  .orbit.o2{width:380px;height:380px;animation:rot 140s linear infinite reverse;}
+  .orbit.o3{width:560px;height:560px;animation:rot 220s linear infinite;}
+  @keyframes rot{to{transform:translate(-50%,-50%) rotate(360deg);}}
+
+  /* center node */
+  .center-node{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:140px;height:140px;border-radius:50%;background:linear-gradient(160deg, var(--earth-bg), var(--gold-soft));border:2px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;box-shadow:0 0 60px var(--solar-glow);transition:all .5s cubic-bezier(.4,0,.2,1);cursor:pointer;}
+  .center-node:hover{box-shadow:0 0 80px var(--solar-glow);}
+  .center-node .glyph{font-family:var(--tc);font-size:64px;font-weight:700;color:var(--gold);line-height:1;}
+  .center-node .name{font-family:var(--serif);font-size:14px;font-weight:500;margin-top:4px;}
+  .center-node .role{font-family:var(--mono);font-size:8px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-top:2px;}
+
+  /* person nodes */
+  .node{position:absolute;width:88px;height:88px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px solid;background:var(--bg-2);transition:all .5s cubic-bezier(.4,0,.2,1);}
+  .node:hover{transform:translate(-50%,-50%) scale(1.12);z-index:20;}
+  .node.elem-wood{border-color:var(--wood);background:linear-gradient(160deg, var(--wood-bg), var(--bg-2));}
+  .node.elem-fire{border-color:var(--fire);background:linear-gradient(160deg, var(--fire-bg), var(--bg-2));}
+  .node.elem-earth{border-color:var(--earth);background:linear-gradient(160deg, var(--earth-bg), var(--bg-2));}
+  .node.elem-metal{border-color:var(--metal);background:linear-gradient(160deg, var(--metal-bg), var(--bg-2));}
+  .node.elem-water{border-color:var(--water);background:linear-gradient(160deg, var(--water-bg), var(--bg-2));}
+  .node .ng{font-family:var(--tc);font-size:24px;font-weight:700;line-height:1;}
+  .node .nm{font-family:var(--thai);font-size:10px;font-weight:600;margin-top:2px;}
+  .node .sc{font-family:var(--mono);font-size:9px;font-weight:700;margin-top:1px;}
+  .node.score-pos .sc{color:var(--good);}
+  .node.score-neg .sc{color:var(--bad);}
+  .node.score-mid .sc{color:var(--neutral);}
+  .node.elem-wood .ng{color:var(--wood);}
+  .node.elem-fire .ng{color:var(--fire);}
+  .node.elem-earth .ng{color:var(--earth);}
+  .node.elem-metal .ng{color:var(--metal);}
+  .node.elem-water .ng{color:var(--water);}
+  .node.is-self{box-shadow:0 0 0 3px var(--gold-soft), 0 0 0 1px var(--gold);}
+  .node.is-self::before{content:'YOU';position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--gold);background:var(--bg);padding:2px 6px;border-radius:99px;border:1px solid var(--gold);}
+
+  .lines{position:absolute;inset:0;pointer-events:none;z-index:1;}
+
+  /* legend & controls */
+  .solar-legend{position:absolute;left:24px;bottom:24px;display:flex;flex-direction:column;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--fg-soft);background:color-mix(in srgb, var(--bg) 70%, transparent);backdrop-filter:blur(8px);padding:14px 16px;border-radius:8px;border:1px solid var(--gold-line);z-index:5;}
+  .solar-legend .lg-row{display:flex;align-items:center;gap:8px;}
+  .solar-legend .lg-line{width:28px;height:2px;}
+  .solar-legend .lg-line.good{background:var(--good);}
+  .solar-legend .lg-line.bad{border-top:1px dashed var(--bad);width:28px;height:0;}
+  .solar-legend .lg-line.mid{background:var(--neutral);opacity:.5;}
+
+  .solar-controls{position:absolute;right:24px;top:24px;display:flex;gap:8px;z-index:30;}
+  .ctrl-btn{background:color-mix(in srgb, var(--bg) 70%, transparent);backdrop-filter:blur(8px);border:1px solid var(--gold-line);color:var(--fg-soft);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;}
+  .ctrl-btn:hover{color:var(--gold);border-color:var(--gold);}
+  .ctrl-btn.is-active{color:var(--gold);border-color:var(--gold);background:var(--gold-soft);}
+
+  /* center-as info banner */
+  .center-info{position:absolute;left:50%;top:24px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:color-mix(in srgb, var(--bg) 70%, transparent);backdrop-filter:blur(8px);padding:8px 16px;border-radius:99px;border:1px solid var(--gold-line);font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase;z-index:30;}
+  .center-info b{color:var(--gold);}
+  .center-info .reset{margin-left:6px;background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:4px 10px;border-radius:99px;font-size:9px;cursor:pointer;}
+  .center-info .reset:hover{background:var(--gold);color:var(--bg);}
+
+  /* ──────── group chips ──────── */
+  .group-chips{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0;}
+  .group-chips button{background:var(--tile);border:1px solid var(--tile-bd);color:var(--fg-soft);padding:10px 18px;border-radius:99px;font-family:var(--thai);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.2s;}
+  .group-chips button:hover{border-color:var(--gold);color:var(--fg);}
+  .group-chips button.on{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);font-weight:600;}
+  .group-chips button .count{font-family:var(--mono);font-size:10px;background:var(--bg);padding:2px 7px;border-radius:99px;color:var(--fg-faint);}
+  .group-chips button.on .count{color:var(--gold);}
+
+  /* ──────── PEOPLE GRID ──────── */
+  .people-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:18px;}
+  .person-card{background:linear-gradient(160deg, var(--tile), var(--bg-2));border:1px solid var(--tile-bd);border-radius:14px;padding:20px;transition:.25s;position:relative;overflow:hidden;cursor:pointer;}
+  .person-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--good);opacity:.7;}
+  .person-card.score-neg::before{background:var(--bad);}
+  .person-card.score-mid::before{background:var(--neutral);}
+  .person-card:hover{transform:translateY(-3px);border-color:var(--gold-line);box-shadow:var(--shadow-card);}
+
+  .pc-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .pc-avatar{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:24px;font-weight:700;border:2px solid;flex-shrink:0;}
+  .pc-avatar.elem-wood{border-color:var(--wood);background:var(--wood-bg);color:var(--wood);}
+  .pc-avatar.elem-fire{border-color:var(--fire);background:var(--fire-bg);color:var(--fire);}
+  .pc-avatar.elem-earth{border-color:var(--earth);background:var(--earth-bg);color:var(--earth);}
+  .pc-avatar.elem-metal{border-color:var(--metal);background:var(--metal-bg);color:var(--metal);}
+  .pc-avatar.elem-water{border-color:var(--water);background:var(--water-bg);color:var(--water);}
+  .pc-meta{flex:1;min-width:0;}
+  .pc-name{font-family:var(--serif);font-size:18px;font-weight:500;color:var(--fg);}
+  .pc-role{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-top:2px;}
+  .pc-tag{font-family:var(--thai);font-size:11px;color:var(--fg-soft);margin-top:4px;}
+
+  .pc-score-row{display:grid;grid-template-columns:50px 1fr 36px;align-items:center;gap:10px;padding:6px 0;font-family:var(--mono);font-size:10px;}
+  .pc-score-row .lbl{color:var(--fg-faint);letter-spacing:.15em;text-transform:uppercase;font-size:9px;}
+  .pc-score-row .bar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;position:relative;}
+  .pc-score-row .bar::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--fg-faint);opacity:.4;}
+  .pc-score-row .bar-fill{position:absolute;top:0;bottom:0;background:var(--good);border-radius:2px;}
+  .pc-score-row.neg .bar-fill{background:var(--bad);}
+  .pc-score-row.mid .bar-fill{background:var(--neutral);}
+  .pc-score-row .num{text-align:right;font-weight:700;}
+  .pc-score-row.pos .num{color:var(--good);}
+  .pc-score-row.neg .num{color:var(--bad);}
+  .pc-score-row.mid .num{color:var(--neutral);}
+
+  .pc-rel{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--tile-bd);}
+  .pc-rel .b{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:4px 8px;border-radius:99px;border:1px solid;}
+  .pc-rel .b.good{color:var(--good);border-color:var(--good);background:var(--wood-bg);}
+  .pc-rel .b.bad{color:var(--bad);border-color:var(--bad);background:var(--fire-bg);}
+  .pc-rel .b.mid{color:var(--neutral);border-color:var(--neutral);background:var(--metal-bg);}
+
+  .pc-actions{display:flex;gap:6px;margin-top:14px;}
+  .pc-actions button{flex:1;background:transparent;border:1px solid var(--tile-bd);color:var(--fg-soft);padding:8px;border-radius:8px;font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;}
+  .pc-actions button:hover{border-color:var(--gold);color:var(--gold);}
+
+  /* ──────── TEAM BUILDER ──────── */
+  .compare-board{background:linear-gradient(160deg, var(--tile), var(--bg-2));border:1px solid var(--gold-line);border-radius:18px;padding:32px;margin-top:18px;}
+  .cmp-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+  .cmp-head h3{font-family:var(--serif);font-size:28px;font-weight:400;}
+  .cmp-head h3 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .cmp-head .syn{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.18em;}
+  .cmp-head .syn b{font-family:var(--serif);font-size:36px;font-style:italic;font-weight:300;letter-spacing:0;}
+
+  .cmp-row{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;}
+  .cmp-card{background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:12px;padding:18px;text-align:center;position:relative;}
+  .cmp-card.empty{border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;color:var(--fg-faint);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
+  .cmp-card.empty:hover{border-color:var(--gold);color:var(--gold);}
+  .cmp-card.empty .plus{font-size:32px;margin-bottom:8px;}
+  .cmp-card .x-btn{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg-faint);cursor:pointer;font-size:12px;line-height:1;}
+  .cmp-card .x-btn:hover{color:var(--bad);border-color:var(--bad);}
+
+  .cmp-avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:30px;font-weight:700;border:2px solid;}
+  .cmp-card .name{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:2px;}
+  .cmp-card .role{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;}
+  .cmp-card .pillar{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:14px 0;padding:10px 6px;background:var(--bg);border-radius:8px;}
+  .cmp-card .pillar .p{font-family:var(--tc);font-size:14px;font-weight:700;line-height:1.1;}
+  .cmp-card .pillar .p .s{display:block;font-size:11px;color:var(--gold);}
+  .cmp-card .total{font-family:var(--serif);font-size:36px;font-style:italic;font-weight:300;letter-spacing:-.02em;}
+  .cmp-card.score-pos .total{color:var(--good);}
+  .cmp-card.score-neg .total{color:var(--bad);}
+  .cmp-card.score-mid .total{color:var(--neutral);}
+
+  .matrix{margin-top:24px;padding:18px;background:var(--bg);border:1px dashed var(--gold-line);border-radius:12px;}
+  .matrix h4{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .matrix-table{display:grid;grid-template-columns:auto repeat(4, 1fr);gap:6px;font-family:var(--mono);font-size:10px;}
+  .matrix-table .cell{padding:8px;text-align:center;background:var(--bg-2);border-radius:4px;}
+  .matrix-table .cell.head{color:var(--gold);font-weight:700;letter-spacing:.15em;text-transform:uppercase;font-size:9px;}
+  .matrix-table .cell.row-head{text-align:left;color:var(--fg-soft);}
+  .matrix-table .cell.good{color:var(--good);background:var(--wood-bg);}
+  .matrix-table .cell.bad{color:var(--bad);background:var(--fire-bg);}
+  .matrix-table .cell.mid{color:var(--neutral);}
+  .matrix-table .cell.self{background:var(--gold-soft);color:var(--gold);}
+
+  .cmp-insights{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+  .insight-box{padding:18px;background:var(--bg);border-radius:10px;border-left:3px solid;}
+  .insight-box.good{border-color:var(--good);}
+  .insight-box.bad{border-color:var(--bad);}
+  .insight-box h5{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .insight-box.good h5{color:var(--good);}
+  .insight-box.bad h5{color:var(--bad);}
+  .insight-box ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .insight-box li{font-size:13px;line-height:1.55;color:var(--fg-soft);padding-left:14px;position:relative;}
+  .insight-box li::before{content:'•';position:absolute;left:0;}
+  .insight-box.good li::before{color:var(--good);}
+  .insight-box.bad li::before{color:var(--bad);}
+
+  /* ─────────── responsive ─────────── */
+  @media (max-width:980px){
+    .stage{padding:22px 18px 60px;}
+    .topbar{padding:14px 18px;flex-wrap:wrap;gap:10px;}
+    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
+    .nav::-webkit-scrollbar{display:none;}
+    .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
+    .nav a .glyph{font-size:14px;}
+    .nav a .lbl{font-size:11px;}
+    .hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}
+    .hero-head{grid-template-columns:1fr;align-items:flex-start;}
+    .hero-head h1{font-size:36px;}
+    .hero-head .stats{gap:14px;}
+    .hero-head .stats b{font-size:24px;}
+    .solar{height:560px;}
+    .center-node{width:104px;height:104px;}
+    .center-node .glyph{font-size:48px;}
+    .center-node .name{font-size:12px;}
+    .node{width:64px;height:64px;}
+    .node .ng{font-size:18px;}
+    .node .nm{font-size:8px;}
+    .node .sc{font-size:7px;}
+    .people-grid{grid-template-columns:1fr;}
+    .cmp-row{grid-template-columns:1fr 1fr;}
+    .cmp-card.empty{min-height:160px;}
+    .cmp-insights{grid-template-columns:1fr;}
+    .view-tabs button{padding:14px 8px;font-size:9px;letter-spacing:.12em;}
+    .view-tabs .tc{font-size:14px;}
+    .center-info{font-size:9px;padding:6px 12px;}
+  }
+  @media (max-width:480px){
+    .cmp-row{grid-template-columns:1fr;}
+    .matrix-table{font-size:9px;}
+    .solar{height:480px;}
+    .center-node{width:88px;height:88px;}
+    .center-node .glyph{font-size:38px;}
+    .node{width:54px;height:54px;}
+    .node .ng{font-size:15px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
+  <nav class="nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="n.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="n.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="n.nav.calendar">ปฏิทิน</span></a>
+    <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="n.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="n.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="n.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="n.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="n.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="n.nav.goal">เป้าหมาย</span></a>
+  </nav>
+  <div class="top-r">
+    <div id="hk-user-menu-mount"></div>
+  </div>
+</header>
+
+<div class="stage">
+  <div class="crumb"><a href="/" data-i18n="n.crumb.home">หน้าหลัก</a> <span>/</span> <span data-i18n="n.crumb.cur">เครือข่าย · 用神 NETWORK</span></div>
+
+  <!-- HERO HEAD -->
+  <div class="hero-head">
+    <div>
+      <div class="label" data-i18n="n.h.label">用神 · YONGSHEN NETWORK</div>
+      <h1 data-i18n="n.h.h1">คนรอบตัวคุณ <span class="tc">關係</span></h1>
+      <p class="lede" data-i18n="n.h.lede">วิเคราะห์ปฏิกิริยาระหว่างดวงคุณกับ <b>11 คน</b> ที่บันทึกไว้ — ใครหนุน · ใครชง · ใครเหมาะร่วมงาน · ใครควรระวัง <b>เปลี่ยนตามเวลา</b> ที่เลือก · <b>คลิกคนใดในวงโคจรเพื่อย้าย Center</b></p>
+    </div>
+    <div class="stats">
+      <div><b id="stat-all">0</b><span data-i18n="n.h.s.all">คนทั้งหมด</span></div>
+      <div><b id="stat-good">0</b><span data-i18n="n.h.s.good">หนุน</span></div>
+      <div><b id="stat-bad">0</b><span data-i18n="n.h.s.bad">ชง</span></div>
+      <div><b id="stat-mid">0</b><span data-i18n="n.h.s.mid">กลาง</span></div>
+    </div>
+  </div>
+
+  <!-- TIME FILTER -->
+  <div class="filter-bar">
+    <span class="label" data-i18n="n.f.label">⏱ TIME RANGE · 流</span>
+    <div class="time-pills" id="time-pills">
+      <button data-tf="day" data-i18n="n.f.day">วันนี้ · 流日</button>
+      <button class="on" data-tf="week" data-i18n="n.f.week">สัปดาห์ · 週</button>
+      <button data-tf="month" data-i18n="n.f.month">เดือน · 流月</button>
+      <button data-tf="year" data-i18n="n.f.year">ปี · 流年</button>
+      <button data-tf="luck" data-i18n="n.f.luck">10 ปี · 大運</button>
+    </div>
+    <div class="filter-meta">
+      <span data-i18n="n.f.meta.dm">DM</span> <b id="meta-dm">己土</b> ·
+      <span data-i18n="n.f.meta.period">ช่วง</span> <b id="meta-period">7-13 พ.ค.</b> ·
+      <span data-i18n="n.f.meta.favor">ดวงเด่น</span> <b id="meta-favor">金 · 木</b>
+    </div>
+  </div>
+
+  <!-- VIEW MODE TABS -->
+  <div class="view-tabs" id="view-tabs">
+    <button class="on" data-view="solar" data-i18n="n.vt.solar"><span class="tc">系</span>SOLAR SYSTEM · ภาพรวม</button>
+    <button data-view="grid" data-i18n="n.vt.grid"><span class="tc">人</span>PEOPLE GRID · การ์ดคน</button>
+    <button data-view="team" data-i18n="n.vt.team"><span class="tc">隊</span>TEAM BUILDER · จัดทีม</button>
+  </div>
+
+  <!-- ─── VIEW 1: SOLAR ─── -->
+  <div class="view-panel on" id="view-solar">
+    <div class="solar" id="solar">
+      <div class="orbit o1"></div>
+      <div class="orbit o2"></div>
+      <div class="orbit o3"></div>
+
+      <div class="center-info" id="center-info" style="display:none;">
+        <span>CENTER · <b id="center-info-name">—</b></span>
+        <button class="reset" id="center-reset" data-i18n="n.ci.reset">↺ กลับไปดวงฉัน</button>
+      </div>
+
+      <svg class="lines" id="solar-lines" viewBox="0 0 1000 720" preserveAspectRatio="none"></svg>
+
+      <!-- nodes injected by JS -->
+
+      <div class="solar-legend">
+        <div class="lg-row"><div class="lg-line good"></div><span data-i18n="n.lg.good">หนุน · 合 · 用神</span></div>
+        <div class="lg-row"><div class="lg-line bad"></div><span data-i18n="n.lg.bad">ชง · 沖 · 忌神</span></div>
+        <div class="lg-row"><div class="lg-line mid"></div><span data-i18n="n.lg.mid">กลาง · neutral</span></div>
+        <div class="lg-row" style="margin-top:6px;color:var(--fg-faint);font-size:9px;" data-i18n="n.lg.tip">วงโคจรใกล้ = ผลกระทบสูง · คลิกคนเพื่อย้าย Center</div>
+      </div>
+
+      <div class="solar-controls">
+        <button class="ctrl-btn" data-i18n="n.cta.add">+ เพิ่มคน</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── VIEW 2: GRID ─── -->
+  <div class="view-panel" id="view-grid">
+    <div class="group-chips">
+      <button class="on" data-g="all"><span data-i18n="n.g.all">ทั้งหมด</span> <span class="count">11</span></button>
+      <button data-g="family"><span data-i18n="n.g.family">家 · ครอบครัว</span> <span class="count">2</span></button>
+      <button data-g="friend"><span data-i18n="n.g.friend">友 · เพื่อน</span> <span class="count">3</span></button>
+      <button data-g="work"><span data-i18n="n.g.work">業 · ที่ทำงาน</span> <span class="count">3</span></button>
+      <button data-g="rival"><span data-i18n="n.g.rival">競 · คู่แข่ง</span> <span class="count">3</span></button>
+      <button data-i18n="n.g.new">+ สร้างกลุ่ม</button>
+    </div>
+    <div class="people-grid" id="people-grid"></div>
+  </div>
+
+  <!-- ─── VIEW 3: TEAM ─── -->
+  <div class="view-panel" id="view-team">
+    <div class="compare-board">
+      <div class="cmp-head">
+        <h3 data-i18n="n.t.h">จัดทีม <span class="tc">隊</span> · Team Synergy</h3>
+        <div class="syn" data-i18n="n.t.syn">SYNERGY <b>+74</b> / 100 ★ ทีมหนุนกัน</div>
+      </div>
+
+      <div class="cmp-row">
+        <!-- self -->
+        <div class="cmp-card score-pos">
+          <div class="cmp-avatar" style="border-color:var(--earth);background:var(--earth-bg);color:var(--earth);">己</div>
+          <div class="name">ไนท์</div>
+          <div class="role" data-i18n="n.t.you">YOU · CEO</div>
+          <div class="pillar">
+            <div class="p"><span class="s">時</span>丁丑</div>
+            <div class="p"><span class="s">日</span>己寅</div>
+            <div class="p"><span class="s">月</span>壬子</div>
+            <div class="p"><span class="s">年</span>庚午</div>
+          </div>
+          <div class="total">+0</div>
+          <div class="role" style="margin-top:6px;" data-i18n="n.t.center">CENTER</div>
+        </div>
+
+        <div class="cmp-card score-pos">
+          <button class="x-btn">×</button>
+          <div class="cmp-avatar" style="border-color:var(--water);background:var(--water-bg);color:var(--water);">壬</div>
+          <div class="name">พีท</div>
+          <div class="role" data-i18n="n.t.cof">CO-FOUNDER</div>
+          <div class="pillar">
+            <div class="p"><span class="s">時</span>戊申</div>
+            <div class="p"><span class="s">日</span>壬辰</div>
+            <div class="p"><span class="s">月</span>甲申</div>
+            <div class="p"><span class="s">年</span>乙丑</div>
+          </div>
+          <div class="total">+71</div>
+          <div class="role" style="margin-top:6px;" data-i18n="n.t.r.sup">三合 หนุน</div>
+        </div>
+
+        <div class="cmp-card score-pos">
+          <button class="x-btn">×</button>
+          <div class="cmp-avatar" style="border-color:var(--metal);background:var(--metal-bg);color:var(--metal);">辛</div>
+          <div class="name">ใหม่</div>
+          <div class="role" data-i18n="n.t.spo">SPOUSE · ที่ปรึกษา</div>
+          <div class="pillar">
+            <div class="p"><span class="s">時</span>戊子</div>
+            <div class="p"><span class="s">日</span>辛巳</div>
+            <div class="p"><span class="s">月</span>壬辰</div>
+            <div class="p"><span class="s">年</span>丙寅</div>
+          </div>
+          <div class="total">+82</div>
+          <div class="role" style="margin-top:6px;" data-i18n="n.t.r.use">用神 金</div>
+        </div>
+
+        <div class="cmp-card empty">
+          <div class="plus">+</div>
+          <div data-i18n="n.t.add">เพิ่มคน</div>
+          <div style="font-size:9px;margin-top:4px;color:var(--fg-faint);" data-i18n="n.t.addsub">เลือกจากเครือข่าย</div>
+        </div>
+      </div>
+
+      <div class="matrix">
+        <h4>
+          <span data-i18n="n.m.h">關係 MATRIX · ปฏิกิริยาในทีม</span>
+          <span style="color:var(--fg-faint);" data-i18n="n.m.dm">DM ปะทะกัน</span>
+        </h4>
+        <div class="matrix-table">
+          <div class="cell head"></div>
+          <div class="cell head">己 · ไนท์</div>
+          <div class="cell head">壬 · พีท</div>
+          <div class="cell head">辛 · ใหม่</div>
+          <div class="cell head">– </div>
+
+          <div class="cell row-head">己 · ไนท์</div>
+          <div class="cell self" data-i18n="n.m.self">SELF</div>
+          <div class="cell good">三合 +71</div>
+          <div class="cell good">用神 +82</div>
+          <div class="cell">–</div>
+
+          <div class="cell row-head">壬 · พีท</div>
+          <div class="cell good">三合 +71</div>
+          <div class="cell self" data-i18n="n.m.self">SELF</div>
+          <div class="cell good">合 +44</div>
+          <div class="cell">–</div>
+
+          <div class="cell row-head">辛 · ใหม่</div>
+          <div class="cell good">用神 +82</div>
+          <div class="cell good">合 +44</div>
+          <div class="cell self" data-i18n="n.m.self">SELF</div>
+          <div class="cell">–</div>
+
+          <div class="cell row-head" style="color:var(--fg-faint);" data-i18n="n.m.slot4">slot 4</div>
+          <div class="cell" style="opacity:.3;">–</div>
+          <div class="cell" style="opacity:.3;">–</div>
+          <div class="cell" style="opacity:.3;">–</div>
+          <div class="cell" style="opacity:.3;" data-i18n="n.m.empty">empty</div>
+        </div>
+      </div>
+
+      <div class="cmp-insights">
+        <div class="insight-box good">
+          <h5 data-i18n="n.in.good.h"><span style="font-family:var(--tc);">強</span> ทีมเสริมกัน</h5>
+          <ul>
+            <li data-i18n="n.in.good.l1">三合 น้ำ (己·壬) ทำให้ <b>การวางกลยุทธ์ชัดและไหลลื่น</b></li>
+            <li data-i18n="n.in.good.l2">用神 金 ของไนท์ ตรงกับ DM ใหม่ — <b>ใหม่คือคนตัดสินใจที่ไนท์ควรฟัง</b></li>
+            <li data-i18n="n.in.good.l3">พีท + ใหม่ มี合 ระหว่างกัน — <b>คุยกันเองได้ ไม่ต้องไนท์เป็นคนกลาง</b></li>
+            <li data-i18n="n.in.good.l4">ทีมมี ดิน · น้ำ · ทอง ครบ 3 ธาตุ — <b>balance ดี</b></li>
+          </ul>
+        </div>
+        <div class="insight-box bad">
+          <h5 data-i18n="n.in.bad.h"><span style="font-family:var(--tc);">慎</span> จุดต้องระวัง</h5>
+          <ul>
+            <li data-i18n="n.in.bad.l1">ทีมขาด <b>ไม้ (creativity)</b> และ <b>ไฟ (drive)</b> — งานสร้างสรรค์อาจช้า</li>
+            <li data-i18n="n.in.bad.l2">คนที่ 4 ที่ควรหา: ดวง <b>木 หรือ 火</b> ที่ไม่ชงไนท์</li>
+            <li data-i18n="n.in.bad.l3">เลี่ยงเพิ่มคนดวง 丁火 หรือ 丙火 — <b>忌神</b> ของไนท์</li>
+            <li data-i18n="n.in.bad.l4">ช่วงเดือนนี้ พีทคะแนนกลาง — <b>อย่ามอบดีลใหญ่ให้พีททำคนเดียว</b></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ═════════════════════════════════════════════════════════════════
+     SCORING SPEC v1 (Phase 1 design · Phase 3 จะ implement)
+     ─────────────────────────────────────────────────────────────────
+     A. Score(self, tf)   = base(stem→DM) + transit_bonus(branch_of_tf, stem_of_tf)
+     B. Score(other, tf)  = same logic ใช้กับดวงเค้า
+     C. Score(a↔b, tf)    = stem_pair_score(a.dm, b.dm)
+                          + branch_combo(a.branches, b.branches)  [六合 三合 沖 刑]
+                          + element_cycle(a.element, b.element)    [生 克 比]
+                          × transit_modifier(tf)
+     D. Add Person       → form input → /api/network/add → recalc
+     E. Team Build       = Σ Score(a,b) ทุก pair / max_pairs · normalized 0-100
+     F. Print            = window.print() + @media print CSS
+     ─────────────────────────────────────────────────────────────────
+     Sesheta sources: sesheta-v2/sesheta-reactions-9.json,
+                      sesheta-v8/decode-interaction-matrix.json,
+                      sesheta-v2/sesheta-ten-gods.json
+     ═════════════════════════════════════════════════════════════════ */
+
+  // ───────── DATA · DEMO seed (Phase 3 จะแทนด้วย /api/network) ─────────
+  // bug 4: ห่อใน loadPeople() เพื่อ migrate ง่าย · localStorage ก่อน → fallback DEMO
+  // bug 5: role/group เป็น key พร้อม resolve ผ่าน HK_I18N (n.role.* · n.grp.*)
+  // Phase 3.1: เติม pillars demo (4 หลัก year/month/day/hour) ให้ engine คำนวณ score ได้
+  const DEMO_PEOPLE = [
+    {id:'self',  name:'ไนท์',   roleKey:'n.role.self',     tagKey:'n.bd.self',  glyph:'己', elem:'earth', group:'self',
+      pillars:{year:{stem:'甲',branch:'子'},month:{stem:'丙',branch:'子'},day:{stem:'己',branch:'亥'},hour:{stem:'庚',branch:'午'}}},
+    {id:'mai',   name:'ใหม่',    roleKey:'n.role.spouse',   tagKey:'n.bd.mai',   glyph:'辛', elem:'metal', group:'family',
+      pillars:{year:{stem:'丙',branch:'寅'},month:{stem:'壬',branch:'辰'},day:{stem:'辛',branch:'巳'},hour:{stem:'戊',branch:'子'}}},
+    {id:'pun',   name:'น้องปุญ', roleKey:'n.role.child',    tagKey:'n.bd.pun',   glyph:'壬', elem:'water', group:'family',
+      pillars:{year:{stem:'甲',branch:'辰'},month:{stem:'庚',branch:'午'},day:{stem:'壬',branch:'戌'},hour:{stem:'丙',branch:'午'}}},
+    {id:'pete',  name:'พีท',     roleKey:'n.role.cof',      tagKey:'n.bd.pete',  glyph:'壬', elem:'water', group:'work',
+      pillars:{year:{stem:'乙',branch:'丑'},month:{stem:'甲',branch:'申'},day:{stem:'壬',branch:'辰'},hour:{stem:'戊',branch:'申'}}},
+    {id:'gong',  name:'ก้อง',    roleKey:'n.role.cto',      tagKey:'n.bd.gong',  glyph:'庚', elem:'metal', group:'work',
+      pillars:{year:{stem:'丁',branch:'卯'},month:{stem:'庚',branch:'戌'},day:{stem:'庚',branch:'子'},hour:{stem:'乙',branch:'酉'}}},
+    {id:'aey',   name:'เอ',      roleKey:'n.role.friend',   tagKey:'n.bd.aey',   glyph:'戊', elem:'earth', group:'friend',
+      pillars:{year:{stem:'甲',branch:'子'},month:{stem:'庚',branch:'午'},day:{stem:'戊',branch:'辰'},hour:{stem:'乙',branch:'卯'}}},
+    {id:'bee',   name:'บี',      roleKey:'n.role.friend',   tagKey:'n.bd.bee',   glyph:'乙', elem:'wood',  group:'friend',
+      pillars:{year:{stem:'癸',branch:'亥'},month:{stem:'丁',branch:'巳'},day:{stem:'乙',branch:'酉'},hour:{stem:'庚',branch:'辰'}}},
+    {id:'cee',   name:'ซี',      roleKey:'n.role.friend',   tagKey:'n.bd.cee',   glyph:'癸', elem:'water', group:'friend',
+      pillars:{year:{stem:'丙',branch:'寅'},month:{stem:'丁',branch:'酉'},day:{stem:'癸',branch:'丑'},hour:{stem:'辛',branch:'酉'}}},
+    {id:'arun',  name:'อรุณ',   roleKey:'n.role.investor', tagKey:'n.bd.arun',  glyph:'丁', elem:'fire',  group:'rival',
+      pillars:{year:{stem:'己',branch:'未'},month:{stem:'丁',branch:'卯'},day:{stem:'丁',branch:'巳'},hour:{stem:'乙',branch:'巳'}}},
+    {id:'mint',  name:'มิ้นท์', roleKey:'n.role.consult',  tagKey:'n.bd.mint',  glyph:'丙', elem:'fire',  group:'rival',
+      pillars:{year:{stem:'戊',branch:'辰'},month:{stem:'己',branch:'未'},day:{stem:'丙',branch:'戌'},hour:{stem:'戊',branch:'子'}}},
+    {id:'dee',   name:'ดี',      roleKey:'n.role.client',   tagKey:'n.bd.dee',   glyph:'辛', elem:'metal', group:'work',
+      pillars:{year:{stem:'己',branch:'巳'},month:{stem:'乙',branch:'亥'},day:{stem:'辛',branch:'酉'},hour:{stem:'戊',branch:'戌'}}},
+    {id:'eee',   name:'อี',      roleKey:'n.role.expart',   tagKey:'n.bd.eee',   glyph:'丁', elem:'fire',  group:'rival',
+      pillars:{year:{stem:'壬',branch:'戌'},month:{stem:'壬',branch:'寅'},day:{stem:'丁',branch:'未'},hour:{stem:'辛',branch:'丑'}}}
+  ];
+  function loadPeople(){
+    try {
+      const stored = localStorage.getItem('hk_network_people');
+      if (stored) { const p = JSON.parse(stored); if (Array.isArray(p) && p.length) return p; }
+    } catch(e){}
+    return DEMO_PEOPLE;
+  }
+  const PEOPLE = loadPeople();
+
+  // tx() helper: ดึงข้อความตาม locale ปัจจุบัน
+  function _tx(key){
+    if(!key || !window.HK_I18N) return key||'';
+    const t = window.HK_I18N[key];
+    if(!t) return key;
+    const lang = document.documentElement.getAttribute('data-lang') || 'th';
+    return t[lang] || t.th || key;
+  }
+  function resolveRole(p){ return p.roleKey ? _tx(p.roleKey) : (p.role||''); }
+  function resolveTag(p){  return p.tagKey  ? _tx(p.tagKey)  : (p.tag ||''); }
+
+  // Symmetric relations map: rel[a][b] = rel[b][a]
+  // Score timeframes: day, week, month, year, luck
+  const REL = {};
+  function setRel(a,b,scores,tags){
+    REL[a] = REL[a] || {};
+    REL[b] = REL[b] || {};
+    REL[a][b] = {scores, tags};
+    REL[b][a] = {scores, tags};
+  }
+  // Self relationships (from Aeaw's perspective)
+  setRel('self','mai',  {day:70,week:82,month:76,year:88,luck:85}, ['合','用神 金','三合']);
+  setRel('self','pun',  {day:38,week:42,month:35,year:45,luck:60}, ['正印','支持']);
+  setRel('self','pete', {day:60,week:71,month:22,year:-28,luck:40}, ['三合','傷官 + 正官']);
+  setRel('self','gong', {day:48,week:45,month:52,year:18,luck:55}, ['用神 金','傷官']);
+  setRel('self','aey',  {day:15,week:12,month:-8,year:5,luck:10},  ['比肩','同類']);
+  setRel('self','bee',  {day:5,week:8,month:14,year:22,luck:18},   ['七殺 ปะ DM','化']);
+  setRel('self','cee',  {day:8,week:6,month:18,year:12,luck:5},    ['正財 น้อย']);
+  setRel('self','arun', {day:-65,week:-58,month:-70,year:-50,luck:-45}, ['沖 ปี','忌神 火','七殺']);
+  setRel('self','mint', {day:-42,week:-48,month:-36,year:-16,luck:-22}, ['忌神 火','正印 ไป印旺']);
+  setRel('self','dee',  {day:-12,week:-16,month:-8,year:5,luck:-4},  ['比劫 อ่อนๆ']);
+  setRel('self','eee',  {day:-58,week:-68,month:-72,year:-60,luck:-55},['沖 หนัก','忌神','刑']);
+
+  // Inter-person relations (sample) — score from a's perspective
+  setRel('mai','pete',  {day:30,week:44,month:38,year:50,luck:42}, ['合 น้ำ-ทอง']);
+  setRel('mai','arun',  {day:-25,week:-30,month:-18,year:-22,luck:-15}, ['ทองชนไฟ']);
+  setRel('pete','gong', {day:35,week:40,month:30,year:25,luck:38},['ทอง-น้ำ ตามกัน']);
+  setRel('pete','arun', {day:-40,week:-35,month:-28,year:-30,luck:-22},['น้ำ-ไฟ ปะทะ']);
+  setRel('arun','mint', {day:55,week:60,month:50,year:48,luck:52}, ['ไฟ-ไฟ พันธมิตร']);
+  setRel('arun','eee',  {day:65,week:70,month:62,year:58,luck:55}, ['ไฟ-ไฟ พันธมิตร']);
+  setRel('gong','mint', {day:-30,week:-25,month:-20,year:-18,luck:-16},['ทองชนไฟ']);
+  setRel('aey','bee',   {day:18,week:22,month:15,year:12,luck:14}, ['ดิน-ไม้']);
+  setRel('cee','pete',  {day:42,week:38,month:40,year:35,luck:32}, ['น้ำพันธมิตร']);
+  setRel('dee','mai',   {day:30,week:28,month:25,year:22,luck:20}, ['ทองพันธมิตร']);
+  setRel('mint','pun',  {day:-20,week:-18,month:-22,year:-15,luck:-12},['ไฟชนน้ำ']);
+
+  // Default for unknown pairs
+  /* Phase 3.1: getScore/getTags · ใช้ engine cache · fallback REL demo · 0 ถ้าไม่มี */
+  window._engineScores      = window._engineScores      || {};  // {a: {b: {day,week,...,overall}}}
+  window._engineTags        = window._engineTags        || {};  // {a: {b: ['合','三合']}}
+  window._engineDirectional = window._engineDirectional || {};  // {a: {b: {atob, btoa}}}
+  window._engineBreakdown   = window._engineBreakdown   || {};  // {a: {b: {atob:{base,nobleman,group,bonus,penalty,transit}, ...}}}
+  window._engineLabels      = window._engineLabels      || {};  // {a: {b: {th, en}}}
+
+  function getScore(a, b, tf){
+    if(a===b) return null;
+    /* 1. engine cache ก่อน */
+    const eng = window._engineScores[a]?.[b];
+    if (eng && (eng[tf] !== undefined && eng[tf] !== null)) return eng[tf];
+    /* 2. fallback DEMO REL */
+    const r = REL[a]?.[b];
+    if(r) return r.scores[tf] ?? 0;
+    return 0;
+  }
+  function getTags(a, b){
+    const eng = window._engineTags[a]?.[b];
+    if (eng && eng.length) return eng;
+    return REL[a]?.[b]?.tags || [];
+  }
+  /* batch fetch · เรียกหลัง PEOPLE เปลี่ยน · cache ทั้ง self↔others */
+  async function recomputeAllScores(){
+    const self = PEOPLE.find(p=>p.id==='self');
+    if (!self || !self.pillars || !self.pillars.day) return;
+    const others = PEOPLE.filter(p=>p.id!=='self' && p.pillars && p.pillars.day);
+    if (!others.length) return;
+    try {
+      const today = new Date();
+      const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+      const r = await fetch('/api/network/score', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          self: self.pillars,
+          others: others.map(p=>({id:p.id, ...p.pillars})),
+          date: dateStr
+        })
+      });
+      const data = await r.json();
+      if (!r.ok || !data.scores) return;
+      window._engineScores['self'] = window._engineScores['self'] || {};
+      window._engineTags['self']   = window._engineTags['self']   || {};
+      window._engineDirectional['self'] = window._engineDirectional['self'] || {};
+      window._engineBreakdown['self']   = window._engineBreakdown['self']   || {};
+      window._engineLabels['self']      = window._engineLabels['self']      || {};
+      others.forEach(p=>{
+        if (data.scores && data.scores[p.id]) {
+          window._engineScores['self'][p.id] = data.scores[p.id];
+          window._engineScores[p.id] = window._engineScores[p.id] || {};
+          window._engineScores[p.id]['self'] = data.scores[p.id];
+        }
+        if (data.tags && data.tags[p.id]) {
+          window._engineTags['self'][p.id] = data.tags[p.id];
+          window._engineTags[p.id] = window._engineTags[p.id] || {};
+          window._engineTags[p.id]['self'] = data.tags[p.id];
+        }
+        if (data.directional && data.directional[p.id]) {
+          window._engineDirectional['self'][p.id] = data.directional[p.id];
+        }
+        if (data.breakdown && data.breakdown[p.id]) {
+          window._engineBreakdown['self'][p.id] = data.breakdown[p.id];
+        }
+        if (data.labels && data.labels[p.id]) {
+          window._engineLabels['self'][p.id] = data.labels[p.id];
+        }
+      });
+      if (typeof render === 'function') render();
+    } catch(e){ console.warn('recomputeAllScores failed', e); }
+  }
+  window.recomputeAllScores = recomputeAllScores;
+  /* call on first load · หลังจาก self profile/pillars พร้อม */
+  setTimeout(recomputeAllScores, 800);
+
+  // ───────── STATE ─────────
+  let state = {
+    centerId: 'self',
+    timeframe: 'week',
+    view: 'solar',
+    group: 'all',
+    theme: 'dark'
+  };
+
+  // ───────── HELPERS ─────────
+  function scoreClass(s){ return s>=20?'pos': s<=-20?'neg':'mid'; }
+  function fmt(s){ return s>0?`+${s}`:s<0?`−${Math.abs(s)}`:'0'; }
+
+  // arrange peripheral nodes around center on 3 orbits (close/mid/far based on |score|)
+  function calcPositions(centerId, tf){
+    const W = 1000, H = 720, CX = W/2, CY = H/2;
+    const peers = PEOPLE.filter(p=>p.id!==centerId);
+    const sorted = peers.map(p=>({...p, score:getScore(centerId,p.id,tf)}))
+      .sort((a,b)=>Math.abs(b.score)-Math.abs(a.score));
+    // assign to rings: top 3 → ring 1 (r=130), next 4 → ring 2 (r=210), rest → ring 3 (r=300)
+    const rings = [{r:130,n:[]},{r:210,n:[]},{r:300,n:[]}];
+    sorted.forEach((p,i)=>{
+      if(i<3) rings[0].n.push(p);
+      else if(i<7) rings[1].n.push(p);
+      else rings[2].n.push(p);
+    });
+    const positions = {};
+    rings.forEach((ring, idx)=>{
+      const startAngle = idx*0.4 + 0.2;
+      ring.n.forEach((p,i)=>{
+        const angle = startAngle + (Math.PI*2 / Math.max(ring.n.length,1)) * i;
+        positions[p.id] = {
+          x: CX + Math.cos(angle) * ring.r,
+          y: CY + Math.sin(angle) * ring.r,
+          score: p.score
+        };
+      });
+    });
+    return positions;
+  }
+
+  // ───────── RENDER: SOLAR ─────────
+  function renderSolar(){
+    const solar = document.getElementById('solar');
+    const lines = document.getElementById('solar-lines');
+    const center = PEOPLE.find(p=>p.id===state.centerId);
+    const positions = calcPositions(state.centerId, state.timeframe);
+
+    // remove old nodes
+    solar.querySelectorAll('.center-node, .node').forEach(n=>n.remove());
+    // clear lines
+    lines.innerHTML='';
+
+    // draw center
+    const c = document.createElement('div');
+    c.className = 'center-node';
+    c.dataset.id = center.id;
+    c.innerHTML = `<div class="glyph">${center.glyph}</div>
+      <div class="name">${center.name}</div>
+      <div class="role">${center.id==='self'?'YOU · 自':'CENTER'}</div>`;
+    if(center.id!=='self'){
+      c.title='คลิกที่ "↺ กลับไปดวงฉัน" เพื่อรีเซ็ต';
+    }
+    solar.appendChild(c);
+
+    // draw lines + nodes
+    PEOPLE.forEach(p=>{
+      if(p.id===state.centerId) return;
+      const pos = positions[p.id];
+      const score = pos.score;
+      const sClass = scoreClass(score);
+      const W = 1000, H = 720, CX = W/2, CY = H/2;
+
+      // line
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1', CX);
+      line.setAttribute('y1', CY);
+      line.setAttribute('x2', pos.x);
+      line.setAttribute('y2', pos.y);
+      const stroke = score>=20?'var(--good)': score<=-20?'var(--bad)':'var(--neutral)';
+      const opacity = Math.min(0.7, 0.2 + Math.abs(score)/200);
+      const strokeW = Math.max(0.5, Math.min(2, Math.abs(score)/50));
+      line.setAttribute('stroke', stroke);
+      line.setAttribute('stroke-width', strokeW);
+      line.setAttribute('opacity', opacity);
+      if(score<=-20) line.setAttribute('stroke-dasharray','4 3');
+      lines.appendChild(line);
+
+      // node
+      const n = document.createElement('div');
+      n.className = `node elem-${p.elem} score-${sClass}`;
+      n.dataset.id = p.id;
+      // convert viewBox coords to actual pixels — solar uses 100% width/height
+      const w = solar.clientWidth || 1000;
+      const h = solar.clientHeight || 720;
+      const px = (pos.x / W) * w;
+      const py = (pos.y / H) * h;
+      n.style.left = px + 'px';
+      n.style.top = py + 'px';
+      n.style.transform = 'translate(-50%,-50%)';
+      n.innerHTML = `<div class="ng">${p.glyph}</div>
+        <div class="nm">${p.name}</div>
+        <div class="sc">${fmt(score)}</div>`;
+      solar.appendChild(n);
+    });
+
+    // center info banner
+    const info = document.getElementById('center-info');
+    const infoName = document.getElementById('center-info-name');
+    if(state.centerId==='self'){
+      info.style.display='none';
+    } else {
+      info.style.display='flex';
+      infoName.textContent = `${center.glyph} · ${center.name}`;
+    }
+  }
+
+  // ───────── RENDER: PEOPLE GRID ─────────
+  function renderGrid(){
+    const grid = document.getElementById('people-grid');
+    grid.innerHTML='';
+    const tfs = ['day','week','month','year'];
+    const tfLabels = {day:'วันนี้', week:'สัปดาห์', month:'เดือน', year:'ปี'};
+
+    PEOPLE.filter(p=>p.id!=='self').forEach(p=>{
+      if(state.group!=='all' && p.group!==state.group) return;
+      const wkScore = getScore('self', p.id, 'week');
+      const sClass = scoreClass(wkScore);
+
+      const rows = tfs.map(tf=>{
+        const s = getScore('self', p.id, tf);
+        const sc = scoreClass(s);
+        const fillW = Math.min(50, Math.abs(s)/2);
+        // bug 6 fix: ถ้า s=0 ไม่ render bar fill เลย (ป้องกันจุดเล็กๆ ตรงกลาง)
+        const fillStyle = s===0
+          ? `display:none;`
+          : s>0
+            ? `left:50%;width:${fillW}%;`
+            : `right:50%;left:auto;width:${fillW}%;`;
+        return `<div class="pc-score-row ${sc}">
+          <span class="lbl">${tfLabels[tf]}</span>
+          <div class="bar"><div class="bar-fill" style="${fillStyle}"></div></div>
+          <span class="num">${fmt(s)}</span>
+        </div>`;
+      }).join('');
+
+      const tags = getTags('self', p.id);
+      const tagsHTML = tags.map(t=>{
+        const cls = wkScore>=20?'good': wkScore<=-20?'bad':'mid';
+        return `<span class="b ${cls}">${t}</span>`;
+      }).join('');
+
+      grid.insertAdjacentHTML('beforeend', `
+        <div class="person-card score-${sClass}" data-id="${p.id}">
+          <div class="pc-head">
+            <div class="pc-avatar elem-${p.elem}">${p.glyph}</div>
+            <div class="pc-meta">
+              <div class="pc-name">${p.name}</div>
+              <div class="pc-role">${resolveRole(p)}</div>
+              <div class="pc-tag">${resolveTag(p)}</div>
+            </div>
+          </div>
+          <div>${rows}</div>
+          <div class="pc-rel">${tagsHTML}</div>
+          <div class="pc-actions">
+            <button data-compare="${p.id}" data-i18n="n.pc.compare">+ เปรียบเทียบ</button>
+            <button data-set-center="${p.id}">มุมมอง ${p.name} →</button>
+          </div>
+        </div>
+      `);
+    });
+  }
+
+  // ───────── RENDER ALL ─────────
+  /* bug 2: stats นับจริงจาก PEOPLE + score · เรียกทุกครั้งที่เปลี่ยน timeframe */
+  function updateStats(){
+    const peers = PEOPLE.filter(p=>p.id!=='self');
+    let good=0, bad=0, mid=0;
+    peers.forEach(p=>{
+      const s = getScore('self', p.id, state.timeframe);
+      const cls = scoreClass(s);
+      if(cls==='pos') good++;
+      else if(cls==='neg') bad++;
+      else mid++;
+    });
+    const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+    set('stat-all', peers.length);
+    set('stat-good', good);
+    set('stat-bad',  bad);
+    set('stat-mid',  mid);
+  }
+
+  /* bug 3: filter-meta dynamic · DM จาก localStorage profile · ช่วงวันที่จาก current Date · favor TODO */
+  function updateMeta(){
+    const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+    let dm = '己土';
+    try {
+      const p = JSON.parse(localStorage.getItem('hk_profile')||'{}');
+      if (p.dayMaster) dm = p.dayMaster;
+    } catch(e){}
+    const now = new Date();
+    const tfMap = {day:1, week:7, month:30, year:365, luck:3650};
+    const days = tfMap[state.timeframe]||7;
+    const end = new Date(now.getTime() + days*86400000);
+    const fmtD = d => `${d.getDate()}/${d.getMonth()+1}`;
+    set('meta-dm', dm);
+    set('meta-period', `${fmtD(now)}-${fmtD(end)}`);
+    /* favor: TODO ดึงจาก yongshen ของ profile · ใช้ '金 · 木' default */
+  }
+
+  function render(){
+    renderSolar();
+    renderGrid();
+    updateStats();
+    updateMeta();
+  }
+
+  // ───────── EVENTS ─────────
+  // theme toggle
+  document.querySelectorAll('.theme-switch button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const t = btn.dataset.theme;
+      document.documentElement.setAttribute('data-theme', t);
+      document.querySelectorAll('.theme-switch button').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      state.theme = t;
+    });
+  });
+
+  // view tabs
+  document.getElementById('view-tabs').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-view]');
+    if(!btn) return;
+    const view = btn.dataset.view;
+    document.querySelectorAll('#view-tabs button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('on'));
+    document.getElementById('view-'+view).classList.add('on');
+    state.view = view;
+    if(view==='solar') setTimeout(renderSolar, 50);
+  });
+
+  // time pills
+  document.getElementById('time-pills').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-tf]');
+    if(!btn) return;
+    document.querySelectorAll('#time-pills button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    state.timeframe = btn.dataset.tf;
+    render();
+  });
+
+  // group chips
+  document.querySelector('.group-chips')?.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-g]');
+    if(!btn) return;
+    document.querySelectorAll('.group-chips button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    state.group = btn.dataset.g;
+    renderGrid();
+  });
+
+  // click on node → set as center
+  document.getElementById('solar').addEventListener('click', (e)=>{
+    const node = e.target.closest('.node');
+    if(node && node.dataset.id){
+      state.centerId = node.dataset.id;
+      renderSolar();
+    }
+  });
+
+  // reset center
+  document.getElementById('center-reset').addEventListener('click', ()=>{
+    state.centerId = 'self';
+    renderSolar();
+  });
+
+  // "มุมมอง X" + "+ เปรียบเทียบ" buttons in card
+  document.getElementById('people-grid').addEventListener('click', (e)=>{
+    /* "+ เปรียบเทียบ" → เปิด /comparison */
+    const cmpBtn = e.target.closest('button[data-compare]');
+    if (cmpBtn) {
+      const id = cmpBtn.dataset.compare;
+      const p = PEOPLE.find(x=>x.id===id);
+      if (p && typeof compareWithPerson === 'function') compareWithPerson(p);
+      return;
+    }
+    const btn = e.target.closest('button[data-set-center]');
+    if(!btn) return;
+    state.centerId = btn.dataset.setCenter;
+    // switch to solar view
+    document.querySelectorAll('#view-tabs button').forEach(b=>b.classList.remove('on'));
+    document.querySelector('#view-tabs button[data-view="solar"]').classList.add('on');
+    document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('on'));
+    document.getElementById('view-solar').classList.add('on');
+    setTimeout(renderSolar, 50);
+  });
+
+  // resize → recompute positions
+  window.addEventListener('resize', ()=>{ if(state.view==='solar') renderSolar(); });
+
+  // initial render
+  render();
+</script>
+
+<script>
+/* hilite active link · auto-detect /network → /yongsennetwork */
+(function(){
+  try {
+    var p = window.location.pathname.replace(/\/$/,'') || '/network';
+    p = p.replace(/-m$/, '');
+    if (p === '/yongsennetwork') p = '/network';
+    document.querySelectorAll('#hk-topnav a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+  } catch(e){}
+})();
+</script>
+
+<script>
+/* hourkey · network · 3-language i18n (TH/EN/ZH) */
+window.HK_I18N = {
+  /* navbar */
+  'n.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
+  'n.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
+  'n.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
+  'n.nav.network': { th:'เครือข่าย', en:'Network', zh:'人脈' },
+  'n.nav.qimen':   { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門' },
+  'n.nav.master':  { th:'ซินแส', en:'Sifu', zh:'老師' },
+  'n.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
+  'n.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  'n.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
+  /* breadcrumb */
+  'n.crumb.home':  { th:'หน้าหลัก', en:'Home', zh:'首頁' },
+  'n.crumb.cur':   { th:'เครือข่าย · 用神 NETWORK', en:'Network · 用神 NETWORK', zh:'人脈 · 用神 NETWORK' },
+  /* hero head */
+  'n.h.label':     { th:'用神 · YONGSHEN NETWORK', en:'用神 · YONGSHEN NETWORK', zh:'用神 · YONGSHEN NETWORK' },
+  'n.h.h1':        { th:'คนรอบตัวคุณ <span class="tc">關係</span>', en:'People around you <span class="tc">關係</span>', zh:'身邊之人 <span class="tc">關係</span>' },
+  'n.h.lede':      { th:'วิเคราะห์ปฏิกิริยาระหว่างดวงคุณกับ <b>11 คน</b> ที่บันทึกไว้ — ใครหนุน · ใครชง · ใครเหมาะร่วมงาน · ใครควรระวัง <b>เปลี่ยนตามเวลา</b> ที่เลือก · <b>คลิกคนใดในวงโคจรเพื่อย้าย Center</b>', en:'Reactions between your chart and <b>11 saved people</b> — who supports · who clashes · who fits · who to watch · <b>changes with time</b> · <b>click anyone to recenter</b>', zh:'解析您與 <b>11 位記錄之人</b> 的命盤互動 — 誰助 · 誰沖 · 誰宜共事 · 誰當慎 · <b>隨時間改變</b> · <b>點選任一人重設中心</b>' },
+  'n.h.s.all':     { th:'คนทั้งหมด', en:'all people', zh:'全部' },
+  'n.h.s.good':    { th:'หนุน', en:'support', zh:'助' },
+  'n.h.s.bad':     { th:'ชง', en:'clash', zh:'沖' },
+  'n.h.s.mid':     { th:'กลาง', en:'neutral', zh:'中' },
+  /* filter bar */
+  'n.f.label':     { th:'⏱ TIME RANGE · 流', en:'⏱ TIME RANGE · 流', zh:'⏱ 時段 · 流' },
+  'n.f.day':       { th:'วันนี้ · 流日', en:'Today · 流日', zh:'今日 · 流日' },
+  'n.f.week':      { th:'สัปดาห์ · 週', en:'Week · 週', zh:'週 · 週' },
+  'n.f.month':     { th:'เดือน · 流月', en:'Month · 流月', zh:'月 · 流月' },
+  'n.f.year':      { th:'ปี · 流年', en:'Year · 流年', zh:'年 · 流年' },
+  'n.f.luck':      { th:'10 ปี · 大運', en:'10 yrs · 大運', zh:'十年 · 大運' },
+  'n.f.meta.dm':     { th:'DM', en:'DM', zh:'日主' },
+  'n.f.meta.period': { th:'ช่วง', en:'Period', zh:'期' },
+  'n.f.meta.favor':  { th:'ดวงเด่น', en:'Favor', zh:'喜' },
+  /* view tabs */
+  'n.vt.solar':    { th:'<span class="tc">系</span>SOLAR SYSTEM · ภาพรวม', en:'<span class="tc">系</span>SOLAR SYSTEM · overview', zh:'<span class="tc">系</span>太陽系 · 總覽' },
+  'n.vt.grid':     { th:'<span class="tc">人</span>PEOPLE GRID · การ์ดคน', en:'<span class="tc">人</span>PEOPLE GRID · cards', zh:'<span class="tc">人</span>人脈卡片' },
+  'n.vt.team':     { th:'<span class="tc">隊</span>TEAM BUILDER · จัดทีม', en:'<span class="tc">隊</span>TEAM BUILDER · build', zh:'<span class="tc">隊</span>組隊' },
+  /* solar legend */
+  'n.lg.good':     { th:'หนุน · 合 · 用神', en:'support · 合 · 用神', zh:'助 · 合 · 用神' },
+  'n.lg.bad':      { th:'ชง · 沖 · 忌神', en:'clash · 沖 · 忌神', zh:'沖 · 忌神' },
+  'n.lg.mid':      { th:'กลาง · neutral', en:'neutral', zh:'中性' },
+  'n.lg.tip':      { th:'วงโคจรใกล้ = ผลกระทบสูง · คลิกคนเพื่อย้าย Center', en:'Closer orbit = stronger impact · click to recenter', zh:'軌道近 = 影響大 · 點選重設中心' },
+  'n.cta.add':     { th:'+ เพิ่มคน', en:'+ Add person', zh:'+ 新增' },
+  'n.ci.reset':    { th:'↺ กลับไปดวงฉัน', en:'↺ Back to me', zh:'↺ 回到我' },
+  /* group chips */
+  'n.g.all':       { th:'ทั้งหมด', en:'All', zh:'全部' },
+  'n.g.family':    { th:'家 · ครอบครัว', en:'家 · Family', zh:'家 · 家庭' },
+  'n.g.friend':    { th:'友 · เพื่อน', en:'友 · Friends', zh:'友 · 朋友' },
+  'n.g.work':      { th:'業 · ที่ทำงาน', en:'業 · Work', zh:'業 · 工作' },
+  'n.g.rival':     { th:'競 · คู่แข่ง', en:'競 · Rivals', zh:'競 · 競爭' },
+  'n.g.new':       { th:'+ สร้างกลุ่ม', en:'+ New group', zh:'+ 新群' },
+  /* team builder */
+  'n.t.h':         { th:'จัดทีม <span class="tc">隊</span> · Team Synergy', en:'Team Build <span class="tc">隊</span> · Synergy', zh:'組隊 <span class="tc">隊</span> · 協同' },
+  'n.t.syn':       { th:'SYNERGY <b>+74</b> / 100 ★ ทีมหนุนกัน', en:'SYNERGY <b>+74</b> / 100 ★ team supports', zh:'協同 <b>+74</b> / 100 ★ 團隊互助' },
+  'n.t.you':       { th:'YOU · CEO', en:'YOU · CEO', zh:'您 · CEO' },
+  'n.t.center':    { th:'CENTER', en:'CENTER', zh:'中心' },
+  'n.t.cof':       { th:'CO-FOUNDER', en:'CO-FOUNDER', zh:'共同創辦人' },
+  'n.t.spo':       { th:'SPOUSE · ที่ปรึกษา', en:'SPOUSE · advisor', zh:'配偶 · 顧問' },
+  'n.t.add':       { th:'เพิ่มคน', en:'Add person', zh:'新增成員' },
+  'n.t.addsub':    { th:'เลือกจากเครือข่าย', en:'pick from network', zh:'從人脈選取' },
+  'n.t.r.sup':     { th:'三合 หนุน', en:'三合 support', zh:'三合 助' },
+  'n.t.r.use':     { th:'用神 金', en:'用神 Metal', zh:'用神 金' },
+  'n.m.h':         { th:'關係 MATRIX · ปฏิกิริยาในทีม', en:'關係 MATRIX · team reactions', zh:'關係矩陣 · 團隊互動' },
+  'n.m.dm':        { th:'DM ปะทะกัน', en:'DM clashes', zh:'日主沖' },
+  'n.m.self':      { th:'SELF', en:'SELF', zh:'自身' },
+  'n.m.empty':     { th:'empty', en:'empty', zh:'空' },
+  'n.m.slot4':     { th:'slot 4', en:'slot 4', zh:'位 4' },
+  /* insights */
+  'n.in.good.h':   { th:'<span style="font-family:var(--tc);">強</span> ทีมเสริมกัน', en:'<span style="font-family:var(--tc);">強</span> Team strengths', zh:'<span style="font-family:var(--tc);">強</span> 團隊優勢' },
+  'n.in.good.l1':  { th:'三合 น้ำ (己·壬) ทำให้ <b>การวางกลยุทธ์ชัดและไหลลื่น</b>', en:'三合 Water (己·壬) makes <b>strategy clear and flowing</b>', zh:'三合 水 (己·壬) <b>策略清晰流暢</b>' },
+  'n.in.good.l2':  { th:'用神 金 ของไนท์ ตรงกับ DM ใหม่ — <b>ใหม่คือคนตัดสินใจที่ไนท์ควรฟัง</b>', en:"Knight's 用神 金 = Mai's DM — <b>Mai is the decision-maker Knight should listen to</b>", zh:'Knight 用神 金 = Mai 日主 — <b>Mai 是 Knight 應聽從之決策者</b>' },
+  'n.in.good.l3':  { th:'พีท + ใหม่ มี合 ระหว่างกัน — <b>คุยกันเองได้ ไม่ต้องไนท์เป็นคนกลาง</b>', en:'Pete + Mai have 合 — <b>can talk directly, no need for Knight as mediator</b>', zh:'Pete + Mai 有合 — <b>可直接溝通 · 不需 Knight 居中</b>' },
+  'n.in.good.l4':  { th:'ทีมมี ดิน · น้ำ · ทอง ครบ 3 ธาตุ — <b>balance ดี</b>', en:'Team has Earth · Water · Metal — <b>good balance</b>', zh:'團隊有土水金 — <b>平衡良好</b>' },
+  'n.in.bad.h':    { th:'<span style="font-family:var(--tc);">慎</span> จุดต้องระวัง', en:'<span style="font-family:var(--tc);">慎</span> Cautions', zh:'<span style="font-family:var(--tc);">慎</span> 當慎之處' },
+  'n.in.bad.l1':   { th:'ทีมขาด <b>ไม้ (creativity)</b> และ <b>ไฟ (drive)</b> — งานสร้างสรรค์อาจช้า', en:'Team lacks <b>Wood (creativity)</b> and <b>Fire (drive)</b> — creative work may slow', zh:'團隊缺 <b>木 (創意)</b> 與 <b>火 (動力)</b> — 創意工作恐遲' },
+  'n.in.bad.l2':   { th:'คนที่ 4 ที่ควรหา: ดวง <b>木 หรือ 火</b> ที่ไม่ชงไนท์', en:'4th member to seek: <b>Wood or Fire</b> that doesn\'t clash with Knight', zh:'宜尋第 4 人: <b>木或火</b> 而不沖 Knight 者' },
+  'n.in.bad.l3':   { th:'เลี่ยงเพิ่มคนดวง 丁火 หรือ 丙火 — <b>忌神</b> ของไนท์', en:'Avoid 丁火 or 丙火 — <b>忌神</b> of Knight', zh:'忌增 丁火 或 丙火 — Knight 之 <b>忌神</b>' },
+  'n.in.bad.l4':   { th:'ช่วงเดือนนี้ พีทคะแนนกลาง — <b>อย่ามอบดีลใหญ่ให้พีททำคนเดียว</b>', en:"This month Pete's score is mid — <b>don't give big deals to Pete alone</b>", zh:'本月 Pete 中等 — <b>勿單獨交付大案</b>' },
+  /* role keys (bug 5) */
+  'n.role.self':     { th:'YOU · CEO', en:'YOU · CEO', zh:'您 · CEO' },
+  'n.role.spouse':   { th:'SPOUSE · ครอบครัว', en:'SPOUSE · Family', zh:'配偶 · 家庭' },
+  'n.role.child':    { th:'CHILD · ครอบครัว', en:'CHILD · Family', zh:'子女 · 家庭' },
+  'n.role.cof':      { th:'CO-FOUNDER · ที่ทำงาน', en:'CO-FOUNDER · Work', zh:'共同創辦人 · 工作' },
+  'n.role.cto':      { th:'CTO · ที่ทำงาน', en:'CTO · Work', zh:'技術總監 · 工作' },
+  'n.role.friend':   { th:'FRIEND · เพื่อน', en:'FRIEND', zh:'朋友' },
+  'n.role.investor': { th:'INVESTOR · คู่แข่ง', en:'INVESTOR · Rival', zh:'投資人 · 競爭' },
+  'n.role.consult':  { th:'CONSULTANT · คู่แข่ง', en:'CONSULTANT · Rival', zh:'顧問 · 競爭' },
+  'n.role.client':   { th:'CLIENT · ที่ทำงาน', en:'CLIENT · Work', zh:'客戶 · 工作' },
+  'n.role.expart':   { th:'EX-PARTNER · คู่แข่ง', en:'EX-PARTNER · Rival', zh:'前夥伴 · 競爭' },
+  /* birthdate tags (bug 5) */
+  'n.bd.self':  { th:'己土 · 31 ธ.ค. 2527', en:'己 Earth · 31 Dec 1984', zh:'己土 · 1984年12月31日' },
+  'n.bd.mai':   { th:'辛金 · 8 เม.ย. 2529', en:'辛 Metal · 8 Apr 1986', zh:'辛金 · 1986年4月8日' },
+  'n.bd.pun':   { th:'壬水 · 7 มิ.ย. 2567', en:'壬 Water · 7 Jun 2024', zh:'壬水 · 2024年6月7日' },
+  'n.bd.pete':  { th:'壬水 · 12 ส.ค. 2528', en:'壬 Water · 12 Aug 1985', zh:'壬水 · 1985年8月12日' },
+  'n.bd.gong':  { th:'庚金 · 18 ต.ค. 2530', en:'庚 Metal · 18 Oct 1987', zh:'庚金 · 1987年10月18日' },
+  'n.bd.aey':   { th:'戊土 · 22 มิ.ย. 2527', en:'戊 Earth · 22 Jun 1984', zh:'戊土 · 1984年6月22日' },
+  'n.bd.bee':   { th:'乙木 · 5 พ.ค. 2526', en:'乙 Wood · 5 May 1983', zh:'乙木 · 1983年5月5日' },
+  'n.bd.cee':   { th:'癸水 · 14 ก.ย. 2529', en:'癸 Water · 14 Sep 1986', zh:'癸水 · 1986年9月14日' },
+  'n.bd.arun':  { th:'丁火 · 3 มี.ค. 2522', en:'丁 Fire · 3 Mar 1979', zh:'丁火 · 1979年3月3日' },
+  'n.bd.mint':  { th:'丙火 · 30 ก.ค. 2531', en:'丙 Fire · 30 Jul 1988', zh:'丙火 · 1988年7月30日' },
+  'n.bd.dee':   { th:'辛金 · 25 พ.ย. 2532', en:'辛 Metal · 25 Nov 1989', zh:'辛金 · 1989年11月25日' },
+  'n.bd.eee':   { th:'丁火 · 17 ก.พ. 2525', en:'丁 Fire · 17 Feb 1982', zh:'丁火 · 1982年2月17日' }
+};
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+    document.querySelectorAll('[data-i18n-ph="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) el.setAttribute('placeholder', t[lang].replace(/<[^>]+>/g,''));
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+    /* bug 5 fix: re-render grid · role/tag dynamic ตาม locale */
+    if (typeof renderGrid === 'function') try{ renderGrid(); }catch(e){}
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+</script>
+
+<!-- ═══════════ Phase 2A · Person Modal (Add/Edit/Delete) ═══════════ -->
+<style>
+.hk-net-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);padding:20px;}
+.hk-net-modal.show{display:flex;animation:hkNetFade .25s ease-out;}
+@keyframes hkNetFade{from{opacity:0;}to{opacity:1;}}
+.hk-net-card{background:linear-gradient(160deg, var(--bg-2), var(--bg-3));border:1px solid var(--gold-line);border-radius:18px;padding:30px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.5);position:relative;}
+[data-theme="light"] .hk-net-card{background:linear-gradient(160deg, var(--bg-2), var(--bg-3));}
+.hk-net-card .x{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:var(--tile);border:1px solid var(--gold-line);color:var(--fg-soft);cursor:pointer;font-size:16px;line-height:1;}
+.hk-net-card .x:hover{color:var(--bad);border-color:var(--bad);}
+.hk-net-card h3{font-family:var(--serif);font-size:24px;font-weight:400;margin-bottom:6px;}
+.hk-net-card h3 .tc{font-family:var(--tc);color:var(--gold);font-weight:600;margin-right:8px;}
+.hk-net-card .sub{font-size:12px;color:var(--fg-soft);margin-bottom:22px;}
+.hk-net-form{display:flex;flex-direction:column;gap:14px;}
+.hk-net-form label{display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-soft);}
+.hk-net-form input,.hk-net-form select{padding:10px 14px;background:var(--bg);border:1px solid var(--tile-bd);border-radius:8px;font-family:var(--thai);font-size:14px;color:var(--fg);outline:none;transition:.2s;}
+.hk-net-form input:focus,.hk-net-form select:focus{border-color:var(--gold);}
+.hk-net-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.hk-net-form .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.hk-net-help{font-family:var(--thai);font-size:12px;color:var(--fg-soft);background:rgba(143,195,124,.06);border:1px solid rgba(143,195,124,.25);border-radius:8px;padding:10px 14px;line-height:1.55;}
+.hk-net-help b{color:var(--gold);font-weight:600;}
+.hk-net-loading{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--gold);}
+.hk-net-loading .spin{display:inline-block;animation:hkSpin 1s linear infinite;font-size:18px;}
+@keyframes hkSpin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+.hk-net-actions{display:flex;gap:10px;justify-content:space-between;margin-top:18px;padding-top:18px;border-top:1px solid var(--tile-bd);}
+.hk-net-btn{padding:12px 22px;border:none;border-radius:99px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;font-weight:700;transition:.2s;}
+.hk-net-btn.primary{background:var(--gold);color:var(--bg);}
+.hk-net-btn.primary:hover{background:var(--gold-deep);}
+.hk-net-btn.danger{background:transparent;color:var(--bad);border:1px solid var(--bad);}
+.hk-net-btn.danger:hover{background:rgba(226,107,93,.1);}
+.hk-net-btn.ghost{background:transparent;color:var(--fg-soft);border:1px solid var(--tile-bd);}
+.hk-net-btn.ghost:hover{border-color:var(--gold);color:var(--gold);}
+
+/* Mini icons in person card */
+.pc-edit-row{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--tile-bd);}
+.pc-edit-row button{flex:1;background:transparent;border:1px solid var(--tile-bd);color:var(--fg-faint);padding:6px 4px;border-radius:6px;font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:.2s;}
+.pc-edit-row button:hover{border-color:var(--gold);color:var(--gold);}
+.pc-edit-row .del:hover{border-color:var(--bad);color:var(--bad);}
+
+@media (max-width:560px){
+  .hk-net-card{padding:20px 16px;}
+  .hk-net-form .row2,.hk-net-form .row3{grid-template-columns:1fr;}
+}
+</style>
+
+<div class="hk-net-modal" id="hk-person-modal" onclick="if(event.target===this)closePersonModal()">
+  <div class="hk-net-card">
+    <button class="x" onclick="closePersonModal()">×</button>
+    <h3><span class="tc" id="pm-icon">人</span><span data-i18n="n.pm.title-add" id="pm-title">เพิ่มคนใหม่</span></h3>
+    <div class="sub" data-i18n="n.pm.sub">กรอกข้อมูลคนที่จะเพิ่มเข้าเครือข่าย · ระบบจะคำนวณปฏิกิริยาให้</div>
+    <form class="hk-net-form" id="pm-form" onsubmit="event.preventDefault();savePerson();">
+      <input type="hidden" id="pm-id" />
+      <label><span data-i18n="n.pm.f.name">ชื่อ · NAME</span>
+        <input type="text" id="pm-name" required maxlength="40" placeholder="เช่น พีท · ใหม่" />
+      </label>
+      <label><span data-i18n="n.pm.f.role">บทบาท · ROLE</span>
+        <input type="text" id="pm-role" required maxlength="60" placeholder="เช่น CO-FOUNDER · ที่ทำงาน" />
+      </label>
+      <label><span data-i18n="n.pm.f.group">กลุ่ม · GROUP</span>
+        <select id="pm-group">
+          <option value="family">家 · ครอบครัว</option>
+          <option value="friend">友 · เพื่อน</option>
+          <option value="work" selected>業 · ที่ทำงาน</option>
+          <option value="rival">競 · คู่แข่ง</option>
+          <option value="self">ตัวเอง</option>
+        </select>
+      </label>
+      <div class="row2">
+        <label><span data-i18n="n.pm.f.bdate">วันเกิด · BIRTH DATE</span>
+          <input type="date" id="pm-bdate" required min="1900-01-01" max="2030-12-31" />
+        </label>
+        <label><span data-i18n="n.pm.f.btime">เวลาเกิด · BIRTH TIME</span>
+          <input type="time" id="pm-btime" required value="12:00" />
+        </label>
+      </div>
+      <div class="row2">
+        <label><span data-i18n="n.pm.f.gender">เพศ · GENDER</span>
+          <select id="pm-gender">
+            <option value="M" selected data-i18n="n.pm.gender.m">ชาย · Male</option>
+            <option value="F" data-i18n="n.pm.gender.f">หญิง · Female</option>
+          </select>
+        </label>
+        <label><span data-i18n="n.pm.f.lng">ลองจิจูด (option)</span>
+          <input type="number" id="pm-lng" step="0.01" value="100.5" placeholder="100.5 (Bangkok)" />
+        </label>
+      </div>
+      <div class="hk-net-help" id="pm-help" data-i18n="n.pm.help">ระบบจะคำนวณ <b>4 หลัก · DM · ธาตุ</b> จากวันเดือนปีให้อัตโนมัติ · ไม่ต้องรู้ล่วงหน้า</div>
+      <div class="hk-net-loading" id="pm-loading" style="display:none;">
+        <span class="spin">⟳</span> <span data-i18n="n.pm.calc">กำลังคำนวณดวง...</span>
+      </div>
+      <div class="hk-net-actions">
+        <button type="button" class="hk-net-btn danger" id="pm-del" data-i18n="n.pm.btn.del" style="display:none;" onclick="deletePerson()">🗑 ลบ</button>
+        <div style="display:flex;gap:8px;margin-left:auto;">
+          <button type="button" class="hk-net-btn ghost" data-i18n="n.pm.btn.cancel" onclick="closePersonModal()">ยกเลิก</button>
+          <button type="submit" class="hk-net-btn primary" id="pm-save" data-i18n="n.pm.btn.save">บันทึก</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ═══════════ Phase 2A handlers · Add/Edit/Delete person ═══════════ */
+(function(){
+  /* i18n keys for modal */
+  Object.assign(window.HK_I18N, {
+    'n.pm.title-add':  { th:'เพิ่มคนใหม่', en:'Add Person', zh:'新增人物' },
+    'n.pm.title-edit': { th:'แก้ไขข้อมูล', en:'Edit Person', zh:'編輯人物' },
+    'n.pm.sub':        { th:'กรอกแค่ชื่อ · บทบาท · วันเดือนปี เกิด · ระบบคำนวณดวงให้', en:'Fill name · role · birthdate · system computes chart', zh:'填寫姓名 · 角色 · 生辰 · 系統自動計算命盤' },
+    'n.pm.f.name':     { th:'ชื่อ · NAME', en:'NAME · ชื่อ', zh:'姓名 · NAME' },
+    'n.pm.f.role':     { th:'บทบาท · ROLE', en:'ROLE · บทบาท', zh:'角色 · ROLE' },
+    'n.pm.f.group':    { th:'กลุ่ม · GROUP', en:'GROUP', zh:'組別' },
+    'n.pm.f.bdate':    { th:'วันเกิด · BIRTH DATE', en:'BIRTH DATE', zh:'生日' },
+    'n.pm.f.btime':    { th:'เวลาเกิด · BIRTH TIME', en:'BIRTH TIME', zh:'時辰' },
+    'n.pm.f.gender':   { th:'เพศ · GENDER', en:'GENDER', zh:'性別' },
+    'n.pm.f.lng':      { th:'ลองจิจูด (option)', en:'Longitude (option)', zh:'經度（選填）' },
+    'n.pm.gender.m':   { th:'ชาย · Male', en:'Male', zh:'男' },
+    'n.pm.gender.f':   { th:'หญิง · Female', en:'Female', zh:'女' },
+    'n.pm.help':       { th:'ระบบจะคำนวณ <b>4 หลัก · DM · ธาตุ</b> จากวันเดือนปีให้อัตโนมัติ · ไม่ต้องรู้ล่วงหน้า', en:'System computes <b>4 pillars · DM · element</b> from birth date — no need to know in advance', zh:'系統將自動由生辰計算 <b>四柱 · 日主 · 五行</b> · 不需事先知曉' },
+    'n.pm.calc':       { th:'กำลังคำนวณดวง...', en:'Computing chart...', zh:'計算命盤中...' },
+    'n.pm.btn.del':    { th:'🗑 ลบ', en:'🗑 Delete', zh:'🗑 刪除' },
+    'n.pm.btn.cancel': { th:'ยกเลิก', en:'Cancel', zh:'取消' },
+    'n.pm.btn.save':   { th:'บันทึก', en:'Save', zh:'儲存' },
+    'n.pm.err':        { th:'ขออภัย คำนวณดวงไม่ได้ · ลองใหม่', en:'Sorry, chart calc failed · try again', zh:'抱歉 · 命盤計算失敗 · 請重試' },
+    'n.pc.view':       { th:'📊 ดูดวง', en:'📊 Chart', zh:'📊 命盤' },
+    'n.pc.compare':    { th:'+ เปรียบเทียบ', en:'+ Compare', zh:'+ 比較' },
+    'n.pc.edit':       { th:'✎ แก้ไข', en:'✎ Edit', zh:'✎ 編輯' },
+    'n.pc.del':        { th:'🗑 ลบ', en:'🗑 Delete', zh:'🗑 刪除' }
+  });
+
+  function tx(k){
+    const t = window.HK_I18N[k]; if(!t) return k;
+    const lang = document.documentElement.getAttribute('data-lang')||'th';
+    return t[lang]||t.th||k;
+  }
+
+  /* save PEOPLE to localStorage (skip self) */
+  function savePeopleToStore(){
+    try {
+      localStorage.setItem('hk_network_people', JSON.stringify(PEOPLE));
+    } catch(e){ console.warn('cannot save', e); }
+  }
+
+  /* element from stem */
+  function elemFromStem(stem){
+    const map = {'甲':'wood','乙':'wood','丙':'fire','丁':'fire','戊':'earth','己':'earth','庚':'metal','辛':'metal','壬':'water','癸':'water'};
+    return map[stem] || 'earth';
+  }
+  /* format Thai date */
+  function fmtThaiDate(date){
+    if (!date) return '';
+    const [y,m,d] = date.split('-').map(Number);
+    const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    return `${d} ${months[m-1]} ${y+543}`;
+  }
+
+  /* open modal · mode='add' or {edit person object} */
+  window.openPersonModal = function(person){
+    const m = document.getElementById('hk-person-modal');
+    const isEdit = !!person;
+    document.getElementById('pm-id').value = isEdit ? person.id : '';
+    document.getElementById('pm-name').value = isEdit ? person.name : '';
+    document.getElementById('pm-role').value = isEdit ? (person.role || tx(person.roleKey||'')) : '';
+    document.getElementById('pm-group').value = isEdit ? person.group : 'work';
+    document.getElementById('pm-bdate').value = isEdit ? (person.birthDate||'') : '';
+    document.getElementById('pm-btime').value = isEdit ? (person.birthTime||'12:00') : '12:00';
+    document.getElementById('pm-gender').value = isEdit ? (person.gender||'M') : 'M';
+    document.getElementById('pm-lng').value = isEdit ? (person.longitude||100.5) : 100.5;
+    document.getElementById('pm-icon').textContent = isEdit ? (person.glyph||'人') : '人';
+    document.getElementById('pm-title').textContent = tx(isEdit ? 'n.pm.title-edit' : 'n.pm.title-add');
+    document.getElementById('pm-del').style.display = (isEdit && person.id !== 'self') ? 'inline-block' : 'none';
+    document.getElementById('pm-loading').style.display = 'none';
+    document.getElementById('pm-save').disabled = false;
+    m.classList.add('show');
+  };
+
+  window.closePersonModal = function(){
+    document.getElementById('hk-person-modal').classList.remove('show');
+  };
+
+  /* save (add or update) — async · เรียก /api/chart คำนวณ pillar */
+  window.savePerson = async function(){
+    const id = document.getElementById('pm-id').value;
+    const name = document.getElementById('pm-name').value.trim();
+    const role = document.getElementById('pm-role').value.trim();
+    const group = document.getElementById('pm-group').value;
+    const birthDate = document.getElementById('pm-bdate').value;
+    const birthTime = document.getElementById('pm-btime').value || '12:00';
+    const gender = document.getElementById('pm-gender').value || 'M';
+    const longitude = parseFloat(document.getElementById('pm-lng').value) || 100.5;
+    if (!name || !role || !birthDate){ alert('กรุณากรอกชื่อ · บทบาท · วันเกิด'); return; }
+
+    /* show loading */
+    document.getElementById('pm-loading').style.display = 'flex';
+    document.getElementById('pm-save').disabled = true;
+
+    try {
+      const r = await fetch('/api/chart', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ date:birthDate, time:birthTime, longitude, gender })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error||'calc failed');
+      const pillars = data.pillars || data.natal || data.chart?.pillars;
+      const day = pillars?.day; const dayStem = day?.stem;
+      if (!dayStem) throw new Error('no day master');
+
+      const obj = {
+        id: id || ('p_'+Date.now()),
+        name, role, group,
+        birthDate, birthTime, gender, longitude,
+        glyph: dayStem,
+        elem: elemFromStem(dayStem),
+        pillars: {
+          year: pillars.year, month: pillars.month, day: pillars.day, hour: pillars.hour
+        },
+        tag: dayStem + (data.dayElement||elemFromStem(dayStem)) + ' · ' + fmtThaiDate(birthDate)
+      };
+
+      if (id){
+        const idx = PEOPLE.findIndex(p=>p.id===id);
+        if (idx>=0) {
+          const old = PEOPLE[idx];
+          delete old.roleKey; delete old.tagKey;
+          PEOPLE[idx] = Object.assign({}, old, obj);
+        }
+      } else {
+        PEOPLE.push(obj);
+      }
+      savePeopleToStore();
+      closePersonModal();
+      if (typeof render === 'function') render();
+      if (typeof recomputeAllScores === 'function') recomputeAllScores();
+    } catch(e){
+      console.error('savePerson failed', e);
+      alert(tx('n.pm.err') + '\n('+(e.message||'')+')');
+    } finally {
+      document.getElementById('pm-loading').style.display = 'none';
+      document.getElementById('pm-save').disabled = false;
+    }
+  };
+
+  /* delete */
+  window.deletePerson = function(){
+    const id = document.getElementById('pm-id').value;
+    if (!id || id==='self'){ return; }
+    if (!confirm('ลบคนนี้ออกจากเครือข่าย?')) return;
+    const idx = PEOPLE.findIndex(p=>p.id===id);
+    if (idx>=0) PEOPLE.splice(idx,1);
+    /* clean REL */
+    if (window.REL && REL[id]){
+      delete REL[id];
+      Object.keys(REL).forEach(k=>{ if (REL[k][id]) delete REL[k][id]; });
+    }
+    savePeopleToStore();
+    closePersonModal();
+    if (typeof render === 'function') render();
+  };
+
+  /* wire "+ เพิ่มคน" button in solar */
+  const addBtn = document.querySelector('.solar-controls .ctrl-btn');
+  if (addBtn) addBtn.addEventListener('click', function(){ openPersonModal(); });
+
+  /* wire "+ สร้างกลุ่ม" — ใช้ prompt ง่ายๆ */
+  const newGroup = document.querySelector('.group-chips button:last-child');
+  if (newGroup && newGroup.dataset.g === undefined){
+    newGroup.addEventListener('click', function(){
+      const name = prompt(tx('n.g.new'));
+      if (name && name.trim()) alert('สร้างกลุ่ม "'+name+'" ยังไม่บันทึก · จะใช้ใน Phase 3');
+    });
+  }
+
+  /* delegate edit/delete + view-chart click ใน person card */
+  const pg = document.getElementById('people-grid');
+  if (pg) {
+    pg.addEventListener('click', function(e){
+      const editBtn = e.target.closest('.pc-edit-btn');
+      const delBtn  = e.target.closest('.pc-del-btn');
+      const viewBtn = e.target.closest('.pc-view-btn');
+      if (editBtn || delBtn || viewBtn) {
+        e.stopPropagation();
+        const card = e.target.closest('.person-card');
+        const id = card && card.dataset.id;
+        const p = PEOPLE.find(x=>x.id===id);
+        if (!p) return;
+        if (editBtn) openPersonModal(p);
+        if (delBtn) {
+          if (confirm('ลบ '+p.name+'?')) {
+            const idx = PEOPLE.findIndex(x=>x.id===id);
+            if (idx>=0) PEOPLE.splice(idx,1);
+            if (window.REL && REL[id]){
+              delete REL[id];
+              Object.keys(REL).forEach(k=>{ if (REL[k][id]) delete REL[k][id]; });
+            }
+            savePeopleToStore();
+            render();
+          }
+        }
+        if (viewBtn) viewAsPerson(p);
+      }
+    });
+  }
+
+  /* "ดูดวง" → เปิด /chart หรือ /today tab ใหม่ + เก็บ context view-as */
+  function _setViewAs(p){
+    try {
+      sessionStorage.setItem('hk_view_as', JSON.stringify({
+        id: p.id, name: p.name, glyph: p.glyph, elem: p.elem,
+        role: p.role || tx(p.roleKey||''),
+        birthDate: p.birthDate||null, birthTime: p.birthTime||null,
+        gender: p.gender||null,
+        pillars: p.pillars||null,
+        ts: Date.now()
+      }));
+    } catch(e){}
+  }
+  window.viewAsPerson = function(p){
+    if (!p) return;
+    _setViewAs(p);
+    window.open('/chart?as='+encodeURIComponent(p.id), '_blank');
+  };
+  /* "+ เปรียบเทียบ" → เปิด /comparison · prefill self vs person · auto-submit */
+  window.compareWithPerson = function(p){
+    if (!p || p.id === 'self') return;
+    const self = (window.PEOPLE||[]).find(x=>x.id==='self') || PEOPLE.find(x=>x.id==='self');
+    try {
+      sessionStorage.setItem('hk_compare', JSON.stringify({
+        p1: self ? {
+          name: self.name||'คุณ',
+          birthDate: self.birthDate||null, birthTime: self.birthTime||'12:00',
+          gender: self.gender||'M', pillars: self.pillars||null
+        } : null,
+        p2: {
+          name: p.name||'คนที่ 2',
+          birthDate: p.birthDate||null, birthTime: p.birthTime||'12:00',
+          gender: p.gender||'M', pillars: p.pillars||null
+        },
+        ts: Date.now()
+      }));
+    } catch(e){}
+    window.open('/comparison?from=network&id='+encodeURIComponent(p.id), '_blank');
+  };
+  window.viewAsPersonToday = function(p){
+    if (!p) return;
+    _setViewAs(p);
+    window.open('/today?as='+encodeURIComponent(p.id), '_blank');
+  };
+
+  /* monkey-patch renderGrid: add edit/del row · view chart button */
+  if (typeof renderGrid === 'function') {
+    const _orig = renderGrid;
+    window.renderGrid = function(){
+      _orig();
+      document.querySelectorAll('#people-grid .person-card').forEach(card=>{
+        if (card.querySelector('.pc-edit-row')) return;
+        const id = card.dataset.id;
+        const isSelf = id === 'self';
+        const row = document.createElement('div');
+        row.className = 'pc-edit-row';
+        row.innerHTML = `
+          <button class="pc-view-btn" data-i18n="n.pc.view">📊 ดูดวง</button>
+          <button class="pc-edit-btn" data-i18n="n.pc.edit">✎ แก้ไข</button>
+          ${isSelf ? '' : '<button class="pc-del-btn del" data-i18n="n.pc.del">🗑 ลบ</button>'}
+        `;
+        card.appendChild(row);
+      });
+      if (window.applyI18N) try { applyI18N(document.documentElement.getAttribute('data-lang')||'th'); } catch(e){}
+    };
+    /* run once now if grid populated */
+    setTimeout(()=>{ if (state.view==='grid') renderGrid(); }, 100);
+  }
+})();
+</script>
+
+<!-- ═══════════ Phase 2B · Person Chart Modal (mini /chart view) ═══════════ -->
+<style>
+.hk-net-chart-card{max-width:680px;}
+.pcm-head{display:flex;align-items:center;gap:18px;padding-bottom:18px;border-bottom:1px solid var(--gold-line);margin-bottom:20px;}
+.pcm-glyph{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:42px;font-weight:700;border:2.5px solid;flex-shrink:0;}
+.pcm-glyph.elem-wood{border-color:var(--wood);background:var(--wood-bg);color:var(--wood);}
+.pcm-glyph.elem-fire{border-color:var(--fire);background:var(--fire-bg);color:var(--fire);}
+.pcm-glyph.elem-earth{border-color:var(--earth);background:var(--earth-bg);color:var(--earth);}
+.pcm-glyph.elem-metal{border-color:var(--metal);background:var(--metal-bg);color:var(--metal);}
+.pcm-glyph.elem-water{border-color:var(--water);background:var(--water-bg);color:var(--water);}
+.pcm-meta{flex:1;min-width:0;}
+.pcm-meta .name{font-family:var(--serif);font-size:28px;font-weight:500;color:var(--fg);}
+.pcm-meta .role{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-top:4px;}
+.pcm-meta .tag{font-family:var(--thai);font-size:13px;color:var(--gold);margin-top:6px;}
+.pcm-section{margin-bottom:22px;}
+/* Phase 3.2 result block */
+.pcm-result-grid{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:linear-gradient(135deg, var(--gold-soft, rgba(200,164,77,.1)), transparent);border:1px solid var(--gold-line, rgba(200,164,77,.25));border-radius:14px;padding:18px 22px;}
+.pcm-result-overall{text-align:center;display:flex;flex-direction:column;align-items:center;}
+.pcm-result-overall .num{font-family:'Cormorant Garamond',serif;font-size:64px;font-weight:300;color:var(--gold);line-height:1;}
+.pcm-result-overall .of{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fg-faint);letter-spacing:.18em;margin-top:4px;}
+.pcm-result-overall .label{font-family:'Noto Serif Thai',serif;font-size:13px;color:var(--gold);margin-top:8px;font-weight:600;}
+.pcm-result-dirs{display:flex;flex-direction:column;gap:10px;}
+.pcm-result-dirs .dir{display:flex;justify-content:space-between;align-items:baseline;padding:8px 14px;background:var(--bg-2, rgba(20,23,28,.4));border-radius:8px;}
+.pcm-result-dirs .dir .lbl{font-family:'Noto Serif Thai',serif;font-size:13px;color:var(--fg-soft);}
+.pcm-result-dirs .dir .lbl b{color:var(--fg);font-weight:600;}
+.pcm-result-dirs .dir .val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--gold);}
+.pcm-breakdown{margin-top:14px;background:var(--tile, rgba(38,42,50,.4));border:1px solid var(--tile-bd, rgba(246,241,230,.1));border-radius:10px;}
+.pcm-breakdown summary{cursor:pointer;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;list-style:none;}
+.pcm-breakdown summary::-webkit-details-marker{display:none;}
+.pcm-breakdown[open] summary{border-bottom:1px solid var(--tile-bd);}
+.pcm-bd-rows{padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.pcm-bd-row{display:flex;justify-content:space-between;align-items:baseline;padding:8px 12px;background:var(--bg, #0d0f12);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.pcm-bd-row .k{color:var(--fg-faint);letter-spacing:.1em;text-transform:uppercase;font-size:9px;}
+.pcm-bd-row .v{font-weight:700;color:var(--fg);}
+.pcm-bd-row .v.pos{color:var(--good, #5a8a48);}
+.pcm-bd-row .v.neg{color:var(--bad, #b03a2e);}
+.pcm-bd-events{padding:0 14px 14px;display:flex;flex-wrap:wrap;gap:6px;}
+.pcm-bd-events .ev{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.05em;padding:4px 10px;border-radius:99px;border:1px solid;}
+.pcm-bd-events .ev.clash{color:var(--bad, #b03a2e);border-color:var(--bad, #b03a2e);background:rgba(176,58,46,.06);}
+.pcm-bd-events .ev.harm{color:#c4994a;border-color:#c4994a;background:rgba(196,153,74,.06);}
+.pcm-bd-events .ev.he{color:var(--good, #5a8a48);border-color:var(--good, #5a8a48);background:rgba(90,138,72,.06);}
+.pcm-bd-events .ev.transit{color:#5b8aa8;border-color:#5b8aa8;background:rgba(91,138,168,.06);}
+.pcm-section h4{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;}
+.pcm-pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.pcm-pillar{background:var(--tile);border:1px solid var(--tile-bd);border-radius:10px;padding:12px 8px;text-align:center;}
+.pcm-pillar .lab{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:6px;}
+.pcm-pillar .stem{font-family:var(--tc);font-size:36px;font-weight:600;color:var(--fg);line-height:1;}
+.pcm-pillar .branch{font-family:var(--tc);font-size:22px;color:var(--fg-soft);margin-top:4px;}
+.pcm-pillar.dm{border-color:var(--gold);background:var(--gold-soft);}
+.pcm-pillar.dm .stem{color:var(--gold);}
+.pcm-scoreline{display:grid;grid-template-columns:60px 1fr 50px;gap:10px;align-items:center;padding:8px 0;font-family:var(--mono);font-size:11px;}
+.pcm-scoreline .lbl{color:var(--fg-faint);letter-spacing:.15em;text-transform:uppercase;font-size:10px;}
+.pcm-scoreline .bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;position:relative;}
+.pcm-scoreline .bar::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--fg-faint);opacity:.4;}
+.pcm-scoreline .bar-fill{position:absolute;top:0;bottom:0;border-radius:3px;background:var(--good);}
+.pcm-scoreline.neg .bar-fill{background:var(--bad);}
+.pcm-scoreline.mid .bar-fill{background:var(--neutral);}
+.pcm-scoreline .num{text-align:right;font-weight:700;}
+.pcm-scoreline.pos .num{color:var(--good);}
+.pcm-scoreline.neg .num{color:var(--bad);}
+.pcm-scoreline.mid .num{color:var(--neutral);}
+.pcm-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.pcm-tags .b{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:4px 10px;border-radius:99px;border:1px solid var(--gold);color:var(--gold);background:var(--gold-soft);}
+.pcm-cta{display:flex;gap:8px;margin-top:20px;padding-top:18px;border-top:1px solid var(--tile-bd);}
+.pcm-cta a, .pcm-cta button{flex:1;padding:12px;background:transparent;border:1px solid var(--tile-bd);color:var(--fg-soft);border-radius:8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;text-decoration:none;text-align:center;transition:.2s;}
+.pcm-cta a:hover, .pcm-cta button:hover{border-color:var(--gold);color:var(--gold);}
+.pcm-cta .primary{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700;}
+.pcm-cta .primary:hover{background:var(--gold-deep);color:var(--bg);}
+@media print{
+  body *{visibility:hidden;}
+  .hk-net-modal.show, .hk-net-modal.show *{visibility:visible;}
+  .hk-net-modal.show{position:absolute;background:#fff;display:block;}
+  .hk-net-modal.show .x, .hk-net-modal.show .pcm-cta{display:none;}
+}
+</style>
+
+<div class="hk-net-modal" id="hk-chart-modal" onclick="if(event.target===this)closeChartModal()">
+  <div class="hk-net-card hk-net-chart-card">
+    <button class="x" onclick="closeChartModal()">×</button>
+    <div class="pcm-head">
+      <div class="pcm-glyph" id="cm-glyph">己</div>
+      <div class="pcm-meta">
+        <div class="name" id="cm-name">—</div>
+        <div class="role" id="cm-role">—</div>
+        <div class="tag" id="cm-tag">—</div>
+      </div>
+    </div>
+
+    <div class="pcm-section">
+      <h4 data-i18n="n.cm.pillars">四柱 · Four Pillars</h4>
+      <div class="pcm-pillars">
+        <div class="pcm-pillar"><div class="lab">時 HOUR</div><div class="stem" id="cm-h-s">—</div><div class="branch" id="cm-h-b">—</div></div>
+        <div class="pcm-pillar dm"><div class="lab">日 DM</div><div class="stem" id="cm-d-s">—</div><div class="branch" id="cm-d-b">—</div></div>
+        <div class="pcm-pillar"><div class="lab">月 MONTH</div><div class="stem" id="cm-m-s">—</div><div class="branch" id="cm-m-b">—</div></div>
+        <div class="pcm-pillar"><div class="lab">年 YEAR</div><div class="stem" id="cm-y-s">—</div><div class="branch" id="cm-y-b">—</div></div>
+      </div>
+    </div>
+
+    <!-- Phase 3.2: ผลเปรียบเทียบ + breakdown -->
+    <div class="pcm-section" id="cm-result-section">
+      <h4 data-i18n="n.cm.result">ผลเปรียบเทียบ · 結果</h4>
+      <div class="pcm-result-grid">
+        <div class="pcm-result-overall">
+          <div class="num" id="cm-result-overall">—</div>
+          <div class="of">/ 100</div>
+          <div class="label" id="cm-result-label">—</div>
+        </div>
+        <div class="pcm-result-dirs">
+          <div class="dir">
+            <span class="lbl"><b id="cm-self-name">คุณ</b> → <b id="cm-other-name">—</b></span>
+            <span class="val" id="cm-result-atob">—</span>
+          </div>
+          <div class="dir">
+            <span class="lbl"><b id="cm-other-name2">—</b> → <b id="cm-self-name2">คุณ</b></span>
+            <span class="val" id="cm-result-btoa">—</span>
+          </div>
+        </div>
+      </div>
+      <details class="pcm-breakdown" id="cm-breakdown">
+        <summary data-i18n="n.cm.breakdownT">📊 รายละเอียดคะแนน</summary>
+        <div class="pcm-bd-rows" id="cm-bd-rows"></div>
+        <div class="pcm-bd-events" id="cm-bd-events"></div>
+      </details>
+    </div>
+
+    <div class="pcm-section" id="cm-rel-section">
+      <h4 data-i18n="n.cm.rel">關係 · ปฏิกิริยากับคุณ · 5 timeframe</h4>
+      <div id="cm-rel-rows"></div>
+      <div class="pcm-tags" id="cm-tags"></div>
+    </div>
+
+    <div class="pcm-cta">
+      <button class="primary" onclick="window.print()" data-i18n="n.cm.print">🖨 พิมพ์ดวง</button>
+      <button onclick="addToTeam(currentChartPersonId)" data-i18n="n.cm.team">+ เข้า Team Builder</button>
+      <button onclick="closeChartModal()" data-i18n="n.cm.close">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════ Phase 2B handlers · Person Chart Modal ═══════════ */
+(function(){
+  Object.assign(window.HK_I18N, {
+    'n.cm.pillars': { th:'四柱 · Four Pillars', en:'四柱 · Four Pillars', zh:'四柱' },
+    'n.cm.rel':     { th:'關係 · ปฏิกิริยากับคุณ · 5 timeframe', en:'關係 · Reactions with you · 5 tf', zh:'關係 · 與您之互動 · 五時段' },
+    'n.cm.print':   { th:'🖨 พิมพ์ดวง', en:'🖨 Print', zh:'🖨 列印' },
+    'n.cm.team':    { th:'+ เข้า Team Builder', en:'+ To Team', zh:'+ 加入團隊' },
+    'n.cm.close':      { th:'ปิด', en:'Close', zh:'關閉' },
+    'n.cm.result':     { th:'ผลเปรียบเทียบ · 結果', en:'Compatibility Result', zh:'對比結果' },
+    'n.cm.breakdownT': { th:'📊 รายละเอียดคะแนน', en:'📊 Score Breakdown', zh:'📊 計分明細' },
+    'n.pc.view':    { th:'📊 ดูดวง', en:'📊 View Chart', zh:'📊 看命盤' }
+  });
+
+  /* Stem table for filling demo pillars (last char of glyph generates extras) */
+  const STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  const BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  function _hash(str){ let h=0; for(let i=0;i<str.length;i++) h = (h*31 + str.charCodeAt(i))|0; return Math.abs(h); }
+  function genPillars(p){
+    /* Demo: ใช้ stem หลักจาก glyph + สร้าง 3 stems อื่นจาก hash · Phase 3 จะดึงจาก /api/chart */
+    const h = _hash(p.id||p.name);
+    const dm = p.glyph || '己';
+    const dmIdx = STEMS.indexOf(dm);
+    return {
+      hour:  { s:STEMS[(dmIdx+(h%9)+1)%10], b:BRANCHES[(h>>3)%12] },
+      day:   { s:dm, b:BRANCHES[(h>>5)%12] },
+      month: { s:STEMS[(dmIdx+(h>>7)%9+2)%10], b:BRANCHES[(h>>9)%12] },
+      year:  { s:STEMS[(dmIdx+(h>>11)%9+5)%10], b:BRANCHES[(h>>13)%12] }
+    };
+  }
+  function tx(k){
+    const t = window.HK_I18N[k]; if(!t) return k;
+    const lang = document.documentElement.getAttribute('data-lang')||'th';
+    return t[lang]||t.th||k;
+  }
+  window.currentChartPersonId = null;
+
+  window.openChartModal = function(person){
+    if (!person) return;
+    currentChartPersonId = person.id;
+    const m = document.getElementById('hk-chart-modal');
+    /* head */
+    const g = document.getElementById('cm-glyph');
+    g.className = 'pcm-glyph elem-' + (person.elem||'earth');
+    g.textContent = person.glyph || '人';
+    document.getElementById('cm-name').textContent = person.name || '—';
+    const role = person.role || tx(person.roleKey||'');
+    const tag  = person.tag  || tx(person.tagKey||'');
+    document.getElementById('cm-role').textContent = role;
+    document.getElementById('cm-tag').textContent = tag;
+    /* pillars */
+    const pill = genPillars(person);
+    const set = (id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+    set('cm-h-s', pill.hour.s);  set('cm-h-b', pill.hour.b);
+    set('cm-d-s', pill.day.s);   set('cm-d-b', pill.day.b);
+    set('cm-m-s', pill.month.s); set('cm-m-b', pill.month.b);
+    set('cm-y-s', pill.year.s);  set('cm-y-b', pill.year.b);
+    /* relations vs self */
+    const relRows = document.getElementById('cm-rel-rows');
+    const tagsBox = document.getElementById('cm-tags');
+    const relSection = document.getElementById('cm-rel-section');
+    if (person.id === 'self'){
+      relSection.style.display = 'none';
+    } else {
+      relSection.style.display = '';
+      const tfs = ['day','week','month','year','luck'];
+      const tfLabels = {day:tx('n.f.day').split(' ')[0]||'วันนี้', week:tx('n.f.week').split(' ')[0]||'สัปดาห์', month:tx('n.f.month').split(' ')[0]||'เดือน', year:tx('n.f.year').split(' ')[0]||'ปี', luck:tx('n.f.luck').split(' ')[0]||'10ปี'};
+      relRows.innerHTML = tfs.map(tf=>{
+        const s = (typeof getScore==='function') ? getScore('self', person.id, tf) : 0;
+        const sc = (typeof scoreClass==='function') ? scoreClass(s) : 'mid';
+        const fillW = Math.min(50, Math.abs(s)/2);
+        const fs = s===0 ? 'display:none;' : (s>0 ? `left:50%;width:${fillW}%;` : `right:50%;left:auto;width:${fillW}%;`);
+        return `<div class="pcm-scoreline ${sc}"><span class="lbl">${tfLabels[tf]}</span><div class="bar"><div class="bar-fill" style="${fs}"></div></div><span class="num">${s>0?'+'+s:s===0?'0':s}</span></div>`;
+      }).join('');
+      const tags = (typeof getTags==='function') ? getTags('self', person.id) : [];
+      tagsBox.innerHTML = tags.map(t=>`<span class="b">${t}</span>`).join('');
+    }
+
+    /* Phase 3.2: render result + breakdown */
+    const resSection = document.getElementById('cm-result-section');
+    if (person.id === 'self') {
+      if (resSection) resSection.style.display = 'none';
+    } else {
+      if (resSection) resSection.style.display = '';
+      const selfP = (window.PEOPLE||[]).find(p=>p.id==='self');
+      const selfName = selfP ? selfP.name : 'You';
+      const dir = (window._engineDirectional||{}).self?.[person.id];
+      const bd  = (window._engineBreakdown  ||{}).self?.[person.id];
+      const lab = (window._engineLabels     ||{}).self?.[person.id];
+      const sc  = (window._engineScores     ||{}).self?.[person.id];
+      const _set = (id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
+      _set('cm-self-name', selfName); _set('cm-self-name2', selfName);
+      _set('cm-other-name', person.name); _set('cm-other-name2', person.name);
+      _set('cm-result-overall', sc?.overall ?? '—');
+      _set('cm-result-label',   lab ? (document.documentElement.getAttribute('data-lang')==='en' ? lab.en : lab.th) : '—');
+      _set('cm-result-atob', dir ? (dir.atob>0?'+'+dir.atob:dir.atob) : '—');
+      _set('cm-result-btoa', dir ? (dir.btoa>0?'+'+dir.btoa:dir.btoa) : '—');
+      /* breakdown rows */
+      const bdRows = document.getElementById('cm-bd-rows');
+      const evBox  = document.getElementById('cm-bd-events');
+      if (bdRows && bd) {
+        const a = bd.atob || {};
+        const cls = (n)=> n>0?'pos':n<0?'neg':'';
+        const fmt = (n)=> n>0?'+'+n:String(n);
+        bdRows.innerHTML = `
+          <div class="pcm-bd-row"><span class="k">ฐาน base</span><span class="v">${a.base ?? 0}</span></div>
+          <div class="pcm-bd-row"><span class="k">👑 อุปถัมภ์</span><span class="v ${cls(a.nobleman||0)}">+${a.nobleman ?? 0}</span></div>
+          <div class="pcm-bd-row"><span class="k">📅 กลุ่มเสา</span><span class="v ${cls(a.group||0)}">+${a.group ?? 0}</span></div>
+          <div class="pcm-bd-row"><span class="k">合 บอนัส</span><span class="v pos">+${(a.bonus||0).toFixed ? a.bonus.toFixed(1) : a.bonus}</span></div>
+          <div class="pcm-bd-row"><span class="k">沖 บทลงโทษ</span><span class="v neg">−${(a.penalty||0).toFixed ? a.penalty.toFixed(1) : a.penalty}</span></div>
+          <div class="pcm-bd-row"><span class="k">⏱ Transit (วันนี้)</span><span class="v ${cls(a.transit||0)}">${fmt(a.transit||0)}</span></div>`;
+      }
+      if (evBox && bd) {
+        const events = (bd.atob?.breakdown?.events || []).slice(0, 8);
+        evBox.innerHTML = events.map(e=>{
+          const lbl = e.type==='clash' ? `${e.branches} 沖`
+                    : e.type==='harm' ? `${e.branches} 害`
+                    : e.type==='he'    ? `${e.branches} 合`
+                    : e.type==='stem_clash' ? `${e.stems} 天剋`
+                    : e.type==='stem_he'    ? `${e.stems} 天合`
+                    : e.type;
+          const cls = (e.type==='clash'||e.type==='stem_clash') ? 'clash'
+                    : e.type==='harm' ? 'harm'
+                    : 'he';
+          return `<span class="ev ${cls}">${lbl}</span>`;
+        }).join('');
+        /* transit events */
+        const tEv = bd.transit?.events || [];
+        if (tEv.length) {
+          evBox.innerHTML += tEv.slice(0,4).map(e=>`<span class="ev transit">${e.type.replace('_','·')} ${e.tBranch||e.tStem||''}</span>`).join('');
+        }
+      }
+    }
+    m.classList.add('show');
+  };
+  /* expose PEOPLE globally · ใช้ใน chart modal */
+  if (typeof PEOPLE !== 'undefined') window.PEOPLE = PEOPLE;
+  window.closeChartModal = function(){
+    document.getElementById('hk-chart-modal').classList.remove('show');
+    currentChartPersonId = null;
+  };
+
+  /* click in solar = ดูดวง (เพิ่ม) · keep recenter เป็น dblclick / shift+click ในอนาคต */
+  /* Solar click ปัจจุบัน → recenter · เพิ่ม long-press / dblclick = open chart */
+  const solar = document.getElementById('solar');
+  if (solar) {
+    solar.addEventListener('dblclick', function(e){
+      const node = e.target.closest('.node');
+      if (node && node.dataset.id){
+        const p = PEOPLE.find(x=>x.id===node.dataset.id);
+        if (p) openChartModal(p);
+      }
+    });
+  }
+})();
+</script>
+
+<!-- ═══════════ Phase 2C · Team Builder full (Add slot · Remove · Picker) ═══════════ -->
+<style>
+.hk-net-pick-card{max-width:560px;}
+.tp-list{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow-y:auto;padding:6px 4px 0;}
+.tp-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:10px;cursor:pointer;transition:.2s;}
+.tp-row:hover{border-color:var(--gold);}
+.tp-row.in-team{opacity:.45;cursor:not-allowed;}
+.tp-row .glyph{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:18px;font-weight:700;border:2px solid;flex-shrink:0;}
+.tp-row .glyph.elem-wood{border-color:var(--wood);background:var(--wood-bg);color:var(--wood);}
+.tp-row .glyph.elem-fire{border-color:var(--fire);background:var(--fire-bg);color:var(--fire);}
+.tp-row .glyph.elem-earth{border-color:var(--earth);background:var(--earth-bg);color:var(--earth);}
+.tp-row .glyph.elem-metal{border-color:var(--metal);background:var(--metal-bg);color:var(--metal);}
+.tp-row .glyph.elem-water{border-color:var(--water);background:var(--water-bg);color:var(--water);}
+.tp-row .info{flex:1;min-width:0;}
+.tp-row .nm{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--fg);}
+.tp-row .rl{font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-faint);text-transform:uppercase;margin-top:2px;}
+.tp-row .sc{font-family:var(--mono);font-size:11px;font-weight:700;}
+.tp-row.pos .sc{color:var(--good);}
+.tp-row.neg .sc{color:var(--bad);}
+.tp-row.mid .sc{color:var(--neutral);}
+.tp-empty{padding:30px;text-align:center;color:var(--fg-faint);font-style:italic;}
+</style>
+
+<div class="hk-net-modal" id="hk-pick-modal" onclick="if(event.target===this)closePickModal()">
+  <div class="hk-net-card hk-net-pick-card">
+    <button class="x" onclick="closePickModal()">×</button>
+    <h3><span class="tc">隊</span><span data-i18n="n.tp.title">เลือกคนเข้า Team Builder</span></h3>
+    <div class="sub" data-i18n="n.tp.sub">กดเพื่อใส่ลง slot · เห็นคะแนนปฏิกิริยากับคุณ</div>
+    <div class="tp-list" id="tp-list"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════ Phase 2C handlers · Team Builder full ═══════════ */
+(function(){
+  Object.assign(window.HK_I18N, {
+    'n.tp.title':  { th:'เลือกคนเข้า Team Builder', en:'Pick Team Member', zh:'選擇團隊成員' },
+    'n.tp.sub':    { th:'กดเพื่อใส่ลง slot · เห็นคะแนนปฏิกิริยากับคุณ', en:'Tap to add to slot · view reaction score', zh:'點選加入空格 · 查看互動分' },
+    'n.tp.empty':  { th:'ทุกคนอยู่ในทีมแล้ว · เพิ่มคนใหม่ที่ Solar', en:'Everyone in team · add new from Solar', zh:'全員已在團隊 · 從太陽系新增' }
+  });
+  function tx(k){
+    const t = window.HK_I18N[k]; if(!t) return k;
+    const lang = document.documentElement.getAttribute('data-lang')||'th';
+    return t[lang]||t.th||k;
+  }
+
+  /* state.team จะเก็บ id ของคนใน 4 slot · slot 0 = self always */
+  if (!state.team) state.team = ['self'];
+
+  function saveTeam(){
+    try { localStorage.setItem('hk_network_team', JSON.stringify(state.team)); } catch(e){}
+  }
+  try {
+    const stored = localStorage.getItem('hk_network_team');
+    if (stored) { const t = JSON.parse(stored); if (Array.isArray(t)) state.team = t; }
+  } catch(e){}
+
+  /* render team cards · ทดแทน static cmp-row */
+  function renderTeam(){
+    const row = document.querySelector('#view-team .cmp-row');
+    if (!row) return;
+    const slots = 4;
+    const teamHTML = [];
+    for (let i=0;i<slots;i++){
+      const id = state.team[i];
+      const p = id ? PEOPLE.find(x=>x.id===id) : null;
+      if (!p) {
+        teamHTML.push(`<div class="cmp-card empty" data-slot="${i}">
+          <div class="plus">+</div>
+          <div data-i18n="n.t.add">เพิ่มคน</div>
+          <div style="font-size:9px;margin-top:4px;color:var(--fg-faint);" data-i18n="n.t.addsub">เลือกจากเครือข่าย</div>
+        </div>`);
+        continue;
+      }
+      const isSelf = p.id === 'self';
+      const score = isSelf ? 0 : (typeof getScore==='function' ? getScore('self', p.id, state.timeframe) : 0);
+      const sc = score>=20?'pos':score<=-20?'neg':'mid';
+      const role = p.role || tx(p.roleKey||'');
+      teamHTML.push(`<div class="cmp-card score-${sc}" data-slot="${i}" data-id="${p.id}">
+        ${isSelf?'':`<button class="x-btn" data-remove="${i}">×</button>`}
+        <div class="cmp-avatar elem-${p.elem}" style="border-color:var(--${p.elem});background:var(--${p.elem}-bg);color:var(--${p.elem});">${p.glyph}</div>
+        <div class="name">${p.name}</div>
+        <div class="role">${role}</div>
+        <div class="pillar">
+          <div class="p"><span class="s">時</span>—</div>
+          <div class="p"><span class="s">日</span>${p.glyph}—</div>
+          <div class="p"><span class="s">月</span>—</div>
+          <div class="p"><span class="s">年</span>—</div>
+        </div>
+        <div class="total">${isSelf?'+0':(score>0?'+'+score:score===0?'0':score)}</div>
+        <div class="role" style="margin-top:6px;">${isSelf?'CENTER':sc==='pos'?'+合':sc==='neg'?'沖':'平'}</div>
+      </div>`);
+    }
+    row.innerHTML = teamHTML.join('');
+    /* synergy */
+    const synEl = document.querySelector('#view-team .syn');
+    if (synEl){
+      const ids = state.team.filter(Boolean);
+      let total=0, pairs=0;
+      for (let i=0;i<ids.length;i++) for (let j=i+1;j<ids.length;j++){
+        if (typeof getScore==='function') {
+          total += getScore(ids[i], ids[j], state.timeframe);
+          pairs++;
+        }
+      }
+      const norm = pairs ? Math.round(total/pairs) : 0;
+      const tag = norm>=20?'★ ทีมหนุนกัน':norm<=-20?'⚠ ทีมปะทะ':'· ทีมกลาง';
+      synEl.innerHTML = `SYNERGY <b>${norm>0?'+'+norm:norm===0?'0':norm}</b> / 100 ${tag}`;
+    }
+  }
+
+  /* open picker modal */
+  window.openPickModal = function(slot){
+    const list = document.getElementById('tp-list');
+    const peers = PEOPLE.filter(p=>p.id!=='self');
+    if (!peers.length) {
+      list.innerHTML = '<div class="tp-empty">'+tx('n.tp.empty')+'</div>';
+    } else {
+      list.innerHTML = peers.map(p=>{
+        const inTeam = state.team.includes(p.id);
+        const s = typeof getScore==='function' ? getScore('self', p.id, state.timeframe) : 0;
+        const sc = s>=20?'pos':s<=-20?'neg':'mid';
+        const role = p.role || tx(p.roleKey||'');
+        return `<div class="tp-row ${sc}${inTeam?' in-team':''}" data-id="${p.id}" data-slot="${slot}">
+          <div class="glyph elem-${p.elem}">${p.glyph}</div>
+          <div class="info"><div class="nm">${p.name}</div><div class="rl">${role}</div></div>
+          <div class="sc">${s>0?'+'+s:s===0?'0':s}</div>
+        </div>`;
+      }).join('');
+    }
+    document.getElementById('hk-pick-modal').classList.add('show');
+  };
+  window.closePickModal = function(){
+    document.getElementById('hk-pick-modal').classList.remove('show');
+  };
+
+  /* delegate clicks on team panel + pick list */
+  document.addEventListener('click', function(e){
+    /* 1. click empty slot → open picker */
+    const empty = e.target.closest('#view-team .cmp-card.empty');
+    if (empty) {
+      const slot = parseInt(empty.dataset.slot);
+      openPickModal(slot);
+      return;
+    }
+    /* 2. remove from team */
+    const rmBtn = e.target.closest('#view-team .x-btn[data-remove]');
+    if (rmBtn) {
+      e.stopPropagation();
+      const slot = parseInt(rmBtn.dataset.remove);
+      state.team[slot] = null;
+      /* compact null */
+      state.team = state.team.filter(Boolean);
+      saveTeam();
+      renderTeam();
+      return;
+    }
+    /* 3. pick row → push to slot */
+    const tpRow = e.target.closest('.tp-row:not(.in-team)');
+    if (tpRow) {
+      const slot = parseInt(tpRow.dataset.slot);
+      const id = tpRow.dataset.id;
+      state.team[slot] = id;
+      /* compact array · keep self at 0 */
+      const team = state.team.filter(Boolean);
+      if (team[0] !== 'self') team.unshift('self');
+      state.team = team.slice(0,4);
+      saveTeam();
+      closePickModal();
+      renderTeam();
+    }
+  });
+
+  /* "+ เข้า Team Builder" จาก chart modal */
+  window.addToTeam = function(personId){
+    if (!personId || personId==='self') return;
+    if (state.team.includes(personId)) { closeChartModal(); return; }
+    const empty = state.team.findIndex(x=>!x);
+    if (empty>=0) state.team[empty] = personId;
+    else if (state.team.length<4) state.team.push(personId);
+    else { alert('Team เต็มแล้ว · ลบสมาชิกออกก่อน'); return; }
+    saveTeam();
+    closeChartModal();
+    renderTeam();
+    /* switch to team tab */
+    const teamTabBtn = document.querySelector('#view-tabs button[data-view="team"]');
+    if (teamTabBtn) teamTabBtn.click();
+  };
+
+  /* hook into tab change + timeframe change → re-render team */
+  const _origRender = window.render;
+  window.render = function(){
+    if (typeof _origRender === 'function') _origRender();
+    renderTeam();
+  };
+  /* render team initially */
+  setTimeout(renderTeam, 150);
+})();
+</script>
+
+
+<script src="/js/hk-user-menu.js?v=9" defer></script>
+</body>
+</html>

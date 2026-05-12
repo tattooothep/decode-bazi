@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>hourkey · วันนี้ · today</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12);
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+    --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.32);
+    --tile:rgba(38,42,50,.55); --tile-bd:rgba(246,241,230,.10);
+    --gold-line:rgba(200,164,77,.22);
+    --wood:#8fc37c; --wood-bg:rgba(143,195,124,.14);
+    --fire:#e26b5d; --fire-bg:rgba(226,107,93,.14);
+    --earth:#d4a85a; --earth-bg:rgba(212,168,90,.14);
+    --metal:#c8b88a; --metal-bg:rgba(200,184,138,.14);
+    --water:#7ba8c8; --water-bg:rgba(123,168,200,.14);
+    --green:#4ea96a; --red:#b03a2e; --amber:#d4a85a;
+  }
+  body.light{
+    --bg:#f6f1e6; --bg-2:#ede5d2; --bg-3:#f9f4e6;
+    --fg:#1a1d24; --fg-soft:rgba(26,29,36,.7); --fg-faint:rgba(26,29,36,.36);
+    --tile:rgba(255,253,247,.7); --tile-bd:rgba(26,29,36,.12);
+    --gold-line:rgba(138,109,42,.3); --gold:#a8842d; --gold-soft:rgba(168,132,45,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);font-family:var(--thai);color:var(--fg);transition:background .35s, color .35s;}
+
+  /* topbar */
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(13,15,18,.78);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  body.light .topbar{background:rgba(246,241,230,.85);}
+  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--thai);font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+  .nav a .glyph{font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:700;line-height:1;}
+  .nav a .lbl{font-size:12px;}
+  .nav a.on,.nav a.active{color:var(--gold);}
+  .nav a:hover{color:var(--fg);}
+  .nav a:hover .glyph{color:var(--gold-deep);}
+  .top-r{display:flex;align-items:center;gap:14px;}
+  .hk-lang-switch{display:inline-flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+  .hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
+  .theme-switch{display:flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+  .theme-switch button{width:30px;height:30px;border:none;background:transparent;color:var(--fg-soft);cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .theme-switch button.on{background:var(--gold);color:var(--bg);}
+  .top-r .me{width:36px;height:36px;border-radius:50%;background:var(--earth-bg);border:1.5px solid var(--earth);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:18px;font-weight:700;color:var(--earth);}
+
+  .wrap{max-width:1320px;margin:0 auto;padding:36px 40px 80px;}
+
+  /* date strip */
+  .datestrip{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:30px;gap:24px;flex-wrap:wrap;}
+  .datestrip .l h1{font-family:var(--serif);font-size:64px;font-weight:300;line-height:1;letter-spacing:-.01em;}
+  .datestrip .l h1 b{font-family:var(--thai);font-weight:600;}
+  .datestrip .l .sub{display:flex;gap:14px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--fg-soft);letter-spacing:.18em;text-transform:uppercase;}
+  .datestrip .r{display:flex;gap:6px;align-items:center;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:6px;}
+  .datestrip .r button{padding:8px 14px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;background:transparent;color:var(--fg-soft);border:none;border-radius:99px;cursor:pointer;text-transform:uppercase;}
+  .datestrip .r button.on{background:var(--gold);color:var(--bg);font-weight:700;}
+
+  /* hero day verdict */
+  .hero{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;margin-bottom:24px;}
+  .verdict{position:relative;background:linear-gradient(140deg, var(--bg-2) 0%, var(--bg-3) 100%);border:1px solid var(--gold-line);border-radius:18px;padding:34px 36px;overflow:hidden;}
+  .verdict::before{content:'';position:absolute;top:-80px;right:-80px;width:340px;height:340px;border:1px dashed var(--gold-line);border-radius:50%;animation:spin 90s linear infinite;}
+  .verdict::after{content:'';position:absolute;top:-40px;right:-40px;width:260px;height:260px;border:1px solid var(--gold-soft);border-radius:50%;animation:spin 60s linear infinite reverse;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .verdict .lab{font-family:var(--mono);font-size:10px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;}
+  .verdict .score{display:flex;align-items:baseline;gap:14px;margin-top:14px;}
+  .verdict .score .n{font-family:var(--serif);font-size:140px;font-weight:300;line-height:.9;color:var(--fg);}
+  .verdict .score .d{font-family:var(--mono);font-size:14px;color:var(--fg-soft);}
+  .verdict .score .tg{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:var(--wood-bg);border:1px solid var(--wood);border-radius:99px;color:var(--wood);font-family:var(--mono);font-size:11px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;position:relative;z-index:2;}
+  .verdict h2{font-family:var(--serif);font-size:30px;font-weight:400;margin-top:14px;line-height:1.25;position:relative;z-index:2;}
+  .verdict h2 b{font-family:var(--thai);font-weight:600;color:var(--gold);}
+  .verdict .meter{margin-top:18px;height:6px;background:var(--bg);border-radius:99px;overflow:hidden;position:relative;z-index:2;}
+  .verdict .meter i{display:block;height:100%;width:72%;background:linear-gradient(90deg, var(--fire), var(--gold), var(--wood));border-radius:99px;}
+  .verdict .scale{display:flex;justify-content:space-between;margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.18em;text-transform:uppercase;position:relative;z-index:2;}
+
+  /* === ป้ายระดับ 5 ขั้น (ดีมาก · ดี · ปานกลาง · ระวัง · ห้าม) === */
+  .hk-level-tag{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:8px 16px;border:1px solid;border-radius:99px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;position:relative;z-index:2;}
+  .hk-level-tag .hk-level-dot{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);}
+  .hk-level-tag .hk-level-name{font-family:var(--thai);font-weight:700;letter-spacing:.04em;}
+  .hk-level-tag[data-level="best"]   {color:#1e8449;background:rgba(30,132,73,.10);border-color:#1e8449;}
+  .hk-level-tag[data-level="good"]   {color:var(--wood);background:var(--wood-bg);border-color:var(--wood);}
+  .hk-level-tag[data-level="ok"]     {color:var(--earth);background:var(--earth-bg);border-color:var(--earth);}
+  .hk-level-tag[data-level="caution"]{color:#c4994a;background:rgba(196,153,74,.14);border-color:#c4994a;}
+  .hk-level-tag[data-level="avoid"]  {color:var(--fire);background:rgba(176,58,46,.10);border-color:var(--fire);}
+
+  /* === มาตรวัด 5 ช่วง === */
+  .hk-gauge-5{margin-top:18px;position:relative;z-index:2;}
+  .hk-g-track{position:relative;display:flex;height:30px;border-radius:8px;overflow:hidden;border:1px solid var(--tile-bd);}
+  .hk-g-seg{flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;letter-spacing:.14em;font-weight:700;text-transform:uppercase;border-right:1px solid var(--tile-bd);}
+  .hk-g-seg:last-child{border-right:none;}
+  .hk-g-seg span{font-family:var(--thai);letter-spacing:.02em;font-weight:600;font-size:10px;opacity:.85;}
+  .hk-g-seg.avoid  {background:rgba(176,58,46,.16);color:var(--fire);}
+  .hk-g-seg.caution{background:rgba(196,153,74,.16);color:#9a7530;}
+  .hk-g-seg.ok     {background:var(--earth-bg);color:var(--earth);}
+  .hk-g-seg.good   {background:var(--wood-bg);color:var(--wood);}
+  .hk-g-seg.best   {background:rgba(30,132,73,.18);color:#1e8449;}
+  body.light .hk-g-seg.avoid  {background:rgba(176,58,46,.10);}
+  body.light .hk-g-seg.caution{background:rgba(196,153,74,.12);}
+  .hk-g-needle{position:absolute;top:-6px;bottom:-6px;width:3px;background:var(--fg);border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 2px var(--bg), 0 2px 6px rgba(0,0,0,.35);transition:left .6s cubic-bezier(.2,.8,.2,1);}
+  .hk-g-needle::before{content:"";position:absolute;left:50%;top:-7px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid var(--fg);}
+  .hk-g-needle::after {content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:7px solid var(--fg);}
+  .hk-g-foot{margin-top:10px;font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.5;}
+  .hk-g-foot b{color:var(--fg);font-weight:700;}
+
+  /* === กล่องขยายปฏิกิริยา (ห้าม/ดี/เสีย รายละเอียด) === */
+  .hk-rel-more{margin-top:6px;border-top:1px dashed var(--tile-bd);padding-top:10px;}
+  .hk-rel-more > summary{cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;font-weight:700;list-style:none;padding:4px 0;}
+  .hk-rel-more > summary::-webkit-details-marker{display:none;}
+  .hk-rel-more > summary:hover{color:var(--fg);}
+  .hk-rel-more[open] > summary{margin-bottom:10px;}
+  .hk-rel-more-body{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .hk-rel-box{padding:10px 12px;border-radius:10px;border:1px solid;}
+  .hk-rel-box.yi{background:var(--wood-bg);border-color:var(--wood);}
+  .hk-rel-box.ji{background:rgba(176,58,46,.06);border-color:var(--fire);}
+  .hk-rel-h{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px;}
+  .hk-rel-box.yi .hk-rel-h{color:var(--wood);}
+  .hk-rel-box.ji .hk-rel-h{color:var(--fire);}
+  .hk-rel-h .tc{font-family:var(--tc);font-size:16px;font-weight:700;letter-spacing:0;}
+  .hk-rel-box ul{list-style:none;padding:0;margin:0;}
+  .hk-rel-box li{font-family:var(--thai);font-size:12px;color:var(--fg);line-height:1.55;padding:3px 0 3px 12px;position:relative;}
+  .hk-rel-box li::before{content:"·";position:absolute;left:2px;top:0;color:var(--gold);font-weight:700;font-size:18px;line-height:1;}
+  .hk-rel-key{font-weight:700;}
+
+  @media(max-width:560px){
+    .hk-g-seg span{font-size:9px;}
+    .hk-rel-more-body{grid-template-columns:1fr;}
+  }
+
+  /* today's pillar card */
+  .pillar-today{background:var(--tile);border:1px solid var(--gold-line);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:18px;}
+  .pillar-today .lab{font-family:var(--mono);font-size:10px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;}
+  .pillar-today .gz{display:flex;justify-content:center;gap:14px;}
+  .gz-cell{width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:62px;font-weight:700;border:2px solid;border-radius:12px;}
+  .gz-cell.metal{background:var(--metal-bg);color:var(--metal);border-color:var(--metal);}
+  .gz-cell.fire{background:var(--fire-bg);color:var(--fire);border-color:var(--fire);}
+  .gz-cell.water{background:var(--water-bg);color:var(--water);border-color:var(--water);}
+  .gz-cell.wood{background:var(--wood-bg);color:var(--wood);border-color:var(--wood);}
+  .gz-cell.earth{background:var(--earth-bg);color:var(--earth);border-color:var(--earth);}
+  .pillar-today .gz-name{text-align:center;font-family:var(--serif);font-size:22px;font-weight:500;}
+  .pillar-today .gz-name .tc{font-family:var(--tc);color:var(--gold);font-weight:700;font-size:18px;}
+  .relations{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .rel{padding:12px 14px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:10px;border-left:3px solid;}
+  body.light .rel{background:var(--bg-3);}
+  .rel.good{border-left-color:var(--wood);}
+  .rel.bad{border-left-color:var(--fire);}
+  .rel .ty{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-soft);text-transform:uppercase;margin-bottom:3px;}
+  .rel.good .ty{color:var(--wood);}
+  .rel.bad .ty{color:var(--fire);}
+  .rel b{font-family:var(--tc);font-size:18px;font-weight:700;color:var(--gold);}
+  .rel p{font-size:11px;color:var(--fg-soft);margin-top:2px;}
+
+  /* section header */
+  .sec{margin-top:36px;}
+  .sec-h{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px;gap:18px;}
+  .sec-h .l .nu{font-family:var(--mono);font-size:10px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+  .sec-h .l h2{font-family:var(--serif);font-size:34px;font-weight:400;}
+  .sec-h .l h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;font-size:24px;margin-right:8px;}
+  .sec-h .l .sub{font-size:12px;color:var(--fg-soft);margin-top:4px;}
+  .sec-h .r{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-soft);text-transform:uppercase;}
+
+  /* lucky hours */
+  .hours{background:var(--tile);border:1px solid var(--tile-bd);border-radius:16px;padding:22px;}
+  .hours-now{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px dashed var(--tile-bd);}
+  .hours-now .ico{width:54px;height:54px;border-radius:12px;background:var(--gold);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:34px;font-weight:700;}
+  .hours-now .info{flex:1;}
+  .hours-now .info .l{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;}
+  .hours-now .info h3{font-family:var(--serif);font-size:24px;font-weight:500;margin-top:2px;}
+  .hours-now .info h3 .tc{font-family:var(--tc);color:var(--gold);}
+  .hours-now .info p{font-size:12px;color:var(--fg-soft);margin-top:2px;}
+  .hours-now .verdict-mini{padding:8px 14px;background:var(--wood-bg);color:var(--wood);border:1px solid var(--wood);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;}
+
+  .grid12{display:grid;grid-template-columns:repeat(12, 1fr);gap:6px;}
+  .h-cell{position:relative;padding:12px 6px;text-align:center;border-radius:8px;border:1.5px solid var(--tile-bd);background:var(--bg-2);transition:transform .2s;cursor:pointer;}
+  body.light .h-cell{background:var(--bg-3);}
+  .h-cell:hover{transform:translateY(-3px);}
+  .h-cell.good{background:var(--wood-bg);border-color:var(--wood);}
+  .h-cell.bad{background:rgba(176,58,46,.06);border-color:var(--fire);}
+  .h-cell.ok{background:var(--bg-2);border-color:var(--tile-bd);}
+  .h-cell.now{box-shadow:0 0 0 2px var(--bg), 0 0 0 4px var(--gold);}
+  .h-cell .br{font-family:var(--tc);font-size:24px;font-weight:700;line-height:1;color:var(--fg);}
+  .h-cell .rg{font-family:var(--mono);font-size:9px;color:var(--fg-soft);margin-top:4px;}
+  .h-cell .q{margin-top:6px;font-family:var(--mono);font-size:8px;letter-spacing:.14em;font-weight:700;text-transform:uppercase;}
+  .h-cell.good .q{color:var(--wood);}
+  .h-cell.bad .q{color:var(--fire);}
+  .h-cell.ok .q{color:var(--fg-faint);}
+  .h-cell.now .q{color:var(--gold);}
+  .h-cell.now::before{content:'NOW';position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--bg);font-family:var(--mono);font-size:7px;letter-spacing:.18em;font-weight:700;padding:2px 6px;border-radius:99px;}
+  .legend{display:flex;gap:18px;margin-top:14px;font-family:var(--mono);font-size:10px;color:var(--fg-soft);letter-spacing:.14em;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:10px;height:10px;border-radius:3px;border:1.5px solid;display:inline-block;}
+  .legend .g{background:var(--wood-bg);border-color:var(--wood);}
+  .legend .o{background:var(--bg-2);border-color:var(--tile-bd);}
+  .legend .b{background:rgba(176,58,46,.06);border-color:var(--fire);}
+
+  /* actions for goals */
+  .actions-grid{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;}
+  .act-card{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:20px;border-top:3px solid;display:flex;flex-direction:column;gap:10px;}
+  .act-card.wealth{border-top-color:var(--gold);}
+  .act-card.work{border-top-color:var(--water);}
+  .act-card.love{border-top-color:var(--fire);}
+  .act-card.health{border-top-color:var(--wood);}
+  .act-card .h{display:flex;align-items:center;gap:10px;}
+  .act-card .ico{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:18px;font-weight:700;}
+  .act-card.wealth .ico{background:var(--gold-soft);color:var(--gold);}
+  .act-card.work .ico{background:var(--water-bg);color:var(--water);}
+  .act-card.love .ico{background:var(--fire-bg);color:var(--fire);}
+  .act-card.health .ico{background:var(--wood-bg);color:var(--wood);}
+  .act-card .h h4{font-family:var(--serif);font-size:18px;font-weight:500;}
+  .act-card .h h4 .tc{font-family:var(--tc);color:var(--gold);font-size:14px;font-weight:700;margin-right:4px;}
+  .act-card .signal{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;}
+  .act-card .signal.up{color:var(--wood);}
+  .act-card .signal.down{color:var(--fire);}
+  .act-card .signal.flat{color:var(--fg-soft);}
+  .act-card ul{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+  .act-card li{position:relative;padding-left:14px;font-size:12px;line-height:1.55;color:var(--fg-soft);}
+  .act-card li::before{content:'›';position:absolute;left:0;top:0;color:var(--gold);font-weight:700;}
+  .act-card li b{color:var(--fg);font-weight:600;}
+  .act-card .when{margin-top:auto;padding-top:10px;border-top:1px dashed var(--tile-bd);font-family:var(--mono);font-size:9px;color:var(--fg-soft);letter-spacing:.14em;text-transform:uppercase;}
+  .act-card .when b{color:var(--gold);}
+
+  /* row: people + color */
+  .row2{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-top:18px;}
+  .people{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:20px;}
+  .people h3{font-family:var(--serif);font-size:20px;font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .people h3 .tc{font-family:var(--tc);color:var(--gold);font-size:14px;font-weight:700;}
+  .ppl-grp{margin-bottom:14px;}
+  .ppl-grp:last-child{margin-bottom:0;}
+  .ppl-grp .gh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .ppl-grp .gh .n{font-family:var(--mono);font-size:10px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;}
+  .ppl-grp.meet .gh .n{color:var(--wood);}
+  .ppl-grp.skip .gh .n{color:var(--fire);}
+  .ppl-grp .gh .c{font-family:var(--mono);font-size:9px;color:var(--fg-soft);}
+  .ppl-list{display:flex;gap:8px;flex-wrap:wrap;}
+  .ppl-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:99px;}
+  body.light .ppl-chip{background:var(--bg-3);}
+  .ppl-chip .av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;font-weight:700;}
+  .ppl-chip .av.wood{background:var(--wood-bg);color:var(--wood);}
+  .ppl-chip .av.fire{background:var(--fire-bg);color:var(--fire);}
+  .ppl-chip .av.water{background:var(--water-bg);color:var(--water);}
+  .ppl-chip .av.metal{background:var(--metal-bg);color:var(--metal);}
+  .ppl-chip .av.earth{background:var(--earth-bg);color:var(--earth);}
+  .ppl-chip .nm{font-family:var(--thai);font-size:13px;font-weight:600;}
+  .ppl-chip .why{font-family:var(--mono);font-size:9px;color:var(--fg-soft);letter-spacing:.1em;}
+
+  /* color & element card */
+  .colorcard{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px;}
+  .colorcard h3{font-family:var(--serif);font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px;}
+  .colorcard h3 .tc{font-family:var(--tc);color:var(--gold);font-size:14px;font-weight:700;}
+  .swatches{display:flex;gap:8px;}
+  .sw{flex:1;aspect-ratio:1;border-radius:10px;border:1.5px solid var(--tile-bd);display:flex;align-items:flex-end;padding:8px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;}
+  .sw.r{background:#c0392b;color:#fff;border-color:#a93426;}
+  .sw.o{background:#d97a3c;color:#fff;border-color:#b66230;}
+  .sw.y{background:#d4a85a;color:#1a1d24;border-color:#a8842d;}
+  .sw.g{background:#5e7a3a;color:#fff;border-color:#4a6029;}
+  .sw.skip{background:transparent;border:1.5px dashed var(--fire);color:var(--fire);position:relative;}
+  .sw.skip::before{content:'';position:absolute;left:10%;right:10%;top:50%;height:1.5px;background:var(--fire);transform:rotate(-30deg);}
+  .el-recs{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .el-r{padding:10px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:8px;display:flex;align-items:center;gap:10px;}
+  body.light .el-r{background:var(--bg-3);}
+  .el-r.use{border-color:var(--wood);}
+  .el-r.skip{border-color:var(--fire);opacity:.85;}
+  .el-r .g{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:18px;font-weight:700;}
+  .el-r.use .g{background:var(--fire-bg);color:var(--fire);}
+  .el-r.skip .g{background:var(--water-bg);color:var(--water);}
+  .el-r .t b{display:block;font-size:12px;}
+  .el-r .t span{font-size:10px;color:var(--fg-soft);}
+
+  /* extras: collapse for tongshu+direction */
+  .extras{margin-top:36px;background:var(--bg-2);border:1px dashed var(--gold-line);border-radius:14px;}
+  body.light .extras{background:var(--bg-3);}
+  .extras summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:18px 22px;list-style:none;font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;}
+  .extras summary::-webkit-details-marker{display:none;}
+  .extras summary::after{content:'+';width:24px;height:24px;display:flex;align-items:center;justify-content:center;border:1px solid var(--gold);border-radius:50%;color:var(--gold);font-size:14px;}
+  .extras[open] summary::after{content:'−';}
+  .extras-body{padding:0 22px 22px;display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .extra-card{background:var(--tile);border:1px solid var(--tile-bd);border-radius:12px;padding:18px;}
+  .extra-card h4{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .extra-card h4 .tc{font-family:var(--tc);color:var(--gold);font-size:14px;font-weight:700;}
+  .compass{position:relative;width:200px;height:200px;margin:8px auto;border:1.5px solid var(--gold-line);border-radius:50%;}
+  .compass .dot{position:absolute;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;font-weight:700;background:var(--bg-2);border:1.5px solid var(--tile-bd);transform:translate(-50%,-50%);}
+  body.light .compass .dot{background:var(--bg-3);}
+  .compass .dot.good{background:var(--wood);color:var(--bg);border-color:var(--wood);box-shadow:0 0 14px rgba(78,169,106,.5);}
+  .compass .dot.bad{background:transparent;color:var(--fire);border-color:var(--fire);border-style:dashed;}
+  .compass .center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--tc);font-size:24px;color:var(--gold);font-weight:700;}
+  .tongshu-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .ts-grp{padding:10px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:8px;}
+  body.light .ts-grp{background:var(--bg-3);}
+  .ts-grp.yi{border-left:3px solid var(--wood);}
+  .ts-grp.ji{border-left:3px solid var(--fire);}
+  .ts-grp .ty{font-family:var(--mono);font-size:9px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;margin-bottom:6px;}
+  .ts-grp.yi .ty{color:var(--wood);}
+  .ts-grp.ji .ty{color:var(--fire);}
+  .ts-grp ul{list-style:none;}
+  .ts-grp li{font-family:var(--tc);font-size:13px;padding:3px 0;color:var(--fg);}
+  .ts-grp li span{font-family:var(--thai);font-size:10px;color:var(--fg-soft);margin-left:4px;}
+
+  /* deep links cta */
+  .deeplinks{margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .deep{background:linear-gradient(135deg, var(--bg-2), var(--bg-3));border:1px solid var(--gold-line);border-radius:16px;padding:24px;display:flex;align-items:center;gap:20px;text-decoration:none;color:var(--fg);transition:transform .25s, border-color .25s;}
+  .deep:hover{transform:translateY(-3px);border-color:var(--gold);}
+  .deep .ico-big{width:64px;height:64px;flex-shrink:0;background:var(--gold-soft);border:1.5px solid var(--gold);border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:30px;font-weight:700;color:var(--gold);}
+  .deep .info{flex:1;}
+  .deep .info .nu{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:3px;}
+  .deep .info h4{font-family:var(--serif);font-size:22px;font-weight:500;margin-bottom:3px;}
+  .deep .info h4 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;font-size:18px;margin-right:6px;}
+  .deep .info p{font-size:12px;color:var(--fg-soft);}
+  .deep .arr{font-family:var(--serif);font-size:32px;color:var(--gold);font-weight:300;}
+
+  @media (max-width:980px){
+    .hero,.row2,.extras-body,.deeplinks{grid-template-columns:1fr;}
+    .actions-grid{grid-template-columns:1fr 1fr;}
+    .grid12{grid-template-columns:repeat(6, 1fr);}
+  }
+
+  /* ─────────────── MOBILE PHONE (≤640px) ─────────────── */
+  @media (max-width:640px){
+    .topbar{padding:12px 14px;flex-wrap:wrap;gap:8px;}
+    .topbar nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
+    .topbar nav::-webkit-scrollbar{display:none;}
+    .topbar nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
+    .topbar nav a .glyph{font-size:14px;}
+    .topbar nav a .lbl{font-size:11px;}
+    .topbar .logo{font-size:18px;}
+    .topbar .top-r{gap:8px;}
+    .hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}
+    .stage{padding:18px 14px 60px;}
+
+    /* hero */
+    .hero{gap:14px;margin-bottom:22px;grid-template-columns:1fr;}
+    .hero h1{font-size:26px;line-height:1.15;}
+    .verdict{padding:16px 14px;}
+    .verdict h2{font-size:16px;line-height:1.3;}
+    .verdict-mini{font-size:11px;}
+
+    /* pillar today + relations */
+    .pillar-today{padding:14px;}
+    .pillar-today h3{font-size:14px;}
+    .relations{grid-template-columns:1fr;gap:8px;}
+    .rel{padding:12px;}
+    .rel h4{font-size:13px;}
+    .rel p{font-size:11px;line-height:1.5;}
+
+    /* section heads (sec-h) */
+    .sec{margin-top:28px;}
+    .sec-h{flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:14px;}
+    .sec-h h2{font-size:20px;line-height:1.2;}
+    .sec-h .lbl{font-size:9px;letter-spacing:.22em;}
+
+    /* hours grid */
+    .hours-now{padding:16px;margin-bottom:14px;}
+    .hours-now h3{font-size:18px;}
+    .hours-now p{font-size:12px;line-height:1.55;}
+
+    .grid12{grid-template-columns:repeat(4, 1fr);gap:5px;}
+    .h-cell{padding:8px 3px;font-size:9px;}
+    .h-cell .glyph, .h-cell > .tc{font-size:14px;}
+
+    .legend{flex-wrap:wrap;font-size:10px;gap:8px;}
+
+    /* actions */
+    .actions-grid{grid-template-columns:1fr;gap:10px;}
+    .actions-grid > div{padding:16px 14px;}
+    .actions-grid h4, .actions-grid h3{font-size:14px;}
+    .actions-grid li{font-size:12px;line-height:1.55;}
+
+    /* row2 — people + colorcard */
+    .row2{grid-template-columns:1fr;gap:14px;margin-top:14px;}
+    .ppl-list, .colorcard{padding:16px 14px;}
+    .ppl-grp{margin-top:12px;}
+    .ppl-list h4, .colorcard h4{font-size:13px;}
+    .ppl-chip{font-size:11px;padding:6px 10px;flex-wrap:wrap;}
+
+    /* element recs */
+    .el-recs{grid-template-columns:1fr;gap:8px;}
+    .el-r{padding:12px;}
+
+    /* tongshu / compass extras */
+    .extras{margin-top:18px;}
+    .extras-body{grid-template-columns:1fr;padding:14px;gap:14px;}
+    .tongshu-list{grid-template-columns:1fr;gap:6px;}
+    .gz-cell{font-size:10px;padding:8px;}
+
+    /* deep links */
+    .deeplinks{grid-template-columns:1fr;margin-top:24px;gap:10px;}
+    .deep{padding:16px 14px;}
+    .deep h4{font-size:13px;}
+    .deep p{font-size:11px;}
+  }
+
+  @media (max-width:380px){
+    .hero h1{font-size:22px;}
+    .grid12{grid-template-columns:repeat(3, 1fr);}
+  }
+
+</style>
+<script>
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const saved = localStorage.getItem('hk-theme') || 'dark';
+    if(saved==='light') document.body.classList.add('light');
+    document.querySelectorAll('.theme-switch button').forEach(b=>{
+      b.classList.toggle('on', b.dataset.theme===saved);
+      b.addEventListener('click', ()=>{
+        const t = b.dataset.theme;
+        document.body.classList.toggle('light', t==='light');
+        localStorage.setItem('hk-theme', t);
+        document.querySelectorAll('.theme-switch button').forEach(x=>x.classList.toggle('on', x.dataset.theme===t));
+      });
+    });
+  });
+</script>
+</head>
+<body>
+
+<!-- ═══════ View-as banner (จาก /network · sessionStorage hk_view_as) ═══════ -->
+<style>
+.hk-viewas-bar{display:none;background:linear-gradient(90deg, var(--gold-soft, rgba(200,164,77,.12)), rgba(200,164,77,.06));border-bottom:1px solid var(--gold-line);padding:10px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;}
+.hk-viewas-bar.show{display:flex;}
+.hk-viewas-bar .info{display:flex;align-items:center;gap:12px;flex:1;min-width:0;}
+.hk-viewas-bar .glyph{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:18px;font-weight:700;border:1.5px solid var(--gold);background:var(--gold-soft);color:var(--gold);flex-shrink:0;}
+.hk-viewas-bar .label{font-family:var(--thai);font-size:13px;letter-spacing:.02em;text-transform:none;color:var(--fg);}
+.hk-viewas-bar .label b{color:var(--gold);font-weight:600;margin:0 4px;}
+.hk-viewas-bar .label .role{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-left:8px;}
+.hk-viewas-bar .back{padding:6px 14px;background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;text-decoration:none;}
+.hk-viewas-bar .back:hover{background:var(--gold);color:var(--bg);}
+@media(max-width:640px){
+  .hk-viewas-bar{padding:8px 14px;font-size:10px;}
+  .hk-viewas-bar .label{font-size:12px;}
+  .hk-viewas-bar .glyph{width:26px;height:26px;font-size:14px;}
+}
+</style>
+<div class="hk-viewas-bar" id="hk-viewas-bar">
+  <div class="info">
+    <div class="glyph" id="va-glyph">人</div>
+    <div class="label">
+      <span data-i18n="t.va.prefix">กำลังดูดวงในมุมของ</span> <b id="va-name">—</b>
+      <span class="role" id="va-role"></span>
+    </div>
+  </div>
+  <a href="/network" class="back" data-i18n="t.va.back">← กลับ</a>
+</div>
+<script>
+/* read view-as context · บอก /today ให้เปลี่ยน mode */
+(function(){
+  try {
+    const raw = sessionStorage.getItem('hk_view_as');
+    const params = new URLSearchParams(location.search);
+    if (!raw || !params.get('as')) return;
+    const p = JSON.parse(raw);
+    if (!p || !p.name) return;
+    const bar = document.getElementById('hk-viewas-bar');
+    document.getElementById('va-glyph').textContent = p.glyph || '人';
+    document.getElementById('va-name').textContent = p.name;
+    document.getElementById('va-role').textContent = p.role || '';
+    bar.classList.add('show');
+    /* tag <html> ให้รู้ว่าอยู่ใน view-as mode */
+    document.documentElement.setAttribute('data-view-as', p.id);
+  } catch(e){}
+})();
+</script>
+
+<div class="topbar">
+  <a class="logo" href="/"><span class="seal">時</span>hourkey</a>
+  <nav class="nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="t.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="t.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="t.nav.calendar">ปฏิทิน</span></a>
+    <a href="/yongsennetwork" data-r="/yongsennetwork"><span class="glyph">人</span><span class="lbl" data-i18n="t.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="t.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="t.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="t.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="t.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="t.nav.goal">เป้าหมาย</span></a>
+  </nav>
+  <div class="top-r">
+    <div id="hk-user-menu-mount"></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- date strip -->
+  <div class="datestrip">
+    <div class="l">
+      <h1 data-i18n="t.title">วันนี้ · <b>วันพุธ</b></h1>
+      <div class="sub">
+        <span data-i18n="t.date">7 พฤษภาคม 2569</span>
+        <span>· <span data-i18n="t.lunar">三月 廿三</span></span>
+        <span>· <span data-i18n="t.week">สัปดาห์ที่ 19</span></span>
+      </div>
+    </div>
+    <div class="r">
+      <button data-i18n="t.btn.prev">‹ เมื่อวาน</button>
+      <button class="on" data-i18n="t.btn.today">วันนี้</button>
+      <button data-i18n="t.btn.next">พรุ่งนี้ ›</button>
+    </div>
+  </div>
+
+  <!-- hero: day score + today's pillar -->
+  <div class="hero">
+    <div class="verdict">
+      <div class="lab" data-i18n="t.h.lab">DAY VERDICT · 日運</div>
+      <div class="hk-level-tag" id="t-verdict-tag" data-level="good">
+        <span class="hk-level-dot"></span>
+        <span class="hk-level-name" data-i18n="t.h.lvl.good">ดี · OPEN</span>
+      </div>
+      <h2 data-i18n="t.h.h2" id="t-verdict-h2">วันที่ <b>ทรัพย์ไหลมา</b><br/>เหมาะ <b>เจรจา · ปิดดีล · เริ่มเรื่องเงิน</b></h2>
+      <div class="hk-gauge-5">
+        <div class="hk-g-track">
+          <div class="hk-g-seg avoid" data-i18n="t.h.lvl.avoid"><span>ห้าม</span></div>
+          <div class="hk-g-seg caution" data-i18n="t.h.lvl.caution"><span>ระวัง</span></div>
+          <div class="hk-g-seg ok" data-i18n="t.h.lvl.ok"><span>ปานกลาง</span></div>
+          <div class="hk-g-seg good" data-i18n="t.h.lvl.good"><span>ดี</span></div>
+          <div class="hk-g-seg best" data-i18n="t.h.lvl.best"><span>ดีมาก</span></div>
+          <div class="hk-g-needle" id="t-verdict-needle" style="left:65%"></div>
+        </div>
+        <div class="hk-g-foot" id="t-verdict-foot" data-i18n="t.h.foot">วันนี้อยู่ช่วง <b>ดี</b> · ใกล้แตะ ดีมาก</div>
+      </div>
+    </div>
+
+    <div class="pillar-today">
+      <div class="lab" data-i18n="t.p.lab">TODAY'S PILLAR · 日柱</div>
+      <div class="gz">
+        <div class="gz-cell wood" id="t-day-stem">乙</div>
+        <div class="gz-cell metal" id="t-day-branch">酉</div>
+      </div>
+      <div class="gz-name" id="t-day-name">乙酉 · <span class="tc">泉中水</span><br/><span style="font-size:13px;color:var(--fg-soft);font-family:var(--mono);letter-spacing:.18em">YI-YOU · WOOD OVER METAL</span></div>
+      <div class="relations" id="t-relations">
+        <div class="rel good" data-rel="dm" id="t-rel-dm">
+          <div class="ty"><span class="hk-rel-key" id="t-rel-dm-key">VS DM · ยินดิน</span></div>
+          <b id="t-rel-dm-name">正財 · ทรัพย์</b>
+          <p id="t-rel-dm-desc">ทรัพย์ที่มาจากแรงงาน · เงินเดือน · ปิดดีลได้</p>
+        </div>
+        <div class="rel bad" data-rel="branch" id="t-rel-br">
+          <div class="ty"><span class="hk-rel-key" id="t-rel-br-key">vs Hour · ราศี</span></div>
+          <b id="t-rel-br-name">沖 · ปะทะ</b>
+          <p id="t-rel-br-desc">ปะทะกับวันเกิด เลี่ยงตัดสินใจช่วงนี้</p>
+        </div>
+      </div>
+      <details class="hk-rel-more">
+        <summary data-i18n="t.p.more">▾ ดูรายละเอียดเพิ่ม · ห้าม/ดี/เสีย</summary>
+        <div class="hk-rel-more-body" id="t-rel-more-body">
+          <div class="hk-rel-box yi"><div class="hk-rel-h"><span class="tc">宜</span><span data-i18n="t.p.yi">วันนี้ดีต่อ</span></div><ul id="t-rel-yi"><li>เจรจาเรื่องเงิน · ปิดดีล</li><li>คุยลูกค้าใหม่</li><li>ทบทวนแผน · จัดบ้าน</li></ul></div>
+          <div class="hk-rel-box ji"><div class="hk-rel-h"><span class="tc">忌</span><span data-i18n="t.p.ji">วันนี้ห้าม</span></div><ul id="t-rel-ji"><li>ตัดสินใจใหญ่หลังเที่ยงคืน</li><li>เริ่มงานสร้าง · ขุดดิน</li><li>เซ็นเอกสารหลัก</li></ul></div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- §3 lucky hours -->
+  <section class="sec">
+    <div class="sec-h">
+      <div class="l">
+        <div class="nu" data-i18n="t.s3.nu">03 · LUCKY HOURS · 吉時</div>
+        <h2 data-i18n="t.s3.h2"><span class="tc">時辰</span>12 ชั่วยามวันนี้</h2>
+        <div class="sub" data-i18n="t.s3.sub">นัดประชุม · ปิดดีล · ตัดสินใจใหญ่ · เลือกชั่วโมงเขียว</div>
+      </div>
+      <div class="r" data-i18n="t.s3.upd">UPDATED 14:23</div>
+    </div>
+
+    <div class="hours">
+      <div class="hours-now">
+        <div class="ico">未</div>
+        <div class="info">
+          <div class="l" data-i18n="t.s3.now">NOW · ตอนนี้</div>
+          <h3 data-i18n="t.s3.nowH3"><span class="tc">未時</span>· 13:00 – 15:00</h3>
+          <p data-i18n="t.s3.nowP">ดิน·ดิน — สงบ ทำงานวิเคราะห์ได้ · ไม่เหมาะเจรจา</p>
+        </div>
+        <div class="verdict-mini" data-i18n="t.s3.nowMini">★ ใช้ได้ · OK</div>
+      </div>
+
+      <div class="grid12" id="t-hours-grid">
+        <div class="h-cell bad"><div class="br" style="color:var(--water)">子</div><div class="rg">23-01</div><div class="q" data-i18n="t.s3.q.bad">ห้าม</div></div>
+        <div class="h-cell ok"><div class="br" style="color:var(--earth)">丑</div><div class="rg">01-03</div><div class="q" data-i18n="t.s3.q.ok">กลาง</div></div>
+        <div class="h-cell good"><div class="br" style="color:var(--wood)">寅</div><div class="rg">03-05</div><div class="q" data-i18n="t.s3.q.good">ดี</div></div>
+        <div class="h-cell good"><div class="br" style="color:var(--wood)">卯</div><div class="rg">05-07</div><div class="q" data-i18n="t.s3.q.good">ดี</div></div>
+        <div class="h-cell ok"><div class="br" style="color:var(--earth)">辰</div><div class="rg">07-09</div><div class="q" data-i18n="t.s3.q.ok">กลาง</div></div>
+        <div class="h-cell good"><div class="br" style="color:var(--fire)">巳</div><div class="rg">09-11</div><div class="q" data-i18n="t.s3.q.best">ดีมาก</div></div>
+        <div class="h-cell good"><div class="br" style="color:var(--fire)">午</div><div class="rg">11-13</div><div class="q" data-i18n="t.s3.q.good">ดี</div></div>
+        <div class="h-cell now ok"><div class="br" style="color:var(--earth)">未</div><div class="rg">13-15</div><div class="q" data-i18n="t.s3.q.now">ตอนนี้</div></div>
+        <div class="h-cell bad"><div class="br" style="color:var(--metal)">申</div><div class="rg">15-17</div><div class="q" data-i18n="t.s3.q.bad">ห้าม</div></div>
+        <div class="h-cell bad"><div class="br" style="color:var(--metal)">酉</div><div class="rg">17-19</div><div class="q" data-i18n="t.s3.q.bad">ห้าม</div></div>
+        <div class="h-cell ok"><div class="br" style="color:var(--earth)">戌</div><div class="rg">19-21</div><div class="q" data-i18n="t.s3.q.ok">กลาง</div></div>
+        <div class="h-cell bad"><div class="br" style="color:var(--water)">亥</div><div class="rg">21-23</div><div class="q" data-i18n="t.s3.q.bad">ห้าม</div></div>
+      </div>
+
+      <div class="legend">
+        <span><i class="g"></i><span data-i18n="t.s3.lg.g">ดี · เจรจา · ปิดดีล</span></span>
+        <span><i class="o"></i><span data-i18n="t.s3.lg.o">กลาง · ทำงานปกติ</span></span>
+        <span><i class="b"></i><span data-i18n="t.s3.lg.b">ห้าม · พัก · เลี่ยงตัดสินใจ</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- §4 actions for goals -->
+  <section class="sec">
+    <div class="sec-h">
+      <div class="l">
+        <div class="nu" data-i18n="t.s4.nu">04 · ACTION TODAY · 用</div>
+        <h2 data-i18n="t.s4.h2"><span class="tc">用</span>สิ่งที่ควรทำ ตามเป้าหมาย</h2>
+        <div class="sub" data-i18n="t.s4.sub">อ้างอิงเป้าหมายที่คุณตั้งไว้: <b style="color:var(--gold)">財 · 業 · 情 · 健</b></div>
+      </div>
+      <div class="r" data-i18n="t.s4.tag">PERSONALIZED</div>
+    </div>
+
+    <div class="actions-grid" id="t-actions-grid">
+      <article class="act-card wealth">
+        <div class="h"><div class="ico">財</div><h4 data-i18n="t.s4.w.h"><span class="tc">財</span>เงิน · ทรัพย์</h4></div>
+        <span class="signal up" data-i18n="t.s4.w.sig">▲ HIGH SIGNAL</span>
+        <ul>
+          <li data-i18n="t.s4.w.li1"><b>ปิดดีล · เซ็นสัญญาเงิน</b> — 金 ของวันนี้ = 正財</li>
+          <li data-i18n="t.s4.w.li2"><b>คุยลูกค้าใหม่</b> ช่วง 09-11 (巳時)</li>
+          <li data-i18n="t.s4.w.li3">ตามหนี้ · ติดตามเงินค้าง</li>
+        </ul>
+        <div class="when" data-i18n="t.s4.w.when">เวลาทอง · <b>09:00 – 13:00</b></div>
+      </article>
+
+      <article class="act-card work">
+        <div class="h"><div class="ico">業</div><h4 data-i18n="t.s4.b.h"><span class="tc">業</span>งาน · อำนาจ</h4></div>
+        <span class="signal flat" data-i18n="t.s4.b.sig">— STEADY</span>
+        <ul>
+          <li data-i18n="t.s4.b.li1"><b>ทบทวนแผน</b> ดูข้อมูลเงียบๆ</li>
+          <li data-i18n="t.s4.b.li2">เลี่ยง <b>ขอเลื่อนตำแหน่ง</b> วันนี้ — รอ 9 วัน</li>
+          <li data-i18n="t.s4.b.li3">ส่งงานที่ค้างได้</li>
+        </ul>
+        <div class="when" data-i18n="t.s4.b.when">เวลาเหมาะ · <b>13:00 – 15:00</b></div>
+      </article>
+
+      <article class="act-card love">
+        <div class="h"><div class="ico">情</div><h4 data-i18n="t.s4.l.h"><span class="tc">情</span>รัก · สัมพันธ์</h4></div>
+        <span class="signal down" data-i18n="t.s4.l.sig">▼ LOW · ระวัง</span>
+        <ul>
+          <li data-i18n="t.s4.l.li1">เลี่ยง <b>ทะเลาะ · ตัดสินใจคู่ครอง</b></li>
+          <li data-i18n="t.s4.l.li2">巳·亥 沖 — คนรักอาจอ่อนไหว</li>
+          <li data-i18n="t.s4.l.li3">ส่งดอกไม้ แทนคำพูดยาว</li>
+        </ul>
+        <div class="when" data-i18n="t.s4.l.when">หลีกเลี่ยง · <b>21:00 – 23:00</b></div>
+      </article>
+
+      <article class="act-card health">
+        <div class="h"><div class="ico">健</div><h4 data-i18n="t.s4.he.h"><span class="tc">健</span>สุขภาพ · ใจ</h4></div>
+        <span class="signal flat" data-i18n="t.s4.he.sig">— STEADY</span>
+        <ul>
+          <li data-i18n="t.s4.he.li1"><b>ออกกำลังเบาๆ</b> ตอนเช้า (寅·卯)</li>
+          <li data-i18n="t.s4.he.li2">ดื่มน้ำให้พอ — น้ำในวันนี้แห้ง</li>
+          <li data-i18n="t.s4.he.li3">ระวัง <b>ปวดหัว</b> หลัง 17:00</li>
+        </ul>
+        <div class="when" data-i18n="t.s4.he.when">นอน · <b>ก่อน 23:00</b></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- §5+§6 row: people + color -->
+  <div class="row2">
+    <div class="people">
+      <h3 data-i18n="t.r.peo.h"><span class="tc">人</span>คนที่ควรเจอ · เลี่ยงเจอ</h3>
+      <div class="ppl-grp meet">
+        <div class="gh"><span class="n" data-i18n="t.r.peo.meet.n">★ ควรเจอ</span><span class="c" data-i18n="t.r.peo.meet.c">3 จาก 12 คนในเครือข่าย</span></div>
+        <div class="ppl-list">
+          <span class="ppl-chip"><span class="av metal">辛</span><span class="nm">วิภา</span><span class="why">CFO · 正財</span></span>
+          <span class="ppl-chip"><span class="av water">壬</span><span class="nm">พีท</span><span class="why">COO · 三合</span></span>
+          <span class="ppl-chip"><span class="av metal">庚</span><span class="nm">ก้อง</span><span class="why">Eng · 傷官</span></span>
+        </div>
+      </div>
+      <div class="ppl-grp skip">
+        <div class="gh"><span class="n" data-i18n="t.r.peo.skip.n">⚠ เลี่ยงเจอ</span><span class="c" data-i18n="t.r.peo.skip.c">2 คน · ระวังโทน</span></div>
+        <div class="ppl-list">
+          <span class="ppl-chip"><span class="av fire">丁</span><span class="nm">อรุณ</span><span class="why">นักลงทุน · 沖</span></span>
+          <span class="ppl-chip"><span class="av wood">乙</span><span class="nm">มิ้นท์</span><span class="why">ที่ปรึกษา · 七殺</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="colorcard">
+      <h3 data-i18n="t.r.col.h"><span class="tc">色</span>สี · ธาตุเสริมวันนี้</h3>
+      <div class="swatches">
+        <div class="sw r" data-i18n="t.r.col.r">★ แดง</div>
+        <div class="sw o" data-i18n="t.r.col.o">ส้ม</div>
+        <div class="sw y" data-i18n="t.r.col.y">ทอง</div>
+        <div class="sw skip" data-i18n="t.r.col.skip">น้ำเงิน</div>
+      </div>
+      <div class="el-recs">
+        <div class="el-r use"><div class="g">火</div><div class="t"><b data-i18n="t.r.col.use.b">ใช้ ไฟ</b><span data-i18n="t.r.col.use.s">ใส่แดง · ส้ม</span></div></div>
+        <div class="el-r skip"><div class="g">水</div><div class="t"><b data-i18n="t.r.col.skip.b">เลี่ยง น้ำ</b><span data-i18n="t.r.col.skip.s">ลดน้ำเงิน · ดำ</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- extras: tongshu + direction (collapse) -->
+  <details class="extras">
+    <summary data-i18n="t.ex.sum">เคล็ดเสริมตามตำรา · 黃曆 + 8 ทิศ</summary>
+    <div class="extras-body">
+      <div class="extra-card">
+        <h4 data-i18n="t.ex.ts.h"><span class="tc">黃曆</span>Tongshu · ทำได้ / ห้ามทำ</h4>
+        <div class="tongshu-list">
+          <div class="ts-grp yi">
+            <div class="ty" data-i18n="t.ex.ts.yi">宜 ทำได้ (5)</div>
+            <ul>
+              <li data-i18n="t.ex.ts.li1">解除<span>ตัดเรื่องเก่า</span></li>
+              <li data-i18n="t.ex.ts.li2">掃舍<span>ทำความสะอาด</span></li>
+              <li data-i18n="t.ex.ts.li3">修飾<span>เสริมสวย</span></li>
+              <li data-i18n="t.ex.ts.li4">納財<span>รับเงิน</span></li>
+              <li data-i18n="t.ex.ts.li5">會親友<span>พบเพื่อน</span></li>
+            </ul>
+          </div>
+          <div class="ts-grp ji">
+            <div class="ty" data-i18n="t.ex.ts.ji">忌 ห้ามทำ (3)</div>
+            <ul>
+              <li data-i18n="t.ex.ts.j1">嫁娶<span>แต่งงาน</span></li>
+              <li data-i18n="t.ex.ts.j2">動土<span>ขุดดิน · ก่อสร้าง</span></li>
+              <li data-i18n="t.ex.ts.j3">安葬<span>ฝังศพ</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="extra-card">
+        <h4 data-i18n="t.ex.dir.h"><span class="tc">八方</span>8 ทิศมงคลวันนี้</h4>
+        <div class="compass" id="t-compass">
+          <div class="dot good" style="left:50%;top:8%">N</div>
+          <div class="dot" style="left:84%;top:18%">NE</div>
+          <div class="dot good" style="left:92%;top:50%">E</div>
+          <div class="dot" style="left:84%;top:82%">SE</div>
+          <div class="dot bad" style="left:50%;top:92%">S</div>
+          <div class="dot" style="left:16%;top:82%">SW</div>
+          <div class="dot good" style="left:8%;top:50%">W</div>
+          <div class="dot bad" style="left:16%;top:18%">NW</div>
+          <div class="center">辛巳</div>
+        </div>
+        <div style="display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--fg-soft);justify-content:center;">
+          <span style="color:var(--wood)" data-i18n="t.ex.dir.good">● ดี: N · E · W</span>
+          <span style="color:var(--fire)" data-i18n="t.ex.dir.bad">● เลี่ยง: S · NW</span>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- deep links: qimen + tongshu full -->
+  <div class="deeplinks">
+    <a href="/qimen" class="deep">
+      <div class="ico-big">奇</div>
+      <div class="info">
+        <div class="nu" data-i18n="t.dl.q.nu">DEEP · ขั้นเทพ</div>
+        <h4 data-i18n="t.dl.q.h"><span class="tc">奇門</span>ฉีเหมินตอนนี้</h4>
+        <p data-i18n="t.dl.q.p">9 วัง · ดาว · ประตู · ก้านสวรรค์ — สำหรับการตัดสินใจสำคัญ</p>
+      </div>
+      <span class="arr">→</span>
+    </a>
+    <a href="/calendar" class="deep">
+      <div class="ico-big">黃</div>
+      <div class="info">
+        <div class="nu" data-i18n="t.dl.t.nu">DEEP · ตำรา</div>
+        <h4 data-i18n="t.dl.t.h"><span class="tc">黃曆</span>Tongshu ฉบับเต็ม</h4>
+        <p data-i18n="t.dl.t.p">28 ดาว · 12 ดาวก่อสร้าง · 神煞 · 沖煞 ทั้งหมด</p>
+      </div>
+      <span class="arr">→</span>
+    </a>
+  </div>
+
+</div>
+
+<script>
+/* hilite active link ใน topnav ตาม pathname */
+(function(){
+  try {
+    var p = window.location.pathname.replace(/\/$/,'') || '/today';
+    p = p.replace(/-m$/, '');
+    document.querySelectorAll('#hk-topnav a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+  } catch(e){}
+})();
+</script>
+
+<script>
+/* hourkey · today · 3-language i18n (TH/EN/ZH) */
+window.HK_I18N = {
+  /* view-as banner */
+  't.va.prefix': { th:'กำลังดูในมุมของ', en:'Viewing as', zh:'以此人視角' },
+  't.va.back':   { th:'← กลับ', en:'← Back', zh:'← 返回' },
+  /* navbar */
+  't.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
+  't.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
+  't.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
+  't.nav.network': { th:'เครือข่าย', en:'Network', zh:'人脈' },
+  't.nav.qimen':   { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門' },
+  't.nav.master':  { th:'ซินแส', en:'Sifu', zh:'老師' },
+  't.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
+  't.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  't.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
+  /* date strip */
+  't.title':       { th:'วันนี้ · <b>วันพุธ</b>', en:'Today · <b>Wednesday</b>', zh:'今日 · <b>星期三</b>' },
+  't.date':        { th:'7 พฤษภาคม 2569', en:'7 May 2026', zh:'2026年5月7日' },
+  't.lunar':       { th:'三月 廿三', en:'3rd month · 23rd day', zh:'三月 廿三' },
+  't.week':        { th:'สัปดาห์ที่ 19', en:'Week 19', zh:'第19週' },
+  't.btn.prev':    { th:'‹ เมื่อวาน', en:'‹ Yesterday', zh:'‹ 昨日' },
+  't.btn.today':   { th:'วันนี้', en:'Today', zh:'今日' },
+  't.btn.next':    { th:'พรุ่งนี้ ›', en:'Tomorrow ›', zh:'明日 ›' },
+  /* hero verdict */
+  't.h.lab':       { th:'DAY VERDICT · 日運', en:'DAY VERDICT · 日運', zh:'日運 · DAY VERDICT' },
+  't.h.tag':       { th:'★ ดวงเปิด · OPEN', en:'★ OPEN · ดวงเปิด', zh:'★ 開運 · OPEN' },
+  't.h.h2':        { th:'วันที่ <b>ทรัพย์ไหลมา</b><br/>เหมาะ <b>เจรจา · ปิดดีล · เริ่มเรื่องเงิน</b>', en:'A day when <b>wealth flows in</b><br/>Good for <b>negotiating · closing deals · starting money matters</b>', zh:'<b>財來之日</b><br/>宜 <b>洽談 · 簽約 · 起財</b>' },
+  't.h.scaleL':    { th:'0 ปิด', en:'0 closed', zh:'0 閉' },
+  't.h.scaleM':    { th:'50 เฝ้าดู', en:'50 watch', zh:'50 觀' },
+  't.h.scaleR':    { th:'100 เปิดเต็ม', en:'100 open', zh:'100 全開' },
+  /* pillar today */
+  't.p.lab':       { th:"TODAY'S PILLAR · 日柱", en:"TODAY'S PILLAR · 日柱", zh:'日柱 · TODAY' },
+  't.p.name':      { th:'辛巳 · <span class="tc">白臘金</span><br/><span style="font-size:13px;color:var(--fg-soft);font-family:var(--mono);letter-spacing:.18em">SHIN-SI · METAL OVER FIRE</span>', en:'辛巳 · <span class="tc">白臘金</span><br/><span style="font-size:13px;color:var(--fg-soft);font-family:var(--mono);letter-spacing:.18em">SHIN-SI · METAL OVER FIRE</span>', zh:'辛巳 · <span class="tc">白臘金</span><br/><span style="font-size:13px;color:var(--fg-soft);font-family:var(--mono);letter-spacing:.18em">辛巳 · 金坐火</span>' },
+  't.p.r1.ty':     { th:'VS DM 己 · ยินดิน', en:'VS DM 己 · Yin Earth', zh:'對日主 己 · 陰土' },
+  't.p.r1.b':      { th:'正財 · ทรัพย์', en:'正財 · Direct Wealth', zh:'正財 · 正財' },
+  't.p.r1.p':      { th:'金 หนุน 土 → ปิดดีลได้', en:'金 supports 土 → can close deals', zh:'金生土 → 可成交' },
+  't.p.r2.ty':     { th:'vs Hour 子', en:'vs Hour 子', zh:'對時柱 子' },
+  't.p.r2.b':      { th:'沖 · ปะทะ', en:'沖 · Clash', zh:'沖 · 相沖' },
+  't.p.r2.p':      { th:'เลี่ยงประชุมหลังเที่ยงคืน', en:'Avoid meetings after midnight', zh:'子時忌會議' },
+  /* §3 lucky hours */
+  't.s3.nu':       { th:'03 · LUCKY HOURS · 吉時', en:'03 · LUCKY HOURS · 吉時', zh:'03 · 吉時 · LUCKY HOURS' },
+  't.s3.h2':       { th:'<span class="tc">時辰</span>12 ชั่วยามวันนี้', en:'<span class="tc">時辰</span>12 hours today', zh:'<span class="tc">時辰</span>今日十二時辰' },
+  't.s3.sub':      { th:'นัดประชุม · ปิดดีล · ตัดสินใจใหญ่ · เลือกชั่วโมงเขียว', en:'Meetings · deals · big decisions — pick the green hours', zh:'會議 · 簽約 · 決策 — 選綠色時辰' },
+  't.s3.upd':      { th:'อัพเดต 14:23', en:'UPDATED 14:23', zh:'更新 14:23' },
+  't.s3.now':      { th:'NOW · ตอนนี้', en:'NOW', zh:'現在' },
+  't.s3.nowH3':    { th:'<span class="tc">未時</span>· 13:00 – 15:00', en:'<span class="tc">未時</span>· 13:00 – 15:00', zh:'<span class="tc">未時</span>· 13:00 – 15:00' },
+  't.s3.nowP':     { th:'ดิน·ดิน — สงบ ทำงานวิเคราะห์ได้ · ไม่เหมาะเจรจา', en:'Earth·Earth — calm, good for analysis · not for negotiating', zh:'土土 — 安靜利分析 · 不宜洽談' },
+  't.s3.nowMini':  { th:'★ ใช้ได้ · OK', en:'★ OK', zh:'★ 可用' },
+  't.s3.q.bad':    { th:'ห้าม', en:'avoid', zh:'忌' },
+  't.s3.q.ok':     { th:'กลาง', en:'neutral', zh:'中' },
+  't.s3.q.good':   { th:'ดี', en:'good', zh:'吉' },
+  't.s3.q.best':   { th:'ดีมาก', en:'best', zh:'大吉' },
+  't.s3.q.now':    { th:'ตอนนี้', en:'now', zh:'現在' },
+  't.s3.lg.g':     { th:'ดี · เจรจา · ปิดดีล', en:'good · negotiate · close', zh:'吉 · 洽談 · 簽約' },
+  't.s3.lg.o':     { th:'กลาง · ทำงานปกติ', en:'neutral · routine work', zh:'中 · 例行工作' },
+  't.s3.lg.b':     { th:'ห้าม · พัก · เลี่ยงตัดสินใจ', en:'avoid · rest · no decisions', zh:'忌 · 休息 · 勿決' },
+  /* §4 actions */
+  't.s4.nu':       { th:'04 · ACTION TODAY · 用', en:'04 · ACTION TODAY · 用', zh:'04 · 今日宜用 · 用' },
+  't.s4.h2':       { th:'<span class="tc">用</span>สิ่งที่ควรทำ ตามเป้าหมาย', en:'<span class="tc">用</span>Actions aligned with your goals', zh:'<span class="tc">用</span>依目標宜行之事' },
+  't.s4.sub':      { th:'อ้างอิงเป้าหมายที่คุณตั้งไว้: <b style="color:var(--gold)">財 · 業 · 情 · 健</b>', en:'Based on your goals: <b style="color:var(--gold)">財 · 業 · 情 · 健</b>', zh:'依您設定之目標 <b style="color:var(--gold)">財 · 業 · 情 · 健</b>' },
+  't.s4.tag':      { th:'ส่วนตัวของคุณ', en:'PERSONALIZED', zh:'個人化' },
+  't.s4.w.h':      { th:'<span class="tc">財</span>เงิน · ทรัพย์', en:'<span class="tc">財</span>Money · Wealth', zh:'<span class="tc">財</span>財富' },
+  't.s4.w.sig':    { th:'▲ HIGH SIGNAL', en:'▲ HIGH SIGNAL', zh:'▲ 強訊號' },
+  't.s4.w.li1':    { th:'<b>ปิดดีล · เซ็นสัญญาเงิน</b> — 金 ของวันนี้ = 正財', en:'<b>Close deals · sign money contracts</b> — today\'s 金 = 正財', zh:'<b>簽約 · 簽訂財務合約</b> — 今日金為正財' },
+  't.s4.w.li2':    { th:'<b>คุยลูกค้าใหม่</b> ช่วง 09-11 (巳時)', en:'<b>Pitch new clients</b> 09-11 (巳時)', zh:'<b>洽談新客戶</b> 09-11 (巳時)' },
+  't.s4.w.li3':    { th:'ตามหนี้ · ติดตามเงินค้าง', en:'Collect debts · chase payments', zh:'催款 · 追討欠款' },
+  't.s4.w.when':   { th:'เวลาทอง · <b>09:00 – 13:00</b>', en:'Golden window · <b>09:00 – 13:00</b>', zh:'黃金時段 · <b>09:00 – 13:00</b>' },
+  't.s4.b.h':      { th:'<span class="tc">業</span>งาน · อำนาจ', en:'<span class="tc">業</span>Career · Authority', zh:'<span class="tc">業</span>事業' },
+  't.s4.b.sig':    { th:'— STEADY', en:'— STEADY', zh:'— 平穩' },
+  't.s4.b.li1':    { th:'<b>ทบทวนแผน</b> ดูข้อมูลเงียบๆ', en:'<b>Review plans</b> · quiet analysis', zh:'<b>檢視計劃</b> · 靜心分析' },
+  't.s4.b.li2':    { th:'เลี่ยง <b>ขอเลื่อนตำแหน่ง</b> วันนี้ — รอ 9 วัน', en:'Avoid <b>asking for promotion</b> today — wait 9 days', zh:'今日忌 <b>升遷之請</b> · 候 9 日' },
+  't.s4.b.li3':    { th:'ส่งงานที่ค้างได้', en:'Submit pending work', zh:'可遞交待辦工作' },
+  't.s4.b.when':   { th:'เวลาเหมาะ · <b>13:00 – 15:00</b>', en:'Best window · <b>13:00 – 15:00</b>', zh:'宜時 · <b>13:00 – 15:00</b>' },
+  't.s4.l.h':      { th:'<span class="tc">情</span>รัก · สัมพันธ์', en:'<span class="tc">情</span>Love · Relations', zh:'<span class="tc">情</span>感情' },
+  't.s4.l.sig':    { th:'▼ LOW · ระวัง', en:'▼ LOW · caution', zh:'▼ 弱 · 慎' },
+  't.s4.l.li1':    { th:'เลี่ยง <b>ทะเลาะ · ตัดสินใจคู่ครอง</b>', en:'Avoid <b>arguments · partner decisions</b>', zh:'忌 <b>口角 · 伴侶之決</b>' },
+  't.s4.l.li2':    { th:'巳·亥 沖 — คนรักอาจอ่อนไหว', en:'巳·亥 clash — partner may be sensitive', zh:'巳亥相沖 — 伴侶易敏感' },
+  't.s4.l.li3':    { th:'ส่งดอกไม้ แทนคำพูดยาว', en:'Send flowers instead of long words', zh:'贈花 勝多言' },
+  't.s4.l.when':   { th:'หลีกเลี่ยง · <b>21:00 – 23:00</b>', en:'Avoid · <b>21:00 – 23:00</b>', zh:'忌時 · <b>21:00 – 23:00</b>' },
+  't.s4.he.h':     { th:'<span class="tc">健</span>สุขภาพ · ใจ', en:'<span class="tc">健</span>Health · Mind', zh:'<span class="tc">健</span>健康' },
+  't.s4.he.sig':   { th:'— STEADY', en:'— STEADY', zh:'— 平穩' },
+  't.s4.he.li1':   { th:'<b>ออกกำลังเบาๆ</b> ตอนเช้า (寅·卯)', en:'<b>Light exercise</b> in morning (寅·卯)', zh:'<b>晨間輕運動</b> (寅·卯)' },
+  't.s4.he.li2':   { th:'ดื่มน้ำให้พอ — น้ำในวันนี้แห้ง', en:'Drink enough water — today is dry', zh:'多飲水 — 今日燥' },
+  't.s4.he.li3':   { th:'ระวัง <b>ปวดหัว</b> หลัง 17:00', en:'Watch for <b>headaches</b> after 17:00', zh:'防 <b>頭痛</b> 17:00 後' },
+  't.s4.he.when':  { th:'นอน · <b>ก่อน 23:00</b>', en:'Sleep · <b>before 23:00</b>', zh:'就寢 · <b>23:00 前</b>' },
+  /* row2 */
+  't.r.peo.h':     { th:'<span class="tc">人</span>คนที่ควรเจอ · เลี่ยงเจอ', en:'<span class="tc">人</span>People to meet · avoid', zh:'<span class="tc">人</span>宜見之人 · 忌見之人' },
+  't.r.peo.meet.n':{ th:'★ ควรเจอ', en:'★ Meet', zh:'★ 宜見' },
+  't.r.peo.meet.c':{ th:'3 จาก 12 คนในเครือข่าย', en:'3 of 12 in your network', zh:'人脈 12 人中 3 位' },
+  't.r.peo.skip.n':{ th:'⚠ เลี่ยงเจอ', en:'⚠ Avoid', zh:'⚠ 忌見' },
+  't.r.peo.skip.c':{ th:'2 คน · ระวังโทน', en:'2 people · mind your tone', zh:'2 人 · 慎言' },
+  't.r.col.h':     { th:'<span class="tc">色</span>สี · ธาตุเสริมวันนี้', en:'<span class="tc">色</span>Colors & elements', zh:'<span class="tc">色</span>今日助色與五行' },
+  't.r.col.r':     { th:'★ แดง', en:'★ Red', zh:'★ 紅' },
+  't.r.col.o':     { th:'ส้ม', en:'Orange', zh:'橙' },
+  't.r.col.y':     { th:'ทอง', en:'Gold', zh:'金' },
+  't.r.col.skip':  { th:'น้ำเงิน', en:'Blue', zh:'藍' },
+  't.r.col.use.b': { th:'ใช้ ไฟ', en:'Use Fire', zh:'用火' },
+  't.r.col.use.s': { th:'ใส่แดง · ส้ม', en:'Wear red · orange', zh:'著紅橙' },
+  't.r.col.skip.b':{ th:'เลี่ยง น้ำ', en:'Avoid Water', zh:'避水' },
+  't.r.col.skip.s':{ th:'ลดน้ำเงิน · ดำ', en:'Reduce blue · black', zh:'減藍黑' },
+  /* extras */
+  't.ex.sum':      { th:'เคล็ดเสริมตามตำรา · 黃曆 + 8 ทิศ', en:'Classical extras · 黃曆 + 8 directions', zh:'古籍精要 · 黃曆 + 八方' },
+  't.ex.ts.h':     { th:'<span class="tc">黃曆</span>Tongshu · ทำได้ / ห้ามทำ', en:'<span class="tc">黃曆</span>Tongshu · do / avoid', zh:'<span class="tc">黃曆</span>通書 · 宜 / 忌' },
+  't.ex.ts.yi':    { th:'宜 ทำได้ (5)', en:'宜 Do (5)', zh:'宜 (5)' },
+  't.ex.ts.ji':    { th:'忌 ห้ามทำ (3)', en:'忌 Avoid (3)', zh:'忌 (3)' },
+  't.ex.ts.li1':   { th:'解除<span>ตัดเรื่องเก่า</span>', en:'解除<span>cut old ties</span>', zh:'解除<span>了結舊事</span>' },
+  't.ex.ts.li2':   { th:'掃舍<span>ทำความสะอาด</span>', en:'掃舍<span>clean house</span>', zh:'掃舍<span>清掃</span>' },
+  't.ex.ts.li3':   { th:'修飾<span>เสริมสวย</span>', en:'修飾<span>grooming</span>', zh:'修飾<span>美容</span>' },
+  't.ex.ts.li4':   { th:'納財<span>รับเงิน</span>', en:'納財<span>receive money</span>', zh:'納財<span>納財</span>' },
+  't.ex.ts.li5':   { th:'會親友<span>พบเพื่อน</span>', en:'會親友<span>meet friends</span>', zh:'會親友<span>會友</span>' },
+  't.ex.ts.j1':    { th:'嫁娶<span>แต่งงาน</span>', en:'嫁娶<span>marry</span>', zh:'嫁娶<span>嫁娶</span>' },
+  't.ex.ts.j2':    { th:'動土<span>ขุดดิน · ก่อสร้าง</span>', en:'動土<span>dig earth · build</span>', zh:'動土<span>動土</span>' },
+  't.ex.ts.j3':    { th:'安葬<span>ฝังศพ</span>', en:'安葬<span>burial</span>', zh:'安葬<span>安葬</span>' },
+  't.ex.dir.h':    { th:'<span class="tc">八方</span>8 ทิศมงคลวันนี้', en:'<span class="tc">八方</span>8 directions today', zh:'<span class="tc">八方</span>今日八方' },
+  't.ex.dir.good': { th:'● ดี: N · E · W', en:'● Good: N · E · W', zh:'● 吉: N · E · W' },
+  't.ex.dir.bad':  { th:'● เลี่ยง: S · NW', en:'● Avoid: S · NW', zh:'● 忌: S · NW' },
+  /* deeplinks */
+  't.dl.q.nu':     { th:'DEEP · ขั้นเทพ', en:'DEEP · advanced', zh:'深度 · 進階' },
+  't.dl.q.h':      { th:'<span class="tc">奇門</span>ฉีเหมินตอนนี้', en:'<span class="tc">奇門</span>Qi Men now', zh:'<span class="tc">奇門</span>當下奇門' },
+  't.dl.q.p':      { th:'9 วัง · ดาว · ประตู · ก้านสวรรค์ — สำหรับการตัดสินใจสำคัญ', en:'9 palaces · stars · gates · stems — for major decisions', zh:'九宮 · 九星 · 八門 · 天干 — 重大決策' },
+  't.dl.t.nu':     { th:'DEEP · ตำรา', en:'DEEP · classical', zh:'深度 · 古籍' },
+  't.dl.t.h':      { th:'<span class="tc">黃曆</span>Tongshu ฉบับเต็ม', en:'<span class="tc">黃曆</span>Full Tongshu', zh:'<span class="tc">黃曆</span>通書全本' },
+  't.dl.t.p':      { th:'28 ดาว · 12 ดาวก่อสร้าง · 神煞 · 沖煞 ทั้งหมด', en:'28 stars · 12 builders · 神煞 · 沖煞 — all', zh:'二十八宿 · 十二建除 · 神煞 · 沖煞' }
+};
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+    document.querySelectorAll('[data-i18n-ph="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) el.setAttribute('placeholder', t[lang].replace(/<[^>]+>/g,''));
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+</script>
+
+<!-- ═══════════ Phase A · Wire DAY VERDICT + TODAY'S PILLAR (live data) ═══════════ -->
+<script>
+(async function wireToday(){
+  try {
+    /* 1. derive date · today */
+    const now = new Date();
+    const dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+
+    /* 2. user chart · view-as override ก่อน · fallback localStorage hk_birth */
+    let userChart = null;
+    let viewAs = null;
+    try { viewAs = JSON.parse(sessionStorage.getItem('hk_view_as')||'null'); } catch(e){}
+    if (viewAs && viewAs.pillars) userChart = viewAs.pillars;
+    if (!userChart) {
+      try {
+        const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
+        if (birth && birth.date) {
+          /* fetch /api/chart เพื่อได้ pillars */
+          const r = await fetch('/api/chart', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ date: birth.date, time: birth.time||'12:00', gender: birth.gender||'M' })
+          });
+          const cd = await r.json();
+          if (r.ok && cd.pillars) userChart = cd.pillars;
+        }
+      } catch(e){}
+    }
+
+    /* 3. fetch /api/daily/score */
+    const body = { date: dateStr };
+    if (userChart) body.userChart = userChart;
+    const r = await fetch('/api/daily/score', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (!r.ok || !d.dayPillar) return;
+
+    /* 4. render DAY VERDICT (5 ระดับ + เข็มชี้) */
+    const score = d.personal ? d.personal.score : d.universal.score;
+    const label = d.personal ? d.personal.label : d.universal.label;
+    const setText = (id, v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+
+    /* แปลงคะแนน → 5 ระดับ */
+    /* เกณฑ์: ≥80 ดีมาก · 65-79 ดี · 50-64 ปานกลาง · 35-49 ระวัง · <35 ห้าม */
+    function levelOf(s){
+      if (s >= 80) return { key:'best',    th:'ดีมาก',   en:'EXCELLENT', segIdx:4 };
+      if (s >= 65) return { key:'good',    th:'ดี',      en:'OPEN',      segIdx:3 };
+      if (s >= 50) return { key:'ok',      th:'ปานกลาง', en:'MODERATE',  segIdx:2 };
+      if (s >= 35) return { key:'caution', th:'ระวัง',   en:'CAUTION',   segIdx:1 };
+      return         { key:'avoid',   th:'ห้าม',    en:'AVOID',     segIdx:0 };
+    }
+    const lv = levelOf(score);
+
+    /* ป้ายระดับ */
+    const tagEl = document.getElementById('t-verdict-tag');
+    if (tagEl) {
+      tagEl.setAttribute('data-level', lv.key);
+      tagEl.style.color = ''; tagEl.style.background = ''; tagEl.style.borderColor = '';
+      tagEl.innerHTML = `<span class="hk-level-dot"></span><span class="hk-level-name">${lv.th} · ${lv.en}</span>`;
+    }
+
+    /* เข็มชี้บน gauge · score 0-100 → left 0-100% */
+    const needle = document.getElementById('t-verdict-needle');
+    if (needle) needle.style.left = Math.max(2, Math.min(98, score)) + '%';
+
+    /* ข้อความใต้ gauge · บอกว่าใกล้แตะระดับถัดไปแค่ไหน */
+    const foot = document.getElementById('t-verdict-foot');
+    if (foot) {
+      const cuts = [0, 35, 50, 65, 80, 100];
+      const i = lv.segIdx;
+      const lo = cuts[i], hi = cuts[i+1];
+      const inSeg = (score - lo) / Math.max(1, (hi - lo));
+      let tail = '';
+      const nextUp = ['ระวัง','ปานกลาง','ดี','ดีมาก','สูงสุด'][i];
+      const nextDn = ['ต่ำสุด','ห้าม','ระวัง','ปานกลาง','ดี'][i];
+      if (inSeg >= .75 && i < 4)      tail = ` · ใกล้แตะ <b>${nextUp}</b>`;
+      else if (inSeg <= .25 && i > 0) tail = ` · เพิ่งเลย <b>${nextDn}</b> มา`;
+      else                            tail = ` · ค่อนกลางช่วง`;
+      foot.innerHTML = `วันนี้อยู่ช่วง <b>${lv.th}</b>${tail}`;
+    }
+
+    /* h2 narrative · ดึงจาก top breakdown */
+    const h2 = document.getElementById('t-verdict-h2');
+    if (h2 && d.universal.breakdown) {
+      const officer = d.universal.breakdown.officer;
+      const officerNarr = officer.tier === 'favorable' ? 'เหมาะ <b>ลงมือเดินหน้า</b>' :
+                          officer.tier === 'critical'  ? 'ระวัง <b>ถอยตั้งหลัก</b>' :
+                          'วันที่ <b>ทำงานปกติ</b>';
+      const personalNarr = d.personal && d.personal.bonuses && d.personal.bonuses.length
+        ? '· ' + d.personal.bonuses[0]
+        : d.personal && d.personal.warnings && d.personal.warnings.length
+          ? '· ' + d.personal.warnings[0]
+          : '';
+      h2.innerHTML = `${officerNarr}<br/>วันฤกษ์ <b>${officer.name}</b> ${personalNarr}`;
+    }
+
+    /* 5. render TODAY'S PILLAR */
+    setText('t-day-stem', d.dayPillar.stem);
+    setText('t-day-branch', d.dayPillar.branch);
+    /* update CSS class for element coloring */
+    const stemEl = document.getElementById('t-day-stem');
+    const brEl = document.getElementById('t-day-branch');
+    const elemMap = { Wood:'wood', Fire:'fire', Earth:'earth', Metal:'metal', Water:'water' };
+    if (stemEl) {
+      stemEl.className = 'gz-cell ' + (elemMap[d.dayPillar.element]||'metal');
+    }
+    if (brEl) {
+      brEl.className = 'gz-cell ' + (elemMap[d.dayPillar.branchElement]||'fire');
+    }
+    /* day-name */
+    const dayName = document.getElementById('t-day-name');
+    if (dayName) {
+      dayName.innerHTML = `${d.dayPillar.stem}${d.dayPillar.branch} · <span class="tc">${d.dayPillar.element}/${d.dayPillar.branchElement}</span><br/><span style="font-size:13px;color:var(--fg-soft);font-family:var(--mono);letter-spacing:.18em">วัน${d.tongshu.officer} · ${d.tongshu.twelveStar}</span>`;
+    }
+
+    /* === 5.1 Wire ปฏิกิริยา VS DM / VS Hour จาก personal breakdown === */
+    function renderRel(elId, keyId, nameId, descId, keyTxt, nameTxt, descTxt, klass){
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.className = 'rel ' + (klass||'');
+      const ke = document.getElementById(keyId); if (ke) ke.textContent = keyTxt;
+      const ne = document.getElementById(nameId); if (ne) ne.textContent = nameTxt;
+      const de = document.getElementById(descId); if (de) de.textContent = descTxt;
+    }
+    if (d.personal && d.personal.breakdown) {
+      const bd = d.personal.breakdown;
+      /* stem relation · DM ↔ Day */
+      const stemMap = {
+        'stemHe':    { name:'天合 · ผูกพัน',   desc:'Day Master ผูกพันกับวัน · ดีต่อความร่วมมือ', klass:'good' },
+        'stemClash': { name:'天剋 · ปะทะ',     desc:'Day Master ถูกปะทะ · เลี่ยงตัดสินใจใหญ่',    klass:'bad'  },
+        'same':      { name:'同 · เสริมแรง',    desc:'ธาตุเดียวกับ Day Master · แรงดีลง',         klass:'good' },
+        'controls':  { name:'剋 · ครอบงำ',     desc:'Day Master ครอบ · กดดันได้ผล',              klass:'good' },
+        'controlled':{ name:'剋我 · ถูกครอบ',  desc:'Day Master ถูกครอบ · ต้องระวัง',             klass:'bad'  },
+        'produces':  { name:'生 · เสริมพลัง',   desc:'Day Master ได้รับการเลี้ยง · ทรัพย์เข้า',    klass:'good' },
+        'produced':  { name:'我生 · ผ่อนพลัง', desc:'Day Master เลี้ยงผู้อื่น · ใช้พลังเยอะ',     klass:'ok'   }
+      };
+      const sm = stemMap[bd.stemDayRelation] || { name:'—', desc:'ปกติ', klass:'' };
+      renderRel('t-rel-dm', 't-rel-dm-key', 't-rel-dm-name', 't-rel-dm-desc',
+                'VS DM · Day Master', sm.name, sm.desc, sm.klass);
+
+      /* branch relation · ใช้ relation ของ branch ที่หนักสุด (clash > harm > sanhe > he) */
+      const br = bd.branchToDay || {};
+      const order = ['clash','harm','sanhe','he','none'];
+      const labelTH = {
+        'clash':{ k:'vs ดวง · ปะทะ', n:'沖 · ปะทะ',   d:'มีเสาในดวงปะทะวันนี้ · เลี่ยงตัดสินใจเร่งด่วน', c:'bad'  },
+        'harm': { k:'vs ดวง · แทรก', n:'害 · แทรกแซง', d:'มีเสาในดวงแทรกแซงวันนี้ · ระวังเรื่องลับ',     c:'bad'  },
+        'sanhe':{ k:'vs ดวง · สามผูก', n:'三合 · ผูกพัน', d:'มีเสาในดวงผูกพันแน่น · เสริมเรื่องคน',         c:'good' },
+        'he':   { k:'vs ดวง · ผูก',   n:'六合 · ผูกพัน', d:'มีเสาในดวงผูกพันกับวัน · ดีต่อข้อตกลง',       c:'good' },
+        'none': { k:'vs ดวง · ปกติ',  n:'—',            d:'ไม่มีปฏิกิริยาเด่นกับเสาในดวง',                c:''     }
+      };
+      let pick = 'none';
+      for (const o of order) {
+        if (Object.values(br).includes(o)) { pick = o; break; }
+      }
+      const bm = labelTH[pick];
+      renderRel('t-rel-br', 't-rel-br-key', 't-rel-br-name', 't-rel-br-desc', bm.k, bm.n, bm.d, bm.c);
+    }
+
+    /* === 5.2 Wire 宜 / 忌 จาก tongshu (ตำราคลาสสิก · [KEEP]) === */
+    const yiUl = document.getElementById('t-rel-yi');
+    const jiUl = document.getElementById('t-rel-ji');
+    if (yiUl) {
+      const list = (d.tongshu.yi||[]).slice(0,8);
+      yiUl.innerHTML = list.length ? list.map(x=>`<li><span class="tc">${x}</span></li>`).join('')
+                                   : '<li style="opacity:.7">— ไม่มีรายการเด่น</li>';
+    }
+    if (jiUl) {
+      const list = (d.tongshu.ji||[]).slice(0,8);
+      jiUl.innerHTML = list.length ? list.map(x=>`<li><span class="tc">${x}</span></li>`).join('')
+                                   : '<li style="opacity:.7">— ไม่มีข้อห้ามพิเศษ</li>';
+    }
+
+    /* mark page as live */
+    document.documentElement.setAttribute('data-today-live', '1');
+    /* expose for debug */
+    window._dailyScore = d;
+
+    /* === 6. Wire 12 ชั่วยาม (Phase B) === */
+    try {
+      const hourBody = { date: dateStr };
+      if (userChart) hourBody.userChart = userChart;
+      const hr = await fetch('/api/today/hours', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(hourBody)
+      });
+      const hd = await hr.json();
+      if (hr.ok && hd.hours) {
+        const grid = document.getElementById('t-hours-grid');
+        if (grid) {
+          const colorMap = { wood:'var(--wood)', fire:'var(--fire)', earth:'var(--earth)', metal:'var(--metal)', water:'var(--water)' };
+          grid.innerHTML = hd.hours.map(h => {
+            const cls = h.isNow ? 'now ok' : (h.quality === 'best' ? 'good' : h.quality === 'good' ? 'good' : h.quality === 'ok' ? 'ok' : 'bad');
+            const lbl = h.isNow ? 'ตอนนี้' : h.label;
+            return `<div class="h-cell ${cls}"><div class="br" style="color:${colorMap[h.element]||'var(--fg)'}">${h.branch}</div><div class="rg">${h.range.replace(/^(\d+):00-/,'$1-').replace(':00','')}</div><div class="q">${lbl}</div></div>`;
+          }).join('');
+        }
+        window._hours = hd;
+      }
+    } catch(e){ console.warn('wireHours failed:', e); }
+
+    /* === 7. Wire 4 ACTION cards (Phase C1) === */
+    if (userChart) try {
+      const ar = await fetch('/api/today/actions', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ date: dateStr, userChart })
+      });
+      const ad = await ar.json();
+      if (ar.ok && ad.actions) {
+        const grid = document.getElementById('t-actions-grid');
+        if (grid) {
+          const goalClass = { wealth:'wealth', career:'work', love:'love', health:'health' };
+          const sigClass = { HIGH:'up', STEADY:'flat', LOW:'down' };
+          const sigLabel = { HIGH:'▲ HIGH SIGNAL', STEADY:'— STEADY', LOW:'▼ LOW · ระวัง' };
+          grid.innerHTML = ad.actions.map(a => `
+            <article class="act-card ${goalClass[a.goal]||''}">
+              <div class="h"><div class="ico">${a.icon}</div><h4><span class="tc">${a.icon}</span>${a.title}</h4></div>
+              <span class="signal ${sigClass[a.signal]||'flat'}">${sigLabel[a.signal]||a.signal}</span>
+              <ul>${a.tips.map(t => `<li>${t}</li>`).join('')}</ul>
+              <div class="when"><b>${a.tenGod || '—'}</b> · ${a.narrative}</div>
+            </article>
+          `).join('');
+        }
+        window._actions = ad;
+      }
+    } catch(e){ console.warn('wireActions failed:', e); }
+
+    /* === 8. Wire 8 DIRECTIONS (Phase C2) === */
+    try {
+      const dirBody = { date: dateStr };
+      if (userChart) dirBody.userChart = userChart;
+      const dr = await fetch('/api/today/directions', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(dirBody)
+      });
+      const dd = await dr.json();
+      if (dr.ok && dd.directions) {
+        const compass = document.getElementById('t-compass');
+        if (compass) {
+          /* preserve center · only update dots */
+          const positions = { N:'left:50%;top:8%', NE:'left:84%;top:18%', E:'left:92%;top:50%', SE:'left:84%;top:82%',
+                              S:'left:50%;top:92%', SW:'left:16%;top:82%', W:'left:8%;top:50%', NW:'left:16%;top:18%' };
+          const html = dd.directions.map(dir => {
+            const cls = dir.quality === 'best' || dir.quality === 'good' ? 'good' : dir.quality === 'avoid' ? 'bad' : '';
+            return `<div class="dot ${cls}" style="${positions[dir.direction]}">${dir.direction}</div>`;
+          }).join('') + `<div class="center">${d.dayPillar.stem}${d.dayPillar.branch}</div>`;
+          compass.innerHTML = html;
+        }
+        /* update summary text · ดี: N · เลี่ยง: S */
+        const dirSummary = compass?.parentElement?.querySelector('div[style*="font-family:var(--mono)"]');
+        if (dirSummary && dd.summary) {
+          const goodTxt = dd.summary.good.length ? dd.summary.good.join(' · ') : 'ไม่มี';
+          const avoidTxt = dd.summary.avoid.length ? dd.summary.avoid.join(' · ') : 'ไม่มี';
+          dirSummary.innerHTML = `<span style="color:var(--wood)">● ดี: ${goodTxt}</span><span style="color:var(--fire)">● เลี่ยง: ${avoidTxt}</span>`;
+        }
+        window._directions = dd;
+      }
+    } catch(e){ console.warn('wireDirections failed:', e); }
+  } catch(e){ console.warn('wireToday failed:', e); }
+})();
+</script>
+<script src="/js/hk-user-menu.js?v=9" defer></script>
+</body>
+</html>

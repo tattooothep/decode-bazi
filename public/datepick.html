@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5"/>
+<title>วางฤกษ์ · 擇吉 · hourkey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0a0a0c; --bg-2:#13131a; --bg-3:#1a1a23; --bg-4:#22222e;
+  --fg:#f3ebd9; --fg-soft:#c2b694; --fg-faint:#7a7160;
+  --gold:#c8a44d; --gold-bright:#e6c976; --gold-soft:rgba(200,164,77,.16); --gold-line:rgba(200,164,77,.32);
+  --line:rgba(200,164,77,.14);
+  --serif:'Cormorant Garamond',serif;
+  --tc:'Noto Serif TC',serif;
+  --th:'Noto Serif Thai',serif;
+  --mono:'JetBrains Mono',monospace;
+  --ok:#7fa869; --ok-soft:rgba(127,168,105,.18);
+  --warn:#c4994a; --warn-soft:rgba(196,153,74,.18);
+  --bad:#c95c4a; --bad-soft:rgba(201,92,74,.18);
+  --info:#5a8aa8; --info-soft:rgba(90,138,168,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--fg);font-family:var(--th),var(--serif);font-weight:400;-webkit-font-smoothing:antialiased;}
+body{min-height:100vh;line-height:1.6;}
+button,input,select{font-family:inherit;color:inherit;}
+
+/* Hero */
+.hero{padding:50px 24px 30px;text-align:center;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--bg-2),var(--bg));}
+.hero .crest{font-family:var(--tc);font-size:42px;color:var(--gold);font-weight:700;letter-spacing:.04em;margin-bottom:6px;}
+.hero h1{font-family:var(--serif);font-size:34px;font-weight:300;letter-spacing:.02em;margin-bottom:8px;}
+.hero h1 b{color:var(--gold);font-weight:500;font-style:italic;}
+.hero .sub{font-size:15px;color:var(--fg-soft);max-width:640px;margin:0 auto;line-height:1.7;}
+.hero .meta{margin-top:14px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;}
+
+/* Layout */
+main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
+.grid{display:grid;grid-template-columns:380px 1fr;gap:28px;}
+@media(max-width:1080px){ .grid{grid-template-columns:1fr;} }
+
+/* Cards */
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px;}
+.card h3{font-family:var(--serif);font-size:22px;font-weight:400;margin-bottom:4px;display:flex;align-items:center;gap:10px;}
+.card h3 .han{font-family:var(--tc);color:var(--gold);font-weight:700;font-size:24px;}
+.card h3 .num{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--gold);background:var(--gold-soft);padding:3px 8px;border-radius:99px;text-transform:uppercase;font-weight:500;}
+.card .desc{font-size:13px;color:var(--fg-soft);margin-bottom:18px;line-height:1.65;}
+
+/* Form Inputs */
+.field{margin-bottom:14px;}
+.field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;}
+.input,.select{width:100%;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:13px;padding:10px 12px;border-radius:8px;outline:none;transition:.2s;}
+.input:focus,.select:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* Activity grid */
+.activity-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.act-btn{background:var(--bg-3);border:1.5px solid var(--line);color:var(--fg-soft);font-family:var(--th),var(--serif);font-size:13px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:8px;text-align:left;}
+.act-btn .ic{font-size:16px;flex-shrink:0;}
+.act-btn .han{font-family:var(--tc);font-size:11px;color:var(--gold);font-weight:600;letter-spacing:.05em;margin-left:auto;}
+.act-btn:hover{border-color:var(--gold-line);color:var(--fg);}
+.act-btn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+.act-btn.active .han{color:var(--gold-bright);}
+
+/* Filter checkboxes — Layered list */
+.filter-list{display:flex;flex-direction:column;gap:8px;}
+.filter-item{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:12px 14px;transition:.2s;cursor:pointer;}
+.filter-item:hover{border-color:var(--gold-line);}
+.filter-item.active{background:var(--gold-soft);border-color:var(--gold-line);}
+.filter-item-head{display:flex;align-items:center;gap:10px;}
+.filter-item input[type="checkbox"]{appearance:none;width:18px;height:18px;border:1.5px solid var(--gold-line);border-radius:4px;cursor:pointer;flex-shrink:0;background:var(--bg-2);position:relative;transition:.2s;}
+.filter-item input[type="checkbox"]:checked{background:var(--gold);border-color:var(--gold);}
+.filter-item input[type="checkbox"]:checked::after{content:'✓';position:absolute;color:var(--bg);font-weight:700;font-size:13px;top:50%;left:50%;transform:translate(-50%,-50%);line-height:1;}
+.filter-item .info{flex:1;min-width:0;}
+.filter-item .ttl{font-family:var(--serif);font-size:15px;font-weight:500;color:var(--fg);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.filter-item .ttl .han{font-family:var(--tc);color:var(--gold);font-size:14px;font-weight:600;}
+.filter-item .level{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;padding:1.5px 6px;border-radius:99px;font-weight:600;text-transform:uppercase;}
+.filter-item .level.hard{background:var(--bad-soft);color:var(--bad);}
+.filter-item .level.soft{background:var(--warn-soft);color:var(--warn);}
+.filter-item .level.score{background:var(--info-soft);color:var(--info);}
+.filter-item .level.note{background:var(--gold-soft);color:var(--gold);}
+.filter-item .sub{font-size:11px;color:var(--fg-faint);margin-top:3px;line-height:1.5;}
+
+/* Sub-options inside filter */
+.filter-sub{margin-top:10px;padding-left:28px;display:none;flex-direction:column;gap:8px;}
+.filter-item.active .filter-sub{display:flex;}
+.sub-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--fg-soft);}
+.sub-row input[type="checkbox"]{width:14px;height:14px;}
+.sub-row input[type="number"],.sub-row select{background:var(--bg-2);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:11px;padding:4px 8px;border-radius:5px;outline:none;width:auto;}
+.sub-row .han{font-family:var(--tc);font-size:13px;color:var(--gold);}
+.sub-pills{display:flex;flex-wrap:wrap;gap:5px;}
+.sub-pill{background:var(--bg-2);border:1px solid var(--gold-line);color:var(--fg-soft);font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:99px;cursor:pointer;letter-spacing:.05em;}
+.sub-pill.active{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700;}
+
+/* Search button */
+.btn-search{width:100%;background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:var(--bg);border:none;font-family:var(--mono);font-size:13px;letter-spacing:.2em;padding:14px;border-radius:10px;cursor:pointer;font-weight:700;text-transform:uppercase;margin-top:6px;transition:.2s;}
+.btn-search:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--gold-soft);}
+.btn-search:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+/* Results pane */
+.results-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+.results-head h2{font-family:var(--serif);font-size:26px;font-weight:400;}
+.results-head h2 .han{font-family:var(--tc);color:var(--gold);font-weight:700;}
+.results-meta{font-family:var(--mono);font-size:11px;color:var(--fg-soft);letter-spacing:.15em;text-transform:uppercase;}
+.results-meta b{color:var(--gold);}
+
+/* Funnel viz */
+.funnel{margin-bottom:24px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:18px 22px;}
+.funnel-title{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;display:flex;justify-content:space-between;}
+.funnel-row{display:flex;align-items:center;gap:12px;margin-bottom:9px;font-size:13px;}
+.funnel-row .name{width:130px;font-family:var(--serif);color:var(--fg);font-weight:500;flex-shrink:0;}
+.funnel-row .name .han{font-family:var(--tc);font-size:13px;color:var(--gold);font-weight:700;margin-right:4px;}
+.funnel-row .bar{flex:1;height:8px;background:var(--bg-4);border-radius:99px;overflow:hidden;position:relative;}
+.funnel-row .fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-bright));border-radius:99px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+.funnel-row .fill.bad{background:linear-gradient(90deg,var(--bad),#a83a2c);}
+.funnel-row .fill.warn{background:linear-gradient(90deg,var(--warn),#a8772a);}
+.funnel-row .fill.ok{background:linear-gradient(90deg,var(--ok),#5a8a52);}
+.funnel-row .count{font-family:var(--mono);font-size:11px;color:var(--fg-soft);min-width:90px;text-align:right;letter-spacing:.05em;}
+.funnel-row .count b{color:var(--gold);font-size:13px;font-weight:700;}
+
+/* Result rows */
+.result-row{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:0;margin-bottom:10px;overflow:hidden;transition:.2s;}
+.result-row:hover{border-color:var(--gold-line);}
+.result-row.expanded{border-color:var(--gold);}
+.result-summary{padding:14px 18px;display:grid;grid-template-columns:auto 1fr auto auto auto;gap:14px;align-items:center;cursor:pointer;}
+.result-rank{font-family:var(--serif);font-size:22px;font-weight:500;color:var(--gold-bright);width:32px;text-align:center;font-style:italic;}
+.result-info{min-width:0;}
+.result-date{font-family:var(--serif);font-size:18px;color:var(--fg);font-weight:500;}
+.result-date .han{font-family:var(--tc);color:var(--gold);font-weight:600;margin-left:6px;font-size:15px;}
+.result-meta{font-family:var(--mono);font-size:10px;color:var(--fg-soft);letter-spacing:.1em;margin-top:3px;}
+.result-score{font-family:var(--mono);font-size:18px;color:var(--gold);font-weight:700;text-align:center;}
+.result-score small{display:block;font-size:8px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;font-weight:400;margin-top:2px;}
+.result-tags{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:200px;}
+.tag{font-family:var(--mono);font-size:9px;font-weight:600;padding:3px 7px;border-radius:99px;letter-spacing:.05em;}
+.tag.ok{background:var(--ok-soft);color:var(--ok);}
+.tag.warn{background:var(--warn-soft);color:var(--warn);}
+.tag.bad{background:var(--bad-soft);color:var(--bad);}
+.tag.info{background:var(--info-soft);color:var(--info);}
+.tag.note{background:var(--gold-soft);color:var(--gold);}
+.expand-arrow{color:var(--fg-faint);font-size:14px;transition:transform .25s;}
+.result-row.expanded .expand-arrow{transform:rotate(180deg);color:var(--gold);}
+
+/* Result detail expanded */
+.result-detail{display:none;border-top:1px solid var(--line);padding:18px 22px;background:var(--bg-3);}
+.result-row.expanded .result-detail{display:block;}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:16px;}
+.detail-cell{padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:8px;}
+.detail-cell h5{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.detail-cell h5 .han{font-family:var(--tc);font-size:13px;color:var(--gold-bright);font-weight:700;letter-spacing:0;}
+.detail-cell .body{font-size:13px;color:var(--fg);line-height:1.65;}
+.detail-cell .body i{color:var(--gold-bright);font-style:italic;}
+.detail-cell .body small{display:block;color:var(--fg-faint);font-size:11px;margin-top:4px;font-family:var(--mono);}
+.detail-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.detail-btn{background:transparent;border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:.15em;padding:7px 12px;border-radius:6px;cursor:pointer;text-transform:uppercase;transition:.2s;}
+.detail-btn:hover{background:var(--gold-soft);border-color:var(--gold);}
+.detail-btn.primary{background:var(--gold);color:var(--bg);font-weight:700;}
+.detail-btn.primary:hover{background:var(--gold-bright);}
+
+/* Empty + loading */
+.empty-state{padding:60px 30px;text-align:center;background:var(--bg-2);border:1px dashed var(--line);border-radius:14px;}
+.empty-state .ic{font-size:48px;margin-bottom:14px;opacity:.4;}
+.empty-state h4{font-family:var(--serif);font-size:22px;font-weight:400;color:var(--fg);margin-bottom:8px;}
+.empty-state p{font-size:14px;color:var(--fg-soft);max-width:400px;margin:0 auto;line-height:1.65;}
+.loading{padding:40px;text-align:center;color:var(--fg-soft);}
+.loading .spinner{width:32px;height:32px;border:2.5px solid var(--gold-soft);border-top-color:var(--gold);border-radius:50%;margin:0 auto 14px;animation:spin .9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* People mini-card */
+.people-mini{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.person-mini{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-3);border-radius:8px;border-left:2.5px solid var(--gold);}
+.person-mini input[type="checkbox"]{width:14px;height:14px;}
+.person-mini .nm{font-family:var(--serif);font-size:14px;color:var(--fg);}
+.person-mini .stats{font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.08em;margin-left:auto;text-transform:uppercase;}
+.person-mini .stats .han{font-family:var(--tc);font-size:12px;color:var(--gold);letter-spacing:0;font-weight:600;}
+
+/* Mobile */
+@media(max-width:640px){
+  .hero{padding:36px 18px 24px;}
+  .hero .crest{font-size:36px;}
+  .hero h1{font-size:26px;}
+  main{padding:24px 14px 60px;}
+  .card{padding:16px;}
+  .activity-grid{grid-template-columns:1fr;}
+  .result-summary{grid-template-columns:auto 1fr auto;gap:10px;}
+  .result-tags,.result-score small{display:none;}
+  .funnel-row .name{width:auto;font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HK Navbar (8 ปุ่ม + lang + theme) · 3-language ═══════════ -->
+<style>
+.hk-topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb, var(--bg, #0d0f12) 88%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line, rgba(200,164,77,.22));font-family:'Noto Serif Thai',serif;}
+.hk-topbar .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:'Cormorant Garamond','Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--fg, #f6f1e6);text-decoration:none;}
+.hk-topbar .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold, #c8a44d);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:13px;color:var(--gold, #c8a44d);}
+.hk-topbar nav.hk-nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+.hk-topbar nav.hk-nav a{color:var(--fg-soft, rgba(246,241,230,.62));text-decoration:none;font-family:'Noto Serif Thai',serif;font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+.hk-topbar nav.hk-nav a .glyph{font-family:'Noto Serif TC',serif;font-size:16px;color:var(--gold, #c8a44d);font-weight:700;line-height:1;}
+.hk-topbar nav.hk-nav a .lbl{font-size:12px;}
+.hk-topbar nav.hk-nav a.active,.hk-topbar nav.hk-nav a:hover{color:var(--gold, #c8a44d);}
+.hk-topbar .hk-top-r{display:flex;align-items:center;gap:14px;}
+.hk-topbar .hk-lang-switch{display:inline-flex;background:rgba(38,42,50,.5);border:1px solid var(--gold-line, rgba(200,164,77,.3));border-radius:99px;padding:3px;}
+.hk-topbar .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft, rgba(246,241,230,.55));font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+.hk-topbar .hk-lang-switch button.on{background:var(--gold, #c8a44d);color:var(--bg, #0d0f12);}
+.hk-topbar .hk-theme-switch{display:inline-flex;background:rgba(38,42,50,.5);border:1px solid var(--gold-line, rgba(200,164,77,.3));border-radius:99px;padding:3px;}
+.hk-topbar .hk-theme-switch button{width:28px;height:28px;border:none;background:transparent;color:var(--fg-soft, rgba(246,241,230,.55));font-size:13px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+.hk-topbar .hk-theme-switch button.on{background:var(--gold, #c8a44d);color:var(--bg, #0d0f12);}
+@media(max-width:980px){
+  .hk-topbar{padding:12px 14px;flex-wrap:wrap;gap:10px;}
+  .hk-topbar nav.hk-nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line, rgba(200,164,77,.22));}
+  .hk-topbar nav.hk-nav::-webkit-scrollbar{display:none;}
+  .hk-topbar nav.hk-nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
+  .hk-topbar nav.hk-nav a .glyph{font-size:14px;}
+  .hk-topbar .hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}
+}
+</style>
+<header class="hk-topbar">
+  <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
+  <nav class="hk-nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="hk.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="hk.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="hk.nav.calendar">ปฏิทิน</span></a>
+    <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="hk.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="hk.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="hk.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="hk.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="hk.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="hk.nav.goal">เป้าหมาย</span></a>
+  </nav>
+  <div class="hk-top-r">
+    <div class="hk-lang-switch" id="hk-lang-switch">
+      <button data-lang="en" title="English">EN</button>
+      <button data-lang="zh" title="中文">中</button>
+      <button data-lang="th" class="on" title="ไทย">TH</button>
+    </div>
+    <div class="hk-theme-switch" id="hk-theme-switch">
+      <button class="on" data-theme="dark" title="Dark">☾</button>
+      <button data-theme="light" title="Light">☀</button>
+    </div>
+  </div>
+</header>
+
+
+<header class="hero">
+  <div class="crest">擇吉</div>
+  <h1>วาง <b>ฤกษ์</b> · Date Picking</h1>
+  <p class="sub">เลือกวันและยามที่เหมาะสำหรับกิจกรรมสำคัญ — กรองด้วย 5 ศาสตร์ซ้อนกัน · จากใหญ่ไปเล็ก</p>
+  <div class="meta">通書 · 八字 · 奇門 · 河洛 · 六十四卦</div>
+</header>
+
+<main>
+  <div class="grid">
+
+    <!-- LEFT: Configuration -->
+    <aside>
+
+      <!-- 1. Activity -->
+      <div class="card">
+        <h3><span class="num">01</span> กิจกรรม <span class="han">事</span></h3>
+        <div class="desc">เลือกประเภทกิจกรรมที่จะวางฤกษ์ — แต่ละกิจกรรมมีกฎ Tong Shu 宜/忌 ต่างกัน</div>
+        <div class="activity-grid">
+          <button class="act-btn" data-act="break-ground">⛏️ ตอกเสาเข็ม <span class="han">動土</span></button>
+          <button class="act-btn active" data-act="sign-contract">📝 เซ็นสัญญา <span class="han">立約</span></button>
+          <button class="act-btn" data-act="move-in">🏠 ย้ายเข้าบ้าน <span class="han">入宅</span></button>
+          <button class="act-btn" data-act="open-shop">🛍️ เปิดกิจการ <span class="han">開市</span></button>
+          <button class="act-btn" data-act="travel">✈️ เดินทางไกล <span class="han">出行</span></button>
+          <button class="act-btn" data-act="negotiate">🤝 เจรจาสำคัญ <span class="han">會見</span></button>
+          <button class="act-btn" data-act="invest">💰 ลงทุน/ซื้อ <span class="han">財貨</span></button>
+          <button class="act-btn" data-act="wedding">💒 พิธีมงคล <span class="han">嫁娶</span></button>
+        </div>
+      </div>
+
+      <!-- 2. Date Range -->
+      <div class="card">
+        <h3><span class="num">02</span> ช่วงวัน <span class="han">期</span></h3>
+        <div class="desc">เลือกช่วงเวลาที่จะค้นหา — แนะนำ 30-60 วัน</div>
+        <div class="row2">
+          <div class="field">
+            <label>เริ่มต้น</label>
+            <input type="date" id="dateStart" class="input"/>
+          </div>
+          <div class="field">
+            <label>สิ้นสุด</label>
+            <input type="date" id="dateEnd" class="input"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. People -->
+      <div class="card">
+        <h3><span class="num">03</span> คนที่เกี่ยวข้อง <span class="han">人</span></h3>
+        <div class="desc">ติ๊กคนที่ต้องเช็คดวง — ระบบจะตัดวันที่ชน Day Master หรือกระทบหนัก</div>
+        <div class="people-mini" id="peopleMini">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- 4. Filters -->
+      <div class="card">
+        <h3><span class="num">04</span> เกณฑ์กรอง <span class="han">篩</span></h3>
+        <div class="desc">ติ๊กเกณฑ์ที่ใช้ — กรองจากเข้มไปอ่อน · ติ๊กหมดวันจะเหลือน้อย</div>
+        <div class="filter-list" id="filterList">
+
+          <!-- Tong Shu -->
+          <label class="filter-item active" data-filter="tongshu">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl"><span class="han">通書</span> Tong Shu <span class="level hard">ห้าม</span></div>
+                <div class="sub">ปฏิทินจีน · กรองวันที่ 忌 (ห้าม) สำหรับกิจกรรมนี้</div>
+              </div>
+            </div>
+          </label>
+
+          <!-- Ba Zi -->
+          <label class="filter-item active" data-filter="bazi">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl"><span class="han">八字</span> Ba Zi <span class="level hard">ห้าม</span></div>
+                <div class="sub">เช็คดวงคน — วันชง · 刑 · 害 · ชน Day Master</div>
+              </div>
+            </div>
+            <div class="filter-sub">
+              <div class="sub-row">
+                <input type="checkbox" id="bz-chong" checked/>
+                <label for="bz-chong">วันชง <span class="han">沖</span> (ตัดทิ้ง)</label>
+              </div>
+              <div class="sub-row">
+                <input type="checkbox" id="bz-xing"/>
+                <label for="bz-xing">刑/害 (warning เฉยๆ)</label>
+              </div>
+            </div>
+          </label>
+
+          <!-- Qi Men -->
+          <label class="filter-item active" data-filter="qimen">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl"><span class="han">奇門</span> Qi Men <span class="level soft">เลี่ยง</span></div>
+                <div class="sub">ดูประตู+ดาว+เทพ ของยาม — ตัดยามที่ตก 死/驚/傷</div>
+              </div>
+            </div>
+            <div class="filter-sub">
+              <div class="sub-row">
+                <span>ค่ายคำนวณ:</span>
+                <div class="sub-pills">
+                  <button class="sub-pill active" data-qm="chaibu">拆補 ChaiBu</button>
+                  <button class="sub-pill" data-qm="zhirun">置閏 ZhiRun</button>
+                </div>
+              </div>
+              <div class="sub-row">
+                <input type="checkbox" id="qm-strict"/>
+                <label for="qm-strict">เข้มงวด · ตัดถ้าประตูร้าย</label>
+              </div>
+            </div>
+          </label>
+
+          <!-- He Luo -->
+          <label class="filter-item" data-filter="heluo">
+            <div class="filter-item-head">
+              <input type="checkbox"/>
+              <div class="info">
+                <div class="ttl"><span class="han">河洛</span> He Luo <span class="level score">คะแนน</span></div>
+                <div class="sub">Pattern ธาตุของยาม — score 25-90 · ใช้กรองและจัดอันดับ</div>
+              </div>
+            </div>
+            <div class="filter-sub">
+              <div class="sub-row">
+                <span>คะแนนขั้นต่ำ:</span>
+                <input type="number" id="hl-min" min="0" max="100" value="70" style="width:60px"/>
+              </div>
+            </div>
+          </label>
+
+          <!-- 64 Hex -->
+          <label class="filter-item" data-filter="hex">
+            <div class="filter-item-head">
+              <input type="checkbox"/>
+              <div class="info">
+                <div class="ttl"><span class="han">六十四卦</span> 64 Hex <span class="level note">ตีความ</span></div>
+                <div class="sub">เพิ่มการตีความ hexagram ของยาม — commentary ไม่กรอง</div>
+              </div>
+            </div>
+          </label>
+
+        </div>
+
+        <button class="btn-search" id="btnSearch">⚡ ค้นหาฤกษ์</button>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT: Results -->
+    <section>
+
+      <div class="results-head">
+        <h2><span class="han">結果</span> ผลลัพธ์</h2>
+        <div class="results-meta" id="resultsMeta">รอการค้นหา</div>
+      </div>
+
+      <!-- Funnel viz (shows after search) -->
+      <div class="funnel" id="funnel" style="display:none;">
+        <div class="funnel-title">
+          <span>🔍 Filter Funnel · ขั้นตอนการกรอง</span>
+          <span id="funnelTotal"></span>
+        </div>
+        <div id="funnelRows"></div>
+      </div>
+
+      <!-- Results list -->
+      <div id="resultsList">
+        <div class="empty-state">
+          <div class="ic">📅</div>
+          <h4>วางฤกษ์ของท่าน</h4>
+          <p>เลือกกิจกรรม + ช่วงวัน + เกณฑ์กรอง<br/>แล้วกด "⚡ ค้นหาฤกษ์" เพื่อเริ่ม</p>
+        </div>
+      </div>
+
+    </section>
+  </div>
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+const state = {
+  activity: 'sign-contract',
+  dateStart: null,
+  dateEnd: null,
+  people: [],
+  filters: { tongshu:true, bazi:true, qimen:true, heluo:false, hex:false },
+  qmCalc: 'chaibu',
+  bzChong: true,
+  bzXing: false,
+  qmStrict: false,
+  hlMin: 70
+};
+
+// Default people (จาก userMemories)
+const DEFAULT_PEOPLE = [
+  { name:'Aeaw',    year:1984, gender:'male',   dm:'己', branch:'子', kua:7, group:'West', enabled:true },
+  { name:'Mai',     year:1986, gender:'female', dm:'辛', branch:'寅', kua:1, group:'East', enabled:true },
+  { name:'น้องปุญ', year:2024, gender:'male',   dm:'壬', branch:'辰', kua:8, group:'West', enabled:false }
+];
+
+// Activity Tong Shu rules (simplified)
+const ACTIVITY_RULES = {
+  'break-ground':  { name:'ตอกเสาเข็ม',  han:'動土', yi:[3,4,5,7,8,11], ji:[1,2,6,12] },
+  'sign-contract': { name:'เซ็นสัญญา',   han:'立約', yi:[3,5,7,9,11],   ji:[2,4,12] },
+  'move-in':       { name:'ย้ายเข้าบ้าน', han:'入宅', yi:[3,4,7,8,11],   ji:[1,5,12] },
+  'open-shop':     { name:'เปิดกิจการ',   han:'開市', yi:[5,8,9,11],     ji:[2,4] },
+  'travel':        { name:'เดินทางไกล',   han:'出行', yi:[3,5,7,9,11],   ji:[1,2,12] },
+  'negotiate':     { name:'เจรจาสำคัญ',   han:'會見', yi:[3,5,7,9,11],   ji:[2,4] },
+  'invest':        { name:'ลงทุน/ซื้อ',   han:'財貨', yi:[5,7,8,9,11],   ji:[2,4,12] },
+  'wedding':       { name:'พิธีมงคล',     han:'嫁娶', yi:[3,5,7,9,11],   ji:[2,4,12] }
+};
+
+// Solar branches (simplified mapping)
+const SHICHEN = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const SHICHEN_TIME = {
+  '子':'23:00-01:00','丑':'01:00-03:00','寅':'03:00-05:00','卯':'05:00-07:00',
+  '辰':'07:00-09:00','巳':'09:00-11:00','午':'11:00-13:00','未':'13:00-15:00',
+  '申':'15:00-17:00','酉':'17:00-19:00','戌':'19:00-21:00','亥':'21:00-23:00'
+};
+
+// He Luo patterns (mock — Jarvis to integrate real)
+const HELUO_PATTERNS = [
+  { name:'三財',     th:'ทรัพย์เด่น',          score:88 },
+  { name:'二財一旺', th:'ทรัพย์+รุ่ง',         score:85 },
+  { name:'二財一恩', th:'ทรัพย์+อุปถัมภ์',     score:82 },
+  { name:'一財二旺', th:'ทรัพย์+พลังเติบโต',   score:79 },
+  { name:'生扶',     th:'ก่อเกิด·หนุนกัน',     score:73 },
+  { name:'比和',     th:'คู่ธาตุ·สมดุล',       score:65 },
+  { name:'相剋',     th:'ปะทะ·เสียพลัง',       score:35 }
+];
+
+// Hex names (subset)
+const HEX_SAMPLES = [
+  { num:11, name:'泰', th:'สงบเจริญ', tag:'ok' },
+  { num:1,  name:'乾', th:'สร้างสรรค์', tag:'ok' },
+  { num:14, name:'大有', th:'ครอบครอง', tag:'ok' },
+  { num:34, name:'大壯', th:'พลังเข้ม', tag:'warn' },
+  { num:43, name:'夬', th:'ตัดสินใจฟันฝ่า', tag:'warn' },
+  { num:6,  name:'訟', th:'ขัดแย้ง', tag:'bad' },
+  { num:23, name:'剝', th:'แตกสลาย', tag:'bad' }
+];
+
+// Qi Men gates
+const QM_GATES = [
+  { name:'生',  type:'good',   desc:'ประตูเกิด · ลงทุน เริ่มงาน' },
+  { name:'開',  type:'good',   desc:'ประตูเปิด · เริ่ม/เปิด/ค้า' },
+  { name:'休',  type:'good',   desc:'ประตูพัก · พบปะ ผ่อนคลาย' },
+  { name:'景',  type:'mid',    desc:'ประตูสว่าง · เผยแพร่' },
+  { name:'杜',  type:'mid',    desc:'ประตูอุดตัน · เก็บตัว' },
+  { name:'傷',  type:'bad',    desc:'ประตูสะดุ้ง · บาดเจ็บ' },
+  { name:'死',  type:'bad',    desc:'ประตูตาย · หลีกเลี่ยง' },
+  { name:'驚',  type:'bad',    desc:'ประตูตื่น · ตกใจ' }
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+function init(){
+  // Default dates
+  const today = new Date();
+  const in30 = new Date(); in30.setDate(today.getDate() + 30);
+  document.getElementById('dateStart').value = today.toISOString().split('T')[0];
+  document.getElementById('dateEnd').value = in30.toISOString().split('T')[0];
+  state.dateStart = today.toISOString().split('T')[0];
+  state.dateEnd = in30.toISOString().split('T')[0];
+
+  state.people = JSON.parse(JSON.stringify(DEFAULT_PEOPLE));
+  renderPeople();
+
+  // Bind events
+  document.querySelectorAll('.act-btn').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.act-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    state.activity = b.dataset.act;
+  }));
+
+  document.getElementById('dateStart').addEventListener('change', e => state.dateStart = e.target.value);
+  document.getElementById('dateEnd').addEventListener('change', e => state.dateEnd = e.target.value);
+
+  document.querySelectorAll('.filter-item').forEach(item => {
+    const cb = item.querySelector('input[type="checkbox"]');
+    cb.addEventListener('change', () => {
+      const f = item.dataset.filter;
+      state.filters[f] = cb.checked;
+      item.classList.toggle('active', cb.checked);
+    });
+    // prevent sub-clicks from toggling parent
+    item.querySelectorAll('.filter-sub').forEach(sub => {
+      sub.addEventListener('click', e => e.stopPropagation());
+    });
+  });
+
+  document.querySelectorAll('[data-qm]').forEach(p => p.addEventListener('click', () => {
+    document.querySelectorAll('[data-qm]').forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    state.qmCalc = p.dataset.qm;
+  }));
+
+  document.getElementById('btnSearch').addEventListener('click', performSearch);
+}
+
+function renderPeople(){
+  const c = document.getElementById('peopleMini');
+  c.innerHTML = state.people.map((p,i) => `
+    <label class="person-mini">
+      <input type="checkbox" ${p.enabled?'checked':''} onchange="state.people[${i}].enabled=this.checked"/>
+      <span class="nm">${p.name}</span>
+      <span class="stats">DM <span class="han">${p.dm}</span> · 支 <span class="han">${p.branch}</span> · Kua ${p.kua}</span>
+    </label>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SEARCH (mock — Jarvis to replace with real engine calls)
+// ═══════════════════════════════════════════════════════════════
+function performSearch(){
+  const btn = document.getElementById('btnSearch');
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังค้นหา...';
+  document.getElementById('resultsList').innerHTML = '<div class="loading"><div class="spinner"></div>กำลังกรองวัน + ยาม ผ่าน 5 layers...</div>';
+
+  setTimeout(() => {
+    const results = mockSearch();
+    renderFunnel(results.funnel);
+    renderResults(results.candidates);
+    btn.disabled = false;
+    btn.textContent = '⚡ ค้นหาฤกษ์';
+    document.getElementById('resultsMeta').innerHTML = 
+      `กิจกรรม <b>${ACTIVITY_RULES[state.activity].han}</b> · พบ <b>${results.candidates.length}</b> ฤกษ์`;
+  }, 700);
+}
+
+function mockSearch(){
+  const start = new Date(state.dateStart);
+  const end = new Date(state.dateEnd);
+  const days = Math.round((end - start) / 86400000) + 1;
+  const totalShichen = days * 12;
+
+  // Mock funnel
+  let remaining = totalShichen;
+  const funnel = [
+    { name:'總計 ทั้งหมด', han:'總', count:totalShichen, type:'gold' }
+  ];
+  if(state.filters.tongshu){
+    remaining = Math.round(remaining * 0.45);
+    funnel.push({ name:'通書 Tong Shu', han:'通書', count:remaining, type:'bad' });
+  }
+  if(state.filters.bazi){
+    remaining = Math.round(remaining * 0.7);
+    funnel.push({ name:'八字 Ba Zi', han:'八字', count:remaining, type:'bad' });
+  }
+  if(state.filters.qimen){
+    remaining = Math.round(remaining * 0.55);
+    funnel.push({ name:'奇門 Qi Men', han:'奇門', count:remaining, type:'warn' });
+  }
+  if(state.filters.heluo){
+    remaining = Math.round(remaining * 0.6);
+    funnel.push({ name:'河洛 He Luo', han:'河洛', count:remaining, type:'ok' });
+  }
+
+  // Generate mock candidates
+  const candidates = [];
+  const sampleCount = Math.min(remaining, 12);
+  for(let i = 0; i < sampleCount; i++){
+    const dayOffset = Math.floor(Math.random() * days);
+    const d = new Date(start); d.setDate(d.getDate() + dayOffset);
+    const sh = SHICHEN[Math.floor(Math.random()*12)];
+    const heluo = HELUO_PATTERNS[Math.floor(Math.random()*4)]; // bias to good
+    const hex = HEX_SAMPLES[Math.floor(Math.random()*HEX_SAMPLES.length)];
+    const gate = QM_GATES[Math.floor(Math.random()*4)]; // bias good
+
+    const tags = ['通書 宜','八字 ✓'];
+    if(state.filters.qimen) tags.push(`${gate.name}門`);
+    if(state.filters.heluo) tags.push(heluo.name);
+    if(state.filters.hex) tags.push(`${hex.name}卦`);
+
+    candidates.push({
+      date: d.toISOString().split('T')[0],
+      dateThai: formatThaiDate(d),
+      shichen: sh,
+      shichenTime: SHICHEN_TIME[sh],
+      score: heluo.score + Math.floor(Math.random()*5) - 2,
+      tags,
+      tongshu: { yi: ACTIVITY_RULES[state.activity].han, ji: '無', verdict:'ok' },
+      bazi: state.people.filter(p=>p.enabled).map(p => ({
+        name: p.name,
+        clash: Math.random()<0.15 ? '沖' : null,
+        verdict: Math.random()<0.15 ? 'bad' : 'ok'
+      })),
+      qimen: { gate: gate.name, gateType: gate.type, gateDesc: gate.desc, star:'天蓬', deity:'值符' },
+      heluo: heluo,
+      hex: hex
+    });
+  }
+  candidates.sort((a,b) => b.score - a.score);
+
+  return { funnel, candidates };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER FUNNEL
+// ═══════════════════════════════════════════════════════════════
+function renderFunnel(rows){
+  const f = document.getElementById('funnel');
+  f.style.display = 'block';
+  const max = rows[0].count;
+  document.getElementById('funnelTotal').textContent = `${rows[rows.length-1].count} / ${max} ผ่าน`;
+  document.getElementById('funnelRows').innerHTML = rows.map(r => `
+    <div class="funnel-row">
+      <span class="name"><span class="han">${r.han}</span></span>
+      <div class="bar"><div class="fill ${r.type==='bad'?'bad':r.type==='warn'?'warn':r.type==='ok'?'ok':''}" style="width:${(r.count/max)*100}%"></div></div>
+      <span class="count">เหลือ <b>${r.count}</b> ยาม</span>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER RESULTS
+// ═══════════════════════════════════════════════════════════════
+function renderResults(items){
+  const c = document.getElementById('resultsList');
+  if(items.length === 0){
+    c.innerHTML = `
+      <div class="empty-state">
+        <div class="ic">⚠️</div>
+        <h4>ไม่พบฤกษ์ที่ผ่านทุกเกณฑ์</h4>
+        <p>ลองขยายช่วงวัน · ลดเกณฑ์กรอง · หรือลด strict mode ใน Qi Men</p>
+      </div>`;
+    return;
+  }
+
+  c.innerHTML = items.map((it, idx) => `
+    <div class="result-row" data-idx="${idx}">
+      <div class="result-summary" onclick="toggleResult(${idx})">
+        <div class="result-rank">${idx+1}</div>
+        <div class="result-info">
+          <div class="result-date">${it.dateThai} <span class="han">時 ${it.shichen}</span></div>
+          <div class="result-meta">${it.shichenTime} · ${it.date}</div>
+        </div>
+        <div class="result-score">${it.score}<small>SCORE</small></div>
+        <div class="result-tags">${it.tags.map(t => `<span class="tag info">${t}</span>`).join('')}</div>
+        <span class="expand-arrow">▾</span>
+      </div>
+      <div class="result-detail">
+        <div class="detail-grid">
+          <div class="detail-cell">
+            <h5><span class="han">通書</span> Tong Shu</h5>
+            <div class="body">วันนี้ <i>宜 ${it.tongshu.yi}</i><small>ปฏิทินจีนรับรอง</small></div>
+          </div>
+          <div class="detail-cell">
+            <h5><span class="han">八字</span> Ba Zi</h5>
+            <div class="body">${it.bazi.map(p => `<div>${p.name} · ${p.clash?`<span style="color:var(--bad)">⚠ ${p.clash}</span>`:'<span style="color:var(--ok)">✓ ผ่าน</span>'}</div>`).join('')}</div>
+          </div>
+          <div class="detail-cell">
+            <h5><span class="han">奇門</span> Qi Men</h5>
+            <div class="body"><i>${it.qimen.gate}門</i> · ${it.qimen.star} · ${it.qimen.deity}<small>${it.qimen.gateDesc}</small></div>
+          </div>
+          <div class="detail-cell">
+            <h5><span class="han">河洛</span> He Luo</h5>
+            <div class="body"><i>${it.heluo.name}</i> · ${it.heluo.th}<small>Score: ${it.heluo.score}</small></div>
+          </div>
+          <div class="detail-cell">
+            <h5><span class="han">六十四卦</span> Hex</h5>
+            <div class="body"><i>${it.hex.num}. ${it.hex.name}</i> · ${it.hex.th}</div>
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="detail-btn primary">📌 บันทึกฤกษ์นี้</button>
+          <button class="detail-btn">🧭 ดูทิศจาก Qi Men</button>
+          <button class="detail-btn">📅 เพิ่มในปฏิทิน</button>
+          <button class="detail-btn">🤖 ขอ AI วิเคราะห์เพิ่ม</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleResult(idx){
+  document.querySelectorAll('.result-row').forEach(r => {
+    if(parseInt(r.dataset.idx) === idx) r.classList.toggle('expanded');
+    else r.classList.remove('expanded');
+  });
+}
+
+function formatThaiDate(d){
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()+543}`;
+}
+
+// init
+init();
+console.log('🐉 Date Picking · 擇吉 · loaded');
+</script>
+
+<script>
+/* HK Navbar · auto-active link · pattern เดียวกับ chart/today/network/qimen */
+(function(){
+  try {
+    var p = window.location.pathname.replace(/\/$/,'');
+    if (p === '/yongsennetwork') p = '/network';
+    document.querySelectorAll('#hk-topnav a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+  } catch(e){}
+})();
+</script>
+
+<script>
+/* hourkey · 3-language i18n pattern · TH/EN/ZH · ทุกหน้าใช้ key เดียวกัน */
+window.HK_I18N = window.HK_I18N || {};
+Object.assign(window.HK_I18N, {
+  'hk.nav.chart':   { th:'ดวง',       en:'Chart',    zh:'命盤' },
+  'hk.nav.today':   { th:'วันนี้',     en:'Today',    zh:'今日' },
+  'hk.nav.calendar':{ th:'ปฏิทิน',    en:'Calendar', zh:'吉曆' },
+  'hk.nav.network': { th:'เครือข่าย',  en:'Network',  zh:'人脈' },
+  'hk.nav.qimen':   { th:'ฉีเหมิน',   en:'Qi Men',   zh:'奇門' },
+  'hk.nav.master':  { th:'ซินแส',    en:'Sifu',     zh:'老師' },
+  'hk.nav.picker':  { th:'วางฤกษ์',   en:'Picker',   zh:'擇日' },
+  'hk.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  'hk.nav.goal':    { th:'เป้าหมาย',   en:'Goals',    zh:'志向' }
+});
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
+      }
+    });
+    document.querySelectorAll('[data-i18n-ph="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) el.setAttribute('placeholder', t[lang].replace(/<[^>]+>/g,''));
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+(function(){
+  var sw = document.getElementById('hk-theme-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(t){
+    document.documentElement.setAttribute('data-theme', t);
+    document.body.classList.toggle('light', t === 'light');
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.theme === t); });
+    try{ localStorage.setItem('hk-theme', t); }catch(e){}
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.theme); }); });
+  try{ var s = localStorage.getItem('hk-theme'); if (s) apply(s); else apply('dark'); }catch(e){ apply('dark'); }
+})();
+</script>
+
+</body>
+</html>
