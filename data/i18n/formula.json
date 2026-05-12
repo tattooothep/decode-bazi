@@ -1,0 +1,467 @@
+{
+  "_meta": {
+    "source": "Sheet 08 · Formula_JSON"
+  },
+  "formulas": {
+    "daily.§7.branch_interactions": {
+      "formula_id": "daily.§7.branch_interactions",
+      "module_id": "§7",
+      "scope": "daily",
+      "formula_type": "score+modifier",
+      "weight": 18.0,
+      "input_required": [
+        "natal_pillars",
+        "current_day_pillar",
+        "current_year_pillar",
+        "luck_pillar"
+      ],
+      "json_logic": {
+        "base_scores": {
+          "positive": {
+            "三會": 12,
+            "三合_化": 10,
+            "三合_no_化": 6,
+            "六合_化": 8,
+            "六合_no_化": 4,
+            "半三合_生地": 4,
+            "半三合_墓地": 2,
+            "拱合": 2,
+            "暗合": 2
+          },
+          "negative": {
+            "三刑_ครบ3": -15,
+            "三刑_2ตัว": -8,
+            "六沖": -13,
+            "自刑": -5,
+            "六破": -5,
+            "六害": -4
+          }
+        },
+        "position_modifier": {
+          "day_branch": 1.5,
+          "month_branch": 1.3,
+          "hour_branch": 1.2,
+          "year_branch": 1.0
+        },
+        "stack_modifier": {
+          "day_only": 1.0,
+          "day_year": 1.8,
+          "day_luck_pillar": 2.0,
+          "day_year_luck_pillar": 3.0
+        },
+        "map_to_weight": {
+          "-100..-50": "0..3.5",
+          "-50..-20": "3.5..7.4",
+          "-20..0": "7.4..10",
+          "0..40": "10..14",
+          "40..80": "14..18",
+          "80..100": "18..20"
+        }
+      },
+      "frontend_codes": [
+        "三會",
+        "三合",
+        "六合",
+        "六沖",
+        "六害",
+        "六破",
+        "三刑",
+        "自刑",
+        "拱合",
+        "暗合"
+      ],
+      "status": "draft",
+      "sinsae_note": "มี base score แล้ว รอซินแสตรวจ modifier และ mapping"
+    },
+    "daily.§2.elements_yongshen": {
+      "formula_id": "daily.§2.elements_yongshen",
+      "module_id": "§2",
+      "scope": "daily",
+      "formula_type": "weighted_element_fit",
+      "weight": 20.0,
+      "input_required": [
+        "day_master",
+        "chart_strength",
+        "yongshen",
+        "jishen",
+        "current_stem_branch",
+        "current_element"
+      ],
+      "json_logic": {
+        "rule": "score current day/month/hour element by relation to yongshen/jishen",
+        "scale": {
+          "strong_yongshen_match": 20,
+          "yongshen_support": 16,
+          "neutral": 10,
+          "jishen_support": 4,
+          "strong_jishen_match": 0
+        },
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "element_wood_good",
+        "element_fire_good",
+        "element_earth_good",
+        "element_metal_good",
+        "element_water_good",
+        "element_wood_bad",
+        "element_fire_bad",
+        "element_earth_bad",
+        "element_metal_bad",
+        "element_water_bad"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "ต้องให้ซินแสกำหนดวิธีหา Yongshen/Jishen ให้ชัด"
+    },
+    "daily.§9.ten_gods_theme": {
+      "formula_id": "daily.§9.ten_gods_theme",
+      "module_id": "§9",
+      "scope": "daily",
+      "formula_type": "ten_god_daily_theme",
+      "weight": 14.0,
+      "input_required": [
+        "day_master",
+        "current_stem",
+        "current_branch_hidden_stems",
+        "ten_gods_map"
+      ],
+      "json_logic": {
+        "rule": "identify dominant ten god of current day relative to day master and score theme usefulness",
+        "base_scale": {
+          "favorable": 14,
+          "neutral": 10,
+          "unfavorable": 4
+        },
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "正官",
+        "七殺",
+        "正印",
+        "偏印",
+        "正財",
+        "偏財",
+        "食神",
+        "傷官",
+        "比肩",
+        "劫財"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "ต้องระบุ favorable/unfavorable ตาม structure/yongshen"
+    },
+    "daily.§11.day_activity": {
+      "formula_id": "daily.§11.day_activity",
+      "module_id": "§11",
+      "scope": "daily",
+      "formula_type": "activity_recommendation",
+      "weight": 12.0,
+      "input_required": [
+        "target_hour",
+        "current_branch",
+        "activity_type",
+        "user_goal"
+      ],
+      "json_logic": {
+        "rule": "map 12 branches/hour energy to recommended activity",
+        "outputs": [
+          "work",
+          "money",
+          "meeting",
+          "health",
+          "travel",
+          "rest"
+        ],
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "activity_work",
+        "activity_money",
+        "activity_meeting",
+        "activity_health",
+        "activity_travel",
+        "activity_rest"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "ควรเพิ่ม frontend codes สำหรับกิจกรรมใน 3 ภาษา"
+    },
+    "daily.§18.qi_phase": {
+      "formula_id": "daily.§18.qi_phase",
+      "module_id": "§18",
+      "scope": "daily",
+      "formula_type": "phase_modifier",
+      "weight": 6.0,
+      "input_required": [
+        "day_master",
+        "current_branch"
+      ],
+      "json_logic": {
+        "phases": [
+          "長生",
+          "沐浴",
+          "冠帶",
+          "臨官",
+          "帝旺",
+          "衰",
+          "病",
+          "死",
+          "墓",
+          "絕",
+          "胎",
+          "養"
+        ],
+        "rule": "map day master to 12 qi phase on current branch",
+        "score_role": "modifier",
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "長生",
+        "沐浴",
+        "冠帶",
+        "臨官",
+        "帝旺",
+        "衰",
+        "病",
+        "死",
+        "墓",
+        "絕",
+        "胎",
+        "養"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "ต้องให้ซินแสกำหนดคะแนนแต่ละ phase ตาม chart strength"
+    },
+    "daily.§20.symbolic_stars": {
+      "formula_id": "daily.§20.symbolic_stars",
+      "module_id": "§20",
+      "scope": "daily",
+      "formula_type": "star_modifier",
+      "weight": 6.0,
+      "input_required": [
+        "natal_pillars",
+        "current_pillars",
+        "star_rules"
+      ],
+      "json_logic": {
+        "rule": "detect symbolic stars from natal/current pillars and apply small modifier",
+        "weight_policy": "low_to_prevent_overlap",
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "天乙貴人",
+        "桃花",
+        "驛馬",
+        "華蓋",
+        "空亡",
+        "羊刃"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "62 ดาวต้องมี code ครบ ไม่ใช่แค่ 6 ดาวหลัก"
+    },
+    "daily.§23.palace_impact": {
+      "formula_id": "daily.§23.palace_impact",
+      "module_id": "§23",
+      "scope": "daily",
+      "formula_type": "palace_context",
+      "weight": 10.0,
+      "input_required": [
+        "interaction_target_position",
+        "natal_pillars",
+        "current_pillars"
+      ],
+      "json_logic": {
+        "palaces": {
+          "year": "elders_family_public",
+          "month": "parents_career_boss",
+          "day": "self_partner",
+          "hour": "children_future_results"
+        },
+        "rule": "identify which natal palace is activated or harmed by current interaction",
+        "score_role": "context+modifier",
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "palace_year",
+        "palace_month",
+        "palace_day",
+        "palace_hour"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "สำคัญต่อการตอบว่า วันนี้กระทบเรื่องไหน"
+    },
+    "daily.§35.fanyin_fuyin": {
+      "formula_id": "daily.§35.fanyin_fuyin",
+      "module_id": "§35",
+      "scope": "daily",
+      "formula_type": "special_trigger",
+      "weight": 6.0,
+      "input_required": [
+        "natal_pillars",
+        "current_pillars",
+        "luck_pillar"
+      ],
+      "json_logic": {
+        "rule": "detect repeated/opposite pillar patterns 反吟/伏吟 and assign verdict",
+        "score_role": "special_trigger",
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "反吟",
+        "伏吟"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "ต้องเติม 27 verdict ให้ครบ"
+    },
+    "daily.§36.stem_combos": {
+      "formula_id": "daily.§36.stem_combos",
+      "module_id": "§36",
+      "scope": "daily",
+      "formula_type": "stem_combo_modifier",
+      "weight": 4.0,
+      "input_required": [
+        "natal_stems",
+        "current_stems",
+        "transformation_conditions"
+      ],
+      "json_logic": {
+        "pairs": {
+          "甲己": "土",
+          "乙庚": "金",
+          "丙辛": "水",
+          "丁壬": "木",
+          "戊癸": "火"
+        },
+        "rule": "detect heavenly stem combination and transformation condition",
+        "score_role": "small_modifier",
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "五合_甲己",
+        "五合_乙庚",
+        "五合_丙辛",
+        "五合_丁壬",
+        "五合_戊癸"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "ต้องระบุเงื่อนไข化/ไม่化"
+    },
+    "natal.§16.structure": {
+      "formula_id": "natal.§16.structure",
+      "module_id": "§16",
+      "scope": "natal",
+      "formula_type": "core_structure",
+      "weight": 18.0,
+      "input_required": [
+        "four_pillars",
+        "month_branch",
+        "day_master",
+        "ten_gods_map",
+        "root_strength"
+      ],
+      "json_logic": {
+        "rule": "detect chart structure 格局 from month command, ten gods, roots, transformations and special structures",
+        "score_role": "core_engine",
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "structure_summary"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "ต้องนิยาม 16 structures ให้ machine-readable"
+    },
+    "natal.§3.ten_gods_radar": {
+      "formula_id": "natal.§3.ten_gods_radar",
+      "module_id": "§3",
+      "scope": "natal",
+      "formula_type": "radar_distribution",
+      "weight": 15.0,
+      "input_required": [
+        "day_master",
+        "stems",
+        "hidden_stems",
+        "branch_weights"
+      ],
+      "json_logic": {
+        "rule": "calculate ten gods distribution from visible stems and hidden stems with branch weights",
+        "score_role": "core_engine",
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "tengods_dominant"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "ต้องกำหนดน้ำหนัก stem vs hidden stem"
+    },
+    "natal.§21.root_tou_gan": {
+      "formula_id": "natal.§21.root_tou_gan",
+      "module_id": "§21",
+      "scope": "natal",
+      "formula_type": "root_quality",
+      "weight": 14.0,
+      "input_required": [
+        "stems",
+        "branches",
+        "hidden_stems",
+        "season_strength"
+      ],
+      "json_logic": {
+        "rule": "evaluate whether visible stems have roots in branches/hidden stems and whether roots are strong by season",
+        "score_role": "core_engine",
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "root_quality",
+        "visible_vs_hidden"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "ใช้แยกพลังจริงกับพลังลอย"
+    },
+    "natal.§10.luck_pillars": {
+      "formula_id": "natal.§10.luck_pillars",
+      "module_id": "§10",
+      "scope": "natal",
+      "formula_type": "timeline",
+      "weight": 12.0,
+      "input_required": [
+        "birth_date",
+        "birth_time",
+        "gender",
+        "year_yinyang",
+        "solar_terms"
+      ],
+      "json_logic": {
+        "rule": "calculate 10-year luck pillars direction/start age and map each pillar to natal chart",
+        "score_role": "dynamic_context",
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "luck_pillars_summary"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "ต้องยืนยันสูตรเดินวัยจรตามสำนัก"
+    },
+    "natal.§5.visible_stems": {
+      "formula_id": "natal.§5.visible_stems",
+      "module_id": "§5",
+      "scope": "natal",
+      "formula_type": "visible_stem_analysis",
+      "weight": 10.0,
+      "input_required": [
+        "year_stem",
+        "month_stem",
+        "day_stem",
+        "hour_stem",
+        "ten_gods_map"
+      ],
+      "json_logic": {
+        "rule": "analyze visible heavenly stems 透干 and their ten-god roles",
+        "score_role": "core_engine",
+        "requires_sinsae_formula": true
+      },
+      "frontend_codes": [
+        "visible_stems"
+      ],
+      "status": "needs_sinsae",
+      "sinsae_note": "แยกจาก hidden stems เพื่อไม่ให้ซ้ำซ้อน"
+    }
+  }
+}
