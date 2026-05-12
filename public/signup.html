@@ -177,20 +177,26 @@
       var form = e.target;
       var input = form.querySelector('input');
       var msg = form.querySelector('.hk-forgot-msg');
-      var email = (input.value || '').trim();
-      if (!email || email.indexOf('@') < 0) { input.focus(); return false; }
+      var identifier = (input.value || '').trim();
+      var phone = identifier.replace(/[\s-]/g, '');
+      var isEmail = identifier.indexOf('@') >= 0;
+      var isPhone = /^(\+?66|0)[689]\d{8}$/.test(phone);
+      if (!identifier || (!isEmail && !isPhone)) { input.focus(); return false; }
       msg.textContent = 'กำลังส่ง...';
       msg.className = 'hk-forgot-msg';
       try {
         var r = await fetch('/api/auth/forgot-password', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email })
+          body: JSON.stringify(isEmail ? { email: identifier } : { phone: phone })
         });
         if (r.ok) {
-          msg.textContent = '✓ ส่งลิงก์เรียบร้อย · ตรวจกล่องอีเมลของคุณ (อายุลิงก์ 1 ชม.)';
+          msg.textContent = isEmail
+            ? '✓ ส่งลิงก์เรียบร้อย · ตรวจกล่องอีเมลของคุณ'
+            : '✓ ส่งลิงก์เรียบร้อย · ตรวจข้อความในมือถือของคุณ';
           msg.classList.add('ok');
         } else {
-          msg.textContent = '⚠ ส่งไม่สำเร็จ · ลองใหม่หรือติดต่อ LINE @hourkey';
+          var j = await r.json().catch(function(){ return {}; });
+          msg.textContent = '⚠ ' + (j.error || 'ส่งไม่สำเร็จ · ลองใหม่หรือติดต่อ LINE @hourkey');
         }
       } catch(_) {
         msg.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
@@ -535,9 +541,9 @@ window.HK_I18N = {
                      zh:'註冊即表示同意 <a href="#">條款</a> · <a href="#">隱私</a>' },
   'fp.eye':        { th:'RESET PASSWORD · 重設密碼', en:'RESET PASSWORD · 重設密碼', zh:'重設密碼' },
   'fp.h3':         { th:'ลืมรหัสผ่าน?', en:'Forgot password?', zh:'忘記密碼？' },
-  'fp.sub':        { th:'กรอกอีเมลที่ใช้สมัคร · เราจะส่งลิงก์รีเซ็ตรหัสให้ในไม่กี่นาที',
-                     en:'Enter your registered email · we\'ll send a reset link in minutes',
-                     zh:'輸入註冊電郵 · 數分鐘內發送重設連結' },
+  'fp.sub':        { th:'กรอกอีเมลหรือเบอร์โทรที่ใช้สมัคร · เราจะส่งลิงก์รีเซ็ตรหัสให้ในไม่กี่นาที',
+                     en:'Enter your registered email or phone · we\'ll send a reset link in minutes',
+                     zh:'輸入註冊電郵或手機 · 數分鐘內發送重設連結' },
   'fp.submit':     { th:'ส่งลิงก์รีเซ็ต →', en:'Send reset link →', zh:'發送重設連結 →' },
   'fp.or':         { th:'หรือ', en:'or', zh:'或' },
   'fp.line':       { th:'📱 ติดต่อทีมที่ LINE @hourkey', en:'📱 Contact us on LINE @hourkey', zh:'📱 LINE @hourkey 聯絡' }
@@ -575,9 +581,9 @@ window.applyI18N = applyI18N;
     <button class="hk-forgot-close" onclick="document.getElementById('hk-forgot-modal').classList.remove('show')">×</button>
     <div class="hk-forgot-eye" data-i18n="fp.eye">RESET PASSWORD · 重設密碼</div>
     <h3 data-i18n="fp.h3">ลืมรหัสผ่าน?</h3>
-    <p data-i18n="fp.sub">กรอกอีเมลที่ใช้สมัคร · เราจะส่งลิงก์รีเซ็ตรหัสให้ในไม่กี่นาที</p>
+    <p data-i18n="fp.sub">กรอกอีเมลหรือเบอร์โทรที่ใช้สมัคร · เราจะส่งลิงก์รีเซ็ตรหัสให้ในไม่กี่นาที</p>
     <form class="hk-forgot-form" id="hk-forgot-form" onsubmit="return hkForgotSubmit(event);">
-      <input type="email" placeholder="อีเมลที่สมัครไว้ · you@hourkey.io" required/>
+      <input type="text" placeholder="อีเมลหรือเบอร์โทร · you@hourkey.io / 08x-xxx-xxxx" required/>
       <button type="submit" data-i18n="fp.submit">ส่งลิงก์รีเซ็ต →</button>
       <div class="hk-forgot-msg"></div>
     </form>
