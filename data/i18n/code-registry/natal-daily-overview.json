@@ -1,0 +1,169 @@
+{
+  "_meta": {
+    "name": "Natal + Daily Overview Text Code Registry",
+    "version": "batch10-skeleton-v1",
+    "purpose": "Reserved text_codes for Batch 10 Composer (Natal Overview + Daily Personalized Overview)",
+    "scope": "code-only · NO translation / forecast / narrative",
+    "wait_for": "GPT Batch 10 text content + sinsae approval before production",
+    "produced_by": "dev (infra) · NOT for translation work"
+  },
+  "groups": {
+    "natal_dm_type": {
+      "scope": "natal",
+      "module_id": "§1",
+      "description_code": "code-only · text from Batch 10",
+      "codes": [
+        "natal_dm_yang_wood",
+        "natal_dm_yin_wood",
+        "natal_dm_yang_fire",
+        "natal_dm_yin_fire",
+        "natal_dm_yang_earth",
+        "natal_dm_yin_earth",
+        "natal_dm_yang_metal",
+        "natal_dm_yin_metal",
+        "natal_dm_yang_water",
+        "natal_dm_yin_water"
+      ]
+    },
+    "natal_dm_strength": {
+      "scope": "natal",
+      "module_id": "§8",
+      "codes": [
+        "natal_dm_strong",
+        "natal_dm_weak",
+        "natal_dm_balanced",
+        "natal_dm_follow_structure",
+        "natal_dm_special_structure"
+      ]
+    },
+    "natal_element_balance": {
+      "scope": "natal",
+      "module_id": "§2",
+      "codes": [
+        "natal_element_wood_high",
+        "natal_element_fire_high",
+        "natal_element_earth_high",
+        "natal_element_metal_high",
+        "natal_element_water_high",
+        "natal_element_wood_low",
+        "natal_element_fire_low",
+        "natal_element_earth_low",
+        "natal_element_metal_low",
+        "natal_element_water_low"
+      ]
+    },
+    "natal_overview_composer": {
+      "scope": "natal",
+      "module_id": "§1",
+      "codes": [
+        "natal_overview_intro",
+        "natal_core_pattern",
+        "natal_strength_summary",
+        "natal_element_summary",
+        "natal_yongshen_summary",
+        "natal_life_strategy",
+        "natal_caution_summary",
+        "natal_next_sections_hint"
+      ]
+    },
+    "daily_natal_interaction": {
+      "scope": "daily",
+      "module_id": "§4",
+      "codes": [
+        "daily_supports_natal",
+        "daily_challenges_natal",
+        "daily_mixed_with_natal"
+      ]
+    },
+    "daily_yongshen_jishen": {
+      "scope": "daily",
+      "module_id": "§2",
+      "codes": [
+        "daily_yongshen_supported",
+        "daily_jishen_activated"
+      ]
+    },
+    "daily_dm_effect": {
+      "scope": "daily",
+      "module_id": "§8",
+      "codes": [
+        "daily_dm_strengthened",
+        "daily_dm_weakened"
+      ]
+    },
+    "daily_overview_composer": {
+      "scope": "daily",
+      "module_id": "§4",
+      "codes": [
+        "daily_overview_intro",
+        "daily_best_strategy",
+        "daily_personalized_warning",
+        "daily_activity_match",
+        "daily_hourkey_focus"
+      ]
+    }
+  },
+  "stem_to_dm_code": {
+    "甲": "natal_dm_yang_wood",
+    "乙": "natal_dm_yin_wood",
+    "丙": "natal_dm_yang_fire",
+    "丁": "natal_dm_yin_fire",
+    "戊": "natal_dm_yang_earth",
+    "己": "natal_dm_yin_earth",
+    "庚": "natal_dm_yang_metal",
+    "辛": "natal_dm_yin_metal",
+    "壬": "natal_dm_yang_water",
+    "癸": "natal_dm_yin_water"
+  },
+  "stem_to_yin_yang": {
+    "甲": "yang", "丙": "yang", "戊": "yang", "庚": "yang", "壬": "yang",
+    "乙": "yin",  "丁": "yin",  "己": "yin",  "辛": "yin",  "癸": "yin"
+  },
+  "stem_to_element": {
+    "甲": "wood", "乙": "wood",
+    "丙": "fire", "丁": "fire",
+    "戊": "earth", "己": "earth",
+    "庚": "metal", "辛": "metal",
+    "壬": "water", "癸": "water"
+  },
+  "strength_to_code": {
+    "strong": "natal_dm_strong",
+    "very_strong": "natal_dm_strong",
+    "extremely_strong": "natal_dm_strong",
+    "slightly_strong": "natal_dm_strong",
+    "balanced": "natal_dm_balanced",
+    "weak": "natal_dm_weak",
+    "very_weak": "natal_dm_weak",
+    "extremely_weak": "natal_dm_weak",
+    "slightly_weak": "natal_dm_weak",
+    "follow": "natal_dm_follow_structure",
+    "follow_wealth": "natal_dm_follow_structure",
+    "follow_official": "natal_dm_follow_structure",
+    "follow_output": "natal_dm_follow_structure",
+    "follow_seal": "natal_dm_follow_structure",
+    "special": "natal_dm_special_structure"
+  },
+  "element_high_codes": {
+    "wood": "natal_element_wood_high",
+    "fire": "natal_element_fire_high",
+    "earth": "natal_element_earth_high",
+    "metal": "natal_element_metal_high",
+    "water": "natal_element_water_high"
+  },
+  "element_low_codes": {
+    "wood": "natal_element_wood_low",
+    "fire": "natal_element_fire_low",
+    "earth": "natal_element_earth_low",
+    "metal": "natal_element_metal_low",
+    "water": "natal_element_water_low"
+  },
+  "daily_relation_to_code": {
+    "supports": "daily_supports_natal",
+    "challenges": "daily_challenges_natal",
+    "mixed": "daily_mixed_with_natal"
+  },
+  "daily_dm_effect_to_code": {
+    "strengthen": "daily_dm_strengthened",
+    "weaken": "daily_dm_weakened"
+  }
+}
