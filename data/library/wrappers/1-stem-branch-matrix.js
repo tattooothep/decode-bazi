@@ -14,6 +14,11 @@
 const S = require('./shared');
 const { TEN_GOD_NAME, trans } = require('./narrative');
 
+/* 19 พ.ค. Option α (Codex-approved) · 4p byte-equal · 3p filters hour */
+function activePositions(natal) {
+  return ['year','month','day','hour'].filter(p => natal[p]);
+}
+
 // ─── helpers ─────────────────────────────────────────────────
 function isStemHe(s1, s2) {
   // 5 combinations: 甲己 乙庚 丙辛 丁壬 戊癸
@@ -50,8 +55,8 @@ function findSanHui(targetBranch, natalBranches) {
 
 // ─── core ────────────────────────────────────────────────────
 function buildStemMatrix(natal) {
-  // natal: {year:{stem,branch},month,day,hour}
-  const positions = ['year','month','day','hour'];
+  // natal: {year:{stem,branch},month,day,hour|null}
+  const positions = activePositions(natal);
   const matrix = {};
   for (const stem of S.STEMS) {
     matrix[stem] = [];
@@ -105,7 +110,7 @@ function buildStemMatrix(natal) {
 }
 
 function buildBranchMatrix(natal) {
-  const positions = ['year','month','day','hour'];
+  const positions = activePositions(natal);
   const natalBranches = positions.map(p => natal[p].branch);
   const matrix = {};
   for (const branch of S.BRANCHES) {

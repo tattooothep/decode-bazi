@@ -10,6 +10,11 @@
 const S = require('./shared');
 const { CRISIS_NAME, ELEMENT_NAME } = require('./narrative');
 
+/* 19 พ.ค. Option α (Codex-approved) · 4p byte-equal · 3p filters hour */
+function activePositions(natal) {
+  return ['year','month','day','hour'].filter(p => natal[p]);
+}
+
 // Map climate → regulating element
 const CLIMATE_REGULATOR = {
   cold:     'fire',   // หนาว → ใช้ไฟอุ่น
@@ -45,7 +50,7 @@ function detectClimate(natal) {
 }
 
 function elementCounts(natal) {
-  const positions = ['year','month','day','hour'];
+  const positions = activePositions(natal);
   const counts = { wood:0, fire:0, earth:0, metal:0, water:0 };
   for (const pos of positions) {
     counts[S.STEM_ELEMENT[natal[pos].stem]]++;

@@ -4,7 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>hourkey · ดวงของคุณ</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
   :root{
     --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12);
@@ -56,7 +61,8 @@
   .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, var(--earth), var(--gold));display:flex;align-items:center;justify-content:center;color:var(--bg);font-family:var(--tc);font-size:14px;font-weight:700;border:1px solid var(--gold-line);}
 
   /* layout */
-  .stage{max-width:1280px;margin:0 auto;padding:32px 40px 80px;}
+  .stage{max-width:1280px;margin:0 auto;padding:32px 40px 80px;opacity:0;transition:opacity .28s ease-out;}
+  html[data-live="1"] .stage{opacity:1;}
   .crumb{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-faint);margin-bottom:14px;}
   .crumb a{color:var(--fg-soft);text-decoration:none;}
   .crumb a:hover{color:var(--gold);}
@@ -79,8 +85,39 @@
   .lede b{color:var(--fg);font-weight:600;}
 
   .dm-card{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;padding:28px;text-align:center;backdrop-filter:blur(8px);}
+  /* 19 พ.ค. · rootedness accordion ใต้ meter · ภาษาซินแสอธิบายทำไม % เป็นเท่านี้ */
+  .rootedness-explain{margin-top:16px;text-align:left;}
+  .rootedness-explain details{background:rgba(0,0,0,.18);border:1px solid var(--gold-line);border-radius:10px;padding:0;overflow:hidden;}
+  [data-theme="light"] .rootedness-explain details{background:rgba(0,0,0,.04);}
+  .rootedness-explain summary{cursor:pointer;padding:10px 14px;font-size:12px;color:var(--gold);font-weight:600;letter-spacing:.04em;list-style:none;display:flex;align-items:center;justify-content:space-between;}
+  .rootedness-explain summary::-webkit-details-marker{display:none;}
+  .rootedness-explain summary::after{content:'▼';font-size:10px;opacity:.6;transition:transform .2s;}
+  .rootedness-explain details[open] summary::after{transform:rotate(180deg);}
+  .rootedness-explain .re-body{padding:4px 14px 14px;display:flex;flex-direction:column;gap:10px;}
+  .rootedness-explain .re-row{padding:8px 10px;border-radius:8px;background:rgba(0,0,0,.15);}
+  [data-theme="light"] .rootedness-explain .re-row{background:rgba(0,0,0,.03);}
+  .rootedness-explain .re-row.is-dm{border-left:3px solid var(--gold);background:rgba(184,154,94,.10);}
+  .rootedness-explain .re-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px;}
+  .rootedness-explain .re-elem{font-weight:700;font-size:13px;color:var(--fg,#e9dfc8);}
+  .rootedness-explain .re-pct{font-family:var(--mono,monospace);font-size:12px;color:var(--gold);}
+  .rootedness-explain .re-label{font-size:10px;color:var(--fg-soft,#8aa);letter-spacing:.04em;text-transform:uppercase;}
+  .rootedness-explain .re-summary{font-size:12px;color:var(--fg,#e9dfc8);margin:2px 0 6px;line-height:1.4;}
+  .rootedness-explain .re-sources{font-size:11px;color:var(--fg-soft,#8aa);padding-left:14px;line-height:1.5;}
+  .rootedness-explain .re-sources li{margin-bottom:2px;list-style:'· ';padding-left:4px;}
   .dm-card .dm-label{font-family:var(--mono);font-size:10px;letter-spacing:.32em;color:var(--gold);margin-bottom:12px;text-transform:uppercase;}
   .dm-glyph{display:inline-flex;align-items:center;justify-content:center;width:128px;height:128px;background:var(--earth-bg);border:2px solid var(--earth);border-radius:14px;font-family:var(--tc);font-size:84px;font-weight:700;color:var(--earth);box-shadow:0 6px 0 var(--earth-deep);margin-bottom:14px;}
+  /* DM glyph สีตามธาตุของเจ้าชะตา · ตรงกับเสาในหมวด 02 */
+  .dm-glyph.wood{background:var(--wood-bg);border-color:var(--wood);color:var(--wood);box-shadow:0 6px 0 var(--wood-deep);}
+  .dm-glyph.fire{background:var(--fire-bg);border-color:var(--fire);color:var(--fire);box-shadow:0 6px 0 var(--fire-deep);}
+  .dm-glyph.earth{background:var(--earth-bg);border-color:var(--earth);color:var(--earth);box-shadow:0 6px 0 var(--earth-deep);}
+  .dm-glyph.metal{background:var(--metal-bg);border-color:var(--metal);color:var(--metal);box-shadow:0 6px 0 var(--metal-deep);}
+  .dm-glyph.water{background:var(--water-bg);border-color:var(--water);color:var(--water);box-shadow:0 6px 0 var(--water-deep);}
+  /* DM name สีตามธาตุด้วย */
+  .dm-name.wood{color:var(--wood);}
+  .dm-name.fire{color:var(--fire);}
+  .dm-name.earth{color:var(--earth);}
+  .dm-name.metal{color:var(--metal);}
+  .dm-name.water{color:var(--water);}
   .dm-name{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--earth);margin-bottom:4px;}
   .dm-th{font-family:var(--thai);font-size:13px;color:var(--fg-soft);margin-bottom:14px;}
   .strength{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px;}
@@ -101,9 +138,8 @@
   .sec-head h2{font-family:var(--serif);font-size:32px;font-weight:400;letter-spacing:-.01em;}
   .sec-head h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;font-size:24px;margin-right:8px;}
   .sec-head .sub{font-size:13px;color:var(--fg-soft);}
-
   /* §2 elements */
-  .el-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:24px;}
+  .el-grid{display:grid;grid-template-columns:1fr;gap:24px;}
   .el-list{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:24px;}
   .el-row{display:grid;grid-template-columns:64px 90px 1fr 60px 70px;align-items:center;gap:14px;padding:10px 0;border-bottom:1px dashed var(--tile-bd);}
   .el-row:last-child{border-bottom:none;}
@@ -138,17 +174,27 @@
   .yong-card .av-row .ty{color:var(--fire);}
 
   /* §3 ten gods radar */
+  /* §03 LIFE DOMAINS · colorful redesign */
+  .dom-career  { --c:#4a9eff; --cb:#2e6cb8; --cbg:rgba(74,158,255,.10); }
+  .dom-wealth  { --c:#f4c842; --cb:#a8830d; --cbg:rgba(244,200,66,.12); }
+  .dom-love    { --c:#ff6b8a; --cb:#c4435f; --cbg:rgba(255,107,138,.10); }
+  .dom-arts    { --c:#b88dff; --cb:#7c52c4; --cbg:rgba(184,141,255,.10); }
+  .dom-self    { --c:#7dd37b; --cb:#4ea050; --cbg:rgba(125,211,123,.10); }
   .gods-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:32px;align-items:center;}
   .radar-wrap{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:24px;display:flex;justify-content:center;align-items:center;}
   .radar{width:100%;max-width:380px;aspect-ratio:1/1;}
-  .gods-list{display:flex;flex-direction:column;gap:14px;}
-  .god-row{display:grid;grid-template-columns:140px 1fr 60px;align-items:center;gap:14px;padding:14px 18px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:10px;}
-  .god-row b{font-family:var(--thai);font-size:14px;color:var(--fg);display:block;}
+  .gods-list{display:flex;flex-direction:column;gap:12px;}
+  .god-row{display:grid;grid-template-columns:46px 140px 1fr 64px;align-items:center;gap:14px;padding:14px 18px;background:var(--cbg,var(--tile));border:1px solid var(--c,var(--tile-bd));border-left:5px solid var(--c,var(--gold));border-radius:12px;transition:.25s;}
+  .god-row:hover{transform:translateX(3px);box-shadow:0 4px 12px var(--cbg);}
+  .god-row .god-ico{font-size:28px;text-align:center;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:#0d0f1244;border:1px solid var(--c);border-radius:50%;}
+  body.light .god-row .god-ico{background:#ffffff88;}
+  .god-row b{font-family:var(--thai);font-size:14px;color:var(--c,var(--fg));display:block;font-weight:700;}
   .god-row span{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-soft);text-transform:uppercase;}
-  .god-bar{height:8px;background:var(--bg);border-radius:99px;overflow:hidden;}
-  .god-bar i{display:block;height:100%;background:linear-gradient(90deg, var(--gold-deep), var(--gold));border-radius:99px;}
-  .god-lvl{text-align:right;font-family:var(--mono);font-size:11px;font-weight:700;}
-  .god-lvl.high{color:var(--gold);}
+  .god-bar{height:10px;background:#0d0f1244;border-radius:99px;overflow:hidden;border:1px solid var(--c);}
+  body.light .god-bar{background:#0d0f1211;}
+  .god-bar i{display:block;height:100%;background:linear-gradient(90deg, var(--cb,var(--gold-deep)), var(--c,var(--gold)));border-radius:99px;transition:.6s;box-shadow:0 0 12px var(--c);}
+  .god-lvl{text-align:right;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.04em;}
+  .god-lvl.high{color:var(--c,var(--gold));}
   .god-lvl.mid{color:var(--fg);}
   .god-lvl.low{color:var(--fg-faint);}
 
@@ -188,6 +234,70 @@
   .pillar .qi{text-align:center;font-family:var(--thai);font-size:11px;color:var(--fg-soft);}
   .pillar .qi b{color:var(--fg);font-family:var(--tc);font-size:13px;}
   .pillar .pillar-toggle{margin-top:12px;text-align:center;font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;cursor:pointer;padding-top:10px;border-top:1px dashed var(--tile-bd);}
+
+  /* §02 four pillars TABLE (G2 · Joey Yap-style) */
+  .pillar-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--tile-bd);border-radius:14px;background:var(--tile);}
+  .pillar-table{width:100%;min-width:680px;border-collapse:collapse;font-family:var(--thai);}
+  .pillar-table th, .pillar-table td{border-bottom:1px solid var(--tile-bd);padding:10px 12px;vertical-align:top;text-align:center;}
+  .pillar-table tr:last-child td{border-bottom:none;}
+  .pillar-table thead th{background:var(--bg-2);font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;padding:14px 8px;}
+  .pillar-table thead th .tc{font-family:var(--tc);font-size:14px;font-weight:700;color:var(--gold);margin-right:6px;}
+  .pillar-table tbody th{background:var(--bg-2);text-align:right;width:120px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-soft);text-transform:uppercase;padding-right:14px;font-weight:500;}
+  .pillar-table tbody th .tc{font-family:var(--tc);font-size:13px;color:var(--gold);margin-right:4px;}
+  .pillar-table thead th.col-day,
+  .pillar-table tbody td.col-day{background:var(--gold-soft);}
+  .pillar-table thead th.col-day{color:var(--gold);font-weight:700;}
+  .pillar-table tbody td.col-day{border-left:1px solid var(--gold-line);border-right:1px solid var(--gold-line);}
+  .pillar-table tbody tr:last-child td.col-day{border-bottom:1px solid var(--gold-line);}
+  .pt-glyph{font-family:var(--tc);font-size:30px;font-weight:700;line-height:1.1;display:block;}
+  .pt-glyph.wood{color:var(--wood);}
+  .pt-glyph.fire{color:var(--fire);}
+  .pt-glyph.earth{color:var(--earth);}
+  .pt-glyph.metal{color:var(--metal);}
+  .pt-glyph.water{color:var(--water);}
+  .pt-sub{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--fg-faint);margin-top:4px;text-transform:uppercase;}
+  .pt-sub-th{display:block;font-family:var(--thai);font-size:10px;color:var(--fg-soft);margin-top:2px;}
+  .pt-tag{display:inline-block;padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--fg-soft);background:var(--bg);border:1px solid var(--tile-bd);margin-top:4px;text-transform:uppercase;}
+  .pt-stack{display:flex;flex-direction:column;gap:6px;align-items:center;}
+  .pt-stack-line{display:flex;align-items:baseline;justify-content:center;gap:4px;font-family:var(--tc);font-size:13px;}
+  .pt-stack-line .el{font-size:10px;color:var(--fg-faint);}
+  .pt-stack-line .god{font-family:var(--thai);font-size:10px;color:var(--fg-soft);}
+  .pt-phases{display:grid;grid-template-rows:repeat(3,1fr);gap:3px;font-family:var(--tc);font-size:12px;}
+  .pt-phases > div{display:flex;justify-content:center;gap:6px;align-items:baseline;}
+  .pt-phases .lab{font-family:var(--mono);font-size:8px;color:var(--fg-faint);letter-spacing:.1em;}
+  .pt-star{display:inline-block;padding:2px 6px;border-radius:4px;font-family:var(--tc);font-size:10px;margin:1px 2px;border:1px solid;}
+  .pt-star.good{color:var(--wood);border-color:var(--wood);background:var(--wood-bg);}
+  .pt-star.bad{color:var(--fire);border-color:var(--fire);background:var(--fire-bg);}
+  .pt-star.neutral{color:var(--gold);border-color:var(--gold-line);background:var(--gold-soft);}
+  /* 📜 hex natal cell · row ใหม่ใต้ palace · 15 พ.ค. */
+  .pt-hex-sym{display:block;font-family:'Noto Sans Symbols','Source Han Sans',serif;font-size:36px;line-height:1;color:#fff;text-align:center;text-shadow:0 0 6px rgba(255,255,255,.18);margin-bottom:4px;}
+  body.light .pt-hex-sym{color:#1a1a1a;text-shadow:0 0 4px rgba(0,0,0,.10);}
+  .pt-hex-num{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase;}
+  .pt-hex-zh{display:block;font-family:var(--tc);font-size:14px;font-weight:600;color:var(--fg);margin-top:2px;}
+  .pt-hex-th{display:block;font-family:var(--thai);font-size:10px;color:var(--fg-soft);margin-top:1px;}
+  .pt-star-anchor{display:inline-block;margin-left:4px;padding:1px 4px;border-radius:3px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.05em;background:var(--gold);color:#0d0f12;vertical-align:middle;}
+  body.light .pt-star-anchor{background:#c8a44d;color:#fff;}
+  .pt-void{display:inline-block;padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--fire);border:1px solid var(--fire);background:var(--fire-bg);text-transform:uppercase;}
+  .pt-empty{color:var(--fg-faint);font-family:var(--tc);}
+  /* G5 · DHHS dropdown · main button + expand list */
+  .dhhs-toggle{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;background:transparent;border:0;cursor:pointer;color:inherit;font-family:inherit;padding:4px;border-radius:6px;transition:background .15s;}
+  .dhhs-toggle:not(:disabled):hover{background:rgba(200,164,77,.06);}
+  .dhhs-toggle:disabled{cursor:default;opacity:.85;}
+  .dhhs-toggle:focus-visible{outline:1px solid var(--gold);outline-offset:2px;}
+  .dhhs-chev{font-size:9px;color:var(--gold);opacity:.6;transition:transform .15s, opacity .15s;}
+  .dhhs-toggle[data-expanded="true"] .dhhs-chev{transform:rotate(180deg);opacity:1;}
+  .dhhs-detail{list-style:none;margin:6px 0 0;padding:6px 4px 0;border-top:1px dashed var(--tile-bd);font-family:var(--tc);font-size:11px;}
+  .dhhs-detail li{display:flex;justify-content:center;gap:6px;align-items:baseline;padding:2px 0;}
+  .dhhs-detail .el{font-size:10px;color:var(--fg-faint);}
+  .dhhs-detail .god{font-family:var(--thai);font-size:10px;color:var(--fg-soft);}
+  /* breakpoint 980px · cells ดบเล็กลง */
+  @media (max-width: 980px){
+    .pillar-table tbody th{width:90px;font-size:9px;padding-right:8px;}
+    .pillar-table th, .pillar-table td{padding:8px 6px;}
+    .pt-glyph{font-size:24px;}
+    .pt-stack-line{font-size:11px;}
+    .pt-phases{font-size:10px;}
+  }
 
   /* §6 interactions */
   .inter-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
@@ -266,6 +376,78 @@
   body.light .hk-pillar-branch{background:rgba(255,250,238,.98);}
   .hk-luck-note{margin-top:18px;padding:14px 18px;background:var(--tile);border:1px solid var(--gold-line);border-left:3px solid var(--gold);border-radius:8px;font-family:var(--thai);font-size:13px;line-height:1.65;color:var(--fg-soft);}
   .hk-luck-note b{color:var(--gold);font-family:var(--mono);font-weight:700;letter-spacing:.04em;}
+  /* Engine 1 · LP × natal interaction tags */
+  .hk-lp-inter{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;}
+  .hk-lp-inter-tag{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:14px;font-family:var(--tc);font-size:11px;border:1px solid;background:rgba(38,42,50,.45);}
+  body.light .hk-lp-inter-tag{background:rgba(255,250,238,.7);}
+  .hk-lp-inter-tag.good{color:var(--wood);border-color:var(--wood);}
+  .hk-lp-inter-tag.bad{color:var(--fire);border-color:var(--fire);}
+  .hk-lp-inter-tag.neutral{color:var(--gold);border-color:var(--gold-line);}
+  .hk-lp-inter-tag .pn{font-family:var(--mono);font-size:9px;opacity:.7;}
+  /* Help tooltip · "?" icon · ใช้ทุก section */
+  .hk-help{display:inline-block;width:16px;height:16px;line-height:14px;text-align:center;font-family:var(--mono),Arial,sans-serif;font-size:11px;font-weight:700;color:var(--gold);border:1px solid var(--gold);border-radius:50%;cursor:help;margin-left:6px;vertical-align:middle;opacity:.85;transition:.15s;position:relative;background:transparent;user-select:none;}
+  .hk-help::before{content:"?";display:block;}
+  .hk-help:hover,.hk-help.on{opacity:1;background:var(--gold);color:#0d0f12;}
+  .hk-help-pop{position:fixed;top:auto;left:0;transform:none;min-width:240px;width:max-content;max-width:min(360px,calc(100vw - 24px));padding:12px 14px;background:#1a1d24;color:#f6f1e6;border:1px solid var(--gold);border-radius:8px;font-family:var(--thai);font-size:13px;line-height:1.65;text-align:left;z-index:9999;box-shadow:0 12px 30px rgba(0,0,0,.6);font-weight:400;letter-spacing:0;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;display:none;pointer-events:none;}
+  .hk-help.on .hk-help-pop{display:block;}
+  body.light .hk-help-pop{background:#fff;color:#1a1d24;}
+  .hk-help-pop b{color:var(--gold);font-weight:700;}
+  /* Engine 2 · §09 PERSONAL section · 4 cards */
+  .hk-personal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:18px;}
+  @media(max-width:780px){.hk-personal-grid{grid-template-columns:1fr;}}
+  .hk-personal-card{background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;padding:22px;position:relative;}
+  body.light .hk-personal-card{background:rgba(255,250,238,.65);}
+  .hk-personal-card .hd{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--gold-line);}
+  .hk-personal-card .hd .ico{font-size:22px;}
+  .hk-personal-card .hd h3{font-family:var(--serif);font-size:18px;font-weight:600;flex:1;}
+  .hk-personal-card .hd h3 .tc{font-family:var(--tc);color:var(--gold);margin-right:5px;}
+  .hk-personal-card .body{font-family:var(--thai);font-size:14px;line-height:1.7;color:var(--fg);}
+  .hk-personal-card .body b{color:var(--gold);font-weight:700;}
+  .hk-personal-card .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .hk-personal-card .pt-tag{padding:3px 10px;border-radius:14px;font-size:12px;border:1px solid var(--gold-line);background:rgba(200,164,77,.06);color:var(--gold);}
+  .hk-personal-card.special-on{border-color:var(--fire);border-width:2px;}
+  .hk-personal-card.special-on .hd h3 .tc{color:var(--fire);}
+  /* Engine 1 · 流年 100-year timeline · ขยาย 15 พ.ค. 2026 */
+  .hk-liunian-wrap{margin-top:20px;}
+  .hk-liunian-title{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;}
+  .hk-liunian-grid{display:grid;grid-template-columns:repeat(10,minmax(110px,1fr));gap:6px;max-height:520px;overflow-y:auto;overflow-x:auto;padding:4px;background:rgba(38,42,50,.15);border-radius:8px;}
+  @media(max-width:980px){.hk-liunian-grid{grid-template-columns:repeat(5,minmax(110px,1fr));}}
+  /* 📜 mobile fix · ปฏิทิน 100 ปี ใน /chart §11 · 15 พ.ค. */
+  @media(max-width:767px){
+    .hk-sifu{padding:18px 14px;}
+    .hk-liunian-grid{grid-template-columns:repeat(3,minmax(0,1fr));max-height:none;overflow-x:visible;overflow-y:visible;gap:4px;}
+    .hk-liunian-cell{padding:6px 3px;}
+    .hk-liunian-cell .yr{font-size:9px;}
+    .hk-liunian-cell .yr .age{font-size:7px;}
+    .hk-liunian-cell .pl{font-size:14px;margin:2px 0;}
+    .hk-liunian-cell .tg{font-size:8px;}
+    .hk-liunian-cell .hx-sym{font-size:18px;margin:3px 0 1px;}
+    .hk-liunian-cell .hx{font-size:7px;padding:0 2px;}
+  }
+  @media(max-width:480px){
+    .hk-liunian-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .hk-sifu{padding:14px 10px;}
+  }
+  .hk-liunian-cell{padding:10px 6px;background:rgba(38,42,50,.4);border:1px solid var(--tile-bd);border-radius:8px;text-align:center;transition:.2s;cursor:default;}
+  body.light .hk-liunian-cell{background:rgba(255,250,238,.65);}
+  .hk-liunian-cell.auspicious{border-color:var(--wood);background:rgba(125,211,123,.07);}
+  .hk-liunian-cell.cautious{border-color:var(--fire);background:rgba(226,107,93,.07);}
+  .hk-liunian-cell.cur{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;background:rgba(200,164,77,.10);}
+  .hk-liunian-cell .yr{font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:.04em;}
+  .hk-liunian-cell .yr .age{color:var(--fg-faint);font-size:8px;letter-spacing:0;}
+  .hk-liunian-cell .pl{font-family:var(--tc);font-size:18px;color:var(--fg);margin:4px 0;font-weight:700;}
+  /* 📜 ก้าน-กิ่ง สีตามธาตุ · 15 พ.ค. */
+  .hk-liunian-cell .pl[data-el="wood"]{color:var(--wood);}
+  .hk-liunian-cell .pl[data-el="fire"]{color:var(--fire);}
+  .hk-liunian-cell .pl[data-el="earth"]{color:var(--earth);}
+  .hk-liunian-cell .pl[data-el="metal"]{color:var(--metal);}
+  .hk-liunian-cell .pl[data-el="water"]{color:var(--water);}
+  .hk-liunian-cell .tg{font-family:var(--tc);font-size:10px;color:var(--fg-soft);}
+  .hk-liunian-cell .hx-sym{font-size:26px;color:#fff;line-height:1;margin:6px 0 2px;font-family:'Noto Sans Symbols','Source Han Sans',serif;text-align:center;text-shadow:0 0 4px rgba(255,255,255,.15);}
+  body.light .hk-liunian-cell .hx-sym{color:#1a1a1a;text-shadow:0 0 4px rgba(0,0,0,.10);}
+  .hk-liunian-cell .hx{font-family:var(--tc);font-size:9px;color:#a98245;margin-top:2px;letter-spacing:0;background:rgba(180,144,82,.08);border-radius:4px;padding:1px 3px;}
+  .hk-liunian-cell .vs{font-family:var(--tc);font-size:9px;color:var(--gold);margin-top:3px;opacity:.85;}
+  .hk-liunian-hint{font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.1em;margin-top:8px;font-style:italic;}
   .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 24px;border-radius:99px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;text-decoration:none;cursor:pointer;border:1px solid;}
   .btn.gold{background:var(--gold);color:var(--bg);border-color:var(--gold);}
   .btn.line{background:transparent;color:var(--fg);border-color:var(--gold-line);}
@@ -333,8 +515,10 @@
 
   /* ─────────────── MOBILE RESPONSIVE ─────────────── */
   @media (max-width: 767px){
-    /* topbar — ให้ nav ลงไปบรรทัดสองและเลื่อนซ้ายขวาได้ */
+    /* topbar — ให้ nav ลงไปบรรทัดสองและเลื่อนซ้ายขวาได้ · avatar ยังอยู่ขวา · 15 พ.ค. */
     .topbar{padding:14px 14px;flex-wrap:wrap;gap:10px;}
+    .logo{order:1;}
+    .top-r{order:2;margin-left:auto;}
     .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
     .nav::-webkit-scrollbar{display:none;}
     .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
@@ -384,9 +568,10 @@
     /* §3 ten gods */
     .gods-grid{grid-template-columns:1fr;gap:18px;}
     .radar{max-width:280px;margin:0 auto;}
-    .god-row{grid-template-columns:1fr 60px;gap:8px;padding:10px 12px;}
-    .god-row .god-name{font-size:12px;}
+    .god-row{grid-template-columns:40px 1fr 56px;gap:10px;padding:10px 12px;}
+    .god-row .god-ico{width:36px;height:36px;font-size:20px;}
     .god-row .god-bar{grid-column:1/-1;}
+    .god-row .god-name{font-size:12px;}
     .god-row .god-val{font-size:10px;}
 
     /* §4 SWA — 3 columns → 1 column */
@@ -395,11 +580,11 @@
     .swa-card h3{font-size:16px;}
     .swa-card li{font-size:13px;line-height:1.6;}
 
-    /* §5 pillars — 4 col → 2 col */
-    .pillars{grid-template-columns:repeat(2, 1fr);gap:10px;}
-    .pillar-card{padding:14px 10px;}
-    .pillar-stem, .pillar-branch{font-size:32px;width:48px;height:48px;}
-    .pillar-meta{font-size:9px;}
+    /* §02 pillar-table mobile · scroll horizontally · table อยู่แล้วใน wrap */
+    .pillar-table{min-width:560px;}
+    .pillar-table tbody th{width:80px;font-size:8px;}
+    .pillar-table th, .pillar-table td{padding:6px 4px;}
+    .pt-glyph{font-size:22px;}
 
     /* §6 interactions */
     .inter-grid{grid-template-columns:1fr;gap:14px;}
@@ -420,6 +605,38 @@
     .cta-row{flex-direction:column;gap:10px;width:100%;}
     .cta-row a{width:100%;text-align:center;}
   }
+  /* 📜 Yongshen v2 · wrapper-7 · 15 พ.ค. 2026 · ใช้กับ /chart */
+  .ys-v2{display:flex;flex-direction:column;gap:12px;background:var(--bg-2,#f7f3ed);border:1px solid var(--line,#e0d6c0);border-radius:14px;padding:18px 20px;}
+  .ys-v2 .ys-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .ys-v2 .ys-struct{font-family:var(--tc,serif);font-size:24px;font-weight:600;color:var(--fg);letter-spacing:.04em;}
+  .ys-v2 .ys-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+  .ys-v2 .ys-engine{font-family:var(--mono,monospace);font-size:9px;letter-spacing:.18em;color:var(--fg-soft);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:3px 8px;text-transform:uppercase;}
+  .ys-v2 .ys-conf,.ys-v2 .ys-strategy{font-family:var(--mono);font-size:9px;letter-spacing:.15em;padding:3px 8px;border-radius:99px;text-transform:uppercase;}
+  .ys-v2 .ys-conf.high{background:rgba(46,160,67,.15);color:#2ea043;}
+  .ys-v2 .ys-conf.moderate{background:rgba(180,144,82,.15);color:#a98245;}
+  .ys-v2 .ys-conf.low{background:rgba(228,93,77,.12);color:#d96650;}
+  .ys-v2 .ys-strategy.progressive{background:rgba(46,160,67,.12);color:#2ea043;}
+  .ys-v2 .ys-strategy.regressive{background:rgba(228,93,77,.12);color:#d96650;}
+  .ys-v2 .ys-strategy.neutral{background:var(--bg);color:var(--fg-soft);}
+  .ys-v2 .ys-row{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;padding-top:6px;border-top:1px dashed var(--line);}
+  .ys-v2 .ys-row:first-of-type{border-top:none;padding-top:0;}
+  .ys-v2 .ys-row .k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-soft);text-transform:uppercase;min-width:90px;padding-top:4px;}
+  .ys-v2 .ys-row .v{display:flex;gap:6px;flex-wrap:wrap;flex:1;}
+  .ys-v2 .ys-pill{font-family:var(--thai,sans-serif);font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid;}
+  .ys-v2 .ys-pill.el-wood{background:rgba(74,148,89,.10);border-color:rgba(74,148,89,.4);color:#4a9459;}
+  .ys-v2 .ys-pill.el-fire{background:rgba(228,93,77,.10);border-color:rgba(228,93,77,.4);color:#d96650;}
+  .ys-v2 .ys-pill.el-earth{background:rgba(180,144,82,.10);border-color:rgba(180,144,82,.4);color:#a98245;}
+  .ys-v2 .ys-pill.el-metal{background:rgba(160,160,160,.10);border-color:rgba(160,160,160,.5);color:var(--fg);}
+  .ys-v2 .ys-pill.el-water{background:rgba(78,128,191,.10);border-color:rgba(78,128,191,.4);color:#4c7ab8;}
+  .ys-v2 .ys-pill.primary{font-weight:700;border-width:2px;}
+  .ys-v2 .ys-pill.bad{text-decoration:line-through;opacity:.85;}
+  .ys-v2 .ys-pill.disease{background:rgba(228,93,77,.10);border-color:#d96650;color:#d96650;font-size:11px;}
+  .ys-v2 .ys-pill.medicine{background:rgba(46,160,67,.10);border-color:#2ea043;color:#2ea043;font-size:11px;}
+  .ys-v2 .ys-pill.bridge{background:rgba(180,144,82,.10);border-color:#a98245;color:#a98245;font-size:11px;font-style:italic;}
+  .ys-v2 .ys-explain{font-family:var(--mono);font-size:10px;color:var(--fg-soft);line-height:1.6;padding-top:8px;border-top:1px dashed var(--line);}
+  .ys-v2 .ys-explain summary{cursor:pointer;color:var(--gold,#a98245);font-weight:600;letter-spacing:.1em;text-transform:uppercase;}
+  .ys-v2 .ys-explain ul{margin:8px 0 0 0;padding-left:18px;}
+  .ys-v2 .ys-explain li{margin-bottom:4px;}
 </style>
 <script>
   document.addEventListener('DOMContentLoaded', ()=>{
@@ -436,6 +653,8 @@
     });
   });
 </script>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
 
@@ -463,41 +682,241 @@
   <a href="/network" class="back" data-i18n="c.va.back">← กลับ</a>
 </div>
 <script>
-/* read view-as · ถ้ามี → override hk_birth ก่อน wireChart รัน */
+/* read view-as · เปิด banner เท่านั้น · controller (HKChartPage) อ่าน snapshot เอง */
 (function(){
   try {
     const params = new URLSearchParams(location.search);
-    if (!params.get('as')) return;
+    const asId = params.get('as');
+    if (!asId) return;
     const raw = sessionStorage.getItem('hk_view_as');
     if (!raw) return;
     const p = JSON.parse(raw);
-    if (!p || !p.name) return;
+    if (!p || !p.name || String(p.id || '') !== String(asId)) return;
     const bar = document.getElementById('hk-viewas-bar');
     document.getElementById('va-glyph').textContent = p.glyph || '人';
     document.getElementById('va-name').textContent = p.name;
     document.getElementById('va-role').textContent = p.role || '';
     bar.classList.add('show');
     document.documentElement.setAttribute('data-view-as', p.id);
-    /* override hk_birth · ให้ wireChart() ดึงดวงคนนี้ */
-    if (p.birthDate && p.birthTime) {
-      sessionStorage.setItem('hk_birth_backup', localStorage.getItem('hk_birth')||'');
-      const fakeBirth = JSON.stringify({
-        date: p.birthDate, time: p.birthTime, gender: p.gender||'M',
-        longitude: 100.5, _viewAs: true
-      });
-      localStorage.setItem('hk_birth', fakeBirth);
-    }
   } catch(e){}
 })();
-window.addEventListener('beforeunload', function(){
-  try {
-    if (sessionStorage.getItem('hk_birth_backup') !== null) {
-      const orig = sessionStorage.getItem('hk_birth_backup');
-      if (orig) localStorage.setItem('hk_birth', orig); else localStorage.removeItem('hk_birth');
-      sessionStorage.removeItem('hk_birth_backup');
+</script>
+
+<!-- HK Chart Page Controller · single snapshot · single fetch · single render pass -->
+<script>
+(function(){
+  if (window.HKChartPage) return;
+  var seq = 0;
+  var inFlight = new Map();
+  function parse(raw){ try { return raw ? JSON.parse(raw) : null; } catch(_) { return null; } }
+  function finite(v, fb){ var n = Number(v); return Number.isFinite(n) ? n : fb; }
+  /* gender · "male"/"female" → "M"/"F" (Codex mitigation #3) */
+  function normGender(g){
+    var s = String(g||'').trim().toLowerCase();
+    if (s === 'm' || s === 'male') return 'M';
+    if (s === 'f' || s === 'female') return 'F';
+    return 'M';
+  }
+  /* parse TIMESTAMPTZ via string split · ไม่ใช้ Date (Codex mitigation #2 · กัน timezone drift) */
+  function splitDt(iso){
+    if (!iso) return { date: '', time: '' };
+    var m = String(iso).match(/^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})/);
+    return m ? { date: m[1], time: m[2] } : { date: '', time: '' };
+  }
+  function norm(p, source){
+    p = p || {};
+    var dt = p.birth_datetime ? splitDt(p.birth_datetime) : null;
+    return {
+      source: source,
+      profileId: p.id || p.profile_id || p.profileId || '',
+      name: p.name || p.displayName || '',
+      date: (dt && dt.date) || p.date || p.birthDate || '',
+      time: (dt && dt.time) || p.time || p.birthTime || '',
+      gender: normGender(p.gender),
+      place: p.birth_location_name || p.place || p.location || 'Bangkok',
+      longitude: finite(p.birth_lng != null ? p.birth_lng : p.longitude, 100.5018),
+      latitude: finite(p.birth_lat != null ? p.birth_lat : p.latitude, 13.7563)
+    };
+  }
+  /* sync localStorage · เฉพาะ self-profile · ห้ามเรียกจาก view-as (Codex mitigation #5/#7) */
+  function syncLocalStorage(s){
+    try {
+      localStorage.setItem('hk_birth', JSON.stringify({
+        name: s.name, date: s.date, time: s.time, place: s.place,
+        longitude: s.longitude, lng: s.longitude, latitude: s.latitude,
+        gender: s.gender, profileId: s.profileId
+      }));
+      if (s.profileId) localStorage.setItem('hk_profile_id', s.profileId);
+      if (s.name) localStorage.setItem('hk_profile_name', s.name);
+    } catch(_) {}
+  }
+  /* fetch /api/profile · prefer hk_profile_id (Codex mitigation #1)
+   * 📜 15 พ.ค. · retry 1 ครั้งถ้า network/401 (เผื่อ mobile session ช้า) */
+  async function fetchActiveProfile(retryCount){
+    retryCount = retryCount || 0;
+    try {
+      var r = await fetch('/api/profile', { cache: 'no-store', credentials: 'include' });
+      if (r.status === 401) {
+        if (retryCount === 0) {
+          await new Promise(function(rs){ setTimeout(rs, 800); });
+          return fetchActiveProfile(1);
+        }
+        return { auth: false, profile: null };
+      }
+      if (!r.ok) return { auth: true, profile: null };
+      var j = await r.json();
+      var arr = (j.profiles || []).filter(function(p){ return !p.is_archived; });
+      if (!arr.length) return { auth: true, profile: null };
+      var preferId = null;
+      try { preferId = localStorage.getItem('hk_profile_id'); } catch(_){}
+      var pick = (j.active_profile && j.active_profile.id && arr.find(function(p){ return p.id === j.active_profile.id; }))
+              || (preferId && arr.find(function(p){ return p.id === preferId; }))
+              || arr.find(function(p){ return !!p.is_self; })
+              || arr[0];
+      return { auth: true, profile: pick };
+    } catch(_) {
+      if (retryCount === 0) {
+        await new Promise(function(rs){ setTimeout(rs, 800); });
+        return fetchActiveProfile(1);
+      }
+      return { auth: false, profile: null };
     }
-  } catch(e){}
-});
+  }
+  /* resolution: ?as → DB → localStorage → /input (no Aeaw demo fallback) */
+  async function readChartSnapshot(){
+    var params = new URLSearchParams(location.search);
+    /* 1. view-as · strict ?as= match เท่านั้น · ห้าม /api/profile · ห้าม localStorage write */
+    if (params.get('as')) {
+      var asId = String(params.get('as'));
+      var va = parse(sessionStorage.getItem('hk_view_as'));
+      if (va && String(va.id || '') === asId && (va.birthDate || va.date)) {
+        return norm(va, 'view-as');
+      }
+      /* 18 พ.ค. fix · mobile new tab fallback · localStorage 'hk_view_as_xfer' (TTL 60s) */
+      try {
+        var xfer = parse(localStorage.getItem('hk_view_as_xfer'));
+        if (xfer && String(xfer.id || '') === asId && (xfer.birthDate || xfer.date)) {
+          var age = Date.now() - (xfer.ts || 0);
+          if (age < 60 * 1000) {
+            /* restore เป็น sessionStorage + clear localStorage หลังใช้ */
+            try { sessionStorage.setItem('hk_view_as', JSON.stringify(xfer)); } catch(_){}
+            try { localStorage.removeItem('hk_view_as_xfer'); } catch(_){}
+            return norm(xfer, 'view-as-xfer');
+          }
+          /* หมดอายุ → ลบทิ้ง */
+          try { localStorage.removeItem('hk_view_as_xfer'); } catch(_){}
+        }
+      } catch(_){}
+      /* ?as= ไม่ match → กลับ /chart (ไม่ fallback sessionStorage · ไม่ DB) */
+      window.location.replace('/chart');
+      return null;
+    }
+    /* 2. DB profile (logged-in · DB-as-truth) */
+    var res = await fetchActiveProfile();
+	    if (res.auth && res.profile) {
+	      var snap = norm(res.profile, 'db');
+	      if (snap.date && snap.time) {
+	        syncLocalStorage(snap);
+	        return snap;
+	      }
+	    }
+	    /* 3. profile-sync fallback · กัน localStorage เก่าทับตอน /api/profile ช้าหรือสะดุด */
+	    if (window.__hkProfileReady) {
+	      var synced = await window.__hkProfileReady.catch(function(){ return null; });
+	      if (synced && synced.birth_datetime) {
+	        var ps = norm(synced, 'profile-sync');
+	        if (ps.date && ps.time) {
+	          syncLocalStorage(ps);
+	          return ps;
+	        }
+	      }
+	    }
+	    /* 4. anonymous fallback localStorage */
+	    var lb = parse(localStorage.getItem('hk_birth'));
+	    if (lb && lb.date && !lb._viewAs) return norm(lb, 'local');
+	    var sb = parse(sessionStorage.getItem('hk_birth'));
+	    if (sb && sb.date) return norm(sb, 'session');
+	    /* 5. ไม่มีดวงเลย · แยก login/anon → /input · ไม่ login → auth หน้าใหม่ */
+    if (res.auth) {
+      /* login แล้ว แต่ไม่มี profile/date → /input ให้กรอกใหม่ */
+      window.location.replace('/input');
+    } else {
+      /* ไม่ได้ login บน device นี้ · localStorage ก็ไม่มี → /signup login tab */
+      var ret = encodeURIComponent('/chart');
+      window.location.replace('/signup?tab=login&next=' + ret);
+    }
+    return null;
+  }
+  function requestBody(s){
+    /* Day boundary toggle · localStorage 'hk_day_boundary' · default '23:00' (ตำราคลาสสิก) */
+    var dayBoundary = '23:00';
+    try { var v = localStorage.getItem('hk_day_boundary'); if (v === '00:00') dayBoundary = '00:00'; } catch(_){}
+    return JSON.stringify({
+      date: s.date,
+      time: s.time || '12:00',
+      longitude: s.longitude || 100.5018,
+      gender: s.gender || 'M',
+      dayBoundary: dayBoundary
+    });
+  }
+  function fetchChart(s){
+    var body = requestBody(s);
+    if (inFlight.has(body)) return inFlight.get(body);
+    var p = fetch('/api/chart', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: body
+    }).then(function(r){
+      if (!r.ok) throw new Error('/api/chart ' + r.status);
+      return r.json();
+    }).finally(function(){ inFlight.delete(body); });
+    inFlight.set(body, p);
+    return p;
+  }
+  function clearChartRoots(s){
+    var nameEl = document.querySelector('.hero-l h1 .name');
+    if (nameEl) nameEl.textContent = s.name || 'ดวงของคุณ';
+    ['bb-yongshen','bb-jishen','bb-interactions','bb-combinations','bb-punishments','bb-wealth-role','bb-debug'].forEach(function(id){
+      var el = document.getElementById(id); if (el) el.innerHTML = '';
+    });
+    ['.hero-meta','.hero-tags'].forEach(function(sel){
+      var el = document.querySelector(sel); if (el) el.innerHTML = '';
+    });
+    var lede = document.querySelector('.hero-l p.lede');
+    if (lede) lede.textContent = '';
+    document.querySelectorAll('.inter-card .glyphs').forEach(function(el){ el.innerHTML = ''; });
+  }
+  async function run(){
+    var token = ++seq;
+    try {
+      var snapshot = await readChartSnapshot();
+      /* post-await seq token check (Codex mitigation #a) */
+      if (token !== seq) return;
+      if (!snapshot) return; /* redirect in progress */
+      clearChartRoots(snapshot);
+      var data = await fetchChart(snapshot);
+      if (token !== seq || !data || !data.pillars) return;
+      if (window.HK_RENDER_BASIC) try { window.HK_RENDER_BASIC(data, snapshot); } catch(e){ console.warn('[HK] basic', e); }
+      if (window.HK_RENDER_CHART) try { window.HK_RENDER_CHART(data, snapshot); } catch(e){ console.warn('[HK] chart', e); }
+      if (window.HK_RENDER_ALL) try { window.HK_RENDER_ALL(data, snapshot); } catch(e){ console.warn('[HK] all', e); }
+      /* 19 พ.ค. Option α · 3p UI overlay · run ท้ายสุด · เฉพาะ UI · ไม่แตะ calc/score */
+      if (window.HK_RENDER_3P_NOTICE) try { window.HK_RENDER_3P_NOTICE(data, snapshot); } catch(e){ console.warn('[HK] 3p', e); }
+      document.documentElement.setAttribute('data-live', '1');
+    } catch(e) {
+      console.warn('[HK] chart load failed', e);
+      document.documentElement.setAttribute('data-live', '1');
+    }
+  }
+  window.HKChartPage = { readChartSnapshot: readChartSnapshot, clearChartRoots: clearChartRoots, run: run };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, {once:true});
+  else setTimeout(run, 0);
+  /* fallback: ถ้าเกิน 5 วิ ยังไม่ live · show หน้าไว้ก่อน */
+  setTimeout(function(){
+    if (document.documentElement.getAttribute('data-live') !== '1') {
+      document.documentElement.setAttribute('data-live', '1');
+    }
+  }, 5000);
+})();
 </script>
 
 <!-- TOP BAR -->
@@ -507,8 +926,9 @@ window.addEventListener('beforeunload', function(){
     <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="c.nav.chart">ดวง</span></a>
     <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="c.nav.today">วันนี้</span></a>
     <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="c.nav.calendar">ปฏิทิน</span></a>
-    <a href="/yongsennetwork" data-r="/yongsennetwork"><span class="glyph">人</span><span class="lbl" data-i18n="c.nav.network">เครือข่าย</span></a>
+    <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="c.nav.network">เครือข่าย</span></a>
     <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="c.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/forecast" data-r="/forecast"><span class="glyph">占</span><span class="lbl" data-i18n="hk.nav.forecast">พยากรณ์</span></a>
     <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="c.nav.master">ซินแส</span></a>
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="c.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="c.nav.fengshui">ทิศมงคล</span></a>
@@ -528,123 +948,130 @@ window.addEventListener('beforeunload', function(){
 <div class="stage">
   <div class="crumb"><a href="/" data-i18n="c.crumb.home">หน้าหลัก</a> <span>/</span> <span data-i18n="c.crumb.chart">ดวงของคุณ · BAZI CHART</span></div>
 
+  <!-- 19 พ.ค. Option α · 3p banner · แสดงเฉพาะ user ที่ไม่ทราบเวลาเกิด · 3 ภาษา + 2 theme -->
+  <div id="hk-3p-banner" hidden style="background:linear-gradient(135deg,rgba(212,168,87,.12),rgba(212,168,87,.04));border:1px solid rgba(212,168,87,.35);border-radius:12px;padding:14px 18px;margin:0 0 18px;display:flex;align-items:center;gap:14px;font-family:var(--thai,'IBM Plex Sans Thai',sans-serif);">
+    <span style="font-size:24px;line-height:1;" aria-hidden="true">⏳</span>
+    <div style="flex:1;line-height:1.55;">
+      <div style="font-size:14px;font-weight:600;color:var(--gold,#d4a857);margin-bottom:3px;" data-i18n="c.3p.title">ดวงนี้คำนวณแบบ 3 เสา · ไม่ทราบเวลาเกิด</div>
+      <div style="font-size:12px;color:var(--fg-soft,#aaa);" data-i18n="c.3p.hint">เสายาม (時柱) · 命宮 · 拱·夾 · 河洛 จะไม่แสดง · ตำราคลาสสิก: ขาดเวลา → ไม่คำนวณ ดีกว่าเดา</div>
+    </div>
+  </div>
+
   <!-- §1 HERO SUMMARY -->
   <section class="hero">
     <div class="hero-grid">
       <div class="hero-l">
-        <div class="label">01 · สรุปภาพรวม · YOUR CHART AT A GLANCE</div>
-        <h1><span class="name">ไนท์</span></h1>
-        <div class="hero-meta">
-          <span>📅 7 พ.ค. 2569</span>
-          <span>🕐 02:35</span>
-          <span>📍 Bangkok</span>
-        </div>
-        <div class="hero-tags">
-          <span class="tag"><span class="glyph">己</span>Yin Earth · ดินอ่อน</span>
-          <span class="tag"><span class="glyph">從財</span>Follow Wealth · ตามทรัพย์</span>
-          <span class="tag"><span class="glyph">土</span>The Connector · นักเชื่อมต่อ</span>
-          <span class="tag"><span class="glyph">水</span>Water 5型 · ลื่นไหล</span>
-        </div>
-        <p class="lede">คุณเป็น <b>ดินอ่อน</b> ในฤดูหนาว — สงบ ไม่แข่ง แต่อ่านคนแม่น มีพรสวรรค์ <b>เชื่อมต่อโอกาสและคน</b> เข้าด้วยกัน · ดวงของคุณ <b>ตามทรัพย์</b> หมายความว่า <b>ลื่นไหลตามกระแสได้ดีกว่าฝืนทาง</b> — เมื่อรู้จักเลือกคลื่น คุณจะไปได้ไกล</p>
+        <div  class="label" data-i18n="auto.c.501">01 · สรุปภาพรวม · YOUR CHART AT A GLANCE</div>
+        <h1><span class="name">—</span></h1>
+        <div class="hero-meta"></div>
+        <div class="hero-tags"></div>
+        <p class="lede"></p>
       </div>
       <div class="dm-card">
         <div class="dm-label" data-i18n="c.dm.label">DAY MASTER · 日主</div>
-        <div class="dm-glyph">己</div>
-        <div class="dm-name">Yin Earth · 己土</div>
-        <div class="dm-th" data-i18n="c.dm.th">ดินอ่อน · ดินไร่นา · เพาะปลูก</div>
+        <div class="dm-glyph">—</div>
+        <div class="dm-name">—</div>
+        <div class="dm-th">—</div>
         <div class="strength">
-          <b>25/100</b>
-          <span class="lvl">อ่อน · WEAK</span>
+          <b>—</b>
+          <span class="lvl">—</span>
         </div>
-        <div class="meter"><span></span></div>
-        <div class="conf">
-          <span>ความมั่นใจ:</span>
-          <span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span>
-          <span>moderate</span>
-        </div>
+        <div class="meter"><span style="width:0%"></span></div>
+        <div class="conf"></div>
+        <div class="rootedness-explain" style="display:none;"></div>
       </div>
     </div>
   </section>
 
-  <!-- §2 ELEMENTS + YONGSHEN -->
+  <!-- §2 FOUR PILLARS -->
   <section class="sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">02 · ELEMENTS</span>
-        <h2 data-i18n="c.sec1.h2"><span class="tc">五行</span>ธาตุที่เด่น · ขาด · ควรเสริม</h2>
+        <span class="num">02 · STRUCTURE</span>
+        <h2 data-i18n="c.sec4.h2"><span class="tc">四柱</span>โครงดวง 4 เสา<span class="hk-help" data-help="s.month_jieqi"></span></h2>
       </div>
-      <span class="sub" data-i18n="c.sec1.sub">ใช้ตอบ "อะไรช่วยฉัน อะไรควรระวัง"</span>
+      <span class="sub" data-i18n="c.sec4.sub">10 แถว · 4 เสา · ตำราคลาสสิก Joey Yap · กดแถว 空亡 ดู hidden stems ครบ</span>
     </div>
-    <div class="el-grid">
-      <div class="el-list">
-        <div class="el-row">
-          <span class="el-glyph" style="color:var(--wood)">木</span>
-          <div class="el-name"><b>ไม้ · WOOD</b><span>เริ่มต้น · เติบโต</span></div>
-          <div class="el-bar"><i style="width:12%;background:var(--wood)"></i></div>
-          <span class="el-pct" style="color:var(--wood)">12%</span>
-          <span class="el-tag use">★ ใช้</span>
-        </div>
-        <div class="el-row">
-          <span class="el-glyph" style="color:var(--fire)">火</span>
-          <div class="el-name"><b>ไฟ · FIRE</b><span>พลัง · ตัดสินใจ</span></div>
-          <div class="el-bar"><i style="width:25%;background:var(--fire)"></i></div>
-          <span class="el-pct" style="color:var(--fire)">25%</span>
-          <span class="el-tag use">★ ใช้</span>
-        </div>
-        <div class="el-row">
-          <span class="el-glyph" style="color:var(--earth)">土</span>
-          <div class="el-name"><b>ดิน · EARTH</b><span>ตัวคุณ · ฐาน</span></div>
-          <div class="el-bar"><i style="width:4%;background:var(--earth)"></i></div>
-          <span class="el-pct" style="color:var(--earth)">4%</span>
-          <span class="el-tag neutral">DM</span>
-        </div>
-        <div class="el-row">
-          <span class="el-glyph" style="color:var(--metal)">金</span>
-          <div class="el-name"><b>ทอง · METAL</b><span>ตัด · กฎเกณฑ์</span></div>
-          <div class="el-bar"><i style="width:9%;background:var(--metal)"></i></div>
-          <span class="el-pct" style="color:var(--metal)">9%</span>
-          <span class="el-tag av">忌 หลีก</span>
-        </div>
-        <div class="el-row">
-          <span class="el-glyph" style="color:var(--water)">水</span>
-          <div class="el-name"><b>น้ำ · WATER</b><span>คิด · ลื่นไหล</span></div>
-          <div class="el-bar"><i style="width:49%;background:var(--water)"></i></div>
-          <span class="el-pct" style="color:var(--water)">49%</span>
-          <span class="el-tag av">忌 หลีก</span>
-        </div>
-      </div>
-      <aside class="yong-card">
-        <div class="ty">用神 · YONGSHEN</div>
-        <h3 data-i18n="c.sec1.help">ธาตุที่ช่วยคุณ</h3>
-        <div class="yong-list">
-          <div class="yong-item">
-            <div class="yong-glyph fire">火</div>
-            <div class="yong-text">
-              <b>ไฟ · ใช้เมื่อต้องการพลัง</b>
-              <span>ตัดสินใจเร็ว · เพิ่มความมั่นใจ · ใส่สีแดง/ส้มให้ในห้อง · ออกแดดเช้า</span>
-            </div>
-          </div>
-          <div class="yong-item">
-            <div class="yong-glyph wood">木</div>
-            <div class="yong-text">
-              <b>ไม้ · ใช้เพื่อเติบโต</b>
-              <span>เริ่มสิ่งใหม่ · งานสร้างสรรค์ · พืชสีเขียวในบ้าน · เดินป่า</span>
-            </div>
-          </div>
-        </div>
-        <div class="av-row">
-          <div class="ty">忌神 · AVOID</div>
-          <div class="yong-list" style="margin-top:10px">
-            <div class="yong-item" style="opacity:.78">
-              <div class="yong-glyph water">水</div>
-              <div class="yong-text">
-                <b>น้ำ · มากแล้วจะคิดเยอะ ลังเล</b>
-                <span>เลี่ยงการตัดสินใจตอนเย็น/ดึก · ลด screen time · อย่าใส่สีดำเข้ม</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
+    <div class="pillar-table-wrap">
+      <table class="pillar-table" id="hk-pillar-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th><span class="tc">時</span>Hour</th>
+            <th class="col-day"><span class="tc">日</span>Day · DM</th>
+            <th><span class="tc">月</span>Month</th>
+            <th><span class="tc">年</span>Year</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-row="ten_god"><th><span class="tc">十神</span>stem<span class="hk-help" data-help="r.tg"></span></th>
+            <td class="tg-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day tg-day"><span class="pt-empty">日元 DM</span></td>
+            <td class="tg-month"><span class="pt-empty">—</span></td>
+            <td class="tg-year"><span class="pt-empty">—</span></td>
+          </tr>
+          <tr data-row="hs"><th><span class="tc">天干</span>HS<span class="hk-help" data-help="r.hs"></span></th>
+            <td class="hs-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day hs-day"><span class="pt-empty">—</span></td>
+            <td class="hs-month"><span class="pt-empty">—</span></td>
+            <td class="hs-year"><span class="pt-empty">—</span></td>
+          </tr>
+          <tr data-row="eb"><th><span class="tc">地支</span>EB<span class="hk-help" data-help="r.eb"></span></th>
+            <td class="eb-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day eb-day"><span class="pt-empty">—</span></td>
+            <td class="eb-month"><span class="pt-empty">—</span></td>
+            <td class="eb-year"><span class="pt-empty">—</span></td>
+          </tr>
+          <tr data-row="hhs"><th><span class="tc">藏干</span>HHS<span class="hk-help" data-help="r.hhs"></span></th>
+            <td class="hhs-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day hhs-day"><span class="pt-empty">—</span></td>
+            <td class="hhs-month"><span class="pt-empty">—</span></td>
+            <td class="hhs-year"><span class="pt-empty">—</span></td>
+          </tr>
+          <tr data-row="nayin"><th><span class="tc">納音</span>Na Yin<span class="hk-help" data-help="r.nayin"></span></th>
+            <td class="ny-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day ny-day"><span class="pt-empty">—</span></td>
+            <td class="ny-month"><span class="pt-empty">—</span></td>
+            <td class="ny-year"><span class="pt-empty">—</span></td>
+          </tr>
+          <tr data-row="phases"><th><span class="tc">十二長生</span>3 phases<span class="hk-help" data-help="r.phase"></span></th>
+            <td class="ph-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day ph-day"><span class="pt-empty">—</span></td>
+            <td class="ph-month"><span class="pt-empty">—</span></td>
+            <td class="ph-year"><span class="pt-empty">—</span></td>
+          </tr>
+          <tr data-row="kong"><th><span class="tc">空亡</span>DHHS<span class="hk-help" data-help="r.kwdhhs"></span></th>
+            <td class="kw-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day kw-day"><span class="pt-empty">—</span></td>
+            <td class="kw-month"><span class="pt-empty">—</span></td>
+            <td class="kw-year"><span class="pt-empty">—</span></td>
+          </tr>
+          <tr data-row="stars"><th><span class="tc">神煞</span>Stars<span class="hk-help" data-help="r.stars"></span></th>
+            <td class="ss-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day ss-day"><span class="pt-empty">—</span></td>
+            <td class="ss-month"><span class="pt-empty">—</span></td>
+            <td class="ss-year"><span class="pt-empty">—</span></td>
+          </tr>
+          <tr data-row="react"><th><span class="tc">反應</span>React.<span class="hk-help" data-help="r.react"></span></th>
+            <td class="rx-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day rx-day"><span class="pt-empty">—</span></td>
+            <td class="rx-month"><span class="pt-empty">—</span></td>
+            <td class="rx-year"><span class="pt-empty">—</span></td>
+          </tr>
+          <tr data-row="palace"><th><span class="tc">宮位</span>Palace<span class="hk-help" data-help="r.palace"></span></th>
+            <td class="pal-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day pal-day"><span class="pt-empty">—</span></td>
+            <td class="pal-month"><span class="pt-empty">—</span></td>
+            <td class="pal-year"><span class="pt-empty">—</span></td>
+          </tr>
+          <tr data-row="hex-natal"><th><span class="tc">易</span>Hex Natal<span class="hk-help" data-help="r.hex_natal"></span></th>
+            <td class="hex-hour"><span class="pt-empty">—</span></td>
+            <td class="col-day hex-day"><span class="pt-empty">—</span></td>
+            <td class="hex-month"><span class="pt-empty">—</span></td>
+            <td class="hex-year"><span class="pt-empty">—</span></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
@@ -653,7 +1080,7 @@ window.addEventListener('beforeunload', function(){
     <div class="sec-head">
       <div class="l">
         <span class="num">03 · LIFE DOMAINS</span>
-        <h2 data-i18n="c.sec2.h2"><span class="tc">十神</span>5 ด้านในชีวิตของคุณ</h2>
+        <h2 data-i18n="c.sec2.h2"><span class="tc">十神</span>5 ด้านในชีวิตของคุณ<span class="hk-help" data-help="d.career"></span></h2>
       </div>
       <span class="sub" data-i18n="c.sec2.sub">10 gods แปลเป็นโดเมนที่ใช้จริง</span>
     </div>
@@ -675,61 +1102,111 @@ window.addEventListener('beforeunload', function(){
             <line x1="200" y1="200" x2="130" y2="296"/>
             <line x1="200" y1="200" x2="86" y2="162"/>
           </g>
-          <!-- data: career(high), money(high), creative(high), relations(mid), discipline(mid) -->
-          <polygon points="200,90 304,168 246,278 158,272 110,170"
-                   fill="rgba(200,164,77,.28)" stroke="var(--gold)" stroke-width="2"/>
-          <!-- dots at vertices -->
-          <g fill="var(--gold)">
-            <circle cx="200" cy="90" r="4"/>
-            <circle cx="304" cy="168" r="4"/>
-            <circle cx="246" cy="278" r="4"/>
-            <circle cx="158" cy="272" r="4"/>
-            <circle cx="110" cy="170" r="4"/>
+          <!-- gradient defs for colorful radar -->
+          <defs>
+            <radialGradient id="hk-radar-fill" cx="50%" cy="50%" r="60%">
+              <stop offset="0%" stop-color="#f4c842" stop-opacity=".35"/>
+              <stop offset="100%" stop-color="#b88dff" stop-opacity=".18"/>
+            </radialGradient>
+          </defs>
+          <!-- data polygon (set by JS) -->
+          <polygon id="hk-radar-poly" points="200,200 200,200 200,200 200,200 200,200"
+                   fill="url(#hk-radar-fill)" stroke="var(--gold)" stroke-width="2"/>
+          <!-- dots at vertices (set by JS) · สีต่างกัน -->
+          <g id="hk-radar-dots">
+            <circle cx="200" cy="200" r="5" fill="#4a9eff"/>
+            <circle cx="200" cy="200" r="5" fill="#f4c842"/>
+            <circle cx="200" cy="200" r="5" fill="#ff6b8a"/>
+            <circle cx="200" cy="200" r="5" fill="#b88dff"/>
+            <circle cx="200" cy="200" r="5" fill="#7dd37b"/>
           </g>
-          <!-- labels -->
-          <g font-family="var(--mono)" font-size="11" fill="currentColor" text-anchor="middle">
-            <text x="200" y="60">งาน · 正官</text>
-            <text x="338" y="158">เงิน · 正財</text>
-            <text x="288" y="320">ความรัก · 七殺</text>
-            <text x="112" y="320">สร้างสรรค์ · 食神</text>
-            <text x="62" y="158">วินัย · 比肩</text>
+          <!-- labels (สีต่างกันตาม domain) -->
+          <g font-family="var(--mono)" font-size="11" text-anchor="middle">
+            <text x="200" y="60" fill="#4a9eff" font-weight="600">💼 งาน · 正官</text>
+            <text x="338" y="158" fill="#f4c842" font-weight="600">💰 เงิน · 正財</text>
+            <text x="288" y="320" fill="#ff6b8a" font-weight="600">❤ ความรัก · 七殺</text>
+            <text x="112" y="320" fill="#b88dff" font-weight="600">🎨 สร้างสรรค์ · 食神</text>
+            <text x="62" y="158" fill="#7dd37b" font-weight="600">🌱 วินัย · 比肩</text>
           </g>
-          <g font-family="var(--serif)" font-size="13" fill="var(--gold)" text-anchor="middle" font-weight="600">
-            <text x="200" y="76">สูง</text>
-            <text x="324" y="180">สูง</text>
-            <text x="266" y="298">กลาง</text>
-            <text x="142" y="292">สูง</text>
-            <text x="92" y="186">กลาง</text>
+          <g font-family="var(--serif)" font-size="13" fill="var(--gold)" text-anchor="middle" font-weight="600" id="hk-radar-lvls">
+            <text x="200" y="76">—</text>
+            <text x="324" y="180">—</text>
+            <text x="266" y="298">—</text>
+            <text x="142" y="292">—</text>
+            <text x="92" y="186">—</text>
           </g>
         </svg>
       </div>
       <div class="gods-list">
-        <div class="god-row">
-          <div><b>งาน / อำนาจ</b><span>正官 · OFFICIAL</span></div>
-          <div class="god-bar"><i style="width:75%"></i></div>
-          <div class="god-lvl high">สูง</div>
+        <div class="god-row dom-career">
+          <div class="god-ico">💼</div>
+          <div><b data-i18n="auto.c.502">งาน / อำนาจ</b><span>正官 · OFFICIAL</span></div>
+          <div class="god-bar"><i style="width:0%"></i></div>
+          <div class="god-lvl">—</div>
         </div>
-        <div class="god-row">
-          <div><b>เงิน / ทรัพย์</b><span>正財 · WEALTH</span></div>
-          <div class="god-bar"><i style="width:80%"></i></div>
-          <div class="god-lvl high">สูง</div>
+        <div class="god-row dom-wealth">
+          <div class="god-ico">💰</div>
+          <div><b data-i18n="auto.c.503">เงิน / ทรัพย์</b><span>正財 · WEALTH</span></div>
+          <div class="god-bar"><i style="width:0%"></i></div>
+          <div class="god-lvl">—</div>
         </div>
-        <div class="god-row">
-          <div><b>ความสัมพันธ์</b><span>七殺 · KILLING</span></div>
-          <div class="god-bar"><i style="width:48%"></i></div>
-          <div class="god-lvl mid">กลาง</div>
+        <div class="god-row dom-love">
+          <div class="god-ico">❤</div>
+          <div><b data-i18n="auto.c.504">ความสัมพันธ์</b><span>七殺 · KILLING</span></div>
+          <div class="god-bar"><i style="width:0%"></i></div>
+          <div class="god-lvl">—</div>
         </div>
-        <div class="god-row">
-          <div><b>ความคิดสร้างสรรค์</b><span>食神 · ARTS</span></div>
-          <div class="god-bar"><i style="width:72%"></i></div>
-          <div class="god-lvl high">สูง</div>
+        <div class="god-row dom-arts">
+          <div class="god-ico">🎨</div>
+          <div><b data-i18n="auto.c.505">ความคิดสร้างสรรค์</b><span>食神 · ARTS</span></div>
+          <div class="god-bar"><i style="width:0%"></i></div>
+          <div class="god-lvl">—</div>
         </div>
-        <div class="god-row">
-          <div><b>วินัย / ตัวตน</b><span>比肩 · SELF</span></div>
-          <div class="god-bar"><i style="width:42%"></i></div>
-          <div class="god-lvl mid">กลาง</div>
+        <div class="god-row dom-self">
+          <div class="god-ico">🌱</div>
+          <div><b data-i18n="auto.c.506">วินัย / ตัวตน</b><span>比肩 · SELF</span></div>
+          <div class="god-bar"><i style="width:0%"></i></div>
+          <div class="god-lvl">—</div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- §09 PERSONAL · ย้ายขึ้นมาหลัง §03 LIFE DOMAINS (Engine 2 · เห็นเด่น) ── -->
+  <section class="sec" id="hk-personal-sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">04 · PERSONAL</span>
+        <h2><span class="tc">人生</span>มิติชีวิตจริง</h2>
+      </div>
+      <span  class="sub" data-i18n="auto.c.507">คู่ครอง · อาชีพ · สุขภาพ · ดวงพิเศษ · จากเสาเกิดของคุณ</span>
+    </div>
+    <div class="hk-personal-grid" id="hk-personal-grid">
+      <article class="hk-personal-card" id="hk-personal-special">
+        <div class="hd"><span class="ico">🔮</span><h3><span class="tc">格</span>ดวงพิเศษ<span class="hk-help" data-help="p.special"></span></h3></div>
+        <div class="body">—</div>
+      </article>
+      <article class="hk-personal-card" id="hk-personal-spouse">
+        <div class="hd"><span class="ico">💑</span><h3><span class="tc">夫妻</span>คู่ครอง<span class="hk-help" data-help="p.spouse"></span></h3></div>
+        <div class="body">—</div>
+      </article>
+      <article class="hk-personal-card" id="hk-personal-career">
+        <div class="hd"><span class="ico">💼</span><h3><span class="tc">事業</span>อาชีพที่เหมาะ<span class="hk-help" data-help="p.career"></span></h3></div>
+        <div class="body">—</div>
+      </article>
+      <article class="hk-personal-card" id="hk-personal-health">
+        <div class="hd"><span class="ico">🌿</span><h3><span class="tc">健康</span>สุขภาพ<span class="hk-help" data-help="p.health"></span></h3></div>
+        <div class="body">—</div>
+      </article>
+      <!-- 18 พ.ค. · #3 · เพิ่ม 父母 + 子女 cards · ใช้ pillar palaces -->
+      <article class="hk-personal-card" id="hk-personal-parents">
+        <div class="hd"><span class="ico">👨‍👩‍👧</span><h3><span class="tc">父母</span>พ่อแม่ · พี่น้อง</h3></div>
+        <div class="body">—</div>
+      </article>
+      <article class="hk-personal-card" id="hk-personal-children">
+        <div class="hd"><span class="ico">👶</span><h3><span class="tc">子女</span>ลูก · บั้นปลาย</h3></div>
+        <div class="body">—</div>
+      </article>
     </div>
   </section>
 
@@ -737,97 +1214,108 @@ window.addEventListener('beforeunload', function(){
   <section class="sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">04 · INSIGHTS</span>
-        <h2 data-i18n="c.sec3.h2"><span class="tc">解</span>จุดแข็ง · จุดที่ควรระวัง · คำแนะนำ</h2>
+        <span class="num">05 · INSIGHTS</span>
+        <h2 data-i18n="c.sec3.h2"><span class="tc">解</span>จุดแข็ง · จุดที่ควรระวัง · คำแนะนำ<span class="hk-help" data-help="s.yongshen"></span></h2>
       </div>
       <span class="sub" data-i18n="c.sec3.sub">เอาไปใช้กับชีวิตได้ทันที</span>
     </div>
     <div class="swa">
       <article class="swa-card s">
         <div class="h"><span class="ico">強</span><h3 data-i18n="c.sec3.strong">จุดแข็ง</h3></div>
-        <ul>
-          <li><b>ตัดสินใจเร็ว</b> เมื่อมีเป้าหมายชัด — เพราะ 正官 + 正財 ทั้งคู่สูง</li>
-          <li><b>เหมาะกับงานวางระบบ</b> · ควบคุมคุณภาพ · เชื่อมคนเป็นทีม</li>
-          <li><b>อ่านคนแม่น</b> — น้ำมาก ทำให้ไหวกับ subtext และอารมณ์รอบตัว</li>
-          <li>ทำงานได้ดี <b>ภายใต้กระแส</b> — ตามทรัพย์ คือไหลตามคลื่นที่ถูกต้อง</li>
-        </ul>
+        <ul id="hk-insight-strong"><li>—</li></ul>
       </article>
       <article class="swa-card w">
         <div class="h"><span class="ico">慎</span><h3 data-i18n="c.sec3.warn">ควรระวัง</h3></div>
-        <ul>
-          <li><b>เครียดง่าย</b> เมื่อมีแรงกดดันซ้อน — DM อ่อน ไฟไม่พอจะเผาน้ำ</li>
-          <li>ถ้าน้ำมากเกินไป อาจ <b>คิดเยอะจนตัดสินใจไม่ได้</b></li>
-          <li>โลหะมาก อาจกลายเป็น <b>ดื้อ / over-control</b> ไม่ยืดหยุ่น</li>
-          <li>เลี่ยง <b>ตัดสินใจตอนอารมณ์แกว่ง</b> โดยเฉพาะช่วงเย็น/ดึก</li>
-        </ul>
+        <ul id="hk-insight-warn"><li>—</li></ul>
       </article>
       <article class="swa-card a">
         <div class="h"><span class="ico">用</span><h3 data-i18n="c.sec3.advice">คำแนะนำ</h3></div>
-        <ul>
-          <li>วาง <b>routine แสงแดดเช้า</b> 15 นาที · ช่วยจุดไฟ DM</li>
-          <li>วางแผน <b>รายสัปดาห์</b> ไม่ใช่รายวัน — ให้ดินมีเวลาตั้งตัว</li>
-          <li>ใส่ <b>สีแดง/ส้ม/เขียว</b> อย่างน้อย 1 ชิ้นในชุด</li>
-          <li>เก็บการตัดสินใจสำคัญไว้ <b>ช่วง 09:00-13:00</b> (ชั่วยามไฟ)</li>
-          <li>เปิดดูชั่วโมงดีในปฏิทินก่อนประชุมสำคัญทุกครั้ง</li>
-        </ul>
+        <ul id="hk-insight-advice"><li>—</li></ul>
       </article>
     </div>
   </section>
 
-  <!-- §5 FOUR PILLARS -->
+  <!-- §5 ELEMENTS + YONGSHEN -->
   <section class="sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">05 · STRUCTURE</span>
-        <h2 data-i18n="c.sec4.h2"><span class="tc">四柱</span>โครงดวง 4 เสา</h2>
+        <span class="num">06 · ELEMENTS</span>
+        <h2 data-i18n="c.sec1.h2"><span class="tc">五行</span>ธาตุที่เด่น · ขาด · ควรเสริม<span class="hk-help" data-help="s.element"></span></h2>
       </div>
-      <span class="sub" data-i18n="c.sec4.sub">หลักของชะตา · กดเสาเพื่อดูรายละเอียด</span>
+      <span class="sub" data-i18n="c.sec1.sub">ใช้ตอบ "อะไรช่วยฉัน อะไรควรระวัง"</span>
     </div>
-    <div class="pillars">
-      <article class="pillar">
-        <div class="col">YEAR</div>
-        <div class="col-th">เสาปี · บรรพบุรุษ</div>
-        <div class="gz-stack">
-          <div class="gz metal">庚</div>
-          <div class="gz fire">午</div>
+    <div class="el-grid">
+      <div class="el-list">
+        <div class="el-row">
+          <span class="el-glyph" style="color:var(--wood)">木</span>
+          <div class="el-name"><b data-i18n="auto.c.508">ไม้ · WOOD</b><span data-i18n="auto.c.509">เริ่มต้น · เติบโต</span></div>
+          <div class="el-bar"><i style="width:0%;background:var(--wood)"></i></div>
+          <span class="el-pct" style="color:var(--wood)">—</span>
+          <span class="el-tag neutral">—</span>
         </div>
-        <div class="ten-god">傷官 · OUTPUT</div>
-        <div class="qi">12 Qi · <b>絕</b> · พลังไหลออก</div>
-        <div class="pillar-toggle">+ hidden · 納音</div>
-      </article>
-      <article class="pillar">
-        <div class="col">MONTH</div>
-        <div class="col-th">เสาเดือน · พ่อแม่ / งาน</div>
-        <div class="gz-stack">
-          <div class="gz water">壬</div>
-          <div class="gz water">子</div>
+        <div class="el-row">
+          <span class="el-glyph" style="color:var(--fire)">火</span>
+          <div class="el-name"><b data-i18n="auto.c.510">ไฟ · FIRE</b><span data-i18n="auto.c.511">พลัง · ตัดสินใจ</span></div>
+          <div class="el-bar"><i style="width:0%;background:var(--fire)"></i></div>
+          <span class="el-pct" style="color:var(--fire)">—</span>
+          <span class="el-tag neutral">—</span>
         </div>
-        <div class="ten-god">正財 · WEALTH</div>
-        <div class="qi">12 Qi · <b>絕</b> · ทรัพย์มา</div>
-        <div class="pillar-toggle">+ hidden · 納音</div>
-      </article>
-      <article class="pillar dm">
-        <div class="col">DAY · DM</div>
-        <div class="col-th">เสาวัน · ตัวคุณ / คู่ครอง</div>
-        <div class="gz-stack">
-          <div class="gz earth dm">己</div>
-          <div class="gz wood">寅</div>
+        <div class="el-row">
+          <span class="el-glyph" style="color:var(--earth)">土</span>
+          <div class="el-name"><b data-i18n="auto.c.512">ดิน · EARTH</b><span data-i18n="auto.c.513">ตัวคุณ · ฐาน</span></div>
+          <div class="el-bar"><i style="width:0%;background:var(--earth)"></i></div>
+          <span class="el-pct" style="color:var(--earth)">—</span>
+          <span class="el-tag neutral">—</span>
         </div>
-        <div class="ten-god">正官 · OFFICIAL</div>
-        <div class="qi">12 Qi · <b>胎</b> · เริ่มก่อตัว</div>
-        <div class="pillar-toggle">+ hidden · 納音</div>
-      </article>
-      <article class="pillar">
-        <div class="col">HOUR</div>
-        <div class="col-th">เสาชั่วโมง · ลูก / บั้นปลาย</div>
-        <div class="gz-stack">
-          <div class="gz fire">丁</div>
-          <div class="gz earth">丑</div>
+        <div class="el-row">
+          <span class="el-glyph" style="color:var(--metal)">金</span>
+          <div class="el-name"><b data-i18n="auto.c.514">ทอง · METAL</b><span data-i18n="auto.c.515">ตัด · กฎเกณฑ์</span></div>
+          <div class="el-bar"><i style="width:0%;background:var(--metal)"></i></div>
+          <span class="el-pct" style="color:var(--metal)">—</span>
+          <span class="el-tag neutral">—</span>
         </div>
-        <div class="ten-god">偏印 · INSIGHT</div>
-        <div class="qi">12 Qi · <b>臨官</b> · พลังเต็ม</div>
-        <div class="pillar-toggle">+ hidden · 納音</div>
-      </article>
+        <div class="el-row">
+          <span class="el-glyph" style="color:var(--water)">水</span>
+          <div class="el-name"><b data-i18n="auto.c.516">น้ำ · WATER</b><span data-i18n="auto.c.517">คิด · ลื่นไหล</span></div>
+          <div class="el-bar"><i style="width:0%;background:var(--water)"></i></div>
+          <span class="el-pct" style="color:var(--water)">—</span>
+          <span class="el-tag neutral">—</span>
+        </div>
+      </div>
+      <!-- yong-card เดิม removed · ใช้ §06b YONGSHEN v2 (wrapper-7) แทน · 15 พ.ค. 2026
+           ของเดิม mechanical: earth=忌神 แต่ตำราอากง earth=warm_earth=喜神 · v2 ตรงกว่า -->
+    </div>
+  </section>
+
+  <!-- §5.5 用神 v2 · wrapper-7 · โครงสร้าง + โรค + ยา + สะพาน · อากง 15 พ.ค. -->
+  <section class="sec" id="hk-ysv2-sec" style="display:none">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">06b · YONGSHEN v2</span>
+        <h2 data-i18n="c.ysv2.h2"><span class="tc">用神</span> v2 · โครงสร้าง · โรค · ยา · สะพานเชื่อม <a class="hk-method-link" href="/methodology" target="_blank" rel="noopener" data-th="📿 วิธีคิด 13 ขั้น →" data-en="📿 Methodology (13 steps) →" data-zh="📿 方法論·十三步 →" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px;font-weight:normal;color:var(--gold,#c8a44d);text-decoration:none;border:1px solid rgba(200,164,77,.3);padding:3px 10px;border-radius:99px;background:rgba(200,164,77,.08);vertical-align:middle;">📿 วิธีคิด 13 ขั้น →</a></h2>
+      </div>
+      <span class="sub" data-i18n="c.ysv2.sub">ใช้ตอบ "ดวงคุณเป็นโครงสร้างอะไร · ติดปัญหาอะไร · ยาคือธาตุไหน"</span>
+    </div>
+    <div class="ys-v2">
+      <div class="ys-head">
+        <div class="ys-struct" id="hk-ysv2-struct">—</div>
+        <div class="ys-meta">
+          <span class="ys-strategy" id="hk-ysv2-strategy">—</span>
+          <span class="ys-engine" id="hk-ysv2-engine">—</span>
+          <span class="ys-conf" id="hk-ysv2-conf">—</span>
+        </div>
+      </div>
+      <div class="ys-row"><span class="k" data-i18n="c.ysv2.primary">用神 · ของเลี้ยง</span><span class="v" id="hk-ysv2-primary">—</span></div>
+      <div class="ys-row"><span class="k" data-i18n="c.ysv2.xishen">喜神 · เสริม</span><span class="v" id="hk-ysv2-xishen">—</span></div>
+      <div class="ys-row"><span class="k" data-i18n="c.ysv2.jishen">忌神 · พิษ</span><span class="v" id="hk-ysv2-jishen">—</span></div>
+      <div class="ys-row"><span class="k" data-i18n="c.ysv2.tiaohou">調候 · ฤดู</span><span class="v" id="hk-ysv2-tiaohou">—</span></div>
+      <div class="ys-row" id="hk-ysv2-disease-row"><span class="k" data-i18n="c.ysv2.disease">病 · โรค</span><span class="v" id="hk-ysv2-diseases">—</span></div>
+      <div class="ys-row" id="hk-ysv2-med-row"><span class="k" data-i18n="c.ysv2.medicine">藥 · ยา</span><span class="v" id="hk-ysv2-medicine">—</span></div>
+      <div class="ys-row" id="hk-ysv2-bridge-row"><span class="k" data-i18n="c.ysv2.bridge">通關 · สะพาน</span><span class="v" id="hk-ysv2-bridges">—</span></div>
+      <details class="ys-explain" id="hk-ysv2-explain-box" style="display:none">
+        <summary data-i18n="c.ysv2.reasoning">📜 ที่มาของการประเมิน</summary>
+        <ul id="hk-ysv2-explain"></ul>
+      </details>
     </div>
   </section>
 
@@ -835,35 +1323,35 @@ window.addEventListener('beforeunload', function(){
   <section class="sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">06 · INTERACTIONS</span>
-        <h2><span class="tc">關係</span>ปฏิกิริยาในดวง</h2>
+        <span class="num">07 · INTERACTIONS</span>
+        <h2><span class="tc">關係</span>ปฏิกิริยาในดวง<span class="hk-help" data-help="i.harmony"></span></h2>
       </div>
       <span class="sub" data-i18n="c.sec5.sub">แรงปะทะและการเสริมในชะตา</span>
     </div>
     <div class="inter-grid">
-      <article class="inter-card good">
-        <div class="ty">六合 · HARMONY (4)</div>
-        <h4>มีคู่สนับสนุนในดวง</h4>
-        <p>เสาเดือนกับเสาวันมีความสัมพันธ์แบบ <b>合 (harmony)</b> — งานกับชีวิตส่วนตัวไม่ขัดกัน คุณ <b>เลือกคนที่ใช่ได้แม่น</b> และมักได้ทีมที่ทำงานเข้าขา</p>
-        <div class="glyphs"><span>丑↔子</span><span>寅↔亥</span></div>
+      <article class="inter-card">
+        <div class="ty">—</div>
+        <h4>—</h4>
+        <p>—</p>
+        <div class="glyphs"></div>
       </article>
       <article class="inter-card">
-        <div class="ty">六沖 · CLASH (1)</div>
-        <h4>มีจุดต้องระวัง: ความเร็ว ↔ การพัก</h4>
-        <p>เสาชั่วโมง <b>沖</b> เสาปี — ตัดสินใจเร็วบางครั้งขัดกับโครงสร้างเดิม · ต้อง <b>ฟังคนรุ่นก่อน</b> ก่อนเปลี่ยนทิศทางใหญ่</p>
-        <div class="glyphs"><span>子→午</span></div>
-      </article>
-      <article class="inter-card good">
-        <div class="ty">三會 · ALLIANCE</div>
-        <h4>มีพันธมิตรน้ำในดวง</h4>
-        <p>子·丑·亥 รวมเป็นพลังน้ำ — ทำให้คุณ <b>เก่งเรื่องวิเคราะห์</b> และ <b>คนรอบตัวมักเสริมกัน</b></p>
-        <div class="glyphs"><span>子+丑+亥 → 水</span></div>
+        <div class="ty">—</div>
+        <h4>—</h4>
+        <p>—</p>
+        <div class="glyphs"></div>
       </article>
       <article class="inter-card">
-        <div class="ty">空亡 · VOID</div>
-        <h4>จุดว่าง: 辰 · 巳</h4>
-        <p>มี <b>เรื่องที่ต้องใช้เวลาเห็นผล</b> — โดยเฉพาะการลงทุนระยะยาวและการสร้างชื่อ · อย่ารีบร้อน</p>
-        <div class="glyphs"><span>辰</span><span>巳</span></div>
+        <div class="ty">—</div>
+        <h4>—</h4>
+        <p>—</p>
+        <div class="glyphs"></div>
+      </article>
+      <article class="inter-card">
+        <div class="ty">—</div>
+        <h4>—</h4>
+        <p>—</p>
+        <div class="glyphs"></div>
       </article>
     </div>
   </section>
@@ -872,31 +1360,71 @@ window.addEventListener('beforeunload', function(){
   <section class="sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">07 · 大運</span>
-        <h2 data-i18n="c.sec7.h2"><span class="tc">大運</span>คลื่นโชค 8 รอบ · ตลอดชีวิต</h2>
+        <span class="num">08 · 大運</span>
+        <h2 data-i18n="c.sec7.h2"><span class="tc">大運</span>คลื่นโชค 8 รอบ · ตลอดชีวิต<span class="hk-help" data-help="l.dayun"></span></h2>
         <span class="sub" data-i18n="c.sec7.sub">รอบละ 10 ปี · กดดูรายละเอียดแต่ละรอบ</span>
       </div>
     </div>
     <div class="hk-luck-row">
-      <div class="hk-luck-card"><div class="age">0-9</div><div class="hk-pillar earth"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">己</div><div class="hk-pillar-branch">丑</div></div></div><div class="phase">沐浴</div></div>
-      <div class="hk-luck-card cur"><div class="age">10-19</div><div class="hk-pillar earth"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">戊</div><div class="hk-pillar-branch">子</div></div></div><div class="phase">冠帶</div></div>
-      <div class="hk-luck-card"><div class="age">20-29</div><div class="hk-pillar fire"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">丁</div><div class="hk-pillar-branch">亥</div></div></div><div class="phase">臨官</div></div>
-      <div class="hk-luck-card"><div class="age">30-39</div><div class="hk-pillar fire"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">丙</div><div class="hk-pillar-branch">戌</div></div></div><div class="phase">帝旺</div></div>
-      <div class="hk-luck-card"><div class="age">40-49</div><div class="hk-pillar wood"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">乙</div><div class="hk-pillar-branch">酉</div></div></div><div class="phase">衰</div></div>
-      <div class="hk-luck-card"><div class="age">50-59</div><div class="hk-pillar wood"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">甲</div><div class="hk-pillar-branch">申</div></div></div><div class="phase">病</div></div>
-      <div class="hk-luck-card"><div class="age">60-69</div><div class="hk-pillar water"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">癸</div><div class="hk-pillar-branch">未</div></div></div><div class="phase">死</div></div>
-      <div class="hk-luck-card"><div class="age">70-79</div><div class="hk-pillar water"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">壬</div><div class="hk-pillar-branch">午</div></div></div><div class="phase">墓</div></div>
+      <div class="hk-luck-card"><div class="age">—</div><div class="hk-pillar"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">—</div><div class="hk-pillar-branch">—</div></div></div><div class="phase">—</div></div>
+      <div class="hk-luck-card"><div class="age">—</div><div class="hk-pillar"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">—</div><div class="hk-pillar-branch">—</div></div></div><div class="phase">—</div></div>
+      <div class="hk-luck-card"><div class="age">—</div><div class="hk-pillar"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">—</div><div class="hk-pillar-branch">—</div></div></div><div class="phase">—</div></div>
+      <div class="hk-luck-card"><div class="age">—</div><div class="hk-pillar"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">—</div><div class="hk-pillar-branch">—</div></div></div><div class="phase">—</div></div>
+      <div class="hk-luck-card"><div class="age">—</div><div class="hk-pillar"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">—</div><div class="hk-pillar-branch">—</div></div></div><div class="phase">—</div></div>
+      <div class="hk-luck-card"><div class="age">—</div><div class="hk-pillar"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">—</div><div class="hk-pillar-branch">—</div></div></div><div class="phase">—</div></div>
+      <div class="hk-luck-card"><div class="age">—</div><div class="hk-pillar"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">—</div><div class="hk-pillar-branch">—</div></div></div><div class="phase">—</div></div>
+      <div class="hk-luck-card"><div class="age">—</div><div class="hk-pillar"><div class="hk-pillar-orb"><div class="hk-pillar-glow"></div><div class="hk-pillar-ring"></div><div class="hk-pillar-stem">—</div><div class="hk-pillar-branch">—</div></div></div><div class="phase">—</div></div>
     </div>
-    <p class="hk-luck-note" data-i18n="c.sec7.note">รอบโชคปัจจุบัน <b>10-19 ปี · 戊子 (Yang Earth + Water)</b> · ช่วงเริ่มสะสม · ระวังน้ำท่วมความคิด · ใช้ดินสร้างฐาน</p>
+    <p class="hk-luck-note">—</p>
+  </section>
+
+  <!-- §08b · 拱·夾 CARRY IMAGE · sifu-grade · classical 三命通會+神峰通考 (18 พ.ค.) -->
+  <section class="sec" id="hk-carry-section" style="display:none;">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">08b · 拱·夾</span>
+        <h2><span class="tc">拱·夾</span>ภาพคีบ · กิ่งที่ซ่อนระหว่างเสา</h2>
+        <span class="sub">Carry image · sifu-grade · ตำรา 三命通會 + 神峰通考</span>
+      </div>
+    </div>
+    <div id="hk-carry-list" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;"></div>
+    <p style="font-size:11px;color:var(--fg-soft,#888);margin-top:10px;line-height:1.6;">
+      💡 <b>拱·夾</b> = "กิ่งที่ไม่อยู่ในผัง แต่ถูกคีบ/รวมโดย 2 กิ่งของผัง" · เปิดเมื่อ 大運/流年/流月 เข้ากิ่งนั้น · แตกเมื่อกิ่งนั้นโดน 沖
+    </p>
+  </section>
+
+  <!-- §10 PERSONAL STARS · ดาวประจำตัว 14 ดวง ─────────── -->
+  <section class="sec" id="hk-personal-stars">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">09 · 個人星</span>
+        <h2><span class="tc">個人星</span>ดาวประจำตัว · Personal Stars<span class="hk-help" data-help="s.pstar"></span></h2>
+      </div>
+      <span  class="sub" data-i18n="auto.c.518">ดาวที่ทำงานในดวง · แยกตามเสาที่ตก · ความหมายตามตำรา Sesheta</span>
+    </div>
+    <style>
+      .hk-ps-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px;}
+      @media(max-width:768px){.hk-ps-grid{grid-template-columns:1fr;gap:10px;}}
+      .hk-ps-card{background:var(--tile);border:1px solid var(--tile-bd);border-radius:12px;padding:18px 20px;border-left:3px solid var(--gold);}
+      .hk-ps-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;gap:10px;}
+      .hk-ps-zh{font-family:var(--tc);font-size:20px;color:var(--gold);font-weight:700;line-height:1;}
+      .hk-ps-pillar{font-family:var(--mono);font-size:10px;color:var(--fg-faint);letter-spacing:.18em;text-transform:uppercase;flex-shrink:0;}
+      .hk-ps-label{font-family:var(--thai);font-size:13px;color:var(--fg);font-weight:600;margin-bottom:6px;}
+      .hk-ps-desc{font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.65;}
+      .hk-ps-empty{text-align:center;padding:30px 0;color:var(--fg-faint);font-style:italic;}
+    </style>
+    <div class="hk-ps-grid" id="hk-ps-grid">
+      <div class="hk-ps-empty">—</div>
+    </div>
   </section>
 
   <!-- §08 BASIC BAZI · ปาจื้อพื้นฐาน (live data จาก /api/chart) ─────────── -->
   <section class="sec" id="hk-basic-bazi">
     <div class="sec-head">
       <div class="l">
-        <span class="num">08 · 基礎</span>
-        <h2><span class="tc">基礎八字</span>ปาจื้อพื้นฐาน · Basic BaZi</h2>
-        <span class="sub">ข้อมูลซินแสตรวจสอบ · TH / EN / ZH</span>
+        <span class="num">10 · 基礎</span>
+        <h2><span class="tc">基礎八字</span>ปาจื้อพื้นฐาน · Basic BaZi<span class="hk-help" data-help="s.basic"></span></h2>
+        <span  class="sub" data-i18n="auto.c.519">ข้อมูลซินแสตรวจสอบ · TH / EN / ZH</span>
       </div>
     </div>
     <style>
@@ -934,43 +1462,43 @@ window.addEventListener('beforeunload', function(){
     <div class="bb-grid">
       <!-- Card 1: 4 Pillars · Ten Gods · Qi Phase -->
       <div class="bb-card" style="grid-column:1/-1">
-        <h4>四柱 · Four Pillars · เสาทั้งสี่</h4>
+        <h4 data-i18n="auto.c.520">四柱 · Four Pillars · เสาทั้งสี่</h4>
         <div class="bb-tg" id="bb-pillars">
-          <div class="col"><div class="pos">年 · YEAR · ปี</div><div class="stem" id="bb-yp-stem">—</div><div class="god" id="bb-yp-god">—</div><div class="phase" id="bb-yp-phase">—</div></div>
-          <div class="col"><div class="pos">月 · MONTH · เดือน</div><div class="stem" id="bb-mp-stem">—</div><div class="god" id="bb-mp-god">—</div><div class="phase" id="bb-mp-phase">—</div></div>
-          <div class="col" style="border-color:var(--gold,#b89a5e);background:linear-gradient(135deg,rgba(184,154,94,.12),transparent)"><div class="pos">日主 · DAY MASTER · เจ้าชะตา</div><div class="stem" id="bb-dp-stem">—</div><div class="god">—</div><div class="phase" id="bb-dp-phase">—</div></div>
-          <div class="col"><div class="pos">時 · HOUR · ยาม</div><div class="stem" id="bb-hp-stem">—</div><div class="god" id="bb-hp-god">—</div><div class="phase" id="bb-hp-phase">—</div></div>
+          <div class="col"><div  class="pos" data-i18n="auto.c.521">年 · YEAR · ปี</div><div class="stem" id="bb-yp-stem">—</div><div class="god" id="bb-yp-god">—</div><div class="phase" id="bb-yp-phase">—</div></div>
+          <div class="col"><div  class="pos" data-i18n="auto.c.522">月 · MONTH · เดือน</div><div class="stem" id="bb-mp-stem">—</div><div class="god" id="bb-mp-god">—</div><div class="phase" id="bb-mp-phase">—</div></div>
+          <div class="col" style="border-color:var(--gold,#b89a5e);background:linear-gradient(135deg,rgba(184,154,94,.12),transparent)"><div  class="pos" data-i18n="auto.c.523">日主 · DAY MASTER · เจ้าชะตา</div><div class="stem" id="bb-dp-stem">—</div><div class="god">—</div><div class="phase" id="bb-dp-phase">—</div></div>
+          <div class="col"><div  class="pos" data-i18n="auto.c.524">時 · HOUR · ยาม</div><div class="stem" id="bb-hp-stem">—</div><div class="god" id="bb-hp-god">—</div><div class="phase" id="bb-hp-phase">—</div></div>
         </div>
-        <div class="lab">บรรทัด: 干 (stem) · 十神 (ten god) · 十二長生 (qi phase ของ DM)</div>
+        <div  class="lab" data-i18n="auto.c.525">บรรทัด: 干 (stem) · 十神 (ten god) · 十二長生 (qi phase ของ DM)</div>
       </div>
 
       <!-- Card 2: Five Elements -->
       <div class="bb-card">
-        <h4>五行 · Five Elements · ห้าธาตุ</h4>
+        <h4 data-i18n="auto.c.526">五行 · Five Elements · ห้าธาตุ</h4>
         <div id="bb-elements">
-          <div class="bb-bar wood"><span class="name">木 ไม้</span><div class="track"><div class="fill" id="bb-el-wood" style="width:0%"></div></div><span class="num" id="bb-el-wood-n">—</span></div>
-          <div class="bb-bar fire"><span class="name">火 ไฟ</span><div class="track"><div class="fill" id="bb-el-fire" style="width:0%"></div></div><span class="num" id="bb-el-fire-n">—</span></div>
-          <div class="bb-bar earth"><span class="name">土 ดิน</span><div class="track"><div class="fill" id="bb-el-earth" style="width:0%"></div></div><span class="num" id="bb-el-earth-n">—</span></div>
-          <div class="bb-bar metal"><span class="name">金 ทอง</span><div class="track"><div class="fill" id="bb-el-metal" style="width:0%"></div></div><span class="num" id="bb-el-metal-n">—</span></div>
-          <div class="bb-bar water"><span class="name">水 น้ำ</span><div class="track"><div class="fill" id="bb-el-water" style="width:0%"></div></div><span class="num" id="bb-el-water-n">—</span></div>
+          <div class="bb-bar wood"><span  class="name" data-i18n="auto.c.527">木 ไม้</span><div class="track"><div class="fill" id="bb-el-wood" style="width:0%"></div></div><span class="num" id="bb-el-wood-n">—</span></div>
+          <div class="bb-bar fire"><span  class="name" data-i18n="auto.c.528">火 ไฟ</span><div class="track"><div class="fill" id="bb-el-fire" style="width:0%"></div></div><span class="num" id="bb-el-fire-n">—</span></div>
+          <div class="bb-bar earth"><span  class="name" data-i18n="auto.c.529">土 ดิน</span><div class="track"><div class="fill" id="bb-el-earth" style="width:0%"></div></div><span class="num" id="bb-el-earth-n">—</span></div>
+          <div class="bb-bar metal"><span  class="name" data-i18n="auto.c.530">金 ทอง</span><div class="track"><div class="fill" id="bb-el-metal" style="width:0%"></div></div><span class="num" id="bb-el-metal-n">—</span></div>
+          <div class="bb-bar water"><span  class="name" data-i18n="auto.c.531">水 น้ำ</span><div class="track"><div class="fill" id="bb-el-water" style="width:0%"></div></div><span class="num" id="bb-el-water-n">—</span></div>
         </div>
-        <div class="lab">นับ stem + branch + hidden stems (0.5×)</div>
+        <div  class="lab" data-i18n="auto.c.532">นับ stem + branch + hidden stems (0.5×)</div>
       </div>
 
       <!-- Card 3: Yongshen · Jishen -->
       <div class="bb-card">
         <h4>用神 / 忌神 · Useful / Unfavorable God</h4>
-        <div style="font-size:11px;color:var(--fg-soft,#888);margin-bottom:4px">用神 (เทพช่วย · favorable)</div>
+        <div  style="font-size:11px;color:var(--fg-soft,#888);margin-bottom:4px" data-i18n="auto.c.533">用神 (เทพช่วย · favorable)</div>
         <div class="bb-row" id="bb-yongshen"></div>
-        <div style="font-size:11px;color:var(--fg-soft,#888);margin:10px 0 4px">忌神 (เทพหลีก · unfavorable)</div>
+        <div  style="font-size:11px;color:var(--fg-soft,#888);margin:10px 0 4px" data-i18n="auto.c.534">忌神 (เทพหลีก · unfavorable)</div>
         <div class="bb-row" id="bb-jishen"></div>
-        <div class="lab" id="bb-wealth-role">บทบาทดาวทรัพย์ (财) · กำลังโหลด</div>
+        <div  class="lab" id="bb-wealth-role" data-i18n="auto.c.535">บทบาทดาวทรัพย์ (财) · กำลังโหลด</div>
       </div>
 
       <!-- Card 4: Interactions · Combinations · Punishments -->
       <div class="bb-card">
         <h4>沖 / 合 / 刑 / 害 / 破 · Interactions</h4>
-        <div style="font-size:11px;color:var(--fg-soft,#888);margin-bottom:4px">ภายในดวงเกิด · within natal</div>
+        <div  style="font-size:11px;color:var(--fg-soft,#888);margin-bottom:4px" data-i18n="auto.c.536">ภายในดวงเกิด · within natal</div>
         <div class="bb-row" id="bb-interactions"></div>
         <div style="font-size:11px;color:var(--fg-soft,#888);margin:10px 0 4px">三合 / 三會 · Combinations</div>
         <div class="bb-row" id="bb-combinations"></div>
@@ -978,21 +1506,13 @@ window.addEventListener('beforeunload', function(){
         <div class="bb-row" id="bb-punishments"></div>
       </div>
 
-      <!-- Card 5: Today Overlay -->
-      <div class="bb-card">
-        <h4>今日 · Today vs Natal · วันนี้กับดวง</h4>
-        <div class="bb-today">
-          <div class="today-pill" id="bb-today-pill">—</div>
-          <div class="today-vs" id="bb-today-vs">กำลังโหลด ...</div>
-        </div>
-        <div class="lab">เทียบกับ 日支 (day branch) ของคุณ</div>
-      </div>
+      <!-- ย้ายไป /today (15 พ.ค.) · /chart โฟกัสเฉพาะดวงเกิด · ลด duplicate -->
 
       <!-- Debug -->
       <div class="bb-card" style="grid-column:1/-1">
         <h4>🔍 Debug · Source Trace (?debug=1)</h4>
         <pre id="bb-debug" style="font-size:10px;color:var(--fg-soft,#888);overflow:auto;max-height:200px;display:none;font-family:var(--mono,monospace);">—</pre>
-        <div class="lab" id="bb-debug-toggle" style="cursor:pointer;text-decoration:underline">แสดง raw data จาก /api/chart</div>
+        <div  class="lab" id="bb-debug-toggle" style="cursor:pointer;text-decoration:underline" data-i18n="auto.c.537">แสดง raw data จาก /api/chart</div>
       </div>
     </div>
     <script>
@@ -1003,30 +1523,13 @@ window.addEventListener('beforeunload', function(){
       const ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
       const INTERACTION_COLOR = {'六沖':'bad','六合':'good','六害':'bad','六破':'bad','三刑':'bad','自刑':'bad','子卯刑':'bad'};
 
-      function getBirth(){
-        try {
-          const raw = localStorage.getItem('hk_birth') || sessionStorage.getItem('hk_birth');
-          if (raw) {
-            const p = JSON.parse(raw);
-            if (p.date && p.time) return { date: p.date, time: p.time };
-          }
-        } catch(_){}
-        return { date: '1984-12-31', time: '13:15' };
-      }
+      /* identity reads removed · controller (HKChartPage) owns snapshot */
 
-      async function loadBasic(){
-        const b = getBirth();
-        try {
-          const r = await fetch('/api/chart', {
-            method: 'POST', headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ date: b.date, time: b.time, longitude: 100.5018 })
-          });
-          if (!r.ok) return;
-          const d = await r.json();
-          if (!d || !d.pillars) return;
-          render(d);
-        } catch(e){ console.warn('basic bazi load fail', e); }
-      }
+      // Controller drives this · expose render as HK_RENDER_BASIC
+      window.HK_RENDER_BASIC = function(d /*, snapshot */){
+        if (!d || !d.pillars) return;
+        try { render(d); } catch(e){ console.warn('basic bazi render fail', e); }
+      };
 
       function render(d){
         const a = d.analysis || {};
@@ -1121,14 +1624,7 @@ window.addEventListener('beforeunload', function(){
           pnEl.appendChild(el);
         });
 
-        // today overlay
-        if (to && to.today_pillar){
-          document.getElementById('bb-today-pill').textContent = to.today_pillar.stem + to.today_pillar.branch;
-          const types = (to.vs_day_branch||[]).filter(x=>x);
-          document.getElementById('bb-today-vs').textContent = types.length
-            ? `วันนี้ vs 日支(${p.day?.branch}) → ${types.join(' · ')}`
-            : `วันนี้ vs 日支(${p.day?.branch}) → ไม่มีปะทะ/รวม · neutral`;
-        }
+        // today overlay · ย้ายไป /today แล้ว · ไม่ render บนหน้านี้
 
         // debug
         const dbg = document.getElementById('bb-debug');
@@ -1143,8 +1639,7 @@ window.addEventListener('beforeunload', function(){
         });
       }
 
-      if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', loadBasic);
-      else loadBasic();
+      /* controller (HKChartPage) auto-runs · no per-block init */
     })();
     </script>
   </section>
@@ -1153,8 +1648,8 @@ window.addEventListener('beforeunload', function(){
   <section class="sec hk-sifu" id="hk-sifu-box">
     <div class="hk-sifu-head">
       <div class="l">
-        <span class="num">08 · 流年 2026</span>
-        <h2 data-i18n="c.sifu.h2"><span class="tc">流年</span>ภาพรวมปี 2026 · ซินแสตอบ</h2>
+        <span class="num">11 · 流年 2026</span>
+        <h2 data-i18n="c.sifu.h2"><span class="tc">流年</span>ภาพรวมปี 2026 · ซินแสตอบ<span class="hk-help" data-help="y.timeline"></span></h2>
         <span class="sub" data-i18n="c.sifu.sub">เลือกเรื่องที่อยากรู้ · ซินแสจะอ่านดวงคุณให้</span>
       </div>
       <div class="yr">2026</div>
@@ -1170,11 +1665,11 @@ window.addEventListener('beforeunload', function(){
     </div>
 
     <div class="hk-sifu-output" id="hk-sifu-output">
-      <div class="placeholder" data-i18n="c.sifu.placeholder">กดเลือกหัวข้อด้านบน · ซินแสจะอ่านดวงคุณตามตำราคลาสสิก</div>
+      <div class="placeholder" data-i18n="c.sifu.placeholder">กดเลือกหัวข้อด้านบน · หรือพิมพ์ถามซินแสด้านล่างได้เลย</div>
     </div>
 
-    <div class="hk-sifu-ask" id="hk-sifu-ask" style="display:none;">
-      <input type="text" id="hk-sifu-input" data-i18n-ph="c.sifu.askPh" placeholder="ถามต่อให้ลึกขึ้น เช่น 'ช่วงไหนเหมาะเปลี่ยนงาน?'">
+    <div class="hk-sifu-ask" id="hk-sifu-ask">
+      <input type="text" id="hk-sifu-input" data-i18n-ph="c.sifu.askPh" placeholder="พิมพ์ถามซินแส เช่น 'ปีนี้เปลี่ยนงานดีไหม?' หรือ 'อายุเท่าไหร่จะแต่งงาน?'">
       <button id="hk-sifu-send" data-i18n="c.sifu.send">ส่ง · 問</button>
     </div>
 
@@ -1187,11 +1682,36 @@ window.addEventListener('beforeunload', function(){
     </details>
   </section>
 
+  <!-- §13 · 24 節氣 ของปีเกิด · อากง v3 (16 พ.ค.) -->
+  <!-- §12 · 河洛理數 Heluo Astrology · Pre/Post-Heaven + Annual + Monthly (17 พ.ค.) -->
+  <section class="sec" id="hk-heluo-sec" style="display:none">
+    <div class="sec-head">
+      <div>
+        <h2><span class="tc">易經</span>ดวงในภาษากว้า · 河洛理數</h2>
+        <span class="sub">Pre-Heaven (เกิด) · Post-Heaven (ภารกิจ) · Annual (ปีนี้) · Monthly (เดือนนี้) · ตำราจีน 4000 ปี</span>
+      </div>
+    </div>
+    <div id="hk-heluo-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;"></div>
+    <div id="hk-heluo-numbers" style="margin-top:12px;padding:12px 16px;background:var(--bg-3,#1a1a23);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--fg-soft);"></div>
+  </section>
+
+  <section class="sec" id="hk-jieqi-sec" style="display:none">
+    <div class="sec-head">
+      <div>
+        <h2 data-i18n="c.jieqi.h2"><span class="tc">節氣</span>24 節氣 · ปฏิทินฤดูปีเกิด</h2>
+        <span class="sub" data-i18n="c.jieqi.sub">เดือน BaZi เริ่มที่ 節 (Major) ไม่ใช่วันที่ 1 จันทรคติ · highlight = jieqi ของเดือนเกิด</span>
+      </div>
+    </div>
+    <div id="hk-jieqi-info" style="background:linear-gradient(160deg,var(--gold-soft),transparent);border:1px solid var(--gold);border-radius:14px;padding:16px;margin-bottom:16px;font-size:13px;line-height:1.7;"></div>
+    <div id="hk-jieqi-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;"></div>
+    <div style="text-align:right;margin-top:14px;"><a href="/solar-terms" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.1em;text-decoration:none;">ดูปฏิทิน 16 ปี · /solar-terms →</a></div>
+  </section>
+
   <!-- FOOTER CTA -->
   <div class="footer-cta">
     <div>
       <h3>พร้อมใช้ <span class="tc">解</span> ดวงในชีวิตจริง?</h3>
-      <p>ดูชั่วโมงมงคลของวันนี้ · ตรวจคนรอบตัว · บันทึกการตัดสินใจ</p>
+      <p data-i18n="auto.c.538">ดูชั่วโมงมงคลของวันนี้ · ตรวจคนรอบตัว · บันทึกการตัดสินใจ</p>
     </div>
     <div class="btn-row">
       <a href="/chart-print" class="btn line" data-i18n="c.cta.deep" target="_blank">📜 ดูเชิงลึก 38 หมวด · 詳細</a>
@@ -1203,21 +1723,9 @@ window.addEventListener('beforeunload', function(){
 
 <script>
 /* hourkey · wire chart from birth data (graceful · ถ้าไม่มี birth → คง sample) */
-(async function wireChart(){
+window.HK_RENDER_CHART = function renderChart(d, birth){
   try {
-    const raw = localStorage.getItem('hk_birth');
-    if (!raw) return; /* keep sample */
-    const birth = JSON.parse(raw);
-    if (!birth || !birth.date) return;
-
-    const r = await fetch('/api/chart', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date: birth.date, time: birth.time || '12:00', longitude: birth.longitude || 100.5018 }),
-    });
-    if (!r.ok) return;
-    const d = await r.json();
     if (!d || !d.pillars) return;
-
     const stems   = ['hour','day','month','year'].map(function(k){ return d.pillars[k]?.stem; });
     const branches= ['hour','day','month','year'].map(function(k){ return d.pillars[k]?.branch; });
     const dayStem = d.pillars.day?.stem;
@@ -1231,21 +1739,13 @@ window.addEventListener('beforeunload', function(){
       dmName.textContent = stemMap[dayStem] || dayStem;
     }
 
-    /* hero name */
-    const email = localStorage.getItem('hk_email');
-    if (email) {
-      const nm = document.querySelector('h1 .name');
-      if (nm) nm.textContent = email.split('@')[0];
-    }
+    /* hero name · controller owns identity now · do NOT read storage here */
 
     /* small DM marker */
     const gzDm = document.querySelector('.gz.dm');
     if (gzDm && dayStem) gzDm.textContent = dayStem;
-
-    /* mark live */
-    document.documentElement.setAttribute('data-live','1');
   } catch(e) { /* silent */ }
-})();
+};
 </script>
 
 <script>
@@ -1263,7 +1763,114 @@ window.addEventListener('beforeunload', function(){
 
 
 <script>
+/* Help tooltip dict · 3 ภาษา · ใช้ผ่าน data-help="key" บน <span class="hk-help"> */
+window.HK_HELP = {
+  /* §02 STRUCTURE rows */
+  'r.tg':    { th:'<b>十神</b> · บทบาท 10 ฝ่ายของก้านวิ่งเทียบกับวันเจ้า (DM) เช่น 正官=อำนาจตรง · 正財=ทรัพย์ตรง · 食神=ผลผลิต · บอกหน้าที่ของก้านนี้ในชีวิตคุณ', en:'<b>Ten Gods</b> · 10 roles of each stem relative to Day Master · e.g. Direct Officer = authority, Wealth = money flow', zh:'<b>十神</b> · 每柱天干對日主的角色 · 如正官·正財·食神等' },
+  'r.hs':    { th:'<b>天干 (ก้านสวรรค์)</b> · 10 ก้าน (甲乙丙丁戊己庚辛壬癸) · ตัวแทนพลังจิตใจและความคิดของเสา', en:'<b>Heavenly Stems</b> · 10 stems · represents mental/spiritual force of the pillar', zh:'<b>天干</b> · 10 干 · 主精神意志' },
+  'r.eb':    { th:'<b>地支 (กิ่งดิน)</b> · 12 ราศี · ตัวแทนสภาพแวดล้อม·ปัจจัยกายภาพ·ฤดูกาล · EB→十神 ใช้ก้านซ่อนหลักเทียบ DM', en:'<b>Earthly Branches</b> · 12 zodiac · physical environment + seasons · EB→Ten God uses main hidden stem', zh:'<b>地支</b> · 12 支 · 環境物質·季節 · EB→十神用本氣' },
+  'r.hhs':   { th:'<b>藏干 (ก้านซ่อน)</b> · ก้านที่ซ่อนอยู่ในกิ่ง 1-3 ตัว · พลังภายในที่ผลักดันลึก ๆ ใช้ดู用神และ強弱', en:'<b>Hidden Stems</b> · 1-3 stems hidden inside each branch · inner force used for yongshen + strength', zh:'<b>藏干</b> · 支中藏 1-3 干 · 用於用神與強弱' },
+  'r.nayin': { th:'<b>納音 (เสียงทอง 60 jiazi)</b> · ธาตุประจำคู่เสา-กิ่ง · ตำราจีนเก่าแก่ใช้ดูบุคลิกองค์รวมและความเข้ากันของคน 2 คน', en:'<b>Na Yin (60 jiazi)</b> · element-sound pair · used for overall personality + compatibility', zh:'<b>納音</b> · 60 甲子之音 · 整體性格與配對' },
+  'r.phase': { th:'<b>十二長生 (12 จังหวะชีวิต)</b> · ก้านวิ่งอยู่ในกิ่งแล้วแกร่ง/อ่อนแค่ไหน · 帝旺=สุดยอด · 臨官=แข็งแรง · 死=อ่อนสุด · 絕=สิ้นสุด', en:'<b>12 Phases of Qi</b> · how strong stem is in each branch · Di Wang=peak · Jue=ending', zh:'<b>十二長生</b> · 天干在地支的旺衰 · 帝旺·臨官·絕等' },
+  'r.kwdhhs':{ th:'<b>空亡 + DHHS</b> · DHHS=ก้านหลักในกิ่ง (本氣) · 空亡=เสาว่าง พลังลด · 年空亡=ว่างจากปี · 日空亡=ว่างจากวัน', en:'<b>Void + Dominant Hidden Stem</b> · DHHS=main qi of branch · Void weakens pillar', zh:'<b>空亡 + 本氣</b> · 本氣為主 · 空亡使柱失力' },
+  'r.stars': { th:'<b>神煞 (ดาว 62 ดวง)</b> · ดาวพิเศษเสริม/เตือนตามตำราคลาสสิก · <b>YP</b>=คำนวณจากกิ่งปี · <b>DP</b>=กิ่งวัน · <b>DS</b>=ก้านวัน · <b>MP</b>=กิ่งเดือน', en:'<b>Symbolic Stars (62)</b> · auxiliary stars · YP=Year anchor · DP=Day · DS=Day stem · MP=Month', zh:'<b>神煞</b> · 輔助星 62 顆 · YP=年柱·DP=日柱·DS=日干·MP=月柱' },
+  'r.react': { th:'<b>反應 (ปฏิสัมพันธ์ระหว่างเสา)</b> · 六沖=ปะทะ · 五合=ผสาน · 天克=ก้านชน · 反吟=พลิกซ้ำ · ดูพลังเสานี้ปะทะหรือสนับสนุนเสาอื่น', en:'<b>Pillar Interactions</b> · clash·combo·repeat·invert · shows how pillars interact', zh:'<b>柱間互動</b> · 沖·合·克·吟' },
+  'r.palace':{ th:'<b>宮位 (วังประจำเสา)</b> · พื้นที่ชีวิตในวัย · 年=บรรพบุรุษ/วัยเด็ก (0-16) · 月=พ่อแม่/อาชีพ (17-32) · 日=ตนเอง/คู่ครอง (33-48) · 時=ลูก/บั้นปลาย (49+)', en:'<b>Palaces</b> · life areas per pillar · Year=ancestor·child · Month=parent·career · Day=self·spouse · Hour=child·late life', zh:'<b>宮位</b> · 年=祖·月=父母·日=夫妻·時=子女' },
+  'r.hex_natal':{ th:'<b>易 64卦 ดวงเกิด</b> · คำนวณจากก้าน+กิ่งของแต่ละเสา (Mei Hua Yi Shu) · พลังโดยกำเนิดในวังนั้น', en:'<b>易 64 Hexagram Natal</b> · per pillar stem+branch (Mei Hua) · innate energy at that palace', zh:'<b>易 64 卦 本命</b> · 柱干支推算 (梅花易數) · 該宮先天能量' },
+  /* §03 LIFE DOMAINS */
+  'd.career':   { th:'<b>อาชีพ/งาน</b> · นับ正官·七殺·傷官·食神 · บอกพลังในด้านงานและความคิดสร้างสรรค์', en:'<b>Career</b> · counts Officer+Killing+Output gods · work + creativity force', zh:'<b>事業</b> · 官殺食傷 · 工作與創造力' },
+  'd.wealth':   { th:'<b>ทรัพย์</b> · นับ正財·偏財 · บอกพลังในด้านการเงินและการได้มา', en:'<b>Wealth</b> · counts Wealth gods · money flow', zh:'<b>財富</b> · 正偏財 · 進財能力' },
+  'd.power':    { th:'<b>พลังขับ</b> · นับ官殺ในเสาเด่น · บอกพลังในการนำและความเด็ดเดี่ยว', en:'<b>Drive</b> · prominent Power gods · leadership + decisiveness', zh:'<b>動力</b> · 官殺顯位 · 領導決斷' },
+  'd.learning': { th:'<b>เรียนรู้</b> · นับ正印·偏印 · บอกพลังในด้านการศึกษาและที่ปรึกษา', en:'<b>Learning</b> · counts Resource gods · education + mentorship', zh:'<b>學習</b> · 正偏印 · 學業師長' },
+  'd.family':   { th:'<b>ครอบครัว/เพื่อน</b> · นับ比肩·劫財 · บอกพลังในด้านสังคมและความสัมพันธ์ใกล้ชิด', en:'<b>Family</b> · counts Friend gods · social + close bonds', zh:'<b>家庭朋友</b> · 比劫 · 社交親近' },
+  /* §04 PERSONAL cards */
+  'p.special': { th:'<b>ดวงพิเศษ (格)</b> · ถ้า DM อ่อน/แกร่งสุดขีดจน "ตาม" ทรัพย์/อำนาจ/ลูกหลาน · กฎอ่านดวงจะตรงข้ามตำราปกติ', en:'<b>Special Chart</b> · DM extremely weak/strong "follows" wealth/power/output · rules invert', zh:'<b>特殊格局</b> · 從格 · 規則反轉' },
+  'p.spouse':  { th:'<b>คู่ครอง (夫妻宮)</b> · ดูจากเสาวัน (Day pillar) · ธาตุของกิ่งวัน + ปฏิสัมพันธ์กับเสาอื่นบอกความสัมพันธ์', en:'<b>Spouse Palace</b> · Day pillar · day branch element + interactions show partner traits', zh:'<b>夫妻宮</b> · 日柱 · 日支元素+互動' },
+  'p.career':  { th:'<b>อาชีพที่เหมาะ</b> · เลือกจากธาตุ用神 + ธาตุ DM · ระบบจับคู่กับอุตสาหกรรม 5 ธาตุ', en:'<b>Recommended Industry</b> · based on yongshen + DM element · matched to 5-element industries', zh:'<b>適合行業</b> · 用神+日主 · 五行行業匹配' },
+  'p.health':  { th:'<b>สุขภาพ (TCM)</b> · ธาตุที่อ่อน/แรงเกิน → อวัยวะที่เปราะ · ใช้ตำราจีน 5 ธาตุ→อวัยวะ (ไม้=ตับ · ไฟ=หัวใจ · ดิน=ม้าม · ทอง=ปอด · น้ำ=ไต)', en:'<b>Health (TCM)</b> · weak/excess elements → vulnerable organs · 5-element mapping', zh:'<b>健康 (中醫)</b> · 五行偏衰旺→五臟' },
+  /* §07 Interactions cards */
+  'i.harmony':  { th:'<b>合 (HARMONY)</b> · 六合=กิ่งคู่ผสาน · 五合=ก้านคู่ผสาน · มีในดวง=มีพันธมิตร', en:'<b>Harmony</b> · Six Combinations + Five Combinations · alliances', zh:'<b>合</b> · 六合·五合 · 貴人' },
+  'i.clash':    { th:'<b>沖 (CLASH)</b> · กิ่งปะทะ 180° · มีในดวง=จุดปะทะภายใน', en:'<b>Clash</b> · branch opposition 180° · internal conflicts', zh:'<b>沖</b> · 地支對沖' },
+  'i.alliance': { th:'<b>三合/三會/半合 (ALLIANCE)</b> · 3 กิ่งรวมธาตุ · ยิ่งครบยิ่งแรง · 半合=2 ใน 3', en:'<b>Trio</b> · 3-branch elemental alliance · partial = 半合', zh:'<b>三合·三會·半合</b> · 三支聚化' },
+  'i.discord':  { th:'<b>害/刑/吟 (DISCORD)</b> · 六害=ปะทะแบบเฉียง · 刑=ลงโทษกัน · 反吟/伏吟=พลิกซ้ำ · จุดร้าวในดวง', en:'<b>Harm/Punish/Repeat</b> · subtle conflicts · self-clash patterns', zh:'<b>害·刑·吟</b> · 隱性沖突' },
+  /* §08 Luck Pillars */
+  'l.dayun':   { th:'<b>大運 (เสาโชค 10 ปี)</b> · 8 รอบ × 10 ปี · ทิศ forward/backward จาก year stem polarity + เพศ · startAge คำนวณจาก jieqi', en:'<b>Luck Pillars</b> · 10-year cycles · direction from year polarity + gender', zh:'<b>大運</b> · 10 年一柱 · 年干陰陽×性別決定方向' },
+  's.month_jieqi': { th:'<b>📐 เดือน BaZi เริ่มที่ 節 (jieqi) · ไม่ใช่วันที่ 1</b><br/>เดือน寅 = 立春 · เดือน卯 = 驚蟄 · ... · ปีจีน = 立春 (ไม่ใช่ตรุษจีน)<br/><br/>🎯 <b>ของเราใช้ tyme4ts + 紫金山天文臺</b> precision นาที · True Solar Time + Equation of Time + Longitude · ตรงซินแสจริง 100%<br/><br/>ดู /chart §13 (24 節氣 ปีเกิด) เพื่อเห็น jieqi ที่กำหนดเดือนเกิดคุณ',
+    en:'<b>📐 BaZi months start at 節 (jieqi) · not calendar 1st</b><br/>Month寅 = 立春, Month卯 = 驚蟄 ... · Chinese year = 立春 (not Lunar New Year)<br/><br/>🎯 We use tyme4ts + Purple Mountain Observatory · True Solar Time + Equation of Time + Longitude · matches real sifus 100%',
+    zh:'<b>📐 八字月始於節氣 · 非朔日</b><br/>寅月始立春 · 卯月始驚蟄 · 中國年始立春 (非農曆新年)<br/><br/>🎯 採用 tyme4ts + 紫金山天文臺 · 真太陽時 + 均時差 + 經度校正 · 100% 對應命理師' },
+  /* §11 流年 */
+  'y.timeline':{ th:'<b>流年 (timeline 10 ปี)</b> · เสาประจำปีถัดไป 10 ปี · ten god vs DM + ปฏิสัมพันธ์กับกิ่งวัน · เขียว=ดี · แดง=ระวัง', en:'<b>10-Year Timeline</b> · annual pillars · ten god + interaction with day branch', zh:'<b>流年 10 年</b> · 年柱 vs 日主互動' },
+  /* §05/06/09/10 misc */
+  's.yongshen':{ th:'<b>用神 (เทพประจำ)</b> · ธาตุที่ดวงต้องการมากที่สุด · ขาดแล้วชีวิตติด · เลือกอาชีพ/สีตามนี้', en:'<b>Useful God</b> · most-needed element · pick career/color', zh:'<b>用神</b> · 最需之神 · 選擇職業·顏色' },
+  's.climate': { th:'<b>調候 (ภูมิอากาศ)</b> · ดวงเย็นเกินต้องไฟ · ดวงร้อนเกินต้องน้ำ · ปรับสมดุล', en:'<b>Climate</b> · cold needs fire · hot needs water · balance', zh:'<b>調候</b> · 寒暖燥濕之調' },
+  's.element': { th:'<b>5 ธาตุ %</b> · นับจากก้าน+กิ่ง+ก้านซ่อน · บอกธาตุเด่น/ขาดในดวง · ดูคู่กับ用神', en:'<b>5 Elements %</b> · stem+branch+hidden · dominant/lacking', zh:'<b>五行 %</b> · 主弱所需' },
+  's.pstar':   { th:'<b>個人星 14 ดวง</b> · ดาวประจำตัวที่ active ในดวง · เลือกจาก 神煞 62 ดวง · เน้นดาวสำคัญต่อชีวิต', en:'<b>Personal Stars (14)</b> · active stars · key life impact', zh:'<b>個人星 14</b> · 重要神煞' },
+  's.basic':   { th:'<b>基礎</b> · ตัวเลขพื้นฐานของดวง · matrix score + jishen + wealth role', en:'<b>Basics</b> · base metrics · matrix + jishen + wealth role', zh:'<b>基礎</b> · 基本數據' },
+};
+
 window.HK_I18N = {
+  /* 🤖 L4 auto-translated · 15 พ.ค. 2026 */
+  'auto.c.501': { th:'01 · สรุปภาพรวม · YOUR CHART AT A GLANCE', en:'01 · YOUR CHART AT A GLANCE', zh:'01·命盤總覽' },
+  'auto.c.502': { th:'งาน / อำนาจ', en:'Career / Authority', zh:'事業/權力' },
+  'auto.c.503': { th:'เงิน / ทรัพย์', en:'Money / Wealth', zh:'財富/錢財' },
+  'auto.c.504': { th:'ความสัมพันธ์', en:'Relationships', zh:'關係' },
+  'auto.c.505': { th:'ความคิดสร้างสรรค์', en:'Creativity', zh:'創造力' },
+  'auto.c.506': { th:'วินัย / ตัวตน', en:'Discipline / Identity', zh:'自律/自我' },
+  'auto.c.507': { th:'คู่ครอง · อาชีพ · สุขภาพ · ดวงพิเศษ · จากเสาเกิดของคุณ', en:'Spouse · Career · Health · Special stars · from your natal pillars', zh:'配偶·事業·健康·特殊星·源自您的本命四柱' },
+  'auto.c.508': { th:'ไม้ · WOOD', en:'WOOD · 木', zh:'木·WOOD' },
+  'auto.c.509': { th:'เริ่มต้น · เติบโต', en:'Beginning · Growth', zh:'始生·成長' },
+  'auto.c.510': { th:'ไฟ · FIRE', en:'FIRE · 火', zh:'火·FIRE' },
+  'auto.c.511': { th:'พลัง · ตัดสินใจ', en:'Power · Decision', zh:'力量·決斷' },
+  'auto.c.512': { th:'ดิน · EARTH', en:'EARTH · 土', zh:'土·EARTH' },
+  'auto.c.513': { th:'ตัวคุณ · ฐาน', en:'You · Foundation', zh:'自我·根基' },
+  'auto.c.514': { th:'ทอง · METAL', en:'METAL · 金', zh:'金·METAL' },
+  'auto.c.515': { th:'ตัด · กฎเกณฑ์', en:'Cut · Rules', zh:'裁斷·法度' },
+  'auto.c.516': { th:'น้ำ · WATER', en:'WATER · 水', zh:'水·WATER' },
+  'auto.c.517': { th:'คิด · ลื่นไหล', en:'Think · Flow', zh:'思考·流通' },
+  'auto.c.518': { th:'ดาวที่ทำงานในดวง · แยกตามเสาที่ตก · ความหมายตามตำรา Sesheta', en:'Active stars · by pillar · meanings per Sesheta classics', zh:'活躍之星·按柱位·依Sesheta古籍釋義' },
+  'auto.c.519': { th:'ข้อมูลซินแสตรวจสอบ · TH / EN / ZH', en:'Master-verified data · TH / EN / ZH', zh:'師父驗證資料·中英泰三語' },
+  'auto.c.520': { th:'四柱 · Four Pillars · เสาทั้งสี่', en:'四柱 · Four Pillars', zh:'四柱·Four Pillars' },
+  'auto.c.521': { th:'年 · YEAR · ปี', en:'年 · YEAR', zh:'年·YEAR' },
+  'auto.c.522': { th:'月 · MONTH · เดือน', en:'月 · MONTH', zh:'月·MONTH' },
+  'auto.c.523': { th:'日主 · DAY MASTER · เจ้าชะตา', en:'日主 · DAY MASTER', zh:'日主·DAY MASTER' },
+  'auto.c.524': { th:'時 · HOUR · ยาม', en:'時 · HOUR', zh:'時·HOUR' },
+  'auto.c.525': { th:'บรรทัด: 干 (stem) · 十神 (ten god) · 十二長生 (qi phase ของ DM)', en:'Lines: 干 (stem) · 十神 (ten god) · 十二長生 (qi phase of DM)', zh:'行：干·十神·十二長生 (日主)' },
+  'auto.c.526': { th:'五行 · Five Elements · ห้าธาตุ', en:'五行 · Five Elements', zh:'五行·Five Elements' },
+  'auto.c.527': { th:'木 ไม้', en:'木 Wood', zh:'木' },
+  'auto.c.528': { th:'火 ไฟ', en:'火 Fire', zh:'火' },
+  'auto.c.529': { th:'土 ดิน', en:'土 Earth', zh:'土' },
+  'auto.c.530': { th:'金 ทอง', en:'金 Metal', zh:'金' },
+  'auto.c.531': { th:'水 น้ำ', en:'水 Water', zh:'水' },
+  'auto.c.532': { th:'นับ stem + branch + hidden stems (0.5×)', en:'Counts stem + branch + hidden stems (0.5×)', zh:'計算天干+地支+藏干 (0.5×)' },
+  'auto.c.533': { th:'用神 (เทพช่วย · favorable)', en:'用神 (favorable god)', zh:'用神 (有利)' },
+  'auto.c.534': { th:'忌神 (เทพหลีก · unfavorable)', en:'忌神 (unfavorable god)', zh:'忌神 (不利)' },
+  'auto.c.535': { th:'บทบาทดาวทรัพย์ (财) · กำลังโหลด', en:'Wealth star (财) role · loading', zh:'財星角色·載入中' },
+  'auto.c.536': { th:'ภายในดวงเกิด · within natal', en:'Within natal', zh:'本命之內' },
+  'auto.c.537': { th:'แสดง raw data จาก /api/chart', en:'Show raw data from /api/chart', zh:'顯示 /api/chart 原始資料' },
+  'auto.c.538': { th:'ดูชั่วโมงมงคลของวันนี้ · ตรวจคนรอบตัว · บันทึกการตัดสินใจ', en:'View today\'s auspicious hours · check people around you · log decisions', zh:'查看今日吉時·檢視身邊之人·記錄抉擇' },
+  /* §06b YONGSHEN v2 · 15 พ.ค. */
+  'c.ysv2.h2':       { th:'<span class="tc">用神</span> v2 · โครงสร้าง · โรค · ยา · สะพานเชื่อม',
+                       en:'<span class="tc">Yongshen</span> v2 · Structure · Disease · Medicine · Bridge',
+                       zh:'<span class="tc">用神</span> v2 · 結構 · 病 · 藥 · 通關' },
+  'c.ysv2.sub':      { th:'ใช้ตอบ "ดวงคุณเป็นโครงสร้างอะไร · ติดปัญหาอะไร · ยาคือธาตุไหน"',
+                       en:'Answers: "Your structure · main affliction · medicine element"',
+                       zh:'回答: "你的格局 · 主病 · 用何藥"' },
+  'c.ysv2.primary':  { th:'用神 · ของเลี้ยง', en:'Yongshen · Primary', zh:'用神 · 主用' },
+  'c.ysv2.xishen':   { th:'喜神 · เสริม', en:'Xishen · Favorable', zh:'喜神 · 輔助' },
+  'c.ysv2.jishen':   { th:'忌神 · พิษ', en:'Jishen · Avoid', zh:'忌神 · 忌避' },
+  'c.ysv2.tiaohou':  { th:'調候 · ฤดู', en:'TiaoHou · Climate', zh:'調候 · 季候' },
+  'c.ysv2.disease':  { th:'病 · โรค', en:'Disease', zh:'病' },
+  'c.ysv2.medicine': { th:'藥 · ยา', en:'Medicine', zh:'藥' },
+  'c.ysv2.bridge':   { th:'通關 · สะพาน', en:'Bridge', zh:'通關' },
+  'c.ysv2.reasoning':{ th:'📜 ที่มาของการประเมิน', en:'📜 Reasoning trail', zh:'📜 推理過程' },
+  /* §11 流年 100-year timeline · 15 พ.ค. */
+  'c.lt.title':      { th:'流年 · {N} ปี (เกิด→ตาย) · เทียบ DM + 64卦 hexagram',
+                       en:'流年 · {N} years (birth→end) · vs DM + 64 hexagrams',
+                       zh:'流年 · {N} 年 (生→終) · 對日主 + 64卦' },
+  'c.lt.hint':       { th:'💡 เลื่อนแนวนอน · hover เซลล์เพื่อดูชื่อ hexagram ภาษาไทย · เซลล์สีทอง = ปีปัจจุบัน',
+                       en:'💡 Scroll horizontally · hover cell for hexagram name · gold = current year',
+                       zh:'💡 橫向滾動 · 懸停看卦名 · 金色 = 當前年' },
+  'c.lt.age_suffix': { th:'ปี', en:'yr', zh:'歲' },
   /* view-as banner */
   'c.va.prefix': { th:'กำลังดูดวงปาจื้อของ', en:'Viewing chart of', zh:'查看其命盤' },
   'c.va.back':   { th:'← กลับ', en:'← Back', zh:'← 返回' },
@@ -1310,8 +1917,8 @@ window.HK_I18N = {
   'c.sifu.p.love': { th:'ความรัก<span class="tc">情</span>', en:'Love<span class="tc">情</span>', zh:'感情<span class="tc">情</span>' },
   'c.sifu.p.health':{ th:'สุขภาพ<span class="tc">健</span>', en:'Health<span class="tc">健</span>', zh:'健康<span class="tc">健</span>' },
   'c.sifu.p.study':{ th:'การเรียน<span class="tc">學</span>', en:'Study<span class="tc">學</span>', zh:'學業<span class="tc">學</span>' },
-  'c.sifu.placeholder':{ th:'กดเลือกหัวข้อด้านบน · ซินแสจะอ่านดวงคุณตามตำราคลาสสิก', en:'Tap a topic above · Sifu will read your chart from classical texts', zh:'點選上方主題 · 老師依古籍為您解讀' },
-  'c.sifu.askPh':  { th:'ถามต่อให้ลึกขึ้น เช่น "ช่วงไหนเหมาะเปลี่ยนงาน?"', en:'Ask deeper, e.g. "When should I change jobs?"', zh:'追問更深 · 例如「何時宜換工作?」' },
+  'c.sifu.placeholder':{ th:'กดเลือกหัวข้อด้านบน · หรือพิมพ์ถามซินแสด้านล่างได้เลย', en:'Tap a topic above · or type your question below', zh:'點選主題 · 或於下方提問' },
+  'c.sifu.askPh':  { th:'พิมพ์ถามซินแส เช่น "ปีนี้เปลี่ยนงานดีไหม?" หรือ "อายุเท่าไหร่จะแต่งงาน?"', en:'Ask Sifu, e.g. "Should I change jobs this year?" or "When will I marry?"', zh:'問老師 · 如「今年換工作好嗎?」「何時結婚?」' },
   'c.sifu.send':   { th:'ส่ง · 問', en:'Ask · 問', zh:'發問 · 問' },
   'c.sifu.histTtl':{ th:'ประวัติคำถาม', en:'Question History', zh:'問答記錄' },
   'c.sifu.histEmpty':{ th:'ยังไม่มีประวัติ · เริ่มถามได้เลย', en:'No history yet · start asking', zh:'暫無記錄 · 開始發問' },
@@ -1336,6 +1943,88 @@ function applyI18N(lang){
   });
 }
 window.applyI18N = applyI18N;
+
+/* Help tooltips · render <span class="hk-help" data-help="key"> · 3-lang */
+function applyHelpTooltips(lang){
+  if (!window.HK_HELP) return;
+  var plain = function(html){ var d = document.createElement('div'); d.innerHTML = html; return d.textContent || d.innerText || ''; };
+  document.querySelectorAll('.hk-help').forEach(function(el){
+    var key = el.getAttribute('data-help');
+    var t = window.HK_HELP[key];
+    if (!t) return;
+    var txt = t[lang] || t.th || '';
+    /* native title fallback (always works · hover only) */
+    el.setAttribute('title', plain(txt));
+    /* Custom pop · click/tap to show */
+    var pop = el.querySelector('.hk-help-pop');
+    if (!pop) {
+      /* glyph as ::before via CSS · just set pop */
+      pop = document.createElement('span');
+      pop.className = 'hk-help-pop';
+      el.appendChild(pop);
+    }
+    pop.innerHTML = txt;
+  });
+}
+window.applyHelpTooltips = applyHelpTooltips;
+/* Init on DOM ready (independent ของ lang switcher) */
+function initHelpTooltips(){
+  try {
+    var lang = (localStorage.getItem('hk_locale')) || (document.documentElement.getAttribute('data-lang')) || 'th';
+    applyHelpTooltips(lang);
+  } catch(e) { applyHelpTooltips('th'); }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHelpTooltips);
+} else {
+  initHelpTooltips();
+}
+/* Toggle pop on tap/click (mobile + desktop) · smart-position หลัง toggle on */
+function positionHelpPop(help){
+  var pop = help.querySelector('.hk-help-pop');
+  if (!pop) return;
+  var btn = help.getBoundingClientRect();
+  var vw = window.innerWidth;
+  var vh = window.innerHeight;
+  /* reset เพื่อวัด size จริง */
+  pop.style.left = '0px';
+  pop.style.top  = '0px';
+  pop.style.maxHeight = '';
+  var pw = pop.offsetWidth;
+  var ph = pop.offsetHeight;
+  /* horizontal · กึ่งกลางปุ่ม แล้ว clamp ให้อยู่ใน viewport */
+  var cx = btn.left + btn.width/2;
+  var left = cx - pw/2;
+  if (left < 12) left = 12;
+  if (left + pw > vw - 12) left = vw - pw - 12;
+  /* vertical · ปกติด้านล่างปุ่ม ถ้าไม่พอย้ายไปด้านบน */
+  var top = btn.bottom + 8;
+  if (top + ph > vh - 12) {
+    var topAlt = btn.top - ph - 8;
+    if (topAlt >= 12) top = topAlt;
+    else { top = 12; pop.style.maxHeight = (vh - 24) + 'px'; pop.style.overflowY = 'auto'; pop.style.pointerEvents = 'auto'; }
+  }
+  pop.style.left = left + 'px';
+  pop.style.top  = top + 'px';
+}
+document.addEventListener('click', function(e){
+  var help = e.target.closest('.hk-help');
+  document.querySelectorAll('.hk-help.on').forEach(function(h){ if (h !== help) h.classList.remove('on'); });
+  if (help) {
+    e.preventDefault(); e.stopPropagation();
+    help.classList.toggle('on');
+    if (help.classList.contains('on')) requestAnimationFrame(function(){ positionHelpPop(help); });
+  }
+});
+/* reposition on scroll/resize */
+window.addEventListener('scroll', function(){
+  var open = document.querySelector('.hk-help.on');
+  if (open) positionHelpPop(open);
+}, true);
+window.addEventListener('resize', function(){
+  var open = document.querySelector('.hk-help.on');
+  if (open) positionHelpPop(open);
+});
 (function(){
   var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
   var btns = sw.querySelectorAll('button');
@@ -1345,6 +2034,7 @@ window.applyI18N = applyI18N;
     btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
     try{ localStorage.setItem('hk_locale', lang); }catch(e){}
     applyI18N(lang);
+    applyHelpTooltips(lang);
   }
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
   try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
@@ -1506,6 +2196,1030 @@ window.applyI18N = applyI18N;
   renderHist();
 })();
 </script>
-<script src="/js/hk-user-menu.js?v=9" defer></script>
+<script src="/js/hk-settings-drawer.js?v=9" defer></script>
+<script src="/js/hk-user-menu.js?v=16" defer></script>
+
+<!-- HK WIRE · live update sections 1-7 from /api/chart ──────────── -->
+<script>
+(function(){
+  const STEM_EL_MAP={甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
+  const STEM_TH={甲:'ไม้ใหญ่',乙:'ไม้อ่อน',丙:'ไฟใหญ่',丁:'ไฟอ่อน',戊:'ดินใหญ่',己:'ดินอ่อน',庚:'ทองใหญ่',辛:'ทองอ่อน',壬:'น้ำใหญ่',癸:'น้ำอ่อน'};
+  const STEM_EN={甲:'Yang Wood',乙:'Yin Wood',丙:'Yang Fire',丁:'Yin Fire',戊:'Yang Earth',己:'Yin Earth',庚:'Yang Metal',辛:'Yin Metal',壬:'Yang Water',癸:'Yin Water'};
+  const STEM_ZH_FULL={甲:'甲木',乙:'乙木',丙:'丙火',丁:'丁火',戊:'戊土',己:'己土',庚:'庚金',辛:'辛金',壬:'壬水',癸:'癸水'};
+  const STEM_DESC_TH={甲:'ไม้ใหญ่ · ต้นไม้ใหญ่ · สูงตรง',乙:'ไม้อ่อน · เถาวัลย์ · ยืดหยุ่น',丙:'ไฟใหญ่ · ดวงอาทิตย์ · เปิดเผย',丁:'ไฟอ่อน · เปลวเทียน · นุ่มนวล',戊:'ดินใหญ่ · ภูเขา · มั่นคง',己:'ดินอ่อน · ดินไร่นา · เพาะปลูก',庚:'ทองใหญ่ · ดาบโลหะ · เด็ดขาด',辛:'ทองอ่อน · เครื่องประดับ · ละเอียด',壬:'น้ำใหญ่ · มหาสมุทร · ลื่นไหล',癸:'น้ำอ่อน · น้ำฝน · ซึม'};
+  const TENGOD_TH={'比肩':'เพื่อน · 比肩','劫財':'ขัดทรัพย์ · 劫財','食神':'ลิ้น · 食神','傷官':'ผู้ทำลายตำแหน่ง · 傷官','偏財':'ทรัพย์เคลื่อน · 偏財','正財':'ทรัพย์ตรง · 正財','七殺':'ผู้คุมเข้ม · 七殺','正官':'ตำแหน่งตรง · 正官','偏印':'ตราเอียง · 偏印','正印':'ตราตรง · 正印','日主':'เจ้าชะตา · 日主'};
+  const TENGOD_LABEL={'比肩':'比肩 · FRIEND','劫財':'劫財 · ROB','食神':'食神 · EATING','傷官':'傷官 · OUTPUT','偏財':'偏財 · INDIRECT','正財':'正財 · WEALTH','七殺':'七殺 · KILLING','正官':'正官 · OFFICIAL','偏印':'偏印 · INSIGHT','正印':'正印 · DIRECT'};
+  const TENGOD_DOMAIN={'正官':{name:'งาน / อำนาจ',category:'career'},'七殺':{name:'อำนาจ / แรง',category:'killing'},'正財':{name:'เงิน / ทรัพย์',category:'wealth'},'偏財':{name:'ทรัพย์เคลื่อน',category:'wealth'},'食神':{name:'ความคิดสร้างสรรค์',category:'arts'},'傷官':{name:'พรสวรรค์ · ทำลาย',category:'arts'},'正印':{name:'ครูบาอาจารย์',category:'resource'},'偏印':{name:'ปัญญาเฉพาะ',category:'resource'},'比肩':{name:'เพื่อน / วินัย',category:'self'},'劫財':{name:'พี่น้อง / แข่งขัน',category:'self'}};
+  const PHASE_TH={'長生':'แรกเกิด','沐浴':'อาบ','冠帶':'ตั้งตน','臨官':'พลังเต็ม','帝旺':'รุ่งโรจน์','衰':'เสื่อม','病':'ป่วย','死':'ดับ','墓':'สุสาน','絕':'ขาด','胎':'เริ่มก่อตัว','養':'ครรภ์'};
+
+  /* identity reads removed · controller (HKChartPage) owns snapshot */
+
+  /* G5 · DHHS dropdown click delegation · ติด listener หนึ่งครั้ง */
+  if (!window.__hkDhhsBound) {
+    window.__hkDhhsBound = true;
+    document.addEventListener('click', function(e){
+      const btn = e.target.closest('.dhhs-toggle');
+      if (!btn || btn.disabled) return;
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      btn.setAttribute('data-expanded', String(!expanded));
+      const id = btn.getAttribute('aria-controls');
+      if (id) {
+        const panel = document.getElementById(id);
+        if (panel) { if (expanded) panel.setAttribute('hidden',''); else panel.removeAttribute('hidden'); }
+      }
+    });
+  }
+
+  window.HK_RENDER_ALL = function renderAll(d, b){
+    if(!d || !d.pillars){ console.warn('[HK] no pillars in response'); return; }
+    if(!b){ console.warn('[HK] renderAll missing snapshot'); return; }
+    const p=d.pillars, a=d.analysis||{};
+    const tg=a.ten_gods_map||{}, qp=a.qi_phases||{}, ec=a.element_counts||{}, ji=a.jishen||{elements:[],wealth_role:'neutral'}, ug=a.useful_god||{}, lp=a.luck_pillars||[], curIdx=a.current_luck_idx||0;
+
+    // §01 Hero · DM card + name + meta
+    const dm=p.day.stem;
+    const dmElement=STEM_EL_MAP[dm]||'earth';
+    const dmEl=document.querySelector('.dm-glyph');
+    if(dmEl){ dmEl.textContent=dm; dmEl.className='dm-glyph '+dmElement; }
+    const dmNameEl=document.querySelector('.dm-name');
+    if(dmNameEl){ dmNameEl.textContent=`${STEM_EN[dm]||''} · ${STEM_ZH_FULL[dm]||dm}`; dmNameEl.className='dm-name '+dmElement; }
+    const dmThEl=document.querySelector('.dm-th');
+    if(dmThEl) dmThEl.textContent=STEM_DESC_TH[dm]||STEM_TH[dm]||'';
+    // h1 name
+    const nameEl=document.querySelector('.hero-l h1 .name');
+    if(nameEl&&b.name) nameEl.textContent=b.name;
+    // hero-meta: 📅 🕐 📍
+    const heroMeta=document.querySelector('.hero-meta');
+    if(heroMeta){
+      heroMeta.innerHTML=`<span>📅 ${b.date}</span><span>🕐 ${b.time}</span><span>📍 ${b.place||'Bangkok'}</span>`;
+    }
+    // คำนวณ totalEl + topEl ล่วงหน้า (ใช้ใน Hero + Section 02)
+    const totalEl=Object.values(ec).reduce((s,v)=>s+v,0)||1;
+    let topEl='earth', topVal=0;
+    Object.entries(ec).forEach(([k,v])=>{ if(v>topVal){topEl=k;topVal=v;} });
+    // hero-tags: ป้ายธาตุ + structure (DM + jishen wealth + element top)
+    const heroTags=document.querySelector('.hero-tags');
+    if(heroTags){
+      const dmElName=STEM_EL_MAP[dm]||'earth';
+      const dmShort=STEM_TH[dm]?.split('·')[0]?.trim()||dm;
+      const TOP_TH={wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+      const TOP_ZH={wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
+      const TOP_GLYPH={wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
+      const structureLabel = ji.wealth_role==='jishen' ? '從財' : (ji.wealth_role==='yongshen' ? '正格' : '中和');
+      const structureName = ji.wealth_role==='jishen' ? 'Follow Wealth · ตามทรัพย์' : (ji.wealth_role==='yongshen' ? 'Standard · ปกติ' : 'Balanced · สมดุล');
+      heroTags.innerHTML = `<span class="tag"><span class="glyph">${dm}</span>${STEM_EN[dm]||''} · ${dmShort}</span><span class="tag"><span class="glyph">${structureLabel}</span>${structureName}</span><span class="tag"><span class="glyph">${TOP_GLYPH[topEl]}</span>${TOP_TH[topEl]} เด่น · dominant</span><span class="tag"><span class="glyph">${TOP_ZH[topEl]}</span>${topEl} ${Math.round(topVal/totalEl*100)}%</span>`;
+    }
+    // Voytek-style DM strength bar (Layer 3 · ไม่กระทบ engine yongshen เดิม)
+    const vs = a.voytek_strength;
+    if (vs) {
+      const strBox = document.querySelector('.dm-card .strength');
+      if (strBox) {
+        strBox.innerHTML = '<b>'+vs.supporting_pct+'% หนุน / '+vs.opposing_pct+'% ต้าน</b><span class="lvl">'+vs.level_th+'</span>';
+      }
+      const meter = document.querySelector('.dm-card .meter span');
+      if (meter) {
+        meter.style.width = vs.supporting_pct + '%';
+        /* สีตามระดับ · weak=red · balanced=gold · strong=green */
+        if (vs.level === 'extreme_weak' || vs.level === 'weak') {
+          meter.style.background = 'linear-gradient(90deg, var(--water), var(--metal))';
+        } else if (vs.level === 'strong' || vs.level === 'extreme_strong') {
+          meter.style.background = 'linear-gradient(90deg, var(--wood), var(--fire))';
+        } else {
+          meter.style.background = 'linear-gradient(90deg, var(--fire), var(--gold))';
+        }
+      }
+    }
+
+    /* 19 พ.ค. · เจ้านาย · accordion ภาษาซินแสอธิบายว่าทำไม % ธาตุได้เท่านี้ */
+    const rxArr = a.rootedness_explain;
+    const rxBox = document.querySelector('.dm-card .rootedness-explain');
+    if (rxArr && rxArr.length && rxBox) {
+      const _lang = document.documentElement.getAttribute('data-lang') || 'th';
+      const _hdr = {th:'ดูเหตุผลของแต่ละธาตุ', en:'See reason for each element', zh:'查看五行原因'}[_lang] || 'ดูเหตุผลของแต่ละธาตุ';
+      const sKey = 'summary_' + _lang, srcKey = 'sources_' + _lang, elKey = 'element_' + _lang, lblKey = 'label_' + _lang;
+      const rows = rxArr.map(e => `
+        <div class="re-row ${e.is_dm ? 'is-dm' : ''}">
+          <div class="re-head">
+            <span class="re-elem">${e[elKey] || e.element}</span>
+            <span class="re-pct">${e.pct}%</span>
+            <span class="re-label">${e[lblKey] || e.label}</span>
+          </div>
+          <div class="re-summary">${e[sKey] || e.summary_th}</div>
+          <ul class="re-sources">${(e[srcKey] || e.sources_th || []).map(s => `<li>${s}</li>`).join('')}</ul>
+        </div>
+      `).join('');
+      rxBox.innerHTML = `<details><summary>${_hdr}</summary><div class="re-body">${rows}</div></details>`;
+      rxBox.style.display = 'block';
+    }
+
+    // lede p
+    const ledeP=document.querySelector('.hero-l p.lede');
+    if(ledeP){
+      const dmShort=STEM_TH[dm]?.split('·')[0]?.trim()||dm;
+      const seasonMap={子:'หนาว',丑:'หนาว',寅:'ใบไม้ผลิ',卯:'ใบไม้ผลิ',辰:'ใบไม้ผลิ',巳:'ร้อน',午:'ร้อน',未:'ร้อน',申:'ใบไม้ร่วง',酉:'ใบไม้ร่วง',戌:'ใบไม้ร่วง',亥:'หนาว'};
+      const season=seasonMap[p.month?.branch]||'';
+      ledeP.innerHTML=`คุณเป็น <b>${dmShort}</b> ในฤดู${season} · ดวงของคุณคำนวณจริงจาก <b>${b.date} ${b.time}</b> ที่ ${b.place||'Bangkok'} · ดูรายละเอียดในส่วนถัดไป`;
+    }
+
+    // §02 Elements bar (5 ธาตุ) · 19 พ.ค. · ใช้ Functional (voytek_strength.bars) · ตำราอากง
+    // ถ้า voytek_strength.source = "functional-wrapper7" → ใช้ functional pct
+    // fallback · raw count (legacy)
+    const elBars=document.querySelectorAll('.el-bar i');
+    const elPcts=document.querySelectorAll('.el-pct');
+    const elOrder=['wood','fire','earth','metal','water'];
+    const _vs = a.voytek_strength || {};
+    const _functional = (_vs.source === 'functional-wrapper7' && Array.isArray(_vs.bars))
+      ? Object.fromEntries(_vs.bars.map(b => [b.element, b.pct]))
+      : null;
+    elOrder.forEach((e,i)=>{
+      let pct;
+      if (_functional && typeof _functional[e] === 'number') {
+        pct = _functional[e]; /* functional · จาก rootedness wrapper-7 */
+      } else {
+        const v=ec[e]||0; pct=Math.round(v/totalEl*100); /* raw fallback */
+      }
+      if(elBars[i]) elBars[i].style.width=pct+'%';
+      if(elPcts[i]) elPcts[i].textContent=pct+'%';
+    });
+    /* §06 用神 / 忌神 list · ใช้ analysis.useful_god + analysis.jishen */
+    const EL_TH_GLOBAL={wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+    /* yong-card เดิม removed · §06b YONGSHEN v2 (wrapper-7) ใช้แทน · 15 พ.ค. */
+
+    /* 📜 §5.5 Yongshen v2 · render จาก d.yongshen_v2 (wrapper-7) · 15 พ.ค. */
+    const yv2 = d.yongshen_v2;
+    const ysv2Sec = document.getElementById('hk-ysv2-sec');
+    if (yv2 && ysv2Sec) {
+      ysv2Sec.style.display = '';
+      const _ysT = (id, v) => { const e=document.getElementById(id); if(e) e.textContent = v; };
+      _ysT('hk-ysv2-struct',   yv2.structure_label || '—');
+      _ysT('hk-ysv2-engine',   yv2.engine_type || '—');
+      const cEl = document.getElementById('hk-ysv2-conf');
+      if (cEl) { cEl.textContent = yv2.confidence || '—'; cEl.className = 'ys-conf ' + (yv2.confidence || ''); }
+      const sEl = document.getElementById('hk-ysv2-strategy');
+      if (sEl) { sEl.textContent = yv2.strategy || '—'; sEl.className = 'ys-strategy ' + (yv2.strategy || ''); }
+      const pillHtml = (el, cls='') => `<span class="ys-pill el-${el} ${cls}">${EL_TH_GLOBAL[el]||el} · ${el}</span>`;
+      const setYsH = (id, html) => { const e=document.getElementById(id); if(e) e.innerHTML = html || '<span class="ys-pill" style="opacity:.4">—</span>'; };
+      setYsH('hk-ysv2-primary', (yv2.primary_yongshen||[]).map(el => pillHtml(el, 'primary')).join(''));
+      setYsH('hk-ysv2-xishen',  (yv2.xishen||[]).map(el => pillHtml(el)).join(''));
+      setYsH('hk-ysv2-jishen',  (yv2.jishen||[]).map(el => pillHtml(el, 'bad')).join(''));
+      const tiaoHtml = yv2.tiaohou_required
+        ? pillHtml(yv2.tiaohou_required, 'primary') + `<span class="ys-pill" style="opacity:.7">weight ${yv2.tiaohou_weight||0}</span>`
+        : '<span class="ys-pill" style="opacity:.4">—</span>';
+      setYsH('hk-ysv2-tiaohou', tiaoHtml);
+      const dRow = document.getElementById('hk-ysv2-disease-row');
+      const mRow = document.getElementById('hk-ysv2-med-row');
+      const bRow = document.getElementById('hk-ysv2-bridge-row');
+      if (yv2.diseases && yv2.diseases.length) {
+        if (dRow) dRow.style.display = '';
+        setYsH('hk-ysv2-diseases', yv2.diseases.map(d => `<span class="ys-pill disease">${d}</span>`).join(''));
+      } else if (dRow) dRow.style.display = 'none';
+      if (yv2.medicine && yv2.medicine.length) {
+        if (mRow) mRow.style.display = '';
+        setYsH('hk-ysv2-medicine', yv2.medicine.map(m => `<span class="ys-pill medicine">${m}</span>`).join(''));
+      } else if (mRow) mRow.style.display = 'none';
+      if (yv2.bridges && yv2.bridges.length) {
+        if (bRow) bRow.style.display = '';
+        setYsH('hk-ysv2-bridges', yv2.bridges.map(b => `<span class="ys-pill bridge">${b}</span>`).join(''));
+      } else if (bRow) bRow.style.display = 'none';
+      const expBox = document.getElementById('hk-ysv2-explain-box');
+      const expList = document.getElementById('hk-ysv2-explain');
+      if (yv2.explain_log && yv2.explain_log.length && expBox && expList) {
+        expBox.style.display = '';
+        expList.innerHTML = yv2.explain_log.map(line => `<li>${String(line).replace(/</g,'&lt;')}</li>`).join('');
+      } else if (expBox) expBox.style.display = 'none';
+    }
+
+    /* 📜 §12 · 河洛理數 Heluo Astrology (17 พ.ค.) */
+    try {
+      const hl = d.heluo_astrology;
+      const hsec = document.getElementById('hk-heluo-sec');
+      if (hl && hsec) {
+        hsec.style.display = '';
+        const HEX_TH = {1:'สร้างสรรค์',2:'รับ',3:'เริ่มแรก',4:'เยาว์ไร้รู้',5:'รอ',6:'ขัดแย้ง',7:'กองทัพ',8:'สามัคคี',9:'เก็บเล็ก',10:'เหยียบ',11:'สงบเจริญ',12:'อุดตัน',13:'ร่วมใจ',14:'ครอบครอง',15:'ถ่อมตัว',16:'หรรษา',17:'ติดตาม',18:'เลื่อม',19:'ใกล้',20:'พิจารณา',21:'กัดเคี้ยว',22:'ประดับ',23:'แตกสลาย',24:'กลับ',25:'ไม่หลง',26:'เก็บใหญ่',27:'เลี้ยง',28:'ล้น',29:'ห้วงเหว',30:'ติดไฟ',31:'รัก',32:'ยั่งยืน',33:'ถอย',34:'พลังยิ่งใหญ่',35:'รุ่ง',36:'แสงดับ',37:'ครอบครัว',38:'ผิดใจ',39:'ติดขัด',40:'แก้',41:'ลด',42:'เพิ่ม',43:'ตัดสิน',44:'พบ',45:'รวม',46:'ก้าวขึ้น',47:'อับจน',48:'บ่อน้ำ',49:'เปลี่ยน',50:'หม้อ',51:'สั่น',52:'หยุด',53:'คืบ',54:'แต่งงาน',55:'รุ่งเรือง',56:'ผู้พเนจร',57:'อ่อนนุ่ม',58:'ร่าเริง',59:'ละลาย',60:'ขอบเขต',61:'ใจสัจ',62:'เกินเล็ก',63:'สำเร็จ',64:'ยังไม่สำเร็จ'};
+        const card = (title, lbl, h, extra='') => {
+          const sym = String.fromCodePoint(0x4DC0 + (h.hex - 1));
+          return `<div style="background:var(--bg-2);border:1px solid var(--gold-line);border-radius:12px;padding:14px;">
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;">${title}</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+              <div style="font-family:var(--tc);font-size:38px;color:var(--gold);line-height:1;">${sym}</div>
+              <div>
+                <div style="font-family:var(--tc);font-size:18px;color:var(--fg);font-weight:600;">卦 ${h.hex} ${h.name}</div>
+                <div style="font-size:11px;color:var(--fg-soft);">${HEX_TH[h.hex]||'?'}</div>
+              </div>
+            </div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--fg-faint);letter-spacing:.05em;">${lbl}</div>
+            ${extra}
+            <button onclick="if(window.showHexDeep)showHexDeep(${h.hex},${h.changing_line||h.line||0})" style="margin-top:8px;background:rgba(200,164,77,.1);border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:9px;padding:4px 10px;border-radius:99px;cursor:pointer;letter-spacing:.05em;">📜 ดูตำราเต็ม</button>
+          </div>`;
+        };
+        const grid = document.getElementById('hk-heluo-grid');
+        grid.innerHTML =
+          card('🌅 Pre-Heaven · เกิดมา', `上${hl.pre_heaven.upper} / 下${hl.pre_heaven.lower} · เส้นเปลี่ยน ${hl.pre_heaven.changing_line}`, hl.pre_heaven, `<div style="font-size:11px;color:var(--fg-soft);margin-top:4px;">นิสัย/พื้นฐานของคุณ · คงที่ตลอดชีวิต</div>`) +
+          card('🌇 Post-Heaven · ภารกิจ', `${hl.post_heaven.upper}${hl.post_heaven.lower}`, hl.post_heaven, `<div style="font-size:11px;color:var(--fg-soft);margin-top:4px;">เป้าหมายชีวิต · หลังจาก changing</div>`) +
+          card(`📅 Annual · ปี ${hl.annual.year} (อายุจีน ${hl.annual.chinese_age})`, `เส้น ${hl.annual.line}/6`, hl.annual, `<div style="font-size:11px;color:#7dd37b;margin-top:4px;">⭐ ปีนี้: ${HEX_TH[hl.annual.hex]||'?'}</div>`) +
+          card(`📆 Monthly · เดือน ${hl.monthly.month}`, `เส้น ${hl.monthly.line}/6`, hl.monthly, `<div style="font-size:11px;color:#5ba0ff;margin-top:4px;">เดือนนี้: ${HEX_TH[hl.monthly.hex]||'?'}</div>`);
+        document.getElementById('hk-heluo-numbers').innerHTML =
+          `🔢 <b style="color:var(--gold);">天數 Heavenly</b> = ${hl.numbers.heavenly} · ` +
+          `<b style="color:var(--gold);">地數 Earthly</b> = ${hl.numbers.earthly} · ` +
+          `<span style="color:var(--fg-faint);">stems [${hl.numbers.stem_nums.join(',')}] · branches [${hl.numbers.branch_nums.join(',')}]</span>` +
+          `<br/><span style="font-size:10px;color:var(--fg-faint);">ที่มา: 河圖洛書 + 河洛理數 (Chen Tuan · ศตวรรษที่ 10) · deterministic 100% · ผูกกับ pillars ของคุณ</span>`;
+      }
+    } catch (e) { console.warn('[chart] heluo render failed:', e); }
+
+    /* 📜 §13 · 24 節氣 ปีเกิด · อากง v3 (16 พ.ค.) */
+    try {
+      const stb = d.solar_terms_birth;
+      const jqSec = document.getElementById('hk-jieqi-sec');
+      if (stb && stb.terms && jqSec) {
+        jqSec.style.display = '';
+        const lang = (typeof getLang==='function'?getLang():(localStorage.getItem('lang')||'th'));
+        const I18 = { th:{node:'節', node2:'氣', cur:'เดือนเกิด', start:'เริ่มเดือน', li:'立春 (ปีจีนเริ่ม)'},
+                      en:{node:'Major', node2:'Middle', cur:'Birth month', start:'Starts month', li:'Beginning of Spring'},
+                      zh:{node:'節', node2:'氣', cur:'本月', start:'始於月', li:'立春'} }[lang] || {};
+        const cur = stb.birth_month_jieqi;
+        const next = stb.next_jieqi;
+        const info = document.getElementById('hk-jieqi-info');
+        info.innerHTML =
+          `<b style="color:var(--gold);font-size:15px;">${I18.li}:</b> ${stb.li_chun_cst} CST · <b>${stb.year_stem_branch}</b> (${stb.year})<br/>` +
+          (cur ? `<b style="color:var(--gold)">📍 ${I18.cur}:</b> 🟡 ${cur.zh} (${cur.date_cst} CST)` +
+                  (cur.branch_starts ? ` → 月支 <span class="tc">${cur.branch_starts}</span>` : '') +
+                  (next ? `<br/><b>→ ถัดไป:</b> ${next.zh} (${next.date_cst} CST)` : '')
+                : '') +
+          // 17 พ.ค. · explainer "ทำไมเดือนเป็นนี้" + จุดเด่นเรา
+          (cur ? `
+            <div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--gold-line);font-size:12px;line-height:1.7;">
+              <div style="color:var(--gold);font-weight:600;margin-bottom:4px;">💡 ทำไมเดือน ${cur.branch_starts}?</div>
+              <div style="color:var(--fg-soft);">
+                เพราะเกิดหลัง <b style="color:var(--gold);">${cur.zh}</b> ${next ? ` ก่อน <b style="color:var(--gold);">${next.zh}</b>` : ''}<br/>
+                ✓ ตำราจริง · เดือน BaZi เริ่มที่ <b>節</b> (jieqi) ไม่ใช่วันที่ 1 ของเดือน · ไม่ใช่ตรุษจีน
+              </div>
+              <div style="margin-top:8px;padding:8px 10px;background:rgba(125,211,123,.08);border-left:3px solid #7dd37b;border-radius:4px;font-size:11px;">
+                🎯 <b style="color:#7dd37b;">จุดเด่นของเรา:</b> ใช้ <b>tyme4ts</b> + <b>紫金山天文臺</b> precision ระดับนาที · ตำราอากงอาม่าครบ 24 節氣 (2020-2035) · ตรงกับซินแสจีนจริง
+              </div>
+            </div>
+          ` : '');
+        const grid = document.getElementById('hk-jieqi-grid');
+        grid.innerHTML = stb.terms.map(t => {
+          const isMaj = t.no % 2 === 1;
+          const isCur = cur && t.name === cur.zh;
+          const bg = isCur ? 'background:var(--gold-soft);border:2px solid var(--gold);' : (isMaj?'border-left:3px solid var(--gold);':'border-left:3px solid #5db3ff;');
+          const tag = isMaj ? I18.node : I18.node2;
+          return `<div style="${bg}background:var(--tile);border-radius:8px;padding:8px 10px;font-size:11px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <span class="tc" style="font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:600;">${t.name}</span>
+              <span style="font-family:var(--mono);font-size:9px;color:var(--fg-faint);">#${t.no} · ${tag}</span>
+            </div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--fg-soft);">${t.date}</div>
+            ${t.branch_starts ? `<div style="font-family:var(--tc);font-size:11px;color:var(--gold);margin-top:2px;">→ ${t.branch_starts}</div>` : ''}
+          </div>`;
+        }).join('');
+      }
+    } catch (e) { console.warn('[chart] jieqi render failed:', e); }
+
+    // §03 Ten Gods · count visible + hidden stems
+    const HIDDEN_STEMS={子:['癸'],丑:['己','癸','辛'],寅:['甲','丙','戊'],卯:['乙'],辰:['戊','乙','癸'],巳:['丙','戊','庚'],午:['丁','己'],未:['己','丁','乙'],申:['庚','壬','戊'],酉:['辛'],戌:['戊','辛','丁'],亥:['壬','甲']};
+    const STEM_POL={甲:'yang',乙:'yin',丙:'yang',丁:'yin',戊:'yang',己:'yin',庚:'yang',辛:'yin',壬:'yang',癸:'yin'};
+    const STEM_E={甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
+    const CTRL={wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};
+    const PROD={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};
+    function tg10(dmS, tS){
+      const dE=STEM_E[dmS], tE=STEM_E[tS]; if(!dE||!tE) return null;
+      const sp=STEM_POL[dmS]===STEM_POL[tS];
+      if(dE===tE) return sp?'比肩':'劫財';
+      if(PROD[dE]===tE) return sp?'食神':'傷官';
+      if(CTRL[dE]===tE) return sp?'偏財':'正財';
+      if(CTRL[tE]===dE) return sp?'七殺':'正官';
+      if(PROD[tE]===dE) return sp?'偏印':'正印';
+      return null;
+    }
+    const dmStem=p.day.stem;
+    const tgCounts={};
+    ['year','month','day','hour'].forEach(k=>{
+      const pp=p[k]; if(!pp) return;
+      // visible stem (skip DM itself in day)
+      if(k!=='day'){ const g=tg10(dmStem,pp.stem); if(g) tgCounts[g]=(tgCounts[g]||0)+1; }
+      // hidden stems
+      const hs=HIDDEN_STEMS[pp.branch]||[];
+      hs.forEach((s,idx)=>{
+        if(k==='day' && s===dmStem && idx===0) return; // skip DM in day branch main
+        const g=tg10(dmStem,s); if(g) tgCounts[g]=(tgCounts[g]||0)+(idx===0?1:0.5);
+      });
+    });
+    const godRows=document.querySelectorAll('.gods-list .god-row');
+    const tg10Order=['正官','正財','七殺','食神','比肩'];
+    /* 19 พ.ค. · ใช้ Functional (voytek_strength.bars) · map ten god → role pct
+     * 正官·七殺 = power · 正財 = wealth · 食神 = output · 比肩 = parallel
+     * fallback · raw tgCounts (legacy) */
+    const _vsR = a.voytek_strength || {};
+    const _fnRoles = (_vsR.source === 'functional-wrapper7' && Array.isArray(_vsR.bars))
+      ? Object.fromEntries(_vsR.bars.map(b => [b.role, b.pct]))
+      : null;
+    const TG_TO_ROLE = { '正官':'power', '七殺':'power', '正財':'wealth', '食神':'output', '比肩':'parallel' };
+    const tg10Counts=[];
+    tg10Order.forEach((gname,i)=>{
+      const row=godRows[i];
+      let cnt;
+      if (_fnRoles) {
+        /* functional · ใช้ pct/10 เป็น "count" สำหรับ radar normalization */
+        cnt = (_fnRoles[TG_TO_ROLE[gname]] || 0) / 10;
+      } else {
+        cnt = tgCounts[gname]||0; /* raw fallback */
+      }
+      tg10Counts.push(cnt);
+      const pct=Math.min(95, Math.round(cnt*22+10));
+      const lvl=cnt>=2?'สูง':cnt>=1?'กลาง':'ต่ำ';
+      const lvlCls=cnt>=2?'high':cnt>=1?'mid':'low';
+      if(row){
+        const barEl=row.querySelector('.god-bar i');
+        const lvlEl=row.querySelector('.god-lvl');
+        if(barEl) barEl.style.width=pct+'%';
+        if(lvlEl){ lvlEl.textContent=lvl; lvlEl.className='god-lvl '+lvlCls; }
+      }
+    });
+    // §05 INSIGHTS · ดึง content จริงจาก /api/insights (ref_strengths + ref_yongshen_ranks)
+    function setInsightPlaceholder(id, msg){
+      const el=document.getElementById(id);
+      if(el) el.innerHTML=`<li style="opacity:.6">${msg}</li>`;
+    }
+    setInsightPlaceholder('hk-insight-strong','กำลังโหลด...');
+    setInsightPlaceholder('hk-insight-warn','กำลังโหลด...');
+    setInsightPlaceholder('hk-insight-advice','กำลังโหลด...');
+    (async function(){
+      try {
+        const lang = document.documentElement.getAttribute('data-lang') || 'th';
+        const lvl = a.strength_yongshen?.strength?.level || 'weak';
+        const ir = await fetch('/api/insights', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ day_master: dm, strength_level: lvl, lang })
+        });
+        const ins = await ir.json();
+        if (!ir.ok || !ins.strength) return;
+        const s = ins.strength;
+        /* 強 จุดแข็ง */
+        const strongEl = document.getElementById('hk-insight-strong');
+        if (strongEl) {
+          const items = [];
+          if (s.metaphor) items.push('<li><b>'+s.label+'</b> · '+s.metaphor+'</li>');
+          if (s.meaning)  items.push('<li>'+s.meaning+'</li>');
+          (s.dos||[]).slice(0,3).forEach(d=>items.push('<li>✓ '+d+'</li>'));
+          strongEl.innerHTML = items.join('') || '<li style="opacity:.6">ไม่มีข้อมูล</li>';
+        }
+        /* 慎 ควรระวัง */
+        const warnEl = document.getElementById('hk-insight-warn');
+        if (warnEl) {
+          const items = [];
+          if (s.core_strategy) items.push('<li><b>กลยุทธ์:</b> '+s.core_strategy+'</li>');
+          (s.donts||[]).slice(0,4).forEach(d=>items.push('<li>✗ '+d+'</li>'));
+          warnEl.innerHTML = items.join('') || '<li style="opacity:.6">ไม่มีข้อมูล</li>';
+        }
+        /* 用 คำแนะนำ (yongshen advice top 3) · fallback analysis.useful_god.ranks ถ้า DB ว่าง */
+        const adviceEl = document.getElementById('hk-insight-advice');
+        if (adviceEl) {
+          const adv = ins.yongshen_advice || [];
+          const fromDb = adv.filter(r => r.element || r.strategy || r.meaning);
+          let items = [];
+          if (fromDb.length) {
+            items = fromDb.slice(0,3).map(r => '<li><b>'+(r.element||'-')+' · #'+r.rank+'</b> · '+(r.strategy||r.meaning||'-')+'</li>');
+          } else {
+            /* fallback · ใช้ strength_yongshen.yongshenFinal (ปรับ climate+strength แล้ว) */
+            const EL_TH={wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+            const ranks = (a.strength_yongshen?.yongshenFinal)||[];
+            items = ranks.slice(0,3).map((r,i) => {
+              const PRIO=['อันดับหนึ่ง','อันดับสอง','อันดับสาม'];
+              const pri = PRIO[i]||'';
+              return '<li><b>'+r.stem+' · '+(EL_TH[r.element]||r.element)+'</b> · 用神'+(r.elementName?.th||'')+(pri?' · '+pri:'')+'</li>';
+            });
+          }
+          adviceEl.innerHTML = items.length ? items.join('') : '<li style="opacity:.6">ไม่มีคำแนะนำ用神</li>';
+        }
+      } catch(e){
+        console.warn('insights load failed:', e);
+        setInsightPlaceholder('hk-insight-strong','โหลด insights ไม่สำเร็จ');
+      }
+    })();
+
+    // SVG radar (5 vertices · center=200,200 · radius max=120)
+    // vertices at angles 90,18,-54,-126,-198 (5 pentagon corners starting top)
+    const RADAR_CX=200, RADAR_CY=200, RADAR_R=120;
+    const angles=[-90,-18,54,126,-162]; // career(top), money(top-right), love(bottom-right), arts(bottom-left), self(top-left)
+    const maxCnt=Math.max(1,...tg10Counts);
+    const pts=tg10Counts.map((c,i)=>{
+      const r=(c/maxCnt)*RADAR_R;
+      const a=angles[i]*Math.PI/180;
+      const x=RADAR_CX+Math.cos(a)*r;
+      const y=RADAR_CY+Math.sin(a)*r;
+      return [Math.round(x),Math.round(y)];
+    });
+    const poly=document.getElementById('hk-radar-poly');
+    if(poly) poly.setAttribute('points',pts.map(p=>p.join(',')).join(' '));
+    const dots=document.querySelectorAll('#hk-radar-dots circle');
+    pts.forEach((p,i)=>{ if(dots[i]){ dots[i].setAttribute('cx',p[0]); dots[i].setAttribute('cy',p[1]); }});
+    const lvlTexts=document.querySelectorAll('#hk-radar-lvls text');
+    tg10Counts.forEach((c,i)=>{ if(lvlTexts[i]){ lvlTexts[i].textContent=c>=2?'สูง':c>=1?'กลาง':'ต่ำ'; }});
+
+    // §02 Four Pillars TABLE (G3 · 9 rows × 4 cols)
+    (function renderPillarTable(){
+      const ny = a.nayin || {};
+      const kw = a.kong_wang || {void_branches:[], per_pillar:{}};
+      const tp = a.three_phases || {};
+      const ss = a.special_stars || {};
+      const interactions = a.interactions || [];
+      const STEM_PINYIN = {甲:'Jiǎ',乙:'Yǐ',丙:'Bǐng',丁:'Dīng',戊:'Wù',己:'Jǐ',庚:'Gēng',辛:'Xīn',壬:'Rén',癸:'Guǐ'};
+      const STEM_NAME_EN = {甲:'Yang Wood',乙:'Yin Wood',丙:'Yang Fire',丁:'Yin Fire',戊:'Yang Earth',己:'Yin Earth',庚:'Yang Metal',辛:'Yin Metal',壬:'Yang Water',癸:'Yin Water'};
+      const BRANCH_EL = {子:'water',丑:'earth',寅:'wood',卯:'wood',辰:'earth',巳:'fire',午:'fire',未:'earth',申:'metal',酉:'metal',戌:'earth',亥:'water'};
+      const BRANCH_EL_ZH = {water:'水',earth:'土',wood:'木',fire:'火',metal:'金'};
+      const HIDDEN_LOCAL = {子:['癸'],丑:['己','癸','辛'],寅:['甲','丙','戊'],卯:['乙'],辰:['戊','乙','癸'],巳:['丙','戊','庚'],午:['丁','己'],未:['己','丁','乙'],申:['庚','壬','戊'],酉:['辛'],戌:['戊','辛','丁'],亥:['壬','甲']};
+      const POL_CLS = {good:'good',bad:'bad',neutral:'neutral'};
+      function cell(sel){ return document.querySelector('#hk-pillar-table '+sel); }
+      function fill(sel, html){ const el = cell(sel); if(el) el.innerHTML = html; }
+      ['hour','day','month','year'].forEach(k=>{
+        const pp = p[k]; if(!pp) return;
+        const stem = pp.stem, branch = pp.branch;
+        const sEl = STEM_EL_MAP[stem] || 'earth';
+        const bEl = BRANCH_EL[branch] || 'earth';
+        // Row 1: ten god of stem
+        const tgZh = (tg[k] && tg[k].ten_god) || '';
+        if (k === 'day') {
+          fill('.tg-'+k, '<span class="pt-glyph '+sEl+'" style="font-size:18px">日元</span><span class="pt-sub">DM</span>');
+        } else {
+          fill('.tg-'+k, tgZh ? '<span class="pt-glyph '+sEl+'" style="font-size:18px">'+tgZh+'</span><span class="pt-sub">'+(TENGOD_LABEL[tgZh]||'').split(' · ')[1]+'</span>' : '<span class="pt-empty">—</span>');
+        }
+        // Row 2: HS (stem + pinyin + element + name)
+        const stemPair = stem + branch;
+        fill('.hs-'+k, '<span class="pt-glyph '+sEl+'">'+stem+'</span><span class="pt-sub">'+(STEM_PINYIN[stem]||'')+' '+(stemPair.length===2?stemPair[1]:'')+'</span><span class="pt-sub" style="color:var(--'+sEl+')">'+(BRANCH_EL_ZH[sEl]||'')+'</span><span class="pt-sub-th">'+(STEM_NAME_EN[stem]||'')+'</span>');
+        // Row 3: EB (branch + element + EB→god)
+        const mainHidden = (HIDDEN_LOCAL[branch] || [])[0];
+        const ebGod = mainHidden ? tg10(dmStem, mainHidden) : null;
+        fill('.eb-'+k, '<span class="pt-glyph '+bEl+'">'+branch+'</span><span class="pt-sub" style="color:var(--'+bEl+')">'+(BRANCH_EL_ZH[bEl]||'')+'</span><span class="pt-sub-th">'+(STEM_NAME_EN[mainHidden]||'')+'</span>'+(ebGod?'<span class="pt-tag">EB → '+ebGod+'</span>':''));
+        // Row 4: HHS (1-3 hidden stems with element + ten god)
+        const hsList = HIDDEN_LOCAL[branch] || [];
+        const hhsHtml = hsList.length ? '<div class="pt-stack">' + hsList.map(s=>{
+          const e = STEM_EL_MAP[s]||'earth';
+          const g = tg10(dmStem, s) || '—';
+          return '<div class="pt-stack-line"><span style="color:var(--'+e+')">'+s+'</span><span class="el">'+(BRANCH_EL_ZH[e]||'')+'</span><span class="god">'+g+'</span></div>';
+        }).join('') + '</div>' : '<span class="pt-empty">—</span>';
+        fill('.hhs-'+k, hhsHtml);
+        // Row 5: Na Yin
+        const nayin = ny[k];
+        fill('.ny-'+k, nayin ? '<span class="pt-glyph" style="font-size:16px;color:var(--'+(nayin.element||'').toLowerCase()+')">'+nayin.zh+'</span><span class="pt-sub">'+nayin.en+'</span>' : '<span class="pt-empty">—</span>');
+        // Row 6: 3 phases (DM · pillar · hidden)
+        const ph = tp[k] || {};
+        fill('.ph-'+k, '<div class="pt-phases"><div><span class="lab">DM</span>'+(ph.dm||'—')+'</div><div><span class="lab">柱</span>'+(ph.pillar||'—')+'</div><div><span class="lab">藏</span>'+(ph.hidden_main||'—')+'</div></div>');
+        // Row 7: 空亡 + DHHS · main + dropdown (G5 · expand shows ALL hidden stems with main marker)
+        // Voytek alignment · แยก year-xun void (年空) จาก day-xun void (日空)
+        const isYearVoid = kw.per_pillar_year && kw.per_pillar_year[k];
+        const isDayVoid = kw.per_pillar_day && kw.per_pillar_day[k];
+        const isVoid = isYearVoid || isDayVoid;
+        const voidLabel = isYearVoid && isDayVoid ? '年日空亡' : isYearVoid ? '年空亡' : isDayVoid ? '日空亡' : '';
+        const hsListAll = HIDDEN_LOCAL[branch] || [];
+        const mainGod = mainHidden ? tg10(dmStem, mainHidden) || '—' : '—';
+        const mainEl = mainHidden ? (STEM_EL_MAP[mainHidden]||'earth') : 'earth';
+        const hasSubs = hsListAll.length > 1;
+        const fullListHtml = hsListAll.map((s, idx) => {
+          const e = STEM_EL_MAP[s]||'earth';
+          const g = tg10(dmStem, s) || '—';
+          const tag = idx === 0 ? '<span class="el">main</span>' : '<span class="el">sub</span>';
+          return '<li><span style="color:var(--'+e+')">'+s+'</span><span class="el">'+(BRANCH_EL_ZH[e]||'')+'</span><span class="god">'+g+'</span>'+tag+'</li>';
+        }).join('');
+        const cellId = 'dhhs-detail-'+k;
+        fill('.kw-'+k,
+          '<button type="button" class="dhhs-toggle" aria-expanded="false" aria-controls="'+cellId+'" data-expanded="false"'+(hasSubs?'':' disabled')+'>'
+          + (isVoid?'<span class="pt-void">'+voidLabel+'</span>':'')
+          + (mainHidden ? '<span class="pt-glyph '+mainEl+'" style="font-size:18px">'+mainHidden+'</span><span class="pt-sub-th">'+mainGod+'</span>' : '<span class="pt-empty">—</span>')
+          + (hasSubs?'<span class="dhhs-chev" aria-hidden="true">▼</span>':'')
+          + '</button>'
+          + (hasSubs ? '<ul class="dhhs-detail" id="'+cellId+'" hidden>'+fullListHtml+'</ul>' : '')
+        );
+        // Row 8: Stars (Voytek alignment · แสดง anchor tag YP/DP/MP/DS)
+        const stars = ss[k] || [];
+        const starsHtml = stars.length ? stars.map(s=>{
+          const anchor = s.anchor ? '<span class="pt-star-anchor">'+s.anchor+'</span>' : '';
+          return '<span class="pt-star '+(POL_CLS[s.polarity]||'neutral')+'" title="'+(s.th||'')+(s.anchor?' · anchor: '+s.anchor:'')+'">'+s.zh+anchor+'</span>';
+        }).join('') : '<span class="pt-empty">—</span>';
+        fill('.ss-'+k, starsHtml);
+        // Row 9: Reactions · Voytek alignment · รวม branch + stem interactions + Fan/Fu Yin
+        const stemInt = a.stem_interactions || [];
+        const fyfy = a.fan_yin_fu_yin || [];
+        const myBranch = interactions.filter(f=>f.pillars_pair && f.pillars_pair.includes(k)).map(f=>f.type);
+        const myStem = stemInt.filter(f=>f.pillars_pair && f.pillars_pair.includes(k)).map(f=>f.type);
+        const myFy = fyfy.filter(f=>f.natal_pillar===k || f.other_pillar===k).map(f=>f.type);
+        const allReact = [...myBranch, ...myStem, ...myFy];
+        const reactHtml = allReact.length ? allReact.map(t=>'<span class="pt-tag">'+t+'</span>').join(' ') : '<span class="pt-empty">—</span>';
+        fill('.rx-'+k, reactHtml);
+        // Row 10: 宮位 Palace (G4 · #23)
+        const palace = (a.palace_readings || {})[k];
+        const palHtml = palace
+          ? '<span class="pt-glyph" style="font-size:14px;color:var(--gold)">'+palace.zh+'</span><span class="pt-sub">'+(palace.age||'')+'</span><span class="pt-sub-th">'+(palace.title_th||'').replace(/^.*· /,'')+'</span>'
+          : '<span class="pt-empty">—</span>';
+        fill('.pal-'+k, palHtml);
+        // Row 11: 易 64 Hex Natal · per pillar · 15 พ.ค.
+        const hex = palace && palace.hex;
+        const hexHtml = hex
+          ? '<span class="pt-hex-sym" title="'+(hex.th||'')+'">'+(hex.symbol||'')+'</span>'+
+            '<span class="pt-hex-num">卦 '+hex.num+'</span>'+
+            '<span class="pt-hex-zh">'+hex.zh+'</span>'+
+            '<span class="pt-hex-th">'+(hex.th||'').split('·')[0].trim()+'</span>'
+          : '<span class="pt-empty">—</span>';
+        fill('.hex-'+k, hexHtml);
+      });
+    })();
+
+    // §01 hero tags · เพิ่ม Life Palace + Five Structure (G4 · #24 · #28)
+    const lifePal = a.life_palace;
+    const fiveStr = a.five_structure;
+    if (heroTags && (lifePal || fiveStr)) {
+      const extraTags = [];
+      if (fiveStr) extraTags.push('<span class="tag"><span class="glyph">'+fiveStr.zh.charAt(0)+'</span>'+fiveStr.title_th+'</span>');
+      if (lifePal) extraTags.push('<span class="tag"><span class="glyph">命</span>กิ่งวังตน · '+lifePal.branch_th+' · ธาตุ'+lifePal.element_th+'</span>');
+      heroTags.insertAdjacentHTML('beforeend', extraTags.join(''));
+    }
+
+    // §10 Personal Stars (G4 · #37)
+    (function renderPersonalStars(){
+      const ps = a.personal_stars || [];
+      const grid = document.getElementById('hk-ps-grid');
+      if (!grid) return;
+      if (!ps.length) { grid.innerHTML = '<div class="hk-ps-empty">ดวงนี้ไม่มีดาวประจำตัวที่ activate</div>'; return; }
+      grid.innerHTML = ps.map(s => {
+        const lbl = s.label_th || s.label_en || '';
+        const desc = s.desc_th || s.desc_en || '';
+        return '<article class="hk-ps-card">'+
+          '<div class="hk-ps-head"><span class="hk-ps-zh">'+s.star_zh+' · '+s.star_key+'</span><span class="hk-ps-pillar">'+s.pillar_zh+' · '+s.pillar_th+'</span></div>'+
+          (lbl ? '<div class="hk-ps-label">'+lbl+'</div>' : '')+
+          (desc ? '<div class="hk-ps-desc">'+desc+'</div>' : '')+
+        '</article>';
+      }).join('');
+    })();
+
+    // §06 Interactions cards (.inter-card) · update .ty title + h4 + p + glyphs
+    const interCards=document.querySelectorAll('.inter-card');
+    const it=a.interactions||[];
+    const cb=a.combinations||{san_he:[],san_hui:[]};
+    function fillCard(c, tyText, h4Text, pText, glyphsArr, isGood){
+      if(!c) return;
+      const ty=c.querySelector('.ty'), h4=c.querySelector('h4'), pTag=c.querySelector('p'), gly=c.querySelector('.glyphs');
+      if(ty) ty.textContent=tyText;
+      if(h4) h4.textContent=h4Text;
+      if(pTag) pTag.textContent=pText;
+      if(gly){ gly.innerHTML = glyphsArr.length ? glyphsArr.map(x=>`<span>${x}</span>`).join('') : '<span style="opacity:.5">—</span>'; }
+      c.classList.toggle('good', !!isGood);
+    }
+    const heList=it.filter(f=>f.type==='六合');
+    /* Voytek alignment · รวม 五合 (stem combo) เข้า HARMONY ด้วย */
+    const EL_TH_ALLIANCE = {water:'น้ำ',fire:'ไฟ',wood:'ไม้',metal:'ทอง',earth:'ดิน'};
+    const wuHeList = (a.stem_interactions || []).filter(f=>f.type==='五合');
+    const harmonyTotal = heList.length + wuHeList.length;
+    fillCard(interCards[0],
+      `六合 / 五合 · HARMONY (${harmonyTotal})`,
+      harmonyTotal?'มีคู่สนับสนุนในดวง':'ไม่มี 合 ในดวงเกิด',
+      harmonyTotal?'มีคู่หลอมรวมในดวง · เสริมสัมพันธ์/พันธมิตร':'ไม่มี 合 ในดวง · ต้องสร้างพันธมิตรเอง',
+      [
+        ...heList.map(f=>'六合 '+f.pair[0]+'↔'+f.pair[1]),
+        ...wuHeList.map(f=>'五合 '+f.pair.join('')+(f.transformed?'→'+(EL_TH_ALLIANCE[f.element]||f.element):''))
+      ], harmonyTotal>0);
+    const chongList=it.filter(f=>f.type==='六沖');
+    fillCard(interCards[1],
+      `六沖 · CLASH (${chongList.length})`,
+      chongList.length?'มีจุดต้องระวัง':'ไม่มี 六沖 ในดวงเกิด',
+      chongList.length?'มีแรงปะทะภายในดวง · ระวังจังหวะแตก':'ไม่มีแรงปะทะใหญ่ · จังหวะเสถียร',
+      chongList.map(f=>`${f.pair[0]}→${f.pair[1]}`), false);
+    const banHeList = cb.ban_he || [];
+    const allianceTotal=(cb.san_he||[]).length+(cb.san_hui||[]).length+banHeList.length;
+    fillCard(interCards[2],
+      `三會/三合/半合 · ALLIANCE (${allianceTotal})`,
+      allianceTotal?'มีพันธมิตรในดวง':'ไม่มีพันธมิตรกลุ่ม',
+      allianceTotal?'คนรอบตัวมักเสริมกัน · มีกลุ่มสนับสนุน':'ไม่มี 三合/三會/半合 — เน้นทำงานเดี่ยว',
+      [
+        ...(cb.san_he||[]).map(s=>'三合 '+s.join('')),
+        ...(cb.san_hui||[]).map(s=>'三會 '+s.join('')),
+        ...banHeList.map(b=>'半合 '+b.pair[0]+b.pair[1]+'·'+(EL_TH_ALLIANCE[b.element]||b.element))
+      ],
+      allianceTotal>0);
+    const harmList=it.filter(f=>f.type==='六害'||f.type==='六破');
+    const pn=a.punishments||[];
+    /* Voytek alignment · เพิ่ม Fan Yin / Fu Yin + 天克 stem clash */
+    const fyfyAll = a.fan_yin_fu_yin || [];
+    const fyNatal = fyfyAll.filter(f=>['year','month','day','hour'].includes(f.other_pillar));
+    const stemInts = a.stem_interactions || [];
+    const tianKe = stemInts.filter(f=>f.type==='天克');
+    const discordTotal=harmList.length+pn.length+fyNatal.length+tianKe.length;
+    fillCard(interCards[3],
+      `害 / 刑 / 吟 · DISCORD (${discordTotal})`,
+      discordTotal?'มีจุดร้าวในดวง':'ไม่มี 害/刑/吟',
+      discordTotal?'ระวังจังหวะแตก · ปะทะแบบไม่ตรง':'ไม่มีจุดร้าวใหญ่',
+      [
+        ...harmList.map(f=>f.type+' '+f.pair.join('')),
+        ...pn.map(f=>f.type+' '+f.branches.join('')),
+        ...fyNatal.map(f=>f.type+' '+f.natal.stem+f.natal.branch+'↔'+f.other.stem+f.other.branch),
+        ...tianKe.map(f=>'天克 '+f.pair.join('-'))
+      ],
+      false);
+
+    /* Format decimal years → "X ปี Y เดือน" (Y omitted ถ้า =0) */
+    function fmtAge(yrs){
+      if (yrs == null) return '—';
+      const total = Math.round(yrs * 12);   /* total months */
+      const y = Math.floor(total / 12);
+      const m = total % 12;
+      if (m === 0) return y + ' ปี';
+      return y + ' ปี ' + m + ' เดือน';
+    }
+    // §07 Luck Pillars (.hk-luck-card × 8)
+    const luckCards=document.querySelectorAll('.hk-luck-row .hk-luck-card');
+    lp.forEach((lpItem,i)=>{
+      const card=luckCards[i]; if(!card) return;
+      card.classList.toggle('cur', i===curIdx);
+      const ageEl=card.querySelector('.age');
+      const pEl=card.querySelector('.hk-pillar');
+      const stemEl=card.querySelector('.hk-pillar-stem');
+      const brEl=card.querySelector('.hk-pillar-branch');
+      const phEl=card.querySelector('.phase');
+      if(ageEl) ageEl.textContent=`${fmtAge(lpItem.age_start)} – ${fmtAge(lpItem.age_end)}`;
+      if(pEl) pEl.className='hk-pillar '+lpItem.element;
+      if(stemEl) stemEl.textContent=lpItem.stem;
+      if(brEl) brEl.textContent=lpItem.branch;
+      if(phEl) phEl.textContent=lpItem.qi_phase||'—';
+    });
+    /* 18 พ.ค. · §08b 拱·夾 carry image · sifu-grade · DOM nodes กัน XSS */
+    try {
+      const carries = (a.carries || []);
+      const section = document.getElementById('hk-carry-section');
+      const list = document.getElementById('hk-carry-list');
+      if (section && list) {
+        list.textContent = '';
+        if (carries.length) {
+          section.style.display = '';
+          const ROLE_COLOR = { useful:'var(--gold,#c8a44d)', jishen:'#e26b5d', neutral:'var(--fg-soft,#8aa)' };
+          const ROLE_LABEL = { useful:'用神', jishen:'忌神', neutral:'中性' };
+          carries.forEach((c) => {
+            const card = document.createElement('div');
+            card.style.cssText = 'background:var(--tile,rgba(200,164,77,.05));border:1px solid var(--gold-line,rgba(200,164,77,.2));border-left:3px solid '+(ROLE_COLOR[c.role]||ROLE_COLOR.neutral)+';border-radius:8px;padding:12px 14px;';
+            const head = document.createElement('div');
+            head.style.cssText='display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;';
+            const t = document.createElement('span');
+            t.style.cssText='font-family:var(--tc);font-size:18px;font-weight:700;color:var(--gold,#c8a44d);';
+            t.textContent = String(c.type||'');
+            head.appendChild(t);
+            const vb = document.createElement('span');
+            vb.style.cssText='font-family:var(--tc);font-size:22px;font-weight:700;color:var(--fg,#fff);';
+            vb.textContent = String(c.virtualBranch||'');
+            head.appendChild(vb);
+            const role = document.createElement('span');
+            role.style.cssText='font-family:var(--mono);font-size:10px;letter-spacing:.12em;padding:3px 8px;border-radius:99px;background:'+(ROLE_COLOR[c.role]||ROLE_COLOR.neutral)+';color:#fff;';
+            role.textContent = ROLE_LABEL[c.role]||'中性';
+            head.appendChild(role);
+            if (c.tenGod) {
+              const tg = document.createElement('span');
+              tg.style.cssText='font-family:var(--tc);font-size:12px;color:var(--fg-soft,#8aa);';
+              tg.textContent = String(c.tenGod);
+              head.appendChild(tg);
+            }
+            if ((c.activatedBy||[]).length) {
+              const act = document.createElement('span');
+              act.style.cssText='font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(125,211,123,.18);color:#7dd37b;border:1px solid rgba(125,211,123,.4);';
+              act.textContent='▶ active: '+c.activatedBy.join(',');
+              head.appendChild(act);
+            }
+            if ((c.brokenBy||[]).length) {
+              const brk = document.createElement('span');
+              brk.style.cssText='font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(226,107,93,.18);color:#e26b5d;border:1px solid rgba(226,107,93,.4);';
+              brk.textContent='⛔ broken: '+c.brokenBy.join(',');
+              head.appendChild(brk);
+            }
+            card.appendChild(head);
+            const note = document.createElement('div');
+            note.style.cssText='font-family:var(--thai);font-size:13px;line-height:1.7;color:var(--fg,#ddd);';
+            /* 18 พ.ค. · Codex flag #6 · note ตาม locale */
+            const lang = (document.documentElement.getAttribute('data-lang') || localStorage.getItem('hk_locale') || 'th').slice(0,2);
+            note.textContent = String((lang === 'en' && c.note_en) ? c.note_en : c.note_th||'');
+            card.appendChild(note);
+            if ((c.hiddenStems||[]).length) {
+              const hs = document.createElement('div');
+              hs.style.cssText='font-family:var(--mono);font-size:10px;color:var(--fg-soft,#8aa);margin-top:5px;letter-spacing:.05em;';
+              hs.textContent='藏干: '+c.hiddenStems.join('·')+'  ·  conf '+(c.confidence!=null?c.confidence.toFixed(2):'-');
+              card.appendChild(hs);
+            }
+            list.appendChild(card);
+          });
+        } else {
+          section.style.display = 'none';
+        }
+      }
+    } catch(_) {}
+
+    // luck note + Engine 1 · LP × natal interactions
+    const luckNote=document.querySelector('.hk-luck-note');
+    if(luckNote&&lp[curIdx]){
+      const c=lp[curIdx];
+      const lpInter = a.lp_natal_interactions || [];
+      const TYPE_POL = {'六沖':'bad','六害':'bad','六破':'bad','天克':'bad','六合':'good','三合':'good','三會':'good','半合':'good','五合':'good'};
+      const P_TH = {year:'ปี', month:'เดือน', day:'วัน', hour:'ชั่วโมง'};
+      let interHtml = '';
+      if (lpInter.length) {
+        interHtml = '<div class="hk-lp-inter">' + lpInter.flatMap(it =>
+          it.types.map(t => {
+            const tBase = t.split('·')[0];
+            const cls = TYPE_POL[tBase] || 'neutral';
+            return `<span class="hk-lp-inter-tag ${cls}"><span class="pn">${P_TH[it.natal_pillar]||it.natal_pillar}</span>${t}</span>`;
+          })
+        ).join('') + '</div>';
+      }
+      luckNote.innerHTML = `รอบโชคปัจจุบัน <b>${fmtAge(c.age_start)} – ${fmtAge(c.age_end)} · ${c.stem}${c.branch}</b> · ${c.qi_phase} · จากดวงจริงของคุณ${interHtml}`;
+    }
+
+    // Engine 1 · 流年 100-year timeline (render ใน §11) · 📜 wrap try/catch อิสระ · 15 พ.ค.
+    try {
+    /* local tx helper · scope-safe · 15 พ.ค. (fix tx not defined บน mobile) */
+    const _ltx = (k, fb) => {
+      try {
+        const t = window.HK_I18N && window.HK_I18N[k];
+        if (!t) return fb;
+        const lang = document.documentElement.getAttribute('data-lang') || 'th';
+        return t[lang] || t.th || fb;
+      } catch(_) { return fb; }
+    };
+    const liuNian = a.liu_nian_timeline || [];
+    const sifuBox = document.getElementById('hk-sifu-box');
+    if (sifuBox && liuNian.length) {
+      let existing = document.getElementById('hk-liunian-wrap');
+      if (existing) existing.remove();
+      const cyYear = (a.current_year_pillar && new Date().getUTCFullYear()) || 0;
+      const FLAG_CLS = {auspicious:'auspicious', cautious:'cautious', neutral:''};
+      const TG_TH = {正官:'อำนาจตรง',七殺:'อำนาจสายลับ',正財:'ทรัพย์ตรง',偏財:'ทรัพย์ไหล',正印:'ครูตรง',偏印:'ครูสายลับ',食神:'สร้างสรรค์',傷官:'พรสวรรค์',比肩:'เพื่อน',劫財:'พี่น้อง'};
+      const STEM_TO_EL = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
+      const cellsHtml = liuNian.map(ln => {
+        const fc = FLAG_CLS[ln.flag] || '';
+        const curC = ln.year === cyYear ? ' cur' : '';
+        const vs = (ln.vs_day_branch || []).map(v => v.split('·')[0]).join('·');
+        const hexNum = ln.hex?.num ? ln.hex.num : '';
+        const hexZh  = ln.hex?.zh  ? ln.hex.zh  : '';
+        const hexSym = ln.hex?.symbol || '';
+        const stemEl = STEM_TO_EL[ln.pillar.stem] || 'earth';
+        return `<div class="hk-liunian-cell ${fc}${curC}" title="${ln.hex?.th||''} (卦${hexNum})">
+          <div class="yr">${ln.year}${ln.age?` <span class="age">·${ln.age}${_ltx('c.lt.age_suffix','ปี')}</span>`:''}</div>
+          <div class="pl" data-el="${stemEl}">${ln.pillar.stem}${ln.pillar.branch}</div>
+          <div class="tg">${ln.ten_god||''}</div>
+          ${hexSym ? `<div class="hx-sym">${hexSym}</div>` : ''}
+          ${hexZh ? `<div class="hx">卦${hexNum}·${hexZh}</div>` : ''}
+          ${vs ? `<div class="vs">${vs}</div>` : ''}
+        </div>`;
+      }).join('');
+      const wrap = document.createElement('div');
+      wrap.id = 'hk-liunian-wrap';
+      wrap.className = 'hk-liunian-wrap';
+      const ltTitle = _ltx('c.lt.title','流年 · {N} ปี (เกิด→ตาย) · เทียบ DM + 64卦 hexagram').replace('{N}', liuNian.length);
+      const ltHint  = _ltx('c.lt.hint','💡 เลื่อนแนวนอน · hover เซลล์เพื่อดูชื่อ hexagram · เซลล์สีทอง = ปีปัจจุบัน');
+      wrap.innerHTML = `
+        <div class="hk-liunian-title">${ltTitle}</div>
+        <div class="hk-liunian-grid">${cellsHtml}</div>
+        <div class="hk-liunian-hint">${ltHint}</div>`;
+      sifuBox.appendChild(wrap);
+    }
+    } catch(e){ console.warn('[HK] liu_nian render failed:', e); }
+
+    // Engine 2 · §04 PERSONAL · 6 cards · 18 พ.ค. Codex P1+P2+P3
+    (function renderPersonal(){
+      const EL_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+      /* helper · DOM nodes กัน XSS (Codex flag เดิม) */
+      const mkB = (text, color) => { const e=document.createElement('b'); e.textContent=String(text||''); if(color)e.style.color=color; return e; };
+      const mkSpan = (text, cls, color) => { const e=document.createElement('span'); if(cls)e.className=cls; e.textContent=String(text||''); if(color)e.style.color=color; return e; };
+      const mkTag = (text, color) => { const e=document.createElement('span'); e.className='pt-tag'; e.textContent=String(text||''); if(color){e.style.color=color;e.style.borderColor=color;} return e; };
+      const mkRow = (label, items, color) => {
+        const r=document.createElement('div'); r.className='tag-row'; r.style.marginTop='8px';
+        if (label){ const lb=document.createElement('span'); lb.style.cssText='font-size:11px;color:var(--fg-soft,#888);margin-right:6px'; lb.textContent=label; r.appendChild(lb); }
+        items.forEach(t => r.appendChild(t));
+        return r;
+      };
+
+      /* ─── #1 · 格 card · ใช้ yongshen_v2 + ge_ju ─── */
+      const spBox = document.querySelector('#hk-personal-special .body');
+      const spCard = document.getElementById('hk-personal-special');
+      const ys = d.yongshen_v2 || {};
+      const gj = a.ge_ju || {};
+      const sLabel = ys.structure_label || gj.structure || '';
+      const sBasis = gj.basis || '';
+      const sConf  = ys.confidence || gj.confidence || '';
+      const sEng   = ys.engine_type || '';
+      /* Codex flag · NORMAL_* = ปกติ · ห้าม render เป็น special */
+      const isNormal  = !sEng || sEng.startsWith('NORMAL_');
+      const isSpecial = !isNormal && !!sLabel && (sEng.startsWith('TRUE_FOLLOW') || sEng.startsWith('HUA_QI') || sEng.startsWith('ZHUAN_WANG') || sEng.startsWith('CONG_') || sEng.startsWith('WEAK_DM_'));
+      if (spBox) {
+        spBox.textContent = '';
+        if (sLabel && !isNormal) {
+          if (isSpecial) spCard && spCard.classList.add('special-on');
+          spBox.appendChild(mkB(sLabel, 'var(--gold)'));
+          if (sEng) { spBox.appendChild(document.createTextNode(' · ')); spBox.appendChild(mkSpan(sEng, null, 'var(--fg-soft,#8aa)')); }
+          spBox.appendChild(document.createElement('br'));
+          if (sBasis) { spBox.appendChild(mkSpan(sBasis)); spBox.appendChild(document.createElement('br')); }
+          /* yongshen tags */
+          const primary = ys.primary_yongshen || [];
+          const xishen  = ys.xishen || [];
+          const jishen  = ys.jishen || [];
+          const tags = [];
+          primary.forEach(el => tags.push(mkTag('🥇 用 '+(EL_TH[el]||el), 'var(--gold,#c8a44d)')));
+          xishen.filter(x => !primary.includes(x)).forEach(el => tags.push(mkTag('✅ 喜 '+(EL_TH[el]||el))));
+          jishen.forEach(el => tags.push(mkTag('⛔ 忌 '+(EL_TH[el]||el), '#e26b5d')));
+          if (tags.length) spBox.appendChild(mkRow('', tags));
+          if (sConf) { const c = document.createElement('div'); c.style.cssText='margin-top:6px;font-size:11px;color:var(--fg-soft,#8aa);font-family:var(--mono,monospace)'; c.textContent='ความเชื่อมั่น · '+sConf; spBox.appendChild(c); }
+        } else {
+          /* normal chart · แสดง 月令格 + 扶抑法 ถ้ามี · กลับมาแสดง "ดวงปกติ" ถ้าไม่มี */
+          if (sLabel && isNormal) { spBox.appendChild(mkB(sLabel, 'var(--gold)')); spBox.appendChild(document.createTextNode(' · 正格 · ใช้กฎ 扶抑法 มาตรฐาน')); }
+          else { spBox.appendChild(mkB('ดวงปกติ')); spBox.appendChild(document.createTextNode(' · ใช้กฎ 扶抑法 มาตรฐาน · ไม่ใช่ดวงพิเศษ')); }
+        }
+      }
+
+      /* ─── #2 · Career 3-tier · จาก primary/xishen/jishen ─── */
+      /* mapping element → อาชีพไทย (deterministic · ไม่ใช่ prediction) */
+      const CAREER_BY_EL = {
+        wood:  ['การศึกษา','ครู·อาจารย์','นักออกแบบ','ป่าไม้','เฟอร์นิเจอร์','พิมพ์·สื่อสิ่งพิมพ์'],
+        fire:  ['การตลาด','โฆษณา','พิธีกร','ไฟฟ้า·อิเล็กทรอนิกส์','อาหารร้อน·ครัว','พลังงาน'],
+        earth: ['อสังหาริมทรัพย์','ก่อสร้าง','การเกษตร·เซรามิก','คลังสินค้า','ที่ปรึกษา','ที่ดิน'],
+        metal: ['การเงิน·ธนาคาร','โลหะ·อัญมณี','กฎหมาย·บัญชี','วิศวกร','ยานยนต์','เครื่องจักร'],
+        water: ['ขนส่ง·โลจิสติกส์','ท่องเที่ยว','ประมง','ค้าขาย','การสื่อสาร','การเงินสภาพคล่อง'],
+      };
+      const car = a.career_industry || {};
+      const carBox = document.querySelector('#hk-personal-career .body');
+      if (carBox) {
+        carBox.textContent = '';
+        const primary = ys.primary_yongshen || [];
+        const xishen  = ys.xishen || [];
+        const jishen  = ys.jishen || [];
+        if (primary.length || xishen.length || jishen.length) {
+          /* Best tier · จาก primary */
+          if (primary.length) {
+            const inds = [];
+            primary.forEach(el => (CAREER_BY_EL[el]||[]).slice(0,3).forEach(j => inds.push(mkTag(j,'var(--gold,#c8a44d)'))));
+            if (inds.length) carBox.appendChild(mkRow('🥇 เหมาะที่สุด:', inds, 'var(--gold)'));
+          }
+          /* Usable tier · จาก xishen */
+          const usableEls = xishen.filter(x => !primary.includes(x));
+          if (usableEls.length) {
+            const inds = [];
+            usableEls.forEach(el => (CAREER_BY_EL[el]||[]).slice(0,3).forEach(j => inds.push(mkTag(j))));
+            if (inds.length) carBox.appendChild(mkRow('✅ ใช้ได้:', inds));
+          }
+          /* Avoid tier · จาก jishen */
+          if (jishen.length) {
+            const inds = [];
+            jishen.forEach(el => (CAREER_BY_EL[el]||[]).slice(0,3).forEach(j => inds.push(mkTag(j,'#e26b5d'))));
+            if (inds.length) carBox.appendChild(mkRow('⛔ หลีกเลี่ยง:', inds, '#e26b5d'));
+          }
+          /* legacy advice ถ้ามี */
+          if (car.advice_th) { const n=document.createElement('div'); n.style.cssText='margin-top:10px;font-size:12px;color:var(--fg-soft,#8aa);line-height:1.6'; n.textContent=car.advice_th; carBox.appendChild(n); }
+        } else if (car.advice_th) {
+          carBox.appendChild(mkSpan(car.advice_th));
+        } else {
+          carBox.appendChild(mkSpan('—'));
+        }
+      }
+
+      /* ─── คงเดิม · 夫妻 + 健康 ─── */
+      const sps = a.spouse_palace;
+      const spsBox = document.querySelector('#hk-personal-spouse .body');
+      if (spsBox && sps) {
+        spsBox.textContent = '';
+        spsBox.appendChild(document.createTextNode('คู่ครองธาตุ'));
+        spsBox.appendChild(mkB(sps.partner_element_th||''));
+        spsBox.appendChild(document.createTextNode(' (เสาวัน '+(sps.day_branch_th||'')+')'));
+        spsBox.appendChild(document.createElement('br'));
+        spsBox.appendChild(mkSpan('บุคลิก: '+(sps.partner_traits_th||'')));
+        const flags = sps.relationship_flags || [];
+        if (flags.length) spsBox.appendChild(mkRow('', flags.map(f => mkTag(f))));
+        else { const e=document.createElement('div'); e.style.cssText='opacity:.6;font-size:12px;margin-top:6px'; e.textContent='ไม่มีปะทะหรือผสานกับเสาอื่น'; spsBox.appendChild(e); }
+      }
+      const hl = a.health_mapping;
+      const hlBox = document.querySelector('#hk-personal-health .body');
+      if (hlBox && hl) {
+        hlBox.textContent = '';
+        hlBox.appendChild(document.createTextNode('อวัยวะหลัก: '));
+        hlBox.appendChild(mkB(hl.dm_organs_th||''));
+        hlBox.appendChild(document.createElement('br'));
+        hlBox.appendChild(mkSpan(hl.summary_th||''));
+        const weak = hl.weak_organs || [];
+        const caution = hl.caution_organs || [];
+        if (weak.length) hlBox.appendChild(mkRow('⚠ อ่อน:', weak.map(w => mkTag(w.organs_th||'',''))));
+        if (caution.length) hlBox.appendChild(mkRow('⚡ ระวัง:', caution.map(c => mkTag(c.organs_th||''))));
+      }
+
+      /* ─── #3 · 父母 + 子女 cards · ใช้ palace_readings (object · keyed by pillar) ─── */
+      const palaces = a.palace_readings || {};
+      /* Codex flag · stem_th/branch_th ไม่ emit จาก engine · ใช้ static map */
+      const PALACE_LABELS = {
+        month: { stem_th: 'พ่อ / หัวหน้า',    branch_th: 'แม่ / รากอาชีพ' },
+        hour:  { stem_th: 'ลูกชาย / ลูกน้อง',  branch_th: 'ลูกหญิง / บั้นปลาย' },
+      };
+      function renderPalace(pillarName, boxSel) {
+        const box = document.querySelector(boxSel);
+        if (!box) return;
+        const p = palaces[pillarName];
+        box.textContent = '';
+        if (!p) { box.appendChild(mkSpan('—')); return; }
+        if (p.title_th) { const t=document.createElement('div'); t.style.cssText='font-family:var(--serif);font-size:13px;color:var(--gold);margin-bottom:4px'; t.textContent=p.title_th; box.appendChild(t); }
+        if (p.age) { const a2=document.createElement('span'); a2.style.cssText='font-family:var(--mono);font-size:10px;color:var(--fg-soft,#8aa);letter-spacing:.1em;text-transform:uppercase'; a2.textContent='ช่วงอายุ '+p.age; box.appendChild(a2); box.appendChild(document.createElement('br')); }
+        const labels = PALACE_LABELS[pillarName] || {};
+        const tags = [];
+        if (labels.stem_th)   tags.push(mkTag('天 · '+labels.stem_th));
+        if (labels.branch_th) tags.push(mkTag('地 · '+labels.branch_th));
+        if (tags.length) box.appendChild(mkRow('', tags));
+        /* Codex disclaimer · ป้ายชื่อวัง ไม่ใช่คำทำนายรายบุคคล */
+        const note = document.createElement('div'); note.style.cssText='margin-top:6px;font-size:11px;color:var(--fg-soft,#888);line-height:1.55'; note.textContent='ป้ายชื่อวังตามเสาเกิด ไม่ใช่คำทำนายรายบุคคล · อ่านร่วมกับ用神และภาพรวมทั้งผัง'; box.appendChild(note);
+      }
+      renderPalace('month', '#hk-personal-parents .body');
+      renderPalace('hour',  '#hk-personal-children .body');
+    })();
+
+    // Engine 1 · 天地合 (ใส่ใน §06 ALLIANCE block ถ้ามี)
+    const tdh = a.tian_di_he || [];
+    if (tdh.length) {
+      const allianceCard = interCards[2];
+      if (allianceCard) {
+        const tdhHtml = tdh.map(t => `天地合 ${t.pair[0]}↔${t.pair[1]}·${EL_TH_ALLIANCE[t.element]||t.element}`).join(' / ');
+        const pTag = allianceCard.querySelector('p');
+        if (pTag) pTag.textContent = (pTag.textContent || '') + ' · 天地合: ' + tdhHtml;
+      }
+    }
+  };
+
+  /* ─── 19 พ.ค. Option α · 3p UI overlay helper ─── */
+  /* รัน "หลัง" HK_RENDER_ALL · เฉพาะ UI · ไม่แตะ calculation/scoring/wrappers
+   * 1. show banner
+   * 2. fill hour pillar cells เป็น "—"
+   * 3. dim cards ที่อิงเสายาม (命宮 · 拱夾 · §11 ที่ hour-required) */
+  window.HK_RENDER_3P_NOTICE = function render3pNotice(d /*, b */){
+    try {
+      var is3p = d && (d.mode === '3p' || (d.pillars && d.pillars.hour == null));
+      var banner = document.getElementById('hk-3p-banner');
+      if (!banner) return;
+      /* selectors ที่ตรงกับ DOM จริงของ chart.html · 4 ตำแหน่ง:
+       * .tg-hour (Tian Gan row · §02) · .hs-hour (Hidden Stems row) · .hhs-hour (Hidden Hidden Stems)
+       * #bb-hp-stem · #bb-hp-god · #bb-hp-phase (basic board hour column)
+       * .gz.hour · .pillar.hour · [data-pillar="hour"] (อนาคต/อื่นๆ) */
+      /* Codex รอบ 18 fix · cover hour table rows ครบทุกแถวของ §02 (Joey Yap-style)
+       * tg=Tian Gan · hs=Hidden Stems · hhs=Hidden Hidden Stems · eb=Earthly Branch
+       * ny=Na Yin · ph=Phases · kw=Kong Wang · ss=Special Stars · rx=Reactions · pal=Palace · hex=Hexagram */
+      var HOUR_TABLE_CELLS = ['.tg-hour', '.hs-hour', '.hhs-hour', '.eb-hour', '.ny-hour', '.ph-hour', '.kw-hour', '.ss-hour', '.rx-hour', '.pal-hour', '.hex-hour'];
+      var HOUR_TEXT_NODES = ['#bb-hp-stem', '#bb-hp-god', '#bb-hp-phase'];
+      var HOUR_PILLAR_GROUPS = ['.pillar.hour', '[data-pillar="hour"]', '.life-palace', '.carry-card', '[data-card="hour-required"]'];
+
+      if (!is3p) {
+        /* 4p · reset overlay · ลบ inline style ที่ helper ใส่ไว้ก่อนหน้านี้ */
+        banner.hidden = true;
+        document.documentElement.removeAttribute('data-no-hour');
+        HOUR_PILLAR_GROUPS.forEach(function(sel){
+          document.querySelectorAll(sel).forEach(function(el){
+            el.style.opacity = '';
+            el.removeAttribute('title');
+          });
+        });
+        return;
+      }
+      banner.hidden = false;
+      document.documentElement.setAttribute('data-no-hour', '1');
+
+      /* 3p · table cells (.tg-hour/.hs-hour/.hhs-hour) → "—" placeholder */
+      HOUR_TABLE_CELLS.forEach(function(sel){
+        document.querySelectorAll(sel).forEach(function(el){
+          el.innerHTML = '<span class="pt-empty" style="opacity:.4;">—</span>';
+        });
+      });
+      /* 3p · basic board hour column (#bb-hp-*) → "—" */
+      HOUR_TEXT_NODES.forEach(function(sel){
+        var el = document.querySelector(sel);
+        if (el) el.textContent = '—';
+      });
+      /* 3p · .gz.hour · .pillar.hour stem/branch · render "—" */
+      document.querySelectorAll('.gz.hour').forEach(function(el){ el.textContent = '—'; });
+      document.querySelectorAll('.pillar.hour .stem, [data-pillar="hour"] .stem').forEach(function(el){ el.textContent = '—'; });
+      document.querySelectorAll('.pillar.hour .branch, [data-pillar="hour"] .branch').forEach(function(el){ el.textContent = '—'; });
+
+      /* dim hour-only blocks + tooltip 3 ภาษา */
+      var lang = document.documentElement.getAttribute('data-lang') || 'th';
+      var tip = lang === 'en' ? 'Hour Pillar unknown · 3-pillar mode'
+              : lang === 'zh' ? '不知時辰 · 三柱推算'
+              : 'ไม่ทราบเวลาเกิด · 3 เสา';
+      HOUR_PILLAR_GROUPS.forEach(function(sel){
+        document.querySelectorAll(sel).forEach(function(el){
+          el.style.opacity = '.35';
+          el.title = tip;
+        });
+      });
+    } catch(_) {}
+  };
+  /* controller (HKChartPage) auto-runs · no per-block init */
+})();
+
+/* ─── 19 พ.ค. Option α · i18n keys ─── */
+(function(){
+  try {
+    var DICT = window.HK_I18N || (window.HK_I18N = {});
+    DICT['c.3p.title'] = { th:'ดวงนี้คำนวณแบบ 3 เสา · ไม่ทราบเวลาเกิด', en:'This chart uses 3-pillar mode · birth time unknown', zh:'此命盤採用三柱推算 · 不知出生時辰' };
+    DICT['c.3p.hint']  = { th:'เสายาม (時柱) · 命宮 · 拱·夾 · 河洛 จะไม่แสดง · ตำราคลาสสิก: ขาดเวลา → ไม่คำนวณ ดีกว่าเดา', en:'Hour Pillar · Life Palace · 拱·夾 · Heluo not shown · classical: skip rather than guess', zh:'時柱 · 命宮 · 拱·夾 · 河洛皆隱藏 · 古法: 寧缺勿猜' };
+  } catch(_){}
+})();
+</script>
+
+<script src="/js/hk-hex-deep.js?v=1" defer></script>
+<script src="/js/hk-method-link.js?v=20260518a" defer></script>
 </body>
 </html>

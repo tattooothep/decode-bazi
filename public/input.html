@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>hourkey · กรอกข้อมูลเกิด</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
   :root, [data-theme="dark"]{
     --bg:#0a0c10;
@@ -149,6 +151,18 @@
   .hk-name-field input::placeholder{color:var(--paper-soft);font-weight:300;}
   .hk-name-hint{margin-top:8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--paper-soft);text-transform:none;}
 
+  .hk-birth-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:-6px 0 24px;}
+  .hk-option-block{background:var(--field);border:1px solid var(--line);border-radius:10px;padding:12px;}
+  .hk-option-title{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--paper-soft);text-transform:uppercase;margin-bottom:10px;}
+  .hk-option-title b{font-family:var(--tc);color:var(--gold);font-weight:500;}
+  .hk-segment{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+  .hk-option-btn{height:38px;border:1px solid var(--line-soft);border-radius:8px;background:rgba(255,255,255,.02);color:var(--paper-dim);font-family:var(--thai);font-size:13px;cursor:none;transition:all .2s;}
+  .hk-option-btn b{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--paper-soft);font-weight:500;margin-left:4px;}
+  .hk-option-btn.on{background:var(--gold);border-color:var(--gold);color:#0d0f12;font-weight:700;}
+  .hk-option-btn.on b{color:#0d0f12;}
+  [data-theme="light"] .hk-option-btn.on{color:#f5efe2;}
+  [data-theme="light"] .hk-option-btn.on b{color:#f5efe2;}
+
   /* ── Date glyph picker ──────────────────────────────────── */
   .date-row{display:grid;grid-template-columns:90px 1fr 110px;gap:14px;align-items:end;margin-bottom:32px;}
   .field{position:relative;}
@@ -173,6 +187,14 @@
   .time-shichen .name{font-family:var(--serif);font-size:13px;color:var(--paper);}
   .time-shichen .name b{color:var(--gold);}
   .time-meta .range{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--paper-soft);text-transform:uppercase;margin-top:8px;}
+  .hk-time-editor{display:grid;grid-template-columns:minmax(160px,.7fr) 1fr;gap:12px;margin:-4px 0 16px;align-items:end;}
+  .hk-time-input-wrap label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--paper-soft);text-transform:uppercase;margin-bottom:8px;}
+  .hk-time-input{width:100%;height:46px;background:var(--field);border:1px solid var(--gold);border-radius:10px;color:var(--paper);font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:.08em;padding:0 14px;outline:none;cursor:pointer;}
+  .hk-time-input:focus{box-shadow:0 0 0 3px var(--gold-soft);background:var(--gold-soft);}
+  .hk-time-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .hk-time-chip{height:46px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--paper);font-family:var(--mono);font-size:12px;letter-spacing:.08em;cursor:none;transition:all .2s;}
+  .hk-time-chip:hover{border-color:var(--gold);background:var(--gold-soft);}
+  .hk-time-chip b{font-family:var(--tc);color:var(--gold);font-size:15px;margin-left:4px;}
 
   .shichen-bar{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-bottom:8px;}
   .sh-cell{aspect-ratio:1;border-radius:6px;background:var(--field);border:1px solid var(--line-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:none;transition:all .2s;position:relative;overflow:hidden;}
@@ -354,10 +376,13 @@
     .input-glyph .label{font-size:8px;}
 
     .time-display{font-size:64px;}
+    .time-big{font-size:64px;}
     .time-shichen{font-size:11px;padding:6px 10px;gap:8px;}
+    .hk-birth-options{grid-template-columns:1fr;gap:10px;}
+    .hk-time-editor{grid-template-columns:1fr;gap:8px;}
 
     /* 12 ยาม · mobile = 4 cols × 3 rows · cell กว้างพอใส่ตัวอักษรไทย */
-    .sh-grid{grid-template-columns:repeat(4, 1fr);gap:8px;}
+    .shichen-bar{grid-template-columns:repeat(4, 1fr);gap:8px;}
     .sh-cell{aspect-ratio:auto;padding:10px 6px;min-height:64px;}
     .sh-cell .br{font-size:20px;}
     .sh-cell .th{font-size:11px;line-height:1.2;margin-top:3px;white-space:nowrap;}
@@ -378,6 +403,8 @@
     .cta-row button{width:100%;padding:14px;font-size:11px;}
   }
 </style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
 
@@ -447,6 +474,24 @@
       <input type="text" id="hk-profile-name" placeholder="เช่น ตัวเอง · เอ๋ · แฟน · ป๊า · หุ้นส่วน" />
       <div class="hk-name-hint" data-i18n="in.name.hint">เก็บไว้เรียกในกล่องเครือข่าย · เพิ่มดวงคนอื่นได้ทีหลังที่หน้าเครือข่าย</div>
     </div>
+    <div class="hk-birth-options">
+      <div class="hk-option-block">
+        <div class="hk-option-title" data-i18n="in.gender.label">เพศ · <b>性別</b></div>
+        <div class="hk-segment" data-hk-segment="gender">
+          <button type="button" class="hk-option-btn on" data-gender="M" data-i18n="in.gender.male">ชาย <b>M</b></button>
+          <button type="button" class="hk-option-btn" data-gender="F" data-i18n="in.gender.female">หญิง <b>F</b></button>
+        </div>
+        <input type="hidden" id="hk-gender" value="M"/>
+      </div>
+      <div class="hk-option-block">
+        <div class="hk-option-title" data-i18n="in.boundary.label">ขอบวัน · <b>換日</b></div>
+        <div class="hk-segment" data-hk-segment="boundary">
+          <button type="button" class="hk-option-btn on" data-boundary="23:00">23:00 <b>子</b></button>
+          <button type="button" class="hk-option-btn" data-boundary="00:00">00:00 <b>日</b></button>
+        </div>
+        <input type="hidden" id="hk-day-boundary" value="23:00"/>
+      </div>
+    </div>
 
     <!-- Date -->
     <div class="date-row">
@@ -502,6 +547,22 @@
           <div class="range" data-i18n="in.time.range">01:00 — 03:00 · 牛時</div>
         </div>
       </div>
+      <div class="hk-time-editor">
+        <div class="hk-time-input-wrap">
+          <label for="hk-birth-time" data-i18n="in.time.full">กรอกเวลาเต็ม · HH:MM</label>
+          <input id="hk-birth-time" class="hk-time-input" type="time" step="60" value="02:35"/>
+        </div>
+        <div class="hk-time-quick">
+          <button type="button" class="hk-time-chip" data-time="23:00">23:00 <b>子</b></button>
+          <button type="button" class="hk-time-chip" data-time="00:00">00:00 <b>子</b></button>
+        </div>
+      </div>
+      <!-- 19 พ.ค. Option α · ไม่ทราบเวลาเกิด · 3-pillar mode (no hour) -->
+      <label style="display:flex;align-items:center;gap:10px;margin:14px 0 4px;cursor:pointer;font-size:13px;color:var(--paper);">
+        <input type="checkbox" id="hk-no-birth-time" style="width:18px;height:18px;cursor:pointer;accent-color:var(--gold);"/>
+        <span data-i18n="in.notime.label">ไม่ทราบเวลาเกิด · คำนวณแบบ 3 เสา (ไม่มีเสายาม)</span>
+      </label>
+      <div id="hk-no-birth-time-hint" style="font-size:11px;color:var(--paper-soft);margin:0 0 12px 28px;line-height:1.5;" data-i18n="in.notime.hint">ตามตำราคลาสสิก · ถ้าไม่ทราบเวลาเกิด คำนวณเฉพาะ ปี เดือน วัน · แม่นยำกว่าการเดาเวลา</div>
       <div class="shichen-bar">
         <div class="sh-cell"><div class="br">子</div><div class="th" data-i18n="in.zod.rat">หนู</div><div class="h">23-01</div></div>
         <div class="sh-cell on"><div class="br">丑</div><div class="th" data-i18n="in.zod.ox">วัว</div><div class="h">01-03</div></div>
@@ -702,7 +763,7 @@
   document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; cd.style.left=mx+'px'; cd.style.top=my+'px'; });
   function tick(){ cx+=(mx-cx)*.15; cy+=(my-cy)*.15; c.style.left=cx+'px'; c.style.top=cy+'px'; requestAnimationFrame(tick); }
   tick();
-  document.querySelectorAll('button, .sh-cell, .input-glyph, .check, input, .step-tab').forEach(el=>{
+  document.querySelectorAll('button, .sh-cell, .input-glyph, .check, input, .step-tab, .hk-option-btn, .hk-time-chip').forEach(el=>{
     el.addEventListener('mouseenter', ()=>c.classList.add('hot'));
     el.addEventListener('mouseleave', ()=>c.classList.remove('hot'));
   });
@@ -717,7 +778,7 @@
     stars.appendChild(s);
   }
 
-  // shichen click
+  // shichen / birth time controls
   const cells = document.querySelectorAll('.sh-cell');
   const branches=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
   const ranges=['23:00','01:00','03:00','05:00','07:00','09:00','11:00','13:00','15:00','17:00','19:00','21:00'];
@@ -726,18 +787,65 @@
   const tBranch = document.querySelector('.time-shichen .branch');
   const tName = document.querySelector('.time-shichen .name');
   const tRange = document.querySelector('.time-meta .range');
+  const timeInput = document.getElementById('hk-birth-time');
+  function idxForTime(v){
+    const m = String(v || '').match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return 0;
+    const h = Math.max(0, Math.min(23, parseInt(m[1],10) || 0));
+    return Math.floor(((h + 1) % 24) / 2);
+  }
+  function setBirthTime(v){
+    const m = String(v || '').match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return;
+    const hh = String(Math.max(0, Math.min(23, parseInt(m[1],10) || 0))).padStart(2,'0');
+    const mm = String(Math.max(0, Math.min(59, parseInt(m[2],10) || 0))).padStart(2,'0');
+    const val = hh + ':' + mm;
+    const idx = idxForTime(val);
+    cells.forEach(c=>c.classList.remove('on'));
+    if (cells[idx]) cells[idx].classList.add('on');
+    const start = ranges[idx], end = ranges[(idx+1)%12];
+    if (tBig) tBig.innerHTML = hh + '<span class="colon">:</span>' + mm;
+    if (timeInput && timeInput.value !== val) timeInput.value = val;
+    if (tBranch) tBranch.textContent = branches[idx];
+    if (tName) tName.innerHTML = '<b>'+names[idx].split(' · ')[0]+'</b> · ชั่วยาม'+names[idx].split(' · ')[1];
+    if (tRange) tRange.textContent = start+' — '+end+' · '+branches[idx]+'時';
+    document.dispatchEvent(new CustomEvent('hkBirthChanged'));
+  }
+  window.hkSetBirthTime = setBirthTime;
+  window.hkGetBirthTime = function(){ return timeInput && timeInput.value ? timeInput.value : (tBig ? tBig.textContent.replace(/[^0-9:]/g,'').slice(0,5) : '02:35'); };
   cells.forEach((el,i)=>{
     el.addEventListener('click', ()=>{
-      cells.forEach(c=>c.classList.remove('on'));
-      el.classList.add('on');
       const start = ranges[i], end = ranges[(i+1)%12];
       const h = (parseInt(start)+1)%24;
-      tBig.innerHTML = String(h).padStart(2,'0')+'<span class="colon">:</span>00';
-      tBranch.textContent = branches[i];
-      tName.innerHTML = '<b>'+names[i].split(' · ')[0]+'</b> · ชั่วยาม'+names[i].split(' · ')[1];
-      tRange.textContent = start+' — '+end+' · '+branches[i]+'時';
+      setBirthTime(String(h).padStart(2,'0')+':00');
     });
   });
+  if (timeInput) {
+    timeInput.addEventListener('input', ()=>setBirthTime(timeInput.value));
+    timeInput.addEventListener('change', ()=>setBirthTime(timeInput.value));
+  }
+  document.querySelectorAll('.hk-time-chip[data-time]').forEach(btn=>{
+    btn.addEventListener('click', ()=>setBirthTime(btn.dataset.time || '00:00'));
+  });
+  document.querySelectorAll('[data-hk-segment="gender"] .hk-option-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('[data-hk-segment="gender"] .hk-option-btn').forEach(x=>x.classList.remove('on'));
+      btn.classList.add('on');
+      const hidden = document.getElementById('hk-gender');
+      if (hidden) hidden.value = btn.dataset.gender || 'M';
+      document.dispatchEvent(new CustomEvent('hkBirthChanged'));
+    });
+  });
+  document.querySelectorAll('[data-hk-segment="boundary"] .hk-option-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('[data-hk-segment="boundary"] .hk-option-btn').forEach(x=>x.classList.remove('on'));
+      btn.classList.add('on');
+      const hidden = document.getElementById('hk-day-boundary');
+      if (hidden) hidden.value = btn.dataset.boundary || '23:00';
+      document.dispatchEvent(new CustomEvent('hkBirthChanged'));
+    });
+  });
+  setBirthTime((timeInput && timeInput.value) || '02:35');
 
   // unsure check
   const ck = document.querySelector('.unsure .check');
@@ -748,12 +856,12 @@
   const tDark  = document.getElementById('t-dark');
   function setTheme(mode){
     document.documentElement.setAttribute('data-theme', mode);
-    tLight.classList.toggle('on', mode==='light');
-    tDark.classList.toggle('on', mode==='dark');
+    if (tLight) tLight.classList.toggle('on', mode==='light');
+    if (tDark) tDark.classList.toggle('on', mode==='dark');
     try{ localStorage.setItem('hourkey-theme', mode); }catch(e){}
   }
-  tLight.addEventListener('click', ()=>setTheme('light'));
-  tDark.addEventListener('click', ()=>setTheme('dark'));
+  if (tLight) tLight.addEventListener('click', ()=>setTheme('light'));
+  if (tDark) tDark.addEventListener('click', ()=>setTheme('dark'));
   try{
     const saved = localStorage.getItem('hourkey-theme');
     if (saved) setTheme(saved);
@@ -851,15 +959,21 @@
     const lpDay = document.getElementById('hk-day');
     const lpMonth = document.getElementById('hk-month');
     const lpYear = document.getElementById('hk-year');
+    const lpTime = document.getElementById('hk-birth-time');
     let liveTimer = null;
     function getCurrentInput(){
       const D = String(parseInt((document.getElementById('hk-day')||{}).value || '07', 10)).padStart(2,'0');
       const M = String(parseInt((document.getElementById('hk-month')||{}).value || '5', 10)).padStart(2,'0');
       const Yraw = parseInt((document.getElementById('hk-year')||{}).value || '2569', 10);
       const Y = Yraw >= 2200 ? Yraw - 543 : Yraw;
-      const tBig = document.querySelector('.time-big');
-      const T = tBig ? tBig.textContent.replace(/[^0-9:]/g,'').slice(0,5) : '13:15';
-      return { date: Y + '-' + M + '-' + D, time: T };
+      const T = (window.hkGetBirthTime && window.hkGetBirthTime()) || ((document.getElementById('hk-birth-time')||{}).value || '02:35');
+      const lng = parseFloat((document.getElementById('hk-place-lng')||{}).value || '100.5018');
+      const gender = (document.getElementById('hk-gender')||{}).value || 'M';
+      const dayBoundary = (document.getElementById('hk-day-boundary')||{}).value || '23:00';
+      /* 19 พ.ค. Option α · ไม่ทราบเวลาเกิด → birthTimeKnown=false */
+      const noTimeChk = document.getElementById('hk-no-birth-time');
+      const birthTimeKnown = !(noTimeChk && noTimeChk.checked);
+      return { date: Y + '-' + M + '-' + D, time: T, longitude: lng, gender: gender, dayBoundary: dayBoundary, birthTimeKnown: birthTimeKnown };
     }
     async function refreshPreview(){
       try {
@@ -868,7 +982,7 @@
         if (live) live.textContent = 'กำลังคำนวณ';
         const r = await fetch('/api/chart', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ date: inp.date, time: inp.time, longitude: 100.5018 }),
+          body: JSON.stringify({ date: inp.date, time: inp.time, longitude: inp.longitude, gender: inp.gender, dayBoundary: inp.dayBoundary, birthTimeKnown: inp.birthTimeKnown }),
         });
         if (!r.ok) { if (live) live.textContent = 'ตัวอย่าง'; return; }
         const d = await r.json();
@@ -878,7 +992,20 @@
         order.forEach(function(k, i){
           const p = d.pillars[k];
           const el = pills[i];
-          if (!p || !el) return;
+          if (!el) return;
+          /* 19 พ.ค. Option α · 3p: pillars.hour = null → clear card เป็น "—" + dim */
+          if (!p) {
+            const stemEl = el.querySelector('.stem');
+            const brEl = el.querySelector('.branch');
+            if (stemEl) stemEl.textContent = '—';
+            if (brEl) brEl.textContent = '—';
+            el.classList.remove('s-fire','s-earth','s-water','s-metal','s-wood','b-fire','b-earth','b-water','b-metal','b-wood','wood','fire','earth','metal','water','dm');
+            el.classList.add('hk-pillar-empty');
+            el.style.opacity = '.35';
+            return;
+          }
+          el.classList.remove('hk-pillar-empty');
+          el.style.opacity = '';
           const stemEl = el.querySelector('.stem');
           const brEl = el.querySelector('.branch');
           if (stemEl) stemEl.textContent = p.stem;
@@ -903,10 +1030,11 @@
       if (liveTimer) clearTimeout(liveTimer);
       liveTimer = setTimeout(refreshPreview, 500);
     }
-    [lpDay, lpMonth, lpYear].forEach(function(el){
+    [lpDay, lpMonth, lpYear, lpTime].forEach(function(el){
       if (el) el.addEventListener('input', debounceRefresh);
       if (el) el.addEventListener('change', debounceRefresh);
     });
+    document.addEventListener('hkBirthChanged', debounceRefresh);
     /* time picker change · ผูกหลังสร้าง overlay */
     const tmObserver = new MutationObserver(function(){
       const tBig = document.querySelector('.time-big');
@@ -917,6 +1045,22 @@
     });
     tmObserver.observe(document.body, { childList: true, subtree: true });
     setTimeout(refreshPreview, 800);
+
+    /* 19 พ.ค. Option α · checkbox "ไม่ทราบเวลาเกิด" · disable time inputs + trigger preview */
+    const noTimeChk = document.getElementById('hk-no-birth-time');
+    if (noTimeChk) {
+      const applyNoTime = function() {
+        const off = noTimeChk.checked;
+        const ti = document.getElementById('hk-birth-time');
+        if (ti) ti.disabled = off;
+        document.querySelectorAll('.hk-time-chip').forEach(c => c.disabled = off);
+        document.querySelectorAll('.shichen-bar .sh-cell').forEach(c => c.style.opacity = off ? '.4' : '');
+        const tBig = document.querySelector('.time-big');
+        if (tBig) tBig.style.opacity = off ? '.35' : '';
+        debounceRefresh();
+      };
+      noTimeChk.addEventListener('change', applyNoTime);
+    }
   } catch(_) {}
 
   /* ── inject native <input type="date" + time"> overlay (legacy · ปุ่มเล็ก opt-in) ── */
@@ -967,39 +1111,7 @@
     }
   } catch(_) {}
 
-  /* ── inject native <input type="time"> overlay over time-display ── */
-  try {
-    const timeBox = document.querySelector('.time-display');
-    if (timeBox) {
-      const ti = document.createElement('input');
-      ti.type = 'time';
-      ti.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:5;border:0;background:transparent;font-size:16px;';
-      const tBig = document.querySelector('.time-big');
-      ti.value = tBig ? tBig.textContent.replace(/[^0-9:]/g,'').slice(0,5) : '13:15';
-      timeBox.style.position = 'relative';
-      timeBox.appendChild(ti);
-      ti.addEventListener('focus', function(){
-        try { if (typeof ti.showPicker === 'function') ti.showPicker(); } catch(_){}
-      });
-      ti.addEventListener('click', function(){
-        try { if (typeof ti.showPicker === 'function') ti.showPicker(); } catch(_){}
-      });
-
-      ti.addEventListener('change', function(){
-        const v = ti.value; if (!v) return;
-        if (tBig) tBig.innerHTML = v.slice(0,2) + '<span class="colon">:</span>' + v.slice(3,5);
-        /* update shichen */
-        const h = parseInt(v.slice(0,2),10);
-        const idx = Math.floor(((h+1)%24)/2);
-        const cells = document.querySelectorAll('.sh-cell');
-        cells.forEach(function(c){ c.classList.remove('on'); });
-        if (cells[idx]) cells[idx].classList.add('on');
-        const branches = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
-        const tBranch = document.querySelector('.time-shichen .branch');
-        if (tBranch) tBranch.textContent = branches[idx];
-      });
-    }
-  } catch(_) {}
+  /* time input is visible above; no invisible overlay needed */
 
   try {
     /* override "ต่อไป" button */
@@ -1016,17 +1128,24 @@
         const yrRaw = parseInt((document.getElementById('hk-year')||{}).value || '2569', 10);
         const yyyy = String(yrRaw >= 2200 ? yrRaw - 543 : yrRaw); /* smart พ.ศ./ค.ศ. */
 
-        const tBig = document.querySelector('.time-big');
-        const time = tBig ? tBig.textContent.replace(/[^0-9:]/g,'').slice(0,5) : '02:35';
-
-        const place = (document.querySelector('.place input') || {}).value || 'กรุงเทพมหานคร';
+        const time = (window.hkGetBirthTime && window.hkGetBirthTime()) || ((document.getElementById('hk-birth-time')||{}).value || '02:35');
+        const gender = (document.getElementById('hk-gender')||{}).value || 'M';
+        const dayBoundary = (document.getElementById('hk-day-boundary')||{}).value || '23:00';
+        const lat = parseFloat((document.getElementById('hk-place-lat')||{}).value || '13.7563');
+        const lng = parseFloat((document.getElementById('hk-place-lng')||{}).value || '100.5018');
+        const place = (document.getElementById('hk-place-name')||{}).value || (document.getElementById('hk-place-input')||{}).value || 'กรุงเทพมหานคร';
         const profileName = (document.getElementById('hk-profile-name')||{}).value?.trim() || 'ตัวเอง';
 
-        const birth = { name: profileName, date: yyyy + '-' + mo + '-' + String(day).padStart(2,'0'), time: time, place: place, longitude: 100.5018 };
+        /* 19 พ.ค. Option α · birthTimeKnown=false ถ้าไม่ทราบเวลา · ส่งใน localStorage + downstream API */
+        const noTimeChk = document.getElementById('hk-no-birth-time');
+        const birthTimeKnown = !(noTimeChk && noTimeChk.checked);
+        const birth = { name: profileName, date: yyyy + '-' + mo + '-' + String(day).padStart(2,'0'), time: time, place: place, latitude: lat, longitude: lng, gender: gender, dayBoundary: dayBoundary, birthTimeKnown: birthTimeKnown };
         localStorage.setItem('hk_birth', JSON.stringify(birth));
         localStorage.setItem('hk_profile_name', profileName);
+        localStorage.setItem('hk_gender', gender);
+        localStorage.setItem('hk_day_boundary', dayBoundary);
       } catch(_) {}
-      window.location.href = '/goal';
+      window.location.href = '/master?intro=1&next=' + encodeURIComponent('/goal');
     });
   } catch(e) {}
 })();
@@ -1054,10 +1173,17 @@ window.HK_I18N = {
   'in.name.hint':   { th:'เก็บไว้เรียกในกล่องเครือข่าย · เพิ่มดวงคนอื่นได้ทีหลังที่หน้าเครือข่าย',
                       en:'Saved to your network · add others later in the network page',
                       zh:'存於人脈中 · 之後可在網絡頁面新增他人命盤' },
+  'in.gender.label':{ th:'เพศ · <b>性別</b>', en:'Gender · <b>性別</b>', zh:'性別 · <b>性別</b>' },
+  'in.gender.male': { th:'ชาย <b>M</b>', en:'Male <b>M</b>', zh:'男 <b>M</b>' },
+  'in.gender.female':{ th:'หญิง <b>F</b>', en:'Female <b>F</b>', zh:'女 <b>F</b>' },
+  'in.boundary.label':{ th:'ขอบวัน · <b>換日</b>', en:'Day boundary · <b>換日</b>', zh:'換日 · <b>換日</b>' },
   'in.day.label':   { th:'วัน · <b>日</b>', en:'Day · <b>日</b>', zh:'日 · <b>日</b>' },
   'in.month.label': { th:'เดือน · <b>月</b>', en:'Month · <b>月</b>', zh:'月 · <b>月</b>' },
   'in.year.label':  { th:'ปี · พ.ศ./ค.ศ. · <b>年</b>', en:'Year · BE/CE · <b>年</b>', zh:'年 · 公元/佛曆 · <b>年</b>' },
   'in.time.label':  { th:'เวลาเกิด · <b>時辰</b>', en:'Birth time · <b>時辰</b>', zh:'出生時辰 · <b>時辰</b>' },
+  'in.time.full':   { th:'กรอกเวลาเต็ม · HH:MM', en:'Exact time · HH:MM', zh:'完整時間 · HH:MM' },
+  'in.notime.label':{ th:'ไม่ทราบเวลาเกิด · คำนวณแบบ 3 เสา (ไม่มีเสายาม)', en:"Don't know birth time · 3-pillar mode (no Hour Pillar)", zh:'不知道出生時辰 · 三柱推算 (略時柱)' },
+  'in.notime.hint': { th:'ตามตำราคลาสสิก · ถ้าไม่ทราบเวลาเกิด คำนวณเฉพาะ ปี เดือน วัน · แม่นยำกว่าการเดาเวลา', en:'Classical method · without birth time we compute Year/Month/Day only · more honest than guessing hour', zh:'依循古法 · 不知時辰時只推年月日 · 比猜測時辰更誠實' },
   'in.place.label': { th:'สถานที่เกิด · <b>出生地</b>', en:'Place of birth · <b>出生地</b>', zh:'出生地 · <b>出生地</b>' },
   'in.place.hint':  { th:'พิมพ์จังหวัด/เมือง · ระบบหาพิกัดให้', en:'Type city/province · we fetch coordinates', zh:'輸入城市/省份 · 系統自動取得座標' },
   'in.place.note':  { th:'<span class="hk-place-note-i">ⓘ</span><span>กรุณาเลือกจังหวัดที่เกิด · ระบบใช้พิกัดเพื่อคำนวณ <b>เวลาเกิดจริง (True Solar Time)</b> · ต่างจังหวัดเวลาเกิดอาจต่างได้ถึง <b>ครึ่งชั่วโมง</b> · ผลต่อชั่วยามที่แม่นยำ</span>', en:'<span class="hk-place-note-i">ⓘ</span><span>Please pick your birth city · we use coordinates to compute <b>True Solar Time</b> · cities can differ by up to <b>30 minutes</b> · affects accurate shichen</span>', zh:'<span class="hk-place-note-i">ⓘ</span><span>請選擇出生城市 · 系統依座標計算 <b>真太陽時</b> · 各城市出生時間可相差達 <b>半小時</b> · 影響時辰精度</span>' },
@@ -1111,6 +1237,7 @@ window.applyI18N = applyI18N;
   try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
 })();
 </script>
-<script src="/js/hk-user-menu.js?v=9" defer></script>
+<script src="/js/hk-settings-drawer.js?v=9" defer></script>
+<script src="/js/hk-user-menu.js?v=16" defer></script>
 </body>
 </html>

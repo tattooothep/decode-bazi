@@ -1,0 +1,136 @@
+/**
+ * POST /api/profile/create
+ *
+ * สร้าง profile ใหม่สำหรับ "คนอื่น" (ไม่ใช่ self upsert) · สำหรับเพิ่มดวงญาติ/เพื่อน/ทีม
+ * รับ: { name, nickname?, birthDate, birthTime, birthLat?, birthLng?, locationName?, gender?, relationshipType? }
+ * 15 พ.ค. 2026 · separate จาก POST /api/profile (LOCKED upsertSelfProfile)
+ */
+import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
+import { q, q1 } from "@/lib/db";
+import { calcBazi } from "@/lib/bazi-calc";
+
+export async function POST(req: Request) {
+  const s = await getSession();
+  if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
+  if (!s.orgId) return NextResponse.json({ error: "no org" }, { status: 400 });
+
+  const body = await req.json().catch(() => ({}));
+  const {
+    name,
+    nickname,
+    birthDate,
+    birthTime: birthTimeRaw,
+    birthLat,
+    birthLng,
+    locationName,
+    gender,
+    relationshipType,
+    /* 16 พ.ค. 2026: รับ dayBoundary "23:00" (early 子) หรือ "00:00" (late 子/Voytek) */
+    dayBoundary,
+    /* 19 พ.ค. Option α · birthTimeKnown=false → 3p mode (no hour pillar) */
+    birthTimeKnown: birthTimeKnownRaw,
+  } = body;
+
+  if (!name || !birthDate) {
+    return NextResponse.json({ error: "name + birthDate required" }, { status: 400 });
+  }
+
+  const birthTimeKnown = birthTimeKnownRaw !== false;        /* default true · backward compat */
+  const birthTime = birthTimeKnown ? (birthTimeRaw || "12:00") : "12:00"; /* 3p ใช้ 12:00 เป็น DB anchor เท่านั้น · ไม่ใช่ pillar */
+
+  const relation = String(relationshipType || "").trim();
+  if (!relation || relation.toLowerCase() === "self" || relation === "ตัวเอง") {
+    return NextResponse.json(
+      { error: "relationshipType required for non-self profile" },
+      { status: 400 }
+    );
+  }
+
+  /* compute BaZi via Layer 0/1 helper · ห้าม inline tyme4ts
+   * 19 พ.ค. Option α · branch by birthTimeKnown · 3p ส่ง birthTimeKnown:false · 4p เดิม */
+  let calc;
+  try {
+    if (birthTimeKnown) {
+      calc = await calcBazi({
+        date: birthDate,
+        time: birthTime,
+        longitude: birthLng != null ? Number(birthLng) : 100.5018,
+        gmtOffsetHours: 7,
+        gender: (gender as "M" | "F" | undefined) || undefined,
+        /* 16 พ.ค. 2026: ส่ง dayBoundary ผ่าน Layer 0 (tyme-tst) · กระทบ 23:00-23:59 birth */
+        dayBoundary: (dayBoundary === "00:00" ? "00:00" : "23:00") as "23:00" | "00:00",
+        birthTimeKnown: true,
+      });
+    } else {
+      calc = await calcBazi({
+        date: birthDate,
+        longitude: birthLng != null ? Number(birthLng) : 100.5018,
+        gmtOffsetHours: 7,
+        gender: (gender as "M" | "F" | undefined) || undefined,
+        birthTimeKnown: false,
+      });
+    }
+  } catch (e: unknown) {
+    const err = e as Error;
+    return NextResponse.json({ error: "bazi calc failed: " + err.message }, { status: 500 });
+  }
+
+  const dayMaster = calc.dayMaster;
+  const strength = String(calc.strength?.percent ?? "");
+  /* 16 พ.ค. fix permanent: standardize format {top3:[], climate} เหมือน upsertSelfProfile · frontend อ่านง่าย */
+  const yongshen = JSON.stringify({
+    top3: calc.yongshen || [],
+    climate: calc.climate || null,
+  });
+  /* Codex รอบ 8 fix #3 · บันทึก shape เดียวกับ self/update · { pillars, ge_ju } · frontend อ่าน row.bazi_pillars.pillars ตรงกันทุก endpoint */
+  const baziPillars = JSON.stringify({
+    pillars: calc.pillars || {},
+    ge_ju: calc.geJu?.structure || null,
+  });
+
+  /* INSERT profile · created_by_user_id = session.userId · id = gen_random_uuid() (column ไม่มี DEFAULT)
+   * 19 พ.ค. Option α · birth_time_known = false → DB เก็บ anchor 12:00 + flag false · pillars.hour=null */
+  const row = await q1<{ id: string }>(
+    `INSERT INTO profiles (
+       id,
+       org_id, created_by_user_id, name, nickname,
+       birth_datetime, birth_lat, birth_lng, birth_location_name, gender,
+       relationship_type,
+       day_master, day_master_strength, yongshen, bazi_pillars,
+       birth_source, birth_time_known, is_archived, created_at, updated_at
+     )
+     VALUES (
+       gen_random_uuid(),
+       $1, $2, $3, $4,
+       ($5::text || ' ' || $6::text || ':00 Asia/Bangkok')::timestamptz,
+       $7, $8, $9, $10,
+       $11,
+       $12, $13, $14::jsonb, $15::jsonb,
+       'self_reported', $16, false, now(), now()
+     )
+     RETURNING id`,
+    [
+      s.orgId, s.userId, name, nickname ?? null,
+      birthDate, birthTime,
+      birthLat != null ? String(birthLat) : null,
+      birthLng != null ? String(birthLng) : null,
+      locationName ?? null,
+      gender ?? null,
+      relation,
+      dayMaster, strength, yongshen, baziPillars,
+      birthTimeKnown,
+    ]
+  );
+  if (!row) return NextResponse.json({ error: "insert failed" }, { status: 500 });
+
+  const full = await q1(
+    `SELECT id, name, nickname, day_master, day_master_strength, yongshen, bazi_pillars,
+            relationship_type, gender, birth_lng, birth_lat, birth_time_known,
+            to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime
+     FROM profiles WHERE id=$1`,
+    [row.id]
+  );
+
+  return NextResponse.json({ ok: true, profile: full });
+}

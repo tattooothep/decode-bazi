@@ -17,12 +17,19 @@
  *   ambiguous     - ขัดแย้งหรือ borderline · ต้อง human inspect
  */
 const S = require('./shared.js');
+let _tiaoHou = null;
+try { _tiaoHou = require('./5-tiao-hou.js'); } catch (_) {}
+
+/* 19 พ.ค. Option α (Codex-approved) · 4p byte-equal · 3p filters hour */
+function activePositions(natal) {
+  return ['year','month','day','hour'].filter(p => natal[p]);
+}
 
 function dmRootCount(natal) {
   const dmStem = natal.day.stem;
   const dmEl = S.STEM_ELEMENT[dmStem];
   let count = 0;
-  for (const pos of ['year','month','day','hour']) {
+  for (const pos of activePositions(natal)) {
     const branch = natal[pos].branch;
     const hidden = S.HIDDEN_STEMS[branch];
     if (!hidden) continue;
@@ -37,7 +44,7 @@ function dmRootCount(natal) {
 
 function elementCounts(natal) {
   const c = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 };
-  for (const pos of ['year','month','day','hour']) {
+  for (const pos of activePositions(natal)) {
     const stem = natal[pos].stem;
     const branch = natal[pos].branch;
     if (pos !== 'day') c[S.STEM_ELEMENT[stem]] += 1;        // skip day stem (DM self)
@@ -56,7 +63,7 @@ function resourcePresence(natal) {
   const resourceEl = Object.entries(S.ELEMENT_PRODUCES).find(([_,v]) => v === dmEl)?.[0];
   if (!resourceEl) return { exists: false, count: 0, source: [] };
   const sources = [];
-  for (const pos of ['year','month','hour']) {
+  for (const pos of activePositions(natal).filter(p => p !== 'day')) {
     if (S.STEM_ELEMENT[natal[pos].stem] === resourceEl) sources.push(`${pos}.stem`);
     const hidden = S.HIDDEN_STEMS[natal[pos].branch] || {};
     if (hidden.main && S.STEM_ELEMENT[hidden.main] === resourceEl) sources.push(`${pos}.branch.main`);
@@ -67,7 +74,7 @@ function resourcePresence(natal) {
 function biJiePresence(natal) {
   const dmEl = S.STEM_ELEMENT[natal.day.stem];
   const sources = [];
-  for (const pos of ['year','month','hour']) {
+  for (const pos of activePositions(natal).filter(p => p !== 'day')) {
     if (S.STEM_ELEMENT[natal[pos].stem] === dmEl) sources.push(`${pos}.stem`);
     const hidden = S.HIDDEN_STEMS[natal[pos].branch] || {};
     if (hidden.main && S.STEM_ELEMENT[hidden.main] === dmEl) sources.push(`${pos}.branch.main`);
@@ -103,7 +110,7 @@ function dominantForce(natal) {
 }
 
 function clashesOrCombos(natal) {
-  const branches = ['year','month','day','hour'].map(p => natal[p].branch);
+  const branches = activePositions(natal).map(p => natal[p].branch);
   const events = [];
   for (let i = 0; i < branches.length; i++) {
     for (let j = i+1; j < branches.length; j++) {
@@ -174,6 +181,40 @@ function detectFollow(natal) {
     follow_type = 'weak_normal';
     follow_candidate = false;
     confidence = 50;
+  }
+
+  // ── 📜 อากง · ห้าม TRUE_FOLLOW ถ้ามี TiaoHou regulator ในผัง (15 พ.ค. 2026) ──
+  // ตำราคลาสสิก: ดวงหนาวที่มีไฟช่วยจริง, ดวงร้อนที่มีน้ำช่วยจริง → ไม่ใช่ 真從
+  // ต้อง downgrade เป็น false_follow (假從) แทน
+  let tiaoHouBlock = null;
+  if (follow_type === 'true_follow' && _tiaoHou && typeof _tiaoHou.tiaoHouAnalysis === 'function') {
+    try {
+      const climate = _tiaoHou.tiaoHouAnalysis(natal);
+      const regulator = climate && climate.regulator;
+      if (regulator) {
+        let regulatorPresent = false;
+        const sources = [];
+        for (const pos of activePositions(natal)) {
+          if (S.STEM_ELEMENT[natal[pos].stem] === regulator) { regulatorPresent = true; sources.push(`${pos}.stem`); }
+          if (S.BRANCH_ELEMENT[natal[pos].branch] === regulator) { regulatorPresent = true; sources.push(`${pos}.branch`); }
+          const hs = S.HIDDEN_STEMS[natal[pos].branch];
+          if (hs?.main && S.STEM_ELEMENT[hs.main] === regulator) { regulatorPresent = true; sources.push(`${pos}.hidden`); }
+        }
+        if (regulatorPresent) {
+          /* Downgrade true → fake follow */
+          follow_type = 'false_follow';
+          follow_candidate = true;
+          confidence = Math.min(75, confidence);
+          tiaoHouBlock = {
+            fired: true,
+            reason: `TiaoHou regulator ${regulator} present in chart → 假從格 (not 真從)`,
+            regulator,
+            sources,
+          };
+          evidence.tiaohou_block = tiaoHouBlock;
+        }
+      }
+    } catch (_) {}
   }
 
   // ── Targeted Rule T (approved 2026-05-06) ──

@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>hourkey · เปรียบเทียบ 2 ดวง · 比較</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
 :root{
   --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12); --gold-line:rgba(200,164,77,.22);
@@ -93,6 +95,8 @@ h1.page-h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-ri
   .cmp-overall .num{font-size:96px;}
 }
 </style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
 
@@ -114,6 +118,11 @@ h1.page-h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-ri
         <label><span data-i18n="cmp.f.btime">เวลาเกิด</span>
           <input type="time" id="p1-btime" value="12:00" required/></label>
       </div>
+      <!-- 19 พ.ค. Option α · ไม่ทราบเวลาเกิด · 3 เสา -->
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:-4px;">
+        <input type="checkbox" id="p1-no-btime" style="width:14px;height:14px;cursor:pointer;"/>
+        <span data-i18n="cmp.f.notime">ไม่ทราบเวลาเกิด · 3 เสา · 不知時辰</span>
+      </label>
       <label><span data-i18n="cmp.f.gender">เพศ · GENDER</span>
         <select id="p1-gender">
           <option value="M" data-i18n="cmp.f.male">ชาย · Male</option>
@@ -133,6 +142,11 @@ h1.page-h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-ri
         <label><span data-i18n="cmp.f.btime">เวลาเกิด</span>
           <input type="time" id="p2-btime" value="12:00" required/></label>
       </div>
+      <!-- 19 พ.ค. Option α · ไม่ทราบเวลาเกิด · 3 เสา -->
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:-4px;">
+        <input type="checkbox" id="p2-no-btime" style="width:14px;height:14px;cursor:pointer;"/>
+        <span data-i18n="cmp.f.notime">ไม่ทราบเวลาเกิด · 3 เสา · 不知時辰</span>
+      </label>
       <label><span data-i18n="cmp.f.gender">เพศ · GENDER</span>
         <select id="p2-gender">
           <option value="M" data-i18n="cmp.f.male">ชาย · Male</option>
@@ -143,10 +157,23 @@ h1.page-h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-ri
 
   <button class="cmp-go" id="cmp-go" data-i18n="cmp.btn.go">เปรียบเทียบ →</button>
 
+  <!-- 19 พ.ค. Option α · AI compare button (active หลังกด เปรียบเทียบ → แล้ว) -->
+  <button class="cmp-go" id="cmp-ai" data-i18n="cmp.btn.ai" style="display:none;margin-top:12px;background:linear-gradient(135deg,#9c7cf4,#d4a857);color:#fff;">🤖 AI อ่านดวงเปรียบเทียบ</button>
+
   <!-- loading -->
   <div class="cmp-loading" id="cmp-loading" style="display:none;">
     <div class="spin">合</div>
     <div class="ttl" data-i18n="cmp.loading">กำลังคำนวณดวง 2 คน + ปฏิกิริยา...</div>
+  </div>
+
+  <!-- 19 พ.ค. Option α · AI result panel -->
+  <div id="cmp-ai-panel" style="display:none;background:linear-gradient(160deg,var(--bg-2,#1a1a1a),var(--bg-3,#222));border:1px solid var(--gold-line,rgba(212,168,87,.3));border-radius:18px;padding:28px;margin:20px 0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid var(--gold-line,rgba(212,168,87,.25));padding-bottom:10px;">
+      <h3 style="font-size:16px;font-weight:600;color:var(--gold,#d4a857);margin:0;" data-i18n="cmp.ai.title">🤖 บทวิเคราะห์ AI · เปรียบเทียบ 2 ดวง</h3>
+      <button id="cmp-ai-close" style="background:transparent;border:none;color:var(--fg-soft,#888);cursor:pointer;font-size:18px;">✕</button>
+    </div>
+    <div id="cmp-ai-status" style="font-size:13px;color:var(--fg-soft,#aaa);font-style:italic;display:none;margin-bottom:12px;"></div>
+    <div id="cmp-ai-content" style="font-family:var(--thai,'IBM Plex Sans Thai',sans-serif);font-size:14px;line-height:1.85;color:var(--fg,#ddd);white-space:pre-wrap;"></div>
   </div>
 
   <!-- result -->
@@ -216,6 +243,7 @@ body{padding-top:62px;}
     <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span data-i18n="hk.nav.calendar">ปฏิทิน</span></a>
     <a href="/network" data-r="/network"><span class="glyph">人</span><span data-i18n="hk.nav.network">เครือข่าย</span></a>
     <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span data-i18n="hk.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/forecast" data-r="/forecast"><span class="glyph">占</span><span class="lbl" data-i18n="hk.nav.forecast">พยากรณ์</span></a>
     <a href="/master" data-r="/master"><span class="glyph">師</span><span data-i18n="hk.nav.master">ซินแส</span></a>
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span data-i18n="hk.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="hk.nav.fengshui">ทิศมงคล</span></a>
@@ -248,9 +276,16 @@ window.HK_I18N = {
   'cmp.p2.num':{th:'PERSON 2',en:'PERSON 2',zh:'第二人'},'cmp.p2.title':{th:'คนที่ 2',en:'Second Person',zh:'第二人'},
   'cmp.f.name':{th:'ชื่อ · NAME',en:'NAME',zh:'姓名'},
   'cmp.f.bdate':{th:'วันเกิด',en:'Birth Date',zh:'生日'},'cmp.f.btime':{th:'เวลาเกิด',en:'Birth Time',zh:'時辰'},
+  /* 19 พ.ค. Option α */
+  'cmp.f.notime':{th:'ไม่ทราบเวลาเกิด · 3 เสา · 不知時辰',en:"Don't know birth time · 3-pillar",zh:'不知道出生時辰 · 三柱'},
   'cmp.f.gender':{th:'เพศ · GENDER',en:'GENDER',zh:'性別'},
   'cmp.f.male':{th:'ชาย · Male',en:'Male',zh:'男'},'cmp.f.female':{th:'หญิง · Female',en:'Female',zh:'女'},
   'cmp.btn.go':{th:'เปรียบเทียบ →',en:'Compare →',zh:'比較 →'},
+  'cmp.btn.ai':{th:'🤖 AI อ่านดวงเปรียบเทียบ',en:'🤖 AI Compare Reading',zh:'🤖 AI 比較解讀'},
+  'cmp.ai.loading':{th:'AI กำลังอ่านดวง...',en:'AI is reading...',zh:'AI 解讀中...'},
+  'cmp.ai.title':{th:'🤖 บทวิเคราะห์ AI · เปรียบเทียบ 2 ดวง',en:'🤖 AI Analysis · 2-chart Comparison',zh:'🤖 AI 分析 · 雙命盤比較'},
+  'cmp.ai.err':{th:'AI ขัดข้อง · ลองใหม่',en:'AI failed · try again',zh:'AI 失敗 · 請重試'},
+  'cmp.3p.tag':{th:'3 เสา',en:'3-pillar',zh:'三柱'},
   'cmp.loading':{th:'กำลังคำนวณดวง 2 คน + ปฏิกิริยา...',en:'Computing 2 charts + reactions...',zh:'計算雙命盤與互動中...'},
   'cmp.bd.atob':{th:'A → B Breakdown',en:'A → B Breakdown',zh:'A → B 明細'},
   'cmp.bd.btoa':{th:'B → A Breakdown',en:'B → A Breakdown',zh:'B → A 明細'},
@@ -298,17 +333,21 @@ function applyI18N(lang){
     const d = JSON.parse(raw);
     if (Date.now() - (d.ts||0) > 60000) return;  /* ค้าง 1 นาที · timeout */
     const set=(id,v)=>{const e=document.getElementById(id); if(e&&v!=null) e.value=v;};
+    const setChk=(id,v)=>{const e=document.getElementById(id); if(e) e.checked = (v === false); };
     if (d.p1) {
       set('p1-name', d.p1.name);
       set('p1-bdate', d.p1.birthDate);
       set('p1-btime', d.p1.birthTime);
       set('p1-gender', d.p1.gender);
+      /* 19 พ.ค. Option α · prefill 3p checkbox · birthTimeKnown=false → checked=true */
+      setChk('p1-no-btime', d.p1.birthTimeKnown);
     }
     if (d.p2) {
       set('p2-name', d.p2.name);
       set('p2-bdate', d.p2.birthDate);
       set('p2-btime', d.p2.birthTime);
       set('p2-gender', d.p2.gender);
+      setChk('p2-no-btime', d.p2.birthTimeKnown);
     }
     /* auto-submit ถ้ามีวันเกิดทั้ง 2 */
     if (d.p1?.birthDate && d.p2?.birthDate) {
@@ -320,14 +359,21 @@ function applyI18N(lang){
 
 /* main · compare 2 charts */
 function tx(k){var t=window.HK_I18N[k]; if(!t) return k; var L=document.documentElement.getAttribute('data-lang')||'th'; return t[L]||t.th||k;}
-async function calcChart(birthDate, birthTime, gender){
+async function calcChart(birthDate, birthTime, gender, birthTimeKnown){
   const r = await fetch('/api/chart',{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({date:birthDate,time:birthTime||'12:00',gender})
+    body: JSON.stringify({
+      date:birthDate,
+      time:birthTime||'12:00',
+      gender,
+      /* 19 พ.ค. Option α · ส่ง birthTimeKnown ถ้า false → 3p mode */
+      birthTimeKnown: birthTimeKnown !== false,
+    })
   });
   const d = await r.json();
   if (!r.ok) throw new Error(d.error||'chart failed');
-  return d.pillars;
+  /* return ทั้ง pillars + metadata เพื่อ AI compare ใช้ต่อ */
+  return { pillars: d.pillars, mode: d.mode || '4p', analysis: d.analysis, yongshen_v2: d.yongshen_v2, uncertainty: d.uncertainty };
 }
 
 document.getElementById('cmp-go').addEventListener('click', async function(){
@@ -336,9 +382,11 @@ document.getElementById('cmp-go').addEventListener('click', async function(){
   const p1bd = document.getElementById('p1-bdate').value;
   const p1bt = document.getElementById('p1-btime').value || '12:00';
   const p1g  = document.getElementById('p1-gender').value;
+  const p1Known = !(document.getElementById('p1-no-btime') || {}).checked;
   const p2bd = document.getElementById('p2-bdate').value;
   const p2bt = document.getElementById('p2-btime').value || '12:00';
   const p2g  = document.getElementById('p2-gender').value;
+  const p2Known = !(document.getElementById('p2-no-btime') || {}).checked;
   if (!p1bd || !p2bd){ alert('กรุณากรอกวันเกิดทั้ง 2 คน'); return; }
 
   const btn = this;
@@ -347,7 +395,15 @@ document.getElementById('cmp-go').addEventListener('click', async function(){
   document.getElementById('cmp-result').classList.remove('show');
 
   try {
-    const [p1, p2] = await Promise.all([calcChart(p1bd,p1bt,p1g), calcChart(p2bd,p2bt,p2g)]);
+    const [p1Full, p2Full] = await Promise.all([
+      calcChart(p1bd,p1bt,p1g,p1Known),
+      calcChart(p2bd,p2bt,p2g,p2Known),
+    ]);
+    /* แยก pillars จาก metadata · /api/network/score รับเฉพาะ pillars */
+    const p1 = p1Full.pillars;
+    const p2 = p2Full.pillars;
+    /* เก็บ context สำหรับ AI compare (Phase 11d) */
+    window.__cmp_ctx = { p1: { name: p1n, gender: p1g, birthDate: p1bd, birthTime: p1bt, birthTimeKnown: p1Known, ...p1Full }, p2: { name: p2n, gender: p2g, birthDate: p2bd, birthTime: p2bt, birthTimeKnown: p2Known, ...p2Full } };
     const today = new Date();
     const dateStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
     const r = await fetch('/api/network/score',{
@@ -405,6 +461,8 @@ document.getElementById('cmp-go').addEventListener('click', async function(){
 
     document.getElementById('cmp-result').classList.add('show');
     document.getElementById('cmp-result').scrollIntoView({behavior:'smooth',block:'start'});
+    /* 19 พ.ค. Option α · เปิดปุ่ม AI เปรียบเทียบ · context พร้อมใน window.__cmp_ctx แล้ว */
+    document.getElementById('cmp-ai').style.display = 'block';
   } catch(e) {
     alert('ผิดพลาด: ' + (e.message||e));
   } finally {
@@ -412,7 +470,46 @@ document.getElementById('cmp-go').addEventListener('click', async function(){
     document.getElementById('cmp-loading').style.display='none';
   }
 });
+
+/* 19 พ.ค. Option α · AI compare · เรียก /api/sifu/compare */
+document.getElementById('cmp-ai').addEventListener('click', async function(){
+  const ctx = window.__cmp_ctx;
+  if (!ctx || !ctx.p1 || !ctx.p2) { alert('กรุณากด "เปรียบเทียบ →" ก่อน'); return; }
+  const btnAi = this;
+  const panel = document.getElementById('cmp-ai-panel');
+  const stat  = document.getElementById('cmp-ai-status');
+  const cont  = document.getElementById('cmp-ai-content');
+  btnAi.disabled = true;
+  panel.style.display = 'block';
+  stat.style.display = 'block';
+  stat.textContent = tx('cmp.ai.loading');
+  cont.textContent = '';
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+  try {
+    const lang = document.documentElement.getAttribute('data-lang') || 'th';
+    const r = await fetch('/api/sifu/compare', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        p1: ctx.p1,
+        p2: ctx.p2,
+        lang: lang === 'en' || lang === 'zh' ? lang : 'th',
+      })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'AI failed');
+    stat.style.display = 'none';
+    cont.textContent = d.reply || '';
+  } catch(e) {
+    stat.textContent = tx('cmp.ai.err') + ' · ' + (e.message || '');
+  } finally {
+    btnAi.disabled = false;
+  }
+});
+document.getElementById('cmp-ai-close').addEventListener('click', function(){
+  document.getElementById('cmp-ai-panel').style.display = 'none';
+});
 </script>
 
+<script src="/js/hk-luopan-nav.js?v=1" defer></script>
 </body>
 </html>

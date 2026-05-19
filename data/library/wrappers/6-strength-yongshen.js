@@ -17,6 +17,11 @@ const { getUsefulGod } = require('./4-useful-god');
 const { tiaoHouAnalysis } = require('./5-tiao-hou');
 const { STRENGTH_LABEL, ELEMENT_NAME } = require('./narrative');
 
+/* 19 พ.ค. Option α (Codex-approved) · helper · 4p byte-equal · 3p filters hour */
+function activePositions(natal) {
+  return ['year','month','day','hour'].filter(p => natal[p]);
+}
+
 const STRENGTH_LEVELS = [
   { code: 'extremely_weak',   min: 0,   max: 20  },
   { code: 'very_weak',        min: 20,  max: 35  },
@@ -39,7 +44,7 @@ function levelFromPercent(p) {
 function rootCount(stem, natal) {
   // Count how many branches contain hidden stems of same element as DM stem
   const dmEl = S.STEM_ELEMENT[stem];
-  const positions = ['year','month','day','hour'];
+  const positions = activePositions(natal);
   let count = 0;
   for (const pos of positions) {
     const branchEl = S.BRANCH_ELEMENT[natal[pos].branch];
@@ -55,7 +60,7 @@ function rootCount(stem, natal) {
 function computeStrength(natal) {
   const dm = natal.day.stem;
   const dmEl = S.STEM_ELEMENT[dm];
-  const positions = ['year','month','day','hour'];
+  const positions = activePositions(natal);
 
   // 1. Phase score (DM in each branch)
   let phaseScore = 0;
@@ -122,14 +127,39 @@ function bridgeYongshen(natal) {
   // Adjust ranking based on strength + climate
   const adjusted = ug.ranks.map(r => ({ ...r, finalScore: 5 - r.rank, reason: ['base rank'] }));
 
-  // Boost climate regulator
+  // Fix E (15 พ.ค.) · Expand to all 10 stems · เพิ่ม stem ที่ wrapper-4 ไม่ได้ list (เช่น 丙丁 ของ 乙)
+  // ทำให้ climate regulator + strong-side output ใช้งานได้ครบ
+  const ALL_STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  const STEM_NAME_EN = {甲:'Jia',乙:'Yi',丙:'Bing',丁:'Ding',戊:'Wu',己:'Ji',庚:'Geng',辛:'Xin',壬:'Ren',癸:'Gui'};
+  const presentStems = new Set(adjusted.map(r => r.stem));
+  for (const stem of ALL_STEMS) {
+    if (presentStems.has(stem)) continue;
+    const element = S.STEM_ELEMENT[stem];
+    const elementName = { en: element.charAt(0).toUpperCase()+element.slice(1), th: ({wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'})[element], zh: ({wood:'木',fire:'火',earth:'土',metal:'金',water:'水'})[element] };
+    adjusted.push({
+      stem,
+      rank: 99,
+      element,
+      elementName,
+      polarity: 'yang',
+      tenGod: '—',
+      tenGodName: { en:'—', th:'—', zh:'—' },
+      priority: { en:'expanded', th:'ส่วนเสริม', zh:'擴展' },
+      finalScore: 0,
+      reason: ['unranked'],
+    });
+  }
+
+  // Boost climate regulator · regulator > bridge (tiebreaker fix · 14 พ.ค. 2026)
+  // Fix A (15 พ.ค.) · skip bridge boost if bridge == DM element (circular)
+  const dmElGlobal = S.STEM_ELEMENT[dm];
   if (climate.regulator) {
     for (const r of adjusted) {
       if (r.element === climate.regulator) {
-        r.finalScore += 3;
+        r.finalScore += 4;
         r.reason.push(`climate ${climate.climate} → ${climate.regulator}`);
       }
-      if (r.element === climate.bridge) {
+      if (r.element === climate.bridge && climate.bridge !== dmElGlobal) {
         r.finalScore += 1.5;
         r.reason.push(`climate bridge ${climate.bridge}`);
       }
@@ -147,6 +177,7 @@ function bridgeYongshen(natal) {
     }
   } else {
     // boost wealth/officer/output
+    // Fix B (15 พ.ค.) · output +0.8 → +2.5 (drain เด่นสำหรับ DM แกร่ง · ตำรา 滴天髓)
     const dmEl = S.STEM_ELEMENT[dm];
     const wealthEl = S.ELEMENT_CONTROLS[dmEl];
     const officerEl = Object.keys(S.ELEMENT_CONTROLS).find(k => S.ELEMENT_CONTROLS[k] === dmEl);
@@ -154,11 +185,30 @@ function bridgeYongshen(natal) {
     for (const r of adjusted) {
       if (r.element === wealthEl)  { r.finalScore += 1.2; r.reason.push('boost wealth (strong)'); }
       if (r.element === officerEl) { r.finalScore += 1;   r.reason.push('boost officer (strong)'); }
-      if (r.element === outputEl)  { r.finalScore += 0.8; r.reason.push('boost output (strong)'); }
+      if (r.element === outputEl)  { r.finalScore += 2.5; r.reason.push('boost output·drain (strong)'); }
     }
   }
 
   adjusted.sort((a,b) => b.finalScore - a.finalScore);
+
+  // School note · บอกแนวคิดที่ใช้ตามตำรา (เผื่อสำนักต่างกัน)
+  const isWeak = strength.polarity === 'weak-side';
+  const climLabel = climate.climate || '—';
+  const top = adjusted[0];
+  const schools_note = {
+    method: isWeak ? 'classical_weak' : 'classical_strong',
+    th: isWeak
+      ? `ตำราคลาสสิก 子平真詮 · DM อ่อน → ใช้ resource (印) + parallel (比劫) เสริมแกร่ง · climate ${climLabel} → boost regulator`
+      : `ตำรา 滴天髓 · DM แกร่ง → ใช้ output (食傷·drain) + wealth (財) + officer (官殺) ระบาย · climate ${climLabel} → boost regulator`,
+    en: isWeak
+      ? `Classical 子平真詮 · Weak DM → boost resource + parallel · climate ${climLabel} → regulator`
+      : `滴天髓 school · Strong DM → boost output (drain) + wealth + officer · climate ${climLabel} → regulator`,
+    zh: isWeak
+      ? `子平真詮 · 弱DM → 印比助身 · 氣候 ${climLabel} → 調候用神`
+      : `滴天髓 · 強DM → 食傷財官洩秀 · 氣候 ${climLabel} → 調候用神`,
+    primary_pick_th: top ? `用神อันดับแรก: ${top.stem} (${top.element}) · ${top.reason.slice(-1)[0] || 'base rank'}` : '—',
+    schools_note: 'หลายสำนัก/ตำราอาจให้คำตอบต่าง · ที่นี่ใช้ classical + 滴天髓 combo',
+  };
 
   return {
     dayMaster: dm,
@@ -171,6 +221,7 @@ function bridgeYongshen(natal) {
       finalScore: Math.round(r.finalScore * 10) / 10,
       reason: r.reason,
     })),
+    schools_note,
     confidence: strength.detail.roots > 0 ? 'high' : 'moderate',
   };
 }

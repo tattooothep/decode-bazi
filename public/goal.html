@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>hourkey · เป้าหมายของคุณ</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
   :root, [data-theme="dark"]{
     --bg:#0a0c10;
@@ -246,6 +248,8 @@
     }
   }
 </style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
 <div class="cursor" id="cursor"></div>
@@ -479,20 +483,37 @@
         localStorage.setItem('hk_goal', JSON.stringify(aims));
 
         /* attempt save via API (logged-in only · graceful fail) */
+        /* Codex: await + use correct field names + save returned profile.id */
         const birthRaw = localStorage.getItem('hk_birth');
         if (birthRaw) {
-          const birth = JSON.parse(birthRaw);
-          fetch('/api/profile', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: localStorage.getItem('hk_email') || 'me',
-              birthDate: birth.date,
-              birthTime: birth.time,
-              birthPlace: birth.place,
-              longitude: birth.longitude,
-              goals: aims,
-            }),
-          }).catch(function(){});
+          try {
+            const birth = JSON.parse(birthRaw);
+            const displayName = birth.name
+              || localStorage.getItem('hk_profile_name')
+              || localStorage.getItem('hk_email')
+              || 'me';
+            const r = await fetch('/api/profile', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              credentials: 'same-origin', cache: 'no-store',
+              body: JSON.stringify({
+                name: displayName,
+                birthDate: birth.date,
+                birthTime: birth.time,
+                locationName: birth.place,
+                birthLng: birth.longitude,
+                gender: birth.gender || null,
+                goals: aims,
+                /* 19 พ.ค. Option α · ส่ง birthTimeKnown ไปยัง /api/profile · ถ้า user ติ๊ก "ไม่ทราบเวลาเกิด" */
+                birthTimeKnown: birth.birthTimeKnown !== false,
+              }),
+            });
+            if (r.ok) {
+              const j = await r.json();
+              if (j && j.profile && j.profile.id) {
+                try { localStorage.setItem('hk_profile_id', j.profile.id); } catch(_){}
+              }
+            }
+          } catch(_) {}
         }
       } catch(_) {}
       window.location.href = '/chart';
@@ -664,6 +685,7 @@ window.applyI18N = applyI18N;
   });
 })();
 </script>
-<script src="/js/hk-user-menu.js?v=9" defer></script>
+<script src="/js/hk-settings-drawer.js?v=9" defer></script>
+<script src="/js/hk-user-menu.js?v=16" defer></script>
 </body>
 </html>
