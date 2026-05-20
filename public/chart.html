@@ -870,7 +870,18 @@
           try { localStorage.removeItem('hk_view_as_xfer'); } catch(_){}
         }
       } catch(_){}
-      /* ?as= ไม่ match → กลับ /chart (ไม่ fallback sessionStorage · ไม่ DB) */
+      /* Phase 19-C+ · DB-as-truth fallback · fetch snapshot จาก server (auth-protected) */
+      try {
+        var snapR = await fetch('/api/profile/' + encodeURIComponent(asId) + '/snapshot');
+        if (snapR.ok) {
+          var snapJ = await snapR.json();
+          if (snapJ && snapJ.snapshot && (snapJ.snapshot.birthDate || snapJ.snapshot.date)) {
+            try { sessionStorage.setItem('hk_view_as', JSON.stringify(snapJ.snapshot)); } catch(_){}
+            return norm(snapJ.snapshot, 'view-as-db');
+          }
+        }
+      } catch(_){}
+      /* ?as= ไม่ match · ดึง DB ไม่ได้ → กลับ /chart */
       window.location.replace('/chart');
       return null;
     }
