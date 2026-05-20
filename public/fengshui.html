@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>hourkey · 玄空飛星 · Flying Star Feng Shui</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Serif+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Serif+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=optional" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 [data-theme="dark"]{
@@ -331,21 +333,15 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
     <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="hk.nav.calendar">ปฏิทิน</span></a>
     <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="hk.nav.network">เครือข่าย</span></a>
     <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="hk.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/forecast" data-r="/forecast"><span class="glyph">占</span><span class="lbl" data-i18n="hk.nav.forecast">พยากรณ์</span></a>
     <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="hk.nav.master">ซินแส</span></a>
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="hk.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="hk.nav.fengshui">ทิศมงคล</span></a>
     <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="hk.nav.goal">เป้าหมาย</span></a>
   </nav>
   <div class="hk-top-r">
-    <div class="hk-lang-switch" id="hk-lang-switch">
-      <button data-lang="en" title="English">EN</button>
-      <button data-lang="zh" title="中文">中</button>
-      <button data-lang="th" class="on" title="ไทย">TH</button>
-    </div>
-    <div class="hk-theme-switch" id="hk-theme-switch">
-      <button class="on" data-theme="dark" title="Dark">☾</button>
-      <button data-theme="light" title="Light">☀</button>
-    </div>
+    <!-- 16 พ.ค. 2026: lang+theme switch ย้ายเข้า avatar menu (hk-user-menu) อย่างเดียว · เอา duplicate นอก avatar ออก -->
+    <div id="hk-user-menu-mount"></div>
   </div>
 </header>
 
@@ -356,17 +352,14 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
     <a href="/">Home</a><span class="sep">/</span>
     <span class="cur">玄空飛星 Flying Star</span>
   </div>
-  <div class="theme-toggle">
-    <button data-mode="dark">☾</button>
-    <button data-mode="light">☀</button>
-  </div>
+  <!-- 16 พ.ค. 2026: theme-toggle ลบ · ใช้ avatar menu (hk-user-menu) ตำแหน่งเดียว -->
 </nav>
 
 <section class="hero">
   <div class="eyebrow">玄空飛星 · XUAN KONG FEI XING · PERIOD 9</div>
-  <h1>ดาวเหิน <span class="tc">9 ยุค</span> · ปี · เดือน · วัน · ยาม</h1>
+  <h1>ดาวเหิน <span  class="tc" data-i18n="auto.f.001">9 ยุค</span> · ปี · เดือน · วัน · ยาม</h1>
   <p class="sub">
-    ผังเดียวเห็นทั้ง 4 layer · <i>ไท่ซุ่ย 太歲 · 5 เหลือง 五黃 · 3 ชะ 三煞</i><br/>
+    ผังเดียวเห็นทั้ง 4 layer · <i data-i18n="auto.f.002">ไท่ซุ่ย 太歲 · 5 เหลือง 五黃 · 3 ชะ 三煞</i><br/>
     ค้นหาทิศบ้านด้วย <b>browser compass + Google Maps</b> · กำหนดทิศมงคลของบ้าน
   </p>
 </section>
@@ -378,7 +371,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <input type="number" id="setYear" min="1900" max="2100" value="2026"/>
       <input type="date" id="setDate"/>
       <input type="time" id="setTime"/>
-      <button class="timeline-now" id="btnNow">↻ ตอนนี้</button>
+      <button  class="timeline-now" id="btnNow" data-i18n="auto.f.003">↻ ตอนนี้</button>
     </div>
     <div class="layer-toggles">
       <button class="layer-btn active" data-layer="period"><span class="han">運</span>ยุค</button>
@@ -402,12 +395,12 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
   <div class="palace-grid-wrap">
     <div class="palace-grid-head">
-      <h3><span class="tc">九宮</span> 9 พาลา · <span id="hdContext">2026 · พ.ค.</span></h3>
+      <h3><span class="tc">九宮</span> 9 พาลา · <span  id="hdContext" data-i18n="auto.f.004">2026 · พ.ค.</span></h3>
       <div class="meta">運 <b id="hdPeriod">9</b> · 年 <b id="hdYear">1</b> · 月 <b id="hdMonth">5</b> · 日 <b id="hdDay">5</b></div>
     </div>
     <div class="person-filter-row" id="personFilterRow" style="display:none">
-      <span style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;align-self:center;margin-right:6px;">八宅 ดูของ:</span>
-      <button class="pf-btn all active" data-person="all">ทั้งครอบครัว</button>
+      <span  style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;align-self:center;margin-right:6px;" data-i18n="auto.f.005">八宅 ดูของ:</span>
+      <button  class="pf-btn all active" data-person="all" data-i18n="auto.f.006">ทั้งครอบครัว</button>
     </div>
     <div class="pgrid show-period show-year show-month show-day" id="pgrid"></div>
     <div class="legend-row">
@@ -460,7 +453,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
             <option value="NW">NW · ตต.เฉียงเหนือ</option>
             <option value="C">C · ศูนย์กลาง</option>
           </select>
-          <button class="add-btn" id="btnAddPerson">+ เพิ่ม</button>
+          <button  class="add-btn" id="btnAddPerson" data-i18n="auto.f.007">+ เพิ่ม</button>
         </div>
       </details>
     </div>
@@ -473,7 +466,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   <div class="geo-head">
     <div class="label">羅盤 · GEO COMPASS · 9 STARS</div>
     <h2>ค้นหา <span class="tc">坐向</span> ทิศบ้าน · กำหนดทิศมงคล</h2>
-    <p>2 วิธีหาทิศ — <b>① Live Compass บนโทรศัพท์</b> (ต้อง HTTPS · iOS ต้องอนุญาต) · <b>② ปักหมุดบนแผนที่ดาวเทียม</b> (จุดยืน → จุดทิศหันออก · ระบบคำนวณองศาให้)</p>
+    <p>2 วิธีหาทิศ — <b data-i18n="auto.f.008">① Live Compass บนโทรศัพท์</b> (ต้อง HTTPS · iOS ต้องอนุญาต) · <b data-i18n="auto.f.009">② ปักหมุดบนแผนที่ดาวเทียม</b> (จุดยืน → จุดทิศหันออก · ระบบคำนวณองศาให้)</p>
   </div>
 
   <div class="geo-grid">
@@ -504,10 +497,10 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div style="text-align:center;">
         <span class="compass-deg" id="compassDeg">—</span><span class="compass-deg-unit">°</span>
       </div>
-      <div class="compass-status" id="compassStatus">กดเริ่มเพื่ออ่านเซ็นเซอร์โทรศัพท์</div>
+      <div  class="compass-status" id="compassStatus" data-i18n="auto.f.010">กดเริ่มเพื่ออ่านเซ็นเซอร์โทรศัพท์</div>
       <div class="compass-actions">
-        <button class="btn-compass" id="btnCompassStart">เริ่ม Live Compass</button>
-        <button class="btn-compass secondary" id="btnLockFacing" disabled>🔒 ล็อกเป็นทิศบ้าน</button>
+        <button  class="btn-compass" id="btnCompassStart" data-i18n="auto.f.011">เริ่ม Live Compass</button>
+        <button  class="btn-compass secondary" id="btnLockFacing" disabled data-i18n="auto.f.012">🔒 ล็อกเป็นทิศบ้าน</button>
       </div>
       <div class="compass-help">
         <b>Tip:</b> หันหลังพิงประตูหน้าบ้าน · ถือมือถือขนานพื้น · ค่าที่ได้คือทิศที่บ้านหันออก<br/>
@@ -518,13 +511,13 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
     <!-- Map -->
     <div class="map-card">
       <div class="map-head">
-        <h4>地圖 Google Map · ปักหมุด 2 จุด</h4>
+        <h4 data-i18n="auto.f.013">地圖 Google Map · ปักหมุด 2 จุด</h4>
         <div class="map-controls">
-          <button class="map-btn active" id="modeWall">🏠 ลากผนัง</button>
-          <button class="map-btn" id="modeStanding">① จุดยืน</button>
-          <button class="map-btn" id="modeFacing">② ทิศหันหน้า</button>
+          <button  class="map-btn active" id="modeWall" data-i18n="auto.f.014">🏠 ลากผนัง</button>
+          <button  class="map-btn" id="modeStanding" data-i18n="auto.f.015">① จุดยืน</button>
+          <button  class="map-btn" id="modeFacing" data-i18n="auto.f.016">② ทิศหันหน้า</button>
           <button class="map-btn" id="btnGeolocate">📍 GPS</button>
-          <button class="map-btn" id="btnClear">↻ ล้าง</button>
+          <button  class="map-btn" id="btnClear" data-i18n="auto.f.017">↻ ล้าง</button>
         </div>
       </div>
       <div id="gmap"></div>
@@ -532,11 +525,11 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <div class="mrb-cell"><b>Heading</b><span id="mrHeading">— °</span></div>
         <div class="mrb-cell"><b>Direction</b><span id="mrDirection">—</span></div>
         <div class="mrb-cell"><b>24 Mountain</b><span id="mr24Mtn" class="han">—</span></div>
-        <div class="mrb-cell"><b>vs ดวง</b><span id="mrVerdict">—</span></div>
+        <div class="mrb-cell"><b data-i18n="auto.f.018">vs ดวง</b><span id="mrVerdict">—</span></div>
       </div>
       <div class="map-instr">
-        <b>🏠 ลากผนัง (แนะนำ):</b> <b>กด-ลากเส้น</b> ทาบขอบผนังหน้าบ้าน A→B · ลูกศรเขียวจุดกลาง = ทิศหันหน้า (ตั้งฉาก CW 90°) · เส้นเทา = ทิศหลัง<br/>
-        <b>① จุดยืน → ② ทิศหันหน้า:</b> 2-marker mode (จุดยืน → จุดหน้าบ้าน)
+        <b data-i18n="auto.f.019">🏠 ลากผนัง (แนะนำ):</b> <b data-i18n="auto.f.020">กด-ลากเส้น</b> ทาบขอบผนังหน้าบ้าน A→B · ลูกศรเขียวจุดกลาง = ทิศหันหน้า (ตั้งฉาก CW 90°) · เส้นเทา = ทิศหลัง<br/>
+        <b data-i18n="auto.f.021">① จุดยืน → ② ทิศหันหน้า:</b> 2-marker mode (จุดยืน → จุดหน้าบ้าน)
       </div>
     </div>
   </div>
@@ -1924,6 +1917,28 @@ console.log('🐉 Flying Star loaded · Period 9 (2024-2043) · Tai Sui + 3 Kill
 /* hourkey · 3-language i18n pattern · TH/EN/ZH · ทุกหน้าใช้ key เดียวกัน */
 window.HK_I18N = window.HK_I18N || {};
 Object.assign(window.HK_I18N, {
+  /* 🤖 auto-translated · 15 พ.ค. 2026 · L3 */
+  'auto.f.001': { th:'9 ยุค', en:'9 Eras', zh:'九運' },
+  'auto.f.002': { th:'ไท่ซุ่ย 太歲 · 5 เหลือง 五黃 · 3 ชะ 三煞', en:'太歲 · 五黃 · 三煞', zh:'太歲·五黃·三煞' },
+  'auto.f.003': { th:'↻ ตอนนี้', en:'↻ Now', zh:'↻ 現在' },
+  'auto.f.004': { th:'2026 · พ.ค.', en:'2026 · May', zh:'2026 · 5月' },
+  'auto.f.005': { th:'八宅 ดูของ:', en:'八宅 view for:', zh:'八宅 看:' },
+  'auto.f.006': { th:'ทั้งครอบครัว', en:'Whole family', zh:'全家' },
+  'auto.f.007': { th:'+ เพิ่ม', en:'+ Add', zh:'+ 增' },
+  'auto.f.008': { th:'① Live Compass บนโทรศัพท์', en:'① Live Compass on phone', zh:'① 手機即時羅盤' },
+  'auto.f.009': { th:'② ปักหมุดบนแผนที่ดาวเทียม', en:'② Pin on satellite map', zh:'② 衛星圖標點' },
+  'auto.f.010': { th:'กดเริ่มเพื่ออ่านเซ็นเซอร์โทรศัพท์', en:'Tap start to read phone sensors', zh:'按開始以讀手機感測器' },
+  'auto.f.011': { th:'เริ่ม Live Compass', en:'Start Live Compass', zh:'啟動即時羅盤' },
+  'auto.f.012': { th:'🔒 ล็อกเป็นทิศบ้าน', en:'🔒 Lock as house direction', zh:'🔒 鎖為宅向' },
+  'auto.f.013': { th:'地圖 Google Map · ปักหมุด 2 จุด', en:'地圖 Google Map · pin 2 points', zh:'地圖 Google Map · 標 2 點' },
+  'auto.f.014': { th:'🏠 ลากผนัง', en:'🏠 Drag wall', zh:'🏠 拖牆' },
+  'auto.f.015': { th:'① จุดยืน', en:'① Standing point', zh:'① 立點' },
+  'auto.f.016': { th:'② ทิศหันหน้า', en:'② Facing direction', zh:'② 朝向' },
+  'auto.f.017': { th:'↻ ล้าง', en:'↻ Clear', zh:'↻ 清除' },
+  'auto.f.018': { th:'vs ดวง', en:'vs chart', zh:'對命' },
+  'auto.f.019': { th:'🏠 ลากผนัง (แนะนำ):', en:'🏠 Drag wall (recommended):', zh:'🏠 拖牆 (建議):' },
+  'auto.f.020': { th:'กด-ลากเส้น', en:'Press-drag line', zh:'按住拖線' },
+  'auto.f.021': { th:'① จุดยืน → ② ทิศหันหน้า:', en:'① Standing point → ② Facing direction:', zh:'① 立點 → ② 朝向:' },
   'hk.nav.chart':   { th:'ดวง',       en:'Chart',    zh:'命盤' },
   'hk.nav.today':   { th:'วันนี้',     en:'Today',    zh:'今日' },
   'hk.nav.calendar':{ th:'ปฏิทิน',    en:'Calendar', zh:'吉曆' },
@@ -1977,5 +1992,8 @@ window.applyI18N = applyI18N;
 })();
 </script>
 
+<script src="/js/hk-settings-drawer.js?v=9" defer></script>
+<script src="/js/hk-user-menu.js?v=15" defer></script>
+<script src="/js/hk-luopan-nav.js?v=1" defer></script>
 </body>
 </html>
