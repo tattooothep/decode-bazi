@@ -2692,8 +2692,25 @@ window.addEventListener('resize', function(){
                 try {
                   const obj = JSON.parse(edata);
                   if (etype === 'cached') {
-                    accumulated = obj.content || '';
-                    scheduleRender(true);
+                    /* cached · จำลอง stream เพื่อ UX · ทยอยทุก 20ms · 80 char/รอบ */
+                    const full = obj.content || '';
+                    accumulated = '';
+                    sifuStatus.textContent = '📜 ซินแสเล่าจากบันทึกครั้งก่อน...';
+                    let i = 0;
+                    const fakeStream = () => {
+                      if (i >= full.length) {
+                        scheduleRender(true);
+                        sifuStatus.textContent = '✅ อ่านจากบันทึก · กด "อ่านใหม่" ถ้าต้องการครั้งใหม่';
+                        setTimeout(()=>{sifuStatus.style.display='none';}, 4000);
+                        regenBtn.style.display = '';
+                        return;
+                      }
+                      accumulated = full.slice(0, Math.min(i + 80, full.length));
+                      i += 80;
+                      scheduleRender(false);
+                      setTimeout(fakeStream, 20);
+                    };
+                    fakeStream();
                   } else if (etype === 'chunk') {
                     accumulated += obj.text || '';
                     scheduleRender(false);
@@ -2719,7 +2736,7 @@ window.addEventListener('resize', function(){
             loadSifuOverview(true);
           }
         });
-        /* auto-check cache · ถ้ามี render ทันที (ไม่ต้องกดปุ่ม) */
+        /* auto-check cache · ถ้ามี render ทันที (ไม่ต้องกดปุ่ม) · ไม่ stream เพราะ user เปิดหน้า refresh */
         (async () => {
           try {
             const hash = await pillarsHashClient(d.pillars);
@@ -2730,6 +2747,12 @@ window.addEventListener('resize', function(){
               sifuBox.style.display = '';
               sifuPrompt.style.display = 'none';
               regenBtn.style.display = '';
+              /* badge บอก user ว่าอ่านจากบันทึก */
+              if (sifuStatus) {
+                sifuStatus.style.display = '';
+                sifuStatus.innerHTML = '📜 <span style="opacity:.8">อ่านจากบันทึกครั้งก่อน · กด "🔄 อ่านใหม่" ด้านบนถ้าต้องการครั้งใหม่</span>';
+                setTimeout(()=>{sifuStatus.style.display='none';}, 6000);
+              }
             }
           } catch(_){}
         })();
