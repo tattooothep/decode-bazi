@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>hourkey · วางฤกษ์ · 擇吉</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
   [data-theme="dark"]{
     --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
@@ -233,7 +235,8 @@
     .missions{grid-template-columns:1fr;}
   }
 </style>
-<script>if(typeof window!=="undefined"&&window.innerWidth<768&&!location.search.match(/force=d/)){location.replace(location.pathname+"-m"+location.search);}</script>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
 
@@ -245,6 +248,7 @@
     <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="pkr.nav.calendar">ปฏิทิน</span></a>
     <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="pkr.nav.network">เครือข่าย</span></a>
     <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="pkr.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/forecast" data-r="/forecast"><span class="glyph">占</span><span class="lbl" data-i18n="hk.nav.forecast">พยากรณ์</span></a>
     <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="pkr.nav.master">ซินแส</span></a>
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="pkr.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="pkr.nav.fengshui">ทิศมงคล</span></a>
@@ -746,5 +750,6 @@ window.applyI18N = applyI18N;
 })();
 </script>
 
+<script src="/js/hk-luopan-nav.js?v=1" defer></script>
 </body>
 </html>

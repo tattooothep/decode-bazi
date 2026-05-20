@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>hourkey · เป้าหมายของฉัน · 我志</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
   [data-theme="dark"]{
     --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
@@ -35,13 +37,18 @@
   body{background:radial-gradient(circle at 20% 90%, var(--gold-soft), transparent 50%), var(--bg);}
   button,input{font-family:inherit;color:inherit;}
 
-  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:color-mix(in srgb, var(--bg) 78%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
-  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
-  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
-  .nav{display:flex;gap:24px;}
-  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
-  .nav a.on{color:var(--gold);}
-  .top-r{display:flex;align-items:center;gap:14px;}
+	  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(13,15,18,.78);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+	  body.light .topbar{background:rgba(246,241,230,.85);}
+	  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+	  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+	  .nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+	  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--thai);font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+	  .nav a .glyph{font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:700;line-height:1;}
+	  .nav a .lbl{font-size:12px;}
+	  .nav a.on,.nav a.active{color:var(--gold);}
+	  .nav a:hover{color:var(--fg);}
+	  .nav a:hover .glyph{color:var(--gold-deep);}
+	  .top-r{display:flex;align-items:center;gap:14px;}
     .hk-lang-switch{display:inline-flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
   .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
   .hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
@@ -167,7 +174,7 @@
   @media (max-width:980px){
     .stage{padding:22px 18px 60px;}
     .topbar{padding:14px 18px;}
-    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
+	    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;}
     .nav::-webkit-scrollbar{display:none;}
     .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
     .nav a .glyph{font-size:14px;}
@@ -190,7 +197,8 @@
     .us-countdown .num{font-size:32px;}
   }
 </style>
-<script>if(typeof window!=="undefined"&&window.innerWidth<768&&!location.search.match(/force=d/)){location.replace(location.pathname+"-m"+location.search);}</script>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
 
@@ -202,6 +210,7 @@
     <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="mg.nav.calendar">ปฏิทิน</span></a>
     <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="mg.nav.network">เครือข่าย</span></a>
     <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="mg.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/forecast" data-r="/forecast"><span class="glyph">占</span><span class="lbl" data-i18n="hk.nav.forecast">พยากรณ์</span></a>
     <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="mg.nav.master">ซินแส</span></a>
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="mg.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="mg.nav.fengshui">ทิศมงคล</span></a>
@@ -213,13 +222,13 @@
 </header>
 
 <div class="stage">
-  <div class="crumb"><a href="/">หน้าหลัก</a> <span>/</span> <span>เป้าหมายของฉัน · 我志 GOALS</span></div>
+  <div class="crumb"><a  href="/" data-i18n="auto.g.001">หน้าหลัก</a> <span>/</span> <span data-i18n="auto.g.002">เป้าหมายของฉัน · 我志 GOALS</span></div>
 
   <div class="hero">
     <div>
       <div class="label">我志 · MY GOALS · INTENTIONS</div>
-      <h1><i>เป้าหมาย</i>ของฉัน <span class="tc">志</span></h1>
-      <p class="lede">ฤกษ์ที่<b>วางไว้</b> · ภารกิจที่<b>กำลังรอ</b> · บันทึกการตัดสินใจของคุณ — เมื่อถึงวันก่อนนาน "วันนี้" จะ <b>เตือนให้</b> · เมื่อถึงเวลาจริง <b>ระบบช่วยเตรียม</b></p>
+      <h1><i data-i18n="auto.g.003">เป้าหมาย</i>ของฉัน <span class="tc">志</span></h1>
+      <p class="lede">ฤกษ์ที่<b data-i18n="auto.g.004">วางไว้</b> · ภารกิจที่<b data-i18n="auto.g.005">กำลังรอ</b> · บันทึกการตัดสินใจของคุณ — เมื่อถึงวันก่อนนาน "วันนี้" จะ <b data-i18n="auto.g.006">เตือนให้</b> · เมื่อถึงเวลาจริง <b data-i18n="auto.g.007">ระบบช่วยเตรียม</b></p>
     </div>
     <a href="/datepick" class="new-btn">
       <span class="tc">擇</span>
@@ -260,7 +269,7 @@
       </div>
       <div class="us-countdown">
         <div class="num">5d 18h</div>
-        <div class="lbl">เหลืออีก · COUNTDOWN</div>
+        <div  class="lbl" data-i18n="auto.g.008">เหลืออีก · COUNTDOWN</div>
       </div>
     </div>
 
@@ -270,18 +279,18 @@
           <span class="tc">文</span>
           เซ็นสัญญา · 簽約
         </div>
-        <h2><i>เซ็นสัญญา</i><br/>กับ Fara — Anhui Hongyu</h2>
+        <h2><i data-i18n="auto.g.009">เซ็นสัญญา</i><br/>กับ Fara — Anhui Hongyu</h2>
         <div class="us-when">
-          <div class="row">📅 <b>พุธ 13 พ.ค. 2569</b> · 三月廿四</div>
+          <div class="row">📅 <b data-i18n="auto.g.010">พุธ 13 พ.ค. 2569</b> · 三月廿四</div>
           <div class="row">⏰ <b>14:00 — 15:30</b> · 未時</div>
           <div class="row">柱 <span class="pillar">癸巳</span> DAY · <span class="pillar">乙巳</span> MONTH</div>
           <div class="row">⚡ <b>+92</b> composite score (★★★)</div>
         </div>
       </div>
       <div class="us-actions">
-        <button class="primary">▶ พรีวิวฤกษ์</button>
-        <button class="ghost">📋 รายละเอียด</button>
-        <button class="ghost">🔔 เตือน 1d ก่อน</button>
+        <button  class="primary" data-i18n="auto.g.011">▶ พรีวิวฤกษ์</button>
+        <button  class="ghost" data-i18n="auto.g.012">📋 รายละเอียด</button>
+        <button  class="ghost" data-i18n="auto.g.013">🔔 เตือน 1d ก่อน</button>
       </div>
     </div>
   </div>
@@ -307,13 +316,13 @@
     <div class="goal-card status-upcoming">
       <div class="gc-head">
         <span class="gc-cat"><span class="tc">文</span>เอกสาร</span>
-        <span class="gc-status upcoming">กำลังรอ</span>
+        <span  class="gc-status upcoming" data-i18n="auto.g.014">กำลังรอ</span>
       </div>
-      <div class="gc-title">เซ็นสัญญา Fara</div>
+      <div  class="gc-title" data-i18n="auto.g.015">เซ็นสัญญา Fara</div>
       <div class="gc-mission"><span class="tc">簽約</span>เซ็นสัญญา · Anhui Hongyu Aluminum</div>
       <div class="gc-when">
         <div>
-          <div class="date"><span class="day">พุธ</span> · 13 พ.ค.</div>
+          <div class="date"><span  class="day" data-i18n="auto.g.016">พุธ</span> · 13 พ.ค.</div>
           <div class="time">14:00 — 15:30 · 未時</div>
         </div>
         <div class="pillar">
@@ -342,13 +351,13 @@
     <div class="goal-card status-upcoming">
       <div class="gc-head">
         <span class="gc-cat"><span class="tc">談</span>เจรจา</span>
-        <span class="gc-status upcoming">กำลังรอ</span>
+        <span  class="gc-status upcoming" data-i18n="auto.g.017">กำลังรอ</span>
       </div>
-      <div class="gc-title">เจรจา BOQ Phase 2</div>
+      <div  class="gc-title" data-i18n="auto.g.018">เจรจา BOQ Phase 2</div>
       <div class="gc-mission"><span class="tc">議事</span>เจรจา · DWN Builder · Horizon House</div>
       <div class="gc-when">
         <div>
-          <div class="date"><span class="day">ศุกร์</span> · 15 พ.ค.</div>
+          <div class="date"><span  class="day" data-i18n="auto.g.019">ศุกร์</span> · 15 พ.ค.</div>
           <div class="time">09:00 — 11:00 · 巳時</div>
         </div>
         <div class="pillar">
@@ -377,13 +386,13 @@
     <div class="goal-card status-soon">
       <div class="gc-head">
         <span class="gc-cat"><span class="tc">交</span>ธุรกรรม</span>
-        <span class="gc-status soon">พรุ่งนี้!</span>
+        <span  class="gc-status soon" data-i18n="auto.g.020">พรุ่งนี้!</span>
       </div>
-      <div class="gc-title">โอนเงิน DWN งวด 2</div>
+      <div  class="gc-title" data-i18n="auto.g.021">โอนเงิน DWN งวด 2</div>
       <div class="gc-mission"><span class="tc">出財</span>จ่ายเงิน · BOQ ก่อสร้าง 1.05M</div>
       <div class="gc-when">
         <div>
-          <div class="date"><span class="day">ศุกร์</span> · 8 พ.ค.</div>
+          <div class="date"><span  class="day" data-i18n="auto.g.022">ศุกร์</span> · 8 พ.ค.</div>
           <div class="time">10:30 — 12:00 · 巳時</div>
         </div>
         <div class="pillar">
@@ -399,7 +408,7 @@
       </div>
       <div class="gc-tags">
         <span class="gc-tag good">休門</span>
-        <span class="gc-tag mid">出財 ฤกษ์</span>
+        <span  class="gc-tag mid" data-i18n="auto.g.023">出財 ฤกษ์</span>
       </div>
       <div class="gc-foot">
         <span>SAVED 12 DAYS AGO</span>
@@ -411,13 +420,13 @@
     <div class="goal-card status-done">
       <div class="gc-head">
         <span class="gc-cat"><span class="tc">經</span>องค์กร</span>
-        <span class="gc-status done">สำเร็จ ✓</span>
+        <span  class="gc-status done" data-i18n="auto.g.024">สำเร็จ ✓</span>
       </div>
-      <div class="gc-title">เปิดร้านสาขาใหม่</div>
+      <div  class="gc-title" data-i18n="auto.g.025">เปิดร้านสาขาใหม่</div>
       <div class="gc-mission"><span class="tc">開市</span>เปิดร้าน · WeWealth สาขา 2</div>
       <div class="gc-when">
         <div>
-          <div class="date"><span class="day">เสาร์</span> · 4 เม.ย.</div>
+          <div class="date"><span  class="day" data-i18n="auto.g.026">เสาร์</span> · 4 เม.ย.</div>
           <div class="time">09:00 — 11:00 · 巳時</div>
         </div>
         <div class="pillar">
@@ -429,15 +438,15 @@
       <div class="gc-score">
         <span class="num">+85</span>
         <div class="scale"><div class="fill" style="width:85%;"></div></div>
-        <span class="lbl">ผลดี ✓</span>
+        <span  class="lbl" data-i18n="auto.g.027">ผลดี ✓</span>
       </div>
       <div class="gc-tags">
         <span class="gc-tag good">開門</span>
-        <span class="gc-tag good">ผลดี · ลูกค้าเข้าวันแรก 12 ราย</span>
+        <span  class="gc-tag good" data-i18n="auto.g.028">ผลดี · ลูกค้าเข้าวันแรก 12 ราย</span>
       </div>
       <div class="gc-foot">
         <span>33 DAYS AGO</span>
-        <span class="gc-countdown passed">เสร็จสิ้น</span>
+        <span  class="gc-countdown passed" data-i18n="auto.g.029">เสร็จสิ้น</span>
       </div>
     </div>
 
@@ -445,13 +454,13 @@
     <div class="goal-card status-done">
       <div class="gc-head">
         <span class="gc-cat"><span class="tc">交</span>ธุรกรรม</span>
-        <span class="gc-status done">สำเร็จ ✓</span>
+        <span  class="gc-status done" data-i18n="auto.g.030">สำเร็จ ✓</span>
       </div>
-      <div class="gc-title">รับชำระลูกค้ารายใหญ่</div>
+      <div  class="gc-title" data-i18n="auto.g.031">รับชำระลูกค้ารายใหญ่</div>
       <div class="gc-mission"><span class="tc">納財</span>รับเงิน · 980k</div>
       <div class="gc-when">
         <div>
-          <div class="date"><span class="day">พฤ.</span> · 23 เม.ย.</div>
+          <div class="date"><span  class="day" data-i18n="auto.g.032">พฤ.</span> · 23 เม.ย.</div>
           <div class="time">10:00 — 12:00 · 巳時</div>
         </div>
         <div class="pillar">
@@ -463,15 +472,15 @@
       <div class="gc-score">
         <span class="num">+74</span>
         <div class="scale"><div class="fill" style="width:74%;"></div></div>
-        <span class="lbl">ผลดี ✓</span>
+        <span  class="lbl" data-i18n="auto.g.033">ผลดี ✓</span>
       </div>
       <div class="gc-tags">
-        <span class="gc-tag good">納財 ฤกษ์</span>
-        <span class="gc-tag good">ลูกค้าโอนเช้าวันนั้น</span>
+        <span  class="gc-tag good" data-i18n="auto.g.034">納財 ฤกษ์</span>
+        <span  class="gc-tag good" data-i18n="auto.g.035">ลูกค้าโอนเช้าวันนั้น</span>
       </div>
       <div class="gc-foot">
         <span>14 DAYS AGO</span>
-        <span class="gc-countdown passed">เสร็จสิ้น</span>
+        <span  class="gc-countdown passed" data-i18n="auto.g.036">เสร็จสิ้น</span>
       </div>
     </div>
 
@@ -479,9 +488,9 @@
     <div class="goal-card status-missed">
       <div class="gc-head">
         <span class="gc-cat"><span class="tc">談</span>เจรจา</span>
-        <span class="gc-status missed">พลาดฤกษ์ ⚠</span>
+        <span  class="gc-status missed" data-i18n="auto.g.037">พลาดฤกษ์ ⚠</span>
       </div>
-      <div class="gc-title">Pitch กับ VC ABC</div>
+      <div  class="gc-title" data-i18n="auto.g.038">Pitch กับ VC ABC</div>
       <div class="gc-mission"><span class="tc">上陳</span>Pitch · Series A</div>
       <div class="gc-when">
         <div>
@@ -497,15 +506,15 @@
       <div class="gc-score bad">
         <span class="num">+68</span>
         <div class="scale"><div class="fill" style="width:68%;"></div></div>
-        <span class="lbl">เลื่อนเอง</span>
+        <span  class="lbl" data-i18n="auto.g.039">เลื่อนเอง</span>
       </div>
       <div class="gc-tags">
-        <span class="gc-tag mid">เลื่อนเป็น 30 เม.ย.</span>
-        <span class="gc-tag bad">วันที่เลือกใหม่ score -22</span>
+        <span  class="gc-tag mid" data-i18n="auto.g.040">เลื่อนเป็น 30 เม.ย.</span>
+        <span  class="gc-tag bad" data-i18n="auto.g.041">วันที่เลือกใหม่ score -22</span>
       </div>
       <div class="gc-foot">
         <span>10 DAYS AGO</span>
-        <span class="gc-countdown passed" style="color:var(--bad);">ผลไม่ดี</span>
+        <span  class="gc-countdown passed" style="color:var(--bad);" data-i18n="auto.g.042">ผลไม่ดี</span>
       </div>
     </div>
 
@@ -549,6 +558,49 @@
 <script>
 /* hourkey · mg · 3-language i18n (TH/EN/ZH) */
 window.HK_I18N = {
+  /* 🤖 auto-translated · 15 พ.ค. 2026 · L3 */
+  'auto.g.001': { th:'หน้าหลัก', en:'Home', zh:'首頁' },
+  'auto.g.002': { th:'เป้าหมายของฉัน · 我志 GOALS', en:'My Goals · 我志 GOALS', zh:'我志 · 我志 GOALS' },
+  'auto.g.003': { th:'เป้าหมาย', en:'Goals', zh:'目標' },
+  'auto.g.004': { th:'วางไว้', en:'Set', zh:'已立' },
+  'auto.g.005': { th:'กำลังรอ', en:'Pending', zh:'待中' },
+  'auto.g.006': { th:'เตือนให้', en:'Reminders', zh:'提醒' },
+  'auto.g.007': { th:'ระบบช่วยเตรียม', en:'System helps prepare', zh:'系統助備' },
+  'auto.g.008': { th:'เหลืออีก · COUNTDOWN', en:'Time Left · COUNTDOWN', zh:'倒數 · COUNTDOWN' },
+  'auto.g.009': { th:'เซ็นสัญญา', en:'Sign contract', zh:'簽約' },
+  'auto.g.010': { th:'พุธ 13 พ.ค. 2569', en:'Wednesday, 13 May 2026', zh:'2026年5月13日 週三' },
+  'auto.g.011': { th:'▶ พรีวิวฤกษ์', en:'▶ Preview Auspicious Time', zh:'▶ 預覽吉時' },
+  'auto.g.012': { th:'📋 รายละเอียด', en:'📋 Details', zh:'📋 詳情' },
+  'auto.g.013': { th:'🔔 เตือน 1d ก่อน', en:'🔔 Remind 1d before', zh:'🔔 提前 1 日提醒' },
+  'auto.g.014': { th:'กำลังรอ', en:'Pending', zh:'待中' },
+  'auto.g.015': { th:'เซ็นสัญญา Fara', en:'Sign Fara contract', zh:'簽 Fara 合同' },
+  'auto.g.016': { th:'พุธ', en:'Wed', zh:'週三' },
+  'auto.g.017': { th:'กำลังรอ', en:'Pending', zh:'待中' },
+  'auto.g.018': { th:'เจรจา BOQ Phase 2', en:'Negotiate BOQ Phase 2', zh:'談 BOQ 第二期' },
+  'auto.g.019': { th:'ศุกร์', en:'Friday', zh:'週五' },
+  'auto.g.020': { th:'พรุ่งนี้!', en:'Tomorrow!', zh:'明日!' },
+  'auto.g.021': { th:'โอนเงิน DWN งวด 2', en:'Transfer DWN payment 2', zh:'匯 DWN 第 2 期' },
+  'auto.g.022': { th:'ศุกร์', en:'Friday', zh:'週五' },
+  'auto.g.023': { th:'出財 ฤกษ์', en:'出財 auspicious time', zh:'出財吉時' },
+  'auto.g.024': { th:'สำเร็จ ✓', en:'Success ✓', zh:'成功 ✓' },
+  'auto.g.025': { th:'เปิดร้านสาขาใหม่', en:'Open new branch', zh:'開新分店' },
+  'auto.g.026': { th:'เสาร์', en:'Saturday', zh:'週六' },
+  'auto.g.027': { th:'ผลดี ✓', en:'Good result ✓', zh:'吉果 ✓' },
+  'auto.g.028': { th:'ผลดี · ลูกค้าเข้าวันแรก 12 ราย', en:'Good result · 12 customers on day 1', zh:'吉果·首日客 12 人' },
+  'auto.g.029': { th:'เสร็จสิ้น', en:'Completed', zh:'已成' },
+  'auto.g.030': { th:'สำเร็จ ✓', en:'Success ✓', zh:'成功 ✓' },
+  'auto.g.031': { th:'รับชำระลูกค้ารายใหญ่', en:'Receive payment from major client', zh:'收大客戶款' },
+  'auto.g.032': { th:'พฤ.', en:'Thu', zh:'週四' },
+  'auto.g.033': { th:'ผลดี ✓', en:'Good result ✓', zh:'吉果 ✓' },
+  'auto.g.034': { th:'納財 ฤกษ์', en:'納財 auspicious time', zh:'納財吉時' },
+  'auto.g.035': { th:'ลูกค้าโอนเช้าวันนั้น', en:'Client transferred that morning', zh:'當日早客匯款' },
+  'auto.g.036': { th:'เสร็จสิ้น', en:'Completed', zh:'已成' },
+  'auto.g.037': { th:'พลาดฤกษ์ ⚠', en:'Missed auspicious time ⚠', zh:'失吉時 ⚠' },
+  'auto.g.038': { th:'Pitch กับ VC ABC', en:'Pitch with VC ABC', zh:'向 VC ABC 提案' },
+  'auto.g.039': { th:'เลื่อนเอง', en:'Self-postponed', zh:'自延期' },
+  'auto.g.040': { th:'เลื่อนเป็น 30 เม.ย.', en:'Postponed to 30 Apr', zh:'延至 4 月 30 日' },
+  'auto.g.041': { th:'วันที่เลือกใหม่ score -22', en:'New date score -22', zh:'新日期分 -22' },
+  'auto.g.042': { th:'ผลไม่ดี', en:'Bad result', zh:'凶果' },
   'mg.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
   'mg.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
   'mg.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
@@ -587,6 +639,7 @@ window.applyI18N = applyI18N;
 })();
 </script>
 
-<script src="/js/hk-user-menu.js?v=9" defer></script>
+<script src="/js/hk-settings-drawer.js?v=9" defer></script>
+<script src="/js/hk-user-menu.js?v=16" defer></script>
 </body>
 </html>

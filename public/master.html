@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>hourkey · ซินแสวันนี้ · 師父</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
   [data-theme="dark"]{
     --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
@@ -44,13 +46,18 @@
   .qi-line{position:absolute;left:50%;top:50%;width:1px;background:linear-gradient(180deg, transparent, var(--gold), transparent);transform-origin:0 0;}
 
   /* topbar */
-  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:color-mix(in srgb, var(--bg) 78%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
-  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
-  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
-  .nav{display:flex;gap:24px;}
-  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
-  .nav a.on{color:var(--gold);}
-  .top-r{display:flex;align-items:center;gap:14px;}
+	  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(13,15,18,.78);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+	  body.light .topbar{background:rgba(246,241,230,.85);}
+	  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+	  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+	  .nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+	  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--thai);font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+	  .nav a .glyph{font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:700;line-height:1;}
+	  .nav a .lbl{font-size:12px;}
+	  .nav a.on,.nav a.active{color:var(--gold);}
+	  .nav a:hover{color:var(--fg);}
+	  .nav a:hover .glyph{color:var(--gold-deep);}
+	  .top-r{display:flex;align-items:center;gap:14px;}
     .hk-lang-switch{display:inline-flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
   .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
   .hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
@@ -213,11 +220,72 @@
   .send-btn{background:var(--gold);color:var(--bg);border:none;padding:14px 20px;border-radius:12px;cursor:pointer;font-family:var(--tc);font-size:18px;font-weight:700;transition:.2s;}
   .send-btn:hover{background:var(--gold-deep);}
 
+  /* first-visit sinsae gate */
+  .sinsae-intro{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:18px;background:radial-gradient(circle at 50% 35%,rgba(200,164,77,.16),transparent 34%),rgba(5,6,8,.82);backdrop-filter:blur(18px);overflow:hidden;}
+  .sinsae-intro.on{display:flex;}
+  .sinsae-intro::before,.sinsae-intro::after{content:'';position:absolute;inset:-18%;pointer-events:none;}
+  .sinsae-intro::before{background:conic-gradient(from 0deg,transparent,rgba(200,164,77,.12),transparent,rgba(246,241,230,.07),transparent);animation:sinsaeSky 28s linear infinite;}
+  .sinsae-intro::after{background:
+    radial-gradient(circle at 18% 72%,rgba(200,164,77,.16),transparent 22%),
+    radial-gradient(circle at 82% 25%,rgba(143,195,124,.11),transparent 20%),
+    repeating-linear-gradient(90deg,transparent 0 46px,rgba(200,164,77,.045) 47px,transparent 48px);
+    opacity:.62;animation:sinsaeMist 9s ease-in-out infinite alternate;}
+  @keyframes sinsaeSky{to{transform:rotate(360deg);}}
+  @keyframes sinsaeMist{from{transform:translate3d(-18px,8px,0) scale(1.02);filter:blur(0);}to{transform:translate3d(18px,-10px,0) scale(1.08);filter:blur(2px);}}
+  .sinsae-oracle-field{position:absolute;inset:0;pointer-events:none;z-index:0;}
+  .sinsae-smoke{position:absolute;left:50%;bottom:-18%;width:130vw;height:42vh;transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(246,241,230,.12),transparent 58%);filter:blur(18px);animation:sinsaeSmoke 7s ease-in-out infinite alternate;}
+  @keyframes sinsaeSmoke{from{opacity:.45;transform:translateX(-52%) translateY(8px) scale(.98);}to{opacity:.75;transform:translateX(-48%) translateY(-10px) scale(1.05);}}
+  .sinsae-gate-light{position:absolute;left:50%;top:48%;width:min(460px,86vw);height:min(460px,86vw);transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(200,164,77,.28),rgba(200,164,77,.08) 38%,transparent 66%);filter:blur(8px);animation:sinsaePulse 3.6s ease-in-out infinite;}
+  @keyframes sinsaePulse{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.96);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.05);}}
+  .sinsae-wheel{position:absolute;left:50%;top:47%;width:min(520px,92vw);height:min(520px,92vw);transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(200,164,77,.22);animation:sinsaeWheel 80s linear infinite;}
+  .sinsae-wheel::before,.sinsae-wheel::after{content:'';position:absolute;inset:9%;border-radius:50%;border:1px dashed rgba(200,164,77,.24);}
+  .sinsae-wheel::after{inset:20%;border-style:solid;opacity:.45;animation:sinsaeWheel 48s linear infinite reverse;}
+  @keyframes sinsaeWheel{to{transform:translate(-50%,-50%) rotate(360deg);}}
+  .sinsae-wheel span{position:absolute;left:50%;top:50%;font-family:var(--tc);font-size:18px;color:rgba(200,164,77,.68);text-shadow:0 0 18px rgba(200,164,77,.45);}
+  .sinsae-wheel span:nth-child(1){transform:rotate(0deg) translate(240px) rotate(0deg);}
+  .sinsae-wheel span:nth-child(2){transform:rotate(45deg) translate(240px) rotate(-45deg);}
+  .sinsae-wheel span:nth-child(3){transform:rotate(90deg) translate(240px) rotate(-90deg);}
+  .sinsae-wheel span:nth-child(4){transform:rotate(135deg) translate(240px) rotate(-135deg);}
+  .sinsae-wheel span:nth-child(5){transform:rotate(180deg) translate(240px) rotate(-180deg);}
+  .sinsae-wheel span:nth-child(6){transform:rotate(225deg) translate(240px) rotate(-225deg);}
+  .sinsae-wheel span:nth-child(7){transform:rotate(270deg) translate(240px) rotate(-270deg);}
+  .sinsae-wheel span:nth-child(8){transform:rotate(315deg) translate(240px) rotate(-315deg);}
+  .sinsae-intro-card{width:min(680px,100%);max-height:92vh;overflow:auto;background:linear-gradient(145deg,rgba(20,23,28,.93),rgba(13,15,18,.94));border:1px solid rgba(200,164,77,.36);border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.64),0 0 70px rgba(200,164,77,.15);padding:30px;position:relative;z-index:2;animation:sinsaeCardIn .9s cubic-bezier(.2,.8,.2,1) both;}
+  .sinsae-intro-card::before{content:'';position:absolute;inset:0;border-radius:18px;background:linear-gradient(120deg,transparent,rgba(246,241,230,.09),transparent);transform:translateX(-120%);animation:sinsaeSheen 3.8s 1s ease-in-out infinite;pointer-events:none;}
+  @keyframes sinsaeCardIn{from{opacity:0;transform:translateY(18px) scale(.97);filter:blur(6px);}to{opacity:1;transform:none;filter:none;}}
+  @keyframes sinsaeSheen{0%,55%{transform:translateX(-120%);}80%,100%{transform:translateX(120%);}}
+  .sinsae-seal{width:82px;height:82px;margin:0 auto 14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:42px;font-weight:900;color:var(--bg);background:radial-gradient(circle at 30% 30%,#f1d37a,var(--gold) 54%,var(--gold-deep));box-shadow:0 0 40px rgba(200,164,77,.5),inset 0 0 18px rgba(0,0,0,.28);position:relative;animation:sinsaeSeal 4s ease-in-out infinite;}
+  .sinsae-seal::after{content:'18';position:absolute;right:-3px;bottom:5px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1px solid var(--gold);color:var(--gold);font-family:var(--mono);font-size:10px;}
+  @keyframes sinsaeSeal{0%,100%{transform:translateY(0);box-shadow:0 0 32px rgba(200,164,77,.42);}50%{transform:translateY(-4px);box-shadow:0 0 58px rgba(200,164,77,.68);}}
+  .sinsae-intro-kicker{font-family:var(--mono);font-size:10px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;text-align:center;}
+  .sinsae-intro-card h2{font-family:var(--serif);font-size:38px;font-weight:300;line-height:1.05;letter-spacing:0;margin-bottom:16px;text-align:center;}
+  .sinsae-intro-card h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+  .sinsae-intro-copy{font-size:15px;line-height:1.8;color:var(--fg-soft);margin-bottom:18px;}
+  .sinsae-intro-copy b{color:var(--fg);font-weight:600;}
+  .sinsae-birth-box{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0;padding:14px;background:var(--tile);border:1px solid var(--gold-line);border-radius:12px;}
+  .sinsae-birth-item{min-width:0;}
+  .sinsae-birth-item span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-faint);margin-bottom:4px;}
+  .sinsae-birth-item b{display:block;font-size:14px;color:var(--fg);font-weight:500;overflow-wrap:anywhere;}
+  .sinsae-reading{display:none;margin-top:18px;padding:16px;background:rgba(200,164,77,.08);border:1px solid var(--gold-line);border-radius:12px;color:var(--fg);font-size:14px;line-height:1.75;white-space:pre-wrap;box-shadow:inset 0 0 28px rgba(200,164,77,.06);}
+  .sinsae-reading.on{display:block;}
+  .sinsae-intro.reading .sinsae-wheel{animation-duration:22s;}
+  .sinsae-intro.reading .sinsae-gate-light{animation-duration:1.8s;}
+  .sinsae-intro.opening .sinsae-intro-card{animation:sinsaeDoor .9s ease both;}
+  @keyframes sinsaeDoor{to{opacity:0;transform:scale(1.06);filter:blur(10px);}}
+  body.sinsae-gate-active .topbar,
+  body.sinsae-gate-active .stage{visibility:hidden;}
+  .sinsae-intro-actions{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:20px;flex-wrap:wrap;}
+  .sinsae-intro-actions button,.sinsae-intro-actions a{border:1px solid var(--gold-line);border-radius:999px;padding:12px 18px;font-family:var(--thai);font-size:13px;text-decoration:none;cursor:pointer;transition:.2s;}
+  .sinsae-intro-actions .ghost{background:transparent;color:var(--fg-soft);}
+  .sinsae-intro-actions .primary{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700;}
+  .sinsae-intro-actions .primary:disabled{opacity:.55;cursor:wait;}
+  .sinsae-status{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--gold);margin-top:8px;min-height:16px;text-transform:uppercase;}
+
   /* responsive */
   @media (max-width:980px){
     .stage{padding:22px 18px 60px;}
     .topbar{padding:14px 18px;}
-    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line);}
+	    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;}
     .nav::-webkit-scrollbar{display:none;}
     .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
     .nav a .glyph{font-size:14px;}
@@ -231,11 +299,96 @@
     .forecast-grid{grid-template-columns:1fr;}
     .chat-section{padding:22px;}
     .chat-head h2{font-size:24px;}
+    .master-greeting .salute,
+    .master-greeting h1,
+    .master-greeting .name,
+    .day-pills,
+    .verdict-line,
+    .fc-card,
+    .chat-section{
+      animation:none !important;
+      opacity:1 !important;
+      transform:none !important;
+    }
+    .messages{max-height:360px;}
+    .msg-bubble{max-width:88%;}
+    .chat-input{align-items:stretch;}
+    .chat-input textarea{min-height:58px;}
+  }
+  @media (max-width:560px){
+    .master-section{min-height:auto;margin-bottom:34px;}
+    .master-orb{max-width:220px;}
+    .orb-core .glyph{font-size:88px;}
+    .master-greeting h1{font-size:34px;}
+    .section-head h2{font-size:32px;}
+    .chat-section{padding:18px;}
+    .msg{gap:8px;}
+    .msg-ava{width:30px;height:30px;font-size:14px;}
+    .msg-bubble{max-width:100%;padding:12px 14px;font-size:13px;}
+    .suggest-chips button{font-size:11px;padding:7px 10px;}
+    .chat-input{flex-direction:column;}
+    .send-btn{width:100%;padding:12px 16px;}
+    .sinsae-intro-card{padding:22px 18px;border-radius:14px;}
+    .sinsae-intro-card h2{font-size:30px;}
+    .sinsae-seal{width:68px;height:68px;font-size:34px;}
+    .sinsae-wheel{width:360px;height:360px;}
+    .sinsae-wheel span{font-size:14px;}
+    .sinsae-wheel span:nth-child(1){transform:rotate(0deg) translate(165px) rotate(0deg);}
+    .sinsae-wheel span:nth-child(2){transform:rotate(45deg) translate(165px) rotate(-45deg);}
+    .sinsae-wheel span:nth-child(3){transform:rotate(90deg) translate(165px) rotate(-90deg);}
+    .sinsae-wheel span:nth-child(4){transform:rotate(135deg) translate(165px) rotate(-135deg);}
+    .sinsae-wheel span:nth-child(5){transform:rotate(180deg) translate(165px) rotate(-180deg);}
+    .sinsae-wheel span:nth-child(6){transform:rotate(225deg) translate(165px) rotate(-225deg);}
+    .sinsae-wheel span:nth-child(7){transform:rotate(270deg) translate(165px) rotate(-270deg);}
+    .sinsae-wheel span:nth-child(8){transform:rotate(315deg) translate(165px) rotate(-315deg);}
+    .sinsae-birth-box{grid-template-columns:1fr;}
+    .sinsae-intro-actions{justify-content:stretch;}
+    .sinsae-intro-actions button,.sinsae-intro-actions a{width:100%;text-align:center;}
   }
 </style>
-<script>if(typeof window!=="undefined"&&window.innerWidth<768&&!location.search.match(/force=d/)){location.replace(location.pathname+"-m"+location.search);}</script>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
+
+<div class="sinsae-intro" id="sinsae-intro" aria-modal="true" role="dialog">
+  <div class="sinsae-oracle-field" aria-hidden="true">
+    <div class="sinsae-gate-light"></div>
+    <div class="sinsae-wheel">
+      <span>乾</span><span>兌</span><span>離</span><span>震</span>
+      <span>巽</span><span>坎</span><span>艮</span><span>坤</span>
+    </div>
+    <div class="sinsae-smoke"></div>
+  </div>
+  <div class="sinsae-intro-card">
+    <div class="sinsae-seal">師</div>
+    <div class="sinsae-intro-kicker">SINSAE GATE · 開門</div>
+    <h2><span class="tc">師</span> ก่อนเปิดดวงของคุณ</h2>
+    <div class="sinsae-intro-copy">
+      ผมคือซินแสของ HourKey<br/>
+      ผมอ่านดวงจากศาสตร์โบราณ <b>18 แขนง</b> ที่สืบจากต้นฉบับ<br/>
+      ก่อนอ่านดวง ขอให้คุณยืนยันวัน เดือน ปี และเวลาเกิดให้ถูกต้อง เพราะข้อมูลนี้คือรากของคำทำนายทั้งหมดในระบบ
+    </div>
+    <div class="sinsae-birth-box" id="sinsae-birth-box">
+      <div class="sinsae-birth-item"><span>ชื่อ</span><b id="sinsae-name">กำลังตรวจข้อมูล...</b></div>
+      <div class="sinsae-birth-item"><span>วันเกิด</span><b id="sinsae-date">-</b></div>
+      <div class="sinsae-birth-item"><span>เวลาเกิด</span><b id="sinsae-time">-</b></div>
+      <div class="sinsae-birth-item"><span>สถานที่</span><b id="sinsae-place">-</b></div>
+    </div>
+    <div class="sinsae-status" id="sinsae-status"></div>
+    <!-- 🚀 Engine-first · แสดงโครงดวงทันที (50ms) ก่อน AI prose -->
+    <div class="sinsae-engine" id="sinsae-engine" style="display:none;margin-top:14px;padding:14px 16px;background:rgba(200,164,77,.06);border:1px solid var(--gold-line);border-radius:12px;font-size:13px;line-height:1.7;">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">⚡ โครงดวงเบื้องต้น · ENGINE</div>
+      <div id="sinsae-engine-body" style="color:var(--fg-soft);">กำลังคำนวณ...</div>
+    </div>
+    <div class="sinsae-reading" id="sinsae-reading"></div>
+    <div class="sinsae-intro-actions">
+      <a class="ghost" id="sinsae-edit" href="/input">แก้ข้อมูลเกิด</a>
+      <button class="primary" id="sinsae-confirm">ยืนยันข้อมูลดวง</button>
+      <button class="primary" id="sinsae-enter" style="display:none;">เปิดประตูเข้าสู่ HourKey</button>
+    </div>
+  </div>
+</div>
 
 <!-- ambient background -->
 <div class="ambient">
@@ -250,6 +403,7 @@
     <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="mst.nav.calendar">ปฏิทิน</span></a>
     <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="mst.nav.network">เครือข่าย</span></a>
     <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="mst.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/forecast" data-r="/forecast"><span class="glyph">占</span><span class="lbl" data-i18n="hk.nav.forecast">พยากรณ์</span></a>
     <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="mst.nav.master">ซินแส</span></a>
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="mst.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="mst.nav.fengshui">ทิศมงคล</span></a>
@@ -288,8 +442,8 @@
     <!-- Greeting text -->
     <div class="master-greeting">
       <div class="salute">時 SINSAE · DAILY ORACLE</div>
-      <h1>สวัสดีตอนบ่าย<br/><i>คุณไนท์</i> <span class="tc">敬</span></h1>
-      <div class="name">วันนี้คือ <b>พฤหัส 7 พ.ค. 2569</b> · 三月廿三 · ชั่วยาม <b>未時 </b>ตอนนี้</div>
+      <h1>สวัสดีตอนบ่าย<br/><i data-i18n="auto.m.001">คุณไนท์</i> <span class="tc">敬</span></h1>
+      <div class="name">วันนี้คือ <b data-i18n="auto.m.002">พฤหัส 7 พ.ค. 2569</b> · 三月廿三 · ชั่วยาม <b>未時 </b>ตอนนี้</div>
 
       <div class="day-pills">
         <span class="pill"><span class="tc">日</span>辛巳</span>
@@ -299,8 +453,8 @@
       </div>
 
       <div class="verdict-line">
-        <span class="tc">告</span>วันนี้ <b>ทรัพย์ไหลมา</b> · เหมาะ <b>ปิดดีล · ทวงเงิน · ตามหนี้</b><br/>
-        จงระวัง <b>คนที่เกิดวันชง 亥 — มิ้นท์, อรุณ</b> · เลี่ยง <b>ตัดสินใจหลัง 17:00</b>
+        <span class="tc">告</span>วันนี้ <b data-i18n="auto.m.003">ทรัพย์ไหลมา</b> · เหมาะ <b data-i18n="auto.m.004">ปิดดีล · ทวงเงิน · ตามหนี้</b><br/>
+        จงระวัง <b data-i18n="auto.m.005">คนที่เกิดวันชง 亥 — มิ้นท์, อรุณ</b> · เลี่ยง <b data-i18n="auto.m.006">ตัดสินใจหลัง 17:00</b>
       </div>
     </div>
   </div>
@@ -308,10 +462,10 @@
   <!-- ═══════════ FORECAST GRID ═══════════ -->
   <div class="section-head">
     <div>
-      <div class="label">FORECAST · 預言 · เห็นล่วงหน้า</div>
-      <h2><span class="tc">前</span>เห็นไกล<i>ก่อน</i>ก้าว</h2>
+      <div  class="label" data-i18n="auto.m.007">FORECAST · 預言 · เห็นล่วงหน้า</div>
+      <h2><span class="tc">前</span>เห็นไกล<i data-i18n="auto.m.008">ก่อน</i>ก้าว</h2>
     </div>
-    <div class="right">3 ช่วงเวลา · 流時 流日 流月</div>
+    <div  class="right" data-i18n="auto.m.009">3 ช่วงเวลา · 流時 流日 流月</div>
   </div>
 
   <div class="forecast-grid">
@@ -322,12 +476,12 @@
         <div class="tc">未</div>
         <div class="label">SHICHEN<small>13:00 — 15:00</small></div>
       </div>
-      <div class="fc-headline">2 ชั่วโมงนี้ · <b>นั่งวิเคราะห์</b> · ไม่เหมาะเจรจา</div>
-      <div class="fc-detail">未時 ดิน·ดิน — สงบ · เหมาะ <b>review เอกสาร</b> · <b>เก็บข้อมูล</b> · <b>เตรียมพรีเซน</b> ให้เสร็จก่อน <b>17:00</b> ก่อนเข้าชั่วยาม 申 ที่ห้ามตัดสินใจ</div>
+      <div class="fc-headline">2 ชั่วโมงนี้ · <b data-i18n="auto.m.010">นั่งวิเคราะห์</b> · ไม่เหมาะเจรจา</div>
+      <div class="fc-detail">未時 ดิน·ดิน — สงบ · เหมาะ <b data-i18n="auto.m.011">review เอกสาร</b> · <b data-i18n="auto.m.012">เก็บข้อมูล</b> · <b data-i18n="auto.m.013">เตรียมพรีเซน</b> ให้เสร็จก่อน <b>17:00</b> ก่อนเข้าชั่วยาม 申 ที่ห้ามตัดสินใจ</div>
       <div class="fc-tags">
-        <span class="mid">นั่งคิด</span>
-        <span class="good">วินัย</span>
-        <span class="bad">ห้ามเจรจา</span>
+        <span  class="mid" data-i18n="auto.m.014">นั่งคิด</span>
+        <span  class="good" data-i18n="auto.m.015">วินัย</span>
+        <span  class="bad" data-i18n="auto.m.016">ห้ามเจรจา</span>
       </div>
       <div class="fc-meta">SCORE <b>+45</b> · 比肩 · 平和</div>
     </div>
@@ -336,10 +490,10 @@
     <div class="fc-card">
       <div class="fc-when">
         <div class="tc">日</div>
-        <div class="label">ทั้งวัน<small>วันนี้</small></div>
+        <div class="label">ทั้งวัน<small data-i18n="auto.m.017">วันนี้</small></div>
       </div>
-      <div class="fc-headline">วัน <b>正財透干</b> · <b>เปิดดวงเงิน</b></div>
-      <div class="fc-detail">辛巳 · ทอง·ไฟ — ทรัพย์ไหลมาทาง <b>ดีลที่ค้าง</b> · ช่วงทอง <b>09:00-13:00</b> · มี <b>3 คนสำคัญ</b> ตอบรับวันนี้: <b>ใหม่ · พีท · ก้อง</b></div>
+      <div class="fc-headline">วัน <b>正財透干</b> · <b data-i18n="auto.m.018">เปิดดวงเงิน</b></div>
+      <div class="fc-detail">辛巳 · ทอง·ไฟ — ทรัพย์ไหลมาทาง <b data-i18n="auto.m.019">ดีลที่ค้าง</b> · ช่วงทอง <b>09:00-13:00</b> · มี <b data-i18n="auto.m.020">3 คนสำคัญ</b> ตอบรับวันนี้: <b data-i18n="auto.m.021">ใหม่ · พีท · ก้อง</b></div>
       <div class="fc-tags">
         <span class="good">正財</span>
         <span class="good">納財</span>
@@ -352,16 +506,16 @@
     <div class="fc-card">
       <div class="fc-when">
         <div class="tc">月</div>
-        <div class="label">เดือน<small>พฤษภาคม 2569</small></div>
+        <div class="label">เดือน<small data-i18n="auto.m.022">พฤษภาคม 2569</small></div>
       </div>
-      <div class="fc-headline">月柱 <b>癸巳</b> · <b>ตั้งหลัก-วาง基</b></div>
-      <div class="fc-detail">เดือนหน้าฤกษ์ใหญ่: <b>13 พ.ค.</b> เซ็นสัญญา (★★★) · <b>15 พ.ค.</b> เจรจา · ระวัง <b>22-24 พ.ค.</b> ดวงตก · ไม่ตัดสินใจใหญ่</div>
+      <div class="fc-headline">月柱 <b>癸巳</b> · <b data-i18n="auto.m.023">ตั้งหลัก-วาง基</b></div>
+      <div class="fc-detail">เดือนหน้าฤกษ์ใหญ่: <b data-i18n="auto.m.024">13 พ.ค.</b> เซ็นสัญญา (★★★) · <b data-i18n="auto.m.025">15 พ.ค.</b> เจรจา · ระวัง <b data-i18n="auto.m.026">22-24 พ.ค.</b> ดวงตก · ไม่ตัดสินใจใหญ่</div>
       <div class="fc-tags">
-        <span class="good">14 ฤกษ์ดี</span>
-        <span class="bad">3 วันตก</span>
+        <span  class="good" data-i18n="auto.m.027">14 ฤกษ์ดี</span>
+        <span  class="bad" data-i18n="auto.m.028">3 วันตก</span>
         <span class="mid">立夏 → 小滿</span>
       </div>
-      <div class="fc-meta">AVG <b>+58</b> · BEST DAY <b>13 พ.ค.</b></div>
+      <div class="fc-meta">AVG <b>+58</b> · BEST DAY <b data-i18n="auto.m.029">13 พ.ค.</b></div>
     </div>
 
   </div>
@@ -369,16 +523,16 @@
   <!-- ═══════════ CHAT WITH MASTER ═══════════ -->
   <div class="section-head">
     <div>
-      <div class="label">ASK · 問師 · ถามซินแส</div>
-      <h2><span class="tc">問</span>ถาม<i>อะไรก็ได้</i></h2>
+      <div  class="label" data-i18n="auto.m.030">ASK · 問師 · ถามซินแส</div>
+      <h2><span class="tc">問</span>ถาม<i data-i18n="auto.m.031">อะไรก็ได้</i></h2>
     </div>
     <div class="right">SINSAE AI · 神算</div>
   </div>
 
   <div class="chat-section">
     <div class="chat-head">
-      <h2><span class="tc">師</span>ซินแส<i>กล่าว</i></h2>
-      <div class="lbl">ออนไลน์ · LISTENING</div>
+      <h2><span class="tc">師</span>ซินแส<i data-i18n="auto.m.032">กล่าว</i></h2>
+      <div  class="lbl" data-i18n="auto.m.033">ออนไลน์ · LISTENING</div>
     </div>
 
     <!-- messages -->
@@ -388,44 +542,40 @@
         <div class="msg-ava">師</div>
         <div class="msg-bubble">
           <span class="tc">告 ·</span> วันนี้คือวัน <b>辛巳 正財透干</b> — ทรัพย์เปิดประตู<br/>
-          <span class="quote">"巳火生土 · 辛金成器" — ไฟใต้ดินงอกขึ้น · ทองเหล็กกลายเป็นเครื่องมือ</span>
-          ลองถามผมเรื่อง <b>ปิดดีล</b> · <b>คนที่จะคุย</b> · <b>ทิศที่นั่ง</b> หรือ <b>ฤกษ์ที่ค้างไว้</b> ครับ
+          <span  class="quote" data-i18n="auto.m.034">"巳火生土 · 辛金成器" — ไฟใต้ดินงอกขึ้น · ทองเหล็กกลายเป็นเครื่องมือ</span>
+          ลองถามผมเรื่อง <b data-i18n="auto.m.035">ปิดดีล</b> · <b data-i18n="auto.m.036">คนที่จะคุย</b> · <b data-i18n="auto.m.037">ทิศที่นั่ง</b> หรือ <b data-i18n="auto.m.038">ฤกษ์ที่ค้างไว้</b> ครับ
         </div>
       </div>
 
       <div class="msg user">
         <div class="msg-ava">น</div>
-        <div class="msg-bubble">
-          วันนี้ควรโทรหา Fara เลยมั้ย เรื่องสัญญาแอ่ลูมิเนียม?
-        </div>
+        <div  class="msg-bubble" data-i18n="auto.m.039">วันนี้ควรโทรหา Fara เลยมั้ย เรื่องสัญญาแอ่ลูมิเนียม?</div>
       </div>
 
       <div class="msg master">
         <div class="msg-ava">師</div>
         <div class="msg-bubble">
-          <b>ควรครับ — แต่จงใจ</b><br/><br/>
-          <span class="tc">時 ·</span> ตอนนี้ <b>未時</b> เป็นช่วง <b>นั่งวิเคราะห์</b> ไม่ใช่เจรจา · รอ <b>17:00 (酉時)</b> หลังจากนั้น金 ขึ้น พลังของ Fara (辛金) จะแรง · พูดน้อยฟังมาก · ขอเสนอเป็นลายลักษณ์<br/><br/>
-          <span class="tc">日 ·</span> Fara เป็น <b>辛金</b> ตรงกับ <b>用神</b> ของคุณ — เป็นคนที่ "ตัดสินใจให้คุณรวยขึ้น" · แต่<b>วันนี้ห้ามรีบ</b><br/><br/>
-          <span class="quote">"金能生水 · 但需火煉" — ทองหลอมต้องผ่านไฟก่อน</span>
-          ผมเห็นในระบบคุณวางฤกษ์ <b>13 พ.ค. 14:00 (★★★ +92)</b> ไว้แล้ว · <b>เลื่อนการเซ็นไปวันนั้น</b> · วันนี้แค่ <b>"ส่งสัญญาณ"</b> ว่าพร้อม
+          <b data-i18n="auto.m.040">ควรครับ — แต่จงใจ</b><br/><br/>
+          <span class="tc">時 ·</span> ตอนนี้ <b>未時</b> เป็นช่วง <b data-i18n="auto.m.041">นั่งวิเคราะห์</b> ไม่ใช่เจรจา · รอ <b>17:00 (酉時)</b> หลังจากนั้น金 ขึ้น พลังของ Fara (辛金) จะแรง · พูดน้อยฟังมาก · ขอเสนอเป็นลายลักษณ์<br/><br/>
+          <span class="tc">日 ·</span> Fara เป็น <b>辛金</b> ตรงกับ <b>用神</b> ของคุณ — เป็นคนที่ "ตัดสินใจให้คุณรวยขึ้น" · แต่<b data-i18n="auto.m.042">วันนี้ห้ามรีบ</b><br/><br/>
+          <span  class="quote" data-i18n="auto.m.043">"金能生水 · 但需火煉" — ทองหลอมต้องผ่านไฟก่อน</span>
+          ผมเห็นในระบบคุณวางฤกษ์ <b data-i18n="auto.m.044">13 พ.ค. 14:00 (★★★ +92)</b> ไว้แล้ว · <b data-i18n="auto.m.045">เลื่อนการเซ็นไปวันนั้น</b> · วันนี้แค่ <b data-i18n="auto.m.046">"ส่งสัญญาณ"</b> ว่าพร้อม
         </div>
       </div>
 
       <div class="msg user">
         <div class="msg-ava">น</div>
-        <div class="msg-bubble">
-          ใครเป็นคนที่ควรพากันไปด้วย?
-        </div>
+        <div  class="msg-bubble" data-i18n="auto.m.047">ใครเป็นคนที่ควรพากันไปด้วย?</div>
       </div>
 
       <div class="msg master">
         <div class="msg-ava">師</div>
         <div class="msg-bubble">
-          <span class="tc">人 ·</span> ในเครือข่ายคุณวันนี้ <b>3 คนคะแนนสูง</b>:<br/><br/>
-          ⭐ <b>ใหม่ (辛金)</b> +82 — Spouse · <b>用神 ตรง</b> · ใหม่หาคำที่ Fara เข้าใจได้<br/>
-          ⭐ <b>พีท (壬水)</b> +71 — Co-founder · 三合 หนุน · พูดเรื่องตัวเลขดี<br/>
-          ⭐ <b>ก้อง (庚金)</b> +45 — CTO · 用神金 อีกตัว · เก่งเรื่องสเปค<br/><br/>
-          <b>เลือก 1 คน</b> ไปด้วย — ผมแนะ <b>ใหม่</b> เพราะ Fara เป็นผู้หญิง 辛金 พูดกันรู้เรื่องที่สุด · นั่งหันหน้า <b>ทิศ SW</b>
+          <span class="tc">人 ·</span> ในเครือข่ายคุณวันนี้ <b data-i18n="auto.m.048">3 คนคะแนนสูง</b>:<br/><br/>
+          ⭐ <b data-i18n="auto.m.049">ใหม่ (辛金)</b> +82 — Spouse · <b data-i18n="auto.m.050">用神 ตรง</b> · ใหม่หาคำที่ Fara เข้าใจได้<br/>
+          ⭐ <b data-i18n="auto.m.051">พีท (壬水)</b> +71 — Co-founder · 三合 หนุน · พูดเรื่องตัวเลขดี<br/>
+          ⭐ <b data-i18n="auto.m.052">ก้อง (庚金)</b> +45 — CTO · 用神金 อีกตัว · เก่งเรื่องสเปค<br/><br/>
+          <b data-i18n="auto.m.053">เลือก 1 คน</b> ไปด้วย — ผมแนะ <b data-i18n="auto.m.054">ใหม่</b> เพราะ Fara เป็นผู้หญิง 辛金 พูดกันรู้เรื่องที่สุด · นั่งหันหน้า <b data-i18n="auto.m.055">ทิศ SW</b>
         </div>
       </div>
 
@@ -516,6 +666,193 @@
     if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send.click(); }
   });
 
+  /* ── First-visit Sinsae gate ── */
+  (function sinsaeIntro(){
+    var VERSION = 'sinsae_intro_20260517';
+    var params = new URLSearchParams(location.search);
+    var forced = params.get('intro') === '1';
+    var next = params.get('next') || '/today';
+    if (!next || next.charAt(0) !== '/' || next.charAt(1) === '/') next = '/today';
+    var done = false;
+    try { done = localStorage.getItem('hk_sinsae_intro_version') === VERSION; } catch(_) {}
+    if (done) {
+      if (forced) window.location.href = next;
+      return;
+    }
+
+    var wrap = document.getElementById('sinsae-intro');
+    var nameEl = document.getElementById('sinsae-name');
+    var dateEl = document.getElementById('sinsae-date');
+    var timeEl = document.getElementById('sinsae-time');
+    var placeEl = document.getElementById('sinsae-place');
+    var statusEl = document.getElementById('sinsae-status');
+    var readingEl = document.getElementById('sinsae-reading');
+    var confirmBtn = document.getElementById('sinsae-confirm');
+    var enterBtn = document.getElementById('sinsae-enter');
+    var editLink = document.getElementById('sinsae-edit');
+    if (!wrap || !confirmBtn || !enterBtn) return;
+
+    var activeProfile = null;
+    document.body.classList.add('sinsae-gate-active');
+    wrap.classList.add('on');
+
+    function setText(el, text){ if (el) el.textContent = text || '-'; }
+    function parseBirthLocal(){
+      try {
+        var b = JSON.parse(localStorage.getItem('hk_birth') || 'null');
+        if (!b) return null;
+        return {
+          id: null,
+          name: b.name || localStorage.getItem('hk_profile_name') || 'ตัวฉัน',
+          birth_datetime: String(b.date || '') + 'T' + String(b.time || '12:00') + ':00+07:00',
+          birth_location_name: b.place || 'กรุงเทพมหานคร'
+        };
+      } catch(_) { return null; }
+    }
+    function fillProfile(p){
+      activeProfile = p || parseBirthLocal();
+      if (!activeProfile) {
+        setText(nameEl, 'ยังไม่พบข้อมูลเกิด');
+        setText(dateEl, 'กรุณากรอกข้อมูลก่อน');
+        setText(timeEl, '-');
+        setText(placeEl, '-');
+        statusEl.textContent = 'ต้องมีข้อมูลเกิดก่อนซินแสเปิดดวง';
+        confirmBtn.style.display = 'none';
+        editLink.textContent = 'กรอกข้อมูลเกิด';
+        return;
+      }
+      var dt = String(activeProfile.birth_datetime || '');
+      var parts = dt.split('T');
+      setText(nameEl, activeProfile.nickname || activeProfile.name || 'ตัวฉัน');
+      setText(dateEl, parts[0] || '-');
+      setText(timeEl, (parts[1] || '').slice(0,5) || '-');
+      setText(placeEl, activeProfile.birth_location_name || activeProfile.locationName || activeProfile.place || 'กรุงเทพมหานคร');
+      statusEl.textContent = 'ตรวจข้อมูลเกิดให้ตรงก่อนกดยืนยัน';
+    }
+
+    fetch('/api/profile', { credentials:'same-origin', cache:'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ fillProfile(j && j.active_profile); })
+      .catch(function(){ fillProfile(null); });
+
+    /* 🚀 Engine-first · ดึง /api/chart ทันที (50ms) แสดงโครงก่อน AI prose */
+    async function loadEngineSummary(){
+      var engineEl = document.getElementById('sinsae-engine');
+      var bodyEl = document.getElementById('sinsae-engine-body');
+      if (!activeProfile || !engineEl) return;
+      engineEl.style.display = 'block';
+      try {
+        var dt = String(activeProfile.birth_datetime||'');
+        var parts = dt.split('T');
+        var date = parts[0];
+        var time = (parts[1]||'12:00').slice(0,5);
+        var r = await fetch('/api/chart', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ date:date, time:time, longitude:activeProfile.birth_lng||100.5018, gender:activeProfile.gender||'M', gmtOffsetHours:7 })
+        });
+        if (!r.ok) throw new Error('chart api '+r.status);
+        var d = await r.json();
+        var p = d.pillarsZh || {};
+        var dm = d.dayMaster || '?';
+        var ys = (d.yongshen||[]).slice(0,2).map(function(y){return y.stem+'('+y.element+')';}).join(' · ');
+        var ge = (d.geJu && d.geJu.structure) || 'ปกติ';
+        var st = (d.strength && d.strength.level) || '-';
+        var lp = (d.luck_pillars && d.current_luck_idx!=null && d.luck_pillars[d.current_luck_idx]) || null;
+        var ny = (d.current_year_pillar) || null;
+        bodyEl.innerHTML =
+          '<b style="color:var(--gold)">日主</b> '+dm+' · <b style="color:var(--gold)">格局</b> '+ge+' · <b style="color:var(--gold)">แรง</b> '+st+'<br/>'+
+          '<b>4 เสา</b> 年'+(p.year||'-')+' · 月'+(p.month||'-')+' · 日'+(p.day||'-')+' · 時'+(p.hour||'-')+'<br/>'+
+          '<b style="color:var(--gold)">用神</b> '+ys+
+          (lp?' · <b style="color:var(--gold)">大運</b> '+lp.stem+lp.branch+' ('+lp.qi_phase+')':'')+
+          (ny?' · <b style="color:var(--gold)">流年</b> '+ny.stem+ny.branch:'');
+      } catch(e){
+        bodyEl.textContent = 'คำนวณโครงดวงไม่สำเร็จ · กำลังเริ่ม AI...';
+      }
+    }
+
+    confirmBtn.addEventListener('click', async function(){
+      if (!activeProfile) return;
+      confirmBtn.disabled = true;
+      wrap.classList.add('reading');
+      statusEl.textContent = 'ซินแสกำลังอ่านร่องรอยดวงย้อนหลัง 12 เดือน...';
+      readingEl.classList.add('on');
+      readingEl.textContent = 'กำลังเปิดตำรา...\nกำลังตั้งวันเกิดลงในวงเวลา...\nกำลังเทียบ 12 เดือนที่ผ่านมา...';
+      /* engine ทันที (ไม่ block AI) */
+      loadEngineSummary();
+      var birthText = [
+        'ชื่อ: ' + (activeProfile.nickname || activeProfile.name || 'ตัวฉัน'),
+        'เกิด: ' + (dateEl.textContent || '-') + ' ' + (timeEl.textContent || '-'),
+        'สถานที่: ' + (placeEl.textContent || '-')
+      ].join('\n');
+      /* 🌊 SSE Streaming · user เห็นทีละ chunk ตั้งแต่ ~7s แรก */
+      var msg = 'นี่คือพิธีเปิดดวงครั้งแรกของผู้ใช้ใหม่ ช่วยอ่านดวงย้อนหลัง 12 เดือนที่ผ่านมาแบบสังเขป ภาษาคน ฟังอบอุ่น แต่ตรงไปตรงมา จบด้วยประโยคเชิญเปิดประตูเข้าสู่ HourKey\n\n' + birthText;
+      var qs = new URLSearchParams({
+        stream: '1',
+        mode: 'intro',
+        message: msg,
+        topic: 'overview',
+        lang: 'th'
+      });
+      if (activeProfile.id) qs.set('profileId', activeProfile.id);
+      var rawDt = String(activeProfile.birth_datetime || '');
+      var rawParts = rawDt.split('T');
+      if (rawParts[0]) qs.set('birthDate', rawParts[0]);
+      if (rawParts[1]) qs.set('birthTime', rawParts[1].slice(0,5));
+      qs.set('birthLng', String(activeProfile.birth_lng || 100.5018));
+      qs.set('gender', activeProfile.gender || 'M');
+      qs.set('name', activeProfile.nickname || activeProfile.name || 'ตัวฉัน');
+
+      try {
+        readingEl.textContent = '';
+        var es = new EventSource('/api/sifu?' + qs.toString());
+        var gotFirst = false;
+        var doneOk = false;
+        es.addEventListener('meta', function(e){
+          try { var m = JSON.parse(e.data);
+            if (m.cached) statusEl.textContent = '📚 ดึงคำอ่านที่ซินแสบันทึกไว้... (cached)';
+            else statusEl.textContent = 'ซินแสกำลังคิด · กรุณารอ ~10-60 วินาที...';
+          } catch(_){}
+        });
+        es.addEventListener('first', function(e){
+          gotFirst = true;
+          try { var f = JSON.parse(e.data); statusEl.textContent = '✍️ ซินแสเริ่มเขียนแล้ว ('+(f.ms/1000).toFixed(1)+'s)'; } catch(_){}
+        });
+        es.addEventListener('chunk', function(e){
+          try { var c = JSON.parse(e.data); readingEl.textContent += c.text; } catch(_){}
+        });
+        es.addEventListener('done', function(e){
+          doneOk = true; es.close();
+          try {
+            var dn = JSON.parse(e.data);
+            statusEl.textContent = dn.cached ? '✅ พร้อมแล้ว (cached)' : '✅ อ่านเสร็จ ('+(dn.ms/1000).toFixed(1)+'s)';
+          } catch(_){ statusEl.textContent = 'อ่านเสร็จแล้ว'; }
+          confirmBtn.style.display = 'none';
+          enterBtn.style.display = '';
+        });
+        es.addEventListener('error', function(){
+          if (doneOk) return;
+          es.close();
+          if (!readingEl.textContent) readingEl.textContent = 'ซินแสอ่านพื้นดวงตั้งต้นแล้ว ข้อมูลเกิดนี้จะเป็นรากของการดูวันนี้ ดวง เครือข่าย และฤกษ์ทั้งหมดใน HourKey';
+          statusEl.textContent = 'อ่านเสร็จแล้ว';
+          confirmBtn.style.display = 'none';
+          enterBtn.style.display = '';
+        });
+      } catch(_) {
+        readingEl.textContent = 'ซินแสอ่านพื้นดวงตั้งต้นแล้ว ข้อมูลเกิดนี้จะเป็นรากของการดูวันนี้ ดวง เครือข่าย และฤกษ์ทั้งหมดใน HourKey';
+        statusEl.textContent = 'อ่านเสร็จแล้ว';
+        confirmBtn.style.display = 'none';
+        enterBtn.style.display = '';
+      }
+    });
+
+    enterBtn.addEventListener('click', function(){
+      try { localStorage.setItem('hk_sinsae_intro_version', VERSION); } catch(_) {}
+      wrap.classList.add('opening');
+      statusEl.textContent = 'กำลังเปิดประตู...';
+      setTimeout(function(){ window.location.href = next; }, 650);
+    });
+  })();
+
   // suggest chips
   document.querySelectorAll('.suggest-chips button').forEach(b=>{
     b.addEventListener('click', ()=>{
@@ -602,6 +939,62 @@
 <script>
 /* hourkey · mst · 3-language i18n (TH/EN/ZH) */
 window.HK_I18N = {
+  /* 🤖 auto-translated · 15 พ.ค. 2026 · L3 */
+  'auto.m.001': { th:'คุณไนท์', en:'Khun Knight', zh:'Knight 先生' },
+  'auto.m.002': { th:'พฤหัส 7 พ.ค. 2569', en:'Thursday, 7 May 2026', zh:'2026年5月7日 週四' },
+  'auto.m.003': { th:'ทรัพย์ไหลมา', en:'Wealth flowing in', zh:'財來' },
+  'auto.m.004': { th:'ปิดดีล · ทวงเงิน · ตามหนี้', en:'Close deals · collect payment · chase debts', zh:'成交·收款·催債' },
+  'auto.m.005': { th:'คนที่เกิดวันชง 亥 — มิ้นท์, อรุณ', en:'People born on 沖日 亥 — Mint, Arun', zh:'沖日生人 亥 — Mint, Arun' },
+  'auto.m.006': { th:'ตัดสินใจหลัง 17:00', en:'Decide after 17:00', zh:'17:00 後再決定' },
+  'auto.m.007': { th:'FORECAST · 預言 · เห็นล่วงหน้า', en:'FORECAST · 預言 · See Ahead', zh:'FORECAST · 預言 · 預見' },
+  'auto.m.008': { th:'ก่อน', en:'Before', zh:'之前' },
+  'auto.m.009': { th:'3 ช่วงเวลา · 流時 流日 流月', en:'3 Periods · 流時 流日 流月', zh:'三段 · 流時 流日 流月' },
+  'auto.m.010': { th:'นั่งวิเคราะห์', en:'Sit and analyze', zh:'靜坐分析' },
+  'auto.m.011': { th:'review เอกสาร', en:'Review documents', zh:'審文件' },
+  'auto.m.012': { th:'เก็บข้อมูล', en:'Collect data', zh:'蒐集資料' },
+  'auto.m.013': { th:'เตรียมพรีเซน', en:'Prepare presentation', zh:'備簡報' },
+  'auto.m.014': { th:'นั่งคิด', en:'Sit and think', zh:'靜思' },
+  'auto.m.015': { th:'วินัย', en:'Discipline', zh:'自律' },
+  'auto.m.016': { th:'ห้ามเจรจา', en:'No negotiation', zh:'忌談判' },
+  'auto.m.017': { th:'วันนี้', en:'Today', zh:'今日' },
+  'auto.m.018': { th:'เปิดดวงเงิน', en:'Open wealth fortune', zh:'開財運' },
+  'auto.m.019': { th:'ดีลที่ค้าง', en:'Pending deals', zh:'未結之約' },
+  'auto.m.020': { th:'3 คนสำคัญ', en:'3 key people', zh:'三位貴人' },
+  'auto.m.021': { th:'ใหม่ · พีท · ก้อง', en:'Mai · Pete · Kong', zh:'Mai · Pete · Kong' },
+  'auto.m.022': { th:'พฤษภาคม 2569', en:'May 2026', zh:'2026年5月' },
+  'auto.m.023': { th:'ตั้งหลัก-วาง基', en:'Set foundation - 立基', zh:'立根·立基' },
+  'auto.m.024': { th:'13 พ.ค.', en:'13 May', zh:'5月13日' },
+  'auto.m.025': { th:'15 พ.ค.', en:'15 May', zh:'5月15日' },
+  'auto.m.026': { th:'22-24 พ.ค.', en:'22-24 May', zh:'5月22-24日' },
+  'auto.m.027': { th:'14 ฤกษ์ดี', en:'14 auspicious times', zh:'14 吉時' },
+  'auto.m.028': { th:'3 วันตก', en:'3 inauspicious days', zh:'3 凶日' },
+  'auto.m.029': { th:'13 พ.ค.', en:'13 May', zh:'5月13日' },
+  'auto.m.030': { th:'ASK · 問師 · ถามซินแส', en:'ASK · 問師 · Ask Sifu', zh:'ASK · 問師 · 問師父' },
+  'auto.m.031': { th:'อะไรก็ได้', en:'Anything', zh:'無論何事' },
+  'auto.m.032': { th:'กล่าว', en:'Speak', zh:'言' },
+  'auto.m.033': { th:'ออนไลน์ · LISTENING', en:'Online · LISTENING', zh:'在線 · 聆聽' },
+  'auto.m.034': { th:'"巳火生土 · 辛金成器" — ไฟใต้ดินงอกขึ้น · ทองเหล็กกลายเป็นเครื่องมือ', en:'"巳火生土 · 辛金成器" — underground fire rises · gold becomes a tool', zh:'「巳火生土·辛金成器」— 地火上騰·金成器用' },
+  'auto.m.035': { th:'ปิดดีล', en:'Close deal', zh:'成交' },
+  'auto.m.036': { th:'คนที่จะคุย', en:'People to talk to', zh:'當談之人' },
+  'auto.m.037': { th:'ทิศที่นั่ง', en:'Seating direction', zh:'坐向' },
+  'auto.m.038': { th:'ฤกษ์ที่ค้างไว้', en:'Pending auspicious time', zh:'未用之吉時' },
+  'auto.m.039': { th:'วันนี้ควรโทรหา Fara เลยมั้ย เรื่องสัญญาแอ่ลูมิเนียม?', en:'Should I call Fara today about the aluminum contract?', zh:'今日該否致電 Fara 談鋁料合同?' },
+  'auto.m.040': { th:'ควรครับ — แต่จงใจ', en:'Yes — but with intent', zh:'宜·然須有意' },
+  'auto.m.041': { th:'นั่งวิเคราะห์', en:'Sit and analyze', zh:'靜坐分析' },
+  'auto.m.042': { th:'วันนี้ห้ามรีบ', en:'Don\'t rush today', zh:'今日忌急' },
+  'auto.m.043': { th:'"金能生水 · 但需火煉" — ทองหลอมต้องผ่านไฟก่อน', en:'"金能生水 · 但需火煉" — gold must be forged through fire first', zh:'「金能生水·但需火煉」— 金須火煉而後成' },
+  'auto.m.044': { th:'13 พ.ค. 14:00 (★★★ +92)', en:'13 May 14:00 (★★★ +92)', zh:'5月13日 14:00 (★★★ +92)' },
+  'auto.m.045': { th:'เลื่อนการเซ็นไปวันนั้น', en:'Move signing to that day', zh:'移簽約於彼日' },
+  'auto.m.046': { th:'"ส่งสัญญาณ"', en:'"Send a signal"', zh:'「示意」' },
+  'auto.m.047': { th:'ใครเป็นคนที่ควรพากันไปด้วย?', en:'Who should accompany you?', zh:'何人宜偕行?' },
+  'auto.m.048': { th:'3 คนคะแนนสูง', en:'3 high-score people', zh:'三位高分貴人' },
+  'auto.m.049': { th:'ใหม่ (辛金)', en:'Mai (辛金)', zh:'Mai (辛金)' },
+  'auto.m.050': { th:'用神 ตรง', en:'Matches 用神', zh:'合用神' },
+  'auto.m.051': { th:'พีท (壬水)', en:'Pete (壬水)', zh:'Pete (壬水)' },
+  'auto.m.052': { th:'ก้อง (庚金)', en:'Kong (庚金)', zh:'Kong (庚金)' },
+  'auto.m.053': { th:'เลือก 1 คน', en:'Pick 1 person', zh:'擇一人' },
+  'auto.m.054': { th:'ใหม่', en:'Mai', zh:'Mai' },
+  'auto.m.055': { th:'ทิศ SW', en:'SW direction', zh:'西南方' },
   'mst.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
   'mst.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
   'mst.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
@@ -640,6 +1033,7 @@ window.applyI18N = applyI18N;
 })();
 </script>
 
-<script src="/js/hk-user-menu.js?v=9" defer></script>
+<script src="/js/hk-settings-drawer.js?v=9" defer></script>
+<script src="/js/hk-user-menu.js?v=16" defer></script>
 </body>
 </html>

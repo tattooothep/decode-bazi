@@ -471,7 +471,62 @@ document.getElementById('cmp-go').addEventListener('click', async function(){
   }
 });
 
+/* 19 พ.ค. Option α · trim person payload สำหรับ AI · ส่งเฉพาะ field ที่ buildPrompt ใช้
+ * payload เต็ม ~45KB/คน · trim เหลือ ~1-2KB/คน · ใต้ cap 64KB ปลอดภัย */
+function trimPersonForAI(p) {
+  if (!p) return null;
+  return {
+    name: p.name, gender: p.gender,
+    birthDate: p.birthDate, birthTime: p.birthTime,
+    birthTimeKnown: p.birthTimeKnown,
+    pillars: p.pillars,
+    mode: p.mode,
+    analysis: p.analysis ? {
+      ge_ju: p.analysis.ge_ju,
+      tiao_hou: p.analysis.tiao_hou,
+      strength_yongshen: p.analysis.strength_yongshen,
+    } : undefined,
+    yongshen_v2: p.yongshen_v2 ? {
+      structure_label: p.yongshen_v2.structure_label,
+      engine_type: p.yongshen_v2.engine_type,
+      primary_yongshen: p.yongshen_v2.primary_yongshen,
+      xishen: p.yongshen_v2.xishen,
+      jishen: p.yongshen_v2.jishen,
+    } : undefined,
+    uncertainty: p.uncertainty,
+  };
+}
+
 /* 19 พ.ค. Option α · AI compare · เรียก /api/sifu/compare */
+/* 19 พ.ค. Phase 12 · POST streaming · fetch + body.getReader + SSE parser
+ * Codex approved · ห้าม EventSource (POST body) · ห้าม URL query (body 3KB) */
+async function parseSseStream(reader, onEvent, signal) {
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (!signal?.aborted) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    let sep;
+    while ((sep = buf.indexOf('\n\n')) !== -1) {
+      const frame = buf.slice(0, sep);
+      buf = buf.slice(sep + 2);
+      let event = 'message', dataLines = [];
+      for (const line of frame.split('\n')) {
+        if (line.startsWith('event:')) event = line.slice(6).trim();
+        else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
+      }
+      if (!dataLines.length) continue;
+      /* Codex รอบ 32 fix · parse JSON ใน try แยก · onEvent อยู่นอก try
+       * เพื่อให้ throw จาก onEvent หลุดเข้า outer catch ได้ (ไม่ถูกกลืน) */
+      let parsed;
+      try { parsed = JSON.parse(dataLines.join('\n')); }
+      catch(_) { continue; }
+      onEvent(event, parsed);
+    }
+  }
+}
+
 document.getElementById('cmp-ai').addEventListener('click', async function(){
   const ctx = window.__cmp_ctx;
   if (!ctx || !ctx.p1 || !ctx.p2) { alert('กรุณากด "เปรียบเทียบ →" ก่อน'); return; }
@@ -485,21 +540,45 @@ document.getElementById('cmp-ai').addEventListener('click', async function(){
   stat.textContent = tx('cmp.ai.loading');
   cont.textContent = '';
   panel.scrollIntoView({behavior:'smooth',block:'start'});
+  const ac = new AbortController();
+  /* abort ถ้า user ปิด panel · server kill child process */
+  document.getElementById('cmp-ai-close').addEventListener('click', () => ac.abort(), { once: true });
   try {
     const lang = document.documentElement.getAttribute('data-lang') || 'th';
-    const r = await fetch('/api/sifu/compare', {
-      method:'POST', headers:{'Content-Type':'application/json'},
+    const r = await fetch('/api/sifu/compare?stream=1', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Accept':'text/event-stream' },
       body: JSON.stringify({
-        p1: ctx.p1,
-        p2: ctx.p2,
+        p1: trimPersonForAI(ctx.p1),
+        p2: trimPersonForAI(ctx.p2),
         lang: lang === 'en' || lang === 'zh' ? lang : 'th',
-      })
+      }),
+      signal: ac.signal,
     });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error || 'AI failed');
-    stat.style.display = 'none';
-    cont.textContent = d.reply || '';
+    if (!r.ok) {
+      /* error response · อ่าน JSON ปกติ (เพราะ server ส่ง JSON error ไม่ใช่ SSE) */
+      const d = await r.json().catch(() => ({ error: 'AI failed status ' + r.status }));
+      throw new Error(d.error || 'AI failed');
+    }
+    if (!r.body) throw new Error('no stream body');
+    const reader = r.body.getReader();
+    await parseSseStream(reader, (event, data) => {
+      if (event === 'meta') {
+        if (data.cached) stat.textContent = '📚 ' + tx('cmp.ai.loading') + ' (cached)';
+        else stat.textContent = '✍️ ' + tx('cmp.ai.loading');
+      } else if (event === 'first') {
+        const ms = data.ms ? (data.ms/1000).toFixed(1) + 's' : '';
+        stat.textContent = '✍️ ' + (data.provider === 'engine' ? 'Engine ' : 'AI ') + ms;
+      } else if (event === 'chunk') {
+        if (data.text) cont.textContent += data.text;
+      } else if (event === 'done') {
+        stat.style.display = 'none';
+      } else if (event === 'error') {
+        throw new Error(data.error || 'stream error');
+      }
+    }, ac.signal);
   } catch(e) {
+    if (e.name === 'AbortError') return;     /* user closed · silent */
     stat.textContent = tx('cmp.ai.err') + ' · ' + (e.message || '');
   } finally {
     btnAi.disabled = false;

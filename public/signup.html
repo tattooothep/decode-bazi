@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>hourkey · sign up</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
   :root{
     --gold:#c8a44d; --gold-deep:#8a6d2a;
@@ -142,8 +144,19 @@
   }
 </style>
 <script>
-  document.addEventListener('DOMContentLoaded', ()=>{
-    const saved = localStorage.getItem('hk-theme') || 'dark';
+	  document.addEventListener('DOMContentLoaded', ()=>{
+	    const params = new URLSearchParams(location.search);
+	    const nextParam = params.get('next') || '';
+	    function safeNext(path){
+	      return (path && path.charAt(0)==='/' && path.charAt(1)!=='/') ? path : '';
+	    }
+	    function afterLogin(hasProfile){
+	      const next = safeNext(nextParam);
+	      const target = encodeURIComponent(next || '/today');
+	      window.location.href = '/master?intro=1&next=' + target;
+	    }
+	    window.hkAfterLogin = afterLogin;
+	    const saved = localStorage.getItem('hk-theme') || 'dark';
     if(saved==='light') document.body.classList.add('light');
     document.querySelectorAll('.theme-switch button').forEach(b=>{
       b.classList.toggle('on', b.dataset.theme===saved);
@@ -181,9 +194,16 @@
       var phone = identifier.replace(/[\s-]/g, '');
       var isEmail = identifier.indexOf('@') >= 0;
       var isPhone = /^(\+?66|0)[689]\d{8}$/.test(phone);
-      if (!identifier || (!isEmail && !isPhone)) { input.focus(); return false; }
+      if (!identifier || (!isEmail && !isPhone)) {
+        msg.textContent = 'กรอกอีเมลหรือเบอร์โทรที่ใช้สมัครให้ถูกต้อง';
+        msg.className = 'hk-forgot-msg err';
+        input.focus();
+        return false;
+      }
       msg.textContent = 'กำลังส่ง...';
       msg.className = 'hk-forgot-msg';
+      var btn = form.querySelector('button');
+      if (btn) btn.disabled = true;
       try {
         var r = await fetch('/api/auth/forgot-password', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -197,20 +217,26 @@
         } else {
           var j = await r.json().catch(function(){ return {}; });
           msg.textContent = '⚠ ' + (j.error || 'ส่งไม่สำเร็จ · ลองใหม่หรือติดต่อ LINE @hourkey');
+          msg.className = 'hk-forgot-msg err';
         }
       } catch(_) {
         msg.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+        msg.className = 'hk-forgot-msg err';
+      } finally {
+        if (btn) btn.disabled = false;
       }
       return false;
     };
 
-    var urlTab = new URLSearchParams(location.search).get('tab');
+	    var urlTab = params.get('tab') || params.get('mode');
     if (urlTab === 'login' || urlTab === 'signup') {
       var btn = document.querySelector('.tabs .t[data-tab="'+urlTab+'"]');
       if (btn) btn.click();
     }
   });
 </script>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
 
@@ -429,7 +455,7 @@
             });
             const j = await r.json().catch(function(){ return {}; });
             if (r.ok) {
-              window.location.href = j.has_profile ? '/today' : '/input';
+	              window.hkAfterLogin(j.has_profile);
               return;
             }
             if (j.need_verify) {
@@ -457,7 +483,7 @@
           if (lr.ok) {
             try { localStorage.setItem('hk_email', email); } catch(_) {}
             const lj = await lr.json().catch(function(){ return {}; });
-            window.location.href = lj.has_profile ? '/today' : '/input';
+	            window.hkAfterLogin(lj.has_profile);
             return;
           }
           const lj = await lr.json().catch(function(){ return {}; });
@@ -471,7 +497,7 @@
         });
         if (r.ok) {
           try { localStorage.setItem('hk_email', email); } catch(_) {}
-          window.location.href = '/input';
+          window.location.href = '/master?intro=1&next=' + encodeURIComponent('/today');
         } else {
           const j = await r.json().catch(function(){ return {}; });
           if (r.status === 409) {
@@ -481,7 +507,7 @@
             });
             if (lr.ok) {
               const lj = await lr.json().catch(function(){ return {}; });
-              window.location.href = lj.has_profile ? '/today' : '/input';
+	              window.hkAfterLogin(lj.has_profile);
               return;
             }
           }
@@ -614,9 +640,11 @@ window.applyI18N = applyI18N;
 .hk-forgot-form input:focus{border-color:#c8a44d;}
 .hk-forgot-form button{padding:14px;background:#c8a44d;color:#0d0f12;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border:none;border-radius:99px;cursor:pointer;transition:.2s;}
 .hk-forgot-form button:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,164,77,.3);}
+.hk-forgot-form button:disabled{opacity:.55;cursor:wait;transform:none;box-shadow:none;}
 [data-theme="light"] .hk-forgot-form button{background:#8a6d2a;color:#f5efe2;}
 .hk-forgot-msg{font-size:12px;color:rgba(246,241,230,.55);min-height:18px;line-height:1.5;}
 .hk-forgot-msg.ok{color:#8fc37c;}
+.hk-forgot-msg.err{color:#e26b5d;}
 [data-theme="light"] .hk-forgot-msg.ok{color:#5a8a48;}
 .hk-forgot-divide{text-align:center;margin:18px 0 14px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.25em;color:rgba(246,241,230,.4);text-transform:uppercase;position:relative;}
 .hk-forgot-divide::before,.hk-forgot-divide::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:rgba(200,164,77,.15);}
@@ -728,7 +756,7 @@ window.applyI18N = applyI18N;
       if (r.ok) {
         msg.textContent = '✓ ยืนยันสำเร็จ · กำลังเข้าระบบ';
         msg.className = 'hk-otp-msg ok';
-        setTimeout(function(){ window.location.href = j.has_profile ? '/today' : '/input'; }, 600);
+        setTimeout(function(){ window.hkAfterLogin(j.has_profile); }, 600);
       } else {
         msg.textContent = '⚠ ' + (j.error || 'รหัสไม่ถูกต้อง');
         msg.className = 'hk-otp-msg err';

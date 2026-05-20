@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>hourkey · landing</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
   :root{
     --ink:#0d0f12; --paper:#f6f1e6; --paper2:#efe8d4; --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:#e8d8a8;
@@ -305,6 +307,8 @@
     .cursor{display:none !important;}
   }
 </style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
 
@@ -434,6 +438,7 @@
   try{
     var saved = localStorage.getItem('hourkey-theme');
     if (saved) apply(saved);
+    else apply('dark');
   }catch(e){}
 })();
 
@@ -457,14 +462,14 @@ window.HK_I18N = {
   },
   'hero.18cta':    { th: '✦ ดูครบ 18 ศาสตร์ที่ใช้', en: '✦ See all 18 sciences', zh: '✦ 查看十八術全集' },
   'hero.tst.row':  {
-    th: '<b>✓</b> True Solar Time · <b>✓</b> Equation of Time · <b>✓</b> Longitude Correction',
-    en: '<b>✓</b> True Solar Time · <b>✓</b> Equation of Time · <b>✓</b> Longitude Correction',
-    zh: '<b>✓</b> 真太陽時 · <b>✓</b> 時差方程式 · <b>✓</b> 經度校正'
+    th: '<b>✓</b> True Solar Time · <b>✓</b> Equation of Time · <b>✓</b> Longitude · <b>✓</b> 24 節氣 precision',
+    en: '<b>✓</b> True Solar Time · <b>✓</b> Equation of Time · <b>✓</b> Longitude · <b>✓</b> 24 Solar Terms',
+    zh: '<b>✓</b> 真太陽時 · <b>✓</b> 時差方程式 · <b>✓</b> 經度校正 · <b>✓</b> 24 節氣精準'
   },
   'hero.tst.tag':  {
-    th: 'ระบบคำนวณตามตำแหน่งดวงอาทิตย์จริง · ไม่ใช่นาฬิกา',
-    en: 'Calculation based on real sun position · not the clock',
-    zh: '依太陽真實位置計算 · 非依時鐘'
+    th: '🎯 เดือน BaZi เริ่มที่ <b>節 (jieqi)</b> ไม่ใช่วันที่ 1 · ปีจีนเริ่มที่ <b>立春</b> ไม่ใช่ตรุษจีน · ตรงซินแสจริง 100%',
+    en: '🎯 BaZi months start at <b>jieqi (節)</b> not the 1st · Chinese year starts at <b>立春</b> not Lunar New Year · matches real sifus 100%',
+    zh: '🎯 八字月始於<b>節氣</b> · 非朔日 · 中國年始<b>立春</b> · 非農曆新年 · 100% 對應命理師'
   },
   'hero.cta.primary': {
     th: 'เปิดดวงฟรี <span class="arrow">→</span>',
@@ -538,6 +543,8 @@ window.HK_I18N = {
   'footer.brand':   { th:'ภูมิปัญญาปาจื้อ + ฉีเหมิน 3,000 ปี ในรูปแบบเครื่องมือสำหรับนักตัดสินใจ', en:'3,000 years of BaZi + Qi Men · a tool for decision makers', zh:'三千年八字 + 奇門 · 為抉擇者打造的工具' },
   'footer.tools':   { th:'เครื่องมือ', en:'Tools', zh:'工具' },
   'footer.learn':   { th:'เรียนรู้', en:'Learn', zh:'學習' },
+  'footer.method':  { th:'วิธีคิดธาตุให้คุณ-ให้โทษ', en:'Yongshen Methodology', zh:'用神方法論' },
+  'footer.accuracy':{ th:'ความแม่นยำ', en:'Accuracy', zh:'真精準' },
   'footer.co':      { th:'บริษัท', en:'Company', zh:'公司' },
   'footer.chart':   { th:'ดวงปาจื้อ', en:'BaZi Chart', zh:'八字命盤' },
   'footer.calendar':{ th:'ปฏิทินมงคล', en:'Auspicious Calendar', zh:'吉曆' },
@@ -975,7 +982,7 @@ window.applyI18N = applyI18N;
     </div>
     <div>
       <h4 data-i18n="footer.learn">เรียนรู้</h4>
-      <ul><li><a href="#" data-hover data-i18n="footer.howread">วิธีอ่านดวง</a></li><li><a href="#" data-hover data-i18n="footer.glossary">คำศัพท์</a></li><li><a href="#" data-hover data-i18n="footer.journal">Journal</a></li><li><a href="#" data-hover data-i18n="footer.podcast">Podcast</a></li></ul>
+      <ul><li><a href="/methodology" data-hover data-i18n="footer.method">วิธีคิดธาตุให้คุณ-ให้โทษ</a></li><li><a href="/accuracy" data-hover data-i18n="footer.accuracy">ความแม่นยำ</a></li><li><a href="#" data-hover data-i18n="footer.howread">วิธีอ่านดวง</a></li><li><a href="#" data-hover data-i18n="footer.glossary">คำศัพท์</a></li></ul>
     </div>
     <div>
       <h4 data-i18n="footer.co">บริษัท</h4>
@@ -1153,33 +1160,32 @@ window.applyI18N = applyI18N;
 
 
 <!-- ── Three.js · STEP 7 (treasure key 3D) ── -->
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
-  }
-}
-</script>
-
 <script type="module">
-import * as THREE from 'three';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
 // ═══════════ THEME ═══════════
 const root = document.documentElement;
-function getTheme() { return root.getAttribute('data-theme'); }
+function getTheme() {
+  return root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
 
 let sceneReady = false;   // guard — applyThemeToScene only runs after scene is built
 
 function setTheme(t) {
-  root.setAttribute('data-theme', t);
-  localStorage.setItem('hk-theme', t);
+  const mode = t === 'light' ? 'light' : 'dark';
+  root.setAttribute('data-theme', mode);
+  localStorage.setItem('hk-theme', mode);
+  localStorage.setItem('hourkey-theme', mode);
+  document.querySelectorAll('.hk-theme-switch button[data-theme]').forEach(b => {
+    b.classList.toggle('on', b.dataset.theme === mode);
+  });
   if (sceneReady) applyThemeToScene();
 }
-const savedTheme = localStorage.getItem('hk-theme');
-if (savedTheme) setTheme(savedTheme);
+const savedTheme = localStorage.getItem('hourkey-theme') || localStorage.getItem('hk-theme') || getTheme();
+setTheme(savedTheme);
 
-document.querySelectorAll('.theme-toggle button').forEach(b => {
-  b.addEventListener('click', () => setTheme(b.dataset.mode));
+document.querySelectorAll('.hk-theme-switch button[data-theme]').forEach(b => {
+  b.addEventListener('click', () => setTheme(b.dataset.theme));
 });
 
 // ═══════════ DEVICE TIER ═══════════
