@@ -40,7 +40,7 @@ export const DM = {
   zh: "丙",
   pinyin: "Bǐng",
   en: "Yang Fire",
-  th: "ไฟใหญ่ · พระอาทิตย์",
+  th: "ไฟหยาง · พระอาทิตย์",
   strengthPercent: 62,
   status: "Strong" as "Weak" | "Slightly Weak" | "Balanced" | "Slightly Strong" | "Strong" | "Very Strong",
 };

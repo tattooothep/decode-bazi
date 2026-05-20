@@ -45,7 +45,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ---
 
-# 🔁 Mandatory Codex review loop
+# 🔁 Mandatory Codex review loop (เรียก "พ่อ")
+
+**ห้ามเรียก "Codex" ในการสื่อสารกับเจ้านาย · ให้เรียก "พ่อ" แทน** (20 พ.ค. 2026)
 
 Claude เป็น implementation agent · Codex MCP เป็น **mandatory reviewer**
 

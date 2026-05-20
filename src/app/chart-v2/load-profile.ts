@@ -40,7 +40,7 @@ const STRENGTH_LABEL: Record<string, "Weak" | "Slightly Weak" | "Balanced" | "Sl
 
 const STEM_PINYIN: Record<string,string> = {甲:'Jiǎ',乙:'Yǐ',丙:'Bǐng',丁:'Dīng',戊:'Wù',己:'Jǐ',庚:'Gēng',辛:'Xīn',壬:'Rén',癸:'Guǐ'};
 const BRANCH_PINYIN: Record<string,string> = {子:'Zǐ',丑:'Chǒu',寅:'Yín',卯:'Mǎo',辰:'Chén',巳:'Sì',午:'Wǔ',未:'Wèi',申:'Shēn',酉:'Yǒu',戌:'Xū',亥:'Hài'};
-const STEM_TH: Record<string,string> = {甲:'ไม้ใหญ่',乙:'ไม้อ่อน',丙:'ไฟใหญ่',丁:'ไฟอ่อน',戊:'ดินใหญ่',己:'ดินอ่อน',庚:'ทองใหญ่',辛:'ทองอ่อน',壬:'น้ำใหญ่',癸:'น้ำอ่อน'};
+const STEM_TH: Record<string,string> = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
 
 export async function loadProfileChart(profileId: string, orgId: string) {
   const row = await q1<ProfileRow>(
