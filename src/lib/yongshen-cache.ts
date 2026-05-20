@@ -19,12 +19,16 @@ const CACHE = new Map<string, { value: Synth; exp: number }>();
 const TTL_MS = 10 * 60 * 1000; /* 10 นาที */
 const MAX_ENTRIES = 1000;       /* กัน leak ใต้ 5,000 user load */
 
+/* Phase 17g · cache version bump · กัน cache เก่าให้ผลเก่าใน TTL หลัง deploy
+ * รวมใน key เพื่อให้ entry ใหม่/เก่าแยกชั้น · เก่า expire ไปตาม TTL */
+const ENGINE_VERSION = 'w7-root|17g-dist-v6';
+
 function key(birthDate?: string, birthTime?: string, birthLng?: number, opts?: YongshenOpts): string {
   const known = opts?.birthTimeKnown !== false;      /* default true · backward compat */
   const mode = known ? '4p' : '3p';
   const db = opts?.dayBoundary || '23:00';
   const t = known ? (birthTime || '12:00') : '-';    /* 3p ไม่ใช้ birthTime ใน key */
-  return `${birthDate || ''}|${t}|${birthLng ?? 100.5018}|${mode}|${db}`;
+  return `v=${ENGINE_VERSION}|${birthDate || ''}|${t}|${birthLng ?? 100.5018}|${mode}|${db}`;
 }
 
 function evictIfFull(): void {

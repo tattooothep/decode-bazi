@@ -31,6 +31,9 @@ const ELEMENT_CONTROLS: Record<string, string> = {
 export interface RootednessItem {
   total_score: number;
   rootedness_label: string;
+  /* Phase 17b · semantic split 通根 vs 透干 · optional · backward compat */
+  stem_visibility_score?: number;
+  effective_score?: number;
 }
 export type RootednessMap = Record<string, RootednessItem>;
 
@@ -50,21 +53,36 @@ export interface FunctionalHealth {
  * @param rootedness · จาก wrapper-7 synth._details.rootedness
  * @param strengthPct · DM strength % (0..100) เพื่อสรุปภาพรวม
  */
+import type { ElementDistributionResult } from "./element-distribution-functional";
+
 export function buildHealthFunctional(
   dmStem: string,
   rootedness: RootednessMap,
   strengthPct: number,
+  distribution?: ElementDistributionResult,
 ): FunctionalHealth {
   const dmEl = STEM_ELEMENT[dmStem] || "earth";
   const ELS = ["wood", "fire", "earth", "metal", "water"];
 
-  /* รวม total · ใช้ Math.max(0,...) กัน negative · ที่ wrapper-7 อาจให้ */
+  /* Phase 17g · 3-layer precedence:
+   * 1. distribution.dist (Plan C v6) → prefer
+   * 2. rootedness.effective_score (Phase 17b)
+   * 3. rootedness.total_score (root only) */
   let total = 0;
   const score: Record<string, number> = {};
-  for (const el of ELS) {
-    const v = Math.max(0, rootedness[el]?.total_score ?? 0);
-    score[el] = v;
-    total += v;
+  if (distribution) {
+    for (const el of ELS) {
+      const v = Math.max(0, distribution.dist[el as keyof typeof distribution.dist] ?? 0);
+      score[el] = v;
+      total += v;
+    }
+  } else {
+    for (const el of ELS) {
+      const r = rootedness[el];
+      const v = Math.max(0, r?.effective_score ?? r?.total_score ?? 0);
+      score[el] = v;
+      total += v;
+    }
   }
   if (total === 0) total = 1;
 

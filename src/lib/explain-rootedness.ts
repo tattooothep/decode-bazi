@@ -85,6 +85,10 @@ interface RootednessOne {
   rootedness_label: string;
   sources?: RootSource[];
   has_root?: boolean;
+  /* Phase 17b · semantic split · optional */
+  stem_visibility_score?: number;
+  stem_visibility_sources?: Array<{ pos: string; stem: string; weight: number }>;
+  effective_score?: number;
 }
 
 interface RootednessMap {
@@ -110,35 +114,59 @@ export interface ElementExplain {
   sources_zh: string[];
 }
 
-export function buildRootednessExplain(dmStem: string, rootedness: RootednessMap): ElementExplain[] {
+import type { ElementDistributionResult } from './element-distribution-functional';
+
+export function buildRootednessExplain(
+  dmStem: string,
+  rootedness: RootednessMap,
+  distribution?: ElementDistributionResult,
+): ElementExplain[] {
   const dmEl = STEM_ELEMENT[dmStem] || 'earth';
   const ELS = ['wood','fire','earth','metal','water'] as const;
 
-  /* คำนวณ pct */
+  /* Phase 17g · 3-layer precedence:
+   * 1. distribution.pctDisplay (Plan C v6) · prefer
+   * 2. rootedness.effective_score (Phase 17b)
+   * 3. rootedness.total_score (root only) */
   let total = 0;
   const scores: Record<string, number> = {};
-  for (const el of ELS) {
-    scores[el] = Math.max(0, rootedness?.[el]?.total_score ?? 0);
-    total += scores[el];
+  const pctOverride: Record<string, number | null> = {};
+  if (distribution) {
+    for (const el of ELS) {
+      pctOverride[el] = distribution.pctDisplay[el as keyof typeof distribution.pctDisplay] ?? 0;
+      scores[el] = Math.max(0, distribution.dist[el as keyof typeof distribution.dist] ?? 0);
+      total += scores[el];
+    }
+  } else {
+    for (const el of ELS) {
+      const r = rootedness?.[el];
+      scores[el] = Math.max(0, r?.effective_score ?? r?.total_score ?? 0);
+      pctOverride[el] = null;
+      total += scores[el];
+    }
   }
   if (total === 0) total = 1;
 
   return ELS.map(el => {
     const r = rootedness?.[el] || { total_score: 0, rootedness_label: 'no_root', sources: [] };
-    const pct = Math.round((scores[el] / total) * 100);
+    const pct = pctOverride[el] !== null
+      ? Math.round(pctOverride[el] as number)
+      : Math.round((scores[el] / total) * 100);
     const label = r.rootedness_label || 'no_root';
     const isDm = el === dmEl;
     const sources = (r.sources || []).filter(s => s);
+    const visSources = (r.stem_visibility_sources || []).filter(s => s);
+    const hasVis = visSources.length > 0;
 
     /* รายการ source · ภาษาซินแส */
     const sources_th: string[] = [];
     const sources_en: string[] = [];
     const sources_zh: string[] = [];
 
-    if (sources.length === 0) {
-      sources_th.push('ไม่มีรากในผัง · ไม่เจอที่อยู่ของธาตุนี้');
-      sources_en.push('No root in chart · element not found');
-      sources_zh.push('盤無根·此五行未現');
+    if (sources.length === 0 && !hasVis) {
+      sources_th.push('ไม่มีรากในผัง · ไม่ปรากฏบนก้านฟ้า');
+      sources_en.push('No root in chart · no stem on TG either');
+      sources_zh.push('盤無根·亦不透干');
     } else {
       sources.forEach(s => {
         const posTh = POS_TH[s.pos] || s.pos;
@@ -168,6 +196,17 @@ export function buildRootednessExplain(dmStem: string, rootedness: RootednessMap
         sources_en.push(baseEn);
         sources_zh.push(baseZh);
       });
+
+      /* Phase 17b · render 透干 (stem-on-TG) ถ้ามี */
+      visSources.forEach(v => {
+        const posTh = POS_TH[v.pos] || v.pos;
+        const posEn = POS_EN[v.pos] || v.pos;
+        const posZh = POS_ZH[v.pos] || v.pos;
+        const w = v.weight || 0;
+        sources_th.push(`${posTh} (ก้านฟ้า ${v.stem}) · 透干 · น้ำหนัก ${w.toFixed(2)}`);
+        sources_en.push(`${posEn} stem ${v.stem} visible on TG · weight ${w.toFixed(2)}`);
+        sources_zh.push(`${posZh} ${v.stem} 透干·重 ${w.toFixed(2)}`);
+      });
     }
 
     /* บทสรุป */
@@ -175,9 +214,16 @@ export function buildRootednessExplain(dmStem: string, rootedness: RootednessMap
     let summaryTh: string, summaryEn: string, summaryZh: string;
 
     if (label === 'no_root' || sources.length === 0) {
-      summaryTh = `${elTh} ไม่มีราก · ไม่อยู่ในผัง หรือถูกล้างหมด`;
-      summaryEn = `${elEn} has no root · absent or fully nullified`;
-      summaryZh = `${elZh}無根·缺位或被剋盡`;
+      if (hasVis) {
+        /* Phase 17b · no root in branches แต่มี stem on TG · 透干 */
+        summaryTh = `${elTh} ไม่มีรากในกิ่ง · แต่ปรากฏบนก้านฟ้า (透干) · ใช้พลังได้บางส่วน`;
+        summaryEn = `${elEn} has no branch root · but visible on TG (透干) · partial usable power`;
+        summaryZh = `${elZh}無根但透干·部分可用`;
+      } else {
+        summaryTh = `${elTh} ไม่มีราก · ไม่อยู่ในผัง หรือถูกล้างหมด`;
+        summaryEn = `${elEn} has no root · absent or fully nullified`;
+        summaryZh = `${elZh}無根·缺位或被剋盡`;
+      }
     } else if (label === 'token_root') {
       summaryTh = `${elTh} มีดอก · ไม่มีรากจริง · ใช้พลังไม่ได้`;
       summaryEn = `${elEn} appears but rootless · flower without root`;

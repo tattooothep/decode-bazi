@@ -275,18 +275,27 @@ export async function POST(req: Request) {
         const sFull = synth(natal);
         const rootedness = sFull?._details?.rootedness;
         if (rootedness) {
-          /* DM strength Functional */
+          /* Phase 17g · compute distribution_score (Plan C v6 strict · Codex APPROVED) */
+          let distribution: any = undefined;
+          try {
+            const { buildElementDistribution } = await import("@/lib/element-distribution-functional");
+            distribution = buildElementDistribution(natal as any);
+            (ext as any).element_distribution = distribution;
+          } catch (e) {
+            console.warn("[chart] element_distribution failed", e);
+          }
+          /* DM strength Functional · Phase 17g · ใช้ distribution ถ้ามี */
           const { buildStrengthFunctional } = await import("@/lib/strength-functional");
-          const fnStrength = buildStrengthFunctional(natal.day.stem, rootedness);
+          const fnStrength = buildStrengthFunctional(natal.day.stem, rootedness, distribution);
           (ext as any).voytek_strength = fnStrength;
-          /* Health Functional */
+          /* Health Functional · Phase 17g */
           const { buildHealthFunctional } = await import("@/lib/health-functional");
-          const fnHealth = buildHealthFunctional(natal.day.stem, rootedness, fnStrength.supporting_pct);
+          const fnHealth = buildHealthFunctional(natal.day.stem, rootedness, fnStrength.supporting_pct, distribution);
           (ext as any).health_mapping = fnHealth;
-          /* 19 พ.ค. · expose rootedness + explain (ภาษาซินแส) ใต้การ์ด DM */
+          /* rootedness explain · Phase 17g */
           try {
             const { buildRootednessExplain } = await import("@/lib/explain-rootedness");
-            (ext as any).rootedness_explain = buildRootednessExplain(natal.day.stem, rootedness);
+            (ext as any).rootedness_explain = buildRootednessExplain(natal.day.stem, rootedness, distribution);
           } catch (e) {
             console.warn("[chart] rootedness_explain failed", e);
           }
@@ -369,6 +378,8 @@ export async function POST(req: Request) {
         health_mapping: ext.health_mapping,
         /* 19 พ.ค. · ภาษาซินแสอธิบาย rootedness ของแต่ละธาตุ */
         rootedness_explain: (ext as any).rootedness_explain,
+        /* Phase 17g · distribution engine output · debug/observability */
+        element_distribution: (ext as any).element_distribution,
       },
       /* 📜 Yongshen v2 (wrapper-7) · structure + disease + medicine + bridges · 15 พ.ค. */
       yongshen_v2: yongshenV2,
