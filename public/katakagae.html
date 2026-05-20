@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5"/>
+<title>方違 Katakagae · เดินทางญี่ปุ่นโบราณ · hourkey</title>
+<meta name="description" content="方違 Katakagae · ตำราเดินทางญี่ปุ่นโบราณยุค Heian · เช็คเทพประจำทิศก่อนเดินทาง · onmyoji 陰陽道"/>
+<link rel="canonical" href="https://www.hourkey.io/katakagae"/>
+<link rel="alternate" hreflang="th" href="https://www.hourkey.io/katakagae?lang=th"/>
+<link rel="alternate" hreflang="en" href="https://www.hourkey.io/katakagae?lang=en"/>
+<link rel="alternate" hreflang="zh" href="https://www.hourkey.io/katakagae?lang=zh"/>
+<meta property="og:title" content="方違 · Katakagae · Heian travel divination"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
+<style>
+  :root{
+    --gold:#c8a44d; --gold-bright:#e6c976; --gold-soft:rgba(200,164,77,.12); --gold-line:rgba(200,164,77,.28);
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif; --th:'Noto Serif Thai',serif; --mono:'JetBrains Mono',monospace;
+    --bg:#0a0a0c; --bg-2:#13131a; --bg-3:#1a1a23; --bg-4:#22222e;
+    --fg:#f3ebd9; --fg-soft:#c2b694; --fg-faint:#7a7160;
+    --line:rgba(200,164,77,.14);
+    --ok:#7dd37b; --ok-soft:rgba(125,211,123,.18);
+    --warn:#f7b955; --warn-soft:rgba(247,185,85,.18);
+    --bad:#e26b5d; --bad-soft:rgba(226,107,93,.18);
+    --info:#5ba0ff; --info-soft:rgba(91,160,255,.18);
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#fbf6ea; --bg-3:#fff8e8; --bg-4:#f1e9d4;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.62); --fg-faint:rgba(26,22,18,.45);
+    --line:rgba(138,109,42,.2);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--fg);font-family:var(--th);min-height:100vh;line-height:1.6;}
+
+  /* HK Topbar */
+  .hk-topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .hk-top-r{display:flex;gap:8px;}
+  .hk-btn{background:transparent;border:1px solid var(--gold-line);color:var(--gold);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;}
+  .hk-btn:hover{background:var(--gold-soft);}
+  .hk-btn.act{background:var(--gold);color:var(--bg);}
+
+  /* Hero */
+  .hero{text-align:center;padding:40px 24px 24px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--bg-2),var(--bg));}
+  .hero .crest{font-family:var(--tc);font-size:56px;color:var(--gold);line-height:1;letter-spacing:8px;margin-bottom:8px;}
+  .hero h1{font-family:var(--serif);font-size:34px;font-weight:400;margin-bottom:6px;}
+  .hero h1 b{color:var(--gold);font-weight:500;font-style:italic;}
+  .hero .sub{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
+  .hero .desc{font-size:14px;color:var(--fg-soft);margin-top:10px;max-width:600px;margin:10px auto 0;}
+
+  /* Main */
+  main{max-width:1100px;margin:0 auto;padding:30px 24px 80px;}
+  .grid{display:grid;grid-template-columns:380px 1fr;gap:24px;}
+  @media(max-width:980px){ .grid{grid-template-columns:1fr;} }
+
+  .card{background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px;}
+  .card h3{font-family:var(--serif);font-size:20px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .card h3 .han{font-family:var(--tc);color:var(--gold);font-weight:600;}
+  .card .desc{font-size:12px;color:var(--fg-soft);margin-bottom:14px;}
+
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;}
+  .input{width:100%;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:13px;padding:9px 12px;border-radius:8px;outline:none;transition:.2s;}
+  .input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+  .btn-go{width:100%;background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:var(--bg);border:none;font-family:var(--mono);font-size:12px;letter-spacing:.2em;padding:13px;border-radius:10px;cursor:pointer;font-weight:700;text-transform:uppercase;}
+  .btn-go:hover{transform:translateY(-1px);box-shadow:0 4px 14px var(--gold-soft);}
+  .btn-go:disabled{opacity:.5;cursor:wait;}
+
+  /* Result */
+  .verdict{text-align:center;padding:20px;border-radius:14px;margin-bottom:18px;}
+  .verdict.auspicious{background:var(--ok-soft);border:2px solid var(--ok);}
+  .verdict.caution{background:var(--warn-soft);border:2px solid var(--warn);}
+  .verdict.forbidden{background:var(--bad-soft);border:2px solid var(--bad);}
+  .verdict .big{font-family:var(--tc);font-size:42px;font-weight:600;line-height:1;margin-bottom:6px;}
+  .verdict.auspicious .big{color:var(--ok);}
+  .verdict.caution .big{color:var(--warn);}
+  .verdict.forbidden .big{color:var(--bad);}
+  .verdict .label{font-family:var(--mono);font-size:11px;letter-spacing:.25em;color:var(--fg-soft);text-transform:uppercase;margin-bottom:8px;}
+  .verdict .msg{font-size:14px;color:var(--fg);}
+
+  .journey{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;}
+  .journey .item{text-align:center;}
+  .journey .item .k{font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+  .journey .item .v{font-family:var(--tc);font-size:18px;color:var(--fg);font-weight:600;}
+  .journey .item .v.small{font-family:var(--mono);font-size:13px;font-weight:500;}
+
+  .deity-card{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+  .deity-card.conflict{border-color:var(--bad);background:var(--bad-soft);}
+  .deity-card.ok{border-color:var(--ok);background:rgba(125,211,123,.08);}
+  .deity-card .dir{font-family:var(--tc);font-size:32px;color:var(--gold);font-weight:600;min-width:54px;text-align:center;line-height:1;}
+  .deity-card.conflict .dir{color:var(--bad);}
+  .deity-card.ok .dir{color:var(--ok);}
+  .deity-card .info{flex:1;}
+  .deity-card .name{font-family:var(--tc);font-size:14px;color:var(--fg);font-weight:600;}
+  .deity-card .name-en{font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.1em;text-transform:uppercase;}
+  .deity-card .reason{font-size:11px;color:var(--fg-soft);margin-top:4px;line-height:1.5;}
+  .deity-card .badge{font-family:var(--mono);font-size:9px;padding:3px 7px;border-radius:99px;letter-spacing:.05em;}
+  .deity-card .badge.bad{background:var(--bad);color:#fff;}
+  .deity-card .badge.ok{background:var(--ok);color:var(--bg);}
+
+  .kata-option{background:var(--info-soft);border:1px solid var(--info);border-radius:8px;padding:12px 14px;margin-bottom:8px;}
+  .kata-option .head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .kata-option .via{font-family:var(--tc);font-size:20px;color:var(--info);font-weight:600;}
+  .kata-option .desc{font-size:12px;color:var(--fg);line-height:1.6;}
+
+  .best-day{background:linear-gradient(135deg,var(--gold-soft),transparent);border:1px solid var(--gold);border-radius:10px;padding:12px 14px;text-align:center;}
+  .best-day .label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+  .best-day .date{font-family:var(--serif);font-size:20px;color:var(--gold);font-weight:600;}
+
+  .empty{text-align:center;padding:50px 20px;background:var(--bg-2);border:1px dashed var(--line);border-radius:14px;color:var(--fg-soft);}
+  .empty .ic{font-size:48px;margin-bottom:12px;opacity:.5;}
+  .empty p{font-size:13px;margin-top:6px;}
+  .loading{text-align:center;padding:40px;color:var(--fg-soft);}
+
+  .heian-note{background:var(--bg-3);border-left:3px solid var(--gold);padding:14px 16px;margin-top:20px;font-size:12px;color:var(--fg-soft);line-height:1.7;border-radius:6px;}
+  .heian-note b{color:var(--gold);}
+  .cross-link{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+  .cross-link a{font-family:var(--mono);font-size:10px;color:var(--gold);text-decoration:none;letter-spacing:.1em;padding:6px 12px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;}
+
+  @media(max-width:640px){
+    .hero h1{font-size:26px;} .hero .crest{font-size:46px;}
+    main{padding:20px 14px 60px;}
+    .journey{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
+</head>
+<body>
+  <header class="hk-topbar">
+    <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
+    <div class="hk-top-r">
+      <button class="hk-btn" id="lang-th">TH</button>
+      <button class="hk-btn" id="lang-en">EN</button>
+      <button class="hk-btn" id="lang-zh">中</button>
+      <button class="hk-btn" id="theme-tog" title="สลับธีม">🌓</button>
+    </div>
+  </header>
+
+  <header class="hero">
+    <div class="crest">方違</div>
+    <h1 id="page-title">เดินทาง <b>มงคล</b> · Katakagae · Heian</h1>
+    <div class="sub" id="page-sub">陰陽道 ONMYOJI · 794-1185 AD · ทีม 100%</div>
+    <div class="desc" id="page-desc">ตำราเดินทางญี่ปุ่นโบราณ · เช็คเทพประจำทิศก่อนออกเดินทาง · 八将神 + 天一神</div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <aside>
+        <div class="card">
+          <h3><span class="han">起</span> <span id="lbl-from">จุดเริ่มต้น</span></h3>
+          <div class="row2">
+            <div class="field">
+              <label id="lbl-from-lat">Latitude</label>
+              <input id="from-lat" class="input" type="number" step="0.0001" value="13.7563"/>
+            </div>
+            <div class="field">
+              <label id="lbl-from-lng">Longitude</label>
+              <input id="from-lng" class="input" type="number" step="0.0001" value="100.5018"/>
+            </div>
+          </div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--fg-faint);text-align:right;letter-spacing:.1em;">📍 Bangkok (default)</div>
+        </div>
+
+        <div class="card">
+          <h3><span class="han">至</span> <span id="lbl-to">จุดหมาย</span></h3>
+          <div class="row2">
+            <div class="field">
+              <label id="lbl-to-lat">Latitude</label>
+              <input id="to-lat" class="input" type="number" step="0.0001" value="35.6762"/>
+            </div>
+            <div class="field">
+              <label id="lbl-to-lng">Longitude</label>
+              <input id="to-lng" class="input" type="number" step="0.0001" value="139.6503"/>
+            </div>
+          </div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--fg-faint);text-align:right;letter-spacing:.1em;">📍 Tokyo (default)</div>
+        </div>
+
+        <div class="card">
+          <h3><span class="han">日</span> <span id="lbl-date">วันเดินทาง</span></h3>
+          <div class="field">
+            <input id="datetime" class="input" type="date"/>
+          </div>
+          <button class="btn-go" id="btn-go" data-i18n="kk.btn">🌸 เช็คทิศ</button>
+        </div>
+
+        <div class="heian-note" id="note">
+          <b>📜 ยุคเฮอัน (794-1185 AD):</b><br/>
+          ขุนนาง · ซามูไร · นักบุญ · ใช้ตำรานี้ก่อนเดินทาง · เชื่อว่าเทพ 8 องค์ (八将神) คุมทิศต่างกัน · ผิดทิศ = ผิดพลาด
+        </div>
+      </aside>
+
+      <section>
+        <div id="results">
+          <div class="empty">
+            <div class="ic">🌸</div>
+            <h4 id="empty-h" style="font-family:var(--serif);font-size:22px;color:var(--fg);">รอเช็คทิศ</h4>
+            <p id="empty-p">ใส่จุดเริ่ม + จุดหมาย + วันเดินทาง → กด "🌸 เช็คทิศ"</p>
+          </div>
+        </div>
+        <div class="cross-link">
+          <a href="/compass">🧭 เข็มทิศมงคล</a>
+          <a href="/fengshui">🏠 ฮวงจุ้ย</a>
+          <a href="/flyingstars">⭐ ดาวเหิน</a>
+          <a href="/datepick">📅 วางฤกษ์</a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+<script>
+const I18N = {
+  th: {
+    title:'เดินทาง <b>มงคล</b> · Katakagae · Heian',
+    desc:'ตำราเดินทางญี่ปุ่นโบราณ · เช็คเทพประจำทิศก่อนออกเดินทาง · 八将神 + 天一神',
+    from:'จุดเริ่มต้น', to:'จุดหมาย', date:'วันเดินทาง', btn:'🌸 เช็คทิศ', loading:'⏳ กำลังคำนวณ...',
+    empty_h:'รอเช็คทิศ', empty_p:'ใส่จุดเริ่ม + จุดหมาย + วันเดินทาง → กด "🌸 เช็คทิศ"',
+    note:'<b>📜 ยุคเฮอัน (794-1185 AD):</b><br/>ขุนนาง · ซามูไร · นักบุญ · ใช้ตำรานี้ก่อนเดินทาง · เชื่อว่าเทพ 8 องค์ (八将神) คุมทิศต่างกัน · ผิดทิศ = ผิดพลาด',
+    journey:'การเดินทาง', dir:'ทิศ', mtn:'山', bearing:'องศา', dist:'ระยะ',
+    restrictions:'เทพประจำทิศ', recommendations:'คำแนะนำ', katatagae:'เส้นทางอ้อม', bestday:'วันที่ดีที่สุด',
+    aus:'吉 มงคล', cau:'注意 ระวัง', for:'禁 ห้าม',
+  },
+  en: {
+    title:'Auspicious <b>Travel</b> · Katakagae · Heian',
+    desc:'Heian-era Japanese travel divination · check deity directions · 八将神 + 天一神',
+    from:'Origin', to:'Destination', date:'Travel Date', btn:'🌸 Check Direction', loading:'⏳ Computing...',
+    empty_h:'Awaiting direction check', empty_p:'Enter origin + destination + date → click "🌸 Check"',
+    note:'<b>📜 Heian Period (794-1185 AD):</b><br/>Nobles · samurai · monks used this before travel · 8 deities (八将神) rule directions · wrong way = misfortune',
+    journey:'Journey', dir:'Dir', mtn:'山', bearing:'Bearing', dist:'Distance',
+    restrictions:'Deity Positions', recommendations:'Recommendations', katatagae:'Detour options', bestday:'Best day',
+    aus:'吉 Auspicious', cau:'注意 Caution', for:'禁 Forbidden',
+  },
+  zh: {
+    title:'<b>方違</b> · Katakagae · 平安時代',
+    desc:'平安時代日本擇方術 · 出行前查方位神 · 八将神 + 天一神',
+    from:'起點', to:'目的地', date:'出行日', btn:'🌸 查方位', loading:'⏳ 計算中...',
+    empty_h:'等待查詢', empty_p:'輸入起點+目的地+日期 → 點 "🌸 查方位"',
+    note:'<b>📜 平安時代 (794-1185):</b><br/>公卿·武士·僧侶皆用此 · 八將神司方位 · 違方則禍',
+    journey:'旅程', dir:'方', mtn:'山', bearing:'方位角', dist:'距離',
+    restrictions:'方位神', recommendations:'建議', katatagae:'迂回路徑', bestday:'最佳日',
+    aus:'吉 吉方', cau:'注意 慎', for:'禁 凶方',
+  },
+};
+
+let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || localStorage.getItem('lang') || 'th';
+
+function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); localStorage.setItem('hk-theme', t); }
+function applyLang(){
+  const t = I18N[LANG] || I18N.th;
+  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
+  document.title = '方違 Katakagae · ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
+  document.getElementById('page-title').innerHTML = t.title;
+  document.getElementById('page-desc').textContent = t.desc;
+  document.getElementById('lbl-from').textContent = t.from;
+  document.getElementById('lbl-to').textContent = t.to;
+  document.getElementById('lbl-date').textContent = t.date;
+  document.getElementById('btn-go').textContent = t.btn;
+  document.getElementById('empty-h').textContent = t.empty_h;
+  document.getElementById('empty-p').textContent = t.empty_p;
+  document.getElementById('note').innerHTML = t.note;
+  ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
+}
+
+// init date
+const today = new Date();
+document.getElementById('datetime').value = today.toISOString().slice(0,10);
+
+async function check(){
+  const t = I18N[LANG] || I18N.th;
+  const btn = document.getElementById('btn-go');
+  btn.disabled = true; btn.textContent = t.loading;
+  const fLat = document.getElementById('from-lat').value;
+  const fLng = document.getElementById('from-lng').value;
+  const tLat = document.getElementById('to-lat').value;
+  const tLng = document.getElementById('to-lng').value;
+  const dt = document.getElementById('datetime').value;
+  try {
+    const r = await fetch(`/api/katakagae?from_lat=${fLat}&from_lng=${fLng}&to_lat=${tLat}&to_lng=${tLng}&datetime=${dt}T12:00:00`);
+    const d = await r.json();
+    if (d.error) { renderError(d.error); return; }
+    renderResult(d);
+  } catch (e) { renderError(e.message); }
+  btn.disabled = false; btn.textContent = t.btn;
+}
+function renderError(msg){
+  document.getElementById('results').innerHTML = `<div class="empty"><div class="ic">⚠️</div><h4 style="color:var(--bad);">Error</h4><p>${msg}</p></div>`;
+}
+function renderResult(d){
+  const t = I18N[LANG] || I18N.th;
+  const v = d.verdict;
+  const vBig = v==='auspicious'?'吉':v==='caution'?'注意':'禁';
+  const vLabel = v==='auspicious'?t.aus:v==='caution'?t.cau:t.for;
+  const j = d.journey;
+  let html = `
+    <div class="verdict ${v}">
+      <div class="big">${vBig}</div>
+      <div class="label">${vLabel}</div>
+      <div class="msg">${d.recommendations.message}</div>
+    </div>
+    <div class="card">
+      <h3><span class="han">旅</span> ${t.journey}</h3>
+      <div class="journey">
+        <div class="item"><div class="k">${t.dir}</div><div class="v">${j.direction}</div></div>
+        <div class="item"><div class="k">${t.mtn}</div><div class="v">${j.mountain}</div></div>
+        <div class="item"><div class="k">${t.bearing}</div><div class="v small">${j.bearing_degrees}°</div></div>
+        <div class="item"><div class="k">${t.dist}</div><div class="v small">${j.distance_km.toLocaleString()} km</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="han">神</span> ${t.restrictions}</h3>
+      ${d.restrictions.map(r => `
+        <div class="deity-card ${r.conflicts ? 'conflict' : 'ok'}">
+          <div class="dir">${r.current_dir}</div>
+          <div class="info">
+            <div class="name">${r.deity_ja} · <span class="name-en">${r.deity}</span></div>
+            <div class="reason">${r.reason}</div>
+          </div>
+          <span class="badge ${r.conflicts ? 'bad' : 'ok'}">${r.conflicts ? '⚠ 沖' : '✓ ปลอด'}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  if (d.recommendations.katatagae_options?.length) {
+    html += `<div class="card">
+      <h3><span class="han">違</span> ${t.katatagae}</h3>
+      ${d.recommendations.katatagae_options.map(k => `
+        <div class="kata-option">
+          <div class="head"><span class="via">→ ${k.via_dir}</span><span style="font-family:var(--mono);font-size:10px;color:var(--info);">+${k.day_offset} day</span></div>
+          <div class="desc">${k.instruction}</div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+  html += `<div class="best-day">
+    <div class="label">🌟 ${t.bestday}</div>
+    <div class="date">${d.recommendations.best_day}</div>
+  </div>`;
+  document.getElementById('results').innerHTML = html;
+}
+
+['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); applyLang(); });
+document.getElementById('theme-tog').onclick = () => {
+  const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+};
+document.getElementById('btn-go').onclick = check;
+
+applyTheme(localStorage.getItem('theme') || localStorage.getItem('hk-theme') || 'dark');
+applyLang();
+</script>
+<script src="/js/hk-luopan-nav.js?v=1" defer></script>
+</body>
+</html>

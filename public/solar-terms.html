@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5"/>
+<title>24 節氣 · 24 Solar Terms · hourkey</title>
+<meta name="description" content="ปฏิทิน 24 節氣 (จี๋ฉี · 24 Solar Terms) ตำราอาม่าอากง · 16 ปี · 3 ภาษา"/>
+<link rel="canonical" href="https://www.hourkey.io/solar-terms"/>
+<link rel="alternate" hreflang="th" href="https://www.hourkey.io/solar-terms?lang=th"/>
+<link rel="alternate" hreflang="en" href="https://www.hourkey.io/solar-terms?lang=en"/>
+<link rel="alternate" hreflang="zh" href="https://www.hourkey.io/solar-terms?lang=zh"/>
+<meta property="og:title" content="24 節氣 · ปฏิทินฤดูจีน"/>
+<meta property="og:description" content="ตำราอากง · จี๋ฉี · เวลา precise · 16 ปี"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.hourkey.io/solar-terms"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
+<style>
+  :root{
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12); --gold-line:rgba(200,164,77,.28);
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+    --bg:#0d0f12; --bg-2:#14171d; --bg-3:#1a1e25;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.4);
+    --tile:#161a21; --tile-bd:rgba(246,241,230,.08);
+    --pos:#7dd37b; --neg:#e26b5d; --info:#5db3ff;
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#fbf6ea; --bg-3:#fff8e8;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.62); --fg-faint:rgba(26,22,18,.45);
+    --tile:#fbf6ea; --tile-bd:rgba(26,22,18,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--fg);font-family:var(--thai);min-height:100vh;line-height:1.6;}
+  .hk-topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .hk-top-r{display:flex;align-items:center;gap:10px;}
+  .hk-btn{background:transparent;border:1px solid var(--gold-line);color:var(--gold);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;}
+  .hk-btn:hover{background:var(--gold-soft);}
+  .hk-btn.act{background:var(--gold);color:var(--bg);}
+
+  .page{max-width:1100px;margin:0 auto;padding:36px 22px 80px;}
+  .hero{text-align:center;margin-bottom:32px;}
+  .hero .seal-big{font-family:var(--tc);font-size:64px;color:var(--gold);line-height:1;letter-spacing:8px;margin-bottom:10px;}
+  .hero h1{font-family:var(--serif);font-size:36px;font-weight:600;margin-bottom:6px;}
+  .hero .sub{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
+  .hero .desc{font-size:14px;color:var(--fg-soft);margin-top:10px;max-width:620px;margin-left:auto;margin-right:auto;}
+
+  .control{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;margin-bottom:28px;padding:16px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:14px;}
+  .control label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--gold);}
+  .control select,.control input{padding:8px 14px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:8px;color:var(--fg);font-family:var(--thai);font-size:14px;outline:none;}
+  .control select:focus,.control input:focus{border-color:var(--gold);}
+
+  .info-card{background:linear-gradient(160deg,var(--gold-soft),transparent);border:1px solid var(--gold);border-radius:14px;padding:20px;margin-bottom:24px;}
+  .info-card .head{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;}
+  .info-card .li-chun{font-family:var(--serif);font-size:22px;color:var(--gold);margin-bottom:6px;}
+  .info-card .stem-branch{font-family:var(--tc);font-size:18px;margin-bottom:10px;}
+  .info-card .concept{font-size:13px;color:var(--fg-soft);line-height:1.7;}
+
+  .terms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+  .term-card{background:var(--tile);border:1px solid var(--tile-bd);border-radius:12px;padding:14px 16px;transition:.2s;}
+  .term-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .term-card.major{border-left:3px solid var(--gold);}
+  .term-card.middle{border-left:3px solid var(--info);}
+  .term-card .row1{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+  .term-card .num{font-family:var(--mono);font-size:10px;color:var(--fg-faint);letter-spacing:.1em;}
+  .term-card .type-tag{font-family:var(--tc);font-size:10px;padding:2px 8px;border-radius:10px;}
+  .term-card.major .type-tag{background:var(--gold-soft);color:var(--gold);}
+  .term-card.middle .type-tag{background:rgba(93,179,255,.12);color:var(--info);}
+  .term-card .zh{font-family:var(--tc);font-size:24px;color:var(--gold);font-weight:600;margin-bottom:2px;}
+  .term-card .pinyin{font-family:var(--mono);font-size:10px;color:var(--fg-faint);margin-bottom:4px;}
+  .term-card .name{font-size:13px;color:var(--fg);margin-bottom:8px;}
+  .term-card .date{font-family:var(--mono);font-size:13px;color:var(--gold);margin-bottom:4px;}
+  .term-card .meta{font-size:11px;color:var(--fg-soft);}
+  .term-card .branch{font-family:var(--tc);font-size:11px;color:var(--gold);margin-left:6px;}
+  .term-card .dun{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:1px 6px;background:var(--bg-3);border-radius:4px;color:var(--fg-soft);margin-left:6px;}
+
+  .footer-note{margin-top:30px;padding:18px;background:var(--bg-2);border-radius:10px;font-size:11px;color:var(--fg-soft);line-height:1.7;}
+  .footer-note b{color:var(--gold);}
+
+  @media(max-width:640px){
+    .hero h1{font-size:26px;}
+    .hero .seal-big{font-size:48px;}
+    .terms-grid{grid-template-columns:1fr;}
+    .control{flex-direction:column;align-items:stretch;}
+  }
+</style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
+</head>
+<body>
+  <header class="hk-topbar">
+    <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
+    <div class="hk-top-r">
+      <button class="hk-btn" id="lang-th">TH</button>
+      <button class="hk-btn" id="lang-en">EN</button>
+      <button class="hk-btn" id="lang-zh">中</button>
+      <button class="hk-btn" id="theme-tog" title="สลับธีม">🌓</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="hero">
+      <div class="seal-big">節氣</div>
+      <h1 id="page-title">24 節氣 · ปฏิทินฤดูจีน</h1>
+      <div class="sub">24 Solar Terms · ตำราอาม่าอากง v3</div>
+      <div class="desc" id="page-desc">วงโคจรของดวงอาทิตย์ 360° แบ่งเป็น 24 ส่วน · กำหนดเดือน BaZi · ปีจีน · ฤกษ์</div>
+    </div>
+
+    <div class="control">
+      <label id="lbl-year">ปี:</label>
+      <select id="year-sel"></select>
+      <label id="lbl-tz">เขตเวลา:</label>
+      <input id="tz-inp" type="number" value="7" min="-12" max="14" style="width:80px"/>
+      <span id="tz-note" style="font-family:var(--mono);font-size:10px;color:var(--fg-faint);">UTC+7 = ไทย</span>
+    </div>
+
+    <div class="info-card" id="year-info">
+      <div class="head" id="lbl-li-chun">立春 · ปีจีนเริ่มที่นี่</div>
+      <div class="li-chun" id="li-chun-time">—</div>
+      <div class="stem-branch" id="stem-branch">—</div>
+      <div class="concept" id="concept">—</div>
+    </div>
+
+    <div class="terms-grid" id="terms-grid"></div>
+
+    <div class="footer-note" id="footer-note">
+      <b>📜 ที่มา:</b> 周易 · 紫金山天文臺 · ตำราอาม่าอากง v3 (UNESCO Intangible Cultural Heritage 2016)<br/>
+      <b>⏰ เวลา:</b> ปรับตามเขตเวลา (default = ไทย UTC+7) · ดิบ CST = UTC+8<br/>
+      <b>🔑 BaZi:</b> เดือน BaZi เริ่มที่ <span style="color:var(--gold)">節 (Major)</span> ไม่ใช่วันที่ 1 จันทรคติ<br/>
+      <b>🐲 ปีจีน:</b> เริ่มที่ 立春 ไม่ใช่ตรุษจีน
+    </div>
+  </main>
+
+<script>
+const I18N = {
+  th: {
+    title:'24 節氣 · ปฏิทินฤดูจีน', desc:'วงโคจรของดวงอาทิตย์ 360° แบ่งเป็น 24 ส่วน · กำหนดเดือน BaZi · ปีจีน · ฤกษ์',
+    yearLbl:'ปี:', tzLbl:'เขตเวลา:', tzNote:'UTC+7 = ไทย', liChunLbl:'立春 · ปีจีนเริ่มที่นี่',
+    typeMajor:'節 เริ่มเดือน', typeMiddle:'氣 กลางเดือน', branchPrefix:'เริ่มเดือน',
+    footer:`<b>📜 ที่มา:</b> 周易 · 紫金山天文臺 · ตำราอาม่าอากง v3 (UNESCO 2016)<br/>
+<b>⏰ เวลา:</b> ปรับตามเขตเวลา (default ไทย UTC+7) · ดิบ CST = UTC+8<br/>
+<b>🔑 BaZi:</b> เดือน BaZi เริ่มที่ <span style="color:var(--gold)">節 (Major)</span> ไม่ใช่วันที่ 1 จันทรคติ<br/>
+<b>🐲 ปีจีน:</b> เริ่มที่ 立春 ไม่ใช่ตรุษจีน`
+  },
+  en: {
+    title:'24 Solar Terms · Chinese Seasonal Calendar', desc:'Sun\'s 360° orbit divided into 24 sections · defines BaZi months · Chinese year · auspicious timing',
+    yearLbl:'Year:', tzLbl:'Timezone:', tzNote:'UTC+7 = Thailand', liChunLbl:'Beginning of Spring · Chinese year starts here',
+    typeMajor:'節 Major (month start)', typeMiddle:'氣 Middle (month center)', branchPrefix:'starts month',
+    footer:`<b>📜 Source:</b> Zhou Yi · Purple Mountain Observatory · Grandparent v3 (UNESCO 2016)<br/>
+<b>⏰ Time:</b> adjusted to your timezone (default Thailand UTC+7) · raw CST = UTC+8<br/>
+<b>🔑 BaZi:</b> BaZi months start at <span style="color:var(--gold)">節 (Major terms)</span> · not lunar 1st<br/>
+<b>🐲 Chinese year:</b> begins at 立春 · not Lunar New Year`
+  },
+  zh: {
+    title:'二十四節氣 · 中國節氣曆', desc:'太陽軌道360°分為24等份 · 決定八字月柱 · 中國年 · 擇日',
+    yearLbl:'年份:', tzLbl:'時區:', tzNote:'UTC+7 = 泰國', liChunLbl:'立春 · 中國年從此開始',
+    typeMajor:'節 月之始', typeMiddle:'氣 月之中', branchPrefix:'始於月',
+    footer:`<b>📜 來源:</b> 周易 · 紫金山天文臺 · 阿公阿嬤 v3 (UNESCO 2016)<br/>
+<b>⏰ 時間:</b> 已換算至所選時區 (預設泰國 UTC+7) · 原始 CST = UTC+8<br/>
+<b>🔑 八字:</b> 八字月始於 <span style="color:var(--gold)">節氣 (Major)</span> · 非陰曆初一<br/>
+<b>🐲 中國年:</b> 始於立春 · 非農曆新年`
+  }
+};
+
+let CUR_LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('lang') || 'th';
+let CUR_YEAR = parseInt(new URLSearchParams(location.search).get('year') || new Date().getFullYear(), 10);
+let CUR_TZ = parseInt(new URLSearchParams(location.search).get('tz') || '7', 10);
+
+// init year selector 2020-2035
+const yearSel = document.getElementById('year-sel');
+for (let y=2020; y<=2035; y++){
+  const o = document.createElement('option');
+  o.value = y; o.textContent = y;
+  if (y === CUR_YEAR) o.selected = true;
+  yearSel.appendChild(o);
+}
+
+function applyLang(){
+  const t = I18N[CUR_LANG] || I18N.th;
+  document.documentElement.lang = CUR_LANG === 'zh' ? 'zh-Hant' : CUR_LANG;
+  document.title = t.title + ' · hourkey';
+  document.getElementById('page-title').textContent = t.title;
+  document.getElementById('page-desc').textContent = t.desc;
+  document.getElementById('lbl-year').textContent = t.yearLbl;
+  document.getElementById('lbl-tz').textContent = t.tzLbl;
+  document.getElementById('tz-note').textContent = t.tzNote;
+  document.getElementById('lbl-li-chun').textContent = t.liChunLbl;
+  document.getElementById('footer-note').innerHTML = t.footer;
+  ['th','en','zh'].forEach(l => {
+    document.getElementById('lang-'+l).classList.toggle('act', l===CUR_LANG);
+  });
+}
+
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+}
+
+async function load(){
+  const grid = document.getElementById('terms-grid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--fg-soft)">⏳ ...</div>';
+  try {
+    const r = await fetch(`/api/akg/solar-terms?year=${CUR_YEAR}&lang=${CUR_LANG}&tz=${CUR_TZ}`);
+    const d = await r.json();
+    if (!d.ok) { grid.innerHTML = `<div style="color:var(--neg);padding:20px;">⚠ ${d.error||'failed'}</div>`; return; }
+
+    document.getElementById('li-chun-time').textContent = d.li_chun_local + ' (' + (CUR_TZ>=0?'UTC+':'UTC') + CUR_TZ + ')';
+    document.getElementById('stem-branch').innerHTML = `<span class="tc" style="font-family:var(--tc);">${d.year_stem_branch||'—'}</span>` + (d.is_leap?' · 閏年 (leap)':'');
+    document.getElementById('concept').textContent = d.concept || '—';
+
+    const t = I18N[CUR_LANG] || I18N.th;
+    grid.innerHTML = '';
+    d.terms.forEach(term => {
+      const isMajor = term.is_major;
+      const card = document.createElement('div');
+      card.className = 'term-card ' + (isMajor ? 'major' : 'middle');
+      const branchHtml = term.branch_starts ? ` <span class="branch">${term.branch_starts}</span>` : '';
+      const dunHtml = term.dun_type ? ` <span class="dun">遁 ${term.dun_type==='yang'?'陽':'陰'}</span>` : '';
+      const noteHtml = term.note ? `<div style="margin-top:6px;font-size:11px;color:var(--fg-soft);">${term.note}</div>` : '';
+      card.innerHTML = `
+        <div class="row1">
+          <div class="num">#${term.no}</div>
+          <div class="type-tag">${isMajor ? t.typeMajor : t.typeMiddle}</div>
+        </div>
+        <div class="zh">${term.zh}</div>
+        <div class="pinyin">${term.pinyin || ''}</div>
+        <div class="name">${CUR_LANG==='en' ? term.name_en : (CUR_LANG==='zh' ? term.zh : term.name_th)}</div>
+        <div class="date">⏰ ${term.date_local}</div>
+        <div class="meta">${branchHtml ? (t.branchPrefix + branchHtml) : ''}${dunHtml}</div>
+        ${noteHtml}
+      `;
+      grid.appendChild(card);
+    });
+  } catch (e) {
+    grid.innerHTML = `<div style="color:var(--neg);padding:20px;">⚠ ${e.message}</div>`;
+  }
+}
+
+// events
+['th','en','zh'].forEach(l => {
+  document.getElementById('lang-'+l).onclick = () => {
+    CUR_LANG = l; localStorage.setItem('lang', l);
+    applyLang(); load();
+  };
+});
+document.getElementById('theme-tog').onclick = () => {
+  const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+};
+yearSel.onchange = (e) => { CUR_YEAR = parseInt(e.target.value,10); load(); };
+document.getElementById('tz-inp').onchange = (e) => { CUR_TZ = parseInt(e.target.value,10)||0; load(); };
+
+// init
+applyTheme(localStorage.getItem('theme') || 'dark');
+applyLang();
+load();
+</script>
+</body>
+</html>

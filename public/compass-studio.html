@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5"/>
+<title>羅盤 Studio · Geo Compass · hourkey</title>
+<meta name="description" content="วัดทิศหน้าบ้านด้วย Google Maps + live compass · 6 layer overlay · 24山 + 飛星 + 八宅 + 64卦"/>
+<link rel="canonical" href="https://www.hourkey.io/compass-studio"/>
+<link rel="alternate" hreflang="th" href="https://www.hourkey.io/compass-studio?lang=th"/>
+<link rel="alternate" hreflang="en" href="https://www.hourkey.io/compass-studio?lang=en"/>
+<link rel="alternate" hreflang="zh" href="https://www.hourkey.io/compass-studio?lang=zh"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
+<style>
+  :root{
+    --gold:#c8a44d; --gold-bright:#e6c976; --gold-soft:rgba(200,164,77,.12); --gold-line:rgba(200,164,77,.28);
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif; --th:'Noto Serif Thai',serif; --mono:'JetBrains Mono',monospace;
+    --bg:#0a0a0c; --bg-2:#13131a; --bg-3:#1a1a23; --bg-4:#22222e;
+    --fg:#f3ebd9; --fg-soft:#c2b694; --fg-faint:#7a7160;
+    --line:rgba(200,164,77,.14);
+    --good:#7dd37b; --bad:#e26b5d; --neutral:#5ba0ff; --warn:#f7b955;
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#fbf6ea; --bg-3:#fff8e8; --bg-4:#f1e9d4;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.62); --fg-faint:rgba(26,22,18,.45);
+    --line:rgba(138,109,42,.2);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--fg);font-family:var(--th);min-height:100vh;line-height:1.6;}
+  .hk-topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .hk-top-r{display:flex;gap:8px;}
+  .hk-btn{background:transparent;border:1px solid var(--gold-line);color:var(--gold);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;}
+  .hk-btn:hover{background:var(--gold-soft);}
+  .hk-btn.act{background:var(--gold);color:var(--bg);}
+
+  .hero{text-align:center;padding:28px 24px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--bg-2),var(--bg));}
+  .hero .crest{font-family:var(--tc);font-size:50px;color:var(--gold);line-height:1;letter-spacing:8px;margin-bottom:6px;}
+  .hero h1{font-family:var(--serif);font-size:28px;font-weight:400;margin-bottom:4px;}
+  .hero h1 b{color:var(--gold);font-weight:500;font-style:italic;}
+  .hero .sub{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
+
+  main{max-width:1100px;margin:0 auto;padding:20px 24px 60px;}
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:18px;}
+  @media(max-width:980px){ .grid{grid-template-columns:1fr;} }
+
+  .card{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;}
+  .card h3{font-family:var(--serif);font-size:16px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .card h3 .han{font-family:var(--tc);color:var(--gold);font-weight:600;font-size:18px;}
+
+  #map{width:100%;height:450px;border-radius:10px;background:var(--bg-3);position:relative;}
+  #map.loading::before{content:'⏳ กำลังโหลด Google Maps...';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--fg-soft);font-family:var(--mono);font-size:12px;}
+
+  .pin-mode{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .pin-btn{flex:1;min-width:100px;padding:8px 12px;background:var(--bg-3);border:1px solid var(--line);color:var(--fg-soft);font-family:var(--mono);font-size:10px;cursor:pointer;border-radius:6px;letter-spacing:.05em;}
+  .pin-btn.act{background:var(--gold);color:var(--bg);}
+  .pin-btn:hover{border-color:var(--gold-line);}
+
+  .compass-display{background:var(--bg-3);border:1px solid var(--gold-line);border-radius:10px;padding:14px;margin-bottom:12px;text-align:center;}
+  .compass-display .big{font-family:var(--serif);font-size:36px;color:var(--gold);font-weight:600;line-height:1;margin-bottom:4px;}
+  .compass-display .meta{font-family:var(--mono);font-size:10px;color:var(--fg-soft);letter-spacing:.1em;}
+
+  .layer-toggles{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+  .layer-toggle{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--bg-3);border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:11px;}
+  .layer-toggle input{margin:0;}
+  .layer-toggle.act{background:var(--gold-soft);border-color:var(--gold-line);}
+
+  .score-card{background:var(--bg-3);border:2px solid var(--gold);border-radius:10px;padding:14px;text-align:center;margin-bottom:12px;}
+  .score-card .num{font-family:var(--serif);font-size:42px;color:var(--gold);font-weight:600;line-height:1;}
+  .score-card .num small{font-size:14px;color:var(--fg-faint);}
+  .score-card .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--fg-soft);text-transform:uppercase;margin-top:4px;}
+  .score-card .bar{height:8px;background:var(--bg-4);border-radius:99px;overflow:hidden;margin-top:8px;}
+  .score-card .bar .fill{height:100%;background:linear-gradient(90deg,#e26b5d,#f7b955,#7dd37b,#5ba0ff);transition:width .6s;}
+  .score-card .tier{font-family:var(--mono);font-size:11px;margin-top:6px;}
+  .score-card.tier-excellent .num{color:#ffd700;}
+  .score-card.tier-good .num{color:var(--good);}
+  .score-card.tier-neutral .num{color:var(--neutral);}
+  .score-card.tier-bad .num{color:var(--bad);}
+
+  .top3-list{display:flex;flex-direction:column;gap:5px;}
+  .top3-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg-3);border-left:3px solid var(--good);border-radius:6px;}
+  .top3-item .rank{font-family:var(--mono);font-size:14px;color:var(--gold);min-width:24px;}
+  .top3-item .dir{font-family:var(--tc);font-size:16px;color:var(--fg);font-weight:600;min-width:48px;}
+  .top3-item .sc{font-family:var(--mono);font-size:12px;color:var(--good);font-weight:700;}
+  .top3-item .rsn{flex:1;font-size:10px;color:var(--fg-soft);}
+
+  .warnings-card{background:var(--bad);background:linear-gradient(135deg,rgba(226,107,93,.18),transparent);border:1px solid var(--bad);border-radius:10px;padding:12px;margin-bottom:12px;color:var(--fg);font-size:12px;}
+  .warnings-card .lbl{font-family:var(--mono);font-size:10px;color:var(--bad);letter-spacing:.15em;margin-bottom:6px;}
+
+  .field{margin-bottom:8px;}
+  .field label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+  .input{width:100%;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:12px;padding:7px 10px;border-radius:6px;outline:none;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+
+  .cross-link{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+  .cross-link a{font-family:var(--mono);font-size:10px;color:var(--gold);text-decoration:none;letter-spacing:.1em;padding:5px 11px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;}
+
+  @media(max-width:640px){
+    .hero h1{font-size:22px;} .hero .crest{font-size:40px;}
+    main{padding:14px;}
+    #map{height:320px;}
+  }
+</style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
+</head>
+<body>
+  <header class="hk-topbar">
+    <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
+    <div class="hk-top-r">
+      <button class="hk-btn" id="lang-th">TH</button>
+      <button class="hk-btn" id="lang-en">EN</button>
+      <button class="hk-btn" id="lang-zh">中</button>
+      <button class="hk-btn" id="theme-tog">🌓</button>
+    </div>
+  </header>
+
+  <header class="hero">
+    <div class="crest">羅盤</div>
+    <h1 id="page-title"><b>Compass Studio</b> · วัดทิศ + 6 layer</h1>
+    <div class="sub" id="page-sub">GEO COMPASS · ปัก 2 จุดบนแผนที่ · 24 山 + 飛星 + 八宅</div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <section>
+        <div class="card">
+          <h3><span class="han">地</span> <span id="lbl-map">แผนที่</span></h3>
+          <div class="pin-mode">
+            <button class="pin-btn act" data-mode="start" id="lbl-start-pin">📍 ปักจุดเริ่ม (หลังบ้าน)</button>
+            <button class="pin-btn" data-mode="end" id="lbl-end-pin">🎯 ปักจุดหมาย (หน้าบ้าน)</button>
+            <button class="pin-btn" id="btn-reset" style="flex:0;">🗑</button>
+          </div>
+          <div id="map" class="loading"></div>
+          <div style="margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);text-align:center;letter-spacing:.1em;">คลิกบนแผนที่เพื่อปักหมุด · เริ่ม=หลังบ้าน · จบ=หน้าบ้าน</div>
+        </div>
+
+        <div class="card">
+          <h3><span class="han">磁</span> <span id="lbl-live">Live Compass (ทดลอง)</span></h3>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+            <button class="hk-btn" id="btn-live" style="font-size:11px;">🧭 เปิด Live Compass (DeviceOrientation)</button>
+            <div id="live-display" style="font-family:var(--mono);font-size:12px;color:var(--fg-soft);">รอเปิด...</div>
+          </div>
+          <div style="margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);">⚠ Live compass ต้องใช้บน iPhone/Android เปิด HTTPS · ขอ permission</div>
+        </div>
+      </section>
+
+      <aside>
+        <div class="card">
+          <h3><span class="han">向</span> <span id="lbl-result">ผลการวัด</span></h3>
+          <div class="compass-display">
+            <div class="big" id="d-angle">— °</div>
+            <div class="meta" id="d-meta">ทิศ — · 山 —</div>
+          </div>
+
+          <div class="field">
+            <label id="lbl-person">เลือกดวง (KUA)</label>
+            <select id="person-sel" class="input"><option value="">-- ไม่ผูกดวง --</option></select>
+          </div>
+
+          <div class="field">
+            <label id="lbl-layers">เลเยอร์</label>
+            <div class="layer-toggles">
+              <label class="layer-toggle act"><input type="checkbox" data-l="twenty_four" checked/>24 山</label>
+              <label class="layer-toggle act"><input type="checkbox" data-l="flying_stars" checked/>飛星</label>
+              <label class="layer-toggle act"><input type="checkbox" data-l="ba_zhai" checked/>八宅</label>
+              <label class="layer-toggle"><input type="checkbox" data-l="ai_xing"/>挨星</label>
+              <label class="layer-toggle"><input type="checkbox" data-l="qi_men"/>奇門</label>
+              <label class="layer-toggle"><input type="checkbox" data-l="sixty_four"/>64 卦</label>
+            </div>
+          </div>
+
+          <button class="hk-btn act" id="btn-analyze" style="width:100%;padding:10px;font-size:12px;">📊 วิเคราะห์</button>
+        </div>
+
+        <div id="analysis-result"></div>
+      </aside>
+    </div>
+
+    <div class="cross-link">
+      <a href="/compass">📋 จัดการบ้าน</a>
+      <a href="/fengshui-pro">🏠 ฮวงจุ้ย Pro</a>
+      <a href="/katakagae">🌸 方違</a>
+      <a href="/datepick">📅 วางฤกษ์</a>
+    </div>
+  </main>
+
+<script>
+const I18N = {
+  th: { title:'<b>Compass Studio</b> · วัดทิศ + 6 layer', map:'แผนที่', start_pin:'📍 ปักจุดเริ่ม (หลังบ้าน)', end_pin:'🎯 ปักจุดหมาย (หน้าบ้าน)',
+        live:'Live Compass (ทดลอง)', result:'ผลการวัด', person:'เลือกดวง (KUA)', layers:'เลเยอร์', analyze:'📊 วิเคราะห์' },
+  en: { title:'<b>Compass Studio</b> · Measure + 6 layers', map:'Map', start_pin:'📍 Start pin (back)', end_pin:'🎯 End pin (face)',
+        live:'Live Compass (beta)', result:'Result', person:'Select chart (KUA)', layers:'Layers', analyze:'📊 Analyze' },
+  zh: { title:'<b>羅盤 Studio</b> · 量向 + 六層', map:'地圖', start_pin:'📍 起點 (後)', end_pin:'🎯 終點 (前)',
+        live:'即時羅盤 (測試)', result:'結果', person:'選命 (KUA)', layers:'圖層', analyze:'📊 分析' },
+};
+let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
+let startPin = null, endPin = null, pinMode = 'start', startMarker = null, endMarker = null, polyline = null, map = null;
+
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);localStorage.setItem('hk-theme',t);}
+function applyLang(){
+  const t = I18N[LANG] || I18N.th;
+  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
+  document.title = '羅盤 ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
+  document.getElementById('page-title').innerHTML = t.title;
+  document.getElementById('lbl-map').textContent = t.map;
+  document.getElementById('lbl-start-pin').textContent = t.start_pin;
+  document.getElementById('lbl-end-pin').textContent = t.end_pin;
+  document.getElementById('lbl-live').textContent = t.live;
+  document.getElementById('lbl-result').textContent = t.result;
+  document.getElementById('lbl-person').textContent = t.person;
+  document.getElementById('lbl-layers').textContent = t.layers;
+  document.getElementById('btn-analyze').textContent = t.analyze;
+  ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
+}
+
+function computeBearing(p1, p2){
+  const toRad = d => d*Math.PI/180, toDeg = r => r*180/Math.PI;
+  const φ1=toRad(p1.lat), φ2=toRad(p2.lat), Δλ=toRad(p2.lng - p1.lng);
+  const y = Math.sin(Δλ)*Math.cos(φ2);
+  const x = Math.cos(φ1)*Math.sin(φ2)-Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+  return (toDeg(Math.atan2(y,x))+360)%360;
+}
+function bearingToDir(deg){
+  const d=((deg%360)+360)%360;
+  if(d>=337.5||d<22.5)return 'N';
+  if(d<67.5)return 'NE';if(d<112.5)return 'E';if(d<157.5)return 'SE';
+  if(d<202.5)return 'S';if(d<247.5)return 'SW';if(d<292.5)return 'W';
+  return 'NW';
+}
+const MOUNTAINS=['壬','子','癸','丑','艮','寅','甲','卯','乙','辰','巽','巳','丙','午','丁','未','坤','申','庚','酉','辛','戌','乾','亥'];
+function bearingToMountain(deg){return MOUNTAINS[Math.floor(((deg+7.5)%360)/15)];}
+
+function updateResult(){
+  if (!startPin || !endPin) {
+    document.getElementById('d-angle').textContent = '— °';
+    document.getElementById('d-meta').textContent = 'ปักทั้ง 2 จุด';
+    return;
+  }
+  const bearing = computeBearing(startPin, endPin);
+  const dir = bearingToDir(bearing);
+  const mtn = bearingToMountain(bearing);
+  document.getElementById('d-angle').textContent = bearing.toFixed(1) + '°';
+  document.getElementById('d-meta').innerHTML = `ทิศ <b>${dir}</b> · 山 <span class="tc" style="font-family:var(--tc);color:var(--gold);">${mtn}</span>`;
+  if (polyline) polyline.setMap(null);
+  if (map) {
+    polyline = new google.maps.Polyline({ path:[startPin, endPin], geodesic:true, strokeColor:'#c8a44d', strokeOpacity:1, strokeWeight:3, map });
+  }
+}
+
+function initMap(){
+  const center = { lat: 13.7563, lng: 100.5018 };
+  map = new google.maps.Map(document.getElementById('map'), {
+    center, zoom: 18, mapTypeId: 'satellite', tilt: 0,
+    streetViewControl: false, fullscreenControl: false,
+  });
+  document.getElementById('map').classList.remove('loading');
+  map.addListener('click', (e) => {
+    const pos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+    if (pinMode === 'start') {
+      if (startMarker) startMarker.setMap(null);
+      startPin = pos;
+      startMarker = new google.maps.Marker({ position: pos, map, label:'A', title:'หลังบ้าน' });
+    } else {
+      if (endMarker) endMarker.setMap(null);
+      endPin = pos;
+      endMarker = new google.maps.Marker({ position: pos, map, label:'B', title:'หน้าบ้าน' });
+    }
+    updateResult();
+  });
+}
+window.initMap = initMap;
+// Load Google Maps via our existing proxy /api/maps-script
+(function loadMaps(){
+  if (window.google?.maps) { initMap(); return; }
+  const s = document.createElement('script');
+  s.src = '/api/maps-script?callback=initMap'; s.async = true; s.defer = true;
+  s.onerror = () => { document.getElementById('map').classList.remove('loading'); document.getElementById('map').innerHTML = '<div style="padding:30px;text-align:center;color:var(--bad)">⚠ โหลด Google Maps ไม่สำเร็จ</div>'; };
+  document.head.appendChild(s);
+})();
+
+document.querySelectorAll('.pin-btn[data-mode]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.pin-btn[data-mode]').forEach(x => x.classList.remove('act'));
+  b.classList.add('act');
+  pinMode = b.dataset.mode;
+});
+document.getElementById('btn-reset').onclick = () => {
+  if (startMarker) { startMarker.setMap(null); startMarker = null; }
+  if (endMarker) { endMarker.setMap(null); endMarker = null; }
+  if (polyline) { polyline.setMap(null); polyline = null; }
+  startPin = null; endPin = null;
+  updateResult();
+};
+
+// Live Compass
+let liveActive = false;
+async function startLive(){
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try { const p = await DeviceOrientationEvent.requestPermission(); if (p !== 'granted') return alert('ไม่อนุญาต'); } catch(_){}
+  }
+  window.addEventListener('deviceorientationabsolute', onOrient, true);
+  window.addEventListener('deviceorientation', onOrient, true);
+  liveActive = true;
+  document.getElementById('btn-live').textContent = '🟢 Live ON';
+}
+function onOrient(e){
+  let heading = e.alpha !== null ? 360 - e.alpha : 0;
+  if (e.webkitCompassHeading !== undefined) heading = e.webkitCompassHeading;
+  const dir = bearingToDir(heading);
+  const mtn = bearingToMountain(heading);
+  document.getElementById('live-display').innerHTML = `🧭 ${heading.toFixed(0)}° · ${dir} · <span class="tc" style="font-family:var(--tc);color:var(--gold);">${mtn}</span>`;
+}
+document.getElementById('btn-live').onclick = startLive;
+
+// Layer toggles
+document.querySelectorAll('.layer-toggle input').forEach(cb => cb.onchange = () => {
+  cb.closest('.layer-toggle').classList.toggle('act', cb.checked);
+});
+
+// Load profiles
+async function loadProfiles(){
+  try {
+    const r = await fetch('/api/profile', { credentials:'include' });
+    if (!r.ok) return;
+    const d = await r.json();
+    const sel = document.getElementById('person-sel');
+    (d.profiles||[]).forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id; o.textContent = `${p.nickname || p.name} · ${p.day_master || '?'}`;
+      sel.appendChild(o);
+    });
+  } catch(_){}
+}
+
+// Analyze
+async function analyze(){
+  if (!startPin || !endPin) { alert('ปักหมุด 2 จุดบนแผนที่ก่อน'); return; }
+  const personId = document.getElementById('person-sel').value;
+  if (!personId) { alert('เลือกดวงจาก dropdown'); return; }
+  const layers = Array.from(document.querySelectorAll('.layer-toggle input:checked')).map(c => c.dataset.l);
+  const bearing = computeBearing(startPin, endPin);
+  try {
+    const r = await fetch('/api/direction-analysis', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+      body: JSON.stringify({ person_id: personId, face_angle: bearing, datetime: new Date().toISOString(), activity:'work', layers }) });
+    const d = await r.json();
+    if (d.error) { document.getElementById('analysis-result').innerHTML = `<div class="card" style="color:var(--bad)">⚠ ${d.error}</div>`; return; }
+    renderAnalysis(d);
+  } catch(e){ alert(e.message); }
+}
+function renderAnalysis(d){
+  const cur = d.recommendation.current_sit;
+  const tier = cur.tier;
+  const tierLbl = tier==='excellent'?'🌟 ดีเยี่ยม':tier==='good'?'✓ ดี':tier==='neutral'?'○ กลาง':'⚠ ระวัง';
+  let html = `
+    <div class="score-card tier-${tier}">
+      <div class="num">${cur.score}<small>/100</small></div>
+      <div class="lbl">SITTING DIR · ${d.sitting.direction} · 山 ${d.sitting.mountain.zh}</div>
+      <div class="bar"><div class="fill" style="width:${cur.score}%"></div></div>
+      <div class="tier" style="color:${tier==='excellent'?'#ffd700':tier==='good'?'var(--good)':tier==='neutral'?'var(--neutral)':'var(--bad)'}">${tierLbl}</div>
+    </div>`;
+  if (d.recommendation.warnings?.length) {
+    html += `<div class="warnings-card"><div class="lbl">⚠ คำเตือน</div>${d.recommendation.warnings.map(w=>'• '+w).join('<br/>')}</div>`;
+  }
+  html += `<div class="card"><h3><span class="han">優</span> 3 ทิศที่ดีที่สุด</h3>
+    <div class="top3-list">${d.recommendation.best_sit.map((s,i) => `
+      <div class="top3-item"><div class="rank">${i===0?'🥇':i===1?'🥈':'🥉'}</div>
+        <div class="dir">${s.direction}</div>
+        <div class="sc">+${s.score}</div>
+        <div class="rsn">${(s.reasons||[]).slice(0,2).join(' · ')}</div>
+      </div>`).join('')}</div></div>`;
+  document.getElementById('analysis-result').innerHTML = html;
+}
+document.getElementById('btn-analyze').onclick = analyze;
+
+['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); applyLang(); });
+document.getElementById('theme-tog').onclick = () => applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
+
+applyTheme(localStorage.getItem('theme') || localStorage.getItem('hk-theme') || 'dark');
+applyLang();
+loadProfiles();
+</script>
+<script src="/js/hk-luopan-nav.js?v=1" defer></script>
+</body>
+</html>

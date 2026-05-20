@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5"/>
+<title>羅盤 เข็มทิศมงคล · hourkey</title>
+<meta name="description" content="羅盤 Compass · บันทึกบ้าน + ทิศหน้าบ้าน + QR handoff ไปมือถือ · ฮวงจุ้ย"/>
+<link rel="canonical" href="https://www.hourkey.io/compass"/>
+<link rel="alternate" hreflang="th" href="https://www.hourkey.io/compass?lang=th"/>
+<link rel="alternate" hreflang="en" href="https://www.hourkey.io/compass?lang=en"/>
+<link rel="alternate" hreflang="zh" href="https://www.hourkey.io/compass?lang=zh"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
+<style>
+  :root{
+    --gold:#c8a44d; --gold-bright:#e6c976; --gold-soft:rgba(200,164,77,.12); --gold-line:rgba(200,164,77,.28);
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif; --th:'Noto Serif Thai',serif; --mono:'JetBrains Mono',monospace;
+    --bg:#0a0a0c; --bg-2:#13131a; --bg-3:#1a1a23; --bg-4:#22222e;
+    --fg:#f3ebd9; --fg-soft:#c2b694; --fg-faint:#7a7160;
+    --line:rgba(200,164,77,.14);
+    --ok:#7dd37b; --warn:#f7b955; --bad:#e26b5d; --info:#5ba0ff;
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#fbf6ea; --bg-3:#fff8e8; --bg-4:#f1e9d4;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.62); --fg-faint:rgba(26,22,18,.45);
+    --line:rgba(138,109,42,.2);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--fg);font-family:var(--th);min-height:100vh;line-height:1.6;}
+  .hk-topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .hk-top-r{display:flex;gap:8px;}
+  .hk-btn{background:transparent;border:1px solid var(--gold-line);color:var(--gold);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;}
+  .hk-btn:hover{background:var(--gold-soft);}
+  .hk-btn.act{background:var(--gold);color:var(--bg);}
+
+  .hero{text-align:center;padding:40px 24px 24px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--bg-2),var(--bg));}
+  .hero .crest{font-family:var(--tc);font-size:56px;color:var(--gold);line-height:1;letter-spacing:8px;margin-bottom:8px;}
+  .hero h1{font-family:var(--serif);font-size:32px;font-weight:400;margin-bottom:6px;}
+  .hero h1 b{color:var(--gold);font-weight:500;font-style:italic;}
+  .hero .sub{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
+  .hero .desc{font-size:14px;color:var(--fg-soft);margin-top:10px;max-width:600px;margin:10px auto 0;}
+
+  main{max-width:900px;margin:0 auto;padding:30px 24px 80px;}
+  .card{background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px;}
+  .card h3{font-family:var(--serif);font-size:20px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .card h3 .han{font-family:var(--tc);color:var(--gold);font-weight:600;}
+
+  .tier-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--gold-soft);border:1px solid var(--gold);border-radius:99px;font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;}
+  .tier-badge.pro{background:linear-gradient(135deg,var(--gold-soft),rgba(125,211,123,.15));border-color:var(--ok);color:var(--ok);}
+
+  .houses-list{display:flex;flex-direction:column;gap:10px;}
+  .house-item{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s;}
+  .house-item:hover{border-color:var(--gold-line);}
+  .house-item.primary{border-left:4px solid var(--gold);}
+  .house-item .compass-icon{font-family:var(--tc);font-size:32px;color:var(--gold);min-width:48px;text-align:center;line-height:1;}
+  .house-item .info{flex:1;min-width:0;}
+  .house-item .name{font-family:var(--serif);font-size:16px;color:var(--fg);font-weight:500;display:flex;align-items:center;gap:8px;}
+  .house-item .name .star{color:var(--gold);font-size:14px;}
+  .house-item .meta{font-family:var(--mono);font-size:11px;color:var(--fg-soft);margin-top:3px;}
+  .house-item .actions{display:flex;gap:6px;}
+  .house-item .actions button{background:transparent;border:1px solid var(--gold-line);color:var(--gold);padding:5px 10px;border-radius:6px;font-family:var(--mono);font-size:10px;cursor:pointer;}
+  .house-item .actions button.del{color:var(--bad);border-color:rgba(226,107,93,.4);}
+
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;}
+  .input{width:100%;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:13px;padding:9px 12px;border-radius:8px;outline:none;}
+  .input:focus{border-color:var(--gold);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+  .btn{padding:10px 18px;border-radius:8px;border:none;font-family:var(--mono);font-size:11px;letter-spacing:.15em;cursor:pointer;font-weight:600;text-transform:uppercase;}
+  .btn.primary{background:var(--gold);color:var(--bg);}
+  .btn.primary:hover{background:var(--gold-bright);}
+  .btn.outline{background:transparent;border:1px solid var(--gold-line);color:var(--gold);}
+  .btn.outline:hover{background:var(--gold-soft);}
+  .btn:disabled{opacity:.5;cursor:wait;}
+
+  .empty{text-align:center;padding:40px 20px;color:var(--fg-soft);}
+  .empty .ic{font-size:42px;margin-bottom:10px;opacity:.5;}
+
+  .alert{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none;}
+  .alert.show{display:block;}
+  .alert.err{background:rgba(226,107,93,.12);border:1px solid var(--bad);color:var(--bad);}
+  .alert.ok{background:rgba(125,211,123,.12);border:1px solid var(--ok);color:var(--ok);}
+
+  .qr-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;}
+  .qr-modal.show{display:flex;}
+  .qr-modal .box{background:var(--bg-2);border:1px solid var(--gold);border-radius:14px;padding:24px;max-width:380px;text-align:center;}
+  .qr-modal .box h4{font-family:var(--serif);font-size:18px;margin-bottom:10px;}
+  .qr-modal .qr-img{width:240px;height:240px;background:#fff;border-radius:10px;margin:14px auto;padding:10px;display:flex;align-items:center;justify-content:center;}
+  .qr-modal .qr-img canvas, .qr-modal .qr-img img{max-width:100%;}
+  .qr-modal .url{font-family:var(--mono);font-size:9px;color:var(--fg-soft);word-break:break-all;margin-top:10px;}
+  .qr-modal .expires{font-family:var(--mono);font-size:10px;color:var(--gold);margin-top:6px;}
+
+  .cross-link{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+  .cross-link a{font-family:var(--mono);font-size:10px;color:var(--gold);text-decoration:none;letter-spacing:.1em;padding:6px 12px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;}
+
+  @media(max-width:640px){
+    .hero h1{font-size:24px;} .hero .crest{font-size:46px;}
+    main{padding:20px 14px 60px;}
+    .row3{grid-template-columns:1fr;}
+  }
+</style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
+</head>
+<body>
+  <header class="hk-topbar">
+    <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
+    <div class="hk-top-r">
+      <button class="hk-btn" id="lang-th">TH</button>
+      <button class="hk-btn" id="lang-en">EN</button>
+      <button class="hk-btn" id="lang-zh">中</button>
+      <button class="hk-btn" id="theme-tog">🌓</button>
+    </div>
+  </header>
+
+  <header class="hero">
+    <div class="crest">羅盤</div>
+    <h1 id="page-title">เข็มทิศ <b>มงคล</b> · Compass</h1>
+    <div class="sub" id="page-sub">羅盤 LUOPAN · บันทึกบ้าน · QR ไปมือถือ</div>
+    <div class="desc" id="page-desc">ใช้ desktop วัดทิศหน้าบ้าน → save → ส่ง QR ไป iPhone ใช้ AR วัดต่อ</div>
+  </header>
+
+  <main>
+    <div class="card" id="auth-needed" style="display:none;text-align:center;">
+      <h3>🔒 <span id="lbl-need-login">ต้องเข้าสู่ระบบก่อน</span></h3>
+      <p style="color:var(--fg-soft);margin-bottom:14px;font-size:13px;" id="lbl-need-login-p">การบันทึกบ้านต้องมีบัญชี · เข้าสู่ระบบเพื่อเริ่ม</p>
+      <a href="/signup?tab=login" class="btn primary" id="lbl-login-btn" style="text-decoration:none;display:inline-block;">เข้าสู่ระบบ</a>
+    </div>
+
+    <div id="main-content">
+      <div class="alert err" id="alert-err"></div>
+      <div class="alert ok" id="alert-ok"></div>
+
+      <div class="card">
+        <h3><span class="han">家</span> <span id="lbl-houses">บ้านของคุณ</span> <span class="tier-badge" id="tier-badge">FREE · 0/1</span></h3>
+        <div id="houses-list" class="houses-list">
+          <div class="empty"><div class="ic">🏠</div><p id="lbl-empty">ยังไม่มีบ้านที่บันทึก · เพิ่มบ้านแรกด้านล่าง</p></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="han">新</span> <span id="lbl-add">เพิ่มบ้านใหม่</span></h3>
+        <div class="field">
+          <label id="lbl-name">ชื่อบ้าน</label>
+          <input id="h-name" class="input" placeholder="บ้านหลัก / ออฟฟิศ / บ้านพ่อแม่"/>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label id="lbl-lat">Latitude</label>
+            <input id="h-lat" class="input" type="number" step="0.0001" value="13.7563"/>
+          </div>
+          <div class="field">
+            <label id="lbl-lng">Longitude</label>
+            <input id="h-lng" class="input" type="number" step="0.0001" value="100.5018"/>
+          </div>
+        </div>
+        <div class="row3">
+          <div class="field">
+            <label id="lbl-face">ทิศหน้าบ้าน (0-360°)</label>
+            <input id="h-face" class="input" type="number" min="0" max="360" step="0.1" value="180"/>
+          </div>
+          <div class="field">
+            <label id="lbl-mountain">山 (24山)</label>
+            <input id="h-mountain" class="input" type="text" maxlength="1" placeholder="auto"/>
+          </div>
+          <div class="field">
+            <label id="lbl-dir">ทิศ (8 ทิศ)</label>
+            <select id="h-dir" class="input">
+              <option value="">auto</option>
+              <option value="N">N · เหนือ</option>
+              <option value="NE">NE · อีสาน</option>
+              <option value="E">E · ตะวันออก</option>
+              <option value="SE">SE · อาคเนย์</option>
+              <option value="S">S · ใต้</option>
+              <option value="SW">SW · พายัพ</option>
+              <option value="W">W · ตะวันตก</option>
+              <option value="NW">NW · พายัพ</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;color:var(--fg-soft);">
+            <input id="h-primary" type="checkbox"/>
+            <span id="lbl-primary">บ้านหลัก (primary)</span>
+          </label>
+        </div>
+        <button class="btn primary" id="btn-save"><span id="lbl-save">💾 บันทึก</span></button>
+      </div>
+    </div>
+
+    <div class="cross-link">
+      <a href="/fengshui">🏠 ฮวงจุ้ย</a>
+      <a href="/flyingstars">⭐ ดาวเหิน</a>
+      <a href="/katakagae">🌸 方違</a>
+      <a href="/datepick">📅 วางฤกษ์</a>
+    </div>
+  </main>
+
+  <div class="qr-modal" id="qr-modal">
+    <div class="box">
+      <h4 id="lbl-qr">📱 QR ส่งไปมือถือ</h4>
+      <p style="color:var(--fg-soft);font-size:12px;" id="lbl-qr-p">เปิดกล้องมือถือสแกน QR เพื่อเปิดบ้านนี้บนมือถือ</p>
+      <div class="qr-img" id="qr-img">⏳</div>
+      <div class="url" id="qr-url"></div>
+      <div class="expires" id="qr-expires">⏰ หมดอายุใน 5 นาที</div>
+      <button class="btn outline" style="margin-top:14px;" onclick="document.getElementById('qr-modal').classList.remove('show')">ปิด</button>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+const I18N = {
+  th: { title:'เข็มทิศ <b>มงคล</b> · Compass', desc:'ใช้ desktop วัดทิศหน้าบ้าน → save → ส่ง QR ไป iPhone ใช้ AR วัดต่อ',
+        need_login:'ต้องเข้าสู่ระบบก่อน', need_login_p:'การบันทึกบ้านต้องมีบัญชี · เข้าสู่ระบบเพื่อเริ่ม', login_btn:'เข้าสู่ระบบ',
+        houses:'บ้านของคุณ', add:'เพิ่มบ้านใหม่', name:'ชื่อบ้าน', face:'ทิศหน้าบ้าน (0-360°)', mountain:'山 (24山)', dir:'ทิศ (8 ทิศ)',
+        primary:'บ้านหลัก (primary)', save:'💾 บันทึก', empty:'ยังไม่มีบ้านที่บันทึก · เพิ่มบ้านแรกด้านล่าง',
+        qr:'📱 QR ส่งไปมือถือ', qr_p:'เปิดกล้องมือถือสแกน QR เพื่อเปิดบ้านนี้บนมือถือ' },
+  en: { title:'Auspicious <b>Compass</b>', desc:'Measure house direction on desktop → save → QR to iPhone for AR view',
+        need_login:'Sign in required', need_login_p:'Saving houses requires account', login_btn:'Sign in',
+        houses:'Your Houses', add:'Add New House', name:'House name', face:'Face Direction (0-360°)', mountain:'Mountain (24山)', dir:'Direction (8)',
+        primary:'Primary house', save:'💾 Save', empty:'No houses saved yet · add first below',
+        qr:'📱 QR to Mobile', qr_p:'Scan with mobile camera to open on phone' },
+  zh: { title:'<b>羅盤</b> · 風水', desc:'桌面測房向 → 保存 → QR傳至手機',
+        need_login:'需先登入', need_login_p:'保存房屋需要帳號', login_btn:'登入',
+        houses:'您的房屋', add:'新增房屋', name:'房屋名稱', face:'坐向 (0-360°)', mountain:'山 (24山)', dir:'方位 (8方)',
+        primary:'主要房屋', save:'💾 保存', empty:'尚無房屋 · 請新增',
+        qr:'📱 QR傳手機', qr_p:'手機掃碼可開啟此房屋' },
+};
+let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);localStorage.setItem('hk-theme',t);}
+function applyLang(){
+  const t = I18N[LANG] || I18N.th;
+  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
+  document.title = '羅盤 ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
+  ['page-title','lbl-need-login','lbl-need-login-p','lbl-login-btn','lbl-houses','lbl-add','lbl-name','lbl-face','lbl-mountain','lbl-dir','lbl-primary','lbl-save','lbl-empty','lbl-qr','lbl-qr-p'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const map={'page-title':t.title,'lbl-need-login':t.need_login,'lbl-need-login-p':t.need_login_p,'lbl-login-btn':t.login_btn,
+      'lbl-houses':t.houses,'lbl-add':t.add,'lbl-name':t.name,'lbl-face':t.face,'lbl-mountain':t.mountain,'lbl-dir':t.dir,
+      'lbl-primary':t.primary,'lbl-save':t.save,'lbl-empty':t.empty,'lbl-qr':t.qr,'lbl-qr-p':t.qr_p};
+    if (id==='page-title') el.innerHTML=map[id]; else el.textContent=map[id];
+  });
+  document.getElementById('page-desc').textContent = t.desc;
+  ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
+}
+
+function showAlert(kind, msg){
+  const el = document.getElementById('alert-'+kind);
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 4000);
+}
+
+async function loadHouses(){
+  try {
+    const r = await fetch('/api/houses', {credentials:'include'});
+    if (r.status === 401) {
+      document.getElementById('main-content').style.display='none';
+      document.getElementById('auth-needed').style.display='block';
+      return;
+    }
+    const d = await r.json();
+    document.getElementById('main-content').style.display='block';
+    document.getElementById('auth-needed').style.display='none';
+    // tier badge
+    const tb = document.getElementById('tier-badge');
+    tb.textContent = `${d.tier.toUpperCase()} · ${d.count}/${d.limit}`;
+    tb.classList.toggle('pro', d.tier !== 'free');
+    renderHouses(d.houses || []);
+  } catch(e){ showAlert('err', e.message); }
+}
+
+function renderHouses(houses){
+  const c = document.getElementById('houses-list');
+  if (!houses.length) {
+    const t = I18N[LANG]||I18N.th;
+    c.innerHTML = `<div class="empty"><div class="ic">🏠</div><p>${t.empty}</p></div>`;
+    return;
+  }
+  c.innerHTML = houses.map(h => `
+    <div class="house-item ${h.is_primary?'primary':''}">
+      <div class="compass-icon">${h.facing_mountain||'?'}</div>
+      <div class="info">
+        <div class="name">${h.name}${h.is_primary?'<span class="star">⭐</span>':''}</div>
+        <div class="meta">📍 ${parseFloat(h.lat).toFixed(4)}, ${parseFloat(h.lng).toFixed(4)} · 坐向 ${parseFloat(h.face_angle).toFixed(1)}° ${h.facing_direction||''}</div>
+      </div>
+      <div class="actions">
+        <button onclick="sendQR(${h.id})">📱 QR</button>
+        <button class="del" onclick="delHouse(${h.id},'${h.name.replace(/'/g,'')}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+async function saveHouse(){
+  const name = document.getElementById('h-name').value.trim();
+  if (!name) { showAlert('err','ใส่ชื่อบ้านก่อน'); return; }
+  const payload = {
+    name,
+    lat: parseFloat(document.getElementById('h-lat').value),
+    lng: parseFloat(document.getElementById('h-lng').value),
+    face_angle: parseFloat(document.getElementById('h-face').value),
+    facing_mountain: document.getElementById('h-mountain').value || null,
+    facing_direction: document.getElementById('h-dir').value || null,
+    is_primary: document.getElementById('h-primary').checked,
+    method: 'manual',
+  };
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true; btn.textContent = '⏳ ...';
+  try {
+    const r = await fetch('/api/houses', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify(payload) });
+    const d = await r.json();
+    if (!r.ok) { showAlert('err', d.error+(d.message?' · '+d.message:'')); return; }
+    showAlert('ok','✓ บันทึกแล้ว');
+    document.getElementById('h-name').value='';
+    loadHouses();
+  } catch(e){ showAlert('err', e.message); }
+  finally { btn.disabled=false; btn.textContent='💾 บันทึก'; }
+}
+
+async function delHouse(id, name){
+  if (!confirm('ลบบ้าน "'+name+'"?')) return;
+  try {
+    const r = await fetch('/api/houses/'+id, { method:'DELETE', credentials:'include' });
+    const d = await r.json();
+    if (!r.ok) { showAlert('err', d.error); return; }
+    showAlert('ok','✓ ลบแล้ว');
+    loadHouses();
+  } catch(e){ showAlert('err', e.message); }
+}
+
+async function sendQR(houseId){
+  const modal = document.getElementById('qr-modal');
+  const img = document.getElementById('qr-img');
+  img.innerHTML = '⏳';
+  modal.classList.add('show');
+  try {
+    const r = await fetch('/api/houses/qr/generate', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ house_id: houseId }) });
+    const d = await r.json();
+    if (!r.ok) { img.innerHTML='⚠ '+(d.error||''); return; }
+    document.getElementById('qr-url').textContent = d.url;
+    img.innerHTML = '';
+    QRCode.toCanvas(d.qr_data, { width: 220, color: { dark:'#0a0a0c', light:'#fff' } }, (err, canvas) => {
+      if (err) { img.textContent = '⚠ '+err.message; return; }
+      img.appendChild(canvas);
+    });
+  } catch(e){ img.innerHTML='⚠ '+e.message; }
+}
+
+['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); applyLang(); loadHouses(); });
+document.getElementById('theme-tog').onclick = () => applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
+document.getElementById('btn-save').onclick = saveHouse;
+
+applyTheme(localStorage.getItem('theme') || localStorage.getItem('hk-theme') || 'dark');
+applyLang();
+loadHouses();
+</script>
+<script src="/js/hk-luopan-nav.js?v=1" defer></script>
+</body>
+</html>

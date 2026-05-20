@@ -7,6 +7,61 @@
 (function () {
   if (window.__hkUserMenuLoaded) return;
   window.__hkUserMenuLoaded = true;
+  var ROOT_ID = 'hk-user-menu-root';
+  var initPromise = null;
+
+  /* 🚀 Global cache · /api/auth/me + /api/account/me · 30s TTL · ลด re-fetch ตอน navigate (16 พ.ค. 2026) */
+  var ME_TTL = 30 * 1000;
+  var inflight = { auth:null, account:null };
+  function cachedMe(url, storageKey){
+    /* in-flight dedupe */
+    if (inflight[storageKey]) return inflight[storageKey];
+    /* sessionStorage hit */
+    try {
+      var raw = sessionStorage.getItem('hk_me_'+storageKey);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.exp > Date.now()) return Promise.resolve(parsed.data);
+      }
+    } catch(_){}
+    /* fresh fetch */
+    var p = fetch(url, { credentials:'same-origin', cache:'no-store' })
+      .then(function(r){ if (!r.ok) throw new Error('me '+r.status); return r.json(); })
+      .then(function(j){
+        try { sessionStorage.setItem('hk_me_'+storageKey, JSON.stringify({ exp: Date.now()+ME_TTL, data: j })); } catch(_){}
+        return j;
+      })
+      .finally(function(){ inflight[storageKey] = null; });
+    inflight[storageKey] = p;
+    return p;
+  }
+  window.__hkFetchAuthMe    = function(){ return cachedMe('/api/auth/me',    'auth'); };
+  window.__hkFetchAccountMe = function(){ return cachedMe('/api/account/me', 'account'); };
+  /* clear on logout · เรียก __hkClearMeCache() ใน flow logout */
+  window.__hkClearMeCache = function(){
+    try { sessionStorage.removeItem('hk_me_auth'); sessionStorage.removeItem('hk_me_account'); } catch(_){}
+    inflight.auth = null; inflight.account = null;
+  };
+
+  var SINSAE_INTRO_VERSION = 'sinsae_intro_20260517';
+  function maybeOpenSinsaeGate(){
+    try {
+      var path = window.location.pathname.replace(/\/$/,'') || '/';
+      var excluded = {
+        '/': true,
+        '/master': true,
+        '/signup': true,
+        '/login': true,
+        '/input': true,
+        '/onboarding': true
+      };
+      if (excluded[path]) return;
+      if (localStorage.getItem('hk_sinsae_intro_version') === SINSAE_INTRO_VERSION) return;
+      var next = window.location.pathname + window.location.search + window.location.hash;
+      if (!next || next.charAt(0) !== '/' || next.charAt(1) === '/') next = '/today';
+      window.location.href = '/master?intro=1&next=' + encodeURIComponent(next);
+    } catch(_) {}
+  }
 
   /* ── i18n ── */
   var I18N = {
@@ -68,10 +123,13 @@
   `;
 
   /* ── inject CSS ── */
-  var style = document.createElement('style');
-  style.id = 'hk-um-style';
-  style.textContent = CSS;
-  document.head.appendChild(style);
+  var style = document.getElementById('hk-um-style');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'hk-um-style';
+    style.textContent = CSS;
+    document.head.appendChild(style);
+  }
 
   /* ── helpers ── */
   function initial(name) {
@@ -124,18 +182,27 @@
     });
   }
 
+  function getMountTarget() {
+    return document.querySelector('#hk-user-menu-mount') || document.querySelector('.top-r');
+  }
+
+  function removeExistingMenu() {
+    var existing = document.getElementById(ROOT_ID);
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+  }
+
   /* ── build menu ── */
   function buildMenu(user) {
     var savedTheme = (localStorage.getItem('hk-theme') || 'dark');
     var savedLang  = (localStorage.getItem('hk_locale') || 'th');
     var displayName = user.name || (user.email || '').split('@')[0] || 'user';
     var avatar = user.avatar_url
-      ? '<img src="'+escapeHtml(user.avatar_url)+'" alt=""/>'
+      ? '<img src="'+escapeHtml(user.avatar_url)+'" alt="" referrerpolicy="no-referrer"/>'
       : escapeHtml(initial(displayName));
-    // หา mount point — ถ้ามี navbar (.top-r) → mount inline · ไม่งั้น fixed
-    var mountTarget = document.querySelector('#hk-user-menu-mount') || document.querySelector('.top-r');
+    var mountTarget = getMountTarget();
     var inline = !!mountTarget;
     var wrap = document.createElement('div');
+    wrap.id = ROOT_ID;
     wrap.className = 'hk-um-wrap' + (inline ? ' inline' : '');
     wrap.innerHTML = `
       <button class="hk-um-trigger" id="hk-um-trigger" aria-label="user menu">${avatar}</button>
@@ -143,11 +210,23 @@
         <div class="hk-um-head">
           <div class="hk-um-name">${escapeHtml(displayName)}</div>
           <div class="hk-um-email">${escapeHtml(user.email || '')}</div>
+          <div class="hk-um-account" id="hk-um-account" style="display:none;margin-top:10px;padding:10px 12px;background:linear-gradient(135deg,rgba(200,164,77,.15),rgba(200,164,77,.05));border:1px solid rgba(200,164,77,.3);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:'JetBrains Mono',monospace;">
+            <span style="display:inline-flex;align-items:center;gap:6px;">
+              <span style="font-family:'Noto Serif TC',serif;font-size:14px;color:#c8a44d;font-weight:700;" id="hk-um-tier-badge">新</span>
+              <span style="font-size:9px;letter-spacing:.12em;color:rgba(246,241,230,.6);text-transform:uppercase;" id="hk-um-tier-name">FREE</span>
+            </span>
+            <a href="/account.html" style="display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:#c8a44d;font-size:11px;letter-spacing:.05em;">
+              <span style="font-family:'Noto Serif TC',serif;font-weight:700;" id="hk-um-balance">—</span>
+              <span style="font-family:'Noto Serif TC',serif;">時</span>
+              <span style="opacity:.6;">▸</span>
+            </a>
+          </div>
         </div>
         <div class="hk-um-sec">
           <a class="hk-um-item" href="/today"><span class="hk-um-ico">📊</span><span class="hk-um-i-today">${t('today')}</span></a>
           <a class="hk-um-item" href="/chart"><span class="hk-um-ico">📜</span><span class="hk-um-i-chart">${t('chart')}</span></a>
-          <a class="hk-um-item" href="/yongsennetwork"><span class="hk-um-ico">👥</span><span class="hk-um-i-network">${t('network')}</span></a>
+	          <a class="hk-um-item" href="/network"><span class="hk-um-ico">👥</span><span class="hk-um-i-network">${t('network')}</span></a>
+          <a class="hk-um-item" href="/account.html"><span class="hk-um-ico">💎</span><span>บัญชี · 時 · Top Up</span></a>
         </div>
         <div class="hk-um-sec">
           <div class="hk-um-row">
@@ -167,12 +246,15 @@
           </div>
         </div>
         <div class="hk-um-sec">
-          <a class="hk-um-item" href="/dashboard"><span class="hk-um-ico">⚙️</span><span class="hk-um-i-settings">${t('settings')}</span></a>
+          <button class="hk-um-item" id="hk-um-settings"><span class="hk-um-ico">⚙️</span><span class="hk-um-i-settings">${t('settings')}</span></button>
           <button class="hk-um-item danger" id="hk-um-logout"><span class="hk-um-ico">🚪</span><span class="hk-um-i-logout">${t('logout')}</span></button>
         </div>
       </div>
     `;
-    if (inline && mountTarget) {
+    removeExistingMenu();
+    if (mountTarget && mountTarget.id === 'hk-user-menu-mount') {
+      mountTarget.replaceChildren(wrap);
+    } else if (inline && mountTarget) {
       mountTarget.appendChild(wrap);
     } else {
       document.body.appendChild(wrap);
@@ -181,6 +263,31 @@
     /* events */
     var trigger = wrap.querySelector('#hk-um-trigger');
     var panel = wrap.querySelector('#hk-um-panel');
+
+    /* 📜 fetch tier + 時 balance · cached 30s · 16 พ.ค. */
+    window.__hkFetchAccountMe()
+      .then(function(acc){
+        var box = wrap.querySelector('#hk-um-account');
+        if (!box) return;
+        box.style.display = 'flex';
+        var TIER_BADGE = {free:'新', premium:'賢', master:'大'};
+        var TIER_NAME = {free:'FREE', premium:'PREMIUM', master:'MASTER'};
+        var bEl = wrap.querySelector('#hk-um-tier-badge');
+        var nEl = wrap.querySelector('#hk-um-tier-name');
+        var balEl = wrap.querySelector('#hk-um-balance');
+        if (bEl) bEl.textContent = TIER_BADGE[acc.tier] || '新';
+        if (nEl) nEl.textContent = TIER_NAME[acc.tier] || 'FREE';
+        if (balEl) balEl.textContent = (acc.hour_balance || 0).toLocaleString();
+      })
+      .catch(function(){ /* anon · silent */ });
+    /* if avatar img fails to load, fall back to initials */
+    var triggerImg = trigger.querySelector('img');
+    if (triggerImg) {
+      triggerImg.addEventListener('error', function(){
+        console.warn('[HK] avatar load failed:', triggerImg.currentSrc || triggerImg.src);
+        trigger.textContent = initial(displayName);
+      });
+    }
     trigger.addEventListener('click', function(e){
       e.stopPropagation();
       panel.classList.toggle('on');
@@ -196,10 +303,25 @@
     });
     wrap.querySelector('#hk-um-logout').addEventListener('click', async function(){
       try {
+        if (window.__hkClearMeCache) window.__hkClearMeCache();
         await fetch('/api/auth/logout', { method: 'POST' });
       } catch(_) {}
       window.location.href = '/';
     });
+    var settingsBtn = wrap.querySelector('#hk-um-settings');
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', function(){
+        panel.classList.remove('on');
+        if (typeof window.HK_openSettings === 'function') {
+          window.HK_openSettings();
+        } else {
+          var s = document.createElement('script');
+          s.src = '/js/hk-settings-drawer.js?v=9';
+          s.onload = function(){ if (typeof window.HK_openSettings === 'function') window.HK_openSettings(); };
+          document.head.appendChild(s);
+        }
+      });
+    }
   }
 
   function escapeHtml(s){
@@ -210,19 +332,26 @@
 
   /* ── fetch user + mount ── */
   function init() {
-    fetch('/api/auth/me', { credentials: 'same-origin' })
-      .then(function(r){ return r.json(); })
+    if (initPromise) return initPromise;
+    initPromise = window.__hkFetchAuthMe()
       .then(function(j){
         if (j && j.user && j.user.id) {
+          console.log('[HK] user menu · avatar_url =', j.user.avatar_url, '· name =', j.user.name);
+          maybeOpenSinsaeGate();
           buildMenu(j.user);
         }
         // ถ้าไม่ login → ไม่แสดงเมนู (หน้า private พวกนี้ ปกติ middleware เด้งไป login อยู่แล้ว)
       })
-      .catch(function(){});
+      .catch(function(){})
+      .finally(function(){ initPromise = null; });
+    return initPromise;
   }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', init, { once: true });
   } else {
     init();
   }
+  window.addEventListener('pageshow', function(e){
+    if (e.persisted) init();
+  });
 })();

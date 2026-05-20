@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5"/>
+<title>ค้นฤกษ์ · 擇吉 · hourkey</title>
+<meta name="description" content="ค้นฤกษ์มงคล · ตำราอาเจ๊กฮ้ง · 11 ศาสตร์ · 7 กิจกรรม · 50ms"/>
+<link rel="canonical" href="https://www.hourkey.io/auspicious"/>
+<link rel="alternate" hreflang="th" href="https://www.hourkey.io/auspicious?lang=th"/>
+<link rel="alternate" hreflang="en" href="https://www.hourkey.io/auspicious?lang=en"/>
+<link rel="alternate" hreflang="zh" href="https://www.hourkey.io/auspicious?lang=zh"/>
+<meta property="og:title" content="ค้นฤกษ์มงคล · 擇吉"/>
+<meta property="og:description" content="11 ศาสตร์ · 7 กิจกรรม · ใช้เวลา 50 มิลลิวินาที"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
+<style>
+  :root{
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12); --gold-line:rgba(200,164,77,.28);
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif; --thai:'Noto Serif Thai',serif; --mono:'JetBrains Mono',monospace;
+    --bg:#0d0f12; --bg-2:#14171d; --bg-3:#1a1e25;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.4);
+    --tile:#161a21; --tile-bd:rgba(246,241,230,.08);
+    --pos:#7dd37b; --neg:#e26b5d; --info:#5db3ff; --warn:#f7b955;
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#fbf6ea; --bg-3:#fff8e8;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.62); --fg-faint:rgba(26,22,18,.45);
+    --tile:#fbf6ea; --tile-bd:rgba(26,22,18,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--fg);font-family:var(--thai);min-height:100vh;line-height:1.6;}
+  .hk-topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .hk-top-r{display:flex;gap:10px;}
+  .hk-btn{background:transparent;border:1px solid var(--gold-line);color:var(--gold);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;}
+  .hk-btn:hover{background:var(--gold-soft);}
+  .hk-btn.act{background:var(--gold);color:var(--bg);}
+
+  .page{max-width:1100px;margin:0 auto;padding:30px 22px 80px;}
+  .hero{text-align:center;margin-bottom:28px;}
+  .hero .seal-big{font-family:var(--tc);font-size:56px;color:var(--gold);line-height:1;letter-spacing:6px;margin-bottom:8px;}
+  .hero h1{font-family:var(--serif);font-size:32px;font-weight:600;margin-bottom:4px;}
+  .hero .sub{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
+  .hero .desc{font-size:13px;color:var(--fg-soft);margin-top:8px;max-width:560px;margin-left:auto;margin-right:auto;}
+
+  .panel{background:var(--bg-2);border:1px solid var(--gold-line);border-radius:14px;padding:18px;margin-bottom:18px;}
+  .panel-h{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .activity-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;}
+  .activity{padding:10px 8px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:8px;cursor:pointer;text-align:center;transition:.2s;}
+  .activity:hover{border-color:var(--gold);}
+  .activity.act{background:var(--gold-soft);border-color:var(--gold);}
+  .activity .zh{font-family:var(--tc);font-size:18px;color:var(--gold);font-weight:600;}
+  .activity .name{font-size:11px;color:var(--fg-soft);margin-top:2px;}
+
+  .modules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;}
+  .mod-chip{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:8px;cursor:pointer;font-size:11px;}
+  .mod-chip input{margin:0;}
+  .mod-chip.act{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+
+  .date-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .date-row label{font-family:var(--mono);font-size:11px;color:var(--gold);}
+  .date-row input{padding:8px 12px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:8px;color:var(--fg);font-family:var(--thai);font-size:13px;}
+
+  .btn-go{margin-top:10px;padding:14px 24px;background:var(--gold);color:var(--bg);border:none;border-radius:10px;font-family:var(--mono);font-size:12px;letter-spacing:.15em;cursor:pointer;width:100%;font-weight:600;}
+  .btn-go:hover{background:var(--gold-deep);color:var(--fg);}
+  .btn-go:disabled{opacity:.5;cursor:not-allowed;}
+
+  .funnel{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-top:12px;}
+  .funnel-bar{padding:8px;background:var(--tile);border-left:3px solid var(--gold);border-radius:6px;font-size:10px;}
+  .funnel-bar .lbl{font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.05em;}
+  .funnel-bar .val{font-family:var(--mono);font-size:14px;color:var(--fg);font-weight:600;margin-top:2px;}
+  .funnel-bar .tot{font-size:9px;color:var(--fg-faint);}
+
+  .results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+  .result-card{background:var(--tile);border:1px solid var(--tile-bd);border-radius:12px;padding:14px;transition:.2s;}
+  .result-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .result-card.tier-excellent{border-left:4px solid #ffd700;}
+  .result-card.tier-very_good{border-left:4px solid var(--pos);}
+  .result-card.tier-good{border-left:4px solid var(--info);}
+  .result-card.tier-acceptable{border-left:4px solid var(--warn);}
+  .result-card.tier-poor{border-left:4px solid var(--neg);}
+  .result-card .row1{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .result-card .dt{font-family:var(--mono);font-size:13px;color:var(--gold);}
+  .result-card .score{font-family:var(--serif);font-size:22px;color:var(--gold);font-weight:600;}
+  .result-card .pill-row{font-family:var(--tc);font-size:13px;color:var(--fg-soft);margin-bottom:4px;}
+  .result-card .pill-row .lbl{color:var(--fg-faint);font-size:10px;letter-spacing:.1em;font-family:var(--mono);}
+  .result-card .badge{display:inline-block;padding:2px 8px;font-size:10px;border-radius:10px;margin-top:6px;}
+
+  .meta{margin-top:16px;text-align:center;font-family:var(--mono);font-size:10px;color:var(--fg-faint);letter-spacing:.05em;}
+
+  .loading{text-align:center;padding:40px;color:var(--fg-soft);}
+
+  @media(max-width:640px){
+    .hero h1{font-size:24px;}
+    .hero .seal-big{font-size:42px;}
+    .results-grid{grid-template-columns:1fr;}
+  }
+</style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
+</head>
+<body>
+  <header class="hk-topbar">
+    <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
+    <div class="hk-top-r">
+      <button class="hk-btn" id="lang-th">TH</button>
+      <button class="hk-btn" id="lang-en">EN</button>
+      <button class="hk-btn" id="lang-zh">中</button>
+      <button class="hk-btn" id="theme-tog">🌓</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="hero">
+      <div class="seal-big">擇吉</div>
+      <h1 id="page-title">ค้นฤกษ์มงคล · ตำราอาเจ๊กฮ้ง</h1>
+      <div class="sub">擇吉 · 11 ศาสตร์ · 7 กิจกรรม · ทีม 5 คน</div>
+      <div class="desc" id="page-desc">เลือกกิจกรรม → เลือกศาสตร์ → กดค้น · ผลใน 50 มิลลิวินาที</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h" id="lbl-activity">เลือกกิจกรรม · ACTIVITY</div>
+      <div class="activity-grid" id="activity-grid"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h" id="lbl-modules">เลือกศาสตร์ที่ต้องการให้ผ่าน · MODULES</div>
+      <div class="modules-grid" id="modules-grid"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-h" id="lbl-range">ช่วงเวลา · DATE RANGE</div>
+      <div class="date-row">
+        <label id="lbl-from">จากวัน:</label>
+        <input id="date-from" type="date"/>
+        <label id="lbl-to">ถึงวัน:</label>
+        <input id="date-to" type="date"/>
+        <label id="lbl-limit">สูงสุด:</label>
+        <input id="limit-inp" type="number" value="20" min="1" max="100" style="width:80px"/>
+      </div>
+      <button class="btn-go" id="btn-go">🔍 ค้นฤกษ์ · GO</button>
+    </div>
+
+    <div class="panel" id="funnel-panel" style="display:none">
+      <div class="panel-h">📊 Funnel · ดูแต่ละศาสตร์ผ่านกี่อัน</div>
+      <div class="funnel" id="funnel"></div>
+    </div>
+
+    <div id="results-area"></div>
+    <div class="meta" id="meta"></div>
+  </main>
+
+<script>
+const ACTIVITIES = [
+  {key:'立約', th:'เซ็นสัญญา', en:'Contract', emoji:'📜'},
+  {key:'出行', th:'เดินทาง', en:'Travel', emoji:'🚗'},
+  {key:'搬家', th:'ย้ายบ้าน', en:'Move home', emoji:'🏠'},
+  {key:'開市', th:'เปิดกิจการ', en:'Open business', emoji:'🏢'},
+  {key:'婚姻', th:'แต่งงาน', en:'Marriage', emoji:'💒'},
+  {key:'求財', th:'หาเงิน', en:'Wealth', emoji:'💰'},
+  {key:'祭祀', th:'พิธีกรรม', en:'Ritual', emoji:'🕯️'},
+];
+const MODULES = [
+  {key:'ze_ri', zh:'擇日', th:'เลือกวัน', en:'Auspicious Day'},
+  {key:'twelve_officers', zh:'十二建除', th:'12 จี้านฉู', en:'12 Officers'},
+  {key:'twenty_eight', zh:'二十八宿', th:'28 ดาว', en:'28 Constellations'},
+  {key:'twelve_spirits', zh:'十二神煞', th:'12 เซินซา', en:'12 Spirits'},
+  {key:'nine_stars', zh:'九飛星', th:'9 ดาว', en:'9 Stars'},
+  {key:'tai_sui', zh:'太歲', th:'ไท้ส่วย', en:'Tai Sui'},
+  {key:'qi_men', zh:'奇門', th:'ฉีเหมิน', en:'Qi Men'},
+  {key:'he_luo', zh:'河洛', th:'เหอลั่ว', en:'He Luo'},
+  {key:'ba_zi', zh:'八字', th:'ปาจื้อ', en:'BaZi (personal)'},
+  {key:'yong_shen', zh:'用神', th:'ย่งเสิน', en:'Useful God'},
+  {key:'hex64', zh:'64卦', th:'64 กว้า', en:'64 Hexagrams'},
+];
+const I18N = {
+  th: { activity:'เลือกกิจกรรม · ACTIVITY', modules:'เลือกศาสตร์ที่ต้องการให้ผ่าน · MODULES',
+        range:'ช่วงเวลา · DATE RANGE', from:'จากวัน:', to:'ถึงวัน:', limit:'สูงสุด:',
+        btn:'🔍 ค้นฤกษ์ · GO', empty:'ไม่พบฤกษ์ที่ผ่านเกณฑ์ · ลองขยายช่วงวัน', loading:'กำลังค้น...',
+        title:'ค้นฤกษ์มงคล · ตำราอาเจ๊กฮ้ง', desc:'เลือกกิจกรรม → เลือกศาสตร์ → กดค้น · ผลใน 50 มิลลิวินาที' },
+  en: { activity:'Select activity', modules:'Select required modules',
+        range:'Date range', from:'From:', to:'To:', limit:'Limit:',
+        btn:'🔍 Search · GO', empty:'No auspicious times match criteria', loading:'Searching...',
+        title:'Auspicious Time Finder · Master Hng', desc:'Pick activity → modules → search · 50ms result' },
+  zh: { activity:'選擇活動', modules:'選擇要篩選的學科',
+        range:'日期範圍', from:'起:', to:'迄:', limit:'上限:',
+        btn:'🔍 搜尋 · GO', empty:'未找到符合條件的吉時', loading:'搜尋中...',
+        title:'擇吉時 · 阿哥師傅版', desc:'選活動 → 選學科 → 搜尋 · 50 毫秒出結果' },
+};
+const TIER_LABEL = {
+  excellent:{th:'⭐ ดีเยี่ยม',en:'⭐ Excellent',zh:'⭐ 極佳'},
+  very_good:{th:'✓ ดีมาก',en:'✓ Very Good',zh:'✓ 大吉'},
+  good:{th:'○ ดี',en:'○ Good',zh:'○ 吉'},
+  acceptable:{th:'△ พอใช้',en:'△ Acceptable',zh:'△ 平'},
+  poor:{th:'⚠ ไม่ดี',en:'⚠ Poor',zh:'⚠ 凶'},
+};
+
+let LANG = new URLSearchParams(location.search).get('lang') || localStorage.getItem('lang') || 'th';
+let activity = '立約';
+let activeMods = new Set(['ze_ri','twelve_officers','tai_sui','qi_men']);
+
+// init UI
+function ymd(d){return d.toISOString().slice(0,10);}
+const today = new Date();
+const in30 = new Date(); in30.setDate(in30.getDate()+30);
+document.getElementById('date-from').value = ymd(today);
+document.getElementById('date-to').value = ymd(in30);
+
+function renderActivities(){
+  const el = document.getElementById('activity-grid');
+  el.innerHTML = ACTIVITIES.map(a => `
+    <div class="activity ${a.key===activity?'act':''}" data-k="${a.key}">
+      <div class="zh">${a.key}</div>
+      <div class="name">${a.emoji} ${LANG==='en'?a.en:a.th}</div>
+    </div>`).join('');
+  el.querySelectorAll('.activity').forEach(d => d.onclick = () => { activity = d.dataset.k; renderActivities(); });
+}
+function renderModules(){
+  const el = document.getElementById('modules-grid');
+  el.innerHTML = MODULES.map(m => {
+    const lbl = LANG==='en'?m.en:(LANG==='zh'?m.zh:m.th);
+    return `<label class="mod-chip ${activeMods.has(m.key)?'act':''}">
+      <input type="checkbox" ${activeMods.has(m.key)?'checked':''} data-k="${m.key}"/>
+      <span class="tc">${m.zh}</span> <span style="font-size:10px;color:var(--fg-soft)">${lbl}</span>
+    </label>`;
+  }).join('');
+  el.querySelectorAll('input').forEach(i => i.onchange = (e) => {
+    if (e.target.checked) activeMods.add(e.target.dataset.k); else activeMods.delete(e.target.dataset.k);
+    e.target.closest('.mod-chip').classList.toggle('act', e.target.checked);
+  });
+}
+function applyLang(){
+  const t = I18N[LANG];
+  document.getElementById('page-title').textContent = t.title;
+  document.getElementById('page-desc').textContent = t.desc;
+  document.getElementById('lbl-activity').textContent = t.activity;
+  document.getElementById('lbl-modules').textContent = t.modules;
+  document.getElementById('lbl-range').textContent = t.range;
+  document.getElementById('lbl-from').textContent = t.from;
+  document.getElementById('lbl-to').textContent = t.to;
+  document.getElementById('lbl-limit').textContent = t.limit;
+  document.getElementById('btn-go').textContent = t.btn;
+  ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
+  renderActivities(); renderModules();
+}
+function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
+
+async function search(){
+  const t = I18N[LANG];
+  const btn = document.getElementById('btn-go');
+  btn.disabled = true; btn.textContent = t.loading;
+  const dateFrom = document.getElementById('date-from').value;
+  const dateTo = document.getElementById('date-to').value;
+  const limit = parseInt(document.getElementById('limit-inp').value) || 20;
+  const t0 = Date.now();
+  try {
+    const r = await fetch('/api/auspicious', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ activityType: activity, dateFrom, dateTo, activeModules: Array.from(activeMods), options:{limit} })
+    });
+    const d = await r.json();
+    renderResults(d, Date.now()-t0);
+  } catch (e) {
+    document.getElementById('results-area').innerHTML = `<div class="loading" style="color:var(--neg)">⚠ ${e.message}</div>`;
+  }
+  btn.disabled = false; btn.textContent = t.btn;
+}
+
+function renderResults(d, clientMs){
+  const t = I18N[LANG];
+  const fp = document.getElementById('funnel-panel');
+  if (d.funnelStats && d.funnelStats.total > 0) {
+    fp.style.display = 'block';
+    const pm = d.funnelStats.perModule || {};
+    document.getElementById('funnel').innerHTML = MODULES.filter(m => pm[m.key]).map(m => {
+      const s = pm[m.key]; const pct = s.passed/d.funnelStats.total*100;
+      return `<div class="funnel-bar"><div class="lbl">${m.zh}</div><div class="val">${s.passed}</div><div class="tot">/${d.funnelStats.total} (${pct.toFixed(0)}%)</div></div>`;
+    }).join('');
+  } else fp.style.display = 'none';
+
+  const cands = d.candidates || [];
+  const ra = document.getElementById('results-area');
+  if (!cands.length) { ra.innerHTML = `<div class="loading">${t.empty}</div>`; document.getElementById('meta').textContent=''; return; }
+
+  ra.innerHTML = `<div class="panel"><div class="panel-h">📌 ${cands.length} ฤกษ์</div>
+    <div class="results-grid">${cands.map(c => {
+      const p = c.pillars; const s = c.scoring;
+      const tier = s.tier;
+      const tierLbl = (TIER_LABEL[tier]||{})[LANG] || tier;
+      const dt = c.datetime.start.replace('T',' ').slice(0,16);
+      return `<div class="result-card tier-${tier}">
+        <div class="row1"><div class="dt">${dt}</div><div class="score">${Math.round(s.finalScore)}</div></div>
+        <div class="pill-row"><span class="lbl">日</span> ${p.day.stem}${p.day.branch} · <span class="lbl">時</span> ${p.hour.stem}${p.hour.branch}</div>
+        <div class="pill-row"><span class="lbl">月</span> ${p.month.stem}${p.month.branch} · <span class="lbl">年</span> ${p.year.stem}${p.year.branch}</div>
+        ${c.calendar.solarTerm?`<div class="pill-row"><span class="lbl">節</span> <span class="tc">${c.calendar.solarTerm}</span></div>`:''}
+        <div class="badge" style="background:${getTierColor(tier)};color:#000">${tierLbl}</div>
+      </div>`;
+    }).join('')}</div></div>`;
+
+  document.getElementById('meta').textContent =
+    `Server: ${d.meta?.durationMs||'?'}ms · Client total: ${clientMs}ms · Cache hit: ${d.meta?.cacheHits||0}/${(d.meta?.cacheHits||0)+(d.meta?.cacheMisses||0)} · Funnel total: ${d.funnelStats?.total||0}`;
+}
+function getTierColor(t){return {excellent:'#ffd700',very_good:'#7dd37b',good:'#5db3ff',acceptable:'#f7b955',poor:'#e26b5d'}[t]||'#999';}
+
+['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('lang',l); applyLang(); });
+document.getElementById('theme-tog').onclick = () => applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
+document.getElementById('btn-go').onclick = search;
+
+applyTheme(localStorage.getItem('theme')||'dark');
+applyLang();
+</script>
+</body>
+</html>

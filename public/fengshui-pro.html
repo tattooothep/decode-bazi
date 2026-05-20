@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5"/>
+<title>九宮 ฮวงจุ้ย Pro · 9 พาลา · hourkey</title>
+<meta name="description" content="9 พาลา + ดาวเหิน + 24 山 + 8 宅 + 64 卦 · ทุก layer ในที่เดียว"/>
+<link rel="canonical" href="https://www.hourkey.io/fengshui-pro"/>
+<link rel="alternate" hreflang="th" href="https://www.hourkey.io/fengshui-pro?lang=th"/>
+<link rel="alternate" hreflang="en" href="https://www.hourkey.io/fengshui-pro?lang=en"/>
+<link rel="alternate" hreflang="zh" href="https://www.hourkey.io/fengshui-pro?lang=zh"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
+<style>
+  :root{
+    --gold:#c8a44d; --gold-bright:#e6c976; --gold-soft:rgba(200,164,77,.12); --gold-line:rgba(200,164,77,.28);
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif; --th:'Noto Serif Thai',serif; --mono:'JetBrains Mono',monospace;
+    --bg:#0a0a0c; --bg-2:#13131a; --bg-3:#1a1a23; --bg-4:#22222e;
+    --fg:#f3ebd9; --fg-soft:#c2b694; --fg-faint:#7a7160;
+    --line:rgba(200,164,77,.14);
+    --good:#7dd37b; --good-soft:rgba(125,211,123,.15);
+    --neutral:#5ba0ff; --neutral-soft:rgba(91,160,255,.12);
+    --bad:#e26b5d; --bad-soft:rgba(226,107,93,.15);
+    --warn:#f7b955; --warn-soft:rgba(247,185,85,.15);
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#fbf6ea; --bg-3:#fff8e8; --bg-4:#f1e9d4;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.62); --fg-faint:rgba(26,22,18,.45);
+    --line:rgba(138,109,42,.2);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--fg);font-family:var(--th);min-height:100vh;line-height:1.6;}
+  .hk-topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb,var(--bg) 80%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .hk-top-r{display:flex;gap:8px;}
+  .hk-btn{background:transparent;border:1px solid var(--gold-line);color:var(--gold);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;}
+  .hk-btn:hover{background:var(--gold-soft);}
+  .hk-btn.act{background:var(--gold);color:var(--bg);}
+
+  .hero{text-align:center;padding:32px 24px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--bg-2),var(--bg));}
+  .hero .crest{font-family:var(--tc);font-size:52px;color:var(--gold);line-height:1;letter-spacing:8px;margin-bottom:6px;}
+  .hero h1{font-family:var(--serif);font-size:30px;font-weight:400;margin-bottom:6px;}
+  .hero h1 b{color:var(--gold);font-weight:500;font-style:italic;}
+  .hero .sub{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;}
+
+  main{max-width:1100px;margin:0 auto;padding:24px 24px 80px;}
+
+  .ctrl-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:14px 18px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;margin-bottom:18px;}
+  .ctrl-bar .field{display:flex;align-items:center;gap:8px;}
+  .ctrl-bar label{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;}
+  .ctrl-bar select, .ctrl-bar input{background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:12px;padding:6px 10px;border-radius:6px;outline:none;}
+
+  .mode-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .mode-tab{padding:8px 14px;background:var(--bg-3);border:1px solid var(--line);color:var(--fg-soft);font-family:var(--mono);font-size:11px;cursor:pointer;border-radius:8px;letter-spacing:.05em;}
+  .mode-tab .tc{font-family:var(--tc);color:var(--gold);font-size:14px;margin-right:4px;}
+  .mode-tab:hover{border-color:var(--gold-line);}
+  .mode-tab.act{background:var(--gold);color:var(--bg);}
+  .mode-tab.act .tc{color:var(--bg);}
+
+  /* 9 Palace Grid */
+  .palace-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:14px;aspect-ratio:1/1;max-width:520px;margin:0 auto 18px;}
+  .palace{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;position:relative;transition:.2s;cursor:pointer;}
+  .palace:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .palace.good{background:var(--good-soft);border-color:rgba(125,211,123,.4);}
+  .palace.bad{background:var(--bad-soft);border-color:rgba(226,107,93,.4);}
+  .palace.neutral{background:var(--neutral-soft);border-color:rgba(91,160,255,.3);}
+  .palace.warning{background:var(--warn-soft);border-color:var(--warn);}
+  .palace .corner{position:absolute;top:6px;left:8px;font-family:var(--mono);font-size:9px;color:var(--fg-soft);letter-spacing:.05em;}
+  .palace .star{font-family:var(--tc);font-size:32px;color:var(--gold);font-weight:600;line-height:1;text-align:center;margin:auto;}
+  .palace .info{font-family:var(--mono);font-size:9px;color:var(--fg-soft);text-align:center;line-height:1.4;}
+  .palace .info .meaning{font-family:var(--th);font-size:9px;margin-top:2px;}
+
+  .layer-info{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:var(--fg-soft);line-height:1.7;}
+  .layer-info b{color:var(--gold);}
+
+  .warnings-box{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin-bottom:14px;}
+  .warnings-box h3{font-family:var(--serif);font-size:16px;color:var(--gold);margin-bottom:10px;}
+  .warn-item{padding:8px 10px;border-radius:6px;margin-bottom:6px;font-size:12px;border-left:3px solid;}
+  .warn-item.critical{background:var(--bad-soft);border-color:var(--bad);color:var(--fg);}
+  .warn-item.warning{background:var(--warn-soft);border-color:var(--warn);color:var(--fg);}
+
+  .deity-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px;}
+  .deity-cell{background:var(--bg-3);border:1px solid var(--line);border-radius:8px;padding:10px 12px;}
+  .deity-cell .lbl{font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:.1em;margin-bottom:4px;}
+  .deity-cell .val{font-family:var(--tc);font-size:18px;color:var(--fg);font-weight:600;}
+
+  .cross-link{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px;}
+  .cross-link a{font-family:var(--mono);font-size:10px;color:var(--gold);text-decoration:none;letter-spacing:.1em;padding:6px 12px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;}
+
+  @media(max-width:640px){
+    .hero h1{font-size:24px;} .hero .crest{font-size:42px;}
+    main{padding:16px 14px 60px;}
+    .palace .star{font-size:22px;}
+  }
+</style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
+</head>
+<body>
+  <header class="hk-topbar">
+    <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
+    <div class="hk-top-r">
+      <button class="hk-btn" id="lang-th">TH</button>
+      <button class="hk-btn" id="lang-en">EN</button>
+      <button class="hk-btn" id="lang-zh">中</button>
+      <button class="hk-btn" id="theme-tog">🌓</button>
+    </div>
+  </header>
+
+  <header class="hero">
+    <div class="crest">九宮</div>
+    <h1 id="page-title"><b>ฮวงจุ้ย</b> Pro · 9 พาลา</h1>
+    <div class="sub" id="page-sub">XUAN KONG · 沈氏玄空 · ทีม 100%</div>
+  </header>
+
+  <main>
+    <div class="ctrl-bar">
+      <div class="field">
+        <label id="lbl-house">บ้าน</label>
+        <select id="house-sel"><option value="">-- ไม่ผูกบ้าน --</option></select>
+      </div>
+      <div class="field">
+        <label id="lbl-dt">เวลา</label>
+        <input id="dt" type="datetime-local"/>
+      </div>
+      <button class="hk-btn" id="btn-now" style="font-size:10px;">⏰ ตอนนี้</button>
+      <button class="hk-btn act" id="btn-refresh">🔄 รีเฟรช</button>
+    </div>
+
+    <div class="mode-tabs" id="mode-tabs">
+      <div class="mode-tab act" data-mode="flying_stars"><span class="tc">飛星</span><span class="lbl-flying">ดาวเหิน</span></div>
+      <div class="mode-tab" data-mode="twenty_four"><span class="tc">24山</span><span class="lbl-24">24 ทิศ</span></div>
+      <div class="mode-tab" data-mode="ai_xing"><span class="tc">挨星</span><span class="lbl-aixing">挨星 Yang Gong</span></div>
+      <div class="mode-tab" data-mode="qi_men"><span class="tc">奇門</span><span class="lbl-qm">奇門</span></div>
+      <div class="mode-tab" data-mode="ba_zhai"><span class="tc">八宅</span><span class="lbl-ba">八宅 ต่อคน</span></div>
+      <div class="mode-tab" data-mode="sixty_four"><span class="tc">64卦</span><span class="lbl-64">64卦</span></div>
+    </div>
+
+    <div id="layer-info" class="layer-info"></div>
+    <div id="palace-grid" class="palace-grid"></div>
+    <div id="deity-row" class="deity-row"></div>
+    <div id="warnings"></div>
+
+    <div class="cross-link">
+      <a href="/compass">🧭 เข็มทิศ</a>
+      <a href="/fengshui">📚 ฮวงจุ้ย Classic</a>
+      <a href="/datepick">📅 วางฤกษ์</a>
+      <a href="/katakagae">🌸 方違</a>
+    </div>
+  </main>
+
+<script>
+const I18N = {
+  th: { title:'<b>ฮวงจุ้ย</b> Pro · 9 พาลา', house:'บ้าน', dt:'เวลา', flying:'ดาวเหิน',
+        m24:'24 ทิศ', aixing:'挨星 Yang Gong', qm:'奇門', ba:'八宅 ต่อคน', m64:'64卦' },
+  en: { title:'<b>Feng Shui</b> Pro · 9 Palaces', house:'House', dt:'Time', flying:'Flying Stars',
+        m24:'24 Mountains', aixing:'Ai Xing', qm:'Qi Men', ba:'Ba Zhai · per person', m64:'64 Hex' },
+  zh: { title:'<b>風水 Pro</b> · 九宮', house:'房屋', dt:'時間', flying:'飛星',
+        m24:'24山', aixing:'挨星', qm:'奇門', ba:'八宅·因人', m64:'64卦' },
+};
+let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
+let curMode = 'flying_stars';
+let curHouseId = null;
+
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);localStorage.setItem('hk-theme',t);}
+function applyLang(){
+  const t = I18N[LANG] || I18N.th;
+  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
+  document.title = '九宮 ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
+  document.getElementById('page-title').innerHTML = t.title;
+  document.getElementById('lbl-house').textContent = t.house;
+  document.getElementById('lbl-dt').textContent = t.dt;
+  document.querySelector('.lbl-flying').textContent = t.flying;
+  document.querySelector('.lbl-24').textContent = t.m24;
+  document.querySelector('.lbl-aixing').textContent = t.aixing;
+  document.querySelector('.lbl-qm').textContent = t.qm;
+  document.querySelector('.lbl-ba').textContent = t.ba;
+  document.querySelector('.lbl-64').textContent = t.m64;
+  ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
+}
+
+// init dt
+function nowLocal(){
+  const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0,16);
+}
+document.getElementById('dt').value = nowLocal();
+
+async function loadHouses(){
+  try {
+    const r = await fetch('/api/houses', { credentials:'include' });
+    if (!r.ok) return; // no auth · just skip
+    const d = await r.json();
+    const sel = document.getElementById('house-sel');
+    (d.houses || []).forEach(h => {
+      const o = document.createElement('option');
+      o.value = h.id; o.textContent = `${h.is_primary?'⭐ ':''}${h.name} · ${h.facing_direction||'?'}`;
+      sel.appendChild(o);
+    });
+  } catch(_){}
+}
+
+const PALACE_LAYOUT = [
+  ['SE','S','SW'], ['E','C','W'], ['NE','N','NW']
+];
+const DIR_NAME = {N:'北 N',NE:'東北',E:'東 E',SE:'東南',S:'南 S',SW:'西南',W:'西 W',NW:'西北',C:'中央'};
+
+async function loadSnapshot(){
+  const dt = document.getElementById('dt').value;
+  const params = new URLSearchParams();
+  if (curHouseId) params.set('house_id', curHouseId);
+  if (dt) params.set('datetime', dt+':00');
+  try {
+    const r = await fetch('/api/fengshui-snapshot?'+params);
+    const d = await r.json();
+    if (d.error) { document.getElementById('palace-grid').innerHTML = '<div style="color:var(--bad);padding:20px;text-align:center;">⚠ '+d.error+'</div>'; return; }
+    renderMode(d);
+  } catch(e){ console.error(e); }
+}
+
+function renderMode(d){
+  const m = curMode;
+  const info = document.getElementById('layer-info');
+  const grid = document.getElementById('palace-grid');
+  const deityRow = document.getElementById('deity-row');
+  const warns = document.getElementById('warnings');
+
+  if (m === 'flying_stars') {
+    const fs = d.layers.flying_stars;
+    info.innerHTML = `<b>飛星 ยุค ${fs.period}</b> (2024-2043) · <b>ดาวประจำปี ${d.datetime.year_pillar||''} = ${fs.annual_center}</b> อยู่กลาง · ดาวรอบทิศ`;
+    grid.innerHTML = '';
+    grid.style.aspectRatio = '1/1';
+    grid.style.maxWidth = '520px';
+    PALACE_LAYOUT.flat().forEach(dir => {
+      const cell = fs.palaces[dir];
+      if (!cell) {
+        grid.innerHTML += `<div class="palace neutral"><div class="corner">${DIR_NAME[dir]||dir}</div><div class="star">${fs.annual_center}</div><div class="info">center</div></div>`;
+        return;
+      }
+      const cls = cell.quality === 'good' ? 'good' : cell.quality === 'bad' ? 'bad' : 'neutral';
+      grid.innerHTML += `<div class="palace ${cls}">
+        <div class="corner">${DIR_NAME[dir]||dir}</div>
+        <div class="star">${cell.annual} ${cell.color||''}</div>
+        <div class="info">${cell.meaning || ''}</div>
+      </div>`;
+    });
+  } else if (m === 'twenty_four') {
+    const t24 = d.layers.twenty_four;
+    info.innerHTML = `<b>24 山</b> · ทิศหน้าบ้าน: <b>${t24.facing||'-'}</b> · ทิศหลัง: <b>${t24.sitting||'-'}</b> · มุม: ${t24.face_angle||'-'}°`;
+    grid.innerHTML = '';
+    grid.style.aspectRatio = 'unset';
+    grid.style.maxWidth = '700px';
+    grid.style.gridTemplateColumns = 'repeat(6,1fr)';
+    t24.mountains.forEach(m => {
+      const isF = m === t24.facing, isS = m === t24.sitting;
+      const cls = isF ? 'good' : isS ? 'warning' : 'neutral';
+      grid.innerHTML += `<div class="palace ${cls}" style="aspect-ratio:1/1.2;padding:8px;">
+        <div class="star" style="font-size:24px">${m}</div>
+        <div class="info">${isF?'➡ หน้า':isS?'⬅ หลัง':''}</div>
+      </div>`;
+    });
+  } else if (m === 'ai_xing') {
+    const ax = d.layers.ai_xing;
+    grid.innerHTML = '';
+    grid.style.aspectRatio = 'unset';
+    if (!ax) {
+      info.innerHTML = '⚠ ต้องเลือกบ้าน (ที่มี face_angle) ก่อน';
+      grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-soft)">เลือกบ้านจาก dropdown ด้านบน</div>';
+    } else {
+      info.innerHTML = `<b>挨星 Yang Gong</b> · ดาวภูเขา (山星): <b>${ax.mountain_star}</b> · ดาวน้ำ (向星): <b>${ax.water_star}</b> · ดาวยุค: <b>${ax.period_star}</b><br/><small>${ax.note}</small>`;
+    }
+  } else if (m === 'qi_men') {
+    const qm = d.layers.qi_men;
+    info.innerHTML = `<b>奇門</b> · ${qm.note || 'จาก ephemeris cache'}`;
+    grid.innerHTML = '';
+    grid.style.aspectRatio = '1/1';
+    grid.style.gridTemplateColumns = 'repeat(3,1fr)';
+    PALACE_LAYOUT.flat().forEach(dir => {
+      const gate = qm.palace_gates?.[dir] || '?';
+      const good = ['生','開','休'].includes(gate);
+      const bad = ['死','驚','傷'].includes(gate);
+      const cls = good ? 'good' : bad ? 'bad' : 'neutral';
+      grid.innerHTML += `<div class="palace ${cls}">
+        <div class="corner">${DIR_NAME[dir]||dir}</div>
+        <div class="star">${gate}門</div>
+        <div class="info">${good?'吉':bad?'凶':'平'}</div>
+      </div>`;
+    });
+  } else if (m === 'ba_zhai') {
+    const bz = d.layers.ba_zhai;
+    grid.innerHTML = '';
+    grid.style.aspectRatio = 'unset';
+    if (!bz?.length) {
+      info.innerHTML = '⚠ ต้องเลือกบ้าน + เพิ่มสมาชิกครอบครัว (พร้อม kua) ก่อน';
+      grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-soft)">เพิ่มคนใน /compass</div>';
+    } else {
+      info.innerHTML = `<b>八宅</b> · ทิศมงคลของแต่ละคน (${bz.length} คน)`;
+      grid.innerHTML = bz.map(p => `
+        <div class="palace good" style="grid-column:span 3;aspect-ratio:unset;padding:14px;">
+          <div style="font-family:var(--serif);font-size:16px;color:var(--gold);margin-bottom:6px;">${p.name} · KUA ${p.kua}</div>
+          <div class="info" style="text-align:left;">
+            ✓ <b>生氣</b> ${p.good.sheng_qi} · <b>天醫</b> ${p.good.tian_yi} · <b>延年</b> ${p.good.yan_nian} · <b>伏位</b> ${p.good.fu_wei}<br/>
+            ✗ <b>絕命</b> ${p.bad.jue_ming} · <b>六煞</b> ${p.bad.liu_sha} · <b>五鬼</b> ${p.bad.wu_gui} · <b>禍害</b> ${p.bad.huo_hai}
+          </div>
+        </div>`).join('');
+    }
+  } else if (m === 'sixty_four') {
+    const h = d.layers.sixty_four;
+    grid.innerHTML = '';
+    grid.style.aspectRatio = 'unset';
+    if (!h) {
+      info.innerHTML = '⚠ ต้องเลือกบ้านก่อน';
+    } else {
+      info.innerHTML = `<b>64 卦</b> · ทิศหน้าบ้าน = 卦 <b>${h.facing_hex}</b> (จาก 64) · ดูตำราเต็มที่ /datepick`;
+    }
+  }
+
+  // deity row
+  const t = d.today || {};
+  const deityHtml = [];
+  if (t.twelve_officers?.raw?.officer) deityHtml.push(`<div class="deity-cell"><div class="lbl">12建除</div><div class="val">${t.twelve_officers.raw.officer}</div></div>`);
+  if (t.twelve_spirits?.raw?.spirit) deityHtml.push(`<div class="deity-cell"><div class="lbl">12神煞</div><div class="val">${t.twelve_spirits.raw.spirit}</div></div>`);
+  if (t.twenty_eight?.raw?.star) deityHtml.push(`<div class="deity-cell"><div class="lbl">28宿</div><div class="val">${t.twenty_eight.raw.star}</div></div>`);
+  if (t.five_element) deityHtml.push(`<div class="deity-cell"><div class="lbl">五行 (時)</div><div class="val">${t.five_element}</div></div>`);
+  if (d.datetime.solar_term) deityHtml.push(`<div class="deity-cell"><div class="lbl">節氣</div><div class="val">${d.datetime.solar_term}</div></div>`);
+  if (d.datetime.day_pillar) deityHtml.push(`<div class="deity-cell"><div class="lbl">日柱</div><div class="val">${d.datetime.day_pillar}</div></div>`);
+  deityRow.innerHTML = deityHtml.join('');
+
+  // warnings
+  const w = d.warnings || [];
+  warns.innerHTML = w.length ? `<div class="warnings-box"><h3>⚠ คำเตือน (${w.length})</h3>${w.map(x=>`<div class="warn-item ${x.severity}">${x.text}</div>`).join('')}</div>` : '';
+}
+
+document.querySelectorAll('.mode-tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.mode-tab').forEach(x => x.classList.remove('act'));
+  t.classList.add('act');
+  curMode = t.dataset.mode;
+  loadSnapshot();
+});
+document.getElementById('house-sel').onchange = (e) => { curHouseId = e.target.value || null; loadSnapshot(); };
+document.getElementById('btn-refresh').onclick = loadSnapshot;
+document.getElementById('btn-now').onclick = () => { document.getElementById('dt').value = nowLocal(); loadSnapshot(); };
+['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); applyLang(); loadSnapshot(); });
+document.getElementById('theme-tog').onclick = () => applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
+
+applyTheme(localStorage.getItem('theme') || localStorage.getItem('hk-theme') || 'dark');
+applyLang();
+loadHouses();
+loadSnapshot();
+</script>
+<script src="/js/hk-luopan-nav.js?v=1" defer></script>
+</body>
+</html>

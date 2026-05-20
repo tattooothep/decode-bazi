@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5"/>
+<title>พยากรณ์ · 占 · hourkey</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
+<style>
+  :root{
+    --gold:#c8a44d; --gold-deep:#8a6d2a; --gold-soft:rgba(200,164,77,.12); --gold-line:rgba(200,164,77,.28);
+    --serif:'Cormorant Garamond','Noto Serif TC',serif;
+    --tc:'Noto Serif TC',serif;
+    --thai:'Noto Serif Thai',serif;
+    --mono:'JetBrains Mono',monospace;
+    --bg:#0d0f12; --bg-2:#14171d; --bg-3:#1a1e25;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.4);
+    --tile:#161a21; --tile-bd:rgba(246,241,230,.08);
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2; --bg-2:#fbf6ea; --bg-3:#fff8e8;
+    --fg:#1a1612; --fg-soft:rgba(26,22,18,.62); --fg-faint:rgba(26,22,18,.45);
+    --tile:#fbf6ea; --tile-bd:rgba(26,22,18,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--fg);font-family:var(--thai);min-height:100vh;line-height:1.6;}
+  /* topbar (เหมือนหน้าอื่น) */
+  .hk-topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb, var(--bg) 80%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
+  .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+  .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .hk-topbar nav.hk-nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+  .hk-topbar nav.hk-nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--thai);font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+  .hk-topbar nav.hk-nav a .glyph{font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:700;line-height:1;}
+  .hk-topbar nav.hk-nav a.active,.hk-topbar nav.hk-nav a:hover{color:var(--gold);}
+  .hk-top-r{display:flex;align-items:center;gap:14px;}
+  @media(max-width:768px){
+    .hk-topbar{flex-wrap:wrap;padding:10px 14px;}
+    .hk-topbar nav.hk-nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;border-top:1px solid var(--gold-line);}
+    .hk-topbar nav.hk-nav::-webkit-scrollbar{display:none;}
+  }
+  /* page header เล็ก */
+  .fc-head{max-width:680px;margin:30px auto 18px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;}
+  .fc-head .now{font-family:var(--mono);font-size:14px;letter-spacing:.05em;color:var(--gold);display:flex;align-items:center;gap:10px;}
+  .fc-head .now .sep{color:var(--fg-faint);}
+  .fc-head .refresh{background:transparent;border:1px solid var(--gold-line);color:var(--gold);border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:14px;}
+  .fc-head .refresh:hover{background:var(--gold-soft);}
+  /* main card */
+  .fc-card{max-width:680px;margin:0 auto 60px;padding:0 24px;}
+  .fc-section{margin-bottom:30px;}
+  .fc-section h3{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .fc-section h3::before,.fc-section h3::after{content:"";flex:1;height:1px;background:var(--gold-line);}
+  .fc-section .label{font-family:var(--thai);font-size:13px;color:var(--fg-soft);margin-bottom:8px;}
+  .fc-input{width:100%;padding:14px 18px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:12px;color:var(--fg);font-family:var(--thai);font-size:15px;outline:none;transition:.2s;}
+  .fc-input:focus{border-color:var(--gold);background:var(--bg-2);}
+  textarea.fc-input{min-height:80px;resize:vertical;font-family:var(--thai);}
+  /* method cards */
+  .fc-methods{display:flex;flex-direction:column;gap:10px;}
+  .fc-method{display:flex;align-items:center;gap:14px;padding:18px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:12px;cursor:pointer;transition:.2s;}
+  .fc-method:hover{border-color:var(--gold-line);background:var(--bg-2);}
+  .fc-method.on{border-color:var(--gold);background:linear-gradient(135deg,var(--gold-soft),transparent);box-shadow:0 0 0 1px var(--gold) inset;}
+  .fc-method .ico{font-size:28px;flex-shrink:0;}
+  .fc-method .info{flex:1;}
+  .fc-method .info .title{font-family:var(--thai);font-size:15px;font-weight:600;color:var(--fg);}
+  .fc-method .info .sub{font-family:var(--thai);font-size:12px;color:var(--fg-soft);margin-top:3px;}
+  .fc-method .check{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--fg-faint);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;}
+  .fc-method.on .check{border-color:var(--gold);background:var(--gold);color:var(--bg);}
+  .fc-method.on .check::after{content:"◉";}
+  /* category chips (qmdj only) */
+  .fc-cats{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .fc-cat{padding:8px 14px;background:transparent;border:1px solid var(--tile-bd);color:var(--fg-soft);border-radius:99px;font-family:var(--thai);font-size:13px;cursor:pointer;transition:.2s;}
+  .fc-cat:hover{border-color:var(--gold-line);}
+  .fc-cat.on{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
+  /* submit */
+  .fc-submit{width:100%;padding:18px;background:var(--gold);color:var(--bg);border:none;border-radius:12px;font-family:var(--mono);font-size:13px;letter-spacing:.22em;text-transform:uppercase;font-weight:700;cursor:pointer;transition:.2s;margin-top:14px;}
+  .fc-submit:hover{background:var(--gold-deep);}
+  .fc-submit:disabled{opacity:.5;cursor:not-allowed;}
+  /* result */
+  .fc-result{display:none;margin-top:30px;padding:24px;background:linear-gradient(160deg,var(--gold-soft),transparent);border:1px solid var(--gold);border-radius:14px;}
+  .fc-result.show{display:block;}
+  .fc-result-head{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+  .fc-result-engine{font-family:var(--thai);font-size:13px;color:var(--fg-soft);line-height:1.7;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--gold-line);}
+  .fc-result-engine b{color:var(--gold);}
+  .fc-result-ai{font-family:var(--thai);font-size:15px;color:var(--fg);line-height:1.85;white-space:pre-wrap;}
+  .fc-loading{display:flex;align-items:center;gap:10px;color:var(--gold);font-family:var(--mono);font-size:11px;letter-spacing:.18em;}
+  .fc-loading .spin{display:inline-block;animation:spin 1s linear infinite;}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  /* hidden until selected */
+  #fc-cats-wrap{display:none;}
+  #fc-cats-wrap.show{display:block;}
+
+  /* ═══════ 擲錢法 Coin Ritual (อากง code · ปรับ theme hourkey · 16 พ.ค. 2026) ═══════ */
+  #fc-coin-ritual{display:none;margin-top:18px;}
+  #fc-coin-ritual.show{display:block;}
+  .cr-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+  @media(max-width:700px){.cr-grid{grid-template-columns:1fr;gap:18px;}}
+  .cr-area{padding:24px 18px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:12px;text-align:center;}
+  .cr-instruction{font-family:var(--tc);font-size:14px;color:var(--gold);letter-spacing:6px;margin-bottom:6px;font-weight:600;}
+  .cr-instruction-en{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--fg-soft);margin-bottom:18px;}
+  .cr-stage{height:120px;display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:20px;perspective:800px;}
+  @media(max-width:700px){.cr-stage{height:96px;gap:14px;}}
+  .cr-coin{width:60px;height:60px;position:relative;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.22,1,.36,1);}
+  @media(max-width:700px){.cr-coin{width:48px;height:48px;}}
+  .cr-coin.flipping{animation:crFlip var(--cr-dur, 1.4s) cubic-bezier(.3,0,.3,1) forwards;}
+  @keyframes crFlip{
+    0%{transform:rotateY(0) translateY(0);}
+    30%{transform:rotateY(calc(var(--cr-final, 1800deg) * .4)) translateY(-50px);}
+    60%{transform:rotateY(calc(var(--cr-final, 1800deg) * .8)) translateY(-30px);}
+    100%{transform:rotateY(var(--cr-final, 1800deg)) translateY(0);}
+  }
+  /* 16 พ.ค. 2026: press-and-hold charge effect (เจ้านาย gimmick) */
+  .cr-coin.charging{animation:crCharge .3s ease-in-out infinite alternate;}
+  @keyframes crCharge{
+    from{transform:rotateY(0) scale(1);filter:drop-shadow(0 0 0 var(--gold));}
+    to{transform:rotateY(0) scale(var(--cr-charge-scale, 1.05));filter:drop-shadow(0 0 var(--cr-charge-glow, 8px) var(--gold));}
+  }
+  .cr-charge-bar{height:4px;background:var(--bg-3);border-radius:2px;overflow:hidden;margin-top:14px;display:none;}
+  .cr-charge-bar.show{display:block;}
+  .cr-charge-bar .fill{height:100%;background:linear-gradient(90deg, var(--gold), var(--gold-deep));width:0%;transition:width .05s linear;border-radius:2px;}
+  .cr-charge-hint{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase;margin-top:6px;opacity:0;transition:.3s;}
+  .cr-charge-hint.show{opacity:1;}
+  .cr-face{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-weight:700;backface-visibility:hidden;
+    box-shadow:inset 0 0 0 2px var(--gold-deep), inset 0 0 0 4px var(--gold), inset 0 0 0 6px var(--gold-deep), 0 4px 12px rgba(0,0,0,.3);
+    background:radial-gradient(circle at 30% 30%, var(--gold), var(--gold-deep));color:var(--bg);font-size:22px;}
+  @media(max-width:700px){.cr-face{font-size:18px;}}
+  .cr-face.tail{transform:rotateY(180deg);font-size:14px;}
+  .cr-coin.show-head{transform:rotateY(0deg);}
+  .cr-coin.show-tail{transform:rotateY(180deg);}
+  .cr-cast-btn{background:var(--gold);color:var(--bg);border:none;padding:16px 32px;font-family:var(--mono);font-size:12px;letter-spacing:4px;text-transform:uppercase;font-weight:700;cursor:pointer;transition:.2s;border-radius:8px;width:100%;max-width:240px;}
+  .cr-cast-btn:hover{background:var(--gold-deep);}
+  .cr-cast-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .cr-cast-btn.complete{background:var(--gold-deep);color:var(--gold);font-size:13px;letter-spacing:3px;border:1.5px solid var(--gold);}
+  .cr-result{margin-top:18px;min-height:30px;font-family:var(--tc);font-size:13px;letter-spacing:2px;color:var(--gold);opacity:0;transition:opacity .4s;}
+  .cr-result.show{opacity:1;}
+  .cr-result .num{font-family:var(--serif);font-size:32px;font-weight:600;color:var(--fg);margin:0 6px;vertical-align:middle;}
+  .cr-result .meaning{display:block;font-family:var(--serif);font-size:12px;font-style:italic;color:var(--fg-soft);margin-top:2px;}
+  .cr-note{margin-top:14px;font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--fg-faint);text-transform:uppercase;}
+
+  /* Hex bars (build bottom-up) */
+  .cr-hex{padding:24px 16px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:12px;}
+  .cr-hex-title{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--fg-soft);text-transform:uppercase;text-align:center;margin-bottom:3px;opacity:.7;}
+  .cr-hex-cn{font-family:var(--tc);font-size:16px;color:var(--gold);text-align:center;letter-spacing:6px;margin-bottom:18px;font-weight:600;}
+  .cr-bars{display:flex;flex-direction:column-reverse;gap:10px;padding:12px 0;min-height:200px;}
+  .cr-line{height:14px;display:flex;align-items:center;justify-content:center;gap:4px;opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s;position:relative;}
+  .cr-line.placeholder{opacity:.15;transform:none;}
+  .cr-line.placeholder::before{content:'';width:100px;height:2px;border-bottom:2px dashed var(--fg-soft);background:transparent;}
+  .cr-line.appear{opacity:1;transform:translateY(0);}
+  .cr-line.yang::before{content:'';width:100px;height:10px;background:var(--fg);}
+  .cr-line.yang.changing::before{background:var(--gold);}
+  .cr-line.yin::before,.cr-line.yin::after{content:'';width:42px;height:10px;background:var(--fg);}
+  .cr-line.yin.changing::before,.cr-line.yin.changing::after{background:var(--gold);}
+  .cr-line .change-mark{position:absolute;right:0;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:1px;}
+  .cr-line .line-num{position:absolute;left:0;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:9px;color:var(--fg-soft);opacity:.4;}
+  /* progress */
+  .cr-prog{margin-top:18px;text-align:center;}
+  .cr-prog-text{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--fg-soft);text-transform:uppercase;margin-bottom:10px;opacity:.7;}
+  .cr-dots{display:flex;justify-content:center;gap:8px;}
+  .cr-dot{width:10px;height:10px;border:1px solid var(--fg-soft);background:transparent;transition:all .3s;border-radius:2px;}
+  .cr-dot.done{background:var(--gold);border-color:var(--gold);}
+  .cr-dot.current{background:var(--gold);border-color:var(--gold);animation:crPulse 1.5s ease-in-out infinite;}
+  @keyframes crPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.3);}}
+  /* loading message */
+  .cr-loading{text-align:center;margin-top:18px;font-family:var(--tc);font-size:14px;color:var(--gold);letter-spacing:4px;animation:crLoad 1.5s ease-in-out infinite;display:none;}
+  .cr-loading.show{display:block;}
+  @keyframes crLoad{0%,100%{opacity:.5;}50%{opacity:1;}}
+
+  /* ═══════ 梅花易數 Mei Hua Display (อากงอาม่า approved · 16 พ.ค.) ═══════ */
+  #fc-meihua-display{display:none;margin-top:18px;}
+  #fc-meihua-display.show{display:block;}
+  .mh-pillars{display:flex;justify-content:center;gap:14px;margin-bottom:20px;padding:12px 18px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:10px;flex-wrap:wrap;}
+  .mh-pillar{display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .mh-pillar .lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--fg-faint);text-transform:uppercase;}
+  .mh-pillar .val{font-family:var(--tc);font-size:18px;color:var(--gold);font-weight:600;}
+  .mh-pair{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin-bottom:16px;}
+  @media(max-width:600px){
+    .mh-pair{grid-template-columns:1fr;gap:14px;}
+    .mh-pair .mh-arrow{transform:rotate(90deg);justify-self:center;}
+  }
+  .mh-hex-card{background:linear-gradient(160deg,var(--bg-2),var(--bg-3));border:1px solid var(--gold-line);border-radius:14px;padding:22px 18px;text-align:center;position:relative;overflow:hidden;}
+  .mh-hex-card.bian{background:linear-gradient(160deg,rgba(200,164,77,.08),var(--bg-3));border-color:var(--gold);}
+  .mh-hex-label{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;opacity:.8;}
+  .mh-hex-sym{font-family:'Noto Sans Symbols','Source Han Sans',serif;font-size:64px;line-height:1;color:var(--fg);text-shadow:0 0 12px rgba(200,164,77,.3);}
+  .mh-hex-card.bian .mh-hex-sym{color:var(--gold);}
+  .mh-hex-num{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--fg-faint);margin-top:6px;text-transform:uppercase;}
+  .mh-hex-zh{font-family:var(--tc);font-size:24px;color:var(--fg);font-weight:600;margin-top:4px;letter-spacing:4px;}
+  .mh-hex-th{font-family:var(--thai);font-size:13px;color:var(--fg-soft);margin-top:2px;}
+  .mh-hex-en{font-family:var(--serif);font-style:italic;font-size:11px;color:var(--fg-faint);margin-top:1px;}
+  .mh-trigram-band{display:flex;justify-content:space-between;align-items:center;margin:14px 0 6px;padding:6px 10px;background:rgba(0,0,0,.15);border-radius:6px;font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .mh-trigram-band .upr,.mh-trigram-band .lwr{display:flex;flex-direction:column;align-items:center;gap:1px;}
+  .mh-trigram-band .upr .tag,.mh-trigram-band .lwr .tag{font-family:var(--mono);font-size:8px;color:var(--fg-faint);letter-spacing:1.5px;text-transform:uppercase;}
+  .mh-bars{display:flex;flex-direction:column-reverse;gap:8px;padding:14px 8px;background:rgba(0,0,0,.18);border-radius:8px;}
+  .mh-bar{height:11px;display:flex;align-items:center;justify-content:center;gap:5px;position:relative;opacity:0;transform:translateX(-15px);transition:opacity .5s,transform .5s;}
+  .mh-bar.appear{opacity:1;transform:translateX(0);}
+  .mh-bar.yang::before{content:'';width:110px;height:9px;background:var(--fg);border-radius:1px;}
+  .mh-bar.yin::before,.mh-bar.yin::after{content:'';width:46px;height:9px;background:var(--fg);border-radius:1px;}
+  .mh-bar.changing.yang::before{background:var(--gold);box-shadow:0 0 8px var(--gold);}
+  .mh-bar.changing.yin::before,.mh-bar.changing.yin::after{background:var(--gold);box-shadow:0 0 8px var(--gold);}
+  .mh-bar .mh-line-num{position:absolute;left:4px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:8px;color:var(--fg-faint);letter-spacing:1px;opacity:.5;}
+  .mh-bar.changing .mh-line-num{color:var(--gold);opacity:1;font-weight:700;}
+  .mh-bar .mh-chg-mark{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:9px;color:var(--gold);letter-spacing:1px;font-weight:700;}
+  .mh-arrow{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;}
+  .mh-arrow .ar{font-size:28px;color:var(--gold);line-height:1;}
+  .mh-arrow .lbl{font-family:var(--tc);font-size:11px;color:var(--gold);letter-spacing:3px;font-weight:600;}
+  .mh-arrow .num{font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:1px;}
+  .mh-meta{text-align:center;font-family:var(--thai);font-size:13px;color:var(--fg-soft);margin-top:14px;padding-top:14px;border-top:1px dashed var(--gold-line);}
+  .mh-meta b{color:var(--gold);}
+  /* 16 พ.ค.: hex spinning ขณะรอ AI · เจ้านาย gimmick */
+  .mh-hex-sym.spinning{animation:mhSpin 1.5s ease-in-out infinite;color:var(--gold);text-shadow:0 0 18px var(--gold), 0 0 30px rgba(200,164,77,.4);}
+  @keyframes mhSpin{
+    0%,100%{transform:rotateY(0) scale(1);opacity:.85;}
+    50%{transform:rotateY(180deg) scale(1.08);opacity:1;}
+  }
+  .mh-hex-card.loading .mh-hex-zh,
+  .mh-hex-card.loading .mh-hex-th,
+  .mh-hex-card.loading .mh-hex-en,
+  .mh-hex-card.loading .mh-trigram-band,
+  .mh-hex-card.loading .mh-bars{opacity:.25;transition:opacity .4s;}
+  .mh-hex-card.loading .mh-hex-num{color:var(--gold);}
+  .mh-loading-text{display:none;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin:10px 0;animation:mhPulse 1.2s ease-in-out infinite;}
+  .mh-loading-text.show{display:block;}
+  @keyframes mhPulse{0%,100%{opacity:.5;}50%{opacity:1;}}
+
+  /* ═══════ QMDJ Display · 9 palace grid + decode to hex (อากง 16 พ.ค.) ═══════ */
+  #fc-qmdj-display{display:none;margin-top:18px;}
+  #fc-qmdj-display.show{display:block;}
+  .qm-title{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .qm-title::before,.qm-title::after{content:'';flex:1;height:1px;background:var(--gold-line);}
+  .qm-meta{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding:10px 16px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:14px;letter-spacing:1px;}
+  .qm-meta b{color:var(--fg);font-family:var(--tc);font-size:14px;font-weight:600;}
+  .qm-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;background:var(--gold-line);border:1px solid var(--gold);border-radius:10px;overflow:hidden;}
+  .qm-cell{background:var(--bg-2);min-height:96px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;position:relative;}
+  .qm-cell.center{background:linear-gradient(135deg,var(--bg-3),var(--bg-2));}
+  .qm-cell.chief{box-shadow:inset 0 0 0 2px var(--gold);background:linear-gradient(135deg,rgba(200,164,77,.12),var(--bg-2));}
+  .qm-cell-id{position:absolute;top:4px;left:6px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);opacity:.6;letter-spacing:1px;}
+  .qm-cell-dir{position:absolute;top:4px;right:6px;font-family:var(--mono);font-size:8px;color:var(--gold);opacity:.7;letter-spacing:1px;}
+  .qm-trigram{font-family:var(--tc);font-size:22px;color:var(--gold);font-weight:700;line-height:1;margin-top:14px;}
+  .qm-star{font-family:var(--tc);font-size:11px;color:var(--fg);margin-top:3px;}
+  .qm-door{font-family:var(--tc);font-size:11px;color:var(--fg-soft);}
+  .qm-deity{font-family:var(--tc);font-size:10px;color:var(--gold);margin-top:2px;}
+  .qm-stem{font-family:var(--tc);font-size:11px;color:var(--fg-soft);margin-top:2px;}
+  .qm-badge{position:absolute;bottom:3px;right:4px;font-family:var(--mono);font-size:8px;color:var(--gold);background:var(--bg-3);padding:1px 4px;border-radius:3px;letter-spacing:1px;}
+  @media(max-width:520px){
+    .qm-cell{min-height:78px;padding:6px 4px;}
+    .qm-trigram{font-size:18px;margin-top:10px;}
+    .qm-star,.qm-door{font-size:9px;}
+    .qm-deity,.qm-stem{font-size:8px;}
+    .qm-cell-id,.qm-cell-dir{font-size:7px;}
+  }
+  /* expandable section */
+  .qm-expand{margin-top:14px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:10px;overflow:hidden;}
+  .qm-expand summary{cursor:pointer;padding:14px 18px;font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;list-style:none;display:flex;align-items:center;justify-content:space-between;}
+  .qm-expand summary::-webkit-details-marker{display:none;}
+  .qm-expand summary .arrow{font-size:14px;transition:transform .3s;}
+  .qm-expand[open] summary .arrow{transform:rotate(180deg);}
+  .qm-expand summary:hover{background:rgba(200,164,77,.04);}
+  .qm-expand .inner{padding:0 18px 18px;}
+  .qm-decode-explain{font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.7;margin-bottom:14px;padding:12px 14px;background:rgba(0,0,0,.15);border-radius:8px;}
+  .qm-decode-explain b{color:var(--gold);}
+
+  /* ═══════ ปรัชญาตำรา + ที่มาแต่ละหมวด (อากงอาม่า 16 พ.ค.) ═══════ */
+  .fc-philos{max-width:680px;margin:18px auto 0;padding:18px 24px;background:linear-gradient(135deg, rgba(200,164,77,.08), transparent);border:1px solid var(--gold-line);border-radius:12px;text-align:center;}
+  .fc-philos .quote{font-family:var(--tc);font-size:18px;color:var(--gold);letter-spacing:4px;line-height:1.6;margin-bottom:8px;font-weight:600;}
+  .fc-philos .quote-src{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--fg-faint);text-transform:uppercase;margin-bottom:10px;}
+  .fc-philos .rule{font-family:var(--thai);font-size:13px;color:var(--fg);line-height:1.7;}
+  .fc-philos .rule b{color:var(--gold);}
+  .fc-philos details{margin-top:12px;text-align:left;}
+  .fc-philos details summary{cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;text-align:center;list-style:none;padding:6px;}
+  .fc-philos details summary::-webkit-details-marker{display:none;}
+  .fc-philos details summary:hover{color:var(--fg);}
+  .fc-philos details .more{margin-top:10px;font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.75;padding:12px 16px;background:rgba(0,0,0,.15);border-radius:8px;}
+  .fc-philos details .more b{color:var(--gold);}
+
+  /* method origin = expand panel ใต้แต่ละ method card */
+  .fc-method-origin{margin-top:8px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:4px;}
+  .fc-method-origin:hover{color:var(--fg);}
+  .fc-method-origin-text{display:none;margin-top:10px;padding:12px 16px;background:rgba(0,0,0,.18);border:1px dashed var(--gold-line);border-radius:8px;font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.75;}
+  .fc-method-origin-text.show{display:block;}
+  .fc-method-origin-text b{color:var(--gold);}
+  .fc-method-origin-text .quote-cn{font-family:var(--tc);color:var(--gold);font-style:italic;letter-spacing:2px;}
+</style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
+</head>
+<body data-theme="dark">
+
+<header class="hk-topbar">
+  <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
+  <nav class="hk-nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="hk.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="hk.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="hk.nav.calendar">ปฏิทิน</span></a>
+    <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="hk.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="hk.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/forecast" data-r="/forecast" class="active"><span class="glyph">占</span><span class="lbl" data-i18n="hk.nav.forecast">พยากรณ์</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="hk.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="hk.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="hk.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="hk.nav.goal">เป้าหมาย</span></a>
+  </nav>
+  <div class="hk-top-r"><div id="hk-user-menu-mount"></div></div>
+</header>
+
+<div class="fc-head">
+  <div class="now">
+    <span id="fc-clock">--:--:--</span><span class="sep">·</span>
+    <span id="fc-shichen">--時</span><span class="sep">·</span>
+    <span id="fc-year">----年</span>
+  </div>
+  <button class="refresh" id="fc-refresh" title="รีเฟรช">↻</button>
+</div>
+
+<!-- ปรัชญาตำราอี้จิง (อากง 16 พ.ค.) -->
+<div class="fc-philos">
+  <div class="quote">初 筮 告 · 再 三 瀆</div>
+  <div class="quote-src" data-i18n="f.philos.src">易經 · I-CHING</div>
+  <div class="rule" data-i18n="f.philos.rule">
+    <b>1 คำถาม 1 คำตอบ</b> · ถามครั้งแรก ฟ้าตอบ · ถามซ้ำ 2-3 ครั้ง ฟ้าโกรธ
+  </div>
+  <details>
+    <summary data-i18n="f.philos.more">▼ ทำไม "ขณะที่นึกถาม = ขณะที่ฟ้าตอบ"</summary>
+    <div class="more" data-i18n="f.philos.body">
+      <b>ทุกวินาทีในจักรวาลมีพลังเฉพาะของมัน</b> (พลังหยินหยาง + 5 ธาตุ ณ ขณะนั้น) ·
+      คนเป็นส่วนหนึ่งของจักรวาล — ความคิดของคุณก็ถูกพลังนั้นกระตุ้น ·
+      เพราะฉะนั้น <b>ตอนที่คุณ "นึกอยากถาม"</b> มันไม่ใช่เรื่องสุ่ม
+      แต่เป็นพลังของวินาทีนั้นที่ผลักดันให้คุณถาม ·
+      ดังนั้น <b>ผังของวินาทีนั้น = คำตอบที่ฟ้าเตรียมไว้ให้คุณอยู่แล้ว</b>
+    </div>
+  </details>
+</div>
+
+<div class="fc-card">
+
+  <div class="fc-section">
+    <h3 data-i18n="f.s.question">ตั้งคำถาม · ASK</h3>
+    <div class="label" data-i18n="f.q.label">คำถามของคุณ</div>
+    <textarea class="fc-input" id="fc-question" placeholder="เช่น · ดีลที่เจรจาอยู่ จะปิดได้ไหม" rows="2"></textarea>
+  </div>
+
+  <div class="fc-section">
+    <h3 data-i18n="f.s.method">เลือกวิธีพยากรณ์ · METHOD</h3>
+    <div class="fc-methods" id="fc-methods">
+      <div class="fc-method" data-method="meihua">
+        <div class="ico">⚡</div>
+        <div class="info">
+          <div class="title" data-i18n="f.m.meihua">เหมยฮัว · 梅花易數</div>
+          <div class="sub" data-i18n="f.m.meihua.sub">ดูพลังของเวลานี้ · ไม่ต้องโยน</div>
+        </div>
+        <div class="check"></div>
+      </div>
+      <div class="fc-method-origin-text" id="fc-origin-meihua" data-i18n="f.o.meihua">
+        <b>ที่มา:</b> <b class="quote-cn">梅花易數</b> — ปรมาจารย์ <b>เซาหย่ง 邵雍</b> (1011-1077) ราชวงศ์ซ่ง คิดค้น ตำนานว่าขณะนั่งสมาธิใต้ต้น<b>เหมย</b> เห็น<b>นกบินมาเกาะ</b> จึงตั้ง trigram จากตัวเลขของขณะนั้น<br/>
+        <b>หลัก:</b> ใช้ "ขณะ" (เวลา · ตัวเลข · ทิศ) ตั้ง 本卦 · 之卦 · 變爻 — ไม่ต้องใช้เครื่องมือใดๆ<br/>
+        <b>เหมาะกับ:</b> ดูภาพรวม · พลังของเวลานี้ · ทันที
+      </div>
+
+      <div class="fc-method on" data-method="qmdj">
+        <div class="ico">🎯</div>
+        <div class="info">
+          <div class="title" data-i18n="f.m.qmdj">QMDJ + อี้จิง · 奇門易卦</div>
+          <div class="sub" data-i18n="f.m.qmdj.sub">ตอบตรงคำถามด้วยผังจิ่วกง 9 วัง</div>
+        </div>
+        <div class="check"></div>
+      </div>
+      <div class="fc-method-origin-text show" id="fc-origin-qmdj" data-i18n="f.o.qmdj">
+        <b>ที่มา:</b> <b class="quote-cn">奇門遁甲</b> — สมัย <b>หวงตี้ 黃帝</b> สำหรับวางยุทธศาสตร์ทหาร · <b>จู๋กั่วเหลียง 諸葛亮</b> (สามก๊ก) ใช้ปกครองและทำสงคราม · ถูกเรียกว่า <b class="quote-cn">天下第一奇學</b> (นักศาสตร์อันดับ 1 ใต้ฟ้า)<br/>
+        <b>หลัก:</b> 9 วัง × 9 ดาว × 8 ประตู × 8 เทพ × stems → 10,368 ผัง · เปลี่ยนทุก 2 ชั่วโมง<br/>
+        <b>เหมาะกับ:</b> ตอบเฉพาะคำถาม · ทิศทาง · จังหวะ · บุคคล · ผลลัพธ์
+      </div>
+
+      <div class="fc-method" data-method="coin">
+        <div class="ico">🎲</div>
+        <div class="info">
+          <div class="title" data-i18n="f.m.coin">โยนเหรียญ · 三錢卦</div>
+          <div class="sub" data-i18n="f.m.coin.sub">ดั้งเดิม สากล · 6 บรรทัด</div>
+        </div>
+        <div class="check"></div>
+      </div>
+      <div class="fc-method-origin-text" id="fc-origin-coin" data-i18n="f.o.coin">
+        <b>ที่มา:</b> <b class="quote-cn">三錢卦</b> — <b>จิ่งฝัง 京房</b> (ราชวงศ์ฮั่น) ปรับ + ตำรา <b class="quote-cn">火珠林</b> ราชวงศ์ถัง — แทนการใช้ไม้ <b>蓍草 50 แท่ง</b> เดิมที่ยาว 30 นาที ทำให้ทุกคนเข้าถึงได้<br/>
+        <b>หลัก:</b> 3 เหรียญ × 6 รอบ → 6 lines · ผลรวม 6 = 老陰 / 7 = 少陽 / 8 = 少陰 / 9 = 老陽 · เลข 6/9 = เส้นเปลี่ยน<br/>
+        <b>เหมาะกับ:</b> ทุกคนใช้ได้ · มีพลังกายร่วม · เน้นเส้นเปลี่ยน (爻辭)
+      </div>
+    </div>
+  </div>
+
+  <div class="fc-section" id="fc-cats-wrap">
+    <h3 data-i18n="f.s.cat">ประเภทคำถาม · CATEGORY</h3>
+    <div class="fc-cats" id="fc-cats">
+      <button class="fc-cat on" data-cat="general" data-i18n="f.c.general">ทั่วไป</button>
+      <button class="fc-cat" data-cat="business" data-i18n="f.c.business">ธุรกิจ</button>
+      <button class="fc-cat" data-cat="love" data-i18n="f.c.love">ความรัก</button>
+      <button class="fc-cat" data-cat="finance" data-i18n="f.c.finance">การเงิน</button>
+      <button class="fc-cat" data-cat="health" data-i18n="f.c.health">สุขภาพ</button>
+      <button class="fc-cat" data-cat="travel" data-i18n="f.c.travel">เดินทาง</button>
+      <button class="fc-cat" data-cat="legal" data-i18n="f.c.legal">คดี</button>
+    </div>
+  </div>
+
+  <!-- QMDJ Display · 9 palace grid + decode to hex · อากงอาม่า design 16 พ.ค. 2026 -->
+  <div id="fc-qmdj-display">
+    <h3 class="qm-title"><span data-i18n="f.qm.title">🎯 奇門遁甲 · ผัง 9 ช่อง</span></h3>
+    <div class="qm-meta" id="qm-meta">
+      <span><span data-i18n="f.qm.ju">局</span> <b id="qm-ju">—</b></span>
+      <span><span data-i18n="f.qm.pillar">時柱</span> <b id="qm-pillar">—</b></span>
+      <span><span data-i18n="f.qm.xun">旬首</span> <b id="qm-xun">—</b></span>
+      <span><span data-i18n="f.qm.dungan">遁干</span> <b id="qm-dungan">—</b></span>
+    </div>
+    <!-- 3x3 grid · Houtian order:
+         vang 4(SE) | 9(S)  | 2(SW)
+         vang 3(E)  | 5(C)  | 7(W)
+         vang 8(NE) | 1(N)  | 6(NW) -->
+    <div class="qm-grid" id="qm-grid">
+      <div class="qm-cell" data-pid="4"><span class="qm-cell-id">4</span><span class="qm-cell-dir">SE 巽</span></div>
+      <div class="qm-cell" data-pid="9"><span class="qm-cell-id">9</span><span class="qm-cell-dir">S 離</span></div>
+      <div class="qm-cell" data-pid="2"><span class="qm-cell-id">2</span><span class="qm-cell-dir">SW 坤</span></div>
+      <div class="qm-cell" data-pid="3"><span class="qm-cell-id">3</span><span class="qm-cell-dir">E 震</span></div>
+      <div class="qm-cell center" data-pid="5"><span class="qm-cell-id">5</span><span class="qm-cell-dir">中宮</span><span class="qm-trigram">中</span></div>
+      <div class="qm-cell" data-pid="7"><span class="qm-cell-id">7</span><span class="qm-cell-dir">W 兌</span></div>
+      <div class="qm-cell" data-pid="8"><span class="qm-cell-id">8</span><span class="qm-cell-dir">NE 艮</span></div>
+      <div class="qm-cell" data-pid="1"><span class="qm-cell-id">1</span><span class="qm-cell-dir">N 坎</span></div>
+      <div class="qm-cell" data-pid="6"><span class="qm-cell-id">6</span><span class="qm-cell-dir">NW 乾</span></div>
+    </div>
+    <details class="qm-expand">
+      <summary><span data-i18n="f.qm.decode">▼ ถอดเป็นเหี่ยอี้จิง · 奇門易卦</span><span class="arrow">⌄</span></summary>
+      <div class="inner">
+        <div class="qm-decode-explain">
+          <b data-i18n="f.qm.decode.title">วิธีถอด:</b>
+          <span data-i18n="f.qm.decode.body"> 值符星 (ดาวเจ้าใหญ่) อยู่วังไหน → ตรีโกษ์ด้านบน · 值使門 (ประตูเจ้าใช้) อยู่วังไหน → ตรีโกษ์ด้านล่าง · รวมเป็นเหี่ย 64 ของอี้จิง</span>
+        </div>
+        <div class="mh-pair">
+          <div class="mh-hex-card">
+            <div class="mh-hex-label">本卦 · ตั้งต้น</div>
+            <div class="mh-hex-sym" id="qm-ben-sym">—</div>
+            <div class="mh-hex-num" id="qm-ben-num">卦 —</div>
+            <div class="mh-hex-zh" id="qm-ben-zh">—</div>
+            <div class="mh-hex-th" id="qm-ben-th">—</div>
+            <div class="mh-hex-en" id="qm-ben-en">—</div>
+            <div class="mh-trigram-band">
+              <div class="upr"><span class="tag">上 (值符宮)</span><span id="qm-ben-upper">—</span></div>
+              <div class="lwr"><span class="tag">下 (值使宮)</span><span id="qm-ben-lower">—</span></div>
+            </div>
+            <div class="mh-bars" id="qm-ben-bars">
+              <div class="mh-bar" data-line="1"><span class="mh-line-num">初</span></div>
+              <div class="mh-bar" data-line="2"><span class="mh-line-num">二</span></div>
+              <div class="mh-bar" data-line="3"><span class="mh-line-num">三</span></div>
+              <div class="mh-bar" data-line="4"><span class="mh-line-num">四</span></div>
+              <div class="mh-bar" data-line="5"><span class="mh-line-num">五</span></div>
+              <div class="mh-bar" data-line="6"><span class="mh-line-num">上</span></div>
+            </div>
+          </div>
+          <div class="mh-arrow">
+            <span class="ar">→</span>
+            <span class="lbl">變</span>
+            <span class="num" id="qm-arrow-num">เส้น —</span>
+          </div>
+          <div class="mh-hex-card bian">
+            <div class="mh-hex-label">之卦 · ที่เปลี่ยน</div>
+            <div class="mh-hex-sym" id="qm-bian-sym">—</div>
+            <div class="mh-hex-num" id="qm-bian-num">卦 —</div>
+            <div class="mh-hex-zh" id="qm-bian-zh">—</div>
+            <div class="mh-hex-th" id="qm-bian-th">—</div>
+            <div class="mh-hex-en" id="qm-bian-en">—</div>
+            <div class="mh-trigram-band">
+              <div class="upr"><span class="tag">上 UPPER</span><span id="qm-bian-upper">—</span></div>
+              <div class="lwr"><span class="tag">下 LOWER</span><span id="qm-bian-lower">—</span></div>
+            </div>
+            <div class="mh-bars" id="qm-bian-bars">
+              <div class="mh-bar" data-line="1"><span class="mh-line-num">初</span></div>
+              <div class="mh-bar" data-line="2"><span class="mh-line-num">二</span></div>
+              <div class="mh-bar" data-line="3"><span class="mh-line-num">三</span></div>
+              <div class="mh-bar" data-line="4"><span class="mh-line-num">四</span></div>
+              <div class="mh-bar" data-line="5"><span class="mh-line-num">五</span></div>
+              <div class="mh-bar" data-line="6"><span class="mh-line-num">上</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- 梅花易數 Mei Hua Display · แสดงหลังกด "ดูคำตอบ" · 16 พ.ค. 2026 -->
+  <div id="fc-meihua-display">
+    <h3 style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+      <span style="flex:1;height:1px;background:var(--gold-line);"></span>
+      <span data-i18n="f.mh.title">⚡ 梅花易數 · เหมยฮัว</span>
+      <span style="flex:1;height:1px;background:var(--gold-line);"></span>
+    </h3>
+    <div class="mh-pillars" id="mh-pillars">
+      <div class="mh-pillar"><span class="lbl">年 Year</span><span class="val" id="mh-yp">—</span></div>
+      <div class="mh-pillar"><span class="lbl">月 Month</span><span class="val" id="mh-mp">—</span></div>
+      <div class="mh-pillar"><span class="lbl">日 Day</span><span class="val" id="mh-dp">—</span></div>
+      <div class="mh-pillar"><span class="lbl">時 Hour</span><span class="val" id="mh-hp">—</span></div>
+    </div>
+    <div class="mh-pair">
+      <div class="mh-hex-card">
+        <div class="mh-hex-label" data-i18n="f.mh.ben">本卦 · ตั้งต้น</div>
+        <div class="mh-hex-sym" id="mh-ben-sym">—</div>
+        <div class="mh-hex-num" id="mh-ben-num">卦 —</div>
+        <div class="mh-hex-zh" id="mh-ben-zh">—</div>
+        <div class="mh-hex-th" id="mh-ben-th">—</div>
+        <div class="mh-hex-en" id="mh-ben-en">—</div>
+        <div class="mh-trigram-band">
+          <div class="upr"><span class="tag">上 UPPER</span><span id="mh-ben-upper">—</span></div>
+          <div class="lwr"><span class="tag">下 LOWER</span><span id="mh-ben-lower">—</span></div>
+        </div>
+        <div class="mh-bars" id="mh-ben-bars">
+          <div class="mh-bar" data-line="1"><span class="mh-line-num">初</span></div>
+          <div class="mh-bar" data-line="2"><span class="mh-line-num">二</span></div>
+          <div class="mh-bar" data-line="3"><span class="mh-line-num">三</span></div>
+          <div class="mh-bar" data-line="4"><span class="mh-line-num">四</span></div>
+          <div class="mh-bar" data-line="5"><span class="mh-line-num">五</span></div>
+          <div class="mh-bar" data-line="6"><span class="mh-line-num">上</span></div>
+        </div>
+      </div>
+      <div class="mh-arrow">
+        <span class="ar">→</span>
+        <span class="lbl">變</span>
+        <span class="num" id="mh-arrow-num">เส้น —</span>
+      </div>
+      <div class="mh-hex-card bian">
+        <div class="mh-hex-label" data-i18n="f.mh.bian">之卦 · ที่เปลี่ยน</div>
+        <div class="mh-hex-sym" id="mh-bian-sym">—</div>
+        <div class="mh-hex-num" id="mh-bian-num">卦 —</div>
+        <div class="mh-hex-zh" id="mh-bian-zh">—</div>
+        <div class="mh-hex-th" id="mh-bian-th">—</div>
+        <div class="mh-hex-en" id="mh-bian-en">—</div>
+        <div class="mh-trigram-band">
+          <div class="upr"><span class="tag">上 UPPER</span><span id="mh-bian-upper">—</span></div>
+          <div class="lwr"><span class="tag">下 LOWER</span><span id="mh-bian-lower">—</span></div>
+        </div>
+        <div class="mh-bars" id="mh-bian-bars">
+          <div class="mh-bar" data-line="1"><span class="mh-line-num">初</span></div>
+          <div class="mh-bar" data-line="2"><span class="mh-line-num">二</span></div>
+          <div class="mh-bar" data-line="3"><span class="mh-line-num">三</span></div>
+          <div class="mh-bar" data-line="4"><span class="mh-line-num">四</span></div>
+          <div class="mh-bar" data-line="5"><span class="mh-line-num">五</span></div>
+          <div class="mh-bar" data-line="6"><span class="mh-line-num">上</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="mh-loading-text" id="mh-loading-text" data-i18n="f.mh.loading">天 機 旋 轉 · ฟ้ากำลังหมุนคำตอบ...</div>
+    <div class="mh-meta" id="mh-meta">
+      <span data-i18n="f.mh.cl">變爻</span>: <b id="mh-cl-text">—</b> ·
+      <span data-i18n="f.mh.dm">วันเจ้า</span>: <b id="mh-dm">—</b>
+    </div>
+  </div>
+
+  <!-- 擲錢法 Coin Ritual · แสดงเมื่อเลือก method=coin · อากง code 16 พ.ค. 2026 -->
+  <div id="fc-coin-ritual">
+    <h3 style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+      <span style="content:'';flex:1;height:1px;background:var(--gold-line);"></span>
+      <span data-i18n="f.coin.ritual">擲錢法 · พิธีโยนเหรียญ</span>
+      <span style="content:'';flex:1;height:1px;background:var(--gold-line);"></span>
+    </h3>
+    <div class="cr-grid">
+      <!-- LEFT: Coin stage -->
+      <div class="cr-area">
+        <div class="cr-instruction">靜 心 觀 想</div>
+        <div class="cr-instruction-en" data-i18n="f.coin.intent">Set your intention upon the question</div>
+        <div class="cr-stage" id="cr-stage">
+          <div class="cr-coin show-head" id="cr-coin1"><div class="cr-face">乾</div><div class="cr-face tail">背</div></div>
+          <div class="cr-coin show-head" id="cr-coin2"><div class="cr-face">乾</div><div class="cr-face tail">背</div></div>
+          <div class="cr-coin show-head" id="cr-coin3"><div class="cr-face">乾</div><div class="cr-face tail">背</div></div>
+        </div>
+        <button class="cr-cast-btn" id="cr-cast" data-i18n="f.coin.toss"><span>โยนเหรียญ · TOSS</span></button>
+        <div class="cr-charge-bar" id="cr-charge-bar"><div class="fill" id="cr-charge-fill"></div></div>
+        <div class="cr-charge-hint" id="cr-charge-hint" data-i18n="f.coin.charge">กดค้าง · สะสมพลัง</div>
+        <div class="cr-result" id="cr-result">
+          <span data-i18n="f.coin.this">ผลครั้งนี้</span>: <span class="num" id="cr-val">—</span>
+          <span class="meaning" id="cr-mean"></span>
+        </div>
+        <div class="cr-note">3頭=9·老陽 | 2頭=8·少陰 | 1頭=7·少陽 | 3背=6·老陰</div>
+      </div>
+      <!-- RIGHT: Hexagram building -->
+      <div class="cr-hex">
+        <div class="cr-hex-title" data-i18n="f.coin.forming">— Hexagram Forming</div>
+        <div class="cr-hex-cn">卦 之 立</div>
+        <div class="cr-bars" id="cr-bars">
+          <div class="cr-line placeholder" data-line="1"><span class="line-num">初</span></div>
+          <div class="cr-line placeholder" data-line="2"><span class="line-num">二</span></div>
+          <div class="cr-line placeholder" data-line="3"><span class="line-num">三</span></div>
+          <div class="cr-line placeholder" data-line="4"><span class="line-num">四</span></div>
+          <div class="cr-line placeholder" data-line="5"><span class="line-num">五</span></div>
+          <div class="cr-line placeholder" data-line="6"><span class="line-num">上</span></div>
+        </div>
+        <div class="cr-prog">
+          <div class="cr-prog-text"><span data-i18n="f.coin.progress">ความคืบหน้า</span> · <span id="cr-prog-n">0</span> / 6</div>
+          <div class="cr-dots" id="cr-dots">
+            <div class="cr-dot current"></div><div class="cr-dot"></div><div class="cr-dot"></div>
+            <div class="cr-dot"></div><div class="cr-dot"></div><div class="cr-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cr-loading" id="cr-loading">天 機 啟 動 · ฟ้ากำลังตอบ...</div>
+  </div>
+
+  <button class="fc-submit" id="fc-submit" data-i18n="f.btn.go">ดูคำตอบ →</button>
+
+  <div class="fc-result" id="fc-result">
+    <div class="fc-result-head" data-i18n="f.r.head">ผลพยากรณ์ · FORECAST</div>
+    <div class="fc-loading" id="fc-loading" style="display:none;">
+      <span class="spin">⟳</span> <span data-i18n="f.r.loading">กำลังคำนวณดวง...</span>
+    </div>
+    <div class="fc-result-engine" id="fc-result-engine"></div>
+    <div class="fc-result-ai" id="fc-result-ai"></div>
+    <!-- 16 พ.ค. v2 (อากงอาม่า 64 卦 deep) -->
+    <div id="fc-result-deep" style="display:none;margin-top:18px;padding:18px;background:linear-gradient(135deg,rgba(200,164,77,.08),transparent);border:1px solid var(--gold-line);border-radius:12px;font-family:var(--thai);font-size:13px;line-height:1.8;color:var(--fg);"></div>
+    <div style="margin-top:24px;padding-top:18px;border-top:1px dashed var(--gold-line);display:none;text-align:center;" id="fc-result-actions">
+      <button id="fc-reset" style="padding:14px 28px;background:transparent;border:1.5px solid var(--gold);color:var(--gold);font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;cursor:pointer;border-radius:8px;transition:.2s;" data-i18n="f.btn.again">↻ ทำนายใหม่</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="/js/hk-user-menu.js?v=16" defer></script>
+
+<script>
+/* ═══ i18n ═══ */
+window.HK_I18N = window.HK_I18N || {};
+Object.assign(window.HK_I18N, {
+  'hk.nav.chart': {th:'ดวง',en:'Chart',zh:'命盤'},
+  'hk.nav.today': {th:'วันนี้',en:'Today',zh:'今日'},
+  'hk.nav.calendar': {th:'ปฏิทิน',en:'Calendar',zh:'曆'},
+  'hk.nav.network': {th:'เครือข่าย',en:'Network',zh:'人脈網'},
+  'hk.nav.qimen': {th:'ฉีเหมิน',en:'QiMen',zh:'奇門'},
+  'hk.nav.forecast': {th:'พยากรณ์',en:'Forecast',zh:'占卜'},
+  'hk.nav.master': {th:'ซินแส',en:'Sifu',zh:'老師'},
+  'hk.nav.picker': {th:'วางฤกษ์',en:'Pick Date',zh:'擇吉'},
+  'hk.nav.fengshui': {th:'ทิศมงคล',en:'Fengshui',zh:'風水'},
+  'hk.nav.goal': {th:'เป้าหมาย',en:'Goal',zh:'目標'},
+  'f.s.question': {th:'── ตั้งคำถาม ──',en:'── ASK ──',zh:'── 問問題 ──'},
+  'f.s.method': {th:'── เลือกวิธีพยากรณ์ ──',en:'── CHOOSE METHOD ──',zh:'── 選擇方法 ──'},
+  'f.s.cat': {th:'── ประเภทคำถาม ──',en:'── CATEGORY ──',zh:'── 問題類型 ──'},
+  'f.q.label': {th:'คำถามของคุณ',en:'Your question',zh:'你的問題'},
+  'f.m.meihua': {th:'⚡ เหมยฮัว · 梅花易數',en:'⚡ Mei Hua · Plum Blossom',zh:'⚡ 梅花易數'},
+  'f.m.meihua.sub': {th:'ดูพลังของเวลานี้ · ไม่ต้องโยน',en:'Reads the energy of THIS moment',zh:'看此時的能量'},
+  'f.m.qmdj': {th:'🎯 QMDJ + อี้จิง · 奇門易卦',en:'🎯 QMDJ + I-Ching',zh:'🎯 奇門 + 易卦'},
+  'f.m.qmdj.sub': {th:'ตอบตรงคำถามด้วยผังจิ่วกง 9 วัง',en:'9-palace plate · question-specific',zh:'九宮對應問題'},
+  'f.m.coin': {th:'🎲 โยนเหรียญ · 三錢卦',en:'🎲 3-Coin Toss',zh:'🎲 三錢起卦'},
+  'f.m.coin.sub': {th:'ดั้งเดิม สากล · 6 บรรทัด',en:'Classical · 6 lines',zh:'傳統 · 六爻'},
+  'f.c.general': {th:'ทั่วไป',en:'General',zh:'通用'},
+  'f.c.business': {th:'ธุรกิจ',en:'Business',zh:'生意'},
+  'f.c.love': {th:'ความรัก',en:'Love',zh:'感情'},
+  'f.c.finance': {th:'การเงิน',en:'Finance',zh:'財運'},
+  'f.c.health': {th:'สุขภาพ',en:'Health',zh:'健康'},
+  'f.c.travel': {th:'เดินทาง',en:'Travel',zh:'出行'},
+  'f.c.legal': {th:'คดี',en:'Legal',zh:'官司'},
+  'f.btn.go': {th:'ดูคำตอบ →',en:'See Answer →',zh:'看答案 →'},
+  'f.r.head': {th:'── ผลพยากรณ์ ──',en:'── FORECAST ──',zh:'── 占卜結果 ──'},
+  'f.r.loading': {th:'กำลังคำนวณดวง · กรุณารอ 5-15 วินาที',en:'Computing · please wait 5-15 sec',zh:'計算中 · 請等 5-15 秒'},
+  'f.err.empty': {th:'กรอกคำถามก่อนนะครับ',en:'Please type your question',zh:'請先輸入問題'},
+  'f.err.fail': {th:'พยากรณ์ไม่สำเร็จ ลองอีกครั้ง',en:'Forecast failed, retry',zh:'占卜失敗，請重試'},
+  'f.coin.charge': {th:'กดค้าง · สะสมพลัง',en:'Hold to charge · longer = faster spin',zh:'按住蓄力 · 越久轉越快'},
+  'f.coin.intent': {th:'ตั้งสมาธิ · นึกถึงคำถาม · กดค้างเพื่อโยน',en:'Focus · hold to charge · release to toss',zh:'靜心 · 按住蓄力 · 放開擲錢'},
+  'f.mh.title': {th:'⚡ 梅花易數 · เหมยฮัว',en:'⚡ Plum Blossom Method',zh:'⚡ 梅花易數'},
+  'f.mh.ben':   {th:'本卦 · ตั้งต้น',en:'本卦 · Original',zh:'本卦 · 起卦'},
+  'f.mh.bian':  {th:'之卦 · ที่เปลี่ยน',en:'之卦 · Transformed',zh:'之卦 · 變化'},
+  'f.mh.cl':    {th:'變爻',en:'Changing Line',zh:'變爻'},
+  'f.mh.dm':    {th:'วันเจ้า',en:'Day Master',zh:'日主'},
+  'f.mh.loading': {th:'天 機 旋 轉 · ฟ้ากำลังหมุนคำตอบ...',en:'Heaven\'s wheel spins...',zh:'天機旋轉 · 等待答案'},
+  'f.qm.title':  {th:'🎯 奇門遁甲 · ผัง 9 ช่อง',en:'🎯 QiMen DunJia · 9-Palace Plate',zh:'🎯 奇門遁甲 · 九宮局'},
+  'f.qm.ju':     {th:'局',en:'Ju',zh:'局'},
+  'f.qm.pillar': {th:'時柱',en:'Hour',zh:'時柱'},
+  'f.qm.xun':    {th:'旬首',en:'Xun',zh:'旬首'},
+  'f.qm.dungan': {th:'遁干',en:'Dun Gan',zh:'遁干'},
+  'f.qm.decode': {th:'▼ ถอดเป็นเหี่ยอี้จิง · 奇門易卦',en:'▼ Decode to I-Ching Hexagram',zh:'▼ 拆解為易經卦'},
+  'f.qm.decode.title': {th:'วิธีถอด:',en:'Method:',zh:'方法：'},
+  'f.qm.decode.body':  {th:' 值符星 (ดาวเจ้าใหญ่) อยู่วังไหน → ตรีโกษ์ด้านบน · 值使門 (ประตูเจ้าใช้) อยู่วังไหน → ตรีโกษ์ด้านล่าง · รวมเป็นเหี่ย 64 ของอี้จิง',en:' Chief Star\'s palace trigram = upper · Zhi-Shi Door\'s palace trigram = lower · Combined = I-Ching hexagram',zh:' 值符所在宮 → 上卦 · 值使所在宮 → 下卦 · 合為易經 64 卦'},
+  'f.btn.again': {th:'↻ ทำนายใหม่',en:'↻ Ask Again',zh:'↻ 重新占卜'},
+  'f.philos.src': {th:'易經 · I-CHING',en:'易經 · I-CHING',zh:'易經 · I-CHING'},
+  'f.philos.rule': {th:'<b>1 คำถาม 1 คำตอบ</b> · ถามครั้งแรก ฟ้าตอบ · ถามซ้ำ 2-3 ครั้ง ฟ้าโกรธ',en:'<b>1 question, 1 answer</b> · First asking Heaven answers · Asking 2-3 times Heaven grows angry',zh:'<b>一問一答</b> · 初筮告 · 再三瀆 · 瀆則不告'},
+  'f.philos.more': {th:'▼ ทำไม "ขณะที่นึกถาม = ขณะที่ฟ้าตอบ"',en:'▼ Why "the moment you ask = the moment Heaven answers"',zh:'▼ 為何「念起即天答」'},
+  'f.philos.body': {th:'<b>ทุกวินาทีในจักรวาลมีพลังเฉพาะของมัน</b> (พลังหยินหยาง + 5 ธาตุ ณ ขณะนั้น) · คนเป็นส่วนหนึ่งของจักรวาล — ความคิดของคุณก็ถูกพลังนั้นกระตุ้น · เพราะฉะนั้น <b>ตอนที่คุณ "นึกอยากถาม"</b> มันไม่ใช่เรื่องสุ่ม แต่เป็นพลังของวินาทีนั้นที่ผลักดันให้คุณถาม · ดังนั้น <b>ผังของวินาทีนั้น = คำตอบที่ฟ้าเตรียมไว้ให้คุณอยู่แล้ว</b>',en:'<b>Every second in the universe carries unique energy</b> (Yin-Yang + 5 Elements at that moment) · Humans are part of the universe — your thoughts are stirred by that energy · So when you <b>"feel like asking,"</b> it\'s not random, but the moment\'s energy pushing you · Therefore <b>the plate of that second = the answer Heaven has prepared for you</b>',zh:'<b>宇宙每一秒都帶有獨特能量</b>（陰陽五行此刻之氣）· 人為宇宙一部分 — 您的念頭即被此能量牽引 · 故 <b>當您「念起欲問」</b> 並非偶然，乃此刻之氣推動您 · 故 <b>此刻之局 = 天已備好之答</b>'},
+  'f.o.meihua': {th:'<b>ที่มา:</b> <b class="quote-cn">梅花易數</b> — ปรมาจารย์ <b>เซาหย่ง 邵雍</b> (1011-1077) ราชวงศ์ซ่ง คิดค้น ตำนานว่าขณะนั่งสมาธิใต้ต้น<b>เหมย</b> เห็น<b>นกบินมาเกาะ</b> จึงตั้ง trigram จากตัวเลขของขณะนั้น<br/><b>หลัก:</b> ใช้ "ขณะ" (เวลา · ตัวเลข · ทิศ) ตั้ง 本卦 · 之卦 · 變爻 — ไม่ต้องใช้เครื่องมือใดๆ<br/><b>เหมาะกับ:</b> ดูภาพรวม · พลังของเวลานี้ · ทันที',en:'<b>Origin:</b> <b class="quote-cn">Plum Blossom Method</b> — Master <b>Shao Yong 邵雍</b> (1011-1077, Song Dynasty) · Legend: while meditating under a plum tree, he saw birds land and built trigrams from numbers of that moment<br/><b>Method:</b> Use "the moment" (time · numbers · direction) to form 本卦 · 之卦 · 變爻 — no tools needed<br/><b>Best for:</b> Overview · the energy of this moment · instant answer',zh:'<b>來源:</b> <b class="quote-cn">梅花易數</b> — <b>邵雍</b>（1011-1077，宋）創立 · 傳說邵雍於梅樹下打坐，見鳥停枝，以時數成卦<br/><b>方法:</b> 以「此刻」（時間·數字·方位）起 本卦·之卦·變爻 — 無需工具<br/><b>適合:</b> 觀大勢 · 此時之氣 · 即問即答'},
+  'f.o.qmdj': {th:'<b>ที่มา:</b> <b class="quote-cn">奇門遁甲</b> — สมัย <b>หวงตี้ 黃帝</b> สำหรับวางยุทธศาสตร์ทหาร · <b>จู๋กั่วเหลียง 諸葛亮</b> (สามก๊ก) ใช้ปกครองและทำสงคราม · ถูกเรียกว่า <b class="quote-cn">天下第一奇學</b> (นักศาสตร์อันดับ 1 ใต้ฟ้า)<br/><b>หลัก:</b> 9 วัง × 9 ดาว × 8 ประตู × 8 เทพ × stems → 10,368 ผัง · เปลี่ยนทุก 2 ชั่วโมง<br/><b>เหมาะกับ:</b> ตอบเฉพาะคำถาม · ทิศทาง · จังหวะ · บุคคล · ผลลัพธ์',en:'<b>Origin:</b> <b class="quote-cn">QiMen DunJia</b> — From Yellow Emperor <b>黃帝</b> for military strategy · <b>Zhuge Liang 諸葛亮</b> (Three Kingdoms) used it for governance and warfare · Known as <b class="quote-cn">天下第一奇學</b> (#1 mystic art under Heaven)<br/><b>Method:</b> 9 palaces × 9 stars × 8 doors × 8 deities × stems → 10,368 plates · shifts every 2 hours<br/><b>Best for:</b> Specific questions · direction · timing · people · outcome',zh:'<b>來源:</b> <b class="quote-cn">奇門遁甲</b> — 起自黃帝兵法 · 諸葛亮治國用兵 · 被稱為 <b class="quote-cn">天下第一奇學</b><br/><b>方法:</b> 九宮 × 九星 × 八門 × 八神 × 天干 → 10,368 局 · 每兩小時換局<br/><b>適合:</b> 問具體事 · 方位 · 時機 · 人事 · 結果'},
+  'f.o.coin': {th:'<b>ที่มา:</b> <b class="quote-cn">三錢卦</b> — <b>จิ่งฝัง 京房</b> (ราชวงศ์ฮั่น) ปรับ + ตำรา <b class="quote-cn">火珠林</b> ราชวงศ์ถัง — แทนการใช้ไม้ <b>蓍草 50 แท่ง</b> เดิมที่ยาว 30 นาที ทำให้ทุกคนเข้าถึงได้<br/><b>หลัก:</b> 3 เหรียญ × 6 รอบ → 6 lines · ผลรวม 6 = 老陰 / 7 = 少陽 / 8 = 少陰 / 9 = 老陽 · เลข 6/9 = เส้นเปลี่ยน<br/><b>เหมาะกับ:</b> ทุกคนใช้ได้ · มีพลังกายร่วม · เน้นเส้นเปลี่ยน (爻辭)',en:'<b>Origin:</b> <b class="quote-cn">3-Coin Method</b> — <b>Jing Fang 京房</b> (Han Dynasty) adapted + <b class="quote-cn">火珠林</b> text (Tang) — replaced the 30-min ritual of 50 yarrow stalks, made divination accessible to all<br/><b>Method:</b> 3 coins × 6 tosses → 6 lines · sum 6 = Old Yin / 7 = Young Yang / 8 = Young Yin / 9 = Old Yang · 6/9 = changing<br/><b>Best for:</b> Everyone · physical engagement · focuses on changing lines (爻辭)',zh:'<b>來源:</b> <b class="quote-cn">三錢卦</b> — <b>京房</b>（漢）創 + 唐 <b class="quote-cn">火珠林</b> 整理 — 替代蓍草五十策 30 分鐘儀式，人人可用<br/><b>方法:</b> 三錢六擲 → 六爻 · 和 6 = 老陰 / 7 = 少陽 / 8 = 少陰 / 9 = 老陽 · 6/9 為變爻<br/><b>適合:</b> 人人皆可 · 身心參與 · 重變爻 (爻辭)'},
+});
+function applyI18N(lang){
+  const L = lang || document.documentElement.getAttribute('data-lang') || 'th';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    const t = window.HK_I18N[k]; if (!t) return;
+    const v = t[L] || t.th || '';
+    /* รองรับ HTML markup (<b>, <br>, etc.) เฉพาะคีย์ที่มี tag */
+    if (/<[a-z]/i.test(v)) el.innerHTML = v;
+    else el.textContent = v;
+  });
+}
+window.applyI18N = applyI18N;
+try { applyI18N(localStorage.getItem('hk_locale') || 'th'); } catch(_){}
+
+/* ═══ theme ═══ */
+try {
+  const t = localStorage.getItem('hk-theme');
+  if (t) document.documentElement.setAttribute('data-theme', t);
+} catch(_){}
+
+/* ═══ live clock + 时辰 + year pillar ═══ */
+const SHICHEN = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+function shichenOf(h){ // h: 0-23
+  // 23-1=子, 1-3=丑, 3-5=寅, 5-7=卯, 7-9=辰, 9-11=巳, 11-13=午, 13-15=未, 15-17=申, 17-19=酉, 19-21=戌, 21-23=亥
+  if (h === 23 || h === 0) return SHICHEN[0];
+  return SHICHEN[Math.floor((h+1)/2)];
+}
+async function loadYearPillar(){
+  try {
+    const r = await fetch('/api/today');
+    if (!r.ok) return null;
+    const d = await r.json();
+    return (d.pillars && d.pillars.year) || null;
+  } catch(_){ return null; }
+}
+let _yearP = null;
+loadYearPillar().then(y => { _yearP = y; tick(); });
+function tick(){
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const hh=pad(now.getHours()), mm=pad(now.getMinutes()), ss=pad(now.getSeconds());
+  document.getElementById('fc-clock').textContent = `${hh}:${mm}:${ss}`;
+  document.getElementById('fc-shichen').textContent = shichenOf(now.getHours()) + '時';
+  document.getElementById('fc-year').textContent = (_yearP || '----') + '年';
+}
+setInterval(tick, 1000); tick();
+document.getElementById('fc-refresh').addEventListener('click', ()=>{ loadYearPillar().then(y=>{_yearP=y;tick();}); });
+
+/* ═══ method selection ═══ */
+let SELECTED_METHOD = 'qmdj';
+let SELECTED_CAT = 'general';
+document.getElementById('fc-methods').addEventListener('click', e => {
+  const card = e.target.closest('.fc-method'); if (!card) return;
+  document.querySelectorAll('.fc-method').forEach(c => c.classList.remove('on'));
+  card.classList.add('on');
+  SELECTED_METHOD = card.dataset.method;
+  /* show cats only for QMDJ */
+  document.getElementById('fc-cats-wrap').classList.toggle('show', SELECTED_METHOD === 'qmdj');
+  /* show coin ritual only for coin · hide submit (จะใช้ ritual flow) */
+  const isCoin = SELECTED_METHOD === 'coin';
+  document.getElementById('fc-coin-ritual').classList.toggle('show', isCoin);
+  document.getElementById('fc-submit').style.display = isCoin ? 'none' : 'block';
+  if (isCoin) resetCoinRitual();
+  /* แสดง origin text เฉพาะ method ที่เลือก (อากง 16 พ.ค.) */
+  ['meihua','qmdj','coin'].forEach(m => {
+    const el = document.getElementById('fc-origin-' + m);
+    if (el) el.classList.toggle('show', m === SELECTED_METHOD);
+  });
+});
+document.getElementById('fc-cats').addEventListener('click', e => {
+  const btn = e.target.closest('.fc-cat'); if (!btn) return;
+  document.querySelectorAll('.fc-cat').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  SELECTED_CAT = btn.dataset.cat;
+});
+/* show cats by default (QMDJ pre-selected) */
+document.getElementById('fc-cats-wrap').classList.add('show');
+
+/* ═══ 擲錢法 Coin Ritual (อากง code · ปรับ theme · 16 พ.ค. 2026) ═══ */
+let CR_castCount = 0;
+const CR_lines = []; // {value, type, changing}
+function resetCoinRitual(){
+  CR_castCount = 0; CR_lines.length = 0;
+  document.querySelectorAll('.cr-line').forEach(el => {
+    const num = el.dataset.line;
+    const labels = {1:'初',2:'二',3:'三',4:'四',5:'五',6:'上'};
+    el.className = 'cr-line placeholder';
+    el.innerHTML = '<span class="line-num">'+labels[num]+'</span>';
+  });
+  ['cr-coin1','cr-coin2','cr-coin3'].forEach(id => {
+    const c = document.getElementById(id);
+    c.classList.remove('flipping','show-tail');
+    c.classList.add('show-head');
+  });
+  const btn = document.getElementById('cr-cast');
+  btn.classList.remove('complete');
+  btn.disabled = false;
+  btn.onclick = CR_castCoins;
+  btn.querySelector('span').textContent = 'โยนเหรียญ · TOSS';
+  document.getElementById('cr-result').classList.remove('show');
+  document.getElementById('cr-loading').classList.remove('show');
+  CR_updateProgress();
+}
+function CR_castCoins(power){
+  if (CR_castCount >= 6) return;
+  /* power 0-1 · 0=กดสั้น 0.2s · 1=กดยาว 2s · default 0.4 (กดปกติ) */
+  const p = Math.max(0.1, Math.min(1, power != null ? power : 0.4));
+  /* duration 0.8s-2.4s · rotation 1080°-3240° (3-9 รอบ) */
+  const dur = 800 + p * 1600;
+  const baseRot = 1080 + Math.floor(p * 2160 / 360) * 360; // multiples of 360
+  const btn = document.getElementById('cr-cast');
+  btn.disabled = true;
+  document.getElementById('cr-result').classList.remove('show');
+  const coins = [0,1,2].map(()=>Math.random()<0.5 ? 1 : 0);
+  const sum = coins.reduce((s,c)=>s+(c?3:2),0);
+  [1,2,3].forEach((idx,i) => {
+    const coin = document.getElementById('cr-coin'+idx);
+    const showHead = coins[i]===1;
+    coin.classList.remove('flipping','charging','show-head','show-tail');
+    coin.style.filter = ''; coin.style.transform = '';
+    void coin.offsetHeight;
+    const finalRot = baseRot + (showHead ? 0 : 180);
+    coin.style.setProperty('--cr-final', finalRot+'deg');
+    coin.style.setProperty('--cr-dur', dur+'ms');
+    coin.classList.add('flipping');
+    setTimeout(()=>{
+      coin.classList.remove('flipping');
+      coin.classList.add(showHead ? 'show-head' : 'show-tail');
+    }, dur);
+  });
+  setTimeout(()=>{
+    CR_showResult(sum);
+    CR_addLine(sum);
+    CR_castCount++;
+    CR_updateProgress();
+    if (CR_castCount < 6) {
+      btn.disabled = false;
+      btn.querySelector('span').textContent = `โยนเหรียญ · ${CR_castCount+1}/6`;
+    } else {
+      btn.classList.add('complete');
+      btn.querySelector('span').textContent = '▶ ฟังคำตอบจากฟ้า';
+      btn.onclick = CR_revealAnswer;
+      btn.disabled = false;
+    }
+  }, dur + 200);
+}
+
+/* 16 พ.ค. 2026: press-and-hold charge mechanism (เจ้านาย gimmick) */
+let CR_pressStart = 0;
+let CR_chargeRAF = null;
+function CR_chargeStart(e){
+  if (CR_castCount >= 6) return;
+  /* skip ถ้า btn เป็น complete state (ปุ่ม "ฟังคำตอบ") */
+  const btn = document.getElementById('cr-cast');
+  if (btn.classList.contains('complete') || btn.disabled) return;
+  e.preventDefault();
+  CR_pressStart = Date.now();
+  const bar = document.getElementById('cr-charge-bar');
+  const hint = document.getElementById('cr-charge-hint');
+  bar.classList.add('show');
+  hint.classList.add('show');
+  /* coins charging effect */
+  ['cr-coin1','cr-coin2','cr-coin3'].forEach(id => {
+    document.getElementById(id).classList.add('charging');
+  });
+  function loop(){
+    const elapsed = Date.now() - CR_pressStart;
+    const p = Math.min(elapsed / 2000, 1); // 0-1 over 2s
+    document.getElementById('cr-charge-fill').style.width = (p * 100) + '%';
+    /* scale + glow ตามพลัง */
+    ['cr-coin1','cr-coin2','cr-coin3'].forEach(id => {
+      const c = document.getElementById(id);
+      c.style.setProperty('--cr-charge-scale', (1 + p*0.15).toFixed(2));
+      c.style.setProperty('--cr-charge-glow', (4 + p*16).toFixed(0)+'px');
+    });
+    if (p < 1) CR_chargeRAF = requestAnimationFrame(loop);
+  }
+  CR_chargeRAF = requestAnimationFrame(loop);
+}
+function CR_chargeEnd(e){
+  if (!CR_pressStart) return;
+  if (e) e.preventDefault();
+  const elapsed = Date.now() - CR_pressStart;
+  CR_pressStart = 0;
+  if (CR_chargeRAF) { cancelAnimationFrame(CR_chargeRAF); CR_chargeRAF = null; }
+  /* clear charge UI */
+  document.getElementById('cr-charge-bar').classList.remove('show');
+  document.getElementById('cr-charge-hint').classList.remove('show');
+  document.getElementById('cr-charge-fill').style.width = '0%';
+  ['cr-coin1','cr-coin2','cr-coin3'].forEach(id => {
+    const c = document.getElementById(id);
+    c.classList.remove('charging');
+    c.style.filter = ''; c.style.transform = '';
+  });
+  /* min 100ms = ป้องกัน click misfire */
+  if (elapsed < 100) return;
+  const power = Math.min(elapsed / 2000, 1);
+  CR_castCoins(power);
+}
+function CR_showResult(sum){
+  const meanings = {
+    9:'老陽 · Yang Changing → Becomes Yin',
+    8:'少陰 · Yin Stable',
+    7:'少陽 · Yang Stable',
+    6:'老陰 · Yin Changing → Becomes Yang'
+  };
+  document.getElementById('cr-val').textContent = sum;
+  document.getElementById('cr-mean').textContent = meanings[sum];
+  document.getElementById('cr-result').classList.add('show');
+}
+function CR_addLine(sum){
+  const ld = { value: sum, type: (sum===7||sum===9) ? 'yang' : 'yin', changing: (sum===6||sum===9) };
+  CR_lines.push(ld);
+  const idx = CR_lines.length;
+  const el = document.querySelector('.cr-line[data-line="'+idx+'"]');
+  el.classList.remove('placeholder');
+  el.classList.add(ld.type);
+  if (ld.changing){
+    el.classList.add('changing');
+    const mark = document.createElement('span');
+    mark.className='change-mark'; mark.textContent='變';
+    el.appendChild(mark);
+  }
+  setTimeout(()=>el.classList.add('appear'), 100);
+}
+function CR_updateProgress(){
+  document.getElementById('cr-prog-n').textContent = CR_castCount;
+  document.querySelectorAll('.cr-dots .cr-dot').forEach((d,i)=>{
+    d.classList.remove('current','done');
+    if (i < CR_castCount) d.classList.add('done');
+    else if (i === CR_castCount) d.classList.add('current');
+  });
+}
+async function CR_revealAnswer(){
+  const q = document.getElementById('fc-question').value.trim();
+  if (!q) { alert(window.HK_I18N['f.err.empty'].th); return; }
+  document.getElementById('cr-cast').style.display = 'none';
+  document.getElementById('cr-loading').classList.add('show');
+  /* ส่ง CR_lines values [6,7,8,9...] ไป API · ใช้แทน random ฝั่ง server */
+  const coin_lines = CR_lines.map(l => l.value);
+  const result = document.getElementById('fc-result');
+  const loading = document.getElementById('fc-loading');
+  const engineEl = document.getElementById('fc-result-engine');
+  const aiEl = document.getElementById('fc-result-ai');
+  result.classList.add('show');
+  loading.style.display = 'flex';
+  engineEl.innerHTML = ''; aiEl.textContent = '';
+  try {
+    const r = await fetch('/api/forecast', {
+      method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+      body: JSON.stringify({ question:q, method:'coin', category:SELECTED_CAT, lang:localStorage.getItem('hk_locale')||'th', coin_lines })
+    });
+    const d = await r.json();
+    loading.style.display = 'none';
+    document.getElementById('cr-loading').classList.remove('show');
+    if (!r.ok) throw new Error(d.error || 'failed');
+    engineEl.innerHTML = d.engine || '';
+    aiEl.textContent = d.ai || '';
+    renderHexDeep(d);
+    /* อาม่า: ซ่อนปุ่ม submit + แสดง reset (ปุ่ม cast ก็ซ่อนไปแล้วใน CR_revealAnswer) */
+    document.getElementById('fc-submit').style.display = 'none';
+    document.getElementById('fc-result-actions').style.display = 'block';
+    document.getElementById('fc-result').scrollIntoView({behavior:'smooth', block:'start'});
+  } catch(e){
+    loading.style.display = 'none';
+    document.getElementById('cr-loading').classList.remove('show');
+    engineEl.innerHTML = '<b>⚠</b> ' + e.message;
+  }
+}
+/* press-hold for cast · click for "ฟังคำตอบ" stage */
+(function(){
+  const btn = document.getElementById('cr-cast');
+  btn.addEventListener('mousedown', CR_chargeStart);
+  btn.addEventListener('touchstart', CR_chargeStart, {passive:false});
+  btn.addEventListener('mouseup', CR_chargeEnd);
+  btn.addEventListener('mouseleave', CR_chargeEnd);
+  btn.addEventListener('touchend', CR_chargeEnd);
+  btn.addEventListener('touchcancel', CR_chargeEnd);
+})();
+
+/* 16 พ.ค. (อาม่า request): reset ทำนายใหม่ — ซ่อน result · กลับมา submit + reset coin ritual */
+document.getElementById('fc-reset').addEventListener('click', () => {
+  document.getElementById('fc-result').classList.remove('show');
+  document.getElementById('fc-result-actions').style.display = 'none';
+  document.getElementById('fc-result-engine').innerHTML = '';
+  document.getElementById('fc-result-ai').textContent = '';
+  const deepEl = document.getElementById('fc-result-deep');
+  if (deepEl) { deepEl.style.display = 'none'; deepEl.innerHTML = ''; }
+  document.getElementById('fc-meihua-display').classList.remove('show');
+  document.getElementById('fc-qmdj-display').classList.remove('show');
+  /* show submit เฉพาะ method ที่ใช้ submit (meihua/qmdj) · coin ใช้ ritual */
+  if (SELECTED_METHOD === 'coin') {
+    document.getElementById('fc-submit').style.display = 'none';
+    resetCoinRitual();
+    document.getElementById('cr-cast').style.display = '';
+  } else {
+    document.getElementById('fc-submit').style.display = 'block';
+  }
+  document.getElementById('fc-question').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+/* 16 พ.ค. 2026: render QMDJ display (อากงอาม่า design) */
+const QM_STAR_ZH = {TIAN_PENG:'天蓬',TIAN_RUI:'天芮',TIAN_CHONG:'天沖',TIAN_FU:'天輔',TIAN_QIN:'天禽',TIAN_XIN:'天心',TIAN_ZHU:'天柱',TIAN_REN:'天任',TIAN_YING:'天英'};
+const QM_DOOR_ZH = {XIU_MEN:'休門',SHENG_MEN:'生門',SHANG_MEN:'傷門',DU_MEN:'杜門',JING_MEN:'景門',SI_MEN:'死門',JING_FEAR_MEN:'驚門',KAI_MEN:'開門'};
+const QM_DEITY_ZH = {ZHI_FU:'值符',TENG_SHE:'螣蛇',TAI_YIN:'太陰',LIU_HE:'六合',BAI_HU:'白虎',XUAN_WU:'玄武',JIU_DI:'九地',JIU_TIAN:'九天',ZHU_QUE:'朱雀',GOU_CHEN:'勾陳'};
+const QM_STEM_ZH = {JIA:'甲',YI:'乙',BING:'丙',DING:'丁',WU:'戊',JI:'己',GENG:'庚',XIN:'辛',REN:'壬',GUI:'癸'};
+function renderQmdjDisplay(s){
+  if (!s || !s.grid) return;
+  document.getElementById('qm-ju').textContent = '陽' + s.ju_number + '局';
+  document.getElementById('qm-pillar').textContent = s.pillar || '—';
+  document.getElementById('qm-xun').textContent = s.xun || '—';
+  document.getElementById('qm-dungan').textContent = s.dun_gan || '—';
+  /* clear cells (เก็บ id + dir + center marker) */
+  document.querySelectorAll('#qm-grid .qm-cell').forEach(cell => {
+    cell.classList.remove('chief');
+    const pid = Number(cell.dataset.pid);
+    if (pid === 5) return; // center fixed
+    cell.innerHTML = `<span class="qm-cell-id">${pid}</span><span class="qm-cell-dir"></span>`;
+  });
+  /* render 8 palaces (skip center) */
+  s.grid.forEach(p => {
+    if (p.id === 5) {
+      const cell = document.querySelector('#qm-grid .qm-cell[data-pid="5"]');
+      if (cell && p.heaven_stem) {
+        // optional: stem ตรงกลาง
+      }
+      return;
+    }
+    const cell = document.querySelector('#qm-grid .qm-cell[data-pid="'+p.id+'"]');
+    if (!cell) return;
+    const dirZh = {N:'北 坎',S:'南 離',E:'東 震',W:'西 兌',NE:'東北 艮',NW:'西北 乾',SE:'東南 巽',SW:'西南 坤'}[p.direction] || '';
+    cell.innerHTML = `
+      <span class="qm-cell-id">${p.id}</span>
+      <span class="qm-cell-dir">${dirZh}</span>
+      <span class="qm-trigram">${p.trigram_zh}</span>
+      <span class="qm-star">${QM_STAR_ZH[p.star] || p.star || ''}</span>
+      <span class="qm-door">${QM_DOOR_ZH[p.door] || p.door || ''}</span>
+      <span class="qm-deity">${QM_DEITY_ZH[p.deity] || p.deity || ''}</span>
+      <span class="qm-stem">${QM_STEM_ZH[p.heaven_stem]||''}${QM_STEM_ZH[p.earth_stem]||''}</span>
+    `;
+    if (p.is_chief_star && p.is_zhi_shi_door) {
+      cell.classList.add('chief');
+      const b = document.createElement('span'); b.className='qm-badge'; b.textContent='符使'; cell.appendChild(b);
+    } else if (p.is_chief_star) {
+      cell.classList.add('chief');
+      const b = document.createElement('span'); b.className='qm-badge'; b.textContent='符'; cell.appendChild(b);
+    } else if (p.is_zhi_shi_door) {
+      cell.classList.add('chief');
+      const b = document.createElement('span'); b.className='qm-badge'; b.textContent='使'; cell.appendChild(b);
+    }
+  });
+  /* derived hex */
+  const dh = s.derived_hex || {};
+  if (dh.ben_hex) {
+    document.getElementById('qm-ben-sym').textContent = dh.ben_hex.symbol || '—';
+    document.getElementById('qm-ben-num').textContent = '卦 ' + dh.ben_hex.num;
+    document.getElementById('qm-ben-zh').textContent = dh.ben_hex.zh || '—';
+    document.getElementById('qm-ben-th').textContent = dh.ben_hex.th || '—';
+    document.getElementById('qm-ben-en').textContent = dh.ben_hex.en || '—';
+    document.getElementById('qm-ben-upper').textContent = dh.upper_trigram_zh || '—';
+    document.getElementById('qm-ben-lower').textContent = dh.lower_trigram_zh || '—';
+  }
+  if (dh.bian_hex) {
+    document.getElementById('qm-bian-sym').textContent = dh.bian_hex.symbol || '—';
+    document.getElementById('qm-bian-num').textContent = '卦 ' + dh.bian_hex.num;
+    document.getElementById('qm-bian-zh').textContent = dh.bian_hex.zh || '—';
+    document.getElementById('qm-bian-th').textContent = dh.bian_hex.th || '—';
+    document.getElementById('qm-bian-en').textContent = dh.bian_hex.en || '—';
+    /* bian upper/lower derive from flipped binary */
+    if (dh.bian_hex.binary) {
+      const TRI_ZH = {'111':'乾','110':'兌','101':'離','100':'震','011':'巽','010':'坎','001':'艮','000':'坤'};
+      document.getElementById('qm-bian-upper').textContent = TRI_ZH[dh.bian_hex.binary.slice(0,3)] || '—';
+      document.getElementById('qm-bian-lower').textContent = TRI_ZH[dh.bian_hex.binary.slice(3,6)] || '—';
+    }
+  }
+  document.getElementById('qm-arrow-num').textContent = 'เส้น ' + (dh.changing_line || '—');
+  /* draw bars · reuse pattern from mei hua */
+  function drawBars(containerId, binary, cl){
+    const bars = document.querySelectorAll('#'+containerId+' .mh-bar');
+    bars.forEach(b => { b.classList.remove('appear','yang','yin','changing'); const m = b.querySelector('.mh-chg-mark'); if (m) m.remove(); });
+    if (!binary || binary.length !== 6) return;
+    bars.forEach((bar, idx) => {
+      const lineNum = idx + 1;
+      const bit = binary[6 - lineNum];
+      bar.classList.add(bit === '1' ? 'yang' : 'yin');
+      if (lineNum === cl) {
+        bar.classList.add('changing');
+        const mark = document.createElement('span');
+        mark.className = 'mh-chg-mark'; mark.textContent = '變';
+        bar.appendChild(mark);
+      }
+      setTimeout(() => bar.classList.add('appear'), 80 + lineNum * 80);
+    });
+  }
+  if (dh.ben_hex && dh.ben_hex.binary) drawBars('qm-ben-bars', dh.ben_hex.binary, dh.changing_line);
+  if (dh.bian_hex && dh.bian_hex.binary) drawBars('qm-bian-bars', dh.bian_hex.binary, dh.changing_line);
+  document.getElementById('fc-qmdj-display').classList.add('show');
+}
+
+/* 16 พ.ค. v2 (อากงอาม่า): render deep interpretation 64 卦 (ben + bian) */
+function renderHexDeep(d){
+  const el = document.getElementById('fc-result-deep');
+  if (!el) return;
+  const ben = d.ben_deep, bian = d.bian_deep;
+  if (!ben && !bian) { el.style.display='none'; return; }
+  function block(deep, label, color){
+    if (!deep) return '';
+    const av = (deep.action_avoid||[]).slice(0,3).map(x=>'<li>'+x+'</li>').join('');
+    const pos = (deep.positive_side||[]).slice(0,3).map(x=>'<li>'+x+'</li>').join('');
+    const neg = (deep.negative_side||[]).slice(0,3).map(x=>'<li>'+x+'</li>').join('');
+    return `<div style="margin-bottom:14px;padding:12px;background:var(--bg-2);border-left:3px solid ${color};border-radius:6px;">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:${color};margin-bottom:6px;">${label} · 卦 ${deep.no} · ${deep.name||''}</div>
+      ${deep.core_lesson?`<div style="font-weight:600;margin-bottom:8px;">📖 ${deep.core_lesson}</div>`:''}
+      ${deep.situation_thai?`<div style="font-size:12px;color:var(--fg-soft);margin-bottom:8px;">${deep.situation_thai}</div>`:''}
+      ${deep.symbol_imagery?`<div style="font-size:12px;color:var(--gold);margin-bottom:8px;">${deep.symbol_imagery}</div>`:''}
+      ${deep.timing?`<div style="font-size:11px;color:var(--fg-soft);margin-bottom:6px;"><b>⏰</b> ดี: ${deep.timing.best_time||'—'} · เลี่ยง: ${deep.timing.worst_time||'—'}</div>`:''}
+      ${pos?`<div style="font-size:12px;margin-bottom:4px;"><b style="color:#7dd37b">✓ ด้านดี:</b><ul style="margin:4px 0 0 18px;color:var(--fg-soft);">${pos}</ul></div>`:''}
+      ${neg?`<div style="font-size:12px;margin-bottom:4px;"><b style="color:#e26b5d">⚠ ด้านเสีย:</b><ul style="margin:4px 0 0 18px;color:var(--fg-soft);">${neg}</ul></div>`:''}
+      ${av?`<div style="font-size:12px;"><b style="color:#e26b5d">✗ ห้าม:</b><ul style="margin:4px 0 0 18px;color:var(--fg-soft);">${av}</ul></div>`:''}
+    </div>`;
+  }
+  function blockYao(yaoCi){
+    if (!Array.isArray(yaoCi) || yaoCi.length===0) return '';
+    const items = yaoCi.map(y => `
+      <div style="margin-bottom:10px;padding:10px 12px;background:rgba(200,164,77,.06);border-left:3px solid #c8a44d;border-radius:6px;">
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:#c8a44d;margin-bottom:4px;">爻辭 · เส้นที่ ${y.line} · ${y.name_zh||''}</div>
+        <div style="font-family:'Noto Serif SC',serif;font-size:15px;color:var(--gold);margin-bottom:4px;letter-spacing:1px;">${y.text_zh||''}</div>
+        ${y.translation_thai?`<div style="font-size:13px;color:var(--fg);margin-bottom:4px;">📜 ${y.translation_thai}</div>`:''}
+        ${y.meaning?`<div style="font-size:12px;color:var(--fg-soft);margin-bottom:4px;">💡 ${y.meaning}</div>`:''}
+        ${y.advice?`<div style="font-size:12px;color:#7dd37b;"><b>คำแนะนำ:</b> ${y.advice}</div>`:''}
+      </div>`).join('');
+    return `<div style="margin-bottom:14px;padding:12px;background:var(--bg-2);border-left:3px solid #c8a44d;border-radius:6px;">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:2px;color:#c8a44d;margin-bottom:10px;">📜 384 爻辭 · เส้นที่เปลี่ยน · ตำรา周易 (อากงอาม่า v3)</div>
+      ${items}
+    </div>`;
+  }
+  el.innerHTML = '<div style="font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:14px;text-align:center;">📜 ตำราอากงอาม่า · 64 卦 易經 + 384 爻辭</div>'
+    + block(ben, '本卦 · ตั้งต้น', 'var(--gold)')
+    + blockYao(d.yao_ci)
+    + block(bian, '之卦 · ที่เปลี่ยน', '#7dd37b');
+  el.style.display = 'block';
+}
+
+/* 16 พ.ค. 2026: spin hex symbols สุ่ม ระหว่างรอ AI (เจ้านาย gimmick) */
+let MH_spinTimer = null;
+function startMeihuaSpin(){
+  /* แสดง mei hua display + spin both hex symbols สุ่ม 64 ตัว */
+  const display = document.getElementById('fc-meihua-display');
+  display.classList.add('show');
+  document.getElementById('mh-loading-text').classList.add('show');
+  ['mh-ben', 'mh-bian'].forEach(prefix => {
+    const card = document.querySelector('#' + prefix + '-sym').closest('.mh-hex-card');
+    card.classList.add('loading');
+    document.getElementById(prefix + '-sym').classList.add('spinning');
+    document.getElementById(prefix + '-num').textContent = '卦 ?';
+    document.getElementById(prefix + '-zh').textContent = '...';
+    document.getElementById(prefix + '-th').textContent = '...';
+    document.getElementById(prefix + '-en').textContent = '...';
+  });
+  document.getElementById('mh-arrow-num').textContent = '變 ?';
+  /* clear bars · pillars stay (เปลือก time signature) */
+  ['mh-ben-bars', 'mh-bian-bars'].forEach(id => {
+    document.querySelectorAll('#' + id + ' .mh-bar').forEach(b => {
+      b.classList.remove('appear','yang','yin','changing');
+      const m = b.querySelector('.mh-chg-mark'); if (m) m.remove();
+    });
+  });
+  /* สุ่ม hex symbol ทุก 90ms · Unicode U+4DC0..U+4DFF (64 hex) */
+  let prevBen = -1, prevBian = -1;
+  MH_spinTimer = setInterval(() => {
+    let b1, b2;
+    do { b1 = Math.floor(Math.random() * 64); } while (b1 === prevBen);
+    do { b2 = Math.floor(Math.random() * 64); } while (b2 === prevBian);
+    prevBen = b1; prevBian = b2;
+    document.getElementById('mh-ben-sym').textContent = String.fromCodePoint(0x4DC0 + b1);
+    document.getElementById('mh-bian-sym').textContent = String.fromCodePoint(0x4DC0 + b2);
+  }, 90);
+}
+function stopMeihuaSpin(){
+  if (MH_spinTimer) { clearInterval(MH_spinTimer); MH_spinTimer = null; }
+  document.getElementById('mh-loading-text').classList.remove('show');
+  ['mh-ben-sym','mh-bian-sym'].forEach(id => document.getElementById(id).classList.remove('spinning'));
+  document.querySelectorAll('.mh-hex-card.loading').forEach(c => c.classList.remove('loading'));
+}
+
+/* 16 พ.ค. 2026: render Mei Hua hex bars + pillars + trigrams */
+function renderMeihuaDisplay(s){
+  if (!s) return;
+  /* pillars */
+  if (s.pillars){
+    document.getElementById('mh-yp').textContent = s.pillars.year || '—';
+    document.getElementById('mh-mp').textContent = s.pillars.month || '—';
+    document.getElementById('mh-dp').textContent = s.pillars.day || '—';
+    document.getElementById('mh-hp').textContent = s.pillars.hour || '—';
+  }
+  const ben = s.ben_hex || {}, bian = s.bian_hex || {};
+  /* ben hex card */
+  document.getElementById('mh-ben-sym').textContent = ben.symbol || '—';
+  document.getElementById('mh-ben-num').textContent = '卦 ' + (ben.num || '—');
+  document.getElementById('mh-ben-zh').textContent = ben.zh || '—';
+  document.getElementById('mh-ben-th').textContent = ben.th || '—';
+  document.getElementById('mh-ben-en').textContent = ben.en || '—';
+  document.getElementById('mh-ben-upper').textContent = s.upper || '—';
+  document.getElementById('mh-ben-lower').textContent = s.lower || '—';
+  /* bian hex card */
+  document.getElementById('mh-bian-sym').textContent = bian.symbol || '—';
+  document.getElementById('mh-bian-num').textContent = '卦 ' + (bian.num || '—');
+  document.getElementById('mh-bian-zh').textContent = bian.zh || '—';
+  document.getElementById('mh-bian-th').textContent = bian.th || '—';
+  document.getElementById('mh-bian-en').textContent = bian.en || '—';
+  document.getElementById('mh-bian-upper').textContent = s.bian_upper || '—';
+  document.getElementById('mh-bian-lower').textContent = s.bian_lower || '—';
+  /* changing line + day master */
+  document.getElementById('mh-arrow-num').textContent = 'เส้น ' + (s.changing_line || '—');
+  document.getElementById('mh-cl-text').textContent = 'เส้นที่ ' + (s.changing_line || '—');
+  document.getElementById('mh-dm').textContent = s.day_master || '—';
+  /* draw bars sequentially · bottom→top · binary "111000" → top bit = line 6 */
+  function drawBars(containerId, binary, cl){
+    const bars = document.querySelectorAll('#'+containerId+' .mh-bar');
+    bars.forEach(b => { b.classList.remove('appear','yang','yin','changing'); const m = b.querySelector('.mh-chg-mark'); if (m) m.remove(); });
+    if (!binary || binary.length !== 6) return;
+    /* binary[0]=top trigram top line=line6, binary[5]=bottom trigram bottom=line1 */
+    /* line i (1-6, bottom up) maps to binary char at index (6-i) */
+    bars.forEach((bar, idx) => {
+      const lineNum = idx + 1; // 1..6 bottom up
+      const bit = binary[6 - lineNum];
+      bar.classList.add(bit === '1' ? 'yang' : 'yin');
+      if (lineNum === cl) {
+        bar.classList.add('changing');
+        const mark = document.createElement('span');
+        mark.className = 'mh-chg-mark'; mark.textContent = '變';
+        bar.appendChild(mark);
+      }
+      setTimeout(() => bar.classList.add('appear'), 80 + lineNum * 100);
+    });
+  }
+  drawBars('mh-ben-bars', ben.binary, s.changing_line);
+  drawBars('mh-bian-bars', bian.binary, s.changing_line);
+  document.getElementById('fc-meihua-display').classList.add('show');
+}
+
+/* ═══ submit · Mei Hua + QMDJ (Coin ใช้ ritual แทน) ═══ */
+document.getElementById('fc-submit').addEventListener('click', async () => {
+  const q = document.getElementById('fc-question').value.trim();
+  if (!q) { alert(window.HK_I18N['f.err.empty'].th); return; }
+  const btn = document.getElementById('fc-submit');
+  const result = document.getElementById('fc-result');
+  const loading = document.getElementById('fc-loading');
+  const engineEl = document.getElementById('fc-result-engine');
+  const aiEl = document.getElementById('fc-result-ai');
+  btn.disabled = true;
+  result.classList.add('show');
+  loading.style.display = 'flex';
+  engineEl.innerHTML = '';
+  aiEl.textContent = '';
+  /* hide displays · ถ้า meihua → spin · ถ้า qmdj → hide qmdj จนกว่าจะ render */
+  if (SELECTED_METHOD === 'meihua') {
+    startMeihuaSpin();
+    document.getElementById('fc-qmdj-display').classList.remove('show');
+  } else {
+    document.getElementById('fc-meihua-display').classList.remove('show');
+    if (SELECTED_METHOD === 'qmdj') {
+      document.getElementById('fc-qmdj-display').classList.remove('show');
+    }
+  }
+  try {
+    const r = await fetch('/api/forecast', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({ question: q, method: SELECTED_METHOD, category: SELECTED_CAT, lang: localStorage.getItem('hk_locale')||'th' })
+    });
+    const d = await r.json();
+    loading.style.display = 'none';
+    if (!r.ok) { stopMeihuaSpin(); throw new Error(d.error || 'failed'); }
+    /* Mei Hua: stop spin → render hex display ด้วย delay เล็กน้อยให้ดูดราม่า */
+    if (SELECTED_METHOD === 'meihua' && d.structured) {
+      stopMeihuaSpin();
+      setTimeout(() => renderMeihuaDisplay(d.structured), 100);
+    }
+    /* QMDJ: render 9 palace grid + decode-to-hex */
+    if (SELECTED_METHOD === 'qmdj' && d.structured) {
+      renderQmdjDisplay(d.structured);
+    }
+    engineEl.innerHTML = d.engine || '';
+    aiEl.textContent = d.ai || '';
+    renderHexDeep(d);
+    /* 16 พ.ค. (อาม่า request): ซ่อนปุ่ม "ดูคำตอบ" หลังตอบ + แสดงปุ่ม "ทำนายใหม่" */
+    document.getElementById('fc-submit').style.display = 'none';
+    document.getElementById('fc-result-actions').style.display = 'block';
+  } catch(e) {
+    loading.style.display = 'none';
+    stopMeihuaSpin();
+    engineEl.innerHTML = '<b>⚠</b> ' + (window.HK_I18N['f.err.fail'].th) + ' · ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+<script src="/js/hk-luopan-nav.js?v=1" defer></script>
+<script src="/js/hk-hex-deep.js?v=1" defer></script>
+</body>
+</html>
