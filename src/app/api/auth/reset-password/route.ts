@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const token = String(body.token || "");
   const password = String(body.password || "");
   if (!token || !password || password.length < 6) {
-    return NextResponse.json({ error: "token + password (≥6) required" }, { status: 400 });
+    return NextResponse.json({ error: "ลิงก์ไม่ครบหรือรหัสผ่านสั้นเกินไป · ต้องมีอย่างน้อย 6 ตัวอักษร" }, { status: 400 });
   }
   const r = await consumeToken(token, "password_reset");
   if (!r) return NextResponse.json({ error: "ลิงก์ไม่ถูกต้องหรือหมดอายุ" }, { status: 400 });

@@ -7,7 +7,6 @@ import {
   findOrCreateUser,
 } from "@/lib/oauth-line";
 import { signSession, setAuthCookie } from "@/lib/auth";
-import { userHasProfile } from "@/lib/profile-status";
 
 function redirect(url: string): Response {
   return new Response(null, { status: 302, headers: { Location: url } });
@@ -62,6 +61,5 @@ export async function GET(req: Request) {
   });
   await setAuthCookie(token);
 
-  const hasProfile = await userHasProfile(user.id);
-  return redirect(hasProfile ? "/today" : "/input");
+  return redirect("/master?intro=1&next=%2Ftoday");
 }

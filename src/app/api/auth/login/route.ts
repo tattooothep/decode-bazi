@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
 import { verifyPassword, signSession, setAuthCookie } from "@/lib/auth";
+import { userHasProfile } from "@/lib/profile-status";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const { email, password } = body;
   if (!email || !password) {
-    return NextResponse.json({ error: "email + password required" }, { status: 400 });
+    return NextResponse.json({ error: "กรอกอีเมลและรหัสผ่าน" }, { status: 400 });
   }
   const user = await q1<{
     id: string;
@@ -18,11 +19,11 @@ export async function POST(req: Request) {
     [email]
   );
   if (!user || !user.password_hash) {
-    return NextResponse.json({ error: "invalid credentials" }, { status: 401 });
+    return NextResponse.json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
   }
   const ok = await verifyPassword(password, user.password_hash);
   if (!ok) {
-    return NextResponse.json({ error: "invalid credentials" }, { status: 401 });
+    return NextResponse.json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
   }
   const token = await signSession({
     userId: user.id,
@@ -31,5 +32,11 @@ export async function POST(req: Request) {
   });
   await setAuthCookie(token);
   await q1("UPDATE users SET last_active_at=now() WHERE id=$1", [user.id]);
-  return NextResponse.json({ ok: true, user: { id: user.id, email: user.email } });
+  const has_profile = await userHasProfile(user.id);
+  return NextResponse.json({
+    ok: true,
+    has_profile,
+    intro_url: "/master?intro=1&next=%2Ftoday",
+    user: { id: user.id, email: user.email },
+  });
 }

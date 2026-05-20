@@ -19,5 +19,5 @@ export async function POST(req: Request) {
   const token = await signSession({ userId: user.id, email: user.email, orgId: user.current_org_id });
   await setAuthCookie(token);
   await q1("UPDATE users SET last_active_at=now() WHERE id=$1", [user.id]);
-  return redirect303("/dashboard");
+  return redirect303("/master?intro=1&next=" + encodeURIComponent("/today"));
 }

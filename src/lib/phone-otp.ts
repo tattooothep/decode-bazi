@@ -18,23 +18,22 @@ export function isValidThaiMobile(p: string): boolean {
 
 export async function createOtp(phone: string): Promise<string> {
   const code = String(Math.floor(100000 + Math.random() * 900000));
-  const expires = new Date(Date.now() + OTP_TTL_MINUTES * 60_000).toISOString();
   await q1(
     `INSERT INTO phone_otp (phone, code, expires_at, attempts, created_at)
-     VALUES ($1, $2, $3, 0, now())
-     ON CONFLICT (phone) DO UPDATE SET code=$2, expires_at=$3, attempts=0, created_at=now()`,
-    [phone, code, expires]
+     VALUES ($1, $2, now() + ($3::text || ' minutes')::interval, 0, now())
+     ON CONFLICT (phone) DO UPDATE SET code=$2, expires_at=now() + ($3::text || ' minutes')::interval, attempts=0, created_at=now()`,
+    [phone, code, OTP_TTL_MINUTES]
   );
   return code;
 }
 
 export async function verifyOtp(phone: string, code: string): Promise<{ ok: boolean; error?: string }> {
-  const row = await q1<{ code: string; expires_at: string; attempts: number }>(
-    `SELECT code, expires_at, attempts FROM phone_otp WHERE phone=$1`,
+  const row = await q1<{ code: string; expired: boolean; attempts: number }>(
+    `SELECT code, expires_at <= now() AS expired, attempts FROM phone_otp WHERE phone=$1`,
     [phone]
   );
   if (!row) return { ok: false, error: "ยังไม่ได้ส่ง OTP · กรุณาส่งใหม่" };
-  if (new Date(row.expires_at) < new Date()) return { ok: false, error: "OTP หมดอายุ · กรุณาส่งใหม่" };
+  if (row.expired) return { ok: false, error: "OTP หมดอายุ · กรุณาส่งใหม่" };
   if (row.attempts >= MAX_ATTEMPTS) return { ok: false, error: "ลองเกินกำหนด · กรุณาส่ง OTP ใหม่" };
   if (row.code !== code) {
     await q1(`UPDATE phone_otp SET attempts=attempts+1 WHERE phone=$1`, [phone]);

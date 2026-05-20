@@ -7,15 +7,15 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const { email, password, name } = body;
   if (!email || !password) {
-    return NextResponse.json({ error: "email + password required" }, { status: 400 });
+    return NextResponse.json({ error: "กรอกอีเมลและรหัสผ่าน" }, { status: 400 });
   }
   if (password.length < 6) {
-    return NextResponse.json({ error: "password too short (>=6)" }, { status: 400 });
+    return NextResponse.json({ error: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }, { status: 400 });
   }
 
   const existing = await q1<{ id: string }>("SELECT id FROM users WHERE email=$1", [email]);
   if (existing) {
-    return NextResponse.json({ error: "email already registered" }, { status: 409 });
+    return NextResponse.json({ error: "อีเมลนี้สมัครไว้แล้ว · ลองเข้าสู่ระบบหรือกดลืมรหัสผ่าน" }, { status: 409 });
   }
 
   const hash = await hashPassword(password);

@@ -1,4 +1,7 @@
-import { Pool } from "pg";
+import { Pool, types as PgTypes } from "pg";
+
+// DATE (OID 1082) — return as YYYY-MM-DD string (ไม่ shift timezone)
+PgTypes.setTypeParser(1082, (v) => v);
 
 const globalForPg = globalThis as unknown as { _pgPool?: Pool };
 
