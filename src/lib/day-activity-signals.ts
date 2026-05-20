@@ -155,13 +155,16 @@ export async function computeDayActivitySignals(input: {
   const shared = (sharedMod as unknown as { default?: typeof sharedMod }).default ?? sharedMod;
   const stars = (starsMod as unknown as { default?: typeof starsMod }).default ?? starsMod;
 
+  /* 19 พ.ค. Option α · day-activity ต้องใช้ hour เสมอ (ทำงานกับ target_hour_branch override)
+   * บังคับ birthTimeKnown:true → return BaziAnalysis4p */
   const calc = await calcBazi({
     date: input.date,
     time: input.time,
     longitude: typeof input.longitude === "number" ? input.longitude : 100.5018,
     gmtOffsetHours: 7,
     gender: input.gender,
-  } as BirthInput);
+    birthTimeKnown: true,
+  });
 
   const pillars = calc.pillars;
   const overrideHour = input.target_hour_branch;

@@ -21,6 +21,7 @@ export type TstInput = {
 export type TstOutput = {
   appliedHour: number;   // hour after TST shift
   appliedMinute: number;
+  appliedDayShift: number; // -1 / 0 / +1 (วันที่ shift จาก TST cross midnight)
   longitudeShiftMin: number;
   eotMin: number;
   totalShiftMin: number;
@@ -62,17 +63,21 @@ export function applyTST(input: TstInput): TstOutput {
   let appliedHour = Math.floor(totalMin / 60);
   let appliedMinute = Math.floor(totalMin - appliedHour * 60);
 
-  // Normalize across day boundary
-  // (rare edge: shift may push to previous/next day · we leave date as input
-  //  because Hour pillar at boundary can shift; a stronger version handles
-  //  date rollover but for typical Bangkok cases (-21 min) it stays in-day)
-  if (appliedHour < 0) appliedHour += 24;
-  if (appliedHour >= 24) appliedHour -= 24;
+  // Cross day boundary · track dayShift
+  let appliedDayShift = 0;
+  if (appliedHour < 0) {
+    appliedHour += 24;
+    appliedDayShift = -1;
+  } else if (appliedHour >= 24) {
+    appliedHour -= 24;
+    appliedDayShift = 1;
+  }
   if (appliedMinute < 0) appliedMinute += 60;
 
   return {
     appliedHour,
     appliedMinute,
+    appliedDayShift,
     longitudeShiftMin: Math.round(longitudeShiftMin * 10) / 10,
     eotMin: Math.round(eotMin * 10) / 10,
     totalShiftMin: Math.round(totalShiftMin * 10) / 10,
