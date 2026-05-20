@@ -104,6 +104,12 @@
   .rootedness-explain .re-summary{font-size:12px;color:var(--fg,#e9dfc8);margin:2px 0 6px;line-height:1.4;}
   .rootedness-explain .re-sources{font-size:11px;color:var(--fg-soft,#8aa);padding-left:14px;line-height:1.5;}
   .rootedness-explain .re-sources li{margin-bottom:2px;list-style:'· ';padding-left:4px;}
+  /* Phase 18 · v2 · resistance callout + advice grid */
+  .rootedness-explain .re-resist{font-size:11px;color:var(--fire,#c97b50);background:rgba(201,123,80,.08);border-left:2px solid var(--fire,#c97b50);padding:6px 10px;margin:6px 0;border-radius:4px;}
+  [data-theme="light"] .rootedness-explain .re-resist{background:rgba(201,123,80,.05);}
+  .rootedness-explain .re-advice{margin-top:8px;padding:8px 10px;background:rgba(184,154,94,.06);border-radius:6px;display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--fg-soft,#8aa);line-height:1.5;}
+  [data-theme="light"] .rootedness-explain .re-advice{background:rgba(184,154,94,.05);}
+  .rootedness-explain .re-advice b{color:var(--gold,#b89a5e);font-weight:600;}
   .dm-card .dm-label{font-family:var(--mono);font-size:10px;letter-spacing:.32em;color:var(--gold);margin-bottom:12px;text-transform:uppercase;}
   .dm-glyph{display:inline-flex;align-items:center;justify-content:center;width:128px;height:128px;background:var(--earth-bg);border:2px solid var(--earth);border-radius:14px;font-family:var(--tc);font-size:84px;font-weight:700;color:var(--earth);box-shadow:0 6px 0 var(--earth-deep);margin-bottom:14px;}
   /* DM glyph สีตามธาตุของเจ้าชะตา · ตรงกับเสาในหมวด 02 */
@@ -385,6 +391,9 @@
   .hk-lp-inter-tag.neutral{color:var(--gold);border-color:var(--gold-line);}
   .hk-lp-inter-tag .pn{font-family:var(--mono);font-size:9px;opacity:.7;}
   /* Help tooltip · "?" icon · ใช้ทุก section */
+  /* Phase 19 · Functional % badge · กัน user เทียบ count-based */
+  .fn-badge{display:inline-block;font-family:var(--mono),Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:.04em;padding:3px 9px;border-radius:99px;background:rgba(200,164,77,.10);color:var(--gold,#c8a44d);border:1px solid rgba(200,164,77,.35);margin-left:8px;vertical-align:middle;cursor:help;white-space:nowrap;}
+  [data-theme="light"] .fn-badge{background:rgba(184,154,94,.08);}
   .hk-help{display:inline-block;width:16px;height:16px;line-height:14px;text-align:center;font-family:var(--mono),Arial,sans-serif;font-size:11px;font-weight:700;color:var(--gold);border:1px solid var(--gold);border-radius:50%;cursor:help;margin-left:6px;vertical-align:middle;opacity:.85;transition:.15s;position:relative;background:transparent;user-select:none;}
   .hk-help::before{content:"?";display:block;}
   .hk-help:hover,.hk-help.on{opacity:1;background:var(--gold);color:#0d0f12;}
@@ -535,18 +544,41 @@
     .stage{padding:20px 16px 60px;}
     .crumb{font-size:9px;letter-spacing:.18em;}
 
-    /* hero — column ซ้อนแทนข้าง */
-    .hero-grid{grid-template-columns:1fr;gap:24px;}
-    .hero h1, .hero-l h1{font-size:36px;line-height:1.1;}
-    .hero-tags{flex-wrap:wrap;gap:6px;}
-    .hero-tag{font-size:10px;padding:6px 10px;}
-    .lede{font-size:14px;line-height:1.65;max-width:none;}
+    /* hero · 20 พ.ค. Phase 14 · compact card mobile-first · Codex รอบ 39 fix */
+    .hero{padding:18px;}
+    .hero::before, .hero::after{display:none;}
+    .hero-grid{grid-template-columns:1fr;gap:12px;}
+    .dm-card{order:-1;padding:12px;text-align:left;display:grid;grid-template-columns:64px minmax(0,1fr);gap:4px 12px;align-items:center;}
+    .hero-l .label{font-size:9px;letter-spacing:.18em;margin-bottom:10px;}
+    .hero h1, .hero-l h1{font-size:28px;line-height:1.15;margin-bottom:4px;}
+    .hero-meta{font-size:10px;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+    .hero-meta span+span::before{margin-right:10px;}
+    .hero-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:0;overflow:visible;}
+    .hero-tags .tag{font-size:10px;padding:5px 9px;letter-spacing:.04em;white-space:nowrap;max-width:100%;}
+    .lede{font-size:12px;line-height:1.55;max-width:none;margin-bottom:0;}
 
-    /* DM card */
-    .dm-card{padding:24px 18px;}
-    .dm-glyph{font-size:80px;}
-    .dm-name{font-size:16px;}
-    .dm-strength{font-size:24px;}
+    .dm-card .dm-label{display:none;}
+    .dm-glyph{grid-row:1 / 4;width:64px;height:64px;font-size:42px;border-width:1.5px;box-shadow:0 4px 0 var(--earth-deep);margin:0;}
+    .dm-glyph.wood{box-shadow:0 4px 0 var(--wood-deep);}
+    .dm-glyph.fire{box-shadow:0 4px 0 var(--fire-deep);}
+    .dm-glyph.earth{box-shadow:0 4px 0 var(--earth-deep);}
+    .dm-glyph.metal{box-shadow:0 4px 0 var(--metal-deep);}
+    .dm-glyph.water{box-shadow:0 4px 0 var(--water-deep);}
+    .dm-card .dm-name{font-size:14px;margin-bottom:0;}
+    .dm-card .dm-th{font-size:11px;margin-bottom:0;}
+    .dm-card .strength{justify-content:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:0;}
+    .dm-card .strength b{font-size:13px;}
+    .dm-card .strength .lvl{font-size:9px;}
+    .dm-card .meter{grid-column:1 / -1;margin-top:6px;}
+    .dm-card .conf{grid-column:1 / -1;margin-top:8px;}
+    /* Phase 18 · A1 · เปิดให้แสดง rootedness บนมือถือ (เดิมซ่อน)
+     * Phase 19 fix · grid-column 1/-1 ให้กว้างเต็ม · กัน text break ทีละตัวอักษร */
+    .dm-card .rootedness-explain{display:block;grid-column:1 / -1;width:100%;}
+    .dm-card .rootedness-explain .re-row{overflow-wrap:break-word;word-break:normal;}
+    .dm-card .rootedness-explain .re-summary,
+    .dm-card .rootedness-explain .re-resist,
+    .dm-card .rootedness-explain .re-advice{overflow-wrap:break-word;word-break:normal;}
+    .dm-card .rootedness-explain .re-sources li{overflow-wrap:break-word;}
 
     /* section heads */
     .sec-head{flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:24px;}
@@ -942,6 +974,8 @@
 .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft);font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
 .hk-lang-switch button.on{background:var(--gold);color:var(--bg);}
 @media(max-width:768px){.hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}}
+/* 20 พ.ค. Codex รอบ 44 fix · force [hidden] respect inline display:flex */
+#hk-3p-banner[hidden]{display:none !important;}
 </style>
 </header>
 
@@ -1240,7 +1274,7 @@
     <div class="sec-head">
       <div class="l">
         <span class="num">06 · ELEMENTS</span>
-        <h2 data-i18n="c.sec1.h2"><span class="tc">五行</span>ธาตุที่เด่น · ขาด · ควรเสริม<span class="hk-help" data-help="s.element"></span></h2>
+        <h2 data-i18n="c.sec1.h2"><span class="tc">五行</span>ธาตุที่เด่น · ขาด · ควรเสริม <span class="fn-badge" data-th="Functional %" data-en="Functional %" data-zh="根氣折算" title="พลังใช้ได้จริง · นับเฉพาะธาตุที่มีรากในผัง">Functional %</span><span class="hk-help" data-help="s.element"></span></h2>
       </div>
       <span class="sub" data-i18n="c.sec1.sub">ใช้ตอบ "อะไรช่วยฉัน อะไรควรระวัง"</span>
     </div>
@@ -1803,7 +1837,7 @@ window.HK_HELP = {
   /* §05/06/09/10 misc */
   's.yongshen':{ th:'<b>用神 (เทพประจำ)</b> · ธาตุที่ดวงต้องการมากที่สุด · ขาดแล้วชีวิตติด · เลือกอาชีพ/สีตามนี้', en:'<b>Useful God</b> · most-needed element · pick career/color', zh:'<b>用神</b> · 最需之神 · 選擇職業·顏色' },
   's.climate': { th:'<b>調候 (ภูมิอากาศ)</b> · ดวงเย็นเกินต้องไฟ · ดวงร้อนเกินต้องน้ำ · ปรับสมดุล', en:'<b>Climate</b> · cold needs fire · hot needs water · balance', zh:'<b>調候</b> · 寒暖燥濕之調' },
-  's.element': { th:'<b>5 ธาตุ %</b> · นับจากก้าน+กิ่ง+ก้านซ่อน · บอกธาตุเด่น/ขาดในดวง · ดูคู่กับ用神', en:'<b>5 Elements %</b> · stem+branch+hidden · dominant/lacking', zh:'<b>五行 %</b> · 主弱所需' },
+  's.element': { th:'<b>5 ธาตุ % (Functional)</b> · พลังใช้ได้จริง · นับเฉพาะธาตุที่มี "ราก" ในผัง (根氣折算) · จึงอาจต่างจาก % แบบนับก้านเต็ม (count-based) ที่ให้ค่าสูงกว่าได้', en:'<b>5 Elements % (Functional)</b> · usable power · counts only rooted elements · may differ from count-based "stem counting" methods', zh:'<b>五行 %（根氣折算）</b> · 可用之力 · 只計通根之力 · 可能與「按天干數量」的算法不同' },
   's.pstar':   { th:'<b>個人星 14 ดวง</b> · ดาวประจำตัวที่ active ในดวง · เลือกจาก 神煞 62 ดวง · เน้นดาวสำคัญต่อชีวิต', en:'<b>Personal Stars (14)</b> · active stars · key life impact', zh:'<b>個人星 14</b> · 重要神煞' },
   's.basic':   { th:'<b>基礎</b> · ตัวเลขพื้นฐานของดวง · matrix score + jishen + wealth role', en:'<b>Basics</b> · base metrics · matrix + jishen + wealth role', zh:'<b>基礎</b> · 基本數據' },
 };
@@ -2261,14 +2295,20 @@ window.addEventListener('resize', function(){
     // hero-tags: ป้ายธาตุ + structure (DM + jishen wealth + element top)
     const heroTags=document.querySelector('.hero-tags');
     if(heroTags){
-      const dmElName=STEM_EL_MAP[dm]||'earth';
       const dmShort=STEM_TH[dm]?.split('·')[0]?.trim()||dm;
       const TOP_TH={wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
-      const TOP_ZH={wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
       const TOP_GLYPH={wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
-      const structureLabel = ji.wealth_role==='jishen' ? '從財' : (ji.wealth_role==='yongshen' ? '正格' : '中和');
-      const structureName = ji.wealth_role==='jishen' ? 'Follow Wealth · ตามทรัพย์' : (ji.wealth_role==='yongshen' ? 'Standard · ปกติ' : 'Balanced · สมดุล');
-      heroTags.innerHTML = `<span class="tag"><span class="glyph">${dm}</span>${STEM_EN[dm]||''} · ${dmShort}</span><span class="tag"><span class="glyph">${structureLabel}</span>${structureName}</span><span class="tag"><span class="glyph">${TOP_GLYPH[topEl]}</span>${TOP_TH[topEl]} เด่น · dominant</span><span class="tag"><span class="glyph">${TOP_ZH[topEl]}</span>${topEl} ${Math.round(topVal/totalEl*100)}%</span>`;
+      const ROLE_TH={resource:'ครู·印',parallel:'ตัวเรา·比',output:'ลูก·食傷',wealth:'ทรัพย์·財',power:'อำนาจ·官殺'};
+      /* 20 พ.ค. Codex รอบ 41 fix · single source: yongshen_v2 + voytek functional · ลบ raw % */
+      const structureLabel = d.yongshen_v2?.structure_label || a.ge_ju?.structure || '中和';
+      const vs2 = a.voytek_strength;
+      /* dominant role จาก functional bars (ไม่ใช่ raw element_counts) */
+      let domRole=null, domVal=0, domEl=null;
+      (vs2?.bars||[]).forEach(b => { if(b.pct>domVal){ domVal=b.pct; domRole=b.role; domEl=b.element; } });
+      const domTag = domRole && domEl
+        ? `<span class="tag"><span class="glyph">${TOP_GLYPH[domEl]||''}</span>${ROLE_TH[domRole]||domRole}(${TOP_TH[domEl]||domEl}) เด่น</span>`
+        : '';
+      heroTags.innerHTML = `<span class="tag"><span class="glyph">${dm}</span>${STEM_EN[dm]||''} · ${dmShort}</span><span class="tag"><span class="glyph">${structureLabel}</span>格局</span>${domTag}`;
     }
     // Voytek-style DM strength bar (Layer 3 · ไม่กระทบ engine yongshen เดิม)
     const vs = a.voytek_strength;
@@ -2291,35 +2331,88 @@ window.addEventListener('resize', function(){
       }
     }
 
-    /* 19 พ.ค. · เจ้านาย · accordion ภาษาซินแสอธิบายว่าทำไม % ธาตุได้เท่านี้ */
-    const rxArr = a.rootedness_explain;
+    /* Phase 18 · accordion ภาษาคน · prefer v2 (4 layers) · fallback v1 */
+    const rxV2 = a.rootedness_explain_v2;
+    const rxV1 = a.rootedness_explain;
+    const rxArr = (Array.isArray(rxV2) && rxV2.length) ? rxV2 : rxV1;
+    const isV2 = (rxArr === rxV2);
     const rxBox = document.querySelector('.dm-card .rootedness-explain');
     if (rxArr && rxArr.length && rxBox) {
       const _lang = document.documentElement.getAttribute('data-lang') || 'th';
       const _hdr = {th:'ดูเหตุผลของแต่ละธาตุ', en:'See reason for each element', zh:'查看五行原因'}[_lang] || 'ดูเหตุผลของแต่ละธาตุ';
-      const sKey = 'summary_' + _lang, srcKey = 'sources_' + _lang, elKey = 'element_' + _lang, lblKey = 'label_' + _lang;
-      const rows = rxArr.map(e => `
-        <div class="re-row ${e.is_dm ? 'is-dm' : ''}">
-          <div class="re-head">
-            <span class="re-elem">${e[elKey] || e.element}</span>
-            <span class="re-pct">${e.pct}%</span>
-            <span class="re-label">${e[lblKey] || e.label}</span>
+      const adviceLabel = {
+        th: {strength:'จุดแข็ง', risk:'จุดเสี่ยง', use_in:'ใช้กับ', balance:'บาลานซ์'},
+        en: {strength:'Strength', risk:'Risk', use_in:'Use in', balance:'Balance'},
+        zh: {strength:'优势', risk:'风险', use_in:'适合', balance:'平衡'},
+      }[_lang] || {strength:'จุดแข็ง', risk:'จุดเสี่ยง', use_in:'ใช้กับ', balance:'บาลานซ์'};
+      const pick = (obj, lang) => obj?.[lang] ?? obj?.th ?? obj?.en ?? obj?.zh ?? '';
+
+      const renderV2 = (e) => {
+        const headline = pick(e.headline, _lang);
+        const meaning = pick(e.meaning, _lang);
+        const elLabel = pick(e.element_label, _lang);
+        const sources = e.sources?.[_lang] || e.sources?.th || [];
+        const resist = pick(e.resistance, _lang);
+        const adv = e.advice?.[_lang] || e.advice?.th || {};
+        return `
+          <div class="re-row ${e.is_dm ? 'is-dm' : ''}">
+            <div class="re-head">
+              <span class="re-elem">${elLabel}</span>
+              <span class="re-pct">${e.pct}%</span>
+              <span class="re-label">${headline}</span>
+            </div>
+            <div class="re-summary">${meaning}</div>
+            <ul class="re-sources">${sources.map(s => `<li>${s}</li>`).join('')}</ul>
+            ${resist ? `<div class="re-resist">⚠ ${resist}</div>` : ''}
+            <div class="re-advice">
+              <div><b>${adviceLabel.strength}:</b> ${adv.strength || ''}</div>
+              <div><b>${adviceLabel.risk}:</b> ${adv.risk || ''}</div>
+              <div><b>${adviceLabel.use_in}:</b> ${adv.use_in || ''}</div>
+              <div><b>${adviceLabel.balance}:</b> ${adv.balance || ''}</div>
+            </div>
           </div>
-          <div class="re-summary">${e[sKey] || e.summary_th}</div>
-          <ul class="re-sources">${(e[srcKey] || e.sources_th || []).map(s => `<li>${s}</li>`).join('')}</ul>
-        </div>
-      `).join('');
+        `;
+      };
+
+      const renderV1 = (e) => {
+        const sKey = 'summary_' + _lang, srcKey = 'sources_' + _lang, elKey = 'element_' + _lang, lblKey = 'label_' + _lang;
+        return `
+          <div class="re-row ${e.is_dm ? 'is-dm' : ''}">
+            <div class="re-head">
+              <span class="re-elem">${e[elKey] || e.element}</span>
+              <span class="re-pct">${e.pct}%</span>
+              <span class="re-label">${e[lblKey] || e.label}</span>
+            </div>
+            <div class="re-summary">${e[sKey] || e.summary_th}</div>
+            <ul class="re-sources">${(e[srcKey] || e.sources_th || []).map(s => `<li>${s}</li>`).join('')}</ul>
+          </div>
+        `;
+      };
+
+      const rows = rxArr.map(e => isV2 ? renderV2(e) : renderV1(e)).join('');
       rxBox.innerHTML = `<details><summary>${_hdr}</summary><div class="re-body">${rows}</div></details>`;
       rxBox.style.display = 'block';
     }
 
-    // lede p
+    // lede p · 20 พ.ค. · เพิ่ม TST info · บอกชัดว่าใช้ True Solar Time ไม่ใช่นาฬิกาดิบ
     const ledeP=document.querySelector('.hero-l p.lede');
     if(ledeP){
       const dmShort=STEM_TH[dm]?.split('·')[0]?.trim()||dm;
       const seasonMap={子:'หนาว',丑:'หนาว',寅:'ใบไม้ผลิ',卯:'ใบไม้ผลิ',辰:'ใบไม้ผลิ',巳:'ร้อน',午:'ร้อน',未:'ร้อน',申:'ใบไม้ร่วง',酉:'ใบไม้ร่วง',戌:'ใบไม้ร่วง',亥:'หนาว'};
       const season=seasonMap[p.month?.branch]||'';
-      ledeP.innerHTML=`คุณเป็น <b>${dmShort}</b> ในฤดู${season} · ดวงของคุณคำนวณจริงจาก <b>${b.date} ${b.time}</b> ที่ ${b.place||'Bangkok'} · ดูรายละเอียดในส่วนถัดไป`;
+      const tst = d.tst || {};
+      const tstStr = tst.appliedTimeStr || '';
+      const lngShift = tst.longitudeShiftMin != null ? tst.longitudeShiftMin.toFixed(1) : '';
+      const eotShift = tst.eotMin != null ? tst.eotMin.toFixed(1) : '';
+      const totalShift = tst.totalShiftMin != null ? tst.totalShiftMin.toFixed(1) : '';
+      /* Codex รอบ 42 fix · UTC-based เพื่อให้ dow ตรงทุก browser timezone */
+      const [by,bm,bd] = String(b.date||'').split('-').map(Number);
+      const dowIdx = by && bm && bd ? new Date(Date.UTC(by, bm - 1, bd)).getUTCDay() : -1;
+      const dowTh = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][dowIdx]||'';
+      const tstLine = tstStr
+        ? `<br/><span style="font-family:var(--mono);font-size:11px;color:var(--gold);opacity:.85;">⏱ <b>TST ${tstStr}</b> · ปรับ ${totalShift} นาที (Longitude ${lngShift} + EoT ${eotShift})</span>`
+        : '';
+      ledeP.innerHTML=`คุณเป็น <b>${dmShort}</b> ในฤดู${season} · เกิดวัน${dowTh} <b>${b.date}</b> เวลา <b>${b.time}</b> ที่ ${b.place||'Bangkok'}${tstLine}`;
     }
 
     // §02 Elements bar (5 ธาตุ) · 19 พ.ค. · ใช้ Functional (voytek_strength.bars) · ตำราอากง
