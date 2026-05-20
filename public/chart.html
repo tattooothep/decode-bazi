@@ -2638,6 +2638,26 @@ window.addEventListener('resize', function(){
           sifuBox.style.display = '';
           sifuBox.innerHTML = '<span class="ov-cursor"></span>';
           let accumulated = '';
+          /* throttle render · 150ms + rAF · กัน innerHTML re-parse ทุก chunk */
+          let pendingRender = false;
+          let lastRenderAt = 0;
+          function scheduleRender(isDone){
+            if (isDone) {
+              sifuBox.innerHTML = md2html(accumulated);
+              return;
+            }
+            if (pendingRender) return;
+            const now = performance.now();
+            const wait = Math.max(0, 150 - (now - lastRenderAt));
+            pendingRender = true;
+            setTimeout(() => {
+              requestAnimationFrame(() => {
+                sifuBox.innerHTML = md2html(accumulated) + '<span class="ov-cursor"></span>';
+                lastRenderAt = performance.now();
+                pendingRender = false;
+              });
+            }, wait);
+          }
           try {
             const resp = await fetch('/api/chart/overview', {
               method: 'POST',
@@ -2673,12 +2693,12 @@ window.addEventListener('resize', function(){
                   const obj = JSON.parse(edata);
                   if (etype === 'cached') {
                     accumulated = obj.content || '';
-                    sifuBox.innerHTML = md2html(accumulated);
+                    scheduleRender(true);
                   } else if (etype === 'chunk') {
                     accumulated += obj.text || '';
-                    sifuBox.innerHTML = md2html(accumulated) + '<span class="ov-cursor"></span>';
+                    scheduleRender(false);
                   } else if (etype === 'done') {
-                    sifuBox.innerHTML = md2html(accumulated);
+                    scheduleRender(true);
                     sifuStatus.textContent = '✅ ซินแสอ่านเสร็จ · บันทึกถาวรแล้ว';
                     setTimeout(()=>{sifuStatus.style.display='none';}, 3000);
                     regenBtn.style.display = '';
