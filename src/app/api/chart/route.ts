@@ -292,12 +292,21 @@ export async function POST(req: Request) {
           const { buildHealthFunctional } = await import("@/lib/health-functional");
           const fnHealth = buildHealthFunctional(natal.day.stem, rootedness, fnStrength.supporting_pct, distribution);
           (ext as any).health_mapping = fnHealth;
-          /* rootedness explain · Phase 17g */
+          /* rootedness explain · Phase 17g · legacy v1 */
           try {
             const { buildRootednessExplain } = await import("@/lib/explain-rootedness");
             (ext as any).rootedness_explain = buildRootednessExplain(natal.day.stem, rootedness, distribution);
           } catch (e) {
             console.warn("[chart] rootedness_explain failed", e);
+          }
+          /* rootedness explain v2 · Phase 18 · 4 layers · ภาษาคน · 3 lang */
+          try {
+            if (distribution) {
+              const { buildRootednessExplainV2 } = await import("@/lib/rootedness-explain-v2");
+              (ext as any).rootedness_explain_v2 = buildRootednessExplainV2(natal.day.stem, distribution);
+            }
+          } catch (e) {
+            console.warn("[chart] rootedness_explain_v2 failed", e);
           }
         }
       }
@@ -376,8 +385,10 @@ export async function POST(req: Request) {
         spouse_palace: ext.spouse_palace,
         career_industry: ext.career_industry,
         health_mapping: ext.health_mapping,
-        /* 19 พ.ค. · ภาษาซินแสอธิบาย rootedness ของแต่ละธาตุ */
+        /* 19 พ.ค. · ภาษาซินแสอธิบาย rootedness ของแต่ละธาตุ (legacy v1) */
         rootedness_explain: (ext as any).rootedness_explain,
+        /* Phase 18 · rootedness explain v2 · 4 layers · ภาษาคน · 3 lang */
+        rootedness_explain_v2: (ext as any).rootedness_explain_v2,
         /* Phase 17g · distribution engine output · debug/observability */
         element_distribution: (ext as any).element_distribution,
       },
