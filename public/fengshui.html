@@ -3,852 +3,1979 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>風水 Hub · ฮวงจุ้ย Master · hourkey</title>
-<meta name="description" content="風水 Master Hub · 9 ศาสตร์ 8 layers · เข็มทิศจริง + 9 พาลา + ดวงส่วนตัว + AI verdict · 玄空·奇門·八宅·太歲·24山·用神·河洛·64卦·通書"/>
-<link rel="canonical" href="https://www.hourkey.io/fengshui"/>
-<link rel="alternate" hreflang="th" href="https://www.hourkey.io/fengshui?lang=th"/>
-<link rel="alternate" hreflang="en" href="https://www.hourkey.io/fengshui?lang=en"/>
-<link rel="alternate" hreflang="zh" href="https://www.hourkey.io/fengshui?lang=zh"/>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
+<title>hourkey · 玄空飛星 · Flying Star Feng Shui</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Serif+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet"/>
 <style>
-  :root{
-    --gold:#c8a44d; --gold-bright:#e6c976; --gold-soft:rgba(200,164,77,.12); --gold-line:rgba(200,164,77,.28);
-    --serif:'Cormorant Garamond','Noto Serif TC',serif;
-    --tc:'Noto Serif TC',serif; --th:'Noto Serif Thai',serif; --mono:'JetBrains Mono',monospace;
-    --bg:#0a0a0c; --bg-2:#13131a; --bg-3:#1a1a23; --bg-4:#22222e;
-    --fg:#f3ebd9; --fg-soft:#c2b694; --fg-faint:#7a7160;
-    --line:rgba(200,164,77,.14);
-    --good:#7dd37b; --good-soft:rgba(125,211,123,.15);
-    --neutral:#5ba0ff; --neutral-soft:rgba(91,160,255,.12);
-    --bad:#e26b5d; --bad-soft:rgba(226,107,93,.15);
-    --warn:#f7b955; --warn-soft:rgba(247,185,85,.15);
-    --personal:#c8a44d; --personal-soft:rgba(200,164,77,.18);
-  }
-  [data-theme="light"]{
-    --bg:#f5efe2; --bg-2:#fbf6ea; --bg-3:#fff8e8; --bg-4:#f1e9d4;
-    --fg:#1a1612; --fg-soft:rgba(26,22,18,.62); --fg-faint:rgba(26,22,18,.45);
-    --line:rgba(138,109,42,.2);
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--fg);font-family:var(--th);min-height:100vh;line-height:1.6;}
+*{box-sizing:border-box;margin:0;padding:0;}
+[data-theme="dark"]{
+  --bg:#0d0f12;--bg-2:#161b22;--bg-3:#1c2229;
+  --fg:#f3ebd9;--fg-soft:rgba(243,235,217,.65);--fg-faint:rgba(243,235,217,.4);--fg-mute:rgba(243,235,217,.22);
+  --gold:#c8a44d;--gold-bright:#e6c068;--gold-deep:#8a6d2a;
+  --gold-soft:rgba(200,164,77,.10);--gold-line:rgba(200,164,77,.22);
+  --line:rgba(243,235,217,.08);
+  --vermilion:#c95c4a;
+  --auspicious:#7fa869;--inauspicious:#c95c4a;--neutral:#c4994a;
+  --tai-sui:#9b6cc9;--three-kill:#c95c4a;--five-yellow:#d4a017;
+}
+[data-theme="light"]{
+  --bg:#f5efe2;--bg-2:#ebe5d0;--bg-3:#dfd9c2;
+  --fg:#1a1612;--fg-soft:rgba(26,22,18,.7);--fg-faint:rgba(26,22,18,.45);--fg-mute:rgba(26,22,18,.25);
+  --gold:#8a6d2a;--gold-bright:#a8852f;--gold-deep:#5e4a1a;
+  --gold-soft:rgba(138,109,42,.12);--gold-line:rgba(138,109,42,.32);
+  --line:rgba(26,22,18,.1);
+  --vermilion:#a83a2c;
+  --auspicious:#3f6b54;--inauspicious:#a83a2c;--neutral:#8a6d2a;
+  --tai-sui:#6b3a8a;--three-kill:#a83a2c;--five-yellow:#a8852f;
+}
+:root{--serif:'Cormorant Garamond','Noto Serif TC',serif;--tc:'Noto Serif TC',serif;--thai:'Noto Serif Thai',serif;--mono:'JetBrains Mono',monospace;}
+html,body{background:var(--bg);color:var(--fg);font-family:var(--thai);min-height:100vh;-webkit-font-smoothing:antialiased;transition:background .4s,color .4s;}
+body{overflow-x:hidden;line-height:1.5;}
 
-	  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(13,15,18,.78);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line);}
-	  body.light .topbar{background:rgba(246,241,230,.85);}
-	  .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
-	  .logo .seal{width:30px;height:30px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);}
-	  .nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
-	  .nav a{color:var(--fg-soft);text-decoration:none;font-family:var(--th);font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
-  .nav a .glyph{font-family:var(--tc);font-size:16px;color:var(--gold);font-weight:700;line-height:1;}
-  .nav a .lbl{font-size:12px;}
-  .nav a.on,.nav a.active{color:var(--gold);}
-  .nav a:hover{color:var(--fg);}
-	  .nav a:hover{color:var(--fg);}
-	  .nav a:hover .glyph{color:var(--gold-deep);}
-	  .top-r{display:flex;align-items:center;gap:14px;}
-  .hk-btn{background:transparent;border:1px solid var(--gold-line);color:var(--gold);padding:6px 12px;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;}
-  .hk-btn:hover{background:var(--gold-soft);}
-  .hk-btn.act{background:var(--gold);color:var(--bg);}
-  @media(max-width:980px){
-	    .topbar{padding:14px 18px;}
-	    .nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;}
-	    .nav::-webkit-scrollbar{display:none;}
-	    .nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
-	    .nav a .glyph{font-size:14px;}
-	    .nav a .lbl{font-size:11px;}
-	  }
+nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);}
+nav .logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;font-weight:600;color:var(--fg);text-decoration:none;}
+nav .logo .seal{font-family:var(--tc);color:var(--gold);font-weight:700;}
+nav .breadcrumb{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-soft);text-transform:uppercase;}
+nav .breadcrumb a{color:var(--fg-soft);text-decoration:none;}
+nav .breadcrumb .sep{color:var(--gold);margin:0 8px;}
+nav .breadcrumb .cur{color:var(--gold);}
+.theme-toggle{display:flex;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+.theme-toggle button{width:28px;height:28px;border:none;background:transparent;color:var(--fg-soft);font-size:12px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+[data-theme="dark"] .theme-toggle button[data-mode="dark"]{background:var(--gold);color:var(--bg);}
+[data-theme="light"] .theme-toggle button[data-mode="light"]{background:var(--gold);color:var(--bg);}
 
-  .hero{padding:24px 24px 14px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--bg-2),var(--bg));}
-  .hero-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1.2fr;gap:24px;align-items:start;}
-  .hero .crest{font-family:var(--tc);font-size:36px;color:var(--gold);line-height:1;letter-spacing:6px;margin-bottom:6px;}
-  .hero h1{font-family:var(--serif);font-size:28px;font-weight:400;margin-bottom:4px;}
-  .hero h1 b{color:var(--gold);font-weight:500;font-style:italic;}
-  .hero .sub{font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
-  .hero-l .now-bar{font-family:var(--mono);font-size:11px;color:var(--fg-soft);padding:10px 12px;background:var(--bg-3);border:1px solid var(--line);border-radius:8px;margin-bottom:10px;line-height:1.7;}
-  .hero-l .now-bar b{color:var(--gold);}
-  .hero-l .live-verdict{padding:14px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:10px;}
-  .hero-l .live-verdict .title{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--gold);margin-bottom:6px;text-transform:uppercase;}
-  .hero-l .live-verdict .body{font-family:var(--th);font-size:13px;line-height:1.7;}
-  .hero-l .live-verdict .badge{display:inline-block;padding:2px 8px;font-family:var(--mono);font-size:10px;border-radius:4px;background:var(--gold);color:var(--bg);margin-right:6px;}
+.hero{padding:60px 32px 30px;text-align:center;}
+.hero .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:20px;display:inline-flex;align-items:center;gap:14px;}
+.hero .eyebrow::before,.hero .eyebrow::after{content:'';width:32px;height:1px;background:var(--gold);}
+.hero h1{font-family:var(--serif);font-size:clamp(36px,6vw,72px);font-weight:300;line-height:1.05;letter-spacing:-.02em;margin-bottom:18px;}
+.hero h1 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+.hero h1 i{font-style:italic;color:var(--gold);}
+.hero .sub{font-size:15px;line-height:1.7;color:var(--fg-soft);max-width:620px;margin:0 auto;}
+.hero .sub i{color:var(--gold-bright);font-style:italic;}
 
-  .compass-wrap{position:relative;width:100%;max-width:420px;aspect-ratio:1/1;margin:0 auto;}
-  .compass-svg{width:100%;height:100%;}
-  .compass-ctrl{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px;align-items:center;}
-  .compass-ctrl input[type=range]{flex:1;min-width:200px;accent-color:var(--gold);}
-  .compass-deg{font-family:var(--mono);font-size:16px;color:var(--gold);padding:4px 12px;background:var(--bg-3);border:1px solid var(--gold-line);border-radius:6px;}
-  .compass-cardinal{font-family:var(--tc);font-size:14px;color:var(--fg-soft);}
-  .compass-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+.topbar{background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border-top:1px solid var(--gold-line);border-bottom:1px solid var(--gold-line);padding:14px 24px;}
+.topbar-inner{max-width:1400px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;}
+.timeline-set{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.timeline-set .label{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-right:4px;}
+.timeline-set input{background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:12px;padding:7px 10px;border-radius:6px;outline:none;}
+.timeline-set input:focus{border-color:var(--gold);}
+.timeline-set input[type="number"]{width:75px;text-align:center;}
+.timeline-set input[type="date"]{width:140px;}
+.timeline-set input[type="time"]{width:90px;}
+.timeline-now{background:var(--gold);color:var(--bg);border:none;padding:7px 14px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;border-radius:6px;cursor:pointer;}
+.timeline-now:hover{background:var(--gold-bright);}
+.layer-toggles{display:flex;gap:6px;flex-wrap:wrap;}
+.layer-btn{background:var(--bg-3);border:1px solid var(--line);color:var(--fg-soft);font-family:var(--mono);font-size:10px;letter-spacing:.18em;padding:7px 12px;border-radius:6px;cursor:pointer;transition:.2s;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+.layer-btn .han{font-family:var(--tc);font-size:13px;letter-spacing:0;color:var(--gold);}
+.layer-btn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
 
-  main{max-width:1200px;margin:0 auto;padding:18px 24px 80px;}
+.school-row{padding:10px 24px;background:var(--bg-3);border-bottom:1px solid var(--line);display:flex;justify-content:center;gap:8px;flex-wrap:wrap;}
+.school-btn{background:var(--bg-2);border:1.5px solid var(--line);color:var(--fg-soft);font-family:var(--mono);font-size:10px;letter-spacing:.16em;padding:9px 16px;border-radius:8px;cursor:pointer;transition:.25s;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
+.school-btn .han{font-family:var(--tc);font-size:14px;letter-spacing:0;color:var(--gold);font-weight:700;}
+.school-btn:hover{border-color:var(--gold-line);}
+.school-btn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
+.school-btn .ic{font-size:14px;line-height:1;}
 
-  .ctx-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:12px 16px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;margin-bottom:16px;}
-  .ctx-bar .field{display:flex;align-items:center;gap:6px;}
-  .ctx-bar label{font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;}
-  .ctx-bar select, .ctx-bar input{background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:12px;padding:6px 10px;border-radius:6px;outline:none;}
+main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
+.grid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
+@media(max-width:1080px){.grid{grid-template-columns:1fr;}}
 
-  .layers-bar{display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;margin-bottom:14px;}
-  .layer-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;background:var(--bg-3);border:1px solid var(--line);border-radius:99px;font-family:var(--mono);font-size:10px;cursor:pointer;color:var(--fg-soft);letter-spacing:.04em;transition:.2s;}
-  .layer-chip:hover{border-color:var(--gold-line);color:var(--fg);}
-  .layer-chip.on{background:var(--gold-soft);border-color:var(--gold);color:var(--gold-bright);}
-  .layer-chip .tc{font-family:var(--tc);font-size:13px;}
-  .layer-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--fg-faint);}
-  .layer-chip.on .dot{background:var(--gold);}
+.palace-grid-wrap{background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border:1px solid var(--gold-line);border-radius:18px;padding:28px;}
+.palace-grid-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.palace-grid-head h3{font-family:var(--serif);font-size:22px;font-weight:400;}
+.palace-grid-head h3 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+.palace-grid-head .meta{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase;}
+.palace-grid-head .meta b{color:var(--gold);}
 
-  .grid-wrap{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-bottom:18px;}
-  @media(max-width:880px){.grid-wrap{grid-template-columns:1fr;} .hero-grid{grid-template-columns:1fr;}}
-  .palace-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:12px;aspect-ratio:1/1;}
-  .palace{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:10px 8px;display:flex;flex-direction:column;justify-content:space-between;position:relative;transition:.2s;cursor:pointer;overflow:hidden;}
-  .palace:hover{border-color:var(--gold);transform:translateY(-2px);}
-  .palace.q-good{background:var(--good-soft);border-color:rgba(125,211,123,.4);}
-  .palace.q-bad{background:var(--bad-soft);border-color:rgba(226,107,93,.4);}
-  .palace.q-neutral{background:var(--neutral-soft);border-color:rgba(91,160,255,.3);}
-  .palace.q-warn{background:var(--warn-soft);border-color:var(--warn);}
-  .palace.q-personal{background:var(--personal-soft);border-color:var(--personal);box-shadow:0 0 0 1px var(--personal) inset;}
-  .palace .corner{position:absolute;top:4px;left:6px;font-family:var(--mono);font-size:8px;color:var(--fg-faint);letter-spacing:.04em;}
-  .palace .deg{position:absolute;top:4px;right:6px;font-family:var(--mono);font-size:8px;color:var(--fg-faint);}
-  .palace .pri{font-family:var(--tc);font-size:26px;color:var(--gold);font-weight:600;line-height:1;text-align:center;margin:18px 0 4px;}
-  .palace .sec{display:flex;flex-wrap:wrap;gap:2px 4px;justify-content:center;font-family:var(--mono);font-size:9px;color:var(--fg-soft);line-height:1.4;}
-  .palace .sec b{color:var(--fg);}
-  .palace .qbadge{position:absolute;bottom:4px;right:6px;font-family:var(--mono);font-size:8px;letter-spacing:.05em;padding:1px 4px;border-radius:3px;}
-  .palace.q-good .qbadge{background:rgba(125,211,123,.3);color:var(--good);}
-  .palace.q-bad .qbadge{background:rgba(226,107,93,.3);color:var(--bad);}
-  .palace.q-warn .qbadge{background:rgba(247,185,85,.3);color:var(--warn);}
-  .palace.q-personal::after{content:'★';position:absolute;top:4px;right:18px;color:var(--gold);font-size:11px;}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:8px;aspect-ratio:1;max-width:680px;margin:0 auto;}
+.pcell{position:relative;background:var(--bg-3);border:1px solid var(--line);border-radius:12px;padding:14px 10px;display:flex;flex-direction:column;cursor:pointer;transition:.25s;overflow:hidden;}
+.pcell::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent-bg,transparent) 0%,transparent 60%);opacity:.6;transition:.3s;}
+.pcell:hover::before{opacity:1;}
+.pcell:hover{border-color:var(--gold);transform:translateY(-2px);}
+.pcell.active{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold);}
+.pcell[data-year="1"]{--accent-bg:rgba(90,138,168,.18);}
+.pcell[data-year="2"]{--accent-bg:rgba(80,80,80,.16);}
+.pcell[data-year="3"]{--accent-bg:rgba(127,168,105,.16);}
+.pcell[data-year="4"]{--accent-bg:rgba(143,194,124,.18);}
+.pcell[data-year="5"]{--accent-bg:rgba(212,160,23,.28);border-color:var(--five-yellow);border-style:dashed;}
+.pcell[data-year="6"]{--accent-bg:rgba(243,235,217,.10);}
+.pcell[data-year="7"]{--accent-bg:rgba(201,92,74,.18);}
+.pcell[data-year="8"]{--accent-bg:rgba(243,235,217,.12);}
+.pcell[data-year="9"]{--accent-bg:rgba(155,108,201,.18);}
+.pcell.center{outline:1.5px solid var(--gold-line);outline-offset:-4px;}
 
-  .side{display:flex;flex-direction:column;gap:12px;}
-  .side-card{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:14px;}
-  .side-card h3{font-family:var(--serif);font-size:15px;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
-  .side-card h3 .tc{font-family:var(--tc);font-size:18px;}
-  .side-card .row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px dashed var(--line);}
-  .side-card .row:last-child{border-bottom:0;}
-  .side-card .row .lbl{color:var(--fg-soft);font-family:var(--mono);font-size:10px;}
-  .side-card .row .val{color:var(--fg);font-family:var(--tc);font-size:14px;}
+.pcell-top{display:flex;justify-content:space-between;align-items:flex-start;font-size:9px;font-family:var(--mono);letter-spacing:.1em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:4px;position:relative;z-index:2;}
+.pcell-top .dir{color:var(--gold-bright);font-weight:700;}
+.pcell-top .tri{font-family:var(--tc);font-size:11px;color:var(--gold-deep);}
 
-  .verdict-card{background:linear-gradient(135deg,var(--bg-2),var(--bg-3));border:1px solid var(--gold-line);border-radius:14px;padding:18px;margin-bottom:18px;}
-  .verdict-card .vhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap;}
-  .verdict-card .vhd .deg{font-family:var(--serif);font-size:28px;color:var(--gold);}
-  .verdict-card .vhd .dir{font-family:var(--tc);font-size:22px;color:var(--fg);}
-  .verdict-card .vhd .lvl{padding:4px 10px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;}
-  .verdict-card .vhd .lvl.lvl-good{background:var(--good-soft);color:var(--good);border:1px solid rgba(125,211,123,.4);}
-  .verdict-card .vhd .lvl.lvl-bad{background:var(--bad-soft);color:var(--bad);border:1px solid rgba(226,107,93,.4);}
-  .verdict-card .vhd .lvl.lvl-warn{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn);}
-  .verdict-card .vhd .lvl.lvl-mixed{background:var(--neutral-soft);color:var(--neutral);border:1px solid rgba(91,160,255,.4);}
-  .verdict-card .vbody{font-family:var(--th);font-size:14px;line-height:1.7;color:var(--fg);margin-bottom:10px;}
-  .verdict-card .vbody b{color:var(--gold);}
-  .verdict-card .layers-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-top:8px;}
-  .verdict-card .lyr-pill{padding:6px 10px;background:var(--bg-3);border:1px solid var(--line);border-radius:6px;font-family:var(--mono);font-size:10px;line-height:1.4;color:var(--fg-soft);}
-  .verdict-card .lyr-pill b{color:var(--fg);font-family:var(--tc);font-size:12px;}
-  .verdict-card .lyr-pill .vg{color:var(--good);} .verdict-card .lyr-pill .vb{color:var(--bad);} .verdict-card .lyr-pill .vw{color:var(--warn);}
-  .verdict-card .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
-  .verdict-card .ai-btn{padding:8px 16px;background:var(--gold);color:var(--bg);border:0;border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;font-weight:600;}
-  .verdict-card .ai-btn:disabled{opacity:.5;cursor:wait;}
-  .verdict-card .activity-btn{padding:8px 16px;background:transparent;color:var(--gold);border:1px solid var(--gold-line);border-radius:8px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.05em;}
-  .verdict-card .activity-btn:hover{background:var(--gold-soft);}
+.stars-quad{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px 8px;flex:1;position:relative;z-index:2;align-items:center;justify-items:center;padding:4px 0;}
+.star-num{font-family:var(--tc);font-weight:700;line-height:1;text-align:center;}
+.star-num.star-period{font-size:13px;color:var(--fg-faint);grid-column:1;grid-row:1;}
+.star-num.star-year{font-size:32px;color:var(--gold);grid-column:2;grid-row:1;}
+.star-num.star-month{font-size:13px;color:var(--fg-soft);grid-column:1;grid-row:2;}
+.star-num.star-day{font-size:13px;color:var(--fg-faint);grid-column:2;grid-row:2;}
+.star-num small{font-size:.55em;color:var(--fg-mute);font-family:var(--tc);margin-left:1px;}
 
-  .activity-card, .family-card{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;display:none;}
-  .activity-card.on, .family-card.on{display:block;}
-  .activity-card textarea{width:100%;min-height:60px;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--th);font-size:13px;padding:10px;border-radius:8px;outline:none;resize:vertical;}
-  .family-card .members{display:flex;flex-wrap:wrap;gap:6px;}
-  .family-card .mb{padding:8px 12px;background:var(--bg-3);border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:11px;}
-  .family-card .mb.conflict{border-color:var(--bad);color:var(--bad);}
-  .family-card .mb.benefit{border-color:var(--good);color:var(--good);}
+.pgrid:not(.show-period) .star-period{visibility:hidden;}
+.pgrid:not(.show-year) .star-year{visibility:hidden;}
+.pgrid:not(.show-month) .star-month{visibility:hidden;}
+.pgrid:not(.show-day) .star-day{visibility:hidden;}
 
-  .warns-card{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;}
-  .warns-card h3{font-family:var(--serif);font-size:15px;color:var(--gold);margin-bottom:8px;}
-  .warn-item{padding:8px 10px;border-radius:6px;margin-bottom:6px;font-size:12px;border-left:3px solid;line-height:1.6;}
-  .warn-item.critical{background:var(--bad-soft);border-color:var(--bad);color:var(--fg);}
-  .warn-item.warning{background:var(--warn-soft);border-color:var(--warn);color:var(--fg);}
+.pcell-warn{position:absolute;bottom:5px;right:5px;display:flex;gap:3px;z-index:3;flex-wrap:wrap;justify-content:flex-end;max-width:60%;}
+.warn-tag{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.05em;padding:2px 5px;border-radius:3px;text-transform:uppercase;}
+.warn-tag.tai{background:var(--tai-sui);color:#fff;}
+.warn-tag.kill{background:var(--three-kill);color:#fff;}
+.warn-tag.fy{background:var(--five-yellow);color:#000;}
+.warn-tag.aus{background:var(--auspicious);color:#fff;}
 
-  .cross-link{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:24px;}
-  .cross-link a{font-family:var(--mono);font-size:10px;color:var(--gold);text-decoration:none;letter-spacing:.08em;padding:6px 12px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;}
+/* Hexagram layer · top-center of cell */
+.pcell-hex{position:absolute;top:5px;left:50%;transform:translateX(-50%);font-family:var(--tc);font-size:18px;color:var(--gold-bright);z-index:4;line-height:1;text-shadow:0 0 6px var(--bg);pointer-events:none;}
+.pgrid:not(.show-hex) .pcell-hex{display:none;}
 
-  .ring-bg{fill:var(--bg-3);}
-  [data-theme="light"] .ring-bg{fill:#fff8e8;}
-  .ring-line{stroke:var(--gold-line);fill:none;}
-  .ring-text{fill:var(--fg);font-family:var(--tc);font-size:11px;}
-  .ring-num{fill:var(--gold);font-family:var(--mono);font-size:7px;}
-  .ring-cardinal{fill:var(--gold);font-family:var(--serif);font-size:14px;font-weight:600;}
-  .ring-pointer{stroke:#e26b5d;stroke-width:2.5;fill:#e26b5d;}
-  .ring-bg-2{fill:var(--bg-4);}
-  [data-theme="light"] .ring-bg-2{fill:#f1e9d4;}
+/* 8 Mansions layer · left-edge ribbon with label */
+.pcell-ribbon{position:absolute;left:0;top:0;bottom:0;width:22px;z-index:1;border-radius:12px 0 0 12px;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-family:var(--mono);font-size:8px;letter-spacing:.15em;color:#fff;font-weight:700;text-transform:uppercase;text-shadow:0 0 4px rgba(0,0,0,.5);}
+.pcell-ribbon.sheng-qi{background:linear-gradient(180deg,#7fa869,#5a8a72);}
+.pcell-ribbon.tian-yi{background:linear-gradient(180deg,#5a8aa8,#3d6e8d);}
+.pcell-ribbon.yan-nian{background:linear-gradient(180deg,#c4994a,#8a6d2a);}
+.pcell-ribbon.fu-wei{background:linear-gradient(180deg,#b9aa78,#7a6b3a);}
+.pcell-ribbon.huo-hai{background:linear-gradient(180deg,#c95c4a,#8a3a2c);opacity:.8;}
+.pcell-ribbon.wu-gui{background:linear-gradient(180deg,#9b6cc9,#6b3a8a);opacity:.85;}
+.pcell-ribbon.liu-sha{background:linear-gradient(180deg,#c95c4a,#a83a2c);opacity:.9;}
+.pcell-ribbon.jue-ming{background:linear-gradient(180deg,#7a3a2c,#4a1f15);}
+.pgrid:not(.show-mansion) .pcell-ribbon{display:none;}
+.pgrid.show-mansion .pcell{padding-left:30px;}  /* compensate ribbon width */
 
-  @media(max-width:640px){
-    .hero h1{font-size:22px;} .hero .crest{font-size:28px;letter-spacing:4px;}
-    main{padding:14px 12px 60px;}
-    .palace .pri{font-size:18px;margin:14px 0 2px;}
-    .palace .sec{font-size:8px;}
-    .hk-topbar{padding:10px 16px;}
-  }
+/* Person filter button */
+.person-filter-row{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 6px;}
+.pf-btn{background:var(--bg-3);border:1.5px solid var(--line);color:var(--fg-soft);font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:5px 10px;border-radius:99px;cursor:pointer;transition:.2s;}
+.pf-btn:hover{border-color:var(--gold-line);color:var(--fg);}
+.pf-btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700;}
+.pf-btn.all{background:var(--bg-2);}
+.pf-btn.all.active{background:var(--gold-bright);color:var(--bg);}
+
+/* People badges · bottom-left of cell */
+.pcell-people{position:absolute;bottom:5px;left:5px;display:flex;gap:2px;z-index:5;flex-wrap:wrap;max-width:55%;}
+.person-chip{font-size:9px;font-family:var(--mono);font-weight:700;padding:2px 6px;border-radius:99px;background:var(--gold);color:var(--bg);letter-spacing:.05em;border:1.5px solid var(--bg-2);position:relative;cursor:help;}
+.person-chip[data-fit="best"]{background:var(--auspicious);}
+.person-chip[data-fit="worst"]{background:var(--inauspicious);color:#fff;}
+.person-chip[data-fit="neutral"]{background:var(--neutral);}
+.pgrid:not(.show-people) .pcell-people{display:none;}
+
+.legend-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--fg-soft);text-transform:uppercase;}
+.legend-item .swatch{width:18px;height:10px;border-radius:2px;}
+
+.side{display:flex;flex-direction:column;gap:20px;}
+.card{background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border:1px solid var(--gold-line);border-radius:18px;padding:22px;}
+.card h4{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:12px;}
+.card h4 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+.card h4 .badge{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--gold);background:var(--gold-soft);padding:2px 7px;border-radius:99px;text-transform:uppercase;margin-left:8px;vertical-align:middle;}
+
+.now-playing .row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px;}
+.now-playing .row:last-child{border-bottom:none;}
+.now-playing .row .l{color:var(--fg-soft);font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;}
+.now-playing .row .r{color:var(--fg);font-family:var(--tc);font-weight:600;font-size:14px;}
+.now-playing .row .r b{color:var(--gold);}
+
+.warning-list{display:flex;flex-direction:column;gap:8px;}
+.warning-item{padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.5;display:flex;gap:10px;align-items:center;}
+.warning-item .ic{flex-shrink:0;font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.05em;}
+.warning-item.tai{background:rgba(155,108,201,.10);border:1px solid rgba(155,108,201,.4);}
+.warning-item.tai .ic{background:var(--tai-sui);color:#fff;}
+.warning-item.kill{background:rgba(201,92,74,.10);border:1px solid rgba(201,92,74,.4);}
+.warning-item.kill .ic{background:var(--three-kill);color:#fff;}
+.warning-item.fy{background:rgba(212,160,23,.10);border:1px solid rgba(212,160,23,.4);}
+.warning-item.fy .ic{background:var(--five-yellow);color:#000;}
+.warning-item span{color:var(--fg);}
+.warning-item span b{color:var(--gold-bright);font-family:var(--tc);}
+
+.palace-detail h5{font-family:var(--serif);font-size:24px;font-weight:400;margin-bottom:6px;}
+.palace-detail h5 .tc{font-family:var(--tc);color:var(--gold);}
+.palace-detail .meta{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;}
+.pdetail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.pdetail-cell{padding:10px;background:var(--bg-3);border-radius:8px;font-size:12px;}
+.pdetail-cell b{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:3px;}
+.pdetail-cell .han{font-family:var(--tc);font-size:14px;font-weight:600;color:var(--gold);}
+.pdetail-meaning{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;line-height:1.65;color:var(--fg-soft);}
+.pdetail-meaning i{color:var(--gold-bright);}
+
+/* People manager */
+.people-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:240px;overflow-y:auto;}
+.person-row{padding:10px 12px;background:var(--bg-3);border-radius:8px;border-left:3px solid var(--gold);display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.person-row .info{flex:1;min-width:0;}
+.person-row .name{font-family:var(--serif);font-size:14px;font-weight:500;color:var(--fg);}
+.person-row .stats{font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+.person-row .stats .han{font-family:var(--tc);font-size:13px;color:var(--gold-bright);font-weight:700;letter-spacing:0;}
+.person-row .actions{display:flex;gap:4px;flex-shrink:0;}
+.person-row button{background:transparent;border:1px solid var(--line);color:var(--fg-soft);font-family:var(--mono);font-size:9px;padding:4px 7px;border-radius:4px;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;}
+.person-row button:hover{border-color:var(--gold);color:var(--gold);}
+.person-row button.danger:hover{border-color:var(--inauspicious);color:var(--inauspicious);}
+.person-form{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:12px;background:var(--bg-3);border-radius:8px;}
+.person-form .full{grid-column:1 / -1;}
+.person-form input,.person-form select{background:var(--bg-2);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:11px;padding:7px 10px;border-radius:5px;outline:none;width:100%;}
+.person-form input:focus,.person-form select:focus{border-color:var(--gold);}
+.person-form .add-btn{grid-column:1 / -1;background:var(--gold);color:var(--bg);border:none;padding:8px;border-radius:5px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;cursor:pointer;}
+.person-form .add-btn:hover{background:var(--gold-bright);}
+.person-empty{padding:20px 14px;text-align:center;font-size:12px;color:var(--fg-faint);font-style:italic;}
+
+.geo-sec{margin-top:50px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:18px;padding:28px;}
+.geo-head{margin-bottom:24px;}
+.geo-head .label{font-family:var(--mono);font-size:10px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;}
+.geo-head h2{font-family:var(--serif);font-size:clamp(28px,4vw,40px);font-weight:300;line-height:1.1;}
+.geo-head h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+.geo-head p{margin-top:10px;font-size:13px;color:var(--fg-soft);max-width:680px;line-height:1.6;}
+.geo-head p b{color:var(--gold);}
+
+.geo-grid{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:stretch;}
+@media(max-width:1080px){.geo-grid{grid-template-columns:1fr;}}
+
+.compass-card{background:var(--bg-3);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.compass-svg-wrap{position:relative;width:100%;max-width:280px;aspect-ratio:1;}
+.compass-svg{width:100%;height:auto;display:block;}
+.compass-needle{transform-origin:200px 200px;transition:transform .25s cubic-bezier(.4,0,.2,1);}
+.facing-arrow{transform-origin:200px 200px;transition:transform .35s ease;}
+.compass-deg{font-family:var(--mono);font-size:42px;font-weight:700;color:var(--gold);letter-spacing:-.02em;line-height:1;}
+.compass-deg-unit{font-size:20px;color:var(--fg-soft);margin-left:2px;}
+.compass-status{font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase;text-align:center;line-height:1.6;width:100%;}
+.compass-status b{color:var(--gold);font-weight:700;}
+.compass-actions{display:flex;flex-direction:column;gap:8px;width:100%;}
+.btn-compass{width:100%;padding:11px 16px;background:var(--gold);color:var(--bg);border:none;border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;cursor:pointer;transition:.2s;}
+.btn-compass:hover:not(:disabled){background:var(--gold-bright);}
+.btn-compass:disabled{opacity:.4;cursor:not-allowed;}
+.btn-compass.secondary{background:transparent;border:1px solid var(--gold-line);color:var(--gold);}
+.btn-compass.secondary:hover:not(:disabled){background:var(--gold-soft);}
+.compass-help{font-size:11px;color:var(--fg-faint);line-height:1.6;padding:10px 12px;background:rgba(212,160,23,.06);border-left:2px solid var(--five-yellow);border-radius:4px;width:100%;}
+.compass-help b{color:var(--gold);}
+
+.map-card{background:var(--bg-3);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:520px;}
+.map-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.map-head h4{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
+.map-controls{display:flex;gap:6px;flex-wrap:wrap;}
+.map-btn{background:var(--bg-2);border:1px solid var(--line);color:var(--fg-soft);font-family:var(--mono);font-size:10px;letter-spacing:.12em;padding:6px 11px;border-radius:6px;cursor:pointer;text-transform:uppercase;transition:.2s;}
+.map-btn:hover{border-color:var(--gold);color:var(--gold);}
+.map-btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+#gmap{flex:1;width:100%;min-height:380px;background:#1a1a1a;}
+
+.map-result-bar{padding:14px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:14px;font-family:var(--mono);font-size:11px;}
+@media(max-width:680px){.map-result-bar{grid-template-columns:1fr 1fr;}}
+.mrb-cell{display:flex;flex-direction:column;gap:3px;}
+.mrb-cell b{font-size:9px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
+.mrb-cell span{color:var(--fg);font-weight:600;font-size:13px;}
+.mrb-cell .han{font-family:var(--tc);color:var(--gold-bright);font-size:15px;}
+
+.map-instr{padding:12px 18px;background:var(--bg-2);border-top:1px solid var(--line);font-size:12px;color:var(--fg-soft);line-height:1.6;}
+.map-instr b{color:var(--gold);}
+
+.api-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.api-modal.show{display:flex;}
+.api-card{background:var(--bg-2);border:1px solid var(--gold);border-radius:18px;padding:28px;max-width:520px;width:100%;}
+.api-card h3{font-family:var(--serif);font-size:24px;color:var(--gold);margin-bottom:6px;}
+.api-card p{font-size:13px;line-height:1.7;color:var(--fg-soft);margin-bottom:14px;}
+.api-card code{background:var(--bg-3);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:11px;color:var(--gold-bright);}
+.api-card input{width:100%;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:13px;padding:11px 14px;border-radius:8px;outline:none;margin-bottom:12px;}
+.api-card input:focus{border-color:var(--gold);}
+.api-card .row{display:flex;gap:8px;}
+.api-card .row button{flex:1;}
+
+footer{padding:50px 32px;border-top:1px solid var(--line);text-align:center;background:var(--bg-2);}
+footer p{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;}
+footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
+
+@media(max-width:680px){
+  nav{padding:12px 16px;}
+  nav .breadcrumb{display:none;}
+  .hero{padding:36px 16px 20px;}
+  .topbar{padding:12px 16px;}
+  main{padding:20px 12px 40px;}
+  .palace-grid-wrap{padding:14px;}
+  .pcell{padding:8px 5px;}
+  .star-num.star-year{font-size:24px;}
+  .star-num.star-period,.star-num.star-month,.star-num.star-day{font-size:11px;}
+  .pcell-top{font-size:8px;}
+  .geo-sec{padding:18px;}
+}
 </style>
-<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
-<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
-  <header class="topbar">
-    <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
-    <nav class="nav" id="hk-topnav">
-      <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl">ดวง</span></a>
-      <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl">วันนี้</span></a>
-      <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl">ปฏิทิน</span></a>
-      <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl">เครือข่าย</span></a>
-      <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl">ฉีเหมิน</span></a>
-      <a href="/forecast" data-r="/forecast"><span class="glyph">占</span><span class="lbl">พยากรณ์</span></a>
-      <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl">ซินแส</span></a>
-      <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl">วางฤกษ์</span></a>
-      <a href="/fengshui" data-r="/fengshui" class="on"><span class="glyph">方</span><span class="lbl">ทิศมงคล</span></a>
-      <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl">เป้าหมาย</span></a>
-    </nav>
-    <div class="top-r">
-      <div id="hk-user-menu-mount"></div>
-    </div>
-  </header>
 
-  <header class="hero">
-    <div class="hero-grid">
-      <div class="hero-l">
-        <div class="crest">風水 玄空</div>
-        <h1 id="page-title"><b>ฮวงจุ้ย</b> Master Hub</h1>
-        <div class="sub" id="page-sub">9 ศาสตร์ · 8 LAYERS · LIVE COMPASS · PERSONAL VERDICT</div>
-        <div class="now-bar" id="now-bar">⏳ กำลังโหลด…</div>
-        <div class="live-verdict" id="live-verdict">
-          <div class="title"><span id="lv-title">⚡ AI VERDICT · ทิศปัจจุบัน</span></div>
-          <div class="body" id="lv-body">หมุนเข็มทิศหรือพิมพ์มุม → ระบบจะวิเคราะห์ 8 ชั้นในทันที</div>
+<!-- ═══════════ HK Navbar (8 ปุ่ม + lang + theme) · 3-language ═══════════ -->
+<style>
+.hk-topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:color-mix(in srgb, var(--bg, #0d0f12) 88%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--gold-line, rgba(200,164,77,.22));font-family:'Noto Serif Thai',serif;}
+.hk-topbar .hk-logo{display:inline-flex;align-items:center;gap:10px;font-family:'Cormorant Garamond','Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--fg, #f6f1e6);text-decoration:none;}
+.hk-topbar .hk-logo .seal{width:30px;height:30px;border:1px solid var(--gold, #c8a44d);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:13px;color:var(--gold, #c8a44d);}
+.hk-topbar nav.hk-nav{display:flex;gap:18px;align-items:center;flex-wrap:nowrap;}
+.hk-topbar nav.hk-nav a{color:var(--fg-soft, rgba(246,241,230,.62));text-decoration:none;font-family:'Noto Serif Thai',serif;font-size:12px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;padding:6px 4px;transition:.2s;white-space:nowrap;}
+.hk-topbar nav.hk-nav a .glyph{font-family:'Noto Serif TC',serif;font-size:16px;color:var(--gold, #c8a44d);font-weight:700;line-height:1;}
+.hk-topbar nav.hk-nav a .lbl{font-size:12px;}
+.hk-topbar nav.hk-nav a.active,.hk-topbar nav.hk-nav a:hover{color:var(--gold, #c8a44d);}
+.hk-topbar .hk-top-r{display:flex;align-items:center;gap:14px;}
+.hk-topbar .hk-lang-switch{display:inline-flex;background:rgba(38,42,50,.5);border:1px solid var(--gold-line, rgba(200,164,77,.3));border-radius:99px;padding:3px;}
+.hk-topbar .hk-lang-switch button{min-width:28px;height:26px;padding:0 7px;border:none;background:transparent;color:var(--fg-soft, rgba(246,241,230,.55));font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;letter-spacing:.05em;border-radius:99px;cursor:pointer;transition:.25s;}
+.hk-topbar .hk-lang-switch button.on{background:var(--gold, #c8a44d);color:var(--bg, #0d0f12);}
+.hk-topbar .hk-theme-switch{display:inline-flex;background:rgba(38,42,50,.5);border:1px solid var(--gold-line, rgba(200,164,77,.3));border-radius:99px;padding:3px;}
+.hk-topbar .hk-theme-switch button{width:28px;height:28px;border:none;background:transparent;color:var(--fg-soft, rgba(246,241,230,.55));font-size:13px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.25s;}
+.hk-topbar .hk-theme-switch button.on{background:var(--gold, #c8a44d);color:var(--bg, #0d0f12);}
+@media(max-width:980px){
+  .hk-topbar{padding:12px 14px;flex-wrap:wrap;gap:10px;}
+  .hk-topbar nav.hk-nav{order:3;width:100%;flex-wrap:nowrap;gap:14px;overflow-x:auto;padding:6px 0 4px;-webkit-overflow-scrolling:touch;border-top:1px solid var(--gold-line, rgba(200,164,77,.22));}
+  .hk-topbar nav.hk-nav::-webkit-scrollbar{display:none;}
+  .hk-topbar nav.hk-nav a{padding:4px 0;font-size:11px;flex-shrink:0;}
+  .hk-topbar nav.hk-nav a .glyph{font-size:14px;}
+  .hk-topbar .hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}
+}
+</style>
+<header class="hk-topbar">
+  <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
+  <nav class="hk-nav" id="hk-topnav">
+    <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="hk.nav.chart">ดวง</span></a>
+    <a href="/today" data-r="/today"><span class="glyph">日</span><span class="lbl" data-i18n="hk.nav.today">วันนี้</span></a>
+    <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="hk.nav.calendar">ปฏิทิน</span></a>
+    <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="hk.nav.network">เครือข่าย</span></a>
+    <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="hk.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="hk.nav.master">ซินแส</span></a>
+    <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="hk.nav.picker">วางฤกษ์</span></a>
+    <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="hk.nav.fengshui">ทิศมงคล</span></a>
+    <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="hk.nav.goal">เป้าหมาย</span></a>
+  </nav>
+  <div class="hk-top-r">
+    <div class="hk-lang-switch" id="hk-lang-switch">
+      <button data-lang="en" title="English">EN</button>
+      <button data-lang="zh" title="中文">中</button>
+      <button data-lang="th" class="on" title="ไทย">TH</button>
+    </div>
+    <div class="hk-theme-switch" id="hk-theme-switch">
+      <button class="on" data-theme="dark" title="Dark">☾</button>
+      <button data-theme="light" title="Light">☀</button>
+    </div>
+  </div>
+</header>
+
+
+<nav>
+  <a href="/" class="logo"><span class="seal">時</span> hourkey</a>
+  <div class="breadcrumb">
+    <a href="/">Home</a><span class="sep">/</span>
+    <span class="cur">玄空飛星 Flying Star</span>
+  </div>
+  <div class="theme-toggle">
+    <button data-mode="dark">☾</button>
+    <button data-mode="light">☀</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">玄空飛星 · XUAN KONG FEI XING · PERIOD 9</div>
+  <h1>ดาวเหิน <span class="tc">9 ยุค</span> · ปี · เดือน · วัน · ยาม</h1>
+  <p class="sub">
+    ผังเดียวเห็นทั้ง 4 layer · <i>ไท่ซุ่ย 太歲 · 5 เหลือง 五黃 · 3 ชะ 三煞</i><br/>
+    ค้นหาทิศบ้านด้วย <b>browser compass + Google Maps</b> · กำหนดทิศมงคลของบ้าน
+  </p>
+</section>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="timeline-set">
+      <span class="label">時</span>
+      <input type="number" id="setYear" min="1900" max="2100" value="2026"/>
+      <input type="date" id="setDate"/>
+      <input type="time" id="setTime"/>
+      <button class="timeline-now" id="btnNow">↻ ตอนนี้</button>
+    </div>
+    <div class="layer-toggles">
+      <button class="layer-btn active" data-layer="period"><span class="han">運</span>ยุค</button>
+      <button class="layer-btn active" data-layer="year"><span class="han">年</span>ปี</button>
+      <button class="layer-btn active" data-layer="month"><span class="han">月</span>เดือน</button>
+      <button class="layer-btn active" data-layer="day"><span class="han">日</span>วัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- School (Layer) Selector -->
+<div class="school-row">
+  <button class="school-btn active" data-school="flying"><span class="ic">⭐</span><span class="han">飛星</span>ดาวเหิน</button>
+  <button class="school-btn" data-school="hex"><span class="ic">☯</span><span class="han">六十四卦</span>64 Hex</button>
+  <button class="school-btn" data-school="mansion"><span class="ic">🏛</span><span class="han">八宅</span>8 Mansions</button>
+  <button class="school-btn" data-school="people"><span class="ic">👥</span><span class="han">人</span>คนในผัง</button>
+</div>
+
+<main>
+<div class="grid">
+
+  <div class="palace-grid-wrap">
+    <div class="palace-grid-head">
+      <h3><span class="tc">九宮</span> 9 พาลา · <span id="hdContext">2026 · พ.ค.</span></h3>
+      <div class="meta">運 <b id="hdPeriod">9</b> · 年 <b id="hdYear">1</b> · 月 <b id="hdMonth">5</b> · 日 <b id="hdDay">5</b></div>
+    </div>
+    <div class="person-filter-row" id="personFilterRow" style="display:none">
+      <span style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;align-self:center;margin-right:6px;">八宅 ดูของ:</span>
+      <button class="pf-btn all active" data-person="all">ทั้งครอบครัว</button>
+    </div>
+    <div class="pgrid show-period show-year show-month show-day" id="pgrid"></div>
+    <div class="legend-row">
+      <div class="legend-item"><span class="swatch" style="background:rgba(243,235,217,.3)"></span>運 ยุค</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--gold)"></span>年 ปี (ตัวใหญ่)</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--fg-soft)"></span>月 เดือน</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--fg-faint)"></span>日 วัน</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--tai-sui)"></span>太 ไท่ซุ่ย</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--three-kill)"></span>煞 3ชะ</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--five-yellow)"></span>5黃 5เหลือง</div>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="card now-playing">
+      <h4><span class="tc">當下</span> ขณะนี้ <span class="badge">LIVE</span></h4>
+      <div class="row"><span class="l">運 Period</span><span class="r"><b id="npPeriod">9</b> 紫白</span></div>
+      <div class="row"><span class="l">年 Year</span><span class="r"><b id="npYear">1白</b> · <span id="npYearTheme">勝</span></span></div>
+      <div class="row"><span class="l">月 Month</span><span class="r"><b id="npMonth">—</b> · <span id="npMonthTheme">—</span></span></div>
+      <div class="row"><span class="l">日 Day</span><span class="r"><b id="npDay">—</b></span></div>
+      <div class="row"><span class="l">時 Shichen</span><span class="r"><span id="npShichen">—</span></span></div>
+    </div>
+    <div class="card">
+      <h4><span class="tc">警示</span> ทิศต้องระวัง</h4>
+      <div class="warning-list" id="warningList"></div>
+    </div>
+
+    <!-- People Manager -->
+    <div class="card" id="peopleCard">
+      <h4><span class="tc">人</span> คนในบ้าน <span class="badge" id="peopleCount">0</span></h4>
+      <div class="people-list" id="peopleList"></div>
+      <details>
+        <summary style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;cursor:pointer;padding:6px 0;">+ เพิ่มคน</summary>
+        <div class="person-form" style="margin-top:10px;">
+          <input type="text" id="pfName" placeholder="ชื่อ" class="full"/>
+          <input type="number" id="pfYear" placeholder="ปีเกิด" min="1900" max="2030"/>
+          <select id="pfGender">
+            <option value="male">ชาย Male</option>
+            <option value="female">หญิง Female</option>
+          </select>
+          <select id="pfRoom" class="full">
+            <option value="">— ห้องประจำ (optional) —</option>
+            <option value="N">N · เหนือ</option>
+            <option value="NE">NE · ตอน.เฉียงเหนือ</option>
+            <option value="E">E · ตะวันออก</option>
+            <option value="SE">SE · ตอน.เฉียงใต้</option>
+            <option value="S">S · ใต้</option>
+            <option value="SW">SW · ตต.เฉียงใต้</option>
+            <option value="W">W · ตะวันตก</option>
+            <option value="NW">NW · ตต.เฉียงเหนือ</option>
+            <option value="C">C · ศูนย์กลาง</option>
+          </select>
+          <button class="add-btn" id="btnAddPerson">+ เพิ่ม</button>
+        </div>
+      </details>
+    </div>
+
+    <div class="card palace-detail" id="palaceDetail"></div>
+  </div>
+</div>
+
+<div class="geo-sec">
+  <div class="geo-head">
+    <div class="label">羅盤 · GEO COMPASS · 9 STARS</div>
+    <h2>ค้นหา <span class="tc">坐向</span> ทิศบ้าน · กำหนดทิศมงคล</h2>
+    <p>2 วิธีหาทิศ — <b>① Live Compass บนโทรศัพท์</b> (ต้อง HTTPS · iOS ต้องอนุญาต) · <b>② ปักหมุดบนแผนที่ดาวเทียม</b> (จุดยืน → จุดทิศหันออก · ระบบคำนวณองศาให้)</p>
+  </div>
+
+  <div class="geo-grid">
+    <!-- Live Compass -->
+    <div class="compass-card">
+      <h4 style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;">指南針 Live Compass</h4>
+      <div class="compass-svg-wrap">
+        <svg class="compass-svg" viewBox="0 0 400 400">
+          <circle cx="200" cy="200" r="195" fill="none" stroke="var(--gold-line)" stroke-width="1"/>
+          <circle cx="200" cy="200" r="180" fill="var(--bg)" stroke="var(--gold)" stroke-width="2"/>
+          <circle cx="200" cy="200" r="120" fill="none" stroke="var(--gold-line)" stroke-width="1"/>
+          <circle cx="200" cy="200" r="60"  fill="none" stroke="var(--gold-line)" stroke-width="1"/>
+          <g id="dirRing"></g>
+          <g id="mountainRing"></g>
+          <circle cx="200" cy="200" r="22" fill="var(--bg-2)" stroke="var(--gold)" stroke-width="1.5"/>
+          <text x="200" y="207" text-anchor="middle" font-family="var(--tc)" font-size="22" font-weight="700" fill="var(--gold)">時</text>
+          <g class="facing-arrow" id="facingArrow" style="display:none">
+            <line x1="200" y1="200" x2="200" y2="40" stroke="var(--auspicious)" stroke-width="3" stroke-linecap="round"/>
+            <polygon points="200,30 190,55 210,55" fill="var(--auspicious)"/>
+          </g>
+          <g class="compass-needle" id="compassNeedle">
+            <polygon points="200,32 192,200 208,200" fill="var(--vermilion)"/>
+            <polygon points="200,368 192,200 208,200" fill="var(--fg-soft)"/>
+            <circle cx="200" cy="200" r="8" fill="var(--gold)"/>
+          </g>
+        </svg>
+      </div>
+      <div style="text-align:center;">
+        <span class="compass-deg" id="compassDeg">—</span><span class="compass-deg-unit">°</span>
+      </div>
+      <div class="compass-status" id="compassStatus">กดเริ่มเพื่ออ่านเซ็นเซอร์โทรศัพท์</div>
+      <div class="compass-actions">
+        <button class="btn-compass" id="btnCompassStart">เริ่ม Live Compass</button>
+        <button class="btn-compass secondary" id="btnLockFacing" disabled>🔒 ล็อกเป็นทิศบ้าน</button>
+      </div>
+      <div class="compass-help">
+        <b>Tip:</b> หันหลังพิงประตูหน้าบ้าน · ถือมือถือขนานพื้น · ค่าที่ได้คือทิศที่บ้านหันออก<br/>
+        Bangkok declination ≈ <b>-0.7°</b> (แทบไม่ต้องแก้)
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div class="map-card">
+      <div class="map-head">
+        <h4>地圖 Google Map · ปักหมุด 2 จุด</h4>
+        <div class="map-controls">
+          <button class="map-btn active" id="modeWall">🏠 ลากผนัง</button>
+          <button class="map-btn" id="modeStanding">① จุดยืน</button>
+          <button class="map-btn" id="modeFacing">② ทิศหันหน้า</button>
+          <button class="map-btn" id="btnGeolocate">📍 GPS</button>
+          <button class="map-btn" id="btnClear">↻ ล้าง</button>
         </div>
       </div>
-      <div class="hero-r">
-        <div class="compass-wrap">
-          <svg class="compass-svg" viewBox="0 0 420 420" id="compass-svg">
-            <circle class="ring-bg" cx="210" cy="210" r="200"/>
-            <circle class="ring-line" cx="210" cy="210" r="200"/>
-            <circle class="ring-line" cx="210" cy="210" r="160"/>
-            <circle class="ring-line" cx="210" cy="210" r="120"/>
-            <circle class="ring-bg-2" cx="210" cy="210" r="80"/>
-            <circle class="ring-line" cx="210" cy="210" r="80"/>
-            <g id="ring-24"></g>
-            <g id="ring-8"></g>
-            <g id="ring-card"></g>
-            <g id="yinyang" transform="translate(210,210)">
-              <circle r="60" fill="#fff"/>
-              <path d="M0,-60 A30,30 0 0,1 0,0 A30,30 0 0,0 0,60 A60,60 0 0,1 0,-60 Z" fill="#1a1a1a"/>
-              <circle cx="0" cy="-30" r="8" fill="#1a1a1a"/>
-              <circle cx="0" cy="30" r="8" fill="#fff"/>
-              <circle cx="0" cy="-30" r="3" fill="#fff"/>
-              <circle cx="0" cy="30" r="3" fill="#1a1a1a"/>
-            </g>
-            <g id="pointer" transform="rotate(0 210 210)">
-              <path class="ring-pointer" d="M210,10 L218,30 L210,22 L202,30 Z"/>
-              <line class="ring-pointer" x1="210" y1="22" x2="210" y2="80" stroke-dasharray="3,3"/>
-            </g>
-          </svg>
-          <div class="compass-ctrl">
-            <input id="cdeg-slider" type="range" min="0" max="360" step="0.5" value="186"/>
-            <div class="compass-deg" id="cdeg-val">186.0°</div>
-            <div class="compass-cardinal" id="cdeg-card">South · 午</div>
-          </div>
-          <div class="compass-btns">
-            <button class="hk-btn" id="btn-compass-live">📱 วัดจริง</button>
-            <button class="hk-btn" id="btn-compass-map">🗺 แผนที่</button>
-            <button class="hk-btn" id="btn-now2">⏰ ตอนนี้</button>
-          </div>
-        </div>
+      <div id="gmap"></div>
+      <div class="map-result-bar">
+        <div class="mrb-cell"><b>Heading</b><span id="mrHeading">— °</span></div>
+        <div class="mrb-cell"><b>Direction</b><span id="mrDirection">—</span></div>
+        <div class="mrb-cell"><b>24 Mountain</b><span id="mr24Mtn" class="han">—</span></div>
+        <div class="mrb-cell"><b>vs ดวง</b><span id="mrVerdict">—</span></div>
+      </div>
+      <div class="map-instr">
+        <b>🏠 ลากผนัง (แนะนำ):</b> <b>กด-ลากเส้น</b> ทาบขอบผนังหน้าบ้าน A→B · ลูกศรเขียวจุดกลาง = ทิศหันหน้า (ตั้งฉาก CW 90°) · เส้นเทา = ทิศหลัง<br/>
+        <b>① จุดยืน → ② ทิศหันหน้า:</b> 2-marker mode (จุดยืน → จุดหน้าบ้าน)
       </div>
     </div>
-  </header>
+  </div>
+</div>
 
-  <main>
-    <div class="ctx-bar">
-      <div class="field"><label id="lbl-house">บ้าน</label>
-        <select id="house-sel"><option value="">— ไม่ผูกบ้าน —</option></select>
-      </div>
-      <div class="field"><label id="lbl-dt">เวลา</label>
-        <input id="dt" type="datetime-local"/>
-      </div>
-      <div class="field"><label id="lbl-profile">ดวง</label>
-        <select id="profile-sel"><option value="">— ไม่ผูกดวง —</option></select>
-      </div>
-      <button class="hk-btn act" id="btn-refresh">🔄 รีเฟรช</button>
-      <button class="hk-btn" id="btn-share">🔗 แชร์</button>
-    </div>
+</main>
 
-    <div class="layers-bar" id="layers-bar"></div>
+<footer>
+  <p>© 2026 hourkey · <span class="han">玄空</span> Period 9 · 2024-2043 · made in Bangkok</p>
+</footer>
 
-    <div class="verdict-card" id="verdict-card">
-      <div class="vhd">
-        <div>
-          <div class="deg" id="v-deg">186°</div>
-          <div class="dir" id="v-dir">午 · S2 · South</div>
-        </div>
-        <div class="lvl lvl-mixed" id="v-lvl">วิเคราะห์…</div>
-      </div>
-      <div class="vbody" id="v-body">หมุนเข็มทิศ → ระบบจะดึงข้อมูลทุกศาสตร์ของทิศนั้นมาสรุป</div>
-      <div class="layers-list" id="v-layers"></div>
-      <div class="actions">
-        <button class="ai-btn" id="ai-verdict-btn">🤖 ขอ AI สรุปภาษาคน</button>
-        <button class="activity-btn" id="activity-toggle-btn">💡 ผูกกิจกรรม</button>
-        <button class="activity-btn" id="family-toggle-btn">👨‍👩‍👧 หลายคน</button>
-      </div>
-    </div>
-
-    <div class="activity-card" id="activity-card">
-      <h3 style="font-family:var(--serif);font-size:14px;color:var(--gold);margin-bottom:8px;">💡 บอกระบบว่าจะทำอะไรที่ทิศนี้</h3>
-      <textarea id="activity-text" placeholder="เช่น: เปิดร้านกาแฟ · ทุบกำแพง · นั่งเจรจาธุรกิจ · ผ่าตัด"></textarea>
-      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center;">
-        <button class="ai-btn" id="activity-go">🔍 วิเคราะห์</button>
-        <div id="activity-result" style="flex:1;min-width:200px;padding:8px 12px;font-size:12px;color:var(--fg-soft);"></div>
-      </div>
-    </div>
-
-    <div class="family-card" id="family-card">
-      <h3 style="font-family:var(--serif);font-size:14px;color:var(--gold);margin-bottom:8px;">👨‍👩‍👧 ทิศนี้กับสมาชิกในบ้าน (八宅 per person)</h3>
-      <div class="members" id="family-members">เพิ่มสมาชิกใน /compass ก่อน · จากนั้นกดรีเฟรช</div>
-    </div>
-
-    <div class="grid-wrap">
-      <div>
-        <div class="palace-grid" id="palace-grid"></div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--fg-faint);text-align:center;margin-top:8px;letter-spacing:.05em;">
-          <span style="color:var(--gold)">★</span> ทิศมงคลส่วนตัว ·
-          <span style="color:var(--good)">●</span> ดี ·
-          <span style="color:var(--warn)">●</span> ระวัง ·
-          <span style="color:var(--bad)">●</span> หลีก
-        </div>
-      </div>
-      <div class="side" id="side-panel"></div>
-    </div>
-
-    <div id="warns"></div>
-
-    <div class="cross-link">
-      <a href="/today">📅 วันนี้</a>
-      <a href="/datepick">⏱ วางฤกษ์</a>
-      <a href="/compass">🧭 ผูกบ้าน</a>
-      <a href="/compass-studio">🔬 Compass Studio</a>
-      <a href="/chart">⭐ ดวง</a>
-      <a href="/katakagae">🌸 方違</a>
-    </div>
-  </main>
 
 <script>
-const I18N = {
-  th: { title:'<b>ฮวงจุ้ย</b> Master Hub', sub:'9 ศาสตร์ · 8 LAYERS · LIVE COMPASS · PERSONAL VERDICT',
-        lv_title:'⚡ AI VERDICT · ทิศปัจจุบัน', lv_body:'หมุนเข็มทิศหรือพิมพ์มุม → ระบบจะวิเคราะห์ 8 ชั้นในทันที',
-        house:'บ้าน', dt:'เวลา', profile:'ดวง',
-        ai_btn:'🤖 ขอ AI สรุปภาษาคน', act_btn:'💡 ผูกกิจกรรม', fam_btn:'👨‍👩‍👧 หลายคน',
-        l_flying:'飛星 ดาวเหิน', l_qm:'奇門 ฉีเหมิน', l_ba:'八宅 ปาเจ๋อ', l_taisui:'太歲 ไท่ซุ่ย',
-        l_24:'24山 ภูเขา', l_yongshen:'用神 ส่วนตัว', l_heluo:'河洛 เหอลั่ว', l_64:'64卦 หกสี่กว้า', l_tongshu:'通書 ตังกง',
-        verdict_good:'เปิดทาง', verdict_bad:'หลีกเลี่ยง', verdict_warn:'ระวัง', verdict_mixed:'ผสม',
-        share:'🔗 แชร์', refresh:'🔄 รีเฟรช' },
-  en: { title:'<b>Feng Shui</b> Master Hub', sub:'9 SCHOOLS · 8 LAYERS · LIVE COMPASS · PERSONAL VERDICT',
-        lv_title:'⚡ AI VERDICT · current direction', lv_body:'Rotate compass or type angle → instant 8-layer analysis',
-        house:'House', dt:'Time', profile:'Chart',
-        ai_btn:'🤖 AI Plain English', act_btn:'💡 Bind activity', fam_btn:'👨‍👩‍👧 Family',
-        l_flying:'Flying Stars', l_qm:'Qi Men', l_ba:'Ba Zhai', l_taisui:'Tai Sui',
-        l_24:'24 Mountains', l_yongshen:'Personal Yong Shen', l_heluo:'He Luo', l_64:'64 Hexagrams', l_tongshu:'Tong Shu',
-        verdict_good:'AUSPICIOUS', verdict_bad:'AVOID', verdict_warn:'CAUTION', verdict_mixed:'MIXED',
-        share:'🔗 Share', refresh:'🔄 Refresh' },
-  zh: { title:'<b>風水 Master</b> Hub', sub:'九術 · 八層 · 實時羅盤 · 個人裁決',
-        lv_title:'⚡ AI 裁決 · 當前方位', lv_body:'轉動羅盤或輸入角度 → 立即八層分析',
-        house:'房屋', dt:'時間', profile:'命盤',
-        ai_btn:'🤖 AI 白話總結', act_btn:'💡 綁定活動', fam_btn:'👨‍👩‍👧 家人',
-        l_flying:'飛星', l_qm:'奇門', l_ba:'八宅', l_taisui:'太歲',
-        l_24:'24山', l_yongshen:'用神 個人', l_heluo:'河洛', l_64:'64卦', l_tongshu:'通書',
-        verdict_good:'吉', verdict_bad:'凶', verdict_warn:'慎', verdict_mixed:'混',
-        share:'🔗 分享', refresh:'🔄 刷新' },
+// ═══════════════════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════════════════
+const root = document.documentElement;
+function setTheme(t){ root.setAttribute('data-theme',t); localStorage.setItem('hk-theme',t); }
+const savedTheme = localStorage.getItem('hk-theme');
+if(savedTheme) setTheme(savedTheme);
+document.querySelectorAll('.theme-toggle button').forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.mode)));
+
+// ═══════════════════════════════════════════════════════════════
+//  FLYING STAR ENGINE
+// ═══════════════════════════════════════════════════════════════
+const PALACE_LAYOUT = [['SE','S','SW'],['E','C','W'],['NE','N','NW']];
+const LOSHU_BASE = { SE:4,S:9,SW:2, E:3,C:5,W:7, NE:8,N:1,NW:6 };
+const PALACE_INFO = {
+  N:  { tri:'坎', pinyin:'Kǎn',  el:'water',th:'อาชีพ · ปัญญา · ลูกชายกลาง' },
+  NE: { tri:'艮', pinyin:'Gèn',  el:'earth',th:'ทรัพย์ · ภูเขา · ลูกชายเล็ก' },
+  E:  { tri:'震', pinyin:'Zhèn', el:'wood', th:'การเคลื่อน · ทะเลาะ · ลูกชายโต' },
+  SE: { tri:'巽', pinyin:'Xùn',  el:'wood', th:'ความรัก · ปัญญา · ลม' },
+  S:  { tri:'離', pinyin:'Lí',   el:'fire', th:'ชื่อเสียง · อนาคต · ลูกสาวกลาง' },
+  SW: { tri:'坤', pinyin:'Kūn',  el:'earth',th:'มารดา · ป่วย · คู่ครอง' },
+  W:  { tri:'兌', pinyin:'Duì',  el:'metal',th:'เด็ก · เริงร่า · ลูกสาวเล็ก' },
+  NW: { tri:'乾', pinyin:'Qián', el:'metal',th:'ผู้ใหญ่ช่วย · บิดา · ฟ้า' },
+  C:  { tri:'中', pinyin:'Zhōng',el:'earth',th:'ศูนย์กลาง · จุดสมดุล' }
 };
-let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
+const STAR_INFO = {
+  1:{color:'白',th:'ขาว · ปัญญา/ชัยชนะ',el:'water',vibe:'auspicious',short:'勝',meaning:'การพัฒนา · ความรู้ · ความเป็นผู้นำ'},
+  2:{color:'黑',th:'ดำ · ป่วย/ทุกข์',el:'earth',vibe:'inauspicious',short:'病',meaning:'⚠️ โรคภัย · ลูกหลาน/มารดาเป็นพิเศษ'},
+  3:{color:'碧',th:'หยกเขียว · เถียง',el:'wood',vibe:'inauspicious',short:'鬥',meaning:'⚠️ ทะเลาะ · ฟ้องร้อง · ความขัดแย้ง'},
+  4:{color:'綠',th:'เขียว · รัก/วัฒนธรรม',el:'wood',vibe:'auspicious',short:'文',meaning:'✨ การงาน · การศึกษา · ความรัก · เกียรติ'},
+  5:{color:'黃',th:'เหลือง · เคราะห์ใหญ่',el:'earth',vibe:'critical',short:'凶',meaning:'☠️ ห้ามรบกวน · ห้ามขุด · ห้ามตอกตะปู · เคราะห์ใหญ่'},
+  6:{color:'白',th:'ขาว · ผู้ใหญ่ช่วย',el:'metal',vibe:'auspicious',short:'貴',meaning:'✨ noble person · เซ็นสัญญา · ดึงผู้สนับสนุน'},
+  7:{color:'赤',th:'แดง · ขโมย/หลอก',el:'metal',vibe:'inauspicious',short:'盜',meaning:'⚠️ ขโมย · เลือดตกยางออก · ระวังเจรจา'},
+  8:{color:'白',th:'ขาว · ทรัพย์',el:'earth',vibe:'auspicious',short:'財',meaning:'✨✨ ทรัพย์ · เก็บเงิน · วางตู้เซฟ'},
+  9:{color:'紫',th:'ม่วง · อนาคต',el:'fire',vibe:'auspicious',short:'未',meaning:'✨ ชื่อเสียง · บุญลาภที่จะมา · ดาวเด่นยุค 9'}
+};
 
-const MOUNTAINS_24 = [
-  {h:'壬',deg:345,r:[337.5,352.5],dir:'N'},{h:'子',deg:0,r:[352.5,7.5],dir:'N'},{h:'癸',deg:15,r:[7.5,22.5],dir:'N'},
-  {h:'丑',deg:30,r:[22.5,37.5],dir:'NE'},{h:'艮',deg:45,r:[37.5,52.5],dir:'NE'},{h:'寅',deg:60,r:[52.5,67.5],dir:'NE'},
-  {h:'甲',deg:75,r:[67.5,82.5],dir:'E'},{h:'卯',deg:90,r:[82.5,97.5],dir:'E'},{h:'乙',deg:105,r:[97.5,112.5],dir:'E'},
-  {h:'辰',deg:120,r:[112.5,127.5],dir:'SE'},{h:'巽',deg:135,r:[127.5,142.5],dir:'SE'},{h:'巳',deg:150,r:[142.5,157.5],dir:'SE'},
-  {h:'丙',deg:165,r:[157.5,172.5],dir:'S'},{h:'午',deg:180,r:[172.5,187.5],dir:'S'},{h:'丁',deg:195,r:[187.5,202.5],dir:'S'},
-  {h:'未',deg:210,r:[202.5,217.5],dir:'SW'},{h:'坤',deg:225,r:[217.5,232.5],dir:'SW'},{h:'申',deg:240,r:[232.5,247.5],dir:'SW'},
-  {h:'庚',deg:255,r:[247.5,262.5],dir:'W'},{h:'酉',deg:270,r:[262.5,277.5],dir:'W'},{h:'辛',deg:285,r:[277.5,292.5],dir:'W'},
-  {h:'戌',deg:300,r:[292.5,307.5],dir:'NW'},{h:'乾',deg:315,r:[307.5,322.5],dir:'NW'},{h:'亥',deg:330,r:[322.5,337.5],dir:'NW'},
+function getPeriodStar(year){
+  if(year < 1864) return 1;
+  const p = Math.floor((year - 1864)/20) + 1;
+  return ((p - 1) % 9) + 1;
+}
+function getYearStar(year){
+  let s = 0, y = year;
+  while(y > 0){ s += y % 10; y = Math.floor(y/10); }
+  while(s > 9){ let t=0; while(s>0){ t+=s%10; s=Math.floor(s/10); } s=t; }
+  let star = 11 - s;
+  if(star > 9) star -= 9;
+  if(star <= 0) star += 9;
+  return star;
+}
+function getMonthStar(year, solarMonth){
+  // year branch (4=甲子, year-4 mod 12 → branch 0=Zi)
+  const branchIdx = ((year - 4) % 12 + 12) % 12;
+  let startStar;
+  if([2,5,8,11].includes(branchIdx)) startStar = 8;
+  else if([0,3,6,9].includes(branchIdx)) startStar = 5;
+  else startStar = 2;
+  let s = startStar - (solarMonth - 1);
+  while(s <= 0) s += 9;
+  while(s > 9) s -= 9;
+  return s;
+}
+function getDayStar(date){
+  const ref = new Date(Date.UTC(2024,1,4));
+  const targ = new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate()));
+  const diff = Math.floor((targ - ref) / 86400000);
+  let s = ((1 + diff) % 9);
+  if(s <= 0) s += 9;
+  return s;
+}
+const SHICHEN_LIST = [
+  {han:'子',pinyin:'Zǐ',  start:23, range:'23–01'},
+  {han:'丑',pinyin:'Chǒu',start:1,  range:'01–03'},
+  {han:'寅',pinyin:'Yín', start:3,  range:'03–05'},
+  {han:'卯',pinyin:'Mǎo', start:5,  range:'05–07'},
+  {han:'辰',pinyin:'Chén',start:7,  range:'07–09'},
+  {han:'巳',pinyin:'Sì',  start:9,  range:'09–11'},
+  {han:'午',pinyin:'Wǔ',  start:11, range:'11–13'},
+  {han:'未',pinyin:'Wèi', start:13, range:'13–15'},
+  {han:'申',pinyin:'Shēn',start:15, range:'15–17'},
+  {han:'酉',pinyin:'Yǒu', start:17, range:'17–19'},
+  {han:'戌',pinyin:'Xū',  start:19, range:'19–21'},
+  {han:'亥',pinyin:'Hài', start:21, range:'21–23'}
 ];
-const DIR_NAME = {N:'北 N',NE:'東北 NE',E:'東 E',SE:'東南 SE',S:'南 S',SW:'西南 SW',W:'西 W',NW:'西北 NW',C:'中央 C'};
-const PALACE_LAYOUT = [['SE','S','SW'], ['E','C','W'], ['NE','N','NW']];
-
-function degToMountain(d){
-  d = ((d % 360) + 360) % 360;
-  return MOUNTAINS_24.find(m => {
-    if (m.r[0] > m.r[1]) return d >= m.r[0] || d < m.r[1];
-    return d >= m.r[0] && d < m.r[1];
+function getShichen(hour){
+  if(hour===23 || hour===0) return SHICHEN_LIST[0];
+  return SHICHEN_LIST[Math.floor((hour+1)/2)];
+}
+function rotateGrid(centerStar){
+  const shift = centerStar - 5;
+  const result = {};
+  Object.entries(LOSHU_BASE).forEach(([dir,baseN])=>{
+    let v = ((baseN + shift - 1) % 9) + 1;
+    if(v <= 0) v += 9;
+    result[dir] = v;
   });
+  return result;
+}
+const YEAR_TAISUI = {0:'N',1:'NE',2:'NE',3:'E',4:'SE',5:'SE',6:'S',7:'SW',8:'SW',9:'W',10:'NW',11:'NW'};
+function getThreeKillings(year){
+  const b = ((year - 4) % 12 + 12) % 12;
+  if([2,6,10].includes(b)) return 'N';
+  if([8,0,4].includes(b))  return 'S';
+  if([11,3,7].includes(b)) return 'W';
+  return 'E';
+}
+function getTaiSui(year){
+  return YEAR_TAISUI[((year - 4) % 12 + 12) % 12];
+}
+function findStarPosition(grid, starNum){
+  return Object.entries(grid).find(([d,n])=>n===starNum)?.[0];
 }
 
-const LAYER_DEFS = [
-  {key:'flying_stars', tc:'飛星', i:'l_flying', on:true},
-  {key:'qi_men',       tc:'奇門', i:'l_qm', on:true},
-  {key:'ba_zhai',      tc:'八宅', i:'l_ba', on:true},
-  {key:'tai_sui',      tc:'太歲', i:'l_taisui', on:true},
-  {key:'twenty_four',  tc:'24山', i:'l_24', on:false},
-  {key:'yong_shen',    tc:'用神', i:'l_yongshen', on:true},
-  {key:'he_luo',       tc:'河洛', i:'l_heluo', on:false},
-  {key:'sixty_four',   tc:'64卦', i:'l_64', on:false},
-  {key:'tong_shu',     tc:'通書', i:'l_tongshu', on:true},
-];
+// ═══════════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════════
+let activeDir = 'C';
 
-let state = { houseId:null, profileId:null, dt:null, bearing:186, snapshot:null };
-
-function applyTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t); localStorage.setItem('hk-theme',t); }
-
-function applyLang(){
-  const t = I18N[LANG] || I18N.th;
-  document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
-  document.title = '風水 ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
-  document.getElementById('page-title').innerHTML = t.title;
-  document.getElementById('page-sub').textContent = t.sub;
-  document.getElementById('lv-title').textContent = t.lv_title;
-  document.getElementById('lbl-house').textContent = t.house;
-  document.getElementById('lbl-dt').textContent = t.dt;
-  document.getElementById('lbl-profile').textContent = t.profile;
-  document.getElementById('ai-verdict-btn').textContent = t.ai_btn;
-  document.getElementById('activity-toggle-btn').textContent = t.act_btn;
-  document.getElementById('family-toggle-btn').textContent = t.fam_btn;
-  document.getElementById('btn-refresh').textContent = t.refresh;
-  document.getElementById('btn-share').textContent = t.share;
-  renderLayersBar();
-  if (state.snapshot) renderAll();
-}
-
-function buildCompassRings(){
-  const r24 = document.getElementById('ring-24');
-  const r8  = document.getElementById('ring-8');
-  const rC  = document.getElementById('ring-card');
-  let svg = '';
-  MOUNTAINS_24.forEach((m) => {
-    const a = (m.deg - 90) * Math.PI / 180;
-    const x = 210 + 180 * Math.cos(a);
-    const y = 210 + 180 * Math.sin(a);
-    svg += `<text class="ring-text" x="${x}" y="${y+4}" text-anchor="middle">${m.h}</text>`;
-    const x2 = 210 + 195 * Math.cos(a), y2 = 210 + 195 * Math.sin(a);
-    svg += `<text class="ring-num" x="${x2}" y="${y2+3}" text-anchor="middle">${m.deg}°</text>`;
-  });
-  r24.innerHTML = svg;
-
-  let s8 = '';
-  ['N','NE','E','SE','S','SW','W','NW'].forEach((d, i) => {
-    const deg = i * 45;
-    const a = (deg - 90) * Math.PI / 180;
-    const x = 210 + 140 * Math.cos(a);
-    const y = 210 + 140 * Math.sin(a);
-    const cn = {N:'坎',NE:'艮',E:'震',SE:'巽',S:'離',SW:'坤',W:'兌',NW:'乾'}[d];
-    s8 += `<text class="ring-text" x="${x}" y="${y+4}" text-anchor="middle" style="font-size:13px">${cn}</text>`;
-  });
-  r8.innerHTML = s8;
-
-  let sC = '';
-  [['N',0],['E',90],['S',180],['W',270]].forEach(([d,deg]) => {
-    const a = (deg - 90) * Math.PI / 180;
-    const x = 210 + 210 * Math.cos(a);
-    const y = 210 + 210 * Math.sin(a);
-    sC += `<text class="ring-cardinal" x="${x}" y="${y+5}" text-anchor="middle">${d}</text>`;
-  });
-  rC.innerHTML = sC;
-}
-
-function updatePointer(deg){
-  document.getElementById('pointer').setAttribute('transform', `rotate(${deg} 210 210)`);
-  document.getElementById('cdeg-val').textContent = deg.toFixed(1) + '°';
-  const m = degToMountain(deg);
-  if (m) document.getElementById('cdeg-card').textContent = DIR_NAME[m.dir] + ' · ' + m.h;
-  state.bearing = deg;
-  computeVerdict();
-}
-
-function renderLayersBar(){
-  const bar = document.getElementById('layers-bar');
-  const t = I18N[LANG] || I18N.th;
-  bar.innerHTML = LAYER_DEFS.map(l => {
-    const label = t[l.i].split(' ').slice(1).join(' ') || t[l.i];
-    return `<span class="layer-chip ${l.on?'on':''}" data-layer="${l.key}">
-      <span class="dot"></span>
-      <span class="tc">${l.tc}</span> ${label}
-    </span>`;
-  }).join('');
-  bar.querySelectorAll('.layer-chip').forEach(c => {
-    c.onclick = () => {
-      const def = LAYER_DEFS.find(x => x.key === c.dataset.layer);
-      def.on = !def.on;
-      c.classList.toggle('on');
-      renderAll();
-    };
-  });
-}
-
-async function loadHouses(){
-  try {
-    const r = await fetch('/api/houses', {credentials:'include'});
-    if (!r.ok) return;
-    const d = await r.json();
-    const sel = document.getElementById('house-sel');
-    (d.houses || []).forEach(h => {
-      const o = document.createElement('option');
-      o.value = h.id;
-      o.textContent = (h.is_primary?'⭐ ':'') + h.name + ' · ' + (h.facing_direction || '?');
-      sel.appendChild(o);
-    });
-  } catch(_){}
-}
-
-async function loadProfiles(){
-  try {
-    const r = await fetch('/api/profile', {credentials:'include'});
-    if (!r.ok) return;
-    const d = await r.json();
-    const sel = document.getElementById('profile-sel');
-    (d.profiles || []).filter(p => !p.is_archived).forEach(p => {
-      const o = document.createElement('option');
-      o.value = p.id;
-      o.textContent = p.name + ' · ' + (p.birth_datetime||'').slice(0,10);
-      sel.appendChild(o);
-    });
-    let aid = localStorage.getItem('hk_profile_id');
-    if (aid && sel.querySelector(`option[value="${aid}"]`)) sel.value = aid;
-  } catch(_){}
-}
-
-async function loadSnapshot(){
-  const dt = document.getElementById('dt').value;
-  const params = new URLSearchParams();
-  if (state.houseId) params.set('house_id', state.houseId);
-  if (dt) params.set('datetime', dt+':00');
-  try {
-    const r = await fetch('/api/fengshui-snapshot?'+params);
-    const d = await r.json();
-    if (d.error) {
-      document.getElementById('palace-grid').innerHTML = `<div style="grid-column:1/4;text-align:center;padding:30px;color:var(--bad)">⚠ ${d.error}</div>`;
-      return;
-    }
-    state.snapshot = d;
-    renderAll();
-  } catch(e) { console.error(e); }
-}
-
-function renderAll(){
-  if (!state.snapshot) return;
-  renderNowBar();
-  renderPalaces();
-  renderSidePanel();
-  renderWarnings();
-  computeVerdict();
-}
-
-function renderNowBar(){
-  const d = state.snapshot;
-  const dt = d.datetime || {};
-  const t = d.today || {};
-  let html = `🕐 <b>${(dt.year_pillar||'').trim()} ${(dt.month_pillar||'').trim()} ${(dt.day_pillar||'').trim()} ${(dt.hour_pillar||'').trim()}</b>`;
-  if (dt.solar_term) html += ` · 節氣 <b>${dt.solar_term}</b>`;
-  if (t.twelve_officers?.raw?.officer) html += ` · 建除 <b>${t.twelve_officers.raw.officer}</b>`;
-  if (t.twenty_eight?.raw?.star) html += ` · 28宿 <b>${t.twenty_eight.raw.star}</b>`;
-  document.getElementById('now-bar').innerHTML = html;
-}
-
-function getPalaceData(dir){
-  const d = state.snapshot;
-  const out = {fs:null, qm:null, bz:null, ts:null, mountains:[]};
-  if (d.layers.flying_stars?.palaces?.[dir]) out.fs = d.layers.flying_stars.palaces[dir];
-  if (d.layers.qi_men?.palace_gates?.[dir]) out.qm = d.layers.qi_men.palace_gates[dir];
-  if (d.layers.ba_zhai && Array.isArray(d.layers.ba_zhai) && d.layers.ba_zhai[0]) {
-    const b = d.layers.ba_zhai[0];
-    const goodKey = Object.keys(b.good||{}).find(k => b.good[k] === dir);
-    const badKey = Object.keys(b.bad||{}).find(k => b.bad[k] === dir);
-    if (goodKey) out.bz = {kind:'good', name:goodKey};
-    else if (badKey) out.bz = {kind:'bad', name:badKey};
+function getCurrentTimeframe(){
+  const yearVal = parseInt(document.getElementById('setYear').value);
+  const dateStr = document.getElementById('setDate').value;
+  const timeStr = document.getElementById('setTime').value;
+  let date, hour;
+  if(dateStr && timeStr){
+    date = new Date(`${dateStr}T${timeStr}`);
+    hour = date.getHours();
+  } else if(dateStr){
+    date = new Date(`${dateStr}T12:00`);
+    hour = 12;
+  } else {
+    date = new Date();
+    hour = date.getHours();
   }
-  out.mountains = MOUNTAINS_24.filter(m => m.dir === dir);
-  if (d.warnings) {
-    out.ts = d.warnings.find(w => (w.text||'').includes(dir) && (w.text||'').includes('太歲'));
-  }
-  return out;
+  const monthCal = date.getMonth() + 1;
+  let solarMonth = monthCal - 1;
+  if(date.getDate() < 5) solarMonth -= 1;
+  if(solarMonth <= 0) solarMonth += 12;
+  return { year: yearVal, date, hour, month: solarMonth };
 }
 
-function paletteOf(p){
-  if (p.ts) return 'q-bad';
-  if (p.bz?.kind === 'bad') return 'q-bad';
-  if (p.qm && ['死','驚','傷'].includes(p.qm)) return 'q-warn';
-  if (p.bz?.kind === 'good') return 'q-personal';
-  if (p.fs?.quality === 'good') return 'q-good';
-  if (p.fs?.quality === 'bad') return 'q-bad';
-  return 'q-neutral';
-}
+function renderGrid(){
+  const tf = getCurrentTimeframe();
+  const periodCenter = getPeriodStar(tf.year);
+  const yearCenter = getYearStar(tf.year);
+  const monthCenter = getMonthStar(tf.year, tf.month);
+  const dayCenter = getDayStar(tf.date);
+  const shichen = getShichen(tf.hour);
+  const gridPeriod = rotateGrid(periodCenter);
+  const gridYear = rotateGrid(yearCenter);
+  const gridMonth = rotateGrid(monthCenter);
+  const gridDay = rotateGrid(dayCenter);
+  const taiSuiDir = getTaiSui(tf.year);
+  const threeKillDir = getThreeKillings(tf.year);
+  const fiveYellowDir = findStarPosition(gridYear, 5);
 
-function renderPalaces(){
-  const d = state.snapshot;
-  const grid = document.getElementById('palace-grid');
-  const layersOn = Object.fromEntries(LAYER_DEFS.map(l => [l.key, l.on]));
-  let html = '';
-  PALACE_LAYOUT.flat().forEach(dir => {
-    if (dir === 'C') {
-      const center = d.layers.flying_stars?.annual_center || '?';
-      html += `<div class="palace q-neutral"><div class="corner">中央 C</div><div class="pri">${center}</div><div class="sec">CENTER</div></div>`;
-      return;
-    }
-    const p = getPalaceData(dir);
-    const cls = paletteOf(p);
-    let pri = p.fs ? `${p.fs.annual||''}` : '—';
-    let secParts = [];
-    if (layersOn.flying_stars && p.fs) secParts.push(`<span>飛<b>${p.fs.annual}</b></span>`);
-    if (layersOn.qi_men && p.qm) secParts.push(`<span>奇<b>${p.qm}門</b></span>`);
-    if (layersOn.ba_zhai && p.bz) secParts.push(`<span class="${p.bz.kind==='good'?'vg':'vb'}">宅<b>${p.bz.name||''}</b></span>`);
-    if (layersOn.tai_sui && p.ts) secParts.push(`<span class="vb">太歲</span>`);
-    if (layersOn.twenty_four) secParts.push(`<span>${p.mountains.map(m=>m.h).join(' ')}</span>`);
-    const range = p.mountains.length ? `${p.mountains[0].r[0]}-${p.mountains[p.mountains.length-1].r[1]}°` : '';
-    let qbadgeText = '';
-    if (cls === 'q-good') qbadgeText = '吉';
-    else if (cls === 'q-bad') qbadgeText = '凶';
-    else if (cls === 'q-warn') qbadgeText = '慎';
-    else if (cls === 'q-personal') qbadgeText = '★';
-    html += `<div class="palace ${cls}" data-dir="${dir}">
-      <div class="corner">${DIR_NAME[dir]||dir}</div>
-      <div class="deg">${range}</div>
-      <div class="pri">${pri}</div>
-      <div class="sec">${secParts.join('')}</div>
-      ${qbadgeText ? `<div class="qbadge">${qbadgeText}</div>` : ''}
-    </div>`;
-  });
-  grid.innerHTML = html;
-  grid.querySelectorAll('.palace[data-dir]').forEach(el => {
-    el.onclick = () => {
-      const center = {N:0,NE:45,E:90,SE:135,S:180,SW:225,W:270,NW:315}[el.dataset.dir];
-      if (center != null) {
-        document.getElementById('cdeg-slider').value = center;
-        updatePointer(center);
+  const monthThai = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][tf.date.getMonth()+1];
+  document.getElementById('hdContext').textContent = `${tf.year} · ${monthThai}`;
+  document.getElementById('hdPeriod').textContent = periodCenter;
+  document.getElementById('hdYear').textContent = yearCenter;
+  document.getElementById('hdMonth').textContent = monthCenter;
+  document.getElementById('hdDay').textContent = dayCenter;
+
+  document.getElementById('npPeriod').textContent = periodCenter;
+  document.getElementById('npYear').textContent = yearCenter + STAR_INFO[yearCenter].color;
+  document.getElementById('npYearTheme').textContent = STAR_INFO[yearCenter].short + ' ' + STAR_INFO[yearCenter].th.split('·')[0].trim();
+  document.getElementById('npMonth').textContent = monthCenter + STAR_INFO[monthCenter].color;
+  document.getElementById('npMonthTheme').textContent = STAR_INFO[monthCenter].vibe === 'critical' ? '凶 ระวังใหญ่' : STAR_INFO[monthCenter].vibe === 'auspicious' ? '吉 ดี' : '凶 ระวัง';
+  document.getElementById('npDay').textContent = dayCenter + STAR_INFO[dayCenter].color;
+  document.getElementById('npShichen').textContent = `${shichen.han} ${shichen.range}`;
+
+  const pgrid = document.getElementById('pgrid');
+  pgrid.innerHTML = '';
+  PALACE_LAYOUT.forEach(row=>{
+    row.forEach(dir=>{
+      const cell = document.createElement('div');
+      cell.className = 'pcell';
+      const yearStar = gridYear[dir];
+      cell.dataset.year = yearStar;
+      cell.dataset.dir = dir;
+      if(dir === 'C') cell.classList.add('center');
+      if(dir === activeDir) cell.classList.add('active');
+      const info = PALACE_INFO[dir];
+      const tags = [];
+      if(dir === taiSuiDir) tags.push('<span class="warn-tag tai">太</span>');
+      if(dir === threeKillDir) tags.push('<span class="warn-tag kill">煞</span>');
+      if(yearStar === 5) tags.push('<span class="warn-tag fy">5黃</span>');
+      if([1,6,8,9].includes(yearStar) && dir !== 'C') tags.push('<span class="warn-tag aus">吉</span>');
+      
+      // 64 Hex layer — combine year + period stars (mountain · water proxy)
+      let hexHtml = '';
+      if(activeSchools.has('hex') && dir !== 'C'){
+        const hexNum = starsToHex(gridPeriod[dir], yearStar);
+        if(hexNum){
+          hexHtml = `<div class="pcell-hex" title="Hex ${hexNum}: ${HEX_NAMES_TH[hexNum]}">${HEX_SYMBOLS[hexNum]}</div>`;
+        }
       }
-    };
+      
+      // 8 Mansions ribbon — respects activePersonFilter
+      let ribbonClass = '';
+      let ribbonLabel = '';
+      if(activeSchools.has('mansion') && people.length > 0 && dir !== 'C'){
+        let fits;
+        if(activePersonFilter === 'all'){
+          // aggregate: pick best fit (lowest rank) across everyone
+          fits = people.map(p => {
+            const kua = calcLifeGua(p.year, p.gender);
+            return MANSION_BY_KUA[kua]?.[dir];
+          }).filter(Boolean);
+        } else {
+          const idx = parseInt(activePersonFilter);
+          const p = people[idx];
+          if(p){
+            const kua = calcLifeGua(p.year, p.gender);
+            const f = MANSION_BY_KUA[kua]?.[dir];
+            fits = f ? [f] : [];
+          } else fits = [];
+        }
+        if(fits.length){
+          fits.sort((x,y) => MANSION_LABELS[x].rank - MANSION_LABELS[y].rank);
+          ribbonClass = fits[0];
+          ribbonLabel = MANSION_LABELS[ribbonClass].tiny;
+        }
+      }
+      const ribbonHtml = ribbonClass ? `<div class="pcell-ribbon ${ribbonClass}">${ribbonLabel}</div>` : '';
+      
+      // People chips — show people whose room === this dir
+      let peopleHtml = '';
+      if(activeSchools.has('people')){
+        const here = people.filter(p => p.room === dir);
+        if(here.length){
+          peopleHtml = '<div class="pcell-people">' + here.map(p => {
+            const kua = calcLifeGua(p.year, p.gender);
+            const fit = MANSION_BY_KUA[kua]?.[dir];
+            const fitType = fit ? (MANSION_LABELS[fit].good ? 'best' : 'worst') : 'neutral';
+            const fitTitle = fit ? `${MANSION_LABELS[fit].en} · ${MANSION_LABELS[fit].th}` : '';
+            return `<span class="person-chip" data-fit="${fitType}" title="${p.name} · Kua ${kua} · ${fitTitle}">${p.name.substring(0,3)}</span>`;
+          }).join('') + '</div>';
+        }
+      }
+      
+      cell.innerHTML = `
+        ${ribbonHtml}
+        ${hexHtml}
+        <div class="pcell-top">
+          <span class="dir">${dir}</span>
+          <span class="tri">${info.tri} ${info.pinyin}</span>
+        </div>
+        <div class="stars-quad">
+          <div class="star-num star-period">${gridPeriod[dir]}<small>運</small></div>
+          <div class="star-num star-year">${yearStar}</div>
+          <div class="star-num star-month">${gridMonth[dir]}<small>月</small></div>
+          <div class="star-num star-day">${gridDay[dir]}<small>日</small></div>
+        </div>
+        ${tags.length > 0 ? `<div class="pcell-warn">${tags.join('')}</div>` : ''}
+        ${peopleHtml}
+      `;
+      cell.addEventListener('click', ()=>{
+        activeDir = dir;
+        document.querySelectorAll('.pcell').forEach(p=>p.classList.remove('active'));
+        cell.classList.add('active');
+        renderPalaceDetail(dir, gridYear, gridMonth, gridDay, gridPeriod);
+      });
+      pgrid.appendChild(cell);
+    });
+  });
+
+  renderWarnings(taiSuiDir, threeKillDir, fiveYellowDir);
+  renderPalaceDetail(activeDir, gridYear, gridMonth, gridDay, gridPeriod);
+  
+  // store for map verdict
+  window._currentYearGrid = gridYear;
+  window._currentTaiSui = taiSuiDir;
+  window._currentThreeKill = threeKillDir;
+}
+
+function renderWarnings(taiSui, threeKill, fiveYellow){
+  document.getElementById('warningList').innerHTML = `
+    <div class="warning-item tai">
+      <span class="ic">太歲</span>
+      <span>ไท่ซุ่ย <b>${taiSui}</b> · ห้ามขุด/ตอก/รบกวนทิศนี้ · ห้ามนั่งหันหลังใส่</span>
+    </div>
+    <div class="warning-item kill">
+      <span class="ic">三煞</span>
+      <span>3 ชะ <b>${threeKill}</b> · ห้ามนั่งหันหน้าใส่ทิศนี้ · ห้าม renovate</span>
+    </div>
+    <div class="warning-item fy">
+      <span class="ic">五黃</span>
+      <span>5 เหลือง <b>${fiveYellow}</b> · ห้ามรบกวน · วางโลหะ/นาฬิกาทอง ลด</span>
+    </div>
+  `;
+}
+
+function renderPalaceDetail(dir, gY, gM, gD, gP){
+  const info = PALACE_INFO[dir];
+  const yearStar = gY[dir];
+  const monthStar = gM[dir];
+  const dayStar = gD[dir];
+  const periodStar = gP[dir];
+  const yStar = STAR_INFO[yearStar];
+  
+  // Optional sections
+  let hexSection = '';
+  if(activeSchools.has('hex') && dir !== 'C'){
+    const hexNum = starsToHex(periodStar, yearStar);
+    if(hexNum){
+      hexSection = `
+        <div class="pdetail-meaning" style="background:rgba(200,164,77,.06);padding:12px;border-radius:8px;margin-top:10px;border-top:none;">
+          <b style="color:var(--gold-bright)">☯ Hexagram (山+水):</b><br/>
+          <span style="font-family:var(--tc);font-size:36px;color:var(--gold);">${HEX_SYMBOLS[hexNum]}</span>
+          <span style="font-size:14px;margin-left:6px;">#${hexNum} · ${HEX_NAMES_TH[hexNum]}</span>
+        </div>`;
+    }
+  }
+  
+  let mansionSection = '';
+  if(activeSchools.has('mansion') && people.length > 0 && dir !== 'C'){
+    const items = people.map(p => {
+      const kua = calcLifeGua(p.year, p.gender);
+      const fit = MANSION_BY_KUA[kua]?.[dir];
+      if(!fit) return null;
+      const lbl = MANSION_LABELS[fit];
+      const color = lbl.good ? 'var(--auspicious)' : 'var(--inauspicious)';
+      return `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line);font-size:12px;">
+        <span><b>${p.name}</b> (Kua ${kua})</span>
+        <span style="color:${color};font-family:var(--tc);font-weight:600;">${lbl.en} · ${lbl.th}</span>
+      </div>`;
+    }).filter(Boolean).join('');
+    if(items){
+      mansionSection = `
+        <div class="pdetail-meaning" style="background:rgba(127,168,105,.04);padding:12px;border-radius:8px;margin-top:10px;border-top:none;">
+          <b style="color:var(--gold-bright);margin-bottom:8px;display:block;">🏛 8 Mansions ของแต่ละคน:</b>
+          ${items}
+        </div>`;
+    }
+  }
+  
+  let peopleSection = '';
+  if(activeSchools.has('people')){
+    const here = people.filter(p => p.room === dir);
+    if(here.length){
+      peopleSection = `
+        <div class="pdetail-meaning" style="background:rgba(200,164,77,.06);padding:12px;border-radius:8px;margin-top:10px;border-top:none;">
+          <b style="color:var(--gold-bright);">👥 อยู่ห้องนี้:</b> ${here.map(p=>p.name).join(' · ')}
+        </div>`;
+    }
+  }
+  
+  document.getElementById('palaceDetail').innerHTML = `
+    <h5><span class="tc">${info.tri}</span> ${dir} · ${info.pinyin}</h5>
+    <div class="meta">${info.el} · ${info.th}</div>
+    <div class="pdetail-grid">
+      <div class="pdetail-cell"><b>運 Period</b><span class="han">${periodStar}${STAR_INFO[periodStar].color}</span></div>
+      <div class="pdetail-cell"><b>年 Year (主)</b><span class="han">${yearStar}${yStar.color}</span></div>
+      <div class="pdetail-cell"><b>月 Month</b><span class="han">${monthStar}${STAR_INFO[monthStar].color}</span></div>
+      <div class="pdetail-cell"><b>日 Day</b><span class="han">${dayStar}${STAR_INFO[dayStar].color}</span></div>
+    </div>
+    <div class="pdetail-meaning">
+      <b style="color:var(--gold-bright)">ดาวประจำปีในทิศนี้:</b><br/>
+      <i>${yStar.th}</i> · ${yStar.meaning}
+    </div>
+    ${hexSection}
+    ${mansionSection}
+    ${peopleSection}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CONTROLS
+// ═══════════════════════════════════════════════════════════════
+function initDateInputs(){
+  const now = new Date();
+  document.getElementById('setDate').value = now.toISOString().split('T')[0];
+  document.getElementById('setTime').value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('setYear').value = now.getFullYear();
+}
+initDateInputs();
+
+document.getElementById('btnNow').addEventListener('click', ()=>{ initDateInputs(); renderGrid(); });
+document.getElementById('setYear').addEventListener('change', renderGrid);
+document.getElementById('setDate').addEventListener('change', ()=>{
+  const d = document.getElementById('setDate').value;
+  if(d) document.getElementById('setYear').value = parseInt(d.split('-')[0]);
+  renderGrid();
+});
+document.getElementById('setTime').addEventListener('change', renderGrid);
+
+document.querySelectorAll('.layer-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    btn.classList.toggle('active');
+    document.getElementById('pgrid').classList.toggle(`show-${btn.dataset.layer}`, btn.classList.contains('active'));
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  SCHOOLS · LAYER TOGGLES (Flying / Hex / Mansion / People)
+// ═══════════════════════════════════════════════════════════════
+const activeSchools = new Set(['flying']);  // default: just flying star
+const pgridEl = document.getElementById('pgrid');
+
+function applySchools(){
+  pgridEl.classList.toggle('show-flying',  activeSchools.has('flying'));
+  pgridEl.classList.toggle('show-hex',     activeSchools.has('hex'));
+  pgridEl.classList.toggle('show-mansion', activeSchools.has('mansion'));
+  pgridEl.classList.toggle('show-people',  activeSchools.has('people'));
+  // hide flying-star numbers if flying is off
+  ['period','year','month','day'].forEach(layer=>{
+    const flying = activeSchools.has('flying');
+    if(flying){
+      const layerBtn = document.querySelector(`.layer-btn[data-layer="${layer}"]`);
+      pgridEl.classList.toggle(`show-${layer}`, layerBtn && layerBtn.classList.contains('active'));
+    } else {
+      pgridEl.classList.remove(`show-${layer}`);
+    }
+  });
+  // toggle people card visibility
+  const pCard = document.getElementById('peopleCard');
+  if(pCard) pCard.style.display = activeSchools.has('people') ? '' : 'none';
+  // show person filter only when mansion layer is active
+  const pfRow = document.getElementById('personFilterRow');
+  if(pfRow) pfRow.style.display = activeSchools.has('mansion') ? '' : 'none';
+  renderPersonFilter();
+}
+
+function renderPersonFilter(){
+  const row = document.getElementById('personFilterRow');
+  if(!row) return;
+  // keep label + "all" button, rebuild person buttons
+  const labelEl = row.querySelector('span');
+  row.innerHTML = '';
+  if(labelEl) row.appendChild(labelEl);
+  
+  const allBtn = document.createElement('button');
+  allBtn.className = 'pf-btn all' + (activePersonFilter === 'all' ? ' active' : '');
+  allBtn.dataset.person = 'all';
+  allBtn.textContent = 'ทั้งครอบครัว';
+  allBtn.addEventListener('click', ()=>{ activePersonFilter='all'; renderPersonFilter(); renderGrid(); });
+  row.appendChild(allBtn);
+  
+  people.forEach((p, idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'pf-btn' + (activePersonFilter === String(idx) ? ' active' : '');
+    btn.dataset.person = String(idx);
+    const kua = calcLifeGua(p.year, p.gender);
+    btn.textContent = `${p.name} (Kua ${kua})`;
+    btn.addEventListener('click', ()=>{ activePersonFilter=String(idx); renderPersonFilter(); renderGrid(); });
+    row.appendChild(btn);
   });
 }
 
-function renderSidePanel(){
-  const d = state.snapshot;
-  const t = d.today || {};
-  const dt = d.datetime || {};
-  let html = '';
-  html += `<div class="side-card"><h3><span class="tc">📅</span> ${LANG==='th'?'วัน·เวลา':LANG==='zh'?'日·時':'Day & Hour'}</h3>`;
-  if (dt.day_pillar) html += `<div class="row"><span class="lbl">DAY 日</span><span class="val">${dt.day_pillar.trim()}</span></div>`;
-  if (dt.hour_pillar) html += `<div class="row"><span class="lbl">HOUR 時</span><span class="val">${dt.hour_pillar.trim()}</span></div>`;
-  if (dt.solar_term) html += `<div class="row"><span class="lbl">節氣</span><span class="val">${dt.solar_term}</span></div>`;
-  if (t.twelve_officers?.raw?.officer) html += `<div class="row"><span class="lbl">12建除</span><span class="val">${t.twelve_officers.raw.officer}</span></div>`;
-  if (t.twelve_spirits?.raw?.spirit) html += `<div class="row"><span class="lbl">12神煞</span><span class="val">${t.twelve_spirits.raw.spirit}</span></div>`;
-  if (t.twenty_eight?.raw?.star) html += `<div class="row"><span class="lbl">28宿</span><span class="val">${t.twenty_eight.raw.star}</span></div>`;
-  html += `</div>`;
+document.querySelectorAll('.school-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const s = btn.dataset.school;
+    if(activeSchools.has(s)){
+      // can't disable last one
+      if(activeSchools.size === 1) return;
+      activeSchools.delete(s);
+      btn.classList.remove('active');
+    } else {
+      activeSchools.add(s);
+      btn.classList.add('active');
+    }
+    applySchools();
+    renderGrid();
+  });
+});
 
-  if (d.layers.flying_stars) {
-    const fs = d.layers.flying_stars;
-    html += `<div class="side-card"><h3><span class="tc">⭐</span> ${LANG==='th'?'飛星 ดาวเหิน':LANG==='zh'?'飛星':'Flying Stars'}</h3>`;
-    html += `<div class="row"><span class="lbl">PERIOD 元運</span><span class="val">${fs.period} (2024-2043)</span></div>`;
-    html += `<div class="row"><span class="lbl">ANNUAL 年星</span><span class="val">${fs.annual_center}</span></div>`;
-    html += `</div>`;
+// ═══════════════════════════════════════════════════════════════
+//  LIFE GUA · 8 MANSIONS LOGIC
+// ═══════════════════════════════════════════════════════════════
+// Returns {kua, group:east|west, dirs:{N:"sheng-qi",...}}
+function calcLifeGua(year, gender){
+  const last2 = year % 100;
+  let s = last2;
+  while(s > 9){ s = String(s).split('').reduce((a,c)=>a+Number(c), 0); }
+  let kua;
+  if(year < 2000){
+    kua = gender === 'male' ? (10 - s) : (5 + s);
+  } else {
+    kua = gender === 'male' ? (9 - s) : (6 + s);
   }
-
-  if (d.layers.qi_men) {
-    const qm = d.layers.qi_men;
-    html += `<div class="side-card"><h3><span class="tc">⚔</span> ${LANG==='th'?'奇門 ฉีเหมิน':LANG==='zh'?'奇門':'Qi Men'}</h3>`;
-    if (qm.ju) html += `<div class="row"><span class="lbl">局 JU</span><span class="val">${qm.ju}</span></div>`;
-    const openCount = Object.values(qm.palace_gates||{}).filter(g => ['生','開','休'].includes(g)).length;
-    const badCount = Object.values(qm.palace_gates||{}).filter(g => ['死','驚','傷'].includes(g)).length;
-    html += `<div class="row"><span class="lbl">吉門 OPEN</span><span class="val" style="color:var(--good)">${openCount}/9</span></div>`;
-    html += `<div class="row"><span class="lbl">凶門 BAD</span><span class="val" style="color:var(--bad)">${badCount}/9</span></div>`;
-    html += `</div>`;
-  }
-  document.getElementById('side-panel').innerHTML = html;
+  while(kua > 9){ kua = String(kua).split('').reduce((a,c)=>a+Number(c), 0); }
+  if(kua === 0) kua = 9;
+  if(kua === 5) kua = gender === 'male' ? 2 : 8;
+  return kua;
 }
 
-function renderWarnings(){
-  const d = state.snapshot;
-  const w = d.warnings || [];
-  const warnsEl = document.getElementById('warns');
-  if (!w.length) { warnsEl.innerHTML = ''; return; }
-  warnsEl.innerHTML = `<div class="warns-card"><h3>⚠ ${LANG==='th'?'คำเตือน':LANG==='zh'?'警告':'Warnings'} (${w.length})</h3>${
-    w.map(x => `<div class="warn-item ${x.severity||'warning'}">${x.text}</div>`).join('')}</div>`;
+// 8 Mansions direction wheel:
+// Each kua has 4 best (Sheng Qi, Tian Yi, Yan Nian, Fu Wei) + 4 worst (Jue Ming, Wu Gui, Liu Sha, Huo Hai)
+const MANSION_BY_KUA = {
+  1: { 'SE':'sheng-qi','E':'tian-yi','S':'yan-nian','N':'fu-wei',  'SW':'jue-ming','NE':'wu-gui','NW':'liu-sha','W':'huo-hai' },
+  2: { 'NE':'sheng-qi','W':'tian-yi','NW':'yan-nian','SW':'fu-wei','N':'jue-ming','S':'wu-gui','SE':'liu-sha','E':'huo-hai' },
+  3: { 'S':'sheng-qi','N':'tian-yi','SE':'yan-nian','E':'fu-wei',  'W':'jue-ming','NE':'wu-gui','SW':'liu-sha','NW':'huo-hai' },
+  4: { 'N':'sheng-qi','S':'tian-yi','E':'yan-nian','SE':'fu-wei',  'NE':'jue-ming','W':'wu-gui','NW':'liu-sha','SW':'huo-hai' },
+  6: { 'W':'sheng-qi','NE':'tian-yi','SW':'yan-nian','NW':'fu-wei','S':'jue-ming','SE':'wu-gui','N':'liu-sha','E':'huo-hai' },
+  7: { 'NW':'sheng-qi','SW':'tian-yi','NE':'yan-nian','W':'fu-wei','E':'jue-ming','N':'wu-gui','S':'liu-sha','SE':'huo-hai' },
+  8: { 'SW':'sheng-qi','NW':'tian-yi','W':'yan-nian','NE':'fu-wei','E':'jue-ming','SE':'wu-gui','N':'liu-sha','S':'huo-hai' },
+  9: { 'E':'sheng-qi','SE':'tian-yi','N':'yan-nian','S':'fu-wei',  'NW':'jue-ming','W':'wu-gui','NE':'liu-sha','SW':'huo-hai' }
+};
+const MANSION_LABELS = {
+  'sheng-qi': { en:'Sheng Qi 生氣', th:'ร่ำรวย ก้าวหน้า', short:'生氣 SQ', tiny:'生氣',  good:true, rank:1 },
+  'tian-yi':  { en:'Tian Yi 天醫',  th:'สุขภาพ การหาย',  short:'天醫 TY', tiny:'天醫', good:true, rank:2 },
+  'yan-nian': { en:'Yan Nian 延年', th:'ความสัมพันธ์',     short:'延年 YN', tiny:'延年', good:true, rank:3 },
+  'fu-wei':   { en:'Fu Wei 伏位',   th:'มั่นคง สงบ',       short:'伏位 FW', tiny:'伏位', good:true, rank:4 },
+  'huo-hai':  { en:'Huo Hai 禍害',  th:'อุปสรรค ขัดข้อง',  short:'禍害 HH', tiny:'禍害', good:false, rank:5 },
+  'liu-sha':  { en:'Liu Sha 六煞',  th:'ทะเลาะ 6 ฆาต',     short:'六煞 LS', tiny:'六煞', good:false, rank:6 },
+  'wu-gui':   { en:'Wu Gui 五鬼',   th:'หลอน 5 ผี',         short:'五鬼 WG', tiny:'五鬼', good:false, rank:7 },
+  'jue-ming': { en:'Jue Ming 絕命', th:'หายนะใหญ่',         short:'絕命 JM', tiny:'絕命', good:false, rank:8 }
+};
+
+// Active person filter: 'all' | <person index>
+let activePersonFilter = 'all';
+
+// ═══════════════════════════════════════════════════════════════
+//  64 HEXAGRAM MAPPING (Mountain + Water Star → Hex)
+// ═══════════════════════════════════════════════════════════════
+// Map each star (1-9) to a trigram-like element direction.
+// Then combine 2 stars → upper trigram + lower trigram → hexagram number.
+// Star→Trigram mapping (post-heaven trigrams):
+//   1 Kǎn (water · ☵ 010), 2 Kūn (earth · ☷ 000), 3 Zhèn (wood · ☳ 001),
+//   4 Xùn (wood · ☴ 110), 5 → use Kūn for compatibility,
+//   6 Qián (metal · ☰ 111), 7 Duì (metal · ☱ 011), 8 Gèn (earth · ☶ 100),
+//   9 Lí (fire · ☲ 101)
+const STAR_TO_TRI_BIN = {
+  1: '010', 2: '000', 3: '001', 4: '110', 5: '000',
+  6: '111', 7: '011', 8: '100', 9: '101'
+};
+// Compose 6-bit binary → match KING_WEN sequence
+const BINARY_TO_HEX = {
+  '111111':1, '000000':2, '010001':3, '100010':4, '010111':5, '111010':6,
+  '000010':7, '010000':8, '110111':9, '111011':10,'000111':11,'111000':12,
+  '111101':13,'101111':14,'000100':15,'001000':16,'011001':17,'100110':18,
+  '000011':19,'110000':20,'101001':21,'100101':22,'000100':15,'000001':24,
+  '111001':25,'100111':26,'100001':27,'011110':28,'010010':29,'101101':30,
+  '011100':31,'110001':32,'111100':33,'001111':34,'101000':35,'000101':36,
+  '110101':37,'101011':38,'010100':39,'001010':40,'100011':41,'110001':32,
+  '011111':43,'111110':44,'011000':45,'000110':46,'011010':47,'010110':48,
+  '011101':49,'101110':50,'001001':51,'100100':52,'110100':53,'001011':54,
+  '001101':55,'101100':56,'110110':57,'011011':58,'110010':59,'010011':60,
+  '110011':61,'001100':62,'010101':63,'101010':64
+};
+const HEX_NAMES_TH = {
+  1:'乾 พลังสร้าง',2:'坤 รับรอง',3:'屯 ยากเริ่ม',4:'蒙 อ่อนวัย',5:'需 รอ',6:'訟 ขัดแย้ง',
+  7:'師 กองทัพ',8:'比 รวมพลัง',9:'小畜 สะสมเล็ก',10:'履 เหยียบ',11:'泰 สงบเจริญ',12:'否 อับ',
+  13:'同人 มิตร',14:'大有 ครอบครอง',15:'謙 ถ่อม',16:'豫 เริงร่า',17:'隨 ติดตาม',18:'蠱 ฟื้น',
+  19:'臨 เข้าใกล้',20:'觀 พิจาร',21:'噬嗑 กัด',22:'賁 สง่า',23:'剝 แตก',24:'復 กลับ',
+  25:'無妄 บริสุทธิ์',26:'大畜 สะสม',27:'頤 หล่อ',28:'大過 เกิน',29:'坎 เหว',30:'離 ไฟ',
+  31:'咸 รัก',32:'恆 ยั่ง',33:'遯 ถอย',34:'大壯 พลัง',35:'晉 ก้าว',36:'明夷 บัง',
+  37:'家人 ครอบครัว',38:'睽 ขัด',39:'蹇 ติด',40:'解 คลาย',41:'損 ลด',42:'益 เพิ่ม',
+  43:'夬 ฟัน',44:'姤 พบ',45:'萃 รวม',46:'升 ขึ้น',47:'困 บีบ',48:'井 บ่อ',
+  49:'革 ปฏิวัติ',50:'鼎 หม้อ',51:'震 ฟ้าผ่า',52:'艮 นิ่ง',53:'漸 ทีละ',54:'歸妹 หญิง',
+  55:'豐 อุดม',56:'旅 เดิน',57:'巽 ลม',58:'兌 เริงร่า',59:'渙 กระจ',60:'節 พอ',
+  61:'中孚 จริง',62:'小過 เล็ก',63:'既濟 สำเร็จ',64:'未濟 ใกล้'
+};
+const HEX_SYMBOLS = {};
+for(let i=1; i<=64; i++) HEX_SYMBOLS[i] = String.fromCodePoint(0x4DC0 + i - 1);
+
+// Get hexagram from mountain + water star pair
+function starsToHex(mountainStar, waterStar){
+  const upper = STAR_TO_TRI_BIN[mountainStar] || '000';
+  const lower = STAR_TO_TRI_BIN[waterStar] || '000';
+  const bin = upper + lower;
+  return BINARY_TO_HEX[bin] || null;
 }
 
-function computeVerdict(){
-  if (!state.snapshot) return;
-  const m = degToMountain(state.bearing);
-  if (!m) return;
-  const dir = m.dir;
-  const p = getPalaceData(dir);
-  const t = I18N[LANG] || I18N.th;
-  const layersOn = Object.fromEntries(LAYER_DEFS.map(l => [l.key, l.on]));
+// ═══════════════════════════════════════════════════════════════
+//  PEOPLE MANAGER
+// ═══════════════════════════════════════════════════════════════
+const DEFAULT_PEOPLE = [
+  { name:'Aeaw',    year:1984, gender:'male',   room:'NW' },
+  { name:'Mai',     year:1986, gender:'female', room:'SE' },
+  { name:'น้องปุญ', year:2024, gender:'male',   room:'E'  }
+];
 
-  let votes = {good:0, bad:0};
-  let parts = [];
-  if (layersOn.flying_stars && p.fs) {
-    if (p.fs.quality === 'good') { votes.good++; parts.push(`<div class="lyr-pill"><b>飛星</b> <span class="vg">${p.fs.annual} 吉</span></div>`); }
-    else if (p.fs.quality === 'bad') { votes.bad++; parts.push(`<div class="lyr-pill"><b>飛星</b> <span class="vb">${p.fs.annual} 凶</span></div>`); }
-    else parts.push(`<div class="lyr-pill"><b>飛星</b> ${p.fs.annual} 平</div>`);
-  }
-  if (layersOn.qi_men && p.qm) {
-    if (['生','開','休'].includes(p.qm)) { votes.good++; parts.push(`<div class="lyr-pill"><b>奇門</b> <span class="vg">${p.qm}門 吉</span></div>`); }
-    else if (['死','驚','傷'].includes(p.qm)) { votes.bad++; parts.push(`<div class="lyr-pill"><b>奇門</b> <span class="vb">${p.qm}門 凶</span></div>`); }
-    else parts.push(`<div class="lyr-pill"><b>奇門</b> ${p.qm}門 平</div>`);
-  }
-  if (layersOn.ba_zhai && p.bz) {
-    if (p.bz.kind === 'good') { votes.good++; parts.push(`<div class="lyr-pill"><b>八宅</b> <span class="vg">${p.bz.name} 吉</span></div>`); }
-    else { votes.bad++; parts.push(`<div class="lyr-pill"><b>八宅</b> <span class="vb">${p.bz.name} 凶</span></div>`); }
-  }
-  if (layersOn.tai_sui && p.ts) { votes.bad++; parts.push(`<div class="lyr-pill"><b>太歲</b> <span class="vb">${p.ts.text||'沖'}</span></div>`); }
-  if (layersOn.twenty_four) parts.push(`<div class="lyr-pill"><b>24山</b> ${p.mountains.map(x=>x.h).join('·')}</div>`);
+let people = [];
+try {
+  const stored = localStorage.getItem('hk-fs-people');
+  if(stored) people = JSON.parse(stored);
+  else people = [...DEFAULT_PEOPLE];
+} catch(e){ people = [...DEFAULT_PEOPLE]; }
 
-  const off = state.snapshot.today?.twelve_officers?.raw?.officer;
-  if (layersOn.tong_shu && off) {
-    const goodOff = ['開','建','除','滿','成','收'];
-    const badOff = ['破','危','閉','執'];
-    if (goodOff.includes(off)) { votes.good++; parts.push(`<div class="lyr-pill"><b>通書</b> <span class="vg">${off}日 吉</span></div>`); }
-    else if (badOff.includes(off)) { votes.bad++; parts.push(`<div class="lyr-pill"><b>通書</b> <span class="vb">${off}日 凶</span></div>`); }
-    else parts.push(`<div class="lyr-pill"><b>通書</b> ${off}日 平</div>`);
-  }
-
-  let lvl = 'mixed', lvlText = t.verdict_mixed;
-  if (votes.good >= 2 && votes.bad === 0) { lvl = 'good'; lvlText = t.verdict_good; }
-  else if (votes.bad >= 2 && votes.good === 0) { lvl = 'bad'; lvlText = t.verdict_bad; }
-  else if (votes.bad >= 1 && votes.good >= 1) { lvl = 'warn'; lvlText = t.verdict_warn; }
-  else if (votes.good > votes.bad) { lvl = 'good'; lvlText = t.verdict_good; }
-  else if (votes.bad > votes.good) { lvl = 'bad'; lvlText = t.verdict_bad; }
-
-  let conflictMsg = '';
-  if (votes.good > 0 && votes.bad > 0) {
-    conflictMsg = LANG==='th' ? `⚡ ตรวจพบ <b>ขัดแย้งข้ามชั้น</b> (${votes.good} ดี / ${votes.bad} ร้าย) — ทำงานเบาๆ ได้ ห้ามทุบเจาะ/ขยับใหญ่`
-                : LANG==='zh' ? `⚡ 跨層衝突 (吉${votes.good}/凶${votes.bad}) — 可輕度活動 禁忌大動土`
-                : `⚡ Cross-layer conflict (${votes.good} good / ${votes.bad} bad) — light activity OK, no renovation`;
-  }
-
-  document.getElementById('v-deg').textContent = state.bearing.toFixed(1) + '°';
-  document.getElementById('v-dir').textContent = `${m.h} · ${DIR_NAME[dir]}`;
-  const vLvl = document.getElementById('v-lvl');
-  vLvl.className = 'lvl lvl-' + lvl;
-  vLvl.textContent = lvlText;
-  document.getElementById('v-body').innerHTML = conflictMsg || (LANG==='th'?'รวมผลจาก '+parts.length+' ชั้น':LANG==='zh'?`綜合 ${parts.length} 層`:`Aggregated from ${parts.length} layers`);
-  document.getElementById('v-layers').innerHTML = parts.join('');
-  document.getElementById('lv-body').innerHTML = `<span class="badge">${lvlText}</span> ${conflictMsg || (LANG==='th'?'ทิศ '+m.h+' '+DIR_NAME[dir]:DIR_NAME[dir]+' · '+m.h)} · ${parts.length} ${LANG==='th'?'ชั้น':'layers'}`;
+function savePeople(){
+  try { localStorage.setItem('hk-fs-people', JSON.stringify(people)); } catch(e){}
 }
 
-async function aiVerdict(){
-  const btn = document.getElementById('ai-verdict-btn');
-  btn.disabled = true; btn.textContent = '⏳ ' + (LANG==='th'?'AI กำลังคิด':LANG==='zh'?'AI 思考中':'AI thinking');
-  try {
-    const m = degToMountain(state.bearing);
-    const r = await fetch('/api/sifu', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
-      question: `ที่ทิศ ${m?.h} (${state.bearing.toFixed(1)}°) วันนี้ ใช้ทำอะไรได้ ห้ามทำอะไร · ตอบเป็น${LANG==='th'?'ภาษาไทย':LANG==='zh'?'ภาษาจีน':'English'} สั้นกระชับ 3 บรรทัด`,
-      context: { bearing: state.bearing, direction: m?.dir, mountain: m?.h, snapshot: state.snapshot, lang: LANG },
-    })});
-    if (!r.ok) throw new Error('AI fail');
-    const j = await r.json();
-    document.getElementById('v-body').innerHTML = `<b>🤖 AI:</b> ${j.answer || j.text || JSON.stringify(j)}`;
-  } catch(e) {
-    document.getElementById('v-body').textContent = '⚠ AI ' + (LANG==='th'?'ไม่ตอบ ลองใหม่':LANG==='zh'?'無回應':'unavailable');
-  } finally {
-    btn.disabled = false; btn.textContent = (I18N[LANG]||I18N.th).ai_btn;
-  }
-}
-
-async function activityGo(){
-  const txt = document.getElementById('activity-text').value.trim();
-  if (!txt) return;
-  const res = document.getElementById('activity-result');
-  res.textContent = '⏳ ' + (LANG==='th'?'กำลังวิเคราะห์':LANG==='zh'?'分析中':'analyzing');
-  try {
-    const r = await fetch('/api/activity-classify', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query:txt})});
-    const j = await r.json();
-    res.innerHTML = `✓ <b>${j.han}</b> · ${j.th} <a href="/datepick?act=${j.ui_act}" style="color:var(--gold);margin-left:8px;">📅 ${LANG==='th'?'ดูฤกษ์':LANG==='zh'?'看吉日':'best dates'} →</a>`;
-  } catch(e) { res.textContent = '⚠ error'; }
-}
-
-function renderFamily(){
-  const d = state.snapshot;
-  const fam = document.getElementById('family-members');
-  if (!d.layers.ba_zhai?.length) {
-    fam.textContent = LANG==='th'?'ยังไม่มีสมาชิก · เพิ่มที่ /compass':LANG==='zh'?'尚無成員':'No members yet';
+function renderPeopleList(){
+  const list = document.getElementById('peopleList');
+  document.getElementById('peopleCount').textContent = people.length;
+  if(people.length === 0){
+    list.innerHTML = '<div class="person-empty">ยังไม่มีคนในผัง · เพิ่มด้านล่าง</div>';
     return;
   }
-  const m = degToMountain(state.bearing);
-  const dir = m?.dir;
-  let html = '';
-  d.layers.ba_zhai.forEach(p => {
-    const goodK = Object.keys(p.good||{}).find(k => p.good[k] === dir);
-    const badK  = Object.keys(p.bad||{}).find(k => p.bad[k] === dir);
-    const cls = badK ? 'conflict' : goodK ? 'benefit' : '';
-    const tag = goodK || badK || '—';
-    html += `<div class="mb ${cls}">${p.name} (KUA ${p.kua}) · ${tag}</div>`;
-  });
-  fam.innerHTML = html;
+  list.innerHTML = people.map((p, idx) => {
+    const kua = calcLifeGua(p.year, p.gender);
+    const group = [1,3,4,9].includes(kua) ? 'East 東' : 'West 西';
+    const trigram = {1:'坎',2:'坤',3:'震',4:'巽',6:'乾',7:'兌',8:'艮',9:'離'}[kua];
+    return `
+      <div class="person-row">
+        <div class="info">
+          <div class="name">${p.name}</div>
+          <div class="stats">
+            Kua <span class="han">${kua} ${trigram}</span> · ${group}
+            ${p.room ? ' · 房 '+p.room : ''}
+          </div>
+        </div>
+        <div class="actions">
+          <button onclick="cyclePersonRoom(${idx})">↻</button>
+          <button class="danger" onclick="removePerson(${idx})">✕</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
-function startCompassLive(){
-  if (!window.DeviceOrientationEvent) { alert('Device orientation not supported'); return; }
-  const handler = (e) => {
-    let heading = e.webkitCompassHeading || (e.alpha != null ? 360 - e.alpha : null);
-    if (heading == null) return;
-    document.getElementById('cdeg-slider').value = heading;
-    updatePointer(heading);
-  };
-  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-    DeviceOrientationEvent.requestPermission().then(p => {
-      if (p === 'granted') window.addEventListener('deviceorientation', handler, true);
+window.removePerson = function(idx){
+  people.splice(idx, 1);
+  savePeople();
+  renderPeopleList();
+  renderPersonFilter();
+  renderGrid();
+};
+
+window.cyclePersonRoom = function(idx){
+  const dirs = ['', 'N','NE','E','SE','S','SW','W','NW','C'];
+  const cur = people[idx].room || '';
+  const nextIdx = (dirs.indexOf(cur) + 1) % dirs.length;
+  people[idx].room = dirs[nextIdx];
+  savePeople();
+  renderPeopleList();
+  renderPersonFilter();
+  renderGrid();
+};
+
+document.getElementById('btnAddPerson').addEventListener('click', ()=>{
+  const name = document.getElementById('pfName').value.trim();
+  const year = parseInt(document.getElementById('pfYear').value);
+  const gender = document.getElementById('pfGender').value;
+  const room = document.getElementById('pfRoom').value;
+  if(!name || !year || year < 1900 || year > 2030){
+    alert('ใส่ชื่อ + ปีเกิด (1900-2030) ครับ');
+    return;
+  }
+  people.push({ name, year, gender, room: room || null });
+  savePeople();
+  renderPeopleList();
+  renderPersonFilter();
+  renderGrid();
+  // reset form
+  document.getElementById('pfName').value = '';
+  document.getElementById('pfYear').value = '';
+});
+
+renderPeopleList();
+renderPersonFilter();
+
+renderGrid();
+
+// ═══════════════════════════════════════════════════════════════
+//  COMPASS SVG (rings)
+// ═══════════════════════════════════════════════════════════════
+function buildCompass(){
+  const dirRing = document.getElementById('dirRing');
+  const mountainRing = document.getElementById('mountainRing');
+  const cx = 200, cy = 200;
+  const dirs = [
+    {a:0,t:'N',c:'var(--vermilion)'},{a:45,t:'NE'},{a:90,t:'E'},{a:135,t:'SE'},
+    {a:180,t:'S'},{a:225,t:'SW'},{a:270,t:'W'},{a:315,t:'NW'}
+  ];
+  dirs.forEach(d=>{
+    const rad = (d.a - 90) * Math.PI / 180;
+    const x = cx + Math.cos(rad) * 145;
+    const y = cy + Math.sin(rad) * 145;
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', x);
+    text.setAttribute('y', y + 5);
+    text.setAttribute('text-anchor','middle');
+    text.setAttribute('font-family','JetBrains Mono, monospace');
+    text.setAttribute('font-size','13');
+    text.setAttribute('font-weight','700');
+    text.setAttribute('fill', d.c || 'var(--gold)');
+    text.textContent = d.t;
+    dirRing.appendChild(text);
+  });
+  // 24 mountains
+  const M24 = ['壬','子','癸','丑','艮','寅','甲','卯','乙','辰','巽','巳','丙','午','丁','未','坤','申','庚','酉','辛','戌','乾','亥'];
+  M24.forEach((han, i)=>{
+    const angle = i * 15 - 90; // -90 because 0deg is east in math
+    const rad = angle * Math.PI / 180;
+    const x = cx + Math.cos(rad) * 100;
+    const y = cy + Math.sin(rad) * 100;
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', x);
+    text.setAttribute('y', y + 4);
+    text.setAttribute('text-anchor','middle');
+    text.setAttribute('font-family','Noto Serif TC, serif');
+    text.setAttribute('font-size','11');
+    text.setAttribute('font-weight','600');
+    text.setAttribute('fill','var(--gold-deep)');
+    text.textContent = han;
+    mountainRing.appendChild(text);
+    // tick mark
+    const tickInner = 165;
+    const tickOuter = 175;
+    const tx1 = cx + Math.cos(rad) * tickInner;
+    const ty1 = cy + Math.sin(rad) * tickInner;
+    const tx2 = cx + Math.cos(rad) * tickOuter;
+    const ty2 = cy + Math.sin(rad) * tickOuter;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', tx1);
+    line.setAttribute('y1', ty1);
+    line.setAttribute('x2', tx2);
+    line.setAttribute('y2', ty2);
+    line.setAttribute('stroke', 'var(--gold-line)');
+    line.setAttribute('stroke-width', '1');
+    mountainRing.appendChild(line);
+  });
+}
+buildCompass();
+
+// ═══════════════════════════════════════════════════════════════
+//  COMPASS · DEVICE ORIENTATION
+// ═══════════════════════════════════════════════════════════════
+let compassWatching = false;
+let lastHeading = 0;
+let orientHandler = null;
+
+function startCompass(){
+  if(compassWatching) return;
+  const status = document.getElementById('compassStatus');
+  if(!('DeviceOrientationEvent' in window)){
+    status.innerHTML = '⚠️ <b>เบราว์เซอร์ไม่รองรับ</b><br/>ใช้แผนที่แทน';
+    return;
+  }
+  if(typeof DeviceOrientationEvent.requestPermission === 'function'){
+    DeviceOrientationEvent.requestPermission().then(p=>{
+      if(p === 'granted') attachOrientation();
+      else status.innerHTML = '❌ <b>ผู้ใช้ปฏิเสธ</b><br/>ใช้แผนที่แทน';
+    }).catch(()=>{
+      status.innerHTML = '⚠️ <b>ขอสิทธิ์ไม่สำเร็จ</b>';
     });
   } else {
-    window.addEventListener('deviceorientation', handler, true);
+    attachOrientation();
   }
 }
 
-function share(){
-  const url = `${location.origin}/fengshui?bearing=${state.bearing.toFixed(1)}&house=${state.houseId||''}&lang=${LANG}`;
-  if (navigator.share) navigator.share({title:'風水', url});
-  else { navigator.clipboard.writeText(url); alert((LANG==='th'?'คัดลอกลิงก์แล้ว':LANG==='zh'?'已複製':'Copied')+': '+url); }
+function attachOrientation(){
+  const status = document.getElementById('compassStatus');
+  const deg = document.getElementById('compassDeg');
+  const needle = document.getElementById('compassNeedle');
+  const lockBtn = document.getElementById('btnLockFacing');
+
+  orientHandler = (event)=>{
+    let heading;
+    if(event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null){
+      heading = event.webkitCompassHeading;
+    } else if(event.alpha !== null){
+      heading = 360 - event.alpha;
+    } else {
+      status.innerHTML = '⚠️ ไม่ได้ค่าเซ็นเซอร์ · ลอง refresh';
+      return;
+    }
+    heading = ((heading % 360) + 360) % 360;
+    lastHeading = heading;
+    deg.textContent = Math.round(heading);
+    needle.style.transform = `rotate(${-heading}deg)`;
+    status.innerHTML = `<b>กำลังอ่านเซ็นเซอร์</b> · ${getDirectionName(heading)}<br/>กดล็อกเมื่อทิศตรงหน้าบ้าน`;
+    lockBtn.disabled = false;
+  };
+
+  window.addEventListener('deviceorientation', orientHandler, true);
+  compassWatching = true;
+  const btn = document.getElementById('btnCompassStart');
+  btn.textContent = '⏸ หยุด Compass';
+  btn.onclick = stopCompass;
 }
 
-function nowLocal(){ const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0,16); }
+function stopCompass(){
+  if(orientHandler){
+    window.removeEventListener('deviceorientation', orientHandler, true);
+    orientHandler = null;
+  }
+  compassWatching = false;
+  const btn = document.getElementById('btnCompassStart');
+  btn.textContent = 'เริ่ม Live Compass';
+  btn.onclick = startCompass;
+  document.getElementById('compassStatus').innerHTML = 'หยุดอ่านเซ็นเซอร์แล้ว';
+}
 
-window.addEventListener('DOMContentLoaded', () => {
-  buildCompassRings();
-  document.getElementById('dt').value = nowLocal();
-  const urlBearing = new URLSearchParams(location.search).get('bearing');
-  if (urlBearing) { state.bearing = +urlBearing; document.getElementById('cdeg-slider').value = state.bearing; }
-  updatePointer(state.bearing);
+document.getElementById('btnCompassStart').addEventListener('click', startCompass);
 
-  document.getElementById('cdeg-slider').oninput = (e) => updatePointer(+e.target.value);
-  document.getElementById('btn-refresh').onclick = loadSnapshot;
-  document.getElementById('btn-now2').onclick = () => { document.getElementById('dt').value = nowLocal(); loadSnapshot(); };
-  document.getElementById('btn-compass-live').onclick = startCompassLive;
-  document.getElementById('btn-compass-map').onclick = () => location.href = '/compass-studio';
-  document.getElementById('btn-share').onclick = share;
-  document.getElementById('house-sel').onchange = (e) => { state.houseId = e.target.value || null; loadSnapshot(); };
-  document.getElementById('profile-sel').onchange = (e) => { state.profileId = e.target.value || null; if (e.target.value) localStorage.setItem('hk_profile_id', e.target.value); loadSnapshot(); };
-  document.getElementById('ai-verdict-btn').onclick = aiVerdict;
-  document.getElementById('activity-toggle-btn').onclick = () => document.getElementById('activity-card').classList.toggle('on');
-  document.getElementById('family-toggle-btn').onclick = () => { document.getElementById('family-card').classList.toggle('on'); renderFamily(); };
-  document.getElementById('activity-go').onclick = activityGo;
+document.getElementById('btnLockFacing').addEventListener('click', ()=>{
+  const arrow = document.getElementById('facingArrow');
+  arrow.style.display = 'block';
+  arrow.style.transform = `rotate(${lastHeading}deg)`;
+  applyFacing(lastHeading);
+});
 
-  /* sync เมื่อ user เปลี่ยน lang/theme ผ่าน avatar (hk-user-menu) */
-  new MutationObserver((muts) => {
-    muts.forEach(m => {
-      if (m.attributeName === 'data-theme') {
-        const t = document.documentElement.getAttribute('data-theme') || 'dark';
-        document.body && document.body.classList.toggle('light', t === 'light');
-      }
-      if (m.attributeName === 'lang') {
-        const newL = (localStorage.getItem('hk_locale') || 'th').toLowerCase().slice(0,2);
-        if (newL !== LANG && I18N[newL]) { LANG = newL; applyLang(); }
+// ═══════════════════════════════════════════════════════════════
+//  DIRECTION + 24 MOUNTAINS
+// ═══════════════════════════════════════════════════════════════
+const DIR_NAMES = [
+  {d:0,en:'N',th:'เหนือ'},{d:45,en:'NE',th:'ตอน.เฉียงเหนือ'},
+  {d:90,en:'E',th:'ตะวันออก'},{d:135,en:'SE',th:'ตอน.เฉียงใต้'},
+  {d:180,en:'S',th:'ใต้'},{d:225,en:'SW',th:'ตต.เฉียงใต้'},
+  {d:270,en:'W',th:'ตะวันตก'},{d:315,en:'NW',th:'ตต.เฉียงเหนือ'}
+];
+function getDirCode(deg){
+  let n = ((deg % 360) + 360) % 360;
+  let best = DIR_NAMES[0], minDiff = 360;
+  DIR_NAMES.forEach(item=>{
+    let diff = Math.abs(n - item.d);
+    if(diff > 180) diff = 360 - diff;
+    if(diff < minDiff){ minDiff = diff; best = item; }
+  });
+  return best;
+}
+function getDirectionName(deg){
+  const d = getDirCode(deg);
+  return `${d.en} ${d.th}`;
+}
+
+const M24 = [
+  {h:'壬',pinyin:'Rén', start:337.5},{h:'子',pinyin:'Zǐ',start:352.5},{h:'癸',pinyin:'Guǐ',start:7.5},
+  {h:'丑',pinyin:'Chǒu',start:22.5},{h:'艮',pinyin:'Gèn',start:37.5},{h:'寅',pinyin:'Yín',start:52.5},
+  {h:'甲',pinyin:'Jiǎ', start:67.5},{h:'卯',pinyin:'Mǎo',start:82.5},{h:'乙',pinyin:'Yǐ',start:97.5},
+  {h:'辰',pinyin:'Chén',start:112.5},{h:'巽',pinyin:'Xùn',start:127.5},{h:'巳',pinyin:'Sì',start:142.5},
+  {h:'丙',pinyin:'Bǐng',start:157.5},{h:'午',pinyin:'Wǔ',start:172.5},{h:'丁',pinyin:'Dīng',start:187.5},
+  {h:'未',pinyin:'Wèi', start:202.5},{h:'坤',pinyin:'Kūn',start:217.5},{h:'申',pinyin:'Shēn',start:232.5},
+  {h:'庚',pinyin:'Gēng',start:247.5},{h:'酉',pinyin:'Yǒu',start:262.5},{h:'辛',pinyin:'Xīn',start:277.5},
+  {h:'戌',pinyin:'Xū',  start:292.5},{h:'乾',pinyin:'Qián',start:307.5},{h:'亥',pinyin:'Hài',start:322.5}
+];
+function get24Mountain(deg){
+  let n = ((deg % 360) + 360) % 360;
+  for(let i = 0; i < 24; i++){
+    const m = M24[i];
+    const next = M24[(i+1) % 24];
+    let s = m.start, e = next.start;
+    if(e <= s) e += 360;
+    let test = n;
+    if(test < s - 180) test += 360;
+    if(test >= s && test < e) return m;
+  }
+  return M24[0];
+}
+
+function applyFacing(deg){
+  document.getElementById('mrHeading').textContent = `${(Math.round(deg*10)/10)} °`;
+  document.getElementById('mrDirection').textContent = getDirectionName(deg);
+  const m = get24Mountain(deg);
+  document.getElementById('mr24Mtn').textContent = `${m.h} ${m.pinyin}`;
+  
+  // Verdict vs current year flying star
+  const dir8 = getDirCode(deg).en;
+  let verdict = '—';
+  if(window._currentYearGrid){
+    const yStar = window._currentYearGrid[dir8];
+    if(window._currentTaiSui === dir8) verdict = '⚠️ ไท่ซุ่ย · ระวัง';
+    else if(window._currentThreeKill === dir8) verdict = '⚠️ 3ชะ · ระวัง';
+    else if(yStar === 5) verdict = '☠️ 5黃 · ห้าม';
+    else if([1,6,8,9].includes(yStar)) verdict = `✓ ${yStar}${STAR_INFO[yStar].color} · ดี`;
+    else verdict = `${yStar}${STAR_INFO[yStar].color} · กลาง`;
+  }
+  document.getElementById('mrVerdict').textContent = verdict;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GOOGLE MAPS
+// ═══════════════════════════════════════════════════════════════
+let map = null;
+let standingMarker = null;
+let facingMarker = null;
+let connectionLine = null;
+// wall mode
+let wallA = null, wallB = null;        // 2 markers along facing wall
+let wallLine = null;                   // the wall itself (gold)
+let perpLine = null;                   // perpendicular line through midpoint (green = facing arrow)
+let perpLineBack = null;               // back side (sitting · grey)
+let currentMode = 'wall';              // 'wall' | 'standing' | 'facing'
+
+window.initMap = function(){
+  // Default center: Bangkok
+  const defaultCenter = { lat: 13.8378, lng: 100.4823 };
+  map = new google.maps.Map(document.getElementById('gmap'), {
+    center: defaultCenter,
+    zoom: 17,
+    mapTypeId: 'hybrid',
+    tilt: 0,
+    streetViewControl: false,
+    fullscreenControl: false,
+    mapTypeControl: true,
+    mapTypeControlOptions: {
+      style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+      position: google.maps.ControlPosition.TOP_LEFT
+    }
+  });
+  
+  map.addListener('click', (e)=>{
+    const latLng = e.latLng;
+    if(currentMode === 'wall'){
+      // wall mode uses drag — single click without drag = place A only
+      // most click events without drag fall here
+      return;
+    } else if(currentMode === 'standing'){
+      placeStanding(latLng);
+    } else if(currentMode === 'facing'){
+      placeFacing(latLng);
+    }
+  });
+  
+  // Wall drag mode setup
+  setupWallDragMode();
+  updateMapCursor();
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  WALL MODE — drag from A to B (like setcompass.com)
+// ═══════════════════════════════════════════════════════════════
+let wallDragging = false;
+let wallStartPos = null;
+let wallTempLine = null;
+
+function setupWallDragMode(){
+  const mapDiv = document.getElementById('gmap');
+  
+  // mousedown — start drag
+  mapDiv.addEventListener('mousedown', wallMouseDown);
+  mapDiv.addEventListener('touchstart', wallTouchStart, { passive: false });
+}
+
+function wallMouseDown(e){
+  if(currentMode !== 'wall') return;
+  if(e.button !== 0) return; // left click only
+  
+  // Convert pixel to LatLng
+  const latLng = pixelToLatLng(e.clientX, e.clientY);
+  if(!latLng) return;
+  
+  startWallDrag(latLng, e);
+}
+
+function wallTouchStart(e){
+  if(currentMode !== 'wall') return;
+  if(e.touches.length !== 1) return;
+  const touch = e.touches[0];
+  const latLng = pixelToLatLng(touch.clientX, touch.clientY);
+  if(!latLng) return;
+  e.preventDefault();
+  startWallDrag(latLng, touch);
+}
+
+function pixelToLatLng(clientX, clientY){
+  if(!map) return null;
+  const mapDiv = document.getElementById('gmap');
+  const rect = mapDiv.getBoundingClientRect();
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  const projection = map.getProjection();
+  if(!projection) return null;
+  
+  // use overlay projection for pixel→latlng
+  if(!window._overlayProj){
+    window._overlayProj = new google.maps.OverlayView();
+    window._overlayProj.draw = function(){};
+    window._overlayProj.setMap(map);
+  }
+  const proj = window._overlayProj.getProjection();
+  if(!proj) return null;
+  return proj.fromContainerPixelToLatLng(new google.maps.Point(x, y));
+}
+
+function startWallDrag(startLatLng, originalEvent){
+  // disable map dragging during wall drag
+  map.setOptions({ draggable: false, gestureHandling: 'none' });
+  
+  // clear previous wall + standing/facing
+  clearWallMode();
+  if(standingMarker){ standingMarker.setMap(null); standingMarker = null; }
+  if(facingMarker){ facingMarker.setMap(null); facingMarker = null; }
+  if(connectionLine){ connectionLine.setMap(null); connectionLine = null; }
+  
+  wallDragging = true;
+  wallStartPos = startLatLng;
+  
+  // Place A marker
+  wallA = new google.maps.Marker({
+    position: startLatLng,
+    map: map,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 7,
+      fillColor: '#c8a44d',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 2
+    },
+    label: { text:'A', color:'#fff', fontSize:'10px', fontWeight:'bold' },
+    title: 'ผนัง A',
+    zIndex: 999
+  });
+  
+  // global listeners for drag move + end
+  document.addEventListener('mousemove', wallMouseMove);
+  document.addEventListener('mouseup', wallMouseUp);
+  document.addEventListener('touchmove', wallTouchMove, { passive: false });
+  document.addEventListener('touchend', wallTouchEnd);
+}
+
+function wallMouseMove(e){
+  if(!wallDragging) return;
+  const latLng = pixelToLatLng(e.clientX, e.clientY);
+  if(latLng) updateWallTempLine(latLng);
+}
+
+function wallTouchMove(e){
+  if(!wallDragging) return;
+  if(e.touches.length !== 1) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  const latLng = pixelToLatLng(touch.clientX, touch.clientY);
+  if(latLng) updateWallTempLine(latLng);
+}
+
+function updateWallTempLine(currentPos){
+  if(wallTempLine) wallTempLine.setMap(null);
+  wallTempLine = new google.maps.Polyline({
+    path: [wallStartPos, currentPos],
+    geodesic: true,
+    strokeColor: '#c8a44d',
+    strokeOpacity: 0.7,
+    strokeWeight: 1.5,
+    map: map,
+    icons: [{
+      icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 3, strokeColor:'#c8a44d', fillColor:'#c8a44d' },
+      offset: '100%'
+    }]
+  });
+  
+  // realtime preview of facing direction (perpendicular CW from B)
+  const wallBearing = computeBearing(wallStartPos.lat(), wallStartPos.lng(), currentPos.lat(), currentPos.lng());
+  const facingBearing = (wallBearing + 90) % 360;  // CW 90° from A→B direction
+  
+  // update HUD live
+  applyFacing(facingBearing);
+  document.getElementById('facingArrow').style.display = 'block';
+  document.getElementById('facingArrow').style.transform = `rotate(${facingBearing}deg)`;
+}
+
+function wallMouseUp(e){
+  if(!wallDragging) return;
+  const latLng = pixelToLatLng(e.clientX, e.clientY);
+  if(latLng) finishWallDrag(latLng);
+}
+
+function wallTouchEnd(e){
+  if(!wallDragging) return;
+  // last position from changedTouches
+  const touch = e.changedTouches[0];
+  const latLng = pixelToLatLng(touch.clientX, touch.clientY);
+  if(latLng) finishWallDrag(latLng);
+}
+
+function finishWallDrag(endLatLng){
+  wallDragging = false;
+  
+  // re-enable map dragging
+  map.setOptions({ draggable: true, gestureHandling: 'auto' });
+  
+  document.removeEventListener('mousemove', wallMouseMove);
+  document.removeEventListener('mouseup', wallMouseUp);
+  document.removeEventListener('touchmove', wallTouchMove);
+  document.removeEventListener('touchend', wallTouchEnd);
+  
+  // Reject if drag was too short (just a click)
+  const dist = google.maps.geometry?.spherical?.computeDistanceBetween(wallStartPos, endLatLng);
+  if(dist !== undefined && dist < 1){
+    if(wallTempLine){ wallTempLine.setMap(null); wallTempLine = null; }
+    if(wallA){ wallA.setMap(null); wallA = null; }
+    return;
+  }
+  
+  // remove temp line
+  if(wallTempLine){ wallTempLine.setMap(null); wallTempLine = null; }
+  
+  // Place permanent B marker
+  wallB = new google.maps.Marker({
+    position: endLatLng,
+    map: map,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 7,
+      fillColor: '#c8a44d',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 2
+    },
+    label: { text:'B', color:'#fff', fontSize:'10px', fontWeight:'bold' },
+    title: 'ผนัง B',
+    zIndex: 999
+  });
+  
+  // make both markers draggable for fine-tuning
+  wallA.setDraggable(true);
+  wallB.setDraggable(true);
+  wallA.addListener('drag', drawWallFromMarkers);
+  wallA.addListener('dragend', drawWallFromMarkers);
+  wallB.addListener('drag', drawWallFromMarkers);
+  wallB.addListener('dragend', drawWallFromMarkers);
+  
+  drawWallFromMarkers();
+}
+
+function drawWallFromMarkers(){
+  if(!wallA || !wallB) return;
+  const a = wallA.getPosition();
+  const b = wallB.getPosition();
+  
+  // wall line (gold) with arrow A→B
+  if(wallLine) wallLine.setMap(null);
+  wallLine = new google.maps.Polyline({
+    path: [a, b],
+    geodesic: true,
+    strokeColor: '#c8a44d',
+    strokeOpacity: 0.7,
+    strokeWeight: 1.5,
+    map: map,
+    icons: [{
+      icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 3, strokeColor:'#c8a44d', fillColor:'#c8a44d' },
+      offset: '100%'
+    }]
+  });
+  
+  // wall bearing A→B
+  const wallBearing = computeBearing(a.lat(), a.lng(), b.lat(), b.lng());
+  
+  // FACING = perpendicular CW 90° from A→B (right side of arrow)
+  const facingBearing = (wallBearing + 90) % 360;
+  // SITTING = opposite (180° from facing)
+  const sittingBearing = (facingBearing + 180) % 360;
+  
+  // arrow length ~ 1.0x wall length
+  const wallDist = google.maps.geometry?.spherical?.computeDistanceBetween(a, b) || 30;
+  const arrowMeters = Math.max(wallDist * 1.0, 15);
+  
+  // MIDPOINT of A-B (anchor for facing/sitting arrows)
+  const mid = google.maps.geometry?.spherical?.interpolate(a, b, 0.5);
+  
+  // start from MIDPOINT (perpendicular bisector of wall)
+  const facingEnd = google.maps.geometry?.spherical?.computeOffset(mid, arrowMeters, facingBearing);
+  const sittingEnd = google.maps.geometry?.spherical?.computeOffset(mid, arrowMeters * 0.6, sittingBearing);
+  
+  if(perpLine) perpLine.setMap(null);
+  perpLine = new google.maps.Polyline({
+    path: [mid, facingEnd],
+    geodesic: true,
+    strokeColor: '#7fa869',
+    strokeOpacity: 0.95,
+    strokeWeight: 5,
+    icons: [{
+      icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 6, strokeColor:'#7fa869', fillColor:'#7fa869' },
+      offset: '100%'
+    }],
+    map: map
+  });
+  
+  if(perpLineBack) perpLineBack.setMap(null);
+  perpLineBack = new google.maps.Polyline({
+    path: [mid, sittingEnd],
+    geodesic: true,
+    strokeColor: '#888',
+    strokeOpacity: 0.5,
+    strokeWeight: 2,
+    map: map
+  });
+  
+  applyFacing(facingBearing);
+  
+  // update compass arrow
+  const arrow = document.getElementById('facingArrow');
+  arrow.style.display = 'block';
+  arrow.style.transform = `rotate(${facingBearing}deg)`;
+  
+  window._currentWallFacing = facingBearing;
+  window._currentWallSitting = sittingBearing;
+}
+
+function clearWallMode(){
+  if(wallA){ wallA.setMap(null); wallA = null; }
+  if(wallB){ wallB.setMap(null); wallB = null; }
+  if(wallLine){ wallLine.setMap(null); wallLine = null; }
+  if(perpLine){ perpLine.setMap(null); perpLine = null; }
+  if(perpLineBack){ perpLineBack.setMap(null); perpLineBack = null; }
+  if(wallTempLine){ wallTempLine.setMap(null); wallTempLine = null; }
+  window._currentWallFacing = null;
+  window._currentWallSitting = null;
+}
+
+// Set cursor based on mode
+function updateMapCursor(){
+  const mapDiv = document.getElementById('gmap');
+  if(currentMode === 'wall'){
+    mapDiv.style.cursor = 'crosshair';
+  } else {
+    mapDiv.style.cursor = '';
+  }
+}
+
+function placeStanding(latLng){
+  if(standingMarker) standingMarker.setMap(null);
+  // also clear wall mode markers
+  clearWallMode();
+  standingMarker = new google.maps.Marker({
+    position: latLng,
+    map: map,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 12,
+      fillColor: '#7fa869',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 3
+    },
+    title: '① จุดยืน · Standing'
+  });
+  // auto-switch to facing mode
+  setMode('facing');
+  updateLine();
+}
+
+function placeFacing(latLng){
+  if(!standingMarker){
+    alert('ปักจุดยืนก่อน (สีเขียว)');
+    return;
+  }
+  if(facingMarker) facingMarker.setMap(null);
+  facingMarker = new google.maps.Marker({
+    position: latLng,
+    map: map,
+    icon: {
+      path: 'M 0,-20 L -8,-3 L -3,-3 L -3,5 L 3,5 L 3,-3 L 8,-3 Z',
+      scale: 1.2,
+      fillColor: '#c95c4a',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 2
+    },
+    title: '② ทิศหันหน้า · Facing'
+  });
+  updateLine();
+}
+
+function updateLine(){
+  if(!standingMarker || !facingMarker) return;
+  if(connectionLine) connectionLine.setMap(null);
+  const start = standingMarker.getPosition();
+  const end = facingMarker.getPosition();
+  connectionLine = new google.maps.Polyline({
+    path: [start, end],
+    geodesic: true,
+    strokeColor: '#c8a44d',
+    strokeOpacity: 0.95,
+    strokeWeight: 3,
+    icons: [{
+      icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 4 },
+      offset: '90%'
+    }],
+    map: map
+  });
+  // calculate bearing
+  const bearing = computeBearing(start.lat(), start.lng(), end.lat(), end.lng());
+  applyFacing(bearing);
+  // update facing arrow on compass too
+  const arrow = document.getElementById('facingArrow');
+  arrow.style.display = 'block';
+  arrow.style.transform = `rotate(${bearing}deg)`;
+}
+
+function computeBearing(lat1, lng1, lat2, lng2){
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δλ = (lng2 - lng1) * Math.PI / 180;
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  const θ = Math.atan2(y, x);
+  return ((θ * 180 / Math.PI) + 360) % 360;
+}
+
+function clearWallMode(){
+  if(wallA){ wallA.setMap(null); wallA = null; }
+  if(wallB){ wallB.setMap(null); wallB = null; }
+  if(wallLine){ wallLine.setMap(null); wallLine = null; }
+  if(perpLine){ perpLine.setMap(null); perpLine = null; }
+  if(perpLineBack){ perpLineBack.setMap(null); perpLineBack = null; }
+  window._currentWallFacing = null;
+  window._currentWallBack = null;
+}
+
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById('modeWall').classList.toggle('active', mode === 'wall');
+  document.getElementById('modeStanding').classList.toggle('active', mode === 'standing');
+  document.getElementById('modeFacing').classList.toggle('active', mode === 'facing');
+  updateMapCursor();
+}
+
+document.getElementById('modeWall').addEventListener('click', ()=>setMode('wall'));
+document.getElementById('modeStanding').addEventListener('click', ()=>{
+  setMode('standing');
+  clearWallMode();
+});
+document.getElementById('modeFacing').addEventListener('click', ()=>setMode('facing'));
+
+document.getElementById('btnClear').addEventListener('click', ()=>{
+  if(standingMarker){ standingMarker.setMap(null); standingMarker = null; }
+  if(facingMarker){ facingMarker.setMap(null); facingMarker = null; }
+  if(connectionLine){ connectionLine.setMap(null); connectionLine = null; }
+  clearWallMode();
+  setMode('wall');
+  document.getElementById('mrHeading').textContent = '— °';
+  document.getElementById('mrDirection').textContent = '—';
+  document.getElementById('mr24Mtn').textContent = '—';
+  document.getElementById('mrVerdict').textContent = '—';
+});
+document.getElementById('btnGeolocate').addEventListener('click', ()=>{
+  if(!navigator.geolocation){ alert('Browser ไม่รองรับ GPS'); return; }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const ll = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    if(map){
+      map.setCenter(ll);
+      map.setZoom(19);
+      placeStanding(new google.maps.LatLng(ll.lat, ll.lng));
+    }
+  }, err=>{
+    alert('ขอ GPS ไม่สำเร็จ: ' + err.message);
+  }, { enableHighAccuracy: true });
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  API KEY MODAL
+// ═══════════════════════════════════════════════════════════════
+function loadGoogleMaps(apiKey){
+  const script = document.createElement('script');
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry&callback=initMap&loading=async`;
+  script.async = true;
+  script.defer = true;
+  script.onerror = ()=>{
+    document.getElementById('gmap').innerHTML = '<div style="padding:40px;text-align:center;color:var(--fg-soft);"><b style="color:var(--inauspicious)">โหลด Google Maps ไม่สำเร็จ</b><br/><br/>ตรวจสอบว่า API key เปิดใช้ <code>Maps JavaScript API</code> และไม่ได้ restrict domain</div>';
+  };
+  document.head.appendChild(script);
+}
+
+// Auto-load with hardcoded key (TEMPORARY — for testing only)
+// REMINDER: revoke this key after testing & set up domain-restricted key
+const HARDCODED_KEY = 'AIzaSyAf68fVgnx-DB1QX0CVQ7zsWtYsIvSHCTs';
+loadGoogleMaps(HARDCODED_KEY);
+
+console.log('🐉 Flying Star loaded · Period 9 (2024-2043) · Tai Sui + 3 Killings + 5 Yellow active');
+</script>
+
+<script>
+/* HK Navbar · auto-active link · pattern เดียวกับ chart/today/network/qimen */
+(function(){
+  try {
+    var p = window.location.pathname.replace(/\/$/,'');
+    if (p === '/yongsennetwork') p = '/network';
+    document.querySelectorAll('#hk-topnav a').forEach(function(a){
+      if (a.getAttribute('data-r') === p) a.classList.add('active');
+    });
+  } catch(e){}
+})();
+</script>
+
+<script>
+/* hourkey · 3-language i18n pattern · TH/EN/ZH · ทุกหน้าใช้ key เดียวกัน */
+window.HK_I18N = window.HK_I18N || {};
+Object.assign(window.HK_I18N, {
+  'hk.nav.chart':   { th:'ดวง',       en:'Chart',    zh:'命盤' },
+  'hk.nav.today':   { th:'วันนี้',     en:'Today',    zh:'今日' },
+  'hk.nav.calendar':{ th:'ปฏิทิน',    en:'Calendar', zh:'吉曆' },
+  'hk.nav.network': { th:'เครือข่าย',  en:'Network',  zh:'人脈' },
+  'hk.nav.qimen':   { th:'ฉีเหมิน',   en:'Qi Men',   zh:'奇門' },
+  'hk.nav.master':  { th:'ซินแส',    en:'Sifu',     zh:'老師' },
+  'hk.nav.picker':  { th:'วางฤกษ์',   en:'Picker',   zh:'擇日' },
+  'hk.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
+  'hk.nav.goal':    { th:'เป้าหมาย',   en:'Goals',    zh:'志向' }
+});
+function applyI18N(lang){
+  if (!window.HK_I18N) return;
+  Object.entries(window.HK_I18N).forEach(function(entry){
+    var key = entry[0], t = entry[1];
+    document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) {
+        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
+        else el.textContent = t[lang];
       }
     });
-  }).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme','lang'] });
-
-  applyTheme(localStorage.getItem('theme') || localStorage.getItem('hk-theme') || 'dark');
-  applyLang();
-  loadHouses();
-  loadProfiles();
-  loadSnapshot();
-
-  setInterval(() => { if (!document.hidden) loadSnapshot(); }, 60000);
-});
+    document.querySelectorAll('[data-i18n-ph="'+key+'"]').forEach(function(el){
+      if (t[lang] !== undefined) el.setAttribute('placeholder', t[lang].replace(/<[^>]+>/g,''));
+    });
+  });
+}
+window.applyI18N = applyI18N;
+(function(){
+  var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(lang){
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
+    try{ localStorage.setItem('hk_locale', lang); }catch(e){}
+    applyI18N(lang);
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
+  try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
+})();
+(function(){
+  var sw = document.getElementById('hk-theme-switch'); if (!sw) return;
+  var btns = sw.querySelectorAll('button');
+  function apply(t){
+    document.documentElement.setAttribute('data-theme', t);
+    document.body.classList.toggle('light', t === 'light');
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.theme === t); });
+    try{ localStorage.setItem('hk-theme', t); }catch(e){}
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.theme); }); });
+  try{ var s = localStorage.getItem('hk-theme'); if (s) apply(s); else apply('dark'); }catch(e){ apply('dark'); }
+})();
 </script>
-<script src="/js/hk-settings-drawer.js?v=9" defer></script>
-<script src="/js/hk-user-menu.js?v=16" defer></script>
+
 </body>
 </html>

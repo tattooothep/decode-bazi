@@ -4,7 +4,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>hourkey · ฉีเหมิน · 奇門遁甲</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="alternate icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
 <style>
   [data-theme="dark"]{
     --bg:#0d0f12; --bg-2:#14171c; --bg-3:#1a1d24;
@@ -122,6 +129,47 @@
 
   .palace-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;aspect-ratio:1/1;}
   .palace{position:relative;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:.25s;overflow:hidden;}
+  /* 📜 qimen10x-style palace layout · 15 พ.ค. */
+  .palace.q10x{display:grid;grid-template-areas:'tl tr tr' 'deity star stem-h' 'door door door' 'trig num stem-e';grid-template-rows:auto 1fr auto auto;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;min-height:140px;padding:10px 12px;}
+  .palace.q10x .p-corner-tl{grid-area:tl;display:flex;gap:3px;font-size:10px;align-items:center;}
+  .palace.q10x .p-corner-tr{grid-area:tr;display:flex;gap:4px;justify-content:flex-end;align-items:flex-start;}
+  .palace.q10x .p-deity{grid-area:deity;display:flex;flex-direction:column;line-height:1.1;}
+  .palace.q10x .p-deity .cn{font-family:var(--tc);font-size:18px;font-weight:700;color:#a98245;}
+  .palace.q10x .p-deity .th{font-family:var(--thai);font-size:9px;color:var(--fg-soft);letter-spacing:.02em;}
+  .palace.q10x .p-star{grid-area:star;display:flex;flex-direction:column;line-height:1.1;text-align:center;}
+  .palace.q10x .p-star .cn{font-family:var(--tc);font-size:22px;font-weight:700;color:var(--fg);}
+  .palace.q10x .p-star .th{font-family:var(--thai);font-size:9px;color:var(--fg-soft);}
+  .palace.q10x .p-door{grid-area:door;display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;}
+  .palace.q10x .p-door .cn{font-family:var(--tc);font-size:18px;font-weight:700;}
+  .palace.q10x .p-door .th{font-family:var(--thai);font-size:10px;}
+  .palace.q10x .p-door.good{background:rgba(46,160,67,.10);color:#2ea043;}
+  .palace.q10x .p-door.bad{background:rgba(228,93,77,.10);color:#d96650;}
+  /* 📜 中宮 (寄宮) · ไม่มี door/deity ตามตำราคลาสสิก · 15 พ.ค. */
+  .palace.q10x.palace-center{background:linear-gradient(160deg, rgba(180,144,82,.05), var(--tile));border-color:rgba(180,144,82,.3);}
+  .palace.q10x .p-deity.center-empty{display:flex;flex-direction:column;line-height:1.1;}
+  .palace.q10x .p-deity.center-empty .cn.ji-label{font-family:var(--tc);font-size:13px;font-weight:600;color:var(--fg-faint);letter-spacing:.05em;background:rgba(180,144,82,.08);border:1px dashed rgba(180,144,82,.3);border-radius:6px;padding:2px 6px;display:inline-block;width:fit-content;}
+  .palace.q10x .p-deity.center-empty .th{font-family:var(--thai);font-size:8px;color:var(--fg-faint);font-style:italic;}
+  .palace.q10x .p-door.center-empty{display:flex;align-items:center;justify-content:center;padding:0;background:transparent;border:none;min-height:14px;}
+  .palace.q10x .p-door.center-empty::before{content:"";display:block;height:1px;width:40%;background:rgba(180,144,82,.2);}
+  .palace.q10x .p-door.neutral,.palace.q10x .p-door.mid{background:rgba(180,144,82,.08);color:var(--fg);}
+  .palace.q10x .p-corner-tr .stem.heaven{display:flex;align-items:center;gap:2px;}
+  .palace.q10x .p-corner-tr .stem.heaven,.palace.q10x .p-corner-br .stem.earth{font-family:var(--tc);font-size:24px;font-weight:700;color:var(--gold);}
+  .palace.q10x .p-corner-br{grid-area:stem-e;display:flex;justify-content:flex-end;}
+  .palace.q10x .p-num{grid-area:num;font-family:var(--mono);font-size:24px;font-weight:700;color:var(--fg-soft);opacity:.4;text-align:center;}
+  .palace.q10x .p-trig{grid-area:trig;font-family:var(--tc);font-size:10px;color:var(--fg-soft);}
+  .palace.q10x .p-fms{grid-area:tl;display:flex;flex-wrap:wrap;gap:3px;justify-self:start;}
+  .palace.q10x .fm-tag{font-family:var(--tc);font-size:9px;padding:1px 5px;border-radius:99px;letter-spacing:.04em;}
+  .palace.q10x .fm-tag.fm-good{background:rgba(46,160,67,.15);color:#2ea043;}
+  .palace.q10x .fm-tag.fm-bad{background:rgba(228,93,77,.15);color:#d96650;}
+  .palace.q10x .fm-tag.fm-neutral{background:var(--tile);color:var(--fg-soft);}
+  .palace.q10x .void-mk{font-family:var(--tc);font-size:11px;color:#d96650;padding:0 4px;border:1px solid #d96650;border-radius:3px;}
+  .palace.q10x .home-mk{color:var(--gold);font-size:10px;}
+  .palace.q10x .qi-mk{font-family:var(--tc);font-size:9px;color:#2ea043;background:rgba(46,160,67,.18);padding:0 3px;border-radius:3px;margin-left:1px;vertical-align:super;}
+  .palace.q10x .fu-mk,.palace.q10x .shi-mk{font-family:var(--tc);font-size:10px;background:var(--gold);color:var(--bg);padding:1px 4px;border-radius:3px;font-weight:700;}
+  .palace.q10x.q-good{border-left:3px solid #2ea043;}
+  .palace.q10x.q-bad{border-left:3px solid #d96650;}
+  .school-toggle button:disabled{opacity:.5;cursor:not-allowed;}
+  .school-toggle button:disabled:hover{background:transparent;}
   .palace:hover{border-color:var(--gold);transform:translateY(-2px);}
   .palace.is-center{background:var(--gold-soft);border-color:var(--gold);}
   .palace.is-shi{box-shadow:0 0 0 2px var(--good);}
@@ -265,7 +313,116 @@
     .palace{padding:5px;}
     .palace .num, .palace .pos{display:none;}
   }
+  /* 📱 Mobile responsive · @media only · ห้ามแก้ base · 15 พ.ค. 2026 */
+  @media (max-width:768px){
+    /* topbar wrap → avatar อยู่ขวาบน · nav บรรทัด 2 (มี order:3 จาก @media 980 ของเดิม) */
+    .topbar{flex-wrap:wrap;padding:14px 16px;gap:8px;}
+    .top-r{order:2;margin-left:auto;}
+    .logo{order:1;}
+    /* hero stats */
+    .stats{flex-wrap:wrap;gap:14px;}
+    .stats b{font-size:22px;}
+    .stats div{flex:1 1 30%;min-width:80px;}
+    /* time picker · wrap 2 row */
+    .time-grid{grid-template-columns:repeat(2,1fr);gap:6px;}
+    .time-grid .sep{display:none;}
+    .time-grid select{width:100%;font-size:11px;padding:8px;}
+    /* school 4 ปุ่ม → 2x2 grid */
+    .school-toggle{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+    .school-toggle button{padding:8px 4px;font-size:11px;}
+    .school-toggle button .tc{font-size:16px;}
+    .school-toggle button .en{font-size:7px;}
+    /* pill bar wrap */
+    .chart-meta{flex-wrap:wrap;gap:6px;}
+    .chart-meta .pill{font-size:10px;padding:4px 8px;}
+    .qmdj-layout{
+      grid-template-columns:minmax(0,1fr) !important;
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      overflow:visible;
+    }
+    .palace-wrap,
+    .side-pane,
+    #qm-sifu-panel,
+    #qm-search-panel{
+      width:100%;
+      max-width:100%;
+      min-width:0;
+      padding:14px !important;
+      overflow:hidden;
+    }
+    .side-pane{
+      position:static;
+      top:auto;
+      max-height:none;
+    }
+    .palace-grid{
+      width:100%;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      grid-template-rows:repeat(3,minmax(0,1fr));
+      aspect-ratio:1/1;
+    }
+    /* q10x palace · ลด font · ลด min-height */
+    .palace.q10x{min-height:0;padding:6px 8px;gap:3px;}
+    .palace.q10x .p-deity .cn{font-size:14px;}
+    .palace.q10x .p-deity .th{font-size:7px;line-height:1;}
+    .palace.q10x .p-star .cn{font-size:18px;}
+    .palace.q10x .p-star .th{font-size:7px;line-height:1;}
+    .palace.q10x .p-door{padding:2px 4px;}
+    .palace.q10x .p-door .cn{font-size:14px;}
+    .palace.q10x .p-door .th{font-size:8px;line-height:1;}
+    .palace.q10x .p-corner-tr .stem.heaven,
+    .palace.q10x .p-corner-br .stem.earth{font-size:18px;}
+    .palace.q10x .p-num{font-size:16px;}
+    .palace.q10x .p-trig{font-size:8px;}
+    .palace.q10x.palace-center .ji-label{font-size:10px;padding:1px 4px;}
+    .center-pillar-table{display:none !important;}
+    /* sifu chat */
+    #qm-sifu-panel{padding:12px 14px;}
+    #qm-sifu-panel h3{font-size:14px;}
+    #qm-sifu-log{max-height:280px;font-size:12px;}
+    .qm-topic-btn{font-size:9px;padding:5px 8px;}
+    /* config row */
+    .config-row{grid-template-columns:1fr;gap:8px;}
+    /* hero head h1 */
+    .hero-head h1{font-size:28px;line-height:1.2;}
+    .hero-head .lede{font-size:13px;}
+    .crumb{font-size:10px;}
+  }
+  @media (max-width:480px){
+    .stage{padding:18px 14px 50px;}
+    .config-bar{padding:14px;}
+    /* time picker · 2 col + smaller */
+    .time-grid select{font-size:10px;padding:6px;}
+    /* school 4 ปุ่ม → 2x2, ลดความสูงบนมือถือ */
+    .school-toggle{grid-template-columns:1fr 1fr;}
+    .school-toggle button{min-width:0;padding:7px 3px;}
+    /* q10x palace · ขั้นต่ำ · ไม่ยุบ */
+    .palace-grid{gap:4px;}
+    .palace-wrap{padding:12px !important;}
+    .palace.q10x{min-height:0;padding:4px;gap:2px;}
+    .palace.q10x .p-deity .th,
+    .palace.q10x .p-star .th,
+    .palace.q10x .p-door .th{display:none;}  /* ซ่อน label ไทย เหลือเฉพาะจีน */
+    .palace.q10x .p-deity .cn{font-size:13px;}
+    .palace.q10x .p-star .cn{font-size:15px;}
+    .palace.q10x .p-door .cn{font-size:13px;}
+    .palace.q10x .p-corner-tr .stem.heaven,
+    .palace.q10x .p-corner-br .stem.earth{font-size:15px;}
+    .palace.q10x .p-num{font-size:13px;}
+    .palace.q10x .p-trig{font-size:7px;}
+    /* hero */
+    .hero-head h1{font-size:22px;}
+    .hero-head .label{font-size:10px;}
+    .stats b{font-size:18px;}
+    /* sifu */
+    #qm-sifu-log{max-height:220px;font-size:11px;}
+    .qm-topic-btn{font-size:8px;padding:4px 6px;letter-spacing:.06em;}
+  }
 </style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
 
@@ -277,6 +434,7 @@
     <a href="/calendar" data-r="/calendar"><span class="glyph">曆</span><span class="lbl" data-i18n="q.nav.calendar">ปฏิทิน</span></a>
     <a href="/network" data-r="/network"><span class="glyph">人</span><span class="lbl" data-i18n="q.nav.network">เครือข่าย</span></a>
     <a href="/qimen" data-r="/qimen"><span class="glyph">奇</span><span class="lbl" data-i18n="q.nav.qimen">ฉีเหมิน</span></a>
+    <a href="/forecast" data-r="/forecast"><span class="glyph">占</span><span class="lbl" data-i18n="hk.nav.forecast">พยากรณ์</span></a>
     <a href="/master" data-r="/master"><span class="glyph">師</span><span class="lbl" data-i18n="q.nav.master">ซินแส</span></a>
     <a href="/datepick" data-r="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="q.nav.picker">วางฤกษ์</span></a>
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="q.nav.fengshui">ทิศมงคล</span></a>
@@ -288,18 +446,19 @@
 </header>
 
 <div class="stage">
-  <div class="crumb"><a href="/">หน้าหลัก</a> <span>/</span> <span>奇門遁甲 · QI MEN DUN JIA</span></div>
+  <div class="crumb"><a  href="/" data-i18n="auto.q.001">หน้าหลัก</a> <span>/</span> <span>奇門遁甲 · QI MEN DUN JIA</span></div>
 
   <div class="hero-head">
     <div>
       <div class="label">奇門遁甲 · QI MEN DUN JIA</div>
       <h1>ฉีเหมิน <span class="tc">遁甲</span> · ผังเวลา</h1>
-      <p class="lede">ระบบพยากรณ์ <b>9 ช่อง</b> ที่เปลี่ยนตามชั่วยาม-วัน-เดือน-ปี · เลือก <b>สำนัก 拆補 / 置閏</b> แล้วตั้งคำถามเฉพาะหน้า — ฉีเหมินตอบเรื่อง <b>ทิศ จังหวะ คน และผลลัพธ์</b></p>
+      <div id="qm-datetime-th" style="font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--gold);margin-top:4px;">—</div>
+      <p class="lede">ระบบพยากรณ์ <b data-i18n="auto.q.002">9 ช่อง</b> ที่เปลี่ยนตามชั่วยาม-วัน-เดือน-ปี · เลือก <b data-i18n="auto.q.003">สำนัก 拆補 / 置閏</b> แล้วตั้งคำถามเฉพาะหน้า — ฉีเหมินตอบเรื่อง <b data-i18n="auto.q.004">ทิศ จังหวะ คน และผลลัพธ์</b></p>
     </div>
-    <div class="stats">
-      <div><b>陽 8</b>หยางจวี 8</div>
-      <div><b>遁三</b>ตุ้นซาน</div>
-      <div><b>72</b>เปลี่ยนผังต่อวัน</div>
+    <div class="stats" id="hk-qm-stats">
+      <div><b id="qm-stat-ju">—</b><span id="qm-stat-ju-th">局</span></div>
+      <div><b id="qm-stat-dun">—</b><span id="qm-stat-dun-th">遁干</span></div>
+      <div><b id="qm-stat-yuan">—</b><span id="qm-stat-yuan-th">元</span></div>
     </div>
   </div>
 
@@ -311,22 +470,27 @@
       <div class="school-toggle" id="school-toggle">
         <button class="on" data-school="zhirun">
           <span class="tc">置閏</span>
-          <span>จื้อรุ่น</span>
+          <span data-i18n="auto.q.005">จื้อรุ่น</span>
           <span class="en">ZHIRUN · LEAP</span>
         </button>
         <button data-school="chaibu">
           <span class="tc">拆補</span>
-          <span>ฉาบู่</span>
+          <span data-i18n="auto.q.006">ฉาบู่</span>
           <span class="en">CHAIBU · PATCH</span>
         </button>
-        <button data-school="maoshan">
+        <button data-school="yinpan">
+          <span class="tc">陰盤</span>
+          <span data-i18n="auto.q.007">หยินผัน</span>
+          <span class="en">YIN PAN · LOST</span>
+        </button>
+        <button data-school="maoshan" disabled title="🚧 engine ยังไม่รองรับ · รอ v2">
           <span class="tc">茅山</span>
-          <span>เหมาซาน</span>
-          <span class="en">MAOSHAN · TAOIST</span>
+          <span data-i18n="auto.q.008">เหมาซาน 🚧</span>
+          <span class="en">MAOSHAN · COMING SOON</span>
         </button>
       </div>
       <div class="school-info" id="school-info">
-        <b>置閏 · ZhiRun</b> — สำนักดั้งเดิม ใช้ <b>節氣ตรง</b> เป็นจุดเปลี่ยน 局 · เหมาะวิเคราะห์ <b>เหตุการณ์ใหญ่</b> · ใช้ในตำรา 煙波釣叟賦
+        <b>置閏 · ZhiRun</b> — สำนักดั้งเดิม ใช้ <b data-i18n="auto.q.009">節氣ตรง</b> เป็นจุดเปลี่ยน 局 · เหมาะวิเคราะห์ <b data-i18n="auto.q.010">เหตุการณ์ใหญ่</b> · ใช้ในตำรา 煙波釣叟賦
       </div>
     </div>
 
@@ -334,51 +498,44 @@
     <div class="config-row">
       <div class="cfg-label"><span class="tc">時</span> เวลา · TIME</div>
       <div class="time-grid">
-        <select id="t-year">
-          <option>2569 / 2026</option>
-          <option>2568 / 2025</option>
-        </select>
-        <select id="t-month">
-          <option>5 พ.ค.</option>
-        </select>
-        <select id="t-day">
-          <option>7</option>
-        </select>
+        <select id="t-year"><!-- populated by JS · 2024-2028 --></select>
+        <select id="t-month"><!-- populated by JS · 1-12 --></select>
+        <select id="t-day"><!-- populated by JS · 1-31 auto adjust --></select>
         <span class="sep">·</span>
         <select id="t-hour">
-          <option>未時 13-15</option>
-          <option>子時 23-1</option>
-          <option>丑時 1-3</option>
-          <option>寅時 3-5</option>
-          <option>卯時 5-7</option>
-          <option>辰時 7-9</option>
-          <option>巳時 9-11</option>
-          <option>午時 11-13</option>
-          <option>申時 15-17</option>
-          <option>酉時 17-19</option>
-          <option>戌時 19-21</option>
-          <option>亥時 21-23</option>
+          <option value="00:30">子時 23-1</option>
+          <option value="02:00">丑時 1-3</option>
+          <option value="04:00">寅時 3-5</option>
+          <option value="06:00">卯時 5-7</option>
+          <option value="08:00">辰時 7-9</option>
+          <option value="10:00">巳時 9-11</option>
+          <option value="12:00">午時 11-13</option>
+          <option value="14:00">未時 13-15</option>
+          <option value="16:00">申時 15-17</option>
+          <option value="18:00">酉時 17-19</option>
+          <option value="20:00">戌時 19-21</option>
+          <option value="22:00">亥時 21-23</option>
         </select>
       </div>
       <div class="quick-times">
-        <button class="on">ตอนนี้</button>
-        <button>วันนี้</button>
-        <button>+ ปฏิทิน</button>
+        <button  class="on" data-i18n="auto.q.011">ตอนนี้</button>
+        <button data-i18n="auto.q.012">วันนี้</button>
+        <button data-i18n="auto.q.013">+ ปฏิทิน</button>
       </div>
     </div>
 
     <!-- row 3: chart meta -->
     <div class="config-row">
       <div class="cfg-label"><span class="tc">局</span> ผังที่ใช้</div>
-      <div class="chart-meta">
-        <span class="pill"><b>陽八局</b>YANG YUAN-JU 8</span>
-        <span class="pill"><b>戊</b>FU TOU · 戊</span>
-        <span class="pill special"><b>直符</b>天心</span>
-        <span class="pill special"><b>直使</b>開門</span>
-        <span class="pill"><b>旬</b>甲申旬</span>
-        <span class="pill"><b>空</b>午未</span>
+      <div class="chart-meta" id="qm-chart-meta">
+        <span class="pill"><b id="qm-pill-ju">—</b>YUAN-JU</span>
+        <span class="pill"><b id="qm-pill-dun">—</b>FU TOU</span>
+        <span class="pill special"><b>直符</b><span id="qm-pill-fu">—</span></span>
+        <span class="pill special"><b>直使</b><span id="qm-pill-shi">—</span></span>
+        <span class="pill"><b>旬</b><span id="qm-pill-xun">—</span></span>
+        <span class="pill"><b>空</b><span id="qm-pill-void">—</span></span>
       </div>
-      <button class="ctrl-btn" style="background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;">↻ คำนวณใหม่</button>
+      <button  class="ctrl-btn" id="qm-recalc-btn" style="background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;" data-i18n="auto.q.014">↻ คำนวณใหม่</button>
     </div>
   </div>
 
@@ -389,127 +546,11 @@
     <div class="palace-wrap">
       <div class="palace-head">
         <h3>九宮 <span class="tc">奇門盤</span></h3>
-        <div class="yuanju">YUAN-JU · <b>陽八局</b> · YANG 8</div>
+        <div class="yuanju">YUAN-JU · <b id="qm-head-ju">—</b></div>
       </div>
 
       <div class="palace-grid" id="palace-grid">
-        <!-- 4 SE 巽 -->
-        <div class="palace" data-pos="4">
-          <div class="pos">巽 SE</div>
-          <div class="num">4</div>
-          <div>
-            <div class="stem-row"><span class="top">壬</span></div>
-            <div class="stem-row"><span class="bot">辛</span></div>
-            <div class="gate bad">杜門</div>
-            <div class="star bad">天輔</div>
-            <div class="deity">六合</div>
-          </div>
-          <div class="marker"></div>
-        </div>
-        <!-- 9 S 離 -->
-        <div class="palace" data-pos="9">
-          <div class="pos">離 S</div>
-          <div class="num">9</div>
-          <div>
-            <div class="stem-row"><span class="top">乙</span></div>
-            <div class="stem-row"><span class="bot">丙</span></div>
-            <div class="gate good">景門</div>
-            <div class="star bad">天英</div>
-            <div class="deity">太陰</div>
-          </div>
-          <div class="marker"></div>
-        </div>
-        <!-- 2 SW 坤 -->
-        <div class="palace is-shi" data-pos="2">
-          <div class="pos">坤 SW</div>
-          <div class="num">2</div>
-          <div>
-            <div class="stem-row"><span class="top">丁</span></div>
-            <div class="stem-row"><span class="bot">癸</span></div>
-            <div class="gate good">死門</div>
-            <div class="star good">天芮</div>
-            <div class="deity spec">直符 天心</div>
-          </div>
-          <div class="marker"><span class="m shi">使</span></div>
-        </div>
-
-        <!-- 3 E 震 -->
-        <div class="palace" data-pos="3">
-          <div class="pos">震 E</div>
-          <div class="num">3</div>
-          <div>
-            <div class="stem-row"><span class="top">庚</span></div>
-            <div class="stem-row"><span class="bot">丁</span></div>
-            <div class="gate bad">傷門</div>
-            <div class="star mid">天沖</div>
-            <div class="deity">勾陳</div>
-          </div>
-          <div class="marker"></div>
-        </div>
-        <!-- 5 CENTER (no gate, 中宮 not used) -->
-        <div class="palace is-center" data-pos="5">
-          <div class="pos">中 中宮</div>
-          <div class="num">5</div>
-          <div style="text-align:center;">
-            <div style="font-family:var(--tc);font-size:36px;color:var(--gold);font-weight:700;line-height:1;margin:14px 0;">中</div>
-            <div style="font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--gold-deep);text-transform:uppercase;">寄 坤宮</div>
-            <div style="font-family:var(--thai);font-size:11px;color:var(--fg-soft);margin-top:8px;">ศูนย์กลาง · ไม่ใช้</div>
-          </div>
-          <div class="marker"><span class="m dm">己</span></div>
-        </div>
-        <!-- 7 W 兌 -->
-        <div class="palace" data-pos="7">
-          <div class="pos">兌 W</div>
-          <div class="num">7</div>
-          <div>
-            <div class="stem-row"><span class="top">辛</span></div>
-            <div class="stem-row"><span class="bot">乙</span></div>
-            <div class="gate mid">驚門</div>
-            <div class="star mid">天柱</div>
-            <div class="deity">朱雀</div>
-          </div>
-          <div class="marker"></div>
-        </div>
-
-        <!-- 8 NE 艮 -->
-        <div class="palace is-ying" data-pos="8">
-          <div class="pos">艮 NE</div>
-          <div class="num">8</div>
-          <div>
-            <div class="stem-row"><span class="top">癸</span></div>
-            <div class="stem-row"><span class="bot">壬</span></div>
-            <div class="gate bad">休門</div>
-            <div class="star bad">天任</div>
-            <div class="deity">九地</div>
-          </div>
-          <div class="marker"><span class="m ying">影</span></div>
-        </div>
-        <!-- 1 N 坎 -->
-        <div class="palace" data-pos="1">
-          <div class="pos">坎 N</div>
-          <div class="num">1</div>
-          <div>
-            <div class="stem-row"><span class="top">己</span></div>
-            <div class="stem-row"><span class="bot">戊</span></div>
-            <div class="gate good">開門</div>
-            <div class="star good">天蓬</div>
-            <div class="deity">九天</div>
-          </div>
-          <div class="marker"></div>
-        </div>
-        <!-- 6 NW 乾 -->
-        <div class="palace" data-pos="6">
-          <div class="pos">乾 NW</div>
-          <div class="num">6</div>
-          <div>
-            <div class="stem-row"><span class="top">戊</span></div>
-            <div class="stem-row"><span class="bot">庚</span></div>
-            <div class="gate mid">生門</div>
-            <div class="star good">天心</div>
-            <div class="deity">值符</div>
-          </div>
-          <div class="marker"></div>
-        </div>
+        <div class="palace-loading" style="grid-column:1/-1;text-align:center;padding:80px 20px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--fg-faint);">起盤中… · LOADING CHART</div>
       </div>
 
       <div class="palace-legend">
@@ -521,9 +562,9 @@
 
     <!-- side: detail / forecast -->
     <div class="side-pane">
-      <div class="side-tabs" id="side-tabs">
+      <!-- 16 พ.ค. 2026: ลบ FORECAST tab · ย้ายไป /forecast แล้ว · เหลือเฉพาะ DETAIL -->
+      <div class="side-tabs" id="side-tabs" style="justify-content:flex-start;">
         <button class="on" data-tab="detail">PALACE DETAIL · 詳</button>
-        <button data-tab="forecast">FORECAST · 占</button>
       </div>
 
       <!-- DETAIL -->
@@ -534,112 +575,51 @@
         </div>
 
         <div class="verdict-card">
-          <h5>★ ตำแหน่งดี · 大吉</h5>
-          <p><b>直符</b> เคลื่อนเข้าตรงนี้พร้อม <b>死門</b> และ <b>天芮星</b> — โดยปกติ 死門 + 芮 ไม่ดี <b>แต่</b> เมื่อ 直符 หนุนให้กลายเป็น <b>"伏吟轉佳"</b> = เหมาะ <b>ปิดเรื่องเก่าให้จบ</b> · ทวงหนี้ · เก็บข้อมูลคู่แข่ง</p>
+          <h5 data-i18n="auto.q.015">★ ตำแหน่งดี · 大吉</h5>
+          <p><b>直符</b> เคลื่อนเข้าตรงนี้พร้อม <b>死門</b> และ <b>天芮星</b> — โดยปกติ 死門 + 芮 ไม่ดี <b data-i18n="auto.q.016">แต่</b> เมื่อ 直符 หนุนให้กลายเป็น <b>"伏吟轉佳"</b> = เหมาะ <b data-i18n="auto.q.017">ปิดเรื่องเก่าให้จบ</b> · ทวงหนี้ · เก็บข้อมูลคู่แข่ง</p>
         </div>
 
         <div class="detail-row">
           <span class="k">天干</span>
-          <span class="v"><span class="tc">丁</span> ไฟหยิน บน <span class="tc">癸</span> น้ำหยิน · <b>丁奇 หนึ่งในสามวิเศษ</b></span>
+          <span class="v"><span class="tc">丁</span> ไฟอ่อน บน <span class="tc">癸</span> น้ำอ่อน · <b data-i18n="auto.q.018">丁奇 หนึ่งในสามวิเศษ</b></span>
         </div>
         <div class="detail-row">
           <span class="k">八門</span>
-          <span class="v"><span class="tc">死門</span> ตามทฤษฎีคือ凶 · บัดนี้ผสมกับ 直符 = <b>เหมาะปิดเรื่อง</b> ไม่เหมาะเริ่มเรื่อง</span>
+          <span class="v"><span class="tc">死門</span> ตามทฤษฎีคือ凶 · บัดนี้ผสมกับ 直符 = <b data-i18n="auto.q.019">เหมาะปิดเรื่อง</b> ไม่เหมาะเริ่มเรื่อง</span>
         </div>
         <div class="detail-row">
           <span class="k">九星</span>
-          <span class="v"><span class="tc">天芮</span> ดาวหาความรู้ · <b>เหมาะการเรียน วินิจฉัย</b> · ไม่ดีเรื่องสุขภาพ</span>
+          <span class="v"><span class="tc">天芮</span> ดาวหาความรู้ · <b data-i18n="auto.q.020">เหมาะการเรียน วินิจฉัย</b> · ไม่ดีเรื่องสุขภาพ</span>
         </div>
         <div class="detail-row">
           <span class="k">八神</span>
-          <span class="v"><span class="tc">直符</span> ดาวเอกของผังนี้ · <b>มีคนใหญ่หนุน</b> · ทิศนี้ = ทิศมงคล</span>
+          <span class="v"><span class="tc">直符</span> ดาวเอกของผังนี้ · <b data-i18n="auto.q.021">มีคนใหญ่หนุน</b> · ทิศนี้ = ทิศมงคล</span>
         </div>
         <div class="detail-row">
-          <span class="k">ทิศ</span>
-          <span class="v">ตะวันตก<b>เฉียงใต้ (SW)</b> · เดินทางทิศนี้ = ทำธุรกรรม · พบที่ปรึกษา · ไม่เหมาะเยี่ยมไข้</span>
+          <span  class="k" data-i18n="auto.q.022">ทิศ</span>
+          <span class="v">ตะวันตก<b data-i18n="auto.q.023">เฉียงใต้ (SW)</b> · เดินทางทิศนี้ = ทำธุรกรรม · พบที่ปรึกษา · ไม่เหมาะเยี่ยมไข้</span>
         </div>
         <div class="detail-row">
-          <span class="k">เวลา</span>
+          <span  class="k" data-i18n="auto.q.024">เวลา</span>
           <span class="v"><b>未時</b> 13:00–15:00 · ตอนนี้ดวงเปิดที่ตำแหน่งนี้ ใช้ภายใน 2 ชม.</span>
         </div>
         <div class="detail-row">
           <span class="k">用法</span>
-          <span class="v"><b>เหมาะ:</b> ปิดดีล · เก็บเงิน · ตามหนี้ · ทำพิธีปิด<br/><b>หลีก:</b> เริ่มงาน · เปิดร้าน · เยี่ยมคนเจ็บ</span>
+          <span class="v"><b data-i18n="auto.q.025">เหมาะ:</b> ปิดดีล · เก็บเงิน · ตามหนี้ · ทำพิธีปิด<br/><b data-i18n="auto.q.026">หลีก:</b> เริ่มงาน · เปิดร้าน · เยี่ยมคนเจ็บ</span>
         </div>
 
         <a href="/today" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--bg-2);border:1px dashed var(--gold-line);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;cursor:pointer;margin-top:18px;text-decoration:none;">
-          <span>→ ไปดูชั่วยามอื่นวันนี้</span>
+          <span data-i18n="auto.q.027">→ ไปดูชั่วยามอื่นวันนี้</span>
           <span class="tc" style="font-size:14px;">時</span>
+        </a>
+        <!-- 16 พ.ค. 2026: ลิงก์ไปหน้า /forecast (ตั้งคำถามเฉพาะ) -->
+        <a href="/forecast" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:linear-gradient(135deg, var(--gold-soft), transparent);border:1px solid var(--gold);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;cursor:pointer;margin-top:10px;text-decoration:none;font-weight:700;" data-i18n="q.link.forecast">
+          <span>→ ตั้งคำถามที่หน้า พยากรณ์</span>
+          <span class="tc" style="font-size:14px;">占</span>
         </a>
       </div>
 
-      <!-- FORECAST -->
-      <div class="side-panel" id="panel-forecast">
-        <div style="margin-bottom:14px;">
-          <h4 style="font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;">เลือกประเภทคำถาม · 問</h4>
-          <div class="ask-types" id="ask-types">
-            <button class="on" data-q="wealth"><span class="gly">財</span><span>การเงิน</span></button>
-            <button data-q="career"><span class="gly">業</span><span>การงาน</span></button>
-            <button data-q="love"><span class="gly">情</span><span>ความรัก</span></button>
-            <button data-q="travel"><span class="gly">出</span><span>เดินทาง</span></button>
-            <button data-q="negotiate"><span class="gly">談</span><span>เจรจา</span></button>
-            <button data-q="health"><span class="gly">疾</span><span>สุขภาพ</span></button>
-          </div>
-        </div>
-
-        <div class="ask-input">
-          <label>คำถาม · QUESTION</label>
-          <textarea id="ask-q" placeholder="เช่น: ควรปิดดีลกับคู่ค้าจีนภายใน 7 วันนี้ไหม?">ควรเซ็นสัญญากับ Fara วันนี้ตอนเย็น 18:00 ดีไหม?</textarea>
-        </div>
-
-        <button class="ask-btn" id="ask-btn">→ พยากรณ์ ตอนนี้ 占之</button>
-
-        <div class="forecast-result" id="forecast-result">
-          <div class="fr-verdict">
-            <div class="num">+72</div>
-            <div class="label">VERDICT<b>"จังหวะดี · ปิดได้"</b></div>
-          </div>
-
-          <div class="fr-section">
-            <h6>ผังที่ใช้ · CHART</h6>
-            <p>ตอน 18:00 (酉時) ของ 7 พ.ค. ผังจะเปลี่ยนเป็น <b>陽八局 → 戌</b> · <b>用神 (ตัวคุณ)</b> ตกที่ <b>2宮 (SW)</b> ร่วมกับ <b>直符</b> · <b>應 (อีกฝ่าย)</b> ตกที่ <b>8宮 (NE)</b> = <b>沖กัน</b> · 2-8 ปะทะ</p>
-          </div>
-
-          <div class="fr-section">
-            <h6>ตีความ · INTERPRETATION</h6>
-            <ul>
-              <li><b>用神 + 直符</b> = คุณมีอำนาจในการตัดสินใจ · มีคนหนุน</li>
-              <li><b>沖 2-8</b> = อีกฝ่ายอาจจะเสนอเงื่อนไขแย้งครั้งสุดท้าย — <b>เตรียมเงื่อนไขสำรอง</b></li>
-              <li><b>丁奇 อยู่ที่ 用神</b> = สื่อสารชัด เป็นทางการ มีเอกสาร</li>
-              <li><b>死門ที่ 用神</b> = "ปิดเรื่อง" — สัญญานี้จะเป็นจุดจบของการเจรจา ไม่ต้องคุยต่อ</li>
-            </ul>
-          </div>
-
-          <div class="fr-section">
-            <h6>สิ่งที่ควรทำ · ACTION</h6>
-            <ul>
-              <li>เริ่มประชุม <b>หลัง 18:30</b> ให้ผังเข้าที่</li>
-              <li>นั่งหันหน้า <b>ทิศตะวันตกเฉียงใต้</b> (SW) — รับ 直符</li>
-              <li>เตรียม <b>2 เงื่อนไขสำรอง</b> ไว้ — รับมือ沖</li>
-              <li>ใส่ <b>สีทอง</b> หรือ <b>แดงเข้ม</b> ช่วย用神 (ดิน·ไฟ)</li>
-            </ul>
-          </div>
-
-          <div class="fr-section">
-            <h6>คนที่ช่วย · PEOPLE</h6>
-            <p>ดวงในเครือข่ายที่หนุนคุณวันนี้: <b>ใหม่ (辛金)</b> · <b>ก้อง (庚金)</b> · ทั้งคู่เป็น金 หนุน用神 ดิน · พาคนใดคนหนึ่งไปด้วยเป็น <b>ที่ปรึกษา</b></p>
-          </div>
-
-          <div class="fr-meta">
-            <span class="b gold">直符</span>
-            <span class="b gold">丁奇</span>
-            <span class="b">死門 (เหมาะปิด)</span>
-            <span class="b">沖 2-8</span>
-            <span class="b">SW direction</span>
-            <span class="b">未-酉時</span>
-          </div>
-        </div>
-      </div>
+      <!-- 16 พ.ค. 2026: FORECAST panel ลบออก · ย้ายไปหน้า /forecast แล้ว (3 method ritual + AI sifu) -->
     </div>
 
   </div>
@@ -679,14 +659,16 @@
     document.getElementById('panel-'+btn.dataset.tab).classList.add('on');
   });
 
-  // ─── ask types ───
-  document.getElementById('ask-types').addEventListener('click', e=>{
-    const btn = e.target.closest('button[data-q]');
-    if(!btn) return;
-    document.querySelectorAll('#ask-types button').forEach(b=>b.classList.remove('on'));
-    btn.classList.add('on');
-    // (in real app, would change forecast logic)
-  });
+  // ─── ask types (deprecated 16 พ.ค.: ย้ายไป /forecast แล้ว · guard กัน null) ───
+  const _askTypesEl = document.getElementById('ask-types');
+  if (_askTypesEl) {
+    _askTypesEl.addEventListener('click', e=>{
+      const btn = e.target.closest('button[data-q]');
+      if(!btn) return;
+      document.querySelectorAll('#ask-types button').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+    });
+  }
 
   // ─── palace click ───
   const PALACE_DATA = {
@@ -742,6 +724,74 @@
 <script>
 /* hourkey · qimen · 3-language i18n (TH/EN/ZH) */
 window.HK_I18N = {
+  /* 🤖 auto-translated · 15 พ.ค. 2026 · L3 */
+  'auto.q.001': { th:'หน้าหลัก', en:'Home', zh:'首頁' },
+  'auto.q.002': { th:'9 ช่อง', en:'9 Palaces', zh:'九宮' },
+  'auto.q.003': { th:'สำนัก 拆補 / 置閏', en:'School: 拆補 / 置閏', zh:'拆補/置閏派' },
+  'auto.q.004': { th:'ทิศ จังหวะ คน และผลลัพธ์', en:'Direction, Timing, People & Outcome', zh:'方位·時機·人事·結果' },
+  'auto.q.005': { th:'จื้อรุ่น', en:'Zhi Run', zh:'置閏' },
+  'auto.q.006': { th:'ฉาบู่', en:'Cha Bu', zh:'拆補' },
+  'auto.q.007': { th:'หยินผัน', en:'Yin Pan', zh:'陰盤' },
+  'auto.q.008': { th:'เหมาซาน 🚧', en:'Mao Shan 🚧', zh:'茅山 🚧' },
+  'auto.q.009': { th:'節氣ตรง', en:'Exact 節氣', zh:'節氣準' },
+  'auto.q.010': { th:'เหตุการณ์ใหญ่', en:'Major Events', zh:'大事' },
+  'auto.q.011': { th:'ตอนนี้', en:'Now', zh:'現在' },
+  'auto.q.012': { th:'วันนี้', en:'Today', zh:'今日' },
+  'auto.q.013': { th:'+ ปฏิทิน', en:'+ Calendar', zh:'+ 日曆' },
+  'auto.q.014': { th:'↻ คำนวณใหม่', en:'↻ Recalculate', zh:'↻ 重新計算' },
+  'auto.q.015': { th:'★ ตำแหน่งดี · 大吉', en:'★ Auspicious Position · 大吉', zh:'★ 吉位·大吉' },
+  'auto.q.016': { th:'แต่', en:'But', zh:'但' },
+  'auto.q.017': { th:'ปิดเรื่องเก่าให้จบ', en:'Close out old matters', zh:'了結舊事' },
+  'auto.q.018': { th:'丁奇 หนึ่งในสามวิเศษ', en:'丁奇 — one of the Three Marvels', zh:'丁奇 三奇之一' },
+  'auto.q.019': { th:'เหมาะปิดเรื่อง', en:'Suitable for closing matters', zh:'宜了結' },
+  'auto.q.020': { th:'เหมาะการเรียน วินิจฉัย', en:'Suitable for study and diagnosis', zh:'宜學習·診斷' },
+  'auto.q.021': { th:'มีคนใหญ่หนุน', en:'Backed by influential people', zh:'得貴人扶持' },
+  'auto.q.022': { th:'ทิศ', en:'Direction', zh:'方位' },
+  'auto.q.023': { th:'เฉียงใต้ (SW)', en:'Southwest (SW)', zh:'西南 (SW)' },
+  'auto.q.024': { th:'เวลา', en:'Time', zh:'時間' },
+  'auto.q.025': { th:'เหมาะ:', en:'Suitable:', zh:'宜:' },
+  'auto.q.026': { th:'หลีก:', en:'Avoid:', zh:'忌:' },
+  'auto.q.027': { th:'→ ไปดูชั่วยามอื่นวันนี้', en:'→ View other 時辰 today', zh:'→ 看今日其他時辰' },
+  'q.link.forecast': { th:'→ ตั้งคำถามที่หน้า พยากรณ์', en:'→ Ask question at /forecast', zh:'→ 到 /forecast 提問' },
+  'auto.q.028': { th:'เลือกประเภทคำถาม · 問', en:'Choose Question Type · 問', zh:'選問題類型 · 問' },
+  'auto.q.029': { th:'การเงิน', en:'Wealth', zh:'財運' },
+  'auto.q.030': { th:'การงาน', en:'Career', zh:'事業' },
+  'auto.q.031': { th:'ความรัก', en:'Love', zh:'感情' },
+  'auto.q.032': { th:'เดินทาง', en:'Travel', zh:'出行' },
+  'auto.q.033': { th:'เจรจา', en:'Negotiation', zh:'談判' },
+  'auto.q.034': { th:'สุขภาพ', en:'Health', zh:'健康' },
+  'auto.q.035': { th:'คำถาม · QUESTION', en:'Question · QUESTION', zh:'問題 · QUESTION' },
+  'auto.q.036': { th:'→ พยากรณ์ ตอนนี้ 占之', en:'→ Forecast Now 占之', zh:'→ 即占 占之' },
+  'auto.q.037': { th:'"จังหวะดี · ปิดได้"', en:'"Good timing · can close"', zh:'「時機佳·可了結」' },
+  'auto.q.038': { th:'ผังที่ใช้ · CHART', en:'Chart Used · CHART', zh:'所用盤 · CHART' },
+  'auto.q.039': { th:'ผังจริง + ดวงคุณ', en:'Live chart + your 命', zh:'實盤+本命' },
+  'auto.q.040': { th:'สิ่งที่ควรทำ · ACTION', en:'What to Do · ACTION', zh:'宜行 · ACTION' },
+  'auto.q.041': { th:'หลัง 18:30', en:'After 18:30', zh:'18:30 之後' },
+  'auto.q.042': { th:'ทิศตะวันตกเฉียงใต้', en:'Southwest direction', zh:'西南方' },
+  'auto.q.043': { th:'2 เงื่อนไขสำรอง', en:'2 backup conditions', zh:'備用 2 條件' },
+  'auto.q.044': { th:'สีทอง', en:'Gold', zh:'金色' },
+  'auto.q.045': { th:'แดงเข้ม', en:'Deep red', zh:'深紅' },
+  'auto.q.046': { th:'คนที่ช่วย · PEOPLE', en:'Helpful People · PEOPLE', zh:'貴人 · PEOPLE' },
+  'auto.q.047': { th:'ใหม่ (辛金)', en:'Mai (辛金)', zh:'Mai (辛金)' },
+  'auto.q.048': { th:'ก้อง (庚金)', en:'Kong (庚金)', zh:'Kong (庚金)' },
+  'auto.q.049': { th:'ที่ปรึกษา', en:'Advisor', zh:'顧問' },
+  'auto.q.050': { th:'死門 (เหมาะปิด)', en:'死門 (suitable for closing)', zh:'死門 (宜了結)' },
+  /* Yongshen overlay · AI sifu · 15 พ.ค. */
+  'q.yso.title':   { th:'⊕ ทิศที่ตรงดวงคุณ · YONGSHEN OVERLAY', en:'⊕ Favorable directions · YONGSHEN OVERLAY', zh:'⊕ 您命局合的方位 · 用神疊圖' },
+  'q.yso.good':    { th:'✦ ทิศแนะนำ:', en:'✦ Recommended:', zh:'✦ 宜方:' },
+  'q.yso.bad':     { th:'⛔ ทิศระวัง:', en:'⛔ Avoid:', zh:'⛔ 忌方:' },
+  'q.yso.struct':  { th:'โครงสร้าง:', en:'Structure:', zh:'格局:' },
+  'q.sifu.h3':     { th:'💬 ซินแสฉีเหมิน · AI Sifu', en:'💬 QiMen Sifu · AI', zh:'💬 奇門師父 · AI' },
+  'q.sifu.t.ov':   { th:'ภาพรวมผัง', en:'Overview', zh:'總覽' },
+  'q.sifu.t.dir':  { th:'ทิศไหนเหมาะ', en:'Direction', zh:'方位' },
+  'q.sifu.t.act':  { th:'ทำอะไรดี', en:'Action', zh:'宜忌' },
+  'q.sifu.t.tim':  { th:'เวลานี้เหมาะมั๊ย', en:'Timing', zh:'時機' },
+  'q.sifu.t.fm':   { th:'格局สำคัญ', en:'Formations', zh:'格局' },
+  'q.sifu.placeholder':{ th:'ถามซินแสได้เลย · เช่น \'วันนี้ทิศไหนรวยเร็ว\'', en:'Ask the master · e.g. "best direction today"', zh:'問師父 · 如「今日哪方有財」' },
+  'q.sifu.send':   { th:'ส่ง', en:'Send', zh:'送' },
+  'q.sifu.hint':   { th:'ใช้ Claude AI · อ้างอิงผังเวลา + ดวงคุณ · 10-30 วินาที', en:'Claude AI · uses chart + your destiny · 10-30s', zh:'Claude AI · 用盤局 + 命局 · 10-30秒' },
+  'q.sifu.thinking':{ th:'ซินแสกำลังคิด...', en:'Sifu is thinking...', zh:'師父思考中...' },
+  'q.sifu.err':    { th:'ขัดข้อง', en:'Error', zh:'錯誤' },
   'q.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
   'q.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
   'q.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
@@ -780,6 +830,840 @@ window.applyI18N = applyI18N;
 })();
 </script>
 
-<script src="/js/hk-user-menu.js?v=9" defer></script>
+<script src="/js/hk-settings-drawer.js?v=9" defer></script>
+<script src="/js/hk-user-menu.js?v=16" defer></script>
+
+<!-- 📜 QiMen Live Calculator · wire /api/qimen · 15 พ.ค. 2026 -->
+<script>
+(function(){
+  /* dictionaries: code → ภาษา */
+  const TRIGRAM_TH = { XUN:'巽 SE · ไม้-ลม', LI:'離 S · ไฟ', KUN:'坤 SW · ดิน', ZHEN:'震 E · ไม้-ฟ้าผ่า', CENTER:'中 · ดินกลาง', DUI:'兌 W · ทอง-ปาก', GEN:'艮 NE · ดิน-ภูเขา', KAN:'坎 N · น้ำ', QIAN:'乾 NW · ทอง-ฟ้า' };
+  const DIR_TH = { SE:'ตอ.ฉ', S:'ใต้', SW:'ตต.ฉ', E:'ตอ.', C:'กลาง', W:'ตต.', NE:'ตอ.น', N:'เหนือ', NW:'ตต.น' };
+  const STEM_CN = { JIA:'甲',YI:'乙',BING:'丙',DING:'丁',WU:'戊',JI:'己',GENG:'庚',XIN:'辛',REN:'壬',GUI:'癸' };
+  const STAR_CN = { TIAN_PENG:'天蓬',TIAN_REN:'天任',TIAN_CHONG:'天沖',TIAN_FU:'天輔',TIAN_YING:'天英',TIAN_QIN:'天禽',TIAN_ZHU:'天柱',TIAN_XIN:'天心',TIAN_RUI:'天芮' };
+  const DOOR_CN = { KAI_MEN:{zh:'開門',q:'good'}, XIU_MEN:{zh:'休門',q:'good'}, SHENG_MEN:{zh:'生門',q:'good'}, JING_VIEW_MEN:{zh:'景門',q:'mid'}, JING_FEAR_MEN:{zh:'驚門',q:'bad'}, DU_MEN:{zh:'杜門',q:'mid'}, SHANG_MEN:{zh:'傷門',q:'bad'}, SI_MEN:{zh:'死門',q:'bad'} };
+  const DEITY_CN = { ZHI_FU:'值符',TENG_SHE:'螣蛇',TAI_YIN:'太陰',LIU_HE:'六合',BAI_HU:'白虎',XUAN_WU:'玄武',JIU_DI:'九地',JIU_TIAN:'九天' };
+  const STAR_QUALITY = { TIAN_PENG:'bad', TIAN_REN:'good', TIAN_CHONG:'mid', TIAN_FU:'good', TIAN_YING:'bad', TIAN_QIN:'good', TIAN_ZHU:'bad', TIAN_XIN:'good', TIAN_RUI:'bad' };
+
+  /* grid positions: row,col → DOM order in template */
+  function gridIdx(row, col){ return (row-1)*3 + (col-1); }
+
+  function pillTH(name, value, cls){
+    return `<span class="pill ${cls||''}"><b>${name}</b>${value||'—'}</span>`;
+  }
+
+  /* 📜 qimen10x-style render · ใช้ field ที่ qimen-api ส่งมาเต็ม · 15 พ.ค. 2026 */
+  function renderPalaces(palaces){
+    const grid = document.getElementById('palace-grid');
+    if (!grid) return;
+    const lang = document.documentElement.getAttribute('data-lang') || 'th';
+    const sorted = [...palaces].sort((a,b) => (a.grid_row*3+a.grid_col) - (b.grid_row*3+b.grid_col));
+    /* หา formations per palace · จาก _qimenLast */
+    const stored = (window._qimenLast?.stored_formations||[]);
+    const compound = (window._qimenLast?.compound_formations||[]);
+    const palaceFormations = (pid) => [...stored, ...compound].filter(f => f.scope==='palace' && f.scope_ref===pid);
+
+    grid.innerHTML = sorted.map(p => {
+      const sH   = p.heaven_stem_zh || '·';
+      const sE   = p.earth_stem_zh  || '·';
+      const star = p.star_zh || p.star_code;
+      const door = p.door_zh || p.door_code;
+      const dty  = p.deity_zh || p.deity_code;
+      const starQ = (p.star_quality||'').toLowerCase() || 'mid';
+      const doorQ = (p.door_quality||'').toLowerCase() || 'mid';
+      const deityQ = (p.deity_quality||'').toLowerCase() || 'mid';
+      const dir  = DIR_TH[p.direction] || p.direction;
+      const trigZh = p.trigram_zh || '';
+      /* names per lang */
+      const starName  = lang==='zh' ? (p.star_zh||'')  : lang==='en' ? (p.star_name_en||'')  : (p.star_name_th||'');
+      const doorName  = lang==='zh' ? (p.door_zh||'')  : lang==='en' ? (p.door_name_en||'')  : (p.door_name_th||'');
+      const deityName = lang==='zh' ? (p.deity_zh||'') : lang==='en' ? (p.deity_name_en||'') : (p.deity_name_th||'');
+      /* mini desc · 1 word */
+      const doorDesc  = lang==='zh' ? '' : lang==='en' ? '' : ''; /* keep blank for now */
+      /* markers */
+      const horse    = p.is_traveling_horse ? '🐎' : '';
+      const voidMk   = p.is_void_any ? '<span class="void-mk">空</span>' : '';
+      const home     = p.is_origin_palace ? '<span class="home-mk">●</span>' : '';
+      const threeQiH = p.heaven_is_three_qi ? '<span class="qi-mk">奇</span>' : '';
+      const threeQiE = p.earth_is_three_qi  ? '<span class="qi-mk">奇</span>' : '';
+      /* formations inline */
+      const fms = palaceFormations(p.palace_id).slice(0,2);
+      const fmHtml = fms.map(f => {
+        const q = (f.quality||'neutral');
+        return `<span class="fm-tag fm-${q}">${f.name_zh || f.formation_code}</span>`;
+      }).join('');
+      /* zhi_fu/zhi_shi markers (chart-level) */
+      const ch = window._qimenLast?.chart || {};
+      const isZhiFu = ch.zhi_fu_palace_id === p.palace_id;
+      const isZhiShi = ch.zhi_shi_palace_id === p.palace_id;
+      const chartMk = (isZhiFu ? '<span class="fu-mk" title="直符">符</span>' : '') + (isZhiShi ? '<span class="shi-mk" title="值使">使</span>' : '');
+
+      /* 📜 中宮 (palace 5) · 寄宮 ตามตำราคลาสสิก 煙波釣叟賦
+         · ไม่มี 八門 (door) + ไม่มี 八神 (deity) — 八 = 8 ทิศ ไม่นับกลาง
+         · มีแต่ 天禽星 ที่ "หาบ้านไม่เจอ" → อยู่ที่ palace 5 (寄坤宮 ตามตำรา)
+         · UI ตามรูป qimen10x · 中宮 แสดงเฉพาะ star + stem + 寄宮 marker · ที่เหลือว่าง */
+      const isCenterPalace = p.palace_id === 5;
+      const deityBlock = isCenterPalace ? '<div class="p-deity center-empty"><div class="cn ji-label">寄宮</div><div class="th">จี้กง</div></div>' : `<div class="p-deity ${deityQ}"><div class="cn">${dty}</div><div class="th">${deityName}</div></div>`;
+      const doorBlock  = isCenterPalace ? '<div class="p-door center-empty"></div>' : `<div class="p-door ${doorQ}"><div class="cn">${door}</div><div class="th">${doorName}</div></div>`;
+
+      return `<div class="palace q10x q-${starQ}${isCenterPalace ? ' palace-center' : ''}" data-pos="${p.palace_id}">
+        <div class="p-corner-tl">
+          ${voidMk}${home}${chartMk}
+        </div>
+        <div class="p-corner-tr">
+          ${horse}<div class="stem heaven">${sH}${threeQiH}</div>
+        </div>
+        ${deityBlock}
+        <div class="p-star ${starQ}">
+          <div class="cn">${star}</div>
+          <div class="th">${starName}</div>
+        </div>
+        ${doorBlock}
+        <div class="p-corner-br">
+          <div class="stem earth">${sE}${threeQiE}</div>
+        </div>
+        <div class="p-num">${p.palace_id}</div>
+        <div class="p-trig">${trigZh} ${dir}</div>
+        ${fmHtml ? `<div class="p-fms">${fmHtml}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  function renderFormations(stored, compound){
+    /* หา host element · ถ้ามี / สร้างใหม่ใต้ palace-wrap */
+    let host = document.getElementById('qm-formations');
+    if (!host){
+      const pw = document.querySelector('.palace-wrap');
+      if (!pw) return;
+      host = document.createElement('div');
+      host.id = 'qm-formations';
+      host.style.cssText = 'margin-top:18px;padding:16px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:12px;display:flex;flex-direction:column;gap:8px;';
+      pw.appendChild(host);
+    }
+    const items = [...(stored||[]), ...(compound||[])];
+    if (!items.length){ host.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--fg-faint);letter-spacing:.15em">⊘ NO FORMATIONS</div>'; return; }
+    host.innerHTML = '<div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:4px">格局 · FORMATIONS</div>' +
+      items.map(f => {
+        const q = f.quality || 'neutral';
+        const color = q==='good' ? '#2ea043' : q==='bad' ? '#d96650' : 'var(--gold)';
+        const nameTh = f.name_th || f.formation_code || '—';
+        const nameZh = f.name_zh || '';
+        const note = f.note || f.reason || '';
+        const scope = f.scope ? `(${f.scope}${f.scope_ref ? ' ' + f.scope_ref : ''})` : '';
+        return `<div style="display:flex;flex-direction:column;gap:3px;padding:8px 10px;background:var(--bg);border-left:3px solid ${color};border-radius:6px">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-family:var(--thai);font-size:13px;color:var(--fg);font-weight:600">
+            <span class="tc" style="font-family:var(--tc);color:${color}">${nameZh}</span>
+            <span>${nameTh}</span>
+            <span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--fg-faint);text-transform:uppercase;margin-left:auto">${scope}</span>
+          </div>
+          ${note ? `<div style="font-family:var(--thai);font-size:11px;color:var(--fg-soft);line-height:1.5">${note}</div>`:''}
+        </div>`;
+      }).join('');
+  }
+
+  function renderHeader(chart){
+    if (!chart) return;
+    const pole = (chart.dun_type === 'yin' || chart.dun_type === 'YIN') ? '陰' : '陽';
+    const num  = chart.ju_number || '?';
+    const juZh = `${pole}${num}局`;
+    /* yuanju · header palace-wrap */
+    const yEl = document.getElementById('qm-head-ju');
+    if (yEl) yEl.textContent = juZh + ' · ' + (pole==='陰'?'YIN':'YANG') + ' ' + num;
+    /* stats card · top-right */
+    const _set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    _set('qm-stat-ju',    juZh);
+    _set('qm-stat-ju-th', pole==='陰' ? 'อิ๋นจวี้' : 'หยางจวี้');
+    _set('qm-stat-dun',   chart.dun_gan_zh || '—');
+    _set('qm-stat-dun-th','遁干 · ตุ้นกัน');
+    _set('qm-stat-yuan',  chart.yuan_cycle_zh || '—');
+    _set('qm-stat-yuan-th','ห้วง · 元');
+    /* chart-meta pill bar */
+    _set('qm-pill-ju',   juZh);
+    _set('qm-pill-dun',  chart.dun_gan_zh || '—');
+    _set('qm-pill-fu',   chart.tian_yi_star_zh || (chart.chief_star_code || '—'));
+    _set('qm-pill-shi',  chart.zhi_shi_door_code || '—');
+    _set('qm-pill-xun',  (chart.xun_hour_zh || '—') + '旬');
+    const voids = chart.void_hour_zh;
+    _set('qm-pill-void', Array.isArray(voids) ? voids.join('') : (voids || '—'));
+    /* update header datetime ภาษาไทย */
+    const h = document.getElementById('qm-datetime-th');
+    if (h && window._qimenInput){
+      const inp = window._qimenInput;
+      const d = new Date(inp.date + 'T' + inp.time);
+      const dayNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+      const monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+      const yyBE = d.getFullYear() + 543;
+      h.textContent = `วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${yyBE} (${d.getFullYear()}) ${inp.time}`;
+    }
+    /* render 4-pillar table at center 5 if available */
+    renderCenterPillarTable(chart);
+  }
+  function renderCenterPillarTable(chart){
+    if (!chart) return;
+    const pal5 = document.querySelector('.palace[data-pos="5"]');
+    if (!pal5) return;
+    /* pillar chart info */
+    const yp = chart.pillar_zh || '';
+    /* ใช้ xun/void info */
+    const xunY = chart.xun_year_zh || '?';
+    const xunM = chart.xun_month_zh || '?';
+    const xunD = chart.xun_day_zh || '?';
+    const xunH = chart.xun_hour_zh || '?';
+    const voidAll = chart.void_all_zh || '';
+    /* append overlay table to palace 5 · ใต้ทุก field */
+    let overlay = pal5.querySelector('.center-pillar-table');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.className = 'center-pillar-table';
+      overlay.style.cssText = 'grid-column:1/-1;grid-row:span 1;background:var(--bg);border:1px solid var(--gold-line);border-radius:6px;padding:4px 6px;margin-top:4px;font-family:var(--tc);font-size:9px;line-height:1.3;';
+      pal5.appendChild(overlay);
+    }
+    overlay.innerHTML = `
+      <div style="display:flex;justify-content:space-around;text-align:center;gap:2px;">
+        <div><div style="font-size:7px;color:var(--fg-faint)">時</div><div>${xunH}</div></div>
+        <div><div style="font-size:7px;color:var(--fg-faint)">日</div><div>${xunD}</div></div>
+        <div><div style="font-size:7px;color:var(--fg-faint)">月</div><div>${xunM}</div></div>
+        <div><div style="font-size:7px;color:var(--fg-faint)">年</div><div>${xunY}</div></div>
+      </div>
+      ${voidAll ? `<div style="text-align:center;color:#d96650;font-size:8px;margin-top:2px">空 ${voidAll}</div>` : ''}
+    `;
+  }
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function defaultDateTime(){
+    const d = new Date();
+    return { date: `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`, time: `${pad(d.getHours())}:${pad(d.getMinutes())}` };
+  }
+
+  async function loadQimen(date, time, lng, lat, school){
+    const sch = school || window._qimenSchool || 'chaibu';
+    const url = `/api/qimen?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&lng=${lng||100.5018}&lat=${lat||13.7563}&school=${sch}`;
+    window._qimenInput = { date, time, lng: lng||100.5018, lat: lat||13.7563, school: sch };
+    try {
+      const r = await fetch(url);
+      const j = await r.json();
+      if (!j.ok && !j.data) { console.warn('[qimen] api error', j); return; }
+      const d = j.data || j;
+      window._qimenLast = d;
+      renderHeader(d.chart || {});
+      renderPalaces(d.palaces || []);
+      renderFormations(d.stored_formations || [], d.compound_formations || []);
+    } catch(e){ console.warn('[qimen] fetch failed', e); }
+  }
+  window.loadQimen = loadQimen;
+
+  /* recalc button */
+  const btn = document.getElementById('qm-recalc-btn');
+  if (btn) btn.addEventListener('click', () => {
+    const dt = readPickerDateTime() || defaultDateTime();
+    loadQimen(dt.date, dt.time);
+  });
+
+  /* 📜 Time picker · populate options + bind change handlers · 15 พ.ค. */
+  const MONTH_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  function daysInMonth(year, month){
+    return new Date(year, month, 0).getDate();
+  }
+  function populatePicker(){
+    const ySel = document.getElementById('t-year');
+    const mSel = document.getElementById('t-month');
+    const dSel = document.getElementById('t-day');
+    const hSel = document.getElementById('t-hour');
+    const now = defaultDateTime();
+    const [curY, curM, curD] = now.date.split('-').map(Number);
+    /* year: -2 to +3 around current */
+    if (ySel && !ySel.options.length) {
+      let years = '';
+      for (let y = curY - 2; y <= curY + 3; y++) {
+        const buddh = y + 543;
+        years += `<option value="${y}"${y===curY?' selected':''}>${buddh} / ${y}</option>`;
+      }
+      ySel.innerHTML = years;
+    }
+    /* month: 1-12 */
+    if (mSel && !mSel.options.length) {
+      let months = '';
+      for (let m = 1; m <= 12; m++) {
+        months += `<option value="${m}"${m===curM?' selected':''}>${m} ${MONTH_TH[m-1]}</option>`;
+      }
+      mSel.innerHTML = months;
+    }
+    /* day: 1-N auto */
+    refreshDayOptions(curY, curM, curD);
+    /* hour: select current */
+    if (hSel && hSel.options.length) {
+      const curHour = Number(now.time.split(':')[0]);
+      let bestIdx = 0;
+      for (let i = 0; i < hSel.options.length; i++){
+        const h = Number(hSel.options[i].value.split(':')[0]);
+        if (h <= curHour) bestIdx = i;
+      }
+      hSel.selectedIndex = bestIdx;
+    }
+  }
+  function refreshDayOptions(year, month, keepDay){
+    const dSel = document.getElementById('t-day');
+    if (!dSel) return;
+    const max = daysInMonth(year, month);
+    const cur = keepDay || Number(dSel.value) || new Date().getDate();
+    let days = '';
+    for (let d = 1; d <= max; d++) {
+      days += `<option value="${d}"${d===Math.min(cur,max)?' selected':''}>${d}</option>`;
+    }
+    dSel.innerHTML = days;
+  }
+  function readPickerDateTime(){
+    const y = document.getElementById('t-year')?.value;
+    const m = document.getElementById('t-month')?.value;
+    const d = document.getElementById('t-day')?.value;
+    const t = document.getElementById('t-hour')?.value;
+    if (!y || !m || !d || !t) return null;
+    const mm = String(m).padStart(2,'0');
+    const dd = String(d).padStart(2,'0');
+    return { date: `${y}-${mm}-${dd}`, time: t };
+  }
+  window.readPickerDateTime = readPickerDateTime;
+  populatePicker();
+  /* listeners */
+  ['t-year','t-month'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => {
+      const y = Number(document.getElementById('t-year').value);
+      const m = Number(document.getElementById('t-month').value);
+      refreshDayOptions(y, m);
+      const dt = readPickerDateTime();
+      if (dt) loadQimen(dt.date, dt.time);
+    });
+  });
+  ['t-day','t-hour'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => {
+      const dt = readPickerDateTime();
+      if (dt) loadQimen(dt.date, dt.time);
+    });
+  });
+
+  /* 📜 school-toggle handler · 15 พ.ค. 2026 · zhirun=4 · chaibu=1 · maoshan disabled */
+  const SCHOOL_INFO = {
+    zhirun: {
+      th: '<b>置閏 · ZhiRun</b> — สำนักดั้งเดิม ใช้ <b>節氣ตรง</b> เป็นจุดเปลี่ยน 局 · เหมาะวิเคราะห์ <b>เหตุการณ์ใหญ่</b> · ใช้ใน 煙波釣叟賦',
+      en: '<b>置閏 · ZhiRun</b> — Classical school · uses <b>節氣 boundaries</b> · best for <b>major events</b>',
+      zh: '<b>置閏</b> — 經典學派 · 用<b>節氣</b>為界 · 適合 <b>重大事件</b>',
+    },
+    chaibu: {
+      th: '<b>拆補 · ChaiBu</b> — สำนักประจุพิเศษ · ปรับ <b>三元局</b> ตามวัน · เหมาะวิเคราะห์ <b>เรื่องเฉพาะหน้า</b>',
+      en: '<b>拆補 · ChaiBu</b> — Daily-adjusted school · <b>三元局</b> per day · best for <b>specific decisions</b>',
+      zh: '<b>拆補</b> — 逐日調整 · <b>三元局</b> · 適合 <b>具體決策</b>',
+    },
+    yinpan: {
+      th: '<b>陰盤 · YinPan</b> — ผังหยิน · เน้น <b>八神</b> เป็นหลัก · เหมาะหา <b>ของหาย</b> · <b>ฝัน</b> · <b>เรื่องลึก-ลับ</b> · กลับขวาตามตำราเดิม',
+      en: '<b>陰盤 · YinPan</b> — Yin-style chart · emphasizes <b>八神</b> · best for <b>lost items</b>, <b>dreams</b>, <b>hidden matters</b>',
+      zh: '<b>陰盤</b> — 陰式盤 · 重 <b>八神</b> · 適合 <b>失物</b> · <b>夢境</b> · <b>隱秘事</b>',
+    },
+  };
+  function setSchoolInfo(school){
+    const info = document.getElementById('school-info');
+    if (!info) return;
+    const lang = document.documentElement.getAttribute('data-lang') || 'th';
+    const data = SCHOOL_INFO[school] || SCHOOL_INFO.chaibu;
+    info.innerHTML = data[lang] || data.th;
+  }
+  (function bindSchoolToggle(){
+    const wrap = document.getElementById('school-toggle');
+    if (!wrap) return;
+    /* default to chaibu (profile_id 1 · recommended) ตั้งให้ on แทน zhirun เดิม */
+    wrap.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+    const defBtn = wrap.querySelector('button[data-school="chaibu"]');
+    if (defBtn) defBtn.classList.add('on');
+    window._qimenSchool = 'chaibu';
+    setSchoolInfo('chaibu');
+
+    wrap.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        if (b.disabled) return;
+        const s = b.dataset.school;
+        if (!s || s === 'maoshan') return;
+        wrap.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+        b.classList.add('on');
+        window._qimenSchool = s;
+        setSchoolInfo(s);
+        const dt = defaultDateTime();
+        loadQimen(dt.date, dt.time, undefined, undefined, s);
+      });
+    });
+  })();
+
+  /* initial load · current time · ใช้ chaibu (recommended) */
+  const dt = defaultDateTime();
+  window._qimenSchool = 'chaibu';
+  loadQimen(dt.date, dt.time, undefined, undefined, 'chaibu');
+
+  /* ───── Step 3 · Yongshen overlay · ดึงดวงผู้ใช้ ───── */
+  const EL_MAP = { WOOD:'wood', FIRE:'fire', EARTH:'earth', METAL:'metal', WATER:'water' };
+  const EL_TH = { wood:'ไม้', fire:'ไฟ', earth:'ดิน', metal:'ทอง', water:'น้ำ' };
+  async function loadUserYongshen(){
+    try {
+      if (window.__hkProfileReady) await window.__hkProfileReady;
+      const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
+      if (!birth || !birth.date || !birth.time) return null;
+      const r = await fetch('/api/chart', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ date: birth.date, time: birth.time, longitude: birth.longitude||100.5018, gender: birth.gender||'M' })
+      });
+      const j = await r.json();
+      return j.yongshen_v2 || null;
+    } catch(e){ return null; }
+  }
+  /* 📜 tx helper · 15 พ.ค. */
+  function _qtx(k, fb){
+    const t = window.HK_I18N && window.HK_I18N[k];
+    if (!t) return fb;
+    const lang = document.documentElement.getAttribute('data-lang')||'th';
+    return t[lang] || t.th || fb;
+  }
+  function applyOverlay(yv2){
+    if (!yv2) return;
+    const palaces = window._qimenLast?.palaces || [];
+    const primary = new Set(yv2.primary_yongshen||[]);
+    const xishen = new Set(yv2.xishen||[]);
+    const jishen = new Set(yv2.jishen||[]);
+    /* tag each palace */
+    document.querySelectorAll('.palace').forEach(el => {
+      const pos = Number(el.dataset.pos);
+      const p = palaces.find(x => x.palace_id === pos);
+      if (!p) return;
+      const el2 = EL_MAP[p.element_code];
+      el.classList.remove('match-primary','match-xishen','match-jishen');
+      let badge = '';
+      if (primary.has(el2)){ el.classList.add('match-primary'); badge = '✦ 用神'; }
+      else if (xishen.has(el2)){ el.classList.add('match-xishen'); badge = '◇ 喜'; }
+      else if (jishen.has(el2)){ el.classList.add('match-jishen'); badge = '⛔ 忌'; }
+      if (badge){
+        const b = document.createElement('div');
+        b.className = 'ys-badge';
+        b.textContent = badge;
+        b.style.cssText = 'position:absolute;top:6px;right:8px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:2px 6px;border-radius:99px;font-weight:700;';
+        if (el.classList.contains('match-primary')){ b.style.background='rgba(46,160,67,.85)'; b.style.color='white'; }
+        else if (el.classList.contains('match-xishen')){ b.style.background='rgba(180,144,82,.85)'; b.style.color='white'; }
+        else { b.style.background='rgba(228,93,77,.85)'; b.style.color='white'; }
+        el.style.position = 'relative';
+        const old = el.querySelector('.ys-badge'); if (old) old.remove();
+        el.appendChild(b);
+      }
+    });
+    /* summary recommendation */
+    let host = document.getElementById('qm-ys-summary');
+    if (!host){
+      const pw = document.querySelector('.palace-wrap');
+      if (!pw) return;
+      host = document.createElement('div');
+      host.id = 'qm-ys-summary';
+      host.style.cssText = 'margin-top:14px;padding:14px 18px;background:linear-gradient(160deg,var(--gold-soft),var(--tile));border:1px solid var(--gold);border-radius:12px;';
+      pw.appendChild(host);
+    }
+    const goodPalaces = palaces.filter(p => primary.has(EL_MAP[p.element_code]) || xishen.has(EL_MAP[p.element_code]))
+      .map(p => `${p.direction}·${EL_TH[EL_MAP[p.element_code]]}`).join(' · ');
+    const badPalaces = palaces.filter(p => jishen.has(EL_MAP[p.element_code]))
+      .map(p => `${p.direction}·${EL_TH[EL_MAP[p.element_code]]}`).join(' · ');
+    host.innerHTML = `
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:8px">${_qtx('q.yso.title','⊕ ทิศที่ตรงดวงคุณ · YONGSHEN OVERLAY')}</div>
+      <div style="font-family:var(--serif);font-size:14px;color:var(--fg);margin-bottom:4px">${_qtx('q.yso.struct','โครงสร้าง:')} <b>${yv2.structure_label||'—'}</b> · 用神 <b style="color:#2ea043">${(yv2.primary_yongshen||[]).map(e=>EL_TH[e]||e).join('·')||'—'}</b> · 忌神 <b style="color:#d96650">${(yv2.jishen||[]).map(e=>EL_TH[e]||e).join('·')||'—'}</b></div>
+      ${goodPalaces ? `<div style="font-family:var(--thai);font-size:13px;color:var(--fg);margin-top:6px"><b style="color:#2ea043">${_qtx('q.yso.good','✦ ทิศแนะนำ:')}</b> ${goodPalaces}</div>`:''}
+      ${badPalaces ? `<div style="font-family:var(--thai);font-size:13px;color:var(--fg);margin-top:4px"><b style="color:#d96650">${_qtx('q.yso.bad','⛔ ทิศระวัง:')}</b> ${badPalaces}</div>`:''}
+    `;
+  }
+  /* style for matched palaces */
+  const style = document.createElement('style');
+  style.textContent = `
+    .palace.match-primary{border-color:#2ea043 !important;box-shadow:0 0 0 2px rgba(46,160,67,.25);}
+    .palace.match-xishen{border-color:#a98245 !important;box-shadow:0 0 0 1px rgba(180,144,82,.2);}
+    .palace.match-jishen{border-color:#d96650 !important;box-shadow:0 0 0 2px rgba(228,93,77,.15);opacity:.85;}
+  `;
+  document.head.appendChild(style);
+
+  async function refreshOverlay(){
+    const yv2 = await loadUserYongshen();
+    if (yv2){ window._qimenUserYs = yv2; applyOverlay(yv2); }
+  }
+  window.refreshQimenOverlay = refreshOverlay;
+  /* รอ palace render เสร็จ (loadQimen async) แล้วค่อย overlay */
+  setTimeout(refreshOverlay, 1200);
+
+  /* ───── Step 4 · AI Sifu สำหรับฉีเหมิน ───── */
+  /* สร้าง chat panel ใต้ qm-ys-summary */
+  /* ───── S1+S2 · QiMen Search Panel · 15 พ.ค. 2026 ───── */
+  const ACTIVITIES_TH = {
+    work_start: {emoji:'💼', th:'เริ่มงานใหม่', en:'New Work', zh:'開工'},
+    negotiate:  {emoji:'📝', th:'เจรจาสัญญา', en:'Negotiate', zh:'談判'},
+    wealth:     {emoji:'💰', th:'หาเงิน · ลงทุน', en:'Wealth', zh:'求財'},
+    love:       {emoji:'💞', th:'ความรัก · คู่ครอง', en:'Love', zh:'求姻緣'},
+    travel:     {emoji:'✈', th:'เดินทาง', en:'Travel', zh:'出行'},
+    authority:  {emoji:'👑', th:'พบผู้ใหญ่ · ขอความช่วย', en:'Meet Authority', zh:'見貴人'},
+    decision:   {emoji:'⚖', th:'ตัดสินใจใหญ่', en:'Big Decision', zh:'大決策'},
+    health:     {emoji:'🏥', th:'รักษา · สุขภาพ', en:'Health', zh:'療病'},
+  };
+  const DOOR_OPTS = [
+    {c:'KAI_MEN',zh:'開門',th:'เปิด·ดี'},
+    {c:'XIU_MEN',zh:'休門',th:'พัก·ดี'},
+    {c:'SHENG_MEN',zh:'生門',th:'เกิด·ดี'},
+    {c:'JING_VIEW_MEN',zh:'景門',th:'ดู·กลาง'},
+    {c:'DU_MEN',zh:'杜門',th:'ปิด·กลาง'},
+    {c:'JING_FEAR_MEN',zh:'驚門',th:'ตกใจ·ไม่ดี'},
+    {c:'SHANG_MEN',zh:'傷門',th:'บาดเจ็บ·ไม่ดี'},
+    {c:'SI_MEN',zh:'死門',th:'ตาย·ไม่ดี'},
+  ];
+  const STAR_OPTS = ['TIAN_PENG','TIAN_REN','TIAN_CHONG','TIAN_FU','TIAN_YING','TIAN_QIN','TIAN_ZHU','TIAN_XIN','TIAN_RUI'].map(c => ({c, zh: STAR_CN[c] || c}));
+  const DEITY_OPTS = ['ZHI_FU','TENG_SHE','TAI_YIN','LIU_HE','BAI_HU','XUAN_WU','JIU_DI','JIU_TIAN'].map(c => ({c, zh: DEITY_CN[c] || c}));
+
+  function ensureSearchPanel(){
+    if (document.getElementById('qm-search-panel')) return;
+    const layout = document.querySelector('.qmdj-layout');
+    if (!layout) return;
+    const panel = document.createElement('div');
+    panel.id = 'qm-search-panel';
+    panel.style.cssText = 'grid-column:1/-1;margin-top:18px;padding:18px 20px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:14px;';
+    panel.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <h3 style="font-family:var(--serif);font-size:16px;color:var(--fg);margin:0">🔍 ค้นหาผังเหมาะกิจกรรม</h3>
+        <div id="qm-search-tabs" style="display:flex;gap:6px">
+          <button class="qm-stab on" data-tab="activity">ตามกิจกรรม</button>
+          <button class="qm-stab" data-tab="spec">ตามองค์ประกอบ</button>
+        </div>
+      </div>
+
+      <div id="qm-tab-activity" class="qm-tab-pane">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:12px" id="qm-act-grid"></div>
+      </div>
+      <div id="qm-tab-spec" class="qm-tab-pane" style="display:none">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
+          <div>
+            <label style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase">八門 · ประตู</label>
+            <select id="qm-spec-doors" multiple size="4" style="width:100%;background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg);padding:6px;border-radius:6px;font-family:var(--tc);font-size:12px"></select>
+          </div>
+          <div>
+            <label style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase">九星 · ดาว</label>
+            <select id="qm-spec-stars" multiple size="4" style="width:100%;background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg);padding:6px;border-radius:6px;font-family:var(--tc);font-size:12px"></select>
+          </div>
+          <div>
+            <label style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase">八神 · เทพ</label>
+            <select id="qm-spec-deities" multiple size="4" style="width:100%;background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg);padding:6px;border-radius:6px;font-family:var(--tc);font-size:12px"></select>
+          </div>
+        </div>
+        <div style="display:flex;gap:14px;font-family:var(--thai);font-size:13px;color:var(--fg-soft)">
+          <label><input type="checkbox" id="qm-spec-yi"> 三奇乙</label>
+          <label><input type="checkbox" id="qm-spec-bing"> 三奇丙</label>
+          <label><input type="checkbox" id="qm-spec-ding"> 三奇丁</label>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,auto) 1fr;gap:8px;align-items:end;margin-top:12px;font-family:var(--thai);font-size:12px;color:var(--fg-soft)">
+        <div>
+          <label style="font-size:9px;display:block">จาก</label>
+          <input type="date" id="qm-srch-from" style="background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg);padding:6px;border-radius:6px"/>
+        </div>
+        <div>
+          <label style="font-size:9px;display:block">ถึง</label>
+          <input type="date" id="qm-srch-to" style="background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg);padding:6px;border-radius:6px"/>
+        </div>
+        <button id="qm-srch-go" style="background:var(--gold);color:var(--bg);padding:8px 20px;border:none;border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;cursor:pointer">🔍 ค้นหา</button>
+        <div style="text-align:right;font-size:10px;color:var(--fg-faint)" id="qm-srch-meta">—</div>
+      </div>
+
+      <div id="qm-srch-results" style="margin-top:14px;display:flex;flex-direction:column;gap:8px"></div>
+      <div id="qm-srch-ai-wrap" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--tile-bd)">
+        <button id="qm-srch-ai-btn" style="font-family:var(--mono);font-size:11px;letter-spacing:.15em;padding:10px 18px;background:linear-gradient(135deg,#4c7ab8,#3a5d8f);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;text-transform:uppercase">💬 ขอ AI แนะนำ · เลือกอันไหนดี</button>
+        <div id="qm-srch-ai-out" style="margin-top:12px;font-family:var(--thai);font-size:13px;color:var(--fg);line-height:1.65;white-space:pre-wrap;display:none;padding:14px 16px;background:var(--bg);border:1px solid var(--gold-line);border-radius:10px"></div>
+      </div>
+    `;
+    layout.appendChild(panel);
+
+    /* style */
+    const css = document.createElement('style');
+    css.textContent = `
+      .qm-stab{font-family:var(--mono);font-size:10px;letter-spacing:.12em;padding:6px 14px;background:transparent;border:1px solid var(--tile-bd);color:var(--fg-soft);border-radius:99px;cursor:pointer;text-transform:uppercase;transition:.2s}
+      .qm-stab:hover{border-color:var(--gold);color:var(--gold)}
+      .qm-stab.on{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700}
+      .qm-act-btn{padding:12px 10px;background:transparent;border:1px solid var(--tile-bd);color:var(--fg);border-radius:10px;cursor:pointer;text-align:center;transition:.2s;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--thai);font-size:12px}
+      .qm-act-btn:hover{border-color:var(--gold);background:var(--gold-soft)}
+      .qm-act-btn.on{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700}
+      .qm-act-btn .em{font-size:24px}
+      .qm-result-row{padding:10px 12px;background:var(--bg);border:1px solid var(--tile-bd);border-radius:8px;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;cursor:pointer;transition:.2s}
+      .qm-result-row:hover{border-color:var(--gold);background:var(--gold-soft)}
+      .qm-result-row .dt{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.05em}
+      .qm-result-row .body{display:flex;flex-direction:column;gap:2px}
+      .qm-result-row .head{font-family:var(--tc);font-size:14px;color:var(--fg);font-weight:600}
+      .qm-result-row .dir{font-family:var(--thai);font-size:11px;color:var(--fg-soft)}
+      .qm-result-row .score{font-family:var(--mono);font-size:14px;color:var(--gold);font-weight:700;padding:4px 10px;background:var(--gold-soft);border-radius:6px}
+    `;
+    document.head.appendChild(css);
+    /* activity grid */
+    const ag = document.getElementById('qm-act-grid');
+    if (ag) ag.innerHTML = Object.entries(ACTIVITIES_TH).map(([k,v]) =>
+      `<button class="qm-act-btn ${k==='wealth'?'on':''}" data-act="${k}"><span class="em">${v.emoji}</span><span>${v.th}</span></button>`
+    ).join('');
+    window._qmActivity = 'wealth';
+    /* spec selects */
+    const ds = document.getElementById('qm-spec-doors');
+    if (ds) ds.innerHTML = DOOR_OPTS.map(d => `<option value="${d.c}">${d.zh} · ${d.th}</option>`).join('');
+    const ss = document.getElementById('qm-spec-stars');
+    if (ss) ss.innerHTML = STAR_OPTS.map(s => `<option value="${s.c}">${s.zh}</option>`).join('');
+    const es = document.getElementById('qm-spec-deities');
+    if (es) es.innerHTML = DEITY_OPTS.map(d => `<option value="${d.c}">${d.zh}</option>`).join('');
+    /* date defaults · today → +6 days */
+    const today = new Date();
+    const wkEnd = new Date(today.getTime() + 6*86400000);
+    const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const f = document.getElementById('qm-srch-from'); if (f) f.value = fmt(today);
+    const t = document.getElementById('qm-srch-to');   if (t) t.value = fmt(wkEnd);
+
+    /* tab switch */
+    document.querySelectorAll('.qm-stab').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.qm-stab').forEach(x=>x.classList.remove('on'));
+        b.classList.add('on');
+        const tab = b.dataset.tab;
+        document.getElementById('qm-tab-activity').style.display = tab==='activity'?'':'none';
+        document.getElementById('qm-tab-spec').style.display     = tab==='spec'?'':'none';
+        window._qmSearchMode = tab;
+      });
+    });
+    window._qmSearchMode = 'activity';
+    /* activity click */
+    document.querySelectorAll('.qm-act-btn').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.qm-act-btn').forEach(x=>x.classList.remove('on'));
+        b.classList.add('on');
+        window._qmActivity = b.dataset.act;
+      });
+    });
+    /* go */
+    const goBtn = document.getElementById('qm-srch-go');
+    if (goBtn) goBtn.addEventListener('click', runQimenSearch);
+    /* AI advice on search results */
+    const aiBtn = document.getElementById('qm-srch-ai-btn');
+    if (aiBtn) aiBtn.addEventListener('click', requestSearchAdvice);
+  }
+
+  async function requestSearchAdvice(){
+    const out = document.getElementById('qm-srch-ai-out');
+    const btn = document.getElementById('qm-srch-ai-btn');
+    if (!window._qmLastSearch?.top?.length) return;
+    if (out){ out.style.display=''; out.textContent='⏳ ซินแสกำลังอ่านผัง...'; }
+    if (btn) btn.disabled = true;
+    try {
+      const ys = window._qimenUserYs || null;
+      const activity = window._qmLastSearch.activity;
+      const message = activity
+        ? `จาก top ${window._qmLastSearch.top.length} ผังนี้ · ผมควรเลือกอันไหน 3 อันดับแรก สำหรับ "${ACTIVITIES_TH[activity]?.th||activity}" · เพราะอะไร · มีอันไหนต้องเลี่ยงมั๊ย`
+        : `จาก top ${window._qmLastSearch.top.length} ผังนี้ · แนะนำผม 3 อันที่เหมาะสุด · เหตุผลตำรา`;
+      const r = await fetch('/api/qimen/sifu', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          message, lang:'th', topic:'search_advice',
+          payload: {
+            qimen: window._qimenLast,
+            user_yongshen_v2: ys,
+            search_results: window._qmLastSearch.top,
+            activity,
+          }
+        })
+      });
+      const j = await r.json();
+      if (out) out.textContent = j.reply || ('❌ ' + (j.error||'error'));
+    } catch(e){
+      if (out) out.textContent = '❌ ' + e.message;
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function runQimenSearch(){
+    const meta = document.getElementById('qm-srch-meta');
+    const out  = document.getElementById('qm-srch-results');
+    if (meta) meta.textContent = '⏳ ค้นหา...';
+    if (out) out.innerHTML = '';
+    const goBtn = document.getElementById('qm-srch-go'); if (goBtn) goBtn.disabled = true;
+    const mode = window._qmSearchMode || 'activity';
+    const dateFrom = document.getElementById('qm-srch-from')?.value;
+    const dateTo   = document.getElementById('qm-srch-to')?.value;
+    const school   = window._qimenSchool || 'chaibu';
+    let payload = { mode, dateFrom, dateTo, school, lng: 100.5018, lat: 13.7563, limit: 10 };
+    if (mode === 'activity') {
+      payload.activity = window._qmActivity || 'wealth';
+    } else {
+      const doors  = [...(document.getElementById('qm-spec-doors')?.selectedOptions||[])].map(o=>o.value);
+      const stars  = [...(document.getElementById('qm-spec-stars')?.selectedOptions||[])].map(o=>o.value);
+      const deities= [...(document.getElementById('qm-spec-deities')?.selectedOptions||[])].map(o=>o.value);
+      const sanqi  = [['qm-spec-yi','YI'],['qm-spec-bing','BING'],['qm-spec-ding','DING']]
+        .filter(([id])=>document.getElementById(id)?.checked).map(([_,v])=>v);
+      payload.spec = { doors, stars, deities, sanqi };
+    }
+    try {
+      const r = await fetch('/api/qimen/search', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload),
+      });
+      const j = await r.json();
+      const aiWrap = document.getElementById('qm-srch-ai-wrap');
+      const aiOut  = document.getElementById('qm-srch-ai-out');
+      if (aiOut) { aiOut.style.display = 'none'; aiOut.textContent = ''; }
+      if (!j.ok) { if (meta) meta.textContent = '❌ ' + (j.error||'error'); if (aiWrap) aiWrap.style.display='none'; return; }
+      if (meta) meta.textContent = `สแกน ${j.total_scanned} ชั่วยาม · ตรง ${j.total_matched} · top ${j.top.length}`;
+      window._qmLastSearch = j; /* cache สำหรับ AI advice */
+      if (!j.top.length){
+        if (out) out.innerHTML = '<div style="text-align:center;color:var(--fg-faint);padding:20px;font-family:var(--thai);font-size:13px">ไม่เจอผังที่ตรง</div>';
+        if (aiWrap) aiWrap.style.display='none';
+        return;
+      }
+      if (aiWrap) aiWrap.style.display = '';
+      if (out) out.innerHTML = j.top.map(t => {
+        const dtTh = new Date(t.datetime).toLocaleString('th-TH', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+        const matchesHtml = (t.matches||[]).slice(0,4).map(m =>
+          `<span style="font-family:var(--mono);font-size:9px;padding:1px 5px;background:var(--tile);border-radius:3px;margin-right:3px">${m}</span>`
+        ).join('');
+        return `<div class="qm-result-row" onclick="window.loadQimen('${t.date}','${t.time}')">
+          <div class="dt">${dtTh}</div>
+          <div class="body">
+            <div class="head">${t.door||'·'} · ${t.star||'·'} · ${t.deity||'·'}</div>
+            <div class="dir">วัง ${t.palace_id} ${t.direction} · 天${t.heaven_stem||'·'}/地${t.earth_stem||'·'} · ${t.ju_pole==='yin'?'陰':'陽'}${t.ju_number}局 ${matchesHtml}</div>
+          </div>
+          <div class="score">${t.score}</div>
+        </div>`;
+      }).join('');
+    } catch(e){
+      if (meta) meta.textContent = '❌ ' + e.message;
+    } finally {
+      if (goBtn) goBtn.disabled = false;
+    }
+  }
+  setTimeout(ensureSearchPanel, 1500);
+
+  function ensureSifuPanel(){
+    if (document.getElementById('qm-sifu-panel')) return;
+    const layout = document.querySelector('.qmdj-layout');
+    if (!layout) return;
+    const panel = document.createElement('div');
+    panel.id = 'qm-sifu-panel';
+    panel.style.cssText = 'grid-column:1/-1;margin-top:18px;padding:18px 20px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:14px;';
+    /* 📜 build labels เป็น variable ก่อน · เลี่ยง quote escape ใน template literal · 15 พ.ค. */
+    const _phHint = _qtx('q.sifu.placeholder', 'ถามซินแสได้เลย · เช่น วันนี้ทิศไหนรวยเร็ว');
+    const _t_h3   = _qtx('q.sifu.h3', '💬 ซินแสฉีเหมิน · AI Sifu');
+    const _t_ov   = _qtx('q.sifu.t.ov', 'ภาพรวมผัง');
+    const _t_dir  = _qtx('q.sifu.t.dir', 'ทิศไหนเหมาะ');
+    const _t_act  = _qtx('q.sifu.t.act', 'ทำอะไรดี');
+    const _t_tim  = _qtx('q.sifu.t.tim', 'เวลานี้เหมาะมั๊ย');
+    const _t_fm   = _qtx('q.sifu.t.fm', '格局สำคัญ');
+    const _t_send = _qtx('q.sifu.send', 'ส่ง');
+    const _t_hint = _qtx('q.sifu.hint', 'ใช้ Claude AI · อ้างอิงผังเวลา + ดวงคุณ · 10-30 วินาที');
+    panel.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <h3 style="font-family:var(--serif);font-size:16px;color:var(--fg);margin:0">${_t_h3}</h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="qm-sifu-topics">
+          <button class="qm-topic-btn" data-topic="overview">${_t_ov}</button>
+          <button class="qm-topic-btn" data-topic="direction">${_t_dir}</button>
+          <button class="qm-topic-btn" data-topic="action">${_t_act}</button>
+          <button class="qm-topic-btn" data-topic="timing">${_t_tim}</button>
+          <button class="qm-topic-btn" data-topic="formation">${_t_fm}</button>
+        </div>
+      </div>
+      <div id="qm-sifu-log" style="display:flex;flex-direction:column;gap:8px;min-height:60px;max-height:360px;overflow-y:auto;padding:10px;background:var(--bg);border-radius:8px;border:1px dashed var(--tile-bd);font-family:var(--thai);"></div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <input type="text" id="qm-sifu-input" placeholder="${_phHint}" style="flex:1;background:var(--bg);border:1px solid var(--tile-bd);border-radius:8px;padding:10px 12px;color:var(--fg);font-family:var(--thai);font-size:13px;">
+        <button id="qm-sifu-send" style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;padding:10px 16px;background:var(--gold);color:var(--bg);border:none;border-radius:8px;cursor:pointer;font-weight:700;text-transform:uppercase">${_t_send}</button>
+      </div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.1em;font-style:italic;margin-top:6px">${_t_hint}</div>
+    `;
+    layout.appendChild(panel);
+    /* style topic buttons */
+    const tbStyle = document.createElement('style');
+    tbStyle.textContent = `
+      .qm-topic-btn{font-family:var(--mono);font-size:10px;letter-spacing:.12em;padding:6px 12px;background:transparent;border:1px solid var(--tile-bd);color:var(--fg-soft);border-radius:99px;cursor:pointer;text-transform:uppercase;transition:.2s}
+      .qm-topic-btn:hover{border-color:var(--gold);color:var(--gold)}
+      .qm-topic-btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700}
+      .qm-msg{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.55}
+      .qm-msg .role{flex-shrink:0;font-family:var(--mono);font-size:9px;letter-spacing:.15em;padding:3px 6px;border-radius:5px;text-transform:uppercase}
+      .qm-msg.user .role{background:var(--gold-soft);color:var(--gold)}
+      .qm-msg.sifu .role{background:rgba(78,128,191,.12);color:#4c7ab8}
+      .qm-msg.loading .role{background:rgba(180,144,82,.12);color:#a98245;animation:qmpulse 1.4s infinite}
+      @keyframes qmpulse{0%,100%{opacity:.5}50%{opacity:1}}
+      .qm-msg .body{flex:1;color:var(--fg);white-space:pre-wrap;word-wrap:break-word}
+      .qm-msg .body strong{font-weight:700;color:var(--gold)}
+    `;
+    document.head.appendChild(tbStyle);
+    bindSifuPanel();
+  }
+  window._qmSifuHist = [];
+  window._qmSifuTopic = null;
+  function qmAppend(role, text, loading){
+    const log = document.getElementById('qm-sifu-log');
+    if (!log) return null;
+    const d = document.createElement('div');
+    d.className = 'qm-msg ' + role + (loading?' loading':'');
+    const roleLab = role==='user'?'ผม':role==='sifu'?'SIFU':'...';
+    const html = String(text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+    d.innerHTML = `<span class="role">${roleLab}</span><div class="body">${html}</div>`;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+    return d;
+  }
+  async function qmAskSifu(message, topic){
+    qmAppend('user', message);
+    const loadingNode = qmAppend('sifu', 'ซินแสกำลังคิด...', true);
+    const send = document.getElementById('qm-sifu-send');
+    if (send) send.disabled = true;
+    try {
+      const r = await fetch('/api/qimen/sifu', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          message, history: window._qmSifuHist.slice(-6), lang:'th', topic,
+          payload: {
+            qimen: window._qimenLast,
+            user_yongshen_v2: window._qimenUserYs || null,
+          }
+        })
+      });
+      const j = await r.json();
+      if (loadingNode?.parentNode) loadingNode.parentNode.removeChild(loadingNode);
+      if (j.reply){
+        qmAppend('sifu', j.reply);
+        window._qmSifuHist.push({role:'user', content:message});
+        window._qmSifuHist.push({role:'assistant', content:j.reply});
+      } else { qmAppend('sifu', 'ขัดข้อง: '+(j.error||'unknown')); }
+    } catch(e){
+      if (loadingNode?.parentNode) loadingNode.parentNode.removeChild(loadingNode);
+      qmAppend('sifu', 'ขัดข้อง: '+e.message);
+    } finally { if (send) send.disabled = false; }
+  }
+  function bindSifuPanel(){
+    document.querySelectorAll('.qm-topic-btn').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.qm-topic-btn').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        const t = b.dataset.topic;
+        window._qmSifuTopic = t;
+        const promptMap = {
+          overview:  'อ่านผังฉีเหมินนี้สั้นๆ · บอกพลังเด่น + ทิศที่ดี + 格局สำคัญ',
+          direction: 'ผังนี้ทิศไหนเหมาะที่สุดสำหรับผม · เพราะอะไร · ทิศไหนเลี่ยง',
+          action:    'ชั่วยามนี้เหมาะทำอะไร · กิจกรรมไหนได้ผล',
+          timing:    'เวลานี้ดีมั๊ย · ถ้ารอ ควรรอถึงเวลาไหน',
+          formation: '格局ที่เห็นในผัง คืออะไร · ดี/ระวังตรงไหน',
+        };
+        qmAskSifu(promptMap[t]||promptMap.overview, t);
+      });
+    });
+    const send = document.getElementById('qm-sifu-send');
+    const inp = document.getElementById('qm-sifu-input');
+    const doSend = () => {
+      const v = (inp?.value||'').trim(); if (!v) return;
+      if (inp) inp.value = '';
+      qmAskSifu(v, window._qmSifuTopic||'overview');
+    };
+    if (send) send.addEventListener('click', doSend);
+    if (inp) inp.addEventListener('keydown', e => { if (e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); doSend(); }});
+  }
+  setTimeout(ensureSifuPanel, 1400);
+})();
+</script>
+<script src="/js/hk-luopan-nav.js?v=1" defer></script>
 </body>
 </html>
