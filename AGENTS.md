@@ -69,6 +69,74 @@ Claude เป็น implementation agent · Codex MCP เป็น **mandatory r
 
 ---
 
+# 🚨 Git Discipline · ทุก deploy = ต้อง commit ก่อน
+
+บันทึก 21 พ.ค. 2026 · เหตุการณ์ "ทุกหน้าหายเป็นเวอร์ชั่นเก่า"
+
+## เหตุการณ์ที่เกิด
+
+Phase 16-19 (16-20 พ.ค.) ทำ hotfix หลายชุด · deploy ตรงเข้า `/root/releases/decode-app-r2X-*/` · **ไม่ commit เข้า git**
+
+ผลลัพธ์เมื่อ cut release ใหม่:
+- HEAD git ขาด 17 API endpoints · admin/ pages · 7 auth routes · 4 lib files
+- HEAD git ขาด 11 HTML pages ใหญ่ (calendar 145K, today 223K, datepick 118K ฯลฯ)
+- HEAD git ขาด shared JS · CSS · favicon · mobile -m pages
+- HEAD git ขาด fengshui hub-redesign (108KB · 17 พ.ค.)
+- ขาด session-pre-p0-002 · Phase 19 yin-yang stash · ฯลฯ
+
+User เห็นหน้าเก่ากว่า **4-7 วัน** · งานสูญเปล่า · ต้องไล่กู้จาก backup ทีละไฟล์
+
+## กฎเหล็ก · ห้ามฝ่าฝืน
+
+### 1. ทุก deploy = commit ก่อน เสมอ
+```bash
+git status              # ต้อง clean
+git add <files>         # add ของจริง · ห้าม git add -A สุ่ม
+git commit -m "..."     # commit + push
+git push origin HEAD
+```
+**ห้าม** deploy ที่ working dir ที่ยังไม่ commit · เพราะ cut release ครั้งหน้าจะหาย
+
+### 2. ห้ามแก้ไฟล์ใน `/root/releases/decode-app-*/` ตรง
+- release dir = artifact (build output)
+- git ตามไม่เห็น · commit ไม่ได้
+- แก้ตรง = hotfix ลอยฟรี · cut release ใหม่จะหาย
+- ถ้า hotfix prod ฉุกเฉิน → **backport commit เข้า /root/decode-app/ git ภายใน 24 ชม.**
+
+### 3. `/root/backups/` = local snapshot · ไม่ใช่ git history
+- backup ใช้สำหรับ rollback ภายในเครื่อง
+- ไม่ replicate · ไม่ remote · เครื่องพัง = หาย
+- ถ้า work เสร็จ + backup เท่านั้น · ไม่ commit = ขาดถาวร
+
+### 4. Cut release = อ่านจาก HEAD ที่ commit ครบเท่านั้น
+```bash
+cd /root/decode-app
+git status              # ต้อง clean (modified empty)
+git log -1 --oneline    # ระบุ commit SHA ที่จะ deploy
+rsync -a /root/decode-app/ /root/releases/decode-app-r<N>/
+```
+**ห้าม** rsync จาก working tree ที่มี untracked หรือ uncommitted changes
+
+### 5. หลัง deploy → tag git
+```bash
+git tag r<N>-deploy-<date>
+git push origin r<N>-deploy-<date>
+```
+ให้ trace ได้ว่า release ไหน = commit ไหน
+
+## เช็คก่อน cut release (ทุกครั้ง)
+
+1. `git status` ต้อง clean
+2. `git push` สำเร็จ
+3. `git log -1` SHA ตรงกับที่ตั้งใจ
+4. `git stash list` ไม่มี wip ที่ค้าง
+5. ถ้า stash มี wip → apply + commit ก่อน หรือ drop ถ้าไม่ใช้
+6. compare `/root/decode-app/public/` size vs production · ขาดอะไร?
+7. compare `/root/decode-app/src/app/api/` count vs production
+8. เช็ค `/root/backups/` 7 วันล่าสุด · มี work ที่ยังไม่ commit มั้ย
+
+---
+
 # 🌐 แผนสร้างเว็บ · บังคับทุก feature ที่ทำใหม่
 
 ## SEO ขั้นสูง (ทุกหน้าใหม่ต้องผ่าน)
