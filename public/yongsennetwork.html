@@ -330,6 +330,43 @@
   .cmp-head .syn{font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.18em;}
   .cmp-head .syn b{font-family:var(--serif);font-size:36px;font-style:italic;font-weight:300;letter-spacing:0;}
 
+  .team-activity-bar{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:-8px 0 18px;padding:14px;background:linear-gradient(135deg,var(--gold-soft),rgba(180,144,82,.03));border:1px solid var(--gold-line);border-radius:14px;}
+  .team-activity-bar label{display:flex;flex-direction:column;gap:6px;min-width:190px;flex:1;}
+  .team-activity-bar label span{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;}
+  .team-activity-bar select{width:100%;background:var(--bg);border:1px solid var(--tile-bd);border-radius:10px;color:var(--fg);padding:10px 12px;font-family:var(--thai);font-size:13px;outline:none;}
+  .team-activity-bar select:focus{border-color:var(--gold);}
+  .team-activity-dashboard{display:grid;gap:14px;margin-bottom:18px;}
+  .team-fit-grid{display:grid;grid-template-columns:1.2fr repeat(4,1fr);gap:10px;}
+  .team-fit-card{background:var(--bg);border:1px solid var(--tile-bd);border-radius:14px;padding:14px;min-height:104px;}
+  .team-fit-card.main{background:radial-gradient(circle at 0% 0%,var(--gold-soft),transparent 55%),var(--bg);border-color:var(--gold-line);}
+  .team-fit-card .k{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:8px;}
+  .team-fit-card .v{font-family:var(--serif);font-size:34px;font-weight:300;color:var(--fg);line-height:1;}
+  .team-fit-card.main .v{font-size:46px;color:var(--gold);}
+  .team-fit-card .sub{font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.45;margin-top:8px;}
+  .team-activity-main{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .team-panel{background:var(--bg);border:1px solid var(--tile-bd);border-radius:14px;padding:16px;}
+  .team-panel h4{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;}
+  .team-coverage-list,.team-role-list,.team-manual-list{display:flex;flex-direction:column;gap:8px;}
+  .team-cov-row,.team-role-row{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;padding:10px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:10px;}
+  .team-cov-row.missing{border-color:rgba(228,93,77,.35);background:var(--fire-bg);}
+  .team-cov-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-weight:700;border:1px solid;}
+  .team-cov-icon.el-wood{color:var(--wood);border-color:var(--wood);background:var(--wood-bg);}
+  .team-cov-icon.el-fire{color:var(--fire);border-color:var(--fire);background:var(--fire-bg);}
+  .team-cov-icon.el-earth{color:var(--earth);border-color:var(--earth);background:var(--earth-bg);}
+  .team-cov-icon.el-metal{color:var(--metal);border-color:var(--metal);background:var(--metal-bg);}
+  .team-cov-icon.el-water{color:var(--water);border-color:var(--water);background:var(--water-bg);}
+  .team-cov-row b,.team-role-row b{font-family:var(--thai);font-size:13px;color:var(--fg);}
+  .team-cov-row p,.team-role-row p{font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.5;margin-top:2px;}
+  .team-role-row{grid-template-columns:44px 1fr;}
+  .team-role-glyph{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:20px;font-weight:700;border:1px solid var(--gold-line);background:var(--tile);}
+  .team-manual-list li{list-style:none;padding:9px 10px;background:var(--bg-2);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;color:var(--fg-soft);font-family:var(--thai);font-size:12px;line-height:1.55;}
+  .team-advanced{margin-top:18px;}
+  .team-advanced summary{cursor:pointer;list-style:none;font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;display:flex;justify-content:space-between;gap:8px;align-items:center;}
+  .team-advanced summary::-webkit-details-marker{display:none;}
+  .team-advanced summary::after{content:'＋';color:var(--fg-faint);}
+  .team-advanced[open] summary::after{content:'−';}
+  .team-advanced .matrix-table{margin-top:14px;}
+
   .cmp-row{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;}
   .cmp-card{background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:12px;padding:18px;text-align:center;position:relative;}
   .cmp-card.empty{border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;color:var(--fg-faint);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
@@ -396,6 +433,9 @@
     .node .nm{font-size:8px;}
     .node .sc{font-size:7px;}
     .people-grid{grid-template-columns:1fr;}
+    .team-fit-grid{grid-template-columns:1fr 1fr;}
+    .team-fit-card.main{grid-column:1/-1;}
+    .team-activity-main{grid-template-columns:1fr;}
     .cmp-row{grid-template-columns:1fr 1fr;}
     .cmp-card.empty{min-height:160px;}
     .cmp-insights{grid-template-columns:1fr;}
@@ -404,6 +444,8 @@
     .center-info{font-size:9px;padding:6px 12px;}
   }
   @media (max-width:480px){
+    .team-fit-grid{grid-template-columns:1fr;}
+    .team-activity-bar label{min-width:100%;}
     .cmp-row{grid-template-columns:1fr;}
     .matrix-table{font-size:9px;}
     .solar{height:480px;}
@@ -602,16 +644,42 @@
         <div class="syn" id="tb-syn-display" data-i18n="n.t.syn.loading">SYNERGY <b>—</b> / 100</div>
       </div>
 
+      <div class="team-activity-bar">
+        <label>
+          <span>กิจกรรม</span>
+          <select id="tb-activity-select">
+            <option value="deal_closing">เจรจา / ปิดดีล</option>
+            <option value="strategy">วางกลยุทธ์</option>
+            <option value="execution">ลุยงาน / ส่งมอบ</option>
+            <option value="operations">วางระบบ / Operations</option>
+            <option value="creative">ครีเอทีฟ / แคมเปญ</option>
+            <option value="crisis">แก้วิกฤต</option>
+          </select>
+        </label>
+        <label>
+          <span>เป้าหมาย</span>
+          <select id="tb-priority-select">
+            <option value="balanced">สมดุล</option>
+            <option value="speed">เร็ว</option>
+            <option value="precision">แม่น</option>
+            <option value="creative">ครีเอทีฟ</option>
+            <option value="safe">ปลอดภัย</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="team-activity-dashboard" id="tb-activity-dashboard"></div>
+
       <!-- 16 พ.ค. 2026 (เจ้านาย): rebuilt dynamic · ใช้ PEOPLE จริง · 4 slots สูงสุด -->
       <div class="cmp-row" id="tb-slots"></div>
 
-      <div class="matrix">
-        <h4>
+      <details class="matrix team-advanced">
+        <summary>
           <span data-i18n="n.m.h">關係 MATRIX · ปฏิกิริยาในทีม</span>
           <span style="color:var(--fg-faint);" data-i18n="n.m.dm">DM ปะทะกัน</span>
-        </h4>
+        </summary>
         <div class="matrix-table" id="tb-matrix"></div>
-      </div>
+      </details>
 
       <div class="cmp-insights" id="tb-insights"></div>
     </div>
@@ -4148,6 +4216,8 @@ window.applyI18N = applyI18N;
     try {
       localStorage.setItem('hk_network_team', JSON.stringify(state.team));
       localStorage.setItem('hk_network_team_center', state.teamCenter);
+      localStorage.setItem('hk_network_team_activity', state.teamActivity || 'deal_closing');
+      localStorage.setItem('hk_network_team_priority', state.teamPriority || 'balanced');
     } catch(e){}
   }
   try {
@@ -4155,7 +4225,209 @@ window.applyI18N = applyI18N;
     if (stored) { const t = JSON.parse(stored); if (Array.isArray(t)) state.team = t; }
     const cc = localStorage.getItem('hk_network_team_center');
     if (cc) state.teamCenter = cc;
+    const act = localStorage.getItem('hk_network_team_activity');
+    if (act) state.teamActivity = act;
+    const pri = localStorage.getItem('hk_network_team_priority');
+    if (pri) state.teamPriority = pri;
   } catch(e){}
+
+  state.teamActivity = state.teamActivity || 'deal_closing';
+  state.teamPriority = state.teamPriority || 'balanced';
+
+  const TEAM_EL = {
+    wood:  { zh:'木', th:'ไม้',  icon:'木', role:'ไอเดีย · เติบโต · relationship' },
+    fire:  { zh:'火', th:'ไฟ',   icon:'火', role:'เปิดเกม · พูด · สร้าง momentum' },
+    earth: { zh:'土', th:'ดิน',  icon:'土', role:'ความน่าเชื่อถือ · ประคอง · ทำให้เป็นจริง' },
+    metal: { zh:'金', th:'ทอง', icon:'金', role:'ตัดสิน · ต่อรอง · QA/Legal/กรอบ' },
+    water: { zh:'水', th:'น้ำ', icon:'水', role:'ฟัง · อ่านจังหวะ · วิเคราะห์ลึก' },
+  };
+  const TEAM_ACTIVITIES = {
+    deal_closing: {
+      label:'เจรจา / ปิดดีล',
+      summary:'ทีมนี้ต้องเปิดบรรยากาศ อ่านอีกฝ่าย และปิดเงื่อนไขให้ชัด',
+      required:['fire','water','metal'],
+      support:['earth'],
+      roles:[
+        { id:'opener', label:'Opener / Presenter', elements:['fire','wood'], text:'เปิดห้อง พรีเซนต์ สร้างแรงส่ง' },
+        { id:'listener', label:'Listener / Stabilizer', elements:['water','earth'], text:'ฟัง pain point ประคองอารมณ์ คุมจังหวะ' },
+        { id:'closer', label:'Closer / Deal Terms', elements:['metal'], text:'ปิดเงื่อนไข ต่อรอง ตรวจสัญญา' },
+        { id:'decision', label:'Decision Owner', elements:['earth','metal'], center:true, text:'ตัดสินใจสุดท้ายและรับผิดชอบกรอบดีล' },
+      ],
+      manual:['ให้คนไฟ/ไม้เปิด presentation','ให้คนน้ำฟัง pain point และอ่านจังหวะ','ให้คนทองหรือ checklist ปิดเงื่อนไขก่อนเซ็น','คนที่เป็น忌神ให้ใช้ก่อนเข้าห้องเป็น challenger ไม่ใช่เถียงกลางดีล'],
+    },
+    strategy: {
+      label:'วางกลยุทธ์',
+      summary:'ทีมนี้ต้องเห็นภาพลึก ตั้งทิศทาง และแปลงเป็นแผนที่ทำได้',
+      required:['water','wood','earth'],
+      support:['metal'],
+      roles:[
+        { id:'insight', label:'Insight Lead', elements:['water'], text:'อ่านข้อมูล เห็น pattern และความเสี่ยงลึก' },
+        { id:'vision', label:'Vision Builder', elements:['wood','fire'], text:'วางทิศทาง โอกาสใหม่ และภาพอนาคต' },
+        { id:'planner', label:'Planner / Grounding', elements:['earth'], text:'แปลง strategy เป็น milestone และ ownership' },
+        { id:'critic', label:'Strategic Critic', elements:['metal'], text:'ตัดสิ่งฟุ้ง ตรวจสมมติฐาน และตั้งเกณฑ์ตัดสิน' },
+      ],
+      manual:['เริ่มจาก insight ไม่ใช่ solution','ให้ไม้/ไฟเปิดทางเลือกหลายแบบ','ให้ดินสรุปเป็นแผนจริง','ให้ทองตรวจสมมติฐานก่อนประกาศใช้'],
+    },
+    execution: {
+      label:'ลุยงาน / ส่งมอบ',
+      summary:'ทีมนี้ต้องมีแรงขับ ความชัดเจน และคนคุมงานให้จบ',
+      required:['fire','earth','metal'],
+      support:['wood'],
+      roles:[
+        { id:'driver', label:'Driver', elements:['fire'], text:'เร่ง momentum ตัดสินใจเร็ว ดันงานเดิน' },
+        { id:'owner', label:'Delivery Owner', elements:['earth'], text:'คุม timeline ติดตามงานและความรับผิดชอบ' },
+        { id:'qa', label:'QA / Boundary', elements:['metal'], text:'ตรวจงาน วางกรอบ และกัน scope creep' },
+        { id:'builder', label:'Builder / Improver', elements:['wood'], text:'แก้ปัญหาเฉพาะหน้าและทำให้ระบบโตต่อ' },
+      ],
+      manual:['กำหนด owner ชัดคนเดียว','ใช้ไฟเปิด daily momentum','ใช้ดินติดตาม commitment','ใช้ทองปิด scope และตรวจคุณภาพก่อนส่ง'],
+    },
+    operations: {
+      label:'วางระบบ / Operations',
+      summary:'ทีมนี้ต้องเสถียร มีมาตรฐาน และลดความเสี่ยงจากงานซ้ำ',
+      required:['earth','metal'],
+      support:['water'],
+      roles:[
+        { id:'operator', label:'Operator', elements:['earth'], text:'ทำระบบให้เสถียร ดูแล process และ routine' },
+        { id:'controller', label:'Controller / Compliance', elements:['metal'], text:'กฎเกณฑ์ QA ตัวเลข กฎหมาย และมาตรฐาน' },
+        { id:'analyst', label:'Analyst', elements:['water'], text:'อ่านข้อมูล flow และ bottleneck' },
+        { id:'trainer', label:'Trainer', elements:['fire','wood'], text:'สื่อสารวิธีใช้ระบบและทำให้คนยอมรับ' },
+      ],
+      manual:['เริ่มจาก process map','กำหนด checklist และ owner','วัด bottleneck ด้วยข้อมูล','ให้คนไฟช่วยสื่อสาร adoption แต่อย่าให้เปลี่ยนระบบถี่เกิน'],
+    },
+    creative: {
+      label:'ครีเอทีฟ / แคมเปญ',
+      summary:'ทีมนี้ต้องมีไอเดีย การเล่าเรื่อง และ insight ของผู้ชม',
+      required:['wood','fire','water'],
+      support:['earth'],
+      roles:[
+        { id:'ideator', label:'Ideator', elements:['wood'], text:'สร้าง concept และทางเลือกใหม่' },
+        { id:'storyteller', label:'Storyteller', elements:['fire'], text:'เล่าเรื่อง พรีเซนต์ ทำให้คนรู้สึก' },
+        { id:'researcher', label:'Audience Reader', elements:['water'], text:'อ่านผู้ชม insight และจังหวะตลาด' },
+        { id:'producer', label:'Producer', elements:['earth','metal'], text:'ทำให้ไอเดียออกมาเป็นชิ้นงานจริง' },
+      ],
+      manual:['เปิดด้วย brainstorm แบบไม่ตัดสินเร็ว','ให้คนไฟคัด narrative ที่มีแรง','ให้คนน้ำเช็ค insight ผู้ชม','ให้ดิน/ทองล็อก production และ deadline'],
+    },
+    crisis: {
+      label:'แก้วิกฤต',
+      summary:'ทีมนี้ต้องนิ่ง อ่านสถานการณ์เร็ว และตัดสินใจแบบมีกรอบ',
+      required:['water','metal','earth'],
+      support:['fire'],
+      roles:[
+        { id:'sensemaker', label:'Sensemaker', elements:['water'], text:'อ่านสถานการณ์ แยก noise ออกจาก signal' },
+        { id:'commander', label:'Commander', elements:['metal'], text:'ตัดสินใจเร็ว วางกรอบและคำสั่งชัด' },
+        { id:'stabilizer', label:'Stabilizer', elements:['earth'], text:'ประคองคน ทรัพยากร และระบบให้ไม่แตก' },
+        { id:'speaker', label:'Spokesperson', elements:['fire'], text:'สื่อสารภายนอก ลด panic และสร้างความมั่นใจ' },
+      ],
+      manual:['ตั้ง war room เล็กและ role ชัด','ให้คนน้ำรวมข้อเท็จจริงก่อน','ให้ทองตัดสินใจและล็อกกรอบ','ให้ไฟสื่อสารหลังข้อเท็จจริงนิ่งแล้ว'],
+    },
+  };
+  const TEAM_PRIORITY_WEIGHTS = {
+    balanced: { coverage:.35, synergy:.30, role:.20, risk:.15 },
+    speed:    { coverage:.25, synergy:.35, role:.25, risk:.15 },
+    precision:{ coverage:.30, synergy:.20, role:.25, risk:.25 },
+    creative: { coverage:.30, synergy:.30, role:.25, risk:.15 },
+    safe:     { coverage:.30, synergy:.15, role:.20, risk:.35 },
+  };
+  function clampTeamScore(n){ return Math.max(0, Math.min(100, Math.round(n))); }
+  function teamElemLabel(el){
+    const e = TEAM_EL[el] || { zh:el, th:el, role:'' };
+    return `${e.zh} ${e.th}`;
+  }
+  function memberProfileLine(p){
+    const elem = TEAM_EL[p.elem] || {};
+    const rel = p.role || tx(p.roleKey||'') || '';
+    return `${elem.role || 'บทบาททั่วไป'}${rel ? ` · ${rel}` : ''}`;
+  }
+  function assignActivityRoles(team, center, tpl){
+    const taken = new Set();
+    return tpl.roles.map(role => {
+      const ranked = team.map(p => {
+        const s = p.id === center?.id ? 0 : (typeof getScore === 'function' ? getScore(center?.id || state.teamCenter, p.id, state.timeframe) : 0);
+        const yong = (center?.yongshenTop3 || []).map(y => y.element);
+        let score = 0;
+        if (role.elements.includes(p.elem)) score += 45;
+        if (role.center && p.id === center?.id) score += 35;
+        if (yong.includes(p.elem)) score += 10;
+        if (p.id !== center?.id) score += Math.max(-15, Math.min(20, Math.round(s / 4)));
+        if (taken.has(p.id)) score -= 18;
+        return { p, score, pairScore:s };
+      }).sort((a,b)=>b.score-a.score);
+      const picked = ranked[0];
+      if (picked?.p) taken.add(picked.p.id);
+      return { role, person:picked?.p || null, score:picked?.score || 0, pairScore:picked?.pairScore || 0 };
+    });
+  }
+  function computeTeamActivity(team){
+    const tpl = TEAM_ACTIVITIES[state.teamActivity] || TEAM_ACTIVITIES.deal_closing;
+    const center = team.find(p => p.id === state.teamCenter) || team[0] || null;
+    const elems = new Set(team.map(p => p.elem).filter(Boolean));
+    const required = tpl.required || [];
+    const covered = required.filter(e => elems.has(e));
+    const coverage = required.length ? clampTeamScore(covered.length / required.length * 100) : 50;
+    let total=0, pairs=0, riskPairs=0, strongPairs=0;
+    for (let i=0;i<team.length;i++) for (let j=i+1;j<team.length;j++){
+      const s = typeof getScore==='function' ? getScore(team[i].id, team[j].id, state.timeframe) : 0;
+      total += s; pairs++;
+      if (s <= -20) riskPairs++;
+      if (s >= 40) strongPairs++;
+    }
+    const avg = pairs ? Math.round(total / pairs) : 0;
+    const synergy = clampTeamScore(50 + avg / 2);
+    const riskControl = clampTeamScore(100 - riskPairs * 18 + strongPairs * 4);
+    const assignments = assignActivityRoles(team, center, tpl);
+    const clearRoles = assignments.filter(a => a.person && a.score >= 30).length;
+    const roleClarity = assignments.length ? clampTeamScore(clearRoles / assignments.length * 100) : 0;
+    const weights = TEAM_PRIORITY_WEIGHTS[state.teamPriority] || TEAM_PRIORITY_WEIGHTS.balanced;
+    const fit = clampTeamScore(coverage*weights.coverage + synergy*weights.synergy + roleClarity*weights.role + riskControl*weights.risk);
+    return { tpl, center, elems, covered, missing: required.filter(e => !elems.has(e)), coverage, avg, synergy, riskControl, roleClarity, fit, assignments, riskPairs, strongPairs };
+  }
+  function renderTeamActivityDashboard(team){
+    const el = document.getElementById('tb-activity-dashboard');
+    if (!el) return;
+    if (!team.length) { el.innerHTML = ''; return; }
+    const r = computeTeamActivity(team);
+    const fitLabel = r.fit >= 80 ? 'เหมาะมาก' : r.fit >= 65 ? 'ใช้ได้ดี' : r.fit >= 50 ? 'ใช้ได้ แต่ต้องคุม' : 'ยังไม่เหมาะ';
+    const missingText = r.missing.length ? `ขาด ${r.missing.map(teamElemLabel).join(' · ')}` : 'ธาตุหลักครบ';
+    const covRows = (r.tpl.required || []).map(e => {
+      const members = team.filter(p => p.elem === e);
+      const info = TEAM_EL[e] || {};
+      const isMissing = !members.length;
+      return `<div class="team-cov-row ${isMissing?'missing':''}">
+        <div class="team-cov-icon el-${e}">${info.icon || e}</div>
+        <div><b>${isMissing?'✕':'✓'} ${teamElemLabel(e)}</b><p>${isMissing ? `ขาดบทบาท: ${info.role || ''}` : `${members.map(p=>escHtml(p.name)).join(', ')} · ${info.role || ''}`}</p></div>
+      </div>`;
+    }).join('');
+    const roleRows = r.assignments.map(a => {
+      const p = a.person;
+      if (!p) return '';
+      const warn = a.score < 30 ? ' · ยังไม่ชัด' : '';
+      const pair = p.id === r.center?.id ? 'CENTER' : `${a.pairScore>0?'+':''}${a.pairScore}`;
+      return `<div class="team-role-row">
+        <div class="team-role-glyph elem-${p.elem}">${escHtml(p.glyph)}</div>
+        <div><b>${escHtml(p.name)} = ${escHtml(a.role.label)}${warn}</b><p>${escHtml(a.role.text)} · ${escHtml(memberProfileLine(p))} · synergy ${pair}</p></div>
+      </div>`;
+    }).join('');
+    const manual = [
+      ...(r.tpl.manual || []),
+      ...(r.missing.length ? [`เพิ่มคนหรือ checklist สาย ${r.missing.map(teamElemLabel).join(' / ')} ก่อนใช้ทีมนี้จริง`] : []),
+      ...(r.riskPairs ? ['คู่ที่ปะทะให้ใช้ moderator หรือกำหนดกติกาก่อนประชุม'] : []),
+    ].slice(0,6).map(x => `<li>${escHtml(x)}</li>`).join('');
+    el.innerHTML = `
+      <div class="team-fit-grid">
+        <div class="team-fit-card main"><div class="k">TEAM FIT · ${escHtml(r.tpl.label)}</div><div class="v">${r.fit}</div><div class="sub">${fitLabel} · ${escHtml(missingText)}</div></div>
+        <div class="team-fit-card"><div class="k">COVERAGE</div><div class="v">${r.coverage}</div><div class="sub">${r.covered.length}/${r.tpl.required.length} ธาตุหลัก</div></div>
+        <div class="team-fit-card"><div class="k">SYNERGY</div><div class="v">${r.synergy}</div><div class="sub">avg ${r.avg>0?'+':''}${r.avg}</div></div>
+        <div class="team-fit-card"><div class="k">RISK CTRL</div><div class="v">${r.riskControl}</div><div class="sub">${r.riskPairs} คู่ต้องคุม</div></div>
+        <div class="team-fit-card"><div class="k">ROLE CLARITY</div><div class="v">${r.roleClarity}</div><div class="sub">${r.assignments.length} บทบาท</div></div>
+      </div>
+      <div class="team-panel"><h4>ภาพรวมกิจกรรม</h4><div style="font-family:var(--thai);font-size:14px;color:var(--fg-soft);line-height:1.65;">${escHtml(r.tpl.summary)} · Center คือ <b style="color:var(--gold);">${escHtml(r.center?.name || '—')}</b> · ${escHtml(missingText)}</div></div>
+      <div class="team-activity-main">
+        <div class="team-panel"><h4>ธาตุที่กิจกรรมนี้ต้องใช้</h4><div class="team-coverage-list">${covRows}</div></div>
+        <div class="team-panel"><h4>บทบาทแนะนำ</h4><div class="team-role-list">${roleRows}</div></div>
+      </div>
+      <div class="team-panel"><h4>Operating Manual</h4><ul class="team-manual-list">${manual}</ul></div>
+    `;
+  }
 
   /* render team cards · ทดแทน static cmp-row · 16 พ.ค.: center ปรับเปลี่ยนได้ + ปุ่มสร้างใหม่ */
   function renderTeam(){
@@ -4167,6 +4439,10 @@ window.applyI18N = applyI18N;
     if (!state.team.includes(state.teamCenter)) {
       state.teamCenter = state.team[0] || 'self';
     }
+    const actSel = document.getElementById('tb-activity-select');
+    if (actSel && actSel.value !== state.teamActivity) actSel.value = state.teamActivity;
+    const priSel = document.getElementById('tb-priority-select');
+    if (priSel && priSel.value !== state.teamPriority) priSel.value = state.teamPriority;
     for (let i=0;i<slots;i++){
       const id = state.team[i];
       const p = id ? PEOPLE.find(x=>x.id===id) : null;
@@ -4204,6 +4480,8 @@ window.applyI18N = applyI18N;
       </div>`);
     }
     row.innerHTML = teamHTML.join('');
+    const activeTeam = state.team.filter(Boolean).map(id => PEOPLE.find(p => p.id === id)).filter(Boolean);
+    renderTeamActivityDashboard(activeTeam);
     /* 16 พ.ค.: ปุ่ม "สร้างทีมใหม่" + แสดง center info */
     let toolbar = document.getElementById('tb-toolbar');
     if (!toolbar) {
@@ -4363,6 +4641,21 @@ window.applyI18N = applyI18N;
     }
     const confirmNo = e.target.closest('#tb-confirm-no, #tb-confirm-bg');
     if (confirmNo) { hideResetConfirm(); return; }
+  });
+  document.addEventListener('change', function(e){
+    const actSel = e.target.closest('#tb-activity-select');
+    if (actSel) {
+      state.teamActivity = actSel.value || 'deal_closing';
+      saveTeam();
+      renderTeam();
+      return;
+    }
+    const priSel = e.target.closest('#tb-priority-select');
+    if (priSel) {
+      state.teamPriority = priSel.value || 'balanced';
+      saveTeam();
+      renderTeam();
+    }
   });
   function showResetConfirm(){
     let m = document.getElementById('tb-confirm-modal');
