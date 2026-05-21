@@ -5,6 +5,7 @@
  * 19 พ.ค. Option α · birthTimeKnown:false → 3p mode · hour null · skip ChildLimit/getSolarTimeAtTST/hsHhs[hour]
  */
 import { NextResponse } from "next/server";
+import { getDaymasterProfile } from "@/lib/daymaster-profile";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
@@ -50,6 +51,10 @@ export async function POST(req: Request) {
           birthTimeKnown: false,
         });
     const natal = calc.pillars;
+    const daymasterProfile = getDaymasterProfile(natal.day.stem, {
+      level: calc.strength.level,
+      percent: calc.strength.percent,
+    });
 
     const matrix     = w1.buildMatrix(natal);
     /* 3p: filter ตำแหน่ง hour ออก · ทุกที่ที่ derefer natal[pos].branch ต้องผ่าน active positions */
@@ -138,6 +143,7 @@ export async function POST(req: Request) {
           strength_yongshen: { strength: calc.strength, yongshenFinal: calc.yongshen, climate: { climate: calc.climate } },
           hs_hhs: hsHhs,
           matrix_summary: matrix.summary,
+          daymaster_profile: daymasterProfile,
         },
         yongshen_v2: yongshenV2_3p,
         heluo_astrology: null,        /* 3p · ต้องการ hour pillar · skip */
@@ -391,6 +397,7 @@ export async function POST(req: Request) {
         rootedness_explain_v2: (ext as any).rootedness_explain_v2,
         /* Phase 17g · distribution engine output · debug/observability */
         element_distribution: (ext as any).element_distribution,
+        daymaster_profile: daymasterProfile,
       },
       /* 📜 Yongshen v2 (wrapper-7) · structure + disease + medicine + bridges · 15 พ.ค. */
       yongshen_v2: yongshenV2,

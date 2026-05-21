@@ -1059,28 +1059,51 @@
     </div>
   </section>
 
-  <!-- §00 ภาพรวมดวงชะตา · OVERVIEW · ซินแสอ่าน 13 ข้อ · Phase 19-C+ -->
+  <!-- §00 ภาพรวมตัวตน · 30 profiles + ซินแสถามต่อ -->
   <section class="sec hk-overview-sec" id="hk-overview-sec" style="display:none">
     <div class="sec-head">
       <div class="l">
         <span class="num">00 · OVERVIEW</span>
-        <h2><span class="tc">概</span>ภาพรวมดวงชะตา · 🧙 ซินแสอ่านให้ฟัง</h2>
-        <span class="sub">13 ข้อจากซินแส · บันทึกในข้อมูลคุณ · ไม่ต้องอ่านซ้ำ</span>
+        <h2><span class="tc">概</span>ภาพรวมตัวตน · จาก 30 โปรไฟล์แกนดวง</h2>
+        <span class="sub">อ่านอัตโนมัติจากก้านวันและกำลังดวง · ถ้าอยากลึกขึ้นค่อยถามซินแสต่อ</span>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button id="hk-ov-regen" style="display:none;padding:6px 14px;font-size:11px;background:transparent;border:1px solid var(--gold-line);border-radius:99px;color:var(--gold);cursor:pointer;font-family:var(--thai);">🔄 อ่านใหม่</button>
+        <button id="hk-ov-regen" style="display:none;padding:6px 14px;font-size:11px;background:transparent;border:1px solid var(--gold-line);border-radius:99px;color:var(--gold);cursor:pointer;font-family:var(--thai);">ถามใหม่</button>
       </div>
     </div>
     <div id="hk-overview-content" class="hk-overview-content">
       <div id="hk-ov-quick" style="background:linear-gradient(160deg,rgba(200,164,77,.08),transparent);border:1px solid var(--gold-line);border-left:3px solid var(--gold);border-radius:14px;padding:20px 22px;font-family:var(--thai);font-size:14px;line-height:1.8;color:var(--fg);"></div>
-      <div id="hk-ov-sifu-prompt" style="margin-top:14px;text-align:center;">
-        <button id="hk-ov-ask-sifu" style="padding:14px 30px;font-size:14px;font-family:var(--thai);font-weight:600;background:linear-gradient(135deg,var(--gold),#d4a85a);color:#0d0f12;border:none;border-radius:99px;cursor:pointer;box-shadow:0 4px 12px rgba(200,164,77,.25);">🧙 ให้ซินแสอ่านดวงให้ฟัง (ฟรี)</button>
-        <div style="font-size:11px;color:var(--fg-soft);margin-top:8px;">ใช้เวลาประมาณ 30-60 วินาที · บันทึกถาวร · ไม่ต้องอ่านซ้ำ</div>
+      <div id="hk-ov-sifu-prompt" class="hk-ov-follow">
+        <label for="hk-ov-question">ถามซินแสให้ลึกขึ้น</label>
+        <textarea id="hk-ov-question" rows="3" placeholder="เช่น จุดที่ต้องระวังจริงๆ คืออะไร, งานแบบไหนเหมาะกับฉัน, ช่วงนี้ควรตัดสินใจเรื่องอะไร"></textarea>
+        <div class="hk-ov-follow-actions">
+          <button type="button" class="hk-ov-chip" data-q="ช่วยอธิบายเงาและจุดที่ต้องระวังของดวงนี้ให้ลึกขึ้น">เงาที่ต้องระวัง</button>
+          <button type="button" class="hk-ov-chip" data-q="ดวงนี้ควรใช้จุดแข็งกับงานและเงินอย่างไร">งานและเงิน</button>
+          <button type="button" class="hk-ov-chip" data-q="ช่วงวัยจรและปีนี้ควรเดินเกมชีวิตอย่างไร">จังหวะช่วงนี้</button>
+          <button id="hk-ov-ask-sifu" type="button">ถามซินแส</button>
+        </div>
+        <div class="hint">ซินแสจะอธิบายต่อจากโปรไฟล์แกนดวงด้านบน · ใช้เวลาประมาณ 30-60 วินาที</div>
       </div>
       <div id="hk-ov-sifu" style="display:none;margin-top:18px;padding:24px 26px;background:linear-gradient(160deg,rgba(200,164,77,.06),transparent);border:1px solid var(--gold-line);border-left:4px solid var(--gold);border-radius:14px;font-family:var(--thai);font-size:14px;line-height:1.85;color:var(--fg);"></div>
       <div id="hk-ov-status" style="display:none;margin-top:10px;font-size:12px;color:var(--gold);font-family:var(--thai);text-align:center;"></div>
     </div>
     <style>
+      .hk-overview-content .hk-ov-profile-title { font-family:var(--serif); font-size:22px; color:var(--gold); margin:0 0 10px; line-height:1.3; }
+      .hk-overview-content .hk-ov-profile-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:16px; }
+      .hk-overview-content .hk-ov-profile-part { padding:14px 16px; background:rgba(255,255,255,.025); border:1px solid var(--gold-line); border-radius:10px; }
+      .hk-overview-content .hk-ov-profile-part b { display:block; color:var(--gold); margin-bottom:5px; }
+      .hk-overview-content .hk-ov-engine-line { margin-top:14px; padding-top:12px; border-top:1px solid var(--gold-line); font-size:12px; color:var(--fg-soft); }
+      .hk-overview-content .hk-ov-follow { margin-top:16px; padding:16px; border:1px solid var(--gold-line); border-radius:12px; background:rgba(200,164,77,.04); }
+      .hk-overview-content .hk-ov-follow label { display:block; font-family:var(--thai); font-size:13px; font-weight:700; color:var(--gold); margin-bottom:8px; }
+      .hk-overview-content .hk-ov-follow textarea { width:100%; box-sizing:border-box; resize:vertical; min-height:76px; padding:12px 14px; border:1px solid var(--tile-bd); border-radius:10px; background:var(--tile); color:var(--fg); font-family:var(--thai); font-size:14px; line-height:1.55; outline:none; }
+      .hk-overview-content .hk-ov-follow textarea:focus { border-color:var(--gold); }
+      .hk-overview-content .hk-ov-follow-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
+      .hk-overview-content .hk-ov-follow-actions button { border-radius:999px; cursor:pointer; font-family:var(--thai); transition:.2s; }
+      .hk-overview-content .hk-ov-chip { padding:8px 12px; border:1px solid var(--gold-line); background:transparent; color:var(--fg-soft); font-size:12px; }
+      .hk-overview-content .hk-ov-chip:hover { color:var(--gold); border-color:var(--gold); }
+      .hk-overview-content #hk-ov-ask-sifu { margin-left:auto; padding:10px 20px; border:0; background:linear-gradient(135deg,var(--gold),#d4a85a); color:#0d0f12; font-size:13px; font-weight:700; box-shadow:0 4px 12px rgba(200,164,77,.22); }
+      .hk-overview-content #hk-ov-ask-sifu:disabled { opacity:.55; cursor:not-allowed; }
+      .hk-overview-content .hk-ov-follow .hint { font-size:11px; color:var(--fg-soft); margin-top:8px; }
       .hk-overview-content #hk-ov-sifu h2 { font-size:16px; font-family:var(--thai); color:var(--gold); margin:18px 0 8px; font-weight:700; }
       .hk-overview-content #hk-ov-sifu h2:first-child { margin-top:0; }
       .hk-overview-content #hk-ov-sifu p { margin:0 0 10px; }
@@ -1088,6 +1111,7 @@
       .hk-overview-content #hk-ov-sifu li { margin-bottom:4px; }
       .hk-overview-content #hk-ov-sifu strong, .hk-overview-content #hk-ov-sifu b { color:var(--gold); }
       .hk-overview-content .ov-cursor { display:inline-block; width:8px; height:18px; background:var(--gold); margin-left:2px; animation:hkBlink 1s step-end infinite; vertical-align:text-bottom; }
+      @media (max-width:720px){ .hk-overview-content .hk-ov-profile-grid{grid-template-columns:1fr;} .hk-overview-content #hk-ov-ask-sifu{width:100%;margin-left:0;} }
     </style>
   </section>
 
@@ -2539,6 +2563,7 @@ window.addEventListener('resize', function(){
         const lt = a.liu_nian_timeline || [];
         const cyYear = (new Date()).getUTCFullYear();
         const cyLn = lt.find(x => x.year === cyYear);
+        const profile = a.daymaster_profile || null;
         const EL_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
         const STEM_TH_OV = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
         const STEM_EL_OV = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
@@ -2591,13 +2616,30 @@ window.addEventListener('resize', function(){
           const e = STEM_EL_OV[x.pillar.stem]; const eTh = EL_TH[e];
           return jishen.includes(eTh);
         }).map(x => x.year);
+        const esc = (s) => String(s || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        const fmt = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
         /* Build narrative */
-        ovBox.innerHTML = `
-          <p style="margin:0 0 14px;"><b style="color:var(--gold);">📜 โครงสร้างดวง:</b> ดวงคุณคือ <b style="color:var(--gold);">${structure}</b>${engineTh?' ('+engineTh+')':''} · ตัวเรา <b>${dmTh}</b> · ธาตุ${EL_TH[dmEl]} ${dmPct}% · ธาตุที่เด่นที่สุดในผังคือ <b>${domElTh}</b> ${domElPct}%</p>
-          <p style="margin:0 0 14px;"><b style="color:var(--gold);">💊 ยาที่ดวงต้องการ:</b> <b style="color:#c8a44d;">${primary.join(' · ')}</b> (อันดับ 1) · เสริมด้วย <b>${xishen.join(' · ')}</b> · <b style="color:#e26b5d;">หลีกเลี่ยง</b> ${jishen.join(' · ')}${diseaseTh?' · <b>โรค:</b> '+diseaseTh:''}${strategyTh?' · <b>กลยุทธ์:</b> '+strategyTh:''}</p>
-          ${curLp ? `<p style="margin:0 0 14px;padding:10px 14px;background:rgba(200,164,77,.06);border-radius:8px;border-left:3px solid var(--gold);"><b style="color:var(--gold);">🎯 ตอนนี้ · วัยจร ${lpAgeStart}-${lpAgeEnd} ปี:</b> รอบโชค <b>${lpStem}${lpBranch}</b> (${lpElTh}·${lpPhaseTh}) · ${lpVerdict}</p>` : ''}
-          ${cyLn ? `<p style="margin:0 0 14px;"><b style="color:var(--gold);">📅 ปีนี้ ${cyYear}:</b> เสาปี <b>${cyStem}${cyBranch}</b> (${cyStemTh} · ธาตุ${cyElTh}) · ${cyVerdict} · ${isYongshenCy?'ธาตุ'+cyElTh+'เสริมดวงคุณ · ใช้โอกาสได้':isJishenCy?'ธาตุ'+cyElTh+'กดดวง · ระมัดระวัง':'ปีเสถียร · ไม่กระทบใหญ่'}</p>` : ''}
-          ${(goodYears.length||warnYears.length) ? `<p style="margin:0;font-size:12px;color:var(--fg-soft);">📆 <b>10 ปีข้างหน้า (${cyYear+1}-${cyYear+10}):</b> ${goodYears.length?'<span style="color:#7dd37b;">⭐ ปีดี: '+goodYears.join(' · ')+'</span>':''}${(goodYears.length&&warnYears.length)?' · ':''}${warnYears.length?'<span style="color:#e26b5d;">⚠ ปีระวัง: '+warnYears.join(' · ')+'</span>':''}</p>` : ''}
+        const engineLine = `
+          <div class="hk-ov-engine-line">
+            <b>เครื่องยนต์ดวง:</b> ${esc(structure)}${engineTh?' ('+esc(engineTh)+')':''} · ตัวเรา <b>${esc(dmTh)}</b> · ธาตุ${esc(EL_TH[dmEl])} ${esc(dmPct)}% · 用神 ${esc(primary.join(' · ') || '-')} · 忌神 ${esc(jishen.join(' · ') || '-')}
+            ${curLp ? `<br><b>วัยจรตอนนี้:</b> ${esc(lpStem+lpBranch)} อายุ ${esc(lpAgeStart)}-${esc(lpAgeEnd)} ปี · ${lpVerdict}` : ''}
+            ${cyLn ? `<br><b>ปีนี้ ${esc(cyYear)}:</b> ${esc(cyStem+cyBranch)} (${esc(cyStemTh)} · ธาตุ${esc(cyElTh)}) · ${cyVerdict}` : ''}
+            ${(goodYears.length||warnYears.length) ? `<br><b>10 ปีข้างหน้า:</b> ${goodYears.length?'<span style="color:#7dd37b;">ปีดี '+esc(goodYears.join(' · '))+'</span>':''}${(goodYears.length&&warnYears.length)?' · ':''}${warnYears.length?'<span style="color:#e26b5d;">ปีระวัง '+esc(warnYears.join(' · '))+'</span>':''}` : ''}
+          </div>
+        `;
+        ovBox.innerHTML = profile ? `
+          <div class="hk-ov-profile-title">${esc(profile.label_th || dmTh)}</div>
+          <div>${fmt(profile.core)}</div>
+          <div class="hk-ov-profile-grid">
+            <div class="hk-ov-profile-part"><b>ชีวิตจริง</b>${fmt(profile.real_life)}</div>
+            <div class="hk-ov-profile-part"><b>เงาที่ต้องระวัง</b>${fmt(profile.shadow)}</div>
+            <div class="hk-ov-profile-part"><b>สิ่งที่ดวงต้องการ</b>${fmt(profile.needs)}</div>
+            <div class="hk-ov-profile-part"><b>อ่านต่อจากตรงนี้</b>ถ้าอยากรู้ว่าเงานี้กระทบงาน เงิน ความรัก หรือจังหวะปีนี้อย่างไร ให้ถามซินแสในกล่องด้านล่าง</div>
+          </div>
+          ${engineLine}
+        ` : `
+          <p style="margin:0 0 14px;"><b style="color:var(--gold);">โครงสร้างดวง:</b> ดวงคุณคือ <b style="color:var(--gold);">${esc(structure)}</b>${engineTh?' ('+esc(engineTh)+')':''} · ตัวเรา <b>${esc(dmTh)}</b> · ธาตุ${esc(EL_TH[dmEl])} ${esc(dmPct)}% · ธาตุที่เด่นที่สุดในผังคือ <b>${esc(domElTh)}</b> ${esc(domElPct)}%</p>
+          ${engineLine}
         `;
         ovSec.style.display = '';
 
@@ -2606,6 +2648,7 @@ window.addEventListener('resize', function(){
         const sifuStatus = document.getElementById('hk-ov-status');
         const sifuPrompt = document.getElementById('hk-ov-sifu-prompt');
         const askBtn = document.getElementById('hk-ov-ask-sifu');
+        const questionBox = document.getElementById('hk-ov-question');
         const regenBtn = document.getElementById('hk-ov-regen');
         const lang = document.documentElement.getAttribute('data-lang') || 'th';
         /* simple markdown → HTML (## h2, ** bold, lists) · safe enough for trusted source */
@@ -2626,9 +2669,9 @@ window.addEventListener('resize', function(){
             return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,60);
           });
         }
-        async function loadSifuOverview(force){
+        async function loadSifuOverview(force, questionText){
           const hash = await pillarsHashClient(d.pillars);
-          if (!force) {
+          if (!force && !questionText) {
             /* try cache first */
             try {
               const cacheR = await fetch(`/api/chart/overview?hash=${hash}&lang=${lang}&lp=${curIdx}&cy=${cyYear}`);
@@ -2643,9 +2686,9 @@ window.addEventListener('resize', function(){
             } catch(_){}
           }
           /* generate via SSE */
-          sifuPrompt.style.display = 'none';
+          if (askBtn) { askBtn.disabled = true; askBtn.textContent = 'กำลังอ่าน...'; }
           sifuStatus.style.display = '';
-          sifuStatus.textContent = '🧙 ซินแสกำลังพิจารณาดวง...';
+          sifuStatus.textContent = 'ซินแสกำลังอธิบายเพิ่ม...';
           sifuBox.style.display = '';
           sifuBox.innerHTML = '<span class="ov-cursor"></span>';
           let accumulated = '';
@@ -2681,14 +2724,20 @@ window.addEventListener('resize', function(){
                 cy_year: cyYear,
                 lang: lang,
                 force: !!force,
+                question: questionText || '',
               })
             });
+            if (!resp.ok || !resp.body) {
+              let msg = 'request failed';
+              try { msg = (await resp.json()).error || msg; } catch(_){}
+              throw new Error(msg);
+            }
             const reader = resp.body.getReader();
             const decoder = new TextDecoder();
             let buf = '';
-            while (true) {
-              const {value, done} = await reader.read();
-              if (done) break;
+	            while (true) {
+	              const {value, done} = await reader.read();
+	              if (done) break;
               buf += decoder.decode(value, {stream:true});
               const events = buf.split('\n\n');
               buf = events.pop() || '';
@@ -2725,49 +2774,40 @@ window.addEventListener('resize', function(){
                   } else if (etype === 'chunk') {
                     accumulated += obj.text || '';
                     scheduleRender(false);
-                  } else if (etype === 'done') {
-                    scheduleRender(true);
-                    sifuStatus.textContent = '✅ ซินแสอ่านเสร็จ · บันทึกถาวรแล้ว';
-                    setTimeout(()=>{sifuStatus.style.display='none';}, 3000);
-                    regenBtn.style.display = '';
-                  } else if (etype === 'error') {
-                    sifuStatus.textContent = '⚠ เกิดข้อผิดพลาด: ' + (obj.error || 'unknown');
-                  }
-                } catch(_){}
-              }
-            }
-          } catch(e) {
-            sifuStatus.textContent = '⚠ ติดต่อซินแสไม่ได้: ' + (e.message || e);
-            sifuPrompt.style.display = '';
-          }
-        }
-        if (askBtn) askBtn.addEventListener('click', () => loadSifuOverview(false));
-        if (regenBtn) regenBtn.addEventListener('click', () => {
-          if (confirm('อ่านใหม่จะใช้เวลา 30-60 วินาที · ของเดิมจะถูกแทนที่ · ดำเนินการ?')) {
-            loadSifuOverview(true);
-          }
-        });
-        /* auto-check cache · ถ้ามี render ทันที (ไม่ต้องกดปุ่ม) · ไม่ stream เพราะ user เปิดหน้า refresh */
-        (async () => {
-          try {
-            const hash = await pillarsHashClient(d.pillars);
-            const r = await fetch(`/api/chart/overview?hash=${hash}&lang=${lang}&lp=${curIdx}&cy=${cyYear}`);
-            const j = await r.json();
-            if (j.cached && j.content) {
-              sifuBox.innerHTML = md2html(j.content);
-              sifuBox.style.display = '';
-              sifuPrompt.style.display = 'none';
-              regenBtn.style.display = '';
-              /* badge บอก user ว่าอ่านจากบันทึก */
-              if (sifuStatus) {
-                sifuStatus.style.display = '';
-                sifuStatus.innerHTML = '📜 <span style="opacity:.8">อ่านจากบันทึกครั้งก่อน · กด "🔄 อ่านใหม่" ด้านบนถ้าต้องการครั้งใหม่</span>';
-                setTimeout(()=>{sifuStatus.style.display='none';}, 6000);
-              }
-            }
-          } catch(_){}
-        })();
-      }
+	                  } else if (etype === 'done') {
+	                    scheduleRender(true);
+	                    sifuStatus.textContent = 'ซินแสตอบเสร็จแล้ว';
+	                    setTimeout(()=>{sifuStatus.style.display='none';}, 3000);
+	                    if (askBtn) { askBtn.disabled = false; askBtn.textContent = 'ถามซินแส'; }
+	                  } else if (etype === 'error') {
+	                    sifuStatus.textContent = '⚠ เกิดข้อผิดพลาด: ' + (obj.error || 'unknown');
+	                    if (askBtn) { askBtn.disabled = false; askBtn.textContent = 'ถามซินแส'; }
+	                  }
+	                } catch(_){}
+	              }
+	            }
+	            if (askBtn) { askBtn.disabled = false; askBtn.textContent = 'ถามซินแส'; }
+	          } catch(e) {
+	            sifuStatus.textContent = '⚠ ติดต่อซินแสไม่ได้: ' + (e.message || e);
+	            if (askBtn) { askBtn.disabled = false; askBtn.textContent = 'ถามซินแส'; }
+	          }
+	        }
+	        if (askBtn) askBtn.addEventListener('click', () => {
+	          const q = (questionBox?.value || '').trim() || 'ช่วยอธิบายภาพรวมตัวตนนี้ให้ลึกขึ้น โดยเน้นจุดแข็ง เงาที่ต้องระวัง และสิ่งที่ควรใช้ในชีวิตจริง';
+	          loadSifuOverview(false, q);
+	        });
+	        document.querySelectorAll('.hk-ov-chip').forEach(btn => {
+	          btn.addEventListener('click', () => {
+	            if (questionBox) questionBox.value = btn.getAttribute('data-q') || '';
+	            questionBox?.focus();
+	          });
+	        });
+	        if (regenBtn) regenBtn.addEventListener('click', () => {
+	          if (confirm('อ่านใหม่จะใช้เวลา 30-60 วินาที · ของเดิมจะถูกแทนที่ · ดำเนินการ?')) {
+	            loadSifuOverview(true);
+	          }
+	        });
+	      }
     } catch (e) { console.warn('[chart] overview render failed:', e); }
 
     // §03 Ten Gods · count visible + hidden stems

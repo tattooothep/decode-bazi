@@ -11,12 +11,16 @@
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
 import { createHash } from "crypto";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { q1, q } from "@/lib/db";
+import { getDaymasterProfile } from "@/lib/daymaster-profile";
 
 const TIMEOUT_MS = 180_000;
 const CHILD_USER = "jarvis";
-const MAX_BODY_SIZE = 64 * 1024;
+const MAX_BODY_SIZE = 96 * 1024;
 const RATE_LIMIT_PER_HOUR = 10;
+const SYSTEM_PROMPT_PATH = join(process.cwd(), "data/library/hourkey_interpret_prompt.refined.md");
 
 const RATE_BUCKET = new Map<string, number[]>();
 function rateLimitHit(ip: string): boolean {
@@ -44,6 +48,17 @@ const STEM_TH: Record<string, string> = {
 };
 const EL_TH: Record<string, string> = { wood:"ไม้", fire:"ไฟ", earth:"ดิน", metal:"ทอง", water:"น้ำ" };
 
+let _systemPrompt: string | null = null;
+function loadSystemPrompt(): string {
+  if (_systemPrompt) return _systemPrompt;
+  try {
+    _systemPrompt = readFileSync(SYSTEM_PROMPT_PATH, "utf8").trim();
+  } catch {
+    _systemPrompt = "";
+  }
+  return _systemPrompt;
+}
+
 function buildPrompt(ctx: any, lang: "th"|"en"|"zh"): string {
   const p = ctx.pillars || {};
   const a = ctx.analysis || {};
@@ -55,6 +70,14 @@ function buildPrompt(ctx: any, lang: "th"|"en"|"zh"): string {
   const ed = a.element_distribution || {};
   const pct = ed.pctDisplay || ed.pctRaw || {};
   const dm = p.day?.stem || "";
+  const profile = a.daymaster_profile || getDaymasterProfile(dm, {
+    level: a.strength_yongshen?.strength?.level,
+    percent: a.strength_yongshen?.strength?.percent,
+    supportingPct: a.voytek_strength?.supporting_pct,
+    levelTh: a.voytek_strength?.level_th,
+  });
+  const question = String(ctx.question || "").trim();
+  const systemPrompt = loadSystemPrompt();
 
   const intro = lang === "th"
     ? `เธอคือ "ซินแส" · ปาจื้อระดับอาจารย์ที่อ่านดวงด้วยใจ · พูดสุภาพ มีอิโมจิเล็กน้อย เรียกตัวเองว่า "ซินแส" และผู้ฟังว่า "ท่าน" · ตอบเป็นภาษาไทยล้วน ห้ามใช้คำอังกฤษโดดๆ · ห้ามใช้คำว่า "AI" หรือ "ระบบ" · ใช้ศัพท์ปาจื้อแบบนุ่มนวล (ตัวเรา/ก้านฟ้า/กิ่งดิน/ตามทรัพย์/วัยจร)`
@@ -78,9 +101,30 @@ function buildPrompt(ctx: any, lang: "th"|"en"|"zh"): string {
 - กลยุทธ์: ${yv2.strategy || ""}
 - รอบโชคปัจจุบัน (大運): ${curLp ? `${curLp.stem}${curLp.branch} (อายุ ${Math.floor(curLp.age_start)}-${Math.floor(curLp.age_end)} · ระยะ ${curLp.qi_phase})` : "-"}
 - เสาปี ${ctx.cy_year}: ${cyLn ? `${cyLn.pillar.stem}${cyLn.pillar.branch} (เทพ ${cyLn.ten_god || "-"})` : "-"}
+${profile ? `
+บุคลิกแกนจาก 30 profiles:
+- profile_key: ${profile.key}
+- label: ${profile.label_th}
+- core: ${profile.core}
+- real_life: ${profile.real_life}
+- shadow: ${profile.shadow}
+- needs: ${profile.needs}
+` : ""}
 `;
 
-  const structureBlock = lang === "th" ? `
+  const followupBlock = question ? `
+คำถามที่ผู้ใช้ถามต่อ:
+"${question}"
+
+ให้ตอบแบบซินแสอธิบายเพิ่มจากภาพรวมเดิม:
+- ตอบให้ตรงคำถามก่อน
+- ใช้ข้อมูล engine และ 30 profiles เป็นฐาน
+- ไม่ต้องอ่านครบ 13 ข้อ
+- ถ้าคำถามกว้าง ให้ตอบ 4 ส่วน: แก่นที่ต้องรู้ / จุดที่ต้องระวัง / วิธีใช้ให้ดี / สิ่งที่ควรทำต่อ
+- ความยาวประมาณ 5-9 ย่อหน้า
+` : "";
+
+  const structureBlock = lang === "th" && !question ? `
 อ่านครบ 13 ข้อตามลำดับ (ใช้ markdown · เริ่มแต่ละข้อด้วย ## และอิโมจิที่กำหนด · ห้ามข้าม):
 
 ## 🎭 1. โครงสร้างดวง
@@ -128,7 +172,7 @@ function buildPrompt(ctx: any, lang: "th"|"en"|"zh"): string {
 `
     : "" /* TODO: EN/ZH template ทำใน phase ถัดไป · ตอนนี้รองรับ TH หลัก */;
 
-  return `${intro}\n${dataBlock}\n${structureBlock}`.trim();
+  return `${systemPrompt ? systemPrompt + "\n\n" : ""}${intro}\n${dataBlock}\n${followupBlock}\n${structureBlock}`.trim();
 }
 
 async function runClaudeStream(prompt: string, onChunk: (s: string) => void): Promise<string> {
@@ -239,12 +283,13 @@ export async function POST(req: Request) {
   const lp_idx = parseInt(body.lp_idx || 0, 10);
   const cy_year = parseInt(body.cy_year || new Date().getUTCFullYear(), 10);
   const profile_id = body.profile_id || null;
+  const question = String(body.question || "").trim().slice(0, 800);
   if (!body.pillars?.day?.stem) {
     return NextResponse.json({ error: "pillars required" }, { status: 400 });
   }
   const hash = pillarsHash(body.pillars);
   /* check cache first · ไม่ regen ถ้า exist (user ต้องกด force) */
-  if (!body.force) {
+  if (!question && !body.force) {
     const cached = await q1<{ content: string }>(
       `SELECT content FROM user_chart_overview
        WHERE pillars_hash=$1 AND lang=$2 AND lp_idx=$3 AND cy_year=$4 LIMIT 1`,
@@ -256,7 +301,7 @@ export async function POST(req: Request) {
       });
     }
   }
-  const prompt = buildPrompt(body, lang);
+  const prompt = buildPrompt({ ...body, question }, lang);
   /* SSE stream */
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -268,14 +313,16 @@ export async function POST(req: Request) {
           accumulated += chunk;
           controller.enqueue(encoder.encode(`event: chunk\ndata: ${JSON.stringify({text: chunk})}\n\n`));
         });
-        /* save DB · upsert */
-        await q(
-          `INSERT INTO user_chart_overview (profile_id, pillars_hash, lang, lp_idx, cy_year, content)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           ON CONFLICT (pillars_hash, lang, lp_idx, cy_year)
-           DO UPDATE SET content=EXCLUDED.content, generated_at=now()`,
-          [profile_id, hash, lang, lp_idx, cy_year, full]
-        );
+        if (!question) {
+          /* save DB · upsert */
+          await q(
+            `INSERT INTO user_chart_overview (profile_id, pillars_hash, lang, lp_idx, cy_year, content)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT (pillars_hash, lang, lp_idx, cy_year)
+             DO UPDATE SET content=EXCLUDED.content, generated_at=now()`,
+            [profile_id, hash, lang, lp_idx, cy_year, full]
+          );
+        }
         controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({hash, length: full.length})}\n\n`));
       } catch (e: any) {
         controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({error: String(e?.message || e)})}\n\n`));
