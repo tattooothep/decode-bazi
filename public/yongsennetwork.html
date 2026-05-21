@@ -750,9 +750,11 @@
     return '';
   }
   function inferNetworkGroup(rel, name, nickname){
-    const text = [rel, name, nickname].filter(Boolean).join(' ').toLowerCase();
-    if (!text.trim()) return null;
-    const has = (re) => re.test(text);
+    const relText = String(rel || '').trim().toLowerCase();
+    const fallbackText = [name, nickname].filter(Boolean).join(' ').toLowerCase();
+    function classify(text){
+      if (!text.trim()) return null;
+      const has = (re) => re.test(text);
     if (has(/(แฟน|คู่รัก|คนรัก|girlfriend|boyfriend|lover|情|愛|恋)/i)) {
       return { group:'love', confidence:'strong' };
     }
@@ -768,7 +770,13 @@
     if (has(/(คู่แข่ง|ศัตรู|rival|competitor|enemy|競)/i)) {
       return { group:'rival', confidence:'strong' };
     }
-    return { group:'friend', confidence:'weak' };
+      return null;
+    }
+    const byRel = classify(relText);
+    if (byRel) return byRel;
+    const byName = classify(fallbackText);
+    if (byName) return byName;
+    return relText || fallbackText ? { group:'friend', confidence:'weak' } : null;
   }
   async function loadPeopleFromDB(){
     try {
