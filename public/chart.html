@@ -1533,8 +1533,8 @@
   <!-- §08 BASIC BAZI · ปาจื้อพื้นฐาน (live data จาก /api/chart) ─────────── -->
   <!-- §10 BASIC BAZI · REMOVED 20 พ.ค. 2026 · ซ้ำ §02 §04 §06 §07 -->
 
-  <!-- §09 ภาพรวม 2026 + ซินแสตอบ ─────────── -->
-  <section class="sec hk-sifu" id="hk-sifu-box">
+  <!-- §11 流年 2026 + ซินแสตอบ · removed: ซ้ำกับ §00 30-profile follow-up -->
+  <section class="sec hk-sifu" id="hk-sifu-box" style="display:none" hidden>
     <div class="hk-sifu-head">
       <div class="l">
         <span class="num">11 · 流年 2026</span>
@@ -1928,6 +1928,7 @@ window.addEventListener('resize', function(){
 /* §08 ซินแสตอบ · AI overview + follow-up + history (3 ภาษา) */
 (function(){
   var box = document.getElementById('hk-sifu-box'); if (!box) return;
+  if (box.hasAttribute('hidden')) return;
   var output = document.getElementById('hk-sifu-output');
   var ask = document.getElementById('hk-sifu-ask');
   var input = document.getElementById('hk-sifu-input');
