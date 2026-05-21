@@ -4338,6 +4338,16 @@ window.applyI18N = applyI18N;
     const rel = p.role || tx(p.roleKey||'') || '';
     return `${elem.role || 'บทบาททั่วไป'}${rel ? ` · ${rel}` : ''}`;
   }
+  function listYongshenField(v){
+    if (!v) return [];
+    if (Array.isArray(v)) return v.map(x => typeof x === 'string' ? x : x?.element).filter(Boolean);
+    if (typeof v === 'object' && Array.isArray(v.elements)) return v.elements.filter(Boolean);
+    return [];
+  }
+  function getCenterYongshenV2(center){
+    if (!center) return null;
+    return (window._engineYongshenV2 || {})[center.id] || (center.id === 'self' ? (window._engineYongshenV2 || {})['self'] : null);
+  }
   function assignActivityRoles(team, center, tpl){
     const taken = new Set();
     return tpl.roles.map(role => {
@@ -4559,7 +4569,10 @@ window.applyI18N = applyI18N;
         /* 2. center 用神 match กับคนในทีม (เปลี่ยน center ได้) */
         const self = team.find(p => p.id === state.teamCenter) || team.find(p => p.id === 'self');
         if (self && self.yongshenTop3 && self.yongshenTop3.length) {
-          const yong1 = self.yongshenTop3[0].element;
+          const yv2 = getCenterYongshenV2(self);
+          const primaryYs = listYongshenField(yv2?.primary_yongshen);
+          const jishenEls = listYongshenField(yv2?.jishen);
+          const yong1 = primaryYs[0] || self.yongshenTop3[0].element;
           const yong1TH = EL_TH3[yong1] || yong1;
           const matchers = team.filter(p => p.id !== self.id && p.elem === yong1);
           if (matchers.length) {
@@ -4567,13 +4580,24 @@ window.applyI18N = applyI18N;
           } else {
             badList.push(`· ยังไม่มีคนใน用神 <b>${yong1TH}</b> — ลองหาเพิ่ม`);
           }
-          /* 3. ระวัง 忌神 */
+          /* 3. ระวัง 忌神 · ใช้ wrapper7 ก่อน ห้ามเดาจาก DM cycle เป็นหลัก */
           const dmEl = STEM_EL2[self.pillars?.day?.stem];
-          if (dmEl) {
-            const KESHEN = {wood:'metal', fire:'water', earth:'wood', metal:'fire', water:'earth'};
-            const ke = KESHEN[dmEl];
-            const enemies = team.filter(p => p.id !== self.id && p.elem === ke);
-            if (enemies.length) badList.push(`⚠ <b>忌神 ${EL_TH3[ke]||ke}</b> มาจาก <b>${enemies.map(p => p.name).join(', ')}</b> — ระวังการตัดสินใจร่วม`);
+          const jishenMembers = jishenEls.length
+            ? team.filter(p => p.id !== self.id && jishenEls.includes(p.elem))
+            : [];
+          if (jishenMembers.length) {
+            const byEl = {};
+            jishenMembers.forEach(p => { (byEl[p.elem] = byEl[p.elem] || []).push(p); });
+            Object.keys(byEl).forEach(el => {
+              badList.push(`⚠ <b>忌神 ${EL_TH3[el]||el}</b> มาจาก <b>${byEl[el].map(p => p.name).join(', ')}</b> — ใช้เป็น Challenger/Blind spot checker · ไม่ควรเป็น final approver เดี่ยว`);
+            });
+          } else if (dmEl) {
+            const PRESSURE_EL = {wood:'metal', fire:'water', earth:'wood', metal:'fire', water:'earth'};
+            const pressure = PRESSURE_EL[dmEl];
+            const challengers = pressure ? team.filter(p => p.id !== self.id && p.elem === pressure) : [];
+            if (challengers.length) {
+              badList.push(`⚠ ธาตุ <b>${EL_TH3[pressure]||pressure}</b> จาก <b>${challengers.map(p => p.name).join(', ')}</b> กดจังหวะของ center — ใช้เป็น Challenger ได้ แต่ต้องมี moderator ตอนตัดสินใจ`);
+            }
           }
         }
         /* 4. high synergy pairs */
