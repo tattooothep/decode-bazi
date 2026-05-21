@@ -787,8 +787,10 @@
 
       let tags = '';
       if(state.overlay==='personal'){
-        if(score>=18) tags = '<span class="d-tag good">用神</span>';
-        else if(score<=-15) tags = '<span class="d-tag bad">忌神</span>';
+        const role = d.verdict && d.verdict.role;
+        if(role === 'yongshen') tags = '<span class="d-tag good">用神</span>';
+        else if(role === 'xishen') tags = '<span class="d-tag special">喜神</span>';
+        else if(role === 'jishen') tags = '<span class="d-tag bad">忌神</span>';
       } else {
         /* tongshu mode · use 12 day-officer 建除满平定执破危成收开闭 */
         const off = d.day_officer || '';
@@ -927,8 +929,25 @@
             jiSfx:gl?` — 忌${gl}`:' — 忌做大事' }
     }[lg] || VTPL_TH;
     /* 17 พ.ค. threshold ใหม่ ตามอาเจ็กฮ้ง · ละเอียด 5 ระดับ */
+    const role = d.verdict && d.verdict.role;
+    const ROLE_TPL = {
+      th: {
+        xishen: { head:'วัน <span class="vtc">喜神</span> รอง', sfx:gl?` — พอช่วยเรื่อง${gl}ได้ แต่ไม่แรงเท่า用神`:' — ช่วยได้แบบมีเงื่อนไข ไม่ใช่用神หลัก' },
+        jishen: { head:'วัน <span class="vtc">忌神</span>', sfx:gl?` — ระวัง${gl}`:' — ระวังเรื่องสำคัญ' },
+      },
+      en: {
+        xishen: { head:'<span class="vtc">喜神</span> support day', sfx:gl?` — usable for ${gl}, lighter than 用神`:' — conditional support, not primary 用神' },
+        jishen: { head:'<span class="vtc">忌神</span> caution day', sfx:gl?` — be careful with ${gl}`:' — be careful with important matters' },
+      },
+      zh: {
+        xishen: { head:'<span class="vtc">喜神</span> 輔助日', sfx:gl?` — 可用於${gl}，但不如用神`:' — 可助，但非主用神' },
+        jishen: { head:'<span class="vtc">忌神</span> 慎日', sfx:gl?` — 慎於${gl}`:' — 慎重行事' },
+      },
+    }[lg] || {};
     let vText = '';
-    if(score>=20)      vText = `${VTPL.use}${VTPL.useSfx}`;
+    if(role === 'xishen' && score >= 10) vText = `${ROLE_TPL.xishen.head}${ROLE_TPL.xishen.sfx}`;
+    else if(role === 'jishen' && score < 65) vText = `${ROLE_TPL.jishen.head}${ROLE_TPL.jishen.sfx}`;
+    else if(score>=20 && role === 'yongshen') vText = `${VTPL.use}${VTPL.useSfx}`;
     else if(score>=10) vText = `${VTPL.flat}${VTPL.flatSfx}`;
     else if(score>=-9) vText = `${VTPL.neut}${VTPL.neutSfx}`;
     else if(score>=-19)vText = `${VTPL.caut}${VTPL.cautSfx}`;

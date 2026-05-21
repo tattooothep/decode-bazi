@@ -4,7 +4,7 @@
  * Returns: full month batch · pillar + lunar + tongshu + verdict + 6 goals
  *
  * Scoring · 3-layer
- *  - คะแนนหลัก: ธาตุก้านวัน/กิ่งวัน vs friendlyElements ของ user (wrapper-6 yongshenFinal)
+ *  - คะแนนหลัก: wrapper-7 strict · primary_yongshen เป็น用神จริง, xishen เป็น喜神รอง
  *  - 6 เป้าหมาย: mapping ten god ของวันต่อ DM (ตำราคลาสสิก)
  *  - fallback: wrapper-4 useful_god ถ้าไม่มี birthDate
  */
@@ -92,7 +92,16 @@ type DayCell = {
     day:   { stem: string; branch: string; hex: { num: number; zh: string; th: string; en: string; symbol: string } | null };
     hour:  { stem: string; branch: string; hex: { num: number; zh: string; th: string; en: string; symbol: string } | null };
   };
-  verdict: { score: number; label: string; level: "best" | "good" | "ok" | "caution" | "avoid" } | null;
+  verdict: {
+    score: number;
+    label: string;
+    level: "best" | "good" | "ok" | "caution" | "avoid";
+    tags?: string[];
+    flags?: string[];
+    role?: "yongshen" | "xishen" | "jishen" | "neutral";
+    role_element?: string | null;
+    role_label?: string;
+  } | null;
   goals?: { wealth: number; career: number; love: number; family: number; health: number; travel: number };
   /* 19 พ.ค. spec #2 · 15 หมวด tongshu */
   intentStatus?: Record<string, 'good'|'neutral'|'bad'>;
@@ -183,6 +192,30 @@ function levelOf(s: number): "best" | "good" | "ok" | "caution" | "avoid" {
 
 function clip(n: number) { return Math.max(5, Math.min(95, Math.round(n))); }
 
+function listFromSynthField(v: any): string[] {
+  if (!v) return [];
+  if (Array.isArray(v)) return v.map((x: any) => typeof x === "string" ? x : x?.element).filter(Boolean);
+  if (typeof v === "object" && Array.isArray(v.elements)) return v.elements.filter(Boolean);
+  return [];
+}
+
+function classifyWrapper7DayRole(
+  stemEl: string,
+  branchEl: string,
+  primary: string[],
+  xishen: string[],
+  jishen: string[],
+): { role: "yongshen" | "xishen" | "jishen" | "neutral"; element: string | null; label: string } {
+  const hits = [stemEl, branchEl].filter(Boolean);
+  const y = hits.find(e => primary.includes(e));
+  if (y) return { role: "yongshen", element: y, label: "用神" };
+  const x = hits.find(e => xishen.includes(e));
+  if (x) return { role: "xishen", element: x, label: "喜神" };
+  const j = hits.find(e => jishen.includes(e));
+  if (j) return { role: "jishen", element: j, label: "忌神" };
+  return { role: "neutral", element: null, label: "平" };
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const year = parseInt(url.searchParams.get("year") || "0", 10);
@@ -200,10 +233,14 @@ export async function GET(req: Request) {
 
     /* === resolve user yongshen
      * 18 พ.ค. Codex APPROVED migration · wrapper-6 → wrapper-7
-     * friendly = primary_yongshen + xishen (จาก wrapper-7)
+     * strict policy:
+     * primary_yongshen = 用神หลัก ใช้คิดคะแนน
+     * xishen           = 喜神รอง ใช้บอกสถานะ/คำอธิบาย แต่ไม่ยกเป็น用神
      * jishen   = explicit จาก wrapper-7 (ไม่ใช่ "5 - friendly")
      * fallback · wrapper-6 ถ้า wrapper-7 ล้ม */
     let friendly: string[] = [];
+    let primaryYongshen: string[] = [];
+    let xishenElements: string[] = [];
     let userDM = dmArg;
     let source = "fallback";
     let userPillars: any = null;
@@ -216,9 +253,11 @@ export async function GET(req: Request) {
         const wrapped = await getYongshenSynth(birthDate, birthTime, birthLng);
         if (wrapped && wrapped.synth) {
           const ex = extractFromSynth(wrapped.synth);
+          primaryYongshen = listFromSynthField(wrapped.synth?.primary_yongshen);
+          xishenElements = listFromSynthField(wrapped.synth?.xishen);
           userDM = wrapped.calc.pillars.day.stem;
           userPillars = wrapped.calc.pillars;
-          friendly = ex.yongshen;        /* primary + xishen */
+          friendly = primaryYongshen.length ? primaryYongshen : ex.yongshen; /* strict: primary only */
           jishenElements = ex.jishen;     /* explicit · ไม่ใช่ 5-friendly */
           dominantJishen = ex.dominantJishen;
           source = "wrapper-7";
@@ -240,6 +279,8 @@ export async function GET(req: Request) {
           userPillars = calc.pillars;
           const top3 = ((calc.yongshen as any[]) || []).slice(0, 3);
           friendly = Array.from(new Set(top3.map((y: any) => y.element).filter(Boolean)));
+          primaryYongshen = friendly.slice(0, 1);
+          xishenElements = friendly.slice(1);
           const allEls = ['wood','fire','earth','metal','water'];
           jishenElements = allEls.filter(e => !friendly.includes(e));
           source = "wrapper-6-fallback";
@@ -254,6 +295,8 @@ export async function GET(req: Request) {
         const w4 = await import("../../../../data/library/wrappers/4-useful-god.js");
         const ug = w4.getUsefulGod(dmArg) as { summary?: { friendlyElements?: string[] } };
         friendly = ug?.summary?.friendlyElements || [];
+        primaryYongshen = friendly.slice(0, 1);
+        xishenElements = friendly.slice(1);
         source = "wrapper-4";
       } catch (_) {}
     }
@@ -296,7 +339,17 @@ export async function GET(req: Request) {
         }
         score = clip(score);
         const lvl = levelOf(score);
-        verdict = { score, label: lvl.toUpperCase(), level: lvl, tags, flags };
+        const role = classifyWrapper7DayRole(stemEl, branchEl, primaryYongshen.length ? primaryYongshen : friendly, xishenElements, jishenElements);
+        verdict = {
+          score,
+          label: lvl.toUpperCase(),
+          level: lvl,
+          tags,
+          flags,
+          role: role.role,
+          role_element: role.element,
+          role_label: role.label,
+        };
 
         /* 6 goals · base = verdict score · + ten god boost */
         const boost = tg ? GOAL_BOOST[tg] || {} : {};
@@ -423,6 +476,10 @@ export async function GET(req: Request) {
       year, month,
       dm: userDM,
       friendly_elements: friendly,
+      primary_yongshen: primaryYongshen.length ? primaryYongshen : friendly,
+      xishen_elements: xishenElements,
+      jishen_elements: jishenElements,
+      score_policy: "wrapper7-strict-primary",
       score_source: source,
       month_pillar: monthPillarPrimary,        /* backward compat */
       month_pillar_label: monthPillarLabel,    /* ใหม่ · แสดง transition */
