@@ -335,6 +335,10 @@
   .team-activity-bar label span{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;}
   .team-activity-bar select{width:100%;background:var(--bg);border:1px solid var(--tile-bd);border-radius:10px;color:var(--fg);padding:10px 12px;font-family:var(--thai);font-size:13px;outline:none;}
   .team-activity-bar select:focus{border-color:var(--gold);}
+  .team-activity-actions{display:flex;flex-direction:column;gap:6px;min-width:170px;}
+  .team-activity-actions span{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;}
+  .team-activity-actions button{height:39px;background:linear-gradient(135deg,var(--gold),#d9b873);border:0;border-radius:10px;color:#16110a;font-family:var(--thai);font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 10px 28px rgba(180,144,82,.18);}
+  .team-activity-actions button:hover{filter:brightness(1.05);transform:translateY(-1px);}
   .team-activity-dashboard{display:grid;gap:14px;margin-bottom:18px;}
   .team-fit-grid{display:grid;grid-template-columns:1.2fr repeat(4,1fr);gap:10px;}
   .team-fit-card{background:var(--bg);border:1px solid var(--tile-bd);border-radius:14px;padding:14px;min-height:104px;}
@@ -446,6 +450,7 @@
   @media (max-width:480px){
     .team-fit-grid{grid-template-columns:1fr;}
     .team-activity-bar label{min-width:100%;}
+    .team-activity-actions{min-width:100%;}
     .cmp-row{grid-template-columns:1fr;}
     .matrix-table{font-size:9px;}
     .solar{height:480px;}
@@ -648,12 +653,45 @@
         <label>
           <span>กิจกรรม</span>
           <select id="tb-activity-select">
-            <option value="deal_closing">เจรจา / ปิดดีล</option>
-            <option value="strategy">วางกลยุทธ์</option>
-            <option value="execution">ลุยงาน / ส่งมอบ</option>
-            <option value="operations">วางระบบ / Operations</option>
-            <option value="creative">ครีเอทีฟ / แคมเปญ</option>
-            <option value="crisis">แก้วิกฤต</option>
+            <optgroup label="Business">
+              <option value="deal_closing">เจรจา / ปิดดีล</option>
+              <option value="client_meeting">ประชุมลูกค้า</option>
+              <option value="pitch_deck">Pitch / Presentation</option>
+              <option value="contract_negotiation">ต่อรองสัญญา</option>
+              <option value="pricing">ตั้งราคา / แพ็กเกจ</option>
+              <option value="product_launch">เปิดตัวสินค้า</option>
+              <option value="investor_meeting">คุยนักลงทุน</option>
+              <option value="board_meeting">ประชุมบอร์ด</option>
+            </optgroup>
+            <optgroup label="Team / Work">
+              <option value="strategy">วางกลยุทธ์</option>
+              <option value="project_kickoff">เริ่มโปรเจกต์</option>
+              <option value="roadmap">ทำ Roadmap</option>
+              <option value="execution">ลุยงาน / ส่งมอบ</option>
+              <option value="deadline_push">ดันงานใกล้เดดไลน์</option>
+              <option value="qa_review">ตรวจงาน / QA</option>
+              <option value="operations">วางระบบ / Operations</option>
+              <option value="training">สอนงาน / Training</option>
+              <option value="retrospective">สรุปบทเรียน</option>
+            </optgroup>
+            <optgroup label="People">
+              <option value="hiring_interview">สัมภาษณ์คน</option>
+              <option value="performance_review">Feedback / ประเมินผลงาน</option>
+              <option value="conflict_resolution">ไกล่เกลี่ยความขัดแย้ง</option>
+              <option value="partner_selection">เลือกพาร์ตเนอร์</option>
+            </optgroup>
+            <optgroup label="Creative / Risk">
+              <option value="creative">ครีเอทีฟ / แคมเปญ</option>
+              <option value="content_planning">วางคอนเทนต์</option>
+              <option value="crisis">แก้วิกฤต</option>
+              <option value="legal_review">ตรวจความเสี่ยง / Legal</option>
+              <option value="investment_decision">ตัดสินใจลงทุน</option>
+            </optgroup>
+            <optgroup label="Family / Life">
+              <option value="family_money">คุยเงินในครอบครัว</option>
+              <option value="elder_talk">คุยกับผู้ใหญ่</option>
+              <option value="home_purchase">ซื้อบ้าน / ทรัพย์สิน</option>
+            </optgroup>
           </select>
         </label>
         <label>
@@ -666,6 +704,10 @@
             <option value="safe">ปลอดภัย</option>
           </select>
         </label>
+        <div class="team-activity-actions">
+          <span>AI Assist</span>
+          <button id="tb-ai-plan-btn" type="button">💬 AI จัดทีมให้</button>
+        </div>
       </div>
 
       <div class="team-activity-dashboard" id="tb-activity-dashboard"></div>
@@ -3301,6 +3343,7 @@ window.applyI18N = applyI18N;
           <button class="sifu-quick" data-topic="allies" data-i18n="n.team.t.al">ใครหนุน</button>
           <button class="sifu-quick" data-topic="watch" data-i18n="n.team.t.wt">ใครต้องระวัง</button>
           <button class="sifu-quick" data-topic="element" data-i18n="n.team.t.el">ธาตุที่ขาด</button>
+          <button class="sifu-quick" data-topic="activity">จัดทีมตามกิจกรรม</button>
           <button class="sifu-quick" data-topic="advice" data-i18n="n.team.t.ad">คำแนะนำ</button>
         </div>
         <div class="sifu-log" id="team-sifu-log"></div>
@@ -3869,6 +3912,27 @@ window.applyI18N = applyI18N;
     }
     return { self, members };
   }
+  function getSelectedTeamForSifu(){
+    const all = window.PEOPLE || [];
+    const ids = Array.from(new Set((state.team || ['self']).filter(Boolean)));
+    return ids.map(id => all.find(p => p.id === id)).filter(Boolean);
+  }
+  function getTeamActivityForSifu(){
+    const activities = window.TEAM_ACTIVITIES || {};
+    const activityId = state.teamActivity || 'deal_closing';
+    const tpl = activities[activityId] || activities.deal_closing || {};
+    const elMap = window.TEAM_EL || {};
+    return {
+      id: activityId,
+      label: tpl.label || activityId,
+      priority: state.teamPriority || 'balanced',
+      summary: tpl.summary || '',
+      required: (tpl.required || []).map(e => ({ element:e, label: `${elMap[e]?.zh || e} ${elMap[e]?.th || ''}`.trim() })),
+      support: (tpl.support || []).map(e => ({ element:e, label: `${elMap[e]?.zh || e} ${elMap[e]?.th || ''}`.trim() })),
+      roles: (tpl.roles || []).map(r => ({ label:r.label, elements:r.elements || [], text:r.text || '' })),
+      manual: tpl.manual || [],
+    };
+  }
   async function askTeamSifu(message, topic){
     const { self, members } = getTeamMembers();
     if (!self || !members.length){
@@ -3896,6 +3960,9 @@ window.applyI18N = applyI18N;
           payload: {
             self: { id:'self', name:self.name, pillars:self.pillars },
             members: members.slice(0, 30).map(m => ({ id:m.id, name:m.name, pillars:m.pillars })),
+            selected_team: getSelectedTeamForSifu().slice(0, 30).map(m => ({ id:m.id, name:m.name, role:m.role || '', elem:m.elem, glyph:m.glyph, pillars:m.pillars })),
+            team_center: state.teamCenter || 'self',
+            activity: getTeamActivityForSifu(),
             yongshen_v2_map: ysMap,
           }
         })
@@ -3959,6 +4026,7 @@ window.applyI18N = applyI18N;
         watch:    'ใครในทีมที่ต้องระวัง · ไม่ใช่ศัตรู แต่พลังไม่ตรง · top 3 + วิธีรักษาระยะ',
         element:  'ทีมนี้ขาดธาตุไหน · ใครเติมได้ · ควรหาคนแบบไหนเพิ่ม',
         advice:   'คำแนะนำสั้นๆสำหรับทีมนี้ · เรื่องอะไรควรทำก่อน',
+        activity: 'ช่วยจัดทีมตามกิจกรรมที่เลือกในหน้า Team Fit · ให้บอกใครควรทำบทบาทอะไร ใครเป็นคนตัดสินใจ และจุดที่ต้องคุม',
       };
       askTeamSifu(promptMap[topic]||promptMap.overview, topic);
     });
@@ -4321,6 +4389,309 @@ window.applyI18N = applyI18N;
       manual:['ตั้ง war room เล็กและ role ชัด','ให้คนน้ำรวมข้อเท็จจริงก่อน','ให้ทองตัดสินใจและล็อกกรอบ','ให้ไฟสื่อสารหลังข้อเท็จจริงนิ่งแล้ว'],
     },
   };
+  Object.assign(TEAM_ACTIVITIES, {
+    client_meeting: {
+      label:'ประชุมลูกค้า',
+      summary:'ทีมนี้ต้องสร้างความน่าเชื่อถือ ฟังความต้องการ และพาอีกฝ่ายไปสู่ next step',
+      required:['earth','water','fire'],
+      support:['metal'],
+      roles:[
+        { id:'host', label:'Room Host', elements:['fire','earth'], text:'เปิดห้อง คุมบรรยากาศ และทำให้ลูกค้ารู้สึกมั่นใจ' },
+        { id:'listener', label:'Need Reader', elements:['water'], text:'ฟัง requirement อ่าน pain point และจับสิ่งที่ลูกค้าไม่พูดตรงๆ' },
+        { id:'expert', label:'Credibility Builder', elements:['earth','metal'], text:'ตอบเชิงหลักฐาน กรอบงาน ราคา และข้อจำกัด' },
+        { id:'next', label:'Next-step Closer', elements:['metal','fire'], text:'สรุป action item และล็อกเจ้าของงานถัดไป' },
+      ],
+      manual:['ให้คนน้ำถามก่อน ไม่รีบขาย','ให้ดินตอบความน่าเชื่อถือและ timeline','ให้ไฟพรีเซนต์เฉพาะช่วงที่ต้องดันอารมณ์','ให้ทองสรุป next step เป็นลายลักษณ์อักษร'],
+    },
+    pitch_deck: {
+      label:'Pitch / Presentation',
+      summary:'ทีมนี้ต้องเล่าเรื่องคม มีภาพอนาคต และรองรับคำถามหนักได้',
+      required:['fire','wood','metal'],
+      support:['water','earth'],
+      roles:[
+        { id:'story', label:'Story Lead', elements:['fire'], text:'เล่าเรื่องให้จำง่ายและมีแรงส่ง' },
+        { id:'concept', label:'Concept Builder', elements:['wood'], text:'วาง big idea และ narrative หลัก' },
+        { id:'proof', label:'Proof / Numbers', elements:['metal','earth'], text:'ทำตัวเลข กรอบเหตุผล และหลักฐานรองรับ' },
+        { id:'qa', label:'Q&A Shield', elements:['water','metal'], text:'อ่านคำถามยากและเตรียมคำตอบไม่ให้หลุด' },
+      ],
+      manual:['เริ่มจาก one-line message ก่อนทำ slide','ให้ไฟซ้อม delivery','ให้ทองตัด slide ที่ไม่จำเป็น','ให้คนน้ำเตรียม objection list'],
+    },
+    contract_negotiation: {
+      label:'ต่อรองสัญญา',
+      summary:'ทีมนี้ต้องอ่านแรงกดดัน รักษาผลประโยชน์ และไม่หลุดกรอบกฎหมาย',
+      required:['metal','water','earth'],
+      support:['fire'],
+      roles:[
+        { id:'terms', label:'Terms Owner', elements:['metal'], text:'คุมข้อสัญญา เงื่อนไข และ boundary' },
+        { id:'reader', label:'Counterparty Reader', elements:['water'], text:'อ่านเจตนา อำนาจต่อรอง และจังหวะถอย/รุก' },
+        { id:'anchor', label:'Business Anchor', elements:['earth'], text:'ยึดเป้าธุรกิจ ต้นทุน และความเสี่ยงจริง' },
+        { id:'speaker', label:'Relationship Speaker', elements:['fire'], text:'รักษาบรรยากาศไม่ให้แข็งเกินไป' },
+      ],
+      manual:['ตั้ง walk-away point ก่อนคุย','ให้ทองถือเอกสารหลัก','ให้คนน้ำอ่านภาษากายและเจตนา','ห้ามให้คนไฟตัดสินใจเดี่ยวถ้าเงื่อนไขยังไม่นิ่ง'],
+    },
+    pricing: {
+      label:'ตั้งราคา / แพ็กเกจ',
+      summary:'ทีมนี้ต้องเห็นคุณค่า ต้นทุน ลูกค้า และกรอบการตัดสินใจพร้อมกัน',
+      required:['earth','metal','water'],
+      support:['fire'],
+      roles:[
+        { id:'cost', label:'Cost Owner', elements:['earth'], text:'คุมต้นทุน margin และความเป็นไปได้' },
+        { id:'structure', label:'Package Architect', elements:['metal'], text:'จัด tier เงื่อนไข และข้อยกเว้นให้ชัด' },
+        { id:'market', label:'Market Listener', elements:['water'], text:'อ่าน willingness to pay และคู่แข่ง' },
+        { id:'value', label:'Value Seller', elements:['fire'], text:'ทำให้ราคาถูกเชื่อมกับคุณค่า ไม่ใช่แค่ตัวเลข' },
+      ],
+      manual:['แยกต้นทุนจริงกับ perceived value','ตั้งราคา 3 tier','ให้คนน้ำเช็คเสียงตลาด','ให้ทองล็อกเงื่อนไข discount'],
+    },
+    product_launch: {
+      label:'เปิดตัวสินค้า',
+      summary:'ทีมนี้ต้องมี timing, story, operation และการปิดความเสี่ยงก่อนออกสู่ตลาด',
+      required:['fire','wood','earth'],
+      support:['water','metal'],
+      roles:[
+        { id:'launch', label:'Launch Lead', elements:['fire'], text:'เปิด momentum และคุมจังหวะประกาศ' },
+        { id:'growth', label:'Growth / Channel', elements:['wood'], text:'หาโอกาส ช่องทาง และ partnership' },
+        { id:'ops', label:'Ops Owner', elements:['earth'], text:'คุม supply, support, และ delivery หลัง launch' },
+        { id:'risk', label:'Risk Gate', elements:['metal','water'], text:'ตรวจ bug, legal, และ sentiment ก่อนปล่อย' },
+      ],
+      manual:['ทำ launch checklist','ให้ไฟคุม moment สำคัญ','ให้ดินคุม backend และ support','ให้ทอง/น้ำทำ go-no-go ก่อนประกาศ'],
+    },
+    investor_meeting: {
+      label:'คุยนักลงทุน',
+      summary:'ทีมนี้ต้องเล่าโอกาสใหญ่ แต่ตอบตัวเลขและความเสี่ยงได้หนักแน่น',
+      required:['fire','earth','metal'],
+      support:['water','wood'],
+      roles:[
+        { id:'vision', label:'Vision Speaker', elements:['fire','wood'], text:'เล่าตลาด โอกาส และภาพเติบโต' },
+        { id:'finance', label:'Finance / Unit Economics', elements:['earth','metal'], text:'ตอบตัวเลข runway, margin, และแผนใช้เงิน' },
+        { id:'risk', label:'Risk Reader', elements:['water','metal'], text:'อ่านคำถามแฝงและเตรียม risk mitigation' },
+        { id:'followup', label:'Follow-up Owner', elements:['earth'], text:'ส่งเอกสารและ next step ให้ครบหลังประชุม' },
+      ],
+      manual:['ให้ไฟเปิดด้วย narrative แต่ไม่ overpromise','ให้ดินถือ model ตัวเลข','ให้ทองตอบ governance และเงื่อนไข','ให้คนน้ำจับสัญญาณ investor fit'],
+    },
+    board_meeting: {
+      label:'ประชุมบอร์ด',
+      summary:'ทีมนี้ต้องชัด สั้น มีเหตุผล และรู้ว่าเรื่องไหนต้องขออนุมัติ',
+      required:['earth','metal','water'],
+      support:['fire'],
+      roles:[
+        { id:'agenda', label:'Agenda Owner', elements:['earth'], text:'คุมวาระ เวลา และการตัดสินใจที่ต้องได้' },
+        { id:'governance', label:'Governance / Risk', elements:['metal'], text:'ตรวจความถูกต้อง กฎ และผลผูกพัน' },
+        { id:'context', label:'Context Reader', elements:['water'], text:'อ่านความกังวลของผู้ใหญ่และประเด็นที่ยังไม่พูด' },
+        { id:'presenter', label:'Presenter', elements:['fire'], text:'สรุปให้เข้าใจง่ายและไม่เยิ่นเย้อ' },
+      ],
+      manual:['ส่ง pre-read ก่อน','แยก inform / discuss / approve ให้ชัด','ให้ทองตรวจเอกสาร','ให้คนน้ำเตรียมคำตอบเรื่องความเสี่ยง'],
+    },
+    project_kickoff: {
+      label:'เริ่มโปรเจกต์',
+      summary:'ทีมนี้ต้องเปิดเป้าหมายเดียวกัน กำหนดเจ้าของ และลดความคลุมเครือตั้งแต่วันแรก',
+      required:['fire','earth','wood'],
+      support:['metal'],
+      roles:[
+        { id:'sponsor', label:'Sponsor / Why', elements:['fire'], text:'เปิดเหตุผลและแรงส่งของงาน' },
+        { id:'scope', label:'Scope Owner', elements:['earth','metal'], text:'กำหนดขอบเขต deadline และนิยามคำว่าเสร็จ' },
+        { id:'builder', label:'Builder', elements:['wood'], text:'แตกงาน ทดลองทางเลือก และปลดล็อกปัญหา' },
+        { id:'tracker', label:'Tracker', elements:['earth'], text:'ติดตาม commitment หลัง kickoff' },
+      ],
+      manual:['จบประชุมต้องมี owner ทุกชิ้น','เขียน done definition','กัน scope creep ด้วยทอง','เปิดช่องทดลองด้วยไม้แต่อย่าให้หลุด timeline'],
+    },
+    roadmap: {
+      label:'ทำ Roadmap',
+      summary:'ทีมนี้ต้องเรียงลำดับอนาคตจาก insight, impact และข้อจำกัดจริง',
+      required:['water','wood','earth'],
+      support:['metal'],
+      roles:[
+        { id:'insight', label:'User / Market Insight', elements:['water'], text:'อ่านข้อมูลผู้ใช้ ตลาด และ pattern' },
+        { id:'growth', label:'Opportunity Builder', elements:['wood'], text:'หาเส้นทางเติบโตและ option ใหม่' },
+        { id:'sequence', label:'Sequencer', elements:['earth','metal'], text:'จัดลำดับตาม capacity, dependency และ risk' },
+        { id:'gate', label:'Decision Gate', elements:['metal'], text:'ตัดของที่ไม่คุ้มและตั้งเกณฑ์เข้า roadmap' },
+      ],
+      manual:['ใช้ impact x effort','แยก must/should/could','ให้คนน้ำเริ่มด้วยข้อมูล','ให้ทองล็อก decision rule'],
+    },
+    deadline_push: {
+      label:'ดันงานใกล้เดดไลน์',
+      summary:'ทีมนี้ต้องเร่งแต่ไม่มั่ว ตัด scope เป็น และปิดงานที่ส่งมอบได้จริง',
+      required:['fire','earth','metal'],
+      support:['water'],
+      roles:[
+        { id:'warrior', label:'Momentum Lead', elements:['fire'], text:'เร่งพลังทีมและ unblock เร็ว' },
+        { id:'owner', label:'Delivery Captain', elements:['earth'], text:'คุมสิ่งที่ต้องส่งวันนี้และคนรับผิดชอบ' },
+        { id:'scope', label:'Scope Cutter', elements:['metal'], text:'ตัดสิ่งที่ไม่จำเป็นและกันงานบาน' },
+        { id:'triage', label:'Triage Reader', elements:['water'], text:'อ่านว่าปัญหาไหนทำให้ล้มจริง' },
+      ],
+      manual:['ตั้ง cut line ชัด','เลิกคุยเรื่องใหม่จนกว่าส่งของหลัก','ให้ทองตัด scope','ให้ไฟใช้กับ momentum ไม่ใช่ drama'],
+    },
+    qa_review: {
+      label:'ตรวจงาน / QA',
+      summary:'ทีมนี้ต้องละเอียด เป็นธรรม และจับจุดเสี่ยงก่อนส่งออกจริง',
+      required:['metal','water','earth'],
+      support:['fire'],
+      roles:[
+        { id:'checker', label:'QA Lead', elements:['metal'], text:'ตรวจมาตรฐาน ข้อผิดพลาด และ edge case' },
+        { id:'reader', label:'User Scenario Reader', elements:['water'], text:'อ่านพฤติกรรมใช้งานจริงและสิ่งที่อาจหลุด' },
+        { id:'owner', label:'Fix Owner', elements:['earth'], text:'จัดลำดับ fix และติดตามจนจบ' },
+        { id:'communicator', label:'Release Communicator', elements:['fire'], text:'สื่อสาร known issue และการเปลี่ยนแปลง' },
+      ],
+      manual:['แยก blocker/major/minor','ให้ทองถือ checklist','ให้คนน้ำลอง flow เหมือน user จริง','ให้ดินตามปิด issue ไม่ให้ค้าง'],
+    },
+    training: {
+      label:'สอนงาน / Training',
+      summary:'ทีมนี้ต้องถ่ายทอดง่าย มีระบบ และปรับตามคนเรียน',
+      required:['fire','earth','water'],
+      support:['wood'],
+      roles:[
+        { id:'teacher', label:'Trainer', elements:['fire'], text:'อธิบายให้เข้าใจง่ายและมีพลัง' },
+        { id:'curriculum', label:'Curriculum Owner', elements:['earth','metal'], text:'จัดบทเรียน step, checklist และแบบฝึก' },
+        { id:'listener', label:'Learner Reader', elements:['water'], text:'ดูว่าคนเรียนติดตรงไหนและปรับจังหวะ' },
+        { id:'coach', label:'Coach', elements:['wood'], text:'ต่อยอดและทำให้คนเรียนกล้าลอง' },
+      ],
+      manual:['เริ่มจากสิ่งที่คนเรียนต้องใช้จริง','ใช้ example สั้นๆ','ให้คนน้ำเช็คความเข้าใจ','ให้ดินทำคู่มือหลังสอน'],
+    },
+    retrospective: {
+      label:'สรุปบทเรียน',
+      summary:'ทีมนี้ต้องพูดความจริงโดยไม่ทำลายใจคน และเปลี่ยนบทเรียนเป็นระบบใหม่',
+      required:['water','earth','metal'],
+      support:['fire'],
+      roles:[
+        { id:'facilitator', label:'Facilitator', elements:['water','earth'], text:'เปิดพื้นที่ปลอดภัยและจับ pattern' },
+        { id:'truth', label:'Truth / Root Cause', elements:['metal'], text:'แยกสาเหตุจริงจากข้อแก้ตัว' },
+        { id:'action', label:'Action Owner', elements:['earth'], text:'แปลงบทเรียนเป็น action item' },
+        { id:'energy', label:'Team Energy', elements:['fire'], text:'รักษาขวัญและสรุปให้ทีมอยากไปต่อ' },
+      ],
+      manual:['ถาม what happened ก่อน who did it','ใช้ data ไม่ใช้ความรู้สึกอย่างเดียว','ให้ทองจับ root cause','ปิดด้วย action owner และ deadline'],
+    },
+    hiring_interview: {
+      label:'สัมภาษณ์คน',
+      summary:'ทีมนี้ต้องเห็นทั้งศักยภาพ ความจริง และความเหมาะกับวัฒนธรรมทีม',
+      required:['water','metal','earth'],
+      support:['fire','wood'],
+      roles:[
+        { id:'reader', label:'Candidate Reader', elements:['water'], text:'อ่านเจตนา depth และความจริงหลังคำตอบ' },
+        { id:'standard', label:'Competency Gate', elements:['metal'], text:'ตั้งเกณฑ์และตรวจทักษะตามหลักฐาน' },
+        { id:'culture', label:'Culture / Fit', elements:['earth'], text:'ดูความเสถียรและ fit กับทีมจริง' },
+        { id:'sell', label:'Opportunity Seller', elements:['fire','wood'], text:'ขายวิสัยทัศน์และเส้นทางเติบโตให้คนเก่ง' },
+      ],
+      manual:['ใช้คำถาม behavior-based','ให้ทองทำ scorecard','ให้คนน้ำฟังสิ่งที่ไม่พูด','ห้ามตัดสินจากความถูกใจอย่างเดียว'],
+    },
+    performance_review: {
+      label:'Feedback / ประเมินผลงาน',
+      summary:'ทีมนี้ต้องตรง ยุติธรรม และทำให้คนรู้ว่าจะพัฒนาอย่างไร',
+      required:['earth','metal','water'],
+      support:['fire'],
+      roles:[
+        { id:'manager', label:'Manager / Context', elements:['earth'], text:'ให้ภาพรวม expectation และผลกระทบต่องาน' },
+        { id:'standard', label:'Standard Keeper', elements:['metal'], text:'ยึด metric และเกณฑ์เดียวกัน' },
+        { id:'listener', label:'Empathy Listener', elements:['water'], text:'ฟังเหตุผลและข้อจำกัดของคนถูก review' },
+        { id:'encourage', label:'Growth Energy', elements:['fire','wood'], text:'ทำให้ feedback กลายเป็นแรงพัฒนา' },
+      ],
+      manual:['เริ่มด้วย facts ไม่ใช่ judgment','แยก performance กับตัวตน','ให้ทองถือเกณฑ์','จบด้วย growth plan ที่วัดได้'],
+    },
+    conflict_resolution: {
+      label:'ไกล่เกลี่ยความขัดแย้ง',
+      summary:'ทีมนี้ต้องลดอารมณ์ อ่านความต้องการจริง และตั้งกติกากลับมาทำงานร่วมกัน',
+      required:['water','earth','metal'],
+      support:['fire'],
+      roles:[
+        { id:'mediator', label:'Mediator', elements:['water','earth'], text:'ฟังทั้งสองฝ่ายและทำให้พื้นที่ปลอดภัย' },
+        { id:'rule', label:'Boundary Setter', elements:['metal'], text:'ตั้งกติกาและขอบเขตที่ทุกฝ่ายยอมรับ' },
+        { id:'bridge', label:'Bridge Builder', elements:['wood'], text:'หา option ที่ไม่ใช่แพ้/ชนะ' },
+        { id:'speaker', label:'Tone Keeper', elements:['fire'], text:'สื่อสารให้ไม่แข็งหรือเย็นเกินไป' },
+      ],
+      manual:['ห้ามเริ่มด้วยการหาคนผิด','ให้คนน้ำสะท้อน pain ของแต่ละฝ่าย','ให้ทองตั้งกติกา','จบด้วย next behavior ไม่ใช่แค่ขอโทษ'],
+    },
+    partner_selection: {
+      label:'เลือกพาร์ตเนอร์',
+      summary:'ทีมนี้ต้องมองทั้งโอกาส ความเสี่ยง และความเข้ากันระยะยาว',
+      required:['water','metal','earth'],
+      support:['wood','fire'],
+      roles:[
+        { id:'due', label:'Due Diligence', elements:['water','metal'], text:'ตรวจข้อมูล เจตนา และความเสี่ยงแฝง' },
+        { id:'fit', label:'Fit / Values', elements:['earth'], text:'ดูความเข้ากันด้านวิธีทำงานและความน่าเชื่อถือ' },
+        { id:'growth', label:'Growth Case', elements:['wood','fire'], text:'เห็นโอกาสร่วมและ narrative ที่โตได้' },
+        { id:'terms', label:'Terms Gate', elements:['metal'], text:'ล็อกเงื่อนไข exit, ownership และผลประโยชน์' },
+      ],
+      manual:['ตรวจประวัติก่อนชอบเขา','ทำ small pilot ก่อนผูกยาว','ให้ทองถือสัญญา','ให้คนน้ำอ่าน red flag'],
+    },
+    content_planning: {
+      label:'วางคอนเทนต์',
+      summary:'ทีมนี้ต้องรู้ audience มีไอเดียต่อเนื่อง และทำจริงตาม calendar',
+      required:['wood','fire','water'],
+      support:['earth'],
+      roles:[
+        { id:'idea', label:'Idea Bank', elements:['wood'], text:'แตก angle และ series ได้ต่อเนื่อง' },
+        { id:'voice', label:'Voice / Hook', elements:['fire'], text:'ทำ hook, headline, และ tone ให้มีชีวิต' },
+        { id:'audience', label:'Audience Insight', elements:['water'], text:'อ่านสิ่งที่ผู้ชมสนใจจริงและ timing' },
+        { id:'calendar', label:'Calendar Owner', elements:['earth','metal'], text:'จัดตาราง production และ publish ให้ไม่หลุด' },
+      ],
+      manual:['เริ่มจาก audience pain','แยก pillar content','ให้ไฟทำ hook','ให้ดินล็อก calendar และ owner'],
+    },
+    legal_review: {
+      label:'ตรวจความเสี่ยง / Legal',
+      summary:'ทีมนี้ต้องเห็นข้อผูกพัน จุดเสี่ยง และทางเลือกที่ยังเดินธุรกิจได้',
+      required:['metal','water','earth'],
+      support:['fire'],
+      roles:[
+        { id:'legal', label:'Legal Gate', elements:['metal'], text:'ตรวจข้อผูกพัน กฎหมาย และมาตรฐาน' },
+        { id:'risk', label:'Risk Mapper', elements:['water'], text:'อ่านความเสี่ยงแฝงและ scenario ที่อาจเกิด' },
+        { id:'business', label:'Business Reality', elements:['earth'], text:'บอกผลกระทบจริงต่อเวลา เงิน และ operation' },
+        { id:'explain', label:'Plain-language Explainer', elements:['fire'], text:'แปล legal ให้ทีมเข้าใจและตัดสินใจได้' },
+      ],
+      manual:['ทำ risk register','แยก must fix กับ acceptable risk','ให้ทองอ่านเอกสารจริง','ห้ามให้ไฟสรุปแทน legal ถ้ายังไม่ตรวจ'],
+    },
+    investment_decision: {
+      label:'ตัดสินใจลงทุน',
+      summary:'ทีมนี้ต้องรวมข้อมูล โอกาส ความเสี่ยง และวินัยไม่ให้ตัดสินใจจากอารมณ์',
+      required:['water','earth','metal'],
+      support:['fire'],
+      roles:[
+        { id:'research', label:'Research Lead', elements:['water'], text:'อ่านข้อมูล macro, timing, และ pattern' },
+        { id:'risk', label:'Risk / Position Sizing', elements:['metal'], text:'ตั้ง stop, exposure, และเงื่อนไขออก' },
+        { id:'capital', label:'Capital Owner', elements:['earth'], text:'ดูเงินสด ภาระ และความเสถียรระยะยาว' },
+        { id:'conviction', label:'Conviction Speaker', elements:['fire'], text:'อธิบาย thesis ให้ชัด แต่ไม่ลากทีมด้วยอารมณ์' },
+      ],
+      manual:['เขียน thesis ก่อนซื้อ','กำหนด downside ก่อน upside','ให้ทองถือกติกา exit','ถ้าไฟแรงเกินให้คนน้ำถาม evidence เพิ่ม'],
+    },
+    family_money: {
+      label:'คุยเงินในครอบครัว',
+      summary:'ทีมนี้ต้องรักษาความสัมพันธ์ พูดตัวเลขชัด และมีขอบเขตที่ไม่ทำร้ายกัน',
+      required:['earth','water','metal'],
+      support:['fire'],
+      roles:[
+        { id:'anchor', label:'Family Anchor', elements:['earth'], text:'ประคองความมั่นคงและความไว้ใจ' },
+        { id:'listener', label:'Emotion Listener', elements:['water'], text:'ฟังความกังวลและเรื่องที่พูดยาก' },
+        { id:'boundary', label:'Boundary / Agreement', elements:['metal'], text:'ตั้งเงื่อนไข ตัวเลข และขอบเขตให้ชัด' },
+        { id:'warmth', label:'Warm Communicator', elements:['fire'], text:'ทำให้การคุยไม่เย็นหรือเป็นการตำหนิ' },
+      ],
+      manual:['คุยตัวเลขบนกระดาษ ไม่คุยจากความจำ','แยกเงินกับคุณค่าของคน','ให้ทองเขียนข้อตกลง','ให้คนน้ำฟังความกลัวก่อนสรุป'],
+    },
+    elder_talk: {
+      label:'คุยกับผู้ใหญ่',
+      summary:'ทีมนี้ต้องนุ่มแต่ชัด ให้เกียรติ และค่อยๆ พาไปสู่ข้อสรุป',
+      required:['earth','water','fire'],
+      support:['metal'],
+      roles:[
+        { id:'respect', label:'Respect Anchor', elements:['earth'], text:'ให้เกียรติและรักษาหน้าทุกฝ่าย' },
+        { id:'reader', label:'Mood Reader', elements:['water'], text:'อ่านจังหวะที่ควรพูดหรือควรหยุด' },
+        { id:'speaker', label:'Warm Speaker', elements:['fire'], text:'สื่อสารให้เข้าใจง่ายและไม่แข็ง' },
+        { id:'terms', label:'Agreement Keeper', elements:['metal'], text:'สรุปสิ่งที่ตกลงกันแบบไม่ทำให้รู้สึกถูกบังคับ' },
+      ],
+      manual:['เริ่มจากความตั้งใจดี','อย่าเปิดด้วยการโต้แย้ง','ให้คนน้ำจับอารมณ์ห้อง','ให้ดินสรุปทางออกที่ทุกคนรับได้'],
+    },
+    home_purchase: {
+      label:'ซื้อบ้าน / ทรัพย์สิน',
+      summary:'ทีมนี้ต้องดูเงิน ทำเล เอกสาร และความเหมาะกับชีวิตจริง',
+      required:['earth','metal','water'],
+      support:['fire','wood'],
+      roles:[
+        { id:'finance', label:'Finance Anchor', elements:['earth'], text:'ดูงบ ผ่อน ภาระ และเงินสำรอง' },
+        { id:'document', label:'Document / Legal', elements:['metal'], text:'ตรวจสัญญา โฉนด เงื่อนไข และข้อผูกพัน' },
+        { id:'location', label:'Location Reader', elements:['water','wood'], text:'อ่านทำเล flow ชีวิต และศักยภาพโต' },
+        { id:'family', label:'Family Buy-in', elements:['fire'], text:'ทำให้คนในบ้านเห็นภาพและตัดสินใจร่วมกัน' },
+      ],
+      manual:['อย่าตัดสินจากความชอบวันแรก','ให้ทองตรวจเอกสารก่อนวางเงินใหญ่','ให้ดินคำนวณ worst case','ให้คนน้ำดู flow ชีวิตจริงในพื้นที่'],
+    },
+  });
+  window.TEAM_EL = TEAM_EL;
+  window.TEAM_ACTIVITIES = TEAM_ACTIVITIES;
   const TEAM_PRIORITY_WEIGHTS = {
     balanced: { coverage:.35, synergy:.30, role:.20, risk:.15 },
     speed:    { coverage:.25, synergy:.35, role:.25, risk:.15 },
@@ -4669,6 +5040,17 @@ window.applyI18N = applyI18N;
     const addBtn = e.target.closest('#tb-add-btn');
     if (addBtn) {
       openPickModal(state.team.length);
+      return;
+    }
+    const aiPlanBtn = e.target.closest('#tb-ai-plan-btn');
+    if (aiPlanBtn) {
+      const tpl = TEAM_ACTIVITIES[state.teamActivity] || TEAM_ACTIVITIES.deal_closing;
+      const priorityLabel = ({balanced:'สมดุล', speed:'เร็ว', precision:'แม่น', creative:'ครีเอทีฟ', safe:'ปลอดภัย'})[state.teamPriority] || state.teamPriority || 'สมดุล';
+      if (typeof window.openTeamModal === 'function') window.openTeamModal();
+      window._teamTopic = 'activity';
+      document.querySelectorAll('#team-topics .sifu-quick').forEach(b => b.classList.toggle('active', b.dataset.topic === 'activity'));
+      const msg = `ช่วยจัดทีมสำหรับ "${tpl.label}" เป้าหมาย ${priorityLabel} จากทีมที่เลือกตอนนี้ · บอกบทบาทของแต่ละคน ใครควรเป็นคนตัดสินใจ ใครควรเป็น challenger และถ้าขาดธาตุ/บทบาทให้แนะนำว่าควรเติมคนแบบไหน`;
+      if (typeof askTeamSifu === 'function') askTeamSifu(msg, 'activity');
       return;
     }
     /* confirm modal buttons */
