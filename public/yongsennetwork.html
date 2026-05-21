@@ -3983,6 +3983,7 @@ window.applyI18N = applyI18N;
       if (sendBtn) sendBtn.disabled = false;
     }
   }
+  window.askTeamSifu = askTeamSifu;
   function refreshTeamMeta(){
     const { self, members } = getTeamMembers();
     const cEl = document.getElementById('team-center');
@@ -5050,7 +5051,7 @@ window.applyI18N = applyI18N;
       window._teamTopic = 'activity';
       document.querySelectorAll('#team-topics .sifu-quick').forEach(b => b.classList.toggle('active', b.dataset.topic === 'activity'));
       const msg = `ช่วยจัดทีมสำหรับ "${tpl.label}" เป้าหมาย ${priorityLabel} จากทีมที่เลือกตอนนี้ · บอกบทบาทของแต่ละคน ใครควรเป็นคนตัดสินใจ ใครควรเป็น challenger และถ้าขาดธาตุ/บทบาทให้แนะนำว่าควรเติมคนแบบไหน`;
-      if (typeof askTeamSifu === 'function') askTeamSifu(msg, 'activity');
+      if (typeof window.askTeamSifu === 'function') window.askTeamSifu(msg, 'activity');
       return;
     }
     /* confirm modal buttons */
