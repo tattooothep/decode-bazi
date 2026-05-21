@@ -249,6 +249,9 @@
   .pc-name{font-family:var(--serif);font-size:18px;font-weight:500;color:var(--fg);}
   .pc-role{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-top:2px;}
   .pc-tag{font-family:var(--thai);font-size:11px;color:var(--fg-soft);margin-top:4px;}
+  .pc-overview-btn{display:none;align-self:flex-start;background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--gold);padding:7px 10px;border-radius:999px;font-family:var(--mono);font-size:9px;letter-spacing:.12em;white-space:nowrap;cursor:pointer;transition:.2s;}
+  .person-card.own-mode .pc-overview-btn{display:inline-flex;align-items:center;gap:4px;}
+  .pc-overview-btn:hover{background:var(--gold);color:var(--bg);border-color:var(--gold);}
 
   .pc-score-row{display:grid;grid-template-columns:50px 1fr 36px;align-items:center;gap:10px;padding:6px 0;font-family:var(--mono);font-size:10px;}
   .pc-score-row .lbl{color:var(--fg-faint);letter-spacing:.15em;text-transform:uppercase;font-size:9px;}
@@ -291,6 +294,15 @@
   .hk-forecast-item.bad .sc{color:var(--bad);}
   .hk-forecast-item .tx{color:var(--fg-soft);}
   .hk-forecast-item .tx b{color:var(--gold);font-family:var(--tc);font-weight:700;}
+  .hk-el{font-weight:700;border-radius:6px;padding:0 3px;}
+  .hk-el-fire{color:var(--fire);background:var(--fire-bg);}
+  .hk-el-water{color:var(--water);background:var(--water-bg);}
+  .hk-el-wood{color:var(--wood);background:var(--wood-bg);}
+  .hk-el-metal{color:var(--metal);background:var(--metal-bg);}
+  .hk-el-earth{color:var(--earth);background:var(--earth-bg);}
+  .hk-key-good{color:var(--good);font-weight:700;}
+  .hk-key-bad{color:var(--bad);font-weight:700;}
+  .hk-key-gold{color:var(--gold);font-weight:700;}
   @media (max-width:640px){
     .hk-luck-score{grid-template-columns:1fr;}
     .hk-bd-grid,.hk-forecast-list{grid-template-columns:1fr;}
@@ -1479,6 +1491,26 @@
   function escHtml(s){
     return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
+  function colorizeLuckText(s){
+    let out = escHtml(s);
+    [
+      ['ไฟ','fire'], ['火','fire'],
+      ['น้ำ','water'], ['水','water'],
+      ['ไม้','wood'], ['木','wood'],
+      ['ทอง','metal'], ['金','metal'],
+      ['ดิน','earth'], ['土','earth'],
+    ].forEach(([word, el]) => {
+      out = out.replaceAll(word, `<span class="hk-el hk-el-${el}">${word}</span>`);
+    });
+    [
+      ['用神','gold'], ['喜神','gold'], ['忌神','bad'],
+      ['ช่วยจริง','good'], ['หนุน','good'], ['เด่นมาก','good'], ['ดี','good'],
+      ['ต้องระวัง','bad'], ['ควรประคอง','bad'], ['ชง','bad'], ['กด','bad'], ['แรง','bad'],
+    ].forEach(([word, cls]) => {
+      out = out.replaceAll(word, `<span class="hk-key-${cls}">${word}</span>`);
+    });
+    return out;
+  }
   function ownScoreClass100(n){ return n >= 70 ? 'good' : n < 45 ? 'bad' : 'mid'; }
   function eventClass(ev){ return /-\d|−|忌|沖|刑|害|破|กด|ชง|ระวัง/.test(ev) ? 'bad' : /用神|合|生|หนุน|ช่วย|\+\d/.test(ev) ? 'good' : ''; }
   function renderBreakdownBlock(tf, sc){
@@ -1496,7 +1528,7 @@
       </div>
       <div class="hk-luck-reason">
         ${events.length
-          ? events.map(e => `<div class="hk-bd-row"><span class="k">${escHtml(e)}</span><span class="v ${eventClass(e)}">${eventClass(e)==='bad'?'ระวัง':'หนุน'}</span></div>`).join('')
+          ? events.map(e => `<div class="hk-bd-row"><span class="k">${colorizeLuckText(e)}</span><span class="v ${eventClass(e)}">${eventClass(e)==='bad'?'ระวัง':'หนุน'}</span></div>`).join('')
           : 'ไม่มี event สำคัญ'}
       </div>
     `;
@@ -1509,7 +1541,7 @@
       return `<div class="hk-forecast-item ${cls}">
         <div class="dt">${escHtml(label)}<br><b>${escHtml(x.pillar || '')}</b></div>
         <div class="sc">${escHtml(x.score ?? '—')}</div>
-        <div class="tx">${escHtml(x.summary || '')}</div>
+        <div class="tx">${colorizeLuckText(x.summary || '')}</div>
       </div>`;
     }).join('')}</div>`;
   }
@@ -1546,7 +1578,7 @@
         <div class="hk-luck-big">${escHtml(score)}/100</div>
         <div class="hk-luck-reason">
           <b>${escHtml(tfLabel)}</b> · ${escHtml(sc.pillars?.[tf === 'day' ? 'day' : tf === 'month' ? 'month' : tf === 'year' ? 'year' : 'day'] || '')}<br>
-          ${escHtml(reason || sc.insight?.element || 'คะแนนนี้คำนวณจากเสาจรเทียบ wrapper7 ของดวงนี้')}
+          ${colorizeLuckText(reason || sc.insight?.element || 'คะแนนนี้คำนวณจากเสาจรเทียบ wrapper7 ของดวงนี้')}
         </div>
       </div>
       ${renderBreakdownBlock(tf, sc)}
@@ -1666,7 +1698,7 @@
       }).join('');
 
       grid.insertAdjacentHTML('beforeend', `
-        <div class="person-card score-${sClass}" data-id="${p.id}">
+        <div class="person-card score-${sClass}${isOwn ? ' own-mode' : ''}" data-id="${p.id}">
           <div class="pc-head">
             <div class="pc-avatar elem-${p.elem}">${p.glyph}</div>
             <div class="pc-meta">
@@ -1674,6 +1706,7 @@
               <div class="pc-role">${resolveRole(p)}</div>
               <div class="pc-tag">${resolveTag(p)}</div>
             </div>
+            <button class="pc-overview-btn" data-own-overview="1" data-person-id="${escHtml(p.id)}" type="button">ดูภาพรวม</button>
           </div>
           <div class="pc-scores-block">${rows}</div>
           <div class="pc-rel">${isOwn ? '' : tagsHTML}</div>
@@ -2703,6 +2736,13 @@ window.applyI18N = applyI18N;
   const pg = document.getElementById('people-grid');
   if (pg) {
     pg.addEventListener('click', function(e){
+      const overviewBtn = e.target.closest('[data-own-overview]');
+      if (overviewBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        openOwnScoreModal(overviewBtn.dataset.personId, 'day');
+        return;
+      }
       const scoreBtn = e.target.closest('[data-own-score-open]');
       if (scoreBtn) {
         e.preventDefault();
