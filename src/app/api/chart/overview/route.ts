@@ -210,8 +210,8 @@ async function runClaudeStream(prompt: string, onChunk: (s: string) => void): Pr
           let txt = "";
           /* แบบ 1 · stream_event.delta.text */
           if (ev.event?.delta?.text) txt = ev.event.delta.text;
-          /* แบบ 2 · message.content[].text (เต็ม) · ใช้เป็น fallback ถ้าไม่มี delta */
-          else if (ev.type === "assistant" && ev.message?.content) {
+          /* แบบ 2 · message.content[].text (เต็ม) · fallback เฉพาะกรณีไม่มี partial delta */
+          else if (!fullText && ev.type === "assistant" && ev.message?.content) {
             const parts = ev.message.content;
             if (Array.isArray(parts)) {
               for (const p of parts) if (p.type === "text" && p.text) txt += p.text;
