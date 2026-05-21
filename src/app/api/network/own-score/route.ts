@@ -173,7 +173,15 @@ function scorePillar(opts: {
   /* 18 พ.ค. · ใส่ tags จาก unified ลงท้าย reasons เป็น signature */
   if (unified.tags?.length) reasons.push(`unified: ${unified.tags.slice(0,4).join('·')}`);
 
-  return { score, reasons };
+  return {
+    score,
+    reasons,
+    label: unified.label,
+    level: unified.level,
+    tags: unified.tags || [],
+    flags: unified.flags || [],
+    breakdown: unified.breakdown,
+  };
 }
 
 async function getPillarsForDate(date: string) {
@@ -258,9 +266,88 @@ function luckText(lp: any, dm: string, yongshenPrimary: string[], xishen: string
   return `${lp.stem}${lp.branch} · เฉย (${th})`;
 }
 
+function roleForPillar(
+  pillar: Pillar,
+  yongshenPrimary: string[],
+  xishen: string[],
+  jishen: string[],
+  diseases: string[] = [],
+) {
+  const stemEl = STEM_EL[pillar.stem];
+  const branchEl = BR_EL[pillar.branch];
+  const dryHeat = diseases.includes("dry_resource_burned") || diseases.includes("hot_drought_no_water");
+  const hit = [stemEl, branchEl].filter(Boolean);
+  const primary = hit.find(e => yongshenPrimary.includes(e));
+  if (primary) return { kind: "primary", text: `ได้${EL_TH[primary] || primary}ช่วยจริง`, element: primary };
+  const joy = hit.find(e => xishen.includes(e));
+  if (joy) {
+    if (joy === "fire" && dryHeat) return { kind: "conditional", text: "ไฟมีโอกาสแต่แรง ต้องคุม", element: joy };
+    return { kind: "conditional", text: `${EL_TH[joy] || joy}ใช้ได้แบบมีเงื่อนไข`, element: joy };
+  }
+  const bad = hit.find(e => jishen.includes(e));
+  if (bad) return { kind: "jishen", text: `${EL_TH[bad] || bad}เป็น忌神 ต้องระวัง`, element: bad };
+  return { kind: "neutral", text: "กลาง ๆ ใช้ตามจังหวะ", element: stemEl || branchEl || "" };
+}
+
+function scoreTitle(score: number) {
+  if (score >= 80) return "เด่นมาก";
+  if (score >= 65) return "ดี";
+  if (score >= 50) return "กลางบวก";
+  if (score >= 35) return "ต้องคุม";
+  return "ควรประคอง";
+}
+
+function summarizePillar(opts: {
+  label: string;
+  dm: string;
+  natalBranch?: string;
+  pillar: Pillar;
+  score: number;
+  yongshenPrimary: string[];
+  xishen: string[];
+  jishen: string[];
+  diseases: string[];
+}) {
+  const { label, dm, natalBranch, pillar, score, yongshenPrimary, xishen, jishen, diseases } = opts;
+  const role = roleForPillar(pillar, yongshenPrimary, xishen, jishen, diseases);
+  const god = tenGod(STEM_EL[dm], STEM_EL[pillar.stem]);
+  const act = activityFor(god);
+  const clash = natalBranch && CLASH[natalBranch] === pillar.branch;
+  const tail = clash ? ` · ${pillar.branch}ชงกิ่งวันเกิด` : "";
+  return `${label}${pillarName(pillar)} · ${scoreTitle(score)} · ${role.text}${tail} · เหมาะ: ${act.suitable}`;
+}
+
+function addDays(date: string, offset: number) {
+  const d = new Date(`${date}T12:00:00+07:00`);
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().slice(0, 10);
+}
+
+function monthMidDate(date: string, offset: number) {
+  const d = new Date(`${date}T12:00:00+07:00`);
+  d.setMonth(d.getMonth() + offset, 15);
+  return d.toISOString().slice(0, 10);
+}
+
+function yearMidDate(date: string, offset: number) {
+  const d = new Date(`${date}T12:00:00+07:00`);
+  d.setFullYear(d.getFullYear() + offset, 6, 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function applyLuckAdjustment(score: number, lp: any, dm: string, yongshenPrimary: string[], xishen: string[]) {
+  if (!lp?.element) return { score, note: "" };
+  const lpEl = lp.element;
+  if (yongshenPrimary.includes(lpEl)) return { score: clamp(score + 8), note: `大運${pillarName(lp)} หนุน用神` };
+  if (xishen.includes(lpEl)) return { score, note: `大運${pillarName(lp)} เป็น喜神มีเงื่อนไข` };
+  if ((REL_SCORE[STEM_EL[dm]]?.[lpEl] || 0) < 0) return { score: clamp(score - 6), note: `大運${pillarName(lp)} กดพื้นหลัง` };
+  return { score, note: `大運${pillarName(lp)} กลาง` };
+}
+
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const date = String(body.date || new Date().toISOString().slice(0, 10));
+  const includeForecast = !!body.includeForecast;
   const person: PersonInput = body.person || {};
   const dm = person.pillars?.day?.stem || "";
   const natalBranch = person.pillars?.day?.branch || "";
@@ -339,6 +426,64 @@ export async function POST(req: Request) {
     ...lpReasons,
   ].slice(0, 5);
 
+  let forecast: any = null;
+  if (includeForecast) {
+    const days = [];
+    for (let i = 0; i < 30; i++) {
+      const d = addDays(date, i);
+      const t = await getPillarsForDate(d);
+      const sc = scorePillar({ label:"วัน", dm, natalBranch, pillar: t.day, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
+      days.push({
+        date: d,
+        pillar: pillarName(t.day),
+        score: sc.score,
+        level: sc.level,
+        summary: summarizePillar({ label:"วัน", dm, natalBranch, pillar: t.day, score: sc.score, yongshenPrimary, xishen, jishen, diseases }),
+        tags: sc.tags.slice(0, 4),
+      });
+    }
+
+    const months = [];
+    for (let i = 0; i < 12; i++) {
+      const d = monthMidDate(date, i);
+      const t = await getPillarsForDate(d);
+      const sc = scorePillar({ label:"เดือน", dm, natalBranch, pillar: t.month, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
+      const adj = applyLuckAdjustment(sc.score, lp, dm, yongshenPrimary, xishen);
+      months.push({
+        date: d,
+        month: d.slice(0, 7),
+        pillar: pillarName(t.month),
+        score: adj.score,
+        level: sc.level,
+        summary: summarizePillar({ label:"เดือน", dm, natalBranch, pillar: t.month, score: adj.score, yongshenPrimary, xishen, jishen, diseases }) + (adj.note ? ` · ${adj.note}` : ""),
+        tags: sc.tags.slice(0, 4),
+      });
+    }
+
+    const years = [];
+    for (let i = 0; i < 5; i++) {
+      const d = yearMidDate(date, i);
+      const t = await getPillarsForDate(d);
+      const sc = scorePillar({ label:"ปี", dm, natalBranch, pillar: t.year, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
+      const adj = applyLuckAdjustment(sc.score, lp, dm, yongshenPrimary, xishen);
+      years.push({
+        year: Number(d.slice(0, 4)),
+        pillar: pillarName(t.year),
+        score: adj.score,
+        level: sc.level,
+        summary: summarizePillar({ label:"ปี", dm, natalBranch, pillar: t.year, score: adj.score, yongshenPrimary, xishen, jishen, diseases }) + (adj.note ? ` · ${adj.note}` : ""),
+        tags: sc.tags.slice(0, 4),
+      });
+    }
+
+    forecast = {
+      generated_at: new Date().toISOString(),
+      days,
+      months,
+      years,
+    };
+  }
+
   return NextResponse.json({
     date,
     person_id: person.id || null,
@@ -348,6 +493,29 @@ export async function POST(req: Request) {
       year: pillarName(transit.year),
     },
     scores: { day: day.score, week, month: monthScore, year: yearScore },
+    breakdown: {
+      day: day.breakdown,
+      week: {
+        base: 50,
+        events: [
+          `วันนี้ ${day.score} × 55%`,
+          `เดือน ${month.score} × 20%`,
+          `ฐานกลาง 50 × 25%`,
+        ],
+        formula: "day*0.55 + month*0.20 + 50*0.25",
+      },
+      month: {
+        ...month.breakdown,
+        adjusted_score: monthScore,
+        luck_adjustments: lpReasons,
+      },
+      year: {
+        ...year.breakdown,
+        adjusted_score: yearScore,
+        luck_adjustments: lpReasons,
+      },
+    },
+    forecast,
     insight: {
       element,
       suitable: activity.suitable,

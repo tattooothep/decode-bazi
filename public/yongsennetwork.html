@@ -258,9 +258,44 @@
   .pc-score-row.neg .bar-fill{background:var(--bad);}
   .pc-score-row.mid .bar-fill{background:var(--neutral);}
   .pc-score-row .num{text-align:right;font-weight:700;}
+  .pc-score-row .num.score-open{cursor:pointer;border:1px solid transparent;border-radius:6px;padding:2px 4px;background:rgba(200,164,77,.06);}
+  .pc-score-row .num.score-open:hover{border-color:var(--gold);background:var(--gold-soft);}
   .pc-score-row.pos .num{color:var(--good);}
   .pc-score-row.neg .num{color:var(--bad);}
   .pc-score-row.mid .num{color:var(--neutral);}
+  .hk-luck-modal{position:fixed;inset:0;z-index:95;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.62);backdrop-filter:blur(8px);}
+  .hk-luck-modal.show{display:flex;}
+  .hk-luck-panel{width:min(920px,96vw);max-height:88vh;overflow:auto;background:linear-gradient(160deg,var(--bg-2),var(--bg-3));border:1px solid var(--gold);border-radius:18px;box-shadow:0 22px 70px rgba(0,0,0,.55);}
+  .hk-luck-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:20px 22px;border-bottom:1px solid var(--gold-line);}
+  .hk-luck-head h3{font-family:var(--serif);font-size:26px;font-weight:500;line-height:1.1;}
+  .hk-luck-head .sub{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--fg-faint);margin-top:6px;text-transform:uppercase;}
+  .hk-luck-close{background:transparent;border:1px solid var(--gold-line);color:var(--fg-soft);border-radius:999px;width:34px;height:34px;cursor:pointer;font-size:20px;line-height:1;}
+  .hk-luck-close:hover{color:var(--gold);border-color:var(--gold);}
+  .hk-luck-body{padding:18px 22px 24px;}
+  .hk-luck-score{display:grid;grid-template-columns:130px 1fr;gap:16px;align-items:center;margin-bottom:14px;}
+  .hk-luck-big{font-family:var(--serif);font-size:46px;font-style:italic;color:var(--gold);line-height:1;}
+  .hk-luck-reason{font-size:13px;line-height:1.65;color:var(--fg-soft);}
+  .hk-bd-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0 18px;}
+  .hk-bd-row{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:10px;font-family:var(--mono);font-size:10px;}
+  .hk-bd-row .k{color:var(--fg-soft);}
+  .hk-bd-row .v.good{color:var(--good);}
+  .hk-bd-row .v.bad{color:var(--bad);}
+  .hk-forecast-tabs{display:flex;gap:6px;margin:12px 0;background:var(--bg);border:1px solid var(--gold-line);border-radius:999px;padding:4px;width:max-content;max-width:100%;overflow-x:auto;}
+  .hk-forecast-tabs button{border:none;background:transparent;color:var(--fg-soft);padding:8px 13px;border-radius:999px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;cursor:pointer;white-space:nowrap;}
+  .hk-forecast-tabs button.on{background:var(--gold);color:var(--bg);font-weight:700;}
+  .hk-forecast-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .hk-forecast-item{display:grid;grid-template-columns:74px 58px 1fr;gap:10px;align-items:start;padding:10px 12px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:10px;font-size:12px;line-height:1.45;}
+  .hk-forecast-item .dt{font-family:var(--mono);font-size:10px;color:var(--fg-faint);}
+  .hk-forecast-item .sc{font-family:var(--serif);font-size:22px;font-style:italic;line-height:1;color:var(--neutral);}
+  .hk-forecast-item.good .sc{color:var(--good);}
+  .hk-forecast-item.bad .sc{color:var(--bad);}
+  .hk-forecast-item .tx{color:var(--fg-soft);}
+  .hk-forecast-item .tx b{color:var(--gold);font-family:var(--tc);font-weight:700;}
+  @media (max-width:640px){
+    .hk-luck-score{grid-template-columns:1fr;}
+    .hk-bd-grid,.hk-forecast-list{grid-template-columns:1fr;}
+    .hk-forecast-item{grid-template-columns:64px 50px 1fr;}
+  }
 
   .pc-rel{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--tile-bd);}
   .pc-rel .b{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:4px 8px;border-radius:99px;border:1px solid;}
@@ -384,6 +419,20 @@
       <div class="hk-coach-tip"><span class="ico">↺</span><span class="txt" data-i18n="n.coach.t4">ปุ่ม <b data-i18n="auto.n.505">"กลับไปดวงฉัน"</b> ขวาบน — รีเซ็ต Center</span></div>
     </div>
     <button class="hk-coach-btn" id="hk-coach-dismiss" data-i18n="n.coach.btn">เข้าใจแล้ว · เริ่มเลย</button>
+  </div>
+</div>
+<div class="hk-luck-modal" id="hk-luck-modal" aria-hidden="true">
+  <div class="hk-luck-panel">
+    <div class="hk-luck-head">
+      <div>
+        <h3 id="hk-luck-title">ดูที่มาคะแนน</h3>
+        <div class="sub" id="hk-luck-sub">wrapper7 · own luck timeline</div>
+      </div>
+      <button class="hk-luck-close" id="hk-luck-close" type="button">×</button>
+    </div>
+    <div class="hk-luck-body" id="hk-luck-body">
+      <div style="color:var(--fg-soft);font-size:13px;">กำลังโหลด...</div>
+    </div>
   </div>
 </div>
 
@@ -1348,31 +1397,36 @@
     return Math.max(25, Math.min(95, score + bonus));
   }
 
-  async function getOwnScores(person){
+  function ownScorePayload(person, dateStr, includeForecast){
+    return {
+      date: dateStr,
+      includeForecast: !!includeForecast,
+      person: {
+        id: person.id,
+        name: person.name,
+        pillars: person.pillars,
+        yongshenTop3: person.yongshenTop3 || [],
+        birthDate: person.birthDate || null,
+        birthTime: person.birthTime || '12:00',
+        longitude: person.longitude || 100.5018,
+        gender: person.gender || 'M'
+      }
+    };
+  }
+  async function getOwnScores(person, opts){
+    opts = opts || {};
     const dm = person.pillars?.day?.stem || person.glyph;
     if (!dm) return {day:50, week:50, month:50, year:50};
     const today = new Date();
     const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-    const cacheKey = 'own_api_' + dateStr + '_' + person.id;
+    const cacheKey = 'own_api_' + dateStr + '_' + person.id + (opts.includeForecast ? '_forecast' : '');
     window._ownScoreApiCache = window._ownScoreApiCache || {};
     if (window._ownScoreApiCache[cacheKey]) return window._ownScoreApiCache[cacheKey];
     try {
       const r = await fetch('/api/network/own-score', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          date: dateStr,
-          person: {
-            id: person.id,
-            name: person.name,
-            pillars: person.pillars,
-            yongshenTop3: person.yongshenTop3 || [],
-            birthDate: person.birthDate || null,
-            birthTime: person.birthTime || '12:00',
-            longitude: person.longitude || 100.5018,
-            gender: person.gender || 'M'
-          }
-        })
+        body: JSON.stringify(ownScorePayload(person, dateStr, opts.includeForecast))
       });
       const d = await r.json();
       if (r.ok && d.scores) {
@@ -1382,6 +1436,9 @@
           month: d.scores.month ?? 50,
           year: d.scores.year ?? 50,
           insight: d.insight || null,
+          pillars: d.pillars || null,
+          breakdown: d.breakdown || null,
+          forecast: d.forecast || null,
         };
         window._ownScoreApiCache[cacheKey] = out;
         return out;
@@ -1419,6 +1476,100 @@
     return { day: dayScore != null ? dayScore : 50, week: weekScore, month: monthScore, year: yearScore, insight };
   }
 
+  function escHtml(s){
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function ownScoreClass100(n){ return n >= 70 ? 'good' : n < 45 ? 'bad' : 'mid'; }
+  function eventClass(ev){ return /-\d|−|忌|沖|刑|害|破|กด|ชง|ระวัง/.test(ev) ? 'bad' : /用神|合|生|หนุน|ช่วย|\+\d/.test(ev) ? 'good' : ''; }
+  function renderBreakdownBlock(tf, sc){
+    const bd = sc.breakdown?.[tf] || null;
+    if (!bd) return '<div class="hk-luck-reason">ยังไม่มี breakdown สำหรับช่องนี้</div>';
+    const rows = [];
+    if (bd.base != null) rows.push(['ฐาน', bd.base, '']);
+    if (bd.bonus != null) rows.push(['แรงหนุนรวม', '+' + bd.bonus, 'good']);
+    if (bd.penalty != null) rows.push(['แรงกดรวม', '-' + bd.penalty, 'bad']);
+    if (bd.adjusted_score != null) rows.push(['คะแนนหลัง大運', bd.adjusted_score + '/100', ownScoreClass100(bd.adjusted_score)]);
+    const events = (bd.events || []).concat(bd.luck_adjustments || []).filter(Boolean);
+    return `
+      <div class="hk-bd-grid">
+        ${rows.map(r => `<div class="hk-bd-row"><span class="k">${escHtml(r[0])}</span><span class="v ${r[2]}">${escHtml(r[1])}</span></div>`).join('')}
+      </div>
+      <div class="hk-luck-reason">
+        ${events.length
+          ? events.map(e => `<div class="hk-bd-row"><span class="k">${escHtml(e)}</span><span class="v ${eventClass(e)}">${eventClass(e)==='bad'?'ระวัง':'หนุน'}</span></div>`).join('')
+          : 'ไม่มี event สำคัญ'}
+      </div>
+    `;
+  }
+  function renderForecastList(items, kind){
+    if (!items || !items.length) return '<div class="hk-luck-reason">ยังไม่มีข้อมูลภาพรวม</div>';
+    return `<div class="hk-forecast-list">${items.map(x => {
+      const label = kind === 'days' ? (x.date || '').slice(5) : kind === 'months' ? (x.month || '') : String(x.year || '');
+      const cls = ownScoreClass100(x.score || 50);
+      return `<div class="hk-forecast-item ${cls}">
+        <div class="dt">${escHtml(label)}<br><b>${escHtml(x.pillar || '')}</b></div>
+        <div class="sc">${escHtml(x.score ?? '—')}</div>
+        <div class="tx">${escHtml(x.summary || '')}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+  function setForecastTab(sc, tab){
+    document.querySelectorAll('#hk-luck-body .hk-forecast-tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+    const box = document.getElementById('hk-forecast-content');
+    if (!box) return;
+    const f = sc.forecast || {};
+    box.innerHTML = tab === 'months'
+      ? renderForecastList(f.months, 'months')
+      : tab === 'years'
+        ? renderForecastList(f.years, 'years')
+        : renderForecastList(f.days, 'days');
+  }
+  async function openOwnScoreModal(personId, tf){
+    const p = PEOPLE.find(x => x.id === personId);
+    if (!p) return;
+    const modal = document.getElementById('hk-luck-modal');
+    const title = document.getElementById('hk-luck-title');
+    const sub = document.getElementById('hk-luck-sub');
+    const body = document.getElementById('hk-luck-body');
+    if (!modal || !body) return;
+    const tfLabel = {day:'วันนี้', week:'สัปดาห์', month:'เดือน', year:'ปี'}[tf] || tf;
+    title.textContent = `${p.name} · ${tfLabel} ${tf === 'day' ? '流日' : tf === 'month' ? '流月' : tf === 'year' ? '流年' : '週'}`;
+    sub.textContent = 'wrapper7 · 用神 / 喜神 / 忌神 · 30 วัน / 12 เดือน / ปี';
+    body.innerHTML = '<div style="color:var(--fg-soft);font-size:13px;">กำลังโหลดภาพรวม...</div>';
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden','false');
+    const sc = await getOwnScores(p, {includeForecast:true});
+    const score = sc[tf] ?? 50;
+    const reason = (sc.insight?.reason || []).join(' · ');
+    body.innerHTML = `
+      <div class="hk-luck-score">
+        <div class="hk-luck-big">${escHtml(score)}/100</div>
+        <div class="hk-luck-reason">
+          <b>${escHtml(tfLabel)}</b> · ${escHtml(sc.pillars?.[tf === 'day' ? 'day' : tf === 'month' ? 'month' : tf === 'year' ? 'year' : 'day'] || '')}<br>
+          ${escHtml(reason || sc.insight?.element || 'คะแนนนี้คำนวณจากเสาจรเทียบ wrapper7 ของดวงนี้')}
+        </div>
+      </div>
+      ${renderBreakdownBlock(tf, sc)}
+      <div class="hk-forecast-tabs">
+        <button type="button" class="on" data-tab="days">30 วัน</button>
+        <button type="button" data-tab="months">12 เดือน</button>
+        <button type="button" data-tab="years">ภาพรวมปี</button>
+      </div>
+      <div id="hk-forecast-content">${renderForecastList(sc.forecast?.days, 'days')}</div>
+    `;
+    body.querySelectorAll('.hk-forecast-tabs button').forEach(btn => {
+      btn.addEventListener('click', () => setForecastTab(sc, btn.dataset.tab || 'days'));
+    });
+  }
+  (function initLuckModal(){
+    const modal = document.getElementById('hk-luck-modal');
+    const close = document.getElementById('hk-luck-close');
+    if (!modal) return;
+    function hide(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); }
+    if (close) close.addEventListener('click', hide);
+    modal.addEventListener('click', e => { if (e.target === modal) hide(); });
+  })();
+
   function renderGrid(){
     const grid = document.getElementById('people-grid');
     grid.innerHTML='';
@@ -1426,23 +1577,29 @@
     const tfLabels = {day:'วันนี้', week:'สัปดาห์', month:'เดือน', year:'ปี'};
     const isOwn = state.gridMode === 'own';
     /* helper: render row for impact (-100..+100) vs own (0..100) */
-    function renderRow(label, score, isOwnMode){
+    function renderRow(label, score, isOwnMode, tf, personId){
+      const validScore = typeof score === 'number' && isFinite(score);
+      const shownScore = validScore ? score : 0;
       const sc = isOwnMode
-        ? (score >= 70 ? 'pos' : score >= 50 ? 'mid' : 'neg')
+        ? (shownScore >= 70 ? 'pos' : shownScore >= 50 ? 'mid' : 'neg')
         : scoreClass(score);
       let fillStyle;
       if (isOwnMode) {
         /* own score 0-100 → bar from 0% to 100% · color by tier */
-        fillStyle = `left:0;width:${score}%;`;
+        fillStyle = validScore ? `left:0;width:${shownScore}%;` : `display:none;`;
       } else {
         const fillW = Math.min(50, Math.abs(score)/2);
         fillStyle = score === 0 ? `display:none;` : score > 0 ? `left:50%;width:${fillW}%;` : `right:50%;left:auto;width:${fillW}%;`;
       }
-      const numText = isOwnMode ? (score + '/100') : fmt(score);
+      const numText = isOwnMode ? (validScore ? shownScore + '/100' : '—') : fmt(score);
+      const openClass = isOwnMode && validScore && personId && tf ? ' score-open' : '';
+      const openAttrs = isOwnMode && validScore && personId && tf
+        ? ` role="button" tabindex="0" data-own-score-open="1" data-tf="${tf}" data-person-id="${escHtml(personId)}"`
+        : '';
       return `<div class="pc-score-row ${sc}">
         <span class="lbl">${label}</span>
         <div class="bar"><div class="bar-fill" style="${fillStyle}"></div></div>
-        <span class="num">${numText}</span>
+        <span class="num${openClass}"${openAttrs}>${numText}</span>
       </div>`;
     }
 
@@ -1470,7 +1627,7 @@
           if (!card) return;
           const scoresBlock = card.querySelector('.pc-scores-block');
           if (!scoresBlock) return;
-          scoresBlock.innerHTML = tfs.map(tf => renderRow(tfLabels[tf], sc[tf], true)).join('');
+          scoresBlock.innerHTML = tfs.map(tf => renderRow(tfLabels[tf], sc[tf], true, tf, p.id)).join('');
           /* อากง insight v3: 3 บรรทัด actionable */
           if (sc.insight) {
             const ins = sc.insight;
@@ -2546,6 +2703,13 @@ window.applyI18N = applyI18N;
   const pg = document.getElementById('people-grid');
   if (pg) {
     pg.addEventListener('click', function(e){
+      const scoreBtn = e.target.closest('[data-own-score-open]');
+      if (scoreBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        openOwnScoreModal(scoreBtn.dataset.personId, scoreBtn.dataset.tf);
+        return;
+      }
       const editBtn = e.target.closest('.pc-edit-btn');
       const delBtn  = e.target.closest('.pc-del-btn');
       const viewBtn = e.target.closest('.pc-view-btn');
