@@ -108,6 +108,9 @@
   /* === 🐲🐯🦚🐢🦜 5 สัตว์มงคล · Five Spirit Beasts · ตามคุณภาพวัน === */
   /* top:32 right:30 หลบมุมขวาบนไว้เผื่อ avatar profile ลื่นออกจาก topbar ตอน defer · width 158 พอดี verdict */
   .dm-spirit{position:absolute;top:32px;right:30px;width:158px;height:auto;z-index:3;pointer-events:none;filter:drop-shadow(0 4px 14px rgba(0,0,0,.20));}
+  /* default · ไม่มี data-level (ก่อน JS รัน) → ซ่อนทุกตัว · กัน flash มังกรโผล่แวบ */
+  .dm-spirit:not([data-level]) g[class^="s-"],
+  .dm-spirit[data-level=""] g[class^="s-"]{opacity:0 !important;transition:none !important;}
   .dm-spirit g[class^="s-"]{opacity:0;transition:opacity .6s ease;}
 
   /* ─── 🦚 Phoenix · ฟีนิกซ์ทอง · best ─── */
@@ -734,7 +737,7 @@
   <div class="hero">
     <div class="verdict">
       <!-- 🐲🐯🦚🐢🦜 สัตว์มงคล 5 ตัว · Five Spirit Beasts -->
-      <svg class="dm-spirit" id="t-verdict-spirit" viewBox="0 0 200 260" data-level="good" aria-hidden="true">
+      <svg class="dm-spirit" id="t-verdict-spirit" viewBox="0 0 200 260" data-level="" aria-hidden="true">
         <defs>
           <radialGradient id="auraGold" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stop-color="#ffd866" stop-opacity=".55"/>
