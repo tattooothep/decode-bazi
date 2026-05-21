@@ -581,6 +581,7 @@
       <button class="on" data-g="all"><span data-i18n="n.g.all">ทั้งหมด</span> <span class="count" data-count="all">0</span></button>
       <button data-g="family"><span data-i18n="n.g.family">家 · ครอบครัว</span> <span class="count" data-count="family">0</span></button>
       <button data-g="friend"><span data-i18n="n.g.friend">友 · เพื่อน</span> <span class="count" data-count="friend">0</span></button>
+      <button data-g="love"><span data-i18n="n.g.love">情 · ความรัก</span> <span class="count" data-count="love">0</span></button>
       <button data-g="work"><span data-i18n="n.g.work">業 · ที่ทำงาน</span> <span class="count" data-count="work">0</span></button>
       <button data-g="rival"><span data-i18n="n.g.rival">競 · คู่แข่ง</span> <span class="count" data-count="rival">0</span></button>
       <button data-i18n="n.g.new">+ สร้างกลุ่ม</button>
@@ -743,6 +744,32 @@
     }
     return false;
   }
+  function normalizeNetworkGroup(g){
+    const v = String(g || '').trim().toLowerCase();
+    if (['family','friend','work','rival','love'].includes(v)) return v;
+    return '';
+  }
+  function inferNetworkGroup(rel, name, nickname){
+    const text = [rel, name, nickname].filter(Boolean).join(' ').toLowerCase();
+    if (!text.trim()) return null;
+    const has = (re) => re.test(text);
+    if (has(/(แฟน|คู่รัก|คนรัก|girlfriend|boyfriend|lover|情|愛|恋)/i)) {
+      return { group:'love', confidence:'strong' };
+    }
+    if (has(/(ภรรยา|สามี|คู่สมรส|พ่อ|แม่|ป๊า|ม๊า|บิดา|มารดา|ลูก|ลูกชาย|ลูกสาว|พี่|น้อง|พี่ชาย|พี่สาว|น้องชาย|น้องสาว|ปู่|ย่า|ตา|ยาย|ลุง|ป้า|น้า|อา|หลาน|โกว|กู๋|เจ๊|เฮีย|ญาติ|ครอบครัว|wife|husband|spouse|配偶|family|father|mother|parent|son|daughter|child|brother|sister|sibling|uncle|aunt|cousin|家)/i)) {
+      return { group:'family', confidence:'strong' };
+    }
+    if (has(/(เพื่อน|เพื่อนเรียน|เพื่อนสนิท|friend|classmate|友)/i)) {
+      return { group:'friend', confidence:'strong' };
+    }
+    if (has(/(งาน|ที่ทำงาน|ลูกค้า|หัวหน้า|เจ้านาย|ลูกน้อง|ทีม|พาร์ทเนอร์ธุรกิจ|หุ้นส่วน|co-?founder|coworker|colleague|boss|client|customer|work|team|業)/i)) {
+      return { group:'work', confidence:'strong' };
+    }
+    if (has(/(คู่แข่ง|ศัตรู|rival|competitor|enemy|競)/i)) {
+      return { group:'rival', confidence:'strong' };
+    }
+    return { group:'friend', confidence:'weak' };
+  }
   async function loadPeopleFromDB(){
     try {
       try { if (window.__hkProfileReady) await window.__hkProfileReady; } catch(_){}
@@ -794,11 +821,19 @@
           elem: ELEM_OF[dmStem] || 'earth',
           group: (function(){
             if (isSelf) return 'self';
+            const inferred = inferNetworkGroup(p.relationship_type, p.name, p.nickname);
             try {
               const map = JSON.parse(localStorage.getItem('hk_network_groups')||'{}');
-              if (map[p.id]) return map[p.id];
+              const saved = normalizeNetworkGroup(map[p.id]);
+              if (saved) {
+                /* กัน map เก่าที่เคย default เป็น friend ทับความสัมพันธ์ครอบครัว/งาน/คู่รักชัดเจน */
+                if (saved === 'friend' && inferred && inferred.group !== 'friend' && inferred.confidence === 'strong') {
+                  return inferred.group;
+                }
+                return saved;
+              }
             } catch(_){}
-            return 'friend';
+            return inferred ? inferred.group : 'friend';
           })(),
           pillars: bp.day ? bp : null,  /* ต้องมี pillars · ไม่งั้นใช้ DEMO เสริม */
           profileId: p.id,
@@ -1784,7 +1819,7 @@
 
   function updateGroupCounts(){
     const peers = PEOPLE.filter(p=>p.id!=='self');
-    const counts = { all: peers.length, family:0, friend:0, work:0, rival:0 };
+    const counts = { all: peers.length, family:0, friend:0, love:0, work:0, rival:0 };
     peers.forEach(p=>{ if (counts[p.group]!=null) counts[p.group]++; });
     Object.keys(counts).forEach(g=>{
       const el = document.querySelector(`.count[data-count="${g}"]`);
@@ -2237,6 +2272,7 @@ window.HK_I18N = {
   'own.limits':{ th:'<b style="color:#7dd37b">✓ P3 เสร็จ:</b> เพิ่ม ④ 大運 (LP) · cache 24h · 1 fetch/คน/วัน · <b>P4 จะเพิ่ม ⑤ 格局</b> (從強·從旺·從財·化氣·假從·專旺) + <b>interactions</b> (合化·沖去·三會·三合) → +5% · <b>เป้าหมายสุดท้าย ~95%</b> ≈ ซินแสจริง', en:'<b style="color:#7dd37b">✓ P3 done:</b> added ④ Luck Pillar · 24h cache · 1 fetch/person/day · <b>P4 will add ⑤ Geju</b> (從強·從旺·從財·化氣·假從·專旺) + <b>interactions</b> (合化·沖去·三會·三合) → +5% · <b>Final target ~95%</b> ≈ professional master', zh:'<b style="color:#7dd37b">✓ P3 完成:</b> 增 ④ 大運 · 24小時快取 · 每人每日1次 · <b>P4 將加 ⑤ 格局</b> (從強·從旺·從財·化氣·假從·專旺) + <b>互動</b> (合化·沖去·三會·三合) → +5% · <b>終極目標 ~95%</b> ≈ 真師父' },
   'n.g.family':    { th:'家 · ครอบครัว', en:'家 · Family', zh:'家 · 家庭' },
   'n.g.friend':    { th:'友 · เพื่อน', en:'友 · Friends', zh:'友 · 朋友' },
+  'n.g.love':      { th:'情 · ความรัก', en:'情 · Love', zh:'情 · 感情' },
   'n.g.work':      { th:'業 · ที่ทำงาน', en:'業 · Work', zh:'業 · 工作' },
   'n.g.rival':     { th:'競 · คู่แข่ง', en:'競 · Rivals', zh:'競 · 競爭' },
   'n.g.new':       { th:'+ สร้างกลุ่ม', en:'+ New group', zh:'+ 新群' },
