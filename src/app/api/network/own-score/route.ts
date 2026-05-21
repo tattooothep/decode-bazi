@@ -19,6 +19,15 @@ type PersonInput = {
   longitude?: number;
   gender?: "M" | "F";
 };
+type YongshenV2Slim = {
+  primary_yongshen: string[];
+  xishen: string[];
+  jishen: string[];
+  diseases: string[];
+  medicine: string[];
+  structure_label?: string | null;
+  engine_type?: string | null;
+};
 
 const STEM_EL: Record<string, string> = {
   甲:"wood", 乙:"wood", 丙:"fire", 丁:"fire", 戊:"earth", 己:"earth",
@@ -86,6 +95,39 @@ function pillarName(p?: Pillar | string | null) {
   return `${p.stem || ""}${p.branch || ""}`;
 }
 
+function normalizeNatal(pillars: PersonInput["pillars"]) {
+  if (!pillars?.year || !pillars?.month || !pillars?.day) return null;
+  return {
+    year: pillars.year,
+    month: pillars.month,
+    day: pillars.day,
+    hour: pillars.hour || null,
+  };
+}
+
+async function synthesizeWrapper7(pillars: PersonInput["pillars"]): Promise<YongshenV2Slim | null> {
+  const natal = normalizeNatal(pillars);
+  if (!natal) return null;
+  try {
+    // @ts-ignore - runtime CJS wrapper
+    const w7 = await import("../../../../../data/library/wrappers/7-yongshen-v2.js");
+    const synth = (w7 as any).synthesizeYongshen || ((w7 as any).default && (w7 as any).default.synthesizeYongshen);
+    if (!synth) return null;
+    const s = synth(natal);
+    return {
+      primary_yongshen: Array.isArray(s.primary_yongshen) ? s.primary_yongshen : [],
+      xishen: Array.isArray(s.xishen) ? s.xishen : [],
+      jishen: Array.isArray(s.jishen) ? s.jishen : [],
+      diseases: Array.isArray(s.diseases) ? s.diseases : [],
+      medicine: Array.isArray(s.medicine) ? s.medicine : [],
+      structure_label: s.structure_label || null,
+      engine_type: s.engine_type || null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 /* 18 พ.ค. unified · score มาจาก computeUserDayScore (Single Source of Truth)
  * reasons มาจาก in-house logic เดิมเพื่อ insight (ไม่กระทบ score)
  * userPillars ใช้ pair-base.ts → /today + /calendar + /network ตรงกัน */
@@ -95,6 +137,7 @@ function scorePillar(opts: {
   natalBranch?: string;
   pillar: Pillar;
   yongshenTop3: string[];
+  jishen?: string[];
   userPillars: { year?: Pillar; month?: Pillar; day: Pillar; hour?: Pillar };
 }) {
   const { label, dm, natalBranch, pillar, yongshenTop3, userPillars } = opts;
@@ -104,7 +147,7 @@ function scorePillar(opts: {
   const reasons: string[] = [];
   /* === score · unified จาก pair-base.ts === */
   const allEls = ['wood','fire','earth','metal','water'];
-  const jishen = allEls.filter(e => !yongshenTop3.includes(e));
+  const jishen = opts.jishen || allEls.filter(e => !yongshenTop3.includes(e));
   const pillarStr = pillar.stem + pillar.branch;
   const unified = computeUserDayScore(userPillars, pillarStr, yongshenTop3, jishen);
   const score = unified.score;
@@ -199,12 +242,17 @@ async function currentLuckPillar(person: PersonInput, yongshenTop3: string[]) {
   }
 }
 
-function luckText(lp: any, dm: string, yongshenTop3: string[]) {
+function luckText(lp: any, dm: string, yongshenPrimary: string[], xishen: string[] = [], diseases: string[] = []) {
   if (!lp) return null;
   const dmEl = STEM_EL[dm];
   const lpEl = lp.element || STEM_EL[lp.stem] || BR_EL[lp.branch];
   const th = EL_TH[lpEl] || lpEl || "";
-  if (yongshenTop3.includes(lpEl)) return `${lp.stem}${lp.branch} · ดี (ธาตุช่วย ${th})`;
+  const dryHeat = diseases.includes("dry_resource_burned") || diseases.includes("hot_drought_no_water");
+  if (yongshenPrimary.includes(lpEl)) return `${lp.stem}${lp.branch} · ดี (用神หลัก ${th})`;
+  if (xishen.includes(lpEl)) {
+    if (lpEl === "fire" && dryHeat) return `${lp.stem}${lp.branch} · โอกาสแต่ไฟแรง (${th})`;
+    return `${lp.stem}${lp.branch} · ใช้ได้แบบมีเงื่อนไข (${th})`;
+  }
   if (lpEl === dmEl) return `${lp.stem}${lp.branch} · กลาง (พลังเดียวกัน ${th})`;
   if ((REL_SCORE[dmEl]?.[lpEl] || 0) < 0) return `${lp.stem}${lp.branch} · กดดัน (${th})`;
   return `${lp.stem}${lp.branch} · เฉย (${th})`;
@@ -221,27 +269,34 @@ export async function POST(req: Request) {
   }
 
   const transit = await getPillarsForDate(date);
-  const yongshenTop3 = (person.yongshenTop3 || [])
+  const yongshenFromProfile = (person.yongshenTop3 || [])
     .map(x => x?.element)
     .filter((x): x is string => !!x)
     .slice(0, 3);
+  const yv2 = await synthesizeWrapper7(person.pillars);
+  const yongshenPrimary = yv2?.primary_yongshen?.length ? yv2.primary_yongshen : yongshenFromProfile;
+  const xishen = yv2?.xishen || [];
+  const jishen = yv2?.jishen || [];
+  const diseases = yv2?.diseases || [];
 
   const userP = person.pillars as any;
-  const day = scorePillar({ label:"วัน", dm, natalBranch, pillar: transit.day, yongshenTop3, userPillars: userP });
-  const month = scorePillar({ label:"เดือน", dm, natalBranch, pillar: transit.month, yongshenTop3, userPillars: userP });
-  const year = scorePillar({ label:"ปี", dm, natalBranch, pillar: transit.year, yongshenTop3, userPillars: userP });
+  const day = scorePillar({ label:"วัน", dm, natalBranch, pillar: transit.day, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
+  const month = scorePillar({ label:"เดือน", dm, natalBranch, pillar: transit.month, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
+  const year = scorePillar({ label:"ปี", dm, natalBranch, pillar: transit.year, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
 
   const week = clamp(Math.round(day.score * 0.55 + month.score * 0.20 + 50 * 0.25));
-  const lp = await currentLuckPillar(person, yongshenTop3);
+  const lp = await currentLuckPillar(person, yongshenPrimary);
   let monthScore = month.score;
   let yearScore = year.score;
   const lpReasons: string[] = [];
   if (lp?.element) {
     const lpEl = lp.element;
-    if (yongshenTop3.includes(lpEl)) {
+    if (yongshenPrimary.includes(lpEl)) {
       monthScore = clamp(monthScore + 6);
       yearScore = clamp(yearScore + 10);
       lpReasons.push(`รอบดวงใหญ่ ${lp.stem}${lp.branch} เป็นธาตุ${EL_TH[lpEl] || lpEl}ที่ช่วยดวง จึงหนุนเดือน/ปี`);
+    } else if (xishen.includes(lpEl)) {
+      lpReasons.push(`รอบดวงใหญ่ ${lp.stem}${lp.branch} เป็น喜神รอง ต้องใช้ตามเงื่อนไข ไม่ใช่用神หลัก`);
     } else if ((REL_SCORE[STEM_EL[dm]]?.[lpEl] || 0) < 0) {
       monthScore = clamp(monthScore - 4);
       yearScore = clamp(yearScore - 8);
@@ -256,9 +311,15 @@ export async function POST(req: Request) {
   const dayBranchEl = BR_EL[transit.day.branch];
   const god = tenGod(dmEl, dayStemEl);
   const activity = activityFor(god);
-  const yongHit = yongshenTop3.find(e => e === dayStemEl || e === dayBranchEl);
+  const yongHit = yongshenPrimary.find(e => e === dayStemEl || e === dayBranchEl);
+  const xishenHit = xishen.find(e => e === dayStemEl || e === dayBranchEl);
+  const dryHeat = diseases.includes("dry_resource_burned") || diseases.includes("hot_drought_no_water");
   const element = yongHit
-    ? `ได้${EL_TH[yongHit] || yongHit}ช่วย`
+    ? `ได้${EL_TH[yongHit] || yongHit}ช่วยจริง`
+    : xishenHit && xishenHit === "fire" && dryHeat
+      ? `ไฟมีโอกาสแต่แรง ต้องคุม`
+    : xishenHit
+      ? `${EL_TH[xishenHit] || xishenHit}ใช้ได้แบบมีเงื่อนไข`
     : god === "guansha" ? `${EL_TH[dayStemEl]}กดดัน`
     : god === "cai" ? `${EL_TH[dayStemEl]}เปิดเรื่องเงิน`
     : god === "shishang" ? `${EL_TH[dayStemEl]}ระบายผลงาน`
@@ -291,7 +352,7 @@ export async function POST(req: Request) {
       element,
       suitable: activity.suitable,
       avoid,
-      lp: luckText(lp, dm, yongshenTop3),
+      lp: luckText(lp, dm, yongshenPrimary, xishen, diseases),
       reason: reasons,
       evidence: {
         dm,
@@ -300,7 +361,11 @@ export async function POST(req: Request) {
         day_stem_element: dayStemEl,
         day_branch_element: dayBranchEl,
         ten_god: god,
-        yongshen_top3: yongshenTop3,
+        yongshen_from_profile: yongshenFromProfile,
+        yongshen_primary: yongshenPrimary,
+        xishen,
+        jishen,
+        diseases,
         luck_pillar: lp ? pillarName(lp) : null,
       },
     },
