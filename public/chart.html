@@ -2597,7 +2597,7 @@ window.addEventListener('resize', function(){
         const ENGINE_TH = {WEAK_DM_WATER_HEAVY:'ตัวเราอ่อน · น้ำเด่น',WEAK_DM_FIRE_HEAVY:'ตัวเราอ่อน · ไฟเด่น',WEAK_DM_WOOD_HEAVY:'ตัวเราอ่อน · ไม้เด่น',WEAK_DM_EARTH_HEAVY:'ตัวเราอ่อน · ดินเด่น',WEAK_DM_METAL_HEAVY:'ตัวเราอ่อน · ทองเด่น'};
         const DISEASE_TH = {cold_excess_wealth_pressure:'หนาวจัด · ทรัพย์กดดัน',hot_drought_no_water:'ร้อนแล้ง · ขาดน้ำ',wealth_drowning_dm_weak:'ทรัพย์ท่วม · ตัวอ่อน',companion_swarm_theft:'เพื่อนเยอะ · แย่งทรัพย์'};
         const STRATEGY_TH = {progressive:'เพิ่มเลี้ยง',regressive:'ระบายคุม',neutral:'กลาง'};
-        const dm = (a.matrix_summary?.day_master || '');
+        const dm = (d.pillars?.day?.stem || a.matrix_summary?.day_master || '');
         const dmEl = STEM_EL_OV[dm] || 'earth';
         const dmTh = STEM_TH_OV[dm] || dm;
         const dmPct = pct[dmEl] || 0;
@@ -2606,11 +2606,32 @@ window.addEventListener('resize', function(){
         const domElPct = dominantEl ? dominantEl[1] : 0;
         const structure = yv2.structure_label || gj.structure || 'ปกติ';
         const engineTh = ENGINE_TH[yv2.engine_type] || yv2.engine_type || '';
-        const primary = (yv2.primary_yongshen||[]).map(x=>EL_TH[x]||x);
-        const xishen = (yv2.xishen||[]).map(x=>EL_TH[x]||x);
-        const jishen = (yv2.jishen||[]).map(x=>EL_TH[x]||x);
+        const primaryEls = yv2.primary_yongshen || [];
+        const xishenEls = yv2.xishen || [];
+        const jishenEls = yv2.jishen || [];
+        const diseases = yv2.diseases || [];
+        const primary = primaryEls.map(x=>EL_TH[x]||x);
+        const xishen = xishenEls.map(x=>EL_TH[x]||x);
+        const jishen = jishenEls.map(x=>EL_TH[x]||x);
         const diseaseTh = (yv2.diseases||[]).map(x=>DISEASE_TH[x]||x).join(', ');
         const strategyTh = STRATEGY_TH[yv2.strategy] || yv2.strategy || '';
+        const hasDryHeatDisease = diseases.includes('dry_resource_burned') || diseases.includes('hot_drought_no_water');
+        function transitVerdict(el, label){
+          const th = EL_TH[el] || el || '-';
+          if (!el) return '⚪ กลาง';
+          if (primaryEls.includes(el)) return '✅ <b style="color:#7dd37b">'+label+'หนุนจริง</b> · ธาตุ'+th+'เป็น用神หลัก';
+          if (jishenEls.includes(el)) return '⚠ <b style="color:#e26b5d">'+label+'ระวัง</b> · ธาตุ'+th+'เป็น忌神';
+          if (xishenEls.includes(el)) {
+            if (el === 'fire' && hasDryHeatDisease) {
+              return '⚠ <b style="color:#d4a857">'+label+'โอกาสสูงแต่ไฟแรง</b> · ใช้ได้เมื่อมีน้ำ/ระบบมาคุม';
+            }
+            if (el === 'earth' && (a.voytek_strength?.supporting_pct || 0) < 35) {
+              return '⚠ <b style="color:#d4a857">'+label+'ใช้ได้แบบมีเงื่อนไข</b> · มีผลลัพธ์/เงิน แต่ตัวเรายังต้องมีแรงแบก';
+            }
+            return '🟡 <b style="color:#d4a857">'+label+'ใช้ได้แบบมีเงื่อนไข</b> · ธาตุ'+th+'เป็น喜神รอง';
+          }
+          return '⚪ '+label+'กลาง · ธาตุ'+th+'ไม่กระทบมาก';
+        }
         /* วัยจร 大運 */
         const lpStem = curLp?.stem || '';
         const lpBranch = curLp?.branch || '';
@@ -2620,23 +2641,23 @@ window.addEventListener('resize', function(){
         const lpPhaseTh = PHASE_TH_OV[lpPhase] || lpPhase;
         const lpAgeStart = curLp ? Math.floor(curLp.age_start) : '';
         const lpAgeEnd = curLp ? Math.floor(curLp.age_end) : '';
-        const isYongshenLp = primary.includes(lpElTh) || xishen.includes(lpElTh);
-        const isJishenLp = jishen.includes(lpElTh);
-        const lpVerdict = isYongshenLp ? '✅ <b style="color:#7dd37b">ดี</b> · ธาตุ'+lpElTh+'เสริมดวงคุณ' : (isJishenLp ? '⚠ <b style="color:#e26b5d">ระวัง</b> · ธาตุ'+lpElTh+'กดดวงคุณ' : '⚪ กลาง · ธาตุ'+lpElTh+'ไม่กระทบมาก');
+        const lpVerdict = transitVerdict(lpEl, '');
         /* ปีนี้ 流年 */
         const cyStem = cyLn?.pillar?.stem || '';
         const cyBranch = cyLn?.pillar?.branch || '';
         const cyEl = STEM_EL_OV[cyStem] || '';
         const cyElTh = EL_TH[cyEl] || '';
         const cyStemTh = STEM_TH_OV[cyStem] || cyStem;
-        const isYongshenCy = primary.includes(cyElTh) || xishen.includes(cyElTh);
-        const isJishenCy = jishen.includes(cyElTh);
-        const cyVerdict = isYongshenCy ? '✅ <b style="color:#7dd37b">ปีดี</b>' : (isJishenCy ? '⚠ <b style="color:#e26b5d">ปีระวัง</b>' : '⚪ ปีกลาง');
+        const cyVerdict = transitVerdict(cyEl, 'ปี');
         /* Timeline 10 ปีข้างหน้า */
         const futureLt = lt.filter(x => x.year > cyYear && x.year <= cyYear + 10);
-        const goodYears = futureLt.filter(x => {
+        const supportYears = futureLt.filter(x => {
           const e = STEM_EL_OV[x.pillar.stem]; const eTh = EL_TH[e];
-          return primary.includes(eTh) || xishen.includes(eTh);
+          return primary.includes(eTh);
+        }).map(x => x.year);
+        const cautionYears = futureLt.filter(x => {
+          const e = STEM_EL_OV[x.pillar.stem];
+          return xishenEls.includes(e) && (e !== 'fire' || hasDryHeatDisease);
         }).map(x => x.year);
         const warnYears = futureLt.filter(x => {
           const e = STEM_EL_OV[x.pillar.stem]; const eTh = EL_TH[e];
@@ -2650,7 +2671,7 @@ window.addEventListener('resize', function(){
             <b>เครื่องยนต์ดวง:</b> ${esc(structure)}${engineTh?' ('+esc(engineTh)+')':''} · ตัวเรา <b>${esc(dmTh)}</b> · ธาตุ${esc(EL_TH[dmEl])} ${esc(dmPct)}% · 用神 ${esc(primary.join(' · ') || '-')} · 忌神 ${esc(jishen.join(' · ') || '-')}
             ${curLp ? `<br><b>วัยจรตอนนี้:</b> ${esc(lpStem+lpBranch)} อายุ ${esc(lpAgeStart)}-${esc(lpAgeEnd)} ปี · ${lpVerdict}` : ''}
             ${cyLn ? `<br><b>ปีนี้ ${esc(cyYear)}:</b> ${esc(cyStem+cyBranch)} (${esc(cyStemTh)} · ธาตุ${esc(cyElTh)}) · ${cyVerdict}` : ''}
-            ${(goodYears.length||warnYears.length) ? `<br><b>10 ปีข้างหน้า:</b> ${goodYears.length?'<span style="color:#7dd37b;">ปีดี '+esc(goodYears.join(' · '))+'</span>':''}${(goodYears.length&&warnYears.length)?' · ':''}${warnYears.length?'<span style="color:#e26b5d;">ปีระวัง '+esc(warnYears.join(' · '))+'</span>':''}` : ''}
+            ${(supportYears.length||cautionYears.length||warnYears.length) ? `<br><b>10 ปีข้างหน้า:</b> ${supportYears.length?'<span style="color:#7dd37b;">ปีหนุนจริง '+esc(supportYears.join(' · '))+'</span>':''}${(supportYears.length&&cautionYears.length)?' · ':''}${cautionYears.length?'<span style="color:#d4a857;">ปีต้องคุม '+esc(cautionYears.join(' · '))+'</span>':''}${((supportYears.length||cautionYears.length)&&warnYears.length)?' · ':''}${warnYears.length?'<span style="color:#e26b5d;">ปีระวัง '+esc(warnYears.join(' · '))+'</span>':''}` : ''}
           </div>
         `;
         ovBox.innerHTML = profile ? `

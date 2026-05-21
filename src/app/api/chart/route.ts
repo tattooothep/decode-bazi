@@ -51,7 +51,7 @@ export async function POST(req: Request) {
           birthTimeKnown: false,
         });
     const natal = calc.pillars;
-    const daymasterProfile = getDaymasterProfile(natal.day.stem, {
+    let daymasterProfile = getDaymasterProfile(natal.day.stem, {
       level: calc.strength.level,
       percent: calc.strength.percent,
     });
@@ -294,6 +294,11 @@ export async function POST(req: Request) {
           const { buildStrengthFunctional } = await import("@/lib/strength-functional");
           const fnStrength = buildStrengthFunctional(natal.day.stem, rootedness, distribution);
           (ext as any).voytek_strength = fnStrength;
+          daymasterProfile = getDaymasterProfile(natal.day.stem, {
+            level: fnStrength.level,
+            levelTh: fnStrength.level_th,
+            supportingPct: fnStrength.supporting_pct,
+          });
           /* Health Functional · Phase 17g */
           const { buildHealthFunctional } = await import("@/lib/health-functional");
           const fnHealth = buildHealthFunctional(natal.day.stem, rootedness, fnStrength.supporting_pct, distribution);
