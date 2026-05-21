@@ -367,7 +367,7 @@
   .team-advanced[open] summary::after{content:'−';}
   .team-advanced .matrix-table{margin-top:14px;}
 
-  .cmp-row{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;}
+  .cmp-row{display:grid;grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));gap:14px;}
   .cmp-card{background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:12px;padding:18px;text-align:center;position:relative;}
   .cmp-card.empty{border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;color:var(--fg-faint);font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;}
   .cmp-card.empty:hover{border-color:var(--gold);color:var(--gold);}
@@ -386,9 +386,9 @@
   .cmp-card.score-neg .total{color:var(--bad);}
   .cmp-card.score-mid .total{color:var(--neutral);}
 
-  .matrix{margin-top:24px;padding:18px;background:var(--bg);border:1px dashed var(--gold-line);border-radius:12px;}
+  .matrix{margin-top:24px;padding:18px;background:var(--bg);border:1px dashed var(--gold-line);border-radius:12px;overflow-x:auto;}
   .matrix h4{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
-  .matrix-table{display:grid;grid-template-columns:auto repeat(4, 1fr);gap:6px;font-family:var(--mono);font-size:10px;}
+  .matrix-table{display:grid;grid-template-columns:auto repeat(4, 1fr);gap:6px;font-family:var(--mono);font-size:10px;min-width:max-content;}
   .matrix-table .cell{padding:8px;text-align:center;background:var(--bg-2);border-radius:4px;}
   .matrix-table .cell.head{color:var(--gold);font-weight:700;letter-spacing:.15em;text-transform:uppercase;font-size:9px;}
   .matrix-table .cell.row-head{text-align:left;color:var(--fg-soft);}
@@ -436,7 +436,7 @@
     .team-fit-grid{grid-template-columns:1fr 1fr;}
     .team-fit-card.main{grid-column:1/-1;}
     .team-activity-main{grid-template-columns:1fr;}
-    .cmp-row{grid-template-columns:1fr 1fr;}
+    .cmp-row{grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));}
     .cmp-card.empty{min-height:160px;}
     .cmp-insights{grid-template-columns:1fr;}
     .view-tabs button{padding:14px 8px;font-size:9px;letter-spacing:.12em;}
@@ -670,7 +670,7 @@
 
       <div class="team-activity-dashboard" id="tb-activity-dashboard"></div>
 
-      <!-- 16 พ.ค. 2026 (เจ้านาย): rebuilt dynamic · ใช้ PEOPLE จริง · 4 slots สูงสุด -->
+      <!-- 16 พ.ค. 2026 (เจ้านาย): rebuilt dynamic · ใช้ PEOPLE จริง · ขยายทีมได้ -->
       <div class="cmp-row" id="tb-slots"></div>
 
       <details class="matrix team-advanced">
@@ -4208,7 +4208,7 @@ window.applyI18N = applyI18N;
     return t[lang]||t.th||k;
   }
 
-  /* 16 พ.ค. (เจ้านาย): state.team = 4 slots · slot 0 default = teamCenter · เปลี่ยน center ได้ */
+  /* 16 พ.ค. (เจ้านาย): state.team dynamic · slot 0 default = teamCenter · เปลี่ยน center ได้ */
   if (!state.team) state.team = ['self'];
   if (!state.teamCenter) state.teamCenter = 'self';
 
@@ -4439,11 +4439,12 @@ window.applyI18N = applyI18N;
     `;
   }
 
-  /* render team cards · ทดแทน static cmp-row · 16 พ.ค.: center ปรับเปลี่ยนได้ + ปุ่มสร้างใหม่ */
+  /* render team cards · ทดแทน static cmp-row · center ปรับเปลี่ยนได้ + เพิ่มสมาชิกได้ไม่จำกัดตาม PEOPLE */
   function renderTeam(){
     const row = document.querySelector('#view-team .cmp-row');
     if (!row) return;
-    const slots = 4;
+    state.team = Array.from(new Set((state.team || []).filter(Boolean)));
+    if (!state.team.length) state.team = ['self'];
     const teamHTML = [];
     /* ensure center ยังอยู่ใน team · ถ้าไม่ → reset เป็น self */
     if (!state.team.includes(state.teamCenter)) {
@@ -4453,6 +4454,7 @@ window.applyI18N = applyI18N;
     if (actSel && actSel.value !== state.teamActivity) actSel.value = state.teamActivity;
     const priSel = document.getElementById('tb-priority-select');
     if (priSel && priSel.value !== state.teamPriority) priSel.value = state.teamPriority;
+    const slots = state.team.length + 1; /* current members + one add card */
     for (let i=0;i<slots;i++){
       const id = state.team[i];
       const p = id ? PEOPLE.find(x=>x.id===id) : null;
@@ -4501,9 +4503,20 @@ window.applyI18N = applyI18N;
       row.parentNode.insertBefore(toolbar, row);
     }
     const centerPerson = PEOPLE.find(x => x.id === state.teamCenter);
+    const teamPersons = state.team.map(id => PEOPLE.find(p => p.id === id)).filter(Boolean);
+    const centerOptions = teamPersons.map(p => `<option value="${escHtml(p.id)}" ${p.id === state.teamCenter ? 'selected' : ''}>${escHtml(p.glyph)} · ${escHtml(p.name)}</option>`).join('');
     toolbar.innerHTML = `
-      <div>★ CENTER: <b style="color:var(--gold);">${centerPerson?.name || '—'}</b> · คนอื่นคำนวณ vs ${centerPerson?.name || 'center'}</div>
-      <button id="tb-reset-btn" style="background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:2px;padding:6px 12px;border-radius:99px;cursor:pointer;text-transform:uppercase;">🆕 ทีมใหม่</button>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span>★ CENTER:</span>
+        <select id="tb-center-select" style="background:var(--bg);border:1px solid var(--gold-line);color:var(--fg);border-radius:8px;padding:6px 10px;font-family:var(--thai);font-size:12px;">
+          ${centerOptions}
+        </select>
+        <span>· คนอื่นคำนวณ vs <b style="color:var(--gold);">${escHtml(centerPerson?.name || 'center')}</b> · สมาชิก <b style="color:var(--gold);">${teamPersons.length}</b> คน</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="tb-add-btn" style="background:transparent;border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:1.5px;padding:6px 12px;border-radius:99px;cursor:pointer;text-transform:uppercase;">＋ เพิ่มคน</button>
+        <button id="tb-reset-btn" style="background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:2px;padding:6px 12px;border-radius:99px;cursor:pointer;text-transform:uppercase;">🆕 ทีมใหม่</button>
+      </div>
     `;
     /* synergy */
     const synEl = document.querySelector('#view-team .syn');
@@ -4546,7 +4559,7 @@ window.applyI18N = applyI18N;
             }
           });
         });
-        matrixEl.style.gridTemplateColumns = `repeat(${N+1}, 1fr)`;
+        matrixEl.style.gridTemplateColumns = `minmax(92px, auto) repeat(${N}, minmax(92px, 1fr))`;
         matrixEl.innerHTML = cellsHTML.join('');
       }
     }
@@ -4653,6 +4666,11 @@ window.applyI18N = applyI18N;
       showResetConfirm();
       return;
     }
+    const addBtn = e.target.closest('#tb-add-btn');
+    if (addBtn) {
+      openPickModal(state.team.length);
+      return;
+    }
     /* confirm modal buttons */
     const confirmYes = e.target.closest('#tb-confirm-yes');
     if (confirmYes) {
@@ -4667,6 +4685,17 @@ window.applyI18N = applyI18N;
     if (confirmNo) { hideResetConfirm(); return; }
   });
   document.addEventListener('change', function(e){
+    const centerSel = e.target.closest('#tb-center-select');
+    if (centerSel) {
+      const newCenter = centerSel.value;
+      if (newCenter && state.team.includes(newCenter)) {
+        state.teamCenter = newCenter;
+        saveTeam();
+        if (window.ensureCenterScores) window.ensureCenterScores(newCenter).then(()=>renderTeam()).catch(()=>renderTeam());
+        else renderTeam();
+      }
+      return;
+    }
     const actSel = e.target.closest('#tb-activity-select');
     if (actSel) {
       state.teamActivity = actSel.value || 'deal_closing';
@@ -4718,7 +4747,7 @@ window.applyI18N = applyI18N;
     } else {
       list.innerHTML = peers.map(p=>{
         const inTeam = state.team.includes(p.id);
-        const s = typeof getScore==='function' ? getScore('self', p.id, state.timeframe) : 0;
+        const s = typeof getScore==='function' ? getScore(state.teamCenter || 'self', p.id, state.timeframe) : 0;
         const sc = s>=20?'pos':s<=-20?'neg':'mid';
         const role = p.role || tx(p.roleKey||'');
         return `<div class="tp-row ${sc}${inTeam?' in-team':''}" data-id="${p.id}" data-slot="${slot}">
@@ -4769,11 +4798,13 @@ window.applyI18N = applyI18N;
     if (tpRow) {
       const slot = parseInt(tpRow.dataset.slot);
       const id = tpRow.dataset.id;
-      state.team[slot] = id;
-      /* compact array · keep self at 0 */
-      const team = state.team.filter(Boolean);
-      if (team[0] !== 'self') team.unshift('self');
-      state.team = team.slice(0,4);
+      if (!id || state.team.includes(id)) return;
+      if (Number.isFinite(slot) && slot >= 0 && slot < state.team.length) state.team[slot] = id;
+      else state.team.push(id);
+      /* compact + unique · keep self first if present */
+      let team = Array.from(new Set(state.team.filter(Boolean)));
+      if (team.includes('self')) team = ['self', ...team.filter(x => x !== 'self')];
+      state.team = team;
       saveTeam();
       closePickModal();
       renderTeam();
@@ -4786,8 +4817,8 @@ window.applyI18N = applyI18N;
     if (state.team.includes(personId)) { closeChartModal(); return; }
     const empty = state.team.findIndex(x=>!x);
     if (empty>=0) state.team[empty] = personId;
-    else if (state.team.length<4) state.team.push(personId);
-    else { alert('Team เต็มแล้ว · ลบสมาชิกออกก่อน'); return; }
+    else state.team.push(personId);
+    state.team = Array.from(new Set(state.team.filter(Boolean)));
     saveTeam();
     closeChartModal();
     renderTeam();
