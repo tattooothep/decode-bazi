@@ -15,6 +15,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { q1, q } from "@/lib/db";
 import { getDaymasterProfile } from "@/lib/daymaster-profile";
+import { getSession, type Session } from "@/lib/auth";
 
 const TIMEOUT_MS = 180_000;
 const CHILD_USER = "jarvis";
@@ -23,6 +24,7 @@ const RATE_LIMIT_PER_HOUR = 10;
 const SYSTEM_PROMPT_PATH = join(process.cwd(), "data/library/hourkey_interpret_prompt.refined.md");
 
 const RATE_BUCKET = new Map<string, number[]>();
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 function rateLimitHit(ip: string): boolean {
   const now = Date.now();
   const hour = 60 * 60 * 1000;
@@ -40,6 +42,70 @@ function pillarsHash(pillars: any): string {
   const p = pillars || {};
   const s = `${p.year?.stem}${p.year?.branch}|${p.month?.stem}${p.month?.branch}|${p.day?.stem}${p.day?.branch}|${p.hour?.stem || ""}${p.hour?.branch || ""}`;
   return createHash("sha256").update(s).digest("hex").slice(0, 60);
+}
+
+function cleanUuid(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  return UUID_RE.test(s) ? s : null;
+}
+
+async function ownedProfileId(session: Session | null, profileId: string | null): Promise<string | null> {
+  if (!session || !profileId || !session.orgId) return null;
+  const row = await q1<{ id: string }>(
+    `SELECT id FROM profiles
+      WHERE id=$1 AND org_id=$2 AND is_archived=false
+      LIMIT 1`,
+    [profileId, session.orgId]
+  );
+  return row?.id || null;
+}
+
+async function saveSifuHistory(input: {
+  session: Session | null;
+  profileId: string | null;
+  pillarsHash: string;
+  lang: string;
+  lpIdx: number;
+  cyYear: number;
+  question: string;
+  answer: string;
+  body: any;
+}): Promise<string | null> {
+  if (!input.session || !input.question || !input.answer) return null;
+  const safeProfileId = await ownedProfileId(input.session, input.profileId);
+  const daymasterProfile = input.body?.analysis?.daymaster_profile || null;
+  const chartSnapshot = {
+    pillars: input.body?.pillars || null,
+    daymaster_profile: daymasterProfile,
+    yongshen_v2: input.body?.yongshen_v2 ? {
+      structure_label: input.body.yongshen_v2.structure_label || null,
+      engine_type: input.body.yongshen_v2.engine_type || null,
+      primary_yongshen: input.body.yongshen_v2.primary_yongshen || null,
+      xishen: input.body.yongshen_v2.xishen || null,
+      jishen: input.body.yongshen_v2.jishen || null,
+    } : null,
+  };
+  const row = await q1<{ id: string }>(
+    `INSERT INTO chart_sifu_history
+       (user_id, profile_id, pillars_hash, lang, lp_idx, cy_year,
+        question, answer, daymaster_profile_key, chart_snapshot)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb)
+     RETURNING id`,
+    [
+      input.session.userId,
+      safeProfileId,
+      input.pillarsHash,
+      input.lang,
+      input.lpIdx,
+      input.cyYear,
+      input.question,
+      input.answer,
+      daymasterProfile?.key || null,
+      JSON.stringify(chartSnapshot),
+    ]
+  );
+  return row?.id || null;
 }
 
 const STEM_TH: Record<string, string> = {
@@ -282,12 +348,13 @@ export async function POST(req: Request) {
     ? body.lang.toLowerCase() : "th";
   const lp_idx = parseInt(body.lp_idx || 0, 10);
   const cy_year = parseInt(body.cy_year || new Date().getUTCFullYear(), 10);
-  const profile_id = body.profile_id || null;
+  const profile_id = cleanUuid(body.profile_id || body.profileId);
   const question = String(body.question || "").trim().slice(0, 800);
   if (!body.pillars?.day?.stem) {
     return NextResponse.json({ error: "pillars required" }, { status: 400 });
   }
   const hash = pillarsHash(body.pillars);
+  const session = question ? await getSession() : null;
   /* check cache first · ไม่ regen ถ้า exist (user ต้องกด force) */
   if (!question && !body.force) {
     const cached = await q1<{ content: string }>(
@@ -307,13 +374,32 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       let accumulated = "";
+      let historyId: string | null = null;
+      let historySaved = false;
       try {
         controller.enqueue(encoder.encode(`event: start\ndata: ${JSON.stringify({lang})}\n\n`));
         const full = await runClaudeStream(prompt, (chunk) => {
           accumulated += chunk;
           controller.enqueue(encoder.encode(`event: chunk\ndata: ${JSON.stringify({text: chunk})}\n\n`));
         });
-        if (!question) {
+        if (question) {
+          try {
+            historyId = await saveSifuHistory({
+              session,
+              profileId: profile_id,
+              pillarsHash: hash,
+              lang,
+              lpIdx: lp_idx,
+              cyYear: cy_year,
+              question,
+              answer: full,
+              body,
+            });
+            historySaved = !!historyId;
+          } catch (historyErr) {
+            console.error("[chart/overview] history save failed", historyErr);
+          }
+        } else {
           /* save DB · upsert */
           await q(
             `INSERT INTO user_chart_overview (profile_id, pillars_hash, lang, lp_idx, cy_year, content)
@@ -323,7 +409,7 @@ export async function POST(req: Request) {
             [profile_id, hash, lang, lp_idx, cy_year, full]
           );
         }
-        controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({hash, length: full.length})}\n\n`));
+        controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({hash, length: full.length, history_id: historyId, history_saved: historySaved})}\n\n`));
       } catch (e: any) {
         controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({error: String(e?.message || e)})}\n\n`));
       } finally {
