@@ -61,6 +61,10 @@
 
   /* date strip */
   .datestrip{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:30px;gap:24px;flex-wrap:wrap;}
+  @media (max-width:640px){
+    .datestrip{justify-content:center !important;}
+    .datestrip .r{width:auto;justify-content:center;}
+  }
   .datestrip .l h1{font-family:var(--serif);font-size:64px;font-weight:300;line-height:1;letter-spacing:-.01em;}
   .datestrip .l h1 b{font-family:var(--thai);font-weight:600;}
   .datestrip .l .sub{display:flex;gap:14px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--fg-soft);letter-spacing:.18em;text-transform:uppercase;}
@@ -637,14 +641,42 @@
 
 <div class="wrap">
 
-  <!-- date strip · ปุ่ม nav อย่างเดียว (Phase 19-C+ · 21 พ.ค. · ลบ title/date) -->
-  <div class="datestrip" style="justify-content:flex-end;">
+  <!-- date strip · 7-day strip (desktop) + ปุ่ม nav + date picker (Phase 19-C++ · 21 พ.ค.) -->
+  <div class="datestrip" id="t-datestrip">
+    <!-- 7-day strip · desktop only -->
+    <div class="hk-7day-strip" id="t-7day-strip"></div>
     <div class="r" id="t-date-nav">
       <button id="t-btn-prev"  data-i18n="t.btn.prev">‹ เมื่อวาน</button>
       <button id="t-btn-today" data-i18n="t.btn.today">วันนี้</button>
       <button id="t-btn-next"  data-i18n="t.btn.next">พรุ่งนี้ ›</button>
+      <input type="date" id="t-date-picker" style="display:none;padding:6px 10px;border:1px solid var(--gold-line);border-radius:99px;background:var(--tile);color:var(--fg);font-family:var(--mono);font-size:11px;cursor:pointer;">
+      <button id="t-btn-pick" title="เลือกวันอื่น">📅</button>
     </div>
   </div>
+  <style>
+    /* 7-day strip · desktop · 21 พ.ค. */
+    .hk-7day-strip{display:flex;gap:4px;flex:1;justify-content:center;align-items:center;font-family:var(--mono);}
+    .hk-7day-strip .d-cell{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;min-width:42px;border-radius:8px;cursor:pointer;transition:.2s;border:1px solid transparent;}
+    .hk-7day-strip .d-cell:hover{background:var(--gold-soft);}
+    .hk-7day-strip .d-cell.cur{background:var(--gold);color:#0d0f12;font-weight:700;}
+    .hk-7day-strip .d-cell .dn{font-size:9px;letter-spacing:.1em;text-transform:uppercase;opacity:.7;}
+    .hk-7day-strip .d-cell.cur .dn{opacity:.85;}
+    .hk-7day-strip .d-cell .dd{font-size:14px;font-weight:600;}
+    @media (max-width:640px){
+      .hk-7day-strip{display:none;}
+      #t-btn-pick{display:none;}
+    }
+    @media (min-width:641px){
+      .verdict::after, .verdict::before{display:none !important;} /* hide swipe hint */
+    }
+    /* mobile swipe hint */
+    .verdict-swipe-hint{display:none;position:absolute;top:8px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.15em;text-transform:uppercase;z-index:5;pointer-events:none;}
+    @media (max-width:640px){
+      .verdict-swipe-hint{display:block;}
+      .verdict-date-label{display:block !important;}
+    }
+    .verdict-date-label{display:none;position:absolute;top:8px;left:16px;font-family:var(--thai);font-size:12px;font-weight:600;color:var(--gold);z-index:5;pointer-events:none;}
+  </style>
   <script>
   /* 🚀 Global fetch cache · /api/chart + /api/profile · 16 พ.ค. 2026 · ลด duplicate calls 4→1 + 2→1 */
   (function(){
@@ -722,12 +754,80 @@
       else if (ymd(d) === ymd(tdate)) btnNext && btnNext.classList.add('on');
       else                            btnToday && btnToday.classList.add('on');
     }
+
+    /* 21 พ.ค. · 7-day strip (desktop) + date picker + mobile swipe */
+    var curDate = dateP ? new Date(dateP+'T00:00:00') : new Date();
+    var DOW_TH = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+    var MONTH_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    /* date label · mobile + verdict card */
+    var dateLabel = document.getElementById('t-verdict-date-label');
+    if (dateLabel) {
+      var labelTxt = DOW_TH[curDate.getDay()] + ' · ' + curDate.getDate() + ' ' + MONTH_TH[curDate.getMonth()];
+      dateLabel.textContent = labelTxt;
+    }
+    /* 7-day strip · 3 ก่อน · วันนี้ · 3 หลัง */
+    var strip = document.getElementById('t-7day-strip');
+    if (strip) {
+      strip.innerHTML = '';
+      for (var offset = -3; offset <= 3; offset++) {
+        var dt = new Date(curDate);
+        dt.setDate(dt.getDate() + offset);
+        var cell = document.createElement('div');
+        cell.className = 'd-cell' + (offset === 0 ? ' cur' : '');
+        cell.innerHTML = '<span class="dn">' + DOW_TH[dt.getDay()] + '</span><span class="dd">' + dt.getDate() + '</span>';
+        (function(d){ cell.addEventListener('click', function(){
+          var p = new URLSearchParams(location.search);
+          p.set('date', ymd(d));
+          if (ymd(d) === ymd(new Date())) p.delete('date');
+          location.search = p.toString() ? '?'+p.toString() : '';
+        }); })(dt);
+        strip.appendChild(cell);
+      }
+    }
+    /* date picker · เลือกวันอื่น */
+    var picker = document.getElementById('t-date-picker');
+    var btnPick = document.getElementById('t-btn-pick');
+    if (picker && btnPick) {
+      picker.value = ymd(curDate);
+      btnPick.addEventListener('click', function(){ picker.showPicker ? picker.showPicker() : picker.click(); });
+      picker.addEventListener('change', function(){
+        if (!picker.value) return;
+        var p = new URLSearchParams(location.search);
+        p.set('date', picker.value);
+        if (picker.value === ymd(new Date())) p.delete('date');
+        location.search = p.toString() ? '?'+p.toString() : '';
+      });
+    }
+    /* mobile swipe · เลื่อนใน verdict card */
+    var hero = document.querySelector('.verdict');
+    if (hero && window.matchMedia && window.matchMedia('(max-width:640px)').matches) {
+      var sx = 0, sy = 0, dx = 0;
+      hero.addEventListener('touchstart', function(e){
+        if (!e.touches[0]) return;
+        sx = e.touches[0].clientX; sy = e.touches[0].clientY; dx = 0;
+      }, {passive:true});
+      hero.addEventListener('touchmove', function(e){
+        if (!e.touches[0]) return;
+        dx = e.touches[0].clientX - sx;
+      }, {passive:true});
+      hero.addEventListener('touchend', function(e){
+        var absX = Math.abs(dx);
+        var absY = Math.abs((e.changedTouches[0]?.clientY || sy) - sy);
+        if (absX > 60 && absX > absY * 2) {
+          if (dx < 0) shift(1);   /* swipe left = พรุ่งนี้ */
+          else        shift(-1);  /* swipe right = เมื่อวาน */
+        }
+      }, {passive:true});
+    }
   })();
   </script>
 
   <!-- hero: day score + today's pillar -->
   <div class="hero">
     <div class="verdict">
+      <!-- mobile swipe hint + date label · 21 พ.ค. -->
+      <span class="verdict-swipe-hint">← เลื่อนเปลี่ยนวัน →</span>
+      <span class="verdict-date-label" id="t-verdict-date-label"></span>
       <!-- 🐲🐯🦚🐢🦜 สัตว์มงคล 5 ตัว · Five Spirit Beasts -->
       <svg class="dm-spirit" id="t-verdict-spirit" viewBox="0 0 200 260" data-level="" aria-hidden="true">
         <defs>
