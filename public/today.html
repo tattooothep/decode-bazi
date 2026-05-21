@@ -2532,8 +2532,16 @@ window.applyI18N = applyI18N;
             grid.querySelectorAll('.h-cell').forEach(c => c.addEventListener('click', () => showReason(c)));
             const nowCell = grid.querySelector('.h-cell.now');
             if (nowCell) showReason(nowCell);
-            /* update NOW card */
-            const nowH = cached.hours.find(h => h.isNow);
+            /* update NOW card · ถ้าไม่มี isNow ให้ใช้ hour ตามเวลาตอนนี้ของ user เอง */
+            let nowH = cached.hours.find(h => h.isNow);
+            if (!nowH) {
+              /* fallback · คำนวณจากเวลาเครื่อง user */
+              const userH = new Date().getHours();
+              const BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+              const branchIdx = Math.floor(((userH + 1) % 24) / 2);
+              const wantBranch = BRANCHES[branchIdx];
+              nowH = cached.hours.find(h => h.branch === wantBranch) || cached.hours[0];
+            }
             if (nowH) {
               const ELN = { th:{wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'},
                             en:{wood:'Wood',fire:'Fire',earth:'Earth',metal:'Metal',water:'Water'},
