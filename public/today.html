@@ -2370,15 +2370,29 @@ window.applyI18N = applyI18N;
     const h2 = document.getElementById('t-verdict-h2');
     if (h2 && d.universal.breakdown) {
       const officer = d.universal.breakdown.officer;
-      const officerNarr = officer.tier === 'favorable' ? 'เหมาะ <b>ลงมือเดินหน้า</b>' :
-                          officer.tier === 'critical'  ? 'ระวัง <b>ถอยตั้งหลัก</b>' :
-                          'วันที่ <b>ทำงานปกติ</b>';
-      const personalNarr = d.personal && d.personal.bonuses && d.personal.bonuses.length
-        ? '· ' + d.personal.bonuses[0]
-        : d.personal && d.personal.warnings && d.personal.warnings.length
-          ? '· ' + d.personal.warnings[0]
-          : '';
-      h2.innerHTML = `${officerNarr}<br/>วันฤกษ์ <b>${officer.name}</b> ${personalNarr}`;
+      /* บรรทัด 1 · ดวงคุณ (tier ของวันนี้) */
+      const personalLine = officer.tier === 'favorable' ? 'วันดี · <b>เหมาะลงมือเดินหน้า</b>' :
+                           officer.tier === 'critical'  ? 'วันระวัง · <b>ถอยตั้งหลัก</b>' :
+                           'วันธรรมดา · <b>ทำกิจวัตรได้</b> · เลี่ยงเริ่มงานใหญ่';
+      /* บรรทัด 2 · ปฏิทินจีน · 12 ฤกษ์ + hint ภาษาคน */
+      const OFFICER_TH = {
+        '建':{th:'เริ่ม',hint:'เริ่มงานใหม่'},
+        '除':{th:'กำจัด',hint:'ขจัดปัญหา · ทำความสะอาด'},
+        '满':{th:'เต็ม',hint:'เก็บออม · เปิดร้าน'},
+        '平':{th:'สมดุล',hint:'กิจกรรมทั่วไป'},
+        '定':{th:'มั่นคง',hint:'ตั้งหลัก · ตัดสินใจ'},
+        '執':{th:'ทำ',hint:'ลงมือ · ออกแรง'},
+        '破':{th:'แตก',hint:'⚠ หลีกเลี่ยงเรื่องใหญ่'},
+        '危':{th:'เสี่ยง',hint:'⚠ ระวังตัว'},
+        '成':{th:'สำเร็จ',hint:'⭐ งานใหญ่ · เปิดกิจการ'},
+        '收':{th:'เก็บ',hint:'สะสม · จัดเก็บ'},
+        '開':{th:'เปิด',hint:'⭐ เริ่มสิ่งใหม่'},
+        '閉':{th:'ปิด',hint:'ปิดงาน · เก็บของ'},
+        '闭':{th:'ปิด',hint:'ปิดงาน · เก็บของ'}
+      };
+      const off = OFFICER_TH[officer.name] || {th:officer.name,hint:''};
+      const calendarLine = `ปฏิทินจีน · ฤกษ์<b>${off.th}</b> (${officer.name}) · เหมาะ${off.hint}`;
+      h2.innerHTML = `${personalLine}<br/>${calendarLine}`;
     }
 
     /* 5. render TODAY'S PILLAR */
