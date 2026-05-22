@@ -3691,7 +3691,6 @@ window.addEventListener('resize', function(){
     try {
       var is3p = d && (d.mode === '3p' || (d.pillars && d.pillars.hour == null));
       var banner = document.getElementById('hk-3p-banner');
-      if (!banner) return;
       /* selectors ที่ตรงกับ DOM จริงของ chart.html · 4 ตำแหน่ง:
        * .tg-hour (Tian Gan row · §02) · .hs-hour (Hidden Stems row) · .hhs-hour (Hidden Hidden Stems)
        * #bb-hp-stem · #bb-hp-god · #bb-hp-phase (basic board hour column)
@@ -3702,11 +3701,37 @@ window.addEventListener('resize', function(){
       var HOUR_TABLE_CELLS = ['.tg-hour', '.hs-hour', '.hhs-hour', '.eb-hour', '.ny-hour', '.ph-hour', '.kw-hour', '.ss-hour', '.rx-hour', '.pal-hour', '.hex-hour'];
       var HOUR_TEXT_NODES = ['#bb-hp-stem', '#bb-hp-god', '#bb-hp-phase'];
       var HOUR_PILLAR_GROUPS = ['.pillar.hour', '[data-pillar="hour"]', '.life-palace', '.carry-card', '[data-card="hour-required"]'];
+      function sec4Text(key, fallback){
+        var lang = document.documentElement.getAttribute('data-lang') || 'th';
+        var dict = window.HK_I18N || {};
+        return (dict[key] && (dict[key][lang] || dict[key].th)) || fallback;
+      }
+      function setSec4Mode(noHour){
+        var table = document.getElementById('hk-pillar-table');
+        var sec = table && table.closest ? table.closest('section') : null;
+        var h2 = sec && sec.querySelector ? sec.querySelector('[data-i18n="c.sec4.h2"]') : null;
+        var sub = sec && sec.querySelector ? sec.querySelector('[data-i18n="c.sec4.sub"]') : null;
+        if (h2) h2.innerHTML = noHour
+          ? sec4Text('c.sec4.h2.3p', '<span class="tc">三柱</span>โครงดวง 3 เสา')
+          : sec4Text('c.sec4.h2', '<span class="tc">四柱</span>โครงดวง 4 เสา');
+        if (sub) sub.textContent = noHour
+          ? sec4Text('c.sec4.sub.3p', 'คำนวณเฉพาะปี · เดือน · วัน เพราะไม่ทราบเวลาเกิด')
+          : sec4Text('c.sec4.sub', 'หลักของชะตา · กดเสาเพื่อดูรายละเอียด');
+      }
+      function setHourColumnVisible(show){
+        var table = document.getElementById('hk-pillar-table');
+        if (!table) return;
+        table.querySelectorAll('tr > *:nth-child(2)').forEach(function(el){
+          el.style.display = show ? '' : 'none';
+        });
+      }
 
       if (!is3p) {
         /* 4p · reset overlay · ลบ inline style ที่ helper ใส่ไว้ก่อนหน้านี้ */
-        banner.hidden = true;
+        if (banner) banner.hidden = true;
         document.documentElement.removeAttribute('data-no-hour');
+        setSec4Mode(false);
+        setHourColumnVisible(true);
         HOUR_PILLAR_GROUPS.forEach(function(sel){
           document.querySelectorAll(sel).forEach(function(el){
             el.style.opacity = '';
@@ -3715,8 +3740,10 @@ window.addEventListener('resize', function(){
         });
         return;
       }
-      banner.hidden = false;
+      if (banner) banner.hidden = false;
       document.documentElement.setAttribute('data-no-hour', '1');
+      setSec4Mode(true);
+      setHourColumnVisible(false);
 
       /* 3p · table cells (.tg-hour/.hs-hour/.hhs-hour) → "—" placeholder */
       HOUR_TABLE_CELLS.forEach(function(sel){
@@ -3756,6 +3783,8 @@ window.addEventListener('resize', function(){
     var DICT = window.HK_I18N || (window.HK_I18N = {});
     DICT['c.3p.title'] = { th:'ดวงนี้คำนวณแบบ 3 เสา · ไม่ทราบเวลาเกิด', en:'This chart uses 3-pillar mode · birth time unknown', zh:'此命盤採用三柱推算 · 不知出生時辰' };
     DICT['c.3p.hint']  = { th:'เสายาม (時柱) · 命宮 · 拱·夾 · 河洛 จะไม่แสดง · ตำราคลาสสิก: ขาดเวลา → ไม่คำนวณ ดีกว่าเดา', en:'Hour Pillar · Life Palace · 拱·夾 · Heluo not shown · classical: skip rather than guess', zh:'時柱 · 命宮 · 拱·夾 · 河洛皆隱藏 · 古法: 寧缺勿猜' };
+    DICT['c.sec4.h2.3p'] = { th:'<span class="tc">三柱</span>โครงดวง 3 เสา', en:'<span class="tc">三柱</span>Three Pillars frame', zh:'<span class="tc">三柱</span>命局三柱' };
+    DICT['c.sec4.sub.3p'] = { th:'คำนวณเฉพาะปี · เดือน · วัน เพราะไม่ทราบเวลาเกิด · เสายามไม่เดา', en:'Year · Month · Day only because birth time is unknown · no guessed hour pillar', zh:'僅排年 · 月 · 日三柱 · 不知時辰則不猜時柱' };
   } catch(_){}
 })();
 </script>

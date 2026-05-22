@@ -92,8 +92,12 @@ export async function POST(req: Request) {
       }
     }
 
-    /* 19 พ.ค. Option α · 3p mode · skip chart-extensions/carry/heluo (consumers deref pillars.hour)
-     * Phase 7 จะ patch consumer modules ให้ guard null · ตอนนี้ส่ง limited 3p response */
+    const { buildChartExtensions } = await import("@/lib/chart-extensions");
+
+    /* 19 พ.ค. Option α · 3p mode · hour pillar unknown
+     * Still build chart extensions for year/month/day so §02 does not look empty.
+     * Keep hour-required engines (Heluo/QiMen precise/solar time) disabled rather than guessing.
+     */
     if (calc.mode === "3p") {
       let yongshenV2_3p: any = null;
       try {
@@ -120,6 +124,70 @@ export async function POST(req: Request) {
           };
         }
       } catch (e) { console.error("yongshen_v2 (3p) synth failed:", e); }
+
+      const birthDateAnchor = new Date(`${date}T12:00:00+07:00`);
+      const adjustedYongshenEls = (calc.yongshen || []).map(y => y.element).filter(Boolean);
+      const ext = buildChartExtensions(
+        natal as any,
+        new Date(),
+        (gender as "M" | "F") || "M",
+        birthDateAnchor,
+        10,
+        calc.geJu.structure || null,
+        calc.strength.percent,
+        calc.yongshen[0]?.element || null,
+        adjustedYongshenEls
+      );
+
+      try {
+        // @ts-ignore — runtime CJS
+        const w7 = await import("../../../../data/library/wrappers/7-yongshen-v2.js");
+        const synth = (w7 as any).synthesizeYongshen || ((w7 as any).default && (w7 as any).default.synthesizeYongshen);
+        if (synth) {
+          const sFull = synth(natal);
+          const rootedness = sFull?._details?.rootedness;
+          if (rootedness) {
+            let distribution: any = undefined;
+            try {
+              const { buildElementDistribution } = await import("@/lib/element-distribution-functional");
+              distribution = buildElementDistribution(natal as any);
+              (ext as any).element_distribution = distribution;
+            } catch (e) {
+              console.warn("[chart] 3p element_distribution failed", e);
+            }
+            const { buildStrengthFunctional } = await import("@/lib/strength-functional");
+            const fnStrength = buildStrengthFunctional(natal.day.stem, rootedness, distribution);
+            (ext as any).voytek_strength = fnStrength;
+            daymasterProfile = getDaymasterProfile(natal.day.stem, {
+              level: fnStrength.level,
+              levelTh: fnStrength.level_th,
+              supportingPct: fnStrength.supporting_pct,
+            });
+            try {
+              const { buildHealthFunctional } = await import("@/lib/health-functional");
+              (ext as any).health_mapping = buildHealthFunctional(natal.day.stem, rootedness, fnStrength.supporting_pct, distribution);
+            } catch (e) {
+              console.warn("[chart] 3p health_mapping failed", e);
+            }
+            try {
+              const { buildRootednessExplain } = await import("@/lib/explain-rootedness");
+              (ext as any).rootedness_explain = buildRootednessExplain(natal.day.stem, rootedness, distribution);
+            } catch (e) {
+              console.warn("[chart] 3p rootedness_explain failed", e);
+            }
+            try {
+              if (distribution) {
+                const { buildRootednessExplainV2 } = await import("@/lib/rootedness-explain-v2");
+                (ext as any).rootedness_explain_v2 = buildRootednessExplainV2(natal.day.stem, distribution);
+              }
+            } catch (e) {
+              console.warn("[chart] 3p rootedness_explain_v2 failed", e);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("[chart] 3p functional override failed", e);
+      }
 
       return NextResponse.json({
         input: { date, time: null, longitude, gender, birthTimeKnown: false },
@@ -150,6 +218,42 @@ export async function POST(req: Request) {
           strength_yongshen: { strength: calc.strength, yongshenFinal: calc.yongshen, climate: { climate: calc.climate } },
           hs_hhs: hsHhs,
           matrix_summary: matrix.summary,
+          element_counts: ext.element_counts,
+          ten_gods_map: ext.ten_gods_map,
+          qi_phases: ext.qi_phases,
+          interactions: ext.interactions,
+          punishments: ext.punishments,
+          combinations: ext.combinations,
+          jishen: ext.jishen,
+          today_overlay: ext.today_overlay,
+          luck_pillars: ext.luck_pillars,
+          current_luck_idx: ext.current_luck_idx,
+          /* G1 · §02 Joey Yap-style table · 3p-safe: hour fields are null/empty only */
+          nayin: ext.nayin,
+          kong_wang: ext.kong_wang,
+          three_phases: ext.three_phases,
+          special_stars: ext.special_stars,
+          carries: [],
+          /* G4 · natal sections that can be derived from 3 pillars */
+          life_palace: null,
+          palace_readings: ext.palace_readings,
+          five_structure: ext.five_structure,
+          personal_stars: ext.personal_stars,
+          qimen_destiny: null,
+          stem_interactions: ext.stem_interactions,
+          fan_yin_fu_yin: ext.fan_yin_fu_yin,
+          current_year_pillar: ext.current_year_pillar,
+          voytek_strength: ext.voytek_strength,
+          lp_natal_interactions: ext.lp_natal_interactions,
+          tian_di_he: ext.tian_di_he,
+          liu_nian_timeline: ext.liu_nian_timeline,
+          special_chart: ext.special_chart,
+          spouse_palace: ext.spouse_palace,
+          career_industry: ext.career_industry,
+          health_mapping: ext.health_mapping,
+          rootedness_explain: (ext as any).rootedness_explain,
+          rootedness_explain_v2: (ext as any).rootedness_explain_v2,
+          element_distribution: (ext as any).element_distribution,
           daymaster_profile: daymasterProfile,
         },
         yongshen_v2: yongshenV2_3p,
@@ -159,7 +263,6 @@ export async function POST(req: Request) {
     }
 
     /* 4p path · เดิม · backward compat 100% (TS narrowed calc to BaziAnalysis4p จาก early return) */
-    const { buildChartExtensions } = await import("@/lib/chart-extensions");
     const birthDate = new Date(`${date}T${time}:00`);
     const adjustedYongshenEls = (calc.yongshen || []).map(y => y.element).filter(Boolean);
     const ext = buildChartExtensions(
