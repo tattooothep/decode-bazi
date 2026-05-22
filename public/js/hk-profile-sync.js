@@ -32,6 +32,7 @@
       if (p.name) localStorage.setItem('hk_profile_name', p.name);
       if (top3.length) localStorage.setItem('hk_user_yongshen', JSON.stringify(top3.slice(0, 3)));
       if (dt.date) {
+        var birthTimeKnown = p.birthTimeKnown !== false && p.birth_time_known !== false;
         localStorage.setItem('hk_birth', JSON.stringify({
           name: p.name || '',
           date: dt.date,
@@ -42,6 +43,7 @@
           latitude: p.birth_lat != null ? Number(p.birth_lat) : 13.7563,
           gender: p.gender === 'female' || p.gender === 'F' ? 'F' : 'M',
           profileId: p.id,
+          birthTimeKnown: birthTimeKnown,
           source: 'db-sync'
         }));
       }

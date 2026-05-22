@@ -701,12 +701,15 @@
       try {
         var b = JSON.parse(localStorage.getItem('hk_birth') || 'null');
         if (!b) return null;
-        return {
-          id: null,
-          name: b.name || localStorage.getItem('hk_profile_name') || 'ตัวฉัน',
-          birth_datetime: String(b.date || '') + 'T' + String(b.time || '12:00') + ':00+07:00',
-          birth_location_name: b.place || 'กรุงเทพมหานคร'
-        };
+	        return {
+	          id: null,
+	          name: b.name || localStorage.getItem('hk_profile_name') || 'ตัวฉัน',
+	          birth_datetime: String(b.date || '') + 'T' + String(b.time || '12:00') + ':00+07:00',
+	          birth_location_name: b.place || 'กรุงเทพมหานคร',
+	          birth_time_known: b.birthTimeKnown !== false,
+	          birth_lng: b.longitude || b.lng || 100.5018,
+	          gender: b.gender || 'M'
+	        };
       } catch(_) { return null; }
     }
     function fillProfile(p){
@@ -725,7 +728,8 @@
       var parts = dt.split('T');
       setText(nameEl, activeProfile.nickname || activeProfile.name || 'ตัวฉัน');
       setText(dateEl, parts[0] || '-');
-      setText(timeEl, (parts[1] || '').slice(0,5) || '-');
+	      var timeKnown = activeProfile.birth_time_known !== false;
+	      setText(timeEl, timeKnown ? ((parts[1] || '').slice(0,5) || '-') : 'ไม่ทราบเวลา');
       setText(placeEl, activeProfile.birth_location_name || activeProfile.locationName || activeProfile.place || 'กรุงเทพมหานคร');
       statusEl.textContent = 'ตรวจข้อมูลเกิดให้ตรงก่อนกดยืนยัน';
     }
@@ -746,10 +750,11 @@
         var parts = dt.split('T');
         var date = parts[0];
         var time = (parts[1]||'12:00').slice(0,5);
-        var r = await fetch('/api/chart', {
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ date:date, time:time, longitude:activeProfile.birth_lng||100.5018, gender:activeProfile.gender||'M', gmtOffsetHours:7 })
-        });
+	        var birthTimeKnown = activeProfile.birth_time_known !== false;
+	        var r = await fetch('/api/chart', {
+	          method:'POST', headers:{'Content-Type':'application/json'},
+	          body: JSON.stringify({ date:date, time:time, longitude:activeProfile.birth_lng||100.5018, gender:activeProfile.gender||'M', gmtOffsetHours:7, birthTimeKnown: birthTimeKnown })
+	        });
         if (!r.ok) throw new Error('chart api '+r.status);
         var d = await r.json();
         var p = d.pillarsZh || {};
@@ -797,7 +802,8 @@
       var rawDt = String(activeProfile.birth_datetime || '');
       var rawParts = rawDt.split('T');
       if (rawParts[0]) qs.set('birthDate', rawParts[0]);
-      if (rawParts[1]) qs.set('birthTime', rawParts[1].slice(0,5));
+	      if (rawParts[1]) qs.set('birthTime', rawParts[1].slice(0,5));
+	      qs.set('birthTimeKnown', activeProfile.birth_time_known !== false ? 'true' : 'false');
       qs.set('birthLng', String(activeProfile.birth_lng || 100.5018));
       qs.set('gender', activeProfile.gender || 'M');
       qs.set('name', activeProfile.nickname || activeProfile.name || 'ตัวฉัน');

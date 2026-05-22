@@ -980,7 +980,7 @@
         const norm = s => String(s || '').trim().toLowerCase();
         people = people.filter(p => {
           if (p.id === 'self') return true;
-          const sameBirth = p.birthDate && p.birthDate === selfPerson.birthDate && (p.birthTime || '12:00') === (selfPerson.birthTime || '12:00');
+          const sameBirth = p.birthDate && p.birthDate === selfPerson.birthDate && (p.birthTime || '12:00') === (selfPerson.birthTime || '12:00') && (p.birthTimeKnown !== false) === (selfPerson.birthTimeKnown !== false);
           const sameChart = p.glyph && p.glyph === selfPerson.glyph;
           const sameName = norm(p.name) && norm(p.name) === norm(selfPerson.name);
           return !(sameBirth && sameChart && sameName);
@@ -1111,10 +1111,10 @@
   async function ensureSelfYongshen(){
     if (window._selfYongshen.length) return;
     try {
-      const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
-      if (!b || !b.date) return;
-      const r = await fetch('/api/chart', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ date:b.date, time:b.time||'12:00', longitude:b.lng||100.5018 })});
+	      const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
+	      if (!b || !b.date) return;
+	      const r = await fetch('/api/chart', { method:'POST', headers:{'Content-Type':'application/json'},
+	        body: JSON.stringify({ date:b.date, time:b.time||'12:00', longitude:b.lng||100.5018, birthTimeKnown:b.birthTimeKnown !== false })});
       if (!r.ok) return;
       const d = await r.json();
       const ys = d.analysis?.strength_yongshen?.yongshenFinal || [];
@@ -1528,11 +1528,12 @@
     if (window._lpCache[cacheKey]) return window._lpCache[cacheKey];
     try {
       const r = await fetch('/api/chart', {
-        method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
-        body: JSON.stringify({
-          date: person.birthDate, time: person.birthTime || '12:00',
-          longitude: person.longitude || 100.5018, gender: person.gender || 'M'
-        })
+	        method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+	        body: JSON.stringify({
+	          date: person.birthDate, time: person.birthTime || '12:00',
+	          longitude: person.longitude || 100.5018, gender: person.gender || 'M',
+	          birthTimeKnown: person.birthTimeKnown !== false
+	        })
       });
       if (!r.ok) return null;
       const d = await r.json();
@@ -1571,10 +1572,11 @@
         name: person.name,
         pillars: person.pillars,
         yongshenTop3: person.yongshenTop3 || [],
-        birthDate: person.birthDate || null,
-        birthTime: person.birthTime || '12:00',
-        longitude: person.longitude || 100.5018,
-        gender: person.gender || 'M'
+	        birthDate: person.birthDate || null,
+	        birthTime: person.birthTime || '12:00',
+	        birthTimeKnown: person.birthTimeKnown !== false,
+	        longitude: person.longitude || 100.5018,
+	        gender: person.gender || 'M'
       }
     };
   }
@@ -1584,7 +1586,7 @@
     if (!dm) return {day:50, week:50, month:50, year:50};
     const today = new Date();
     const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-    const cacheKey = 'own_api_' + dateStr + '_' + person.id + (opts.includeForecast ? '_forecast' : '');
+    const cacheKey = 'own_api_' + dateStr + '_' + person.id + '_' + (person.birthTimeKnown === false ? '3p' : '4p') + (opts.includeForecast ? '_forecast' : '');
     window._ownScoreApiCache = window._ownScoreApiCache || {};
     if (window._ownScoreApiCache[cacheKey]) return window._ownScoreApiCache[cacheKey];
     try {
@@ -1917,9 +1919,9 @@
     /* 3) Favor · ดึงจาก yongshen 2 อันดับแรกจาก /api/chart (wrapper-6) */
     if (self && self.pillars && self.pillars.day && self.pillars.day.stem && !window._cachedFavor) {
       const birthDate = (function(){ try { return JSON.parse(localStorage.getItem('hk_birth')||'null'); } catch(_){ return null; }})();
-      if (birthDate && birthDate.date) {
-        fetch('/api/chart', { method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ date: birthDate.date, time: birthDate.time||'12:00', longitude: birthDate.lng||100.5018 })})
+	      if (birthDate && birthDate.date) {
+	        fetch('/api/chart', { method:'POST', headers:{'Content-Type':'application/json'},
+	          body: JSON.stringify({ date: birthDate.date, time: birthDate.time||'12:00', longitude: birthDate.lng||100.5018, birthTimeKnown: birthDate.birthTimeKnown !== false })})
           .then(r=>r.ok?r.json():null)
           .then(d=>{
             if (!d) return;

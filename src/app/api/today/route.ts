@@ -16,6 +16,7 @@ export async function POST(req: Request) {
 
   /* 18 พ.ค. · ถ้าไม่ส่ง yongshen + มี birth → calc ภายใน · ให้ score ตรง /calendar /network */
   const birthDate = body.birthDate;
+  const birthTimeKnown = body.birthTimeKnown !== false;
   const birthTime = body.birthTime || '12:00';
   const birthLng  = parseFloat(body.birthLng ?? body.longitude ?? '100.5018');
   /* 18 พ.ค. · เพิ่ม userSummary 1 บรรทัด · สรุปดวงคุณให้ user อ่านง่าย
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
   if (!yongshen && birthDate && /^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
     try {
       const { getYongshenSynth, extractFromSynth } = await import("@/lib/yongshen-cache");
-      const wrapped = await getYongshenSynth(birthDate, birthTime, birthLng);
+        const wrapped = await getYongshenSynth(birthDate, birthTime, birthLng, { birthTimeKnown });
       if (wrapped) {
         const s = wrapped.synth;
         const calc = wrapped.calc;
@@ -63,7 +64,9 @@ export async function POST(req: Request) {
       if (!yongshen || !yongshen.length) {
         /* fallback · wrapper-6 top-3 */
         const { calcBazi } = await import("@/lib/bazi-calc");
-        const calc = await calcBazi({ date: birthDate, time: birthTime, longitude: birthLng, gmtOffsetHours: 7 });
+        const calc = birthTimeKnown
+          ? await calcBazi({ date: birthDate, time: birthTime, longitude: birthLng, gmtOffsetHours: 7, birthTimeKnown: true })
+          : await calcBazi({ date: birthDate, longitude: birthLng, gmtOffsetHours: 7, birthTimeKnown: false });
         const top3 = (calc.yongshen || []).slice(0, 3);
         yongshen = Array.from(new Set(top3.map((y: any) => y.element).filter(Boolean)));
         const allEls = ['wood','fire','earth','metal','water'];

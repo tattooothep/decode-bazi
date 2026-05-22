@@ -655,13 +655,14 @@
       try {
         /* normalize body · key dedupe by date+time only (longitude/gender default ใช้ค่าเดียวกัน) */
         var b = body || {};
-        var norm = {
-          date: b.date || '',
-          time: b.time || '12:00',
-          gender: b.gender || 'M',
-          longitude: Number(b.longitude || b.lng || 100.5018)
-        };
-        var key = norm.date + '|' + norm.time;
+	        var norm = {
+	          date: b.date || '',
+	          time: b.time || '12:00',
+	          gender: b.gender || 'M',
+	          longitude: Number(b.longitude || b.lng || 100.5018),
+	          birthTimeKnown: b.birthTimeKnown !== false
+	        };
+	        var key = norm.date + '|' + norm.time + '|' + (norm.birthTimeKnown ? '4p' : '3p');
         if (chartCache.has(key)) return chartCache.get(key);
         var p = fetch('/api/chart', {
           method:'POST',
@@ -1262,14 +1263,20 @@
       const ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
       const INTERACTION_COLOR = {'六沖':'bad','六合':'good','六害':'bad','六破':'bad','三刑':'bad','自刑':'bad','子卯刑':'bad'};
       function getBirth(){
-        try{ const raw = localStorage.getItem('hk_birth')||sessionStorage.getItem('hk_birth'); if(raw){ const p=JSON.parse(raw); if(p.date&&p.time) return {date:p.date,time:p.time}; } } catch(_){}
-        return {date:'1984-12-31',time:'13:15'};
+        try{
+          const raw = localStorage.getItem('hk_birth')||sessionStorage.getItem('hk_birth');
+          if(raw){
+            const p=JSON.parse(raw);
+            if(p.date && (p.birthTimeKnown === false || p.time)) return {date:p.date,time:p.time||'12:00',birthTimeKnown:p.birthTimeKnown !== false};
+          }
+        } catch(_){}
+        return {date:'1984-12-31',time:'13:15',birthTimeKnown:true};
       }
       async function loadBasic(){
         try { if (window.__hkProfileReady) await window.__hkProfileReady; } catch(_){}
         const b=getBirth();
         try{
-          const d = await window.__hkFetchChart({date:b.date,time:b.time,longitude:100.5018});
+          const d = await window.__hkFetchChart({date:b.date,time:b.time,longitude:100.5018,birthTimeKnown:b.birthTimeKnown !== false});
           if(!d||!d.pillars) return;
           render(d);
         } catch(e){ console.warn('basic bazi load fail',e); }
@@ -1922,10 +1929,11 @@ window.applyI18N = applyI18N;
             const dpart = dt.slice(0,10), tpart = dt.slice(11,16);
             const gender = myself.gender === 'female' ? 'F' : 'M';
             const lng = Number(myself.birth_lng || 100.5018);
-            const cd = await window.__hkFetchChart({ date: dpart, time: tpart, longitude: lng, gender });
+	            const birthTimeKnown = myself.birth_time_known !== false;
+	            const cd = await window.__hkFetchChart({ date: dpart, time: tpart, longitude: lng, gender, birthTimeKnown });
             if (cd && cd.pillars) {
               userChart = cd.pillars;
-              selfBirth = { date: dpart, time: tpart, gender, longitude: lng, lng, profileId: myself.id };
+	              selfBirth = { date: dpart, time: tpart, gender, longitude: lng, lng, profileId: myself.id, birthTimeKnown };
               try { localStorage.setItem('hk_birth', JSON.stringify(selfBirth)); localStorage.setItem('hk_profile_id', myself.id); } catch(_){}
             }
           }
@@ -1936,7 +1944,7 @@ window.applyI18N = applyI18N;
       try {
         const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
         if (birth && birth.date) {
-          const cd = await window.__hkFetchChart({ date: birth.date, time: birth.time||'12:00', gender: birth.gender||'M', longitude: Number(birth.longitude || birth.lng || 100.5018) });
+	          const cd = await window.__hkFetchChart({ date: birth.date, time: birth.time||'12:00', gender: birth.gender||'M', longitude: Number(birth.longitude || birth.lng || 100.5018), birthTimeKnown: birth.birthTimeKnown !== false });
           if (cd && cd.pillars) {
             userChart = cd.pillars;
             selfBirth = birth;
@@ -1951,7 +1959,7 @@ window.applyI18N = applyI18N;
     let _birth = null;
     try { _birth = JSON.parse(localStorage.getItem('hk_birth') || 'null'); } catch(_){}
     const _postBody = { date: dateStr, userChart };
-    if (_birth && _birth.date) { _postBody.birthDate = _birth.date; _postBody.birthTime = _birth.time || '12:00'; _postBody.birthLng = _birth.lng || _birth.longitude || 100.5018; }
+	    if (_birth && _birth.date) { _postBody.birthDate = _birth.date; _postBody.birthTime = _birth.time || '12:00'; _postBody.birthLng = _birth.lng || _birth.longitude || 100.5018; _postBody.birthTimeKnown = _birth.birthTimeKnown !== false; }
     const tr = (userChart && userChart.day && userChart.day.branch)
       ? await fetch('/api/today', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_postBody) })
       : await fetch('/api/today?date=' + encodeURIComponent(dateStr) + (dmStem ? '&dm=' + encodeURIComponent(dmStem) : ''));
@@ -2488,7 +2496,7 @@ window.applyI18N = applyI18N;
         const hourBody = { date: dateStr };
         if (userChart) hourBody.userChart = userChart;
         /* 18 พ.ค. · ส่ง birth → backend calc yongshen → qualityFor ตามตำราอาเจ๊กฮ้ง */
-        if (_birth && _birth.date) { hourBody.birthDate = _birth.date; hourBody.birthTime = _birth.time || '12:00'; hourBody.birthLng = _birth.lng || _birth.longitude || 100.5018; }
+	        if (_birth && _birth.date) { hourBody.birthDate = _birth.date; hourBody.birthTime = _birth.time || '12:00'; hourBody.birthLng = _birth.lng || _birth.longitude || 100.5018; hourBody.birthTimeKnown = _birth.birthTimeKnown !== false; }
         const hr = await fetch('/api/today/hours', {
           method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify(hourBody)
@@ -2701,7 +2709,7 @@ window.applyI18N = applyI18N;
         const dpart = birthForColor.date;
         const tpart = birthForColor.time || '12:00';
         if (dpart) {
-          const cd = await window.__hkFetchChart({ date:dpart, time:tpart, longitude:Number(lng) });
+	          const cd = await window.__hkFetchChart({ date:dpart, time:tpart, longitude:Number(lng), birthTimeKnown: birthForColor.birthTimeKnown !== false });
           /* ใช้ wrapper-6 yongshenFinal (ผ่าน Fix A/B/E) · ไม่ใช่ wrapper-4 useful_god (เก่า) */
           yongshenEl = cd?.analysis?.strength_yongshen?.yongshenFinal?.[0]?.element
                     || cd?.analysis?.useful_god?.summary?.primaryElement

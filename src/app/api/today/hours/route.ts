@@ -130,11 +130,11 @@ async function currentHourBranchTST(date: Date, longitude: number = 100.5018): P
   }
 }
 
-async function _calcYongshenFromBirth(birthDate?: string, birthTime?: string, birthLng?: number): Promise<{yongshen: string[]; jishen: string[]; dominantJishen: string | null}> {
+async function _calcYongshenFromBirth(birthDate?: string, birthTime?: string, birthLng?: number, birthTimeKnown = true): Promise<{yongshen: string[]; jishen: string[]; dominantJishen: string | null}> {
   if (!birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) return { yongshen: [], jishen: [], dominantJishen: null };
   /* 18 พ.ค. · Codex flag #4 · ใช้ shared cache · กัน double-call wrapper-7 */
   const { getYongshenSynth, extractFromSynth } = await import("@/lib/yongshen-cache");
-  const wrapped = await getYongshenSynth(birthDate, birthTime, birthLng);
+  const wrapped = await getYongshenSynth(birthDate, birthTime, birthLng, { birthTimeKnown });
   if (!wrapped) return { yongshen: [], jishen: [], dominantJishen: null };
   const { yongshen, jishen, dominantJishen } = extractFromSynth(wrapped.synth);
   /* fallback · wrapper-6 top-3 ถ้า wrapper-7 ไม่มี yongshen */
@@ -158,7 +158,7 @@ export async function POST(req: Request) {
   let jishen:   string[] = Array.isArray(body.jishen)   ? body.jishen   : [];
   let dominantJishen: string | null = typeof body.dominantJishen === 'string' ? body.dominantJishen : null;
   if (!yongshen.length && body.birthDate) {
-    const r = await _calcYongshenFromBirth(body.birthDate, body.birthTime, body.birthLng);
+    const r = await _calcYongshenFromBirth(body.birthDate, body.birthTime, body.birthLng, body.birthTimeKnown !== false);
     yongshen = r.yongshen; jishen = r.jishen; dominantJishen = r.dominantJishen;
   }
 

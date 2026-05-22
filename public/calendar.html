@@ -488,8 +488,8 @@
     try {
       const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
       if (birth && birth.date) {
-        const r = await fetch('/api/chart', { method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ date: birth.date, time: birth.time||'12:00', longitude: birth.longitude || birth.lng || 100.5018 })});
+	        const r = await fetch('/api/chart', { method:'POST', headers:{'Content-Type':'application/json'},
+	          body: JSON.stringify({ date: birth.date, time: birth.time||'12:00', longitude: birth.longitude || birth.lng || 100.5018, birthTimeKnown: birth.birthTimeKnown !== false })});
         if (r.ok) {
           const d = await r.json();
           if (d.pillars?.day?.stem) {
@@ -1631,7 +1631,7 @@
     try { _birth = JSON.parse(localStorage.getItem('hk_birth') || 'null'); } catch(_){}
     const _payload = (extra) => {
       const p = userChartArg ? { date, userChart: userChartArg, ...(extra||{}) } : { date, ...(extra||{}) };
-      if (_birth && _birth.date) { p.birthDate = _birth.date; p.birthTime = _birth.time || '12:00'; p.birthLng = _birth.lng || _birth.longitude || 100.5018; }
+	      if (_birth && _birth.date) { p.birthDate = _birth.date; p.birthTime = _birth.time || '12:00'; p.birthLng = _birth.lng || _birth.longitude || 100.5018; p.birthTimeKnown = _birth.birthTimeKnown !== false; }
       return p;
     };
     try {
@@ -1667,7 +1667,7 @@
       try {
         const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
         if (b && b.date) {
-          bUrl = `&birthDate=${encodeURIComponent(b.date)}&birthTime=${encodeURIComponent(b.time||'12:00')}&birthLng=${encodeURIComponent(b.lng||100.5018)}`;
+	          bUrl = `&birthDate=${encodeURIComponent(b.date)}&birthTime=${encodeURIComponent(b.time||'12:00')}&birthLng=${encodeURIComponent(b.lng||100.5018)}&birthTimeKnown=${b.birthTimeKnown !== false ? 'true' : 'false'}`;
         }
       } catch(_){}
       const r = await fetch(`/api/calendar?year=${year}&month=${month}&dm=${encodeURIComponent(SELF_DM)}${bUrl}`);

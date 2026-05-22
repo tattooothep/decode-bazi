@@ -835,9 +835,10 @@ async function loadNetworkPeople(){
         enabled: true,
         profileId: p.id,
         personId: 'hk_' + p.id, // aj_user_profile.person_id mapping
-        birthDate: p.birth_datetime ? p.birth_datetime.slice(0,10) : null,
-        birthTime: p.birth_datetime ? p.birth_datetime.slice(11,16) : '12:00',
-        birthLng: p.birth_lng || 100.5018,
+	        birthDate: p.birth_datetime ? p.birth_datetime.slice(0,10) : null,
+	        birthTime: p.birth_datetime ? p.birth_datetime.slice(11,16) : '12:00',
+	        birthTimeKnown: p.birth_time_known !== false,
+	        birthLng: p.birth_lng || 100.5018,
         rel: p.relationship_type || '',
       };
     });
@@ -854,10 +855,11 @@ async function ensureAjProfiles(people){
       await fetch('/api/auspicious/profile', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-          personId: p.personId,
-          birthDate: p.birthDate,
-          birthTime: p.birthTime || '12:00',
-          longitude: p.birthLng || 100.5018,
+	          personId: p.personId,
+	          birthDate: p.birthDate,
+	          birthTime: p.birthTime || '12:00',
+	          birthTimeKnown: p.birthTimeKnown !== false,
+	          longitude: p.birthLng || 100.5018,
           gender: 'M',
         })
       });
@@ -1327,11 +1329,11 @@ async function dpAskSifu(){
   try {
     if (window.__hkProfileReady) await window.__hkProfileReady;
     const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
-    if (birth?.date && birth?.time){
-      const cr = await fetch('/api/chart', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ date:birth.date, time:birth.time, longitude:birth.longitude||100.5018, gender:birth.gender||'M' })
-      });
+	    if (birth?.date && (birth.birthTimeKnown === false || birth?.time)){
+	      const cr = await fetch('/api/chart', {
+	        method:'POST', headers:{'Content-Type':'application/json'},
+	        body: JSON.stringify({ date:birth.date, time:birth.time||'12:00', longitude:birth.longitude||100.5018, gender:birth.gender||'M', birthTimeKnown: birth.birthTimeKnown !== false })
+	      });
       const cj = await cr.json();
       userYs = cj.yongshen_v2 || null;
     }

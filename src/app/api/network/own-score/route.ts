@@ -16,6 +16,7 @@ type PersonInput = {
   yongshenTop3?: Array<{ element?: string; score?: number }>;
   birthDate?: string;
   birthTime?: string;
+  birthTimeKnown?: boolean;
   longitude?: number;
   gender?: "M" | "F";
 };
@@ -203,16 +204,26 @@ async function currentLuckPillar(person: PersonInput, yongshenTop3: string[]) {
   try {
     const { calcBazi } = await import("@/lib/bazi-calc");
     const { buildChartExtensions } = await import("@/lib/chart-extensions");
+    const birthTimeKnown = person.birthTimeKnown !== false;
     const time = person.birthTime || "12:00";
     const longitude = Number(person.longitude || 100.5018);
     const gender = person.gender || "M";
-    const calc = await calcBazi({
-      date: person.birthDate,
-      time,
-      longitude,
-      gmtOffsetHours: 7,
-      gender,
-    });
+    const calc = birthTimeKnown
+      ? await calcBazi({
+          date: person.birthDate,
+          time,
+          longitude,
+          gmtOffsetHours: 7,
+          gender,
+          birthTimeKnown: true,
+        })
+      : await calcBazi({
+          date: person.birthDate,
+          longitude,
+          gmtOffsetHours: 7,
+          gender,
+          birthTimeKnown: false,
+        });
     let startAge = 10;
     try {
       const tyme = await import("tyme4ts");

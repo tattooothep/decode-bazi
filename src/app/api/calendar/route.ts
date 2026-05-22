@@ -223,6 +223,7 @@ export async function GET(req: Request) {
   const dmArg = url.searchParams.get("dm") || "";
   const birthDate = url.searchParams.get("birthDate") || "";
   const birthTime = url.searchParams.get("birthTime") || "12:00";
+  const birthTimeKnown = url.searchParams.get("birthTimeKnown") !== "false";
   const birthLng = parseFloat(url.searchParams.get("birthLng") || "100.5018");
   if (!year || !month || month < 1 || month > 12) {
     return NextResponse.json({ error: "year + month (1-12) required" }, { status: 400 });
@@ -250,7 +251,7 @@ export async function GET(req: Request) {
     if (birthDate && /^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
       try {
         const { getYongshenSynth, extractFromSynth } = await import("@/lib/yongshen-cache");
-        const wrapped = await getYongshenSynth(birthDate, birthTime, birthLng);
+        const wrapped = await getYongshenSynth(birthDate, birthTime, birthLng, { birthTimeKnown });
         if (wrapped && wrapped.synth) {
           const ex = extractFromSynth(wrapped.synth);
           primaryYongshen = listFromSynthField(wrapped.synth?.primary_yongshen);
@@ -269,12 +270,20 @@ export async function GET(req: Request) {
       if (!friendly.length) {
         try {
           const { calcBazi } = await import("@/lib/bazi-calc");
-          const calc = await calcBazi({
-            date: birthDate,
-            time: birthTime,
-            longitude: birthLng,
-            gmtOffsetHours: 7,
-          });
+          const calc = birthTimeKnown
+            ? await calcBazi({
+                date: birthDate,
+                time: birthTime,
+                longitude: birthLng,
+                gmtOffsetHours: 7,
+                birthTimeKnown: true,
+              })
+            : await calcBazi({
+                date: birthDate,
+                longitude: birthLng,
+                gmtOffsetHours: 7,
+                birthTimeKnown: false,
+              });
           userDM = calc.pillars.day.stem;
           userPillars = calc.pillars;
           const top3 = ((calc.yongshen as any[]) || []).slice(0, 3);
