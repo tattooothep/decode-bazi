@@ -12,7 +12,8 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const name = String(form.get("name") || "").trim();
   const birthDate = String(form.get("birthDate") || "");
-  const birthTime = String(form.get("birthTime") || "12:00");
+  const birthTimeKnown = form.get("birthTimeUnknown") !== "1";
+  const birthTime = birthTimeKnown ? String(form.get("birthTime") || "12:00") : "12:00";
   const locationName = String(form.get("locationName") || "Bangkok");
   const gender = String(form.get("gender") || "M");
   if (!name || !birthDate) return redirect303("/onboarding?err=" + encodeURIComponent("กรอก ชื่อ + วันเกิด"));
@@ -26,6 +27,7 @@ export async function POST(req: Request) {
     birthLng: 100.5018,
     locationName,
     gender: gender as "M" | "F",
+    birthTimeKnown,
   });
 
   return redirect303("/master?intro=1&next=" + encodeURIComponent("/today"));

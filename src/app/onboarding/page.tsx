@@ -17,7 +17,7 @@ async function OnboardingForm({ searchParamsPromise }: { searchParamsPromise: Pr
         <div>
           <div className="text-[10px] text-muted-foreground" style={{letterSpacing:"0.32em"}}>STEP 1 OF 1</div>
           <h1 className="mt-2 font-serif text-2xl">วันเกิดของคุณ</h1>
-          <p className="mt-1 text-[12.5px] text-muted-foreground">ใช้คำนวณดวง 4 เสา · บันทึกครั้งเดียว · กลับมาดูได้เสมอ</p>
+          <p className="mt-1 text-[12.5px] text-muted-foreground">ถ้าไม่ทราบเวลาเกิด ระบบจะคำนวณแบบ 3 เสาและไม่เดาเสายาม</p>
         </div>
 
         <label className="block">
@@ -32,9 +32,17 @@ async function OnboardingForm({ searchParamsPromise }: { searchParamsPromise: Pr
           </label>
           <label className="block">
             <span className="block text-[10px] text-muted-foreground" style={{letterSpacing:"0.2em"}}>BIRTH TIME</span>
-            <input name="birthTime" type="time" required defaultValue="12:00" className="mt-1.5 w-full rounded-sm border border-foreground/20 bg-background px-3 py-2.5 text-[14px] focus:border-[var(--cinnabar)] focus:outline-none" />
+            <input name="birthTime" type="time" defaultValue="12:00" className="mt-1.5 w-full rounded-sm border border-foreground/20 bg-background px-3 py-2.5 text-[14px] focus:border-[var(--cinnabar)] focus:outline-none" />
           </label>
         </div>
+
+        <label className="flex cursor-pointer items-start gap-3 rounded-sm border border-foreground/15 bg-background/40 p-3 text-[13px] leading-relaxed">
+          <input name="birthTimeUnknown" value="1" type="checkbox" className="mt-1 h-4 w-4 accent-[var(--cinnabar)]" />
+          <span>
+            <b>ไม่ทราบเวลาเกิด</b>
+            <span className="block text-[12px] text-muted-foreground">ใช้ปี เดือน วันเท่านั้น · ไม่สร้างเสายาม 12:00 ปลอม</span>
+          </span>
+        </label>
 
         <label className="block">
           <span className="block text-[10px] text-muted-foreground" style={{letterSpacing:"0.2em"}}>LOCATION</span>
