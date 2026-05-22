@@ -643,6 +643,11 @@ function rotateGrid(centerStar){
   return result;
 }
 const YEAR_TAISUI = {0:'N',1:'NE',2:'NE',3:'E',4:'SE',5:'SE',6:'S',7:'SW',8:'SW',9:'W',10:'NW',11:'NW'};
+function fsEsc(v){
+  return String(v ?? '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[ch]));
+}
 function getThreeKillings(year){
   const b = ((year - 4) % 12 + 12) % 12;
   if([2,6,10].includes(b)) return 'N';
@@ -779,7 +784,8 @@ function renderGrid(){
             const fit = MANSION_BY_KUA[kua]?.[dir];
             const fitType = fit ? (MANSION_LABELS[fit].good ? 'best' : 'worst') : 'neutral';
             const fitTitle = fit ? `${MANSION_LABELS[fit].en} · ${MANSION_LABELS[fit].th}` : '';
-            return `<span class="person-chip" data-fit="${fitType}" title="${p.name} · Kua ${kua} · ${fitTitle}">${p.name.substring(0,3)}</span>`;
+            const safeName = fsEsc(p.name);
+            return `<span class="person-chip" data-fit="${fitType}" title="${safeName} · Kua ${kua} · ${fsEsc(fitTitle)}">${fsEsc(String(p.name || '').substring(0,3))}</span>`;
           }).join('') + '</div>';
         }
       }
@@ -867,7 +873,7 @@ function renderPalaceDetail(dir, gY, gM, gD, gP){
       const lbl = MANSION_LABELS[fit];
       const color = lbl.good ? 'var(--auspicious)' : 'var(--inauspicious)';
       return `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--line);font-size:12px;">
-        <span><b>${p.name}</b> (Kua ${kua})</span>
+        <span><b>${fsEsc(p.name)}</b> (Kua ${kua})</span>
         <span style="color:${color};font-family:var(--tc);font-weight:600;">${lbl.en} · ${lbl.th}</span>
       </div>`;
     }).filter(Boolean).join('');
@@ -886,7 +892,7 @@ function renderPalaceDetail(dir, gY, gM, gD, gP){
     if(here.length){
       peopleSection = `
         <div class="pdetail-meaning" style="background:rgba(200,164,77,.06);padding:12px;border-radius:8px;margin-top:10px;border-top:none;">
-          <b style="color:var(--gold-bright);">👥 อยู่ห้องนี้:</b> ${here.map(p=>p.name).join(' · ')}
+          <b style="color:var(--gold-bright);">👥 อยู่ห้องนี้:</b> ${here.map(p=>fsEsc(p.name)).join(' · ')}
         </div>`;
     }
   }
@@ -1111,18 +1117,18 @@ function starsToHex(mountainStar, waterStar){
 // ═══════════════════════════════════════════════════════════════
 //  PEOPLE MANAGER
 // ═══════════════════════════════════════════════════════════════
-const DEFAULT_PEOPLE = [
-  { name:'Aeaw',    year:1984, gender:'male',   room:'NW' },
-  { name:'Mai',     year:1986, gender:'female', room:'SE' },
-  { name:'น้องปุญ', year:2024, gender:'male',   room:'E'  }
-];
-
 let people = [];
 try {
   const stored = localStorage.getItem('hk-fs-people');
   if(stored) people = JSON.parse(stored);
-  else people = [...DEFAULT_PEOPLE];
-} catch(e){ people = [...DEFAULT_PEOPLE]; }
+  if(!Array.isArray(people)) people = [];
+} catch(e){ people = []; }
+people = people.map(p => ({
+  name: String(p?.name || '').slice(0, 80),
+  year: Number(p?.year),
+  gender: p?.gender === 'female' ? 'female' : 'male',
+  room: ['N','NE','E','SE','S','SW','W','NW','C'].includes(p?.room) ? p.room : null
+})).filter(p => p.name && Number.isFinite(p.year) && p.year >= 1900 && p.year <= 2030);
 
 function savePeople(){
   try { localStorage.setItem('hk-fs-people', JSON.stringify(people)); } catch(e){}
@@ -1139,32 +1145,36 @@ function renderPeopleList(){
     const kua = calcLifeGua(p.year, p.gender);
     const group = [1,3,4,9].includes(kua) ? 'East 東' : 'West 西';
     const trigram = {1:'坎',2:'坤',3:'震',4:'巽',6:'乾',7:'兌',8:'艮',9:'離'}[kua];
+    const safeName = fsEsc(p.name);
+    const safeRoom = p.room ? fsEsc(p.room) : '';
     return `
-      <div class="person-row">
+      <div class="person-row" data-idx="${idx}">
         <div class="info">
-          <div class="name">${p.name}</div>
+          <div class="name">${safeName}</div>
           <div class="stats">
             Kua <span class="han">${kua} ${trigram}</span> · ${group}
-            ${p.room ? ' · 房 '+p.room : ''}
+            ${safeRoom ? ' · 房 '+safeRoom : ''}
           </div>
         </div>
         <div class="actions">
-          <button onclick="cyclePersonRoom(${idx})">↻</button>
-          <button class="danger" onclick="removePerson(${idx})">✕</button>
+          <button data-action="cycle" data-idx="${idx}">↻</button>
+          <button class="danger" data-action="remove" data-idx="${idx}">✕</button>
         </div>
       </div>`;
   }).join('');
 }
 
-window.removePerson = function(idx){
+function removePerson(idx){
+  if(!Number.isInteger(idx) || idx < 0 || idx >= people.length) return;
   people.splice(idx, 1);
   savePeople();
   renderPeopleList();
   renderPersonFilter();
   renderGrid();
-};
+}
 
-window.cyclePersonRoom = function(idx){
+function cyclePersonRoom(idx){
+  if(!Number.isInteger(idx) || idx < 0 || idx >= people.length) return;
   const dirs = ['', 'N','NE','E','SE','S','SW','W','NW','C'];
   const cur = people[idx].room || '';
   const nextIdx = (dirs.indexOf(cur) + 1) % dirs.length;
@@ -1173,7 +1183,15 @@ window.cyclePersonRoom = function(idx){
   renderPeopleList();
   renderPersonFilter();
   renderGrid();
-};
+}
+
+document.getElementById('peopleList').addEventListener('click', (ev)=>{
+  const btn = ev.target.closest('button[data-action][data-idx]');
+  if(!btn) return;
+  const idx = Number(btn.dataset.idx);
+  if(btn.dataset.action === 'remove') removePerson(idx);
+  if(btn.dataset.action === 'cycle') cyclePersonRoom(idx);
+});
 
 document.getElementById('btnAddPerson').addEventListener('click', ()=>{
   const name = document.getElementById('pfName').value.trim();
@@ -1828,16 +1846,6 @@ function computeBearing(lat1, lng1, lat2, lng2){
   return ((θ * 180 / Math.PI) + 360) % 360;
 }
 
-function clearWallMode(){
-  if(wallA){ wallA.setMap(null); wallA = null; }
-  if(wallB){ wallB.setMap(null); wallB = null; }
-  if(wallLine){ wallLine.setMap(null); wallLine = null; }
-  if(perpLine){ perpLine.setMap(null); perpLine = null; }
-  if(perpLineBack){ perpLineBack.setMap(null); perpLineBack = null; }
-  window._currentWallFacing = null;
-  window._currentWallBack = null;
-}
-
 function setMode(mode){
   currentMode = mode;
   document.getElementById('modeWall').classList.toggle('active', mode === 'wall');
@@ -1879,11 +1887,11 @@ document.getElementById('btnGeolocate').addEventListener('click', ()=>{
 });
 
 // ═══════════════════════════════════════════════════════════════
-//  API KEY MODAL
+//  GOOGLE MAPS · load through server proxy, no key in HTML
 // ═══════════════════════════════════════════════════════════════
-function loadGoogleMaps(apiKey){
+function loadGoogleMaps(){
   const script = document.createElement('script');
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry&callback=initMap&loading=async`;
+  script.src = '/api/maps-script?callback=initMap&libraries=geometry';
   script.async = true;
   script.defer = true;
   script.onerror = ()=>{
@@ -1892,10 +1900,7 @@ function loadGoogleMaps(apiKey){
   document.head.appendChild(script);
 }
 
-// Auto-load with hardcoded key (TEMPORARY — for testing only)
-// REMINDER: revoke this key after testing & set up domain-restricted key
-const HARDCODED_KEY = 'AIzaSyAf68fVgnx-DB1QX0CVQ7zsWtYsIvSHCTs';
-loadGoogleMaps(HARDCODED_KEY);
+loadGoogleMaps();
 
 console.log('🐉 Flying Star loaded · Period 9 (2024-2043) · Tai Sui + 3 Killings + 5 Yellow active');
 </script>

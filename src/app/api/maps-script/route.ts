@@ -1,8 +1,8 @@
 /**
- * GET /api/maps-script?callback=hkInitPlaces
+ * GET /api/maps-script?callback=hkInitPlaces&libraries=places,geometry
  *
  * Proxy ไปยัง Google Maps JS API · ส่ง browser key จาก env (ไม่ expose ใน HTML)
- * โหลด Places library พร้อม callback ที่ frontend ส่งมา
+ * โหลด Google Maps JS พร้อม callback ที่ frontend ส่งมา
  *
  * ใช้โดย /input.html (สถานที่เกิด autocomplete)
  */
@@ -13,6 +13,11 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const callback = (url.searchParams.get("callback") || "hkInitPlaces").replace(/[^a-zA-Z0-9_]/g, "");
+  const requestedLibraries = (url.searchParams.get("libraries") || "places")
+    .split(",")
+    .map((x) => x.trim())
+    .filter((x) => x === "places" || x === "geometry");
+  const libraries = Array.from(new Set(requestedLibraries.length ? requestedLibraries : ["places"]));
   const key =
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY ||
     process.env.GOOGLE_MAPS_BROWSER_KEY ||
@@ -27,7 +32,7 @@ export async function GET(req: Request) {
   const target =
     `https://maps.googleapis.com/maps/api/js` +
     `?key=${encodeURIComponent(key)}` +
-    `&libraries=places` +
+    `&libraries=${encodeURIComponent(libraries.join(","))}` +
     `&callback=${encodeURIComponent(callback)}` +
     `&loading=async` +
     `&v=weekly`;
