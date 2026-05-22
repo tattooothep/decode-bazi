@@ -858,42 +858,43 @@
   /* resolution: ?as → DB → localStorage → /input (no Aeaw demo fallback) */
   async function readChartSnapshot(){
     var params = new URLSearchParams(location.search);
-    /* 1. view-as · strict ?as= match เท่านั้น · ห้าม /api/profile · ห้าม localStorage write */
-    if (params.get('as')) {
-      var asId = String(params.get('as'));
-      var va = parse(sessionStorage.getItem('hk_view_as'));
-      if (va && String(va.id || '') === asId && (va.birthDate || va.date)) {
-        return norm(va, 'view-as');
-      }
-      /* 18 พ.ค. fix · mobile new tab fallback · localStorage 'hk_view_as_xfer' (TTL 60s) */
-      try {
-        var xfer = parse(localStorage.getItem('hk_view_as_xfer'));
-        if (xfer && String(xfer.id || '') === asId && (xfer.birthDate || xfer.date)) {
-          var age = Date.now() - (xfer.ts || 0);
-          if (age < 60 * 1000) {
-            /* restore เป็น sessionStorage + clear localStorage หลังใช้ */
-            try { sessionStorage.setItem('hk_view_as', JSON.stringify(xfer)); } catch(_){}
-            try { localStorage.removeItem('hk_view_as_xfer'); } catch(_){}
-            return norm(xfer, 'view-as-xfer');
-          }
-          /* หมดอายุ → ลบทิ้ง */
-          try { localStorage.removeItem('hk_view_as_xfer'); } catch(_){}
-        }
-      } catch(_){}
-      /* Phase 19-C+ · DB-as-truth fallback · fetch snapshot จาก server (auth-protected) */
-      try {
-        var snapR = await fetch('/api/profile/' + encodeURIComponent(asId) + '/snapshot');
-        if (snapR.ok) {
-          var snapJ = await snapR.json();
-          if (snapJ && snapJ.snapshot && (snapJ.snapshot.birthDate || snapJ.snapshot.date)) {
-            try { sessionStorage.setItem('hk_view_as', JSON.stringify(snapJ.snapshot)); } catch(_){}
-            return norm(snapJ.snapshot, 'view-as-db');
-          }
-        }
-      } catch(_){}
-      /* ?as= ไม่ match · ดึง DB ไม่ได้ → กลับ /chart */
-      window.location.replace('/chart');
-      return null;
+	    /* 1. view-as · strict ?as= match เท่านั้น · ห้าม /api/profile · ห้าม localStorage write */
+	    if (params.get('as')) {
+	      var asId = String(params.get('as'));
+	      /* Phase 19-C+ / 3p hotfix · DB-as-truth first.
+	       * ห้ามให้ sessionStorage เก่าที่ไม่มี birthTimeKnown ทับ DB=false แล้วสร้าง 12:00 ปลอม */
+	      try {
+	        var snapR = await fetch('/api/profile/' + encodeURIComponent(asId) + '/snapshot');
+	        if (snapR.ok) {
+	          var snapJ = await snapR.json();
+	          if (snapJ && snapJ.snapshot && (snapJ.snapshot.birthDate || snapJ.snapshot.date)) {
+	            try { sessionStorage.setItem('hk_view_as', JSON.stringify(snapJ.snapshot)); } catch(_){}
+	            return norm(snapJ.snapshot, 'view-as-db');
+	          }
+	        }
+	      } catch(_){}
+	      var va = parse(sessionStorage.getItem('hk_view_as'));
+	      if (va && String(va.id || '') === asId && (va.birthDate || va.date) && (va.birthTimeKnown != null || va.birth_time_known != null)) {
+	        return norm(va, 'view-as');
+	      }
+	      /* 18 พ.ค. fix · mobile new tab fallback · localStorage 'hk_view_as_xfer' (TTL 60s) */
+	      try {
+	        var xfer = parse(localStorage.getItem('hk_view_as_xfer'));
+	        if (xfer && String(xfer.id || '') === asId && (xfer.birthDate || xfer.date)) {
+	          var age = Date.now() - (xfer.ts || 0);
+	          if (age < 60 * 1000 && (xfer.birthTimeKnown != null || xfer.birth_time_known != null)) {
+	            /* restore เป็น sessionStorage + clear localStorage หลังใช้ */
+	            try { sessionStorage.setItem('hk_view_as', JSON.stringify(xfer)); } catch(_){}
+	            try { localStorage.removeItem('hk_view_as_xfer'); } catch(_){}
+	            return norm(xfer, 'view-as-xfer');
+	          }
+	          /* หมดอายุหรือ schema เก่า → ลบทิ้ง */
+	          try { localStorage.removeItem('hk_view_as_xfer'); } catch(_){}
+	        }
+	      } catch(_){}
+	      /* ?as= ไม่ match · ดึง DB ไม่ได้ → กลับ /chart */
+	      window.location.replace('/chart');
+	      return null;
     }
     /* 2. DB profile (logged-in · DB-as-truth) */
     var res = await fetchActiveProfile();
