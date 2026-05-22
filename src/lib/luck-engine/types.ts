@@ -285,6 +285,7 @@ export type Badge = {
 export type ActivityType =
   | "立約"      // เซ็นสัญญา (Contract)
   | "出行"      // เดินทาง (Travel)
+  | "動土"      // ตอกเสาเข็ม / ก่อสร้าง (Ground-breaking)
   | "搬家"      // ย้ายบ้าน (Move home)
   | "開市"      // เปิดกิจการ (Open business)
   | "婚姻"      // แต่งงาน (Marriage)

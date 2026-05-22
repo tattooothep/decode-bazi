@@ -2,7 +2,7 @@
  * POST /api/auspicious  · อาเจ๊กฮ้ง architecture · 16 พ.ค. 2026
  *
  * Body: SearchRequest {
- *   activityType: '立約'|'出行'|'搬家'|'開市'|'婚姻'|'求財'|'祭祀',
+ *   activityType: '立約'|'出行'|'動土'|'搬家'|'開市'|'婚姻'|'求財'|'祭祀',
  *   dateFrom: 'YYYY-MM-DD', dateTo: 'YYYY-MM-DD',
  *   peopleIds?: string[],
  *   activeModules: ModuleKey[],
@@ -92,9 +92,13 @@ export async function POST(req: NextRequest) {
     const customer = profiles[0] || null;
     const avoidZodiacs = collectClashZodiacs(profiles);
 
-    // STEP 2: Fail-fast SQL · ดึง candidates จาก aj_ephemeris_cache
+    // STEP 2: ดึง candidates จาก aj_ephemeris_cache
+    // options.hardModules ใช้สำหรับ layer ที่ต้องตัดจริงเท่านั้น; activeModules ใช้จัดคะแนนทั้งหมด
     const universalActive = activeModules.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
-    const candidates = await queryEphemerisCandidates(dateFrom, dateTo, avoidZodiacs, universalActive, options.limit ?? 100);
+    const hardModules = Array.isArray(options.hardModules)
+      ? options.hardModules.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m))
+      : universalActive;
+    const candidates = await queryEphemerisCandidates(dateFrom, dateTo, avoidZodiacs, hardModules, options.scanLimit ?? 360);
 
     // STEP 3: Funnel stats
     const funnelStats = await buildFunnelStats(dateFrom, dateTo, avoidZodiacs);

@@ -50,7 +50,7 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     qi_men:          0.28,
     ze_ri:           0.18,
     twenty_eight:    0.12,
-    bazi_ba:         0.10,
+    ba_zi:           0.10,
     tai_sui:         0.10,
     twelve_spirits:  0.08,
     twelve_officers: 0.06,
@@ -58,7 +58,25 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     yong_shen:       0.02,
     he_luo:          0.01,
     hex64:           0.01,
-  } as any,  // typo fix: ba_zi
+  },
+
+  // ----------------------------------------------------------------
+  // 動土 · ตอกเสาเข็ม / เริ่มก่อสร้าง
+  // ----------------------------------------------------------------
+  // หลัก: 擇日 + 太歲 + 奇門 · ระวังปะทะพื้นดิน/ทิศ
+  動土: {
+    ze_ri:           0.22,
+    tai_sui:         0.16,
+    qi_men:          0.14,
+    ba_zi:           0.12,
+    twelve_officers: 0.10,
+    twenty_eight:    0.08,
+    twelve_spirits:  0.06,
+    nine_stars:      0.05,
+    he_luo:          0.03,
+    yong_shen:       0.03,
+    hex64:           0.01,
+  },
 
   // ----------------------------------------------------------------
   // 搬家 · ย้ายบ้าน

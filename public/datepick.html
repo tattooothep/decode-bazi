@@ -243,6 +243,24 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .result-body .r-line .v{color:var(--fg);}
 .result-matches{display:flex;flex-wrap:wrap;gap:5px;padding-top:6px;border-top:1px dashed var(--line);}
 .result-matches .match-tag{font-family:var(--mono);font-size:9px;letter-spacing:.05em;padding:2px 7px;border-radius:99px;background:rgba(180,144,82,.10);border:1px solid rgba(180,144,82,.3);color:var(--gold);}
+.el-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-family:var(--mono);font-size:9px;letter-spacing:.06em;border:1px solid currentColor;background:rgba(255,255,255,.04);}
+.el-chip b{font-family:var(--tc);font-size:12px;line-height:1;}
+.el-wood{color:#72c987;background:rgba(114,201,135,.12);}
+.el-fire{color:#ff8a63;background:rgba(255,138,99,.12);}
+.el-earth{color:#d4aa62;background:rgba(212,170,98,.12);}
+.el-metal{color:#d8d8ce;background:rgba(216,216,206,.12);}
+.el-water{color:#6fb7ff;background:rgba(111,183,255,.12);}
+.layer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:12px;}
+.layer-card{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+.layer-card .top{display:flex;justify-content:space-between;gap:8px;align-items:start;}
+.layer-card .th{font-size:13px;color:var(--fg);font-weight:600;}
+.layer-card .zh{font-family:var(--tc);font-size:15px;color:var(--gold);font-weight:700;}
+.layer-card .mode{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--fg-faint);text-transform:uppercase;margin-top:2px;}
+.layer-card .count{font-family:var(--mono);font-size:16px;color:var(--gold);font-weight:700;text-align:right;}
+.layer-card .bar{height:5px;background:var(--bg-4);border-radius:99px;overflow:hidden;margin:8px 0 6px;}
+.layer-card .fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-bright));}
+.layer-card .desc{font-size:11px;color:var(--fg-soft);line-height:1.45;margin:0;}
+.score-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--gold-line);border-radius:99px;padding:2px 8px;font-family:var(--mono);font-size:9px;color:var(--gold);background:rgba(200,164,77,.08);}
 /* 📜 17 พ.ค.: สี tag ตามชนิดศาสตร์ + คะแนน */
 .match-tag.t-qm{background:rgba(91,160,255,.12);border-color:rgba(91,160,255,.4);color:#5ba0ff;}
 .match-tag.t-bz{background:rgba(180,128,220,.12);border-color:rgba(180,128,220,.4);color:#b480dc;}
@@ -302,7 +320,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 <header class="hero">
   <div class="crest">擇吉</div>
   <h1>วาง <b data-i18n="auto.d.001">ฤกษ์</b> · Date Picking</h1>
-  <p  class="sub" data-i18n="auto.d.002">เลือกวันและยามที่เหมาะสำหรับกิจกรรมสำคัญ — กรองด้วย 5 ศาสตร์ซ้อนกัน · จากใหญ่ไปเล็ก</p>
+  <p  class="sub" data-i18n="auto.d.002">เลือกวันและยามที่เหมาะสำหรับกิจกรรมสำคัญ — คำนวณด้วย engine มาตรฐานหลายศาสตร์ซ้อนกัน</p>
   <div class="meta">通書 · 八字 · 奇門 · 河洛 · 六十四卦</div>
 </header>
 
@@ -555,11 +573,11 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
         </div>
 
         <button  class="btn-search" id="btnSearch" data-i18n="auto.d.023">⚡ ค้นหาฤกษ์</button>
-        <label style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:rgba(200,164,77,.08);border-radius:8px;font-size:11px;color:var(--fg-soft);cursor:pointer;">
-          <input type="checkbox" id="cb-aj-engine" onchange="localStorage.setItem('hk_use_aj_engine', this.checked?'1':'0')"/>
+        <label hidden style="display:none;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:rgba(200,164,77,.08);border-radius:8px;font-size:11px;color:var(--fg-soft);cursor:pointer;">
+          <input type="checkbox" id="cb-aj-engine" checked/>
           <span>🚀 <b>Engine อาเจ๊กฮ้ง v1</b> · เร็ว 21× · pre-compute 4380 slots · p95 366ms</span>
         </label>
-        <script>document.getElementById('cb-aj-engine').checked = localStorage.getItem('hk_use_aj_engine')==='1';</script>
+        <script>try{localStorage.setItem('hk_use_aj_engine','1');}catch(_){}</script>
       </div>
 
     </aside>
@@ -688,7 +706,7 @@ function init(){
   // Default dates · P9 16 พ.ค. fix: ใช้ local date แทน toISOString (กัน UTC drift ตอนเช้า)
   function ymdLocal(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   const today = new Date();
-  const in30 = new Date(); in30.setDate(today.getDate() + 30);
+  const in30 = new Date(); in30.setDate(today.getDate() + 29);
   const in90 = new Date(); in90.setDate(today.getDate() + 90);
   const todayStr = ymdLocal(today);
   const in30Str = ymdLocal(in30);
@@ -700,11 +718,11 @@ function init(){
   state.dateStart = todayStr;
   state.dateEnd = in30Str;
 
-  state.people = JSON.parse(JSON.stringify(DEFAULT_PEOPLE));
+  state.people = [];
   renderPeople();
   bindPeopleControls();
   /* P_B (เจ้านาย 16 พ.ค.): พยายามดึงคนจาก network จริง · login user เห็นเครือข่ายเอง */
-  loadNetworkPeople();
+  const networkReady = loadNetworkPeople();
 
   // Bind events
   document.querySelectorAll('.act-btn').forEach(b => b.addEventListener('click', () => {
@@ -806,6 +824,7 @@ function init(){
   }));
 
   document.getElementById('btnSearch').addEventListener('click', performSearch);
+  Promise.resolve(networkReady).finally(() => setTimeout(performSearch, 180));
 }
 
 /* 16 พ.ค. 2026 (เจ้านาย): ดึง network จริงจาก /api/profile + group filter */
@@ -926,15 +945,70 @@ function bindPeopleControls(){
 /* 16 พ.ค. 2026: map ให้ตรงกับ /api/qimen/search ACTIVITIES (decode-app · ไม่ใช่ qimen-api)
    valid: work_start · negotiate · wealth · love · travel · authority · decision · health */
 const ACTIVITY_MAP = {
-  'break-ground': 'work_start',
-  'sign-contract':'decision',   // ✓ มี decision จริง
-  'move-in':      'travel',
-  'open-shop':    'wealth',
+  'break-ground': 'break_ground',
+  'sign-contract':'decision',
+  'move-in':      'move_home',
+  'open-shop':    'open_business',
   'travel':       'travel',
   'negotiate':    'negotiate',
   'invest':       'wealth',
   'wedding':      'love',
 };
+
+const MODULE_LABELS = {
+  ze_ri: { th:'ปฏิทินจีน', zh:'通書', mode:'ตัดวันต้องห้าม', element:null, desc:'ดู 宜/忌 ว่าวันนี้ห้ามกิจกรรมนี้หรือไม่' },
+  tai_sui: { th:'ไท้ส่วย', zh:'太歲', mode:'ตัดชนหนัก', element:'earth', desc:'กันวัน/ยามที่ชนพลังปีแรงเกินไป' },
+  ba_zi: { th:'ดวงคนที่เกี่ยวข้อง', zh:'八字', mode:'เฉพาะบุคคล', element:null, desc:'เทียบวันกับดวงของคนที่เลือก' },
+  qi_men: { th:'ฉีเหมิน', zh:'奇門', mode:'จัดคะแนนทิศและยาม', element:null, desc:'ดูประตู ดาว เทพ และทิศที่เหมาะกับกิจกรรม' },
+  yong_shen: { th:'ธาตุที่ดวงต้องการ', zh:'用神', mode:'เฉพาะบุคคล', element:null, desc:'เพิ่มคะแนนเมื่อวัน/ยามหนุนธาตุที่ดวงต้องการ' },
+  twelve_officers: { th:'สิบสองจังหวะวัน', zh:'十二建除', mode:'ปรับคะแนน', element:null, desc:'ดูจังหวะ 建除 ว่าวันนี้เปิด ปิด สำเร็จ หรือแตก' },
+  twenty_eight: { th:'ยี่สิบแปดดาวฤกษ์', zh:'二十八宿', mode:'ปรับคะแนน', element:null, desc:'ดาวฤกษ์จีนสำหรับงานมงคลและงานสำคัญ' },
+  twelve_spirits: { th:'สิบสองเทพประจำวัน', zh:'十二神煞', mode:'ปรับคะแนน', element:null, desc:'ดูเทพดี/เทพร้ายที่มากับวัน' },
+  nine_stars: { th:'เก้าดาวเหิน', zh:'九飛星', mode:'ปรับคะแนน', element:null, desc:'พลังดาวเหินของวัน/ยาม' },
+  he_luo: { th:'เหอหลัว', zh:'河洛', mode:'บริบทเสริม', element:null, desc:'อ่าน pattern เชิงตัวเลขและจังหวะพลัง' },
+  hex64: { th:'หกสิบสี่ข่วย', zh:'六十四卦', mode:'ตีความ', element:null, desc:'ใช้ตีความสถานการณ์ ไม่ใช่ตัวตัดหลัก' },
+};
+const MODULE_ORDER = ['ze_ri','tai_sui','ba_zi','qi_men','yong_shen','twelve_officers','twenty_eight','twelve_spirits','nine_stars','he_luo','hex64'];
+const STEM_ELEMENT = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
+const ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+const ELEMENT_ZH = {wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
+
+function elementChipFromStem(stem){
+  const el = STEM_ELEMENT[stem] || '';
+  if (!el) return '';
+  return `<span class="el-chip el-${el}"><b>${ELEMENT_ZH[el]}</b>${ELEMENT_TH[el]}</span>`;
+}
+
+function escHtml(v){
+  return String(v == null ? '' : v)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function buildLayerReport(funnelStats, activeModules, hardModules, finalCount){
+  const total = Number(funnelStats?.total || 0);
+  const per = funnelStats?.perModule || {};
+  const active = new Set(activeModules || []);
+  const hard = new Set(hardModules || []);
+  return MODULE_ORDER.filter(k => active.has(k)).map(k => {
+    const meta = MODULE_LABELS[k] || { th:k, zh:k, mode:'', desc:'' };
+    const row = per[k] || {};
+    const passed = Number(row.passed ?? (k === 'ba_zi' || k === 'yong_shen' || k === 'hex64' ? finalCount : total));
+    const failed = Number(row.failed ?? Math.max(0, total - passed));
+    return {
+      key:k,
+      th:meta.th,
+      zh:meta.zh,
+      mode: hard.has(k) ? 'ตัดจริง' : meta.mode,
+      desc: meta.desc,
+      total,
+      passed,
+      failed,
+      hard: hard.has(k),
+      pct: total ? Math.max(0, Math.min(100, Math.round((passed / total) * 100))) : 0,
+    };
+  });
+}
 
 /* 📜 tx helper · 15 พ.ค. */
 function _dptx(k, fb){
@@ -947,7 +1021,7 @@ async function performSearch(){
   const btn = document.getElementById('btnSearch');
   btn.disabled = true;
   btn.textContent = _dptx('dp.search.searching_btn','⏳ กำลังค้นหา...');
-  document.getElementById('resultsList').innerHTML = '<div class="loading"><div class="spinner"></div>กำลังค้นฤกษ์จริงผ่าน Qimen API + กรอง 5 ชั้น...</div>';
+  document.getElementById('resultsList').innerHTML = '<div class="loading"><div class="spinner"></div>กำลังคำนวณฤกษ์ด้วย engine มาตรฐานหลายศาสตร์...</div>';
   document.getElementById('resultsMeta').textContent = 'กำลังค้นหา...';
 
   try {
@@ -977,13 +1051,24 @@ async function performSearch(){
     const useTaisui  = document.querySelector('.filter-item[data-filter="taisui"] input[type="checkbox"]')?.checked !== false;
     const useYongshen = document.querySelector('.filter-item[data-filter="yongshen"] input[type="checkbox"]')?.checked !== false;
     const useHex     = document.querySelector('.filter-item[data-filter="hex"] input[type="checkbox"]')?.checked === true;
-    /* 16 พ.ค. (อาเจ๊กฮ้ง engine v1): ใช้ /api/auspicious ใหม่ ถ้า localStorage flag = '1'
-       · ของเดิม /api/qimen/search ยังเป็น fallback */
-    const useAjEngine = localStorage.getItem('hk_use_aj_engine') === '1';
+    /* 22 พ.ค. · /api/auspicious เป็น canonical engine ของหน้า datepick แล้ว
+       ของเดิม /api/qimen/search เก็บไว้เป็น fallback สำหรับ debug/rollback เท่านั้น */
+    const useAjEngine = true;
     let data;
     if (useAjEngine) {
       /* map activity ENG → ZH ของอาเจ๊ก */
-      const AJ_ACTIVITY = { work_start:'開市', decision:'立約', wealth:'求財', love:'婚姻', travel:'出行', negotiate:'立約', authority:'開市', health:'祭祀' };
+      const AJ_ACTIVITY = {
+        break_ground:'動土',
+        decision:'立約',
+        move_home:'搬家',
+        open_business:'開市',
+        wealth:'求財',
+        love:'婚姻',
+        travel:'出行',
+        negotiate:'立約',
+        authority:'開市',
+        health:'祭祀'
+      };
       const ajActivity = AJ_ACTIVITY[activity] || '立約';
       const activeModules = [];
       if (useTongshu) activeModules.push('ze_ri');
@@ -997,12 +1082,15 @@ async function performSearch(){
       if (useBazi)    activeModules.push('ba_zi');
       if (useYongshen) activeModules.push('yong_shen');
       if (useHex)     activeModules.push('hex64');
+      const hardModules = [];
+      if (useTongshu) hardModules.push('ze_ri');
+      if (useTaisui) hardModules.push('tai_sui');
       const r = await fetch('/api/auspicious', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           activityType: ajActivity, dateFrom, dateTo: dateEnd,
           peopleIds: (state.people||[]).filter(p=>p.enabled&&p.personId).map(p=>p.personId),
-          activeModules, options:{ limit: 12 },
+          activeModules, options:{ limit: 12, scanLimit: 360, hardModules },
         })
       });
       const aj = await r.json();
@@ -1011,11 +1099,13 @@ async function performSearch(){
         btn.disabled = false; btn.textContent = _dptx('dp.search.btn','⚡ ค้นหาฤกษ์');
         return;
       }
-      /* adapt aj response → datepick format */
+      /* adapt aj response → datepick format · ไทยนำ จีนรอง */
       const cands = aj.candidates || [];
       const fp = aj.funnelStats || { perModule:{} };
+      const layerReport = buildLayerReport(fp, activeModules, hardModules, cands.length);
       data = {
         ok: true, total_scanned: fp.total || cands.length,
+        layers: layerReport,
         _aj_hex_lookup: cands.map(c => ({
           datetime: c.datetime.start,
           hex_num: c.modules?.hex64?.raw?.hex_num || null,
@@ -1035,12 +1125,18 @@ async function performSearch(){
             door: qm.door || '·',
             star: qm.star || '·',
             deity: qm.deity || '·',
-            heaven_stem: c.pillars.hour.stem, earth_stem: c.pillars.hour.branch,
+            heaven_stem: c.pillars?.hour?.stem || '·', earth_stem: c.pillars?.hour?.branch || '·',
             ju_pole:'yang', ju_number: qm.ju_number || 1,
             hex_num: h64.hex_num || null,
             hex_name: h64.hex_name || null,
             changing_line: h64.changing_line || null,
-            matches: (c.scoring?.reasonsUp||[]).map(r => `${r.delta>0?'+':''}${r.delta} ${r.thai}`),
+            element: STEM_ELEMENT[c.pillars?.hour?.stem] || null,
+            moduleScores: c.scoring?.moduleScores || {},
+            matches: [
+              ...(c.scoring?.reasonsUp||[]).map(r => `${r.delta>0?'+':''}${r.delta} ${r.thai}`),
+              ...(c.scoring?.reasonsDown||[]).map(r => `${r.delta} ${r.thai}`),
+              ...(c.scoring?.warnings||[]).map(r => `ระวัง ${r.thai}`)
+            ],
             tongshu: { day_officer: c.modules?.twelve_officers?.raw?.officer || '·',
                        yi:[], ji:[] },
           };
@@ -1070,31 +1166,32 @@ async function performSearch(){
     /* เก็บผลล่าสุดสำหรับ AI Sifu */
     window._dpLastSearch = data;
     window._dpLastActivity = activity;
-    /* P8 16 พ.ค. (อากง intersection): ทุกศาสตร์ที่ติ๊ก = hard cut · funnel แสดง cut ทีละขั้น */
-    const st = data.stats || {};
-    let running = data.total_scanned;
-    const cuts = [
-      ['通書 yi/ji', '通書', useTongshu ? (st.tongshu_cut||0) : null],
-      ['八字 沖', '八字', useBazi ? (st.bazi_cut||0) : null],
-      ['太歲 流年沖', '太歲', useTaisui ? (st.taisui_cut||0) : null],
-      ['12 建除', '建除', useJianchu ? (st.jianchu_cut||0) : null],
-      ['28 宿', '宿', useXiu28 ? (st.xiu28_cut||0) : null],
-      ['12 神煞', '神煞', useShen12 ? (st.shen12_cut||0) : null],
-      ['9 飛星', '飛星', useFly9 ? (st.fly9_cut||0) : null],
-      ['河洛 ดาวเหิน', '河洛', useHeluo ? (st.heluo_cut||0) : null],
-      ['用神', '用神', userYongshen.length ? (st.yongshen_cut||0) : null],
-    ];
-    const funnel = [{ name:'總計 ทั้งหมด', han:'總', count: data.total_scanned, type:'gold' }];
-    for (const [name, han, cut] of cuts) {
-      if (cut === null) {
-        funnel.push({ name: name + ' (ไม่ติ๊ก)', han, count: running, type:'mid' });
-      } else {
-        running -= cut;
-        funnel.push({ name: name + ' · ตัด ' + cut, han, count: running, type: cut > 0 ? 'bad' : 'ok' });
+    if (data.layers) renderLayerFunnel(data.layers, data.total_scanned, data.top.length);
+    else {
+      const st = data.stats || {};
+      let running = data.total_scanned;
+      const cuts = [
+        ['ปฏิทินจีน', '通書', useTongshu ? (st.tongshu_cut||0) : null],
+        ['ดวงคนที่เกี่ยวข้อง', '八字', useBazi ? (st.bazi_cut||0) : null],
+        ['ไท้ส่วย', '太歲', useTaisui ? (st.taisui_cut||0) : null],
+        ['สิบสองจังหวะวัน', '建除', useJianchu ? (st.jianchu_cut||0) : null],
+        ['ยี่สิบแปดดาวฤกษ์', '宿', useXiu28 ? (st.xiu28_cut||0) : null],
+        ['สิบสองเทพประจำวัน', '神煞', useShen12 ? (st.shen12_cut||0) : null],
+        ['เก้าดาวเหิน', '飛星', useFly9 ? (st.fly9_cut||0) : null],
+        ['เหอหลัว', '河洛', useHeluo ? (st.heluo_cut||0) : null],
+        ['ธาตุที่ดวงต้องการ', '用神', userYongshen.length ? (st.yongshen_cut||0) : null],
+      ];
+      const funnel = [{ name:'ทั้งหมด', han:'總', count: data.total_scanned, type:'gold' }];
+      for (const [name, han, cut] of cuts) {
+        if (cut === null) funnel.push({ name: name + ' (ไม่ได้ใช้)', han, count: running, type:'mid' });
+        else {
+          running -= cut;
+          funnel.push({ name: name + ' · ตัด ' + cut, han, count: running, type: cut > 0 ? 'bad' : 'ok' });
+        }
       }
+      funnel.push({ name:'จัดอันดับด้วยฉีเหมิน', han:'奇門', count: data.top.length, type:'ok' });
+      renderFunnel(funnel);
     }
-    funnel.push({ name:'奇門 ranking', han:'奇門', count: data.top.length, type:'ok' });
-    renderFunnel(funnel);
     renderRealResults(data.top);
     btn.disabled = false;
     btn.textContent = _dptx('dp.search.btn','⚡ ค้นหาฤกษ์');
@@ -1129,6 +1226,11 @@ function renderRealResults(items){
     const shichenName = SHICHEN_NAME[t.earth_stem] || '';
     const pctOfMax = Math.round((t.score / maxSc) * 100);
     const rankPct = Math.round(((items.length - i) / items.length) * 100);
+    const stemChip = elementChipFromStem(t.heaven_stem);
+    const modulePills = Object.entries(t.moduleScores || {}).slice(0,6).map(([k,v]) => {
+      const m = MODULE_LABELS[k] || { th:k, zh:k };
+      return `<span class="score-pill">${escHtml(m.th)} <b>${Math.round(v)}</b></span>`;
+    }).join('');
     const matchTags = (t.matches||[]).slice(0,12).map(m => {
       let cls = 'match-tag ';
       const d = parseInt(String(m).match(/^[+-]?(\d+)/)?.[1] || '0', 10);
@@ -1153,13 +1255,13 @@ function renderRealResults(items){
       <div class="result-head">
         <div class="rank">${rankBadge}</div>
         <div class="rdate">
-          <div class="dt">🗓 ${dateThai} · <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${t.time}</div>
+          <div class="dt">🗓 ${dateThai} · ${t.time} น. <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip}</div>
           <div class="ctx">
-            <span>📍 宮${t.palace_id} ${t.direction}</span>
-            <span>· ${pole}${t.ju_number}局</span>
+            <span>ทิศที่เด่น: ${t.direction} · วัง ${t.palace_id}</span>
+            <span>· ผังฉีเหมิน ${pole}${t.ju_number}局</span>
           </div>
           <div class="ctx">
-            <span class="tc">${t.heaven_stem}${t.earth_stem}</span><span style="color:var(--fg-soft);">時 · 開門 ${t.door}</span>
+            <span class="tc">${t.heaven_stem}${t.earth_stem}</span><span style="color:var(--fg-soft);">時 · ประตู ${t.door}</span>
           </div>
         </div>
         <div class="rscore" style="min-width:90px;">
@@ -1169,12 +1271,13 @@ function renderRealResults(items){
         </div>
       </div>
       <div class="result-body">
-        <div class="r-line"><span class="k">門</span><span class="v">${t.door||'—'}</span></div>
-        <div class="r-line"><span class="k">星</span><span class="v">${t.star||'—'}</span></div>
-        <div class="r-line"><span class="k">神</span><span class="v">${t.deity||'—'}</span></div>
-        <div class="r-line"><span class="k">天/地</span><span class="v">${t.heaven_stem||'·'} / ${t.earth_stem||'·'}</span></div>
-        <div class="r-line"><span class="k">局</span><span class="v">${pole}${t.ju_number||'?'}局</span></div>
+        <div class="r-line"><span class="k">ประตู · 門</span><span class="v">${t.door||'—'}</span></div>
+        <div class="r-line"><span class="k">ดาว · 星</span><span class="v">${t.star||'—'}</span></div>
+        <div class="r-line"><span class="k">เทพ · 神</span><span class="v">${t.deity||'—'}</span></div>
+        <div class="r-line"><span class="k">ฟ้า/ดิน · 天地</span><span class="v">${t.heaven_stem||'·'} / ${t.earth_stem||'·'} ${stemChip}</span></div>
+        <div class="r-line"><span class="k">ผัง · 局</span><span class="v">${pole}${t.ju_number||'?'}局</span></div>
       </div>
+      ${modulePills ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">${modulePills}</div>` : ''}
       ${matchTags ? `<div class="result-matches">${matchTags}</div>` : ''}
       ${t.hex_num ? `<div style="margin-top:8px;text-align:right;"><button onclick="showHexDeep(${t.hex_num},${t.changing_line||0})" style="background:rgba(200,164,77,.1);border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:10px;padding:5px 11px;border-radius:99px;cursor:pointer;letter-spacing:.05em;">📜 ดูตำรา 卦${t.hex_num} ${t.hex_name||''} เส้น${t.changing_line||'-'}</button></div>` : ''}
     </div>`;
@@ -1443,6 +1546,34 @@ function mockSearch(){
 // ═══════════════════════════════════════════════════════════════
 //  RENDER FUNNEL
 // ═══════════════════════════════════════════════════════════════
+function renderLayerFunnel(layers, total, resultCount){
+  const f = document.getElementById('funnel');
+  f.style.display = 'block';
+  document.getElementById('funnelTotal').textContent = `${resultCount} ฤกษ์แนะนำ จาก ${total} ยาม`;
+  const hardLayers = (layers || []).filter(x => x.hard);
+  const scoreLayers = (layers || []).filter(x => !x.hard);
+  const layerCard = (r) => `
+    <div class="layer-card">
+      <div class="top">
+        <div>
+          <div class="th">${escHtml(r.th)} <span class="zh">${escHtml(r.zh)}</span></div>
+          <div class="mode">${escHtml(r.mode)}</div>
+        </div>
+        <div class="count">${r.passed}<span style="font-size:10px;color:var(--fg-faint);">/${r.total}</span></div>
+      </div>
+      <div class="bar"><div class="fill" style="width:${r.pct}%"></div></div>
+      <p class="desc">${escHtml(r.desc)}${r.failed ? ` · ไม่ผ่าน ${r.failed} ยาม` : ''}</p>
+    </div>`;
+  document.getElementById('funnelRows').innerHTML = `
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">ภาพรวม 30 วัน · 360 ยาม</div>
+    <div style="font-size:13px;color:var(--fg-soft);line-height:1.6;margin-bottom:12px;">
+      ระบบเริ่มจากทุกยามในช่วง 30 วัน แล้วใช้แต่ละศาสตร์ช่วยกรองและจัดอันดับ · ภาษาไทยเป็นคำอธิบายหลัก จีนเป็นชื่อศาสตร์อ้างอิง
+    </div>
+    ${hardLayers.length ? `<div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--bad);text-transform:uppercase;margin:10px 0 8px;">ชั้นที่ตัดจริง</div><div class="layer-grid">${hardLayers.map(layerCard).join('')}</div>` : ''}
+    ${scoreLayers.length ? `<div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--info);text-transform:uppercase;margin:14px 0 8px;">ชั้นที่ใช้ให้คะแนน / อธิบาย</div><div class="layer-grid">${scoreLayers.map(layerCard).join('')}</div>` : ''}
+  `;
+}
+
 function renderFunnel(rows){
   /* 17 พ.ค. · อาม่าอากง v2 · แยก Hard Filter (ตัดทิ้ง) + Scoring Layers (บวก/ลบเฉย) */
   const f = document.getElementById('funnel');

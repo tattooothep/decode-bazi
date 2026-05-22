@@ -25,10 +25,20 @@ export async function POST(req: NextRequest) {
           gender: gender as "M" | "F", dayBoundary: "23:00", birthTimeKnown: false,
         });
 
-    const ys = (c.yongshen || []).map(y => y.element).filter(Boolean) as string[];
+    let ys = (c.yongshen || []).map(y => y.element).filter(Boolean) as string[];
+    let js: string[] = [];
+    try {
+      const { getYongshenSynth, extractFromSynth } = await import("@/lib/yongshen-cache");
+      const wrapped = await getYongshenSynth(birthDate, birthTime, longitude, { birthTimeKnown });
+      if (wrapped?.synth) {
+        const ex = extractFromSynth(wrapped.synth);
+        if (ex.yongshen.length) ys = ex.yongshen;
+        js = ex.jishen || [];
+      }
+    } catch { /* wrapper-7 fallback ใช้ calcBazi เดิม */ }
     const ELEMENT_TO_BRANCH: Record<string, string> = { wood:"寅", fire:"巳", earth:"辰", metal:"申", water:"亥" };
     const yongBranches = ys.map(e => ELEMENT_TO_BRANCH[e]).filter(Boolean);
-    const jiBranches: string[] = []; // เริ่มต้นว่าง · เพิ่มทีหลัง
+    const jiBranches = js.map(e => ELEMENT_TO_BRANCH[e]).filter(Boolean);
 
     await q(`
       INSERT INTO aj_user_profiles
