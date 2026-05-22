@@ -233,6 +233,8 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .compass-card{background:var(--bg-3);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px;}
 .compass-svg-wrap{position:relative;width:100%;max-width:280px;aspect-ratio:1;}
 .compass-svg{width:100%;height:auto;display:block;}
+.compass-luck-seg{stroke:rgba(13,15,18,.65);stroke-width:1.2;cursor:help;transition:opacity .2s,filter .2s;}
+.compass-luck-seg:hover{opacity:1!important;filter:brightness(1.22);}
 .compass-needle{transform-origin:200px 200px;transition:transform .25s cubic-bezier(.4,0,.2,1);}
 .facing-arrow{transform-origin:200px 200px;transition:transform .35s ease;}
 .compass-deg{font-family:var(--mono);font-size:42px;font-weight:700;color:var(--gold);letter-spacing:-.02em;line-height:1;}
@@ -247,6 +249,9 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .btn-compass.secondary:hover:not(:disabled){background:var(--gold-soft);}
 .compass-help{font-size:11px;color:var(--fg-faint);line-height:1.6;padding:10px 12px;background:rgba(212,160,23,.06);border-left:2px solid var(--five-yellow);border-radius:4px;width:100%;}
 .compass-help b{color:var(--gold);}
+.compass-luck-legend{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--fg-faint);text-transform:uppercase;}
+.compass-luck-legend span{display:flex;align-items:center;gap:6px;min-width:0;}
+.compass-luck-legend i{display:inline-block;width:18px;height:8px;border-radius:99px;border:1px solid rgba(243,235,217,.15);}
 
 .map-card{background:var(--bg-3);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:520px;}
 .map-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
@@ -476,6 +481,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="compass-svg-wrap">
         <svg class="compass-svg" viewBox="0 0 400 400">
           <circle cx="200" cy="200" r="195" fill="none" stroke="var(--gold-line)" stroke-width="1"/>
+          <g id="compassLuckRing"></g>
           <circle cx="200" cy="200" r="180" fill="var(--bg)" stroke="var(--gold)" stroke-width="2"/>
           <circle cx="200" cy="200" r="120" fill="none" stroke="var(--gold-line)" stroke-width="1"/>
           <circle cx="200" cy="200" r="60"  fill="none" stroke="var(--gold-line)" stroke-width="1"/>
@@ -493,6 +499,12 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
             <circle cx="200" cy="200" r="8" fill="var(--gold)"/>
           </g>
         </svg>
+      </div>
+      <div class="compass-luck-legend" aria-label="สีแถบมงคลบนเข็มทิศ">
+        <span><i style="background:#5fa86b"></i>ดี · ใช้ได้</span>
+        <span><i style="background:#c8a44d"></i>กลางดี</span>
+        <span><i style="background:#c8843f"></i>ต้องคุม</span>
+        <span><i style="background:#c95c4a"></i>เลี่ยง</span>
       </div>
       <div style="text-align:center;">
         <span class="compass-deg" id="compassDeg">—</span><span class="compass-deg-unit">°</span>
@@ -647,6 +659,27 @@ function fsEsc(v){
   return String(v ?? '').replace(/[&<>"']/g, ch => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
   }[ch]));
+}
+const COMPASS_DIRS = [
+  {dir:'N', deg:0, th:'เหนือ'}, {dir:'NE', deg:45, th:'ตะวันออกเฉียงเหนือ'},
+  {dir:'E', deg:90, th:'ตะวันออก'}, {dir:'SE', deg:135, th:'ตะวันออกเฉียงใต้'},
+  {dir:'S', deg:180, th:'ใต้'}, {dir:'SW', deg:225, th:'ตะวันตกเฉียงใต้'},
+  {dir:'W', deg:270, th:'ตะวันตก'}, {dir:'NW', deg:315, th:'ตะวันตกเฉียงเหนือ'}
+];
+function compassGrade(dir, yearGrid, taiSuiDir, threeKillDir){
+  const yStar = yearGrid?.[dir];
+  if(taiSuiDir === dir) return {level:'danger', color:'#9b6cc9', label:'ไท่ซุ่ย · ห้ามรบกวน', score:18};
+  if(threeKillDir === dir) return {level:'danger', color:'#c95c4a', label:'สามชะ · เลี่ยงนั่งหันหน้าใส่', score:20};
+  if(yStar === 5) return {level:'danger', color:'#d4a017', label:'5 เหลือง · ห้ามขุด/ตอก/รบกวน', score:15};
+  if(yStar === 2) return {level:'warn', color:'#c8843f', label:'2 ดำ · ระวังสุขภาพ', score:40};
+  if(yStar === 3) return {level:'warn', color:'#c8843f', label:'3 หยก · ระวังเถียง/คดี', score:46};
+  if(yStar === 7) return {level:'warn', color:'#c8843f', label:'7 แดง · ระวังเสียเงิน/คำพูด', score:48};
+  if(yStar === 8) return {level:'good', color:'#5fa86b', label:'8 ขาว · ทรัพย์/เก็บเงิน', score:86};
+  if(yStar === 9) return {level:'good', color:'#5fa86b', label:'9 ม่วง · ชื่อเสียง/อนาคต', score:88};
+  if(yStar === 1) return {level:'good', color:'#5a8aa8', label:'1 ขาว · ปัญญา/โอกาส', score:78};
+  if(yStar === 6) return {level:'good', color:'#7fa869', label:'6 ขาว · ผู้ใหญ่/อำนาจ', score:80};
+  if(yStar === 4) return {level:'mid', color:'#c8a44d', label:'4 เขียว · เรียน/ความสัมพันธ์', score:64};
+  return {level:'mid', color:'#8a6d2a', label:'กลาง · ใช้ตามจังหวะ', score:55};
 }
 function getThreeKillings(year){
   const b = ((year - 4) % 12 + 12) % 12;
@@ -817,6 +850,7 @@ function renderGrid(){
   });
 
   renderWarnings(taiSuiDir, threeKillDir, fiveYellowDir);
+  renderCompassLuckRing(gridYear, taiSuiDir, threeKillDir);
   renderPalaceDetail(activeDir, gridYear, gridMonth, gridDay, gridPeriod);
   
   // store for map verdict
@@ -1279,6 +1313,47 @@ function buildCompass(){
 }
 buildCompass();
 
+function polarPoint(cx, cy, r, deg){
+  const rad = deg * Math.PI / 180;
+  return { x: cx + Math.sin(rad) * r, y: cy - Math.cos(rad) * r };
+}
+function ringSegmentPath(cx, cy, innerR, outerR, startDeg, endDeg){
+  const a0 = ((startDeg % 360) + 360) % 360;
+  const a1 = ((endDeg % 360) + 360) % 360;
+  const span = ((a1 - a0 + 360) % 360) || 360;
+  const large = span > 180 ? 1 : 0;
+  const endAbs = startDeg + span;
+  const o0 = polarPoint(cx, cy, outerR, startDeg);
+  const o1 = polarPoint(cx, cy, outerR, endAbs);
+  const i1 = polarPoint(cx, cy, innerR, endAbs);
+  const i0 = polarPoint(cx, cy, innerR, startDeg);
+  return [
+    `M ${o0.x.toFixed(2)} ${o0.y.toFixed(2)}`,
+    `A ${outerR} ${outerR} 0 ${large} 1 ${o1.x.toFixed(2)} ${o1.y.toFixed(2)}`,
+    `L ${i1.x.toFixed(2)} ${i1.y.toFixed(2)}`,
+    `A ${innerR} ${innerR} 0 ${large} 0 ${i0.x.toFixed(2)} ${i0.y.toFixed(2)}`,
+    'Z'
+  ].join(' ');
+}
+function renderCompassLuckRing(yearGrid, taiSuiDir, threeKillDir){
+  const ring = document.getElementById('compassLuckRing');
+  if(!ring) return;
+  ring.innerHTML = '';
+  COMPASS_DIRS.forEach(item => {
+    const grade = compassGrade(item.dir, yearGrid, taiSuiDir, threeKillDir);
+    const seg = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    seg.setAttribute('class', `compass-luck-seg ${grade.level}`);
+    seg.setAttribute('d', ringSegmentPath(200, 200, 181, 194, item.deg - 22.5, item.deg + 22.5));
+    seg.setAttribute('fill', grade.color);
+    seg.setAttribute('opacity', grade.level === 'danger' ? '.9' : grade.level === 'good' ? '.78' : '.68');
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    const star = yearGrid?.[item.dir];
+    title.textContent = `${item.dir} ${item.th} · ${star ? `ดาวปี ${star}${STAR_INFO[star]?.color || ''} · ` : ''}${grade.label} · ${grade.score}/100`;
+    seg.appendChild(title);
+    ring.appendChild(seg);
+  });
+}
+
 // ═══════════════════════════════════════════════════════════════
 //  COMPASS · DEVICE ORIENTATION
 // ═══════════════════════════════════════════════════════════════
@@ -1416,11 +1491,9 @@ function applyFacing(deg){
   let verdict = '—';
   if(window._currentYearGrid){
     const yStar = window._currentYearGrid[dir8];
-    if(window._currentTaiSui === dir8) verdict = '⚠️ ไท่ซุ่ย · ระวัง';
-    else if(window._currentThreeKill === dir8) verdict = '⚠️ 3ชะ · ระวัง';
-    else if(yStar === 5) verdict = '☠️ 5黃 · ห้าม';
-    else if([1,6,8,9].includes(yStar)) verdict = `✓ ${yStar}${STAR_INFO[yStar].color} · ดี`;
-    else verdict = `${yStar}${STAR_INFO[yStar].color} · กลาง`;
+    const grade = compassGrade(dir8, window._currentYearGrid, window._currentTaiSui, window._currentThreeKill);
+    const icon = grade.level === 'danger' ? '⛔' : grade.level === 'warn' ? '⚠️' : grade.level === 'good' ? '✓' : '·';
+    verdict = `${icon} ${yStar}${STAR_INFO[yStar].color} · ${grade.label}`;
   }
   document.getElementById('mrVerdict').textContent = verdict;
 }
