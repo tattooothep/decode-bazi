@@ -3655,6 +3655,14 @@ window.addEventListener('resize', function(){
         if (!box) return;
         const p = palaces[pillarName];
         box.textContent = '';
+        const chartIs3p = d && (d.mode === '3p' || (d.pillars && d.pillars.hour == null));
+        if (pillarName === 'hour' && chartIs3p) {
+          const note = document.createElement('div');
+          note.style.cssText = 'font-size:12px;color:var(--fg-soft,#888);line-height:1.65';
+          note.textContent = 'ไม่ทราบเวลาเกิด · วังลูกและบั้นปลายต้องใช้เสายาม จึงไม่คำนวณในโหมด 3 เสา';
+          box.appendChild(note);
+          return;
+        }
         if (!p) { box.appendChild(mkSpan('—')); return; }
         if (p.title_th) { const t=document.createElement('div'); t.style.cssText='font-family:var(--serif);font-size:13px;color:var(--gold);margin-bottom:4px'; t.textContent=p.title_th; box.appendChild(t); }
         if (p.age) { const a2=document.createElement('span'); a2.style.cssText='font-family:var(--mono);font-size:10px;color:var(--fg-soft,#8aa);letter-spacing:.1em;text-transform:uppercase'; a2.textContent='ช่วงอายุ '+p.age; box.appendChild(a2); box.appendChild(document.createElement('br')); }
