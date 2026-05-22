@@ -318,6 +318,24 @@ body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important
 .house-star-tag.danger{border-color:#c95c4a;background:rgba(101,31,25,.9);}
 .house-star-tag.aff{border-color:#9b6cc9;background:rgba(63,38,82,.9);}
 
+.plan-card{margin-top:24px;background:var(--bg-3);border:1px solid var(--line);border-radius:18px;overflow:hidden;}
+.plan-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;}
+.plan-head h4{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+.plan-head p{font-size:12px;color:var(--fg-soft);line-height:1.55;}
+.plan-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.plan-file{position:relative;overflow:hidden;}
+.plan-file input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.plan-tune{padding:12px 18px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;background:rgba(13,15,18,.18);}
+.plan-field label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:5px;}
+.plan-field input[type=range]{width:100%;accent-color:var(--gold);}
+.plan-field output{font-family:var(--mono);font-size:11px;color:var(--gold-bright);}
+.plan-stage{position:relative;background:#101214;min-height:360px;padding:12px;}
+.plan-stage canvas{display:block;width:100%;max-height:76vh;border-radius:14px;background:#17191d;border:1px solid rgba(200,164,77,.24);touch-action:none;}
+.plan-empty{position:absolute;inset:12px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--fg-faint);font-size:13px;line-height:1.7;border:1px dashed rgba(200,164,77,.3);border-radius:14px;pointer-events:none;}
+.plan-status{padding:10px 18px;border-top:1px solid var(--line);font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
+@media(max-width:760px){.plan-tune{grid-template-columns:1fr 1fr;}.plan-head{align-items:stretch}.plan-controls{width:100%;}.plan-controls .map-btn{flex:1;}}
+@media(max-width:460px){.plan-tune{grid-template-columns:1fr;}}
+
 .map-result-bar{padding:14px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:14px;font-family:var(--mono);font-size:11px;}
 @media(max-width:680px){.map-result-bar{grid-template-columns:1fr 1fr;}}
 @media(max-width:680px){
@@ -659,6 +677,57 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <b data-i18n="auto.f.021">① จุดยืน → ② ทิศหันหน้า:</b> 2-marker mode (จุดยืน → จุดหน้าบ้าน)
       </div>
     </div>
+  </div>
+
+  <div class="plan-card" id="planCard">
+    <div class="plan-head">
+      <div>
+        <h4>平面圖 Floor Plan Overlay · อัพแปลนบ้าน</h4>
+        <p>อัพรูปแปลน/ภาพบ้าน แล้ววางวง 24 ขุนเขา + ดาวเหินทับรูปได้ · ลากจุดกลางเพื่อวางไท่จี๋ · ปรับรัศมีและหมุนวงให้ตรงทิศจริง</p>
+      </div>
+      <div class="plan-controls">
+        <label class="map-btn plan-file">อัพรูปแปลน
+          <input id="planUpload" type="file" accept="image/*"/>
+        </label>
+        <button class="map-btn" id="btnPlanUseFacing">ใช้ Facing</button>
+        <button class="map-btn" id="btnPlanReset">จัดกลาง</button>
+        <button class="map-btn" id="btnPlanClear">ล้างรูป</button>
+      </div>
+    </div>
+    <div class="map-layer-controls plan-layer-controls" id="planLayerControls" aria-label="เลือกชั้นข้อมูลบนรูปแปลน">
+      <button class="map-layer-btn active" data-map-layer="m24">24山</button>
+      <button class="map-layer-btn active" data-map-layer="year">ดาวปี</button>
+      <button class="map-layer-btn" data-map-layer="month">ดาวเดือน</button>
+      <button class="map-layer-btn" data-map-layer="day">ดาววัน</button>
+      <button class="map-layer-btn active" data-map-layer="hour">ดาวยาม</button>
+      <button class="map-layer-btn active" data-map-layer="affliction">5/2/太歲</button>
+    </div>
+    <div class="plan-tune">
+      <div class="plan-field">
+        <label for="planRadius">รัศมีวง</label>
+        <input id="planRadius" type="range" min="80" max="520" value="260"/>
+        <output id="planRadiusOut">260px</output>
+      </div>
+      <div class="plan-field">
+        <label for="planRotation">หมุนวง / ตั้งทิศ</label>
+        <input id="planRotation" type="range" min="0" max="359" value="0"/>
+        <output id="planRotationOut">0°</output>
+      </div>
+      <div class="plan-field">
+        <label for="planOpacity">ความเข้ม overlay</label>
+        <input id="planOpacity" type="range" min="35" max="100" value="88"/>
+        <output id="planOpacityOut">88%</output>
+      </div>
+      <div class="plan-field">
+        <label>สถานะ</label>
+        <output id="planQuickStatus">ยังไม่ได้อัพรูป</output>
+      </div>
+    </div>
+    <div class="plan-stage" id="planStage">
+      <canvas id="planCanvas" width="1200" height="820"></canvas>
+      <div class="plan-empty" id="planEmpty">อัพรูปแปลนบ้านหรือ screenshot จากมือถือ<br/>จากนั้นลากจุดกลาง 中 และปรับรัศมีวงให้ครอบพื้นที่บ้าน</div>
+    </div>
+    <div class="plan-status" id="planStatus">Tip: ถ้ารูปแปลนมีทิศเหนืออยู่แล้ว ตั้งหมุนวงเป็น 0° · ถ้ารู้ Facing บ้าน กด “ใช้ Facing” เพื่อหมุนวงตามองศาบ้านปัจจุบัน</div>
   </div>
 </div>
 
@@ -2734,6 +2803,7 @@ function clearHouseMode(){
 
 window.refreshHouseOverlayFromGrid = function(){
   if(housePoints.length >= 3) updateHouseOverlay();
+  if(typeof drawFloorPlan === 'function') drawFloorPlan();
 };
 
 // Set cursor based on mode
@@ -2859,7 +2929,13 @@ document.getElementById('modeStanding').addEventListener('click', ()=>{
 });
 document.getElementById('modeFacing').addEventListener('click', ()=>setMode('facing'));
 
-document.querySelectorAll('#mapLayerControls .map-layer-btn').forEach(btn => {
+function syncMapLayerButtons(){
+  document.querySelectorAll('.map-layer-btn[data-map-layer]').forEach(btn => {
+    btn.classList.toggle('active', mapLayers.has(btn.dataset.mapLayer));
+  });
+}
+
+document.querySelectorAll('.map-layer-btn[data-map-layer]').forEach(btn => {
   const layer = btn.dataset.mapLayer;
   btn.classList.toggle('active', mapLayers.has(layer));
   btn.addEventListener('click', ()=>{
@@ -2869,10 +2945,290 @@ document.querySelectorAll('#mapLayerControls .map-layer-btn').forEach(btn => {
     } else {
       mapLayers.add(layer);
     }
-    btn.classList.toggle('active', mapLayers.has(layer));
+    syncMapLayerButtons();
     if(housePoints.length >= 3) updateHouseOverlay();
+    if(typeof drawFloorPlan === 'function') drawFloorPlan();
   });
 });
+
+// ═══════════════════════════════════════════════════════════════
+//  FLOOR PLAN IMAGE OVERLAY — upload plan, place 24 mountains + stars
+// ═══════════════════════════════════════════════════════════════
+const planCanvas = document.getElementById('planCanvas');
+const planCtx = planCanvas ? planCanvas.getContext('2d') : null;
+const planState = {
+  img:null, imgName:'', imgRect:null,
+  cx:600, cy:410, radius:260, rotation:0, opacity:.88,
+  dragging:false
+};
+
+function planSetStatus(text){
+  const st = document.getElementById('planStatus');
+  const qs = document.getElementById('planQuickStatus');
+  if(st) st.textContent = text;
+  if(qs) qs.textContent = planState.img ? `${planState.imgName || 'แปลน'} · R${Math.round(planState.radius)} · ${Math.round(planState.rotation)}°` : 'ยังไม่ได้อัพรูป';
+}
+
+function updatePlanOutputs(){
+  const r = document.getElementById('planRadiusOut');
+  const deg = document.getElementById('planRotationOut');
+  const op = document.getElementById('planOpacityOut');
+  if(r) r.textContent = `${Math.round(planState.radius)}px`;
+  if(deg) deg.textContent = `${Math.round(planState.rotation)}°`;
+  if(op) op.textContent = `${Math.round(planState.opacity * 100)}%`;
+  planSetStatus(planState.img ? 'ลากจุด 中 เพื่อวางกลางบ้าน · ปรับรัศมี/หมุนวงให้ตรงรูปแปลน' : 'อัพรูปแปลนก่อน แล้วระบบจะวางวง 24 ขุนเขาให้');
+}
+
+function fitPlanImageRect(){
+  const pad = 34;
+  const cw = planCanvas.width - pad * 2;
+  const ch = planCanvas.height - pad * 2;
+  if(!planState.img) return {x:pad,y:pad,w:cw,h:ch};
+  const iw = planState.img.naturalWidth || planState.img.width;
+  const ih = planState.img.naturalHeight || planState.img.height;
+  const scale = Math.min(cw / iw, ch / ih);
+  const w = iw * scale;
+  const h = ih * scale;
+  return { x:(planCanvas.width - w) / 2, y:(planCanvas.height - h) / 2, w, h };
+}
+
+function resetPlanCircle(){
+  const rect = planState.imgRect || fitPlanImageRect();
+  planState.cx = rect.x + rect.w / 2;
+  planState.cy = rect.y + rect.h / 2;
+  planState.radius = Math.max(Math.min(rect.w, rect.h) * .42, 90);
+  const radiusInput = document.getElementById('planRadius');
+  if(radiusInput){
+    radiusInput.max = String(Math.max(520, Math.round(Math.max(rect.w, rect.h) * .8)));
+    radiusInput.value = String(Math.round(planState.radius));
+  }
+  updatePlanOutputs();
+}
+
+function planPoint(r, deg){
+  const rad = normalizeDeg(deg + planState.rotation) * Math.PI / 180;
+  return { x: planState.cx + Math.sin(rad) * r, y: planState.cy - Math.cos(rad) * r };
+}
+
+function drawRoundRect(ctx, x, y, w, h, r){
+  const rr = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.lineTo(x + w - rr, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + rr);
+  ctx.lineTo(x + w, y + h - rr);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+  ctx.lineTo(x + rr, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - rr);
+  ctx.lineTo(x, y + rr);
+  ctx.quadraticCurveTo(x, y, x + rr, y);
+  ctx.closePath();
+}
+
+function canvasTagColors(kind){
+  if(kind === 'danger') return {bg:'rgba(101,31,25,.92)', bd:'#c95c4a', fg:'#fff'};
+  if(kind === 'warn') return {bg:'rgba(111,66,24,.9)', bd:'#c8843f', fg:'#fff'};
+  if(kind === 'good') return {bg:'rgba(38,82,48,.88)', bd:'#5fa86b', fg:'#fff'};
+  if(kind === 'aff') return {bg:'rgba(63,38,82,.9)', bd:'#9b6cc9', fg:'#fff'};
+  return {bg:'rgba(92,72,24,.88)', bd:'#c8a44d', fg:'#fff'};
+}
+
+function drawCanvasPill(ctx, text, x, y, kind){
+  ctx.save();
+  ctx.font = '700 13px JetBrains Mono, monospace';
+  const padX = 7, h = 22;
+  const w = Math.ceil(ctx.measureText(text).width + padX * 2);
+  const c = canvasTagColors(kind);
+  drawRoundRect(ctx, x - w/2, y - h/2, w, h, 11);
+  ctx.fillStyle = c.bg;
+  ctx.fill();
+  ctx.strokeStyle = c.bd;
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+  ctx.fillStyle = c.fg;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y + .5);
+  ctx.restore();
+  return h + 3;
+}
+
+function floorStarTags(dir){
+  const grids = {
+    year: window._currentYearGrid || {},
+    month: window._currentMonthGrid || {},
+    day: window._currentDayGrid || {},
+    hour: window._currentHourGrid || {}
+  };
+  const label = {year:'年', month:'月', day:'日', hour:'時'};
+  const tags = [];
+  ['year','month','day','hour'].forEach(layer => {
+    if(!mapLayers.has(layer)) return;
+    const star = grids[layer]?.[dir];
+    if(star) tags.push({ text:`${label[layer]}${star}${STAR_INFO[star]?.color || ''}`, kind:starLevel(star) });
+  });
+  const y = grids.year?.[dir];
+  if(mapLayers.has('affliction')){
+    if(dir === window._currentTaiSui) tags.push({ text:'太歲', kind:'aff' });
+    if(dir === window._currentThreeKill) tags.push({ text:'三煞', kind:'aff' });
+    if(y === 5) tags.push({ text:'年5黃', kind:'danger' });
+    if(y === 2) tags.push({ text:'年2黑', kind:'warn' });
+  }
+  return tags;
+}
+
+function drawFloorPlan(){
+  if(!planCtx || !planCanvas) return;
+  const ctx = planCtx;
+  ctx.clearRect(0,0,planCanvas.width,planCanvas.height);
+  ctx.fillStyle = '#111318';
+  ctx.fillRect(0,0,planCanvas.width,planCanvas.height);
+
+  if(!planState.img){
+    updatePlanOutputs();
+    return;
+  }
+
+  planState.imgRect = fitPlanImageRect();
+  const rect = planState.imgRect;
+  ctx.drawImage(planState.img, rect.x, rect.y, rect.w, rect.h);
+  ctx.save();
+  ctx.globalAlpha = planState.opacity;
+  ctx.strokeStyle = '#c8a44d';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(planState.cx, planState.cy, planState.radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  M24_RING.forEach((m, i) => {
+    const major = i % 3 === 1;
+    const p = planPoint(planState.radius, m.start);
+    ctx.beginPath();
+    ctx.moveTo(planState.cx, planState.cy);
+    ctx.lineTo(p.x, p.y);
+    ctx.strokeStyle = major ? '#c8a44d' : '#7fa869';
+    ctx.globalAlpha = major ? planState.opacity : planState.opacity * .58;
+    ctx.lineWidth = major ? 2 : 1;
+    ctx.stroke();
+    if(mapLayers.has('m24')){
+      const lp = planPoint(planState.radius * 1.09, getMountainCenterDeg(i));
+      drawCanvasPill(ctx, `${m.h}${m.code}`, lp.x, lp.y, major ? 'mid' : 'good');
+    }
+  });
+
+  COMPASS_DIRS.forEach(item => {
+    const tags = floorStarTags(item.dir);
+    if(!tags.length) return;
+    const p = planPoint(planState.radius * .62, item.deg);
+    const total = tags.length * 25;
+    let y = p.y - total / 2 + 12;
+    tags.forEach(t => {
+      y += drawCanvasPill(ctx, t.text, p.x, y, t.kind);
+    });
+  });
+
+  ctx.globalAlpha = 1;
+  ctx.beginPath();
+  ctx.arc(planState.cx, planState.cy, 11, 0, Math.PI * 2);
+  ctx.fillStyle = '#c8a44d';
+  ctx.fill();
+  ctx.strokeStyle = '#101214';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.fillStyle = '#101214';
+  ctx.font = '900 16px Noto Serif TC, serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('中', planState.cx, planState.cy + 1);
+  ctx.restore();
+  updatePlanOutputs();
+}
+
+function planCanvasPos(ev){
+  const rect = planCanvas.getBoundingClientRect();
+  return {
+    x: (ev.clientX - rect.left) * planCanvas.width / rect.width,
+    y: (ev.clientY - rect.top) * planCanvas.height / rect.height
+  };
+}
+
+if(planCanvas){
+  planCanvas.addEventListener('pointerdown', ev => {
+    if(!planState.img) return;
+    ev.preventDefault();
+    const p = planCanvasPos(ev);
+    planState.cx = p.x;
+    planState.cy = p.y;
+    planState.dragging = true;
+    planCanvas.setPointerCapture(ev.pointerId);
+    drawFloorPlan();
+  });
+  planCanvas.addEventListener('pointermove', ev => {
+    if(!planState.dragging || !planState.img) return;
+    ev.preventDefault();
+    const p = planCanvasPos(ev);
+    planState.cx = p.x;
+    planState.cy = p.y;
+    drawFloorPlan();
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(evt => {
+    planCanvas.addEventListener(evt, ev => {
+      planState.dragging = false;
+      try{ planCanvas.releasePointerCapture(ev.pointerId); }catch(e){}
+    });
+  });
+}
+
+document.getElementById('planUpload')?.addEventListener('change', ev => {
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      planState.img = img;
+      planState.imgName = file.name;
+      document.getElementById('planEmpty').style.display = 'none';
+      planState.imgRect = fitPlanImageRect();
+      resetPlanCircle();
+      drawFloorPlan();
+    };
+    img.src = String(reader.result || '');
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('planRadius')?.addEventListener('input', ev => {
+  planState.radius = Number(ev.target.value || 260);
+  drawFloorPlan();
+});
+document.getElementById('planRotation')?.addEventListener('input', ev => {
+  planState.rotation = normalizeDeg(ev.target.value || 0);
+  drawFloorPlan();
+});
+document.getElementById('planOpacity')?.addEventListener('input', ev => {
+  planState.opacity = Math.max(.1, Math.min(1, Number(ev.target.value || 88) / 100));
+  drawFloorPlan();
+});
+document.getElementById('btnPlanReset')?.addEventListener('click', ()=>{
+  if(!planState.img) return;
+  resetPlanCircle();
+  drawFloorPlan();
+});
+document.getElementById('btnPlanUseFacing')?.addEventListener('click', ()=>{
+  planState.rotation = normalizeDeg(document.getElementById('houseFacingDeg')?.value || 0);
+  const input = document.getElementById('planRotation');
+  if(input) input.value = String(Math.round(planState.rotation));
+  drawFloorPlan();
+});
+document.getElementById('btnPlanClear')?.addEventListener('click', ()=>{
+  planState.img = null;
+  planState.imgName = '';
+  document.getElementById('planUpload').value = '';
+  document.getElementById('planEmpty').style.display = '';
+  drawFloorPlan();
+});
+drawFloorPlan();
 
 function resizeMapAfterLayout(){
   if(!map || !window.google?.maps?.event) return;
