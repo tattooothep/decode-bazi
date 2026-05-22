@@ -694,6 +694,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           <button class="map-btn" id="btnGeolocate">📍 GPS</button>
           <button class="map-btn" id="btnMapZoomIn">＋ ซูม</button>
           <button class="map-btn" id="btnMapZoomOut">－ ย่อ</button>
+          <button class="map-btn" id="btnMapRoofZoom">🔍 หลังคา</button>
           <button class="map-btn" id="btnMapExpand">⛶ เต็มจอ</button>
           <button class="map-btn" id="btnLockHouseFromMap">鎖 ล็อกทิศบ้าน</button>
           <button  class="map-btn" id="btnClear" data-i18n="auto.f.017">↻ ล้าง</button>
@@ -2300,7 +2301,7 @@ window.initMap = function(){
   map = new google.maps.Map(document.getElementById('gmap'), {
     center: defaultCenter,
     zoom: 17,
-    maxZoom: 23,
+    maxZoom: 24,
     mapTypeId: 'hybrid',
     tilt: 0,
     draggableCursor: 'default',
@@ -2333,6 +2334,42 @@ window.initMap = function(){
   setupWallDragMode();
   updateMapCursor();
 };
+
+function getActiveMapFocusLatLng(){
+  if(wallB) return wallB.getPosition();
+  if(facingMarker) return facingMarker.getPosition();
+  if(standingMarker) return standingMarker.getPosition();
+  if(houseCenterMarker) return houseCenterMarker.getPosition();
+  if(housePoints.length >= 4) return houseCenterOverride || computeHouseCentroid(housePoints);
+  if(housePoints.length) return housePoints[housePoints.length - 1];
+  return map?.getCenter?.() || null;
+}
+
+function zoomToRoof(targetLatLng, pan=true){
+  if(!map || !window.google?.maps) return;
+  const target = targetLatLng || getActiveMapFocusLatLng();
+  if(!target) return;
+  if(pan) map.panTo(target);
+  map.setMapTypeId('hybrid');
+  map.setTilt(0);
+  const fallbackZoom = 22;
+  const btn = document.getElementById('btnMapRoofZoom');
+  if(btn) btn.textContent = 'กำลังซูม...';
+  const done = z => {
+    const safeZoom = Math.max(18, Math.min(Number(z) || fallbackZoom, 24));
+    map.setZoom(safeZoom);
+    if(btn) btn.textContent = `🔍 หลังคา ${safeZoom}`;
+  };
+  if(google.maps.MaxZoomService){
+    const svc = new google.maps.MaxZoomService();
+    svc.getMaxZoomAtLatLng(target, res => {
+      if(res && res.status === 'OK' && Number.isFinite(res.zoom)) done(res.zoom);
+      else done(fallbackZoom);
+    });
+  } else {
+    done(fallbackZoom);
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════
 //  WALL MODE — drag from A to B (like setcompass.com)
@@ -3603,13 +3640,17 @@ document.getElementById('btnMapExpand').addEventListener('click', ()=>{
 document.getElementById('btnMapZoomIn').addEventListener('click', ()=>{
   if(!map) return;
   const z = map.getZoom() || 17;
-  map.setZoom(Math.min(z + 1, 23));
+  map.setZoom(Math.min(z + 1, 24));
 });
 
 document.getElementById('btnMapZoomOut').addEventListener('click', ()=>{
   if(!map) return;
   const z = map.getZoom() || 17;
   map.setZoom(Math.max(z - 1, 3));
+});
+
+document.getElementById('btnMapRoofZoom').addEventListener('click', ()=>{
+  zoomToRoof();
 });
 
 document.addEventListener('keydown', e => {
@@ -3645,8 +3686,8 @@ document.getElementById('btnGeolocate').addEventListener('click', ()=>{
     const ll = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     if(map){
       map.setCenter(ll);
-      map.setZoom(19);
       placeStanding(new google.maps.LatLng(ll.lat, ll.lng));
+      zoomToRoof(new google.maps.LatLng(ll.lat, ll.lng), false);
     }
   }, err=>{
     alert('ขอ GPS ไม่สำเร็จ: ' + err.message);
