@@ -160,6 +160,43 @@ async function runClaudeCli(prompt: string): Promise<string> {
   });
 }
 
+function spawnClaudeStreaming(prompt: string) {
+  const claudeArgs = [
+    "-p",
+    "--output-format", "stream-json",
+    "--include-partial-messages",
+    "--verbose",
+    "--dangerously-skip-permissions",
+    "--setting-sources", "project",
+  ];
+  const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
+  const c = spawn("sudo", spawnArgs, { cwd: "/var/www/checklist-app", env: process.env });
+  c.stdin.write(prompt);
+  c.stdin.end();
+  return c;
+}
+
+function makeJsonlParser(onText: (text: string) => void) {
+  let buf = "";
+  return (chunk: Buffer) => {
+    buf += chunk.toString();
+    let nl;
+    while ((nl = buf.indexOf("\n")) !== -1) {
+      const line = buf.slice(0, nl).trim();
+      buf = buf.slice(nl + 1);
+      if (!line) continue;
+      try {
+        const obj = JSON.parse(line);
+        if (obj.type === "stream_event" && obj.event?.type === "content_block_delta" && obj.event.delta?.type === "text_delta") {
+          onText(obj.event.delta.text);
+        }
+      } catch {
+        /* Claude stream-json may include non-json diagnostics; ignore. */
+      }
+    }
+  };
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -181,6 +218,77 @@ export async function POST(req: Request) {
     const prompt = mode === "team"
       ? buildTeamPrompt({ message, history, lang, payload })
       : buildPairPrompt({ message, history, lang, topic, payload });
+
+    const wantsStream = (req.headers.get("accept") || "").includes("text/event-stream") || body.stream === true;
+    if (wantsStream) {
+      const encoder = new TextEncoder();
+      let activeChild: ReturnType<typeof spawnClaudeStreaming> | null = null;
+      const stream = new ReadableStream({
+        start(controller) {
+          let closed = false;
+          let full = "";
+          let firstChunkSent = false;
+          const t0 = Date.now();
+          const safeClose = () => {
+            if (closed) return;
+            closed = true;
+            try { controller.close(); } catch {}
+          };
+          const send = (event: string, data: unknown) => {
+            if (closed) return;
+            try {
+              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+            } catch {
+              closed = true;
+            }
+          };
+
+          send("meta", { mode, lang, startedAt: t0, spent: spend.spent, balance_after: spend.balance_after });
+          const child = spawnClaudeStreaming(prompt);
+          activeChild = child;
+          const timer = setTimeout(() => {
+            try { child.kill("SIGKILL"); } catch {}
+            send("error", { error: "timeout" });
+            safeClose();
+          }, TIMEOUT_MS);
+
+          const parser = makeJsonlParser((text) => {
+            full += text;
+            if (!firstChunkSent) {
+              firstChunkSent = true;
+              send("first", { ms: Date.now() - t0, model: "claude-max-cli" });
+            }
+            send("chunk", { text });
+          });
+          child.stdout.on("data", parser);
+          child.stderr.on("data", (chunk: Buffer) => {
+            console.warn("[network/sifu stream stderr]", chunk.toString().slice(0, 200));
+          });
+          child.on("close", (code) => {
+            activeChild = null;
+            clearTimeout(timer);
+            const ms = Date.now() - t0;
+            if (code === 0 && full.trim()) {
+              send("done", { ms, mode, model: "claude-max-cli", chars: full.length, cached: false });
+            } else {
+              send("error", { error: `claude exit ${code}`, ms });
+            }
+            safeClose();
+          });
+        },
+        cancel() {
+          try { activeChild?.kill("SIGKILL"); } catch {}
+          activeChild = null;
+        },
+      });
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          "X-Accel-Buffering": "no",
+        },
+      });
+    }
 
     const reply = await runClaudeCli(prompt);
     return NextResponse.json({ reply, mode, model: "claude-max-cli", balance_after: spend.balance_after, spent: spend.spent });

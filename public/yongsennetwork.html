@@ -3910,6 +3910,45 @@ window.applyI18N = applyI18N;
     log.scrollTop = log.scrollHeight;
     return d;
   }
+  function renderTeamMsgBody(node, text){
+    const body = node && node.querySelector ? node.querySelector('.body') : null;
+    if (!body) return;
+    body.innerHTML = String(text||'')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+    const log = document.getElementById('team-sifu-log');
+    if (log) log.scrollTop = log.scrollHeight;
+  }
+  async function readTeamSifuStream(response, handlers){
+    const reader = response.body && response.body.getReader ? response.body.getReader() : null;
+    if (!reader) throw new Error('stream unavailable');
+    const decoder = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream:true });
+      let sep;
+      while ((sep = buf.indexOf('\n\n')) !== -1) {
+        const raw = buf.slice(0, sep);
+        buf = buf.slice(sep + 2);
+        let event = 'message';
+        let data = '';
+        raw.split('\n').forEach(line => {
+          if (line.startsWith('event:')) event = line.slice(6).trim();
+          else if (line.startsWith('data:')) data += line.slice(5).trim();
+        });
+        if (!data) continue;
+        let payload = {};
+        try { payload = JSON.parse(data); } catch(_){}
+        if (event === 'chunk' && payload.text) handlers.onChunk(payload.text);
+        else if (event === 'error') throw new Error(payload.error || 'stream error');
+        else if (event === 'done') { if (handlers.onDone) handlers.onDone(payload); }
+      }
+    }
+  }
   function getTeamMembers(){
     const grp = window._teamGroup || 'all';
     const all = window.PEOPLE || [];
@@ -3959,9 +3998,10 @@ window.applyI18N = applyI18N;
     try {
       const lang = document.documentElement.getAttribute('data-lang')||'th';
       const r = await fetch('/api/network/sifu', {
-        method:'POST', headers:{'Content-Type':'application/json'},
+        method:'POST', headers:{'Content-Type':'application/json', 'Accept':'text/event-stream'},
         body: JSON.stringify({
           mode: 'team',
+          stream: true,
           message,
           history: window._teamSifuHistory.slice(-6),
           lang,
@@ -3976,14 +4016,35 @@ window.applyI18N = applyI18N;
           }
         })
       });
-      const data = await r.json().catch(()=>({}));
-      if (loadingNode && loadingNode.parentNode) loadingNode.parentNode.removeChild(loadingNode);
-      if (data.reply){
-        appendTeamMsg('sifu', data.reply);
-        window._teamSifuHistory.push({role:'user', content:message});
-        window._teamSifuHistory.push({role:'assistant', content:data.reply});
+      if ((r.headers.get('content-type')||'').includes('text/event-stream')) {
+        let reply = '';
+        let sifuNode = null;
+        await readTeamSifuStream(r, {
+          onChunk(text){
+            if (loadingNode && loadingNode.parentNode) loadingNode.parentNode.removeChild(loadingNode);
+            if (!sifuNode) sifuNode = appendTeamMsg('sifu', '');
+            reply += text;
+            renderTeamMsgBody(sifuNode, reply);
+          }
+        });
+        if (loadingNode && loadingNode.parentNode) loadingNode.parentNode.removeChild(loadingNode);
+        if (!reply.trim()) appendTeamMsg('sifu', tx('n.sifu.err')||'ขัดข้อง · ไม่มีข้อความตอบกลับ');
+        else {
+          window._teamSifuHistory.push({role:'user', content:message});
+          window._teamSifuHistory.push({role:'assistant', content:reply.trim()});
+        }
       } else {
-        appendTeamMsg('sifu', tx('n.sifu.err')||'ขัดข้อง · '+(data.error||''));
+        const data = await r.json().catch(()=>({}));
+        if (loadingNode && loadingNode.parentNode) loadingNode.parentNode.removeChild(loadingNode);
+        if (!r.ok) {
+          appendTeamMsg('sifu', tx('n.sifu.err')||'ขัดข้อง · '+(data.error||r.status));
+        } else if (data.reply){
+          appendTeamMsg('sifu', data.reply);
+          window._teamSifuHistory.push({role:'user', content:message});
+          window._teamSifuHistory.push({role:'assistant', content:data.reply});
+        } else {
+          appendTeamMsg('sifu', tx('n.sifu.err')||'ขัดข้อง · '+(data.error||''));
+        }
       }
     } catch(e){
       if (loadingNode && loadingNode.parentNode) loadingNode.parentNode.removeChild(loadingNode);
@@ -5060,7 +5121,11 @@ window.applyI18N = applyI18N;
       window._teamTopic = 'activity';
       document.querySelectorAll('#team-topics .sifu-quick').forEach(b => b.classList.toggle('active', b.dataset.topic === 'activity'));
       const msg = `ช่วยจัดทีมสำหรับ "${tpl.label}" เป้าหมาย ${priorityLabel} จากทีมที่เลือกตอนนี้ · บอกบทบาทของแต่ละคน ใครควรเป็นคนตัดสินใจ ใครควรเป็น challenger และถ้าขาดธาตุ/บทบาทให้แนะนำว่าควรเติมคนแบบไหน`;
-      if (typeof window.askTeamSifu === 'function') window.askTeamSifu(msg, 'activity');
+      const inp = document.getElementById('team-sifu-input');
+      if (inp) {
+        inp.value = msg;
+        inp.focus();
+      }
       return;
     }
     /* confirm modal buttons */
