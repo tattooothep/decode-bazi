@@ -409,8 +409,12 @@ export async function POST(req: Request) {
   const dayBranchEl = BR_EL[transit.day.branch];
   const god = tenGod(dmEl, dayStemEl);
   const activity = activityFor(god);
-  const yongHit = yongshenPrimary.find(e => e === dayStemEl || e === dayBranchEl);
-  const xishenHit = xishen.find(e => e === dayStemEl || e === dayBranchEl);
+  const transitElementHit = (elements: string[]) =>
+    elements.includes(dayStemEl) ? dayStemEl
+      : elements.includes(dayBranchEl) ? dayBranchEl
+      : undefined;
+  const yongHit = transitElementHit(yongshenPrimary);
+  const xishenHit = transitElementHit(xishen);
   const dryHeat = diseases.includes("dry_resource_burned") || diseases.includes("hot_drought_no_water");
   const element = yongHit
     ? `ได้${EL_TH[yongHit] || yongHit}ช่วยจริง`
