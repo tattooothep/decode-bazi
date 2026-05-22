@@ -354,8 +354,13 @@ body.fs-map-expanded .map-card.map-expanded .map-instr{max-height:96px;overflow:
 #gmap{flex:1;width:100%;min-height:380px;background:#1a1a1a;}
 #gmap,#gmap *{cursor:default!important;}
 body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important;}
-.house-mtn-label{font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:.02em;color:#fff;background:rgba(13,15,18,.72);border:1px solid rgba(200,164,77,.75);border-radius:999px;padding:2px 5px;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.32);}
-.house-mtn-label.major{font-size:12px;color:var(--gold-bright);border-color:var(--gold);}
+.house-mtn-label{font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:.02em;color:#fff;background:rgba(13,15,18,.76);border:1px solid rgba(200,164,77,.75);border-radius:999px;padding:2px 5px;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.32);}
+.house-mtn-label.major{font-size:12px;border-width:1.5px;}
+.house-mtn-label.el-water{color:#cfd9ff;border-color:#7a85dd;background:rgba(38,49,112,.78);}
+.house-mtn-label.el-wood{color:#d7f5d8;border-color:#78b980;background:rgba(39,85,45,.76);}
+.house-mtn-label.el-fire{color:#ffe0d8;border-color:#e06c6c;background:rgba(104,39,32,.78);}
+.house-mtn-label.el-earth{color:#ffe7aa;border-color:#d4ab45;background:rgba(92,68,24,.78);}
+.house-mtn-label.el-metal{color:#f0f0f5;border-color:#b8b8c2;background:rgba(72,72,82,.78);}
 .house-star-stack{display:flex;flex-direction:column;gap:2px;align-items:center;pointer-events:none;}
 .house-star-tag{font-family:var(--mono);font-size:9px;font-weight:800;line-height:1;padding:3px 5px;border-radius:999px;color:#fff;background:rgba(13,15,18,.78);border:1px solid rgba(255,255,255,.18);white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.32);}
 .house-star-tag.good{border-color:#5fa86b;background:rgba(38,82,48,.86);}
@@ -816,6 +821,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="plan-star-key"><i style="background:#8f7650"></i>ภู = ดาวภูเขา / คน / สุขภาพ</div>
       <div class="plan-star-key"><i style="background:#3f78b8"></i>น้ำ = ดาวแม่น้ำ / ประตู / เงิน</div>
       <div class="plan-star-key"><i style="background:#c8a44d"></i>ฐาน = ดาวฐาน / พื้นพลัง</div>
+      <div class="plan-star-key"><i style="background:#7a85dd"></i>สี 24山 = ธาตุของขุนเขา ไม่ใช่ความมงคล</div>
     </div>
     <div class="plan-tune">
       <div class="plan-field">
@@ -1102,6 +1108,19 @@ const M24_RING = [
   {h:'庚',pinyin:'Gēng',code:'W1',start:247.5},{h:'酉',pinyin:'Yǒu',code:'W2',start:262.5},{h:'辛',pinyin:'Xīn',code:'W3',start:277.5},
   {h:'戌',pinyin:'Xū',code:'NW1',start:292.5},{h:'乾',pinyin:'Qián',code:'NW2',start:307.5},{h:'亥',pinyin:'Hài',code:'NW3',start:322.5}
 ];
+const M24_ELEMENT_BY_HAN = {
+  壬:'water', 子:'water', 癸:'water', 亥:'water',
+  甲:'wood', 卯:'wood', 乙:'wood', 寅:'wood', 巽:'wood',
+  丙:'fire', 午:'fire', 丁:'fire', 巳:'fire',
+  丑:'earth', 艮:'earth', 辰:'earth', 未:'earth', 坤:'earth', 戌:'earth',
+  庚:'metal', 酉:'metal', 辛:'metal', 申:'metal', 乾:'metal'
+};
+function m24Element(mountain){
+  return M24_ELEMENT_BY_HAN[mountain?.h] || 'earth';
+}
+function elementThai(el){
+  return { water:'น้ำ', wood:'ไม้', fire:'ไฟ', earth:'ดิน', metal:'ทอง' }[el] || 'ดิน';
+}
 function normalizeDeg(deg){
   const n = Number(deg);
   if(!Number.isFinite(n)) return 0;
@@ -1113,11 +1132,23 @@ function normalizeSignedDeg(deg){
 }
 function mountainRangeLabel(i){
   const m = M24_RING[i];
-  const next = M24_RING[(i + 1) % M24_RING.length];
-  const start = m.start;
-  const end = next.start <= start ? next.start + 360 : next.start;
   const fmt = v => String(Math.round((v % 360) * 10) / 10).replace(/\.0$/,'');
-  return `${fmt(start)} - ${fmt(end)}`;
+  return `${fmt(m.start)} - ${fmt(get24MountainEndDeg(i))}`;
+}
+function get24MountainEndDeg(i){
+  const m = M24_RING[i];
+  const next = M24_RING[(i + 1) % M24_RING.length];
+  return normalizeDeg(next.start <= m.start ? next.start + 360 : next.start);
+}
+function get24MountainCenterDeg(i){
+  const m = M24_RING[i];
+  const endAbs = M24_RING[(i + 1) % M24_RING.length].start <= m.start
+    ? M24_RING[(i + 1) % M24_RING.length].start + 360
+    : M24_RING[(i + 1) % M24_RING.length].start;
+  return normalizeDeg((m.start + endAbs) / 2);
+}
+function is24MajorBoundary(i){
+  return i % 3 === 0;
 }
 function get24MountainIndex(deg){
   const n = normalizeDeg(deg);
@@ -1151,12 +1182,7 @@ function dirThaiShort(dir){
     S:'ใต้', SW:'หรดี', W:'ตะวันตก', NW:'พายัพ', C:'กลาง'
   }[dir] || dir;
 }
-function getMountainCenterDeg(idx){
-  const start = M24_RING[idx].start;
-  const next = M24_RING[(idx + 1) % M24_RING.length].start;
-  const end = next <= start ? next + 360 : next;
-  return normalizeDeg((start + end) / 2);
-}
+function getMountainCenterDeg(idx){ return get24MountainCenterDeg(idx); }
 const M24_DIR_START = { N:0, NE:3, E:6, SE:9, S:12, SW:15, W:18, NW:21 };
 const M24_YANG = new Set(['甲','庚','壬','丙','乾','坤','艮','巽','寅','申','巳','亥']);
 function mountainYuanIndex(mountain){
@@ -1808,7 +1834,7 @@ function initHouseInputs(){
   const periodSel = document.getElementById('housePeriod');
   if(mountainSel && !mountainSel.options.length){
     mountainSel.innerHTML = M24_RING.map((m, i) =>
-      `<option value="${i}">${m.code} · ${m.h} ${m.pinyin} · ${mountainRangeLabel(i)}</option>`
+      `<option value="${i}">${m.code} · ${m.h} ${m.pinyin} · ${elementThai(m24Element(m))} · ${mountainRangeLabel(i)}</option>`
     ).join('');
   }
   if(periodSel && !periodSel.options.length){
@@ -2609,20 +2635,7 @@ function updateDirectionBreakdown(dir8, deg){
   `;
 }
 
-const M24 = M24_RING;
-function get24Mountain(deg){
-  let n = ((deg % 360) + 360) % 360;
-  for(let i = 0; i < 24; i++){
-    const m = M24[i];
-    const next = M24[(i+1) % 24];
-    let s = m.start, e = next.start;
-    if(e <= s) e += 360;
-    let test = n;
-    if(test < s - 180) test += 360;
-    if(test >= s && test < e) return m;
-  }
-  return M24[0];
-}
+function get24Mountain(deg){ return get24MountainByDeg(deg); }
 
 function applyFacing(deg){
   currentBearing = ((deg % 360) + 360) % 360;
@@ -3326,7 +3339,7 @@ function drawHouseCompass(center){
   });
   M24_RING.forEach((m, i)=>{
     const boundary = google.maps.geometry.spherical.computeOffset(center, radius, m.start);
-    const major = i % 3 === 1;
+    const major = is24MajorBoundary(i);
     houseCompassLines.push(new google.maps.Polyline({
       path: [center, boundary],
       geodesic: true,
@@ -3337,11 +3350,11 @@ function drawHouseCompass(center){
       map
     }));
     if(mapLayers.has('m24')){
-      const labelPos = google.maps.geometry.spherical.computeOffset(center, radius * 1.08, getMountainCenterDeg(i));
+      const labelPos = google.maps.geometry.spherical.computeOffset(center, radius * 1.08, get24MountainCenterDeg(i));
       const label = new Label(
         labelPos,
         `${fsEsc(m.h)}<span style="font-size:9px;margin-left:2px">${fsEsc(m.code)}</span>`,
-        `house-mtn-label${major ? ' major' : ''}`
+        `house-mtn-label el-${m24Element(m)}${major ? ' major' : ''}`
       );
       label.setMap(map);
       houseCompassLabels.push(label);
@@ -3690,6 +3703,11 @@ function canvasTagColors(kind){
   if(kind === 'warn') return {bg:'rgba(111,66,24,.9)', bd:'#c8843f', fg:'#fff'};
   if(kind === 'good') return {bg:'rgba(38,82,48,.88)', bd:'#5fa86b', fg:'#fff'};
   if(kind === 'aff') return {bg:'rgba(63,38,82,.9)', bd:'#9b6cc9', fg:'#fff'};
+  if(kind === 'm24-water') return {bg:'rgba(38,49,112,.88)', bd:'#7a85dd', fg:'#dfe6ff'};
+  if(kind === 'm24-wood') return {bg:'rgba(39,85,45,.86)', bd:'#78b980', fg:'#def8df'};
+  if(kind === 'm24-fire') return {bg:'rgba(104,39,32,.88)', bd:'#e06c6c', fg:'#ffe2db'};
+  if(kind === 'm24-earth') return {bg:'rgba(92,68,24,.88)', bd:'#d4ab45', fg:'#ffe7aa'};
+  if(kind === 'm24-metal') return {bg:'rgba(72,72,82,.88)', bd:'#b8b8c2', fg:'#f2f2f6'};
   return {bg:'rgba(92,72,24,.88)', bd:'#c8a44d', fg:'#fff'};
 }
 
@@ -3984,7 +4002,7 @@ function drawFloorPlan(){
 
   M24_RING.forEach((m, i) => {
     /* major = ขอบ 45° จริง: N1/NE1/E1... ไม่ใช่กลางกลุ่ม */
-    const major = i % 3 === 0;
+    const major = is24MajorBoundary(i);
     const p = planPoint(planState.radius, m.start);
     ctx.beginPath();
     ctx.moveTo(planState.cx, planState.cy);
@@ -3994,8 +4012,8 @@ function drawFloorPlan(){
     ctx.lineWidth = major ? 3 : 1;
     ctx.stroke();
     if(mapLayers.has('m24')){
-      const lp = planPoint(planState.radius * 1.09, getMountainCenterDeg(i));
-      drawCanvasPill(ctx, `${m.h}${m.code}`, lp.x, lp.y, 'mid');
+      const lp = planPoint(planState.radius * 1.09, get24MountainCenterDeg(i));
+      drawCanvasPill(ctx, `${m.h}${m.code}`, lp.x, lp.y, `m24-${m24Element(m)}`);
     }
   });
 
