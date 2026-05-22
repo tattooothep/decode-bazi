@@ -302,11 +302,21 @@ body.fs-map-expanded .map-card.map-expanded .map-instr{max-height:96px;overflow:
 .map-btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
 .map-btn:disabled{opacity:.35;cursor:not-allowed;border-color:var(--line);color:var(--fg-faint);}
 .map-btn.house-action{border-color:rgba(127,168,105,.45);}
+.map-layer-controls{display:flex;gap:6px;flex-wrap:wrap;padding:9px 18px;border-bottom:1px solid var(--line);background:rgba(13,15,18,.24);}
+.map-layer-btn{background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--fg-faint);font-family:var(--mono);font-size:9px;letter-spacing:.12em;padding:5px 9px;border-radius:999px;cursor:pointer;text-transform:uppercase;}
+.map-layer-btn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold-bright);}
 #gmap{flex:1;width:100%;min-height:380px;background:#1a1a1a;}
 #gmap,#gmap *{cursor:default!important;}
 body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important;}
 .house-mtn-label{font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:.02em;color:#fff;background:rgba(13,15,18,.72);border:1px solid rgba(200,164,77,.75);border-radius:999px;padding:2px 5px;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.32);}
 .house-mtn-label.major{font-size:12px;color:var(--gold-bright);border-color:var(--gold);}
+.house-star-stack{display:flex;flex-direction:column;gap:2px;align-items:center;pointer-events:none;}
+.house-star-tag{font-family:var(--mono);font-size:9px;font-weight:800;line-height:1;padding:3px 5px;border-radius:999px;color:#fff;background:rgba(13,15,18,.78);border:1px solid rgba(255,255,255,.18);white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.32);}
+.house-star-tag.good{border-color:#5fa86b;background:rgba(38,82,48,.86);}
+.house-star-tag.mid{border-color:#c8a44d;background:rgba(92,72,24,.86);}
+.house-star-tag.warn{border-color:#c8843f;background:rgba(111,66,24,.88);}
+.house-star-tag.danger{border-color:#c95c4a;background:rgba(101,31,25,.9);}
+.house-star-tag.aff{border-color:#9b6cc9;background:rgba(63,38,82,.9);}
 
 .map-result-bar{padding:14px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:14px;font-family:var(--mono);font-size:11px;}
 @media(max-width:680px){.map-result-bar{grid-template-columns:1fr 1fr;}}
@@ -315,6 +325,8 @@ body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important
   .map-card.map-expanded .map-head{padding:10px 12px;}
   .map-card.map-expanded .map-controls{gap:5px;}
   .map-card.map-expanded .map-btn{font-size:9px;padding:6px 8px;}
+  .map-card.map-expanded .map-layer-controls{padding:7px 12px;gap:5px;}
+  .map-card.map-expanded .map-layer-btn{font-size:8px;padding:5px 7px;}
   .map-card.map-expanded .map-result-bar{padding:9px 12px;gap:8px;}
   .map-card.map-expanded .map-instr{padding:9px 12px;font-size:11px;max-height:84px;}
 }
@@ -626,6 +638,14 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           <button  class="map-btn" id="btnClear" data-i18n="auto.f.017">↻ ล้าง</button>
         </div>
       </div>
+      <div class="map-layer-controls" id="mapLayerControls" aria-label="เลือกชั้นข้อมูลฮวงจุ้ยบนแผนที่">
+        <button class="map-layer-btn active" data-map-layer="m24">24山</button>
+        <button class="map-layer-btn active" data-map-layer="year">ดาวปี</button>
+        <button class="map-layer-btn" data-map-layer="month">ดาวเดือน</button>
+        <button class="map-layer-btn" data-map-layer="day">ดาววัน</button>
+        <button class="map-layer-btn active" data-map-layer="hour">ดาวยาม</button>
+        <button class="map-layer-btn active" data-map-layer="affliction">5/2/太歲</button>
+      </div>
       <div id="gmap"></div>
       <div class="map-result-bar">
         <div class="mrb-cell"><b>Heading</b><span id="mrHeading">— °</span></div>
@@ -721,6 +741,17 @@ function getDayStar(date){
   if(s <= 0) s += 9;
   return s;
 }
+function getShichenIndex(hour){
+  if(hour === 23 || hour === 0) return 0;
+  return Math.floor((hour + 1) / 2);
+}
+function getHourStar(date, hour){
+  /* v1: hourly flying-star center derived from day star, moving every 2-hour 時辰. */
+  let s = getDayStar(date) - getShichenIndex(hour);
+  while(s <= 0) s += 9;
+  while(s > 9) s -= 9;
+  return s;
+}
 const SHICHEN_LIST = [
   {han:'子',pinyin:'Zǐ',  start:23, range:'23–01'},
   {han:'丑',pinyin:'Chǒu',start:1,  range:'01–03'},
@@ -736,8 +767,7 @@ const SHICHEN_LIST = [
   {han:'亥',pinyin:'Hài', start:21, range:'21–23'}
 ];
 function getShichen(hour){
-  if(hour===23 || hour===0) return SHICHEN_LIST[0];
-  return SHICHEN_LIST[Math.floor((hour+1)/2)];
+  return SHICHEN_LIST[getShichenIndex(hour)];
 }
 function rotateGrid(centerStar){
   const shift = centerStar - 5;
@@ -925,6 +955,7 @@ function renderGrid(){
   const yearCenter = getYearStar(tf.year);
   const monthCenter = getMonthStar(tf.year, tf.month);
   const dayCenter = getDayStar(tf.date);
+  const hourCenter = getHourStar(tf.date, tf.hour);
   const shichen = getShichen(tf.hour);
   const houseGrids = buildHouseNatalGrids(house);
   const gridPeriod = houseGrids.baseGrid;
@@ -933,6 +964,7 @@ function renderGrid(){
   const gridYear = rotateGrid(yearCenter);
   const gridMonth = rotateGrid(monthCenter);
   const gridDay = rotateGrid(dayCenter);
+  const gridHour = rotateGrid(hourCenter);
   const taiSuiDir = getTaiSui(tf.year);
   const threeKillDir = getThreeKillings(tf.year);
   const fiveYellowDir = findStarPosition(gridYear, 5);
@@ -1067,8 +1099,11 @@ function renderGrid(){
   window._currentYearGrid = gridYear;
   window._currentMonthGrid = gridMonth;
   window._currentDayGrid = gridDay;
+  window._currentHourGrid = gridHour;
+  window._currentHourCenter = hourCenter;
   window._currentTaiSui = taiSuiDir;
   window._currentThreeKill = threeKillDir;
+  if(typeof window.refreshHouseOverlayFromGrid === 'function') window.refreshHouseOverlayFromGrid();
 }
 
 function renderWarnings(taiSui, threeKill, fiveYellow){
@@ -2018,6 +2053,8 @@ let houseClosed = false;
 let houseCompassLines = [];
 let houseCompassLabels = [];
 let houseCompassCircle = null;
+let houseStarOverlays = [];
+const mapLayers = new Set(['m24','year','hour','affliction']);
 
 window.initMap = function(){
   // Default center: Bangkok
@@ -2542,6 +2579,8 @@ function clearHouseCompass(){
   houseCompassLines = [];
   houseCompassLabels.forEach(x => x.setMap(null));
   houseCompassLabels = [];
+  houseStarOverlays.forEach(x => x.setMap(null));
+  houseStarOverlays = [];
   if(houseCompassCircle){ houseCompassCircle.setMap(null); houseCompassCircle = null; }
 }
 
@@ -2576,15 +2615,18 @@ function drawHouseCompass(center){
       strokeWeight: major ? 2 : 1,
       map
     }));
-    const labelPos = google.maps.geometry.spherical.computeOffset(center, radius * 1.08, getMountainCenterDeg(i));
-    const label = new Label(
-      labelPos,
-      `${fsEsc(m.h)}<span style="font-size:9px;margin-left:2px">${fsEsc(m.code)}</span>`,
-      `house-mtn-label${major ? ' major' : ''}`
-    );
-    label.setMap(map);
-    houseCompassLabels.push(label);
+    if(mapLayers.has('m24')){
+      const labelPos = google.maps.geometry.spherical.computeOffset(center, radius * 1.08, getMountainCenterDeg(i));
+      const label = new Label(
+        labelPos,
+        `${fsEsc(m.h)}<span style="font-size:9px;margin-left:2px">${fsEsc(m.code)}</span>`,
+        `house-mtn-label${major ? ' major' : ''}`
+      );
+      label.setMap(map);
+      houseCompassLabels.push(label);
+    }
   });
+  drawHouseStarLayers(center, radius);
 }
 
 function getHouseCompassRadius(center){
@@ -2595,6 +2637,54 @@ function getHouseCompassRadius(center){
     if(d > maxDist) maxDist = d;
   });
   return Math.max(maxDist * 1.35, 18);
+}
+
+function starLevel(star){
+  if(star === 5) return 'danger';
+  if([2,3,7].includes(star)) return 'warn';
+  if([1,6,8,9].includes(star)) return 'good';
+  return 'mid';
+}
+
+function starLayerTag(label, star){
+  const info = STAR_INFO[star] || {};
+  return `<span class="house-star-tag ${starLevel(star)}" title="${fsEsc(label)} · ${star}${fsEsc(info.color || '')} · ${fsEsc(info.meaning || '')}">${fsEsc(label)}${star}${fsEsc(info.color || '')}</span>`;
+}
+
+function afflictionTags(dir, yearStar){
+  const out = [];
+  if(mapLayers.has('affliction')){
+    if(dir === window._currentTaiSui) out.push('<span class="house-star-tag aff">太歲</span>');
+    if(dir === window._currentThreeKill) out.push('<span class="house-star-tag aff">三煞</span>');
+    if(yearStar === 5) out.push('<span class="house-star-tag danger">年5黃</span>');
+    if(yearStar === 2) out.push('<span class="house-star-tag warn">年2黑</span>');
+  }
+  return out;
+}
+
+function drawHouseStarLayers(center, radius){
+  const Label = ensureMapHtmlLabel();
+  const grids = {
+    year: window._currentYearGrid || {},
+    month: window._currentMonthGrid || {},
+    day: window._currentDayGrid || {},
+    hour: window._currentHourGrid || {}
+  };
+  const layerLabel = { year:'年', month:'月', day:'日', hour:'時' };
+  COMPASS_DIRS.forEach(item => {
+    const tags = [];
+    ['year','month','day','hour'].forEach(layer => {
+      if(!mapLayers.has(layer)) return;
+      const star = grids[layer]?.[item.dir];
+      if(star) tags.push(starLayerTag(layerLabel[layer], star));
+    });
+    tags.push(...afflictionTags(item.dir, grids.year?.[item.dir]));
+    if(!tags.length) return;
+    const pos = google.maps.geometry.spherical.computeOffset(center, radius * 0.66, item.deg);
+    const label = new Label(pos, `<div class="house-star-stack">${tags.join('')}</div>`, 'house-star-anchor');
+    label.setMap(map);
+    houseStarOverlays.push(label);
+  });
 }
 
 function updateHouseMapStatus(center){
@@ -2641,6 +2731,10 @@ function clearHouseMode(){
   clearHouseCenterAndCompass();
   updateHouseActions();
 }
+
+window.refreshHouseOverlayFromGrid = function(){
+  if(housePoints.length >= 3) updateHouseOverlay();
+};
 
 // Set cursor based on mode
 function updateMapCursor(){
@@ -2764,6 +2858,21 @@ document.getElementById('modeStanding').addEventListener('click', ()=>{
   clearWallMode();
 });
 document.getElementById('modeFacing').addEventListener('click', ()=>setMode('facing'));
+
+document.querySelectorAll('#mapLayerControls .map-layer-btn').forEach(btn => {
+  const layer = btn.dataset.mapLayer;
+  btn.classList.toggle('active', mapLayers.has(layer));
+  btn.addEventListener('click', ()=>{
+    if(mapLayers.has(layer)){
+      if(layer === 'm24' && mapLayers.size === 1) return;
+      mapLayers.delete(layer);
+    } else {
+      mapLayers.add(layer);
+    }
+    btn.classList.toggle('active', mapLayers.has(layer));
+    if(housePoints.length >= 3) updateHouseOverlay();
+  });
+});
 
 function resizeMapAfterLayout(){
   if(!map || !window.google?.maps?.event) return;
