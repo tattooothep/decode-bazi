@@ -235,6 +235,10 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .compass-svg{width:100%;height:auto;display:block;}
 .compass-luck-seg{stroke:rgba(13,15,18,.65);stroke-width:1.2;cursor:help;transition:opacity .2s,filter .2s;}
 .compass-luck-seg:hover{opacity:1!important;filter:brightness(1.22);}
+.qimen-door-mark{cursor:help;transition:filter .2s,opacity .2s;}
+.qimen-door-mark:hover{filter:brightness(1.25);}
+.qimen-door-mark circle{stroke:rgba(13,15,18,.72);stroke-width:1.5;}
+.qimen-door-mark text{font-family:var(--tc);font-size:12px;font-weight:700;text-anchor:middle;dominant-baseline:middle;fill:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7);}
 .compass-needle{transform-origin:200px 200px;transition:transform .25s cubic-bezier(.4,0,.2,1);}
 .facing-arrow{transform-origin:200px 200px;transition:transform .35s ease;}
 .compass-deg{font-family:var(--mono);font-size:42px;font-weight:700;color:var(--gold);letter-spacing:-.02em;line-height:1;}
@@ -252,6 +256,13 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .compass-luck-legend{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--fg-faint);text-transform:uppercase;}
 .compass-luck-legend span{display:flex;align-items:center;gap:6px;min-width:0;}
 .compass-luck-legend i{display:inline-block;width:18px;height:8px;border-radius:99px;border:1px solid rgba(243,235,217,.15);}
+.direction-breakdown{width:100%;padding:12px;background:linear-gradient(135deg,var(--gold-soft),rgba(127,168,105,.04));border:1px solid var(--gold-line);border-radius:10px;font-size:12px;line-height:1.55;color:var(--fg-soft);}
+.direction-breakdown h5{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:0 0 8px;}
+.direction-breakdown .db-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px dashed var(--line);}
+.direction-breakdown .db-row:first-of-type{border-top:0;}
+.direction-breakdown .db-k{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--fg-faint);text-transform:uppercase;white-space:nowrap;}
+.direction-breakdown .db-v{color:var(--fg);text-align:right;}
+.direction-breakdown .db-v b{color:var(--gold-bright);font-family:var(--tc);}
 
 .map-card{background:var(--bg-3);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:520px;}
 .map-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
@@ -487,6 +498,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           <circle cx="200" cy="200" r="60"  fill="none" stroke="var(--gold-line)" stroke-width="1"/>
           <g id="dirRing"></g>
           <g id="mountainRing"></g>
+          <g id="qimenDoorRing"></g>
           <circle cx="200" cy="200" r="22" fill="var(--bg-2)" stroke="var(--gold)" stroke-width="1.5"/>
           <text x="200" y="207" text-anchor="middle" font-family="var(--tc)" font-size="22" font-weight="700" fill="var(--gold)">時</text>
           <g class="facing-arrow" id="facingArrow" style="display:none">
@@ -505,6 +517,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <span><i style="background:#c8a44d"></i>กลางดี</span>
         <span><i style="background:#c8843f"></i>ต้องคุม</span>
         <span><i style="background:#c95c4a"></i>เลี่ยง</span>
+        <span style="grid-column:1/-1;color:var(--fg-faint)">วงนอก = ดาวปี/ไท่ซุ่ย · จุดจีนด้านใน = ประตูฉีเหมินของเวลานั้น</span>
       </div>
       <div style="text-align:center;">
         <span class="compass-deg" id="compassDeg">—</span><span class="compass-deg-unit">°</span>
@@ -513,6 +526,11 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="compass-actions">
         <button  class="btn-compass" id="btnCompassStart" data-i18n="auto.f.011">เริ่ม Live Compass</button>
         <button  class="btn-compass secondary" id="btnLockFacing" disabled data-i18n="auto.f.012">🔒 ล็อกเป็นทิศบ้าน</button>
+        <button class="btn-compass secondary" id="btnFlipFacing" disabled>↔ สลับ Facing / Sitting</button>
+      </div>
+      <div class="direction-breakdown" id="directionBreakdown">
+        <h5>Direction Breakdown</h5>
+        <div style="color:var(--fg-faint)">กดแถบสีบนเข็มทิศ หรือวัดทิศบ้าน เพื่อดูเหตุผลของทิศนี้</div>
       </div>
       <div class="compass-help">
         <b>Tip:</b> หันหลังพิงประตูหน้าบ้าน · ถือมือถือขนานพื้น · ค่าที่ได้คือทิศที่บ้านหันออก<br/>
@@ -681,6 +699,15 @@ function compassGrade(dir, yearGrid, taiSuiDir, threeKillDir){
   if(yStar === 4) return {level:'mid', color:'#c8a44d', label:'4 เขียว · เรียน/ความสัมพันธ์', score:64};
   return {level:'mid', color:'#8a6d2a', label:'กลาง · ใช้ตามจังหวะ', score:55};
 }
+function qimenDoorGrade(palace){
+  const q = String(palace?.door_quality || '').toLowerCase();
+  const door = palace?.door_zh || '';
+  if(q.includes('great') || ['開門','生門','休門'].includes(door)) return {level:'good', color:'#5fa86b', label:'ประตูดี ใช้เปิดเรื่องได้'};
+  if(q.includes('auspicious') || door === '景門') return {level:'mid', color:'#c8a44d', label:'ใช้ได้ตามเรื่อง'};
+  if(q.includes('severe') || ['死門','傷門','驚門'].includes(door)) return {level:'danger', color:'#c95c4a', label:'ประตูแรง ควรเลี่ยง'};
+  if(q.includes('inauspicious')) return {level:'warn', color:'#c8843f', label:'ต้องคุมจังหวะ'};
+  return {level:'mid', color:'#8a6d2a', label:'กลาง ต้องดูบริบท'};
+}
 function getThreeKillings(year){
   const b = ((year - 4) % 12 + 12) % 12;
   if([2,6,10].includes(b)) return 'N';
@@ -699,6 +726,12 @@ function findStarPosition(grid, starNum){
 //  RENDER
 // ═══════════════════════════════════════════════════════════════
 let activeDir = 'C';
+let qimenSeq = 0;
+let currentQimenPalaces = [];
+let currentBearing = null;
+let facingMode = 'facing';
+let lastFacingBearing = null;
+let lastSittingBearing = null;
 
 function getCurrentTimeframe(){
   const yearVal = parseInt(document.getElementById('setYear').value);
@@ -851,10 +884,14 @@ function renderGrid(){
 
   renderWarnings(taiSuiDir, threeKillDir, fiveYellowDir);
   renderCompassLuckRing(gridYear, taiSuiDir, threeKillDir);
+  loadQimenDirectionOverlay();
   renderPalaceDetail(activeDir, gridYear, gridMonth, gridDay, gridPeriod);
   
   // store for map verdict
+  window._currentPeriodGrid = gridPeriod;
   window._currentYearGrid = gridYear;
+  window._currentMonthGrid = gridMonth;
+  window._currentDayGrid = gridDay;
   window._currentTaiSui = taiSuiDir;
   window._currentThreeKill = threeKillDir;
 }
@@ -1346,12 +1383,72 @@ function renderCompassLuckRing(yearGrid, taiSuiDir, threeKillDir){
     seg.setAttribute('d', ringSegmentPath(200, 200, 181, 194, item.deg - 22.5, item.deg + 22.5));
     seg.setAttribute('fill', grade.color);
     seg.setAttribute('opacity', grade.level === 'danger' ? '.9' : grade.level === 'good' ? '.78' : '.68');
+    seg.addEventListener('click', () => selectCompassDirection(item.deg, item.dir));
     const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
     const star = yearGrid?.[item.dir];
     title.textContent = `${item.dir} ${item.th} · ${star ? `ดาวปี ${star}${STAR_INFO[star]?.color || ''} · ` : ''}${grade.label} · ${grade.score}/100`;
     seg.appendChild(title);
     ring.appendChild(seg);
   });
+}
+function renderQimenDoorOverlay(palaces){
+  const ring = document.getElementById('qimenDoorRing');
+  if(!ring) return;
+  ring.innerHTML = '';
+  const byDir = Object.fromEntries((palaces || []).filter(p => p.direction && p.direction !== 'C').map(p => [p.direction, p]));
+  COMPASS_DIRS.forEach(item => {
+    const p = byDir[item.dir];
+    if(!p) return;
+    const grade = qimenDoorGrade(p);
+    const pt = polarPoint(200, 200, 153, item.deg);
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', `qimen-door-mark ${grade.level}`);
+    g.addEventListener('click', () => selectCompassDirection(item.deg, item.dir));
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', pt.x.toFixed(2));
+    circle.setAttribute('cy', pt.y.toFixed(2));
+    circle.setAttribute('r', '15');
+    circle.setAttribute('fill', grade.color);
+    circle.setAttribute('opacity', grade.level === 'danger' ? '.92' : '.82');
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', pt.x.toFixed(2));
+    text.setAttribute('y', (pt.y + 1).toFixed(2));
+    text.textContent = String(p.door_zh || '門').slice(0,1);
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = `${item.dir} · ${p.door_name_th || p.door_zh} · ${p.star_name_th || p.star_zh} · ${p.deity_name_th || p.deity_zh} · ${grade.label}`;
+    g.appendChild(circle);
+    g.appendChild(text);
+    g.appendChild(title);
+    ring.appendChild(g);
+  });
+}
+function getSelectedDateTimeForApi(){
+  const tf = getCurrentTimeframe();
+  const y = tf.date.getFullYear();
+  const m = String(tf.date.getMonth()+1).padStart(2,'0');
+  const d = String(tf.date.getDate()).padStart(2,'0');
+  const h = String(tf.date.getHours()).padStart(2,'0');
+  const min = String(tf.date.getMinutes()).padStart(2,'0');
+  return { date:`${y}-${m}-${d}`, time:`${h}:${min}` };
+}
+async function loadQimenDirectionOverlay(){
+  const seq = ++qimenSeq;
+  const dt = getSelectedDateTimeForApi();
+  try {
+    const url = `/api/qimen?date=${encodeURIComponent(dt.date)}&time=${encodeURIComponent(dt.time)}&school=chaibu&lng=100.5018&lat=13.7563`;
+    const r = await fetch(url, { cache:'no-store' });
+    if(!r.ok) throw new Error(`qimen ${r.status}`);
+    const j = await r.json();
+    if(seq !== qimenSeq) return;
+    const d = j.data || j;
+    currentQimenPalaces = Array.isArray(d.palaces) ? d.palaces : [];
+    renderQimenDoorOverlay(currentQimenPalaces);
+    if(currentBearing != null) updateDirectionBreakdown(getDirCode(currentBearing).en, currentBearing);
+  } catch(e){
+    if(seq !== qimenSeq) return;
+    currentQimenPalaces = [];
+    renderQimenDoorOverlay([]);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1426,10 +1523,16 @@ function stopCompass(){
 document.getElementById('btnCompassStart').addEventListener('click', startCompass);
 
 document.getElementById('btnLockFacing').addEventListener('click', ()=>{
-  const arrow = document.getElementById('facingArrow');
-  arrow.style.display = 'block';
-  arrow.style.transform = `rotate(${lastHeading}deg)`;
+  lastFacingBearing = lastHeading;
+  lastSittingBearing = (lastHeading + 180) % 360;
+  setFacingMode('facing');
+  document.getElementById('btnFlipFacing').disabled = false;
+  setCompassArrow(lastHeading);
   applyFacing(lastHeading);
+});
+document.getElementById('btnFlipFacing').addEventListener('click', ()=>{
+  setFacingMode(facingMode === 'facing' ? 'sitting' : 'facing');
+  applyStoredFacingMode();
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -1454,6 +1557,36 @@ function getDirCode(deg){
 function getDirectionName(deg){
   const d = getDirCode(deg);
   return `${d.en} ${d.th}`;
+}
+function qimenPalaceForDir(dir){
+  return (currentQimenPalaces || []).find(p => p.direction === dir) || null;
+}
+function resetDirectionBreakdown(){
+  const host = document.getElementById('directionBreakdown');
+  if(!host) return;
+  host.innerHTML = `
+    <h5>Direction Breakdown</h5>
+    <div style="color:var(--fg-faint)">กดแถบสีบนเข็มทิศ หรือวัดทิศบ้าน เพื่อดูเหตุผลของทิศนี้</div>
+  `;
+}
+function updateDirectionBreakdown(dir8, deg){
+  const host = document.getElementById('directionBreakdown');
+  if(!host) return;
+  const yStar = window._currentYearGrid?.[dir8];
+  const grade = compassGrade(dir8, window._currentYearGrid || {}, window._currentTaiSui, window._currentThreeKill);
+  const q = qimenPalaceForDir(dir8);
+  const qg = qimenDoorGrade(q);
+  const m = get24Mountain(deg);
+  const warnings = [];
+  if(window._currentTaiSui === dir8) warnings.push('ไท่ซุ่ย 太歲');
+  if(window._currentThreeKill === dir8) warnings.push('สามชะ 三煞');
+  if(yStar === 5) warnings.push('5 เหลือง 五黃');
+  host.innerHTML = `
+    <h5>${fsEsc(dir8)} · ${fsEsc(getDirectionName(deg))} · ${fsEsc(m.h)} ${fsEsc(m.pinyin)}</h5>
+    <div class="db-row"><span class="db-k">飛星 ดาวปี</span><span class="db-v"><b>${fsEsc(yStar || '—')}</b> ${yStar ? fsEsc(STAR_INFO[yStar].color) : ''} · ${fsEsc(grade.label)} · ${grade.score}/100</span></div>
+    <div class="db-row"><span class="db-k">警示 ห้าม</span><span class="db-v">${warnings.length ? fsEsc(warnings.join(' · ')) : 'ไม่มี hard warning หลัก'}</span></div>
+    <div class="db-row"><span class="db-k">奇門 Qi Men</span><span class="db-v">${q ? `<b>${fsEsc(q.door_zh)}</b> ${fsEsc(q.door_name_th || '')} · ${fsEsc(q.star_name_th || q.star_zh || '')} · ${fsEsc(q.deity_name_th || q.deity_zh || '')} · ${fsEsc(qg.label)}` : 'กำลังโหลดประตูฉีเหมิน...'}</span></div>
+  `;
 }
 
 const M24 = [
@@ -1481,6 +1614,7 @@ function get24Mountain(deg){
 }
 
 function applyFacing(deg){
+  currentBearing = ((deg % 360) + 360) % 360;
   document.getElementById('mrHeading').textContent = `${(Math.round(deg*10)/10)} °`;
   document.getElementById('mrDirection').textContent = getDirectionName(deg);
   const m = get24Mountain(deg);
@@ -1496,6 +1630,33 @@ function applyFacing(deg){
     verdict = `${icon} ${yStar}${STAR_INFO[yStar].color} · ${grade.label}`;
   }
   document.getElementById('mrVerdict').textContent = verdict;
+  updateDirectionBreakdown(dir8, deg);
+}
+function setCompassArrow(deg){
+  const arrow = document.getElementById('facingArrow');
+  arrow.style.display = 'block';
+  arrow.style.transform = `rotate(${deg}deg)`;
+}
+function selectCompassDirection(deg, dir){
+  activeDir = dir || getDirCode(deg).en;
+  setCompassArrow(deg);
+  applyFacing(deg);
+  document.querySelectorAll('.pcell').forEach(p => p.classList.toggle('active', p.dataset.dir === activeDir));
+  if(window._currentYearGrid && window._currentMonthGrid && window._currentDayGrid && window._currentPeriodGrid){
+    renderPalaceDetail(activeDir, window._currentYearGrid, window._currentMonthGrid, window._currentDayGrid, window._currentPeriodGrid);
+  }
+}
+function setFacingMode(mode){
+  if(mode !== 'sitting') mode = 'facing';
+  facingMode = mode;
+  const btn = document.getElementById('btnFlipFacing');
+  if(btn) btn.textContent = mode === 'facing' ? '↔ แสดง Sitting' : '↔ แสดง Facing';
+}
+function applyStoredFacingMode(){
+  const deg = facingMode === 'sitting' ? lastSittingBearing : lastFacingBearing;
+  if(deg == null) return;
+  setCompassArrow(deg);
+  applyFacing(deg);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1673,11 +1834,14 @@ function updateWallTempLine(currentPos){
   // realtime preview of facing direction (perpendicular CW from B)
   const wallBearing = computeBearing(wallStartPos.lat(), wallStartPos.lng(), currentPos.lat(), currentPos.lng());
   const facingBearing = (wallBearing + 90) % 360;  // CW 90° from A→B direction
+  lastFacingBearing = facingBearing;
+  lastSittingBearing = (facingBearing + 180) % 360;
+  setFacingMode('facing');
+  document.getElementById('btnFlipFacing').disabled = false;
   
   // update HUD live
+  setCompassArrow(facingBearing);
   applyFacing(facingBearing);
-  document.getElementById('facingArrow').style.display = 'block';
-  document.getElementById('facingArrow').style.transform = `rotate(${facingBearing}deg)`;
 }
 
 function wallMouseUp(e){
@@ -1807,12 +1971,14 @@ function drawWallFromMarkers(){
     map: map
   });
   
+  lastFacingBearing = facingBearing;
+  lastSittingBearing = sittingBearing;
+  setFacingMode('facing');
+  document.getElementById('btnFlipFacing').disabled = false;
   applyFacing(facingBearing);
   
   // update compass arrow
-  const arrow = document.getElementById('facingArrow');
-  arrow.style.display = 'block';
-  arrow.style.transform = `rotate(${facingBearing}deg)`;
+  setCompassArrow(facingBearing);
   
   window._currentWallFacing = facingBearing;
   window._currentWallSitting = sittingBearing;
@@ -1902,11 +2068,13 @@ function updateLine(){
   });
   // calculate bearing
   const bearing = computeBearing(start.lat(), start.lng(), end.lat(), end.lng());
+  lastFacingBearing = bearing;
+  lastSittingBearing = (bearing + 180) % 360;
+  setFacingMode('facing');
+  document.getElementById('btnFlipFacing').disabled = false;
   applyFacing(bearing);
   // update facing arrow on compass too
-  const arrow = document.getElementById('facingArrow');
-  arrow.style.display = 'block';
-  arrow.style.transform = `rotate(${bearing}deg)`;
+  setCompassArrow(bearing);
 }
 
 function computeBearing(lat1, lng1, lat2, lng2){
@@ -1940,6 +2108,15 @@ document.getElementById('btnClear').addEventListener('click', ()=>{
   if(connectionLine){ connectionLine.setMap(null); connectionLine = null; }
   clearWallMode();
   setMode('wall');
+  lastFacingBearing = null;
+  lastSittingBearing = null;
+  currentBearing = null;
+  setFacingMode('facing');
+  document.getElementById('btnFlipFacing').disabled = true;
+  document.getElementById('facingArrow').style.display = 'none';
+  activeDir = 'C';
+  document.querySelectorAll('.pcell').forEach(p => p.classList.toggle('active', p.dataset.dir === activeDir));
+  resetDirectionBreakdown();
   document.getElementById('mrHeading').textContent = '— °';
   document.getElementById('mrDirection').textContent = '—';
   document.getElementById('mr24Mtn').textContent = '—';
