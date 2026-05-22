@@ -504,56 +504,130 @@ export type SpecialChartRules = {
   summary_en: string;
 };
 
-function buildSpecialChartRules(pillars: BaziPillars, geJuStructure: string | null): SpecialChartRules {
+function buildSpecialChartRules(pillars: BaziPillarsAny, geJuStructure: string | null): SpecialChartRules {
   const dm = pillars.day.stem;
   const dmEl = STEM_ELEMENT[dm];
   const wealthEl = ELEMENT_CONTROLS[dmEl];
   const outputEl = ELEMENT_PRODUCES[dmEl];
   const powerEl = Object.keys(ELEMENT_CONTROLS).find(k => ELEMENT_CONTROLS[k] === dmEl) || "";
   const resourceEl = Object.keys(ELEMENT_PRODUCES).find(k => ELEMENT_PRODUCES[k] === dmEl) || "";
+  const structure = geJuStructure || "";
+  const actual = structure.replace(/^假/, "");
+  const fakePrefix = structure.startsWith("假") ? "กึ่ง" : "";
 
-  if (geJuStructure === "從財格") {
-    return {
-      applicable: true,
-      type_zh: "從財格",
-      type_en: "Follow Wealth",
-      type_th: "ตามทรัพย์ · พิเศษ",
-      friendly_elements: [wealthEl, outputEl],
-      hostile_elements: [dmEl, resourceEl],
-      summary_th: `ดวงพิเศษ · DM อ่อนจัดจน "ตามทรัพย์" → ธาตุ${ELEMENT_TH_MAP_LOCAL[wealthEl]}เป็นมิตร (สิ่งที่ตรงข้ามตำราปกติ)`,
-      summary_en: `Special chart · DM too weak, follows Wealth → ${wealthEl} becomes friendly (inverted rules)`,
-    };
-  }
-  if (geJuStructure === "從殺格" || geJuStructure === "從官格") {
-    return {
-      applicable: true,
-      type_zh: geJuStructure,
-      type_en: geJuStructure === "從殺格" ? "Follow Killing" : "Follow Officer",
-      type_th: "ตามอำนาจ · พิเศษ",
-      friendly_elements: [powerEl, wealthEl],
-      hostile_elements: [dmEl, resourceEl],
-      summary_th: `ดวงพิเศษ · DM ตามอำนาจ → ธาตุ${ELEMENT_TH_MAP_LOCAL[powerEl]}เป็นมิตร`,
-      summary_en: `Special chart · follows Power → ${powerEl} becomes friendly`,
-    };
-  }
-  if (geJuStructure === "從兒格") {
-    return {
-      applicable: true,
-      type_zh: "從兒格",
-      type_en: "Follow Output",
-      type_th: "ตามลูกหลาน · พิเศษ",
-      friendly_elements: [outputEl, wealthEl],
-      hostile_elements: [resourceEl, powerEl],
-      summary_th: `ดวงพิเศษ · DM ตามผลผลิต → ธาตุ${ELEMENT_TH_MAP_LOCAL[outputEl]}เป็นมิตร`,
-      summary_en: `Special chart · follows Output → ${outputEl} becomes friendly`,
-    };
-  }
-  return {
+  const standard = {
     applicable: false,
     type_zh: "正格", type_en: "Standard", type_th: "ปกติ",
     friendly_elements: [], hostile_elements: [],
     summary_th: "ดวงปกติ · ใช้กฎ用神มาตรฐาน", summary_en: "Standard chart · use regular yongshen rules",
   };
+
+  if (actual === "從財格") {
+    return {
+      applicable: true,
+      type_zh: structure,
+      type_en: structure.startsWith("假") ? "Partial Follow Wealth" : "Follow Wealth",
+      type_th: `${fakePrefix}ตามทรัพย์ · พิเศษ`,
+      friendly_elements: [wealthEl, outputEl],
+      hostile_elements: [dmEl, resourceEl],
+      summary_th: `ดวงพิเศษ · DM อ่อนมากจน "${fakePrefix}ตามทรัพย์" → ธาตุ${ELEMENT_TH_MAP_LOCAL[wealthEl]}และ${ELEMENT_TH_MAP_LOCAL[outputEl]}เป็นมิตร`,
+      summary_en: `Special chart · DM follows Wealth → ${wealthEl}/${outputEl} become friendly`,
+    };
+  }
+  if (actual === "從殺格" || actual === "從官格") {
+    return {
+      applicable: true,
+      type_zh: structure,
+      type_en: actual === "從殺格" ? "Follow Killing" : "Follow Officer",
+      type_th: `${fakePrefix}ตามอำนาจ · พิเศษ`,
+      friendly_elements: [powerEl, wealthEl],
+      hostile_elements: [dmEl, resourceEl],
+      summary_th: `ดวงพิเศษ · DM ${fakePrefix}ตามอำนาจ → ธาตุ${ELEMENT_TH_MAP_LOCAL[powerEl]}เป็นมิตร`,
+      summary_en: `Special chart · follows Power → ${powerEl} becomes friendly`,
+    };
+  }
+  if (actual === "從兒格") {
+    return {
+      applicable: true,
+      type_zh: structure,
+      type_en: structure.startsWith("假") ? "Partial Follow Output" : "Follow Output",
+      type_th: `${fakePrefix}ตามผลงาน · พิเศษ`,
+      friendly_elements: [outputEl, wealthEl],
+      hostile_elements: [resourceEl, powerEl],
+      summary_th: `ดวงพิเศษ · DM ${fakePrefix}ตามผลงาน → ธาตุ${ELEMENT_TH_MAP_LOCAL[outputEl]}และ${ELEMENT_TH_MAP_LOCAL[wealthEl]}เป็นมิตร`,
+      summary_en: `Special chart · follows Output → ${outputEl} becomes friendly`,
+    };
+  }
+
+  const soleVigorous: Record<string, { element: string; en: string; th: string }> = {
+    "曲直格": { element: "wood", en: "Wood Dominant", th: "ไม้ล้วน · พิเศษ" },
+    "炎上格": { element: "fire", en: "Fire Dominant", th: "ไฟล้วน · พิเศษ" },
+    "稼穡格": { element: "earth", en: "Earth Dominant", th: "ดินล้วน · พิเศษ" },
+    "從革格": { element: "metal", en: "Metal Dominant", th: "ทองล้วน · พิเศษ" },
+    "潤下格": { element: "water", en: "Water Dominant", th: "น้ำล้วน · พิเศษ" },
+  };
+  const sole = soleVigorous[structure];
+  if (sole) {
+    const el = sole.element;
+    const child = ELEMENT_PRODUCES[el];
+    const parent = Object.keys(ELEMENT_PRODUCES).find(k => ELEMENT_PRODUCES[k] === el) || "";
+    const controller = Object.keys(ELEMENT_CONTROLS).find(k => ELEMENT_CONTROLS[k] === el) || "";
+    return {
+      applicable: true,
+      type_zh: structure,
+      type_en: sole.en,
+      type_th: sole.th,
+      friendly_elements: [el, child, parent].filter(Boolean),
+      hostile_elements: [controller, ELEMENT_CONTROLS[el]].filter(Boolean),
+      summary_th: `ดวงพิเศษ · พลัง${ELEMENT_TH_MAP_LOCAL[el]}กุมทั้งผัง → ใช้กฎเฉพาะของ${structure} ไม่อ่านเหมือนดวงปกติ`,
+      summary_en: `Special chart · ${el} dominates the chart; use ${structure} rules, not standard balancing only`,
+    };
+  }
+
+  if (structure === "從強格" || structure === "從旺格") {
+    return {
+      applicable: true,
+      type_zh: structure,
+      type_en: structure === "從強格" ? "Follow Strong" : "Follow Dominant",
+      type_th: structure === "從強格" ? "ตามความแกร่ง · พิเศษ" : "ตามความ旺 · พิเศษ",
+      friendly_elements: [dmEl, resourceEl, outputEl].filter(Boolean),
+      hostile_elements: [wealthEl, powerEl].filter(Boolean),
+      summary_th: `ดวงพิเศษ · ตัวตนและแรงหนุนแรงมาก → ธาตุ${ELEMENT_TH_MAP_LOCAL[dmEl]}และ${ELEMENT_TH_MAP_LOCAL[resourceEl]}เป็นแกน`,
+      summary_en: `Special chart · strong DM follows its dominant support pattern`,
+    };
+  }
+
+  if (/^化[木火土金水]格$/.test(structure)) {
+    const zhEl = structure[1];
+    const el = ({ 木:"wood", 火:"fire", 土:"earth", 金:"metal", 水:"water" } as Record<string, string>)[zhEl];
+    const child = ELEMENT_PRODUCES[el];
+    const parent = Object.keys(ELEMENT_PRODUCES).find(k => ELEMENT_PRODUCES[k] === el) || "";
+    return {
+      applicable: true,
+      type_zh: structure,
+      type_en: `Transform to ${el}`,
+      type_th: `化${ELEMENT_TH_MAP_LOCAL[el]} · พิเศษ`,
+      friendly_elements: [el, child, parent].filter(Boolean),
+      hostile_elements: [Object.keys(ELEMENT_CONTROLS).find(k => ELEMENT_CONTROLS[k] === el) || ""].filter(Boolean),
+      summary_th: `ดวงพิเศษ · ก้านฟ้า合化เป็น${ELEMENT_TH_MAP_LOCAL[el]} → อ่านตามพลังแปลง ไม่ใช่อ่านแค่ Day Master เดิม`,
+      summary_en: `Special chart · heavenly stems transform into ${el}; read by transformation pattern`,
+    };
+  }
+
+  if (structure === "魁罡格") {
+    return {
+      applicable: true,
+      type_zh: structure,
+      type_en: "Kui Gang",
+      type_th: "魁罡 · พิเศษ",
+      friendly_elements: [dmEl, outputEl].filter(Boolean),
+      hostile_elements: [powerEl].filter(Boolean),
+      summary_th: "ดวงพิเศษ · 魁罡 ต้องอ่านเรื่องแรงกดดัน วินัย และความสุดโต่งแยกจากดวงปกติ",
+      summary_en: "Special chart · Kui Gang needs separate handling for pressure, discipline, and extremes",
+    };
+  }
+
+  return standard;
 }
 
 const BRANCH_TH: Record<string, string> = {子:"ชวด",丑:"ฉลู",寅:"ขาล",卯:"เถาะ",辰:"มะโรง",巳:"มะเส็ง",午:"มะเมีย",未:"มะแม",申:"วอก",酉:"ระกา",戌:"จอ",亥:"กุน"};

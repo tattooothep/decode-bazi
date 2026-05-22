@@ -54,7 +54,7 @@ export type BaziPillarsAny = BaziPillars4p | BaziPillars3p;
 
 interface BaziAnalysisCore {
   dayMaster: string;
-  geJu: { structure: string | null; basis?: string; confidence?: string };
+  geJu: { structure: string | null; basis?: string; confidence?: string; raw_structure?: string | null };
   strength: { percent: number; level: string };
   yongshen: { stem: string; element: string; finalScore: number; reason: string[] }[];
   climate: string | null;
@@ -87,6 +87,14 @@ export interface BaziAnalysis3p extends BaziAnalysisCore {
 }
 
 export type BaziAnalysis = BaziAnalysis4p | BaziAnalysis3p;
+
+function classicGeJuAlias(structure: string | null | undefined): string | null {
+  if (!structure) return structure || null;
+  /* Classic display alias: month-lu/rob-wealth structures are not generic peer labels. */
+  if (structure === "比肩格") return "建祿格";
+  if (structure === "劫財格") return "月劫格";
+  return structure;
+}
 
 /**
  * Compute full BaZi chart from birth input.
@@ -157,7 +165,12 @@ export async function calcBazi(input: BirthInput): Promise<BaziAnalysis> {
       pillars: pillars3,
       pillarsZh: { year: ypN, month: mpN, day: dpN, hour: null },
       dayMaster: pillars3.day.stem,
-      geJu: { structure: ge3.structure, basis: ge3.basis, confidence: ge3.confidence },
+      geJu: {
+        structure: classicGeJuAlias(ge3.structure),
+        raw_structure: ge3.structure,
+        basis: ge3.basis,
+        confidence: ge3.confidence,
+      },
       strength: { percent: yong3.strength.percent, level: yong3.strength.level },
       yongshen: yong3.yongshenFinal,
       climate: yong3.climate?.climate || null,
@@ -237,7 +250,12 @@ export async function calcBazi(input: BirthInput): Promise<BaziAnalysis> {
     pillars,
     pillarsZh: { year: yp, month: mpc, day: dp, hour: hp },
     dayMaster: pillars.day.stem,
-    geJu: { structure: ge.structure, basis: ge.basis, confidence: ge.confidence },
+    geJu: {
+      structure: classicGeJuAlias(ge.structure),
+      raw_structure: ge.structure,
+      basis: ge.basis,
+      confidence: ge.confidence,
+    },
     strength: { percent: yong.strength.percent, level: yong.strength.level },
     yongshen: yong.yongshenFinal,
     climate: yong.climate?.climate || null,

@@ -178,6 +178,7 @@ export function pairBaseScore(
   let score = 0;
   const tags: string[] = [];
   const flags: string[] = [];   /* 📜 compound_flags · บันทึกตรรกะที่ใช้ */
+  const adjustmentEvents: Array<{ label: string; weight: number }> = [];
   const aDay = a.day, bDay = b.day;
   if (!aDay || !bDay) return { score: 0, tags: [], flags: [], bd: { bonus:0, penalty:0, base:0, events:[] } };
 
@@ -432,6 +433,7 @@ export function pairBaseScore(
       const discountedTiaohou = effectiveYongshen[0] === 'fire' ? Math.round(tiaohou * 0.65) : tiaohou;
       score += discountedTiaohou;
       tags.push('調候·火助');
+      adjustmentEvents.push({ label: '調候·火助', weight: discountedTiaohou });
       flags.push('tiaohou_fire_correction');
     }
   }
@@ -446,6 +448,7 @@ export function pairBaseScore(
       const support = Math.min(18, supportCount * 6);
       score += support;
       tags.push('用神·根');
+      adjustmentEvents.push({ label: '用神·根', weight: support });
       flags.push('yongshen_branch_support');
     }
   }
@@ -464,11 +467,13 @@ export function pairBaseScore(
     /* clash ทั้งกระทบ ys และทำลาย js → mixed · ผ่อนคลาย +12 */
     score += 12;
     tags.push('沖·ผสม·พอชดเชย');
+    adjustmentEvents.push({ label: '沖·ผสม·พอชดเชย', weight: 12 });
     flags.push('mixed_clash_balanced');
   } else if (dayMix && dayMix.ysHit && !dayMix.jsHit) {
     /* clash ทำลาย yongshen ตรงๆ → ลงโทษเพิ่ม */
     score -= 6;
     tags.push('沖去用神 ⚠⚠');
+    adjustmentEvents.push({ label: '沖去用神 ⚠⚠', weight: -6 });
     flags.push('clash_destroys_yongshen');
   }
 
@@ -476,6 +481,7 @@ export function pairBaseScore(
   if (opts?.selfDmWeak && tags.includes('生')) {
     score -= 6;
     tags.push('生·เสียพลัง');
+    adjustmentEvents.push({ label: '生·เสียพลัง', weight: -6 });
     flags.push('weak_dm_drain');
   }
 
@@ -483,6 +489,7 @@ export function pairBaseScore(
   const _clashCount = tags.filter((t: string) => /沖|刑|破|害/.test(t)).length;
   if (_clashCount >= 3) {
     score += -8;  /* additional · -10..-16 total when combined with existing penalty */
+    adjustmentEvents.push({ label: 'multi clash', weight: -8 });
     flags.push('multi_clash_penalty');
   }
 
@@ -502,6 +509,7 @@ export function pairBaseScore(
   if (score > 20 && clashTags.length >= 2 && positiveTags.length >= 2) {
     score += W.STABILITY_PENALTY;
     tags.push('แรงขับ·ไม่นิ่ง');
+    adjustmentEvents.push({ label: 'แรงขับ·ไม่นิ่ง', weight: W.STABILITY_PENALTY });
     flags.push('stability_penalty');
   }
 
@@ -529,7 +537,12 @@ export function pairBaseScore(
     if (intersect(bP, aJ)) { score -= 4; tags.push('A·剋B用神'); flags.push('a_harms_b_yongshen'); }
   }
 
+  const beforeCap = score;
   score = applyCaps(score);
+  const capDelta = score - beforeCap;
+  if (capDelta !== 0) {
+    adjustmentEvents.push({ label: 'cap/soften', weight: capDelta });
+  }
 
   /* 📜 อากง ข้อ 9 · Mechanical vs Context-aware split
    * mechanical = ดูแค่ tags ที่เกิด (sum weights)
@@ -608,6 +621,19 @@ export function pairBaseScore(
     else penalty += -w;
     events.push(t + (w >= 0 ? ` +${w}` : ` ${w}`));
   });
+  for (const ev of adjustmentEvents) {
+    if (!ev.weight) continue;
+    if (ev.weight > 0) bonus += ev.weight;
+    else penalty += -ev.weight;
+    events.push(ev.label + (ev.weight >= 0 ? ` +${ev.weight}` : ` ${ev.weight}`));
+  }
+  const eventSum = bonus - penalty;
+  const remainder = score - eventSum;
+  if (remainder !== 0) {
+    if (remainder > 0) bonus += remainder;
+    else penalty += -remainder;
+    events.push('context remainder' + (remainder >= 0 ? ` +${remainder}` : ` ${remainder}`));
+  }
   bd.bonus = bonus;
   bd.penalty = penalty;
   bd.events = events;
