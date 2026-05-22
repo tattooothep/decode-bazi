@@ -3580,11 +3580,12 @@ function canvasTagColors(kind){
 
 function starElementColors(star){
   const el = STAR_INFO[star]?.el || 'earth';
-  if(el === 'water') return {bg:'rgba(72,118,190,.94)', bd:'#9fc4ff', fg:'#eef6ff'};
-  if(el === 'wood') return {bg:'rgba(76,148,88,.94)', bd:'#a8dfae', fg:'#f2fff3'};
-  if(el === 'fire') return {bg:'rgba(200,78,66,.95)', bd:'#ffb1a8', fg:'#fff5f2'};
-  if(el === 'metal') return {bg:'rgba(150,150,156,.94)', bd:'#f0f0f2', fg:'#101214'};
-  return {bg:'rgba(198,148,43,.95)', bd:'#ffe0a0', fg:'#15120a'};
+  /* Pastel square palette แบบ reference round chart */
+  if(el === 'water') return {bg:'rgba(218,222,255,.96)', bd:'#7a85dd', fg:'#4352d6'};
+  if(el === 'wood') return {bg:'rgba(199,232,199,.96)', bd:'#78b980', fg:'#3f8d48'};
+  if(el === 'fire') return {bg:'rgba(255,206,206,.96)', bd:'#e06c6c', fg:'#df3030'};
+  if(el === 'metal') return {bg:'rgba(222,222,228,.96)', bd:'#9d9da6', fg:'#686872'};
+  return {bg:'rgba(246,215,143,.96)', bd:'#d4ab45', fg:'#a46f00'};
 }
 
 function drawCanvasPill(ctx, text, x, y, kind){
@@ -3708,33 +3709,38 @@ function drawPlanSector(ctx, startDeg, endDeg, innerR, outerR, colors){
 function planLayerVisual(layer){
   if(layer === 'ภู') return { label:'ภู', full:'ภูเขา', color:'#8f7650', fg:'#fff7e8' };
   if(layer === 'น้ำ') return { label:'น้ำ', full:'แม่น้ำ', color:'#3f78b8', fg:'#eef7ff' };
-  return { label:'ฐาน', full:'ฐาน', color:'#c8a44d', fg:'#15120a' };
+  return { label:'ฐ', full:'ฐาน', color:'#c8a44d', fg:'#15120a' };
 }
 
 function drawStarBox(ctx, star, x, y, layer){
   if(!star) return;
   const c = starElementColors(star);
   const lv = planLayerVisual(layer);
-  const w = layer === 'น้ำ' ? 38 : 34;
-  const h = 36;
+  const w = 34;
+  const h = 34;
   ctx.save();
-  drawRoundRect(ctx, x - w/2, y - h/2, w, h, 6);
+  ctx.shadowColor = 'rgba(0,0,0,.18)';
+  ctx.shadowBlur = 5;
+  ctx.shadowOffsetY = 2;
+  drawRoundRect(ctx, x - w/2, y - h/2, w, h, 2);
   ctx.fillStyle = c.bg;
   ctx.fill();
-  ctx.strokeStyle = lv.color;
-  ctx.lineWidth = 2.4;
+  ctx.shadowColor = 'transparent';
+  ctx.strokeStyle = c.bd;
+  ctx.lineWidth = 1.4;
   ctx.stroke();
-  drawRoundRect(ctx, x - w/2 + 3, y + h/2 - 12, w - 6, 9, 4);
+  /* แถบล่างบอกชั้นดาว: ภูซ้าย · น้ำขวา · ฐานล่าง */
+  drawRoundRect(ctx, x - w/2 + 4, y + h/2 - 10, w - 8, 7, 2);
   ctx.fillStyle = lv.color;
   ctx.fill();
   ctx.fillStyle = c.fg;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = '900 21px JetBrains Mono, monospace';
-  ctx.fillText(String(star), x, y - 5);
+  ctx.font = '900 22px JetBrains Mono, monospace';
+  ctx.fillText(String(star), x, y - 4);
   ctx.fillStyle = lv.fg;
-  ctx.font = '900 8px Noto Sans Thai, sans-serif';
-  ctx.fillText(lv.label, x, y + h/2 - 7.5);
+  ctx.font = '900 7px Noto Sans Thai, sans-serif';
+  ctx.fillText(lv.label, x, y + h/2 - 6.5);
   ctx.restore();
 }
 
@@ -3758,29 +3764,16 @@ function drawPlanDirectionLabel(ctx, item){
 }
 
 function drawFloorStarCluster(ctx, dir, deg, natalGrids){
-  /* Floor plan = 宅盤 หลัก: ภูเขา / น้ำ / ฐาน แบบ reference round chart */
+  /* Reference layout: ภูเขาซ้ายบน · แม่น้ำขวาบน · ฐานล่างกลาง ไม่หมุนตามทิศ */
   const stars = [
-    {star:natalGrids?.mountainGrid?.[dir], layer:'ภู'},
-    {star:natalGrids?.waterGrid?.[dir], layer:'น้ำ'},
-    {star:natalGrids?.baseGrid?.[dir], layer:'ฐ'}
+    {star:natalGrids?.mountainGrid?.[dir], layer:'ภู', dx:-19, dy:-15},
+    {star:natalGrids?.waterGrid?.[dir], layer:'น้ำ', dx:19, dy:-15},
+    {star:natalGrids?.baseGrid?.[dir], layer:'ฐ', dx:0, dy:21}
   ].filter(s => s.star);
   if(!stars.length) return;
   const base = planPoint(planState.radius * .50, deg);
-  const rad = normalizeDeg(deg + planState.rotation) * Math.PI / 180;
-  const tangent = {x:Math.cos(rad), y:Math.sin(rad)};
-  const radial = {x:Math.sin(rad), y:-Math.cos(rad)};
-  const layouts = {
-    1: [[0,0]],
-    2: [[-17,0],[17,0]],
-    3: [[-18,-14],[18,-14],[0,18]],
-    4: [[-18,-16],[18,-16],[-18,18],[18,18]]
-  };
-  const pts = layouts[Math.min(stars.length, 4)];
-  stars.slice(0,4).forEach((s, i) => {
-    const [tx, rr] = pts[i];
-    const x = base.x + tangent.x * tx + radial.x * rr;
-    const y = base.y + tangent.y * tx + radial.y * rr;
-    drawStarBox(ctx, s.star, x, y, s.layer);
+  stars.forEach(s => {
+    drawStarBox(ctx, s.star, base.x + s.dx, base.y + s.dy, s.layer);
   });
 }
 
