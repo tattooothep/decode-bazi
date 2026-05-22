@@ -578,7 +578,9 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="house-help">
         ใช้สร้างผัง <b>山 ดาวภูเขา</b> · <b>水 ดาวแม่น้ำ</b> · <b>基 ดาวฐาน</b> ตรงกลาง 9 ช่อง · ค่าเริ่มต้น S2 180° / Period 9
         <div class="fs-action-row">
+          <button class="fs-action-btn" id="btnCalcHouseChart">คำนวณผัง</button>
           <button class="fs-action-btn" id="btnSaveHouse">บันทึกบ้าน</button>
+          <button class="fs-action-btn" id="btnLoadHouse">โหลดบ้าน</button>
           <span class="fs-save-status" id="houseSaveStatus">บันทึกในเครื่องนี้อัตโนมัติ</span>
         </div>
       </div>
@@ -1698,18 +1700,40 @@ function initHouseInputs(){
     periodSel.innerHTML = [1,2,3,4,5,6,7,8,9].map(p => `<option value="${p}">${periodLabel(p)}</option>`).join('');
   }
   let hasSavedPeriod = false;
-  try{
-    const saved = JSON.parse(localStorage.getItem('hk-fs-house') || '{}');
-    if(typeof saved.name === 'string' && saved.name.trim()) document.getElementById('houseName').value = saved.name.trim();
-    if(Number.isFinite(Number(saved.facingDeg))) document.getElementById('houseFacingDeg').value = normalizeDeg(saved.facingDeg).toFixed(1).replace(/\.0$/,'');
-    if(Number.isFinite(Number(saved.constructionYear))) document.getElementById('houseConstructionYear').value = Number(saved.constructionYear);
-    if(Number.isFinite(Number(saved.period))){
-      document.getElementById('housePeriod').value = Number(saved.period);
-      hasSavedPeriod = true;
-    }
-  }catch(e){}
+  const saved = loadSavedHouseInputs(false);
+  hasSavedPeriod = !!saved?.hasPeriod;
   if(!hasSavedPeriod) document.getElementById('housePeriod').value = getPeriodStar(Number(document.getElementById('houseConstructionYear').value || 2026));
   syncHouseMountainFromDegree(false);
+}
+function readSavedHouseInputs(){
+  try{ return JSON.parse(localStorage.getItem('hk-fs-house') || '{}') || {}; }
+  catch(e){ return {}; }
+}
+function loadSavedHouseInputs(showStatus=true){
+  const saved = readSavedHouseInputs();
+  let hasAny = false;
+  let hasPeriod = false;
+  if(typeof saved.name === 'string' && saved.name.trim()){
+    document.getElementById('houseName').value = saved.name.trim();
+    hasAny = true;
+  }
+  if(Number.isFinite(Number(saved.facingDeg))){
+    document.getElementById('houseFacingDeg').value = normalizeDeg(saved.facingDeg).toFixed(1).replace(/\.0$/,'');
+    hasAny = true;
+  }
+  if(Number.isFinite(Number(saved.constructionYear))){
+    document.getElementById('houseConstructionYear').value = Number(saved.constructionYear);
+    hasAny = true;
+  }
+  if(Number.isFinite(Number(saved.period))){
+    document.getElementById('housePeriod').value = Number(saved.period);
+    hasAny = true;
+    hasPeriod = true;
+  }
+  syncHouseMountainFromDegree(false);
+  const st = document.getElementById('houseSaveStatus');
+  if(showStatus && st) st.textContent = hasAny ? 'โหลดบ้านที่บันทึกไว้แล้ว' : 'ยังไม่มีบ้านที่บันทึกไว้';
+  return { hasAny, hasPeriod };
 }
 function saveHouseInputs(){
   try{
@@ -1759,10 +1783,27 @@ function lockMeasuredFacingToHouse(){
   const st = document.getElementById('houseSaveStatus');
   if(st) st.textContent = 'ล็อกทิศจากแผนที่แล้ว';
 }
+function calculateHouseChart(){
+  syncHouseMountainFromDegree(false);
+  saveHouseInputs();
+  activeDir = getDirCode8(document.getElementById('houseFacingDeg')?.value || 0);
+  renderGrid();
+  if(typeof drawFloorPlan === 'function') {
+    planState.selectedDir = activeDir;
+    drawFloorPlan();
+  }
+  const st = document.getElementById('houseSaveStatus');
+  if(st) st.textContent = `คำนวณผังแล้ว · Facing ${document.getElementById('houseFacingDeg').value}° · ${document.getElementById('houseFacingMountain').selectedOptions[0]?.textContent || ''}`;
+}
 initHouseInputs();
 
 document.getElementById('houseName').addEventListener('change', saveHouseInputs);
-document.getElementById('btnSaveHouse').addEventListener('click', ()=>{ saveHouseInputs(); renderGrid(); });
+document.getElementById('btnCalcHouseChart').addEventListener('click', calculateHouseChart);
+document.getElementById('btnSaveHouse').addEventListener('click', ()=>{ saveHouseInputs(); calculateHouseChart(); });
+document.getElementById('btnLoadHouse').addEventListener('click', ()=>{
+  const loaded = loadSavedHouseInputs(true);
+  if(loaded.hasAny) calculateHouseChart();
+});
 document.getElementById('btnLockHouseFromMap').addEventListener('click', lockMeasuredFacingToHouse);
 document.getElementById('btnNow').addEventListener('click', ()=>{ initDateInputs(); renderGrid(); });
 document.getElementById('setYear').addEventListener('change', renderGrid);
