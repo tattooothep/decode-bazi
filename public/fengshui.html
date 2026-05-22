@@ -717,7 +717,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       </div>
       <div class="map-instr">
         <b data-i18n="auto.f.019">🏠 ลากผนัง (แนะนำ):</b> <b data-i18n="auto.f.020">กด-ลากเส้น</b> ทาบขอบผนังหน้าบ้าน A→B · ถ้าไม่ชิด ใช้ปุ่ม Fine Wall Fit ขยับ A/B ทีละนิดจนเส้นทองทับขอบผนังพอดี · ลูกศรเขียวจุดกลาง = ทิศหันหน้า (ตั้งฉาก CW 90°) · เส้นเทา = ทิศหลัง<br/>
-        <b>◎ คลุมบ้าน:</b> แตะมุมหลังคาทีละจุด · 3 จุดขึ้นไประบบหาจุดกลางบ้านและวางวง 24 ขุนเขาให้ · กด ✓ ปิดรูปบ้านเมื่อครบมุม<br/>
+        <b>◎ คลุมบ้าน:</b> แตะมุมหลังคาทีละจุด · จุดที่ 4 ขึ้นไประบบหาจุดกลางบ้านและวางวง 24 ขุนเขาให้ · กด ✓ ปิดรูปบ้านเมื่อครบมุม<br/>
         <b data-i18n="auto.f.021">① จุดยืน → ② ทิศหันหน้า:</b> 2-marker mode (จุดยืน → จุดหน้าบ้าน)
       </div>
     </div>
@@ -2570,7 +2570,8 @@ function ensureMapHtmlLabel(){
     div.style.transform = 'translate(-50%, -50%)';
     div.style.pointerEvents = 'none';
     this.div = div;
-    this.getPanes().overlayMouseTarget.appendChild(div);
+    // Keep compass labels under Google markers so house corner points stay visible.
+    this.getPanes().overlayLayer.appendChild(div);
   };
   MapHtmlLabel.prototype.draw = function(){
     if(!this.div) return;
@@ -2604,7 +2605,7 @@ function addHousePoint(latLng){
     },
     label: { text:String(idx), color:'#101214', fontSize:'9px', fontWeight:'bold' },
     title: `มุมบ้าน ${idx}`,
-    zIndex: 1002
+    zIndex: 3000 + idx
   });
   marker.addListener('drag', ()=>{
     const i = houseMarkers.indexOf(marker);
@@ -2638,11 +2639,12 @@ function updateHouseOverlay(){
       strokeOpacity: 0.95,
       strokeWeight: houseClosed ? 3 : 2,
       fillColor: '#7fa869',
-      fillOpacity: housePoints.length >= 3 ? (houseClosed ? 0.20 : 0.10) : 0
+      fillOpacity: housePoints.length >= 3 ? (houseClosed ? 0.20 : 0.10) : 0,
+      zIndex: 90
     });
   }
   updateHouseActions();
-  if(housePoints.length >= 3){
+  if(housePoints.length >= 4){
     const center = houseCenterOverride || computeHouseCentroid(housePoints);
     drawHouseCenter(center);
     drawHouseCompass(center);
@@ -2658,7 +2660,7 @@ function updateHouseActions(){
   const close = document.getElementById('btnHouseClose');
   if(undo) undo.disabled = housePoints.length === 0;
   if(close){
-    close.disabled = housePoints.length < 3;
+    close.disabled = housePoints.length < 4;
     close.textContent = houseClosed ? '✓ ปิดแล้ว' : '✓ ปิดรูปบ้าน';
   }
 }
@@ -2713,7 +2715,7 @@ function drawHouseCenter(center){
     },
     label: { text:'中', color:'#101214', fontSize:'12px', fontWeight:'bold' },
     title: 'จุดกลางบ้าน · ลากปรับไท่จี๋ได้',
-    zIndex: 1005
+    zIndex: 2990
   });
   houseCenterMarker.addListener('drag', ()=>{
     houseCenterOverride = houseCenterMarker.getPosition();
@@ -2755,7 +2757,8 @@ function drawHouseCompass(center){
     strokeOpacity: 0.72,
     strokeWeight: 1.5,
     fillColor: '#c8a44d',
-    fillOpacity: 0.035
+    fillOpacity: 0.035,
+    zIndex: 100
   });
   M24_RING.forEach((m, i)=>{
     const boundary = google.maps.geometry.spherical.computeOffset(center, radius, m.start);
@@ -2766,6 +2769,7 @@ function drawHouseCompass(center){
       strokeColor: major ? '#c8a44d' : '#7fa869',
       strokeOpacity: major ? 0.72 : 0.42,
       strokeWeight: major ? 2 : 1,
+      zIndex: major ? 120 : 110,
       map
     }));
     if(mapLayers.has('m24')){
@@ -2846,7 +2850,7 @@ function updateHouseMapStatus(center){
     const radius = Math.round(getHouseCompassRadius(center));
     document.getElementById('mrVerdict').textContent = `คลุมบ้าน ${n} จุด · รัศมี ${radius}m`;
   } else if(currentMode === 'house'){
-    document.getElementById('mrVerdict').textContent = n ? `แตะเพิ่มอีก ${Math.max(0, 3-n)} จุดเพื่อหาจุดกลาง` : 'แตะมุมบ้านทีละจุด';
+    document.getElementById('mrVerdict').textContent = n ? `แตะเพิ่มอีก ${Math.max(0, 4-n)} จุดเพื่อเปิดวง 24山` : 'แตะมุมบ้านทีละจุด';
   }
 }
 
@@ -2862,7 +2866,7 @@ function undoHousePoint(){
 }
 
 function closeHousePolygon(){
-  if(housePoints.length < 3) return;
+  if(housePoints.length < 4) return;
   houseClosed = true;
   updateHouseOverlay();
 }
@@ -2871,6 +2875,7 @@ function relabelHouseMarkers(){
   houseMarkers.forEach((m, i)=>{
     m.setLabel({ text:String(i + 1), color:'#101214', fontSize:'9px', fontWeight:'bold' });
     m.setTitle(`มุมบ้าน ${i + 1}`);
+    m.setZIndex(3000 + i + 1);
   });
 }
 
@@ -2886,7 +2891,7 @@ function clearHouseMode(){
 }
 
 window.refreshHouseOverlayFromGrid = function(){
-  if(housePoints.length >= 3) updateHouseOverlay();
+  if(housePoints.length >= 4) updateHouseOverlay();
   if(typeof drawFloorPlan === 'function') drawFloorPlan();
 };
 
@@ -2997,7 +3002,7 @@ document.getElementById('modeHouse').addEventListener('click', ()=>{
   if(standingMarker){ standingMarker.setMap(null); standingMarker = null; }
   if(facingMarker){ facingMarker.setMap(null); facingMarker = null; }
   if(connectionLine){ connectionLine.setMap(null); connectionLine = null; }
-  updateHouseMapStatus(housePoints.length >= 3 ? (houseCenterOverride || computeHouseCentroid(housePoints)) : null);
+  updateHouseMapStatus(housePoints.length >= 4 ? (houseCenterOverride || computeHouseCentroid(housePoints)) : null);
 });
 document.getElementById('btnHouseUndo').addEventListener('click', ()=>{
   setMode('house');
@@ -3043,7 +3048,7 @@ document.querySelectorAll('.map-layer-btn[data-map-layer]').forEach(btn => {
       mapLayers.add(layer);
     }
     syncMapLayerButtons();
-    if(housePoints.length >= 3) updateHouseOverlay();
+    if(housePoints.length >= 4) updateHouseOverlay();
     if(typeof drawFloorPlan === 'function') drawFloorPlan();
   });
 });
