@@ -569,6 +569,48 @@ export function pairBaseScore(
     events.push(t + (w >= 0 ? ` +${w}` : ` ${w}`));
   });
   const bd = { bonus, penalty, base: 50, events, mechanical: mechanicalScore, context_aware: score };
+  function contextTagWeight(t: string): number | undefined {
+    if (t === '半合') {
+      if (flags.includes('三合_to_yongshen')) return W.SAN_HE_PARTIAL_TO_YONGSHEN;
+      if (flags.includes('三合_to_xishen')) return W.SAN_HE_PARTIAL_TO_XISHEN;
+      if (flags.includes('三合_to_jishen_heavy')) return W.SAN_HE_PARTIAL_TO_JISHEN_HEAVY;
+      if (flags.includes('三合_to_jishen')) return W.SAN_HE_PARTIAL_TO_JISHEN;
+      if (flags.includes('三合_neutral')) return W.SAN_HE_PARTIAL_NEUTRAL;
+    }
+    if (t === '半三會') {
+      if (flags.includes('三會_to_yongshen')) return W.SAN_HE_PARTIAL_TO_YONGSHEN;
+      if (flags.includes('三會_to_xishen')) return W.SAN_HE_PARTIAL_TO_XISHEN;
+      if (flags.includes('三會_to_jishen_heavy')) return W.SAN_HE_PARTIAL_TO_JISHEN_HEAVY;
+      if (flags.includes('三會_to_jishen')) return W.SAN_HE_PARTIAL_TO_JISHEN;
+      if (flags.includes('三會_neutral')) return W.SAN_HE_PARTIAL_NEUTRAL;
+    }
+    if (t === '三合') {
+      if (flags.includes('三合_to_yongshen')) return W.SAN_HE_FULL;
+      if (flags.includes('三合_to_xishen')) return Math.round(W.SAN_HE_FULL * 0.7);
+      if (flags.includes('三合_to_jishen_heavy')) return -Math.round(W.SAN_HE_FULL * 0.8);
+      if (flags.includes('三合_to_jishen')) return -Math.round(W.SAN_HE_FULL * 0.55);
+      if (flags.includes('三合_neutral')) return Math.round(W.SAN_HE_FULL * 0.35);
+    }
+    if (t === '三會') {
+      if (flags.includes('三會_to_yongshen')) return W.SAN_HUI_FULL;
+      if (flags.includes('三會_to_xishen')) return Math.round(W.SAN_HUI_FULL * 0.7);
+      if (flags.includes('三會_to_jishen_heavy')) return -Math.round(W.SAN_HUI_FULL * 0.8);
+      if (flags.includes('三會_to_jishen')) return -Math.round(W.SAN_HUI_FULL * 0.55);
+      if (flags.includes('三會_neutral')) return Math.round(W.SAN_HUI_FULL * 0.35);
+    }
+    return TAG_WEIGHT[t];
+  }
+  bonus = 0; penalty = 0; events.length = 0;
+  tags.forEach(t => {
+    const w = contextTagWeight(t);
+    if (w == null) return;
+    if (w > 0) bonus += w;
+    else penalty += -w;
+    events.push(t + (w >= 0 ? ` +${w}` : ` ${w}`));
+  });
+  bd.bonus = bonus;
+  bd.penalty = penalty;
+  bd.events = events;
   return { score, tags, flags, bd };
 }
 
