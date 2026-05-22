@@ -393,6 +393,15 @@ body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important
 .plan-star-legend{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 12px;border-bottom:1px solid var(--line);background:rgba(13,15,18,.16);}
 .plan-star-key{display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.025);font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
 .plan-star-key i{width:10px;height:10px;border-radius:50%;display:inline-block;}
+.plan-workbench{display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,rgba(63,49,31,.32),rgba(13,15,18,.14));}
+.plan-tool-btn{border:1px solid var(--line);background:rgba(255,255,255,.035);color:var(--fg-soft);border-radius:999px;padding:8px 11px;font-family:var(--thai);font-size:12px;cursor:pointer;transition:.18s;}
+.plan-tool-btn b{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;margin-right:4px;}
+.plan-tool-btn:hover{border-color:var(--gold);color:var(--gold-bright);}
+.plan-tool-btn.active{background:rgba(200,164,77,.18);border-color:var(--gold);color:#ffe4a8;box-shadow:0 0 0 2px rgba(200,164,77,.08) inset;}
+.plan-tool-btn.danger{border-color:rgba(201,92,74,.42);}
+.plan-tool-btn.struct{border-color:rgba(127,168,105,.38);}
+.plan-tool-note{flex:1 1 260px;align-self:center;font-family:var(--thai);font-size:12px;line-height:1.45;color:var(--fg-faint);}
+.plan-tool-note b{color:#ffb1a8;font-weight:800;}
 .plan-inspector{display:grid;grid-template-columns:minmax(150px,.9fr) minmax(0,1.5fr) minmax(0,1.2fr);gap:14px;padding:14px 18px;border-top:1px solid var(--line);background:linear-gradient(135deg,rgba(200,164,77,.08),rgba(13,15,18,.16));}
 .plan-inspector .pi-hero{display:flex;gap:12px;align-items:center;}
 .pi-badge{width:58px;height:58px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:19px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);}
@@ -815,11 +824,11 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <button class="map-layer-btn active" data-map-layer="affliction">5/2/太歲</button>
     </div>
     <div class="plan-luck-legend" aria-label="คำอธิบายสีดาวเหินบนแปลนบ้าน">
-      <div class="plan-luck-item"><i style="background:#9b6cc9"></i><div><b>ม่วง</b><span>เด่นพิเศษ</span></div></div>
-      <div class="plan-luck-item"><i style="background:#5fa86b"></i><div><b>เขียว</b><span>ใช้ดี</span></div></div>
-      <div class="plan-luck-item"><i style="background:#c8a44d"></i><div><b>ทอง</b><span>ใช้ได้</span></div></div>
-      <div class="plan-luck-item"><i style="background:#c8843f"></i><div><b>ส้ม</b><span>ต้องคุม</span></div></div>
-      <div class="plan-luck-item"><i style="background:#c95c4a"></i><div><b>แดง</b><span>เลี่ยง</span></div></div>
+      <div class="plan-luck-item"><i style="background:rgba(210,38,28,.28)"></i><div><b>แดงจาง</b><span>1 ศาสตร์หนุน</span></div></div>
+      <div class="plan-luck-item"><i style="background:rgba(210,38,28,.52)"></i><div><b>แดงกลาง</b><span>หลายศาสตร์หนุน</span></div></div>
+      <div class="plan-luck-item"><i style="background:rgba(210,38,28,.78)"></i><div><b>แดงเข้ม</b><span>ฉันทามติสูง</span></div></div>
+      <div class="plan-luck-item"><i style="background:rgba(140,140,140,.38)"></i><div><b>เทา</b><span>ไม่เด่น/ไม่หนุน</span></div></div>
+      <div class="plan-luck-item"><i style="background:repeating-linear-gradient(45deg,rgba(20,20,20,.72),rgba(20,20,20,.72) 4px,rgba(201,92,74,.55) 4px,rgba(201,92,74,.55) 8px)"></i><div><b>ขีดทับ</b><span>มีข้อห้าม</span></div></div>
     </div>
     <div class="plan-star-legend" aria-label="คำอธิบายชั้นดาวบนแปลน">
       <div class="plan-star-key"><i style="background:#8f7650"></i>ภู = ดาวภูเขา / คน / สุขภาพ</div>
@@ -827,6 +836,18 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="plan-star-key"><i style="background:#c8a44d"></i>ฐาน = ดาวฐาน / พื้นพลัง</div>
       <div class="plan-star-key"><i style="background:#7a85dd"></i>สี 24山 = ธาตุของขุนเขา ไม่ใช่ความมงคล</div>
       <div class="plan-star-key"><i style="background:#3f311f"></i>64卦 = ช่องละเอียด 5.625° สำหรับอ่าน pattern เพิ่ม</div>
+    </div>
+    <div class="plan-workbench" id="planLuopanControls" aria-label="ตัวกรองหล่อแกดิจิทัล">
+      <button class="plan-tool-btn active" data-luopan-layer="house"><b>宅</b>ดาวบ้าน</button>
+      <button class="plan-tool-btn active" data-luopan-layer="year"><b>年</b>ดาวปี</button>
+      <button class="plan-tool-btn" data-luopan-layer="month"><b>月</b>ดาวเดือน</button>
+      <button class="plan-tool-btn" data-luopan-layer="day"><b>日</b>ดาววัน</button>
+      <button class="plan-tool-btn active" data-luopan-layer="hour"><b>時</b>ดาวยาม</button>
+      <button class="plan-tool-btn active" data-luopan-layer="qimen"><b>奇</b>QMDJ</button>
+      <button class="plan-tool-btn struct active" data-luopan-layer="m24"><b>24</b>24山</button>
+      <button class="plan-tool-btn struct" data-luopan-layer="hex64"><b>64</b>64卦</button>
+      <button class="plan-tool-btn danger active" data-luopan-layer="blocker"><b>煞</b>ข้อห้าม</button>
+      <div class="plan-tool-note"><b>ต้องล็อค 中 + Facing ก่อน</b> · แต่ละศาสตร์ยิงแดงโปร่งใสเท่ากัน แดงเข้ม = หลายศาสตร์หนุน ไม่ใช่สีอันตราย</div>
     </div>
     <div class="plan-tune">
       <div class="plan-field">
@@ -3658,6 +3679,37 @@ document.querySelectorAll('.map-layer-btn[data-map-layer]').forEach(btn => {
     if(typeof drawFloorPlan === 'function') drawFloorPlan();
   });
 });
+const planLuopanLayers = new Set(['house','year','hour','qimen','m24','blocker']);
+const PLAN_VOTE_LAYERS = [
+  {key:'house', label:'ดาวบ้าน'},
+  {key:'year', label:'ดาวปี'},
+  {key:'month', label:'ดาวเดือน'},
+  {key:'day', label:'ดาววัน'},
+  {key:'hour', label:'ดาวยาม'},
+  {key:'qimen', label:'QMDJ'}
+];
+const PLAN_GOOD_STARS = new Set([1,6,8,9]);
+function syncPlanLuopanButtons(){
+  document.querySelectorAll('[data-luopan-layer]').forEach(btn => {
+    btn.classList.toggle('active', planLuopanLayers.has(btn.dataset.luopanLayer));
+  });
+}
+document.querySelectorAll('[data-luopan-layer]').forEach(btn => {
+  const layer = btn.dataset.luopanLayer;
+  btn.classList.toggle('active', planLuopanLayers.has(layer));
+  btn.addEventListener('click', () => {
+    if(planLuopanLayers.has(layer)){
+      const voteLayers = PLAN_VOTE_LAYERS.map(x => x.key);
+      const activeVotes = voteLayers.filter(k => planLuopanLayers.has(k));
+      if(activeVotes.length === 1 && activeVotes[0] === layer) return;
+      planLuopanLayers.delete(layer);
+    } else {
+      planLuopanLayers.add(layer);
+    }
+    syncPlanLuopanButtons();
+    if(typeof drawFloorPlan === 'function') drawFloorPlan();
+  });
+});
 
 // ═══════════════════════════════════════════════════════════════
 //  FLOOR PLAN IMAGE OVERLAY — upload plan, place 24 mountains + stars
@@ -3667,14 +3719,14 @@ const planCtx = planCanvas ? planCanvas.getContext('2d') : null;
 const planState = {
   img:null, imgName:'', imgRect:null,
   cx:600, cy:410, radius:260, rotation:0, imageRotation:0, opacity:.88,
-  dragging:false, dragStart:null, selectedDir:null
+  dragging:false, dragStart:null, selectedDir:null, selectedDeg:null
 };
 
 function planSetStatus(text){
   const st = document.getElementById('planStatus');
   const qs = document.getElementById('planQuickStatus');
   if(st) st.textContent = text;
-  if(qs) qs.textContent = planState.img ? `${planState.imgName || 'แปลน'} · R${Math.round(planState.radius)} · Facing ${Math.round(planState.rotation)}°` : 'ยังไม่ได้อัพรูป';
+  if(qs) qs.textContent = planState.img ? `${planState.imgName || 'แปลน'} · 中 locked · Facing ${Math.round(planState.rotation)}°` : 'ยังไม่ได้อัพรูป';
 }
 
 function updatePlanOutputs(){
@@ -3682,7 +3734,7 @@ function updatePlanOutputs(){
   const op = document.getElementById('planOpacityOut');
   if(r) r.textContent = `${Math.round(planState.radius)}px`;
   if(op) op.textContent = `${Math.round(planState.opacity * 100)}%`;
-  planSetStatus(planState.img ? 'ลากจุด 中 เพื่อวางกลางบ้าน · แตะโซนสีเพื่ออ่านดาว/คะแนน · ทิศวงใช้ Facing จากการ์ดบน' : 'อัพรูปแปลนก่อน แล้วระบบจะวางวง 24 ขุนเขาให้');
+  planSetStatus(planState.img ? 'หล่อแกดิจิทัล: ลาก 中 ให้ตรงกลางบ้าน · Facing ล็อกจากการ์ดบน · แดงเข้ม = หลายศาสตร์หนุน' : 'อัพรูปแปลนก่อน แล้วล็อค 中 + Facing เพื่อวางหล่อแก');
 }
 
 function fitPlanImageRect(){
@@ -3825,6 +3877,142 @@ function planGradeForDir(dir, natalGrids){
 function syncPlanRotationFromHouse(){
   planState.rotation = normalizeDeg(document.getElementById('houseFacingDeg')?.value || 0);
 }
+function starIsLuopanGood(star){
+  return PLAN_GOOD_STARS.has(Number(star));
+}
+function planLuopanTimeGrid(layer){
+  return {
+    year: window._currentYearGrid || {},
+    month: window._currentMonthGrid || {},
+    day: window._currentDayGrid || {},
+    hour: window._currentHourGrid || {}
+  }[layer] || {};
+}
+function planLuopanLayerReports(deg, natalGrids){
+  const dir = getDirCode8(deg);
+  const reports = [];
+  const houseGrade = scoreFlyingStarDirectionV12({
+    dir,
+    mountain:natalGrids?.mountainGrid?.[dir],
+    water:natalGrids?.waterGrid?.[dir],
+    base:natalGrids?.baseGrid?.[dir]
+  });
+  reports.push({
+    key:'house',
+    label:'ดาวบ้าน',
+    supports:['green','purple'].includes(houseGrade.color),
+    detail:`${houseGrade.verdict} · ภู${houseGrade.stars.mountain || '—'} น้ำ${houseGrade.stars.water || '—'} ฐ${houseGrade.stars.base || '—'}`
+  });
+  ['year','month','day','hour'].forEach(layer => {
+    const star = planLuopanTimeGrid(layer)?.[dir];
+    const activeLabel = {year:'ดาวปี', month:'ดาวเดือน', day:'ดาววัน', hour:'ดาวยาม'}[layer];
+    const isBlockedYear = layer === 'year' && (window._currentTaiSui === dir || window._currentThreeKill === dir || [2,5].includes(Number(star)));
+    reports.push({
+      key:layer,
+      label:activeLabel,
+      supports:starIsLuopanGood(star) && !isBlockedYear,
+      detail:star ? `${activeLabel} ${star}${STAR_INFO[star]?.color || ''}${isBlockedYear ? ' · ถูกข้อห้ามคุม' : ''}` : `${activeLabel} ยังไม่มีข้อมูล`
+    });
+  });
+  const q = qimenPalaceForDir(dir);
+  const qg = qimenDoorGrade(q);
+  reports.push({
+    key:'qimen',
+    label:'QMDJ',
+    supports:!!q && qg.level === 'good',
+    detail:q ? `${q.door_name_th || q.door_zh || '門'} · ${qg.label}` : 'ยังไม่มีผัง QMDJ'
+  });
+  return reports;
+}
+function planLuopanBoundaryReport(deg){
+  const m = get24MountainByDeg(deg);
+  const hex = getXkdgHexByDeg(deg);
+  const distTo24 = (() => {
+    let min = 180;
+    M24_RING.forEach(x => {
+      let d = Math.abs(normalizeSignedDeg(deg - x.start));
+      if(d < min) min = d;
+    });
+    return min;
+  })();
+  const hexOffset = normalizeDeg(deg) % HEX_SECTOR_DEG;
+  const distToHex = Math.min(hexOffset, HEX_SECTOR_DEG - hexOffset);
+  const warnings = [];
+  if(distTo24 < 1.2) warnings.push(`ใกล้เส้น 24山 ${Math.round(distTo24 * 10) / 10}° · ต้องวัดละเอียด`);
+  if(distToHex < .7) warnings.push(`ใกล้เส้น 64卦 ${Math.round(distToHex * 10) / 10}° · verdict ต้องระวัง`);
+  return { mountain:m, hex, distTo24, distToHex, warnings };
+}
+function planLuopanReport(deg, natalGrids){
+  const dir = getDirCode8(deg);
+  const layerReports = planLuopanLayerReports(deg, natalGrids);
+  const activeVoteReports = layerReports.filter(r => planLuopanLayers.has(r.key));
+  const supportCount = activeVoteReports.filter(r => r.supports).length;
+  const boundary = planLuopanBoundaryReport(deg);
+  return { dir, deg:normalizeDeg(deg), layerReports, activeVoteReports, supportCount, total:activeVoteReports.length, boundary };
+}
+function drawPlanRadialTick(ctx, deg, innerR, outerR, stroke, width){
+  const p1 = planPoint(innerR, deg);
+  const p2 = planPoint(outerR, deg);
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = width;
+  ctx.stroke();
+}
+function drawPlanBlockerSector(ctx, startDeg, endDeg){
+  drawPlanSector(ctx, startDeg, endDeg, 0, planState.radius, {fill:'rgba(28,28,28,.34)', stroke:'rgba(20,20,20,.72)'});
+  const mid = normalizeDeg((startDeg + endDeg) / 2);
+  [-13,-6,1,8,15].forEach(offset => {
+    drawPlanRadialTick(ctx, mid + offset, planState.radius * .12, planState.radius * .98, 'rgba(15,15,15,.55)', 2);
+  });
+}
+function drawPlanDigitalLuopan(ctx, natalGrids){
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = Math.min(planState.opacity, .92);
+  ctx.beginPath();
+  ctx.arc(planState.cx, planState.cy, planState.radius, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(135,135,135,.13)';
+  ctx.fill();
+  for(let i = 0; i < 64; i++){
+    const start = i * HEX_SECTOR_DEG;
+    const end = (i + 1) * HEX_SECTOR_DEG;
+    const center = getXkdgHexCenterDeg(i);
+    const reports = planLuopanLayerReports(center, natalGrids);
+    reports.forEach(r => {
+      if(planLuopanLayers.has(r.key) && r.supports){
+        drawPlanSector(ctx, start, end, 0, planState.radius, {fill:'rgba(210,38,28,.155)', stroke:'rgba(210,38,28,.025)'});
+      }
+    });
+  }
+  if(planLuopanLayers.has('blocker')){
+    COMPASS_DIRS.forEach(item => {
+      const y = Number(window._currentYearGrid?.[item.dir]);
+      if(y === 5 || y === 2 || window._currentTaiSui === item.dir || window._currentThreeKill === item.dir){
+        drawPlanBlockerSector(ctx, item.deg - 22.5, item.deg + 22.5);
+      }
+    });
+  }
+  ctx.globalAlpha = 1;
+  if(planLuopanLayers.has('hex64')){
+    for(let i = 0; i < 64; i++){
+      const major = i % 8 === 0;
+      drawPlanRadialTick(ctx, i * HEX_SECTOR_DEG, planState.radius * (major ? .89 : .94), planState.radius * 1.03, major ? 'rgba(246,231,189,.55)' : 'rgba(246,231,189,.22)', major ? 1.4 : .8);
+    }
+  }
+  if(planLuopanLayers.has('m24')){
+    M24_RING.forEach((m, i) => {
+      const major = is24MajorBoundary(i);
+      drawPlanRadialTick(ctx, m.start, 0, planState.radius, major ? 'rgba(255,214,122,.92)' : 'rgba(127,168,105,.45)', major ? 2.6 : 1);
+    });
+  }
+  if(Number.isFinite(planState.selectedDeg)){
+    const idx = getXkdgHexIndex(planState.selectedDeg);
+    drawPlanSector(ctx, idx * HEX_SECTOR_DEG, (idx + 1) * HEX_SECTOR_DEG, 0, planState.radius, {fill:'rgba(255,245,190,.06)', stroke:'rgba(255,245,190,.95)'});
+  }
+  ctx.restore();
+}
 function renderPlanInspector(dir, grade){
   const info = COMPASS_DIRS.find(d => d.dir === dir) || {dir, th:dir};
   const badge = document.getElementById('piBadge');
@@ -3834,18 +4022,22 @@ function renderPlanInspector(dir, grade){
   const reasons = document.getElementById('piReasons');
   const usage = document.getElementById('piUsage');
   if(!badge || !title || !sub || !stars || !reasons || !usage) return;
-  badge.className = `pi-badge ${grade.color || 'gold'}`;
-  badge.textContent = dir;
-  title.textContent = `${info.th} · ${planColorThai(grade.color)} · ${grade.verdict}`;
-  sub.textContent = `คะแนน ${grade.score}/100 · เสี่ยง ${grade.riskLevel} · ${grade.confidence}`;
+  const deg = Number.isFinite(planState.selectedDeg) ? planState.selectedDeg : info.deg;
+  const luopan = planLuopanReport(deg, buildHouseNatalGrids(getHouseSettings()));
+  badge.className = `pi-badge ${luopan.supportCount >= 4 ? 'red' : luopan.supportCount >= 2 ? 'orange' : 'gold'}`;
+  badge.textContent = `${luopan.supportCount}/${luopan.total || 0}`;
+  title.textContent = `${info.th} · หล่อแกหนุน ${luopan.supportCount}/${luopan.total || 0} ศาสตร์`;
+  sub.textContent = `${Math.round(luopan.deg * 10) / 10}° · ${luopan.boundary.mountain.h}${luopan.boundary.mountain.code} · ${luopan.boundary.hex.symbol}#${luopan.boundary.hex.num} ${luopan.boundary.hex.name || ''}`;
   stars.innerHTML = [
     ['ภู', grade.stars.mountain, 'ดาวภูเขา'],
     ['น้ำ', grade.stars.water, 'ดาวน้ำ'],
     ['ฐ', grade.stars.base, 'ดาวฐาน']
   ].map(([label, star, text]) => `<div class="pi-star"><b>${star || '—'}</b><span>${label} · ${text}</span></div>`).join('');
-  const mainReasons = (grade.reasons || []).slice(0,3).map(x => `<div>${x}</div>`);
+  const votes = luopan.activeVoteReports.map(r => `<div class="${r.supports ? '' : 'warn'}">${r.supports ? 'หนุน' : 'ไม่หนุน'} · ${r.label}: ${fsEsc(r.detail)}</div>`);
+  const mainReasons = [...votes, ...(grade.reasons || []).slice(0,2).map(x => `<div>${x}</div>`)];
   const warns = (grade.warnings || []).slice(0,3).map(x => `<div class="warn">${x}</div>`);
-  reasons.innerHTML = [...mainReasons, ...warns].join('') || '<div>ยังไม่มีเหตุผลเฉพาะ</div>';
+  const boundaryWarns = luopan.boundary.warnings.map(x => `<div class="warn">${fsEsc(x)}</div>`);
+  reasons.innerHTML = [...mainReasons, ...warns, ...boundaryWarns].join('') || '<div>ยังไม่มีเหตุผลเฉพาะ</div>';
   const labels = {door:'ประตู/ทางเดิน', bedroom:'ห้องนอน', office:'ทำงาน', storage:'เก็บของ'};
   usage.innerHTML = Object.entries(labels).map(([k, label]) => {
     const st = grade.usage?.[k] || 'neutral';
@@ -4008,13 +4200,8 @@ function drawFloorPlan(){
 
   const natalGrids = buildHouseNatalGrids(getHouseSettings());
 
-  /* ชั้น 45° · สีดาว 9 ยุค v1.2 วิ่งถึงศูนย์กลาง อ่านโซนใหญ่ก่อน */
-  COMPASS_DIRS.forEach(item => {
-    const grade = planGradeForDir(item.dir, natalGrids);
-    const colors = floorGradeColors(grade.color);
-    ctx.globalAlpha = Math.min(planState.opacity, .78);
-    drawPlanSector(ctx, item.deg - 22.5, item.deg + 22.5, 0, planState.radius, colors);
-  });
+  /* หล่อแกดิจิทัล: แต่ละศาสตร์ยิงแดง opacity เท่ากัน ซ้อนกัน = consensus เข้มขึ้น */
+  drawPlanDigitalLuopan(ctx, natalGrids);
   if(planState.selectedDir){
     const selected = COMPASS_DIRS.find(d => d.dir === planState.selectedDir);
     if(selected){
@@ -4112,6 +4299,12 @@ function planDirFromPoint(p){
   const compassDeg = normalizeDeg(Math.atan2(dx, dy) * 180 / Math.PI);
   return getDirCode8(compassDeg - planState.rotation);
 }
+function planCompassDegFromPoint(p){
+  const dx = p.x - planState.cx;
+  const dy = planState.cy - p.y;
+  const canvasDeg = normalizeDeg(Math.atan2(dx, dy) * 180 / Math.PI);
+  return normalizeDeg(canvasDeg - planState.rotation);
+}
 
 if(planCanvas){
   planCanvas.addEventListener('pointerdown', ev => {
@@ -4127,7 +4320,9 @@ if(planCanvas){
       planCanvas.setPointerCapture(ev.pointerId);
       drawFloorPlan();
     } else if(planDistanceFromCenter(p) <= planState.radius * 1.12){
-      selectPlanDirection(planDirFromPoint(p));
+      const deg = planCompassDegFromPoint(p);
+      planState.selectedDeg = deg;
+      selectPlanDirection(getDirCode8(deg));
       drawFloorPlan();
     }
   });
@@ -4161,7 +4356,8 @@ document.getElementById('planUpload')?.addEventListener('change', ev => {
       document.getElementById('planEmpty').style.display = 'none';
       planState.imgRect = fitPlanImageRect();
       resetPlanCircle();
-      planState.selectedDir = getDirCode8(document.getElementById('houseFacingDeg')?.value || 0);
+      planState.selectedDeg = normalizeDeg(document.getElementById('houseFacingDeg')?.value || 0);
+      planState.selectedDir = getDirCode8(planState.selectedDeg);
       drawFloorPlan();
     };
     img.src = String(reader.result || '');
@@ -4197,6 +4393,7 @@ document.getElementById('btnPlanClear')?.addEventListener('click', ()=>{
   planState.imgName = '';
   planState.imageRotation = 0;
   planState.selectedDir = null;
+  planState.selectedDeg = null;
   document.getElementById('planUpload').value = '';
   document.getElementById('planEmpty').style.display = '';
   resetPlanInspector();
