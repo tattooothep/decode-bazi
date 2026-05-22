@@ -239,7 +239,7 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .qimen-door-mark:hover{filter:brightness(1.25);}
 .qimen-door-mark circle{stroke:rgba(13,15,18,.72);stroke-width:1.5;}
 .qimen-door-mark text{font-family:var(--tc);font-size:12px;font-weight:700;text-anchor:middle;dominant-baseline:middle;fill:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7);}
-.compass-needle{transform-origin:200px 200px;transition:transform .25s cubic-bezier(.4,0,.2,1);}
+.compass-needle{transform-origin:200px 200px;will-change:transform;backface-visibility:hidden;}
 .facing-arrow{transform-origin:200px 200px;transition:transform .35s ease;}
 .compass-deg{font-family:var(--mono);font-size:42px;font-weight:700;color:var(--gold);letter-spacing:-.02em;line-height:1;}
 .compass-deg-unit{font-size:20px;color:var(--fg-soft);margin-left:2px;}
@@ -1295,22 +1295,41 @@ function buildCompass(){
   const dirRing = document.getElementById('dirRing');
   const mountainRing = document.getElementById('mountainRing');
   const cx = 200, cy = 200;
+  /* iPhone-Compass style · N เด่น · 4 ทิศหลักใหญ่ · 4 ทิศรองเล็ก · 22 พ.ค. */
   const dirs = [
-    {a:0,t:'N',c:'var(--vermilion)'},{a:45,t:'NE'},{a:90,t:'E'},{a:135,t:'SE'},
-    {a:180,t:'S'},{a:225,t:'SW'},{a:270,t:'W'},{a:315,t:'NW'}
+    {a:0,   t:'N',  c:'var(--vermilion)', sz:24, w:900, dy:6, tier:'primary'},
+    {a:45,  t:'NE', c:'var(--gold)',      sz:10, w:500, dy:3, tier:'sub'},
+    {a:90,  t:'E',  c:'var(--gold)',      sz:16, w:700, dy:5, tier:'cardinal'},
+    {a:135, t:'SE', c:'var(--gold)',      sz:10, w:500, dy:3, tier:'sub'},
+    {a:180, t:'S',  c:'var(--gold)',      sz:16, w:700, dy:5, tier:'cardinal'},
+    {a:225, t:'SW', c:'var(--gold)',      sz:10, w:500, dy:3, tier:'sub'},
+    {a:270, t:'W',  c:'var(--gold)',      sz:16, w:700, dy:5, tier:'cardinal'},
+    {a:315, t:'NW', c:'var(--gold)',      sz:10, w:500, dy:3, tier:'sub'},
   ];
   dirs.forEach(d=>{
     const rad = (d.a - 90) * Math.PI / 180;
     const x = cx + Math.cos(rad) * 145;
     const y = cy + Math.sin(rad) * 145;
+    /* N · highlight background pill ให้โดดเด่นบน vrings */
+    if (d.tier === 'primary') {
+      const pill = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      pill.setAttribute('cx', x);
+      pill.setAttribute('cy', y - 2);
+      pill.setAttribute('r', 16);
+      pill.setAttribute('fill', 'rgba(201,92,74,.18)');
+      pill.setAttribute('stroke', 'var(--vermilion)');
+      pill.setAttribute('stroke-width', '1.2');
+      dirRing.appendChild(pill);
+    }
     const text = document.createElementNS('http://www.w3.org/2000/svg','text');
     text.setAttribute('x', x);
-    text.setAttribute('y', y + 5);
+    text.setAttribute('y', y + d.dy);
     text.setAttribute('text-anchor','middle');
     text.setAttribute('font-family','JetBrains Mono, monospace');
-    text.setAttribute('font-size','13');
-    text.setAttribute('font-weight','700');
-    text.setAttribute('fill', d.c || 'var(--gold)');
+    text.setAttribute('font-size', d.sz);
+    text.setAttribute('font-weight', d.w);
+    text.setAttribute('fill', d.c);
+    if (d.tier === 'sub') text.setAttribute('opacity', '0.55');
     text.textContent = d.t;
     dirRing.appendChild(text);
   });
@@ -1483,6 +1502,32 @@ function attachOrientation(){
   const needle = document.getElementById('compassNeedle');
   const lockBtn = document.getElementById('btnLockFacing');
 
+  /* Smooth compass · EMA + Shortest path + rAF · 22 พ.ค. */
+  const EMA_ALPHA = 0.18;      /* smaller = นิ่ง · ใหญ่ = ไว */
+  const RAF_LERP  = 0.20;      /* easing per frame */
+  let targetCumAngle = null;   /* accumulator องศาสะสม · กัน spin 360° */
+  let renderCumAngle = null;   /* ค่าที่ render ขณะนี้ */
+  let smoothedHeading = null;  /* EMA ของ heading 0-360 */
+  let lastRawHeading = null;
+  let rafId = null;
+
+  function renderLoop(){
+    if (targetCumAngle == null) { rafId = null; return; }
+    if (renderCumAngle == null) renderCumAngle = targetCumAngle;
+    /* spring/lerp ใกล้ target */
+    renderCumAngle += (targetCumAngle - renderCumAngle) * RAF_LERP;
+    needle.style.transform = `rotate(${-renderCumAngle}deg)`;
+    if (Math.abs(targetCumAngle - renderCumAngle) > 0.05) {
+      rafId = requestAnimationFrame(renderLoop);
+    } else {
+      renderCumAngle = targetCumAngle;
+      needle.style.transform = `rotate(${-renderCumAngle}deg)`;
+      rafId = null;
+    }
+  }
+  /* expose ให้ stopCompass cancel ได้ */
+  window._fsCompassRafCancel = () => { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } };
+
   orientHandler = (event)=>{
     let heading;
     if(event.webkitCompassHeading !== undefined && event.webkitCompassHeading !== null){
@@ -1494,10 +1539,35 @@ function attachOrientation(){
       return;
     }
     heading = ((heading % 360) + 360) % 360;
-    lastHeading = heading;
-    deg.textContent = Math.round(heading);
-    needle.style.transform = `rotate(${-heading}deg)`;
-    status.innerHTML = `<b>กำลังอ่านเซ็นเซอร์</b> · ${getDirectionName(heading)}<br/>กดล็อกเมื่อทิศตรงหน้าบ้าน`;
+
+    /* EMA low-pass · ลด jitter sensor · ระวัง wrap 0/360 */
+    if (smoothedHeading == null) {
+      smoothedHeading = heading;
+    } else {
+      let d = heading - smoothedHeading;
+      if (d > 180) d -= 360;
+      else if (d < -180) d += 360;
+      smoothedHeading += EMA_ALPHA * d;
+      smoothedHeading = ((smoothedHeading % 360) + 360) % 360;
+    }
+
+    /* Shortest path → cumulative angle · กัน spin 358° ตอนข้าม 0 */
+    if (targetCumAngle == null || lastRawHeading == null) {
+      targetCumAngle = smoothedHeading;
+    } else {
+      let delta = smoothedHeading - lastRawHeading;
+      if (delta > 180) delta -= 360;
+      else if (delta < -180) delta += 360;
+      targetCumAngle += delta;
+    }
+    lastRawHeading = smoothedHeading;
+    lastHeading = smoothedHeading;
+
+    deg.textContent = Math.round(smoothedHeading);
+    /* trigger rAF loop · ถ้ายังไม่วิ่งอยู่ */
+    if (!rafId) rafId = requestAnimationFrame(renderLoop);
+
+    status.innerHTML = `<b>กำลังอ่านเซ็นเซอร์</b> · ${getDirectionName(smoothedHeading)}<br/>กดล็อกเมื่อทิศตรงหน้าบ้าน`;
     lockBtn.disabled = false;
   };
 
@@ -1513,6 +1583,8 @@ function stopCompass(){
     window.removeEventListener('deviceorientation', orientHandler, true);
     orientHandler = null;
   }
+  /* Smooth · cancel rAF loop · 22 พ.ค. */
+  if (typeof window._fsCompassRafCancel === 'function') window._fsCompassRafCancel();
   compassWatching = false;
   const btn = document.getElementById('btnCompassStart');
   btn.textContent = 'เริ่ม Live Compass';
