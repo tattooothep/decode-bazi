@@ -78,6 +78,28 @@ nav .breadcrumb .cur{color:var(--gold);}
 .school-btn .ic{font-size:14px;line-height:1;}
 
 main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
+.fs-workflow{display:flex;flex-direction:column;gap:24px;}
+.fs-step{background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border:1px solid var(--gold-line);border-radius:22px;overflow:hidden;}
+.fs-step-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap;background:rgba(200,164,77,.045);}
+.fs-step-kicker{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;}
+.fs-step-head h2{font-family:var(--serif);font-size:clamp(24px,3vw,34px);font-weight:400;line-height:1.1;margin:0;}
+.fs-step-head h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
+.fs-step-head p{font-size:13px;color:var(--fg-soft);line-height:1.6;max-width:720px;margin-top:8px;}
+.fs-step-badge{font-family:var(--mono);font-size:11px;color:var(--bg);background:var(--gold);border-radius:999px;padding:7px 11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;}
+.fs-step-body{padding:18px;}
+.fs-step-body.no-pad{padding:0;}
+.fs-measure-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start;}
+.fs-compass-drawer{display:block;}
+.fs-compass-drawer summary{cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg-3);margin-bottom:12px;}
+.fs-compass-drawer .compass-card{max-width:none;}
+.fs-house-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start;}
+.fs-timing-layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:18px;align-items:start;}
+.fs-timing-stack{display:flex;flex-direction:column;gap:18px;}
+.fs-action-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;}
+.fs-action-btn{background:var(--gold);border:0;color:var(--bg);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;border-radius:8px;padding:9px 12px;cursor:pointer;}
+.fs-action-btn:hover{background:var(--gold-bright);}
+.fs-save-status{font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
+@media(max-width:1080px){.fs-measure-grid,.fs-house-layout,.fs-timing-layout{grid-template-columns:1fr;}}
 .grid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
 @media(max-width:1080px){.grid{grid-template-columns:1fr;}}
 
@@ -460,11 +482,10 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 </nav>
 
 <section class="hero">
-  <div class="eyebrow">玄空飛星 · XUAN KONG FEI XING · PERIOD 9</div>
-  <h1>ดาวเหิน <span  class="tc" data-i18n="auto.f.001">9 ยุค</span> · ปี · เดือน · วัน · ยาม</h1>
+  <div class="eyebrow">陽宅 · HOUSE FENG SHUI WORKFLOW · PERIOD 9</div>
+  <h1>ตั้งดวงบ้าน <span  class="tc" data-i18n="auto.f.001">วัดทิศ → ผังบ้าน → แปลน → จังหวะเวลา</span></h1>
   <p class="sub">
-    ผังเดียวเห็นทั้ง 4 layer · <i data-i18n="auto.f.002">ไท่ซุ่ย 太歲 · 5 เหลือง 五黃 · 3 ชะ 三煞</i><br/>
-    ค้นหาทิศบ้านด้วย <b>browser compass + Google Maps</b> · กำหนดทิศมงคลของบ้าน
+    เริ่มจากวัด Facing บน Google Map ให้แม่น · ใส่ปีสร้างเพื่อขึ้นผังดาวบ้านถาวร · วางแปลนจริง · แล้วค่อยดูจังหวะปี/เดือน/วัน/ยาม
   </p>
 </section>
 
@@ -506,6 +527,10 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="house-config-title">House Facing and Construction Period · ตั้งค่าบ้าน</div>
       <div class="house-config-grid">
         <div class="house-field">
+          <label for="houseName">House name</label>
+          <input id="houseName" type="text" value="บ้านของฉัน" maxlength="80"/>
+        </div>
+        <div class="house-field">
           <label for="houseFacingDeg">Facing degrees</label>
           <input id="houseFacingDeg" type="number" min="0" max="359.9" step="0.1" value="180"/>
         </div>
@@ -524,6 +549,10 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       </div>
       <div class="house-help">
         ใช้สร้างผัง <b>山 ดาวภูเขา</b> · <b>水 ดาวแม่น้ำ</b> · <b>基 ดาวฐาน</b> ตรงกลาง 9 ช่อง · ค่าเริ่มต้น S2 180° / Period 9
+        <div class="fs-action-row">
+          <button class="fs-action-btn" id="btnSaveHouse">บันทึกบ้าน</button>
+          <span class="fs-save-status" id="houseSaveStatus">บันทึกในเครื่องนี้อัตโนมัติ</span>
+        </div>
       </div>
     </div>
     <div class="person-filter-row" id="personFilterRow" style="display:none">
@@ -666,6 +695,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           <button class="map-btn" id="btnMapZoomIn">＋ ซูม</button>
           <button class="map-btn" id="btnMapZoomOut">－ ย่อ</button>
           <button class="map-btn" id="btnMapExpand">⛶ เต็มจอ</button>
+          <button class="map-btn" id="btnLockHouseFromMap">鎖 ล็อกทิศบ้าน</button>
           <button  class="map-btn" id="btnClear" data-i18n="auto.f.017">↻ ล้าง</button>
         </div>
       </div>
@@ -767,6 +797,87 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
 
 <script>
+// ═══════════════════════════════════════════════════════════════
+//  WORKFLOW LAYOUT · reorder existing blocks into 4 clear cards
+// ═══════════════════════════════════════════════════════════════
+(function arrangeFengshuiWorkflow(){
+  const main = document.querySelector('main');
+  if(!main || main.dataset.fsArranged === '1') return;
+  const topbar = document.querySelector('.topbar');
+  const schoolRow = document.querySelector('.school-row');
+  const mapCard = document.querySelector('.map-card');
+  const compassCard = document.querySelector('.compass-card');
+  const palaceGrid = document.querySelector('.palace-grid-wrap');
+  const side = document.querySelector('.side');
+  const planCard = document.getElementById('planCard');
+  if(!mapCard || !palaceGrid || !side || !planCard) return;
+
+  function step(no, zh, title, desc, badge){
+    const wrap = document.createElement('section');
+    wrap.className = 'fs-step';
+    wrap.innerHTML = `
+      <div class="fs-step-head">
+        <div>
+          <div class="fs-step-kicker">${String(no).padStart(2,'0')} · ${zh}</div>
+          <h2>${title}</h2>
+          <p>${desc}</p>
+        </div>
+        <div class="fs-step-badge">${badge}</div>
+      </div>
+      <div class="fs-step-body"></div>
+    `;
+    return { wrap, body: wrap.querySelector('.fs-step-body') };
+  }
+
+  const flow = document.createElement('div');
+  flow.className = 'fs-workflow';
+
+  const s1 = step(1, '坐向', 'หาทิศบ้าน · <span class="tc">Facing</span>', 'ใช้ Google Map ลากผนัง A→B แล้วปรับ +/− 0.1° ให้เส้นทองขนานขอบบ้าน จากนั้นกดล็อกทิศบ้านเพื่อส่งองศาไปทุกการ์ด', 'INPUT');
+  const measure = document.createElement('div');
+  measure.className = 'fs-measure-grid';
+  measure.appendChild(mapCard);
+  if(compassCard){
+    const details = document.createElement('details');
+    details.className = 'fs-compass-drawer';
+    details.innerHTML = '<summary>เปิด Live Compass เสริม · ใช้ตอนอยู่นอกบ้าน</summary>';
+    details.appendChild(compassCard);
+    measure.appendChild(details);
+  }
+  s1.body.appendChild(measure);
+
+  const s2 = step(2, '宅盤', 'ผังบ้านหลังนี้ · <span class="tc">Flying Star</span>', 'ตั้งชื่อบ้าน ปีสร้าง/ปีรีโนเวทใหญ่ และ Period เพื่อคำนวณดาวภูเขา 山 ดาวแม่น้ำ 水 และดาวฐาน 基 ของบ้านหลังนี้', 'HOUSE');
+  if(topbar) s2.body.appendChild(topbar);
+  if(schoolRow) s2.body.appendChild(schoolRow);
+  const houseLayout = document.createElement('div');
+  houseLayout.className = 'fs-house-layout';
+  houseLayout.appendChild(palaceGrid);
+  const peopleCard = document.getElementById('peopleCard');
+  if(peopleCard) houseLayout.appendChild(peopleCard);
+  s2.body.appendChild(houseLayout);
+
+  const s3 = step(3, '平面圖', 'แปลนบ้านจริง · <span class="tc">Floor Plan</span>', 'อัปโหลดแปลนบ้าน หมุนรูปให้ตรง วางจุดกลาง 中 แล้วใช้ทิศที่ล็อกจากการ์ดแรกเป็นแกนของวง 24 ขุนเขาและดาวบนพื้นที่จริง', 'PLAN');
+  s3.body.classList.add('no-pad');
+  s3.body.appendChild(planCard);
+
+  const s4 = step(4, '流年流月', 'จังหวะปัจจุบัน · <span class="tc">Timing</span>', 'ชั้นนี้คือความมงคลชั่วคราวของปี เดือน วัน ยาม รวมถึงไท่ซุ่ย 3 ชะ 5 เหลือง และรายละเอียดรายวัง ไม่ใช่โครงบ้านถาวร', 'LIVE');
+  const timingLayout = document.createElement('div');
+  timingLayout.className = 'fs-timing-layout';
+  const timingStack = document.createElement('div');
+  timingStack.className = 'fs-timing-stack';
+  ['.now-playing', '#warningList'].forEach(sel => {
+    const el = sel === '#warningList' ? document.getElementById('warningList')?.closest('.card') : document.querySelector(sel);
+    if(el) timingStack.appendChild(el);
+  });
+  timingLayout.appendChild(timingStack);
+  const palaceDetail = document.getElementById('palaceDetail');
+  if(palaceDetail) timingLayout.appendChild(palaceDetail);
+  s4.body.appendChild(timingLayout);
+
+  [s1.wrap, s2.wrap, s3.wrap, s4.wrap].forEach(x => flow.appendChild(x));
+  main.dataset.fsArranged = '1';
+  main.replaceChildren(flow);
+})();
+
 // ═══════════════════════════════════════════════════════════════
 //  THEME
 // ═══════════════════════════════════════════════════════════════
@@ -1333,6 +1444,7 @@ function initHouseInputs(){
   let hasSavedPeriod = false;
   try{
     const saved = JSON.parse(localStorage.getItem('hk-fs-house') || '{}');
+    if(typeof saved.name === 'string' && saved.name.trim()) document.getElementById('houseName').value = saved.name.trim();
     if(Number.isFinite(Number(saved.facingDeg))) document.getElementById('houseFacingDeg').value = normalizeDeg(saved.facingDeg).toFixed(1).replace(/\.0$/,'');
     if(Number.isFinite(Number(saved.constructionYear))) document.getElementById('houseConstructionYear').value = Number(saved.constructionYear);
     if(Number.isFinite(Number(saved.period))){
@@ -1346,10 +1458,13 @@ function initHouseInputs(){
 function saveHouseInputs(){
   try{
     localStorage.setItem('hk-fs-house', JSON.stringify({
+      name: String(document.getElementById('houseName')?.value || '').trim() || 'บ้านของฉัน',
       facingDeg: normalizeDeg(document.getElementById('houseFacingDeg').value),
       constructionYear: Number(document.getElementById('houseConstructionYear').value),
       period: Number(document.getElementById('housePeriod').value)
     }));
+    const st = document.getElementById('houseSaveStatus');
+    if(st) st.textContent = 'บันทึกแล้วในเครื่องนี้';
   }catch(e){}
 }
 function syncHouseMountainFromDegree(save=true){
@@ -1370,8 +1485,29 @@ function syncHousePeriodFromYear(){
   document.getElementById('housePeriod').value = getPeriodStar(year);
   saveHouseInputs();
 }
+function setHouseFacingFromDegree(deg, scrollToGrid=false){
+  const normalized = normalizeDeg(deg);
+  document.getElementById('houseFacingDeg').value = String(Math.round(normalized * 10) / 10).replace(/\.0$/,'');
+  syncHouseMountainFromDegree(true);
+  renderGrid();
+  if(typeof drawFloorPlan === 'function') drawFloorPlan();
+  if(scrollToGrid) document.querySelector('.palace-grid-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function lockMeasuredFacingToHouse(){
+  if(currentBearing == null || !Number.isFinite(Number(currentBearing))){
+    const st = document.getElementById('wallFineStatus');
+    if(st) st.textContent = 'ต้องวัดทิศบนแผนที่ก่อน';
+    return;
+  }
+  setHouseFacingFromDegree(currentBearing, true);
+  const st = document.getElementById('houseSaveStatus');
+  if(st) st.textContent = 'ล็อกทิศจากแผนที่แล้ว';
+}
 initHouseInputs();
 
+document.getElementById('houseName').addEventListener('change', saveHouseInputs);
+document.getElementById('btnSaveHouse').addEventListener('click', ()=>{ saveHouseInputs(); renderGrid(); });
+document.getElementById('btnLockHouseFromMap').addEventListener('click', lockMeasuredFacingToHouse);
 document.getElementById('btnNow').addEventListener('click', ()=>{ initDateInputs(); renderGrid(); });
 document.getElementById('setYear').addEventListener('change', renderGrid);
 document.getElementById('setDate').addEventListener('change', ()=>{
@@ -1993,6 +2129,7 @@ document.getElementById('btnLockFacing').addEventListener('click', ()=>{
   document.getElementById('btnFlipFacing').disabled = false;
   setCompassArrow(lastHeading);
   applyFacing(lastHeading);
+  if(typeof setHouseFacingFromDegree === 'function') setHouseFacingFromDegree(lastHeading, true);
 });
 document.getElementById('btnFlipFacing').addEventListener('click', ()=>{
   setFacingMode(facingMode === 'facing' ? 'sitting' : 'facing');
