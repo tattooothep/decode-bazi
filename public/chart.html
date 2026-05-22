@@ -780,6 +780,14 @@
     if (s === 'f' || s === 'female') return 'F';
     return 'M';
   }
+  function normBirthTimeKnown(p){
+    if (!p) return true;
+    var raw = p.birthTimeKnown;
+    if (raw == null) raw = p.birth_time_known;
+    if (raw === false || raw === 0) return false;
+    if (String(raw).toLowerCase() === 'false' || String(raw) === '0') return false;
+    return true;
+  }
   /* parse TIMESTAMPTZ via string split · ไม่ใช้ Date (Codex mitigation #2 · กัน timezone drift) */
   function splitDt(iso){
     if (!iso) return { date: '', time: '' };
@@ -795,6 +803,7 @@
       name: p.name || p.displayName || '',
       date: (dt && dt.date) || p.date || p.birthDate || '',
       time: (dt && dt.time) || p.time || p.birthTime || '',
+      birthTimeKnown: normBirthTimeKnown(p),
       gender: normGender(p.gender),
       place: p.birth_location_name || p.place || p.location || 'Bangkok',
       longitude: finite(p.birth_lng != null ? p.birth_lng : p.longitude, 100.5018),
@@ -807,7 +816,8 @@
       localStorage.setItem('hk_birth', JSON.stringify({
         name: s.name, date: s.date, time: s.time, place: s.place,
         longitude: s.longitude, lng: s.longitude, latitude: s.latitude,
-        gender: s.gender, profileId: s.profileId
+        gender: s.gender, profileId: s.profileId,
+        birthTimeKnown: s.birthTimeKnown !== false
       }));
       if (s.profileId) localStorage.setItem('hk_profile_id', s.profileId);
       if (s.name) localStorage.setItem('hk_profile_name', s.name);
@@ -889,7 +899,7 @@
     var res = await fetchActiveProfile();
 	    if (res.auth && res.profile) {
 	      var snap = norm(res.profile, 'db');
-	      if (snap.date && snap.time) {
+	      if (snap.date && (snap.birthTimeKnown === false || snap.time)) {
 	        syncLocalStorage(snap);
 	        return snap;
 	      }
@@ -899,7 +909,7 @@
 	      var synced = await window.__hkProfileReady.catch(function(){ return null; });
 	      if (synced && synced.birth_datetime) {
 	        var ps = norm(synced, 'profile-sync');
-	        if (ps.date && ps.time) {
+	        if (ps.date && (ps.birthTimeKnown === false || ps.time)) {
 	          syncLocalStorage(ps);
 	          return ps;
 	        }
@@ -930,7 +940,8 @@
       time: s.time || '12:00',
       longitude: s.longitude || 100.5018,
       gender: s.gender || 'M',
-      dayBoundary: dayBoundary
+      dayBoundary: dayBoundary,
+      birthTimeKnown: s.birthTimeKnown !== false
     });
   }
   function fetchChart(s){
@@ -2163,7 +2174,8 @@ window.addEventListener('resize', function(){
     // hero-meta: 📅 🕐 📍
     const heroMeta=document.querySelector('.hero-meta');
     if(heroMeta){
-      heroMeta.innerHTML=`<span>📅 ${b.date}</span><span>🕐 ${b.time}</span><span>📍 ${b.place||'Bangkok'}</span>`;
+      const timeLabel = b.birthTimeKnown === false ? 'ไม่ทราบเวลา' : (b.time || '12:00');
+      heroMeta.innerHTML=`<span>📅 ${b.date}</span><span>🕐 ${timeLabel}</span><span>📍 ${b.place||'Bangkok'}</span>`;
     }
     // คำนวณ totalEl + topEl ล่วงหน้า (ใช้ใน Hero + Section 02)
     const totalEl=Object.values(ec).reduce((s,v)=>s+v,0)||1;
@@ -2289,7 +2301,8 @@ window.addEventListener('resize', function(){
       const tstLine = tstStr
         ? `<br/><span style="font-family:var(--mono);font-size:11px;color:var(--gold);opacity:.85;">⏱ <b>TST ${tstStr}</b> · ปรับ ${totalShift} นาที (Longitude ${lngShift} + EoT ${eotShift})</span>`
         : '';
-      ledeP.innerHTML=`คุณเป็น <b>${dmShort}</b> ในฤดู${season} · เกิดวัน${dowTh} <b>${b.date}</b> เวลา <b>${b.time}</b> ที่ ${b.place||'Bangkok'}${tstLine}`;
+      const timePhrase = b.birthTimeKnown === false ? 'ไม่ทราบเวลาเกิด' : `เวลา <b>${b.time || '12:00'}</b>`;
+      ledeP.innerHTML=`คุณเป็น <b>${dmShort}</b> ในฤดู${season} · เกิดวัน${dowTh} <b>${b.date}</b> ${timePhrase} ที่ ${b.place||'Bangkok'}${tstLine}`;
     }
 
     // §02 Elements bar (5 ธาตุ) · 19 พ.ค. · ใช้ Functional (voytek_strength.bars) · ตำราอากง

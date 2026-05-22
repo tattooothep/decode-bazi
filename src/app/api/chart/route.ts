@@ -122,9 +122,16 @@ export async function POST(req: Request) {
       } catch (e) { console.error("yongshen_v2 (3p) synth failed:", e); }
 
       return NextResponse.json({
-        input: { date, longitude, gender },
+        input: { date, time: null, longitude, gender, birthTimeKnown: false },
         pillars: natal,
         pillarsZh: calc.pillarsZh,
+        dayMaster: calc.dayMaster,
+        day_master: calc.dayMaster,
+        strength: calc.strength,
+        geJu: calc.geJu,
+        ge_ju: calc.geJu,
+        yongshen: calc.yongshen,
+        climate: calc.climate,
         lunar: calc.lunar,
         tst: null,
         mode: "3p" as const,
@@ -346,9 +353,16 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      input: { date, time, longitude, gender },
+      input: { date, time, longitude, gender, birthTimeKnown: true },
       pillars: natal,
       pillarsZh: calc.pillarsZh,
+      dayMaster: calc.dayMaster,
+      day_master: calc.dayMaster,
+      strength: calc.strength,
+      geJu: calc.geJu,
+      ge_ju: calc.geJu,
+      yongshen: calc.yongshen,
+      climate: calc.climate,
       lunar: calc.lunar,
       tst: calc.tst,
       analysis: {

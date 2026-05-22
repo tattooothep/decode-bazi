@@ -23,6 +23,7 @@ type IntroBirthInput = {
   time: string;
   lng: number;
   gender: "M" | "F";
+  birthTimeKnown?: boolean;
   source: "profile" | "params";
 };
 
@@ -151,7 +152,7 @@ function cacheKey(opts: {
   ruleVersion: string;
 }): string {
   const parts = [
-    "v1",
+    "v2-3p",
     opts.ruleVersion,
     opts.profileId || "anon",
     opts.topic || "free",
@@ -161,6 +162,12 @@ function cacheKey(opts: {
     opts.message,
   ].join("|");
   return createHash("sha256").update(parts).digest("hex");
+}
+
+function knownBirthTime(raw: unknown): boolean {
+  if (raw === false || raw === 0) return false;
+  if (String(raw).toLowerCase() === "false" || String(raw) === "0") return false;
+  return true;
 }
 async function getCachedReply(key: string): Promise<{ reply: string; model: string } | null> {
   try {
@@ -208,9 +215,10 @@ async function buildBaziContext(profileId: string): Promise<string> {
       birth_datetime: string;
       birth_lng: number | null;
       gender: string | null;
+      birth_time_known: boolean | null;
     }>(
       `SELECT name, to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-              birth_lng, gender FROM profiles WHERE id=$1`,
+              birth_lng, gender, birth_time_known FROM profiles WHERE id=$1`,
       [profileId]
     );
     if (!row) return "(ไม่พบ profile)";
@@ -219,8 +227,24 @@ async function buildBaziContext(profileId: string): Promise<string> {
     const [date, time] = dt.split("T");
     const lng = Number(row.birth_lng || 100.5018);
     const gender = (row.gender === "female" ? "F" : "M") as "M" | "F";
+    const birthTimeKnown = knownBirthTime(row.birth_time_known);
 
-    const calc = await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender });
+    const calc = birthTimeKnown
+      ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: true })
+      : await calcBazi({ date, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: false });
+    if (calc.mode === "3p") {
+      return [
+        `ชื่อ: ${row.name || "—"} · เพศ ${gender}`,
+        `เกิด: ${date} · ไม่ทราบเวลาเกิด · ลองจิจูด ${lng}`,
+        `โหมดคำนวณ: 3 เสา (年/月/日) · ห้ามสร้างหรือเดาเสายาม`,
+        `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่คำนวณ)`,
+        `FACT LOCK: Day Master = ${calc.dayMaster} · element = ${STEM_ELEMENT_MAP[calc.dayMaster] || "unknown"} · ห้ามเรียกธาตุหลักผิด`,
+        `วันเจ้า: ${calc.dayMaster} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
+        `用神: ${calc.yongshen.slice(0, 3).map(y => `${y.stem}(${y.element})`).join(" · ")}`,
+        `格局: ${calc.geJu.structure || "ปกติ"}`,
+        `ข้อจำกัดสำคัญ: ไม่มีเสายาม จึงไม่อ่านเรื่องลูก/บั้นปลาย/เรือนยาม/河洛/命宮ที่ต้องพึ่งเวลาเกิด ให้ตอบจากปี เดือน วัน ฤดู และ Day Master เท่านั้น`,
+      ].join("\n");
+    }
     const ext = buildChartExtensions(
       calc.pillars,
       new Date(),
@@ -258,8 +282,9 @@ async function buildBaziContext(profileId: string): Promise<string> {
 
 function parseIntroBirthParams(url: URL): IntroBirthInput | null {
   const date = (url.searchParams.get("birthDate") || "").trim();
-  const time = (url.searchParams.get("birthTime") || "12:00").trim().slice(0, 5);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return null;
+  const birthTimeKnown = knownBirthTime(url.searchParams.get("birthTimeKnown"));
+  const time = birthTimeKnown ? (url.searchParams.get("birthTime") || "12:00").trim().slice(0, 5) : "12:00";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || (birthTimeKnown && !/^\d{2}:\d{2}$/.test(time))) return null;
   const lng = Number(url.searchParams.get("birthLng") || 100.5018);
   const genderRaw = (url.searchParams.get("gender") || "M").toLowerCase();
   return {
@@ -268,6 +293,7 @@ function parseIntroBirthParams(url: URL): IntroBirthInput | null {
     time,
     lng: Number.isFinite(lng) ? lng : 100.5018,
     gender: genderRaw === "female" || genderRaw === "f" ? "F" : "M",
+    birthTimeKnown,
     source: "params",
   };
 }
@@ -279,9 +305,10 @@ async function buildIntroBaziContext(profileId: string): Promise<string> {
       birth_datetime: string;
       birth_lng: number | null;
       gender: string | null;
+      birth_time_known: boolean | null;
     }>(
       `SELECT name, to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-              birth_lng, gender FROM profiles WHERE id=$1`,
+              birth_lng, gender, birth_time_known FROM profiles WHERE id=$1`,
       [profileId]
     );
     if (!row) return "(ไม่พบ profile)";
@@ -292,6 +319,7 @@ async function buildIntroBaziContext(profileId: string): Promise<string> {
       time: (timeRaw || "12:00").slice(0, 5),
       lng: Number(row.birth_lng || 100.5018),
       gender: (row.gender === "female" ? "F" : "M") as "M" | "F",
+      birthTimeKnown: knownBirthTime(row.birth_time_known),
       source: "profile",
     });
   } catch (e) {
@@ -303,7 +331,29 @@ async function buildIntroBaziContext(profileId: string): Promise<string> {
 async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<string> {
   try {
     const birthDate = new Date(`${input.date}T${input.time}:00+07:00`);
-    const calc = await calcBazi({ date: input.date, time: input.time, longitude: input.lng, gmtOffsetHours: 7, gender: input.gender });
+    const birthTimeKnown = input.birthTimeKnown !== false;
+    const calc = birthTimeKnown
+      ? await calcBazi({ date: input.date, time: input.time, longitude: input.lng, gmtOffsetHours: 7, gender: input.gender, birthTimeKnown: true })
+      : await calcBazi({ date: input.date, longitude: input.lng, gmtOffsetHours: 7, gender: input.gender, birthTimeKnown: false });
+    if (calc.mode === "3p") {
+      const dm = calc.dayMaster;
+      const dmElement = STEM_ELEMENT_MAP[dm] || "unknown";
+      const dmPolarity = STEM_POLARITY_MAP[dm] || "yang";
+      const dmElementTh = DM_LABEL_TH[dmElement] || dmElement;
+      const dmPolarityTh = DM_POLARITY_TH[dmPolarity] || dmPolarity;
+      return [
+        `DATA SOURCE: ${input.source}`,
+        `ชื่อ: ${input.name || "—"} · เพศ ${input.gender}`,
+        `เกิด: ${input.date} · ไม่ทราบเวลาเกิด · lng ${input.lng} · timezone Asia/Bangkok`,
+        `MODE LOCK: 3-pillar mode · ไม่มีเสายาม · ห้ามเดาเสา 12:00 เป็นชั่วยามจริง`,
+        `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement} · ห้ามเรียกธาตุหลักผิด`,
+        `DM THAI LOCK: ต้องเรียกตัวตนหลักว่า "ธาตุ${dmElementTh}แบบ${dmPolarityTh}" เท่านั้น · ธาตุรองห้ามเรียกเป็นตัวตนหลัก`,
+        `3 เสาแบบอ่านไทย: ปี=${STEM_TH[calc.pillars.year.stem]}/${BRANCH_TH_NAME[calc.pillars.year.branch]} · เดือน=${STEM_TH[calc.pillars.month.stem]}/${BRANCH_TH_NAME[calc.pillars.month.branch]} · วัน=${STEM_TH[calc.pillars.day.stem]}/${BRANCH_TH_NAME[calc.pillars.day.branch]} · ยาม=ไม่ทราบเวลาเกิด`,
+        `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · กำลัง${calc.strength.level}`,
+        `โครงดวง: ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วย ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
+        `ข้อจำกัด: ไม่มีเสายาม จึงไม่อ่านเรือนลูก/บั้นปลาย/命宮/河洛/拱夾ที่ต้องใช้เวลาเกิด ให้เน้น Day Master เดือนเกิด ฤดู ธาตุช่วย และภาพชีวิตจาก 3 เสา`,
+      ].join("\n");
+    }
     const ext = buildChartExtensions(
       calc.pillars,
       new Date(),
