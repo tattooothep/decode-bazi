@@ -3715,9 +3715,8 @@ function planLayerVisual(layer){
 function drawStarBox(ctx, star, x, y, layer){
   if(!star) return;
   const c = starElementColors(star);
-  const lv = planLayerVisual(layer);
-  const w = 34;
-  const h = 34;
+  const w = 32;
+  const h = 32;
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,.18)';
   ctx.shadowBlur = 5;
@@ -3729,18 +3728,11 @@ function drawStarBox(ctx, star, x, y, layer){
   ctx.strokeStyle = c.bd;
   ctx.lineWidth = 1.4;
   ctx.stroke();
-  /* แถบล่างบอกชั้นดาว: ภูซ้าย · น้ำขวา · ฐานล่าง */
-  drawRoundRect(ctx, x - w/2 + 4, y + h/2 - 10, w - 8, 7, 2);
-  ctx.fillStyle = lv.color;
-  ctx.fill();
   ctx.fillStyle = c.fg;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = '900 22px JetBrains Mono, monospace';
-  ctx.fillText(String(star), x, y - 4);
-  ctx.fillStyle = lv.fg;
-  ctx.font = '900 7px Noto Sans Thai, sans-serif';
-  ctx.fillText(lv.label, x, y + h/2 - 6.5);
+  ctx.font = '900 23px JetBrains Mono, monospace';
+  ctx.fillText(String(star), x, y);
   ctx.restore();
 }
 
@@ -3766,9 +3758,9 @@ function drawPlanDirectionLabel(ctx, item){
 function drawFloorStarCluster(ctx, dir, deg, natalGrids){
   /* Reference layout: ภูเขาซ้ายบน · แม่น้ำขวาบน · ฐานล่างกลาง ไม่หมุนตามทิศ */
   const stars = [
-    {star:natalGrids?.mountainGrid?.[dir], layer:'ภู', dx:-19, dy:-15},
-    {star:natalGrids?.waterGrid?.[dir], layer:'น้ำ', dx:19, dy:-15},
-    {star:natalGrids?.baseGrid?.[dir], layer:'ฐ', dx:0, dy:21}
+    {star:natalGrids?.mountainGrid?.[dir], layer:'ภู', dx:-23, dy:-17},
+    {star:natalGrids?.waterGrid?.[dir], layer:'น้ำ', dx:23, dy:-17},
+    {star:natalGrids?.baseGrid?.[dir], layer:'ฐ', dx:0, dy:25}
   ].filter(s => s.star);
   if(!stars.length) return;
   const base = planPoint(planState.radius * .50, deg);
