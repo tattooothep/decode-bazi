@@ -1157,6 +1157,33 @@ function getMountainCenterDeg(idx){
   const end = next <= start ? next + 360 : next;
   return normalizeDeg((start + end) / 2);
 }
+const M24_DIR_START = { N:0, NE:3, E:6, SE:9, S:12, SW:15, W:18, NW:21 };
+const M24_YANG = new Set(['甲','庚','壬','丙','乾','坤','艮','巽','寅','申','巳','亥']);
+function mountainYuanIndex(mountain){
+  const code = String(mountain?.code || '');
+  const n = Number(code.replace(/^[A-Z]+/, ''));
+  return Number.isFinite(n) && n >= 1 && n <= 3 ? n - 1 : 1;
+}
+function starHomeDir(star){
+  return Object.entries(LOSHU_BASE).find(([, n]) => Number(n) === Number(star))?.[0] || 'C';
+}
+function starFlightForward(centerStar, mountain){
+  /* 玄空下卦: 山盤取坐山、向盤取向方。以該山三元龍對應到入中星原宮的同元龍判陰陽;
+   * 五黃無本宮，沿用本山/本向陰陽。陽順飛、陰逆飛。 */
+  const star = Number(centerStar);
+  let judgeMountain = mountain;
+  if(star !== 5){
+    const home = starHomeDir(star);
+    const start = M24_DIR_START[home];
+    if(start != null){
+      judgeMountain = M24_RING[start + mountainYuanIndex(mountain)] || mountain;
+    }
+  }
+  return M24_YANG.has(judgeMountain?.h);
+}
+function flyGridByMountain(centerStar, mountain){
+  return starFlightForward(centerStar, mountain) ? rotateGrid(centerStar) : rotateGridReverse(centerStar);
+}
 function oppositeDir8(dir){
   return {N:'S',NE:'SW',E:'W',SE:'NW',S:'N',SW:'NE',W:'E',NW:'SE',C:'C'}[dir] || 'N';
 }
@@ -1166,17 +1193,24 @@ function getHouseSettings(){
   const period = Number(document.getElementById('housePeriod')?.value || getPeriodStar(constructionYear || 2026));
   const facingDir = getDirCode8(facingDeg);
   const sittingDir = oppositeDir8(facingDir);
-  return { facingDeg, constructionYear, period, facingDir, sittingDir, mountain:get24MountainByDeg(facingDeg) };
+  return {
+    facingDeg,
+    constructionYear,
+    period,
+    facingDir,
+    sittingDir,
+    mountain:get24MountainByDeg(facingDeg),
+    sittingMountain:get24MountainByDeg(facingDeg + 180)
+  };
 }
 function buildHouseNatalGrids(settings){
   const baseGrid = rotateGrid(settings.period);
-  const mountainCenter = baseGrid[settings.facingDir];
-  const waterCenter = baseGrid[settings.sittingDir];
+  const mountainCenter = baseGrid[settings.sittingDir];
+  const waterCenter = baseGrid[settings.facingDir];
   return {
     baseGrid,
-    /* v1: matches common S2 / Period 9 reference: mountain flies forward, water flies reverse. */
-    mountainGrid: rotateGrid(mountainCenter),
-    waterGrid: rotateGridReverse(waterCenter)
+    mountainGrid: flyGridByMountain(mountainCenter, settings.sittingMountain),
+    waterGrid: flyGridByMountain(waterCenter, settings.mountain)
   };
 }
 function elementGenerates(a, b){ return ELEMENT_GENERATES[a] === b; }
@@ -1617,8 +1651,8 @@ function renderGrid(){
           <span class="pcell-luck ${fsEsc(cellGrade.color || 'gold')}" title="${fsEsc(cellGrade.verdict)} · ${fsEsc(cellGrade.riskLevel)}">${fsEsc(planColorThai(cellGrade.color).split(' · ')[0])}</span>
         </div>
         <div class="stars-quad">
-          <div class="star-box star-period" title="山 ดาวภูเขา · คน/สุขภาพ · จาก Facing ${fsEsc(house.mountain.code)} / Period ${periodCenter}"><b>${mountainStar}</b><small>ภู</small></div>
-          <div class="star-box star-year" title="向/水 ดาวแม่น้ำ · ประตู/เงิน · จาก Sitting ${fsEsc(house.sittingDir)} / Period ${periodCenter}"><b>${waterStar}</b><small>น้ำ</small></div>
+          <div class="star-box star-period" title="山 ดาวภูเขา · คน/สุขภาพ · จาก Sitting ${fsEsc(house.sittingMountain.code)} / Period ${periodCenter}"><b>${mountainStar}</b><small>ภู</small></div>
+          <div class="star-box star-year" title="向/水 ดาวแม่น้ำ · ประตู/เงิน · จาก Facing ${fsEsc(house.mountain.code)} / Period ${periodCenter}"><b>${waterStar}</b><small>น้ำ</small></div>
           <div class="star-box star-base" title="基 ดาวฐาน · พื้นพลังของวัง"><b>${baseStar}</b><small>ฐาน</small></div>
           <div class="star-time-row">
             <span class="star-num star-month" title="月 ดาวเดือน">${gridMonth[dir]}<small>月</small></span>
