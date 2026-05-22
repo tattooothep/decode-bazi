@@ -44,6 +44,11 @@ next-env.d.ts
 *.bak
 *.bak.*
 
+# private research / test exports (ห้ามอยู่ใน public หรือ git)
+private/
+public/D03-*
+public/docs/research/
+
 # archives + databases
 *.tar.gz
 *.zip

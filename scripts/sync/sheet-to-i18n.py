@@ -263,6 +263,20 @@ def build_bundles(rows: list[dict[str, Any]], config: dict[str, Any]) -> tuple[d
     return bundles, errors
 
 
+def existing_entries_checksum(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    try:
+        with path.open(encoding="utf-8") as fh:
+            data = json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        return None
+    entries = data.get("entries")
+    if not isinstance(entries, dict):
+        return None
+    return checksum(entries)
+
+
 def write_bundles(bundles: dict[str, Any], config: dict[str, Any], dry_run: bool) -> None:
     outputs = config["outputs"]
     mapping = {
@@ -275,6 +289,9 @@ def write_bundles(bundles: dict[str, Any], config: dict[str, Any], dry_run: bool
         path = ROOT / rel_path
         if dry_run:
             print(f"dry-run {rel_path}: {bundles[key]['_meta']['entries_count']} entries")
+            continue
+        if existing_entries_checksum(path) == bundles[key]["_meta"]["checksum"]:
+            print(f"skipped {rel_path}: unchanged checksum")
             continue
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("w", encoding="utf-8") as fh:

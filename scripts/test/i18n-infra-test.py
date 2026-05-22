@@ -103,6 +103,56 @@ def test_export_rules() -> None:
         assert any("health_19_blocked_from_production" in error for error in errors)
 
 
+def test_write_bundles_skips_unchanged_entries() -> None:
+    with tempfile.TemporaryDirectory() as td:
+        tmp = Path(td)
+        module = load_export_module()
+        entries = {"daily_ok": {"th": {"main": "TH"}}}
+        bundle = {
+            "_meta": {
+                "version": "test.old",
+                "generated_at": "old",
+                "source_sheet_id": "sheet",
+                "checksum": module.checksum(entries),
+                "export_profile": "production",
+                "review_mode": False,
+                "entries_count": 1,
+            },
+            "entries": entries,
+        }
+        out_paths = {
+            "decode_production": tmp / "decode.production.json",
+            "decode_staging": tmp / "decode.staging.json",
+            "qimen_production": tmp / "qimen.production.json",
+            "qimen_staging": tmp / "qimen.staging.json",
+        }
+        for path in out_paths.values():
+            path.write_text(json.dumps(bundle, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+        new_bundle = {
+            **bundle,
+            "_meta": {
+                **bundle["_meta"],
+                "version": "test.new",
+                "generated_at": "new",
+            },
+        }
+        config = {"outputs": {key: str(path) for key, path in out_paths.items()}}
+        module.write_bundles(
+            {
+                "decode.production": new_bundle,
+                "decode.staging": new_bundle,
+                "qimen.production": new_bundle,
+                "qimen.staging": new_bundle,
+            },
+            config,
+            False,
+        )
+
+        written = json.loads(out_paths["decode_production"].read_text(encoding="utf-8"))
+        assert written["_meta"]["version"] == "test.old"
+
+
 def test_wrapper_contract_static() -> None:
     src = (ROOT / "src/lib/i18n-decode.ts").read_text(encoding="utf-8")
     assert "export function t(" in src
@@ -143,6 +193,7 @@ def test_hardcoded_scanner_daily_score() -> None:
 def main() -> int:
     for test in [
         test_export_rules,
+        test_write_bundles_skips_unchanged_entries,
         test_wrapper_contract_static,
         test_daily_score_contract_static,
         test_hardcoded_scanner_daily_score,

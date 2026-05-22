@@ -108,6 +108,13 @@ git push origin HEAD
 - ไม่ replicate · ไม่ remote · เครื่องพัง = หาย
 - ถ้า work เสร็จ + backup เท่านั้น · ไม่ commit = ขาดถาวร
 
+### 3b. Stash Snapshot Protocol · ก่อน drop ทุกครั้ง
+- ห้าม `git stash drop` ก่อน export snapshot อย่างน้อย 1 แบบ
+- งานใหญ่/เสี่ยงต้องมี 2 แบบ: patch (`git stash show -p --include-untracked`) + bundle (`git bundle create`)
+- ต้องบันทึก `git rev-parse stash@{N}` ลง manifest ก่อน drop เพราะเลข stash เลื่อนหลัง drop
+- ห้าม `git stash pop` บน branch หลักถ้า stash แตะ Layer 0/1, auth, DB migration, หรือ public HTML ใหญ่
+- ให้ apply บน temp branch ก่อนเท่านั้น แล้ว cherry-pick เฉพาะ diff ที่ตรวจแล้ว
+
 ### 4. Cut release = อ่านจาก HEAD ที่ commit ครบเท่านั้น
 ```bash
 cd /root/decode-app
@@ -224,6 +231,11 @@ Fix plan: <steps>
 - `src/lib/bazi-calc.ts` · `calcBazi()` · `getSolarTimeAtTST()`
 
 ห้าม inline `tyme.SolarTime.fromYmdHms()` ใน endpoint ใหม่
+
+**DANGER · ห้าม pop/apply stash ที่ลดเวอร์ชัน Layer 0/1 ทับ HEAD**
+- ถ้า stash มี `src/lib/tyme-tst.ts` หรือ `src/lib/bazi-calc.ts` ต้อง diff เทียบ HEAD ก่อนทุกครั้ง
+- ถ้า HEAD ใหม่กว่า ห้าม pop ตรง เพราะจะ downgrade engine และทำให้ดวง user เพี้ยน
+- ต้องรัน `node scripts/test-bazi-calc.cjs` ก่อนและหลัง cherry-pick ทุกครั้ง
 
 ## 3. ก่อนแก้ ต้องตอบ 5 ข้อนี้ก่อน
 
@@ -515,3 +527,77 @@ data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 **ขั้นตอนแก้:** อ่าน DATEPICK-LOCKED.md → ตอบ 5 ข้อ → ถามเจ้านาย → backup → phase → test 3 รอบ → รายงาน 8 จุด
 
 **Next:** `/fengshui` hub redesign (รอ session ใหม่)
+
+---
+
+# 🔬 Research DB Rules · `bazi-3000.db` / `bazi-research.db`
+
+บันทึก 21 พ.ค. 2026 · เจ้านายเตือน: **"งานนี้มีผลต่อชีวิตคน · ถ้ามั่วจะทำร้ายคน"**
+
+## กฎเหล็ก (ห้ามฝ่าฝืน · ทุก subagent · ทุก session)
+
+### 1. DB ต้องมี `category='famous'` เท่านั้น
+- ⛔ **ห้าม** ใส่ `category='ordinary'`
+- ⛔ **ห้าม** ใส่ `category='quiet'`
+- ⛔ **ห้าม** synthetic / persona / สมมุติ
+- ✅ คนจริง · มีใน Wikipedia/Wikidata/Astro-Databank เท่านั้น
+
+### 2. Source ที่อนุญาตเท่านั้น
+- ✅ **Astro-Databank** (astro.com/astro-databank) · ใช้เฉพาะ **Rodden Rating AA หรือ A**
+- ✅ **Gauquelin dataset** · ทะเบียนราษฎร์ฝรั่งเศส (public · นักกีฬา/หมอ/นักวิทย์)
+- ✅ Wikipedia/Wikidata (มี birth_date verify ได้)
+- ⛔ Rating B/C/DD = ห้ามใช้
+- ⛔ คนที่ไม่มี birth_date verify = ห้ามใส่
+
+### 3. ทุก row ต้องมี
+- `name` · ชื่อจริง
+- `birth_date` (YYYY-MM-DD verify ได้)
+- `time_verified` (1=AA/A · 0=ไม่มีเวลา)
+- `ground_truth_type` ('retro' = เหตุการณ์เกิดแล้ว · 'prosp' = ทำนายอนาคต)
+- `notes` · ระบุ source (เช่น "AstroDB AA Rodden ID 12345")
+
+### 4. Rate-limit แหล่งข้อมูล
+- IP server เดียว `72.62.247.64`
+- ดึงทีละหน้า · sleep 3-5s
+- max 20-30 req/นาที
+- cache local · re-use
+
+### 5. ทุก subagent ที่เพิ่มดวงต้อง
+- ✅ เช็คชื่อซ้ำใน DB ก่อน INSERT
+- ✅ INSERT category='famous' เท่านั้น (CHECK constraint จะ reject อื่น)
+- ✅ Backup DB ก่อนแก้
+- ✅ ระบุ source ทุกแถวใน notes
+- ⛔ ห้ามแต่งวันเกิด · ไม่ verify ได้ = skip
+- ⛔ ห้าม fake `time_verified=1` ถ้าไม่มี Rodden AA/A
+
+### 6. Synthetic เคยใช้ stage 3 · ถูกล้างออกแล้ว 21 พ.ค.
+- Backup ไฟล์: `synthetic-backup-full.sql` (46,721 บรรทัด)
+- **ห้ามเอากลับมาใส่ DB** เว้นแต่เจ้านายสั่งชัดเจน
+- Synthetic = test logic เท่านั้น · ไม่ใช่ ground truth
+
+### 7. ตรวจหลัง INSERT ทุกครั้ง
+```sql
+-- ต้องเป็น 0
+SELECT COUNT(*) FROM people WHERE category != 'famous';
+
+-- ต้องไม่มีดวงที่ไม่ verify
+SELECT COUNT(*) FROM people WHERE birth_date IS NULL;
+```
+
+## เหตุผล (ห้ามลืม)
+
+ดวงที่ใช้ training pattern จะกลายเป็น **base ของระบบ AI Sifu**
+ถ้า base มาจาก synthetic = AI Sifu อ่านมั่ว
+ผู้ใช้จริงเอาคำทำนายไป **ตัดสินใจชีวิต** (แต่งงาน · ลงทุน · ผ่าตัด · ย้ายบ้าน · เลือกอาชีพ)
+
+**คนเชื่อ → คนทำตาม → ชีวิตเปลี่ยน**
+
+ถ้าฐานข้อมูลของเราผิด · ความเสียหายไม่ได้อยู่ที่ตัวเลข accuracy · มันอยู่ที่ **ชีวิตคนที่เชื่อเรา**
+
+## ขั้นตอน DECODE BUILD MODE · เพิ่มดวง famous
+1. Backup DB ก่อนแก้
+2. หาชื่อ + verify จาก Astro-Databank/Gauquelin/Wikipedia
+3. กรอง Rodden Rating AA/A เท่านั้น
+4. INSERT batch (ID range ไม่ชนของเดิม)
+5. ตรวจ category='famous' · CHECK constraint
+6. รายงาน 8 จุด · ระบุ source ทุก batch
