@@ -972,6 +972,68 @@ const MODULE_ORDER = ['ba_zi','ze_ri','tai_sui','qi_men','yong_shen','twelve_off
 const STEM_ELEMENT = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
 const ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
 const ELEMENT_ZH = {wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
+const QIMEN_DOOR_TH = {
+  休門:'ประตูพัก', 生門:'ประตูเกิด', 傷門:'ประตูบาดเจ็บ', 杜門:'ประตูปิด',
+  景門:'ประตูภาพลักษณ์', 死門:'ประตูตาย', 驚門:'ประตูตกใจ', 開門:'ประตูเปิด',
+};
+const QIMEN_STAR_TH = {
+  天蓬:'ดาวเทียนเผิง', 天任:'ดาวเทียนเริ่น', 天沖:'ดาวเทียนชง',
+  天輔:'ดาวเทียนฝู่', 天英:'ดาวเทียนอิง', 天芮:'ดาวเทียนรุ่ย',
+  天柱:'ดาวเทียนจู้', 天心:'ดาวเทียนซิน', 天禽:'ดาวเทียนฉิน',
+};
+const QIMEN_DEITY_TH = {
+  值符:'เทพจื๋อฟู', 螣蛇:'เทพเถิงเสอ', 太陰:'เทพไท่อิน', 六合:'เทพลิ่วเหอ',
+  白虎:'เทพเสือขาว', 玄武:'เทพเสวียนอู่', 九地:'เทพเก้าดิน', 九天:'เทพเก้าฟ้า',
+};
+const FLYING_STAR_TH = {
+  '1白':'ดาวหนึ่งขาว', '2黑':'ดาวสองดำ', '3碧':'ดาวสามเขียว', '4綠':'ดาวสี่เขียว',
+  '5黃':'ดาวห้าเหลือง', '5黄':'ดาวห้าเหลือง', '6白':'ดาวหกขาว', '7赤':'ดาวเจ็ดแดง',
+  '8白':'ดาวแปดขาว', '9紫':'ดาวเก้าม่วง', '9白':'ดาวเก้าขาว',
+};
+const CONSTELLATION_TH = {
+  角宿:'ดาวเจี่ยว', 亢宿:'ดาวคัง', 氐宿:'ดาวตี', 房宿:'ดาวฝาง', 心宿:'ดาวซิน', 尾宿:'ดาวเว่ย', 箕宿:'ดาวจี',
+  斗宿:'ดาวโต่ว', 牛宿:'ดาวหนิว', 女宿:'ดาวหนวี่', 虛宿:'ดาวซวี', 虚宿:'ดาวซวี', 危宿:'ดาวเวย', 室宿:'ดาวซื่อ', 壁宿:'ดาวปี้',
+  奎宿:'ดาวขุย', 婁宿:'ดาวโหลว', 娄宿:'ดาวโหลว', 胃宿:'ดาวเว่ย', 昴宿:'ดาวเหม่า', 畢宿:'ดาวปี้', 毕宿:'ดาวปี้', 觜宿:'ดาวจุ่ย', 參宿:'ดาวเซิน', 参宿:'ดาวเซิน',
+  井宿:'ดาวจิ่ง', 鬼宿:'ดาวกุ่ย', 柳宿:'ดาวหลิ่ว', 星宿:'ดาวซิง', 張宿:'ดาวจาง', 张宿:'ดาวจาง', 翼宿:'ดาวอี้', 軫宿:'ดาวเจิ่น', 轸宿:'ดาวเจิ่น',
+};
+const SPIRIT_TH = {
+  青龍:'ดาวมังกรเขียว', 青龙:'ดาวมังกรเขียว', 明堂:'ดาวพระโรง', 金匱:'ดาวคลังทอง', 金匮:'ดาวคลังทอง',
+  天德:'ดาวคุณธรรมฟ้า', 玉堂:'ดาวพระโรงหยก', 司命:'ดาวผู้กำหนดชะตา',
+  天刑:'ดาวอาญาฟ้า', 朱雀:'ดาวนกแดง', 白虎:'ดาวเสือขาว', 天牢:'ดาวคุกฟ้า',
+  玄武:'ดาวเต่าดำ', 勾陳:'ดาวขอเกี่ยว', 勾陈:'ดาวขอเกี่ยว',
+};
+const OFFICER_TH = {
+  建日:'วันสร้าง', 除日:'วันขจัด', 滿日:'วันเต็ม', 满日:'วันเต็ม', 平日:'วันเสมอ',
+  定日:'วันกำหนด', 執日:'วันยึด', 执日:'วันยึด', 破日:'วันทำลาย', 危日:'วันอันตราย',
+  成日:'วันสำเร็จ', 收日:'วันเก็บ', 開日:'วันเปิด', 开日:'วันเปิด', 閉日:'วันปิด', 闭日:'วันปิด',
+};
+
+function qimenLabel(kind, zh){
+  if (!zh || zh === '·' || zh === '—') return zh || '—';
+  const dict = kind === 'door' ? QIMEN_DOOR_TH : kind === 'star' ? QIMEN_STAR_TH : QIMEN_DEITY_TH;
+  const th = dict[zh];
+  return th ? `${th} · ${zh}` : zh;
+}
+
+function localizeQimenReason(text){
+  return String(text || '')
+    .replace(/([🚪⭐])\s*(休門|生門|傷門|杜門|景門|死門|驚門|開門)(?=\s|$|[（(])/g, (_, icon, zh) => `${icon} ${qimenLabel('door', zh)}`)
+    .replace(/([🚪⭐])\s*(天蓬|天任|天沖|天輔|天英|天芮|天柱|天心|天禽)(?=\s|$|[（(])/g, (_, icon, zh) => `${icon} ${qimenLabel('star', zh)}`)
+    .replace(/([✨⭐])\s*(值符|螣蛇|太陰|六合|白虎|玄武|九地|九天)(?=\s|$|[（(])/g, (_, icon, zh) => `${icon} ${qimenLabel('deity', zh)}`);
+}
+
+function thZh(dict, zh){
+  const th = dict[zh];
+  return th ? `${th} · ${zh}` : zh;
+}
+
+function localizeAuspiciousReason(text){
+  return localizeQimenReason(text)
+    .replace(/\b([1-9][白黑碧綠绿黃黄赤紫])(?=\s|$|[（(])/g, (m) => thZh(FLYING_STAR_TH, m))
+    .replace(/(角宿|亢宿|氐宿|房宿|心宿|尾宿|箕宿|斗宿|牛宿|女宿|虛宿|虚宿|危宿|室宿|壁宿|奎宿|婁宿|娄宿|胃宿|昴宿|畢宿|毕宿|觜宿|參宿|参宿|井宿|鬼宿|柳宿|星宿|張宿|张宿|翼宿|軫宿|轸宿)(?=\s|$|[（(])/g, (m) => thZh(CONSTELLATION_TH, m))
+    .replace(/(青龍|青龙|明堂|金匱|金匮|天德|玉堂|司命|天刑|朱雀|白虎|天牢|玄武|勾陳|勾陈)(?=\s|$|[（(])/g, (m) => thZh(SPIRIT_TH, m))
+    .replace(/(建日|除日|滿日|满日|平日|定日|執日|执日|破日|危日|成日|收日|開日|开日|閉日|闭日)(?=\s|$|[（(])/g, (m) => thZh(OFFICER_TH, m));
+}
 
 function elementChipFromStem(stem){
   const el = STEM_ELEMENT[stem] || '';
@@ -1143,8 +1205,11 @@ async function performSearch(){
             palace_id: qm.palace_id || 1,
             direction: qm.direction || '·',
             door: qm.door || '·',
+            door_label: qimenLabel('door', qm.door || '·'),
             star: qm.star || '·',
+            star_label: qimenLabel('star', qm.star || '·'),
             deity: qm.deity || '·',
+            deity_label: qimenLabel('deity', qm.deity || '·'),
             heaven_stem: c.pillars?.hour?.stem || '·', earth_stem: c.pillars?.hour?.branch || '·',
             ju_pole:'yang', ju_number: qm.ju_number || 1,
             hex_num: h64.hex_num || null,
@@ -1153,9 +1218,9 @@ async function performSearch(){
             element: STEM_ELEMENT[c.pillars?.hour?.stem] || null,
             moduleScores: c.scoring?.moduleScores || {},
             matches: [
-              ...(c.scoring?.reasonsUp||[]).map(r => `${r.delta>0?'+':''}${r.delta} ${r.thai}`),
-              ...(c.scoring?.reasonsDown||[]).map(r => `${r.delta} ${r.thai}`),
-              ...(c.scoring?.warnings||[]).map(r => `ระวัง ${r.thai}`)
+              ...(c.scoring?.reasonsUp||[]).map(r => localizeAuspiciousReason(`${r.delta>0?'+':''}${r.delta} ${r.thai}`)),
+              ...(c.scoring?.reasonsDown||[]).map(r => localizeAuspiciousReason(`${r.delta} ${r.thai}`)),
+              ...(c.scoring?.warnings||[]).map(r => localizeAuspiciousReason(`ระวัง ${r.thai}`))
             ],
             tongshu: { day_officer: c.modules?.twelve_officers?.raw?.officer || '·',
                        yi:[], ji:[] },
@@ -1284,7 +1349,7 @@ function renderRealResults(items){
             <span>· ผังฉีเหมิน ${pole}${t.ju_number}局</span>
           </div>
           <div class="ctx">
-            <span class="tc">${t.heaven_stem}${t.earth_stem}</span><span style="color:var(--fg-soft);">時 · ประตู ${t.door}</span>
+            <span class="tc">${t.heaven_stem}${t.earth_stem}</span><span style="color:var(--fg-soft);">時 · ${t.door_label || qimenLabel('door', t.door)}</span>
           </div>
         </div>
         <div class="rscore" style="min-width:90px;">
@@ -1294,9 +1359,9 @@ function renderRealResults(items){
         </div>
       </div>
       <div class="result-body">
-        <div class="r-line"><span class="k">ประตู · 門</span><span class="v">${t.door||'—'}</span></div>
-        <div class="r-line"><span class="k">ดาว · 星</span><span class="v">${t.star||'—'}</span></div>
-        <div class="r-line"><span class="k">เทพ · 神</span><span class="v">${t.deity||'—'}</span></div>
+        <div class="r-line"><span class="k">ประตู · 門</span><span class="v">${t.door_label || qimenLabel('door', t.door)}</span></div>
+        <div class="r-line"><span class="k">ดาว · 星</span><span class="v">${t.star_label || qimenLabel('star', t.star)}</span></div>
+        <div class="r-line"><span class="k">เทพ · 神</span><span class="v">${t.deity_label || qimenLabel('deity', t.deity)}</span></div>
         <div class="r-line"><span class="k">ฟ้า/ดิน · 天地</span><span class="v">${t.heaven_stem||'·'} / ${t.earth_stem||'·'} ${stemChip}</span></div>
         <div class="r-line"><span class="k">ผัง · 局</span><span class="v">${pole}${t.ju_number||'?'}局</span></div>
       </div>
