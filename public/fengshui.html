@@ -87,6 +87,16 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .palace-grid-head h3 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
 .palace-grid-head .meta{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase;}
 .palace-grid-head .meta b{color:var(--gold);}
+.house-config{margin:0 0 16px;padding:14px;border:1px solid var(--gold-line);border-radius:14px;background:rgba(200,164,77,.06);}
+.house-config-title{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;}
+.house-config-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+.house-field label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:4px;}
+.house-field input,.house-field select{width:100%;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:12px;padding:8px 9px;border-radius:8px;outline:none;}
+.house-field input:focus,.house-field select:focus{border-color:var(--gold);}
+.house-help{margin-top:8px;font-size:11px;color:var(--fg-soft);line-height:1.55;}
+.house-help b{color:var(--gold-bright);font-family:var(--tc);}
+@media(max-width:760px){.house-config-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:460px){.house-config-grid{grid-template-columns:1fr;}}
 
 .pgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:8px;aspect-ratio:1;max-width:680px;margin:0 auto;}
 .pcell{position:relative;background:var(--bg-3);border:1px solid var(--line);border-radius:12px;padding:14px 10px;display:flex;flex-direction:column;cursor:pointer;transition:.25s;overflow:hidden;}
@@ -109,18 +119,22 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .pcell-top .dir{color:var(--gold-bright);font-weight:700;}
 .pcell-top .tri{font-family:var(--tc);font-size:11px;color:var(--gold-deep);}
 
-.stars-quad{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px 8px;flex:1;position:relative;z-index:2;align-items:center;justify-items:center;padding:4px 0;}
+.stars-quad{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:5px 10px;flex:1;position:relative;z-index:2;align-content:center;justify-items:center;padding:2px 0 0;}
 .star-num{font-family:var(--tc);font-weight:700;line-height:1;text-align:center;}
-.star-num.star-period{font-size:13px;color:var(--fg-faint);grid-column:1;grid-row:1;}
-.star-num.star-year{font-size:32px;color:var(--gold);grid-column:2;grid-row:1;}
-.star-num.star-month{font-size:13px;color:var(--fg-soft);grid-column:1;grid-row:2;}
-.star-num.star-day{font-size:13px;color:var(--fg-faint);grid-column:2;grid-row:2;}
+.star-num.star-period{font-size:28px;color:var(--fg-soft);grid-column:1;grid-row:1;}
+.star-num.star-year{font-size:28px;color:var(--gold);grid-column:2;grid-row:1;}
+.star-num.star-base{font-size:36px;color:var(--gold-bright);grid-column:1 / -1;grid-row:2;padding:4px 12px;border-radius:999px;background:rgba(200,164,77,.10);border:1px solid var(--gold-line);min-width:54px;}
+.star-time-row{grid-column:1 / -1;grid-row:3;display:flex;gap:10px;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--fg-faint);}
+.star-time-row .star-num{font-size:12px;font-family:var(--tc);}
+.star-num.star-month{color:var(--fg-soft);}
+.star-num.star-day{color:var(--fg-faint);}
 .star-num small{font-size:.55em;color:var(--fg-mute);font-family:var(--tc);margin-left:1px;}
 
 .pgrid:not(.show-period) .star-period{visibility:hidden;}
 .pgrid:not(.show-year) .star-year{visibility:hidden;}
 .pgrid:not(.show-month) .star-month{visibility:hidden;}
 .pgrid:not(.show-day) .star-day{visibility:hidden;}
+.pgrid:not(.show-period) .star-base{visibility:hidden;}
 
 .pcell-warn{position:absolute;bottom:5px;right:5px;display:flex;gap:3px;z-index:3;flex-wrap:wrap;justify-content:flex-end;max-width:60%;}
 .warn-tag{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.05em;padding:2px 5px;border-radius:3px;text-transform:uppercase;}
@@ -316,8 +330,10 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   main{padding:20px 12px 40px;}
   .palace-grid-wrap{padding:14px;}
   .pcell{padding:8px 5px;}
-  .star-num.star-year{font-size:24px;}
-  .star-num.star-period,.star-num.star-month,.star-num.star-day{font-size:11px;}
+  .star-num.star-period,.star-num.star-year{font-size:22px;}
+  .star-num.star-base{font-size:28px;min-width:46px;padding:3px 10px;}
+  .star-time-row{font-size:9px;gap:7px;}
+  .star-time-row .star-num{font-size:10px;}
   .pcell-top{font-size:8px;}
   .geo-sec{padding:18px;}
 }
@@ -422,7 +438,31 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   <div class="palace-grid-wrap">
     <div class="palace-grid-head">
       <h3><span class="tc">九宮</span> 9 พาลา · <span  id="hdContext" data-i18n="auto.f.004">2026 · พ.ค.</span></h3>
-      <div class="meta">運 <b id="hdPeriod">9</b> · 年 <b id="hdYear">1</b> · 月 <b id="hdMonth">5</b> · 日 <b id="hdDay">5</b></div>
+      <div class="meta">宅運 <b id="hdPeriod">9</b> · 年 <b id="hdYear">1</b> · 月 <b id="hdMonth">5</b> · 日 <b id="hdDay">5</b></div>
+    </div>
+    <div class="house-config" id="houseConfig">
+      <div class="house-config-title">House Facing and Construction Period · ตั้งค่าบ้าน</div>
+      <div class="house-config-grid">
+        <div class="house-field">
+          <label for="houseFacingDeg">Facing degrees</label>
+          <input id="houseFacingDeg" type="number" min="0" max="359.9" step="0.1" value="180"/>
+        </div>
+        <div class="house-field">
+          <label for="houseFacingMountain">Facing mountain</label>
+          <select id="houseFacingMountain"></select>
+        </div>
+        <div class="house-field">
+          <label for="houseConstructionYear">Construction year</label>
+          <input id="houseConstructionYear" type="number" min="1864" max="2100" value="2026"/>
+        </div>
+        <div class="house-field">
+          <label for="housePeriod">Construction period</label>
+          <select id="housePeriod"></select>
+        </div>
+      </div>
+      <div class="house-help">
+        ใช้สร้างผัง <b>山 ดาวภูเขา</b> · <b>水 ดาวแม่น้ำ</b> · <b>基 ดาวฐาน</b> ตรงกลาง 9 ช่อง · ค่าเริ่มต้น S2 180° / Period 9
+      </div>
     </div>
     <div class="person-filter-row" id="personFilterRow" style="display:none">
       <span  style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;align-self:center;margin-right:6px;" data-i18n="auto.f.005">八宅 ดูของ:</span>
@@ -430,8 +470,9 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
     </div>
     <div class="pgrid show-period show-year show-month show-day" id="pgrid"></div>
     <div class="legend-row">
-      <div class="legend-item"><span class="swatch" style="background:rgba(243,235,217,.3)"></span>運 ยุค</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--gold)"></span>年 ปี (ตัวใหญ่)</div>
+      <div class="legend-item"><span class="swatch" style="background:rgba(243,235,217,.3)"></span>山 ภูเขา</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--gold)"></span>水 แม่น้ำ</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--gold-bright)"></span>基 ฐาน</div>
       <div class="legend-item"><span class="swatch" style="background:var(--fg-soft)"></span>月 เดือน</div>
       <div class="legend-item"><span class="swatch" style="background:var(--fg-faint)"></span>日 วัน</div>
       <div class="legend-item"><span class="swatch" style="background:var(--tai-sui)"></span>太 ไท่ซุ่ย</div>
@@ -682,6 +723,15 @@ function rotateGrid(centerStar){
   });
   return result;
 }
+function rotateGridReverse(centerStar){
+  const result = {};
+  Object.entries(LOSHU_BASE).forEach(([dir,baseN])=>{
+    let v = ((centerStar - (baseN - 5) - 1) % 9) + 1;
+    if(v <= 0) v += 9;
+    result[dir] = v;
+  });
+  return result;
+}
 const YEAR_TAISUI = {0:'N',1:'NE',2:'NE',3:'E',4:'SE',5:'SE',6:'S',7:'SW',8:'SW',9:'W',10:'NW',11:'NW'};
 function fsEsc(v){
   return String(v ?? '').replace(/[&<>"']/g, ch => ({
@@ -694,6 +744,83 @@ const COMPASS_DIRS = [
   {dir:'S', deg:180, th:'ใต้'}, {dir:'SW', deg:225, th:'ตะวันตกเฉียงใต้'},
   {dir:'W', deg:270, th:'ตะวันตก'}, {dir:'NW', deg:315, th:'ตะวันตกเฉียงเหนือ'}
 ];
+const M24_RING = [
+  {h:'壬',pinyin:'Rén', code:'N1', start:337.5},{h:'子',pinyin:'Zǐ',code:'N2',start:352.5},{h:'癸',pinyin:'Guǐ',code:'N3',start:7.5},
+  {h:'丑',pinyin:'Chǒu',code:'NE1',start:22.5},{h:'艮',pinyin:'Gèn',code:'NE2',start:37.5},{h:'寅',pinyin:'Yín',code:'NE3',start:52.5},
+  {h:'甲',pinyin:'Jiǎ', code:'E1',start:67.5},{h:'卯',pinyin:'Mǎo',code:'E2',start:82.5},{h:'乙',pinyin:'Yǐ',code:'E3',start:97.5},
+  {h:'辰',pinyin:'Chén',code:'SE1',start:112.5},{h:'巽',pinyin:'Xùn',code:'SE2',start:127.5},{h:'巳',pinyin:'Sì',code:'SE3',start:142.5},
+  {h:'丙',pinyin:'Bǐng',code:'S1',start:157.5},{h:'午',pinyin:'Wǔ',code:'S2',start:172.5},{h:'丁',pinyin:'Dīng',code:'S3',start:187.5},
+  {h:'未',pinyin:'Wèi', code:'SW1',start:202.5},{h:'坤',pinyin:'Kūn',code:'SW2',start:217.5},{h:'申',pinyin:'Shēn',code:'SW3',start:232.5},
+  {h:'庚',pinyin:'Gēng',code:'W1',start:247.5},{h:'酉',pinyin:'Yǒu',code:'W2',start:262.5},{h:'辛',pinyin:'Xīn',code:'W3',start:277.5},
+  {h:'戌',pinyin:'Xū',code:'NW1',start:292.5},{h:'乾',pinyin:'Qián',code:'NW2',start:307.5},{h:'亥',pinyin:'Hài',code:'NW3',start:322.5}
+];
+function normalizeDeg(deg){
+  const n = Number(deg);
+  if(!Number.isFinite(n)) return 0;
+  return ((n % 360) + 360) % 360;
+}
+function mountainRangeLabel(i){
+  const m = M24_RING[i];
+  const next = M24_RING[(i + 1) % M24_RING.length];
+  const start = m.start;
+  const end = next.start <= start ? next.start + 360 : next.start;
+  const fmt = v => String(Math.round((v % 360) * 10) / 10).replace(/\.0$/,'');
+  return `${fmt(start)} - ${fmt(end)}`;
+}
+function get24MountainIndex(deg){
+  const n = normalizeDeg(deg);
+  for(let i = 0; i < M24_RING.length; i++){
+    const m = M24_RING[i];
+    const next = M24_RING[(i+1) % M24_RING.length];
+    let s = m.start, e = next.start;
+    if(e <= s) e += 360;
+    let test = n;
+    if(test < s - 180) test += 360;
+    if(test >= s && test < e) return i;
+  }
+  return 1;
+}
+function get24MountainByDeg(deg){
+  return M24_RING[get24MountainIndex(deg)] || M24_RING[1];
+}
+function getDirCode8(deg){
+  const n = normalizeDeg(deg);
+  let best = COMPASS_DIRS[0], minDiff = 360;
+  COMPASS_DIRS.forEach(item=>{
+    let diff = Math.abs(n - item.deg);
+    if(diff > 180) diff = 360 - diff;
+    if(diff < minDiff){ minDiff = diff; best = item; }
+  });
+  return best.dir;
+}
+function getMountainCenterDeg(idx){
+  const start = M24_RING[idx].start;
+  const next = M24_RING[(idx + 1) % M24_RING.length].start;
+  const end = next <= start ? next + 360 : next;
+  return normalizeDeg((start + end) / 2);
+}
+function oppositeDir8(dir){
+  return {N:'S',NE:'SW',E:'W',SE:'NW',S:'N',SW:'NE',W:'E',NW:'SE',C:'C'}[dir] || 'N';
+}
+function getHouseSettings(){
+  const facingDeg = normalizeDeg(document.getElementById('houseFacingDeg')?.value ?? 180);
+  const constructionYear = Number(document.getElementById('houseConstructionYear')?.value ?? 2026);
+  const period = Number(document.getElementById('housePeriod')?.value || getPeriodStar(constructionYear || 2026));
+  const facingDir = getDirCode8(facingDeg);
+  const sittingDir = oppositeDir8(facingDir);
+  return { facingDeg, constructionYear, period, facingDir, sittingDir, mountain:get24MountainByDeg(facingDeg) };
+}
+function buildHouseNatalGrids(settings){
+  const baseGrid = rotateGrid(settings.period);
+  const mountainCenter = baseGrid[settings.facingDir];
+  const waterCenter = baseGrid[settings.sittingDir];
+  return {
+    baseGrid,
+    /* v1: matches common S2 / Period 9 reference: mountain flies forward, water flies reverse. */
+    mountainGrid: rotateGrid(mountainCenter),
+    waterGrid: rotateGridReverse(waterCenter)
+  };
+}
 function compassGrade(dir, yearGrid, taiSuiDir, threeKillDir){
   const yStar = yearGrid?.[dir];
   if(taiSuiDir === dir) return {level:'danger', color:'#9b6cc9', band:'เลี่ยง', label:'ไท่ซุ่ย · ห้ามรบกวน', score:18};
@@ -767,12 +894,16 @@ function getCurrentTimeframe(){
 
 function renderGrid(){
   const tf = getCurrentTimeframe();
-  const periodCenter = getPeriodStar(tf.year);
+  const house = getHouseSettings();
+  const periodCenter = house.period;
   const yearCenter = getYearStar(tf.year);
   const monthCenter = getMonthStar(tf.year, tf.month);
   const dayCenter = getDayStar(tf.date);
   const shichen = getShichen(tf.hour);
-  const gridPeriod = rotateGrid(periodCenter);
+  const houseGrids = buildHouseNatalGrids(house);
+  const gridPeriod = houseGrids.baseGrid;
+  const gridMountain = houseGrids.mountainGrid;
+  const gridWater = houseGrids.waterGrid;
   const gridYear = rotateGrid(yearCenter);
   const gridMonth = rotateGrid(monthCenter);
   const gridDay = rotateGrid(dayCenter);
@@ -782,7 +913,7 @@ function renderGrid(){
 
   const monthThai = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][tf.date.getMonth()+1];
   document.getElementById('hdContext').textContent = `${tf.year} · ${monthThai}`;
-  document.getElementById('hdPeriod').textContent = periodCenter;
+  document.getElementById('hdPeriod').textContent = `${periodCenter} · ${house.mountain.code}`;
   document.getElementById('hdYear').textContent = yearCenter;
   document.getElementById('hdMonth').textContent = monthCenter;
   document.getElementById('hdDay').textContent = dayCenter;
@@ -802,6 +933,9 @@ function renderGrid(){
       const cell = document.createElement('div');
       cell.className = 'pcell';
       const yearStar = gridYear[dir];
+      const mountainStar = gridMountain[dir];
+      const waterStar = gridWater[dir];
+      const baseStar = gridPeriod[dir];
       cell.dataset.year = yearStar;
       cell.dataset.dir = dir;
       if(dir === 'C') cell.classList.add('center');
@@ -813,10 +947,10 @@ function renderGrid(){
       if(yearStar === 5) tags.push('<span class="warn-tag fy">5黃</span>');
       if([1,6,8,9].includes(yearStar) && dir !== 'C') tags.push('<span class="warn-tag aus">吉</span>');
       
-      // 64 Hex layer — combine year + period stars (mountain · water proxy)
+      // 64 Hex layer — combine period + year stars (mountain · water proxy)
       let hexHtml = '';
       if(activeSchools.has('hex') && dir !== 'C'){
-        const hexNum = starsToHex(gridPeriod[dir], yearStar);
+        const hexNum = starsToHex(mountainStar, waterStar);
         if(hexNum){
           hexHtml = `<div class="pcell-hex" title="Hex ${hexNum}: ${HEX_NAMES_TH[hexNum]}">${HEX_SYMBOLS[hexNum]}</div>`;
         }
@@ -874,10 +1008,13 @@ function renderGrid(){
           <span class="tri">${info.tri} ${info.pinyin}</span>
         </div>
         <div class="stars-quad">
-          <div class="star-num star-period">${gridPeriod[dir]}<small>運</small></div>
-          <div class="star-num star-year">${yearStar}</div>
-          <div class="star-num star-month">${gridMonth[dir]}<small>月</small></div>
-          <div class="star-num star-day">${gridDay[dir]}<small>日</small></div>
+          <div class="star-num star-period" title="山 ดาวภูเขา · จาก Facing ${house.mountain.code} / Period ${periodCenter}">${mountainStar}<small>山</small></div>
+          <div class="star-num star-year" title="向/水 ดาวแม่น้ำ · จาก Sitting ${house.sittingDir} / Period ${periodCenter}">${waterStar}<small>水</small></div>
+          <div class="star-num star-base" title="基 ดาวฐาน · 洛書 base palace">${baseStar}<small>基</small></div>
+          <div class="star-time-row">
+            <span class="star-num star-month" title="月 ดาวเดือน">${gridMonth[dir]}<small>月</small></span>
+            <span class="star-num star-day" title="日 ดาววัน">${gridDay[dir]}<small>日</small></span>
+          </div>
         </div>
         ${tags.length > 0 ? `<div class="pcell-warn">${tags.join('')}</div>` : ''}
         ${peopleHtml}
@@ -886,7 +1023,7 @@ function renderGrid(){
         activeDir = dir;
         document.querySelectorAll('.pcell').forEach(p=>p.classList.remove('active'));
         cell.classList.add('active');
-        renderPalaceDetail(dir, gridYear, gridMonth, gridDay, gridPeriod);
+        renderPalaceDetail(dir, gridYear, gridMonth, gridDay, gridPeriod, gridMountain, gridWater, house);
       });
       pgrid.appendChild(cell);
     });
@@ -895,10 +1032,12 @@ function renderGrid(){
   renderWarnings(taiSuiDir, threeKillDir, fiveYellowDir);
   renderCompassLuckRing(gridYear, taiSuiDir, threeKillDir);
   loadQimenDirectionOverlay();
-  renderPalaceDetail(activeDir, gridYear, gridMonth, gridDay, gridPeriod);
+  renderPalaceDetail(activeDir, gridYear, gridMonth, gridDay, gridPeriod, gridMountain, gridWater, house);
   
   // store for map verdict
   window._currentPeriodGrid = gridPeriod;
+  window._currentMountainGrid = gridMountain;
+  window._currentWaterGrid = gridWater;
   window._currentYearGrid = gridYear;
   window._currentMonthGrid = gridMonth;
   window._currentDayGrid = gridDay;
@@ -923,18 +1062,20 @@ function renderWarnings(taiSui, threeKill, fiveYellow){
   `;
 }
 
-function renderPalaceDetail(dir, gY, gM, gD, gP){
+function renderPalaceDetail(dir, gY, gM, gD, gP, gMountain, gWater, house){
   const info = PALACE_INFO[dir];
   const yearStar = gY[dir];
   const monthStar = gM[dir];
   const dayStar = gD[dir];
-  const periodStar = gP[dir];
+  const baseStar = gP[dir];
+  const mountainStar = gMountain?.[dir] ?? baseStar;
+  const waterStar = gWater?.[dir] ?? yearStar;
   const yStar = STAR_INFO[yearStar];
   
   // Optional sections
   let hexSection = '';
   if(activeSchools.has('hex') && dir !== 'C'){
-    const hexNum = starsToHex(periodStar, yearStar);
+    const hexNum = starsToHex(mountainStar, waterStar);
     if(hexNum){
       hexSection = `
         <div class="pdetail-meaning" style="background:rgba(200,164,77,.06);padding:12px;border-radius:8px;margin-top:10px;border-top:none;">
@@ -982,12 +1123,15 @@ function renderPalaceDetail(dir, gY, gM, gD, gP){
     <h5><span class="tc">${info.tri}</span> ${dir} · ${info.pinyin}</h5>
     <div class="meta">${info.el} · ${info.th}</div>
     <div class="pdetail-grid">
-      <div class="pdetail-cell"><b>運 Period</b><span class="han">${periodStar}${STAR_INFO[periodStar].color}</span></div>
-      <div class="pdetail-cell"><b>年 Year (主)</b><span class="han">${yearStar}${yStar.color}</span></div>
+      <div class="pdetail-cell"><b>山 Mountain</b><span class="han">${mountainStar}${STAR_INFO[mountainStar].color}</span></div>
+      <div class="pdetail-cell"><b>水 Water / Facing</b><span class="han">${waterStar}${STAR_INFO[waterStar].color}</span></div>
+      <div class="pdetail-cell"><b>基 Base</b><span class="han">${baseStar}${STAR_INFO[baseStar].color}</span></div>
       <div class="pdetail-cell"><b>月 Month</b><span class="han">${monthStar}${STAR_INFO[monthStar].color}</span></div>
       <div class="pdetail-cell"><b>日 Day</b><span class="han">${dayStar}${STAR_INFO[dayStar].color}</span></div>
     </div>
     <div class="pdetail-meaning">
+      <b style="color:var(--gold-bright)">ผังบ้าน:</b>
+      Facing ${house ? fsEsc(house.mountain.code + ' ' + house.mountain.h + ' · ' + Math.round(house.facingDeg * 10) / 10 + '°') : '—'} · Period ${house ? fsEsc(house.period) : '—'}<br/>
       <b style="color:var(--gold-bright)">ดาวประจำปีในทิศนี้:</b><br/>
       <i>${yStar.th}</i> · ${yStar.meaning}
     </div>
@@ -1008,6 +1152,64 @@ function initDateInputs(){
 }
 initDateInputs();
 
+function periodLabel(p){
+  if(p === 9) return '9 · Feb 2024 - Feb 2044';
+  if(p === 8) return '8 · Feb 2004 - Feb 2024';
+  return `${p} · Construction Period`;
+}
+function initHouseInputs(){
+  const mountainSel = document.getElementById('houseFacingMountain');
+  const periodSel = document.getElementById('housePeriod');
+  if(mountainSel && !mountainSel.options.length){
+    mountainSel.innerHTML = M24_RING.map((m, i) =>
+      `<option value="${i}">${m.code} · ${m.h} ${m.pinyin} · ${mountainRangeLabel(i)}</option>`
+    ).join('');
+  }
+  if(periodSel && !periodSel.options.length){
+    periodSel.innerHTML = [1,2,3,4,5,6,7,8,9].map(p => `<option value="${p}">${periodLabel(p)}</option>`).join('');
+  }
+  let hasSavedPeriod = false;
+  try{
+    const saved = JSON.parse(localStorage.getItem('hk-fs-house') || '{}');
+    if(Number.isFinite(Number(saved.facingDeg))) document.getElementById('houseFacingDeg').value = normalizeDeg(saved.facingDeg).toFixed(1).replace(/\.0$/,'');
+    if(Number.isFinite(Number(saved.constructionYear))) document.getElementById('houseConstructionYear').value = Number(saved.constructionYear);
+    if(Number.isFinite(Number(saved.period))){
+      document.getElementById('housePeriod').value = Number(saved.period);
+      hasSavedPeriod = true;
+    }
+  }catch(e){}
+  if(!hasSavedPeriod) document.getElementById('housePeriod').value = getPeriodStar(Number(document.getElementById('houseConstructionYear').value || 2026));
+  syncHouseMountainFromDegree(false);
+}
+function saveHouseInputs(){
+  try{
+    localStorage.setItem('hk-fs-house', JSON.stringify({
+      facingDeg: normalizeDeg(document.getElementById('houseFacingDeg').value),
+      constructionYear: Number(document.getElementById('houseConstructionYear').value),
+      period: Number(document.getElementById('housePeriod').value)
+    }));
+  }catch(e){}
+}
+function syncHouseMountainFromDegree(save=true){
+  const deg = normalizeDeg(document.getElementById('houseFacingDeg').value);
+  document.getElementById('houseFacingDeg').value = String(Math.round(deg * 10) / 10).replace(/\.0$/,'');
+  const idx = get24MountainIndex(deg);
+  const sel = document.getElementById('houseFacingMountain');
+  if(sel) sel.value = String(idx);
+  if(save) saveHouseInputs();
+}
+function syncHouseDegreeFromMountain(){
+  const idx = Number(document.getElementById('houseFacingMountain').value || 0);
+  document.getElementById('houseFacingDeg').value = String(getMountainCenterDeg(idx)).replace(/\.0$/,'');
+  saveHouseInputs();
+}
+function syncHousePeriodFromYear(){
+  const year = Number(document.getElementById('houseConstructionYear').value || 2026);
+  document.getElementById('housePeriod').value = getPeriodStar(year);
+  saveHouseInputs();
+}
+initHouseInputs();
+
 document.getElementById('btnNow').addEventListener('click', ()=>{ initDateInputs(); renderGrid(); });
 document.getElementById('setYear').addEventListener('change', renderGrid);
 document.getElementById('setDate').addEventListener('change', ()=>{
@@ -1016,6 +1218,10 @@ document.getElementById('setDate').addEventListener('change', ()=>{
   renderGrid();
 });
 document.getElementById('setTime').addEventListener('change', renderGrid);
+document.getElementById('houseFacingDeg').addEventListener('change', ()=>{ syncHouseMountainFromDegree(); renderGrid(); });
+document.getElementById('houseFacingMountain').addEventListener('change', ()=>{ syncHouseDegreeFromMountain(); renderGrid(); });
+document.getElementById('houseConstructionYear').addEventListener('change', ()=>{ syncHousePeriodFromYear(); renderGrid(); });
+document.getElementById('housePeriod').addEventListener('change', ()=>{ saveHouseInputs(); renderGrid(); });
 
 document.querySelectorAll('.layer-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -1692,16 +1898,7 @@ function updateDirectionBreakdown(dir8, deg){
   `;
 }
 
-const M24 = [
-  {h:'壬',pinyin:'Rén', start:337.5},{h:'子',pinyin:'Zǐ',start:352.5},{h:'癸',pinyin:'Guǐ',start:7.5},
-  {h:'丑',pinyin:'Chǒu',start:22.5},{h:'艮',pinyin:'Gèn',start:37.5},{h:'寅',pinyin:'Yín',start:52.5},
-  {h:'甲',pinyin:'Jiǎ', start:67.5},{h:'卯',pinyin:'Mǎo',start:82.5},{h:'乙',pinyin:'Yǐ',start:97.5},
-  {h:'辰',pinyin:'Chén',start:112.5},{h:'巽',pinyin:'Xùn',start:127.5},{h:'巳',pinyin:'Sì',start:142.5},
-  {h:'丙',pinyin:'Bǐng',start:157.5},{h:'午',pinyin:'Wǔ',start:172.5},{h:'丁',pinyin:'Dīng',start:187.5},
-  {h:'未',pinyin:'Wèi', start:202.5},{h:'坤',pinyin:'Kūn',start:217.5},{h:'申',pinyin:'Shēn',start:232.5},
-  {h:'庚',pinyin:'Gēng',start:247.5},{h:'酉',pinyin:'Yǒu',start:262.5},{h:'辛',pinyin:'Xīn',start:277.5},
-  {h:'戌',pinyin:'Xū',  start:292.5},{h:'乾',pinyin:'Qián',start:307.5},{h:'亥',pinyin:'Hài',start:322.5}
-];
+const M24 = M24_RING;
 function get24Mountain(deg){
   let n = ((deg % 360) + 360) % 360;
   for(let i = 0; i < 24; i++){
@@ -1721,7 +1918,7 @@ function applyFacing(deg){
   document.getElementById('mrHeading').textContent = `${(Math.round(deg*10)/10)} °`;
   document.getElementById('mrDirection').textContent = getDirectionName(deg);
   const m = get24Mountain(deg);
-  document.getElementById('mr24Mtn').textContent = `${m.h} ${m.pinyin}`;
+  document.getElementById('mr24Mtn').textContent = `${m.code || ''} ${m.h} ${m.pinyin}`;
   
   // Verdict vs current year flying star
   const dir8 = getDirCode(deg).en;
@@ -1746,7 +1943,16 @@ function selectCompassDirection(deg, dir){
   applyFacing(deg);
   document.querySelectorAll('.pcell').forEach(p => p.classList.toggle('active', p.dataset.dir === activeDir));
   if(window._currentYearGrid && window._currentMonthGrid && window._currentDayGrid && window._currentPeriodGrid){
-    renderPalaceDetail(activeDir, window._currentYearGrid, window._currentMonthGrid, window._currentDayGrid, window._currentPeriodGrid);
+    renderPalaceDetail(
+      activeDir,
+      window._currentYearGrid,
+      window._currentMonthGrid,
+      window._currentDayGrid,
+      window._currentPeriodGrid,
+      window._currentMountainGrid,
+      window._currentWaterGrid,
+      getHouseSettings()
+    );
   }
 }
 function setFacingMode(mode){
