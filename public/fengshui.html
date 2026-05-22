@@ -296,6 +296,8 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .map-btn:hover{border-color:var(--gold);color:var(--gold);}
 .map-btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
 #gmap{flex:1;width:100%;min-height:380px;background:#1a1a1a;}
+#gmap,#gmap *{cursor:default!important;}
+body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important;}
 
 .map-result-bar{padding:14px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:14px;font-family:var(--mono);font-size:11px;}
 @media(max-width:680px){.map-result-bar{grid-template-columns:1fr 1fr;}}
@@ -1990,6 +1992,8 @@ window.initMap = function(){
     zoom: 17,
     mapTypeId: 'hybrid',
     tilt: 0,
+    draggableCursor: 'default',
+    draggingCursor: 'default',
     streetViewControl: false,
     fullscreenControl: false,
     mapTypeControl: true,
@@ -2023,6 +2027,7 @@ window.initMap = function(){
 let wallDragging = false;
 let wallStartPos = null;
 let wallTempLine = null;
+let wallStartClient = null;
 
 function setupWallDragMode(){
   const mapDiv = document.getElementById('gmap');
@@ -2035,22 +2040,24 @@ function setupWallDragMode(){
 function wallMouseDown(e){
   if(currentMode !== 'wall') return;
   if(e.button !== 0) return; // left click only
+  if(e.target && e.target.closest && e.target.closest('.gm-style-mtc,.gm-control-active,.gm-fullscreen-control,.gm-bundled-control,.gmnoprint')) return;
   
   // Convert pixel to LatLng
   const latLng = pixelToLatLng(e.clientX, e.clientY);
   if(!latLng) return;
   
-  startWallDrag(latLng, e);
+  startWallDrag(latLng, { clientX:e.clientX, clientY:e.clientY });
 }
 
 function wallTouchStart(e){
   if(currentMode !== 'wall') return;
   if(e.touches.length !== 1) return;
+  if(e.target && e.target.closest && e.target.closest('.gm-style-mtc,.gm-control-active,.gm-fullscreen-control,.gm-bundled-control,.gmnoprint')) return;
   const touch = e.touches[0];
   const latLng = pixelToLatLng(touch.clientX, touch.clientY);
   if(!latLng) return;
   e.preventDefault();
-  startWallDrag(latLng, touch);
+  startWallDrag(latLng, { clientX:touch.clientX, clientY:touch.clientY });
 }
 
 function pixelToLatLng(clientX, clientY){
@@ -2075,7 +2082,8 @@ function pixelToLatLng(clientX, clientY){
 
 function startWallDrag(startLatLng, originalEvent){
   // disable map dragging during wall drag
-  map.setOptions({ draggable: false, gestureHandling: 'none' });
+  map.setOptions({ draggable: false, gestureHandling: 'none', draggableCursor:'default', draggingCursor:'default' });
+  document.body.classList.add('fs-map-dragging');
   
   // clear previous wall + standing/facing
   clearWallMode();
@@ -2085,23 +2093,9 @@ function startWallDrag(startLatLng, originalEvent){
   
   wallDragging = true;
   wallStartPos = startLatLng;
-  
-  // Place A marker
-  wallA = new google.maps.Marker({
-    position: startLatLng,
-    map: map,
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: 7,
-      fillColor: '#c8a44d',
-      fillOpacity: 1,
-      strokeColor: '#fff',
-      strokeWeight: 2
-    },
-    label: { text:'A', color:'#fff', fontSize:'10px', fontWeight:'bold' },
-    title: 'ผนัง A',
-    zIndex: 999
-  });
+  wallStartClient = originalEvent && Number.isFinite(originalEvent.clientX)
+    ? { x: originalEvent.clientX, y: originalEvent.clientY }
+    : null;
   
   // global listeners for drag move + end
   document.addEventListener('mousemove', wallMouseMove);
@@ -2171,7 +2165,8 @@ function finishWallDrag(endLatLng){
   wallDragging = false;
   
   // re-enable map dragging
-  map.setOptions({ draggable: true, gestureHandling: 'auto' });
+  map.setOptions({ draggable: true, gestureHandling: 'auto', draggableCursor:'default', draggingCursor:'default' });
+  document.body.classList.remove('fs-map-dragging');
   
   document.removeEventListener('mousemove', wallMouseMove);
   document.removeEventListener('mouseup', wallMouseUp);
@@ -2183,11 +2178,29 @@ function finishWallDrag(endLatLng){
   if(dist !== undefined && dist < 1){
     if(wallTempLine){ wallTempLine.setMap(null); wallTempLine = null; }
     if(wallA){ wallA.setMap(null); wallA = null; }
+    wallStartClient = null;
     return;
   }
   
   // remove temp line
   if(wallTempLine){ wallTempLine.setMap(null); wallTempLine = null; }
+
+  // Place permanent A marker only after drag finishes, so the start corner stays visible under finger/cursor.
+  wallA = new google.maps.Marker({
+    position: wallStartPos,
+    map: map,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 5,
+      fillColor: '#c8a44d',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 2
+    },
+    label: { text:'A', color:'#fff', fontSize:'9px', fontWeight:'bold' },
+    title: 'ผนัง A',
+    zIndex: 999
+  });
   
   // Place permanent B marker
   wallB = new google.maps.Marker({
@@ -2195,13 +2208,13 @@ function finishWallDrag(endLatLng){
     map: map,
     icon: {
       path: google.maps.SymbolPath.CIRCLE,
-      scale: 7,
+      scale: 5,
       fillColor: '#c8a44d',
       fillOpacity: 1,
       strokeColor: '#fff',
       strokeWeight: 2
     },
-    label: { text:'B', color:'#fff', fontSize:'10px', fontWeight:'bold' },
+    label: { text:'B', color:'#fff', fontSize:'9px', fontWeight:'bold' },
     title: 'ผนัง B',
     zIndex: 999
   });
@@ -2214,6 +2227,7 @@ function finishWallDrag(endLatLng){
   wallB.addListener('drag', drawWallFromMarkers);
   wallB.addListener('dragend', drawWallFromMarkers);
   
+  wallStartClient = null;
   drawWallFromMarkers();
 }
 
@@ -2300,6 +2314,8 @@ function clearWallMode(){
   if(perpLine){ perpLine.setMap(null); perpLine = null; }
   if(perpLineBack){ perpLineBack.setMap(null); perpLineBack = null; }
   if(wallTempLine){ wallTempLine.setMap(null); wallTempLine = null; }
+  wallStartClient = null;
+  document.body.classList.remove('fs-map-dragging');
   window._currentWallFacing = null;
   window._currentWallSitting = null;
 }
@@ -2307,11 +2323,8 @@ function clearWallMode(){
 // Set cursor based on mode
 function updateMapCursor(){
   const mapDiv = document.getElementById('gmap');
-  if(currentMode === 'wall'){
-    mapDiv.style.cursor = 'crosshair';
-  } else {
-    mapDiv.style.cursor = '';
-  }
+  mapDiv.style.cursor = 'default';
+  if(map) map.setOptions({ draggableCursor:'default', draggingCursor:'default' });
 }
 
 function placeStanding(latLng){
