@@ -305,6 +305,10 @@ body.fs-map-expanded .map-card.map-expanded .map-instr{max-height:96px;overflow:
 .map-layer-controls{display:flex;gap:6px;flex-wrap:wrap;padding:9px 18px;border-bottom:1px solid var(--line);background:rgba(13,15,18,.24);}
 .map-layer-btn{background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--fg-faint);font-family:var(--mono);font-size:9px;letter-spacing:.12em;padding:5px 9px;border-radius:999px;cursor:pointer;text-transform:uppercase;}
 .map-layer-btn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold-bright);}
+.map-fine-controls{display:grid;grid-template-columns:120px 1fr 58px auto;gap:10px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line);background:rgba(127,168,105,.07);}
+.map-fine-controls label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--fg-faint);text-transform:uppercase;}
+.map-fine-controls input{width:100%;accent-color:var(--gold);}
+.map-fine-controls output{font-family:var(--mono);font-size:11px;color:var(--gold-bright);text-align:right;}
 #gmap{flex:1;width:100%;min-height:380px;background:#1a1a1a;}
 #gmap,#gmap *{cursor:default!important;}
 body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important;}
@@ -345,6 +349,8 @@ body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important
   .map-card.map-expanded .map-btn{font-size:9px;padding:6px 8px;}
   .map-card.map-expanded .map-layer-controls{padding:7px 12px;gap:5px;}
   .map-card.map-expanded .map-layer-btn{font-size:8px;padding:5px 7px;}
+  .map-card.map-expanded .map-fine-controls{grid-template-columns:1fr 52px auto;padding:7px 12px;gap:7px;}
+  .map-card.map-expanded .map-fine-controls label{grid-column:1/-1;}
   .map-card.map-expanded .map-result-bar{padding:9px 12px;gap:8px;}
   .map-card.map-expanded .map-instr{padding:9px 12px;font-size:11px;max-height:84px;}
 }
@@ -664,6 +670,12 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <button class="map-layer-btn active" data-map-layer="hour">ดาวยาม</button>
         <button class="map-layer-btn active" data-map-layer="affliction">5/2/太歲</button>
       </div>
+      <div class="map-fine-controls" aria-label="ปรับแกนทิศหันหน้าแบบละเอียด">
+        <label for="wallFineOffset">แกนละเอียด</label>
+        <input id="wallFineOffset" type="range" min="-15" max="15" step="0.1" value="0"/>
+        <output id="wallFineOffsetOut">+0.0°</output>
+        <button class="map-btn" id="btnWallFineReset">รีเซ็ตแกน</button>
+      </div>
       <div id="gmap"></div>
       <div class="map-result-bar">
         <div class="mrb-cell"><b>Heading</b><span id="mrHeading">— °</span></div>
@@ -689,6 +701,8 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <label class="map-btn plan-file">อัพรูปแปลน
           <input id="planUpload" type="file" accept="image/*"/>
         </label>
+        <button class="map-btn" id="btnPlanRotateLeft">↺ รูป 90°</button>
+        <button class="map-btn" id="btnPlanRotateRight">↻ รูป 90°</button>
         <button class="map-btn" id="btnPlanUseFacing">ใช้ Facing</button>
         <button class="map-btn" id="btnPlanReset">จัดกลาง</button>
         <button class="map-btn" id="btnPlanClear">ล้างรูป</button>
@@ -712,6 +726,11 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <label for="planRotation">หมุนวง / ตั้งทิศ</label>
         <input id="planRotation" type="range" min="0" max="359" value="0"/>
         <output id="planRotationOut">0°</output>
+      </div>
+      <div class="plan-field">
+        <label for="planImageRotation">หมุนรูปแปลน</label>
+        <input id="planImageRotation" type="range" min="-180" max="180" step="1" value="0"/>
+        <output id="planImageRotationOut">0°</output>
       </div>
       <div class="plan-field">
         <label for="planOpacity">ความเข้ม overlay</label>
@@ -883,6 +902,10 @@ function normalizeDeg(deg){
   const n = Number(deg);
   if(!Number.isFinite(n)) return 0;
   return ((n % 360) + 360) % 360;
+}
+function normalizeSignedDeg(deg){
+  const n = normalizeDeg(deg);
+  return n > 180 ? n - 360 : n;
 }
 function mountainRangeLabel(i){
   const m = M24_RING[i];
@@ -2172,6 +2195,23 @@ let wallDragging = false;
 let wallStartPos = null;
 let wallTempLine = null;
 let wallStartClient = null;
+let wallFineOffset = 0;
+
+function formatSignedDeg(v){
+  const n = Number(v) || 0;
+  return `${n >= 0 ? '+' : ''}${n.toFixed(1)}°`;
+}
+
+function updateWallFineUi(){
+  const input = document.getElementById('wallFineOffset');
+  const out = document.getElementById('wallFineOffsetOut');
+  if(input) input.value = String(wallFineOffset);
+  if(out) out.textContent = formatSignedDeg(wallFineOffset);
+}
+
+function applyWallFine(baseFacing){
+  return normalizeDeg(baseFacing + wallFineOffset);
+}
 
 function setupWallDragMode(){
   const mapDiv = document.getElementById('gmap');
@@ -2232,6 +2272,8 @@ function startWallDrag(startLatLng, originalEvent){
   // clear previous wall + standing/facing
   clearWallMode();
   clearHouseMode();
+  wallFineOffset = 0;
+  updateWallFineUi();
   if(standingMarker){ standingMarker.setMap(null); standingMarker = null; }
   if(facingMarker){ facingMarker.setMap(null); facingMarker = null; }
   if(connectionLine){ connectionLine.setMap(null); connectionLine = null; }
@@ -2281,7 +2323,8 @@ function updateWallTempLine(currentPos){
   
   // realtime preview of facing direction (perpendicular CW from B)
   const wallBearing = computeBearing(wallStartPos.lat(), wallStartPos.lng(), currentPos.lat(), currentPos.lng());
-  const facingBearing = (wallBearing + 90) % 360;  // CW 90° from A→B direction
+  const baseFacing = (wallBearing + 90) % 360;  // CW 90° from A→B direction
+  const facingBearing = applyWallFine(baseFacing);
   lastFacingBearing = facingBearing;
   lastSittingBearing = (facingBearing + 180) % 360;
   setFacingMode('facing');
@@ -2400,7 +2443,8 @@ function drawWallFromMarkers(){
   const wallBearing = computeBearing(a.lat(), a.lng(), b.lat(), b.lng());
   
   // FACING = perpendicular CW 90° from A→B (right side of arrow)
-  const facingBearing = (wallBearing + 90) % 360;
+  const baseFacing = (wallBearing + 90) % 360;
+  const facingBearing = applyWallFine(baseFacing);
   // SITTING = opposite (180° from facing)
   const sittingBearing = (facingBearing + 180) % 360;
   
@@ -2460,6 +2504,8 @@ function clearWallMode(){
   if(perpLineBack){ perpLineBack.setMap(null); perpLineBack = null; }
   if(wallTempLine){ wallTempLine.setMap(null); wallTempLine = null; }
   wallStartClient = null;
+  wallFineOffset = 0;
+  updateWallFineUi();
   document.body.classList.remove('fs-map-dragging');
   window._currentWallFacing = null;
   window._currentWallSitting = null;
@@ -2929,6 +2975,18 @@ document.getElementById('modeStanding').addEventListener('click', ()=>{
 });
 document.getElementById('modeFacing').addEventListener('click', ()=>setMode('facing'));
 
+document.getElementById('wallFineOffset')?.addEventListener('input', ev => {
+  wallFineOffset = Number(ev.target.value || 0);
+  updateWallFineUi();
+  if(wallA && wallB) drawWallFromMarkers();
+});
+
+document.getElementById('btnWallFineReset')?.addEventListener('click', ()=>{
+  wallFineOffset = 0;
+  updateWallFineUi();
+  if(wallA && wallB) drawWallFromMarkers();
+});
+
 function syncMapLayerButtons(){
   document.querySelectorAll('.map-layer-btn[data-map-layer]').forEach(btn => {
     btn.classList.toggle('active', mapLayers.has(btn.dataset.mapLayer));
@@ -2958,7 +3016,7 @@ const planCanvas = document.getElementById('planCanvas');
 const planCtx = planCanvas ? planCanvas.getContext('2d') : null;
 const planState = {
   img:null, imgName:'', imgRect:null,
-  cx:600, cy:410, radius:260, rotation:0, opacity:.88,
+  cx:600, cy:410, radius:260, rotation:0, imageRotation:0, opacity:.88,
   dragging:false
 };
 
@@ -2966,17 +3024,19 @@ function planSetStatus(text){
   const st = document.getElementById('planStatus');
   const qs = document.getElementById('planQuickStatus');
   if(st) st.textContent = text;
-  if(qs) qs.textContent = planState.img ? `${planState.imgName || 'แปลน'} · R${Math.round(planState.radius)} · ${Math.round(planState.rotation)}°` : 'ยังไม่ได้อัพรูป';
+  if(qs) qs.textContent = planState.img ? `${planState.imgName || 'แปลน'} · R${Math.round(planState.radius)} · วง ${Math.round(planState.rotation)}° · รูป ${Math.round(planState.imageRotation)}°` : 'ยังไม่ได้อัพรูป';
 }
 
 function updatePlanOutputs(){
   const r = document.getElementById('planRadiusOut');
   const deg = document.getElementById('planRotationOut');
+  const imgDeg = document.getElementById('planImageRotationOut');
   const op = document.getElementById('planOpacityOut');
   if(r) r.textContent = `${Math.round(planState.radius)}px`;
   if(deg) deg.textContent = `${Math.round(planState.rotation)}°`;
+  if(imgDeg) imgDeg.textContent = `${Math.round(planState.imageRotation)}°`;
   if(op) op.textContent = `${Math.round(planState.opacity * 100)}%`;
-  planSetStatus(planState.img ? 'ลากจุด 中 เพื่อวางกลางบ้าน · ปรับรัศมี/หมุนวงให้ตรงรูปแปลน' : 'อัพรูปแปลนก่อน แล้วระบบจะวางวง 24 ขุนเขาให้');
+  planSetStatus(planState.img ? 'ลากจุด 中 เพื่อวางกลางบ้าน · หมุนรูปให้แปลนตรงก่อน แล้วค่อยหมุนวงให้ตรงทิศจริง' : 'อัพรูปแปลนก่อน แล้วระบบจะวางวง 24 ขุนเขาให้');
 }
 
 function fitPlanImageRect(){
@@ -2986,10 +3046,15 @@ function fitPlanImageRect(){
   if(!planState.img) return {x:pad,y:pad,w:cw,h:ch};
   const iw = planState.img.naturalWidth || planState.img.width;
   const ih = planState.img.naturalHeight || planState.img.height;
-  const scale = Math.min(cw / iw, ch / ih);
-  const w = iw * scale;
-  const h = ih * scale;
-  return { x:(planCanvas.width - w) / 2, y:(planCanvas.height - h) / 2, w, h };
+  const rad = normalizeDeg(planState.imageRotation) * Math.PI / 180;
+  const bboxW = Math.abs(iw * Math.cos(rad)) + Math.abs(ih * Math.sin(rad));
+  const bboxH = Math.abs(iw * Math.sin(rad)) + Math.abs(ih * Math.cos(rad));
+  const scale = Math.min(cw / bboxW, ch / bboxH);
+  const drawW = iw * scale;
+  const drawH = ih * scale;
+  const w = bboxW * scale;
+  const h = bboxH * scale;
+  return { x:(planCanvas.width - w) / 2, y:(planCanvas.height - h) / 2, w, h, drawW, drawH, cx:planCanvas.width / 2, cy:planCanvas.height / 2 };
 }
 
 function resetPlanCircle(){
@@ -3091,7 +3156,11 @@ function drawFloorPlan(){
 
   planState.imgRect = fitPlanImageRect();
   const rect = planState.imgRect;
-  ctx.drawImage(planState.img, rect.x, rect.y, rect.w, rect.h);
+  ctx.save();
+  ctx.translate(rect.cx, rect.cy);
+  ctx.rotate(normalizeDeg(planState.imageRotation) * Math.PI / 180);
+  ctx.drawImage(planState.img, -rect.drawW / 2, -rect.drawH / 2, rect.drawW, rect.drawH);
+  ctx.restore();
   ctx.save();
   ctx.globalAlpha = planState.opacity;
   ctx.strokeStyle = '#c8a44d';
@@ -3188,6 +3257,9 @@ document.getElementById('planUpload')?.addEventListener('change', ev => {
     img.onload = () => {
       planState.img = img;
       planState.imgName = file.name;
+      planState.imageRotation = 0;
+      const imgRot = document.getElementById('planImageRotation');
+      if(imgRot) imgRot.value = '0';
       document.getElementById('planEmpty').style.display = 'none';
       planState.imgRect = fitPlanImageRect();
       resetPlanCircle();
@@ -3206,6 +3278,11 @@ document.getElementById('planRotation')?.addEventListener('input', ev => {
   planState.rotation = normalizeDeg(ev.target.value || 0);
   drawFloorPlan();
 });
+document.getElementById('planImageRotation')?.addEventListener('input', ev => {
+  planState.imageRotation = Number(ev.target.value || 0);
+  planState.imgRect = fitPlanImageRect();
+  drawFloorPlan();
+});
 document.getElementById('planOpacity')?.addEventListener('input', ev => {
   planState.opacity = Math.max(.1, Math.min(1, Number(ev.target.value || 88) / 100));
   drawFloorPlan();
@@ -3221,9 +3298,21 @@ document.getElementById('btnPlanUseFacing')?.addEventListener('click', ()=>{
   if(input) input.value = String(Math.round(planState.rotation));
   drawFloorPlan();
 });
+function rotatePlanImage(delta){
+  planState.imageRotation = normalizeSignedDeg(Number(planState.imageRotation || 0) + delta);
+  const input = document.getElementById('planImageRotation');
+  if(input) input.value = String(Math.round(planState.imageRotation));
+  planState.imgRect = fitPlanImageRect();
+  drawFloorPlan();
+}
+document.getElementById('btnPlanRotateLeft')?.addEventListener('click', ()=>rotatePlanImage(-90));
+document.getElementById('btnPlanRotateRight')?.addEventListener('click', ()=>rotatePlanImage(90));
 document.getElementById('btnPlanClear')?.addEventListener('click', ()=>{
   planState.img = null;
   planState.imgName = '';
+  planState.imageRotation = 0;
+  const imgRot = document.getElementById('planImageRotation');
+  if(imgRot) imgRot.value = '0';
   document.getElementById('planUpload').value = '';
   document.getElementById('planEmpty').style.display = '';
   drawFloorPlan();
