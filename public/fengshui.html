@@ -689,8 +689,6 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           <button class="map-btn" id="modeHouse">◎ คลุมบ้าน</button>
           <button class="map-btn house-action" id="btnHouseUndo" disabled>↶ ย้อนจุด</button>
           <button class="map-btn house-action" id="btnHouseClose" disabled>✓ ปิดรูปบ้าน</button>
-          <button  class="map-btn" id="modeStanding" data-i18n="auto.f.015">① จุดยืน</button>
-          <button  class="map-btn" id="modeFacing" data-i18n="auto.f.016">② ทิศหันหน้า</button>
           <button class="map-btn" id="btnGeolocate">📍 GPS</button>
           <button class="map-btn" id="btnMapZoomIn">＋ ซูม</button>
           <button class="map-btn" id="btnMapZoomOut">－ ย่อ</button>
@@ -3142,8 +3140,8 @@ function setMode(mode){
   currentMode = mode;
   document.getElementById('modeWall').classList.toggle('active', mode === 'wall');
   document.getElementById('modeHouse').classList.toggle('active', mode === 'house');
-  document.getElementById('modeStanding').classList.toggle('active', mode === 'standing');
-  document.getElementById('modeFacing').classList.toggle('active', mode === 'facing');
+  document.getElementById('modeStanding')?.classList.toggle('active', mode === 'standing');
+  document.getElementById('modeFacing')?.classList.toggle('active', mode === 'facing');
   updateHouseActions();
   updateMapCursor();
 }
@@ -3165,11 +3163,11 @@ document.getElementById('btnHouseClose').addEventListener('click', ()=>{
   setMode('house');
   closeHousePolygon();
 });
-document.getElementById('modeStanding').addEventListener('click', ()=>{
+document.getElementById('modeStanding')?.addEventListener('click', ()=>{
   setMode('standing');
   clearWallMode();
 });
-document.getElementById('modeFacing').addEventListener('click', ()=>setMode('facing'));
+document.getElementById('modeFacing')?.addEventListener('click', ()=>setMode('facing'));
 
 document.getElementById('btnWallAngleMinus')?.addEventListener('click', () => rotateWallAroundA(-WALL_FINE_DEG));
 document.getElementById('btnWallAnglePlus')?.addEventListener('click', () => rotateWallAroundA(WALL_FINE_DEG));
