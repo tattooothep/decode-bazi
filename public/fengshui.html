@@ -364,6 +364,31 @@ body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important
 .plan-stage canvas{display:block;width:100%;max-height:76vh;border-radius:14px;background:#17191d;border:1px solid rgba(200,164,77,.24);touch-action:none;}
 .plan-empty{position:absolute;inset:12px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--fg-faint);font-size:13px;line-height:1.7;border:1px dashed rgba(200,164,77,.3);border-radius:14px;pointer-events:none;}
 .plan-status{padding:10px 18px;border-top:1px solid var(--line);font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
+.plan-luck-legend{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(13,15,18,.16);}
+.plan-luck-item{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);}
+.plan-luck-item i{width:18px;height:18px;border-radius:50%;flex:0 0 auto;border:1px solid rgba(255,255,255,.2);box-shadow:0 0 0 3px rgba(255,255,255,.025);}
+.plan-luck-item b{display:block;font-family:var(--thai);font-size:12px;color:var(--fg);line-height:1.1;white-space:nowrap;}
+.plan-luck-item span{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--fg-faint);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.plan-inspector{display:grid;grid-template-columns:minmax(150px,.9fr) minmax(0,1.5fr) minmax(0,1.2fr);gap:14px;padding:14px 18px;border-top:1px solid var(--line);background:linear-gradient(135deg,rgba(200,164,77,.08),rgba(13,15,18,.16));}
+.plan-inspector .pi-hero{display:flex;gap:12px;align-items:center;}
+.pi-badge{width:58px;height:58px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:19px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);}
+.pi-badge.purple{background:#9b6cc9}.pi-badge.green{background:#5fa86b}.pi-badge.gold{background:#c8a44d;color:#15120c;text-shadow:none}.pi-badge.orange{background:#c8843f}.pi-badge.red{background:#c95c4a}
+.pi-title{font-family:var(--thai);font-size:16px;color:var(--fg);font-weight:800;line-height:1.25;}
+.pi-sub{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--fg-faint);text-transform:uppercase;margin-top:4px;}
+.pi-stars{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+.pi-star{min-width:48px;padding:6px 8px;border-radius:10px;background:rgba(13,15,18,.48);border:1px solid var(--line);text-align:center;}
+.pi-star b{display:block;font-family:var(--mono);font-size:20px;color:var(--gold-bright);line-height:1;}
+.pi-star span{display:block;font-family:var(--thai);font-size:10px;color:var(--fg-soft);margin-top:3px;}
+.pi-section h5{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+.pi-list{display:grid;gap:5px;font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.45;}
+.pi-list div{padding-left:12px;position:relative;}
+.pi-list div:before{content:'•';position:absolute;left:0;color:var(--gold);}
+.pi-list .warn:before{color:#c95c4a;}
+.pi-usage{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.pi-use{border:1px solid var(--line);border-radius:10px;padding:7px 8px;background:rgba(13,15,18,.36);font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
+.pi-use b{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:2px;}
+.pi-use.good{border-color:rgba(95,168,107,.55);color:#a8dfae}.pi-use.caution{border-color:rgba(200,132,63,.55);color:#efc08b}.pi-use.avoid{border-color:rgba(201,92,74,.55);color:#ffb1a8}
+@media(max-width:980px){.plan-luck-legend{grid-template-columns:1fr 1fr;}.plan-inspector{grid-template-columns:1fr;}}
 @media(max-width:760px){.plan-tune{grid-template-columns:1fr 1fr;}.plan-head{align-items:stretch}.plan-controls{width:100%;}.plan-controls .map-btn{flex:1;}}
 @media(max-width:460px){.plan-tune{grid-template-columns:1fr;}}
 
@@ -754,6 +779,13 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <button class="map-layer-btn active" data-map-layer="hour">ดาวยาม</button>
       <button class="map-layer-btn active" data-map-layer="affliction">5/2/太歲</button>
     </div>
+    <div class="plan-luck-legend" aria-label="คำอธิบายสีดาวเหินบนแปลนบ้าน">
+      <div class="plan-luck-item"><i style="background:#9b6cc9"></i><div><b>ม่วง</b><span>เด่นพิเศษ</span></div></div>
+      <div class="plan-luck-item"><i style="background:#5fa86b"></i><div><b>เขียว</b><span>ใช้ดี</span></div></div>
+      <div class="plan-luck-item"><i style="background:#c8a44d"></i><div><b>ทอง</b><span>ใช้ได้</span></div></div>
+      <div class="plan-luck-item"><i style="background:#c8843f"></i><div><b>ส้ม</b><span>ต้องคุม</span></div></div>
+      <div class="plan-luck-item"><i style="background:#c95c4a"></i><div><b>แดง</b><span>เลี่ยง</span></div></div>
+    </div>
     <div class="plan-tune">
       <div class="plan-field">
         <label for="planRadius">รัศมีวง</label>
@@ -784,7 +816,25 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <canvas id="planCanvas" width="1200" height="820"></canvas>
       <div class="plan-empty" id="planEmpty">อัพรูปแปลนบ้านหรือ screenshot จากมือถือ<br/>จากนั้นลากจุดกลาง 中 และปรับรัศมีวงให้ครอบพื้นที่บ้าน</div>
     </div>
-    <div class="plan-status" id="planStatus">Tip: ถ้ารูปแปลนมีทิศเหนืออยู่แล้ว ตั้งหมุนวงเป็น 0° · ถ้ารู้ Facing บ้าน กด “ใช้ Facing” เพื่อหมุนวงตามองศาบ้านปัจจุบัน</div>
+    <div class="plan-inspector" id="planInspector">
+      <div class="pi-hero">
+        <div class="pi-badge gold" id="piBadge">—</div>
+        <div>
+          <div class="pi-title" id="piTitle">แตะโซนสีบนวงแปลนเพื่อดูรายละเอียด</div>
+          <div class="pi-sub" id="piSub">ดาวภูเขา · ดาวน้ำ · ดาวฐาน · เหตุผล v1.2</div>
+          <div class="pi-stars" id="piStars"></div>
+        </div>
+      </div>
+      <div class="pi-section">
+        <h5>เหตุผล / คำเตือน</h5>
+        <div class="pi-list" id="piReasons"><div>อัพรูปแปลนแล้วแตะทิศที่ต้องการอ่าน</div></div>
+      </div>
+      <div class="pi-section">
+        <h5>เหมาะกับอะไร</h5>
+        <div class="pi-usage" id="piUsage"></div>
+      </div>
+    </div>
+    <div class="plan-status" id="planStatus">Tip: ลากจุด 中 เพื่อย้ายกลางบ้าน · แตะโซนสีเพื่ออ่านดาว/คะแนน/การใช้งาน · ถ้ารู้ Facing บ้าน กด “ใช้ Facing” เพื่อหมุนวงตามองศาบ้านปัจจุบัน</div>
   </div>
 </div>
 
@@ -3415,7 +3465,7 @@ const planCtx = planCanvas ? planCanvas.getContext('2d') : null;
 const planState = {
   img:null, imgName:'', imgRect:null,
   cx:600, cy:410, radius:260, rotation:0, imageRotation:0, opacity:.88,
-  dragging:false
+  dragging:false, dragStart:null, selectedDir:null
 };
 
 function planSetStatus(text){
@@ -3434,7 +3484,7 @@ function updatePlanOutputs(){
   if(deg) deg.textContent = `${Math.round(planState.rotation)}°`;
   if(imgDeg) imgDeg.textContent = `${Math.round(planState.imageRotation)}°`;
   if(op) op.textContent = `${Math.round(planState.opacity * 100)}%`;
-  planSetStatus(planState.img ? 'ลากจุด 中 เพื่อวางกลางบ้าน · หมุนรูปให้แปลนตรงก่อน แล้วค่อยหมุนวงให้ตรงทิศจริง' : 'อัพรูปแปลนก่อน แล้วระบบจะวางวง 24 ขุนเขาให้');
+  planSetStatus(planState.img ? 'ลากจุด 中 เพื่อวางกลางบ้าน · แตะโซนสีเพื่ออ่านดาว/คะแนน · หมุนรูปให้แปลนตรงก่อน แล้วค่อยหมุนวงให้ตรงทิศจริง' : 'อัพรูปแปลนก่อน แล้วระบบจะวางวง 24 ขุนเขาให้');
 }
 
 function fitPlanImageRect(){
@@ -3536,6 +3586,69 @@ function floorGradeColors(levelOrColor){
   if(levelOrColor === 'purple' || levelOrColor === 'aff') return { fill:'rgba(155,108,201,.22)', stroke:'rgba(155,108,201,.74)' };
   if(levelOrColor === 'gold' || levelOrColor === 'mid') return { fill:'rgba(200,164,77,.20)', stroke:'rgba(200,164,77,.64)' };
   return { fill:'rgba(200,164,77,.17)', stroke:'rgba(200,164,77,.54)' };
+}
+function planColorThai(color){
+  return {purple:'ม่วง · เด่นพิเศษ', green:'เขียว · ใช้ดี', gold:'ทอง · ใช้ได้', orange:'ส้ม · ต้องคุม', red:'แดง · เลี่ยง'}[color] || 'ทอง · ใช้ได้';
+}
+function planUsageThai(status){
+  return {good:'ดี', caution:'ระวัง', avoid:'เลี่ยง', neutral:'กลาง'}[status] || 'กลาง';
+}
+function planUsageClass(status){
+  return status === 'good' ? 'good' : status === 'caution' ? 'caution' : status === 'avoid' ? 'avoid' : '';
+}
+function planGradeForDir(dir, natalGrids){
+  return scoreFlyingStarDirectionV12({
+    dir,
+    mountain:natalGrids?.mountainGrid?.[dir],
+    water:natalGrids?.waterGrid?.[dir],
+    base:natalGrids?.baseGrid?.[dir]
+  });
+}
+function renderPlanInspector(dir, grade){
+  const info = COMPASS_DIRS.find(d => d.dir === dir) || {dir, th:dir};
+  const badge = document.getElementById('piBadge');
+  const title = document.getElementById('piTitle');
+  const sub = document.getElementById('piSub');
+  const stars = document.getElementById('piStars');
+  const reasons = document.getElementById('piReasons');
+  const usage = document.getElementById('piUsage');
+  if(!badge || !title || !sub || !stars || !reasons || !usage) return;
+  badge.className = `pi-badge ${grade.color || 'gold'}`;
+  badge.textContent = dir;
+  title.textContent = `${info.th} · ${planColorThai(grade.color)} · ${grade.verdict}`;
+  sub.textContent = `คะแนน ${grade.score}/100 · เสี่ยง ${grade.riskLevel} · ${grade.confidence}`;
+  stars.innerHTML = [
+    ['ภู', grade.stars.mountain, 'ดาวภูเขา'],
+    ['น้ำ', grade.stars.water, 'ดาวน้ำ'],
+    ['ฐ', grade.stars.base, 'ดาวฐาน']
+  ].map(([label, star, text]) => `<div class="pi-star"><b>${star || '—'}</b><span>${label} · ${text}</span></div>`).join('');
+  const mainReasons = (grade.reasons || []).slice(0,3).map(x => `<div>${x}</div>`);
+  const warns = (grade.warnings || []).slice(0,3).map(x => `<div class="warn">${x}</div>`);
+  reasons.innerHTML = [...mainReasons, ...warns].join('') || '<div>ยังไม่มีเหตุผลเฉพาะ</div>';
+  const labels = {door:'ประตู/ทางเดิน', bedroom:'ห้องนอน', office:'ทำงาน', storage:'เก็บของ'};
+  usage.innerHTML = Object.entries(labels).map(([k, label]) => {
+    const st = grade.usage?.[k] || 'neutral';
+    return `<div class="pi-use ${planUsageClass(st)}"><b>${label}</b>${planUsageThai(st)}</div>`;
+  }).join('');
+}
+function resetPlanInspector(){
+  const badge = document.getElementById('piBadge');
+  const title = document.getElementById('piTitle');
+  const sub = document.getElementById('piSub');
+  const stars = document.getElementById('piStars');
+  const reasons = document.getElementById('piReasons');
+  const usage = document.getElementById('piUsage');
+  if(badge){ badge.className = 'pi-badge gold'; badge.textContent = '—'; }
+  if(title) title.textContent = 'แตะโซนสีบนวงแปลนเพื่อดูรายละเอียด';
+  if(sub) sub.textContent = 'ดาวภูเขา · ดาวน้ำ · ดาวฐาน · เหตุผล v1.2';
+  if(stars) stars.innerHTML = '';
+  if(reasons) reasons.innerHTML = '<div>อัพรูปแปลนแล้วแตะทิศที่ต้องการอ่าน</div>';
+  if(usage) usage.innerHTML = '';
+}
+function selectPlanDirection(dir, natalGrids){
+  planState.selectedDir = dir;
+  const grids = natalGrids || buildHouseNatalGrids(getHouseSettings());
+  renderPlanInspector(dir, planGradeForDir(dir, grids));
 }
 
 function drawPlanSector(ctx, startDeg, endDeg, innerR, outerR, colors){
@@ -3661,16 +3774,27 @@ function drawFloorPlan(){
 
   /* ชั้น 45° · สีดาว 9 ยุค v1.2 วิ่งถึงศูนย์กลาง อ่านโซนใหญ่ก่อน */
   COMPASS_DIRS.forEach(item => {
-    const grade = scoreFlyingStarDirectionV12({
-      dir:item.dir,
-      mountain:natalGrids.mountainGrid?.[item.dir],
-      water:natalGrids.waterGrid?.[item.dir],
-      base:natalGrids.baseGrid?.[item.dir]
-    });
+    const grade = planGradeForDir(item.dir, natalGrids);
     const colors = floorGradeColors(grade.color);
     ctx.globalAlpha = Math.min(planState.opacity, .78);
     drawPlanSector(ctx, item.deg - 22.5, item.deg + 22.5, 0, planState.radius, colors);
   });
+  if(planState.selectedDir){
+    const selected = COMPASS_DIRS.find(d => d.dir === planState.selectedDir);
+    if(selected){
+      const p1 = planPoint(planState.radius, selected.deg - 22.5);
+      const p2 = planPoint(planState.radius, selected.deg + 22.5);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = 'rgba(255,245,190,.98)';
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(planState.cx, planState.cy);
+      ctx.lineTo(p1.x, p1.y);
+      ctx.moveTo(planState.cx, planState.cy);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+    }
+  }
 
   ctx.globalAlpha = planState.opacity;
   ctx.strokeStyle = 'rgba(200,164,77,.88)';
@@ -3720,6 +3844,7 @@ function drawFloorPlan(){
   ctx.textBaseline = 'middle';
   ctx.fillText('中', planState.cx, planState.cy + 1);
   ctx.restore();
+  if(planState.selectedDir) selectPlanDirection(planState.selectedDir, natalGrids);
   updatePlanOutputs();
 }
 
@@ -3730,17 +3855,33 @@ function planCanvasPos(ev){
     y: (ev.clientY - rect.top) * planCanvas.height / rect.height
   };
 }
+function planDistanceFromCenter(p){
+  return Math.hypot(p.x - planState.cx, p.y - planState.cy);
+}
+function planDirFromPoint(p){
+  const dx = p.x - planState.cx;
+  const dy = planState.cy - p.y;
+  const compassDeg = normalizeDeg(Math.atan2(dx, dy) * 180 / Math.PI);
+  return getDirCode8(compassDeg - planState.rotation);
+}
 
 if(planCanvas){
   planCanvas.addEventListener('pointerdown', ev => {
     if(!planState.img) return;
     ev.preventDefault();
     const p = planCanvasPos(ev);
-    planState.cx = p.x;
-    planState.cy = p.y;
-    planState.dragging = true;
-    planCanvas.setPointerCapture(ev.pointerId);
-    drawFloorPlan();
+    planState.dragStart = p;
+    const nearCenter = planDistanceFromCenter(p) <= 42;
+    if(nearCenter){
+      planState.cx = p.x;
+      planState.cy = p.y;
+      planState.dragging = true;
+      planCanvas.setPointerCapture(ev.pointerId);
+      drawFloorPlan();
+    } else if(planDistanceFromCenter(p) <= planState.radius * 1.12){
+      selectPlanDirection(planDirFromPoint(p));
+      drawFloorPlan();
+    }
   });
   planCanvas.addEventListener('pointermove', ev => {
     if(!planState.dragging || !planState.img) return;
@@ -3753,6 +3894,7 @@ if(planCanvas){
   ['pointerup','pointercancel','pointerleave'].forEach(evt => {
     planCanvas.addEventListener(evt, ev => {
       planState.dragging = false;
+      planState.dragStart = null;
       try{ planCanvas.releasePointerCapture(ev.pointerId); }catch(e){}
     });
   });
@@ -3773,6 +3915,7 @@ document.getElementById('planUpload')?.addEventListener('change', ev => {
       document.getElementById('planEmpty').style.display = 'none';
       planState.imgRect = fitPlanImageRect();
       resetPlanCircle();
+      planState.selectedDir = getDirCode8(document.getElementById('houseFacingDeg')?.value || 0);
       drawFloorPlan();
     };
     img.src = String(reader.result || '');
@@ -3804,6 +3947,7 @@ document.getElementById('btnPlanReset')?.addEventListener('click', ()=>{
 });
 document.getElementById('btnPlanUseFacing')?.addEventListener('click', ()=>{
   planState.rotation = normalizeDeg(document.getElementById('houseFacingDeg')?.value || 0);
+  planState.selectedDir = getDirCode8(document.getElementById('houseFacingDeg')?.value || 0);
   const input = document.getElementById('planRotation');
   if(input) input.value = String(Math.round(planState.rotation));
   drawFloorPlan();
@@ -3821,12 +3965,15 @@ document.getElementById('btnPlanClear')?.addEventListener('click', ()=>{
   planState.img = null;
   planState.imgName = '';
   planState.imageRotation = 0;
+  planState.selectedDir = null;
   const imgRot = document.getElementById('planImageRotation');
   if(imgRot) imgRot.value = '0';
   document.getElementById('planUpload').value = '';
   document.getElementById('planEmpty').style.display = '';
+  resetPlanInspector();
   drawFloorPlan();
 });
+resetPlanInspector();
 drawFloorPlan();
 
 function resizeMapAfterLayout(){
