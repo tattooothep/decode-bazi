@@ -121,11 +121,17 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 @media(max-width:460px){.house-config-grid{grid-template-columns:1fr;}}
 
 .pgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:8px;aspect-ratio:1;max-width:680px;margin:0 auto;}
-.pcell{position:relative;background:var(--bg-3);border:1px solid var(--line);border-radius:12px;padding:14px 10px;display:flex;flex-direction:column;cursor:pointer;transition:.25s;overflow:hidden;}
-.pcell::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent-bg,transparent) 0%,transparent 60%);opacity:.6;transition:.3s;}
+.pcell{--luck:#c8a44d;--luck-soft:rgba(200,164,77,.18);position:relative;background:var(--bg-3);border:1px solid var(--line);border-radius:12px;padding:13px 10px 12px;display:flex;flex-direction:column;cursor:pointer;transition:.25s;overflow:hidden;}
+.pcell::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--luck-soft,transparent) 0%,var(--accent-bg,transparent) 42%,transparent 72%);opacity:.72;transition:.3s;}
+.pcell::after{content:'';position:absolute;left:0;right:0;top:0;height:6px;background:var(--luck);z-index:2;box-shadow:0 0 14px var(--luck-soft);}
 .pcell:hover::before{opacity:1;}
 .pcell:hover{border-color:var(--gold);transform:translateY(-2px);}
 .pcell.active{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold);}
+.pcell[data-luck="purple"]{--luck:#9b6cc9;--luck-soft:rgba(155,108,201,.24);}
+.pcell[data-luck="green"]{--luck:#5fa86b;--luck-soft:rgba(95,168,107,.22);}
+.pcell[data-luck="gold"]{--luck:#c8a44d;--luck-soft:rgba(200,164,77,.20);}
+.pcell[data-luck="orange"]{--luck:#c8843f;--luck-soft:rgba(200,132,63,.22);}
+.pcell[data-luck="red"]{--luck:#c95c4a;--luck-soft:rgba(201,92,74,.24);}
 .pcell[data-year="1"]{--accent-bg:rgba(90,138,168,.18);}
 .pcell[data-year="2"]{--accent-bg:rgba(80,80,80,.16);}
 .pcell[data-year="3"]{--accent-bg:rgba(127,168,105,.16);}
@@ -137,15 +143,24 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .pcell[data-year="9"]{--accent-bg:rgba(155,108,201,.18);}
 .pcell.center{outline:1.5px solid var(--gold-line);outline-offset:-4px;}
 
-.pcell-top{display:flex;justify-content:space-between;align-items:flex-start;font-size:9px;font-family:var(--mono);letter-spacing:.1em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:4px;position:relative;z-index:2;}
-.pcell-top .dir{color:var(--gold-bright);font-weight:700;}
-.pcell-top .tri{font-family:var(--tc);font-size:11px;color:var(--gold-deep);}
+.pcell-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;font-family:var(--mono);color:var(--fg-faint);margin-bottom:5px;position:relative;z-index:3;}
+.pcell-dir-main{font-size:13px;line-height:1;font-weight:800;color:var(--fg);letter-spacing:.02em;}
+.pcell-dir-main b{font-size:16px;color:var(--gold-bright);letter-spacing:.08em;}
+.pcell-dir-sub{margin-top:3px;font-family:var(--tc);font-size:10px;line-height:1;color:var(--gold-deep);}
+.pcell-luck{flex:0 0 auto;font-family:var(--thai);font-size:9px;font-weight:800;line-height:1;padding:4px 6px;border-radius:999px;color:#111;background:var(--luck);box-shadow:0 0 0 1px rgba(255,255,255,.12) inset;}
+.pcell-luck.red,.pcell-luck.purple,.pcell-luck.green{color:#fff;}
 
-.stars-quad{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:5px 10px;flex:1;position:relative;z-index:2;align-content:center;justify-items:center;padding:2px 0 0;}
+.stars-quad{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:5px 8px;flex:1;position:relative;z-index:2;align-content:center;justify-items:center;padding:2px 0 0;}
 .star-num{font-family:var(--tc);font-weight:700;line-height:1;text-align:center;}
-.star-num.star-period{font-size:28px;color:var(--fg-soft);grid-column:1;grid-row:1;}
-.star-num.star-year{font-size:28px;color:var(--gold);grid-column:2;grid-row:1;}
-.star-num.star-base{font-size:36px;color:var(--gold-bright);grid-column:1 / -1;grid-row:2;padding:4px 12px;border-radius:999px;background:rgba(200,164,77,.10);border:1px solid var(--gold-line);min-width:54px;}
+.star-box{display:flex;align-items:center;justify-content:center;gap:3px;min-width:50px;padding:5px 7px;border-radius:12px;border:1px solid rgba(200,164,77,.20);background:rgba(13,15,18,.34);box-shadow:0 8px 20px rgba(0,0,0,.10);}
+.star-box b{font-family:var(--tc);font-size:25px;line-height:1;color:var(--fg);}
+.star-box small{font-family:var(--thai);font-size:9px;font-weight:800;line-height:1;color:var(--fg-soft);}
+.star-box.star-period{grid-column:1;grid-row:1;}
+.star-box.star-year{grid-column:2;grid-row:1;}
+.star-box.star-base{grid-column:1 / -1;grid-row:2;min-width:58px;border-color:var(--gold-line);background:rgba(200,164,77,.13);}
+.star-box.star-base b{font-size:30px;color:var(--gold-bright);}
+.star-box.star-period b{color:#7fa869;}
+.star-box.star-year b{color:#5a8aa8;}
 .star-time-row{grid-column:1 / -1;grid-row:3;display:flex;gap:10px;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--fg-faint);}
 .star-time-row .star-num{font-size:12px;font-family:var(--tc);}
 .star-num.star-month{color:var(--fg-soft);}
@@ -441,9 +456,16 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   .topbar{padding:12px 16px;}
   main{padding:20px 12px 40px;}
   .palace-grid-wrap{padding:14px;}
-  .pcell{padding:8px 5px;}
-  .star-num.star-period,.star-num.star-year{font-size:22px;}
-  .star-num.star-base{font-size:28px;min-width:46px;padding:3px 10px;}
+  .pcell{padding:9px 5px 8px;}
+  .pcell-dir-main{font-size:11px;}
+  .pcell-dir-main b{font-size:14px;}
+  .pcell-dir-sub{font-size:9px;}
+  .pcell-luck{font-size:8px;padding:3px 5px;}
+  .star-box{min-width:42px;padding:4px 5px;border-radius:10px;}
+  .star-box b{font-size:21px;}
+  .star-box small{font-size:8px;}
+  .star-box.star-base{min-width:50px;}
+  .star-box.star-base b{font-size:26px;}
   .star-time-row{font-size:9px;gap:7px;}
   .star-time-row .star-num{font-size:10px;}
   .pcell-top{font-size:8px;}
@@ -527,8 +549,8 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <button  class="timeline-now" id="btnNow" data-i18n="auto.f.003">↻ ตอนนี้</button>
     </div>
     <div class="layer-toggles">
-      <button class="layer-btn active" data-layer="period"><span class="han">運</span>ยุค</button>
-      <button class="layer-btn active" data-layer="year"><span class="han">年</span>ปี</button>
+      <button class="layer-btn active" data-layer="period"><span class="han">山/基</span>ภู+ฐาน</button>
+      <button class="layer-btn active" data-layer="year"><span class="han">水</span>น้ำ</button>
       <button class="layer-btn active" data-layer="month"><span class="han">月</span>เดือน</button>
       <button class="layer-btn active" data-layer="day"><span class="han">日</span>วัน</button>
     </div>
@@ -770,6 +792,8 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           <input id="planUpload" type="file" accept="image/*"/>
         </label>
         <button class="map-btn" id="btnPlanReset">จัดกลาง</button>
+        <button class="map-btn" id="btnPlanRotL">↺ 90°</button>
+        <button class="map-btn" id="btnPlanRotR">↻ 90°</button>
         <button class="map-btn" id="btnPlanClear">ล้างรูป</button>
       </div>
     </div>
@@ -1121,6 +1145,12 @@ function getDirCode8(deg){
   });
   return best.dir;
 }
+function dirThaiShort(dir){
+  return {
+    N:'เหนือ', NE:'อีสาน', E:'ตะวันออก', SE:'อาคเนย์',
+    S:'ใต้', SW:'หรดี', W:'ตะวันตก', NW:'พายัพ', C:'กลาง'
+  }[dir] || dir;
+}
 function getMountainCenterDeg(idx){
   const start = M24_RING[idx].start;
   const next = M24_RING[(idx + 1) % M24_RING.length].start;
@@ -1347,6 +1377,51 @@ function scoreFlyingStarDirectionV12({ dir, mountain, water, base }){
     chartContext: { housePattern:null, note:'v2 จะเพิ่ม 旺山旺向 / 上山下水 และให้ทับคะแนนรายทิศ' }
   };
 }
+function cloneGradeV12(grade){
+  return {
+    ...grade,
+    warnings: [...(grade.warnings || [])],
+    reasons: [...(grade.reasons || [])],
+    tags: [...(grade.tags || [])],
+    override: { ...(grade.override || {}), reasons:[...(grade.override?.reasons || [])] }
+  };
+}
+function applyAnnualAfflictionToHouseGrade(grade, ctx){
+  const g = cloneGradeV12(grade);
+  const y = Number(ctx.yearStar);
+  function warn(msg){ if(!g.warnings.includes(msg)) g.warnings.push(msg); }
+  function tag(msg){ if(!g.tags.includes(msg)) g.tags.push(msg); }
+  function cap(color, severity, msg){
+    g.color = capBestColorV12(g.color, color);
+    g.riskLevel = maxRiskLevelV12(g.riskLevel || 'low', severity);
+    if(severity === 'critical') g.severity = 'critical';
+    else if(!g.severity || g.severity === 'low') g.severity = severity;
+    warn(msg);
+  }
+  if(y === 5){
+    g.color = 'red';
+    g.riskLevel = 'critical';
+    g.severity = 'critical';
+    warn('ดาวปี 5 เหลืองทับทิศนี้ ห้ามรบกวน/ขุด/ตอก');
+    tag('5เหลือง');
+  } else if(y === 2){
+    cap('orange', 'high', 'ดาวปี 2 ดำทับทิศนี้ ระวังสุขภาพ');
+    tag('2ดำ');
+  } else if([3,7].includes(y)){
+    cap('gold', 'medium', `ดาวปี ${y} ทับทิศนี้ ใช้ได้แต่ต้องคุม`);
+  }
+  if(ctx.taiSuiDir === ctx.dir){
+    cap('orange', 'high', 'ไท่ซุ่ยทับทิศนี้ เลี่ยงการรบกวนแรง');
+    tag('ไท่ซุ่ย');
+  }
+  if(ctx.threeKillDir === ctx.dir){
+    cap('orange', 'high', 'สามชะทับทิศนี้ ระวังการนั่ง/หัน/เปิดงานผิดจังหวะ');
+    tag('สามชะ');
+  }
+  g.verdict = colorVerdictV12(g.color, g.riskLevel);
+  g.confidence = 'v1.2-house+annual-rule';
+  return g;
+}
 function compassGrade(dir, yearGrid, taiSuiDir, threeKillDir){
   const yStar = yearGrid?.[dir];
   if(taiSuiDir === dir) return {level:'danger', color:'#9b6cc9', band:'เลี่ยง', label:'ไท่ซุ่ย · ห้ามรบกวน', score:18};
@@ -1464,16 +1539,19 @@ function renderGrid(){
       const mountainStar = gridMountain[dir];
       const waterStar = gridWater[dir];
       const baseStar = gridPeriod[dir];
+      const houseGrade = scoreFlyingStarDirectionV12({ dir, mountain: mountainStar, water: waterStar, base: baseStar });
+      const cellGrade = applyAnnualAfflictionToHouseGrade(houseGrade, { dir, yearStar, taiSuiDir, threeKillDir });
       cell.dataset.year = yearStar;
       cell.dataset.dir = dir;
+      cell.dataset.luck = cellGrade.color || 'gold';
       if(dir === 'C') cell.classList.add('center');
       if(dir === activeDir) cell.classList.add('active');
       const info = PALACE_INFO[dir];
       const tags = [];
-      if(dir === taiSuiDir) tags.push('<span class="warn-tag tai">太</span>');
-      if(dir === threeKillDir) tags.push('<span class="warn-tag kill">煞</span>');
-      if(yearStar === 5) tags.push('<span class="warn-tag fy">5黃</span>');
-      if([1,6,8,9].includes(yearStar) && dir !== 'C') tags.push('<span class="warn-tag aus">吉</span>');
+      if(dir === taiSuiDir) tags.push('<span class="warn-tag tai">ไท่</span>');
+      if(dir === threeKillDir) tags.push('<span class="warn-tag kill">สามชะ</span>');
+      if(yearStar === 5) tags.push('<span class="warn-tag fy">5เหลือง</span>');
+      if([1,6,8,9].includes(yearStar) && dir !== 'C' && cellGrade.color !== 'red') tags.push('<span class="warn-tag aus">ดี</span>');
       
       // 64 Hex layer — combine period + year stars (mountain · water proxy)
       let hexHtml = '';
@@ -1532,13 +1610,16 @@ function renderGrid(){
         ${ribbonHtml}
         ${hexHtml}
         <div class="pcell-top">
-          <span class="dir">${dir}</span>
-          <span class="tri">${info.tri} ${info.pinyin}</span>
+          <div>
+            <div class="pcell-dir-main"><b>${fsEsc(dir)}</b> · ${fsEsc(dirThaiShort(dir))}</div>
+            <div class="pcell-dir-sub">${fsEsc(info.tri)} ${fsEsc(info.pinyin)}</div>
+          </div>
+          <span class="pcell-luck ${fsEsc(cellGrade.color || 'gold')}" title="${fsEsc(cellGrade.verdict)} · ${fsEsc(cellGrade.riskLevel)}">${fsEsc(planColorThai(cellGrade.color).split(' · ')[0])}</span>
         </div>
         <div class="stars-quad">
-          <div class="star-num star-period" title="山 ดาวภูเขา · จาก Facing ${house.mountain.code} / Period ${periodCenter}">${mountainStar}<small>山</small></div>
-          <div class="star-num star-year" title="向/水 ดาวแม่น้ำ · จาก Sitting ${house.sittingDir} / Period ${periodCenter}">${waterStar}<small>水</small></div>
-          <div class="star-num star-base" title="基 ดาวฐาน · 洛書 base palace">${baseStar}<small>基</small></div>
+          <div class="star-box star-period" title="山 ดาวภูเขา · คน/สุขภาพ · จาก Facing ${fsEsc(house.mountain.code)} / Period ${periodCenter}"><b>${mountainStar}</b><small>ภู</small></div>
+          <div class="star-box star-year" title="向/水 ดาวแม่น้ำ · ประตู/เงิน · จาก Sitting ${fsEsc(house.sittingDir)} / Period ${periodCenter}"><b>${waterStar}</b><small>น้ำ</small></div>
+          <div class="star-box star-base" title="基 ดาวฐาน · พื้นพลังของวัง"><b>${baseStar}</b><small>ฐาน</small></div>
           <div class="star-time-row">
             <span class="star-num star-month" title="月 ดาวเดือน">${gridMonth[dir]}<small>月</small></span>
             <span class="star-num star-day" title="日 ดาววัน">${gridDay[dir]}<small>日</small></span>
@@ -3609,6 +3690,13 @@ function drawCanvasPill(ctx, text, x, y, kind){
 }
 
 function floorGradeForDir(dir){
+  if(window._currentMountainGrid && window._currentWaterGrid && window._currentPeriodGrid){
+    return planGradeForDir(dir, {
+      mountainGrid: window._currentMountainGrid,
+      waterGrid: window._currentWaterGrid,
+      baseGrid: window._currentPeriodGrid
+    });
+  }
   return compassGrade(dir, window._currentYearGrid || {}, window._currentTaiSui, window._currentThreeKill);
 }
 
@@ -3630,11 +3718,17 @@ function planUsageClass(status){
   return status === 'good' ? 'good' : status === 'caution' ? 'caution' : status === 'avoid' ? 'avoid' : '';
 }
 function planGradeForDir(dir, natalGrids){
-  return scoreFlyingStarDirectionV12({
+  const houseGrade = scoreFlyingStarDirectionV12({
     dir,
     mountain:natalGrids?.mountainGrid?.[dir],
     water:natalGrids?.waterGrid?.[dir],
     base:natalGrids?.baseGrid?.[dir]
+  });
+  return applyAnnualAfflictionToHouseGrade(houseGrade, {
+    dir,
+    yearStar: window._currentYearGrid?.[dir],
+    taiSuiDir: window._currentTaiSui,
+    threeKillDir: window._currentThreeKill
   });
 }
 function syncPlanRotationFromHouse(){
@@ -3984,6 +4078,16 @@ document.getElementById('planOpacity')?.addEventListener('input', ev => {
 document.getElementById('btnPlanReset')?.addEventListener('click', ()=>{
   if(!planState.img) return;
   resetPlanCircle();
+  drawFloorPlan();
+});
+document.getElementById('btnPlanRotL')?.addEventListener('click', ()=>{
+  if(!planState.img) return;
+  planState.imageRotation = normalizeDeg(planState.imageRotation - 90);
+  drawFloorPlan();
+});
+document.getElementById('btnPlanRotR')?.addEventListener('click', ()=>{
+  if(!planState.img) return;
+  planState.imageRotation = normalizeDeg(planState.imageRotation + 90);
   drawFloorPlan();
 });
 document.getElementById('btnPlanClear')?.addEventListener('click', ()=>{
