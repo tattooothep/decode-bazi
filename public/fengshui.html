@@ -4068,8 +4068,13 @@ function drawFloorPlan(){
     drawFloorStarCluster(ctx, item.dir, item.deg, natalGrids);
     const tags = floorStarTags(item.dir).filter(t => t.kind === 'aff');
     if(tags.length){
-      const p = planPoint(planState.radius * .26, item.deg);
-      tags.slice(0,2).forEach((t, idx) => drawCanvasPill(ctx, t.text, p.x, p.y + idx * 24, t.kind));
+      /* badge 太歲/三煞/5黃/2黑 ย้ายไประหว่างกลุ่มดาว (.50±) กับวงนอก (1.0) เพื่อไม่ทับ label ทิศ N/S ที่ .24 */
+      const baseR = planState.radius * .72;
+      const stepR = planState.radius * .09;
+      tags.slice(0,2).forEach((t, idx) => {
+        const p = planPoint(baseR + idx * stepR, item.deg);
+        drawCanvasPill(ctx, t.text, p.x, p.y, t.kind);
+      });
     }
   });
 
