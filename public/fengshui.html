@@ -289,6 +289,11 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .direction-breakdown .db-v b{color:var(--gold-bright);font-family:var(--tc);}
 
 .map-card{background:var(--bg-3);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:520px;}
+.map-card.map-expanded{position:fixed;inset:8px;z-index:1200;min-height:0;height:calc(100dvh - 16px);border-radius:18px;box-shadow:0 20px 80px rgba(0,0,0,.72);}
+body.fs-map-expanded{overflow:hidden;}
+body.fs-map-expanded .map-card.map-expanded #gmap{min-height:0;height:auto;flex:1;}
+body.fs-map-expanded .map-card.map-expanded .map-head{background:rgba(18,20,24,.96);backdrop-filter:blur(10px);}
+body.fs-map-expanded .map-card.map-expanded .map-instr{max-height:96px;overflow:auto;}
 .map-head{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
 .map-head h4{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
 .map-controls{display:flex;gap:6px;flex-wrap:wrap;}
@@ -305,6 +310,14 @@ body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important
 
 .map-result-bar{padding:14px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:14px;font-family:var(--mono);font-size:11px;}
 @media(max-width:680px){.map-result-bar{grid-template-columns:1fr 1fr;}}
+@media(max-width:680px){
+  .map-card.map-expanded{inset:0;height:100dvh;border-radius:0;border:0;}
+  .map-card.map-expanded .map-head{padding:10px 12px;}
+  .map-card.map-expanded .map-controls{gap:5px;}
+  .map-card.map-expanded .map-btn{font-size:9px;padding:6px 8px;}
+  .map-card.map-expanded .map-result-bar{padding:9px 12px;gap:8px;}
+  .map-card.map-expanded .map-instr{padding:9px 12px;font-size:11px;max-height:84px;}
+}
 .mrb-cell{display:flex;flex-direction:column;gap:3px;}
 .mrb-cell b{font-size:9px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
 .mrb-cell span{color:var(--fg);font-weight:600;font-size:13px;}
@@ -607,6 +620,9 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           <button  class="map-btn" id="modeStanding" data-i18n="auto.f.015">① จุดยืน</button>
           <button  class="map-btn" id="modeFacing" data-i18n="auto.f.016">② ทิศหันหน้า</button>
           <button class="map-btn" id="btnGeolocate">📍 GPS</button>
+          <button class="map-btn" id="btnMapZoomIn">＋ ซูม</button>
+          <button class="map-btn" id="btnMapZoomOut">－ ย่อ</button>
+          <button class="map-btn" id="btnMapExpand">⛶ เต็มจอ</button>
           <button  class="map-btn" id="btnClear" data-i18n="auto.f.017">↻ ล้าง</button>
         </div>
       </div>
@@ -2009,7 +2025,7 @@ window.initMap = function(){
   map = new google.maps.Map(document.getElementById('gmap'), {
     center: defaultCenter,
     zoom: 17,
-    maxZoom: 22,
+    maxZoom: 23,
     mapTypeId: 'hybrid',
     tilt: 0,
     draggableCursor: 'default',
@@ -2748,6 +2764,49 @@ document.getElementById('modeStanding').addEventListener('click', ()=>{
   clearWallMode();
 });
 document.getElementById('modeFacing').addEventListener('click', ()=>setMode('facing'));
+
+function resizeMapAfterLayout(){
+  if(!map || !window.google?.maps?.event) return;
+  const center = map.getCenter();
+  setTimeout(()=>{
+    google.maps.event.trigger(map, 'resize');
+    if(center) map.setCenter(center);
+  }, 80);
+}
+
+function setMapExpanded(expanded){
+  const card = document.querySelector('.map-card');
+  const btn = document.getElementById('btnMapExpand');
+  if(!card || !btn) return;
+  card.classList.toggle('map-expanded', expanded);
+  document.body.classList.toggle('fs-map-expanded', expanded);
+  btn.classList.toggle('active', expanded);
+  btn.textContent = expanded ? '⤢ ย่อแผนที่' : '⛶ เต็มจอ';
+  resizeMapAfterLayout();
+}
+
+document.getElementById('btnMapExpand').addEventListener('click', ()=>{
+  const card = document.querySelector('.map-card');
+  setMapExpanded(!(card && card.classList.contains('map-expanded')));
+});
+
+document.getElementById('btnMapZoomIn').addEventListener('click', ()=>{
+  if(!map) return;
+  const z = map.getZoom() || 17;
+  map.setZoom(Math.min(z + 1, 23));
+});
+
+document.getElementById('btnMapZoomOut').addEventListener('click', ()=>{
+  if(!map) return;
+  const z = map.getZoom() || 17;
+  map.setZoom(Math.max(z - 1, 3));
+});
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && document.body.classList.contains('fs-map-expanded')){
+    setMapExpanded(false);
+  }
+});
 
 document.getElementById('btnClear').addEventListener('click', ()=>{
   if(standingMarker){ standingMarker.setMap(null); standingMarker = null; }
