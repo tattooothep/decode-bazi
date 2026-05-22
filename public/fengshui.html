@@ -361,6 +361,7 @@ body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important
 .house-mtn-label.el-fire{color:#ffe0d8;border-color:#e06c6c;background:rgba(104,39,32,.78);}
 .house-mtn-label.el-earth{color:#ffe7aa;border-color:#d4ab45;background:rgba(92,68,24,.78);}
 .house-mtn-label.el-metal{color:#f0f0f5;border-color:#b8b8c2;background:rgba(72,72,82,.78);}
+.house-hex-label{font-family:var(--tc);font-size:10px;font-weight:800;color:#f6e7bd;background:rgba(13,15,18,.78);border:1px solid rgba(200,164,77,.52);border-radius:999px;padding:2px 5px;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.28);}
 .house-star-stack{display:flex;flex-direction:column;gap:2px;align-items:center;pointer-events:none;}
 .house-star-tag{font-family:var(--mono);font-size:9px;font-weight:800;line-height:1;padding:3px 5px;border-radius:999px;color:#fff;background:rgba(13,15,18,.78);border:1px solid rgba(255,255,255,.18);white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.32);}
 .house-star-tag.good{border-color:#5fa86b;background:rgba(38,82,48,.86);}
@@ -415,7 +416,7 @@ body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important
 @media(max-width:760px){.plan-tune{grid-template-columns:1fr 1fr;}.plan-head{align-items:stretch}.plan-controls{width:100%;}.plan-controls .map-btn{flex:1;}}
 @media(max-width:460px){.plan-tune{grid-template-columns:1fr;}}
 
-.map-result-bar{padding:14px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:14px;font-family:var(--mono);font-size:11px;}
+.map-result-bar{padding:14px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px;font-family:var(--mono);font-size:11px;}
 @media(max-width:680px){.map-result-bar{grid-template-columns:1fr 1fr;}}
 @media(max-width:680px){
   .map-card.map-expanded{inset:0;height:100dvh;border-radius:0;border:0;}
@@ -757,6 +758,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       </div>
       <div class="map-layer-controls" id="mapLayerControls" aria-label="เลือกชั้นข้อมูลฮวงจุ้ยบนแผนที่">
         <button class="map-layer-btn active" data-map-layer="m24">24山</button>
+        <button class="map-layer-btn" data-map-layer="hex64">64卦</button>
         <button class="map-layer-btn active" data-map-layer="year">ดาวปี</button>
         <button class="map-layer-btn" data-map-layer="month">ดาวเดือน</button>
         <button class="map-layer-btn" data-map-layer="day">ดาววัน</button>
@@ -776,6 +778,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <div class="mrb-cell"><b>Heading</b><span id="mrHeading">— °</span></div>
         <div class="mrb-cell"><b>Direction</b><span id="mrDirection">—</span></div>
         <div class="mrb-cell"><b>24 Mountain</b><span id="mr24Mtn" class="han">—</span></div>
+        <div class="mrb-cell"><b>64 Hex</b><span id="mrHex64" class="han">—</span></div>
         <div class="mrb-cell"><b data-i18n="auto.f.018">vs ดวง</b><span id="mrVerdict">—</span></div>
       </div>
       <div class="map-instr">
@@ -804,6 +807,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
     </div>
     <div class="map-layer-controls plan-layer-controls" id="planLayerControls" aria-label="เลือกชั้นข้อมูลบนรูปแปลน">
       <button class="map-layer-btn active" data-map-layer="m24">24山</button>
+      <button class="map-layer-btn" data-map-layer="hex64">64卦</button>
       <button class="map-layer-btn active" data-map-layer="year">ดาวปี</button>
       <button class="map-layer-btn" data-map-layer="month">ดาวเดือน</button>
       <button class="map-layer-btn" data-map-layer="day">ดาววัน</button>
@@ -822,6 +826,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="plan-star-key"><i style="background:#3f78b8"></i>น้ำ = ดาวแม่น้ำ / ประตู / เงิน</div>
       <div class="plan-star-key"><i style="background:#c8a44d"></i>ฐาน = ดาวฐาน / พื้นพลัง</div>
       <div class="plan-star-key"><i style="background:#7a85dd"></i>สี 24山 = ธาตุของขุนเขา ไม่ใช่ความมงคล</div>
+      <div class="plan-star-key"><i style="background:#3f311f"></i>64卦 = ช่องละเอียด 5.625° สำหรับอ่าน pattern เพิ่ม</div>
     </div>
     <div class="plan-tune">
       <div class="plan-field">
@@ -2128,6 +2133,24 @@ const HEX_NAMES_TH = {
 };
 const HEX_SYMBOLS = {};
 for(let i=1; i<=64; i++) HEX_SYMBOLS[i] = String.fromCodePoint(0x4DC0 + i - 1);
+const XKDG_HEX_CIRCLE = [
+  24,27,3,42,51,21,17,25,36,22,63,37,55,30,49,13,
+  19,41,60,61,54,38,58,10,11,26,5,9,34,14,43,1,
+  44,28,50,32,57,48,18,46,6,47,64,40,59,29,4,7,
+  33,31,56,62,53,39,52,15,12,45,35,16,20,8,23,2
+];
+const HEX_SECTOR_DEG = 360 / 64;
+function getXkdgHexIndex(deg){
+  return Math.floor(normalizeDeg(deg) / HEX_SECTOR_DEG) % 64;
+}
+function getXkdgHexCenterDeg(i){
+  return normalizeDeg((i + .5) * HEX_SECTOR_DEG);
+}
+function getXkdgHexByDeg(deg){
+  const idx = getXkdgHexIndex(deg);
+  const num = XKDG_HEX_CIRCLE[idx];
+  return { index:idx, num, symbol:HEX_SYMBOLS[num], name:HEX_NAMES_TH[num], start:idx * HEX_SECTOR_DEG, end:(idx + 1) * HEX_SECTOR_DEG, center:getXkdgHexCenterDeg(idx) };
+}
 
 // Get hexagram from mountain + water star pair
 function starsToHex(mountainStar, waterStar){
@@ -2643,6 +2666,9 @@ function applyFacing(deg){
   document.getElementById('mrDirection').textContent = getDirectionName(deg);
   const m = get24Mountain(deg);
   document.getElementById('mr24Mtn').textContent = `${m.code || ''} ${m.h} ${m.pinyin}`;
+  const hex = getXkdgHexByDeg(deg);
+  const hexEl = document.getElementById('mrHex64');
+  if(hexEl) hexEl.textContent = `${hex.symbol} #${hex.num} ${hex.name || ''}`;
   
   // Verdict vs current year flying star
   const dir8 = getDirCode(deg).en;
@@ -3360,6 +3386,18 @@ function drawHouseCompass(center){
       houseCompassLabels.push(label);
     }
   });
+  if(mapLayers.has('hex64')){
+    XKDG_HEX_CIRCLE.forEach((hexNum, i) => {
+      const labelPos = google.maps.geometry.spherical.computeOffset(center, radius * 1.24, getXkdgHexCenterDeg(i));
+      const label = new Label(
+        labelPos,
+        `${fsEsc(HEX_SYMBOLS[hexNum])}<span style="font-size:8px;margin-left:2px">#${hexNum}</span>`,
+        'house-hex-label'
+      );
+      label.setMap(map);
+      houseCompassLabels.push(label);
+    });
+  }
   drawHouseStarLayers(center, radius);
 }
 
@@ -3708,6 +3746,7 @@ function canvasTagColors(kind){
   if(kind === 'm24-fire') return {bg:'rgba(104,39,32,.88)', bd:'#e06c6c', fg:'#ffe2db'};
   if(kind === 'm24-earth') return {bg:'rgba(92,68,24,.88)', bd:'#d4ab45', fg:'#ffe7aa'};
   if(kind === 'm24-metal') return {bg:'rgba(72,72,82,.88)', bd:'#b8b8c2', fg:'#f2f2f6'};
+  if(kind === 'hex64') return {bg:'rgba(38,31,18,.88)', bd:'#c8a44d', fg:'#f6e7bd'};
   return {bg:'rgba(92,72,24,.88)', bd:'#c8a44d', fg:'#fff'};
 }
 
@@ -4016,6 +4055,12 @@ function drawFloorPlan(){
       drawCanvasPill(ctx, `${m.h}${m.code}`, lp.x, lp.y, `m24-${m24Element(m)}`);
     }
   });
+  if(mapLayers.has('hex64')){
+    XKDG_HEX_CIRCLE.forEach((hexNum, i) => {
+      const lp = planPoint(planState.radius * 1.22, getXkdgHexCenterDeg(i));
+      drawCanvasPill(ctx, `${HEX_SYMBOLS[hexNum]}#${hexNum}`, lp.x, lp.y, 'hex64');
+    });
+  }
 
   ctx.globalAlpha = 1;
   COMPASS_DIRS.forEach(item => drawPlanDirectionLabel(ctx, item));
@@ -4221,6 +4266,8 @@ document.getElementById('btnClear').addEventListener('click', ()=>{
   document.getElementById('mrHeading').textContent = '— °';
   document.getElementById('mrDirection').textContent = '—';
   document.getElementById('mr24Mtn').textContent = '—';
+  const hexEl = document.getElementById('mrHex64');
+  if(hexEl) hexEl.textContent = '—';
   document.getElementById('mrVerdict').textContent = '—';
 });
 document.getElementById('btnGeolocate').addEventListener('click', ()=>{
