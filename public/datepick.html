@@ -986,21 +986,36 @@ function escHtml(v){
 }
 
 function buildLayerReport(funnelStats, activeModules, hardModules, finalCount){
-  const total = Number(funnelStats?.total || 0);
+  const poolTotal = Number(funnelStats?.total || 0);
+  const baseTotal = Number(funnelStats?.baseTotal || poolTotal);
+  const personCut = Number(funnelStats?.personCut || 0);
   const per = funnelStats?.perModule || {};
   const active = new Set(activeModules || []);
   const hard = new Set(hardModules || []);
   return MODULE_ORDER.filter(k => active.has(k)).map(k => {
     const meta = MODULE_LABELS[k] || { th:k, zh:k, mode:'', desc:'' };
     const row = per[k] || {};
-    const passed = Number(row.passed ?? (k === 'ba_zi' || k === 'yong_shen' || k === 'hex64' ? finalCount : total));
-    const failed = Number(row.failed ?? Math.max(0, total - passed));
+    let total = poolTotal;
+    let passed = Number(row.passed ?? poolTotal);
+    let failed = Number(row.failed ?? Math.max(0, total - passed));
+    let desc = meta.desc;
+    if (k === 'ba_zi' && hard.has(k)) {
+      total = baseTotal;
+      passed = poolTotal;
+      failed = personCut;
+      desc = 'ตัดวัน/ยามที่ชงกับดวงของคนที่เลือกก่อน แล้วค่อยจัดคะแนนต่อ';
+    } else if (k === 'ba_zi' || k === 'yong_shen' || k === 'hex64') {
+      total = Math.max(finalCount, 1);
+      passed = finalCount;
+      failed = 0;
+      desc = meta.desc + ' · ใช้กับผลลัพธ์ที่ผ่านเข้ารอบ ไม่ใช่ตัวตัด 360 ยาม';
+    }
     return {
       key:k,
       th:meta.th,
       zh:meta.zh,
       mode: hard.has(k) ? 'ตัดจริง' : meta.mode,
-      desc: meta.desc,
+      desc,
       total,
       passed,
       failed,
@@ -1042,6 +1057,7 @@ async function performSearch(){
     /* อ่าน filter ที่ติ๊ก */
     const useTongshu = document.querySelector('.filter-item[data-filter="tongshu"] input[type="checkbox"]')?.checked !== false;
     const useBazi    = document.querySelector('.filter-item[data-filter="bazi"] input[type="checkbox"]')?.checked !== false;
+    const useQimen   = document.querySelector('.filter-item[data-filter="qimen"] input[type="checkbox"]')?.checked !== false;
     const useXiu28   = document.querySelector('.filter-item[data-filter="xiu28"] input[type="checkbox"]')?.checked !== false;
     const useShen12  = document.querySelector('.filter-item[data-filter="shen12"] input[type="checkbox"]')?.checked !== false;
     const useFly9    = document.querySelector('.filter-item[data-filter="fly9"] input[type="checkbox"]')?.checked !== false;
@@ -1077,7 +1093,7 @@ async function performSearch(){
       if (useShen12)  activeModules.push('twelve_spirits');
       if (useFly9)    activeModules.push('nine_stars');
       if (useTaisui)  activeModules.push('tai_sui');
-      activeModules.push('qi_men'); // เสมอ
+      if (useQimen) activeModules.push('qi_men');
       if (useHeluo)   activeModules.push('he_luo');
       if (useBazi)    activeModules.push('ba_zi');
       if (useYongshen) activeModules.push('yong_shen');
@@ -1085,6 +1101,8 @@ async function performSearch(){
       const hardModules = [];
       if (useTongshu) hardModules.push('ze_ri');
       if (useTaisui) hardModules.push('tai_sui');
+      if (useBazi && (state.people||[]).some(p=>p.enabled&&p.personId)) hardModules.push('ba_zi');
+      if (useQimen) hardModules.push('qi_men');
       const r = await fetch('/api/auspicious', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({

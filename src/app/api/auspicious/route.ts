@@ -21,7 +21,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { q, q1 } from "@/lib/db";
 import { ALL_MODULES, UNIVERSAL_MODULES, PERSONAL_MODULES } from "@/lib/luck-engine/types";
 import type { ModuleKey, ActivityType, CandidateSlot, ModuleResult, FunnelStats, SearchResponse, PersonProfile } from "@/lib/luck-engine/types";
-import { combineScores, TIER_LABELS } from "@/lib/luck-engine/combineScores";
+import { combineScores, scoreToTier, tierToAction, TIER_LABELS } from "@/lib/luck-engine/combineScores";
 
 const ZODIAC_CLASH_MAP: Record<string, string> = {
   "子":"午","丑":"未","寅":"申","卯":"酉","辰":"戌","巳":"亥",
@@ -98,11 +98,17 @@ export async function POST(req: NextRequest) {
     const hardModules = Array.isArray(options.hardModules)
       ? options.hardModules.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m))
       : universalActive;
-    const candidates = await queryEphemerisCandidates(dateFrom, dateTo, avoidZodiacs, hardModules, options.scanLimit ?? 360);
+    const applyPersonHard = Array.isArray(options.hardModules) && options.hardModules.includes("ba_zi");
+    const baseTotal = await countEphemerisBase(dateFrom, dateTo);
+    const personalAvoidZodiacs = applyPersonHard ? avoidZodiacs : [];
+    const candidates = await queryEphemerisCandidates(dateFrom, dateTo, personalAvoidZodiacs, hardModules, options.scanLimit ?? 360);
 
     // STEP 3: Funnel stats
-    const funnelStats = await buildFunnelStats(dateFrom, dateTo, avoidZodiacs);
+    const funnelStats = await buildFunnelStats(dateFrom, dateTo, personalAvoidZodiacs);
     funnelStats.finalCount = candidates.length;
+    (funnelStats as any).baseTotal = baseTotal || funnelStats.total;
+    (funnelStats as any).personCut = Math.max(0, (baseTotal || funnelStats.total) - funnelStats.total);
+    (funnelStats as any).personHard = applyPersonHard;
 
     // STEP 4: Late hydration · personal modules (top 50)
     const personalActive = activeModules.filter((m: ModuleKey) => PERSONAL_MODULES.includes(m));
@@ -161,6 +167,16 @@ export async function POST(req: NextRequest) {
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────
+
+async function countEphemerisBase(dateFrom: string, dateTo: string): Promise<number> {
+  try {
+    const r = await q1<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM aj_ephemeris_cache WHERE date BETWEEN $1 AND $2`,
+      [dateFrom, dateTo]
+    );
+    return r?.total || 0;
+  } catch { return 0; }
+}
 
 async function loadPersonProfiles(personIds: string[]): Promise<PersonProfile[]> {
   if (!personIds.length) return [];
@@ -324,6 +340,19 @@ async function getPersonalCache(personId: string, ephemerisId: string): Promise<
 
 function enrichCandidate(c: CandidateSlot, activeModules: ModuleKey[], activity: ActivityType): CandidateSlot {
   const scoring = combineScores(c.modules as any, activeModules, activity);
+  const qm = (c.modules as any)?.qi_men;
+  if (activeModules.includes("qi_men") && (qm?.pass === false || qm?.raw?.bad_door === true)) {
+    scoring.finalScore = Math.min(scoring.finalScore, 49);
+    scoring.tier = scoreToTier(scoring.finalScore);
+    scoring.action = tierToAction(scoring.tier, scoring.warnings.length);
+    scoring.reasonsDown.unshift({
+      code: "QM_BAD_DOOR_CAP",
+      thai: "ประตูฉีเหมินไม่เหมาะ · จำกัดคะแนนสูงสุด",
+      delta: -30,
+      source: "qi_men",
+      severity: "warning",
+    } as any);
+  }
   c.scoring = scoring;
   const tierMeta = TIER_LABELS[scoring.tier];
   c.display = {
