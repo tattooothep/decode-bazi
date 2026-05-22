@@ -972,8 +972,9 @@ export type ChartExtensions = {
   health_mapping: HealthMapping;
 };
 
-export function buildChartExtensions(pillars: BaziPillars, todayDate: Date = new Date(), gender: "M" | "F" = "M", birthDate?: Date, startAge: number = 10, geJuStructure: string | null = null, strengthPct: number = 50, yongshenElement: string | null = null, adjustedYongshenElements: string[] | null = null): ChartExtensions {
-  const lp = buildLuckPillars(pillars, gender, startAge);
+export function buildChartExtensions(pillars: BaziPillarsAny, todayDate: Date = new Date(), gender: "M" | "F" = "M", birthDate?: Date, startAge: number = 10, geJuStructure: string | null = null, strengthPct: number = 50, yongshenElement: string | null = null, adjustedYongshenElements: string[] | null = null): ChartExtensions {
+  const pAny = pillars as any;
+  const lp = buildLuckPillars(pAny, gender, startAge);
   let currentAge = 0;
   if (birthDate) {
     currentAge = Math.floor((todayDate.getTime() - birthDate.getTime()) / (365.25 * 86400000));
@@ -990,34 +991,34 @@ export function buildChartExtensions(pillars: BaziPillars, todayDate: Date = new
     punishments: buildPunishments(pillars),
     combinations: buildCombinations(pillars),
     jishen: buildJishen(pillars.day.stem, adjustedYongshenElements),
-    today_overlay: buildTodayOverlay(pillars, todayDate),
+    today_overlay: buildTodayOverlay(pAny, todayDate),
     luck_pillars: lp,
     current_luck_idx: finalIdx,
     /* G1 · table data */
-    nayin: buildNayin(pillars),
-    kong_wang: buildKongWang(pillars),
-    three_phases: buildThreePhases(pillars),
-    special_stars: buildSpecialStars(pillars),
+    nayin: buildNayin(pAny),
+    kong_wang: buildKongWang(pAny),
+    three_phases: buildThreePhases(pAny),
+    special_stars: buildSpecialStars(pAny),
     /* G4 · 4 BaZi natal sections */
-    life_palace: buildLifePalace(pillars),
-    palace_readings: buildPalaceReadings(pillars),
-    five_structure: buildFiveStructure(pillars),
-    personal_stars: buildPersonalStars(pillars, buildKongWang(pillars).per_pillar),
+    life_palace: buildLifePalace(pAny),
+    palace_readings: buildPalaceReadings(pAny),
+    five_structure: buildFiveStructure(pAny),
+    personal_stars: buildPersonalStars(pAny, buildKongWang(pAny).per_pillar),
     /* Voytek alignment · stem interactions + fan/fu yin + current year */
     stem_interactions: buildStemInteractions(pillars),
     fan_yin_fu_yin: buildFanYinFuYin(pillars, lp, finalIdx, cyp),
     current_year_pillar: cyp,
-    voytek_strength: buildVoytekStrength(pillars, ec),
+    voytek_strength: buildVoytekStrength(pAny, ec),
     /* Engine 1 · LP × natal + 天地合 + 10-year 流年 timeline */
     lp_natal_interactions: lp[finalIdx]
-      ? buildLpNatalInteractions(pillars, { stem: lp[finalIdx].stem, branch: lp[finalIdx].branch })
+      ? buildLpNatalInteractions(pAny, { stem: lp[finalIdx].stem, branch: lp[finalIdx].branch })
       : [],
     tian_di_he: buildTianDiHe(pillars),
-    liu_nian_timeline: buildLiuNianTimeline(pillars, birthDate ? birthDate.getUTCFullYear() : todayDate.getUTCFullYear(), 100, birthDate?.getUTCFullYear()),
+    liu_nian_timeline: buildLiuNianTimeline(pAny, birthDate ? birthDate.getUTCFullYear() : todayDate.getUTCFullYear(), 100, birthDate?.getUTCFullYear()),
     /* Engine 2 · Special chart + Spouse + Career + Health */
-    special_chart: buildSpecialChartRules(pillars, geJuStructure),
+    special_chart: buildSpecialChartRules(pAny, geJuStructure),
     spouse_palace: buildSpousePalace(pillars),
-    career_industry: buildCareerIndustry(pillars, yongshenElement),
-    health_mapping: buildHealthMapping(pillars, ec, strengthPct),
+    career_industry: buildCareerIndustry(pAny, yongshenElement),
+    health_mapping: buildHealthMapping(pAny, ec, strengthPct),
   };
 }

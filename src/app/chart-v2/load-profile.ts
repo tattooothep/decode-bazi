@@ -10,13 +10,14 @@ type ProfileRow = {
   id: string;
   name: string;
   birth_datetime: string;
+  birth_time_known?: boolean;
   birth_location_name?: string;
   birth_lat?: string;
   birth_lng?: string;
   day_master?: string;
   day_master_strength?: string;
   yongshen?: { top3?: { stem: string; element: string }[]; climate?: string };
-  bazi_pillars?: { pillars?: Record<string, Pillar>; ge_ju?: string };
+  bazi_pillars?: { pillars?: { year?: Pillar; month?: Pillar; day?: Pillar; hour?: Pillar | null }; ge_ju?: string };
   gender?: string;
 };
 
@@ -44,7 +45,7 @@ const STEM_TH: Record<string,string> = {甲:'ไม้หยาง',乙:'ไม�
 
 export async function loadProfileChart(profileId: string, orgId: string) {
   const row = await q1<ProfileRow>(
-    `SELECT id, name, birth_datetime, birth_location_name, birth_lat, birth_lng,
+    `SELECT id, name, birth_datetime, birth_time_known, birth_location_name, birth_lat, birth_lng,
             day_master, day_master_strength, yongshen, bazi_pillars, gender
      FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
     [profileId, orgId]
@@ -52,7 +53,8 @@ export async function loadProfileChart(profileId: string, orgId: string) {
   if (!row) return null;
 
   const pillars = row.bazi_pillars?.pillars;
-  if (!pillars) return null;
+  if (!pillars?.year || !pillars?.month || !pillars?.day) return null;
+  const birthTimeKnown = row.birth_time_known !== false;
 
   // ── TST + RECOMPUTE pillars (use shared helper · single source of truth) ──
   const { applyTST } = await import("@/lib/tyme-tst");
@@ -76,19 +78,26 @@ export async function loadProfileChart(profileId: string, orgId: string) {
   const earlyShift = tstResult.totalShiftMin;
   const earlyEot = tstResult.eotMin;
   const earlyTzMer = tstResult.meta.standardMeridian;
-  // recompute pillars at TST
+  // recompute year/month/day at TST. In 3p mode, never fabricate an hour pillar.
   const ecEarly = tymeEarly.SolarTime.fromYmdHms(earlyYy, earlyMm, earlyDd, earlyTstHh, earlyTstMn, 0).getLunarHour().getEightChar();
   pillars.year  = { stem: ecEarly.getYear().getName()[0],  branch: ecEarly.getYear().getName()[1]  };
   pillars.month = { stem: ecEarly.getMonth().getName()[0], branch: ecEarly.getMonth().getName()[1] };
   pillars.day   = { stem: ecEarly.getDay().getName()[0],   branch: ecEarly.getDay().getName()[1]   };
-  pillars.hour  = { stem: ecEarly.getHour().getName()[0],  branch: ecEarly.getHour().getName()[1]  };
+  pillars.hour  = birthTimeKnown
+    ? { stem: ecEarly.getHour().getName()[0], branch: ecEarly.getHour().getName()[1] }
+    : null;
 
   const dmStem = pillars.day.stem;
   const dmEl = STEM_ELEMENT[dmStem];
+  const ACTIVE_POSITIONS = (["year","month","day","hour"] as const).filter(pos => !!pillars[pos]);
+  const DISPLAY_POSITIONS = (birthTimeKnown && pillars.hour)
+    ? (["hour","day","month","year"] as const)
+    : (["day","month","year"] as const);
 
-  // 4 pillars formatted
-  const PILLARS = (["hour","day","month","year"] as const).map(pos => {
+  // Pillars formatted. 3p charts intentionally omit hour.
+  const PILLARS = DISPLAY_POSITIONS.map(pos => {
     const p = pillars[pos];
+    if (!p) return null;
     return {
       label: pos[0].toUpperCase() + pos.slice(1),
       labelZh: { hour:"時", day:"日", month:"月", year:"年" }[pos],
@@ -100,7 +109,7 @@ export async function loadProfileChart(profileId: string, orgId: string) {
       pinyin: STEM_PINYIN[p.stem] + " " + BRANCH_PINYIN[p.branch],
       isDM: pos === "day",
     };
-  });
+  }).filter((p): p is NonNullable<typeof p> => !!p);
 
   // Element distribution from natal
   // F-VOYTEK-CSS (reverse-engineered from Voytek HTML pixel widths · Aeaw 9/10 god ตรงเป๊ะ)
@@ -115,13 +124,15 @@ export async function loadProfileChart(profileId: string, orgId: string) {
 
   const dist: Record<ElementCode, number> = { Wood:0, Fire:0, Earth:0, Metal:0, Water:0 };
   if (USE_DEEPTUNE) {
-    for (const pos of ["year","month","day","hour"] as const) {
+    for (const pos of ACTIVE_POSITIONS) {
+      const p = pillars[pos];
+      if (!p) continue;
       const pw = POS_W[pos];
       if (pos !== "day") {
-        dist[STEM_ELEMENT[pillars[pos].stem]] += 6 * pw;
+        dist[STEM_ELEMENT[p.stem]] += 6 * pw;
       }
       // branch visible: DISABLED
-      const hh = HIDDEN[pillars[pos].branch] || [];
+      const hh = HIDDEN[p.branch] || [];
       const wTab = VOYTEK_HIDDEN[hh.length] || [];
       for (let i = 0; i < hh.length; i++) {
         const w = wTab[i] || 0;
@@ -130,10 +141,12 @@ export async function loadProfileChart(profileId: string, orgId: string) {
     }
   } else {
     // F1 legacy fallback
-    for (const pos of ["year","month","day","hour"] as const) {
-      dist[STEM_ELEMENT[pillars[pos].stem]] += 12;
-      dist[BRANCH_ELEMENT[pillars[pos].branch]] += 12;
-      for (const h of HIDDEN[pillars[pos].branch] || []) {
+    for (const pos of ACTIVE_POSITIONS) {
+      const p = pillars[pos];
+      if (!p) continue;
+      dist[STEM_ELEMENT[p.stem]] += 12;
+      dist[BRANCH_ELEMENT[p.branch]] += 12;
+      for (const h of HIDDEN[p.branch] || []) {
         dist[STEM_ELEMENT[h]] += 4;
       }
     }
@@ -183,7 +196,7 @@ export async function loadProfileChart(profileId: string, orgId: string) {
     nameEn: row.name,
     nameZh: row.name,
     birthDate: bd.toISOString().slice(0, 10),
-    birthTime: bd.toTimeString().slice(0, 5),
+    birthTime: birthTimeKnown ? bd.toTimeString().slice(0, 5) : "ไม่ทราบเวลา",
     birthCity: row.birth_location_name || "Bangkok",
   };
 
@@ -305,13 +318,15 @@ export async function loadProfileChart(profileId: string, orgId: string) {
   }
   // F-VOYTEK-CSS for 10 Gods (same toggle USE_DEEPTUNE_FORMULA)
   if (USE_DEEPTUNE) {
-    for (const pos of ['year','month','day','hour'] as const) {
+    for (const pos of ACTIVE_POSITIONS) {
+      const p = pillars[pos];
+      if (!p) continue;
       const pw = POS_W[pos];
       if (pos !== 'day') {
-        const g = godOf(pillars[pos].stem);
+        const g = godOf(p.stem);
         if (g) godCounts[g] += 6 * pw;
       }
-      const hh = HIDDEN[pillars[pos].branch] || [];
+      const hh = HIDDEN[p.branch] || [];
       const wTab = VOYTEK_HIDDEN[hh.length] || [];
       for (let i = 0; i < hh.length; i++) {
         const w = wTab[i] || 0;
@@ -321,12 +336,14 @@ export async function loadProfileChart(profileId: string, orgId: string) {
       }
     }
   } else {
-    for (const pos of ['year','month','day','hour'] as const) {
-      const stem = pillars[pos].stem;
+    for (const pos of ACTIVE_POSITIONS) {
+      const p = pillars[pos];
+      if (!p) continue;
+      const stem = p.stem;
       const g = godOf(stem);
       if (g) godCounts[g] += 12;
-      for (let i = 0; i < (HIDDEN[pillars[pos].branch] || []).length; i++) {
-        const h = HIDDEN[pillars[pos].branch][i];
+      for (let i = 0; i < (HIDDEN[p.branch] || []).length; i++) {
+        const h = HIDDEN[p.branch][i];
         const w = i === 0 ? 5 : i === 1 ? 3 : 2;
         const gh = godOf(h);
         if (gh) godCounts[gh] += w;
@@ -390,12 +407,12 @@ export async function loadProfileChart(profileId: string, orgId: string) {
     子:'酉',酉:'子', 丑:'辰',辰:'丑', 寅:'亥',亥:'寅',
     卯:'午',午:'卯', 巳:'申',申:'巳', 未:'戌',戌:'未',
   };
-  const natalBranches = ['year','month','day','hour'].map(p => pillars[p as keyof typeof pillars].branch);
+  const natalBranches = ACTIVE_POSITIONS.map(pos => pillars[pos]?.branch).filter((b): b is string => !!b);
   const SIX_DEST_FOUND: { pair: string[]; pillars: string[] }[] = [];
   for (let i = 0; i < natalBranches.length; i++) {
     for (let j = i + 1; j < natalBranches.length; j++) {
       if (SIX_DESTROY[natalBranches[i]] === natalBranches[j]) {
-        const positions = ['year','month','day','hour'];
+        const positions = ACTIVE_POSITIONS;
         SIX_DEST_FOUND.push({
           pair: [natalBranches[i], natalBranches[j]],
           pillars: [positions[i], positions[j]],
@@ -466,8 +483,9 @@ export async function loadProfileChart(profileId: string, orgId: string) {
   const NA_YIN: Record<string, { zh: string; en: string; element: string; symbol: string } | null> = {};
   const QI_PHASES: Record<string, string | null> = {};
   for (const pos of ['year','month','day','hour'] as const) {
-    NA_YIN[pos] = naYinOf(pillars[pos].stem + pillars[pos].branch);
-    QI_PHASES[pos] = twelvePhaseOf(dmStem, pillars[pos].branch);
+    const p = pillars[pos];
+    NA_YIN[pos] = p ? naYinOf(p.stem + p.branch) : null;
+    QI_PHASES[pos] = p ? twelvePhaseOf(dmStem, p.branch) : null;
   }
   const _now = new Date();
   const _ny = _now.getFullYear(), _nm = _now.getMonth()+1, _nd = _now.getDate(), _nh = _now.getHours(), _nmin = _now.getMinutes();
@@ -486,8 +504,9 @@ export async function loadProfileChart(profileId: string, orgId: string) {
   // Fu Yin (伏吟) = ซ้ำจริงในดวงกำเนิด · branch ที่ปรากฏ ≥ 2 ครั้ง
   // ไม่ใช่ matrix incoming (ที่ flag ทุก branch ตรงกับ natal เดียว)
   const natalBranchCount: Record<string, number> = {};
-  for (const pos of ['year','month','day','hour'] as const) {
-    const b = pillars[pos].branch;
+  for (const pos of ACTIVE_POSITIONS) {
+    const b = pillars[pos]?.branch;
+    if (!b) continue;
     natalBranchCount[b] = (natalBranchCount[b] || 0) + 1;
   }
   // pull top events from branch matrix (sanHe/sanHui จากดวงเอง)
@@ -523,16 +542,19 @@ export async function loadProfileChart(profileId: string, orgId: string) {
     庚: ['申','酉'], 辛: ['申','酉'],
     壬: ['亥','子'], 癸: ['亥','子'],
   };
-  const ROOTS_DATA = (['year','month','day','hour'] as const).map(pos => {
-    const stem = pillars[pos].stem;
+  const ROOTS_DATA = ACTIVE_POSITIONS.map(pos => {
+    const p = pillars[pos];
+    if (!p) return null;
+    const stem = p.stem;
     const stemEl = STEM_ELEMENT[stem];
     const peakSet = ROOT_PEAK_BRANCH[stem] || [];
     let strength = 0;
     let label = 'no_root';
     let labelTh = 'ไม่มีราก';
     const rootedIn: string[] = [];
-    for (const p2 of ['year','month','day','hour'] as const) {
-      const b = pillars[p2].branch;
+    for (const p2 of ACTIVE_POSITIONS) {
+      const b = pillars[p2]?.branch;
+      if (!b) continue;
       if (peakSet.includes(b)) {
         strength = Math.max(strength, 1.0);
         label = 'strong_root';
@@ -549,13 +571,14 @@ export async function loadProfileChart(profileId: string, orgId: string) {
       }
     }
     return { pillar: pos, stem, element: stemEl, strength, label, labelTh, rootedIn: [...new Set(rootedIn)] };
-  });
+  }).filter((r): r is NonNullable<typeof r> => !!r);
 
   // Tou Gan: hidden stem ใดที่ "ปรากฏใน HS" บนยอด
-  const stemsOnTop = (['year','month','day','hour'] as const).map(p => pillars[p].stem);
+  const stemsOnTop = ACTIVE_POSITIONS.map(pos => pillars[pos]?.stem).filter((s): s is string => !!s);
   const TOU_GAN_DATA: { branch: string; pillar: string; tou: { hidden: string; pos: 'main'|'middle'|'residual' }[] }[] = [];
-  for (const pos of ['year','month','day','hour'] as const) {
-    const b = pillars[pos].branch;
+  for (const pos of ACTIVE_POSITIONS) {
+    const b = pillars[pos]?.branch;
+    if (!b) continue;
     const hh = HIDDEN[b] || [];
     const tou: { hidden: string; pos: 'main'|'middle'|'residual' }[] = [];
     for (let i = 0; i < hh.length; i++) {
@@ -573,8 +596,9 @@ export async function loadProfileChart(profileId: string, orgId: string) {
     丑: { mainEl: 'earth', primaryStored: 'metal 辛', secondary: ['water 癸'], sanHe: '巳酉丑 → metal', thNote: 'คลังโลหะ · ปลดปล่อยเมื่อครบ 巳酉丑' },
     未: { mainEl: 'earth', primaryStored: 'wood 乙', secondary: ['fire 丁'], sanHe: '亥卯未 → wood', thNote: 'คลังไม้ · ปลดปล่อยเมื่อครบ 亥卯未' },
   };
-  const STORAGE_DATA = (['year','month','day','hour'] as const).flatMap(pos => {
-    const b = pillars[pos].branch;
+  const STORAGE_DATA = ACTIVE_POSITIONS.flatMap(pos => {
+    const b = pillars[pos]?.branch;
+    if (!b) return [];
     const info = STORAGE_INFO[b];
     if (!info) return [];
     return [{ pillar: pos, branch: b, ...info }];
@@ -586,12 +610,12 @@ export async function loadProfileChart(profileId: string, orgId: string) {
     { pillar: 'month' as const, zh: '父母兄弟宫', th: 'เสาเดือน · พ่อแม่/อาชีพ',          age: '17-32', domains: ['parents','career','structure','siblings','education'], stemMeaning: 'พ่อ/หัวหน้า', branchMeaning: 'แม่/รากอาชีพ · ⭐ holds Ge Ju seed' },
     { pillar: 'day' as const,   zh: '夫妻宫',   th: 'เสาวัน · ตนเอง/คู่ครอง',           age: '33-48', domains: ['self','spouse','marriage','core_health','identity'],  stemMeaning: 'ตนเอง (Day Master)', branchMeaning: 'คู่ครอง · เก้าอี้คู่' },
     { pillar: 'hour' as const,  zh: '子女宫',   th: 'เสาชั่วโมง · ลูก/บั้นปลาย',        age: '49+',   domains: ['children','team','subordinates','creative_output','old_age'], stemMeaning: 'ลูกชาย/ลูกน้อง', branchMeaning: 'ลูกหญิง/บั้นปลาย' },
-  ].map(p => ({
+  ].filter(p => !!pillars[p.pillar]).map(p => ({
     ...p,
-    stem: pillars[p.pillar].stem,
-    branch: pillars[p.pillar].branch,
-    stemEl: STEM_ELEMENT[pillars[p.pillar].stem],
-    branchEl: BRANCH_ELEMENT[pillars[p.pillar].branch],
+    stem: pillars[p.pillar]!.stem,
+    branch: pillars[p.pillar]!.branch,
+    stemEl: STEM_ELEMENT[pillars[p.pillar]!.stem],
+    branchEl: BRANCH_ELEMENT[pillars[p.pillar]!.branch],
   }));
 
   // ── P0-B · Follow / 從格 detector (read-only · ไม่ override Yongshen) ──
@@ -645,7 +669,7 @@ import naYinData from "../../../data/sesheta-v3/sesheta-na-yin-60.json";
 
 type StarHit = { code: string; zh: string; th: string; polarity: 'good'|'bad'|'neutral'; pillars: string[] };
 
-function detectShenShaStars(pillars: { year: Pillar; month: Pillar; day: Pillar; hour: Pillar }): StarHit[] {
+function detectShenShaStars(pillars: { year: Pillar; month: Pillar; day: Pillar; hour?: Pillar | null }): StarHit[] {
   const ds = pillars.day.stem, db = pillars.day.branch, ys = pillars.year.stem, yb = pillars.year.branch, mb = pillars.month.branch;
   const TBL: Array<{ code: string; zh: string; th: string; polarity: 'good'|'bad'|'neutral'; targets: string[]; targetField: 'stem'|'branch' }> = [];
   const T_DS: Record<string, Record<string, string[]>> = {
@@ -700,8 +724,8 @@ function detectShenShaStars(pillars: { year: Pillar; month: Pillar; day: Pillar;
     tianDe:{zh:'天德貴人',th:'คุณฟ้า',polarity:'good'},
     yueDe:{zh:'月德貴人',th:'คุณเดือน',polarity:'good'},
   };
-  const positions = ['year','month','day','hour'] as const;
-  const pp = (p: typeof positions[number]) => pillars[p];
+  const positions = (['year','month','day','hour'] as const).filter(p => !!pillars[p]);
+  const pp = (p: typeof positions[number]) => pillars[p]!;
   const found: StarHit[] = [];
   const checkBranch = (code: string, targets: string[]) => {
     const hits = positions.filter(p => targets.includes(pp(p).branch));

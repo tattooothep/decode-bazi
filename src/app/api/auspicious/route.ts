@@ -162,7 +162,7 @@ async function loadPersonProfiles(personIds: string[]): Promise<PersonProfile[]>
   if (!personIds.length) return [];
   try {
     const rows = await q<{ person_id: string; birth_datetime: string;
-      year_pillar: string; month_pillar: string; day_pillar: string; hour_pillar: string;
+      year_pillar: string; month_pillar: string; day_pillar: string; hour_pillar: string | null;
       day_master: string; zodiac: string; yong_shen: string[] | null; ji_shen: string[] | null }>(
       `SELECT person_id, birth_datetime::text, year_pillar, month_pillar, day_pillar, hour_pillar,
               day_master, zodiac, yong_shen, ji_shen FROM aj_user_profiles WHERE person_id = ANY($1)`,
@@ -179,7 +179,7 @@ async function loadPersonProfiles(personIds: string[]): Promise<PersonProfile[]>
         year:  { stem: T(r.year_pillar)?.[0],  branch: T(r.year_pillar)?.[1]  } as any,
         month: { stem: T(r.month_pillar)?.[0], branch: T(r.month_pillar)?.[1] } as any,
         day:   { stem: T(r.day_pillar)?.[0],   branch: T(r.day_pillar)?.[1]   } as any,
-        hour:  { stem: T(r.hour_pillar)?.[0],  branch: T(r.hour_pillar)?.[1]  } as any,
+        hour: T(r.hour_pillar) ? { stem: T(r.hour_pillar)?.[0], branch: T(r.hour_pillar)?.[1] } as any : null as any,
       },
       dayMaster: T(r.day_master) as any,
       zodiac: T(r.zodiac) as any,

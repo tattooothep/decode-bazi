@@ -1,6 +1,6 @@
 /**
  * POST /api/auspicious/profile · บันทึกโปรไฟล์ลูกค้า + คำนวณ pillars
- * Body: { personId: string, birthDate: 'YYYY-MM-DD', birthTime: 'HH:MM', longitude?: number, gender?: 'M'|'F' }
+ * Body: { personId: string, birthDate: 'YYYY-MM-DD', birthTime?: 'HH:MM', birthTimeKnown?: boolean, longitude?: number, gender?: 'M'|'F' }
  *
  * เก็บลง aj_user_profiles · ใช้ใน /api/auspicious lazy compute (ba_zi/yong_shen/hex64)
  */
@@ -12,12 +12,18 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { personId, birthDate, birthTime = "12:00", longitude = 100.5018, gender = "M" } = body;
+    const birthTimeKnown = body.birthTimeKnown !== false;
     if (!personId || !birthDate) return NextResponse.json({ error: "personId + birthDate required" }, { status: 400 });
 
-    const c = await calcBazi({
-      date: birthDate, time: birthTime, longitude, gmtOffsetHours: 7,
-      gender: gender as "M" | "F", dayBoundary: "23:00",
-    });
+    const c = birthTimeKnown
+      ? await calcBazi({
+          date: birthDate, time: birthTime, longitude, gmtOffsetHours: 7,
+          gender: gender as "M" | "F", dayBoundary: "23:00", birthTimeKnown: true,
+        })
+      : await calcBazi({
+          date: birthDate, longitude, gmtOffsetHours: 7,
+          gender: gender as "M" | "F", dayBoundary: "23:00", birthTimeKnown: false,
+        });
 
     const ys = (c.yongshen || []).map(y => y.element).filter(Boolean) as string[];
     const ELEMENT_TO_BRANCH: Record<string, string> = { wood:"寅", fire:"巳", earth:"辰", metal:"申", water:"亥" };
@@ -38,7 +44,7 @@ export async function POST(req: NextRequest) {
         updated_at=NOW()
     `, [
       personId, `${birthDate}T${birthTime}:00+07:00`,
-      c.pillarsZh.year, c.pillarsZh.month, c.pillarsZh.day, c.pillarsZh.hour,
+      c.pillarsZh.year, c.pillarsZh.month, c.pillarsZh.day, c.pillarsZh.hour || null,
       c.pillars.day.stem, c.pillars.year.branch,
       yongBranches, jiBranches,
       c.geJu?.structure || null, null,
@@ -49,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       ok: true, personId,
-      pillars: c.pillarsZh, dayMaster: c.pillars.day.stem, zodiac: c.pillars.year.branch,
+      pillars: c.pillarsZh, birthTimeKnown, dayMaster: c.pillars.day.stem, zodiac: c.pillars.year.branch,
       yongShen: ys, yongBranches,
     });
   } catch (e: unknown) {
