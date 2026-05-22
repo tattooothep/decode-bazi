@@ -369,6 +369,9 @@ body.fs-map-dragging #gmap,body.fs-map-dragging #gmap *{cursor:default!important
 .plan-luck-item i{width:18px;height:18px;border-radius:50%;flex:0 0 auto;border:1px solid rgba(255,255,255,.2);box-shadow:0 0 0 3px rgba(255,255,255,.025);}
 .plan-luck-item b{display:block;font-family:var(--thai);font-size:12px;color:var(--fg);line-height:1.1;white-space:nowrap;}
 .plan-luck-item span{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--fg-faint);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.plan-star-legend{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 12px;border-bottom:1px solid var(--line);background:rgba(13,15,18,.16);}
+.plan-star-key{display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.025);font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
+.plan-star-key i{width:10px;height:10px;border-radius:50%;display:inline-block;}
 .plan-inspector{display:grid;grid-template-columns:minmax(150px,.9fr) minmax(0,1.5fr) minmax(0,1.2fr);gap:14px;padding:14px 18px;border-top:1px solid var(--line);background:linear-gradient(135deg,rgba(200,164,77,.08),rgba(13,15,18,.16));}
 .plan-inspector .pi-hero{display:flex;gap:12px;align-items:center;}
 .pi-badge{width:58px;height:58px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:19px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);}
@@ -758,15 +761,12 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
     <div class="plan-head">
       <div>
         <h4>平面圖 Floor Plan Overlay · อัพแปลนบ้าน</h4>
-        <p>อัพรูปแปลน/ภาพบ้าน แล้ววางวง 24 ขุนเขา + ดาวเหินทับรูปได้ · ลากจุดกลางเพื่อวางไท่จี๋ · ปรับรัศมีและหมุนวงให้ตรงทิศจริง</p>
+        <p>อัพรูปแปลน/ภาพบ้าน แล้ววางวง 24 ขุนเขา + ดาวเหินทับรูปได้ · ลากจุดกลางเพื่อวางไท่จี๋ · วงทิศอิง Facing จากการ์ดบนอัตโนมัติ</p>
       </div>
       <div class="plan-controls">
         <label class="map-btn plan-file">อัพรูปแปลน
           <input id="planUpload" type="file" accept="image/*"/>
         </label>
-        <button class="map-btn" id="btnPlanRotateLeft">↺ รูป 90°</button>
-        <button class="map-btn" id="btnPlanRotateRight">↻ รูป 90°</button>
-        <button class="map-btn" id="btnPlanUseFacing">ใช้ Facing</button>
         <button class="map-btn" id="btnPlanReset">จัดกลาง</button>
         <button class="map-btn" id="btnPlanClear">ล้างรูป</button>
       </div>
@@ -786,21 +786,16 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="plan-luck-item"><i style="background:#c8843f"></i><div><b>ส้ม</b><span>ต้องคุม</span></div></div>
       <div class="plan-luck-item"><i style="background:#c95c4a"></i><div><b>แดง</b><span>เลี่ยง</span></div></div>
     </div>
+    <div class="plan-star-legend" aria-label="คำอธิบายชั้นดาวบนแปลน">
+      <div class="plan-star-key"><i style="background:#8f7650"></i>ภู = ดาวภูเขา / คน / สุขภาพ</div>
+      <div class="plan-star-key"><i style="background:#3f78b8"></i>น้ำ = ดาวแม่น้ำ / ประตู / เงิน</div>
+      <div class="plan-star-key"><i style="background:#c8a44d"></i>ฐาน = ดาวฐาน / พื้นพลัง</div>
+    </div>
     <div class="plan-tune">
       <div class="plan-field">
         <label for="planRadius">รัศมีวง</label>
         <input id="planRadius" type="range" min="80" max="520" value="260"/>
         <output id="planRadiusOut">260px</output>
-      </div>
-      <div class="plan-field">
-        <label for="planRotation">หมุนวง / ตั้งทิศ</label>
-        <input id="planRotation" type="range" min="0" max="359" value="0"/>
-        <output id="planRotationOut">0°</output>
-      </div>
-      <div class="plan-field">
-        <label for="planImageRotation">หมุนรูปแปลน</label>
-        <input id="planImageRotation" type="range" min="-180" max="180" step="1" value="0"/>
-        <output id="planImageRotationOut">0°</output>
       </div>
       <div class="plan-field">
         <label for="planOpacity">ความเข้ม overlay</label>
@@ -834,7 +829,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <div class="pi-usage" id="piUsage"></div>
       </div>
     </div>
-    <div class="plan-status" id="planStatus">Tip: ลากจุด 中 เพื่อย้ายกลางบ้าน · แตะโซนสีเพื่ออ่านดาว/คะแนน/การใช้งาน · ถ้ารู้ Facing บ้าน กด “ใช้ Facing” เพื่อหมุนวงตามองศาบ้านปัจจุบัน</div>
+    <div class="plan-status" id="planStatus">Tip: ลากจุด 中 เพื่อย้ายกลางบ้าน · แตะโซนสีเพื่ออ่านดาว/คะแนน/การใช้งาน · ทิศวงอิง Facing จากการ์ดบน</div>
   </div>
 </div>
 
@@ -3472,19 +3467,15 @@ function planSetStatus(text){
   const st = document.getElementById('planStatus');
   const qs = document.getElementById('planQuickStatus');
   if(st) st.textContent = text;
-  if(qs) qs.textContent = planState.img ? `${planState.imgName || 'แปลน'} · R${Math.round(planState.radius)} · วง ${Math.round(planState.rotation)}° · รูป ${Math.round(planState.imageRotation)}°` : 'ยังไม่ได้อัพรูป';
+  if(qs) qs.textContent = planState.img ? `${planState.imgName || 'แปลน'} · R${Math.round(planState.radius)} · Facing ${Math.round(planState.rotation)}°` : 'ยังไม่ได้อัพรูป';
 }
 
 function updatePlanOutputs(){
   const r = document.getElementById('planRadiusOut');
-  const deg = document.getElementById('planRotationOut');
-  const imgDeg = document.getElementById('planImageRotationOut');
   const op = document.getElementById('planOpacityOut');
   if(r) r.textContent = `${Math.round(planState.radius)}px`;
-  if(deg) deg.textContent = `${Math.round(planState.rotation)}°`;
-  if(imgDeg) imgDeg.textContent = `${Math.round(planState.imageRotation)}°`;
   if(op) op.textContent = `${Math.round(planState.opacity * 100)}%`;
-  planSetStatus(planState.img ? 'ลากจุด 中 เพื่อวางกลางบ้าน · แตะโซนสีเพื่ออ่านดาว/คะแนน · หมุนรูปให้แปลนตรงก่อน แล้วค่อยหมุนวงให้ตรงทิศจริง' : 'อัพรูปแปลนก่อน แล้วระบบจะวางวง 24 ขุนเขาให้');
+  planSetStatus(planState.img ? 'ลากจุด 中 เพื่อวางกลางบ้าน · แตะโซนสีเพื่ออ่านดาว/คะแนน · ทิศวงใช้ Facing จากการ์ดบน' : 'อัพรูปแปลนก่อน แล้วระบบจะวางวง 24 ขุนเขาให้');
 }
 
 function fitPlanImageRect(){
@@ -3604,6 +3595,9 @@ function planGradeForDir(dir, natalGrids){
     base:natalGrids?.baseGrid?.[dir]
   });
 }
+function syncPlanRotationFromHouse(){
+  planState.rotation = normalizeDeg(document.getElementById('houseFacingDeg')?.value || 0);
+}
 function renderPlanInspector(dir, grade){
   const info = COMPASS_DIRS.find(d => d.dir === dir) || {dir, th:dir};
   const badge = document.getElementById('piBadge');
@@ -3670,25 +3664,55 @@ function drawPlanSector(ctx, startDeg, endDeg, innerR, outerR, colors){
   ctx.stroke();
 }
 
+function planLayerVisual(layer){
+  if(layer === 'ภู') return { label:'ภู', full:'ภูเขา', color:'#8f7650', fg:'#fff7e8' };
+  if(layer === 'น้ำ') return { label:'น้ำ', full:'แม่น้ำ', color:'#3f78b8', fg:'#eef7ff' };
+  return { label:'ฐาน', full:'ฐาน', color:'#c8a44d', fg:'#15120a' };
+}
+
 function drawStarBox(ctx, star, x, y, layer){
   if(!star) return;
   const c = starElementColors(star);
-  const size = 28;
+  const lv = planLayerVisual(layer);
+  const w = layer === 'น้ำ' ? 38 : 34;
+  const h = 36;
   ctx.save();
-  drawRoundRect(ctx, x - size/2, y - size/2, size, size, 3);
+  drawRoundRect(ctx, x - w/2, y - h/2, w, h, 6);
   ctx.fillStyle = c.bg;
   ctx.fill();
-  ctx.strokeStyle = c.bd;
-  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = lv.color;
+  ctx.lineWidth = 2.4;
   ctx.stroke();
+  drawRoundRect(ctx, x - w/2 + 3, y + h/2 - 12, w - 6, 9, 4);
+  ctx.fillStyle = lv.color;
+  ctx.fill();
   ctx.fillStyle = c.fg;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.font = '900 21px JetBrains Mono, monospace';
-  ctx.fillText(String(star), x, y - 1);
-  ctx.globalAlpha = .82;
-  ctx.font = '800 7px Noto Sans Thai, sans-serif';
-  ctx.fillText(layer, x, y + 10);
+  ctx.fillText(String(star), x, y - 5);
+  ctx.fillStyle = lv.fg;
+  ctx.font = '900 8px Noto Sans Thai, sans-serif';
+  ctx.fillText(lv.label, x, y + h/2 - 7.5);
+  ctx.restore();
+}
+
+function drawPlanDirectionLabel(ctx, item){
+  const p = planPoint(planState.radius * .24, item.deg);
+  const w = item.dir.length > 1 ? 34 : 28;
+  const h = 19;
+  ctx.save();
+  drawRoundRect(ctx, p.x - w/2, p.y - h/2, w, h, 9);
+  ctx.fillStyle = 'rgba(13,15,18,.78)';
+  ctx.fill();
+  ctx.strokeStyle = item.dir === 'N' ? 'rgba(201,92,74,.95)' : 'rgba(255,214,122,.72)';
+  ctx.lineWidth = item.dir === 'N' ? 2 : 1.2;
+  ctx.stroke();
+  ctx.fillStyle = item.dir === 'N' ? '#ffb1a8' : '#ffe0a0';
+  ctx.font = `${item.dir === 'N' ? '900' : '800'} 11px JetBrains Mono, monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(item.dir, p.x, p.y + .5);
   ctx.restore();
 }
 
@@ -3745,6 +3769,7 @@ function floorStarTags(dir){
 
 function drawFloorPlan(){
   if(!planCtx || !planCanvas) return;
+  syncPlanRotationFromHouse();
   const ctx = planCtx;
   ctx.clearRect(0,0,planCanvas.width,planCanvas.height);
   ctx.fillStyle = '#111318';
@@ -3821,6 +3846,7 @@ function drawFloorPlan(){
   });
 
   ctx.globalAlpha = 1;
+  COMPASS_DIRS.forEach(item => drawPlanDirectionLabel(ctx, item));
   COMPASS_DIRS.forEach(item => {
     drawFloorStarCluster(ctx, item.dir, item.deg, natalGrids);
     const tags = floorStarTags(item.dir).filter(t => t.kind === 'aff');
@@ -3910,8 +3936,6 @@ document.getElementById('planUpload')?.addEventListener('change', ev => {
       planState.img = img;
       planState.imgName = file.name;
       planState.imageRotation = 0;
-      const imgRot = document.getElementById('planImageRotation');
-      if(imgRot) imgRot.value = '0';
       document.getElementById('planEmpty').style.display = 'none';
       planState.imgRect = fitPlanImageRect();
       resetPlanCircle();
@@ -3927,15 +3951,6 @@ document.getElementById('planRadius')?.addEventListener('input', ev => {
   planState.radius = Number(ev.target.value || 260);
   drawFloorPlan();
 });
-document.getElementById('planRotation')?.addEventListener('input', ev => {
-  planState.rotation = normalizeDeg(ev.target.value || 0);
-  drawFloorPlan();
-});
-document.getElementById('planImageRotation')?.addEventListener('input', ev => {
-  planState.imageRotation = Number(ev.target.value || 0);
-  planState.imgRect = fitPlanImageRect();
-  drawFloorPlan();
-});
 document.getElementById('planOpacity')?.addEventListener('input', ev => {
   planState.opacity = Math.max(.1, Math.min(1, Number(ev.target.value || 88) / 100));
   drawFloorPlan();
@@ -3945,29 +3960,11 @@ document.getElementById('btnPlanReset')?.addEventListener('click', ()=>{
   resetPlanCircle();
   drawFloorPlan();
 });
-document.getElementById('btnPlanUseFacing')?.addEventListener('click', ()=>{
-  planState.rotation = normalizeDeg(document.getElementById('houseFacingDeg')?.value || 0);
-  planState.selectedDir = getDirCode8(document.getElementById('houseFacingDeg')?.value || 0);
-  const input = document.getElementById('planRotation');
-  if(input) input.value = String(Math.round(planState.rotation));
-  drawFloorPlan();
-});
-function rotatePlanImage(delta){
-  planState.imageRotation = normalizeSignedDeg(Number(planState.imageRotation || 0) + delta);
-  const input = document.getElementById('planImageRotation');
-  if(input) input.value = String(Math.round(planState.imageRotation));
-  planState.imgRect = fitPlanImageRect();
-  drawFloorPlan();
-}
-document.getElementById('btnPlanRotateLeft')?.addEventListener('click', ()=>rotatePlanImage(-90));
-document.getElementById('btnPlanRotateRight')?.addEventListener('click', ()=>rotatePlanImage(90));
 document.getElementById('btnPlanClear')?.addEventListener('click', ()=>{
   planState.img = null;
   planState.imgName = '';
   planState.imageRotation = 0;
   planState.selectedDir = null;
-  const imgRot = document.getElementById('planImageRotation');
-  if(imgRot) imgRot.value = '0';
   document.getElementById('planUpload').value = '';
   document.getElementById('planEmpty').style.display = '';
   resetPlanInspector();
