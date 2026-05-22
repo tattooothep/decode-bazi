@@ -2039,6 +2039,13 @@
     state.view = view;
     if(view==='solar') setTimeout(renderSolar, 50);
   });
+  (function applyInitialTeamView(){
+    const params = new URLSearchParams(location.search || '');
+    if ((params.get('teamv') || '').toLowerCase() === 'build') {
+      const teamBtn = document.querySelector('#view-tabs button[data-view="team"]');
+      if (teamBtn) setTimeout(() => teamBtn.click(), 0);
+    }
+  })();
 
   // time pills
   document.getElementById('time-pills').addEventListener('click', (e)=>{

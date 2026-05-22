@@ -83,11 +83,32 @@ function buildTeamPrompt(opts: {
   const { payload, message, history, lang } = opts;
   const self = payload?.self;
   const members = payload?.members || [];
+  const selectedTeam = Array.isArray(payload?.selected_team) ? payload.selected_team : [];
+  const activity = payload?.activity || null;
+  const centerId = payload?.team_center || self?.id || "self";
   const ysMap = payload?.yongshen_v2_map || {};
 
   const selfLine = fmtPersonCard(self, ysMap[self?.id || "self"]);
   const memberLines = members.slice(0, 30).map((m: any) =>
     `• ${fmtPersonCard(m, ysMap[m.id])}`).join("\n");
+  const selectedLines = selectedTeam.slice(0, 30).map((m: any) =>
+    `• ${m.id === centerId ? "[CENTER] " : ""}${fmtPersonCard(m, ysMap[m.id])}${m.role ? ` · role=${m.role}` : ""}${m.elem ? ` · element=${m.elem}` : ""}${m.glyph ? ` · DM=${m.glyph}` : ""}`).join("\n");
+  const activityLines = activity ? [
+    `กิจกรรม: ${activity.label || activity.id || "—"} · priority=${activity.priority || "balanced"}`,
+    activity.summary ? `ภาพรวมกิจกรรม: ${activity.summary}` : "",
+    Array.isArray(activity.required) && activity.required.length
+      ? `ธาตุหลักที่กิจกรรมต้องใช้: ${activity.required.map((x: any) => x.label || x.element).join(" · ")}`
+      : "",
+    Array.isArray(activity.support) && activity.support.length
+      ? `ธาตุเสริม: ${activity.support.map((x: any) => x.label || x.element).join(" · ")}`
+      : "",
+    Array.isArray(activity.roles) && activity.roles.length
+      ? "บทบาทตามกิจกรรม:\n" + activity.roles.map((r: any) => `• ${r.label || "role"} · ${(r.elements || []).join("/") || "—"} · ${r.text || ""}`).join("\n")
+      : "",
+    Array.isArray(activity.manual) && activity.manual.length
+      ? "Operating manual:\n" + activity.manual.map((m: string) => `• ${m}`).join("\n")
+      : "",
+  ].filter(Boolean).join("\n") : "";
 
   const histText = history.length
     ? "\n\nประวัติคำถาม:\n" + history.map(h => `[${h.role}] ${h.content}`).join("\n")
@@ -100,6 +121,11 @@ ${LANG_INSTR[lang] || LANG_INSTR.th}
 ศูนย์กลาง (ลูกค้า):
 ${selfLine}
 
+ทีมที่เลือกใน Team Builder (${selectedTeam.length || 0} คน):
+${selectedLines || "—"}
+
+${activityLines ? activityLines + "\n" : ""}
+
 สมาชิก (${members.length} คน):
 ${memberLines || "—"}
 
@@ -107,7 +133,7 @@ ${memberLines || "—"}
 
 คำถาม: ${message}
 
-ตอบ:`;
+ตอบโดยยึด "ทีมที่เลือก" และ "กิจกรรม" เป็นหลัก · ถ้าต้องเสนอคนเพิ่ม ค่อยดูจากสมาชิกทั้งหมด · ให้บอกบทบาท ใครตัดสินใจ ใครเป็น challenger ใครควรถือรายละเอียด และจุดที่ต้องคุม:`;
 }
 
 async function runClaudeCli(prompt: string): Promise<string> {

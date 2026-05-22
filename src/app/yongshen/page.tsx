@@ -1,6 +1,11 @@
 import { ComingSoon } from "@/components/coming-soon";
+import { redirect } from "next/navigation";
 
-export default function YongshenLegacyPage() {
+export default async function YongshenLegacyPage({ searchParams }: { searchParams: Promise<{ teamv?: string }> }) {
+  const sp = await searchParams;
+  if (sp.teamv) {
+    redirect(`/yongsennetwork?teamv=${encodeURIComponent(sp.teamv)}`);
+  }
   return (
     <ComingSoon
       titleTh="ใบสั่งยาดวง"
