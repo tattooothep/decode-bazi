@@ -231,10 +231,12 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 @media(max-width:1080px){.geo-grid{grid-template-columns:1fr;}}
 
 .compass-card{background:var(--bg-3);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px;}
-.compass-svg-wrap{position:relative;width:100%;max-width:280px;aspect-ratio:1;}
+.compass-svg-wrap{position:relative;width:100%;max-width:320px;aspect-ratio:1;}
 .compass-svg{width:100%;height:auto;display:block;}
-.compass-luck-seg{stroke:rgba(13,15,18,.65);stroke-width:1.2;cursor:help;transition:opacity .2s,filter .2s;}
-.compass-luck-seg:hover{opacity:1!important;filter:brightness(1.22);}
+.compass-luck-seg{stroke:rgba(13,15,18,.72);stroke-width:1.8;cursor:help;transition:opacity .2s,filter .2s;}
+.compass-luck-seg:hover{opacity:1!important;filter:brightness(1.22) saturate(1.15);}
+.compass-luck-label{font-family:var(--thai);font-size:10px;font-weight:800;text-anchor:middle;dominant-baseline:middle;fill:#fff;text-shadow:0 1px 3px rgba(0,0,0,.75);pointer-events:none;}
+.compass-luck-score{font-family:var(--mono);font-size:8px;font-weight:700;text-anchor:middle;dominant-baseline:middle;fill:rgba(255,255,255,.9);text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;}
 .qimen-door-mark{cursor:help;transition:filter .2s,opacity .2s;}
 .qimen-door-mark:hover{filter:brightness(1.25);}
 .qimen-door-mark circle{stroke:rgba(13,15,18,.72);stroke-width:1.5;}
@@ -258,6 +260,14 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .compass-luck-legend i{display:inline-block;width:18px;height:8px;border-radius:99px;border:1px solid rgba(243,235,217,.15);}
 .direction-breakdown{width:100%;padding:12px;background:linear-gradient(135deg,var(--gold-soft),rgba(127,168,105,.04));border:1px solid var(--gold-line);border-radius:10px;font-size:12px;line-height:1.55;color:var(--fg-soft);}
 .direction-breakdown h5{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:0 0 8px;}
+.direction-breakdown .dir-hero{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;margin-bottom:10px;padding:10px;border-radius:10px;background:rgba(0,0,0,.14);border:1px solid var(--line);}
+.direction-breakdown .dir-badge{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:18px;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);}
+.direction-breakdown .dir-hero.good .dir-badge{background:#5fa86b;}
+.direction-breakdown .dir-hero.mid .dir-badge{background:#c8a44d;color:#15120c;}
+.direction-breakdown .dir-hero.warn .dir-badge{background:#c8843f;}
+.direction-breakdown .dir-hero.danger .dir-badge{background:#c95c4a;}
+.direction-breakdown .dir-main{font-family:var(--thai);font-size:15px;color:var(--fg);font-weight:700;}
+.direction-breakdown .dir-sub{font-size:12px;color:var(--fg-soft);margin-top:2px;}
 .direction-breakdown .db-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px dashed var(--line);}
 .direction-breakdown .db-row:first-of-type{border-top:0;}
 .direction-breakdown .db-k{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--fg-faint);text-transform:uppercase;white-space:nowrap;}
@@ -492,8 +502,8 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="compass-svg-wrap">
         <svg class="compass-svg" viewBox="0 0 400 400">
           <circle cx="200" cy="200" r="195" fill="none" stroke="var(--gold-line)" stroke-width="1"/>
-          <g id="compassLuckRing"></g>
           <circle cx="200" cy="200" r="180" fill="var(--bg)" stroke="var(--gold)" stroke-width="2"/>
+          <g id="compassLuckRing"></g>
           <circle cx="200" cy="200" r="120" fill="none" stroke="var(--gold-line)" stroke-width="1"/>
           <circle cx="200" cy="200" r="60"  fill="none" stroke="var(--gold-line)" stroke-width="1"/>
           <g id="dirRing"></g>
@@ -686,18 +696,18 @@ const COMPASS_DIRS = [
 ];
 function compassGrade(dir, yearGrid, taiSuiDir, threeKillDir){
   const yStar = yearGrid?.[dir];
-  if(taiSuiDir === dir) return {level:'danger', color:'#9b6cc9', label:'ไท่ซุ่ย · ห้ามรบกวน', score:18};
-  if(threeKillDir === dir) return {level:'danger', color:'#c95c4a', label:'สามชะ · เลี่ยงนั่งหันหน้าใส่', score:20};
-  if(yStar === 5) return {level:'danger', color:'#d4a017', label:'5 เหลือง · ห้ามขุด/ตอก/รบกวน', score:15};
-  if(yStar === 2) return {level:'warn', color:'#c8843f', label:'2 ดำ · ระวังสุขภาพ', score:40};
-  if(yStar === 3) return {level:'warn', color:'#c8843f', label:'3 หยก · ระวังเถียง/คดี', score:46};
-  if(yStar === 7) return {level:'warn', color:'#c8843f', label:'7 แดง · ระวังเสียเงิน/คำพูด', score:48};
-  if(yStar === 8) return {level:'good', color:'#5fa86b', label:'8 ขาว · ทรัพย์/เก็บเงิน', score:86};
-  if(yStar === 9) return {level:'good', color:'#5fa86b', label:'9 ม่วง · ชื่อเสียง/อนาคต', score:88};
-  if(yStar === 1) return {level:'good', color:'#5a8aa8', label:'1 ขาว · ปัญญา/โอกาส', score:78};
-  if(yStar === 6) return {level:'good', color:'#7fa869', label:'6 ขาว · ผู้ใหญ่/อำนาจ', score:80};
-  if(yStar === 4) return {level:'mid', color:'#c8a44d', label:'4 เขียว · เรียน/ความสัมพันธ์', score:64};
-  return {level:'mid', color:'#8a6d2a', label:'กลาง · ใช้ตามจังหวะ', score:55};
+  if(taiSuiDir === dir) return {level:'danger', color:'#9b6cc9', band:'เลี่ยง', label:'ไท่ซุ่ย · ห้ามรบกวน', score:18};
+  if(threeKillDir === dir) return {level:'danger', color:'#c95c4a', band:'เลี่ยง', label:'สามชะ · เลี่ยงนั่งหันหน้าใส่', score:20};
+  if(yStar === 5) return {level:'danger', color:'#d4a017', band:'ห้าม', label:'5 เหลือง · ห้ามขุด/ตอก/รบกวน', score:15};
+  if(yStar === 2) return {level:'warn', color:'#c8843f', band:'คุม', label:'2 ดำ · ระวังสุขภาพ', score:40};
+  if(yStar === 3) return {level:'warn', color:'#c8843f', band:'คุม', label:'3 หยก · ระวังเถียง/คดี', score:46};
+  if(yStar === 7) return {level:'warn', color:'#c8843f', band:'คุม', label:'7 แดง · ระวังเสียเงิน/คำพูด', score:48};
+  if(yStar === 8) return {level:'good', color:'#5fa86b', band:'ดี', label:'8 ขาว · ทรัพย์/เก็บเงิน', score:86};
+  if(yStar === 9) return {level:'good', color:'#5fa86b', band:'ดี', label:'9 ม่วง · ชื่อเสียง/อนาคต', score:88};
+  if(yStar === 1) return {level:'good', color:'#5a8aa8', band:'ดี', label:'1 ขาว · ปัญญา/โอกาส', score:78};
+  if(yStar === 6) return {level:'good', color:'#7fa869', band:'ดี', label:'6 ขาว · ผู้ใหญ่/อำนาจ', score:80};
+  if(yStar === 4) return {level:'mid', color:'#c8a44d', band:'กลาง', label:'4 เขียว · เรียน/ความสัมพันธ์', score:64};
+  return {level:'mid', color:'#8a6d2a', band:'กลาง', label:'กลาง · ใช้ตามจังหวะ', score:55};
 }
 function qimenDoorGrade(palace){
   const q = String(palace?.door_quality || '').toLowerCase();
@@ -1399,15 +1409,28 @@ function renderCompassLuckRing(yearGrid, taiSuiDir, threeKillDir){
     const grade = compassGrade(item.dir, yearGrid, taiSuiDir, threeKillDir);
     const seg = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     seg.setAttribute('class', `compass-luck-seg ${grade.level}`);
-    seg.setAttribute('d', ringSegmentPath(200, 200, 181, 194, item.deg - 22.5, item.deg + 22.5));
+    seg.setAttribute('d', ringSegmentPath(200, 200, 154, 195, item.deg - 22.5, item.deg + 22.5));
     seg.setAttribute('fill', grade.color);
-    seg.setAttribute('opacity', grade.level === 'danger' ? '.9' : grade.level === 'good' ? '.78' : '.68');
+    seg.setAttribute('opacity', grade.level === 'danger' ? '.92' : grade.level === 'good' ? '.86' : '.78');
     seg.addEventListener('click', () => selectCompassDirection(item.deg, item.dir));
     const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
     const star = yearGrid?.[item.dir];
     title.textContent = `${item.dir} ${item.th} · ${star ? `ดาวปี ${star}${STAR_INFO[star]?.color || ''} · ` : ''}${grade.label} · ${grade.score}/100`;
     seg.appendChild(title);
     ring.appendChild(seg);
+    const labelPt = polarPoint(200, 200, 178, item.deg);
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('class', 'compass-luck-label');
+    label.setAttribute('x', labelPt.x.toFixed(2));
+    label.setAttribute('y', (labelPt.y - 4).toFixed(2));
+    label.textContent = grade.band || grade.label.split(' ')[0] || '';
+    ring.appendChild(label);
+    const score = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    score.setAttribute('class', 'compass-luck-score');
+    score.setAttribute('x', labelPt.x.toFixed(2));
+    score.setAttribute('y', (labelPt.y + 8).toFixed(2));
+    score.textContent = `${grade.score}`;
+    ring.appendChild(score);
   });
 }
 function renderQimenDoorOverlay(palaces){
@@ -1419,14 +1442,14 @@ function renderQimenDoorOverlay(palaces){
     const p = byDir[item.dir];
     if(!p) return;
     const grade = qimenDoorGrade(p);
-    const pt = polarPoint(200, 200, 153, item.deg);
+    const pt = polarPoint(200, 200, 134, item.deg);
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('class', `qimen-door-mark ${grade.level}`);
     g.addEventListener('click', () => selectCompassDirection(item.deg, item.dir));
     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     circle.setAttribute('cx', pt.x.toFixed(2));
     circle.setAttribute('cy', pt.y.toFixed(2));
-    circle.setAttribute('r', '15');
+    circle.setAttribute('r', '13');
     circle.setAttribute('fill', grade.color);
     circle.setAttribute('opacity', grade.level === 'danger' ? '.92' : '.82');
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -1566,6 +1589,7 @@ function attachOrientation(){
     deg.textContent = Math.round(smoothedHeading);
     /* trigger rAF loop · ถ้ายังไม่วิ่งอยู่ */
     if (!rafId) rafId = requestAnimationFrame(renderLoop);
+    updateDirectionBreakdown(getDirCode(smoothedHeading).en, smoothedHeading);
 
     status.innerHTML = `<b>กำลังอ่านเซ็นเซอร์</b> · ${getDirectionName(smoothedHeading)}<br/>กดล็อกเมื่อทิศตรงหน้าบ้าน`;
     lockBtn.disabled = false;
@@ -1654,6 +1678,13 @@ function updateDirectionBreakdown(dir8, deg){
   if(window._currentThreeKill === dir8) warnings.push('สามชะ 三煞');
   if(yStar === 5) warnings.push('5 เหลือง 五黃');
   host.innerHTML = `
+    <div class="dir-hero ${fsEsc(grade.level)}">
+      <div class="dir-badge">${fsEsc(dir8)}</div>
+      <div>
+        <div class="dir-main">${fsEsc(getDirectionName(deg))} · ${fsEsc(grade.band || '')}</div>
+        <div class="dir-sub">${Math.round(deg)}° · 山 ${fsEsc(m.h)} ${fsEsc(m.pinyin)} · ${fsEsc(grade.label)}</div>
+      </div>
+    </div>
     <h5>${fsEsc(dir8)} · ${fsEsc(getDirectionName(deg))} · ${fsEsc(m.h)} ${fsEsc(m.pinyin)}</h5>
     <div class="db-row"><span class="db-k">飛星 ดาวปี</span><span class="db-v"><b>${fsEsc(yStar || '—')}</b> ${yStar ? fsEsc(STAR_INFO[yStar].color) : ''} · ${fsEsc(grade.label)} · ${grade.score}/100</span></div>
     <div class="db-row"><span class="db-k">警示 ห้าม</span><span class="db-v">${warnings.length ? fsEsc(warnings.join(' · ')) : 'ไม่มี hard warning หลัก'}</span></div>
