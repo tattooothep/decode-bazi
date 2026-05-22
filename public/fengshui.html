@@ -913,6 +913,20 @@ const STAR_INFO = {
   8:{color:'白',th:'ขาว · ทรัพย์',el:'earth',vibe:'auspicious',short:'財',meaning:'✨✨ ทรัพย์ · เก็บเงิน · วางตู้เซฟ'},
   9:{color:'紫',th:'ม่วง · อนาคต',el:'fire',vibe:'auspicious',short:'未',meaning:'✨ ชื่อเสียง · บุญลาภที่จะมา · ดาวเด่นยุค 9'}
 };
+const FS_V12_STAR_SCORE = { 1:14, 2:-16, 3:-8, 4:7, 5:-28, 6:10, 7:-13, 8:10, 9:24 };
+const FS_V12_POSITION_WEIGHT = { water:1.2, mountain:1.0, base:.35 };
+const FS_V12_PAIR_SCORE = {
+  '9-9':18, '8-9':12, '9-8':14, '1-9':14, '9-1':12, '6-9':10, '9-6':10,
+  '1-4':10, '4-1':8, '6-1':8, '1-6':9, '8-6':5, '6-8':6,
+  '5-5':-35, '2-5':-32, '5-2':-32, '2-2':-24,
+  '3-7':-20, '7-3':-18, '2-3':-18, '3-2':-15, '7-7':-16,
+  '5-9':-14, '9-5':-14
+};
+const FS_V12_COLOR_RANK = { red:0, orange:1, gold:2, green:3, purple:4 };
+const FS_V12_GOOD_STARS = new Set([1,4,6,8,9]);
+const FS_V12_BAD_STARS = new Set([2,3,5,7]);
+const ELEMENT_GENERATES = { wood:'fire', fire:'earth', earth:'metal', metal:'water', water:'wood' };
+const ELEMENT_CONTROLS = { wood:'earth', earth:'water', water:'fire', fire:'metal', metal:'wood' };
 
 function getPeriodStar(year){
   if(year < 1864) return 1;
@@ -1086,6 +1100,204 @@ function buildHouseNatalGrids(settings){
     /* v1: matches common S2 / Period 9 reference: mountain flies forward, water flies reverse. */
     mountainGrid: rotateGrid(mountainCenter),
     waterGrid: rotateGridReverse(waterCenter)
+  };
+}
+function elementGenerates(a, b){ return ELEMENT_GENERATES[a] === b; }
+function elementControls(a, b){ return ELEMENT_CONTROLS[a] === b; }
+function starElement(star){ return STAR_INFO[star]?.el || 'earth'; }
+function dirElement(dir){ return PALACE_INFO[dir]?.el || 'earth'; }
+function isGoodStar(star){ return FS_V12_GOOD_STARS.has(Number(star)); }
+function isBadStar(star){ return FS_V12_BAD_STARS.has(Number(star)); }
+function scoreColorV12(score){
+  if(score >= 45) return 'purple';
+  if(score >= 25) return 'green';
+  if(score >= 8) return 'gold';
+  if(score < -12) return 'red';
+  return 'orange';
+}
+function colorVerdictV12(color, riskLevel){
+  if(riskLevel === 'critical') return 'เลี่ยง/หนัก';
+  return { purple:'จุดเด่นพิเศษ', green:'ใช้ดี', gold:'กลางดี/ใช้ได้', orange:'ต้องคุม', red:'เลี่ยง/หนัก' }[color] || 'ต้องคุม';
+}
+function capBestColorV12(color, maxColor){
+  if(!maxColor) return color;
+  return FS_V12_COLOR_RANK[color] > FS_V12_COLOR_RANK[maxColor] ? maxColor : color;
+}
+function minRiskColorV12(color, minColor){
+  if(!minColor) return color;
+  return FS_V12_COLOR_RANK[color] > FS_V12_COLOR_RANK[minColor] ? minColor : color;
+}
+function maxRiskLevelV12(a, b){
+  const rank = { low:0, medium:1, high:2, critical:3 };
+  return rank[b] > rank[a] ? b : a;
+}
+function elementRelationScoreV12(dir, star, position){
+  const de = dirElement(dir);
+  const se = starElement(star);
+  const good = isGoodStar(star);
+  const bad = isBadStar(star);
+  let score = 0;
+  let reason = '';
+  let warning = '';
+  if(se === de){
+    score = good ? 3 : bad ? -5 : 0;
+    reason = good ? `ดาว${star} ได้รากธาตุเดียวกับทิศ ${dir}` : '';
+    warning = bad ? `ดาวร้าย ${star} ได้รากธาตุเดียวกับทิศ ${dir}` : '';
+  } else if(elementGenerates(de, se)){
+    score = good ? 5 : bad ? -7 : 0;
+    reason = good ? `ทิศ ${dir} 生 ดาว${star} เสริมพลังดี` : '';
+    warning = bad ? `ทิศ ${dir} 生 ดาวร้าย ${star} ทำให้แรงขึ้น` : '';
+  } else if(elementGenerates(se, de)){
+    score = good ? 2 : bad ? -2 : 0;
+    reason = good ? `ดาว${star} 生 ทิศ ${dir} ใช้ได้แบบมีเงื่อนไข` : '';
+    warning = bad ? `ดาวร้าย ${star} 生 ทิศ ${dir} ยังมีแรงรบกวน` : '';
+  } else if(elementControls(de, se)){
+    score = good ? -4 : bad ? 4 : 0;
+    reason = bad ? `ทิศ ${dir} ข่มดาวร้าย ${star} ช่วยลดแรง` : '';
+    warning = good ? `ทิศ ${dir} ข่มดาวดี ${star} ทำให้พลังดีลดลง` : '';
+  } else if(elementControls(se, de)){
+    score = good ? -2 : bad ? -4 : 0;
+    warning = good ? `ดาว${star} ข่มทิศ ${dir} ใช้ได้แต่ไม่ลื่น` : `ดาวร้าย ${star} ข่มทิศ ${dir}`;
+  }
+  const weighted = score * (FS_V12_POSITION_WEIGHT[position] || 1);
+  return { score: weighted, reason, warning };
+}
+function period9StarBonusV12(dir, star, position){
+  if(Number(star) !== 9) return { score:0, reason:'', warning:'' };
+  const base = { water:8, mountain:6, base:3 }[position] || 0;
+  const reduced = elementControls(dirElement(dir), 'fire');
+  const score = reduced ? base * .5 : base;
+  return {
+    score,
+    reason: `ดาว${position === 'water' ? 'น้ำ' : position === 'mountain' ? 'ภูเขา' : 'ฐาน'} 9 เป็นดาวยุค 9`,
+    warning: reduced ? `ดาว 9 อยู่ทิศ ${dir} ที่ข่มไฟ โบนัสยุคลดลงครึ่งหนึ่ง` : ''
+  };
+}
+function transition8BonusV12(stars){
+  if([stars.water, stars.mountain, stars.base].includes(9)) return { score:0, reason:'' };
+  let score = 0;
+  if(stars.water === 8) score += 3;
+  if(stars.mountain === 8) score += 2;
+  if(stars.base === 8) score += 1;
+  return { score, reason: score ? 'ไม่มีดาว 9 แต่มีดาว 8 ช่วยประคองแบบดาวถอยพลัง' : '' };
+}
+function scoreFlyingStarDirectionV12({ dir, mountain, water, base }){
+  mountain = Number(mountain); water = Number(water); base = Number(base);
+  const stars = { mountain, water, base };
+  const reasons = [], warnings = [], tags = [];
+  const scoreBreakdown = { water:0, mountain:0, base:0, pair:0, element:0, period9:0, transition8:0, override:0 };
+  ['water','mountain','base'].forEach(pos => {
+    const star = stars[pos];
+    const raw = FS_V12_STAR_SCORE[star] || 0;
+    const weighted = raw * (FS_V12_POSITION_WEIGHT[pos] || 1);
+    scoreBreakdown[pos] = weighted;
+    if(weighted > 0) reasons.push(`ดาว${pos === 'water' ? 'น้ำ' : pos === 'mountain' ? 'ภูเขา' : 'ฐาน'} ${star} ได้ ${Math.round(weighted*10)/10}`);
+    if(weighted < 0) warnings.push(`ดาว${pos === 'water' ? 'น้ำ' : pos === 'mountain' ? 'ภูเขา' : 'ฐาน'} ${star} เสีย ${Math.round(weighted*10)/10}`);
+    const e = elementRelationScoreV12(dir, star, pos);
+    scoreBreakdown.element += e.score;
+    if(e.reason) reasons.push(e.reason);
+    if(e.warning) warnings.push(e.warning);
+    const p9 = period9StarBonusV12(dir, star, pos);
+    scoreBreakdown.period9 += p9.score;
+    if(p9.reason) reasons.push(p9.reason);
+    if(p9.warning) warnings.push(p9.warning);
+  });
+  const pairKey = `${mountain}-${water}`;
+  scoreBreakdown.pair = FS_V12_PAIR_SCORE[pairKey] || 0;
+  if(scoreBreakdown.pair > 0) reasons.push(`คู่ดาว ${pairKey} ส่งเสริมกัน`);
+  if(scoreBreakdown.pair < 0) warnings.push(`คู่ดาว ${pairKey} ต้องระวัง`);
+  const t8 = transition8BonusV12(stars);
+  scoreBreakdown.transition8 = t8.score;
+  if(t8.reason) reasons.push(t8.reason);
+
+  const has = (...nums) => [mountain, water, base].some(s => nums.includes(s));
+  const has2 = has(2), has5 = has(5), has9 = has(9);
+  const override = { forceColor:null, minColor:null, maxColor:null, severity:null, reasons:[] };
+  let riskLevel = 'low';
+
+  if(['5-5','2-5','5-2'].includes(pairKey)){
+    override.forceColor = 'red'; override.severity = 'critical';
+    override.reasons.push(`คู่ ${pairKey} เป็นคู่ดาวร้ายหนัก`);
+  }
+  if(has2 && has5){
+    override.forceColor = 'red'; override.severity = 'critical';
+    override.reasons.push('พบดาว 2 และ 5 อยู่ร่วมทิศเดียวกัน');
+  }
+  if(has5 && ['NE','SW','C'].includes(dir)){
+    override.forceColor = 'red'; override.severity = 'critical';
+    override.reasons.push(`ดาว 5 อยู่ทิศ${dir} ธาตุดิน เสริมเคราะห์ 5`);
+  }
+  if(has5 && dir === 'S'){
+    if(water === 5 || mountain === 5){
+      override.forceColor = 'red'; override.severity = 'critical';
+      override.reasons.push('ดาวน้ำ/ภูเขา 5 อยู่ทิศใต้ ไฟ生ดิน เสริมเคราะห์ 5');
+    } else {
+      override.maxColor = 'orange'; override.severity = 'high';
+      override.reasons.push('ฐาน 5 อยู่ทิศใต้ จึงจำกัดสีไม่ให้เกินส้ม');
+    }
+  }
+  if(['3-7','7-3','7-7','2-3','3-2'].includes(pairKey)){
+    override.minColor = 'orange';
+    if(!override.severity) override.severity = 'high';
+    override.reasons.push(`คู่ ${pairKey} เป็นคู่ต้องคุม`);
+  }
+  if(has5 && has9){
+    override.maxColor = override.maxColor === 'red' ? 'red' : 'orange';
+    if(!override.severity) override.severity = 'high';
+    override.reasons.push('มีดาว 9 ร่วมกับดาว 5 จึงห้ามตีเป็นทิศเขียว/ม่วง');
+  }
+  if(base === 5 && (water === 8 || water === 9 || mountain === 8 || mountain === 9)){
+    override.maxColor = override.maxColor || 'gold';
+    if(!override.severity) override.severity = 'high';
+    override.reasons.push('ดาวดีถูกฐาน 5 จำกัดเพดานผลลัพธ์');
+  }
+
+  let score = Object.values(scoreBreakdown).reduce((a,b)=>a + b, 0);
+  let color = scoreColorV12(score);
+  color = minRiskColorV12(color, override.minColor);
+  color = capBestColorV12(color, override.maxColor);
+  if(override.forceColor) color = override.forceColor;
+  if(override.severity === 'critical') riskLevel = 'critical';
+  else if(override.severity === 'high') riskLevel = 'high';
+  else if(color === 'red') riskLevel = 'high';
+  else if(color === 'orange') riskLevel = 'medium';
+  else if(color === 'gold') riskLevel = warnings.length ? 'medium' : 'low';
+  else if(color === 'purple' && warnings.length) riskLevel = 'medium';
+
+  if([1,8,9].includes(water)) tags.push('ทรัพย์');
+  if([1,4,6,9].includes(mountain)) tags.push('คนหนุน');
+  if([4,9].includes(water) || [4,9].includes(mountain)) tags.push('ชื่อเสียง');
+  if(has5 || has2) tags.push('ระวังสุขภาพ');
+  if(has(3,7)) tags.push('ระวังปะทะ');
+  if(!tags.length && score > 0) tags.push('ใช้ได้');
+
+  const usage = { door:'neutral', bedroom:'neutral', office:'neutral', storage:'neutral' };
+  if([2,5].includes(water)) usage.door = 'avoid';
+  else if([3,7].includes(water)) usage.door = 'caution';
+  else if([1,6,8,9].includes(water)) usage.door = 'good';
+  if([2,5].includes(mountain)) usage.bedroom = 'avoid';
+  else if([3,7].includes(mountain)) usage.bedroom = 'caution';
+  else if([1,4,6,8,9].includes(mountain)) usage.bedroom = 'good';
+  usage.office = [3,7].includes(water) || [3,7].includes(mountain) ? 'caution' : (['green','purple','gold'].includes(color) ? 'good' : 'neutral');
+  usage.storage = color === 'red' ? 'neutral' : 'neutral';
+  if(color === 'red'){ if(usage.door !== 'avoid') usage.door = 'avoid'; if(usage.bedroom !== 'avoid') usage.bedroom = 'caution'; }
+
+  return {
+    dir,
+    score: Math.round(score * 10) / 10,
+    color,
+    riskLevel,
+    severity: override.severity || riskLevel,
+    verdict: colorVerdictV12(color, riskLevel),
+    confidence: 'v1-rule-based',
+    stars,
+    scoreBreakdown: Object.fromEntries(Object.entries(scoreBreakdown).map(([k,v]) => [k, Math.round(v * 10) / 10])),
+    tags: [...new Set(tags)],
+    reasons: [...new Set(reasons)],
+    warnings: [...new Set([...warnings, ...override.reasons])],
+    usage,
+    override,
+    chartContext: { housePattern:null, note:'v2 จะเพิ่ม 旺山旺向 / 上山下水 และให้ทับคะแนนรายทิศ' }
   };
 }
 function compassGrade(dir, yearGrid, taiSuiDir, threeKillDir){
@@ -3317,11 +3529,12 @@ function floorGradeForDir(dir){
   return compassGrade(dir, window._currentYearGrid || {}, window._currentTaiSui, window._currentThreeKill);
 }
 
-function floorGradeColors(level){
-  if(level === 'danger') return { fill:'rgba(201,92,74,.24)', stroke:'rgba(201,92,74,.72)' };
-  if(level === 'warn') return { fill:'rgba(200,132,63,.22)', stroke:'rgba(200,132,63,.66)' };
-  if(level === 'good') return { fill:'rgba(95,168,107,.22)', stroke:'rgba(95,168,107,.66)' };
-  if(level === 'aff') return { fill:'rgba(155,108,201,.20)', stroke:'rgba(155,108,201,.62)' };
+function floorGradeColors(levelOrColor){
+  if(levelOrColor === 'red' || levelOrColor === 'danger') return { fill:'rgba(201,92,74,.25)', stroke:'rgba(201,92,74,.76)' };
+  if(levelOrColor === 'orange' || levelOrColor === 'warn') return { fill:'rgba(200,132,63,.23)', stroke:'rgba(200,132,63,.70)' };
+  if(levelOrColor === 'green' || levelOrColor === 'good') return { fill:'rgba(95,168,107,.23)', stroke:'rgba(95,168,107,.70)' };
+  if(levelOrColor === 'purple' || levelOrColor === 'aff') return { fill:'rgba(155,108,201,.22)', stroke:'rgba(155,108,201,.74)' };
+  if(levelOrColor === 'gold' || levelOrColor === 'mid') return { fill:'rgba(200,164,77,.20)', stroke:'rgba(200,164,77,.64)' };
   return { fill:'rgba(200,164,77,.17)', stroke:'rgba(200,164,77,.54)' };
 }
 
@@ -3444,10 +3657,17 @@ function drawFloorPlan(){
   ctx.arc(planState.cx, planState.cy, planState.radius, 0, Math.PI * 2);
   ctx.stroke();
 
-  /* ชั้น 45° · สีความมงคลวิ่งถึงศูนย์กลาง อ่านโซนใหญ่ก่อน */
+  const natalGrids = buildHouseNatalGrids(getHouseSettings());
+
+  /* ชั้น 45° · สีดาว 9 ยุค v1.2 วิ่งถึงศูนย์กลาง อ่านโซนใหญ่ก่อน */
   COMPASS_DIRS.forEach(item => {
-    const grade = floorGradeForDir(item.dir);
-    const colors = floorGradeColors(grade.level);
+    const grade = scoreFlyingStarDirectionV12({
+      dir:item.dir,
+      mountain:natalGrids.mountainGrid?.[item.dir],
+      water:natalGrids.waterGrid?.[item.dir],
+      base:natalGrids.baseGrid?.[item.dir]
+    });
+    const colors = floorGradeColors(grade.color);
     ctx.globalAlpha = Math.min(planState.opacity, .78);
     drawPlanSector(ctx, item.deg - 22.5, item.deg + 22.5, 0, planState.radius, colors);
   });
@@ -3477,7 +3697,6 @@ function drawFloorPlan(){
   });
 
   ctx.globalAlpha = 1;
-  const natalGrids = buildHouseNatalGrids(getHouseSettings());
   COMPASS_DIRS.forEach(item => {
     drawFloorStarCluster(ctx, item.dir, item.deg, natalGrids);
     const tags = floorStarTags(item.dir).filter(t => t.kind === 'aff');
