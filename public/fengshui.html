@@ -3249,6 +3249,15 @@ function canvasTagColors(kind){
   return {bg:'rgba(92,72,24,.88)', bd:'#c8a44d', fg:'#fff'};
 }
 
+function starElementColors(star){
+  const el = STAR_INFO[star]?.el || 'earth';
+  if(el === 'water') return {bg:'rgba(72,118,190,.94)', bd:'#9fc4ff', fg:'#eef6ff'};
+  if(el === 'wood') return {bg:'rgba(76,148,88,.94)', bd:'#a8dfae', fg:'#f2fff3'};
+  if(el === 'fire') return {bg:'rgba(200,78,66,.95)', bd:'#ffb1a8', fg:'#fff5f2'};
+  if(el === 'metal') return {bg:'rgba(150,150,156,.94)', bd:'#f0f0f2', fg:'#101214'};
+  return {bg:'rgba(198,148,43,.95)', bd:'#ffe0a0', fg:'#15120a'};
+}
+
 function drawCanvasPill(ctx, text, x, y, kind){
   ctx.save();
   ctx.font = '700 13px JetBrains Mono, monospace';
@@ -3269,17 +3278,16 @@ function drawCanvasPill(ctx, text, x, y, kind){
   return h + 3;
 }
 
-function floorGradeForDeg(deg){
-  const dir = getDirCode8(deg);
+function floorGradeForDir(dir){
   return compassGrade(dir, window._currentYearGrid || {}, window._currentTaiSui, window._currentThreeKill);
 }
 
 function floorGradeColors(level){
-  if(level === 'danger') return { fill:'rgba(201,92,74,.30)', stroke:'rgba(201,92,74,.78)' };
-  if(level === 'warn') return { fill:'rgba(200,132,63,.26)', stroke:'rgba(200,132,63,.72)' };
-  if(level === 'good') return { fill:'rgba(95,168,107,.28)', stroke:'rgba(95,168,107,.74)' };
-  if(level === 'aff') return { fill:'rgba(155,108,201,.24)', stroke:'rgba(155,108,201,.70)' };
-  return { fill:'rgba(200,164,77,.20)', stroke:'rgba(200,164,77,.62)' };
+  if(level === 'danger') return { fill:'rgba(201,92,74,.24)', stroke:'rgba(201,92,74,.72)' };
+  if(level === 'warn') return { fill:'rgba(200,132,63,.22)', stroke:'rgba(200,132,63,.66)' };
+  if(level === 'good') return { fill:'rgba(95,168,107,.22)', stroke:'rgba(95,168,107,.66)' };
+  if(level === 'aff') return { fill:'rgba(155,108,201,.20)', stroke:'rgba(155,108,201,.62)' };
+  return { fill:'rgba(200,164,77,.17)', stroke:'rgba(200,164,77,.54)' };
 }
 
 function drawPlanSector(ctx, startDeg, endDeg, innerR, outerR, colors){
@@ -3299,6 +3307,55 @@ function drawPlanSector(ctx, startDeg, endDeg, innerR, outerR, colors){
   ctx.strokeStyle = colors.stroke;
   ctx.lineWidth = 1;
   ctx.stroke();
+}
+
+function drawStarBox(ctx, star, x, y, layer){
+  if(!star) return;
+  const c = starElementColors(star);
+  const size = 28;
+  ctx.save();
+  drawRoundRect(ctx, x - size/2, y - size/2, size, size, 3);
+  ctx.fillStyle = c.bg;
+  ctx.fill();
+  ctx.strokeStyle = c.bd;
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+  ctx.fillStyle = c.fg;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = '900 21px JetBrains Mono, monospace';
+  ctx.fillText(String(star), x, y - 1);
+  ctx.globalAlpha = .82;
+  ctx.font = '800 7px Noto Sans Thai, sans-serif';
+  ctx.fillText(layer, x, y + 10);
+  ctx.restore();
+}
+
+function drawFloorStarCluster(ctx, dir, deg, natalGrids){
+  /* Floor plan = 宅盤 หลัก: ภูเขา / น้ำ / ฐาน แบบ reference round chart */
+  const stars = [
+    {star:natalGrids?.mountainGrid?.[dir], layer:'ภู'},
+    {star:natalGrids?.waterGrid?.[dir], layer:'น้ำ'},
+    {star:natalGrids?.baseGrid?.[dir], layer:'ฐ'}
+  ].filter(s => s.star);
+  if(!stars.length) return;
+  const base = planPoint(planState.radius * .50, deg);
+  const rad = normalizeDeg(deg + planState.rotation) * Math.PI / 180;
+  const tangent = {x:Math.cos(rad), y:Math.sin(rad)};
+  const radial = {x:Math.sin(rad), y:-Math.cos(rad)};
+  const layouts = {
+    1: [[0,0]],
+    2: [[-17,0],[17,0]],
+    3: [[-18,-14],[18,-14],[0,18]],
+    4: [[-18,-16],[18,-16],[-18,18],[18,18]]
+  };
+  const pts = layouts[Math.min(stars.length, 4)];
+  stars.slice(0,4).forEach((s, i) => {
+    const [tx, rr] = pts[i];
+    const x = base.x + tangent.x * tx + radial.x * rr;
+    const y = base.y + tangent.y * tx + radial.y * rr;
+    drawStarBox(ctx, s.star, x, y, s.layer);
+  });
 }
 
 function floorStarTags(dir){
@@ -3352,40 +3409,47 @@ function drawFloorPlan(){
   ctx.arc(planState.cx, planState.cy, planState.radius, 0, Math.PI * 2);
   ctx.stroke();
 
-  /* สีความมงคลของ 24 山 · ใช้ grade เดียวกับวง map compass เพื่ออ่านโซนเร็ว */
-  M24_RING.forEach((m, i) => {
-    const next = M24_RING[(i + 1) % M24_RING.length];
-    const grade = floorGradeForDeg(getMountainCenterDeg(i));
+  /* ชั้น 45° · สีความมงคลวิ่งถึงศูนย์กลาง อ่านโซนใหญ่ก่อน */
+  COMPASS_DIRS.forEach(item => {
+    const grade = floorGradeForDir(item.dir);
     const colors = floorGradeColors(grade.level);
-    ctx.globalAlpha = Math.min(planState.opacity, .92);
-    drawPlanSector(ctx, m.start, next.start, planState.radius * .72, planState.radius, colors);
+    ctx.globalAlpha = Math.min(planState.opacity, .78);
+    drawPlanSector(ctx, item.deg - 22.5, item.deg + 22.5, 0, planState.radius, colors);
   });
 
+  ctx.globalAlpha = planState.opacity;
+  ctx.strokeStyle = 'rgba(200,164,77,.88)';
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.arc(planState.cx, planState.cy, planState.radius, 0, Math.PI * 2);
+  ctx.stroke();
+
   M24_RING.forEach((m, i) => {
-    const major = i % 3 === 1;
+    /* major = ขอบ 45° จริง: N1/NE1/E1... ไม่ใช่กลางกลุ่ม */
+    const major = i % 3 === 0;
     const p = planPoint(planState.radius, m.start);
     ctx.beginPath();
     ctx.moveTo(planState.cx, planState.cy);
     ctx.lineTo(p.x, p.y);
-    ctx.strokeStyle = major ? '#c8a44d' : '#7fa869';
+    ctx.strokeStyle = major ? 'rgba(255,214,122,.95)' : 'rgba(127,168,105,.48)';
     ctx.globalAlpha = major ? planState.opacity : planState.opacity * .58;
-    ctx.lineWidth = major ? 2 : 1;
+    ctx.lineWidth = major ? 3 : 1;
     ctx.stroke();
     if(mapLayers.has('m24')){
       const lp = planPoint(planState.radius * 1.09, getMountainCenterDeg(i));
-      drawCanvasPill(ctx, `${m.h}${m.code}`, lp.x, lp.y, major ? 'mid' : 'good');
+      drawCanvasPill(ctx, `${m.h}${m.code}`, lp.x, lp.y, 'mid');
     }
   });
 
+  ctx.globalAlpha = 1;
+  const natalGrids = buildHouseNatalGrids(getHouseSettings());
   COMPASS_DIRS.forEach(item => {
-    const tags = floorStarTags(item.dir);
-    if(!tags.length) return;
-    const p = planPoint(planState.radius * .62, item.deg);
-    const total = tags.length * 25;
-    let y = p.y - total / 2 + 12;
-    tags.forEach(t => {
-      y += drawCanvasPill(ctx, t.text, p.x, y, t.kind);
-    });
+    drawFloorStarCluster(ctx, item.dir, item.deg, natalGrids);
+    const tags = floorStarTags(item.dir).filter(t => t.kind === 'aff');
+    if(tags.length){
+      const p = planPoint(planState.radius * .26, item.deg);
+      tags.slice(0,2).forEach((t, idx) => drawCanvasPill(ctx, t.text, p.x, p.y + idx * 24, t.kind));
+    }
   });
 
   ctx.globalAlpha = 1;
