@@ -3269,6 +3269,38 @@ function drawCanvasPill(ctx, text, x, y, kind){
   return h + 3;
 }
 
+function floorGradeForDeg(deg){
+  const dir = getDirCode8(deg);
+  return compassGrade(dir, window._currentYearGrid || {}, window._currentTaiSui, window._currentThreeKill);
+}
+
+function floorGradeColors(level){
+  if(level === 'danger') return { fill:'rgba(201,92,74,.30)', stroke:'rgba(201,92,74,.78)' };
+  if(level === 'warn') return { fill:'rgba(200,132,63,.26)', stroke:'rgba(200,132,63,.72)' };
+  if(level === 'good') return { fill:'rgba(95,168,107,.28)', stroke:'rgba(95,168,107,.74)' };
+  if(level === 'aff') return { fill:'rgba(155,108,201,.24)', stroke:'rgba(155,108,201,.70)' };
+  return { fill:'rgba(200,164,77,.20)', stroke:'rgba(200,164,77,.62)' };
+}
+
+function drawPlanSector(ctx, startDeg, endDeg, innerR, outerR, colors){
+  const rot = Number(planState.rotation) || 0;
+  let end = Number(endDeg);
+  const start = Number(startDeg);
+  if(!Number.isFinite(start) || !Number.isFinite(end)) return;
+  if(end <= start) end += 360;
+  const a1 = (start + rot - 90) * Math.PI / 180;
+  const a2 = (end + rot - 90) * Math.PI / 180;
+  ctx.beginPath();
+  ctx.arc(planState.cx, planState.cy, outerR, a1, a2, false);
+  ctx.arc(planState.cx, planState.cy, innerR, a2, a1, true);
+  ctx.closePath();
+  ctx.fillStyle = colors.fill;
+  ctx.fill();
+  ctx.strokeStyle = colors.stroke;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
 function floorStarTags(dir){
   const grids = {
     year: window._currentYearGrid || {},
@@ -3319,6 +3351,15 @@ function drawFloorPlan(){
   ctx.beginPath();
   ctx.arc(planState.cx, planState.cy, planState.radius, 0, Math.PI * 2);
   ctx.stroke();
+
+  /* สีความมงคลของ 24 山 · ใช้ grade เดียวกับวง map compass เพื่ออ่านโซนเร็ว */
+  M24_RING.forEach((m, i) => {
+    const next = M24_RING[(i + 1) % M24_RING.length];
+    const grade = floorGradeForDeg(getMountainCenterDeg(i));
+    const colors = floorGradeColors(grade.level);
+    ctx.globalAlpha = Math.min(planState.opacity, .92);
+    drawPlanSector(ctx, m.start, next.start, planState.radius * .72, planState.radius, colors);
+  });
 
   M24_RING.forEach((m, i) => {
     const major = i % 3 === 1;
