@@ -1843,6 +1843,29 @@ function scoreClass(n){const v=Number(n);return v>=5?'s5':v>=4?'s4':v>=3?'s3':v>
 function scoreLabel(n){return Number(n)+'/5';}
 function fsEsc(s){return String(s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'})[c]);}
 
+/* ===== 八宅明鏡 遊年 + 正神零神 (deterministic · verify ผ่าน mutual+錯卦+東西四) ===== */
+const BZ_LINES={乾:[1,1,1],兌:[1,1,0],離:[1,0,1],震:[1,0,0],巽:[0,1,1],坎:[0,1,0],艮:[0,0,1],坤:[0,0,0]};
+const BZ_DIR_GUA={N:'坎',NE:'艮',E:'震',SE:'巽',S:'離',SW:'坤',W:'兌',NW:'乾'};
+const BZ_PAT={'':'伏位','2':'生氣','0,1':'天醫','0,1,2':'延年','1':'絕命','0,2':'五鬼','0':'六煞','1,2':'禍害'};
+const BZ_STAR={
+  生氣:{th:'เซิงชี่ · ทรัพย์ ก้าวหน้า ลูกหลาน',el:'木',score:5,ji:true},
+  天醫:{th:'เทียนอี · สุขภาพ อุปถัมภ์ การเงินมั่นคง',el:'土',score:5,ji:true},
+  延年:{th:'เหยียนเหนียน · อายุยืน ความรัก สัมพันธ์ดี',el:'金',score:4,ji:true},
+  伏位:{th:'ฝูเว่ย · สงบ มั่นคง สะสมช้าๆ',el:'木',score:3,ji:true},
+  禍害:{th:'ฮั่วไห้ · ปากเสียง ขัดแย้ง ป่วยเล็กน้อย',el:'土',score:2,ji:false},
+  六煞:{th:'ลิ่วซา · เสียทรัพย์ เรื่องชู้สาว อารมณ์',el:'水',score:2,ji:false},
+  五鬼:{th:'อู่กุ่ย · วุ่นวาย โจร อัคคี สูญเสีย',el:'火',score:1,ji:false},
+  絕命:{th:'เจวี๋ยมิ่ง · ร้ายแรงสุด สุขภาพ-การเงินพัง',el:'金',score:1,ji:false},
+};
+function bzYounian(seatGua, dirGua){
+  const a=BZ_LINES[seatGua], b=BZ_LINES[dirGua];
+  if(!a||!b) return null;
+  const diff=[0,1,2].filter(i=>a[i]!==b[i]).join(','); /* ขีดที่ต่าง (爻變) → ดาว · symmetric */
+  return BZ_PAT[diff];
+}
+const BZ_LOSHU_GUA={1:'坎',2:'坤',3:'震',4:'巽',6:'乾',7:'兌',8:'艮',9:'離'};
+function bzZhengLing(period){ const z=BZ_LOSHU_GUA[period], l=BZ_LOSHU_GUA[10-period]; return z&&l?{zheng:z,ling:l}:null; }
+
 function updateInspector(){
   const deg = getCursorRelativeDeg();
   const r = getRingDataAt(deg);
@@ -1872,6 +1895,7 @@ function updateInspector(){
     '28宿':['28 ดาวฤกษ์','28宿'],'24節氣':['24 ฤดูสุริยะ','24節氣'],
     '60甲子':['60 จื่อจี๊','60甲子'],'透地72龍':['72 มังกรทะลุดิน','透地72龍'],'穿山60龍':['60 มังกรเจาะภู','穿山60龍'],
     '城門':['ประตูเมือง','城門'],
+    '八宅':['แปดบ้านโป๊ยเต๊ก','八宅'],'正神零神':['เทพจริง-ศูนย์','正神零神'],
     '警示':['เตือน','警示']
   };
   function row(cat, han, head, score, general, home, rich){
@@ -1917,6 +1941,29 @@ function updateInspector(){
   /* 64卦 */
   const hex = L.hexagrams_64?.hexagrams?.[r.h64char];
   if(hex) row('cat2','64卦', `<b>${r.h64char}</b> #${r.h64num} · ${hex.name||''}`, hex.score, hex.general, hex.home);
+
+  /* 八宅明鏡 + 正神零神 (ต้องล็อกบ้าน — ใช้坐卦ของบ้าน) */
+  if(houseLocked && castleGateResult){
+    const seatGua = castleGateResult.chart.sittingMountain.trigram; /* 坐卦 */
+    const dirGua = BZ_DIR_GUA[r.dir8];
+    const star = bzYounian(seatGua, dirGua);
+    if(star){
+      const si = BZ_STAR[star];
+      row('cat2','八宅', `<b>${star}</b> ${si.ji?'吉':'凶'} · ${si.el}`, si.score,
+        `坐บ้าน ${seatGua} → ทิศ ${dirGua}(${r.dir8}) ได้ดาว <b>${star}</b> · ${si.th}`,
+        si.ji ? 'ทิศมงคลของบ้านนี้ · เหมาะวางประตูหลัก หัวเตียง โต๊ะทำงาน เตา' : 'ทิศอัปมงคลของบ้านนี้ · เลี่ยงประตูหลัก/หัวเตียง · ใช้เป็นห้องน้ำ ที่เก็บของได้', true);
+    }
+    const zl = bzZhengLing(lockedPeriod);
+    if(zl){
+      const dg = BZ_DIR_GUA[r.dir8];
+      if(dg===zl.zheng) row('cat2','正神零神', `<b>正神</b> 宜山 · 吉`, 5,
+        `ยุค ${lockedPeriod}: ทิศนี้ (${zl.zheng}) = 正神 · ควร "สูง มั่นคง มีภูเขา"`,
+        'วางของสูง ตู้ ผนังทึบ ภูเขาจำลอง · ห้ามเปิดโล่ง/วางน้ำ (จะเสียทรัพย์-คน)', true);
+      else if(dg===zl.ling) row('cat2','正神零神', `<b>零神</b> 宜水 · 吉(น้ำ)`, 4,
+        `ยุค ${lockedPeriod}: ทิศนี้ (${zl.ling}) = 零神 · ควร "ต่ำ โล่ง มีน้ำ"`,
+        'วางน้ำ ตู้ปลา ทางเข้า ที่โล่ง · เรียกทรัพย์ · ห้ามวางของสูงทึบ', true);
+    }
+  }
 
   /* 城門訣 Castle Gate (เมื่อล็อกบ้านแล้ว) */
   if(castleGateResult){
