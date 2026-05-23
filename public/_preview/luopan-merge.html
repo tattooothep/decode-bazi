@@ -1,0 +1,1599 @@
+<!doctype html>
+<html lang="th" data-theme="dark" data-lang="th">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>羅盤 14 環 · POC merge with floor plan</title>
+<style>
+  :root{
+    --bg:#0d0f12; --panel:#15181d; --line:rgba(200,164,77,.22);
+    --gold:#c8a44d; --gold-bright:#ffd97a; --gold-soft:#a07f3a;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.38);
+    --ring-bg:rgba(40,32,18,.32); --ring-stroke:#c8a44d; --ring-text:#f6e7bd;
+    --tick-major:#ffd97a; --tick-minor:rgba(200,164,77,.45);
+    --water:#7a85dd; --wood:#78b980; --fire:#e06c6c; --earth:#d4ab45; --metal:#b8b8c2;
+    --blocker:#d2261c; --blocker-mid:rgba(210,38,28,.22);
+    --hl:#fff5be;
+    --label-halo:rgba(8,10,13,.82);
+    --mono:'JetBrains Mono','SF Mono',monospace;
+    --tc:'Noto Serif TC','Noto Serif SC',serif;
+    --th:'Noto Serif Thai',serif;
+  }
+  html[data-theme="light"]{
+    --bg:#f3efe2; --panel:#fbf6ea; --line:rgba(160,127,58,.32);
+    --gold:#a07f3a; --gold-bright:#7a5e21; --gold-soft:#8a6a2a;
+    --fg:#2a221b; --fg-soft:rgba(42,34,27,.7); --fg-faint:rgba(42,34,27,.42);
+    --ring-bg:rgba(243,239,226,.6); --ring-stroke:#9c8a5e; --ring-text:#5a4a3a;
+    --tick-major:#8a7a52; --tick-minor:rgba(155,128,80,.4);
+    --label-halo:rgba(255,252,242,.85);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--th),sans-serif;min-height:100vh;}
+  header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--panel);}
+  header h1{margin:0;font-family:var(--tc);font-size:18px;font-weight:600;color:var(--gold-bright);letter-spacing:.06em;}
+  header h1 small{font-size:11px;color:var(--fg-soft);font-family:var(--mono);margin-left:8px;}
+  .spacer{flex:1}
+  .btn{background:var(--bg);color:var(--fg);border:1px solid var(--line);padding:6px 12px;border-radius:99px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:.2s;}
+  .btn:hover{border-color:var(--gold);color:var(--gold-bright);}
+  .btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+  main{display:grid;grid-template-columns:280px 1fr 320px;gap:14px;padding:14px;align-items:start;}
+  @media(max-width:1100px){main{grid-template-columns:1fr;}}
+  .ctrl,.inspector{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;}
+  .ctrl h3,.inspector h3{margin:0 0 10px;font-family:var(--tc);font-size:13px;font-weight:600;color:var(--gold-bright);letter-spacing:.05em;}
+  .ctrl label{display:block;font-size:11px;color:var(--fg-soft);margin:8px 0 3px;font-family:var(--mono);letter-spacing:.04em;}
+  .ctrl input[type=range]{width:100%;}
+  .ctrl input[type=file]{display:none;}
+  .file-btn{display:block;padding:14px;border:1.5px dashed var(--line);border-radius:10px;text-align:center;cursor:pointer;color:var(--fg-soft);font-size:12px;transition:.2s;}
+  .file-btn:hover{border-color:var(--gold);color:var(--gold-bright);}
+  .cat-section{margin-top:14px;}
+  .cat-section h4{margin:0 0 3px;font-family:var(--tc);font-size:12px;font-weight:600;color:var(--gold-bright);letter-spacing:.04em;display:flex;align-items:center;gap:6px;}
+  .cat-section h4 .cat-tag{font-family:var(--mono);font-size:9px;background:var(--gold);color:var(--bg);padding:1px 6px;border-radius:99px;font-weight:700;}
+  .cat-section .cat-desc{margin:0 0 6px;font-size:10px;color:var(--fg-faint);line-height:1.4;}
+  .layer-grid{display:grid;grid-template-columns:1fr;gap:3px;margin-top:6px;}
+  .layer-grid label{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;font-size:11px;cursor:pointer;color:var(--fg);font-family:var(--th);margin:0;padding:4px 6px;border-radius:6px;border:1px solid transparent;transition:.15s;}
+  .layer-grid label:hover{background:var(--bg);border-color:var(--line);}
+  .layer-grid input{accent-color:var(--gold);}
+  .layer-grid .lbl-th{font-family:var(--th);color:var(--fg);}
+  .layer-grid .lbl-cn{font-family:var(--tc);color:var(--gold-bright);font-size:11px;letter-spacing:.02em;}
+  .stage-wrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;position:relative;}
+  .stage{aspect-ratio:1;width:100%;max-width:720px;margin:0 auto;position:relative;background:#0a0c0f;border-radius:10px;overflow:hidden;}
+  html[data-theme="light"] .stage{background:#e8e0c8;}
+  .stage canvas,.stage svg{position:absolute;inset:0;width:100%;height:100%;}
+  .stage svg{transition:transform .15s ease-out;will-change:transform;}
+  .nudge-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:6px;}
+  .nudge-pad .btn{padding:6px 0;font-size:14px;}
+  .nudge-pad .btn.center{font-size:11px;background:var(--bg);}
+  .stage svg{pointer-events:auto;cursor:crosshair;}
+  .stage svg:active{cursor:grabbing;}
+  .timing{margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-family:var(--mono);font-size:11px;}
+  .timing div{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center;}
+  .timing div b{display:block;color:var(--gold-bright);font-family:var(--tc);font-size:14px;margin-bottom:2px;}
+  .insp-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12px;}
+  .insp-row:last-child{border-bottom:none;}
+  .insp-row b{font-family:var(--tc);font-size:14px;color:var(--gold-bright);}
+  .badge{display:inline-block;padding:2px 8px;border-radius:99px;font-family:var(--mono);font-size:10px;font-weight:700;}
+  .badge.red{background:rgba(210,38,28,.18);color:#ff8a7a;border:1px solid rgba(210,38,28,.4);}
+  .badge.gold{background:rgba(200,164,77,.18);color:var(--gold-bright);border:1px solid rgba(200,164,77,.4);}
+  .badge.green{background:rgba(120,185,128,.18);color:#a9e1ad;border:1px solid rgba(120,185,128,.4);}
+  .legend{margin-top:10px;font-size:10px;color:var(--fg-faint);line-height:1.6;font-family:var(--mono);}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:5px;}
+  .val{font-family:var(--mono);font-size:11px;color:var(--gold-bright);min-width:42px;text-align:right;}
+  .row{display:flex;align-items:center;gap:8px;}
+  .ctrl input[type=text],.ctrl input[type=number]{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:12px;}
+  .ctrl input[type=text]:focus,.ctrl input[type=number]:focus{outline:none;border-color:var(--gold);}
+  .auto-readout{display:block;margin-top:4px;padding:6px 8px;background:var(--bg);border:1px dashed var(--line);border-radius:6px;font-family:var(--tc);font-size:12px;color:var(--gold-bright);min-height:20px;}
+  .btn-grp{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .btn-grp .btn{flex:1;min-width:80px;text-align:center;}
+  .img-tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .img-tools .btn{flex:1;min-width:60px;font-size:13px;padding:6px 8px;}
+  .help-line{font-size:10px;color:var(--fg-faint);margin-top:6px;line-height:1.5;}
+  .lock-status{padding:10px 14px;border-radius:10px;background:var(--bg);border:1px solid var(--line);font-family:var(--mono);font-size:11px;display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .lock-status.locked{border-color:var(--gold);background:rgba(200,164,77,.08);}
+  .lock-status b{color:var(--gold-bright);font-family:var(--tc);font-size:13px;}
+  .cursor-ctrl{margin-top:12px;padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:10px;}
+  .cursor-ctrl label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--fg-soft);margin-bottom:6px;letter-spacing:.04em;}
+  .cursor-ctrl input[type=range]{width:100%;}
+  .cursor-readout{margin-top:8px;font-family:var(--tc);font-size:14px;color:var(--gold-bright);text-align:center;padding:6px;background:var(--panel);border-radius:6px;}
+  .time-filter{margin-top:12px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
+  .time-filter .btn{font-size:10px;padding:8px 4px;text-align:center;line-height:1.3;}
+  .time-filter .btn b{display:block;font-family:var(--tc);font-size:14px;color:var(--gold-bright);}
+  .time-filter .btn.active{background:var(--gold);color:var(--bg);}
+  .time-filter .btn.active b{color:var(--bg);}
+  .insp-cat{margin-top:14px;padding-top:8px;border-top:1px solid var(--line);}
+  .insp-cat:first-of-type{border-top:none;padding-top:0;}
+  .insp-cat-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .insp-cat-head .cat-tag{font-family:var(--mono);font-size:9px;background:var(--gold);color:var(--bg);padding:1px 6px;border-radius:99px;font-weight:700;}
+  .insp-cat-head h5{margin:0;font-family:var(--tc);font-size:12px;font-weight:600;color:var(--gold-bright);letter-spacing:.04em;}
+  .insp-cat-head .cat-sub{font-size:9px;color:var(--fg-faint);font-family:var(--mono);margin-left:auto;}
+  .insp-cat.cat-warn .insp-cat-head h5{color:#e06c6c;}
+  .insp-cat.cat-warn .insp-cat-head .cat-tag{background:#c8403c;}
+  .ring-row{padding:8px 0;border-bottom:1px dashed var(--line);font-size:11px;}
+  .ring-row:last-child{border-bottom:none;}
+  .ring-row .rr-head{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;cursor:pointer;}
+  .ring-row .rn-han{display:flex;flex-direction:column;align-items:center;min-width:50px;line-height:1.2;}
+  .ring-row .rn-han .rh-th{font-family:var(--th);font-size:9px;color:var(--fg-soft);letter-spacing:.01em;text-align:center;}
+  .ring-row .rn-han .rh-cn{font-family:var(--tc);font-size:13px;color:var(--gold-bright);font-weight:600;}
+  .ring-row .rn-name{color:var(--fg);font-size:12px;font-family:var(--th);line-height:1.3;}
+  .ring-row .rn-name b{color:var(--gold-bright);font-family:var(--tc);font-size:13px;}
+  .ring-row .rn-score{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap;}
+  .ring-row.s5 .rn-score{background:rgba(120,185,128,.25);color:#a9e1ad;border:1px solid rgba(120,185,128,.5);}
+  .ring-row.s4 .rn-score{background:rgba(155,200,90,.22);color:#c2dc8a;border:1px solid rgba(155,200,90,.45);}
+  .ring-row.s3 .rn-score{background:rgba(212,171,69,.22);color:#e6b04a;border:1px solid rgba(212,171,69,.45);}
+  .ring-row.s2 .rn-score{background:rgba(224,138,70,.22);color:#e6b07a;border:1px solid rgba(224,138,70,.45);}
+  .ring-row.s1 .rn-score{background:rgba(224,108,108,.25);color:#ff8a7a;border:1px solid rgba(224,108,108,.5);}
+  .ring-row .rr-general{margin-top:4px;color:var(--fg-soft);font-size:11px;line-height:1.45;}
+  .ring-row .rr-home{margin-top:4px;color:var(--gold-bright);font-size:10px;line-height:1.45;display:none;padding:5px 8px;background:var(--bg);border-radius:6px;border-left:2px solid var(--gold);}
+  .ring-row.open .rr-home{display:block;}
+  .ring-row .rr-toggle{font-size:10px;color:var(--fg-faint);cursor:pointer;margin-top:3px;font-family:var(--mono);}
+  .ring-row.open .rr-toggle::before{content:'▾ '} .ring-row:not(.open) .rr-toggle::before{content:'▸ '}
+  /* SVG fill ใช้ CSS var ผ่าน CSS rule (presentation attribute fill=var() ไม่รองรับใน spec) */
+  #lp text{fill:var(--ring-text);
+    /* halo: เส้นขอบสีตรงข้าม อ่านได้ทั้งพื้นมืด/พื้นรูปขาว */
+    paint-order:stroke fill;stroke:var(--label-halo);stroke-width:2.4px;stroke-linejoin:round;}
+  #lp line{stroke:var(--ring-stroke);}
+  #lp circle{stroke:var(--ring-stroke);}
+  /* 城門 Castle Gate overlay colors */
+  .gate-primary{fill:rgba(120,185,128,.35);stroke:#a9e1ad;stroke-width:2.5;}
+  .gate-secondary{fill:rgba(90,160,220,.32);stroke:#7cc4ff;stroke-width:2;}
+  .gate-danger{fill:rgba(224,108,108,.22);stroke:#ff8a7a;stroke-width:2;stroke-dasharray:5 3;}
+  .gate-warning{fill:rgba(230,176,74,.22);stroke:#ffc966;stroke-width:1.6;stroke-dasharray:4 2;}
+  .gate-label-bg{fill:rgba(8,10,13,.85);}
+  .gate-label-primary{fill:#a9e1ad;font-family:var(--tc);font-size:11px;font-weight:700;}
+  .gate-label-secondary{fill:#7cc4ff;font-family:var(--tc);font-size:11px;font-weight:700;}
+  .gate-label-danger{fill:#ff8a7a;font-family:var(--tc);font-size:10px;font-weight:700;}
+  /* pin tool */
+  .pin-toolbar{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;padding:8px;background:var(--bg);border:1px solid var(--line);border-radius:8px;}
+  .pin-toolbar .btn{font-size:12px;padding:4px 8px;}
+  .pin-toolbar .btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+  .stage svg.pin-mode{cursor:cell !important;}
+  .pin-marker{cursor:pointer;}
+  .pin-marker.activated circle{stroke:#a9e1ad !important;stroke-width:3;filter:drop-shadow(0 0 6px #7bcf7b);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>羅盤 22 環 <small data-i18n="title.sub">หล่อแก 22 วง · ทับแปลนบ้าน · POC</small></h1>
+  <small id="buildTag" style="font-family:var(--mono);font-size:10px;color:var(--fg-faint);margin-left:6px">build…</small>
+  <div id="errBanner" style="display:none;position:fixed;top:0;left:0;right:0;background:#7a1c1c;color:#fff;padding:8px 16px;font-family:var(--mono);font-size:12px;z-index:9999;"></div>
+  <div class="spacer"></div>
+  <button class="btn" id="btnTheme">☀️ <span data-i18n="btn.theme">สลับธีม</span></button>
+  <button class="btn" data-lang="th">TH</button>
+  <button class="btn" data-lang="en">EN</button>
+  <button class="btn" data-lang="zh">中</button>
+</header>
+
+<main>
+
+  <!-- LEFT: controls -->
+  <div class="ctrl">
+    <h3 data-i18n="ctrl.house">ตั้งค่าบ้าน · 坐向</h3>
+
+    <label data-i18n="ctrl.houseName">ชื่อบ้าน</label>
+    <input type="text" id="hName" placeholder="บ้านของฉัน" maxlength="60"/>
+
+    <label data-i18n="ctrl.facingDeg">หันหน้า · องศา (0-359)</label>
+    <input type="number" id="hFacing" value="180" min="0" max="359" step="0.1"/>
+    <span class="auto-readout" id="hMountain">S2 · 午 Wǔ · ไฟ · 172.5-187.5</span>
+
+    <label data-i18n="ctrl.year">ปีสร้างบ้าน</label>
+    <input type="number" id="hYear" value="2026" min="1864" max="2100"/>
+    <span class="auto-readout" id="hPeriod">9 · Feb 2024 - Feb 2044</span>
+
+    <div class="help-line" data-i18n="ctrl.helpHouse">ใช้สร้างผัง 山 ดาวภูเขา · 水 ดาวแม่น้ำ · 基 ดาวฐาน 9 ช่องตรงกลาง · ค่าเริ่มต้น S2 180° / Period 9</div>
+
+    <div class="btn-grp">
+      <button class="btn" id="btnLock" data-i18n="btn.lock">🔒 ล็อกบ้าน · เริ่มสำรวจ</button>
+    </div>
+    <div class="btn-grp" style="margin-top:6px">
+      <button class="btn" id="btnSave" data-i18n="btn.save">บันทึก</button>
+      <button class="btn" id="btnLoad" data-i18n="btn.load">โหลด</button>
+      <button class="btn" id="btnUnlock" data-i18n="btn.unlock">🔓 ปลด</button>
+    </div>
+    <div class="help-line" id="houseStatus" data-i18n="ctrl.helpSave">บันทึกในเครื่องนี้อัตโนมัติ</div>
+
+    <h3 style="margin-top:18px" data-i18n="ctrl.upload">อัพแปลนบ้าน · 平面圖</h3>
+    <input type="file" id="fileIn" accept="image/*"/>
+    <label class="file-btn" for="fileIn">
+      📁 <span data-i18n="ctrl.choose">เลือกไฟล์รูป · ลากวางได้</span>
+    </label>
+    <div class="img-tools">
+      <button class="btn" id="imgCenter" data-i18n="img.center">จัดกลาง</button>
+      <button class="btn" id="imgRotL" title="หมุนซ้าย 90°">↺ 90°</button>
+      <button class="btn" id="imgRotR" title="หมุนขวา 90°">↻ 90°</button>
+      <button class="btn" id="imgClear" data-i18n="img.clear">ล้างรูป</button>
+    </div>
+
+    <label style="margin-top:10px"><span data-i18n="ctrl.pinTool">ปักจุดบนแปลน · Pin Tool</span></label>
+    <div class="pin-toolbar">
+      <button class="btn" data-pin="door" title="ประตู">🚪 ประตู</button>
+      <button class="btn" data-pin="bed" title="หัวเตียง">🛏 เตียง</button>
+      <button class="btn" data-pin="stove" title="เตาไฟ">🔥 เตา</button>
+      <button class="btn" data-pin="water" title="จุดน้ำ">💧 น้ำ</button>
+      <button class="btn" data-pin="desk" title="โต๊ะทำงาน">💼 โต๊ะ</button>
+      <button class="btn" id="pinClear" title="ลบทั้งหมด">ล้าง</button>
+    </div>
+    <div class="help-line">เลือกชนิด → คลิกบนแปลนเพื่อปัก · คลิก pin เพื่อลบ · pin ที่อยู่ในวง城門 = activated</div>
+
+    <label><span data-i18n="ctrl.imgRot">หมุนรูปแปลน</span> <span class="val" id="vImgRot">0°</span></label>
+    <input type="range" id="imgRot" min="0" max="359" value="0"/>
+
+    <label><span data-i18n="ctrl.imgOpa">ความเข้มรูป</span> <span class="val" id="vImgOpa">90%</span></label>
+    <input type="range" id="imgOpa" min="0" max="100" value="90"/>
+
+    <label><span data-i18n="ctrl.dialOpa">ความเข้มวง</span> <span class="val" id="vDialOpa">88%</span></label>
+    <input type="range" id="dialOpa" min="10" max="100" value="88"/>
+
+    <label><span data-i18n="ctrl.center">ย้ายศูนย์กลางหล่อแก</span> <span class="val" id="vCenter">0,0</span></label>
+    <div class="nudge-pad">
+      <button class="btn" data-nudge="ul" title="ซ้ายบน">↖</button>
+      <button class="btn" data-nudge="u" title="ขึ้น">↑</button>
+      <button class="btn" data-nudge="ur" title="ขวาบน">↗</button>
+      <button class="btn" data-nudge="l" title="ซ้าย">←</button>
+      <button class="btn center" data-nudge="0" title="กลับกลาง" data-i18n="ctrl.recenter">กลาง</button>
+      <button class="btn" data-nudge="r" title="ขวา">→</button>
+      <button class="btn" data-nudge="dl" title="ซ้ายล่าง">↙</button>
+      <button class="btn" data-nudge="d" title="ลง">↓</button>
+      <button class="btn" data-nudge="dr" title="ขวาล่าง">↘</button>
+    </div>
+    <div class="help-line" data-i18n="ctrl.helpNudge">กดทีละครั้งเลื่อน 10px · Shift+กด = 30px · หรือใช้ลูกศรคีย์บอร์ดเมื่อโฟกัสที่หล่อแก</div>
+
+    <label style="margin-top:10px"><span data-i18n="ctrl.scale">ขยาย/ย่อ วงหล่อแก</span> <span class="val" id="vScale">100%</span></label>
+    <div class="row" style="gap:6px;align-items:center">
+      <button class="btn" id="scaleMinus" title="ย่อ −5%">−</button>
+      <input type="range" id="dialScale" min="40" max="160" value="100" step="1" style="flex:1"/>
+      <button class="btn" id="scalePlus" title="ขยาย +5%">+</button>
+      <button class="btn" id="scaleReset" title="100%">100</button>
+    </div>
+
+    <h3 style="margin-top:18px" data-i18n="ctrl.layers">22 ชั้นวง · filter</h3>
+    <div class="btn-grp" style="margin-top:6px">
+      <button class="btn" id="layerAll" data-i18n="layer.all">เปิดหมด</button>
+      <button class="btn" id="layerNone" data-i18n="layer.none">ปิดหมด</button>
+    </div>
+    <div class="btn-grp" style="margin-top:4px">
+      <button class="btn" data-cat="1">หมวด 1</button>
+      <button class="btn" data-cat="2">หมวด 2</button>
+      <button class="btn" data-cat="3">หมวด 3</button>
+      <button class="btn" data-cat="4">หมวด 4</button>
+    </div>
+
+    <!-- หมวด 1: ฐานราก -->
+    <div class="cat-section">
+      <h4><span class="cat-tag">หมวด 1</span> โครงสร้างพื้นฐาน · ฐานราก</h4>
+      <p class="cat-desc">ต้องมีก่อน ไม่เปลี่ยนแปลง · ใช้จับทิศและระบุตำแหน่ง</p>
+      <div class="layer-grid">
+        <label><input type="checkbox" data-r="rPool" data-cg="1" checked><span class="lbl-th">บ่อฟ้า · เข็มแม่เหล็ก</span><span class="lbl-cn">天池</span></label>
+        <label><input type="checkbox" data-r="rDg" data-cg="1" checked><span class="lbl-th">องศา 360°</span><span class="lbl-cn">度數</span></label>
+        <label><input type="checkbox" data-r="r24" data-cg="1" checked><span class="lbl-th">24 ขุนเขา · ทิศหลัก</span><span class="lbl-cn">24山 / 地盤</span></label>
+        <label><input type="checkbox" data-r="rCd" data-cg="1" checked><span class="lbl-th">รหัสทิศ N1-NW3</span><span class="lbl-cn">山編碼</span></label>
+        <label><input type="checkbox" data-r="rRN" data-cg="1" checked><span class="lbl-th">เข็มคน · ดูคน</span><span class="lbl-cn">人盤</span></label>
+        <label><input type="checkbox" data-r="rTN" data-cg="1" checked><span class="lbl-th">เข็มฟ้า · ดูน้ำ</span><span class="lbl-cn">天盤</span></label>
+        <label><input type="checkbox" data-r="rDZ" data-cg="1" checked><span class="lbl-th">12 กิ่งดิน · นักษัตร</span><span class="lbl-cn">地支</span></label>
+        <label><input type="checkbox" data-r="rTG" data-cg="1" checked><span class="lbl-th">10 ก้านฟ้า · ธาตุสวรรค์</span><span class="lbl-cn">天干</span></label>
+      </div>
+    </div>
+
+    <!-- หมวด 2: ศาสตร์หลัก -->
+    <div class="cat-section">
+      <h4><span class="cat-tag">หมวด 2</span> ศาสตร์หลัก · แกนกลาง</h4>
+      <p class="cat-desc">ใช้ตัดสินดี-ร้ายของทิศบ้าน</p>
+      <div class="layer-grid">
+        <label><input type="checkbox" data-r="rLH" data-cg="2" checked><span class="lbl-th">ปากั้วหลังฟ้า · แกนฮวงจุ้ย</span><span class="lbl-cn">後天八卦</span></label>
+        <label><input type="checkbox" data-r="rEH" data-cg="2" checked><span class="lbl-th">ปากั้วก่อนฟ้า · พลังดั้งเดิม</span><span class="lbl-cn">先天八卦</span></label>
+        <label><input type="checkbox" data-r="r5E" data-cg="2" checked><span class="lbl-th">5 ธาตุ · สร้าง/ทำลาย</span><span class="lbl-cn">五行</span></label>
+        <label><input type="checkbox" data-r="rFX" data-cg="2" checked><span class="lbl-th">ดาวเหิน 9 ยุค · ดี-ร้ายตามยุค</span><span class="lbl-cn">飛星</span></label>
+        <label><input type="checkbox" data-r="r64" data-cg="2" checked><span class="lbl-th">64 กว้า · ความหมายละเอียด</span><span class="lbl-cn">64卦</span></label>
+        <label><input type="checkbox" data-r="rKU" data-cg="2" checked><span class="lbl-th">ยุคของกว้า · ช่วงเวลา</span><span class="lbl-cn">卦運</span></label>
+        <label><input type="checkbox" data-r="rGate" data-cg="2"><span class="lbl-th">城門ประตูเมือง · ประตูข้างมงคล</span><span class="lbl-cn">城門訣</span></label>
+      </div>
+    </div>
+
+    <!-- หมวด 3: ศาสตร์เสริม -->
+    <div class="cat-section">
+      <h4><span class="cat-tag">หมวด 3</span> ศาสตร์เสริม · ละเอียด</h4>
+      <p class="cat-desc">เจาะลึกสำหรับมืออาชีพ · เพิ่มความแม่นยำ</p>
+      <div class="layer-grid">
+        <label><input type="checkbox" data-r="r120" data-cg="3" checked><span class="lbl-th">120 ส่วนทอง · จับคู่ปีเกิด+ทิศ</span><span class="lbl-cn">120分金</span></label>
+        <label><input type="checkbox" data-r="r72" data-cg="3" checked><span class="lbl-th">72 มังกรทะลุดิน · พลังใต้ดิน</span><span class="lbl-cn">透地72龍</span></label>
+        <label><input type="checkbox" data-r="r60M" data-cg="3" checked><span class="lbl-th">60 มังกรเจาะภู · พลังภูเขาหลัง</span><span class="lbl-cn">穿山60龍</span></label>
+        <label><input type="checkbox" data-r="r60D" data-cg="3" checked><span class="lbl-th">60 จื่อจี๊ดิน · พลังพื้นดิน</span><span class="lbl-cn">地盤60甲子</span></label>
+        <label><input type="checkbox" data-r="r384" data-cg="3" checked><span class="lbl-th">384 เส้นเหย้า · ละเอียดสุด ~1°</span><span class="lbl-cn">384爻</span></label>
+        <label><input type="checkbox" data-r="r28" data-cg="3" checked><span class="lbl-th">28 ดาวฤกษ์ · ฤกษ์ก่อสร้าง</span><span class="lbl-cn">28宿</span></label>
+        <label><input type="checkbox" data-r="rJQ" data-cg="3" checked><span class="lbl-th">24 ฤดูสุริยะ · ช่วงเวลามงคล</span><span class="lbl-cn">24節氣</span></label>
+        <label><input type="checkbox" data-r="r5H" data-cg="3" checked><span class="lbl-th">ธาตุของ 64 กว้า</span><span class="lbl-cn">64卦五行</span></label>
+      </div>
+    </div>
+
+    <!-- หมวด 4: ศาสตร์คำนวณ -->
+    <div class="cat-section">
+      <h4><span class="cat-tag">หมวด 4</span> ศาสตร์คำนวณ · เปลี่ยนตามเวลา</h4>
+      <p class="cat-desc">ไม่ใช่ vงแยก · 2 ศาสตร์ในหมวด 2 ที่ values เปลี่ยนตามเวลา · ใช้ปุ่ม filter เวลา (運/年/月/日/時) ที่การ์ดกลางเปลี่ยน:</p>
+      <div class="layer-grid" style="opacity:.75">
+        <label style="cursor:default"><span style="font-family:var(--tc);color:var(--gold-bright)">飛星</span><span class="lbl-th">ดาว 山/向/基 — ทิศบ้าน + ยุค (ยุค=3 ดวง · ปี/เดือน/วัน/ยาม=1 ดวง)</span><span></span></label>
+        <label style="cursor:default"><span style="font-family:var(--tc);color:var(--gold-bright)">奇門</span><span class="lbl-th">門/神/星 — เฉพาะ ปี/เดือน/วัน/ยาม</span><span></span></label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CENTER: stage -->
+  <div class="stage-wrap">
+    <div class="lock-status" id="lockStatus">
+      <span>🏠 <span data-i18n="lock.unlocked">ยังไม่ล็อกบ้าน</span> · <span data-i18n="lock.fillFirst">กรอกข้อมูลซ้ายแล้วกดล็อก</span></span>
+    </div>
+    <div class="stage">
+      <canvas id="plan" width="760" height="760"></canvas>
+
+      <svg id="lp" viewBox="0 0 760 760" xmlns="http://www.w3.org/2000/svg">
+        <g id="dial" transform="rotate(0 380 380)">
+          <g id="sectors"></g>
+          <g id="r28"></g><g id="r384"></g><g id="rKU"></g><g id="r64"></g>
+          <g id="r5H"></g><g id="rJQ"></g><g id="r120"></g>
+          <g id="rTk"></g><g id="rDg"></g><g id="rCd"></g>
+          <g id="rRN"></g><g id="r24"></g><g id="rTN"></g>
+          <g id="r72"></g><g id="r60D"></g><g id="r60M"></g>
+          <g id="rEH"></g><g id="rLH"></g><g id="rFX"></g><g id="rQM"></g>
+          <g id="r5E"></g><g id="rTG"></g><g id="rDZ"></g>
+          <!-- 城門 Castle Gate overlay (toggle via filter) -->
+          <g id="rGate" style="display:none"></g>
+          <!-- Pin layer (door/bed/stove/water/desk) - rotates with dial so pins stay tied to building orientation -->
+          <g id="pinLayer"></g>
+          <!-- blocker overlay (sectors) -->
+          <g id="rBlock" opacity=".55"></g>
+          <!-- Heaven Pool · center magnetic needle -->
+          <g id="rPool">
+            <circle cx="380" cy="380" r="34" fill="var(--ring-bg)" stroke="var(--ring-stroke)" stroke-width="1"/>
+            <line x1="380" y1="350" x2="380" y2="410" stroke="rgba(200,164,77,.35)" stroke-width=".5"/>
+            <line x1="350" y1="380" x2="410" y2="380" stroke="rgba(200,164,77,.35)" stroke-width=".5"/>
+            <!-- magnetic needle red/dark -->
+            <polygon id="needleN" points="380,353 376,380 384,380" fill="#d2261c"/>
+            <polygon id="needleS" points="380,407 376,380 384,380" fill="#2a2a2a"/>
+            <circle cx="380" cy="380" r="3" fill="var(--gold-bright)" stroke="var(--bg)" stroke-width=".8"/>
+          </g>
+        </g>
+        <!-- FACING pointer · ทิศหันหน้าบ้าน (คงที่หลังล็อก) -->
+        <line x1="380" y1="380" x2="380" y2="6" stroke="var(--blocker)" stroke-width="2"/>
+        <polygon points="380,4 373,16 387,16" fill="var(--blocker)"/>
+        <text x="380" y="28" text-anchor="middle" font-size="9" font-weight="700" fill="var(--blocker)" font-family="var(--mono)">FACING</text>
+        <!-- CURSOR needle · เข็มสำรวจที่หมุนได้ -->
+        <g id="cursorNeedle" transform="rotate(0 380 380)" style="pointer-events:none">
+          <line x1="380" y1="380" x2="380" y2="14" stroke="var(--gold-bright)" stroke-width="2.5" opacity=".92"/>
+          <polygon points="380,8 372,22 388,22" fill="var(--gold-bright)"/>
+          <text x="380" y="44" text-anchor="middle" font-size="9" font-weight="700" fill="var(--gold-bright)" font-family="var(--mono)">CURSOR</text>
+          <circle cx="380" cy="380" r="5" fill="var(--gold-bright)" stroke="var(--bg)" stroke-width="1"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="cursor-ctrl">
+      <label><span data-i18n="cursor.rot">หมุนเข็มสำรวจ · CURSOR</span> <span class="val" id="vCursorRot">180°</span></label>
+      <input type="range" id="cursorRot" min="0" max="359" value="180" step="0.5"/>
+      <div class="cursor-readout" id="cursorReadout">เข็มชี้ · S2 午 Wǔ · 180° · ธาตุไฟ</div>
+    </div>
+
+    <div class="time-filter">
+      <button class="btn active" data-time="era"><b>運</b><span data-i18n="t.era">ยุค</span></button>
+      <button class="btn" data-time="year"><b>年</b><span data-i18n="t.year">ปี</span></button>
+      <button class="btn" data-time="month"><b>月</b><span data-i18n="t.month">เดือน</span></button>
+      <button class="btn" data-time="day"><b>日</b><span data-i18n="t.day">วัน</span></button>
+      <button class="btn" data-time="hour"><b>時</b><span data-i18n="t.hour">ยาม</span></button>
+    </div>
+
+    <div class="timing">
+      <div><b id="tPeriod">9</b><span data-i18n="time.period">ยุค</span></div>
+      <div><b id="tYear">1白</b><span data-i18n="time.year">ดาวปี</span></div>
+      <div><b id="tMonth">2黑</b><span data-i18n="time.month">ดาวเดือน</span></div>
+      <div><b id="tBlocker">午→子</b><span data-i18n="time.blocker">太歲/歲破</span></div>
+    </div>
+
+    <div class="legend">
+      <i style="background:#7bcf7b"></i><span data-i18n="legend.good">ดี</span>
+      &nbsp;<i style="background:#e6b04a"></i><span data-i18n="legend.mid">กลาง</span>
+      &nbsp;<i style="background:#e06c6c"></i><span data-i18n="legend.bad">ไม่ดี</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: inspector · dynamic ตามเข็ม -->
+  <div class="inspector">
+    <h3 data-i18n="insp.title">ผลลัพธ์ตามเข็ม</h3>
+    <div class="insp-row"><span data-i18n="insp.cursor">เข็มชี้</span><b id="iCursor">S2 · 午 · 180°</b></div>
+    <div class="insp-row"><span data-i18n="insp.element">ธาตุ</span><b id="iElement" style="color:var(--fire)">火 · ไฟ</b></div>
+    <div class="insp-row"><span data-i18n="insp.consensus">consensus</span><span class="badge gold" id="iConsensus">3/8</span></div>
+
+    <h3 style="margin-top:14px" data-i18n="insp.rings">ทุกศาสตร์ที่เข็มผ่าน</h3>
+    <div id="ringList">
+      <!-- populated by JS -->
+    </div>
+
+    <h3 style="margin-top:14px" data-i18n="insp.use">เหมาะใช้</h3>
+    <div id="useList">
+      <div class="ring-row"><span>🚪</span><span class="rn-name" data-i18n="insp.door">ประตู</span><span class="badge gold rn-val" data-i18n="insp.mid">กลาง</span></div>
+      <div class="ring-row"><span>🛏</span><span class="rn-name" data-i18n="insp.bed">หัวเตียง</span><span class="badge green rn-val" data-i18n="insp.good">ดี</span></div>
+      <div class="ring-row"><span>🔥</span><span class="rn-name" data-i18n="insp.stove">เตาไฟ</span><span class="badge red rn-val" data-i18n="insp.bad">เลี่ยง</span></div>
+      <div class="ring-row"><span>💧</span><span class="rn-name" data-i18n="insp.water">จุดน้ำ</span><span class="badge green rn-val" data-i18n="insp.good">ดี</span></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* ============== i18n ============== */
+const I18N = {
+  th:{'title.sub':'หล่อแก 22 วง · ทับแปลนบ้าน · POC','btn.theme':'สลับธีม','ctrl.house':'ตั้งค่าบ้าน · 坐向','ctrl.houseName':'ชื่อบ้าน','ctrl.facingDeg':'หันหน้า · องศา (0-359)','ctrl.year':'ปีสร้างบ้าน','ctrl.helpHouse':'ใช้สร้างผัง 山 ดาวภูเขา · 水 ดาวแม่น้ำ · 基 ดาวฐาน 9 ช่องตรงกลาง · ค่าเริ่มต้น S2 180° / Period 9','ctrl.helpSave':'บันทึกในเครื่องนี้อัตโนมัติ','btn.lock':'🔒 ล็อกบ้าน · เริ่มสำรวจ','btn.unlock':'🔓 ปลด','btn.save':'บันทึก','btn.load':'โหลด','ctrl.upload':'อัพแปลนบ้าน · 平面圖','ctrl.choose':'เลือกไฟล์รูป · ลากวางได้','img.center':'จัดกลาง','img.clear':'ล้างรูป','ctrl.imgRot':'หมุนรูปแปลน','ctrl.imgOpa':'ความเข้มวง','ctrl.layers':'22 ชั้นวง · filter','layer.all':'เปิดหมด','layer.none':'ปิดหมด','layer.core':'เฉพาะหลัก','lock.unlocked':'ยังไม่ล็อกบ้าน','lock.fillFirst':'กรอกข้อมูลซ้ายแล้วกดล็อก','cursor.rot':'หมุนเข็มสำรวจ · CURSOR','t.era':'ยุค','t.year':'ปี','t.month':'เดือน','t.day':'วัน','t.hour':'ยาม','time.period':'ยุค','time.year':'ดาวปี','time.month':'ดาวเดือน','time.blocker':'太歲/歲破','legend.good':'ดี','legend.mid':'กลาง','legend.bad':'ไม่ดี','insp.title':'ผลลัพธ์ตามเข็ม','insp.cursor':'เข็มชี้','insp.element':'ธาตุ','insp.consensus':'consensus','insp.rings':'ทุกศาสตร์ที่เข็มผ่าน','insp.use':'เหมาะใช้','insp.door':'ประตู','insp.bed':'หัวเตียง','insp.stove':'เตาไฟ','insp.water':'จุดน้ำ','insp.good':'ดี','insp.mid':'กลาง','insp.bad':'เลี่ยง','r.deg':'องศา','r.code':'รหัส','r.element':'ธาตุ','time.period':'ยุค 9','time.year':'ดาวปี','time.month':'ดาวเดือน','time.blocker':'太歲/歲破','legend.block':'ดาวต้องเลี่ยง (5黃 / 2黑 / 太歲 / 三煞)','legend.consensus':'consensus หลายศาสตร์ซ้อน','insp.title':'รายละเอียดทิศ','insp.facing':'หันหน้า','insp.sitting':'นั่งหลัง','insp.period':'ยุค','insp.element':'ธาตุประจำหน้าบ้าน','insp.consensus':'consensus','insp.taisui':'太歲 ตำแหน่ง','insp.yearbreak':'歲破 ตำแหน่ง','insp.threekill':'三煞 ตำแหน่ง','insp.use':'เหมาะใช้','insp.door':'ประตู','insp.bed':'หัวเตียง','insp.stove':'เตาไฟ','insp.water':'จุดน้ำ','insp.good':'ดี','insp.mid':'กลาง','insp.bad':'เลี่ยง'},
+  en:{'title.sub':'22-Ring Compass · over floor plan · POC','btn.theme':'Theme','ctrl.house':'House setup · 坐向','ctrl.houseName':'House name','ctrl.facingDeg':'Facing degree (0-359)','ctrl.year':'Construction year','ctrl.helpHouse':'Used to build 山 mountain · 水 water · 基 base star chart in 9 palaces · default S2 180° / Period 9','ctrl.helpSave':'Auto-saved on this device','btn.calc':'Calculate','btn.save':'Save','btn.load':'Load','ctrl.upload':'Upload floor plan · 平面圖','ctrl.choose':'Pick image · drag-drop ok','img.center':'Center','img.clear':'Clear','ctrl.imgRot':'Rotate plan','ctrl.imgOpa':'Plan opacity','ctrl.dialRot':'Rotate dial (Facing)','ctrl.dialOpa':'Dial opacity','ctrl.layers':'22 Rings · filter','ctrl.timing':'Time layer','layer.all':'All on','layer.none':'All off','layer.core':'Core only','r.deg':'Degree','r.code':'Code','r.element':'Element','time.period':'Period 9','time.year':'Year star','time.month':'Month star','time.blocker':'Year stars','legend.block':'Avoid stars (5黃 / 2黑 / 太歲 / 三煞)','legend.consensus':'Multi-school consensus','insp.title':'Direction detail','insp.facing':'Facing','insp.sitting':'Sitting','insp.period':'Period','insp.element':'Facing element','insp.consensus':'Consensus','insp.taisui':'太歲 Tai Sui','insp.yearbreak':'歲破 Year Breaker','insp.threekill':'三煞 Three Killings','insp.use':'Best for','insp.door':'Door','insp.bed':'Bed head','insp.stove':'Stove','insp.water':'Water','insp.good':'Good','insp.mid':'Mid','insp.bad':'Avoid'},
+  zh:{'title.sub':'廿二環羅盤 · 套疊平面圖 · POC','btn.theme':'主題','ctrl.house':'坐向設定','ctrl.houseName':'宅名','ctrl.facingDeg':'向首 · 度數 (0-359)','ctrl.year':'建造年','ctrl.helpHouse':'用於建立 山星 · 水星 · 基星 九宮圖 · 預設 S2 180° / 九運','ctrl.helpSave':'自動儲存於本機','btn.calc':'計算','btn.save':'儲存','btn.load':'載入','ctrl.upload':'上傳平面圖','ctrl.choose':'選擇圖片 · 可拖放','img.center':'置中','img.clear':'清除','ctrl.imgRot':'旋轉平面圖','ctrl.imgOpa':'平面圖不透明','ctrl.dialRot':'旋轉羅盤 (向)','ctrl.dialOpa':'羅盤不透明','ctrl.layers':'廿二環 · 篩選','ctrl.timing':'時間環','layer.all':'全開','layer.none':'全關','layer.core':'主要','r.deg':'度數','r.code':'代號','r.element':'五行','time.period':'運九','time.year':'年星','time.month':'月星','time.blocker':'年值','legend.block':'須避之星 (5黃 / 2黑 / 太歲 / 三煞)','legend.consensus':'多派共識','insp.title':'方位細節','insp.facing':'向','insp.sitting':'坐','insp.period':'運','insp.element':'向首五行','insp.consensus':'共識','insp.taisui':'太歲方位','insp.yearbreak':'歲破方位','insp.threekill':'三煞方位','insp.use':'宜','insp.door':'門','insp.bed':'床頭','insp.stove':'灶','insp.water':'水','insp.good':'吉','insp.mid':'平','insp.bad':'避'}
+};
+function applyLang(L){
+  document.documentElement.dataset.lang = L;
+  document.querySelectorAll('[data-i18n]').forEach(e => {
+    const k = e.dataset.i18n; if(I18N[L]?.[k]) e.textContent = I18N[L][k];
+  });
+  document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('active', b.dataset.lang === L));
+}
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
+applyLang('th');
+
+/* ============== theme ============== */
+document.getElementById('btnTheme').addEventListener('click', () => {
+  const cur = document.documentElement.dataset.theme;
+  document.documentElement.dataset.theme = cur === 'light' ? 'dark' : 'light';
+  /* redraw วงเพราะ resolved color ค้าง theme เก่า */
+  if(typeof rebuildLuopan === 'function'){ rebuildLuopan(); applyTiming(currentTimingKey); }
+});
+
+/* ============== floor-plan canvas ============== */
+const planCanvas = document.getElementById('plan'), planCtx = planCanvas.getContext('2d');
+let planImg = null, planImgRot = 0, planImgOpa = .9;
+function drawPlan(){
+  /* canvas 760x760 · center 380,380 · ขนาดรูปครอบ ~680 px */
+  planCtx.clearRect(0,0,planCanvas.width,planCanvas.height);
+  if(planImg){
+    planCtx.save();
+    planCtx.globalAlpha = planImgOpa;
+    planCtx.translate(380,380);
+    planCtx.rotate(planImgRot * Math.PI / 180);
+    const r = Math.min(planImg.width, planImg.height);
+    const sc = 680 / r;
+    planCtx.drawImage(planImg, -planImg.width*sc/2, -planImg.height*sc/2, planImg.width*sc, planImg.height*sc);
+    planCtx.restore();
+  } else {
+    /* placeholder */
+    planCtx.save();
+    planCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--line').trim() || '#444';
+    planCtx.lineWidth = 1.5; planCtx.setLineDash([8,6]);
+    planCtx.strokeRect(60,60,640,640);
+    planCtx.setLineDash([]);
+    planCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--fg-faint').trim();
+    planCtx.font = '14px monospace'; planCtx.textAlign = 'center';
+    planCtx.fillText('upload floor plan →', 380, 380);
+    planCtx.restore();
+  }
+}
+function loadFile(f){
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => { const i = new Image(); i.onload = () => { planImg = i; drawPlan(); }; i.src = ev.target.result; };
+  r.readAsDataURL(f);
+}
+document.getElementById('fileIn').addEventListener('change', e => loadFile(e.target.files[0]));
+document.querySelector('.stage').addEventListener('dragover', e => { e.preventDefault(); });
+document.querySelector('.stage').addEventListener('drop', e => { e.preventDefault(); loadFile(e.dataTransfer.files[0]); });
+
+/* ============== luopan engine (from luopan_14_rings_complete) ============== */
+function rebuildLuopan(){
+  /* ล้างของเดิมก่อน redraw (theme change) */
+  ['sectors','r28','r384','rKU','r64','r5H','rJQ','r120','rTk','rDg','rCd','rRN','r24','rTN','r72','r60D','r60M','rEH','rLH','rFX','rQM','r5E','rTG','rDZ','rBlock'].forEach(id=>{const g=document.getElementById(id);if(g)g.innerHTML='';});
+  /* ลบ circle outline เก่า (insertBefore เพิ่มซ้ำได้) */
+  document.querySelectorAll('#dial > circle[data-ring]').forEach(el=>el.remove());
+  const NS='http://www.w3.org/2000/svg',cx=380,cy=380;
+  function rd(d){return(d-90)*Math.PI/180;}
+  function pt(r,a){return[cx+r*Math.cos(rd(a)),cy+r*Math.sin(rd(a))];}
+  function mk(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+  function W(rO,s,e){const o1=pt(rO,s),o2=pt(rO,e);return'M'+cx+','+cy+' L'+o1[0]+','+o1[1]+' A'+rO+','+rO+' 0 0,1 '+o2[0]+','+o2[1]+' Z';}
+  function resolveCol(s){if(!s)return s;const m=String(s).match(/^var\((--[\w-]+)/);if(!m)return s;return getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim()||s;}
+  function L(g,r1,r2,a,c,w){const p1=pt(r1,a),p2=pt(r2,a);const el=mk('line',{x1:p1[0],y1:p1[1],x2:p2[0],y2:p2[1],'stroke-width':w||0.4});if(c)el.setAttribute('stroke',resolveCol(c));g.appendChild(el);}
+  function T(g,r,a,txt,sz,cl){const p=pt(r,a);const t=mk('text',{x:p[0],y:p[1]+(sz<8?2:sz<11?3:4),'text-anchor':'middle'});t.setAttribute('style','font-size:'+sz+'px;font-family:var(--tc)');if(cl)t.setAttribute('fill',resolveCol(cl));t.textContent=txt;g.appendChild(t);}
+
+  const bM={'坎':'rgba(122,133,221,.18)','艮':'rgba(212,171,69,.18)','震':'rgba(120,185,128,.20)','巽':'rgba(120,185,128,.15)','離':'rgba(224,108,108,.20)','坤':'rgba(212,171,69,.15)','兌':'rgba(184,184,194,.20)','乾':'rgba(184,184,194,.15)'};
+  const d24=[{m:'壬',c:'N1',s:337.5,b:'坎'},{m:'子',c:'N2',s:352.5,b:'坎'},{m:'癸',c:'N3',s:7.5,b:'坎'},{m:'丑',c:'NE1',s:22.5,b:'艮'},{m:'艮',c:'NE2',s:37.5,b:'艮'},{m:'寅',c:'NE3',s:52.5,b:'艮'},{m:'甲',c:'E1',s:67.5,b:'震'},{m:'卯',c:'E2',s:82.5,b:'震'},{m:'乙',c:'E3',s:97.5,b:'震'},{m:'辰',c:'SE1',s:112.5,b:'巽'},{m:'巽',c:'SE2',s:127.5,b:'巽'},{m:'巳',c:'SE3',s:142.5,b:'巽'},{m:'丙',c:'S1',s:157.5,b:'離'},{m:'午',c:'S2',s:172.5,b:'離'},{m:'丁',c:'S3',s:187.5,b:'離'},{m:'未',c:'SW1',s:202.5,b:'坤'},{m:'坤',c:'SW2',s:217.5,b:'坤'},{m:'申',c:'SW3',s:232.5,b:'坤'},{m:'庚',c:'W1',s:247.5,b:'兌'},{m:'酉',c:'W2',s:262.5,b:'兌'},{m:'辛',c:'W3',s:277.5,b:'兌'},{m:'戌',c:'NW1',s:292.5,b:'乾'},{m:'乾',c:'NW2',s:307.5,b:'乾'},{m:'亥',c:'NW3',s:322.5,b:'乾'}];
+
+  /* sectors (color hint) — ใต้ 24山 ring เท่านั้น */
+  const gS=document.getElementById('sectors');
+  for(let i=0;i<24;i++) gS.appendChild(mk('path',{d:W(244,d24[i].s,d24[i].s+15),fill:bM[d24[i].b]}));
+
+  /* circles outline */
+  [378,366,350,336,320,308,294,282,270,256,244,220,208,195,182,169,154,140,122,104,92,80,60].forEach(r=>{
+    const c=mk('circle',{cx,cy,r,fill:'none','stroke-width':(r===378||r===244||r===220)?1.5:0.5,opacity:(r===378||r===244)?.85:.45,'data-ring':r});
+    document.getElementById('dial').insertBefore(c,document.getElementById('r28'));
+  });
+
+  /* element color map for 24山 */
+  const elColor={'壬':'var(--water)','子':'var(--water)','癸':'var(--water)','亥':'var(--water)','甲':'var(--wood)','卯':'var(--wood)','乙':'var(--wood)','寅':'var(--wood)','巽':'var(--wood)','丙':'var(--fire)','午':'var(--fire)','丁':'var(--fire)','巳':'var(--fire)','丑':'var(--earth)','艮':'var(--earth)','辰':'var(--earth)','未':'var(--earth)','坤':'var(--earth)','戌':'var(--earth)','庚':'var(--metal)','酉':'var(--metal)','辛':'var(--metal)','申':'var(--metal)','乾':'var(--metal)'};
+
+  /* === 1) 28宿 lunar mansions (366-378) === */
+  /* 角亢氐房心尾箕(E東) 斗牛女虛危室壁(N北) 奎婁胃昴畢觜參(W西) 井鬼柳星張翼軫(S南) */
+  const m28=['角','亢','氐','房','心','尾','箕','斗','牛','女','虛','危','室','壁','奎','婁','胃','昴','畢','觜','參','井','鬼','柳','星','張','翼','軫'];
+  const g28=document.getElementById('r28');
+  /* เริ่ม 角 = E 卯 = 90° ในแนว clockwise (in Chinese astro ใช้ 4 quadrant) */
+  const seg28=360/28;
+  for(let i=0;i<28;i++){
+    const s=(90-3.5*seg28+i*seg28+360)%360, mid=(s+seg28/2)%360;
+    L(g28,366,378,s,(i%7===0)?'var(--tick-major)':'var(--tick-minor)',(i%7===0)?0.6:0.25);
+    T(g28,372,mid,m28[i],5);
+  }
+
+  /* === 2) 384爻 (350-366) === */
+  const g384=document.getElementById('r384');
+  for(let i=0;i<384;i++){const a=(i*0.9375)%360;const big=(i%6===0);L(g384,big?350:354,366,a,big?'var(--tick-major)':'var(--tick-minor)',big?0.4:0.15);}
+
+  /* === 3) 卦運 (336-350) === */
+  const kuYun=[6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6];
+  const gKU=document.getElementById('rKU');
+  for(let i=0;i<64;i++){const s=(337.5+i*5.625)%360,mid=(s+2.8125)%360;L(gKU,336,350,s,(i%8===0)?'var(--tick-major)':'var(--tick-minor)',(i%8===0)?0.6:0.25);T(gKU,343,mid,kuYun[i],5);}
+
+  /* === 4) 64卦 (320-336) === */
+  const h64=['復','臨','泰','升','師','謙','明夷','坤','剝','頤','損','大畜','蠱','蒙','賁','艮','小過','豫','歸妹','大壯','恆','解','豐','震','益','漸','觀','中孚','小畜','渙','家人','巽','鼎','噬嗑','旅','晉','睽','大有','未濟','離','无妄','履','同人','遁','否','姤','訟','乾','夬','隨','革','咸','萃','大過','困','兌','節','屯','既濟','蹇','比','井','需','坎'];
+  const g64=document.getElementById('r64');
+  for(let i=0;i<64;i++){const s=(337.5+i*5.625)%360,mid=(s+2.8125)%360;L(g64,320,336,s,(i%8===0)?'var(--tick-major)':'var(--tick-minor)',(i%8===0)?0.6:0.25);T(g64,328,mid,h64[i],6);}
+
+  /* === 5) 5行 of 64卦 (308-320) === */
+  /* แต่ละกว้าอ้างธาตุตาม trigram บน · 8卦 trigram → 5行 */
+  const tri5={'乾':'metal','兌':'metal','離':'fire','震':'wood','巽':'wood','坎':'water','艮':'earth','坤':'earth'};
+  const t5Char={water:'水',wood:'木',fire:'火',earth:'土',metal:'金'};
+  const t5Col={water:'var(--water)',wood:'var(--wood)',fire:'var(--fire)',earth:'var(--earth)',metal:'var(--metal)'};
+  /* mapping 64卦 → upper trigram (โดยเรียง 24°/8 = ปัด chunk แต่ละ 8 卦) */
+  const upperTri=['坤','艮','坎','巽','震','離','兌','乾']; /* approx mapping ต่อ chunk */
+  const g5H=document.getElementById('r5H');
+  for(let i=0;i<64;i++){
+    const s=(337.5+i*5.625)%360,mid=(s+2.8125)%360;
+    const t=upperTri[Math.floor(i/8)];
+    const el=tri5[t];
+    L(g5H,308,320,s,'var(--ring-stroke)',0.2);
+    T(g5H,314,mid,t5Char[el],5,t5Col[el]);
+  }
+
+  /* === 6) 24節氣 (294-308) === */
+  const jq=['立春','雨水','驚蟄','春分','清明','穀雨','立夏','小滿','芒種','夏至','小暑','大暑','立秋','處暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至','小寒','大寒'];
+  const gJQ=document.getElementById('rJQ');
+  /* 立春 ตรงกับ 寅 = 60° (NE3 中) ในระบบทิศ · เรียงตามฤดู */
+  for(let i=0;i<24;i++){
+    const s=(45+i*15)%360, mid=(s+7.5)%360;
+    L(gJQ,294,308,s,(i%6===0)?'var(--tick-major)':'var(--tick-minor)',(i%6===0)?0.5:0.25);
+    T(gJQ,301,mid,jq[i],4.5);
+  }
+
+  /* === 7) 120分金 (282-294) === */
+  const jz=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const g120=document.getElementById('r120');
+  for(let i=0;i<120;i++){const s=(i*3)%360;L(g120,282,294,s,(i%5===0)?'var(--ring-stroke)':'var(--tick-minor)',(i%5===0)?0.4:0.15);if(i%2===0){const mid=(s+1.5)%360;T(g120,288,mid,jz[i%12],4);}}
+
+  /* === 8) ticks + 9) องศา (270-282) === */
+  const gTk=document.getElementById('rTk');
+  for(let k=0;k<360;k++){const b=(k%15===0),m=(k%5===0);L(gTk,b?270:m?273:276,282,k,b?'var(--tick-major)':m?'var(--ring-stroke)':'var(--tick-minor)',b?0.5:0.2);}
+  const gDg=document.getElementById('rDg');
+  for(let i=0;i<24;i++) T(gDg,276,d24[i].s,d24[i].s,4.5);
+
+  /* === 10) รหัส (256-270) === */
+  const gCd=document.getElementById('rCd');
+  for(let i=0;i<24;i++){L(gCd,256,270,d24[i].s,'var(--ring-stroke)',0.4);T(gCd,263,d24[i].s+7.5,d24[i].c,6);}
+
+  /* === 11) 人盤24山 (244-256) · offset +7.5° === */
+  const gRN=document.getElementById('rRN');
+  for(let i=0;i<24;i++){
+    const s=(d24[i].s+7.5)%360, mid=(s+7.5)%360;
+    L(gRN,244,256,s,'var(--ring-stroke)',0.3);
+    T(gRN,250,mid,d24[i].m,7.5,elColor[d24[i].m]);
+  }
+
+  /* === 12) 24山 + 天地人 · 地盤 (220-244) · main ring === */
+  const g24=document.getElementById('r24');
+  for(let i=0;i<24;i++){const mid=d24[i].s+7.5;L(g24,220,244,d24[i].s,'var(--ring-stroke)',0.4);T(g24,238,mid,['天','地','人'][i%3],6,'var(--fg-soft)');T(g24,228,mid,d24[i].m,11,elColor[d24[i].m]||'var(--ring-text)');}
+
+  /* === 13) 天盤24山 (208-220) · offset -7.5° === */
+  const gTN=document.getElementById('rTN');
+  for(let i=0;i<24;i++){
+    const s=(d24[i].s-7.5+360)%360, mid=(s+7.5)%360;
+    L(gTN,208,220,s,'var(--ring-stroke)',0.3);
+    T(gTN,214,mid,d24[i].m,7.5,elColor[d24[i].m]);
+  }
+
+  /* === 14) 透地72龍 (195-208) · 5° per slice === */
+  /* ใช้ Heavenly Stem + index 1-72 */
+  const stems60=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  const g72=document.getElementById('r72');
+  for(let i=0;i<72;i++){
+    const s=(i*5)%360, mid=(s+2.5)%360;
+    L(g72,195,208,s,(i%6===0)?'var(--tick-major)':'var(--tick-minor)',(i%6===0)?0.5:0.2);
+    if(i%2===0) T(g72,201,mid,stems60[i%10],4);
+  }
+
+  /* === 15) 地盤60甲子 (182-195) · 6° per slice === */
+  const stem10=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  const br12=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const jiazi60=[];for(let i=0;i<60;i++)jiazi60.push(stem10[i%10]+br12[i%12]);
+  const g60D=document.getElementById('r60D');
+  for(let i=0;i<60;i++){
+    const s=(i*6)%360, mid=(s+3)%360;
+    L(g60D,182,195,s,(i%5===0)?'var(--tick-major)':'var(--tick-minor)',(i%5===0)?0.5:0.2);
+    T(g60D,188,mid,jiazi60[i].charAt(0),3.5);
+    T(g60D,191,mid,jiazi60[i].charAt(1),3.5);
+  }
+
+  /* === 16) 穿山60龍 (169-182) · 6° per slice (offset 3°) === */
+  const g60M=document.getElementById('r60M');
+  for(let i=0;i<60;i++){
+    const s=(i*6+3)%360, mid=(s+3)%360;
+    L(g60M,169,182,s,(i%5===0)?'var(--tick-major)':'var(--tick-minor)',(i%5===0)?0.5:0.2);
+    T(g60M,175,mid,jiazi60[i].charAt(1),4);
+  }
+
+  /* === 17) 先天八卦 (154-169) === */
+  const eh=[{c:'坤',a:0},{c:'震',a:45},{c:'離',a:90},{c:'兌',a:135},{c:'乾',a:180},{c:'巽',a:225},{c:'坎',a:270},{c:'艮',a:315}];
+  const gEH=document.getElementById('rEH');
+  eh.forEach(b=>{L(gEH,154,169,b.a-22.5,'var(--ring-stroke)',0.6);T(gEH,161,b.a,b.c,10);});
+
+  /* === 18) 後天八卦 (140-154) === */
+  const lh=[{c:'坎',a:0},{c:'艮',a:45},{c:'震',a:90},{c:'巽',a:135},{c:'離',a:180},{c:'坤',a:225},{c:'兌',a:270},{c:'乾',a:315}];
+  const gLH=document.getElementById('rLH');
+  lh.forEach(b=>{L(gLH,140,154,b.a-22.5,'var(--ring-stroke)',0.6);T(gLH,147,b.a,b.c,10);});
+
+  /* === 19) 飛星 (122-140) === */
+  const gFX=document.getElementById('rFX');
+  const dirs=[0,45,90,135,180,225,270,315];
+  dirs.forEach((a,i)=>{
+    L(gFX,122,140,a-22.5,'var(--ring-stroke)',0.6);
+    const pS=pt(135,a-7),pX=pt(135,a+7),pJ=pt(126,a);
+    [['fs'+i,pS,'#5a9fd4',7],['fx'+i,pX,'#5a9f6b',7],['fj'+i,pJ,'var(--gold-bright)',9]].forEach(([id,p,cl,sz])=>{
+      const t=mk('text',{x:p[0],y:p[1]+3,'text-anchor':'middle',id});
+      t.setAttribute('style','font-size:'+sz+'px;font-weight:600;font-family:var(--mono)');
+      t.setAttribute('fill',resolveCol(cl)); t.textContent='-'; gFX.appendChild(t);
+    });
+  });
+
+  /* === 20) 奇門 (104-122) === */
+  const gQM=document.getElementById('rQM');
+  dirs.forEach((a,i)=>{
+    L(gQM,104,122,a-22.5,'var(--ring-stroke)',0.6);
+    const pM=pt(116,a-7),pSh=pt(116,a+7),pXi=pt(108,a);
+    [['qm'+i,pM,'#c97a3a',6.5],['qs'+i,pSh,'#7a6ac9',6.5],['qx'+i,pXi,'#4a8a4a',8]].forEach(([id,p,cl,sz])=>{
+      const t=mk('text',{x:p[0],y:p[1]+3,'text-anchor':'middle',id});
+      t.setAttribute('style','font-size:'+sz+'px;font-family:var(--tc)');
+      t.setAttribute('fill',resolveCol(cl)); t.textContent='-'; gQM.appendChild(t);
+    });
+  });
+
+  /* === 21) 5行 of 8卦 (92-104) === */
+  const el5=[{c:'水',a:0,cl:'var(--water)'},{c:'土',a:45,cl:'var(--earth)'},{c:'木',a:90,cl:'var(--wood)'},{c:'木',a:135,cl:'var(--wood)'},{c:'火',a:180,cl:'var(--fire)'},{c:'土',a:225,cl:'var(--earth)'},{c:'金',a:270,cl:'var(--metal)'},{c:'金',a:315,cl:'var(--metal)'}];
+  const g5=document.getElementById('r5E');
+  el5.forEach(e=>{L(g5,92,104,e.a-22.5,'var(--ring-stroke)',0.6);T(g5,98,e.a,e.c,8,e.cl);});
+
+  /* === 22) 天干 (80-92) === */
+  const tgL=[{c:'壬',s:337.5},{c:'癸',s:7.5},{c:'甲',s:67.5},{c:'乙',s:97.5},{c:'丙',s:157.5},{c:'丁',s:187.5},{c:'庚',s:247.5},{c:'辛',s:277.5}];
+  const gTG=document.getElementById('rTG');
+  [0,45,90,135,180,225,270,315].forEach(a=>L(gTG,80,92,a-22.5,'var(--ring-stroke)',0.5));
+  tgL.forEach(tg=>{L(gTG,80,92,tg.s,'var(--ring-stroke)',0.3);L(gTG,80,92,tg.s+15,'var(--ring-stroke)',0.3);T(gTG,86,tg.s+7.5,tg.c,7);});
+
+  /* === 23) 地支 (60-80) === */
+  const dzL=[{c:'子',a:0},{c:'丑',a:30},{c:'寅',a:60},{c:'卯',a:90},{c:'辰',a:120},{c:'巳',a:150},{c:'午',a:180},{c:'未',a:210},{c:'申',a:240},{c:'酉',a:270},{c:'戌',a:300},{c:'亥',a:330}];
+  const gDZ=document.getElementById('rDZ');
+  dzL.forEach(dz=>{L(gDZ,60,80,dz.a-15,'var(--ring-stroke)',0.3);T(gDZ,70,dz.a,dz.c,8);});
+
+  /* BLOCKER overlay · 太歲/歲破/三煞/五黃 (demo: year 2026 午) */
+  const gBlock=document.getElementById('rBlock');
+  function drawBlock(start,end,fill){
+    const path = (end < start) ?
+      [W(244, start, 360), W(244, 0, end)].join(' ') :
+      W(244, start, end);
+    gBlock.appendChild(mk('path',{d:path, fill}));
+  }
+  drawBlock(157.5, 202.5, 'rgba(210,38,28,.18)');  /* 太歲 S 午 */
+  drawBlock(337.5, 22.5, 'rgba(210,38,28,.15)');   /* 歲破 N 子 */
+  drawBlock(67.5, 112.5, 'rgba(220,170,30,.22)');  /* 5黃 demo E */
+
+}
+
+/* APIs · setFX รับ {mode:'era'|'single', data:[8]} */
+window.setFX=function(payload){
+  const isEra = payload && payload.mode === 'era';
+  const d = (payload && payload.data) || [];
+  for(let i=0;i<8;i++){
+    const v=d[i]||{};
+    const s=document.getElementById('fs'+i),x=document.getElementById('fx'+i),j=document.getElementById('fj'+i);
+    if(isEra){
+      if(s)s.textContent=v.shan!=null?v.shan:'-';
+      if(x)x.textContent=v.xiang!=null?v.xiang:'-';
+      if(j)j.textContent=v.ji!=null?v.ji:'-';
+    } else {
+      /* single star · แสดงดาวเดียวตรงกลาง (ji) ซ่อน shan/xiang */
+      if(s)s.textContent='';
+      if(x)x.textContent='';
+      if(j)j.textContent=v.star!=null?v.star:'-';
+    }
+  }
+};
+window.setQM=function(d){for(let i=0;i<8;i++){const v=(d||[])[i]||{};const m=document.getElementById('qm'+i),sh=document.getElementById('qs'+i),xi=document.getElementById('qx'+i);if(m)m.textContent=v.men||'-';if(sh)sh.textContent=v.shen||'-';if(xi)xi.textContent=v.xing||'-';}};
+
+/* === Demo data === */
+/* ยุค 9 (period 9) — 3 ดาว 山/水/基 ต่อ 8 ทิศ */
+const dEra={fx:[{shan:6,xiang:2,ji:1},{shan:1,xiang:7,ji:8},{shan:8,xiang:4,ji:3},{shan:7,xiang:3,ji:4},{shan:2,xiang:6,ji:9},{shan:4,xiang:8,ji:2},{shan:3,xiang:9,ji:7},{shan:9,xiang:1,ji:6}],qm:null};
+/* ปี/เดือน/วัน/ยาม — ดาวเดียว · per 8 ทิศ */
+const dYear={fx:[{star:1},{star:8},{star:3},{star:4},{star:9},{star:2},{star:7},{star:6}],qm:[{men:'休',shen:'值符',xing:'天蓬'},{men:'生',shen:'螣蛇',xing:'天任'},{men:'傷',shen:'太陰',xing:'天沖'},{men:'杜',shen:'六合',xing:'天輔'},{men:'景',shen:'九地',xing:'天英'},{men:'死',shen:'九天',xing:'天芮'},{men:'驚',shen:'玄武',xing:'天柱'},{men:'開',shen:'白虎',xing:'天心'}]};
+const dMonth={fx:[{star:2},{star:9},{star:4},{star:5},{star:1},{star:3},{star:8},{star:7}],qm:[{men:'開',shen:'九天',xing:'天心'},{men:'休',shen:'值符',xing:'天蓬'},{men:'生',shen:'螣蛇',xing:'天任'},{men:'傷',shen:'太陰',xing:'天沖'},{men:'杜',shen:'六合',xing:'天輔'},{men:'景',shen:'九地',xing:'天英'},{men:'死',shen:'玄武',xing:'天芮'},{men:'驚',shen:'白虎',xing:'天柱'}]};
+const dDay={fx:[{star:5},{star:3},{star:7},{star:6},{star:1},{star:2},{star:8},{star:4}],qm:dYear.qm};
+const dHour={fx:[{star:4},{star:8},{star:6},{star:5},{star:9},{star:2},{star:1},{star:7}],qm:dYear.qm};
+
+const demos={era:dEra, year:dYear, month:dMonth, day:dDay, hour:dHour};
+let currentTimingKey='era';
+function applyTiming(k){
+  currentTimingKey=k;
+  const isEra = k === 'era';
+  window.setFX({mode: isEra?'era':'single', data: demos[k].fx});
+  window.setQM(demos[k].qm || []);
+  document.querySelectorAll('[data-time]').forEach(x=>x.classList.toggle('active',x.dataset.time===k));
+  updateInspector();
+}
+document.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>applyTiming(b.dataset.time)));
+
+/* ============== controls ============== */
+const dial = document.getElementById('dial');
+const lp = document.getElementById('lp');
+const cursorNeedle = document.getElementById('cursorNeedle');
+document.getElementById('dialOpa').addEventListener('input', e => {
+  lp.style.opacity = e.target.value / 100;
+  document.getElementById('vDialOpa').textContent = e.target.value + '%';
+});
+
+/* ====== ย้ายศูนย์กลาง + ขยาย/ย่อ หล่อแก ====== */
+let dialOffsetX = 0, dialOffsetY = 0, dialScale = 1;
+function applyDialOffset(){
+  lp.style.transformOrigin = 'center center';
+  lp.style.transform = `translate(${dialOffsetX}px, ${dialOffsetY}px) scale(${dialScale})`;
+  document.getElementById('vCenter').textContent = `${dialOffsetX},${dialOffsetY}`;
+  const v = document.getElementById('vScale'); if(v) v.textContent = Math.round(dialScale*100)+'%';
+  try{
+    localStorage.setItem('luopan-center', `${dialOffsetX},${dialOffsetY}`);
+    localStorage.setItem('luopan-scale', String(dialScale));
+  }catch(e){}
+}
+function setScale(pct){
+  dialScale = Math.max(.4, Math.min(1.6, pct/100));
+  const s = document.getElementById('dialScale'); if(s) s.value = Math.round(dialScale*100);
+  applyDialOffset();
+}
+document.getElementById('dialScale')?.addEventListener('input', e => setScale(Number(e.target.value)));
+document.getElementById('scalePlus')?.addEventListener('click', () => setScale(Math.round(dialScale*100)+5));
+document.getElementById('scaleMinus')?.addEventListener('click', () => setScale(Math.round(dialScale*100)-5));
+document.getElementById('scaleReset')?.addEventListener('click', () => setScale(100));
+const NUDGE = {ul:[-1,-1], u:[0,-1], ur:[1,-1], l:[-1,0], r:[1,0], dl:[-1,1], d:[0,1], dr:[1,1]};
+document.querySelectorAll('[data-nudge]').forEach(b => b.addEventListener('click', ev => {
+  if(b.dataset.nudge === '0'){ dialOffsetX = 0; dialOffsetY = 0; applyDialOffset(); return; }
+  const [dx,dy] = NUDGE[b.dataset.nudge];
+  const step = ev.shiftKey ? 30 : 10;
+  dialOffsetX += dx * step;
+  dialOffsetY += dy * step;
+  applyDialOffset();
+}));
+/* keyboard arrow when focus in stage area */
+document.querySelector('.stage').addEventListener('keydown', e => {
+  const step = e.shiftKey ? 30 : 10;
+  let h = false;
+  if(e.key === 'ArrowLeft'){ dialOffsetX -= step; h = true; }
+  else if(e.key === 'ArrowRight'){ dialOffsetX += step; h = true; }
+  else if(e.key === 'ArrowUp'){ dialOffsetY -= step; h = true; }
+  else if(e.key === 'ArrowDown'){ dialOffsetY += step; h = true; }
+  if(h){ e.preventDefault(); applyDialOffset(); }
+});
+document.querySelector('.stage').setAttribute('tabindex','0');
+/* restore from localStorage */
+try{
+  const saved = localStorage.getItem('luopan-center');
+  if(saved){ const [x,y] = saved.split(',').map(Number); dialOffsetX = x||0; dialOffsetY = y||0; }
+  const savedS = localStorage.getItem('luopan-scale');
+  if(savedS){ dialScale = Number(savedS)||1; const s=document.getElementById('dialScale'); if(s) s.value = Math.round(dialScale*100); }
+  applyDialOffset();
+}catch(e){}
+/* CURSOR needle = เข็มสำรวจที่หมุนรอบกลาง · อ่านทิศที่ชี้ */
+let cursorDeg = 180;
+function setCursor(d){
+  cursorDeg = ((Number(d) % 360) + 360) % 360;
+  cursorNeedle.setAttribute('transform', `rotate(${cursorDeg} 380 380)`);
+  document.getElementById('vCursorRot').textContent = cursorDeg.toFixed(1) + '°';
+  updateInspector();
+}
+document.getElementById('cursorRot').addEventListener('input', e => setCursor(e.target.value));
+
+/* คลิก/ลากบน SVG ให้เข็มหมุนไปที่ตำแหน่งที่แตะ */
+let dragging = false;
+function svgPointToDeg(ev){
+  const r = lp.getBoundingClientRect();
+  const x = ev.clientX - r.left - r.width/2;
+  const y = ev.clientY - r.top - r.height/2;
+  const a = Math.atan2(y, x) * 180 / Math.PI + 90;
+  return ((a % 360) + 360) % 360;
+}
+lp.addEventListener('mousedown', e => {
+  if(pinMode){ addPin(e); return; }
+  dragging = true; setCursor(svgPointToDeg(e)); document.getElementById('cursorRot').value = cursorDeg;
+});
+window.addEventListener('mousemove', e => { if(dragging){ setCursor(svgPointToDeg(e)); document.getElementById('cursorRot').value = cursorDeg; }});
+window.addEventListener('mouseup', () => dragging = false);
+lp.addEventListener('touchstart', e => { dragging = true; const t=e.touches[0]; setCursor(svgPointToDeg(t)); document.getElementById('cursorRot').value = cursorDeg; e.preventDefault(); }, {passive:false});
+window.addEventListener('touchmove', e => { if(dragging && e.touches[0]){ setCursor(svgPointToDeg(e.touches[0])); document.getElementById('cursorRot').value = cursorDeg; }}, {passive:true});
+window.addEventListener('touchend', () => dragging = false);
+
+/* ====== Pin Tool (door/bed/stove/water/desk) ====== */
+let pinMode = null; /* 'door' | 'bed' | 'stove' | 'water' | 'desk' | null */
+let pins = []; /* {id, type, deg, dist} */
+const PIN_ICONS = {door:'🚪', bed:'🛏', stove:'🔥', water:'💧', desk:'💼'};
+const PIN_LABELS_TH = {door:'ประตู', bed:'หัวเตียง', stove:'เตา', water:'น้ำ', desk:'โต๊ะ'};
+
+function setPinMode(m){
+  pinMode = (pinMode === m) ? null : m;
+  document.querySelectorAll('[data-pin]').forEach(b => b.classList.toggle('active', b.dataset.pin === pinMode));
+  lp.classList.toggle('pin-mode', !!pinMode);
+}
+document.querySelectorAll('[data-pin]').forEach(b => b.addEventListener('click', () => setPinMode(b.dataset.pin)));
+
+function svgPointToPolar(ev){
+  /* convert screen click → SVG coord (380,380 center) → deg + dist */
+  const rect = lp.getBoundingClientRect();
+  const x = (ev.clientX - rect.left) * 760 / rect.width;
+  const y = (ev.clientY - rect.top) * 760 / rect.height;
+  /* compensate dial offset + scale */
+  const dx = (x - 380 - dialOffsetX) / dialScale;
+  const dy = (y - 380 - dialOffsetY) / dialScale;
+  const deg = ((Math.atan2(dy, dx) * 180 / Math.PI + 90) % 360 + 360) % 360;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  return { deg, dist };
+}
+function addPin(ev){
+  if(!pinMode) return;
+  const {deg, dist} = svgPointToPolar(ev);
+  if(dist > 380) return; /* คลิกนอกวง */
+  pins.push({ id: Date.now() + Math.random(), type: pinMode, deg, dist });
+  savePins();
+  renderPins();
+  updateInspector(); /* refresh activate status */
+}
+function removePin(id){
+  pins = pins.filter(p => p.id !== id);
+  savePins();
+  renderPins();
+  updateInspector();
+}
+function savePins(){
+  try{ localStorage.setItem('luopan-pins', JSON.stringify(pins)); }catch(e){}
+}
+function loadPins(){
+  try{ const s = localStorage.getItem('luopan-pins'); if(s) pins = JSON.parse(s)||[]; }catch(e){}
+}
+function pinIsActivated(pin){
+  if(!castleGateResult) return false;
+  if(pin.type !== 'door') return false;
+  const both = [castleGateResult.candidates.left, castleGateResult.candidates.right];
+  return both.some(c => {
+    if(!c.usable) return false;
+    const m = c.mountain;
+    const d = pin.deg;
+    return m.start < m.end ? (d >= m.start && d < m.end) : (d >= m.start || d < m.end);
+  });
+}
+function renderPins(){
+  const NS='http://www.w3.org/2000/svg';
+  const g = document.getElementById('pinLayer');
+  if(!g) return;
+  g.innerHTML = '';
+  pins.forEach(p => {
+    const rad = (p.deg - 90) * Math.PI / 180;
+    const x = 380 + p.dist * Math.cos(rad);
+    const y = 380 + p.dist * Math.sin(rad);
+    const isAct = pinIsActivated(p);
+    const grp = document.createElementNS(NS,'g');
+    grp.setAttribute('class', 'pin-marker' + (isAct?' activated':''));
+    grp.dataset.pinId = p.id;
+    const circle = document.createElementNS(NS,'circle');
+    circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r', 14);
+    circle.setAttribute('fill', 'rgba(13,15,18,.85)');
+    circle.setAttribute('stroke', isAct ? '#a9e1ad' : 'var(--gold)');
+    circle.setAttribute('stroke-width', isAct ? 3 : 1.5);
+    grp.appendChild(circle);
+    const txt = document.createElementNS(NS,'text');
+    txt.setAttribute('x', x); txt.setAttribute('y', y+5);
+    txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('font-size','15');
+    txt.textContent = PIN_ICONS[p.type] || '·';
+    grp.appendChild(txt);
+    grp.addEventListener('click', e => { e.stopPropagation(); removePin(p.id); });
+    g.appendChild(grp);
+  });
+}
+document.getElementById('pinClear')?.addEventListener('click', () => {
+  if(!pins.length) return;
+  pins = []; savePins(); renderPins(); updateInspector();
+});
+loadPins();
+setTimeout(() => renderPins(), 100);
+document.getElementById('imgRot').addEventListener('input', e => {
+  planImgRot = Number(e.target.value);
+  document.getElementById('vImgRot').textContent = e.target.value + '°';
+  drawPlan();
+});
+document.getElementById('imgOpa').addEventListener('input', e => {
+  planImgOpa = Number(e.target.value) / 100;
+  document.getElementById('vImgOpa').textContent = e.target.value + '%';
+  drawPlan();
+});
+document.querySelectorAll('[data-r]').forEach(cb => cb.addEventListener('change', () => {
+  const g = document.getElementById(cb.dataset.r);
+  if(g) g.style.display = cb.checked ? '' : 'none';
+}));
+function setAllLayers(check){
+  document.querySelectorAll('input[data-r]').forEach(cb => {
+    cb.checked = check;
+    const g = document.getElementById(cb.dataset.r);
+    if(g) g.style.display = check ? '' : 'none';
+  });
+}
+document.getElementById('layerAll').addEventListener('click', () => setAllLayers(true));
+document.getElementById('layerNone').addEventListener('click', () => setAllLayers(false));
+/* ปุ่มหมวด N · เปิดเฉพาะ ring ในหมวดนั้น + หมวด 1 (ฐานราก) เสมอ */
+document.querySelectorAll('[data-cat]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const cat = btn.dataset.cat;
+    const keepSet = new Set();
+    /* หมวด 1 ฐานราก เปิดเสมอ */
+    document.querySelectorAll('input[data-cg="1"]').forEach(cb => keepSet.add(cb.dataset.r));
+    if(cat !== '1') document.querySelectorAll(`input[data-cg="${cat}"]`).forEach(cb => keepSet.add(cb.dataset.r));
+    document.querySelectorAll('input[data-r]').forEach(cb => {
+      cb.checked = keepSet.has(cb.dataset.r);
+      const g = document.getElementById(cb.dataset.r);
+      if(g) g.style.display = cb.checked ? '' : 'none';
+    });
+  });
+});
+
+/* ============== Castle Gate Engine v2.2 (ported from JSX) ============== */
+const CG_MOUNTAINS_24 = [
+  {name:'壬',code:'N1',start:337.5,end:352.5,trigram:'坎',element:'水',yuan:'Earth'},
+  {name:'子',code:'N2',start:352.5,end:7.5,trigram:'坎',element:'水',yuan:'Heaven'},
+  {name:'癸',code:'N3',start:7.5,end:22.5,trigram:'坎',element:'水',yuan:'Man'},
+  {name:'丑',code:'NE1',start:22.5,end:37.5,trigram:'艮',element:'土',yuan:'Earth'},
+  {name:'艮',code:'NE2',start:37.5,end:52.5,trigram:'艮',element:'土',yuan:'Heaven'},
+  {name:'寅',code:'NE3',start:52.5,end:67.5,trigram:'艮',element:'木',yuan:'Man'},
+  {name:'甲',code:'E1',start:67.5,end:82.5,trigram:'震',element:'木',yuan:'Earth'},
+  {name:'卯',code:'E2',start:82.5,end:97.5,trigram:'震',element:'木',yuan:'Heaven'},
+  {name:'乙',code:'E3',start:97.5,end:112.5,trigram:'震',element:'木',yuan:'Man'},
+  {name:'辰',code:'SE1',start:112.5,end:127.5,trigram:'巽',element:'土',yuan:'Earth'},
+  {name:'巽',code:'SE2',start:127.5,end:142.5,trigram:'巽',element:'木',yuan:'Heaven'},
+  {name:'巳',code:'SE3',start:142.5,end:157.5,trigram:'巽',element:'火',yuan:'Man'},
+  {name:'丙',code:'S1',start:157.5,end:172.5,trigram:'離',element:'火',yuan:'Earth'},
+  {name:'午',code:'S2',start:172.5,end:187.5,trigram:'離',element:'火',yuan:'Heaven'},
+  {name:'丁',code:'S3',start:187.5,end:202.5,trigram:'離',element:'火',yuan:'Man'},
+  {name:'未',code:'SW1',start:202.5,end:217.5,trigram:'坤',element:'土',yuan:'Earth'},
+  {name:'坤',code:'SW2',start:217.5,end:232.5,trigram:'坤',element:'土',yuan:'Heaven'},
+  {name:'申',code:'SW3',start:232.5,end:247.5,trigram:'坤',element:'金',yuan:'Man'},
+  {name:'庚',code:'W1',start:247.5,end:262.5,trigram:'兌',element:'金',yuan:'Earth'},
+  {name:'酉',code:'W2',start:262.5,end:277.5,trigram:'兌',element:'金',yuan:'Heaven'},
+  {name:'辛',code:'W3',start:277.5,end:292.5,trigram:'兌',element:'金',yuan:'Man'},
+  {name:'戌',code:'NW1',start:292.5,end:307.5,trigram:'乾',element:'土',yuan:'Earth'},
+  {name:'乾',code:'NW2',start:307.5,end:322.5,trigram:'乾',element:'金',yuan:'Heaven'},
+  {name:'亥',code:'NW3',start:322.5,end:337.5,trigram:'乾',element:'水',yuan:'Man'}
+];
+const CG_PALACE_INDEX = {坎:0,坤:1,震:2,巽:3,中:4,乾:5,兌:6,艮:7,離:8};
+const CG_FLY_ORDER = [4,5,6,7,8,0,1,2,3];
+const CG_STAR_HOME = {1:'坎',2:'坤',3:'震',4:'巽',6:'乾',7:'兌',8:'艮',9:'離'};
+const CG_PALACE_MTN = {坎:['壬','子','癸'],艮:['丑','艮','寅'],震:['甲','卯','乙'],巽:['辰','巽','巳'],離:['丙','午','丁'],坤:['未','坤','申'],兌:['庚','酉','辛'],乾:['戌','乾','亥']};
+const CG_MTN_YINYANG = {壬:'陽',甲:'陽',庚:'陽',丙:'陽',乾:'陽',坤:'陽',艮:'陽',巽:'陽',寅:'陽',申:'陽',巳:'陽',亥:'陽',子:'陰',午:'陰',卯:'陰',酉:'陰',癸:'陰',丁:'陰',乙:'陰',辛:'陰',丑:'陰',未:'陰',辰:'陰',戌:'陰'};
+const CG_YUAN_IDX = {Earth:0,Heaven:1,Man:2};
+const CG_YUAN_LBL = {Earth:'地元',Heaven:'天元',Man:'人元'};
+
+function cgNormDeg(d){return ((d%360)+360)%360;}
+function cgNormStar(s){return ((s-1+9)%9)+1;}
+function cgFindMtn(deg){
+  const d=cgNormDeg(deg);
+  return CG_MOUNTAINS_24.find(m => m.start < m.end ? (d>=m.start && d<m.end) : (d>=m.start || d<m.end));
+}
+function cgGetMid(m){ return m.start < m.end ? (m.start+m.end)/2 : cgNormDeg((m.start+m.end+360)/2); }
+function cgGetIdx(name){ return CG_MOUNTAINS_24.findIndex(m => m.name===name); }
+function cgFlyStars(centerStar, dir){
+  if(!centerStar||!dir) return new Array(9).fill(null);
+  const result = new Array(9).fill(null);
+  for(let i=0;i<9;i++){
+    const palaceIndex = CG_FLY_ORDER[i];
+    const star = dir==='forward' ? cgNormStar(centerStar+i) : cgNormStar(centerStar-i);
+    result[palaceIndex] = star;
+  }
+  return result;
+}
+function cgFlightInfo(seedStar, mtnName, currPalace){
+  const mObj = CG_MOUNTAINS_24.find(m => m.name===mtnName);
+  const yuan = mObj?.yuan; if(!yuan) throw new Error('yuan missing: '+mtnName);
+  let homePalace, warning = null;
+  if(seedStar===5){ homePalace = currPalace; warning = 'ดาว 5 รับช่วง yin-yang จากวังปัจจุบัน'; }
+  else { homePalace = CG_STAR_HOME[seedStar]; if(!homePalace) throw new Error('home missing: '+seedStar); }
+  const refMtn = CG_PALACE_MTN[homePalace][CG_YUAN_IDX[yuan]];
+  const refYY = CG_MTN_YINYANG[refMtn];
+  return { direction: refYY==='陽'?'forward':'reverse', referenceStar:seedStar, homePalace, referenceMountainName:refMtn, referenceYinYang:refYY, yuan, warning };
+}
+function cgCalcChart(period, facingMtn){
+  const sitDeg = cgNormDeg(cgGetMid(facingMtn)+180);
+  const sittingMtn = cgFindMtn(sitDeg);
+  const base = cgFlyStars(period,'forward');
+  const fIdx = CG_PALACE_INDEX[facingMtn.trigram], sIdx = CG_PALACE_INDEX[sittingMtn.trigram];
+  const fSeed = base[fIdx], sSeed = base[sIdx];
+  const fFlight = cgFlightInfo(fSeed, facingMtn.name, facingMtn.trigram);
+  const sFlight = cgFlightInfo(sSeed, sittingMtn.name, sittingMtn.trigram);
+  return { base, water:cgFlyStars(fSeed,fFlight.direction), mountain:cgFlyStars(sSeed,sFlight.direction), facingMountain:facingMtn, sittingMountain:sittingMtn };
+}
+function cgGetCandidates(facingMtn){
+  const idx = cgGetIdx(facingMtn.name);
+  return { left:CG_MOUNTAINS_24[(idx-3+24)%24], right:CG_MOUNTAINS_24[(idx+3)%24] };
+}
+function cgEvalCandidate(cand, chart, period){
+  const palaceIndex = CG_PALACE_INDEX[cand.trigram];
+  const gateWater = chart.water[palaceIndex];
+  const gateBase = chart.base[palaceIndex];
+  const gateMtn = chart.mountain[palaceIndex];
+  const reasons=[], warnings=[];
+  let type='無城門', usable=false, severity='none', arrivedStar=null;
+  if(gateWater){
+    try{
+      const fInfo = cgFlightInfo(gateWater, cand.name, cand.trigram);
+      if(fInfo.warning) warnings.push(fInfo.warning);
+      const gateFlight = cgFlyStars(gateWater, fInfo.direction);
+      arrivedStar = gateFlight[palaceIndex];
+      const hasPeriod = arrivedStar===period;
+      const hasFuture = arrivedStar === (period===9?1:period+1);
+      const badWater = [2,5].includes(gateWater);
+      const badArrived = [2,5].includes(arrivedStar);
+      if(badWater){ severity='danger'; warnings.push(`ดาวน้ำ城門=${gateWater} ไม่ควรเปิดประตู`); }
+      if(badArrived){ severity='danger'; warnings.push(`ดาวบินถึง城門=${arrivedStar} เสี่ยงสูง`); }
+      if(!badWater && !badArrived){
+        if(hasPeriod){ type='正城門'; usable=true; severity='excellent'; reasons.push(`ดาวยุค ${period} บินถึงวัง城門`); }
+        else if(hasFuture){ type='副城門'; usable=true; severity='good'; reasons.push(`ดาว生氣 ${arrivedStar} บินถึงวัง城門`); }
+        else reasons.push(`ดาวถึง=${arrivedStar} ไม่ใช่ดาวยุค/生氣`);
+      }
+      reasons.push(`ทิศบิน: ดาวน้ำ ${gateWater} → ${fInfo.homePalace} → ${CG_YUAN_LBL[fInfo.yuan]} ${fInfo.referenceMountainName} (${fInfo.referenceYinYang}) → ${fInfo.direction==='forward'?'順':'逆'}`);
+    } catch(e){ warnings.push(e.message); severity='danger'; }
+  } else { warnings.push('ไม่พบดาวน้ำของวัง'); severity='danger'; }
+  return { mountain:cand, palace:cand.trigram, palaceIndex, gateWaterStar:gateWater, gateBaseStar:gateBase, gateMountainStar:gateMtn, arrivedStar, type, usable, severity, reasons, warnings };
+}
+function calculateCastleGateV22(facingDeg, period){
+  const fMtn = cgFindMtn(facingDeg);
+  if(!fMtn) return null;
+  const chart = cgCalcChart(period, fMtn);
+  const {left,right} = cgGetCandidates(fMtn);
+  const leftRes = cgEvalCandidate(left, chart, period);
+  const rightRes = cgEvalCandidate(right, chart, period);
+  const gates = [leftRes, rightRes];
+  return { version:'CastleGateEngine-v2.2', period, facing:{degree:facingDeg, mountain:fMtn, palace:fMtn.trigram, yuan:fMtn.yuan}, sitting:{mountain:chart.sittingMountain, palace:chart.sittingMountain.trigram, yuan:chart.sittingMountain.yuan}, chart, candidates:{left:leftRes, right:rightRes}, primaryGate:gates.find(g=>g.type==='正城門')||null, secondaryGate:gates.find(g=>g.type==='副城門')||null };
+}
+
+/* ====== Render Castle Gate Overlay ====== */
+let castleGateResult = null;
+function renderCastleGateOverlay(){
+  const g = document.getElementById('rGate');
+  if(!g) return;
+  g.innerHTML = '';
+  if(!castleGateResult || !houseLocked) return;
+  const NS='http://www.w3.org/2000/svg', cx=380, cy=380;
+  const r1=140, r2=336; /* radius สำหรับ wedge · จาก 後天八卦 ถึง 卦運 */
+  function rad(d){return(d-90)*Math.PI/180;}
+  function pt(r,a){return[cx+r*Math.cos(rad(a)),cy+r*Math.sin(rad(a))];}
+  function wedge(start, end, cls){
+    if(end < start) end += 360;
+    const a1=pt(r1,start), a2=pt(r2,start), b1=pt(r1,end), b2=pt(r2,end);
+    const large = (end-start) > 180 ? 1 : 0;
+    const d = `M${a1[0]},${a1[1]} L${a2[0]},${a2[1]} A${r2},${r2} 0 ${large},1 ${b2[0]},${b2[1]} L${b1[0]},${b1[1]} A${r1},${r1} 0 ${large},0 ${a1[0]},${a1[1]} Z`;
+    const p = document.createElementNS(NS,'path');
+    p.setAttribute('d', d);
+    p.setAttribute('class', cls);
+    g.appendChild(p);
+  }
+  function label(mid, text, cls){
+    const p = pt((r1+r2)/2, mid);
+    const bg = document.createElementNS(NS,'rect');
+    bg.setAttribute('x', p[0]-22); bg.setAttribute('y', p[1]-9);
+    bg.setAttribute('width', 44); bg.setAttribute('height', 18);
+    bg.setAttribute('rx', 9); bg.setAttribute('class', 'gate-label-bg');
+    g.appendChild(bg);
+    const t = document.createElementNS(NS,'text');
+    t.setAttribute('x', p[0]); t.setAttribute('y', p[1]+4);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('class', cls);
+    t.textContent = text; g.appendChild(t);
+  }
+  /* draw both candidates · left + right */
+  [castleGateResult.candidates.left, castleGateResult.candidates.right].forEach(c => {
+    const m = c.mountain;
+    const start = m.start, end = m.end;
+    let cls = 'gate-warning', labelCls = 'gate-label-danger', labelText = '無';
+    if(c.type==='正城門'){ cls='gate-primary'; labelCls='gate-label-primary'; labelText='正城門'; }
+    else if(c.type==='副城門'){ cls='gate-secondary'; labelCls='gate-label-secondary'; labelText='副城門'; }
+    else if(c.severity==='danger'){ cls='gate-danger'; labelCls='gate-label-danger'; labelText='⚠ ไม่ใช้'; }
+    wedge(start, end, cls);
+    const mid = m.start < m.end ? (m.start+m.end)/2 : cgNormDeg((m.start+m.end+360)/2);
+    label(mid, labelText, labelCls);
+  });
+}
+
+function updateCastleGate(){
+  if(!houseLocked){ castleGateResult = null; renderCastleGateOverlay(); if(typeof renderPins==='function') renderPins(); return; }
+  try{ castleGateResult = calculateCastleGateV22(lockedFacing, lockedPeriod); }
+  catch(e){ console.warn('castle gate calc failed:', e); castleGateResult = null; }
+  renderCastleGateOverlay();
+  if(typeof renderPins==='function') renderPins();
+}
+
+/* ============== Inspector · อ่านทุกศาสตร์ที่เข็มผ่าน ============== */
+window.LUOPAN_DATA = null;
+fetch('/_preview/luopan_complete.json').then(r => r.json()).then(d => {
+  window.LUOPAN_DATA = d;
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('luopan data load failed:', e));
+
+function getCursorRelativeDeg(){
+  if(!houseLocked) return cursorDeg;
+  return ((cursorDeg + lockedFacing) % 360 + 360) % 360;
+}
+/* 3-tier rating helper */
+function rateStar(n){
+  /* 玄空 ดาว: 8/9/1 = ดี · 6 = ดี · 4 = กลาง · 2/3/7 = ระวัง · 5 = แย่ */
+  if([8,9,1,6].includes(n)) return 'good';
+  if(n===4) return 'mid';
+  if([2,3,7].includes(n)) return 'mid';
+  if(n===5) return 'bad';
+  return 'neutral';
+}
+function rateHexNum(n){
+  /* mock — บางกว้าดี/บางกว้ากลาง */
+  const good=[11,14,19,24,46,48,55,63,1];
+  const bad=[12,23,29,36,47,64];
+  if(good.includes(n)) return 'good';
+  if(bad.includes(n)) return 'bad';
+  return 'mid';
+}
+function rateDirAffliction(dir8){
+  /* demo: ปี 午 · 太歲=S, 歲破=N, 三煞=N group */
+  if(dir8==='S') return 'bad'; /* 太歲 */
+  if(dir8==='N') return 'bad'; /* 歲破 + 三煞 N */
+  return 'neutral';
+}
+/* helper: ทิศ 8 จากองศา */
+function degTo8(d){
+  const a=((d%360)+360)%360;
+  const labels=['N','NE','E','SE','S','SW','W','NW'];
+  return labels[Math.round(a/45)%8];
+}
+function getRingDataAt(deg){
+  const m24data=[{c:'N1',m:'壬',p:'Rén',el:'water'},{c:'N2',m:'子',p:'Zǐ',el:'water'},{c:'N3',m:'癸',p:'Guǐ',el:'water'},{c:'NE1',m:'丑',p:'Chǒu',el:'earth'},{c:'NE2',m:'艮',p:'Gèn',el:'earth'},{c:'NE3',m:'寅',p:'Yín',el:'wood'},{c:'E1',m:'甲',p:'Jiǎ',el:'wood'},{c:'E2',m:'卯',p:'Mǎo',el:'wood'},{c:'E3',m:'乙',p:'Yǐ',el:'wood'},{c:'SE1',m:'辰',p:'Chén',el:'earth'},{c:'SE2',m:'巽',p:'Xùn',el:'wood'},{c:'SE3',m:'巳',p:'Sì',el:'fire'},{c:'S1',m:'丙',p:'Bǐng',el:'fire'},{c:'S2',m:'午',p:'Wǔ',el:'fire'},{c:'S3',m:'丁',p:'Dīng',el:'fire'},{c:'SW1',m:'未',p:'Wèi',el:'earth'},{c:'SW2',m:'坤',p:'Kūn',el:'earth'},{c:'SW3',m:'申',p:'Shēn',el:'metal'},{c:'W1',m:'庚',p:'Gēng',el:'metal'},{c:'W2',m:'酉',p:'Yǒu',el:'metal'},{c:'W3',m:'辛',p:'Xīn',el:'metal'},{c:'NW1',m:'戌',p:'Xū',el:'earth'},{c:'NW2',m:'乾',p:'Qián',el:'metal'},{c:'NW3',m:'亥',p:'Hài',el:'water'}];
+  /* N1 เริ่ม 337.5° · ช่องละ 15° · ใช้ตรงๆ (formula เก่า off-by-22) */
+  const m24idx = Math.floor(((deg - 337.5 + 360) % 360) / 15) % 24;
+  const m24 = m24data[m24idx];
+  /* 64 卦 — สมมุติเริ่ม 卦24 復 ที่ 0° */
+  const h64=['復','臨','泰','升','師','謙','明夷','坤','剝','頤','損','大畜','蠱','蒙','賁','艮','小過','豫','歸妹','大壯','恆','解','豐','震','益','漸','觀','中孚','小畜','渙','家人','巽','鼎','噬嗑','旅','晉','睽','大有','未濟','離','无妄','履','同人','遁','否','姤','訟','乾','夬','隨','革','咸','萃','大過','困','兌','節','屯','既濟','蹇','比','井','需','坎'];
+  const h64nums=[24,19,11,46,7,15,36,2,23,27,41,26,18,4,22,52,62,16,54,34,32,40,55,51,42,53,20,61,9,59,37,57,50,21,56,35,38,14,64,30,25,10,13,33,12,44,6,1,43,17,49,31,45,28,47,58,60,3,63,39,8,48,5,29];
+  const h64idx = Math.floor(((deg-337.5+360)%360)/5.625)%64;
+  /* 28宿 */
+  const m28=['角','亢','氐','房','心','尾','箕','斗','牛','女','虛','危','室','壁','奎','婁','胃','昴','畢','觜','參','井','鬼','柳','星','張','翼','軫'];
+  const seg28=360/28;
+  const m28idx = Math.floor(((deg-(90-3.5*seg28)+360)%360)/seg28)%28;
+  /* 24節氣 — 立春 เริ่ม 45° */
+  const jq=['立春','雨水','驚蟄','春分','清明','穀雨','立夏','小滿','芒種','夏至','小暑','大暑','立秋','處暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至','小寒','大寒'];
+  const jqidx = Math.floor(((deg-45+360)%360)/15)%24;
+  /* 8 ทิศ */
+  const dir8=degTo8(deg);
+  const dir8idx=Math.round(deg/45)%8;
+  /* ดาวบ้าน */
+  const fxData = demos[currentTimingKey].fx[dir8idx]||{};
+  /* 奇門 */
+  const qm = currentTimingKey==='era' ? null : (demos[currentTimingKey].qm||[])[dir8idx]||{};
+  /* 8 trigram 後天 */
+  const lh8=['坎','艮','震','巽','離','坤','兌','乾'];
+  /* 5 行 8 ทิศ */
+  const el8=['water','earth','wood','wood','fire','earth','metal','metal'];
+
+  return { m24, m24idx, h64char:h64[h64idx], h64num:h64nums[h64idx], h64idx, m28:m28[m28idx], jq:jq[jqidx], dir8, dir8idx, fx:fxData, qm, lh:lh8[dir8idx], el8:el8[dir8idx] };
+}
+const elTH={water:'น้ำ',wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง'};
+const elHan={water:'水',wood:'木',fire:'火',earth:'土',metal:'金'};
+function scoreClass(n){const v=Number(n);return v>=5?'s5':v>=4?'s4':v>=3?'s3':v>=2?'s2':'s1';}
+function scoreLabel(n){return Number(n)+'/5';}
+function fsEsc(s){return String(s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'})[c]);}
+
+function updateInspector(){
+  const deg = getCursorRelativeDeg();
+  const r = getRingDataAt(deg);
+  const L = window.LUOPAN_DATA;
+
+  /* header */
+  document.getElementById('cursorReadout').textContent = `เข็มชี้ · ${r.m24.c} ${r.m24.m} ${r.m24.p} · ${deg.toFixed(1)}° · ธาตุ${elTH[r.m24.el]}`;
+  document.getElementById('iCursor').textContent = `${r.m24.c} · ${r.m24.m} · ${deg.toFixed(1)}°`;
+  document.getElementById('iElement').textContent = `${elHan[r.m24.el]} · ${elTH[r.m24.el]}`;
+  document.getElementById('iElement').style.color = `var(--${r.m24.el})`;
+
+  if(!L){
+    document.getElementById('ringList').innerHTML = '<div class="rr-general">กำลังโหลดคำแปล...</div>';
+    return;
+  }
+
+  const groups = {cat2:[], cat4:[], cat1:[], cat3:[], warn:[]};
+  const scores = [];
+  /* ไทยนำ จีนรอง: ส่ง han เป็น [thai, chinese] */
+  const HAN_LABEL = {
+    '後天':['ปากั้วหลังฟ้า','後天'],'先天':['ปากั้วก่อนฟ้า','先天'],
+    '飛星山':['ดาวภูเขา','飛星山'],'飛星水':['ดาวแม่น้ำ','飛星水'],'飛星基':['ดาวฐาน','飛星基'],'飛星':['ดาวเหิน','飛星'],
+    '64卦':['64 กว้า','64卦'],
+    '奇門·門':['ฉีเหมิน ประตู','奇門 門'],'奇門·神':['ฉีเหมิน เทพ','奇門 神'],'奇門·星':['ฉีเหมิน ดาว','奇門 星'],
+    '地盤':['24 ขุนเขา','地盤'],'地支':['12 กิ่งดิน','地支'],'天干':['10 ก้านฟ้า','天干'],
+    '三盤':['3 เข็ม','三盤'],'天池':['บ่อฟ้า','天池'],
+    '28宿':['28 ดาวฤกษ์','28宿'],'24節氣':['24 ฤดูสุริยะ','24節氣'],
+    '60甲子':['60 จื่อจี๊','60甲子'],'透地72龍':['72 มังกรทะลุดิน','透地72龍'],'穿山60龍':['60 มังกรเจาะภู','穿山60龍'],
+    '城門':['ประตูเมือง','城門'],
+    '警示':['เตือน','警示']
+  };
+  function row(cat, han, head, score, general, home, rich){
+    const cls = score ? scoreClass(score) : 's3';
+    const scoreHtml = score ? `<span class="rn-score">${scoreLabel(score)}</span>` : '';
+    if(score) scores.push(Number(score));
+    const lbl = HAN_LABEL[han] || ['', han];
+    const hanHtml = `<span class="rn-han">${lbl[0]?`<span class="rh-th">${fsEsc(lbl[0])}</span>`:''}<span class="rh-cn">${fsEsc(lbl[1])}</span></span>`;
+    /* rich=true → allow HTML (สำหรับเนื้อหา trusted จาก engine เช่น castle gate · multi-line) */
+    const genTxt = general ? (rich ? general : fsEsc(general)) : '';
+    const homeTxt = home ? (rich ? home : fsEsc(home)) : '';
+    const html = `<div class="ring-row ${cls}"><div class="rr-head">${hanHtml}<span class="rn-name">${head}</span>${scoreHtml}</div>${genTxt?`<div class="rr-general">${genTxt}</div>`:''}${homeTxt?`<div class="rr-toggle">เปิดคำแนะนำสำหรับบ้าน</div><div class="rr-home">${homeTxt}</div>`:''}</div>`;
+    (groups[cat]||groups.cat3).push(html);
+  }
+
+  /* === หมวด 2 ศาสตร์หลัก === */
+  /* 後天八卦 */
+  if(L.later_heaven_bagua?.arrangement){
+    const lhKey = Object.keys(L.later_heaven_bagua.arrangement).find(k => k.startsWith(r.lh));
+    const lh = lhKey ? L.later_heaven_bagua.arrangement[lhKey] : null;
+    if(lh) row('cat2','後天', `<b>${r.lh}</b> · ${lh.position||''} <span style="color:var(--fg-faint)">${lh.element||''}</span>`, lh.score, lh.general, lh.home);
+  }
+  /* 先天八卦 */
+  if(L.early_heaven_bagua?.arrangement){
+    const ehKey = Object.keys(L.early_heaven_bagua.arrangement).find(k => k.split('_')[1]===r.dir8);
+    const eh = ehKey ? L.early_heaven_bagua.arrangement[ehKey] : null;
+    if(eh){
+      const trigram = ehKey.split('_')[0];
+      row('cat2','先天', `<b>${trigram}</b> · ${eh.position||''} <span style="color:var(--fg-faint)">${eh.element||''}</span>`, eh.score, eh.general, eh.home);
+    }
+  }
+  /* ดาวเหิน (era → cat2 / time → cat4) */
+  if(currentTimingKey==='era'){
+    [['山','ดาวภูเขา · ที่หลังบ้าน',r.fx.shan],['水','ดาวน้ำ · ที่หน้าบ้าน',r.fx.xiang],['基','ดาวฐาน · กลางวัง',r.fx.ji]].forEach(([han,name,n])=>{
+      const fs = L.flying_stars_9?.stars?.[String(n)];
+      if(fs) row('cat2','飛星'+han, `<b>${han}${n}</b> · ${fs.name||''}`, fs.score, fs.general, fs.home);
+    });
+  } else {
+    const fs = L.flying_stars_9?.stars?.[String(r.fx.star)];
+    const tname={year:'ดาวปี',month:'ดาวเดือน',day:'ดาววัน',hour:'ดาวยาม'}[currentTimingKey];
+    if(fs) row('cat4','飛星', `<b>${tname} ${r.fx.star}</b> · ${fs.name||''}`, fs.score, fs.general, fs.home);
+  }
+  /* 64卦 */
+  const hex = L.hexagrams_64?.hexagrams?.[r.h64char];
+  if(hex) row('cat2','64卦', `<b>${r.h64char}</b> #${r.h64num} · ${hex.name||''}`, hex.score, hex.general, hex.home);
+
+  /* 城門訣 Castle Gate (เมื่อล็อกบ้านแล้ว) */
+  if(castleGateResult){
+    const pg = castleGateResult.primaryGate;
+    const sg = castleGateResult.secondaryGate;
+    const YUAN_TH = {Earth:'地元', Heaven:'天元', Man:'人元'};
+    const EL_TH = {水:'น้ำ', 木:'ไม้', 火:'ไฟ', 土:'ดิน', 金:'ทอง'};
+    function dir8Of(deg){const a=((deg%360)+360)%360;return ['N','NE','E','SE','S','SW','W','NW'][Math.round(a/45)%8];}
+    function gateActStatus(gate){
+      const doorPins = (typeof pins!=='undefined') ? pins.filter(p => p.type==='door') : [];
+      const m = gate.mountain;
+      const hit = doorPins.find(p => m.start < m.end ? (p.deg>=m.start && p.deg<m.end) : (p.deg>=m.start || p.deg<m.end));
+      if(hit) return '<span style="color:#a9e1ad">✓ activated · มีประตูทาบ</span>';
+      if(doorPins.length) return '<span style="color:var(--fg-faint)">ยังไม่ activate · ปักประตูเพิ่ม</span>';
+      return '<span style="color:var(--fg-faint)">ยังไม่มีประตู · ใช้ Pin Tool ปักประตู</span>';
+    }
+    function gateDetailHTML(g){
+      const m = g.mountain;
+      /* engine flight info — recompute สำหรับ render (engine ไม่ return ใน eval result) */
+      let flightTxt = '';
+      try{
+        if(g.gateWaterStar){
+          const fi = cgFlightInfo(g.gateWaterStar, m.name, m.trigram);
+          flightTxt = `<div>↻ <b>${fi.direction==='forward'?'順飛':'逆飛'}</b> · ดาวน้ำ ${g.gateWaterStar} → วัง ${fi.homePalace} → ${YUAN_TH[fi.yuan]||fi.yuan} ${fi.referenceMountainName} (${fi.referenceYinYang})</div>`;
+        }
+      }catch(e){}
+      const startTxt = m.start.toFixed(1).replace(/\.0$/,'');
+      const endTxt = m.end.toFixed(1).replace(/\.0$/,'');
+      return [
+        `<div>📐 <b>${startTxt}°–${endTxt}°</b> · ทิศใหญ่ ${dir8Of((m.start+m.end)/2)} · ${YUAN_TH[m.yuan]||m.yuan} · ${m.element} ${EL_TH[m.element]||''} · 八卦วัง <b>${m.trigram}</b></div>`,
+        `<div>⭐ 3 ดาววัง: ภู <b>${g.gateMountainStar||'—'}</b> · น้ำ <b>${g.gateWaterStar||'—'}</b> · ฐาน <b>${g.gateBaseStar||'—'}</b> · ดาวที่บินถึง <b>${g.arrivedStar||'—'}</b></div>`,
+        flightTxt,
+        `<div style="color:var(--fg-faint)">${fsEsc(g.reasons[0]||'')}</div>`
+      ].filter(Boolean).join('');
+    }
+    function gateWarnHTML(g){
+      if(!g.warnings || !g.warnings.length) return '';
+      return g.warnings.map(w => `<div style="color:#ff8a7a">⚠ ${fsEsc(w)}</div>`).join('');
+    }
+    if(pg){
+      row('cat2','城門', `<b>${pg.mountain.name}</b> ${pg.mountain.code} · 正城門 · ${gateActStatus(pg)}`, 5,
+          gateDetailHTML(pg),
+          'เปิดประตูข้าง/ทางเข้ารองที่ทิศนี้ได้ · รับ qi ยุค ' + castleGateResult.period + ' โดยตรง · เหมาะกิจการ ค้าขาย เปิดร้าน', true);
+    }
+    if(sg){
+      row('cat2','城門', `<b>${sg.mountain.name}</b> ${sg.mountain.code} · 副城門 · ${gateActStatus(sg)}`, 4,
+          gateDetailHTML(sg),
+          'ใช้เป็นประตูสำรอง · รับ qi 生氣 (อนาคต) · เหมาะมิตรภาพ ความสัมพันธ์ โชค', true);
+    }
+    /* candidates ที่ไม่ใช่ทั้ง 正/副 → ใส่ warning */
+    [castleGateResult.candidates.left, castleGateResult.candidates.right].forEach(c => {
+      if(c.type==='正城門' || c.type==='副城門') return;
+      row('cat2','城門', `<b>${c.mountain.name}</b> ${c.mountain.code} · ⚠ ห้ามใช้`, 1,
+          gateDetailHTML(c) + gateWarnHTML(c),
+          'ห้ามเปิดเป็นประตูที่ทิศนี้ · เลี่ยงทำหน้าต่างใหญ่ · ใช้เป็นมุมเก็บของหรือกำแพงทึบ', true);
+    });
+  }
+
+  /* === หมวด 4 ศาสตร์คำนวณ (เปลี่ยนตามเวลา) === */
+  if(r.qm){
+    const gate = L.qimen_gates?.gates?.[r.qm.men];
+    if(gate) row('cat4','奇門·門', `<b>${r.qm.men}</b> · ${gate.name||''}`, gate.score, gate.general, gate.home);
+    const dei = L.qimen_deities?.deities?.[r.qm.shen];
+    if(dei) row('cat4','奇門·神', `<b>${r.qm.shen}</b> · ${dei.name||''}`, dei.score, dei.general, dei.home);
+    const star = L.qimen_stars?.stars?.[r.qm.xing];
+    if(star) row('cat4','奇門·星', `<b>${r.qm.xing}</b> · ${star.name||''}`, star.score, star.general, star.home);
+  }
+
+  /* === หมวด 1 โครงสร้างพื้นฐาน === */
+  /* 24 ขุนเขา + ธาตุ */
+  const elObj = L.five_elements?.elements?.[elHan[r.m24.el]];
+  row('cat1','地盤', `<b>${r.m24.m}</b> ${r.m24.c} · ${r.m24.p} <span style="color:var(--${r.m24.el})">· ${elHan[r.m24.el]} ${elTH[r.m24.el]}</span>`,
+      elObj?.score, elObj?.general, elObj?.home);
+  /* 12 กิ่งดิน */
+  const BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  if(BRANCHES.includes(r.m24.m) && L.earthly_branches?.branches?.[r.m24.m]){
+    const dz = L.earthly_branches.branches[r.m24.m];
+    row('cat1','地支', `<b>${r.m24.m}</b> · ${dz.name||''} <span style="color:var(--fg-faint)">· ${dz.time||''}</span>`, dz.score, dz.general, dz.home);
+  }
+  /* 10 ก้านฟ้า */
+  const STEMS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  if(STEMS.includes(r.m24.m) && L.heavenly_stems?.stems?.[r.m24.m]){
+    const tg = L.heavenly_stems.stems[r.m24.m];
+    row('cat1','天干', `<b>${r.m24.m}</b> · ${tg.name||''} <span style="color:var(--fg-faint)">· ${tg.yinyang||''} ${tg.element||''}</span>`, tg.score, tg.general, tg.home);
+  }
+  /* 三盤 */
+  if(L.three_plates?.plates?.['地盤']){
+    const pl=L.three_plates.plates['地盤'];
+    row('cat1','三盤', `<b>地盤</b> · ${pl.name||''}`, null, pl.general, pl.home);
+  }
+  /* 天池 */
+  if(L.sky_pool?.interpretation){
+    const sp=L.sky_pool.interpretation;
+    row('cat1','天池', `<b>บ่อฟ้า</b> · เข็มแม่เหล็ก`, null, sp.general, sp.home);
+  }
+
+  /* === หมวด 3 ศาสตร์เสริม === */
+  /* 28宿 */
+  if(L.stars_28?.groups){
+    let s28=null, gname='';
+    for(const g of Object.values(L.stars_28.groups)){
+      if(g.stars && g.stars[r.m28]){ s28 = g.stars[r.m28]; gname = g.name || ''; break; }
+    }
+    if(s28) row('cat3','28宿', `<b>${r.m28}</b> · ${s28.name||''} <span style="color:var(--fg-faint)">(${gname})</span>`, s28.score, s28.general, s28.home);
+  }
+  /* 24節氣 */
+  const jq = L.solar_terms_24?.terms?.[r.jq];
+  if(jq) row('cat3','24節氣', `<b>${r.jq}</b> · ${jq.name||''}`, jq.score, jq.general, jq.home);
+  /* 60甲子 */
+  if(L.jiazi_60_earth?.nayin_elements){
+    const pairs=Object.keys(L.jiazi_60_earth.nayin_elements);
+    const dz60idx = Math.floor(deg/6) % 60;
+    const pairIdx = Math.floor(dz60idx/2);
+    const pairKey = pairs[pairIdx];
+    const ny = pairKey ? L.jiazi_60_earth.nayin_elements[pairKey] : null;
+    if(ny) row('cat3','60甲子', `<b>${pairKey}</b> · ${ny.nayin||''} ${ny.meaning||''}`, ny.score, ny.general, ny.home);
+  }
+  /* 透地72龍 */
+  if(L.dragon_72?.interpretation){
+    const dg=L.dragon_72.interpretation;
+    row('cat3','透地72龍', `<b>72 มังกรทะลุดิน</b> · ใต้ทิศ ${r.m24.c}`, null, dg.general, dg.home);
+  }
+  /* 穿山60龍 */
+  if(L.mountain_dragon_60?.interpretation){
+    const md=L.mountain_dragon_60.interpretation;
+    row('cat3','穿山60龍', `<b>60 มังกรเจาะภู</b> · หลังทิศ ${r.m24.c}`, null, md.general, md.home);
+  }
+
+  /* === คำเตือน (太歲/歲破/三煞) === */
+  if(r.dir8==='S') row('warn','警示', `<b>太歲</b> · ตำแหน่งไท่ซุ่ย (ห้ามรบกวน)`, 1, 'มุมนี้คือ太歲ของปี · ห้ามขุดเจาะ ตอกตะปู ซ่อมใหญ่', 'หลีกเลี่ยงเปิดประตูบ่อยที่ทิศนี้ · ห้ามวางเตา/ห้องนอนใหม่');
+  if(r.dir8==='N') row('warn','警示', `<b>歲破/三煞</b> · ตรงข้ามไท่ซุ่ย + ที่ตั้งสามชะ`, 1, 'ทิศตรงข้ามไท่ซุ่ย + สามชะรวมกัน · พลังถอย', 'เลี่ยงงานใหญ่ที่ทิศนี้ · ใช้เก็บของได้');
+
+  /* === Render เป็น 4 หมวด + warn === */
+  const catMeta = [
+    {k:'cat1', tag:'หมวด 1', name:'โครงสร้างพื้นฐาน · ฐานราก', sub:'จับทิศ · ระบุตำแหน่ง'},
+    {k:'cat2', tag:'หมวด 2', name:'ศาสตร์หลัก · แกนกลาง', sub:'ดี-ร้ายของทิศบ้าน'},
+    {k:'cat3', tag:'หมวด 3', name:'ศาสตร์เสริม · ละเอียด', sub:'มืออาชีพ'},
+    {k:'cat4', tag:'หมวด 4', name:'ศาสตร์คำนวณ · เปลี่ยนตามเวลา', sub:currentTimingKey==='era'?'เปลี่ยน filter เวลา':''},
+    {k:'warn', tag:'⚠ เตือน', name:'ดาวต้องเลี่ยง', sub:'ไม่ทำ ไม่แตะ', cls:'cat-warn'}
+  ];
+  const sectionHtml = catMeta.filter(c => groups[c.k].length).map(c =>
+    `<div class="insp-cat ${c.cls||''}"><div class="insp-cat-head"><span class="cat-tag">${c.tag}</span><h5>${c.name}</h5>${c.sub?`<span class="cat-sub">${c.sub}</span>`:''}</div>${groups[c.k].join('')}</div>`
+  ).join('');
+  document.getElementById('ringList').innerHTML = sectionHtml;
+
+  /* bind toggle */
+  document.querySelectorAll('#ringList .ring-row .rr-toggle, #ringList .ring-row .rr-head').forEach(el => {
+    el.onclick = () => el.closest('.ring-row').classList.toggle('open');
+  });
+
+  /* consensus */
+  const total = scores.length;
+  const sum = scores.reduce((a,b)=>a+b,0);
+  const avg = total ? (sum/total) : 0;
+  const badge = document.getElementById('iConsensus');
+  badge.textContent = total ? `${avg.toFixed(1)}/5` : '—';
+  badge.className = avg>=4?'badge green':avg>=3?'badge gold':'badge red';
+}
+
+/* ============== House Setup (Facing + Period) ============== */
+const M24 = [
+  {c:'N1',m:'壬',p:'Rén',el:'น้ำ',cn:0,s:337.5,e:352.5},
+  {c:'N2',m:'子',p:'Zǐ',el:'น้ำ',cn:0,s:352.5,e:7.5},
+  {c:'N3',m:'癸',p:'Guǐ',el:'น้ำ',cn:0,s:7.5,e:22.5},
+  {c:'NE1',m:'丑',p:'Chǒu',el:'ดิน',cn:45,s:22.5,e:37.5},
+  {c:'NE2',m:'艮',p:'Gèn',el:'ดิน',cn:45,s:37.5,e:52.5},
+  {c:'NE3',m:'寅',p:'Yín',el:'ไม้',cn:45,s:52.5,e:67.5},
+  {c:'E1',m:'甲',p:'Jiǎ',el:'ไม้',cn:90,s:67.5,e:82.5},
+  {c:'E2',m:'卯',p:'Mǎo',el:'ไม้',cn:90,s:82.5,e:97.5},
+  {c:'E3',m:'乙',p:'Yǐ',el:'ไม้',cn:90,s:97.5,e:112.5},
+  {c:'SE1',m:'辰',p:'Chén',el:'ดิน',cn:135,s:112.5,e:127.5},
+  {c:'SE2',m:'巽',p:'Xùn',el:'ไม้',cn:135,s:127.5,e:142.5},
+  {c:'SE3',m:'巳',p:'Sì',el:'ไฟ',cn:135,s:142.5,e:157.5},
+  {c:'S1',m:'丙',p:'Bǐng',el:'ไฟ',cn:180,s:157.5,e:172.5},
+  {c:'S2',m:'午',p:'Wǔ',el:'ไฟ',cn:180,s:172.5,e:187.5},
+  {c:'S3',m:'丁',p:'Dīng',el:'ไฟ',cn:180,s:187.5,e:202.5},
+  {c:'SW1',m:'未',p:'Wèi',el:'ดิน',cn:225,s:202.5,e:217.5},
+  {c:'SW2',m:'坤',p:'Kūn',el:'ดิน',cn:225,s:217.5,e:232.5},
+  {c:'SW3',m:'申',p:'Shēn',el:'ทอง',cn:225,s:232.5,e:247.5},
+  {c:'W1',m:'庚',p:'Gēng',el:'ทอง',cn:270,s:247.5,e:262.5},
+  {c:'W2',m:'酉',p:'Yǒu',el:'ทอง',cn:270,s:262.5,e:277.5},
+  {c:'W3',m:'辛',p:'Xīn',el:'ทอง',cn:270,s:277.5,e:292.5},
+  {c:'NW1',m:'戌',p:'Xū',el:'ดิน',cn:315,s:292.5,e:307.5},
+  {c:'NW2',m:'乾',p:'Qián',el:'ทอง',cn:315,s:307.5,e:322.5},
+  {c:'NW3',m:'亥',p:'Hài',el:'น้ำ',cn:315,s:322.5,e:337.5}
+];
+function degToMountain(d){
+  const n = ((d % 360) + 360) % 360;
+  return M24.find(m => (m.s <= m.e ? (n >= m.s && n < m.e) : (n >= m.s || n < m.e))) || M24[13];
+}
+/* 9 ยุค · period 1 = 1864-1883, ..., period 9 = 2024-2043 */
+function yearToPeriod(y){
+  const Y = Number(y) || 2026;
+  const startBase = 1864; /* period 1 start */
+  const idx = Math.floor((Y - startBase) / 20);
+  const n = ((idx % 9) + 9) % 9 + 1;
+  const sY = startBase + (Math.floor((Y - startBase) / 20)) * 20;
+  return { n, start:sY, end:sY + 19 };
+}
+
+const $hName = document.getElementById('hName');
+const $hFacing = document.getElementById('hFacing');
+const $hYear = document.getElementById('hYear');
+const $hMountain = document.getElementById('hMountain');
+const $hPeriod = document.getElementById('hPeriod');
+const $houseStatus = document.getElementById('houseStatus');
+
+function updateHouseReadout(){
+  const d = Number($hFacing.value);
+  const m = degToMountain(d);
+  $hMountain.textContent = `${m.c} · ${m.m} ${m.p} · ${m.el} · ${m.s}-${m.e}`;
+  const y = Number($hYear.value);
+  const p = yearToPeriod(y);
+  $hPeriod.textContent = `${p.n} · Feb ${p.start} - Feb ${p.end + 1}`;
+}
+[$hFacing, $hYear, $hName].forEach(el => el.addEventListener('input', updateHouseReadout));
+
+/* ============== Lock / Unlock ============== */
+let houseLocked = false;
+let lockedFacing = 180, lockedYear = 2026, lockedPeriod = 9;
+function applyLock(){
+  const d = Number($hFacing.value);
+  const y = Number($hYear.value);
+  const p = yearToPeriod(y);
+  lockedFacing = d; lockedYear = y; lockedPeriod = p.n;
+  /* หมุนวงให้ degree บ้านมาตรง FACING (ด้านบน) */
+  const dialRot = -d;
+  dial.setAttribute('transform', `rotate(${dialRot} 380 380)`);
+  houseLocked = true;
+  [$hName,$hFacing,$hYear].forEach(el => el.disabled = true);
+  document.getElementById('btnLock').textContent = '🔒 ' + ($hName.value || 'บ้าน') + ' · ล็อกแล้ว';
+  document.getElementById('lockStatus').className = 'lock-status locked';
+  document.getElementById('lockStatus').innerHTML = `<span>🔒 <b>${$hName.value || 'บ้าน'}</b> · ${degToMountain(d).c} ${degToMountain(d).m} · ${d}° · ยุค ${p.n}</span><span style="margin-left:auto;color:var(--fg-soft)">หมุนเข็มทอง CURSOR เพื่อสำรวจ →</span>`;
+  document.getElementById('tPeriod').textContent = p.n;
+  $houseStatus.textContent = `ล็อกแล้ว · ${degToMountain(d).c} · period ${p.n}`;
+  updateCastleGate(); /* คำนวณก่อน · เพื่อให้ updateInspector ใน setCursor เห็น castleGateResult */
+  setCursor(d); /* เริ่มเข็มที่ทิศหันหน้า · trigger updateInspector */
+}
+function applyUnlock(){
+  houseLocked = false;
+  [$hName,$hFacing,$hYear].forEach(el => el.disabled = false);
+  document.getElementById('btnLock').textContent = '🔒 ล็อกบ้าน · เริ่มสำรวจ';
+  document.getElementById('lockStatus').className = 'lock-status';
+  document.getElementById('lockStatus').innerHTML = `<span>🏠 ยังไม่ล็อกบ้าน · กรอกข้อมูลซ้ายแล้วกดล็อก</span>`;
+  $houseStatus.textContent = 'ปลดล็อกแล้ว · กดล็อกใหม่เมื่อพร้อม';
+  updateCastleGate();
+}
+document.getElementById('btnLock').addEventListener('click', applyLock);
+document.getElementById('btnUnlock').addEventListener('click', applyUnlock);
+
+/* localStorage save/load */
+const LS_KEY = 'luopan-house-v1';
+document.getElementById('btnSave').addEventListener('click', () => {
+  const data = { name:$hName.value, facing:$hFacing.value, year:$hYear.value, ts:Date.now() };
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); $houseStatus.textContent = `บันทึกแล้ว · ${new Date().toLocaleTimeString()}`; }
+  catch(e){ $houseStatus.textContent = 'บันทึกไม่สำเร็จ: ' + e.message; }
+});
+document.getElementById('btnLoad').addEventListener('click', () => {
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw){ $houseStatus.textContent = 'ยังไม่มีข้อมูลบันทึก'; return; }
+    const d = JSON.parse(raw);
+    $hName.value = d.name || ''; $hFacing.value = d.facing || 180; $hYear.value = d.year || 2026;
+    updateHouseReadout();
+    $houseStatus.textContent = `โหลดแล้ว · บันทึกเมื่อ ${new Date(d.ts).toLocaleString()}`;
+  } catch(e){ $houseStatus.textContent = 'โหลดไม่สำเร็จ: ' + e.message; }
+});
+
+/* auto-load ตอนเริ่ม */
+try{
+  const raw = localStorage.getItem(LS_KEY);
+  if(raw){ const d = JSON.parse(raw); $hName.value = d.name || ''; $hFacing.value = d.facing || 180; $hYear.value = d.year || 2026; }
+} catch(e){}
+updateHouseReadout();
+
+/* ============== Image tools ============== */
+document.getElementById('imgCenter').addEventListener('click', () => {
+  planImgRot = 0;
+  document.getElementById('imgRot').value = 0;
+  document.getElementById('vImgRot').textContent = '0°';
+  drawPlan();
+});
+document.getElementById('imgRotL').addEventListener('click', () => {
+  planImgRot = ((planImgRot - 90) % 360 + 360) % 360;
+  document.getElementById('imgRot').value = planImgRot;
+  document.getElementById('vImgRot').textContent = planImgRot + '°';
+  drawPlan();
+});
+document.getElementById('imgRotR').addEventListener('click', () => {
+  planImgRot = (planImgRot + 90) % 360;
+  document.getElementById('imgRot').value = planImgRot;
+  document.getElementById('vImgRot').textContent = planImgRot + '°';
+  drawPlan();
+});
+document.getElementById('imgClear').addEventListener('click', () => {
+  planImg = null; planImgRot = 0;
+  document.getElementById('fileIn').value = '';
+  document.getElementById('imgRot').value = 0;
+  document.getElementById('vImgRot').textContent = '0°';
+  drawPlan();
+});
+
+/* ============== Initial build + apply (LAST · กัน TDZ) ============== */
+window.addEventListener('error', e => {
+  const b = document.getElementById('errBanner');
+  if(b){ b.style.display='block'; b.textContent = '⚠ JS Error: ' + (e.message || e) + (e.filename?` · ${e.filename}:${e.lineno}`:''); }
+});
+try {
+  rebuildLuopan();
+  applyTiming('era');
+  setCursor(180);
+  drawPlan();
+  const t = document.getElementById('buildTag');
+  if(t) t.textContent = 'build ' + new Date().toISOString().slice(11,19) + ' · OK';
+} catch(e) {
+  const b = document.getElementById('errBanner');
+  if(b){ b.style.display='block'; b.textContent = '⚠ Init error: ' + e.message + ' @ ' + (e.stack||'').split('\n').slice(0,3).join(' | '); }
+  console.error('init failed:', e);
+}
+</script>
+</body>
+</html>

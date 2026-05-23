@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<title>Fengshui upload illustration · preview</title>
+<style>
+  :root{
+    --bg:#0d0f12; --panel:#15181d; --line:rgba(200,164,77,.22);
+    --gold:#c8a44d; --gold-bright:#ffd97a; --gold-soft:#a07f3a;
+    --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.62); --fg-faint:rgba(246,241,230,.38);
+    --water:#7a85dd; --wood:#78b980; --fire:#e06c6c; --earth:#d4ab45; --metal:#b8b8c2;
+    --mono:'JetBrains Mono','SF Mono',monospace;
+    --tc:'Noto Serif TC',serif;
+    --th:'Noto Serif Thai',serif;
+  }
+  html[data-theme="light"]{
+    --bg:#f4ede0; --panel:#fbf6ea; --line:rgba(160,127,58,.32);
+    --gold:#a07f3a; --gold-bright:#7a5e21; --gold-soft:#8a6a2a;
+    --fg:#2a221b; --fg-soft:rgba(42,34,27,.7); --fg-faint:rgba(42,34,27,.42);
+  }
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--th),sans-serif;padding:40px;display:grid;gap:30px;place-items:center;}
+  .demo{width:min(720px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:32px;}
+  .demo h3{margin:0 0 16px;font-family:var(--tc);font-weight:600;color:var(--gold-bright);letter-spacing:.04em;}
+  .stage{aspect-ratio:3/2;border:1.5px dashed var(--line);border-radius:14px;display:grid;place-items:center;position:relative;overflow:hidden;cursor:pointer;transition:.3s;}
+  .stage:hover{border-color:var(--gold);box-shadow:0 0 40px rgba(200,164,77,.18) inset;}
+  .stage svg{width:min(380px,80%);height:auto;}
+  .stage-text{position:absolute;bottom:24px;left:0;right:0;text-align:center;font-size:13px;color:var(--fg-soft);letter-spacing:.02em;}
+  .stage-text b{display:block;color:var(--gold-bright);font-family:var(--tc);font-size:15px;margin-bottom:4px;letter-spacing:.05em;}
+  .toggle{position:fixed;top:16px;right:16px;background:var(--panel);color:var(--fg);border:1px solid var(--line);padding:8px 14px;border-radius:99px;cursor:pointer;font-family:var(--mono);font-size:12px;}
+</style>
+</head>
+<body>
+<button class="toggle" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light'">⇆ THEME</button>
+
+<div class="demo">
+  <h3>平面圖 · UPLOAD EMPTY STATE · variant A — 羅盤 isometric</h3>
+  <div class="stage">
+    <svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="glow-a" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stop-color="var(--gold)" stop-opacity=".22"/>
+          <stop offset="65%" stop-color="var(--gold)" stop-opacity=".05"/>
+          <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="floor-a" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="var(--gold-bright)" stop-opacity=".18"/>
+          <stop offset="100%" stop-color="var(--gold)" stop-opacity=".05"/>
+        </linearGradient>
+        <filter id="soft-a"><feGaussianBlur stdDeviation=".6"/></filter>
+      </defs>
+
+      <circle cx="200" cy="140" r="130" fill="url(#glow-a)"/>
+
+      <!-- isometric floor plan footprint -->
+      <g transform="translate(200 158)" opacity=".95">
+        <polygon points="-90,-10 0,-50 90,-10 0,30" fill="url(#floor-a)" stroke="var(--gold)" stroke-width="1.4"/>
+        <line x1="-45" y1="-30" x2="45" y2="10" stroke="var(--gold-soft)" stroke-width=".8" stroke-dasharray="3 3"/>
+        <line x1="0" y1="-50" x2="0" y2="30" stroke="var(--gold-soft)" stroke-width=".8" stroke-dasharray="3 3"/>
+        <polygon points="-20,-30 -10,-25 -10,-15 -20,-20" fill="var(--gold)" opacity=".5"/>
+        <polygon points="15,-10 25,-5 25,5 15,0" fill="var(--gold)" opacity=".35"/>
+      </g>
+
+      <!-- 羅盤 ring above plan -->
+      <g transform="translate(200 110)">
+        <circle r="58" fill="none" stroke="var(--gold)" stroke-width="1.2"/>
+        <circle r="46" fill="none" stroke="var(--gold-soft)" stroke-width=".6" stroke-dasharray="2 4"/>
+        <circle r="32" fill="var(--bg)" opacity=".6"/>
+        <!-- 24 mountain ticks -->
+        <g stroke="var(--gold)" stroke-width=".8">
+          <g opacity=".95">
+            <line x1="0" y1="-58" x2="0" y2="-48"/>
+            <line x1="0" y1="58" x2="0" y2="48"/>
+            <line x1="-58" y1="0" x2="-48" y2="0"/>
+            <line x1="58" y1="0" x2="48" y2="0"/>
+          </g>
+          <g opacity=".55">
+            <line x1="41" y1="-41" x2="34" y2="-34"/>
+            <line x1="-41" y1="-41" x2="-34" y2="-34"/>
+            <line x1="41" y1="41" x2="34" y2="34"/>
+            <line x1="-41" y1="41" x2="-34" y2="34"/>
+          </g>
+          <g opacity=".3" stroke-width=".5">
+            <line x1="15" y1="-56" x2="13" y2="-48"/>
+            <line x1="-15" y1="-56" x2="-13" y2="-48"/>
+            <line x1="29" y1="-50" x2="25" y2="-43"/>
+            <line x1="-29" y1="-50" x2="-25" y2="-43"/>
+            <line x1="50" y1="-29" x2="43" y2="-25"/>
+            <line x1="-50" y1="-29" x2="-43" y2="-25"/>
+            <line x1="56" y1="-15" x2="48" y2="-13"/>
+            <line x1="-56" y1="-15" x2="-48" y2="-13"/>
+            <line x1="15" y1="56" x2="13" y2="48"/>
+            <line x1="-15" y1="56" x2="-13" y2="48"/>
+            <line x1="29" y1="50" x2="25" y2="43"/>
+            <line x1="-29" y1="50" x2="-25" y2="43"/>
+            <line x1="50" y1="29" x2="43" y2="25"/>
+            <line x1="-50" y1="29" x2="-43" y2="25"/>
+            <line x1="56" y1="15" x2="48" y2="13"/>
+            <line x1="-56" y1="15" x2="-48" y2="13"/>
+          </g>
+        </g>
+        <!-- cardinal labels -->
+        <text x="0" y="-64" text-anchor="middle" font-family="var(--tc)" font-size="11" font-weight="700" fill="var(--fire)" opacity=".95">離</text>
+        <text x="0" y="74" text-anchor="middle" font-family="var(--tc)" font-size="11" font-weight="700" fill="var(--water)" opacity=".95">坎</text>
+        <text x="-66" y="4" text-anchor="middle" font-family="var(--tc)" font-size="11" font-weight="700" fill="var(--wood)" opacity=".95">震</text>
+        <text x="66" y="4" text-anchor="middle" font-family="var(--tc)" font-size="11" font-weight="700" fill="var(--metal)" opacity=".95">兌</text>
+        <!-- 中 -->
+        <text x="0" y="5" text-anchor="middle" font-family="var(--tc)" font-size="18" font-weight="700" fill="var(--gold-bright)">中</text>
+        <!-- pointer needle -->
+        <g filter="url(#soft-a)">
+          <polygon points="0,-44 -3.5,0 0,3 3.5,0" fill="var(--fire)" opacity=".88"/>
+          <polygon points="0,44 -3.5,0 0,-3 3.5,0" fill="var(--gold)" opacity=".6"/>
+        </g>
+        <circle r="2.5" fill="var(--gold-bright)"/>
+      </g>
+
+      <!-- upload arrow -->
+      <g transform="translate(200 230)">
+        <circle r="14" fill="var(--bg)" stroke="var(--gold)" stroke-width="1.2" opacity=".9"/>
+        <path d="M0,-6 L0,6 M-5,-1 L0,-6 L5,-1" stroke="var(--gold-bright)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <!-- floating sparkles -->
+      <g fill="var(--gold-bright)" opacity=".55">
+        <circle cx="80" cy="60" r="1.4"/>
+        <circle cx="320" cy="50" r="1.1"/>
+        <circle cx="60" cy="200" r="1.2"/>
+        <circle cx="340" cy="210" r="1.5"/>
+        <circle cx="120" cy="40" r="1"/>
+      </g>
+    </svg>
+
+    <div class="stage-text">
+      <b>上傳平面圖 · อัพแปลนบ้าน</b>
+      ลากรูป screenshot จากมือถือ หรือคลิกเพื่ออัพโหลด · ระบบจะวาง 24山 + 64卦 ทับให้
+    </div>
+  </div>
+</div>
+
+<div class="demo">
+  <h3>平面圖 · UPLOAD EMPTY STATE · variant B — 64卦 ring + flying qi</h3>
+  <div class="stage">
+    <svg viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="glow-b" cx="50%" cy="50%" r="60%">
+          <stop offset="0%" stop-color="var(--gold)" stop-opacity=".25"/>
+          <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="blur-b"><feGaussianBlur stdDeviation="1.2"/></filter>
+      </defs>
+
+      <circle cx="200" cy="140" r="130" fill="url(#glow-b)"/>
+
+      <!-- 64 hex ticks outer ring -->
+      <g transform="translate(200 140)" stroke="var(--gold)" opacity=".75">
+        <g id="ticks-b"></g>
+      </g>
+      <script><![CDATA[]]></script>
+
+      <!-- inner 8 trigram bagua -->
+      <g transform="translate(200 140)">
+        <circle r="78" fill="none" stroke="var(--gold)" stroke-width=".8" opacity=".5"/>
+        <circle r="62" fill="none" stroke="var(--gold-soft)" stroke-width=".5" stroke-dasharray="1 3"/>
+
+        <!-- 8 trigrams -->
+        <g font-family="var(--tc)" font-size="13" font-weight="700" text-anchor="middle">
+          <text x="0" y="-66" fill="var(--fire)">離</text>
+          <text x="47" y="-44" fill="var(--earth)">坤</text>
+          <text x="70" y="4" fill="var(--metal)">兌</text>
+          <text x="47" y="52" fill="var(--metal)" opacity=".8">乾</text>
+          <text x="0" y="74" fill="var(--water)">坎</text>
+          <text x="-47" y="52" fill="var(--earth)" opacity=".8">艮</text>
+          <text x="-70" y="4" fill="var(--wood)">震</text>
+          <text x="-47" y="-44" fill="var(--wood)" opacity=".8">巽</text>
+        </g>
+
+        <!-- center taiji -->
+        <g>
+          <circle r="22" fill="var(--bg)" stroke="var(--gold)" stroke-width="1"/>
+          <path d="M0,-22 A11,11 0 0,1 0,0 A11,11 0 0,0 0,22 A22,22 0 0,1 0,-22 Z" fill="var(--gold-bright)" opacity=".88"/>
+          <circle cx="0" cy="-11" r="2.4" fill="var(--bg)"/>
+          <circle cx="0" cy="11" r="2.4" fill="var(--gold-bright)"/>
+        </g>
+
+        <!-- flying qi line (spiral) -->
+        <path d="M0,0 Q40,-30 80,-10 T140,30" fill="none" stroke="var(--gold-bright)" stroke-width="1.2" opacity=".55" filter="url(#blur-b)" stroke-dasharray="3 5"/>
+      </g>
+
+      <!-- corner brackets · floor plan hint -->
+      <g stroke="var(--gold)" stroke-width="1.4" fill="none" opacity=".85">
+        <path d="M40,40 L40,60 M40,40 L60,40"/>
+        <path d="M360,40 L360,60 M360,40 L340,40"/>
+        <path d="M40,240 L40,220 M40,240 L60,240"/>
+        <path d="M360,240 L360,220 M360,240 L340,240"/>
+      </g>
+
+      <!-- upload arrow with hex frame -->
+      <g transform="translate(200 240)">
+        <polygon points="-12,-7 -12,7 0,14 12,7 12,-7 0,-14" fill="var(--bg)" stroke="var(--gold)" stroke-width="1.2"/>
+        <path d="M0,-6 L0,6 M-5,-1 L0,-6 L5,-1" stroke="var(--gold-bright)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </svg>
+
+    <div class="stage-text">
+      <b>平面圖 · วางแปลนเข้าวง</b>
+      อัพรูปแปลน → ลากจุดกลาง 中 → วง 24山 / 64卦 จะทับให้อัตโนมัติ
+    </div>
+  </div>
+</div>
+
+<script>
+// build 64 hex ticks for variant B
+(function(){
+  const ticks = document.querySelector('#ticks-b');
+  if(!ticks) return;
+  const ns = 'http://www.w3.org/2000/svg';
+  for(let i=0; i<64; i++){
+    const ang = (i * 5.625 - 90) * Math.PI / 180;
+    const r1 = 102, r2 = (i % 8 === 0) ? 88 : (i % 4 === 0) ? 92 : 96;
+    const l = document.createElementNS(ns, 'line');
+    l.setAttribute('x1', (Math.cos(ang)*r1).toFixed(2));
+    l.setAttribute('y1', (Math.sin(ang)*r1).toFixed(2));
+    l.setAttribute('x2', (Math.cos(ang)*r2).toFixed(2));
+    l.setAttribute('y2', (Math.sin(ang)*r2).toFixed(2));
+    l.setAttribute('stroke-width', i % 8 === 0 ? 1.4 : i % 4 === 0 ? .9 : .5);
+    l.setAttribute('opacity', i % 8 === 0 ? .95 : i % 4 === 0 ? .65 : .35);
+    ticks.appendChild(l);
+  }
+})();
+</script>
+
+</body>
+</html>
