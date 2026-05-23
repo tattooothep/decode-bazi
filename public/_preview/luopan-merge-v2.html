@@ -860,7 +860,7 @@ function r_tianpan() {
   const r1 = 208, r2 = 220;
   let g = ring(r2, `stroke="${GOLD_DIM}" stroke-width=".5"`);
   D.MOUNTAINS_24.forEach((m, i) => {
-    const center = 345 + i * 15 - 7.5; // -7.5° offset
+    const center = 345 + i * 15 + 7.5; // +7.5° 天盤縫針 順針 (ดู納水)
     const cDeg = ((center % 360) + 360) % 360;
     const d1 = cDeg - 7.5;
     g += brd(r1, r2, d1, `stroke="${HAIR}" stroke-width=".4"`);
@@ -892,7 +892,7 @@ function r_renpan() {
   const r1 = 244, r2 = 256;
   let g = ring(r2, `stroke="${GOLD_DIM}" stroke-width=".5"`);
   D.MOUNTAINS_24.forEach((m, i) => {
-    const center = 345 + i * 15 + 7.5; // +7.5° offset
+    const center = 345 + i * 15 - 7.5; // -7.5° 人盤中針 逆針 (ดู撥砂)
     const cDeg = ((center % 360) + 360) % 360;
     const d1 = cDeg - 7.5;
     g += brd(r1, r2, d1, `stroke="${HAIR}" stroke-width=".4"`);
@@ -1811,7 +1811,8 @@ function getRingDataAt(deg){
   const m24idx = Math.floor(((deg - 337.5 + 360) % 360) / 15) % 24;
   const m24 = m24data[m24idx];
   /* 64 卦 — sync กับ render (圓圖 Shao Yong · D.HEXAGRAMS_64 · 復@0°) */
-  const h64idx = Math.floor((((deg%360)+360)%360)/5.625)%64;
+  /* +2.8125 (ครึ่งช่อง) เพราะ render วาง 復 คร่อม 0° (center=i*5.625) · floor เดิมเลื่อนครึ่งช่อง */
+  const h64idx = Math.floor((((deg+2.8125)%360+360)%360)/5.625)%64;
   const h64char = LUOPAN.HEXAGRAMS_64[h64idx];
   const h64num = KING_WEN_NUM[h64char] || 0;
   /* 28宿 — sync กับ render: center=90+(3-i)*seg (ทวนเข็ม) → กลับสูตร engine */
@@ -2027,7 +2028,8 @@ function updateInspector(){
   /* 60甲子 */
   if(L.jiazi_60_earth?.nayin_elements){
     const pairs=Object.keys(L.jiazi_60_earth.nayin_elements);
-    const dz60idx = Math.floor(deg/6) % 60;
+    /* +3 (ครึ่งช่อง) เพราะ render วาง 甲子 คร่อม 0° (center=i*6) */
+    const dz60idx = Math.floor(((deg+3)%360+360)%360/6) % 60;
     const pairIdx = Math.floor(dz60idx/2);
     const pairKey = pairs[pairIdx];
     const ny = pairKey ? L.jiazi_60_earth.nayin_elements[pairKey] : null;
