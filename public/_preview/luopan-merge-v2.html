@@ -137,6 +137,9 @@
   .gate-label-primary{fill:#a9e1ad;font-family:var(--tc);font-size:11px;font-weight:700;}
   .gate-label-secondary{fill:#7cc4ff;font-family:var(--tc);font-size:11px;font-weight:700;}
   .gate-label-danger{fill:#ff8a7a;font-family:var(--tc);font-size:10px;font-weight:700;}
+  /* ไม่เกิด城門 (ปกติ ไม่ร้าย) — เทากลาง · ต่างจาก danger ชัด */
+  .gate-neutral{fill:rgba(150,150,150,.14);stroke:rgba(160,160,160,.5);stroke-width:1.2;stroke-dasharray:3 4;}
+  .gate-label-neutral{fill:#b0b0b0;font-family:var(--th);font-size:9px;font-weight:600;}
   /* pin tool */
   .pin-toolbar{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;padding:8px;background:var(--bg);border:1px solid var(--line);border-radius:8px;}
   .pin-toolbar .btn{font-size:12px;padding:4px 8px;}
@@ -1693,14 +1696,20 @@ function renderCastleGateOverlay(){
   [castleGateResult.candidates.left, castleGateResult.candidates.right].forEach(c => {
     const m = c.mountain;
     const start = m.start, end = m.end;
-    let cls = 'gate-warning', labelCls = 'gate-label-danger', labelText = '無';
-    if(c.type==='正城門'){ cls='gate-primary'; labelCls='gate-label-primary'; labelText='正城門'; }
-    else if(c.type==='副城門'){ cls='gate-secondary'; labelCls='gate-label-secondary'; labelText='副城門'; }
-    else if(c.severity==='danger'){ cls='gate-danger'; labelCls='gate-label-danger'; labelText='⚠ ไม่ใช้'; }
-    wedge(start, end, cls);
+    const ov = getCastleGateOverlayLabel(c);
+    wedge(start, end, ov.wedgeCls);
     const mid = m.start < m.end ? (m.start+m.end)/2 : cgNormDeg((m.start+m.end+360)/2);
-    label(mid, labelText, labelCls);
+    label(mid, ov.label, ov.labelCls);
   });
+}
+
+/* แยก 2 กรณี "ไม่ใช่城門" ให้ชัด: ร้าย(2/5)=เลี่ยง vs ปกติ=ไม่เกิด城門 */
+function getCastleGateOverlayLabel(gate){
+  const hasDanger = [2,5].includes(gate.gateWaterStar) || [2,5].includes(gate.arrivedStar);
+  if(hasDanger) return { label:'⚠ ห้ามเปิด · 凶', wedgeCls:'gate-danger', labelCls:'gate-label-danger' };
+  if(gate.type==='正城門') return { label:'正城門', wedgeCls:'gate-primary', labelCls:'gate-label-primary' };
+  if(gate.type==='副城門') return { label:'副城門', wedgeCls:'gate-secondary', labelCls:'gate-label-secondary' };
+  return { label:'ไม่เกิด城門', wedgeCls:'gate-neutral', labelCls:'gate-label-neutral' };
 }
 
 function updateCastleGate(){
