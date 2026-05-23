@@ -1161,6 +1161,8 @@ function buildLuopan() {
 
       ${r_rim()}
 
+      <!-- กลุ่มหมุนตามทิศบ้าน (rings+overlays+pins) · ล็อกแล้ว facing ขึ้นบน · เข็ม/บ่อ/ป้าย อยู่นอกกลุ่ม (ตรึง) -->
+      <g id="lpRotate" transform="rotate(0 380 380)">
       <!-- translucent sector tints under all rings -->
       <g id="sector-tints">${r_sectorTints()}</g>
 
@@ -1193,6 +1195,7 @@ function buildLuopan() {
       <g id="rZL" style="display:none"></g>
       <!-- Pin layer (door/bed/stove/water/desk) -->
       <g id="pinLayer"></g>
+      </g><!-- /lpRotate -->
 
       ${r_pool()}
       ${r_needle()}
@@ -1399,11 +1402,18 @@ try{
 }catch(e){}
 /* CURSOR needle = เข็มสำรวจที่หมุนรอบกลาง · อ่านทิศที่ชี้ */
 let cursorDeg = 180;
+/* ล็อกบ้าน → วง (lpRotate) หมุน -facing ให้ทิศหันหน้าขึ้นบน · เข็ม CURSOR (screen) ตรึงนอกกลุ่ม
+ * ทิศจริงบนวง = มุมเข็ม(screen) + facing · ก่อนล็อก = ตรง (วงไม่หมุน) */
+function ringRotation(){ return houseLocked ? lockedFacing : 0; }
+function applyDialRotation(){
+  const lr = document.getElementById('lpRotate');
+  if(lr) lr.setAttribute('transform', `rotate(${-ringRotation()} 380 380)`);
+}
 function setCursor(d){
-  cursorDeg = ((Number(d) % 360) + 360) % 360;
+  cursorDeg = ((Number(d) % 360) + 360) % 360; /* มุมเข็มบนจอ (screen) */
   const cursorNeedle = document.getElementById('cursorNeedle');
   if(cursorNeedle) cursorNeedle.setAttribute('transform', `rotate(${cursorDeg} 380 380)`);
-  document.getElementById('vCursorRot').textContent = cursorDeg.toFixed(1) + '°';
+  document.getElementById('vCursorRot').textContent = getCursorRelativeDeg().toFixed(1) + '°'; /* แสดงทิศจริงบนวง */
   updateInspector();
 }
 document.getElementById('cursorRot').addEventListener('input', e => setCursor(e.target.value));
@@ -1456,7 +1466,9 @@ function addPin(ev){
   if(!pinMode) return;
   const {deg, dist} = svgPointToPolar(ev);
   if(dist > 380) return; /* คลิกนอกวง */
-  pins.push({ id: Date.now() + Math.random(), type: pinMode, deg, dist });
+  /* เก็บเป็นทิศจริงบนวง (ชดเชยการหมุนวงเมื่อล็อก) — pin จะ align กับวง+castle gate */
+  const ringDeg = ((deg + ringRotation()) % 360 + 360) % 360;
+  pins.push({ id: Date.now() + Math.random(), type: pinMode, deg: ringDeg, dist });
   savePins();
   renderPins();
   updateInspector(); /* refresh activate status */
@@ -1803,8 +1815,8 @@ fetch('/_preview/luopan_complete.json').then(r => r.json()).then(d => {
 }).catch(e => console.warn('luopan data load failed:', e));
 
 function getCursorRelativeDeg(){
-  /* ring คงที่ N บน · cursor degree = degree จริงบนวงโดยตรง */
-  return ((cursorDeg % 360) + 360) % 360;
+  /* ทิศจริงบนวง = มุมเข็ม(screen) + การหมุนวง (facing เมื่อล็อก) */
+  return ((cursorDeg + ringRotation()) % 360 + 360) % 360;
 }
 /* 3-tier rating helper */
 function rateStar(n){
@@ -2239,8 +2251,9 @@ function applyLock(){
   const y = Number($hYear.value);
   const p = yearToPeriod(y);
   lockedFacing = d; lockedYear = y; lockedPeriod = p.n;
-  /* ring คงที่ N บน (เหมือนหล่อแกจริง) · cursor needle จะชี้ทิศหันบ้าน */
+  /* ล็อก → วงหมุนให้ทิศหันหน้าขึ้นบน · เข็มแดง(บน)=หน้าบ้าน · เข็มทอง CURSOR หมุนสำรวจแยก */
   houseLocked = true;
+  applyDialRotation();
   [$hName,$hFacing,$hYear].forEach(el => el.disabled = true);
   document.getElementById('btnLock').textContent = '🔒 ' + ($hName.value || 'บ้าน') + ' · ล็อกแล้ว';
   document.getElementById('lockStatus').className = 'lock-status locked';
@@ -2248,10 +2261,12 @@ function applyLock(){
   document.getElementById('tPeriod').textContent = p.n;
   $houseStatus.textContent = `ล็อกแล้ว · ${degToMountain(d).c} · period ${p.n}`;
   updateCastleGate(); /* คำนวณก่อน · เพื่อให้ updateInspector ใน setCursor เห็น castleGateResult */
-  setCursor(d); /* เริ่มเข็มที่ทิศหันหน้า · trigger updateInspector */
+  setCursor(0); /* เข็มทองเริ่มชี้บน = หน้าบ้าน (วงหมุนแล้ว) · trigger updateInspector */
+  document.getElementById('cursorRot').value = 0;
 }
 function applyUnlock(){
   houseLocked = false;
+  applyDialRotation(); /* วงหมุนกลับ N บน */
   [$hName,$hFacing,$hYear].forEach(el => el.disabled = false);
   document.getElementById('btnLock').textContent = '🔒 ล็อกบ้าน · เริ่มสำรวจ';
   document.getElementById('lockStatus').className = 'lock-status';
