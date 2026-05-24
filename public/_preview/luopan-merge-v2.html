@@ -1544,8 +1544,8 @@ document.getElementById('imgOpa').addEventListener('input', e => {
 document.querySelectorAll('[data-r]').forEach(cb => cb.addEventListener('change', () => {
   const g = document.getElementById(cb.dataset.r);
   if(g) g.style.display = cb.checked ? '' : 'none';
-  /* 八宅/正神零神 — refresh การ์ดขวาเมื่อ toggle (เพราะผูก checkbox) */
-  if((cb.dataset.r==='r8Z'||cb.dataset.r==='rZL') && typeof updateInspector==='function') updateInspector();
+  /* ทุกศาสตร์ผูกการ์ด 3 → refresh inspector เมื่อ toggle filter */
+  if(typeof updateInspector==='function') updateInspector();
 }));
 function setAllLayers(check){
   document.querySelectorAll('input[data-r]').forEach(cb => {
@@ -1553,6 +1553,7 @@ function setAllLayers(check){
     const g = document.getElementById(cb.dataset.r);
     if(g) g.style.display = check ? '' : 'none';
   });
+  if(typeof updateInspector==='function') updateInspector();
 }
 document.getElementById('layerAll').addEventListener('click', () => setAllLayers(true));
 document.getElementById('layerNone').addEventListener('click', () => setAllLayers(false));
@@ -1569,6 +1570,7 @@ document.querySelectorAll('[data-cat]').forEach(btn => {
       const g = document.getElementById(cb.dataset.r);
       if(g) g.style.display = cb.checked ? '' : 'none';
     });
+    if(typeof updateInspector==='function') updateInspector();
   });
 });
 
@@ -1958,7 +1960,11 @@ function updateInspector(){
     '八宅':['แปดบ้านโป๊ยเต๊ก','八宅'],'正神零神':['เทพจริง-ศูนย์','正神零神'],
     '警示':['เตือน','警示']
   };
+  /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
+  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','64卦':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool'};
   function row(cat, han, head, score, general, home, rich){
+    const rid = HAN_RING[han];
+    if(rid){ const cb=document.querySelector('input[data-r="'+rid+'"]'); if(cb && !cb.checked) return; } /* ศาสตร์ถูกปิด filter */
     const cls = score ? scoreClass(score) : 's3';
     const scoreHtml = score ? `<span class="rn-score">${scoreLabel(score)}</span>` : '';
     if(score) scores.push(Number(score));
@@ -2033,6 +2039,8 @@ function updateInspector(){
     const sg = castleGateResult.secondaryGate;
     const YUAN_TH = {Earth:'地元', Heaven:'天元', Man:'人元'};
     const EL_TH = {水:'น้ำ', 木:'ไม้', 火:'ไฟ', 土:'ดิน', 金:'ทอง'};
+    /* 城門 โชว์เฉพาะเมื่อเข็มสำรวจ(cursor)หมุนมาถึงช่วงทิศประตูนั้น */
+    const cursorOnGate = (m)=> m.start<m.end ? (deg>=m.start && deg<m.end) : (deg>=m.start || deg<m.end);
     function dir8Of(deg){const a=((deg%360)+360)%360;return ['N','NE','E','SE','S','SW','W','NW'][Math.round(a/45)%8];}
     function gateActStatus(gate){
       const doorPins = (typeof pins!=='undefined') ? pins.filter(p => p.type==='door') : [];
@@ -2065,12 +2073,12 @@ function updateInspector(){
       if(!g.warnings || !g.warnings.length) return '';
       return g.warnings.map(w => `<div style="color:#ff8a7a">⚠ ${fsEsc(w)}</div>`).join('');
     }
-    if(pg){
+    if(pg && cursorOnGate(pg.mountain)){
       row('cat2','城門', `<b>${pg.mountain.name}</b> ${pg.mountain.code} · 正城門 · ${gateActStatus(pg)}`, 5,
           gateDetailHTML(pg),
           'เปิดประตูข้าง/ทางเข้ารองที่ทิศนี้ได้ · รับ qi ยุค ' + castleGateResult.period + ' โดยตรง · เหมาะกิจการ ค้าขาย เปิดร้าน', true);
     }
-    if(sg){
+    if(sg && cursorOnGate(sg.mountain)){
       row('cat2','城門', `<b>${sg.mountain.name}</b> ${sg.mountain.code} · 副城門 · ${gateActStatus(sg)}`, 4,
           gateDetailHTML(sg),
           'ใช้เป็นประตูสำรอง · รับ qi 生氣 (อนาคต) · เหมาะมิตรภาพ ความสัมพันธ์ โชค', true);
@@ -2078,6 +2086,7 @@ function updateInspector(){
     /* candidates ที่ไม่ใช่ทั้ง 正/副 → ใส่ warning */
     [castleGateResult.candidates.left, castleGateResult.candidates.right].forEach(c => {
       if(c.type==='正城門' || c.type==='副城門') return;
+      if(!cursorOnGate(c.mountain)) return;
       row('cat2','城門', `<b>${c.mountain.name}</b> ${c.mountain.code} · ⚠ ห้ามใช้`, 1,
           gateDetailHTML(c) + gateWarnHTML(c),
           'ห้ามเปิดเป็นประตูที่ทิศนี้ · เลี่ยงทำหน้าต่างใหญ่ · ใช้เป็นมุมเก็บของหรือกำแพงทึบ', true);
