@@ -1981,6 +1981,9 @@ function getRingDataAt(deg){
   /* N1 เริ่ม 337.5° · ช่องละ 15° · ใช้ตรงๆ (formula เก่า off-by-22) */
   const m24idx = Math.floor(((deg - 337.5 + 360) % 360) / 15) % 24;
   const m24 = m24data[m24idx];
+  /* 人盤(中針 -7.5° 撥砂/ดูภูเขา) ขอบเริ่ม 330° · 天盤(縫針 +7.5° 納水/ดูน้ำ) ขอบเริ่ม 345° */
+  const renpan = m24data[Math.floor(((deg - 330 + 360) % 360) / 15) % 24];
+  const tianpan = m24data[Math.floor(((deg - 345 + 360) % 360) / 15) % 24];
   /* 64 卦 — sync กับ render (圓圖 Shao Yong · D.HEXAGRAMS_64 · 復@0°) */
   /* +2.8125 (ครึ่งช่อง) เพราะ render วาง 復 คร่อม 0° (center=i*5.625) · floor เดิมเลื่อนครึ่งช่อง */
   const h64idx = Math.floor((((deg+2.8125)%360+360)%360)/5.625)%64;
@@ -2006,7 +2009,7 @@ function getRingDataAt(deg){
   /* 5 行 8 ทิศ */
   const el8=['water','earth','wood','wood','fire','earth','metal','metal'];
 
-  return { m24, m24idx, h64char, h64num, h64idx, m28:m28[m28idx], jq:jq[jqidx], dir8, dir8idx, fx:fxData, qm, lh:lh8[dir8idx], el8:el8[dir8idx] };
+  return { m24, m24idx, renpan, tianpan, h64char, h64num, h64idx, m28:m28[m28idx], jq:jq[jqidx], dir8, dir8idx, fx:fxData, qm, lh:lh8[dir8idx], el8:el8[dir8idx] };
 }
 const elTH={water:'น้ำ',wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง'};
 const elHan={water:'水',wood:'木',fire:'火',earth:'土',metal:'金'};
@@ -2062,7 +2065,7 @@ function updateInspector(){
     '64卦':['64 กว้า','64卦'],
     '奇門·門':['ฉีเหมิน ประตู','奇門 門'],'奇門·神':['ฉีเหมิน เทพ','奇門 神'],'奇門·星':['ฉีเหมิน ดาว','奇門 星'],
     '地盤':['24 ขุนเขา','地盤'],'地支':['12 กิ่งดิน','地支'],'天干':['10 ก้านฟ้า','天干'],
-    '三盤':['3 เข็ม','三盤'],'天池':['บ่อฟ้า','天池'],
+    '三盤':['3 เข็ม','三盤'],'天池':['บ่อฟ้า','天池'],'人盤':['เข็มคน','人盤'],'天盤':['เข็มฟ้า','天盤'],
     '28宿':['28 ดาวฤกษ์','28宿'],'24節氣':['24 ฤดูสุริยะ','24節氣'],
     '60甲子':['60 จื่อจี๊','60甲子'],'透地72龍':['72 มังกรทะลุดิน','透地72龍'],'穿山60龍':['60 มังกรเจาะภู','穿山60龍'],
     '城門':['ประตูเมือง','城門'],
@@ -2072,7 +2075,7 @@ function updateInspector(){
   const ELZ = {水:'น้ำ',木:'ไม้',火:'ไฟ',土:'ดิน',金:'ทอง'}; /* ธาตุจีน→ไทย */
   const DIR_TH = {N:'เหนือ',NE:'อีสาน',E:'ตะวันออก',SE:'อาคเนย์',S:'ใต้',SW:'หรดี',W:'ตะวันตก',NW:'พายัพ'};
   /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
-  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool','三盤':'r24','警示':'rWarn'};
+  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
   function row(cat, han, head, score, general, home, rich){
     const rid = HAN_RING[han];
     if(rid){ const cb=document.querySelector('input[data-r="'+rid+'"]'); if(cb && !cb.checked) return; } /* ศาสตร์ถูกปิด filter */
@@ -2226,6 +2229,14 @@ function updateInspector(){
     const pl=L.three_plates.plates['地盤'];
     row('cat1','三盤', `<b>${pl.name||'เข็มดิน'}</b> <span style="color:var(--fg-faint)">· 地盤</span>`, null, pl.general, pl.home);
   }
+  /* 人盤 (中針 撥砂/ดูภูเขา) — เลื่อน -7.5° จากเข็มหลัก */
+  row('cat1','人盤', `<b>${r.renpan.m} ${r.renpan.p}</b> <span style="color:var(--fg-faint)">· ${r.renpan.c} · 中針 −7.5°</span>`, null,
+      `เข็มคน(中針) ที่องศานี้ตกขุนเขา <b>${r.renpan.m}</b> · ใช้ "撥砂" ดูภูเขา/ตึกสูง/สิ่งทึบ รอบบ้าน`,
+      `ทิศนี้ถ้ามี ภูเขา/อาคารสูง/สิ่งทึบ → ใช้เข็มคนวัดว่า砂ตกขุนเขามงคลไหม (เสริมคน/บริวาร/สุขภาพ)`, true);
+  /* 天盤 (縫針 納水/ดูน้ำ) — เลื่อน +7.5° จากเข็มหลัก */
+  row('cat1','天盤', `<b>${r.tianpan.m} ${r.tianpan.p}</b> <span style="color:var(--fg-faint)">· ${r.tianpan.c} · 縫針 +7.5°</span>`, null,
+      `เข็มฟ้า(縫針) ที่องศานี้ตกขุนเขา <b>${r.tianpan.m}</b> · ใช้ "納水" ดูน้ำ/ทางน้ำ/ที่ต่ำ/ถนน`,
+      `ทิศนี้ถ้ามี น้ำ/สระ/ถนน/ที่โล่งต่ำ → ใช้เข็มฟ้าวัดว่าน้ำมาขุนเขามงคลไหม (เสริมทรัพย์/โชค)`, true);
   /* 天池 */
   if(L.sky_pool?.interpretation){
     const sp=L.sky_pool.interpretation;
