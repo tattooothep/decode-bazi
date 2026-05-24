@@ -1,0 +1,236 @@
+[
+  {
+    "id": "later_heaven_bagua",
+    "slug": "hou_tian_ba_gua",
+    "thaiName": "ปากั้วหลังฟ้า · แกนฮวงจุ้ย",
+    "chineseName": "後天八卦",
+    "englishName": "Later Heaven Bagua",
+    "category": "ศาสตร์หลัก · แกนกลาง",
+    "categoryId": "core_feng_shui",
+    "mode": 2,
+    "priority": 20,
+    "enabledByDefault": false,
+    "purpose": "ใช้เป็นแกนวิเคราะห์บ้านจริง ทิศ วัง ธาตุ สมาชิกครอบครัว และความหมายพื้นฐานของแต่ละพื้นที่",
+    "shortDescription": "後天八卦 คือปากั้วหลังฟ้า ใช้กับการวิเคราะห์บ้านจริง เป็นแกนหลักของฮวงจุ้ยภาคปฏิบัติในการอ่าน 8 ทิศ 8 วัง และธาตุประจำทิศ",
+    "fullDescription": "ปากั้วหลังฟ้า / 後天八卦 คือระบบ 8 กว้าที่ใช้กับโลกหลังเกิด หรือสภาพแวดล้อมที่เปลี่ยนแปลงได้ จึงเป็นแกนหลักในการอ่านบ้านจริง เช่น ทิศหน้าบ้าน ทิศหลังบ้าน วังประจำพื้นที่ ธาตุประจำทิศ สมาชิกครอบครัว และความหมายเชิงชีวิตของแต่ละวัง ในระบบหล่อแก้ว ชั้นนี้ช่วยบอกว่าทิศที่เข็มชี้อยู่ในวังใด เช่น 坎, 艮, 震, 巽, 離, 坤, 兌, 乾 และใช้เป็นฐานให้ศาสตร์อื่นต่อยอด เช่น 飛星, 城門, 八宅 และการอ่านธาตุของพื้นที่",
+    "coreMeaning": "โลกหลังเกิด · การใช้งานจริง · บ้านจริง · สภาพแวดล้อมที่เปลี่ยนแปลงได้",
+    "useFor": [
+      "อ่าน 8 ทิศหลักของบ้าน",
+      "ระบุวังประจำทิศที่เข็มชี้",
+      "เชื่อมทิศกับธาตุ เช่น 坎=น้ำ, 離=ไฟ",
+      "ใช้เป็นฐานของดาวเหิน 9 ยุค",
+      "ใช้ร่วมกับประตูเมือง 城門 เพื่อรู้วังของ candidate",
+      "ใช้ประกอบการวางฟังก์ชันห้องตามทิศ"
+    ],
+    "notUseFor": [
+      "ไม่ใช่ชั้นวัดองศาละเอียดแทน 24山",
+      "ไม่ใช่ตัวตัดสินดีร้ายเดี่ยว ๆ โดยไม่ดูดาวหรือบริบท",
+      "ไม่ควรใช้แทน 先天八卦 เพราะหน้าที่คนละแบบ"
+    ],
+    "homeAdvice": [
+      "ใช้เป็นแกนหลักในการอ่านบ้านจริงว่าพื้นที่นั้นอยู่ในวังใด",
+      "เหมาะกับการดูทิศของประตู ห้องนอน ห้องทำงาน ครัว และพื้นที่สำคัญ",
+      "ควรอ่านร่วมกับ 24山 และดาวเหิน ไม่ควรสรุปดีร้ายจากปากั้วอย่างเดียว",
+      "ถ้าเข็มหรือศูนย์กลางบ้านผิด การอ่านวัง後天八卦จะผิดตาม"
+    ],
+    "degreeBehavior": {
+      "descriptionChangesByDegree": false,
+      "dynamicReadingChangesByDegree": true,
+      "explanation": "คำอธิบายของ後天八卦คงที่ แต่ค่าที่อ่านได้ เช่น วัง กว้า ธาตุ และสมาชิกครอบครัว จะเปลี่ยนตามองศาที่เข็มชี้"
+    },
+    "dynamicFields": [
+      "currentDegree",
+      "currentDirection",
+      "currentPalace",
+      "currentTrigram",
+      "currentElement",
+      "currentFamilyRole",
+      "currentLifeArea"
+    ],
+    "currentReadingTemplate": "เข็มชี้ {currentDegree}° อยู่ในวัง {currentPalace} · กว้า {currentTrigram} · ธาตุ {currentElement}",
+    "arrangementType": "後天",
+    "arrangement": [
+      { "direction": "N", "degreeRange": "337.5°–22.5°", "trigram": "坎", "trigramNumber": 1, "symbol": "☵", "element": "水", "elementThai": "น้ำ", "familyRole": "ลูกชายคนกลาง", "lifeArea": "อาชีพ · เส้นทางชีวิต", "bodyPart": "ไต · หู · ระบบน้ำ", "quality": "ไหลเวียน · ปรับตัว · ลึก" },
+      { "direction": "NE", "degreeRange": "22.5°–67.5°", "trigram": "艮", "trigramNumber": 8, "symbol": "☶", "element": "土", "elementThai": "ดิน", "familyRole": "ลูกชายคนเล็ก", "lifeArea": "ความรู้ · การศึกษา · ภูเขา", "bodyPart": "มือ · หลัง · กระดูก", "quality": "นิ่ง · หยุด · สะสม" },
+      { "direction": "E", "degreeRange": "67.5°–112.5°", "trigram": "震", "trigramNumber": 3, "symbol": "☳", "element": "木", "elementThai": "ไม้", "familyRole": "ลูกชายคนโต", "lifeArea": "ครอบครัว · บรรพบุรุษ · การเริ่มต้น", "bodyPart": "เท้า · ตับ · ระบบเคลื่อนไหว", "quality": "เคลื่อนไหว · เริ่มต้น · ตื่นตัว" },
+      { "direction": "SE", "degreeRange": "112.5°–157.5°", "trigram": "巽", "trigramNumber": 4, "symbol": "☴", "element": "木", "elementThai": "ไม้", "familyRole": "ลูกสาวคนโต", "lifeArea": "ทรัพย์ · การเติบโต · เครือข่าย", "bodyPart": "สะโพก · เส้นเอ็น · ลม", "quality": "แทรกซึม · เติบโต · อ่อนโยน" },
+      { "direction": "S", "degreeRange": "157.5°–202.5°", "trigram": "離", "trigramNumber": 9, "symbol": "☲", "element": "火", "elementThai": "ไฟ", "familyRole": "ลูกสาวคนกลาง", "lifeArea": "ชื่อเสียง · การมองเห็น · ภาพลักษณ์", "bodyPart": "ตา · หัวใจ · เลือด", "quality": "สว่าง · เปิดเผย · โดดเด่น" },
+      { "direction": "SW", "degreeRange": "202.5°–247.5°", "trigram": "坤", "trigramNumber": 2, "symbol": "☷", "element": "土", "elementThai": "ดิน", "familyRole": "แม่", "lifeArea": "คู่ครอง · ความสัมพันธ์ · การรองรับ", "bodyPart": "ท้อง · ม้าม · ระบบย่อย", "quality": "รองรับ · อ่อนโยน · หล่อเลี้ยง" },
+      { "direction": "W", "degreeRange": "247.5°–292.5°", "trigram": "兌", "trigramNumber": 7, "symbol": "☱", "element": "金", "elementThai": "ทอง", "familyRole": "ลูกสาวคนเล็ก", "lifeArea": "ลูกหลาน · ความสุข · การสื่อสาร", "bodyPart": "ปาก · ปอด · ฟัน", "quality": "สื่อสาร · เบิกบาน · แลกเปลี่ยน" },
+      { "direction": "NW", "degreeRange": "292.5°–337.5°", "trigram": "乾", "trigramNumber": 6, "symbol": "☰", "element": "金", "elementThai": "ทอง", "familyRole": "พ่อ", "lifeArea": "ผู้ใหญ่ · ผู้นำ · ผู้สนับสนุน", "bodyPart": "ศีรษะ · ปอด · กระดูกใหญ่", "quality": "แข็งแรง · นำทาง · อำนาจ" }
+    ],
+    "rendering": { "ringLabel": "後天八卦", "showOnLuopan": true, "colorByElement": true, "tooltipPlacement": "hover_or_click", "recommendedLayer": "core" },
+    "warnings": [
+      "อย่าสรุปดีร้ายของทิศจาก後天八卦อย่างเดียว ต้องดูดาวเหินและบริบทบ้านร่วมด้วย",
+      "ควรแยกองศาหน้าบ้านจริงออกจากองศาการหมุนแปลนบนจอ"
+    ]
+  },
+  {
+    "id": "pre_heaven_bagua",
+    "slug": "xian_tian_ba_gua",
+    "thaiName": "ปากั้วก่อนฟ้า · พลังดั้งเดิม",
+    "chineseName": "先天八卦",
+    "englishName": "Pre-Heaven Bagua",
+    "category": "ศาสตร์หลัก · แกนกลาง",
+    "categoryId": "core_feng_shui",
+    "mode": 2,
+    "priority": 21,
+    "enabledByDefault": false,
+    "purpose": "ใช้ดูโครงสร้างพลังดั้งเดิม ความสมดุลก่อนเกิด คู่ตรงข้าม และรากพลังของกว้า",
+    "shortDescription": "先天八卦 คือปากั้วก่อนฟ้า แสดงโครงสร้างพลังดั้งเดิมและความสมดุลของจักรวาล ใช้อธิบายรากพลังของกว้า ไม่ใช่แกนหลักสำหรับตัดสินพื้นที่บ้านจริงแบบ後天八卦",
+    "fullDescription": "ปากั้วก่อนฟ้า / 先天八卦 คือระบบ 8 กว้าในสภาวะก่อนเกิดหรือพลังดั้งเดิม แสดงความสมดุลเชิงจักรวาลและคู่ตรงข้าม เช่น 乾-坤, 坎-離, 震-巽, 艮-兌 ในการใช้หล่อแก้ว ชั้นนี้ช่วยให้เข้าใจรากพลังของกว้า ความสัมพันธ์เชิงสมดุล และแนวคิดก่อนแปรเปลี่ยนเป็นโลกใช้งานจริง แต่โดยทั่วไปการอ่านบ้านจริงจะใช้後天八卦เป็นแกนหลัก ส่วน先天八卦ใช้เป็นชั้นอ้างอิงเชิงลึกหรือประกอบศาสตร์ขั้นสูง เช่น 64卦, 玄空大卦 และการพิจารณาสมดุลเชิงกว้า",
+    "coreMeaning": "พลังก่อนเกิด · สมดุลเดิม · จักรวาลต้นแบบ · คู่ตรงข้าม",
+    "useFor": [
+      "ดูความสมดุลดั้งเดิมของกว้า",
+      "ดูคู่ตรงข้าม เช่น 乾-坤, 坎-離",
+      "ใช้เป็นฐานเชิงทฤษฎีสำหรับ 64卦 และ玄空大卦",
+      "ใช้เปรียบเทียบกับ後天八卦เพื่อเข้าใจการเปลี่ยนจากพลังเดิมสู่โลกจริง",
+      "ใช้ใน tooltip เพื่ออธิบายรากพลังของแต่ละกว้า"
+    ],
+    "notUseFor": [
+      "ไม่ควรใช้เป็นแกนหลักแทน後天八卦ในการวางห้องทั่วไป",
+      "ไม่ควรใช้ตัดสินประตูหลักโดยลำพัง",
+      "ไม่ใช่ชั้นที่ใช้แทนองศา 24山 หรือดาวเหิน"
+    ],
+    "homeAdvice": [
+      "ใช้เป็นข้อมูลประกอบเชิงลึก ไม่ใช่ตัวตัดสินหลักของการจัดบ้าน",
+      "เหมาะกับการดูสมดุลกว้าและความสัมพันธ์ของพลังคู่ตรงข้าม",
+      "ถ้าต้องตัดสินพื้นที่ใช้งานจริง ให้ดู後天八卦, 24山, 飛星 และบริบทแปลนร่วมด้วย",
+      "เหมาะเปิดเป็น layer เสริม ไม่ควรเปิดเป็น layer หลักตลอดเวลาเพราะอาจทำให้ผู้ใช้สับสน"
+    ],
+    "degreeBehavior": {
+      "descriptionChangesByDegree": false,
+      "dynamicReadingChangesByDegree": true,
+      "explanation": "คำอธิบายของ先天八卦คงที่ แต่กว้าที่เข็มชี้ในชั้น先天จะเปลี่ยนตามองศา หากเปิด layer นี้"
+    },
+    "dynamicFields": [
+      "currentDegree",
+      "currentPreHeavenTrigram",
+      "currentPreHeavenPair",
+      "currentPreHeavenElement",
+      "currentPreHeavenMeaning"
+    ],
+    "currentReadingTemplate": "เข็มชี้ {currentDegree}° ในชั้น先天八卦 = {currentPreHeavenTrigram} · คู่สมดุล {currentPreHeavenPair}",
+    "arrangementType": "先天",
+    "arrangement": [
+      { "direction": "S", "degreeRange": "157.5°–202.5°", "trigram": "乾", "symbol": "☰", "element": "金", "elementThai": "ทอง", "oppositeTrigram": "坤", "oppositeDirection": "N", "meaning": "ฟ้า · พ่อ · ความสร้างสรรค์ · พลังนำ", "quality": "แข็งแรง · เริ่มต้น · สร้างสรรค์" },
+      { "direction": "N", "degreeRange": "337.5°–22.5°", "trigram": "坤", "symbol": "☷", "element": "土", "elementThai": "ดิน", "oppositeTrigram": "乾", "oppositeDirection": "S", "meaning": "ดิน · แม่ · การรองรับ · การหล่อเลี้ยง", "quality": "รับพลัง · หล่อเลี้ยง · เสถียร" },
+      { "direction": "E", "degreeRange": "67.5°–112.5°", "trigram": "離", "symbol": "☲", "element": "火", "elementThai": "ไฟ", "oppositeTrigram": "坎", "oppositeDirection": "W", "meaning": "ไฟ · ความสว่าง · การมองเห็น · จิตใจ", "quality": "สว่าง · ชัดเจน · เปิดเผย" },
+      { "direction": "W", "degreeRange": "247.5°–292.5°", "trigram": "坎", "symbol": "☵", "element": "水", "elementThai": "น้ำ", "oppositeTrigram": "離", "oppositeDirection": "E", "meaning": "น้ำ · ความลึก · การไหล · ภายใน", "quality": "ลึก · ยืดหยุ่น · ซ่อนเร้น" },
+      { "direction": "NE", "degreeRange": "22.5°–67.5°", "trigram": "震", "symbol": "☳", "element": "木", "elementThai": "ไม้", "oppositeTrigram": "巽", "oppositeDirection": "SW", "meaning": "ฟ้าร้อง · การเริ่มต้น · การเคลื่อนไหว", "quality": "กระตุ้น · ตื่นตัว · เริ่มขยับ" },
+      { "direction": "SW", "degreeRange": "202.5°–247.5°", "trigram": "巽", "symbol": "☴", "element": "木", "elementThai": "ไม้", "oppositeTrigram": "震", "oppositeDirection": "NE", "meaning": "ลม · การแทรกซึม · การเติบโตอย่างอ่อนโยน", "quality": "นุ่มนวล · แทรกซึม · ต่อเนื่อง" },
+      { "direction": "NW", "degreeRange": "292.5°–337.5°", "trigram": "艮", "symbol": "☶", "element": "土", "elementThai": "ดิน", "oppositeTrigram": "兌", "oppositeDirection": "SE", "meaning": "ภูเขา · การหยุด · การสะสม", "quality": "นิ่ง · หยุด · หนักแน่น" },
+      { "direction": "SE", "degreeRange": "112.5°–157.5°", "trigram": "兌", "symbol": "☱", "element": "金", "elementThai": "ทอง", "oppositeTrigram": "艮", "oppositeDirection": "NW", "meaning": "บึง · ความสุข · การสื่อสาร", "quality": "เบิกบาน · เปิดใจ · แลกเปลี่ยน" }
+    ],
+    "pairRelations": [
+      { "pair": "乾-坤", "meaning": "ฟ้าและดิน · ผู้ให้กำเนิดและผู้รองรับ" },
+      { "pair": "坎-離", "meaning": "น้ำและไฟ · ความลึกและความสว่าง" },
+      { "pair": "震-巽", "meaning": "ฟ้าร้องและลม · การเริ่มเคลื่อนและการแทรกซึม" },
+      { "pair": "艮-兌", "meaning": "ภูเขาและบึง · ความนิ่งและความเบิกบาน" }
+    ],
+    "rendering": { "ringLabel": "先天八卦", "showOnLuopan": true, "colorByElement": true, "tooltipPlacement": "hover_or_click", "recommendedLayer": "core_optional" },
+    "warnings": [
+      "先天八卦 เป็นพลังต้นแบบ ไม่ใช่แกนหลักในการตัดสินการใช้งานบ้านจริง",
+      "ควรแสดงเป็น layer เสริม เพราะตำแหน่งกว้าไม่เหมือน後天八卦"
+    ]
+  },
+  {
+    "id": "five_elements",
+    "slug": "wu_xing",
+    "thaiName": "5 ธาตุ · สร้าง/ทำลาย",
+    "chineseName": "五行",
+    "englishName": "Five Elements",
+    "category": "ศาสตร์หลัก · แกนกลาง",
+    "categoryId": "core_feng_shui",
+    "mode": 2,
+    "priority": 22,
+    "enabledByDefault": false,
+    "purpose": "ใช้อธิบายความสัมพันธ์ของธาตุในทิศ ดาว กว้า วัง สี รูปทรง และการเสริม/ลดพลัง",
+    "shortDescription": "五行 คือระบบ 5 ธาตุ ได้แก่ ไม้ ไฟ ดิน ทอง น้ำ ใช้อ่านความสัมพันธ์แบบสร้าง ทำลาย ถ่ายเท และควบคุม ระหว่างทิศ ดาว วัง และสภาพแวดล้อม",
+    "fullDescription": "5 ธาตุ / 五行 คือระบบความสัมพันธ์พื้นฐานของฮวงจุ้ยและศาสตร์จีน ประกอบด้วย 木 ไม้, 火 ไฟ, 土 ดิน, 金 ทอง, 水 น้ำ ใช้อธิบายว่าพลังหนึ่งส่งเสริม กดข่ม ถ่ายเท หรือทำให้อีกพลังอ่อนลงอย่างไร ในหล่อแก้ว ชั้นนี้ใช้ประกอบการอ่านทิศ วัง ปากั้ว ดาวเหิน สี รูปทรง วัสดุ และการจัดพื้นที่บ้าน เช่น น้ำเสริมไม้ ไม้เสริมไฟ ไฟเสริมดิน ดินเสริมทอง ทองเสริมน้ำ ขณะเดียวกันไม้ข่มดิน ดินข่มน้ำ น้ำข่มไฟ ไฟข่มทอง และทองข่มไม้",
+    "coreMeaning": "ระบบความสัมพันธ์ของพลัง · สร้าง · ทำลาย · ถ่ายเท · สมดุล",
+    "useFor": [
+      "ดูว่าธาตุของทิศสัมพันธ์กับธาตุของดาวอย่างไร",
+      "ใช้สร้างคำอธิบายว่าทิศหนึ่งหนุนหรือกดดาว",
+      "ใช้แนะนำสี วัสดุ รูปทรง และฟังก์ชันพื้นที่",
+      "ใช้ร่วมกับ後天八卦, 飛星, 24山 และการจัดห้อง",
+      "ใช้เป็นแกนของคำแนะนำเสริม/ลดพลังในบ้าน"
+    ],
+    "notUseFor": [
+      "ไม่ควรใช้ธาตุอย่างเดียวเพื่อตัดสินว่าทิศดีหรือร้าย",
+      "ไม่ควรใช้สีแก้ฮวงจุ้ยแทนการดูดาวและสภาพจริงทั้งหมด",
+      "ไม่ควรสรุปว่าธาตุเดียวกันดีเสมอ เพราะดาวดี/ดาวร้ายให้ผลต่างกัน"
+    ],
+    "homeAdvice": [
+      "ใช้ดูว่าควรเสริม ลด หรือคุมธาตุของพื้นที่อย่างไร",
+      "ถ้าดาวดีได้รับธาตุหนุน มักช่วยให้ใช้ทิศนั้นได้ดีขึ้น",
+      "ถ้าดาวร้ายได้รับธาตุหนุน อาจทำให้ผลเสียแรงขึ้น",
+      "ควรใช้ธาตุเพื่อปรับระดับพลัง ไม่ใช่ใช้แทนการตัดสินจากดาวเหิน"
+    ],
+    "degreeBehavior": {
+      "descriptionChangesByDegree": false,
+      "dynamicReadingChangesByDegree": true,
+      "explanation": "คำอธิบายระบบ五行คงที่ แต่ธาตุที่อ่านได้จากเข็มจะเปลี่ยนตามทิศ วัง 24山 หรือดาวที่กำลังวิเคราะห์"
+    },
+    "dynamicFields": [
+      "currentDegree",
+      "currentDirectionElement",
+      "currentPalaceElement",
+      "currentMountainElement",
+      "currentStarElement",
+      "elementRelation",
+      "elementAdvice"
+    ],
+    "currentReadingTemplate": "เข็มชี้ {currentDegree}° · ธาตุทิศ {currentDirectionElement} · ธาตุดาว {currentStarElement} · ความสัมพันธ์ {elementRelation}",
+    "elements": [
+      { "element": "木", "thaiName": "ไม้", "englishName": "Wood", "colorKeys": ["green", "teal"], "forms": ["สูง", "ตรง", "ทรงกระบอก", "แนวตั้ง"], "materials": ["ไม้", "ต้นไม้", "ผ้า", "กระดาษ", "วัสดุธรรมชาติ"], "qualities": ["เติบโต", "ขยายตัว", "ยืดหยุ่น", "สร้างสรรค์"], "directions": ["E", "SE"], "trigrams": ["震", "巽"], "stars": [3, 4] },
+      { "element": "火", "thaiName": "ไฟ", "englishName": "Fire", "colorKeys": ["red", "purple", "bright_orange"], "forms": ["สามเหลี่ยม", "แหลม", "เปลวไฟ", "แสง"], "materials": ["ไฟ", "แสงสว่าง", "อุปกรณ์ไฟฟ้า", "เทียน", "โคมไฟ"], "qualities": ["สว่าง", "โดดเด่น", "ชื่อเสียง", "ความร้อน"], "directions": ["S"], "trigrams": ["離"], "stars": [9] },
+      { "element": "土", "thaiName": "ดิน", "englishName": "Earth", "colorKeys": ["yellow", "brown", "beige", "sand"], "forms": ["สี่เหลี่ยม", "แบน", "หนัก", "มั่นคง"], "materials": ["ดิน", "หิน", "เซรามิก", "อิฐ", "ปูน", "คริสตัล"], "qualities": ["มั่นคง", "สะสม", "รองรับ", "ชะลอ"], "directions": ["NE", "SW", "C"], "trigrams": ["艮", "坤"], "stars": [2, 5, 8] },
+      { "element": "金", "thaiName": "ทอง", "englishName": "Metal", "colorKeys": ["white", "silver", "gold", "gray"], "forms": ["กลม", "โค้ง", "วงรี", "โลหะ"], "materials": ["โลหะ", "ทองเหลือง", "เหล็ก", "เงิน", "ทอง", "ของกลม"], "qualities": ["ตัดสินใจ", "โครงสร้าง", "ระเบียบ", "การสื่อสาร"], "directions": ["W", "NW"], "trigrams": ["兌", "乾"], "stars": [6, 7] },
+      { "element": "水", "thaiName": "น้ำ", "englishName": "Water", "colorKeys": ["black", "dark_blue", "blue"], "forms": ["คลื่น", "โค้งไหล", "ไม่แน่นอน", "อิสระ"], "materials": ["น้ำ", "กระจก", "ของสะท้อน", "ตู้ปลา", "น้ำพุ"], "qualities": ["ไหลเวียน", "ความลึก", "ปัญญา", "การเคลื่อนไหว"], "directions": ["N"], "trigrams": ["坎"], "stars": [1] }
+    ],
+    "cycles": {
+      "generating": {
+        "chineseName": "相生",
+        "thaiName": "วงจรสร้าง",
+        "sequence": ["木", "火", "土", "金", "水", "木"],
+        "rules": [
+          { "from": "木", "to": "火", "meaning": "ไม้生ไฟ" },
+          { "from": "火", "to": "土", "meaning": "ไฟ生ดิน" },
+          { "from": "土", "to": "金", "meaning": "ดิน生ทอง" },
+          { "from": "金", "to": "水", "meaning": "ทอง生น้ำ" },
+          { "from": "水", "to": "木", "meaning": "น้ำ生ไม้" }
+        ]
+      },
+      "controlling": {
+        "chineseName": "相克",
+        "thaiName": "วงจรข่ม/ควบคุม",
+        "sequence": ["木", "土", "水", "火", "金", "木"],
+        "rules": [
+          { "from": "木", "to": "土", "meaning": "ไม้ข่มดิน" },
+          { "from": "土", "to": "水", "meaning": "ดินข่มน้ำ" },
+          { "from": "水", "to": "火", "meaning": "น้ำข่มไฟ" },
+          { "from": "火", "to": "金", "meaning": "ไฟข่มทอง" },
+          { "from": "金", "to": "木", "meaning": "ทองข่มไม้" }
+        ]
+      },
+      "draining": {
+        "thaiName": "วงจรถ่ายเท/ลดพลัง",
+        "explanation": "เมื่อธาตุหนึ่งไปสร้างอีกธาตุ พลังของธาตุแม่จะถูกถ่ายออก เช่น น้ำ生ไม้ แปลว่าน้ำถูกไม้ดึงพลังไปใช้"
+      }
+    },
+    "relationLogic": {
+      "sameElement": { "label": "ธาตุเดียวกัน", "effectForGoodStar": "ช่วยให้พลังดาวดีมีราก", "effectForBadStar": "อาจทำให้ดาวร้ายหนักขึ้น" },
+      "palaceGeneratesStar": { "label": "วัง生ดาว", "effectForGoodStar": "หนุนดาวดี", "effectForBadStar": "หนุนดาวร้าย ต้องระวัง" },
+      "palaceControlsStar": { "label": "วัง克ดาว", "effectForGoodStar": "กดดาวดี ทำให้แรงลดลง", "effectForBadStar": "ช่วยกดดาวร้าย" },
+      "starGeneratesPalace": { "label": "ดาว生วัง", "effect": "ดาวถ่ายพลังออกไปยังวัง พลังดาวอาจลดลง" },
+      "starControlsPalace": { "label": "ดาว克วัง", "effect": "เกิดแรงปะทะระหว่างดาวกับพื้นที่ ต้องดูบริบท" }
+    },
+    "rendering": { "ringLabel": "五行", "showOnLuopan": true, "colorByElement": true, "tooltipPlacement": "hover_or_click", "recommendedLayer": "core" },
+    "warnings": [
+      "ธาตุเป็นระบบอธิบายความสัมพันธ์ ไม่ใช่คำตัดสินสุดท้าย",
+      "ดาวดีได้ธาตุหนุนถือว่าดี แต่ดาวร้ายได้ธาตุหนุนอาจร้ายขึ้น",
+      "การใช้สีหรือวัสดุแก้ฮวงจุ้ยควรดูดาวเหินและการใช้งานจริงร่วมด้วย"
+    ]
+  }
+]

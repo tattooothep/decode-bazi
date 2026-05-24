@@ -1942,6 +1942,13 @@ fetch('/_preview/annual-warning.json').then(r => r.json()).then(d => {
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('annual-warning load failed:', e));
 
+/* 24 พ.ค. · core-sciences ซินแส (後天/先天/五行 · familyRole·lifeArea·cycles·relationLogic) — เสริม score/general/home เดิม */
+window.CORE_SCI = null;
+fetch('/_preview/core-sciences.json').then(r => r.json()).then(d => {
+  window.CORE_SCI = {}; (Array.isArray(d)?d:[]).forEach(s => window.CORE_SCI[s.id] = s);
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('core-sciences load failed:', e));
+
 function getCursorRelativeDeg(){
   /* ทิศจริงบนวง = มุมเข็ม(screen) + การหมุนวง (facing เมื่อล็อก) */
   return ((cursorDeg + ringRotation()) % 360 + 360) % 360;
@@ -2135,7 +2142,14 @@ function updateInspector(){
   if(L.later_heaven_bagua?.arrangement){
     const lhKey = Object.keys(L.later_heaven_bagua.arrangement).find(k => k.startsWith(r.lh));
     const lh = lhKey ? L.later_heaven_bagua.arrangement[lhKey] : null;
-    if(lh) row('cat2','後天', `<b>${lh.position||r.lh}</b> <span style="color:var(--fg-faint)">· ${r.lh} ${ELZ[lh.element]||lh.element||''}</span>`, lh.score, lh.general, lh.home);
+    if(lh){
+      /* เสริมข้อมูลลึกจาก core-sciences ซินแส (familyRole/lifeArea/bodyPart/quality) คงคะแนน+คำแนะนำเดิม */
+      let lhHome = lh.home || '';
+      const cs = window.CORE_SCI && window.CORE_SCI.later_heaven_bagua;
+      const it = cs && cs.arrangement.find(a => a.trigram === r.lh);
+      if(it) lhHome = `${lh.home||''}<div style="margin-top:6px;color:var(--fg-faint);line-height:1.7">👨‍👩‍👧 ${it.familyRole} · 🎯 ${it.lifeArea}<br>🩺 ${it.bodyPart} · ✨ ${it.quality}</div>`;
+      row('cat2','後天', `<b>${lh.position||r.lh}</b> <span style="color:var(--fg-faint)">· ${r.lh} ${ELZ[lh.element]||lh.element||''}</span>`, lh.score, lh.general, lhHome, true);
+    }
   }
   /* 先天八卦 */
   if(L.early_heaven_bagua?.arrangement){
@@ -2143,7 +2157,15 @@ function updateInspector(){
     const eh = ehKey ? L.early_heaven_bagua.arrangement[ehKey] : null;
     if(eh){
       const trigram = ehKey.split('_')[0];
-      row('cat2','先天', `<b>${eh.position||trigram}</b> <span style="color:var(--fg-faint)">· ${trigram} ${ELZ[eh.element]||eh.element||''}</span>`, eh.score, eh.general, eh.home);
+      /* เสริมข้อมูลลึกจาก core-sciences ซินแส (คู่ตรงข้าม + ความหมาย + คู่สมดุล) คงคะแนน+คำแนะนำเดิม */
+      let ehHome = eh.home || '';
+      const cs = window.CORE_SCI && window.CORE_SCI.pre_heaven_bagua;
+      const it = cs && cs.arrangement.find(a => a.trigram === trigram);
+      if(it){
+        const pair = (cs.pairRelations||[]).find(p => p.pair.split('-').includes(trigram));
+        ehHome = `${eh.home||''}<div style="margin-top:6px;color:var(--fg-faint);line-height:1.7">↔ คู่ตรงข้าม ${it.oppositeTrigram} (${it.oppositeDirection}) · ✨ ${it.quality}<br>📖 ${it.meaning}${pair?`<br>⚖ ${pair.pair} · ${pair.meaning}`:''}</div>`;
+      }
+      row('cat2','先天', `<b>${eh.position||trigram}</b> <span style="color:var(--fg-faint)">· ${trigram} ${ELZ[eh.element]||eh.element||''}</span>`, eh.score, eh.general, ehHome, true);
     }
   }
   /* ดาวเหิน (era → cat2 / time → cat4) */
@@ -2249,8 +2271,13 @@ function updateInspector(){
   /* === หมวด 1 โครงสร้างพื้นฐาน === */
   /* 24 ขุนเขา + ธาตุ */
   const elObj = L.five_elements?.elements?.[elHan[r.m24.el]];
+  /* เสริม五行 จาก core-sciences ซินแส (qualities/forms/materials) คงคะแนน+คำแนะนำเดิม */
+  let diHome = elObj?.home || '';
+  const cs5 = window.CORE_SCI && window.CORE_SCI.five_elements;
+  const fe = cs5 && cs5.elements.find(e => e.element === elHan[r.m24.el]);
+  if(fe) diHome = `${elObj?.home||''}<div style="margin-top:6px;color:var(--fg-faint);line-height:1.7">✨ ${fe.qualities.join(' · ')}<br>🔷 รูปทรง: ${fe.forms.join(' ')} · 🧱 วัสดุ: ${fe.materials.join(' ')}</div>`;
   row('cat1','地盤', `<b>ทิศ${DIR_TH[r.dir8]||''}</b> <span style="color:var(--fg-faint)">${r.m24.m} ${r.m24.p} ${r.m24.c}</span> <span style="color:var(--${r.m24.el})">· ${elTH[r.m24.el]}</span>`,
-      elObj?.score, elObj?.general, elObj?.home);
+      elObj?.score, elObj?.general, diHome, true);
   /* 12 กิ่งดิน · ใช้ JSON ซินแส 象意 (score+เหตุผล+recommendation) → fallback luopan_complete */
   const ES = window.EARTH_SYMBOLIC;
   const BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
