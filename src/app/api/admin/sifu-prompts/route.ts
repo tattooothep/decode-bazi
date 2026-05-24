@@ -20,6 +20,10 @@ const FILES: Record<string, { label: string; note: string }> = {
   "prompts/qimen-sifu.md": { label: "ซินแสฉีเหมิน", note: "/api/qimen/sifu · datepick · qimen · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
   "prompts/forecast-sifu.md": { label: "ซินแสพยากรณ์ (เซียมซี/เหรียญ)", note: "/api/forecast · forecast · {{METHOD}}+{{BODY}}=dynamic · เห็นผล ~60 วิ" },
   "prompts/ai-parse-bulk.md": { label: "Parser ดวง bulk (JSON)", note: "/api/network/ai-parse-bulk · yongsennetwork · ${text} ต่อในโค้ด · เห็นผล ~60 วิ" },
+  "prompts/compare-th.md": { label: "เทียบดวงคู่ · ไทย", note: "/api/sifu/compare · หน้า comparison · section ===HEADER/GUARD/WARMUP/STRUCTURE/BOTH3P===" },
+  "prompts/compare-en.md": { label: "เทียบดวงคู่ · EN", note: "/api/sifu/compare · หน้า comparison · section markers" },
+  "prompts/compare-zh.md": { label: "เทียบดวงคู่ · 中文", note: "/api/sifu/compare · หน้า comparison · section markers" },
+  "prompts/activity-classify.md": { label: "จัดหมวดกิจกรรม (date selection)", note: "/api/activity-classify · หน้า datepick · {{QUERY}}=dynamic · เห็นผล ~60 วิ" },
 };
 
 export async function GET() {

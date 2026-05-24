@@ -24,6 +24,38 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { q1, q } from "@/lib/db";
 import { spawnClaudeStreaming, makeJsonlParser, streamOpenRouter } from "@/lib/claude-stream";
+import { loadPromptMd } from "@/lib/prompt-md";
+
+/* 25 พ.ค. · compare persona ย้ายไป prompts/compare-{th,en,zh}.md (section marker) · parser + fallback */
+function parseCompareSections(raw: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  const parts = raw.split(/^===([A-Z0-9]+)===$/m);
+  for (let i = 1; i < parts.length; i += 2) out[parts[i]] = (parts[i + 1] || "").trim();
+  return out;
+}
+const COMPARE_FALLBACK: Record<string, Record<string, string>> = {
+  th: {
+    HEADER: "คุณคือซินแสปาจื้อระดับอาจารย์ · วิเคราะห์ความสัมพันธ์ระหว่างดวง 2 คน อย่างซื่อตรง เป็นรูปธรรม และมีคำแนะนำใช้ได้จริง",
+    GUARD: "สำคัญ: อย่างน้อยฝั่งหนึ่งไม่ทราบเวลาเกิด · ห้ามอ่านส่วนที่ต้องใช้เสายาม",
+    WARMUP: "หมายเหตุ: ผู้ใช้เห็นสรุปเอนจินแล้ว (DM relation · 用神 · 忌神) · ห้ามเริ่มซ้ำ ให้ต่อเป็น prose เชิงลึก",
+    STRUCTURE: "ตอบเป็น markdown 5 ส่วน:\n1. ปฏิกิริยา DM (เชิงลึก · เกินกว่าวงรอบ 5 ธาตุ)\n2. การประกบ 用神/忌神 (เชิงลึก)\n3. ปฏิกิริยา stem + branch (เอ่ยเฉพาะที่มีจริง)\n4. ความเข้ากัน (รัก · งาน · เพื่อน · 0-10 พร้อมเหตุผล)\n5. คำแนะนำใช้ได้จริง (แต่ละคน 3 ข้อ)",
+    BOTH3P: "หมายเหตุ: ทั้งคู่ไม่ทราบเวลาเกิด",
+  },
+  en: {
+    HEADER: "You are a master BaZi (Chinese astrology) compatibility reader. Analyze the relationship dynamics between two charts honestly and concretely.",
+    GUARD: "IMPORTANT: At least one chart has no Hour Pillar (birth time unknown). Skip readings that depend on Hour (spouse house · 命宮 · 拱·夾).",
+    WARMUP: "NOTE: User already sees a deterministic engine summary (DM relation · Yongshen overlap · Jishen). Do NOT repeat that. Build deeper prose on top.",
+    STRUCTURE: "Return 5 markdown sections:\n1. Day Master interaction (DM ↔ DM · 5-element cycle)\n2. Yongshen / Jishen overlap (deeper context)\n3. Stem & Branch interactions (天合/地合/沖/害/三合 · only existing pairs)\n4. Practical compatibility (love · work · friendship · score 0-10 with rationale)\n5. Practical advice (3 actions per person)",
+    BOTH3P: "Note: both charts lack Hour Pillar.",
+  },
+  zh: {
+    HEADER: "你是八字配對命理大師。請依下方雙命盤分析兩人的關係動態 · 誠實、具體、有實用建議。",
+    GUARD: "重要: 至少一人不知時辰 (無時柱). 涉及時柱的判讀必須略過.",
+    WARMUP: "註: 使用者已看到引擎速覽 (日主關係 · 用神對接 · 忌神). 請勿重複, 直接進入深度解讀.",
+    STRUCTURE: "以 markdown 回傳 5 段:\n1. 日主互動 (深度)\n2. 用神/忌神對接 (深度)\n3. 天干地支互動 (僅實際組合)\n4. 實用配對 (愛情·工作·友情 · 0-10)\n5. 實用建議 (各人 3 個)",
+    BOTH3P: "註: 雙方皆不知時辰",
+  },
+};
 
 export const runtime = "nodejs";   /* Codex Phase 12 hard requirement · child_process spawn */
 
@@ -231,36 +263,27 @@ function buildPrompt(p1: PersonCtx, p2: PersonCtx, lang: "th" | "en" | "zh", has
   const both3p = p1.pillars.hour == null && p2.pillars.hour == null;
   const any3p = p1.pillars.hour == null || p2.pillars.hour == null;
 
-  const header = lang === "en"
-    ? `You are a master BaZi (Chinese astrology) compatibility reader. Analyze the relationship dynamics between two charts honestly and concretely.`
-    : lang === "zh"
-      ? `你是八字配對命理大師。請依下方雙命盤分析兩人的關係動態 · 誠實、具體、有實用建議。`
-      : `คุณคือซินแสปาจื้อระดับอาจารย์ · วิเคราะห์ความสัมพันธ์ระหว่างดวง 2 คน อย่างซื่อตรง เป็นรูปธรรม และมีคำแนะนำใช้ได้จริง`;
+  /* 25 พ.ค. · persona ย้ายไป prompts/compare-{th,en,zh}.md (แก้ผ่าน /admin/sifu-prompts) · section marker ===HEADER/GUARD/WARMUP/STRUCTURE/BOTH3P=== · fallback เนื้อเดิมกันพัง */
+  const fb = COMPARE_FALLBACK[lang] || COMPARE_FALLBACK.th;
+  const md = parseCompareSections(loadPromptMd(`prompts/compare-${lang}.md`, ""));
+  const sec = (k: string) => (md[k] || fb[k] || "");
+  const header = sec("HEADER");
+  const structure = sec("STRUCTURE");
+  const guard = any3p ? sec("GUARD") : "";
+  const warmup = hasWarmup ? sec("WARMUP") : "";
+  const both3pNote = both3p ? sec("BOTH3P") : "";
+  const labelA = lang === "en" ? "Person A" : lang === "zh" ? "甲方" : "คนที่ 1";
+  const labelB = lang === "en" ? "Person B" : lang === "zh" ? "乙方" : "คนที่ 2";
 
-  const guard = any3p
-    ? (lang === "en"
-        ? `\nIMPORTANT: At least one chart has no Hour Pillar (birth time unknown). Skip readings that depend on Hour (spouse house · 命宮 · 拱·夾).`
-        : lang === "zh"
-          ? `\n重要: 至少一人不知時辰 (無時柱). 涉及時柱的判讀必須略過.`
-          : `\nสำคัญ: อย่างน้อยฝั่งหนึ่งไม่ทราบเวลาเกิด · ห้ามอ่านส่วนที่ต้องใช้เสายาม`)
-    : "";
-
-  const warmupNote = hasWarmup
-    ? (lang === "en"
-      ? `\n\nNOTE: User already sees a deterministic engine summary (DM relation · Yongshen overlap · Jishen). Do NOT repeat that. Build deeper prose on top.`
-      : lang === "zh"
-        ? `\n\n註: 使用者已看到引擎速覽 (日主關係 · 用神對接 · 忌神). 請勿重複, 直接進入深度解讀.`
-        : `\n\nหมายเหตุ: ผู้ใช้เห็นสรุปเอนจินแล้ว (DM relation · 用神 · 忌神) · ห้ามเริ่มซ้ำ ให้ต่อเป็น prose เชิงลึก`)
-    : "";
-
-  const structure = lang === "en"
-    ? `\n\nReturn 5 markdown sections:\n1. Day Master interaction (DM ↔ DM · 5-element cycle)\n2. Yongshen / Jishen overlap (deeper context)\n3. Stem & Branch interactions (天合/地合/沖/害/三合 · only existing pairs)\n4. Practical compatibility (love · work · friendship · score 0-10 with rationale)\n5. Practical advice (3 actions per person)`
-    : lang === "zh"
-      ? `\n\n以 markdown 回傳 5 段:\n1. 日主互動 (深度)\n2. 用神/忌神對接 (深度)\n3. 天干地支互動 (僅實際組合)\n4. 實用配對 (愛情·工作·友情 · 0-10)\n5. 實用建議 (各人 3 個)`
-      : `\n\nตอบเป็น markdown 5 ส่วน:\n1. ปฏิกิริยา DM (เชิงลึก · เกินกว่าวงรอบ 5 ธาตุ)\n2. การประกบ 用神/忌神 (เชิงลึก)\n3. ปฏิกิริยา stem + branch (เอ่ยเฉพาะที่มีจริง)\n4. ความเข้ากัน (รัก · งาน · เพื่อน · 0-10 พร้อมเหตุผล)\n5. คำแนะนำใช้ได้จริง (แต่ละคน 3 ข้อ)`;
-
-  /* Codex รอบ 52 fix · ต้องใส่ protocolBlock จริง (bug · สร้างแล้วไม่ได้ใช้) */
-  return `${protocolBlock}${header}${guard}${warmupNote}\n\n${personSummary(p1, lang === "en" ? "Person A" : lang === "zh" ? "甲方" : "คนที่ 1", lang)}\n\n${personSummary(p2, lang === "en" ? "Person B" : lang === "zh" ? "乙方" : "คนที่ 2", lang)}${structure}\n\n${both3p ? (lang === "th" ? "หมายเหตุ: ทั้งคู่ไม่ทราบเวลาเกิด" : lang === "en" ? "Note: both charts lack Hour Pillar." : "註: 雙方皆不知時辰") : ""}`.trim();
+  return [
+    protocolBlock + header,
+    guard,
+    warmup,
+    personSummary(p1, labelA, lang),
+    personSummary(p2, labelB, lang),
+    structure,
+    both3pNote,
+  ].filter((x) => x && x.trim()).join("\n\n").trim();
 }
 
 function isValidPerson(p: unknown): p is PersonCtx {

@@ -97,22 +97,10 @@ export async function POST(req: NextRequest) {
     // Layer 2 · AI fallback (Claude Max CLI · best-effort · timeout 8s)
     try {
       const { spawn } = await import('child_process');
-      const prompt = `Activity classifier for Chinese date selection. User said: "${query}"
-Pick ONE activity from this list (return JSON only):
-- break-ground (動土 ก่อสร้าง)
-- sign-contract (立約 เซ็นสัญญา)
-- move-in (入宅 ย้ายบ้าน)
-- open-shop (開市 เปิดกิจการ)
-- travel (出行 เดินทาง)
-- negotiate (會見 เจรจา/พบ)
-- invest (財貨 ลงทุน/ซื้อ)
-- wedding (嫁娶 แต่งงาน)
-- health (求醫 รักษา)
-- study (入學 เรียน)
-- ritual (祭祀 พิธี)
-- haircut (剃頭 ตัดผม)
-- authority (求官 ขออำนาจ/ตำแหน่ง)
-Return JSON: {"activity":"key","reason":"why in Thai 1 line"}`;
+      const { loadPromptMd } = await import('@/lib/prompt-md');
+      /* 25 พ.ค. · prompt ย้ายไป prompts/activity-classify.md (แก้ผ่าน /admin/sifu-prompts) · {{QUERY}}=dynamic · fallback กันพัง */
+      const ACTIVITY_FALLBACK = `Activity classifier for Chinese date selection. User said: "{{QUERY}}"\nPick ONE activity from this list (return JSON only):\n- break-ground (動土 ก่อสร้าง)\n- sign-contract (立約 เซ็นสัญญา)\n- move-in (入宅 ย้ายบ้าน)\n- open-shop (開市 เปิดกิจการ)\n- travel (出行 เดินทาง)\n- negotiate (會見 เจรจา/พบ)\n- invest (財貨 ลงทุน/ซื้อ)\n- wedding (嫁娶 แต่งงาน)\n- health (求醫 รักษา)\n- study (入學 เรียน)\n- ritual (祭祀 พิธี)\n- haircut (剃頭 ตัดผม)\n- authority (求官 ขออำนาจ/ตำแหน่ง)\nReturn JSON: {"activity":"key","reason":"why in Thai 1 line"}`;
+      const prompt = loadPromptMd("prompts/activity-classify.md", ACTIVITY_FALLBACK).replace("{{QUERY}}", query);
       const result = await new Promise<string>((resolve, reject) => {
         const p = spawn('sudo', ['-u', 'jarvis', 'claude', '--print', '--output-format', 'text'], { timeout: 8000 });
         let out = '', err = '';
