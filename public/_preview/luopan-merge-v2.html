@@ -1935,6 +1935,13 @@ fetch('/_preview/earth-plate-symbolic.json').then(r => r.json()).then(d => {
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('earth-plate symbolic load failed:', e));
 
+/* 24 พ.ค. · 太歲/三煞/歲破 ดาวเตือนปี จาก JSON ซินแส v1.0 (score 2/1/2 · 三煞 5 ขุนเขา 75°) */
+window.ANNUAL_WARNING = null;
+fetch('/_preview/annual-warning.json').then(r => r.json()).then(d => {
+  window.ANNUAL_WARNING = d.annual_warning_layer || d;
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('annual-warning load failed:', e));
+
 function getCursorRelativeDeg(){
   /* ทิศจริงบนวง = มุมเข็ม(screen) + การหมุนวง (facing เมื่อล็อก) */
   return ((cursorDeg + ringRotation()) % 360 + 360) % 360;
@@ -1968,18 +1975,33 @@ function degTo8(d){
   const labels=['N','NE','E','SE','S','SW','W','NW'];
   return labels[Math.round(a/45)%8];
 }
-/* 太歲/歲破/三煞 dynamic จากปี (地支ปี → ทิศ) — แทน hardcode 午 */
+/* 太歲/歲破/三煞 dynamic จากปี — ใช้ JSON ซินแส (annual-warning.json) ถ้าโหลดแล้ว · fallback logic เก่า (dir8) */
 function getYearAfflictions(year){
   const branches=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
   const bIdx=((Number(year)-4)%12+12)%12;  /* 甲子=ปี4 · 2026→(2022)%12=6=午 */
   const branch=branches[bIdx];
-  const bDeg=bIdx*30;  /* 子=0°(N) 午=180°(S) */
+  const AW=window.ANNUAL_WARNING;
+  if(AW && AW.annual_map_by_year_branch && AW.annual_map_by_year_branch[branch]){
+    /* ─── ของใหม่ · match แบบขุนเขา (15° 太歲/歲破 · 5山 75° 三煞) ─── */
+    const m=AW.annual_map_by_year_branch[branch];
+    const grp=AW.rules.san_sha.group_rules[m.san_sha_group]||{};
+    return {
+      fromJSON:true, year:Number(year), branch,
+      taisuiMountain:m.tai_sui, taisuiScore:AW.rules.tai_sui.score,           /* 2 */
+      suipoMountain:m.sui_po,   suipoScore:AW.rules.sui_po.score,             /* 1 */
+      sanshaMountains:grp.standard_5_mountains||m.san_sha_exact_mountains,    /* 5 山 */
+      sanshaExact:grp.exact_earth_branches||m.san_sha_exact_mountains,        /* 3 山 หลัก */
+      sanshaScore:AW.rules.san_sha.score,                                     /* 2 */
+      sanshaDirTh:m.san_sha_direction_th,
+    };
+  }
+  /* ─── fallback · logic เก่า dir8 (ถ้า JSON ยังไม่โหลด) ─── */
+  const bDeg=bIdx*30;
   const taisuiDeg=bDeg, yearbreakDeg=(bDeg+180)%360;
-  /* 三煞: ตรงข้าม三合局 — 申子辰水局→南 · 寅午戌火局→北 · 巳酉丑金局→東 · 亥卯未木局→西 */
   const sanshaByBranch={'申':180,'子':180,'辰':180,'寅':0,'午':0,'戌':0,'巳':90,'酉':90,'丑':90,'亥':270,'卯':270,'未':270};
-  const sanshaCenter=sanshaByBranch[branch];  /* ทิศกลางของ三煞 (กิน 3 山 = ±45°) */
+  const sanshaCenter=sanshaByBranch[branch];
   const d8=(deg)=>['N','NE','E','SE','S','SW','W','NW'][Math.round(((deg%360)+360)%360/45)%8];
-  return { branch, taisuiDeg, taisuiDir:d8(taisuiDeg), yearbreakDir:d8(yearbreakDeg), sanshaCenter, sanshaDir:d8(sanshaCenter) };
+  return { fromJSON:false, branch, taisuiDeg, taisuiDir:d8(taisuiDeg), yearbreakDir:d8(yearbreakDeg), sanshaCenter, sanshaDir:d8(sanshaCenter) };
 }
 /* King Wen number 64卦 (ชื่อกว้า → ลำดับมาตรฐาน) สำหรับแสดง # ใน inspector */
 const KING_WEN_NUM = {'乾':1,'坤':2,'屯':3,'蒙':4,'需':5,'訟':6,'師':7,'比':8,'小畜':9,'履':10,'泰':11,'否':12,'同人':13,'大有':14,'謙':15,'豫':16,'隨':17,'蠱':18,'臨':19,'觀':20,'噬嗑':21,'賁':22,'剝':23,'復':24,'无妄':25,'大畜':26,'頤':27,'大過':28,'坎':29,'離':30,'咸':31,'恆':32,'遯':33,'大壯':34,'晉':35,'明夷':36,'家人':37,'睽':38,'蹇':39,'解':40,'損':41,'益':42,'夬':43,'姤':44,'萃':45,'升':46,'困':47,'井':48,'革':49,'鼎':50,'震':51,'艮':52,'漸':53,'歸妹':54,'豐':55,'旅':56,'巽':57,'兌':58,'渙':59,'節':60,'中孚':61,'小過':62,'既濟':63,'未濟':64};
@@ -2335,9 +2357,29 @@ function updateInspector(){
 
   /* === คำเตือน (太歲/歲破/三煞) · dynamic จากปีที่ล็อก === */
   const aff = getYearAfflictions(houseLocked ? lockedYear : 2026);
-  if(r.dir8===aff.taisuiDir) row('warn','警示', `<b>太歲</b> ${aff.branch}ปี · ทิศไท่ซุ่ย (ห้ามรบกวน)`, 1, `ปีนี้太歲อยู่ทิศ ${aff.taisuiDir} (${aff.branch}) · ห้ามขุดเจาะ ตอกตะปู ซ่อมใหญ่`, 'หลีกเลี่ยงเปิดประตูบ่อย · ห้ามวางเตา/ห้องนอนใหม่ที่ทิศนี้');
-  if(r.dir8===aff.yearbreakDir) row('warn','警示', `<b>歲破</b> · ตรงข้ามไท่ซุ่ย`, 1, `ทิศตรงข้าม太歲 (${aff.yearbreakDir}) · พลังปะทะปีนี้`, 'เลี่ยงงานใหญ่ · ใช้เก็บของได้');
-  if(r.dir8===aff.sanshaDir) row('warn','警示', `<b>三煞</b> · สามชะ`, 1, `三煞ปีนี้อยู่ทิศ ${aff.sanshaDir} (กิน 3 山) · พลังถอย`, 'เลี่ยงนั่งหันหน้าใส่ · ห้ามขุด/ตอก/รื้อที่ทิศนี้');
+  const affYr = houseLocked ? lockedYear : 2026;
+  if(aff.fromJSON){
+    /* ─── ของใหม่ (annual-warning.json) · match แบบขุนเขา ─── */
+    if(r.m24.m===aff.taisuiMountain)
+      row('warn','警示', `<b>太歲</b> · ทิศเจ้าปี (${aff.branch}ปี)`, aff.taisuiScore,
+        `太歲ปี ${affYr} อยู่ที่ขุนเขา ${aff.taisuiMountain} · เลี่ยงทุบ ขุด เจาะ ต่อเติม หรือกระตุ้นแรงในทิศนี้`,
+        'เลี่ยงเปิดประตูบ่อย · ห้ามตั้งเตา/หัวเตียงใหม่ · ใช้แบบนิ่งๆได้');
+    if(r.m24.m===aff.suipoMountain)
+      row('warn','警示', `<b>歲破</b> · ทิศปะทะปี`, aff.suipoScore,
+        `ทิศตรงข้าม太歲 (ขุนเขา ${aff.suipoMountain}) · พลังปะทะปีนี้ ควรเลี่ยงรบกวนหนักเป็นพิเศษ`,
+        'เลี่ยงงานใหญ่ · ใช้เก็บของได้');
+    if(aff.sanshaMountains.includes(r.m24.m)){
+      const core = aff.sanshaExact.includes(r.m24.m);
+      row('warn','警示', `<b>三煞</b> · สามพิฆาต`, aff.sanshaScore,
+        `三煞ปีนี้ทิศ${aff.sanshaDirTh} · 5 ขุนเขา ${aff.sanshaMountains.join(' ')} · ขุนเขานี้ = ${core?'地支หลัก':'天干คั่นกลาง'}`,
+        'ห้ามขุด ตอก รื้อ หรือซ่อมใหญ่ · เลี่ยงนั่งหันหน้าใส่');
+    }
+  } else {
+    /* ─── fallback เก่า (dir8) ถ้า JSON ยังไม่โหลด ─── */
+    if(r.dir8===aff.taisuiDir) row('warn','警示', `<b>太歲</b> ${aff.branch}ปี · ทิศไท่ซุ่ย (ห้ามรบกวน)`, 1, `ปีนี้太歲อยู่ทิศ ${aff.taisuiDir} (${aff.branch}) · ห้ามขุดเจาะ ตอกตะปู ซ่อมใหญ่`, 'หลีกเลี่ยงเปิดประตูบ่อย · ห้ามวางเตา/ห้องนอนใหม่ที่ทิศนี้');
+    if(r.dir8===aff.yearbreakDir) row('warn','警示', `<b>歲破</b> · ตรงข้ามไท่ซุ่ย`, 1, `ทิศตรงข้าม太歲 (${aff.yearbreakDir}) · พลังปะทะปีนี้`, 'เลี่ยงงานใหญ่ · ใช้เก็บของได้');
+    if(r.dir8===aff.sanshaDir) row('warn','警示', `<b>三煞</b> · สามชะ`, 1, `三煞ปีนี้อยู่ทิศ ${aff.sanshaDir} (กิน 3 山) · พลังถอย`, 'เลี่ยงนั่งหันหน้าใส่ · ห้ามขุด/ตอก/รื้อที่ทิศนี้');
+  }
 
   /* === Render เป็น 4 หมวด + warn === */
   const catMeta = [
