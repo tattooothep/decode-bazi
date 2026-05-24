@@ -255,6 +255,32 @@
       </div>
     </section>
 
+    <section class="card" id="fs-needles-card">
+      <h2><span class="han">盤</span> <span id="fs-sec-title"></span></h2>
+      <p id="fs-sec-intro" style="font-size:14px;color:var(--fg);"></p>
+      <div id="fs-needles-grid" class="grid-2"></div>
+    </section>
+
+    <section class="card" id="fs-pasha-card">
+      <h2><span class="han">砂</span> <span id="fs-pasha-title"></span></h2>
+      <div id="fs-pasha-intro" style="font-size:14px;color:var(--fg);line-height:1.85;"></div>
+      <h3 id="fs-pasha-wuxing-title" style="margin-top:16px;font-size:15px;"></h3>
+      <p id="fs-pasha-wuxing-note" style="font-size:13px;color:var(--fg);opacity:.75;"></p>
+      <div id="fs-pasha-wuxing-grid" class="grid-2"></div>
+      <h3 id="fs-pasha-rules-title" style="margin-top:16px;font-size:15px;"></h3>
+      <div id="fs-pasha-rules"></div>
+    </section>
+
+    <section class="card" id="fs-nashui-card">
+      <h2><span class="han">水</span> <span id="fs-nashui-title"></span></h2>
+      <div id="fs-nashui-intro" style="font-size:14px;color:var(--fg);line-height:1.85;"></div>
+      <h3 id="fs-nashui-xk-title" style="margin-top:16px;font-size:15px;"></h3>
+      <div id="fs-nashui-stars"></div>
+      <h3 id="fs-nashui-sh-title" style="margin-top:16px;font-size:15px;"></h3>
+      <div id="fs-nashui-sh-body" style="font-size:14px;color:var(--fg);line-height:1.85;"></div>
+      <p id="fs-nashui-sh-note" style="font-size:13px;color:#d9a44c;"></p>
+    </section>
+
     <div class="cross-link">
       <a href="/chart">📜 ดวงของฉัน</a>
       <a href="/today">🌅 ฤกษ์วันนี้</a>
@@ -870,6 +896,172 @@ const ADV_DATA = {
   }
 };
 
+/* 24 พ.ค. · FENGSHUI_DATA · 羅盤三針 (撥砂訣 + 納水) · 3 ภาษา · จาก JSON ซินแส (賴公撥砂五行 + 玄空納水 1-9) */
+const FENGSHUI_DATA = {
+  th: {
+    secTitle:'羅盤三針 · ศาสตร์เข็มทิศฮวงจุ้ย 3 เข็ม',
+    secIntro:'หล่อแก (羅盤) มี 3 เข็มซ้อนกัน · แต่ละเข็มมีหน้าที่ต่างกัน ห้ามใช้ปนกัน',
+    needles:[
+      {han:'地盤正針', name:'เข็มดิน · เข็มหลัก (0°)', use:'ตั้งฐานบ้าน หา 坐山 (หลังบ้าน) · 向首 (หน้าบ้าน) · 24 ขุนเขา · ผังดาวเหิน 飛星'},
+      {han:'人盤中針', name:'เข็มคน (−7.5°)', use:'ดูภูเขา สิ่งสูง ตึก เสา (砂) ด้วยวิชา 撥砂訣 — เทียบกับ坐山'},
+      {han:'天盤縫針', name:'เข็มฟ้า (+7.5°)', use:'ดูน้ำ ทางน้ำเข้า-ออก (來水 去水 水口) ด้วยวิชา 納水'},
+    ],
+    pasha:{
+      title:'人盤撥砂訣 · เข็มคน ดูภูเขา',
+      intro:[
+        'ใช้เมื่อมีภูเขา เนินสูง ตึกสูง เสา หรือสิ่งสูงนิ่งๆ อยู่ทิศใดทิศหนึ่ง',
+        'หลัก: ให้ 坐山 (หลังบ้าน) เป็น "ตัวเรา" แล้วเอาธาตุของ砂(ภูเขา)มาเทียบ ดูว่าเกิด-ชง-คุม กันอย่างไร',
+        'ห้ามใช้กับน้ำ และห้ามอ้างอิง 向首 (หน้าบ้าน) — ภูเขาดูที่หลังบ้านเท่านั้น',
+      ],
+      wuxingTitle:'撥砂五行 (賴公) — ไม่ใช่ธาตุปกติ',
+      wuxingNote:'วิชาปัวซาใช้ "ธาตุปัวซาของซินแสไล่" (賴公) ต่างจากธาตุปกติของ 24 ขุนเขา · ห้ามใช้ธาตุปกติแทน',
+      wuxing:[
+        {emoji:'🔥', el:'火 ไฟ', mountains:'子 午 卯 酉 · 甲 庚 丙 壬'},
+        {emoji:'🌳', el:'木 ไม้', mountains:'乾 坤 艮 巽'},
+        {emoji:'💧', el:'水 น้ำ', mountains:'寅 申 巳 亥'},
+        {emoji:'⚪', el:'金 ทอง', mountains:'辰 戌 丑 未'},
+        {emoji:'🟫', el:'土 ดิน', mountains:'乙 辛 丁 癸'},
+      ],
+      rulesTitle:'5 ผลลัพธ์ · เทียบ 砂(ภูเขา) กับ 坐山(หลังบ้าน)',
+      rules:[
+        {badge:'✅✅', name:'砂生坐 (食神砂)', verdict:'ดีมาก', meaning:'ภูเขาเกิดให้หลังบ้าน หนุนคน สุขภาพ บารมี และฐานบ้าน'},
+        {badge:'✅', name:'比和 (旺砂)', verdict:'ดี', meaning:'ภูเขาธาตุเดียวกับหลังบ้าน เสริมกำลังกัน'},
+        {badge:'✅', name:'坐剋砂 (財砂)', verdict:'ดี', meaning:'หลังบ้านคุมภูเขา ได้ทรัพย์เป็นบริวาร แต่ต้องออกแรงจัดการ'},
+        {badge:'△', name:'坐生砂 (洩砂)', verdict:'อ่อน', meaning:'หลังบ้านเสียพลังไปเลี้ยงภูเขา พลังบ้านรั่วไหล'},
+        {badge:'⚠', name:'砂剋坐 (煞砂)', verdict:'ร้าย', meaning:'ภูเขาพิฆาตหลังบ้าน เป็น煞 กดทับ เจ็บป่วย เสียฐาน'},
+      ]
+    },
+    nashui:{
+      title:'天盤納水 · เข็มฟ้า ดูน้ำ',
+      intro:[
+        'ใช้เมื่อมีน้ำ สระ บ่อ แม่น้ำ คลอง ถนน หรือที่โล่ง อยู่ทิศใดทิศหนึ่ง',
+        'ปัจจุบันใช้วิธี 玄空飛星 (ดาวเหิน) — ดูจากดาว 向星 ของทิศนั้น ร่วมกับยุคบ้านและรูปทรงน้ำ',
+      ],
+      xkTitle:'玄空飛星納水 · ยุค 9 (2024–2043) · ดูที่ดาว 向星',
+      stars:[
+        {badge:'✅ ควรมีน้ำ', name:'旺水 / 生氣水', label:'ดาว 9, 1', meaning:'ยุค9 ดาว9เป็น旺氣 ดาว1เป็น生氣 เหมาะมีน้ำถ้ารูปทรงดี เรียกทรัพย์'},
+        {badge:'△ กลาง', name:'退氣', label:'ดาว 8, 4', meaning:'ดาว8ถอยจากยุคก่อน ดาว4ใช้ได้บางกรณี (文昌 ชื่อเสียง) ต้องดูรูปทรงน้ำ'},
+        {badge:'⚠ ไม่ควรมีน้ำ', name:'衰死水 / 是非水', label:'ดาว 6, 7, 3', meaning:'ดาว6,7เสื่อมกำลังในยุค9 · ดาว3กระตุ้นเรื่องปะทะ ฟ้องร้อง ทะเลาะ'},
+        {badge:'⛔ ห้ามมีน้ำ', name:'病符 / 五黃水', label:'ดาว 2, 5', meaning:'ดาว2,5 ห้ามกระตุ้นด้วยน้ำ เกี่ยวโรคภัย อุบัติเหตุ วิบัติหนัก'},
+      ],
+      shTitle:'三合水法 · (สำรอง · ยังไม่เปิดใช้)',
+      shBody:[
+        'อีกสำนักดูน้ำด้วย 三合水法 ใช้เข็มฟ้าตรงๆ ดู 來水(น้ำเข้า) 去水(น้ำออก) 水口(ปากน้ำ) ร่วมกับ 十二長生',
+        'หลักสำคัญ: 來水ควรมาจากทิศ 生旺 (พลังรุ่งเรือง) · 去水ควรออกทาง 墓絕 (พลังหมด)',
+      ],
+      shNote:'⚠ ยังไม่เปิดใช้จริง — ต้องกรอกกฎ 來水/去水/水口/十二長生 ให้ครบก่อน จึงจะฟันธงได้',
+    }
+  },
+  en: {
+    secTitle:'San Zhen · The Three Needles of the Luopan',
+    secIntro:'The Luopan has three overlapping needle rings · each has a distinct purpose and must not be mixed',
+    needles:[
+      {han:'地盤 Earth Plate', name:'Correct Needle (0°)', use:'Establishes the house: Sitting (坐山) · Facing (向首) · 24 Mountains · Flying Star chart'},
+      {han:'人盤 Human Plate', name:'Middle Needle (−7.5°)', use:'Reads mountains, tall objects, buildings, poles (砂) via Bo Sha — compared to the Sitting Mountain'},
+      {han:'天盤 Heaven Plate', name:'Seam Needle (+7.5°)', use:'Reads water: incoming (來水), outgoing (去水), water mouth (水口) via Water Reception'},
+    ],
+    pasha:{
+      title:'Human Plate Bo Sha · Reading Mountains',
+      intro:[
+        'Used when a mountain, hill, tall building, tower or static high form sits in a given direction.',
+        'Principle: treat the Sitting Mountain (坐山) as the "self", then compare the sand (砂) element against it to see how they generate, clash or control.',
+        'Never use for water, and never reference the Facing (向首) — mountains are judged from the back of the house only.',
+      ],
+      wuxingTitle:'Bo Sha Five Elements (Lai Gong) — NOT the normal elements',
+      wuxingNote:'Bo Sha uses the "Lai Gong Bo Sha Five Elements", which differ from the normal elements of the 24 Mountains · do not substitute the normal element table.',
+      wuxing:[
+        {emoji:'🔥', el:'Fire 火', mountains:'子 午 卯 酉 · 甲 庚 丙 壬'},
+        {emoji:'🌳', el:'Wood 木', mountains:'乾 坤 艮 巽'},
+        {emoji:'💧', el:'Water 水', mountains:'寅 申 巳 亥'},
+        {emoji:'⚪', el:'Metal 金', mountains:'辰 戌 丑 未'},
+        {emoji:'🟫', el:'Earth 土', mountains:'乙 辛 丁 癸'},
+      ],
+      rulesTitle:'5 outcomes · Sand (砂) vs Sitting Mountain (坐山)',
+      rules:[
+        {badge:'✅✅', name:'砂生坐 (Sand generates Sitting)', verdict:'Very good', meaning:'The sand supports the Sitting Mountain — strong backing for people, health, prestige and foundation.'},
+        {badge:'✅', name:'比和 (Same element / Prosperous)', verdict:'Good', meaning:'Sand shares the same element as the back of the house — mutual reinforcement.'},
+        {badge:'✅', name:'坐剋砂 (Wealth Sand)', verdict:'Good', meaning:'The Sitting Mountain controls the sand — wealth and servants, but requires effort to manage.'},
+        {badge:'△', name:'坐生砂 (Leaking Sand)', verdict:'Weak', meaning:'The Sitting Mountain leaks energy into the sand — the home loses strength.'},
+        {badge:'⚠', name:'砂剋坐 (Sha Sand)', verdict:'Harmful', meaning:'The sand attacks the Sitting Mountain — oppressive sha, illness, loss of foundation.'},
+      ]
+    },
+    nashui:{
+      title:'Heaven Plate Water Reception · Reading Water',
+      intro:[
+        'Used when water, a pool, pond, river, canal, road or open space sits in a given direction.',
+        'Currently uses the Xuan Kong Flying Star method — judged by the Facing Star (向星) of that sector, together with the period and water form.',
+      ],
+      xkTitle:'Xuan Kong Flying Star Water · Period 9 (2024–2043) · by Facing Star (向星)',
+      stars:[
+        {badge:'✅ Water OK', name:'旺水 / 生氣水', label:'Star 9, 1', meaning:'In Period 9, Star 9 is timely and Star 1 is future-prosperous; water activates wealth if the form is good.'},
+        {badge:'△ Neutral', name:'退氣', label:'Star 8, 4', meaning:'Star 8 is retreating; Star 4 may serve academic/reputation effects — check the water form.'},
+        {badge:'⚠ Avoid water', name:'衰死水 / disputes', label:'Star 6, 7, 3', meaning:'Stars 6 & 7 are untimely in Period 9; Star 3 stirs conflict, lawsuits and quarrels.'},
+        {badge:'⛔ No water', name:'病符 / 五黃', label:'Star 2, 5', meaning:'Stars 2 & 5 must not be activated by water — illness, accidents and severe misfortune.'},
+      ],
+      shTitle:'San He Water Method · (optional · not yet active)',
+      shBody:[
+        'Another lineage reads water via the San He method, using the Heaven Plate directly to judge incoming (來水), outgoing (去水) and water mouth (水口) with the Twelve Growth Phases.',
+        'Core principle: incoming water should come from prosperous phases (生旺) · outgoing water should leave through storage/terminating phases (墓絕).',
+      ],
+      shNote:'⚠ Not yet active — incoming/outgoing/water-mouth and the Twelve Growth Phases must be configured before judgement.',
+    }
+  },
+  zh: {
+    secTitle:'羅盤三針 · 風水羅盤三層',
+    secIntro:'羅盤有三層針，各司其職，不可混用',
+    needles:[
+      {han:'地盤正針', name:'正針 (0°)', use:'定宅基：坐山、向首、二十四山、飛星盤'},
+      {han:'人盤中針', name:'中針 (−7.5°)', use:'主撥砂，看山峰、高樓、砂體 — 以坐山論之'},
+      {han:'天盤縫針', name:'縫針 (+7.5°)', use:'主納水，看來水、去水、水口'},
+    ],
+    pasha:{
+      title:'人盤撥砂訣 · 中針看山',
+      intro:[
+        '凡有山峰、高崗、高樓、塔柱等高聳靜物在某方時用之。',
+        '以坐山為「我」，以砂峰為「客」，取砂之五行與坐山相較，論其生剋。',
+        '不可用於水，亦不可參引向首 — 砂只論坐山。',
+      ],
+      wuxingTitle:'撥砂五行 (賴公) — 非正五行',
+      wuxingNote:'撥砂以「賴公撥砂五行」為主，與二十四山之正五行不同，不可以正五行代之。',
+      wuxing:[
+        {emoji:'🔥', el:'火', mountains:'子 午 卯 酉 · 甲 庚 丙 壬'},
+        {emoji:'🌳', el:'木', mountains:'乾 坤 艮 巽'},
+        {emoji:'💧', el:'水', mountains:'寅 申 巳 亥'},
+        {emoji:'⚪', el:'金', mountains:'辰 戌 丑 未'},
+        {emoji:'🟫', el:'土', mountains:'乙 辛 丁 癸'},
+      ],
+      rulesTitle:'五應 · 砂與坐山相較',
+      rules:[
+        {badge:'✅✅', name:'砂生坐 (食神砂)', verdict:'大吉', meaning:'砂生坐山，主有助力，人丁興旺，靠山有情。'},
+        {badge:'✅', name:'比和 (旺砂)', verdict:'吉', meaning:'砂與坐山比和，旺氣相扶。'},
+        {badge:'✅', name:'坐剋砂 (財砂)', verdict:'吉', meaning:'坐山剋砂，為財砂奴砂，可用但須駕馭。'},
+        {badge:'△', name:'坐生砂 (洩砂)', verdict:'弱', meaning:'坐山生砂，為洩氣，主氣力外洩。'},
+        {badge:'⚠', name:'砂剋坐 (煞砂)', verdict:'凶', meaning:'砂剋坐山，為煞砂，主凶應。'},
+      ]
+    },
+    nashui:{
+      title:'天盤納水 · 縫針看水',
+      intro:[
+        '凡有水、池、塘、河、渠、道路或空曠之地在某方時用之。',
+        '現以玄空飛星為法 — 以該方向星為主，兼看元運與水形。',
+      ],
+      xkTitle:'玄空飛星納水 · 九運 (2024–2043) · 以向星論',
+      stars:[
+        {badge:'✅ 宜水', name:'旺水 / 生氣水', label:'向星 9、1', meaning:'九運九為旺氣，一為生氣，得水催財（須水形佳）。'},
+        {badge:'△ 中平', name:'退氣', label:'向星 8、4', meaning:'八為退氣，四可作文昌名氣，須審水形。'},
+        {badge:'⚠ 不宜水', name:'衰死水 / 是非', label:'向星 6、7、3', meaning:'六七為衰死之氣，三碧主是非爭鬥，遇水多不宜。'},
+        {badge:'⛔ 忌水', name:'病符 / 五黃', label:'向星 2、5', meaning:'二黑病符、五黃廉貞，不宜見水催動，主病災凶禍。'},
+      ],
+      shTitle:'三合水法 · (備用 · 尚未啟用)',
+      shBody:[
+        '別派以三合水法論水，直用天盤看來水、去水、水口，配十二長生。',
+        '要訣：來水要生旺，去水要墓絕。',
+      ],
+      shNote:'⚠ 尚未啟用 — 須先設定來水、去水、水口與十二長生，方可論斷。',
+    }
+  }
+};
+
 const I18N = {
   th: {
     title:'วิธีคิด <b>ธาตุให้คุณ-ให้โทษ</b>',
@@ -1069,6 +1261,40 @@ function renderAdv(){
   a.warn.list.forEach(item => { const li=document.createElement('li'); li.textContent=item; wl.appendChild(li); });
 }
 
+function fsTile(parts){
+  const d=document.createElement('div'); d.className='tile';
+  parts.forEach(([cls,txt])=>{ const e=document.createElement('div'); e.className=cls; e.textContent=txt; d.appendChild(e); });
+  return d;
+}
+function renderFengshui(){
+  const f = FENGSHUI_DATA[LANG] || FENGSHUI_DATA.th;
+  document.getElementById('fs-sec-title').textContent = f.secTitle;
+  document.getElementById('fs-sec-intro').textContent = f.secIntro;
+  const ng = document.getElementById('fs-needles-grid'); ng.textContent='';
+  f.needles.forEach(n => ng.appendChild(fsTile([['h',n.han],['t',n.name],['d',n.use]])));
+  /* 撥砂 */
+  const p=f.pasha;
+  document.getElementById('fs-pasha-title').textContent=p.title;
+  document.getElementById('fs-pasha-intro').innerHTML=p.intro.map(x=>`<p>${x}</p>`).join('');
+  document.getElementById('fs-pasha-wuxing-title').textContent=p.wuxingTitle;
+  document.getElementById('fs-pasha-wuxing-note').textContent=p.wuxingNote;
+  const wg=document.getElementById('fs-pasha-wuxing-grid'); wg.textContent='';
+  p.wuxing.forEach(w => wg.appendChild(fsTile([['h',w.emoji+' '+w.el],['d',w.mountains]])));
+  document.getElementById('fs-pasha-rules-title').textContent=p.rulesTitle;
+  const pr=document.getElementById('fs-pasha-rules'); pr.textContent='';
+  p.rules.forEach(r => { const d=fsTile([['h',r.badge+' '+r.name],['t',r.verdict],['d',r.meaning]]); d.style.marginBottom='8px'; pr.appendChild(d); });
+  /* 納水 */
+  const w=f.nashui;
+  document.getElementById('fs-nashui-title').textContent=w.title;
+  document.getElementById('fs-nashui-intro').innerHTML=w.intro.map(x=>`<p>${x}</p>`).join('');
+  document.getElementById('fs-nashui-xk-title').textContent=w.xkTitle;
+  const ns=document.getElementById('fs-nashui-stars'); ns.textContent='';
+  w.stars.forEach(s => { const d=fsTile([['h',s.badge+' '+s.name],['t',s.label],['d',s.meaning]]); d.style.marginBottom='8px'; ns.appendChild(d); });
+  document.getElementById('fs-nashui-sh-title').textContent=w.shTitle;
+  document.getElementById('fs-nashui-sh-body').innerHTML=w.shBody.map(x=>`<p>${x}</p>`).join('');
+  document.getElementById('fs-nashui-sh-note').textContent=w.shNote;
+}
+
 function renderAll(){
   const t = I18N[LANG] || I18N.th;
   document.documentElement.lang = LANG==='zh'?'zh-Hant':LANG;
@@ -1112,6 +1338,7 @@ function renderAll(){
   renderSteps();
   renderTOC();
   renderAdv();
+  renderFengshui();
 }
 
 function applyTheme(t){

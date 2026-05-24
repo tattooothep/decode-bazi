@@ -35,14 +35,15 @@ export async function POST(req: Request) {
           if (Array.isArray(v)) return v.map((x: any) => typeof x === 'string' ? x : x?.element).filter(Boolean);
           return [];
         };
-        yongshen = ex.yongshen;
+        /* 24 พ.ค. · strict: 用神หลักเท่านั้น · ให้ score ตรง /calendar (commit 0f305c6 fix) · ไม่ดึง 喜神 มารวม */
+        const primary = toList(s?.primary_yongshen);
+        yongshen = primary.length ? primary : ex.yongshen;
         if (!jishen) jishen = ex.jishen;
         /* userSummary · ให้คนไทยเข้าใจดวงตัวเอง 1 บรรทัด */
         const EL_TH: Record<string,string> = {wood:"ไม้",fire:"ไฟ",earth:"ดิน",metal:"ทอง",water:"น้ำ"};
         const STEM_EL: Record<string,string> = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
         const dmStem = calc.pillars.day?.stem || '';
         const dmEl = STEM_EL[dmStem] || '';
-        const primary = toList(s?.primary_yongshen);
         const xishen = toList(s?.xishen);
         /* Codex flag #3 · bridges dynamic · ใช้ bridge_element จริง · ไม่ hardcode ไม้ */
         const bridgeElements = ex.bridgeElements;
