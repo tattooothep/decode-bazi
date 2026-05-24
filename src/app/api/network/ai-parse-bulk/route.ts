@@ -9,11 +9,13 @@
  */
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
+import { loadPromptMd } from "@/lib/prompt-md";
 
 const CHILD_USER = "jarvis";
 const TIMEOUT_MS = 60_000;
 
-const SYSTEM_PROMPT = `You are a precise data parser. Parse the user's list of people into a JSON array.
+/* 25 พ.ค. · SYSTEM_PROMPT ย้ายไป prompts/ai-parse-bulk.md (แก้ผ่าน /admin/sifu-prompts) · const นี้ = fallback กันพัง */
+const SYSTEM_PROMPT_FALLBACK = `You are a precise data parser. Parse the user's list of people into a JSON array.
 
 Each person becomes ONE object with these fields:
 - name: string (Thai or English)
@@ -116,7 +118,7 @@ export async function POST(req: Request) {
     const spend = await spendHours(10, "network_ai_parse_bulk");
     if (!spend.ok) return NextResponse.json(spend, { status: spend.status });
 
-    const prompt = `${SYSTEM_PROMPT}
+    const prompt = `${loadPromptMd("prompts/ai-parse-bulk.md", SYSTEM_PROMPT_FALLBACK)}
 
 USER LIST (parse this to JSON array):
 ${text}`;

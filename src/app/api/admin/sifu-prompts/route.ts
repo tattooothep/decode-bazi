@@ -19,6 +19,7 @@ const FILES: Record<string, { label: string; note: string }> = {
   "prompts/network-sifu-team.md": { label: "ซินแสเครือข่าย · ทีม (team)", note: "/api/network/sifu · yongsennetwork · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
   "prompts/qimen-sifu.md": { label: "ซินแสฉีเหมิน", note: "/api/qimen/sifu · datepick · qimen · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
   "prompts/forecast-sifu.md": { label: "ซินแสพยากรณ์ (เซียมซี/เหรียญ)", note: "/api/forecast · forecast · {{METHOD}}+{{BODY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/ai-parse-bulk.md": { label: "Parser ดวง bulk (JSON)", note: "/api/network/ai-parse-bulk · yongsennetwork · ${text} ต่อในโค้ด · เห็นผล ~60 วิ" },
 };
 
 export async function GET() {
