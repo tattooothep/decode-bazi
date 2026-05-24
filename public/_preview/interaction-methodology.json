@@ -1,0 +1,211 @@
+{
+  "version": "interaction-methodology-v1-2026-05-25",
+  "title": { "th": "คัมภีร์ปฏิกิริยาภายในดวงปาจื้อ", "en": "BaZi Internal Interaction Codex", "zh": "八字內部互動寶典" },
+  "intro": {
+    "th": "ปาจื้อไม่ได้อ่านแค่ \"มีธาตุอะไรเยอะ\" หรือ \"ปีนี้ชงไหม\" แต่ต้องดูว่าพลังในดวงทำปฏิกิริยากันอย่างไร — บางตัวรวม บางตัวชน บางตัวถูกตรึง บางตัวเปิดคลัง · ปฏิกิริยาเดียวกันเป็นคุณหรือโทษได้ ขึ้นกับว่ากระทบธาตุที่ดวงต้องการ (用神) หรือธาตุที่ดวงกลัว (忌神)",
+    "en": "BaZi is not read by \"which element is abundant\" or \"is this year a clash\" alone — you must see how the forces interact: some combine, some clash, some get bound, some open a storehouse. The same interaction can be a benefit or harm depending on whether it touches the element the chart needs (Useful God) or the element it fears (Avoid God).",
+    "zh": "八字非僅看「何行多」或「今年是否沖」，而須觀命中諸力如何互動：有合、有沖、有被合住、有開庫。同一互動為吉為凶，端視其所動者為用神或忌神。"
+  },
+  "sections": [
+    {
+      "id": "terms",
+      "title": { "th": "1) คำศัพท์หลัก", "en": "1) Core Terms", "zh": "一、核心術語" },
+      "rows": [
+        { "k": "合", "v": { "th": "ฮะ/รวม — ดึงดูด ผูก ตรึง หรือรวมจนแปรธาตุถ้าเงื่อนไขครบ", "en": "He — attract, bind, lock, or transform into a new element if conditions are met", "zh": "合 — 牽引、繫絆、合住，條件足則化" } },
+        { "k": "化", "v": { "th": "แปรธาตุ — รวมแล้วเปลี่ยนเป็นธาตุใหม่จริง ไม่เกิดอัตโนมัติ", "en": "Hua — actual transformation into a new element; not automatic", "zh": "化 — 合而真化為新行，非自動發生" } },
+        { "k": "冲", "v": { "th": "ชง/ปะทะ — กระแทก เปลี่ยน เคลื่อนย้าย เปิดคลัง ถอนราก", "en": "Chong — clash: impact, change, move, open storehouse, uproot", "zh": "冲 — 衝擊、變動、遷移、開庫、拔根" } },
+        { "k": "刑", "v": { "th": "เฮ้ง/ทัณฑ์ — ความกดดันเรื้อรัง บาดแผลภายใน กฎหมาย ภาระ", "en": "Xing — chronic pressure, inner wound, legal matters, burden", "zh": "刑 — 久壓、內傷、官非、負累" } },
+        { "k": "害", "v": { "th": "ไห่/ภัย — บั่นทอนซ่อนเร้น แทงข้างหลัง ความไม่ไว้วางใจ", "en": "Hai — hidden harm, backstabbing, distrust", "zh": "害 — 暗損、背刺、猜疑" } },
+        { "k": "破", "v": { "th": "ผั่ว/แตก — แตก ร้าว หลุดระบบ สิ่งที่ก่อตัวอยู่เสียรูป", "en": "Po — break, crack, fall out of system, lose form", "zh": "破 — 破裂、脫節、失形" } },
+        { "k": "三合", "v": { "th": "ไตรภาคี — สามกิ่งรวมเป็นธาตุแบบเกิด-รุ่ง-คลัง", "en": "San He — three branches form an element via birth-peak-storehouse", "zh": "三合 — 三支成局：生、旺、墓" } },
+        { "k": "三会", "v": { "th": "สามทิศ/สามฤดู — สามกิ่งรวมตามฤดูกาล แรงมาก", "en": "San Hui — three branches unite by seasonal direction; very strong", "zh": "三會 — 三支會方，力強" } },
+        { "k": "藏干", "v": { "th": "ก้านซ่อน — ก้านฟ้าที่ซ่อนในกิ่งดิน เป็นพลังลึก", "en": "Hidden Stems — stems concealed inside branches; deep power", "zh": "藏干 — 地支所藏天干，深層之力" } },
+        { "k": "通根", "v": { "th": "มีราก — ก้านฟ้ามีพลังจริงเพราะมีธาตุเดียวกันซ่อนในกิ่ง", "en": "Rooted — a stem has real power because the same element hides in a branch", "zh": "通根 — 干因支藏同行而有實力" } },
+        { "k": "月令", "v": { "th": "ฤดูกาลเดือนเกิด — ตัวคุมกำลังธาตุที่สำคัญที่สุด", "en": "Month Command — the season of birth; the single most important strength gauge", "zh": "月令 — 生月，定五行旺衰之首要" } },
+        { "k": "用神 / 忌神", "v": { "th": "ธาตุใช้งาน (ช่วยสมดุล) / ธาตุที่ดวงกลัว (ทำลายสมดุล)", "en": "Useful God (balances) / Avoid God (unbalances)", "zh": "用神（助衡）／忌神（破衡）" } }
+      ]
+    },
+    {
+      "id": "wuxing",
+      "title": { "th": "2) ธาตุทั้งห้า สร้าง/ควบคุม", "en": "2) Five Elements: Generate/Control", "zh": "二、五行生剋" },
+      "intro": { "th": "การเกื้อไม่ฟรี — ผู้เกื้อเสียพลังให้ผู้รับ (泄) · ถ้าผู้ถูกควบแข็งมากอาจย้อนกลับ (反克)", "en": "Generating is not free — the giver loses energy (leak/泄). If the controlled is too strong, it can rebel (反克).", "zh": "生非無償 — 生者洩氣於受者；受剋者過強則反剋。" },
+      "rows": [
+        { "k": "生 สร้าง", "v": { "th": "木→火→土→金→水→木 (ไม้เกิดไฟ · ไฟเกิดดิน · ดินเกิดทอง · ทองเกิดน้ำ · น้ำเกิดไม้)", "en": "Wood→Fire→Earth→Metal→Water→Wood", "zh": "木生火、火生土、土生金、金生水、水生木" } },
+        { "k": "克 ควบคุม", "v": { "th": "木→土→水→火→金→木 (ไม้ควบดิน · ดินคุมน้ำ · น้ำคุมไฟ · ไฟคุมทอง · ทองคุมไม้)", "en": "Wood→Earth→Water→Fire→Metal→Wood", "zh": "木剋土、土剋水、水剋火、火剋金、金剋木" } }
+      ]
+    },
+    {
+      "id": "tiangan5he",
+      "title": { "th": "5) ก้านฟ้ารวม 天干五合", "en": "5) Stem Combinations 天干五合", "zh": "五、天干五合" },
+      "intro": { "th": "ห้ามแปลว่า \"แปรธาตุสำเร็จ\" ทันที — ส่วนใหญ่คือผูก/ตรึงก่อน · จะแปรต้องได้ฤดู+มีราก+ไม่มีตัวแย่ง · ถ้าก้านที่ถูกฮะเป็น用神 ผลอาจเสีย", "en": "Do not assume successful transformation — usually it binds first. Transformation needs season + root + no competitor. If the combined stem is the Useful God, the result may be harmful.", "zh": "勿即斷化成 — 多為先合住。化須得令、有根、無爭合。若被合者為用神，反凶。" },
+      "rows": [
+        { "k": "甲己 → 土", "v": { "th": "中正之合 (เที่ยงตรง) · ต้องมีดินคุมฤดู ไม่มีไม้แย่ง甲", "en": "Combination of Integrity → Earth · needs Earth in season, no Wood stealing 甲", "zh": "中正之合化土 · 須土當令、無木爭甲" } },
+        { "k": "乙庚 → 金", "v": { "th": "仁义之合 (คุณธรรม) · ต้องมีทองคุมฤดู(申酉) มีดินเกื้อ", "en": "Combination of Virtue → Metal · needs Metal in season (申酉), Earth support", "zh": "仁義之合化金 · 須金當令(申酉)、土生" } },
+        { "k": "丙辛 → 水", "v": { "th": "威制之合 (อำนาจ) · ต้องมีน้ำคุมฤดู(亥子) · สำคัญ: ถ้า DM=辛 มักเสียกำลัง", "en": "Combination of Authority → Water · needs Water in season; if DM=辛 it often loses power", "zh": "威制之合化水 · 須水當令(亥子)；日主辛者多失力" } },
+        { "k": "丁壬 → 木", "v": { "th": "淫慝之合 (เสน่หา) · ต้องมีไม้คุมฤดู(寅卯) มีน้ำเกื้อ — โยงความสัมพันธ์", "en": "Combination of Charm → Wood · needs Wood in season, Water support — links to relationships", "zh": "淫慝之合化木 · 須木當令(寅卯)、水生 — 主情感" } },
+        { "k": "戊癸 → 火", "v": { "th": "无情之合 (ไร้เยื่อใย) · ต้องมีไฟคุมฤดู(巳午) — รวมแบบห่างวัย", "en": "Heartless Combination → Fire · needs Fire in season (巳午) — an age-gap union", "zh": "無情之合化火 · 須火當令(巳午)" } }
+      ]
+    },
+    {
+      "id": "liuhe",
+      "title": { "th": "7) กิ่งดิน 六合", "en": "7) Branch Six Combinations 六合", "zh": "七、地支六合" },
+      "intro": { "th": "六合 = แรงดึงดูด/ผูกพัน ทำให้กิ่งนั้น \"ติดฮะ\" จนไปชง/ช่วยอย่างอื่นลดลง (贪合忘冲) · 巳申 ระวังเป็นพิเศษ เป็นทั้ง合刑破", "en": "Six Combinations bind a branch so it 'sticks' and clashes/helps less (greedy-combine-forgets-clash). Beware 巳申 — it is 合, 刑, and 破 at once.", "zh": "六合主牽繫，使支「合住」而少沖少助（貪合忘冲）。巳申尤須慎，兼合、刑、破。" },
+      "rows": [
+        { "k": "子丑 → ดิน", "v": { "th": "ผูกติด ความนิ่ง การสะสม", "en": "binding, stillness, accumulation", "zh": "繫絆、靜、積" } },
+        { "k": "寅亥 → ไม้", "v": { "th": "เริ่มต้น เติบโต เมตตา ความรู้", "en": "beginning, growth, benevolence, knowledge", "zh": "始、長、仁、學" } },
+        { "k": "卯戌 → ไฟ", "v": { "th": "จุดประกาย ชื่อเสียง การแสดงออก", "en": "ignite, fame, expression", "zh": "點火、名、表現" } },
+        { "k": "辰酉 → ทอง", "v": { "th": "จัดระเบียบ ระบบ มาตรฐาน", "en": "order, system, standards", "zh": "整飭、制度、標準" } },
+        { "k": "巳申 → น้ำ", "v": { "th": "ดึงดูดแต่แฝง刑破 ผันผวน", "en": "attraction with hidden 刑/破, volatility", "zh": "相吸而藏刑破，多變" } },
+        { "k": "午未 → ดิน", "v": { "th": "อบอุ่น ครอบครัว การก่อรูป", "en": "warmth, family, formation", "zh": "暖、家、成形" } }
+      ]
+    },
+    {
+      "id": "sanhe",
+      "title": { "th": "8) 三合局 สามประสานธาตุ", "en": "8) Three Harmonies 三合局", "zh": "八、三合局" },
+      "intro": { "th": "เกิด(长生)+รุ่ง(帝旺)+คลัง(墓库) · ครบสามตัว+ได้ฤดู = แรงใหญ่ของธาตุนั้น · ขาดตัวรุ่ง = รวมบางส่วน", "en": "Birth(长生)+Peak(帝旺)+Storehouse(墓库). All three + season = great force of that element. Missing the peak = partial.", "zh": "長生+帝旺+墓庫。三全得令成大局；缺旺則半成。" },
+      "rows": [
+        { "k": "申子辰 → น้ำ", "v": { "th": "เกิด申·รุ่ง子·คลัง辰", "en": "birth 申 · peak 子 · storehouse 辰", "zh": "生申·旺子·庫辰" } },
+        { "k": "亥卯未 → ไม้", "v": { "th": "เกิด亥·รุ่ง卯·คลัง未", "en": "birth 亥 · peak 卯 · storehouse 未", "zh": "生亥·旺卯·庫未" } },
+        { "k": "寅午戌 → ไฟ", "v": { "th": "เกิด寅·รุ่ง午·คลัง戌", "en": "birth 寅 · peak 午 · storehouse 戌", "zh": "生寅·旺午·庫戌" } },
+        { "k": "巳酉丑 → ทอง", "v": { "th": "เกิด巳·รุ่ง酉·คลัง丑", "en": "birth 巳 · peak 酉 · storehouse 丑", "zh": "生巳·旺酉·庫丑" } }
+      ]
+    },
+    {
+      "id": "sanhui",
+      "title": { "th": "9) 三会方局 สามทิศ/สามฤดู", "en": "9) Three Directional Unions 三会", "zh": "九、三會方局" },
+      "intro": { "th": "แรงกว่า三合 เพราะเป็นกิ่งฤดูเดียวกันมารวมทิศ", "en": "Stronger than 三合 — same-season branches uniting a direction.", "zh": "強於三合 — 同季之支會方。" },
+      "rows": [
+        { "k": "亥子丑 → น้ำ", "v": { "th": "ทิศเหนือ/ฤดูหนาว", "en": "North / Winter", "zh": "北方/冬" } },
+        { "k": "寅卯辰 → ไม้", "v": { "th": "ทิศตะวันออก/ฤดูใบไม้ผลิ", "en": "East / Spring", "zh": "東方/春" } },
+        { "k": "巳午未 → ไฟ", "v": { "th": "ทิศใต้/ฤดูร้อน", "en": "South / Summer", "zh": "南方/夏" } },
+        { "k": "申酉戌 → ทอง", "v": { "th": "ทิศตะวันตก/ฤดูใบไม้ร่วง", "en": "West / Autumn", "zh": "西方/秋" } }
+      ]
+    },
+    {
+      "id": "liuchong",
+      "title": { "th": "11) 六冲 ชงไม่ใช่แค่พัง", "en": "11) Six Clashes 六冲", "zh": "十一、六冲" },
+      "intro": { "th": "冲 มี 3 มิติ: (1)กระแทกให้เคลื่อน/เปลี่ยน/ย้าย (2)ดูใครชนะจากฤดู+ราก+ตำแหน่ง (3)ชนคลัง辰戌丑未 = เปิดคลัง · ชงใกล้แรงกว่าไกล · ชง忌神อาจดี · ชง用神ทำลายฐาน", "en": "Clash has 3 dimensions: (1) forces movement/change (2) who wins by season+root+position (3) clashing a storehouse 辰戌丑未 opens it. Near clash > far. Clashing the Avoid God may help; clashing the Useful God ruins the base.", "zh": "冲三義：動/變/遷；以令根位定勝負；冲庫(辰戌丑未)為開庫。近冲強於遠冲；冲忌或吉，冲用破基。" },
+      "rows": [
+        { "k": "子午", "v": { "th": "น้ำ-ไฟ · อารมณ์/หัวใจ/การเดินทาง", "en": "Water-Fire · emotion/heart/travel", "zh": "水火 · 情/心/動" } },
+        { "k": "丑未", "v": { "th": "ดิน-ดิน · เปิดคลังทอง/ไม้ · ทรัพย์สิน/ครอบครัว", "en": "Earth-Earth · opens Metal/Wood storehouse · assets/family", "zh": "土土 · 開金木庫 · 財/家" } },
+        { "k": "寅申", "v": { "th": "ไม้-ทอง · การเริ่มต้น งาน เดินทาง", "en": "Wood-Metal · beginnings, work, travel", "zh": "木金 · 始/業/動" } },
+        { "k": "卯酉", "v": { "th": "ไม้-ทอง · ความสัมพันธ์ ภาพลักษณ์ สัญญา", "en": "Wood-Metal · relationships, image, contracts", "zh": "木金 · 緣/相/約" } },
+        { "k": "辰戌", "v": { "th": "ดิน-ดิน · เปิดคลังน้ำ/ไฟ · บ้าน/ที่ดิน/ความเชื่อ", "en": "Earth-Earth · opens Water/Fire storehouse · home/land/beliefs", "zh": "土土 · 開水火庫 · 宅/地/信" } },
+        { "k": "巳亥", "v": { "th": "ไฟ-น้ำ · เดินทางไกล ความลับ จิตใจ", "en": "Fire-Water · long travel, secrets, mind", "zh": "火水 · 遠行/密/心" } }
+      ]
+    },
+    {
+      "id": "xing",
+      "title": { "th": "12) 刑 เฮ้ง/ทัณฑ์", "en": "12) Xing 刑 (Punishment)", "zh": "十二、刑" },
+      "intro": { "th": "ไม่ระเบิดแรงเท่า冲 แต่เป็นแรงกดดันเรื้อรัง — ภาระ คดี ความเจ็บป่วย ความอึดอัดสะสม", "en": "Not explosive like clash, but chronic pressure — burden, lawsuits, illness, accumulating stress.", "zh": "不若冲之爆，乃久壓 — 負累、官非、病、積鬱。" },
+      "rows": [
+        { "k": "寅巳申", "v": { "th": "三刑/无恩之刑 · กดดัน แข่งขัน หุนหัน บาดเจ็บจากความเร็ว", "en": "Triple Xing/ungrateful · pressure, competition, impulsiveness, speed injuries", "zh": "三刑/無恩之刑 · 壓、爭、躁、速傷" } },
+        { "k": "丑未戌", "v": { "th": "三刑/恃势之刑 · กดดันจากครอบครัว ทรัพย์สิน ภาระสะสม", "en": "Triple Xing/relying-on-power · pressure from family, assets, burdens", "zh": "三刑/恃勢之刑 · 家、財、責之壓" } },
+        { "k": "子卯", "v": { "th": "无礼之刑 · เสียมารยาท/ขอบเขต อารมณ์กับความสัมพันธ์ตีกัน", "en": "Rude Xing · broken boundaries, emotion vs relationship conflict", "zh": "無禮之刑 · 失禮/越界、情緣相擊" } },
+        { "k": "辰辰·午午·酉酉·亥亥", "v": { "th": "自刑 · พลังวนซ้ำในตัวเอง ความคิดวน/ใจร้อน/วิจารณ์ตัวเอง/หมกมุ่น", "en": "Self-Xing · self-looping force: rumination/hot temper/self-criticism/obsession", "zh": "自刑 · 內耗循環：思繞/躁/自責/執" } }
+      ]
+    },
+    {
+      "id": "hai",
+      "title": { "th": "13) 害 ไห่ ภัยซ่อนเร้น", "en": "13) Hai 害 (Hidden Harm)", "zh": "十三、害" },
+      "intro": { "th": "ออกทางความไม่ไว้ใจ การถูกขัดขวาง ความสัมพันธ์เสียแบบไม่เปิดเผย ปัญหาลากยาว", "en": "Manifests as distrust, obstruction, covertly damaged relationships, prolonged problems.", "zh": "現於猜疑、受阻、暗壞之緣、久拖之患。" },
+      "rows": [
+        { "k": "子未", "v": { "th": "ครอบครัว/สุขภาพ/ความปลอดภัยทางใจ", "en": "family/health/emotional safety", "zh": "家/健/心安" } },
+        { "k": "丑午", "v": { "th": "ความมั่นคงปะทะความรีบ", "en": "stability vs haste friction", "zh": "穩與急之摩" } },
+        { "k": "寅巳", "v": { "th": "ช่วยกันแต่บาดกัน เร่ง/เผาไหม้เร็ว", "en": "help yet hurt, fast burn", "zh": "助而相傷、速耗" } },
+        { "k": "卯辰", "v": { "th": "ไม่ลงรอยละเอียด สัญญา/คำพูด/ขอบเขต", "en": "subtle discord, contracts/words/boundaries", "zh": "細不合、約/言/界" } },
+        { "k": "申亥", "v": { "th": "ความลับ ระแวง การเดินทาง", "en": "secrets, suspicion, travel", "zh": "密、疑、行" } },
+        { "k": "酉戌", "v": { "th": "ทำร้ายด้วยกฎ มาตรฐาน คำวิจารณ์", "en": "harm via rules, standards, criticism", "zh": "以規/標/評傷之" } }
+      ]
+    },
+    {
+      "id": "po",
+      "title": { "th": "14) 破 ผั่ว แตก/หลุดระบบ", "en": "14) Po 破 (Break)", "zh": "十四、破" },
+      "intro": { "th": "อ่อนกว่า冲และ刑 แต่ถ้าซ้อนปฏิกิริยาอื่น = ยืนยันว่าระบบเดิมเริ่มร้าว/ไม่ต่อเนื่อง", "en": "Weaker than 冲/刑, but stacked with others it confirms the old system is cracking/discontinuous.", "zh": "弱於冲刑，然與他應疊現，則證舊局начала裂、失續。" },
+      "rows": [
+        { "k": "子酉", "v": { "th": "ภาพลักษณ์/ความสัมพันธ์/กฎส่วนตัวไม่ลงล็อก", "en": "image/relationship/personal-rule misalignment", "zh": "相/緣/己規不合" } },
+        { "k": "丑辰", "v": { "th": "ระบบทรัพย์สิน/เอกสาร/ครอบครัวติดขัด", "en": "assets/paperwork/family stuck", "zh": "財/文/家滯" } },
+        { "k": "寅亥", "v": { "th": "คู่合ไม้ที่แฝง破 ดึงดูดแต่เสียขอบเขต", "en": "Wood-combine pair hiding 破 — attract yet lose boundary", "zh": "合木而藏破 — 吸而失界" } },
+        { "k": "卯午", "v": { "th": "แสดงออกแรงเกิน เสียมารยาท/ขัดใจ", "en": "over-expression, rudeness/friction", "zh": "表現過、失禮/相拗" } },
+        { "k": "巳申", "v": { "th": "คู่合น้ำแฝง破/刑 รวมได้แต่ไว้ใจยาก", "en": "Water-combine pair hiding 破/刑 — combine yet hard to trust", "zh": "合水而藏破刑 — 合而難信" } },
+        { "k": "未戌", "v": { "th": "ดินแห้งสองคลังแตก ความยึดติด/ทรัพย์ต้องปรับ", "en": "two dry storehouses crack — attachments/assets must adjust", "zh": "燥土二庫裂 — 執/財須調" } }
+      ]
+    },
+    {
+      "id": "anhe",
+      "title": { "th": "15) 暗合 ความสัมพันธ์ลับผ่านก้านซ่อน", "en": "15) An He 暗合 (Hidden Combination)", "zh": "十五、暗合" },
+      "intro": { "th": "อ่านสิ่งไม่เปิดเผย — ความสัมพันธ์ลับ ดีลใต้โต๊ะ เงินไม่ชัด แรงดึงดูดที่คนนอกมองไม่เห็น · ห้ามฟันธงถ้าไม่มีหลักฐานชีวิตจริง", "en": "Reads the hidden — secret relationships, under-table deals, unclear money, attraction unseen by outsiders. Do not conclude without real-life evidence.", "zh": "讀隱事 — 密緣、檯底交易、不明之財、外人不見之吸引。無實證勿斷。" },
+      "rows": [
+        { "k": "寅丑", "v": { "th": "甲合己·丙合辛·戊合癸 — ลักลอบภาคีสมบูรณ์ ดีลใต้ดินทรงพลัง", "en": "甲-己·丙-辛·戊-癸 — most complete covert alliance, powerful underground deals", "zh": "甲己·丙辛·戊癸 — 暗合最全，地下之約強" } },
+        { "k": "卯申", "v": { "th": "乙合庚 — ตกลงผลประโยชน์ลับบริหารกับสายปฏิบัติ", "en": "乙-庚 — covert interest deal between management and operations", "zh": "乙庚 — 管理與執行之密約" } },
+        { "k": "午亥", "v": { "th": "丁合壬·己合甲 — กระแสเงินลับ หรือรักที่เปิดเผยไม่ได้", "en": "丁-壬·己-甲 — secret cash flow or undisclosable love", "zh": "丁壬·己甲 — 暗財或不可宣之情" } }
+      ]
+    },
+    {
+      "id": "muku",
+      "title": { "th": "16) 墓库 คลังทั้งสี่", "en": "16) Four Storehouses 墓库", "zh": "十六、墓庫" },
+      "intro": { "th": "辰=คลังน้ำ · 未=คลังไม้ · 戌=คลังไฟ · 丑=คลังทอง · เปิดคลังด้วยชง (辰戌冲/丑未冲) — ดีหรือร้ายดูว่าของในคลังเป็น用神หรือ忌神", "en": "辰=Water · 未=Wood · 戌=Fire · 丑=Metal storehouse. Opened by clash (辰戌/丑未) — good or bad depends on whether the contents are Useful or Avoid God.", "zh": "辰水庫·未木庫·戌火庫·丑金庫。以冲開庫(辰戌/丑未) — 吉凶視庫中為用為忌。" },
+      "rows": [
+        { "k": "辰戌冲", "v": { "th": "เปิดคลังน้ำ-ไฟ · ความทรงจำ/ความเชื่อ/บ้าน/ที่ดินถูกกระตุ้น", "en": "opens Water-Fire storehouse · memory/beliefs/home/land activated", "zh": "開水火庫 · 憶/信/宅/地動" } },
+        { "k": "丑未冲", "v": { "th": "เปิดคลังทอง-ไม้ · ทรัพย์สิน งาน ครอบครัว vs กฎระเบียบ", "en": "opens Metal-Wood storehouse · assets/work/family vs rules", "zh": "開金木庫 · 財/業/家 與 規之爭" } }
+      ]
+    },
+    {
+      "id": "tengods",
+      "title": { "th": "17) สิบเทพ แปลธาตุเป็นเรื่องชีวิต", "en": "17) Ten Gods 十神", "zh": "十七、十神" },
+      "intro": { "th": "ธาตุดิบยังไม่พอ — ต้องเทียบกับ Day Master แล้วแปลงเป็นสิบเทพ จึงรู้ว่าเรื่องนั้นคือเงิน งาน คู่ ลูก สุขภาพ อำนาจ หรือผู้ช่วย", "en": "Raw elements are not enough — compare to the Day Master and convert to Ten Gods to know if it is money, career, spouse, children, health, power, or helper.", "zh": "生五行未足 — 須對日主化為十神，方知財/業/配/子/健/權/助。" },
+      "rows": [
+        { "k": "比肩 / 劫财", "v": { "th": "เพื่อนพ้อง/ปล้นทรัพย์ — พี่น้อง เพื่อน หุ้นส่วน คู่แข่ง · DMอ่อน=ช่วย · DMแข็ง+มีทรัพย์=แย่งเสียเงิน", "en": "Peer/Rob Wealth — siblings, friends, partners, rivals · weak DM=help · strong DM with wealth=loss", "zh": "比肩/劫財 — 兄弟友夥敵 · 身弱則助 · 身旺見財則奪" } },
+        { "k": "食神 / 伤官", "v": { "th": "เทพกิน/ทำลายอำนาจ — ผลงาน ลูก ความคิดสร้างสรรค์ การพูด · 伤官见官=ขัดอำนาจ คดี", "en": "Eating God/Hurting Officer — output, children, creativity, speech · 伤官见官=power conflict, lawsuit", "zh": "食神/傷官 — 作品/子/創/言 · 傷官見官=犯上、官非" } },
+        { "k": "偏财 / 正财", "v": { "th": "ทรัพย์ลอย/ทรัพย์ปกติ — เงินก้อน/ธุรกิจ · เงินเดือน/ภรรยา(ชาย) · DMแข็งคุมได้=รวย · DMอ่อน=เหนื่อยได้น้อย", "en": "Indirect/Direct Wealth — windfall/business · salary/wife(male) · strong DM controls=rich · weak DM=tired for little", "zh": "偏財/正財 — 大財/業 · 薪/妻(男) · 身旺能任則富 · 身弱徒勞" } },
+        { "k": "七杀 / 正官", "v": { "th": "เจ็ดสังหาร/อำนาจปกติ — อำนาจ ศัตรู โรค ตำแหน่ง สามี(หญิง) · มีตัวคุม(食神制杀)/印化=บารมี · ลอยไม่มีคุม=ภัย", "en": "Seven Killings/Direct Officer — power, enemies, illness, position, husband(female) · controlled(食神制杀)/印化=authority · uncontrolled=danger", "zh": "七殺/正官 — 權/敵/病/位/夫(女) · 食制印化=貴 · 無制=凶" } },
+        { "k": "偏印 / 正印", "v": { "th": "ตราลอย/ตราปกติ — แม่ การศึกษา ผู้อุปถัมภ์ ศาสตร์ · 枭神夺食=ทำลายผลงาน · 印多=พึ่งพา ขี้เกียจ", "en": "Indirect/Direct Resource — mother, study, patron, esoterics · 枭神夺食=ruins output · too much=dependent, lazy", "zh": "偏印/正印 — 母/學/貴人/術 · 梟神奪食=壞作 · 印多=依賴懶" } }
+      ]
+    },
+    {
+      "id": "order",
+      "title": { "th": "18) ลำดับอ่านดวง", "en": "18) Reading Order", "zh": "十八、論命次序" },
+      "rows": [
+        { "k": "1-3", "v": { "th": "แปลงสี่เสาด้วย节气 → ระบุ Day Master + ฤดูเดือนเกิด + ก้านซ่อน", "en": "Convert four pillars by solar terms → identify Day Master + birth season + hidden stems", "zh": "節氣排盤 → 定日主、月令、藏干" } },
+        { "k": "4-5", "v": { "th": "ประเมิน旺衰 (ฤดู>ราก>ก้านช่วย/ควบ>กลุ่ม合会冲) → หาโครงสร้าง格局 → แยก喜/忌/用神", "en": "Assess strength (season>root>helping/controlling stems>combine/clash groups) → find structure → separate Xi/Ji/Useful God", "zh": "評旺衰(令>根>助剋>合會冲) → 定格局 → 分喜忌用神" } },
+        { "k": "6-7", "v": { "th": "ตรวจปฏิกิริยาดวงเดิม (合冲刑害破三合三会) → ตรวจดวงจร 大运/流年/流月", "en": "Check natal interactions (合冲刑害破三合三会) → check luck cycles 大运/流年/流月", "zh": "查原局互動 → 查大運/流年/流月" } },
+        { "k": "8", "v": { "th": "ผูกกับตำแหน่งเสา: ปี=วงศ์/สังคม · เดือน=พ่อแม่/งาน · วัน=ตัวตน-คู่ · ชั่วโมง=ลูก/อนาคต", "en": "Map to pillars: Year=clan/society · Month=parents/work · Day=self-spouse · Hour=children/future", "zh": "繫於四柱：年=族/社 · 月=父母/業 · 日=己-配 · 時=子/未來" } }
+      ]
+    },
+    {
+      "id": "mistakes",
+      "title": { "th": "22) ข้อผิดพลาดที่พบบ่อย", "en": "22) Common Mistakes", "zh": "二十二、常見錯誤" },
+      "rows": [
+        { "k": "1", "v": { "th": "อ่านคะแนนดิบเป็นดี/ร้ายทันที", "en": "Reading raw scores as good/bad instantly", "zh": "即以生數定吉凶" } },
+        { "k": "2", "v": { "th": "เห็น合 แล้วบอกแปรธาตุทันที · เห็น冲 แล้วบอกร้ายทันที", "en": "Seeing 合=transform / 冲=bad instantly", "zh": "見合即化、見冲即凶" } },
+        { "k": "3", "v": { "th": "ไม่ดู月令 / ไม่ดูก้านซ่อน → น้ำหนักธาตุ+รากผิด", "en": "Ignoring Month Command / hidden stems → wrong strength+root", "zh": "不察月令/藏干 → 旺衰根錯" } },
+        { "k": "4", "v": { "th": "ไม่ดูว่าอะไร resolve ก่อน · ใช้กฎปกติกับดวงพิเศษ 从格/化格/专旺格", "en": "Ignoring resolution order · using normal rules on special charts (从/化/专旺)", "zh": "不分先後 · 以常法論从/化/專旺" } },
+        { "k": "5", "v": { "th": "ฟันธงแรงเกินข้อมูล · เอาปาจื้อแทนแพทย์/กฎหมาย/การเงิน", "en": "Over-asserting beyond data · using BaZi to replace doctor/lawyer/financial expert", "zh": "斷過其實 · 以命理代醫/法/財專業" } }
+      ]
+    },
+    {
+      "id": "formula7",
+      "title": { "th": "23) สูตร 7 ข้อ ก่อนฟันธงปฏิกิริยา", "en": "23) 7-Question Formula", "zh": "二十三、論互動七問" },
+      "rows": [
+        { "k": "1-2", "v": { "th": "ปฏิกิริยานี้คืออะไร (合冲刑害破三合三会)? · เกิดใกล้หรือไกล?", "en": "What interaction is it? · Near or far?", "zh": "何種互動？ · 近或遠？" } },
+        { "k": "3-4", "v": { "th": "แตะเสาเดือน/วันไหม? · ธาตุที่เกี่ยวได้ฤดู/มีรากไหม?", "en": "Touches Month/Day pillar? · Element in season/rooted?", "zh": "動月/日柱否？ · 所涉得令/有根否？" } },
+        { "k": "5-6", "v": { "th": "มีปฏิกิริยาอื่นแรงกว่ามาตรึง/ทำลายไหม? · สิ่งที่ถูกกระทบเป็น用神หรือ忌神?", "en": "Stronger interaction binding/breaking it? · Target is Useful or Avoid God?", "zh": "有他應更強合住/破之否？ · 所動為用為忌？" } },
+        { "k": "7", "v": { "th": "แปลเป็นเรื่องชีวิตผ่านสิบเทพ+ตำแหน่งเสาแล้วคือเรื่องอะไร?", "en": "Translate to life via Ten Gods + pillar position — what matter is it?", "zh": "經十神+柱位譯為何事？" } }
+      ]
+    },
+    {
+      "id": "onepage",
+      "title": { "th": "24) สรุปคัมภีร์หนึ่งหน้า", "en": "24) One-Page Summary", "zh": "二十四、一頁總綱" },
+      "rows": [
+        { "k": "月令·藏干·通根", "v": { "th": "月令=หัวใจกำลังธาตุ · 藏干=พลังจริงในกิ่ง · 通根=ทำให้ก้านมีพลังจริง", "en": "Month Command=core of strength · Hidden Stems=real power in branch · Rooting=makes a stem real", "zh": "月令為旺衰之本 · 藏干為支中實力 · 通根使干有力" } },
+        { "k": "合冲刑害破", "v": { "th": "合=ผูกก่อนแปรทีหลัง · 冲=เปลี่ยน/เปิดคลัง ไม่ใช่ร้ายเสมอ · 刑=กดดันเรื้อรัง · 害=ภัยซ่อน · 破=แตก/หลุดระบบ", "en": "合=bind then transform · 冲=change/open storehouse, not always bad · 刑=chronic pressure · 害=hidden harm · 破=break/discontinuity", "zh": "合先繫後化 · 冲為變/開庫非定凶 · 刑久壓 · 害暗損 · 破裂脫" } },
+        { "k": "用神/忌神", "v": { "th": "ตัดสินหลังปฏิกิริยาถูก resolve แล้ว · ดี/ร้ายขึ้นกับว่าแรงนั้นช่วยสมดุลหรือทำลายสมดุลดวง", "en": "Decide AFTER interactions are resolved · good/bad depends on whether the force balances or unbalances the chart", "zh": "互動釐清後方定 · 吉凶視其助衡或破衡" } }
+      ]
+    }
+  ],
+  "disclaimer": {
+    "th": "⚠ คัมภีร์นี้ใช้เพื่อเข้าใจหลักปฏิกิริยา ไม่ใช่คำทำนายฟันธง · ปาจื้อไม่แทนแพทย์ กฎหมาย หรือผู้เชี่ยวชาญการเงิน",
+    "en": "⚠ This codex is for understanding interaction principles, not definitive prediction · BaZi does not replace medical, legal, or financial professionals.",
+    "zh": "⚠ 本寶典用以明互動之理，非鐵口直斷 · 命理不代醫、法、財之專業。"
+  }
+}

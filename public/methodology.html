@@ -315,6 +315,13 @@
       <div id="fs-cs-body"></div>
     </section>
 
+    <section class="card" id="im-card">
+      <h2><span class="han">應</span> <span id="im-title"></span></h2>
+      <p id="im-intro" style="font-size:14px;color:var(--fg);line-height:1.85;"></p>
+      <div id="im-body"></div>
+      <p id="im-disclaimer" style="font-size:13px;color:#d9a44c;margin-top:12px;line-height:1.7;"></p>
+    </section>
+
     <div class="cross-link">
       <a href="/chart">📜 ดวงของฉัน</a>
       <a href="/today">🌅 ฤกษ์วันนี้</a>
@@ -1833,7 +1840,35 @@ function renderAll(){
   renderTOC();
   renderAdv();
   renderFengshui();
+  renderInteraction();
 }
+
+/* 25 พ.ค. · คัมภีร์ปฏิกิริยาดวง (合冲刑害破/三合/สิบเทพ) · โหลดจาก interaction-methodology.json · 3 ภาษา */
+window.INTERACTION_M = null;
+function renderInteraction(){
+  const L = LANG, M = window.INTERACTION_M;
+  const card = document.getElementById('im-card');
+  if(!M){ if(card) card.style.display='none'; return; }
+  if(card) card.style.display='';
+  const pick = o => (o && (o[L] || o.th)) || '';
+  document.getElementById('im-title').textContent = pick(M.title);
+  document.getElementById('im-intro').textContent = pick(M.intro);
+  document.getElementById('im-disclaimer').textContent = pick(M.disclaimer);
+  const body = document.getElementById('im-body'); body.textContent='';
+  (M.sections||[]).forEach(sec => {
+    const h = document.createElement('h3');
+    h.style.cssText = 'margin-top:16px;font-size:15px;';
+    h.textContent = pick(sec.title); body.appendChild(h);
+    if(sec.intro){ const p=document.createElement('p'); p.style.cssText='font-size:13px;color:var(--fg);opacity:.8;line-height:1.7;'; p.textContent=pick(sec.intro); body.appendChild(p); }
+    (sec.rows||[]).forEach(r => {
+      const d=document.createElement('div'); d.className='tile'; d.style.marginBottom='6px';
+      const k=document.createElement('div'); k.className='h'; k.textContent=r.k; d.appendChild(k);
+      const v=document.createElement('div'); v.className='d'; v.innerHTML=pick(r.v); d.appendChild(v);
+      body.appendChild(d);
+    });
+  });
+}
+fetch('/_preview/interaction-methodology.json').then(r=>r.json()).then(d=>{ window.INTERACTION_M=d; renderInteraction(); }).catch(e=>console.warn('interaction methodology load failed:',e));
 
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);
