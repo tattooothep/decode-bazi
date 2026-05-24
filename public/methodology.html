@@ -281,6 +281,20 @@
       <p id="fs-nashui-sh-note" style="font-size:13px;color:#d9a44c;"></p>
     </section>
 
+    <section class="card" id="fs-ganzhi-card">
+      <h2><span class="han">干支</span> <span id="fs-gz-title"></span></h2>
+      <div id="fs-gz-intro" style="font-size:14px;color:var(--fg);line-height:1.85;"></div>
+      <h3 id="fs-gz-branch-title" style="margin-top:16px;font-size:15px;"></h3>
+      <p id="fs-gz-branch-intro" style="font-size:13px;color:var(--fg);opacity:.8;"></p>
+      <div id="fs-gz-branch-ex" class="grid-2"></div>
+      <h3 id="fs-gz-group-title" style="margin-top:16px;font-size:15px;"></h3>
+      <div id="fs-gz-groups" class="grid-2"></div>
+      <h3 id="fs-gz-stem-title" style="margin-top:16px;font-size:15px;"></h3>
+      <p id="fs-gz-stem-intro" style="font-size:13px;color:var(--fg);opacity:.8;"></p>
+      <div id="fs-gz-stem-ex" class="grid-2"></div>
+      <p id="fs-gz-stem-note" style="font-size:13px;color:var(--fg);opacity:.75;margin-top:10px;line-height:1.7;"></p>
+    </section>
+
     <div class="cross-link">
       <a href="/chart">📜 ดวงของฉัน</a>
       <a href="/today">🌅 ฤกษ์วันนี้</a>
@@ -950,6 +964,37 @@ const FENGSHUI_DATA = {
         'หลักสำคัญ: 來水ควรมาจากทิศ 生旺 (พลังรุ่งเรือง) · 去水ควรออกทาง 墓絕 (พลังหมด)',
       ],
       shNote:'⚠ ยังไม่เปิดใช้จริง — ต้องกรอกกฎ 來水/去水/水口/十二長生 ให้ครบก่อน จึงจะฟันธงได้',
+    },
+    ganzhi:{
+      title:'วิธีอ่านก้านฟ้าและกิ่งดิน · 天干地支',
+      intro:[
+        'หมวดก้านฟ้าและกิ่งดิน ใช้อ่าน "ความหมายเชิงพลังและสัญลักษณ์ของทิศ" จากเข็มดิน (地盤正針) ช่วยให้เข้าใจว่าทิศนั้นมีภาพพลังแบบใด และเหมาะกับการใช้งานพื้นที่แบบไหน',
+        'ผลลัพธ์เป็นคำอธิบายเชิง象 / ภาพพลัง เช่น ความสงบ การเคลื่อนไหว ครอบครัว ความงาม การจัดเก็บ การเริ่มต้น หรือการปกป้อง — ไม่ใช่คำตัดสินฮวงจุ้ยสุดท้าย',
+        'คะแนน 1–5 คือคะแนนความเหมาะสมเชิงคำอธิบายของเว็บ บอกว่าทิศนั้นเหมาะกับฟังก์ชันที่แนะนำมากน้อยแค่ไหน เช่น มุมครอบครัว ห้องกินข้าว ทางเดิน โรงรถ มุมอ่านหนังสือ หรือพื้นที่โชว์',
+        '⚠ คะแนนนี้ไม่ใช่คะแนนดี-ร้ายสุดท้ายของฮวงจุ้ย เพราะการตัดสินจริงยังต้องดูระบบอื่นร่วมด้วย เช่น ดาวเหิน ประตู เตา น้ำ ภูเขา ปีจร และแปลนบ้านจริง',
+      ],
+      branchTitle:'12 กิ่งดิน · 地支',
+      branchIntro:'กิ่งดินแสดงพลังของทิศที่สัมพันธ์กับนักษัตร เวลา ฤดูกาล ธาตุ และภาพสัญลักษณ์ของทิศนั้น',
+      branchEx:[
+        {k:'未 · แพะ', v:'ครอบครัว อาหาร การเลี้ยงดู และความอบอุ่น'},
+        {k:'巳 · งู', v:'การเคลื่อนไหว การเปลี่ยนผ่าน การเดินทาง และทางสัญจร'},
+        {k:'酉 · ไก่', v:'ความงาม ความประณีต และการจัดระเบียบ'},
+      ],
+      groupTitle:'กิ่งดินแบ่งเป็น 3 กลุ่มใหญ่',
+      groups:[
+        {name:'四長生 · 驛馬', members:'寅 申 巳 亥', q:'การเคลื่อนไหว ทางเข้า ทางเดิน โรงรถ การเดินทาง และพื้นที่เปลี่ยนผ่าน'},
+        {name:'四正 · 桃花', members:'子 午 卯 酉', q:'จุดเด่น เสน่ห์ ความสัมพันธ์ ชื่อเสียง ความงาม และพื้นที่สังคม'},
+        {name:'四庫', members:'辰 戌 丑 未', q:'คลัง การเก็บสะสม ครอบครัว อาหาร ทรัพย์สิน และฐานราก'},
+      ],
+      stemTitle:'10 ก้านฟ้า · 天干',
+      stemIntro:'ก้านฟ้าแสดงพลังธาตุฟ้าของทิศ (ไม้ ไฟ ดิน ทอง น้ำ) พร้อมลักษณะหยินหยางของพลังนั้น',
+      stemEx:[
+        {k:'甲 · ไม้หยาง', v:'เปรียบเหมือนต้นไม้ใหญ่ เหมาะกับการเริ่มต้น การวางแผน และโครงสร้าง'},
+        {k:'丁 · ไฟหยิน', v:'เปรียบเหมือนตะเกียง เหมาะกับแสงปัญญา ห้องอ่านหนังสือ และงานละเอียด'},
+        {k:'辛 · ทองหยิน', v:'เปรียบเหมือนอัญมณี เหมาะกับความงาม การจัดระเบียบ และงานประณีต'},
+        {k:'壬 · น้ำหยาง', v:'เปรียบเหมือนมหาสมุทร เหมาะกับเครือข่าย การเดินทาง และแผนธุรกิจ'},
+      ],
+      stemNote:'ในวง 24 ขุนเขา มีก้านฟ้า 8 ตัว: 甲 乙 丙 丁 庚 辛 壬 癸 · ส่วน 戊 และ 己 เป็นก้านกลาง ไม่อยู่บน 24 ทิศโดยตรง แต่ใช้ตีความจุดกึ่งกลางบ้านในระบบวิเคราะห์แปลนได้',
     }
   },
   en: {
@@ -1004,6 +1049,37 @@ const FENGSHUI_DATA = {
         'Core principle: incoming water should come from prosperous phases (生旺) · outgoing water should leave through storage/terminating phases (墓絕).',
       ],
       shNote:'⚠ Not yet active — incoming/outgoing/water-mouth and the Twelve Growth Phases must be configured before judgement.',
+    },
+    ganzhi:{
+      title:'How to Read the Heavenly Stems & Earthly Branches · 天干地支',
+      intro:[
+        'This layer interprets the symbolic quality of a direction from the Earth Plate (地盤正針) — what kind of energy and image a direction carries, and which spatial functions it suits.',
+        'Results are symbolic interpretations such as stillness, movement, family, beauty, storage, beginnings, or protection — not a final Feng Shui judgement.',
+        'The 1–5 score is an editorial fit-score: how well a direction symbolically suits a suggested function such as a family corner, dining room, corridor, garage, reading area, or display space.',
+        '⚠ This score is NOT the final auspicious/inauspicious score. A full judgement still requires Flying Stars, doors, stove, water, mountain forms, annual afflictions, and the actual floor plan.',
+      ],
+      branchTitle:'Twelve Earthly Branches · 地支',
+      branchIntro:'The Branches show a direction’s quality through zodiac, time, season, Five Element, and spatial imagery.',
+      branchEx:[
+        {k:'未 · Goat', v:'Family, food, nurturing, warmth, and care'},
+        {k:'巳 · Snake', v:'Movement, transition, travel, circulation, and passageways'},
+        {k:'酉 · Rooster', v:'Beauty, refinement, organization, and precision'},
+      ],
+      groupTitle:'The Twelve Branches form three major groups',
+      groups:[
+        {name:'Four Growth · 驛馬', members:'寅 申 巳 亥', q:'Movement, entrances, corridors, garages, travel, and transition spaces'},
+        {name:'Four Cardinals · 桃花', members:'子 午 卯 酉', q:'Attraction, relationships, reputation, beauty, and social spaces'},
+        {name:'Four Storages · 四庫', members:'辰 戌 丑 未', q:'Storage, family, food, assets, foundation, and stability'},
+      ],
+      stemTitle:'Ten Heavenly Stems · 天干',
+      stemIntro:'The Stems describe the celestial Five-Element and yin-yang quality of a direction.',
+      stemEx:[
+        {k:'甲 · Yang Wood', v:'Like a large tree — growth, structure, planning, and leadership'},
+        {k:'丁 · Yin Fire', v:'Like a lamp — wisdom, reading, subtle light, and refined focus'},
+        {k:'辛 · Yin Metal', v:'Like jewelry — beauty, refinement, value, and organization'},
+        {k:'壬 · Yang Water', v:'Like the ocean — movement, networks, travel, and large-scale planning'},
+      ],
+      stemNote:'Only eight Stems appear on the 24 Mountains: 甲 乙 丙 丁 庚 辛 壬 癸 · 戊 and 己 are central Earth stems, not on the 24 directions, but used to interpret the center sector of a floor plan.',
     }
   },
   zh: {
@@ -1058,6 +1134,37 @@ const FENGSHUI_DATA = {
         '要訣：來水要生旺，去水要墓絕。',
       ],
       shNote:'⚠ 尚未啟用 — 須先設定來水、去水、水口與十二長生，方可論斷。',
+    },
+    ganzhi:{
+      title:'天干地支的閱讀方法',
+      intro:[
+        '天干與地支用以解讀方位的象意與能量特質，以地盤正針為基礎，說明某一方位帶有什麼樣的象、氣質與功能傾向。',
+        '此屬象意解讀，例如安靜、流動、家庭、收藏、美感、開始、保護等，非最終風水吉凶判斷。',
+        '1–5 分為本系統依象意與空間功能所給之「功能適配分」，表示某方位與某用途是否相合，如家庭角、餐廳、走道、車庫、閱讀區或展示區。',
+        '⚠ 此分數非最終吉凶分數。真正判斷仍須結合飛星、門、灶、水、砂、流年與實際格局。',
+      ],
+      branchTitle:'十二地支',
+      branchIntro:'地支呈現方位與生肖、時辰、季節、五行及象意之關係。',
+      branchEx:[
+        {k:'未 · 羊', v:'家庭、食物、照顧、溫暖與培養'},
+        {k:'巳 · 蛇', v:'流動、轉換、旅行、道路與交通動線'},
+        {k:'酉 · 雞', v:'美感、精緻、整理與秩序'},
+      ],
+      groupTitle:'十二地支分為三組',
+      groups:[
+        {name:'四長生 · 驛馬', members:'寅 申 巳 亥', q:'流動、入口、走道、車庫、旅行與轉換空間'},
+        {name:'四正 · 桃花', members:'子 午 卯 酉', q:'吸引力、關係、名氣、美感、社交與可見度'},
+        {name:'四庫', members:'辰 戌 丑 未', q:'收藏、庫藏、家庭、食物、資產、根基與穩定'},
+      ],
+      stemTitle:'十天干',
+      stemIntro:'天干解讀方位之天氣、五行與陰陽特質。',
+      stemEx:[
+        {k:'甲 · 陽木', v:'如大樹，主開始、成長、規劃與架構'},
+        {k:'丁 · 陰火', v:'如燈火，主智慧、細緻、閱讀與溫暖之光'},
+        {k:'辛 · 陰金', v:'如珠玉，主美感、精緻、價值與整理'},
+        {k:'壬 · 陽水', v:'如大海，主流動、網絡、旅行與大格局'},
+      ],
+      stemNote:'二十四山中實際出現之天干為八個：甲 乙 丙 丁 庚 辛 壬 癸 · 戊與己為中央之土，不直接落在二十四山上，可用於平面分析之住宅中心點。',
     }
   }
 };
@@ -1293,6 +1400,22 @@ function renderFengshui(){
   document.getElementById('fs-nashui-sh-title').textContent=w.shTitle;
   document.getElementById('fs-nashui-sh-body').innerHTML=w.shBody.map(x=>`<p>${x}</p>`).join('');
   document.getElementById('fs-nashui-sh-note').textContent=w.shNote;
+  /* 干支 · วิธีอ่านก้านฟ้ากิ่งดิน */
+  const g=f.ganzhi;
+  document.getElementById('fs-gz-title').textContent=g.title;
+  document.getElementById('fs-gz-intro').innerHTML=g.intro.map(x=>`<p>${x}</p>`).join('');
+  document.getElementById('fs-gz-branch-title').textContent=g.branchTitle;
+  document.getElementById('fs-gz-branch-intro').textContent=g.branchIntro;
+  const bx=document.getElementById('fs-gz-branch-ex'); bx.textContent='';
+  g.branchEx.forEach(e=>bx.appendChild(fsTile([['h',e.k],['d',e.v]])));
+  document.getElementById('fs-gz-group-title').textContent=g.groupTitle;
+  const gg=document.getElementById('fs-gz-groups'); gg.textContent='';
+  g.groups.forEach(e=>gg.appendChild(fsTile([['h',e.name],['t',e.members],['d',e.q]])));
+  document.getElementById('fs-gz-stem-title').textContent=g.stemTitle;
+  document.getElementById('fs-gz-stem-intro').textContent=g.stemIntro;
+  const sx=document.getElementById('fs-gz-stem-ex'); sx.textContent='';
+  g.stemEx.forEach(e=>sx.appendChild(fsTile([['h',e.k],['d',e.v]])));
+  document.getElementById('fs-gz-stem-note').textContent=g.stemNote;
 }
 
 function renderAll(){
