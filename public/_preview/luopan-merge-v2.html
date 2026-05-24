@@ -142,12 +142,12 @@
   #lp text{paint-order:stroke fill;stroke:var(--label-halo);stroke-width:2.2px;stroke-linejoin:round;}
   /* 城門 Castle Gate overlay colors */
   .gate-primary{fill:rgba(120,185,128,.35);stroke:#a9e1ad;stroke-width:2.5;}
-  .gate-secondary{fill:rgba(90,160,220,.32);stroke:#7cc4ff;stroke-width:2;}
+  .gate-secondary{fill:rgba(232,150,60,.30);stroke:#ffaa55;stroke-width:2;}
   .gate-danger{fill:rgba(224,108,108,.22);stroke:#ff8a7a;stroke-width:2;stroke-dasharray:5 3;}
   .gate-warning{fill:rgba(230,176,74,.22);stroke:#ffc966;stroke-width:1.6;stroke-dasharray:4 2;}
   .gate-label-bg{fill:rgba(8,10,13,.85);}
   .gate-label-primary{fill:#a9e1ad;font-family:var(--tc);font-size:11px;font-weight:700;}
-  .gate-label-secondary{fill:#7cc4ff;font-family:var(--tc);font-size:11px;font-weight:700;}
+  .gate-label-secondary{fill:#ffb866;font-family:var(--tc);font-size:11px;font-weight:700;}
   .gate-label-danger{fill:#ff8a7a;font-family:var(--tc);font-size:10px;font-weight:700;}
   /* ไม่เกิด城門 (ปกติ ไม่ร้าย) — เทากลาง · ต่างจาก danger ชัด */
   .gate-neutral{fill:rgba(150,150,150,.14);stroke:rgba(160,160,160,.5);stroke-width:1.2;stroke-dasharray:3 4;}
@@ -1673,6 +1673,30 @@ function cgGetCandidates(facingMtn){
   const idx = cgGetIdx(facingMtn.name);
   return { left:CG_MOUNTAINS_24[(idx-3+24)%24], right:CG_MOUNTAINS_24[(idx+3)%24] };
 }
+/* สถานะ城門 4 ระดับ (เช็ค danger 2/5 ก่อนเสมอ) · สี: 正เขียว 副ส้ม 候補เทา 凶แดง */
+function buildCastleGateDisplayStatus(gate){
+  const hasDanger = [2,5].includes(gate.gateWaterStar) || [2,5].includes(gate.arrivedStar);
+  if(hasDanger) return {
+    status:'凶門', label:'凶門 · หลีกเลี่ยง', shortLabel:'เลี่ยง', tone:'danger', score:1, colorKey:'red',
+    verdict:'ไม่ควรใช้เป็นจุดเปิดพลัง',
+    advice:['เลี่ยงเปิดเป็นประตูหลัก','เลี่ยงหน้าต่างใหญ่/ช่องลมแรงที่ทิศนี้','ใช้เป็นผนังทึบ มุมนิ่ง หรือพื้นที่ที่ไม่กระตุ้นการเคลื่อนไหว จะปลอดภัยกว่า']
+  };
+  if(gate.type==='正城門') return {
+    status:'正城門', label:'正城門 · ประตูเมืองแท้', shortLabel:'正城門', tone:'excellent', score:5, colorKey:'green',
+    verdict:'จุดเปิดพลังหลักได้เด่นที่สุด',
+    advice:['เหมาะเปิดประตู ช่องลม ทางเดิน หรือจุดเคลื่อนไหวหลัก','ถ้ามีช่องเปิดจริง ถือว่า activate ได้ดี','ตรวจสภาพภายนอกประกอบ — ถนน น้ำ ทางเดิน ไม่มีของแหลม/เสาพุ่ง']
+  };
+  if(gate.type==='副城門') return {
+    status:'副城門', label:'副城門 · ประตูเมืองรอง', shortLabel:'副城門', tone:'good', score:4, colorKey:'orange',
+    verdict:'ใช้เสริมได้ มงคลรอง',
+    advice:['ใช้เป็นช่องเปิดรอง หรือจุดเคลื่อนไหวเบาได้','แรงน้อยกว่า 正城門','ดูคะแนนดาวเหินรวม + สภาพภายนอกประกอบ']
+  };
+  return {
+    status:'候補不成', label:'候補 · ไม่เกิด城門', shortLabel:'ไม่เกิด', tone:'neutral', score:3, colorKey:'gray',
+    verdict:'ตำแหน่ง候補ตามองศา แต่ไม่เกิดพลัง城門พิเศษ',
+    advice:['เป็นเพียงตำแหน่ง候補ตามองศา (±3 山)','ไม่เกิด 正城門/副城門 จากสูตรบินดาว','ยังใช้เป็นประตูธรรมดาได้ ถ้าคะแนนดาวเหินรวม+สภาพภายนอกเหมาะ','อย่าใช้เป็นจุด activate หลักโดยอ้าง城門訣']
+  };
+}
 function cgEvalCandidate(cand, chart, period){
   const palaceIndex = CG_PALACE_INDEX[cand.trigram];
   const gateWater = chart.water[palaceIndex];
@@ -1700,7 +1724,8 @@ function cgEvalCandidate(cand, chart, period){
       reasons.push(`ทิศบิน: ดาวน้ำ ${gateWater} เข้ากลาง · ${CG_YUAN_LBL[fInfo.yuan]} ${fInfo.referenceMountainName}(${fInfo.referenceYinYang}) → ${fInfo.direction==='forward'?'順飛':'逆飛'}`);
     } catch(e){ warnings.push(e.message); severity='danger'; }
   } else { warnings.push('ไม่พบดาวน้ำของวัง'); severity='danger'; }
-  return { mountain:cand, palace:cand.trigram, palaceIndex, gateWaterStar:gateWater, gateBaseStar:gateBase, gateMountainStar:gateMtn, arrivedStar, type, usable, severity, reasons, warnings };
+  const result = { mountain:cand, palace:cand.trigram, palaceIndex, gateWaterStar:gateWater, gateBaseStar:gateBase, gateMountainStar:gateMtn, arrivedStar, type, usable, severity, reasons, warnings };
+  return { ...result, displayStatus: buildCastleGateDisplayStatus(result) };
 }
 function calculateCastleGateV22(facingDeg, period){
   const fMtn = cgFindMtn(facingDeg);
@@ -1794,13 +1819,12 @@ function renderBazhaiOverlay(){
   }
 }
 
-/* แยก 2 กรณี "ไม่ใช่城門" ให้ชัด: ร้าย(2/5)=เลี่ยง vs ปกติ=ไม่เกิด城門 */
+/* overlay label จาก displayStatus (4 ระดับ) · colorKey → สี wedge: 正เขียว 副ส้ม 候補เทา 凶แดง */
 function getCastleGateOverlayLabel(gate){
-  const hasDanger = [2,5].includes(gate.gateWaterStar) || [2,5].includes(gate.arrivedStar);
-  if(hasDanger) return { label:'⚠ ห้ามเปิด · 凶', wedgeCls:'gate-danger', labelCls:'gate-label-danger' };
-  if(gate.type==='正城門') return { label:'正城門', wedgeCls:'gate-primary', labelCls:'gate-label-primary' };
-  if(gate.type==='副城門') return { label:'副城門', wedgeCls:'gate-secondary', labelCls:'gate-label-secondary' };
-  return { label:'ไม่เกิด城門', wedgeCls:'gate-neutral', labelCls:'gate-label-neutral' };
+  const ds = gate.displayStatus || buildCastleGateDisplayStatus(gate);
+  const map = {green:['gate-primary','gate-label-primary'], orange:['gate-secondary','gate-label-secondary'], gray:['gate-neutral','gate-label-neutral'], red:['gate-danger','gate-label-danger']};
+  const cls = map[ds.colorKey] || map.gray;
+  return { label: ds.shortLabel, wedgeCls: cls[0], labelCls: cls[1] };
 }
 
 /* ดาวบินยุค dynamic ตามทิศบ้านจริง — sync ทั้งวง rFX + inspector(dEra.fx) จาก chart เดียว */
@@ -2074,8 +2098,6 @@ function updateInspector(){
 
   /* 城門訣 Castle Gate (เมื่อล็อกบ้านแล้ว) */
   if(castleGateResult){
-    const pg = castleGateResult.primaryGate;
-    const sg = castleGateResult.secondaryGate;
     const YUAN_TH = {Earth:'地元', Heaven:'天元', Man:'人元'};
     const EL_TH = {水:'น้ำ', 木:'ไม้', 火:'ไฟ', 土:'ดิน', 金:'ทอง'};
     /* 城門 โชว์เฉพาะเมื่อเข็มสำรวจ(cursor)หมุนมาถึงช่วงทิศประตูนั้น */
@@ -2112,23 +2134,15 @@ function updateInspector(){
       if(!g.warnings || !g.warnings.length) return '';
       return g.warnings.map(w => `<div style="color:#ff8a7a">⚠ ${fsEsc(w)}</div>`).join('');
     }
-    if(pg && cursorOnGate(pg.mountain)){
-      row('cat2','城門', `<b>${pg.mountain.name}</b> ${pg.mountain.code} · 正城門 · ${gateActStatus(pg)}`, 5,
-          gateDetailHTML(pg),
-          'เปิดประตูข้าง/ทางเข้ารองที่ทิศนี้ได้ · รับ qi ยุค ' + castleGateResult.period + ' โดยตรง · เหมาะกิจการ ค้าขาย เปิดร้าน', true);
-    }
-    if(sg && cursorOnGate(sg.mountain)){
-      row('cat2','城門', `<b>${sg.mountain.name}</b> ${sg.mountain.code} · 副城門 · ${gateActStatus(sg)}`, 4,
-          gateDetailHTML(sg),
-          'ใช้เป็นประตูสำรอง · รับ qi 生氣 (อนาคต) · เหมาะมิตรภาพ ความสัมพันธ์ โชค', true);
-    }
-    /* candidates ที่ไม่ใช่ทั้ง 正/副 → ใส่ warning */
+    /* 4 ระดับ จาก engine displayStatus · โชว์เฉพาะ candidate ที่เข็มสำรวจหมุนมาถึง */
     [castleGateResult.candidates.left, castleGateResult.candidates.right].forEach(c => {
-      if(c.type==='正城門' || c.type==='副城門') return;
       if(!cursorOnGate(c.mountain)) return;
-      row('cat2','城門', `<b>${c.mountain.name}</b> ${c.mountain.code} · ⚠ ห้ามใช้`, 1,
-          gateDetailHTML(c) + gateWarnHTML(c),
-          'ห้ามเปิดเป็นประตูที่ทิศนี้ · เลี่ยงทำหน้าต่างใหญ่ · ใช้เป็นมุมเก็บของหรือกำแพงทึบ', true);
+      const ds = c.displayStatus || buildCastleGateDisplayStatus(c);
+      const actTxt = (ds.tone==='excellent'||ds.tone==='good') ? ' · '+gateActStatus(c) : '';
+      const homeHtml = `<b>${ds.verdict}</b><br>` + ds.advice.map(a=>'• '+a).join('<br>')
+        + (ds.tone==='danger' ? gateWarnHTML(c) : '');
+      row('cat2','城門', `<b>${c.mountain.name}</b> ${c.mountain.code} · ${ds.label}${actTxt}`,
+          ds.score, gateDetailHTML(c), homeHtml, true);
     });
   }
 
