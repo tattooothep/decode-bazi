@@ -2229,14 +2229,30 @@ function updateInspector(){
     const pl=L.three_plates.plates['地盤'];
     row('cat1','三盤', `<b>${pl.name||'เข็มดิน'}</b> <span style="color:var(--fg-faint)">· 地盤</span>`, null, pl.general, pl.home);
   }
-  /* 人盤 (中針) — เข็มดูภูเขา · อธิบายแบบคนไทยเข้าใจ ใช้ยังไง */
-  row('cat1','人盤', `<b>เข็มดูภูเขา</b> <span style="color:var(--fg-faint)">· 人盤 中針 · ตรงนี้ = ${r.renpan.m} (${r.renpan.c})</span>`, null,
-      `เข็มพิเศษสำหรับ "วัดของสูง" รอบบ้าน — ภูเขา ตึกสูง เสาไฟ ต้นไม้ใหญ่ กำแพงทึบ (จีนเรียก 撥砂)`,
-      `<b>ใช้ยังไง:</b> ถ้ารอบบ้านมีของสูง (เขา/ตึก/เสา) อยู่ทาง<b>ทิศนี้</b> → ถือว่า "มีภูเขาหนุน"<br>✅ <b>ดี</b> = เสริมคน บริวาร สุขภาพ คนในบ้านแข็งแรง มีคนช่วย<br>⚠ ของสูงควรอยู่ "ด้านหลัง/ข้าง" บ้าน · ถ้าอยู่หน้าบ้าน(ตรงประตู)จะอึดอัด`, true);
-  /* 天盤 (縫針) — เข็มดูน้ำ */
-  row('cat1','天盤', `<b>เข็มดูน้ำ</b> <span style="color:var(--fg-faint)">· 天盤 縫針 · ตรงนี้ = ${r.tianpan.m} (${r.tianpan.c})</span>`, null,
-      `เข็มพิเศษสำหรับ "วัดน้ำ/ที่โล่ง" รอบบ้าน — แม่น้ำ สระ คลอง ถนนใหญ่ ที่ว่างต่ำ (จีนเรียก 納水)`,
-      `<b>ใช้ยังไง:</b> ถ้ารอบบ้านมีน้ำ/ถนน/ที่โล่ง อยู่ทาง<b>ทิศนี้</b> → ถือว่า "มีน้ำรับทรัพย์"<br>✅ <b>ดี</b> = เสริมทรัพย์ การเงิน โชคลาภ ค้าขายคล่อง<br>⚠ น้ำ/ที่โล่งควรอยู่ "ด้านหน้า" บ้าน · ตรงข้ามกับภูเขา (เขาหลัง-น้ำหน้า = ดีที่สุด)`, true);
+  /* 撥砂訣/納水訣 — 五行生剋 เทียบ向首五行 (deterministic) · โชว์ดี-ร้ายที่หัวแถว */
+  const W_SHENG={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};
+  const W_KE={wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};
+  const EL_ZH2EN={'水':'water','木':'wood','火':'fire','土':'earth','金':'metal'};
+  function shaSuiVerdict(outerEl, xiangEl){
+    if(!outerEl||!xiangEl) return null;
+    if(outerEl===xiangEl) return {v:'ดี',badge:'✅ ดี',cls:5,th:'比和 ธาตุเดียวกับหน้าบ้าน · เสริมกำลัง'};
+    if(W_KE[xiangEl]===outerEl) return {v:'ดีมาก',badge:'✅ ดีมาก',cls:5,th:'向剋 หน้าบ้านคุมได้ · กลายเป็นทรัพย์/บริวาร'};
+    if(W_SHENG[outerEl]===xiangEl) return {v:'ดี',badge:'✅ ดี',cls:4,th:'生向 หนุนหน้าบ้าน · เสริมพลัง'};
+    if(W_KE[outerEl]===xiangEl) return {v:'ร้าย',badge:'⚠ ร้าย',cls:1,th:'剋向(煞) ปะทะหน้าบ้าน · เป็นโทษ'};
+    if(W_SHENG[xiangEl]===outerEl) return {v:'อ่อน',badge:'△ อ่อน',cls:2,th:'洩氣 ดูดพลังหน้าบ้าน · เสียกำลัง'};
+    return null;
+  }
+  const xiangEl = (houseLocked && castleGateResult) ? EL_ZH2EN[castleGateResult.chart.facingMountain.element] : null;
+  /* 人盤 (中針) — เข็มดูภูเขา · 撥砂訣 */
+  const rvR = shaSuiVerdict(r.renpan.el, xiangEl);
+  row('cat1','人盤', `<b>เข็มดูภูเขา</b>${rvR?` <span class="rn-val badge ${rvR.cls>=4?'green':rvR.cls<=2?'red':''}">ถ้ามีภูเขา: ${rvR.badge}</span>`:''} <span style="color:var(--fg-faint)">· 人盤 · ${r.renpan.m}(${r.renpan.c})</span>`, rvR?rvR.cls:null,
+      `เข็มวัด "ของสูง" รอบบ้าน — ภูเขา ตึกสูง เสาไฟ ต้นไม้ใหญ่ (撥砂)${rvR?` · ทิศนี้: ${rvR.th}`:''}`,
+      `<b>ใช้ยังไง:</b> ถ้ารอบบ้านมีของสูง (เขา/ตึก/เสา) อยู่<b>ทิศนี้</b> → "มีภูเขาหนุน"<br>${rvR?`<b>ผลที่ทิศนี้: ${rvR.badge}</b> (${rvR.th})<br>`:''}✅ ดี = เสริมคน บริวาร สุขภาพ มีคนช่วย<br>⚠ ของสูงควรอยู่ "หลัง/ข้าง" บ้าน · อยู่หน้า(ตรงประตู)จะอึดอัด`, true);
+  /* 天盤 (縫針) — เข็มดูน้ำ · 納水訣 */
+  const rvT = shaSuiVerdict(r.tianpan.el, xiangEl);
+  row('cat1','天盤', `<b>เข็มดูน้ำ</b>${rvT?` <span class="rn-val badge ${rvT.cls>=4?'green':rvT.cls<=2?'red':''}">ถ้ามีน้ำ: ${rvT.badge}</span>`:''} <span style="color:var(--fg-faint)">· 天盤 · ${r.tianpan.m}(${r.tianpan.c})</span>`, rvT?rvT.cls:null,
+      `เข็มวัด "น้ำ/ที่โล่ง" รอบบ้าน — แม่น้ำ สระ คลอง ถนนใหญ่ ที่ว่างต่ำ (納水)${rvT?` · ทิศนี้: ${rvT.th}`:''}`,
+      `<b>ใช้ยังไง:</b> ถ้ารอบบ้านมีน้ำ/ถนน/ที่โล่ง อยู่<b>ทิศนี้</b> → "มีน้ำรับทรัพย์"<br>${rvT?`<b>ผลที่ทิศนี้: ${rvT.badge}</b> (${rvT.th})<br>`:''}✅ ดี = เสริมทรัพย์ การเงิน โชคลาภ<br>⚠ น้ำ/ที่โล่งควรอยู่ "หน้า" บ้าน · เขาหลัง-น้ำหน้า = ดีที่สุด`, true);
   /* 天池 */
   if(L.sky_pool?.interpretation){
     const sp=L.sky_pool.interpretation;
