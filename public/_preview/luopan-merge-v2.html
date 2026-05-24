@@ -1828,6 +1828,29 @@ function renderBazhaiOverlay(){
     t.setAttribute('transform', `rotate(${ringRotation()} ${p[0].toFixed(1)} ${(p[1]+4).toFixed(1)})`);
     t.textContent=text; grp.appendChild(t);
   }
+  /* 正神=ภูเขา(山) · 零神=น้ำ(水) เป็น icon SVG (แทน wedge แถบ) · ตั้งตรงเสมอ */
+  function drawShanShui(deg, kind){
+    const [px,py]=pt(264, deg);
+    const grp=document.createElementNS(NS,'g');
+    grp.setAttribute('transform', `translate(${px.toFixed(1)},${py.toFixed(1)}) rotate(${ringRotation()})`);
+    if(kind==='shan'){
+      grp.innerHTML = `
+        <ellipse cx="0" cy="17" rx="23" ry="4" fill="#000" opacity=".3"/>
+        <path d="M-23,16 L-9,-10 L-1,2 L8,-17 L23,16 Z" fill="#a8803c" stroke="#e8d18a" stroke-width=".9"/>
+        <path d="M-9,-10 L-4.5,-3 L-13.5,-3 Z M8,-17 L12.5,-9 L3.5,-9 Z" fill="#f5ecd0"/>
+        <rect x="-28" y="21" width="56" height="13" rx="6.5" fill="rgba(8,10,13,.9)" stroke="#e8d18a" stroke-width=".6"/>
+        <text x="0" y="30" text-anchor="middle" font-size="8" font-weight="700" fill="#f0d79a" font-family="var(--th)">ควรสูง · 正神山</text>`;
+    } else {
+      grp.innerHTML = `
+        <ellipse cx="0" cy="17" rx="23" ry="4" fill="#000" opacity=".3"/>
+        <path d="M-21,-7 Q-14,-14 -7,-7 Q0,0 7,-7 Q14,-14 21,-7" fill="none" stroke="#8fb8ec" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M-21,1 Q-14,-6 -7,1 Q0,8 7,1 Q14,-6 21,1" fill="none" stroke="#5b88c8" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M-21,9 Q-14,2 -7,9 Q0,16 7,9 Q14,2 21,9" fill="none" stroke="#3f6aa8" stroke-width="2.6" stroke-linecap="round"/>
+        <rect x="-28" y="21" width="56" height="13" rx="6.5" fill="rgba(8,10,13,.9)" stroke="#7fa8e0" stroke-width=".6"/>
+        <text x="0" y="30" text-anchor="middle" font-size="8" font-weight="700" fill="#a8c8f0" font-family="var(--th)">ควรมีน้ำ · 零神水</text>`;
+    }
+    gz.appendChild(grp);
+  }
   const seatGua=castleGateResult.chart.sittingMountain.trigram;
   const DIRS=['N','NE','E','SE','S','SW','W','NW']; /* dir8idx → center = i*45 (N บน) */
   if(g8) DIRS.forEach((d,i)=>{
@@ -1838,10 +1861,9 @@ function renderBazhaiOverlay(){
   });
   const zl=bzZhengLing(lockedPeriod);
   if(gz && zl){
-    [[zl.zheng,'正神山','#e8d18a'],[zl.ling,'零神水','#7fa8e0']].forEach(([gua,txt,col])=>{
-      const dir=Object.keys(BZ_DIR_GUA).find(k=>BZ_DIR_GUA[k]===gua); const i=DIRS.indexOf(dir);
-      wedge(gz, i*45, col, 0.20); lbl(gz, i*45, txt, col, r1+34);
-    });
+    const di=(gua)=>DIRS.indexOf(Object.keys(BZ_DIR_GUA).find(k=>BZ_DIR_GUA[k]===gua));
+    drawShanShui(di(zl.zheng)*45, 'shan');  /* 正神 ภูเขา */
+    drawShanShui(di(zl.ling)*45, 'shui');   /* 零神 น้ำ */
   }
 }
 
