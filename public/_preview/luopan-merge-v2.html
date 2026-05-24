@@ -1942,7 +1942,7 @@ fetch('/_preview/annual-warning.json').then(r => r.json()).then(d => {
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('annual-warning load failed:', e));
 
-/* 24 พ.ค. · 玄空大卦 64卦 + 卦運(ยุคของกว้า) · guaYun เติมครบ 64 · guaQi ยัง null */
+/* 24 พ.ค. · 玄空大卦 64卦 + 卦運(ยุค) + 卦氣(ชั้น) · guaYun + guaQi เติมครบ 64 (玄空大卦 เต็มรูปแบบ) */
 window.XKDG = null;
 fetch('/_preview/xkdg-64-gua.json').then(r => r.json()).then(d => {
   const byId = {}; (d.hexagrams || []).forEach(h => { byId[h.id] = h; }); d.byId = byId;
@@ -2209,10 +2209,14 @@ function updateInspector(){
     /* คะแนน: baseHouseScore(1-5)→100 (×20) + scoreAdjust → กลับเป็น 1-5 สำหรับ badge */
     const sc5 = (yun==null) ? (g.baseHouseScore||3)
       : Math.max(1, Math.min(5, Math.round(((g.baseHouseScore||3)*20 + padj)/20)));
-    const guaQiNote = (!g.xkdg || g.xkdg.guaQi==null)
-      ? ' · ⚠ ยังไม่เติม 卦氣(guaQi) → ยังไม่ใช่ 玄空大卦 เต็มรูปแบบ 100%' : '';
+    const guaQi = g.xkdg ? g.xkdg.guaQi : null;
+    /* 卦氣數 = เลขชั้น XKDG (五行/卦氣) ไม่ใช่ธาตุปกติของตรีโกณ — แสดงเป็นเลขชั้นเท่านั้น */
+    const guaQiTxt = (guaQi!=null) ? ` · 卦氣ชั้น ${guaQi}` : '';
+    const guaQiNote = (guaQi==null)
+      ? ' · ⚠ ยังไม่เติม 卦氣(guaQi) → ยังไม่ใช่ 玄空大卦 เต็มรูปแบบ 100%'
+      : ' · ✓ ครบ guaYun+卦氣 (玄空大卦 เต็มรูปแบบ)';
     row('cat2','卦運',
-      `<b>${g.thaiName||g.name}</b> <span style="color:var(--fg-faint)">· ยุคกว้า ${yun==null?'—':yun} · ${plabel}</span>`,
+      `<b>${g.thaiName||g.name}</b> <span style="color:var(--fg-faint)">· ยุคกว้า ${yun==null?'—':yun}${guaQiTxt} · ${plabel}</span>`,
       sc5,
       `ยุคบ้านปัจจุบัน ${cur} · กว้านี้ประจำยุค ${yun==null?'—':yun} → ${plabel} (ปรับคะแนน ${padj>=0?'+':''}${padj})${guaQiNote}`,
       g.homeAdvice || g.homeUse || '', true);

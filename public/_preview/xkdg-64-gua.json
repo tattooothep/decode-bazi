@@ -1,7 +1,7 @@
 {
   "version": "xkdg-64-gua-home-methodology-v1.0",
-  "status": "production_draft_gua_yun_filled_needs_gua_qi_review",
-  "importantNote": "ชุดนี้เติม field xkdg.guaYun / 卦運 ครบ 64 กว้าแล้ว โดย match ตาม id = King Wen Gua Number; field xkdg.guaQi ยังเป็น null และควรล็อกจากตาราง羅盤/สำนักซินแสก่อนใช้เป็นระบบ玄空大卦เต็มรูปแบบ",
+  "status": "production_draft_gua_yun_and_gua_qi_filled_needs_lineage_review",
+  "importantNote": "ชุดนี้เติม field xkdg.guaYun และ xkdg.guaQi ครบ 64 กว้าแล้ว โดย guaQi ใช้ค่า N/五行 จากตาราง Xuan Kong Da Gua และ match ตาม upper trigram ของกว้า; ก่อน production ควรให้ซินแส/สำนักที่ใช้งานจริงตรวจทาน wording และ interpretation อีกครั้ง",
   "scoreModel": {
     "baseHouseScoreScale": {
       "5": "ดีมาก ใช้งานบ้านได้เด่น",
@@ -115,7 +115,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 1,
-        "guaQi": null
+        "guaQi": 9
       }
     },
     {
@@ -131,7 +131,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 1,
-        "guaQi": null
+        "guaQi": 1
       }
     },
     {
@@ -147,7 +147,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 4,
-        "guaQi": null
+        "guaQi": 7
       }
     },
     {
@@ -163,7 +163,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 2,
-        "guaQi": null
+        "guaQi": 6
       }
     },
     {
@@ -179,7 +179,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 3,
-        "guaQi": null
+        "guaQi": 7
       }
     },
     {
@@ -195,7 +195,7 @@
       "tone": "danger",
       "xkdg": {
         "guaYun": 3,
-        "guaQi": null
+        "guaQi": 9
       }
     },
     {
@@ -211,7 +211,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 7,
-        "guaQi": null
+        "guaQi": 1
       }
     },
     {
@@ -227,7 +227,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 7,
-        "guaQi": null
+        "guaQi": 7
       }
     },
     {
@@ -243,7 +243,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 8,
-        "guaQi": null
+        "guaQi": 2
       }
     },
     {
@@ -259,7 +259,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 6,
-        "guaQi": null
+        "guaQi": 9
       }
     },
     {
@@ -275,7 +275,7 @@
       "tone": "excellent",
       "xkdg": {
         "guaYun": 9,
-        "guaQi": null
+        "guaQi": 1
       }
     },
     {
@@ -291,7 +291,7 @@
       "tone": "danger",
       "xkdg": {
         "guaYun": 9,
-        "guaQi": null
+        "guaQi": 9
       }
     },
     {
@@ -307,7 +307,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 7,
-        "guaQi": null
+        "guaQi": 9
       }
     },
     {
@@ -323,7 +323,7 @@
       "tone": "excellent",
       "xkdg": {
         "guaYun": 7,
-        "guaQi": null
+        "guaQi": 3
       }
     },
     {
@@ -339,7 +339,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 6,
-        "guaQi": null
+        "guaQi": 1
       }
     },
     {
@@ -355,7 +355,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 8,
-        "guaQi": null
+        "guaQi": 8
       }
     },
     {
@@ -371,7 +371,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 7,
-        "guaQi": null
+        "guaQi": 4
       }
     },
     {
@@ -387,7 +387,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 7,
-        "guaQi": null
+        "guaQi": 6
       }
     },
     {
@@ -403,7 +403,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 4,
-        "guaQi": null
+        "guaQi": 1
       }
     },
     {
@@ -419,7 +419,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 2,
-        "guaQi": null
+        "guaQi": 2
       }
     },
     {
@@ -435,7 +435,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 6,
-        "guaQi": null
+        "guaQi": 3
       }
     },
     {
@@ -451,7 +451,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 8,
-        "guaQi": null
+        "guaQi": 6
       }
     },
     {
@@ -467,7 +467,7 @@
       "tone": "danger",
       "xkdg": {
         "guaYun": 6,
-        "guaQi": null
+        "guaQi": 6
       }
     },
     {
@@ -483,7 +483,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 8,
-        "guaQi": null
+        "guaQi": 1
       }
     },
     {
@@ -499,7 +499,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 2,
-        "guaQi": null
+        "guaQi": 9
       }
     },
     {
@@ -515,7 +515,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 4,
-        "guaQi": null
+        "guaQi": 6
       }
     },
     {
@@ -531,7 +531,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 3,
-        "guaQi": null
+        "guaQi": 6
       }
     },
     {
@@ -547,7 +547,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 3,
-        "guaQi": null
+        "guaQi": 4
       }
     },
     {
@@ -563,7 +563,7 @@
       "tone": "danger",
       "xkdg": {
         "guaYun": 1,
-        "guaQi": null
+        "guaQi": 7
       }
     },
     {
@@ -579,7 +579,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 1,
-        "guaQi": null
+        "guaQi": 3
       }
     },
     {
@@ -595,7 +595,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 9,
-        "guaQi": null
+        "guaQi": 4
       }
     },
     {
@@ -611,7 +611,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 9,
-        "guaQi": null
+        "guaQi": 8
       }
     },
     {
@@ -627,7 +627,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 4,
-        "guaQi": null
+        "guaQi": 9
       }
     },
     {
@@ -643,7 +643,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 2,
-        "guaQi": null
+        "guaQi": 8
       }
     },
     {
@@ -659,7 +659,7 @@
       "tone": "excellent",
       "xkdg": {
         "guaYun": 3,
-        "guaQi": null
+        "guaQi": 3
       }
     },
     {
@@ -675,7 +675,7 @@
       "tone": "danger",
       "xkdg": {
         "guaYun": 3,
-        "guaQi": null
+        "guaQi": 1
       }
     },
     {
@@ -691,7 +691,7 @@
       "tone": "excellent",
       "xkdg": {
         "guaYun": 4,
-        "guaQi": null
+        "guaQi": 2
       }
     },
     {
@@ -707,7 +707,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 2,
-        "guaQi": null
+        "guaQi": 3
       }
     },
     {
@@ -723,7 +723,7 @@
       "tone": "danger",
       "xkdg": {
         "guaYun": 2,
-        "guaQi": null
+        "guaQi": 7
       }
     },
     {
@@ -739,7 +739,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 4,
-        "guaQi": null
+        "guaQi": 8
       }
     },
     {
@@ -755,7 +755,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 9,
-        "guaQi": null
+        "guaQi": 6
       }
     },
     {
@@ -771,7 +771,7 @@
       "tone": "excellent",
       "xkdg": {
         "guaYun": 9,
-        "guaQi": null
+        "guaQi": 2
       }
     },
     {
@@ -787,7 +787,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 6,
-        "guaQi": null
+        "guaQi": 4
       }
     },
     {
@@ -803,7 +803,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 8,
-        "guaQi": null
+        "guaQi": 9
       }
     },
     {
@@ -819,7 +819,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 4,
-        "guaQi": null
+        "guaQi": 4
       }
     },
     {
@@ -835,7 +835,7 @@
       "tone": "excellent",
       "xkdg": {
         "guaYun": 2,
-        "guaQi": null
+        "guaQi": 1
       }
     },
     {
@@ -851,7 +851,7 @@
       "tone": "danger",
       "xkdg": {
         "guaYun": 8,
-        "guaQi": null
+        "guaQi": 4
       }
     },
     {
@@ -867,7 +867,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 6,
-        "guaQi": null
+        "guaQi": 7
       }
     },
     {
@@ -883,7 +883,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 2,
-        "guaQi": null
+        "guaQi": 4
       }
     },
     {
@@ -899,7 +899,7 @@
       "tone": "excellent",
       "xkdg": {
         "guaYun": 4,
-        "guaQi": null
+        "guaQi": 3
       }
     },
     {
@@ -915,7 +915,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 1,
-        "guaQi": null
+        "guaQi": 8
       }
     },
     {
@@ -931,7 +931,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 1,
-        "guaQi": null
+        "guaQi": 6
       }
     },
     {
@@ -947,7 +947,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 7,
-        "guaQi": null
+        "guaQi": 2
       }
     },
     {
@@ -963,7 +963,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 7,
-        "guaQi": null
+        "guaQi": 8
       }
     },
     {
@@ -979,7 +979,7 @@
       "tone": "excellent",
       "xkdg": {
         "guaYun": 6,
-        "guaQi": null
+        "guaQi": 8
       }
     },
     {
@@ -995,7 +995,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 8,
-        "guaQi": null
+        "guaQi": 3
       }
     },
     {
@@ -1011,7 +1011,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 1,
-        "guaQi": null
+        "guaQi": 2
       }
     },
     {
@@ -1027,7 +1027,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 1,
-        "guaQi": null
+        "guaQi": 4
       }
     },
     {
@@ -1043,7 +1043,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 6,
-        "guaQi": null
+        "guaQi": 2
       }
     },
     {
@@ -1059,7 +1059,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 8,
-        "guaQi": null
+        "guaQi": 7
       }
     },
     {
@@ -1075,7 +1075,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 3,
-        "guaQi": null
+        "guaQi": 2
       }
     },
     {
@@ -1091,7 +1091,7 @@
       "tone": "caution",
       "xkdg": {
         "guaYun": 3,
-        "guaQi": null
+        "guaQi": 8
       }
     },
     {
@@ -1107,7 +1107,7 @@
       "tone": "good",
       "xkdg": {
         "guaYun": 9,
-        "guaQi": null
+        "guaQi": 7
       }
     },
     {
@@ -1123,7 +1123,7 @@
       "tone": "neutral",
       "xkdg": {
         "guaYun": 9,
-        "guaQi": null
+        "guaQi": 3
       }
     }
   ],
@@ -1132,5 +1132,63 @@
     "meaning": "卦運 / M column",
     "matchKey": "hexagrams[].id = GN / King Wen Gua Number",
     "reviewNote": "ควรให้ซินแสหรือสำนักที่ใช้งานจริงตรวจทานก่อน production เพราะตาราง/คำเรียกของแต่ละสายอาจต่างกัน"
+  },
+  "guaQiSourceNote": {
+    "field": "xkdg.guaQi",
+    "meaningInThisFile": "XKDG N / 五行 number; commonly used in apps as guaQi/卦氣數 layer",
+    "derivation": "derived from hexagram.upper using upper trigram numbering",
+    "upperTrigramToGuaQi": {
+      "坤": 1,
+      "巽": 2,
+      "離": 3,
+      "兌": 4,
+      "艮": 6,
+      "坎": 7,
+      "震": 8,
+      "乾": 9
+    },
+    "numberToXkdgElement": {
+      "1": {
+        "zh": "水",
+        "th": "น้ำ",
+        "en": "Water"
+      },
+      "2": {
+        "zh": "火",
+        "th": "ไฟ",
+        "en": "Fire"
+      },
+      "3": {
+        "zh": "木",
+        "th": "ไม้",
+        "en": "Wood"
+      },
+      "4": {
+        "zh": "金",
+        "th": "ทอง",
+        "en": "Metal"
+      },
+      "6": {
+        "zh": "水",
+        "th": "น้ำ",
+        "en": "Water"
+      },
+      "7": {
+        "zh": "火",
+        "th": "ไฟ",
+        "en": "Fire"
+      },
+      "8": {
+        "zh": "木",
+        "th": "ไม้",
+        "en": "Wood"
+      },
+      "9": {
+        "zh": "金",
+        "th": "ทอง",
+        "en": "Metal"
+      }
+    },
+    "warning": "numberToXkdgElement is the XKDG numeric element mapping, not the ordinary trigram element stored in trigrams[].element"
   }
 }
