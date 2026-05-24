@@ -1985,13 +1985,17 @@ function getYearAfflictions(year){
     /* ─── ของใหม่ · match แบบขุนเขา (15° 太歲/歲破 · 5山 75° 三煞) ─── */
     const m=AW.annual_map_by_year_branch[branch];
     const grp=AW.rules.san_sha.group_rules[m.san_sha_group]||{};
+    const av=(keys)=>(keys||[]).map(k=>(AW.avoid_actions[k]||{}).th).filter(Boolean);  /* resolve avoid_actions → ข้อความไทยจาก JSON */
     return {
       fromJSON:true, year:Number(year), branch,
       taisuiMountain:m.tai_sui, taisuiScore:AW.rules.tai_sui.score,           /* 2 */
+      taisuiName:AW.rules.tai_sui.name_th, taisuiDesc:AW.rules.tai_sui.description_th, taisuiAvoid:av(AW.rules.tai_sui.avoid_actions),
       suipoMountain:m.sui_po,   suipoScore:AW.rules.sui_po.score,             /* 1 */
+      suipoName:AW.rules.sui_po.name_th, suipoDesc:AW.rules.sui_po.description_th, suipoAvoid:av(AW.rules.sui_po.avoid_actions),
       sanshaMountains:grp.standard_5_mountains||m.san_sha_exact_mountains,    /* 5 山 */
       sanshaExact:grp.exact_earth_branches||m.san_sha_exact_mountains,        /* 3 山 หลัก */
       sanshaScore:AW.rules.san_sha.score,                                     /* 2 */
+      sanshaName:AW.rules.san_sha.name_th, sanshaDesc:AW.rules.san_sha.description_th, sanshaAvoid:av(AW.rules.san_sha.avoid_actions),
       sanshaDirTh:m.san_sha_direction_th,
     };
   }
@@ -2361,18 +2365,18 @@ function updateInspector(){
   if(aff.fromJSON){
     /* ─── ของใหม่ (annual-warning.json) · match แบบขุนเขา ─── */
     if(r.m24.m===aff.taisuiMountain)
-      row('warn','警示', `<b>太歲</b> · ทิศเจ้าปี (${aff.branch}ปี)`, aff.taisuiScore,
-        `太歲ปี ${affYr} อยู่ที่ขุนเขา ${aff.taisuiMountain} · เลี่ยงทุบ ขุด เจาะ ต่อเติม หรือกระตุ้นแรงในทิศนี้`,
-        'เลี่ยงเปิดประตูบ่อย · ห้ามตั้งเตา/หัวเตียงใหม่ · ใช้แบบนิ่งๆได้');
+      row('warn','警示', `<b>太歲</b> · ${aff.taisuiName}`, aff.taisuiScore,
+        `${aff.taisuiDesc} · ปี ${affYr} (${aff.branch}) อยู่ที่ขุนเขา ${aff.taisuiMountain}`,
+        aff.taisuiAvoid.join(' · '));
     if(r.m24.m===aff.suipoMountain)
-      row('warn','警示', `<b>歲破</b> · ทิศปะทะปี`, aff.suipoScore,
-        `ทิศตรงข้าม太歲 (ขุนเขา ${aff.suipoMountain}) · พลังปะทะปีนี้ ควรเลี่ยงรบกวนหนักเป็นพิเศษ`,
-        'เลี่ยงงานใหญ่ · ใช้เก็บของได้');
+      row('warn','警示', `<b>歲破</b> · ${aff.suipoName}`, aff.suipoScore,
+        `${aff.suipoDesc} · อยู่ที่ขุนเขา ${aff.suipoMountain}`,
+        aff.suipoAvoid.join(' · '));
     if(aff.sanshaMountains.includes(r.m24.m)){
       const core = aff.sanshaExact.includes(r.m24.m);
-      row('warn','警示', `<b>三煞</b> · สามพิฆาต`, aff.sanshaScore,
-        `三煞ปีนี้ทิศ${aff.sanshaDirTh} · 5 ขุนเขา ${aff.sanshaMountains.join(' ')} · ขุนเขานี้ = ${core?'地支หลัก':'天干คั่นกลาง'}`,
-        'ห้ามขุด ตอก รื้อ หรือซ่อมใหญ่ · เลี่ยงนั่งหันหน้าใส่');
+      row('warn','警示', `<b>三煞</b> · ${aff.sanshaName}`, aff.sanshaScore,
+        `${aff.sanshaDesc} · ปีนี้อยู่${aff.sanshaDirTh} · 5 ขุนเขา ${aff.sanshaMountains.join(' ')} · ขุนเขานี้ = ${core?'地支หลัก':'天干คั่นกลาง'}`,
+        aff.sanshaAvoid.join(' · '));
     }
   } else {
     /* ─── fallback เก่า (dir8) ถ้า JSON ยังไม่โหลด ─── */
