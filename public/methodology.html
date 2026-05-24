@@ -295,6 +295,20 @@
       <p id="fs-gz-stem-note" style="font-size:13px;color:var(--fg);opacity:.75;margin-top:10px;line-height:1.7;"></p>
     </section>
 
+    <section class="card" id="fs-annual-card">
+      <h2><span class="han">警示</span> <span id="fs-an-title"></span></h2>
+      <div id="fs-an-intro" style="font-size:14px;color:var(--fg);line-height:1.85;"></div>
+      <h3 id="fs-an-warn-title" style="margin-top:16px;font-size:15px;"></h3>
+      <div id="fs-an-warns"></div>
+      <h3 id="fs-an-mode-title" style="margin-top:16px;font-size:15px;"></h3>
+      <div id="fs-an-modes" class="grid-2"></div>
+      <h3 id="fs-an-avoid-title" style="margin-top:16px;font-size:15px;"></h3>
+      <p id="fs-an-avoid" style="font-size:14px;color:var(--fg);line-height:1.8;"></p>
+      <h3 id="fs-an-eg-title" style="margin-top:16px;font-size:15px;"></h3>
+      <div id="fs-an-eg" style="font-size:14px;color:var(--fg);line-height:1.9;"></div>
+      <p id="fs-an-note" style="font-size:13px;color:#d9a44c;margin-top:10px;line-height:1.7;"></p>
+    </section>
+
     <div class="cross-link">
       <a href="/chart">📜 ดวงของฉัน</a>
       <a href="/today">🌅 ฤกษ์วันนี้</a>
@@ -995,6 +1009,36 @@ const FENGSHUI_DATA = {
         {k:'壬 · น้ำหยาง', v:'เปรียบเหมือนมหาสมุทร เหมาะกับเครือข่าย การเดินทาง และแผนธุรกิจ'},
       ],
       stemNote:'ในวง 24 ขุนเขา มีก้านฟ้า 8 ตัว: 甲 乙 丙 丁 庚 辛 壬 癸 · ส่วน 戊 และ 己 เป็นก้านกลาง ไม่อยู่บน 24 ทิศโดยตรง แต่ใช้ตีความจุดกึ่งกลางบ้านในระบบวิเคราะห์แปลนได้',
+    },
+    annual:{
+      title:'太歲/三煞/歲破 · ดาวเตือนปี',
+      intro:[
+        'หมวดนี้ใช้ตรวจ "ทิศเตือนประจำปี" (太歲 · 歲破 · 三煞) บนเข็มดิน เพื่อหลีกเลี่ยงการขุด ทุบ เจาะ ต่อเติม หรือกระตุ้นแรงในทิศที่ปะทะกับพลังปีนั้น',
+        '⚠ เป็นคำเตือนเชิงปีจร ไม่ใช่คำตัดสินฮวงจุ้ยสุดท้าย — ใช้เพื่อเลี่ยงงานรบกวนหนัก ไม่ได้แปลว่าทิศนั้น "ร้าย" ในทุกเรื่อง',
+        '📅 ปีฮวงจุ้ยนับจาก立春 (ราว 4 ก.พ.) ไม่ใช่ 1 มกราคม — ถ้ายังไม่ถึง立春ให้ใช้ปีจีนก่อนหน้า',
+      ],
+      warnTitle:'ดาวเตือน 3 ตัว',
+      warns:[
+        {name:'太歲 · ไท้ส่วย (ทิศเจ้าปี)', lvl:'ระวังสูง', d:'อยู่ที่กิ่งดิน(地支)ของปีนั้น เช่น ปี午 อยู่ทิศใต้ · ไม่ควรทุบ ขุด เจาะ ต่อเติม หรือกระตุ้นแรง'},
+        {name:'歲破 · ทิศปะทะปี (ชงปี)', lvl:'หลีกเลี่ยง', d:'ทิศตรงข้าม太歲 (สวนกัน 180°) เป็นทิศปะทะปี ควรเลี่ยงการรบกวนหนักเป็นพิเศษ'},
+        {name:'三煞 · สามพิฆาต', lvl:'ระวังสูง', d:'มาจากกลุ่มสามประสาน(三合)ของปี เป็นเขตเตือนกว้าง เลี่ยงขุด ทุบ เจาะ และซ่อมใหญ่'},
+      ],
+      modeTitle:'ความละเอียด三煞 · 3 โหมด',
+      modes:[
+        {name:'3 กิ่งดินหลัก', span:'45°', d:'โหมดพื้นฐาน · เตือนเฉพาะ 3 ขุนเขา地支'},
+        {name:'5 ขุนเขา (มาตรฐานหล่อแก)', span:'75°', d:'รวมก้านฟ้าที่คั่นกลาง · เป็นค่าเริ่มต้นบนหน้าหล่อแก'},
+        {name:'ภาคทิศเต็ม', span:'90°', d:'โหมดปลอดภัย · แนะนำสำหรับงานขุด ทุบ ต่อเติมจริง'},
+      ],
+      avoidTitle:'สิ่งที่ควรเลี่ยงในทิศเตือน',
+      avoid:'กระตุ้นแรง · ขุดดิน · ทุบ-รื้อ-ถอน · เจาะ-ตอก-กระแทก · ต่อเติม/ซ่อมใหญ่ · เริ่มก่อสร้างจากทิศนี้',
+      egTitle:'ตัวอย่างปี 2026 · 丙午',
+      eg:[
+        '太歲 = 午 · ทิศใต้ (172.5°–187.5°)',
+        '歲破 = 子 · ทิศเหนือ (352.5°–7.5°)',
+        '三煞 = กลุ่ม 寅午戌 → ทิศเหนือ · 5 ขุนเขา 亥 壬 子 癸 丑',
+        '👉 ปี 2026 "ทิศเหนือ" โดนซ้อน 2 ชั้น (歲破 + 三煞) จึงควรระวังเป็นพิเศษ',
+      ],
+      note:'คำเตือนนี้ใช้สำหรับปีจรและงานกระตุ้นแรงเท่านั้น หากจะก่อสร้างจริงควรตรวจวันยาม แปลนบ้าน และระบบฮวงจุ้ยอื่นร่วมด้วย',
     }
   },
   en: {
@@ -1080,6 +1124,36 @@ const FENGSHUI_DATA = {
         {k:'壬 · Yang Water', v:'Like the ocean — movement, networks, travel, and large-scale planning'},
       ],
       stemNote:'Only eight Stems appear on the 24 Mountains: 甲 乙 丙 丁 庚 辛 壬 癸 · 戊 and 己 are central Earth stems, not on the 24 directions, but used to interpret the center sector of a floor plan.',
+    },
+    annual:{
+      title:'Annual Warnings · 太歲/三煞/歲破',
+      intro:[
+        'This layer checks the annual affliction directions (Tai Sui · Sui Po · San Sha) on the Earth Plate, to avoid digging, demolition, drilling, renovation, or strong activation in directions that clash with the year’s energy.',
+        '⚠ These are annual-cycle warnings, NOT a final Feng Shui judgement — they flag heavy-disturbance risk, not that a direction is "bad" in every respect.',
+        '📅 The Feng Shui year starts at Li Chun (~Feb 4), not January 1 — before Li Chun, use the previous Chinese year.',
+      ],
+      warnTitle:'The Three Warnings',
+      warns:[
+        {name:'太歲 · Tai Sui (Grand Duke)', lvl:'High caution', d:'Sits at the year’s Earthly Branch (e.g. 午 year = South) · avoid demolition, digging, drilling, renovation, or strong activation'},
+        {name:'歲破 · Sui Po (Year Breaker)', lvl:'Avoid', d:'The direction directly opposite Tai Sui (180°) · a strong annual clash, avoid heavy disturbance especially'},
+        {name:'三煞 · San Sha (Three Killings)', lvl:'High caution', d:'Derived from the year’s San He group · a wide warning sector — avoid digging, demolition, drilling, and major renovation'},
+      ],
+      modeTitle:'San Sha precision · 3 modes',
+      modes:[
+        {name:'3 Branch mountains', span:'45°', d:'Basic mode · warn only the three Earthly-Branch mountains'},
+        {name:'5 mountains (Luopan standard)', span:'75°', d:'Includes the flanking Heavenly Stems · default on the Luopan view'},
+        {name:'Full sector', span:'90°', d:'Conservative mode · recommended for real digging, demolition, or renovation'},
+      ],
+      avoidTitle:'What to avoid in a warned direction',
+      avoid:'Strong activation · digging · demolition · drilling/hammering · major renovation · starting construction here',
+      egTitle:'Example · Year 2026 · 丙午',
+      eg:[
+        'Tai Sui = 午 · South (172.5°–187.5°)',
+        'Sui Po = 子 · North (352.5°–7.5°)',
+        'San Sha = group 寅午戌 → North · 5 mountains 亥 壬 子 癸 丑',
+        '👉 In 2026 the North is doubly afflicted (Sui Po + San Sha) — take extra care',
+      ],
+      note:'This warning is for annual renovation and activation reference only. Actual construction should also consider date selection, the house chart, and other Feng Shui systems.',
     }
   },
   zh: {
@@ -1165,6 +1239,36 @@ const FENGSHUI_DATA = {
         {k:'壬 · 陽水', v:'如大海，主流動、網絡、旅行與大格局'},
       ],
       stemNote:'二十四山中實際出現之天干為八個：甲 乙 丙 丁 庚 辛 壬 癸 · 戊與己為中央之土，不直接落在二十四山上，可用於平面分析之住宅中心點。',
+    },
+    annual:{
+      title:'太歲 / 三煞 / 歲破 · 流年警示',
+      intro:[
+        '此層於地盤檢查流年警示方位（太歲 · 歲破 · 三煞），以避免在沖犯流年之方動土、拆除、鑽孔、修造或強力催動。',
+        '⚠ 此為流年警示，非最終風水吉凶判斷 — 用以提示重度擾動之風險，並非該方位事事皆凶。',
+        '📅 風水流年以立春（約2月4日）為界，非1月1日 — 未到立春仍以前一年論。',
+      ],
+      warnTitle:'三大警示',
+      warns:[
+        {name:'太歲 · 歲君之方', lvl:'高度注意', d:'位於流年地支之方（如午年在南） · 不宜拆除、動土、鑽孔、修造或強力催動'},
+        {name:'歲破 · 沖太歲之方', lvl:'忌動', d:'太歲正對之方（180°） · 為流年沖破之位，尤忌重度擾動'},
+        {name:'三煞 · 三煞方', lvl:'高度注意', d:'由流年三合局所定 · 為較寬之警示帶，忌動土、拆除、鑽孔與大型修造'},
+      ],
+      modeTitle:'三煞精度 · 三種模式',
+      modes:[
+        {name:'三地支山', span:'45°', d:'基本模式 · 只看三個地支山位'},
+        {name:'五山（羅盤標準）', span:'75°', d:'含夾於中間之天干 · 為羅盤頁面之預設'},
+        {name:'整方位', span:'90°', d:'保守模式 · 適合實際動土、拆除、修造'},
+      ],
+      avoidTitle:'警示方位應避免之事',
+      avoid:'強力催動 · 動土 · 拆除 · 鑽孔敲打 · 大型修造 · 由此方開工',
+      egTitle:'範例 · 2026年 · 丙午',
+      eg:[
+        '太歲 = 午 · 南方 (172.5°–187.5°)',
+        '歲破 = 子 · 北方 (352.5°–7.5°)',
+        '三煞 = 寅午戌局 → 北方 · 五山 亥 壬 子 癸 丑',
+        '👉 2026年「北方」雙重受沖（歲破 + 三煞），尤須謹慎',
+      ],
+      note:'此警示僅作流年動土修造參考，實際施工仍須配合擇日、宅盤與其他風水系統同看。',
     }
   }
 };
@@ -1416,6 +1520,21 @@ function renderFengshui(){
   const sx=document.getElementById('fs-gz-stem-ex'); sx.textContent='';
   g.stemEx.forEach(e=>sx.appendChild(fsTile([['h',e.k],['d',e.v]])));
   document.getElementById('fs-gz-stem-note').textContent=g.stemNote;
+  /* 警示 · 太歲/三煞/歲破 ดาวเตือนปี */
+  const an=f.annual;
+  document.getElementById('fs-an-title').textContent=an.title;
+  document.getElementById('fs-an-intro').innerHTML=an.intro.map(x=>`<p>${x}</p>`).join('');
+  document.getElementById('fs-an-warn-title').textContent=an.warnTitle;
+  const aw=document.getElementById('fs-an-warns'); aw.textContent='';
+  an.warns.forEach(e=>{ const t=fsTile([['h',e.name],['t',e.lvl],['d',e.d]]); t.style.marginBottom='8px'; aw.appendChild(t); });
+  document.getElementById('fs-an-mode-title').textContent=an.modeTitle;
+  const am=document.getElementById('fs-an-modes'); am.textContent='';
+  an.modes.forEach(e=>am.appendChild(fsTile([['h',e.name],['t',e.span],['d',e.d]])));
+  document.getElementById('fs-an-avoid-title').textContent=an.avoidTitle;
+  document.getElementById('fs-an-avoid').textContent=an.avoid;
+  document.getElementById('fs-an-eg-title').textContent=an.egTitle;
+  document.getElementById('fs-an-eg').innerHTML=an.eg.map(x=>`<div>${x}</div>`).join('');
+  document.getElementById('fs-an-note').textContent=an.note;
 }
 
 function renderAll(){
