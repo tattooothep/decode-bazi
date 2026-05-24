@@ -1759,26 +1759,45 @@ function renderCastleGateOverlay(){
     p.setAttribute('class', cls);
     g.appendChild(p);
   }
-  function label(mid, text, cls){
-    const p = pt((r1+r2)/2, mid);
-    const bg = document.createElementNS(NS,'rect');
-    bg.setAttribute('x', p[0]-22); bg.setAttribute('y', p[1]-9);
-    bg.setAttribute('width', 44); bg.setAttribute('height', 18);
-    bg.setAttribute('rx', 9); bg.setAttribute('class', 'gate-label-bg');
-    g.appendChild(bg);
-    const t = document.createElementNS(NS,'text');
-    t.setAttribute('x', p[0]); t.setAttribute('y', p[1]+4);
-    t.setAttribute('text-anchor','middle'); t.setAttribute('class', cls);
-    t.textContent = text; g.appendChild(t);
+  /* 牌坊 ประตูโค้งจีน — สีตามระดับ · ตั้งตรงเสมอ อ่านง่าย */
+  const GATE_PAL = {
+    green:{roof:'#4fae6e',body:'#2f7a4a',edge:'#8fe6a8',ink:'#d6f5e0'},
+    orange:{roof:'#e8943a',body:'#a8642a',edge:'#ffc888',ink:'#ffe6c8'},
+    gray:{roof:'#8f8f8f',body:'#5e5e5e',edge:'#c4c4c4',ink:'#e8e8e8'},
+    red:{roof:'#d8402a',body:'#8a1f12',edge:'#ff8a72',ink:'#ffd2c8'},
+  };
+  const GATE_HAN1 = {'正城門':'正','副城門':'副','候補不成':'候','凶門':'凶'};
+  function drawPaifang(deg, ds){
+    const [px,py] = pt(232, deg);            /* วางกลางวง · ตั้งตรง */
+    const C = GATE_PAL[ds.colorKey] || GATE_PAL.gray;
+    const han = GATE_HAN1[ds.status] || '?';
+    const danger = ds.colorKey==='red';
+    const grp = document.createElementNS(NS,'g');
+    grp.setAttribute('transform', `translate(${px.toFixed(1)},${py.toFixed(1)})`);
+    grp.innerHTML = `
+      <ellipse cx="0" cy="27" rx="25" ry="5" fill="#000" opacity=".32"/>
+      <rect x="-22" y="22" width="44" height="6" rx="2" fill="${C.body}" stroke="${C.edge}" stroke-width=".5"/>
+      <rect x="-16.5" y="-3" width="6" height="26" rx="1.5" fill="${C.body}" stroke="${C.edge}" stroke-width=".6"/>
+      <rect x="10.5" y="-3" width="6" height="26" rx="1.5" fill="${C.body}" stroke="${C.edge}" stroke-width=".6"/>
+      <rect x="-21" y="-6" width="42" height="6" rx="1.5" fill="${C.roof}" stroke="${C.edge}" stroke-width=".5"/>
+      <rect x="-12.5" y="-21" width="25" height="14" rx="2.5" fill="#160f0a" stroke="${C.edge}" stroke-width="1.3"/>
+      <text x="0" y="-10.5" text-anchor="middle" font-size="10.5" font-weight="700" fill="${C.ink}" font-family="var(--tc),serif">${han}</text>
+      <path d="M-25,-21 Q-21,-31 0,-32.5 Q21,-31 25,-21 Q26,-25 13,-25.5 L13,-23 Q0,-26 -13,-23 L-13,-25.5 Q-26,-25 -25,-21 Z" fill="${C.roof}" stroke="${C.edge}" stroke-width=".8"/>
+      <circle cx="0" cy="-33.5" r="2.4" fill="${C.edge}"/>
+      ${danger?`<line x1="-19" y1="-19" x2="19" y2="17" stroke="#ff2e1a" stroke-width="4" stroke-linecap="round" opacity=".92"/><line x1="19" y1="-19" x2="-19" y2="17" stroke="#ff2e1a" stroke-width="4" stroke-linecap="round" opacity=".92"/>`:''}
+      <rect x="-26" y="33" width="52" height="14" rx="7" fill="rgba(8,10,13,.88)" stroke="${C.edge}" stroke-width=".5"/>
+      <text x="0" y="42.5" text-anchor="middle" font-size="8.5" font-weight="600" fill="${C.ink}" font-family="var(--th)">${ds.shortLabel}</text>
+    `;
+    g.appendChild(grp);
   }
-  /* draw both candidates · left + right */
+  /* draw both candidates · left + right · wedge บาง (sector hint) + 牌坊 เด่น */
   [castleGateResult.candidates.left, castleGateResult.candidates.right].forEach(c => {
     const m = c.mountain;
-    const start = m.start, end = m.end;
     const ov = getCastleGateOverlayLabel(c);
-    wedge(start, end, ov.wedgeCls);
+    const ds = c.displayStatus || buildCastleGateDisplayStatus(c);
+    wedge(m.start, m.end, ov.wedgeCls);
     const mid = m.start < m.end ? (m.start+m.end)/2 : cgNormDeg((m.start+m.end+360)/2);
-    label(mid, ov.label, ov.labelCls);
+    drawPaifang(mid, ds);
   });
 }
 
