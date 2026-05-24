@@ -1960,6 +1960,8 @@ function updateInspector(){
     '八宅':['แปดบ้านโป๊ยเต๊ก','八宅'],'正神零神':['เทพจริง-ศูนย์','正神零神'],
     '警示':['เตือน','警示']
   };
+  const ELZ = {水:'น้ำ',木:'ไม้',火:'ไฟ',土:'ดิน',金:'ทอง'}; /* ธาตุจีน→ไทย */
+  const DIR_TH = {N:'เหนือ',NE:'อีสาน',E:'ตะวันออก',SE:'อาคเนย์',S:'ใต้',SW:'หรดี',W:'ตะวันตก',NW:'พายัพ'};
   /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
   const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','64卦':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool'};
   function row(cat, han, head, score, general, home, rich){
@@ -1982,7 +1984,7 @@ function updateInspector(){
   if(L.later_heaven_bagua?.arrangement){
     const lhKey = Object.keys(L.later_heaven_bagua.arrangement).find(k => k.startsWith(r.lh));
     const lh = lhKey ? L.later_heaven_bagua.arrangement[lhKey] : null;
-    if(lh) row('cat2','後天', `<b>${r.lh}</b> · ${lh.position||''} <span style="color:var(--fg-faint)">${lh.element||''}</span>`, lh.score, lh.general, lh.home);
+    if(lh) row('cat2','後天', `<b>${lh.position||r.lh}</b> <span style="color:var(--fg-faint)">· ${r.lh} ${ELZ[lh.element]||lh.element||''}</span>`, lh.score, lh.general, lh.home);
   }
   /* 先天八卦 */
   if(L.early_heaven_bagua?.arrangement){
@@ -1990,23 +1992,23 @@ function updateInspector(){
     const eh = ehKey ? L.early_heaven_bagua.arrangement[ehKey] : null;
     if(eh){
       const trigram = ehKey.split('_')[0];
-      row('cat2','先天', `<b>${trigram}</b> · ${eh.position||''} <span style="color:var(--fg-faint)">${eh.element||''}</span>`, eh.score, eh.general, eh.home);
+      row('cat2','先天', `<b>${eh.position||trigram}</b> <span style="color:var(--fg-faint)">· ${trigram} ${ELZ[eh.element]||eh.element||''}</span>`, eh.score, eh.general, eh.home);
     }
   }
   /* ดาวเหิน (era → cat2 / time → cat4) */
   if(currentTimingKey==='era'){
     [['山','ดาวภูเขา · ที่หลังบ้าน',r.fx.shan],['水','ดาวน้ำ · ที่หน้าบ้าน',r.fx.xiang],['基','ดาวฐาน · กลางวัง',r.fx.ji]].forEach(([han,name,n])=>{
       const fs = L.flying_stars_9?.stars?.[String(n)];
-      if(fs) row('cat2','飛星'+han, `<b>${han}${n}</b> · ${fs.name||''}`, fs.score, fs.general, fs.home);
+      if(fs) row('cat2','飛星'+han, `<b>${fs.name||han+n}</b> <span style="color:var(--fg-faint)">· ${han}${n}</span>`, fs.score, fs.general, fs.home);
     });
   } else {
     const fs = L.flying_stars_9?.stars?.[String(r.fx.star)];
     const tname={year:'ดาวปี',month:'ดาวเดือน',day:'ดาววัน',hour:'ดาวยาม'}[currentTimingKey];
-    if(fs) row('cat4','飛星', `<b>${tname} ${r.fx.star}</b> · ${fs.name||''}`, fs.score, fs.general, fs.home);
+    if(fs) row('cat4','飛星', `<b>${fs.name||r.fx.star}</b> <span style="color:var(--fg-faint)">· ${tname} ${r.fx.star}</span>`, fs.score, fs.general, fs.home);
   }
   /* 64卦 */
   const hex = L.hexagrams_64?.hexagrams?.[r.h64char];
-  if(hex) row('cat2','64卦', `<b>${r.h64char}</b> #${r.h64num} · ${hex.name||''}`, hex.score, hex.general, hex.home);
+  if(hex) row('cat2','64卦', `<b>${hex.name||r.h64char}</b> <span style="color:var(--fg-faint)">· ${r.h64char} #${r.h64num}</span>`, hex.score, hex.general, hex.home);
 
   /* 八宅明鏡 + 正神零神 (ต้องล็อกบ้าน + เปิด checkbox การ์ดซ้าย — ใช้坐卦ของบ้าน) */
   const show8Z = document.querySelector('input[data-r="r8Z"]')?.checked;
@@ -2106,24 +2108,24 @@ function updateInspector(){
   /* === หมวด 1 โครงสร้างพื้นฐาน === */
   /* 24 ขุนเขา + ธาตุ */
   const elObj = L.five_elements?.elements?.[elHan[r.m24.el]];
-  row('cat1','地盤', `<b>${r.m24.m}</b> ${r.m24.c} · ${r.m24.p} <span style="color:var(--${r.m24.el})">· ${elHan[r.m24.el]} ${elTH[r.m24.el]}</span>`,
+  row('cat1','地盤', `<b>ทิศ${DIR_TH[r.dir8]||''}</b> <span style="color:var(--fg-faint)">${r.m24.m} ${r.m24.p} ${r.m24.c}</span> <span style="color:var(--${r.m24.el})">· ${elTH[r.m24.el]}</span>`,
       elObj?.score, elObj?.general, elObj?.home);
   /* 12 กิ่งดิน */
   const BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
   if(BRANCHES.includes(r.m24.m) && L.earthly_branches?.branches?.[r.m24.m]){
     const dz = L.earthly_branches.branches[r.m24.m];
-    row('cat1','地支', `<b>${r.m24.m}</b> · ${dz.name||''} <span style="color:var(--fg-faint)">· ${dz.time||''}</span>`, dz.score, dz.general, dz.home);
+    row('cat1','地支', `<b>${dz.name||r.m24.m}</b> <span style="color:var(--fg-faint)">· ${r.m24.m} · ${dz.time||''}</span>`, dz.score, dz.general, dz.home);
   }
   /* 10 ก้านฟ้า */
   const STEMS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
   if(STEMS.includes(r.m24.m) && L.heavenly_stems?.stems?.[r.m24.m]){
     const tg = L.heavenly_stems.stems[r.m24.m];
-    row('cat1','天干', `<b>${r.m24.m}</b> · ${tg.name||''} <span style="color:var(--fg-faint)">· ${tg.yinyang||''} ${tg.element||''}</span>`, tg.score, tg.general, tg.home);
+    row('cat1','天干', `<b>${tg.name||r.m24.m}</b> <span style="color:var(--fg-faint)">· ${r.m24.m} · ${ELZ[tg.element]||tg.element||''}</span>`, tg.score, tg.general, tg.home);
   }
   /* 三盤 */
   if(L.three_plates?.plates?.['地盤']){
     const pl=L.three_plates.plates['地盤'];
-    row('cat1','三盤', `<b>地盤</b> · ${pl.name||''}`, null, pl.general, pl.home);
+    row('cat1','三盤', `<b>${pl.name||'เข็มดิน'}</b> <span style="color:var(--fg-faint)">· 地盤</span>`, null, pl.general, pl.home);
   }
   /* 天池 */
   if(L.sky_pool?.interpretation){
@@ -2138,11 +2140,11 @@ function updateInspector(){
     for(const g of Object.values(L.stars_28.groups)){
       if(g.stars && g.stars[r.m28]){ s28 = g.stars[r.m28]; gname = g.name || ''; break; }
     }
-    if(s28) row('cat3','28宿', `<b>${r.m28}</b> · ${s28.name||''} <span style="color:var(--fg-faint)">(${gname})</span>`, s28.score, s28.general, s28.home);
+    if(s28) row('cat3','28宿', `<b>${s28.name||r.m28}</b> <span style="color:var(--fg-faint)">· ${r.m28}宿 (${gname})</span>`, s28.score, s28.general, s28.home);
   }
   /* 24節氣 */
   const jq = L.solar_terms_24?.terms?.[r.jq];
-  if(jq) row('cat3','24節氣', `<b>${r.jq}</b> · ${jq.name||''}`, jq.score, jq.general, jq.home);
+  if(jq) row('cat3','24節氣', `<b>${jq.name||r.jq}</b> <span style="color:var(--fg-faint)">· ${r.jq}</span>`, jq.score, jq.general, jq.home);
   /* 60甲子 */
   if(L.jiazi_60_earth?.nayin_elements){
     const pairs=Object.keys(L.jiazi_60_earth.nayin_elements);
@@ -2151,7 +2153,7 @@ function updateInspector(){
     const pairIdx = Math.floor(dz60idx/2);
     const pairKey = pairs[pairIdx];
     const ny = pairKey ? L.jiazi_60_earth.nayin_elements[pairKey] : null;
-    if(ny) row('cat3','60甲子', `<b>${pairKey}</b> · ${ny.nayin||''} ${ny.meaning||''}`, ny.score, ny.general, ny.home);
+    if(ny) row('cat3','60甲子', `<b>${ny.meaning||ny.nayin||pairKey}</b> <span style="color:var(--fg-faint)">· ${pairKey} ${ny.nayin||''}</span>`, ny.score, ny.general, ny.home);
   }
   /* 透地72龍 */
   if(L.dragon_72?.interpretation){
