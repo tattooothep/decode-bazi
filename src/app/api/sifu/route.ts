@@ -484,6 +484,10 @@ function buildPrompt(opts: {
   mode?: string;
 }): string {
   if (opts.mode === "intro") {
+    const introInteraction = loadInteractionMaster();
+    const introInteractionBlock = introInteraction.text
+      ? `\n=== 📜 คัมภีร์ปฏิกิริยาดวง (สแกนภายใน · เล่าเป็นไทยล้วน ห้ามโชว์อักษรจีน) ===\nก่อนเล่าชีวิต ให้สแกนผังหา "ปฏิกิริยาระหว่างเสา" (รวม/ปะทะ/ลงโทษ/ทำร้าย/ทำลาย/สามประสาน/แอบรวม/เข้าคลัง + สิบเทพ) เทียบกฎคัมภีร์นี้ แล้วเล่าผลด้วยคำไทย เช่น "แรงประสาน" "แรงปะทะ" "แรงแทรก" "แรงดึงเข้าคลัง" — ดูกลไกก่อนดีร้าย · รวมไม่ได้แปลว่าแปรธาตุเสมอ · ผูกผลกลับแกนหลักเสมอ · ห้ามพิมพ์อักษรจีนในคำตอบ\n${introInteraction.text}\n=== จบคัมภีร์ปฏิกิริยา ===\n`
+      : "";
     return `คุณคือ "ซินแส" ประจำหน้าเปิดประตูของ hourkey.io
 
 ${INTRO_LANG_INSTR[opts.lang] || INTRO_LANG_INSTR.th}
@@ -509,7 +513,7 @@ ${INTRO_LANG_INSTR[opts.lang] || INTRO_LANG_INSTR.th}
 - ใช้ภาษาคน อ่านง่าย ตรง ชัด ไม่ท่องตาราง ไม่พูดศัพท์เทคนิคติดกันยาวๆ
 - ตอบเป็นย่อหน้า ไม่ทำ bullet list
 - ห้ามบอกว่าตัวเองเป็น AI
-
+${introInteractionBlock}
 ข้อมูลตั้งต้น:
 ${opts.ctx}
 
