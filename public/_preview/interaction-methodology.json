@@ -121,7 +121,7 @@
     {
       "id": "po",
       "title": { "th": "14) 破 ผั่ว แตก/หลุดระบบ", "en": "14) Po 破 (Break)", "zh": "十四、破" },
-      "intro": { "th": "อ่อนกว่า冲และ刑 แต่ถ้าซ้อนปฏิกิริยาอื่น = ยืนยันว่าระบบเดิมเริ่มร้าว/ไม่ต่อเนื่อง", "en": "Weaker than 冲/刑, but stacked with others it confirms the old system is cracking/discontinuous.", "zh": "弱於冲刑，然與他應疊現，則證舊局начала裂、失續。" },
+      "intro": { "th": "อ่อนกว่า冲และ刑 แต่ถ้าซ้อนปฏิกิริยาอื่น = ยืนยันว่าระบบเดิมเริ่มร้าว/ไม่ต่อเนื่อง", "en": "Weaker than 冲/刑, but stacked with others it confirms the old system is cracking/discontinuous.", "zh": "弱於冲刑，然與他應疊現，則證舊局始裂、失續。" },
       "rows": [
         { "k": "子酉", "v": { "th": "ภาพลักษณ์/ความสัมพันธ์/กฎส่วนตัวไม่ลงล็อก", "en": "image/relationship/personal-rule misalignment", "zh": "相/緣/己規不合" } },
         { "k": "丑辰", "v": { "th": "ระบบทรัพย์สิน/เอกสาร/ครอบครัวติดขัด", "en": "assets/paperwork/family stuck", "zh": "財/文/家滯" } },
