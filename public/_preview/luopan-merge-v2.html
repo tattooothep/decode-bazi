@@ -38,6 +38,13 @@
   .btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
   main{display:grid;grid-template-columns:280px 1fr 320px;gap:14px;padding:14px;align-items:start;}
   @media(max-width:1100px){main{grid-template-columns:1fr;}}
+  /* Desktop: เต็มจอ · การ์ดกลาง(หล่อแก)ตรึงอยู่กับที่ · การ์ด1(กรอง)+การ์ด3(ผล)เลื่อนแยกอิสระ */
+  @media(min-width:1101px){
+    body{height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+    main{flex:1;min-height:0;align-items:stretch;}
+    main>.ctrl,main>.inspector{max-height:100%;overflow-y:auto;}
+    main>.stage-wrap{max-height:100%;overflow-y:auto;align-self:start;}
+  }
   .ctrl,.inspector{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;}
   .ctrl h3,.inspector h3{margin:0 0 10px;font-family:var(--tc);font-size:13px;font-weight:600;color:var(--gold-bright);letter-spacing:.05em;}
   .ctrl label{display:block;font-size:11px;color:var(--fg-soft);margin:8px 0 3px;font-family:var(--mono);letter-spacing:.04em;}
