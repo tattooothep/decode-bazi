@@ -12,18 +12,21 @@ import { join } from "path";
  */
 const DIR = join(process.cwd(), "data/library");
 const FILES: Record<string, { label: string; note: string }> = {
-  "ajek-bazi-rules.md": { label: "สูตรอ่านปาจื้อ 13 ขั้น · อาเจ๊กฮ้ง", note: "ซินแสหลัก (/api/sifu) · เห็นผลใน ~60 วิ" },
-  "bazi-interaction-master.md": { label: "คัมภีร์ปฏิกิริยา 合冲刑害破", note: "ซินแสหลัก (/api/sifu) · เห็นผลใน ~60 วิ" },
-  "hourkey_interpret_prompt.refined.md": { label: "System prompt · คำอ่านภาพรวม", note: "/api/chart/overview · ต้อง restart ถึงเห็นผล" },
-  "prompts/network-sifu-pair.md": { label: "ซินแสเครือข่าย · คู่ (pair)", note: "/api/network/sifu · yongsennetwork · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
-  "prompts/network-sifu-team.md": { label: "ซินแสเครือข่าย · ทีม (team)", note: "/api/network/sifu · yongsennetwork · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
-  "prompts/qimen-sifu.md": { label: "ซินแสฉีเหมิน", note: "/api/qimen/sifu · datepick · qimen · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
-  "prompts/forecast-sifu.md": { label: "ซินแสพยากรณ์ (เซียมซี/เหรียญ)", note: "/api/forecast · forecast · {{METHOD}}+{{BODY}}=dynamic · เห็นผล ~60 วิ" },
-  "prompts/ai-parse-bulk.md": { label: "Parser ดวง bulk (JSON)", note: "/api/network/ai-parse-bulk · yongsennetwork · ${text} ต่อในโค้ด · เห็นผล ~60 วิ" },
-  "prompts/compare-th.md": { label: "เทียบดวงคู่ · ไทย", note: "/api/sifu/compare · หน้า comparison · section ===HEADER/GUARD/WARMUP/STRUCTURE/BOTH3P===" },
-  "prompts/compare-en.md": { label: "เทียบดวงคู่ · EN", note: "/api/sifu/compare · หน้า comparison · section markers" },
-  "prompts/compare-zh.md": { label: "เทียบดวงคู่ · 中文", note: "/api/sifu/compare · หน้า comparison · section markers" },
-  "prompts/activity-classify.md": { label: "จัดหมวดกิจกรรม (date selection)", note: "/api/activity-classify · หน้า datepick · {{QUERY}}=dynamic · เห็นผล ~60 วิ" },
+  // ── ซินแสหลัก (/api/sifu) · ใช้ในหน้า: ดูดวงตัวเอง (master) + มือถือ (master-m) + รายงานเต็ม (chart) ──
+  "prompts/sifu-qa.md": { label: "ซินแสหลัก · ถาม-ตอบ (Q&A persona)", note: "หน้า master · master-m · chart (ช่องถามซินแส) · /api/sifu · {{CTX}}/{{MESSAGE}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/sifu-intro.md": { label: "ซินแสหลัก · เปิดประตู (intro persona)", note: "หน้าเปิดดวงครั้งแรก (intro) · /api/sifu mode=intro · {{CTX}}/{{MESSAGE}}=dynamic · เห็นผล ~60 วิ" },
+  "ajek-bazi-rules.md": { label: "สูตรอ่านปาจื้อ 13 ขั้น · อาเจ๊กฮ้ง", note: "เสริมซินแสหลัก · หน้า master · master-m · chart · /api/sifu · เห็นผล ~60 วิ" },
+  "bazi-interaction-master.md": { label: "คัมภีร์ปฏิกิริยา 合冲刑害破", note: "เสริมซินแสหลัก · หน้า master · master-m · chart · /api/sifu · เห็นผล ~60 วิ" },
+  "hourkey_interpret_prompt.refined.md": { label: "System prompt · คำอ่านภาพรวม", note: "หน้า chart (กล่องภาพรวมดวง) · /api/chart/overview · ⚠️ ต้อง pm2 restart ถึงเห็นผล" },
+  "prompts/network-sifu-pair.md": { label: "ซินแสเครือข่าย · คู่ (pair)", note: "หน้า yongsennetwork (เทียบ 2 คน) · /api/network/sifu · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/network-sifu-team.md": { label: "ซินแสเครือข่าย · ทีม (team)", note: "หน้า yongsennetwork (วิเคราะห์ทีม) · /api/network/sifu · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/ai-parse-bulk.md": { label: "Parser ดวง bulk (JSON)", note: "หน้า yongsennetwork (วางรายชื่อทีละหลายคน) · /api/network/ai-parse-bulk · รายชื่อต่อในโค้ด · เห็นผล ~60 วิ" },
+  "prompts/qimen-sifu.md": { label: "ซินแสฉีเหมิน", note: "หน้า datepick + qimen · /api/qimen/sifu · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/forecast-sifu.md": { label: "ซินแสพยากรณ์ (เซียมซี/เหรียญ)", note: "หน้า forecast · /api/forecast · {{METHOD}}+{{BODY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/activity-classify.md": { label: "จัดหมวดกิจกรรม (date selection)", note: "หน้า datepick (พิมพ์กิจกรรมเอง) · /api/activity-classify · {{QUERY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/compare-th.md": { label: "เทียบดวงคู่ · ไทย", note: "หน้า comparison (เทียบดวง) · /api/sifu/compare · section ===HEADER/GUARD/WARMUP/STRUCTURE/BOTH3P===" },
+  "prompts/compare-en.md": { label: "เทียบดวงคู่ · EN", note: "หน้า comparison · /api/sifu/compare · section markers" },
+  "prompts/compare-zh.md": { label: "เทียบดวงคู่ · 中文", note: "หน้า comparison · /api/sifu/compare · section markers" },
 };
 
 export async function GET() {

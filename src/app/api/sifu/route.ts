@@ -15,6 +15,7 @@ import { createHash } from "crypto";
 import { q1, q } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
+import { loadPromptMd } from "@/lib/prompt-md";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type IntroBirthInput = {
@@ -488,6 +489,15 @@ function buildPrompt(opts: {
     const introInteractionBlock = introInteraction.text
       ? `\n=== 📜 คัมภีร์ปฏิกิริยาดวง (สแกนภายใน · เล่าเป็นไทยล้วน ห้ามโชว์อักษรจีน) ===\nก่อนเล่าชีวิต ให้สแกนผังหา "ปฏิกิริยาระหว่างเสา" (รวม/ปะทะ/ลงโทษ/ทำร้าย/ทำลาย/สามประสาน/แอบรวม/เข้าคลัง + สิบเทพ) เทียบกฎคัมภีร์นี้ แล้วเล่าผลด้วยคำไทย เช่น "แรงประสาน" "แรงปะทะ" "แรงแทรก" "แรงดึงเข้าคลัง" — ดูกลไกก่อนดีร้าย · รวมไม่ได้แปลว่าแปรธาตุเสมอ · ผูกผลกลับแกนหลักเสมอ · ห้ามพิมพ์อักษรจีนในคำตอบ\n${introInteraction.text}\n=== จบคัมภีร์ปฏิกิริยา ===\n`
       : "";
+    /* 25 พ.ค. · persona ย้ายไป prompts/sifu-intro.md (แก้ผ่าน /admin/sifu-prompts) · template เดิมด้านล่าง = fallback ถ้า md หาย */
+    const introTpl = loadPromptMd("prompts/sifu-intro.md", "");
+    if (introTpl) {
+      return introTpl
+        .replace("{{LANG}}", () => INTRO_LANG_INSTR[opts.lang] || INTRO_LANG_INSTR.th)
+        .replace("{{INTERACTION}}", () => introInteractionBlock)
+        .replace("{{CTX}}", () => opts.ctx)
+        .replace("{{MESSAGE}}", () => opts.message);
+    }
     return `คุณคือ "ซินแส" ประจำหน้าเปิดประตูของ hourkey.io
 
 ${INTRO_LANG_INSTR[opts.lang] || INTRO_LANG_INSTR.th}
@@ -546,6 +556,17 @@ ${opts.message}
   const interactionBlock = interaction.text
     ? `\n\n=== 📜 คัมภีร์ปฏิกิริยาดวงภายใน (Internal Interaction Master Engine) ===\nก่อนสรุป ให้สแกนผังของลูกค้าหา "ปฏิกิริยาระหว่างก้าน-กิ่ง" ทุกชนิด (天干五合/相冲 · 六合/三合/三会/半合/六冲/刑/害/破/暗合 · 墓库 · 十神) แล้วเทียบกฎในคัมภีร์นี้: ดู Mechanism ก่อน Favorability · 合ไม่ใช่化เสมอ · ใช้หลักชนะกันเมื่อปฏิกิริยาซ้อน · ผูกผลกลับเข้าแกนหลัก (用神/喜忌) อย่าหยิบปฏิกิริยาเดี่ยวมาตัดสินลอยๆ\n${interaction.text}\n=== จบคัมภีร์ปฏิกิริยา ===\n`
     : "";
+  /* 25 พ.ค. · persona ย้ายไป prompts/sifu-qa.md (แก้ผ่าน /admin/sifu-prompts) · template เดิมด้านล่าง = fallback ถ้า md หาย */
+  const qaTpl = loadPromptMd("prompts/sifu-qa.md", "");
+  if (qaTpl) {
+    return qaTpl
+      .replace("{{LANG}}", () => LANG_INSTR[opts.lang] || LANG_INSTR.th)
+      .replace("{{RULES}}", () => rulesBlock)
+      .replace("{{INTERACTION}}", () => interactionBlock)
+      .replace("{{CTX}}", () => opts.ctx)
+      .replace("{{FOCUS_HIST}}", () => focus + histText)
+      .replace("{{MESSAGE}}", () => opts.message);
+  }
   return `คุณคือซินแสปาจื้อ · ตอบลูกค้าที่ดูดวงจาก hourkey.io
 
 ${LANG_INSTR[opts.lang] || LANG_INSTR.th}
