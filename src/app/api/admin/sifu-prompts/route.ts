@@ -13,8 +13,17 @@ import { join } from "path";
 const DIR = join(process.cwd(), "data/library");
 const FILES: Record<string, { label: string; note: string }> = {
   // ── ซินแสหลัก (/api/sifu) · ใช้ในหน้า: ดูดวงตัวเอง (master) + มือถือ (master-m) + รายงานเต็ม (chart) ──
-  "prompts/sifu-qa.md": { label: "ซินแสหลัก · ถาม-ตอบ (Q&A persona)", note: "หน้า master · master-m · chart (ช่องถามซินแส) · /api/sifu · {{CTX}}/{{MESSAGE}}=dynamic · เห็นผล ~60 วิ" },
-  "prompts/sifu-intro.md": { label: "ซินแสหลัก · เปิดประตู (intro persona)", note: "หน้าเปิดดวงครั้งแรก (intro) · /api/sifu mode=intro · {{CTX}}/{{MESSAGE}}=dynamic · เห็นผล ~60 วิ" },
+  // ทุกชิ้น md ล้วน · ไม่มี persona ผูกในโค้ด · มีไฟล์ .default.md เป็นตัวกันพัง (ไม่อยู่ใน whitelist = แก้ไม่ได้)
+  "prompts/sifu-qa.md": { label: "ซินแสหลัก · ถาม-ตอบ (Q&A persona)", note: "หน้า master · master-m · chart (ช่องถามซินแส) · /api/sifu · {{LANG}}/{{RULES}}/{{INTERACTION}}/{{CTX}}/{{FOCUS_HIST}}/{{MESSAGE}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/sifu-intro.md": { label: "ซินแสหลัก · เปิดประตู (intro persona)", note: "หน้าเปิดดวงครั้งแรก (intro) · /api/sifu mode=intro · {{LANG}}/{{INTERACTION}}/{{CTX}}/{{MESSAGE}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/sifu-lang.md": { label: "ซินแสหลัก · ภาษาบังคับ ถาม-ตอบ (TH/EN/ZH)", note: "หน้า master · chart · /api/sifu · section ===TH===/===EN===/===ZH=== · กำหนดความยาว+ภาษา · เห็นผล ~60 วิ" },
+  "prompts/sifu-intro-lang.md": { label: "ซินแสหลัก · ภาษาบังคับ เปิดดวง (TH/EN/ZH)", note: "หน้าเปิดดวง · /api/sifu intro · section ===TH===/===EN===/===ZH=== · เห็นผล ~60 วิ" },
+  "prompts/sifu-topics.md": { label: "ซินแสหลัก · หัวข้อโฟกัส 6 หัวข้อ", note: "หน้า master · chart (ปุ่มเลือกหัวข้อ overview/career/wealth/love/health/study) · /api/sifu · รูปแบบ key = ข้อความ" },
+  "prompts/sifu-rules-header.md": { label: "ซินแสหลัก · กรอบหุ้มสูตรอาเจ๊ก", note: "หน้า master · chart · /api/sifu · {{RULES}}=เนื้อ ajek-bazi-rules.md · เห็นผล ~60 วิ" },
+  "prompts/sifu-interaction-header.md": { label: "ซินแสหลัก · กรอบหุ้มคัมภีร์ปฏิกิริยา + กฎเหล็ก (ถาม-ตอบ)", note: "หน้า master · chart · /api/sifu · {{INTERACTION}}=เนื้อ bazi-interaction-master.md · มีบรรทัดบังคับอ้างปฏิกิริยา · เห็นผล ~60 วิ" },
+  "prompts/sifu-intro-interaction-header.md": { label: "ซินแสหลัก · กรอบหุ้มคัมภีร์ปฏิกิริยา + กฎเหล็ก (เปิดดวง)", note: "หน้าเปิดดวง · /api/sifu intro · {{INTERACTION}}=เนื้อคัมภีร์ · ไทยล้วน · มีบรรทัดบังคับ · เห็นผล ~60 วิ" },
+  "prompts/sifu-warmup.md": { label: "ซินแสหลัก · ประโยคทักทายเปิดดวง", note: "หน้าเปิดดวง · /api/sifu intro (streaming) · {{ELEMENT}}/{{POLARITY}}/{{BODY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/sifu-warmup-bodies.md": { label: "ซินแสหลัก · คำบรรยายแกนธาตุ 10 แบบ", note: "หน้าเปิดดวง warmup · /api/sifu intro · รูปแบบ element:polarity = ข้อความ · key default กันพลาด · เห็นผล ~60 วิ" },
   "ajek-bazi-rules.md": { label: "สูตรอ่านปาจื้อ 13 ขั้น · อาเจ๊กฮ้ง", note: "เสริมซินแสหลัก · หน้า master · master-m · chart · /api/sifu · เห็นผล ~60 วิ" },
   "bazi-interaction-master.md": { label: "คัมภีร์ปฏิกิริยา 合冲刑害破", note: "เสริมซินแสหลัก · หน้า master · master-m · chart · /api/sifu · เห็นผล ~60 วิ" },
   "hourkey_interpret_prompt.refined.md": { label: "System prompt · คำอ่านภาพรวม", note: "หน้า chart (กล่องภาพรวมดวง) · /api/chart/overview · ⚠️ ต้อง pm2 restart ถึงเห็นผล" },

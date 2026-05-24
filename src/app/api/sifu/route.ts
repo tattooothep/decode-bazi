@@ -15,7 +15,7 @@ import { createHash } from "crypto";
 import { q1, q } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
-import { loadPromptMd } from "@/lib/prompt-md";
+import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type IntroBirthInput = {
@@ -62,18 +62,6 @@ const DM_POLARITY_TH: Record<string, string> = {
   yang: "หยาง",
   yin: "หยิน",
 };
-const DM_WARMUP_MAP: Record<string, string> = {
-  "wood:yang": "แกนในเป็นคนเดินหน้า โตจากแรงผลักและความเชื่อของตัวเอง เวลาชีวิตติดมักไม่ยอมแพ้ง่าย",
-  "wood:yin": "แกนในเป็นคนค่อยๆ เติบโต เก็บรายละเอียดเก่ง รู้จังหวะเข้าหาและถอยห่างจากคนรอบตัว",
-  "fire:yang": "แกนในเป็นคนเปิดเผย ชัดเจน มีแรงส่งสูง เวลาเชื่ออะไรจะผลักเรื่องนั้นให้ไปข้างหน้าอย่างจริงจัง",
-  "fire:yin": "แกนในไวต่อบรรยากาศและความรู้สึกคนอื่น มีเสน่ห์จากความอบอุ่นและวิธีพูดที่ค่อยๆ แตะใจคน",
-  "earth:yang": "แกนในหนักแน่น รับภาระเก่ง และมักเป็นเสาค้ำให้คนรอบตัว แม้ข้างในจะกดดันไม่น้อย",
-  "earth:yin": "แกนในระวังตัว สุขุม และชอบวางเรื่องให้เป็นระบบ เวลาตัดสินใจจะดูผลระยะยาวมากกว่าความฉาบฉวย",
-  "metal:yang": "แกนในตรง คม และตัดสินใจชัด เมื่อถึงเวลาต้องเลือกมักไม่ชอบยืดเรื่องให้ค้างคา",
-  "metal:yin": "แกนในละเอียด รอบคอบ และมีมาตรฐานในใจสูง จึงอ่านคนและอ่านสถานการณ์ค่อนข้างไว",
-  "water:yang": "แกนในเคลื่อนไหวเร็ว ปรับตัวเก่ง รับแรงกดดันได้ดี และมักหาทางออกได้แม้ตอนสถานการณ์บีบ",
-  "water:yin": "แกนในลึก เงียบ และช่างสังเกต มองอะไรหลายชั้นก่อนพูดหรือก่อนเปิดใจให้ใครง่ายๆ",
-};
 const TEN_GOD_TH: Record<string, string> = {
   比肩: "ดาวเพื่อนร่วมแรง",
   劫財: "ดาวแย่งทรัพย์",
@@ -119,8 +107,14 @@ function buildIntroWarmup(ctx: string): string | null {
   const [, , polarityRaw, elementRaw] = fact;
   const element = DM_LABEL_TH[elementRaw] || elementRaw;
   const polarity = DM_POLARITY_TH[polarityRaw] || polarityRaw;
-  const body = DM_WARMUP_MAP[`${elementRaw}:${polarityRaw}`] || "แกนในมีแรงของตัวเองชัด และชีวิตมักสอนผ่านประสบการณ์ตรงมากกว่าคำพูด";
-  return `คุณเป็นคนธาตุ${element}แบบ${polarity} ${body} ซินแสจะค่อยๆ ไล่ให้คุณเห็นว่าแต่ละช่วงวัยและ 12 เดือนล่าสุดเดินพลังอย่างไร\n\n`;
+  const bodyMap = loadPromptKV("prompts/sifu-warmup-bodies.md"); // แก้ผ่าน admin
+  const body = bodyMap[`${elementRaw}:${polarityRaw}`] || bodyMap.default || "";
+  const tpl = loadPromptMd("prompts/sifu-warmup.md").trim(); // แก้ผ่าน admin · .default กันพัง
+  if (!tpl) return null;
+  return tpl
+    .replace("{{ELEMENT}}", () => element)
+    .replace("{{POLARITY}}", () => polarity)
+    .replace("{{BODY}}", () => body) + "\n\n";
 }
 
 /* 🧓 อาเจ๊กฮ้ง bazi reading rules · cache 60s · บังคับ AI ทุก request */
@@ -455,27 +449,6 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
   }
 }
 
-const LANG_INSTR: Record<string, string> = {
-  th: "ตอบเป็นภาษาไทย · **สั้นกระชับ ไม่เกิน 350 คำ** · ใช้ markdown bold/emoji · ตำราคลาสสิก 子平真詮·淵海子平·三命通會 · เดินครบลำดับแต่ไม่ต้องเขียนทุก sub-step",
-  en: "Reply in English · **concise, max 350 words** · markdown bold/emoji · classical BaZi sources · follow order but skip verbose sub-steps",
-  zh: "用简体中文回答 · **简洁限 350 字内** · markdown 粗体/emoji · 子平真詮·淵海子平·三命通會 · 按顺序但不冗述",
-};
-
-const INTRO_LANG_INSTR: Record<string, string> = {
-  th: "ตอบเป็นภาษาไทย · **ชัด ตรง อ่านง่าย 450-700 คำ** · ใช้น้ำเสียงซินแสพูดกับลูกค้าโดยตรง · มี emoji เล็กน้อยพอให้หายใจ",
-  en: "Reply in English · **concise but substantial, 220-320 words** · warm, direct, easy to read · sound like a master greeting a new client immediately · avoid heavy technical jargon",
-  zh: "用简体中文回答 · **精简但有内容，约220-320字** · 温和直接、容易读 · 像师傅第一次开口点醒新客人 · 避免过多术语",
-};
-
-const TOPIC_FOCUS: Record<string, string> = {
-  overview: "ภาพรวมปี ดี-ระวัง-โอกาส",
-  career:   "งาน·อาชีพ ปีนี้ · ควรเปลี่ยน/รอ · ช่วงไหนเหมาะ",
-  wealth:   "การเงิน·ทรัพย์ ปีนี้ · เข้า-ออก · ลงทุนอะไรเหมาะ",
-  love:     "ความรัก·คู่ครอง ปีนี้ · โอกาส·เตือน",
-  health:   "สุขภาพ ปีนี้ · จุดเสี่ยง · ฤดูที่อ่อนแอ",
-  study:    "การเรียน·พัฒนาตน ปีนี้ · ทักษะที่ควรเสริม",
-};
-
 function buildPrompt(opts: {
   ctx: string;
   message: string;
@@ -484,100 +457,43 @@ function buildPrompt(opts: {
   lang: string;
   mode?: string;
 }): string {
+  /* 25 พ.ค. · ทุก persona/คำสั่ง/ภาษา/หัวคัมภีร์ อ่านจาก md (แก้ผ่าน /admin/sifu-prompts) · ไม่มี persona ผูกในโค้ด · .default.md = ตัวกันพัง */
+  const langKey = (opts.lang || "th").toUpperCase();
+
   if (opts.mode === "intro") {
     const introInteraction = loadInteractionMaster();
     const introInteractionBlock = introInteraction.text
-      ? `\n=== 📜 คัมภีร์ปฏิกิริยาดวง (สแกนภายใน · เล่าเป็นไทยล้วน ห้ามโชว์อักษรจีน) ===\nก่อนเล่าชีวิต ให้สแกนผังหา "ปฏิกิริยาระหว่างเสา" (รวม/ปะทะ/ลงโทษ/ทำร้าย/ทำลาย/สามประสาน/แอบรวม/เข้าคลัง + สิบเทพ) เทียบกฎคัมภีร์นี้ แล้วเล่าผลด้วยคำไทย เช่น "แรงประสาน" "แรงปะทะ" "แรงแทรก" "แรงดึงเข้าคลัง" — ดูกลไกก่อนดีร้าย · รวมไม่ได้แปลว่าแปรธาตุเสมอ · ผูกผลกลับแกนหลักเสมอ · ห้ามพิมพ์อักษรจีนในคำตอบ\n${introInteraction.text}\n⛔ กฎเหล็ก: คำตอบทุกครั้งต้องอ้างถึงปฏิกิริยาจากคัมภีร์นี้อย่างน้อย 1 จุด (แรงประสาน/แรงปะทะ/แรงแทรก/แรงดึงเข้าคลัง) แล้วผูกผลกลับแกนหลัก · ถ้าไม่พูดถึงปฏิกิริยาเลย = คำตอบใช้ไม่ได้ ต้องเขียนใหม่ทันที\n=== จบคัมภีร์ปฏิกิริยา ===\n`
+      ? "\n" + loadPromptMd("prompts/sifu-intro-interaction-header.md").trim().replace("{{INTERACTION}}", () => introInteraction.text) + "\n"
       : "";
-    /* 25 พ.ค. · persona ย้ายไป prompts/sifu-intro.md (แก้ผ่าน /admin/sifu-prompts) · template เดิมด้านล่าง = fallback ถ้า md หาย */
-    const introTpl = loadPromptMd("prompts/sifu-intro.md", "");
-    if (introTpl) {
-      return introTpl
-        .replace("{{LANG}}", () => INTRO_LANG_INSTR[opts.lang] || INTRO_LANG_INSTR.th)
-        .replace("{{INTERACTION}}", () => introInteractionBlock)
-        .replace("{{CTX}}", () => opts.ctx)
-        .replace("{{MESSAGE}}", () => opts.message);
-    }
-    return `คุณคือ "ซินแส" ประจำหน้าเปิดประตูของ hourkey.io
-
-${INTRO_LANG_INSTR[opts.lang] || INTRO_LANG_INSTR.th}
-
-กฎหลัก:
-- เรียกตัวเองว่า "ซินแส" และเรียกผู้ใช้ว่า "คุณ"
-- เนื้อดวงจริงประมาณ 80% · อลัมพบทประมาณ 20%
-- ใช้ภาษาไทยเป็นหลักเท่านั้น สำนวนซินแส อ่านง่าย ไม่โชว์ศัพท์จีน
-- ห้ามใช้อักษรจีนในคำตอบสุดท้าย แม้ chart packet จะมีข้อมูลจีนอยู่ ให้แปลเป็นชื่อไทย เช่น ธาตุน้ำ, ดาวทรัพย์, ดาวครู, แรงปะทะ
-- ห้ามพูดตัวเลขเปอร์เซ็นต์ทุกชนิด เช่น 29% หรือ 70% ให้พูดว่า อ่อน, กลาง, แข็ง, เด่น, น้อย, มาก แทน
-- ใช้ emoji เล็กน้อยได้ เช่น ✨ 🧭 ⚠️ แต่ไม่เกิน 3 จุด
-- ข้อเท็จจริงใน chart packet เป็นกฎสูงสุด โดยเฉพาะ Day Master
-- ลำดับน้ำหนักการอ่านต้องเป็น: Day Master/หยินหยาง > เดือนเกิด/ฤดู > กำลังตัวตน/ธาตุช่วย > ธาตุซ่อน/ดาวสิบเทพ > ปฏิกิริยาระหว่างเสา > วัยจร/ปีจร > เรือนชีวิต > ดาวพิเศษ/ภาพเปลี่ยนผ่าน/นับเสียง
-- ดาวพิเศษ, ภาพเปลี่ยนผ่าน, นับเสียง ใช้เป็นเครื่องยืนยันหรือสีสันประกอบเท่านั้น ห้ามเป็นแกนหลักของคำอ่าน
-- ใน 1 คำตอบ พูดถึงดาวพิเศษได้ไม่เกิน 3 ครั้ง และต้องผูกกลับไปที่แกนหลักทุกครั้ง
-- ถ้าระบบส่งย่อหน้าเปิดธาตุหลักไปแล้ว ให้ต่อการอ่านเลย ห้ามประกาศธาตุหลักซ้ำ
-- ถ้ายังไม่มีข้อความเปิด ให้ประโยคแรกต้องบอกธาตุหลัก + หยินหยางตาม Day Master ตรงๆ
-- ห้ามใช้ Na Yin, hour stem, month climate หรือภาพเปรียบรอง มาแทนธาตุหลัก
-- ถ้า FACT LOCK ระบุ Day Master เป็นน้ำ ไม้ ไฟ ดิน หรือทอง ต้องพูดตามนั้นเท่านั้น
-- ถ้า DM THAI LOCK ระบุ "ธาตุ...แบบหยาง" ห้ามใช้วลี "ธาตุ...หยิน" กับตัวตนหลักเด็ดขาด และกลับกันด้วย
-- ถ้าพูดถึงธาตุรอง ให้ใช้คำว่า "แรงน้ำรอง", "ไฟรอง", "ดินรอง" ไม่ใช้เป็นคำเปิดตัวตน
-- ถ้าไม่มี FACT LOCK หรือ DATA SOURCE เป็น generic ห้ามทำนายละเอียด ให้บอกว่าต้องมีข้อมูลเกิดครบ
-- ใช้ภาษาคน อ่านง่าย ตรง ชัด ไม่ท่องตาราง ไม่พูดศัพท์เทคนิคติดกันยาวๆ
-- ตอบเป็นย่อหน้า ไม่ทำ bullet list
-- ห้ามบอกว่าตัวเองเป็น AI
-${introInteractionBlock}
-ข้อมูลตั้งต้น:
-${opts.ctx}
-
-ข้อความจากหน้าเว็บ:
-${opts.message}
-
-เขียนตามลำดับนี้:
-1. วิเคราะห์ตัวตนพื้นฐานจาก Day Master, หยินหยาง, เดือนเกิด/ฤดู, กำลังตัวตน, Day branch และ hidden stems
-2. เล่าชีวิตเป็นช่วงวัย 0-10, 10-20, 20-30 ไปจนถึงวัยปัจจุบัน โดยใช้ธาตุซ่อน, ดาวสิบเทพ, ปฏิกิริยาระหว่างเสา และเรือนชีวิตเป็นเหตุหลัก แล้วใช้ดาวพิเศษเป็นแค่ตัวประกอบ
-3. เล่าย้อนหลัง 12 เดือน เป็น 4 ช่วง ช่วงละ 3 เดือน โดยดูงาน เงิน ความสัมพันธ์ ใจ และแรงกดดัน
-4. สรุปว่าตอนนี้คุณยืนอยู่ตรงประตูไหนของชีวิต และปิดด้วยคำชวนเข้า HourKey 1-2 ประโยค
-
-ข้อสำคัญ:
-- ถ้าข้อมูลบางหมวดมีมาแล้ว เช่น Palace, Hex Natal, Stars, React ต้องใช้จริงในการตีความ
-- ถ้าข้อมูลบางหมวดไม่พอ ห้ามเดาเกิน fact lock
-- อย่าคัดลอกตารางดิบ ต้องแปลเป็นภาษาชีวิต
-
-ตอบเดี๋ยวนี้เป็นภาษาไทยล้วน แบบซินแสที่เห็นชีวิตคนจริง ความยาวประมาณ 650-1000 คำ ห้ามใช้อักษรจีน ห้ามใช้เปอร์เซ็นต์:`;
+    const introLang = loadPromptSections("prompts/sifu-intro-lang.md");
+    return loadPromptMd("prompts/sifu-intro.md")
+      .replace("{{LANG}}", () => introLang[langKey] || introLang.TH || "")
+      .replace("{{INTERACTION}}", () => introInteractionBlock)
+      .replace("{{CTX}}", () => opts.ctx)
+      .replace("{{MESSAGE}}", () => opts.message);
   }
 
   const histText = opts.history.length
     ? "\n\nประวัติคำถาม:\n" + opts.history.map(h => `[${h.role}] ${h.content}`).join("\n")
     : "";
-  const focus = opts.topic && TOPIC_FOCUS[opts.topic] ? `\nหัวข้อ: ${TOPIC_FOCUS[opts.topic]}` : "";
+  const topicMap = loadPromptKV("prompts/sifu-topics.md");
+  const focus = opts.topic && topicMap[opts.topic] ? `\nหัวข้อ: ${topicMap[opts.topic]}` : "";
   const ajek = loadAjekRules();
   const rulesBlock = ajek.text
-    ? `\n\n=== 🧓 สูตรอ่านปาจื้อบังคับ · อาเจ๊กฮ้ง (ใช้ลำดับนี้ทุกครั้ง · ห้ามข้ามขั้น · ห้ามอ่าน Stars/Hex ก่อนโครง) ===\n${ajek.text}\n=== จบสูตรบังคับ ===\n`
+    ? "\n\n" + loadPromptMd("prompts/sifu-rules-header.md").trim().replace("{{RULES}}", () => ajek.text) + "\n"
     : "";
   const interaction = loadInteractionMaster();
   const interactionBlock = interaction.text
-    ? `\n\n=== 📜 คัมภีร์ปฏิกิริยาดวงภายใน (Internal Interaction Master Engine) ===\nก่อนสรุป ให้สแกนผังของลูกค้าหา "ปฏิกิริยาระหว่างก้าน-กิ่ง" ทุกชนิด (天干五合/相冲 · 六合/三合/三会/半合/六冲/刑/害/破/暗合 · 墓库 · 十神) แล้วเทียบกฎในคัมภีร์นี้: ดู Mechanism ก่อน Favorability · 合ไม่ใช่化เสมอ · ใช้หลักชนะกันเมื่อปฏิกิริยาซ้อน · ผูกผลกลับเข้าแกนหลัก (用神/喜忌) อย่าหยิบปฏิกิริยาเดี่ยวมาตัดสินลอยๆ\n${interaction.text}\n⛔ กฎเหล็ก: คำตอบทุกครั้งต้องอ้างถึงปฏิกิริยาจากคัมภีร์นี้อย่างน้อย 1 จุด (合化/沖/刑/害/破/三合/墓库/十神) ระบุกลไกแล้วผูกผลกลับ用神/喜忌 · ถ้าไม่อ้างปฏิกิริยาเลย = คำตอบใช้ไม่ได้ ต้องเขียนใหม่\n=== จบคัมภีร์ปฏิกิริยา ===\n`
+    ? "\n\n" + loadPromptMd("prompts/sifu-interaction-header.md").trim().replace("{{INTERACTION}}", () => interaction.text) + "\n"
     : "";
-  /* 25 พ.ค. · persona ย้ายไป prompts/sifu-qa.md (แก้ผ่าน /admin/sifu-prompts) · template เดิมด้านล่าง = fallback ถ้า md หาย */
-  const qaTpl = loadPromptMd("prompts/sifu-qa.md", "");
-  if (qaTpl) {
-    return qaTpl
-      .replace("{{LANG}}", () => LANG_INSTR[opts.lang] || LANG_INSTR.th)
-      .replace("{{RULES}}", () => rulesBlock)
-      .replace("{{INTERACTION}}", () => interactionBlock)
-      .replace("{{CTX}}", () => opts.ctx)
-      .replace("{{FOCUS_HIST}}", () => focus + histText)
-      .replace("{{MESSAGE}}", () => opts.message);
-  }
-  return `คุณคือซินแสปาจื้อ · ตอบลูกค้าที่ดูดวงจาก hourkey.io
-
-${LANG_INSTR[opts.lang] || LANG_INSTR.th}
-${rulesBlock}${interactionBlock}
-ข้อมูลดวงของลูกค้า:
-${opts.ctx}
-${focus}${histText}
-
-คำถาม: ${opts.message}
-
-ตอบ (เดินตาม 13 ขั้นของอาเจ๊กฮ้งอย่างเคร่งครัด · ตรวจ從格/專旺ก่อนหา用神 · อ่าน合化 + hidden stem · ดู空亡 · จบด้วย大運+流年 React):`;
+  const qaLang = loadPromptSections("prompts/sifu-lang.md");
+  return loadPromptMd("prompts/sifu-qa.md")
+    .replace("{{LANG}}", () => qaLang[langKey] || qaLang.TH || "")
+    .replace("{{RULES}}", () => rulesBlock)
+    .replace("{{INTERACTION}}", () => interactionBlock)
+    .replace("{{CTX}}", () => opts.ctx)
+    .replace("{{FOCUS_HIST}}", () => focus + histText)
+    .replace("{{MESSAGE}}", () => opts.message);
 }
 
 async function runClaudeCli(prompt: string): Promise<string> {
