@@ -2136,6 +2136,7 @@ function updateInspector(){
     '飛星山':['ดาวภูเขา','飛星山'],'飛星水':['ดาวแม่น้ำ','飛星水'],'飛星基':['ดาวฐาน','飛星基'],'飛星':['ดาวเหิน','飛星'],
     '64卦':['64 กว้า','64卦'],
     '卦運':['ยุคของกว้า','卦運'],
+    '五行':['5 ธาตุ สร้าง/ทำลาย','五行'],
     '奇門·門':['ฉีเหมิน ประตู','奇門 門'],'奇門·神':['ฉีเหมิน เทพ','奇門 神'],'奇門·星':['ฉีเหมิน ดาว','奇門 星'],
     '地盤':['24 ขุนเขา','地盤'],'地支':['12 กิ่งดิน','地支'],'天干':['10 ก้านฟ้า','天干'],
     '三盤':['3 เข็ม','三盤'],'天池':['บ่อฟ้า','天池'],'人盤':['เข็มคน','人盤'],'天盤':['เข็มฟ้า','天盤'],
@@ -2148,7 +2149,7 @@ function updateInspector(){
   const ELZ = {水:'น้ำ',木:'ไม้',火:'ไฟ',土:'ดิน',金:'ทอง'}; /* ธาตุจีน→ไทย */
   const DIR_TH = {N:'เหนือ',NE:'อีสาน',E:'ตะวันออก',SE:'อาคเนย์',S:'ใต้',SW:'หรดี',W:'ตะวันตก',NW:'พายัพ'};
   /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
-  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','卦運':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
+  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','卦運':'rKU','五行':'r5E','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
   function row(cat, han, head, score, general, home, rich){
     const rid = HAN_RING[han];
     if(rid){ const cb=document.querySelector('input[data-r="'+rid+'"]'); if(cb && !cb.checked) return; } /* ศาสตร์ถูกปิด filter */
@@ -2335,6 +2336,20 @@ function updateInspector(){
   if(fe) diHome = `${elObj?.home||''}<div style="margin-top:6px;color:var(--fg-faint);line-height:1.7">✨ ${fe.qualities.join(' · ')}<br>🔷 รูปทรง: ${fe.forms.join(' ')} · 🧱 วัสดุ: ${fe.materials.join(' ')}</div>`;
   row('cat1','地盤', `<b>ทิศ${DIR_TH[r.dir8]||''}</b> <span style="color:var(--fg-faint)">${r.m24.m} ${r.m24.p} ${r.m24.c}</span> <span style="color:var(--${r.m24.el})">· ${elTH[r.m24.el]}</span>`,
       elObj?.score, elObj?.general, diHome, true);
+  /* 五行 สร้าง/ทำลาย (生/克) ของธาตุประจำทิศ · checkbox r5E */
+  {
+    const SH={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};   /* 生 สร้าง */
+    const KE={wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};    /* 克 คุม/ทำลาย */
+    const el=r.m24.el;
+    const genBy=Object.keys(SH).find(k=>SH[k]===el);   /* ธาตุที่สร้างเรา */
+    const ctrlBy=Object.keys(KE).find(k=>KE[k]===el);  /* ธาตุที่คุมเรา */
+    const C=e=>`<span style="color:var(--${e})">${elTH[e]}</span>`;
+    row('cat1','五行',
+      `<b>ธาตุ${elTH[el]}</b> <span style="color:var(--fg-faint)">· ${elHan[el]}</span>`,
+      null,
+      `🟢 <b>สร้าง (生)</b>: ${C(el)} → ${C(SH[el])}　·　ถูกสร้างโดย ${C(genBy)}<br>🔴 <b>ทำลาย/คุม (克)</b>: ${C(el)} → ${C(KE[el])}　·　ถูกคุมโดย ${C(ctrlBy)}`,
+      '', true);
+  }
   /* 12 กิ่งดิน · ใช้ JSON ซินแส 象意 (score+เหตุผล+recommendation) → fallback luopan_complete */
   const ES = window.EARTH_SYMBOLIC;
   const BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
