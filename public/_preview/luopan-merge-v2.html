@@ -1601,9 +1601,12 @@ const CG_MOUNTAINS_24 = [
 ];
 const CG_PALACE_INDEX = {坎:0,坤:1,震:2,巽:3,中:4,乾:5,兌:6,艮:7,離:8};
 const CG_FLY_ORDER = [4,5,6,7,8,0,1,2,3];
-/* (ลบ CG_STAR_HOME / CG_PALACE_MTN / CG_YUAN_IDX แล้ว — เดิมใช้หา陰陽จากบ้านดาว運星 ซึ่งผิดหลัก沈氏
- *  หลังแก้ cgFlightInfo ใช้陰陽ของภูเขา向首/坐山เองจาก CG_MTN_YINYANG โดยตรง) */
+/* 沈氏玄空下卦 起星 — verified ตรง Voytek calculator 100% (子山午向P9=雙星到坐 ทั้ง9วัง)
+ *  順逆ของ山/向星: ดู陰陽ของ "ภูเขาที่ตรง三元龍ของ坐/向山 ในบ้าน(本宮)ของดาว運盤ที่入中" */
+const CG_STAR_HOME = {1:'坎',2:'坤',3:'震',4:'巽',6:'乾',7:'兌',8:'艮',9:'離'};
+const CG_PALACE_MTN = {坎:['壬','子','癸'],艮:['丑','艮','寅'],震:['甲','卯','乙'],巽:['辰','巽','巳'],離:['丙','午','丁'],坤:['未','坤','申'],兌:['庚','酉','辛'],乾:['戌','乾','亥']};
 const CG_MTN_YINYANG = {壬:'陽',甲:'陽',庚:'陽',丙:'陽',乾:'陽',坤:'陽',艮:'陽',巽:'陽',寅:'陽',申:'陽',巳:'陽',亥:'陽',子:'陰',午:'陰',卯:'陰',酉:'陰',癸:'陰',丁:'陰',乙:'陰',辛:'陰',丑:'陰',未:'陰',辰:'陰',戌:'陰'};
+const CG_YUAN_IDX = {Earth:0,Heaven:1,Man:2};
 const CG_YUAN_LBL = {Earth:'地元',Heaven:'天元',Man:'人元'};
 
 function cgNormDeg(d){return ((d%360)+360)%360;}
@@ -1624,19 +1627,19 @@ function cgFlyStars(centerStar, dir){
   }
   return result;
 }
-/* 八卦陰陽 (洛書數) — หัวใจกำหนด順逆飛 沈氏玄空下卦:
- *  乾6 坎1 艮8 震3 = 陽 → 順飛 · 巽4 離9 坤2 兌7 = 陰 → 逆飛 · 5中宮無正卦
- *  ⚠ ต้องใช้陰陽ของ "八卦(卦德)ของดาว運盤ที่入中" — ไม่ใช่陰陽ของ24山 (v2.2/วิธีเก่าผิดตรงนี้)
- *  verified ผ่าน 48 ดวง ยุค8,9 (子午P9旺山旺向 · 卯酉P8上山下水 · 乾巽P8旺山旺向) + สมมาตร216 */
-const CG_GUA_YINYANG = {1:'陽',3:'陽',6:'陽',8:'陽', 2:'陰',4:'陰',7:'陰',9:'陰'};
+/* 沈氏玄空下卦 起星訣 (วิธี A · ตรง Voytek):
+ *  運盤星 seedStar ตกวัง坐/向 → 入中 · 順逆 = 陰陽ของภูเขาใน "บ้าน(本宮)ของ seedStar"
+ *  ที่ตรง三元龍ของ坐/向山(mtnName) · ดาว5無本宮 → ยืม陰陽จากวังปัจจุบัน(currPalace)
+ *  period param เก็บไว้ compat (ไม่ใช้) */
 function cgFlightInfo(seedStar, mtnName, currPalace, period){
-  /* seedStar = ดาว運盤ที่ตกวัง坐/向 (สำหรับ山向盤) หรือ向星ที่วัง城門 (สำหรับ城門訣)
-   * ดาว5無正卦 → ยืม陰陽ของดาวยุค (period) */
-  let refYY = CG_GUA_YINYANG[seedStar];
-  if(!refYY && seedStar===5) refYY = CG_GUA_YINYANG[period];
-  if(!refYY) throw new Error('gua yinyang missing: seed='+seedStar+' period='+period);
   const mObj = CG_MOUNTAINS_24.find(m => m.name===mtnName);
-  return { direction: refYY==='陽'?'forward':'reverse', referenceStar:seedStar, homePalace:currPalace, referenceMountainName:mtnName, referenceYinYang:refYY, yuan:mObj?.yuan||null, warning:null };
+  const yuan = mObj?.yuan; if(!yuan) throw new Error('yuan missing: '+mtnName);
+  let homePalace, warning = null;
+  if(seedStar===5){ homePalace = currPalace; warning = 'ดาว 5 รับช่วง 陰陽 จากวังปัจจุบัน'; }
+  else { homePalace = CG_STAR_HOME[seedStar]; if(!homePalace) throw new Error('home missing: '+seedStar); }
+  const refMtn = CG_PALACE_MTN[homePalace][CG_YUAN_IDX[yuan]];
+  const refYY = CG_MTN_YINYANG[refMtn];
+  return { direction: refYY==='陽'?'forward':'reverse', referenceStar:seedStar, homePalace, referenceMountainName:refMtn, referenceYinYang:refYY, yuan, warning };
 }
 function cgCalcChart(period, facingMtn){
   const sitDeg = cgNormDeg(cgGetMid(facingMtn)+180);
@@ -1676,7 +1679,7 @@ function cgEvalCandidate(cand, chart, period){
         else if(hasFuture){ type='副城門'; usable=true; severity='good'; reasons.push(`ดาว生氣 ${arrivedStar} บินถึงวัง城門`); }
         else reasons.push(`ดาวถึง=${arrivedStar} ไม่ใช่ดาวยุค/生氣`);
       }
-      reasons.push(`ทิศบิน: ดาวน้ำ ${gateWater} เข้ากลาง · บินตาม八卦陰陽ของดาว ${gateWater} (${fInfo.referenceYinYang}) → ${fInfo.direction==='forward'?'順飛':'逆飛'}`);
+      reasons.push(`ทิศบิน: ดาวน้ำ ${gateWater} เข้ากลาง · ${CG_YUAN_LBL[fInfo.yuan]} ${fInfo.referenceMountainName}(${fInfo.referenceYinYang}) → ${fInfo.direction==='forward'?'順飛':'逆飛'}`);
     } catch(e){ warnings.push(e.message); severity='danger'; }
   } else { warnings.push('ไม่พบดาวน้ำของวัง'); severity='danger'; }
   return { mountain:cand, palace:cand.trigram, palaceIndex, gateWaterStar:gateWater, gateBaseStar:gateBase, gateMountainStar:gateMtn, arrivedStar, type, usable, severity, reasons, warnings };
@@ -2046,7 +2049,7 @@ function updateInspector(){
       try{
         if(g.gateWaterStar){
           const fi = cgFlightInfo(g.gateWaterStar, m.name, m.trigram, lockedPeriod);
-          flightTxt = `<div>↻ <b>${fi.direction==='forward'?'順飛':'逆飛'}</b> · ดาวน้ำ ${g.gateWaterStar} เข้ากลาง · ตาม八卦陰陽ของดาว ${g.gateWaterStar} (${fi.referenceYinYang})</div>`;
+          flightTxt = `<div>↻ <b>${fi.direction==='forward'?'順飛':'逆飛'}</b> · ดาวน้ำ ${g.gateWaterStar} เข้ากลาง · ${YUAN_TH[fi.yuan]||fi.yuan} ${fi.referenceMountainName}(${fi.referenceYinYang})</div>`;
         }
       }catch(e){}
       const startTxt = m.start.toFixed(1).replace(/\.0$/,'');
