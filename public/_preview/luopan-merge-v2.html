@@ -282,6 +282,7 @@
         <label><input type="checkbox" data-r="rTN" data-cg="1" checked><span class="lbl-th">เข็มฟ้า · ดูน้ำ</span><span class="lbl-cn">天盤</span></label>
         <label><input type="checkbox" data-r="rDZ" data-cg="1" checked><span class="lbl-th">12 กิ่งดิน · นักษัตร</span><span class="lbl-cn">地支</span></label>
         <label><input type="checkbox" data-r="rTG" data-cg="1" checked><span class="lbl-th">10 ก้านฟ้า · ธาตุสวรรค์</span><span class="lbl-cn">天干</span></label>
+        <label><input type="checkbox" data-r="rWarn" data-cg="1" checked><span class="lbl-th">太歲/三煞/歲破 · ดาวเตือนปี</span><span class="lbl-cn">警示</span></label>
       </div>
     </div>
 
@@ -2071,7 +2072,7 @@ function updateInspector(){
   const ELZ = {水:'น้ำ',木:'ไม้',火:'ไฟ',土:'ดิน',金:'ทอง'}; /* ธาตุจีน→ไทย */
   const DIR_TH = {N:'เหนือ',NE:'อีสาน',E:'ตะวันออก',SE:'อาคเนย์',S:'ใต้',SW:'หรดี',W:'ตะวันตก',NW:'พายัพ'};
   /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
-  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool'};
+  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool','三盤':'r24','警示':'rWarn'};
   function row(cat, han, head, score, general, home, rich){
     const rid = HAN_RING[han];
     if(rid){ const cb=document.querySelector('input[data-r="'+rid+'"]'); if(cb && !cb.checked) return; } /* ศาสตร์ถูกปิด filter */
