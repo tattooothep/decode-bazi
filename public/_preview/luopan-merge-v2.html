@@ -1391,6 +1391,8 @@ document.querySelector('.stage').addEventListener('keydown', e => {
   else if(e.key === 'ArrowDown'){ dialOffsetY += step; h = true; }
   if(h){ e.preventDefault(); applyDialOffset(); }
 });
+/* ESC = ยกเลิกโหมดปักหมุด (กันค้าง) */
+window.addEventListener('keydown', e => { if(e.key==='Escape' && typeof setPinMode==='function' && pinMode){ setPinMode(null); } });
 document.querySelector('.stage').setAttribute('tabindex','0');
 /* restore from localStorage */
 try{
@@ -1472,6 +1474,7 @@ function addPin(ev){
   savePins();
   renderPins();
   updateInspector(); /* refresh activate status */
+  setPinMode(null); /* ปักทีละจุด · ปิดโหมดอัตโนมัติ กันค้างทำงานตลอด */
 }
 function removePin(id){
   pins = pins.filter(p => p.id !== id);
