@@ -1928,6 +1928,13 @@ fetch('/_preview/luopan_complete.json').then(r => r.json()).then(d => {
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('luopan data load failed:', e));
 
+/* 24 พ.ค. · 地盤象意 (12地支+10天干 · score+เหตุผล+recommendation) จาก JSON ซินแส v1.1 */
+window.EARTH_SYMBOLIC = null;
+fetch('/_preview/earth-plate-symbolic.json').then(r => r.json()).then(d => {
+  window.EARTH_SYMBOLIC = d.earth_plate_symbolic_layers || d;
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('earth-plate symbolic load failed:', e));
+
 function getCursorRelativeDeg(){
   /* ทิศจริงบนวง = มุมเข็ม(screen) + การหมุนวง (facing เมื่อล็อก) */
   return ((cursorDeg + ringRotation()) % 360 + 360) % 360;
@@ -2016,6 +2023,12 @@ const elHan={water:'水',wood:'木',fire:'火',earth:'土',metal:'金'};
 function scoreClass(n){const v=Number(n);return v>=5?'s5':v>=4?'s4':v>=3?'s3':v>=2?'s2':'s1';}
 function scoreLabel(n){return Number(n)+'/5';}
 function fsEsc(s){return String(s||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'})[c]);}
+/* 地盤象意 · สร้างคำแนะนำใช้พื้นที่ + disclaimer (รูปแบบ rich · trusted จาก JSON ซินแส) */
+function buildEarthHome(it, disclaimer){
+  const recs = (it.recommendations||[]).map(rc =>
+    `<div class="${scoreClass(rc.score)}" style="margin:2px 0">${scoreLabel(rc.score)} <b>${fsEsc(rc.label_th)}</b> — ${fsEsc(rc.reason_th)}</div>`).join('');
+  return `<div style="margin-bottom:6px;color:var(--fg-faint)">📐 คำแนะนำใช้พื้นที่ (เชิง象意 · ไม่ใช่คำตัดสินฮวงจุ้ยสุดท้าย)</div>${recs}<div style="margin-top:8px;font-size:11px;color:#d9a44c;line-height:1.6">⚠ ${fsEsc(disclaimer)}</div>`;
+}
 
 /* ===== 八宅明鏡 遊年 + 正神零神 (deterministic · verify ผ่าน mutual+錯卦+東西四) ===== */
 const BZ_LINES={乾:[1,1,1],兌:[1,1,0],離:[1,0,1],震:[1,0,0],巽:[0,1,1],坎:[0,1,0],艮:[0,0,1],坤:[0,0,0]};
@@ -2212,17 +2225,35 @@ function updateInspector(){
   const elObj = L.five_elements?.elements?.[elHan[r.m24.el]];
   row('cat1','地盤', `<b>ทิศ${DIR_TH[r.dir8]||''}</b> <span style="color:var(--fg-faint)">${r.m24.m} ${r.m24.p} ${r.m24.c}</span> <span style="color:var(--${r.m24.el})">· ${elTH[r.m24.el]}</span>`,
       elObj?.score, elObj?.general, elObj?.home);
-  /* 12 กิ่งดิน */
+  /* 12 กิ่งดิน · ใช้ JSON ซินแส 象意 (score+เหตุผล+recommendation) → fallback luopan_complete */
+  const ES = window.EARTH_SYMBOLIC;
   const BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
-  if(BRANCHES.includes(r.m24.m) && L.earthly_branches?.branches?.[r.m24.m]){
-    const dz = L.earthly_branches.branches[r.m24.m];
-    row('cat1','地支', `<b>${dz.name||r.m24.m}</b> <span style="color:var(--fg-faint)">· ${r.m24.m} · ${dz.time||''}</span>`, dz.score, dz.general, dz.home);
+  if(BRANCHES.includes(r.m24.m)){
+    const es = ES?.dizhi?.items?.[r.m24.m];
+    if(es){
+      const grp = ES.dizhi_group_quality?.[es.group];
+      const grpTxt = grp ? `${grp.name_th} ${grp.name_zh}` : es.group;
+      const general = `${es.primary_reason_th} · 象意: ${es.symbolic_meaning_th}`;
+      const home = buildEarthHome(es, ES.score_design?.score_disclaimer_th||'');
+      row('cat1','地支', `<b>${es.zodiac_th} ${es.thai_reading}</b> <span style="color:var(--fg-faint)">· ${r.m24.m} · ${grpTxt} · ${es.wuxing_th}${es.yin_yang_th}</span>`, es.primary_score, general, home, true);
+    } else if(L.earthly_branches?.branches?.[r.m24.m]){
+      const dz = L.earthly_branches.branches[r.m24.m];
+      row('cat1','地支', `<b>${dz.name||r.m24.m}</b> <span style="color:var(--fg-faint)">· ${r.m24.m} · ${dz.time||''}</span>`, dz.score, dz.general, dz.home);
+    }
   }
-  /* 10 ก้านฟ้า */
+  /* 10 ก้านฟ้า (บนวง 24山 มีเฉพาะ 甲乙丙丁庚辛壬癸 · 戊己 อยู่กลางบ้าน) */
   const STEMS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
-  if(STEMS.includes(r.m24.m) && L.heavenly_stems?.stems?.[r.m24.m]){
-    const tg = L.heavenly_stems.stems[r.m24.m];
-    row('cat1','天干', `<b>${tg.name||r.m24.m}</b> <span style="color:var(--fg-faint)">· ${r.m24.m} · ${ELZ[tg.element]||tg.element||''}</span>`, tg.score, tg.general, tg.home);
+  if(STEMS.includes(r.m24.m)){
+    const es = ES?.tiangan?.items?.[r.m24.m];
+    if(es){
+      const general = `${es.primary_reason_th} · 象意: ${es.symbolic_meaning_th}`;
+      const home = buildEarthHome(es, ES.score_design?.score_disclaimer_th||'');
+      const img = es.image_symbol_th ? ` · ${es.image_symbol_th}` : '';
+      row('cat1','天干', `<b>${r.m24.m} ${es.thai_reading}</b> <span style="color:var(--fg-faint)">· ${es.wuxing_th}${es.yin_yang_th}${img}</span>`, es.primary_score, general, home, true);
+    } else if(L.heavenly_stems?.stems?.[r.m24.m]){
+      const tg = L.heavenly_stems.stems[r.m24.m];
+      row('cat1','天干', `<b>${tg.name||r.m24.m}</b> <span style="color:var(--fg-faint)">· ${r.m24.m} · ${ELZ[tg.element]||tg.element||''}</span>`, tg.score, tg.general, tg.home);
+    }
   }
   /* 三盤 */
   if(L.three_plates?.plates?.['地盤']){

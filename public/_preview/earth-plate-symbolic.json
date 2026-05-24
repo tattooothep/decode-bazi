@@ -1,0 +1,1013 @@
+{
+  "earth_plate_symbolic_layers": {
+    "version": "1.1.0",
+    "base_ring": "地盤正針",
+    "base_ring_th": "เข็มดิน / เข็มหลัก",
+    "base_ring_en": "Earth Plate / Correct Needle",
+    "purpose_th": "ใช้แสดงข้อมูลพื้นฐานเชิง象意และฟังก์ชันของ 24 ขุนเขา ไม่ใช่คำตัดสินฮวงจุ้ยสุดท้าย",
+    "not_final_fengshui_judgement": true,
+
+    "score_design": {
+      "score_type": "symbolic_functional_fit",
+      "score_source": "website_editorial_interpretation",
+      "score_max": 5,
+      "score_disclaimer_th": "คะแนนนี้เป็นคะแนนเชิงคำอธิบายจากเว็บ ใช้บอกความเหมาะสมเชิง象意และฟังก์ชัน ไม่ใช่ผลตัดสินจากดาวเหิน ประตู เตา น้ำ ภูเขา หรือปีจร",
+      "score_disclaimer_zh": "此分數為網站編輯之象意與功能適配評分，非最終風水吉凶判斷。",
+      "score_disclaimer_en": "This score is an editorial symbolic-functional fit score, not a final Feng Shui judgement.",
+      "primary_score_rule": {
+        "5": {
+          "label_th": "เหมาะมาก",
+          "logic_th": "ใช้เมื่อพลังของทิศนั้นตรงกับฟังก์ชันอย่างชัดเจนและใช้ได้เด่นมาก"
+        },
+        "4": {
+          "label_th": "เหมาะ",
+          "logic_th": "ใช้เมื่อพลังค่อนข้างนุ่ม ใช้ได้กว้าง หรือส่งเสริมฟังก์ชันบ้านได้ดี"
+        },
+        "3": {
+          "label_th": "กลาง / เฉพาะทาง",
+          "logic_th": "ใช้เมื่อพลังลึก แข็ง คม หนัก เฉพาะทาง หรือเหมาะเฉพาะบางฟังก์ชัน"
+        },
+        "2": {
+          "label_th": "อ่อน / ต้องระวัง",
+          "logic_th": "ใช้เมื่อฟังก์ชันนั้นไม่ค่อยสอดคล้อง หรืออาจทำให้พลังรั่ว ตึง หรือถูกรบกวน"
+        },
+        "1": {
+          "label_th": "ไม่แนะนำ",
+          "logic_th": "ใช้เมื่อฟังก์ชันนั้นขัดกับ象意อย่างชัดเจน"
+        }
+      }
+    },
+
+    "dizhi_group_quality": {
+      "四長生": {
+        "members": ["寅", "申", "巳", "亥"],
+        "name_th": "กลุ่มเกิดใหม่ / ม้าเคลื่อนไหว",
+        "name_zh": "四長生 / 驛馬",
+        "name_en": "Four Growth / Traveling Horse",
+        "core_quality_th": "การเคลื่อนไหว การเริ่มทาง การเดินทาง การเปลี่ยนผ่าน ทางเข้า-ออก ทางสัญจร",
+        "recommended_use_cases": [
+          "โถงทางเข้า",
+          "ทางเดิน",
+          "โรงรถ",
+          "พื้นที่เปลี่ยนผ่าน",
+          "มุมเดินทาง",
+          "พื้นที่เริ่มโปรเจกต์"
+        ]
+      },
+      "四正": {
+        "members": ["子", "午", "卯", "酉"],
+        "name_th": "กลุ่มทิศกลาง / จุดสูงสุด",
+        "name_zh": "四正 / 桃花",
+        "name_en": "Four Cardinals / Peach Blossom",
+        "core_quality_th": "จุดเด่น จุดดึงดูด เสน่ห์ ความสัมพันธ์ ชื่อเสียง สังคม การมองเห็น",
+        "recommended_use_cases": [
+          "ห้องรับแขก",
+          "มุมสังคม",
+          "พื้นที่โชว์",
+          "มุมศิลปะ",
+          "มุมความสัมพันธ์",
+          "พื้นที่สร้างบรรยากาศ"
+        ]
+      },
+      "四庫": {
+        "members": ["辰", "戌", "丑", "未"],
+        "name_th": "กลุ่มคลัง / ดินเก็บพลัง",
+        "name_zh": "四庫",
+        "name_en": "Four Storages",
+        "core_quality_th": "การเก็บสะสม คลัง ฐานราก การบ่มเพาะ การเปลี่ยนผ่าน ความมั่นคง",
+        "recommended_use_cases": [
+          "ห้องเก็บของ",
+          "พื้นที่เอกสาร",
+          "ที่เก็บอาหาร",
+          "มุมครอบครัว",
+          "พื้นที่ทรัพย์สิน",
+          "พื้นที่ฐานราก"
+        ]
+      }
+    },
+
+    "dizhi": {
+      "module_id": "dizhi_12_branches",
+      "name_th": "12 กิ่งดิน · นักษัตร",
+      "name_zh": "十二地支",
+      "name_en": "Twelve Earthly Branches",
+      "show_when": "current_mountain_type == '地支'",
+      "score_type": "symbolic_functional_fit",
+      "fallback_message_th": "ทิศนี้ไม่ใช่ตำแหน่ง地支 ให้ไปดูหมวด天干หรือหมวด 24山 แทน",
+
+      "items": {
+        "子": {
+          "order": 1,
+          "thai_reading": "จื่อ",
+          "zodiac_th": "หนู",
+          "zodiac_zh": "鼠",
+          "zodiac_en": "Rat",
+          "group": "四正",
+          "time_range": "23:00-01:00",
+          "wuxing": "水",
+          "wuxing_th": "น้ำ",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "direction_degrees": {
+            "center": 0,
+            "start": 352.5,
+            "end": 7.5,
+            "wraps_zero": true
+          },
+          "primary_score": 3,
+          "primary_label_th": "กลาง / เฉพาะทาง",
+          "primary_reason_th": "子เป็นน้ำลึก มีพลังสะสม ปัญญา ความลับ และการเริ่มต้นภายใน เหมาะกับพื้นที่สงบมากกว่าพื้นที่คึกคัก",
+          "symbolic_meaning_th": "การเริ่มต้น ความลับ การสะสมพลัง ปัญญา การเคลื่อนไหวลึก",
+          "recommendations": [
+            {
+              "use_id": "quiet_corner",
+              "label_th": "มุมสงบ",
+              "score": 4,
+              "reason_th": "子เป็นน้ำลึก เหมาะกับพื้นที่นิ่งและใช้ความคิด"
+            },
+            {
+              "use_id": "planning_work",
+              "label_th": "มุมวางแผน",
+              "score": 4,
+              "reason_th": "สื่อถึงปัญญา การเก็บข้อมูล และการเริ่มต้นจากภายใน"
+            },
+            {
+              "use_id": "actual_water_feature",
+              "label_th": "บ่อน้ำ / สระน้ำจริง",
+              "score": 2,
+              "reason_th": "แม้子เป็นธาตุน้ำ แต่การวางน้ำจริงต้องใช้納水หรือดาวเหินแยก"
+            }
+          ]
+        },
+
+        "丑": {
+          "order": 2,
+          "thai_reading": "โจ่ว",
+          "zodiac_th": "วัว",
+          "zodiac_zh": "牛",
+          "zodiac_en": "Ox",
+          "group": "四庫",
+          "time_range": "01:00-03:00",
+          "wuxing": "土",
+          "wuxing_th": "ดิน",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "direction_degrees": {
+            "center": 30,
+            "start": 22.5,
+            "end": 37.5,
+            "wraps_zero": false
+          },
+          "primary_score": 3,
+          "primary_label_th": "กลาง / เฉพาะทาง",
+          "primary_reason_th": "丑เป็นดินคลัง มีพลังสะสม หนัก และช้า เหมาะกับของนิ่งหรือการเก็บระยะยาว",
+          "symbolic_meaning_th": "ความอดทน ฐานราก การสะสม ความมั่นคง งานหนัก",
+          "recommendations": [
+            {
+              "use_id": "storage",
+              "label_th": "ห้องเก็บของ",
+              "score": 4,
+              "reason_th": "丑เป็นดินหยิน มีภาพ象ของการสะสมและฐานราก"
+            },
+            {
+              "use_id": "document_archive",
+              "label_th": "พื้นที่เอกสาร",
+              "score": 4,
+              "reason_th": "เหมาะกับของที่ต้องจัดเก็บนานและไม่เคลื่อนไหวบ่อย"
+            },
+            {
+              "use_id": "active_social_area",
+              "label_th": "พื้นที่กิจกรรมคึกคัก",
+              "score": 2,
+              "reason_th": "พลัง丑ค่อนข้างนิ่ง หนัก และช้า"
+            }
+          ]
+        },
+
+        "寅": {
+          "order": 3,
+          "thai_reading": "อิ๋น",
+          "zodiac_th": "เสือ",
+          "zodiac_zh": "虎",
+          "zodiac_en": "Tiger",
+          "group": "四長生",
+          "time_range": "03:00-05:00",
+          "wuxing": "木",
+          "wuxing_th": "ไม้",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "direction_degrees": {
+            "center": 60,
+            "start": 52.5,
+            "end": 67.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "寅เป็นไม้หยางในกลุ่ม四長生 มีพลังเริ่มต้น เคลื่อนไหว และเปิดทาง",
+          "symbolic_meaning_th": "การเริ่มขยับ พลังเติบโต ความกล้า การเปิดทาง",
+          "recommendations": [
+            {
+              "use_id": "project_corner",
+              "label_th": "มุมเริ่มโปรเจกต์",
+              "score": 5,
+              "reason_th": "寅เป็นไม้หยางช่วงต้นฤดูใบไม้ผลิ สื่อถึงแรงเปิดทาง"
+            },
+            {
+              "use_id": "entrance_or_transition",
+              "label_th": "โถงทางเข้า / พื้นที่เปลี่ยนผ่าน",
+              "score": 4,
+              "reason_th": "อยู่ในกลุ่ม四長生 / 驛馬 เหมาะกับการเริ่มการเคลื่อนไหว"
+            },
+            {
+              "use_id": "sleeping_area",
+              "label_th": "พื้นที่นอน",
+              "score": 2,
+              "reason_th": "พลัง寅ค่อนข้างกระตุ้น อาจไม่นิ่งพอสำหรับการพักลึก"
+            }
+          ]
+        },
+
+        "卯": {
+          "order": 4,
+          "thai_reading": "เหม่า",
+          "zodiac_th": "กระต่าย",
+          "zodiac_zh": "兔",
+          "zodiac_en": "Rabbit",
+          "group": "四正",
+          "time_range": "05:00-07:00",
+          "wuxing": "木",
+          "wuxing_th": "ไม้",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "direction_degrees": {
+            "center": 90,
+            "start": 82.5,
+            "end": 97.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "卯เป็นไม้หยินในกลุ่ม四正 / 桃花 เหมาะกับศิลปะ ความสัมพันธ์ ความงาม และการเติบโตแบบนุ่มนวล",
+          "symbolic_meaning_th": "ความนุ่มนวล ความสัมพันธ์ ศิลปะ การเติบโตแบบละเอียด",
+          "recommendations": [
+            {
+              "use_id": "art_corner",
+              "label_th": "มุมศิลปะ",
+              "score": 5,
+              "reason_th": "卯มีพลัง桃花และไม้หยิน เหมาะกับความสวยงามและความสร้างสรรค์"
+            },
+            {
+              "use_id": "relationship_corner",
+              "label_th": "มุมความสัมพันธ์",
+              "score": 4,
+              "reason_th": "อยู่ในกลุ่ม四正 / 桃花 มีนัยเรื่องเสน่ห์และการเชื่อมโยง"
+            },
+            {
+              "use_id": "plant_area",
+              "label_th": "พื้นที่ต้นไม้",
+              "score": 4,
+              "reason_th": "สอดคล้องกับพลังไม้และการเติบโต"
+            }
+          ]
+        },
+
+        "辰": {
+          "order": 5,
+          "thai_reading": "เฉิน",
+          "zodiac_th": "มังกร",
+          "zodiac_zh": "龍",
+          "zodiac_en": "Dragon",
+          "group": "四庫",
+          "time_range": "07:00-09:00",
+          "wuxing": "土",
+          "wuxing_th": "ดิน",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "direction_degrees": {
+            "center": 120,
+            "start": 112.5,
+            "end": 127.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "辰เป็นดินคลังแบบหยาง มีศักยภาพซ่อนอยู่ เหมาะกับแผนใหญ่ ทรัพย์สิน และฐานบริหาร",
+          "symbolic_meaning_th": "การรวมพลัง ศักยภาพที่ซ่อนอยู่ การเปลี่ยนผ่าน อำนาจแฝง",
+          "recommendations": [
+            {
+              "use_id": "strategy_area",
+              "label_th": "มุมวางแผนใหญ่",
+              "score": 5,
+              "reason_th": "辰มีภาพ象ของพลังซ่อนอยู่และศักยภาพขนาดใหญ่"
+            },
+            {
+              "use_id": "asset_storage",
+              "label_th": "พื้นที่เก็บทรัพย์สิน",
+              "score": 4,
+              "reason_th": "辰อยู่ในกลุ่ม四庫 เหมาะกับการเก็บและสะสม"
+            },
+            {
+              "use_id": "casual_relax_area",
+              "label_th": "มุมพักเล่นเบา ๆ",
+              "score": 3,
+              "reason_th": "ใช้ได้ แต่พลัง辰เหมาะกับงานที่มีน้ำหนักมากกว่า"
+            }
+          ]
+        },
+
+        "巳": {
+          "order": 6,
+          "thai_reading": "ซื่อ",
+          "zodiac_th": "งู",
+          "zodiac_zh": "蛇",
+          "zodiac_en": "Snake",
+          "group": "四長生",
+          "time_range": "09:00-11:00",
+          "wuxing": "火",
+          "wuxing_th": "ไฟ",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "direction_degrees": {
+            "center": 150,
+            "start": 142.5,
+            "end": 157.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "巳เป็นไฟหยินในกลุ่ม四長生 / 驛馬 จึงเด่นเรื่องการเคลื่อนไหว การเปลี่ยนผ่าน การเดินทาง และระบบสัญจร มากกว่าการอ่านหนังสือลึกซึ่งควรให้丁เด่นกว่า",
+          "symbolic_meaning_th": "การเคลื่อนไหวแบบมีชั้นเชิง การเปลี่ยนผ่าน ความเร็วแฝง การเดินทาง การเชื่อมต่อ",
+          "recommendations": [
+            {
+              "use_id": "garage_or_vehicle_area",
+              "label_th": "โรงรถ / พื้นที่ยานพาหนะ",
+              "score": 5,
+              "reason_th": "巳อยู่ในกลุ่ม四長生 / 驛馬 เหมาะกับการเดินทางและการเคลื่อนที่"
+            },
+            {
+              "use_id": "corridor_or_circulation",
+              "label_th": "ทางเดิน / พื้นที่สัญจร",
+              "score": 4,
+              "reason_th": "เหมาะกับ flow การเคลื่อนผ่านมากกว่าพื้นที่นิ่ง"
+            },
+            {
+              "use_id": "study_room",
+              "label_th": "ห้องอ่านหนังสือ",
+              "score": 3,
+              "reason_th": "ใช้ได้บางกรณีจากไฟหยิน แต่ถ้าเน้นอ่านหนังสือและแสงปัญญา 丁 จะตรงกว่า"
+            }
+          ]
+        },
+
+        "午": {
+          "order": 7,
+          "thai_reading": "อู่",
+          "zodiac_th": "ม้า",
+          "zodiac_zh": "馬",
+          "zodiac_en": "Horse",
+          "group": "四正",
+          "time_range": "11:00-13:00",
+          "wuxing": "火",
+          "wuxing_th": "ไฟ",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "direction_degrees": {
+            "center": 180,
+            "start": 172.5,
+            "end": 187.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "午เป็นไฟหยางในกลุ่ม四正 มีพลังชื่อเสียง แสง การแสดงออก และความโดดเด่น",
+          "symbolic_meaning_th": "ชื่อเสียง แสงสว่าง การแสดงออก ความเร็ว พลังเปิดเผย",
+          "recommendations": [
+            {
+              "use_id": "display_area",
+              "label_th": "พื้นที่โชว์",
+              "score": 5,
+              "reason_th": "午เป็นไฟหยางและอยู่ในกลุ่ม四正 เหมาะกับการมองเห็นและชื่อเสียง"
+            },
+            {
+              "use_id": "living_room",
+              "label_th": "ห้องรับแขก",
+              "score": 4,
+              "reason_th": "เหมาะกับพื้นที่เปิดเผยและการพบปะ"
+            },
+            {
+              "use_id": "deep_rest",
+              "label_th": "มุมพักลึก",
+              "score": 2,
+              "reason_th": "พลัง午ร้อนและเปิดเผยเกินไปสำหรับการพักเงียบ"
+            }
+          ]
+        },
+
+        "未": {
+          "order": 8,
+          "thai_reading": "เว่ย",
+          "zodiac_th": "แพะ",
+          "zodiac_zh": "羊",
+          "zodiac_en": "Goat",
+          "group": "四庫",
+          "time_range": "13:00-15:00",
+          "wuxing": "土",
+          "wuxing_th": "ดิน",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "direction_degrees": {
+            "center": 210,
+            "start": 202.5,
+            "end": 217.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "未เป็นดินหยินในกลุ่ม四庫 มีภาพ象ของอาหาร ครอบครัว การเลี้ยงดู และความอบอุ่น",
+          "symbolic_meaning_th": "ความอ่อนโยน การเลี้ยงดู ครอบครัว อาหาร ความอบอุ่น",
+          "recommendations": [
+            {
+              "use_id": "family_corner",
+              "label_th": "มุมครอบครัว",
+              "score": 5,
+              "reason_th": "未เป็นดินหยิน อ่อนโยน เหมาะกับความอบอุ่นในบ้าน"
+            },
+            {
+              "use_id": "dining_room",
+              "label_th": "ห้องกินข้าว",
+              "score": 4,
+              "reason_th": "未มีภาพ象ของอาหาร ครอบครัว และการบ่มเลี้ยง"
+            },
+            {
+              "use_id": "child_care_corner",
+              "label_th": "มุมเลี้ยงลูก",
+              "score": 4,
+              "reason_th": "สอดคล้องกับพลังดูแล เลี้ยงดู และประคับประคอง"
+            }
+          ]
+        },
+
+        "申": {
+          "order": 9,
+          "thai_reading": "เซิน",
+          "zodiac_th": "ลิง",
+          "zodiac_zh": "猴",
+          "zodiac_en": "Monkey",
+          "group": "四長生",
+          "time_range": "15:00-17:00",
+          "wuxing": "金",
+          "wuxing_th": "ทอง",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "direction_degrees": {
+            "center": 240,
+            "start": 232.5,
+            "end": 247.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "申เป็นโลหะหยางในกลุ่ม四長生 มีพลังระบบ เครื่องมือ เทคโนโลยี และการเคลื่อนไหวที่มีประสิทธิภาพ",
+          "symbolic_meaning_th": "ไหวพริบ ระบบ เครื่องมือ เทคโนโลยี การแก้ปัญหา",
+          "recommendations": [
+            {
+              "use_id": "technology_area",
+              "label_th": "พื้นที่เทคโนโลยี",
+              "score": 5,
+              "reason_th": "申เป็นโลหะหยาง มีภาพ象ของระบบ เครื่องมือ และความไว"
+            },
+            {
+              "use_id": "garage_or_mobility_system",
+              "label_th": "โรงรถ / ระบบเดินทาง",
+              "score": 4,
+              "reason_th": "อยู่ในกลุ่ม四長生 / 驛馬 เหมาะกับ movement และเครื่องมือ"
+            },
+            {
+              "use_id": "soft_family_area",
+              "label_th": "มุมครอบครัวนุ่มนวล",
+              "score": 2,
+              "reason_th": "พลัง申ค่อนข้างคม ไว และใช้สมองมาก"
+            }
+          ]
+        },
+
+        "酉": {
+          "order": 10,
+          "thai_reading": "โหย่ว",
+          "zodiac_th": "ไก่",
+          "zodiac_zh": "雞",
+          "zodiac_en": "Rooster",
+          "group": "四正",
+          "time_range": "17:00-19:00",
+          "wuxing": "金",
+          "wuxing_th": "ทอง",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "direction_degrees": {
+            "center": 270,
+            "start": 262.5,
+            "end": 277.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "酉เป็นโลหะหยินในกลุ่ม四正 / 桃花 เหมาะกับความงาม ความประณีต การจัดระเบียบ และงานละเอียด",
+          "symbolic_meaning_th": "ความประณีต ความงาม การจัดระเบียบ การสื่อสารที่ชัดเจน",
+          "recommendations": [
+            {
+              "use_id": "dressing_area",
+              "label_th": "มุมแต่งตัว",
+              "score": 5,
+              "reason_th": "酉เป็นโลหะหยินและมีนัย桃花 เหมาะกับความงามและความประณีต"
+            },
+            {
+              "use_id": "organization_area",
+              "label_th": "พื้นที่จัดของ",
+              "score": 4,
+              "reason_th": "เหมาะกับการแยกแยะ จัดระเบียบ และความเรียบร้อย"
+            },
+            {
+              "use_id": "detail_work",
+              "label_th": "มุมงานละเอียด",
+              "score": 4,
+              "reason_th": "พลัง酉ช่วยเรื่องความประณีตและความแม่น"
+            }
+          ]
+        },
+
+        "戌": {
+          "order": 11,
+          "thai_reading": "ซวี",
+          "zodiac_th": "สุนัข",
+          "zodiac_zh": "狗",
+          "zodiac_en": "Dog",
+          "group": "四庫",
+          "time_range": "19:00-21:00",
+          "wuxing": "土",
+          "wuxing_th": "ดิน",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "direction_degrees": {
+            "center": 300,
+            "start": 292.5,
+            "end": 307.5,
+            "wraps_zero": false
+          },
+          "primary_score": 3,
+          "primary_label_th": "กลาง / เฉพาะทาง",
+          "primary_reason_th": "戌เป็นดินคลังแบบแข็ง มีภาพ象ของการปกป้อง ขอบเขต และความปลอดภัย เหมาะเฉพาะฟังก์ชันที่ต้องการความจริงจัง",
+          "symbolic_meaning_th": "การปกป้อง ความซื่อสัตย์ ขอบเขต ความปลอดภัย การเฝ้าระวัง",
+          "recommendations": [
+            {
+              "use_id": "security_area",
+              "label_th": "มุมรักษาความปลอดภัย",
+              "score": 5,
+              "reason_th": "戌มีภาพ象ของการเฝ้าระวัง ป้องกัน และขอบเขต"
+            },
+            {
+              "use_id": "control_system",
+              "label_th": "มุมควบคุมระบบบ้าน",
+              "score": 4,
+              "reason_th": "เหมาะกับระบบ กล้อง อุปกรณ์ควบคุม หรือของสำคัญ"
+            },
+            {
+              "use_id": "soft_child_area",
+              "label_th": "มุมเด็กเล็ก",
+              "score": 2,
+              "reason_th": "พลัง戌อาจแข็งและจริงจังเกินไป"
+            }
+          ]
+        },
+
+        "亥": {
+          "order": 12,
+          "thai_reading": "ไฮ่",
+          "zodiac_th": "หมู",
+          "zodiac_zh": "豬",
+          "zodiac_en": "Pig",
+          "group": "四長生",
+          "time_range": "21:00-23:00",
+          "wuxing": "水",
+          "wuxing_th": "น้ำ",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "direction_degrees": {
+            "center": 330,
+            "start": 322.5,
+            "end": 337.5,
+            "wraps_zero": false
+          },
+          "primary_score": 3,
+          "primary_label_th": "กลาง / เฉพาะทาง",
+          "primary_reason_th": "亥เป็นน้ำหยินในกลุ่ม四長生 มีทั้งนัยพักฟื้นและนัยการเดินทางลึก เหมาะกับพื้นที่สงบหรือ transition แบบไม่คึกคัก",
+          "symbolic_meaning_th": "การพักฟื้น ความลึก ความเมตตา การเก็บตัว การฟื้นพลัง การเดินทางไกล",
+          "recommendations": [
+            {
+              "use_id": "rest_corner",
+              "label_th": "มุมพักผ่อน",
+              "score": 4,
+              "reason_th": "亥เป็นน้ำหยิน เหมาะกับความสงบและการฟื้นตัว"
+            },
+            {
+              "use_id": "private_corner",
+              "label_th": "มุมส่วนตัว",
+              "score": 4,
+              "reason_th": "มีพลังเก็บตัว ลึก และไม่วุ่นวาย"
+            },
+            {
+              "use_id": "travel_storage",
+              "label_th": "มุมเก็บของเดินทาง",
+              "score": 4,
+              "reason_th": "亥อยู่ในกลุ่ม四長生 / 驛馬 มีนัยการเดินทางไกล"
+            }
+          ]
+        }
+      }
+    },
+
+    "tiangan": {
+      "module_id": "tiangan_10_stems",
+      "name_th": "10 ก้านฟ้า · ธาตุสวรรค์",
+      "name_zh": "十天干",
+      "name_en": "Ten Heavenly Stems",
+      "show_when": "current_mountain_type == '天干'",
+      "score_type": "symbolic_functional_fit",
+      "stems_in_24_mountains": ["甲", "乙", "丙", "丁", "庚", "辛", "壬", "癸"],
+      "stems_not_in_24_mountains": ["戊", "己"],
+      "note_th": "ใน 24 ขุนเขาของหล่อแก มีเฉพาะ 甲乙丙丁庚辛壬癸 ส่วน 戊己 เป็นก้านกลาง ไม่อยู่บนวง 24 ทิศ แต่สามารถใช้กับจุดกึ่งกลางบ้านในระบบวิเคราะห์แปลนได้",
+      "fallback_message_th": "ทิศนี้ไม่ใช่ตำแหน่ง天干 ให้ไปดูหมวด地支หรือหมวด 24山 แทน",
+
+      "center_sector_mapping": {
+        "active_when": "floorplan_analysis_enabled == true",
+        "center_stems": ["戊", "己"],
+        "戊": {
+          "center_quality_th": "ความหนักแน่น ฐานกลาง ความมั่นคง โครงสร้างหลัก",
+          "recommended_use_th": "จุดกึ่งกลางบ้านควรนิ่ง โปร่ง ไม่ถูกรบกวนหนัก และไม่รก"
+        },
+        "己": {
+          "center_quality_th": "การบ่มเพาะ การรองรับ ความอบอุ่น ศูนย์รวมครอบครัว",
+          "recommended_use_th": "จุดกลางบ้านควรสะอาด สมดุล เป็นจุดรวมพลัง ไม่อับหรือถูกกดทับ"
+        }
+      },
+
+      "items": {
+        "甲": {
+          "order": 1,
+          "thai_reading": "เจี่ย",
+          "wuxing": "木",
+          "wuxing_th": "ไม้",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "image_symbol_th": "ต้นไม้ใหญ่",
+          "in_24_mountains": true,
+          "direction_degrees": {
+            "center": 75,
+            "start": 67.5,
+            "end": 82.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "甲เป็นไม้หยาง เหมาะกับการเริ่มต้น การวางโครงสร้าง และความเป็นผู้นำ",
+          "symbolic_meaning_th": "การเริ่มต้น การเติบโต ความเป็นผู้นำ โครงสร้างใหญ่",
+          "recommendations": [
+            {
+              "use_id": "planning_area",
+              "label_th": "มุมวางแผน",
+              "score": 5,
+              "reason_th": "甲เปรียบเหมือนต้นไม้ใหญ่ มีพลังตั้งหลักและเริ่มต้น"
+            },
+            {
+              "use_id": "work_room",
+              "label_th": "ห้องทำงาน",
+              "score": 4,
+              "reason_th": "เหมาะกับงานที่ต้องใช้โครงสร้างและทิศทาง"
+            }
+          ]
+        },
+
+        "乙": {
+          "order": 2,
+          "thai_reading": "อี่",
+          "wuxing": "木",
+          "wuxing_th": "ไม้",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "image_symbol_th": "เถาวัลย์ ดอกไม้ ไม้อ่อน",
+          "in_24_mountains": true,
+          "direction_degrees": {
+            "center": 105,
+            "start": 97.5,
+            "end": 112.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "乙เป็นไม้หยิน เหมาะกับศิลปะ ความสัมพันธ์ ความยืดหยุ่น และงานสร้างสรรค์",
+          "symbolic_meaning_th": "ความยืดหยุ่น ศิลปะ ความสัมพันธ์ การเติบโตแบบนุ่มนวล",
+          "recommendations": [
+            {
+              "use_id": "art_corner",
+              "label_th": "มุมศิลปะ",
+              "score": 5,
+              "reason_th": "乙เปรียบเหมือนเถาวัลย์ ดอกไม้ และความงามแบบอ่อนโยน"
+            },
+            {
+              "use_id": "plant_area",
+              "label_th": "มุมต้นไม้",
+              "score": 4,
+              "reason_th": "สอดคล้องกับพลังไม้และการเติบโตแบบละเอียด"
+            }
+          ]
+        },
+
+        "丙": {
+          "order": 3,
+          "thai_reading": "ปิ่ง",
+          "wuxing": "火",
+          "wuxing_th": "ไฟ",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "image_symbol_th": "ดวงอาทิตย์",
+          "in_24_mountains": true,
+          "direction_degrees": {
+            "center": 165,
+            "start": 157.5,
+            "end": 172.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "丙เป็นไฟหยาง เหมาะกับแสง ชื่อเสียง การแสดงออก และพื้นที่เปิดเผย",
+          "symbolic_meaning_th": "ชื่อเสียง แสงสว่าง การเปิดเผย ความโดดเด่น ความมั่นใจ",
+          "recommendations": [
+            {
+              "use_id": "display_area",
+              "label_th": "พื้นที่โชว์",
+              "score": 5,
+              "reason_th": "丙เปรียบเหมือนดวงอาทิตย์ เหมาะกับการเปิดเผยและการมองเห็น"
+            },
+            {
+              "use_id": "living_room",
+              "label_th": "ห้องรับแขก",
+              "score": 4,
+              "reason_th": "ช่วยเสริมบรรยากาศสว่างและเปิด"
+            }
+          ]
+        },
+
+        "丁": {
+          "order": 4,
+          "thai_reading": "ติง",
+          "wuxing": "火",
+          "wuxing_th": "ไฟ",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "image_symbol_th": "ตะเกียง แสงไฟละเอียด",
+          "in_24_mountains": true,
+          "direction_degrees": {
+            "center": 195,
+            "start": 187.5,
+            "end": 202.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "丁เป็นไฟหยิน เหมาะกับปัญญา ความละเอียด แสงอบอุ่น และงานประณีต",
+          "symbolic_meaning_th": "ปัญญา ความอบอุ่น ความละเอียด ความงาม แสงนำทาง",
+          "recommendations": [
+            {
+              "use_id": "reading_room",
+              "label_th": "ห้องอ่านหนังสือ",
+              "score": 5,
+              "reason_th": "丁เปรียบเหมือนตะเกียงหรือแสงไฟละเอียด เหมาะกับการอ่านและความรู้"
+            },
+            {
+              "use_id": "decorative_light",
+              "label_th": "แสงไฟตกแต่ง",
+              "score": 4,
+              "reason_th": "สอดคล้องกับพลังแสงอบอุ่นและความงาม"
+            }
+          ]
+        },
+
+        "戊": {
+          "order": 5,
+          "thai_reading": "โบ่ว",
+          "wuxing": "土",
+          "wuxing_th": "ดิน",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "image_symbol_th": "ภูเขา ดินใหญ่ ฐานหนัก",
+          "in_24_mountains": false,
+          "show_on_24_mountains": false,
+          "center_sector_applicable": true,
+          "direction_degrees": null,
+          "primary_score": 3,
+          "primary_label_th": "กลาง / เฉพาะทาง",
+          "primary_reason_th": "戊เป็นก้านฟ้ากลาง ไม่อยู่บน 24 ขุนเขาโดยตรง แต่เหมาะกับการตีความจุดกึ่งกลางบ้านด้านความหนักแน่นและฐานมั่นคง",
+          "symbolic_meaning_th": "ความมั่นคง กำแพง การปกป้อง ฐานหนัก โครงสร้างกลาง",
+          "recommendations": [
+            {
+              "use_id": "center_stability",
+              "label_th": "จุดกึ่งกลางบ้านที่มั่นคง",
+              "score": 4,
+              "reason_th": "戊เป็นดินหยาง เปรียบเหมือนภูเขาและฐานใหญ่ เหมาะกับ center sector ที่นิ่งและไม่ถูกรบกวน"
+            },
+            {
+              "use_id": "heavy_storage",
+              "label_th": "พื้นที่เก็บของหนัก",
+              "score": 3,
+              "reason_th": "ใช้ได้เชิง象 แต่ไม่ควรทำให้กลางบ้านรก หนัก หรืออับเกินไป"
+            }
+          ]
+        },
+
+        "己": {
+          "order": 6,
+          "thai_reading": "กี้",
+          "wuxing": "土",
+          "wuxing_th": "ดิน",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "image_symbol_th": "ดินนา สวน แปลงเพาะปลูก",
+          "in_24_mountains": false,
+          "show_on_24_mountains": false,
+          "center_sector_applicable": true,
+          "direction_degrees": null,
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "己เป็นก้านฟ้ากลาง ไม่อยู่บน 24 ขุนเขาโดยตรง แต่เหมาะกับการตีความจุดกลางบ้านด้านการบ่มเพาะ การรองรับ และศูนย์รวมครอบครัว",
+          "symbolic_meaning_th": "การดูแล การบ่มเพาะ ความละเอียด การรองรับ ความอบอุ่นในบ้าน",
+          "recommendations": [
+            {
+              "use_id": "center_family_balance",
+              "label_th": "จุดกลางบ้านแบบอบอุ่น",
+              "score": 5,
+              "reason_th": "己เป็นดินหยิน เปรียบเหมือนดินนาและการบ่มเพาะ เหมาะกับจุดรวมพลังของครอบครัว"
+            },
+            {
+              "use_id": "food_or_care_area",
+              "label_th": "พื้นที่อาหาร / ดูแล",
+              "score": 4,
+              "reason_th": "สื่อถึงการดูแล หล่อเลี้ยง และรองรับ"
+            }
+          ]
+        },
+
+        "庚": {
+          "order": 7,
+          "thai_reading": "เกิง",
+          "wuxing": "金",
+          "wuxing_th": "ทอง",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "image_symbol_th": "เหล็กดิบ อาวุธ เครื่องมือหนัก",
+          "in_24_mountains": true,
+          "direction_degrees": {
+            "center": 255,
+            "start": 247.5,
+            "end": 262.5,
+            "wraps_zero": false
+          },
+          "primary_score": 3,
+          "primary_label_th": "กลาง / เฉพาะทาง",
+          "primary_reason_th": "庚เป็นโลหะหยาง พลังคม แข็ง และจริงจัง เหมาะกับเครื่องมือ ระบบ วินัย และการจัดการเฉพาะทาง",
+          "symbolic_meaning_th": "ความเด็ดขาด โครงสร้าง การตัดสินใจ ระบบ วินัย",
+          "recommendations": [
+            {
+              "use_id": "tool_area",
+              "label_th": "มุมเครื่องมือ",
+              "score": 5,
+              "reason_th": "庚เปรียบเหมือนเหล็กดิบหรือเครื่องมือหนัก"
+            },
+            {
+              "use_id": "system_management",
+              "label_th": "มุมจัดการระบบ",
+              "score": 4,
+              "reason_th": "เหมาะกับวินัย การตัดสินใจ และโครงสร้าง"
+            }
+          ]
+        },
+
+        "辛": {
+          "order": 8,
+          "thai_reading": "ซิน",
+          "wuxing": "金",
+          "wuxing_th": "ทอง",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "image_symbol_th": "อัญมณี โลหะประณีต",
+          "in_24_mountains": true,
+          "direction_degrees": {
+            "center": 285,
+            "start": 277.5,
+            "end": 292.5,
+            "wraps_zero": false
+          },
+          "primary_score": 4,
+          "primary_label_th": "เหมาะ",
+          "primary_reason_th": "辛เป็นโลหะหยิน เหมาะกับความงาม คุณค่า งานละเอียด และการจัดระเบียบ",
+          "symbolic_meaning_th": "ความงาม ความละเอียด คุณค่า การคัดกรอง ความประณีต",
+          "recommendations": [
+            {
+              "use_id": "beauty_corner",
+              "label_th": "มุมแต่งตัว / ความงาม",
+              "score": 5,
+              "reason_th": "辛เปรียบเหมือนอัญมณีหรือโลหะประณีต"
+            },
+            {
+              "use_id": "detail_work",
+              "label_th": "มุมงานละเอียด",
+              "score": 4,
+              "reason_th": "ช่วยเรื่องความประณีต การเลือก และการคัดกรอง"
+            }
+          ]
+        },
+
+        "壬": {
+          "order": 9,
+          "thai_reading": "เหริน",
+          "wuxing": "水",
+          "wuxing_th": "น้ำ",
+          "yin_yang": "陽",
+          "yin_yang_th": "หยาง",
+          "image_symbol_th": "มหาสมุทร แม่น้ำใหญ่",
+          "in_24_mountains": true,
+          "direction_degrees": {
+            "center": 345,
+            "start": 337.5,
+            "end": 352.5,
+            "wraps_zero": false
+          },
+          "primary_score": 3,
+          "primary_label_th": "กลาง / เฉพาะทาง",
+          "primary_reason_th": "壬เป็นน้ำหยาง พลังใหญ่ เคลื่อนไหว และลึก เหมาะกับเครือข่าย การเดินทาง แผนธุรกิจ แต่ไม่ใช่กฎวางน้ำจริง",
+          "symbolic_meaning_th": "การเคลื่อนไหว ปัญญา เครือข่าย การเดินทาง โอกาสใหญ่",
+          "recommendations": [
+            {
+              "use_id": "business_planning",
+              "label_th": "มุมวางแผนธุรกิจ",
+              "score": 4,
+              "reason_th": "壬เปรียบเหมือนมหาสมุทรหรือแม่น้ำใหญ่"
+            },
+            {
+              "use_id": "communication_area",
+              "label_th": "พื้นที่สื่อสาร",
+              "score": 4,
+              "reason_th": "สื่อถึงการเชื่อมต่อ การเดินทาง และเครือข่าย"
+            },
+            {
+              "use_id": "actual_water_feature",
+              "label_th": "บ่อน้ำ / สระน้ำจริง",
+              "score": 2,
+              "reason_th": "แม้壬เป็นธาตุน้ำ แต่การวางน้ำจริงต้องใช้納水หรือดาวเหิน"
+            }
+          ]
+        },
+
+        "癸": {
+          "order": 10,
+          "thai_reading": "กุ่ย",
+          "wuxing": "水",
+          "wuxing_th": "น้ำ",
+          "yin_yang": "陰",
+          "yin_yang_th": "หยิน",
+          "image_symbol_th": "ฝน หมอก น้ำค้าง",
+          "in_24_mountains": true,
+          "direction_degrees": {
+            "center": 15,
+            "start": 7.5,
+            "end": 22.5,
+            "wraps_zero": false
+          },
+          "primary_score": 3,
+          "primary_label_th": "กลาง / เฉพาะทาง",
+          "primary_reason_th": "癸เป็นน้ำหยิน พลังละเอียด ลึก และสงบ เหมาะกับการพักฟื้น สมาธิ และความรู้ลึก",
+          "symbolic_meaning_th": "ความละเอียด ความรู้ลึก การฟื้นตัว ความสงบ ความอ่อนไหว",
+          "recommendations": [
+            {
+              "use_id": "meditation_corner",
+              "label_th": "มุมสมาธิ",
+              "score": 4,
+              "reason_th": "癸เปรียบเหมือนฝน หมอก หรือน้ำค้าง มีพลังละเอียดและสงบ"
+            },
+            {
+              "use_id": "recovery_area",
+              "label_th": "มุมพักฟื้น",
+              "score": 4,
+              "reason_th": "เหมาะกับพลังละเอียด สงบ และฟื้นตัว"
+            },
+            {
+              "use_id": "active_party_area",
+              "label_th": "พื้นที่กิจกรรมคึกคัก",
+              "score": 2,
+              "reason_th": "พลัง癸นุ่ม ลึก และสงบ ไม่เหมาะกับความคึกคักมาก"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
