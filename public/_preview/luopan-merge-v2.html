@@ -1419,7 +1419,13 @@ try{
 let cursorDeg = 180;
 /* ล็อกบ้าน → วง (lpRotate) หมุน -facing ให้ทิศหันหน้าขึ้นบน · เข็ม CURSOR (screen) ตรึงนอกกลุ่ม
  * ทิศจริงบนวง = มุมเข็ม(screen) + facing · ก่อนล็อก = ตรง (วงไม่หมุน) */
-function ringRotation(){ return houseLocked ? lockedFacing : 0; }
+/* หมุนวงด้วย "กลางภูเขาหน้าบ้าน (山)" ไม่ใช่องศาดิบ → 城門 2 บานสมมาตรเท่ากันเสมอ
+ * (玄空 อ้างอิง山 15° · เข็มชี้กลาง山หน้าบ้าน) · cursor/pin/overlay ใช้ค่านี้พร้อมกัน */
+function ringRotation(){
+  if(!houseLocked) return 0;
+  const m = (typeof cgFindMtn==='function') ? cgFindMtn(lockedFacing) : null;
+  return m ? cgGetMid(m) : lockedFacing;
+}
 function applyDialRotation(){
   const lr = document.getElementById('lpRotate');
   if(lr) lr.setAttribute('transform', `rotate(${-ringRotation()} 380 380)`);
