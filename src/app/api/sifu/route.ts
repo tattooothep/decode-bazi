@@ -140,6 +140,23 @@ function loadAjekRules(): { text: string; version: string } {
   }
 }
 
+/* 24 พ.ค. · คัมภีร์ปฏิกิริยาดวง (合/冲/刑/害/破/三合/暗合/墓库/十神) · AI สแกนผัง user เทียบกฎนี้ */
+const INTERACTION_MASTER_PATH = join(process.cwd(), "data/library/bazi-interaction-master.md");
+let _interactionCache: { text: string; ts: number; version: string } | null = null;
+function loadInteractionMaster(): { text: string; version: string } {
+  const now = Date.now();
+  if (_interactionCache && now - _interactionCache.ts < 60_000) return _interactionCache;
+  try {
+    const text = readFileSync(INTERACTION_MASTER_PATH, "utf8");
+    const version = createHash("sha1").update(text).digest("hex").slice(0, 12);
+    _interactionCache = { text, ts: now, version };
+    return _interactionCache;
+  } catch (e) {
+    console.warn("[sifu] interaction master not found:", (e as Error).message);
+    return { text: "", version: "none" };
+  }
+}
+
 /* 💾 DB result cache · TTL 24h */
 const CACHE_TTL_HOURS = 24;
 function cacheKey(opts: {
@@ -521,10 +538,14 @@ ${opts.message}
   const rulesBlock = ajek.text
     ? `\n\n=== 🧓 สูตรอ่านปาจื้อบังคับ · อาเจ๊กฮ้ง (ใช้ลำดับนี้ทุกครั้ง · ห้ามข้ามขั้น · ห้ามอ่าน Stars/Hex ก่อนโครง) ===\n${ajek.text}\n=== จบสูตรบังคับ ===\n`
     : "";
+  const interaction = loadInteractionMaster();
+  const interactionBlock = interaction.text
+    ? `\n\n=== 📜 คัมภีร์ปฏิกิริยาดวงภายใน (Internal Interaction Master Engine) ===\nก่อนสรุป ให้สแกนผังของลูกค้าหา "ปฏิกิริยาระหว่างก้าน-กิ่ง" ทุกชนิด (天干五合/相冲 · 六合/三合/三会/半合/六冲/刑/害/破/暗合 · 墓库 · 十神) แล้วเทียบกฎในคัมภีร์นี้: ดู Mechanism ก่อน Favorability · 合ไม่ใช่化เสมอ · ใช้หลักชนะกันเมื่อปฏิกิริยาซ้อน · ผูกผลกลับเข้าแกนหลัก (用神/喜忌) อย่าหยิบปฏิกิริยาเดี่ยวมาตัดสินลอยๆ\n${interaction.text}\n=== จบคัมภีร์ปฏิกิริยา ===\n`
+    : "";
   return `คุณคือซินแสปาจื้อ · ตอบลูกค้าที่ดูดวงจาก hourkey.io
 
 ${LANG_INSTR[opts.lang] || LANG_INSTR.th}
-${rulesBlock}
+${rulesBlock}${interactionBlock}
 ข้อมูลดวงของลูกค้า:
 ${opts.ctx}
 ${focus}${histText}
@@ -695,7 +716,7 @@ export async function POST(req: Request) {
     }
 
     /* 💾 Cache check ก่อน */
-    const ajekVersion = loadAjekRules().version;
+    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version;
     const dayKey = await getDayPillarKey();
     const key = cacheKey({ profileId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
     const useCache = mode !== "intro";
@@ -741,7 +762,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "message too long" }, { status: 400 });
   }
 
-  const ajekVersion = loadAjekRules().version;
+  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version;
   const dayKey = await getDayPillarKey();
   const key = cacheKey({ profileId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
   const useCache = mode !== "intro";
