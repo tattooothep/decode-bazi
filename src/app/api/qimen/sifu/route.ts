@@ -100,7 +100,7 @@ ${fmtUserYs(ys)}${searchText}${focus}${histText}
 
 async function runClaudeCli(prompt: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const args = ["-p", "--output-format", "text", "--dangerously-skip-permissions", "--setting-sources", "project"];
+    const args = ["-p", "--output-format", "text", "--dangerously-skip-permissions", "--setting-sources", "user"];
     const c = spawn("sudo", ["-u", CHILD_USER, "-H", "claude", ...args], { cwd: "/var/www/checklist-app", env: process.env });
     let out = "", err = "";
     const timer = setTimeout(() => { try { c.kill("SIGKILL"); } catch {} reject(new Error("timeout")); }, TIMEOUT_MS);

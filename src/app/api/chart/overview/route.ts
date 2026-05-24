@@ -249,7 +249,7 @@ async function runClaudeStream(prompt: string, onChunk: (s: string) => void): Pr
       "--include-partial-messages",
       "--verbose",
       "--dangerously-skip-permissions",
-      "--setting-sources", "project",
+      "--setting-sources", "user",
     ];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, {

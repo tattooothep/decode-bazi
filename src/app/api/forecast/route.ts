@@ -292,7 +292,7 @@ ${JSON.stringify(structured, null, 2)}
 
 async function runClaudeCli(prompt: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const claudeArgs = ["-p", "--output-format", "text", "--dangerously-skip-permissions", "--setting-sources", "project"];
+    const claudeArgs = ["-p", "--output-format", "text", "--dangerously-skip-permissions", "--setting-sources", "user"];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, { cwd: "/var/www/checklist-app", env: process.env });
     let out = ""; let err = "";

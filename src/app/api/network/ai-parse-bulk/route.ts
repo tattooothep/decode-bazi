@@ -65,7 +65,7 @@ async function runClaudeCli(prompt: string): Promise<string> {
       "-p",
       "--output-format", "text",
       "--dangerously-skip-permissions",
-      "--setting-sources", "project",
+      "--setting-sources", "user",
     ];
     const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
     const c = spawn("sudo", spawnArgs, { cwd: "/var/www/checklist-app", env: process.env });

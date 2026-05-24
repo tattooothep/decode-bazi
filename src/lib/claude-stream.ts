@@ -22,7 +22,7 @@ export function spawnClaudeStreaming(prompt: string): ChildProcess {
     "--include-partial-messages",
     "--verbose",
     "--dangerously-skip-permissions",
-    "--setting-sources", "project",
+    "--setting-sources", "user",
   ];
   const spawnArgs = ["-u", CHILD_USER, "-H", "claude", ...claudeArgs];
   const c = spawn("sudo", spawnArgs, {
