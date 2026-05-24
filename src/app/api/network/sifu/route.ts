@@ -10,6 +10,11 @@
  */
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
+import { loadPromptMd } from "@/lib/prompt-md";
+
+/* 25 พ.ค. · persona ย้ายไป md (แก้ผ่าน /admin/sifu-prompts) · {{BODY}} = ส่วน dynamic · fallback กันพัง */
+const PAIR_TPL_FALLBACK = `คุณคือซินแสปาจื้อ · กำลังวิเคราะห์ความสัมพันธ์ระหว่าง 2 คน · ตำรา子平真詮·三命通會\n{{BODY}}\nตอบสั้นกระชับ · เน้นหลักตำรา · อย่าโฆษณา · ตรงประเด็น:`;
+const TEAM_TPL_FALLBACK = `คุณคือซินแสปาจื้อ · กำลังวิเคราะห์ภาพรวมทีม/ครอบครัว/เครือข่ายของลูกค้า\n{{BODY}}\nตอบโดยยึด "ทีมที่เลือก" และ "กิจกรรม" เป็นหลัก · ถ้าต้องเสนอคนเพิ่ม ค่อยดูจากสมาชิกทั้งหมด · ให้บอกบทบาท ใครตัดสินใจ ใครเป็น challenger ใครควรถือรายละเอียด และจุดที่ต้องคุม:`;
 
 const CHILD_USER = "jarvis";
 const TIMEOUT_MS = 60_000;
@@ -61,20 +66,8 @@ function buildPairPrompt(opts: {
     ? "\n\nประวัติคำถาม:\n" + history.map(h => `[${h.role}] ${h.content}`).join("\n")
     : "";
 
-  return `คุณคือซินแสปาจื้อ · กำลังวิเคราะห์ความสัมพันธ์ระหว่าง 2 คน · ตำรา子平真詮·三命通會
-
-${LANG_INSTR[lang] || LANG_INSTR.th}
-
-ข้อมูลคู่นี้:
-• A: ${fmtPersonCard(self, selfYs)}
-• B: ${fmtPersonCard(other, otherYs)}
-
-คะแนน (A→B): day=${scores.day ?? "?"} · week=${scores.week ?? "?"} · month=${scores.month ?? "?"} · year=${scores.year ?? "?"} · luck=${scores.luck ?? "?"} · overall=${scores.overall ?? "?"}
-Tags: ${tags.join(", ") || "—"}${focus}${histText}
-
-คำถาม: ${message}
-
-ตอบสั้นกระชับ · เน้นหลักตำรา · อย่าโฆษณา · ตรงประเด็น:`;
+  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n\nข้อมูลคู่นี้:\n• A: ${fmtPersonCard(self, selfYs)}\n• B: ${fmtPersonCard(other, otherYs)}\n\nคะแนน (A→B): day=${scores.day ?? "?"} · week=${scores.week ?? "?"} · month=${scores.month ?? "?"} · year=${scores.year ?? "?"} · luck=${scores.luck ?? "?"} · overall=${scores.overall ?? "?"}\nTags: ${tags.join(", ") || "—"}${focus}${histText}\n\nคำถาม: ${message}\n`;
+  return loadPromptMd("prompts/network-sifu-pair.md", PAIR_TPL_FALLBACK).replace("{{BODY}}", body);
 }
 
 function buildTeamPrompt(opts: {
@@ -114,26 +107,8 @@ function buildTeamPrompt(opts: {
     ? "\n\nประวัติคำถาม:\n" + history.map(h => `[${h.role}] ${h.content}`).join("\n")
     : "";
 
-  return `คุณคือซินแสปาจื้อ · กำลังวิเคราะห์ภาพรวมทีม/ครอบครัว/เครือข่ายของลูกค้า
-
-${LANG_INSTR[lang] || LANG_INSTR.th}
-
-ศูนย์กลาง (ลูกค้า):
-${selfLine}
-
-ทีมที่เลือกใน Team Builder (${selectedTeam.length || 0} คน):
-${selectedLines || "—"}
-
-${activityLines ? activityLines + "\n" : ""}
-
-สมาชิก (${members.length} คน):
-${memberLines || "—"}
-
-หัวข้อ: ${TEAM_FOCUS}${histText}
-
-คำถาม: ${message}
-
-ตอบโดยยึด "ทีมที่เลือก" และ "กิจกรรม" เป็นหลัก · ถ้าต้องเสนอคนเพิ่ม ค่อยดูจากสมาชิกทั้งหมด · ให้บอกบทบาท ใครตัดสินใจ ใครเป็น challenger ใครควรถือรายละเอียด และจุดที่ต้องคุม:`;
+  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n\nศูนย์กลาง (ลูกค้า):\n${selfLine}\n\nทีมที่เลือกใน Team Builder (${selectedTeam.length || 0} คน):\n${selectedLines || "—"}\n\n${activityLines ? activityLines + "\n" : ""}\n\nสมาชิก (${members.length} คน):\n${memberLines || "—"}\n\nหัวข้อ: ${TEAM_FOCUS}${histText}\n\nคำถาม: ${message}\n`;
+  return loadPromptMd("prompts/network-sifu-team.md", TEAM_TPL_FALLBACK).replace("{{BODY}}", body);
 }
 
 async function runClaudeCli(prompt: string): Promise<string> {

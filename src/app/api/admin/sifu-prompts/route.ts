@@ -15,6 +15,8 @@ const FILES: Record<string, { label: string; note: string }> = {
   "ajek-bazi-rules.md": { label: "สูตรอ่านปาจื้อ 13 ขั้น · อาเจ๊กฮ้ง", note: "ซินแสหลัก (/api/sifu) · เห็นผลใน ~60 วิ" },
   "bazi-interaction-master.md": { label: "คัมภีร์ปฏิกิริยา 合冲刑害破", note: "ซินแสหลัก (/api/sifu) · เห็นผลใน ~60 วิ" },
   "hourkey_interpret_prompt.refined.md": { label: "System prompt · คำอ่านภาพรวม", note: "/api/chart/overview · ต้อง restart ถึงเห็นผล" },
+  "prompts/network-sifu-pair.md": { label: "ซินแสเครือข่าย · คู่ (pair)", note: "/api/network/sifu · yongsennetwork · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/network-sifu-team.md": { label: "ซินแสเครือข่าย · ทีม (team)", note: "/api/network/sifu · yongsennetwork · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
 };
 
 export async function GET() {
