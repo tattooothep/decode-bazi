@@ -309,6 +309,12 @@
       <p id="fs-an-note" style="font-size:13px;color:#d9a44c;margin-top:10px;line-height:1.7;"></p>
     </section>
 
+    <section class="card" id="fs-coresci-card">
+      <h2><span class="han">核</span> <span id="fs-cs-title"></span></h2>
+      <p id="fs-cs-intro" style="font-size:14px;color:var(--fg);line-height:1.85;"></p>
+      <div id="fs-cs-body"></div>
+    </section>
+
     <div class="cross-link">
       <a href="/chart">📜 ดวงของฉัน</a>
       <a href="/today">🌅 ฤกษ์วันนี้</a>
@@ -1039,6 +1045,81 @@ const FENGSHUI_DATA = {
         '👉 ปี 2026 "ทิศเหนือ" โดนซ้อน 2 ชั้น (歲破 + 三煞) จึงควรระวังเป็นพิเศษ',
       ],
       note:'คำเตือนนี้ใช้สำหรับปีจรและงานกระตุ้นแรงเท่านั้น หากจะก่อสร้างจริงควรตรวจวันยาม แปลนบ้าน และระบบฮวงจุ้ยอื่นร่วมด้วย',
+    },
+    coreSci:{
+      secTitle:'ศาสตร์แกนกลาง · 後天 / 先天 / 五行',
+      secIntro:'3 แกนหลักของฮวงจุ้ยภาคปฏิบัติ — ใช้จับวัง อ่านธาตุ และความสัมพันธ์ของพลัง ก่อนเอาศาสตร์อื่น (ดาวเหิน · ประตูเมือง · 24山) มาทับ',
+      items:[
+        {
+          han:'後天八卦', title:'ปากั้วหลังฟ้า · แกนฮวงจุ้ย',
+          core:[
+            '後天八卦 คือปากั้วที่ใช้กับ "โลกหลังเกิด" — โลกที่มีทิศ เวลา คน บ้าน ประตู ห้อง ถนน น้ำ และการใช้งานจริง เป็นแกนหลักที่ซินแสใช้ "จับวัง"',
+            'พูดง่ายๆ: 後天八卦 คือแผนที่ 8 วังของบ้านจริง ใช้ระบุว่าองศา/พื้นที่นั้นอยู่ในวังไหน และมีพลังพื้นฐานอย่างไร',
+            'ตัวอย่าง: 180° = ทิศใต้ = 離宮 = ไฟ = ชื่อเสียง การมองเห็น ภาพลักษณ์ · พอรู้ว่า "พื้นที่นี้อยู่วัง離" จึงค่อยเอาดาวเหิน/ประตูเมือง/24山 มาทับ',
+          ],
+          orderTitle:'ลำดับการอ่าน',
+          order:['จับองศาจากศูนย์กลางบ้าน','แบ่งเข้า 8 ทิศใหญ่','ระบุวัง後天八卦','อ่านธาตุประจำวัง','อ่านความหมายของวัง','ส่งค่าไปให้ศาสตร์อื่น (飛星 · 城門 · 八宅)'],
+          tableTitle:'ตาราง 8 วังหลังฟ้า',
+          table:[
+            {k:'N · 坎', v:'น้ำ · อาชีพ ทางชีวิต การไหลเวียน'},
+            {k:'NE · 艮', v:'ดิน · ภูเขา ความรู้ ความนิ่ง การสะสม'},
+            {k:'E · 震', v:'ไม้ · ครอบครัว การเริ่มต้น การเคลื่อนไหว'},
+            {k:'SE · 巽', v:'ไม้ · ทรัพย์ การเติบโต เครือข่าย'},
+            {k:'S · 離', v:'ไฟ · ชื่อเสียง ภาพลักษณ์ ความสว่าง'},
+            {k:'SW · 坤', v:'ดิน · แม่ คู่ครอง การรองรับ'},
+            {k:'W · 兌', v:'ทอง · ลูกหลาน ความสุข การสื่อสาร'},
+            {k:'NW · 乾', v:'ทอง · พ่อ ผู้ใหญ่ ผู้นำ ผู้สนับสนุน'},
+          ],
+          warn:'⚠ ห้ามตัดสินดีร้ายจาก後天八卦อย่างเดียว — ทิศใต้เป็นไฟไม่ได้แปลว่าดีเสมอ ต้องดูว่าในวัง離มีดาวอะไร (ดาว 9 ดี · ดาว 5/2 ต้องระวัง)',
+          degreeNote:'ตัวหลักคงที่ แต่ผลอ่านเปลี่ยนตามองศา · 180°=離宮 · 90°=震宮 · 230°=坤宮',
+        },
+        {
+          han:'先天八卦', title:'ปากั้วก่อนฟ้า · พลังดั้งเดิม',
+          core:[
+            '先天八卦 คือปากั้วก่อนเกิด — โครงสร้างพลังดั้งเดิมของฟ้า-ดิน ก่อนกลายเป็นโลกใช้งานจริง',
+            'ซินแสใช้ 先天 เป็น "體" (รากพลัง) · 後天 เป็น "用" (การใช้งานจริง) — 先天 บอกพลังเดิมของกว้า · 後天 บอกว่าพลังนั้นมาใช้ในบ้านจริงอย่างไร',
+            'ใช้ดูรากพลังและคู่สมดุล (乾↔坤 · 坎↔離 · 震↔巽 · 艮↔兌) เป็นข้อมูลเชิงลึก ไม่ใช่ตัวตัดสินหลัก',
+          ],
+          tableTitle:'ตาราง 8 กว้าก่อนฟ้า',
+          table:[
+            {k:'S · 乾', v:'ฟ้า · พลังนำ พ่อ ความสร้างสรรค์'},
+            {k:'N · 坤', v:'ดิน · การรองรับ แม่ ความมั่นคง'},
+            {k:'E · 離', v:'ไฟ · ความสว่าง การมองเห็น'},
+            {k:'W · 坎', v:'น้ำ · ความลึก ภายใน การไหล'},
+            {k:'NE · 震', v:'ฟ้าร้อง · การเริ่มเคลื่อนไหว'},
+            {k:'SW · 巽', v:'ลม · การแทรกซึม การเติบโต'},
+            {k:'NW · 艮', v:'ภูเขา · การหยุด การสะสม'},
+            {k:'SE · 兌', v:'บึง · ความสุข การสื่อสาร'},
+          ],
+          pairsTitle:'คู่สมดุลสำคัญ',
+          pairs:['乾 ↔ 坤 · ฟ้า ↔ ดิน','坎 ↔ 離 · น้ำ ↔ ไฟ','震 ↔ 巽 · ฟ้าร้อง ↔ ลม','艮 ↔ 兌 · ภูเขา ↔ บึง'],
+          warn:'⚠ ไม่ใช้ 先天 ตัดสินว่าประตู/ห้องนอนควรอยู่ตรงไหน — การใช้งานบ้านจริงต้องกลับไปดู 後天 · 24山 · 飛星',
+          degreeNote:'UI ต้องบอกชัด: 先天 = ชั้นพลังดั้งเดิม · 後天 = ชั้นใช้งานจริง เพื่อไม่ให้งงว่าทำไมทิศใต้ใน後天=離 แต่ใน先天=乾',
+        },
+        {
+          han:'五行', title:'5 ธาตุ · สร้าง / ทำลาย',
+          core:[
+            '五行 คือกลไกการไหลของพลัง 5 แบบ — 木 ไม้ · 火 ไฟ · 土 ดิน · 金 ทอง · 水 น้ำ',
+            'ซินแสไม่ได้ดูแค่ "ทิศนี้ธาตุอะไร" แต่ดูว่า ธาตุนี้ 生 อะไร · 克 อะไร · ถูกใคร 生 · ถูกใคร 克',
+            '五行 = ภาษาที่บอกว่าพลังหนุนกันหรือข่มกัน',
+          ],
+          shengTitle:'วงจรสร้าง · 相生',
+          sheng:['木生火 · ไม้เลี้ยงไฟ','火生土 · ไฟเผาเกิดเถ้าดิน','土生金 · ดินให้แร่ทอง','金生水 · ทองก่อความชื้น','水生木 · น้ำเลี้ยงไม้'],
+          keTitle:'วงจรข่ม · 相克',
+          ke:['木克土 · รากไม้แทงดิน','土克水 · ดินกั้นน้ำ','水克火 · น้ำดับไฟ','火克金 · ไฟหลอมทอง','金克木 · ทองตัดไม้'],
+          tableTitle:'ตารางธาตุหลัก',
+          table:[
+            {k:'木 ไม้', v:'ทิศ E/SE · กว้า 震巽 · ดาว 3,4 · เติบโต ขยาย เคลื่อนไหว'},
+            {k:'火 ไฟ', v:'ทิศ S · กว้า 離 · ดาว 9 · สว่าง ชื่อเสียง ภาพลักษณ์'},
+            {k:'土 ดิน', v:'ทิศ NE/SW/กลาง · กว้า 艮坤 · ดาว 2,5,8 · รองรับ สะสม หนักแน่น'},
+            {k:'金 ทอง', v:'ทิศ W/NW · กว้า 兌乾 · ดาว 6,7 · โครงสร้าง ระเบียบ ตัดสินใจ'},
+            {k:'水 น้ำ', v:'ทิศ N · กว้า 坎 · ดาว 1 · ไหลเวียน ปัญญา ความลึก'},
+          ],
+          starTitle:'หัวใจ · ดาวดี vs ดาวร้าย เมื่อได้ธาตุหนุน',
+          starLogic:['ดาวดีได้ธาตุหนุน = ดีขึ้น','ดาวร้ายได้ธาตุหนุน = ร้ายขึ้น','เช่น ดาว 5 (ดิน) ตกทิศใต้ (ไฟ) → ไฟ生ดิน หนุนดาว 5 · ถ้าดาว 5 เป็นดาวร้าย จุดนี้ยิ่งต้องระวัง'],
+          degreeNote:'หลัก五行คงที่ แต่ผลเปลี่ยนตาม: องศา→ทิศ→ธาตุวัง + ดาวที่ตก→ธาตุดาว → ความสัมพันธ์ 生/克/同',
+        },
+      ]
     }
   },
   en: {
@@ -1154,6 +1235,81 @@ const FENGSHUI_DATA = {
         '👉 In 2026 the North is doubly afflicted (Sui Po + San Sha) — take extra care',
       ],
       note:'This warning is for annual renovation and activation reference only. Actual construction should also consider date selection, the house chart, and other Feng Shui systems.',
+    },
+    coreSci:{
+      secTitle:'Core Sciences · 後天 / 先天 / 五行',
+      secIntro:'The three foundations of practical Feng Shui — used to locate the palace, read the element, and judge how energies relate, before layering other systems (Flying Stars, Castle Gate, 24 Mountains).',
+      items:[
+        {
+          han:'後天八卦', title:'Later Heaven Bagua · Feng Shui Core',
+          core:[
+            'The Later Heaven Bagua applies to the "post-birth world" — the world of directions, time, people, houses, doors, rooms, roads, water and real use. It is the master grid a sifu uses to locate the palace.',
+            'In short: 後天八卦 is the map of the 8 palaces of a real house — it tells which palace a bearing/area falls into and its baseline energy.',
+            'Example: 180° = South = 離 palace = Fire = fame, visibility, image. Once you know "this area is in 離", you then layer Flying Stars / Castle Gate / 24 Mountains.',
+          ],
+          orderTitle:'Reading order',
+          order:['Take the bearing from the house center','Divide into 8 major directions','Identify the 後天八卦 palace','Read the palace element','Read the palace meaning','Pass it to other systems (飛星 · 城門 · 八宅)'],
+          tableTitle:'The 8 Later-Heaven palaces',
+          table:[
+            {k:'N · 坎', v:'Water · career, life path, flow'},
+            {k:'NE · 艮', v:'Earth · mountain, knowledge, stillness, storage'},
+            {k:'E · 震', v:'Wood · family, beginnings, movement'},
+            {k:'SE · 巽', v:'Wood · wealth, growth, networks'},
+            {k:'S · 離', v:'Fire · fame, image, brightness'},
+            {k:'SW · 坤', v:'Earth · mother, spouse, support'},
+            {k:'W · 兌', v:'Metal · children, joy, communication'},
+            {k:'NW · 乾', v:'Metal · father, elders, leader, patron'},
+          ],
+          warn:'⚠ Never judge good/bad from 後天八卦 alone — South being Fire does not always mean good; check which star sits in 離 (Star 9 good · Stars 5/2 caution).',
+          degreeNote:'The base is fixed, but the reading changes by bearing · 180°=離 · 90°=震 · 230°=坤',
+        },
+        {
+          han:'先天八卦', title:'Pre-Heaven Bagua · Original Force',
+          core:[
+            'The Pre-Heaven Bagua is the pre-birth arrangement — the original cosmic structure of Heaven-Earth before becoming the world of use.',
+            'A sifu treats 先天 as 體 (the root/substance) and 後天 as 用 (the function/use): 先天 states a trigram’s original force, 後天 states how that force is applied in a real house.',
+            'Used to read root force and balancing pairs (乾↔坤 · 坎↔離 · 震↔巽 · 艮↔兌) — as deep reference, not the main verdict.',
+          ],
+          tableTitle:'The 8 Pre-Heaven trigrams',
+          table:[
+            {k:'S · 乾', v:'Heaven · leading force, father, creativity'},
+            {k:'N · 坤', v:'Earth · support, mother, stability'},
+            {k:'E · 離', v:'Fire · brightness, vision'},
+            {k:'W · 坎', v:'Water · depth, inner, flow'},
+            {k:'NE · 震', v:'Thunder · initiating movement'},
+            {k:'SW · 巽', v:'Wind · penetration, growth'},
+            {k:'NW · 艮', v:'Mountain · stopping, accumulation'},
+            {k:'SE · 兌', v:'Lake · joy, communication'},
+          ],
+          pairsTitle:'Key balancing pairs',
+          pairs:['乾 ↔ 坤 · Heaven ↔ Earth','坎 ↔ 離 · Water ↔ Fire','震 ↔ 巽 · Thunder ↔ Wind','艮 ↔ 兌 · Mountain ↔ Lake'],
+          warn:'⚠ Do not use 先天 to decide where doors/bedrooms go — real use must return to 後天 · 24山 · 飛星.',
+          degreeNote:'The UI must state clearly: 先天 = original-force layer · 後天 = practical-use layer, so users aren’t confused why South is 離 in 後天 but 乾 in 先天.',
+        },
+        {
+          han:'五行', title:'Five Elements · Generate / Control',
+          core:[
+            'The Five Elements are five modes of energy flow — 木 Wood · 火 Fire · 土 Earth · 金 Metal · 水 Water.',
+            'A sifu reads not just "what element is this direction" but: what does it generate (生), what does it control (克), what generates it, what controls it.',
+            '五行 is the language that tells whether energies support or suppress each other.',
+          ],
+          shengTitle:'Generating cycle · 相生',
+          sheng:['木生火 · Wood feeds Fire','火生土 · Fire makes ash → Earth','土生金 · Earth yields Metal','金生水 · Metal condenses Water','水生木 · Water nourishes Wood'],
+          keTitle:'Controlling cycle · 相克',
+          ke:['木克土 · Wood roots pierce Earth','土克水 · Earth dams Water','水克火 · Water quenches Fire','火克金 · Fire melts Metal','金克木 · Metal cuts Wood'],
+          tableTitle:'Element table',
+          table:[
+            {k:'木 Wood', v:'Dir E/SE · trigrams 震巽 · stars 3,4 · growth, expansion, movement'},
+            {k:'火 Fire', v:'Dir S · trigram 離 · star 9 · brightness, fame, image'},
+            {k:'土 Earth', v:'Dir NE/SW/center · trigrams 艮坤 · stars 2,5,8 · support, storage, weight'},
+            {k:'金 Metal', v:'Dir W/NW · trigrams 兌乾 · stars 6,7 · structure, order, decision'},
+            {k:'水 Water', v:'Dir N · trigram 坎 · star 1 · flow, wisdom, depth'},
+          ],
+          starTitle:'Key · Good vs Bad star when the element supports it',
+          starLogic:['Good star + element support = better','Bad star + element support = worse','E.g. Star 5 (Earth) lands in South (Fire) → Fire generates Earth, feeding Star 5 · if Star 5 is malefic, this spot needs extra caution'],
+          degreeNote:'The 五行 principle is fixed, but the result changes by: bearing→direction→palace element + the star that lands→its element → relation 生/克/same',
+        },
+      ]
     }
   },
   zh: {
@@ -1269,6 +1425,81 @@ const FENGSHUI_DATA = {
         '👉 2026年「北方」雙重受沖（歲破 + 三煞），尤須謹慎',
       ],
       note:'此警示僅作流年動土修造參考，實際施工仍須配合擇日、宅盤與其他風水系統同看。',
+    },
+    coreSci:{
+      secTitle:'核心三學 · 後天 / 先天 / 五行',
+      secIntro:'風水實務之三大基礎 — 用以定宮、讀五行、判生剋，再疊加其他系統（飛星、城門、二十四山）。',
+      items:[
+        {
+          han:'後天八卦', title:'後天八卦 · 風水主軸',
+          core:[
+            '後天八卦用於「後天之世」— 有方位、時間、人、宅、門、房、路、水與實際用途之世界，是命理師「定宮」之主軸。',
+            '簡言之：後天八卦即實宅八宮之地圖，用以判斷某度數／區域落在何宮及其基本氣。',
+            '例：180° = 南 = 離宮 = 火 = 名聲、能見度、形象。知「此區在離宮」後，方疊加飛星／城門／二十四山。',
+          ],
+          orderTitle:'讀盤次序',
+          order:['由宅心取度數','分入八大方位','定後天八卦之宮','讀該宮五行','讀該宮之義','傳予其他系統（飛星 · 城門 · 八宅）'],
+          tableTitle:'後天八宮表',
+          table:[
+            {k:'N · 坎', v:'水 · 事業 人生路 流通'},
+            {k:'NE · 艮', v:'土 · 山 學識 靜止 積累'},
+            {k:'E · 震', v:'木 · 家庭 開始 動'},
+            {k:'SE · 巽', v:'木 · 財 成長 人脈'},
+            {k:'S · 離', v:'火 · 名聲 形象 光明'},
+            {k:'SW · 坤', v:'土 · 母 配偶 承載'},
+            {k:'W · 兌', v:'金 · 子女 喜悅 溝通'},
+            {k:'NW · 乾', v:'金 · 父 長輩 領導 貴人'},
+          ],
+          warn:'⚠ 不可僅憑後天八卦斷吉凶 — 南為火不代表必吉，須看離宮中是何星（九星吉 · 五黃二黑須慎）。',
+          degreeNote:'主體固定，所讀之值隨度數變 · 180°=離宮 · 90°=震宮 · 230°=坤宮',
+        },
+        {
+          han:'先天八卦', title:'先天八卦 · 原始之力',
+          core:[
+            '先天八卦為先天之序 — 天地未化為實用之世前之原始能量結構。',
+            '命理師以先天為「體」（根力），後天為「用」（實用）：先天言卦之原力，後天言該力如何用於實宅。',
+            '用以觀根力與平衡之對（乾↔坤 · 坎↔離 · 震↔巽 · 艮↔兌）— 為深層參考，非主要論斷。',
+          ],
+          tableTitle:'先天八卦表',
+          table:[
+            {k:'S · 乾', v:'天 · 主導之力 父 創造'},
+            {k:'N · 坤', v:'地 · 承載 母 穩定'},
+            {k:'E · 離', v:'火 · 光明 能見'},
+            {k:'W · 坎', v:'水 · 深 內在 流'},
+            {k:'NE · 震', v:'雷 · 起動'},
+            {k:'SW · 巽', v:'風 · 滲透 成長'},
+            {k:'NW · 艮', v:'山 · 止 積累'},
+            {k:'SE · 兌', v:'澤 · 喜悅 溝通'},
+          ],
+          pairsTitle:'重要平衡之對',
+          pairs:['乾 ↔ 坤 · 天 ↔ 地','坎 ↔ 離 · 水 ↔ 火','震 ↔ 巽 · 雷 ↔ 風','艮 ↔ 兌 · 山 ↔ 澤'],
+          warn:'⚠ 不以先天斷門／臥房之位 — 實宅運用須回歸後天 · 二十四山 · 飛星。',
+          degreeNote:'介面須明示：先天 = 原力層 · 後天 = 實用層，以免疑惑為何南方後天為離而先天為乾。',
+        },
+        {
+          han:'五行', title:'五行 · 相生 / 相剋',
+          core:[
+            '五行為五種能量流動之機制 — 木 · 火 · 土 · 金 · 水。',
+            '命理師不僅看「此方何行」，更看此行 生 何、剋 何、被誰 生、被誰 剋。',
+            '五行即表達能量相扶或相制之語言。',
+          ],
+          shengTitle:'相生',
+          sheng:['木生火 · 木養火','火生土 · 火焚成灰土','土生金 · 土蘊金','金生水 · 金生潤水','水生木 · 水養木'],
+          keTitle:'相剋',
+          ke:['木克土 · 木根穿土','土克水 · 土堤防水','水克火 · 水滅火','火克金 · 火熔金','金克木 · 金斷木'],
+          tableTitle:'五行主表',
+          table:[
+            {k:'木', v:'方 E/SE · 卦 震巽 · 星 3,4 · 生長 擴張 動'},
+            {k:'火', v:'方 S · 卦 離 · 星 9 · 光明 名聲 形象'},
+            {k:'土', v:'方 NE/SW/中 · 卦 艮坤 · 星 2,5,8 · 承載 積累 厚重'},
+            {k:'金', v:'方 W/NW · 卦 兌乾 · 星 6,7 · 結構 條理 決斷'},
+            {k:'水', v:'方 N · 卦 坎 · 星 1 · 流通 智慧 深'},
+          ],
+          starTitle:'要訣 · 吉星 vs 凶星 得行之扶',
+          starLogic:['吉星得行扶 = 更吉','凶星得行扶 = 更凶','例：五黃（土）落南（火）→ 火生土，扶五黃 · 若五黃為凶，此處尤須慎'],
+          degreeNote:'五行之理固定，所論隨：度數→方位→宮之行 + 落宮之星→星之行 → 關係 生/剋/同',
+        },
+      ]
     }
   }
 };
@@ -1535,6 +1766,24 @@ function renderFengshui(){
   document.getElementById('fs-an-eg-title').textContent=an.egTitle;
   document.getElementById('fs-an-eg').innerHTML=an.eg.map(x=>`<div>${x}</div>`).join('');
   document.getElementById('fs-an-note').textContent=an.note;
+  /* 核 · ศาสตร์แกนกลาง 後天/先天/五行 */
+  const cx=f.coreSci;
+  document.getElementById('fs-cs-title').textContent=cx.secTitle;
+  document.getElementById('fs-cs-intro').textContent=cx.secIntro;
+  const cb=document.getElementById('fs-cs-body'); cb.textContent='';
+  const addList=(title,arr)=>{ if(!title||!arr) return; const t=document.createElement('div'); t.style.cssText='margin-top:10px;font-weight:600;font-size:13px'; t.textContent=title; cb.appendChild(t); const ul=document.createElement('div'); ul.style.cssText='font-size:13px;color:var(--fg);opacity:.9;line-height:1.8'; ul.innerHTML=arr.map(x=>`<div>· ${x}</div>`).join(''); cb.appendChild(ul); };
+  cx.items.forEach(it=>{
+    const h=document.createElement('h3'); h.style.cssText='margin-top:18px;font-size:15px'; h.textContent=`${it.han} · ${it.title}`; cb.appendChild(h);
+    const cd=document.createElement('div'); cd.style.cssText='font-size:14px;color:var(--fg);line-height:1.85'; cd.innerHTML=it.core.map(x=>`<p>${x}</p>`).join(''); cb.appendChild(cd);
+    addList(it.orderTitle,it.order);
+    addList(it.shengTitle,it.sheng);
+    addList(it.keTitle,it.ke);
+    if(it.tableTitle&&it.table){ const t=document.createElement('div'); t.style.cssText='margin-top:10px;font-weight:600;font-size:13px'; t.textContent=it.tableTitle; cb.appendChild(t); const g=document.createElement('div'); g.className='grid-2'; it.table.forEach(e=>g.appendChild(fsTile([['h',e.k],['d',e.v]]))); cb.appendChild(g); }
+    addList(it.pairsTitle,it.pairs);
+    addList(it.starTitle,it.starLogic);
+    if(it.warn){ const wn=document.createElement('p'); wn.style.cssText='margin-top:8px;font-size:13px;color:#d9a44c;line-height:1.7'; wn.textContent=it.warn; cb.appendChild(wn); }
+    if(it.degreeNote){ const dn=document.createElement('p'); dn.style.cssText='margin-top:4px;font-size:12px;color:var(--fg);opacity:.7;line-height:1.6'; dn.textContent='🧭 '+it.degreeNote; cb.appendChild(dn); }
+  });
 }
 
 function renderAll(){
