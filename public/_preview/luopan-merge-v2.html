@@ -1773,8 +1773,8 @@ function renderCastleGateOverlay(){
     const han = GATE_HAN1[ds.status] || '?';
     const danger = ds.colorKey==='red';
     const grp = document.createElementNS(NS,'g');
-    /* counter-rotate +ringRotation เพื่อหักล้างการหมุนวง (lpRotate -facing) → ประตูตั้งตรงเสมอ ไม่กลับหัว */
-    grp.setAttribute('transform', `translate(${px.toFixed(1)},${py.toFixed(1)}) rotate(${ringRotation()})`);
+    /* counter-rotate +ringRotation (หักล้าง lpRotate ตั้งตรง) + scale 1.2 ให้ประตูกว้าง ~15° arc (1 ภูเขา) */
+    grp.setAttribute('transform', `translate(${px.toFixed(1)},${py.toFixed(1)}) rotate(${ringRotation()}) scale(1.2)`);
     grp.innerHTML = `
       <ellipse cx="0" cy="27" rx="25" ry="5" fill="#000" opacity=".32"/>
       <rect x="-22" y="22" width="44" height="6" rx="2" fill="${C.body}" stroke="${C.edge}" stroke-width=".5"/>
@@ -1791,12 +1791,10 @@ function renderCastleGateOverlay(){
     `;
     g.appendChild(grp);
   }
-  /* draw both candidates · left + right · wedge บาง (sector hint) + 牌坊 เด่น */
+  /* draw both candidates · ไม่มี wedge แล้ว · ประตู牌坊เป็นตัวบอกตำแหน่ง+ขอบเขต 15° เอง */
   [castleGateResult.candidates.left, castleGateResult.candidates.right].forEach(c => {
     const m = c.mountain;
-    const ov = getCastleGateOverlayLabel(c);
     const ds = c.displayStatus || buildCastleGateDisplayStatus(c);
-    wedge(m.start, m.end, ov.wedgeCls);
     const mid = m.start < m.end ? (m.start+m.end)/2 : cgNormDeg((m.start+m.end+360)/2);
     drawPaifang(mid, ds);
   });
