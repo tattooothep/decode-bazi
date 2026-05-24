@@ -41,3 +41,5 @@ OUTPUT FORMAT (CRITICAL):
 - Return ONLY valid JSON array
 - No markdown code fences, no explanation, no extra text
 - Example: [{"name":"พีท","birthDate":"1985-08-12","birthTime":"13:30","gender":"M","city":"Bangkok","lng":100.5018,"lat":13.7563}]
+
+If the list is empty or unparseable, return: []
