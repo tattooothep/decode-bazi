@@ -193,27 +193,27 @@
     </section>
 
     <!-- 18 พ.ค. · v2 upgrade · 4 sections ใหม่ · JS render จาก ADV_DATA[lang] -->
-    <section class="card">
+    <section class="card" id="adv-state-card">
       <h2><span class="han">態</span> <span id="adv-state-title"></span></h2>
       <p id="adv-state-intro" style="font-size:14px;color:var(--fg);"></p>
       <div id="adv-state-grid" class="grid-2"></div>
     </section>
 
-    <section class="card">
+    <section class="card" id="adv-need-card">
       <h2><span class="han">需</span> <span id="adv-need-title"></span></h2>
       <p id="adv-need-intro" style="font-size:14px;color:var(--fg);"></p>
       <div id="adv-need-grid" class="grid-2"></div>
       <p id="adv-need-eg" style="font-size:13px;color:var(--fg-soft);margin-top:12px;line-height:1.7;"></p>
     </section>
 
-    <section class="card">
+    <section class="card" id="adv-ex-card">
       <h2><span class="han">例</span> <span id="adv-ex-title"></span></h2>
       <div class="quote" id="adv-ex-quote"></div>
       <p id="adv-ex-intro" style="font-size:14px;color:var(--fg);margin-top:10px;"></p>
       <ul id="adv-ex-list" style="font-size:13px;color:var(--fg);line-height:1.85;padding-left:22px;"></ul>
     </section>
 
-    <section class="card">
+    <section class="card" id="adv-warn-card">
       <h2><span class="han">戒</span> <span id="adv-warn-title"></span></h2>
       <ol id="adv-warn-list" style="font-size:14px;color:var(--fg);line-height:1.85;padding-left:22px;"></ol>
     </section>
@@ -1670,10 +1670,25 @@ function renderSteps(){
   wrap.innerHTML = html;
 }
 
+/* 25 พ.ค. · 11 หมวดเสริม (ขั้นสูง用神 + ฮวงจุ้ย + คัมภีร์ปฏิกิริยา) เข้าสารบัญ */
+const TOC_EXTRA = [
+  { id:'adv-state-card', icon:'🌳', th:'態 ธาตุมีสภาพ', en:'態 Element State', zh:'態 五行有態' },
+  { id:'adv-need-card',  icon:'💊', th:'需 Needed vs Available', en:'需 Needed vs Available', zh:'需 需用 vs 可用' },
+  { id:'adv-ex-card',    icon:'📋', th:'例 ตัวอย่างวิเคราะห์', en:'例 Worked Example', zh:'例 案例' },
+  { id:'adv-warn-card',  icon:'⚠️', th:'戒 ข้อควรระวัง', en:'戒 Cautions', zh:'戒 誡' },
+  { id:'fs-needles-card',icon:'🧭', th:'盤 羅盤三針', en:'盤 Three Needles', zh:'盤 羅盤三針' },
+  { id:'fs-pasha-card',  icon:'⛰', th:'砂 撥砂訣 (ดูภูเขา)', en:'砂 Bo Sha (mountains)', zh:'砂 撥砂訣' },
+  { id:'fs-nashui-card', icon:'🌊', th:'水 納水 (ดูน้ำ)', en:'水 Water Method', zh:'水 納水' },
+  { id:'fs-ganzhi-card', icon:'🔣', th:'干支 ก้านฟ้ากิ่งดิน', en:'干支 Stems & Branches', zh:'干支 天干地支' },
+  { id:'fs-annual-card', icon:'🚧', th:'警示 太歲/三煞/歲破', en:'警示 Annual Warnings', zh:'警示 太歲/三煞/歲破' },
+  { id:'fs-coresci-card',icon:'🔯', th:'核 核心三學', en:'核 Core Three', zh:'核 核心三學' },
+  { id:'im-card',        icon:'⚛️', th:'應 คัมภีร์ปฏิกิริยา', en:'應 Interaction Codex', zh:'應 互動寶典' },
+];
 function renderTOC(){
   const t = I18N[LANG] || I18N.th;
   const items = STEPS.map(s => `<li><a href="#step-${s.n}">${s.icon} ${pickStep(s,'title')}</a></li>`).join('');
-  document.getElementById('toc').innerHTML = `<h3>📑 ${t.tocLabel}</h3><ol>${items}</ol>`;
+  const extra = TOC_EXTRA.map(e => `<li><a href="#${e.id}">${e.icon} ${e[LANG]||e.th}</a></li>`).join('');
+  document.getElementById('toc').innerHTML = `<h3>📑 ${t.tocLabel}</h3><ol>${items}${extra}</ol>`;
 }
 
 function renderAdv(){
