@@ -546,9 +546,12 @@ function hexElement(i) {
 // Each hexagram maps to a period 1-9 based on its Xuan Kong cycle.
 // Standard table (簡化版 deterministic mapping for visual fidelity)
 function hexPeriod(i) {
-  // 玄空大卦 卦運 ที่ถูกต้องต้อง derive จาก 父母卦/江東江西/三般卦 (蔣大鴻)
-  // ของเดิมเป็น Latin square ปลอม → แสดง '—' จนกว่าจะ verify ตาราง玄空大卦แท้
-  return '—';
+  // 24 พ.ค. · ใช้ guaYun จริงจากตาราง玄空大卦 (xkdg-64-gua.json · 3 agent verify) ที่โหลดเข้า window.XKDG
+  // map: ตำแหน่งวง i → ชื่อกว้าสั้น HEXAGRAMS_64[i] → guaYun · ถ้า XKDG ยังไม่โหลด แสดง '—' (จะ re-render เมื่อโหลดเสร็จ)
+  var XK = (typeof window !== 'undefined') ? window.XKDG : null;
+  if (!XK || !XK.guaYunByName) return '—';
+  var v = XK.guaYunByName[HEXAGRAMS_64[i]];
+  return (v == null) ? '—' : v;
 }
 
 // ─── Period 9 Flying Stars · 山·水·運 per direction (子山午向 下卦)
@@ -1946,7 +1949,22 @@ fetch('/_preview/annual-warning.json').then(r => r.json()).then(d => {
 window.XKDG = null;
 fetch('/_preview/xkdg-64-gua.json').then(r => r.json()).then(d => {
   const byId = {}; (d.hexagrams || []).forEach(h => { byId[h.id] = h; }); d.byId = byId;
+  /* map ชื่อกว้าสั้น (HEXAGRAMS_64) → guaYun ผ่าน King Wen id · ใช้ในวง rKU บนหล่อแก */
+  const guaYunByName = {};
+  try {
+    Object.keys(KING_WEN_NUM).forEach(nm => {
+      const id = KING_WEN_NUM[nm];
+      const h = byId[id];
+      if (h && h.xkdg && h.xkdg.guaYun != null) guaYunByName[nm] = h.xkdg.guaYun;
+    });
+  } catch(e) {}
+  d.guaYunByName = guaYunByName;
   window.XKDG = d;
+  /* re-render วง 卦運 (rKU) ด้วยเลขจริง หลังข้อมูลโหลด (ตอน build template ครั้งแรก XKDG ยังไม่มา → เป็น '—') */
+  try {
+    const rku = document.getElementById('rKU');
+    if (rku && typeof r_64period === 'function') rku.innerHTML = r_64period();
+  } catch(e) { console.warn('rKU re-render failed:', e); }
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('xkdg load failed:', e));
 
