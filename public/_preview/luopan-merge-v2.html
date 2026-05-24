@@ -1942,6 +1942,14 @@ fetch('/_preview/annual-warning.json').then(r => r.json()).then(d => {
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('annual-warning load failed:', e));
 
+/* 24 พ.ค. · 玄空大卦 64卦 + 卦運(ยุคของกว้า) · guaYun เติมครบ 64 · guaQi ยัง null */
+window.XKDG = null;
+fetch('/_preview/xkdg-64-gua.json').then(r => r.json()).then(d => {
+  const byId = {}; (d.hexagrams || []).forEach(h => { byId[h.id] = h; }); d.byId = byId;
+  window.XKDG = d;
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('xkdg load failed:', e));
+
 /* 24 พ.ค. · core-sciences ซินแส (後天/先天/五行 · familyRole·lifeArea·cycles·relationLogic) — เสริม score/general/home เดิม */
 window.CORE_SCI = null;
 fetch('/_preview/core-sciences.json').then(r => r.json()).then(d => {
@@ -2109,6 +2117,7 @@ function updateInspector(){
     '後天':['ปากั้วหลังฟ้า','後天'],'先天':['ปากั้วก่อนฟ้า','先天'],
     '飛星山':['ดาวภูเขา','飛星山'],'飛星水':['ดาวแม่น้ำ','飛星水'],'飛星基':['ดาวฐาน','飛星基'],'飛星':['ดาวเหิน','飛星'],
     '64卦':['64 กว้า','64卦'],
+    '卦運':['ยุคของกว้า','卦運'],
     '奇門·門':['ฉีเหมิน ประตู','奇門 門'],'奇門·神':['ฉีเหมิน เทพ','奇門 神'],'奇門·星':['ฉีเหมิน ดาว','奇門 星'],
     '地盤':['24 ขุนเขา','地盤'],'地支':['12 กิ่งดิน','地支'],'天干':['10 ก้านฟ้า','天干'],
     '三盤':['3 เข็ม','三盤'],'天池':['บ่อฟ้า','天池'],'人盤':['เข็มคน','人盤'],'天盤':['เข็มฟ้า','天盤'],
@@ -2121,7 +2130,7 @@ function updateInspector(){
   const ELZ = {水:'น้ำ',木:'ไม้',火:'ไฟ',土:'ดิน',金:'ทอง'}; /* ธาตุจีน→ไทย */
   const DIR_TH = {N:'เหนือ',NE:'อีสาน',E:'ตะวันออก',SE:'อาคเนย์',S:'ใต้',SW:'หรดี',W:'ตะวันตก',NW:'พายัพ'};
   /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
-  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
+  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','卦運':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
   function row(cat, han, head, score, general, home, rich){
     const rid = HAN_RING[han];
     if(rid){ const cb=document.querySelector('input[data-r="'+rid+'"]'); if(cb && !cb.checked) return; } /* ศาสตร์ถูกปิด filter */
@@ -2182,6 +2191,32 @@ function updateInspector(){
   /* 64卦 */
   const hex = L.hexagrams_64?.hexagrams?.[r.h64char];
   if(hex) row('cat2','64卦', `<b>${hex.name||r.h64char}</b> <span style="color:var(--fg-faint)">· ${r.h64char} #${r.h64num}</span>`, hex.score, hex.general, hex.home);
+
+  /* 卦運 玄空大卦 · ยุคของกว้า · match ด้วย King Wen id (r.h64num) · periodScoreFormula ซินแส */
+  const XK = window.XKDG;
+  if(XK && XK.byId && XK.byId[r.h64num]){
+    const g = XK.byId[r.h64num];
+    const yun = g.xkdg ? g.xkdg.guaYun : null;
+    const cur = houseLocked ? lockedPeriod : 9;            /* ยุคบ้าน · ยังไม่ล็อก = ยุค 9 ปัจจุบัน */
+    const cyc = (p,delta)=>(((p-1+delta)%9)+9)%9+1;         /* วนยุค 1..9 */
+    let plabel, padj;
+    if(yun==null){ plabel='未校驗 · ยังไม่ตรวจยุค'; padj=0; }
+    else if(cur===5){ plabel='ยุค 5 · ไม่มีกว้าประจำยุค (แบ่งครึ่งไป 2/3 + 6/7)'; padj=0; }  /* Period 5 handle แยก */
+    else if(yun===cur){ plabel='當運 · ทันยุค (รุ่งสุด)'; padj=25; }
+    else if(yun===cyc(cur,1)){ plabel='生氣 · ยุคหน้า (กำลังขึ้น)'; padj=12; }
+    else if(yun===cyc(cur,-1)){ plabel='退氣 · เพิ่งผ่านยุค (ถอย)'; padj=-8; }
+    else { plabel='失令 · ผิดยุค (อ่อนแรง)'; padj=-14; }
+    /* คะแนน: baseHouseScore(1-5)→100 (×20) + scoreAdjust → กลับเป็น 1-5 สำหรับ badge */
+    const sc5 = (yun==null) ? (g.baseHouseScore||3)
+      : Math.max(1, Math.min(5, Math.round(((g.baseHouseScore||3)*20 + padj)/20)));
+    const guaQiNote = (!g.xkdg || g.xkdg.guaQi==null)
+      ? ' · ⚠ ยังไม่เติม 卦氣(guaQi) → ยังไม่ใช่ 玄空大卦 เต็มรูปแบบ 100%' : '';
+    row('cat2','卦運',
+      `<b>${g.thaiName||g.name}</b> <span style="color:var(--fg-faint)">· ยุคกว้า ${yun==null?'—':yun} · ${plabel}</span>`,
+      sc5,
+      `ยุคบ้านปัจจุบัน ${cur} · กว้านี้ประจำยุค ${yun==null?'—':yun} → ${plabel} (ปรับคะแนน ${padj>=0?'+':''}${padj})${guaQiNote}`,
+      g.homeAdvice || g.homeUse || '', true);
+  }
 
   /* 八宅明鏡 + 正神零神 (ต้องล็อกบ้าน + เปิด checkbox การ์ดซ้าย — ใช้坐卦ของบ้าน) */
   const show8Z = document.querySelector('input[data-r="r8Z"]')?.checked;
