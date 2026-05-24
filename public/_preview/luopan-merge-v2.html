@@ -2229,30 +2229,40 @@ function updateInspector(){
     const pl=L.three_plates.plates['地盤'];
     row('cat1','三盤', `<b>${pl.name||'เข็มดิน'}</b> <span style="color:var(--fg-faint)">· 地盤</span>`, null, pl.general, pl.home);
   }
-  /* 撥砂訣/納水訣 — 五行生剋 เทียบ向首五行 (deterministic) · โชว์ดี-ร้ายที่หัวแถว */
+  /* === 撥砂訣 (人盤) — ซินแส: เทียบ "坐山" + 五行生剋 (Fix1) === */
   const W_SHENG={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};
   const W_KE={wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};
   const EL_ZH2EN={'水':'water','木':'wood','火':'fire','土':'earth','金':'metal'};
-  function shaSuiVerdict(outerEl, xiangEl){
-    if(!outerEl||!xiangEl) return null;
-    if(outerEl===xiangEl) return {v:'ดี',badge:'✅ ดี',cls:5,th:'比和 ธาตุเดียวกับหน้าบ้าน · เสริมกำลัง'};
-    if(W_KE[xiangEl]===outerEl) return {v:'ดีมาก',badge:'✅ ดีมาก',cls:5,th:'向剋 หน้าบ้านคุมได้ · กลายเป็นทรัพย์/บริวาร'};
-    if(W_SHENG[outerEl]===xiangEl) return {v:'ดี',badge:'✅ ดี',cls:4,th:'生向 หนุนหน้าบ้าน · เสริมพลัง'};
-    if(W_KE[outerEl]===xiangEl) return {v:'ร้าย',badge:'⚠ ร้าย',cls:1,th:'剋向(煞) ปะทะหน้าบ้าน · เป็นโทษ'};
-    if(W_SHENG[xiangEl]===outerEl) return {v:'อ่อน',badge:'△ อ่อน',cls:2,th:'洩氣 ดูดพลังหน้าบ้าน · เสียกำลัง'};
+  function shaVerdict(shaEl, zuoEl){ /* 砂(ภูเขา) เทียบ坐山(เจ้าบ้าน) */
+    if(!shaEl||!zuoEl) return null;
+    if(shaEl===zuoEl) return {badge:'✅ ดี',cls:4,th:'比和(旺砂) ธาตุเดียวกับเจ้าบ้าน · เสริมกำลัง'};
+    if(W_SHENG[shaEl]===zuoEl) return {badge:'✅ ดีมาก',cls:5,th:'砂生坐(เลี้ยงเจ้าบ้าน) · หนุนโดยตรง'};
+    if(W_KE[zuoEl]===shaEl) return {badge:'✅ ดี',cls:4,th:'坐剋砂(เป็นบริวาร) · เจ้าบ้านคุมได้'};
+    if(W_KE[shaEl]===zuoEl) return {badge:'⚠ ร้าย',cls:1,th:'砂剋坐(煞) ภูเขาทำร้ายเจ้าบ้าน · เป็นโทษ'};
+    if(W_SHENG[zuoEl]===shaEl) return {badge:'△ อ่อน',cls:2,th:'坐生砂(洩) เจ้าบ้านถูกดูดพลัง'};
     return null;
   }
-  const xiangEl = (houseLocked && castleGateResult) ? EL_ZH2EN[castleGateResult.chart.facingMountain.element] : null;
-  /* 人盤 (中針) — เข็มดูภูเขา · 撥砂訣 */
-  const rvR = shaSuiVerdict(r.renpan.el, xiangEl);
+  /* === 納水 (天盤) — ซินแส Fix3,4: ลบ五行เดิม · ใช้玄空飛星向星ยุค === */
+  function shuiVerdict(xStar, period){
+    if(!xStar) return null;
+    const sheng = period===9?1:period+1;
+    if(xStar===period) return {badge:'✅ ควรมีน้ำ',cls:5,th:`向星 ${xStar} = ดาวยุค(當令) · ทิศนี้ "ควรมีน้ำ" รับทรัพย์โดยตรง`};
+    if(xStar===sheng) return {badge:'✅ ควรมีน้ำ',cls:4,th:`向星 ${xStar} = 生氣(ดาวอนาคต) · น้ำทิศนี้ดี`};
+    if([2,5].includes(xStar)) return {badge:'⚠ ห้ามมีน้ำ',cls:1,th:`向星 ${xStar} = ดาวร้าย(${xStar===5?'五黃':'二黑'}) · มีน้ำตรงนี้กระตุ้นเคราะห์`};
+    return {badge:'△ กลาง',cls:3,th:`向星 ${xStar} = ดาวถอย(衰) · น้ำตรงนี้เฉยๆ`};
+  }
+  const zuoEl = (houseLocked && castleGateResult) ? EL_ZH2EN[castleGateResult.chart.sittingMountain.element] : null;
+  const xStarHere = (houseLocked && castleGateResult) ? castleGateResult.chart.water[CG_PALACE_INDEX[BZ_DIR_GUA[r.dir8]]] : null;
+  /* 人盤 (中針) — เข็มดูภูเขา · 撥砂訣 (เทียบ坐山) */
+  const rvR = shaVerdict(r.renpan.el, zuoEl);
   row('cat1','人盤', `<b>เข็มดูภูเขา</b>${rvR?` <span class="rn-val badge ${rvR.cls>=4?'green':rvR.cls<=2?'red':''}">ถ้ามีภูเขา: ${rvR.badge}</span>`:''} <span style="color:var(--fg-faint)">· 人盤 · ${r.renpan.m}(${r.renpan.c})</span>`, rvR?rvR.cls:null,
-      `เข็มวัด "ของสูง" รอบบ้าน — ภูเขา ตึกสูง เสาไฟ ต้นไม้ใหญ่ (撥砂)${rvR?` · ทิศนี้: ${rvR.th}`:''}`,
-      `<b>ใช้ยังไง:</b> ถ้ารอบบ้านมีของสูง (เขา/ตึก/เสา) อยู่<b>ทิศนี้</b> → "มีภูเขาหนุน"<br>${rvR?`<b>ผลที่ทิศนี้: ${rvR.badge}</b> (${rvR.th})<br>`:''}✅ ดี = เสริมคน บริวาร สุขภาพ มีคนช่วย<br>⚠ ของสูงควรอยู่ "หลัง/ข้าง" บ้าน · อยู่หน้า(ตรงประตู)จะอึดอัด`, true);
-  /* 天盤 (縫針) — เข็มดูน้ำ · 納水訣 */
-  const rvT = shaSuiVerdict(r.tianpan.el, xiangEl);
-  row('cat1','天盤', `<b>เข็มดูน้ำ</b>${rvT?` <span class="rn-val badge ${rvT.cls>=4?'green':rvT.cls<=2?'red':''}">ถ้ามีน้ำ: ${rvT.badge}</span>`:''} <span style="color:var(--fg-faint)">· 天盤 · ${r.tianpan.m}(${r.tianpan.c})</span>`, rvT?rvT.cls:null,
-      `เข็มวัด "น้ำ/ที่โล่ง" รอบบ้าน — แม่น้ำ สระ คลอง ถนนใหญ่ ที่ว่างต่ำ (納水)${rvT?` · ทิศนี้: ${rvT.th}`:''}`,
-      `<b>ใช้ยังไง:</b> ถ้ารอบบ้านมีน้ำ/ถนน/ที่โล่ง อยู่<b>ทิศนี้</b> → "มีน้ำรับทรัพย์"<br>${rvT?`<b>ผลที่ทิศนี้: ${rvT.badge}</b> (${rvT.th})<br>`:''}✅ ดี = เสริมทรัพย์ การเงิน โชคลาภ<br>⚠ น้ำ/ที่โล่งควรอยู่ "หน้า" บ้าน · เขาหลัง-น้ำหน้า = ดีที่สุด`, true);
+      `เข็มวัด "ของสูง" รอบบ้าน — ภูเขา ตึกสูง เสาไฟ ต้นไม้ใหญ่ (撥砂 · เทียบ五行กับ坐山เจ้าบ้าน)${rvR?` · ทิศนี้: ${rvR.th}`:''}`,
+      `<b>ใช้ยังไง:</b> ถ้ารอบบ้านมีของสูง (เขา/ตึก/เสา) อยู่<b>ทิศนี้</b> → "มีภูเขาหนุน"<br>${rvR?`<b>ผลที่ทิศนี้: ${rvR.badge}</b> (${rvR.th})<br>`:''}✅ ดี = เสริมคน บริวาร สุขภาพ มีคนช่วย<br>⚠ ของสูงควรอยู่ "หลัง/ข้าง" บ้าน<br><span style="color:var(--fg-faint)">※ ใช้正五行เบื้องต้น · ตาราง撥砂五行เฉพาะรอซินแสยืนยัน</span>`, true);
+  /* 天盤 (縫針) — เข็มดูน้ำ · 納水 玄空向星 + Fix5 ต้องระบุน้ำจริง */
+  const rvT = shuiVerdict(xStarHere, lockedPeriod);
+  row('cat1','天盤', `<b>เข็มดูน้ำ</b>${rvT?` <span class="rn-val badge ${rvT.cls>=4?'green':rvT.cls<=2?'red':''}">${rvT.badge}</span>`:''} <span style="color:var(--fg-faint)">· 天盤 · ${r.tianpan.m}(${r.tianpan.c})</span>`, rvT?rvT.cls:null,
+      `เข็มดูน้ำ (納水 · 玄空ใช้向星ยุค ไม่ใช่五行)${rvT?` · ทิศนี้: ${rvT.th}`:''}`,
+      `<b>ทิศนี้:</b> ${rvT?rvT.badge+' — '+rvT.th:'ล็อกบ้านก่อน'}<br>✅ ทิศ向星旺(ยุค) = ควรมีน้ำ รับทรัพย์ · ⚠ ทิศดาวร้าย(2/5) = ห้ามมีน้ำ<br><span style="color:#ffcf8a">※ ดูน้ำจริง "ดี-ร้าย" แม่นยำ ต้องระบุ <b>ชนิดน้ำ + ทิศน้ำไหลเข้า/ออก (來水/去水)</b> ด้วยวิชา 三合水法 — ระบบยังไม่มีข้อมูลส่วนนี้</span>`, true);
   /* 天池 */
   if(L.sky_pool?.interpretation){
     const sp=L.sky_pool.interpretation;
