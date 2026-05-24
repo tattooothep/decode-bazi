@@ -293,7 +293,6 @@
         <label><input type="checkbox" data-r="rLH" data-cg="2" checked><span class="lbl-th">ปากั้วหลังฟ้า · แกนฮวงจุ้ย</span><span class="lbl-cn">後天八卦</span></label>
         <label><input type="checkbox" data-r="rEH" data-cg="2" checked><span class="lbl-th">ปากั้วก่อนฟ้า · พลังดั้งเดิม</span><span class="lbl-cn">先天八卦</span></label>
         <label><input type="checkbox" data-r="r5E" data-cg="2" checked><span class="lbl-th">5 ธาตุ · สร้าง/ทำลาย</span><span class="lbl-cn">五行</span></label>
-        <label><input type="checkbox" data-r="rFX" data-cg="2" checked><span class="lbl-th">ดาวเหิน 9 ยุค · ดี-ร้ายตามยุค</span><span class="lbl-cn">飛星</span></label>
         <label><input type="checkbox" data-r="r64" data-cg="2" checked><span class="lbl-th">64 กว้า · ความหมายละเอียด</span><span class="lbl-cn">64卦</span></label>
         <label><input type="checkbox" data-r="rKU" data-cg="2" checked><span class="lbl-th">ยุคของกว้า · ช่วงเวลา</span><span class="lbl-cn">卦運</span></label>
         <label><input type="checkbox" data-r="rGate" data-cg="2"><span class="lbl-th">城門ประตูเมือง · ประตูข้างมงคล</span><span class="lbl-cn">城門訣</span></label>
@@ -322,9 +321,9 @@
     <div class="cat-section">
       <h4><span class="cat-tag">หมวด 4</span> ศาสตร์คำนวณ · เปลี่ยนตามเวลา</h4>
       <p class="cat-desc">ไม่ใช่ vงแยก · 2 ศาสตร์ในหมวด 2 ที่ values เปลี่ยนตามเวลา · ใช้ปุ่ม filter เวลา (運/年/月/日/時) ที่การ์ดกลางเปลี่ยน:</p>
-      <div class="layer-grid" style="opacity:.75">
-        <label style="cursor:default"><span style="font-family:var(--tc);color:var(--gold-bright)">飛星</span><span class="lbl-th">ดาว 山/向/基 — ทิศบ้าน + ยุค (ยุค=3 ดวง · ปี/เดือน/วัน/ยาม=1 ดวง)</span><span></span></label>
-        <label style="cursor:default"><span style="font-family:var(--tc);color:var(--gold-bright)">奇門</span><span class="lbl-th">門/神/星 — เฉพาะ ปี/เดือน/วัน/ยาม</span><span></span></label>
+      <div class="layer-grid">
+        <label><input type="checkbox" data-r="rFX" data-cg="4" checked><span class="lbl-th">ดาวเหิน 山/向/基 · ทิศบ้าน+ยุค</span><span class="lbl-cn">飛星</span></label>
+        <label><input type="checkbox" data-r="rQM" data-cg="4" checked><span class="lbl-th">ฉีเหมิน 門/神/星 · ปี/เดือน/วัน/ยาม</span><span class="lbl-cn">奇門</span></label>
       </div>
     </div>
 
@@ -2072,7 +2071,7 @@ function updateInspector(){
   const ELZ = {水:'น้ำ',木:'ไม้',火:'ไฟ',土:'ดิน',金:'ทอง'}; /* ธาตุจีน→ไทย */
   const DIR_TH = {N:'เหนือ',NE:'อีสาน',E:'ตะวันออก',SE:'อาคเนย์',S:'ใต้',SW:'หรดี',W:'ตะวันตก',NW:'พายัพ'};
   /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
-  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','64卦':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool'};
+  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool'};
   function row(cat, han, head, score, general, home, rich){
     const rid = HAN_RING[han];
     if(rid){ const cb=document.querySelector('input[data-r="'+rid+'"]'); if(cb && !cb.checked) return; } /* ศาสตร์ถูกปิด filter */
