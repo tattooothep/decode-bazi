@@ -7,6 +7,9 @@
  * Layer 3 · เรียก Layer 0/1 (bazi-calc + year-hexagram) + qimen-api + Claude CLI
  */
 import { NextResponse } from "next/server";
+import { loadPromptMd } from "@/lib/prompt-md";
+/* 25 พ.ค. · persona ย้ายไป prompts/forecast-sifu.md (แก้ผ่าน /admin/sifu-prompts) · {{METHOD}}+{{BODY}}=dynamic · fallback กันพัง */
+const FORECAST_TPL_FALLBACK = `คุณคือซินแสพยากรณ์ของ hourkey.io · ใช้วิธี "{{METHOD}}" ตอบคำถามนี้\n{{BODY}}\nตอบให้ตรงคำถาม · เริ่มด้วย "✓ ปิดได้" / "✗ ยังไม่ได้" / "⚠ ต้องระวัง" ตามผัง แล้วอธิบายเหตุผลจาก 卦/星/門/神 · ปิดท้ายด้วยคำแนะนำ 1-2 บรรทัด`;
 import { spawn } from "child_process";
 import { calcBazi } from "@/lib/bazi-calc";
 import { hexagramForStemBranch, HEXAGRAMS_64, TRIGRAMS_8 } from "@/lib/year-hexagram";
@@ -276,18 +279,8 @@ const CAT_FOCUS: Record<string, string> = {
 };
 
 function buildPrompt(question: string, method: Method, category: string, lang: string, structured: unknown): string {
-  return `คุณคือซินแสพยากรณ์ของ hourkey.io · ใช้วิธี "${method}" ตอบคำถามนี้
-
-${LANG_INSTR[lang] || LANG_INSTR.th}
-
-หัวข้อ: ${CAT_FOCUS[category] || CAT_FOCUS.general}
-
-ผลคำนวณจาก engine (structured):
-${JSON.stringify(structured, null, 2)}
-
-คำถามลูกค้า: ${question}
-
-ตอบให้ตรงคำถาม · เริ่มด้วย "✓ ปิดได้" / "✗ ยังไม่ได้" / "⚠ ต้องระวัง" ตามผัง แล้วอธิบายเหตุผลจาก 卦/星/門/神 · ปิดท้ายด้วยคำแนะนำ 1-2 บรรทัด`;
+  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n\nหัวข้อ: ${CAT_FOCUS[category] || CAT_FOCUS.general}\n\nผลคำนวณจาก engine (structured):\n${JSON.stringify(structured, null, 2)}\n\nคำถามลูกค้า: ${question}\n`;
+  return loadPromptMd("prompts/forecast-sifu.md", FORECAST_TPL_FALLBACK).replace("{{METHOD}}", method).replace("{{BODY}}", body);
 }
 
 async function runClaudeCli(prompt: string): Promise<string> {

@@ -17,6 +17,8 @@ const FILES: Record<string, { label: string; note: string }> = {
   "hourkey_interpret_prompt.refined.md": { label: "System prompt · คำอ่านภาพรวม", note: "/api/chart/overview · ต้อง restart ถึงเห็นผล" },
   "prompts/network-sifu-pair.md": { label: "ซินแสเครือข่าย · คู่ (pair)", note: "/api/network/sifu · yongsennetwork · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
   "prompts/network-sifu-team.md": { label: "ซินแสเครือข่าย · ทีม (team)", note: "/api/network/sifu · yongsennetwork · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/qimen-sifu.md": { label: "ซินแสฉีเหมิน", note: "/api/qimen/sifu · datepick · qimen · {{BODY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/forecast-sifu.md": { label: "ซินแสพยากรณ์ (เซียมซี/เหรียญ)", note: "/api/forecast · forecast · {{METHOD}}+{{BODY}}=dynamic · เห็นผล ~60 วิ" },
 };
 
 export async function GET() {
@@ -47,7 +49,8 @@ export async function POST(req: Request) {
     try {
       const old = readFileSync(target, "utf8");
       const ts = new Date().toISOString().replace(/[:.]/g, "-");
-      writeFileSync(join(bkDir, `${file}.${ts}.bak`), old, "utf8");
+      const safe = file.replace(/\//g, "_");
+      writeFileSync(join(bkDir, `${safe}.${ts}.bak`), old, "utf8");
     } catch {}
     writeFileSync(target, content, "utf8");
     return NextResponse.json({ ok: true, file, bytes: content.length, by: admin.email, savedAt: new Date().toISOString(),

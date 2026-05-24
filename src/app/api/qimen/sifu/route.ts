@@ -6,6 +6,10 @@
  */
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
+import { loadPromptMd } from "@/lib/prompt-md";
+
+/* 25 พ.ค. · persona ย้ายไป prompts/qimen-sifu.md (แก้ผ่าน /admin/sifu-prompts) · {{BODY}}=dynamic · fallback กันพัง */
+const QIMEN_TPL_FALLBACK = `คุณคือซินแสฉีเหมินตุ้นเจี่ย · ตำรา 煙波釣叟賦·奇門遁甲統宗\n{{BODY}}\nตอบสั้นกระชับ · เน้นตำรา · ใช้ผังจริง + ดวงผู้ใช้ + ผลค้นหาผสมกัน · เลี่ยงคำว่าโชค/ฟลุค:`;
 
 const CHILD_USER = "jarvis";
 const TIMEOUT_MS = 60_000;
@@ -83,19 +87,8 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
     ? "\n\nประวัติคำถาม:\n" + history.map(h => `[${h.role}] ${h.content}`).join("\n")
     : "";
   const searchText = fmtSearchResults(searchResults, activity);
-  return `คุณคือซินแสฉีเหมินตุ้นเจี่ย · ตำรา 煙波釣叟賦·奇門遁甲統宗
-
-${LANG_INSTR[lang] || LANG_INSTR.th}
-
-ผังเวลา (QiMen Chart):
-${fmtQimenCard(qimen)}
-
-ดวงเกิดผู้ใช้ (BaZi v2):
-${fmtUserYs(ys)}${searchText}${focus}${histText}
-
-คำถาม: ${message}
-
-ตอบสั้นกระชับ · เน้นตำรา · ใช้ผังจริง + ดวงผู้ใช้ + ผลค้นหาผสมกัน · เลี่ยงคำว่าโชค/ฟลุค:`;
+  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n\nผังเวลา (QiMen Chart):\n${fmtQimenCard(qimen)}\n\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${searchText}${focus}${histText}\n\nคำถาม: ${message}\n`;
+  return loadPromptMd("prompts/qimen-sifu.md", QIMEN_TPL_FALLBACK).replace("{{BODY}}", body);
 }
 
 async function runClaudeCli(prompt: string): Promise<string> {
