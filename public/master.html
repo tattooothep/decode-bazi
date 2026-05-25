@@ -541,41 +541,7 @@
       <div class="msg master">
         <div class="msg-ava">師</div>
         <div class="msg-bubble">
-          <span class="tc">告 ·</span> วันนี้คือวัน <b>辛巳 正財透干</b> — ทรัพย์เปิดประตู<br/>
-          <span  class="quote" data-i18n="auto.m.034">"巳火生土 · 辛金成器" — ไฟใต้ดินงอกขึ้น · ทองเหล็กกลายเป็นเครื่องมือ</span>
-          ลองถามผมเรื่อง <b data-i18n="auto.m.035">ปิดดีล</b> · <b data-i18n="auto.m.036">คนที่จะคุย</b> · <b data-i18n="auto.m.037">ทิศที่นั่ง</b> หรือ <b data-i18n="auto.m.038">ฤกษ์ที่ค้างไว้</b> ครับ
-        </div>
-      </div>
-
-      <div class="msg user">
-        <div class="msg-ava">น</div>
-        <div  class="msg-bubble" data-i18n="auto.m.039">วันนี้ควรโทรหา Fara เลยมั้ย เรื่องสัญญาแอ่ลูมิเนียม?</div>
-      </div>
-
-      <div class="msg master">
-        <div class="msg-ava">師</div>
-        <div class="msg-bubble">
-          <b data-i18n="auto.m.040">ควรครับ — แต่จงใจ</b><br/><br/>
-          <span class="tc">時 ·</span> ตอนนี้ <b>未時</b> เป็นช่วง <b data-i18n="auto.m.041">นั่งวิเคราะห์</b> ไม่ใช่เจรจา · รอ <b>17:00 (酉時)</b> หลังจากนั้น金 ขึ้น พลังของ Fara (辛金) จะแรง · พูดน้อยฟังมาก · ขอเสนอเป็นลายลักษณ์<br/><br/>
-          <span class="tc">日 ·</span> Fara เป็น <b>辛金</b> ตรงกับ <b>用神</b> ของคุณ — เป็นคนที่ "ตัดสินใจให้คุณรวยขึ้น" · แต่<b data-i18n="auto.m.042">วันนี้ห้ามรีบ</b><br/><br/>
-          <span  class="quote" data-i18n="auto.m.043">"金能生水 · 但需火煉" — ทองหลอมต้องผ่านไฟก่อน</span>
-          ผมเห็นในระบบคุณวางฤกษ์ <b data-i18n="auto.m.044">13 พ.ค. 14:00 (★★★ +92)</b> ไว้แล้ว · <b data-i18n="auto.m.045">เลื่อนการเซ็นไปวันนั้น</b> · วันนี้แค่ <b data-i18n="auto.m.046">"ส่งสัญญาณ"</b> ว่าพร้อม
-        </div>
-      </div>
-
-      <div class="msg user">
-        <div class="msg-ava">น</div>
-        <div  class="msg-bubble" data-i18n="auto.m.047">ใครเป็นคนที่ควรพากันไปด้วย?</div>
-      </div>
-
-      <div class="msg master">
-        <div class="msg-ava">師</div>
-        <div class="msg-bubble">
-          <span class="tc">人 ·</span> ในเครือข่ายคุณวันนี้ <b data-i18n="auto.m.048">3 คนคะแนนสูง</b>:<br/><br/>
-          ⭐ <b data-i18n="auto.m.049">ใหม่ (辛金)</b> +82 — Spouse · <b data-i18n="auto.m.050">用神 ตรง</b> · ใหม่หาคำที่ Fara เข้าใจได้<br/>
-          ⭐ <b data-i18n="auto.m.051">พีท (壬水)</b> +71 — Co-founder · 三合 หนุน · พูดเรื่องตัวเลขดี<br/>
-          ⭐ <b data-i18n="auto.m.052">ก้อง (庚金)</b> +45 — CTO · 用神金 อีกตัว · เก่งเรื่องสเปค<br/><br/>
-          <b data-i18n="auto.m.053">เลือก 1 คน</b> ไปด้วย — ผมแนะ <b data-i18n="auto.m.054">ใหม่</b> เพราะ Fara เป็นผู้หญิง 辛金 พูดกันรู้เรื่องที่สุด · นั่งหันหน้า <b data-i18n="auto.m.055">ทิศ SW</b>
+          <span class="tc">告 ·</span> สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ
         </div>
       </div>
 
@@ -629,42 +595,8 @@
     stars.appendChild(s);
   }
 
-  // chat send
-  const messages = document.getElementById('messages');
+  // chat input ref (ใช้โดยปุ่ม preset chips) · แชทจริงอยู่ใน wireSifu()
   const input = document.getElementById('chat-input');
-  const send = document.getElementById('send');
-  const typing = document.getElementById('typing-row');
-
-  function addMsg(who, text){
-    const m = document.createElement('div');
-    m.className = 'msg ' + who;
-    m.innerHTML = `
-      <div class="msg-ava">${who==='user'?'น':'師'}</div>
-      <div class="msg-bubble">${text}</div>
-    `;
-    messages.insertBefore(m, typing);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  function masterReply(){
-    typing.style.display='flex';
-    messages.scrollTop = messages.scrollHeight;
-    setTimeout(()=>{
-      typing.style.display='none';
-      addMsg('master', `<span class="tc">告 ·</span> เป็นคำถามที่ดี · <b>ผมต้องตรวจดวงคุณกับเวลานี้ก่อน</b><br/>(ในเวอร์ชั่น production จะต่อ AI API · ตอนนี้เป็น mockup เพื่อให้เห็น UX)`);
-    }, 1800);
-  }
-
-  send.addEventListener('click', ()=>{
-    const v = input.value.trim();
-    if(!v) return;
-    addMsg('user', v);
-    input.value='';
-    masterReply();
-  });
-  input.addEventListener('keydown', e=>{
-    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send.click(); }
-  });
 
   /* ── First-visit Sinsae gate ── */
   (function sinsaeIntro(){
@@ -979,28 +911,6 @@ window.HK_I18N = {
   'auto.m.031': { th:'อะไรก็ได้', en:'Anything', zh:'無論何事' },
   'auto.m.032': { th:'กล่าว', en:'Speak', zh:'言' },
   'auto.m.033': { th:'ออนไลน์ · LISTENING', en:'Online · LISTENING', zh:'在線 · 聆聽' },
-  'auto.m.034': { th:'"巳火生土 · 辛金成器" — ไฟใต้ดินงอกขึ้น · ทองเหล็กกลายเป็นเครื่องมือ', en:'"巳火生土 · 辛金成器" — underground fire rises · gold becomes a tool', zh:'「巳火生土·辛金成器」— 地火上騰·金成器用' },
-  'auto.m.035': { th:'ปิดดีล', en:'Close deal', zh:'成交' },
-  'auto.m.036': { th:'คนที่จะคุย', en:'People to talk to', zh:'當談之人' },
-  'auto.m.037': { th:'ทิศที่นั่ง', en:'Seating direction', zh:'坐向' },
-  'auto.m.038': { th:'ฤกษ์ที่ค้างไว้', en:'Pending auspicious time', zh:'未用之吉時' },
-  'auto.m.039': { th:'วันนี้ควรโทรหา Fara เลยมั้ย เรื่องสัญญาแอ่ลูมิเนียม?', en:'Should I call Fara today about the aluminum contract?', zh:'今日該否致電 Fara 談鋁料合同?' },
-  'auto.m.040': { th:'ควรครับ — แต่จงใจ', en:'Yes — but with intent', zh:'宜·然須有意' },
-  'auto.m.041': { th:'นั่งวิเคราะห์', en:'Sit and analyze', zh:'靜坐分析' },
-  'auto.m.042': { th:'วันนี้ห้ามรีบ', en:'Don\'t rush today', zh:'今日忌急' },
-  'auto.m.043': { th:'"金能生水 · 但需火煉" — ทองหลอมต้องผ่านไฟก่อน', en:'"金能生水 · 但需火煉" — gold must be forged through fire first', zh:'「金能生水·但需火煉」— 金須火煉而後成' },
-  'auto.m.044': { th:'13 พ.ค. 14:00 (★★★ +92)', en:'13 May 14:00 (★★★ +92)', zh:'5月13日 14:00 (★★★ +92)' },
-  'auto.m.045': { th:'เลื่อนการเซ็นไปวันนั้น', en:'Move signing to that day', zh:'移簽約於彼日' },
-  'auto.m.046': { th:'"ส่งสัญญาณ"', en:'"Send a signal"', zh:'「示意」' },
-  'auto.m.047': { th:'ใครเป็นคนที่ควรพากันไปด้วย?', en:'Who should accompany you?', zh:'何人宜偕行?' },
-  'auto.m.048': { th:'3 คนคะแนนสูง', en:'3 high-score people', zh:'三位高分貴人' },
-  'auto.m.049': { th:'ใหม่ (辛金)', en:'Mai (辛金)', zh:'Mai (辛金)' },
-  'auto.m.050': { th:'用神 ตรง', en:'Matches 用神', zh:'合用神' },
-  'auto.m.051': { th:'พีท (壬水)', en:'Pete (壬水)', zh:'Pete (壬水)' },
-  'auto.m.052': { th:'ก้อง (庚金)', en:'Kong (庚金)', zh:'Kong (庚金)' },
-  'auto.m.053': { th:'เลือก 1 คน', en:'Pick 1 person', zh:'擇一人' },
-  'auto.m.054': { th:'ใหม่', en:'Mai', zh:'Mai' },
-  'auto.m.055': { th:'ทิศ SW', en:'SW direction', zh:'西南方' },
   'mst.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
   'mst.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
   'mst.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
