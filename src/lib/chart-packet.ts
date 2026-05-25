@@ -248,11 +248,17 @@ export function buildStructuredChartPacket(
   const palaceZhMap: Record<string, string> = {};
   for (const k of PILLAR_KEYS) palaceZhMap[k] = ext.palace_readings[k]?.zh || PILLAR_ZH[k];
 
-  /* ─── usefulGods (engine-derived · ไม่ใช่คำตัดสินสุดท้ายของซินแส) ─── */
+  /* ─── usefulGods (engine-derived · ไม่ใช่คำตัดสินสุดท้ายของซินแส) ───
+   * normalize เป็น element มาตรฐาน (lowercase EN 5 ธาตุ) + dedupe + exclude ลำดับ
+   * กฎ: ธาตุเดียวห้ามอยู่ทั้งกลุ่มช่วยและกลุ่มระวังพร้อมกัน
+   *   yong(หลัก) → xi exclude yong → ji exclude (yong∪xi) */
+  const VALID = new Set<ElementEN>(["wood", "fire", "earth", "metal", "water"]);
+  const norm = (arr: unknown[]): ElementEN[] =>
+    Array.from(new Set(arr.map((e) => String(e).toLowerCase() as ElementEN).filter((e) => VALID.has(e))));
   const ys = calc.yongshen || [];
-  const yong = Array.from(new Set(ys.slice(0, 1).map((y) => y.element as ElementEN)));
-  const xi = Array.from(new Set(ys.slice(1, 3).map((y) => y.element as ElementEN)));
-  const ji = Array.from(new Set((ext.jishen?.elements || []) as ElementEN[]));
+  const yong = norm(ys.slice(0, 1).map((y) => y.element));
+  const xi = norm(ys.slice(1, 3).map((y) => y.element)).filter((e) => !yong.includes(e));
+  const ji = norm(ext.jishen?.elements || []).filter((e) => !yong.includes(e) && !xi.includes(e));
 
   /* ─── pillars ─── */
   const pillars: ChartPacket["pillars"] = PILLAR_KEYS.map((k) => {
