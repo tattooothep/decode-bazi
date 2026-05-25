@@ -24,6 +24,8 @@ const FILES: Record<string, { label: string; note: string }> = {
   "prompts/sifu-intro-interaction-header.md": { label: "ซินแสหลัก · กรอบหุ้มคัมภีร์ปฏิกิริยา + กฎเหล็ก (เปิดดวง)", note: "หน้าเปิดดวง · /api/sifu intro · {{INTERACTION}}=เนื้อคัมภีร์ · ไทยล้วน · มีบรรทัดบังคับ · เห็นผล ~60 วิ" },
   "prompts/sifu-warmup.md": { label: "ซินแสหลัก · ประโยคทักทายเปิดดวง", note: "หน้าเปิดดวง · /api/sifu intro (streaming) · {{ELEMENT}}/{{POLARITY}}/{{BODY}}=dynamic · เห็นผล ~60 วิ" },
   "prompts/sifu-warmup-bodies.md": { label: "ซินแสหลัก · คำบรรยายแกนธาตุ 10 แบบ", note: "หน้าเปิดดวง warmup · /api/sifu intro · รูปแบบ element:polarity = ข้อความ · key default กันพลาด · เห็นผล ~60 วิ" },
+  "prompts/sifu-ctx-guards.md": { label: "ซินแสหลัก · คำสั่ง/ล็อกในข้อมูลดวง", note: "หน้า master · master-m · chart + เปิดดวง · /api/sifu · คำสั่งที่แทรกในผังดวง (ห้ามเดาเสา/ห้ามเรียกธาตุผิด/ลำดับการอ่าน ฯลฯ) · ตัวเลขคำนวณสดคงในโค้ด · {{DM_ELEMENT}}/{{DM_POLARITY}}=dynamic · เห็นผล ~60 วิ" },
+  "prompts/sifu-intro-resume-note.md": { label: "ซินแสหลัก · หมายเหตุต่อเรื่อง (เปิดดวง streaming)", note: "หน้าเปิดดวง (streaming หลัง warmup) · /api/sifu intro · กันเริ่มซ้ำ · เห็นผล ~60 วิ" },
   "ajek-bazi-rules.md": { label: "สูตรอ่านปาจื้อ 13 ขั้น · อาเจ๊กฮ้ง", note: "เสริมซินแสหลัก · หน้า master · master-m · chart · /api/sifu · เห็นผล ~60 วิ" },
   "bazi-interaction-master.md": { label: "คัมภีร์ปฏิกิริยา 合冲刑害破", note: "เสริมซินแสหลัก · หน้า master · master-m · chart · /api/sifu · เห็นผล ~60 วิ" },
   "hourkey_interpret_prompt.refined.md": { label: "System prompt · คำอ่านภาพรวม", note: "หน้า chart (กล่องภาพรวมดวง) · /api/chart/overview · ⚠️ ต้อง pm2 restart ถึงเห็นผล" },

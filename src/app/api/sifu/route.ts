@@ -244,17 +244,18 @@ async function buildBaziContext(profileId: string): Promise<string> {
     const calc = birthTimeKnown
       ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: true })
       : await calcBazi({ date, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: false });
+    const g = loadPromptKV("prompts/sifu-ctx-guards.md"); // คำสั่ง/ล็อก แก้ผ่าน admin
     if (calc.mode === "3p") {
       return [
         `ชื่อ: ${row.name || "—"} · เพศ ${gender}`,
         `เกิด: ${date} · ไม่ทราบเวลาเกิด · ลองจิจูด ${lng}`,
-        `โหมดคำนวณ: 3 เสา (年/月/日) · ห้ามสร้างหรือเดาเสายาม`,
+        `โหมดคำนวณ: 3 เสา (年/月/日) · ${g.NO_HOUR_PILLAR}`,
         `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่คำนวณ)`,
-        `FACT LOCK: Day Master = ${calc.dayMaster} · element = ${STEM_ELEMENT_MAP[calc.dayMaster] || "unknown"} · ห้ามเรียกธาตุหลักผิด`,
+        `FACT LOCK: Day Master = ${calc.dayMaster} · element = ${STEM_ELEMENT_MAP[calc.dayMaster] || "unknown"} · ${g.DM_FACT_LOCK}`,
         `วันเจ้า: ${calc.dayMaster} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
         `用神: ${calc.yongshen.slice(0, 3).map(y => `${y.stem}(${y.element})`).join(" · ")}`,
         `格局: ${calc.geJu.structure || "ปกติ"}`,
-        `ข้อจำกัดสำคัญ: ไม่มีเสายาม จึงไม่อ่านเรื่องลูก/บั้นปลาย/เรือนยาม/河洛/命宮ที่ต้องพึ่งเวลาเกิด ให้ตอบจากปี เดือน วัน ฤดู และ Day Master เท่านั้น`,
+        g.LIMIT_3P_QA,
       ].join("\n");
     }
     const ext = buildChartExtensions(
@@ -347,23 +348,25 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
     const calc = birthTimeKnown
       ? await calcBazi({ date: input.date, time: input.time, longitude: input.lng, gmtOffsetHours: 7, gender: input.gender, birthTimeKnown: true })
       : await calcBazi({ date: input.date, longitude: input.lng, gmtOffsetHours: 7, gender: input.gender, birthTimeKnown: false });
+    const g = loadPromptKV("prompts/sifu-ctx-guards.md"); // คำสั่ง/ล็อก แก้ผ่าน admin
     if (calc.mode === "3p") {
       const dm = calc.dayMaster;
       const dmElement = STEM_ELEMENT_MAP[dm] || "unknown";
       const dmPolarity = STEM_POLARITY_MAP[dm] || "yang";
       const dmElementTh = DM_LABEL_TH[dmElement] || dmElement;
       const dmPolarityTh = DM_POLARITY_TH[dmPolarity] || dmPolarity;
+      const dmThaiLock = g.DM_THAI_LOCK.replace("{{DM_ELEMENT}}", () => dmElementTh).replace("{{DM_POLARITY}}", () => dmPolarityTh);
       return [
         `DATA SOURCE: ${input.source}`,
         `ชื่อ: ${input.name || "—"} · เพศ ${input.gender}`,
         `เกิด: ${input.date} · ไม่ทราบเวลาเกิด · lng ${input.lng} · timezone Asia/Bangkok`,
-        `MODE LOCK: 3-pillar mode · ไม่มีเสายาม · ห้ามเดาเสา 12:00 เป็นชั่วยามจริง`,
-        `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement} · ห้ามเรียกธาตุหลักผิด`,
-        `DM THAI LOCK: ต้องเรียกตัวตนหลักว่า "ธาตุ${dmElementTh}แบบ${dmPolarityTh}" เท่านั้น · ธาตุรองห้ามเรียกเป็นตัวตนหลัก`,
+        g.MODE_LOCK_3P,
+        `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement} · ${g.DM_FACT_LOCK}`,
+        dmThaiLock,
         `3 เสาแบบอ่านไทย: ปี=${STEM_TH[calc.pillars.year.stem]}/${BRANCH_TH_NAME[calc.pillars.year.branch]} · เดือน=${STEM_TH[calc.pillars.month.stem]}/${BRANCH_TH_NAME[calc.pillars.month.branch]} · วัน=${STEM_TH[calc.pillars.day.stem]}/${BRANCH_TH_NAME[calc.pillars.day.branch]} · ยาม=ไม่ทราบเวลาเกิด`,
         `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · กำลัง${calc.strength.level}`,
         `โครงดวง: ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วย ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
-        `ข้อจำกัด: ไม่มีเสายาม จึงไม่อ่านเรือนลูก/บั้นปลาย/命宮/河洛/拱夾ที่ต้องใช้เวลาเกิด ให้เน้น Day Master เดือนเกิด ฤดู ธาตุช่วย และภาพชีวิตจาก 3 เสา`,
+        g.LIMIT_3P_INTRO,
       ].join("\n");
     }
     const ext = buildChartExtensions(
@@ -427,14 +430,14 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
       `DATA SOURCE: ${input.source}`,
       `ชื่อ: ${input.name || "—"} · เพศ ${input.gender} · อายุปัจจุบันประมาณ ${ageNow}`,
       `เกิด: ${input.date} ${input.time} · lng ${input.lng} · timezone Asia/Bangkok`,
-      `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement} · ห้ามเรียกธาตุหลักผิด`,
-      `DM THAI LOCK: ต้องเรียกตัวตนหลักว่า "ธาตุ${dmElementTh}แบบ${dmPolarityTh}" เท่านั้น · ธาตุรองห้ามเรียกเป็นตัวตนหลัก`,
+      `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement} · ${g.DM_FACT_LOCK}`,
+      g.DM_THAI_LOCK.replace("{{DM_ELEMENT}}", () => dmElementTh).replace("{{DM_POLARITY}}", () => dmPolarityTh),
       `สี่เสาแบบอ่านไทย: ปี=${STEM_TH[calc.pillars.year.stem]}/${BRANCH_TH_NAME[calc.pillars.year.branch]} · เดือน=${STEM_TH[calc.pillars.month.stem]}/${BRANCH_TH_NAME[calc.pillars.month.branch]} · วัน=${STEM_TH[calc.pillars.day.stem]}/${BRANCH_TH_NAME[calc.pillars.day.branch]} · ยาม=${STEM_TH[calc.pillars.hour.stem]}/${BRANCH_TH_NAME[calc.pillars.hour.branch]}`,
       `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · กำลัง${calc.strength.level}`,
       `โครงดวง: ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วย ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
       `CHART PACKET รายเสา:\n${pillarFacts.join("\n")}`,
-      `ลำดับน้ำหนักการอ่าน: 1) วันเจ้าและหยินหยาง 2) เดือนเกิด/ฤดู 3) กำลังตัวตนและธาตุช่วย 4) ธาตุซ่อนและดาวสิบเทพ 5) ปฏิกิริยาระหว่างเสา 6) วัยจร/ปีจร 7) เรือนชีวิต 8) ดาวพิเศษ/ภาพเปลี่ยนผ่าน/นับเสียงเป็นข้อมูลประกอบเท่านั้น`,
-      `ธาตุรวม: ไม้ ${ext.element_counts.wood} · ไฟ ${ext.element_counts.fire} · ดิน ${ext.element_counts.earth} · ทอง ${ext.element_counts.metal} · น้ำ ${ext.element_counts.water} · ห้ามพูดตัวเลขเปอร์เซ็นต์`,
+      g.READING_ORDER,
+      `ธาตุรวม: ไม้ ${ext.element_counts.wood} · ไฟ ${ext.element_counts.fire} · ดิน ${ext.element_counts.earth} · ทอง ${ext.element_counts.metal} · น้ำ ${ext.element_counts.water} · ${g.NO_PERCENT}`,
       `ช่องว่างของดวง: วัน=${ext.kong_wang.void_branches.map((b) => BRANCH_TH_NAME[b] || b).join("/")} · ปี=${ext.kong_wang.year_xun_voids.map((b) => BRANCH_TH_NAME[b] || b).join("/")}`,
       `วัยจรปัจจุบัน: ${lp ? `${STEM_TH[lp.stem] || lp.stem}/${BRANCH_TH_NAME[lp.branch] || lp.branch} อายุ ${lp.age_start}-${lp.age_end} · ${lp.qi_phase || "-"}` : "-"}`,
       `ปีจรปัจจุบัน: ${STEM_TH[ext.current_year_pillar.stem] || ext.current_year_pillar.stem}/${BRANCH_TH_NAME[ext.current_year_pillar.branch] || ext.current_year_pillar.branch}`,
@@ -758,7 +761,7 @@ export async function GET(req: Request) {
       const warmup = mode === "intro" ? buildIntroWarmup(ctx) : null;
       const promptBase = buildPrompt({ ctx, message, history: [], topic, lang, mode });
       const prompt = warmup
-        ? `${promptBase}\n\nหมายเหตุสำคัญ: ผู้ใช้เห็นย่อหน้าเปิดเรื่องธาตุหลักและตัวตนเบื้องต้นแล้ว ห้ามเริ่มซ้ำ ให้ต่อเข้าการอ่านชีวิตเชิงลึกทันที`
+        ? `${promptBase}\n\n${loadPromptMd("prompts/sifu-intro-resume-note.md").trim()}`
         : promptBase;
 
       const t0 = Date.now();
