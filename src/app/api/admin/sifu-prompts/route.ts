@@ -49,6 +49,26 @@ function pageOf(name: string): string {
   if (name.includes("hourkey_interpret")) return "📊 ภาพรวมดวง (chart)";
   return "🔮 ซินแสหลัก (master · master-m · chart)"; // sifu-* · ajek · interaction
 }
+/* ลำดับการประกอบ prompt จริงตอนกด "ถาม"/"เปิดดวง" (กลุ่มซินแสหลัก) · flow = ชุดย่อย · step = ลำดับต่อ prompt */
+const FLOW: Record<string, { flow: string; step: number }> = {
+  // ① ถาม-ตอบ (กดถาม บน /master · /master-m · /chart)
+  "prompts/sifu-qa.md": { flow: "① ถาม-ตอบ", step: 1 },
+  "prompts/sifu-lang.md": { flow: "① ถาม-ตอบ", step: 2 },
+  "prompts/sifu-rules-header.md": { flow: "① ถาม-ตอบ", step: 3 },
+  "ajek-bazi-rules.md": { flow: "① ถาม-ตอบ", step: 4 },
+  "prompts/sifu-interaction-header.md": { flow: "① ถาม-ตอบ", step: 5 },
+  "bazi-interaction-master.md": { flow: "① ถาม-ตอบ", step: 6 },
+  "prompts/sifu-ctx-guards.md": { flow: "① ถาม-ตอบ", step: 7 },
+  "prompts/sifu-topics.md": { flow: "① ถาม-ตอบ", step: 8 },
+  // ② เปิดดวงครั้งแรก (/master?intro=1)
+  "prompts/sifu-intro.md": { flow: "② เปิดดวง", step: 1 },
+  "prompts/sifu-intro-lang.md": { flow: "② เปิดดวง", step: 2 },
+  "prompts/sifu-intro-interaction-header.md": { flow: "② เปิดดวง", step: 3 },
+  "prompts/sifu-warmup.md": { flow: "② เปิดดวง", step: 4 },
+  "prompts/sifu-warmup-bodies.md": { flow: "② เปิดดวง", step: 5 },
+  "prompts/sifu-intro-resume-note.md": { flow: "② เปิดดวง", step: 6 },
+};
+
 /* ลำดับการแสดงกลุ่ม */
 const PAGE_ORDER = [
   "🔮 ซินแสหลัก (master · master-m · chart)",
@@ -65,9 +85,9 @@ export async function GET() {
     let content = "", size = 0, mtime = "";
     try { const p = join(DIR, name); content = readFileSync(p, "utf8"); const st = statSync(p); size = st.size; mtime = st.mtime.toISOString(); }
     catch (e) { content = `(โหลดไม่ได้: ${(e as Error).message})`; }
-    return { name, label: meta.label, note: meta.note, page: pageOf(name), content, size, mtime };
+    return { name, label: meta.label, note: meta.note, page: pageOf(name), flow: FLOW[name]?.flow || "", step: FLOW[name]?.step ?? 99, content, size, mtime };
   });
-  files.sort((a, b) => (PAGE_ORDER.indexOf(a.page) - PAGE_ORDER.indexOf(b.page)));
+  files.sort((a, b) => (PAGE_ORDER.indexOf(a.page) - PAGE_ORDER.indexOf(b.page)) || a.flow.localeCompare(b.flow) || (a.step - b.step));
   return NextResponse.json({ files, dir: DIR });
 }
 

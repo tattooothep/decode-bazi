@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
-type PFile = { name: string; label: string; note: string; page: string; content: string; size: number; mtime: string };
+type PFile = { name: string; label: string; note: string; page: string; flow: string; step: number; content: string; size: number; mtime: string };
 
 export default function SifuPromptsAdmin({ email }: { email: string }) {
   const [files, setFiles] = useState<PFile[]>([]);
@@ -32,6 +32,8 @@ export default function SifuPromptsAdmin({ email }: { email: string }) {
   const countByPage: Record<string, number> = {};
   for (const f of files) { if (!pages.includes(f.page)) pages.push(f.page); countByPage[f.page] = (countByPage[f.page] || 0) + 1; }
   const shown = files.filter((f) => f.page === activePage);
+  const flowsInPage: string[] = [];
+  for (const f of shown) if (!flowsInPage.includes(f.flow)) flowsInPage.push(f.flow);
 
   function pickPage(p: string) {
     if (p === activePage) return;
@@ -91,16 +93,21 @@ export default function SifuPromptsAdmin({ email }: { email: string }) {
 
             <div className="text-xs opacity-50 mb-2">หน้า <b>{activePage}</b> · มี {shown.length} prompt</div>
 
-            {/* รายการ prompt ในหน้าที่เลือก */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              {shown.map((f) => (
-                <button key={f.name} onClick={() => pick(f.name)}
-                  className={`text-left text-sm px-3 py-2 border rounded ${active === f.name ? "border-foreground bg-foreground/10" : "border-foreground/20 hover:border-foreground/50"}`}>
-                  <div className="font-medium">{f.label}</div>
-                  <div className="text-xs opacity-50 font-mono">{f.name} · {(f.size / 1024).toFixed(1)}KB</div>
-                </button>
-              ))}
-            </div>
+            {/* รายการ prompt ในหน้าที่เลือก · แยกชุดย่อยตามลำดับการประกอบ (① ถาม-ตอบ / ② เปิดดวง) */}
+            {flowsInPage.map((fl) => (
+              <div key={fl || "_"} className="mb-3">
+                {fl && <div className="text-sm font-semibold opacity-80 mt-2 mb-1.5">{fl} <span className="text-xs font-normal opacity-50">· เรียงตามลำดับที่ AI ต่อ prompt</span></div>}
+                <div className="flex flex-wrap gap-2">
+                  {shown.filter((f) => f.flow === fl).map((f) => (
+                    <button key={f.name} onClick={() => pick(f.name)}
+                      className={`text-left text-sm px-3 py-2 border rounded ${active === f.name ? "border-foreground bg-foreground/10" : "border-foreground/20 hover:border-foreground/50"}`}>
+                      <div className="font-medium">{fl && f.step < 99 ? <span className="opacity-50">{f.step}. </span> : null}{f.label}</div>
+                      <div className="text-xs opacity-50 font-mono">{f.name} · {(f.size / 1024).toFixed(1)}KB</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
 
             {cur && (
               <div className="text-xs opacity-60 mb-2">{cur.note} · แก้ล่าสุด {cur.mtime?.slice(0, 16).replace("T", " ")}</div>
