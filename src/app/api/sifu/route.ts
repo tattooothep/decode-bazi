@@ -249,7 +249,7 @@ function cacheKey(opts: {
   ruleVersion: string;
 }): string {
   const parts = [
-    "v4-profile", // 25 พ.ค. · เพิ่ม ตัวตนเชิงลึก/โครงธาตุ/อาชีพ/สุขภาพ เข้า packet · bump = invalidate คำตอบเก่า
+    "v5-deep", // 25 พ.ค. · เพิ่ม ตัวตนเชิงลึก/โครงธาตุ/อาชีพ/สุขภาพ เข้า packet · bump = invalidate คำตอบเก่า
     opts.ruleVersion,
     opts.profileId || "anon",
     opts.topic || "free",
