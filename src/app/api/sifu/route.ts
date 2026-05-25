@@ -9,7 +9,7 @@
  */
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
-import { readFileSync, statSync } from "fs";
+import { readFileSync, statSync, writeFileSync } from "fs";
 import { join } from "path";
 import { createHash } from "crypto";
 import { q1, q } from "@/lib/db";
@@ -481,7 +481,18 @@ function buildPrompt(opts: {
     .replace("{{MESSAGE}}", () => opts.message);
 }
 
+/* 🔍 ดักจับ prompt จริงที่ส่งเข้า AI · พิสูจน์ตำรา+engine ถูกยัดจริง · ทำงานเฉพาะ env SIFU_DUMP_PROMPT=1 · default off ไม่กระทบ prod */
+function dumpPromptIfDebug(prompt: string, tag: string) {
+  if (!process.env.SIFU_DUMP_PROMPT) return;
+  try {
+    const path = `/tmp/sifu-prompt-${tag}-${Date.now()}.txt`;
+    writeFileSync(path, prompt);
+    console.log(`[sifu][DUMP] ${tag} · ${prompt.length} chars → ${path}`);
+  } catch (e) { console.error("[sifu][DUMP] fail:", (e as Error).message); }
+}
+
 async function runClaudeCli(prompt: string): Promise<string> {
+  dumpPromptIfDebug(prompt, "cli");
   return new Promise((resolve, reject) => {
     const claudeArgs = [
       "-p",
@@ -515,6 +526,7 @@ async function runClaudeCli(prompt: string): Promise<string> {
 /* 🌊 Streaming version · pipe stdout เป็น chunks · ใช้ใน SSE
  * stream-json + include-partial-messages = real token streaming */
 function spawnClaudeStreaming(prompt: string) {
+  dumpPromptIfDebug(prompt, "stream");
   const claudeArgs = [
     "-p",
     "--output-format", "stream-json",
@@ -557,6 +569,7 @@ function makeJsonlParser(onText: (text: string) => void) {
 }
 
 async function streamOpenRouter(prompt: string, onText: (text: string) => void): Promise<{ full: string; model: string }> {
+  dumpPromptIfDebug(prompt, "openrouter");
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY not set");
 
