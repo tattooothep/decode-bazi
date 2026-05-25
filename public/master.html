@@ -218,7 +218,8 @@
 
   /* input */
   .chat-input{display:flex;gap:8px;align-items:flex-end;}
-  .chat-input textarea{flex:1;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:12px;padding:14px 16px;font-family:var(--thai);font-size:14px;line-height:1.5;resize:none;min-height:52px;max-height:120px;}
+  .chat-input textarea{flex:1;background:var(--bg-2);color:var(--fg);border:1px solid var(--gold-line);border-radius:12px;padding:14px 16px;font-family:var(--thai);font-size:14px;line-height:1.5;resize:none;min-height:52px;max-height:120px;}
+  .chat-input textarea::placeholder{color:var(--fg);opacity:.45;}
   .chat-input textarea:focus{outline:none;border-color:var(--gold);}
   .send-btn{background:var(--gold);color:var(--bg);border:none;padding:14px 20px;border-radius:12px;cursor:pointer;font-family:var(--tc);font-size:18px;font-weight:700;transition:.2s;}
   .send-btn:hover{background:var(--gold-deep);}
