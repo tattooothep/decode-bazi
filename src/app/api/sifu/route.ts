@@ -29,7 +29,7 @@ type IntroBirthInput = {
   source: "profile" | "params";
 };
 
-const TIMEOUT_MS = 400_000; // 400s · เติมคัมภีร์ md เต็มที่ได้ · ผู้ใช้รอได้ (นโยบาย แม่น>เร็ว 25 พ.ค.) · nginx /api/sifu ต้อง >400s
+const TIMEOUT_MS = 600_000; // 600s · ยัดตำราคลาสสิก 4 ไฟล์เต็ม (~141KB prompt · first token ~546s) · nginx /api/sifu ต้อง >600s · ช้าค่อยตัด
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 /* startAge (起運) จาก tyme4ts ChildLimit · เหมือน /api/chart · เดิม sifu ใส่ 10 ตายตัว → วัยจรเลื่อน ~8 ปี (bug 25 พ.ค.) */
@@ -127,6 +127,37 @@ function loadInteractionMaster(): { text: string; version: string } {
     console.warn("[sifu] interaction master not found:", (e as Error).message);
     return { text: "", version: "none" };
   }
+}
+
+/* 25 พ.ค. · ตำราคลาสสิกเสริม 4 ไฟล์ (調候用神 · Event Timing應期 · 5 ด้านชีวิต · ปฏิกิริยาเสาเชิงลึก)
+ * ยัดดิบเข้า prompt ให้ AI อ่านเป็นอ้างอิง · ไม่ทำ scoring engine · AI ตีความเอง (แม่น>เร็ว · ลูกค้ารอได้)
+ * อ่านครั้งเดียว cache 60s · compass_artifact = ซ้ำ Yong Shen ตัดออก */
+const ENGINE_KNOWLEDGE_DIR = join(process.cwd(), "data/library/สำหรับทำ engine");
+const ENGINE_KNOWLEDGE_FILES: { file: string; label: string }[] = [
+  { file: "คู่มืออ้างอิงสำหรับ Yong Shen (用神) Selection Engine ของระบบ BaZi (八字) — hourkey Platform.md", label: "調候用神 · การเลือกธาตุที่ใช้" },
+  { file: "Classical Zi Ping (子平) BaZi Rules for Event Timing — A Codifiable Reference for the hourkey Engine.md", label: "應期 · จังหวะเวลาเกิดเหตุ" },
+  { file: "Classical BaZi Technical Rules for Hourkey.io Scoring Engine — 5 Life Domains (Health, Career, Spouse, Wealth, Study).md", label: "5 ด้านชีวิต · สุขภาพ/อาชีพ/คู่/ทรัพย์/เรียน" },
+  { file: "Pillar Interactions.md", label: "ปฏิกิริยาระหว่างเสาเชิงลึก (รายคู่)" },
+];
+let _engineKnowledgeCache: { text: string; ts: number; version: string } | null = null;
+function loadEngineKnowledge(): { text: string; version: string } {
+  const now = Date.now();
+  if (_engineKnowledgeCache && now - _engineKnowledgeCache.ts < 60_000) return _engineKnowledgeCache;
+  const parts: string[] = [];
+  const hash = createHash("sha1");
+  for (const { file, label } of ENGINE_KNOWLEDGE_FILES) {
+    try {
+      const text = readFileSync(join(ENGINE_KNOWLEDGE_DIR, file), "utf8");
+      hash.update(file).update(text);
+      parts.push(`\n──────── ตำราเสริม: ${label} ────────\n${text}`);
+    } catch (e) {
+      console.warn("[sifu] engine knowledge missing:", file, (e as Error).message);
+    }
+  }
+  const text = parts.join("\n");
+  const version = text ? hash.digest("hex").slice(0, 12) : "none";
+  _engineKnowledgeCache = { text, ts: now, version };
+  return _engineKnowledgeCache;
 }
 
 /* 💾 DB result cache · TTL 24h */
@@ -411,10 +442,14 @@ function buildPrompt(opts: {
     const introInteractionBlock = introInteraction.text
       ? "\n" + loadPromptMd("prompts/sifu-intro-interaction-header.md").trim().replace("{{INTERACTION}}", () => introInteraction.text) + "\n"
       : "";
+    const introEngine = loadEngineKnowledge();
+    const introEngineBlock = introEngine.text
+      ? "\n" + loadPromptMd("prompts/sifu-engine-header.md").trim().replace("{{ENGINE}}", () => introEngine.text) + "\n"
+      : "";
     const introLang = loadPromptSections("prompts/sifu-intro-lang.md");
     return loadPromptMd("prompts/sifu-intro.md")
       .replace("{{LANG}}", () => introLang[langKey] || introLang.TH || "")
-      .replace("{{INTERACTION}}", () => introInteractionBlock)
+      .replace("{{INTERACTION}}", () => introInteractionBlock + introEngineBlock)
       .replace("{{CTX}}", () => opts.ctx)
       .replace("{{MESSAGE}}", () => opts.message);
   }
@@ -432,11 +467,15 @@ function buildPrompt(opts: {
   const interactionBlock = interaction.text
     ? "\n\n" + loadPromptMd("prompts/sifu-interaction-header.md").trim().replace("{{INTERACTION}}", () => interaction.text) + "\n"
     : "";
+  const engineKnow = loadEngineKnowledge();
+  const engineBlock = engineKnow.text
+    ? "\n\n" + loadPromptMd("prompts/sifu-engine-header.md").trim().replace("{{ENGINE}}", () => engineKnow.text) + "\n"
+    : "";
   const qaLang = loadPromptSections("prompts/sifu-lang.md");
   return loadPromptMd("prompts/sifu-qa.md")
     .replace("{{LANG}}", () => qaLang[langKey] || qaLang.TH || "")
     .replace("{{RULES}}", () => rulesBlock)
-    .replace("{{INTERACTION}}", () => interactionBlock)
+    .replace("{{INTERACTION}}", () => interactionBlock + engineBlock)
     .replace("{{CTX}}", () => opts.ctx)
     .replace("{{FOCUS_HIST}}", () => focus + histText)
     .replace("{{MESSAGE}}", () => opts.message);
@@ -603,7 +642,7 @@ export async function POST(req: Request) {
     }
 
     /* 💾 Cache check ก่อน */
-    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version;
+    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version;
     const dayKey = await getDayPillarKey();
     const key = cacheKey({ profileId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
     const useCache = mode !== "intro";
@@ -728,7 +767,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "message too long" }, { status: 400 });
   }
 
-  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version;
+  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version;
   const dayKey = await getDayPillarKey();
   const key = cacheKey({ profileId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
   const useCache = mode !== "intro";
