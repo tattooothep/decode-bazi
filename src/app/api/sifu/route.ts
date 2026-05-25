@@ -714,7 +714,86 @@ export async function POST(req: Request) {
     const ctx = mode === "intro"
       ? (profileId ? await buildIntroBaziContext(profileId) : "(intro mode แต่ไม่มี profileId)")
       : (profileId ? await buildBaziContext(profileId) : "(ไม่มี profileId · ตอบทั่วไป)");
+    /* ⚠️ ส่ง history จริงเข้า prompt (ไม่ใช่ history:[] แบบ GET) · คำตอบต้องจำบทสนทนา */
     const prompt = buildPrompt({ ctx, message, history, topic, lang, mode });
+
+    /* 🌊 SSE streaming เมื่อ Accept: text/event-stream หรือ body.stream === true
+     * (intro mode คง JSON เดิม · master ใช้ Q&A ปกติ mode=undefined) · ยก pattern จาก /api/network/sifu + GET handler */
+    const wantsStream =
+      mode !== "intro" &&
+      ((req.headers.get("accept") || "").includes("text/event-stream") || body.stream === true);
+    if (wantsStream) {
+      const encoder = new TextEncoder();
+      let activeChild: ReturnType<typeof spawnClaudeStreaming> | null = null;
+      const stream = new ReadableStream({
+        start(controller) {
+          let closed = false;
+          let full = "";
+          let firstChunkSent = false;
+          const t0 = Date.now();
+          const safeClose = () => {
+            if (closed) return;
+            closed = true;
+            try { controller.close(); } catch {}
+          };
+          const send = (event: string, data: unknown) => {
+            if (closed) return;
+            try {
+              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+            } catch {
+              closed = true;
+            }
+          };
+
+          send("meta", { cached: false, key: key.slice(0, 8), startedAt: t0 });
+          const child = spawnClaudeStreaming(prompt);
+          activeChild = child;
+          const killTimer = setTimeout(() => {
+            try { child.kill("SIGKILL"); } catch {}
+            send("error", { error: "timeout" });
+            safeClose();
+          }, TIMEOUT_MS);
+
+          const parser = makeJsonlParser((text) => {
+            full += text;
+            if (!firstChunkSent) {
+              firstChunkSent = true;
+              send("first", { ms: Date.now() - t0, model: "claude-max-cli" });
+            }
+            send("chunk", { text });
+          });
+          child.stdout.on("data", parser);
+          child.stderr.on("data", (chunk: Buffer) => {
+            console.warn("[sifu sse stderr]", chunk.toString().slice(0, 200));
+          });
+          child.on("close", (code) => {
+            activeChild = null;
+            clearTimeout(killTimer);
+            const ms = Date.now() - t0;
+            if (code === 0 && full.trim()) {
+              const payload = { reply: full.trim(), model: "claude-max-cli" };
+              if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+              send("done", { ms, model: payload.model, cached: false, chars: full.length });
+            } else {
+              send("error", { error: `claude exit ${code}`, ms });
+            }
+            safeClose();
+          });
+        },
+        cancel() {
+          try { activeChild?.kill("SIGKILL"); } catch {}
+          activeChild = null;
+        },
+      });
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          "Connection": "keep-alive",
+          "X-Accel-Buffering": "no",
+        },
+      });
+    }
 
     const t0 = Date.now();
     const reply = await runClaudeCli(prompt);

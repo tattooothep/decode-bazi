@@ -839,6 +839,36 @@
       }
     } catch(_){}
 
+    /* อ่าน SSE ทีละ token · ยก pattern readTeamSifuStream จาก /yongsennetwork */
+    async function readSifuStream(response, handlers){
+      const reader = response.body && response.body.getReader ? response.body.getReader() : null;
+      if (!reader) throw new Error('stream unavailable');
+      const decoder = new TextDecoder();
+      let buf = '';
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream:true });
+        let sep;
+        while ((sep = buf.indexOf('\n\n')) !== -1) {
+          const raw = buf.slice(0, sep);
+          buf = buf.slice(sep + 2);
+          let event = 'message';
+          let data = '';
+          raw.split('\n').forEach(function(line){
+            if (line.startsWith('event:')) event = line.slice(6).trim();
+            else if (line.startsWith('data:')) data += line.slice(5).trim();
+          });
+          if (!data) continue;
+          let payload = {};
+          try { payload = JSON.parse(data); } catch(_){}
+          if (event === 'chunk' && payload.text) handlers.onChunk(payload.text);
+          else if (event === 'error') throw new Error(payload.error || 'stream error');
+          else if (event === 'done') { if (handlers.onDone) handlers.onDone(payload); }
+        }
+      }
+    }
+
     async function send(){
       const text = inputEl.value.trim();
       if (!text) return;
@@ -849,21 +879,45 @@
       try {
         const r = await fetch('/api/sifu', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
           body: JSON.stringify({
             message: text,
             history: history.slice(-8),   /* จำบทสนทนา · backend ตัด 6 อีกชั้น */
             profileId: profileId || undefined,
           }),
         });
-        const d = await r.json();
-        if (r.ok && d.reply) {
-          placeholder.textContent = d.reply;
-          history.push({ role: 'user', content: text });
-          history.push({ role: 'assistant', content: d.reply });
-          persist();
+        const ct = r.headers.get('content-type') || '';
+        if (r.ok && ct.includes('text/event-stream')) {
+          /* 🌊 streaming · ทยอยต่อ text ทีละ token */
+          let reply = '';
+          let cleared = false;
+          await readSifuStream(r, {
+            onChunk(chunk){
+              if (!cleared) { placeholder.textContent = ''; cleared = true; }
+              reply += chunk;
+              placeholder.textContent = reply;
+              msgBox.scrollTop = msgBox.scrollHeight;
+            }
+          });
+          if (reply.trim()) {
+            placeholder.textContent = reply;
+            history.push({ role: 'user', content: text });
+            history.push({ role: 'assistant', content: reply.trim() });
+            persist();
+          } else {
+            placeholder.textContent = '⚠ ขัดข้อง · ไม่มีข้อความตอบกลับ';
+          }
         } else {
-          placeholder.textContent = '⚠ ขัดข้อง: ' + (d.error || r.status) + (d.detail ? '\n' + d.detail : '');
+          /* fallback · JSON ก้อนเดียว (กันพังถ้า server ไม่ stream) */
+          const d = await r.json().catch(function(){ return {}; });
+          if (r.ok && d.reply) {
+            placeholder.textContent = d.reply;
+            history.push({ role: 'user', content: text });
+            history.push({ role: 'assistant', content: d.reply });
+            persist();
+          } else {
+            placeholder.textContent = '⚠ ขัดข้อง: ' + (d.error || r.status) + (d.detail ? '\n' + d.detail : '');
+          }
         }
       } catch (e) {
         placeholder.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
