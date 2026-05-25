@@ -899,7 +899,7 @@
       const placeholder = addMsg('sifu', 'ซินแสกำลังพิจารณาดวง ~10-15 วิ ...');
       /* 🩺 ตัวจับเวลา · ถ้าเงียบ (ไม่มี chunk) เกิน 45 วิ = เลิกรอ กันค้างถาวร */
       const ac = new AbortController();
-      const IDLE_MS = 45000;
+      const IDLE_MS = 190000;  /* 190 วิ > backend timeout 180 วิ · ตัดเฉพาะค้างจริง · คำถามลึกที่ซินแสคิด 10-60 วิ ไม่โดนตัด */
       let idleTimer = null;
       const armIdle = function(){ if (idleTimer) clearTimeout(idleTimer); idleTimer = setTimeout(function(){ try { ac.abort('idle'); } catch(_){} }, IDLE_MS); };
       let thinkTimer = setInterval(function(){ if (!placeholder.dataset.started) placeholder.textContent = 'ซินแสกำลังพิจารณาดวง ~10-15 วิ (อย่าเพิ่งปิดหน้านี้) ...'; }, 5000);
