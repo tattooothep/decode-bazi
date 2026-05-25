@@ -682,6 +682,11 @@ function renderInteractionGroup(title: string, list: Interaction[], status: stri
     const pairTxt = it.participants
       .map((p) => `${p.pillar !== "-" ? `${PILLAR_EN_TH[p.pillar as PillarKey] || p.pillar}:` : ""}${p.token}`)
       .join("↔");
+    /* ธาตุดิบของปฏิกิริยา (เช่น 子午冲 = น้ำ+ไฟ) · ให้ AI เห็นว่าปะทะ/ประสานด้วยธาตุอะไร · ไม่ตัดสินดี-ร้าย */
+    const reactEl = Array.from(new Set(it.reactionElements || []))
+      .map((e) => elementTh(e))
+      .filter((e) => e && e !== "-");
+    const reactTxt = reactEl.length ? ` · กระทบธาตุ: ${reactEl.join("+")}` : "";
     const palaces = it.affectedPalaces.length ? ` · เรือน ${it.affectedPalaces.join("/")}` : "";
     const topics = it.affectedTopicsLite.length ? ` · แตะเรื่อง ${it.affectedTopicsLite.join("/")}` : "";
     const impactTags: string[] = [];
@@ -690,7 +695,7 @@ function renderInteractionGroup(title: string, list: Interaction[], status: stri
     if (it.usefulGodImpact.hitsJi) impactTags.push("แตะธาตุระวัง忌神");
     const impact = impactTags.length ? ` · ${impactTags.join("+")} [derived]` : "";
     const transformed = it.resolverStatus === "transformed" ? " · รวมแล้ว(transformed)" : "";
-    return `  - ${typeTh} ${pairTxt}${palaces}${topics}${impact}${transformed} · อ่านตามคัมภีร์ ยังไม่ฟันธงดี-ร้าย`;
+    return `  - ${typeTh} ${pairTxt}${reactTxt}${palaces}${topics}${impact}${transformed} · อ่านตามคัมภีร์ ยังไม่ฟันธงดี-ร้าย`;
   });
   return `${title} [${status}]:\n${items.join("\n")}`;
 }
