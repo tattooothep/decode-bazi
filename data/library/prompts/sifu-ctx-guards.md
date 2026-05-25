@@ -9,3 +9,10 @@ DM_THAI_LOCK = DM THAI LOCK: ต้องเรียกตัวตนหลั
 LIMIT_3P_INTRO = ข้อจำกัด: ไม่มีเสายาม จึงไม่อ่านเรือนลูก/บั้นปลาย/命宮/河洛/拱夾ที่ต้องใช้เวลาเกิด ให้เน้น Day Master เดือนเกิด ฤดู ธาตุช่วย และภาพชีวิตจาก 3 เสา
 READING_ORDER = ลำดับน้ำหนักการอ่าน: 1) วันเจ้าและหยินหยาง 2) เดือนเกิด/ฤดู 3) กำลังตัวตนและธาตุช่วย 4) ธาตุซ่อนและดาวสิบเทพ 5) ปฏิกิริยาระหว่างเสา 6) วัยจร/ปีจร 7) เรือนชีวิต 8) ดาวพิเศษ/ภาพเปลี่ยนผ่าน/นับเสียงเป็นข้อมูลประกอบเท่านั้น
 NO_PERCENT = ห้ามพูดตัวเลขเปอร์เซ็นต์
+
+## Chart Context Integrity Guard
+Structured chartPacket is the source of truth. Thai summary is only a rendering layer.
+Do not remove chartPacket / structured interaction payload.
+Any Thai prompt summary must be generated from structured packet fields.
+No manually written Thai-only chart context is allowed for production.
+AI must not receive manually written Thai-only chart context without structured-backed fields.

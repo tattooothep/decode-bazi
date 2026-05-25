@@ -16,7 +16,7 @@ import { q1, q } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
-import { getDaymasterProfile } from "@/lib/daymaster-profile";
+import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type IntroBirthInput = {
@@ -33,11 +33,6 @@ const TIMEOUT_MS = 180_000; // 180s · 13-step ajek rules · streaming-less
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const INTRO_OPENROUTER_MODEL = process.env.SIFU_INTRO_MODEL || "anthropic/claude-opus-4.7";
 const CHILD_USER = "jarvis";
-const HIDDEN_STEMS_MAP: Record<string, string[]> = {
-  子: ["癸"], 丑: ["己", "癸", "辛"], 寅: ["甲", "丙", "戊"], 卯: ["乙"],
-  辰: ["戊", "乙", "癸"], 巳: ["丙", "戊", "庚"], 午: ["丁", "己"], 未: ["己", "丁", "乙"],
-  申: ["庚", "壬", "戊"], 酉: ["辛"], 戌: ["戊", "辛", "丁"], 亥: ["壬", "甲"],
-};
 const STEM_ELEMENT_MAP: Record<string, string> = {
   甲: "wood", 乙: "wood", 丙: "fire", 丁: "fire", 戊: "earth", 己: "earth",
   庚: "metal", 辛: "metal", 壬: "water", 癸: "water",
@@ -45,12 +40,6 @@ const STEM_ELEMENT_MAP: Record<string, string> = {
 const STEM_POLARITY_MAP: Record<string, "yang" | "yin"> = {
   甲: "yang", 乙: "yin", 丙: "yang", 丁: "yin", 戊: "yang", 己: "yin",
   庚: "yang", 辛: "yin", 壬: "yang", 癸: "yin",
-};
-const ELEMENT_PRODUCES_MAP: Record<string, string> = {
-  wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood",
-};
-const ELEMENT_CONTROLS_MAP: Record<string, string> = {
-  wood: "earth", earth: "water", water: "fire", fire: "metal", metal: "wood",
 };
 const DM_LABEL_TH: Record<string, string> = {
   wood: "ไม้",
@@ -63,19 +52,6 @@ const DM_POLARITY_TH: Record<string, string> = {
   yang: "หยาง",
   yin: "หยิน",
 };
-const TEN_GOD_TH: Record<string, string> = {
-  比肩: "ดาวเพื่อนร่วมแรง",
-  劫財: "ดาวแย่งทรัพย์",
-  食神: "ดาวความสามารถ",
-  傷官: "ดาวแสดงออก",
-  偏財: "ดาวทรัพย์นอกระบบ",
-  正財: "ดาวทรัพย์ตรง",
-  七殺: "ดาวแรงกดดัน",
-  正官: "ดาวระเบียบอำนาจ",
-  偏印: "ดาวครูแปลกทาง",
-  正印: "ดาวครูผู้ใหญ่",
-  日主: "ตัวตนหลัก",
-};
 const STEM_TH: Record<string, string> = {
   甲: "ไม้หยาง", 乙: "ไม้หยิน", 丙: "ไฟหยาง", 丁: "ไฟหยิน", 戊: "ดินหยาง", 己: "ดินหยิน",
   庚: "ทองหยาง", 辛: "ทองหยิน", 壬: "น้ำหยาง", 癸: "น้ำหยิน",
@@ -84,24 +60,6 @@ const BRANCH_TH_NAME: Record<string, string> = {
   子: "ชวด", 丑: "ฉลู", 寅: "ขาล", 卯: "เถาะ", 辰: "มะโรง", 巳: "มะเส็ง",
   午: "มะเมีย", 未: "มะแม", 申: "วอก", 酉: "ระกา", 戌: "จอ", 亥: "กุน",
 };
-function tenGodOf(dayMaster: string, targetStem: string): string | null {
-  const dmEl = STEM_ELEMENT_MAP[dayMaster];
-  const tEl = STEM_ELEMENT_MAP[targetStem];
-  if (!dmEl || !tEl) return null;
-  const samePol = STEM_POLARITY_MAP[dayMaster] === STEM_POLARITY_MAP[targetStem];
-  if (dmEl === tEl) return samePol ? "比肩" : "劫財";
-  if (ELEMENT_PRODUCES_MAP[dmEl] === tEl) return samePol ? "食神" : "傷官";
-  if (ELEMENT_CONTROLS_MAP[dmEl] === tEl) return samePol ? "偏財" : "正財";
-  if (ELEMENT_CONTROLS_MAP[tEl] === dmEl) return samePol ? "七殺" : "正官";
-  if (ELEMENT_PRODUCES_MAP[tEl] === dmEl) return samePol ? "偏印" : "正印";
-  return null;
-}
-
-function tenGodLabel(stem: string, dayMaster: string): string {
-  const tg = stem === dayMaster ? "日主" : tenGodOf(dayMaster, stem);
-  return tg ? `${TEN_GOD_TH[tg] || tg}` : "-";
-}
-
 function buildIntroWarmup(ctx: string): string | null {
   const fact = ctx.match(/FACT LOCK: Day Master = (\S+) · polarity = (\w+) · element = (\w+)/);
   if (!fact) return null;
@@ -118,89 +76,8 @@ function buildIntroWarmup(ctx: string): string | null {
     .replace("{{BODY}}", () => body) + "\n\n";
 }
 
-/* 📦 CHART PACKET รายเสา (ใช้ร่วม intro + ถาม-ตอบ · ให้ AI เห็นข้อมูลเท่ากัน)
- * คืน rich lines: รายเสา (สิบเทพ/ก้านซ่อน/12ระยะ/ปฏิกิริยา/วัง/ดาว/นายิน/卦) + ลำดับการอ่าน + ธาตุรวม + 空亡 + วัยจร + ปีจร + คู่ครอง + timeline */
-function buildChartPacket(
-  calc: Awaited<ReturnType<typeof calcBazi>>,
-  ext: ReturnType<typeof buildChartExtensions>,
-  dm: string,
-  g: Record<string, string>,
-  ageNow: number,
-): string[] {
-  const lp = ext.luck_pillars[ext.current_luck_idx];
-  const pkeys = ["year", "month", "day", "hour"] as const;
-  const pillarZh: Record<(typeof pkeys)[number], string> = { year: "年", month: "月", day: "日", hour: "時" };
-  const pillarEn: Record<(typeof pkeys)[number], string> = { year: "Year", month: "Month", day: "Day", hour: "Hour" };
-  const pillarFacts = pkeys.map((k) => {
-    const p = calc.pillars[k];
-    if (!p) return `${pillarEn[k]} ${pillarZh[k]}: -`; // 3p mode ไม่มีเสายาม (helper ถูกเรียกเฉพาะ 4p อยู่แล้ว)
-    const tg = k === "day" ? "ตัวตนหลัก" : (TEN_GOD_TH[ext.ten_gods_map[k]?.ten_god || ""] || "-");
-    const hidden = (HIDDEN_STEMS_MAP[p.branch] || [])
-      .map((h, idx) => `${idx === 0 ? "แกนหลัก" : `แรงแฝง${idx}`}:${STEM_TH[h] || h}/${DM_LABEL_TH[STEM_ELEMENT_MAP[h]] || STEM_ELEMENT_MAP[h] || "-"}/${tenGodLabel(h, dm)}`)
-      .join(" · ") || "-";
-    const phase = ext.three_phases[k];
-    const stars = ext.special_stars[k].map((s) => s.th || s.zh).slice(0, 3).join(" · ") || "-";
-    const react = [
-      ...ext.interactions.filter((i) => i.pillars_pair.includes(k)).map((i) => i.type === "六沖" ? "แรงปะทะ" : i.type === "六合" ? "แรงประสาน" : i.type === "六害" ? "แรงแทรก" : "แรงแตก"),
-      ...ext.stem_interactions.filter((i) => i.pillars_pair.includes(k)).map((i) => i.type === "五合" ? "แรงรวมตัว" : "แรงขัด"),
-      ...ext.fan_yin_fu_yin.filter((i) => i.natal_pillar === k || i.other_pillar === k).map((i) => i.type.includes("伏吟") ? "แรงซ้ำเรื่องเดิม" : "แรงพลิกเรื่องเดิม"),
-    ].join(" · ") || "-";
-    const ny = ext.nayin[k];
-    const palace = ext.palace_readings[k];
-    return `${pillarEn[k]} ${pillarZh[k]}: ฟ้า=${STEM_TH[p.stem] || p.stem}/${tg}; ดิน=${BRANCH_TH_NAME[p.branch] || p.branch}/${DM_LABEL_TH[STEM_ELEMENT_MAP[(HIDDEN_STEMS_MAP[p.branch] || [])[0] || ""]] || "-"}; แรงดิน->${tenGodLabel((HIDDEN_STEMS_MAP[p.branch] || [])[0] || "", dm)}; ธาตุซ่อน=${hidden}; วัฏจักร=ตัวตน:${phase.dm || "-"} เสา:${phase.pillar || "-"} ซ่อน:${phase.hidden_main || "-"}; ปฏิกิริยา=${react}; เรือน=${palace.title_th}; ดาวประกอบเท่านั้น=${stars}; นับเสียงประกอบ=${ny ? `${ny.th || ny.en}` : "-"}; ภาพเปลี่ยนผ่านประกอบ=${palace.hex ? `${palace.hex.th || palace.hex.en}` : "-"}`;
-  });
-  const lifeDecades = ext.liu_nian_timeline
-    .filter((x) => x.age >= 0 && x.age <= ageNow)
-    .reduce<Array<{ start: number; sample: string[] }>>((acc, x) => {
-      const bucketStart = Math.floor(x.age / 10) * 10;
-      let bucket = acc.find((b) => b.start === bucketStart);
-      if (!bucket) {
-        bucket = { start: bucketStart, sample: [] };
-        acc.push(bucket);
-      }
-      if (bucket.sample.length < 2) bucket.sample.push(`${x.pillar.stem}${x.pillar.branch}${x.ten_god ? `/${x.ten_god}` : ""}${x.vs_day_branch.length ? `/${x.vs_day_branch.join(",")}` : ""}`);
-      return acc;
-    }, [])
-    .map((b) => `${b.start}-${b.start + 9}:${b.sample.join("|")}`)
-    .slice(0, 7)
-    .join(" ; ");
-  return [
-    `CHART PACKET รายเสา:\n${pillarFacts.join("\n")}`,
-    g.READING_ORDER,
-    `ธาตุรวม: ไม้ ${ext.element_counts.wood} · ไฟ ${ext.element_counts.fire} · ดิน ${ext.element_counts.earth} · ทอง ${ext.element_counts.metal} · น้ำ ${ext.element_counts.water} · ${g.NO_PERCENT}`,
-    `ช่องว่างของดวง: วัน=${ext.kong_wang.void_branches.map((b) => BRANCH_TH_NAME[b] || b).join("/")} · ปี=${ext.kong_wang.year_xun_voids.map((b) => BRANCH_TH_NAME[b] || b).join("/")}`,
-    `วัยจรปัจจุบัน: ${lp ? `${STEM_TH[lp.stem] || lp.stem}/${BRANCH_TH_NAME[lp.branch] || lp.branch} อายุ ${lp.age_start}-${lp.age_end} · ${lp.qi_phase || "-"}` : "-"}`,
-    `ปีจรปัจจุบัน: ${STEM_TH[ext.current_year_pillar.stem] || ext.current_year_pillar.stem}/${BRANCH_TH_NAME[ext.current_year_pillar.branch] || ext.current_year_pillar.branch}`,
-    `คู่ครอง/ตัวตน: ${BRANCH_TH_NAME[ext.spouse_palace.day_branch] || ext.spouse_palace.day_branch} · ธาตุซ่อน ${ext.spouse_palace.hidden_stems.map((h) => STEM_TH[h] || h).join(" · ") || "-"} · ปฏิกิริยา ${ext.spouse_palace.relationship_flags.join(" · ") || "-"}`,
-    `timeline 10 ปี: ${lifeDecades || "-"}`,
-    ...buildProfilePacket(calc, ext, dm),
-  ];
-}
-
-/* 📿 โปรไฟล์เชิงลึก (Sesheta) · ใช้ร่วม intro + ถาม-ตอบ: ตัวตน · โครง 5 ธาตุ · อาชีพ · สุขภาพ
- * ดึงจาก ext (five_structure/career_industry/health_mapping) + getDaymasterProfile · ทุกอย่างเป็นไทยพร้อมใช้ */
-function buildProfilePacket(
-  calc: Awaited<ReturnType<typeof calcBazi>>,
-  ext: ReturnType<typeof buildChartExtensions>,
-  dm: string,
-): string[] {
-  const out: string[] = [];
-  try {
-    const dp = getDaymasterProfile(dm, { level: calc.strength.level, percent: calc.strength.percent });
-    if (dp) out.push(`📿 ตัวตนเชิงลึก (${dp.label_th}): แก่น=${dp.core} · ชีวิตจริง=${dp.real_life} · ด้านเงา=${dp.shadow} · สิ่งที่ต้องการ=${dp.needs}`);
-  } catch { /* ไม่มีโปรไฟล์ → ข้าม */ }
-  const fs = ext.five_structure;
-  if (fs?.title_th) out.push(`🏗 โครง 5 ธาตุ: ${fs.title_th} (${fs.zh})`);
-  const ci = ext.career_industry;
-  if (ci?.industries_th?.length) out.push(`💼 อาชีพที่เสริมดวง: ${ci.industries_th.join(" · ")} · ${ci.advice_th || ""}`);
-  const hm = ext.health_mapping;
-  if (hm?.dm_organs_th) {
-    const weak = (hm.weak_organs || []).map((w) => `${w.organs_th}(${w.reason_th})`).join(" · ");
-    const caution = (hm.caution_organs || []).map((w) => `${w.organs_th}(${w.reason_th})`).join(" · ");
-    out.push(`🩺 สุขภาพ: อวัยวะตัวตน ${hm.dm_organs_th}${weak ? ` · อ่อน: ${weak}` : ""}${caution ? ` · ระวัง: ${caution}` : ""}`);
-  }
-  return out;
-}
+/* 📦 buildChartPacket/buildProfilePacket เดิม ย้ายไป src/lib/chart-packet.ts (structured layer)
+ * → buildStructuredChartPacket + renderChartPrompt + validateChartPacket (25 พ.ค. · Step 1 Lite) */
 
 /* 🧓 อาเจ๊กฮ้ง bazi reading rules · cache 60s · บังคับ AI ทุก request */
 const AJEK_RULES_PATH = join(process.cwd(), "data/library/ajek-bazi-rules.md");
@@ -249,7 +126,7 @@ function cacheKey(opts: {
   ruleVersion: string;
 }): string {
   const parts = [
-    "v5-deep", // 25 พ.ค. · เพิ่ม ตัวตนเชิงลึก/โครงธาตุ/อาชีพ/สุขภาพ เข้า packet · bump = invalidate คำตอบเก่า
+    "v6-packet", // 25 พ.ค. · structured ChartPacket layer (chart-packet.ts) · bump = invalidate คำตอบเก่า
     opts.ruleVersion,
     opts.profileId || "anon",
     opts.topic || "free",
@@ -371,8 +248,11 @@ async function buildBaziContext(profileId: string): Promise<string> {
       `用神: ${calc.yongshen.slice(0, 3).map(y => `${y.stem}(${y.element})`).join(" · ")}`,
       `格局: ${calc.geJu.structure || "ปกติ"}`,
       `納音: 年${ny.year?.zh||"-"} · 月${ny.month?.zh||"-"} · 日${ny.day?.zh||"-"} · 時${ny.hour?.zh||"-"}`,
-      ...buildChartPacket(calc, ext, dm, g, ageNow),
     ];
+    // TODO Step1.1: dedupe 用神/格局 ที่ซ้ำกับ renderChartPrompt
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g);
+    validateChartPacket(packet);
+    lines.push(renderChartPrompt(packet));
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
     }
@@ -484,9 +364,12 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
       `สี่เสาแบบอ่านไทย: ปี=${STEM_TH[calc.pillars.year.stem]}/${BRANCH_TH_NAME[calc.pillars.year.branch]} · เดือน=${STEM_TH[calc.pillars.month.stem]}/${BRANCH_TH_NAME[calc.pillars.month.branch]} · วัน=${STEM_TH[calc.pillars.day.stem]}/${BRANCH_TH_NAME[calc.pillars.day.branch]} · ยาม=${STEM_TH[calc.pillars.hour.stem]}/${BRANCH_TH_NAME[calc.pillars.hour.branch]}`,
       `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · กำลัง${calc.strength.level}`,
       `โครงดวง: ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วย ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
-      ...buildChartPacket(calc, ext, dm, g, ageNow),
-      `ย้อนหลัง 12 เดือน: 0-3 เดือนล่าสุด / 4-6 เดือน / 7-9 เดือน / 10-12 เดือน`,
     ];
+    // TODO Step1.1: dedupe 用神/格局 ที่ซ้ำกับ renderChartPrompt
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g);
+    validateChartPacket(packet);
+    lines.push(renderChartPrompt(packet));
+    lines.push(`ย้อนหลัง 12 เดือน: 0-3 เดือนล่าสุด / 4-6 เดือน / 7-9 เดือน / 10-12 เดือน`);
     return lines.join("\n");
   } catch (e) {
     console.error("[sifu] buildIntroBaziContextFromBirth failed:", e);
