@@ -851,27 +851,34 @@
       if (!reader) throw new Error('stream unavailable');
       const decoder = new TextDecoder();
       let buf = '';
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream:true });
-        let sep;
-        while ((sep = buf.indexOf('\n\n')) !== -1) {
-          const raw = buf.slice(0, sep);
-          buf = buf.slice(sep + 2);
-          let event = 'message';
-          let data = '';
-          raw.split('\n').forEach(function(line){
-            if (line.startsWith('event:')) event = line.slice(6).trim();
-            else if (line.startsWith('data:')) data += line.slice(5).trim();
-          });
-          if (!data) continue;
-          let payload = {};
-          try { payload = JSON.parse(data); } catch(_){}
-          if (event === 'chunk' && payload.text) handlers.onChunk(payload.text);
-          else if (event === 'error') throw new Error(payload.error || 'stream error');
-          else if (event === 'done') { if (handlers.onDone) handlers.onDone(payload); }
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream:true });
+          let sep;
+          while ((sep = buf.indexOf('\n\n')) !== -1) {
+            const raw = buf.slice(0, sep);
+            buf = buf.slice(sep + 2);
+            let event = 'message';
+            let data = '';
+            raw.split('\n').forEach(function(line){
+              if (line.startsWith('event:')) event = line.slice(6).trim();
+              else if (line.startsWith('data:')) data += line.slice(5).trim();
+            });
+            if (!data) continue;
+            let payload = {};
+            try { payload = JSON.parse(data); } catch(_){}
+            if (event === 'first') { if (handlers.onFirst) handlers.onFirst(payload); }
+            else if (event === 'chunk' && payload.text) handlers.onChunk(payload.text);
+            else if (event === 'error') {
+              throw new Error(payload.error === 'timeout' ? '__SIFU_TIMEOUT__' : (payload.error || 'stream error'));
+            }
+            else if (event === 'done') { if (handlers.onDone) handlers.onDone(payload); }
+          }
         }
+      } finally {
+        try { reader.cancel(); } catch(_){}  /* ปิด connection ทุกกรณี กันค้าง */
       }
     }
 
@@ -889,10 +896,18 @@
         if (!window.__sifuNoProfileWarned) { addMsg('sifu','⚠️ ยังไม่พบดวงที่เลือก — คำตอบจะเป็นภาพรวม กรุณาเปิดดวงก่อน เพื่อให้ซินแสอ่านตรงดวงคุณ'); window.__sifuNoProfileWarned = true; }
       }
       if (location.search.indexOf('debug') >= 0) console.log('[sifu] Q&A payload · hasProfileId =', !!pid);
-      const placeholder = addMsg('sifu', 'ซินแสกำลังคิด ...');
+      const placeholder = addMsg('sifu', 'ซินแสกำลังพิจารณาดวง ~10-15 วิ ...');
+      /* 🩺 ตัวจับเวลา · ถ้าเงียบ (ไม่มี chunk) เกิน 45 วิ = เลิกรอ กันค้างถาวร */
+      const ac = new AbortController();
+      const IDLE_MS = 45000;
+      let idleTimer = null;
+      const armIdle = function(){ if (idleTimer) clearTimeout(idleTimer); idleTimer = setTimeout(function(){ try { ac.abort('idle'); } catch(_){} }, IDLE_MS); };
+      let thinkTimer = setInterval(function(){ if (!placeholder.dataset.started) placeholder.textContent = 'ซินแสกำลังพิจารณาดวง ~10-15 วิ (อย่าเพิ่งปิดหน้านี้) ...'; }, 5000);
+      armIdle();
       try {
         const r = await fetch('/api/sifu', {
           method: 'POST',
+          signal: ac.signal,
           headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
           body: JSON.stringify({
             message: text,
@@ -906,7 +921,9 @@
           let reply = '';
           let cleared = false;
           await readSifuStream(r, {
+            onFirst(){ placeholder.dataset.started = '1'; clearInterval(thinkTimer); armIdle(); },
             onChunk(chunk){
+              armIdle();
               if (!cleared) { placeholder.textContent = ''; cleared = true; }
               reply += chunk;
               placeholder.textContent = reply;
@@ -934,8 +951,13 @@
           }
         }
       } catch (e) {
-        placeholder.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+        var isTimeout = e && (e.message === '__SIFU_TIMEOUT__' || e.name === 'AbortError' || String(e.message || e).indexOf('idle') >= 0);
+        placeholder.textContent = isTimeout
+          ? '⚠ ซินแสใช้เวลานานผิดปกติ · ลองถามใหม่อีกครั้งนะครับ'
+          : '⚠ เครือข่ายขัดข้อง · ลองใหม่';
       } finally {
+        clearInterval(thinkTimer);
+        if (idleTimer) clearTimeout(idleTimer);
         sendBtn.disabled = false;
         inputEl.focus();
       }
