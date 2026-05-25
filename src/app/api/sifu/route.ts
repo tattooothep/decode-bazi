@@ -251,7 +251,7 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     const [date, timeRaw] = dt.split("T");
     const time = (timeRaw || "12:00").slice(0, 5);  // ตัดวินาทีออก (DB ให้ HH:MM:SS) · กัน new Date(`...T13:15:00:00`) เสีย → อายุ/วัยจร = NaN
     const lng = Number(row.birth_lng || 100.5018);
-    const gender = (row.gender === "female" ? "F" : "M") as "M" | "F";
+    const gender = (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F"; // DB เก็บ "F"/"M" (ไม่ใช่ "female") · รับทั้ง F/female/f → กันผู้หญิงกลายเป็นชาย
     const birthTimeKnown = knownBirthTime(row.birth_time_known);
 
     const calc = birthTimeKnown
@@ -354,7 +354,7 @@ async function buildIntroBaziContext(profileId: string, orgId: string | null): P
       date,
       time: (timeRaw || "12:00").slice(0, 5),
       lng: Number(row.birth_lng || 100.5018),
-      gender: (row.gender === "female" ? "F" : "M") as "M" | "F",
+      gender: (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F", // DB เก็บ "F"/"M" · รับทั้ง F/female/f → กันผู้หญิงกลายเป็นชาย
       birthTimeKnown: knownBirthTime(row.birth_time_known),
       source: "profile",
     });
