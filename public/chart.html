@@ -996,7 +996,24 @@
       document.documentElement.setAttribute('data-live', '1');
     }
   }
-  window.HKChartPage = { readChartSnapshot: readChartSnapshot, clearChartRoots: clearChartRoots, run: run };
+  /* 25 พ.ค. · ดูดวง ad-hoc จากกล่องกรอก/รายชื่อ · ไม่ syncLocalStorage (ไม่ทับ self-profile)
+   * customSnap shape = norm() output: {source,profileId,name,date,time,birthTimeKnown,gender,place,longitude,latitude} */
+  async function viewSnapshot(customSnap){
+    if (!customSnap || !customSnap.date) return;
+    var token = ++seq;
+    try {
+      clearChartRoots(customSnap);
+      var data = await fetchChart(customSnap);
+      if (token !== seq || !data || !data.pillars) return;
+      if (window.HK_RENDER_BASIC) try { window.HK_RENDER_BASIC(data, customSnap); } catch(e){ console.warn('[HK] basic', e); }
+      if (window.HK_RENDER_CHART) try { window.HK_RENDER_CHART(data, customSnap); } catch(e){ console.warn('[HK] chart', e); }
+      if (window.HK_RENDER_ALL) try { window.HK_RENDER_ALL(data, customSnap); } catch(e){ console.warn('[HK] all', e); }
+      if (window.HK_RENDER_3P_NOTICE) try { window.HK_RENDER_3P_NOTICE(data, customSnap); } catch(e){ console.warn('[HK] 3p', e); }
+      document.documentElement.setAttribute('data-live', '1');
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(_){}
+    } catch(e) { console.warn('[HK] viewSnapshot failed', e); }
+  }
+  window.HKChartPage = { readChartSnapshot: readChartSnapshot, clearChartRoots: clearChartRoots, run: run, viewSnapshot: viewSnapshot };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run, {once:true});
   else setTimeout(run, 0);
   /* fallback: ถ้าเกิน 5 วิ ยังไม่ live · show หน้าไว้ก่อน */
@@ -1024,6 +1041,9 @@
     <a href="/mygoal" data-r="/mygoal"><span class="glyph">志</span><span class="lbl" data-i18n="c.nav.goal">เป้าหมาย</span></a>
   </nav>
   <div class="top-r">
+    <button type="button" id="hk-people-btn" class="hk-people-btn" aria-label="เปลี่ยนดวง">
+      <span class="glyph">換</span><span class="lbl" data-i18n="c.people.btn">เปลี่ยนดวง</span>
+    </button>
     <div id="hk-user-menu-mount"></div>
   </div>
 <style>
@@ -1859,7 +1879,8 @@ window.HK_I18N = {
   'c.sifu.histClear':{ th:'ลบทั้งหมด', en:'Clear all', zh:'清除全部' },
   'c.sifu.loadTtl':{ th:'กำลังอ่านดวง', en:'Reading your chart', zh:'解讀命盤中' },
   'c.sifu.loadSub':{ th:'ซินแสกำลังเทียบกับตำรา · รอสักครู่', en:'Sifu cross-checks classical texts · please wait', zh:'老師正核對古籍 · 請稍候' },
-  'c.sifu.errMsg': { th:'ขออภัย ตอนนี้ติดต่อซินแสไม่ได้ · ลองใหม่อีกครั้ง', en:'Sorry, cannot reach Sifu · please try again', zh:'抱歉 · 暫時無法連繫老師 · 請重試' }
+  'c.sifu.errMsg': { th:'ขออภัย ตอนนี้ติดต่อซินแสไม่ได้ · ลองใหม่อีกครั้ง', en:'Sorry, cannot reach Sifu · please try again', zh:'抱歉 · 暫時無法連繫老師 · 請重試' },
+  'c.people.btn':  { th:'เปลี่ยนดวง', en:'Switch chart', zh:'換盤' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
@@ -3811,5 +3832,300 @@ window.addEventListener('resize', function(){
 
 <script src="/js/hk-hex-deep.js?v=1" defer></script>
 <script src="/js/hk-method-link.js?v=20260518a" defer></script>
+
+<!-- ════════ 換盤 People Drawer · 25 พ.ค. · ดูดวงคนอื่น/กรอกใหม่ ไม่ต้องไปหน้าเครือข่าย ════════ -->
+<style>
+  .hk-people-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:99px;border:1px solid var(--gold-line);background:var(--tile);color:var(--fg);font-family:var(--thai,'IBM Plex Sans Thai',sans-serif);font-size:12px;cursor:pointer;transition:.18s;line-height:1;}
+  .hk-people-btn:hover{background:var(--gold);color:var(--bg);}
+  .hk-people-btn .glyph{font-family:var(--tc);font-size:15px;}
+  @media(max-width:600px){.hk-people-btn .lbl{display:none;} .hk-people-btn{padding:7px 10px;}}
+  .hkp-overlay{position:fixed;inset:0;z-index:9996;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);opacity:0;transition:opacity .25s;}
+  .hkp-overlay.on{opacity:1;}
+  .hkp-drawer{position:fixed;top:0;right:0;height:100%;width:min(420px,92vw);z-index:9997;background:var(--bg);border-left:1px solid var(--gold-line);box-shadow:-12px 0 40px rgba(0,0,0,.4);transform:translateX(102%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;font-family:var(--thai,'IBM Plex Sans Thai',sans-serif);}
+  .hkp-drawer.on{transform:translateX(0);}
+  .hkp-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--gold-line);}
+  .hkp-head h3{margin:0;font-size:16px;color:var(--fg);font-weight:600;display:flex;align-items:center;gap:8px;}
+  .hkp-head h3 .tc{font-family:var(--tc);color:var(--gold);font-size:18px;}
+  .hkp-close{background:transparent;border:0;color:var(--fg-soft);font-size:24px;cursor:pointer;line-height:1;}
+  .hkp-close:hover{color:var(--fg);}
+  .hkp-tabs{display:flex;gap:4px;padding:12px 16px 0;}
+  .hkp-tab{flex:1;padding:9px 0;text-align:center;font-size:13px;background:transparent;border:0;border-bottom:2px solid transparent;color:var(--fg-soft);cursor:pointer;transition:.18s;font-family:inherit;}
+  .hkp-tab.on{color:var(--gold);border-bottom-color:var(--gold);font-weight:600;}
+  .hkp-body{flex:1;overflow-y:auto;padding:16px 20px 28px;}
+  .hkp-pane{display:none;}
+  .hkp-pane.on{display:block;}
+  .hkp-search{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--gold-line);border-radius:10px;background:var(--tile);color:var(--fg);font-size:14px;margin-bottom:12px;font-family:inherit;}
+  .hkp-card{display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--gold-line);border-radius:12px;margin-bottom:9px;cursor:pointer;transition:.15s;background:var(--tile);}
+  .hkp-card:hover{border-color:var(--gold);transform:translateY(-1px);}
+  .hkp-card.cur{border-color:var(--gold);background:linear-gradient(135deg,var(--gold-soft,rgba(200,164,77,.12)),transparent);}
+  .hkp-ava{width:38px;height:38px;border-radius:50%;flex:0 0 38px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:15px;font-weight:700;color:var(--bg);background:linear-gradient(135deg,var(--earth,#8a6d3b),var(--gold));}
+  .hkp-info{flex:1;min-width:0;}
+  .hkp-nm{font-size:14px;color:var(--fg);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hkp-sub{font-size:11px;color:var(--fg-soft);font-family:var(--mono);margin-top:2px;}
+  .hkp-empty{text-align:center;color:var(--fg-soft);font-size:13px;padding:30px 10px;line-height:1.7;}
+  .hkp-grp{margin-bottom:14px;}
+  .hkp-grp label{display:block;font-size:12px;color:var(--fg-soft);margin-bottom:6px;}
+  .hkp-grp input[type=text]{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--gold-line);border-radius:10px;background:var(--tile);color:var(--fg);font-size:16px;font-family:inherit;}
+  .hkp-row3{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:8px;}
+  .hkp-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .hkp-seg{display:flex;gap:0;border:1px solid var(--gold-line);border-radius:10px;overflow:hidden;}
+  .hkp-seg button{flex:1;padding:10px 0;background:transparent;border:0;color:var(--fg-soft);font-size:13px;cursor:pointer;font-family:inherit;transition:.15s;}
+  .hkp-seg button.on{background:var(--gold);color:var(--bg);font-weight:600;}
+  .hkp-check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg);cursor:pointer;margin-bottom:14px;user-select:none;}
+  .hkp-check input{width:17px;height:17px;accent-color:var(--gold);cursor:pointer;}
+  .hkp-tst{background:linear-gradient(160deg,var(--gold-soft,rgba(200,164,77,.1)),transparent);border:1px solid var(--gold-line);border-radius:12px;padding:12px 14px;font-size:11.5px;line-height:1.85;color:var(--fg-soft);font-family:var(--mono);margin-bottom:14px;}
+  .hkp-tst b{color:var(--gold);}
+  .hkp-tst .hkp-tst-note{font-family:var(--thai,'IBM Plex Sans Thai',sans-serif);font-size:11px;opacity:.8;display:block;margin-top:6px;}
+  .hkp-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
+  .hkp-btn{padding:12px 0;border-radius:11px;border:1px solid var(--gold-line);font-size:13.5px;cursor:pointer;font-family:inherit;font-weight:600;transition:.15s;}
+  .hkp-btn.ghost{background:transparent;color:var(--fg);}
+  .hkp-btn.ghost:hover{background:var(--tile);}
+  .hkp-btn.solid{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+  .hkp-btn.solid:hover{opacity:.92;}
+  .hkp-btn:disabled{opacity:.45;cursor:wait;}
+  .hkp-err{color:#e0625e;font-size:12px;margin-top:10px;min-height:1em;text-align:center;}
+</style>
+<script>
+(function(){
+  'use strict';
+  if (window.__hkPeopleDrawerInit) return; window.__hkPeopleDrawerInit = true;
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function lang(){ return (document.documentElement.getAttribute('data-lang') || localStorage.getItem('hk_locale') || 'th').slice(0,2); }
+  var L = {
+    th:{ title:'เปลี่ยนดวง', list:'รายชื่อ', add:'กรอกใหม่', search:'ค้นหาชื่อ…', empty:'ยังไม่มีรายชื่อที่บันทึก<br>ลองกรอกดวงใหม่ที่แท็บ "กรอกใหม่"', noTime:'(ไม่ทราบเวลา · 3 เสา)',
+         name:'ชื่อ (ไม่บังคับ)', namePh:'เช่น คุณแม่, เพื่อน, ลูกค้า', dob:'วันเกิด · วัน / เดือน / ปี (ค.ศ.)', d:'วัน', m:'เดือน', y:'ปี ค.ศ.',
+         time:'เวลาเกิด · ชม. : นาที', noBtime:'ไม่ทราบเวลาเกิด (ดูดวงแบบ 3 เสา)', gender:'เพศ', male:'ชาย', female:'หญิง', city:'เมืองเกิด', cityPh:'พิมพ์ชื่อเมือง เช่น Bangkok',
+         lng:'ลองจิจูด', gmt:'เขตเวลา', corr:'แก้เวลาสุริยะ', eot:'สมการเวลา', tstNote:'⏱ คำนวณอัตโนมัติจากเมืองเกิด · 真太陽時 (節氣เดือนเกิด ดูใน §13 หลังเปิดดวง)',
+         view:'ดูเลย', save:'บันทึก + ดู', errDate:'กรุณากรอกวันเกิดให้ครบ', errTime:'กรุณากรอกเวลา หรือเลือก "ไม่ทราบเวลา"', saving:'กำลังบันทึก…', loading:'กำลังโหลด…' },
+    en:{ title:'Switch Chart', list:'People', add:'New', search:'Search name…', empty:'No saved people yet<br>Try the "New" tab to add a chart', noTime:'(no time · 3 pillars)',
+         name:'Name (optional)', namePh:'e.g. Mom, Friend, Client', dob:'Birth date · D / M / Y (CE)', d:'Day', m:'Mon', y:'Year CE',
+         time:'Birth time · HH : MM', noBtime:'Unknown birth time (3-pillar chart)', gender:'Gender', male:'Male', female:'Female', city:'Birth city', cityPh:'Type a city e.g. Bangkok',
+         lng:'Longitude', gmt:'Time zone', corr:'Solar correction', eot:'Equation of Time', tstNote:'⏱ Auto-computed from birth city · True Solar Time (birth-month 節氣 shown in §13 after loading)',
+         view:'View now', save:'Save + view', errDate:'Please fill the full birth date', errTime:'Enter a time or tick "Unknown time"', saving:'Saving…', loading:'Loading…' },
+    zh:{ title:'換盤', list:'名單', add:'新增', search:'搜尋姓名…', empty:'尚無已存名單<br>請在「新增」分頁建立命盤', noTime:'(無時辰 · 三柱)',
+         name:'姓名(可選)', namePh:'例:母親、朋友、客戶', dob:'出生日期 · 日 / 月 / 年(西元)', d:'日', m:'月', y:'西元年', time:'出生時間 · 時 : 分',
+         noBtime:'不知出生時間(三柱盤)', gender:'性別', male:'男', female:'女', city:'出生城市', cityPh:'輸入城市 如 Bangkok',
+         lng:'經度', gmt:'時區', corr:'真太陽時差', eot:'均時差', tstNote:'⏱ 依出生城市自動計算 · 真太陽時(出生月節氣見載入後 §13)',
+         view:'立即查看', save:'儲存 + 查看', errDate:'請填寫完整出生日期', errTime:'請輸入時間或勾選「不知時間」', saving:'儲存中…', loading:'載入中…' }
+  };
+  function t(k){ return (L[lang()] || L.th)[k] || (L.th[k] || k); }
+
+  /* TST shift · client-side approx (longitude + EoT) · เหมือน hk-settings-drawer */
+  function computeTST(lng, dateObj){
+    var LNG_REF = 105;
+    var longitudeShiftMin = (lng - LNG_REF) * 4;
+    var start = new Date(dateObj.getFullYear(),0,0);
+    var n = Math.floor((dateObj - start) / 86400000);
+    var B = (2 * Math.PI * (n - 81)) / 365;
+    var eotMin = 9.87 * Math.sin(2*B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+    return { lngShift: longitudeShiftMin, eot: eotMin, total: longitudeShiftMin + eotMin };
+  }
+  function pad(v,n){ v=String(v); while(v.length<n) v='0'+v; return v; }
+  function splitDt(iso){ var m = String(iso||'').match(/^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})/); return m ? {date:m[1],time:m[2]} : {date:'',time:''}; }
+  function initials(nm){ nm=String(nm||'').trim(); if(!nm) return '命'; var p=nm.split(/\s+/); return (p.length>1?(p[0][0]+p[1][0]):nm.slice(0,2)).toUpperCase(); }
+
+  function buildProfileSnap(p){
+    var dt = p.birth_datetime ? splitDt(p.birth_datetime) : {date:'',time:''};
+    var known = p.birth_time_known !== false;
+    return { source:'view-as-db', profileId: p.id||'', name: p.name||'',
+      date: dt.date, time: known ? dt.time : '', birthTimeKnown: known,
+      gender: (String(p.gender||'M').toUpperCase()==='F')?'F':'M',
+      place: p.birth_location_name || 'Bangkok',
+      longitude: (p.birth_lng!=null && isFinite(+p.birth_lng)) ? +p.birth_lng : 100.5018,
+      latitude:  (p.birth_lat!=null && isFinite(+p.birth_lat)) ? +p.birth_lat : 13.7563 };
+  }
+
+  var openLock = false;
+  async function open(){
+    if (openLock || document.querySelector('.hkp-drawer')) return;
+    openLock = true;
+    var lg = lang();
+    var ov = document.createElement('div'); ov.className='hkp-overlay';
+    var dw = document.createElement('aside'); dw.className='hkp-drawer'; dw.setAttribute('role','dialog');
+    dw.innerHTML =
+      '<div class="hkp-head"><h3><span class="tc">換</span>'+esc(t('title'))+'</h3>'+
+        '<button class="hkp-close" aria-label="close">✕</button></div>'+
+      '<div class="hkp-tabs">'+
+        '<button class="hkp-tab on" data-pane="list">'+esc(t('list'))+'</button>'+
+        '<button class="hkp-tab" data-pane="add">'+esc(t('add'))+'</button></div>'+
+      '<div class="hkp-body">'+
+        '<div class="hkp-pane on" id="hkp-pane-list"><div class="hkp-empty">'+esc(t('loading'))+'</div></div>'+
+        '<div class="hkp-pane" id="hkp-pane-add"></div></div>';
+    document.body.appendChild(ov); document.body.appendChild(dw);
+    requestAnimationFrame(function(){ ov.classList.add('on'); dw.classList.add('on'); });
+
+    function close(){ ov.classList.remove('on'); dw.classList.remove('on'); setTimeout(function(){ ov.remove(); dw.remove(); openLock=false; }, 300); }
+    ov.addEventListener('click', close);
+    dw.querySelector('.hkp-close').addEventListener('click', close);
+    document.addEventListener('keydown', function onEsc(e){ if(e.key==='Escape'){ close(); document.removeEventListener('keydown',onEsc); } });
+
+    // tabs
+    dw.querySelectorAll('.hkp-tab').forEach(function(tb){
+      tb.addEventListener('click', function(){
+        dw.querySelectorAll('.hkp-tab').forEach(function(x){ x.classList.remove('on'); });
+        dw.querySelectorAll('.hkp-pane').forEach(function(x){ x.classList.remove('on'); });
+        tb.classList.add('on');
+        dw.querySelector('#hkp-pane-'+tb.dataset.pane).classList.add('on');
+      });
+    });
+
+    function pickSnap(snap){
+      try { if (snap.profileId) history.replaceState(null,'', '/chart?as='+encodeURIComponent(snap.profileId)); } catch(_){}
+      if (window.HKChartPage && window.HKChartPage.viewSnapshot) window.HKChartPage.viewSnapshot(snap);
+      close();
+    }
+
+    /* ───── Tab: รายชื่อ ───── */
+    (async function loadList(){
+      var pane = dw.querySelector('#hkp-pane-list');
+      var arr = [];
+      try {
+        var r = await fetch('/api/profile', { cache:'no-store', credentials:'include' });
+        var j = await r.json();
+        arr = (j.profiles || []).filter(function(p){ return !p.is_archived && p.birth_datetime; });
+      } catch(e){ console.warn('[hkp] list', e); }
+      if (!arr.length){ pane.innerHTML = '<div class="hkp-empty">'+t('empty')+'</div>'; return; }
+      var curId = ''; try { curId = new URLSearchParams(location.search).get('as') || localStorage.getItem('hk_profile_id') || ''; } catch(_){}
+      pane.innerHTML =
+        '<input class="hkp-search" id="hkp-search" placeholder="'+esc(t('search'))+'" autocomplete="off">'+
+        '<div id="hkp-list-box"></div>';
+      function render(filter){
+        var box = pane.querySelector('#hkp-list-box');
+        var f = (filter||'').trim().toLowerCase();
+        var rows = arr.filter(function(p){ return !f || String(p.name||'').toLowerCase().indexOf(f)>=0; });
+        if (!rows.length){ box.innerHTML='<div class="hkp-empty">—</div>'; return; }
+        box.innerHTML = rows.map(function(p){
+          var dt = splitDt(p.birth_datetime);
+          var known = p.birth_time_known !== false;
+          var sub = dt.date + (known && dt.time ? ' · '+dt.time : ' '+t('noTime'));
+          return '<div class="hkp-card'+(p.id===curId?' cur':'')+'" data-id="'+esc(p.id)+'">'+
+            '<div class="hkp-ava">'+esc(initials(p.name))+'</div>'+
+            '<div class="hkp-info"><div class="hkp-nm">'+esc(p.name||'—')+'</div><div class="hkp-sub">'+esc(sub)+'</div></div></div>';
+        }).join('');
+        box.querySelectorAll('.hkp-card').forEach(function(card){
+          card.addEventListener('click', function(){
+            var p = arr.find(function(x){ return x.id===card.dataset.id; });
+            if (p) pickSnap(buildProfileSnap(p));
+          });
+        });
+      }
+      render('');
+      pane.querySelector('#hkp-search').addEventListener('input', function(e){ render(e.target.value); });
+    })();
+
+    /* ───── Tab: กรอกใหม่ ───── */
+    (function buildAddForm(){
+      var pane = dw.querySelector('#hkp-pane-add');
+      pane.innerHTML =
+        '<div class="hkp-grp"><label>'+esc(t('name'))+'</label><input type="text" id="hkp-name" placeholder="'+esc(t('namePh'))+'" autocomplete="off"></div>'+
+        '<div class="hkp-grp"><label>'+esc(t('dob'))+'</label><div class="hkp-row3">'+
+          '<input type="text" id="hkp-d" inputmode="numeric" maxlength="2" placeholder="'+esc(t('d'))+'" autocomplete="off">'+
+          '<input type="text" id="hkp-m" inputmode="numeric" maxlength="2" placeholder="'+esc(t('m'))+'" autocomplete="off">'+
+          '<input type="text" id="hkp-y" inputmode="numeric" maxlength="4" placeholder="'+esc(t('y'))+'" autocomplete="off"></div></div>'+
+        '<div class="hkp-grp" id="hkp-time-grp"><label>'+esc(t('time'))+'</label><div class="hkp-row2">'+
+          '<input type="text" id="hkp-h" inputmode="numeric" maxlength="2" placeholder="HH" autocomplete="off">'+
+          '<input type="text" id="hkp-mi" inputmode="numeric" maxlength="2" placeholder="MM" autocomplete="off"></div></div>'+
+        '<label class="hkp-check"><input type="checkbox" id="hkp-no-btime">'+esc(t('noBtime'))+'</label>'+
+        '<div class="hkp-grp"><label>'+esc(t('gender'))+'</label><div class="hkp-seg" id="hkp-gender">'+
+          '<button type="button" data-g="M" class="on">'+esc(t('male'))+'</button>'+
+          '<button type="button" data-g="F">'+esc(t('female'))+'</button></div></div>'+
+        '<div class="hkp-grp"><label>'+esc(t('city'))+'</label><input type="text" id="hkp-city" placeholder="'+esc(t('cityPh'))+'" value="Bangkok" autocomplete="off">'+
+          '<input type="hidden" id="hkp-lat" value="13.7563"><input type="hidden" id="hkp-lng" value="100.5018"></div>'+
+        '<div class="hkp-tst" id="hkp-tst"></div>'+
+        '<div class="hkp-actions">'+
+          '<button class="hkp-btn ghost" id="hkp-view">'+esc(t('view'))+'</button>'+
+          '<button class="hkp-btn solid" id="hkp-save">'+esc(t('save'))+'</button></div>'+
+        '<div class="hkp-err" id="hkp-err"></div>';
+
+      var $ = function(id){ return pane.querySelector('#'+id); };
+      // gender seg
+      $('hkp-gender').querySelectorAll('button').forEach(function(b){
+        b.addEventListener('click', function(){ $('hkp-gender').querySelectorAll('button').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); });
+      });
+      // no-btime toggle
+      $('hkp-no-btime').addEventListener('change', function(){ $('hkp-time-grp').style.opacity = this.checked?'.4':'1'; $('hkp-h').disabled=$('hkp-mi').disabled=this.checked; refreshTST(); });
+      // TST live
+      function refreshTST(){
+        var lng = parseFloat($('hkp-lng').value)||100.5018;
+        var y=parseInt($('hkp-y').value,10), m=parseInt($('hkp-m').value,10), d=parseInt($('hkp-d').value,10);
+        var dobj = (y&&m&&d) ? new Date(y, m-1, d) : new Date();
+        var c = computeTST(lng, dobj);
+        var gmt = Math.round(lng/15);
+        $('hkp-tst').innerHTML =
+          '<b>'+t('lng')+':</b> '+lng.toFixed(2)+'°　<b>'+t('gmt')+':</b> GMT'+(gmt>=0?'+':'')+gmt+'<br>'+
+          '<b>'+t('corr')+':</b> '+c.total.toFixed(2)+' min　(<b>'+t('lng')+'</b> '+c.lngShift.toFixed(2)+' + <b>'+t('eot')+'</b> '+c.eot.toFixed(2)+')'+
+          '<span class="hkp-tst-note">'+t('tstNote')+'</span>';
+      }
+      ['hkp-d','hkp-m','hkp-y'].forEach(function(id){ $(id).addEventListener('input', refreshTST); });
+      refreshTST();
+
+      // city autocomplete (reuse global loader)
+      (async function(){
+        try {
+          if (!window.HK_ensurePlacesScript) return;
+          await window.HK_ensurePlacesScript();
+          if (!(window.google && google.maps && google.maps.places)) return;
+          var ac = new google.maps.places.Autocomplete($('hkp-city'), { fields:['name','geometry','formatted_address'] });
+          ac.addListener('place_changed', function(){
+            var p = ac.getPlace();
+            if (!p.geometry || !p.geometry.location) return;
+            $('hkp-lat').value = p.geometry.location.lat().toFixed(4);
+            $('hkp-lng').value = p.geometry.location.lng().toFixed(4);
+            $('hkp-city').value = p.name || p.formatted_address || $('hkp-city').value;
+            refreshTST();
+          });
+        } catch(e){ console.warn('[hkp] places', e); }
+      })();
+
+      function collect(){
+        $('hkp-err').textContent='';
+        var d=parseInt($('hkp-d').value,10), m=parseInt($('hkp-m').value,10), y=parseInt($('hkp-y').value,10);
+        if (!(d>=1&&d<=31&&m>=1&&m<=12&&y>=1900&&y<=2100)){ $('hkp-err').textContent=t('errDate'); return null; }
+        var noBt = $('hkp-no-btime').checked;
+        var hh=parseInt($('hkp-h').value,10), mi=parseInt($('hkp-mi').value,10);
+        var time='';
+        if (!noBt){
+          if (!(hh>=0&&hh<=23&&mi>=0&&mi<=59)){ $('hkp-err').textContent=t('errTime'); return null; }
+          time = pad(hh,2)+':'+pad(mi,2);
+        }
+        var g = ($('hkp-gender').querySelector('button.on')||{}).dataset; g = (g&&g.g)||'M';
+        return { source:'adhoc', profileId:'', name:$('hkp-name').value.trim(),
+          date: y+'-'+pad(m,2)+'-'+pad(d,2), time: time, birthTimeKnown: !noBt, gender: g,
+          place: $('hkp-city').value.trim()||'Bangkok',
+          longitude: parseFloat($('hkp-lng').value)||100.5018, latitude: parseFloat($('hkp-lat').value)||13.7563 };
+      }
+
+      $('hkp-view').addEventListener('click', function(){
+        var snap = collect(); if (!snap) return;
+        try { history.replaceState(null,'', '/chart'); } catch(_){}
+        if (window.HKChartPage && window.HKChartPage.viewSnapshot) window.HKChartPage.viewSnapshot(snap);
+        close();
+      });
+
+      $('hkp-save').addEventListener('click', async function(){
+        var snap = collect(); if (!snap) return;
+        var btn = $('hkp-save'); btn.disabled=true; var old=btn.textContent; btn.textContent=t('saving');
+        try {
+          var dayBoundary='23:00'; try { if (localStorage.getItem('hk_day_boundary')==='00:00') dayBoundary='00:00'; } catch(_){}
+          var r = await fetch('/api/profile/create', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+            body: JSON.stringify({ name: snap.name||'(ไม่ระบุชื่อ)', birthDate: snap.date, birthTime: snap.time||'12:00',
+              birthLat: snap.latitude, birthLng: snap.longitude, locationName: snap.place, gender: snap.gender,
+              relationshipType: 'friend', dayBoundary: dayBoundary, birthTimeKnown: snap.birthTimeKnown }) });
+          if (!r.ok) throw new Error('create '+r.status);
+          var j = await r.json();
+          var newId = (j && (j.id || (j.profile && j.profile.id))) || '';
+          snap.profileId = newId; snap.source='view-as-db';
+          pickSnap(snap);
+        } catch(e){ console.warn('[hkp] save', e); $('hkp-err').textContent = String(e.message||e); btn.disabled=false; btn.textContent=old; }
+      });
+    })();
+  }
+
+  function bind(){ var b=document.getElementById('hk-people-btn'); if (b && !b.__hkBound){ b.__hkBound=true; b.addEventListener('click', open); } }
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind); else bind();
+  window.HK_openPeople = open;
+})();
+</script>
 </body>
 </html>
