@@ -36,6 +36,13 @@ export const metadata: Metadata = {
   title: "Decode · 解碼 — Personal AI Sinsae",
   description: "ดวงปาจื้อ + ฉีเหมิน + ปฏิทินมงคล สำหรับการตัดสินใจในแต่ละวัน",
   applicationName: "Decode",
+  icons: {
+    icon: [
+      { url: "/favicon.ico?v=2", sizes: "any" },
+      { url: "/favicon.svg?v=2", type: "image/svg+xml" },
+    ],
+    apple: "/favicon.svg?v=2",
+  },
 };
 
 export const viewport: Viewport = {
