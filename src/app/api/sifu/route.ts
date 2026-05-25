@@ -16,6 +16,7 @@ import { q1, q } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
+import { getDaymasterProfile } from "@/lib/daymaster-profile";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type IntroBirthInput = {
@@ -172,7 +173,33 @@ function buildChartPacket(
     `ปีจรปัจจุบัน: ${STEM_TH[ext.current_year_pillar.stem] || ext.current_year_pillar.stem}/${BRANCH_TH_NAME[ext.current_year_pillar.branch] || ext.current_year_pillar.branch}`,
     `คู่ครอง/ตัวตน: ${BRANCH_TH_NAME[ext.spouse_palace.day_branch] || ext.spouse_palace.day_branch} · ธาตุซ่อน ${ext.spouse_palace.hidden_stems.map((h) => STEM_TH[h] || h).join(" · ") || "-"} · ปฏิกิริยา ${ext.spouse_palace.relationship_flags.join(" · ") || "-"}`,
     `timeline 10 ปี: ${lifeDecades || "-"}`,
+    ...buildProfilePacket(calc, ext, dm),
   ];
+}
+
+/* 📿 โปรไฟล์เชิงลึก (Sesheta) · ใช้ร่วม intro + ถาม-ตอบ: ตัวตน · โครง 5 ธาตุ · อาชีพ · สุขภาพ
+ * ดึงจาก ext (five_structure/career_industry/health_mapping) + getDaymasterProfile · ทุกอย่างเป็นไทยพร้อมใช้ */
+function buildProfilePacket(
+  calc: Awaited<ReturnType<typeof calcBazi>>,
+  ext: ReturnType<typeof buildChartExtensions>,
+  dm: string,
+): string[] {
+  const out: string[] = [];
+  try {
+    const dp = getDaymasterProfile(dm, { level: calc.strength.level, percent: calc.strength.percent });
+    if (dp) out.push(`📿 ตัวตนเชิงลึก (${dp.label_th}): แก่น=${dp.core} · ชีวิตจริง=${dp.real_life} · ด้านเงา=${dp.shadow} · สิ่งที่ต้องการ=${dp.needs}`);
+  } catch { /* ไม่มีโปรไฟล์ → ข้าม */ }
+  const fs = ext.five_structure;
+  if (fs?.title_th) out.push(`🏗 โครง 5 ธาตุ: ${fs.title_th} (${fs.zh})`);
+  const ci = ext.career_industry;
+  if (ci?.industries_th?.length) out.push(`💼 อาชีพที่เสริมดวง: ${ci.industries_th.join(" · ")} · ${ci.advice_th || ""}`);
+  const hm = ext.health_mapping;
+  if (hm?.dm_organs_th) {
+    const weak = (hm.weak_organs || []).map((w) => `${w.organs_th}(${w.reason_th})`).join(" · ");
+    const caution = (hm.caution_organs || []).map((w) => `${w.organs_th}(${w.reason_th})`).join(" · ");
+    out.push(`🩺 สุขภาพ: อวัยวะตัวตน ${hm.dm_organs_th}${weak ? ` · อ่อน: ${weak}` : ""}${caution ? ` · ระวัง: ${caution}` : ""}`);
+  }
+  return out;
 }
 
 /* 🧓 อาเจ๊กฮ้ง bazi reading rules · cache 60s · บังคับ AI ทุก request */
@@ -222,7 +249,7 @@ function cacheKey(opts: {
   ruleVersion: string;
 }): string {
   const parts = [
-    "v3-fullctx", // 25 พ.ค. · Q&A ส่ง CHART PACKET ครบเท่า intro · bump = invalidate คำตอบเก่าที่ข้อมูลบาง
+    "v4-profile", // 25 พ.ค. · เพิ่ม ตัวตนเชิงลึก/โครงธาตุ/อาชีพ/สุขภาพ เข้า packet · bump = invalidate คำตอบเก่า
     opts.ruleVersion,
     opts.profileId || "anon",
     opts.topic || "free",
