@@ -423,7 +423,7 @@ data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 
 
 **🎯 หมุดย้อนกลับ (ถ้า session หน้าทำพัง ให้ย้อนมาจุดนี้ทันที):**
-`git checkout sifu-best-20260526` (= commit `e5cd70c`) — **เวอร์ชันดีสุด เจ้านายยืนยัน 26 พ.ค.** · tag บน remote · (หมุดเก่า sifu-accurate-20260525=9148e2e ยังใช้ได้แต่เก่ากว่า)
+`git checkout r105-sifu-gender-fix` (= commit `57fdd3f`) — **เวอร์ชันดีสุด 26 พ.ค. (รวม gender fix)** · tag บน remote · (sifu-best-20260526=e5cd70c ยังก่อน gender fix · 9148e2e เก่าสุด)
 
 **Pipeline ที่ทำให้แม่น (ห้ามแตะลำดับ · engine คำนวณ → AI แค่สรุป):**
 ```
@@ -454,8 +454,11 @@ data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 - ❌ chart-packet ยุบ 伏吟·กิ่ง/·ก้าน → "伏吟" เต็ม = AI พูดมั่ว (ซินแสภายนอกติง · แก้ filter r103)
 - ❌ แก้ 伏吟 ที่ chart-extensions = ลามไป /chart (LOCKED Voytek) · ต้องแก้เฉพาะ chart-packet (เลเยอร์ซินแส)
 - ❌ master dropdown ใช้ nickname นำ self → ดวงเจ้าของโผล่เป็นชื่อเล่น หาไม่เจอ (network ใช้ name นำ · แก้ r104)
+- ❌ **gender: DB เก็บ "F"/"M" แต่ route.ts เทียบ `=== "female"` → ผู้หญิงกลายเป็นชาย (วัยจร 大運 กลับทิศ)** · แก้ใช้ `charAt(0)==="f"` (r105 57fdd3f) · **ทุกที่ที่อ่าน profiles.gender ต้องรับ "F" ไม่ใช่ "female"**
 
-**commit chain:** 97b79de → c4d2f11 → 2652e71 → 9148e2e (25 พ.ค.) → 6b5b1cd (วัยจร) → a0c8c41 (ตำรา) → 032f98c (dump) → 052728d (multiprofile+org guard) → 235f7f5 (伏吟) → **e5cd70c (dropdown · หมุดดีสุด 26 พ.ค.)** · ดู memory [[project_sifu_ab_locked]]
+**🔒 gender mapping (r105):** route.ts buildBaziContext:254 + buildIntroBaziContext:357 ใช้ `String(row.gender||"").trim().toLowerCase().charAt(0)==="f"?"F":"M"` — ห้ามกลับไปเทียบ "female" · DB เก็บ "F"/"M"/"male"(legacy) · ⚠️ ยังมี 2 จุดนอก sifu ที่เทียบ gender เข้มงวด (network/own-score:210,237 · sifu/compare:305) — legacy "male"→M ถูกบังเอิญ แต่ถ้ามี "female" จะพลาด (ยังไม่แก้ · นอก scope)
+
+**commit chain:** ...→ 235f7f5 (伏吟) → e5cd70c (dropdown) → **57fdd3f (gender fix · หมุดดีสุด 26 พ.ค.)** · ดู memory [[project_sifu_ab_locked]]
 
 **scoring/resolver (finalScore/rootMultiplier/合化 grading) = เฟส B/C รอ golden test** · ห้ามใส่ magic number ดิบ
 
