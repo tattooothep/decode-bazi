@@ -40,14 +40,34 @@ const FILES: Record<string, { label: string; note: string }> = {
   "prompts/compare-zh.md": { label: "เทียบดวงคู่ · 中文", note: "หน้า comparison · /api/sifu/compare · section markers" },
 };
 
+/* จัดกลุ่ม prompt ตามหน้าเว็บที่ใช้ (ให้ admin หาง่าย · กดหน้าแล้วเห็นเฉพาะ prompt ของหน้านั้น) */
+function pageOf(name: string): string {
+  if (name.includes("compare-")) return "⚖️ เทียบดวง (comparison)";
+  if (name.includes("network-") || name.includes("ai-parse-bulk")) return "🌐 เครือข่าย (yongsennetwork)";
+  if (name.includes("qimen-sifu") || name.includes("activity-classify")) return "📅 เลือกฤกษ์/ฉีเหมิน (datepick · qimen)";
+  if (name.includes("forecast")) return "🎴 พยากรณ์ (forecast)";
+  if (name.includes("hourkey_interpret")) return "📊 ภาพรวมดวง (chart)";
+  return "🔮 ซินแสหลัก (master · master-m · chart)"; // sifu-* · ajek · interaction
+}
+/* ลำดับการแสดงกลุ่ม */
+const PAGE_ORDER = [
+  "🔮 ซินแสหลัก (master · master-m · chart)",
+  "📊 ภาพรวมดวง (chart)",
+  "📅 เลือกฤกษ์/ฉีเหมิน (datepick · qimen)",
+  "🌐 เครือข่าย (yongsennetwork)",
+  "🎴 พยากรณ์ (forecast)",
+  "⚖️ เทียบดวง (comparison)",
+];
+
 export async function GET() {
   try { await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 }); }
   const files = Object.entries(FILES).map(([name, meta]) => {
     let content = "", size = 0, mtime = "";
     try { const p = join(DIR, name); content = readFileSync(p, "utf8"); const st = statSync(p); size = st.size; mtime = st.mtime.toISOString(); }
     catch (e) { content = `(โหลดไม่ได้: ${(e as Error).message})`; }
-    return { name, label: meta.label, note: meta.note, content, size, mtime };
+    return { name, label: meta.label, note: meta.note, page: pageOf(name), content, size, mtime };
   });
+  files.sort((a, b) => (PAGE_ORDER.indexOf(a.page) - PAGE_ORDER.indexOf(b.page)));
   return NextResponse.json({ files, dir: DIR });
 }
 

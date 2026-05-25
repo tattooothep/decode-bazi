@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
-type PFile = { name: string; label: string; note: string; content: string; size: number; mtime: string };
+type PFile = { name: string; label: string; note: string; page: string; content: string; size: number; mtime: string };
 
 export default function SifuPromptsAdmin({ email }: { email: string }) {
   const [files, setFiles] = useState<PFile[]>([]);
   const [active, setActive] = useState<string>("");
+  const [activePage, setActivePage] = useState<string>("");
   const [draft, setDraft] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -20,11 +21,24 @@ export default function SifuPromptsAdmin({ email }: { email: string }) {
       if (!r.ok) { setMsg("โหลดไม่ได้: " + r.status); setLoading(false); return; }
       const d = await r.json();
       setFiles(d.files || []);
-      if (d.files?.length) { setActive(d.files[0].name); setDraft(d.files[0].content); }
+      if (d.files?.length) { setActive(d.files[0].name); setActivePage(d.files[0].page || ""); setDraft(d.files[0].content); }
     } catch (e) { setMsg("error: " + (e as Error).message); }
     setLoading(false);
   }, []);
   useEffect(() => { load(); }, [load]);
+
+  // กลุ่มหน้า (เรียงตาม API) + จำนวน prompt ต่อหน้า
+  const pages: string[] = [];
+  const countByPage: Record<string, number> = {};
+  for (const f of files) { if (!pages.includes(f.page)) pages.push(f.page); countByPage[f.page] = (countByPage[f.page] || 0) + 1; }
+  const shown = files.filter((f) => f.page === activePage);
+
+  function pickPage(p: string) {
+    if (p === activePage) return;
+    setActivePage(p);
+    const first = files.find((f) => f.page === p);
+    if (first) pick(first.name);
+  }
 
   const cur = files.find((f) => f.name === active);
   const dirty = cur && draft !== cur.content;
@@ -65,8 +79,21 @@ export default function SifuPromptsAdmin({ email }: { email: string }) {
 
         {loading ? <div className="opacity-60">กำลังโหลด…</div> : (
           <>
+            {/* แถบเลือกหน้าเว็บ — กดหน้าแล้วเห็นเฉพาะ prompt ของหน้านั้น */}
             <div className="flex flex-wrap gap-2 mb-3">
-              {files.map((f) => (
+              {pages.map((p) => (
+                <button key={p} onClick={() => pickPage(p)}
+                  className={`text-sm px-3 py-1.5 rounded-full border ${activePage === p ? "border-foreground bg-foreground text-background" : "border-foreground/25 hover:border-foreground/60"}`}>
+                  {p} <span className="opacity-60">({countByPage[p]})</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="text-xs opacity-50 mb-2">หน้า <b>{activePage}</b> · มี {shown.length} prompt</div>
+
+            {/* รายการ prompt ในหน้าที่เลือก */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {shown.map((f) => (
                 <button key={f.name} onClick={() => pick(f.name)}
                   className={`text-left text-sm px-3 py-2 border rounded ${active === f.name ? "border-foreground bg-foreground/10" : "border-foreground/20 hover:border-foreground/50"}`}>
                   <div className="font-medium">{f.label}</div>
