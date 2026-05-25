@@ -417,6 +417,13 @@ data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 
 **ขั้นตอน:** ถามเจ้านาย → รอ confirm → backup → ทำเป็น phase → test 3 รอบ
 
+### 🔒 ซินแส A+B · LOCKED (25 พ.ค. 2026 · deployed + เจ้านายยืนยัน "ใช้ได้")
+แก้ปัญหา AI "ตอบกว้าง" สำเร็จ · commit c4d2f11 + 97b79de · tag `r99-sifu-ab-deploy-20260525` · **ห้าม rewrite/ลด/มั่ว โดยไม่ถามเจ้านาย:**
+- `src/lib/chart-packet.ts` · renderInteractionGroup render `reactionElements` ("กระทบธาตุ: น้ำ+ไฟ") — ห้ามถอด
+- `data/library/prompts/sifu-qa.md` + `sifu-lang.md` (TH/EN/ZH) · กฎเลือกหลักฐาน 3-5 จุด + ระบุชื่อ+เสาปฏิกิริยา + ลด hedge — ห้ามตัดกฎเจาะ
+- `public/master.html` · Q&A อ่าน profileId จาก `window.hkActiveProfileId`/localStorage (sync จาก /api/profile) — ห้ามถอย
+- **scoring/resolver (finalScore/rootMultiplier/合化 grading) = เฟส B/C รอ golden test** · ห้ามใส่ magic number ดิบ · ดู memory [[project_sifu_ab_locked]]
+
 ---
 
 ## 🔒 /chart + /today + /calendar + /yongsennetwork Suite LOCKED · บันทึก 14-15 พ.ค. 2026
