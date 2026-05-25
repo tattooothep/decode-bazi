@@ -805,7 +805,15 @@
     const inputEl = document.getElementById('chat-input');
     const msgBox = document.getElementById('messages');
     if (!sendBtn || !inputEl || !msgBox) return;
-    const history = [];
+
+    /* รับพารามิเตอร์จากหน้าดวง (chart เด้งมา) · ดวงที่ส่งมา = ดวงปัจจุบัน */
+    const params = new URLSearchParams(location.search);
+    const urlPid = params.get('profileId');
+    if (urlPid) { try { localStorage.setItem('hk_profile_id', urlPid); } catch(_){} }
+    let profileId = ''; try { profileId = localStorage.getItem('hk_profile_id') || ''; } catch(_){}
+    const STORE = 'hk_sifu_chat_' + (profileId || 'anon'); /* ประวัติแชทแยกตามดวง */
+    let history = [];
+    function persist(){ try { localStorage.setItem(STORE, JSON.stringify(history.slice(-40))); } catch(_){} }
 
     function addMsg(role, text){
       const div = document.createElement('div');
@@ -818,6 +826,15 @@
       msgBox.scrollTop = msgBox.scrollHeight;
       return div;
     }
+
+    /* โหลดประวัติแชทเก่ากลับมา (จำข้ามแชท · เครื่องเดียวกัน) → render เป็นฟอง */
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE) || '[]');
+      if (Array.isArray(saved) && saved.length) {
+        history = saved.slice(-40);
+        history.forEach(function(m){ addMsg(m.role === 'user' ? 'user' : 'sifu', m.content); });
+      }
+    } catch(_){}
 
     async function send(){
       const text = inputEl.value.trim();
@@ -832,8 +849,8 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: text,
-            history: history,
-            profileId: localStorage.getItem('hk_profile_id') || undefined,
+            history: history.slice(-8),   /* จำบทสนทนา · backend ตัด 6 อีกชั้น */
+            profileId: profileId || undefined,
           }),
         });
         const d = await r.json();
@@ -841,6 +858,7 @@
           placeholder.textContent = d.reply;
           history.push({ role: 'user', content: text });
           history.push({ role: 'assistant', content: d.reply });
+          persist();
         } else {
           placeholder.textContent = '⚠ ขัดข้อง: ' + (d.error || r.status) + (d.detail ? '\n' + d.detail : '');
         }
@@ -856,6 +874,10 @@
     inputEl.addEventListener('keydown', function(e){
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
+
+    /* คำถามที่เด้งมาจากหน้าดวง (?q=) → ถามให้อัตโนมัติ */
+    const urlQ = params.get('q');
+    if (urlQ) { inputEl.value = urlQ; send(); }
   })();
 </script>
 
