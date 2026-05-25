@@ -1086,16 +1086,25 @@
     <div id="hk-overview-content" class="hk-overview-content">
       <div id="hk-ov-quick" style="background:linear-gradient(160deg,rgba(200,164,77,.08),transparent);border:1px solid var(--gold-line);border-left:3px solid var(--gold);border-radius:14px;padding:20px 22px;font-family:var(--thai);font-size:14px;line-height:1.8;color:var(--fg);"></div>
       <div id="hk-ov-sifu-prompt" class="hk-ov-follow">
-        <label for="hk-ov-question">ถามซินแสให้ลึกขึ้น</label>
-        <textarea id="hk-ov-question" rows="3" placeholder="เช่น จุดที่ต้องระวังจริงๆ คืออะไร, งานแบบไหนเหมาะกับฉัน, ช่วงนี้ควรตัดสินใจเรื่องอะไร"></textarea>
+        <label>อยากเจาะลึกกว่านี้? คุยกับซินแสแบบต่อเนื่อง (ซินแสจำบทสนทนาให้)</label>
         <div class="hk-ov-follow-actions">
-          <button type="button" class="hk-ov-chip" data-q="ช่วยอธิบายเงาและจุดที่ต้องระวังของดวงนี้ให้ลึกขึ้น">เงาที่ต้องระวัง</button>
-          <button type="button" class="hk-ov-chip" data-q="ดวงนี้ควรใช้จุดแข็งกับงานและเงินอย่างไร">งานและเงิน</button>
-          <button type="button" class="hk-ov-chip" data-q="ช่วงวัยจรและปีนี้ควรเดินเกมชีวิตอย่างไร">จังหวะช่วงนี้</button>
-          <button id="hk-ov-ask-sifu" type="button">ถามซินแส</button>
+          <button type="button" class="hk-ov-chip" onclick="hkGotoSifu('ช่วยอธิบายเงาและจุดที่ต้องระวังของดวงนี้ให้ลึกขึ้น')">เงาที่ต้องระวัง</button>
+          <button type="button" class="hk-ov-chip" onclick="hkGotoSifu('ดวงนี้ควรใช้จุดแข็งกับงานและเงินอย่างไร')">งานและเงิน</button>
+          <button type="button" class="hk-ov-chip" onclick="hkGotoSifu('ช่วงวัยจรและปีนี้ควรเดินเกมชีวิตอย่างไร')">จังหวะช่วงนี้</button>
+          <button type="button" id="hk-ov-goto-sifu" onclick="hkGotoSifu('')" style="padding:9px 18px;font-size:13px;background:var(--gold);border:none;border-radius:99px;color:var(--bg,#1a1208);cursor:pointer;font-family:var(--thai);font-weight:600;">💬 คุยกับซินแสต่อ →</button>
         </div>
-        <div class="hint">ซินแสจะอธิบายต่อจากโปรไฟล์แกนดวงด้านบน · ใช้เวลาประมาณ 30-60 วินาที</div>
+        <div class="hint">เปิดหน้าซินแสด้วยดวงเดียวกับหน้านี้ · คุยต่อเนื่อง เก็บประวัติให้</div>
       </div>
+      <script>
+        /* เด้งไปหน้าซินแส /master พร้อมดวงเดียวกัน (+คำถามเริ่ม) */
+        function hkGotoSifu(q){
+          var id = ''; try { id = localStorage.getItem('hk_profile_id') || ''; } catch(_){}
+          var u = '/master?from=chart'
+            + (id ? ('&profileId=' + encodeURIComponent(id)) : '')
+            + (q ? ('&q=' + encodeURIComponent(q)) : '');
+          location.href = u;
+        }
+      </script>
       <div id="hk-ov-sifu" style="display:none;margin-top:18px;padding:24px 26px;background:linear-gradient(160deg,rgba(200,164,77,.06),transparent);border:1px solid var(--gold-line);border-left:4px solid var(--gold);border-radius:14px;font-family:var(--thai);font-size:14px;line-height:1.85;color:var(--fg);"></div>
       <div id="hk-ov-status" style="display:none;margin-top:10px;font-size:12px;color:var(--gold);font-family:var(--thai);text-align:center;"></div>
       <div id="hk-ov-history" class="hk-ov-history" style="display:none;">
