@@ -671,7 +671,12 @@
 
     fetch('/api/profile', { credentials:'same-origin', cache:'no-store' })
       .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(j){ fillProfile(j && j.active_profile); })
+      .then(function(j){
+        var ap = j && j.active_profile;
+        fillProfile(ap);
+        /* 🩺 จำ id ดวงปัจจุบันลงเครื่อง + global · ให้ช่องถาม (Q&A) ใช้แหล่งเดียวกับพิธีเปิดดวง */
+        if (ap && ap.id) { try { localStorage.setItem('hk_profile_id', String(ap.id)); window.hkActiveProfileId = String(ap.id); } catch(_){} }
+      })
       .catch(function(){ fillProfile(null); });
 
     /* 🚀 Engine-first · ดึง /api/chart ทันที (50ms) แสดงโครงก่อน AI prose */
@@ -875,6 +880,14 @@
       inputEl.value = '';
       sendBtn.disabled = true;
       addMsg('user', text);
+      /* 🩺 อ่าน id ดวงสดทุกครั้ง · ลำดับ: global(สด) > จำในเครื่อง > ไม่มี */
+      let pid = '';
+      try { pid = String(window.hkActiveProfileId || localStorage.getItem('hk_profile_id') || ''); } catch(_){}
+      if (!pid) {
+        console.warn('[sifu] Q&A ไม่มี profileId — คำตอบจะเป็นภาพรวม (ยังไม่พบดวง)');
+        if (!window.__sifuNoProfileWarned) { addMsg('sifu','⚠️ ยังไม่พบดวงที่เลือก — คำตอบจะเป็นภาพรวม กรุณาเปิดดวงก่อน เพื่อให้ซินแสอ่านตรงดวงคุณ'); window.__sifuNoProfileWarned = true; }
+      }
+      if (location.search.indexOf('debug') >= 0) console.log('[sifu] Q&A payload · hasProfileId =', !!pid);
       const placeholder = addMsg('sifu', 'ซินแสกำลังคิด ...');
       try {
         const r = await fetch('/api/sifu', {
@@ -883,7 +896,7 @@
           body: JSON.stringify({
             message: text,
             history: history.slice(-8),   /* จำบทสนทนา · backend ตัด 6 อีกชั้น */
-            profileId: profileId || undefined,
+            profileId: pid || undefined,
           }),
         });
         const ct = r.headers.get('content-type') || '';
