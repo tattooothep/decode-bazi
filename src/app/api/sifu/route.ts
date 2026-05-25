@@ -13,6 +13,7 @@ import { readFileSync, statSync, writeFileSync } from "fs";
 import { join } from "path";
 import { createHash } from "crypto";
 import { q1, q } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
@@ -164,6 +165,7 @@ function loadEngineKnowledge(): { text: string; version: string } {
 const CACHE_TTL_HOURS = 24;
 function cacheKey(opts: {
   profileId?: string;
+  orgId?: string | null;
   topic?: string;
   mode?: string;
   lang: string;
@@ -172,8 +174,9 @@ function cacheKey(opts: {
   ruleVersion: string;
 }): string {
   const parts = [
-    "v6-packet", // 25 พ.ค. · structured ChartPacket layer (chart-packet.ts) · bump = invalidate คำตอบเก่า
+    "v7-multiprofile", // 26 พ.ค. · multi-profile + org guard · bump = invalidate คำตอบเก่า (เดิม v6-packet)
     opts.ruleVersion,
+    opts.orgId || "noorg",
     opts.profileId || "anon",
     opts.topic || "free",
     opts.mode || "default",
@@ -228,7 +231,8 @@ async function getDayPillarKey(): Promise<string> {
 }
 
 /* Build short BaZi context summary from profile */
-async function buildBaziContext(profileId: string): Promise<string> {
+async function buildBaziContext(profileId: string, orgId: string | null): Promise<string> {
+  if (!orgId) return "(ไม่พบ profile)"; // ไม่มี session/org = อ่านดวงใครไม่ได้ (กันข้ามบัญชี)
   try {
     const row = await q1<{
       name?: string;
@@ -238,8 +242,8 @@ async function buildBaziContext(profileId: string): Promise<string> {
       birth_time_known: boolean | null;
     }>(
       `SELECT name, to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-              birth_lng, gender, birth_time_known FROM profiles WHERE id=$1`,
-      [profileId]
+              birth_lng, gender, birth_time_known FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
+      [profileId, orgId]
     );
     if (!row) return "(ไม่พบ profile)";
 
@@ -329,7 +333,8 @@ function parseIntroBirthParams(url: URL): IntroBirthInput | null {
   };
 }
 
-async function buildIntroBaziContext(profileId: string): Promise<string> {
+async function buildIntroBaziContext(profileId: string, orgId: string | null): Promise<string> {
+  if (!orgId) return "(ไม่พบ profile)"; // ไม่มี session/org = อ่านดวงใครไม่ได้ (กันข้ามบัญชี)
   try {
     const row = await q1<{
       name?: string;
@@ -339,8 +344,8 @@ async function buildIntroBaziContext(profileId: string): Promise<string> {
       birth_time_known: boolean | null;
     }>(
       `SELECT name, to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-              birth_lng, gender, birth_time_known FROM profiles WHERE id=$1`,
-      [profileId]
+              birth_lng, gender, birth_time_known FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
+      [profileId, orgId]
     );
     if (!row) return "(ไม่พบ profile)";
     const [date, timeRaw] = row.birth_datetime.split("T");
@@ -654,10 +659,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "message too long" }, { status: 400 });
     }
 
+    /* 🔐 session → org · ดวงที่ถามได้ต้องอยู่ใน org เดียวกับผู้ login (ดวงตัวเอง+ญาติในบัญชี) · กันอ่านข้ามบัญชี */
+    const session = await getSession();
+    const orgId = session?.orgId ?? null;
+
     /* 💾 Cache check ก่อน */
     const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version;
     const dayKey = await getDayPillarKey();
-    const key = cacheKey({ profileId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
+    const key = cacheKey({ profileId, orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
     const useCache = mode !== "intro";
     const cached = useCache ? await getCachedReply(key) : null;
     if (cached) {
@@ -665,8 +674,8 @@ export async function POST(req: Request) {
     }
 
     const ctx = mode === "intro"
-      ? (profileId ? await buildIntroBaziContext(profileId) : "(intro mode แต่ไม่มี profileId)")
-      : (profileId ? await buildBaziContext(profileId) : "(ไม่มี profileId · ตอบทั่วไป)");
+      ? (profileId ? await buildIntroBaziContext(profileId, orgId) : "(intro mode แต่ไม่มี profileId)")
+      : (profileId ? await buildBaziContext(profileId, orgId) : "(ไม่มี profileId · ตอบทั่วไป)");
     /* ⚠️ ส่ง history จริงเข้า prompt (ไม่ใช่ history:[] แบบ GET) · คำตอบต้องจำบทสนทนา */
     const prompt = buildPrompt({ ctx, message, history, topic, lang, mode });
 
@@ -780,9 +789,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "message too long" }, { status: 400 });
   }
 
+  /* 🔐 session → org · เหมือน POST · กันอ่านดวงข้ามบัญชี */
+  const session = await getSession();
+  const orgId = session?.orgId ?? null;
+
   const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version;
   const dayKey = await getDayPillarKey();
-  const key = cacheKey({ profileId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
+  const key = cacheKey({ profileId, orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
   const useCache = mode !== "intro";
   const cached = useCache ? await getCachedReply(key) : null;
 
@@ -822,13 +835,13 @@ export async function GET(req: Request) {
         if (mode === "intro") {
           const birthParams = parseIntroBirthParams(url);
           if (profileId) {
-            ctx = await buildIntroBaziContext(profileId);
+            ctx = await buildIntroBaziContext(profileId, orgId);
             if (ctx.startsWith("(ไม่") && birthParams) ctx = await buildIntroBaziContextFromBirth(birthParams);
           } else {
             ctx = birthParams ? await buildIntroBaziContextFromBirth(birthParams) : ctx;
           }
         }
-        else ctx = profileId ? await buildBaziContext(profileId) : ctx;
+        else ctx = profileId ? await buildBaziContext(profileId, orgId) : ctx;
       } catch (e) {
         console.warn("[sifu sse] ctx err:", (e as Error).message);
       }

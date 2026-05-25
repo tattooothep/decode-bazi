@@ -217,6 +217,10 @@
   .suggest-chips button .tc{font-family:var(--tc);font-weight:700;color:var(--gold);}
 
   /* input */
+  .profile-pick{display:none;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .profile-pick .pp-label{font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
+  .profile-pick select{background:var(--bg-2);color:var(--fg);border:1px solid var(--gold-line);border-radius:10px;padding:7px 12px;font-family:var(--thai);font-size:13px;cursor:pointer;max-width:240px;}
+  .profile-pick select:focus{outline:none;border-color:var(--gold);}
   .chat-input{display:flex;gap:8px;align-items:flex-end;}
   .chat-input textarea{flex:1;background:var(--bg-2);color:var(--fg);border:1px solid var(--gold-line);border-radius:12px;padding:14px 16px;font-family:var(--thai);font-size:14px;line-height:1.5;resize:none;min-height:52px;max-height:120px;}
   .chat-input textarea::placeholder{color:var(--fg);opacity:.45;}
@@ -569,6 +573,12 @@
       <button><span class="tc">方</span>ทิศที่ควรนั่ง</button>
     </div>
 
+    <!-- profile picker · เลือกดวงในบัญชีที่จะถามซินแส -->
+    <div class="profile-pick" id="sifu-profile-wrap">
+      <span class="pp-label" data-i18n="mst.ask.for">ดูดวงของ:</span>
+      <select id="sifu-profile" aria-label="เลือกโปรไฟล์"></select>
+    </div>
+
     <!-- input -->
     <div class="chat-input">
       <textarea id="chat-input" placeholder="ถามซินแส... เช่น 'พรุ่งนี้ควรประชุมตอนไหน', 'ใครเป็นคนของฉันสัปดาห์นี้'"></textarea>
@@ -819,10 +829,12 @@
     const params = new URLSearchParams(location.search);
     const urlPid = params.get('profileId');
     if (urlPid) { try { localStorage.setItem('hk_profile_id', urlPid); } catch(_){} }
-    let profileId = ''; try { profileId = localStorage.getItem('hk_profile_id') || ''; } catch(_){}
-    const STORE = 'hk_sifu_chat_' + (profileId || 'anon'); /* ประวัติแชทแยกตามดวง */
+    /* 🧑‍🤝‍🧑 ดวงที่เลือกถามได้ = ดวงในบัญชี (ตัวเอง+ญาติ) · เริ่มที่ดวง self · dropdown สลับได้ · ไม่ทับ window.hkActiveProfileId (ดวง self ของ intro) */
+    let selectedProfileId = '';
+    try { selectedProfileId = String(urlPid || window.hkActiveProfileId || localStorage.getItem('hk_profile_id') || ''); } catch(_){}
+    function storeKey(){ return 'hk_sifu_chat_' + (selectedProfileId || 'anon'); } /* ประวัติแชทแยกตามดวง */
     let history = [];
-    function persist(){ try { localStorage.setItem(STORE, JSON.stringify(history.slice(-40))); } catch(_){} }
+    function persist(){ try { localStorage.setItem(storeKey(), JSON.stringify(history.slice(-40))); } catch(_){} }
 
     function addMsg(role, text){
       const div = document.createElement('div');
@@ -836,14 +848,51 @@
       return div;
     }
 
-    /* โหลดประวัติแชทเก่ากลับมา (จำข้ามแชท · เครื่องเดียวกัน) → render เป็นฟอง */
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORE) || '[]');
-      if (Array.isArray(saved) && saved.length) {
-        history = saved.slice(-40);
-        history.forEach(function(m){ addMsg(m.role === 'user' ? 'user' : 'sifu', m.content); });
-      }
-    } catch(_){}
+    /* โหลดประวัติแชทเก่าของดวงที่เลือก → render เป็นฟอง */
+    function loadHistory(){
+      history = [];
+      try {
+        const saved = JSON.parse(localStorage.getItem(storeKey()) || '[]');
+        if (Array.isArray(saved) && saved.length) {
+          history = saved.slice(-40);
+          history.forEach(function(m){ addMsg(m.role === 'user' ? 'user' : 'sifu', m.content); });
+        }
+      } catch(_){}
+    }
+    loadHistory();
+
+    /* 🧑‍🤝‍🧑 dropdown เลือกดวง · โหลดรายชื่อโปรไฟล์ในบัญชีจาก /api/profile (ตัวเอง+ญาติ org เดียวกัน) */
+    var relSelf = (window.HK_I18N && window.HK_I18N['mst.ask.self']) ? window.HK_I18N['mst.ask.self'] : { th:'ตัวเอง', en:'Self', zh:'本人' };
+    function curLocale(){ try { return localStorage.getItem('hk_locale') || 'th'; } catch(_){ return 'th'; } }
+    function switchProfile(newId){
+      if (!newId || String(newId) === selectedProfileId) return;
+      persist();                          /* เก็บแชทดวงเดิมก่อนสลับ */
+      selectedProfileId = String(newId);
+      msgBox.innerHTML = '';              /* เคลียร์ฟองแชทดวงเดิม */
+      loadHistory();                      /* โหลดแชทดวงใหม่ (แยกตามดวง · ไม่ปน) */
+    }
+    fetch('/api/profile', { credentials:'same-origin', cache:'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if (!j || !Array.isArray(j.profiles) || !j.profiles.length) return;
+        var sel = document.getElementById('sifu-profile');
+        var wrap = document.getElementById('sifu-profile-wrap');
+        if (!sel || !wrap) return;
+        var loc = curLocale();
+        sel.innerHTML = '';
+        j.profiles.forEach(function(p){
+          var o = document.createElement('option');
+          o.value = p.id;
+          var rel = p.is_self ? (relSelf[loc] || relSelf.th) : (p.relationship_type || '');
+          o.textContent = (p.nickname || p.name || '—') + (rel ? ' (' + rel + ')' : '');
+          if (String(p.id) === selectedProfileId) o.selected = true;
+          sel.appendChild(o);
+        });
+        if (!selectedProfileId && j.profiles[0]) { selectedProfileId = String(j.profiles[0].id); sel.value = selectedProfileId; }
+        wrap.style.display = 'flex';
+        sel.addEventListener('change', function(){ switchProfile(sel.value); });
+      })
+      .catch(function(){});
 
     /* อ่าน SSE ทีละ token · ยก pattern readTeamSifuStream จาก /yongsennetwork */
     async function readSifuStream(response, handlers){
@@ -881,9 +930,9 @@
       inputEl.value = '';
       sendBtn.disabled = true;
       addMsg('user', text);
-      /* 🩺 อ่าน id ดวงสดทุกครั้ง · ลำดับ: global(สด) > จำในเครื่อง > ไม่มี */
+      /* 🩺 ใช้ดวงที่เลือกใน dropdown · ลำดับ: ดวงที่เลือก > global(สด) > จำในเครื่อง */
       let pid = '';
-      try { pid = String(window.hkActiveProfileId || localStorage.getItem('hk_profile_id') || ''); } catch(_){}
+      try { pid = String(selectedProfileId || window.hkActiveProfileId || localStorage.getItem('hk_profile_id') || ''); } catch(_){}
       if (!pid) {
         console.warn('[sifu] Q&A ไม่มี profileId — คำตอบจะเป็นภาพรวม (ยังไม่พบดวง)');
         if (!window.__sifuNoProfileWarned) { addMsg('sifu','⚠️ ยังไม่พบดวงที่เลือก — คำตอบจะเป็นภาพรวม กรุณาเปิดดวงก่อน เพื่อให้ซินแสอ่านตรงดวงคุณ'); window.__sifuNoProfileWarned = true; }
@@ -970,6 +1019,9 @@
 <script>
 /* hourkey · mst · 3-language i18n (TH/EN/ZH) */
 window.HK_I18N = {
+  /* 🧑‍🤝‍🧑 dropdown เลือกดวง (26 พ.ค.) */
+  'mst.ask.for': { th:'ดูดวงของ:', en:'Reading for:', zh:'查看命盘：' },
+  'mst.ask.self': { th:'ตัวเอง', en:'Self', zh:'本人' },
   /* 🤖 auto-translated · 15 พ.ค. 2026 · L3 */
   'auto.m.001': { th:'คุณไนท์', en:'Khun Knight', zh:'Knight 先生' },
   'auto.m.002': { th:'พฤหัส 7 พ.ค. 2569', en:'Thursday, 7 May 2026', zh:'2026年5月7日 週四' },
