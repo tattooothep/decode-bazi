@@ -880,17 +880,25 @@
         if (!sel || !wrap) return;
         var loc = curLocale();
         sel.innerHTML = '';
-        j.profiles.forEach(function(p){
+        /* default = ดวงตัวเอง (active_profile/is_self) เป็นหลัก · ไม่เชื่อ hk_profile_id ที่อาจค้างดวงญาติจากหน้า chart · ยกเว้น urlPid (chart เด้งมาตั้งใจดูดวงนั้น) */
+        var selfP = j.profiles.find(function(p){ return p.is_self; });
+        var preferId = String(urlPid || (j.active_profile && j.active_profile.id) || (selfP && selfP.id) || j.profiles[0].id);
+        /* ดวงตัวเองขึ้นบนสุดเสมอ (กันค่าเรียงจาก DB เปลี่ยน) */
+        var ordered = j.profiles.slice().sort(function(a, b){ return (b.is_self ? 1 : 0) - (a.is_self ? 1 : 0); });
+        ordered.forEach(function(p){
           var o = document.createElement('option');
           o.value = p.id;
           var rel = p.is_self ? (relSelf[loc] || relSelf.th) : (p.relationship_type || '');
-          o.textContent = (p.nickname || p.name || '—') + (rel ? ' (' + rel + ')' : '');
-          if (String(p.id) === selectedProfileId) o.selected = true;
+          /* ตัวเอง = ชื่อจริงนำ (โชว์ "ไนท์") · ญาติ = ชื่อเล่นนำ — เลียน network กัน self โผล่เป็นชื่อเล่นจนหาไม่เจอ */
+          var nm = p.is_self ? (p.name || p.nickname || '—') : (p.nickname || p.name || '—');
+          o.textContent = (p.is_self ? '⭐ ' : '') + nm + (rel ? ' (' + rel + ')' : '');
+          if (String(p.id) === preferId) o.selected = true;
           sel.appendChild(o);
         });
-        if (!selectedProfileId && j.profiles[0]) { selectedProfileId = String(j.profiles[0].id); sel.value = selectedProfileId; }
         wrap.style.display = 'flex';
         sel.addEventListener('change', function(){ switchProfile(sel.value); });
+        /* ถ้า default (ดวงตัวเอง) ต่างจากที่ตั้งไว้ตอนเริ่ม → สลับไปดวงตัวเอง + โหลดประวัติให้ตรงดวง (ไม่ปน) · switchProfile กัน no-op ถ้าตรงกันอยู่แล้ว */
+        if (preferId !== selectedProfileId) switchProfile(preferId);
       })
       .catch(function(){});
 
