@@ -198,7 +198,8 @@ async function buildBaziContext(profileId: string): Promise<string> {
     if (!row) return "(ไม่พบ profile)";
 
     const dt = row.birth_datetime;
-    const [date, time] = dt.split("T");
+    const [date, timeRaw] = dt.split("T");
+    const time = (timeRaw || "12:00").slice(0, 5);  // ตัดวินาทีออก (DB ให้ HH:MM:SS) · กัน new Date(`...T13:15:00:00`) เสีย → อายุ/วัยจร = NaN
     const lng = Number(row.birth_lng || 100.5018);
     const gender = (row.gender === "female" ? "F" : "M") as "M" | "F";
     const birthTimeKnown = knownBirthTime(row.birth_time_known);
