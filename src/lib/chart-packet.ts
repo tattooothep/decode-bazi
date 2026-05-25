@@ -25,7 +25,8 @@ type PillarKey = "year" | "month" | "day" | "hour";
 /* zh interaction type ที่ engine ส่งมาจริง (รวม fan/fu yin variant) */
 export type InteractionTypeZh =
   | "六沖" | "六合" | "六害" | "六破" | "五合" | "天克"
-  | "伏吟" | "反吟" | "三合" | "三會" | "半合";
+  | "伏吟" | "反吟" | "三合" | "三會" | "半合"
+  | "自刑" | "三刑" | "子卯刑";
 
 export type Interaction = {
   /** zh type จริงจาก engine */
@@ -46,6 +47,14 @@ export type Interaction = {
   };
   /** flag transformed ที่ engine มี (五合) เท่านั้น · ไม่ทำ resolver เอง */
   resolverStatus: "none" | "transformed";
+  /** lot1 · สิบเทพที่ reactionElements กระทบ (เทียบ DM) → "กระทบเรื่องอะไร" · ไม่ตัดสินดี-ร้าย */
+  affectedTenGods?: Array<{ tenGod: string; tenGodTh: string; lifeTopics: string[] }>;
+  /** lot2a · คำอ่านพฤติกรรมต่อคู่ (presentation · กลางๆ ไม่ฟันธง) */
+  behavioralHint?: string;
+  /** lot2b · ประเภทกระตุ้นเชิงจังหวะ · เฉพาะดวงจร (luck/annual) */
+  timingActivationType?: "combination_active" | "clash_active" | "harm_active";
+  /** lot2b · ภาพคู่กิ่งเชิงสัญลักษณ์ (巳申合水 ชุบโลหะ) */
+  branchInteractionImagery?: { image: string; meaning: string };
   /** อ่านตามคัมภีร์ · ยังไม่ฟันธง → AI เติมเอง */
   aiReadingHint: null;
 };
@@ -189,6 +198,7 @@ const INTERACTION_TH: Record<string, string> = {
   五合: "แรงรวมตัวก้านฟ้า (五合)", 天克: "แรงขัดก้านฟ้า (天克)",
   伏吟: "แรงซ้ำเรื่องเดิม (伏吟)", 反吟: "แรงพลิกเรื่องเดิม (反吟)",
   三合: "แรงรวมหมู่ (三合)", 三會: "แรงรวมทิศ (三會)", 半合: "แรงรวมครึ่ง (半合)",
+  自刑: "แรงลงโทษตัวเอง (自刑)", 三刑: "แรงลงโทษสามกิ่ง (三刑)", 子卯刑: "แรงลงโทษไร้มารยาท (子卯刑)",
 };
 
 const ELEMENT_PRODUCES: Record<ElementEN, ElementEN> = {
@@ -240,6 +250,122 @@ function palacesFromPillars(pillars: string[], palaceZh: Record<string, string>)
 }
 function topicsFromPillars(pillars: string[]): string[] {
   return Array.from(new Set(pillars.flatMap((p) => TOPIC_LITE[p] || [])));
+}
+
+/* ──────── lot1: สิบเทพที่ปฏิกิริยากระทบ (element → ten god → เรื่องชีวิต) ──────── */
+/* ten god zh → เรื่องชีวิตไทย (mapping เบา · บอก "กระทบเรื่องอะไร" · ไม่ตัดสินดี-ร้าย) */
+const LIFE_TOPICS: Record<string, string[]> = {
+  正財: ["เงิน", "ทรัพย์", "คู่ครอง(ชาย)"],
+  偏財: ["เงิน", "ทรัพย์", "คู่ครอง(ชาย)"],
+  正官: ["งาน", "อำนาจ", "สามี(หญิง)"],
+  七殺: ["งาน", "อำนาจ", "สามี(หญิง)"],
+  正印: ["แม่", "การเรียน", "ที่พึ่ง", "สุขภาพ"],
+  偏印: ["แม่", "การเรียน", "ที่พึ่ง", "สุขภาพ"],
+  食神: ["ผลงาน", "ความสามารถ", "ลูก(หญิง)"],
+  傷官: ["ผลงาน", "ความสามารถ", "ลูก(หญิง)"],
+  比肩: ["เพื่อน", "หุ้นส่วน", "พี่น้อง", "การแข่งขัน"],
+  劫財: ["เพื่อน", "หุ้นส่วน", "พี่น้อง", "การแข่งขัน"],
+};
+/* element ปลายทาง → ten god zh ที่เป็นไปได้ (คืนทั้ง yin+yang · reactionElement ไม่มี polarity จึงไม่เดาข้าง)
+ * ใช้ relation เดียวกับ tenGodOf เดิม (ทิศตรงกัน) */
+function tenGodOfElement(dmElement: ElementEN | "unknown", targetElement: ElementEN): string[] {
+  if (dmElement === "unknown") return [];
+  const dmEl = dmElement, tEl = targetElement;
+  if (dmEl === tEl) return ["比肩", "劫財"];
+  if (ELEMENT_PRODUCES[dmEl] === tEl) return ["食神", "傷官"];
+  if (ELEMENT_CONTROLS[dmEl] === tEl) return ["偏財", "正財"];
+  if (ELEMENT_CONTROLS[tEl] === dmEl) return ["七殺", "正官"];
+  if (ELEMENT_PRODUCES[tEl] === dmEl) return ["偏印", "正印"];
+  return [];
+}
+/* reactionElements → affectedTenGods · dedupe · derived ล้วน ไม่ตัดสินดี-ร้าย */
+function makeTenGods(reaction: ElementEN[], dmElement: ElementEN | "unknown"): NonNullable<Interaction["affectedTenGods"]> {
+  const seen = new Set<string>();
+  const out: NonNullable<Interaction["affectedTenGods"]> = [];
+  for (const el of reaction) {
+    for (const tg of tenGodOfElement(dmElement, el)) {
+      if (seen.has(tg)) continue;
+      seen.add(tg);
+      out.push({ tenGod: tg, tenGodTh: TEN_GOD_TH[tg] || tg, lifeTopics: LIFE_TOPICS[tg] || [] });
+    }
+  }
+  return out;
+}
+
+/* ──────── lot2a: คำอ่านพฤติกรรมต่อคู่ + 自刑 ──────── */
+const BRANCH_ORDER = "子丑寅卯辰巳午未申酉戌亥";
+function sortedPairKey(a: string, b: string): string {
+  return [a, b].sort((x, y) => BRANCH_ORDER.indexOf(x) - BRANCH_ORDER.indexOf(y)).join("");
+}
+/* key = `${zhType}|${sortedPair}` · กลางๆ ไม่ฟันธง (子午/丑未 มีในคัมภีร์แล้ว ไม่ซ้ำ) */
+const BEHAVIORAL_HINT: Record<string, string> = {
+  "六沖|寅申": "มักเกี่ยวกับความคิดสร้างสรรค์ปะทะกับระเบียบ/ระบบ อาจมีแรงปรับวิธีทำงานหรือโครงสร้าง",
+  "六沖|卯酉": "มักเกี่ยวกับความสัมพันธ์/ภาพลักษณ์ที่ถูกแรงตัดสิน ระวังคำพูดและมาตรฐานที่แข็งเกินไป",
+  "六沖|辰戌": "มักเกี่ยวกับการสั่นคลอนโครงสร้างเก่า/การเปิดของสะสมเดิม เป็นจังหวะทบทวนระบบ",
+  "六沖|巳亥": "มักเกี่ยวกับการเปลี่ยนสถานที่/แนวทาง/กระบวนทัศน์ มีแรงปรับทิศ",
+  "六破|巳申": "ภายนอกดูลงตัวแต่ภายในมีแรงเปลี่ยนแผน/ความไม่ไว้ใจซ่อนอยู่",
+  "六破|未戌": "มักเกี่ยวกับภาระ/ทางเลือกที่คล้ายกันแย่งศูนย์ถ่วงกัน ตัดสินใจได้ยาก ระบบเดิมเริ่มร้าว",
+  "六害|子未": "มักเกี่ยวกับการแบกภาระ/ความคาดหวังที่ไม่ตรงจริง เสี่ยงถูกเอาเปรียบ",
+  "六害|丑午": "มักเกี่ยวกับความมั่นคงกับความรีบที่ชนกัน ต้องจัดจังหวะให้ลงตัว",
+  "六害|寅巳": "มักเกี่ยวกับความทะเยอทะยานที่ผลักดันแต่เผากันเอง ควรคุมจังหวะของทีม",
+  "六害|卯辰": "มักเกี่ยวกับรายละเอียดกับภาพรวมที่ไม่ลงรอย ควรทำขอบเขต/เอกสารให้ชัด",
+  "六害|申亥": "มักเกี่ยวกับความลับ/ความระแวงที่กัดเซาะความไว้ใจ ควรทำข้อมูลให้โปร่งใส",
+  "六害|酉戌": "มักเกี่ยวกับมาตรฐานสูงที่ขาดความผ่อนปรน ระวังคำวิจารณ์กระทบความร่วมมือ",
+};
+/* ชั้นจิตวิทยา 自刑 · key = กิ่งที่ซ้ำ · กลางๆ ไม่ฟันธง */
+const SELF_PUNISH_HINT: Record<string, string> = {
+  辰: "มักมีแนวโน้มคิดวนกับอดีต/ระบบ/ความทรงจำ-เอกสาร และแรงกดดันที่มาจากภายในตัวเอง",
+  午: "มักมีพลังร้อนแรงในใจ ใจร้อน-พักยาก และแรงกดดันเรื่องการแสดงออก/ชื่อเสียง",
+  酉: "มักมีแนวโน้มวิจารณ์ตัวเองและตั้งมาตรฐานสูง ความสัมพันธ์อาจตึงเพราะใช้ความถูกต้องเป็นเครื่องตัดสิน",
+  亥: "มักมีแนวโน้มคิดลึก เก็บความลับ/ความกลัว และครุ่นคิดจนหมกมุ่น",
+};
+
+/* ──────── lot2b: timing activation + ภาพคู่กิ่ง ──────── */
+const TIMING_ACTIVATION: Partial<Record<InteractionTypeZh, Interaction["timingActivationType"]>> = {
+  六合: "combination_active", 三合: "combination_active", 三會: "combination_active",
+  半合: "combination_active", 五合: "combination_active",
+  六沖: "clash_active", 天克: "clash_active", 反吟: "clash_active",
+  六害: "harm_active",
+};
+const TIMING_ACTIVATION_TH: Record<NonNullable<Interaction["timingActivationType"]>, string> = {
+  combination_active: "ช่วงเชื่อม/พันธมิตร/เจรจา",
+  clash_active: "ช่วงปรับโครงสร้าง/เปลี่ยน",
+  harm_active: "ช่วงระวังเข้าใจผิด/ข้อตกลง",
+};
+/* 巳申合水 = ภาพชุบโลหะ · detect จาก 六合 ที่คู่มี 巳+申 (token อาจเป็น stem+branch รวม → ใช้ includes) */
+function detectBranchImagery(type: InteractionTypeZh, tokens: string[]): Interaction["branchInteractionImagery"] | undefined {
+  if (type !== "六合") return undefined;
+  const joined = tokens.join("");
+  if (joined.includes("巳") && joined.includes("申")) {
+    return { image: "quenching_metal", meaning: "ไฟ+ทองเกิดน้ำ ภาพชุบโลหะ คิดไวคม ดูดซับเร็ว แต่มีแรงกดดันซ่อน(破/刑)" };
+  }
+  return undefined;
+}
+/* post-process เติม derived fields (lot1+2a+2b) ให้ Interaction ที่สร้างแล้ว · mutate in place
+ * isTransit=true เฉพาะดวงจร (luck/annual) → ใส่ timingActivationType */
+function enrichInteraction(it: Interaction, dmElement: ElementEN | "unknown", isTransit: boolean): void {
+  /* lot1: affectedTenGods จาก reactionElements */
+  it.affectedTenGods = makeTenGods(it.reactionElements, dmElement);
+  /* branch ของแต่ละ token (token ยาว 2 = stem+branch → เอา branch ตัวท้าย) */
+  const branches = it.participants.map((p) => (p.token.length >= 2 ? p.token.slice(-1) : p.token));
+  /* lot2a: behavioralHint (คู่กิ่ง) */
+  if (branches.length === 2) {
+    const bh = BEHAVIORAL_HINT[`${it.type}|${sortedPairKey(branches[0], branches[1])}`];
+    if (bh) it.behavioralHint = bh;
+  }
+  /* lot2a: 自刑 ชั้นจิตวิทยา */
+  if (it.type === "自刑" && branches[0]) {
+    const sh = SELF_PUNISH_HINT[branches[0]];
+    if (sh) it.behavioralHint = sh;
+  }
+  /* lot2b: timing activation เฉพาะดวงจร */
+  if (isTransit) {
+    const ta = TIMING_ACTIVATION[it.type];
+    if (ta) it.timingActivationType = ta;
+  }
+  /* lot2b: ภาพชุบโลหะ 巳申合水 */
+  const img = detectBranchImagery(it.type, it.participants.map((p) => p.token));
+  if (img) it.branchInteractionImagery = img;
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -410,6 +536,25 @@ export function buildStructuredChartPacket(
     });
   }
 
+  /* lot2a: 刑/自刑 (packet เดิมไม่ดึง ext.punishments) · engine ไม่ส่ง pillar → affectedPalaces ว่าง (ไม่เดา) */
+  for (const p of (ext.punishments || [])) {
+    const uniq = Array.from(new Set(p.branches));
+    const reaction = Array.from(new Set(uniq.map((b) => BRANCH_ELEMENT[b]).filter(Boolean))) as ElementEN[];
+    raw.push({
+      type: p.type as InteractionTypeZh,
+      participants: p.branches.map((b) => ({ pillar: "-", token: b })),
+      reactionElements: reaction,
+      affectedPalaces: [],
+      affectedTopicsLite: ["ภาพรวม"],
+      usefulGodImpact: makeImpact(reaction, yong, xi, ji),
+      resolverStatus: "none",
+      aiReadingHint: null,
+    });
+  }
+
+  /* lot1+2a+2b: เติม derived fields ให้ raw (ผังเกิด · isTransit=false) */
+  for (const it of raw) enrichInteraction(it, dmElement, false);
+
   const anyTransformed = raw.some((r) => r.resolverStatus === "transformed");
   const interactionStatus: ChartPacket["interactions"]["status"] =
     raw.length === 0 ? "none_detected" : (anyTransformed ? "resolved_partial" : "raw_only");
@@ -461,6 +606,8 @@ export function buildStructuredChartPacket(
       });
     }
   }
+  /* lot1+2a+2b: เติม derived fields ให้วัยจร (isTransit=true → มี timingActivationType) */
+  for (const it of luckInteractions) enrichInteraction(it, dmElement, true);
 
   /* ─── annualInteractions (ปีจร × เสาวัน · อ่านจาก engine: liu_nian_timeline entry ของปีปัจจุบัน)
    *   vs_day_branch[] ที่ engine ตรวจไว้แล้ว = 六沖/六合/六害/六破/半合·element (ครบทุกชนิด · ไม่คำนวณเอง) ─── */
@@ -495,6 +642,8 @@ export function buildStructuredChartPacket(
       }
     }
   }
+  /* lot1+2a+2b: เติม derived fields ให้ปีจร (isTransit=true) */
+  for (const it of annualInteractions) enrichInteraction(it, dmElement, true);
 
   /* ─── profile (deep · จาก ext + getDaymasterProfile) ─── */
   const profile: ChartPacket["profile"] = {};
@@ -695,7 +844,16 @@ function renderInteractionGroup(title: string, list: Interaction[], status: stri
     if (it.usefulGodImpact.hitsJi) impactTags.push("แตะธาตุระวัง忌神");
     const impact = impactTags.length ? ` · ${impactTags.join("+")} [derived]` : "";
     const transformed = it.resolverStatus === "transformed" ? " · รวมแล้ว(transformed)" : "";
-    return `  - ${typeTh} ${pairTxt}${reactTxt}${palaces}${topics}${impact}${transformed} · อ่านตามคัมภีร์ ยังไม่ฟันธงดี-ร้าย`;
+    /* lot1: สิบเทพ→เรื่องชีวิต (derived · ไม่ตัดสินดี-ร้าย) */
+    const tgList = it.affectedTenGods || [];
+    const tgTopics = Array.from(new Set(tgList.flatMap((t) => t.lifeTopics)));
+    const tgZh = Array.from(new Set(tgList.map((t) => t.tenGod)));
+    const tgTxt = tgTopics.length ? ` · กระทบ: ${tgTopics.join("/")}${tgZh.length ? `(${tgZh.join("")})` : ""}` : "";
+    /* lot2a: คำอ่านพฤติกรรม · lot2b: จังหวะดวงจร + ภาพคู่กิ่ง */
+    const behavior = it.behavioralHint ? ` · พฤติกรรม: ${it.behavioralHint}` : "";
+    const timing = it.timingActivationType ? ` · จังหวะ: ${TIMING_ACTIVATION_TH[it.timingActivationType]}` : "";
+    const imagery = it.branchInteractionImagery ? ` · ภาพชุบโลหะ: คิดไวคม แต่ซ่อนแรงกดดัน` : "";
+    return `  - ${typeTh} ${pairTxt}${reactTxt}${tgTxt}${palaces}${topics}${impact}${transformed}${timing}${imagery}${behavior} · อ่านตามคัมภีร์ ยังไม่ฟันธงดี-ร้าย`;
   });
   return `${title} [${status}]:\n${items.join("\n")}`;
 }

@@ -29,7 +29,7 @@ type IntroBirthInput = {
   source: "profile" | "params";
 };
 
-const TIMEOUT_MS = 180_000; // 180s · 13-step ajek rules · streaming-less
+const TIMEOUT_MS = 400_000; // 400s · เติมคัมภีร์ md เต็มที่ได้ · ผู้ใช้รอได้ (นโยบาย แม่น>เร็ว 25 พ.ค.) · nginx /api/sifu ต้อง >400s
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const INTRO_OPENROUTER_MODEL = process.env.SIFU_INTRO_MODEL || "anthropic/claude-opus-4.7";
 const CHILD_USER = "jarvis";
