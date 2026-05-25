@@ -419,6 +419,9 @@ data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 
 ### 🔒 ซินแส อ่านดวงแม่น · LOCKED (25 พ.ค. 2026 · deployed + เจ้านายยืนยัน "อ่านดวงเป๊ะมาก")
 
+**📖 อ่านก่อนแตะระบบซินแส: `SIFU-PIPELINE.md` ที่ root** — อธิบายละเอียดทำไมแม่น (5 ชั้น engine→packet→prompt + 5 fix + บทเรียนห้ามทำซ้ำ)
+
+
 **🎯 หมุดย้อนกลับ (ถ้า session หน้าทำพัง ให้ย้อนมาจุดนี้ทันที):**
 `git checkout sifu-accurate-20260525` (= commit `9148e2e`) — จุดที่ซินแสอ่านแม่นที่สุด · tag อยู่บน remote แล้ว
 
