@@ -423,7 +423,7 @@ data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 
 
 **🎯 หมุดย้อนกลับ (ถ้า session หน้าทำพัง ให้ย้อนมาจุดนี้ทันที):**
-`git checkout sifu-accurate-20260525` (= commit `9148e2e`) — จุดที่ซินแสอ่านแม่นที่สุด · tag อยู่บน remote แล้ว
+`git checkout sifu-best-20260526` (= commit `e5cd70c`) — **เวอร์ชันดีสุด เจ้านายยืนยัน 26 พ.ค.** · tag บน remote · (หมุดเก่า sifu-accurate-20260525=9148e2e ยังใช้ได้แต่เก่ากว่า)
 
 **Pipeline ที่ทำให้แม่น (ห้ามแตะลำดับ · engine คำนวณ → AI แค่สรุป):**
 ```
@@ -441,11 +441,21 @@ data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 - `src/app/api/sifu/route.ts` · **บรรทัด ~201 `time.slice(0,5)` ตัดวินาที — ห้ามถอด (ถ้าถอด อายุ/วัยจร = NaN ทันที)** · buildBaziContext/buildIntroBaziContextFromBirth คำนวณ ageNow + วัยจร
 - `public/master.html` · Q&A อ่าน profileId จาก `window.hkActiveProfileId`/localStorage · streaming อ่านทีละ chunk (ห้ามใส่ AbortController/idle-timeout/reader.cancel แบบที่เคยทำ streaming พัง — ดูบทเรียนล่าง)
 
-**บทเรียนที่ห้ามทำซ้ำ (25 พ.ค.):**
+**🔒 ไฟล์ LOCKED เพิ่ม (26 พ.ค. · r100-r104 · ห้ามแก้/ถอดโดยไม่ถามเจ้านาย):**
+- `data/library/สำหรับทำ engine/` (ตำราคลาสสิก 4 เล่ม ~164KB) + `data/library/prompts/sifu-engine-header.md` (กฎเหล็ก 8 ข้อ) — `loadEngineKnowledge()` ใน route.ts ยัดเต็มเข้า prompt · ห้ามตัด/เจือจาง (r100 a0c8c41)
+- `route.ts` · `dumpPromptIfDebug` 3 จุด (env SIFU_DUMP_PROMPT=1 พิสูจน์ prompt จริง · default off) — เก็บไว้ (r101 032f98c)
+- `route.ts` · **org guard**: buildBaziContext/buildIntroBaziContext รับ orgId + `AND org_id=$2 AND is_archived=false` + getSession() ทั้ง POST/GET — ห้ามถอด (กัน IDOR อ่านดวงข้ามบัญชี · r102 052728d)
+- `chart-packet.ts` · **伏吟/反吟 filter ตำราเข้ม** (เฉพาะเต็มเสา + เวลา×ดวง · ตัด variant เดี่ยว+natal×natal) — ห้ามกลับไปยุบ variant (r103 235f7f5) · **ห้ามแตะ chart-extensions เพื่อแก้ 伏吟 (จะลาม /chart)**
+- `master.html` · dropdown เลือกโปรไฟล์: self ใช้ `name||nickname` + ⭐ + บนสุด · default=active_profile/is_self (ไม่เชื่อ localStorage ค้าง) · `selectedProfileId` แยกจาก `window.hkActiveProfileId` · ประวัติแชทแยกตามดวง (r104 e5cd70c)
+
+**บทเรียนที่ห้ามทำซ้ำ:**
 - ❌ ใส่ idle-timeout/AbortController ใน master.html → ตัด stream กลางคัน → ซินแสไม่พิมพ์ (ถอดออกแล้ว commit 2652e71)
 - ❌ DB ให้เวลา HH:MM:SS แล้วเติม `:00` ซ้ำ → Invalid Date → อายุ/วัยจร NaN (แก้ด้วย slice(0,5) commit 9148e2e)
+- ❌ chart-packet ยุบ 伏吟·กิ่ง/·ก้าน → "伏吟" เต็ม = AI พูดมั่ว (ซินแสภายนอกติง · แก้ filter r103)
+- ❌ แก้ 伏吟 ที่ chart-extensions = ลามไป /chart (LOCKED Voytek) · ต้องแก้เฉพาะ chart-packet (เลเยอร์ซินแส)
+- ❌ master dropdown ใช้ nickname นำ self → ดวงเจ้าของโผล่เป็นชื่อเล่น หาไม่เจอ (network ใช้ name นำ · แก้ r104)
 
-**commit chain:** 97b79de (profileId) → c4d2f11 (A+B เจาะปฏิกิริยา) → 2652e71 (ถอด stream-killer) → 9148e2e (fix time/อายุ) · ดู memory [[project_sifu_ab_locked]]
+**commit chain:** 97b79de → c4d2f11 → 2652e71 → 9148e2e (25 พ.ค.) → 6b5b1cd (วัยจร) → a0c8c41 (ตำรา) → 032f98c (dump) → 052728d (multiprofile+org guard) → 235f7f5 (伏吟) → **e5cd70c (dropdown · หมุดดีสุด 26 พ.ค.)** · ดู memory [[project_sifu_ab_locked]]
 
 **scoring/resolver (finalScore/rootMultiplier/合化 grading) = เฟส B/C รอ golden test** · ห้ามใส่ magic number ดิบ
 

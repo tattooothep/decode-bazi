@@ -1,0 +1,1334 @@
+{
+  "packetVersion": "hourkey-bazi-chart-ai-packet-v1.1-final",
+  "packetType": "bazi_chart_context",
+  "language": "th",
+  "source": {
+    "app": "hourkey.io",
+    "module": "master-m-chart",
+    "engineMode": "engine-first",
+    "chartDataQuality": "calculated",
+    "aiMayInventChartData": false,
+    "purpose": "AI-facing normalized Chart Packet for buildChartPacket(); do not send UI dump text."
+  },
+  "questionContext": {
+    "rawQuestion": null,
+    "detectedTopic": null,
+    "detectedFocus": [],
+    "answerMode": "natural_sifu",
+    "detailLevel": "medium",
+    "shouldShowFullChecklist": false,
+    "shouldUseEvidenceLimit": true,
+    "maxEvidencePoints": 5,
+    "routerHints": {
+      "wealth": [
+        "การเงิน",
+        "เงิน",
+        "รายได้",
+        "ลงทุน",
+        "cashflow",
+        "ทรัพย์",
+        "財"
+      ],
+      "career": [
+        "งาน",
+        "อาชีพ",
+        "ตำแหน่ง",
+        "หัวหน้า",
+        "官"
+      ],
+      "leadership": [
+        "ผู้นำ",
+        "บริหาร",
+        "หัวหน้า",
+        "แม่ทัพ",
+        "leadership"
+      ],
+      "relationship": [
+        "คู่",
+        "แฟน",
+        "แต่งงาน",
+        "ความรัก",
+        "夫妻"
+      ],
+      "children": [
+        "ลูก",
+        "บุตร",
+        "ICSI",
+        "ตั้งครรภ์",
+        "子女"
+      ],
+      "health": [
+        "สุขภาพ",
+        "ป่วย",
+        "ร่างกาย",
+        "นอน",
+        "เครียด"
+      ],
+      "forecast": [
+        "ปีนี้",
+        "เดือนนี้",
+        "หลังกันยายน",
+        "อีก 6 เดือน",
+        "จังหวะ"
+      ]
+    }
+  },
+  "personContext": {
+    "privacyMode": "nickname_only",
+    "displayName": null,
+    "safeName": "เจ้าชะตา",
+    "nicknameForResponse": "อรุณ",
+    "genderForClassicalRules": "male",
+    "currentAge": {
+      "asOfDate": "ENGINE_FILL_CURRENT_DATE",
+      "solarAge": null,
+      "chineseAge": null,
+      "calculationStatus": "engine_should_compute"
+    },
+    "birth": {
+      "dateGregorian": "1984-12-31",
+      "timeClock": "13:15",
+      "place": "Bangkok, Thailand",
+      "timezone": "Asia/Bangkok",
+      "trueSolarTimeApplied": true,
+      "timePillarMode": "true_solar_time",
+      "selectedTimePillar": "庚午"
+    }
+  },
+  "timePillarConfidence": {
+    "selectedPillar": "庚午",
+    "method": "true_solar_time",
+    "confidence": "medium",
+    "borderlineHour": true,
+    "clockTime": "13:15",
+    "estimatedTrueSolarTime": "engine_should_compute_exact",
+    "boundary": {
+      "from": "午",
+      "to": "未",
+      "engineShouldComputeLocalClockBoundary": true
+    },
+    "alternativePillar": "辛未",
+    "aiShouldFlagIfHourCritical": true,
+    "hourCriticalTopics": [
+      "children",
+      "future",
+      "late_life",
+      "leadership_style",
+      "output",
+      "creativity",
+      "subordinates"
+    ],
+    "selectedPillarEffectSummary": "庚午 gives 庚傷官 on hour stem and 午火 as useful fire in hour branch.",
+    "alternativePillarEffectSummary": "辛未 would shift hour stem toward 辛食神 and hour branch toward 未 earth-storage; 子午冲 changes materially.",
+    "instructionToAI": "If the answer depends on hour pillar, briefly state the reading assumes true-solar-time 庚午 and mention borderline-hour audit for precision."
+  },
+  "chartCore": {
+    "pillarsText": {
+      "year": "甲子",
+      "month": "丙子",
+      "day": "己亥",
+      "hour": "庚午"
+    },
+    "dayMaster": {
+      "stem": "己",
+      "pinyin": "Jǐ",
+      "element": "土",
+      "polarity": "yin",
+      "thai": "ดินหยิน",
+      "metaphor": "ดินสวน / ดินไร่ที่ต้องการความอบอุ่นและระบบน้ำที่พอดี"
+    },
+    "structure": {
+      "mainPattern": "假從財格_candidate",
+      "patternKey": "WEAK_DM_WATER_HEAVY",
+      "patternThai": "คล้ายตามทรัพย์ / ตัวเราอ่อน น้ำเด่นมาก",
+      "confidence": "high",
+      "notTrueFollow": true,
+      "effectiveReadingMode": "調候_priority_plus_扶抑",
+      "functionalSummary": "DM 己 is very weak and water-heavy, but not true follow-wealth because fire resource and weak root remain.",
+      "doNotOversimplify": true
+    },
+    "patternConsistency": {
+      "declaredPattern": "假從財格_candidate",
+      "trueFollow": false,
+      "consistencyStatus": "reconciled",
+      "effectiveMode": "weak_dm_cold_wealth_pressure_with_fake_follow_tendency",
+      "whyNotTrueFollow": [
+        "丙正印 appears on month stem",
+        "午火 appears in hour branch under true solar time",
+        "己 hidden in 午 gives weak DM root"
+      ],
+      "yongShenConsistency": {
+        "waterAsWealth": true,
+        "waterAsFriendInTrueFollow": false,
+        "waterAsJiInThisChart": true,
+        "reason": "Not 真從財; water is dominant/cold and presses weak-but-not-surrendered 己土."
+      },
+      "aiInstruction": "Do not read as true follow-wealth. Read as weak 己土 with strong wealth/water pressure; fire warms, earth stabilizes, wood bridges."
+    },
+    "dayMasterStrength": {
+      "score": null,
+      "scale": "0-100; engine should compute; <20 may indicate follow-structure territory",
+      "category": "very_weak_but_not_true_follow",
+      "confidence": "high",
+      "rootAnalysis": {
+        "hasRoot": true,
+        "rootLocations": [
+          {
+            "pillar": "hour",
+            "branch": "午",
+            "hiddenStem": "己",
+            "tenGod": "比肩",
+            "hiddenStemWeight": "middle",
+            "rootQuality": "weak_middle_qi_root",
+            "disturbance": "午 is clashed by natal 子 twice"
+          }
+        ],
+        "resourceSupport": [
+          {
+            "pillar": "month",
+            "stem": "丙",
+            "tenGod": "正印",
+            "element": "火",
+            "quality": "visible_resource_but_under_winter_water_pressure"
+          },
+          {
+            "pillar": "hour",
+            "branch": "午",
+            "element": "火",
+            "quality": "useful_fire_but_clashed_by_子"
+          }
+        ],
+        "overallRootQuality": "weak_but_present",
+        "fakeFollowReason": "假從 because 己 has weak root in 午 and receives 丙/午 fire resource; not 真從財."
+      },
+      "supportVsDrain": {
+        "support": [
+          "火印",
+          "土比劫"
+        ],
+        "bridge": [
+          "木官 as 通關 water-to-fire"
+        ],
+        "drainOrPressure": [
+          "水財",
+          "金食傷",
+          "木官 pressure if too strong"
+        ]
+      }
+    },
+    "yongShenLogic": {
+      "primaryLogic": "調候",
+      "secondaryLogic": "扶抑",
+      "tiaoHouUrgency": "high",
+      "tiaoHouReason": "Born in 子 month after 大雪; water/cold is dominant. Fire is needed to warm and restore function.",
+      "fuYiReason": "己土 is weak; fire produces earth and earth strengthens the Day Master.",
+      "conflictCheck": {
+        "hasConflict": false,
+        "note": "Fire supports both 調候 and 扶抑."
+      },
+      "elementRoles": {
+        "火": [
+          "primary_yongshen",
+          "warming",
+          "resource",
+          "confidence",
+          "mentor_support"
+        ],
+        "土": [
+          "xishen",
+          "stability",
+          "root",
+          "capacity_to_hold_wealth"
+        ],
+        "木": [
+          "xishen_bridge",
+          "official_structure",
+          "channels_water_to_fire"
+        ],
+        "水": [
+          "wealth",
+          "pressure",
+          "cold_excess",
+          "cashflow_too_fast_if_uncontained"
+        ],
+        "金": [
+          "output",
+          "drain",
+          "cuts_wood_official_if_unregulated"
+        ]
+      }
+    },
+    "usefulGods": {
+      "yongShen": [
+        {
+          "element": "火",
+          "thai": "ไฟ",
+          "role": "調候 / ความอบอุ่น / ความมั่นใจ / ผู้ใหญ่ / ความรู้"
+        }
+      ],
+      "xiShen": [
+        {
+          "element": "土",
+          "thai": "ดิน",
+          "role": "เพิ่มฐานและกำลังตัวตน"
+        },
+        {
+          "element": "木",
+          "thai": "ไม้",
+          "role": "สะพานน้ำไปหาไฟ / งาน กฎ เป้าหมาย"
+        }
+      ],
+      "jiShen": [
+        {
+          "element": "水",
+          "thai": "น้ำ",
+          "role": "ทรัพย์มากเกิน / แรงกดดัน / ควบคุมยาก"
+        },
+        {
+          "element": "金",
+          "thai": "ทอง",
+          "role": "ระบายพลัง / ตัดไม้官 / พลังรั่ว"
+        }
+      ]
+    },
+    "elementProfile": {
+      "functionalPercent": {
+        "木": 13,
+        "火": 17,
+        "土": 12,
+        "金": 1,
+        "水": 57
+      },
+      "dominant": [
+        "水"
+      ],
+      "weakOrMissing": [
+        "金"
+      ],
+      "neededForBalance": [
+        "火",
+        "土",
+        "木"
+      ],
+      "riskElements": [
+        "水",
+        "金"
+      ],
+      "summary": "น้ำเด่นมาก ดินตัวตนอ่อน ต้องใช้ไฟอุ่นดวงและดินเพิ่มฐาน"
+    }
+  },
+  "pillars": {
+    "order": [
+      "year",
+      "month",
+      "day",
+      "hour"
+    ],
+    "year": {
+      "pillar": "甲子",
+      "palace": {
+        "key": "ancestral",
+        "thai": "祖宮",
+        "lifeArea": "บรรพบุรุษ / วัยเด็ก / เครือข่ายเดิม",
+        "ageRange": "0-16"
+      },
+      "stem": {
+        "char": "甲",
+        "element": "木",
+        "polarity": "yang",
+        "tenGod": "正官",
+        "tenGodThai": "งาน / อำนาจ / กฎ / ตำแหน่ง"
+      },
+      "branch": {
+        "char": "子",
+        "element": "水",
+        "mainQi": "癸"
+      },
+      "hiddenStems": [
+        {
+          "char": "癸",
+          "element": "水",
+          "weight": "principal",
+          "tenGod": "偏財"
+        }
+      ],
+      "growthStages": {
+        "dayMasterOnBranch": {
+          "stage": "絕",
+          "thai": "ขาด"
+        },
+        "pillarStemOnBranch": {
+          "stage": "沐浴",
+          "thai": "อาบ"
+        }
+      },
+      "void": {
+        "status": "engine_should_compute"
+      },
+      "naYin": {
+        "chinese": "海中金",
+        "element": "金"
+      },
+      "hexagram": {
+        "number": 43,
+        "name": "夬",
+        "thai": "ตัด"
+      }
+    },
+    "month": {
+      "pillar": "丙子",
+      "palace": {
+        "key": "parents_career",
+        "thai": "父母兄弟宮",
+        "lifeArea": "พ่อแม่ / อาชีพ / โครงสร้างชีวิต",
+        "ageRange": "17-32"
+      },
+      "stem": {
+        "char": "丙",
+        "element": "火",
+        "polarity": "yang",
+        "tenGod": "正印",
+        "tenGodThai": "ความรู้ / ผู้ใหญ่ / การคุ้มครอง"
+      },
+      "branch": {
+        "char": "子",
+        "element": "水",
+        "mainQi": "癸",
+        "isMonthCommand": true
+      },
+      "hiddenStems": [
+        {
+          "char": "癸",
+          "element": "水",
+          "weight": "principal",
+          "tenGod": "偏財"
+        }
+      ],
+      "growthStages": {
+        "dayMasterOnBranch": {
+          "stage": "絕",
+          "thai": "ขาด"
+        },
+        "pillarStemOnBranch": {
+          "stage": "胎",
+          "thai": "เริ่มก่อตัว"
+        }
+      },
+      "void": {
+        "status": "engine_should_compute"
+      },
+      "naYin": {
+        "chinese": "澗下水",
+        "element": "水"
+      },
+      "hexagram": {
+        "number": 55,
+        "name": "豐",
+        "thai": "เจริญ"
+      }
+    },
+    "day": {
+      "pillar": "己亥",
+      "palace": {
+        "key": "self_spouse",
+        "thai": "夫妻宮",
+        "lifeArea": "ตัวเรา / คู่ครอง",
+        "ageRange": "33-48"
+      },
+      "stem": {
+        "char": "己",
+        "element": "土",
+        "polarity": "yin",
+        "tenGod": "日元",
+        "tenGodThai": "ตัวเรา / Day Master"
+      },
+      "branch": {
+        "char": "亥",
+        "element": "水",
+        "mainQi": "壬"
+      },
+      "hiddenStems": [
+        {
+          "char": "壬",
+          "element": "水",
+          "weight": "principal",
+          "tenGod": "正財"
+        },
+        {
+          "char": "甲",
+          "element": "木",
+          "weight": "middle",
+          "tenGod": "正官"
+        }
+      ],
+      "growthStages": {
+        "dayMasterOnBranch": {
+          "stage": "胎",
+          "thai": "เริ่มก่อตัว"
+        },
+        "pillarStemOnBranch": {
+          "stage": "胎",
+          "thai": "เริ่มก่อตัว"
+        }
+      },
+      "void": {
+        "status": "engine_should_compute"
+      },
+      "naYin": {
+        "chinese": "平地木",
+        "element": "木"
+      },
+      "hexagram": {
+        "number": 9,
+        "name": "小畜",
+        "thai": "สะสมเล็ก"
+      }
+    },
+    "hour": {
+      "pillar": "庚午",
+      "palace": {
+        "key": "children_future",
+        "thai": "子女宮",
+        "lifeArea": "ลูก / ลูกน้อง / อนาคต / บั้นปลาย / ความคิดลึก",
+        "ageRange": "49+"
+      },
+      "stem": {
+        "char": "庚",
+        "element": "金",
+        "polarity": "yang",
+        "tenGod": "傷官",
+        "tenGodThai": "ผลงาน / การแสดงออก / ความสามารถ / การพูด"
+      },
+      "branch": {
+        "char": "午",
+        "element": "火",
+        "mainQi": "丁"
+      },
+      "hiddenStems": [
+        {
+          "char": "丁",
+          "element": "火",
+          "weight": "principal",
+          "tenGod": "偏印"
+        },
+        {
+          "char": "己",
+          "element": "土",
+          "weight": "middle",
+          "tenGod": "比肩"
+        }
+      ],
+      "growthStages": {
+        "dayMasterOnBranch": {
+          "stage": "臨官",
+          "thai": "พลังเต็ม"
+        },
+        "pillarStemOnBranch": {
+          "stage": "沐浴",
+          "thai": "อาบ"
+        }
+      },
+      "void": {
+        "status": "engine_should_compute"
+      },
+      "naYin": {
+        "chinese": "路旁土",
+        "element": "土"
+      },
+      "hexagram": {
+        "number": 32,
+        "name": "恆",
+        "thai": "ยั่งยืน"
+      }
+    }
+  },
+  "stemRootStatus": {
+    "甲": {
+      "visibleAt": [
+        "year.stem"
+      ],
+      "rooted": true,
+      "level": "partial_root",
+      "rootLocations": [
+        "day.branch.亥.hidden.甲"
+      ],
+      "aiImpact": "Authority star has support but is involved in combine/control conflict."
+    },
+    "丙": {
+      "visibleAt": [
+        "month.stem"
+      ],
+      "rooted": true,
+      "level": "disturbed_fire_support",
+      "rootLocations": [
+        "hour.branch.午.hidden.丁"
+      ],
+      "aiImpact": "Useful resource fire exists but is disturbed by 子午 clashes."
+    },
+    "己": {
+      "visibleAt": [
+        "day.stem"
+      ],
+      "rooted": true,
+      "level": "weak_root",
+      "rootLocations": [
+        "hour.branch.午.hidden.己"
+      ],
+      "aiImpact": "Weak root prevents true follow."
+    },
+    "庚": {
+      "visibleAt": [
+        "hour.stem"
+      ],
+      "rooted": false,
+      "level": "虚浮",
+      "rootLocations": [],
+      "rootMultiplier": 0.15,
+      "aiImpact": "Output star visible but not fully rooted; don't overstate control over 甲 unless metal arrives by luck/time."
+    }
+  },
+  "storageVaults": {
+    "natalVaults": [],
+    "luckVaults": [
+      {
+        "source": "currentLuck",
+        "pillar": "庚辰",
+        "branch": "辰",
+        "vaultOf": "水",
+        "thai": "คลังน้ำ / คลังทรัพย์",
+        "status": "present_in_luck_pillar",
+        "relatedToWealth": true,
+        "isUsefulOrRisk": "risk_if_water_overwhelms_weak_dm",
+        "readingHint": "Current luck brings water storage; money/cashflow/stored pressure can be activated."
+      }
+    ],
+    "openCloseEvents": [],
+    "openCloseRulesPending": true,
+    "aiInstruction": "Do not say a vault is opened unless engine marks vaultOpened=true."
+  },
+  "interactions": {
+    "summary": {
+      "hasHarmony": true,
+      "hasClash": true,
+      "hasAlliance": true,
+      "hasDiscord": true,
+      "aiMustNotAssumeGoodBadFromType": true
+    },
+    "resolverStatus": {
+      "level": "B_lite_partial_resolved",
+      "engineFullyResolved": false,
+      "aiShouldUseResolvedFirst": true,
+      "aiMayReferToRawOnlyAsSupport": true,
+      "knownMissing": [
+        "full 貪合忘冲 priority",
+        "full 合化 grading",
+        "full 刑害破 sequencing",
+        "full 墓库 open-close"
+      ]
+    },
+    "raw": [
+      {
+        "id": "INT-001",
+        "type": "天干五合",
+        "name": "甲己合土",
+        "category": "harmony",
+        "participants": [
+          "year.stem.甲",
+          "day.stem.己"
+        ],
+        "resultElementIfTransform": "土",
+        "transformStatus": "bound_no_transform_likely",
+        "shouldAiAssumeTransform": false,
+        "conflictsWith": [
+          "INT-007"
+        ],
+        "resolutionNeeded": true,
+        "strength": {
+          "rawScore": 50,
+          "absoluteStrength": 58,
+          "label": "medium",
+          "distance": {
+            "pillarDistance": 2,
+            "adjacent": false,
+            "modifier": 0.75
+          },
+          "rootModifier": 0.8,
+          "finalScore": 35
+        },
+        "affectedPalaces": [
+          "ancestral",
+          "self_spouse"
+        ],
+        "affectedTopics": [
+          "authority",
+          "career",
+          "leadership"
+        ],
+        "usefulGodImpact": {
+          "hitsYongShen": false,
+          "hitsXiShen": true,
+          "hitsJiShen": false
+        },
+        "aiReadingHint": "Authority tends to approach the native, but official power may be bound/ambivalent."
+      },
+      {
+        "id": "INT-002",
+        "type": "地支六冲",
+        "name": "子午冲",
+        "category": "clash",
+        "participants": [
+          "month.branch.子",
+          "hour.branch.午"
+        ],
+        "strength": {
+          "rawScore": -70,
+          "absoluteStrength": 84,
+          "label": "very_strong",
+          "distance": {
+            "pillarDistance": 2,
+            "adjacent": false,
+            "modifier": 0.85
+          },
+          "positionWeight": {
+            "monthBranch": 5,
+            "hourBranch": 3
+          },
+          "seasonalModifier": 1.2,
+          "finalScore": -71
+        },
+        "affectedPalaces": [
+          "parents_career",
+          "children_future"
+        ],
+        "affectedTopics": [
+          "career_base",
+          "future",
+          "children",
+          "confidence",
+          "decision_making"
+        ],
+        "usefulGodImpact": {
+          "hitsYongShen": true,
+          "hitsXiShen": true,
+          "hitsJiShen": true
+        },
+        "aiReadingHint": "Confidence and long-term direction are disturbed by wealth/pressure/emotional water."
+      },
+      {
+        "id": "INT-003",
+        "type": "地支六冲",
+        "name": "子午冲",
+        "category": "clash",
+        "participants": [
+          "year.branch.子",
+          "hour.branch.午"
+        ],
+        "strength": {
+          "rawScore": -70,
+          "absoluteStrength": 60,
+          "label": "medium_strong",
+          "distance": {
+            "pillarDistance": 3,
+            "adjacent": false,
+            "modifier": 0.65
+          },
+          "positionWeight": {
+            "yearBranch": 2,
+            "hourBranch": 3
+          },
+          "finalScore": -46
+        },
+        "affectedPalaces": [
+          "ancestral",
+          "children_future"
+        ],
+        "affectedTopics": [
+          "social_background",
+          "future",
+          "long_term_plans"
+        ],
+        "usefulGodImpact": {
+          "hitsYongShen": true,
+          "hitsJiShen": true
+        },
+        "aiReadingHint": "Old/social pressure may disturb future direction; lower weight than month-hour clash."
+      },
+      {
+        "id": "INT-004",
+        "type": "三會_partial",
+        "name": "亥子半會水",
+        "category": "alliance",
+        "participants": [
+          "day.branch.亥",
+          "month.branch.子"
+        ],
+        "missingBranchForFullMeeting": "丑",
+        "strength": {
+          "rawScore": 55,
+          "absoluteStrength": 74,
+          "label": "strong",
+          "distance": {
+            "pillarDistance": 1,
+            "adjacent": true,
+            "modifier": 1.0
+          },
+          "seasonalModifier": 1.2,
+          "finalScore": 66
+        },
+        "affectedPalaces": [
+          "self_spouse",
+          "parents_career"
+        ],
+        "affectedTopics": [
+          "wealth_pressure",
+          "career_environment",
+          "spouse_palace"
+        ],
+        "usefulGodImpact": {
+          "hitsJiShen": true
+        },
+        "aiReadingHint": "Money/cashflow/thought/emotional depth are strong, but can press weak earth."
+      },
+      {
+        "id": "INT-005",
+        "type": "伏吟_branch",
+        "name": "子子伏吟",
+        "category": "discord",
+        "participants": [
+          "year.branch.子",
+          "month.branch.子"
+        ],
+        "strength": {
+          "rawScore": -35,
+          "absoluteStrength": 55,
+          "label": "medium",
+          "distance": {
+            "pillarDistance": 1,
+            "adjacent": true,
+            "modifier": 1.0
+          },
+          "finalScore": -35
+        },
+        "affectedTopics": [
+          "family_background",
+          "career_environment",
+          "wealth_pressure",
+          "repetition"
+        ],
+        "usefulGodImpact": {
+          "hitsJiShen": true
+        },
+        "aiReadingHint": "Repeated water from early/social and career environment can become repeated pressure."
+      },
+      {
+        "id": "INT-006",
+        "type": "反吟",
+        "name": "甲子↔庚午反吟",
+        "category": "discord",
+        "participants": [
+          "year.甲子",
+          "hour.庚午"
+        ],
+        "strength": {
+          "rawScore": -60,
+          "absoluteStrength": 64,
+          "label": "medium_strong",
+          "distance": {
+            "pillarDistance": 3,
+            "adjacent": false,
+            "modifier": 0.65
+          },
+          "finalScore": -39
+        },
+        "affectedTopics": [
+          "past_vs_future",
+          "authority_vs_output",
+          "leadership_style"
+        ],
+        "usefulGodImpact": {
+          "hitsYongShen": true,
+          "hitsJiShen": true
+        },
+        "aiReadingHint": "Pulled between old environment and future vision; needs boundaries and system."
+      },
+      {
+        "id": "INT-007",
+        "type": "天克",
+        "name": "庚克甲",
+        "category": "stem_control",
+        "participants": [
+          "hour.stem.庚",
+          "year.stem.甲"
+        ],
+        "conflictsWith": [
+          "INT-001"
+        ],
+        "resolutionNeeded": true,
+        "strength": {
+          "rawScore": -45,
+          "absoluteStrength": 38,
+          "label": "weak_to_medium",
+          "distance": {
+            "pillarDistance": 3,
+            "adjacent": false,
+            "modifier": 0.65
+          },
+          "rootModifier": 0.15,
+          "finalScore": -4
+        },
+        "affectedTopics": [
+          "authority",
+          "expression",
+          "leadership"
+        ],
+        "usefulGodImpact": {
+          "hitsXiShen": true,
+          "hitsJiShen": true
+        },
+        "aiReadingHint": "Ideas/words may challenge authority, but 庚 is floating; do not overstate unless metal is reinforced."
+      }
+    ],
+    "interactionConflicts": [
+      {
+        "id": "CONFLICT-001",
+        "interactions": [
+          "INT-001",
+          "INT-007"
+        ],
+        "sharedParticipant": "year.stem.甲",
+        "issue": "甲 cannot be fully bound by 己 and fully cut by 庚 at full strength simultaneously.",
+        "resolutionRuleNeeded": "合 vs 克 priority; check root strength, distance, seasonal support, and whether 庚 is rooted.",
+        "topicImpact": [
+          "leadership",
+          "career_authority"
+        ],
+        "aiInstruction": "Do not treat both effects as full strength simultaneously. Use resolvedInteractions first."
+      }
+    ],
+    "resolvedInteractions": [
+      {
+        "id": "RES-001",
+        "rawRefs": [
+          "INT-001",
+          "INT-007"
+        ],
+        "resolutionLevel": "B_lite_interpretive_chain",
+        "ruleApplied": "甲己合 likely binds 甲; 庚克甲 exists but is weakened by distance and unrooted 庚.",
+        "result": "正官被合而半羈絆; 傷官克官 risk remains secondary",
+        "thai": "ดาวอำนาจผูกกับตัวเจ้าชะตา แต่ไม่ทำงานเป็นอำนาจสั่งการเต็มรูป; ความคิด/คำพูดอาจปะทะกฎได้ แต่ไม่ใช่แกนหลักถ้าไม่มีทองมาช่วย",
+        "topics": [
+          "leadership",
+          "career",
+          "authority"
+        ],
+        "confidence": "medium_high",
+        "leadershipImplication": "เหมาะกับผู้นำแบบเชื่อมทีม รับผิดชอบ สร้างความไว้ใจ มากกว่าสายสั่งการแข็ง"
+      },
+      {
+        "id": "RES-002",
+        "rawRefs": [
+          "INT-002",
+          "INT-003",
+          "INT-005"
+        ],
+        "resolutionLevel": "B_lite_interpretive_chain",
+        "ruleApplied": "Repeated 子 and two 子午 clashes amplify water-fire tension; month-hour clash stronger than year-hour clash.",
+        "result": "午火用神受冲",
+        "thai": "ไฟที่ช่วยดวงและความมั่นใจถูกน้ำกวนซ้ำ โดยเฉพาะจากเสาเดือน ต้องมีผู้ใหญ่/ระบบ/ที่ปรึกษา/ขอบเขตช่วยประคอง",
+        "topics": [
+          "confidence",
+          "leadership",
+          "future",
+          "decision_making"
+        ],
+        "confidence": "high",
+        "leadershipImplication": "เป็นผู้นำได้ดีเมื่อมีระบบและทีม ไม่เหมาะกับการตัดสินใจเดี่ยวภายใต้แรงอารมณ์/แรงเงิน"
+      },
+      {
+        "id": "RES-003",
+        "rawRefs": [
+          "INT-004"
+        ],
+        "resolutionLevel": "B_lite_interpretive_chain",
+        "ruleApplied": "亥子 water pull strengthens wealth/water pressure.",
+        "result": "財氣過旺",
+        "thai": "แรงทรัพย์และน้ำมาก มีโอกาสเรื่องเงิน แต่กดดันตัวตน ต้องมีดิน/ระบบ/กติกาคุม",
+        "topics": [
+          "wealth",
+          "cashflow",
+          "emotional_pressure"
+        ],
+        "confidence": "high"
+      }
+    ],
+    "secondaryInteractions": {
+      "punishments": {
+        "detected": [],
+        "noneDetected": true
+      },
+      "harms": {
+        "detected": [],
+        "noneDetected": true
+      },
+      "destructions": {
+        "detected": [],
+        "noneDetected": true
+      },
+      "selfPunishments": {
+        "detected": [],
+        "noneDetected": true
+      }
+    }
+  },
+  "patternCandidates": [
+    {
+      "name": "傷官配印",
+      "status": "partial_or_supported",
+      "components": {
+        "shangGuan": {
+          "stem": "庚",
+          "pillar": "hour",
+          "rootQuality": "unrooted_or_weak"
+        },
+        "yin": {
+          "stem": "丙",
+          "pillar": "month",
+          "element": "火",
+          "isYongShen": true
+        }
+      },
+      "quality": "usable_if_fire_is_supported",
+      "readingHint": "Talent/speech/unconventional ideas need knowledge, mentors, rules, or discipline to become leadership power."
+    }
+  ],
+  "luckCycles": {
+    "timing": {
+      "asOfDate": "ENGINE_FILL_CURRENT_DATE",
+      "currentLuckPillar": "庚辰",
+      "currentLuckStatus": "active",
+      "nextLuckPillar": "辛巳",
+      "transitionDateApprox": "engine_should_compute_exact",
+      "isTransitionYear": true,
+      "forecastRule": "If forecast range crosses the transition date, split reading into 庚辰 and 辛巳 segments."
+    },
+    "forecastLuckSegments": [
+      {
+        "from": "2026-01",
+        "to": "transitionDateApprox",
+        "luckPillar": "庚辰"
+      },
+      {
+        "from": "transitionDateApprox",
+        "to": "2036-xx",
+        "luckPillar": "辛巳"
+      }
+    ],
+    "current": {
+      "pillar": "庚辰",
+      "ageRange": "31 ปี 9 เดือน – 41 ปี 9 เดือน",
+      "stem": {
+        "char": "庚",
+        "element": "金",
+        "tenGod": "傷官"
+      },
+      "branch": {
+        "char": "辰",
+        "element": "土",
+        "phase": "衰",
+        "vaultOf": "水"
+      },
+      "interactionsWithNatal": [
+        {
+          "target": "year.stem.甲",
+          "type": "天克",
+          "note": "庚 may pressure/cut 甲; weigh roots/distance."
+        },
+        {
+          "target": "year_month.branch.子",
+          "type": "半合·water",
+          "note": "辰 connects with 子 into water half-combination."
+        }
+      ]
+    },
+    "next": {
+      "pillar": "辛巳",
+      "ageRange": "41 ปี 9 เดือน – 51 ปี 9 เดือน",
+      "stem": {
+        "char": "辛",
+        "element": "金"
+      },
+      "branch": {
+        "char": "巳",
+        "element": "火",
+        "phase": "帝旺"
+      },
+      "transitionNote": "After transition, read 辛巳 as main luck, especially for 亥冲巳."
+    }
+  },
+  "annualMonthlyContext": {
+    "currentYear": {
+      "year": 2026,
+      "pillar": "丙午",
+      "available": true,
+      "stem": {
+        "char": "丙",
+        "element": "火",
+        "tenGod": "正印",
+        "relationToChart": "火 is Yong Shen; 印 means knowledge/mentor/protection."
+      },
+      "branch": {
+        "char": "午",
+        "element": "火",
+        "relationToChart": "午 is useful fire but activates 子午冲 with natal 子."
+      }
+    },
+    "annualInteractionsWithNatal": [
+      {
+        "year": 2026,
+        "annualPillar": "丙午",
+        "type": "流年地支六冲",
+        "name": "午冲子",
+        "targets": [
+          {
+            "pillar": "year",
+            "branch": "子"
+          },
+          {
+            "pillar": "month",
+            "branch": "子"
+          }
+        ],
+        "strength": {
+          "label": "strong",
+          "reason": "Annual 午 repeats useful fire and clashes two natal 子 branches."
+        },
+        "usefulGodImpact": {
+          "annualBranchIsYongShen": true,
+          "targetsAreJiShen": true,
+          "note": "Fire enters to confront excessive water; corrective but turbulent."
+        },
+        "readingHint": "2026 brings useful fire to move/challenge old water pressure."
+      }
+    ],
+    "luckAnnualInteractions": [
+      {
+        "luckPillar": "庚辰",
+        "annualPillar": "丙午",
+        "type": "天干克",
+        "name": "丙克庚",
+        "effect": "Annual fire/resource can regulate current-luck 庚傷官.",
+        "readingHint": "Mentors/knowledge/systems help control sharp speech/overthinking from 庚."
+      }
+    ],
+    "importantMonthsForForecast": [
+      {
+        "monthApprox": "2026-10",
+        "pillar": "戊戌",
+        "theme": "ดินหนา ดินอุ่น ตั้งฐาน วางระบบ หาทีม",
+        "likelyHelpful": true
+      },
+      {
+        "monthApprox": "2026-11",
+        "pillar": "己亥",
+        "theme": "ดินบน น้ำล่าง เงิน/ภาระมา ต้องคุม cashflow",
+        "likelyHelpful": "mixed"
+      },
+      {
+        "monthApprox": "2026-12",
+        "pillar": "庚子",
+        "theme": "ทองน้ำแรง งานเยอะ เงินหมุนเร็ว พลังรั่ว",
+        "likelyHelpful": false
+      }
+    ]
+  },
+  "lifeDomains": {
+    "wealth": {
+      "wealthElement": "水",
+      "wealthIsDominant": true,
+      "wealthAsJiShen": true,
+      "readingHint": "Money/cashflow can be strong but must be contained with earth/system."
+    },
+    "leadership": {
+      "authoritySignals": [
+        "正官甲 appears on year stem",
+        "甲己合 links authority to DM",
+        "庚傷官 hour stem gives output/communication",
+        "丙正印 can regulate 傷官"
+      ],
+      "riskSignals": [
+        "庚傷官 may challenge 甲正官 but 庚 is weakly rooted",
+        "子午冲 disturbs useful fire",
+        "water dominance may create hesitation"
+      ],
+      "bestLeadershipStyle": [
+        "ผู้นำเชื่อมทีม",
+        "product/vision leader",
+        "trusted center",
+        "leader with mentors/systems"
+      ],
+      "lessSuitableLeadershipStyle": [
+        "command-control แบบแข็ง",
+        "ลุยเดี่ยว",
+        "ปะทะอำนาจทั้งวัน"
+      ]
+    },
+    "spousePalaceAnalysis": {
+      "enabledForRelationshipTopic": true,
+      "dayBranch": "亥",
+      "element": "水",
+      "hiddenStems": [
+        "壬",
+        "甲"
+      ],
+      "forMaleChart": {
+        "spouseStarElement": "水",
+        "spouseStarPresent": true,
+        "spouseStarInSpousePalace": true
+      },
+      "readingHint": "Relationship carries strong water quality; deep/flexible but can add emotional/financial pressure if excessive."
+    }
+  },
+  "stars": {
+    "useAsSecondaryEvidenceOnly": true,
+    "topicRelevantStars": {
+      "leadership": [
+        {
+          "name": "將星",
+          "detected": true,
+          "pillars": [
+            "year",
+            "month"
+          ]
+        },
+        {
+          "name": "天乙貴人",
+          "detected": true,
+          "pillars": [
+            "year",
+            "month"
+          ]
+        },
+        {
+          "name": "祿神",
+          "detected": true,
+          "pillars": [
+            "hour"
+          ]
+        },
+        {
+          "name": "羊刃",
+          "detected": false
+        },
+        {
+          "name": "魁罡",
+          "detected": false
+        },
+        {
+          "name": "文昌",
+          "detected": false
+        }
+      ]
+    }
+  },
+  "hexagrams": {
+    "useAsTextureOnly": true,
+    "natalPillarHex": {
+      "hour": {
+        "number": 32,
+        "name": "恆",
+        "thai": "ยั่งยืน"
+      },
+      "day": {
+        "number": 9,
+        "name": "小畜",
+        "thai": "สะสมเล็ก"
+      },
+      "month": {
+        "number": 55,
+        "name": "豐",
+        "thai": "เจริญ"
+      },
+      "year": {
+        "number": 43,
+        "name": "夬",
+        "thai": "ตัด"
+      }
+    }
+  },
+  "jieQi": {
+    "birthMonthByJieQi": "子",
+    "monthStartJie": {
+      "name": "大雪",
+      "thai": "หิมะหนัก",
+      "datetimeCST": "1984-12-07 06:28"
+    },
+    "birthAfterMonthStart": true,
+    "note": "BaZi month starts at 節氣, not lunar day 1."
+  },
+  "confidence": {
+    "overallChart": "medium_high",
+    "timePillar": "medium",
+    "patternClassification": "medium_high",
+    "usefulGods": "high_if_selected_hour_is_庚午",
+    "interactions": "medium_high_for_B_lite_resolved_chains",
+    "forecast": "medium_due_to_luck_transition_year",
+    "notes": [
+      "Hour-pillar dependent topics should mention borderline hour.",
+      "Pattern is not true follow-wealth; use effective reading mode."
+    ]
+  },
+  "provenance": {
+    "dataVersion": {
+      "hiddenStemsTable": "hourkey-bazi-core-v1",
+      "tenGodMapping": "hourkey-bazi-core-v1",
+      "shenShaTable": "hourkey-sesheta-stars-v1",
+      "interactionRules": "hourkey-interaction-master-v1",
+      "growthStages": "hourkey-12changsheng-v1"
+    },
+    "computedBy": {
+      "pillars": "engine",
+      "trueSolarTime": "engine",
+      "tenGods": "engine",
+      "hiddenStems": "engine",
+      "functionalPercent": "engine",
+      "interactionsRaw": "engine",
+      "interactionsResolved": "engine_or_rule_preprocessor_B_lite",
+      "aiReadingHints": "curated_template"
+    }
+  },
+  "aiResponsePolicy": {
+    "mustUseOnlyProvidedChartData": true,
+    "mustNotInventPillars": true,
+    "mustNotInventScores": true,
+    "mustPreferResolvedInteractionsOverRaw": true,
+    "mustNotShowFullChecklistUnlessAsked": true,
+    "mustSelectTopEvidenceBeforeWriting": true,
+    "mustFlagHourIfQuestionDependsOnHour": true,
+    "evidenceSelectionRule": {
+      "min": 3,
+      "max": 5,
+      "mustIncludeIfRelevant": [
+        "用神/忌神",
+        "月令",
+        "dayMasterStrength",
+        "patternConsistency",
+        "affectedPalace",
+        "resolvedInteraction",
+        "timePillarConfidence"
+      ]
+    },
+    "style": {
+      "tone": "natural_sifu",
+      "avoidOverTechnicalChinese": true,
+      "explainChineseTermsOnlyWhenUseful": true,
+      "answerStructureForSpecificQuestion": [
+        "สรุปตรงคำถาม",
+        "หลักฐานจากดวง 3-5 จุด",
+        "แปลเป็นชีวิตจริง",
+        "สิ่งที่ควรทำ"
+      ],
+      "noFearMongering": true,
+      "noAbsolutePrediction": true
+    }
+  }
+}
