@@ -417,12 +417,34 @@ data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 
 **ขั้นตอน:** ถามเจ้านาย → รอ confirm → backup → ทำเป็น phase → test 3 รอบ
 
-### 🔒 ซินแส A+B · LOCKED (25 พ.ค. 2026 · deployed + เจ้านายยืนยัน "ใช้ได้")
-แก้ปัญหา AI "ตอบกว้าง" สำเร็จ · commit c4d2f11 + 97b79de · tag `r99-sifu-ab-deploy-20260525` · **ห้าม rewrite/ลด/มั่ว โดยไม่ถามเจ้านาย:**
-- `src/lib/chart-packet.ts` · renderInteractionGroup render `reactionElements` ("กระทบธาตุ: น้ำ+ไฟ") — ห้ามถอด
+### 🔒 ซินแส อ่านดวงแม่น · LOCKED (25 พ.ค. 2026 · deployed + เจ้านายยืนยัน "อ่านดวงเป๊ะมาก")
+
+**🎯 หมุดย้อนกลับ (ถ้า session หน้าทำพัง ให้ย้อนมาจุดนี้ทันที):**
+`git checkout sifu-accurate-20260525` (= commit `9148e2e`) — จุดที่ซินแสอ่านแม่นที่สุด · tag อยู่บน remote แล้ว
+
+**Pipeline ที่ทำให้แม่น (ห้ามแตะลำดับ · engine คำนวณ → AI แค่สรุป):**
+```
+วันเกิด → bazi-calc.ts (4 เสา · tyme4ts · Layer 0-1)
+        → chart-extensions.ts (วัยจร/ปฏิกิริยา · Layer 2)
+        → chart-packet.ts (buildStructuredChartPacket + renderChartPrompt)
+        → sifu-qa/lang.md + คัมภีร์ bazi-interaction-master.md
+        → Claude CLI (opus)
+```
+
+**ไฟล์ LOCKED — ห้าม rewrite/ลด/มั่ว โดยไม่ถามเจ้านาย:**
+- `src/lib/chart-packet.ts` · render `reactionElements` ("กระทบธาตุ: น้ำ+ไฟ") + เสา/วัยจร/ปฏิกิริยา — ห้ามถอด
 - `data/library/prompts/sifu-qa.md` + `sifu-lang.md` (TH/EN/ZH) · กฎเลือกหลักฐาน 3-5 จุด + ระบุชื่อ+เสาปฏิกิริยา + ลด hedge — ห้ามตัดกฎเจาะ
-- `public/master.html` · Q&A อ่าน profileId จาก `window.hkActiveProfileId`/localStorage (sync จาก /api/profile) — ห้ามถอย
-- **scoring/resolver (finalScore/rootMultiplier/合化 grading) = เฟส B/C รอ golden test** · ห้ามใส่ magic number ดิบ · ดู memory [[project_sifu_ab_locked]]
+- `data/library/bazi-interaction-master.md` (คัมภีร์ปฏิกิริยา 54KB) — ส่งเต็มก้อนทุก request · ห้ามตัด/เจือจาง
+- `src/app/api/sifu/route.ts` · **บรรทัด ~201 `time.slice(0,5)` ตัดวินาที — ห้ามถอด (ถ้าถอด อายุ/วัยจร = NaN ทันที)** · buildBaziContext/buildIntroBaziContextFromBirth คำนวณ ageNow + วัยจร
+- `public/master.html` · Q&A อ่าน profileId จาก `window.hkActiveProfileId`/localStorage · streaming อ่านทีละ chunk (ห้ามใส่ AbortController/idle-timeout/reader.cancel แบบที่เคยทำ streaming พัง — ดูบทเรียนล่าง)
+
+**บทเรียนที่ห้ามทำซ้ำ (25 พ.ค.):**
+- ❌ ใส่ idle-timeout/AbortController ใน master.html → ตัด stream กลางคัน → ซินแสไม่พิมพ์ (ถอดออกแล้ว commit 2652e71)
+- ❌ DB ให้เวลา HH:MM:SS แล้วเติม `:00` ซ้ำ → Invalid Date → อายุ/วัยจร NaN (แก้ด้วย slice(0,5) commit 9148e2e)
+
+**commit chain:** 97b79de (profileId) → c4d2f11 (A+B เจาะปฏิกิริยา) → 2652e71 (ถอด stream-killer) → 9148e2e (fix time/อายุ) · ดู memory [[project_sifu_ab_locked]]
+
+**scoring/resolver (finalScore/rootMultiplier/合化 grading) = เฟส B/C รอ golden test** · ห้ามใส่ magic number ดิบ
 
 ---
 
