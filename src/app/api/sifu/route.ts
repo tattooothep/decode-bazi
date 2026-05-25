@@ -117,6 +117,64 @@ function buildIntroWarmup(ctx: string): string | null {
     .replace("{{BODY}}", () => body) + "\n\n";
 }
 
+/* 📦 CHART PACKET รายเสา (ใช้ร่วม intro + ถาม-ตอบ · ให้ AI เห็นข้อมูลเท่ากัน)
+ * คืน rich lines: รายเสา (สิบเทพ/ก้านซ่อน/12ระยะ/ปฏิกิริยา/วัง/ดาว/นายิน/卦) + ลำดับการอ่าน + ธาตุรวม + 空亡 + วัยจร + ปีจร + คู่ครอง + timeline */
+function buildChartPacket(
+  calc: Awaited<ReturnType<typeof calcBazi>>,
+  ext: ReturnType<typeof buildChartExtensions>,
+  dm: string,
+  g: Record<string, string>,
+  ageNow: number,
+): string[] {
+  const lp = ext.luck_pillars[ext.current_luck_idx];
+  const pkeys = ["year", "month", "day", "hour"] as const;
+  const pillarZh: Record<(typeof pkeys)[number], string> = { year: "年", month: "月", day: "日", hour: "時" };
+  const pillarEn: Record<(typeof pkeys)[number], string> = { year: "Year", month: "Month", day: "Day", hour: "Hour" };
+  const pillarFacts = pkeys.map((k) => {
+    const p = calc.pillars[k];
+    if (!p) return `${pillarEn[k]} ${pillarZh[k]}: -`; // 3p mode ไม่มีเสายาม (helper ถูกเรียกเฉพาะ 4p อยู่แล้ว)
+    const tg = k === "day" ? "ตัวตนหลัก" : (TEN_GOD_TH[ext.ten_gods_map[k]?.ten_god || ""] || "-");
+    const hidden = (HIDDEN_STEMS_MAP[p.branch] || [])
+      .map((h, idx) => `${idx === 0 ? "แกนหลัก" : `แรงแฝง${idx}`}:${STEM_TH[h] || h}/${DM_LABEL_TH[STEM_ELEMENT_MAP[h]] || STEM_ELEMENT_MAP[h] || "-"}/${tenGodLabel(h, dm)}`)
+      .join(" · ") || "-";
+    const phase = ext.three_phases[k];
+    const stars = ext.special_stars[k].map((s) => s.th || s.zh).slice(0, 3).join(" · ") || "-";
+    const react = [
+      ...ext.interactions.filter((i) => i.pillars_pair.includes(k)).map((i) => i.type === "六沖" ? "แรงปะทะ" : i.type === "六合" ? "แรงประสาน" : i.type === "六害" ? "แรงแทรก" : "แรงแตก"),
+      ...ext.stem_interactions.filter((i) => i.pillars_pair.includes(k)).map((i) => i.type === "五合" ? "แรงรวมตัว" : "แรงขัด"),
+      ...ext.fan_yin_fu_yin.filter((i) => i.natal_pillar === k || i.other_pillar === k).map((i) => i.type.includes("伏吟") ? "แรงซ้ำเรื่องเดิม" : "แรงพลิกเรื่องเดิม"),
+    ].join(" · ") || "-";
+    const ny = ext.nayin[k];
+    const palace = ext.palace_readings[k];
+    return `${pillarEn[k]} ${pillarZh[k]}: ฟ้า=${STEM_TH[p.stem] || p.stem}/${tg}; ดิน=${BRANCH_TH_NAME[p.branch] || p.branch}/${DM_LABEL_TH[STEM_ELEMENT_MAP[(HIDDEN_STEMS_MAP[p.branch] || [])[0] || ""]] || "-"}; แรงดิน->${tenGodLabel((HIDDEN_STEMS_MAP[p.branch] || [])[0] || "", dm)}; ธาตุซ่อน=${hidden}; วัฏจักร=ตัวตน:${phase.dm || "-"} เสา:${phase.pillar || "-"} ซ่อน:${phase.hidden_main || "-"}; ปฏิกิริยา=${react}; เรือน=${palace.title_th}; ดาวประกอบเท่านั้น=${stars}; นับเสียงประกอบ=${ny ? `${ny.th || ny.en}` : "-"}; ภาพเปลี่ยนผ่านประกอบ=${palace.hex ? `${palace.hex.th || palace.hex.en}` : "-"}`;
+  });
+  const lifeDecades = ext.liu_nian_timeline
+    .filter((x) => x.age >= 0 && x.age <= ageNow)
+    .reduce<Array<{ start: number; sample: string[] }>>((acc, x) => {
+      const bucketStart = Math.floor(x.age / 10) * 10;
+      let bucket = acc.find((b) => b.start === bucketStart);
+      if (!bucket) {
+        bucket = { start: bucketStart, sample: [] };
+        acc.push(bucket);
+      }
+      if (bucket.sample.length < 2) bucket.sample.push(`${x.pillar.stem}${x.pillar.branch}${x.ten_god ? `/${x.ten_god}` : ""}${x.vs_day_branch.length ? `/${x.vs_day_branch.join(",")}` : ""}`);
+      return acc;
+    }, [])
+    .map((b) => `${b.start}-${b.start + 9}:${b.sample.join("|")}`)
+    .slice(0, 7)
+    .join(" ; ");
+  return [
+    `CHART PACKET รายเสา:\n${pillarFacts.join("\n")}`,
+    g.READING_ORDER,
+    `ธาตุรวม: ไม้ ${ext.element_counts.wood} · ไฟ ${ext.element_counts.fire} · ดิน ${ext.element_counts.earth} · ทอง ${ext.element_counts.metal} · น้ำ ${ext.element_counts.water} · ${g.NO_PERCENT}`,
+    `ช่องว่างของดวง: วัน=${ext.kong_wang.void_branches.map((b) => BRANCH_TH_NAME[b] || b).join("/")} · ปี=${ext.kong_wang.year_xun_voids.map((b) => BRANCH_TH_NAME[b] || b).join("/")}`,
+    `วัยจรปัจจุบัน: ${lp ? `${STEM_TH[lp.stem] || lp.stem}/${BRANCH_TH_NAME[lp.branch] || lp.branch} อายุ ${lp.age_start}-${lp.age_end} · ${lp.qi_phase || "-"}` : "-"}`,
+    `ปีจรปัจจุบัน: ${STEM_TH[ext.current_year_pillar.stem] || ext.current_year_pillar.stem}/${BRANCH_TH_NAME[ext.current_year_pillar.branch] || ext.current_year_pillar.branch}`,
+    `คู่ครอง/ตัวตน: ${BRANCH_TH_NAME[ext.spouse_palace.day_branch] || ext.spouse_palace.day_branch} · ธาตุซ่อน ${ext.spouse_palace.hidden_stems.map((h) => STEM_TH[h] || h).join(" · ") || "-"} · ปฏิกิริยา ${ext.spouse_palace.relationship_flags.join(" · ") || "-"}`,
+    `timeline 10 ปี: ${lifeDecades || "-"}`,
+  ];
+}
+
 /* 🧓 อาเจ๊กฮ้ง bazi reading rules · cache 60s · บังคับ AI ทุก request */
 const AJEK_RULES_PATH = join(process.cwd(), "data/library/ajek-bazi-rules.md");
 let _ajekCache: { text: string; ts: number; version: string } | null = null;
@@ -164,7 +222,7 @@ function cacheKey(opts: {
   ruleVersion: string;
 }): string {
   const parts = [
-    "v2-3p",
+    "v3-fullctx", // 25 พ.ค. · Q&A ส่ง CHART PACKET ครบเท่า intro · bump = invalidate คำตอบเก่าที่ข้อมูลบาง
     opts.ruleVersion,
     opts.profileId || "anon",
     opts.topic || "free",
@@ -268,20 +326,25 @@ async function buildBaziContext(profileId: string): Promise<string> {
       calc.strength.percent,
       calc.yongshen[0]?.element || null
     );
-    const lp = ext.luck_pillars[ext.current_luck_idx];
+    const dm = calc.dayMaster;
+    const ageNow = Math.max(0, new Date().getUTCFullYear() - new Date(`${date}T${time}:00+07:00`).getUTCFullYear());
+    const dmElement = STEM_ELEMENT_MAP[dm] || "unknown";
+    const dmPolarity = STEM_POLARITY_MAP[dm] || "yang";
+    const dmElementTh = DM_LABEL_TH[dmElement] || dmElement;
+    const dmPolarityTh = DM_POLARITY_TH[dmPolarity] || dmPolarity;
     const ny = ext.nayin;
-    const lpStr = lp ? `${lp.stem}${lp.branch} (${lp.qi_phase})` : "—";
 
     const lines = [
-      `ชื่อ: ${row.name || "—"} · เพศ ${gender}`,
+      `ชื่อ: ${row.name || "—"} · เพศ ${gender} · อายุปัจจุบันประมาณ ${ageNow}`,
       `เกิด: ${date} ${time} · ลองจิจูด ${lng}`,
       `4 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時${calc.pillarsZh.hour}`,
-      `วันเจ้า: ${calc.dayMaster} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
+      `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement} · ${g.DM_FACT_LOCK}`,
+      g.DM_THAI_LOCK.replace("{{DM_ELEMENT}}", () => dmElementTh).replace("{{DM_POLARITY}}", () => dmPolarityTh),
+      `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
       `用神: ${calc.yongshen.slice(0, 3).map(y => `${y.stem}(${y.element})`).join(" · ")}`,
       `格局: ${calc.geJu.structure || "ปกติ"}`,
       `納音: 年${ny.year?.zh||"-"} · 月${ny.month?.zh||"-"} · 日${ny.day?.zh||"-"} · 時${ny.hour?.zh||"-"}`,
-      `เสาโชคปัจจุบัน: ${lpStr}`,
-      `流年 2026: ${ext.current_year_pillar.stem}${ext.current_year_pillar.branch}`,
+      ...buildChartPacket(calc, ext, dm, g, ageNow),
     ];
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
@@ -381,51 +444,10 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
     );
     const dm = calc.dayMaster;
     const ageNow = Math.max(0, new Date().getUTCFullYear() - birthDate.getUTCFullYear());
-    const lp = ext.luck_pillars[ext.current_luck_idx];
     const dmElement = STEM_ELEMENT_MAP[dm] || "unknown";
     const dmPolarity = STEM_POLARITY_MAP[dm] || "yang";
     const dmElementTh = DM_LABEL_TH[dmElement] || dmElement;
     const dmPolarityTh = DM_POLARITY_TH[dmPolarity] || dmPolarity;
-    const pkeys = ["year", "month", "day", "hour"] as const;
-    const pillarZh: Record<(typeof pkeys)[number], string> = { year: "年", month: "月", day: "日", hour: "時" };
-    const pillarEn: Record<(typeof pkeys)[number], string> = { year: "Year", month: "Month", day: "Day", hour: "Hour" };
-      const pillarFacts = pkeys.map((k) => {
-      const p = calc.pillars[k];
-      const tg = k === "day" ? "ตัวตนหลัก" : (TEN_GOD_TH[ext.ten_gods_map[k]?.ten_god || ""] || "-");
-      const hidden = (HIDDEN_STEMS_MAP[p.branch] || [])
-        .map((h, idx) => `${idx === 0 ? "แกนหลัก" : `แรงแฝง${idx}`}:${STEM_TH[h] || h}/${DM_LABEL_TH[STEM_ELEMENT_MAP[h]] || STEM_ELEMENT_MAP[h] || "-"}/${tenGodLabel(h, dm)}`)
-        .join(" · ") || "-";
-      const phase = ext.three_phases[k];
-      const stars = ext.special_stars[k].map((s) => s.th || s.zh).slice(0, 3).join(" · ") || "-";
-      const react = [
-        ...ext.interactions.filter((i) => i.pillars_pair.includes(k)).map((i) => i.type === "六沖" ? "แรงปะทะ" : i.type === "六合" ? "แรงประสาน" : i.type === "六害" ? "แรงแทรก" : "แรงแตก"),
-        ...ext.stem_interactions.filter((i) => i.pillars_pair.includes(k)).map((i) => i.type === "五合" ? "แรงรวมตัว" : "แรงขัด"),
-        ...ext.fan_yin_fu_yin.filter((i) => i.natal_pillar === k || i.other_pillar === k).map((i) => i.type.includes("伏吟") ? "แรงซ้ำเรื่องเดิม" : "แรงพลิกเรื่องเดิม"),
-      ].join(" · ") || "-";
-      const kw = [
-        ext.kong_wang.per_pillar[k] ? "any" : "",
-        ext.kong_wang.per_pillar_year[k] ? "year" : "",
-        ext.kong_wang.per_pillar_day[k] ? "day" : "",
-      ].filter(Boolean).join("/") || "no";
-      const ny = ext.nayin[k];
-      const palace = ext.palace_readings[k];
-      return `${pillarEn[k]} ${pillarZh[k]}: ฟ้า=${STEM_TH[p.stem] || p.stem}/${tg}; ดิน=${BRANCH_TH_NAME[p.branch] || p.branch}/${DM_LABEL_TH[STEM_ELEMENT_MAP[(HIDDEN_STEMS_MAP[p.branch] || [])[0] || ""]] || "-"}; แรงดิน->${tenGodLabel((HIDDEN_STEMS_MAP[p.branch] || [])[0] || "", dm)}; ธาตุซ่อน=${hidden}; วัฏจักร=ตัวตน:${phase.dm || "-"} เสา:${phase.pillar || "-"} ซ่อน:${phase.hidden_main || "-"}; ปฏิกิริยา=${react}; เรือน=${palace.title_th}; ดาวประกอบเท่านั้น=${stars}; นับเสียงประกอบ=${ny ? `${ny.th || ny.en}` : "-"}; ภาพเปลี่ยนผ่านประกอบ=${palace.hex ? `${palace.hex.th || palace.hex.en}` : "-"}`;
-    });
-    const lifeDecades = ext.liu_nian_timeline
-      .filter((x) => x.age >= 0 && x.age <= ageNow)
-      .reduce<Array<{ start: number; sample: string[] }>>((acc, x) => {
-        const bucketStart = Math.floor(x.age / 10) * 10;
-        let bucket = acc.find((b) => b.start === bucketStart);
-        if (!bucket) {
-          bucket = { start: bucketStart, sample: [] };
-          acc.push(bucket);
-        }
-        if (bucket.sample.length < 2) bucket.sample.push(`${x.pillar.stem}${x.pillar.branch}${x.ten_god ? `/${x.ten_god}` : ""}${x.vs_day_branch.length ? `/${x.vs_day_branch.join(",")}` : ""}`);
-        return acc;
-      }, [])
-      .map((b) => `${b.start}-${b.start + 9}:${b.sample.join("|")}`)
-      .slice(0, 7)
-      .join(" ; ");
     const lines = [
       `DATA SOURCE: ${input.source}`,
       `ชื่อ: ${input.name || "—"} · เพศ ${input.gender} · อายุปัจจุบันประมาณ ${ageNow}`,
@@ -435,14 +457,7 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
       `สี่เสาแบบอ่านไทย: ปี=${STEM_TH[calc.pillars.year.stem]}/${BRANCH_TH_NAME[calc.pillars.year.branch]} · เดือน=${STEM_TH[calc.pillars.month.stem]}/${BRANCH_TH_NAME[calc.pillars.month.branch]} · วัน=${STEM_TH[calc.pillars.day.stem]}/${BRANCH_TH_NAME[calc.pillars.day.branch]} · ยาม=${STEM_TH[calc.pillars.hour.stem]}/${BRANCH_TH_NAME[calc.pillars.hour.branch]}`,
       `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · กำลัง${calc.strength.level}`,
       `โครงดวง: ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วย ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
-      `CHART PACKET รายเสา:\n${pillarFacts.join("\n")}`,
-      g.READING_ORDER,
-      `ธาตุรวม: ไม้ ${ext.element_counts.wood} · ไฟ ${ext.element_counts.fire} · ดิน ${ext.element_counts.earth} · ทอง ${ext.element_counts.metal} · น้ำ ${ext.element_counts.water} · ${g.NO_PERCENT}`,
-      `ช่องว่างของดวง: วัน=${ext.kong_wang.void_branches.map((b) => BRANCH_TH_NAME[b] || b).join("/")} · ปี=${ext.kong_wang.year_xun_voids.map((b) => BRANCH_TH_NAME[b] || b).join("/")}`,
-      `วัยจรปัจจุบัน: ${lp ? `${STEM_TH[lp.stem] || lp.stem}/${BRANCH_TH_NAME[lp.branch] || lp.branch} อายุ ${lp.age_start}-${lp.age_end} · ${lp.qi_phase || "-"}` : "-"}`,
-      `ปีจรปัจจุบัน: ${STEM_TH[ext.current_year_pillar.stem] || ext.current_year_pillar.stem}/${BRANCH_TH_NAME[ext.current_year_pillar.branch] || ext.current_year_pillar.branch}`,
-      `คู่ครอง/ตัวตน: ${BRANCH_TH_NAME[ext.spouse_palace.day_branch] || ext.spouse_palace.day_branch} · ธาตุซ่อน ${ext.spouse_palace.hidden_stems.map((h) => STEM_TH[h] || h).join(" · ") || "-"} · ปฏิกิริยา ${ext.spouse_palace.relationship_flags.join(" · ") || "-"}`,
-      `timeline 10 ปี: ${lifeDecades || "-"}`,
+      ...buildChartPacket(calc, ext, dm, g, ageNow),
       `ย้อนหลัง 12 เดือน: 0-3 เดือนล่าสุด / 4-6 เดือน / 7-9 เดือน / 10-12 เดือน`,
     ];
     return lines.join("\n");
