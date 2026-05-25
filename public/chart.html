@@ -521,6 +521,23 @@
   .hk-sifu-output .cursor{display:inline-block;width:8px;height:18px;background:var(--gold);margin-left:2px;animation:hkBlink 1s step-end infinite;vertical-align:text-bottom;}
   @keyframes hkBlink{50%{opacity:0;}}
 
+  /* 25 พ.ค. · chat thread (overview follow-up) · ฟองสนทนาต่อเนื่อง */
+  .hk-ov-thread{display:flex;flex-direction:column;gap:14px;margin:18px 0;max-height:560px;overflow-y:auto;padding:4px;}
+  .hk-ov-thread:empty{display:none;}
+  .hk-ov-msg{display:flex;width:100%;}
+  .hk-ov-msg.user{justify-content:flex-end;}
+  .hk-ov-msg.sifu{justify-content:flex-start;}
+  .hk-ov-bubble{max-width:82%;padding:13px 17px;border-radius:15px;font-family:var(--thai);font-size:14px;line-height:1.8;color:var(--fg);}
+  .hk-ov-msg.user .hk-ov-bubble{background:var(--gold-soft,rgba(200,164,77,.14));border:1px solid var(--gold-line);border-bottom-right-radius:4px;}
+  .hk-ov-msg.sifu .hk-ov-bubble{background:var(--tile);border:1px solid var(--tile-bd);border-bottom-left-radius:4px;}
+  .hk-ov-msg.sifu .hk-ov-bubble::before{content:'師 · ซินแส';display:block;font-family:var(--tc);font-size:10px;letter-spacing:.12em;color:var(--gold);margin-bottom:6px;opacity:.85;}
+  .hk-ov-bubble p{margin:0 0 10px;}
+  .hk-ov-bubble p:last-child{margin-bottom:0;}
+  .hk-ov-bubble b,.hk-ov-bubble strong{color:var(--gold);}
+  .hk-ov-bubble h2,.hk-ov-bubble h3{font-size:14px;color:var(--gold);margin:10px 0 6px;}
+  .hk-ov-bubble ul{margin:6px 0;padding-left:18px;}
+  .hk-ov-bubble .cursor{display:inline-block;width:8px;height:18px;background:var(--gold);margin-left:2px;animation:hkBlink 1s step-end infinite;vertical-align:text-bottom;}
+
   /* loading: spinning key */
   .hk-sifu-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:30px 10px;}
   .hk-sifu-key{width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:46px;color:var(--gold);animation:hkSpin 2.4s linear infinite;filter:drop-shadow(0 0 16px rgba(200,164,77,.6));}
@@ -1085,8 +1102,9 @@
     </div>
     <div id="hk-overview-content" class="hk-overview-content">
       <div id="hk-ov-quick" style="background:linear-gradient(160deg,rgba(200,164,77,.08),transparent);border:1px solid var(--gold-line);border-left:3px solid var(--gold);border-radius:14px;padding:20px 22px;font-family:var(--thai);font-size:14px;line-height:1.8;color:var(--fg);"></div>
+      <div id="hk-ov-thread" class="hk-ov-thread"></div>
       <div id="hk-ov-sifu-prompt" class="hk-ov-follow">
-        <label for="hk-ov-question">ถามซินแสให้ลึกขึ้น</label>
+        <label for="hk-ov-question">ถามซินแสให้ลึกขึ้น (คุยต่อได้เรื่อยๆ)</label>
         <textarea id="hk-ov-question" rows="3" placeholder="เช่น จุดที่ต้องระวังจริงๆ คืออะไร, งานแบบไหนเหมาะกับฉัน, ช่วงนี้ควรตัดสินใจเรื่องอะไร"></textarea>
         <div class="hk-ov-follow-actions">
           <button type="button" class="hk-ov-chip" data-q="ช่วยอธิบายเงาและจุดที่ต้องระวังของดวงนี้ให้ลึกขึ้น">เงาที่ต้องระวัง</button>
@@ -2718,6 +2736,23 @@ window.addEventListener('resize', function(){
         const historyRefresh = document.getElementById('hk-ov-history-refresh');
         const profileIdForHistory = (b && b.profileId) || (()=>{ try { return localStorage.getItem('hk_profile_id') || ''; } catch(_) { return ''; } })();
         const lang = document.documentElement.getAttribute('data-lang') || 'th';
+        /* 25 พ.ค. · chat thread (ฟองสนทนาต่อเนื่อง) + ความจำบริบท */
+        const threadBox = document.getElementById('hk-ov-thread');
+        const convThread = []; /* [{q,a}] เก็บไว้แนบบริบทให้ซินแสจำ */
+        function ovScroll(){ if (threadBox) threadBox.scrollTop = threadBox.scrollHeight; }
+        function ovAddUser(text){
+          if (!threadBox) return;
+          const m = document.createElement('div'); m.className = 'hk-ov-msg user';
+          const b = document.createElement('div'); b.className = 'hk-ov-bubble'; b.textContent = text;
+          m.appendChild(b); threadBox.appendChild(m); ovScroll();
+        }
+        function ovAddSifu(htmlOrNull){
+          if (!threadBox) return null;
+          const m = document.createElement('div'); m.className = 'hk-ov-msg sifu';
+          const b = document.createElement('div'); b.className = 'hk-ov-bubble';
+          b.innerHTML = htmlOrNull != null ? htmlOrNull : '<span class="ov-cursor"></span>';
+          m.appendChild(b); threadBox.appendChild(m); ovScroll(); return b;
+        }
         /* simple markdown → HTML (## h2, ** bold, lists) · safe enough for trusted source */
         function md2html(md){
           if (!md) return '';
@@ -2818,15 +2853,29 @@ window.addEventListener('resize', function(){
           if (askBtn) { askBtn.disabled = true; askBtn.textContent = 'กำลังอ่าน...'; }
           sifuStatus.style.display = '';
           sifuStatus.textContent = 'ซินแสกำลังอธิบายเพิ่ม...';
-          sifuBox.style.display = '';
-          sifuBox.innerHTML = '<span class="ov-cursor"></span>';
+          /* follow-up = ต่อ bubble ในเธรด · auto overview = กล่องเดิม */
+          let streamTarget, apiQuestion = questionText;
+          if (questionText) {
+            ovAddUser(questionText);
+            streamTarget = ovAddSifu(null) || sifuBox;
+            if (questionBox) questionBox.value = '';
+            /* แนบบริบทย่อ 2 รอบล่าสุดให้ซินแสจำว่าคุยอะไรมา (ความจำต่อเนื่อง) */
+            if (convThread.length) {
+              apiQuestion = '(ต่อเนื่องจากบทสนทนา · เคยถามมาแล้ว: ' + convThread.slice(-2).map(t => t.q).join(' / ') + ') คำถามใหม่: ' + questionText;
+            }
+          } else {
+            sifuBox.style.display = '';
+            sifuBox.innerHTML = '<span class="ov-cursor"></span>';
+            streamTarget = sifuBox;
+          }
           let accumulated = '';
           /* throttle render · 150ms + rAF · กัน innerHTML re-parse ทุก chunk */
           let pendingRender = false;
           let lastRenderAt = 0;
           function scheduleRender(isDone){
             if (isDone) {
-              sifuBox.innerHTML = md2html(accumulated);
+              streamTarget.innerHTML = md2html(accumulated);
+              ovScroll();
               return;
             }
             if (pendingRender) return;
@@ -2835,7 +2884,8 @@ window.addEventListener('resize', function(){
             pendingRender = true;
             setTimeout(() => {
               requestAnimationFrame(() => {
-                sifuBox.innerHTML = md2html(accumulated) + '<span class="ov-cursor"></span>';
+                streamTarget.innerHTML = md2html(accumulated) + '<span class="ov-cursor"></span>';
+                ovScroll();
                 lastRenderAt = performance.now();
                 pendingRender = false;
               });
@@ -2854,7 +2904,7 @@ window.addEventListener('resize', function(){
                 lang: lang,
                 profile_id: profileIdForHistory,
                 force: !!force,
-                question: questionText || '',
+                question: apiQuestion || '',
               })
             });
             if (!resp.ok || !resp.body) {
@@ -2909,7 +2959,7 @@ window.addEventListener('resize', function(){
 	                    sifuStatus.textContent = 'ซินแสตอบเสร็จแล้ว';
 	                    setTimeout(()=>{sifuStatus.style.display='none';}, 3000);
 	                    if (questionText && !obj.history_saved) saveLocalSifuHistory(questionText, accumulated);
-	                    if (questionText) refreshSifuHistory(hash);
+	                    if (questionText) { convThread.push({ q: questionText, a: accumulated }); refreshSifuHistory(hash); }
 	                    if (askBtn) { askBtn.disabled = false; askBtn.textContent = 'ถามซินแส'; }
 	                  } else if (etype === 'error') {
 	                    sifuStatus.textContent = '⚠ เกิดข้อผิดพลาด: ' + (obj.error || 'unknown');
