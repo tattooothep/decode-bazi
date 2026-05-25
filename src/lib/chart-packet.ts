@@ -519,9 +519,13 @@ export function buildStructuredChartPacket(
     });
   }
 
-  /* fan/fu yin (伏吟/反吟 · normalize variant → base zh) */
+  /* fan/fu yin · ตำราเข้ม เฉพาะ packet ซินแส (26 พ.ค. · 子平: 伏吟=流年/大運=命柱 ทั้งก้าน+กิ่ง · "伏吟比反吟还更伤脑筋")
+   * กรอง 2 ชั้น ก่อนส่งให้ AI: (1) เฉพาะเต็มเสา 伏吟/反吟 (ก้าน+กิ่งซ้ำ/ชนทั้งคู่) ตัด variant เดี่ยว (伏吟·ก้าน/·กิ่ง ฯลฯ)
+   * (2) เฉพาะเวลา(วัยจร/ปีจร)×ดวง ตัด natal×natal (ปฏิกิริยาในดวงเกิดกันเอง) · ไม่แตะ chart-extensions → /chart ใช้ครบเหมือนเดิม */
   for (const f of ext.fan_yin_fu_yin) {
-    const baseZh: InteractionTypeZh = f.type.includes("反吟") ? "反吟" : "伏吟";
+    if (f.type !== "伏吟" && f.type !== "反吟") continue;
+    if (!f.other_pillar.startsWith("luck_") && f.other_pillar !== "current_year") continue;
+    const baseZh: InteractionTypeZh = f.type === "反吟" ? "反吟" : "伏吟";
     const pa = f.natal_pillar, pb = f.other_pillar;
     const reaction = Array.from(new Set([
       BRANCH_ELEMENT[f.natal.branch], BRANCH_ELEMENT[f.other.branch],
