@@ -51,6 +51,17 @@ export type Interaction = {
 };
 
 export type ChartPacket = {
+  /* ── version/level lock ── */
+  packetVersion: "hourkey-chart-packet-lite-v1.0";
+  packetLevel: "step1_lite";
+  /* ⚠️ ยังไม่อยู่ใน Step 1 Lite (สงวนไว้ v1.1 / Step B-C) — ห้ามถือว่า "หาย":
+   *   - timePillarConfidence
+   *   - dayMasterStrength / stemRootStatus
+   *   - strengthScore / positionWeight
+   *   - resolvedInteractions / interactionConflicts
+   *   - 合化 grading · 貪合忘冲 · 墓库 open-close
+   *   - rootMultiplier
+   * (ทั้งหมดต้องรอ engine resolver + ซินแส calibrate · ดู roadmap memory) */
   meta: {
     mode: "4p";
     dayMaster: string;
@@ -518,6 +529,8 @@ export function buildStructuredChartPacket(
     .slice(0, 7);
 
   const packet: ChartPacket = {
+    packetVersion: "hourkey-chart-packet-lite-v1.0",
+    packetLevel: "step1_lite",
     meta: {
       mode: "4p",
       dayMaster: dm,
@@ -704,6 +717,28 @@ export function validateChartPacket(packet: ChartPacket): { ok: boolean; degrade
       typeof pol.selectEvidence.min !== "number" || typeof pol.selectEvidence.max !== "number" ||
       pol.showFullChecklist !== false) {
     warnings.push("aiResponsePolicy ไม่ครบ/ไม่ถูกต้อง");
+  }
+  /* regression guard: ธาตุเดียวห้ามอยู่ทั้งกลุ่มช่วยและกลุ่มระวัง (yong/xi/ji แยกขาด) */
+  const ug = packet.usefulGods;
+  if (ug) {
+    const ovYX = ug.yong.filter((e) => ug.xi.includes(e));
+    const ovYJ = ug.yong.filter((e) => ug.ji.includes(e));
+    const ovXJ = ug.xi.filter((e) => ug.ji.includes(e));
+    if (ovYX.length || ovYJ.length || ovXJ.length) {
+      warnings.push(`usefulGods ธาตุซ้ำข้ามกลุ่ม: yong∩xi=${ovYX} yong∩ji=${ovYJ} xi∩ji=${ovXJ}`);
+    }
+  }
+  /* regression guard: render ต้องไม่มี % / undefined / {{ }} leak (Thai เป็น presentation จาก packet) */
+  try {
+    const rendered = renderChartPrompt(packet);
+    const leak = rendered.match(/undefined|\{\{|\}\}|[0-9.]+%/);
+    if (leak) warnings.push(`render leak พบ: "${leak[0]}"`);
+  } catch (e) {
+    warnings.push(`renderChartPrompt error: ${(e as Error).message}`);
+  }
+  /* regression guard: version/level lock ต้องตรง */
+  if (packet.packetVersion !== "hourkey-chart-packet-lite-v1.0" || packet.packetLevel !== "step1_lite") {
+    warnings.push("packetVersion/packetLevel ไม่ตรง lock");
   }
 
   const degraded = warnings.length > 0;
