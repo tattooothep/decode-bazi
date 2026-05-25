@@ -31,6 +31,21 @@ type IntroBirthInput = {
 
 const TIMEOUT_MS = 400_000; // 400s · เติมคัมภีร์ md เต็มที่ได้ · ผู้ใช้รอได้ (นโยบาย แม่น>เร็ว 25 พ.ค.) · nginx /api/sifu ต้อง >400s
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+/* startAge (起運) จาก tyme4ts ChildLimit · เหมือน /api/chart · เดิม sifu ใส่ 10 ตายตัว → วัยจรเลื่อน ~8 ปี (bug 25 พ.ค.) */
+async function computeStartAge(date: string, time: string, gender: "M" | "F", lng: number): Promise<number> {
+  try {
+    const tyme = await import("tyme4ts");
+    const { getSolarTimeAtTST } = await import("@/lib/bazi-calc");
+    const { st } = await getSolarTimeAtTST({ date, time, longitude: lng, gmtOffsetHours: 7, birthTimeKnown: true });
+    const g = gender === "F" ? tyme.Gender.WOMAN : tyme.Gender.MAN;
+    const cl = tyme.ChildLimit.fromSolarTime(st, g);
+    return Math.round((cl.getYearCount() + cl.getMonthCount() / 12 + cl.getDayCount() / 365.25) * 100) / 100;
+  } catch (e) {
+    console.error("[sifu] ChildLimit failed, default 10:", (e as Error).message);
+    return 10;
+  }
+}
 const INTRO_OPENROUTER_MODEL = process.env.SIFU_INTRO_MODEL || "anthropic/claude-opus-4.7";
 const CHILD_USER = "jarvis";
 const STEM_ELEMENT_MAP: Record<string, string> = {
@@ -221,12 +236,13 @@ async function buildBaziContext(profileId: string): Promise<string> {
         g.LIMIT_3P_QA,
       ].join("\n");
     }
+    const startAge = await computeStartAge(date, time, gender, lng);
     const ext = buildChartExtensions(
       calc.pillars,
       new Date(),
       gender,
       new Date(`${date}T${time}:00+07:00`),
-      10,
+      startAge,
       calc.geJu.structure || null,
       calc.strength.percent,
       calc.yongshen[0]?.element || null
@@ -340,12 +356,13 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
         g.LIMIT_3P_INTRO,
       ].join("\n");
     }
+    const startAge = await computeStartAge(input.date, input.time, input.gender, input.lng);
     const ext = buildChartExtensions(
       calc.pillars,
       new Date(),
       input.gender,
       birthDate,
-      10,
+      startAge,
       calc.geJu.structure || null,
       calc.strength.percent,
       calc.yongshen[0]?.element || null

@@ -116,6 +116,11 @@ export type ChartPacket = {
     ageStart: number;
     ageEnd: number;
   } | null;
+  /* วัยจรทั้งชีวิต + ปีครอบ (เสริม currentLuck · ให้ AI รู้ว่าปีไหนอยู่วัยจรไหน · กันเดา三合ข้ามวัยจร) */
+  luckTimeline: Array<{
+    stem: string; branch: string; element: ElementEN;
+    ageStart: number; ageEnd: number; yearStart: number; yearEnd: number; isCurrent: boolean;
+  }>;
   annualPillar: { stem: string; branch: string };
   interactions: {
     status: "resolved_partial" | "raw_only" | "none_detected";
@@ -565,6 +570,21 @@ export function buildStructuredChartPacket(
     ? { stem: lp.stem, branch: lp.branch, element: lp.element, ageStart: lp.age_start, ageEnd: lp.age_end }
     : null;
 
+  /* ─── luckTimeline (วัยจรทั้งชีวิต + ปีครอบ · เสริม currentLuck · ไม่ลบเดิม)
+   *   birthYear: liu_nian_timeline[0] (year-age · engine ใส่ year จริง) · fallback ปีปัจจุบัน-ageNow ─── */
+  const lnFirst = (ext.liu_nian_timeline || [])[0];
+  const birthYear = lnFirst ? lnFirst.year - lnFirst.age : (new Date().getFullYear() - ageNow);
+  const luckTimeline: ChartPacket["luckTimeline"] = (ext.luck_pillars || []).map((p) => {
+    const aStart = Math.round(p.age_start);
+    const aEnd = Math.round(p.age_end);
+    return {
+      stem: p.stem, branch: p.branch, element: p.element,
+      ageStart: aStart, ageEnd: aEnd,
+      yearStart: birthYear + aStart, yearEnd: birthYear + aEnd,
+      isCurrent: ageNow >= aStart && ageNow <= aEnd,
+    };
+  });
+
   /* ─── luckInteractions (LP × natal · จาก lp_natal_interactions)
    *   หนึ่ง entry มีได้หลาย types[] (ก้าน+กิ่ง) → แตกเป็น Interaction ต่อ type ─── */
   const luckInteractions: Interaction[] = [];
@@ -664,7 +684,7 @@ export function buildStructuredChartPacket(
 
   /* ─── timeline 10-year buckets (เหมือน buildChartPacket เดิม) ─── */
   const timeline = (ext.liu_nian_timeline || [])
-    .filter((x) => x.age >= 0 && x.age <= ageNow)
+    .filter((x) => x.age >= Math.max(0, ageNow - 10) && x.age <= ageNow + 10)  /* เปิดอนาคต ±10 ปี (เดิมตัด age<=ageNow → อ่านปีหน้าไม่ได้) */
     .reduce<Array<{ start: number; sample: string[] }>>((acc, x) => {
       const bucketStart = Math.floor(x.age / 10) * 10;
       let bucket = acc.find((b) => b.start === bucketStart);
@@ -707,6 +727,7 @@ export function buildStructuredChartPacket(
       voytekLevel: ext.voytek_strength?.level || calc.strength?.level || "-",
     },
     currentLuck,
+    luckTimeline,
     annualPillar: { stem: cyp?.stem || "-", branch: cyp?.branch || "-" },
     interactions: { status: interactionStatus, raw },
     luckInteractions,
@@ -802,6 +823,15 @@ export function renderChartPrompt(packet: ChartPacket): string {
       ? `${STEM_TH[packet.currentLuck.stem] || packet.currentLuck.stem}/${BRANCH_TH_NAME[packet.currentLuck.branch] || packet.currentLuck.branch} อายุ ${packet.currentLuck.ageStart}-${packet.currentLuck.ageEnd} · ธาตุ${elementTh(packet.currentLuck.element)}`
       : "-"}`
   );
+  /* วัยจรทั้งชีวิต + ปีครอบ · ให้ AI อ่านปีไหนใช้วัยจรของปีนั้น (กันเดาปฏิกิริยาข้ามวัยจร) */
+  if (packet.luckTimeline.length) {
+    lines.push(
+      `วัยจรทั้งชีวิต (อ่านปีไหนใช้วัยจรของปีนั้น · ห้ามจับปฏิกิริยาข้ามวัยจร): ` +
+      packet.luckTimeline
+        .map((t) => `${STEM_TH[t.stem] || t.stem}/${BRANCH_TH_NAME[t.branch] || t.branch}(อายุ${t.ageStart}-${t.ageEnd}·ปี${t.yearStart}-${t.yearEnd}·ธาตุ${elementTh(t.element)})${t.isCurrent ? "◀ปัจจุบัน" : ""}`)
+        .join(" · ")
+    );
+  }
   lines.push(`ปีจรปัจจุบัน: ${STEM_TH[packet.annualPillar.stem] || packet.annualPillar.stem}/${BRANCH_TH_NAME[packet.annualPillar.branch] || packet.annualPillar.branch}`);
 
   /* ปฏิกิริยาในดวง */
