@@ -1002,13 +1002,38 @@
     function hkgI18n(key){ return (window.HK_I18N && window.HK_I18N[key]) || null; }
     /* ดึง map กลุ่มจาก localStorage hk_network_groups {profileId: group} (เขียนโดยหน้าดวง) */
     function hkgGroupMap(){ try { return JSON.parse(localStorage.getItem('hk_network_groups')||'{}') || {}; } catch(_){ return {}; } }
+    /* infer กลุ่มจาก relationship_type/ชื่อ · ยกจาก yongsennetwork · ให้คนเก่า (ยังไม่ tag) เข้ากลุ่มอัตโนมัติ */
+    function inferNetworkGroup(rel, name, nickname){
+      var relText = String(rel || '').trim().toLowerCase();
+      var fallbackText = [name, nickname].filter(Boolean).join(' ').toLowerCase();
+      function classify(text){
+        if (!text.trim()) return null;
+        var has = function(re){ return re.test(text); };
+        if (has(/(แฟน|คู่รัก|คนรัก|girlfriend|boyfriend|lover|情|愛|恋)/i)) return { group:'love' };
+        if (has(/(งาน|ที่ทำงาน|ลูกค้า|หัวหน้า|เจ้านาย|ลูกน้อง|ทีม|พาร์ทเนอร์ธุรกิจ|หุ้นส่วน|co-?founder|coworker|colleague|boss|client|customer|work|team|業)/i)) return { group:'work' };
+        if (has(/(คู่แข่ง|ศัตรู|rival|competitor|enemy|競)/i)) return { group:'rival' };
+        if (has(/(ภรรยา|สามี|คู่สมรส|พ่อ|แม่|ป๊า|ม๊า|บิดา|มารดา|ลูก|ลูกชาย|ลูกสาว|พี่|น้อง|พี่ชาย|พี่สาว|น้องชาย|น้องสาว|ปู่|ย่า|ตา|ยาย|ลุง|ป้า|น้า|อา|หลาน|โกว|กู๋|เจ๊|เฮีย|ญาติ|ครอบครัว|wife|husband|spouse|配偶|family|father|mother|parent|son|daughter|child|brother|sister|sibling|uncle|aunt|cousin|家)/i)) return { group:'family' };
+        if (has(/(เพื่อน|เพื่อนเรียน|เพื่อนสนิท|friend|classmate|友)/i)) return { group:'friend' };
+        return null;
+      }
+      var byRel = classify(relText); if (byRel) return byRel;
+      var byName = classify(fallbackText); if (byName) return byName;
+      return (relText || fallbackText) ? { group:'friend' } : null;
+    }
+    /* กลุ่มของ profile · tag ตรง (hk_network_groups) ชนะก่อน · ไม่มีค่อย infer */
+    function hkgGroupOf(p){
+      var map = hkgGroupMap();
+      var pid = String(p.id);
+      if (map[pid]) return map[pid];
+      var inf = inferNetworkGroup(p.relationship_type, p.name, p.nickname);
+      return inf ? inf.group : null;
+    }
     /* คำนวณ ids ของกลุ่มที่เลือก · รวมดวงตัวเองเสมอ · cap 10 */
     function hkgMemberIds(group){
-      var map = hkgGroupMap();
       var ids = [];
       hkgProfiles.forEach(function(p){
         var pid = String(p.id);
-        if (map[pid] === group && ids.indexOf(pid) < 0) ids.push(pid);
+        if (hkgGroupOf(p) === group && ids.indexOf(pid) < 0) ids.push(pid);
       });
       if (hkgSelfId && ids.indexOf(hkgSelfId) < 0) ids.unshift(hkgSelfId); /* ตัวเองนำเสมอ */
       return ids.slice(0, 10); /* cap 10 (backend cap ซ้ำ) */
@@ -1054,8 +1079,7 @@
       var loc = curLocale();
       var lbl = (HKG_LABELS[g] && (HKG_LABELS[g][loc]||HKG_LABELS[g].th)) || g;
       /* นับเฉพาะคนในกลุ่ม (ไม่รวมตัวเองอัตโนมัติ) เพื่อเช็คว่าว่างจริงไหม */
-      var map = hkgGroupMap();
-      var inGroupAll = hkgProfiles.filter(function(p){ return map[String(p.id)] === g; });
+      var inGroupAll = hkgProfiles.filter(function(p){ return !p.is_self && hkgGroupOf(p) === g; });
       if (inGroupAll.length === 0){
         var em = hkgI18n('hkg.empty');
         hkgCountEl.textContent = em ? (em[loc] || em.th) : 'ยังไม่มีคนในกลุ่มนี้ · ไปเพิ่มที่หน้าดวง (換)';
