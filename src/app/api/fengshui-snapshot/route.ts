@@ -5,6 +5,57 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
+import { readFileSync } from "fs";
+import { join } from "path";
+
+// ── โหลดฐานข้อมูล玄空飛星ยุค 9 (อ่านครั้งเดียว · cache module-level) ──
+type XKMountain = {
+  id: string; mountain_name_zh: string; mountain_pinyin: string; gua: string;
+  compass_code: string; degrees_range_min: number; degrees_range_max: number;
+  facing_mountain: string; chart_type: string; chart_type_en: string;
+  score: number; note_en: string; note_th: string; special_flag: string | null;
+};
+type XKValuation = {
+  star_number: number; color_zh: string; element: string; status_zh: string;
+  status_en: string; score: number; label_en: string; label_th: string;
+  classical_justification: string;
+};
+type XKAnnual = {
+  year: number; pillar: string; zodiac: string; centre_star: number;
+  wuhuang_direction: string; erhei_direction: string; sansha_direction: string;
+  taisui_direction: string; suipo_direction: string; year_start?: string;
+  critical_flag?: string; note?: string;
+};
+type XKPair = {
+  id: string; mountain_star: number; water_star: number; score: number;
+  nature: string; is_fire_pair: boolean; classical_zh: string;
+  interpretation_en: string; interpretation_th: string;
+  remedy_element: string; remedy_th: string; period9_modifier: string;
+};
+type XKData = {
+  metadata: { period: number; period_start: string; period_end: string; year_boundary_rule: string };
+  star_pairs_81: XKPair[];
+  mountains_24_p9: XKMountain[];
+  star_valuations_p9: XKValuation[];
+  annual_wuhuang_erhei: XKAnnual[];
+};
+let XK_CACHE: XKData | null = null;
+function getXK(): XKData | null {
+  if (XK_CACHE) return XK_CACHE;
+  try {
+    const raw = readFileSync(join(process.cwd(), "data/library/xuankong-period9.json"), "utf8");
+    XK_CACHE = JSON.parse(raw) as XKData;
+  } catch {
+    XK_CACHE = null;
+  }
+  return XK_CACHE;
+}
+// valuation map: star_number → valuation (จาก star_valuations_p9)
+function getValuationMap(xk: XKData | null): Record<number, XKValuation> {
+  const m: Record<number, XKValuation> = {};
+  (xk?.star_valuations_p9 || []).forEach(v => { m[v.star_number] = v; });
+  return m;
+}
 
 const FLYING_ORDER = [4, 9, 2, 3, 5, 7, 8, 1, 6];
 const PALACE_DIRS_GRID = ['SE','S','SW','E','C','W','NE','N','NW'];
@@ -37,27 +88,72 @@ const SAN_SHA: Record<string,string> = {'申':'S','子':'S','辰':'S','寅':'N',
 const TAISUI: Record<string,string> = {'子':'N','丑':'NE','寅':'NE','卯':'E','辰':'SE','巳':'SE','午':'S','未':'SW','申':'SW','酉':'W','戌':'NW','亥':'NW'};
 const MOUNTAINS = ['壬','子','癸','丑','艮','寅','甲','卯','乙','辰','巽','巳','丙','午','丁','未','坤','申','庚','酉','辛','戌','乾','亥'];
 
-function getCurrentPeriod(d: Date): number {
-  const y = d.getFullYear();
+// ── A. ปีฮวงจุ้ย (年柱) เปลี่ยนที่ 立春 ไม่ใช่ 1 ม.ค. ──
+// ยุค 9 เริ่ม 4 ก.พ. 2024 16:27 (+08:00 = ICT 15:27) ตาม metadata.period_start
+// JSON มี year_start เฉพาะปี 2024 · ปีอื่นใช้ค่าประมาณ 立春 ≈ 4 ก.พ.
+function getFengShuiYear(d: Date, xk: XKData | null): number {
+  const calYear = d.getFullYear();
+  // หา year_start ของปีปฏิทินนี้จาก table (มีเฉพาะ 2024) ไม่งั้น fallback 4 ก.พ.
+  const row = (xk?.annual_wuhuang_erhei || []).find(r => r.year === calYear && r.year_start);
+  let lichun: Date;
+  if (row?.year_start) {
+    lichun = new Date(row.year_start);
+  } else {
+    // ค่าประมาณ 立春 = 4 ก.พ. เวลา 16:27 ICT ของปีนั้น (UTC = 09:27)
+    lichun = new Date(Date.UTC(calYear, 1, 4, 9, 27, 0));
+  }
+  // ก่อน 立春 = ยังนับเป็นปีฮวงจุ้ยก่อนหน้า
+  return d.getTime() < lichun.getTime() ? calYear - 1 : calYear;
+}
+function getCurrentPeriod(d: Date, xk: XKData | null): number {
+  // ยุค 9 = ตั้งแต่ period_start (4 ก.พ. 2024) ถึง period_end (4 ก.พ. 2044)
+  const meta = xk?.metadata;
+  if (meta?.period_start && meta?.period_end) {
+    const t = d.getTime();
+    const start = new Date(meta.period_start).getTime();
+    const end = new Date(meta.period_end).getTime();
+    if (t >= start && t < end) return 9;
+    if (t < start) return 8; // ก่อน 立春 2024 = ยังเป็นยุค 8
+  }
+  // fallback (กรณี JSON หาย) — ใช้ปีฮวงจุ้ยตาม 立春
+  const y = getFengShuiYear(d, xk);
   if (y >= 2024 && y < 2044) return 9;
   if (y >= 2004 && y < 2024) return 8;
   if (y >= 1984 && y < 2004) return 7;
   return 9;
 }
-function getAnnualCenter(year: number): number {
+// ดาวกลางผังประจำปี — lookup centre_star จาก JSON ก่อน · ไม่มีค่อย fallback สูตร
+function getAnnualCenter(year: number, xk: XKData | null): { center: number; from_json: boolean } {
+  const row = (xk?.annual_wuhuang_erhei || []).find(r => r.year === year);
+  if (row && typeof row.centre_star === "number") return { center: row.centre_star, from_json: true };
   const off = year - 2024;
   let c = (3 - off) % 9;
   if (c <= 0) c += 9;
-  return c;
+  return { center: c, from_json: false };
 }
-function computePalaceStars(annualCenter: number) {
+// ── B. ผูกค่าดาวยุค 9 (valuation) ต่อ palace จาก star_valuations_p9 ──
+function computePalaceStars(annualCenter: number, xk: XKData | null) {
   const offset = annualCenter - 5;
+  const valMap = getValuationMap(xk);
   const result: Record<string, any> = {};
   PALACE_DIRS_GRID.forEach((dir, i) => {
     let star = FLYING_ORDER[i] + offset;
     if (star > 9) star -= 9;
     if (star < 1) star += 9;
-    result[dir] = { annual: star, ...STAR_INFO[star] };
+    const cell: Record<string, any> = { annual: star, ...STAR_INFO[star] };
+    const v = valMap[star];
+    if (v) {
+      // field ใหม่จาก p9 valuation (ห้ามลบ field เดิม)
+      cell.p9_status = v.status_en;
+      cell.p9_status_zh = v.status_zh;
+      cell.p9_score = v.score;
+      cell.p9_label_th = v.label_th;
+      cell.p9_label_en = v.label_en;
+      cell.p9_element = v.element;
+      // quality ตามตำรายุค 9 (score≥3.5=ดี · ≤1.5=ร้าย · กลาง=neutral)
+      cell.quality = v.score >= 3.5 ? "good" : v.score <= 1.5 ? "bad" : "neutral";
+    }
+    result[dir] = cell;
   });
   return result;
 }
@@ -71,12 +167,49 @@ function build24Mountains(faceAngle?: number) {
   }
   return { mountains: MOUNTAINS, facing, sitting, face_angle: faceAngle ?? null };
 }
-function computeAiXing(faceAngle?: number, period = 9) {
+// ── C. lookup 24 ภูเขา (ผัง玄空ตามด้านนั่ง) จาก mountains_24_p9 ──
+// ผัง玄空ตั้งชื่อตามภูเขาด้าน "นั่ง" (sitting) เช่น หันหน้า 午 = นั่ง 子 → ใช้ผังของ 子
+function findMountainByAngle(angle: number, xk: XKData | null): XKMountain | null {
+  const list = xk?.mountains_24_p9 || [];
+  const a = ((angle % 360) + 360) % 360;
+  for (const m of list) {
+    const lo = m.degrees_range_min, hi = m.degrees_range_max;
+    if (lo < hi) { if (a >= lo && a < hi) return m; }
+    else { if (a >= lo || a < hi) return m; } // ช่วงคร่อม 0° (เช่น 子 352.5–7.5)
+  }
+  return null;
+}
+function computeAiXing(faceAngle: number | undefined, period: number, xk: XKData | null) {
   if (faceAngle === undefined || faceAngle === null) return null;
+  // ดาวภูเขา/ดาวน้ำ — JSON ไม่มีเลขต่อภูเขา จึงคงสูตรเดิมไว้ (ค่าประมาณ)
   const mountainStar = (Math.floor(faceAngle / 15) % 9) + 1;
   const waterStar = (Math.floor(((faceAngle + 180) % 360) / 15) % 9) + 1;
-  return { mountain_star: mountainStar, water_star: waterStar, period_star: period,
-           note: 'Yang Gong · simplified · ใช้ data file สำหรับ exact pattern' };
+  const sitAngle = (faceAngle + 180) % 360;
+  const mt = findMountainByAngle(sitAngle, xk); // ผังตามภูเขาด้านนั่ง
+  const out: Record<string, any> = {
+    // field เดิม (ห้ามลบ)
+    mountain_star: mountainStar,
+    water_star: waterStar,
+    period_star: period,
+    note: mt
+      ? `ค่าประมาณ · ใช้ chart_type/score เป็นหลัก (沈氏玄空 ยุค 9 · ผังตามภูเขาด้านนั่ง ${mt.mountain_name_zh})`
+      : 'Yang Gong · simplified · ใช้ data file สำหรับ exact pattern',
+  };
+  if (mt) {
+    // field ใหม่จาก mountains_24_p9 (ตัวที่ถูกตำรา)
+    out.sitting_mountain = mt.mountain_name_zh;
+    out.facing_mountain = mt.facing_mountain;
+    out.chart_type = mt.chart_type;
+    out.chart_type_zh = mt.chart_type;
+    out.chart_type_en = mt.chart_type_en;
+    out.chart_type_th = mt.note_th;
+    out.score = mt.score;
+    out.note_th = mt.note_th;
+    out.note_en = mt.note_en;
+    out.special_flag = mt.special_flag;
+    out.compass_code = mt.compass_code;
+  }
+  return out;
 }
 function computeQiMenFallback(dt: Date) {
   const GATES = ['休','生','傷','杜','景','死','驚','開'];
@@ -99,8 +232,35 @@ function computeSixtyFour(faceAngle?: number) {
   if (faceAngle === undefined || faceAngle === null) return null;
   return { facing_hex: Math.floor(faceAngle / 5.625) + 1 };
 }
-function buildWarnings(stars: any, yearBranch: string) {
+// ── D. คำเตือนประจำปี 五黃/二黑/三煞/太歲/歲破 จาก annual_wuhuang_erhei ──
+// ปีนอกตาราง (นอก 2024-2044) → fallback สูตรเดิม (TAISUI/SAN_SHA dict + ดาวในผัง)
+function buildWarnings(stars: any, yearBranch: string, fsYear: number, xk: XKData | null) {
   const w: any[] = [];
+  const row = (xk?.annual_wuhuang_erhei || []).find(r => r.year === fsYear);
+
+  if (row) {
+    // 五黃 大煞 (จากตาราง · ทิศแน่นอนตามตำรา)
+    w.push({ code:`WU_HUANG_${row.wuhuang_direction}`, severity:'critical',
+      text:`五黃 (5 黄大煞) อยู่ทิศ ${row.wuhuang_direction} · ห้ามรบกวน/ขุด/ตอก · วางโลหะ-นาฬิกาทองสลาย`, dirs:[row.wuhuang_direction] });
+    // 二黑 病符
+    w.push({ code:`ER_HEI_${row.erhei_direction}`, severity:'warning',
+      text:`二黑 (2 黒 病符) อยู่ทิศ ${row.erhei_direction} · ระวังสุขภาพ · เลี่ยงเตียง/โต๊ะ · วางโลหะ`, dirs:[row.erhei_direction] });
+    // 三煞
+    w.push({ code:`SAN_SHA_${row.sansha_direction}`, severity:'critical',
+      text:`三煞 (3 ชะ) อยู่ทิศ ${row.sansha_direction} · ห้ามนั่งหันหน้าใส่ · ห้ามรบกวนทิศนี้`, dirs:[row.sansha_direction] });
+    // 太歲
+    w.push({ code:`TAISUI_${row.taisui_direction}`, severity:'critical',
+      text:`太歲 (ไท่ซุ่ย ${row.pillar}) อยู่ทิศ ${row.taisui_direction} · ห้ามขุด/ตอก/รบกวนทิศนี้`, dirs:[row.taisui_direction] });
+    // 歲破
+    w.push({ code:`SUI_PO_${row.suipo_direction}`, severity:'warning',
+      text:`歲破 (ซุ่ยพั่ว) อยู่ทิศ ${row.suipo_direction} · ทิศตรงข้ามไท่ซุ่ย · เลี่ยงงานใหญ่`, dirs:[row.suipo_direction] });
+    if (row.critical_flag === 'wuhuang_in_centre')
+      w.push({ code:'WU_HUANG_CENTRE', severity:'critical',
+        text:`⚠ ปีนี้ 五黃 เข้ากลางผัง (正關煞) · เป็นปีที่ต้องระวังเป็นพิเศษทั้งบ้าน`, dirs:['C'] });
+    return w;
+  }
+
+  // fallback (ปีนอกตาราง) — สูตรเดิม
   for (const dir of Object.keys(stars)) {
     if (stars[dir]?.annual === 5)
       w.push({ code:`WU_HUANG_${dir}`, severity:'critical', text:`5 黄 อยู่ทิศ ${dir} · ห้ามรบกวน · วางโลหะ/นาฬิกาทอง`, dirs:[dir] });
@@ -113,15 +273,19 @@ function buildWarnings(stars: any, yearBranch: string) {
   if (ss) w.push({ code:'SAN_SHA', severity:'critical', text:`3 ชะ ${ss} · ห้ามนั่งหันหน้าใส่`, dirs:[ss] });
   return w;
 }
-function buildRecsPerPerson(members: any[], stars: any) {
+// ── B. "ดี" = ดาวที่ score≥3.5 ในยุค 9 (9,1,2) แทน [1,6,8,9] เดิม ──
+function buildRecsPerPerson(members: any[], stars: any, xk: XKData | null) {
+  const valMap = getValuationMap(xk);
+  const isGoodP9 = (s: number) => (valMap[s] ? valMap[s].score >= 3.5 : [9, 1, 2].includes(s));
+  const isBadP9 = (s: number) => (valMap[s] ? valMap[s].score <= 1.5 : [5, 3, 4, 6, 7].includes(s));
   return (members || []).map(p => {
     const g = KUA_GOOD[p.kua]; if (!g) return null;
     const recs: string[] = [];
     const shengStar = stars[g.sheng]?.annual;
-    if (shengStar && [1,6,8,9].includes(shengStar))
-      recs.push(`ทิศ ${g.sheng} = 生氣 + ดาว ${shengStar} ดี · เหมาะนั่งทำงาน/ห้องนอน`);
-    else if (shengStar === 5 || shengStar === 2)
-      recs.push(`ทิศ ${g.sheng} = 生氣 แต่ดาว ${shengStar} ร้าย · ปีนี้เลี่ยง`);
+    if (shengStar && isGoodP9(shengStar))
+      recs.push(`ทิศ ${g.sheng} = 生氣 + ดาว ${shengStar} ดี (ยุค 9) · เหมาะนั่งทำงาน/ห้องนอน`);
+    else if (shengStar && isBadP9(shengStar))
+      recs.push(`ทิศ ${g.sheng} = 生氣 แต่ดาว ${shengStar} ร้าย (ยุค 9) · ปีนี้เลี่ยง`);
     else recs.push(`ทิศ ${g.sheng} = 生氣 ของคุณ · ปลอดภัย`);
     return { person_id: p.person_id, name: p.name, kua: p.kua, best_direction: g.sheng, recommendations: recs };
   }).filter(Boolean);
@@ -153,17 +317,20 @@ export async function GET(req: NextRequest) {
       [dt.toISOString()]
     );
 
-    const period = getCurrentPeriod(dt);
-    const annualCenter = getAnnualCenter(dt.getFullYear());
-    const palaceStars = computePalaceStars(annualCenter);
+    const xk = getXK();
+    const period = getCurrentPeriod(dt, xk);
+    const fsYear = getFengShuiYear(dt, xk); // ปีฮวงจุ้ยตาม 立春
+    const ac = getAnnualCenter(fsYear, xk);
+    const annualCenter = ac.center;
+    const palaceStars = computePalaceStars(annualCenter, xk);
     const yearBranch = ephemeris?.year_pillar?.charAt(1) || getYearBranchFallback(dt);
 
     const faceAngle = house?.face_angle ? parseFloat(house.face_angle) : undefined;
 
     const layers = {
-      flying_stars: { period, annual_center: annualCenter, palaces: palaceStars },
+      flying_stars: { period, annual_center: annualCenter, feng_shui_year: fsYear, annual_center_source: ac.from_json ? 'json_centre_star' : 'formula_fallback', palaces: palaceStars },
       twenty_four: build24Mountains(faceAngle),
-      ai_xing: computeAiXing(faceAngle, period),
+      ai_xing: computeAiXing(faceAngle, period, xk),
       qi_men: ephemeris?.qi_men || computeQiMenFallback(dt),
       ba_zhai: house?.family_members?.length ? buildBaZhai(house.family_members) : null,
       sixty_four: computeSixtyFour(faceAngle),
@@ -176,8 +343,8 @@ export async function GET(req: NextRequest) {
       five_element: fiveElementOfHour(ephemeris?.hour_pillar),
     };
 
-    const warnings = buildWarnings(palaceStars, yearBranch);
-    const recommendations = house?.family_members ? buildRecsPerPerson(house.family_members, palaceStars) : [];
+    const warnings = buildWarnings(palaceStars, yearBranch, fsYear, xk);
+    const recommendations = house?.family_members ? buildRecsPerPerson(house.family_members, palaceStars, xk) : [];
 
     return NextResponse.json({
       house,
@@ -191,7 +358,7 @@ export async function GET(req: NextRequest) {
         shichen: ephemeris?.shichen,
       },
       layers, today, warnings, recommendations,
-      source: 'อาเจ๊กฮ้ง compass 3 · 沈氏玄空 + 八宅 + 24山',
+      source: 'อาเจ๊กฮ้ง compass 3 · 沈氏玄空 ยุค 9 (xuankong-period9.json) + 八宅 + 24山',
     });
   } catch (e: unknown) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
