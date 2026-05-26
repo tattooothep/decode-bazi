@@ -689,7 +689,8 @@ function rt(r, deg, text, opts = {}) {
   const fill = opts.fill || INK;
   const op = opts.op || 1;
   const ls = opts.ls || 0;
-  return `<text x="${x.toFixed(2)}" y="${y.toFixed(2)}" font-family="${fam}" font-size="${fs}" font-weight="${fw}" fill="${fill}" text-anchor="middle" dominant-baseline="middle" opacity="${op}" letter-spacing="${ls}" transform="rotate(${rot.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)})">${text}</text>`;
+  const idAttr = opts.id ? ` id="${opts.id}"` : '';
+  return `<text${idAttr} x="${x.toFixed(2)}" y="${y.toFixed(2)}" font-family="${fam}" font-size="${fs}" font-weight="${fw}" fill="${fill}" text-anchor="middle" dominant-baseline="middle" opacity="${op}" letter-spacing="${ls}" transform="rotate(${rot.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)})">${text}</text>`;
 }
 // Boundary line in ring
 function brd(r1, r2, deg, attrs = `stroke="${HAIR}" stroke-width=".4"`) {
@@ -761,6 +762,20 @@ function r_5elements() {
     const col = D.ELEMENT_COLOR[t.el];
     g += rt(98, t.center, t.el, { fs:10, fw:600, fill:col, op:.95 });
   });
+  return g;
+}
+
+// ─── Ring (ฉีเหมิน) · 奇門 門/神/星 8 ทิศ (104-122) · text id qm/qs/qx{i} ให้ setQM เติมตามเวลา (ปี/เดือน/วัน/ยาม · era=ว่าง)
+function r_qimen() {
+  let g = ring(104, `stroke="${GOLD_DIM}" stroke-width=".5"`);
+  g += ring(122, `stroke="${GOLD_DIM}" stroke-width=".6"`);
+  for (let i = 0; i < 8; i++) {
+    const c = i * 45;                       // ทิศ i (N=0°,NE=45°...NW=315°) sync dir8idx
+    g += brd(104, 122, c - 22.5);
+    g += rt(116, c - 7, '-', { fs:6.5, fw:600, fill:'#c97a3a', id:'qm'+i }); // 八門 (ประตู·ส้ม)
+    g += rt(116, c + 7, '-', { fs:6.5, fw:600, fill:'#7a6ac9', id:'qs'+i }); // 八神 (เทพ·ม่วง)
+    g += rt(108, c,     '-', { fs:8,   fw:700, fill:'#4a8a4a', id:'qx'+i }); // 九星 (ดาว·เขียว)
+  }
   return g;
 }
 
@@ -1233,6 +1248,7 @@ function buildLuopan() {
       <g id="rEH" class="ring">${r_xiantian()}</g>
       <g id="rLH" class="ring">${r_houtian()}</g>
       <g id="rFX" class="ring">${r_flyingstars()}</g>
+      <g id="rQM" class="ring">${r_qimen()}</g>
       <g id="r5E" class="ring">${r_5elements()}</g>
       <g id="rTG" class="ring">${r_tiangan()}</g>
       <g id="rDZ" class="ring">${r_dizhi()}</g>
