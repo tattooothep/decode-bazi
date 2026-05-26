@@ -1397,13 +1397,35 @@ const dHour={fx:[{star:4},{star:8},{star:6},{star:5},{star:9},{star:2},{star:1},
 
 const demos={era:dEra, year:dYear, month:dMonth, day:dDay, hour:dHour};
 let currentTimingKey='era';
-function applyTiming(k){
+/* 26 พ.ค. · ฉีเหมินจริง: GET /api/qimen (proxy→qimen-api 4090 · 時家奇門 · เวลาปัจจุบัน Bangkok) → ผัง 9宮 → map direction→8ทิศ · 中5 เก็บแยก */
+window.QM_REAL = null;   // [8] ต่อทิศ {men,shen,xing,raw} · null=ยังไม่โหลด/ไม่ใช่ยาม
+window.QM_CENTER = null; // วัง中5 (ไม่มีทิศ)
+const QM_DIR2IDX = {N:0,NE:1,E:2,SE:3,S:4,SW:5,W:6,NW:7};
+async function fetchQimenReal(){
+  try{
+    const r = await fetch('/api/qimen');  // default = เวลาปัจจุบัน Bangkok (時家)
+    const j = await r.json();
+    const palaces = (j && j.data && j.data.palaces) || [];
+    if(!palaces.length){ window.QM_REAL=null; window.QM_CENTER=null; window.setQM([]); return; }
+    const arr = Array.from({length:8}, ()=>({}));
+    let center = null;
+    palaces.forEach(p=>{
+      const cell = { men:(p.door_zh||'').replace('門',''), shen:p.deity_zh, xing:p.star_zh, raw:p };
+      if(p.direction==='C') center = cell;
+      else if(QM_DIR2IDX[p.direction]!=null) arr[QM_DIR2IDX[p.direction]] = cell;
+    });
+    window.QM_REAL = arr; window.QM_CENTER = center;
+    window.setQM(arr);
+  }catch(e){ console.warn('qimen fetch fail:', e); window.QM_REAL=null; window.QM_CENTER=null; window.setQM([]); }
+}
+async function applyTiming(k){
   currentTimingKey=k;
   const isEra = k === 'era';
   window.setFX({mode: isEra?'era':'single', data: demos[k].fx});
-  window.setQM(demos[k].qm || []);
   document.querySelectorAll('[data-time]').forEach(x=>x.classList.toggle('active',x.dataset.time===k));
-  updateInspector();
+  /* ฉีเหมิน = 時家เท่านั้น (engine รองรับชั่วยาม) · ยาม=ผังจริง · ปี/เดือน/วัน/ยุค=ว่าง (ไม่หลอก) */
+  if(k==='hour'){ window.setQM([]); updateInspector(); await fetchQimenReal(); updateInspector(); }
+  else { window.QM_REAL=null; window.QM_CENTER=null; window.setQM([]); updateInspector(); }
 }
 document.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>applyTiming(b.dataset.time)));
 
@@ -2161,7 +2183,8 @@ function getRingDataAt(deg){
   /* ดาวบ้าน */
   const fxData = demos[currentTimingKey].fx[dir8idx]||{};
   /* 奇門 */
-  const qm = currentTimingKey==='era' ? null : (demos[currentTimingKey].qm||[])[dir8idx]||{};
+  /* 奇門 จริง: เฉพาะระดับยาม (時家) อ่านจาก window.QM_REAL (ผังจริงจาก qimen-api) · ระดับอื่น = null */
+  const qm = currentTimingKey==='hour' ? ((window.QM_REAL||[])[dir8idx]||null) : null;
   /* 8 trigram 後天 */
   const lh8=['坎','艮','震','巽','離','坤','兌','乾'];
   /* 5 行 8 ทิศ */
@@ -2296,7 +2319,7 @@ function updateInspector(){
     '64卦':['64 กว้า','64卦'],'64卦五行':['ธาตุของกว้า','64卦五行'],'384爻':['384 เส้นเหย้า','384爻'],
     '卦運':['ยุคของกว้า','卦運'],
     '五行':['5 ธาตุ สร้าง/ทำลาย','五行'],
-    '奇門·門':['ฉีเหมิน ประตู','奇門 門'],'奇門·神':['ฉีเหมิน เทพ','奇門 神'],'奇門·星':['ฉีเหมิน ดาว','奇門 星'],
+    '奇門·門':['ฉีเหมิน ประตู','奇門 門'],'奇門·神':['ฉีเหมิน เทพ','奇門 神'],'奇門·星':['ฉีเหมิน ดาว','奇門 星'],'奇門·中宮':['ฉีเหมิน วังกลาง','奇門 中宮'],
     '地盤':['24 ขุนเขา','地盤'],'地支':['12 กิ่งดิน','地支'],'天干':['10 ก้านฟ้า','天干'],
     '三盤':['3 เข็ม','三盤'],'天池':['บ่อฟ้า','天池'],'人盤':['เข็มคน','人盤'],'天盤':['เข็มฟ้า','天盤'],
     '28宿':['28 ดาวฤกษ์','28宿'],'24節氣':['24 ฤดูสุริยะ','24節氣'],
@@ -2308,7 +2331,7 @@ function updateInspector(){
   const ELZ = {水:'น้ำ',木:'ไม้',火:'ไฟ',土:'ดิน',金:'ทอง'}; /* ธาตุจีน→ไทย */
   const DIR_TH = {N:'เหนือ',NE:'อีสาน',E:'ตะวันออก',SE:'อาคเนย์',S:'ใต้',SW:'หรดี',W:'ตะวันตก',NW:'พายัพ'};
   /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
-  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','64卦五行':'r5H','384爻':'r384','卦運':'rKU','五行':'r5E','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','穿山72龍':'r72','透地60龍':'r60M','120分金':'r120','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
+  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','奇門·中宮':'rQM','64卦':'r64','64卦五行':'r5H','384爻':'r384','卦運':'rKU','五行':'r5E','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','穿山72龍':'r72','透地60龍':'r60M','120分金':'r120','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
   function row(cat, han, head, score, general, home, rich){
     const rid = HAN_RING[han];
     if(rid){ const cb=document.querySelector('input[data-r="'+rid+'"]'); if(cb && !cb.checked) return; } /* ศาสตร์ถูกปิด filter */
@@ -2501,6 +2524,18 @@ function updateInspector(){
     if(dei) row('cat4','奇門·神', `<b>${r.qm.shen}</b> · ${dei.name||''}`, dei.score, dei.general, dei.home);
     const star = L.qimen_stars?.stars?.[r.qm.xing];
     if(star) row('cat4','奇門·星', `<b>${r.qm.xing}</b> · ${star.name||''}`, star.score, star.general, star.home);
+  }
+  /* 中宮 วัง中5 (ไม่มีทิศบนหล่อแก) — แสดงแยกเมื่อระดับยาม · ไม่ fold เข้าทิศอื่น (กันผิดสำนัก) */
+  if(currentTimingKey==='hour' && window.QM_CENTER){
+    const c=window.QM_CENTER;
+    const cg=L.qimen_gates?.gates?.[c.men];
+    row('cat4','奇門·中宮', `<b>中5 · ${c.men||''}門 ${c.xing||''} ${c.shen||''}</b>`, cg?cg.score:null,
+        `วัง中5 (วังกลาง) ของผังฉีเหมิน — ไม่มีทิศบนหล่อแก แสดงแยกไว้${cg?.general?' · '+cg.general:''}`, cg?.home||'');
+  }
+  /* honest: ฉีเหมินคำนวณเฉพาะระดับยาม (時家) · ระดับปี/เดือน/วัน ยังไม่รองรับ — ไม่แสดงข้อมูลหลอก */
+  if(['year','month','day'].includes(currentTimingKey)){
+    row('cat4','奇門·門', `<b>ฉีเหมินระดับนี้ยังไม่รองรับ</b>`, null,
+        'วิชาฉีเหมินบนระบบนี้คำนวณเฉพาะระดับ "ยาม" (時家奇門) จาก engine จริง · กดปุ่ม 時 (ยาม) เพื่อดูผัง 8 ทิศจริง', null);
   }
 
   /* === หมวด 1 โครงสร้างพื้นฐาน === */
