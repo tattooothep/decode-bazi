@@ -2018,6 +2018,15 @@ fetch('/_preview/fenjin120.json').then(r => r.json()).then(d => {
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('fenjin120 load failed:', e));
 
+/* 26 พ.ค. · 周易384爻辭 (เส้นเหย้า ~0.9375°) · 64卦×6เส้น + บทจีน+ไทย3ช่อง+score(จากคำมงคล) · ซินแสร่างไทย 386 entries (รวม用九用六) · index byGua[ชื่อกว้า]=[6เส้น 初→上] */
+window.YAO384 = null;
+fetch('/_preview/yao384.json').then(r => r.json()).then(d => {
+  const byGua = {};
+  (d.lines || []).forEach(l => { if(!l.bonus){ (byGua[l.gua] = byGua[l.gua] || []).push(l); } });
+  window.YAO384 = byGua;
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('yao384 load failed:', e));
+
 function getCursorRelativeDeg(){
   /* ทิศจริงบนวง = มุมเข็ม(screen) + การหมุนวง (facing เมื่อล็อก) */
   return ((cursorDeg + ringRotation()) % 360 + 360) % 360;
@@ -2195,7 +2204,21 @@ function getRingDataAt(deg){
       d64el.rel=elRelation(el, d64el.sitEl);
     }
   }catch(e){}
-  return { m24, m24idx, renpan, tianpan, h64char, h64num, h64idx, m28:m28[m28idx], jq:jq[jqidx], dir8, dir8idx, fx:fxData, qm, lh:lh8[dir8idx], el8:el8[dir8idx], d72, d60, d120, d64el };
+  /* 384爻 · sync render r_384yao (เส้น i center=i*0.9375° เริ่ม0° · กว้า h=floor(i/6)=HEXAGRAMS_64[h] · yaoPos=i%6 0=初→5=上) */
+  let d384=null;
+  try{
+    const Y=window.YAO384;
+    if(Y){
+      const stepY=360/384;
+      const i384=Math.floor((((deg+stepY/2)%360+360)%360)/stepY)%384;
+      const hY=Math.floor(i384/6)%64;
+      const yaoPos=i384%6;
+      const guaY=LUOPAN.HEXAGRAMS_64[hY];
+      const arr=Y[guaY];
+      if(arr && arr[yaoPos]) d384=arr[yaoPos];
+    }
+  }catch(e){}
+  return { m24, m24idx, renpan, tianpan, h64char, h64num, h64idx, m28:m28[m28idx], jq:jq[jqidx], dir8, dir8idx, fx:fxData, qm, lh:lh8[dir8idx], el8:el8[dir8idx], d72, d60, d120, d64el, d384 };
 }
 const elTH={water:'น้ำ',wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง'};
 const elHan={water:'水',wood:'木',fire:'火',earth:'土',metal:'金'};
@@ -2254,7 +2277,7 @@ function updateInspector(){
   const HAN_LABEL = {
     '後天':['ปากั้วหลังฟ้า','後天'],'先天':['ปากั้วก่อนฟ้า','先天'],
     '飛星山':['ดาวภูเขา','飛星山'],'飛星水':['ดาวแม่น้ำ','飛星水'],'飛星基':['ดาวฐาน','飛星基'],'飛星':['ดาวเหิน','飛星'],
-    '64卦':['64 กว้า','64卦'],'64卦五行':['ธาตุของกว้า','64卦五行'],
+    '64卦':['64 กว้า','64卦'],'64卦五行':['ธาตุของกว้า','64卦五行'],'384爻':['384 เส้นเหย้า','384爻'],
     '卦運':['ยุคของกว้า','卦運'],
     '五行':['5 ธาตุ สร้าง/ทำลาย','五行'],
     '奇門·門':['ฉีเหมิน ประตู','奇門 門'],'奇門·神':['ฉีเหมิน เทพ','奇門 神'],'奇門·星':['ฉีเหมิน ดาว','奇門 星'],
@@ -2269,7 +2292,7 @@ function updateInspector(){
   const ELZ = {水:'น้ำ',木:'ไม้',火:'ไฟ',土:'ดิน',金:'ทอง'}; /* ธาตุจีน→ไทย */
   const DIR_TH = {N:'เหนือ',NE:'อีสาน',E:'ตะวันออก',SE:'อาคเนย์',S:'ใต้',SW:'หรดี',W:'ตะวันตก',NW:'พายัพ'};
   /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
-  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','64卦五行':'r5H','卦運':'rKU','五行':'r5E','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','穿山72龍':'r72','透地60龍':'r60M','120分金':'r120','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
+  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','64卦五行':'r5H','384爻':'r384','卦運':'rKU','五行':'r5E','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','穿山72龍':'r72','透地60龍':'r60M','120分金':'r120','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
   function row(cat, han, head, score, general, home, rich){
     const rid = HAN_RING[han];
     if(rid){ const cb=document.querySelector('input[data-r="'+rid+'"]'); if(cb && !cb.checked) return; } /* ศาสตร์ถูกปิด filter */
@@ -2340,6 +2363,13 @@ function updateInspector(){
     const gen=`ธาตุประจำกว้านี้คือ ${elTxt} (${r.d64el.elCN}) · มาจาก上卦 (กว้าบน)`;
     const home=rel ? `เทียบกับธาตุทิศนั่ง (${elTH[r.d64el.sitEl]||r.d64el.sitEl}): ${REL_TH[rel]}` : 'ล็อกทิศบ้านก่อน เพื่อดูความเข้ากับธาตุทิศนั่ง';
     row('cat3','64卦五行', `<b>ธาตุ${elTxt}</b> <span style="color:var(--fg-faint)">· ${r.d64el.elCN}${rel?' · '+REL_TH[rel].split(' ')[0]:''}</span>`, sc, gen, home);
+  }
+  /* 384爻 · เส้นเหย้าที่เข็มชี้ (บทจีน + แปลไทย + score จากคำมงคล + คำอธิบายงาน/บ้าน · ซินแสร่าง) */
+  if(r.d384){
+    const y=r.d384;
+    const head=`<b>${y.gua}${y.pos}</b> <span style="color:var(--fg-faint)">· ${y.yao_ci||''}${y.jixiong?' · '+y.jixiong:''}</span>`;
+    const gen=`${y.th||''}${y.general?' — '+y.general:''}`;
+    row('cat3','384爻', head, y.score, gen, y.home||'');
   }
 
   /* 卦運 玄空大卦 · ยุคของกว้า · match ด้วย King Wen id (r.h64num) · periodScoreFormula ซินแส */
