@@ -1,0 +1,3012 @@
+{
+ "meta": {
+  "count": 120,
+  "usable": 48,
+  "school": "楊公/三合 (Yang Gong)",
+  "formula": "idx=floor(((deg+22.5)%360)/3)",
+  "ring": "人紀/立向",
+  "note": "interp 3 ภาษาครบ (template ตาม status)"
+ },
+ "fenjin": [
+  {
+   "index": 0,
+   "deg_start": 337.5,
+   "deg_end": 340.5,
+   "mountain": "壬",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "乙亥",
+   "stem": "乙",
+   "branch": "亥",
+   "nayin": "山頭火",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 1,
+   "deg_start": 340.5,
+   "deg_end": 343.5,
+   "mountain": "壬",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "丁亥",
+   "stem": "丁",
+   "branch": "亥",
+   "nayin": "屋上土",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山壬之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 壬 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 2,
+   "deg_start": 343.5,
+   "deg_end": 346.5,
+   "mountain": "壬",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "己亥",
+   "stem": "己",
+   "branch": "亥",
+   "nayin": "平地木",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 3,
+   "deg_start": 346.5,
+   "deg_end": 349.5,
+   "mountain": "壬",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "辛亥",
+   "stem": "辛",
+   "branch": "亥",
+   "nayin": "釵釧金",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山壬之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 壬 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 4,
+   "deg_start": 349.5,
+   "deg_end": 352.5,
+   "mountain": "壬",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "癸亥",
+   "stem": "癸",
+   "branch": "亥",
+   "nayin": "大海水",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 5,
+   "deg_start": 352.5,
+   "deg_end": 355.5,
+   "mountain": "子",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "甲子",
+   "stem": "甲",
+   "branch": "子",
+   "nayin": "海中金",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 6,
+   "deg_start": 355.5,
+   "deg_end": 358.5,
+   "mountain": "子",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "丙子",
+   "stem": "丙",
+   "branch": "子",
+   "nayin": "澗下水",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山子之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 子 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู子 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 7,
+   "deg_start": 358.5,
+   "deg_end": 1.5,
+   "mountain": "子",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "戊子",
+   "stem": "戊",
+   "branch": "子",
+   "nayin": "霹靂火",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 8,
+   "deg_start": 1.5,
+   "deg_end": 4.5,
+   "mountain": "子",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "庚子",
+   "stem": "庚",
+   "branch": "子",
+   "nayin": "壁上土",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山子之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 子 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู子 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 9,
+   "deg_start": 4.5,
+   "deg_end": 7.5,
+   "mountain": "子",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "壬子",
+   "stem": "壬",
+   "branch": "子",
+   "nayin": "桑柘木",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 10,
+   "deg_start": 7.5,
+   "deg_end": 10.5,
+   "mountain": "癸",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "甲子",
+   "stem": "甲",
+   "branch": "子",
+   "nayin": "海中金",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 11,
+   "deg_start": 10.5,
+   "deg_end": 13.5,
+   "mountain": "癸",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "丙子",
+   "stem": "丙",
+   "branch": "子",
+   "nayin": "澗下水",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山癸之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 癸 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู癸 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 12,
+   "deg_start": 13.5,
+   "deg_end": 16.5,
+   "mountain": "癸",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "戊子",
+   "stem": "戊",
+   "branch": "子",
+   "nayin": "霹靂火",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 13,
+   "deg_start": 16.5,
+   "deg_end": 19.5,
+   "mountain": "癸",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "庚子",
+   "stem": "庚",
+   "branch": "子",
+   "nayin": "壁上土",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山癸之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 癸 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู癸 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 14,
+   "deg_start": 19.5,
+   "deg_end": 22.5,
+   "mountain": "癸",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "壬子",
+   "stem": "壬",
+   "branch": "子",
+   "nayin": "桑柘木",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 15,
+   "deg_start": 22.5,
+   "deg_end": 25.5,
+   "mountain": "丑",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "乙丑",
+   "stem": "乙",
+   "branch": "丑",
+   "nayin": "海中金",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 16,
+   "deg_start": 25.5,
+   "deg_end": 28.5,
+   "mountain": "丑",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "丁丑",
+   "stem": "丁",
+   "branch": "丑",
+   "nayin": "澗下水",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山丑之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 丑 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 17,
+   "deg_start": 28.5,
+   "deg_end": 31.5,
+   "mountain": "丑",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "己丑",
+   "stem": "己",
+   "branch": "丑",
+   "nayin": "霹靂火",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 18,
+   "deg_start": 31.5,
+   "deg_end": 34.5,
+   "mountain": "丑",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "辛丑",
+   "stem": "辛",
+   "branch": "丑",
+   "nayin": "壁上土",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山丑之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 丑 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 19,
+   "deg_start": 34.5,
+   "deg_end": 37.5,
+   "mountain": "丑",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "癸丑",
+   "stem": "癸",
+   "branch": "丑",
+   "nayin": "桑柘木",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 20,
+   "deg_start": 37.5,
+   "deg_end": 40.5,
+   "mountain": "艮",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "乙丑",
+   "stem": "乙",
+   "branch": "丑",
+   "nayin": "海中金",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 21,
+   "deg_start": 40.5,
+   "deg_end": 43.5,
+   "mountain": "艮",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "丁丑",
+   "stem": "丁",
+   "branch": "丑",
+   "nayin": "澗下水",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山艮之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 艮 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 22,
+   "deg_start": 43.5,
+   "deg_end": 46.5,
+   "mountain": "艮",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "己丑",
+   "stem": "己",
+   "branch": "丑",
+   "nayin": "霹靂火",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 23,
+   "deg_start": 46.5,
+   "deg_end": 49.5,
+   "mountain": "艮",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "辛丑",
+   "stem": "辛",
+   "branch": "丑",
+   "nayin": "壁上土",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山艮之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 艮 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 24,
+   "deg_start": 49.5,
+   "deg_end": 52.5,
+   "mountain": "艮",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "癸丑",
+   "stem": "癸",
+   "branch": "丑",
+   "nayin": "桑柘木",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 25,
+   "deg_start": 52.5,
+   "deg_end": 55.5,
+   "mountain": "寅",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "甲寅",
+   "stem": "甲",
+   "branch": "寅",
+   "nayin": "大溪水",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 26,
+   "deg_start": 55.5,
+   "deg_end": 58.5,
+   "mountain": "寅",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "丙寅",
+   "stem": "丙",
+   "branch": "寅",
+   "nayin": "爐中火",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山寅之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 寅 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู寅 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 27,
+   "deg_start": 58.5,
+   "deg_end": 61.5,
+   "mountain": "寅",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "戊寅",
+   "stem": "戊",
+   "branch": "寅",
+   "nayin": "城頭土",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 28,
+   "deg_start": 61.5,
+   "deg_end": 64.5,
+   "mountain": "寅",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "庚寅",
+   "stem": "庚",
+   "branch": "寅",
+   "nayin": "松柏木",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山寅之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 寅 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู寅 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 29,
+   "deg_start": 64.5,
+   "deg_end": 67.5,
+   "mountain": "寅",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "壬寅",
+   "stem": "壬",
+   "branch": "寅",
+   "nayin": "金箔金",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 30,
+   "deg_start": 67.5,
+   "deg_end": 70.5,
+   "mountain": "甲",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "甲寅",
+   "stem": "甲",
+   "branch": "寅",
+   "nayin": "大溪水",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 31,
+   "deg_start": 70.5,
+   "deg_end": 73.5,
+   "mountain": "甲",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "丙寅",
+   "stem": "丙",
+   "branch": "寅",
+   "nayin": "爐中火",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山甲之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 甲 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู甲 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 32,
+   "deg_start": 73.5,
+   "deg_end": 76.5,
+   "mountain": "甲",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "戊寅",
+   "stem": "戊",
+   "branch": "寅",
+   "nayin": "城頭土",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 33,
+   "deg_start": 76.5,
+   "deg_end": 79.5,
+   "mountain": "甲",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "庚寅",
+   "stem": "庚",
+   "branch": "寅",
+   "nayin": "松柏木",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山甲之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 甲 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู甲 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 34,
+   "deg_start": 79.5,
+   "deg_end": 82.5,
+   "mountain": "甲",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "壬寅",
+   "stem": "壬",
+   "branch": "寅",
+   "nayin": "金箔金",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 35,
+   "deg_start": 82.5,
+   "deg_end": 85.5,
+   "mountain": "卯",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "乙卯",
+   "stem": "乙",
+   "branch": "卯",
+   "nayin": "大溪水",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 36,
+   "deg_start": 85.5,
+   "deg_end": 88.5,
+   "mountain": "卯",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "丁卯",
+   "stem": "丁",
+   "branch": "卯",
+   "nayin": "爐中火",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山卯之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 卯 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 37,
+   "deg_start": 88.5,
+   "deg_end": 91.5,
+   "mountain": "卯",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "己卯",
+   "stem": "己",
+   "branch": "卯",
+   "nayin": "城頭土",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 38,
+   "deg_start": 91.5,
+   "deg_end": 94.5,
+   "mountain": "卯",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "辛卯",
+   "stem": "辛",
+   "branch": "卯",
+   "nayin": "松柏木",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山卯之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 卯 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 39,
+   "deg_start": 94.5,
+   "deg_end": 97.5,
+   "mountain": "卯",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "癸卯",
+   "stem": "癸",
+   "branch": "卯",
+   "nayin": "金箔金",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 40,
+   "deg_start": 97.5,
+   "deg_end": 100.5,
+   "mountain": "乙",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "乙卯",
+   "stem": "乙",
+   "branch": "卯",
+   "nayin": "大溪水",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 41,
+   "deg_start": 100.5,
+   "deg_end": 103.5,
+   "mountain": "乙",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "丁卯",
+   "stem": "丁",
+   "branch": "卯",
+   "nayin": "爐中火",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山乙之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 乙 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 42,
+   "deg_start": 103.5,
+   "deg_end": 106.5,
+   "mountain": "乙",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "己卯",
+   "stem": "己",
+   "branch": "卯",
+   "nayin": "城頭土",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 43,
+   "deg_start": 106.5,
+   "deg_end": 109.5,
+   "mountain": "乙",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "辛卯",
+   "stem": "辛",
+   "branch": "卯",
+   "nayin": "松柏木",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山乙之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 乙 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 44,
+   "deg_start": 109.5,
+   "deg_end": 112.5,
+   "mountain": "乙",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "癸卯",
+   "stem": "癸",
+   "branch": "卯",
+   "nayin": "金箔金",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 45,
+   "deg_start": 112.5,
+   "deg_end": 115.5,
+   "mountain": "辰",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "甲辰",
+   "stem": "甲",
+   "branch": "辰",
+   "nayin": "覆燈火",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 46,
+   "deg_start": 115.5,
+   "deg_end": 118.5,
+   "mountain": "辰",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "丙辰",
+   "stem": "丙",
+   "branch": "辰",
+   "nayin": "沙中土",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山辰之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 辰 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู辰 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 47,
+   "deg_start": 118.5,
+   "deg_end": 121.5,
+   "mountain": "辰",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "戊辰",
+   "stem": "戊",
+   "branch": "辰",
+   "nayin": "大林木",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 48,
+   "deg_start": 121.5,
+   "deg_end": 124.5,
+   "mountain": "辰",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "庚辰",
+   "stem": "庚",
+   "branch": "辰",
+   "nayin": "白臘金",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山辰之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 辰 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู辰 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 49,
+   "deg_start": 124.5,
+   "deg_end": 127.5,
+   "mountain": "辰",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "壬辰",
+   "stem": "壬",
+   "branch": "辰",
+   "nayin": "長流水",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 50,
+   "deg_start": 127.5,
+   "deg_end": 130.5,
+   "mountain": "巽",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "甲辰",
+   "stem": "甲",
+   "branch": "辰",
+   "nayin": "覆燈火",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 51,
+   "deg_start": 130.5,
+   "deg_end": 133.5,
+   "mountain": "巽",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "丙辰",
+   "stem": "丙",
+   "branch": "辰",
+   "nayin": "沙中土",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山巽之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 巽 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู巽 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 52,
+   "deg_start": 133.5,
+   "deg_end": 136.5,
+   "mountain": "巽",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "戊辰",
+   "stem": "戊",
+   "branch": "辰",
+   "nayin": "大林木",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 53,
+   "deg_start": 136.5,
+   "deg_end": 139.5,
+   "mountain": "巽",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "庚辰",
+   "stem": "庚",
+   "branch": "辰",
+   "nayin": "白臘金",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山巽之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 巽 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู巽 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 54,
+   "deg_start": 139.5,
+   "deg_end": 142.5,
+   "mountain": "巽",
+   "mountain_element": {
+    "zh": "木",
+    "th": "ธาตุไม้"
+   },
+   "ganzhi": "壬辰",
+   "stem": "壬",
+   "branch": "辰",
+   "nayin": "長流水",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 55,
+   "deg_start": 142.5,
+   "deg_end": 145.5,
+   "mountain": "巳",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "乙巳",
+   "stem": "乙",
+   "branch": "巳",
+   "nayin": "覆燈火",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 56,
+   "deg_start": 145.5,
+   "deg_end": 148.5,
+   "mountain": "巳",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "丁巳",
+   "stem": "丁",
+   "branch": "巳",
+   "nayin": "沙中土",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山巳之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 巳 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 57,
+   "deg_start": 148.5,
+   "deg_end": 151.5,
+   "mountain": "巳",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "己巳",
+   "stem": "己",
+   "branch": "巳",
+   "nayin": "大林木",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 58,
+   "deg_start": 151.5,
+   "deg_end": 154.5,
+   "mountain": "巳",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "辛巳",
+   "stem": "辛",
+   "branch": "巳",
+   "nayin": "白臘金",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山巳之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 巳 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 59,
+   "deg_start": 154.5,
+   "deg_end": 157.5,
+   "mountain": "巳",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "癸巳",
+   "stem": "癸",
+   "branch": "巳",
+   "nayin": "長流水",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 60,
+   "deg_start": 157.5,
+   "deg_end": 160.5,
+   "mountain": "丙",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "乙巳",
+   "stem": "乙",
+   "branch": "巳",
+   "nayin": "覆燈火",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 61,
+   "deg_start": 160.5,
+   "deg_end": 163.5,
+   "mountain": "丙",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "丁巳",
+   "stem": "丁",
+   "branch": "巳",
+   "nayin": "沙中土",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山丙之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 丙 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 62,
+   "deg_start": 163.5,
+   "deg_end": 166.5,
+   "mountain": "丙",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "己巳",
+   "stem": "己",
+   "branch": "巳",
+   "nayin": "大林木",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 63,
+   "deg_start": 166.5,
+   "deg_end": 169.5,
+   "mountain": "丙",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "辛巳",
+   "stem": "辛",
+   "branch": "巳",
+   "nayin": "白臘金",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山丙之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 丙 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 64,
+   "deg_start": 169.5,
+   "deg_end": 172.5,
+   "mountain": "丙",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "癸巳",
+   "stem": "癸",
+   "branch": "巳",
+   "nayin": "長流水",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 65,
+   "deg_start": 172.5,
+   "deg_end": 175.5,
+   "mountain": "午",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "甲午",
+   "stem": "甲",
+   "branch": "午",
+   "nayin": "沙中金",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 66,
+   "deg_start": 175.5,
+   "deg_end": 178.5,
+   "mountain": "午",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "丙午",
+   "stem": "丙",
+   "branch": "午",
+   "nayin": "天河水",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山午之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 午 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู午 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 67,
+   "deg_start": 178.5,
+   "deg_end": 181.5,
+   "mountain": "午",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "戊午",
+   "stem": "戊",
+   "branch": "午",
+   "nayin": "天上火",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 68,
+   "deg_start": 181.5,
+   "deg_end": 184.5,
+   "mountain": "午",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "庚午",
+   "stem": "庚",
+   "branch": "午",
+   "nayin": "路旁土",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山午之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 午 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู午 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 69,
+   "deg_start": 184.5,
+   "deg_end": 187.5,
+   "mountain": "午",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "壬午",
+   "stem": "壬",
+   "branch": "午",
+   "nayin": "楊柳木",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 70,
+   "deg_start": 187.5,
+   "deg_end": 190.5,
+   "mountain": "丁",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "甲午",
+   "stem": "甲",
+   "branch": "午",
+   "nayin": "沙中金",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 71,
+   "deg_start": 190.5,
+   "deg_end": 193.5,
+   "mountain": "丁",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "丙午",
+   "stem": "丙",
+   "branch": "午",
+   "nayin": "天河水",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山丁之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 丁 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู丁 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 72,
+   "deg_start": 193.5,
+   "deg_end": 196.5,
+   "mountain": "丁",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "戊午",
+   "stem": "戊",
+   "branch": "午",
+   "nayin": "天上火",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 73,
+   "deg_start": 196.5,
+   "deg_end": 199.5,
+   "mountain": "丁",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "庚午",
+   "stem": "庚",
+   "branch": "午",
+   "nayin": "路旁土",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山丁之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 丁 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู丁 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 74,
+   "deg_start": 199.5,
+   "deg_end": 202.5,
+   "mountain": "丁",
+   "mountain_element": {
+    "zh": "火",
+    "th": "ธาตุไฟ"
+   },
+   "ganzhi": "壬午",
+   "stem": "壬",
+   "branch": "午",
+   "nayin": "楊柳木",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 75,
+   "deg_start": 202.5,
+   "deg_end": 205.5,
+   "mountain": "未",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "乙未",
+   "stem": "乙",
+   "branch": "未",
+   "nayin": "沙中金",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 76,
+   "deg_start": 205.5,
+   "deg_end": 208.5,
+   "mountain": "未",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "丁未",
+   "stem": "丁",
+   "branch": "未",
+   "nayin": "天河水",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山未之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 未 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 77,
+   "deg_start": 208.5,
+   "deg_end": 211.5,
+   "mountain": "未",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "己未",
+   "stem": "己",
+   "branch": "未",
+   "nayin": "天上火",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 78,
+   "deg_start": 211.5,
+   "deg_end": 214.5,
+   "mountain": "未",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "辛未",
+   "stem": "辛",
+   "branch": "未",
+   "nayin": "路旁土",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山未之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 未 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 79,
+   "deg_start": 214.5,
+   "deg_end": 217.5,
+   "mountain": "未",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "癸未",
+   "stem": "癸",
+   "branch": "未",
+   "nayin": "楊柳木",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 80,
+   "deg_start": 217.5,
+   "deg_end": 220.5,
+   "mountain": "坤",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "乙未",
+   "stem": "乙",
+   "branch": "未",
+   "nayin": "沙中金",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 81,
+   "deg_start": 220.5,
+   "deg_end": 223.5,
+   "mountain": "坤",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "丁未",
+   "stem": "丁",
+   "branch": "未",
+   "nayin": "天河水",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山坤之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 坤 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 82,
+   "deg_start": 223.5,
+   "deg_end": 226.5,
+   "mountain": "坤",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "己未",
+   "stem": "己",
+   "branch": "未",
+   "nayin": "天上火",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 83,
+   "deg_start": 226.5,
+   "deg_end": 229.5,
+   "mountain": "坤",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "辛未",
+   "stem": "辛",
+   "branch": "未",
+   "nayin": "路旁土",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山坤之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 坤 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 84,
+   "deg_start": 229.5,
+   "deg_end": 232.5,
+   "mountain": "坤",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "癸未",
+   "stem": "癸",
+   "branch": "未",
+   "nayin": "楊柳木",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 85,
+   "deg_start": 232.5,
+   "deg_end": 235.5,
+   "mountain": "申",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "甲申",
+   "stem": "甲",
+   "branch": "申",
+   "nayin": "泉中水",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 86,
+   "deg_start": 235.5,
+   "deg_end": 238.5,
+   "mountain": "申",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "丙申",
+   "stem": "丙",
+   "branch": "申",
+   "nayin": "山下火",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山申之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 申 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู申 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 87,
+   "deg_start": 238.5,
+   "deg_end": 241.5,
+   "mountain": "申",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "戊申",
+   "stem": "戊",
+   "branch": "申",
+   "nayin": "大驛土",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 88,
+   "deg_start": 241.5,
+   "deg_end": 244.5,
+   "mountain": "申",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "庚申",
+   "stem": "庚",
+   "branch": "申",
+   "nayin": "石榴木",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山申之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 申 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู申 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 89,
+   "deg_start": 244.5,
+   "deg_end": 247.5,
+   "mountain": "申",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "壬申",
+   "stem": "壬",
+   "branch": "申",
+   "nayin": "劍鋒金",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 90,
+   "deg_start": 247.5,
+   "deg_end": 250.5,
+   "mountain": "庚",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "甲申",
+   "stem": "甲",
+   "branch": "申",
+   "nayin": "泉中水",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 91,
+   "deg_start": 250.5,
+   "deg_end": 253.5,
+   "mountain": "庚",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "丙申",
+   "stem": "丙",
+   "branch": "申",
+   "nayin": "山下火",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山庚之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 庚 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู庚 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 92,
+   "deg_start": 253.5,
+   "deg_end": 256.5,
+   "mountain": "庚",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "戊申",
+   "stem": "戊",
+   "branch": "申",
+   "nayin": "大驛土",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 93,
+   "deg_start": 256.5,
+   "deg_end": 259.5,
+   "mountain": "庚",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "庚申",
+   "stem": "庚",
+   "branch": "申",
+   "nayin": "石榴木",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山庚之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 庚 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู庚 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 94,
+   "deg_start": 259.5,
+   "deg_end": 262.5,
+   "mountain": "庚",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "壬申",
+   "stem": "壬",
+   "branch": "申",
+   "nayin": "劍鋒金",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 95,
+   "deg_start": 262.5,
+   "deg_end": 265.5,
+   "mountain": "酉",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "乙酉",
+   "stem": "乙",
+   "branch": "酉",
+   "nayin": "泉中水",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 96,
+   "deg_start": 265.5,
+   "deg_end": 268.5,
+   "mountain": "酉",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "丁酉",
+   "stem": "丁",
+   "branch": "酉",
+   "nayin": "山下火",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山酉之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 酉 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 97,
+   "deg_start": 268.5,
+   "deg_end": 271.5,
+   "mountain": "酉",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "己酉",
+   "stem": "己",
+   "branch": "酉",
+   "nayin": "大驛土",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 98,
+   "deg_start": 271.5,
+   "deg_end": 274.5,
+   "mountain": "酉",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "辛酉",
+   "stem": "辛",
+   "branch": "酉",
+   "nayin": "石榴木",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山酉之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 酉 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 99,
+   "deg_start": 274.5,
+   "deg_end": 277.5,
+   "mountain": "酉",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "癸酉",
+   "stem": "癸",
+   "branch": "酉",
+   "nayin": "劍鋒金",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 100,
+   "deg_start": 277.5,
+   "deg_end": 280.5,
+   "mountain": "辛",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "乙酉",
+   "stem": "乙",
+   "branch": "酉",
+   "nayin": "泉中水",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 101,
+   "deg_start": 280.5,
+   "deg_end": 283.5,
+   "mountain": "辛",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "丁酉",
+   "stem": "丁",
+   "branch": "酉",
+   "nayin": "山下火",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山辛之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 辛 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 102,
+   "deg_start": 283.5,
+   "deg_end": 286.5,
+   "mountain": "辛",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "己酉",
+   "stem": "己",
+   "branch": "酉",
+   "nayin": "大驛土",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 103,
+   "deg_start": 286.5,
+   "deg_end": 289.5,
+   "mountain": "辛",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "辛酉",
+   "stem": "辛",
+   "branch": "酉",
+   "nayin": "石榴木",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山辛之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 辛 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 104,
+   "deg_start": 289.5,
+   "deg_end": 292.5,
+   "mountain": "辛",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "癸酉",
+   "stem": "癸",
+   "branch": "酉",
+   "nayin": "劍鋒金",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 105,
+   "deg_start": 292.5,
+   "deg_end": 295.5,
+   "mountain": "戌",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "甲戌",
+   "stem": "甲",
+   "branch": "戌",
+   "nayin": "山頭火",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 106,
+   "deg_start": 295.5,
+   "deg_end": 298.5,
+   "mountain": "戌",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "丙戌",
+   "stem": "丙",
+   "branch": "戌",
+   "nayin": "屋上土",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山戌之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 戌 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู戌 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 107,
+   "deg_start": 298.5,
+   "deg_end": 301.5,
+   "mountain": "戌",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "戊戌",
+   "stem": "戊",
+   "branch": "戌",
+   "nayin": "平地木",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 108,
+   "deg_start": 301.5,
+   "deg_end": 304.5,
+   "mountain": "戌",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "庚戌",
+   "stem": "庚",
+   "branch": "戌",
+   "nayin": "釵釧金",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山戌之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 戌 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู戌 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 109,
+   "deg_start": 304.5,
+   "deg_end": 307.5,
+   "mountain": "戌",
+   "mountain_element": {
+    "zh": "土",
+    "th": "ธาตุดิน"
+   },
+   "ganzhi": "壬戌",
+   "stem": "壬",
+   "branch": "戌",
+   "nayin": "大海水",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 110,
+   "deg_start": 307.5,
+   "deg_end": 310.5,
+   "mountain": "乾",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "甲戌",
+   "stem": "甲",
+   "branch": "戌",
+   "nayin": "山頭火",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 111,
+   "deg_start": 310.5,
+   "deg_end": 313.5,
+   "mountain": "乾",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "丙戌",
+   "stem": "丙",
+   "branch": "戌",
+   "nayin": "屋上土",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山乾之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 乾 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู乾 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 112,
+   "deg_start": 313.5,
+   "deg_end": 316.5,
+   "mountain": "乾",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "戊戌",
+   "stem": "戊",
+   "branch": "戌",
+   "nayin": "平地木",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 113,
+   "deg_start": 316.5,
+   "deg_end": 319.5,
+   "mountain": "乾",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "庚戌",
+   "stem": "庚",
+   "branch": "戌",
+   "nayin": "釵釧金",
+   "status": {
+    "zh": "旺",
+    "py": "wàng",
+    "en": "yang-prosperous",
+    "th": "อ๋วง (รุ่งเรืองสูงสุด)"
+   },
+   "usable": true,
+   "score": 5,
+   "interp_zh": "旺氣分金，珠寶之線。本山乾之氣最旺，宜立向坐穴，主丁財兩旺，富貴綿長。",
+   "interp_en": "Prosperous (wàng) line — the most auspicious 3° arc of 乾 mountain, the 'jewel' line of Yang Gong. Orient doors/homes/graves here for wealth, descendants and lasting honour.",
+   "interp_th": "เส้นอ๋วง (旺) — เส้นรุ่งเรืองสูงสุดของภู乾 ถือเป็น 'เส้นไข่มุก' ในตำราเอี๊ยกง เหมาะตั้งทิศประตู ฮวงซุ้ย หันบ้าน ให้ทั้งทรัพย์ ลาภยศ ลูกหลานสืบสกุล (มงคลสูงสุด)"
+  },
+  {
+   "index": 114,
+   "deg_start": 319.5,
+   "deg_end": 322.5,
+   "mountain": "乾",
+   "mountain_element": {
+    "zh": "金",
+    "th": "ธาตุทอง"
+   },
+   "ganzhi": "壬戌",
+   "stem": "壬",
+   "branch": "戌",
+   "nayin": "大海水",
+   "status": {
+    "zh": "陽孤",
+    "py": "yáng-gū",
+    "en": "yang-lonely",
+    "th": "เอี๊ยงโดดเดี่ยว"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陽孤分金。乾卦純陽，孤陽不生，犯之主絕嗣、出家、家門冷落，立向忌用。",
+   "interp_en": "Yang-lonely (gū) line — pure-yang, 'lone yang cannot give birth'. Risks no heirs, cold empty home, occupants becoming monks. Avoid.",
+   "interp_th": "เส้นเอี๊ยงโดดเดี่ยว (陽孤) — หยางล้วน 'หยางโดดเดี่ยวก่อกำเนิดไม่ได้' ตั้งทิศแล้วไร้ทายาท บ้านเย็นเหงา ออกบวช — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 115,
+   "deg_start": 322.5,
+   "deg_end": 325.5,
+   "mountain": "亥",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "乙亥",
+   "stem": "乙",
+   "branch": "亥",
+   "nayin": "山頭火",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  },
+  {
+   "index": 116,
+   "deg_start": 325.5,
+   "deg_end": 328.5,
+   "mountain": "亥",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "丁亥",
+   "stem": "丁",
+   "branch": "亥",
+   "nayin": "屋上土",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山亥之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 亥 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 117,
+   "deg_start": 328.5,
+   "deg_end": 331.5,
+   "mountain": "亥",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "己亥",
+   "stem": "己",
+   "branch": "亥",
+   "nayin": "平地木",
+   "status": {
+    "zh": "龜甲空亡",
+    "py": "guī-jiǎ kōng-wáng",
+    "en": "tortoise-shell void / fire-pit",
+    "th": "กุยกะคงบ๊วง (หลุมไฟ)"
+   },
+   "usable": false,
+   "score": 1,
+   "interp_zh": "龜甲空亡分金，又名「火坑」。坎納戊、離納己，孤陽不生獨陰不長，此線大凶，主敗絕、瘟疫、損妻克子，絕對不可用。",
+   "interp_en": "Tortoise-shell void line ('Fire Pit', 火坑). Catastrophic: family extinction, plague, death of spouse and children. Absolutely must not be used.",
+   "interp_th": "เส้นกุยกะคงบ๊วง / มหาสูญกระดองเต่า ('หลุมไฟ' 火坑) เส้นวิบัติร้ายแรงสุด ตระกูลล่มสลาย โรคระบาด สูญเสียคู่ครองและบุตร — ห้ามใช้เด็ดขาด"
+  },
+  {
+   "index": 118,
+   "deg_start": 331.5,
+   "deg_end": 334.5,
+   "mountain": "亥",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "辛亥",
+   "stem": "辛",
+   "branch": "亥",
+   "nayin": "釵釧金",
+   "status": {
+    "zh": "相",
+    "py": "xiàng",
+    "en": "yin-flourishing",
+    "th": "เซียง (มงคลรอง)"
+   },
+   "usable": true,
+   "score": 4,
+   "interp_zh": "相氣分金，亦屬旺相吉線。本山亥之輔氣，立向可用，主家宅安寧、財丁漸進。",
+   "interp_en": "Flourishing (xiàng) line — yin partner of wàng, fully usable. Brings steady prosperity, family harmony and gradual ascent for 亥 mountain.",
+   "interp_th": "เส้นเซียง (相) — เส้นมงคลรองคู่อิมของอ๋วง ใช้ตั้งทิศได้เต็มที่ ให้ทรัพย์-ลูกหลานแบบค่อยเป็นค่อยไป ครอบครัวสงบสุข (มงคล)"
+  },
+  {
+   "index": 119,
+   "deg_start": 334.5,
+   "deg_end": 337.5,
+   "mountain": "亥",
+   "mountain_element": {
+    "zh": "水",
+    "th": "ธาตุน้ำ"
+   },
+   "ganzhi": "癸亥",
+   "stem": "癸",
+   "branch": "亥",
+   "nayin": "大海水",
+   "status": {
+    "zh": "陰虛",
+    "py": "yīn-xū",
+    "en": "yin-empty",
+    "th": "อิมว่างเปล่า"
+   },
+   "usable": false,
+   "score": 2,
+   "interp_zh": "陰虛分金。坤卦純陰，獨陰不長，犯之主退財、損丁、女寡，立向忌用。",
+   "interp_en": "Yin-empty (xū) line — pure-yin, 'lone yin cannot grow'. Causes loss of wealth, loss of male heirs, widowhood. Avoid.",
+   "interp_th": "เส้นอิมว่างเปล่า (陰虛) — อิมล้วน 'อิมโดดเดี่ยวเจริญไม่ได้' เสื่อมทรัพย์ ขาดทายาทชาย ภรรยาเป็นม่าย — อัปมงคล หลีกเลี่ยง"
+  }
+ ]
+}

@@ -308,8 +308,8 @@
       <p class="cat-desc">เจาะลึกสำหรับมืออาชีพ · เพิ่มความแม่นยำ</p>
       <div class="layer-grid">
         <label><input type="checkbox" data-r="r120" data-cg="3" checked><span class="lbl-th">120 ส่วนทอง · จับคู่ปีเกิด+ทิศ</span><span class="lbl-cn">120分金</span></label>
-        <label><input type="checkbox" data-r="r72" data-cg="3" checked><span class="lbl-th">72 มังกรทะลุดิน · พลังใต้ดิน</span><span class="lbl-cn">透地72龍</span></label>
-        <label><input type="checkbox" data-r="r60M" data-cg="3" checked><span class="lbl-th">60 มังกรเจาะภู · พลังภูเขาหลัง</span><span class="lbl-cn">穿山60龍</span></label>
+        <label><input type="checkbox" data-r="r72" data-cg="3" checked><span class="lbl-th">72 มังกรเจาะภู · สันมังกร</span><span class="lbl-cn">穿山72龍</span></label>
+        <label><input type="checkbox" data-r="r60M" data-cg="3" checked><span class="lbl-th">60 มังกรทะลุดิน · พลังพื้นดิน</span><span class="lbl-cn">透地60龍</span></label>
         <label><input type="checkbox" data-r="r60D" data-cg="3" checked><span class="lbl-th">60 จื่อจี๊ดิน · พลังพื้นดิน</span><span class="lbl-cn">地盤60甲子</span></label>
         <label><input type="checkbox" data-r="r384" data-cg="3" checked><span class="lbl-th">384 เส้นเหย้า · ละเอียดสุด ~1°</span><span class="lbl-cn">384爻</span></label>
         <label><input type="checkbox" data-r="r28" data-cg="3" checked><span class="lbl-th">28 ดาวฤกษ์ · ฤกษ์ก่อสร้าง</span><span class="lbl-cn">28宿</span></label>
@@ -584,26 +584,48 @@ const FENJIN_LABELS = ['孤','旺','敗','虛','龜'];
 // At each of 12 inter-branch boundaries (every 30°) sits a 空亡
 // Otherwise jiazi cycles through.
 function build72Dragons() {
+  /* 穿山七十二龍 · 5干同支ต่อ地支 + 大空亡 1 ใต้แต่ละ支 (12) · ช่อง[0]=甲子 เริ่มที่ 壬末/子初 (352.5°) center 355°
+   * 五子分布: กิ่งหยาง(子寅辰午申戌)→ก้านหยาง甲丙戊庚壬 · กิ่งอิน(丑卯巳未酉亥)→ก้านอิน乙丁己辛癸 · เริ่มเลื่อนทีละ1 ตามรอบ甲子 */
+  const G = [
+    { b:'子', st:['甲','丙','戊','庚','壬'], e:'癸' },
+    { b:'丑', st:['乙','丁','己','辛','癸'], e:'艮' },
+    { b:'寅', st:['丙','戊','庚','壬','甲'], e:'甲' },
+    { b:'卯', st:['丁','己','辛','癸','乙'], e:'乙' },
+    { b:'辰', st:['戊','庚','壬','甲','丙'], e:'巽' },
+    { b:'巳', st:['己','辛','癸','乙','丁'], e:'丙' },
+    { b:'午', st:['庚','壬','甲','丙','戊'], e:'丁' },
+    { b:'未', st:['辛','癸','乙','丁','己'], e:'坤' },
+    { b:'申', st:['壬','甲','丙','戊','庚'], e:'庚' },
+    { b:'酉', st:['癸','乙','丁','己','辛'], e:'辛' },
+    { b:'戌', st:['甲','丙','戊','庚','壬'], e:'乾' },
+    { b:'亥', st:['乙','丁','己','辛','癸'], e:'壬' },
+  ];
   const out = [];
-  let ji = 0;
-  for (let i = 0; i < 72; i++) {
-    // Position i corresponds to angle i * 5°. Boundaries at every 30° = every 6 positions.
-    // But traditional layout: 6 jiazi between each branch, with 空亡 at boundary.
-    // i % 6 === 0 means boundary → 空亡; else jiazi.
-    if (i % 6 === 0) {
-      out.push({ type:'kong', label:'空' });
-    } else {
-      out.push({ type:'jiazi', s:STEMS_10[ji%10], b:BRANCHES_12[ji%12], idx:ji });
-      ji++;
-    }
+  for (const g of G) {
+    for (const s of g.st) out.push({ type:'jiazi', s, b:g.b });
+    out.push({ type:'kong', label:'空', under:g.e });
   }
-  return out;
+  return out; /* 72 ช่อง · ช่อง k center = 352.5 + k*5 + 2.5 */
 }
 
-// ─── 60 Chuanshan Dragons · 穿山60龍 (60 jiazi with 納音五行)
+// ─── 60 Chuanshan Dragons · 透地60龍 (60 jiazi with 納音五行)
 // Each spans 6°, offset 3° from 60甲子 ring
 function buildChuanshan() {
-  return JIAZI_60.map((j, i) => ({ ...j, el: NAYIN_ELEMENTS[i] }));
+  /* 透地六十龍 · 5干同支 (เหมือน穿山72 แต่ไม่มี空亡) · 60 ช่อง × 6° · ช่อง[0]=甲子 เริ่ม壬初 337.5° center 340.5° */
+  const G = [
+    { b:'子', st:['甲','丙','戊','庚','壬'] }, { b:'丑', st:['乙','丁','己','辛','癸'] },
+    { b:'寅', st:['丙','戊','庚','壬','甲'] }, { b:'卯', st:['丁','己','辛','癸','乙'] },
+    { b:'辰', st:['戊','庚','壬','甲','丙'] }, { b:'巳', st:['己','辛','癸','乙','丁'] },
+    { b:'午', st:['庚','壬','甲','丙','戊'] }, { b:'未', st:['辛','癸','乙','丁','己'] },
+    { b:'申', st:['壬','甲','丙','戊','庚'] }, { b:'酉', st:['癸','乙','丁','己','辛'] },
+    { b:'戌', st:['甲','丙','戊','庚','壬'] }, { b:'亥', st:['乙','丁','己','辛','癸'] },
+  ];
+  const out = [];
+  for (const g of G) for (const s of g.st) {
+    const idx = JIAZI_60.findIndex(j => j.s===s && j.b===g.b);
+    out.push({ s, b:g.b, el: NAYIN_ELEMENTS[idx>=0?idx:0] });
+  }
+  return out; /* 60 ช่อง · ช่อง k center = 337.5 + k*6 + 3 */
 }
 
 // ─── 384 Yao · 384爻 (64 hex × 6 lines, labeled 初/二/三/四/五/上 + 九/六)
@@ -818,14 +840,14 @@ function r_xiantian() {
   return g;
 }
 
-// ─── Ring 17 · 穿山60龍 (169-182, offset 3°)
+// ─── Ring 17 · 透地60龍 (169-182, offset 3°)
 function r_chuanshan() {
   const r1 = 169, r2 = 182;
   let g = ring(r2, `stroke="${GOLD_DIM}" stroke-width=".5"`);
   const step = 6;
   const data = D.buildChuanshan();
   for (let i = 0; i < 60; i++) {
-    const center = 3 + i * step; // offset 3°
+    const center = 337.5 + i * step + step / 2; // 透地60 · ช่อง[0]甲子 center 340.5° (เริ่ม壬初 337.5°)
     const d1 = center - step / 2;
     g += brd(r1, r2, d1, `stroke="${HAIR}" stroke-width=".3"`);
     const j = data[i];
@@ -852,14 +874,14 @@ function r_jiazi60() {
   return g;
 }
 
-// ─── Ring 16 · 透地72龍 (195-208)
+// ─── Ring 16 · 穿山72龍 (195-208)
 function r_72dragons() {
   const r1 = 195, r2 = 208;
   let g = ring(r2, `stroke="${GOLD_DIM}" stroke-width=".5"`);
   const step = 5;
   const data = D.build72Dragons();
   for (let i = 0; i < 72; i++) {
-    const center = i * step;
+    const center = 352.5 + i * step + step / 2; /* 穿山72 · ช่อง[0]甲子 center 355° (เริ่ม壬末/子初 352.5°) */
     const d1 = center - step / 2;
     const isBdy = data[i].type === 'kong';
     g += brd(r1, r2, d1, `stroke="${isBdy ? GOLD_DIM : HAIR}" stroke-width="${isBdy ? .55 : .3}"`);
@@ -960,19 +982,29 @@ function r_120fenjin() {
   const r1 = 282, r2 = 294;
   let g = ring(r2, `stroke="${GOLD_DIM}" stroke-width=".5"`);
   const step = 3;
-  // 120 fenjin = 60 jiazi cycled twice; each 3°.
-  // Start offset so first entry aligns with 子 boundary
+  const FJ = window.FENJIN120;
+  // สีตามคะแนนตำรา 楊公: 旺5=ทอง · 相4=เขียว · 孤虛2=จาง · 火坑1=แดงจาง
+  const colByScore = s => s>=5 ? '#e8c878' : s>=4 ? '#a9e1ad' : s>=2 ? 'rgba(240,230,207,.3)' : 'rgba(214,120,120,.45)';
+  if (Array.isArray(FJ) && FJ.length === 120) {
+    // วาดจากข้อมูลตำราจริง (index0=337.5° · เรียง 5干同支ต่อภู)
+    for (let i = 0; i < 120; i++) {
+      const o = FJ[i];
+      const cDeg = (((o.deg_start + step/2) % 360) + 360) % 360;
+      g += brd(r1, r2, o.deg_start, `stroke="${HAIR}" stroke-width=".25"`);
+      const col = colByScore(o.score);
+      g += rt(289, cDeg, o.stem, { fs:4.5, fw:500, fill:col });
+      g += rt(285, cDeg, o.branch, { fs:4.5, fw:500, fill:col });
+    }
+    return g;
+  }
+  // fallback (ก่อน fenjin120.json โหลด) — ลำดับ甲子ดิบ ไม่ตรงตำรา ใช้ชั่วคราว
   for (let i = 0; i < 120; i++) {
-    const center = i * step - 1.5; // start at -1.5° (offset half-cell)
+    const center = i * step - 1.5;
     const cDeg = ((center % 360) + 360) % 360;
-    const d1 = cDeg - step / 2;
-    g += brd(r1, r2, d1, `stroke="${HAIR}" stroke-width=".25"`);
+    g += brd(r1, r2, cDeg - step / 2, `stroke="${HAIR}" stroke-width=".25"`);
     const j = D.JIAZI_60[i % 60];
-    // Color by sub-position label (孤旺敗虛龜)
     const sub = i % 5;
-    const isVitality = sub === 1; // 旺 = prosperous
-    const isVoid = sub === 0 || sub === 3; // 孤虛
-    const col = isVitality ? '#e8c878' : isVoid ? 'rgba(240,230,207,.3)' : DIM;
+    const col = sub === 1 ? '#e8c878' : (sub === 0 || sub === 3) ? 'rgba(240,230,207,.3)' : DIM;
     g += rt(289, cDeg, j.s, { fs:4.5, fw:500, fill:col });
     g += rt(285, cDeg, j.b, { fs:4.5, fw:500, fill:col });
   }
@@ -1974,6 +2006,18 @@ fetch('/_preview/core-sciences.json').then(r => r.json()).then(d => {
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('core-sciences load failed:', e));
 
+/* 26 พ.ค. · 楊公120分金 (人紀/立向) · 120 ช่อง 3° · index0=337.5° · 旺5相4孤虛2火坑1 · 48 ใช้ได้ · interp 3 ภาษา (ตรวจ 120/48/60 ผ่าน) */
+window.FENJIN120 = null;
+fetch('/_preview/fenjin120.json').then(r => r.json()).then(d => {
+  window.FENJIN120 = (d && d.fenjin) ? d.fenjin : null;
+  /* re-render วง r120 ด้วยข้อมูลจริงตำรา (ตอน build ครั้งแรกยังไม่โหลด → ใช้ fallback) */
+  try {
+    const r120 = document.getElementById('r120');
+    if (r120 && typeof r_120fenjin === 'function') r120.innerHTML = r_120fenjin();
+  } catch(e) { console.warn('r120 re-render failed:', e); }
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('fenjin120 load failed:', e));
+
 function getCursorRelativeDeg(){
   /* ทิศจริงบนวง = มุมเข็ม(screen) + การหมุนวง (facing เมื่อล็อก) */
   return ((cursorDeg + ringRotation()) % 360 + 360) % 360;
@@ -2041,6 +2085,30 @@ function getYearAfflictions(year){
 }
 /* King Wen number 64卦 (ชื่อกว้า → ลำดับมาตรฐาน) สำหรับแสดง # ใน inspector */
 const KING_WEN_NUM = {'乾':1,'坤':2,'屯':3,'蒙':4,'需':5,'訟':6,'師':7,'比':8,'小畜':9,'履':10,'泰':11,'否':12,'同人':13,'大有':14,'謙':15,'豫':16,'隨':17,'蠱':18,'臨':19,'觀':20,'噬嗑':21,'賁':22,'剝':23,'復':24,'无妄':25,'大畜':26,'頤':27,'大過':28,'坎':29,'離':30,'咸':31,'恆':32,'遯':33,'大壯':34,'晉':35,'明夷':36,'家人':37,'睽':38,'蹇':39,'解':40,'損':41,'益':42,'夬':43,'姤':44,'萃':45,'升':46,'困':47,'井':48,'革':49,'鼎':50,'震':51,'艮':52,'漸':53,'歸妹':54,'豐':55,'旅':56,'巽':57,'兌':58,'渙':59,'節':60,'中孚':61,'小過':62,'既濟':63,'未濟':64};
+/* 五行生克 → ความสัมพันธ์ธาตุ (สำหรับ score 穿山72龍/透地60龍) · cell=ธาตุที่เข็มชี้ · ref=ธาตุ坐山 */
+const EL_GEN={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'}; /* 生: A→B */
+const EL_KE ={wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'}; /* 克: A→B */
+function elRelation(cell, ref){
+  if(!cell||!ref) return null;
+  if(cell===ref) return 'same_element';    /* 比和 旺 · key ตรง score_guide */
+  if(EL_GEN[ref]===cell) return 'generating'; /* 坐山生มังกร · ได้พลัง */
+  if(EL_GEN[cell]===ref) return 'weakening';  /* มังกร生坐山 · ถูกดูด */
+  if(EL_KE[cell]===ref||EL_KE[ref]===cell) return 'destroying'; /* 相克 */
+  return 'neutral';
+}
+/* nayinOf · map (干支) → ธาตุนาอิน(en) + ชื่อนาอิน + general/home/score · อ่าน JIAZI_60/NAYIN_ELEMENTS/nayin_elements (read-only ไม่แตะ data · shared 3 วง) */
+function nayinOf(stem, branch){
+  try{
+    const J=LUOPAN.JIAZI_60;
+    const idx=J.findIndex(j=>j.s===stem&&j.b===branch);
+    if(idx<0) return null;
+    const CN2EN={'金':'metal','水':'water','木':'wood','火':'fire','土':'earth'};
+    const elCN=LUOPAN.NAYIN_ELEMENTS[idx];
+    const ne=window.LUOPAN_DATA?.jiazi_60_earth?.nayin_elements;
+    const pair=ne?Object.values(ne)[Math.floor(idx/2)]:null;
+    return { idx, el:CN2EN[elCN]||elCN, elCN, nayinName:pair?.nayin||null, general:pair?.general||null, home:pair?.home||null, score:pair?.score??null };
+  }catch(e){ return null; }
+}
 function getRingDataAt(deg){
   const m24data=[{c:'N1',m:'壬',p:'Rén',el:'water'},{c:'N2',m:'子',p:'Zǐ',el:'water'},{c:'N3',m:'癸',p:'Guǐ',el:'water'},{c:'NE1',m:'丑',p:'Chǒu',el:'earth'},{c:'NE2',m:'艮',p:'Gèn',el:'earth'},{c:'NE3',m:'寅',p:'Yín',el:'wood'},{c:'E1',m:'甲',p:'Jiǎ',el:'wood'},{c:'E2',m:'卯',p:'Mǎo',el:'wood'},{c:'E3',m:'乙',p:'Yǐ',el:'wood'},{c:'SE1',m:'辰',p:'Chén',el:'earth'},{c:'SE2',m:'巽',p:'Xùn',el:'wood'},{c:'SE3',m:'巳',p:'Sì',el:'fire'},{c:'S1',m:'丙',p:'Bǐng',el:'fire'},{c:'S2',m:'午',p:'Wǔ',el:'fire'},{c:'S3',m:'丁',p:'Dīng',el:'fire'},{c:'SW1',m:'未',p:'Wèi',el:'earth'},{c:'SW2',m:'坤',p:'Kūn',el:'earth'},{c:'SW3',m:'申',p:'Shēn',el:'metal'},{c:'W1',m:'庚',p:'Gēng',el:'metal'},{c:'W2',m:'酉',p:'Yǒu',el:'metal'},{c:'W3',m:'辛',p:'Xīn',el:'metal'},{c:'NW1',m:'戌',p:'Xū',el:'earth'},{c:'NW2',m:'乾',p:'Qián',el:'metal'},{c:'NW3',m:'亥',p:'Hài',el:'water'}];
   /* N1 เริ่ม 337.5° · ช่องละ 15° · ใช้ตรงๆ (formula เก่า off-by-22) */
@@ -2074,7 +2142,47 @@ function getRingDataAt(deg){
   /* 5 行 8 ทิศ */
   const el8=['water','earth','wood','wood','fire','earth','metal','metal'];
 
-  return { m24, m24idx, renpan, tianpan, h64char, h64num, h64idx, m28:m28[m28idx], jq:jq[jqidx], dir8, dir8idx, fx:fxData, qm, lh:lh8[dir8idx], el8:el8[dir8idx] };
+  /* 穿山72龍 · sync render r_72dragons (center=i*5° · round(deg/5) · i%6==0=空亡) · ธาตุนาอินเทียบ坐山 */
+  let d72=null;
+  try{
+    const arr72=LUOPAN.build72Dragons();
+    const i72=(Math.floor((((deg-352.5)%360+360)%360)/5))%72; /* ช่อง k ครอบ [352.5+k*5 , +5) · floor · [0]=甲子 (center 355°) */
+    const c72=arr72[i72];
+    if(c72.type==='kong'){ d72={kong:true, under:c72.under}; }
+    else {
+      const ny=nayinOf(c72.s, c72.b); /* ธาตุ(en)+นาอิน+general/home per甲子 · map ผ่าน JIAZI_60 (穿山72 เรียง支group ไม่ sequential) */
+      d72={jiazi:c72.s+c72.b, el:ny?.el, idx:ny?.idx, no:Math.floor(i72/6)*5+(i72%6)+1, nayinName:ny?.nayinName, general:ny?.general, home:ny?.home}; /* no=ลำดับมังกรบนวง 1-60 (ข้าม大空亡) */
+      if(houseLocked){
+        const sIdx=Math.floor(((((lockedFacing+180)%360)-337.5+360)%360)/15)%24;
+        d72.sitEl=m24data[sIdx].el;
+        d72.rel=elRelation(d72.el, d72.sitEl);
+      }
+    }
+  }catch(e){}
+  /* 透地六十龍 · 5干同支 · ช่อง 6° · ช่อง[0]甲子 center 340.5° (เริ่ม壬初 337.5°) · ไม่มี空亡 · ธาตุนาอินเทียบ坐山 */
+  let d60=null;
+  try{
+    const arr60=LUOPAN.buildChuanshan();
+    const i60=(Math.floor((((deg-337.5)%360+360)%360)/6))%60;
+    const c60=arr60[i60];
+    const ny=nayinOf(c60.s, c60.b);
+    d60={jiazi:c60.s+c60.b, el:ny?.el, no:i60+1, nayinName:ny?.nayinName, general:ny?.general, home:ny?.home};
+    if(houseLocked){
+      const sIdx=Math.floor(((((lockedFacing+180)%360)-337.5+360)%360)/15)%24;
+      d60.sitEl=m24data[sIdx].el;
+      d60.rel=elRelation(d60.el, d60.sitEl);
+    }
+  }catch(e){}
+  /* 楊公120分金 · ช่อง 3° · idx0=337.5° (สูตรตำรา idx=floor(((deg+22.5)%360)/3)) · score ตำราตรง (旺5相4孤虛2火坑1) · interp 3 ภาษา */
+  let d120=null;
+  try{
+    const FJ=window.FENJIN120;
+    if(Array.isArray(FJ) && FJ.length===120){
+      const i120=Math.floor((((deg+22.5)%360+360)%360)/3)%120;
+      d120=FJ[i120];
+    }
+  }catch(e){}
+  return { m24, m24idx, renpan, tianpan, h64char, h64num, h64idx, m28:m28[m28idx], jq:jq[jqidx], dir8, dir8idx, fx:fxData, qm, lh:lh8[dir8idx], el8:el8[dir8idx], d72, d60, d120 };
 }
 const elTH={water:'น้ำ',wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง'};
 const elHan={water:'水',wood:'木',fire:'火',earth:'土',metal:'金'};
@@ -2140,7 +2248,7 @@ function updateInspector(){
     '地盤':['24 ขุนเขา','地盤'],'地支':['12 กิ่งดิน','地支'],'天干':['10 ก้านฟ้า','天干'],
     '三盤':['3 เข็ม','三盤'],'天池':['บ่อฟ้า','天池'],'人盤':['เข็มคน','人盤'],'天盤':['เข็มฟ้า','天盤'],
     '28宿':['28 ดาวฤกษ์','28宿'],'24節氣':['24 ฤดูสุริยะ','24節氣'],
-    '60甲子':['60 จื่อจี๊','60甲子'],'透地72龍':['72 มังกรทะลุดิน','透地72龍'],'穿山60龍':['60 มังกรเจาะภู','穿山60龍'],
+    '60甲子':['60 จื่อจี๊','60甲子'],'穿山72龍':['72 มังกรเจาะภู','穿山72龍'],'透地60龍':['60 มังกรทะลุดิน','透地60龍'],'120分金':['120 ส่วนทอง','120分金'],
     '城門':['ประตูเมือง','城門'],
     '八宅':['แปดบ้านโป๊ยเต๊ก','八宅'],'正神零神':['เทพจริง-ศูนย์','正神零神'],
     '警示':['เตือน','警示']
@@ -2148,7 +2256,7 @@ function updateInspector(){
   const ELZ = {水:'น้ำ',木:'ไม้',火:'ไฟ',土:'ดิน',金:'ทอง'}; /* ธาตุจีน→ไทย */
   const DIR_TH = {N:'เหนือ',NE:'อีสาน',E:'ตะวันออก',SE:'อาคเนย์',S:'ใต้',SW:'หรดี',W:'ตะวันตก',NW:'พายัพ'};
   /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
-  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','卦運':'rKU','五行':'r5E','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','透地72龍':'r72','穿山60龍':'r60M','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
+  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','64卦':'r64','卦運':'rKU','五行':'r5E','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','穿山72龍':'r72','透地60龍':'r60M','120分金':'r120','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
   function row(cat, han, head, score, general, home, rich){
     const rid = HAN_RING[han];
     if(rid){ const cb=document.querySelector('input[data-r="'+rid+'"]'); if(cb && !cb.checked) return; } /* ศาสตร์ถูกปิด filter */
@@ -2446,15 +2554,32 @@ function updateInspector(){
     const ny = pairKey ? L.jiazi_60_earth.nayin_elements[pairKey] : null;
     if(ny) row('cat3','60甲子', `<b>${ny.meaning||ny.nayin||pairKey}</b> <span style="color:var(--fg-faint)">· ${pairKey} ${ny.nayin||''}</span>`, ny.score, ny.general, ny.home);
   }
-  /* 透地72龍 */
-  if(L.dragon_72?.interpretation){
-    const dg=L.dragon_72.interpretation;
-    row('cat3','透地72龍', `<b>72 มังกรทะลุดิน</b> · ใต้ทิศ ${r.m24.c}`, null, dg.general, dg.home);
+  /* 穿山七十二龍 · ช่อง甲子ที่เข็มชี้ (5干同支) + นาอิน + score เทียบ坐山 (生克) · 5干/支 + 大空亡 */
+  if(L.dragon_72 && r.d72){
+    const D72=L.dragon_72;
+    if(r.d72.kong){
+      row('cat3','穿山72龍', `<b>大空亡</b> <span style="color:var(--fg-faint)">· ช่องว่าง · ใต้ ${r.d72.under||r.m24.c}</span>`, null, 'ช่องว่าง 大空亡 · ไม่มีก้านกิ่งกำกับ ตำราถือไม่ดี · ควรเลี่ยงวางสันมังกร/坐 ตรงรอยต่อนี้', null);
+    } else {
+      const sg72=r.d72.rel?D72.score_guide?.[r.d72.rel]:null;
+      const elTxt=elTH[r.d72.el]||r.d72.el;
+      row('cat3','穿山72龍', `<b>มังกรที่ ${r.d72.no} · ${r.d72.jiazi}</b> <span style="color:var(--fg-faint)">· ${r.d72.nayinName||''} · ธาตุ${elTxt}${sg72?' · '+sg72.label:''} · เข้าสันทิศ ${r.m24.c}</span>`, sg72?sg72.score:null, r.d72.general, r.d72.home);
+    }
   }
-  /* 穿山60龍 */
-  if(L.mountain_dragon_60?.interpretation){
-    const md=L.mountain_dragon_60.interpretation;
-    row('cat3','穿山60龍', `<b>60 มังกรเจาะภู</b> · หลังทิศ ${r.m24.c}`, null, md.general, md.home);
+  /* 透地60龍 · ช่อง甲子ที่เข็มชี้ (5干同支) + นาอิน + score เทียบ坐山 (旺相休囚死) */
+  if(L.mountain_dragon_60 && r.d60){
+    const D60=L.mountain_dragon_60;
+    const REL2WXS={same_element:'wang',generating:'xiang',neutral:'xiu',weakening:'qiu',destroying:'si'}; /* 生克 → 旺相休囚死 */
+    const sg60=r.d60.rel?D60.score_guide?.[REL2WXS[r.d60.rel]]:null;
+    const elTxt=elTH[r.d60.el]||r.d60.el;
+    row('cat3','透地60龍', `<b>มังกรที่ ${r.d60.no} · ${r.d60.jiazi}</b> <span style="color:var(--fg-faint)">· ${r.d60.nayinName||''} · ธาตุ${elTxt}${sg60?' · '+sg60.label:''} · เข้าดิน ${r.m24.c}</span>`, sg60?sg60.score:null, r.d60.general, r.d60.home);
+  }
+  /* 楊公120分金 · เส้นตั้งทิศ (人紀/立向) · score+interp ตำราตรง (ยังไม่คูณ仙命納音 = เฟส 2) */
+  if(r.d120){
+    const f=r.d120;
+    const st=f.status||{};
+    const head=`<b>分金 ${f.ganzhi}</b> <span style="color:var(--fg-faint)">· ${st.th||''}${st.zh?' ('+st.zh+')':''} · 納音${f.nayin||''} · ภู${f.mountain||''} · ${f.usable?'✅ ตั้งทิศได้':'⛔ เลี่ยง'}</span>`;
+    const home=f.usable ? 'เส้นมงคล — ตั้งทิศประตู/หันบ้าน/ฮวงซุ้ยได้' : 'เลี่ยงตั้งทิศ ประตู หรือเตา ตรงเส้นนี้ (分金差一線 富貴不相見)';
+    row('cat3','120分金', head, f.score, f.interp_th||'', home);
   }
 
   /* === คำเตือน (太歲/歲破/三煞) · dynamic จากปีที่ล็อก === */
