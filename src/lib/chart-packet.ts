@@ -872,6 +872,25 @@ export function renderChartPrompt(packet: ChartPacket): string {
     lines.push(`ราก 5 ธาตุ: ${allTxt}`);
   }
 
+  /* 透干 (ก้านซ่อนในกิ่ง โผล่ขึ้นเป็นก้านบนฟ้า · ธาตุมีพลังเปิดเผยแสดงผลชัด · ดี/ร้ายขึ้นกับ用神หรือ忌神 · ห้ามฟันธง · derived จาก packet ไม่คำนวณเสาใหม่) */
+  {
+    const heavenStems = packet.pillars.map((p) => p.stem);
+    const revealed: string[] = [];
+    const seen = new Set<string>();
+    packet.pillars.forEach((p) => {
+      p.hiddenStems.forEach((h) => {
+        if (heavenStems.includes(h.stem) && !seen.has(h.stem + p.branch)) {
+          seen.add(h.stem + p.branch);
+          const elTh = h.element === "unknown" ? "-" : elementTh(h.element);
+          revealed.push(`${h.stem}(ธาตุ${elTh} · ซ่อนในกิ่ง${BRANCH_TH_NAME[p.branch] || p.branch} ${PILLAR_EN_TH[p.key]} · ${h.tenGod})`);
+        }
+      });
+    });
+    if (revealed.length) {
+      lines.push(`透干 (ก้านซ่อนโผล่ขึ้นก้านบนฟ้า · ธาตุมีพลังเปิดเผย แสดงผลชัด · ดีหรือร้ายขึ้นกับว่าเป็น用神หรือ忌神): ${revealed.join(" · ")}`);
+    }
+  }
+
   /* วัยจร + ปีจร */
   lines.push(
     `วัยจรปัจจุบัน: ${packet.currentLuck
