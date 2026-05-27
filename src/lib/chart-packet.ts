@@ -123,6 +123,24 @@ export type ChartPacket = {
     siLing: { stem: string; element: ElementEN; phase: string; tenGod: string } | null; // 司令
     xiaoYun: { age1Stem: string; age1Branch: string; direction: "forward" | "backward" } | null; // 小運
   } | null;
+  /** 六親 ญาติ (derived จาก十神+宮位+ราก · ไม่คำนวณ engine ใหม่ · แปรตามเพศ · ไม่ฟันธงดี-ร้าย)
+   * 配偶(ชาย財/หญิง官殺·เรือน日支) · 父(偏財) · 母(正印) · 子女(ชาย官殺/หญิง食傷·เรือน時·3p=null) · 兄弟(比劫)
+   * gender=null → null (เดาเพศไม่ได้ · ห้ามมั่ว) */
+  sixRelatives?: {
+    gender: "M" | "F";
+    items: Array<{
+      relativeZh: string;        // 配偶/父/母/子女/兄弟姊妹
+      relativeTh: string;        // คู่ครอง/พ่อ/แม่/ลูก/พี่น้อง
+      starsZh: string[];         // สิบเทพแทนญาติ (正財/偏財...)
+      element: ElementEN;        // ธาตุของดาวญาติ
+      palaceZh: string;          // เรือนหลักของญาติ (日支配偶 · 月父母兄弟 · 時子女)
+      foundAt: string[];         // เสาที่ดาวญาติปรากฏจริง (ก้าน/ซ่อน) · [] = ไม่ปรากฏในผัง
+      rootLabel: RootLabel | null; // ราก element ของดาวญาติ (จาก rootedness.all · null=ไม่มีข้อมูล)
+      isUseful: "yong" | "xi" | "ji" | "neutral"; // เทียบ usefulGods
+      palaceClashed: boolean;    // เรือนญาติถูก 沖/刑/害/破 (จาก interactions)
+      palaceVoid: boolean;       // เรือนญาติตก 空亡
+    }>;
+  } | null;
   usefulGods: {
     /** rank1 useful element */
     yong: ElementEN[];
@@ -405,6 +423,69 @@ function enrichInteraction(it: Interaction, dmElement: ElementEN | "unknown", is
 /* ════════════════════════════════════════════════════════════════
  * buildStructuredChartPacket · map ext/calc → ChartPacket (4p เท่านั้น)
  * ════════════════════════════════════════════════════════════════ */
+/* ── 六親 helper (27 พ.ค.) — สิบเทพ group → ธาตุญาติ (มาตรฐานความสัมพันธ์ธาตุ) ── */
+function controllerElementOf(el: ElementEN): ElementEN | null {
+  return (Object.keys(ELEMENT_CONTROLS) as ElementEN[]).find((k) => ELEMENT_CONTROLS[k] === el) || null;
+}
+function producerElementOf(el: ElementEN): ElementEN | null {
+  return (Object.keys(ELEMENT_PRODUCES) as ElementEN[]).find((k) => ELEMENT_PRODUCES[k] === el) || null;
+}
+function tenGodGroupElement(group: string, dmEl: ElementEN): ElementEN | null {
+  switch (group) {
+    case "比劫": return dmEl;
+    case "食傷": return ELEMENT_PRODUCES[dmEl] || null;
+    case "財":   return ELEMENT_CONTROLS[dmEl] || null;
+    case "官殺": return controllerElementOf(dmEl);
+    case "印":   return producerElementOf(dmEl);
+    default: return null;
+  }
+}
+/* 六親: map ดาว(十神)+宮位+ราก เป็นญาติ · ไม่คำนวณ engine ใหม่ · แปรเพศ · ไม่ฟันธง */
+export function buildSixRelatives(
+  pillars: Record<string, { stem: string; branch: string } | null>,
+  dm: string, dmEl: ElementEN, gender: "M" | "F",
+  rootedness: ChartPacket["rootedness"],
+  voids: Set<string>, clashedBranches: Set<string>,
+  isUsefulFn: (el: ElementEN) => "yong" | "xi" | "ji" | "neutral",
+  is3p: boolean,
+): NonNullable<ChartPacket["sixRelatives"]> {
+  const PT: Record<string, string> = { year: "เสาปี", month: "เสาเดือน", day: "เสาวัน", hour: "เสายาม" };
+  const DEFS = [
+    { zh: "配偶", th: "คู่ครอง", group: gender === "M" ? "財" : "官殺", stars: gender === "M" ? ["正財", "偏財"] : ["正官", "七殺"], palaceKey: "day", palaceZh: "日支 (เรือนคู่ครอง·กิ่งวัน)" },
+    { zh: "父",   th: "พ่อ",     group: "財", stars: ["偏財"], palaceKey: "month", palaceZh: "月 (เรือนพ่อแม่)" },
+    { zh: "母",   th: "แม่",     group: "印", stars: ["正印"], palaceKey: "month", palaceZh: "月 (เรือนพ่อแม่)" },
+    { zh: "子女", th: "ลูก",     group: gender === "M" ? "官殺" : "食傷", stars: gender === "M" ? ["正官", "七殺"] : ["食神", "傷官"], palaceKey: "hour", palaceZh: "時 (เรือนลูก)" },
+    { zh: "兄弟姊妹", th: "พี่น้อง", group: "比劫", stars: ["比肩", "劫財"], palaceKey: "month", palaceZh: "月 (เรือนพี่น้อง)" },
+  ];
+  const POS = ["year", "month", "day", "hour"];
+  const items = DEFS
+    .filter((d) => !(is3p && d.palaceKey === "hour")) // 3p ไม่มี時 → ตัดลูก (กันเดา)
+    .map((d) => {
+      const el = tenGodGroupElement(d.group, dmEl);
+      const foundAt: string[] = [];
+      for (const pos of POS) {
+        const p = pillars[pos]; if (!p) continue;
+        const stemTg = tenGodOf(dm, p.stem);
+        if (stemTg && d.stars.includes(stemTg)) foundAt.push(`${PT[pos]}(ก้าน)`);
+        for (const hs of (HIDDEN_STEMS_MAP[p.branch] || [])) {
+          const hsTg = tenGodOf(dm, hs);
+          if (hsTg && d.stars.includes(hsTg)) { foundAt.push(`${PT[pos]}(ซ่อน)`); break; }
+        }
+      }
+      const pb = pillars[d.palaceKey]?.branch || "";
+      return {
+        relativeZh: d.zh, relativeTh: d.th, starsZh: d.stars,
+        element: (el || "unknown") as ElementEN,
+        palaceZh: d.palaceZh, foundAt,
+        rootLabel: el && rootedness ? rootedness.all[el] : null,
+        isUseful: el ? isUsefulFn(el) : "neutral",
+        palaceClashed: pb ? clashedBranches.has(pb) : false,
+        palaceVoid: pb ? voids.has(pb) : false,
+      };
+    });
+  return { gender, items };
+}
+
 export function buildStructuredChartPacket(
   calc: Calc,
   ext: Ext,
@@ -788,6 +869,20 @@ export function buildStructuredChartPacket(
         xiaoYun: xy ? { age1Stem: xy.entries[0].stem, age1Branch: xy.entries[0].branch, direction: xy.direction } : null,
       };
     })(),
+    sixRelatives: gender ? (() => {
+      const voidSet = new Set<string>(([...(ext.kong_wang?.void_branches || []), ...(ext.kong_wang?.year_xun_voids || [])] as string[]).filter(Boolean));
+      const clashed = new Set<string>();
+      for (const it of raw) {
+        if (!["六沖", "六害", "六破", "三刑", "自刑", "子卯刑"].includes(it.type)) continue;
+        for (const pp of it.participants) if (BRANCH_ELEMENT[pp.token]) clashed.add(pp.token);
+      }
+      const usefulFn = (el: ElementEN): "yong" | "xi" | "ji" | "neutral" =>
+        yong.includes(el) ? "yong" : xi.includes(el) ? "xi" : ji.includes(el) ? "ji" : "neutral";
+      return buildSixRelatives(
+        calc.pillars as Record<string, { stem: string; branch: string } | null>,
+        dm, dmElement as ElementEN, gender, rootedness ?? null, voidSet, clashed, usefulFn, calc.mode === "3p",
+      );
+    })() : null,
     usefulGods: {
       yong,
       xi,
@@ -979,6 +1074,20 @@ export function renderChartPrompt(packet: ChartPacket): string {
   if (packet.fivePalaces?.xiaoYun) {
     const x = packet.fivePalaces.xiaoYun;
     lines.push(`小運 วัยจรเล็ก (โชควัยเด็กก่อนเข้าวัยจรใหญ่): ขวบ1=${STEM_TH[x.age1Stem] || x.age1Stem} ${BRANCH_TH_NAME[x.age1Branch] || x.age1Branch} (${x.age1Stem}${x.age1Branch}) เดิน${x.direction === "forward" ? "หน้า順" : "ถอย逆"} · ใช้อ่านช่วงเด็กก่อน大運เริ่ม · ไม่ฟันธงดี-ร้าย`);
+  }
+  /* 六親 ญาติ (27 พ.ค. · derived 十神+宮位+ราก · แปรเพศ · ไม่ฟันธงดี-ร้าย · AI ใช้คัมภีร์六親 bazi-shishen-classical ประกอบ) */
+  if (packet.sixRelatives) {
+    const sr = packet.sixRelatives;
+    const USEFUL_TH: Record<string, string> = { yong: "ธาตุช่วยหลัก(用)", xi: "ธาตุช่วยรอง(喜)", ji: "ธาตุระวัง(忌)", neutral: "กลาง" };
+    const ROOT_REL: Record<string, string> = { no_root: "ไร้ราก", token_root: "รากบางมาก", partial_root: "รากบางส่วน", rooted: "มีราก", strong_root: "รากแข็ง" };
+    const relLines = sr.items.map((r) => {
+      const starsTh = r.starsZh.map((s) => TEN_GOD_TH[s] || s).join("/");
+      const where = r.foundAt.length ? r.foundAt.join("·") : "ไม่ปรากฏในก้าน/ซ่อนของผังเกิด (ไม่ได้แปลว่าไม่มีญาติ · ห้ามเดา)";
+      const rootTxt = r.rootLabel ? (ROOT_REL[r.rootLabel] || r.rootLabel) : "-";
+      const flags = [r.palaceClashed ? "เรือนถูกกระทบ(沖/刑/害/破)" : "", r.palaceVoid ? "เรือนตกว่าง(空亡)" : ""].filter(Boolean).join(" · ");
+      return `${r.relativeZh} ${r.relativeTh}: ดาวแทน=${starsTh} (ธาตุ${elementTh(r.element)}·${USEFUL_TH[r.isUseful]}) · เรือน=${r.palaceZh} · พบดาวที่=${where} · รากดาว=${rootTxt}${flags ? ` · ${flags}` : ""}`;
+    });
+    lines.push(`六親 ญาติ (เพศ${sr.gender === "M" ? "ชาย" : "หญิง"} · ดาวแทนญาติจากสิบเทพ+เรือน · อ่านสภาพ/ความสัมพันธ์ญาติตามคัมภีร์六親 · ดาวแรง/ถูกกระทบ/ตกว่าง = จุดเด่น-จุดต้องระวังเชิงสร้างสรรค์ · ห้ามฟันธงดี-ร้าย ห้ามทำนายว่าญาติเป็น/ตาย):\n  ${relLines.join("\n  ")}`);
   }
   /* 通根 รากธาตุ (wrapper-7 · ฐานตัดสิน 從格/用神 · ห้ามคำนวณใหม่ · engine ให้มา) */
   if (packet.rootedness) {
