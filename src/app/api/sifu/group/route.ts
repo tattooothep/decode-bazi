@@ -83,12 +83,14 @@ const REL_LABEL: Record<RelZh, { th: string; en: string; zh: string }> = {
   "六害": { th: "แทรก(害)", en: "Harm(害)", zh: "六害" },
   "六破": { th: "บั่นทอน(破)", en: "Break(破)", zh: "六破" },
 };
-function branchRel(a: string, b: string): RelZh | null {
-  if (SYN_HE[a] === b) return "六合";
-  if (SYN_CLASH[a] === b) return "六沖";
-  if (SYN_HARM[a] === b) return "六害";
-  if (SYN_DESTROY[a] === b) return "六破";
-  return null;
+/* คืน "ทุก" ความสัมพันธ์ · กิ่งคู่หนึ่งเป็นได้หลายอย่างพร้อมกัน (寅亥/巳申 = ทั้ง 六合 และ 六破 ตามตำรา) */
+function branchRel(a: string, b: string): RelZh[] {
+  const out: RelZh[] = [];
+  if (SYN_HE[a] === b) out.push("六合");
+  if (SYN_CLASH[a] === b) out.push("六沖");
+  if (SYN_HARM[a] === b) out.push("六害");
+  if (SYN_DESTROY[a] === b) out.push("六破");
+  return out;
 }
 const PILLAR_LABEL_SYN: Record<string, Record<string, string>> = {
   th: { day: "เสาวัน", year: "เสาปี" },
@@ -113,6 +115,8 @@ function buildSynastry(people: PersonSyn[], lang: string): string {
   if (valid.length < 2) return "";
   const elName = L === "en" ? EL_EN : L === "zh" ? EL_ZH : EL_TH;
   const pL = (k: string) => PILLAR_LABEL_SYN[L][k] || k;
+  /* ชื่อกิ่ง: ไทยใช้ราศี (ชวด/ฉลู) · จีน/อังกฤษใช้กิ่งจีน (子/丑) ไม่ปนราศีไทย */
+  const bN = (b: string) => (L === "th" ? (BRANCH_TH_NAME[b] || b) : b);
   const lines: string[] = [];
   for (let i = 0; i < valid.length; i++) {
     for (let j = i + 1; j < valid.length; j++) {
@@ -123,8 +127,8 @@ function buildSynastry(people: PersonSyn[], lang: string): string {
         for (const kb of ["day", "year"] as const) {
           const ba = A.pillars?.[ka]?.branch, bb = B.pillars?.[kb]?.branch;
           if (!ba || !bb) continue;
-          const rel = branchRel(ba, bb);
-          if (rel) hits.push(`${pL(ka)}${BRANCH_TH_NAME[ba] || ba}×${pL(kb)}${BRANCH_TH_NAME[bb] || bb} ${REL_LABEL[rel][L]}`);
+          const rels = branchRel(ba, bb);
+          for (const rel of rels) hits.push(`${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${REL_LABEL[rel][L]}`);
         }
       }
       /* axis_A · ธาตุวันเจ้า A↔B (生/剋/同) */
@@ -141,11 +145,13 @@ function buildSynastry(people: PersonSyn[], lang: string): string {
       const helps: string[] = [];
       if (eb && A.yongEls.includes(eb)) helps.push(L === "en" ? "2's element aids 1's 用神" : L === "zh" ? "2之五行助1用神" : "ธาตุคน2 ช่วย用神คน1");
       if (ea && B.yongEls.includes(ea)) helps.push(L === "en" ? "1's element aids 2's 用神" : L === "zh" ? "1之五行助2用神" : "ธาตุคน1 ช่วย用神คน2");
-      if (hits.length || elRel || helps.length) {
+      /* push เฉพาะคู่ที่มีปฏิกิริยา "เด่น": กิ่ง合冲害破 หรือ 用神ช่วยกัน
+       * (ธาตุวันเจ้า生剋มีเกือบทุกคู่ = ไม่ใช่จุดเด่น · แสดงเป็น context เสริมเมื่อคู่นั้น push แล้วเท่านั้น กัน noise) */
+      if (hits.length || helps.length) {
         const parts = [`${A.name || "?"} ↔ ${B.name || "?"}`];
         if (hits.length) parts.push(hits.join(" · "));
-        if (elRel) parts.push(elRel);
         if (helps.length) parts.push(helps.join(" · "));
+        if (elRel) parts.push(elRel);
         lines.push("  - " + parts.join(" | "));
       }
     }
@@ -240,6 +246,37 @@ function loadEngineKnowledge(): { text: string; version: string } {
   const version = text ? hash.digest("hex").slice(0, 12) : "none";
   _engineKnowledgeCache = { text, ts: now, version };
   return _engineKnowledgeCache;
+}
+
+/* คัมภีร์เจาะลึก 5 เล่ม (十神/格局/合婚/納音/神煞) · copy จาก /api/sifu/route.ts
+ * 合婚 สำคัญสุดสำหรับกลุ่ม (กฎ "ห้ามฟันธงเลิก/ไม่เลิก") · ก่อนหน้านี้ group ไม่โหลด = ช่องโหว่ */
+const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
+const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
+  { file: "bazi-shishen-classical.md", label: "十神 · จิตวิทยาบทบาทสิบเทพ (子平 verbatim)" },
+  { file: "bazi-geju-master.md", label: "格局 · โครงสร้างดวง 子平真詮 spec" },
+  { file: "bazi-hehun-classical.md", label: "合婚 · ความเข้ากันดวงคู่/หลายดวง" },
+  { file: "bazi-nayin-master.md", label: "納音60 · เนื้อสัมผัสนาอิน" },
+  { file: "bazi-shensha-catalog.md", label: "神煞 · คาตาล็อกดาวพิเศษ (รอง)" },
+];
+let _sifuExtraCache: { text: string; ts: number; version: string } | null = null;
+function loadSifuExtraKnowledge(): { text: string; version: string } {
+  const now = Date.now();
+  if (_sifuExtraCache && now - _sifuExtraCache.ts < 60_000) return _sifuExtraCache;
+  const parts: string[] = [];
+  const hash = createHash("sha1");
+  for (const { file, label } of SIFU_EXTRA_FILES) {
+    try {
+      const text = readFileSync(join(SIFU_EXTRA_DIR, file), "utf8");
+      hash.update(file).update(text);
+      parts.push(`\n──────── ตำราเจาะลึก: ${label} ────────\n${text}`);
+    } catch (e) {
+      console.warn("[sifu/group] extra knowledge missing:", file, (e as Error).message);
+    }
+  }
+  const text = parts.join("\n");
+  const version = text ? hash.digest("hex").slice(0, 12) : "none";
+  _sifuExtraCache = { text, ts: now, version };
+  return _sifuExtraCache;
 }
 
 type ProfileRow = {
@@ -348,9 +385,9 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
 
 /* คำสั่งวิเคราะห์กลุ่ม · inline 3 ภาษา · ต่อท้าย group context */
 const GROUP_INSTRUCTION: Record<string, string> = {
-  th: "ด้านบนคือดวงของหลายคนในกลุ่มเดียวกัน · ช่วยวิเคราะห์ภาพรวมกลุ่ม ความเข้ากัน จุดเสริม-จุดชน บทบาทแต่ละคน โดยใช้กฎการอ่านเดียวกับการอ่านดวงเดี่ยว (เจาะ 3-5 จุด ระบุชื่อ+เสาที่เกี่ยวข้อง)",
-  en: "Above are the charts of several people in the same group. Analyze the overall group dynamics, compatibility, mutual support and clashes, and each person's role — using the same reading rules as a single-chart reading (pick 3-5 concrete points, naming the person and the pillars involved).",
-  zh: "以上是同一群組中多人的命盤。請分析群組整體互動、配對、相生相剋與各人角色，並沿用單一命盤的判讀規則（挑 3-5 個具體論點，標明所涉及的人與柱）。",
+  th: "ด้านบนคือดวงของหลายคนในกลุ่มเดียวกัน · ช่วยวิเคราะห์ภาพรวมกลุ่ม ความเข้ากัน จุดเสริม-จุดชน บทบาทแต่ละคน โดยใช้กฎการอ่านเดียวกับการอ่านดวงเดี่ยว (เจาะ 3-5 จุด ระบุชื่อ+เสาที่เกี่ยวข้อง) · ⚠️ 合婚/ความเข้ากัน: 合ไม่ดีเสมอ 冲ไม่ร้ายเสมอ · ห้ามฟันธง 'ต้องเลิก/ไปกันไม่ได้/ห้ามคบ' · ชี้จุดเสริม-จุดต้องระวังเชิงสร้างสรรค์ ผูกกลับ用神/บทบาทแต่ละคน · ใช้คำอ่อนโยน ไม่ขู่",
+  en: "Above are the charts of several people in the same group. Analyze the overall group dynamics, compatibility, mutual support and clashes, and each person's role — using the same reading rules as a single-chart reading (pick 3-5 concrete points, naming the person and the pillars involved). ⚠️ Compatibility/合婚: 合 is not always good, 冲 not always bad — never declare 'must break up / incompatible / should not associate'. Point out constructive strengths and cautions, tied back to each one's 用神/role, in a gentle, non-alarming tone.",
+  zh: "以上是同一群組中多人的命盤。請分析群組整體互動、配對、相生相剋與各人角色，並沿用單一命盤的判讀規則（挑 3-5 個具體論點，標明所涉及的人與柱）。⚠️ 合婚/相合度：合不必吉、冲不必凶 — 切勿斷言「必須分開／不合／不可往來」。請以建設性方式指出助力與需留意之處，結合各自用神/角色，語氣溫和不恐嚇。",
 };
 
 /* ประกอบ prompt · reuse sifu-qa.md เป็นฐาน เหมือน buildPrompt branch Q&A ใน /api/sifu */
@@ -371,12 +408,16 @@ function buildGroupPrompt(opts: { ctx: string; message: string; history: Msg[]; 
   const engineBlock = engineKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-engine-header.md").trim().replace("{{ENGINE}}", () => engineKnow.text) + "\n"
     : "";
+  const extraKnow = loadSifuExtraKnowledge();
+  const extraBlock = extraKnow.text
+    ? "\n\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => extraKnow.text) + "\n"
+    : "";
   const qaLang = loadPromptSections("prompts/sifu-lang.md");
   const groupInstruction = "\n\n" + (GROUP_INSTRUCTION[opts.lang] || GROUP_INSTRUCTION.th);
   return loadPromptMd("prompts/sifu-qa.md")
     .replace("{{LANG}}", () => qaLang[langKey] || qaLang.TH || "")
     .replace("{{RULES}}", () => rulesBlock)
-    .replace("{{INTERACTION}}", () => interactionBlock + engineBlock)
+    .replace("{{INTERACTION}}", () => interactionBlock + engineBlock + extraBlock)
     .replace("{{CTX}}", () => opts.ctx + groupInstruction)
     .replace("{{FOCUS_HIST}}", () => histText)
     .replace("{{MESSAGE}}", () => opts.message);
