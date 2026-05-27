@@ -184,6 +184,38 @@ function loadEngineKnowledge(): { text: string; version: string } {
   return _engineKnowledgeCache;
 }
 
+/* 27 พ.ค. · คัมภีร์เจาะลึก 5 เล่ม ที่ AI ซินแสขอเพิ่ม (十神 บทบาท · 格局 子平真詮 · 合婚 ดวงคู่ · 納音60 · 神煞)
+ * โหลดเสริมพร้อมตำราเดิม · กลไกเดียวกับ loadEngineKnowledge เป๊ะ (folder loop + cache 60s + version hash)
+ * ไม่แตะ 3 loader เดิม (ajek/interaction/engine) · เติมของใหม่ ห้ามกระทบเดิม */
+const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
+const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
+  { file: "bazi-shishen-classical.md", label: "十神 · จิตวิทยาบทบาทสิบเทพ (子平 verbatim)" },
+  { file: "bazi-geju-master.md", label: "格局 · โครงสร้างดวง 子平真詮 spec" },
+  { file: "bazi-hehun-classical.md", label: "合婚 · ความเข้ากันดวงคู่/หลายดวง" },
+  { file: "bazi-nayin-master.md", label: "納音60 · เนื้อสัมผัสนาอิน" },
+  { file: "bazi-shensha-catalog.md", label: "神煞 · คาตาล็อกดาวพิเศษ (รอง)" },
+];
+let _sifuExtraCache: { text: string; ts: number; version: string } | null = null;
+function loadSifuExtraKnowledge(): { text: string; version: string } {
+  const now = Date.now();
+  if (_sifuExtraCache && now - _sifuExtraCache.ts < 60_000) return _sifuExtraCache;
+  const parts: string[] = [];
+  const hash = createHash("sha1");
+  for (const { file, label } of SIFU_EXTRA_FILES) {
+    try {
+      const text = readFileSync(join(SIFU_EXTRA_DIR, file), "utf8");
+      hash.update(file).update(text);
+      parts.push(`\n──────── ตำราเจาะลึก: ${label} ────────\n${text}`);
+    } catch (e) {
+      console.warn("[sifu] extra knowledge missing:", file, (e as Error).message);
+    }
+  }
+  const text = parts.join("\n");
+  const version = text ? hash.digest("hex").slice(0, 12) : "none";
+  _sifuExtraCache = { text, ts: now, version };
+  return _sifuExtraCache;
+}
+
 /* 💾 DB result cache · TTL 24h */
 const CACHE_TTL_HOURS = 24;
 function cacheKey(opts: {
@@ -476,10 +508,14 @@ function buildPrompt(opts: {
     const introEngineBlock = introEngine.text
       ? "\n" + loadPromptMd("prompts/sifu-engine-header.md").trim().replace("{{ENGINE}}", () => introEngine.text) + "\n"
       : "";
+    const introExtra = loadSifuExtraKnowledge();
+    const introExtraBlock = introExtra.text
+      ? "\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => introExtra.text) + "\n"
+      : "";
     const introLang = loadPromptSections("prompts/sifu-intro-lang.md");
     return loadPromptMd("prompts/sifu-intro.md")
       .replace("{{LANG}}", () => introLang[langKey] || introLang.TH || "")
-      .replace("{{INTERACTION}}", () => introInteractionBlock + introEngineBlock)
+      .replace("{{INTERACTION}}", () => introInteractionBlock + introEngineBlock + introExtraBlock)
       .replace("{{CTX}}", () => opts.ctx)
       .replace("{{MESSAGE}}", () => opts.message);
   }
@@ -501,11 +537,15 @@ function buildPrompt(opts: {
   const engineBlock = engineKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-engine-header.md").trim().replace("{{ENGINE}}", () => engineKnow.text) + "\n"
     : "";
+  const extraKnow = loadSifuExtraKnowledge();
+  const extraBlock = extraKnow.text
+    ? "\n\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => extraKnow.text) + "\n"
+    : "";
   const qaLang = loadPromptSections("prompts/sifu-lang.md");
   return loadPromptMd("prompts/sifu-qa.md")
     .replace("{{LANG}}", () => qaLang[langKey] || qaLang.TH || "")
     .replace("{{RULES}}", () => rulesBlock)
-    .replace("{{INTERACTION}}", () => interactionBlock + engineBlock)
+    .replace("{{INTERACTION}}", () => interactionBlock + engineBlock + extraBlock)
     .replace("{{CTX}}", () => opts.ctx)
     .replace("{{FOCUS_HIST}}", () => focus + histText)
     .replace("{{MESSAGE}}", () => opts.message);
@@ -689,7 +729,7 @@ export async function POST(req: Request) {
     const orgId = session?.orgId ?? null;
 
     /* 💾 Cache check ก่อน */
-    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version;
+    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version;
     const dayKey = await getDayPillarKey();
     const key = cacheKey({ profileId, orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
     const useCache = mode !== "intro";
@@ -818,7 +858,7 @@ export async function GET(req: Request) {
   const session = await getSession();
   const orgId = session?.orgId ?? null;
 
-  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version;
+  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version;
   const dayKey = await getDayPillarKey();
   const key = cacheKey({ profileId, orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
   const useCache = mode !== "intro";
