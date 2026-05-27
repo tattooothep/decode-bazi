@@ -12,6 +12,9 @@ t("parse ไม่มี", parseIdLine("วันเจ้าคือ己..."), 
 t("parse ก้านมั่ว(ไม่ใช่10ก้าน)", parseIdLine("⟦ID⟧日干=X⟧"), null);
 t("strip ID line", stripIdLine("⟦ID⟧日干=己⟧\nคำตอบจริง"), "คำตอบจริง");
 t("strip ไม่มี ID (คงเดิม)", stripIdLine("คำตอบปกติ"), "คำตอบปกติ");
+t("strip ก้านต่างคน (group 甲)", stripIdLine("⟦ID⟧日干=甲⟧\nกลุ่ม..."), "กลุ่ม...");
+t("strip greeting ก่อน ID (ไม่ตัด · คงเดิม)", stripIdLine("สวัสดี ⟦ID⟧日干=己⟧\n..."), "สวัสดี ⟦ID⟧日干=己⟧\n...");
+t("strip \\n นำหน้า ID (group delta ว่าง)", stripIdLine("\n⟦ID⟧日干=己⟧\nเนื้อ"), "เนื้อ");
 t("ตรง (己=己)", validateIdentity("⟦ID⟧日干=己⟧\n...", "己").reason, "ok");
 t("ผิด (壬≠己) = mismatch", validateIdentity("⟦ID⟧日干=壬⟧\n...", "己").reason, "dm_mismatch");
 t("ไม่มี ID + มี expected = fail", validateIdentity("ดวงนี้...", "己").reason, "no_id_line");

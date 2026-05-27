@@ -32,6 +32,7 @@ import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
 import { computeSiLingDays } from "@/lib/chart-table";
+import { stripIdLine } from "@/lib/identity-lock";
 
 export const runtime = "nodejs"; // child_process spawn (เหมือน /api/sifu)
 
@@ -108,6 +109,31 @@ type PersonSyn = {
   yongEls: string[];
   pillars: { year?: { stem: string; branch: string }; day?: { stem: string; branch: string } } | null;
 };
+
+/* 通根 (root strength) จาก wrapper-7 · copy จาก /api/sifu/route.ts computeRootedness
+   (group ลึกกว่าเดี่ยว 1 ชั้น → path wrapper-7 = ../../../../../data · ฐานตัดสิน 從格/用神
+   ส่ง arg เข้า packet แทน null · ไม่แตะ bazi-calc/extensions/route เดี่ยว LOCKED) */
+async function computeRootedness(pillars: { year: { stem: string; branch: string }; month: { stem: string; branch: string }; day: { stem: string; branch: string }; hour: { stem: string; branch: string } | null }): Promise<ReturnType<typeof buildStructuredChartPacket>["rootedness"]> {
+  try {
+    const w7 = await import("../../../../../data/library/wrappers/7-yongshen-v2.js") as unknown as {
+      dmRootProfile: (n: unknown) => { dm_element: string; rootedness_label: string; is_extremely_weak: boolean; is_token_only: boolean };
+      rootednessAll: (n: unknown) => Record<string, { rootedness_label: string }>;
+    };
+    const dmR = w7.dmRootProfile(pillars);
+    const allR = w7.rootednessAll(pillars);
+    const lab = (e: string) => (allR[e]?.rootedness_label || "no_root");
+    return {
+      dmElement: dmR.dm_element,
+      dmLabel: dmR.rootedness_label,
+      isExtremelyWeak: dmR.is_extremely_weak,
+      isTokenOnly: dmR.is_token_only,
+      all: { wood: lab("wood"), fire: lab("fire"), earth: lab("earth"), metal: lab("metal"), water: lab("water") },
+    } as ReturnType<typeof buildStructuredChartPacket>["rootedness"];
+  } catch (e) {
+    console.warn("[sifu/group] rootedness (wrapper-7) failed:", (e as Error).message);
+    return null;
+  }
+}
 
 /* เทียบปฏิกิริยาข้ามคน · เฉพาะ 日柱+年柱 · neutral · คืนเฉพาะคู่ที่มี hit จริง */
 function buildSynastry(people: PersonSyn[], lang: string): string {
@@ -350,7 +376,8 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const [slY, slMo, slD] = date.split("-").map(Number);
     const [slH, slMi] = time.split(":").map(Number);
     const siLingDays = computeSiLingDays(slY, slMo, slD, slH || 12, slMi || 0);  // 司令
-    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, null, gender, siLingDays);
+    const rootedness = await computeRootedness(calc.pillars);  // 通根 wrapper-7 (เดี่ยวมี · group เคยส่ง null = หาย)
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays);
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
     if (ext.special_chart.applicable) {
@@ -539,6 +566,8 @@ export async function POST(req: Request) {
           let closed = false;
           let full = "";
           let firstChunkSent = false;
+          let idBuf = "";          // buffer บรรทัดแรก strip ⟦ID⟧ (group = strip-only · ไม่ validate · หลาย日干)
+          let idStripped = false;
           const t0 = Date.now();
           const safeClose = () => {
             if (closed) return;
@@ -563,13 +592,29 @@ export async function POST(req: Request) {
             safeClose();
           }, TIMEOUT_MS);
 
-          const parser = makeJsonlParser((text) => {
-            full += text;
+          const sendFirstOnce = () => {
             if (!firstChunkSent) {
               firstChunkSent = true;
               send("first", { ms: Date.now() - t0, model: "claude-max-cli" });
             }
-            send("chunk", { text });
+          };
+          const emit = (text: string) => { full += text; sendFirstOnce(); send("chunk", { text }); };
+          const parser = makeJsonlParser((text) => {
+            if (!idStripped) {
+              idBuf += text;
+              if (!idBuf.trim()) return; // delta แรกเป็นบรรทัดว่าง/ช่องว่าง → buffer ต่อ กัน ⟦ID⟧ ที่ตามมาหลุด
+              const nl = idBuf.indexOf("\n");
+              if (nl === -1) {
+                // ยังไม่ครบบรรทัดแรก · ถ้ายาวเกิน 120 → flush (group ห้าม kill) · ยัง stripIdLine กัน ⟦ID⟧ ไม่มี \n หลุด
+                if (idBuf.length > 120) { idStripped = true; const r = stripIdLine(idBuf); if (r) emit(r); }
+                return; // buffer ต่อ · ไม่ block
+              }
+              idStripped = true;
+              const rest = stripIdLine(idBuf); // ตัดบรรทัด ⟦ID⟧ ถ้าขึ้นต้น · ไม่ขึ้นก็คงเดิม
+              if (rest) emit(rest);
+              return;
+            }
+            emit(text);
           });
           child.stdout.on("data", parser);
           child.stderr.on("data", (chunk: Buffer) => {
@@ -578,6 +623,8 @@ export async function POST(req: Request) {
           child.on("close", (code) => {
             activeChild = null;
             clearTimeout(killTimer);
+            // flush idBuf ที่ค้าง (AI ตอบสั้น < 120 ตัว ไม่มี \n) · กันคำตอบหาย → done กลายเป็น error
+            if (!idStripped && idBuf) { idStripped = true; const r = stripIdLine(idBuf); if (r) emit(r); }
             const ms = Date.now() - t0;
             if (code === 0 && full.trim()) {
               send("done", { ms, model: "claude-max-cli", cached: false, chars: full.length });
@@ -603,7 +650,7 @@ export async function POST(req: Request) {
     }
 
     /* JSON mode */
-    const reply = await runClaudeCli(prompt);
+    const reply = stripIdLine(await runClaudeCli(prompt));  // strip ⟦ID⟧ บรรทัดแรก (กันหลุดจอ group)
     return NextResponse.json({ reply, model: "claude-max-cli" });
   } catch (e: unknown) {
     const err = e as Error;
