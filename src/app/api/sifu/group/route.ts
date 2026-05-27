@@ -58,6 +58,107 @@ const STEM_TH: Record<string, string> = {
   庚: "ทองหยาง", 辛: "ทองหยิน", 壬: "น้ำหยาง", 癸: "น้ำหยิน",
 };
 
+/* ══════ synastry · ปฏิกิริยาข้ามคน (27 พ.ค.) ══════
+ * ตาราง 六合/六沖/六害/六破 + 五行生克 = ค่าคงที่ตำรา · copy จาก chart-extensions (LOCKED · private)
+ * มาเป็น const ในไฟล์นี้ (เหมือน STEM_ELEMENT_MAP ที่ copy มาแล้ว) · ไม่แตะ engine
+ * เทียบเฉพาะ 日柱(ตัวคน)+年柱 ข้ามคน · neutral (合ไม่ดีเสมอ 冲ไม่ร้ายเสมอ ตามคัมภีร์ 合婚) · 3 ภาษา */
+const BRANCH_TH_NAME: Record<string, string> = {
+  子: "ชวด", 丑: "ฉลู", 寅: "ขาล", 卯: "เถาะ", 辰: "มะโรง", 巳: "มะเส็ง",
+  午: "มะเมีย", 未: "มะแม", 申: "วอก", 酉: "ระกา", 戌: "จอ", 亥: "กุน",
+};
+const SYN_HE: Record<string, string> = { 子: "丑", 丑: "子", 寅: "亥", 亥: "寅", 卯: "戌", 戌: "卯", 辰: "酉", 酉: "辰", 巳: "申", 申: "巳", 午: "未", 未: "午" };
+const SYN_CLASH: Record<string, string> = { 子: "午", 午: "子", 丑: "未", 未: "丑", 寅: "申", 申: "寅", 卯: "酉", 酉: "卯", 辰: "戌", 戌: "辰", 巳: "亥", 亥: "巳" };
+const SYN_HARM: Record<string, string> = { 子: "未", 未: "子", 丑: "午", 午: "丑", 寅: "巳", 巳: "寅", 卯: "辰", 辰: "卯", 申: "亥", 亥: "申", 酉: "戌", 戌: "酉" };
+const SYN_DESTROY: Record<string, string> = { 子: "酉", 酉: "子", 丑: "辰", 辰: "丑", 寅: "亥", 亥: "寅", 卯: "午", 午: "卯", 巳: "申", 申: "巳", 未: "戌", 戌: "未" };
+const SYN_SHENG: Record<string, string> = { wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood" };
+const SYN_KE: Record<string, string> = { wood: "earth", fire: "metal", earth: "water", metal: "wood", water: "fire" };
+const EL_TH: Record<string, string> = { wood: "ไม้", fire: "ไฟ", earth: "ดิน", metal: "ทอง", water: "น้ำ" };
+const EL_EN: Record<string, string> = { wood: "Wood", fire: "Fire", earth: "Earth", metal: "Metal", water: "Water" };
+const EL_ZH: Record<string, string> = { wood: "木", fire: "火", earth: "土", metal: "金", water: "水" };
+
+type RelZh = "六合" | "六沖" | "六害" | "六破";
+const REL_LABEL: Record<RelZh, { th: string; en: string; zh: string }> = {
+  "六合": { th: "ผสาน(合)", en: "Harmony(合)", zh: "六合" },
+  "六沖": { th: "ปะทะ(冲)", en: "Clash(冲)", zh: "六沖" },
+  "六害": { th: "แทรก(害)", en: "Harm(害)", zh: "六害" },
+  "六破": { th: "บั่นทอน(破)", en: "Break(破)", zh: "六破" },
+};
+function branchRel(a: string, b: string): RelZh | null {
+  if (SYN_HE[a] === b) return "六合";
+  if (SYN_CLASH[a] === b) return "六沖";
+  if (SYN_HARM[a] === b) return "六害";
+  if (SYN_DESTROY[a] === b) return "六破";
+  return null;
+}
+const PILLAR_LABEL_SYN: Record<string, Record<string, string>> = {
+  th: { day: "เสาวัน", year: "เสาปี" },
+  en: { day: "Day", year: "Year" },
+  zh: { day: "日柱", year: "年柱" },
+};
+
+/* ข้อมูลต่อคนที่ synastry ต้องใช้ (เก็บจาก buildPersonContext) */
+type PersonSyn = {
+  name: string;
+  text: string;
+  mode: "3p" | "4p" | "err";
+  dmEl: string;
+  yongEls: string[];
+  pillars: { year?: { stem: string; branch: string }; day?: { stem: string; branch: string } } | null;
+};
+
+/* เทียบปฏิกิริยาข้ามคน · เฉพาะ 日柱+年柱 · neutral · คืนเฉพาะคู่ที่มี hit จริง */
+function buildSynastry(people: PersonSyn[], lang: string): string {
+  const L = (lang === "en" || lang === "zh") ? lang : "th";
+  const valid = people.filter((p) => p.pillars && p.mode !== "err");
+  if (valid.length < 2) return "";
+  const elName = L === "en" ? EL_EN : L === "zh" ? EL_ZH : EL_TH;
+  const pL = (k: string) => PILLAR_LABEL_SYN[L][k] || k;
+  const lines: string[] = [];
+  for (let i = 0; i < valid.length; i++) {
+    for (let j = i + 1; j < valid.length; j++) {
+      const A = valid[i], B = valid[j];
+      const hits: string[] = [];
+      /* axis_B · กิ่ง 日柱+年柱 ข้ามคน */
+      for (const ka of ["day", "year"] as const) {
+        for (const kb of ["day", "year"] as const) {
+          const ba = A.pillars?.[ka]?.branch, bb = B.pillars?.[kb]?.branch;
+          if (!ba || !bb) continue;
+          const rel = branchRel(ba, bb);
+          if (rel) hits.push(`${pL(ka)}${BRANCH_TH_NAME[ba] || ba}×${pL(kb)}${BRANCH_TH_NAME[bb] || bb} ${REL_LABEL[rel][L]}`);
+        }
+      }
+      /* axis_A · ธาตุวันเจ้า A↔B (生/剋/同) */
+      const ea = A.dmEl, eb = B.dmEl;
+      let elRel = "";
+      if (ea && eb && ea !== "unknown" && eb !== "unknown") {
+        if (ea === eb) elRel = L === "en" ? "same element (peer)" : L === "zh" ? "同類(比肩)" : "ธาตุเดียวกัน(เพื่อน)";
+        else if (SYN_SHENG[ea] === eb) elRel = L === "en" ? `${elName[ea]}→${elName[eb]} (1 generates 2)` : L === "zh" ? `${EL_ZH[ea]}生${EL_ZH[eb]}(1生2)` : `${EL_TH[ea]}เสริม${EL_TH[eb]} (คน1เกื้อคน2)`;
+        else if (SYN_SHENG[eb] === ea) elRel = L === "en" ? `${elName[eb]}→${elName[ea]} (2 generates 1)` : L === "zh" ? `${EL_ZH[eb]}生${EL_ZH[ea]}(2生1)` : `${EL_TH[eb]}เสริม${EL_TH[ea]} (คน2เกื้อคน1)`;
+        else if (SYN_KE[ea] === eb) elRel = L === "en" ? `${elName[ea]} controls ${elName[eb]} (1剋2)` : L === "zh" ? `${EL_ZH[ea]}剋${EL_ZH[eb]}(1剋2)` : `${EL_TH[ea]}ข่ม${EL_TH[eb]} (คน1คุมคน2)`;
+        else if (SYN_KE[eb] === ea) elRel = L === "en" ? `${elName[eb]} controls ${elName[ea]} (2剋1)` : L === "zh" ? `${EL_ZH[eb]}剋${EL_ZH[ea]}(2剋1)` : `${EL_TH[eb]}ข่ม${EL_TH[ea]} (คน2คุมคน1)`;
+      }
+      /* axis_A เสริม · ธาตุของอีกฝ่ายช่วย 用神 ของเราไหม */
+      const helps: string[] = [];
+      if (eb && A.yongEls.includes(eb)) helps.push(L === "en" ? "2's element aids 1's 用神" : L === "zh" ? "2之五行助1用神" : "ธาตุคน2 ช่วย用神คน1");
+      if (ea && B.yongEls.includes(ea)) helps.push(L === "en" ? "1's element aids 2's 用神" : L === "zh" ? "1之五行助2用神" : "ธาตุคน1 ช่วย用神คน2");
+      if (hits.length || elRel || helps.length) {
+        const parts = [`${A.name || "?"} ↔ ${B.name || "?"}`];
+        if (hits.length) parts.push(hits.join(" · "));
+        if (elRel) parts.push(elRel);
+        if (helps.length) parts.push(helps.join(" · "));
+        lines.push("  - " + parts.join(" | "));
+      }
+    }
+  }
+  if (!lines.length) return "";
+  const title = L === "en"
+    ? "━━━ Cross-person reactions (synastry · neutral: 合 not always good / 冲 not always bad · weigh against each one's 用神/role) ━━━"
+    : L === "zh"
+    ? "━━━ 跨人互動 (synastry · 中性: 合不必吉 / 冲不必凶 · 須結合各自用神/角色判讀) ━━━"
+    : "━━━ ปฏิกิริยาข้ามคน (synastry · กลางๆ: 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ · ต้องดูที่用神/บทบาทแต่ละคน · ห้ามฟันธงเลิก/ไม่เลิก) ━━━";
+  return title + "\n" + lines.join("\n");
+}
+
 /* startAge (起運) · copy จาก /api/sifu route.ts ~37 */
 async function computeStartAge(date: string, time: string, gender: "M" | "F", lng: number): Promise<number> {
   try {
@@ -154,7 +255,7 @@ type ProfileRow = {
  * ประกอบ context ต่อคน · replicate buildBaziContext ใน /api/sifu/route.ts เป๊ะ
  * (รับ row ที่ผ่าน org guard มาแล้ว เพื่อไม่ query ซ้ำ)
  */
-async function buildPersonContext(row: ProfileRow): Promise<string> {
+async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
   try {
     const dt = row.birth_datetime;
     const [date, timeRaw] = dt.split("T");
@@ -167,18 +268,33 @@ async function buildPersonContext(row: ProfileRow): Promise<string> {
       ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: true })
       : await calcBazi({ date, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: false });
     const g = loadPromptKV("prompts/sifu-ctx-guards.md");
+    /* ข้อมูล synastry (ใช้ทั้ง 3p/4p · เก็บก่อน return แต่ละโหมด) */
+    const VALID_EL = ["wood", "fire", "earth", "metal", "water"];
+    const yongEls = (calc.yongshen || []).slice(0, 3).map((y) => String(y.element || "").toLowerCase()).filter((e) => VALID_EL.includes(e));
+    const synPillars = {
+      year: calc.pillars.year ? { stem: calc.pillars.year.stem, branch: calc.pillars.year.branch } : undefined,
+      day: calc.pillars.day ? { stem: calc.pillars.day.stem, branch: calc.pillars.day.branch } : undefined,
+    };
+    const dmElSyn = STEM_ELEMENT_MAP[calc.dayMaster] || "unknown";
     if (calc.mode === "3p") {
-      return [
-        `ชื่อ: ${row.name || "—"} · เพศ ${gender}`,
-        `เกิด: ${date} · ไม่ทราบเวลาเกิด · ลองจิจูด ${lng}`,
-        `โหมดคำนวณ: 3 เสา (年/月/日) · ${g.NO_HOUR_PILLAR}`,
-        `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่คำนวณ)`,
-        `FACT LOCK: Day Master = ${calc.dayMaster} · element = ${STEM_ELEMENT_MAP[calc.dayMaster] || "unknown"} · ${g.DM_FACT_LOCK}`,
-        `วันเจ้า: ${calc.dayMaster} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
-        `用神: ${calc.yongshen.slice(0, 3).map(y => `${y.stem}(${y.element})`).join(" · ")}`,
-        `格局: ${calc.geJu.structure || "ปกติ"}`,
-        g.LIMIT_3P_QA,
-      ].join("\n");
+      return {
+        name: row.name || "—",
+        mode: "3p",
+        dmEl: dmElSyn,
+        yongEls,
+        pillars: synPillars,
+        text: [
+          `ชื่อ: ${row.name || "—"} · เพศ ${gender}`,
+          `เกิด: ${date} · ไม่ทราบเวลาเกิด · ลองจิจูด ${lng}`,
+          `โหมดคำนวณ: 3 เสา (年/月/日) · ${g.NO_HOUR_PILLAR}`,
+          `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่คำนวณ)`,
+          `FACT LOCK: Day Master = ${calc.dayMaster} · element = ${dmElSyn} · ${g.DM_FACT_LOCK}`,
+          `วันเจ้า: ${calc.dayMaster} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
+          `用神: ${calc.yongshen.slice(0, 3).map(y => `${y.stem}(${y.element})`).join(" · ")}`,
+          `格局: ${calc.geJu.structure || "ปกติ"}`,
+          g.LIMIT_3P_QA,
+        ].join("\n"),
+      };
     }
     const startAge = await computeStartAge(date, time, gender, lng);
     const ext = buildChartExtensions(
@@ -216,10 +332,17 @@ async function buildPersonContext(row: ProfileRow): Promise<string> {
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
     }
-    return lines.join("\n");
+    return {
+      name: row.name || "—",
+      mode: "4p",
+      dmEl: dmElement,
+      yongEls,
+      pillars: synPillars,
+      text: lines.join("\n"),
+    };
   } catch (e) {
     console.error("[sifu/group] buildPersonContext failed:", e);
-    return "(ไม่สามารถคำนวณดวงได้)";
+    return { name: row.name || "—", mode: "err", dmEl: "unknown", yongEls: [], pillars: null, text: "(ไม่สามารถคำนวณดวงได้)" };
   }
 }
 
@@ -359,14 +482,19 @@ export async function POST(req: Request) {
     const byId = new Map(rows.map(r => [r.id, r]));
     const ordered = profileIds.map(id => byId.get(id)).filter((r): r is ProfileRow => !!r);
 
-    /* ประกอบ context ต่อคน (replicate buildBaziContext) */
+    /* ประกอบ context ต่อคน (replicate buildBaziContext) + เก็บ pillars ไว้ทำ synastry */
     const sections: string[] = [];
+    const people: PersonSyn[] = [];
     for (let i = 0; i < ordered.length; i++) {
       const r = ordered[i];
-      const ctx = await buildPersonContext(r);
-      sections.push(`━━━ คนที่ ${i + 1} · ${r.name || "—"} ━━━\n${ctx}`);
+      const pc = await buildPersonContext(r);
+      sections.push(`━━━ คนที่ ${i + 1} · ${r.name || "—"} ━━━\n${pc.text}`);
+      people.push(pc);
     }
-    const groupCtx = `[กลุ่ม: ${groupLabel} · มี ${ordered.length} คน]\n\n` + sections.join("\n\n");
+    let groupCtx = `[กลุ่ม: ${groupLabel} · มี ${ordered.length} คน]\n\n` + sections.join("\n\n");
+    /* synastry · ปฏิกิริยาข้ามคน (日柱+年柱 · neutral) · ต่อท้ายก่อนส่ง AI */
+    const syn = buildSynastry(people, lang);
+    if (syn) groupCtx += "\n\n" + syn;
 
     const prompt = buildGroupPrompt({ ctx: groupCtx, message, history, lang });
 
