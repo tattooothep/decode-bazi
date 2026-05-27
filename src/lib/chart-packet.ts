@@ -56,8 +56,8 @@ export type Interaction = {
   timingActivationType?: "combination_active" | "clash_active" | "harm_active";
   /** lot2b · ภาพคู่กิ่งเชิงสัญลักษณ์ (巳申合水 ชุบโลหะ) */
   branchInteractionImagery?: { image: string; meaning: string };
-  /** อ่านตามคัมภีร์ · ยังไม่ฟันธง → AI เติมเอง */
-  aiReadingHint: null;
+  /** หมายเหตุการอ่าน · null = ปล่อย AI เติมเอง · string = คำกำกับ (เช่น กันนับปะทะซ้ำ 反吟/六沖) */
+  aiReadingHint: string | null;
 };
 
 export type ChartPacket = {
@@ -568,7 +568,11 @@ export function buildStructuredChartPacket(
       affectedTopicsLite: topicsFromPillars([pa, pb]),
       usefulGodImpact: makeImpact(reaction, yong, xi, ji),
       resolverStatus: "none",
-      aiReadingHint: null,
+      /* กัน AI นับการปะทะซ้ำ: 反吟เต็มเสา = ก้านชน+กิ่งชน ครอบ 六沖(กิ่ง)+天克(ก้าน) คู่เดียวกันไว้แล้ว
+       * 伏吟 = ก้าน+กิ่งซ้ำเต็มเสา (พลังกดซ้ำ ไม่ใช่ปะทะ) · เมื่อสรุปอย่านับคู่เสานี้ซ้ำกับ 六沖/天克 ที่ส่งแยก */
+      aiReadingHint: baseZh === "反吟"
+        ? "เต็มเสา (ก้านชน+กิ่งชน) ครอบ 六沖/天克 คู่นี้ไว้แล้ว · อย่านับการปะทะซ้ำ"
+        : "เต็มเสา (ก้าน+กิ่งซ้ำ) = พลังกดซ้ำย้ำเดิม ไม่ใช่ปะทะ",
     });
   }
 
@@ -986,7 +990,8 @@ function renderInteractionGroup(title: string, list: Interaction[], status: stri
     const behavior = it.behavioralHint ? ` · พฤติกรรม: ${it.behavioralHint}` : "";
     const timing = it.timingActivationType ? ` · จังหวะ: ${TIMING_ACTIVATION_TH[it.timingActivationType]}` : "";
     const imagery = it.branchInteractionImagery ? ` · ภาพชุบโลหะ: คิดไวคม แต่ซ่อนแรงกดดัน` : "";
-    return `  - ${typeTh} ${pairTxt}${reactTxt}${tgTxt}${palaces}${topics}${impact}${transformed}${timing}${imagery}${behavior} · อ่านตามคัมภีร์ ยังไม่ฟันธงดี-ร้าย`;
+    const note = it.aiReadingHint ? ` · หมายเหตุ: ${it.aiReadingHint}` : "";
+    return `  - ${typeTh} ${pairTxt}${reactTxt}${tgTxt}${palaces}${topics}${impact}${transformed}${timing}${imagery}${behavior}${note} · อ่านตามคัมภีร์ ยังไม่ฟันธงดี-ร้าย`;
   });
   return `${title} [${status}]:\n${items.join("\n")}`;
 }
