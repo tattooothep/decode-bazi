@@ -18,6 +18,7 @@ import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
+import { computeSiLingDays } from "@/lib/chart-table";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type IntroBirthInput = {
@@ -358,7 +359,10 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     ];
     // TODO Step1.1: dedupe 用神/格局 ที่ซ้ำกับ renderChartPrompt
     const rootedness = await computeRootedness(calc.pillars);
-    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness);
+    const [slY, slMo, slD] = date.split("-").map(Number);
+    const [slH, slMi] = time.split(":").map(Number);
+    const siLingDays = computeSiLingDays(slY, slMo, slD, slH || 12, slMi || 0);  // 司令 วันนับจาก節 (ICT→BJT)
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays);
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
     if (ext.special_chart.applicable) {
@@ -477,7 +481,10 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
     ];
     // TODO Step1.1: dedupe 用神/格局 ที่ซ้ำกับ renderChartPrompt
     const rootedness = await computeRootedness(calc.pillars);
-    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness);
+    const [slY, slMo, slD] = String(input.date).split("-").map(Number);
+    const [slH, slMi] = String(input.time || "12:00").split(":").map(Number);
+    const siLingDays = computeSiLingDays(slY, slMo, slD, slH || 12, slMi || 0);  // 司令
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, input.gender, siLingDays);
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
     lines.push(`ย้อนหลัง 12 เดือน: 0-3 เดือนล่าสุด / 4-6 เดือน / 7-9 เดือน / 10-12 เดือน`);

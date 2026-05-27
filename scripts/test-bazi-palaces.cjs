@@ -45,6 +45,22 @@ function lifePalaceBranch(mb, hb) {
 function lifePalace(ys, mb, hb) { const b = lifePalaceBranch(mb, hb); return tiger(ys, b) + b; }
 function bodyPalace(ys, mb, hb) { const b = BRANCHES[(Bi[lifePalaceBranch(mb, hb)] + 6) % 12]; return tiger(ys, b) + b; }
 
+/* 司令 子平真詮 half-open + 節氣 (ICT→BJT +1h) */
+const SILING = { 子: [["壬", 10], ["癸", 20]], 丑: [["癸", 9], ["辛", 3], ["己", 18]], 寅: [["戊", 7], ["丙", 7], ["甲", 16]], 卯: [["甲", 10], ["乙", 20]], 辰: [["乙", 9], ["癸", 3], ["戊", 18]], 巳: [["戊", 7], ["庚", 7], ["丙", 16]], 午: [["丙", 9], ["己", 10], ["丁", 11]], 未: [["丁", 9], ["乙", 3], ["己", 18]], 申: [["戊", 7], ["壬", 7], ["庚", 16]], 酉: [["庚", 10], ["辛", 20]], 戌: [["辛", 9], ["丁", 3], ["戊", 18]], 亥: [["戊", 7], ["甲", 5], ["壬", 18]] };
+function siLingDays(y, mo, d, h, mi) {
+  const st = tyme.SolarTime.fromYmdHms(y, mo, d, h + 1, mi, 0);
+  let term = st.getTerm();
+  for (let i = 0; i < 3 && !term.isJie(); i++) term = term.next(-1);
+  return st.subtract(term.getJulianDay().getSolarTime()) / 86400;
+}
+function siling(mb, days) { let acc = 0; for (const [s, n] of SILING[mb]) { if (days < acc + n) return s; acc += n; } return SILING[mb][SILING[mb].length - 1][0]; }
+/* 小運 Option B: age1=時柱เอง · 陽男陰女順 / 陰男陽女逆 */
+function minorLuckAge1(ys, hourGZ, gender) {
+  const yang = STEMS.indexOf(ys) % 2 === 0;
+  const forward = (yang && gender === "M") || (!yang && gender === "F");
+  return { age1: hourGZ, dir: forward ? "順" : "逆" };
+}
+
 let pass = 0, fail = 0;
 function check(label, got, exp) {
   const ok = got === exp;
@@ -64,6 +80,8 @@ console.log("\n=== Aeaw 1984-12-31 13:15 Bangkok ===");
   check("胎元", conceptionPalace(p.month), "丁卯");
   check("命宮", lifePalace(p.year[0], p.month[1], p.hour[1]), "乙亥");
   check("身宮", bodyPalace(p.year[0], p.month[1], p.hour[1]), "己巳");
+  check("司令", siling(p.month[1], siLingDays(1984, 12, 31, 13, 15)), "癸");
+  check("小運age1", minorLuckAge1(p.year[0], p.hour, "M").age1, "庚午");
 }
 console.log("\n=== Mai 1986-04-12 16:42 Bangkok ===");
 {
@@ -73,7 +91,14 @@ console.log("\n=== Mai 1986-04-12 16:42 Bangkok ===");
   check("胎元", conceptionPalace(p.month), "癸未");
   check("命宮", lifePalace(p.year[0], p.month[1], p.hour[1]), "癸巳");
   check("身宮", bodyPalace(p.year[0], p.month[1], p.hour[1]), "己亥");
+  check("司令", siling(p.month[1], siLingDays(1986, 4, 12, 16, 42)), "乙");
+  check("小運age1", minorLuckAge1(p.year[0], p.hour, "F").age1, "丙申");
 }
 
-console.log(`\n[5 เรือน · เฟส 胎元+命宮+身宮] ${pass}/${pass + fail} passed`);
+console.log("\n=== 3 ดวงทดสอบ 司令 (แยกสำนัก 子平真詮 ≠ 三命通會) ===");
+for (const [n, y, mo, d, h, mi, mb, exp] of [["巳1990", 1990, 5, 12, 9, 0, "巳", "戊"], ["午1995", 1995, 6, 15, 22, 42, "午", "己"], ["申1988", 1988, 8, 9, 8, 20, "申", "戊"]]) {
+  check(`司令 ${n}`, siling(mb, siLingDays(y, mo, d, h, mi)), exp);
+}
+
+console.log(`\n[5 เรือนครบ 胎元+命宮+身宮+司令+小運] ${pass}/${pass + fail} passed`);
 process.exit(fail === 0 ? 0 : 1);

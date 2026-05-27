@@ -563,6 +563,97 @@ export function buildBodyPalace(pillars: Pillars, lifePalace: LifePalaceInfo | n
   };
 }
 
+/* #27 · 司令 人元司令分野 · 27 พ.ค. · ตาราง 子平真詮 (徐樂吾1934 · 韋千里1940 · 元亨利貞/文墨天機 default)
+ * verify: 5 ดวงผ่าน (Aeaw子月→癸 · Mai辰月→乙 · 巳1990→戊 · 午1995→己 · 申1988→戊 · ต่าง三命通會ที่巳午申)
+ * half-open [start,end) · ก้านที่คุมเดือน ณ วันเกิด (ลึกกว่าดูแค่เดือน) */
+const SILING_ZIPING: Record<string, Array<{ stem: string; days: number }>> = {
+  子: [{ stem: "壬", days: 10 }, { stem: "癸", days: 20 }],
+  丑: [{ stem: "癸", days: 9 }, { stem: "辛", days: 3 }, { stem: "己", days: 18 }],
+  寅: [{ stem: "戊", days: 7 }, { stem: "丙", days: 7 }, { stem: "甲", days: 16 }],
+  卯: [{ stem: "甲", days: 10 }, { stem: "乙", days: 20 }],
+  辰: [{ stem: "乙", days: 9 }, { stem: "癸", days: 3 }, { stem: "戊", days: 18 }],
+  巳: [{ stem: "戊", days: 7 }, { stem: "庚", days: 7 }, { stem: "丙", days: 16 }],
+  午: [{ stem: "丙", days: 9 }, { stem: "己", days: 10 }, { stem: "丁", days: 11 }],
+  未: [{ stem: "丁", days: 9 }, { stem: "乙", days: 3 }, { stem: "己", days: 18 }],
+  申: [{ stem: "戊", days: 7 }, { stem: "壬", days: 7 }, { stem: "庚", days: 16 }],
+  酉: [{ stem: "庚", days: 10 }, { stem: "辛", days: 20 }],
+  戌: [{ stem: "辛", days: 9 }, { stem: "丁", days: 3 }, { stem: "戊", days: 18 }],
+  亥: [{ stem: "戊", days: 7 }, { stem: "甲", days: 5 }, { stem: "壬", days: 18 }],
+};
+export type SiLingInfo = {
+  stem: string;
+  element: string;
+  element_th: string;
+  phase: string;        // 餘氣/中氣/本氣
+  days_since_jie: number | null;
+  month_branch: string;
+  title_th: string;
+  title_en: string;
+  title_zh: string;
+};
+/* นับวันจาก節(jie) ที่ผ่านมา · ICT clock → BJT (+1h) เทียบ節氣 (ห้ามใช้ 真太陽時 ฝั่งนี้)
+ * คืน daysSinceJie (เศษทศนิยม) หรือ null ถ้าคำนวณไม่ได้ (3p ใช้ noon) */
+export function computeSiLingDays(year: number, month: number, day: number, hour: number, minute: number): number | null {
+  try {
+    const tyme = require("tyme4ts");
+    const st = tyme.SolarTime.fromYmdHms(year, month, day, hour + 1, minute, 0); // +1h: ICT→BJT
+    let term = st.getTerm();
+    for (let i = 0; i < 3 && !term.isJie(); i++) term = term.next(-1); // ถอยถึง 節 (เปลี่ยนเดือน)
+    const jieSt = term.getJulianDay().getSolarTime();
+    return st.subtract(jieSt) / 86400;
+  } catch { return null; }
+}
+export function buildSiLing(monthBranch: string, daysSinceJie: number | null): SiLingInfo | null {
+  const table = SILING_ZIPING[monthBranch];
+  if (!table) return null;
+  const phaseLabels = table.length === 3 ? ["餘氣", "中氣", "本氣"] : ["中氣", "本氣"]; // 四正(子卯酉)=2 stage
+  let idx = table.length - 1;          // fallback = 本氣 (ถ้า daysSinceJie=null)
+  if (daysSinceJie != null) {
+    let acc = 0;
+    for (let i = 0; i < table.length; i++) {
+      if (daysSinceJie < acc + table[i].days) { idx = i; break; }
+      acc += table[i].days;
+    }
+  }
+  const stem = table[idx].stem;
+  const el = STEM_ELEMENT[stem] || "earth";
+  return {
+    stem,
+    element: el,
+    element_th: ELEMENT_TH_MAP[el] || el,
+    phase: phaseLabels[idx] || "本氣",
+    days_since_jie: daysSinceJie,
+    month_branch: monthBranch,
+    title_th: `ธาตุบัญชาฤดู · ${stem}(${ELEMENT_TH_MAP[el] || el}) · ระยะ${phaseLabels[idx] || "本氣"}`,
+    title_en: `Month Command · ${stem} · ${phaseLabels[idx] || "benqi"}`,
+    title_zh: `司令 · ${stem} · ${phaseLabels[idx] || "本氣"}`,
+  };
+}
+
+/* #28 · 小運 Minor Luck · 27 พ.ค. · Option B (時柱=虛歲1 เอง · 韋千里1940/徐樂吾1934/元亨利貞)
+ * ทิศ 陽男陰女順 / 陰男陽女逆 (陽=ปีก้าน甲丙戊庚壬) · verify Aeaw庚午順 · Mai丙申逆 · ต้องมี時柱 → 3p=null */
+export type MinorLuckInfo = {
+  direction: "forward" | "backward";
+  convention: "hour_pillar_self";
+  entries: Array<{ age: number; stem: string; branch: string; pillar: string }>;
+} | null;
+export function buildMinorLuck(pillars: Pillars, gender: "M" | "F", count = 6): MinorLuckInfo {
+  if (!pillars.hour) return null;                 // ต้องใช้ 時柱
+  const ys = pillars.year.stem;
+  const yangYear = STEMS_ALL.indexOf(ys) % 2 === 0; // 甲丙戊庚壬 = 陽
+  const forward = (yangYear && gender === "M") || (!yangYear && gender === "F");
+  let si = STEMS_ALL.indexOf(pillars.hour.stem);
+  let bi = BRANCHES_ALL.indexOf(pillars.hour.branch);
+  if (si < 0 || bi < 0) return null;
+  const entries: Array<{ age: number; stem: string; branch: string; pillar: string }> = [];
+  for (let age = 1; age <= count; age++) {
+    entries.push({ age, stem: STEMS_ALL[si], branch: BRANCHES_ALL[bi], pillar: `${STEMS_ALL[si]}${BRANCHES_ALL[bi]}` });
+    if (forward) { si = (si + 1) % 10; bi = (bi + 1) % 12; }
+    else { si = (si + 9) % 10; bi = (bi + 11) % 12; }
+  }
+  return { direction: forward ? "forward" : "backward", convention: "hour_pillar_self", entries };
+}
+
 /* #25 · 胎元 Conception Palace · 27 พ.ค. · สูตร 子平: 「月干進一位、月支進三位」
  * (三命通會 卷二「論胎元」· 淵海子平 卷一 · ทุกสำนักตรงกัน ไม่มี fork)
  * golden: Aeaw 月柱丙子→丁卯 · Mai 月柱壬辰→癸未 · ไม่ใช้ยาม → 3p คำนวณได้

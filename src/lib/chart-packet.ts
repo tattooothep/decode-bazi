@@ -14,7 +14,7 @@
  */
 import type { calcBazi } from "./bazi-calc";
 import type { buildChartExtensions } from "./chart-extensions";
-import { buildConceptionPalace, buildLifePalace, buildBodyPalace } from "./chart-table";
+import { buildConceptionPalace, buildLifePalace, buildBodyPalace, buildSiLing, buildMinorLuck } from "./chart-table";
 import { getDaymasterProfile } from "./daymaster-profile";
 
 type Calc = Awaited<ReturnType<typeof calcBazi>>;
@@ -412,6 +412,8 @@ export function buildStructuredChartPacket(
   ageNow: number,
   g: Record<string, string>,
   rootedness: ChartPacket["rootedness"] = null,  // 通根 (route เรียก wrapper-7 ส่งมา · optional · undefined=group/ไม่ส่ง)
+  gender: "M" | "F" | null = null,               // 小運 ทิศ (route ส่ง · null=ไม่คำนวณ小運)
+  siLingDays: number | null = null,              // 司令 วันนับจาก節 (route เรียก computeSiLingDays ส่ง · null=本氣 fallback)
 ): ChartPacket {
   const dmElement = STEM_ELEMENT[dm] || "unknown";
   const dmPolarity = STEM_POLARITY[dm] || "yang";
@@ -774,12 +776,14 @@ export function buildStructuredChartPacket(
       const tai = buildConceptionPalace(calc.pillars);
       const ming = buildLifePalace(calc.pillars);          // 27 พ.ค. สูตร 卯安命 節氣法 (4−M−H) + 五虎遁
       const shen = buildBodyPalace(calc.pillars, ming);     // 對宮ของ命宮
+      const sl = buildSiLing(calc.pillars.month?.branch ?? "", siLingDays);  // 司令 (route ส่ง siLingDays)
+      const xy = gender ? buildMinorLuck(calc.pillars, gender) : null;        // 小運 Option B (ต้อง gender + 時柱)
       return {
         taiYuan: tai ? { stem: tai.stem, branch: tai.branch, tenGod: tenGodLabelTh(tai.stem, dm) } : null,
         mingGong: ming ? { stem: ming.stem, branch: ming.branch, tenGod: tenGodLabelTh(ming.stem, dm) } : null,
         shenGong: shen ? { stem: shen.stem, branch: shen.branch, tenGod: tenGodLabelTh(shen.stem, dm) } : null,
-        siLing: null,    // เฟสถัดไป (ต้อง節氣 ephemeris)
-        xiaoYun: null,   // เฟสถัดไป (時柱+เพศ)
+        siLing: sl ? { stem: sl.stem, element: sl.element as ElementEN, phase: sl.phase, tenGod: tenGodLabelTh(sl.stem, dm) } : null,
+        xiaoYun: xy ? { age1Stem: xy.entries[0].stem, age1Branch: xy.entries[0].branch, direction: xy.direction } : null,
       };
     })(),
     usefulGods: {
@@ -927,6 +931,16 @@ export function renderChartPrompt(packet: ChartPacket): string {
   if (packet.fivePalaces?.shenGong) {
     const s = packet.fivePalaces.shenGong;
     lines.push(`身宮 เรือนกาย (ครึ่งหลังชีวิต·สิ่งที่ลงมือทำจริง): ${STEM_TH[s.stem] || s.stem}/${s.tenGod} ${BRANCH_TH_NAME[s.branch] || s.branch} (${s.stem}${s.branch}) · คู่ตรงข้าม命宮 · ไม่ฟันธงดี-ร้าย`);
+  }
+  /* 司令 ธาตุบัญชาฤดู (27 พ.ค. · 子平真詮 · ธาตุแท้ที่คุมเดือน ณ วันเกิด · ละเอียดกว่าดูแค่เดือน) */
+  if (packet.fivePalaces?.siLing) {
+    const sl = packet.fivePalaces.siLing;
+    lines.push(`司令 ธาตุบัญชาฤดู (ธาตุแท้ที่คุมเดือนเกิด·ระยะ${sl.phase}): ${STEM_TH[sl.stem] || sl.stem}/${sl.tenGod} ธาตุ${elementTh(sl.element)} · ดูธาตุที่แรงจริงตามจังหวะฤดู (ระยะ本氣=เต็มแรง 中氣/餘氣=รองลงมา) · ไม่ฟันธงดี-ร้าย`);
+  }
+  /* 小運 วัยจรเล็ก (Option B 時柱=ขวบ1 · โชควัยเด็กก่อนเข้า大運) */
+  if (packet.fivePalaces?.xiaoYun) {
+    const x = packet.fivePalaces.xiaoYun;
+    lines.push(`小運 วัยจรเล็ก (โชควัยเด็กก่อนเข้าวัยจรใหญ่): ขวบ1=${STEM_TH[x.age1Stem] || x.age1Stem} ${BRANCH_TH_NAME[x.age1Branch] || x.age1Branch} (${x.age1Stem}${x.age1Branch}) เดิน${x.direction === "forward" ? "หน้า順" : "ถอย逆"} · ใช้อ่านช่วงเด็กก่อน大運เริ่ม · ไม่ฟันธงดี-ร้าย`);
   }
   /* 通根 รากธาตุ (wrapper-7 · ฐานตัดสิน 從格/用神 · ห้ามคำนวณใหม่ · engine ให้มา) */
   if (packet.rootedness) {

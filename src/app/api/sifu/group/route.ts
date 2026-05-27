@@ -31,6 +31,7 @@ import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
+import { computeSiLingDays } from "@/lib/chart-table";
 
 export const runtime = "nodejs"; // child_process spawn (เหมือน /api/sifu)
 
@@ -363,7 +364,10 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
       `格局: ${calc.geJu.structure || "ปกติ"}`,
       `納音: 年${ny.year?.zh || "-"} · 月${ny.month?.zh || "-"} · 日${ny.day?.zh || "-"} · 時${ny.hour?.zh || "-"}`,
     ];
-    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g);
+    const [slY, slMo, slD] = date.split("-").map(Number);
+    const [slH, slMi] = time.split(":").map(Number);
+    const siLingDays = computeSiLingDays(slY, slMo, slD, slH || 12, slMi || 0);  // 司令
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, null, gender, siLingDays);
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
     if (ext.special_chart.applicable) {
