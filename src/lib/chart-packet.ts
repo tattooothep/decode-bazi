@@ -847,6 +847,23 @@ export function renderChartPrompt(packet: ChartPacket): string {
   /* ช่องว่างของดวง */
   lines.push(`ช่องว่างของดวง: วัน=${packet.kongWang.dayVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"} · ปี=${packet.kongWang.yearVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"}`);
 
+  /* 空亡 ตกเสาไหน → เรือน + สิบเทพที่ "ไม่เต็ม" (derived จาก packet · กิ่งว่าง × กิ่งของเสาในผัง · ไม่คำนวณใหม่) */
+  {
+    const voidSet = new Set([...packet.kongWang.dayVoids, ...packet.kongWang.yearVoids].filter((b) => b && b !== "-"));
+    const hits: string[] = [];
+    packet.pillars.forEach((p) => {
+      if (voidSet.has(p.branch)) {
+        const gods = p.hiddenStems.map((h) => h.tenGod).filter((t) => t && t !== "-").join("/");
+        const inD = packet.kongWang.dayVoids.includes(p.branch), inY = packet.kongWang.yearVoids.includes(p.branch);
+        const src = inD && inY ? "ฐานวัน+ปี (年日空亡)" : inD ? "ฐานวัน" : "ฐานปี";
+        hits.push(`${PILLAR_EN_TH[p.key]}(กิ่ง${BRANCH_TH_NAME[p.branch] || p.branch} · เรือน${p.palaceZh}${gods ? " · สิบเทพที่ตกว่าง: " + gods : ""} · จาก旬空${src})`);
+      }
+    });
+    if (hits.length) {
+      lines.push(`空亡ตกที่เสา (สิ่งที่ "ว่าง/ไม่เต็ม" · ต้องรอเติมเต็ม/填實ปีจร): ${hits.join(" · ")}`);
+    }
+  }
+
   /* กลุ่ม ก (26 พ.ค. · เชื่อมท่อ engine ที่มีค่าแล้ว) — 真太陽時 / 起運 (命宮 ถอดชั่วคราว รอ verify สำนัก) */
   if (packet.trueSolarTime) {
     const t = packet.trueSolarTime;
