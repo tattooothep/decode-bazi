@@ -93,7 +93,15 @@ export type ChartPacket = {
   structure: {
     label: string;
     special: { typeZh: string; friendly: string[] } | null;
+    /** ระดับความมั่นใจของโครงดวง (label จาก wrapper ge-ju · ไม่ใช่ % ตัวเลข) */
+    confidence?: string | null;
   };
+  /** 命宮 เรือนชะตา (จาก ext.life_palace · buildLifePalace · null ถ้า 3 เสา) */
+  lifePalace?: { branchTh: string; elementTh: string; titleTh: string; hidden: string[] } | null;
+  /** 真太陽時 — เวลาจริงหลังแก้ลองจิจูด+สมการเวลา (จาก calc.tst) */
+  trueSolarTime?: { appliedTimeStr: string; totalShiftMin: number; dayShift: number } | null;
+  /** 起運 อายุเริ่มวัยจร 大運 (จาก ext.luck_pillars[0].age_start · computeStartAge) */
+  startLuckAge?: number | null;
   usefulGods: {
     /** rank1 useful element */
     yong: ElementEN[];
@@ -718,7 +726,16 @@ export function buildStructuredChartPacket(
       special: ext.special_chart?.applicable
         ? { typeZh: ext.special_chart.type_zh, friendly: ext.special_chart.friendly_elements || [] }
         : null,
+      confidence: calc.geJu?.confidence ?? null,
     },
+    /* กลุ่ม ก (เชื่อมท่อ · 26 พ.ค.) — ของที่ engine คำนวณแล้วแต่ packet ไม่เคย expose */
+    lifePalace: ext.life_palace
+      ? { branchTh: ext.life_palace.branch_th, elementTh: ext.life_palace.element_th, titleTh: ext.life_palace.title_th, hidden: ext.life_palace.hidden || [] }
+      : null,
+    trueSolarTime: calc.tst
+      ? { appliedTimeStr: calc.tst.appliedTimeStr, totalShiftMin: calc.tst.totalShiftMin, dayShift: calc.tst.appliedDayShift }
+      : null,
+    startLuckAge: ext.luck_pillars?.[0]?.age_start ?? null,
     usefulGods: {
       yong,
       xi,
@@ -803,6 +820,7 @@ export function renderChartPrompt(packet: ChartPacket): string {
     structureLine += ` · ดวงพิเศษ ${packet.structure.special.typeZh}` +
       (packet.structure.special.friendly.length ? ` · ธาตุเกื้อ ${packet.structure.special.friendly.map((e) => elementTh(e)).join("·")}` : "");
   }
+  if (packet.structure.confidence) structureLine += ` · ความมั่นใจโครง ${packet.structure.confidence}`;
   lines.push(structureLine);
 
   /* ธาตุช่วย (engine-derived · ไม่ฟันธงดี-ร้าย) */
@@ -820,6 +838,21 @@ export function renderChartPrompt(packet: ChartPacket): string {
 
   /* ช่องว่างของดวง */
   lines.push(`ช่องว่างของดวง: วัน=${packet.kongWang.dayVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"} · ปี=${packet.kongWang.yearVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"}`);
+
+  /* กลุ่ม ก (26 พ.ค. · เชื่อมท่อ engine ที่มีค่าแล้ว) — 真太陽時 / 命宮 / 起運 */
+  if (packet.trueSolarTime) {
+    const t = packet.trueSolarTime;
+    lines.push(`真太陽時 (เวลาจริงหลังแก้ลองจิจูด+สมการเวลา): ${t.appliedTimeStr}` +
+      (t.totalShiftMin ? ` · เลื่อน ${t.totalShiftMin} นาทีจากเวลานาฬิกา` : "") +
+      (t.dayShift ? ` · ข้ามวัน ${t.dayShift > 0 ? "+1" : "-1"}` : ""));
+  }
+  if (packet.lifePalace) {
+    lines.push(`命宮 (เรือนชะตา): ${packet.lifePalace.branchTh} ธาตุ${packet.lifePalace.elementTh}` +
+      (packet.lifePalace.titleTh ? ` · ${packet.lifePalace.titleTh}` : ""));
+  }
+  if (packet.startLuckAge != null) {
+    lines.push(`起運 (เริ่มเดินวัยจร 大運): อายุ ${packet.startLuckAge} ปี`);
+  }
 
   /* วัยจร + ปีจร */
   lines.push(
