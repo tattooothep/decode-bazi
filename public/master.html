@@ -1256,12 +1256,16 @@
             history.push({ role: 'user', content: text });
             history.push({ role: 'assistant', content: d.reply });
             persist();
+          } else if (d.error === 'identity_mismatch') {
+            placeholder.textContent = 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ';
           } else {
             placeholder.textContent = '⚠ ขัดข้อง: ' + (d.error || r.status) + (d.detail ? '\n' + d.detail : '');
           }
         }
       } catch (e) {
-        placeholder.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+        placeholder.textContent = (e && e.message && e.message.indexOf('identity_mismatch') !== -1)
+          ? 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ'
+          : '⚠ เครือข่ายขัดข้อง · ลองใหม่';
       } finally {
         sendBtn.disabled = false;
         inputEl.focus();

@@ -19,6 +19,7 @@ import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
 import { computeSiLingDays } from "@/lib/chart-table";
+import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type IntroBirthInput = {
@@ -736,7 +737,7 @@ export async function POST(req: Request) {
     const orgId = session?.orgId ?? null;
 
     /* 💾 Cache check ก่อน */
-    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version;
+    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1";
     const dayKey = await getDayPillarKey();
     const key = cacheKey({ profileId, orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
     const useCache = mode !== "intro";
@@ -765,6 +766,9 @@ export async function POST(req: Request) {
           let full = "";
           let firstChunkSent = false;
           const t0 = Date.now();
+          /* identity-lock: buffer บรรทัดแรก (⟦ID⟧日干=X⟧) เทียบ 日干 · ผิด/ไม่มี=ตัด stream (ไม่ retry · master ให้ถามใหม่) */
+          const expectedDM = extractExpectedDM(ctx);
+          let idBuf = "", idChecked = false, idRejected = false;
           const safeClose = () => {
             if (closed) return;
             closed = true;
@@ -788,12 +792,34 @@ export async function POST(req: Request) {
             safeClose();
           }, TIMEOUT_MS);
 
+          const sendFirstOnce = () => {
+            if (!firstChunkSent) { firstChunkSent = true; send("first", { ms: Date.now() - t0, model: "claude-max-cli" }); }
+          };
+          const rejectId = (reason: string) => {
+            idRejected = true;
+            clearTimeout(killTimer);
+            try { child.kill("SIGKILL"); } catch {}
+            send("error", { error: "identity_mismatch", reason });
+            safeClose();
+          };
           const parser = makeJsonlParser((text) => {
-            full += text;
-            if (!firstChunkSent) {
-              firstChunkSent = true;
-              send("first", { ms: Date.now() - t0, model: "claude-max-cli" });
+            if (idRejected) return;
+            if (expectedDM && !idChecked) {
+              idBuf += text;
+              const nl = idBuf.indexOf("\n");
+              if (nl === -1) {
+                if (idBuf.length > 120) rejectId("no_id_line"); // AI ไม่ขึ้น ID line ในบรรทัดแรก
+                return; // ยังไม่ครบบรรทัด · ห้ามปล่อย chunk (buffer ต่อ · ไม่ block)
+              }
+              idChecked = true;
+              const chk = validateIdentity(idBuf.slice(0, nl) + "\n", expectedDM);
+              if (!chk.ok) { rejectId(chk.reason); return; }
+              const rest = idBuf.slice(nl + 1); // strip บรรทัด ID · ปล่อยเฉพาะเนื้อ
+              if (rest) { full += rest; sendFirstOnce(); send("chunk", { text: rest }); }
+              return;
             }
+            full += text;
+            sendFirstOnce();
             send("chunk", { text });
           });
           child.stdout.on("data", parser);
@@ -803,9 +829,15 @@ export async function POST(req: Request) {
           child.on("close", (code) => {
             activeChild = null;
             clearTimeout(killTimer);
+            if (idRejected) { safeClose(); return; } // ตัดไปแล้วจาก identity-lock
             const ms = Date.now() - t0;
+            if (expectedDM && !idChecked) { // AI ตอบจบแต่ไม่เคยขึ้น ID line (ตอบสั้น/ไม่มี newline) → ตัด
+              console.error(`[sifu] identity no_id_line on close (expect=${expectedDM})`);
+              send("error", { error: "identity_mismatch", reason: "no_id_line" });
+              safeClose(); return;
+            }
             if (code === 0 && full.trim()) {
-              const payload = { reply: full.trim(), model: "claude-max-cli" };
+              const payload = { reply: full.trim(), model: "claude-max-cli" }; // full = strip ID แล้ว (idBuf ไม่เข้า full)
               if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
               send("done", { ms, model: payload.model, cached: false, chars: full.length });
             } else {
@@ -830,10 +862,23 @@ export async function POST(req: Request) {
     }
 
     const t0 = Date.now();
-    const reply = await runClaudeCli(prompt);
+    /* identity-lock: เทียบ 日干 ที่ AI echo กับ engine · ไม่ตรง=retry 1 ครั้ง → error (กันอ่านผิดคนละดวง) */
+    const expectedDM = extractExpectedDM(ctx);
+    let reply = await runClaudeCli(prompt);
+    let idCheck = validateIdentity(reply, expectedDM);
+    if (!idCheck.ok) {
+      console.warn(`[sifu] identity ${idCheck.reason} (expect=${expectedDM} got=${idCheck.parsedDM}) · retry`);
+      reply = await runClaudeCli(prompt);
+      idCheck = validateIdentity(reply, expectedDM);
+      if (!idCheck.ok) {
+        console.error(`[sifu] identity FAIL after retry (expect=${expectedDM} got=${idCheck.parsedDM})`);
+        return NextResponse.json({ error: "identity_mismatch" }, { status: 502 });
+      }
+    }
+    const cleanReply = stripIdLine(reply);
     const ms = Date.now() - t0;
-    const payload = { reply, model: "claude-max-cli" };
-    if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+    const payload = { reply: cleanReply, model: "claude-max-cli" };
+    if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {}); // cache เฉพาะที่ผ่าน id-check แล้ว (ถึงบรรทัดนี้=ผ่าน)
     return NextResponse.json({ ...payload, cached: false, ms, key: key.slice(0, 8) });
   } catch (e: unknown) {
     const err = e as Error;
@@ -865,7 +910,7 @@ export async function GET(req: Request) {
   const session = await getSession();
   const orgId = session?.orgId ?? null;
 
-  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version;
+  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1";
   const dayKey = await getDayPillarKey();
   const key = cacheKey({ profileId, orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
   const useCache = mode !== "intro";
@@ -954,6 +999,9 @@ export async function GET(req: Request) {
       const c = spawnClaudeStreaming(prompt);
       let full = "";
       let firstChunkSent = false;
+      /* identity-lock (GET Q&A) · warmup/intro = engine สรุป → skip */
+      const expectedDM = warmup ? null : extractExpectedDM(ctx);
+      let idBuf = "", idChecked = false, idRejected = false;
 
       if (warmup) {
         send("first", { ms: 0, synthetic: true });
@@ -967,7 +1015,26 @@ export async function GET(req: Request) {
         safeClose();
       }, TIMEOUT_MS);
 
+      const rejectIdG = (reason: string) => {
+        idRejected = true;
+        clearTimeout(killTimer);
+        try { c.kill("SIGKILL"); } catch {}
+        send("error", { error: "identity_mismatch", reason });
+        safeClose();
+      };
       const parser = makeJsonlParser((text: string) => {
+        if (idRejected) return;
+        if (expectedDM && !idChecked) {
+          idBuf += text;
+          const nl = idBuf.indexOf("\n");
+          if (nl === -1) { if (idBuf.length > 120) rejectIdG("no_id_line"); return; }
+          idChecked = true;
+          const chk = validateIdentity(idBuf.slice(0, nl) + "\n", expectedDM);
+          if (!chk.ok) { rejectIdG(chk.reason); return; }
+          const rest = idBuf.slice(nl + 1);
+          if (rest) { full += rest; send("chunk", { text: rest }); if (!firstChunkSent) { send("first", { ms: Date.now() - t0 }); firstChunkSent = true; } }
+          return;
+        }
         send("chunk", { text });
         full += text;
         if (!firstChunkSent) {
@@ -981,7 +1048,9 @@ export async function GET(req: Request) {
       });
       c.on("close", (code) => {
         clearTimeout(killTimer);
+        if (idRejected) { safeClose(); return; }
         const ms = Date.now() - t0;
+        if (expectedDM && !idChecked) { send("error", { error: "identity_mismatch", reason: "no_id_line" }); safeClose(); return; }
         if (code === 0 && full.trim()) {
           const payload = { reply: full.trim(), model: "claude-max-cli" };
           if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
