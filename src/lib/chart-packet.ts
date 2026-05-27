@@ -86,10 +86,13 @@ export type ChartPacket = {
     branch: string;
     tenGod: string;
     hiddenStems: Array<{ stem: string; element: ElementEN | "unknown"; tenGod: string }>;
-    qiPhase: { dm: string | null; pillar: string | null };
+    qiPhase: { dm: string | null; pillar: string | null; hidden: string | null };
     palaceZh: string;
     nayinZh: string;
-    stars: string[];
+    /** 易卦 ของเสา (梅花易數 อากง · deterministic) · null ถ้าคำนวณไม่ได้ */
+    hexZh: string | null;
+    /** 神煞 ดาวพิเศษ · ส่งดี/ร้ายไปด้วยกัน AI ไม่ต้องเดา polarity */
+    stars: Array<{ name: string; polarity: "good" | "bad" | "neutral" }>;
   }>;
   structure: {
     label: string;
@@ -431,7 +434,14 @@ export function buildStructuredChartPacket(
       tenGod: tenGodLabelTh(h, dm),
     }));
     const phase = ext.three_phases[k];
-    const stars = (ext.special_stars[k] || []).map((s) => s.th || s.zh).slice(0, 3);
+    /* 神煞: เรียงดาวร้ายขึ้นก่อน (กัน slice ตัดดาวร้ายสำคัญ 災煞/劍鋒/歲破 ที่อยู่ท้าย array ทิ้ง)
+     * cap 8/เสา กัน prompt ยาว · ส่ง polarity ไปด้วย AI จะได้ไม่เดาดี-ร้าย (เคยขาด → อ่านอุบัติเหตุ/ขัดแย้งไม่ได้) */
+    const POL_ORDER: Record<string, number> = { bad: 0, good: 1, neutral: 2 };
+    const stars = [...(ext.special_stars[k] || [])]
+      .sort((a, b) => (POL_ORDER[a.polarity] ?? 3) - (POL_ORDER[b.polarity] ?? 3))
+      .slice(0, 8)
+      .map((s) => ({ name: s.th || s.zh, polarity: s.polarity }));
+    const hex = ext.palace_readings[k]?.hex;
     const ny = ext.nayin[k];
     return {
       key: k,
@@ -439,9 +449,10 @@ export function buildStructuredChartPacket(
       branch,
       tenGod,
       hiddenStems,
-      qiPhase: { dm: phase?.dm ?? null, pillar: phase?.pillar ?? null },
+      qiPhase: { dm: phase?.dm ?? null, pillar: phase?.pillar ?? null, hidden: phase?.hidden_main ?? null },
       palaceZh: palaceZhMap[k],
       nayinZh: ny ? (ny.zh || ny.en || "-") : "-",
+      hexZh: hex ? `${hex.zh}${hex.changing_line ? `·เคลื่อนเหยา${hex.changing_line}` : ""}` : null,
       stars,
     };
   });
@@ -536,11 +547,11 @@ export function buildStructuredChartPacket(
   }
 
   /* fan/fu yin · ตำราเข้ม เฉพาะ packet ซินแส (26 พ.ค. · 子平: 伏吟=流年/大運=命柱 ทั้งก้าน+กิ่ง · "伏吟比反吟还更伤脑筋")
-   * กรอง 2 ชั้น ก่อนส่งให้ AI: (1) เฉพาะเต็มเสา 伏吟/反吟 (ก้าน+กิ่งซ้ำ/ชนทั้งคู่) ตัด variant เดี่ยว (伏吟·ก้าน/·กิ่ง ฯลฯ)
-   * (2) เฉพาะเวลา(วัยจร/ปีจร)×ดวง ตัด natal×natal (ปฏิกิริยาในดวงเกิดกันเอง) · ไม่แตะ chart-extensions → /chart ใช้ครบเหมือนเดิม */
+   * กรอง 1 ชั้น: เฉพาะเต็มเสา 伏吟/反吟 (ก้าน+กิ่งซ้ำ/ชนทั้งคู่) ตัด variant เดี่ยว (伏吟·ก้าน/·กิ่ง) ที่เคยทำ AI มั่ว
+   * 27 พ.ค. · เจ้านายยืนยันปัญหา伏吟มั่วแก้แล้ว → ปลด filter natal×natal · ส่งเต็มเสาทุกแหล่ง (natal+วัยจร+ปีจร)
+   *   ให้ตรง /chart (เช่น Aeaw 年甲子↔時庚午 反吟เต็มเสา natal · ซินแสขอ) · ยังคงตัด variant เดี่ยวกัน AI มั่วซ้ำ */
   for (const f of ext.fan_yin_fu_yin) {
     if (f.type !== "伏吟" && f.type !== "反吟") continue;
-    if (!f.other_pillar.startsWith("luck_") && f.other_pillar !== "current_year") continue;
     const baseZh: InteractionTypeZh = f.type === "反吟" ? "反吟" : "伏吟";
     const pa = f.natal_pillar, pb = f.other_pillar;
     const reaction = Array.from(new Set([
@@ -814,8 +825,9 @@ export function renderChartPrompt(packet: ChartPacket): string {
     const hidden = p.hiddenStems.length
       ? p.hiddenStems.map((h, idx) => `${idx === 0 ? "แกนหลัก" : `แรงแฝง${idx}`}:${STEM_TH[h.stem] || h.stem}/${elementTh(h.element)}/${h.tenGod}`).join(" · ")
       : "-";
-    const stars = p.stars.length ? p.stars.join(" · ") : "-";
-    return `${PILLAR_EN_TH[p.key]} ${PILLAR_ZH[p.key]}: ฟ้า=${STEM_TH[p.stem] || p.stem}/${p.tenGod}; ดิน=${BRANCH_TH_NAME[p.branch] || p.branch}; ธาตุซ่อน=${hidden}; วัฏจักร=ตัวตน:${p.qiPhase.dm || "-"} เสา:${p.qiPhase.pillar || "-"}; เรือน=${p.palaceZh}; ดาวประกอบเท่านั้น=${stars}; นับเสียงประกอบ=${p.nayinZh}`;
+    const POL_TH: Record<string, string> = { bad: "ร้าย", good: "ดี", neutral: "กลาง" };
+    const stars = p.stars.length ? p.stars.map((s) => `${s.name}(${POL_TH[s.polarity] || "กลาง"})`).join(" · ") : "-";
+    return `${PILLAR_EN_TH[p.key]} ${PILLAR_ZH[p.key]}: ฟ้า=${STEM_TH[p.stem] || p.stem}/${p.tenGod}; ดิน=${BRANCH_TH_NAME[p.branch] || p.branch}; ธาตุซ่อน=${hidden}; วัฏจักร=ตัวตน:${p.qiPhase.dm || "-"} เสา:${p.qiPhase.pillar || "-"} ซ่อน:${p.qiPhase.hidden || "-"}; เรือน=${p.palaceZh}; 易卦=${p.hexZh || "-"}; 神煞ดาวพิเศษ(ดี/ร้าย)=${stars}; นับเสียงประกอบ=${p.nayinZh}`;
   });
   lines.push(`CHART PACKET รายเสา:\n${pillarBlock.join("\n")}`);
 
