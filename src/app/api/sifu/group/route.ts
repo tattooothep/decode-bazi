@@ -284,6 +284,9 @@ const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "bazi-hehun-classical.md", label: "合婚 · ความเข้ากันดวงคู่/หลายดวง" },
   { file: "bazi-nayin-master.md", label: "納音60 · เนื้อสัมผัสนาอิน" },
   { file: "bazi-shensha-catalog.md", label: "神煞 · คาตาล็อกดาวพิเศษ (รอง)" },
+  { file: "bazi-hechong-resolution.md", label: "合冲 · กฎแก้ขัด/รวมพลัง 刑沖會合解法 + 墓庫 (子平真詮 Resolution)" },
+  { file: "bazi-xiangshen-judgment.md", label: "相神/成格/破格/救應 · ตัดสินโครงดวงสมบูรณ์/พัง (子平真詮 Judgment)" },
+  { file: "bazi-conghua-master.md", label: "從格/化格 · ดวงตาม/แปรธาตุ + 真假 boundary + 合化 (滴天髓+三命通會)" },
 ];
 let _sifuExtraCache: { text: string; ts: number; version: string } | null = null;
 function loadSifuExtraKnowledge(): { text: string; version: string } {
