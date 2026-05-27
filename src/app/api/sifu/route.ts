@@ -47,6 +47,29 @@ async function computeStartAge(date: string, time: string, gender: "M" | "F", ln
     return 10;
   }
 }
+/* 通根 (root strength) จาก wrapper-7 · sifu เดิมใช้แค่ wrapper-6 (หยาบ) · ดึง 5 เกรด + ราก/contest เข้า packet
+   (ฐานตัดสิน 從格/用神 · เรียกที่ route ไม่แตะ bazi-calc/extensions LOCKED · ส่ง arg เข้า packet) */
+async function computeRootedness(pillars: { year: { stem: string; branch: string }; month: { stem: string; branch: string }; day: { stem: string; branch: string }; hour: { stem: string; branch: string } | null }): Promise<ReturnType<typeof buildStructuredChartPacket>["rootedness"]> {
+  try {
+    const w7 = await import("../../../../data/library/wrappers/7-yongshen-v2.js") as unknown as {
+      dmRootProfile: (n: unknown) => { dm_element: string; rootedness_label: string; is_extremely_weak: boolean; is_token_only: boolean };
+      rootednessAll: (n: unknown) => Record<string, { rootedness_label: string }>;
+    };
+    const dmR = w7.dmRootProfile(pillars);
+    const allR = w7.rootednessAll(pillars);
+    const lab = (e: string) => (allR[e]?.rootedness_label || "no_root");
+    return {
+      dmElement: dmR.dm_element,
+      dmLabel: dmR.rootedness_label,
+      isExtremelyWeak: dmR.is_extremely_weak,
+      isTokenOnly: dmR.is_token_only,
+      all: { wood: lab("wood"), fire: lab("fire"), earth: lab("earth"), metal: lab("metal"), water: lab("water") },
+    } as ReturnType<typeof buildStructuredChartPacket>["rootedness"];
+  } catch (e) {
+    console.warn("[sifu] rootedness (wrapper-7) failed:", (e as Error).message);
+    return null;
+  }
+}
 const INTRO_OPENROUTER_MODEL = process.env.SIFU_INTRO_MODEL || "anthropic/claude-opus-4.7";
 const CHILD_USER = "jarvis";
 const STEM_ELEMENT_MAP: Record<string, string> = {
@@ -302,7 +325,8 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
       `納音: 年${ny.year?.zh||"-"} · 月${ny.month?.zh||"-"} · 日${ny.day?.zh||"-"} · 時${ny.hour?.zh||"-"}`,
     ];
     // TODO Step1.1: dedupe 用神/格局 ที่ซ้ำกับ renderChartPrompt
-    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g);
+    const rootedness = await computeRootedness(calc.pillars);
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness);
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
     if (ext.special_chart.applicable) {
@@ -420,7 +444,8 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
       `โครงดวง: ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วย ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
     ];
     // TODO Step1.1: dedupe 用神/格局 ที่ซ้ำกับ renderChartPrompt
-    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g);
+    const rootedness = await computeRootedness(calc.pillars);
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness);
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
     lines.push(`ย้อนหลัง 12 เดือน: 0-3 เดือนล่าสุด / 4-6 เดือน / 7-9 เดือน / 10-12 เดือน`);

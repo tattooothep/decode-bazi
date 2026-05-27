@@ -20,6 +20,7 @@ type Calc = Awaited<ReturnType<typeof calcBazi>>;
 type Ext = ReturnType<typeof buildChartExtensions>;
 
 export type ElementEN = "wood" | "fire" | "earth" | "metal" | "water";
+export type RootLabel = "no_root" | "token_root" | "partial_root" | "rooted" | "strong_root";
 type PillarKey = "year" | "month" | "day" | "hour";
 
 /* zh interaction type ที่ engine ส่งมาจริง (รวม fan/fu yin variant) */
@@ -100,6 +101,14 @@ export type ChartPacket = {
   trueSolarTime?: { appliedTimeStr: string; totalShiftMin: number; dayShift: number } | null;
   /** 起運 อายุเริ่มวัยจร 大運 (จาก ext.luck_pillars[0].age_start · computeStartAge) */
   startLuckAge?: number | null;
+  /** 通根 รากธาตุ (wrapper-7 dmRootProfile + rootednessAll · route เรียกแล้ว map มาให้ · ฐานตัดสิน 從格/用神) */
+  rootedness?: {
+    dmElement: ElementEN;
+    dmLabel: RootLabel;          // ราก DM: no_root/token_root/partial_root/rooted/strong_root
+    isExtremelyWeak: boolean;    // DM อ่อนยิ่ง → เข้าเกณฑ์從格
+    isTokenOnly: boolean;        // ราก DM บางมาก
+    all: Record<ElementEN, RootLabel>;  // ราก 5 ธาตุ
+  } | null;
   usefulGods: {
     /** rank1 useful element */
     yong: ElementEN[];
@@ -388,6 +397,7 @@ export function buildStructuredChartPacket(
   dm: string,
   ageNow: number,
   g: Record<string, string>,
+  rootedness: ChartPacket["rootedness"] = null,  // 通根 (route เรียก wrapper-7 ส่งมา · optional · undefined=group/ไม่ส่ง)
 ): ChartPacket {
   const dmElement = STEM_ELEMENT[dm] || "unknown";
   const dmPolarity = STEM_POLARITY[dm] || "yang";
@@ -733,6 +743,7 @@ export function buildStructuredChartPacket(
       ? { appliedTimeStr: calc.tst.appliedTimeStr, totalShiftMin: calc.tst.totalShiftMin, dayShift: calc.tst.appliedDayShift }
       : null,
     startLuckAge: ext.luck_pillars?.[0]?.age_start ?? null,
+    rootedness: rootedness ?? null,
     usefulGods: {
       yong,
       xi,
@@ -845,6 +856,20 @@ export function renderChartPrompt(packet: ChartPacket): string {
   }
   if (packet.startLuckAge != null) {
     lines.push(`起運 (เริ่มเดินวัยจร 大運): อายุ ${packet.startLuckAge} ปี`);
+  }
+  /* 通根 รากธาตุ (wrapper-7 · ฐานตัดสิน 從格/用神 · ห้ามคำนวณใหม่ · engine ให้มา) */
+  if (packet.rootedness) {
+    const r = packet.rootedness;
+    const ROOT_TH: Record<RootLabel, string> = {
+      no_root: "ไร้ราก", token_root: "รากบางมาก", partial_root: "รากบางส่วน", rooted: "มีราก", strong_root: "รากแข็ง",
+    };
+    const allTxt = (["wood","fire","earth","metal","water"] as ElementEN[])
+      .map((e) => `${elementTh(e)}=${ROOT_TH[r.all[e]] || r.all[e]}`).join(" · ");
+    let dmLine = `通根 (ราก): ตัวตน(日干 ธาตุ${elementTh(r.dmElement)}) = ${ROOT_TH[r.dmLabel] || r.dmLabel}`;
+    if (r.isExtremelyWeak) dmLine += " · DM อ่อนยิ่ง (พิจารณาเกณฑ์從格)";
+    else if (r.isTokenOnly) dmLine += " · รากบางมาก (ระวังเกณฑ์從格)";
+    lines.push(dmLine);
+    lines.push(`ราก 5 ธาตุ: ${allTxt}`);
   }
 
   /* วัยจร + ปีจร */
