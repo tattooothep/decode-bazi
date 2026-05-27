@@ -500,12 +500,12 @@ function geToRuleKey(label: string): string | null {
   if (l.includes("傷官")) return "傷官格";
   if (l.includes("七殺") || l.includes("七杀")) return "七殺格";
   if (l.includes("正官")) return "正官格";
+  if (l.includes("陽刃") || l.includes("羊刃")) return "陽刃格";
+  if (l.includes("比肩") || l.includes("劫財") || l.includes("建祿") || l.includes("月劫")) return "建祿月劫格"; // ก่อน財 (劫財 includes 財!)
   if (l.includes("財")) return "財格";
   if (l.includes("印")) return "印綬格";
   if (l.includes("食神")) return "食神格";
-  if (l.includes("陽刃") || l.includes("羊刃")) return "陽刃格";
-  if (l.includes("比肩") || l.includes("劫財") || l.includes("建祿") || l.includes("月劫")) return "建祿月劫格";
-  return null;  // 化/從/曲直/炎上/稼穡/從革/潤下/魁罡 → 相神 ไม่ applicable
+  return null;  // 曲直/炎上/稼穡/從革/潤下/魁罡 → 相神 ไม่ applicable
 }
 function godsInChartXS(pillars: Record<string, { stem: string; branch: string } | null>, dm: string): Set<string> {
   const g = new Set<string>();
