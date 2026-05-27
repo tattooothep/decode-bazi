@@ -65,40 +65,80 @@ function isStemHe(s1, s2) {
          ['甲己','乙庚','丙辛','丁壬','戊癸'].some(p => (p[0]===s1 && p[1]===s2) || (p[1]===s1 && p[0]===s2));
 }
 
+/* ── 化氣格 gate (wrapper-8 · 27 พ.ค. · 6 เงื่อนไข真化 + 12長生 root model · proto v2 พิสูจน์ 8/8 golden)
+ * blueprint: data/library/wrapper8-huahe-cong-blueprint.md
+ * month-support = 三合+三會 ของ化神 (ตำรา · ไม่ใช้ STEM_COMBOS.requiredBranches ที่หยาบ)
+ * 12長生 แยก 真化(ราก衰墓絕被沖→สลาย) จาก 假從(ราก臨官帝旺→ทน) — root model หยาบ(本氣/中氣)แยกไม่ได้ */
+const HUA_MONTHS = {
+  earth: ['辰','戌','丑','未'], metal: ['巳','酉','丑','申','戌'], water: ['亥','子','丑','申','辰'],
+  wood:  ['寅','卯','辰','亥','未'], fire: ['巳','午','未','寅','戌'],
+};
+const HUA_GUIDE = { earth:'戊', metal:'庚', water:'壬', wood:'甲', fire:'丙' };
+const HUA_ZH = { wood:'木', fire:'火', earth:'土', metal:'金', water:'水' };
+const STRONG_PHASE_HUA = new Set(['長生','冠帶','臨官','帝旺']);
+
+function findStemCombo(s1, s2) {
+  for (const [, v] of Object.entries(S.STEM_COMBOS))
+    if ((v.partner1 === s1 && v.partner2 === s2) || (v.partner1 === s2 && v.partner2 === s1)) return v;
+  return null;
+}
+function huaClashed(natal, b) { const c = S.SIX_CLASH[b]; return !!(c && activePositions(natal).some(p => natal[p].branch === c)); }
+// (g) ระดับราก DM ด้วย 12長生: real(真根不化) / hair(微根) / none(ไร้ราก/สลาย)
+function dmRootGateHua(natal) {
+  const dm = natal.day.stem, dmEl = S.STEM_ELEMENT[dm];
+  let strong = false, weak = false;
+  for (const p of activePositions(natal)) {
+    const b = natal[p].branch, hs = S.HIDDEN_STEMS[b]; if (!hs) continue;
+    if (![hs.main, hs.middle, hs.residual].filter(Boolean).some(h => S.STEM_ELEMENT[h] === dmEl)) continue;
+    const ph = S.twelvePhase(dm, b), cl = huaClashed(natal, b);
+    if (STRONG_PHASE_HUA.has(ph)) { if (!cl) return 'real'; strong = true; }  // 真根ไม่被沖=不化 · 被沖=เหลือ hair
+    else if (ph === '墓') { if (cl) weak = true; }                            // 沖開庫=hair · ปิด=ไม่นับ
+    else { if (!cl) weak = true; }                                           // 微根ไม่被沖=hair · 被沖=สลาย
+  }
+  return (strong || weak) ? 'hair' : 'none';
+}
+function huaRootCount(natal, el) {
+  let n = 0;
+  for (const p of activePositions(natal)) { const hs = S.HIDDEN_STEMS[natal[p].branch];
+    if (hs && [hs.main, hs.middle, hs.residual].filter(Boolean).some(h => S.STEM_ELEMENT[h] === el)) n++; }
+  return n;
+}
+function huaController(natal, hua) {  // (e) 化神被剋แรง (透干+本氣ราก)
+  const foes = Object.entries(S.ELEMENT_CONTROLS).filter(([, v]) => v === hua).map(([k]) => k);
+  const stems = activePositions(natal).map(p => natal[p].stem);
+  const transparent = stems.some(s => foes.includes(S.STEM_ELEMENT[s]));
+  const rooted = activePositions(natal).some(p => { const hs = S.HIDDEN_STEMS[natal[p].branch]; return hs && hs.main && foes.includes(S.STEM_ELEMENT[hs.main]); });
+  return transparent && rooted;
+}
+/* คืน 化X格 object เฉพาะ 真化 (ครบ 6 เงื่อนไข+DM rootless) · 假化/合而不化/隔位 → null
+ * null = ไม่ declare 化格 → wrapper-7 ไม่ push 化神 (กัน over-declare用神พลิก180°) */
 function findTransformation(natal) {
-  // 化氣格 — DM combines with adjacent stem (month or hour) AND season supports
   const dm = natal.day.stem;
-  const candidates = [
-    { partner: natal.month.stem, source: 'month' },
-    ...(natal.hour ? [{ partner: natal.hour.stem, source: 'hour' }] : []),
-  ];
-  for (const c of candidates) {
-    const key = [dm, c.partner].sort().join('');
-    const possible = ['甲己','乙庚','丙辛','丁壬','戊癸'];
-    if (!possible.includes(key)) continue;
-    // หา transformsTo
-    const STEM_PAIR_TO_ELEMENT = {
-      '甲己':'earth', '乙庚':'metal', '丙辛':'water', '丁壬':'wood', '戊癸':'fire',
-    };
-    const transformsTo = STEM_PAIR_TO_ELEMENT[key];
-    // ถ้า transformsTo === DM element แล้ว · DM ไม่ได้ "แปร" → ปล่อยให้ 專旺จับแทน · อากง 15 พ.ค.
-    if (transformsTo === S.STEM_ELEMENT[dm]) continue;
-    // ตรวจ season (ที่ classical: ต้องเกิดในเดือนของธาตุที่แปร)
-    const monthBranch = natal.month.branch;
-    const monthSeason = SEASON_OF_BRANCH[monthBranch];
-    const transformSeason = ELEMENT_SEASON[transformsTo];
-    const seasonMatch = monthSeason === transformSeason;
-    if (seasonMatch) {
-      const structKey = `化${{wood:'木',fire:'火',earth:'土',metal:'金',water:'水'}[transformsTo]}格`;
+  const pos = activePositions(natal);
+  const idx = {}; pos.forEach((p, i) => idx[p] = i);
+  for (const other of pos.filter(p => p !== 'day')) {
+    const combo = findStemCombo(dm, natal[other].stem); if (!combo) continue;
+    const hua = combo.transformsTo, partner = natal[other].stem;
+    if (Math.abs(idx.day - idx[other]) !== 1) return null;          // (a) 緊貼 · 隔位 → 合而不化(ไม่化)
+    const gotMonth = HUA_MONTHS[hua].includes(natal.month.branch);  // (b) 得令
+    const gotGround = huaRootCount(natal, hua) >= 2;                // (c) 得地
+    const guide = HUA_GUIDE[hua];
+    const stems = pos.map(p => natal[p].stem);
+    const hasGuide = stems.includes(guide) || pos.some(p => {       // (f) 元神
+      const hs = S.HIDDEN_STEMS[natal[p].branch]; return hs && [hs.main, hs.middle, hs.residual].includes(guide); });
+    const noKiller = !huaController(natal, hua);                    // (e) 不受剋
+    const contention = stems.filter(s => s === dm).length > 1 || stems.filter(s => s === partner).length > 1; // (d) 爭/妒合
+    const dmRoot = dmRootGateHua(natal);                            // (g) DM rootless (12長生)
+    const core = gotMonth && gotGround && hasGuide && noKiller;
+    const blocks = contention && !core;                            // 妒合 exception: core ครบ → ไม่ block (真化ก่อน·競ทีหลัง)
+    if (core && !blocks && dmRoot === 'none') {
       return {
-        structure: structKey,
-        transformsTo,
-        partner: c.partner,
-        partnerSource: c.source,
-        seasonSupport: true,
-        confidence: 'high',
+        structure: `化${HUA_ZH[hua]}格`, transformsTo: hua, partner, partnerSource: other,
+        seasonSupport: gotMonth, confidence: 'high',
+        detail: { verdict: '真化', dmRoot, gotMonth, gotGround, hasGuide, noKiller, contention },
       };
     }
+    return null;  // 假化/合而不化 → ไม่ declare 化格 (AI เห็น五合ผ่าน interactions + flag chart-packet)
   }
   return null;
 }
