@@ -14,7 +14,7 @@
  */
 import type { calcBazi } from "./bazi-calc";
 import type { buildChartExtensions } from "./chart-extensions";
-import { buildConceptionPalace } from "./chart-table";
+import { buildConceptionPalace, buildLifePalace, buildBodyPalace } from "./chart-table";
 import { getDaymasterProfile } from "./daymaster-profile";
 
 type Calc = Awaited<ReturnType<typeof calcBazi>>;
@@ -772,10 +772,12 @@ export function buildStructuredChartPacket(
     rootedness: rootedness ?? null,
     fivePalaces: (() => {
       const tai = buildConceptionPalace(calc.pillars);
+      const ming = buildLifePalace(calc.pillars);          // 27 พ.ค. สูตร 卯安命 節氣法 (4−M−H) + 五虎遁
+      const shen = buildBodyPalace(calc.pillars, ming);     // 對宮ของ命宮
       return {
         taiYuan: tai ? { stem: tai.stem, branch: tai.branch, tenGod: tenGodLabelTh(tai.stem, dm) } : null,
-        mingGong: null,  // เฟสถัดไป · รอซินแสฟันธงการนับยาม (酉 vs 亥)
-        shenGong: null,  // เฟสถัดไป (=對宮命宮 · รอ命宮)
+        mingGong: ming ? { stem: ming.stem, branch: ming.branch, tenGod: tenGodLabelTh(ming.stem, dm) } : null,
+        shenGong: shen ? { stem: shen.stem, branch: shen.branch, tenGod: tenGodLabelTh(shen.stem, dm) } : null,
         siLing: null,    // เฟสถัดไป (ต้อง節氣 ephemeris)
         xiaoYun: null,   // เฟสถัดไป (時柱+เพศ)
       };
@@ -915,6 +917,16 @@ export function renderChartPrompt(packet: ChartPacket): string {
   if (packet.fivePalaces?.taiYuan) {
     const t = packet.fivePalaces.taiYuan;
     lines.push(`胎元 เรือนปฏิสนธิ (ทุนแต่เกิด·รากฐานก่อนลืมตา): ${STEM_TH[t.stem] || t.stem}/${t.tenGod} ${BRANCH_TH_NAME[t.branch] || t.branch} (${t.stem}${t.branch}) · ใช้ดูธาตุเสริมที่ติดตัวมาก่อนเกิด (มักเติมธาตุที่ 4 เสาขาด) · ไม่ฟันธงดี-ร้าย`);
+  }
+  /* 命宮 เรือนชีวิต (27 พ.ค. · 卯安命 節氣法 · บุคลิก/ทิศทางชีวิต · ต้องมีเวลาเกิด) */
+  if (packet.fivePalaces?.mingGong) {
+    const m = packet.fivePalaces.mingGong;
+    lines.push(`命宮 เรือนชีวิต (บุคลิกแกน·ทิศทางชีวิต): ${STEM_TH[m.stem] || m.stem}/${m.tenGod} ${BRANCH_TH_NAME[m.branch] || m.branch} (${m.stem}${m.branch}) · อ่านแนวทางชีวิต/นิสัยพื้นฐาน · ไม่ฟันธงดี-ร้าย`);
+  }
+  /* 身宮 เรือนกาย (對宮ของ命宮 · ครึ่งหลังชีวิต/สิ่งที่ทุ่มจริง) */
+  if (packet.fivePalaces?.shenGong) {
+    const s = packet.fivePalaces.shenGong;
+    lines.push(`身宮 เรือนกาย (ครึ่งหลังชีวิต·สิ่งที่ลงมือทำจริง): ${STEM_TH[s.stem] || s.stem}/${s.tenGod} ${BRANCH_TH_NAME[s.branch] || s.branch} (${s.stem}${s.branch}) · คู่ตรงข้าม命宮 · ไม่ฟันธงดี-ร้าย`);
   }
   /* 通根 รากธาตุ (wrapper-7 · ฐานตัดสิน 從格/用神 · ห้ามคำนวณใหม่ · engine ให้มา) */
   if (packet.rootedness) {
