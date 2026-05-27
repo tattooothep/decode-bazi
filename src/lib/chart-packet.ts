@@ -96,8 +96,6 @@ export type ChartPacket = {
     /** ระดับความมั่นใจของโครงดวง (label จาก wrapper ge-ju · ไม่ใช่ % ตัวเลข) */
     confidence?: string | null;
   };
-  /** 命宮 เรือนชะตา (จาก ext.life_palace · buildLifePalace · null ถ้า 3 เสา) */
-  lifePalace?: { branchTh: string; elementTh: string; titleTh: string; hidden: string[] } | null;
   /** 真太陽時 — เวลาจริงหลังแก้ลองจิจูด+สมการเวลา (จาก calc.tst) */
   trueSolarTime?: { appliedTimeStr: string; totalShiftMin: number; dayShift: number } | null;
   /** 起運 อายุเริ่มวัยจร 大運 (จาก ext.luck_pillars[0].age_start · computeStartAge) */
@@ -728,10 +726,9 @@ export function buildStructuredChartPacket(
         : null,
       confidence: calc.geJu?.confidence ?? null,
     },
-    /* กลุ่ม ก (เชื่อมท่อ · 26 พ.ค.) — ของที่ engine คำนวณแล้วแต่ packet ไม่เคย expose */
-    lifePalace: ext.life_palace
-      ? { branchTh: ext.life_palace.branch_th, elementTh: ext.life_palace.element_th, titleTh: ext.life_palace.title_th, hidden: ext.life_palace.hidden || [] }
-      : null,
+    /* กลุ่ม ก (เชื่อมท่อ · 26 พ.ค.) — ของที่ engine คำนวณแล้วแต่ packet ไม่เคย expose
+       หมายเหตุ: 命宮 ถอดออกชั่วคราว — สูตร buildLifePalace anchor (子=0) ต่างจากตำราคลาสสิก (寅=1)
+       benchmark 正月子時: โค้ด→子 · ตำรา→卯 · รอ verify สำนักกับซินแสก่อนเปิด (กันอ่านเรือนผิด) */
     trueSolarTime: calc.tst
       ? { appliedTimeStr: calc.tst.appliedTimeStr, totalShiftMin: calc.tst.totalShiftMin, dayShift: calc.tst.appliedDayShift }
       : null,
@@ -839,16 +836,12 @@ export function renderChartPrompt(packet: ChartPacket): string {
   /* ช่องว่างของดวง */
   lines.push(`ช่องว่างของดวง: วัน=${packet.kongWang.dayVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"} · ปี=${packet.kongWang.yearVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"}`);
 
-  /* กลุ่ม ก (26 พ.ค. · เชื่อมท่อ engine ที่มีค่าแล้ว) — 真太陽時 / 命宮 / 起運 */
+  /* กลุ่ม ก (26 พ.ค. · เชื่อมท่อ engine ที่มีค่าแล้ว) — 真太陽時 / 起運 (命宮 ถอดชั่วคราว รอ verify สำนัก) */
   if (packet.trueSolarTime) {
     const t = packet.trueSolarTime;
     lines.push(`真太陽時 (เวลาจริงหลังแก้ลองจิจูด+สมการเวลา): ${t.appliedTimeStr}` +
       (t.totalShiftMin ? ` · เลื่อน ${t.totalShiftMin} นาทีจากเวลานาฬิกา` : "") +
       (t.dayShift ? ` · ข้ามวัน ${t.dayShift > 0 ? "+1" : "-1"}` : ""));
-  }
-  if (packet.lifePalace) {
-    lines.push(`命宮 (เรือนชะตา): ${packet.lifePalace.branchTh} ธาตุ${packet.lifePalace.elementTh}` +
-      (packet.lifePalace.titleTh ? ` · ${packet.lifePalace.titleTh}` : ""));
   }
   if (packet.startLuckAge != null) {
     lines.push(`起運 (เริ่มเดินวัยจร 大運): อายุ ${packet.startLuckAge} ปี`);
