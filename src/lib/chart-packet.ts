@@ -879,6 +879,27 @@ export function renderChartPrompt(packet: ChartPacket): string {
       (packet.structure.special.friendly.length ? ` · ธาตุเกื้อ ${packet.structure.special.friendly.map((e) => elementTh(e)).join("·")}` : "");
   }
   if (packet.structure.confidence) structureLine += ` · ความมั่นใจโครง ${packet.structure.confidence}`;
+  /* 🔒 化氣格 guard (27 พ.ค. · option A · 5-agent) — engine (wrapper-3 findTransformation) declare 化X格 จากแค่ 2/6 เงื่อนไข
+     (五合คู่ + เดือนตรงฤดู) ไม่เช็คราก DM → over-declare 化 (เคส合而不化/假化 อ่านผิด用神พลิก180°)
+     hotfix เลเยอร์ packet: ถ้า structure เป็น 化X格 + ตัวตน(日干)ยังมีราก (rootedness จาก wrapper-7 · ไม่คำนวณใหม่)
+     → ไม่ฟันธง化 · flag ให้ AI ใช้คัมภีร์從化ตรวจ真化/假化/合而不化 ก่อน (ดู header กฎ10ข้อ จ)
+     ไม่แก้ packet.structure.label (ค่า engine ดิบคงไว้) · ไม่แตะ wrapper LOCKED · /chart แยก (เฟส B) */
+  {
+    const HUAQI_RE = /^化[木火土金水]格$/;
+    const isHuaQi = HUAQI_RE.test(packet.structure.label) ||
+      (!!packet.structure.special?.typeZh && HUAQI_RE.test(packet.structure.special.typeZh));
+    const r = packet.rootedness;
+    const dmRooted = !!r && (r.dmLabel === "partial_root" || r.dmLabel === "rooted" || r.dmLabel === "strong_root");
+    if (isHuaQi && dmRooted && r) {
+      const ROOT_HUA: Partial<Record<RootLabel, string>> = {
+        partial_root: "รากบางส่วน", rooted: "มีราก", strong_root: "รากแข็ง",
+      };
+      structureLine += `\n⚠️ 化氣格 = เบื้องต้นเท่านั้น (ยังไม่ฟันธง): ตัวตน(日干 ธาตุ${elementTh(r.dmElement)}) ${ROOT_HUA[r.dmLabel] || r.dmLabel}` +
+        ` → ต้องตรวจ 真化/假化/合而不化 ตามคัมภีร์從化ก่อนสรุป · ห้ามประกาศว่า "แปรธาตุสำเร็จ/化แท้" ทันที` +
+        ` · ตัวตนที่ยังมีราก (หรือ月令ไม่หนุนธาตุที่แปร) มักเป็น 合而不化 (合แต่ไม่แปร · ทั้งคู่ทำงานครึ่งเดียว) ไม่ใช่化แท้` +
+        ` · อ้างอิงค่ารากใน packet เท่านั้น (ห้ามคำนวณราก/ก้านใหม่)`;
+    }
+  }
   lines.push(structureLine);
 
   /* ธาตุช่วย (engine-derived · ไม่ฟันธงดี-ร้าย) */
