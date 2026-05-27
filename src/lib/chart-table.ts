@@ -519,6 +519,45 @@ export function buildLifePalace(pillars: Pillars): LifePalaceInfo | null {
   };
 }
 
+/* #25 · 胎元 Conception Palace · 27 พ.ค. · สูตร 子平: 「月干進一位、月支進三位」
+ * (三命通會 卷二「論胎元」· 淵海子平 卷一 · ทุกสำนักตรงกัน ไม่มี fork)
+ * golden: Aeaw 月柱丙子→丁卯 · Mai 月柱壬辰→癸未 · ไม่ใช้ยาม → 3p คำนวณได้
+ * ⚠️ ห้ามสับสนกับ 胎息 (六合ของเสาวัน คนละเรื่อง) */
+export type ConceptionPalaceInfo = {
+  stem: string;
+  branch: string;
+  pillar: string;
+  branch_th: string;
+  element: string;
+  element_th: string;
+  hidden: string[];
+  title_th: string;
+  title_en: string;
+  title_zh: string;
+};
+export function buildConceptionPalace(pillars: Pillars): ConceptionPalaceInfo | null {
+  const m = pillars.month;
+  if (!m) return null;
+  const si = STEMS_ALL.indexOf(m.stem);
+  const bi = BRANCHES_ALL.indexOf(m.branch);
+  if (si < 0 || bi < 0) return null;
+  const stem = STEMS_ALL[(si + 1) % 10];      // 月干進一
+  const branch = BRANCHES_ALL[(bi + 3) % 12]; // 月支進三
+  const el = BRANCH_ELEMENT[branch] || "earth";
+  return {
+    stem,
+    branch,
+    pillar: `${stem}${branch}`,
+    branch_th: BRANCH_TH_MAP[branch] || branch,
+    element: el,
+    element_th: ELEMENT_TH_MAP[el] || el,
+    hidden: HIDDEN_STEMS[branch] || [],
+    title_th: `เรือนปฏิสนธิ · ${stem}${branch} · ธาตุ${ELEMENT_TH_MAP[el] || el}`,
+    title_en: `Conception Palace · ${stem}${branch} · ${el}`,
+    title_zh: `胎元 · ${stem}${branch} · ${el}`,
+  };
+}
+
 /* #23 · 宮位 Palace Reading · 4 pillar palaces */
 const PALACE_TABLE: Array<{
   pillar: "year"|"month"|"day"|"hour";

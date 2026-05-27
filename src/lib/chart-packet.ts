@@ -14,6 +14,7 @@
  */
 import type { calcBazi } from "./bazi-calc";
 import type { buildChartExtensions } from "./chart-extensions";
+import { buildConceptionPalace } from "./chart-table";
 import { getDaymasterProfile } from "./daymaster-profile";
 
 type Calc = Awaited<ReturnType<typeof calcBazi>>;
@@ -111,6 +112,16 @@ export type ChartPacket = {
     isExtremelyWeak: boolean;    // DM อ่อนยิ่ง → เข้าเกณฑ์從格
     isTokenOnly: boolean;        // ราก DM บางมาก
     all: Record<ElementEN, RootLabel>;  // ราก 5 ธาตุ
+  } | null;
+  /** 五宮 เรือนเสริม 5 อย่าง (engine คำนวณ → packet map · เติมทีละเรือน)
+   * 胎元=ทุนแต่เกิด · 命宮=บุคลิก/ทิศ · 身宮=ครึ่งหลัง/กาย · 司令=ธาตุแท้ฤดู · 小運=วัยเด็ก
+   * 命宮/身宮/小運 = null เมื่อไม่มียามเกิด (3p) · ห้าม AI เดา */
+  fivePalaces?: {
+    taiYuan: { stem: string; branch: string; tenGod: string } | null;   // 胎元 (ไม่ต้องยาม)
+    mingGong: { stem: string; branch: string; tenGod: string } | null;  // 命宮 (รอ verify สำนัก)
+    shenGong: { stem: string; branch: string; tenGod: string } | null;  // 身宮 (=對宮命宮)
+    siLing: { stem: string; element: ElementEN; phase: string; tenGod: string } | null; // 司令
+    xiaoYun: { age1Stem: string; age1Branch: string; direction: "forward" | "backward" } | null; // 小運
   } | null;
   usefulGods: {
     /** rank1 useful element */
@@ -759,6 +770,16 @@ export function buildStructuredChartPacket(
       : null,
     startLuckAge: ext.luck_pillars?.[0]?.age_start ?? null,
     rootedness: rootedness ?? null,
+    fivePalaces: (() => {
+      const tai = buildConceptionPalace(calc.pillars);
+      return {
+        taiYuan: tai ? { stem: tai.stem, branch: tai.branch, tenGod: tenGodLabelTh(tai.stem, dm) } : null,
+        mingGong: null,  // เฟสถัดไป · รอซินแสฟันธงการนับยาม (酉 vs 亥)
+        shenGong: null,  // เฟสถัดไป (=對宮命宮 · รอ命宮)
+        siLing: null,    // เฟสถัดไป (ต้อง節氣 ephemeris)
+        xiaoYun: null,   // เฟสถัดไป (時柱+เพศ)
+      };
+    })(),
     usefulGods: {
       yong,
       xi,
@@ -889,6 +910,11 @@ export function renderChartPrompt(packet: ChartPacket): string {
   }
   if (packet.startLuckAge != null) {
     lines.push(`起運 (เริ่มเดินวัยจร 大運): อายุ ${packet.startLuckAge} ปี`);
+  }
+  /* 胎元 เรือนปฏิสนธิ (27 พ.ค. · 月干進一月支進三 · engine คำนวณ · ทุนแต่เกิด/รากฐาน · ตีความด้วยสิบเทพเทียบ日干) */
+  if (packet.fivePalaces?.taiYuan) {
+    const t = packet.fivePalaces.taiYuan;
+    lines.push(`胎元 เรือนปฏิสนธิ (ทุนแต่เกิด·รากฐานก่อนลืมตา): ${STEM_TH[t.stem] || t.stem}/${t.tenGod} ${BRANCH_TH_NAME[t.branch] || t.branch} (${t.stem}${t.branch}) · ใช้ดูธาตุเสริมที่ติดตัวมาก่อนเกิด (มักเติมธาตุที่ 4 เสาขาด) · ไม่ฟันธงดี-ร้าย`);
   }
   /* 通根 รากธาตุ (wrapper-7 · ฐานตัดสิน 從格/用神 · ห้ามคำนวณใหม่ · engine ให้มา) */
   if (packet.rootedness) {
