@@ -421,6 +421,19 @@ data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 
 **📖 อ่านก่อนแตะระบบซินแส: `SIFU-PIPELINE.md` ที่ root** — อธิบายละเอียดทำไมแม่น (5 ชั้น engine→packet→prompt + 5 fix + บทเรียนห้ามทำซ้ำ)
 
+### 🔒🔒 5 เรือนปาจื้อ + สูตรเฉพาะ · LOCKED แน่น (27 พ.ค. 2026 · เจ้านายสั่ง "อย่าให้ session หน้าแก้มั่ว")
+
+**ห้ามแก้สูตร 5 เรือนใน `src/lib/chart-table.ts` โดยไม่มี golden + เจ้านาย approve** (verify หนัก · ผ่าน 5-agent × 3 รอบ · เว็บจีน 3 แหล่ง · worked example):
+- **命宮 (buildLifePalace):** สูตร 子平 卯安命節氣法 `命宮支(子=0) = (4−M−H) mod 12` · M=เดือน節氣 寅=1…子=11,丑=12 · H=ยาม 子=0…亥=11 · ก้าน 五虎遁 · **golden Aeaw=乙亥 Mai=癸巳** · worked 午月酉時→寅 · 巳月未時→巳 · ⚠️ **ไฟล์ซินแสเดิมเขียน酉=ผิด** (นับยาม子時=1 ผิด · ที่ถูก子=0) · ห้ามกลับไป 14減 hour子=1 หรือ index子=0
+- **胎元 (buildConceptionPalace):** 月干進一/月支進三 · golden Aeaw丁卯/Mai癸未 · ไม่มี fork
+- **身宮 (buildBodyPalace):** 對宮(+6 六沖)ของ命宮 + 五虎遁 · Aeaw己巳/Mai己亥
+- **司令 (buildSiLing + computeSiLingDays + SILING_ZIPING):** ตาราง 子平真詮 (亥=7/5/18) · half-open `[start,end)` · 節氣 ICT→BJT (+1h · **ห้ามใช้真太陽時ฝั่ง節氣**) · getTerm ถอยถึง isJie · golden 癸/乙 + 3ดวง巳戊/午己/申戊 (ต่าง三命通會)
+- **小運 (buildMinorLuck):** **Option B (時柱=ขวบ1 เอง)** 韋千里/徐樂吾 · 陽男陰女順/陰男陽女逆 · golden Aeaw庚午順/Mai丙申逆 · ห้ามกลับไป Option A (ก้าวก่อน=辛未/乙未)
+- **ทดสอบบังคับ:** `node scripts/test-bazi-palaces.cjs` ต้อง 15/15 + `test-bazi-calc.cjs` 2/2 ก่อน/หลังแก้
+- ⚠️ **buildLifePalace กระทบ /chart §01+§24** (chart-extensions→/api/chart) — แก้แล้วต้อง verify /api/chart Aeaw 命宮=乙亥
+- ส่งเข้า packet ผ่าน field `fivePalaces` (chart-packet.ts) + param gender/siLingDays (route ส่ง · ไม่แตะ bazi-calc Layer1)
+- หมุดย้อน: `git checkout r100-sifu-5palaces-complete-20260527`
+
 
 **🎯 หมุดย้อนกลับ (ถ้า session หน้าทำพัง ให้ย้อนมาจุดนี้ทันที):**
 `git checkout r105-sifu-gender-fix` (= commit `57fdd3f`) — **เวอร์ชันดีสุด 26 พ.ค. (รวม gender fix)** · tag บน remote · (sifu-best-20260526=e5cd70c ยังก่อน gender fix · 9148e2e เก่าสุด)
