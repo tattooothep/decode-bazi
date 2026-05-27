@@ -13,10 +13,11 @@
 
 const TEN_STEMS = new Set(["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]);
 
-/** ดึงก้านวันจากบรรทัด ID ที่ AI ต้องขึ้นต้น · null ถ้าไม่มี/รูปแบบผิด */
+/** ดึงก้านวันจากบรรทัด ID ที่ AI ต้องขึ้น "ต้นสุด" · null ถ้าไม่อยู่บรรทัดแรก/รูปแบบผิด
+ * anchor ^\s* ให้ sync กับ stripIdLine — กัน AI ใส่ greeting ก่อน ID แล้ว validate ผ่านแต่ strip ไม่ออก (⟦ID⟧ หลุดจอ) */
 export function parseIdLine(text: string): string | null {
   // ⟦⟧ = U+27E6/U+27E7 · ไม่โผล่ในเนื้อคำตอบปกติ → false-match เกือบ 0
-  const m = text.match(/⟦ID⟧\s*日干\s*=\s*(.)\s*⟧/);
+  const m = text.match(/^\s*⟦ID⟧\s*日干\s*=\s*(.)\s*⟧/);
   if (!m) return null;
   const stem = m[1];
   return TEN_STEMS.has(stem) ? stem : null;
