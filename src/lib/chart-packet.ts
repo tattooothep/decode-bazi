@@ -141,6 +141,13 @@ export type ChartPacket = {
       palaceVoid: boolean;       // เรือนญาติตก 空亡
     }>;
   } | null;
+  /** 相神/成格破格救應 (子平真詮 §8.2 · ตัดสินโครงดวงสำเร็จ/พัง · derived 格局+十神 · ไม่แตะ engine)
+   * เฉพาะ 8 正格 (化/從/專旺/魁罡=null·相神ไม่ applicable) · ไม่ฟันธงดี-ร้าย ใช้คัมภีร์ xiangshen ประกอบ */
+  xiangShen?: {
+    geZh: string;          // 格 (RULES key · เช่น 正官格)
+    verdict: "成格" | "破格" | "救應" | "合格普通";
+    reason: string;        // เหตุผลตามสูตร §8.2
+  } | null;
   usefulGods: {
     /** rank1 useful element */
     yong: ElementEN[];
@@ -484,6 +491,79 @@ export function buildSixRelatives(
       };
     });
   return { gender, items };
+}
+
+/* ── 相神/成格破格 (子平真詮 §8.2 · port proto-xiangshen-v2 16/16) ── */
+function geToRuleKey(label: string): string | null {
+  const l = label.replace("雜氣", "");  // 雜氣正印格 → 正印格
+  if (l.includes("從") || l.includes("化")) return null;  // 從格/化格 → 相神ไม่ applicable (กันก่อน · 假從財格 includes 財)
+  if (l.includes("傷官")) return "傷官格";
+  if (l.includes("七殺") || l.includes("七杀")) return "七殺格";
+  if (l.includes("正官")) return "正官格";
+  if (l.includes("財")) return "財格";
+  if (l.includes("印")) return "印綬格";
+  if (l.includes("食神")) return "食神格";
+  if (l.includes("陽刃") || l.includes("羊刃")) return "陽刃格";
+  if (l.includes("比肩") || l.includes("劫財") || l.includes("建祿") || l.includes("月劫")) return "建祿月劫格";
+  return null;  // 化/從/曲直/炎上/稼穡/從革/潤下/魁罡 → 相神 ไม่ applicable
+}
+function godsInChartXS(pillars: Record<string, { stem: string; branch: string } | null>, dm: string): Set<string> {
+  const g = new Set<string>();
+  for (const pos of PILLAR_KEYS) {
+    const p = pillars[pos]; if (!p) continue;
+    if (pos !== "day") { const tg = tenGodOf(dm, p.stem); if (tg) g.add(tg); }  // ข้าม 日主 (DM ไม่ใช่ 比肩ตัวเอง)
+    const main = (HIDDEN_STEMS_MAP[p.branch] || [])[0];
+    if (main) { const h = tenGodOf(dm, main); if (h) g.add(h); }
+  }
+  return g;
+}
+export function buildXiangShen(pillars: Record<string, { stem: string; branch: string } | null>, dm: string, geJuLabel: string): NonNullable<ChartPacket["xiangShen"]> | null {
+  const ge = geToRuleKey(geJuLabel); if (!ge) return null;
+  const g = godsInChartXS(pillars, dm); const has = (x: string) => g.has(x);
+  const 印 = has("正印") || has("偏印"), 財 = has("正財") || has("偏財");
+  const 食 = has("食神"), 傷 = has("傷官"), 殺 = has("七殺"), 官 = has("正官");
+  const 比劫 = has("比肩") || has("劫財");
+  const help = ["比肩", "劫財", "正印", "偏印"].filter((x) => g.has(x)).length;
+  const drain = ["正財", "偏財", "正官", "七殺", "食神", "傷官"].filter((x) => g.has(x)).length;
+  const strong = help >= drain;
+  const R = (verdict: "成格" | "破格" | "救應" | "合格普通", reason: string) => ({ geZh: ge, verdict, reason });
+  switch (ge) {
+    case "正官格":
+      if (傷) return 印 ? R("救應", "傷官見官 → 透印制傷 (敗中有成)") : R("破格", "傷官見官 (PO_OFFICIAL_1)");
+      if (殺) return R("破格", "官煞混雜 (PO_OFFICIAL_3)");
+      return (財 || 印) ? R("成格", "官透 + 財/印 + 無傷官") : R("合格普通", "官透ไม่มี財/印ค้ำ");
+    case "財格":
+      if (比劫 && !食 && !官) return R("破格", "比劫奪財 (PO_WEALTH_1)");
+      if (比劫 && (食 || 官)) return R("救應", "比劫奪財 → 食化劫/官制劫");
+      if (殺 && !食) return R("破格", "財生殺攻身 (PO_WEALTH_3)");
+      return (官 || 食 || 印) ? R("成格", "財旺生官/食生財/財透印") : R("合格普通", "財ไม่มีค้ำ");
+    case "印綬格":
+      if (財 && !比劫) return R("破格", "財重破印 (PO_SEAL_1)");
+      if (財 && 比劫) return R("救應", "財破印 → 比劫制財");
+      return (官 || 殺 || 食 || 傷) ? R("成格", "官印雙全/印旺透食傷洩秀") : R("合格普通", "印ไม่มีค้ำ");
+    case "食神格":
+      if (has("偏印") && !財) return R("破格", "梟印奪食 (PO_FOOD_1)");
+      if (has("偏印") && 財) return R("救應", "梟印奪食 → 透財化梟");
+      return (財 || 殺) ? R("成格", "食神生財/食帶煞制殺") : R("合格普通", "食ไม่มีค้ำ");
+    case "七殺格":
+      if (!食 && !印 && !比劫 && !strong) return R("破格", "煞重身輕無制無印 (PO_KILL_3)");
+      return (食 || 印 || (strong && 財)) ? R("成格", "食制殺/印化殺/身強財滋殺") : R("合格普通", "殺ไม่มีตัวคุมชัด");
+    case "傷官格":
+      if (官) {
+        if (STEM_ELEMENT[dm] === "metal") return R("成格", "金水傷官 · 允許見官 (例外)");
+        return 財 ? R("救應", "傷官見官 → 財通關") : R("破格", "傷官見官 非金水 (PO_HURT_1)");
+      }
+      return (財 || 印 || 殺) ? R("成格", "傷官生財/傷官佩印/傷官駕殺") : R("合格普通", "傷ไม่มีค้ำ");
+    case "陽刃格":
+      if (!官 && !殺) return R("破格", "無官煞制刃 (PO_BLADE_1)");
+      if ((官 || 殺) && 傷 && !印) return R("破格", "官遭傷 (PO_BLADE_2)");
+      return R("成格", "透官煞制刃 + 財印");
+    case "建祿月劫格":
+      if (!財 && !官 && !殺) return R("破格", "純比劫無財官煞 (PO_LU_1)");
+      if (官 && 傷) return R("破格", "用官而官被傷 (PO_LU_2)");
+      return R("成格", "透官逢財印/透財逢食傷");
+    default: return null;
+  }
 }
 
 export function buildStructuredChartPacket(
@@ -883,6 +963,10 @@ export function buildStructuredChartPacket(
         dm, dmElement as ElementEN, gender, rootedness ?? null, voidSet, clashed, usefulFn, calc.mode === "3p",
       );
     })() : null,
+    xiangShen: buildXiangShen(
+      calc.pillars as Record<string, { stem: string; branch: string } | null>,
+      dm, calc.geJu?.structure || "",
+    ),
     usefulGods: {
       yong,
       xi,
@@ -1088,6 +1172,12 @@ export function renderChartPrompt(packet: ChartPacket): string {
       return `${r.relativeZh} ${r.relativeTh}: ดาวแทน=${starsTh} (ธาตุ${elementTh(r.element)}·${USEFUL_TH[r.isUseful]}) · เรือน=${r.palaceZh} · พบดาวที่=${where} · รากดาว=${rootTxt}${flags ? ` · ${flags}` : ""}`;
     });
     lines.push(`六親 ญาติ (อ่านตาม "เพศ${sr.gender === "M" ? "ชาย" : "หญิง"}" ที่บันทึกในระบบ · ⚠️ ถ้าเพศไม่ตรงจริง ดาวคู่ครอง/ลูกจะสลับ ให้ทักผู้ใช้ยืนยันเพศก่อนอ่านลึก · ดาวแทนญาติจากสิบเทพ+เรือน · อ่านสภาพ/ความสัมพันธ์ญาติตามคัมภีร์六親 · ดาวแรง/ถูกกระทบ/ตกว่าง = จุดเด่น-จุดต้องระวังเชิงสร้างสรรค์ · ห้ามฟันธงดี-ร้าย ห้ามทำนายว่าญาติเป็น/ตาย):\n  ${relLines.join("\n  ")}`);
+  }
+  /* 相神/成格破格 (27 พ.ค. · 子平真詮 §8.2 · derived 格局+十神 · ตัดสินโครงดวงสำเร็จ/พัง · ไม่ฟันธงดี-ร้าย) */
+  if (packet.xiangShen) {
+    const xs = packet.xiangShen;
+    const VTH: Record<string, string> = { 成格: "โครงดวงสำเร็จ (成格)", 破格: "โครงดวงเสีย (破格)", 救應: "เสียแล้วมีตัวกู้ (救應·敗中有成)", 合格普通: "เข้าโครงแต่ไม่เด่น (普通)" };
+    lines.push(`相神/成格破格 (โครงดวง${xs.geZh} · ${VTH[xs.verdict] || xs.verdict}): ${xs.reason} · อ่านลึกตามคัมภีร์相神/成格破格救應 (子平真詮) ประกอบ · ⚠️ "สำเร็จ/เสีย" = ระดับการใช้การของโครง ไม่ใช่ดวงดี-ร้ายเด็ดขาด · ดวงเสียมีทางแก้ (救應/วัยจร) เสมอ · ห้ามฟันธงชี้ชะตา`);
   }
   /* 通根 รากธาตุ (wrapper-7 · ฐานตัดสิน 從格/用神 · ห้ามคำนวณใหม่ · engine ให้มา) */
   if (packet.rootedness) {
