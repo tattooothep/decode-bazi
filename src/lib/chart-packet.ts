@@ -1138,6 +1138,19 @@ export function renderChartPrompt(packet: ChartPacket): string {
         .join(" · ")
     );
   }
+  /* 交運 วันสลับวัยจร大運 (27 พ.ค. · derived จาก luckTimeline · ปีรอยต่อ + เตือน交脫ไม่นิ่ง · กัน 3p เพราะไม่มี起運จริง) */
+  if (packet.meta.mode !== "3p" && packet.luckTimeline.length >= 2) {
+    const tl = packet.luckTimeline;
+    const transitions = tl.slice(1).map((t) =>
+      `อายุ${t.ageStart}(ปี${t.yearStart}) เข้า${STEM_TH[t.stem] || t.stem}/${BRANCH_TH_NAME[t.branch] || t.branch}`);
+    const curIdx = tl.findIndex((t) => t.isCurrent);
+    let nextTxt = "";
+    if (curIdx >= 0 && curIdx + 1 < tl.length) {
+      const nx = tl[curIdx + 1];
+      nextTxt = ` · ⏭ รอยต่อถัดไป: อายุ ${nx.ageStart} (ปี ${nx.yearStart}) สลับเข้า ${STEM_TH[nx.stem] || nx.stem}/${BRANCH_TH_NAME[nx.branch] || nx.branch} ธาตุ${elementTh(nx.element)} — ช่วง交脫 (รอยต่อ ~ปี ${nx.yearStart - 1}-${nx.yearStart + 1}) ดวงผันผวน/ปรับตัว ก่อนวัยจรใหม่ลงหลัก · ไม่ฟันธงดี-ร้าย`;
+    }
+    lines.push(`交運 จังหวะสลับวัยจร大運 (ปีที่เปลี่ยนวัยจร · ช่วงรอยต่อ交脫 ดวงไม่นิ่ง ต้องปรับตัว · ใช้เตือนจังหวะ ไม่ฟันธงดี-ร้าย): ${transitions.join(" · ")}${nextTxt}`);
+  }
   lines.push(`ปีจรปัจจุบัน: ${STEM_TH[packet.annualPillar.stem] || packet.annualPillar.stem}/${BRANCH_TH_NAME[packet.annualPillar.branch] || packet.annualPillar.branch}`);
 
   /* ปฏิกิริยาในดวง */
