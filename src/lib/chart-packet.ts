@@ -74,7 +74,7 @@ export type ChartPacket = {
    *   - rootMultiplier
    * (ทั้งหมดต้องรอ engine resolver + ซินแส calibrate · ดู roadmap memory) */
   meta: {
-    mode: "4p";
+    mode: "4p" | "3p";
     dayMaster: string;
     dmElement: ElementEN | "unknown";
     dmPolarity: "yang" | "yin";
@@ -435,7 +435,9 @@ export function buildStructuredChartPacket(
   const ji = norm(ext.jishen?.elements || []).filter((e) => !yong.includes(e) && !xi.includes(e));
 
   /* ─── pillars ─── */
-  const pillars: ChartPacket["pillars"] = PILLAR_KEYS.map((k) => {
+  /* 3p (ไม่ทราบเวลาเกิด): กรองเสายาม(時)ออก · ห้าม render "-" เปล่า (กัน AI เดายาม · ทริค#6) */
+  const activePillarKeys = calc.mode === "3p" ? PILLAR_KEYS.filter((k) => k !== "hour") : PILLAR_KEYS;
+  const pillars: ChartPacket["pillars"] = activePillarKeys.map((k) => {
     const p = calc.pillars[k];
     const stem = p?.stem || "-";
     const branch = p?.branch || "-";
@@ -749,7 +751,7 @@ export function buildStructuredChartPacket(
     packetVersion: "hourkey-chart-packet-lite-v1.0",
     packetLevel: "step1_lite",
     meta: {
-      mode: "4p",
+      mode: calc.mode === "3p" ? "3p" : "4p", // 27 พ.ค. · เลิก hardcode · 3 เสาติดป้ายถูก
       dayMaster: dm,
       dmElement,
       dmPolarity,
@@ -770,7 +772,7 @@ export function buildStructuredChartPacket(
     trueSolarTime: calc.tst
       ? { appliedTimeStr: calc.tst.appliedTimeStr, totalShiftMin: calc.tst.totalShiftMin, dayShift: calc.tst.appliedDayShift }
       : null,
-    startLuckAge: ext.luck_pillars?.[0]?.age_start ?? null,
+    startLuckAge: calc.mode === "3p" ? null : (ext.luck_pillars?.[0]?.age_start ?? null), // 3p: computeStartAge ปลอม → ตัด 起運 (กันมโนยาม)
     rootedness: rootedness ?? null,
     fivePalaces: (() => {
       const tai = buildConceptionPalace(calc.pillars);
@@ -861,6 +863,9 @@ export function renderChartPrompt(packet: ChartPacket): string {
     return `${PILLAR_EN_TH[p.key]} ${PILLAR_ZH[p.key]}: ฟ้า=${STEM_TH[p.stem] || p.stem}/${p.tenGod}; ดิน=${BRANCH_TH_NAME[p.branch] || p.branch}; ธาตุซ่อน=${hidden}; วัฏจักร=ตัวตน:${p.qiPhase.dm || "-"} เสา:${p.qiPhase.pillar || "-"} ซ่อน:${p.qiPhase.hidden || "-"}; เรือน=${p.palaceZh}; 易卦=${p.hexZh || "-"}; 神煞ดาวพิเศษ(ดี/ร้าย)=${stars}; นับเสียงประกอบ=${p.nayinZh}`;
   });
   lines.push(`CHART PACKET รายเสา:\n${pillarBlock.join("\n")}`);
+  if (packet.meta.mode === "3p") {
+    lines.push("⚠️ ดวง 3 เสา (ไม่ทราบเวลาเกิด · ไม่มีเสายาม時) — อ่านได้ครบ年月日 แต่ห้ามเดา/อนุมาน: เสายาม · สิบเทพยาม · 命宮/身宮/小運/起運 · ดวงคู่จากยาม");
+  }
 
   /* ลำดับการอ่าน */
   if (packet.meta.readingOrder) lines.push(packet.meta.readingOrder);

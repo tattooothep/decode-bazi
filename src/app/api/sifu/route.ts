@@ -315,20 +315,10 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
       ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: true })
       : await calcBazi({ date, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: false });
     const g = loadPromptKV("prompts/sifu-ctx-guards.md"); // คำสั่ง/ล็อก แก้ผ่าน admin
-    if (calc.mode === "3p") {
-      return [
-        `ชื่อ: ${row.name || "—"} · เพศ ${gender}`,
-        `เกิด: ${date} · ไม่ทราบเวลาเกิด · ลองจิจูด ${lng}`,
-        `โหมดคำนวณ: 3 เสา (年/月/日) · ${g.NO_HOUR_PILLAR}`,
-        `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่คำนวณ)`,
-        `FACT LOCK: Day Master = ${calc.dayMaster} · element = ${STEM_ELEMENT_MAP[calc.dayMaster] || "unknown"} · ${g.DM_FACT_LOCK}`,
-        `วันเจ้า: ${calc.dayMaster} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
-        `用神: ${calc.yongshen.slice(0, 3).map(y => `${y.stem}(${y.element})`).join(" · ")}`,
-        `格局: ${calc.geJu.structure || "ปกติ"}`,
-        g.LIMIT_3P_QA,
-      ].join("\n");
-    }
-    const startAge = await computeStartAge(date, time, gender, lng);
+    const is3p = calc.mode === "3p";
+    /* 27 พ.ค. · 3 เสาไหลเข้า packet เต็ม (ได้ปฏิกิริยา/ดาว/通根/透干/空亡 ของ 年月日 ลึกเท่า 4 เสา)
+     * กันเดายาม: ไม่เรียก computeStartAge (time ปลอม → 起運ปลอม) ใช้ 10 · packet ตัด 起運/เสายาม/命宮/身宮/小運 เองตาม mode 3p */
+    const startAge = is3p ? 10 : await computeStartAge(date, time, gender, lng);
     const ext = buildChartExtensions(
       calc.pillars,
       new Date(),
@@ -350,7 +340,9 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     const lines = [
       `ชื่อ: ${row.name || "—"} · เพศ ${gender} · อายุปัจจุบันประมาณ ${ageNow}`,
       `เกิด: ${date} ${time} · ลองจิจูด ${lng}`,
-      `4 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時${calc.pillarsZh.hour}`,
+      is3p
+        ? `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่ทราบเวลาเกิด) · ${g.NO_HOUR_PILLAR}`
+        : `4 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時${calc.pillarsZh.hour}`,
       `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement} · ${g.DM_FACT_LOCK}`,
       g.DM_THAI_LOCK.replace("{{DM_ELEMENT}}", () => dmElementTh).replace("{{DM_POLARITY}}", () => dmPolarityTh),
       `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
@@ -369,6 +361,7 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
     }
+    if (is3p) lines.push(g.LIMIT_3P_QA); // กันเหนียว: ห้ามอ่านลูก/บั้นปลาย/命宮ที่พึ่งยาม
     return lines.join("\n");
   } catch (e) {
     console.error("[sifu] buildBaziContext failed:", e);

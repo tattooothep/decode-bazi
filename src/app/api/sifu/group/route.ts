@@ -313,28 +313,9 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
       year: calc.pillars.year ? { stem: calc.pillars.year.stem, branch: calc.pillars.year.branch } : undefined,
       day: calc.pillars.day ? { stem: calc.pillars.day.stem, branch: calc.pillars.day.branch } : undefined,
     };
-    const dmElSyn = STEM_ELEMENT_MAP[calc.dayMaster] || "unknown";
-    if (calc.mode === "3p") {
-      return {
-        name: row.name || "—",
-        mode: "3p",
-        dmEl: dmElSyn,
-        yongEls,
-        pillars: synPillars,
-        text: [
-          `ชื่อ: ${row.name || "—"} · เพศ ${gender}`,
-          `เกิด: ${date} · ไม่ทราบเวลาเกิด · ลองจิจูด ${lng}`,
-          `โหมดคำนวณ: 3 เสา (年/月/日) · ${g.NO_HOUR_PILLAR}`,
-          `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่คำนวณ)`,
-          `FACT LOCK: Day Master = ${calc.dayMaster} · element = ${dmElSyn} · ${g.DM_FACT_LOCK}`,
-          `วันเจ้า: ${calc.dayMaster} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
-          `用神: ${calc.yongshen.slice(0, 3).map(y => `${y.stem}(${y.element})`).join(" · ")}`,
-          `格局: ${calc.geJu.structure || "ปกติ"}`,
-          g.LIMIT_3P_QA,
-        ].join("\n"),
-      };
-    }
-    const startAge = await computeStartAge(date, time, gender, lng);
+    const is3p = calc.mode === "3p";
+    /* 27 พ.ค. · 3 เสาไหลเข้า packet เต็ม (ลึกเท่า 4 เสา · ปฏิกิริยา/ดาว/通根 ของ年月日) · กันเดายาม: ไม่เรียก computeStartAge (time ปลอม → 起運ปลอม) · packet ตัด起運/เสายาม/命宮/小運 เอง */
+    const startAge = is3p ? 10 : await computeStartAge(date, time, gender, lng);
     const ext = buildChartExtensions(
       calc.pillars,
       new Date(),
@@ -356,7 +337,9 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const lines = [
       `ชื่อ: ${row.name || "—"} · เพศ ${gender} · อายุปัจจุบันประมาณ ${ageNow}`,
       `เกิด: ${date} ${time} · ลองจิจูด ${lng}`,
-      `4 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時${calc.pillarsZh.hour}`,
+      is3p
+        ? `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่ทราบเวลาเกิด) · ${g.NO_HOUR_PILLAR}`
+        : `4 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時${calc.pillarsZh.hour}`,
       `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement} · ${g.DM_FACT_LOCK}`,
       g.DM_THAI_LOCK.replace("{{DM_ELEMENT}}", () => dmElementTh).replace("{{DM_POLARITY}}", () => dmPolarityTh),
       `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
@@ -373,9 +356,10 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
     }
+    if (is3p) lines.push(g.LIMIT_3P_QA);
     return {
       name: row.name || "—",
-      mode: "4p",
+      mode: is3p ? "3p" : "4p",
       dmEl: dmElement,
       yongEls,
       pillars: synPillars,
