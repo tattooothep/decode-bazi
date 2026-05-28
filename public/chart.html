@@ -1197,7 +1197,11 @@
       .hk-overview-content .hk-ov-hist-item summary { cursor:pointer; list-style:none; display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; }
       .hk-overview-content .hk-ov-hist-item summary::-webkit-details-marker { display:none; }
       .hk-overview-content .hk-ov-hist-q { color:var(--fg); font-size:13px; line-height:1.5; }
+      .hk-overview-content .hk-ov-hist-meta { display:flex; align-items:center; gap:8px; }
       .hk-overview-content .hk-ov-hist-time { color:var(--fg-soft); font-size:11px; white-space:nowrap; }
+      .hk-overview-content .hk-ov-hist-del { padding:3px 8px; border:1px solid rgba(200,164,77,.28); border-radius:999px; background:transparent; color:var(--fg-soft); font-family:var(--thai); font-size:11px; cursor:pointer; }
+      .hk-overview-content .hk-ov-hist-del:hover { color:#ffb3a8; border-color:rgba(255,120,100,.62); }
+      .hk-overview-content .hk-ov-hist-del:disabled { opacity:.45; cursor:not-allowed; }
       .hk-overview-content .hk-ov-hist-answer { margin-top:10px; padding:12px 14px; border-radius:10px; background:rgba(200,164,77,.045); color:var(--fg); font-size:13px; line-height:1.75; }
       .hk-overview-content .hk-ov-hist-empty { color:var(--fg-soft); font-size:12px; padding:6px 0 2px; }
       .hk-overview-content #hk-ov-history-note { margin-top:8px; color:var(--fg-soft); font-size:11px; line-height:1.5; }
@@ -2810,6 +2814,12 @@ window.addEventListener('resize', function(){
           arr.unshift({ id:'local-'+Date.now(), question, answer, created_at:new Date().toISOString() });
           try { localStorage.setItem(ovHistoryKey, JSON.stringify(arr.slice(0, 20))); } catch(_) {}
         }
+        function removeLocalSifuHistory(id){
+          if (!ovHistoryKey || !id) return [];
+          const arr = loadLocalSifuHistory().filter(it => String(it.id) !== String(id));
+          try { localStorage.setItem(ovHistoryKey, JSON.stringify(arr.slice(0, 20))); } catch(_) {}
+          return arr;
+        }
         function renderSifuHistory(items, mode){
           if (!historyBox || !historyList || !historyCount) return;
           const arr = Array.isArray(items) ? items : [];
@@ -2822,7 +2832,10 @@ window.addEventListener('resize', function(){
               <details class="hk-ov-hist-item" ${idx === 0 ? 'open' : ''}>
                 <summary>
                   <span class="hk-ov-hist-q">${escHist(it.question || '')}</span>
-                  <span class="hk-ov-hist-time">${escHist(histDate(it.created_at || it.ts || Date.now()))}</span>
+                  <span class="hk-ov-hist-meta">
+                    <span class="hk-ov-hist-time">${escHist(histDate(it.created_at || it.ts || Date.now()))}</span>
+                    <button type="button" class="hk-ov-hist-del" data-mode="${escHist(mode || 'server')}" data-id="${escHist(it.id || '')}" aria-label="ลบประวัติคำถามนี้">ลบ</button>
+                  </span>
                 </summary>
                 <div class="hk-ov-hist-answer">${md2html(it.answer || '')}</div>
               </details>
@@ -2833,6 +2846,40 @@ window.addEventListener('resize', function(){
               ? 'โหมดชั่วคราวบนเครื่องนี้ · เข้าสู่ระบบเพื่อเก็บประวัติถาวรข้ามอุปกรณ์'
               : 'บันทึกถาวรในบัญชีของท่าน · ผูกกับดวงนี้';
           }
+        }
+        if (historyList && !historyList.dataset.hkDeleteWired) {
+          historyList.dataset.hkDeleteWired = '1';
+          historyList.addEventListener('click', async (ev) => {
+            const btn = ev.target && ev.target.closest ? ev.target.closest('.hk-ov-hist-del') : null;
+            if (!btn) return;
+            ev.preventDefault();
+            ev.stopPropagation();
+            const id = btn.getAttribute('data-id') || '';
+            const mode = btn.getAttribute('data-mode') || 'server';
+            if (!id) return;
+            if (!confirm('ลบประวัติคำถามนี้?')) return;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = 'ลบ...';
+            try {
+              if (mode === 'local') {
+                renderSifuHistory(removeLocalSifuHistory(id), 'local');
+                return;
+              }
+              const r = await fetch('/api/chart/sifu-history?id=' + encodeURIComponent(id), {
+                method:'DELETE',
+                credentials:'include',
+                cache:'no-store'
+              });
+              if (!r.ok) throw new Error('delete ' + r.status);
+              const hash = await pillarsHashClient(d.pillars);
+              await refreshSifuHistory(hash);
+            } catch(e) {
+              btn.disabled = false;
+              btn.textContent = oldText || 'ลบ';
+              if (historyNote) historyNote.textContent = 'ลบไม่สำเร็จ · กรุณาลองใหม่';
+            }
+          });
         }
         async function refreshSifuHistory(hash){
           ovHistoryKey = 'hk_chart_sifu_history_' + (profileIdForHistory || hash || 'anon');
