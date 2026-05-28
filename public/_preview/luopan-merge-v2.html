@@ -238,7 +238,7 @@
     <input type="range" id="imgOpa" min="0" max="100" value="90"/>
 
     <label><span data-i18n="ctrl.dialOpa">ความเข้มวง</span> <span class="val" id="vDialOpa">88%</span></label>
-    <input type="range" id="dialOpa" min="10" max="100" value="88"/>
+    <input type="range" id="dialOpa" min="0" max="100" value="88"/>
 
     <label><span data-i18n="ctrl.center">ย้ายศูนย์กลางหล่อแก</span> <span class="val" id="vCenter">0,0</span></label>
     <div class="nudge-pad">
@@ -1474,18 +1474,14 @@ document.querySelectorAll('[data-qm-school]').forEach(b=>{
 const lp = document.getElementById('lp');
 /* cursorNeedle + dial ถูกสร้างใน rebuildLuopan() — query dynamic ทุกครั้ง */
 function applyDialOpacity(pct){
-  const v = Math.max(10, Math.min(100, Number(pct) || 88));
-  // สำคัญ: ปรับเฉพาะชั้นวง/overlay ใน lpRotate แต่ "ไม่แตะ pinLayer"
-  const lr = document.getElementById('lpRotate');
-  if (lr) {
-    Array.from(lr.children).forEach((el) => {
-      if (el && el.id === 'pinLayer') return;
-      el.style.opacity = String(v / 100);
-    });
-  }
-  // กันค่าค้างเก่า: อย่าให้ opacity ระดับ root SVG หรือ lpRotate มาทับ pin
+  const v = Math.max(0, Math.min(100, Number(pct) || 0));
+  // ปรับทั้งวง + เข็ม cursor/needle/pool ให้จางพร้อมกัน แต่ "ไม่แตะ pinLayer"
+  Array.from(lp.children).forEach((el) => {
+    if (!el || el.id === 'pinLayer') return;
+    el.style.opacity = String(v / 100);
+  });
+  // กันค่า legacy ค้าง
   lp.style.opacity = '1';
-  if (lr) lr.style.opacity = '1';
   document.getElementById('vDialOpa').textContent = v + '%';
 }
 document.getElementById('dialOpa').addEventListener('input', e => {
