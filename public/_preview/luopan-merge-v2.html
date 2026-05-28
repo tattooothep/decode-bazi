@@ -229,7 +229,7 @@
       <button class="btn" data-pin="desk" title="โต๊ะทำงาน">💼 โต๊ะ</button>
       <button class="btn" id="pinClear" title="ลบทั้งหมด">ล้าง</button>
     </div>
-    <div class="help-line">เลือกชนิด → คลิกบนแปลนเพื่อปัก · คลิก pin เพื่อลบ · pin ที่อยู่ในวง城門 = activated</div>
+    <div class="help-line">เลือกชนิด → คลิกบนแปลนเพื่อปัก · ลาก pin เพื่อย้ายตำแหน่ง · ดับเบิลคลิกเพื่อลบ · pin ที่อยู่ในวง城門 = activated</div>
 
     <label><span data-i18n="ctrl.imgRot">หมุนรูปแปลน</span> <span class="val" id="vImgRot">0°</span></label>
     <input type="range" id="imgRot" min="0" max="359" value="0"/>
@@ -1569,6 +1569,7 @@ document.getElementById('cursorRot').addEventListener('input', e => setCursor(e.
 
 /* คลิก/ลากบน SVG ให้เข็มหมุนไปที่ตำแหน่งที่แตะ */
 let dragging = false;
+let pinDraggingId = null;
 function svgPointToDeg(ev){
   const r = lp.getBoundingClientRect();
   const x = ev.clientX - r.left - r.width/2;
@@ -1577,14 +1578,24 @@ function svgPointToDeg(ev){
   return ((a % 360) + 360) % 360;
 }
 lp.addEventListener('mousedown', e => {
-  if(pinMode){ addPin(e); return; }
+  if(pinMode){ e.preventDefault(); e.stopPropagation(); addPin(e); return; }
+  if(pinDraggingId) return;
   dragging = true; setCursor(svgPointToDeg(e)); document.getElementById('cursorRot').value = cursorDeg;
 });
-window.addEventListener('mousemove', e => { if(dragging){ setCursor(svgPointToDeg(e)); document.getElementById('cursorRot').value = cursorDeg; }});
-window.addEventListener('mouseup', () => dragging = false);
-lp.addEventListener('touchstart', e => { dragging = true; const t=e.touches[0]; setCursor(svgPointToDeg(t)); document.getElementById('cursorRot').value = cursorDeg; e.preventDefault(); }, {passive:false});
-window.addEventListener('touchmove', e => { if(dragging && e.touches[0]){ setCursor(svgPointToDeg(e.touches[0])); document.getElementById('cursorRot').value = cursorDeg; }}, {passive:true});
-window.addEventListener('touchend', () => dragging = false);
+window.addEventListener('mousemove', e => {
+  if(pinDraggingId){ dragPinToPointer(e, pinDraggingId); return; }
+  if(dragging){ setCursor(svgPointToDeg(e)); document.getElementById('cursorRot').value = cursorDeg; }
+});
+window.addEventListener('mouseup', () => { dragging = false; pinDraggingId = null; savePins(); });
+lp.addEventListener('touchstart', e => {
+  if(pinMode){ e.preventDefault(); return; }
+  dragging = true; const t=e.touches[0]; setCursor(svgPointToDeg(t)); document.getElementById('cursorRot').value = cursorDeg; e.preventDefault();
+}, {passive:false});
+window.addEventListener('touchmove', e => {
+  if(pinDraggingId && e.touches[0]){ dragPinToPointer(e.touches[0], pinDraggingId); return; }
+  if(dragging && e.touches[0]){ setCursor(svgPointToDeg(e.touches[0])); document.getElementById('cursorRot').value = cursorDeg; }
+}, {passive:true});
+window.addEventListener('touchend', () => { dragging = false; pinDraggingId = null; savePins(); });
 
 /* ====== Pin Tool (door/bed/stove/water/desk) ====== */
 let pinMode = null; /* 'door' | 'bed' | 'stove' | 'water' | 'desk' | null */
@@ -1623,6 +1634,15 @@ function addPin(ev){
   updateInspector(); /* refresh activate status */
   setPinMode(null); /* ปักทีละจุด · ปิดโหมดอัตโนมัติ กันค้างทำงานตลอด */
 }
+function dragPinToPointer(ev, id){
+  const p = pins.find(x => String(x.id) === String(id));
+  if(!p) return;
+  const {deg, dist} = svgPointToPolar(ev);
+  p.dist = Math.max(0, Math.min(380, dist));
+  p.deg = ((deg + ringRotation()) % 360 + 360) % 360;
+  renderPins();
+  updateInspector();
+}
 function removePin(id){
   pins = pins.filter(p => p.id !== id);
   savePins();
@@ -1652,7 +1672,9 @@ function renderPins(){
   if(!g) return;
   g.innerHTML = '';
   pins.forEach(p => {
-    const rad = (p.deg - 90) * Math.PI / 180;
+    // เก็บ p.deg เป็น "องศาบนวงจริง" แต่ตอนวาดต้องหัก ringRotation กลับเป็นพิกัดจอ
+    const screenDeg = ((p.deg - ringRotation()) % 360 + 360) % 360;
+    const rad = (screenDeg - 90) * Math.PI / 180;
     const x = 380 + p.dist * Math.cos(rad);
     const y = 380 + p.dist * Math.sin(rad);
     const isAct = pinIsActivated(p);
@@ -1671,7 +1693,17 @@ function renderPins(){
     txt.setAttribute('font-size','15');
     txt.textContent = PIN_ICONS[p.type] || '·';
     grp.appendChild(txt);
-    grp.addEventListener('click', e => { e.stopPropagation(); removePin(p.id); });
+    grp.addEventListener('mousedown', e => {
+      e.preventDefault(); e.stopPropagation();
+      pinDraggingId = String(p.id);
+      dragging = false; // กัน cursor mode แทรก
+    });
+    grp.addEventListener('touchstart', e => {
+      e.preventDefault(); e.stopPropagation();
+      pinDraggingId = String(p.id);
+      dragging = false;
+    }, { passive:false });
+    grp.addEventListener('dblclick', e => { e.stopPropagation(); removePin(p.id); }); // ลบด้วยดับเบิลคลิกแทนคลิกเดียว
     g.appendChild(grp);
   });
 }
