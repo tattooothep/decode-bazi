@@ -230,6 +230,7 @@
       <button class="btn" id="fitApply">🎯 ใช้ CGM เป็นศูนย์</button>
     </div>
     <div class="help-line">เปิดโหมดคลุมบ้าน → คลิกมุมบ้าน 4 จุดขึ้นไป · ลากจุดเพื่อปรับละเอียด · ระบบคำนวณ CGM และย้ายศูนย์หล่อแกอัตโนมัติ</div>
+    <div class="help-line" id="fitStatus">คลุมบ้าน: ปิดอยู่</div>
 
     <label style="margin-top:10px"><span data-i18n="ctrl.pinTool">ปักจุดบนแปลน · Pin Tool</span></label>
     <div class="pin-toolbar">
@@ -1355,6 +1356,18 @@ function syncDialCenterToCGM(){
   dialOffsetY = c.y - 380;
   applyDialOffset();
 }
+function updateFitStatus(){
+  const el = document.getElementById('fitStatus');
+  if(!el) return;
+  const c = polygonCentroid(housePoly);
+  if(houseFitMode !== 'house'){
+    el.textContent = `คลุมบ้าน: ปิดอยู่ · มีจุด ${housePoly.length}`;
+    return;
+  }
+  if(!housePoly.length){ el.textContent = 'คลุมบ้าน: เปิดอยู่ · คลิกมุมบ้านเพื่อเริ่ม'; return; }
+  if(c) el.textContent = `คลุมบ้าน: ${housePoly.length} จุด · CGM (${c.x.toFixed(1)}, ${c.y.toFixed(1)})`;
+  else el.textContent = `คลุมบ้าน: ${housePoly.length} จุด · รออย่างน้อย 3 จุด`;
+}
 function drawPlan(){
   /* canvas 760x760 · center 380,380 · ขนาดรูปครอบ ~680 px */
   planCtx.clearRect(0,0,planCanvas.width,planCanvas.height);
@@ -1379,7 +1392,7 @@ function drawPlan(){
     planCtx.fillText('upload floor plan →', 380, 380);
     planCtx.restore();
   }
-  if(housePoly.length){
+  if(houseFitMode === 'house' && housePoly.length){
     planCtx.save();
     planCtx.strokeStyle = 'rgba(255,214,122,.9)';
     planCtx.fillStyle = 'rgba(255,214,122,.14)';
@@ -1399,6 +1412,9 @@ function drawPlan(){
       planCtx.strokeStyle = 'rgba(23,18,8,.92)';
       planCtx.lineWidth = 1.2;
       planCtx.stroke();
+      planCtx.fillStyle = 'rgba(255,240,180,.98)';
+      planCtx.font = '700 11px monospace';
+      planCtx.fillText(String(i+1), p.x + 10, p.y - 10);
     }
     const c = polygonCentroid(housePoly);
     if(c){
@@ -1411,10 +1427,11 @@ function drawPlan(){
       planCtx.stroke();
       planCtx.fillStyle = 'rgba(123,207,123,.95)';
       planCtx.font = '700 11px monospace';
-      planCtx.fillText('CGM', c.x+10, c.y-10);
+      planCtx.fillText(`CGM ${c.x.toFixed(0)},${c.y.toFixed(0)}`, c.x+10, c.y-10);
     }
     planCtx.restore();
   }
+  updateFitStatus();
 }
 function loadFile(f){
   if(!f) return;
@@ -1814,6 +1831,7 @@ function renderPins(){
   const g = document.getElementById('pinLayer');
   if(!g) return;
   g.innerHTML = '';
+  if(houseFitMode === 'house') return; // โหมดคลุมบ้าน: ซ่อน pin ลดการทับ layer
   pins.forEach(p => {
     // ข้อมูลใหม่ใช้ x/y ตรง (ลากอิสระ) · ข้อมูลเก่า fallback จาก deg/dist
     let x = p.x, y = p.y;
@@ -3149,7 +3167,11 @@ function setHouseFitMode(mode){
   houseFitMode = mode;
   const on = mode === 'house';
   document.getElementById('fitModeHouse')?.classList.toggle('active', on);
+  if(on) setPinMode(null); // กันเครื่องมือชนกัน
   lp.classList.toggle('pin-mode', on); // ใช้ cursor cell เดิม
+  renderPins(); // ซ่อน/แสดง pin ตามโหมด
+  updateFitStatus();
+  drawPlan();
 }
 document.getElementById('fitModeHouse')?.addEventListener('click', () => {
   setHouseFitMode(houseFitMode === 'house' ? 'off' : 'house');
