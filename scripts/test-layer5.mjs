@@ -53,5 +53,26 @@ for (const [d, xs, luck, ann, root, is3p, exp, annHas] of INT) {
   if (ok && r && r.ruleId && r.verdict!=='UNMAPPED') {} // rule-id present
   ok ? pass++ : fail++;
 }
+// ชั้น C: regression ดวงจริง (end-to-end behavior · กันหลุดรอบหน้า · พิสูจน์แล้วใน prompt dump 28 พ.ค.)
+//   Aeaw 假從財格 → 從格 gate → xiangShen null → chengBaiNow null (ไม่มี 行運成敗 ใน prompt)
+//   Mai 印綬格(財破印·比劫制財) → xiangShen 救應/財為忌 → chengBaiNow มี (行運成敗 + ZP-1a-10b ใน prompt)
+console.log('\n=== ชั้น C: regression ดวงจริง (從格ไม่มี · 正格มี) ===');
+{
+  const aeawXs = buildXiangShen(P('甲子','丙子','己亥','庚午'), '己', '假從財格');
+  const aeawCB = buildChengBaiNow(aeawXs, '己', { stem:'庚', branch:'午' }, null, 'no_root', false);
+  const ok1 = aeawXs === null && aeawCB === null;
+  console.log(`${ok1?'✓':'✗'} Aeaw 假從財格 → xiangShen=${aeawXs} · chengBaiNow=${aeawCB} (expect null·null = 從格ไม่มี timing)`);
+  ok1 ? pass++ : fail++;
+
+  const maiXs = buildXiangShen(P('丙寅','壬辰','丙戌','丙申'), '丙', '印綬格');
+  const ok2 = maiXs !== null && maiXs.verdict === '救應' && maiXs.subLabel === '財為忌';
+  console.log(`${ok2?'✓':'✗'} Mai 印綬格 → verdict=${maiXs?.verdict}/subLabel=${maiXs?.subLabel} (expect 救應/財為忌)`);
+  ok2 ? pass++ : fail++;
+  // chengBaiNow ของ Mai: feed currentLuck ที่มี 比劫+偏財 (reproduce prompt dump: วัยจร平·ปีจร比肩หนุน)
+  const maiCB = buildChengBaiNow(maiXs, '丙', { stem:'丙', branch:'申' }, { stem:'丙', branch:'寅' }, 'rooted', false);
+  const ok3 = maiCB !== null && maiCB.ruleId.startsWith('ZP-1a-10b') && maiCB.verdict !== 'UNMAPPED';
+  console.log(`${ok3?'✓':'✗'} Mai chengBaiNow → ${maiCB?.verdict} [${maiCB?.ruleId?.slice(0,12)}] (expect มีค่า + ZP-1a-10b · ไม่ UNMAPPED)`);
+  ok3 ? pass++ : fail++;
+}
 console.log(`\n=== ${pass}/${pass+fail} ${fail?'❌ FAIL':'✅ PASS'} ===`);
 process.exit(fail?1:0);
