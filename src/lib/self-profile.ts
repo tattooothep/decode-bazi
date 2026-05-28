@@ -28,6 +28,7 @@ export type UpsertSelfFields = {
   birthLng?: number | null;
   locationName?: string | null;
   gender?: "M" | "F" | null;
+  dayBoundary?: "23:00" | "00:00";
   /* 19 พ.ค. Option α · birthTimeKnown=false → 3p mode · hour pillar = null */
   birthTimeKnown?: boolean;
 };
@@ -48,6 +49,7 @@ export async function upsertSelfProfile(
   // Codex direction: shared Layer 0/1 source · no inline tyme4ts.
   // 19 พ.ค. Option α · branch by birthTimeKnown · 3p ส่ง birthTimeKnown:false · 4p เดิม
   const birthTimeKnown = fields.birthTimeKnown !== false;        /* default true · backward compat */
+  const dayBoundary = fields.dayBoundary === "00:00" ? "00:00" : "23:00";
   const calc = birthTimeKnown
     ? await calcBazi({
         date: fields.birthDate,
@@ -55,6 +57,7 @@ export async function upsertSelfProfile(
         longitude: fields.birthLng ?? 100.5018,
         gmtOffsetHours: 7,
         gender: fields.gender ?? undefined,
+        dayBoundary,
         birthTimeKnown: true,
       })
     : await calcBazi({
@@ -69,7 +72,7 @@ export async function upsertSelfProfile(
   const dbTime = birthTimeKnown ? fields.birthTime : "12:00";
   const isoDt = `${fields.birthDate}T${dbTime}:00+07:00`;
   const yongshenJson = JSON.stringify({ top3: calc.yongshen, climate: calc.climate });
-  const baziJson = JSON.stringify({ pillars: calc.pillars, ge_ju: calc.geJu.structure });
+  const baziJson = JSON.stringify({ pillars: calc.pillars, ge_ju: calc.geJu.structure, day_boundary: dayBoundary });
 
   const client = await pool.connect();
   try {
@@ -98,9 +101,9 @@ export async function upsertSelfProfile(
            name=$1, nickname=$2,
            birth_datetime=$3, birth_lat=$4, birth_lng=$5, birth_location_name=$6, gender=$7,
            day_master=$8, day_master_strength=$9, yongshen=$10, bazi_pillars=$11,
-           birth_time_known=$12,
+           birth_time_known=$12, day_boundary=$13,
            updated_at=now()
-         WHERE id=$13`,
+         WHERE id=$14`,
         [
           fields.name,
           fields.nickname ?? null,
@@ -114,6 +117,7 @@ export async function upsertSelfProfile(
           yongshenJson,
           baziJson,
           birthTimeKnown,
+          dayBoundary,
           existing.id,
         ]
       );
@@ -127,8 +131,8 @@ export async function upsertSelfProfile(
          id, org_id, created_by_user_id, name, nickname,
          birth_datetime, birth_lat, birth_lng, birth_location_name, gender,
          relationship_type, day_master, day_master_strength, yongshen, bazi_pillars,
-         birth_source, birth_time_known, is_archived, created_at, updated_at
-       ) VALUES ($1,$2,$3,$4,$5, $6,$7,$8,$9,$10, NULL, $11,$12,$13,$14, 'self_reported', $15, false, now(), now())`,
+         birth_source, birth_time_known, day_boundary, is_archived, created_at, updated_at
+       ) VALUES ($1,$2,$3,$4,$5, $6,$7,$8,$9,$10, NULL, $11,$12,$13,$14, 'self_reported', $15, $16, false, now(), now())`,
       [
         id,
         orgId,
@@ -145,6 +149,7 @@ export async function upsertSelfProfile(
         yongshenJson,
         baziJson,
         birthTimeKnown,
+        dayBoundary,
       ]
     );
     await client.query("COMMIT");

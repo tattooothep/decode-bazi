@@ -810,7 +810,8 @@
       gender: normGender(p.gender),
       place: p.birth_location_name || p.place || p.location || 'Bangkok',
       longitude: finite(p.birth_lng != null ? p.birth_lng : p.longitude, 100.5018),
-      latitude: finite(p.birth_lat != null ? p.birth_lat : p.latitude, 13.7563)
+      latitude: finite(p.birth_lat != null ? p.birth_lat : p.latitude, 13.7563),
+      dayBoundary: (p.dayBoundary === '00:00' || p.day_boundary === '00:00') ? '00:00' : '23:00'
     };
   }
   /* sync localStorage · เฉพาะ self-profile · ห้ามเรียกจาก view-as (Codex mitigation #5/#7) */
@@ -820,13 +821,15 @@
         name: s.name, date: s.date, time: s.time, place: s.place,
         longitude: s.longitude, lng: s.longitude, latitude: s.latitude,
         gender: s.gender, profileId: s.profileId,
-        birthTimeKnown: s.birthTimeKnown !== false
+        birthTimeKnown: s.birthTimeKnown !== false,
+        dayBoundary: s.dayBoundary === '00:00' ? '00:00' : '23:00'
       }));
+      localStorage.setItem('hk_day_boundary', s.dayBoundary === '00:00' ? '00:00' : '23:00');
       if (s.profileId) localStorage.setItem('hk_profile_id', s.profileId);
       if (s.name) localStorage.setItem('hk_profile_name', s.name);
     } catch(_) {}
   }
-  /* fetch /api/profile · prefer hk_profile_id (Codex mitigation #1)
+  /* fetch /api/profile · prefer backend active_profile/is_self (source-of-truth)
    * 📜 15 พ.ค. · retry 1 ครั้งถ้า network/401 (เผื่อ mobile session ช้า) */
   async function fetchActiveProfile(retryCount){
     retryCount = retryCount || 0;
@@ -843,12 +846,14 @@
       var j = await r.json();
       var arr = (j.profiles || []).filter(function(p){ return !p.is_archived; });
       if (!arr.length) return { auth: true, profile: null };
-      var preferId = null;
-      try { preferId = localStorage.getItem('hk_profile_id'); } catch(_){}
       var pick = (j.active_profile && j.active_profile.id && arr.find(function(p){ return p.id === j.active_profile.id; }))
-              || (preferId && arr.find(function(p){ return p.id === preferId; }))
               || arr.find(function(p){ return !!p.is_self; })
               || arr[0];
+      // hygiene: ล้าง hk_profile_id ที่ค้างแต่ไม่อยู่ในบัญชี/องค์กรปัจจุบัน
+      try {
+        var stale = localStorage.getItem('hk_profile_id');
+        if (stale && !arr.find(function(p){ return p.id === stale; })) localStorage.removeItem('hk_profile_id');
+      } catch(_){}
       return { auth: true, profile: pick };
     } catch(_) {
       if (retryCount === 0) {
@@ -864,10 +869,11 @@
 	    /* 1. view-as · strict ?as= match เท่านั้น · ห้าม /api/profile · ห้าม localStorage write */
 	    if (params.get('as')) {
 	      var asId = String(params.get('as'));
+        var asIdClean = asId.replace(/^p_/, '');
 	      /* Phase 19-C+ / 3p hotfix · DB-as-truth first.
 	       * ห้ามให้ sessionStorage เก่าที่ไม่มี birthTimeKnown ทับ DB=false แล้วสร้าง 12:00 ปลอม */
 	      try {
-	        var snapR = await fetch('/api/profile/' + encodeURIComponent(asId) + '/snapshot');
+	        var snapR = await fetch('/api/profile/' + encodeURIComponent(asIdClean) + '/snapshot');
 	        if (snapR.ok) {
 	          var snapJ = await snapR.json();
 	          if (snapJ && snapJ.snapshot && (snapJ.snapshot.birthDate || snapJ.snapshot.date)) {
@@ -877,13 +883,13 @@
 	        }
 	      } catch(_){}
 	      var va = parse(sessionStorage.getItem('hk_view_as'));
-	      if (va && String(va.id || '') === asId && (va.birthDate || va.date) && (va.birthTimeKnown != null || va.birth_time_known != null)) {
+	      if (va && String(va.id || '').replace(/^p_/, '') === asIdClean && (va.birthDate || va.date) && (va.birthTimeKnown != null || va.birth_time_known != null)) {
 	        return norm(va, 'view-as');
 	      }
 	      /* 18 พ.ค. fix · mobile new tab fallback · localStorage 'hk_view_as_xfer' (TTL 60s) */
 	      try {
 	        var xfer = parse(localStorage.getItem('hk_view_as_xfer'));
-	        if (xfer && String(xfer.id || '') === asId && (xfer.birthDate || xfer.date)) {
+	        if (xfer && String(xfer.id || '').replace(/^p_/, '') === asIdClean && (xfer.birthDate || xfer.date)) {
 	          var age = Date.now() - (xfer.ts || 0);
 	          if (age < 60 * 1000 && (xfer.birthTimeKnown != null || xfer.birth_time_known != null)) {
 	            /* restore เป็น sessionStorage + clear localStorage หลังใช้ */
@@ -936,9 +942,18 @@
     return null;
   }
   function requestBody(s){
-    /* Day boundary toggle · localStorage 'hk_day_boundary' · default '23:00' (ตำราคลาสสิก) */
+    /* Day boundary priority: URL db=00:00/23:00 > snapshot(per-profile) > localStorage > default */
     var dayBoundary = '23:00';
-    try { var v = localStorage.getItem('hk_day_boundary'); if (v === '00:00') dayBoundary = '00:00'; } catch(_){}
+    try {
+      var udb = new URLSearchParams(location.search).get('db');
+      if (udb === '00:00' || udb === '23:00') dayBoundary = udb;
+      else if (s && s.dayBoundary === '00:00') dayBoundary = '00:00';
+    } catch(_) {
+      if (s && s.dayBoundary === '00:00') dayBoundary = '00:00';
+    }
+    if (!(s && (s.dayBoundary === '00:00' || s.dayBoundary === '23:00'))) {
+      try { var v = localStorage.getItem('hk_day_boundary'); if (v === '00:00') dayBoundary = '00:00'; } catch(_){}
+    }
     return JSON.stringify({
       date: s.date,
       time: s.time || '12:00',
@@ -4028,7 +4043,11 @@ window.addEventListener('resize', function(){
     (function buildAddForm(){
       var pane = dw.querySelector('#hkp-pane-add');
       pane.innerHTML =
-        '<div class="hkp-grp"><label>'+esc(t('name'))+'</label><input type="text" id="hkp-name" placeholder="'+esc(t('namePh'))+'" autocomplete="off"></div>'+
+        '<div class="hkp-row2">'+
+          '<div class="hkp-grp" style="margin-bottom:0"><label>'+esc(t('name'))+'</label><input type="text" id="hkp-name" placeholder="'+esc(t('namePh'))+'" autocomplete="off"></div>'+
+          '<div class="hkp-grp" style="margin-bottom:0"><label>ชื่อเล่น · Nickname</label><input type="text" id="hkp-nickname" placeholder="เช่น ใหม่" autocomplete="off"></div>'+
+        '</div>'+
+        '<div style="height:10px"></div>'+
         '<div class="hkp-grp"><label>'+esc(t('dob'))+'</label><div class="hkp-row3">'+
           '<input type="text" id="hkp-d" inputmode="numeric" maxlength="2" placeholder="'+esc(t('d'))+'" autocomplete="off">'+
           '<input type="text" id="hkp-m" inputmode="numeric" maxlength="2" placeholder="'+esc(t('m'))+'" autocomplete="off">'+
@@ -4118,6 +4137,7 @@ window.addEventListener('resize', function(){
         }
         var g = ($('hkp-gender').querySelector('button.on')||{}).dataset; g = (g&&g.g)||'M';
         return { source:'adhoc', profileId:'', name:$('hkp-name').value.trim(),
+          nickname: $('hkp-nickname').value.trim(),
           date: y+'-'+pad(m,2)+'-'+pad(d,2), time: time, birthTimeKnown: !noBt, gender: g,
           role: $('hkp-role').value.trim(), group: $('hkp-group').value || 'friend',
           place: $('hkp-city').value.trim()||'Bangkok',
@@ -4137,7 +4157,7 @@ window.addEventListener('resize', function(){
         try {
           var dayBoundary='23:00'; try { if (localStorage.getItem('hk_day_boundary')==='00:00') dayBoundary='00:00'; } catch(_){}
           var r = await fetch('/api/profile/create', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
-            body: JSON.stringify({ name: snap.name||'(ไม่ระบุชื่อ)', birthDate: snap.date, birthTime: snap.time||'12:00',
+            body: JSON.stringify({ name: snap.name||'(ไม่ระบุชื่อ)', nickname: (snap.nickname || '').trim() || null, birthDate: snap.date, birthTime: snap.time||'12:00',
               birthLat: snap.latitude, birthLng: snap.longitude, locationName: snap.place, gender: snap.gender,
               relationshipType: snap.role || 'friend', dayBoundary: dayBoundary, birthTimeKnown: snap.birthTimeKnown }) });
           if (!r.ok) throw new Error('create '+r.status);

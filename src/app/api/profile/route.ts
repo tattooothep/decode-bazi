@@ -18,7 +18,7 @@ export async function GET() {
             birth_lat, birth_lng, birth_location_name, gender,
             relationship_type,
             day_master, day_master_strength, yongshen, bazi_pillars,
-            birth_time_known, is_archived, created_at,
+            birth_time_known, day_boundary, is_archived, created_at,
             (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self
      FROM profiles
      WHERE org_id=$1 AND is_archived=false
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
   const {
     name, nickname, birthDate, birthTime = "12:00",
     birthLat, birthLng, locationName, gender,
+    dayBoundary,
     birthTimeKnown: birthTimeKnownRaw,
   } = body;
   if (!name || !birthDate)
@@ -55,11 +56,12 @@ export async function POST(req: Request) {
     birthLng: birthLng != null ? Number(birthLng) : null,
     locationName: locationName ?? null,
     gender: gender ?? null,
+    dayBoundary: dayBoundary === "00:00" ? "00:00" : "23:00",
     birthTimeKnown: typeof birthTimeKnownRaw === 'boolean' ? birthTimeKnownRaw : undefined,
   });
 
   const row = await q1(
-    `SELECT id, name, day_master, day_master_strength, yongshen, bazi_pillars, birth_time_known
+    `SELECT id, name, day_master, day_master_strength, yongshen, bazi_pillars, birth_time_known, day_boundary
      FROM profiles WHERE id=$1`,
     [result.id]
   );

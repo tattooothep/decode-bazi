@@ -32,6 +32,7 @@ export async function GET(_req: Request, ctx: Ctx) {
     birth_location_name: string | null;
     gender: string | null;
     birth_time_known: boolean;
+    day_boundary: string | null;
     relationship_type: string | null;
     bazi_pillars: any;
     day_master: string | null;
@@ -43,7 +44,7 @@ export async function GET(_req: Request, ctx: Ctx) {
        to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD') AS birth_date,
        to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'HH24:MI') AS birth_time,
        birth_lat, birth_lng, birth_location_name,
-       gender, birth_time_known, relationship_type,
+       gender, birth_time_known, day_boundary, relationship_type,
        bazi_pillars, day_master
      FROM profiles
      WHERE id=$1 AND org_id=$2 AND is_archived=false`,
@@ -60,6 +61,8 @@ export async function GET(_req: Request, ctx: Ctx) {
       birthDate: row.birth_date,
       birthTime: row.birth_time,
       birthTimeKnown: row.birth_time_known,
+      dayBoundary: row.day_boundary === "00:00" ? "00:00" : "23:00",
+      day_boundary: row.day_boundary === "00:00" ? "00:00" : "23:00",
       longitude: row.birth_lng ? parseFloat(row.birth_lng) : 100.5018,
       latitude: row.birth_lat ? parseFloat(row.birth_lat) : 13.7563,
       locationName: row.birth_location_name,

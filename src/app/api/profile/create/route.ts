@@ -38,6 +38,7 @@ export async function POST(req: Request) {
 
   const birthTimeKnown = birthTimeKnownRaw !== false;        /* default true · backward compat */
   const birthTime = birthTimeKnown ? (birthTimeRaw || "12:00") : "12:00"; /* 3p ใช้ 12:00 เป็น DB anchor เท่านั้น · ไม่ใช่ pillar */
+  const dayBoundaryNorm = dayBoundary === "00:00" ? "00:00" : "23:00";
 
   const relation = String(relationshipType || "").trim();
   if (!relation || relation.toLowerCase() === "self" || relation === "ตัวเอง") {
@@ -45,6 +46,34 @@ export async function POST(req: Request) {
       { error: "relationshipType required for non-self profile" },
       { status: 400 }
     );
+  }
+
+  // duplicate guard: same org + same person payload (name/relationship/datetime) and not archived
+  // ป้องกันกดซ้ำ/ยิงซ้ำจาก UI แล้วเกิด profile โคลน
+  const existed = await q1<{ id: string }>(
+    `SELECT id
+       FROM profiles
+      WHERE org_id=$1
+        AND is_archived=false
+        AND lower(btrim(name)) = lower(btrim($2))
+        AND lower(btrim(coalesce(relationship_type, ''))) = lower(btrim($3))
+        AND birth_time_known = $4
+        AND to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD') = $5
+        AND to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'HH24:MI') = $6
+        AND COALESCE(day_boundary, '23:00') = $7
+      ORDER BY COALESCE(updated_at, created_at) DESC
+      LIMIT 1`,
+    [s.orgId, String(name), relation, birthTimeKnown, birthDate, birthTime, dayBoundaryNorm]
+  );
+  if (existed?.id) {
+    const fullExisting = await q1(
+      `SELECT id, name, nickname, day_master, day_master_strength, yongshen, bazi_pillars,
+              relationship_type, gender, birth_lng, birth_lat, birth_time_known, day_boundary,
+              to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime
+       FROM profiles WHERE id=$1`,
+      [existed.id]
+    );
+    return NextResponse.json({ ok: true, created: false, duplicate: true, profile: fullExisting });
   }
 
   /* compute BaZi via Layer 0/1 helper · ห้าม inline tyme4ts
@@ -59,7 +88,7 @@ export async function POST(req: Request) {
         gmtOffsetHours: 7,
         gender: (gender as "M" | "F" | undefined) || undefined,
         /* 16 พ.ค. 2026: ส่ง dayBoundary ผ่าน Layer 0 (tyme-tst) · กระทบ 23:00-23:59 birth */
-        dayBoundary: (dayBoundary === "00:00" ? "00:00" : "23:00") as "23:00" | "00:00",
+        dayBoundary: dayBoundaryNorm as "23:00" | "00:00",
         birthTimeKnown: true,
       });
     } else {
@@ -87,6 +116,7 @@ export async function POST(req: Request) {
   const baziPillars = JSON.stringify({
     pillars: calc.pillars || {},
     ge_ju: calc.geJu?.structure || null,
+    day_boundary: dayBoundaryNorm,
   });
 
   /* INSERT profile · created_by_user_id = session.userId · id = gen_random_uuid() (column ไม่มี DEFAULT)
@@ -98,7 +128,7 @@ export async function POST(req: Request) {
        birth_datetime, birth_lat, birth_lng, birth_location_name, gender,
        relationship_type,
        day_master, day_master_strength, yongshen, bazi_pillars,
-       birth_source, birth_time_known, is_archived, created_at, updated_at
+       birth_source, birth_time_known, day_boundary, is_archived, created_at, updated_at
      )
      VALUES (
        gen_random_uuid(),
@@ -107,7 +137,7 @@ export async function POST(req: Request) {
        $7, $8, $9, $10,
        $11,
        $12, $13, $14::jsonb, $15::jsonb,
-       'self_reported', $16, false, now(), now()
+       'self_reported', $16, $17, false, now(), now()
      )
      RETURNING id`,
     [
@@ -120,13 +150,14 @@ export async function POST(req: Request) {
       relation,
       dayMaster, strength, yongshen, baziPillars,
       birthTimeKnown,
+      dayBoundaryNorm,
     ]
   );
   if (!row) return NextResponse.json({ error: "insert failed" }, { status: 500 });
 
   const full = await q1(
     `SELECT id, name, nickname, day_master, day_master_strength, yongshen, bazi_pillars,
-            relationship_type, gender, birth_lng, birth_lat, birth_time_known,
+            relationship_type, gender, birth_lng, birth_lat, birth_time_known, day_boundary,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime
      FROM profiles WHERE id=$1`,
     [row.id]

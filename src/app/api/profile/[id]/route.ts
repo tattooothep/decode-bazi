@@ -21,7 +21,7 @@ export async function GET(_req: Request, ctx: Ctx) {
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
             birth_lat, birth_lng, birth_location_name,
             gender, day_master, day_master_strength, yongshen, bazi_pillars,
-            birth_time_known, is_archived, created_at
+            birth_time_known, day_boundary, is_archived, created_at
      FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
     [id, s.orgId]
   );
@@ -34,13 +34,13 @@ export async function PUT(req: Request, ctx: Ctx) {
   if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const { id } = await ctx.params;
   const body = await req.json().catch(() => ({}));
-  const { name, birthDate, birthTime, birthLat, birthLng, locationName, gender, nickname,
+  const { name, birthDate, birthTime, birthLat, birthLng, locationName, gender, nickname, dayBoundary: dayBoundaryRaw,
     /* 19 พ.ค. Option α · birthTimeKnown (optional) · ถ้าไม่ส่ง = keep existing */
     birthTimeKnown: birthTimeKnownRaw,
   } = body;
 
-  const existing = await q1<{ birth_datetime: string; birth_time_known: boolean; birth_lng: string | null }>(
-    `SELECT id, birth_lng, birth_time_known,
+  const existing = await q1<{ birth_datetime: string; birth_time_known: boolean; birth_lng: string | null; day_boundary: string | null }>(
+    `SELECT id, birth_lng, birth_time_known, day_boundary,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime
      FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
     [id, s.orgId]
@@ -75,7 +75,12 @@ export async function PUT(req: Request, ctx: Ctx) {
    * Codex รอบ 8 fix #2: เพิ่ม birthLng trigger · ป้องกัน save location ใหม่แต่ pillar เก่า */
   const knownChanged = typeof birthTimeKnownRaw === 'boolean' && birthTimeKnownRaw !== existing.birth_time_known;
   const lngChanged = birthLng != null && String(birthLng) !== String(existing.birth_lng ?? '');
-  const recompute = !!(birthDate || birthTime || lngChanged || knownChanged);
+  const existingBoundary = existing.day_boundary === "00:00" ? "00:00" : "23:00";
+  const requestedBoundary = dayBoundaryRaw === "00:00" ? "00:00" : dayBoundaryRaw === "23:00" ? "23:00" : null;
+  const dayBoundary = requestedBoundary || existingBoundary;
+  const boundaryRequested = requestedBoundary !== null;
+  const boundaryChanged = boundaryRequested && requestedBoundary !== existingBoundary;
+  const recompute = !!(birthDate || birthTime || lngChanged || knownChanged || (boundaryChanged && newBirthTimeKnown));
   let newIsoDt: string | null = null;
   if (recompute) {
     const oldDate = existing.birth_datetime.slice(0, 10);
@@ -91,6 +96,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     const calc = newBirthTimeKnown
       ? await calcBazi({
           date: useDate, time: useTime, longitude: lng, gmtOffsetHours: 7,
+          dayBoundary,
           birthTimeKnown: true,
         })
       : await calcBazi({
@@ -105,7 +111,13 @@ export async function PUT(req: Request, ctx: Ctx) {
     sets.push(`"yongshen"=$${i++}`);
     params.push(JSON.stringify({ top3: calc.yongshen, climate: calc.climate }));
     sets.push(`"bazi_pillars"=$${i++}`);
-    params.push(JSON.stringify({ pillars: calc.pillars, ge_ju: calc.geJu.structure }));
+    params.push(JSON.stringify({ pillars: calc.pillars, ge_ju: calc.geJu.structure, day_boundary: dayBoundary }));
+  }
+
+  /* Persist day_boundary even when no pillar recompute is required (เช่น 3p/no-hour) */
+  if (boundaryRequested) {
+    sets.push(`"day_boundary"=$${i++}`);
+    params.push(dayBoundary);
   }
 
   /* บันทึก birth_time_known ถ้าส่งมา (explicit) */
@@ -128,7 +140,7 @@ export async function PUT(req: Request, ctx: Ctx) {
     `SELECT id, name, nickname,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
             birth_lat, birth_lng, birth_location_name,
-            gender, day_master, day_master_strength, yongshen, bazi_pillars, birth_time_known
+            gender, day_master, day_master_strength, yongshen, bazi_pillars, birth_time_known, day_boundary
      FROM profiles WHERE id=$1 AND org_id=$2`,
     [id, s.orgId]
   );

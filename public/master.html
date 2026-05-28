@@ -697,7 +697,8 @@
 	          birth_location_name: b.place || 'กรุงเทพมหานคร',
 	          birth_time_known: b.birthTimeKnown !== false,
 	          birth_lng: b.longitude || b.lng || 100.5018,
-	          gender: b.gender || 'M'
+	          gender: b.gender || 'M',
+	          day_boundary: b.dayBoundary === '00:00' ? '00:00' : '23:00'
 	        };
       } catch(_) { return null; }
     }
@@ -747,7 +748,7 @@
 	        var birthTimeKnown = activeProfile.birth_time_known !== false;
 	        var r = await fetch('/api/chart', {
 	          method:'POST', headers:{'Content-Type':'application/json'},
-	          body: JSON.stringify({ date:date, time:time, longitude:activeProfile.birth_lng||100.5018, gender:activeProfile.gender||'M', gmtOffsetHours:7, birthTimeKnown: birthTimeKnown })
+	          body: JSON.stringify({ date:date, time:time, longitude:activeProfile.birth_lng||100.5018, gender:activeProfile.gender||'M', gmtOffsetHours:7, birthTimeKnown: birthTimeKnown, dayBoundary: activeProfile.day_boundary === '00:00' ? '00:00' : '23:00' })
 	        });
         if (!r.ok) throw new Error('chart api '+r.status);
         var d = await r.json();
@@ -801,6 +802,7 @@
       qs.set('birthLng', String(activeProfile.birth_lng || 100.5018));
       qs.set('gender', activeProfile.gender || 'M');
       qs.set('name', activeProfile.nickname || activeProfile.name || 'ตัวฉัน');
+      qs.set('dayBoundary', activeProfile.day_boundary === '00:00' ? '00:00' : '23:00');
 
       try {
         readingEl.textContent = '';
@@ -871,10 +873,9 @@
     /* รับพารามิเตอร์จากหน้าดวง (chart เด้งมา) · ดวงที่ส่งมา = ดวงปัจจุบัน */
     const params = new URLSearchParams(location.search);
     const urlPid = params.get('profileId');
-    if (urlPid) { try { localStorage.setItem('hk_profile_id', urlPid); } catch(_){} }
     /* 🧑‍🤝‍🧑 ดวงที่เลือกถามได้ = ดวงในบัญชี (ตัวเอง+ญาติ) · เริ่มที่ดวง self · dropdown สลับได้ · ไม่ทับ window.hkActiveProfileId (ดวง self ของ intro) */
     let selectedProfileId = '';
-    try { selectedProfileId = String(urlPid || window.hkActiveProfileId || localStorage.getItem('hk_profile_id') || ''); } catch(_){}
+    try { selectedProfileId = String(urlPid || window.hkActiveProfileId || ''); } catch(_){}
     function storeKey(){ return 'hk_sifu_chat_' + (selectedProfileId || 'anon'); } /* ประวัติแชทแยกตามดวง */
     let history = [];
     function persist(){ try { localStorage.setItem(storeKey(), JSON.stringify(history.slice(-40))); } catch(_){} }
@@ -939,8 +940,8 @@
           var o = document.createElement('option');
           o.value = p.id;
           var rel = p.is_self ? (relSelf[loc] || relSelf.th) : (p.relationship_type || '');
-          /* ตัวเอง = ชื่อจริงนำ (โชว์ "ไนท์") · ญาติ = ชื่อเล่นนำ — เลียน network กัน self โผล่เป็นชื่อเล่นจนหาไม่เจอ */
-          var nm = p.is_self ? (p.name || p.nickname || '—') : (p.nickname || p.name || '—');
+          /* ตัวเอง/ญาติ: ใช้ชื่อจริงนำเสมอ เพื่อลดความสับสนจาก nickname ค้าง */
+          var nm = p.name || p.nickname || '—';
           o.textContent = (p.is_self ? '⭐ ' : '') + nm + (rel ? ' (' + rel + ')' : '');
           if (String(p.id) === preferId) o.selected = true;
           sel.appendChild(o);
@@ -1047,11 +1048,11 @@
       var loc = curLocale();
       return { group:g, ids:ids, label:(HKG_LABELS[g] && (HKG_LABELS[g][loc]||HKG_LABELS[g].th)) || g };
     }
-    /* ดึงชื่อย่อของ id (self = ⭐ + ชื่อจริงนำ · ญาติ = ชื่อเล่นนำ · เลียน dropdown) */
+    /* ดึงชื่อย่อของ id (ใช้ชื่อจริงนำเสมอ) */
     function hkgNameOf(pid){
       var p = hkgProfiles.find(function(x){ return String(x.id) === String(pid); });
       if (!p) return '—';
-      return p.is_self ? (p.name || p.nickname || '—') : (p.nickname || p.name || '—');
+      return p.name || p.nickname || '—';
     }
     /* render chips รายชื่อย่อ + ปุ่มดูทั้งกลุ่ม */
     function hkgRenderMembers(ids){

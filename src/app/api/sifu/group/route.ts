@@ -318,6 +318,7 @@ type ProfileRow = {
   birth_lng: number | null;
   gender: string | null;
   birth_time_known: boolean | null;
+  day_boundary: string | null;
 };
 
 /**
@@ -332,7 +333,7 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const lng = Number(row.birth_lng || 100.5018);
     const gender = (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F"; // DB เก็บ "F"/"M" · charAt(0)==="f"
     const birthTimeKnown = knownBirthTime(row.birth_time_known);
-    const dayBoundary: "23:00" | "00:00" = "23:00"; // profiles table ยังไม่มี day_boundary column · group/sifu ต้องไม่เดา
+    const dayBoundary: "23:00" | "00:00" = row.day_boundary === "00:00" ? "00:00" : "23:00";
 
     const calc = birthTimeKnown
       ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, dayBoundary, birthTimeKnown: true })
@@ -385,7 +386,7 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const rootedness = await computeRootedness(calc.pillars);  // 通根 wrapper-7 (เดี่ยวมี · group เคยส่ง null = หาย)
     const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays, {
       dayBoundary,
-      dayBoundarySource: "default",
+      dayBoundarySource: "explicit",
     });
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
@@ -536,7 +537,7 @@ export async function POST(req: Request) {
     const rows = await q<ProfileRow>(
       `SELECT id, name,
               to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-              birth_lng, gender, birth_time_known
+              birth_lng, gender, birth_time_known, day_boundary
        FROM profiles
        WHERE id = ANY($1) AND org_id=$2 AND is_archived=false`,
       [profileIds, orgId]

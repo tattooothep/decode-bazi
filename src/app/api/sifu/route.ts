@@ -304,9 +304,10 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
       birth_lng: number | null;
       gender: string | null;
       birth_time_known: boolean | null;
+      day_boundary: string | null;
     }>(
       `SELECT name, to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-              birth_lng, gender, birth_time_known FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
+              birth_lng, gender, birth_time_known, day_boundary FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
       [profileId, orgId]
     );
     if (!row) return "(ไม่พบ profile)";
@@ -317,7 +318,7 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     const lng = Number(row.birth_lng || 100.5018);
     const gender = (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F"; // DB เก็บ "F"/"M" (ไม่ใช่ "female") · รับทั้ง F/female/f → กันผู้หญิงกลายเป็นชาย
     const birthTimeKnown = knownBirthTime(row.birth_time_known);
-    const dayBoundary: "23:00" | "00:00" = "23:00"; // profiles table ยังไม่มี day_boundary column · ห้ามเดา/heuristic
+    const dayBoundary: "23:00" | "00:00" = row.day_boundary === "00:00" ? "00:00" : "23:00";
 
     const calc = birthTimeKnown
       ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, dayBoundary, birthTimeKnown: true })
@@ -365,7 +366,7 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     const siLingDays = computeSiLingDays(slY, slMo, slD, slH || 12, slMi || 0);  // 司令 วันนับจาก節 (ICT→BJT)
     const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays, {
       dayBoundary,
-      dayBoundarySource: "default",
+      dayBoundarySource: "explicit",
     });
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
@@ -412,9 +413,10 @@ async function buildIntroBaziContext(profileId: string, orgId: string | null): P
       birth_lng: number | null;
       gender: string | null;
       birth_time_known: boolean | null;
+      day_boundary: string | null;
     }>(
       `SELECT name, to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-              birth_lng, gender, birth_time_known FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
+              birth_lng, gender, birth_time_known, day_boundary FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
       [profileId, orgId]
     );
     if (!row) return "(ไม่พบ profile)";
@@ -426,8 +428,8 @@ async function buildIntroBaziContext(profileId: string, orgId: string | null): P
       lng: Number(row.birth_lng || 100.5018),
       gender: (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F", // DB เก็บ "F"/"M" · รับทั้ง F/female/f → กันผู้หญิงกลายเป็นชาย
       birthTimeKnown: knownBirthTime(row.birth_time_known),
-      dayBoundary: "23:00",
-      dayBoundarySource: "default",
+      dayBoundary: row.day_boundary === "00:00" ? "00:00" : "23:00",
+      dayBoundarySource: "explicit",
       source: "profile",
     });
   } catch (e) {
@@ -752,7 +754,7 @@ export async function POST(req: Request) {
     const orgId = session?.orgId ?? null;
 
     /* 💾 Cache check ก่อน */
-    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1";
+    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
     const dayKey = await getDayPillarKey();
     const key = cacheKey({ profileId, orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
     const useCache = mode !== "intro";
@@ -925,7 +927,7 @@ export async function GET(req: Request) {
   const session = await getSession();
   const orgId = session?.orgId ?? null;
 
-  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1";
+  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
   const dayKey = await getDayPillarKey();
   const key = cacheKey({ profileId, orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
   const useCache = mode !== "intro";

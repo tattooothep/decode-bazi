@@ -935,7 +935,7 @@
         }
         return {
           id: isSelf ? 'self' : ('p_' + p.id),
-          name: isSelf ? (p.name || p.nickname || 'ตัวฉัน') : (p.nickname || p.name || ('คน '+(i+1))),
+          name: isSelf ? (p.name || p.nickname || 'ตัวฉัน') : (p.name || p.nickname || ('คน '+(i+1))),
           roleKey: isSelf ? 'n.role.self' : null,
           role: isSelf ? '' : (p.relationship_type || 'เพื่อนในเครือข่าย'),
           glyph: dmStem,
@@ -970,6 +970,7 @@
           locationName: p.birth_location_name || 'Bangkok',
           /* 19 พ.ค. Option α · birth_time_known จาก DB · default true */
           birthTimeKnown: p.birth_time_known !== false,
+          dayBoundary: (p.day_boundary === '00:00' || p.dayBoundary === '00:00') ? '00:00' : '23:00',
           _rawProfile: { id:p.id, name:p.name, nickname:p.nickname, day_master:p.day_master },
         };
       }).filter(p => p.pillars);
@@ -2809,10 +2810,10 @@ window.applyI18N = applyI18N;
           delete old.roleKey; delete old.tagKey;
           PEOPLE[idx] = Object.assign({}, old, obj);
         }
-        /* 16 พ.ค. 2026: บันทึก edit ลง DB ผ่าน PUT /api/profile/[id] · skip self (LOCKED upsertSelfProfile) */
+        /* บันทึก edit ลง DB ผ่าน PUT /api/profile/[id] (รวม self ด้วย โดยใช้ profileId จริง) */
         const target = PEOPLE.find(p => p.id === id);
         const pid = target && target.profileId;
-        if (pid && id !== 'self') {
+        if (pid) {
           try {
             const pr = await fetch('/api/profile/' + pid, {
               method:'PUT', headers:{'Content-Type':'application/json'},
@@ -2822,6 +2823,7 @@ window.applyI18N = applyI18N;
                 birthDate, birthTime,
                 birthLat: latitude, birthLng: longitude, locationName,
                 gender,
+                dayBoundary,
                 birthTimeKnown,        /* 19 พ.ค. Option α · ส่ง flag ไป API */
               })
             });
@@ -2833,6 +2835,7 @@ window.applyI18N = applyI18N;
       } else {
         PEOPLE.push(obj);
       }
+      try { localStorage.setItem('hk_day_boundary', dayBoundary === '00:00' ? '00:00' : '23:00'); } catch(_){}
       savePeopleToStore();
       closePersonModal();
       if (typeof render === 'function') render();
@@ -2962,6 +2965,11 @@ window.applyI18N = applyI18N;
    * 18 พ.ค. fix · mobile new tab ไม่ inherit sessionStorage
    * → mirror localStorage 'hk_view_as_xfer' (TTL 60s · ตรวจ id ตรง · clear หลังใช้) */
   function _setViewAs(p){
+    var dayBoundary = '23:00';
+    try {
+      if (p && (p.dayBoundary === '00:00' || p.dayBoundary === '23:00')) dayBoundary = p.dayBoundary;
+      else if (localStorage.getItem('hk_day_boundary') === '00:00') dayBoundary = '00:00';
+    } catch(_){}
     var payload = {
       id: p.id,
       profileId: p.profileId || null,
@@ -2972,6 +2980,7 @@ window.applyI18N = applyI18N;
       birthDate: p.birthDate||null, birthTime: p.birthTime||null,
       date: p.birthDate||null, time: p.birthTime||null,
       gender: p.gender||null,
+      dayBoundary: dayBoundary,
       longitude: p.longitude ?? null,
       lng: p.longitude ?? null,
       latitude: p.latitude ?? null,
@@ -2987,7 +2996,9 @@ window.applyI18N = applyI18N;
     if (!p) return;
     if (p.id === 'self') { window.open('/chart', '_blank'); return; }
     _setViewAs(p);
-    window.open('/chart?as='+encodeURIComponent(p.id), '_blank');
+    var asId = p.profileId ? String(p.profileId) : String(p.id || '').replace(/^p_/, '');
+    var db = (p.dayBoundary === '00:00') ? '00:00' : '23:00';
+    window.open('/chart?as='+encodeURIComponent(asId)+'&db='+encodeURIComponent(db), '_blank');
   };
   /* "+ เปรียบเทียบ" → เปิด /comparison · prefill self vs person · auto-submit */
   window.compareWithPerson = function(p){
@@ -3017,7 +3028,8 @@ window.applyI18N = applyI18N;
     if (!p) return;
     if (p.id === 'self') { window.open('/today', '_blank'); return; }
     _setViewAs(p);
-    window.open('/today?as='+encodeURIComponent(p.id), '_blank');
+    var asId = p.profileId ? String(p.profileId) : String(p.id || '').replace(/^p_/, '');
+    window.open('/today?as='+encodeURIComponent(asId), '_blank');
   };
 
   /* monkey-patch renderGrid: add edit/del row · view chart button */
@@ -5414,6 +5426,8 @@ window.applyI18N = applyI18N;
       let ok = 0;
       for (const p of people) {
         try {
+          let dayBoundary = '23:00';
+          try { if (localStorage.getItem('hk_day_boundary') === '00:00') dayBoundary = '00:00'; } catch(_){}
           const pr = await fetch('/api/profile/create', {
             method:'POST', headers:{'Content-Type':'application/json'},
             credentials:'include',
@@ -5424,7 +5438,7 @@ window.applyI18N = applyI18N;
               locationName: p.city || 'Bangkok',
               gender: p.gender || 'M',
               relationshipType: 'AI batch',
-              dayBoundary: '23:00',
+              dayBoundary,
               /* 19 พ.ค. Option α · AI parser อาจ extract time ไม่ได้ → 3p */
               birthTimeKnown: p.birthTime ? true : false,
             })

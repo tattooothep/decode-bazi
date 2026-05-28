@@ -144,9 +144,16 @@
       var pr = await fetch('/api/profile');
       var pj = await pr.json();
       var arr = (pj.profiles || []).filter(function(p){ return !p.is_archived; });
-      // Find: prefer hk_profile_id, else first
-      var activeId = null;
-      try { activeId = localStorage.getItem('hk_profile_id'); } catch(e){}
+      // Find: prefer backend active_profile / is_self (เชื่อแหล่งจริงจากระบบ)
+      // hk_profile_id ใช้ fallback เท่านั้น เพราะอาจค้างเป็นดวงญาติจากหน้าอื่น
+      var activeId = (pj && pj.active_profile && pj.active_profile.id) || null;
+      if (!activeId) {
+        var selfP = arr.find(function(p){ return !!p.is_self; });
+        activeId = selfP ? selfP.id : null;
+      }
+      if (!activeId) {
+        try { activeId = localStorage.getItem('hk_profile_id'); } catch(e){}
+      }
       profile = arr.find(function(p){ return p.id === activeId; }) || arr[0] || null;
     } catch(e) { console.warn('settings load', e); }
 
@@ -225,9 +232,11 @@
       </div>
       <button class="hk-set-save" id="set-save">💾 บันทึก</button>
     `;
-    /* restore from localStorage */
+    /* restore from DB first · localStorage only legacy fallback */
     try {
-      var savedBoundary = localStorage.getItem('hk_day_boundary');
+      var savedBoundary = (profile.day_boundary === '00:00' || profile.dayBoundary === '00:00')
+        ? '00:00'
+        : localStorage.getItem('hk_day_boundary');
       if (savedBoundary === '00:00') document.getElementById('set-day-boundary').value = '00:00';
     } catch(_){}
 
@@ -346,6 +355,7 @@
         locationName: document.getElementById('set-loc-name').value,
         gender: document.getElementById('set-gender').value || null,
         birthTimeKnown: birthTimeKnown,
+        dayBoundary: (document.getElementById('set-day-boundary').value === '00:00' ? '00:00' : '23:00'),
       };
       try {
         var r = await fetch('/api/profile/' + profile.id, {
