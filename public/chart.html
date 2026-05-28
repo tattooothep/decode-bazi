@@ -388,6 +388,33 @@
   .hk-luck-detail .ld-k{min-width:90px;color:var(--fg-soft);font-size:12px;}
   .hk-luck-detail .ld-v{color:var(--fg);font-weight:500;}
   .hk-luck-detail .ld-v .zh{opacity:.6;font-size:11px;font-family:var(--tc);margin-left:4px;}
+  .hk-luck-drill{margin-top:14px;padding-top:14px;border-top:1px dashed var(--gold-line);}
+  .hk-luck-drill-title{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .hk-luck-drill-title b{font-family:var(--thai);font-size:13px;color:var(--gold);}
+  .hk-luck-drill-title span{font-family:var(--mono);font-size:10px;color:var(--fg-soft);letter-spacing:.08em;}
+  .hk-ld-years{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;margin-bottom:10px;}
+  @media(max-width:980px){.hk-ld-years{grid-template-columns:repeat(5,minmax(0,1fr));}}
+  @media(max-width:520px){.hk-ld-years{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .hk-ld-year{border:1px solid var(--tile-bd);background:rgba(38,42,50,.34);border-radius:8px;padding:8px 6px;text-align:center;cursor:pointer;color:var(--fg);font-family:var(--thai);}
+  body.light .hk-ld-year{background:rgba(255,250,238,.7);}
+  .hk-ld-year .yr{font-family:var(--mono);font-size:10px;color:var(--gold);}
+  .hk-ld-year .pl{font-family:var(--tc);font-size:16px;font-weight:700;margin-top:2px;}
+  .hk-ld-year .tg{font-size:10px;color:var(--fg-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hk-ld-year.auspicious{border-color:var(--wood);background:rgba(125,211,123,.07);}
+  .hk-ld-year.cautious{border-color:var(--fire);background:rgba(226,107,93,.07);}
+  .hk-ld-year.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;background:rgba(200,164,77,.10);}
+  .hk-ld-month-head{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--fg-soft);margin:12px 0 8px;}
+  .hk-ld-months{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;}
+  @media(max-width:720px){.hk-ld-months{grid-template-columns:repeat(3,minmax(0,1fr));}}
+  @media(max-width:420px){.hk-ld-months{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .hk-ld-month{border:1px solid var(--tile-bd);background:rgba(38,42,50,.28);border-radius:8px;padding:7px 6px;min-height:58px;}
+  body.light .hk-ld-month{background:rgba(255,250,238,.62);}
+  .hk-ld-month .mo{font-family:var(--mono);font-size:9px;color:var(--fg-faint);}
+  .hk-ld-month .pl{font-family:var(--tc);font-size:15px;font-weight:700;color:var(--fg);}
+  .hk-ld-month .tg{font-size:10px;color:var(--fg-soft);line-height:1.35;}
+  .hk-ld-month .vs{font-family:var(--tc);font-size:10px;color:var(--gold);margin-top:3px;}
+  .hk-ld-month.auspicious{border-color:rgba(125,211,123,.55);}
+  .hk-ld-month.cautious{border-color:rgba(226,107,93,.55);}
   .hk-pillar.wood .hk-pillar-glow{background:radial-gradient(circle,#8fc37c,transparent 65%);}
   .hk-pillar.wood .hk-pillar-ring{border-color:rgba(143,195,124,.55);background-color:rgba(63,107,47,.14);}
   .hk-pillar.wood .hk-pillar-stem{color:#a8d098;}
@@ -2217,6 +2244,7 @@ window.addEventListener('resize', function(){
     if(!b){ console.warn('[HK] renderAll missing snapshot'); return; }
     const p=d.pillars, a=d.analysis||{};
     const tg=a.ten_gods_map||{}, qp=a.qi_phases||{}, ec=a.element_counts||{}, ji=a.jishen||{elements:[],wealth_role:'neutral'}, ug=a.useful_god||{}, lp=a.luck_pillars||[], curIdx=a.current_luck_idx||0;
+    const luckDrill = a.luck_decade_drilldown || [];
 
     // §01 Hero · DM card + name + meta
     const dm=p.day.stem;
@@ -3382,6 +3410,7 @@ window.addEventListener('resize', function(){
     function renderLuckDetail(i){
       if (!luckDetail || !lp[i]) return;
       const item = lp[i];
+      const h = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
       const status = i < curIdx ? 'past' : (i === curIdx ? 'cur' : 'next');
       const statusTh = i < curIdx ? 'ผ่านมาแล้ว' : (i === curIdx ? '🎯 ตอนนี้' : 'รออยู่ข้างหน้า');
       const stem = item.stem, branch = item.branch;
@@ -3394,6 +3423,20 @@ window.addEventListener('resize', function(){
       const tgTh = (typeof TENGOD_DOMAIN !== 'undefined' && TENGOD_DOMAIN[tgZh] && TENGOD_DOMAIN[tgZh].name) || tgZh;
       const yrFrom = item.year_start || '';
       const yrTo = item.year_end || '';
+      const drill = luckDrill[i] || null;
+      const years = drill && Array.isArray(drill.years) ? drill.years : [];
+      const TG_TH_SHORT = {正官:'งาน/อำนาจ',七殺:'แรงกดดัน',正財:'ทรัพย์ตรง',偏財:'ทรัพย์ไหล',正印:'ครู/ที่พึ่ง',偏印:'ปัญญาเฉพาะ',食神:'ผลงาน',傷官:'พรสวรรค์',比肩:'เพื่อน',劫財:'แข่งขัน'};
+      const VS_TH_D = {'六合':'จับคู่','六沖':'ปะทะ','六害':'ทำลาย','六破':'บั่นทอน','半合':'ครึ่งผสาน','三合':'สามผสาน','三會':'สามฤดู','三刑':'ลงโทษ'};
+      const yearCells = years.map((y, yi) => {
+        const ys = y.pillar || {};
+        const ytg = TG_TH_SHORT[y.ten_god] || y.ten_god || '';
+        const fc = y.flag === 'auspicious' ? 'auspicious' : (y.flag === 'cautious' ? 'cautious' : '');
+        return `<button type="button" class="hk-ld-year ${fc}" data-yi="${yi}">
+          <div class="yr">${h(y.year)} <span style="opacity:.55">· ${h(y.age)}ปี</span></div>
+          <div class="pl">${h((ys.stem||'')+(ys.branch||''))}</div>
+          <div class="tg">${h(ytg)}</div>
+        </button>`;
+      }).join('');
       luckDetail.style.display = '';
       luckDetail.innerHTML = `
         <div class="ld-title">รอบที่ ${i+1} · ${stem}${branch} <span class="ld-pill ${status}">${statusTh}</span></div>
@@ -3403,7 +3446,50 @@ window.addEventListener('resize', function(){
         <div class="ld-row"><span class="ld-k">กิ่งดิน</span><span class="ld-v">ธาตุ${brTh} · ปี${brAnimal}<span class="zh">${branch}</span></span></div>
         <div class="ld-row"><span class="ld-k">12 ระยะ</span><span class="ld-v">${phTh}<span class="zh">${phZh}</span></span></div>
         ${tgTh?`<div class="ld-row"><span class="ld-k">เทพประจำ</span><span class="ld-v">${tgTh}<span class="zh">${tgZh}</span></span></div>`:''}
+        ${years.length ? `<div class="hk-luck-drill">
+          <div class="hk-luck-drill-title"><b>ปีจรในรอบ 10 ปีนี้ · 流年</b><span>กดปีเพื่อดูเดือนจร · 流月</span></div>
+          <div class="hk-ld-years">${yearCells}</div>
+          <div class="hk-ld-month-head" id="hk-ld-month-head">流月</div>
+          <div class="hk-ld-months" id="hk-ld-months"></div>
+          <div class="hk-liunian-hint">เดือนจรใช้ anchor กลางเดือนเพื่อเลี่ยงขอบ節氣 · ปี/เดือนสีเขียว=ผสาน · แดง=ปะทะ/ทำลายกับกิ่งวัน</div>
+        </div>` : ''}
       `;
+      if (years.length) {
+        const root = luckDetail.querySelector('.hk-luck-drill');
+        const monthHead = luckDetail.querySelector('#hk-ld-month-head');
+        const monthBox = luckDetail.querySelector('#hk-ld-months');
+        const setYear = (yi) => {
+          const y = years[yi] || years[0];
+          root.querySelectorAll('.hk-ld-year').forEach((btn, bi) => btn.classList.toggle('on', bi === yi));
+          if (monthHead) {
+            const yp = y.pillar || {};
+            monthHead.textContent = `流月 · ${y.year} · ${yp.stem || ''}${yp.branch || ''}`;
+          }
+          if (monthBox) {
+            monthBox.innerHTML = (y.months || []).map((m) => {
+              const mp = m.pillar || {};
+              const fc = m.flag === 'auspicious' ? 'auspicious' : (m.flag === 'cautious' ? 'cautious' : '');
+              const mtg = TG_TH_SHORT[m.ten_god] || m.ten_god || '';
+              const vs = (m.vs_day_branch || []).map(v => {
+                const base = String(v).split('·')[0];
+                return VS_TH_D[base] || v;
+              }).join('·');
+              return `<div class="hk-ld-month ${fc}" title="${h((m.vs_day_branch||[]).join(' · '))}">
+                <div class="mo">${String(m.month).padStart(2,'0')}</div>
+                <div class="pl">${h((mp.stem||'')+(mp.branch||''))}</div>
+                <div class="tg">${h(mtg)}</div>
+                ${vs ? `<div class="vs">${h(vs)}</div>` : ''}
+              </div>`;
+            }).join('');
+          }
+        };
+        root.querySelectorAll('.hk-ld-year').forEach(btn => {
+          btn.addEventListener('click', () => setYear(parseInt(btn.dataset.yi || '0', 10) || 0));
+        });
+        const nowYear = new Date().getFullYear();
+        const defaultYi = years.findIndex(y => y.year === nowYear);
+        setYear(defaultYi >= 0 ? defaultYi : 0);
+      }
     }
     lp.forEach((lpItem,i)=>{
       const card=luckCards[i]; if(!card) return;

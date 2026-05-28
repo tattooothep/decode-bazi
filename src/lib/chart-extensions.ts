@@ -779,6 +779,26 @@ export type LiuNianEntry = {
   } | null;
 };
 
+export type LiuYueEntry = {
+  year: number;
+  month: number;
+  label: string;
+  pillar: { stem: string; branch: string };
+  ten_god: string | null;
+  vs_day_branch: string[];
+  flag: "auspicious" | "cautious" | "neutral";
+};
+
+export type LuckDecadeDrilldown = {
+  luck_index: number;
+  luck_pillar: { stem: string; branch: string };
+  age_start: number;
+  age_end: number;
+  year_start: number;
+  year_end: number;
+  years: Array<LiuNianEntry & { months: LiuYueEntry[] }>;
+};
+
 function buildLiuNianTimeline(pillars: BaziPillars, baseYear: number, span: number = 10, birthYear?: number): LiuNianEntry[] {
   const dm = pillars.day.stem;
   const dayBranch = pillars.day.branch;
@@ -827,6 +847,97 @@ function buildLiuNianTimeline(pillars: BaziPillars, baseYear: number, span: numb
     out.push({ year: y, age, pillar: { stem, branch }, ten_god, vs_day_branch: vs, flag, hex });
   }
   return out;
+}
+
+function branchTransitTags(dayBranch: string, branch: string): string[] {
+  const vs: string[] = [];
+  if (SIX_CLASH[dayBranch] === branch) vs.push("六沖");
+  if (SIX_HE[dayBranch] === branch) vs.push("六合");
+  if (SIX_HARM[dayBranch] === branch) vs.push("六害");
+  if (SIX_DESTROY[dayBranch] === branch) vs.push("六破");
+  for (const r of BAN_HE_PAIRS) {
+    if ((r.pair[0] === dayBranch && r.pair[1] === branch) ||
+        (r.pair[0] === branch && r.pair[1] === dayBranch)) {
+      vs.push("半合·"+r.element);
+    }
+  }
+  return vs;
+}
+
+function transitFlag(vs: string[]): "auspicious" | "cautious" | "neutral" {
+  if (vs.some(t => t === "六合" || t.startsWith("半合"))) return "auspicious";
+  if (vs.some(t => t === "六沖" || t === "六害" || t === "六破")) return "cautious";
+  return "neutral";
+}
+
+function yearStem(year: number): string {
+  const offset = ((year - 1984) % 60 + 60) % 60;
+  return STEMS_ORDER[offset % 10];
+}
+
+function monthPillarMidMonth(year: number, month: number): { stem: string; branch: string } {
+  /* Mid-month anchor: avoids Jieqi boundary ambiguity. Jan belongs to 丑 month of previous solar year. */
+  const branchesByGregorianMid = ["丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥", "子"];
+  const branch = branchesByGregorianMid[Math.max(0, Math.min(11, month - 1))];
+  const stemStartByYearStem: Record<string, string> = {
+    甲: "丙", 己: "丙",
+    乙: "戊", 庚: "戊",
+    丙: "庚", 辛: "庚",
+    丁: "壬", 壬: "壬",
+    戊: "甲", 癸: "甲",
+  };
+  const solarYearStem = yearStem(month === 1 ? year - 1 : year);
+  const startStem = stemStartByYearStem[solarYearStem] || "丙"; // 寅 month stem
+  const startIdx = STEMS_ORDER.indexOf(startStem);
+  const offsetFromYin = month === 1 ? 11 : month - 2;
+  const stem = STEMS_ORDER[(startIdx + offsetFromYin + 120) % 10];
+  return { stem, branch };
+}
+
+function buildLiuYueForYear(pillars: BaziPillars, year: number): LiuYueEntry[] {
+  const dm = pillars.day.stem;
+  const dayBranch = pillars.day.branch;
+  const out: LiuYueEntry[] = [];
+  for (let month = 1; month <= 12; month++) {
+    const pillar = monthPillarMidMonth(year, month);
+    const vs = branchTransitTags(dayBranch, pillar.branch);
+    out.push({
+      year,
+      month,
+      label: `${year}-${String(month).padStart(2, "0")}`,
+      pillar,
+      ten_god: tenGodOf(dm, pillar.stem),
+      vs_day_branch: vs,
+      flag: transitFlag(vs),
+    });
+  }
+  return out;
+}
+
+function annotateLuckPillarYears(lp: LuckPillar[], birthYear?: number): LuckPillar[] {
+  if (!birthYear) return lp;
+  return lp.map((p) => {
+    const yearStart = Math.ceil(birthYear + p.age_start);
+    return { ...p, year_start: yearStart, year_end: yearStart + 9 };
+  });
+}
+
+function buildLuckDecadeDrilldown(pillars: BaziPillars, lp: LuckPillar[], birthYear?: number): LuckDecadeDrilldown[] {
+  if (!birthYear) return [];
+  return lp.map((p, idx) => {
+    const yearStart = p.year_start ?? Math.ceil(birthYear + p.age_start);
+    const years = buildLiuNianTimeline(pillars, yearStart, 10, birthYear)
+      .map((y) => ({ ...y, months: buildLiuYueForYear(pillars, y.year) }));
+    return {
+      luck_index: idx,
+      luck_pillar: { stem: p.stem, branch: p.branch },
+      age_start: p.age_start,
+      age_end: p.age_end,
+      year_start: yearStart,
+      year_end: yearStart + 9,
+      years,
+    };
+  });
 }
 
 function buildInteractions(pillars: BaziPillarsAny): InteractionFlag[] {
@@ -968,6 +1079,8 @@ function buildTodayOverlay(pillars: BaziPillars, todayDate: Date): TodayOverlay 
 export type LuckPillar = {
   age_start: number;
   age_end: number;
+  year_start?: number;
+  year_end?: number;
   stem: string;
   branch: string;
   element: "wood" | "fire" | "earth" | "metal" | "water";
@@ -1039,6 +1152,7 @@ export type ChartExtensions = {
   lp_natal_interactions: LPNatalInteraction[];
   tian_di_he: TianDiHe[];
   liu_nian_timeline: LiuNianEntry[];
+  luck_decade_drilldown: LuckDecadeDrilldown[];
   /* Engine 2 · Special chart + Spouse + Career + Health */
   special_chart: SpecialChartRules;
   spouse_palace: SpousePalace;
@@ -1048,7 +1162,8 @@ export type ChartExtensions = {
 
 export function buildChartExtensions(pillars: BaziPillarsAny, todayDate: Date = new Date(), gender: "M" | "F" = "M", birthDate?: Date, startAge: number = 10, geJuStructure: string | null = null, strengthPct: number = 50, yongshenElement: string | null = null, adjustedYongshenElements: string[] | null = null): ChartExtensions {
   const pAny = pillars as any;
-  const lp = buildLuckPillars(pAny, gender, startAge);
+  const birthYear = birthDate?.getUTCFullYear();
+  const lp = annotateLuckPillarYears(buildLuckPillars(pAny, gender, startAge), birthYear);
   let currentAge = 0;
   if (birthDate) {
     currentAge = Math.floor((todayDate.getTime() - birthDate.getTime()) / (365.25 * 86400000));
@@ -1088,7 +1203,8 @@ export function buildChartExtensions(pillars: BaziPillarsAny, todayDate: Date = 
       ? buildLpNatalInteractions(pAny, { stem: lp[finalIdx].stem, branch: lp[finalIdx].branch })
       : [],
     tian_di_he: buildTianDiHe(pillars),
-    liu_nian_timeline: buildLiuNianTimeline(pAny, birthDate ? birthDate.getUTCFullYear() : todayDate.getUTCFullYear(), 100, birthDate?.getUTCFullYear()),
+    liu_nian_timeline: buildLiuNianTimeline(pAny, birthYear || todayDate.getUTCFullYear(), 100, birthYear),
+    luck_decade_drilldown: buildLuckDecadeDrilldown(pAny, lp, birthYear),
     /* Engine 2 · Special chart + Spouse + Career + Health */
     special_chart: buildSpecialChartRules(pAny, geJuStructure),
     spouse_palace: buildSpousePalace(pillars),

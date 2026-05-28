@@ -247,6 +247,7 @@ export async function POST(req: Request) {
           lp_natal_interactions: ext.lp_natal_interactions,
           tian_di_he: ext.tian_di_he,
           liu_nian_timeline: ext.liu_nian_timeline,
+          luck_decade_drilldown: ext.luck_decade_drilldown,
           special_chart: ext.special_chart,
           spouse_palace: ext.spouse_palace,
           career_industry: ext.career_industry,
@@ -508,6 +509,7 @@ export async function POST(req: Request) {
         lp_natal_interactions: ext.lp_natal_interactions,
         tian_di_he: ext.tian_di_he,
         liu_nian_timeline: ext.liu_nian_timeline,
+        luck_decade_drilldown: ext.luck_decade_drilldown,
         /* Engine 2 · Special chart + Spouse + Career + Health */
         special_chart: ext.special_chart,
         spouse_palace: ext.spouse_palace,
