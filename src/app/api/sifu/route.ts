@@ -229,6 +229,7 @@ function loadSifuExtraKnowledge(): { text: string; version: string } {
 const CACHE_TTL_HOURS = 24;
 function cacheKey(opts: {
   profileId?: string;
+  contextHash?: string;
   orgId?: string | null;
   topic?: string;
   mode?: string;
@@ -242,6 +243,7 @@ function cacheKey(opts: {
     opts.ruleVersion,
     opts.orgId || "noorg",
     opts.profileId || "anon",
+    opts.contextHash || "noctx",
     opts.topic || "free",
     opts.mode || "default",
     opts.lang,
@@ -249,6 +251,19 @@ function cacheKey(opts: {
     opts.message,
   ].join("|");
   return createHash("sha256").update(parts).digest("hex");
+}
+
+function contextHash(ctx: string): string {
+  return createHash("sha1").update(ctx).digest("hex").slice(0, 16);
+}
+
+function promptSafe(raw: unknown, fallback = "—"): string {
+  const s = String(raw ?? "").replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+  if (!s) return fallback;
+  return s
+    .replace(/FACT LOCK:/gi, "FACT_LOCK:")
+    .replace(/Day Master/gi, "DayMaster")
+    .replace(/⟦ID⟧/g, "ID");
 }
 
 function knownBirthTime(raw: unknown): boolean {
@@ -295,22 +310,46 @@ async function getDayPillarKey(): Promise<string> {
 }
 
 /* Build short BaZi context summary from profile */
-async function buildBaziContext(profileId: string, orgId: string | null): Promise<string> {
+async function buildBaziContext(profileId: string, orgId: string | null, userId?: string | null): Promise<string> {
   if (!orgId) return "(ไม่พบ profile)"; // ไม่มี session/org = อ่านดวงใครไม่ได้ (กันข้ามบัญชี)
   try {
     const row = await q1<{
+      id: string;
       name?: string;
+      nickname?: string | null;
+      relationship_type: string | null;
+      is_self: boolean;
       birth_datetime: string;
       birth_lng: number | null;
       gender: string | null;
       birth_time_known: boolean | null;
       day_boundary: string | null;
     }>(
-      `SELECT name, to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-              birth_lng, gender, birth_time_known, day_boundary FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
+      `SELECT id, name, nickname, relationship_type,
+              (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self,
+              to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
+              birth_lng, gender, birth_time_known, day_boundary
+       FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
       [profileId, orgId]
     );
     if (!row) return "(ไม่พบ profile)";
+    const owner = row.is_self ? row : await q1<{
+      id: string;
+      name?: string;
+      nickname?: string | null;
+    }>(
+      `SELECT id, name, nickname
+       FROM profiles
+       WHERE org_id=$1 AND is_archived=false
+         AND created_by_user_id=$2
+         AND (relationship_type IS NULL OR btrim(relationship_type) = '')
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [orgId, userId || ""]
+    );
+    const ownerName = promptSafe(owner ? (owner.nickname || owner.name) : "", "ไม่พบ self profile");
+    const subjectName = promptSafe(row.nickname || row.name, "—");
+    const subjectRole = promptSafe(row.is_self ? "ตัวเอง/เจ้าของบัญชี" : row.relationship_type, "คนในเครือข่าย");
 
     const dt = row.birth_datetime;
     const [date, timeRaw] = dt.split("T");
@@ -348,8 +387,10 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     const ny = ext.nayin;
 
     const lines = [
+      `IDENTITY CONTEXT: ผู้ถาม/เจ้าของบัญชี = ${ownerName} (profileId=${owner?.id || "unknown"}) · ดวงที่กำลังดู/ตอบ = ${subjectName} (${subjectRole}, profileId=${row.id}) · ถ้าคำถามใช้คำว่า "คุณ/ผม/เรา" ให้หมายถึงผู้ถาม; ถ้ากำลังดูดวงคนอื่นให้เรียกชื่อ/บทบาทคนที่เลือก ห้ามสลับ Day Master หรือชื่อระหว่าง profile`,
       `ชื่อ: ${row.name || "—"} · เพศ ${gender} · อายุปัจจุบันประมาณ ${ageNow}`,
       `เกิด: ${date} ${time} · ลองจิจูด ${lng}`,
+      `ขอบวัน/Day boundary ที่ใช้คำนวณ: ${dayBoundary} (${dayBoundarySource})`,
       is3p
         ? `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่ทราบเวลาเกิด) · ${g.NO_HOUR_PILLAR}`
         : `4 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時${calc.pillarsZh.hour}`,
@@ -754,19 +795,18 @@ export async function POST(req: Request) {
     const session = await getSession();
     const orgId = session?.orgId ?? null;
 
-    /* 💾 Cache check ก่อน */
     const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
     const dayKey = await getDayPillarKey();
-    const key = cacheKey({ profileId, orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
+    const ctx = mode === "intro"
+      ? (profileId ? await buildIntroBaziContext(profileId, orgId) : "(intro mode แต่ไม่มี profileId)")
+      : (profileId ? await buildBaziContext(profileId, orgId, session?.userId) : "(ไม่มี profileId · ตอบทั่วไป)");
+    /* 💾 Cache หลัง build context เท่านั้น: profile/dayBoundary/packet เปลี่ยน = ctx hash เปลี่ยน = ไม่คืนคำตอบดวงเก่า */
+    const key = cacheKey({ profileId, contextHash: contextHash(ctx), orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
     const useCache = mode !== "intro";
     const cached = useCache ? await getCachedReply(key) : null;
     if (cached) {
       return NextResponse.json({ ...cached, cached: true, key: key.slice(0, 8) });
     }
-
-    const ctx = mode === "intro"
-      ? (profileId ? await buildIntroBaziContext(profileId, orgId) : "(intro mode แต่ไม่มี profileId)")
-      : (profileId ? await buildBaziContext(profileId, orgId) : "(ไม่มี profileId · ตอบทั่วไป)");
     /* ⚠️ ส่ง history จริงเข้า prompt (ไม่ใช่ history:[] แบบ GET) · คำตอบต้องจำบทสนทนา */
     const prompt = buildPrompt({ ctx, message, history, topic, lang, mode });
 
@@ -930,7 +970,25 @@ export async function GET(req: Request) {
 
   const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
   const dayKey = await getDayPillarKey();
-  const key = cacheKey({ profileId, orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
+  let ctx = mode === "intro"
+    ? "(intro mode แต่ไม่มี profileId)"
+    : "(ไม่มี profileId)";
+  try {
+    if (mode === "intro") {
+      const birthParams = parseIntroBirthParams(url);
+      if (profileId) {
+        ctx = await buildIntroBaziContext(profileId, orgId);
+        if (ctx.startsWith("(ไม่") && birthParams) ctx = await buildIntroBaziContextFromBirth(birthParams);
+      } else {
+        ctx = birthParams ? await buildIntroBaziContextFromBirth(birthParams) : ctx;
+      }
+    } else {
+      ctx = profileId ? await buildBaziContext(profileId, orgId, session?.userId) : ctx;
+    }
+  } catch (e) {
+    console.warn("[sifu sse] ctx err:", (e as Error).message);
+  }
+  const key = cacheKey({ profileId, contextHash: contextHash(ctx), orgId, topic, mode, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
   const useCache = mode !== "intro";
   const cached = useCache ? await getCachedReply(key) : null;
 
@@ -963,23 +1021,6 @@ export async function GET(req: Request) {
 
       // 2. Cache miss → spawn Claude + pipe stdout chunk-by-chunk
       send("meta", { cached: false, key: key.slice(0, 8), startedAt: Date.now() });
-      let ctx = mode === "intro"
-        ? "(intro mode แต่ไม่มี profileId)"
-        : "(ไม่มี profileId)";
-      try {
-        if (mode === "intro") {
-          const birthParams = parseIntroBirthParams(url);
-          if (profileId) {
-            ctx = await buildIntroBaziContext(profileId, orgId);
-            if (ctx.startsWith("(ไม่") && birthParams) ctx = await buildIntroBaziContextFromBirth(birthParams);
-          } else {
-            ctx = birthParams ? await buildIntroBaziContextFromBirth(birthParams) : ctx;
-          }
-        }
-        else ctx = profileId ? await buildBaziContext(profileId, orgId) : ctx;
-      } catch (e) {
-        console.warn("[sifu sse] ctx err:", (e as Error).message);
-      }
       const warmup = mode === "intro" ? buildIntroWarmup(ctx) : null;
       const promptBase = buildPrompt({ ctx, message, history: [], topic, lang, mode });
       const prompt = warmup
