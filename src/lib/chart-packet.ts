@@ -633,12 +633,39 @@ function godsInChartXS(pillars: Record<string, { stem: string; branch: string } 
   }
   return g;
 }
+const STEM_COMBO_PAIRS_XS = new Set(["甲己", "乙庚", "丙辛", "丁壬", "戊癸"]);
+function isStemComboXS(a: string, b: string): boolean {
+  return STEM_COMBO_PAIRS_XS.has(`${a}${b}`) || STEM_COMBO_PAIRS_XS.has(`${b}${a}`);
+}
+function visibleStemGodsXS(pillars: Record<string, { stem: string; branch: string } | null>, dm: string): Array<{ pos: PillarKey; stem: string; god: string }> {
+  const out: Array<{ pos: PillarKey; stem: string; god: string }> = [];
+  for (const pos of PILLAR_KEYS) {
+    if (pos === "day") continue; // 日主ก้านวันไม่ใช่สิบเทพ และไม่ใช้เป็นตัวกู้ใน resolver 5.2
+    const p = pillars[pos]; if (!p) continue;
+    const god = tenGodOf(dm, p.stem);
+    if (god) out.push({ pos, stem: p.stem, god });
+  }
+  return out;
+}
+function hasVisibleComboTargetGodXS(
+  pillars: Record<string, { stem: string; branch: string } | null>,
+  dm: string,
+  targetGod: string,
+  combinerGods?: string[],
+): boolean {
+  const stems = visibleStemGodsXS(pillars, dm);
+  return stems.some((target, i) => target.god === targetGod && stems.some((other, j) =>
+    i !== j && isStemComboXS(target.stem, other.stem) && (!combinerGods || combinerGods.includes(other.god))
+  ));
+}
 export function buildXiangShen(pillars: Record<string, { stem: string; branch: string } | null>, dm: string, geJuLabel: string): NonNullable<ChartPacket["xiangShen"]> | null {
   const ge = geToRuleKey(geJuLabel); if (!ge) return null;
   const g = godsInChartXS(pillars, dm); const has = (x: string) => g.has(x);
   const 印 = has("正印") || has("偏印"), 財 = has("正財") || has("偏財");
   const 食 = has("食神"), 傷 = has("傷官"), 殺 = has("七殺"), 官 = has("正官");
   const 比劫 = has("比肩") || has("劫財");
+  const 合煞 = hasVisibleComboTargetGodXS(pillars, dm, "七殺");
+  const 印合傷 = hasVisibleComboTargetGodXS(pillars, dm, "傷官", ["正印", "偏印"]);
   const help = ["比肩", "劫財", "正印", "偏印"].filter((x) => g.has(x)).length;
   const drain = ["正財", "偏財", "正官", "七殺", "食神", "傷官"].filter((x) => g.has(x)).length;
   const strong = help >= drain;
@@ -647,6 +674,7 @@ export function buildXiangShen(pillars: Record<string, { stem: string; branch: s
   switch (ge) {
     case "正官格":
       if (傷) return 印 ? R("救應", "傷官見官 → 透印制傷 (敗中有成)", "佩印") : R("破格", "傷官見官 (PO_OFFICIAL_1)", "無印");
+      if (殺 && 官 && 合煞) return R("救應", "官煞混雜 → 合煞留官取清 (ZPZQ-5.2-01)", null);
       if (殺) return R("破格", "官煞混雜 (PO_OFFICIAL_3)", null);  // 官煞混雜 ไม่มี sub-case ใน RUN
       return (財 || 印) ? R("成格", "官透 + 財/印 + 無傷官", 印 ? "佩印" : "用財") : R("合格普通", "官透ไม่มี財/印ค้ำ", "無印");
     case "財格":
@@ -677,6 +705,8 @@ export function buildXiangShen(pillars: Record<string, { stem: string; branch: s
       return R("成格", "透官煞制刃 + 財印", 官 ? "用官" : "用煞");
     case "建祿月劫格":
       if (!財 && !官 && !殺) return R("破格", "純比劫無財官煞 (PO_LU_1)", null);
+      if (財 && 殺 && 合煞) return R("救應", "財帶七殺 → 合煞存財 (ZPZQ-5.2-02)", "用財");
+      if (官 && 傷 && 印 && 印合傷) return R("救應", "用官被傷 → 印護合傷護官 (ZPZQ-5.2-03)", "用官");
       if (官 && 傷) return R("破格", "用官而官被傷 (PO_LU_2)", "用官");
       return R("成格", "透官逢財印/透財逢食傷", 官 ? "用官" : 財 ? "用財" : null);
     default: return null;
