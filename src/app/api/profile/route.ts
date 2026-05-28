@@ -19,13 +19,13 @@ export async function GET() {
             relationship_type,
             day_master, day_master_strength, yongshen, bazi_pillars,
             birth_time_known, day_boundary, is_archived, created_at,
-            (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self
+            (created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '')) AS is_self
      FROM profiles
      WHERE org_id=$1 AND is_archived=false
      ORDER BY
-       CASE WHEN relationship_type IS NULL OR btrim(relationship_type) = '' THEN 0 ELSE 1 END,
+       CASE WHEN created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '') THEN 0 ELSE 1 END,
        created_at DESC`,
-    [s.orgId]
+    [s.orgId, s.userId]
   );
   const activeProfile = rows.find((p: any) => p.is_self) || rows[0] || null;
   return NextResponse.json({ profiles: rows, active_profile: activeProfile });
