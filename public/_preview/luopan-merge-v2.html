@@ -1551,6 +1551,7 @@ try{
 }catch(e){}
 /* CURSOR needle = เข็มสำรวจที่หมุนรอบกลาง · อ่านทิศที่ชี้ */
 let cursorDeg = 180;
+let inspectorSource = 'cursor'; // 'cursor' | 'pin'
 /* ล็อกบ้าน → วง (lpRotate) หมุน -facing ให้ทิศหันหน้าขึ้นบน · เข็ม CURSOR (screen) ตรึงนอกกลุ่ม
  * ทิศจริงบนวง = มุมเข็ม(screen) + facing · ก่อนล็อก = ตรง (วงไม่หมุน) */
 /* หมุนวงด้วย "กลางภูเขาหน้าบ้าน (山)" ไม่ใช่องศาดิบ → 城門 2 บานสมมาตรเท่ากันเสมอ
@@ -1564,6 +1565,7 @@ function applyDialRotation(){
   if(lr) lr.setAttribute('transform', `rotate(${-ringRotation()} 380 380)`);
 }
 function setCursor(d){
+  inspectorSource = 'cursor';
   cursorDeg = ((Number(d) % 360) + 360) % 360; /* มุมเข็มบนจอ (screen) */
   const cursorNeedle = document.getElementById('cursorNeedle');
   if(cursorNeedle) cursorNeedle.setAttribute('transform', `rotate(${cursorDeg} 380 380)`);
@@ -1647,6 +1649,7 @@ function pinRingDeg(pin){
   return Number.isFinite(pin?.deg) ? pin.deg : 0;
 }
 function getActivePin(){
+  if(inspectorSource !== 'pin') return null;
   if(!pins.length || !activePinId) return null;
   return pins.find(p => String(p.id) === String(activePinId)) || null;
 }
@@ -1657,6 +1660,7 @@ function addPin(ev){
   const id = Date.now() + Math.random();
   pins.push({ id, type: pinMode, x, y });
   activePinId = String(id);
+  inspectorSource = 'pin';
   savePins();
   renderPins();
   updateInspector(); /* refresh activate status */
@@ -1666,6 +1670,7 @@ function dragPinToPointer(ev, id){
   const p = pins.find(x => String(x.id) === String(id));
   if(!p) return;
   activePinId = String(id);
+  inspectorSource = 'pin';
   const {x, y} = svgPointToLocal(ev);
   p.x = x; p.y = y;
   renderPins();
@@ -1674,6 +1679,7 @@ function dragPinToPointer(ev, id){
 function removePin(id){
   pins = pins.filter(p => p.id !== id);
   if(String(activePinId) === String(id)) activePinId = pins[0] ? String(pins[0].id) : null;
+  if(!activePinId) inspectorSource = 'cursor';
   savePins();
   renderPins();
   updateInspector();
@@ -1729,6 +1735,7 @@ function renderPins(){
     grp.addEventListener('mousedown', e => {
       e.preventDefault(); e.stopPropagation();
       activePinId = String(p.id);
+      inspectorSource = 'pin';
       pinDraggingId = String(p.id);
       dragging = false; // กัน cursor mode แทรก
       updateInspector();
@@ -1736,6 +1743,7 @@ function renderPins(){
     grp.addEventListener('touchstart', e => {
       e.preventDefault(); e.stopPropagation();
       activePinId = String(p.id);
+      inspectorSource = 'pin';
       pinDraggingId = String(p.id);
       dragging = false;
       updateInspector();
@@ -1746,7 +1754,7 @@ function renderPins(){
 }
 document.getElementById('pinClear')?.addEventListener('click', () => {
   if(!pins.length) return;
-  pins = []; activePinId = null; savePins(); renderPins(); updateInspector();
+  pins = []; activePinId = null; inspectorSource = 'cursor'; savePins(); renderPins(); updateInspector();
 });
 loadPins();
 if(pins.length && !activePinId) activePinId = String(pins[0].id);
