@@ -3505,9 +3505,11 @@ window.addEventListener('resize', function(){
               const end = m.jieqi_end ? `${m.jieqi_end.date}` : '';
               const hid = hiddenShort(m.hidden_stems);
               const impact = impactShort(m.impacts, 2);
+              const monthNo = String(m.month || '').padStart(2, '0');
+              const displayLabel = `เดือนจร ${monthNo} · 流月`;
               const title = [`節:${start || 'fallback กลางเดือน'} → ${end}`, `日:${(m.vs_day_branch||[]).join(' · ')}`, `運:${(m.vs_luck_branch||[]).join(' · ')}`, impact].join(' | ');
               return `<div class="hk-ld-month ${fc}" title="${h(title)}">
-                <div class="mo">${h(m.label || String(m.month).padStart(2,'0'))}</div>
+                <div class="mo">${h(displayLabel)}</div>
                 <div class="pl">${h((mp.stem||'')+(mp.branch||''))}</div>
                 <div class="tg">ฟ้า ${h(mp.stem||'')} = ${h(mtg)}${stemRole ? ' · '+h(stemRole) : ''}</div>
                 <div class="tg">ดิน ${h(mp.branch||'')} = ${h(BRANCH_EL_TH_LP[mp.branch]||'')}${branchRole ? ' · '+h(branchRole) : ''}</div>
