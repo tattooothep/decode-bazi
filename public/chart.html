@@ -400,6 +400,7 @@
   .hk-ld-year .yr{font-family:var(--mono);font-size:10px;color:var(--gold);}
   .hk-ld-year .pl{font-family:var(--tc);font-size:16px;font-weight:700;margin-top:2px;}
   .hk-ld-year .tg{font-size:10px;color:var(--fg-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hk-ld-year .vs{font-family:var(--mono);font-size:9px;color:var(--fg-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
   .hk-ld-year.auspicious{border-color:var(--wood);background:rgba(125,211,123,.07);}
   .hk-ld-year.cautious{border-color:var(--fire);background:rgba(226,107,93,.07);}
   .hk-ld-year.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;background:rgba(200,164,77,.10);}
@@ -3427,14 +3428,22 @@ window.addEventListener('resize', function(){
       const years = drill && Array.isArray(drill.years) ? drill.years : [];
       const TG_TH_SHORT = {正官:'งาน/อำนาจ',七殺:'แรงกดดัน',正財:'ทรัพย์ตรง',偏財:'ทรัพย์ไหล',正印:'ครู/ที่พึ่ง',偏印:'ปัญญาเฉพาะ',食神:'ผลงาน',傷官:'พรสวรรค์',比肩:'เพื่อน',劫財:'แข่งขัน'};
       const VS_TH_D = {'六合':'จับคู่','六沖':'ปะทะ','六害':'ทำลาย','六破':'บั่นทอน','半合':'ครึ่งผสาน','三合':'สามผสาน','三會':'สามฤดู','三刑':'ลงโทษ'};
+      const vsShort = (arr) => (arr || []).map(v => {
+        const base = String(v).split('·')[0];
+        return VS_TH_D[base] || v;
+      }).join('·');
       const yearCells = years.map((y, yi) => {
         const ys = y.pillar || {};
         const ytg = TG_TH_SHORT[y.ten_god] || y.ten_god || '';
         const fc = y.flag === 'auspicious' ? 'auspicious' : (y.flag === 'cautious' ? 'cautious' : '');
+        const yVsDay = vsShort(y.vs_day_branch);
+        const yVsLuck = vsShort(y.vs_luck_branch);
+        const yVs = [yVsDay ? `日:${yVsDay}` : '', yVsLuck ? `運:${yVsLuck}` : ''].filter(Boolean).join(' · ');
         return `<button type="button" class="hk-ld-year ${fc}" data-yi="${yi}">
           <div class="yr">${h(y.year)} <span style="opacity:.55">· ${h(y.age)}ปี</span></div>
           <div class="pl">${h((ys.stem||'')+(ys.branch||''))}</div>
           <div class="tg">${h(ytg)}</div>
+          ${yVs ? `<div class="vs">${h(yVs)}</div>` : ''}
         </button>`;
       }).join('');
       luckDetail.style.display = '';
@@ -3451,7 +3460,7 @@ window.addEventListener('resize', function(){
           <div class="hk-ld-years">${yearCells}</div>
           <div class="hk-ld-month-head" id="hk-ld-month-head">流月</div>
           <div class="hk-ld-months" id="hk-ld-months"></div>
-          <div class="hk-liunian-hint">เดือนจรใช้ anchor กลางเดือนเพื่อเลี่ยงขอบ節氣 · ปี/เดือนสีเขียว=ผสาน · แดง=ปะทะ/ทำลายกับกิ่งวัน</div>
+          <div class="hk-liunian-hint">流月1 เริ่มที่立春 · เดือนจรใช้節氣หลักจริง · 日=เทียบกิ่งวัน · 運=เทียบกิ่งวัยจร · เขียว=ผสาน · แดง=ปะทะ/ทำลาย</div>
         </div>` : ''}
       `;
       if (years.length) {
@@ -3470,14 +3479,16 @@ window.addEventListener('resize', function(){
               const mp = m.pillar || {};
               const fc = m.flag === 'auspicious' ? 'auspicious' : (m.flag === 'cautious' ? 'cautious' : '');
               const mtg = TG_TH_SHORT[m.ten_god] || m.ten_god || '';
-              const vs = (m.vs_day_branch || []).map(v => {
-                const base = String(v).split('·')[0];
-                return VS_TH_D[base] || v;
-              }).join('·');
-              return `<div class="hk-ld-month ${fc}" title="${h((m.vs_day_branch||[]).join(' · '))}">
-                <div class="mo">${String(m.month).padStart(2,'0')}</div>
+              const vsDay = vsShort(m.vs_day_branch);
+              const vsLuck = vsShort(m.vs_luck_branch);
+              const vs = [vsDay ? `日:${vsDay}` : '', vsLuck ? `運:${vsLuck}` : ''].filter(Boolean).join(' · ');
+              const start = m.jieqi_start ? `${m.jieqi_start.name} ${m.jieqi_start.date}` : '';
+              const title = [`節:${start || 'fallback กลางเดือน'}`, `日:${(m.vs_day_branch||[]).join(' · ')}`, `運:${(m.vs_luck_branch||[]).join(' · ')}`].join(' | ');
+              return `<div class="hk-ld-month ${fc}" title="${h(title)}">
+                <div class="mo">${h(m.label || String(m.month).padStart(2,'0'))}</div>
                 <div class="pl">${h((mp.stem||'')+(mp.branch||''))}</div>
                 <div class="tg">${h(mtg)}</div>
+                ${start ? `<div class="vs">節:${h(start)}</div>` : ''}
                 ${vs ? `<div class="vs">${h(vs)}</div>` : ''}
               </div>`;
             }).join('');

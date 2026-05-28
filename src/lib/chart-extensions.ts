@@ -4,6 +4,7 @@
 // Status: read-only · ไม่ recommend activity · ไม่มี wording user-facing
 
 import type { BaziPillars, BaziPillarsAny } from "./bazi-calc";
+import * as tyme from "tyme4ts";
 
 /* 19 พ.ค. Option α · accept hour=null · 4p path byte-equal · 3p path: skip hour-only events */
 const ACTIVE_KEYS_4P: (keyof BaziPillars)[] = ["year", "month", "day", "hour"];
@@ -784,9 +785,22 @@ export type LiuYueEntry = {
   month: number;
   label: string;
   pillar: { stem: string; branch: string };
+  element: string;
+  branch_element: string;
+  jieqi_start: { name: string; date: string } | null;
+  jieqi_end: { name: string; date: string } | null;
+  month_method: "jieqi_major_term" | "mid_month_fallback";
   ten_god: string | null;
   vs_day_branch: string[];
+  vs_luck_branch: string[];
   flag: "auspicious" | "cautious" | "neutral";
+};
+
+export type LuckDecadeYearEntry = LiuNianEntry & {
+  element: string;
+  branch_element: string;
+  vs_luck_branch: string[];
+  months: LiuYueEntry[];
 };
 
 export type LuckDecadeDrilldown = {
@@ -796,7 +810,7 @@ export type LuckDecadeDrilldown = {
   age_end: number;
   year_start: number;
   year_end: number;
-  years: Array<LiuNianEntry & { months: LiuYueEntry[] }>;
+  years: LuckDecadeYearEntry[];
 };
 
 function buildLiuNianTimeline(pillars: BaziPillars, baseYear: number, span: number = 10, birthYear?: number): LiuNianEntry[] {
@@ -865,14 +879,28 @@ function branchTransitTags(dayBranch: string, branch: string): string[] {
 }
 
 function transitFlag(vs: string[]): "auspicious" | "cautious" | "neutral" {
-  if (vs.some(t => t === "六合" || t.startsWith("半合"))) return "auspicious";
   if (vs.some(t => t === "六沖" || t === "六害" || t === "六破")) return "cautious";
+  if (vs.some(t => t === "六合" || t.startsWith("半合"))) return "auspicious";
   return "neutral";
 }
 
 function yearStem(year: number): string {
   const offset = ((year - 1984) % 60 + 60) % 60;
   return STEMS_ORDER[offset % 10];
+}
+
+const LIU_YUE_MAJOR_TERMS = [
+  { no: 1, name: "立春", yearOffset: 0 }, { no: 2, name: "惊蛰", yearOffset: 0 },
+  { no: 3, name: "清明", yearOffset: 0 }, { no: 4, name: "立夏", yearOffset: 0 },
+  { no: 5, name: "芒种", yearOffset: 0 }, { no: 6, name: "小暑", yearOffset: 0 },
+  { no: 7, name: "立秋", yearOffset: 0 }, { no: 8, name: "白露", yearOffset: 0 },
+  { no: 9, name: "寒露", yearOffset: 0 }, { no: 10, name: "立冬", yearOffset: 0 },
+  { no: 11, name: "大雪", yearOffset: 0 }, { no: 12, name: "小寒", yearOffset: 1 },
+];
+
+function formatSolarTimeLike(st: any): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${st.getYear()}-${pad(st.getMonth())}-${pad(st.getDay())} ${pad(st.getHour())}:${pad(st.getMinute())}`;
 }
 
 function monthPillarMidMonth(year: number, month: number): { stem: string; branch: string } {
@@ -894,21 +922,61 @@ function monthPillarMidMonth(year: number, month: number): { stem: string; branc
   return { stem, branch };
 }
 
-function buildLiuYueForYear(pillars: BaziPillars, year: number): LiuYueEntry[] {
+function liuYuePillarByJieqi(year: number, month: number): {
+  pillar: { stem: string; branch: string };
+  jieqi_start: { name: string; date: string } | null;
+  jieqi_end: { name: string; date: string } | null;
+  month_method: "jieqi_major_term" | "mid_month_fallback";
+} {
+  try {
+    const startCfg = LIU_YUE_MAJOR_TERMS[Math.max(0, Math.min(11, month - 1))];
+    const endCfg = month === 12 ? LIU_YUE_MAJOR_TERMS[0] : LIU_YUE_MAJOR_TERMS[month];
+    const startTerm = tyme.SolarTerm.fromName(year + startCfg.yearOffset, startCfg.name);
+    const endTerm = tyme.SolarTerm.fromName(year + (month === 12 ? 1 : endCfg.yearOffset), endCfg.name);
+    const startTime = startTerm.getJulianDay().getSolarTime();
+    const endTime = endTerm.getJulianDay().getSolarTime();
+    const monthName = startTime.next(3600).getLunarHour().getEightChar().getMonth().getName();
+    return {
+      pillar: { stem: monthName[0], branch: monthName[1] },
+      jieqi_start: { name: startCfg.name, date: formatSolarTimeLike(startTime) },
+      jieqi_end: { name: endCfg.name, date: formatSolarTimeLike(endTime) },
+      month_method: "jieqi_major_term",
+    };
+  } catch (_) {
+    const gregYear = month === 12 ? year + 1 : year;
+    const gregMonth = month === 12 ? 1 : month + 1;
+    return {
+      pillar: monthPillarMidMonth(gregYear, gregMonth),
+      jieqi_start: null,
+      jieqi_end: null,
+      month_method: "mid_month_fallback",
+    };
+  }
+}
+
+function buildLiuYueForYear(pillars: BaziPillars, year: number, luckBranch?: string): LiuYueEntry[] {
   const dm = pillars.day.stem;
   const dayBranch = pillars.day.branch;
   const out: LiuYueEntry[] = [];
   for (let month = 1; month <= 12; month++) {
-    const pillar = monthPillarMidMonth(year, month);
-    const vs = branchTransitTags(dayBranch, pillar.branch);
+    const byJieqi = liuYuePillarByJieqi(year, month);
+    const pillar = byJieqi.pillar;
+    const vsDay = branchTransitTags(dayBranch, pillar.branch);
+    const vsLuck = luckBranch ? branchTransitTags(luckBranch, pillar.branch) : [];
     out.push({
       year,
       month,
-      label: `${year}-${String(month).padStart(2, "0")}`,
+      label: `${year}-L${String(month).padStart(2, "0")}`,
       pillar,
+      element: STEM_ELEMENT[pillar.stem] || "unknown",
+      branch_element: BRANCH_ELEMENT[pillar.branch] || "unknown",
+      jieqi_start: byJieqi.jieqi_start,
+      jieqi_end: byJieqi.jieqi_end,
+      month_method: byJieqi.month_method,
       ten_god: tenGodOf(dm, pillar.stem),
-      vs_day_branch: vs,
-      flag: transitFlag(vs),
+      vs_day_branch: vsDay,
+      vs_luck_branch: vsLuck,
+      flag: transitFlag([...vsDay, ...vsLuck]),
     });
   }
   return out;
@@ -927,7 +995,18 @@ function buildLuckDecadeDrilldown(pillars: BaziPillars, lp: LuckPillar[], birthY
   return lp.map((p, idx) => {
     const yearStart = p.year_start ?? Math.ceil(birthYear + p.age_start);
     const years = buildLiuNianTimeline(pillars, yearStart, 10, birthYear)
-      .map((y) => ({ ...y, months: buildLiuYueForYear(pillars, y.year) }));
+      .map((y) => {
+        const vsLuck = branchTransitTags(p.branch, y.pillar.branch);
+        const mergedVs = [...y.vs_day_branch, ...vsLuck];
+        return {
+          ...y,
+          element: STEM_ELEMENT[y.pillar.stem] || "unknown",
+          branch_element: BRANCH_ELEMENT[y.pillar.branch] || "unknown",
+          vs_luck_branch: vsLuck,
+          flag: transitFlag(mergedVs),
+          months: buildLiuYueForYear(pillars, y.year, p.branch),
+        };
+      });
     return {
       luck_index: idx,
       luck_pillar: { stem: p.stem, branch: p.branch },

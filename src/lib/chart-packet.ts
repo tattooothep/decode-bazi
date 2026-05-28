@@ -233,6 +233,49 @@ export type ChartPacket = {
     stem: string; branch: string; element: ElementEN;
     ageStart: number; ageEnd: number; yearStart: number; yearEnd: number; isCurrent: boolean;
   }>;
+  /** ปีจร/เดือนจรในวัยจรปัจจุบัน · engine precomputed จาก chart-extensions
+   * ส่งให้ AI ใช้เป็น source of truth เวลา user ถามย้อนหลัง/รายเดือน · ห้าม AI คำนวณเสาเอง */
+  transitDrilldown: {
+    source: "engine_luck_decade_drilldown";
+    monthPillarMethod: "jieqi_major_terms_with_mid_month_fallback";
+    currentDecade: {
+      luckIndex: number;
+      luckPillar: { stem: string; branch: string };
+      ageStart: number;
+      ageEnd: number;
+      yearStart: number;
+      yearEnd: number;
+      years: Array<{
+        year: number;
+        age: number;
+        pillar: { stem: string; branch: string };
+        stemElement: ElementEN | "unknown";
+        branchElement: ElementEN | "unknown";
+        stemUsefulRole: "yong" | "xi" | "ji" | "neutral";
+        branchUsefulRole: "yong" | "xi" | "ji" | "neutral";
+        tenGod: string | null;
+        flag: "auspicious" | "cautious" | "neutral";
+        vsDayBranch: string[];
+        vsLuckBranch: string[];
+        months: Array<{
+          month: number;
+          label: string;
+          pillar: { stem: string; branch: string };
+          jieqiStart: { name: string; date: string } | null;
+          jieqiEnd: { name: string; date: string } | null;
+          monthMethod: "jieqi_major_term" | "mid_month_fallback";
+          stemElement: ElementEN | "unknown";
+          branchElement: ElementEN | "unknown";
+          stemUsefulRole: "yong" | "xi" | "ji" | "neutral";
+          branchUsefulRole: "yong" | "xi" | "ji" | "neutral";
+          tenGod: string | null;
+          flag: "auspicious" | "cautious" | "neutral";
+          vsDayBranch: string[];
+          vsLuckBranch: string[];
+        }>;
+      }>;
+    } | null;
+  } | null;
   annualPillar: { stem: string; branch: string };
   interactions: {
     status: "resolved_partial" | "raw_only" | "none_detected";
@@ -1162,6 +1205,73 @@ export function buildStructuredChartPacket(
     };
   });
 
+  /* ─── transitDrilldown (วัยจรปัจจุบัน → ปีจร 10 ปี → เดือนจร 12 เดือน)
+   * source = ext.luck_decade_drilldown ที่ engine คำนวณแล้ว · packet แค่ map/annotate useful role
+   * ไม่ส่งทุกวัยจรทั้งชีวิตเข้า prompt เพื่อคุมขนาด แต่ให้ AI ตอบย้อนหลัง/รายเดือนในรอบปัจจุบันได้โดยไม่คำนวณเสาเอง */
+  const asElement = (el: unknown): ElementEN | "unknown" => {
+    const v = String(el || "").toLowerCase() as ElementEN;
+    return VALID.has(v) ? v : "unknown";
+  };
+  const usefulRole = (el: ElementEN | "unknown"): "yong" | "xi" | "ji" | "neutral" => {
+    if (el === "unknown") return "neutral";
+    if (yong.includes(el)) return "yong";
+    if (xi.includes(el)) return "xi";
+    if (ji.includes(el)) return "ji";
+    return "neutral";
+  };
+  const drill = calc.mode === "3p"
+    ? null
+    : ((ext.luck_decade_drilldown || [])[ext.current_luck_idx] || null);
+  const transitDrilldown: ChartPacket["transitDrilldown"] = drill ? {
+    source: "engine_luck_decade_drilldown",
+    monthPillarMethod: "jieqi_major_terms_with_mid_month_fallback",
+    currentDecade: {
+      luckIndex: drill.luck_index,
+      luckPillar: drill.luck_pillar,
+      ageStart: drill.age_start,
+      ageEnd: drill.age_end,
+      yearStart: drill.year_start,
+      yearEnd: drill.year_end,
+      years: (drill.years || []).map((y) => {
+        const stemElement = asElement(y.element);
+        const branchElement = asElement(y.branch_element);
+        return {
+          year: y.year,
+          age: y.age,
+          pillar: y.pillar,
+          stemElement,
+          branchElement,
+          stemUsefulRole: usefulRole(stemElement),
+          branchUsefulRole: usefulRole(branchElement),
+          tenGod: y.ten_god,
+          flag: y.flag,
+          vsDayBranch: y.vs_day_branch || [],
+          vsLuckBranch: y.vs_luck_branch || [],
+          months: (y.months || []).map((m) => {
+            const mStemElement = asElement(m.element);
+            const mBranchElement = asElement(m.branch_element);
+            return {
+              month: m.month,
+              label: m.label,
+              pillar: m.pillar,
+              jieqiStart: m.jieqi_start ?? null,
+              jieqiEnd: m.jieqi_end ?? null,
+              monthMethod: m.month_method || "mid_month_fallback",
+              stemElement: mStemElement,
+              branchElement: mBranchElement,
+              stemUsefulRole: usefulRole(mStemElement),
+              branchUsefulRole: usefulRole(mBranchElement),
+              tenGod: m.ten_god,
+              flag: m.flag,
+              vsDayBranch: m.vs_day_branch || [],
+              vsLuckBranch: m.vs_luck_branch || [],
+            };
+          }),
+        };
+      }),
+    },
+  } : null;
+
   /* ─── luckInteractions (LP × natal · จาก lp_natal_interactions)
    *   หนึ่ง entry มีได้หลาย types[] (ก้าน+กิ่ง) → แตกเป็น Interaction ต่อ type ─── */
   const luckInteractions: Interaction[] = [];
@@ -1349,6 +1459,7 @@ export function buildStructuredChartPacket(
     },
     currentLuck,
     luckTimeline,
+    transitDrilldown,
     annualPillar: { stem: cyp?.stem || "-", branch: cyp?.branch || "-" },
     interactions: { status: interactionStatus, raw },
     luckInteractions,
@@ -1643,6 +1754,36 @@ export function renderChartPrompt(packet: ChartPacket): string {
       packet.luckTimeline
         .map((t) => `${STEM_TH[t.stem] || t.stem}/${BRANCH_TH_NAME[t.branch] || t.branch}(อายุ${t.ageStart}-${t.ageEnd}·ปี${t.yearStart}-${t.yearEnd}·ธาตุ${elementTh(t.element)})${t.isCurrent ? "◀ปัจจุบัน" : ""}`)
         .join(" · ")
+    );
+  }
+  /* ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed)
+   * ให้ AI ใช้ block นี้ตอบคำถามย้อนหลัง/รายเดือนในรอบ 10 ปีปัจจุบัน · ห้าม AI คำนวณเสาเอง */
+  if (packet.transitDrilldown?.currentDecade) {
+    const d = packet.transitDrilldown.currentDecade;
+    const flagTh: Record<string, string> = { auspicious: "ผสาน", cautious: "ต้องคุม", neutral: "กลาง" };
+    const roleTh: Record<string, string> = { yong: "用", xi: "喜", ji: "忌", neutral: "กลาง" };
+    const tgTh = (g: string | null) => g ? (TEN_GOD_TH[g] || g) : "-";
+    const tags = (xs: string[]) => xs.length ? xs.join("+") : "-";
+    const monthTxt = (m: NonNullable<NonNullable<ChartPacket["transitDrilldown"]>["currentDecade"]>["years"][number]["months"][number]) =>
+      `${String(m.month).padStart(2, "0")}${m.pillar.stem}${m.pillar.branch}/${tgTh(m.tenGod)}/${flagTh[m.flag] || m.flag}` +
+      `${m.jieqiStart ? `/เริ่ม${m.jieqiStart.name}:${m.jieqiStart.date}` : "/fallbackกลางเดือน"}` +
+      `/ฟ้า${elementTh(m.stemElement)}=${roleTh[m.stemUsefulRole]}` +
+      `/ดิน${elementTh(m.branchElement)}=${roleTh[m.branchUsefulRole]}` +
+      `${m.vsDayBranch.length ? `/日:${tags(m.vsDayBranch)}` : ""}` +
+      `${m.vsLuckBranch.length ? `/運:${tags(m.vsLuckBranch)}` : ""}`;
+    const years = d.years.map((y) =>
+      `${y.year}(อายุ${y.age}) ${y.pillar.stem}${y.pillar.branch}/${tgTh(y.tenGod)}/${flagTh[y.flag] || y.flag}` +
+      `/ฟ้า${elementTh(y.stemElement)}=${roleTh[y.stemUsefulRole]}` +
+      `/ดิน${elementTh(y.branchElement)}=${roleTh[y.branchUsefulRole]}` +
+      `${y.vsDayBranch.length ? `/เทียบกิ่งวัน:${tags(y.vsDayBranch)}` : ""}` +
+      `${y.vsLuckBranch.length ? `/เทียบกิ่งวัยจร:${tags(y.vsLuckBranch)}` : ""}` +
+      `; เดือนจร=${y.months.map(monthTxt).join(" | ")}`
+    );
+    lines.push(
+      `ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed · AI ห้ามคำนวณเสาปี/เดือนเอง): ` +
+      `大運 ${d.luckPillar.stem}${d.luckPillar.branch} อายุ ${d.ageStart}-${d.ageEnd} ปี${d.yearStart}-${d.yearEnd} · ` +
+      `เดือนจรใช้節氣หลักจริง (立春/惊蛰/清明...) จาก engine; รายการที่ fallback จะติดป้าย fallbackกลางเดือน · ถ้าถามวันใกล้เวลาเปลี่ยน節氣ให้เตือนว่าต้องเช็คขอบเวลา節氣\n` +
+      years.join("\n")
     );
   }
   /* 交運 วันสลับวัยจร大運 (27 พ.ค. · derived จาก luckTimeline · ปีรอยต่อ + เตือน交脫ไม่นิ่ง · กัน 3p เพราะไม่มี起運จริง) */
