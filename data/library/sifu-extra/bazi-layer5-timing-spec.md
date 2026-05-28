@@ -102,8 +102,12 @@ buildChengBaiNow(pillars, dm, geJu/xiangShen, yongShen/jiShen, currentLuck, curr
 
 ---
 
-## §5. ลำดับ implement (phase · session ต่อ)
-1. craft golden จาก §4 (5 命例 + เฉลย成/破) → `scripts/proto-layer5-v1.cjs`
-2. `buildChengBaiNow` ใน chart-packet (อ่าน buildXiangShen + wrapper-7 用神 + luckTimeline)
-3. test golden ผ่าน → wire render block (หลัง交運)
-4. 5-agent หรือพ่อ review → deploy r100
+## §5. ลำดับ implement (phase)
+1. ✅ **Step 1 DONE** (6fa1c06 · APPROVED-by-พ่อ + จาวิส): `proto-layer5-v1.cjs` — RUN_RULES 21 rule (§1a) + §2d + §2c-lite + guard fail-fast + UNMAPPED · 16/16
+2. ⏳ **Step 2 (consensus กับพ่อ lock แล้ว):** port → `buildChengBaiNow` ใน chart-packet
+   - **option B (single-source):** เพิ่ม `subLabel` ใน buildXiangShen `R(verdict, reason, subLabel?)` (default null · non-breaking) — derive จากจุดตัดสินเดิม (กฎเดียวกับ verdict · ไม่ใช่ heuristic แยก) · **invariant test: verdict เดิม 16/16 ห้ามเปลี่ยน**
+   - buildChengBaiNow รับ subLabel + gods + dmRoot(single source · ไม่ recompute) + currentLuck/annualPillar → luckGods/yearGod (**lock: รวม hidden main หรือ stem-only — ตัดสินตอนเขียน**) → judgeTiming
+   - UNMAPPED แยก telemetry (ไม่นับ neutral)
+   - **golden 2 ชั้น:** A=命例จริง §4 (เท่าที่ parse · ยึดตำรา) + B=synthetic 4เสาเต็มคุม hidden (deterministic 成/破)
+3. wire render block (หลัง交運) · ปิด 3p · ไม่ฟันธงปีเลข
+4. พ่อ review + ลายเซ็น → จาวิส self-review + ลายเซ็น → deploy r100
