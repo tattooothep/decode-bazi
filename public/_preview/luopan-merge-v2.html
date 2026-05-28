@@ -229,7 +229,7 @@
       <button class="btn" data-pin="desk" title="โต๊ะทำงาน">💼 โต๊ะ</button>
       <button class="btn" id="pinClear" title="ลบทั้งหมด">ล้าง</button>
     </div>
-    <div class="help-line">เลือกชนิด → คลิกบนแปลนเพื่อปัก · ลาก pin เพื่อย้ายตำแหน่ง · ดับเบิลคลิกเพื่อลบ · pin ที่อยู่ในวง城門 = activated</div>
+    <div class="help-line">เลือกชนิด → คลิกบนแปลนเพื่อปัก · ลาก pin ได้อิสระทั้งแปลน (ไม่ล็อกในกรอบวง) · ดับเบิลคลิกเพื่อลบ · pin ที่อยู่ในวง城門 = activated</div>
 
     <label><span data-i18n="ctrl.imgRot">หมุนรูปแปลน</span> <span class="val" id="vImgRot">0°</span></label>
     <input type="range" id="imgRot" min="0" max="359" value="0"/>
@@ -1599,7 +1599,7 @@ window.addEventListener('touchend', () => { dragging = false; pinDraggingId = nu
 
 /* ====== Pin Tool (door/bed/stove/water/desk) ====== */
 let pinMode = null; /* 'door' | 'bed' | 'stove' | 'water' | 'desk' | null */
-let pins = []; /* {id, type, deg, dist} */
+let pins = []; /* {id, type, x, y} | legacy {deg,dist} */
 const PIN_ICONS = {door:'🚪', bed:'🛏', stove:'🔥', water:'💧', desk:'💼'};
 const PIN_LABELS_TH = {door:'ประตู', bed:'หัวเตียง', stove:'เตา', water:'น้ำ', desk:'โต๊ะ'};
 
@@ -1622,13 +1622,29 @@ function svgPointToPolar(ev){
   const dist = Math.sqrt(dx*dx + dy*dy);
   return { deg, dist };
 }
+function svgPointToLocal(ev){
+  // พิกัด local ภายในหล่อแก (ชดเชย translate+scale แล้ว) ใช้สำหรับ pin drag แบบอิสระ
+  const rect = lp.getBoundingClientRect();
+  const sx = (ev.clientX - rect.left) * 760 / rect.width;
+  const sy = (ev.clientY - rect.top) * 760 / rect.height;
+  const x = 380 + (sx - 380 - dialOffsetX) / dialScale;
+  const y = 380 + (sy - 380 - dialOffsetY) / dialScale;
+  return { x, y };
+}
+function pinRingDeg(pin){
+  // รองรับข้อมูลเก่า (deg/dist) และข้อมูลใหม่ (x/y)
+  if (Number.isFinite(pin?.x) && Number.isFinite(pin?.y)) {
+    const dx = pin.x - 380, dy = pin.y - 380;
+    const screenDeg = ((Math.atan2(dy, dx) * 180 / Math.PI + 90) % 360 + 360) % 360;
+    return ((screenDeg + ringRotation()) % 360 + 360) % 360;
+  }
+  return Number.isFinite(pin?.deg) ? pin.deg : 0;
+}
 function addPin(ev){
   if(!pinMode) return;
-  const {deg, dist} = svgPointToPolar(ev);
-  if(dist > 380) return; /* คลิกนอกวง */
-  /* เก็บเป็นทิศจริงบนวง (ชดเชยการหมุนวงเมื่อล็อก) — pin จะ align กับวง+castle gate */
-  const ringDeg = ((deg + ringRotation()) % 360 + 360) % 360;
-  pins.push({ id: Date.now() + Math.random(), type: pinMode, deg: ringDeg, dist });
+  const {x, y} = svgPointToLocal(ev);
+  // pin อิสระ: ไม่บังคับให้อยู่ในกรอบวงหล่อแก
+  pins.push({ id: Date.now() + Math.random(), type: pinMode, x, y });
   savePins();
   renderPins();
   updateInspector(); /* refresh activate status */
@@ -1637,9 +1653,8 @@ function addPin(ev){
 function dragPinToPointer(ev, id){
   const p = pins.find(x => String(x.id) === String(id));
   if(!p) return;
-  const {deg, dist} = svgPointToPolar(ev);
-  p.dist = Math.max(0, Math.min(380, dist));
-  p.deg = ((deg + ringRotation()) % 360 + 360) % 360;
+  const {x, y} = svgPointToLocal(ev);
+  p.x = x; p.y = y;
   renderPins();
   updateInspector();
 }
@@ -1662,7 +1677,7 @@ function pinIsActivated(pin){
   return both.some(c => {
     if(!c.usable) return false;
     const m = c.mountain;
-    const d = pin.deg;
+    const d = pinRingDeg(pin);
     return m.start < m.end ? (d >= m.start && d < m.end) : (d >= m.start || d < m.end);
   });
 }
@@ -1672,11 +1687,15 @@ function renderPins(){
   if(!g) return;
   g.innerHTML = '';
   pins.forEach(p => {
-    // เก็บ p.deg เป็น "องศาบนวงจริง" แต่ตอนวาดต้องหัก ringRotation กลับเป็นพิกัดจอ
-    const screenDeg = ((p.deg - ringRotation()) % 360 + 360) % 360;
-    const rad = (screenDeg - 90) * Math.PI / 180;
-    const x = 380 + p.dist * Math.cos(rad);
-    const y = 380 + p.dist * Math.sin(rad);
+    // ข้อมูลใหม่ใช้ x/y ตรง (ลากอิสระ) · ข้อมูลเก่า fallback จาก deg/dist
+    let x = p.x, y = p.y;
+    if (!(Number.isFinite(x) && Number.isFinite(y))) {
+      const dist = Number.isFinite(p.dist) ? p.dist : 0;
+      const screenDeg = ((pinRingDeg(p) - ringRotation()) % 360 + 360) % 360;
+      const rad = (screenDeg - 90) * Math.PI / 180;
+      x = 380 + dist * Math.cos(rad);
+      y = 380 + dist * Math.sin(rad);
+    }
     const isAct = pinIsActivated(p);
     const grp = document.createElementNS(NS,'g');
     grp.setAttribute('class', 'pin-marker' + (isAct?' activated':''));
