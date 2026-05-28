@@ -3925,6 +3925,13 @@ window.addEventListener('resize', function(){
     return { lngShift: longitudeShiftMin, eot: eotMin, total: longitudeShiftMin + eotMin };
   }
   function pad(v,n){ v=String(v); while(v.length<n) v='0'+v; return v; }
+  // รับปีไทย (พ.ศ.) แล้ว normalize เป็นปีค.ศ. อัตโนมัติ
+  function normalizeYearCE(raw){
+    var y = parseInt(String(raw||'').replace(/[^\d]/g,''), 10);
+    if (!isFinite(y)) return NaN;
+    if (y >= 2400 && y <= 2600) return y - 543; // พ.ศ. → ค.ศ.
+    return y; // ค.ศ. เดิม
+  }
   function splitDt(iso){ var m = String(iso||'').match(/^(\d{4}-\d{2}-\d{2})[T\s](\d{2}:\d{2})/); return m ? {date:m[1],time:m[2]} : {date:'',time:''}; }
   function initials(nm){ nm=String(nm||'').trim(); if(!nm) return '命'; var p=nm.split(/\s+/); return (p.length>1?(p[0][0]+p[1][0]):nm.slice(0,2)).toUpperCase(); }
 
@@ -4061,7 +4068,7 @@ window.addEventListener('resize', function(){
       // TST live
       function refreshTST(){
         var lng = parseFloat($('hkp-lng').value)||100.5018;
-        var y=parseInt($('hkp-y').value,10), m=parseInt($('hkp-m').value,10), d=parseInt($('hkp-d').value,10);
+        var y = normalizeYearCE($('hkp-y').value), m=parseInt($('hkp-m').value,10), d=parseInt($('hkp-d').value,10);
         var dobj = (y&&m&&d) ? new Date(y, m-1, d) : new Date();
         var c = computeTST(lng, dobj);
         var gmt = Math.round(lng/15);
@@ -4071,6 +4078,12 @@ window.addEventListener('resize', function(){
           '<span class="hkp-tst-note">'+t('tstNote')+'</span>';
       }
       ['hkp-d','hkp-m','hkp-y'].forEach(function(id){ $(id).addEventListener('input', refreshTST); });
+      // blur ปี: แปลง พ.ศ. เป็น ค.ศ. ให้ผู้ใช้เห็นค่าที่ใช้จริง
+      $('hkp-y').addEventListener('blur', function(){
+        var y = normalizeYearCE(this.value);
+        if (isFinite(y)) this.value = String(y);
+        refreshTST();
+      });
       refreshTST();
 
       // city autocomplete (reuse global loader)
@@ -4093,7 +4106,8 @@ window.addEventListener('resize', function(){
 
       function collect(){
         $('hkp-err').textContent='';
-        var d=parseInt($('hkp-d').value,10), m=parseInt($('hkp-m').value,10), y=parseInt($('hkp-y').value,10);
+        var d=parseInt($('hkp-d').value,10), m=parseInt($('hkp-m').value,10), y = normalizeYearCE($('hkp-y').value);
+        if (isFinite(y)) $('hkp-y').value = String(y);
         if (!(d>=1&&d<=31&&m>=1&&m<=12&&y>=1900&&y<=2100)){ $('hkp-err').textContent=t('errDate'); return null; }
         var noBt = $('hkp-no-btime').checked;
         var hh=parseInt($('hkp-h').value,10), mi=parseInt($('hkp-mi').value,10);

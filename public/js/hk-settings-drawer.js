@@ -231,13 +231,21 @@
       if (savedBoundary === '00:00') document.getElementById('set-day-boundary').value = '00:00';
     } catch(_){}
 
+    function normalizeYearCE(raw) {
+      var y = parseInt(String(raw || '').trim(), 10);
+      if (!isFinite(y)) return NaN;
+      // รับปี พ.ศ. ที่ผู้ใช้กรอก แล้วแปลงเป็น ค.ศ. อัตโนมัติ
+      if (y >= 2400 && y <= 2600) y -= 543;
+      return y;
+    }
     function recalcTST() {
-      var y = +document.getElementById('set-y').value;
+      var y = normalizeYearCE(document.getElementById('set-y').value);
       var m = +document.getElementById('set-m').value;
       var d = +document.getElementById('set-d').value;
       var hh = +document.getElementById('set-hh').value;
       var mn = +document.getElementById('set-mn').value;
       var lng = +document.getElementById('set-lng').value;
+      if (!isFinite(y)) return;
       var date = new Date(Date.UTC(y, m-1, d, hh-7, mn));
       var t = computeTST(lng, date);
       var trueMinutes = hh*60 + mn + t.total;
@@ -256,6 +264,11 @@
       /* 🛡 focus → select all · ป้องกัน maxlength ตัดท้าย เมื่อพิมพ์ทับ */
       el.addEventListener('focus', function(){ this.select(); });
       el.addEventListener('click', function(){ this.select(); });
+    });
+    document.getElementById('set-y').addEventListener('blur', function(){
+      var y = normalizeYearCE(this.value);
+      if (isFinite(y)) this.value = String(y);
+      recalcTST();
     });
     recalcTST();
 
@@ -309,17 +322,24 @@
         var sb = document.getElementById('set-day-boundary').value;
         localStorage.setItem('hk_day_boundary', sb === '00:00' ? '00:00' : '23:00');
       } catch(_){}
-      var y = document.getElementById('set-y').value;
+      var y = normalizeYearCE(document.getElementById('set-y').value);
+      if (isFinite(y)) document.getElementById('set-y').value = String(y);
       var m = pad(+document.getElementById('set-m').value);
       var d = pad(+document.getElementById('set-d').value);
       var hh = pad(+document.getElementById('set-hh').value);
       var mn = pad(+document.getElementById('set-mn').value);
+      if (!isFinite(y) || y < 1900 || y > 2100) {
+        toast('ปีเกิดไม่ถูกต้อง', 'err');
+        btn.disabled = false;
+        btn.textContent = '💾 บันทึก';
+        return;
+      }
       /* 19 พ.ค. Option α · ไม่ทราบเวลาเกิด → birthTimeKnown=false */
       var noBtimeEl = document.getElementById('set-no-btime');
       var birthTimeKnown = !(noBtimeEl && noBtimeEl.checked);
       var payload = {
         name: document.getElementById('set-name').value.trim(),
-        birthDate: y + '-' + m + '-' + d,
+        birthDate: String(y) + '-' + m + '-' + d,
         birthTime: hh + ':' + mn,
         birthLng: Number(document.getElementById('set-lng').value),
         birthLat: Number(document.getElementById('set-lat').value),
