@@ -3,7 +3,6 @@
    ทุก verdict อ้าง rule-id (ZP-1a/DTS-2d/DTS-2c) เพื่อตรวจย้อน (ตาม consensus กับพ่อ)
    craft golden god-level (test rule layer) — integration 4เสา/hidden = ชั้น port เข้า chart-packet
    รัน: node scripts/proto-layer5-v1.cjs */
-const S = require('../data/library/wrappers/shared');
 
 /* §1a — ตารางทองคำ喜運/忌運 (สิบเทพของวัยจร) per格×相神 · verbatim 子平真詮論行運 ¶122-160
    key = `${格}|${相神/用神}` · ค่า = { xi:[喜運สิบเทพ], ji:[忌運สิบเทพ], src } */
@@ -20,7 +19,8 @@ const RUN_RULES = {
   // 印綬格
   '印綬格|用官':   { xi:['正財','偏財','傷官','食神'], ji:[],                    src:'ZP-1a-08 印用官·財運反吉·傷食最利' },
   '印綬格|用傷食': { xi:['正財','偏財','傷官','食神'], ji:['正官','七殺'],       src:'ZP-1a-09 印旺洩秀·財傷食吉·官煞太過' },
-  '印綬格|印重用財':{ xi:['正財','偏財'],         ji:['比肩','劫財'],            src:'ZP-1a-10 印重透財抑太過·忌比劫' },
+  '印綬格|印重用財':{ xi:['正財','偏財'],         ji:['比肩','劫財'],            src:'ZP-1a-10a 印多身強·透財抑太過(財為用)·只要根深·忌比劫去財' },
+  '印綬格|財為忌':  { xi:['比肩','劫財'],         ji:['正財','偏財'],            src:'ZP-1a-10b 印帶財以為忌(財損印)·運劫財去財救印=喜 (¶122)' },
   // 食神格
   '食神格|生財':   { xi:['正財','偏財'],          ji:['正官','七殺','偏印'],     src:'ZP-1a-11 食神生財·忌官煞·畏梟(偏印)奪食' },
   '食神格|帶煞':   { xi:['正印','偏印','比肩','劫財'], ji:['正財','偏財'],       src:'ZP-1a-12 食用煞印·喜印旺身旺·忌財鄉' },
@@ -38,6 +38,17 @@ const RUN_RULES = {
   '建祿格|用財':   { xi:['傷官','食神','正財','偏財'], ji:['比肩','劫財'],       src:'ZP-1a-20 月劫用財·運行傷食·忌比劫' },
 };
 
+/* runtime guard (fail-fast) — กัน xi∩ji overlap กลับมาเงียบๆ (เคส 七殺食制 เดิม) */
+function assertRulesSane() {
+  const bad = [];
+  for (const [k, r] of Object.entries(RUN_RULES)) {
+    const ov = r.xi.filter(g => r.ji.includes(g));
+    if (ov.length) bad.push(`${k}: ${ov.join('/')}`);
+  }
+  if (bad.length) throw new Error(`RUN_RULES xi∩ji overlap (rule ขัดกันเอง):\n  ${bad.join('\n  ')}`);
+}
+assertRulesSane();
+
 /* §2d — 日主旺衰 map (consensus พ่อ: rooted/strong→旺相 · no_root/token→休囚) */
 function dmVigor(rootednessLabel) {
   const strong = ['strong_root','rooted','medium_root'];
@@ -48,7 +59,7 @@ function dmVigor(rootednessLabel) {
 function judgeTiming({ ge, xiangShen, luckGods, yearGod, dmRoot }) {
   const key = `${ge}|${xiangShen}`;
   const rule = RUN_RULES[key];
-  if (!rule) return { verdict:'平', reason:`ยังไม่มีกฎ ${key}`, ruleId:'NONE' };
+  if (!rule) return { verdict:'UNMAPPED', reason:`ไม่มีกฎสำหรับ ${key} (ต้อง map sub-label ก่อน · ห้าม false-neutral)`, ruleId:'UNMAPPED_RULE' };
   // §1a — วัยจรเข้า喜運/忌運?
   const hitXi = luckGods.filter(g => rule.xi.includes(g));
   const hitJi = luckGods.filter(g => rule.ji.includes(g));
@@ -89,6 +100,10 @@ const GOLDEN = [
   // §2d — 旺衰 แยกความหนัก (忌運เดียวกัน·รากต่าง)
   { d:'同忌運·日主旺→เบา',  ge:'建祿格', xiangShen:'用財', luckGods:['比肩'], dmRoot:'strong_root', expect:'破(เบา)' },
   { d:'同忌運·日主弱→หนัก', ge:'建祿格', xiangShen:'用財', luckGods:['比肩'], dmRoot:'no_root',     expect:'破(หนัก)' },
+  // §1a-10b — 印帶財為忌·運劫財去財救印 = 成 (แยกจาก印重用財)
+  { d:'印帶財為忌·運走劫財救印', ge:'印綬格', xiangShen:'財為忌', luckGods:['劫財'], dmRoot:'no_root', expect:'成' },
+  // UNMAPPED — sub-label ไม่มีกฎ ต้องไม่ false-neutral (平)
+  { d:'sub-label ไม่รู้จัก→UNMAPPED', ge:'正官格', xiangShen:'มั่ว', luckGods:['正財'], dmRoot:'rooted', expect:'UNMAPPED' },
   // §2c-lite — ปีจรหนุน/ต้าน (verdict 成 + ปีจร tag)
   { d:'成運+ปีจรหนุนซ้ำ',   ge:'印綬格', xiangShen:'用官', luckGods:['傷官'], yearGod:'正財', dmRoot:'rooted', expect:'成', annualHas:'หนุนซ้ำ' },
   { d:'成運+ปีจรต้าน',      ge:'傷官格', xiangShen:'佩印', luckGods:['正印'], yearGod:'正財', dmRoot:'rooted', expect:'成', annualHas:'ต้าน' },
