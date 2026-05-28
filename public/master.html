@@ -881,7 +881,14 @@
     /* 🧑‍🤝‍🧑 ดวงที่เลือกถามได้ = ดวงในบัญชี (ตัวเอง+ญาติ) · เริ่มที่ดวง self · dropdown สลับได้ · ไม่ทับ window.hkActiveProfileId (ดวง self ของ intro) */
     let selectedProfileId = '';
     try { selectedProfileId = String(urlPid || window.hkActiveProfileId || ''); } catch(_){}
-    function storeKey(){ return 'hk_sifu_chat_' + (selectedProfileId || 'anon'); } /* ประวัติแชทแยกตามดวง */
+    var sifuProfileSigById = {}; /* profileId → signature ปัจจุบันของดวง (กัน history น้ำหยาง/ทองหยินปนหลังแก้วันเกิด/dayBoundary) */
+    function safeKeyPart(v){ return String(v || '').replace(/[^\w:-]+/g, '_').slice(0, 96); }
+    function profileStoreSig(id){
+      var p = sifuProfileSigById[String(id || '')] || null;
+      if (!p) return safeKeyPart(id || 'anon');
+      return [id || 'anon', p.day_master || 'nodm', p.day_boundary || p.dayBoundary || 'nodb', p.birth_datetime || 'nobt'].map(safeKeyPart).join('_');
+    }
+    function storeKey(){ return 'hk_sifu_chat_' + profileStoreSig(selectedProfileId || 'anon'); } /* ประวัติแชทแยกตามดวง+signature */
     let history = [];
     function persist(){ try { localStorage.setItem(storeKey(), JSON.stringify(history.slice(-40))); } catch(_){} }
 
@@ -913,9 +920,10 @@
     /* 🧑‍🤝‍🧑 dropdown เลือกดวง · โหลดรายชื่อโปรไฟล์ในบัญชีจาก /api/profile (ตัวเอง+ญาติ org เดียวกัน) */
     var relSelf = (window.HK_I18N && window.HK_I18N['mst.ask.self']) ? window.HK_I18N['mst.ask.self'] : { th:'ตัวเอง', en:'Self', zh:'本人' };
     function curLocale(){ try { return localStorage.getItem('hk_locale') || 'th'; } catch(_){ return 'th'; } }
-    function switchProfile(newId){
-      if (!newId || String(newId) === selectedProfileId) return;
-      persist();                          /* เก็บแชทดวงเดิมก่อนสลับ */
+    function switchProfile(newId, opts){
+      opts = opts || {};
+      if (!newId || (!opts.force && String(newId) === selectedProfileId)) return;
+      if (!opts.skipPersist) persist();    /* เก็บแชทดวงเดิมก่อนสลับ · skip ตอนเพิ่งได้ signature ใหม่ กัน copy history ดวงเก่าไป key ใหม่ */
       selectedProfileId = String(newId);
       msgBox.innerHTML = '';              /* เคลียร์ฟองแชทดวงเดิม */
       loadHistory();                      /* โหลดแชทดวงใหม่ (แยกตามดวง · ไม่ปน) */
@@ -928,6 +936,14 @@
       .then(function(j){
         if (!j || !Array.isArray(j.profiles) || !j.profiles.length) return;
         hkgProfiles = j.profiles;
+        sifuProfileSigById = {};
+        j.profiles.forEach(function(p){
+          sifuProfileSigById[String(p.id)] = {
+            day_master: p.day_master || '',
+            day_boundary: p.day_boundary || p.dayBoundary || '',
+            birth_datetime: p.birth_datetime || ''
+          };
+        });
         var selfPg = j.profiles.find(function(p){ return p.is_self; });
         hkgSelfId = String((j.active_profile && j.active_profile.id) || (selfPg && selfPg.id) || j.profiles[0].id || '');
         if (window.hkgInitGroup) window.hkgInitGroup();
@@ -955,6 +971,7 @@
         sel.addEventListener('change', function(){ switchProfile(sel.value); });
         /* ถ้า default (ดวงตัวเอง) ต่างจากที่ตั้งไว้ตอนเริ่ม → สลับไปดวงตัวเอง + โหลดประวัติให้ตรงดวง (ไม่ปน) · switchProfile กัน no-op ถ้าตรงกันอยู่แล้ว */
         if (preferId !== selectedProfileId) switchProfile(preferId);
+        else switchProfile(preferId, { force:true, skipPersist:true }); /* profile signature เพิ่งโหลด: reload history จาก key ใหม่ ไม่เอาคำตอบดวงเก่าปน */
       })
       .catch(function(){});
 
