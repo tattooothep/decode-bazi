@@ -29,6 +29,8 @@ type IntroBirthInput = {
   lng: number;
   gender: "M" | "F";
   birthTimeKnown?: boolean;
+  dayBoundary?: "23:00" | "00:00";
+  dayBoundarySource?: "explicit" | "default";
   source: "profile" | "params";
 };
 
@@ -315,9 +317,10 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     const lng = Number(row.birth_lng || 100.5018);
     const gender = (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F"; // DB เก็บ "F"/"M" (ไม่ใช่ "female") · รับทั้ง F/female/f → กันผู้หญิงกลายเป็นชาย
     const birthTimeKnown = knownBirthTime(row.birth_time_known);
+    const dayBoundary: "23:00" | "00:00" = "23:00"; // profiles table ยังไม่มี day_boundary column · ห้ามเดา/heuristic
 
     const calc = birthTimeKnown
-      ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: true })
+      ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, dayBoundary, birthTimeKnown: true })
       : await calcBazi({ date, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: false });
     const g = loadPromptKV("prompts/sifu-ctx-guards.md"); // คำสั่ง/ล็อก แก้ผ่าน admin
     const is3p = calc.mode === "3p";
@@ -360,7 +363,10 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     const [slY, slMo, slD] = date.split("-").map(Number);
     const [slH, slMi] = time.split(":").map(Number);
     const siLingDays = computeSiLingDays(slY, slMo, slD, slH || 12, slMi || 0);  // 司令 วันนับจาก節 (ICT→BJT)
-    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays);
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays, {
+      dayBoundary,
+      dayBoundarySource: "default",
+    });
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
     if (ext.special_chart.applicable) {
@@ -381,6 +387,9 @@ function parseIntroBirthParams(url: URL): IntroBirthInput | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || (birthTimeKnown && !/^\d{2}:\d{2}$/.test(time))) return null;
   const lng = Number(url.searchParams.get("birthLng") || 100.5018);
   const genderRaw = (url.searchParams.get("gender") || "M").toLowerCase();
+  const dayBoundaryRaw = url.searchParams.get("dayBoundary") || url.searchParams.get("db") || "";
+  const dayBoundary = dayBoundaryRaw === "00:00" ? "00:00" : "23:00";
+  const dayBoundarySource = dayBoundaryRaw === "00:00" || dayBoundaryRaw === "23:00" ? "explicit" : "default";
   return {
     name: url.searchParams.get("name") || undefined,
     date,
@@ -388,6 +397,8 @@ function parseIntroBirthParams(url: URL): IntroBirthInput | null {
     lng: Number.isFinite(lng) ? lng : 100.5018,
     gender: genderRaw === "female" || genderRaw === "f" ? "F" : "M",
     birthTimeKnown,
+    dayBoundary,
+    dayBoundarySource,
     source: "params",
   };
 }
@@ -415,6 +426,8 @@ async function buildIntroBaziContext(profileId: string, orgId: string | null): P
       lng: Number(row.birth_lng || 100.5018),
       gender: (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F", // DB เก็บ "F"/"M" · รับทั้ง F/female/f → กันผู้หญิงกลายเป็นชาย
       birthTimeKnown: knownBirthTime(row.birth_time_known),
+      dayBoundary: "23:00",
+      dayBoundarySource: "default",
       source: "profile",
     });
   } catch (e) {
@@ -427,8 +440,9 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
   try {
     const birthDate = new Date(`${input.date}T${input.time}:00+07:00`);
     const birthTimeKnown = input.birthTimeKnown !== false;
+    const dayBoundary = input.dayBoundary === "00:00" ? "00:00" : "23:00";
     const calc = birthTimeKnown
-      ? await calcBazi({ date: input.date, time: input.time, longitude: input.lng, gmtOffsetHours: 7, gender: input.gender, birthTimeKnown: true })
+      ? await calcBazi({ date: input.date, time: input.time, longitude: input.lng, gmtOffsetHours: 7, gender: input.gender, dayBoundary, birthTimeKnown: true })
       : await calcBazi({ date: input.date, longitude: input.lng, gmtOffsetHours: 7, gender: input.gender, birthTimeKnown: false });
     const g = loadPromptKV("prompts/sifu-ctx-guards.md"); // คำสั่ง/ล็อก แก้ผ่าน admin
     if (calc.mode === "3p") {
@@ -483,7 +497,10 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
     const [slY, slMo, slD] = String(input.date).split("-").map(Number);
     const [slH, slMi] = String(input.time || "12:00").split(":").map(Number);
     const siLingDays = computeSiLingDays(slY, slMo, slD, slH || 12, slMi || 0);  // 司令
-    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, input.gender, siLingDays);
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, input.gender, siLingDays, {
+      dayBoundary,
+      dayBoundarySource: input.dayBoundarySource || "default",
+    });
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
     lines.push(`ย้อนหลัง 12 เดือน: 0-3 เดือนล่าสุด / 4-6 เดือน / 7-9 เดือน / 10-12 เดือน`);

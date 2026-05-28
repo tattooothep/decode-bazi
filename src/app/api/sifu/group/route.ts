@@ -332,9 +332,10 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const lng = Number(row.birth_lng || 100.5018);
     const gender = (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F"; // DB เก็บ "F"/"M" · charAt(0)==="f"
     const birthTimeKnown = knownBirthTime(row.birth_time_known);
+    const dayBoundary: "23:00" | "00:00" = "23:00"; // profiles table ยังไม่มี day_boundary column · group/sifu ต้องไม่เดา
 
     const calc = birthTimeKnown
-      ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: true })
+      ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, dayBoundary, birthTimeKnown: true })
       : await calcBazi({ date, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: false });
     const g = loadPromptKV("prompts/sifu-ctx-guards.md");
     /* ข้อมูล synastry (ใช้ทั้ง 3p/4p · เก็บก่อน return แต่ละโหมด) */
@@ -382,7 +383,10 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const [slH, slMi] = time.split(":").map(Number);
     const siLingDays = computeSiLingDays(slY, slMo, slD, slH || 12, slMi || 0);  // 司令
     const rootedness = await computeRootedness(calc.pillars);  // 通根 wrapper-7 (เดี่ยวมี · group เคยส่ง null = หาย)
-    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays);
+    const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays, {
+      dayBoundary,
+      dayBoundarySource: "default",
+    });
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
     if (ext.special_chart.applicable) {

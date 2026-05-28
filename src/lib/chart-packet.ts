@@ -22,6 +22,7 @@ type Ext = ReturnType<typeof buildChartExtensions>;
 
 export type ElementEN = "wood" | "fire" | "earth" | "metal" | "water";
 export type RootLabel = "no_root" | "token_root" | "partial_root" | "rooted" | "strong_root";
+export type DayBoundary = "23:00" | "00:00";
 type PillarKey = "year" | "month" | "day" | "hour";
 
 /* zh interaction type ที่ engine ส่งมาจริง (รวม fan/fu yin variant) */
@@ -61,15 +62,29 @@ export type Interaction = {
   aiReadingHint: string | null;
 };
 
+export type InteractionConflictSummary = {
+  scope: "natal" | "luck" | "annual";
+  participantKey: string;
+  types: InteractionTypeZh[];
+  affectedPalaces: string[];
+  affectedTopicsLite: string[];
+  note: string;
+};
+
+export type ChartPacketBuildOptions = {
+  /** ขอบวันจริงที่ caller ใช้ตอน calcBazi · ถ้าไม่ส่ง = default 23:00 (ไม่เดาเอง) */
+  dayBoundary?: DayBoundary;
+  dayBoundarySource?: "explicit" | "default";
+};
+
 export type ChartPacket = {
   /* ── version/level lock ── */
   packetVersion: "hourkey-chart-packet-lite-v1.0";
   packetLevel: "step1_lite";
   /* ⚠️ ยังไม่อยู่ใน Step 1 Lite (สงวนไว้ v1.1 / Step B-C) — ห้ามถือว่า "หาย":
-   *   - timePillarConfidence
    *   - dayMasterStrength / stemRootStatus
    *   - strengthScore / positionWeight
-   *   - resolvedInteractions / interactionConflicts
+   *   - full resolvedInteractions / resolver conflict graph
    *   - 合化 grading · 貪合忘冲 · 墓库 open-close
    *   - rootMultiplier
    * (ทั้งหมดต้องรอ engine resolver + ซินแส calibrate · ดู roadmap memory) */
@@ -80,6 +95,15 @@ export type ChartPacket = {
     dmPolarity: "yang" | "yin";
     ageNow: number;
     readingOrder: string;
+    /** ขอบวัน 子時 ที่ใช้คำนวณเสาวัน · ต้องเปิดเผยให้ AI เห็นเพื่อกัน 23:00/00:00 สับสน */
+    dayBoundary: DayBoundary;
+    /** explicit=caller/user ส่งมา · default=ระบบไม่ได้รับค่าเฉพาะ profile จึงใช้ 23:00 */
+    dayBoundarySource: "explicit" | "default";
+    /** ความมั่นใจเสายาม/เสาวันแถบเที่ยงคืน · derived จาก mode + TST + dayBoundary */
+    timePillarConfidence: {
+      level: "known" | "unknown" | "boundary_sensitive";
+      reason: string;
+    };
   };
   pillars: Array<{
     key: PillarKey;
@@ -188,6 +212,8 @@ export type ChartPacket = {
   };
   luckInteractions: Interaction[];
   annualInteractions: Interaction[];
+  /** สรุปปฏิกิริยาซ้อนคู่เดียวกัน (เช่น 反吟 ครอบ 六沖/天克) · derived summary ไม่ใช่ full resolver */
+  interactionConflictSummary: InteractionConflictSummary[];
   profile?: {
     daymaster?: string;
     /** ตัวตนเชิงลึก (Sesheta · getDaymasterProfile) · presentation พร้อมใช้ */
@@ -433,6 +459,90 @@ function enrichInteraction(it: Interaction, dmElement: ElementEN | "unknown", is
   if (img) it.branchInteractionImagery = img;
 }
 
+function normalizeBuildOptions(opts: ChartPacketBuildOptions = {}): Required<ChartPacketBuildOptions> {
+  return {
+    dayBoundary: opts.dayBoundary === "00:00" ? "00:00" : "23:00",
+    dayBoundarySource: opts.dayBoundarySource || (opts.dayBoundary ? "explicit" : "default"),
+  };
+}
+
+function buildTimePillarConfidence(calc: Calc, dayBoundary: DayBoundary): ChartPacket["meta"]["timePillarConfidence"] {
+  if (calc.mode === "3p") {
+    return {
+      level: "unknown",
+      reason: "ไม่ทราบเวลาเกิด → ไม่มีเสายาม時/起運จริง และขอบวันใช้ไม่ได้กับดวง 3 เสา",
+    };
+  }
+  const applied = calc.tst?.appliedTimeStr || "";
+  const dayShift = calc.tst?.appliedDayShift || 0;
+  const nearBoundary = /^23:|^00:/.test(applied) || dayShift !== 0;
+  if (nearBoundary) {
+    return {
+      level: "boundary_sensitive",
+      reason: `เวลาจริงหลัง TST=${applied || "-"} อยู่แถบขอบวัน · ใช้ขอบวัน ${dayBoundary} จึงต้องระวังเสาวัน/Day Master`,
+    };
+  }
+  return {
+    level: "known",
+    reason: "มีเวลาเกิดและเวลาจริงไม่อยู่แถบ 23:00/00:00 · เสายามใช้ได้ตาม engine",
+  };
+}
+
+const PARTICIPANT_ORDER: Record<string, number> = { year: 0, month: 1, day: 2, hour: 3, luck: 4, annual: 5 };
+function participantKeyForConflict(scope: InteractionConflictSummary["scope"], it: Interaction): string | null {
+  const names = it.participants
+    .map((p) => p.pillar)
+    .filter((p) => p && p !== "-");
+  if (names.length < 2) return null;
+  const uniq = Array.from(new Set(names))
+    .sort((a, b) => (PARTICIPANT_ORDER[a] ?? 99) - (PARTICIPANT_ORDER[b] ?? 99) || a.localeCompare(b));
+  return `${scope}:${uniq.join("↔")}`;
+}
+function buildInteractionConflictSummary(
+  raw: Interaction[],
+  luck: Interaction[],
+  annual: Interaction[],
+): InteractionConflictSummary[] {
+  const groups = new Map<string, {
+    scope: InteractionConflictSummary["scope"];
+    participantKey: string;
+    types: InteractionTypeZh[];
+    affectedPalaces: Set<string>;
+    affectedTopicsLite: Set<string>;
+  }>();
+  const add = (scope: InteractionConflictSummary["scope"], it: Interaction) => {
+    const key = participantKeyForConflict(scope, it);
+    if (!key) return;
+    let g = groups.get(key);
+    if (!g) {
+      g = { scope, participantKey: key.replace(`${scope}:`, ""), types: [], affectedPalaces: new Set(), affectedTopicsLite: new Set() };
+      groups.set(key, g);
+    }
+    if (!g.types.includes(it.type)) g.types.push(it.type);
+    it.affectedPalaces.forEach((x) => g!.affectedPalaces.add(x));
+    it.affectedTopicsLite.forEach((x) => g!.affectedTopicsLite.add(x));
+  };
+  raw.forEach((it) => add("natal", it));
+  luck.forEach((it) => add("luck", it));
+  annual.forEach((it) => add("annual", it));
+  return Array.from(groups.values())
+    .filter((g) => g.types.length > 1)
+    .map((g) => {
+      const hasFanYinCover = g.types.includes("反吟") && (g.types.includes("六沖") || g.types.includes("天克"));
+      const note = hasFanYinCover
+        ? "反吟เต็มเสาครอบแรงก้าน/กิ่งคู่เดียวกัน · อ่านเป็นชั้นเดียวก่อน ห้ามบวกผลซ้ำ"
+        : "คู่เดียวกันมีหลายปฏิกิริยา · อ่านเป็นแรงซ้อนและจัดลำดับหลัก/รองก่อนสรุป";
+      return {
+        scope: g.scope,
+        participantKey: g.participantKey,
+        types: g.types,
+        affectedPalaces: Array.from(g.affectedPalaces),
+        affectedTopicsLite: Array.from(g.affectedTopicsLite),
+        note,
+      };
+    });
+}
+
 /* ════════════════════════════════════════════════════════════════
  * buildStructuredChartPacket · map ext/calc → ChartPacket (4p เท่านั้น)
  * ════════════════════════════════════════════════════════════════ */
@@ -657,9 +767,11 @@ export function buildStructuredChartPacket(
   rootedness: ChartPacket["rootedness"] = null,  // 通根 (route เรียก wrapper-7 ส่งมา · optional · undefined=group/ไม่ส่ง)
   gender: "M" | "F" | null = null,               // 小運 ทิศ (route ส่ง · null=ไม่คำนวณ小運)
   siLingDays: number | null = null,              // 司令 วันนับจาก節 (route เรียก computeSiLingDays ส่ง · null=本氣 fallback)
+  opts: ChartPacketBuildOptions = {},
 ): ChartPacket {
   const dmElement = STEM_ELEMENT[dm] || "unknown";
   const dmPolarity = STEM_POLARITY[dm] || "yang";
+  const packetOpts = normalizeBuildOptions(opts);
 
   /* palace zh lookup (จาก ext.palace_readings) */
   const palaceZhMap: Record<string, string> = {};
@@ -1000,6 +1112,9 @@ export function buildStructuredChartPacket(
       dmPolarity,
       ageNow,
       readingOrder: g.READING_ORDER || "",
+      dayBoundary: packetOpts.dayBoundary,
+      dayBoundarySource: packetOpts.dayBoundarySource,
+      timePillarConfidence: buildTimePillarConfidence(calc, packetOpts.dayBoundary),
     },
     pillars,
     structure: {
@@ -1066,6 +1181,7 @@ export function buildStructuredChartPacket(
     interactions: { status: interactionStatus, raw },
     luckInteractions,
     annualInteractions,
+    interactionConflictSummary: buildInteractionConflictSummary(raw, luckInteractions, annualInteractions),
     profile,
     kongWang: {
       dayVoids: (ext.kong_wang?.void_branches || []) as string[],
@@ -1134,6 +1250,16 @@ export function renderChartPrompt(packet: ChartPacket): string {
     lines.push("⚠️ ดวง 3 เสา (ไม่ทราบเวลาเกิด · ไม่มีเสายาม時) — อ่านได้ครบ年月日 แต่ห้ามเดา/อนุมาน: เสายาม · สิบเทพยาม · 命宮/身宮/小運/起運 · ดวงคู่จากยาม");
     lines.push("⚠️ วัยจร大運 3 เสา: ลำดับธาตุ/ก้านกิ่งถูกต้อง แต่ \"อายุที่เข้าวัยจร + ปีครอบ\" เป็นค่าประมาณ (ไม่ทราบ起運จริงเพราะไม่มีเวลาเกิด) — ห้ามฟันธงปี/อายุที่เปลี่ยนวัยจร · พูดได้แค่ลำดับธาตุวัยจร");
     lines.push("⚠️ ถ้าเกิดใกล้เที่ยงคืน (子時 ~23:00-01:00) เสาวัน/Day Master อาจคลาด ±1 วัน — engine ใช้ตามวันที่ที่ระบุ · เตือนผู้ใช้ได้ถ้าผลดูไม่ตรงตัว");
+  }
+  if (packet.meta.dayBoundary && packet.meta.timePillarConfidence) {
+    const src = packet.meta.dayBoundarySource === "explicit" ? "ผู้ใช้/endpoint ส่งมาโดยตรง" : "default ระบบ (profile ยังไม่มี column day_boundary)";
+    const CONF_TH: Record<string, string> = {
+      known: "รู้เวลาและไม่ชนขอบวัน",
+      unknown: "ไม่ทราบเวลา",
+      boundary_sensitive: "ไวต่อขอบวัน/เที่ยงคืน",
+    };
+    const tc = packet.meta.timePillarConfidence;
+    lines.push(`ขอบวัน/Day boundary ที่ใช้คำนวณ: ${packet.meta.dayBoundary} (${src}) · ความมั่นใจเสายาม=${CONF_TH[tc.level] || tc.level} — ${tc.reason}`);
   }
 
   /* ลำดับการอ่าน */
@@ -1341,6 +1467,16 @@ export function renderChartPrompt(packet: ChartPacket): string {
   lines.push(renderInteractionGroup("ปฏิกิริยาในดวง", packet.interactions.raw, packet.interactions.status));
   if (packet.luckInteractions.length) lines.push(renderInteractionGroup("ปฏิกิริยาวัยจร×ดวงเกิด", packet.luckInteractions, "raw_only"));
   if (packet.annualInteractions.length) lines.push(renderInteractionGroup("ปฏิกิริยาปีจร×เสาวัน", packet.annualInteractions, "raw_only"));
+  if (packet.interactionConflictSummary?.length) {
+    const scopeTh: Record<string, string> = { natal: "ดวงเกิด", luck: "วัยจร×ดวงเกิด", annual: "ปีจร×ดวงเกิด" };
+    const items = packet.interactionConflictSummary.map((s) =>
+      `${scopeTh[s.scope] || s.scope}:${s.participantKey} มี ${s.types.join("+")}` +
+      `${s.affectedPalaces.length ? ` · เรือน ${s.affectedPalaces.join("/")}` : ""}` +
+      `${s.affectedTopicsLite.length ? ` · เรื่อง ${s.affectedTopicsLite.join("/")}` : ""}` +
+      ` · ${s.note}`
+    );
+    lines.push(`สรุปปฏิกิริยาซ้อน (derived summary · ไม่ใช่ full resolver): ${items.join(" · ")}`);
+  }
 
   /* profile เชิงลึก */
   if (packet.profile) {
