@@ -1491,6 +1491,7 @@ applyDialOpacity(document.getElementById('dialOpa').value);
 
 /* ====== ย้ายศูนย์กลาง + ขยาย/ย่อ หล่อแก ====== */
 let dialOffsetX = 0, dialOffsetY = 0, dialScale = 1;
+const DIAL_OFFSET_LIMIT = 220; // กันค่า center ค้างผิดปกติจาก localStorage เก่า
 function applyDialOffset(){
   lp.style.transformOrigin = 'center center';
   lp.style.transform = `translate(${dialOffsetX}px, ${dialOffsetY}px) scale(${dialScale})`;
@@ -1535,7 +1536,15 @@ document.querySelector('.stage').setAttribute('tabindex','0');
 /* restore from localStorage */
 try{
   const saved = localStorage.getItem('luopan-center');
-  if(saved){ const [x,y] = saved.split(',').map(Number); dialOffsetX = x||0; dialOffsetY = y||0; }
+  if(saved){
+    const [x,y] = saved.split(',').map(Number);
+    if(Number.isFinite(x) && Number.isFinite(y) && Math.abs(x) <= DIAL_OFFSET_LIMIT && Math.abs(y) <= DIAL_OFFSET_LIMIT){
+      dialOffsetX = x; dialOffsetY = y;
+    } else {
+      dialOffsetX = 0; dialOffsetY = 0;
+      localStorage.setItem('luopan-center', '0,0');
+    }
+  }
   const savedS = localStorage.getItem('luopan-scale');
   if(savedS){ dialScale = Number(savedS)||1; const s=document.getElementById('dialScale'); if(s) s.value = Math.round(dialScale*100); }
   applyDialOffset();
@@ -3000,6 +3009,7 @@ document.getElementById('imgCenter').addEventListener('click', () => {
   planImgRot = 0;
   document.getElementById('imgRot').value = 0;
   document.getElementById('vImgRot').textContent = '0°';
+  dialOffsetX = 0; dialOffsetY = 0; applyDialOffset();
   drawPlan();
 });
 document.getElementById('imgRotL').addEventListener('click', () => {
