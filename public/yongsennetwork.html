@@ -970,7 +970,11 @@
           locationName: p.birth_location_name || 'Bangkok',
           /* 19 พ.ค. Option α · birth_time_known จาก DB · default true */
           birthTimeKnown: p.birth_time_known !== false,
-          dayBoundary: (p.day_boundary === '00:00' || p.dayBoundary === '00:00') ? '00:00' : '23:00',
+          dayBoundary: (function(){
+            if (p.day_boundary === '00:00' || p.dayBoundary === '00:00') return '00:00';
+            if (p.day_boundary === '23:00' || p.dayBoundary === '23:00') return '23:00';
+            try { return localStorage.getItem('hk_day_boundary') === '00:00' ? '00:00' : '23:00'; } catch(_) { return '23:00'; }
+          })(),
           _rawProfile: { id:p.id, name:p.name, nickname:p.nickname, day_master:p.day_master },
         };
       }).filter(p => p.pillars);

@@ -334,6 +334,7 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const gender = (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F"; // DB เก็บ "F"/"M" · charAt(0)==="f"
     const birthTimeKnown = knownBirthTime(row.birth_time_known);
     const dayBoundary: "23:00" | "00:00" = row.day_boundary === "00:00" ? "00:00" : "23:00";
+    const dayBoundarySource: "explicit" | "default" = row.day_boundary === "00:00" || row.day_boundary === "23:00" ? "explicit" : "default";
 
     const calc = birthTimeKnown
       ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, dayBoundary, birthTimeKnown: true })
@@ -386,7 +387,7 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const rootedness = await computeRootedness(calc.pillars);  // 通根 wrapper-7 (เดี่ยวมี · group เคยส่ง null = หาย)
     const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays, {
       dayBoundary,
-      dayBoundarySource: "explicit",
+      dayBoundarySource,
     });
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));

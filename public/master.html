@@ -686,6 +686,11 @@
     wrap.classList.add('on');
 
     function setText(el, text){ if (el) el.textContent = text || '-'; }
+    function profileDayBoundary(p){
+      if (p && (p.day_boundary === '00:00' || p.dayBoundary === '00:00')) return '00:00';
+      if (p && (p.day_boundary === '23:00' || p.dayBoundary === '23:00')) return '23:00';
+      try { return localStorage.getItem('hk_day_boundary') === '00:00' ? '00:00' : '23:00'; } catch(_) { return '23:00'; }
+    }
     function parseBirthLocal(){
       try {
         var b = JSON.parse(localStorage.getItem('hk_birth') || 'null');
@@ -748,7 +753,7 @@
 	        var birthTimeKnown = activeProfile.birth_time_known !== false;
 	        var r = await fetch('/api/chart', {
 	          method:'POST', headers:{'Content-Type':'application/json'},
-	          body: JSON.stringify({ date:date, time:time, longitude:activeProfile.birth_lng||100.5018, gender:activeProfile.gender||'M', gmtOffsetHours:7, birthTimeKnown: birthTimeKnown, dayBoundary: activeProfile.day_boundary === '00:00' ? '00:00' : '23:00' })
+	          body: JSON.stringify({ date:date, time:time, longitude:activeProfile.birth_lng||100.5018, gender:activeProfile.gender||'M', gmtOffsetHours:7, birthTimeKnown: birthTimeKnown, dayBoundary: profileDayBoundary(activeProfile) })
 	        });
         if (!r.ok) throw new Error('chart api '+r.status);
         var d = await r.json();
@@ -802,7 +807,7 @@
       qs.set('birthLng', String(activeProfile.birth_lng || 100.5018));
       qs.set('gender', activeProfile.gender || 'M');
       qs.set('name', activeProfile.nickname || activeProfile.name || 'ตัวฉัน');
-      qs.set('dayBoundary', activeProfile.day_boundary === '00:00' ? '00:00' : '23:00');
+      qs.set('dayBoundary', profileDayBoundary(activeProfile));
 
       try {
         readingEl.textContent = '';

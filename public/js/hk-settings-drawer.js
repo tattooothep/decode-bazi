@@ -234,9 +234,10 @@
     `;
     /* restore from DB first · localStorage only legacy fallback */
     try {
-      var savedBoundary = (profile.day_boundary === '00:00' || profile.dayBoundary === '00:00')
+      var dbBoundary = (profile.day_boundary === '00:00' || profile.dayBoundary === '00:00')
         ? '00:00'
-        : localStorage.getItem('hk_day_boundary');
+        : (profile.day_boundary === '23:00' || profile.dayBoundary === '23:00') ? '23:00' : null;
+      var savedBoundary = dbBoundary || localStorage.getItem('hk_day_boundary');
       if (savedBoundary === '00:00') document.getElementById('set-day-boundary').value = '00:00';
     } catch(_){}
 

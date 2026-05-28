@@ -319,6 +319,7 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     const gender = (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F"; // DB เก็บ "F"/"M" (ไม่ใช่ "female") · รับทั้ง F/female/f → กันผู้หญิงกลายเป็นชาย
     const birthTimeKnown = knownBirthTime(row.birth_time_known);
     const dayBoundary: "23:00" | "00:00" = row.day_boundary === "00:00" ? "00:00" : "23:00";
+    const dayBoundarySource: "explicit" | "default" = row.day_boundary === "00:00" || row.day_boundary === "23:00" ? "explicit" : "default";
 
     const calc = birthTimeKnown
       ? await calcBazi({ date, time, longitude: lng, gmtOffsetHours: 7, gender, dayBoundary, birthTimeKnown: true })
@@ -366,7 +367,7 @@ async function buildBaziContext(profileId: string, orgId: string | null): Promis
     const siLingDays = computeSiLingDays(slY, slMo, slD, slH || 12, slMi || 0);  // 司令 วันนับจาก節 (ICT→BJT)
     const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays, {
       dayBoundary,
-      dayBoundarySource: "explicit",
+      dayBoundarySource,
     });
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet));
@@ -429,7 +430,7 @@ async function buildIntroBaziContext(profileId: string, orgId: string | null): P
       gender: (String(row.gender || "").trim().toLowerCase().charAt(0) === "f" ? "F" : "M") as "M" | "F", // DB เก็บ "F"/"M" · รับทั้ง F/female/f → กันผู้หญิงกลายเป็นชาย
       birthTimeKnown: knownBirthTime(row.birth_time_known),
       dayBoundary: row.day_boundary === "00:00" ? "00:00" : "23:00",
-      dayBoundarySource: "explicit",
+      dayBoundarySource: row.day_boundary === "00:00" || row.day_boundary === "23:00" ? "explicit" : "default",
       source: "profile",
     });
   } catch (e) {

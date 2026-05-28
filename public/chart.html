@@ -811,7 +811,9 @@
       place: p.birth_location_name || p.place || p.location || 'Bangkok',
       longitude: finite(p.birth_lng != null ? p.birth_lng : p.longitude, 100.5018),
       latitude: finite(p.birth_lat != null ? p.birth_lat : p.latitude, 13.7563),
-      dayBoundary: (p.dayBoundary === '00:00' || p.day_boundary === '00:00') ? '00:00' : '23:00'
+      dayBoundary: (p.dayBoundary === '00:00' || p.day_boundary === '00:00')
+        ? '00:00'
+        : (p.dayBoundary === '23:00' || p.day_boundary === '23:00') ? '23:00' : null
     };
   }
   /* sync localStorage · เฉพาะ self-profile · ห้ามเรียกจาก view-as (Codex mitigation #5/#7) */
@@ -824,7 +826,9 @@
         birthTimeKnown: s.birthTimeKnown !== false,
         dayBoundary: s.dayBoundary === '00:00' ? '00:00' : '23:00'
       }));
-      localStorage.setItem('hk_day_boundary', s.dayBoundary === '00:00' ? '00:00' : '23:00');
+      if (s.dayBoundary === '00:00' || s.dayBoundary === '23:00') {
+        localStorage.setItem('hk_day_boundary', s.dayBoundary);
+      }
       if (s.profileId) localStorage.setItem('hk_profile_id', s.profileId);
       if (s.name) localStorage.setItem('hk_profile_name', s.name);
     } catch(_) {}
@@ -948,8 +952,10 @@
       var udb = new URLSearchParams(location.search).get('db');
       if (udb === '00:00' || udb === '23:00') dayBoundary = udb;
       else if (s && s.dayBoundary === '00:00') dayBoundary = '00:00';
+      else if (s && s.dayBoundary === '23:00') dayBoundary = '23:00';
     } catch(_) {
       if (s && s.dayBoundary === '00:00') dayBoundary = '00:00';
+      else if (s && s.dayBoundary === '23:00') dayBoundary = '23:00';
     }
     if (!(s && (s.dayBoundary === '00:00' || s.dayBoundary === '23:00'))) {
       try { var v = localStorage.getItem('hk_day_boundary'); if (v === '00:00') dayBoundary = '00:00'; } catch(_){}
