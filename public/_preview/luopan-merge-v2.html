@@ -161,6 +161,9 @@
   .pin-toolbar{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;padding:8px;background:var(--bg);border:1px solid var(--line);border-radius:8px;}
   .pin-toolbar .btn{font-size:12px;padding:4px 8px;}
   .pin-toolbar .btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+  .housefit-toolbar{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;padding:8px;background:var(--bg);border:1px solid var(--line);border-radius:8px;}
+  .housefit-toolbar .btn{font-size:12px;padding:4px 8px;}
+  .housefit-toolbar .btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
   .stage svg.pin-mode{cursor:cell !important;}
   .pin-marker{cursor:pointer;}
   .pin-marker.activated circle{stroke:#a9e1ad !important;stroke-width:3;filter:drop-shadow(0 0 6px #7bcf7b);}
@@ -219,6 +222,14 @@
       <button class="btn" id="imgRotR" title="หมุนขวา 90°">↻ 90°</button>
       <button class="btn" id="imgClear" data-i18n="img.clear">ล้างรูป</button>
     </div>
+    <label style="margin-top:10px">◎ คลุมบ้านจากแปลน (CGM)</label>
+    <div class="housefit-toolbar">
+      <button class="btn" id="fitModeHouse">◎ คลุมบ้าน</button>
+      <button class="btn" id="fitUndo">↶ ย้อนจุด</button>
+      <button class="btn" id="fitClear">ล้างกรอบ</button>
+      <button class="btn" id="fitApply">🎯 ใช้ CGM เป็นศูนย์</button>
+    </div>
+    <div class="help-line">เปิดโหมดคลุมบ้าน → คลิกมุมบ้าน 4 จุดขึ้นไป · ลากจุดเพื่อปรับละเอียด · ระบบคำนวณ CGM และย้ายศูนย์หล่อแกอัตโนมัติ</div>
 
     <label style="margin-top:10px"><span data-i18n="ctrl.pinTool">ปักจุดบนแปลน · Pin Tool</span></label>
     <div class="pin-toolbar">
@@ -1318,6 +1329,32 @@ document.getElementById('btnTheme').addEventListener('click', () => {
 /* ============== floor-plan canvas ============== */
 const planCanvas = document.getElementById('plan'), planCtx = planCanvas.getContext('2d');
 let planImg = null, planImgRot = 0, planImgOpa = .9;
+let houseFitMode = 'off';         // off | house
+let housePoly = [];               // [{x,y}, ...] in stage coords 760x760
+let houseDragIdx = -1;
+const HOUSE_POINT_R = 8;
+function polygonCentroid(pts){
+  if(!pts || pts.length < 3) return null;
+  let a = 0, cx = 0, cy = 0;
+  for(let i=0;i<pts.length;i++){
+    const p = pts[i], q = pts[(i+1)%pts.length];
+    const cross = p.x*q.y - q.x*p.y;
+    a += cross; cx += (p.x + q.x) * cross; cy += (p.y + q.y) * cross;
+  }
+  a *= 0.5;
+  if(Math.abs(a) < 1e-6){
+    const sx = pts.reduce((s,p)=>s+p.x,0), sy = pts.reduce((s,p)=>s+p.y,0);
+    return { x: sx/pts.length, y: sy/pts.length };
+  }
+  return { x: cx/(6*a), y: cy/(6*a) };
+}
+function syncDialCenterToCGM(){
+  const c = polygonCentroid(housePoly);
+  if(!c) return;
+  dialOffsetX = c.x - 380;
+  dialOffsetY = c.y - 380;
+  applyDialOffset();
+}
 function drawPlan(){
   /* canvas 760x760 · center 380,380 · ขนาดรูปครอบ ~680 px */
   planCtx.clearRect(0,0,planCanvas.width,planCanvas.height);
@@ -1340,6 +1377,42 @@ function drawPlan(){
     planCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--fg-faint').trim();
     planCtx.font = '14px monospace'; planCtx.textAlign = 'center';
     planCtx.fillText('upload floor plan →', 380, 380);
+    planCtx.restore();
+  }
+  if(housePoly.length){
+    planCtx.save();
+    planCtx.strokeStyle = 'rgba(255,214,122,.9)';
+    planCtx.fillStyle = 'rgba(255,214,122,.14)';
+    planCtx.lineWidth = 2;
+    planCtx.beginPath();
+    planCtx.moveTo(housePoly[0].x, housePoly[0].y);
+    for(let i=1;i<housePoly.length;i++) planCtx.lineTo(housePoly[i].x, housePoly[i].y);
+    if(housePoly.length >= 3) planCtx.closePath();
+    if(housePoly.length >= 3) planCtx.fill();
+    planCtx.stroke();
+    for(let i=0;i<housePoly.length;i++){
+      const p = housePoly[i];
+      planCtx.beginPath();
+      planCtx.arc(p.x, p.y, HOUSE_POINT_R, 0, Math.PI*2);
+      planCtx.fillStyle = i===houseDragIdx ? 'rgba(233,132,88,.95)' : 'rgba(255,214,122,.95)';
+      planCtx.fill();
+      planCtx.strokeStyle = 'rgba(23,18,8,.92)';
+      planCtx.lineWidth = 1.2;
+      planCtx.stroke();
+    }
+    const c = polygonCentroid(housePoly);
+    if(c){
+      planCtx.beginPath();
+      planCtx.arc(c.x, c.y, 6, 0, Math.PI*2);
+      planCtx.fillStyle = 'rgba(123,207,123,.95)';
+      planCtx.fill();
+      planCtx.strokeStyle = '#0f1a0f';
+      planCtx.lineWidth = 1.2;
+      planCtx.stroke();
+      planCtx.fillStyle = 'rgba(123,207,123,.95)';
+      planCtx.font = '700 11px monospace';
+      planCtx.fillText('CGM', c.x+10, c.y-10);
+    }
     planCtx.restore();
   }
 }
@@ -1512,7 +1585,11 @@ document.getElementById('scaleMinus')?.addEventListener('click', () => setScale(
 document.getElementById('scaleReset')?.addEventListener('click', () => setScale(100));
 const NUDGE = {ul:[-1,-1], u:[0,-1], ur:[1,-1], l:[-1,0], r:[1,0], dl:[-1,1], d:[0,1], dr:[1,1]};
 document.querySelectorAll('[data-nudge]').forEach(b => b.addEventListener('click', ev => {
-  if(b.dataset.nudge === '0'){ dialOffsetX = 0; dialOffsetY = 0; applyDialOffset(); return; }
+  if(b.dataset.nudge === '0'){
+    if(housePoly.length >= 3) syncDialCenterToCGM();
+    else { dialOffsetX = 0; dialOffsetY = 0; applyDialOffset(); }
+    return;
+  }
   const [dx,dy] = NUDGE[b.dataset.nudge];
   const step = ev.shiftKey ? 30 : 10;
   dialOffsetX += dx * step;
@@ -1573,25 +1650,71 @@ function svgPointToDeg(ev){
   const a = Math.atan2(y, x) * 180 / Math.PI + 90;
   return ((a % 360) + 360) % 360;
 }
+function stagePointFromEvent(ev){
+  const r = lp.getBoundingClientRect();
+  const x = (ev.clientX - r.left) * 760 / r.width;
+  const y = (ev.clientY - r.top) * 760 / r.height;
+  return { x, y };
+}
+function nearestHousePoint(pt, maxDist=14){
+  let idx = -1, best = maxDist*maxDist;
+  for(let i=0;i<housePoly.length;i++){
+    const dx = housePoly[i].x - pt.x, dy = housePoly[i].y - pt.y;
+    const d2 = dx*dx + dy*dy;
+    if(d2 <= best){ best = d2; idx = i; }
+  }
+  return idx;
+}
 lp.addEventListener('mousedown', e => {
+  if(houseFitMode === 'house'){
+    e.preventDefault(); e.stopPropagation();
+    const pt = stagePointFromEvent(e);
+    const hit = nearestHousePoint(pt);
+    if(hit >= 0){ houseDragIdx = hit; }
+    else { housePoly.push(pt); houseDragIdx = housePoly.length - 1; syncDialCenterToCGM(); drawPlan(); }
+    return;
+  }
   if(pinMode){ e.preventDefault(); e.stopPropagation(); addPin(e); return; }
   if(pinDraggingId) return;
   dragging = true; setCursor(svgPointToDeg(e)); document.getElementById('cursorRot').value = cursorDeg;
 });
 window.addEventListener('mousemove', e => {
+  if(houseFitMode === 'house' && houseDragIdx >= 0){
+    const pt = stagePointFromEvent(e);
+    housePoly[houseDragIdx] = pt;
+    syncDialCenterToCGM();
+    drawPlan();
+    return;
+  }
   if(pinDraggingId){ dragPinToPointer(e, pinDraggingId); return; }
   if(dragging){ setCursor(svgPointToDeg(e)); document.getElementById('cursorRot').value = cursorDeg; }
 });
-window.addEventListener('mouseup', () => { dragging = false; pinDraggingId = null; savePins(); });
+window.addEventListener('mouseup', () => { dragging = false; pinDraggingId = null; houseDragIdx = -1; savePins(); });
 lp.addEventListener('touchstart', e => {
+  if(houseFitMode === 'house'){
+    const t=e.touches[0]; if(!t) return;
+    e.preventDefault(); e.stopPropagation();
+    const pt = stagePointFromEvent(t);
+    const hit = nearestHousePoint(pt);
+    if(hit >= 0){ houseDragIdx = hit; }
+    else { housePoly.push(pt); houseDragIdx = housePoly.length - 1; syncDialCenterToCGM(); drawPlan(); }
+    return;
+  }
   if(pinMode){ e.preventDefault(); return; }
   dragging = true; const t=e.touches[0]; setCursor(svgPointToDeg(t)); document.getElementById('cursorRot').value = cursorDeg; e.preventDefault();
 }, {passive:false});
 window.addEventListener('touchmove', e => {
+  if(houseFitMode === 'house' && houseDragIdx >= 0 && e.touches[0]){
+    const pt = stagePointFromEvent(e.touches[0]);
+    housePoly[houseDragIdx] = pt;
+    syncDialCenterToCGM();
+    drawPlan();
+    return;
+  }
   if(pinDraggingId && e.touches[0]){ dragPinToPointer(e.touches[0], pinDraggingId); return; }
   if(dragging && e.touches[0]){ setCursor(svgPointToDeg(e.touches[0])); document.getElementById('cursorRot').value = cursorDeg; }
 }, {passive:true});
-window.addEventListener('touchend', () => { dragging = false; pinDraggingId = null; savePins(); });
+window.addEventListener('touchend', () => { dragging = false; pinDraggingId = null; houseDragIdx = -1; savePins(); });
 
 /* ====== Pin Tool (door/bed/stove/water/desk) ====== */
 let pinMode = null; /* 'door' | 'bed' | 'stove' | 'water' | 'desk' | null */
@@ -3019,6 +3142,30 @@ document.getElementById('imgClear').addEventListener('click', () => {
   document.getElementById('fileIn').value = '';
   document.getElementById('imgRot').value = 0;
   document.getElementById('vImgRot').textContent = '0°';
+  housePoly = []; houseDragIdx = -1;
+  drawPlan();
+});
+function setHouseFitMode(mode){
+  houseFitMode = mode;
+  const on = mode === 'house';
+  document.getElementById('fitModeHouse')?.classList.toggle('active', on);
+  lp.classList.toggle('pin-mode', on); // ใช้ cursor cell เดิม
+}
+document.getElementById('fitModeHouse')?.addEventListener('click', () => {
+  setHouseFitMode(houseFitMode === 'house' ? 'off' : 'house');
+});
+document.getElementById('fitUndo')?.addEventListener('click', () => {
+  if(!housePoly.length) return;
+  housePoly.pop();
+  syncDialCenterToCGM();
+  drawPlan();
+});
+document.getElementById('fitClear')?.addEventListener('click', () => {
+  housePoly = []; houseDragIdx = -1;
+  drawPlan();
+});
+document.getElementById('fitApply')?.addEventListener('click', () => {
+  syncDialCenterToCGM();
   drawPlan();
 });
 
