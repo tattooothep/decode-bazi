@@ -1475,11 +1475,17 @@ const lp = document.getElementById('lp');
 /* cursorNeedle + dial ถูกสร้างใน rebuildLuopan() — query dynamic ทุกครั้ง */
 function applyDialOpacity(pct){
   const v = Math.max(10, Math.min(100, Number(pct) || 88));
-  // สำคัญ: ปรับเฉพาะวงหลัวพาน (lpRotate) ไม่กระทบ pinLayer ที่ปักบนแปลน
+  // สำคัญ: ปรับเฉพาะชั้นวง/overlay ใน lpRotate แต่ "ไม่แตะ pinLayer"
   const lr = document.getElementById('lpRotate');
-  if (lr) lr.style.opacity = String(v / 100);
-  // กันค่าค้างเก่า: อย่าให้ opacity ระดับ root svg ไปจาง pin ทั้งหมด
+  if (lr) {
+    Array.from(lr.children).forEach((el) => {
+      if (el && el.id === 'pinLayer') return;
+      el.style.opacity = String(v / 100);
+    });
+  }
+  // กันค่าค้างเก่า: อย่าให้ opacity ระดับ root SVG หรือ lpRotate มาทับ pin
   lp.style.opacity = '1';
+  if (lr) lr.style.opacity = '1';
   document.getElementById('vDialOpa').textContent = v + '%';
 }
 document.getElementById('dialOpa').addEventListener('input', e => {
