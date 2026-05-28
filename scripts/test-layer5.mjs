@@ -82,6 +82,11 @@ console.log('\n=== ชั้น D: ZPZQ 5.2 resolver regression (3 fail closures
     ['李參政命 合煞留官', P('庚寅','乙酉','甲子','戊辰'), '甲', '正官格', '救應', null, '合煞留官', L('庚','申'), 'NULL'],
     ['毛狀元命 合煞存財', P('乙酉','庚辰','甲午','戊辰'), '甲', '雜氣劫財格', '救應', '用財', '合煞存財', L('丙','午'), '成'],
     ['穆同知命 印護合傷', P('甲午','癸酉','庚寅','戊寅'), '庚', '劫財格', '救應', '用官', '印護', L('丁','巳'), '成'],
+    ['朱尚書命 印制傷護官', P('丙戌','戊戌','辛未','壬辰'), '辛', '雜氣比肩格', '救應', '用官', '印制傷護官', L('甲','寅'), '成'],
+    ['臨淮侯命 印制食傷護官', P('乙亥','己卯','丁酉','壬寅'), '丁', '偏印格', '救應', '用官', '印制食傷護官', L('庚','申'), '成'],
+    ['常國公命 食神帶煞印', P('辛卯','辛卯','癸酉','己未'), '癸', '食神格', '成格', '帶煞', '食神帶煞印', L('辛','酉'), '成'],
+    ['張都統命 祿劫用財帶食傷', P('甲子','丙子','癸丑','壬辰'), '癸', '比肩格', '成格', '用財', '祿劫用財', L('甲','寅'), '成'],
+    ['趙丞相命 癸日庚申', P('己酉','癸未','癸未','庚申'), '癸', '雜氣偏財格', '救應', null, '申合巳', L('甲','寅'), 'NULL'],
   ];
   for (const [name, pil, dm, ge, exp, subExp, reasonHas, luck, timingExp] of cases) {
     const r = buildXiangShen(pil, dm, ge);
@@ -97,6 +102,10 @@ console.log('\n=== ชั้น D: ZPZQ 5.2 resolver regression (3 fail closures
   const ok = fg?.verdict === '成格' && fg?.subLabel === '食生';
   console.log(`${ok?'✓':'✗'} 財格+食生 guard → ${fg?.verdict}/${fg?.subLabel ?? 'null'} · ${fg?.reason} (expect 成格/食生)`);
   ok ? pass++ : fail++;
+  const noCombo = buildXiangShen(P('庚寅','辛酉','甲子','戊辰'), '甲', '正官格');
+  const okNoCombo = noCombo?.verdict === '破格' && (noCombo?.reason || '').includes('官煞混雜');
+  console.log(`${okNoCombo?'✓':'✗'} 官煞混雜無合 guard → ${noCombo?.verdict}/${noCombo?.subLabel ?? 'null'} · ${noCombo?.reason} (expect 破格/官煞混雜)`);
+  okNoCombo ? pass++ : fail++;
 }
 console.log(`\n=== ${pass}/${pass+fail} ${fail?'❌ FAIL':'✅ PASS'} ===`);
 process.exit(fail?1:0);

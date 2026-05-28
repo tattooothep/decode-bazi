@@ -19,6 +19,25 @@ const corpus = JSON.parse(fs.readFileSync("data/library/sifu-extra/zpzq-mingli-g
 const POSITIVE_RE = /(大貴|貴格|皆貴|為貴|甚美|無減福|有情|最利|美|取清|用清|有成|富貴)/;
 const NEGATIVE_RE = /(救死之不暇|不暇|不利|寒貧|小富|破格|貧|不貴|無取|不美|不甚美|不相能)/;
 
+// Guard oracle v1: corpus is still raw ctext, so this is not a full "81/81 matches
+// the commentary" claim. It only asserts the executable policy stable enough for
+// regression:
+// - known special/fallback cases are not judged by 相神 8格.
+// - ZPZQ-cited usable cases must not be returned as 破格.
+// - selected resolver cases must carry the resolver phrase in reason.
+const SPECIAL_OR_FALLBACK = new Set([2,10,11,25,34,37,39,40,41,47,49,52,61,68,72,73,74,76,78,80]);
+const REASON_MUST_CONTAIN = new Map([
+  [7, "合煞留官"],
+  [15, "合煞存財"],
+  [20, "印制傷護官"],
+  [21, "印制食傷護官"],
+  [33, "食神帶煞印"],
+  [58, "印護"],
+  [63, "祿劫用財"],
+  [67, "合煞存財"],
+  [70, "印護"],
+]);
+
 function P([y, m, d, h]) {
   const one = (x) => ({ stem: x[0], branch: x[1] });
   return { year: one(y), month: one(m), day: one(d), hour: h ? one(h) : null };
@@ -49,6 +68,23 @@ function classifyNull(ge) {
   return "UNMAPPED_OR_GAP";
 }
 
+function hardExpected(no) {
+  if (SPECIAL_OR_FALLBACK.has(no)) return { scope: "special_or_fallback", verdict: "SKIP_XIANGSHEN_ASSERT" };
+  const must = REASON_MUST_CONTAIN.get(no);
+  return { scope: "xiangShen", verdict: "NOT_破格", reasonMustContain: must || null };
+}
+
+function hardAlign(no, xs) {
+  const exp = hardExpected(no);
+  if (exp.scope === "special_or_fallback") return { ok: true, expected: exp, note: "special/fallback case; not asserted against 相神 8格" };
+  if (!xs) return { ok: false, expected: exp, note: "expected xiangShen result, got null" };
+  if (xs.verdict === "破格") return { ok: false, expected: exp, note: `expected not 破格, got ${xs.reason}` };
+  if (exp.reasonMustContain && !(xs.reason || "").includes(exp.reasonMustContain)) {
+    return { ok: false, expected: exp, note: `reason missing ${exp.reasonMustContain}` };
+  }
+  return { ok: true, expected: exp, note: "" };
+}
+
 const rows = [];
 const stats = {
   total: corpus.length,
@@ -61,6 +97,8 @@ const stats = {
   strictPass: 0,
   strictFail: 0,
   review: 0,
+  guardPass: 0,
+  guardFail: 0,
 };
 
 for (let i = 0; i < corpus.length; i++) {
@@ -72,6 +110,7 @@ for (let i = 0; i < corpus.length; i++) {
   const xs = buildXiangShen(natal, dm, geLabel || "");
   const pol = polarity(rec.ctext || "");
   const ok = xs ? aligns(pol, xs.verdict) : null;
+  const hard = hardAlign(i + 1, xs);
 
   if (xs) stats.xiangShen++; else stats.null++;
   if (pol === "POSITIVE") stats.positive++;
@@ -81,6 +120,8 @@ for (let i = 0; i < corpus.length; i++) {
   if (ok === true) stats.strictPass++;
   else if (ok === false) stats.strictFail++;
   else stats.review++;
+  if (hard.ok) stats.guardPass++;
+  else stats.guardFail++;
 
   rows.push({
     no: i + 1,
@@ -94,6 +135,9 @@ for (let i = 0; i < corpus.length; i++) {
     reason: xs?.reason ?? classifyNull(geLabel),
     textPolarity: pol,
     align: ok === null ? "REVIEW" : ok ? "PASS" : "FAIL",
+    guardAlign: hard.ok ? "PASS" : "FAIL",
+    guardExpected: hard.expected,
+    guardNote: hard.note,
     ctext: rec.ctext,
   });
 }
@@ -103,6 +147,14 @@ console.log(`total: ${stats.total}`);
 console.log(`xiangShen coverage: ${stats.xiangShen}/${stats.total} (${Math.round(stats.xiangShen / stats.total * 100)}%) · null=${stats.null}`);
 console.log(`text polarity: positive=${stats.positive} · negative=${stats.negative} · mixed=${stats.mixed} · unlabeled=${stats.unlabeled}`);
 console.log(`strict heuristic alignment: PASS=${stats.strictPass} · FAIL=${stats.strictFail} · REVIEW=${stats.review}`);
+console.log(`guard oracle v1 (not full 81 hard-label): PASS=${stats.guardPass}/${stats.total} · FAIL=${stats.guardFail}`);
+
+if (stats.guardFail) {
+  console.log("\n=== GUARD FAIL rows ===");
+  for (const r of rows.filter((x) => x.guardAlign === "FAIL")) {
+    console.log(`${String(r.no).padStart(2, "0")}. ${r.name || "-"} · ${r.pillars} · ge=${r.ge || "-"} · xs=${r.xiangShen || "-"}${r.subLabel ? "/" + r.subLabel : ""} · expected=${r.guardExpected.verdict}${r.guardExpected.reasonMustContain ? "/" + r.guardExpected.reasonMustContain : ""} · ${r.guardNote}`);
+  }
+}
 
 console.log("\n=== FAIL / REVIEW headline rows ===");
 for (const r of rows.filter((x) => x.align !== "PASS").slice(0, 80)) {
@@ -129,4 +181,4 @@ console.log("\noutputs:");
 console.log("  /tmp/hourkey-audit/zpzq-81-audit.json");
 console.log("  /tmp/hourkey-audit/zpzq-81-audit.tsv");
 
-process.exit(stats.strictFail ? 1 : 0);
+process.exit(stats.strictFail || stats.guardFail ? 1 : 0);

@@ -178,6 +178,34 @@ export type ChartPacket = {
     verdict: string;       // 成/破(เบา)/破(หนัก)/平/UNMAPPED
     reason: string; ruleId: string; annual?: string;
   } | null;
+  /** 病藥 v1 (Disease-Medicine · 子平真詮/滴天髓)
+   * derived จาก rootedness/usefulGods/xiangShen/Layer5 · ไม่ใช่โรคสุขภาพตรงๆ
+   * gate 從/化/專旺 ก่อน เพราะสูตร扶抑/病藥จะกลับทิศ */
+  bingYao?: {
+    status: "ok" | "not_applicable" | "needs_review";
+    primary: {
+      id: string;
+      diseaseType: string;
+      diseaseElements: ElementEN[];
+      diseaseGods: string[];
+      medicineElements: ElementEN[];
+      medicineGods: string[];
+      reason: string;
+      sourceIds: string[];
+      guard: string;
+    } | null;
+    candidates: Array<{
+      id: string;
+      diseaseType: string;
+      diseaseElements: ElementEN[];
+      diseaseGods: string[];
+      medicineElements: ElementEN[];
+      medicineGods: string[];
+      reason: string;
+      sourceIds: string[];
+      guard: string;
+    }>;
+  } | null;
   usefulGods: {
     /** rank1 useful element */
     yong: ElementEN[];
@@ -647,6 +675,9 @@ function visibleStemGodsXS(pillars: Record<string, { stem: string; branch: strin
   }
   return out;
 }
+function visibleHasGodXS(pillars: Record<string, { stem: string; branch: string } | null>, dm: string, god: string): boolean {
+  return visibleStemGodsXS(pillars, dm).some((x) => x.god === god);
+}
 function hasVisibleComboTargetGodXS(
   pillars: Record<string, { stem: string; branch: string } | null>,
   dm: string,
@@ -666,27 +697,35 @@ export function buildXiangShen(pillars: Record<string, { stem: string; branch: s
   const 比劫 = has("比肩") || has("劫財");
   const 合煞 = hasVisibleComboTargetGodXS(pillars, dm, "七殺");
   const 印合傷 = hasVisibleComboTargetGodXS(pillars, dm, "傷官", ["正印", "偏印"]);
+  const 官透 = visibleHasGodXS(pillars, dm, "正官");
+  const 殺透 = visibleHasGodXS(pillars, dm, "七殺");
+  const 印透 = visibleHasGodXS(pillars, dm, "正印") || visibleHasGodXS(pillars, dm, "偏印");
+  const 食傷透 = visibleHasGodXS(pillars, dm, "食神") || visibleHasGodXS(pillars, dm, "傷官");
   const help = ["比肩", "劫財", "正印", "偏印"].filter((x) => g.has(x)).length;
   const drain = ["正財", "偏財", "正官", "七殺", "食神", "傷官"].filter((x) => g.has(x)).length;
   const strong = help >= drain;
+  const 癸日庚申 = dm === "癸" && pillars.hour?.stem === "庚" && pillars.hour?.branch === "申";
   // subLabel = 相神 sub-case (RUN_RULES key สำหรับ Layer 5) · derive จากจุดตัดสินเดิม (กฎเดียวกับ verdict · single-source) · null=map ไม่ได้→UNMAPPED ตอน timing
   const R = (verdict: "成格" | "破格" | "救應" | "合格普通", reason: string, subLabel: string | null = null) => ({ geZh: ge, verdict, reason, subLabel });
   switch (ge) {
     case "正官格":
       if (傷) return 印 ? R("救應", "傷官見官 → 透印制傷 (敗中有成)", "佩印") : R("破格", "傷官見官 (PO_OFFICIAL_1)", "無印");
       if (殺 && 官 && 合煞) return R("救應", "官煞混雜 → 合煞留官取清 (ZPZQ-5.2-01)", null);
-      if (殺) return R("破格", "官煞混雜 (PO_OFFICIAL_3)", null);  // 官煞混雜 ไม่มี sub-case ใน RUN
+      if (殺 && 官透 && 殺透) return R("破格", "官煞混雜 (PO_OFFICIAL_3)", null);  // 官煞พร้อม透ออกมาจึงลงโทษเต็ม
       return (財 || 印) ? R("成格", "官透 + 財/印 + 無傷官", 印 ? "佩印" : "用財") : R("合格普通", "官透ไม่มี財/印ค้ำ", "無印");
     case "財格":
+      if (癸日庚申) return R("救應", "癸日庚申 → 申合巳得財朋 (ZPZQ-5.2-10)", null);
       if (比劫 && !食 && !官) return R("破格", "比劫奪財 (PO_WEALTH_1)", null);  // 比劫奪財ไม่มีตัวค้ำ
       if (比劫 && (食 || 官)) return R("救應", "比劫奪財 → 食化劫/官制劫", 食 ? "食生" : "生官");
       if (殺 && !食) return R("破格", "財生殺攻身 (PO_WEALTH_3)", null);
       return (官 || 食 || 印) ? R("成格", "財旺生官/食生財/財透印", 官 ? "生官" : 食 ? "食生" : "佩印") : R("合格普通", "財ไม่มีค้ำ", null);
     case "印綬格":
+      if (官 && 印透 && 食傷透) return R("救應", "印制食傷護官 (ZPZQ-5.2-05)", "用官");
       if (財 && !比劫) return R("破格", "財重破印 (PO_SEAL_1)", "財為忌");
       if (財 && 比劫) return R("救應", "財破印 → 比劫制財", "財為忌");
       return (官 || 殺) ? R("成格", "官印雙全", "用官") : (食 || 傷) ? R("成格", "印旺透食傷洩秀", "用傷食") : R("合格普通", "印ไม่มีค้ำ", null);
     case "食神格":
+      if (殺透 && 印) return R("成格", "食神帶煞印 (ZPZQ-5.2-06)", "帶煞");
       if (has("偏印") && !財) return R("破格", "梟印奪食 (PO_FOOD_1)", null);  // 梟奪食破·用神พัง
       if (has("偏印") && 財) return R("救應", "梟印奪食 → 透財化梟", "生財");
       return 財 ? R("成格", "食神生財", "生財") : 殺 ? R("成格", "食帶煞制殺", "帶煞") : R("合格普通", "食ไม่มีค้ำ", null);
@@ -706,8 +745,11 @@ export function buildXiangShen(pillars: Record<string, { stem: string; branch: s
     case "建祿月劫格":
       if (!財 && !官 && !殺) return R("破格", "純比劫無財官煞 (PO_LU_1)", null);
       if (財 && 殺 && 合煞) return R("救應", "財帶七殺 → 合煞存財 (ZPZQ-5.2-02)", "用財");
+      if (財 && (食 || 傷) && !印) return R("成格", "祿劫用財須帶食傷化劫生財 (ZPZQ-5.2-07)", "用財");
       if (官 && 傷 && 印 && 印合傷) return R("救應", "用官被傷 → 印護合傷護官 (ZPZQ-5.2-03)", "用官");
+      if (官 && 傷 && 印) return R("救應", "用官被傷 → 印制傷護官 (ZPZQ-5.2-04)", "用官");
       if (官 && 傷) return R("破格", "用官而官被傷 (PO_LU_2)", "用官");
+      if (財 && (食 || 傷)) return R("成格", "祿劫用財須帶食傷化劫生財 (ZPZQ-5.2-07)", "用財");
       return R("成格", "透官逢財印/透財逢食傷", 官 ? "用官" : 財 ? "用財" : null);
     default: return null;
   }
@@ -786,6 +828,106 @@ export function buildChengBaiNow(
     if (yg) annual = rule.xi.includes(yg) ? `DTS-2c ปีจร ${yg}=หนุนซ้ำ` : rule.ji.includes(yg) ? `DTS-2c ปีจร ${yg}=ต้าน` : `DTS-2c ปีจร ${yg}=กลาง`;
   }
   return { geZh: geKey, subLabel: sub, verdict, reason, ruleId: rule.src, annual };
+}
+
+type BingYaoCandidate = NonNullable<NonNullable<ChartPacket["bingYao"]>["primary"]>;
+const ROOT_RANK_BY: Record<RootLabel, number> = {
+  no_root: 0, token_root: 1, partial_root: 2, rooted: 3, strong_root: 4,
+};
+function rootRankBY(label: RootLabel | undefined): number {
+  return label ? ROOT_RANK_BY[label] ?? 0 : 0;
+}
+function uniqElsBY(arr: Array<ElementEN | null | undefined>): ElementEN[] {
+  return Array.from(new Set(arr.filter(Boolean) as ElementEN[]));
+}
+function godsForElementsBY(dmElement: ElementEN, els: ElementEN[]): string[] {
+  return Array.from(new Set(els.flatMap((el) => tenGodOfElement(dmElement, el))));
+}
+function candidateBY(
+  id: string,
+  diseaseType: string,
+  diseaseElements: ElementEN[],
+  medicineElements: ElementEN[],
+  dmElement: ElementEN,
+  reason: string,
+  guard: string,
+  sourceIds: string[],
+  diseaseGods: string[] = godsForElementsBY(dmElement, diseaseElements),
+  medicineGods: string[] = godsForElementsBY(dmElement, medicineElements),
+): BingYaoCandidate {
+  return { id, diseaseType, diseaseElements, diseaseGods, medicineElements, medicineGods, reason, sourceIds, guard };
+}
+/* 病藥 v1 — จุดเสียของโครงดวง + ตัวยาแก้ (ไม่ใช่โรคสุขภาพ)
+   子平真詮: 傷其扶/去其抑者為病，除病神為藥 · 滴天髓: 旺太過宜泄, 弱有根宜扶, 弱無根從勢 */
+export function buildBingYao(
+  structureLabel: string,
+  dmElement: ElementEN | "unknown",
+  rootedness: ChartPacket["rootedness"] | null,
+  usefulGods: ChartPacket["usefulGods"],
+  xiangShen: ChartPacket["xiangShen"] | null,
+  chengBaiNow: ChartPacket["chengBaiNow"] | null,
+  elementProfile: ChartPacket["elementProfile"],
+): ChartPacket["bingYao"] {
+  if (dmElement === "unknown" || !rootedness) return { status: "needs_review", primary: null, candidates: [] };
+  if (/^(假)?(從|化)/.test(structureLabel) || /曲直|炎上|稼穡|從革|潤下|魁罡/.test(structureLabel)) {
+    return { status: "not_applicable", primary: null, candidates: [] };
+  }
+  const candidates: BingYaoCandidate[] = [];
+  const add = (c: BingYaoCandidate) => candidates.push(c);
+  const yong = usefulGods.yong[0] || null;
+  const xi = usefulGods.xi || [];
+  const ji = usefulGods.ji || [];
+  const xsReason = xiangShen?.reason || "";
+
+  // BY-08/BY-10/BY-09/BY-05: rule-table tied to 相神/成敗 reason first.
+  if (xiangShen?.subLabel === "財為忌" || /財破印|財重破印/.test(xsReason)) {
+    add(candidateBY("BY-08", "財破印: ดาวทรัพย์ทำลายอิน/ตัวหนุน", [ELEMENT_CONTROLS[dmElement]], [dmElement], dmElement,
+      `相神=${xiangShen?.verdict || "-"}: ${xsReason}`, "ถ้าเป็น從財/化格 ห้ามใช้สูตรนี้ ต้องตาม勢ก่อน", ["ZPZQ-BY-08"]));
+  }
+  if (/煞重身輕|殺重|財黨煞|財生殺/.test(xsReason) || (xiangShen?.geZh === "七殺格" && xiangShen.verdict === "破格")) {
+    add(candidateBY("BY-10", "殺重身輕/財黨殺: แรงกดดันฆาตแรงกว่าตัวดวง", [controllerElementOf(dmElement) || dmElement], uniqElsBY([ELEMENT_PRODUCES[dmElement], producerElementOf(dmElement), dmElement]), dmElement,
+      `相神=${xiangShen?.verdict || "-"}: ${xsReason || "七殺格破"}`, "ถ้า engine จัดเป็น從殺 ต้องไม่ใช้สูตร扶身/制殺นี้", ["ZPZQ-BY-10", "DTS-BY-10"]));
+  }
+  if (/梟印奪食/.test(xsReason)) {
+    add(candidateBY("BY-09", "梟奪食: อินเกินจนกดการระบาย/ผลงาน", [producerElementOf(dmElement) || dmElement], [ELEMENT_CONTROLS[dmElement]], dmElement,
+      `相神=${xiangShen?.verdict || "-"}: ${xsReason}`, "ถ้าเป็น食神帶煞印หรือ印為調候 ต้องให้ resolver ชนะก่อน", ["ZPZQ-BY-09"]));
+  }
+  if (xiangShen?.verdict === "破格" || chengBaiNow?.verdict?.startsWith("破")) {
+    add(candidateBY("BY-05", "忌神傷用/傷相: ตัวขัดทำลาย用神หรือ相神", ji, uniqElsBY([yong, ...xi]), dmElement,
+      `โครงดวง/วัยจรมีจุดขัด: ${xiangShen?.reason || ""}${chengBaiNow ? ` · ${chengBaiNow.reason}` : ""}`.trim(),
+      "v1 ใช้เป็นคำเตือนเชิงโครงสร้าง ถ้า resolver ยังไม่ชี้ชัดให้ซินแสอ่านประกอบ", ["ZPZQ-BY-05"]));
+  }
+
+  // BY-01/BY-03: root/useful balance fallback.
+  const counts = elementProfile.counts;
+  const elements = Object.keys(counts) as ElementEN[];
+  const strongest = elements
+    .filter((el) => rootRankBY(rootedness.all[el]) >= 3)
+    .sort((a, b) => (counts[b] - counts[a]) || (rootRankBY(rootedness.all[b]) - rootRankBY(rootedness.all[a])))[0];
+  if (strongest && counts[strongest] >= 3 && !usefulGods.yong.includes(strongest)) {
+    add(candidateBY("BY-01", "旺神太過: ธาตุหนึ่งแรงเกิน", [strongest], [ELEMENT_PRODUCES[strongest]], dmElement,
+      `${ELEMENT_TH[strongest]}ราก=${rootedness.all[strongest]} และปรากฏ ${counts[strongest]} จุด → ใช้泄 ระบายแรง`,
+      "ถ้าเป็น專旺/從旺 ต้อง not_applicable ไม่ใช่ใช้泄", ["DTS-BY-01"]));
+  }
+  if (yong && rootRankBY(rootedness.all[yong]) >= 1 && rootRankBY(rootedness.all[yong]) <= 2 && !rootedness.isExtremelyWeak) {
+    add(candidateBY("BY-03", "弱神有根/รากบาง: ธาตุที่ใช้ยังไม่มั่นคง", [yong], uniqElsBY([yong, producerElementOf(yong)]), dmElement,
+      `用神 ${ELEMENT_TH[yong]} ราก=${rootedness.all[yong]} → ใช้扶 เติมแม่/พวกเดียวกัน`,
+      "ถ้า no_root และดวงเข้า從/化 ห้ามฝืน扶", ["DTS-BY-03"]));
+  }
+
+  // BY-06: 通關缺 lite from direct yong/ji clash.
+  for (const bad of ji) {
+    for (const good of uniqElsBY([yong, ...xi])) {
+      if (ELEMENT_CONTROLS[bad] === good) {
+        const bridge = ELEMENT_PRODUCES[bad]; // bad -> bridge -> good
+        add(candidateBY("BY-06", "通關缺: ตัวขัดชนธาตุสำคัญ ต้องมีตัวกลาง", [bad, good], [bridge], dmElement,
+          `${ELEMENT_TH[bad]}剋${ELEMENT_TH[good]} → ใช้${ELEMENT_TH[bridge]}เป็นตัวผ่านด่าน`, "ใช้เมื่อสองฝ่ายยังต้องเก็บไว้ ไม่ใช่ตัดฝ่ายหนึ่งทิ้ง", ["ZPZQ-BY-06"]));
+      }
+    }
+  }
+
+  const primary = candidates[0] || null;
+  return { status: primary ? "ok" : "needs_review", primary, candidates };
 }
 
 export function buildStructuredChartPacket(
@@ -1232,6 +1374,15 @@ export function buildStructuredChartPacket(
     cyp ? { stem: cyp.stem, branch: cyp.branch } : null,
     rootedness?.dmLabel, calc.mode === "3p",
   );
+  packet.bingYao = buildBingYao(
+    `${packet.structure.label} ${packet.structure.special?.typeZh || ""}`,
+    dmElement,
+    packet.rootedness ?? null,
+    packet.usefulGods,
+    packet.xiangShen ?? null,
+    packet.chengBaiNow ?? null,
+    packet.elementProfile,
+  );
   return packet;
 }
 
@@ -1428,6 +1579,22 @@ export function renderChartPrompt(packet: ChartPacket): string {
     const c = packet.chengBaiNow;
     const VTH2: Record<string, string> = { "成": "วัยจรช่วงนี้หนุนโครงดวง (成)", "破(เบา)": "วัยจรช่วงนี้ขัดโครงดวง·แต่日主旺พอทน (破·เบา)", "破(หนัก)": "วัยจรช่วงนี้ขัดโครงดวง·日主อ่อนรับเต็ม (破·หนัก)", "平": "วัยจรช่วงนี้เป็นกลางต่อโครงดวง (平)" };
     lines.push(`行運成敗 (จังหวะวัยจรกับโครงดวง${c.geZh}·相神${c.subLabel}): ${VTH2[c.verdict] || c.verdict} — ${c.reason}${c.annual ? ` · ${c.annual}` : ""} · อ้างตัวบทจริง [${c.ruleId}] · ⚠️ บอก "ช่วงวัยจรนี้หนุน/ขัดโครงดวง" ไม่ใช่ฟันธงปีดี-ร้ายเป็นตัวเลข · โครงขัดมีทางปรับ(印/比劫/ตัวไกล่เกลี่ย)เสมอ · ห้ามชี้ชะตาตายตัว`);
+  }
+  /* 病藥 v1 (28 พ.ค. · 子平真詮/滴天髓 · จุดเสียเชิงโครงสร้าง + ตัวยาแก้ · ไม่ใช่โรคสุขภาพ) */
+  if (packet.bingYao) {
+    const by = packet.bingYao;
+    if (by.status === "not_applicable") {
+      lines.push("病藥 (จุดเสีย/ตัวยา): ไม่ใช้สูตร扶抑病藥ตรงๆ เพราะดวงนี้เข้าโครงพิเศษ/從化/專旺 · ให้อ่านตาม勢ของโครงพิเศษก่อน");
+    } else if (by.primary) {
+      const p = by.primary;
+      const dis = p.diseaseElements.length ? fmtEls(p.diseaseElements) : "-";
+      const med = p.medicineElements.length ? fmtEls(p.medicineElements) : "-";
+      const dg = p.diseaseGods.length ? p.diseaseGods.map((g) => TEN_GOD_TH[g] || g).join("/") : "-";
+      const mg = p.medicineGods.length ? p.medicineGods.map((g) => TEN_GOD_TH[g] || g).join("/") : "-";
+      lines.push(`病藥 (จุดเสีย/ตัวยา · ${p.id}): 病=${p.diseaseType} · ธาตุ/ดาวที่เป็น病=${dis}/${dg} · 藥=ใช้${med}/${mg}เป็นตัวยา · เหตุผล=${p.reason} · อ้างอิง=${p.sourceIds.join(",")} · guard=${p.guard} · ⚠️ นี่คือจุดเสียเชิงโครงดวง ไม่ใช่โรคสุขภาพตรงๆ`);
+    } else {
+      lines.push("病藥 (จุดเสีย/ตัวยา): ยังต้องให้ซินแสอ่านประกอบจาก用神/相神/รากธาตุ · engine v1 ไม่พบ病หลักที่ชัดพอจะฟันธง");
+    }
   }
   /* 通根 รากธาตุ (wrapper-7 · ฐานตัดสิน 從格/用神 · ห้ามคำนวณใหม่ · engine ให้มา) */
   if (packet.rootedness) {
