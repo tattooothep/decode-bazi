@@ -111,6 +111,11 @@
   .time-filter .btn b{display:block;font-family:var(--tc);font-size:14px;color:var(--gold-bright);}
   .time-filter .btn.active{background:var(--gold);color:var(--bg);}
   .time-filter .btn.active b{color:var(--bg);}
+  .time-filter-mini{margin-top:8px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
+  .time-filter-mini .btn{font-size:10px;padding:7px 2px;text-align:center;line-height:1.2;}
+  .time-filter-mini .btn b{display:block;font-family:var(--tc);font-size:13px;color:var(--gold-bright);}
+  .time-filter-mini .btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+  .time-filter-mini .btn.active b{color:var(--bg);}
   .insp-cat{margin-top:14px;padding-top:8px;border-top:1px solid var(--line);}
   .insp-cat:first-of-type{border-top:none;padding-top:0;}
   .insp-cat-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
@@ -324,8 +329,20 @@
       <p class="cat-desc">ไม่ใช่ vงแยก · 2 ศาสตร์ในหมวด 2 ที่ values เปลี่ยนตามเวลา · ใช้ปุ่ม filter เวลา (運/年/月/日/時) ที่การ์ดกลางเปลี่ยน:</p>
       <div class="layer-grid">
         <label><input type="checkbox" data-r="rFX" data-cg="4" checked><span class="lbl-th">ดาวเหิน 山/向/基 · ทิศบ้าน+ยุค</span><span class="lbl-cn">飛星</span></label>
-        <label><input type="checkbox" data-r="rQM" data-cg="4" checked><span class="lbl-th">ฉีเหมิน 門/神/星 · ปี/เดือน/วัน/ยาม</span><span class="lbl-cn">奇門</span></label>
+        <label><input type="checkbox" data-r="rQM" data-cg="4" checked><span class="lbl-th">ฉีเหมิน 門/神/星 · ยามจริง (時家)</span><span class="lbl-cn">奇門</span></label>
       </div>
+      <div class="btn-grp" style="margin-top:6px">
+        <button class="btn active" id="qmSchoolChaibu" data-qm-school="chaibu">拆補</button>
+        <button class="btn" id="qmSchoolZhirun" data-qm-school="zhirun">置閏</button>
+      </div>
+      <div class="time-filter-mini" aria-label="time filter in category 4">
+        <button class="btn active" data-time-jump="era"><b>運</b>ยุค</button>
+        <button class="btn" data-time-jump="year"><b>年</b>ปี</button>
+        <button class="btn" data-time-jump="month"><b>月</b>เดือน</button>
+        <button class="btn" data-time-jump="day"><b>日</b>วัน</button>
+        <button class="btn" data-time-jump="hour"><b>時</b>ยาม</button>
+      </div>
+      <div class="help-line">สำนักฉีเหมิน: เลือกได้ 2 สำนัก (ใช้กับโหมดยามจริง) · ตอนนี้ค่าเริ่มต้น = 拆補</div>
     </div>
 
   </div>
@@ -1390,23 +1407,35 @@ window.setQM=function(d){for(let i=0;i<8;i++){const v=(d||[])[i]||{};const m=doc
 /* ยุค 9 (period 9) — 3 ดาว 山/水/基 ต่อ 8 ทิศ */
 const dEra={fx:[{shan:6,xiang:2,ji:1},{shan:1,xiang:7,ji:8},{shan:8,xiang:4,ji:3},{shan:7,xiang:3,ji:4},{shan:2,xiang:6,ji:9},{shan:4,xiang:8,ji:2},{shan:3,xiang:9,ji:7},{shan:9,xiang:1,ji:6}],qm:null};
 /* ปี/เดือน/วัน/ยาม — ดาวเดียว · per 8 ทิศ */
-const dYear={fx:[{star:1},{star:8},{star:3},{star:4},{star:9},{star:2},{star:7},{star:6}],qm:[{men:'休',shen:'值符',xing:'天蓬'},{men:'生',shen:'螣蛇',xing:'天任'},{men:'傷',shen:'太陰',xing:'天沖'},{men:'杜',shen:'六合',xing:'天輔'},{men:'景',shen:'九地',xing:'天英'},{men:'死',shen:'九天',xing:'天芮'},{men:'驚',shen:'玄武',xing:'天柱'},{men:'開',shen:'白虎',xing:'天心'}]};
-const dMonth={fx:[{star:2},{star:9},{star:4},{star:5},{star:1},{star:3},{star:8},{star:7}],qm:[{men:'開',shen:'九天',xing:'天心'},{men:'休',shen:'值符',xing:'天蓬'},{men:'生',shen:'螣蛇',xing:'天任'},{men:'傷',shen:'太陰',xing:'天沖'},{men:'杜',shen:'六合',xing:'天輔'},{men:'景',shen:'九地',xing:'天英'},{men:'死',shen:'玄武',xing:'天芮'},{men:'驚',shen:'白虎',xing:'天柱'}]};
-const dDay={fx:[{star:5},{star:3},{star:7},{star:6},{star:1},{star:2},{star:8},{star:4}],qm:dYear.qm};
-const dHour={fx:[{star:4},{star:8},{star:6},{star:5},{star:9},{star:2},{star:1},{star:7}],qm:dYear.qm};
+const dYear={fx:[{star:1},{star:8},{star:3},{star:4},{star:9},{star:2},{star:7},{star:6}],qm:null};
+const dMonth={fx:[{star:2},{star:9},{star:4},{star:5},{star:1},{star:3},{star:8},{star:7}],qm:null};
+const dDay={fx:[{star:5},{star:3},{star:7},{star:6},{star:1},{star:2},{star:8},{star:4}],qm:null};
+const dHour={fx:[{star:4},{star:8},{star:6},{star:5},{star:9},{star:2},{star:1},{star:7}],qm:null};
 
 const demos={era:dEra, year:dYear, month:dMonth, day:dDay, hour:dHour};
 let currentTimingKey='era';
 /* 26 พ.ค. · ฉีเหมินจริง: GET /api/qimen (proxy→qimen-api 4090 · 時家奇門 · เวลาปัจจุบัน Bangkok) → ผัง 9宮 → map direction→8ทิศ · 中5 เก็บแยก */
 window.QM_REAL = null;   // [8] ต่อทิศ {men,shen,xing,raw} · null=ยังไม่โหลด/ไม่ใช่ยาม
 window.QM_CENTER = null; // วัง中5 (ไม่มีทิศ)
+window.QM_FETCH_STATE = 'idle'; // idle|loading|ok|fail|na
+window.QM_SCHOOL = 'chaibu'; // chaibu | zhirun
 const QM_DIR2IDX = {N:0,NE:1,E:2,SE:3,S:4,SW:5,W:6,NW:7};
+function updateSourceStatus(){
+  const t = document.getElementById('buildTag');
+  if(!t) return;
+  const qmTxt = (currentTimingKey === 'hour')
+    ? (window.QM_FETCH_STATE === 'ok' ? `QM:/api/qimen(${window.QM_SCHOOL}) ✓` : window.QM_FETCH_STATE === 'loading' ? `QM:${window.QM_SCHOOL} loading…` : `QM:/api/qimen(${window.QM_SCHOOL}) ✗`)
+    : 'QM:hour-only';
+  t.textContent = `FX:玄空公式+JSON · ${qmTxt}`;
+}
 async function fetchQimenReal(){
   try{
-    const r = await fetch('/api/qimen');  // default = เวลาปัจจุบัน Bangkok (時家)
+    window.QM_FETCH_STATE = 'loading'; updateSourceStatus();
+    const r = await fetch(`/api/qimen?school=${encodeURIComponent(window.QM_SCHOOL || 'chaibu')}`);  // default = เวลาปัจจุบัน Bangkok (時家)
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
     const j = await r.json();
     const palaces = (j && j.data && j.data.palaces) || [];
-    if(!palaces.length){ window.QM_REAL=null; window.QM_CENTER=null; window.setQM([]); return; }
+    if(!palaces.length){ window.QM_REAL=null; window.QM_CENTER=null; window.setQM([]); window.QM_FETCH_STATE = 'fail'; updateSourceStatus(); return; }
     const arr = Array.from({length:8}, ()=>({}));
     let center = null;
     palaces.forEach(p=>{
@@ -1416,18 +1445,36 @@ async function fetchQimenReal(){
     });
     window.QM_REAL = arr; window.QM_CENTER = center;
     window.setQM(arr);
-  }catch(e){ console.warn('qimen fetch fail:', e); window.QM_REAL=null; window.QM_CENTER=null; window.setQM([]); }
+    window.QM_FETCH_STATE = 'ok'; updateSourceStatus();
+  }catch(e){ console.warn('qimen fetch fail:', e); window.QM_REAL=null; window.QM_CENTER=null; window.setQM([]); window.QM_FETCH_STATE = 'fail'; updateSourceStatus(); }
 }
 async function applyTiming(k){
   currentTimingKey=k;
   const isEra = k === 'era';
   window.setFX({mode: isEra?'era':'single', data: demos[k].fx});
   document.querySelectorAll('[data-time]').forEach(x=>x.classList.toggle('active',x.dataset.time===k));
+  document.querySelectorAll('[data-time-jump]').forEach(x=>x.classList.toggle('active',x.dataset.timeJump===k));
   /* ฉีเหมิน = 時家เท่านั้น (engine รองรับชั่วยาม) · ยาม=ผังจริง · ปี/เดือน/วัน/ยุค=ว่าง (ไม่หลอก) */
   if(k==='hour'){ window.setQM([]); updateInspector(); await fetchQimenReal(); updateInspector(); }
-  else { window.QM_REAL=null; window.QM_CENTER=null; window.setQM([]); updateInspector(); }
+  else { window.QM_REAL=null; window.QM_CENTER=null; window.setQM([]); window.QM_FETCH_STATE='na'; updateInspector(); updateSourceStatus(); }
 }
 document.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>applyTiming(b.dataset.time)));
+document.querySelectorAll('[data-time-jump]').forEach(b=>{
+  b.addEventListener('click',()=>applyTiming(b.getAttribute('data-time-jump') || 'era'));
+});
+document.querySelectorAll('[data-qm-school]').forEach(b=>{
+  b.addEventListener('click', async () => {
+    window.QM_SCHOOL = b.getAttribute('data-qm-school') || 'chaibu';
+    document.querySelectorAll('[data-qm-school]').forEach(x=>x.classList.toggle('active', x===b));
+    if(currentTimingKey === 'hour'){
+      window.setQM([]); updateInspector();
+      await fetchQimenReal();
+      updateInspector();
+    } else {
+      updateSourceStatus();
+    }
+  });
+});
 
 /* ============== controls ============== */
 const lp = document.getElementById('lp');
@@ -2382,12 +2429,12 @@ function updateInspector(){
   if(currentTimingKey==='era'){
     [['山','ดาวภูเขา · ที่หลังบ้าน',r.fx.shan],['水','ดาวน้ำ · ที่หน้าบ้าน',r.fx.xiang],['基','ดาวฐาน · กลางวัง',r.fx.ji]].forEach(([han,name,n])=>{
       const fs = L.flying_stars_9?.stars?.[String(n)];
-      if(fs) row('cat2','飛星'+han, `<b>${fs.name||han+n}</b> <span style="color:var(--fg-faint)">· ${han}${n}</span>`, fs.score, fs.general, fs.home);
+      if(fs) row('cat2','飛星'+han, `<b>${fs.name||han+n}</b> <span style="color:var(--fg-faint)">· ${han}${n}</span>`, fs.score, `${fs.general||''} · source: 玄空飛星公式 + luopan_complete.json`, fs.home);
     });
   } else {
     const fs = L.flying_stars_9?.stars?.[String(r.fx.star)];
     const tname={year:'ดาวปี',month:'ดาวเดือน',day:'ดาววัน',hour:'ดาวยาม'}[currentTimingKey];
-    if(fs) row('cat4','飛星', `<b>${fs.name||r.fx.star}</b> <span style="color:var(--fg-faint)">· ${tname} ${r.fx.star}</span>`, fs.score, fs.general, fs.home);
+    if(fs) row('cat4','飛星', `<b>${fs.name||r.fx.star}</b> <span style="color:var(--fg-faint)">· ${tname} ${r.fx.star}</span>`, fs.score, `${fs.general||''} · source: เวลาเลือก + luopan_complete.json`, fs.home);
   }
   /* 64卦 */
   const hex = L.hexagrams_64?.hexagrams?.[r.h64char];
@@ -2519,11 +2566,11 @@ function updateInspector(){
   /* === หมวด 4 ศาสตร์คำนวณ (เปลี่ยนตามเวลา) === */
   if(r.qm){
     const gate = L.qimen_gates?.gates?.[r.qm.men];
-    if(gate) row('cat4','奇門·門', `<b>${r.qm.men}</b> · ${gate.name||''}`, gate.score, gate.general, gate.home);
+    if(gate) row('cat4','奇門·門', `<b>${r.qm.men}</b> · ${gate.name||''}`, gate.score, `${gate.general||''} · source: /api/qimen (時家)`, gate.home);
     const dei = L.qimen_deities?.deities?.[r.qm.shen];
-    if(dei) row('cat4','奇門·神', `<b>${r.qm.shen}</b> · ${dei.name||''}`, dei.score, dei.general, dei.home);
+    if(dei) row('cat4','奇門·神', `<b>${r.qm.shen}</b> · ${dei.name||''}`, dei.score, `${dei.general||''} · source: /api/qimen (時家)`, dei.home);
     const star = L.qimen_stars?.stars?.[r.qm.xing];
-    if(star) row('cat4','奇門·星', `<b>${r.qm.xing}</b> · ${star.name||''}`, star.score, star.general, star.home);
+    if(star) row('cat4','奇門·星', `<b>${r.qm.xing}</b> · ${star.name||''}`, star.score, `${star.general||''} · source: /api/qimen (時家)`, star.home);
   }
   /* 中宮 วัง中5 (ไม่มีทิศบนหล่อแก) — แสดงแยกเมื่อระดับยาม · ไม่ fold เข้าทิศอื่น (กันผิดสำนัก) */
   if(currentTimingKey==='hour' && window.QM_CENTER){
@@ -2897,6 +2944,7 @@ try {
   drawPlan();
   const t = document.getElementById('buildTag');
   if(t) t.textContent = 'build ' + new Date().toISOString().slice(11,19) + ' · OK';
+  updateSourceStatus();
 } catch(e) {
   const b = document.getElementById('errBanner');
   if(b){ b.style.display='block'; b.textContent = '⚠ Init error: ' + e.message + ' @ ' + (e.stack||'').split('\n').slice(0,3).join(' | '); }
