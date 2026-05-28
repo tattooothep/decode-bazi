@@ -147,6 +147,12 @@ export type ChartPacket = {
     geZh: string;          // 格 (RULES key · เช่น 正官格)
     verdict: "成格" | "破格" | "救應" | "合格普通";
     reason: string;        // เหตุผลตามสูตร §8.2
+    subLabel?: string | null;  // 相神 sub-case (佩印/無印/用財/生官/食制...) → RUN_RULES key สำหรับ Layer 5 · null=map ไม่ได้
+  } | null;
+  chengBaiNow?: {
+    geZh: string; subLabel: string;
+    verdict: string;       // 成/破(เบา)/破(หนัก)/平/UNMAPPED
+    reason: string; ruleId: string; annual?: string;
   } | null;
   usefulGods: {
     /** rank1 useful element */
@@ -526,44 +532,120 @@ export function buildXiangShen(pillars: Record<string, { stem: string; branch: s
   const help = ["比肩", "劫財", "正印", "偏印"].filter((x) => g.has(x)).length;
   const drain = ["正財", "偏財", "正官", "七殺", "食神", "傷官"].filter((x) => g.has(x)).length;
   const strong = help >= drain;
-  const R = (verdict: "成格" | "破格" | "救應" | "合格普通", reason: string) => ({ geZh: ge, verdict, reason });
+  // subLabel = 相神 sub-case (RUN_RULES key สำหรับ Layer 5) · derive จากจุดตัดสินเดิม (กฎเดียวกับ verdict · single-source) · null=map ไม่ได้→UNMAPPED ตอน timing
+  const R = (verdict: "成格" | "破格" | "救應" | "合格普通", reason: string, subLabel: string | null = null) => ({ geZh: ge, verdict, reason, subLabel });
   switch (ge) {
     case "正官格":
-      if (傷) return 印 ? R("救應", "傷官見官 → 透印制傷 (敗中有成)") : R("破格", "傷官見官 (PO_OFFICIAL_1)");
-      if (殺) return R("破格", "官煞混雜 (PO_OFFICIAL_3)");
-      return (財 || 印) ? R("成格", "官透 + 財/印 + 無傷官") : R("合格普通", "官透ไม่มี財/印ค้ำ");
+      if (傷) return 印 ? R("救應", "傷官見官 → 透印制傷 (敗中有成)", "佩印") : R("破格", "傷官見官 (PO_OFFICIAL_1)", "無印");
+      if (殺) return R("破格", "官煞混雜 (PO_OFFICIAL_3)", null);  // 官煞混雜 ไม่มี sub-case ใน RUN
+      return (財 || 印) ? R("成格", "官透 + 財/印 + 無傷官", 印 ? "佩印" : "用財") : R("合格普通", "官透ไม่มี財/印ค้ำ", "無印");
     case "財格":
-      if (比劫 && !食 && !官) return R("破格", "比劫奪財 (PO_WEALTH_1)");
-      if (比劫 && (食 || 官)) return R("救應", "比劫奪財 → 食化劫/官制劫");
-      if (殺 && !食) return R("破格", "財生殺攻身 (PO_WEALTH_3)");
-      return (官 || 食 || 印) ? R("成格", "財旺生官/食生財/財透印") : R("合格普通", "財ไม่มีค้ำ");
+      if (比劫 && !食 && !官) return R("破格", "比劫奪財 (PO_WEALTH_1)", null);  // 比劫奪財ไม่มีตัวค้ำ
+      if (比劫 && (食 || 官)) return R("救應", "比劫奪財 → 食化劫/官制劫", 食 ? "食生" : "生官");
+      if (殺 && !食) return R("破格", "財生殺攻身 (PO_WEALTH_3)", null);
+      return (官 || 食 || 印) ? R("成格", "財旺生官/食生財/財透印", 官 ? "生官" : 食 ? "食生" : "佩印") : R("合格普通", "財ไม่มีค้ำ", null);
     case "印綬格":
-      if (財 && !比劫) return R("破格", "財重破印 (PO_SEAL_1)");
-      if (財 && 比劫) return R("救應", "財破印 → 比劫制財");
-      return (官 || 殺 || 食 || 傷) ? R("成格", "官印雙全/印旺透食傷洩秀") : R("合格普通", "印ไม่มีค้ำ");
+      if (財 && !比劫) return R("破格", "財重破印 (PO_SEAL_1)", "財為忌");
+      if (財 && 比劫) return R("救應", "財破印 → 比劫制財", "財為忌");
+      return (官 || 殺) ? R("成格", "官印雙全", "用官") : (食 || 傷) ? R("成格", "印旺透食傷洩秀", "用傷食") : R("合格普通", "印ไม่มีค้ำ", null);
     case "食神格":
-      if (has("偏印") && !財) return R("破格", "梟印奪食 (PO_FOOD_1)");
-      if (has("偏印") && 財) return R("救應", "梟印奪食 → 透財化梟");
-      return (財 || 殺) ? R("成格", "食神生財/食帶煞制殺") : R("合格普通", "食ไม่มีค้ำ");
+      if (has("偏印") && !財) return R("破格", "梟印奪食 (PO_FOOD_1)", null);  // 梟奪食破·用神พัง
+      if (has("偏印") && 財) return R("救應", "梟印奪食 → 透財化梟", "生財");
+      return 財 ? R("成格", "食神生財", "生財") : 殺 ? R("成格", "食帶煞制殺", "帶煞") : R("合格普通", "食ไม่มีค้ำ", null);
     case "七殺格":
-      if (!食 && !印 && !比劫 && !strong) return R("破格", "煞重身輕無制無印 (PO_KILL_3)");
-      return (食 || 印 || (strong && 財)) ? R("成格", "食制殺/印化殺/身強財滋殺") : R("合格普通", "殺ไม่มีตัวคุมชัด");
+      if (!食 && !印 && !比劫 && !strong) return R("破格", "煞重身輕無制無印 (PO_KILL_3)", null);
+      return (食 || 傷) ? R("成格", "食制殺", "食制") : 印 ? R("成格", "印化殺", "用印") : (strong && 財) ? R("成格", "身強財滋殺", null) : R("合格普通", "殺ไม่มีตัวคุมชัด", null);
     case "傷官格":
       if (官) {
-        if (STEM_ELEMENT[dm] === "metal") return R("成格", "金水傷官 · 允許見官 (例外)");
-        return 財 ? R("救應", "傷官見官 → 財通關") : R("破格", "傷官見官 非金水 (PO_HURT_1)");
+        if (STEM_ELEMENT[dm] === "metal") return R("成格", "金水傷官 · 允許見官 (例外)", 印 ? "佩印" : "生財");
+        return 財 ? R("救應", "傷官見官 → 財通關", "生財") : R("破格", "傷官見官 非金水 (PO_HURT_1)", null);
       }
-      return (財 || 印 || 殺) ? R("成格", "傷官生財/傷官佩印/傷官駕殺") : R("合格普通", "傷ไม่มีค้ำ");
+      return 財 ? R("成格", "傷官生財", "生財") : 印 ? R("成格", "傷官佩印", "佩印") : 殺 ? R("成格", "傷官駕殺", null) : R("合格普通", "傷ไม่มีค้ำ", null);
     case "陽刃格":
-      if (!官 && !殺) return R("破格", "無官煞制刃 (PO_BLADE_1)");
-      if ((官 || 殺) && 傷 && !印) return R("破格", "官遭傷 (PO_BLADE_2)");
-      return R("成格", "透官煞制刃 + 財印");
+      if (!官 && !殺) return R("破格", "無官煞制刃 (PO_BLADE_1)", null);
+      if ((官 || 殺) && 傷 && !印) return R("破格", "官遭傷 (PO_BLADE_2)", 官 ? "用官" : "用煞");
+      return R("成格", "透官煞制刃 + 財印", 官 ? "用官" : "用煞");
     case "建祿月劫格":
-      if (!財 && !官 && !殺) return R("破格", "純比劫無財官煞 (PO_LU_1)");
-      if (官 && 傷) return R("破格", "用官而官被傷 (PO_LU_2)");
-      return R("成格", "透官逢財印/透財逢食傷");
+      if (!財 && !官 && !殺) return R("破格", "純比劫無財官煞 (PO_LU_1)", null);
+      if (官 && 傷) return R("破格", "用官而官被傷 (PO_LU_2)", "用官");
+      return R("成格", "透官逢財印/透財逢食傷", 官 ? "用官" : 財 ? "用財" : null);
     default: return null;
   }
+}
+
+/* ═══ Layer 5 行運成敗 timing (port จาก proto-layer5-v1 · APPROVED · derived · ไม่แตะ wrapper LOCKED) ═══
+   §1a 子平真詮論行運ตารางทองคำ喜運/忌運 per格×相神 + §2d 滴天髓日主旺衰 + §2c-lite ปีจรหนุน/ต้าน
+   ทุก verdict อ้าง rule-id · UNMAPPED ไม่ false-neutral · spec: data/library/sifu-extra/bazi-layer5-timing-spec.md */
+const RUN_RULES_L5: Record<string, { xi: string[]; ji: string[]; src: string }> = {
+  "正官格|佩印":   { xi:["正印","偏印"],          ji:["正財","偏財"],            src:"ZP-1a-01 官用印制傷·運助印/忌財去印" },
+  "正官格|無印":   { xi:["正財","偏財"],          ji:["傷官","食神"],            src:"ZP-1a-02 正官無印·運行傷則破" },
+  "正官格|用財":   { xi:["正印","偏印"],          ji:["傷官","食神","七殺"],     src:"ZP-1a-03 正官用財·喜印身旺·忌食傷" },
+  "財格|生官":     { xi:["正印","偏印","比肩","劫財"], ji:["七殺","傷官"],       src:"ZP-1a-04 財旺生官·喜身旺印·不利煞傷" },
+  "財格|食生":     { xi:["正財","偏財","比肩","劫財"], ji:["正官","七殺"],       src:"ZP-1a-05 財用食生·財食重喜幫身·官煞晦" },
+  "財格|佩印":     { xi:["正官","正印","偏印"],   ji:["比肩","劫財"],            src:"ZP-1a-06 財佩印·喜官鄉·身弱喜印旺" },
+  "財格|帶傷":     { xi:["正財","偏財"],          ji:["七殺"],                   src:"ZP-1a-07 財帶傷官·財運亨·煞運不利" },
+  "印綬格|用官":   { xi:["正財","偏財","傷官","食神"], ji:[],                    src:"ZP-1a-08 印用官·財運反吉·傷食最利" },
+  "印綬格|用傷食": { xi:["正財","偏財","傷官","食神"], ji:["正官","七殺"],       src:"ZP-1a-09 印旺洩秀·財傷食吉·官煞太過" },
+  "印綬格|印重用財":{ xi:["正財","偏財"],         ji:["比肩","劫財"],            src:"ZP-1a-10a 印多透財抑太過·忌比劫去財" },  // ⏳ inactive until buildXiangShen แยก身強印重 (5.2) — forward-compat ไม่ใช่ dead-code
+  "印綬格|財為忌":  { xi:["比肩","劫財"],         ji:["正財","偏財"],            src:"ZP-1a-10b 印帶財為忌·運劫財去財救印=喜" },
+  "食神格|生財":   { xi:["正財","偏財"],          ji:["正官","七殺","偏印"],     src:"ZP-1a-11 食神生財·忌官煞·畏梟奪食" },
+  "食神格|帶煞":   { xi:["正印","偏印","比肩","劫財"], ji:["正財","偏財"],       src:"ZP-1a-12 食用煞印·喜印旺身旺·忌財鄉" },
+  "七殺格|食制":   { xi:["食神","傷官","比肩","劫財"], ji:["正印","偏印","正財","偏財","正官"], src:"ZP-1a-13 煞用食制·喜食傷制煞/比劫助身·畏印奪食·忌財黨煞·忌官混" },
+  "七殺格|用印":   { xi:["傷官","食神","比肩","劫財"], ji:["正財","偏財"],       src:"ZP-1a-14 煞用印·不利財鄉·傷食美" },
+  "傷官格|佩印":   { xi:["正官","七殺","正印","偏印"], ji:["正財","偏財"],       src:"ZP-1a-15 傷官佩印·運行官煞美·忌財" },
+  "傷官格|生財":   { xi:["正財","偏財"],          ji:["七殺","正印","偏印"],     src:"ZP-1a-16 傷官生財·財運亨·煞印不利" },
+  "陽刃格|用官":   { xi:["正財","偏財","正官"],   ji:["食神","傷官"],            src:"ZP-1a-17 陽刃用官·運助財鄉·忌食傷制官" },
+  "陽刃格|用煞":   { xi:["正財","偏財","七殺"],   ji:["食神"],                   src:"ZP-1a-18 陽刃用煞·忌食制煞" },
+  "建祿格|用官":   { xi:["正財","正官"],          ji:["傷官"],                   src:"ZP-1a-19 建祿用官·運逢傷則破" },
+  "建祿格|用財":   { xi:["傷官","食神","正財","偏財"], ji:["比肩","劫財"],       src:"ZP-1a-20 月劫用財·運行傷食·忌比劫" },
+};
+// fail-fast: กัน xi∩ji overlap (เคส 七殺食制 เดิม) — รันตอน module load
+for (const [k, r] of Object.entries(RUN_RULES_L5)) {
+  const ov = r.xi.filter((x) => r.ji.includes(x));
+  if (ov.length) throw new Error(`RUN_RULES_L5 xi∩ji overlap ${k}: ${ov.join("/")}`);
+}
+function dmVigorL5(label: string | undefined): "旺相" | "休囚" {
+  return (label === "strong_root" || label === "rooted") ? "旺相" : "休囚"; // partial/token/no_root → 休囚 (conservative · 破หนักกว่า=เตือนมากกว่า)
+}
+/* judge: วัยจรปัจจุบัน vs ตารางกฎ → 成/破 + §2d旺衰 + §2c-liteปีจร · ทุกอย่างจากค่าที่ engine มีแล้ว */
+export function buildChengBaiNow(
+  xiangShen: { geZh: string; subLabel?: string | null } | null,
+  dm: string,
+  currentLuck: { stem: string; branch: string } | null,
+  annualPillar: { stem: string; branch: string } | null,
+  dmRootLabel: string | undefined,
+  is3p: boolean,
+): NonNullable<ChartPacket["chengBaiNow"]> | null {
+  if (is3p || !xiangShen || !currentLuck) return null;            // ปิด 3p (วัยจรไม่นิ่ง)
+  const sub = xiangShen.subLabel;
+  if (!sub) return null;                                          // 相神 map sub-label ไม่ได้ → ไม่ตัดสิน timing
+  const geKey = xiangShen.geZh === "建祿月劫格" ? "建祿格" : xiangShen.geZh;  // align RUN key
+  const key = `${geKey}|${sub}`;
+  const rule = RUN_RULES_L5[key];
+  if (!rule) return { geZh: geKey, subLabel: sub, verdict: "UNMAPPED", reason: `ไม่มีกฎ ${key} (ห้าม false-neutral)`, ruleId: "UNMAPPED_RULE" };
+  // luckGods = สิบเทพของวัยจร (ก้าน + กิ่งซ่อนหลัก · lock ตาม consensus)
+  const luckGods: string[] = [];
+  const lt = tenGodOf(dm, currentLuck.stem); if (lt) luckGods.push(lt);
+  const lm = (HIDDEN_STEMS_MAP[currentLuck.branch] || [])[0]; if (lm) { const h = tenGodOf(dm, lm); if (h) luckGods.push(h); }
+  const hitXi = luckGods.filter((g) => rule.xi.includes(g));
+  const hitJi = luckGods.filter((g) => rule.ji.includes(g));
+  let verdict: string, reason: string;
+  if (hitJi.length && !hitXi.length) { verdict = "破"; reason = `วัยจร ${hitJi.join("/")} = 忌運 (ขัดโครงดวง)`; }
+  else if (hitXi.length && !hitJi.length) { verdict = "成"; reason = `วัยจร ${hitXi.join("/")} = 喜運 (หนุนโครงดวง)`; }
+  else if (hitXi.length && hitJi.length) { verdict = "平"; reason = `วัยจรมีทั้งหนุน(${hitXi.join("/")})และขัด(${hitJi.join("/")})`; }
+  else { verdict = "平"; reason = "วัยจรเป็นกลางต่อโครงดวง"; }
+  // §2d 滴天髓 旺衰ปรับความหนักของ破
+  if (verdict === "破") {
+    if (dmVigorL5(dmRootLabel) === "旺相") { verdict = "破(เบา)"; reason += " · DTS-2d 日主旺相→ทนได้ (เบาลง)"; }
+    else { verdict = "破(หนัก)"; reason += " · DTS-2d 日主休囚→รับเต็ม"; }
+  }
+  // §2c-lite ปีจรปัจจุบัน (太歲重天干 → ใช้ก้านปีจร · ไม่ฟันธงเลขปีอนาคต)
+  let annual: string | undefined;
+  if (annualPillar) {
+    const yg = tenGodOf(dm, annualPillar.stem);
+    if (yg) annual = rule.xi.includes(yg) ? `DTS-2c ปีจร ${yg}=หนุนซ้ำ` : rule.ji.includes(yg) ? `DTS-2c ปีจร ${yg}=ต้าน` : `DTS-2c ปีจร ${yg}=กลาง`;
+  }
+  return { geZh: geKey, subLabel: sub, verdict, reason, ruleId: rule.src, annual };
 }
 
 export function buildStructuredChartPacket(
@@ -998,6 +1080,12 @@ export function buildStructuredChartPacket(
       showFullChecklist: false,
     },
   };
+  // Layer 5 行運成敗 timing (derived · reuse packet.xiangShen/currentLuck/annualPillar · ปิด 3p)
+  packet.chengBaiNow = buildChengBaiNow(
+    packet.xiangShen ?? null, dm, currentLuck,
+    cyp ? { stem: cyp.stem, branch: cyp.branch } : null,
+    rootedness?.dmLabel, calc.mode === "3p",
+  );
   return packet;
 }
 
@@ -1178,6 +1266,12 @@ export function renderChartPrompt(packet: ChartPacket): string {
     const xs = packet.xiangShen;
     const VTH: Record<string, string> = { 成格: "โครงดวงสำเร็จ (成格)", 破格: "โครงดวงเสีย (破格)", 救應: "เสียแล้วมีตัวกู้ (救應·敗中有成)", 合格普通: "เข้าโครงแต่ไม่เด่น (普通)" };
     lines.push(`相神/成格破格 (โครงดวง${xs.geZh} · ${VTH[xs.verdict] || xs.verdict}): ${xs.reason} · อ่านลึกตามคัมภีร์相神/成格破格救應 (子平真詮) ประกอบ · ⚠️ "สำเร็จ/เสีย" = ระดับการใช้การของโครง ไม่ใช่ดวงดี-ร้ายเด็ดขาด · ดวงเสียมีทางแก้ (救應/วัยจร) เสมอ · ห้ามฟันธงชี้ชะตา`);
+  }
+  /* 行運成敗 Layer 5 (28 พ.ค. · derived จาก相神×วัยจรปัจจุบัน · ตัวบทจริง子平真詮論行運+滴天髓歲運 · ปิด 3p · ไม่ฟันธงปีเลข) */
+  if (packet.chengBaiNow && packet.chengBaiNow.verdict !== "UNMAPPED") {
+    const c = packet.chengBaiNow;
+    const VTH2: Record<string, string> = { "成": "วัยจรช่วงนี้หนุนโครงดวง (成)", "破(เบา)": "วัยจรช่วงนี้ขัดโครงดวง·แต่日主旺พอทน (破·เบา)", "破(หนัก)": "วัยจรช่วงนี้ขัดโครงดวง·日主อ่อนรับเต็ม (破·หนัก)", "平": "วัยจรช่วงนี้เป็นกลางต่อโครงดวง (平)" };
+    lines.push(`行運成敗 (จังหวะวัยจรกับโครงดวง${c.geZh}·相神${c.subLabel}): ${VTH2[c.verdict] || c.verdict} — ${c.reason}${c.annual ? ` · ${c.annual}` : ""} · อ้างตัวบทจริง [${c.ruleId}] · ⚠️ บอก "ช่วงวัยจรนี้หนุน/ขัดโครงดวง" ไม่ใช่ฟันธงปีดี-ร้ายเป็นตัวเลข · โครงขัดมีทางปรับ(印/比劫/ตัวไกล่เกลี่ย)เสมอ · ห้ามชี้ชะตาตายตัว`);
   }
   /* 通根 รากธาตุ (wrapper-7 · ฐานตัดสิน 從格/用神 · ห้ามคำนวณใหม่ · engine ให้มา) */
   if (packet.rootedness) {
