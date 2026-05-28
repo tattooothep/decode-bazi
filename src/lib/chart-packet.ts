@@ -243,20 +243,32 @@ export type ChartPacket = {
       luckPillar: { stem: string; branch: string };
       ageStart: number;
       ageEnd: number;
+      ageStartDetail?: string;
+      ageEndDetail?: string;
+      startDate?: string;
+      endDate?: string;
+      timingMethod?: string;
+      direction?: "forward" | "backward";
+      directionTh?: string;
       yearStart: number;
       yearEnd: number;
       years: Array<{
         year: number;
         age: number;
         pillar: { stem: string; branch: string };
+        baziYearStart: { name: string; date: string } | null;
+        baziYearEnd: { name: string; date: string } | null;
+        calendarNote: string;
         stemElement: ElementEN | "unknown";
         branchElement: ElementEN | "unknown";
         stemUsefulRole: "yong" | "xi" | "ji" | "neutral";
         branchUsefulRole: "yong" | "xi" | "ji" | "neutral";
+        hiddenStems: Array<{ stem: string; element: ElementEN | "unknown"; tenGod: string | null; usefulRole: "yong" | "xi" | "ji" | "neutral" }>;
         tenGod: string | null;
         flag: "auspicious" | "cautious" | "neutral";
         vsDayBranch: string[];
         vsLuckBranch: string[];
+        impacts: Array<{ type: string; typeTh: string; pair: string; target: string; targetTh: string; palaceTh: string; domainsTh: string[]; strength: "low" | "medium" | "high" | "critical"; summaryTh: string }>;
         months: Array<{
           month: number;
           label: string;
@@ -268,10 +280,12 @@ export type ChartPacket = {
           branchElement: ElementEN | "unknown";
           stemUsefulRole: "yong" | "xi" | "ji" | "neutral";
           branchUsefulRole: "yong" | "xi" | "ji" | "neutral";
+          hiddenStems: Array<{ stem: string; element: ElementEN | "unknown"; tenGod: string | null; usefulRole: "yong" | "xi" | "ji" | "neutral" }>;
           tenGod: string | null;
           flag: "auspicious" | "cautious" | "neutral";
           vsDayBranch: string[];
           vsLuckBranch: string[];
+          impacts: Array<{ type: string; typeTh: string; pair: string; target: string; targetTh: string; palaceTh: string; domainsTh: string[]; strength: "low" | "medium" | "high" | "critical"; summaryTh: string }>;
         }>;
       }>;
     } | null;
@@ -1219,6 +1233,28 @@ export function buildStructuredChartPacket(
     if (ji.includes(el)) return "ji";
     return "neutral";
   };
+  const hiddenTransit = (xs: Array<{ stem: string; element: string; ten_god: string | null; useful_role?: string }> = []) =>
+    xs.map((h) => {
+      const el = asElement(h.element);
+      const role = (h.useful_role === "yong" || h.useful_role === "xi" || h.useful_role === "ji" || h.useful_role === "neutral")
+        ? h.useful_role
+        : usefulRole(el);
+      return { stem: h.stem, element: el, tenGod: h.ten_god, usefulRole: role };
+    });
+  const transitImpacts = (xs: Array<{
+    type: string; type_th: string; pair: string; target: string; target_th: string; palace_th: string;
+    domains_th: string[]; strength: "low" | "medium" | "high" | "critical"; summary_th: string;
+  }> = []) => xs.map((x) => ({
+    type: x.type,
+    typeTh: x.type_th,
+    pair: x.pair,
+    target: x.target,
+    targetTh: x.target_th,
+    palaceTh: x.palace_th,
+    domainsTh: x.domains_th || [],
+    strength: x.strength,
+    summaryTh: x.summary_th,
+  }));
   const drill = calc.mode === "3p"
     ? null
     : ((ext.luck_decade_drilldown || [])[ext.current_luck_idx] || null);
@@ -1230,6 +1266,13 @@ export function buildStructuredChartPacket(
       luckPillar: drill.luck_pillar,
       ageStart: drill.age_start,
       ageEnd: drill.age_end,
+      ageStartDetail: drill.age_start_detail,
+      ageEndDetail: drill.age_end_detail,
+      startDate: drill.start_date,
+      endDate: drill.end_date,
+      timingMethod: drill.timing_method,
+      direction: drill.direction,
+      directionTh: drill.direction_th,
       yearStart: drill.year_start,
       yearEnd: drill.year_end,
       years: (drill.years || []).map((y) => {
@@ -1239,14 +1282,19 @@ export function buildStructuredChartPacket(
           year: y.year,
           age: y.age,
           pillar: y.pillar,
+          baziYearStart: y.bazi_year_start ?? null,
+          baziYearEnd: y.bazi_year_end ?? null,
+          calendarNote: y.calendar_note || "",
           stemElement,
           branchElement,
           stemUsefulRole: usefulRole(stemElement),
           branchUsefulRole: usefulRole(branchElement),
+          hiddenStems: hiddenTransit(y.hidden_stems),
           tenGod: y.ten_god,
           flag: y.flag,
           vsDayBranch: y.vs_day_branch || [],
           vsLuckBranch: y.vs_luck_branch || [],
+          impacts: transitImpacts(y.impacts),
           months: (y.months || []).map((m) => {
             const mStemElement = asElement(m.element);
             const mBranchElement = asElement(m.branch_element);
@@ -1261,10 +1309,12 @@ export function buildStructuredChartPacket(
               branchElement: mBranchElement,
               stemUsefulRole: usefulRole(mStemElement),
               branchUsefulRole: usefulRole(mBranchElement),
+              hiddenStems: hiddenTransit(m.hidden_stems),
               tenGod: m.ten_god,
               flag: m.flag,
               vsDayBranch: m.vs_day_branch || [],
               vsLuckBranch: m.vs_luck_branch || [],
+              impacts: transitImpacts(m.impacts),
             };
           }),
         };
@@ -1762,26 +1812,40 @@ export function renderChartPrompt(packet: ChartPacket): string {
     const d = packet.transitDrilldown.currentDecade;
     const flagTh: Record<string, string> = { auspicious: "ผสาน", cautious: "ต้องคุม", neutral: "กลาง" };
     const roleTh: Record<string, string> = { yong: "用", xi: "喜", ji: "忌", neutral: "กลาง" };
+    const strengthTh: Record<string, string> = { critical: "แรงมาก", high: "แรง", medium: "กลาง", low: "เบา" };
     const tgTh = (g: string | null) => g ? (TEN_GOD_TH[g] || g) : "-";
     const tags = (xs: string[]) => xs.length ? xs.join("+") : "-";
+    const hiddenTxt = (hs: Array<{ stem: string; element: ElementEN | "unknown"; tenGod: string | null; usefulRole: string }>) =>
+      hs.length ? hs.map((h) => `${h.stem}${tgTh(h.tenGod)}=${roleTh[h.usefulRole] || h.usefulRole}`).join(",") : "-";
+    const impactTxt = (xs: Array<{ summaryTh: string; strength: "low" | "medium" | "high" | "critical" }>) =>
+      xs.length ? xs.slice(0, 3).map((x) => `${x.summaryTh}[${strengthTh[x.strength] || x.strength}]`).join(" | ") : "-";
     const monthTxt = (m: NonNullable<NonNullable<ChartPacket["transitDrilldown"]>["currentDecade"]>["years"][number]["months"][number]) =>
       `${String(m.month).padStart(2, "0")}${m.pillar.stem}${m.pillar.branch}/${tgTh(m.tenGod)}/${flagTh[m.flag] || m.flag}` +
       `${m.jieqiStart ? `/เริ่ม${m.jieqiStart.name}:${m.jieqiStart.date}` : "/fallbackกลางเดือน"}` +
+      `${m.jieqiEnd ? `/จบ${m.jieqiEnd.date}` : ""}` +
       `/ฟ้า${elementTh(m.stemElement)}=${roleTh[m.stemUsefulRole]}` +
       `/ดิน${elementTh(m.branchElement)}=${roleTh[m.branchUsefulRole]}` +
+      `/藏:${hiddenTxt(m.hiddenStems)}` +
       `${m.vsDayBranch.length ? `/日:${tags(m.vsDayBranch)}` : ""}` +
-      `${m.vsLuckBranch.length ? `/運:${tags(m.vsLuckBranch)}` : ""}`;
+      `${m.vsLuckBranch.length ? `/運:${tags(m.vsLuckBranch)}` : ""}` +
+      `/กระทบ:${impactTxt(m.impacts)}`;
     const years = d.years.map((y) =>
       `${y.year}(อายุ${y.age}) ${y.pillar.stem}${y.pillar.branch}/${tgTh(y.tenGod)}/${flagTh[y.flag] || y.flag}` +
+      `${y.baziYearStart ? `/เริ่ม${y.baziYearStart.name}:${y.baziYearStart.date}` : ""}` +
+      `${y.baziYearEnd ? `/จบ${y.baziYearEnd.date}` : ""}` +
       `/ฟ้า${elementTh(y.stemElement)}=${roleTh[y.stemUsefulRole]}` +
       `/ดิน${elementTh(y.branchElement)}=${roleTh[y.branchUsefulRole]}` +
+      `/藏:${hiddenTxt(y.hiddenStems)}` +
       `${y.vsDayBranch.length ? `/เทียบกิ่งวัน:${tags(y.vsDayBranch)}` : ""}` +
       `${y.vsLuckBranch.length ? `/เทียบกิ่งวัยจร:${tags(y.vsLuckBranch)}` : ""}` +
+      `/กระทบหลัก:${impactTxt(y.impacts)}` +
       `; เดือนจร=${y.months.map(monthTxt).join(" | ")}`
     );
     lines.push(
       `ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed · AI ห้ามคำนวณเสาปี/เดือนเอง): ` +
-      `大運 ${d.luckPillar.stem}${d.luckPillar.branch} อายุ ${d.ageStart}-${d.ageEnd} ปี${d.yearStart}-${d.yearEnd} · ` +
+      `大運 ${d.luckPillar.stem}${d.luckPillar.branch} อายุ ${d.ageStartDetail || d.ageStart}-${d.ageEndDetail || d.ageEnd}` +
+      `${d.startDate && d.endDate ? ` · วันที่จริง ${d.startDate} ถึงก่อน ${d.endDate}` : ""}` +
+      `${d.directionTh ? ` · เดิน運 ${d.directionTh}` : ""} · ปีที่คร่อมจริง ${d.yearStart}-${d.yearEnd} · ` +
       `เดือนจรใช้節氣หลักจริง (立春/惊蛰/清明...) จาก engine; รายการที่ fallback จะติดป้าย fallbackกลางเดือน · ถ้าถามวันใกล้เวลาเปลี่ยน節氣ให้เตือนว่าต้องเช็คขอบเวลา節氣\n` +
       years.join("\n")
     );

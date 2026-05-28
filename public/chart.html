@@ -408,12 +408,15 @@
   .hk-ld-months{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;}
   @media(max-width:720px){.hk-ld-months{grid-template-columns:repeat(3,minmax(0,1fr));}}
   @media(max-width:420px){.hk-ld-months{grid-template-columns:repeat(2,minmax(0,1fr));}}
-  .hk-ld-month{border:1px solid var(--tile-bd);background:rgba(38,42,50,.28);border-radius:8px;padding:7px 6px;min-height:58px;}
+  .hk-ld-month{border:1px solid var(--tile-bd);background:rgba(38,42,50,.28);border-radius:8px;padding:7px 6px;min-height:104px;}
   body.light .hk-ld-month{background:rgba(255,250,238,.62);}
   .hk-ld-month .mo{font-family:var(--mono);font-size:9px;color:var(--fg-faint);}
   .hk-ld-month .pl{font-family:var(--tc);font-size:15px;font-weight:700;color:var(--fg);}
   .hk-ld-month .tg{font-size:10px;color:var(--fg-soft);line-height:1.35;}
   .hk-ld-month .vs{font-family:var(--tc);font-size:10px;color:var(--gold);margin-top:3px;}
+  .hk-ld-month .rng,.hk-ld-year .rng{font-family:var(--mono);font-size:9px;color:var(--fg-faint);line-height:1.35;margin-top:2px;}
+  .hk-ld-month .hid,.hk-ld-year .hid{font-family:var(--thai);font-size:9.5px;color:var(--fg-soft);line-height:1.35;margin-top:2px;}
+  .hk-ld-month .impact,.hk-ld-year .impact{font-family:var(--thai);font-size:9.5px;color:var(--fg-soft);line-height:1.35;margin-top:3px;border-top:1px dashed rgba(200,164,77,.18);padding-top:3px;}
   .hk-ld-month.auspicious{border-color:rgba(125,211,123,.55);}
   .hk-ld-month.cautious{border-color:rgba(226,107,93,.55);}
   .hk-pillar.wood .hk-pillar-glow{background:radial-gradient(circle,#8fc37c,transparent 65%);}
@@ -3428,10 +3431,14 @@ window.addEventListener('resize', function(){
       const years = drill && Array.isArray(drill.years) ? drill.years : [];
       const TG_TH_SHORT = {正官:'งาน/อำนาจ',七殺:'แรงกดดัน',正財:'ทรัพย์ตรง',偏財:'ทรัพย์ไหล',正印:'ครู/ที่พึ่ง',偏印:'ปัญญาเฉพาะ',食神:'ผลงาน',傷官:'พรสวรรค์',比肩:'เพื่อน',劫財:'แข่งขัน'};
       const VS_TH_D = {'六合':'จับคู่','六沖':'ปะทะ','六害':'ทำลาย','六破':'บั่นทอน','半合':'ครึ่งผสาน','三合':'สามผสาน','三會':'สามฤดู','三刑':'ลงโทษ'};
+      const ROLE_TH = {yong:'ใช้ได้ดี 用',xi:'เสริม 喜',ji:'ควรคุม 忌',neutral:'กลาง'};
+      const STR_TH = {critical:'แรงมาก',high:'แรง',medium:'กลาง',low:'เบา'};
       const vsShort = (arr) => (arr || []).map(v => {
         const base = String(v).split('·')[0];
         return VS_TH_D[base] || v;
       }).join('·');
+      const hiddenShort = (arr) => (arr || []).map(x => `${x.stem}${x.ten_god ? '·'+(TG_TH_SHORT[x.ten_god]||x.ten_god) : ''}${x.useful_role ? '·'+(ROLE_TH[x.useful_role]||x.useful_role) : ''}`).join(' / ');
+      const impactShort = (arr, max=2) => (arr || []).slice(0,max).map(x => `${x.summary_th || x.summaryTh || ''}${x.strength ? ' · '+(STR_TH[x.strength]||x.strength) : ''}`).filter(Boolean).join(' · ');
       const yearCells = years.map((y, yi) => {
         const ys = y.pillar || {};
         const ytg = TG_TH_SHORT[y.ten_god] || y.ten_god || '';
@@ -3439,18 +3446,27 @@ window.addEventListener('resize', function(){
         const yVsDay = vsShort(y.vs_day_branch);
         const yVsLuck = vsShort(y.vs_luck_branch);
         const yVs = [yVsDay ? `日:${yVsDay}` : '', yVsLuck ? `運:${yVsLuck}` : ''].filter(Boolean).join(' · ');
+        const yRange = y.bazi_year_start ? `${y.bazi_year_start.name} ${y.bazi_year_start.date} → ${y.bazi_year_end?.date || ''}` : '';
+        const yHidden = hiddenShort(y.hidden_stems);
+        const yImpact = impactShort(y.impacts, 1);
         return `<button type="button" class="hk-ld-year ${fc}" data-yi="${yi}">
           <div class="yr">${h(y.year)} <span style="opacity:.55">· ${h(y.age)}ปี</span></div>
           <div class="pl">${h((ys.stem||'')+(ys.branch||''))}</div>
           <div class="tg">${h(ytg)}</div>
+          ${yRange ? `<div class="rng">${h(yRange)}</div>` : ''}
+          ${yHidden ? `<div class="hid">藏 ${h(yHidden)}</div>` : ''}
           ${yVs ? `<div class="vs">${h(yVs)}</div>` : ''}
+          ${yImpact ? `<div class="impact">${h(yImpact)}</div>` : ''}
         </button>`;
       }).join('');
       luckDetail.style.display = '';
       luckDetail.innerHTML = `
         <div class="ld-title">รอบที่ ${i+1} · ${stem}${branch} <span class="ld-pill ${status}">${statusTh}</span></div>
         <div class="ld-row"><span class="ld-k">ช่วงอายุ</span><span class="ld-v">${fmtAge(item.age_start)} – ${fmtAge(item.age_end)}</span></div>
-        ${yrFrom?`<div class="ld-row"><span class="ld-k">ช่วงปี</span><span class="ld-v">${yrFrom} – ${yrTo}</span></div>`:''}
+        ${item.start_date&&item.end_date?`<div class="ld-row"><span class="ld-k">วันที่จริง</span><span class="ld-v">${h(item.start_date)} ถึงก่อน ${h(item.end_date)}</span></div>`:''}
+        ${item.age_start_detail&&item.age_end_detail?`<div class="ld-row"><span class="ld-k">อายุละเอียด</span><span class="ld-v">${h(item.age_start_detail)} – ${h(item.age_end_detail)}</span></div>`:''}
+        ${item.direction_th?`<div class="ld-row"><span class="ld-k">เดิน運</span><span class="ld-v">${h(item.direction_th)}</span></div>`:''}
+        ${yrFrom?`<div class="ld-row"><span class="ld-k">ปีปาจื้อที่คร่อม</span><span class="ld-v">${yrFrom} – ${yrTo}</span></div>`:''}
         <div class="ld-row"><span class="ld-k">ก้านฟ้า</span><span class="ld-v">${stemTh}<span class="zh">${stem}</span></span></div>
         <div class="ld-row"><span class="ld-k">กิ่งดิน</span><span class="ld-v">ธาตุ${brTh} · ปี${brAnimal}<span class="zh">${branch}</span></span></div>
         <div class="ld-row"><span class="ld-k">12 ระยะ</span><span class="ld-v">${phTh}<span class="zh">${phZh}</span></span></div>
@@ -3460,7 +3476,7 @@ window.addEventListener('resize', function(){
           <div class="hk-ld-years">${yearCells}</div>
           <div class="hk-ld-month-head" id="hk-ld-month-head">流月</div>
           <div class="hk-ld-months" id="hk-ld-months"></div>
-          <div class="hk-liunian-hint">流月1 เริ่มที่立春 · เดือนจรใช้節氣หลักจริง · 日=เทียบกิ่งวัน · 運=เทียบกิ่งวัยจร · เขียว=ผสาน · แดง=ปะทะ/ทำลาย</div>
+          <div class="hk-liunian-hint">ไทยนำ จีนตาม · ปีปาจื้อเริ่มที่立春 ไม่ใช่ 1 ม.ค. · 流月1 เริ่มที่立春 · 日=เทียบกิ่งวัน · 運=เทียบกิ่งวัยจร · แรงมาก/แรง/กลาง/เบา = น้ำหนัก interaction</div>
         </div>` : ''}
       `;
       if (years.length) {
@@ -3472,24 +3488,33 @@ window.addEventListener('resize', function(){
           root.querySelectorAll('.hk-ld-year').forEach((btn, bi) => btn.classList.toggle('on', bi === yi));
           if (monthHead) {
             const yp = y.pillar || {};
-            monthHead.textContent = `流月 · ${y.year} · ${yp.stem || ''}${yp.branch || ''}`;
+            const yStart = y.bazi_year_start ? ` · เริ่ม ${y.bazi_year_start.name} ${y.bazi_year_start.date}` : '';
+            monthHead.textContent = `เดือนจร 流月 · ปีปาจื้อ ${y.year} · ${yp.stem || ''}${yp.branch || ''}${yStart}`;
           }
           if (monthBox) {
             monthBox.innerHTML = (y.months || []).map((m) => {
               const mp = m.pillar || {};
               const fc = m.flag === 'auspicious' ? 'auspicious' : (m.flag === 'cautious' ? 'cautious' : '');
               const mtg = TG_TH_SHORT[m.ten_god] || m.ten_god || '';
+              const stemRole = m.stem_useful_role ? (ROLE_TH[m.stem_useful_role] || m.stem_useful_role) : '';
+              const branchRole = m.branch_useful_role ? (ROLE_TH[m.branch_useful_role] || m.branch_useful_role) : '';
               const vsDay = vsShort(m.vs_day_branch);
               const vsLuck = vsShort(m.vs_luck_branch);
               const vs = [vsDay ? `日:${vsDay}` : '', vsLuck ? `運:${vsLuck}` : ''].filter(Boolean).join(' · ');
               const start = m.jieqi_start ? `${m.jieqi_start.name} ${m.jieqi_start.date}` : '';
-              const title = [`節:${start || 'fallback กลางเดือน'}`, `日:${(m.vs_day_branch||[]).join(' · ')}`, `運:${(m.vs_luck_branch||[]).join(' · ')}`].join(' | ');
+              const end = m.jieqi_end ? `${m.jieqi_end.date}` : '';
+              const hid = hiddenShort(m.hidden_stems);
+              const impact = impactShort(m.impacts, 2);
+              const title = [`節:${start || 'fallback กลางเดือน'} → ${end}`, `日:${(m.vs_day_branch||[]).join(' · ')}`, `運:${(m.vs_luck_branch||[]).join(' · ')}`, impact].join(' | ');
               return `<div class="hk-ld-month ${fc}" title="${h(title)}">
                 <div class="mo">${h(m.label || String(m.month).padStart(2,'0'))}</div>
                 <div class="pl">${h((mp.stem||'')+(mp.branch||''))}</div>
-                <div class="tg">${h(mtg)}</div>
-                ${start ? `<div class="vs">節:${h(start)}</div>` : ''}
+                <div class="tg">ฟ้า ${h(mp.stem||'')} = ${h(mtg)}${stemRole ? ' · '+h(stemRole) : ''}</div>
+                <div class="tg">ดิน ${h(mp.branch||'')} = ${h(BRANCH_EL_TH_LP[mp.branch]||'')}${branchRole ? ' · '+h(branchRole) : ''}</div>
+                ${start ? `<div class="rng">${h(start)} → ${h(end)}</div>` : ''}
+                ${hid ? `<div class="hid">藏 ${h(hid)}</div>` : ''}
                 ${vs ? `<div class="vs">${h(vs)}</div>` : ''}
+                ${impact ? `<div class="impact">${h(impact)}</div>` : ''}
               </div>`;
             }).join('');
           }

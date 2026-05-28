@@ -767,6 +767,12 @@ export type LiuNianEntry = {
   year: number;
   age: number;
   pillar: { stem: string; branch: string };
+  element: string;
+  branch_element: string;
+  hidden_stems: TransitHiddenStem[];
+  bazi_year_start: { name: string; date: string } | null;
+  bazi_year_end: { name: string; date: string } | null;
+  calendar_note: string;
   ten_god: string | null;
   vs_day_branch: string[];  /* clash · he · harm · destroy · ban_he */
   flag: "auspicious" | "cautious" | "neutral";
@@ -780,6 +786,25 @@ export type LiuNianEntry = {
   } | null;
 };
 
+export type TransitHiddenStem = {
+  stem: string;
+  element: string;
+  ten_god: string | null;
+  useful_role?: "yong" | "xi" | "ji" | "neutral";
+};
+
+export type TransitImpact = {
+  type: string;
+  type_th: string;
+  pair: string;
+  target: "year" | "month" | "day" | "hour" | "luck";
+  target_th: string;
+  palace_th: string;
+  domains_th: string[];
+  strength: "low" | "medium" | "high" | "critical";
+  summary_th: string;
+};
+
 export type LiuYueEntry = {
   year: number;
   month: number;
@@ -787,19 +812,24 @@ export type LiuYueEntry = {
   pillar: { stem: string; branch: string };
   element: string;
   branch_element: string;
+  stem_useful_role?: "yong" | "xi" | "ji" | "neutral";
+  branch_useful_role?: "yong" | "xi" | "ji" | "neutral";
+  hidden_stems: TransitHiddenStem[];
   jieqi_start: { name: string; date: string } | null;
   jieqi_end: { name: string; date: string } | null;
   month_method: "jieqi_major_term" | "mid_month_fallback";
   ten_god: string | null;
   vs_day_branch: string[];
   vs_luck_branch: string[];
+  impacts: TransitImpact[];
   flag: "auspicious" | "cautious" | "neutral";
 };
 
 export type LuckDecadeYearEntry = LiuNianEntry & {
-  element: string;
-  branch_element: string;
+  stem_useful_role?: "yong" | "xi" | "ji" | "neutral";
+  branch_useful_role?: "yong" | "xi" | "ji" | "neutral";
   vs_luck_branch: string[];
+  impacts: TransitImpact[];
   months: LiuYueEntry[];
 };
 
@@ -808,10 +838,51 @@ export type LuckDecadeDrilldown = {
   luck_pillar: { stem: string; branch: string };
   age_start: number;
   age_end: number;
+  age_start_detail?: string;
+  age_end_detail?: string;
+  start_date?: string;
+  end_date?: string;
+  timing_method?: string;
+  direction?: "forward" | "backward";
+  direction_th?: string;
   year_start: number;
   year_end: number;
   years: LuckDecadeYearEntry[];
 };
+
+type TransitRoleResolver = (element: string) => "yong" | "xi" | "ji" | "neutral";
+
+function hiddenStemDetails(branch: string, dm: string, usefulRole?: TransitRoleResolver): TransitHiddenStem[] {
+  return (HIDDEN_STEMS[branch] || []).map((stem) => {
+    const element = STEM_ELEMENT[stem] || "unknown";
+    return {
+      stem,
+      element,
+      ten_god: tenGodOf(dm, stem),
+      useful_role: usefulRole ? usefulRole(element) : undefined,
+    };
+  });
+}
+
+function baziYearBoundary(year: number): {
+  start: { name: string; date: string } | null;
+  end: { name: string; date: string } | null;
+  startDate: Date | null;
+  endDate: Date | null;
+} {
+  try {
+    const start = tyme.SolarTerm.fromName(year, "立春").getJulianDay().getSolarTime();
+    const end = tyme.SolarTerm.fromName(year + 1, "立春").getJulianDay().getSolarTime();
+    return {
+      start: { name: "立春", date: formatSolarTimeLike(start) },
+      end: { name: "立春", date: formatSolarTimeLike(end) },
+      startDate: solarTimeToDate(start),
+      endDate: solarTimeToDate(end),
+    };
+  } catch (_) {
+    return { start: null, end: null, startDate: null, endDate: null };
+  }
+}
 
 function buildLiuNianTimeline(pillars: BaziPillars, baseYear: number, span: number = 10, birthYear?: number): LiuNianEntry[] {
   const dm = pillars.day.stem;
@@ -858,7 +929,24 @@ function buildLiuNianTimeline(pillars: BaziPillars, baseYear: number, span: numb
       }
     }
     const age = birthYear ? (y - birthYear) : 0;
-    out.push({ year: y, age, pillar: { stem, branch }, ten_god, vs_day_branch: vs, flag, hex });
+    const boundary = baziYearBoundary(y);
+    out.push({
+      year: y,
+      age,
+      pillar: { stem, branch },
+      element: STEM_ELEMENT[stem] || "unknown",
+      branch_element: BRANCH_ELEMENT[branch] || "unknown",
+      hidden_stems: hiddenStemDetails(branch, dm),
+      bazi_year_start: boundary.start,
+      bazi_year_end: boundary.end,
+      calendar_note: boundary.start
+        ? `ปีปาจื้อ ${stem}${branch} เริ่มที่${boundary.start.name} ${boundary.start.date}; ม.ค.ก่อน立春ยังเป็นปีปาจื้อก่อนหน้า`
+        : "ปีปาจื้อเริ่มที่立春; ไม่มีเวลาขอบปีในระบบ",
+      ten_god,
+      vs_day_branch: vs,
+      flag,
+      hex,
+    });
   }
   return out;
 }
@@ -884,6 +972,95 @@ function transitFlag(vs: string[]): "auspicious" | "cautious" | "neutral" {
   return "neutral";
 }
 
+const TRANSIT_TYPE_TH: Record<string, string> = {
+  伏吟: "เสาซ้ำเรื่องเดิม",
+  反吟: "เสาพลิกแรง",
+  六沖: "ปะทะ",
+  六合: "จับคู่",
+  六害: "ทำร้ายแทรก",
+  六破: "บั่นทอน",
+  半合: "ครึ่งผสาน",
+  五合: "ก้านฟ้าผสาน",
+  天克: "ก้านฟ้าขัด",
+};
+
+const TRANSIT_TARGET_TH: Record<string, string> = {
+  year: "เสาปี 年",
+  month: "เสาเดือน 月",
+  day: "เสาวัน 日",
+  hour: "เสายาม 時",
+  luck: "วัยจร 大運",
+};
+
+const TRANSIT_PALACE_TH: Record<string, string> = {
+  year: "祖宮/บ้านเดิม",
+  month: "父母兄弟宮/งาน-พ่อแม่",
+  day: "夫妻宮/ตัวตน-คู่ครอง",
+  hour: "子女宮/ลูก-บั้นปลาย",
+  luck: "大運/จังหวะใหญ่สิบปี",
+};
+
+const TRANSIT_DOMAIN_TH: Record<string, string[]> = {
+  year: ["บ้านเดิม", "เครือญาติ", "ภาพรวม"],
+  month: ["งาน", "พ่อแม่", "อาชีพ"],
+  day: ["ตัวตน", "คู่ครอง", "บ้าน"],
+  hour: ["ลูก", "บั้นปลาย", "สุขภาพ"],
+  luck: ["วัยจร", "ทิศทางสิบปี", "จังหวะใหญ่"],
+};
+
+function transitStrength(type: string, target: string): TransitImpact["strength"] {
+  if ((type === "伏吟" || type === "反吟") && (target === "day" || target === "luck")) return "critical";
+  if (type === "伏吟" || type === "反吟") return "high";
+  if (type === "六沖" && (target === "day" || target === "month")) return "high";
+  if (type === "六沖") return "medium";
+  if (type === "六害" || type === "六破" || type === "天克") return "medium";
+  return "low";
+}
+
+function buildTransitImpacts(
+  pillars: BaziPillarsAny,
+  transit: { stem: string; branch: string },
+  luck?: { stem: string; branch: string },
+): TransitImpact[] {
+  const out: TransitImpact[] = [];
+  const pushImpact = (typeRaw: string, target: "year" | "month" | "day" | "hour" | "luck", pair: string) => {
+    const type = typeRaw.includes("半合") ? "半合" : typeRaw;
+    const strength = transitStrength(type, target);
+    const targetTh = TRANSIT_TARGET_TH[target] || target;
+    const domains = TRANSIT_DOMAIN_TH[target] || ["ภาพรวม"];
+    out.push({
+      type,
+      type_th: TRANSIT_TYPE_TH[type] || type,
+      pair,
+      target,
+      target_th: targetTh,
+      palace_th: TRANSIT_PALACE_TH[target] || targetTh,
+      domains_th: domains,
+      strength,
+      summary_th: `${TRANSIT_TYPE_TH[type] || type} ${pair} กระทบ${targetTh} · ${domains.join("/")}`,
+    });
+  };
+  const targets: Array<{ key: "year" | "month" | "day" | "hour" | "luck"; stem: string; branch: string }> = [
+    ...activeKeys(pillars).map((key) => ({ key: key as "year" | "month" | "day" | "hour", stem: pillars[key]!.stem, branch: pillars[key]!.branch })),
+    ...(luck ? [{ key: "luck" as const, stem: luck.stem, branch: luck.branch }] : []),
+  ];
+  for (const t of targets) {
+    const full = classifyFanFu({ stem: t.stem, branch: t.branch }, transit);
+    if (full === "伏吟" || full === "反吟") pushImpact(full, t.key, `${t.stem}${t.branch}↔${transit.stem}${transit.branch}`);
+    for (const tag of branchTransitTags(t.branch, transit.branch)) {
+      const base = tag.split("·")[0];
+      pushImpact(base, t.key, `${t.branch}${transit.branch}`);
+    }
+    if (STEM_CLASH[t.stem] === transit.stem) pushImpact("天克", t.key, `${t.stem}${transit.stem}`);
+    const combo = STEM_COMBOS[t.stem];
+    if (combo?.partner === transit.stem) pushImpact("五合", t.key, `${t.stem}${transit.stem}`);
+  }
+  return out.sort((a, b) => {
+    const rank: Record<TransitImpact["strength"], number> = { critical: 0, high: 1, medium: 2, low: 3 };
+    return rank[a.strength] - rank[b.strength];
+  });
+}
+
 function yearStem(year: number): string {
   const offset = ((year - 1984) % 60 + 60) % 60;
   return STEMS_ORDER[offset % 10];
@@ -901,6 +1078,32 @@ const LIU_YUE_MAJOR_TERMS = [
 function formatSolarTimeLike(st: any): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${st.getYear()}-${pad(st.getMonth())}-${pad(st.getDay())} ${pad(st.getHour())}:${pad(st.getMinute())}`;
+}
+
+function solarTimeToDate(st: any): Date {
+  return new Date(Date.UTC(st.getYear(), st.getMonth() - 1, st.getDay(), st.getHour(), st.getMinute(), st.getSecond?.() || 0));
+}
+
+function dateToYmd(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+}
+
+function addAgeYears(birthDate: Date, age: number): Date {
+  const years = Math.floor(age);
+  const frac = age - years;
+  const out = new Date(birthDate.getTime());
+  out.setUTCFullYear(out.getUTCFullYear() + years);
+  out.setUTCDate(out.getUTCDate() + Math.round(frac * 365.2425));
+  return out;
+}
+
+function ageDetail(age: number): string {
+  const years = Math.floor(age);
+  const monthFloat = (age - years) * 12;
+  const months = Math.floor(monthFloat);
+  const days = Math.round((monthFloat - months) * 30.4375);
+  return `${years} ปี${months ? ` ${months} เดือน` : ""}${days ? ` ${days} วัน` : ""}`;
 }
 
 function monthPillarMidMonth(year: number, month: number): { stem: string; branch: string } {
@@ -954,7 +1157,12 @@ function liuYuePillarByJieqi(year: number, month: number): {
   }
 }
 
-function buildLiuYueForYear(pillars: BaziPillars, year: number, luckBranch?: string): LiuYueEntry[] {
+function buildLiuYueForYear(
+  pillars: BaziPillars,
+  year: number,
+  luck?: { stem: string; branch: string },
+  usefulRole?: TransitRoleResolver,
+): LiuYueEntry[] {
   const dm = pillars.day.stem;
   const dayBranch = pillars.day.branch;
   const out: LiuYueEntry[] = [];
@@ -962,49 +1170,91 @@ function buildLiuYueForYear(pillars: BaziPillars, year: number, luckBranch?: str
     const byJieqi = liuYuePillarByJieqi(year, month);
     const pillar = byJieqi.pillar;
     const vsDay = branchTransitTags(dayBranch, pillar.branch);
-    const vsLuck = luckBranch ? branchTransitTags(luckBranch, pillar.branch) : [];
+    const vsLuck = luck ? branchTransitTags(luck.branch, pillar.branch) : [];
+    const stemElement = STEM_ELEMENT[pillar.stem] || "unknown";
+    const branchElement = BRANCH_ELEMENT[pillar.branch] || "unknown";
     out.push({
       year,
       month,
       label: `${year}-L${String(month).padStart(2, "0")}`,
       pillar,
-      element: STEM_ELEMENT[pillar.stem] || "unknown",
-      branch_element: BRANCH_ELEMENT[pillar.branch] || "unknown",
+      element: stemElement,
+      branch_element: branchElement,
+      stem_useful_role: usefulRole ? usefulRole(stemElement) : undefined,
+      branch_useful_role: usefulRole ? usefulRole(branchElement) : undefined,
+      hidden_stems: hiddenStemDetails(pillar.branch, dm, usefulRole),
       jieqi_start: byJieqi.jieqi_start,
       jieqi_end: byJieqi.jieqi_end,
       month_method: byJieqi.month_method,
       ten_god: tenGodOf(dm, pillar.stem),
       vs_day_branch: vsDay,
       vs_luck_branch: vsLuck,
+      impacts: buildTransitImpacts(pillars, pillar, luck),
       flag: transitFlag([...vsDay, ...vsLuck]),
     });
   }
   return out;
 }
 
-function annotateLuckPillarYears(lp: LuckPillar[], birthYear?: number): LuckPillar[] {
-  if (!birthYear) return lp;
+function annotateLuckPillarTiming(lp: LuckPillar[], birthDate?: Date): LuckPillar[] {
+  if (!birthDate) return lp;
+  const birthYear = birthDate.getUTCFullYear();
   return lp.map((p) => {
-    const yearStart = Math.ceil(birthYear + p.age_start);
-    return { ...p, year_start: yearStart, year_end: yearStart + 9 };
+    const startDate = addAgeYears(birthDate, p.age_start);
+    const endDate = addAgeYears(birthDate, p.age_start + 10);
+    return {
+      ...p,
+      age_start_detail: ageDetail(p.age_start),
+      age_end_detail: ageDetail(p.age_start + 10),
+      start_date: dateToYmd(startDate),
+      end_date: dateToYmd(endDate),
+      timing_method: "tyme4ts ChildLimit.fromSolarTime → age_start; date = birth datetime + age_start",
+      year_start: birthYear + Math.floor(p.age_start),
+      year_end: birthYear + Math.ceil(p.age_start + 10),
+    };
   });
 }
 
-function buildLuckDecadeDrilldown(pillars: BaziPillars, lp: LuckPillar[], birthYear?: number): LuckDecadeDrilldown[] {
+function buildLuckDecadeDrilldown(
+  pillars: BaziPillars,
+  lp: LuckPillar[],
+  birthYear?: number,
+  usefulRole?: TransitRoleResolver,
+): LuckDecadeDrilldown[] {
   if (!birthYear) return [];
   return lp.map((p, idx) => {
-    const yearStart = p.year_start ?? Math.ceil(birthYear + p.age_start);
-    const years = buildLiuNianTimeline(pillars, yearStart, 10, birthYear)
+    const luckStart = p.start_date ? new Date(`${p.start_date}T00:00:00Z`) : null;
+    const luckEnd = p.end_date ? new Date(`${p.end_date}T00:00:00Z`) : null;
+    const candidateStart = p.year_start ?? Math.floor(birthYear + p.age_start);
+    const candidateEnd = p.year_end ?? Math.ceil(birthYear + p.age_start + 10);
+    const yearNums: number[] = [];
+    for (let y = candidateStart - 1; y <= candidateEnd + 1; y++) {
+      const boundary = baziYearBoundary(y);
+      if (luckStart && luckEnd && boundary.startDate && boundary.endDate) {
+        if (boundary.startDate < luckEnd && boundary.endDate > luckStart) yearNums.push(y);
+      } else if (y >= candidateStart && y <= candidateStart + 9) {
+        yearNums.push(y);
+      }
+    }
+    const years = yearNums
+      .map((y) => buildLiuNianTimeline(pillars, y, 1, birthYear)[0])
       .map((y) => {
         const vsLuck = branchTransitTags(p.branch, y.pillar.branch);
         const mergedVs = [...y.vs_day_branch, ...vsLuck];
+        const stemElement = STEM_ELEMENT[y.pillar.stem] || "unknown";
+        const branchElement = BRANCH_ELEMENT[y.pillar.branch] || "unknown";
+        const luckPillar = { stem: p.stem, branch: p.branch };
         return {
           ...y,
-          element: STEM_ELEMENT[y.pillar.stem] || "unknown",
-          branch_element: BRANCH_ELEMENT[y.pillar.branch] || "unknown",
+          element: stemElement,
+          branch_element: branchElement,
+          stem_useful_role: usefulRole ? usefulRole(stemElement) : undefined,
+          branch_useful_role: usefulRole ? usefulRole(branchElement) : undefined,
+          hidden_stems: hiddenStemDetails(y.pillar.branch, pillars.day.stem, usefulRole),
           vs_luck_branch: vsLuck,
+          impacts: buildTransitImpacts(pillars, y.pillar, luckPillar),
           flag: transitFlag(mergedVs),
-          months: buildLiuYueForYear(pillars, y.year, p.branch),
+          months: buildLiuYueForYear(pillars, y.year, luckPillar, usefulRole),
         };
       });
     return {
@@ -1012,8 +1262,15 @@ function buildLuckDecadeDrilldown(pillars: BaziPillars, lp: LuckPillar[], birthY
       luck_pillar: { stem: p.stem, branch: p.branch },
       age_start: p.age_start,
       age_end: p.age_end,
-      year_start: yearStart,
-      year_end: yearStart + 9,
+      age_start_detail: p.age_start_detail,
+      age_end_detail: p.age_end_detail,
+      start_date: p.start_date,
+      end_date: p.end_date,
+      timing_method: p.timing_method,
+      direction: p.direction,
+      direction_th: p.direction_th,
+      year_start: years[0]?.year ?? candidateStart,
+      year_end: years[years.length - 1]?.year ?? candidateEnd,
       years,
     };
   });
@@ -1160,6 +1417,13 @@ export type LuckPillar = {
   age_end: number;
   year_start?: number;
   year_end?: number;
+  age_start_detail?: string;
+  age_end_detail?: string;
+  start_date?: string;
+  end_date?: string;
+  timing_method?: string;
+  direction?: "forward" | "backward";
+  direction_th?: string;
   stem: string;
   branch: string;
   element: "wood" | "fire" | "earth" | "metal" | "water";
@@ -1193,7 +1457,16 @@ function buildLuckPillars(pillars: BaziPillars, gender: "M" | "F" = "M", startAg
     const qi_phase = twelvePhase(dm, branch);
     const age0 = startAge + (i - 1) * 10;
     /* end-exclusive: next pillar starts at age0+10 · no gap, no overlap */
-    out.push({ age_start: Math.round(age0 * 100) / 100, age_end: Math.round((age0 + 10 - 0.01) * 100) / 100, stem, branch, element, qi_phase });
+    out.push({
+      age_start: Math.round(age0 * 100) / 100,
+      age_end: Math.round((age0 + 10 - 0.01) * 100) / 100,
+      direction: forward ? "forward" : "backward",
+      direction_th: forward ? "เดินหน้า順" : "ถอยหลัง逆",
+      stem,
+      branch,
+      element,
+      qi_phase,
+    });
   }
   return out;
 }
@@ -1242,7 +1515,7 @@ export type ChartExtensions = {
 export function buildChartExtensions(pillars: BaziPillarsAny, todayDate: Date = new Date(), gender: "M" | "F" = "M", birthDate?: Date, startAge: number = 10, geJuStructure: string | null = null, strengthPct: number = 50, yongshenElement: string | null = null, adjustedYongshenElements: string[] | null = null): ChartExtensions {
   const pAny = pillars as any;
   const birthYear = birthDate?.getUTCFullYear();
-  const lp = annotateLuckPillarYears(buildLuckPillars(pAny, gender, startAge), birthYear);
+  const lp = annotateLuckPillarTiming(buildLuckPillars(pAny, gender, startAge), birthDate);
   let currentAge = 0;
   if (birthDate) {
     currentAge = Math.floor((todayDate.getTime() - birthDate.getTime()) / (365.25 * 86400000));
@@ -1251,6 +1524,16 @@ export function buildChartExtensions(pillars: BaziPillarsAny, todayDate: Date = 
   const cyp = currentYearPillar(todayDate);
   const finalIdx = current_luck_idx >= 0 ? current_luck_idx : 0;
   const ec = buildElementCounts(pillars);
+  const jishenInfo = buildJishen(pillars.day.stem, adjustedYongshenElements);
+  const usefulList = Array.from(new Set((adjustedYongshenElements || []).map((e) => String(e).toLowerCase()).filter(Boolean)));
+  const yongEl = yongshenElement ? String(yongshenElement).toLowerCase() : usefulList[0];
+  const transitUsefulRole: TransitRoleResolver = (element: string) => {
+    const el = String(element || "").toLowerCase();
+    if (yongEl && el === yongEl) return "yong";
+    if (usefulList.includes(el)) return "xi";
+    if (jishenInfo.elements.includes(el)) return "ji";
+    return "neutral";
+  };
   return {
     element_counts: ec,
     ten_gods_map: buildTenGodsMap(pillars),
@@ -1258,7 +1541,7 @@ export function buildChartExtensions(pillars: BaziPillarsAny, todayDate: Date = 
     interactions: buildInteractions(pillars),
     punishments: buildPunishments(pillars),
     combinations: buildCombinations(pillars),
-    jishen: buildJishen(pillars.day.stem, adjustedYongshenElements),
+    jishen: jishenInfo,
     today_overlay: buildTodayOverlay(pAny, todayDate),
     luck_pillars: lp,
     current_luck_idx: finalIdx,
@@ -1283,7 +1566,7 @@ export function buildChartExtensions(pillars: BaziPillarsAny, todayDate: Date = 
       : [],
     tian_di_he: buildTianDiHe(pillars),
     liu_nian_timeline: buildLiuNianTimeline(pAny, birthYear || todayDate.getUTCFullYear(), 100, birthYear),
-    luck_decade_drilldown: buildLuckDecadeDrilldown(pAny, lp, birthYear),
+    luck_decade_drilldown: buildLuckDecadeDrilldown(pAny, lp, birthYear, transitUsefulRole),
     /* Engine 2 · Special chart + Spouse + Career + Health */
     special_chart: buildSpecialChartRules(pAny, geJuStructure),
     spouse_palace: buildSpousePalace(pillars),

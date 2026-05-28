@@ -49,10 +49,12 @@ const cd = packet.transitDrilldown?.currentDecade;
 const firstMonth = cd?.years?.[0]?.months?.[0];
 
 ok("packet has current decade drilldown", !!cd);
-ok("current decade has 10 annual entries", cd?.years?.length === 10);
+ok("current decade has annual entries covering real DaYun date range", (cd?.years?.length || 0) >= 10 && !!cd?.startDate && !!cd?.endDate);
 ok("each annual entry has 12 monthly entries", cd?.years?.every((y) => y.months.length === 12));
 ok("month pillars are Jieqi-based, not AI-calculated", firstMonth?.monthMethod === "jieqi_major_term" && !!firstMonth?.jieqiStart?.date);
 ok("month entries compare both day branch and luck branch", Array.isArray(firstMonth?.vsDayBranch) && Array.isArray(firstMonth?.vsLuckBranch));
+ok("annual/month entries include target impacts", Array.isArray(cd?.years?.[0]?.impacts) && Array.isArray(firstMonth?.impacts));
+ok("annual/month entries include hidden stems", (cd?.years?.[0]?.hiddenStems?.length || 0) > 0 && (firstMonth?.hiddenStems?.length || 0) > 0);
 ok("prompt tells AI not to calculate transit pillars", prompt.includes("AI ห้ามคำนวณเสาปี/เดือนเอง"));
 ok("prompt includes Jieqi method note", prompt.includes("เดือนจรใช้節氣หลักจริง"));
 
