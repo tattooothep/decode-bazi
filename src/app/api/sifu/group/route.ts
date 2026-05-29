@@ -414,7 +414,7 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     // Group mode can include 10 people. Keep the single-chart prompt fully detailed,
     // but omit the 10-year x 12-month drilldown per person here so the group prompt
     // stays within Claude CLI context and behaves like the stable pre-liuyue group flow.
-    lines.push(renderChartPrompt(packet, { includeTransitDrilldown: false, subjectLabel: `${displayName}·${row.id.slice(0, 8)}` }));
+    lines.push(renderChartPrompt(packet, { includeTransitDrilldown: false }));
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
     }

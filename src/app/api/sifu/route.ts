@@ -452,7 +452,7 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
       dayBoundarySource,
     });
     validateChartPacket(packet);
-    lines.push(renderChartPrompt(packet, { subjectLabel: `${subjectName}·${row.id.slice(0, 8)}` }));
+    lines.push(renderChartPrompt(packet));
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
     }
@@ -647,7 +647,7 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
       dayBoundarySource: input.dayBoundarySource || "default",
     });
     validateChartPacket(packet);
-    lines.push(renderChartPrompt(packet, { subjectLabel: input.name ? `${input.name}` : undefined }));
+    lines.push(renderChartPrompt(packet));
     lines.push(`ย้อนหลัง 12 เดือน: 0-3 เดือนล่าสุด / 4-6 เดือน / 7-9 เดือน / 10-12 เดือน`);
     return lines.join("\n");
   } catch (e) {
