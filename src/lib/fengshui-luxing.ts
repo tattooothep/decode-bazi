@@ -219,7 +219,8 @@ export function computeFlyingLayers(
   h: number,
   mi: number,
   s = 0,
-  daySchool: DaySchool = "zaoming"
+  daySchool: DaySchool = "zaoming",
+  annualCenter?: number   // 年盤 ดาวกลางปี (centre_star จาก annual table · route ส่งค่า verify มา) · ปีจร順飛
 ) {
   const st = toSolarTime(y, mo, d, h, mi, s);
 
@@ -288,5 +289,11 @@ export function computeFlyingLayers(
     `時盤(${hour_stars.dun === "yang" ? "陽遁順飛" : "陰遁逆飛"}) · ` +
     `เปลี่ยนชั้นที่ 節氣 (tyme4ts) · default day_school='zaoming' (ครึ่งร้อน逆飛)`;
 
-  return { month_stars, day_stars, hour_stars, luxing_note };
+  // ── 年盤 (ปีจร) · ดาวกลางปี 入中 順飛เสมอ · center จาก annual table (verify) ที่ route ส่งมา ──
+  const year_stars =
+    typeof annualCenter === "number" && annualCenter >= 1 && annualCenter <= 9
+      ? { center: annualCenter, direction: "順" as const, palaces: flyStars(annualCenter, true), year_branch: yearBranch }
+      : null;
+
+  return { year_stars, month_stars, day_stars, hour_stars, luxing_note };
 }

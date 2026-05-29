@@ -339,7 +339,8 @@ export async function GET(req: NextRequest) {
     try {
       flyingLayers = computeFlyingLayers(
         dt.getFullYear(), dt.getMonth() + 1, dt.getDate(),
-        dt.getHours(), dt.getMinutes(), dt.getSeconds()
+        dt.getHours(), dt.getMinutes(), dt.getSeconds(),
+        "zaoming", annualCenter   // 年盤 ใช้ centre_star ปีฮวงจุ้ย (verify จาก annual table)
       );
     } catch { flyingLayers = null; }
 
@@ -351,6 +352,7 @@ export async function GET(req: NextRequest) {
       ba_zhai: house?.family_members?.length ? buildBaZhai(house.family_members) : null,
       sixty_four: computeSixtyFour(faceAngle),
       // ── field ใหม่ (additive · ไม่กระทบ field เดิม) ──
+      year_stars: flyingLayers?.year_stars ?? null,
       month_stars: flyingLayers?.month_stars ?? null,
       day_stars: flyingLayers?.day_stars ?? null,
       hour_stars: flyingLayers?.hour_stars ?? null,
