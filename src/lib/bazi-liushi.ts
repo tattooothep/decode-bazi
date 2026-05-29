@@ -181,8 +181,7 @@ export function buildLiuShi(ctx: LiuShiContext): {
     else if (ELEMENT_CONTROLS[dmEl] === hourEl) reasonTh = `${elTh}คือทรัพย์ ทำได้แต่อย่าหนัก`;
     else if (ELEMENT_CONTROLS[hourEl] === dmEl) reasonTh = `${elTh}กดตัวคุณ ระวัง`;
     else reasonTh = `${elTh}ทั่วไป ใช้ได้`;
-    if (reactions.length) reasonTh += ` · ${reactions.join(" · ")}`;
-    if (shensha.length) reasonTh += ` · ${shensha.join(" · ")}`;
+    /* reasonTh = เหตุผลธาตุล้วน · reactions/shensha แยก field ให้ UI ต่อเอง (กันซ้ำ) */
 
     return {
       branch: h.branch, stem, range: h.range, nameTh: h.nameTh,
