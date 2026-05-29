@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { computeFlyingLayers } from "@/lib/fengshui-luxing";
 
 // ── โหลดฐานข้อมูล玄空飛星ยุค 9 (อ่านครั้งเดียว · cache module-level) ──
 type XKMountain = {
@@ -332,6 +333,16 @@ export async function GET(req: NextRequest) {
 
     const faceAngle = house?.face_angle ? parseFloat(house.face_angle) : undefined;
 
+    // ── ดาวจร 玄空飛星 3 ชั้น (月盤/日盤/時盤) · additive · deterministic ──
+    // ใช้ component ของ dt (local civil · ตรง convention ของ getFengShuiYear)
+    let flyingLayers: ReturnType<typeof computeFlyingLayers> | null = null;
+    try {
+      flyingLayers = computeFlyingLayers(
+        dt.getFullYear(), dt.getMonth() + 1, dt.getDate(),
+        dt.getHours(), dt.getMinutes(), dt.getSeconds()
+      );
+    } catch { flyingLayers = null; }
+
     const layers = {
       flying_stars: { period, annual_center: annualCenter, feng_shui_year: fsYear, annual_center_source: ac.from_json ? 'json_centre_star' : 'formula_fallback', palaces: palaceStars },
       twenty_four: build24Mountains(faceAngle),
@@ -339,6 +350,11 @@ export async function GET(req: NextRequest) {
       qi_men: ephemeris?.qi_men || computeQiMenFallback(dt),
       ba_zhai: house?.family_members?.length ? buildBaZhai(house.family_members) : null,
       sixty_four: computeSixtyFour(faceAngle),
+      // ── field ใหม่ (additive · ไม่กระทบ field เดิม) ──
+      month_stars: flyingLayers?.month_stars ?? null,
+      day_stars: flyingLayers?.day_stars ?? null,
+      hour_stars: flyingLayers?.hour_stars ?? null,
+      luxing_note: flyingLayers?.luxing_note ?? null,
     };
 
     const today = {
