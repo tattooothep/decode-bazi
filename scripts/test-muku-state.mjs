@@ -1,6 +1,6 @@
-/* mukuState v1 tests — deterministic 辰戌丑未 storage/tomb guard.
+/* mukuState v1/v2 tests — deterministic 辰戌丑未 storage/tomb guard.
    รัน: node --experimental-strip-types --loader ./scripts/ts-loader.mjs scripts/test-muku-state.mjs */
-import { buildMukuStates, explainMukuState } from "../src/lib/bazi-muku-state.ts";
+import { buildMukuStates, buildMukuTransitStates, explainMukuState } from "../src/lib/bazi-muku-state.ts";
 import { BAZI_INTERACTION_RULES } from "../src/lib/bazi-interaction-rule-registry.ts";
 
 const STEM_PARITY = { 甲:0, 丙:0, 戊:0, 庚:0, 壬:0, 乙:1, 丁:1, 己:1, 辛:1, 癸:1 };
@@ -116,6 +116,56 @@ const ruleMap = new Map(BAZI_INTERACTION_RULES.map((r) => [r.ruleId, r]));
 const mk = ruleMap.get("ZPZQ-MK-001");
 mark(Boolean(mk?.ruleLevel && mk?.sourceAnchor && mk?.canonicalChinese), "registry metadata ZPZQ-MK-001", mk ? `${mk.engineStatus} · ${mk.ruleLevel} · ${mk.canonicalChinese}` : "missing");
 mark(mk?.engineStatus === "partial" || mk?.engineStatus === "supported", "ZPZQ-MK-001 engineStatus partial/supported", `${mk?.engineStatus}`);
+
+console.log("\n=== mukuState v2 transit evidence ===");
+{
+  const natal = P("甲子", "戊辰", "己卯", "丁卯");
+  const got = buildMukuTransitStates(
+    natal,
+    [{ scope: "luck", label: "大運庚戌", pillar: { stem: "庚", branch: "戌" } }],
+    { usefulElements: ["water"], avoidElements: [] },
+  )[0];
+  mark(
+    got?.scope === "luck" && got?.branch === "辰" && got?.finalVerdict === "opened_favorable" && got?.sourceRuleIds.includes("ZPZQ-MK-001"),
+    "luck 戌 clashes natal 辰 storage → opened_favorable",
+    got ? `${got.thaiSummary} · ${got.reasonCodes.join("/")}` : "missing",
+  );
+}
+{
+  const natal = P("甲子", "戊辰", "己卯", "丁卯");
+  const got = buildMukuTransitStates(
+    natal,
+    [{ scope: "annual", label: "ปีจร 2018", year: 2018, pillar: { stem: "戊", branch: "戌" } }],
+    { usefulElements: [], avoidElements: ["water"] },
+  )[0];
+  mark(
+    got?.scope === "annual" && got?.year === 2018 && got?.finalVerdict === "opened_unfavorable" && got?.reasonCodes.includes("annual_storage_clash"),
+    "annual 戌 clashes natal 辰 storage → opened_unfavorable",
+    got ? `${got.thaiSummary} · ${got.reasonCodes.join("/")}` : "missing",
+  );
+}
+{
+  const natal = P("甲子", "戊辰", "己卯", "丁卯");
+  const got = buildMukuTransitStates(
+    natal,
+    [{ scope: "month", label: "2025-M09", year: 2025, month: 9, pillar: { stem: "丙", branch: "戌" } }],
+    { usefulElements: ["water"], avoidElements: ["earth"] },
+  )[0];
+  mark(
+    got?.scope === "month" && got?.month === 9 && got?.finalVerdict === "opened_mixed" && got?.confidence === "medium",
+    "month 戌 clashes natal 辰 storage → opened_mixed medium",
+    got ? `${got.thaiSummary} · ${got.reasonCodes.join("/")}` : "missing",
+  );
+}
+{
+  const natal = P("甲子", "戊辰", "己卯", "丁卯");
+  const got = buildMukuTransitStates(
+    natal,
+    [{ scope: "annual", label: "ปีจร 2025", year: 2025, pillar: { stem: "乙", branch: "巳" } }],
+    { usefulElements: ["water"], avoidElements: [] },
+  );
+  mark(got.length === 0, "non-clashing transit branch produces no muku transit state", `got ${got.length}`);
+}
 
 console.log(`\n=== ${pass}/${pass + fail} ${fail ? "FAIL" : "PASS"} ===`);
 process.exit(fail ? 1 : 0);

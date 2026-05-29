@@ -17,7 +17,7 @@ import type { buildChartExtensions } from "./chart-extensions";
 import { buildConceptionPalace, buildLifePalace, buildBodyPalace, buildSiLing, buildMinorLuck } from "./chart-table";
 import { getDaymasterProfile } from "./daymaster-profile";
 import { buildHehuaVerdicts, type HehuaVerdict } from "./bazi-hehua-resolver";
-import { buildMukuStates, type MukuState } from "./bazi-muku-state";
+import { buildMukuStates, buildMukuTransitStates, type MukuState, type MukuTransitInput, type MukuTransitState } from "./bazi-muku-state";
 
 type Calc = Awaited<ReturnType<typeof calcBazi>>;
 type Ext = ReturnType<typeof buildChartExtensions>;
@@ -303,6 +303,8 @@ export type ChartPacket = {
   /** 墓庫 state v1 · หลักฐานกลไกเสริมสำหรับ AI Sifu
    * ใช้บอกว่าคลัง 辰戌丑未 ปิด/เปิดแล้วหนุน/ต้าน/ปนอย่างไร · ไม่ใช่ full resolver และไม่ใช่กรอบจำกัดสไตล์คำตอบ */
   mukuStates?: MukuState[];
+  /** 墓庫 state v2 · หลักฐานคลังตามเวลา (大運/流年/流月) สำหรับคำถามย้อนหลัง/ล่วงหน้า */
+  mukuTransitStates?: MukuTransitState[];
   luckInteractions: Interaction[];
   annualInteractions: Interaction[];
   /** สรุปปฏิกิริยาซ้อนคู่เดียวกัน (เช่น 反吟 ครอบ 六沖/天克) · derived summary ไม่ใช่ full resolver */
@@ -1442,6 +1444,51 @@ export function buildStructuredChartPacket(
     .map((b) => `${b.start}-${b.start + 9}:${b.sample.join("|")}`)
     .slice(0, 7);
 
+  const mukuTransitInputs: MukuTransitInput[] = [];
+  const mukuTransitSeen = new Set<string>();
+  const addMukuTransit = (input: MukuTransitInput | null | undefined) => {
+    if (!input?.pillar?.branch) return;
+    const key = `${input.scope}|${input.year ?? ""}|${input.month ?? ""}|${input.pillar.stem}${input.pillar.branch}`;
+    if (mukuTransitSeen.has(key)) return;
+    mukuTransitSeen.add(key);
+    mukuTransitInputs.push(input);
+  };
+  addMukuTransit(currentLuck ? {
+    scope: "luck",
+    label: "大運",
+    pillar: { stem: currentLuck.stem, branch: currentLuck.branch },
+  } : null);
+  if (cyp?.branch) {
+    addMukuTransit({
+      scope: "annual",
+      label: `ปีจร ${new Date().getFullYear()}`,
+      year: new Date().getFullYear(),
+      pillar: { stem: cyp.stem, branch: cyp.branch },
+    });
+  }
+  for (const y of transitDrilldown?.currentDecade?.years || []) {
+    addMukuTransit({ scope: "annual", label: `ปีจร ${y.year}`, year: y.year, pillar: y.pillar });
+    for (const m of y.months || []) {
+      addMukuTransit({
+        scope: "month",
+        label: `${y.year}-M${String(m.month).padStart(2, "0")}`,
+        year: y.year,
+        month: m.month,
+        pillar: m.pillar,
+      });
+    }
+  }
+  const mukuUsefulOpts = { usefulElements: [...yong, ...xi], avoidElements: ji };
+  const mukuStates = buildMukuStates(
+    calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
+    mukuUsefulOpts,
+  );
+  const mukuTransitStates = buildMukuTransitStates(
+    calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
+    mukuTransitInputs,
+    mukuUsefulOpts,
+  );
+
   const packet: ChartPacket = {
     packetVersion: "hourkey-chart-packet-lite-v1.0",
     packetLevel: "step1_lite",
@@ -1521,10 +1568,8 @@ export function buildStructuredChartPacket(
     annualPillar: { stem: cyp?.stem || "-", branch: cyp?.branch || "-" },
     interactions: { status: interactionStatus, raw },
     hehuaVerdicts: buildHehuaVerdicts(calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>),
-    mukuStates: buildMukuStates(
-      calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
-      { usefulElements: [...yong, ...xi], avoidElements: ji },
-    ),
+    mukuStates,
+    mukuTransitStates,
     luckInteractions,
     annualInteractions,
     interactionConflictSummary: buildInteractionConflictSummary(raw, luckInteractions, annualInteractions),
@@ -1899,6 +1944,28 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       return `คลัง${v.branch}${v.storageElement}庫@${PILLAR_EN_TH[v.pillar] || v.pillar} → ${v.verdictZh}/${v.finalVerdict}${clash}${visible} · 藏干 ${hidden} · ${v.thaiSummary}${rules}`;
     });
     lines.push(`ข้อมูลเสริมคลัง墓庫 (mukuStates · หลักฐานเสริม): ${items.join(" · ")} · เป็นข้อมูลกลไกเพิ่มสำหรับซินแส ใช้อธิบายจังหวะคลัง/ก้านซ่อนร่วมกับ用神/忌神 วัยจร ปีจร และคำถามจริง · ไม่เปลี่ยนสไตล์และไม่ลดอิสระการอ่าน`);
+  }
+  if (packet.mukuTransitStates?.length) {
+    const scopeRank: Record<string, number> = { luck: 0, annual: 1, month: 2 };
+    const scopeTh: Record<string, string> = { luck: "วัยจร", annual: "ปีจร", month: "เดือนจร" };
+    const sorted = [...packet.mukuTransitStates].sort((a, b) =>
+      (scopeRank[a.scope] ?? 9) - (scopeRank[b.scope] ?? 9) ||
+      (a.year ?? 0) - (b.year ?? 0) ||
+      (a.month ?? 0) - (b.month ?? 0)
+    );
+    const items = sorted.slice(0, 24).map((v) => {
+      const hidden = v.hiddenStems.map((h) => `${h.stem}${h.element}${h.role === "neutral" ? "" : `:${h.role}`}`).join("/");
+      const rules = v.sourceRuleIds.length ? ` · rule ${v.sourceRuleIds.join("/")}` : "";
+      const label = v.label.startsWith(scopeTh[v.scope] || "") || v.label.startsWith("大運")
+        ? v.label
+        : `${scopeTh[v.scope] || v.scope} ${v.label}`;
+      const pillarText = v.label.includes(`${v.transitPillar.stem}${v.transitPillar.branch}`)
+        ? ""
+        : ` ${v.transitPillar.stem}${v.transitPillar.branch}`;
+      return `${label}${pillarText} → ชงคลัง${v.branch}${v.storageElement}庫@${PILLAR_EN_TH[v.pillar] || v.pillar} = ${v.verdictZh}/${v.finalVerdict} · 藏干 ${hidden} · ${v.thaiSummary}${rules}`;
+    });
+    const more = sorted.length > items.length ? ` · ยังมีหลักฐานคลังตามเวลาอีก ${sorted.length - items.length} รายการใน packet` : "";
+    lines.push(`ข้อมูลเสริมคลังตามเวลา墓庫流動 (mukuTransitStates · 大運/流年/流月): ${items.join(" · ")}${more} · หลักฐานเพิ่มสำหรับอ่านจังหวะย้อนหลัง/ล่วงหน้า`);
   }
   if (packet.luckInteractions.length) lines.push(renderInteractionGroup("ปฏิกิริยาวัยจร×ดวงเกิด", packet.luckInteractions, "raw_only"));
   if (packet.annualInteractions.length) lines.push(renderInteractionGroup("ปฏิกิริยาปีจร×เสาวัน", packet.annualInteractions, "raw_only"));
