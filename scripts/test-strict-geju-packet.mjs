@@ -60,5 +60,46 @@ ok("prompt renders audit-only line", prompt.includes("格局 strict audit (HK_ST
 ok("prompt does not leak raw percent", !/[0-9.]+%/.test(prompt));
 ok("validateChartPacket stays clean", validation.ok === true);
 
+// Paa regression: raw wrapper label 假從兒格 must not close 病藥 when strict audit says 七殺格
+const paaPillars = P("甲辰", "甲戌", "壬寅", "乙巳");
+const paaCalc = {
+  mode: "4p",
+  pillars: paaPillars,
+  pillarsZh: { year: "甲辰", month: "甲戌", day: "壬寅", hour: "乙巳" },
+  dayMaster: "壬",
+  geJu: { structure: "假從兒格", basis: "mock raw wrapper label", confidence: "moderate" },
+  strength: { percent: 28, level: "very_weak" },
+  yongshen: [{ stem: "庚", element: "metal" }, { stem: "壬", element: "water" }],
+  climate: "dry",
+  tst: null,
+};
+const paaExt = buildChartExtensions(
+  paaPillars,
+  new Date("2026-05-29T12:00:00+07:00"),
+  "M",
+  new Date("1970-10-20T09:00:00+07:00"),
+  10,
+  paaCalc.geJu.structure,
+  paaCalc.strength.percent,
+  paaCalc.yongshen[0].element,
+  paaCalc.yongshen.map((x) => x.element),
+);
+const paaRootedness = {
+  dmElement: "water",
+  dmLabel: "token_root",
+  isExtremelyWeak: true,
+  isTokenOnly: true,
+  all: { wood: "rooted", fire: "rooted", earth: "rooted", metal: "token_root", water: "token_root" },
+};
+const paaPacket = buildStructuredChartPacket(paaCalc, paaExt, "壬", 56, {}, paaRootedness, "M", null, {
+  dayBoundary: "00:00",
+  dayBoundarySource: "explicit",
+});
+const paaPrompt = renderChartPrompt(paaPacket);
+ok("Paa strict audit catches 七殺格 under raw 假從兒格", paaPacket.strictGeJuAudit?.strictLabel === "七殺格" && paaPacket.strictGeJuAudit?.matchesCurrent === false);
+ok("false-follow guard reaches prompt", paaPrompt.includes("HK_FALSE_FOLLOW_GUARD_V1") && paaPrompt.includes("候選/ป้ายเตือน"));
+ok("false-follow does not close 病藥", paaPacket.bingYao?.status === "ok" && paaPacket.bingYao?.primary?.id === "BY-11");
+ok("false-follow uses 扶抑 instead of 從勢 gate", paaPacket.yongShenProtocols?.fuyi.mode === "扶");
+
 console.log(`\n=== ${pass}/${pass + fail} ${fail ? "❌ FAIL" : "✅ PASS"} ===`);
 process.exit(fail ? 1 : 0);

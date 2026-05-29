@@ -200,7 +200,7 @@ export type ChartPacket = {
   } | null;
   /** 病藥 v1 (Disease-Medicine · 子平真詮/滴天髓)
    * derived จาก rootedness/usefulGods/xiangShen/Layer5 · ไม่ใช่โรคสุขภาพตรงๆ
-   * gate 從/化/專旺 ก่อน เพราะสูตร扶抑/病藥จะกลับทิศ */
+   * gate เฉพาะ真從/真化/專旺 ก่อน; 假從/假化 ยังต้องอ่าน病藥ประกอบ เพราะยังไม่ใช่真從 */
   bingYao?: {
     status: "ok" | "not_applicable" | "needs_review";
     primary: {
@@ -978,6 +978,21 @@ function uniqElsBY(arr: Array<ElementEN | null | undefined>): ElementEN[] {
 function godsForElementsBY(dmElement: ElementEN, els: ElementEN[]): string[] {
   return Array.from(new Set(els.flatMap((el) => tenGodOfElement(dmElement, el))));
 }
+function isFalseFollowCandidateLabel(label: string): boolean {
+  return /^假從/.test((label || "").trim());
+}
+function isConfirmedSpecialStructureForProtocol(label: string): boolean {
+  const l = (label || "").trim();
+  if (/^假(從|化)/.test(l)) return false; // 假從/假化 ยังต้องอ่านราก+病藥 ไม่ปิดแบบ真從/真化
+  return /^(真從|從|真化|化)/.test(l) || /曲直|炎上|稼穡|從革|潤下|魁罡/.test(l);
+}
+function hasSupportDirection(
+  dmElement: ElementEN,
+  usefulGods: ChartPacket["usefulGods"],
+): boolean {
+  const support = uniqElsBY([producerElementOf(dmElement), dmElement]);
+  return support.some((el) => usefulGods.yong.includes(el) || usefulGods.xi.includes(el));
+}
 function candidateBY(
   id: string,
   diseaseType: string,
@@ -1004,15 +1019,23 @@ export function buildBingYao(
   elementProfile: ChartPacket["elementProfile"],
 ): ChartPacket["bingYao"] {
   if (dmElement === "unknown" || !rootedness) return { status: "needs_review", primary: null, candidates: [] };
-  if (/^(假)?(從|化)/.test(structureLabel) || /曲直|炎上|稼穡|從革|潤下|魁罡/.test(structureLabel)) {
+  const yong = usefulGods.yong[0] || null;
+  const xi = usefulGods.xi || [];
+  const ji = usefulGods.ji || [];
+  if (isConfirmedSpecialStructureForProtocol(structureLabel)) {
     return { status: "not_applicable", primary: null, candidates: [] };
   }
   const candidates: BingYaoCandidate[] = [];
   const add = (c: BingYaoCandidate) => candidates.push(c);
-  const yong = usefulGods.yong[0] || null;
-  const xi = usefulGods.xi || [];
-  const ji = usefulGods.ji || [];
   const xsReason = xiangShen?.reason || "";
+
+  // 假從 guard: ถ้า usefulGods กลับไปทาง印/比劫 แปลว่าไม่ควรปิด病藥แบบ真從
+  if (isFalseFollowCandidateLabel(structureLabel) && hasSupportDirection(dmElement, usefulGods)) {
+    const medicine = uniqElsBY([producerElementOf(dmElement), dmElement].filter((el) => el && (usefulGods.yong.includes(el) || usefulGods.xi.includes(el))));
+    add(candidateBY("BY-11", "假從不真: ป้ายตามเทียมแต่ยังต้องใช้印/比劫เป็นยา", ji.length ? ji : uniqElsBY([ELEMENT_PRODUCES[dmElement], controllerElementOf(dmElement)]), medicine, dmElement,
+      "engine label เป็น假從 แต่ธาตุช่วยรวมกลับมาทาง印/比劫 → อ่าน病藥ประกอบ ไม่ปิดแบบ真從",
+      "ใช้เฉพาะกรณี假從候選ที่ usefulGods ชี้กลับมาหนุนตัวตน; ไม่ใช่การลบ raw engine label", ["DTS-BY-11", "HK-FALSE-FOLLOW-GUARD-001"]));
+  }
 
   // BY-08/BY-10/BY-09/BY-05: rule-table tied to 相神/成敗 reason first.
   if (xiangShen?.subLabel === "財為忌" || /財破印|財重破印/.test(xsReason)) {
@@ -1072,10 +1095,6 @@ const TIAOHOU_PROTOCOL: Record<string, { regulator: ElementEN; bridge: ElementEN
   dry:      { regulator: "water", bridge: "metal", th: "แห้ง → ใช้น้ำหล่อ ทองช่วยเก็บความชื้น" },
 };
 
-function isSpecialStructureForProtocol(label: string): boolean {
-  return /^(假)?(從|化)/.test(label) || /曲直|炎上|稼穡|從革|潤下|魁罡/.test(label);
-}
-
 function buildYongShenProtocols(
   structureLabel: string,
   structureBasis: string | null | undefined,
@@ -1090,7 +1109,7 @@ function buildYongShenProtocols(
   let mode: NonNullable<ChartPacket["yongShenProtocols"]>["fuyi"]["mode"] = "unknown";
   let fuyiEls: ElementEN[] = [];
   if (dmElement !== "unknown") {
-    if (isSpecialStructureForProtocol(structureLabel)) {
+    if (isConfirmedSpecialStructureForProtocol(structureLabel)) {
       mode = "從勢/特殊格優先";
       fuyiEls = [];
     } else if (!rootedness || ["no_root", "token_root", "partial_root"].includes(rootedness.dmLabel)) {
@@ -1136,8 +1155,8 @@ function buildYongShenProtocols(
         ? "ตัวตนอ่อน/รากบาง → ชั้น扶抑อ่านแนวเติมแม่/พวกเดียวกัน"
         : mode === "抑/泄"
           ? "ตัวตนมีราก → ชั้น扶抑อ่านแนวระบายหรือควบให้สมดุล"
-          : mode === "從勢/特殊格優先"
-            ? "ดวงพิเศษ/從化/專旺 → อ่านตาม勢ก่อน ไม่ยัดสูตร扶抑ปกติทับ"
+        : mode === "從勢/特殊格優先"
+            ? "真從/真化/專旺 → อ่านตาม勢ก่อน ไม่ยัดสูตร扶抑ปกติทับ"
             : "ข้อมูลรากไม่พอสำหรับชั้น扶抑",
     },
     bingYao: {
@@ -1916,6 +1935,14 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       `engine=${a.currentLabel} · strict月令=${a.strictLabel || "-"} · 選用=${stemTxt} · ` +
       `${verdict} · ${a.noteTh} · อ้างหลัก ${a.canonicalChinese}`
     );
+    if (isFalseFollowCandidateLabel(a.currentLabel) && !a.matchesCurrent) {
+      lines.push(
+        `從格ตรวจทาน (HK_FALSE_FOLLOW_GUARD_V1 · ไทยนำจีนตาม · เพิ่มข้อมูล ไม่จำกัดลีลาซินแส): ` +
+        `raw engine=${a.currentLabel} ให้อ่านเป็น候選/ป้ายเตือน ไม่ใช่格หลักทันที · ` +
+        `เมื่อ strict月令=${a.strictLabel || "-"} และธาตุช่วยรวมกลับไปทาง印/比劫 ให้เปิดอ่าน扶抑+病藥ตามปกติ · ` +
+        `หลัก任氏假從: 局中雖有劫印、亦自顧不暇 ต้องพิสูจน์ว่า印/比ช่วยตัวตนไม่ได้จริงก่อน`
+      );
+    }
   }
 
   /* ธาตุช่วย (engine-derived · เป็นฐานให้ซินแสตัดสิน) */
@@ -1953,7 +1980,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   lines.push(`ธาตุรวม: ไม้ ${c.wood} · ไฟ ${c.fire} · ดิน ${c.earth} · ทอง ${c.metal} · น้ำ ${c.water} · กำลังตัวตนระดับ ${packet.elementProfile.voytekLevel} (ห้ามพูดตัวเลขเปอร์เซ็นต์)`);
 
   /* ช่องว่างของดวง */
-  lines.push(`ช่องว่างของดวง: วัน=${packet.kongWang.dayVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"} · ปี=${packet.kongWang.yearVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"}`);
+  lines.push(`ช่องว่างของดวง: 日旬空(ฐานวัน)=${packet.kongWang.dayVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"} · 年旬空(ฐานปี)=${packet.kongWang.yearVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"} · 空亡เป็นข้อมูลรอง ต้องอ่านคู่กับ用神/冲合/填實`);
 
   /* 空亡 ตกเสาไหน → เรือน + สิบเทพที่ "ไม่เต็ม" (derived จาก packet · กิ่งว่าง × กิ่งของเสาในผัง · ไม่คำนวณใหม่) */
   {
@@ -1968,7 +1995,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       }
     });
     if (hits.length) {
-      lines.push(`空亡ตกที่เสา (สิ่งที่ "ว่าง/ไม่เต็ม" · ต้องรอเติมเต็ม/填實ปีจร): ${hits.join(" · ")}`);
+      lines.push(`空亡ตกที่เสา (ข้อมูลรองเรื่องสิ่งที่ "ว่าง/ไม่เต็ม" · แยกฐานวัน/ฐานปีชัด · ใช้ประกอบ填實/沖合 ไม่ใช้เป็นแกนเดี่ยว): ${hits.join(" · ")}`);
     }
   }
 

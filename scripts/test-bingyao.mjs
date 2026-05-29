@@ -18,9 +18,16 @@ const profile = (counts={wood:1,fire:1,earth:1,metal:1,water:1}) => ({ counts, v
 
 const cases = [
   {
-    name: 'special/follow gate → not_applicable',
-    args: ['假從財格', 'earth', roots(), useful(), null, null, profile()],
+    name: 'true follow gate → not_applicable',
+    args: ['從財格', 'earth', roots(), useful(), null, null, profile()],
     expectStatus: 'not_applicable',
+  },
+  {
+    name: 'false follow + support yong → BY-11 not closed',
+    args: ['假從兒格', 'water',
+      { dmElement:'water', dmLabel:'token_root', isExtremelyWeak:true, isTokenOnly:true, all:{ wood:'rooted', fire:'rooted', earth:'rooted', metal:'token_root', water:'token_root' } },
+      useful(['metal'], ['water'], ['wood','fire','earth']), null, null, profile({wood:4.5,fire:1.5,earth:3,metal:0,water:1})],
+    expectId: 'BY-11',
   },
   {
     name: '財破印 → BY-08',
