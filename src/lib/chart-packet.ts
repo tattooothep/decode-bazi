@@ -2452,11 +2452,16 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       const prevBranchEl = prev ? (BRANCH_ELEMENT[prev.branch] || null) : null;
       const curHasRegulator = !!regulator && (curStemEl === regulator || curBranchEl === regulator);
       const prevHasRegulator = !!regulator && !!prev && (prevStemEl === regulator || prevBranchEl === regulator);
-      if (regulator && curHasRegulator && !prevHasRegulator) {
+      /* symmetric — 調候用神 พลิกได้ 2 ทาง: เข้ามา(ฤดูเปิด) / หายไป(ฤดูปิด) · 窮通寶鑑·調候 ฤดูพลิกทั้งขาขึ้น-ขาลง */
+      if (regulator && prev && curHasRegulator !== prevHasRegulator) {
+        const regTxt = `${elementTh(regulator)}${bridge ? `+${elementTh(bridge)}` : ""}`;
+        const flipTh = curHasRegulator
+          ? `調候用神 ${regTxt} เข้าวัยจรปัจจุบัน (ก่อนหน้าไม่มี) → ฤดูดวงเปิด/คลาย`
+          : `調候用神 ${regTxt} หายจากวัยจรปัจจุบัน (ก่อนหน้าเคยมี) → ฤดูดวงปิด/กลับเข้มข้น ระวัง`;
         lines.push(
           `${subjectPrefix}大運氣候轉折 candidate: อายุ ${cur.ageStart} (ปี ${cur.yearStart}) · ` +
-          `gate=มี調候用神 ${elementTh(regulator)}${bridge ? `+${elementTh(bridge)}` : ""} เข้าวัยจร · ` +
-          `flip reason=วัยจรก่อนหน้าไม่มี調候用神 → ฤดูดวงเปลี่ยน · confidence=สูง · ตำราอ้าง 窮通寶鑑·調候`
+          `gate=${curHasRegulator ? "มี" : "ไม่มี"}調候用神ในวัยจรปัจจุบัน · ` +
+          `flip reason=${flipTh} · confidence=สูง · ตำราอ้าง 窮通寶鑑·調候`
         );
       }
     }
