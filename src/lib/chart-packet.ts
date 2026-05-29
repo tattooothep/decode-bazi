@@ -1086,9 +1086,9 @@ export function buildBingYao(
     const wealthEl = ELEMENT_CONTROLS[dmElement];
     const sealEl = producerElementOf(dmElement);
     if (shouldUseSealHeavyWealthMedicine(ctx, dmElement, rootedness, elementProfile, wealthEl)) {
-      add(candidateBY("BY-08P", "印多用財: อิน/ไฟหนาในดวงร้อนแห้ง ต้องใช้財/น้ำลดอิน", uniqElsBY([sealEl, controllerElementOf(dmElement)]), uniqElsBY([wealthEl, producerElementOf(wealthEl)]), dmElement,
+      add(candidateBY("BY-08P", "印多用財: อิน/ไฟหนาในดวงร้อนแห้ง → 財/น้ำเป็นตัวยา", uniqElsBY([sealEl, controllerElementOf(dmElement)]), uniqElsBY([wealthEl, producerElementOf(wealthEl)]), dmElement,
         `เดือน${ctx.monthBranch || "-"}ร้อนแห้ง + 印(${ELEMENT_TH[sealEl || "unknown"]}) count=${sealEl ? elementProfile.counts[sealEl] : "-"} และ透干=${countVisibleElementBY(ctx.pillars, sealEl)} → 子平論印 印多逢財 + 調候 ${ctx.dmStem || "-"}日${ctx.monthBranch || "-"}月 ${wealthEl ? ELEMENT_TH[wealthEl] : "-"}不可缺`,
-        "HK resolver: เมื่อดวงร้อนแห้งและ印重 ให้สูตร印多用財ชนะ財破印; BY-08 เดิมเป็นข้อมูลโครง印 ไม่ใช่โรคหลัก", ["ZPZQ-BY-08P", "ZPZQ-PRINT-001", "QTBJ-TIAOHOU-戊未"]));
+        "HK resolver: ดวงร้อนแห้งและ印重เข้า pattern 印多用財; แยกจาก BY-08 財破印", ["ZPZQ-BY-08P", "ZPZQ-PRINT-001", "QTBJ-TIAOHOU-戊未"]));
     } else {
       add(candidateBY("BY-08", "財破印: ดาวทรัพย์ทำลายอิน/ตัวหนุน", [wealthEl], [dmElement], dmElement,
         `相神=${xiangShen?.verdict || "-"}: ${xsReason}`, "ถ้าเป็น從財/化格 ห้ามใช้สูตรนี้ ต้องตาม勢ก่อน", ["ZPZQ-BY-08"]));
@@ -1140,7 +1140,7 @@ export function buildBingYao(
   const consistencyWarnings: string[] = [];
   if (primary && yong && !primary.medicineElements.includes(yong)) {
     consistencyWarnings.push(
-      `INCONSISTENT_LAYERS: 病藥藥=${primary.medicineElements.map((e) => ELEMENT_TH[e]).join("/")} แต่ engine用神หลัก=${ELEMENT_TH[yong]} · ให้ยึด用神分層/調候ก่อน แล้วใช้病藥เป็นข้อมูลรอง`
+      `INCONSISTENT_LAYERS: 病藥藥=${primary.medicineElements.map((e) => ELEMENT_TH[e]).join("/")} แต่ engine用神หลัก=${ELEMENT_TH[yong]}`
     );
   }
   return { status: primary ? "ok" : "needs_review", primary, candidates, consistencyWarnings };
@@ -2263,9 +2263,8 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       const prevHasRegulator = !!regulator && !!prev && (prevStemEl === regulator || prevBranchEl === regulator);
       if (regulator && curHasRegulator && !prevHasRegulator) {
         lines.push(
-          `${subjectPrefix}จุดพลิกใหญ่ของวัยจร (大運氣候轉折): อายุ ${cur.ageStart} (ปี ${cur.yearStart}) — ` +
-          `วัยจรเริ่มพา${elementTh(regulator)}${bridge ? `+${elementTh(bridge)}` : ""}เข้าผัง · ` +
-          `用神/調候เริ่มกลับมาเดินชัดกว่ารอบก่อน → ก่อนหน้านี้คือกดสภาพเดิม หลังจากนี้คือเริ่มคลายสภาพเดิม`
+          `${subjectPrefix}大運氣候轉折: อายุ ${cur.ageStart} (ปี ${cur.yearStart}) — ` +
+          `วัยจรปัจจุบันมี${elementTh(regulator)}${bridge ? `+${elementTh(bridge)}` : ""}; วัยจรก่อนหน้าไม่มี`
         );
       }
     }

@@ -70,6 +70,7 @@ ok("BY-08 flips to 印多用財 variant", packet.bingYao?.primary?.id === "BY-08
 ok("prompt prefixes luck lines with subject label", prompt.includes("[เค็ง·06c97193] LUCK LOCK"));
 ok("prompt references current/previous luck", prompt.includes("大運ปัจจุบัน=辛亥") && prompt.includes("大運อดีต=庚戌"));
 ok("prompt highlights climate turning point", prompt.includes("大運氣候轉折") && prompt.includes("ปี 2021"));
+ok("prompt does not include today's directive wording", !/ให้สูตร印多用財ชนะ|ให้ยึด用神分層|ต้องใช้財|ก่อนหน้านี้คือกดสภาพเดิม|หลังจากนี้คือเริ่มคลายสภาพเดิม/.test(prompt));
 ok("prompt does not render removed Patch5 final verdict", !prompt.includes("FINAL VERDICT 用神ใช้จริงในชีวิต"));
 ok("prompt labels month pillars as 流月", prompt.includes("流月03:庚辰"));
 ok("prompt no longer renders old primary BY-08 medicine earth", !prompt.includes("病藥=BY-08 · 藥=ดิน"));
