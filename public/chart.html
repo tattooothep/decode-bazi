@@ -3455,10 +3455,6 @@ window.addEventListener('resize', function(){
         const strength = x.strength ? (STR_TH[x.strength] || x.strength) : '';
         return [strength, type, domains].filter(Boolean).join(' · ');
       };
-      const termMs = (term) => {
-        if (!term || !term.date) return NaN;
-        return new Date(String(term.date).replace(' ', 'T')).getTime();
-      };
       const yearCells = years.map((y, yi) => {
         const ys = y.pillar || {};
         const ytg = TG_TH_SHORT[y.ten_god] || y.ten_god || '';
@@ -3552,15 +3548,13 @@ window.addEventListener('resize', function(){
               });
             };
             monthBox.querySelectorAll('.hk-ld-month').forEach((btn) => {
-              btn.addEventListener('click', () => setMonth(parseInt(btn.dataset.mi || '0', 10) || 0));
+              btn.addEventListener('click', () => {
+                const mi = parseInt(btn.dataset.mi || '0', 10) || 0;
+                const isOpen = btn.classList.contains('on');
+                setMonth(isOpen ? -1 : mi);
+              });
             });
-            const nowMs = Date.now();
-            const currentMi = months.findIndex((m) => {
-              const a = termMs(m.jieqi_start);
-              const b = termMs(m.jieqi_end);
-              return Number.isFinite(a) && Number.isFinite(b) && a <= nowMs && nowMs < b;
-            });
-            setMonth(currentMi >= 0 ? currentMi : 0);
+            setMonth(-1);
           }
         };
         root.querySelectorAll('.hk-ld-year').forEach(btn => {
