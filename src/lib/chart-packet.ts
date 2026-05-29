@@ -52,7 +52,7 @@ export type Interaction = {
   resolverStatus: "none" | "transformed";
   /** lot1 · สิบเทพที่ reactionElements กระทบ (เทียบ DM) → "กระทบเรื่องอะไร" · ไม่ตัดสินดี-ร้าย */
   affectedTenGods?: Array<{ tenGod: string; tenGodTh: string; lifeTopics: string[] }>;
-  /** lot2a · คำอ่านพฤติกรรมต่อคู่ (presentation · กลางๆ ไม่ฟันธง) */
+  /** lot2a · คำอ่านพฤติกรรมต่อคู่ (presentation) */
   behavioralHint?: string;
   /** lot2b · ประเภทกระตุ้นเชิงจังหวะ · เฉพาะดวงจร (luck/annual) */
   timingActivationType?: "combination_active" | "clash_active" | "harm_active";
@@ -147,7 +147,7 @@ export type ChartPacket = {
     siLing: { stem: string; element: ElementEN; phase: string; tenGod: string } | null; // 司令
     xiaoYun: { age1Stem: string; age1Branch: string; direction: "forward" | "backward" } | null; // 小運
   } | null;
-  /** 六親 ญาติ (derived จาก十神+宮位+ราก · ไม่คำนวณ engine ใหม่ · แปรตามเพศ · ไม่ฟันธงดี-ร้าย)
+  /** 六親 ญาติ (derived จาก十神+宮位+ราก · ไม่คำนวณ engine ใหม่ · แปรตามเพศ)
    * 配偶(ชาย財/หญิง官殺·เรือน日支) · 父(偏財) · 母(正印) · 子女(ชาย官殺/หญิง食傷·เรือน時·3p=null) · 兄弟(比劫)
    * gender=null → null (เดาเพศไม่ได้ · ห้ามมั่ว) */
   sixRelatives?: {
@@ -166,7 +166,7 @@ export type ChartPacket = {
     }>;
   } | null;
   /** 相神/成格破格救應 (子平真詮 §8.2 · ตัดสินโครงดวงสำเร็จ/พัง · derived 格局+十神 · ไม่แตะ engine)
-   * เฉพาะ 8 正格 (化/從/專旺/魁罡=null·相神ไม่ applicable) · ไม่ฟันธงดี-ร้าย ใช้คัมภีร์ xiangshen ประกอบ */
+   * เฉพาะ 8 正格 (化/從/專旺/魁罡=null·相神ไม่ applicable) · ใช้คัมภีร์ xiangshen ประกอบ */
   xiangShen?: {
     geZh: string;          // 格 (RULES key · เช่น 正官格)
     verdict: "成格" | "破格" | "救應" | "合格普通";
@@ -473,7 +473,7 @@ const BRANCH_ORDER = "子丑寅卯辰巳午未申酉戌亥";
 function sortedPairKey(a: string, b: string): string {
   return [a, b].sort((x, y) => BRANCH_ORDER.indexOf(x) - BRANCH_ORDER.indexOf(y)).join("");
 }
-/* key = `${zhType}|${sortedPair}` · กลางๆ ไม่ฟันธง (子午/丑未 มีในคัมภีร์แล้ว ไม่ซ้ำ) */
+/* key = `${zhType}|${sortedPair}` · (子午/丑未 มีในคัมภีร์แล้ว ไม่ซ้ำ) */
 const BEHAVIORAL_HINT: Record<string, string> = {
   "六沖|寅申": "มักเกี่ยวกับความคิดสร้างสรรค์ปะทะกับระเบียบ/ระบบ อาจมีแรงปรับวิธีทำงานหรือโครงสร้าง",
   "六沖|卯酉": "มักเกี่ยวกับความสัมพันธ์/ภาพลักษณ์ที่ถูกแรงตัดสิน ระวังคำพูดและมาตรฐานที่แข็งเกินไป",
@@ -488,7 +488,7 @@ const BEHAVIORAL_HINT: Record<string, string> = {
   "六害|申亥": "มักเกี่ยวกับความลับ/ความระแวงที่กัดเซาะความไว้ใจ ควรทำข้อมูลให้โปร่งใส",
   "六害|酉戌": "มักเกี่ยวกับมาตรฐานสูงที่ขาดความผ่อนปรน ระวังคำวิจารณ์กระทบความร่วมมือ",
 };
-/* ชั้นจิตวิทยา 自刑 · key = กิ่งที่ซ้ำ · กลางๆ ไม่ฟันธง */
+/* ชั้นจิตวิทยา 自刑 · key = กิ่งที่ซ้ำ */
 const SELF_PUNISH_HINT: Record<string, string> = {
   辰: "มักมีแนวโน้มคิดวนกับอดีต/ระบบ/ความทรงจำ-เอกสาร และแรงกดดันที่มาจากภายในตัวเอง",
   午: "มักมีพลังร้อนแรงในใจ ใจร้อน-พักยาก และแรงกดดันเรื่องการแสดงออก/ชื่อเสียง",
@@ -648,7 +648,7 @@ function tenGodGroupElement(group: string, dmEl: ElementEN): ElementEN | null {
     default: return null;
   }
 }
-/* 六親: map ดาว(十神)+宮位+ราก เป็นญาติ · ไม่คำนวณ engine ใหม่ · แปรเพศ · ไม่ฟันธง */
+/* 六親: map ดาว(十神)+宮位+ราก เป็นญาติ · ไม่คำนวณ engine ใหม่ · แปรเพศ */
 export function buildSixRelatives(
   pillars: Record<string, { stem: string; branch: string } | null>,
   dm: string, dmEl: ElementEN, gender: "M" | "F",
@@ -844,7 +844,7 @@ for (const [k, r] of Object.entries(RUN_RULES_L5)) {
   if (ov.length) throw new Error(`RUN_RULES_L5 xi∩ji overlap ${k}: ${ov.join("/")}`);
 }
 function dmVigorL5(label: string | undefined): "旺相" | "休囚" {
-  return (label === "strong_root" || label === "rooted") ? "旺相" : "休囚"; // partial/token/no_root → 休囚 (conservative · 破หนักกว่า=เตือนมากกว่า)
+  return (label === "strong_root" || label === "rooted") ? "旺相" : "休囚"; // partial/token/no_root → 休囚
 }
 /* judge: วัยจรปัจจุบัน vs ตารางกฎ → 成/破 + §2d旺衰 + §2c-liteปีจร · ทุกอย่างจากค่าที่ engine มีแล้ว */
 export function buildChengBaiNow(
@@ -878,7 +878,7 @@ export function buildChengBaiNow(
     if (dmVigorL5(dmRootLabel) === "旺相") { verdict = "破(เบา)"; reason += " · DTS-2d 日主旺相→ทนได้ (เบาลง)"; }
     else { verdict = "破(หนัก)"; reason += " · DTS-2d 日主休囚→รับเต็ม"; }
   }
-  // §2c-lite ปีจรปัจจุบัน (太歲重天干 → ใช้ก้านปีจร · ไม่ฟันธงเลขปีอนาคต)
+  // §2c-lite ปีจรปัจจุบัน (太歲重天干 → ใช้ก้านปีจร)
   let annual: string | undefined;
   if (annualPillar) {
     const yg = tenGodOf(dm, annualPillar.stem);
@@ -1591,7 +1591,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   lines.push(`CHART PACKET รายเสา:\n${pillarBlock.join("\n")}`);
   if (packet.meta.mode === "3p") {
     lines.push("⚠️ ดวง 3 เสา (ไม่ทราบเวลาเกิด · ไม่มีเสายาม時) — อ่านได้ครบ年月日 แต่ห้ามเดา/อนุมาน: เสายาม · สิบเทพยาม · 命宮/身宮/小運/起運 · ดวงคู่จากยาม");
-    lines.push("⚠️ วัยจร大運 3 เสา: ลำดับธาตุ/ก้านกิ่งถูกต้อง แต่ \"อายุที่เข้าวัยจร + ปีครอบ\" เป็นค่าประมาณ (ไม่ทราบ起運จริงเพราะไม่มีเวลาเกิด) — ห้ามฟันธงปี/อายุที่เปลี่ยนวัยจร · พูดได้แค่ลำดับธาตุวัยจร");
+    lines.push("⚠️ วัยจร大運 3 เสา: ลำดับธาตุ/ก้านกิ่งถูกต้อง แต่ \"อายุที่เข้าวัยจร + ปีครอบ\" เป็นค่าประมาณ (ไม่ทราบ起運จริงเพราะไม่มีเวลาเกิด) — อ่านจังหวะและน้ำหนักได้ แต่ให้บอกผู้ใช้ว่าอายุ/ปีเปลี่ยนวัยจรเป็นค่าประมาณ");
     lines.push("⚠️ ถ้าเกิดใกล้เที่ยงคืน (子時 ~23:00-01:00) เสาวัน/Day Master อาจคลาด ±1 วัน — engine ใช้ตามวันที่ที่ระบุ · เตือนผู้ใช้ได้ถ้าผลดูไม่ตรงตัว");
   }
   if (packet.meta.dayBoundary && packet.meta.timePillarConfidence) {
@@ -1633,14 +1633,14 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
         const ROOT_HUA: Partial<Record<RootLabel, string>> = {
           partial_root: "รากบางส่วน", rooted: "มีราก", strong_root: "รากแข็ง",
         };
-        structureLine += `\n⚠️ 化氣格 = เบื้องต้นเท่านั้น (ยังไม่ฟันธง): ตัวตน(日干 ธาตุ${elTh}) ${ROOT_HUA[r.dmLabel]}` +
-          ` → ต้องตรวจ 真化/假化/合而不化 ตามคัมภีร์從化ก่อนสรุป · ห้ามประกาศว่า "แปรธาตุสำเร็จ/化แท้" ทันที` +
+        structureLine += `\n⚠️ 化氣格 = ต้องชั่งน้ำหนัก真化/假化/合而不化: ตัวตน(日干 ธาตุ${elTh}) ${ROOT_HUA[r.dmLabel]}` +
+          ` → ใช้รากตัวตน+เดือนเกิดช่วยตัดสินว่าแปรแท้หรือ合แต่ไม่化` +
           ` · ตัวตนที่ยังมีราก (หรือ月令ไม่หนุนธาตุที่แปร) มักเป็น 合而不化 (合แต่ไม่แปร · ทั้งคู่ทำงานครึ่งเดียว) ไม่ใช่化แท้` +
           ` · อ้างอิงค่ารากใน packet เท่านั้น (ห้ามคำนวณราก/ก้านใหม่)`;
       } else if (r.dmLabel === "token_root") {
-        structureLine += `\n⚠️ 化氣格 = แปรแบบไม่มั่นคง (假化 · ยังไม่ฟันธง): ตัวตน(日干 ธาตุ${elTh}) รากบางมาก(微根)` +
+        structureLine += `\n⚠️ 化氣格 = แปรแบบไม่มั่นคง (假化): ตัวตน(日干 ธาตุ${elTh}) รากบางมาก(微根)` +
           ` → แปรตามคู่ได้แต่ไม่เต็มใจ ยังมีรากเล็กค้างอยู่ · จังหวะปี/วัยจรที่ดาวหนุนตัวตน(印·比劫 = ดาวครู/ดาวเพื่อนช่วย)มาเสริมรากเดิมให้ฟื้น → มัก "เด้งกลับเป็นตัวเดิม" (ชีวิตพลิก) · ส่วนปีที่沖去/克รากเดิม กลับยิ่งเข้าทางแปร` +
-          ` · ต้องตรวจ真化/假化 ตามคัมภีร์從化ก่อนสรุป · ห้ามฟันธงว่าแปรสมบูรณ์ถาวร · ต้องเตือนความไม่มั่นคงนี้ในคำอ่าน` +
+          ` · ใช้真化/假化 ตามคัมภีร์從化ประกอบ แล้วตัดสินน้ำหนักให้ชัดว่าช่วงไหนแปร ช่วงไหนเด้งกลับ` +
           ` · อ้างอิงค่ารากใน packet เท่านั้น (ห้ามคำนวณราก/ก้านใหม่)`;
       }
       /* no_root → 真化ได้จริง · ไม่ flag */
@@ -1648,10 +1648,10 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   }
   lines.push(structureLine);
 
-  /* ธาตุช่วย (engine-derived · ไม่ฟันธงดี-ร้าย) */
+  /* ธาตุช่วย (engine-derived · เป็นฐานให้ซินแสตัดสิน) */
   const fmtEls = (arr: string[]) => arr.length ? arr.map((e) => elementTh(e)).join(" · ") : "-";
   lines.push(
-    `ธาตุช่วยจากระบบ (engine-derived · ไม่ใช่คำตัดสินสุดท้ายของซินแส): ` +
+    `ธาตุช่วยจากระบบ (engine-derived · ใช้เป็นฐานให้ซินแสตัดสิน): ` +
     `ธาตุช่วยหลัก=${fmtEls(packet.usefulGods.yong)} · ` +
     `ธาตุช่วยรอง=${fmtEls(packet.usefulGods.xi)} · ` +
     `ธาตุที่ระบบจัดเป็นธาตุระวัง=${fmtEls(packet.usefulGods.ji)}`
@@ -1694,29 +1694,29 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* 胎元 เรือนปฏิสนธิ (27 พ.ค. · 月干進一月支進三 · engine คำนวณ · ทุนแต่เกิด/รากฐาน · ตีความด้วยสิบเทพเทียบ日干) */
   if (packet.fivePalaces?.taiYuan) {
     const t = packet.fivePalaces.taiYuan;
-    lines.push(`胎元 เรือนปฏิสนธิ (ทุนแต่เกิด·รากฐานก่อนลืมตา): ${STEM_TH[t.stem] || t.stem}/${t.tenGod} ${BRANCH_TH_NAME[t.branch] || t.branch} (${t.stem}${t.branch}) · ใช้ดูธาตุเสริมที่ติดตัวมาก่อนเกิด (มักเติมธาตุที่ 4 เสาขาด) · ไม่ฟันธงดี-ร้าย`);
+    lines.push(`胎元 เรือนปฏิสนธิ (ทุนแต่เกิด·รากฐานก่อนลืมตา): ${STEM_TH[t.stem] || t.stem}/${t.tenGod} ${BRANCH_TH_NAME[t.branch] || t.branch} (${t.stem}${t.branch}) · ใช้ดูธาตุเสริมที่ติดตัวมาก่อนเกิด (มักเติมธาตุที่ 4 เสาขาด)`);
   }
   /* 命宮 เรือนชีวิต (27 พ.ค. · 卯安命 節氣法 · บุคลิก/ทิศทางชีวิต · ต้องมีเวลาเกิด) */
   if (packet.fivePalaces?.mingGong) {
     const m = packet.fivePalaces.mingGong;
-    lines.push(`命宮 เรือนชีวิต (บุคลิกแกน·ทิศทางชีวิต): ${STEM_TH[m.stem] || m.stem}/${m.tenGod} ${BRANCH_TH_NAME[m.branch] || m.branch} (${m.stem}${m.branch}) · อ่านแนวทางชีวิต/นิสัยพื้นฐาน · ไม่ฟันธงดี-ร้าย`);
+    lines.push(`命宮 เรือนชีวิต (บุคลิกแกน·ทิศทางชีวิต): ${STEM_TH[m.stem] || m.stem}/${m.tenGod} ${BRANCH_TH_NAME[m.branch] || m.branch} (${m.stem}${m.branch}) · อ่านแนวทางชีวิต/นิสัยพื้นฐาน`);
   }
   /* 身宮 เรือนกาย (對宮ของ命宮 · ครึ่งหลังชีวิต/สิ่งที่ทุ่มจริง) */
   if (packet.fivePalaces?.shenGong) {
     const s = packet.fivePalaces.shenGong;
-    lines.push(`身宮 เรือนกาย (ครึ่งหลังชีวิต·สิ่งที่ลงมือทำจริง): ${STEM_TH[s.stem] || s.stem}/${s.tenGod} ${BRANCH_TH_NAME[s.branch] || s.branch} (${s.stem}${s.branch}) · คู่ตรงข้าม命宮 · ไม่ฟันธงดี-ร้าย`);
+    lines.push(`身宮 เรือนกาย (ครึ่งหลังชีวิต·สิ่งที่ลงมือทำจริง): ${STEM_TH[s.stem] || s.stem}/${s.tenGod} ${BRANCH_TH_NAME[s.branch] || s.branch} (${s.stem}${s.branch}) · คู่ตรงข้าม命宮`);
   }
   /* 司令 ธาตุบัญชาฤดู (27 พ.ค. · 子平真詮 · ธาตุแท้ที่คุมเดือน ณ วันเกิด · ละเอียดกว่าดูแค่เดือน) */
   if (packet.fivePalaces?.siLing) {
     const sl = packet.fivePalaces.siLing;
-    lines.push(`司令 ธาตุบัญชาฤดู (ธาตุแท้ที่คุมเดือนเกิด·ระยะ${sl.phase}): ${STEM_TH[sl.stem] || sl.stem}/${sl.tenGod} ธาตุ${elementTh(sl.element)} · ดูธาตุที่แรงจริงตามจังหวะฤดู (ระยะ本氣=เต็มแรง 中氣/餘氣=รองลงมา) · ไม่ฟันธงดี-ร้าย`);
+    lines.push(`司令 ธาตุบัญชาฤดู (ธาตุแท้ที่คุมเดือนเกิด·ระยะ${sl.phase}): ${STEM_TH[sl.stem] || sl.stem}/${sl.tenGod} ธาตุ${elementTh(sl.element)} · ดูธาตุที่แรงจริงตามจังหวะฤดู (ระยะ本氣=เต็มแรง 中氣/餘氣=รองลงมา)`);
   }
   /* 小運 วัยจรเล็ก (Option B 時柱=ขวบ1 · โชควัยเด็กก่อนเข้า大運) */
   if (packet.fivePalaces?.xiaoYun) {
     const x = packet.fivePalaces.xiaoYun;
-    lines.push(`小運 วัยจรเล็ก (โชควัยเด็กก่อนเข้าวัยจรใหญ่): ขวบ1=${STEM_TH[x.age1Stem] || x.age1Stem} ${BRANCH_TH_NAME[x.age1Branch] || x.age1Branch} (${x.age1Stem}${x.age1Branch}) เดิน${x.direction === "forward" ? "หน้า順" : "ถอย逆"} · ใช้อ่านช่วงเด็กก่อน大運เริ่ม · ไม่ฟันธงดี-ร้าย`);
+    lines.push(`小運 วัยจรเล็ก (โชควัยเด็กก่อนเข้าวัยจรใหญ่): ขวบ1=${STEM_TH[x.age1Stem] || x.age1Stem} ${BRANCH_TH_NAME[x.age1Branch] || x.age1Branch} (${x.age1Stem}${x.age1Branch}) เดิน${x.direction === "forward" ? "หน้า順" : "ถอย逆"} · ใช้อ่านช่วงเด็กก่อน大運เริ่ม`);
   }
-  /* 六親 ญาติ (27 พ.ค. · derived 十神+宮位+ราก · แปรเพศ · ไม่ฟันธงดี-ร้าย · AI ใช้คัมภีร์六親 bazi-shishen-classical ประกอบ) */
+  /* 六親 ญาติ (27 พ.ค. · derived 十神+宮位+ราก · แปรเพศ · AI ใช้คัมภีร์六親 bazi-shishen-classical ประกอบ) */
   if (packet.sixRelatives) {
     const sr = packet.sixRelatives;
     const USEFUL_TH: Record<string, string> = { yong: "ธาตุช่วยหลัก(用)", xi: "ธาตุช่วยรอง(喜)", ji: "ธาตุระวัง(忌)", neutral: "กลาง" };
@@ -1728,19 +1728,19 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       const flags = [r.palaceClashed ? "เรือนถูกกระทบ(沖/刑/害/破)" : "", r.palaceVoid ? "เรือนตกว่าง(空亡)" : ""].filter(Boolean).join(" · ");
       return `${r.relativeZh} ${r.relativeTh}: ดาวแทน=${starsTh} (ธาตุ${elementTh(r.element)}·${USEFUL_TH[r.isUseful]}) · เรือน=${r.palaceZh} · พบดาวที่=${where} · รากดาว=${rootTxt}${flags ? ` · ${flags}` : ""}`;
     });
-    lines.push(`六親 ญาติ (อ่านตาม "เพศ${sr.gender === "M" ? "ชาย" : "หญิง"}" ที่บันทึกในระบบ · ⚠️ ถ้าเพศไม่ตรงจริง ดาวคู่ครอง/ลูกจะสลับ ให้ทักผู้ใช้ยืนยันเพศก่อนอ่านลึก · ดาวแทนญาติจากสิบเทพ+เรือน · อ่านสภาพ/ความสัมพันธ์ญาติตามคัมภีร์六親 · ดาวแรง/ถูกกระทบ/ตกว่าง = จุดเด่น-จุดต้องระวังเชิงสร้างสรรค์ · ห้ามฟันธงดี-ร้าย ห้ามทำนายว่าญาติเป็น/ตาย):\n  ${relLines.join("\n  ")}`);
+    lines.push(`六親 ญาติ (อ่านตาม "เพศ${sr.gender === "M" ? "ชาย" : "หญิง"}" ที่บันทึกในระบบ · ⚠️ ถ้าเพศไม่ตรงจริง ดาวคู่ครอง/ลูกจะสลับ ให้ทักผู้ใช้ยืนยันเพศก่อนอ่านลึก · ดาวแทนญาติจากสิบเทพ+เรือน · อ่านสภาพ/ความสัมพันธ์ญาติตามคัมภีร์六親 · ดาวแรง/ถูกกระทบ/ตกว่าง = จุดเด่น-จุดต้องระวังเชิงสร้างสรรค์ · อ่านให้ชัดตามหลักฐานในดวง แต่อย่าทำนายว่าญาติเป็น/ตาย):\n  ${relLines.join("\n  ")}`);
   }
-  /* 相神/成格破格 (27 พ.ค. · 子平真詮 §8.2 · derived 格局+十神 · ตัดสินโครงดวงสำเร็จ/พัง · ไม่ฟันธงดี-ร้าย) */
+  /* 相神/成格破格 (27 พ.ค. · 子平真詮 §8.2 · derived 格局+十神 · ตัดสินโครงดวงสำเร็จ/พัง) */
   if (packet.xiangShen) {
     const xs = packet.xiangShen;
     const VTH: Record<string, string> = { 成格: "โครงดวงสำเร็จ (成格)", 破格: "โครงดวงเสีย (破格)", 救應: "เสียแล้วมีตัวกู้ (救應·敗中有成)", 合格普通: "เข้าโครงแต่ไม่เด่น (普通)" };
-    lines.push(`相神/成格破格 (โครงดวง${xs.geZh} · ${VTH[xs.verdict] || xs.verdict}): ${xs.reason} · อ่านลึกตามคัมภีร์相神/成格破格救應 (子平真詮) ประกอบ · ⚠️ "สำเร็จ/เสีย" = ระดับการใช้การของโครง ไม่ใช่ดวงดี-ร้ายเด็ดขาด · ดวงเสียมีทางแก้ (救應/วัยจร) เสมอ · ห้ามฟันธงชี้ชะตา`);
+    lines.push(`相神/成格破格 (โครงดวง${xs.geZh} · ${VTH[xs.verdict] || xs.verdict}): ${xs.reason} · อ่านลึกตามคัมภีร์相神/成格破格救應 (子平真詮) ประกอบ · ใช้เป็นแกนตัดสินว่าโครงดวงทำงานดี/ติดขัดตรงไหน และแปลเป็นชีวิตจริงได้เมื่อมีวัยจร/ปีจรมารองรับ`);
   }
-  /* 行運成敗 Layer 5 (28 พ.ค. · derived จาก相神×วัยจรปัจจุบัน · ตัวบทจริง子平真詮論行運+滴天髓歲運 · ปิด 3p · ไม่ฟันธงปีเลข) */
+  /* 行運成敗 Layer 5 (28 พ.ค. · derived จาก相神×วัยจรปัจจุบัน · ตัวบทจริง子平真詮論行運+滴天髓歲運 · ปิด 3p) */
   if (packet.chengBaiNow && packet.chengBaiNow.verdict !== "UNMAPPED") {
     const c = packet.chengBaiNow;
     const VTH2: Record<string, string> = { "成": "วัยจรช่วงนี้หนุนโครงดวง (成)", "破(เบา)": "วัยจรช่วงนี้ขัดโครงดวง·แต่日主旺พอทน (破·เบา)", "破(หนัก)": "วัยจรช่วงนี้ขัดโครงดวง·日主อ่อนรับเต็ม (破·หนัก)", "平": "วัยจรช่วงนี้เป็นกลางต่อโครงดวง (平)" };
-    lines.push(`行運成敗 (จังหวะวัยจรกับโครงดวง${c.geZh}·相神${c.subLabel}): ${VTH2[c.verdict] || c.verdict} — ${c.reason}${c.annual ? ` · ${c.annual}` : ""} · อ้างตัวบทจริง [${c.ruleId}] · ⚠️ บอก "ช่วงวัยจรนี้หนุน/ขัดโครงดวง" ไม่ใช่ฟันธงปีดี-ร้ายเป็นตัวเลข · โครงขัดมีทางปรับ(印/比劫/ตัวไกล่เกลี่ย)เสมอ · ห้ามชี้ชะตาตายตัว`);
+    lines.push(`行運成敗 (จังหวะวัยจรกับโครงดวง${c.geZh}·相神${c.subLabel}): ${VTH2[c.verdict] || c.verdict} — ${c.reason}${c.annual ? ` · ${c.annual}` : ""} · อ้างตัวบทจริง [${c.ruleId}] · ใช้ตัดสินน้ำหนักช่วงวัยจรได้ชัด: หนุนให้เดินเกม/ขัดให้ปรับเกม แล้วโยงเข้าชีวิตจริงตามคำถาม`);
   }
   /* 病藥 v1 (28 พ.ค. · 子平真詮/滴天髓 · จุดเสียเชิงโครงสร้าง + ตัวยาแก้ · ไม่ใช่โรคสุขภาพ) */
   if (packet.bingYao) {
@@ -1773,7 +1773,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     lines.push(`ราก 5 ธาตุ: ${allTxt}`);
   }
 
-  /* 透干 (ก้านซ่อนในกิ่ง โผล่ขึ้นเป็นก้านบนฟ้า · ธาตุมีพลังเปิดเผยแสดงผลชัด · ดี/ร้ายขึ้นกับ用神หรือ忌神 · ห้ามฟันธง · derived จาก packet ไม่คำนวณเสาใหม่) */
+  /* 透干 (ก้านซ่อนในกิ่ง โผล่ขึ้นเป็นก้านบนฟ้า · ธาตุมีพลังเปิดเผยแสดงผลชัด · ดี/ร้ายขึ้นกับ用神หรือ忌神 · derived จาก packet ไม่คำนวณเสาใหม่) */
   {
     const heavenStems = packet.pillars.map((p) => p.stem);
     const revealed: string[] = [];
@@ -1801,14 +1801,14 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* วัยจรทั้งชีวิต + ปีครอบ · ให้ AI อ่านปีไหนใช้วัยจรของปีนั้น (กันเดาปฏิกิริยาข้ามวัยจร) */
   if (packet.luckTimeline.length) {
     lines.push(
-      `วัยจรทั้งชีวิต (อ่านปีไหนใช้วัยจรของปีนั้น · ห้ามจับปฏิกิริยาข้ามวัยจร): ` +
+      `วัยจรทั้งชีวิต (อ่านปีไหนใช้วัยจรของปีนั้น · อย่าดึงวัยจรผิดช่วงมาปน): ` +
       packet.luckTimeline
         .map((t) => `${STEM_TH[t.stem] || t.stem}/${BRANCH_TH_NAME[t.branch] || t.branch}(อายุ${t.ageStart}-${t.ageEnd}·ปี${t.yearStart}-${t.yearEnd}·ธาตุ${elementTh(t.element)})${t.isCurrent ? "◀ปัจจุบัน" : ""}`)
         .join(" · ")
     );
   }
   /* ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed)
-   * ให้ AI ใช้ block นี้ตอบคำถามย้อนหลัง/รายเดือนในรอบ 10 ปีปัจจุบัน · ห้าม AI คำนวณเสาเอง */
+   * ให้ AI ใช้ block นี้ตอบคำถามย้อนหลัง/รายเดือนในรอบ 10 ปีปัจจุบัน โดยไม่ต้องคำนวณเสาเอง */
   if (includeTransitDrilldown && packet.transitDrilldown?.currentDecade) {
     const d = packet.transitDrilldown.currentDecade;
     const flagTh: Record<string, string> = { auspicious: "ผสาน", cautious: "ต้องคุม", neutral: "กลาง" };
@@ -1843,11 +1843,11 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       `; เดือนจร=${y.months.map(monthTxt).join(" | ")}`
     );
     lines.push(
-      `ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed · AI ห้ามคำนวณเสาปี/เดือนเอง): ` +
+      `ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed · เสาปี/เดือนคำนวณมาแล้ว ไม่ต้องคำนวณเสาเอง · ใช้เป็นหลักฐานให้ซินแสอ่านย้อนหลัง/ล่วงหน้าได้เต็มที่): ` +
       `大運 ${d.luckPillar.stem}${d.luckPillar.branch} อายุ ${d.ageStartDetail || d.ageStart}-${d.ageEndDetail || d.ageEnd}` +
       `${d.startDate && d.endDate ? ` · วันที่จริง ${d.startDate} ถึงก่อน ${d.endDate}` : ""}` +
       `${d.directionTh ? ` · เดิน運 ${d.directionTh}` : ""} · ปีที่คร่อมจริง ${d.yearStart}-${d.yearEnd} · ` +
-      `เดือนจรใช้節氣หลักจริง (立春/惊蛰/清明...) จาก engine; รายการที่ fallback จะติดป้าย fallbackกลางเดือน · ถ้าถามวันใกล้เวลาเปลี่ยน節氣ให้เตือนว่าต้องเช็คขอบเวลา節氣\n` +
+      `เดือนจรใช้節氣หลักจริง (立春/惊蛰/清明...) จาก engine; รายการ fallbackกลางเดือนใช้เมื่อไม่มีจุด節氣ละเอียด · ถ้าถามวันใกล้เวลาเปลี่ยน節氣ให้บอกว่าจังหวะอยู่แถวรอยต่อ\n` +
       years.join("\n")
     );
   }
@@ -1860,9 +1860,9 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     let nextTxt = "";
     if (curIdx >= 0 && curIdx + 1 < tl.length) {
       const nx = tl[curIdx + 1];
-      nextTxt = ` · ⏭ รอยต่อถัดไป: อายุ ${nx.ageStart} (ปี ${nx.yearStart}) สลับเข้า ${STEM_TH[nx.stem] || nx.stem}/${BRANCH_TH_NAME[nx.branch] || nx.branch} ธาตุ${elementTh(nx.element)} — ช่วง交脫 (รอยต่อ ~ปี ${nx.yearStart - 1}-${nx.yearStart + 1}) ดวงผันผวน/ปรับตัว ก่อนวัยจรใหม่ลงหลัก · ไม่ฟันธงดี-ร้าย`;
+      nextTxt = ` · ⏭ รอยต่อถัดไป: อายุ ${nx.ageStart} (ปี ${nx.yearStart}) สลับเข้า ${STEM_TH[nx.stem] || nx.stem}/${BRANCH_TH_NAME[nx.branch] || nx.branch} ธาตุ${elementTh(nx.element)} — ช่วง交脫 (รอยต่อ ~ปี ${nx.yearStart - 1}-${nx.yearStart + 1}) ดวงผันผวน/ปรับตัว ก่อนวัยจรใหม่ลงหลัก`;
     }
-    lines.push(`交運 จังหวะสลับวัยจร大運 (ปีที่เปลี่ยนวัยจร · ช่วงรอยต่อ交脫 ดวงไม่นิ่ง ต้องปรับตัว · ใช้เตือนจังหวะ ไม่ฟันธงดี-ร้าย): ${transitions.join(" · ")}${nextTxt}`);
+    lines.push(`交運 จังหวะสลับวัยจร大運 (ปีที่เปลี่ยนวัยจร · ช่วงรอยต่อ交脫 ดวงไม่นิ่ง ต้องปรับตัว · ใช้จับจังหวะเปลี่ยนเกม): ${transitions.join(" · ")}${nextTxt}`);
   }
   lines.push(`ปีจรปัจจุบัน: ${STEM_TH[packet.annualPillar.stem] || packet.annualPillar.stem}/${BRANCH_TH_NAME[packet.annualPillar.branch] || packet.annualPillar.branch}`);
 
@@ -1926,7 +1926,7 @@ function renderInteractionGroup(title: string, list: Interaction[], status: stri
     const timing = it.timingActivationType ? ` · จังหวะ: ${TIMING_ACTIVATION_TH[it.timingActivationType]}` : "";
     const imagery = it.branchInteractionImagery ? ` · ภาพชุบโลหะ: คิดไวคม แต่ซ่อนแรงกดดัน` : "";
     const note = it.aiReadingHint ? ` · หมายเหตุ: ${it.aiReadingHint}` : "";
-    return `  - ${typeTh} ${pairTxt}${reactTxt}${tgTxt}${palaces}${topics}${impact}${transformed}${timing}${imagery}${behavior}${note} · อ่านตามคัมภีร์ ยังไม่ฟันธงดี-ร้าย`;
+    return `  - ${typeTh} ${pairTxt}${reactTxt}${tgTxt}${palaces}${topics}${impact}${transformed}${timing}${imagery}${behavior}${note} · ใช้เป็นหลักฐานให้ซินแสชั่งน้ำหนักและตัดสิน`;
   });
   return `${title} [${status}]:\n${items.join("\n")}`;
 }

@@ -55,7 +55,7 @@ ok("month pillars are Jieqi-based, not AI-calculated", firstMonth?.monthMethod =
 ok("month entries compare both day branch and luck branch", Array.isArray(firstMonth?.vsDayBranch) && Array.isArray(firstMonth?.vsLuckBranch));
 ok("annual/month entries include target impacts", Array.isArray(cd?.years?.[0]?.impacts) && Array.isArray(firstMonth?.impacts));
 ok("annual/month entries include hidden stems", (cd?.years?.[0]?.hiddenStems?.length || 0) > 0 && (firstMonth?.hiddenStems?.length || 0) > 0);
-ok("prompt tells AI not to calculate transit pillars", prompt.includes("AI ห้ามคำนวณเสาปี/เดือนเอง"));
+ok("prompt tells AI transit pillars are precomputed", prompt.includes("ไม่ต้องคำนวณเสาเอง"));
 ok("prompt includes Jieqi method note", prompt.includes("เดือนจรใช้節氣หลักจริง"));
 
 console.log(`\n=== ${pass}/${pass + fail} ${fail ? "❌ FAIL" : "✅ PASS"} ===`);
