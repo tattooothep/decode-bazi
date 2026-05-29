@@ -1077,7 +1077,7 @@ export function buildBingYao(
     const medicine = uniqElsBY([producerElementOf(dmElement), dmElement].filter((el) => el && (usefulGods.yong.includes(el) || usefulGods.xi.includes(el))));
     add(candidateBY("BY-11", "身弱有根: ตัวตนอ่อนแต่ยังมี印/比可救 ไม่ใช่從แท้", ji.length ? ji : uniqElsBY([ELEMENT_PRODUCES[dmElement], controllerElementOf(dmElement)]), medicine, dmElement,
       "raw engine label เป็น假從候選 แต่ธาตุช่วยรวมกลับมาทาง印/比劫 → 病คือแรง忌神/泄身ที่กดตัวตน ไม่ใช่ป้าย假從เอง; อ่าน病藥ประกอบ ไม่ปิดแบบ真從",
-      "ใช้เฉพาะกรณี假從候選ที่ usefulGods ชี้กลับมาหนุนตัวตน; raw 假從 เป็นป้ายเตือนเท่านั้น ห้ามยกเป็น格หลักหรือชื่อ病", ["DTS-BY-11", "HK-FALSE-FOLLOW-GUARD-001"]));
+      "gate: ใช้เมื่อ usefulGods ชี้กลับหนุนตัวตน · candidate ระดับต่ำเมื่อ engine ดิบ label=假從 · reason: 任氏假從 — 印/比劫ต้องช่วยตัวตนได้จริง", ["DTS-BY-11", "HK-FALSE-FOLLOW-GUARD-001"]));
   }
 
   // BY-08/BY-10/BY-09/BY-05: rule-table tied to 相神/成敗 reason first.
@@ -1087,10 +1087,10 @@ export function buildBingYao(
     if (shouldUseSealHeavyWealthMedicine(ctx, dmElement, rootedness, elementProfile, wealthEl)) {
       add(candidateBY("BY-08P", "印多用財: อิน/ไฟหนาในดวงร้อนแห้ง → 財/น้ำเป็นตัวยา", uniqElsBY([sealEl, controllerElementOf(dmElement)]), uniqElsBY([wealthEl, producerElementOf(wealthEl)]), dmElement,
         `เดือน${ctx.monthBranch || "-"}ร้อนแห้ง + 印(${ELEMENT_TH[sealEl || "unknown"]}) count=${sealEl ? elementProfile.counts[sealEl] : "-"} และ透干=${countVisibleElementBY(ctx.pillars, sealEl)} → 子平論印 印多逢財 + 調候 ${ctx.dmStem || "-"}日${ctx.monthBranch || "-"}月 ${wealthEl ? ELEMENT_TH[wealthEl] : "-"}不可缺`,
-        "HK resolver: ดวงร้อนแห้งและ印重เข้า pattern 印多用財; แยกจาก BY-08 財破印", ["ZPZQ-BY-08P", "ZPZQ-PRINT-001", "QTBJ-TIAOHOU-戊未"]));
+        "pattern: 印多用財 (印重+ดวงร้อนแห้ง) · candidate แยกจาก BY-08 財破印 · อ้าง 子平真詮論印 + 窮通寶鑑調候", ["ZPZQ-BY-08P", "ZPZQ-PRINT-001", "QTBJ-TIAOHOU-戊未"]));
     } else {
       add(candidateBY("BY-08", "財破印: ดาวทรัพย์ทำลายอิน/ตัวหนุน", [wealthEl], [dmElement], dmElement,
-        `相神=${xiangShen?.verdict || "-"}: ${xsReason}`, "ถ้าเป็น從財/化格 ห้ามใช้สูตรนี้ ต้องตาม勢ก่อน", ["ZPZQ-BY-08"]));
+        `相神=${xiangShen?.verdict || "-"}: ${xsReason}`, "gate: ใช้เมื่อไม่เข้าเงื่อนไข從財/化格 · reason: 任從化 ต้องตาม勢ก่อนใช้สูตร扶抑", ["ZPZQ-BY-08"]));
     }
   }
   if (/煞重身輕|殺重|財黨煞|財生殺/.test(xsReason) || (xiangShen?.geZh === "七殺格" && xiangShen.verdict === "破格")) {
@@ -2014,15 +2014,13 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
         const ROOT_HUA: Partial<Record<RootLabel, string>> = {
           partial_root: "รากบางส่วน", rooted: "มีราก", strong_root: "รากแข็ง",
         };
-        structureLine += `\n⚠️ 化氣格 = ต้องชั่งน้ำหนัก真化/假化/合而不化: ตัวตน(日干 ธาตุ${elTh}) ${ROOT_HUA[r.dmLabel]}` +
-          ` → ใช้รากตัวตน+เดือนเกิดช่วยตัดสินว่าแปรแท้หรือ合แต่ไม่化` +
-          ` · ตัวตนที่ยังมีราก (หรือ月令ไม่หนุนธาตุที่แปร) มักเป็น 合而不化 (合แต่ไม่แปร · ทั้งคู่ทำงานครึ่งเดียว) ไม่ใช่化แท้` +
-          ` · อ้างอิงค่ารากใน packet เท่านั้น (ห้ามคำนวณราก/ก้านใหม่)`;
+        structureLine += `\n⚠️ 化氣格 หลักฐาน 3 ทาง (真化/假化/合而不化): ตัวตน(日干 ธาตุ${elTh}) ${ROOT_HUA[r.dmLabel]}` +
+          ` · flip ตามรากตัวตน+เดือนเกิด · candidate=合而不化 ถ้ารากยังเหลือ (合แต่ไม่แปร · ทั้งคู่ทำงานครึ่งเดียว)` +
+          ` · confidence=กลาง · ตำราอ้าง 子平真詮論化 · 滴天髓·從化論`;
       } else if (r.dmLabel === "token_root") {
-        structureLine += `\n⚠️ 化氣格 = แปรแบบไม่มั่นคง (假化): ตัวตน(日干 ธาตุ${elTh}) รากบางมาก(微根)` +
-          ` → แปรตามคู่ได้แต่ไม่เต็มใจ ยังมีรากเล็กค้างอยู่ · จังหวะปี/วัยจรที่ดาวหนุนตัวตน(印·比劫 = ดาวครู/ดาวเพื่อนช่วย)มาเสริมรากเดิมให้ฟื้น → มัก "เด้งกลับเป็นตัวเดิม" (ชีวิตพลิก) · ส่วนปีที่沖去/克รากเดิม กลับยิ่งเข้าทางแปร` +
-          ` · ใช้真化/假化 ตามคัมภีร์從化ประกอบ แล้วตัดสินน้ำหนักให้ชัดว่าช่วงไหนแปร ช่วงไหนเด้งกลับ` +
-          ` · อ้างอิงค่ารากใน packet เท่านั้น (ห้ามคำนวณราก/ก้านใหม่)`;
+        structureLine += `\n⚠️ 化氣格 หลักฐาน假化 (แปรแบบไม่มั่นคง): ตัวตน(日干 ธาตุ${elTh}) รากบางมาก(微根)` +
+          ` · pattern: แปรตามคู่ได้แต่ไม่เต็มใจ ยังมีรากเล็กค้างอยู่ · จังหวะปี/วัยจรที่ดาวหนุนตัวตน(印·比劫)มาเสริมราก → มัก "เด้งกลับเป็นตัวเดิม" (ชีวิตพลิก) · ส่วนปีที่沖去/克รากเดิม กลับยิ่งเข้าทางแปร` +
+          ` · confidence=กลาง-ต่ำ · ตำราอ้าง 子平真詮·化氣 · 滴天髓·從化論`;
       }
       /* no_root → 真化ได้จริง · ไม่ flag */
     }
@@ -2174,7 +2172,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   if (packet.chengBaiNow && packet.chengBaiNow.verdict !== "UNMAPPED") {
     const c = packet.chengBaiNow;
     const VTH2: Record<string, string> = { "成": "วัยจรช่วงนี้หนุนโครงดวง (成)", "破(เบา)": "วัยจรช่วงนี้ขัดโครงดวง·แต่日主旺พอทน (破·เบา)", "破(หนัก)": "วัยจรช่วงนี้ขัดโครงดวง·日主อ่อนรับเต็ม (破·หนัก)", "平": "วัยจรช่วงนี้เป็นกลางต่อโครงดวง (平)" };
-    lines.push(`行運成敗 (จังหวะวัยจรกับโครงดวง${c.geZh}·相神${c.subLabel}): ${VTH2[c.verdict] || c.verdict} — ${c.reason}${c.annual ? ` · ${c.annual}` : ""} · อ้างตัวบทจริง [${c.ruleId}] · ใช้ตัดสินน้ำหนักช่วงวัยจรได้ชัด: หนุนให้เดินเกม/ขัดให้ปรับเกม แล้วโยงเข้าชีวิตจริงตามคำถาม`);
+    lines.push(`行運成敗 (จังหวะวัยจรกับโครงดวง${c.geZh}·相神${c.subLabel}): ${VTH2[c.verdict] || c.verdict} — ${c.reason}${c.annual ? ` · ${c.annual}` : ""} · ตำราอ้าง [${c.ruleId}] · หลักฐานน้ำหนักช่วงวัยจร`);
   }
   /* 病藥 v1 (28 พ.ค. · 子平真詮/滴天髓 · จุดเสียเชิงโครงสร้าง + ตัวยาแก้ · ไม่ใช่โรคสุขภาพ) */
   if (packet.bingYao) {
@@ -2253,8 +2251,9 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       const prevHasRegulator = !!regulator && !!prev && (prevStemEl === regulator || prevBranchEl === regulator);
       if (regulator && curHasRegulator && !prevHasRegulator) {
         lines.push(
-          `${subjectPrefix}大運氣候轉折: อายุ ${cur.ageStart} (ปี ${cur.yearStart}) — ` +
-          `วัยจรปัจจุบันมี${elementTh(regulator)}${bridge ? `+${elementTh(bridge)}` : ""}; วัยจรก่อนหน้าไม่มี`
+          `${subjectPrefix}大運氣候轉折 candidate: อายุ ${cur.ageStart} (ปี ${cur.yearStart}) · ` +
+          `gate=มี調候用神 ${elementTh(regulator)}${bridge ? `+${elementTh(bridge)}` : ""} เข้าวัยจร · ` +
+          `flip reason=วัยจรก่อนหน้าไม่มี調候用神 → ฤดูดวงเปลี่ยน · confidence=สูง · ตำราอ้าง 窮通寶鑑·調候`
         );
       }
     }
