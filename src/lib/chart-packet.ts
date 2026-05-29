@@ -994,6 +994,9 @@ function godsForElementsBY(dmElement: ElementEN, els: ElementEN[]): string[] {
 function isFalseFollowCandidateLabel(label: string): boolean {
   return /^假從/.test((label || "").trim());
 }
+function isFalseFollowAuditConflict(a: ChartPacket["strictGeJuAudit"] | undefined): a is NonNullable<ChartPacket["strictGeJuAudit"]> {
+  return !!a && isFalseFollowCandidateLabel(a.currentLabel) && !a.matchesCurrent && !!a.strictLabel;
+}
 function isConfirmedSpecialStructureForProtocol(label: string): boolean {
   const l = (label || "").trim();
   if (/^假(從|化)/.test(l)) return false; // 假從/假化 ยังต้องอ่านราก+病藥 ไม่ปิดแบบ真從/真化
@@ -1045,9 +1048,9 @@ export function buildBingYao(
   // 假從 guard: ถ้า usefulGods กลับไปทาง印/比劫 แปลว่าไม่ควรปิด病藥แบบ真從
   if (isFalseFollowCandidateLabel(structureLabel) && hasSupportDirection(dmElement, usefulGods)) {
     const medicine = uniqElsBY([producerElementOf(dmElement), dmElement].filter((el) => el && (usefulGods.yong.includes(el) || usefulGods.xi.includes(el))));
-    add(candidateBY("BY-11", "假從不真: ป้ายตามเทียมแต่ยังต้องใช้印/比劫เป็นยา", ji.length ? ji : uniqElsBY([ELEMENT_PRODUCES[dmElement], controllerElementOf(dmElement)]), medicine, dmElement,
-      "engine label เป็น假從 แต่ธาตุช่วยรวมกลับมาทาง印/比劫 → อ่าน病藥ประกอบ ไม่ปิดแบบ真從",
-      "ใช้เฉพาะกรณี假從候選ที่ usefulGods ชี้กลับมาหนุนตัวตน; ไม่ใช่การลบ raw engine label", ["DTS-BY-11", "HK-FALSE-FOLLOW-GUARD-001"]));
+    add(candidateBY("BY-11", "身弱有根: ตัวตนอ่อนแต่ยังมี印/比可救 ไม่ใช่從แท้", ji.length ? ji : uniqElsBY([ELEMENT_PRODUCES[dmElement], controllerElementOf(dmElement)]), medicine, dmElement,
+      "raw engine label เป็น假從候選 แต่ธาตุช่วยรวมกลับมาทาง印/比劫 → 病คือแรง忌神/泄身ที่กดตัวตน ไม่ใช่ป้าย假從เอง; อ่าน病藥ประกอบ ไม่ปิดแบบ真從",
+      "ใช้เฉพาะกรณี假從候選ที่ usefulGods ชี้กลับมาหนุนตัวตน; raw 假從 เป็นป้ายเตือนเท่านั้น ห้ามยกเป็น格หลักหรือชื่อ病", ["DTS-BY-11", "HK-FALSE-FOLLOW-GUARD-001"]));
   }
 
   // BY-08/BY-10/BY-09/BY-05: rule-table tied to 相神/成敗 reason first.
@@ -1942,10 +1945,17 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   if (packet.meta.readingOrder) lines.push(packet.meta.readingOrder);
 
   /* โครงดวง + ดวงพิเศษ */
-  let structureLine = `โครงดวง: ${packet.structure.label}`;
+  const falseFollowAudit = isFalseFollowAuditConflict(packet.strictGeJuAudit) ? packet.strictGeJuAudit : null;
+  let structureLine = falseFollowAudit
+    ? `โครงดวงหลักสำหรับ AI: ${falseFollowAudit.strictLabel} (strict月令) · raw engine候選=${packet.structure.label} (ป้ายเตือนเท่านั้น · ห้ามใช้เป็น格หลักจนกว่าจะพิสูจน์從แท้)`
+    : `โครงดวง: ${packet.structure.label}`;
   if (packet.structure.special) {
-    structureLine += ` · ดวงพิเศษ ${packet.structure.special.typeZh}` +
-      (packet.structure.special.friendly.length ? ` · ธาตุเกื้อ ${packet.structure.special.friendly.map((e) => elementTh(e)).join("·")}` : "");
+    if (falseFollowAudit && isFalseFollowCandidateLabel(packet.structure.special.typeZh || packet.structure.label)) {
+      structureLine += ` · ดวงพิเศษ候選 ${packet.structure.special.typeZh} (ไม่ใช่ข้อสรุปหลัก)`;
+    } else {
+      structureLine += ` · ดวงพิเศษ ${packet.structure.special.typeZh}` +
+        (packet.structure.special.friendly.length ? ` · ธาตุเกื้อ ${packet.structure.special.friendly.map((e) => elementTh(e)).join("·")}` : "");
+    }
   }
   if (packet.structure.confidence) structureLine += ` · ความมั่นใจโครง ${packet.structure.confidence}`;
   /* 🔒 化氣格 guard (27 พ.ค. · option A · 5-agent · ระดับ1+2) — engine (wrapper-3 findTransformation) declare 化X格
@@ -1985,15 +1995,19 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     const a = packet.strictGeJuAudit;
     const verdict = a.matchesCurrent ? "ตรงกับ engine label" : "ต่างจาก engine label";
     const stemTxt = a.selectedStem ? `${a.selectedStem}${a.tenGod ? `/${a.tenGod}` : ""}` : "-";
+    const auditHead = falseFollowAudit
+      ? `raw engine候選=${a.currentLabel} · strict月令(อ่านเป็น格หลัก)=${a.strictLabel || "-"}`
+      : `engine=${a.currentLabel} · strict月令=${a.strictLabel || "-"}`;
     lines.push(
       `格局 strict audit (${a.tag} · audit-only ไม่ใช่ข้อจำกัดคำตอบ): ` +
-      `engine=${a.currentLabel} · strict月令=${a.strictLabel || "-"} · 選用=${stemTxt} · ` +
+      `${auditHead} · 選用=${stemTxt} · ` +
       `${verdict} · ${a.noteTh} · อ้างหลัก ${a.canonicalChinese}`
     );
-    if (isFalseFollowCandidateLabel(a.currentLabel) && !a.matchesCurrent) {
+    if (falseFollowAudit) {
       lines.push(
         `從格ตรวจทาน (HK_FALSE_FOLLOW_GUARD_V1 · ไทยนำจีนตาม · เพิ่มข้อมูล ไม่จำกัดลีลาซินแส): ` +
-        `raw engine=${a.currentLabel} ให้อ่านเป็น候選/ป้ายเตือน ไม่ใช่格หลักทันที · ` +
+        `ให้ใช้ strict月令=${a.strictLabel || "-"} เป็นชื่อ格หลักในคำตอบก่อน · raw engine=${a.currentLabel} ให้อ่านเป็น候選/ป้ายเตือนเท่านั้น · ` +
+        `ห้ามเรียก raw ${a.currentLabel} เป็นโรคหลักของ病藥หรือข้อสรุปสุดท้าย · ` +
         `เมื่อ strict月令=${a.strictLabel || "-"} และธาตุช่วยรวมกลับไปทาง印/比劫 ให้เปิดอ่าน扶抑+病藥ตามปกติ · ` +
         `หลัก任氏假從: 局中雖有劫印、亦自顧不暇 ต้องพิสูจน์ว่า印/比ช่วยตัวตนไม่ได้จริงก่อน`
       );
@@ -2027,9 +2041,12 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     const xs = yp.xiangShen.geZh
       ? `${yp.xiangShen.geZh}/${yp.xiangShen.verdict || "-"}${yp.xiangShen.subLabel ? `/${yp.xiangShen.subLabel}` : ""}`
       : "-";
+    const geJuForPrompt = falseFollowAudit
+      ? `${falseFollowAudit.strictLabel} (strict月令; raw候選=${yp.structure.geJuLabel})`
+      : yp.structure.geJuLabel;
     lines.push(
       `用神分層 (${yp.tag} · ไทยนำจีนตาม · ใช้กันคำเรียกผิดตำรา ไม่ใช่ข้อจำกัดคำตอบ): ` +
-      `格局/月令用神=${yp.structure.geJuLabel} · ` +
+      `格局/月令用神=${geJuForPrompt} · ` +
       `調候用神=${strictTiao} · climate補助=${tiao} · 扶抑用神=${fuyi} · 病藥=${by} · 相神=${xs} · ` +
       `สรุปรวม engine=${fmtEls(yp.finalCombined.yong)} / 喜=${fmtEls(yp.finalCombined.xi)} / 忌=${fmtEls(yp.finalCombined.ji)} · ` +
       `${yp.finalCombined.noteTh} · อ้างหลัก ${yp.structure.canonicalChinese}`
