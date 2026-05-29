@@ -18,6 +18,7 @@ import { buildConceptionPalace, buildLifePalace, buildBodyPalace, buildSiLing, b
 import { getDaymasterProfile } from "./daymaster-profile";
 import { buildHehuaVerdicts, type HehuaVerdict } from "./bazi-hehua-resolver";
 import { buildMukuStates, buildMukuTransitStates, type MukuState, type MukuTransitInput, type MukuTransitState } from "./bazi-muku-state";
+import { auditStrictGeJuFromMonth, type StrictGeJuAudit } from "./bazi-strict-geju-audit";
 
 type Calc = Awaited<ReturnType<typeof calcBazi>>;
 type Ext = ReturnType<typeof buildChartExtensions>;
@@ -127,6 +128,23 @@ export type ChartPacket = {
     /** ระดับความมั่นใจของโครงดวง (label จาก wrapper ge-ju · ไม่ใช่ % ตัวเลข) */
     confidence?: string | null;
   };
+  /** HK_STRICT_GEJU_AUDIT_V1
+   * audit-only: เทียบ格局เดิมกับ strict 月令取用 ตาม子平真詮 · ไม่แทน structure.label เดิม */
+  strictGeJuAudit?: {
+    tag: "HK_STRICT_GEJU_AUDIT_V1";
+    currentLabel: string;
+    strictLabel: string | null;
+    selectedStem: string | null;
+    selectedSource: StrictGeJuAudit["selectedSource"];
+    tenGod: string | null;
+    confidence: StrictGeJuAudit["confidence"];
+    matchesCurrent: boolean;
+    reasonCodes: string[];
+    sourceRuleIds: string[];
+    thaiSummary: string;
+    canonicalChinese: string;
+    noteTh: string;
+  };
   /** 真太陽時 — เวลาจริงหลังแก้ลองจิจูด+สมการเวลา (จาก calc.tst) */
   trueSolarTime?: { appliedTimeStr: string; totalShiftMin: number; dayShift: number } | null;
   /** 起運 อายุเริ่มวัยจร 大運 (จาก ext.luck_pillars[0].age_start · computeStartAge) */
@@ -208,6 +226,56 @@ export type ChartPacket = {
       guard: string;
     }>;
   } | null;
+  /** HK_YONGSHEN_PROTOCOL_SPLIT_V1
+   * ใช้แก้ชื่อให้ตรงตำรา: 子平真詮 用神(月令/格局) ≠ ธาตุช่วยรวมของ engine
+   * additive-only · ถอดออกได้ทั้งก้อนโดยค้น marker นี้ · ไม่เปลี่ยน usefulGods เดิม */
+  yongShenProtocols?: {
+    tag: "HK_YONGSHEN_PROTOCOL_SPLIT_V1";
+    ctextPrinciple: string;
+    structure: {
+      protocol: "格局/月令用神";
+      geJuLabel: string;
+      basis: string | null;
+      noteTh: string;
+      sourceRuleId: "ZPZQ-GJ-001";
+      canonicalChinese: "八字用神，專求月令";
+    };
+    xiangShen: {
+      protocol: "相神";
+      geZh: string | null;
+      verdict: string | null;
+      subLabel: string | null;
+      noteTh: string;
+    };
+    tiaoHou: {
+      protocol: "調候用神";
+      climate: string | null;
+      regulator: ElementEN | null;
+      bridge: ElementEN | null;
+      noteTh: string;
+    };
+    fuyi: {
+      protocol: "扶抑用神";
+      dmRootLabel: RootLabel | null;
+      mode: "扶" | "抑/泄" | "從勢/特殊格優先" | "unknown";
+      candidateElements: ElementEN[];
+      noteTh: string;
+    };
+    bingYao: {
+      protocol: "病藥";
+      status: "ok" | "not_applicable" | "needs_review" | null;
+      primaryId: string | null;
+      medicineElements: ElementEN[];
+      noteTh: string;
+    };
+    finalCombined: {
+      protocol: "engine_final_combined";
+      yong: ElementEN[];
+      xi: ElementEN[];
+      ji: ElementEN[];
+      noteTh: string;
+    };
+  };
   usefulGods: {
     /** rank1 useful element */
     yong: ElementEN[];
@@ -997,6 +1065,125 @@ export function buildBingYao(
   return { status: primary ? "ok" : "needs_review", primary, candidates };
 }
 
+const TIAOHOU_PROTOCOL: Record<string, { regulator: ElementEN; bridge: ElementEN; th: string }> = {
+  cold:     { regulator: "fire",  bridge: "wood",  th: "หนาว/เย็น → ใช้ไฟอุ่น ไม้ช่วยเลี้ยงไฟ" },
+  damp:     { regulator: "fire",  bridge: "wood",  th: "ชื้น/หนัก → ใช้ไฟตาก ไม้ช่วยเปิดทางไฟ" },
+  scorched: { regulator: "water", bridge: "metal", th: "ร้อนจัด → ใช้น้ำลดร้อน ทองช่วยตั้งน้ำ" },
+  dry:      { regulator: "water", bridge: "metal", th: "แห้ง → ใช้น้ำหล่อ ทองช่วยเก็บความชื้น" },
+};
+
+function isSpecialStructureForProtocol(label: string): boolean {
+  return /^(假)?(從|化)/.test(label) || /曲直|炎上|稼穡|從革|潤下|魁罡/.test(label);
+}
+
+function buildYongShenProtocols(
+  structureLabel: string,
+  structureBasis: string | null | undefined,
+  climate: string | null | undefined,
+  dmElement: ElementEN | "unknown",
+  rootedness: ChartPacket["rootedness"] | null,
+  usefulGods: ChartPacket["usefulGods"],
+  xiangShen: ChartPacket["xiangShen"] | null,
+  bingYao: ChartPacket["bingYao"] | null,
+): NonNullable<ChartPacket["yongShenProtocols"]> {
+  const climateRule = climate ? TIAOHOU_PROTOCOL[climate] : null;
+  let mode: NonNullable<ChartPacket["yongShenProtocols"]>["fuyi"]["mode"] = "unknown";
+  let fuyiEls: ElementEN[] = [];
+  if (dmElement !== "unknown") {
+    if (isSpecialStructureForProtocol(structureLabel)) {
+      mode = "從勢/特殊格優先";
+      fuyiEls = [];
+    } else if (!rootedness || ["no_root", "token_root", "partial_root"].includes(rootedness.dmLabel)) {
+      mode = "扶";
+      fuyiEls = uniqElsBY([producerElementOf(dmElement), dmElement]);
+    } else {
+      mode = "抑/泄";
+      fuyiEls = uniqElsBY([ELEMENT_PRODUCES[dmElement], controllerElementOf(dmElement)]);
+    }
+  }
+  const byPrimary = bingYao?.primary || null;
+  return {
+    tag: "HK_YONGSHEN_PROTOCOL_SPLIT_V1",
+    ctextPrinciple: "子平真詮: 用神先看月令/格局；調候、扶抑、病藥、相神ต้องแยกชั้น ไม่เรียกปนกัน",
+    structure: {
+      protocol: "格局/月令用神",
+      geJuLabel: structureLabel || "ปกติ",
+      basis: structureBasis || null,
+      noteTh: "ชื่อ格และ用神ชั้นโครงสร้างจาก月令/格局 ไม่ใช่ธาตุบาลานซ์รวมของ engine",
+      sourceRuleId: "ZPZQ-GJ-001",
+      canonicalChinese: "八字用神，專求月令",
+    },
+    xiangShen: {
+      protocol: "相神",
+      geZh: xiangShen?.geZh || null,
+      verdict: xiangShen?.verdict || null,
+      subLabel: xiangShen?.subLabel || null,
+      noteTh: "相神คือตัวช่วยให้格局ใช้งานได้ ไม่ใช่調候หรือ扶抑",
+    },
+    tiaoHou: {
+      protocol: "調候用神",
+      climate: climate || null,
+      regulator: climateRule?.regulator || null,
+      bridge: climateRule?.bridge || null,
+      noteTh: climateRule ? climateRule.th : "ไม่พบ climate พิเศษจาก engine",
+    },
+    fuyi: {
+      protocol: "扶抑用神",
+      dmRootLabel: rootedness?.dmLabel || null,
+      mode,
+      candidateElements: fuyiEls,
+      noteTh: mode === "扶"
+        ? "ตัวตนอ่อน/รากบาง → ชั้น扶抑อ่านแนวเติมแม่/พวกเดียวกัน"
+        : mode === "抑/泄"
+          ? "ตัวตนมีราก → ชั้น扶抑อ่านแนวระบายหรือควบให้สมดุล"
+          : mode === "從勢/特殊格優先"
+            ? "ดวงพิเศษ/從化/專旺 → อ่านตาม勢ก่อน ไม่ยัดสูตร扶抑ปกติทับ"
+            : "ข้อมูลรากไม่พอสำหรับชั้น扶抑",
+    },
+    bingYao: {
+      protocol: "病藥",
+      status: bingYao?.status || null,
+      primaryId: byPrimary?.id || null,
+      medicineElements: byPrimary?.medicineElements || [],
+      noteTh: byPrimary
+        ? "病藥คือจุดเสียกับตัวยาเชิงโครงสร้าง แยกจากชื่อ格และ調候"
+        : bingYao?.status === "not_applicable"
+          ? "ดวงพิเศษไม่ใช้病藥แบบ扶抑ตรงๆ"
+          : "engine ยังไม่พบ病หลักที่ชัด",
+    },
+    finalCombined: {
+      protocol: "engine_final_combined",
+      yong: usefulGods.yong,
+      xi: usefulGods.xi,
+      ji: usefulGods.ji,
+      noteTh: "นี่คือธาตุช่วย/ระวังที่ engine สรุปรวมแล้ว ไม่ใช่ 子平真詮 用神(月令) อย่างเดียว",
+    },
+  };
+}
+
+function buildStrictGeJuAuditPacket(
+  pillars: Record<PillarKey, { stem: string; branch: string } | null>,
+  currentLabel: string,
+): NonNullable<ChartPacket["strictGeJuAudit"]> {
+  const audit = auditStrictGeJuFromMonth(pillars);
+  const strictLabel = audit.structure;
+  return {
+    tag: "HK_STRICT_GEJU_AUDIT_V1",
+    currentLabel: currentLabel || "ปกติ",
+    strictLabel,
+    selectedStem: audit.selectedStem,
+    selectedSource: audit.selectedSource,
+    tenGod: audit.tenGod,
+    confidence: audit.confidence,
+    matchesCurrent: !!strictLabel && currentLabel === strictLabel,
+    reasonCodes: audit.reasonCodes,
+    sourceRuleIds: audit.sourceRuleIds,
+    thaiSummary: audit.thaiSummary,
+    canonicalChinese: audit.canonicalChinese,
+    noteTh: "audit-only: ใช้แยกชื่อ格ตาม月令 strict ออกจากพลังที่ engine อ่านใช้งานจริง ไม่ใช่การเปลี่ยนผลดวง",
+  };
+}
+
 export function buildStructuredChartPacket(
   calc: Calc,
   ext: Ext,
@@ -1511,6 +1698,10 @@ export function buildStructuredChartPacket(
         : null,
       confidence: calc.geJu?.confidence ?? null,
     },
+    strictGeJuAudit: buildStrictGeJuAuditPacket(
+      calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
+      calc.geJu?.structure || "ปกติ",
+    ),
     /* กลุ่ม ก (เชื่อมท่อ · 26 พ.ค.) — ของที่ engine คำนวณแล้วแต่ packet ไม่เคย expose
        หมายเหตุ: 命宮 ถอดออกชั่วคราว — สูตร buildLifePalace anchor (子=0) ต่างจากตำราคลาสสิก (寅=1)
        benchmark 正月子時: โค้ด→子 · ตำรา→卯 · รอ verify สำนักกับซินแสก่อนเปิด (กันอ่านเรือนผิด) */
@@ -1601,6 +1792,16 @@ export function buildStructuredChartPacket(
     packet.xiangShen ?? null,
     packet.chengBaiNow ?? null,
     packet.elementProfile,
+  );
+  packet.yongShenProtocols = buildYongShenProtocols(
+    packet.structure.label,
+    calc.geJu?.basis,
+    calc.climate,
+    dmElement,
+    packet.rootedness ?? null,
+    packet.usefulGods,
+    packet.xiangShen ?? null,
+    packet.bingYao ?? null,
   );
   return packet;
 }
@@ -1705,6 +1906,17 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     }
   }
   lines.push(structureLine);
+  /* HK_STRICT_GEJU_AUDIT_V1 — audit-only แยกชื่อ格 strict จาก practical engine label */
+  if (packet.strictGeJuAudit?.tag === "HK_STRICT_GEJU_AUDIT_V1") {
+    const a = packet.strictGeJuAudit;
+    const verdict = a.matchesCurrent ? "ตรงกับ engine label" : "ต่างจาก engine label";
+    const stemTxt = a.selectedStem ? `${a.selectedStem}${a.tenGod ? `/${a.tenGod}` : ""}` : "-";
+    lines.push(
+      `格局 strict audit (${a.tag} · audit-only ไม่ใช่ข้อจำกัดคำตอบ): ` +
+      `engine=${a.currentLabel} · strict月令=${a.strictLabel || "-"} · 選用=${stemTxt} · ` +
+      `${verdict} · ${a.noteTh} · อ้างหลัก ${a.canonicalChinese}`
+    );
+  }
 
   /* ธาตุช่วย (engine-derived · เป็นฐานให้ซินแสตัดสิน) */
   const fmtEls = (arr: string[]) => arr.length ? arr.map((e) => elementTh(e)).join(" · ") : "-";
@@ -1714,6 +1926,27 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     `ธาตุช่วยรอง=${fmtEls(packet.usefulGods.xi)} · ` +
     `ธาตุที่ระบบจัดเป็นธาตุระวัง=${fmtEls(packet.usefulGods.ji)}`
   );
+  /* HK_YONGSHEN_PROTOCOL_SPLIT_V1 — แยกชื่อ用神ตามตำรา ไม่เปลี่ยน logic เดิม */
+  if (packet.yongShenProtocols?.tag === "HK_YONGSHEN_PROTOCOL_SPLIT_V1") {
+    const yp = packet.yongShenProtocols;
+    const tiao = yp.tiaoHou.regulator
+      ? `${fmtEls([yp.tiaoHou.regulator])}${yp.tiaoHou.bridge ? ` · สะพาน=${fmtEls([yp.tiaoHou.bridge])}` : ""} (${yp.tiaoHou.climate || "-"})`
+      : "-";
+    const fuyi = `${yp.fuyi.mode}${yp.fuyi.candidateElements.length ? `=${fmtEls(yp.fuyi.candidateElements)}` : ""}`;
+    const by = yp.bingYao.primaryId
+      ? `${yp.bingYao.primaryId} · 藥=${fmtEls(yp.bingYao.medicineElements)}`
+      : (yp.bingYao.status || "-");
+    const xs = yp.xiangShen.geZh
+      ? `${yp.xiangShen.geZh}/${yp.xiangShen.verdict || "-"}${yp.xiangShen.subLabel ? `/${yp.xiangShen.subLabel}` : ""}`
+      : "-";
+    lines.push(
+      `用神分層 (${yp.tag} · ไทยนำจีนตาม · ใช้กันคำเรียกผิดตำรา ไม่ใช่ข้อจำกัดคำตอบ): ` +
+      `格局/月令用神=${yp.structure.geJuLabel} · ` +
+      `調候用神=${tiao} · 扶抑用神=${fuyi} · 病藥=${by} · 相神=${xs} · ` +
+      `สรุปรวม engine=${fmtEls(yp.finalCombined.yong)} / 喜=${fmtEls(yp.finalCombined.xi)} / 忌=${fmtEls(yp.finalCombined.ji)} · ` +
+      `${yp.finalCombined.noteTh} · อ้างหลัก ${yp.structure.canonicalChinese}`
+    );
+  }
 
   /* ธาตุรวม (level key เท่านั้น · ไม่มี %) */
   const c = packet.elementProfile.counts;
