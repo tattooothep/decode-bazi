@@ -100,6 +100,8 @@ ok("Paa strict audit catches 七殺格 under raw 假從兒格", paaPacket.strict
 ok("false-follow guard reaches prompt", paaPrompt.includes("HK_FALSE_FOLLOW_GUARD_V1") && paaPrompt.includes("候選/ป้ายเตือน"));
 ok("false-follow does not close 病藥", paaPacket.bingYao?.status === "ok" && paaPacket.bingYao?.primary?.id === "BY-11");
 ok("false-follow uses 扶抑 instead of 從勢 gate", paaPacket.yongShenProtocols?.fuyi.mode === "扶");
+ok("Paa strict 調候 separates 壬戌月 as 甲/丙", paaPacket.yongShenProtocols?.tiaoHou.strict?.primaryStems?.[0] === "甲" && paaPacket.yongShenProtocols?.tiaoHou.strict?.secondaryStems?.[0] === "丙");
+ok("prompt renders strict 調候 before climate補助", paaPrompt.includes("調候用神=strict 壬日戌月 主=甲/ไม้ 次=丙/ไฟ") && paaPrompt.includes("climate補助="));
 
 console.log(`\n=== ${pass}/${pass + fail} ${fail ? "❌ FAIL" : "✅ PASS"} ===`);
 process.exit(fail ? 1 : 0);

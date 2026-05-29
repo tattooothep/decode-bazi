@@ -252,6 +252,19 @@ export type ChartPacket = {
       climate: string | null;
       regulator: ElementEN | null;
       bridge: ElementEN | null;
+      strict: {
+        dmStem: string;
+        monthBranch: string;
+        primaryStems: string[];
+        secondaryStems: string[];
+        tertiaryStems: string[];
+        primaryElements: ElementEN[];
+        secondaryElements: ElementEN[];
+        tertiaryElements: ElementEN[];
+        rationaleZh: string;
+        sourceRuleId: "QTBJ-TIAOHOU-120";
+        noteTh: string;
+      } | null;
       noteTh: string;
     };
     fuyi: {
@@ -1095,6 +1108,40 @@ const TIAOHOU_PROTOCOL: Record<string, { regulator: ElementEN; bridge: ElementEN
   dry:      { regulator: "water", bridge: "metal", th: "แห้ง → ใช้น้ำหล่อ ทองช่วยเก็บความชื้น" },
 };
 
+type StrictTiaoHouRule = {
+  primary: string[];
+  secondary: string[];
+  tertiary: string[];
+  rationaleZh: string;
+};
+const STRICT_TIAOHOU_TABLE: Record<string, StrictTiaoHouRule> = {
+  "壬|戌": { primary: ["甲"], secondary: ["丙"], tertiary: [], rationaleZh: "以甲制戌中戊土，丙火為佐" },
+};
+function stemsToElements(stems: string[]): ElementEN[] {
+  return uniqElsBY(stems.map((s) => STEM_ELEMENT[s]).filter(Boolean));
+}
+function buildStrictTiaoHouProtocol(
+  dmStem: string | undefined,
+  monthBranch: string | undefined,
+): NonNullable<NonNullable<ChartPacket["yongShenProtocols"]>["tiaoHou"]["strict"]> | null {
+  if (!dmStem || !monthBranch) return null;
+  const rule = STRICT_TIAOHOU_TABLE[`${dmStem}|${monthBranch}`];
+  if (!rule) return null;
+  return {
+    dmStem,
+    monthBranch,
+    primaryStems: rule.primary,
+    secondaryStems: rule.secondary,
+    tertiaryStems: rule.tertiary,
+    primaryElements: stemsToElements(rule.primary),
+    secondaryElements: stemsToElements(rule.secondary),
+    tertiaryElements: stemsToElements(rule.tertiary),
+    rationaleZh: rule.rationaleZh,
+    sourceRuleId: "QTBJ-TIAOHOU-120",
+    noteTh: `strict調候 ${dmStem}日${monthBranch}月: 主=${rule.primary.join("/") || "-"} · 次=${rule.secondary.join("/") || "-"} · 再=${rule.tertiary.join("/") || "-"} — ${rule.rationaleZh}`,
+  };
+}
+
 function buildYongShenProtocols(
   structureLabel: string,
   structureBasis: string | null | undefined,
@@ -1104,8 +1151,11 @@ function buildYongShenProtocols(
   usefulGods: ChartPacket["usefulGods"],
   xiangShen: ChartPacket["xiangShen"] | null,
   bingYao: ChartPacket["bingYao"] | null,
+  dmStem?: string,
+  monthBranch?: string,
 ): NonNullable<ChartPacket["yongShenProtocols"]> {
   const climateRule = climate ? TIAOHOU_PROTOCOL[climate] : null;
+  const strictTiaoHou = buildStrictTiaoHouProtocol(dmStem, monthBranch);
   let mode: NonNullable<ChartPacket["yongShenProtocols"]>["fuyi"]["mode"] = "unknown";
   let fuyiEls: ElementEN[] = [];
   if (dmElement !== "unknown") {
@@ -1144,7 +1194,10 @@ function buildYongShenProtocols(
       climate: climate || null,
       regulator: climateRule?.regulator || null,
       bridge: climateRule?.bridge || null,
-      noteTh: climateRule ? climateRule.th : "ไม่พบ climate พิเศษจาก engine",
+      strict: strictTiaoHou,
+      noteTh: strictTiaoHou
+        ? `${strictTiaoHou.noteTh} · climate engine=${climateRule ? climateRule.th : "ไม่พบ climate พิเศษ"}`
+        : climateRule ? climateRule.th : "ไม่พบ climate พิเศษจาก engine",
     },
     fuyi: {
       protocol: "扶抑用神",
@@ -1821,6 +1874,8 @@ export function buildStructuredChartPacket(
     packet.usefulGods,
     packet.xiangShen ?? null,
     packet.bingYao ?? null,
+    dm,
+    calc.pillars.month?.branch,
   );
   return packet;
 }
@@ -1956,8 +2011,14 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* HK_YONGSHEN_PROTOCOL_SPLIT_V1 — แยกชื่อ用神ตามตำรา ไม่เปลี่ยน logic เดิม */
   if (packet.yongShenProtocols?.tag === "HK_YONGSHEN_PROTOCOL_SPLIT_V1") {
     const yp = packet.yongShenProtocols;
+    const fmtStems = (stems: string[]) => stems.length
+      ? stems.map((s) => `${s}/${elementTh(STEM_ELEMENT[s] || "unknown")}`).join("/")
+      : "-";
     const tiao = yp.tiaoHou.regulator
       ? `${fmtEls([yp.tiaoHou.regulator])}${yp.tiaoHou.bridge ? ` · สะพาน=${fmtEls([yp.tiaoHou.bridge])}` : ""} (${yp.tiaoHou.climate || "-"})`
+      : "-";
+    const strictTiao = yp.tiaoHou.strict
+      ? `strict ${yp.tiaoHou.strict.dmStem}日${yp.tiaoHou.strict.monthBranch}月 主=${fmtStems(yp.tiaoHou.strict.primaryStems)} 次=${fmtStems(yp.tiaoHou.strict.secondaryStems)} 再=${fmtStems(yp.tiaoHou.strict.tertiaryStems)} · ${yp.tiaoHou.strict.rationaleZh}`
       : "-";
     const fuyi = `${yp.fuyi.mode}${yp.fuyi.candidateElements.length ? `=${fmtEls(yp.fuyi.candidateElements)}` : ""}`;
     const by = yp.bingYao.primaryId
@@ -1969,7 +2030,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     lines.push(
       `用神分層 (${yp.tag} · ไทยนำจีนตาม · ใช้กันคำเรียกผิดตำรา ไม่ใช่ข้อจำกัดคำตอบ): ` +
       `格局/月令用神=${yp.structure.geJuLabel} · ` +
-      `調候用神=${tiao} · 扶抑用神=${fuyi} · 病藥=${by} · 相神=${xs} · ` +
+      `調候用神=${strictTiao} · climate補助=${tiao} · 扶抑用神=${fuyi} · 病藥=${by} · 相神=${xs} · ` +
       `สรุปรวม engine=${fmtEls(yp.finalCombined.yong)} / 喜=${fmtEls(yp.finalCombined.xi)} / 忌=${fmtEls(yp.finalCombined.ji)} · ` +
       `${yp.finalCombined.noteTh} · อ้างหลัก ${yp.structure.canonicalChinese}`
     );
