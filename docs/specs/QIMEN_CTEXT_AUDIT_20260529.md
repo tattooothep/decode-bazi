@@ -1,6 +1,6 @@
 # QiMen ctext Audit — 2026-05-29
 
-Status: 值符/值使 metadata resolver is live on `qimen-api` (verified 2026-05-29 16:50 ICT). No QiMen prompt change in this pass.
+Status: 值符/值使 metadata resolver is live on `qimen-api` and wired into QiMen Sifu prompt (verified 2026-05-29 17:25 ICT).
 
 Source of truth for this pass:
 - ctext `奇門遁甲統宗卷之一`: `https://ctext.org/wiki.pl?chapter=666094&if=en`
@@ -161,6 +161,15 @@ Implemented and live:
   - `chart.ctext_fushi_enabled: true`
   - corrected `chart.chief_star_code`, `chart.zhi_fu_palace_id`, `chart.zhi_shi_door_code`, `chart.zhi_shi_palace_id`
   - `chart.legacy_fushi_metadata` for rollback/audit comparison.
+- Next app r122 (`decode-app-r122-qimen-fushi-sifu`) wires `chart.ctext_fushi` into `/api/qimen/sifu` prompt header:
+  - `時柱`
+  - `旬首`
+  - `遁干`
+  - `八神派別`
+  - `值符星@宮`
+  - `值使門@宮`
+  - ctext source.
+  This is data enrichment only; it does not add restrictive answer rules.
 
 Rollback:
 
@@ -177,4 +186,14 @@ Verification:
 - Live smoke:
   - `POST http://localhost:4090/api/qimen/calculate` returns `ctext_fushi_enabled: true`.
   - `POST http://localhost:3209/api/qimen` and `POST http://localhost:3186/api/qimen` both return `ctext_fushi_enabled: true`.
-  - `https://hourkey.io/` returns HTTP 200.
+  - `POST https://hourkey.io/api/qimen` returns `ctext_fushi_enabled: true`.
+  - `https://hourkey.io/` and `https://hourkey.io/api/health` return HTTP 200.
+
+Deployment:
+
+- Main app live release: `/root/releases/decode-app-r122-qimen-fushi-sifu` on port `3210`.
+- Nginx active proxy: `127.0.0.1:3210`.
+- Previous rollback port: r121 on `3209`.
+- Tags:
+  - `qimen-ctext-fushi-live-20260529`
+  - `qimen-sifu-fushi-prompt-wire-20260529`
