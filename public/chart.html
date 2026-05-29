@@ -405,20 +405,28 @@
   .hk-ld-year.cautious{border-color:var(--fire);background:rgba(226,107,93,.07);}
   .hk-ld-year.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;background:rgba(200,164,77,.10);}
   .hk-ld-month-head{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--fg-soft);margin:12px 0 8px;}
-  .hk-ld-months{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;}
+  .hk-ld-months{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;align-items:start;}
   @media(max-width:720px){.hk-ld-months{grid-template-columns:repeat(3,minmax(0,1fr));}}
   @media(max-width:420px){.hk-ld-months{grid-template-columns:repeat(2,minmax(0,1fr));}}
-  .hk-ld-month{border:1px solid var(--tile-bd);background:rgba(38,42,50,.28);border-radius:8px;padding:7px 6px;min-height:104px;}
+  .hk-ld-month{appearance:none;border:1px solid var(--tile-bd);background:rgba(38,42,50,.28);border-radius:8px;padding:7px 6px;min-height:76px;width:100%;text-align:left;color:var(--fg);cursor:pointer;font-family:var(--thai);}
   body.light .hk-ld-month{background:rgba(255,250,238,.62);}
-  .hk-ld-month .mo{font-family:var(--mono);font-size:9px;color:var(--fg-faint);}
+  .hk-ld-month.on{border-color:var(--gold);box-shadow:0 0 0 1px rgba(200,164,77,.55) inset;background:rgba(200,164,77,.10);}
+  .hk-ld-month .top{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+  .hk-ld-month .mo{font-family:var(--mono);font-size:9px;color:var(--fg-faint);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .hk-ld-month .chev{font-family:var(--mono);font-size:10px;color:var(--gold);opacity:.75;flex:0 0 auto;}
+  .hk-ld-month.on .chev{transform:rotate(180deg);}
   .hk-ld-month .pl{font-family:var(--tc);font-size:15px;font-weight:700;color:var(--fg);}
   .hk-ld-month .tg{font-size:10px;color:var(--fg-soft);line-height:1.35;}
   .hk-ld-month .vs{font-family:var(--tc);font-size:10px;color:var(--gold);margin-top:3px;}
   .hk-ld-month .rng,.hk-ld-year .rng{font-family:var(--mono);font-size:9px;color:var(--fg-faint);line-height:1.35;margin-top:2px;}
   .hk-ld-month .hid,.hk-ld-year .hid{font-family:var(--thai);font-size:9.5px;color:var(--fg-soft);line-height:1.35;margin-top:2px;}
   .hk-ld-month .impact,.hk-ld-year .impact{font-family:var(--thai);font-size:9.5px;color:var(--fg-soft);line-height:1.35;margin-top:3px;border-top:1px dashed rgba(200,164,77,.18);padding-top:3px;}
+  .hk-ld-month .impact.lead{border-top:0;padding-top:0;}
+  .hk-ld-month .detail{display:none;margin-top:6px;padding-top:5px;border-top:1px dashed rgba(200,164,77,.16);}
+  .hk-ld-month.on .detail{display:block;}
   .hk-ld-month.auspicious{border-color:rgba(125,211,123,.55);}
   .hk-ld-month.cautious{border-color:rgba(226,107,93,.55);}
+  .hk-ld-month.on{border-color:var(--gold);}
   .hk-pillar.wood .hk-pillar-glow{background:radial-gradient(circle,#8fc37c,transparent 65%);}
   .hk-pillar.wood .hk-pillar-ring{border-color:rgba(143,195,124,.55);background-color:rgba(63,107,47,.14);}
   .hk-pillar.wood .hk-pillar-stem{color:#a8d098;}
@@ -3439,6 +3447,18 @@ window.addEventListener('resize', function(){
       }).join('·');
       const hiddenShort = (arr) => (arr || []).map(x => `${x.stem}${x.ten_god ? '·'+(TG_TH_SHORT[x.ten_god]||x.ten_god) : ''}${x.useful_role ? '·'+(ROLE_TH[x.useful_role]||x.useful_role) : ''}`).join(' / ');
       const impactShort = (arr, max=2) => (arr || []).slice(0,max).map(x => `${x.summary_th || x.summaryTh || ''}${x.strength ? ' · '+(STR_TH[x.strength]||x.strength) : ''}`).filter(Boolean).join(' · ');
+      const impactLead = (arr) => {
+        const x = (arr || [])[0];
+        if (!x) return '';
+        const domains = (x.domains_th || x.domainsTh || []).slice(0, 2).join('/');
+        const type = x.type_th || x.typeTh || x.type || '';
+        const strength = x.strength ? (STR_TH[x.strength] || x.strength) : '';
+        return [strength, type, domains].filter(Boolean).join(' · ');
+      };
+      const termMs = (term) => {
+        if (!term || !term.date) return NaN;
+        return new Date(String(term.date).replace(' ', 'T')).getTime();
+      };
       const yearCells = years.map((y, yi) => {
         const ys = y.pillar || {};
         const ytg = TG_TH_SHORT[y.ten_god] || y.ten_god || '';
@@ -3492,7 +3512,8 @@ window.addEventListener('resize', function(){
             monthHead.textContent = `เดือนจร 流月 · ปีปาจื้อ ${y.year} · ${yp.stem || ''}${yp.branch || ''}${yStart}`;
           }
           if (monthBox) {
-            monthBox.innerHTML = (y.months || []).map((m) => {
+            const months = y.months || [];
+            monthBox.innerHTML = months.map((m, mi) => {
               const mp = m.pillar || {};
               const fc = m.flag === 'auspicious' ? 'auspicious' : (m.flag === 'cautious' ? 'cautious' : '');
               const mtg = TG_TH_SHORT[m.ten_god] || m.ten_god || '';
@@ -3505,20 +3526,41 @@ window.addEventListener('resize', function(){
               const end = m.jieqi_end ? `${m.jieqi_end.date}` : '';
               const hid = hiddenShort(m.hidden_stems);
               const impact = impactShort(m.impacts, 2);
+              const lead = impactLead(m.impacts);
               const monthNo = String(m.month || '').padStart(2, '0');
               const displayLabel = `เดือนจร ${monthNo} · 流月`;
               const title = [`節:${start || 'fallback กลางเดือน'} → ${end}`, `日:${(m.vs_day_branch||[]).join(' · ')}`, `運:${(m.vs_luck_branch||[]).join(' · ')}`, impact].join(' | ');
-              return `<div class="hk-ld-month ${fc}" title="${h(title)}">
-                <div class="mo">${h(displayLabel)}</div>
+              return `<button type="button" class="hk-ld-month ${fc}" data-mi="${mi}" aria-expanded="false" title="${h(title)}">
+                <div class="top"><div class="mo">${h(displayLabel)}</div><div class="chev">⌄</div></div>
                 <div class="pl">${h((mp.stem||'')+(mp.branch||''))}</div>
-                <div class="tg">ฟ้า ${h(mp.stem||'')} = ${h(mtg)}${stemRole ? ' · '+h(stemRole) : ''}</div>
-                <div class="tg">ดิน ${h(mp.branch||'')} = ${h(BRANCH_EL_TH_LP[mp.branch]||'')}${branchRole ? ' · '+h(branchRole) : ''}</div>
                 ${start ? `<div class="rng">${h(start)} → ${h(end)}</div>` : ''}
-                ${hid ? `<div class="hid">藏 ${h(hid)}</div>` : ''}
-                ${vs ? `<div class="vs">${h(vs)}</div>` : ''}
-                ${impact ? `<div class="impact">${h(impact)}</div>` : ''}
-              </div>`;
+                ${lead ? `<div class="impact lead">${h(lead)}</div>` : ''}
+                <div class="detail">
+                  <div class="tg">ฟ้า ${h(mp.stem||'')} = ${h(mtg)}${stemRole ? ' · '+h(stemRole) : ''}</div>
+                  <div class="tg">ดิน ${h(mp.branch||'')} = ${h(BRANCH_EL_TH_LP[mp.branch]||'')}${branchRole ? ' · '+h(branchRole) : ''}</div>
+                  ${hid ? `<div class="hid">藏 ${h(hid)}</div>` : ''}
+                  ${vs ? `<div class="vs">${h(vs)}</div>` : ''}
+                  ${impact ? `<div class="impact">${h(impact)}</div>` : ''}
+                </div>
+              </button>`;
             }).join('');
+            const setMonth = (mi) => {
+              monthBox.querySelectorAll('.hk-ld-month').forEach((btn, bi) => {
+                const on = bi === mi;
+                btn.classList.toggle('on', on);
+                btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+              });
+            };
+            monthBox.querySelectorAll('.hk-ld-month').forEach((btn) => {
+              btn.addEventListener('click', () => setMonth(parseInt(btn.dataset.mi || '0', 10) || 0));
+            });
+            const nowMs = Date.now();
+            const currentMi = months.findIndex((m) => {
+              const a = termMs(m.jieqi_start);
+              const b = termMs(m.jieqi_end);
+              return Number.isFinite(a) && Number.isFinite(b) && a <= nowMs && nowMs < b;
+            });
+            setMonth(currentMi >= 0 ? currentMi : 0);
           }
         };
         root.querySelectorAll('.hk-ld-year').forEach(btn => {
