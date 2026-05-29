@@ -7,6 +7,7 @@
  * 12 ชั่วยาม + quality score เทียบ DM (ถ้ามี userChart)
  */
 import { NextResponse } from "next/server";
+import { buildLiuShi, type ElementEN } from "@/lib/bazi-liushi";
 
 const BRANCH_ELEMENT: Record<string, "wood"|"fire"|"earth"|"metal"|"water"> = {
   子:"water", 丑:"earth", 寅:"wood", 卯:"wood", 辰:"earth", 巳:"fire",
@@ -348,6 +349,32 @@ export async function POST(req: Request) {
   const avoid_window  = findLongestRun(q => q === "bad");
   const calm_window   = findLongestRun(q => q === "ok");
 
+  /* 流時 deep (30 พ.ค.) — เทียบยาม × ทุกเสาในดวง + chain 大運/流年/流月 + 神煞
+   * ทำงานเมื่อมี natal 4 เสาครบ (userChart.year/month/day/hour) · ไม่ครบ → liushi=null (hours เดิมยังทำงาน) */
+  let liushi: ReturnType<typeof buildLiuShi> | null = null;
+  try {
+    const np = {
+      year: userChart?.year?.stem && userChart?.year?.branch ? { stem: userChart.year.stem, branch: userChart.year.branch } : null,
+      month: userChart?.month?.stem && userChart?.month?.branch ? { stem: userChart.month.stem, branch: userChart.month.branch } : null,
+      day: userChart?.day?.stem && userChart?.day?.branch ? { stem: userChart.day.stem, branch: userChart.day.branch } : null,
+      hour: userChart?.hour?.stem && userChart?.hour?.branch ? { stem: userChart.hour.stem, branch: userChart.hour.branch } : null,
+    };
+    if (dmStem && (np.year || np.month || np.hour)) {
+      liushi = buildLiuShi({
+        natalPillars: np,
+        dmStem,
+        todayDayStem: dayStem || dmStem,
+        todayDayBranch: dayBranch,
+        luckBranch: typeof body.luckBranch === "string" ? body.luckBranch : null,
+        yearBranch: typeof body.flowYearBranch === "string" ? body.flowYearBranch : null,
+        monthBranch: typeof body.flowMonthBranch === "string" ? body.flowMonthBranch : null,
+        yongshen: yongshen as ElementEN[],
+        jishen: jishen as ElementEN[],
+        nowBranch,
+      });
+    }
+  } catch (_) { liushi = null; }
+
   return NextResponse.json({
     date,
     day_pillar: dayStem + dayBranch,
@@ -355,6 +382,7 @@ export async function POST(req: Request) {
     clash_branch: dayBranch ? BRANCH_CLASH[dayBranch] : null,
     user_branch: userBranch || null,
     yongshen, jishen,
-    hours, golden_window, avoid_window, calm_window
+    hours, golden_window, avoid_window, calm_window,
+    liushi   /* deep · null ถ้า natal ไม่ครบ · UI ใช้ถ้ามี ไม่งั้น fallback hours */
   });
 }

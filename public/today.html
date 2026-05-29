@@ -2499,6 +2499,8 @@ window.applyI18N = applyI18N;
         if (userChart) hourBody.userChart = userChart;
         /* 18 พ.ค. · ส่ง birth → backend calc yongshen → qualityFor ตามตำราอาเจ๊กฮ้ง */
 	        if (_birth && _birth.date) { hourBody.birthDate = _birth.date; hourBody.birthTime = _birth.time || '12:00'; hourBody.birthLng = _birth.lng || _birth.longitude || 100.5018; hourBody.birthTimeKnown = _birth.birthTimeKnown !== false; }
+        /* 30 พ.ค. · 流時 deep · ส่งกิ่งปีปัจจุบัน (流年) → backend เทียบยาม×ปีจร · หน้านี้ไม่มีตัวแปร 大運/流月 จึงส่งแค่ flowYearBranch */
+        try { hourBody.flowYearBranch = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'][((new Date().getFullYear())-4)%12]; } catch(_){}
         const hr = await fetch('/api/today/hours', {
           method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify(hourBody)
@@ -2515,13 +2517,29 @@ window.applyI18N = applyI18N;
             const colorMap = { wood:'var(--wood)', fire:'var(--fire)', earth:'var(--earth)', metal:'var(--metal)', water:'var(--water)' };
             const NOW_TH = { th:'ตอนนี้', en:'NOW', zh:'此刻' };
             const _lang = (localStorage.getItem('hk_locale') || document.documentElement.lang || 'th').slice(0,2);
-            grid.innerHTML = cached.hours.map(h => {
+            /* 30 พ.ค. · 流時 deep · ใช้ liushi.hours (12 ยาม) แทนถ้ามีครบ · ปลอดภัย: deep เฉพาะ th (มีแค่ reasonTh)
+             * en/zh → คง cached.hours เดิม (มี reason_en/zh) เพื่อไม่ให้ภาษาอื่นพัง · fallback ดวงไม่มี natal → liushi=null → hours เดิม */
+            const useDeep = (_lang === 'th') && cached.liushi && Array.isArray(cached.liushi.hours) && cached.liushi.hours.length === 12;
+            const srcHours = useDeep ? cached.liushi.hours : cached.hours;
+            /* lookup label เดิมตาม branch (liushi ไม่มี label คุณภาพไทย · ยืมจาก hours เดิม) */
+            const _qlblByBranch = {}; (cached.hours || []).forEach(h => { _qlblByBranch[h.branch] = h.label; });
+            grid.innerHTML = srcHours.map(h => {
               const cls = h.isNow ? 'now ok' : (h.quality === 'best' ? 'good' : h.quality === 'good' ? 'good' : h.quality === 'ok' ? 'ok' : 'bad');
-              const lblText = (_lang==='en') ? (h.label_en||h.label) : (_lang==='zh') ? (h.label_zh||h.label) : h.label;
+              const lblText = useDeep ? (_qlblByBranch[h.branch] || h.nameTh || '')
+                            : ((_lang==='en') ? (h.label_en||h.label) : (_lang==='zh') ? (h.label_zh||h.label) : h.label);
               const lbl = h.isNow ? (NOW_TH[_lang]||NOW_TH.th) : lblText;
-              const _r = (_lang === 'en' && h.reason_en) ? h.reason_en
-                       : (_lang === 'zh' && h.reason_zh) ? h.reason_zh
-                       : h.reason_th || '';
+              let _r;
+              if (useDeep) {
+                /* deep th · reasonTh + ปฏิกิริยา (reactions) + ดาวพิเศษ (shensha) */
+                const parts = [h.reasonTh || ''];
+                if (Array.isArray(h.reactions) && h.reactions.length) parts.push('ปฏิกิริยา: ' + h.reactions.join(' · '));
+                if (Array.isArray(h.shensha) && h.shensha.length) parts.push('ดาว: ' + h.shensha.join(' · '));
+                _r = parts.filter(Boolean).join(' · ');
+              } else {
+                _r = (_lang === 'en' && h.reason_en) ? h.reason_en
+                   : (_lang === 'zh' && h.reason_zh) ? h.reason_zh
+                   : h.reason_th || '';
+              }
               const tip = _r.replace(/"/g,'&quot;');
               const rg = h.range.replace(/^(\d+):00-/,'$1-').replace(':00','');
               return `<div class="h-cell ${cls}" title="${tip}" data-reason="${tip}" data-branch="${h.branch}" data-range="${rg}" data-label="${lblText}"><div class="br" style="color:${colorMap[h.element]||'var(--fg)'}">${h.branch}</div><div class="rg">${rg}</div><div class="q">${lbl}</div></div>`;
@@ -2543,14 +2561,14 @@ window.applyI18N = applyI18N;
             const nowCell = grid.querySelector('.h-cell.now');
             if (nowCell) showReason(nowCell);
             /* update NOW card · ถ้าไม่มี isNow ให้ใช้ hour ตามเวลาตอนนี้ของ user เอง */
-            let nowH = cached.hours.find(h => h.isNow);
+            let nowH = srcHours.find(h => h.isNow);
             if (!nowH) {
               /* fallback · คำนวณจากเวลาเครื่อง user */
               const userH = new Date().getHours();
               const BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
               const branchIdx = Math.floor(((userH + 1) % 24) / 2);
               const wantBranch = BRANCHES[branchIdx];
-              nowH = cached.hours.find(h => h.branch === wantBranch) || cached.hours[0];
+              nowH = srcHours.find(h => h.branch === wantBranch) || srcHours[0];
             }
             if (nowH) {
               const ELN = { th:{wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'},
@@ -2569,9 +2587,17 @@ window.applyI18N = applyI18N;
               if (icoEl) icoEl.textContent = nowH.branch;
               if (h3El) h3El.innerHTML = '<span class="tc">'+nowH.branch+'時</span>· '+nowH.range;
               if (pEl) {
-                const reason = ((_lang==='en'&&nowH.reason_en) ? nowH.reason_en
-                              : (_lang==='zh'&&nowH.reason_zh) ? nowH.reason_zh
-                              : nowH.reason_th) || QUAL_TIP[nowH.quality] || '-';
+                let reason;
+                if (useDeep) {
+                  const parts = [nowH.reasonTh || ''];
+                  if (Array.isArray(nowH.reactions) && nowH.reactions.length) parts.push(nowH.reactions.join(' · '));
+                  if (Array.isArray(nowH.shensha) && nowH.shensha.length) parts.push(nowH.shensha.join(' · '));
+                  reason = parts.filter(Boolean).join(' · ') || QUAL_TIP[nowH.quality] || '-';
+                } else {
+                  reason = ((_lang==='en'&&nowH.reason_en) ? nowH.reason_en
+                          : (_lang==='zh'&&nowH.reason_zh) ? nowH.reason_zh
+                          : nowH.reason_th) || QUAL_TIP[nowH.quality] || '-';
+                }
                 pEl.textContent = elTh+'·'+(nowH.stem?nowH.stem+' · ':'')+reason;
               }
               if (miniEl) miniEl.textContent = QUAL_MINI_TH[nowH.quality] || 'OK';
@@ -2632,9 +2658,11 @@ window.applyI18N = applyI18N;
       const ad = await ar.json();
       if (ar.ok && ad.actions) {
         const grid = document.getElementById('t-actions-grid');
-        /* B · golden window จาก /api/today/hours (window._hours) */
-        const gw = window._hours && window._hours.golden_window;
-        const aw = window._hours && window._hours.avoid_window;
+        /* B · golden window จาก /api/today/hours (window._hours)
+         * 30 พ.ค. · 流時 deep · ถ้ามี liushi → ใช้ goldenWindow/avoidWindow ของ deep · calm คงของเดิม */
+        const _ls = window._hours && window._hours.liushi;
+        const gw = (_ls && _ls.goldenWindow) || (window._hours && window._hours.golden_window);
+        const aw = (_ls && _ls.avoidWindow) || (window._hours && window._hours.avoid_window);
         const cw = window._hours && window._hours.calm_window;
         /* mapping ช่วงเวลาตามเป้าหมาย */
         const goalWindow = {
