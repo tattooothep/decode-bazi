@@ -1,5 +1,5 @@
 /* 六親 Event-Level Forecast (Gap 4)
-   อ้าง: 三命通會·卷五 古人立印食官財名義 + 淵海子平·喜忌篇
+   อ้าง: 三命通會·卷七 論六親 (六親總篇/論父母妻子) + 淵海子平·喜忌篇
    อ่าน timeline ของดาวญาติ (พ่อ/แม่/คู่/ลูก/พี่น้อง) × LiuNian
    ไม่ใช่ engine ตัดสิน · เป็น evidence layer
 */
@@ -83,7 +83,7 @@ export function buildSixRelativesEvents(
           eventType: "clash_palace",
           eventTh: `ปี ${yr.year} (${yr.branch}) ชนเรือน${relTh} (${palaceBranch}) → ระวังเรื่อง${relTh} เปลี่ยนแปลง/แยก/กระทบสุขภาพ`,
           triggerBranch: yr.branch,
-          sourceRuleIds: ["SMTG-Vol5", "YHZP-XJP", "HK-RELATIVE-EVENT-001"],
+          sourceRuleIds: ["SMTG-Vol7", "YHZP-XJP", "HK-RELATIVE-EVENT-001"],
         });
       }
       // (2) ปีจรฮะเรือนญาติ
@@ -94,7 +94,7 @@ export function buildSixRelativesEvents(
           eventType: "combine_palace",
           eventTh: `ปี ${yr.year} (${yr.branch}) ฮะเรือน${relTh} (${palaceBranch}) → เรื่อง${relTh}ใกล้ชิด/ผูกพัน/ตัดสินใจร่วม`,
           triggerBranch: yr.branch,
-          sourceRuleIds: ["SMTG-Vol5", "YHZP-XJP", "HK-RELATIVE-EVENT-002"],
+          sourceRuleIds: ["SMTG-Vol7", "YHZP-XJP", "HK-RELATIVE-EVENT-002"],
         });
       }
       // (3) ถ้า relative ไม่ปรากฏในผังเลย (foundAt=[]) + ปีจรนำดาว relative มา → flag
