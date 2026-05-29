@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "scope": "audit-only",
+  "sourceCorpus": "data/library/sifu-extra/zpzq-mingli-golden.json",
+  "note": "Baseline expected overlay for ZPZQ 81 命例 audit. This file is not used by runtime, prompt, stream, packet, or AI Sifu. Human-reviewed labels should be added here before turning REVIEW rows into hard regressions.",
+  "specialOrFallbackNos": [
+    2,
+    10,
+    11,
+    25,
+    34,
+    37,
+    39,
+    40,
+    41,
+    47,
+    49,
+    52,
+    61,
+    68,
+    72,
+    73,
+    74,
+    76,
+    78,
+    80
+  ],
+  "reasonMustContain": {
+    "7": "合煞留官",
+    "15": "合煞存財",
+    "20": "印制傷護官",
+    "21": "印制食傷護官",
+    "33": "食神帶煞印",
+    "58": "印護",
+    "63": "祿劫用財",
+    "67": "合煞存財",
+    "70": "印護"
+  },
+  "humanReviewed": []
+}

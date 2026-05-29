@@ -15,6 +15,7 @@ const require = createRequire(import.meta.url);
 const { inferGeJu } = require("../data/library/wrappers/3-ge-ju.js");
 
 const corpus = JSON.parse(fs.readFileSync("data/library/sifu-extra/zpzq-mingli-golden.json", "utf8"));
+const expected = JSON.parse(fs.readFileSync("data/library/sifu-extra/zpzq-mingli-expected-v1.json", "utf8"));
 
 const POSITIVE_RE = /(大貴|貴格|皆貴|為貴|甚美|無減福|有情|最利|美|取清|用清|有成|富貴)/;
 const NEGATIVE_RE = /(救死之不暇|不暇|不利|寒貧|小富|破格|貧|不貴|無取|不美|不甚美|不相能)/;
@@ -25,18 +26,8 @@ const NEGATIVE_RE = /(救死之不暇|不暇|不利|寒貧|小富|破格|貧|不
 // - known special/fallback cases are not judged by 相神 8格.
 // - ZPZQ-cited usable cases must not be returned as 破格.
 // - selected resolver cases must carry the resolver phrase in reason.
-const SPECIAL_OR_FALLBACK = new Set([2,10,11,25,34,37,39,40,41,47,49,52,61,68,72,73,74,76,78,80]);
-const REASON_MUST_CONTAIN = new Map([
-  [7, "合煞留官"],
-  [15, "合煞存財"],
-  [20, "印制傷護官"],
-  [21, "印制食傷護官"],
-  [33, "食神帶煞印"],
-  [58, "印護"],
-  [63, "祿劫用財"],
-  [67, "合煞存財"],
-  [70, "印護"],
-]);
+const SPECIAL_OR_FALLBACK = new Set(expected.specialOrFallbackNos || []);
+const REASON_MUST_CONTAIN = new Map(Object.entries(expected.reasonMustContain || {}).map(([k, v]) => [Number(k), String(v)]));
 
 function P([y, m, d, h]) {
   const one = (x) => ({ stem: x[0], branch: x[1] });

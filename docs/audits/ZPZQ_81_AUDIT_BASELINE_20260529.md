@@ -8,6 +8,8 @@ Date: 2026-05-29
 
 เป้าหมายคือใช้ 81 命例 จาก `data/library/sifu-extra/zpzq-mingli-golden.json` ตรวจว่า engine ปัจจุบันยังไม่หลุดจาก guard สำคัญ ก่อนเริ่มทำ resolver ก้อนเสี่ยงกว่า เช่น `hechongResolver` และ `mukuState`.
 
+Expected oracle ที่ audit runner ใช้ถูกแยกไว้ที่ `data/library/sifu-extra/zpzq-mingli-expected-v1.json` เพื่อให้เพิ่ม human-reviewed labels ได้โดยไม่แตะ engine.
+
 ## Result
 
 - total: 81
