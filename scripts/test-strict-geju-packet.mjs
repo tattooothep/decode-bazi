@@ -98,8 +98,8 @@ const paaPacket = buildStructuredChartPacket(paaCalc, paaExt, "壬", 56, {}, paa
 const paaPrompt = renderChartPrompt(paaPacket);
 ok("Paa strict audit catches 七殺格 under raw 假從兒格", paaPacket.strictGeJuAudit?.strictLabel === "七殺格" && paaPacket.strictGeJuAudit?.matchesCurrent === false);
 ok("false-follow guard reaches prompt", paaPrompt.includes("HK_FALSE_FOLLOW_GUARD_V1") && paaPrompt.includes("候選/ป้ายเตือน"));
-ok("false-follow prompt promotes strict label as primary", paaPrompt.includes("โครงดวงหลักสำหรับ AI: 七殺格") && !paaPrompt.includes("โครงดวง: 假從兒格"));
-ok("false-follow raw label is candidate only", paaPrompt.includes("raw engine候選=假從兒格") && paaPrompt.includes("ห้ามใช้เป็น格หลัก"));
+ok("false-follow prompt promotes strict label as primary", paaPrompt.includes("candidate หลัก=七殺格") && !paaPrompt.includes("โครงดวง: 假從兒格"));
+ok("false-follow raw label is candidate only", paaPrompt.includes("raw engine候選=假從兒格") && paaPrompt.includes("candidate รอง"));
 ok("false-follow BY-11 does not call raw label the disease", !paaPrompt.includes("病=假從"));
 ok("false-follow does not close 病藥", paaPacket.bingYao?.status === "ok" && paaPacket.bingYao?.primary?.id === "BY-11");
 ok("false-follow uses 扶抑 instead of 從勢 gate", paaPacket.yongShenProtocols?.fuyi.mode === "扶");

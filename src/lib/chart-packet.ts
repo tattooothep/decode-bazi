@@ -1985,7 +1985,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* โครงดวง + ดวงพิเศษ */
   const falseFollowAudit = isFalseFollowAuditConflict(packet.strictGeJuAudit) ? packet.strictGeJuAudit : null;
   let structureLine = falseFollowAudit
-    ? `โครงดวงหลักสำหรับ AI: ${falseFollowAudit.strictLabel} (strict月令) · raw engine候選=${packet.structure.label} (ป้ายเตือนเท่านั้น · ห้ามใช้เป็น格หลักจนกว่าจะพิสูจน์從แท้)`
+    ? `โครงดวง: candidate หลัก=${falseFollowAudit.strictLabel} (strict月令 · มั่นใจ=สูง) · raw engine候選=${packet.structure.label} (candidate รอง · ยังไม่ถึงเกณฑ์從แท้ · ดู gate ใน 從格ตรวจทาน)`
     : `โครงดวง: ${packet.structure.label}`;
   if (packet.structure.special) {
     if (falseFollowAudit && isFalseFollowCandidateLabel(packet.structure.special.typeZh || packet.structure.label)) {
@@ -2041,11 +2041,12 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     );
     if (falseFollowAudit) {
       lines.push(
-        `從格ตรวจทาน (HK_FALSE_FOLLOW_GUARD_V1 · ไทยนำจีนตาม · เพิ่มข้อมูล ไม่จำกัดลีลาซินแส): ` +
-        `ให้ใช้ strict月令=${a.strictLabel || "-"} เป็นชื่อ格หลักในคำตอบก่อน · raw engine=${a.currentLabel} ให้อ่านเป็น候選/ป้ายเตือนเท่านั้น · ` +
-        `ห้ามเรียก raw ${a.currentLabel} เป็นโรคหลักของ病藥หรือข้อสรุปสุดท้าย · ` +
-        `เมื่อ strict月令=${a.strictLabel || "-"} และธาตุช่วยรวมกลับไปทาง印/比劫 ให้เปิดอ่าน扶抑+病藥ตามปกติ · ` +
-        `หลัก任氏假從: 局中雖有劫印、亦自顧不暇 ต้องพิสูจน์ว่า印/比ช่วยตัวตนไม่ได้จริงก่อน`
+        `從格ตรวจทาน (HK_FALSE_FOLLOW_GUARD_V1 · หลักฐานเทียบสองทาง · ไม่จำกัดลีลาซินแส): ` +
+        `candidate หลัก=strict月令=${a.strictLabel || "-"} (มั่นใจ=สูง · 子平真詮 月令取用) · ` +
+        `candidate รอง=raw engine=${a.currentLabel} (มั่นใจ=ต่ำ · 候選/ป้ายเตือน) · ` +
+        `gate ของ從แท้: ตัวตนไร้ราก + ไม่มี印/比劫เข้ามาช่วย · ` +
+        `flip reason: ถ้าธาตุช่วยรวมกลับไปทาง印/比劫 → 扶抑+病藥ตามปกติ · ` +
+        `ตำราอ้าง: 任氏假從 "局中雖有劫印、亦自顧不暇"`
       );
     }
   }
@@ -2081,11 +2082,11 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       ? `${falseFollowAudit.strictLabel} (strict月令; raw候選=${yp.structure.geJuLabel})`
       : yp.structure.geJuLabel;
     lines.push(
-      `用神分層 (${yp.tag} · ไทยนำจีนตาม · ใช้กันคำเรียกผิดตำรา ไม่ใช่ข้อจำกัดคำตอบ): ` +
+      `用神分層 (${yp.tag} · หลักฐาน 5 ชั้นตามตำรา · ไม่จำกัดสไตล์คำตอบ): ` +
       `格局/月令用神=${geJuForPrompt} · ` +
       `調候用神=${strictTiao} · climate補助=${tiao} · 扶抑用神=${fuyi} · 病藥=${by} · 相神=${xs} · ` +
       `engineรวมภาพรวม=${fmtEls(yp.finalCombined.yong)} / 喜=${fmtEls(yp.finalCombined.xi)} / 忌=${fmtEls(yp.finalCombined.ji)} · ` +
-      `${yp.finalCombined.noteTh} · อ้างหลัก ${yp.structure.canonicalChinese}`
+      `${yp.finalCombined.noteTh} · ตำราอ้าง ${yp.structure.canonicalChinese}`
     );
   }
 
