@@ -157,13 +157,18 @@ function computePalaceStars(annualCenter: number, xk: XKData | null) {
   });
   return result;
 }
+// 24 ภูเขา · ภูเขาที่ idx 0 (壬) ครอบ 337.5–352.5° ดังนั้น 0°=子 (กลางเหนือ)
+// สูตรถูก: ภูเขา i ครอบ [337.5 + i*15, +15) → idx = floor(((angle - 337.5 + 360) % 360) / 15)
+// (เดิมใช้ +7.5 ทำให้ map เพี้ยนครึ่งช่วง · 0°→壬 ผิด)
+function mountainIdxOf(angle: number): number {
+  const a = ((angle % 360) + 360) % 360;
+  return Math.floor((((a - 337.5) % 360 + 360) % 360) / 15) % 24;
+}
 function build24Mountains(faceAngle?: number) {
   let facing: string | null = null, sitting: string | null = null;
   if (faceAngle !== undefined && faceAngle !== null) {
-    const idx = Math.floor(((faceAngle + 7.5) % 360) / 15);
-    facing = MOUNTAINS[idx];
-    const sitIdx = Math.floor((((faceAngle + 180) + 7.5) % 360) / 15);
-    sitting = MOUNTAINS[sitIdx];
+    facing = MOUNTAINS[mountainIdxOf(faceAngle)];
+    sitting = MOUNTAINS[mountainIdxOf(faceAngle + 180)];
   }
   return { mountains: MOUNTAINS, facing, sitting, face_angle: faceAngle ?? null };
 }
