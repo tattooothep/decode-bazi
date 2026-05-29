@@ -25,6 +25,7 @@ import { spawn } from "child_process";
 import { readFileSync, statSync } from "fs";
 import { join } from "path";
 import { createHash } from "crypto";
+import { StringDecoder } from "string_decoder";
 import { q } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { calcBazi } from "@/lib/bazi-calc";
@@ -41,6 +42,8 @@ type Msg = { role: "user" | "assistant"; content: string };
 const TIMEOUT_MS = 600_000; // เท่ากับ /api/sifu · ตำราคลาสสิก + หลายคน = prompt ยาว
 const CHILD_USER = "jarvis";
 const MAX_GROUP = 10; // cap กัน abuse/token
+const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 10_000);
+const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
 
 function promptSafe(raw: unknown, fallback = "—"): string {
   const s = String(raw ?? "").replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
@@ -512,8 +515,9 @@ function spawnClaudeStreaming(prompt: string) {
 /* Parser · stream-json line-by-line · copy จาก /api/sifu makeJsonlParser */
 function makeJsonlParser(onText: (text: string) => void) {
   let buf = "";
+  const decoder = new StringDecoder("utf8");
   return (chunk: Buffer) => {
-    buf += chunk.toString();
+    buf += decoder.write(chunk);
     let nl;
     while ((nl = buf.indexOf("\n")) !== -1) {
       const line = buf.slice(0, nl).trim();
@@ -528,6 +532,27 @@ function makeJsonlParser(onText: (text: string) => void) {
         // not JSON · skip
       }
     }
+  };
+}
+
+function startSifuHeartbeat(
+  send: (event: string, data: unknown) => void,
+  getPhase: () => string
+): () => void {
+  let stopped = false;
+  let count = 0;
+  const ping = () => {
+    if (stopped) return;
+    send("ping", { phase: getPhase(), count: ++count, ts: Date.now() });
+  };
+  const first = setTimeout(ping, SIFU_FIRST_PING_MS);
+  const interval = setInterval(ping, SIFU_HEARTBEAT_MS);
+  (first as any).unref?.();
+  (interval as any).unref?.();
+  return () => {
+    stopped = true;
+    clearTimeout(first);
+    clearInterval(interval);
   };
 }
 
@@ -620,12 +645,15 @@ export async function POST(req: Request) {
           let closed = false;
           let full = "";
           let firstChunkSent = false;
+          let firstDeltaSeen = false;
+          let stopHeartbeat: (() => void) | null = null;
           let idBuf = "";          // buffer บรรทัดแรก strip ⟦ID⟧ (group = strip-only · ไม่ validate · หลาย日干)
           let idStripped = false;
           const t0 = Date.now();
           const safeClose = () => {
             if (closed) return;
             closed = true;
+            stopHeartbeat?.();
             try { controller.close(); } catch {}
           };
           const send = (event: string, data: unknown) => {
@@ -638,6 +666,12 @@ export async function POST(req: Request) {
           };
 
           send("meta", { cached: false, count: ordered.length, startedAt: t0 });
+          stopHeartbeat = startSifuHeartbeat(send, () => {
+            if (!firstDeltaSeen) return "waiting_claude";
+            if (!idStripped) return "identity_lock";
+            if (!firstChunkSent) return "waiting_visible_chunk";
+            return "streaming";
+          });
           const child = spawnClaudeStreaming(prompt);
           activeChild = child;
           const killTimer = setTimeout(() => {
@@ -654,6 +688,7 @@ export async function POST(req: Request) {
           };
           const emit = (text: string) => { full += text; sendFirstOnce(); send("chunk", { text }); };
           const parser = makeJsonlParser((text) => {
+            firstDeltaSeen = true;
             if (!idStripped) {
               idBuf += text;
               if (!idBuf.trim()) return; // delta แรกเป็นบรรทัดว่าง/ช่องว่าง → buffer ต่อ กัน ⟦ID⟧ ที่ตามมาหลุด

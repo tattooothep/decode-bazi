@@ -12,6 +12,7 @@ import { spawn } from "child_process";
 import { readFileSync, statSync, writeFileSync } from "fs";
 import { join } from "path";
 import { createHash } from "crypto";
+import { StringDecoder } from "string_decoder";
 import { q1, q } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { calcBazi } from "@/lib/bazi-calc";
@@ -36,6 +37,8 @@ type IntroBirthInput = {
 
 const TIMEOUT_MS = 600_000; // 600s · ยัดตำราคลาสสิก 4 ไฟล์เต็ม (~141KB prompt · first token ~546s) · nginx /api/sifu ต้อง >600s · ช้าค่อยตัด
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 10_000);
+const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
 
 /* startAge (起運) จาก tyme4ts ChildLimit · เหมือน /api/chart · เดิม sifu ใส่ 10 ตายตัว → วัยจรเลื่อน ~8 ปี (bug 25 พ.ค.) */
 async function computeStartAge(date: string, time: string, gender: "M" | "F", lng: number): Promise<number> {
@@ -682,8 +685,9 @@ function spawnClaudeStreaming(prompt: string) {
 /* Parser · แยก JSON line-by-line · ดึง text content จาก stream-json */
 function makeJsonlParser(onText: (text: string) => void) {
   let buf = "";
+  const decoder = new StringDecoder("utf8");
   return (chunk: Buffer) => {
-    buf += chunk.toString();
+    buf += decoder.write(chunk);
     let nl;
     while ((nl = buf.indexOf("\n")) !== -1) {
       const line = buf.slice(0, nl).trim();
@@ -702,6 +706,27 @@ function makeJsonlParser(onText: (text: string) => void) {
         // not JSON · skip
       }
     }
+  };
+}
+
+function startSifuHeartbeat(
+  send: (event: string, data: unknown) => void,
+  getPhase: () => string
+): () => void {
+  let stopped = false;
+  let count = 0;
+  const ping = () => {
+    if (stopped) return;
+    send("ping", { phase: getPhase(), count: ++count, ts: Date.now() });
+  };
+  const first = setTimeout(ping, SIFU_FIRST_PING_MS);
+  const interval = setInterval(ping, SIFU_HEARTBEAT_MS);
+  (first as any).unref?.();
+  (interval as any).unref?.();
+  return () => {
+    stopped = true;
+    clearTimeout(first);
+    clearInterval(interval);
   };
 }
 
@@ -823,6 +848,8 @@ export async function POST(req: Request) {
           let closed = false;
           let full = "";
           let firstChunkSent = false;
+          let firstDeltaSeen = false;
+          let stopHeartbeat: (() => void) | null = null;
           const t0 = Date.now();
           /* identity-lock: buffer บรรทัดแรก (⟦ID⟧日干=X⟧) เทียบ 日干 · ผิด/ไม่มี=ตัด stream (ไม่ retry · master ให้ถามใหม่) */
           const expectedDM = extractExpectedDM(ctx);
@@ -830,6 +857,7 @@ export async function POST(req: Request) {
           const safeClose = () => {
             if (closed) return;
             closed = true;
+            stopHeartbeat?.();
             try { controller.close(); } catch {}
           };
           const send = (event: string, data: unknown) => {
@@ -842,6 +870,12 @@ export async function POST(req: Request) {
           };
 
           send("meta", { cached: false, key: key.slice(0, 8), startedAt: t0 });
+          stopHeartbeat = startSifuHeartbeat(send, () => {
+            if (!firstDeltaSeen) return "waiting_claude";
+            if (expectedDM && !idChecked) return "identity_lock";
+            if (!firstChunkSent) return "waiting_visible_chunk";
+            return "streaming";
+          });
           const child = spawnClaudeStreaming(prompt);
           activeChild = child;
           const killTimer = setTimeout(() => {
@@ -861,6 +895,7 @@ export async function POST(req: Request) {
             safeClose();
           };
           const parser = makeJsonlParser((text) => {
+            firstDeltaSeen = true;
             if (idRejected) return;
             if (expectedDM && !idChecked) {
               idBuf += text;
@@ -996,9 +1031,11 @@ export async function GET(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       let closed = false;
+      let stopHeartbeat: (() => void) | null = null;
       const safeClose = () => {
         if (closed) return;
         closed = true;
+        stopHeartbeat?.();
         try { controller.close(); } catch {}
       };
       const send = (event: string, data: unknown) => {
@@ -1030,6 +1067,7 @@ export async function GET(req: Request) {
       const t0 = Date.now();
       if (mode === "intro") {
         let firstChunkSent = !!warmup;
+        stopHeartbeat = startSifuHeartbeat(send, () => firstChunkSent ? "streaming" : "waiting_openrouter");
         if (warmup) {
           send("first", { ms: 0, synthetic: true, provider: "engine" });
           send("chunk", { text: warmup });
@@ -1058,9 +1096,16 @@ export async function GET(req: Request) {
       const c = spawnClaudeStreaming(prompt);
       let full = "";
       let firstChunkSent = false;
+      let firstDeltaSeen = false;
       /* identity-lock (GET Q&A) · warmup/intro = engine สรุป → skip */
       const expectedDM = warmup ? null : extractExpectedDM(ctx);
       let idBuf = "", idChecked = false, idRejected = false;
+      stopHeartbeat = startSifuHeartbeat(send, () => {
+        if (!firstDeltaSeen) return "waiting_claude";
+        if (expectedDM && !idChecked) return "identity_lock";
+        if (!firstChunkSent) return "waiting_visible_chunk";
+        return "streaming";
+      });
 
       if (warmup) {
         send("first", { ms: 0, synthetic: true });
@@ -1082,6 +1127,7 @@ export async function GET(req: Request) {
         safeClose();
       };
       const parser = makeJsonlParser((text: string) => {
+        firstDeltaSeen = true;
         if (idRejected) return;
         if (expectedDM && !idChecked) {
           idBuf += text;

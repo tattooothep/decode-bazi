@@ -976,6 +976,16 @@
       .catch(function(){});
 
     /* อ่าน SSE ทีละ token · ยก pattern readTeamSifuStream จาก /yongsennetwork */
+    function sifuPhaseText(phase){
+      var map = {
+        waiting_claude: 'ซินแสกำลังเปิดตำรา ...',
+        waiting_openrouter: 'ซินแสกำลังเปิดตำรา ...',
+        identity_lock: 'ซินแสกำลังตรวจดวงให้ตรงคน ...',
+        waiting_visible_chunk: 'ซินแสกำลังเรียบเรียงคำตอบ ...',
+        streaming: 'ซินแสเริ่มเขียนแล้ว ...'
+      };
+      return map[phase] || 'ซินแสกำลังคิด ...';
+    }
     async function readSifuStream(response, handlers){
       const reader = response.body && response.body.getReader ? response.body.getReader() : null;
       if (!reader) throw new Error('stream unavailable');
@@ -999,6 +1009,7 @@
           let payload = {};
           try { payload = JSON.parse(data); } catch(_){}
           if (event === 'chunk' && payload.text) handlers.onChunk(payload.text);
+          else if (event === 'ping' && handlers.onPing) handlers.onPing(payload);
           else if (event === 'error') throw new Error(payload.error || 'stream error');
           else if (event === 'done') { if (handlers.onDone) handlers.onDone(payload); }
         }
@@ -1172,6 +1183,9 @@
           var replyG = '';
           var clearedG = false;
           await readSifuStream(rG, {
+            onPing: function(p){
+              if (!clearedG) phG.textContent = sifuPhaseText(p && p.phase);
+            },
             onChunk: function(chunk){
               if (!clearedG){ phG.textContent = ''; clearedG = true; }
               replyG += chunk;
@@ -1256,6 +1270,9 @@
           let reply = '';
           let cleared = false;
           await readSifuStream(r, {
+            onPing(p){
+              if (!cleared) placeholder.textContent = sifuPhaseText(p && p.phase);
+            },
             onChunk(chunk){
               if (!cleared) { placeholder.textContent = ''; cleared = true; }
               reply += chunk;
