@@ -1575,7 +1575,8 @@ function normalizeLpType(t: string): InteractionTypeZh {
  * renderChartPrompt · ChartPacket → ข้อความไทย (presentation เท่านั้น)
  *   ทุกบรรทัด render จาก field ใน packet · คงโทน "key: value" แบบเดิม
  * ════════════════════════════════════════════════════════════════ */
-export function renderChartPrompt(packet: ChartPacket): string {
+export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDrilldown?: boolean } = {}): string {
+  const includeTransitDrilldown = opts.includeTransitDrilldown !== false;
   const lines: string[] = [];
 
   /* รายเสา */
@@ -1808,7 +1809,7 @@ export function renderChartPrompt(packet: ChartPacket): string {
   }
   /* ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed)
    * ให้ AI ใช้ block นี้ตอบคำถามย้อนหลัง/รายเดือนในรอบ 10 ปีปัจจุบัน · ห้าม AI คำนวณเสาเอง */
-  if (packet.transitDrilldown?.currentDecade) {
+  if (includeTransitDrilldown && packet.transitDrilldown?.currentDecade) {
     const d = packet.transitDrilldown.currentDecade;
     const flagTh: Record<string, string> = { auspicious: "ผสาน", cautious: "ต้องคุม", neutral: "กลาง" };
     const roleTh: Record<string, string> = { yong: "用", xi: "喜", ji: "忌", neutral: "กลาง" };
