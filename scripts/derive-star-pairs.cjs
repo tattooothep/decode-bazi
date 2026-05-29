@@ -100,6 +100,85 @@ function relate(mEl, wEl) {
   return { rel: 'unknown', zh: '?' };
 }
 
+// ───────────────────────── deriveScore: ให้คะแนน 1-5 แบบ deterministic ─────────────────────────
+// 1 = ร้ายสุด ... 5 = ดีสุด (ครึ่งขั้นได้)
+// กฎเป็นชั้น (ยุค 9):
+//   ชั้น 1: base จากปฏิกิริยาธาตุ  (生=3.5 · 比和=3 · 剋=2.5)
+//   ชั้น 2: ปรับด้วย "คุณภาพดาวยุค9" ของทั้งคู่ (9旺 +1 · 1生氣 +0.5 · 8退氣 0 · 3/4/6失令 −0.5 · 2病符/7破軍 −0.75)
+//           × น้ำหนัก 2 (ดาวเป็นตัวขับหลัก) + ปรับปฏิกิริยา×คุณภาพ:
+//             - 相生 ที่ "หล่อเลี้ยงดาวร้าย" (ปลายทางเป็น 2/5/7) → −1 (อุ้มดาวร้าย เช่น 火生土病符)
+//             - 9火剋金(6/7) ไฟลวกทอง → −0.5 (อันตรายแม้ 9 旺)
+//   ชั้น 2 override สูงสุด: มีดาว 5 (廉貞大煞) → คืน 1 เสมอ ก่อนคำนวณอื่น
+//   ชั้น 3: fire pair (5-9·9-5·7-9·9-7·2-7·7-2) → −1 (อันตรายไฟ)
+//   ชั้น 4: clamp เข้าชุด {1,1.5,...,5}
+const SCORE_TIMELY = new Set([9]);     // 旺 ดีสุดยุค9
+const SCORE_GROWING = new Set([1]);    // 生氣 ดี
+const SCORE_RETIRING = new Set([8]);   // 退氣 กลางๆ
+const SCORE_DECLINE = new Set([3, 4, 6]); // 失令
+const SCORE_BREAK = new Set([7]);      // 破軍 失令(ร้าย)
+const SCORE_SICK = new Set([2]);       // 病符
+const SCORE_POISON = new Set([5]);     // 廉貞大煞 → 1 เสมอ
+const SCORE_BAD_CORE = new Set([2, 5, 7]); // ดาวร้ายแก่น (การหล่อเลี้ยงดาวเหล่านี้ = อุ้มความร้าย)
+const FIRE_PAIR_KEYS = new Set(['5-9', '9-5', '7-9', '9-7', '2-7', '7-2']);
+
+function starQualityP9(s) {
+  if (SCORE_TIMELY.has(s)) return 1.0;
+  if (SCORE_GROWING.has(s)) return 0.5;
+  if (SCORE_RETIRING.has(s)) return 0;
+  if (SCORE_DECLINE.has(s)) return -0.5;
+  if (SCORE_SICK.has(s)) return -0.75;
+  if (SCORE_BREAK.has(s)) return -0.75;
+  return 0;
+}
+
+function clampScoreHalf(v) {
+  v = Math.max(1, Math.min(5, v));
+  return Math.round(v * 2) / 2; // ครึ่งขั้น
+}
+
+function deriveScore(m, w) {
+  const mEl = STAR_ELEMENT[m];
+  const wEl = STAR_ELEMENT[w];
+  const r = relate(mEl, wEl);
+
+  // ── override สูงสุด: 5 大煞 ร้ายเสมอ ──
+  if (SCORE_POISON.has(m) || SCORE_POISON.has(w)) return 1;
+
+  // ── ชั้น 1: base จากปฏิกิริยาธาตุ ──
+  let score;
+  if (r.rel === 'sheng_out' || r.rel === 'sheng_in') score = 3.5;
+  else if (r.rel === 'bihe') score = 3;
+  else score = 2.5; // ke_out / ke_in / unknown
+
+  // ── ชั้น 2: คุณภาพดาวยุค9 (เฉลี่ยทั้งคู่ × 2) ──
+  const q = (starQualityP9(m) + starQualityP9(w)) / 2;
+  score += q * 2;
+
+  // ── ชั้น 2 (ปฏิกิริยา×คุณภาพ) ──
+  // (a) 相生 หล่อเลี้ยงดาวร้าย → กดลง
+  if (r.rel === 'sheng_out') {
+    // m เสริม w → w รับ
+    if (SCORE_BAD_CORE.has(w)) score -= 1;
+  } else if (r.rel === 'sheng_in') {
+    // w เสริม m → m รับ
+    if (SCORE_BAD_CORE.has(m)) score -= 1;
+  }
+  // (b) 9火剋金(6/7) ไฟลวกทอง อันตรายแม้ 9 旺
+  if (r.rel === 'ke_out') {
+    // m ข่ม w ; actor = m
+    if (m === 9 && (w === 6 || w === 7)) score -= 0.5;
+  } else if (r.rel === 'ke_in') {
+    // w ข่ม m ; actor = w
+    if (w === 9 && (m === 6 || m === 7)) score -= 0.5;
+  }
+
+  // ── ชั้น 3: fire pair ──
+  if (FIRE_PAIR_KEYS.has(`${m}-${w}`)) score -= 1;
+
+  // ── ชั้น 4: clamp ──
+  return clampScoreHalf(score);
+}
+
 // อวัยวะ/ความหมายของธาตุที่ถูกขม
 const EL_HARM_TH = {
   water: 'ไต/ระบบปัสสาวะ/หู',
@@ -300,6 +379,8 @@ function main() {
   }
 
   // ── snapshot classical interpretations เพื่อยืนยันว่าไม่ถูกแตะ ──
+  // หมายเหตุ: score ถูก "ตั้งใจเขียนใหม่ทั้ง 81 คู่" (deriveScore) จึงไม่อยู่ใน snapshot นี้
+  //          แต่ interpretation/remedy/classical_zh/source/is_fire_pair ของ classical/principle ต้องคงเดิม
   const classicalSnapshot = {};
   for (const p of pairs) {
     if (p.source === 'classical' || p.source === 'principle') {
@@ -308,7 +389,6 @@ function main() {
         interpretation_en: p.interpretation_en,
         remedy_element: p.remedy_element,
         remedy_th: p.remedy_th,
-        score: p.score,
       });
     }
   }
@@ -327,17 +407,33 @@ function main() {
   //                   (นี่คือเกณฑ์หลัก gate ≥70% เพราะวัดว่าสูตรฟันธงผิดทางไหม)
   //   (B) no_conflict = นับ MISS เฉพาะ good↔bad ตรงข้าม (mixed ฝั่งใดฝั่ง = ไม่ขัด)
   //   (C) strict    = ต้องตรงป้ายเป๊ะ good/bad/mixed
+  // หมายเหตุสำคัญ: ต้องใช้ baseline ที่เสถียร = score เดิมของ Claude (score_claude_original)
+  //   ถ้าใช้ p.score ตรงๆ จะพังตอน re-run เพราะ p.score กลายเป็นค่าสูตรไปแล้ว → calibrate เทียบกับตัวเอง (เป๊ะปลอม)
+  //   รอบแรก score_claude_original ยังไม่มี → fallback เป็น p.score (ซึ่งยังเป็นค่าเดิม)
   const calRows = [];
   for (const p of pairs) {
     if (p.source !== 'classical') continue;
     const m = p.mountain_star;
     const w = p.water_star;
+    const baselineScore = typeof p.score_claude_original === 'number' ? p.score_claude_original : p.score;
     const derived = deriveDirection(m, w).dir;
-    const expected = scoreToDir(p.score, p.nature);
+    const expected = scoreToDir(baselineScore, p.nature);
     const conflict = (derived === 'good' && expected === 'bad') || (derived === 'bad' && expected === 'good');
     const decisive = derived !== 'mixed' && expected !== 'mixed'; // ทั้งคู่ฟันธง
-    calRows.push({ id: p.id, pair: `${m}-${w}`, score: p.score, expected, derived, conflict, decisive });
+    // เทียบระดับ score (ตัวเลข): สูตร deriveScore vs score คัมภีร์เดิม (baseline เสถียร)
+    const derivedScore = deriveScore(m, w);
+    const scoreDiff = Math.abs(derivedScore - baselineScore);
+    calRows.push({
+      id: p.id, pair: `${m}-${w}`, score: baselineScore, expected, derived, conflict, decisive,
+      derivedScore, scoreDiff,
+    });
   }
+  // calibrate ระดับ score กับ 18 คู่ classical
+  const calScoreExact = calRows.filter((r) => r.scoreDiff === 0).length;
+  const calScoreNear = calRows.filter((r) => r.scoreDiff > 0 && r.scoreDiff <= 0.5).length;
+  const calScoreConflict = calRows.filter((r) => r.scoreDiff > 0.5).length;
+  const calScoreWithinPct = calRows.length
+    ? Math.round(((calScoreExact + calScoreNear) / calRows.length) * 1000) / 10 : 0;
   // (A) decisive accuracy — เกณฑ์หลัก
   const decisiveRows = calRows.filter((r) => r.decisive);
   const decTotal = decisiveRows.length;
@@ -351,28 +447,71 @@ function main() {
   const strictHit = calRows.filter((r) => r.derived === r.expected).length;
   const strictPct = calTotal ? Math.round((strictHit / calTotal) * 1000) / 10 : 0;
 
-  // ── 2) เติม five_element ──
+  // ── 2) เติมข้อความ interpretation ของ five_element (ไม่แตะ score ที่นี่) ──
   let filled = 0;
   const examples = [];
   for (const p of pairs) {
     if (p.source !== 'five_element') continue;
     const out = buildInterpretation(p.mountain_star, p.water_star);
-    // ห้ามแตะ score
-    const keepScore = p.score;
     p.interpretation_th = out.interpretation_th;
     p.remedy_element = out.remedy_element;
     p.remedy_th = out.remedy_th;
     p.derivation = out.derivation;
-    p.score = keepScore; // ยืนยัน
     filled++;
     if (examples.length < 5) {
       examples.push({
         pair: `${p.mountain_star}-${p.water_star}`,
-        score: p.score,
         derivation: out.derivation,
         interp: out.interpretation_th,
         remedy: `${out.remedy_element} — ${out.remedy_th}`,
       });
+    }
+  }
+
+  // ── 2b) DERIVE SCORE ทั้ง 81 คู่ (deterministic ห้าธาตุ) ──
+  // เก็บ score เดิมของ Claude ไว้ที่ score_claude_original (ครั้งแรกเท่านั้น · idempotent)
+  // เขียน score ใหม่ + score_source + flag ถ้าต่างจากของเดิม/คัมภีร์ > 0.5
+  const ALLOWED_SCORES = new Set([1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]);
+  let exactCnt = 0; let nearCnt = 0; let conflictCnt = 0; // เทียบ score เดิม Claude
+  const flaggedReview = [];
+  const newDist = {};
+  const oldDist = {};
+  for (const p of pairs) {
+    const m = p.mountain_star;
+    const w = p.water_star;
+
+    // เก็บของเดิมครั้งแรก (ไม่ทับถ้ามีแล้ว — กัน re-run ลบ ground-truth Claude)
+    if (typeof p.score_claude_original !== 'number') {
+      p.score_claude_original = p.score;
+    }
+    const original = p.score_claude_original;
+
+    const derived = deriveScore(m, w);
+    if (!ALLOWED_SCORES.has(derived)) {
+      console.error(`ABORT: deriveScore(${m},${w}) = ${derived} ไม่อยู่ในชุดที่อนุญาต`);
+      process.exit(1);
+    }
+
+    p.score = derived;
+    p.score_source = 'five_element_derived';
+
+    // distribution
+    oldDist[original] = (oldDist[original] || 0) + 1;
+    newDist[derived] = (newDist[derived] || 0) + 1;
+
+    // เทียบกับของเดิม Claude
+    const diff = Math.abs(derived - original);
+    if (diff === 0) exactCnt++;
+    else if (diff <= 0.5) nearCnt++;
+    else conflictCnt++;
+
+    // flag review ถ้าต่างจากของเดิม > 0.5 (classical/principle = ของเดิม verify แล้ว)
+    if (diff > 0.5) {
+      p.score_review_flag = true;
+      flaggedReview.push({ pair: `${m}-${w}`, src: p.source, original, derived, diff });
+    } else if ('score_review_flag' in p) {
+      // ไม่ขัดแล้ว → ถอด flag เก่า (idempotent)
+      delete p.score_review_flag;
     }
   }
 
@@ -385,7 +524,6 @@ function main() {
         interpretation_en: p.interpretation_en,
         remedy_element: p.remedy_element,
         remedy_th: p.remedy_th,
-        score: p.score,
       });
       if (now !== classicalSnapshot[p.id]) {
         untouched = false;
@@ -425,18 +563,51 @@ function main() {
     console.log(`  ✅ decisive ≥70% — สูตรไม่เคยฟันธงสวนคัมภีร์`);
   }
   console.log('');
-  console.log('  รายคู่ (classical): pair | score | คัมภีร์ | สูตร | สถานะ');
+  console.log('  รายคู่ (classical): pair | score | คัมภีร์ | สูตร | สถานะ(ทิศทาง)');
   for (const r of calRows) {
     const status = r.conflict ? 'CONFLICT' : (r.decisive ? 'OK' : 'soft(mixed)');
     console.log(`    ${r.pair.padEnd(5)} | ${String(r.score).padEnd(4)} | ${r.expected.padEnd(5)} | ${r.derived.padEnd(5)} | ${status}`);
   }
   console.log('');
-  console.log(`── เติมคู่ five_element สำเร็จ: ${filled} คู่ (ทุกคู่มี field derivation) ──`);
-  console.log(`── ไม่แตะ classical/principle: ${untouched ? 'ยืนยัน (22 คู่คงเดิม)' : 'ผิดพลาด!'} ──`);
+  console.log('── CALIBRATE ระดับ SCORE vs คัมภีร์ (18 คู่ classical) ──');
+  console.log(`  ตรงเป๊ะ: ${calScoreExact}/18 · ต่าง ≤0.5: ${calScoreNear}/18 · ขัดแย้ง >0.5: ${calScoreConflict}/18`);
+  console.log(`  อยู่ในเกณฑ์ (≤0.5): ${calScoreExact + calScoreNear}/18 = ${calScoreWithinPct}%`);
+  if (calScoreWithinPct < 60) {
+    console.log('  ⚠️ สูตรขัดคัมภีร์ระดับ score เกินครึ่ง — สูตรอาจพลาด ต้องทบทวน!');
+  } else {
+    console.log('  ✅ สูตรใกล้เคียงคัมภีร์ในกรอบยอมรับได้');
+  }
+  console.log('  รายคู่ (classical · score): pair | คัมภีร์ | สูตร | diff');
+  for (const r of calRows) {
+    const mark = r.scoreDiff > 0.5 ? ' ← CONFLICT(flag)' : (r.scoreDiff === 0 ? ' (เป๊ะ)' : '');
+    console.log(`    ${r.pair.padEnd(5)} | ${String(r.score).padEnd(4)} | ${String(r.derivedScore).padEnd(4)} | ${r.scoreDiff}${mark}`);
+  }
   console.log('');
-  console.log('── ตัวอย่าง 5 คู่ที่เติม ──');
+  console.log('── CALIBRATE SCORE ใหม่ vs score เดิม (Claude · ทั้ง 81 คู่) ──');
+  const within = exactCnt + nearCnt;
+  console.log(`  ตรงเป๊ะ: ${exactCnt}/81 = ${Math.round((exactCnt / 81) * 1000) / 10}%`);
+  console.log(`  ต่าง ≤0.5: ${nearCnt}/81 · ขัดแย้ง >0.5: ${conflictCnt}/81`);
+  console.log(`  อยู่ในเกณฑ์ (≤0.5): ${within}/81 = ${Math.round((within / 81) * 1000) / 10}%`);
+  console.log('');
+  console.log('── DISTRIBUTION score ──');
+  const allScores = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+  console.log('  score | เดิม(Claude) | ใหม่(สูตร)');
+  for (const s of allScores) {
+    console.log(`   ${String(s).padEnd(4)} | ${String(oldDist[s] || 0).padEnd(11)} | ${newDist[s] || 0}`);
+  }
+  console.log('');
+  console.log(`── คู่ที่ติด score_review_flag (ต่างจากของเดิม >0.5): ${flaggedReview.length} คู่ ──`);
+  console.log('  pair | source | เดิม | สูตร | diff');
+  for (const f of flaggedReview) {
+    console.log(`    ${f.pair.padEnd(5)} | ${f.src.padEnd(12)} | ${String(f.original).padEnd(4)} | ${String(f.derived).padEnd(4)} | ${f.diff}`);
+  }
+  console.log('');
+  console.log(`── เติมข้อความ five_element: ${filled} คู่ · score ใหม่ทั้ง 81 คู่ (score_source=five_element_derived) ──`);
+  console.log(`── ไม่แตะ interpretation/remedy ของ classical/principle: ${untouched ? 'ยืนยัน' : 'ผิดพลาด!'} ──`);
+  console.log('');
+  console.log('── ตัวอย่าง 5 คู่ five_element ที่เติมข้อความ ──');
   for (const e of examples) {
-    console.log(`  [${e.pair}] score=${e.score}`);
+    console.log(`  [${e.pair}]`);
     console.log(`    derivation: ${e.derivation}`);
     console.log(`    ความหมาย : ${e.interp}`);
     console.log(`    remedy   : ${e.remedy}`);
