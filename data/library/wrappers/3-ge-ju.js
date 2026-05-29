@@ -65,82 +65,50 @@ function isStemHe(s1, s2) {
          ['甲己','乙庚','丙辛','丁壬','戊癸'].some(p => (p[0]===s1 && p[1]===s2) || (p[1]===s1 && p[0]===s2));
 }
 
-/* ── 化氣格 gate (wrapper-8 · 27 พ.ค. · 6 เงื่อนไข真化 + 12長生 root model · proto v2 พิสูจน์ 8/8 golden)
+/* ── 化氣格 promote · wrapper-8 (29 พ.ค. · proto v2 → runtime)
  * blueprint: data/library/wrapper8-huahe-cong-blueprint.md
- * month-support = 三合+三會 ของ化神 (ตำรา · ไม่ใช้ STEM_COMBOS.requiredBranches ที่หยาบ)
- * 12長生 แยก 真化(ราก衰墓絕被沖→สลาย) จาก 假從(ราก臨官帝旺→ทน) — root model หยาบ(本氣/中氣)แยกไม่ได้ */
-const HUA_MONTHS = {
-  earth: ['辰','戌','丑','未'], metal: ['巳','酉','丑','申','戌'], water: ['亥','子','丑','申','辰'],
-  wood:  ['寅','卯','辰','亥','未'], fire: ['巳','午','未','寅','戌'],
-};
-const HUA_GUIDE = { earth:'戊', metal:'庚', water:'壬', wood:'甲', fire:'丙' };
+ * proto: scripts/proto-huaqi-gate-v2.cjs (8/8 PASS)
+ *
+ * contract เดิม findTransformation (wrapper-7:601 อ่าน) คงเดิม:
+ *   - return 化X格 object สำหรับ 真化 เท่านั้น
+ *   - return null สำหรับ 假化/合而不化/隔位/ไม่มีคู่ → wrapper-7 ไม่ push 化神 อัตโนมัติ (กัน over-declare用神พลิก180°)
+ *
+ * เพิ่ม: analyzeHuaQiVerdict(natal) → expose verdict 真化/假化/合而不化 (chart-packet ดูดเข้า field huaQi)
+ *        ไม่กระทบ wrapper-7 · ไม่กระทบ /chart special_chart
+ */
+const HUA_HHE = require('./8-huahe');
 const HUA_ZH = { wood:'木', fire:'火', earth:'土', metal:'金', water:'水' };
-const STRONG_PHASE_HUA = new Set(['長生','冠帶','臨官','帝旺']);
 
-function findStemCombo(s1, s2) {
-  for (const [, v] of Object.entries(S.STEM_COMBOS))
-    if ((v.partner1 === s1 && v.partner2 === s2) || (v.partner1 === s2 && v.partner2 === s1)) return v;
-  return null;
-}
-function huaClashed(natal, b) { const c = S.SIX_CLASH[b]; return !!(c && activePositions(natal).some(p => natal[p].branch === c)); }
-// (g) ระดับราก DM ด้วย 12長生: real(真根不化) / hair(微根) / none(ไร้ราก/สลาย)
-function dmRootGateHua(natal) {
-  const dm = natal.day.stem, dmEl = S.STEM_ELEMENT[dm];
-  let strong = false, weak = false;
-  for (const p of activePositions(natal)) {
-    const b = natal[p].branch, hs = S.HIDDEN_STEMS[b]; if (!hs) continue;
-    if (![hs.main, hs.middle, hs.residual].filter(Boolean).some(h => S.STEM_ELEMENT[h] === dmEl)) continue;
-    const ph = S.twelvePhase(dm, b), cl = huaClashed(natal, b);
-    if (STRONG_PHASE_HUA.has(ph)) { if (!cl) return 'real'; strong = true; }  // 真根ไม่被沖=不化 · 被沖=เหลือ hair
-    else if (ph === '墓') { if (cl) weak = true; }                            // 沖開庫=hair · ปิด=ไม่นับ
-    else { if (!cl) weak = true; }                                           // 微根ไม่被沖=hair · 被沖=สลาย
-  }
-  return (strong || weak) ? 'hair' : 'none';
-}
-function huaRootCount(natal, el) {
-  let n = 0;
-  for (const p of activePositions(natal)) { const hs = S.HIDDEN_STEMS[natal[p].branch];
-    if (hs && [hs.main, hs.middle, hs.residual].filter(Boolean).some(h => S.STEM_ELEMENT[h] === el)) n++; }
-  return n;
-}
-function huaController(natal, hua) {  // (e) 化神被剋แรง (透干+本氣ราก)
-  const foes = Object.entries(S.ELEMENT_CONTROLS).filter(([, v]) => v === hua).map(([k]) => k);
-  const stems = activePositions(natal).map(p => natal[p].stem);
-  const transparent = stems.some(s => foes.includes(S.STEM_ELEMENT[s]));
-  const rooted = activePositions(natal).some(p => { const hs = S.HIDDEN_STEMS[natal[p].branch]; return hs && hs.main && foes.includes(S.STEM_ELEMENT[hs.main]); });
-  return transparent && rooted;
-}
-/* คืน 化X格 object เฉพาะ 真化 (ครบ 6 เงื่อนไข+DM rootless) · 假化/合而不化/隔位 → null
- * null = ไม่ declare 化格 → wrapper-7 ไม่ push 化神 (กัน over-declare用神พลิก180°) */
+/** wrapper-3 → wrapper-7 contract เดิม · เฉพาะ真化 */
 function findTransformation(natal) {
-  const dm = natal.day.stem;
-  const pos = activePositions(natal);
-  const idx = {}; pos.forEach((p, i) => idx[p] = i);
-  for (const other of pos.filter(p => p !== 'day')) {
-    const combo = findStemCombo(dm, natal[other].stem); if (!combo) continue;
-    const hua = combo.transformsTo, partner = natal[other].stem;
-    if (Math.abs(idx.day - idx[other]) !== 1) return null;          // (a) 緊貼 · 隔位 → 合而不化(ไม่化)
-    const gotMonth = HUA_MONTHS[hua].includes(natal.month.branch);  // (b) 得令
-    const gotGround = huaRootCount(natal, hua) >= 2;                // (c) 得地
-    const guide = HUA_GUIDE[hua];
-    const stems = pos.map(p => natal[p].stem);
-    const hasGuide = stems.includes(guide) || pos.some(p => {       // (f) 元神
-      const hs = S.HIDDEN_STEMS[natal[p].branch]; return hs && [hs.main, hs.middle, hs.residual].includes(guide); });
-    const noKiller = !huaController(natal, hua);                    // (e) 不受剋
-    const contention = stems.filter(s => s === dm).length > 1 || stems.filter(s => s === partner).length > 1; // (d) 爭/妒合
-    const dmRoot = dmRootGateHua(natal);                            // (g) DM rootless (12長生)
-    const core = gotMonth && gotGround && hasGuide && noKiller;
-    const blocks = contention && !core;                            // 妒合 exception: core ครบ → ไม่ block (真化ก่อน·競ทีหลัง)
-    if (core && !blocks && dmRoot === 'none') {
-      return {
-        structure: `化${HUA_ZH[hua]}格`, transformsTo: hua, partner, partnerSource: other,
-        seasonSupport: gotMonth, confidence: 'high',
-        detail: { verdict: '真化', dmRoot, gotMonth, gotGround, hasGuide, noKiller, contention },
-      };
-    }
-    return null;  // 假化/合而不化 → ไม่ declare 化格 (AI เห็น五合ผ่าน interactions + flag chart-packet)
-  }
-  return null;
+  const v = HUA_HHE.analyzeHuaQi(natal);
+  if (!v || v.verdict !== '真化') return null;
+  return {
+    structure: `化${HUA_ZH[v.transformElement]}格`,
+    transformsTo: v.transformElement,
+    partner: v.stems.partner,
+    partnerSource: v.partnerPosition,
+    seasonSupport: v.monthSupport,
+    confidence: v.confidence === 'high' ? 'high' : 'moderate',
+    detail: {
+      verdict: '真化',
+      dmRoot: v.dmRootGate,
+      gotMonth: v.monthSupport,
+      sourceRuleIds: v.sourceRuleIds,
+    },
+  };
+}
+
+/** expose full verdict (真化/假化/合而不化/null) สำหรับ chart-packet field huaQi
+ *   - ไม่กระทบ wrapper-7 (อ่านแค่ findTransformation)
+ *   - caller ต้อง dm fill เอง (wrapper-8 ปล่อย stems.dm = undefined) */
+function analyzeHuaQiVerdict(natal) {
+  const v = HUA_HHE.analyzeHuaQi(natal);
+  if (!v) return null;
+  return {
+    ...v,
+    stems: { dm: natal?.day?.stem || null, partner: v.stems.partner },
+  };
 }
 
 function findFollower(natal, counts) {
@@ -609,6 +577,6 @@ function runAll() {
   return ok;
 }
 
-module.exports = { inferGeJu, runAll };
+module.exports = { inferGeJu, analyzeHuaQiVerdict, runAll };
 
 if (require.main === module) runAll();

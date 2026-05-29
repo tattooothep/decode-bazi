@@ -19,6 +19,45 @@ import { getDaymasterProfile } from "./daymaster-profile";
 import { buildHehuaVerdicts, type HehuaVerdict } from "./bazi-hehua-resolver";
 import { buildMukuStates, buildMukuTransitStates, type MukuState, type MukuTransitInput, type MukuTransitState } from "./bazi-muku-state";
 import { auditStrictGeJuFromMonth, type StrictGeJuAudit } from "./bazi-strict-geju-audit";
+import { resolveXch, type XchResolution } from "./bazi-xch-resolver";
+import { buildShenShaTransit, type ShenShaTransit } from "./bazi-shensha-transit";
+import { buildSixRelativesEvents, type RelativeEvent } from "./bazi-six-relatives-events";
+import { createRequire } from "node:module";
+
+/* wrapper-8 化氣格 (CJS) · dynamic require + cache · sync-safe สำหรับ buildStructuredChartPacket
+ * promote จาก scripts/proto-huaqi-gate-v2.cjs (8/8 PASS · 29 พ.ค.)
+ * ไม่กระทบ wrapper-7 (อ่านแค่ findTransformation เดิม) · ไม่กระทบ usefulGods output
+ *
+ * ใช้ createRequire กัน ESM context (Next.js bundler + ts-loader) ที่ require อาจไม่ใช่ global
+ *   - ใน CJS build → createRequire ก็ใช้ได้
+ *   - ใน ESM runtime (ts-loader/strip-types) → ต้องผ่าน createRequire เท่านั้น */
+type _HuaQiRaw = {
+  verdict: "真化" | "假化" | "合而不化";
+  transformElement: "wood" | "fire" | "earth" | "metal" | "water";
+  stems: { dm: string | null; partner: string };
+  partnerPosition: "year" | "month" | "hour";
+  monthSupport: boolean;
+  dmRootLabel: "no_root" | "token_root" | "rooted";
+  dmRootGate?: string;
+  confidence: "high" | "medium" | "low";
+  sourceRuleIds: string[];
+  reasonZh?: string;
+  thaiSummary: string;
+};
+type _HuaQiAnalyzerInput = Record<string, { stem: string; branch: string } | null | undefined>;
+type _HuaQiAnalyzer = (n: _HuaQiAnalyzerInput) => _HuaQiRaw | null;
+let _analyzeHuaQiCached: _HuaQiAnalyzer | null | undefined; // undefined=not tried · null=load failed
+function _getAnalyzeHuaQi(): _HuaQiAnalyzer | null {
+  if (_analyzeHuaQiCached !== undefined) return _analyzeHuaQiCached;
+  try {
+    const req = createRequire(import.meta.url);
+    const mod = req("../../data/library/wrappers/3-ge-ju.js") as { analyzeHuaQiVerdict?: _HuaQiAnalyzer };
+    _analyzeHuaQiCached = typeof mod?.analyzeHuaQiVerdict === "function" ? mod.analyzeHuaQiVerdict : null;
+  } catch {
+    _analyzeHuaQiCached = null;
+  }
+  return _analyzeHuaQiCached;
+}
 
 type Calc = Awaited<ReturnType<typeof calcBazi>>;
 type Ext = ReturnType<typeof buildChartExtensions>;
@@ -128,6 +167,23 @@ export type ChartPacket = {
     /** ระดับความมั่นใจของโครงดวง (label จาก wrapper ge-ju · ไม่ใช่ % ตัวเลข) */
     confidence?: string | null;
   };
+  /** HK_HUAQI_VERDICT_V1 (wrapper-8 · 29 พ.ค. · promoted จาก proto v2 8/8 PASS)
+   * 化氣格 verdict (真化/假化/合而不化) · derived จาก wrapper-8 (analyzeHuaQi)
+   * additive-only · null = ไม่มีคู่ 五合 (DM ไม่อยู่ candidate ของ化氣格)
+   * ไม่กระทบ structure.label เดิม + ไม่กระทบ wrapper-7 (อ่านแค่ findTransformation) */
+  huaQi?: {
+    verdict: "真化" | "假化" | "合而不化" | null;
+    transformElement: ElementEN | null;
+    stems: { dm: string; partner: string };
+    /** position ของก้านคู่หู (year/month/hour) · null=ไม่มี (ไม่ adjacency) */
+    partnerPosition: "year" | "month" | "hour" | null;
+    monthSupport: boolean;
+    /** map dmRootGate (none/hair/real) → packet root label (no_root/token_root/rooted) */
+    dmRootLabel: RootLabel;
+    confidence: "high" | "medium" | "low";
+    sourceRuleIds: string[];
+    thaiSummary: string;
+  } | null;
   /** HK_STRICT_GEJU_AUDIT_V1
    * audit-only: เทียบ格局เดิมกับ strict 月令取用 ตาม子平真詮 · ไม่แทน structure.label เดิม */
   strictGeJuAudit?: {
@@ -384,6 +440,16 @@ export type ChartPacket = {
   /** 墓庫 state v1 · หลักฐานกลไกเสริมสำหรับ AI Sifu
    * ใช้บอกว่าคลัง 辰戌丑未 ปิด/เปิดแล้วหนุน/ต้าน/ปนอย่างไร · ไม่ใช่ full resolver และไม่ใช่กรอบจำกัดสไตล์คำตอบ */
   mukuStates?: MukuState[];
+  /** 合冲 resolver v1 (HK-XCH · ZPZQ-XCH-001/002/003) · หลักฐานกลไกเสริมสำหรับ AI Sifu
+   * - 三合解六沖 (weakened_by_combination)
+   * - 貪合忘冲 (suppressed_by_stem_combo)
+   * - 因解而反得刑衝 (secondary_clash_exposed)
+   * ใช้บอกว่า沖ในผังโดน合คลายแค่ไหน / มี刑/沖รองที่ถูกเปิดออกมาแทน · ไม่ตัดสินดี-ร้าย */
+  xchResolution?: XchResolution[];
+  /** 神煞 × transit activation (HK-SHENSHA-TRANSIT · SMTG-Vol3) · ดาวพิเศษที่ถูกกระตุ้นโดยวัยจร/ปีจร */
+  shenshaTransit?: ShenShaTransit[];
+  /** 六親 event-level forecast (HK-RELATIVE-EVENT · SMTG-Vol5 + YHZP) · เหตุการณ์ครอบครัวรายปี */
+  sixRelativesEvents?: RelativeEvent[];
   /** 墓庫 state v2 · หลักฐานคลังตามเวลา (大運/流年/流月) สำหรับคำถามย้อนหลัง/ล่วงหน้า */
   mukuTransitStates?: MukuTransitState[];
   luckInteractions: Interaction[];
@@ -1813,6 +1879,29 @@ export function buildStructuredChartPacket(
       calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
       calc.geJu?.structure || "ปกติ",
     ),
+    /* HK_HUAQI_VERDICT_V1 · wrapper-8 化氣格 verdict (真化/假化/合而不化)
+     * additive-only · ไม่ override structure.label · ไม่กระทบ wrapper-7 (อ่านแค่ findTransformation) */
+    huaQi: (() => {
+      const fn = _getAnalyzeHuaQi();
+      if (!fn) return null;
+      try {
+        const v = fn(calc.pillars as _HuaQiAnalyzerInput);
+        if (!v) return null;
+        return {
+          verdict: v.verdict,
+          transformElement: v.transformElement as ElementEN,
+          stems: { dm: v.stems.dm || dm, partner: v.stems.partner },
+          partnerPosition: v.partnerPosition,
+          monthSupport: v.monthSupport,
+          dmRootLabel: v.dmRootLabel as RootLabel,
+          confidence: v.confidence,
+          sourceRuleIds: v.sourceRuleIds,
+          thaiSummary: v.thaiSummary,
+        };
+      } catch {
+        return null;
+      }
+    })(),
     /* กลุ่ม ก (เชื่อมท่อ · 26 พ.ค.) — ของที่ engine คำนวณแล้วแต่ packet ไม่เคย expose
        หมายเหตุ: 命宮 ถอดออกชั่วคราว — สูตร buildLifePalace anchor (子=0) ต่างจากตำราคลาสสิก (寅=1)
        benchmark 正月子時: โค้ด→子 · ตำรา→卯 · รอ verify สำนักกับซินแสก่อนเปิด (กันอ่านเรือนผิด) */
@@ -1871,6 +1960,21 @@ export function buildStructuredChartPacket(
     interactions: { status: interactionStatus, raw },
     hehuaVerdicts: buildHehuaVerdicts(calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>),
     mukuStates,
+    xchResolution: resolveXch({
+      pillars: calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
+      interactions: raw,
+    }).resolutions,
+    shenshaTransit: buildShenShaTransit(
+      calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
+      {
+        luckBranch: currentLuck?.branch ?? null,
+        luckLabel: currentLuck ? `${currentLuck.stem}${currentLuck.branch}` : undefined,
+        luckAgeStart: currentLuck?.ageStart,
+        yearBranch: cyp?.branch ?? null,
+        yearLabel: cyp ? `${cyp.stem}${cyp.branch}` : undefined,
+      },
+    ),
+    sixRelativesEvents: [],
     mukuTransitStates,
     luckInteractions,
     annualInteractions,
@@ -1917,6 +2021,22 @@ export function buildStructuredChartPacket(
     dm,
     calc.pillars.month?.branch,
   );
+  /* Gap 4 post-processing: 六親 event-level (อาศัย sixRelatives + luckTimeline) */
+  if (packet.sixRelatives && packet.luckTimeline?.length) {
+    const BR_LIST = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+    const yt: { year: number; branch: string }[] = [];
+    const now = Number(process.env.HK_CURRENT_YEAR) || 2026;
+    for (let y = now; y <= now + 12; y++) {
+      const offset = ((y - 4) % 12 + 12) % 12;
+      yt.push({ year: y, branch: BR_LIST[offset] });
+    }
+    packet.sixRelativesEvents = buildSixRelativesEvents(
+      calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
+      packet.sixRelatives.items.map((it) => ({ relativeZh: it.relativeZh, starsZh: it.starsZh, foundAt: it.foundAt })),
+      yt,
+      12,
+    );
+  }
   return packet;
 }
 
@@ -2026,6 +2146,28 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     }
   }
   lines.push(structureLine);
+  /* HK_HUAQI_VERDICT_V1 (29 พ.ค. · wrapper-8 promote) — verdict block
+   * 真化/假化/合而不化 จาก analyzeHuaQi (8/8 golden) · แสดงเฉพาะเมื่อมีคู่ 五合 ติด DM
+   * additive · ไม่ override structure.label เดิม · ไม่กระทบ wrapper-7 */
+  if (packet.huaQi && packet.huaQi.verdict) {
+    const hq = packet.huaQi;
+    const CONF_TH: Record<string, string> = { high: "สูง", medium: "กลาง", low: "ต่ำ" };
+    const POS_TH: Record<string, string> = { year: "ปี", month: "เดือน", hour: "ยาม" };
+    const huaTh = hq.transformElement ? elementTh(hq.transformElement) : "-";
+    const partnerSrc = hq.partnerPosition ? POS_TH[hq.partnerPosition] : "-";
+    const monthFlag = hq.monthSupport ? "หนุน" : "ไม่หนุน";
+    const dmRootTh: Record<RootLabel, string> = {
+      no_root: "ไร้ราก", token_root: "ราก微根(บางมาก)", partial_root: "รากบางส่วน",
+      rooted: "มีราก", strong_root: "รากแข็ง",
+    };
+    const ruleIds = hq.sourceRuleIds.length ? hq.sourceRuleIds.join(", ") : "-";
+    lines.push(
+      `化氣格 verdict (wrapper-8): ${hq.verdict} → ธาตุที่แปร=${huaTh} · ก้านคู่=${hq.stems.partner}(${partnerSrc}) · ` +
+      `เดือนเกิด=${monthFlag} · ราก日干=${dmRootTh[hq.dmRootLabel] || hq.dmRootLabel} · ` +
+      `confidence=${CONF_TH[hq.confidence] || hq.confidence} · กฎอ้าง: ${ruleIds}`
+    );
+    lines.push(`化氣格 สรุป: ${hq.thaiSummary}`);
+  }
   /* HK_STRICT_GEJU_AUDIT_V1 — audit-only แยกชื่อ格 strict จาก practical engine label */
   if (packet.strictGeJuAudit?.tag === "HK_STRICT_GEJU_AUDIT_V1") {
     const a = packet.strictGeJuAudit;
@@ -2344,6 +2486,46 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       return `คลัง${v.branch}${v.storageElement}庫@${PILLAR_EN_TH[v.pillar] || v.pillar} → ${v.verdictZh}/${v.finalVerdict}${clash}${visible} · 藏干 ${hidden} · ${v.thaiSummary}${rules}`;
     });
     lines.push(`ข้อมูลเสริมคลัง墓庫 (mukuStates · หลักฐานเสริม): ${items.join(" · ")} · เป็นข้อมูลกลไกเพิ่มสำหรับซินแส ใช้อธิบายจังหวะคลัง/ก้านซ่อนร่วมกับ用神/忌神 วัยจร ปีจร และคำถามจริง · ไม่เปลี่ยนสไตล์และไม่ลดอิสระการอ่าน`);
+  }
+  if (packet.xchResolution?.length) {
+    const verdictTh: Record<string, string> = {
+      weakened_by_combination: "ชงอ่อนเพราะฮะ",
+      suppressed_by_stem_combo: "ชงถูกระงับเพราะ天干合",
+      secondary_clash_exposed: "เปิดชง/刑รองหลังแก้",
+    };
+    const items = packet.xchResolution.map((r) => {
+      const parts = r.participants
+        .map((p) => `${PILLAR_EN_TH[p.pillar] || p.pillar}:${p.token}(${p.role})`)
+        .join(",");
+      const sec = r.secondaryClash
+        ? ` · 刑/沖รอง:${r.secondaryClash.kind}${r.secondaryClash.branches.join("")}`
+        : "";
+      const conf = r.confidence === "high" ? "น้ำหนักสูง" : r.confidence === "medium" ? "น้ำหนักกลาง" : "น้ำหนักเบา";
+      const rules = r.sourceRuleIds.length ? ` · rule ${r.sourceRuleIds.join("/")}` : "";
+      return `${r.ruleId}/${verdictTh[r.verdict] || r.verdict} · ${r.reasonTh} · [${parts}]${sec} · ${conf}${rules}`;
+    });
+    lines.push(
+      `合冲resolver (xchResolution · หลักฐานเสริมการคลายชง/เปิดชงรอง · ZPZQ-XCH-001/002/003): ${items.join(
+        " · ",
+      )} · ใช้ประกอบการอ่านร่วมกับ用神/忌神 วัยจร ปีจร และคำถามจริง · ไม่ลดอิสระการอ่านของซินแส และไม่ใช่ฟันธงดี-ร้าย`,
+    );
+  }
+  /* Gap 4: 神煞 × transit activation (HK-SHENSHA-TRANSIT) */
+  if (packet.shenshaTransit?.length) {
+    const items = packet.shenshaTransit.slice(0, 10).map((s) => {
+      const ptTh: Record<string, string> = { year: "เสาปี", month: "เสาเดือน", day: "เสาวัน", hour: "เสายาม" };
+      const place = ptTh[s.natalPillar] || s.natalPillar;
+      const period = s.activatorPeriod.label ? ` · ช่วง ${s.activatorPeriod.label}` : "";
+      return `${s.starTh}(${s.starZh}) @${place}/${s.natalBranch} · ${s.verdict}${period} · ${s.thaiSummary}`;
+    });
+    lines.push(`神煞 transit activation (หลักฐานเสริม · SMTG-Vol3 ตำราอ้าง): ${items.join(" · ")}`);
+  }
+  /* Gap 4: 六親 event-level (HK-RELATIVE-EVENT) */
+  if (packet.sixRelativesEvents?.length) {
+    const items = packet.sixRelativesEvents.slice(0, 12).map((e) =>
+      `ปี ${e.year}/${e.triggerBranch}: ${e.relativeTh}(${e.relativeZh}) · ${e.eventType} · ${e.eventTh}`
+    );
+    lines.push(`六親 event timeline (หลักฐานเสริม · SMTG-Vol5 + YHZP ตำราอ้าง): ${items.join(" · ")}`);
   }
   if (packet.mukuTransitStates?.length) {
     const scopeRank: Record<string, number> = { luck: 0, annual: 1, month: 2 };
