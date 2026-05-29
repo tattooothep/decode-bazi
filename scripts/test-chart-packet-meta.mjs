@@ -34,6 +34,35 @@ const packet = {
   luckTimeline: [],
   annualPillar: { stem: "丙", branch: "寅" },
   interactions: { status: "none_detected", raw: [] },
+  mukuStates: [{
+    type: "墓庫",
+    branch: "辰",
+    pillar: "month",
+    storageElement: "水",
+    storageElementEn: "water",
+    hiddenStems: [
+      { stem: "戊", element: "土", elementEn: "earth", role: "neutral" },
+      { stem: "乙", element: "木", elementEn: "wood", role: "neutral" },
+      { stem: "癸", element: "水", elementEn: "water", role: "useful" },
+    ],
+    visibleStoredStems: [{ pillar: "month", stem: "戊" }],
+    isClashed: true,
+    clashPair: "辰戌",
+    clashedBy: [{ pillar: "hour", branch: "戌", distance: "gap1" }],
+    affectedPillars: ["month", "hour"],
+    storesUsefulElement: true,
+    storesAvoidElement: false,
+    usefulHiddenStems: ["癸"],
+    avoidHiddenStems: [],
+    finalVerdict: "opened_favorable",
+    status: "opened_favorable",
+    verdictZh: "沖庫得用",
+    reasonCodes: ["storage_branch_present", "storage_pair_clash_present", "stores_useful_element"],
+    sourceRuleIds: ["ZPZQ-MK-001"],
+    confidence: "high",
+    thaiSummary: "คลัง辰 (水庫) ถูก戌ชง (辰戌) และของในคลังอยู่ฝั่ง用/喜 จึงฟันธงเป็นคลังถูกกระตุ้นแล้วใช้ได้",
+    canonicalChinese: "刑衝未必成格",
+  }],
   luckInteractions: [],
   annualInteractions: [],
   interactionConflictSummary: [{
@@ -56,6 +85,7 @@ const checks = [
   ["explicit source render", out.includes("ผู้ใช้/endpoint ส่งมาโดยตรง")],
   ["time confidence render", out.includes("ไวต่อขอบวัน/เที่ยงคืน")],
   ["conflict summary render", out.includes("สรุปปฏิกิริยาซ้อน") && out.includes("反吟+六沖")],
+  ["mukuStates render", out.includes("ข้อมูลเสริมคลัง墓庫") && out.includes("沖庫得用/opened_favorable") && out.includes("ZPZQ-MK-001")],
 ];
 
 let fail = 0;

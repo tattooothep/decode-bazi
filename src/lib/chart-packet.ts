@@ -17,6 +17,7 @@ import type { buildChartExtensions } from "./chart-extensions";
 import { buildConceptionPalace, buildLifePalace, buildBodyPalace, buildSiLing, buildMinorLuck } from "./chart-table";
 import { getDaymasterProfile } from "./daymaster-profile";
 import { buildHehuaVerdicts, type HehuaVerdict } from "./bazi-hehua-resolver";
+import { buildMukuStates, type MukuState } from "./bazi-muku-state";
 
 type Calc = Awaited<ReturnType<typeof calcBazi>>;
 type Ext = ReturnType<typeof buildChartExtensions>;
@@ -299,6 +300,9 @@ export type ChartPacket = {
   /** 天干五合 verdict v1 · หลักฐานกลไกเสริมสำหรับ AI Sifu
    * ใช้บอกว่า 合 นี้แปร/ไม่แปร/มีตัวแย่ง/ตัวคั่นอย่างไร · ไม่ใช่กรอบจำกัดสไตล์คำตอบ */
   hehuaVerdicts?: HehuaVerdict[];
+  /** 墓庫 state v1 · หลักฐานกลไกเสริมสำหรับ AI Sifu
+   * ใช้บอกว่าคลัง 辰戌丑未 ปิด/เปิดแล้วหนุน/ต้าน/ปนอย่างไร · ไม่ใช่ full resolver และไม่ใช่กรอบจำกัดสไตล์คำตอบ */
+  mukuStates?: MukuState[];
   luckInteractions: Interaction[];
   annualInteractions: Interaction[];
   /** สรุปปฏิกิริยาซ้อนคู่เดียวกัน (เช่น 反吟 ครอบ 六沖/天克) · derived summary ไม่ใช่ full resolver */
@@ -1517,6 +1521,10 @@ export function buildStructuredChartPacket(
     annualPillar: { stem: cyp?.stem || "-", branch: cyp?.branch || "-" },
     interactions: { status: interactionStatus, raw },
     hehuaVerdicts: buildHehuaVerdicts(calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>),
+    mukuStates: buildMukuStates(
+      calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
+      { usefulElements: [...yong, ...xi], avoidElements: ji },
+    ),
     luckInteractions,
     annualInteractions,
     interactionConflictSummary: buildInteractionConflictSummary(raw, luckInteractions, annualInteractions),
@@ -1881,6 +1889,16 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       return `${v.pair}(${pairTxt}) → ${v.verdictZh}/${v.finalVerdict} · ${v.thaiSummary} · ${confidenceTh}${rules}`;
     });
     lines.push(`ข้อมูลเสริมก้านฟ้า五合 (hehuaVerdicts · หลักฐานเสริม): ${items.join(" · ")} · ใช้ประกอบการอ่านร่วมกับ用神/忌神 วัยจร ปีจร และคำถามจริง · ไม่ลดอิสระการอ่านของซินแส`);
+  }
+  if (packet.mukuStates?.length) {
+    const items = packet.mukuStates.map((v) => {
+      const hidden = v.hiddenStems.map((h) => `${h.stem}${h.element}${h.role === "neutral" ? "" : `:${h.role}`}`).join("/");
+      const clash = v.clashedBy.length ? ` · ชงโดย ${v.clashedBy.map((x) => `${PILLAR_EN_TH[x.pillar] || x.pillar}:${x.branch}/${x.distance}`).join(",")}` : "";
+      const visible = v.visibleStoredStems.length ? ` · 透干 ${v.visibleStoredStems.map((x) => `${PILLAR_EN_TH[x.pillar] || x.pillar}:${x.stem}`).join(",")}` : "";
+      const rules = v.sourceRuleIds.length ? ` · rule ${v.sourceRuleIds.join("/")}` : "";
+      return `คลัง${v.branch}${v.storageElement}庫@${PILLAR_EN_TH[v.pillar] || v.pillar} → ${v.verdictZh}/${v.finalVerdict}${clash}${visible} · 藏干 ${hidden} · ${v.thaiSummary}${rules}`;
+    });
+    lines.push(`ข้อมูลเสริมคลัง墓庫 (mukuStates · หลักฐานเสริม): ${items.join(" · ")} · เป็นข้อมูลกลไกเพิ่มสำหรับซินแส ใช้อธิบายจังหวะคลัง/ก้านซ่อนร่วมกับ用神/忌神 วัยจร ปีจร และคำถามจริง · ไม่เปลี่ยนสไตล์และไม่ลดอิสระการอ่าน`);
   }
   if (packet.luckInteractions.length) lines.push(renderInteractionGroup("ปฏิกิริยาวัยจร×ดวงเกิด", packet.luckInteractions, "raw_only"));
   if (packet.annualInteractions.length) lines.push(renderInteractionGroup("ปฏิกิริยาปีจร×เสาวัน", packet.annualInteractions, "raw_only"));
