@@ -266,6 +266,8 @@ export type ChartPacket = {
       diseaseGods: string[];
       medicineElements: ElementEN[];
       medicineGods: string[];
+      /** 橋藥/相神 — ธาตุสะพาน (เช่น 金生水/泄土) แยกจาก主藥 · มีเงื่อนไข ไม่ใช่ยาหลัก */
+      bridgeMedicine?: ElementEN[];
       reason: string;
       sourceIds: string[];
       guard: string;
@@ -277,6 +279,7 @@ export type ChartPacket = {
       diseaseGods: string[];
       medicineElements: ElementEN[];
       medicineGods: string[];
+      bridgeMedicine?: ElementEN[];
       reason: string;
       sourceIds: string[];
       guard: string;
@@ -352,6 +355,9 @@ export type ChartPacket = {
     xi: ElementEN[];
     /** ext.jishen.elements (ธาตุที่ระบบจัดเป็นธาตุระวัง · ไม่ใช่คำตัดสินสุดท้ายของซินแส) */
     ji: ElementEN[];
+    /** 有條件之喜 / 相神橋藥 — ธาตุที่เป็นสะพาน/相神 มีเงื่อนไข (เช่น 金生水/泄土 แต่忌傷官見官)
+     * derived จาก BY-08P bridgeMedicine · 滴天髓「隨其所向論喜忌」 · post-processed ไม่ใช่ blanket ji */
+    conditionalUse?: Array<{ element: ElementEN; role: string; goodWhen: string[]; badWhen: string[]; source: string }>;
     method: "derived_from_engine_top3_useful_elements";
     confidence: "engine_derived_not_sifu_final";
   };
@@ -1151,9 +1157,14 @@ export function buildBingYao(
     const wealthEl = ELEMENT_CONTROLS[dmElement];
     const sealEl = producerElementOf(dmElement);
     if (shouldUseSealHeavyWealthMedicine(ctx, dmElement, rootedness, elementProfile, wealthEl)) {
-      add(candidateBY("BY-08P", "印多用財: อิน/ไฟหนาในดวงร้อนแห้ง → 財/น้ำเป็นตัวยา", uniqElsBY([sealEl, controllerElementOf(dmElement)]), uniqElsBY([wealthEl, producerElementOf(wealthEl)]), dmElement,
-        `เดือน${ctx.monthBranch || "-"}ร้อนแห้ง + 印(${ELEMENT_TH[sealEl || "unknown"]}) count=${sealEl ? elementProfile.counts[sealEl] : "-"} และ透干=${countVisibleElementBY(ctx.pillars, sealEl)} → 子平論印 印多逢財 + 調候 ${ctx.dmStem || "-"}日${ctx.monthBranch || "-"}月 ${wealthEl ? ELEMENT_TH[wealthEl] : "-"}不可缺`,
-        "pattern: 印多用財 (印重+ดวงร้อนแห้ง) · candidate แยกจาก BY-08 財破印 · อ้าง 子平真詮論印 + 窮通寶鑑調候", ["ZPZQ-BY-08P", "ZPZQ-PRINT-001", "QTBJ-TIAOHOU-戊未"]));
+      /* 主藥=財(水) · 橋藥=食傷(金 = 生水之源/泄土之道 · 相神) แยกบทบาท ไม่รวมเป็น忌
+       * 子平真詮論印 印多用財 + 食傷泄秀生財 (ZPZQ บรรทัด 190) */
+      const bridgeEl = producerElementOf(wealthEl);   // ธาตุที่ผลิต財 = 食傷 = สะพาน生財
+      const by08p = candidateBY("BY-08P", "印多用財: อิน/ไฟหนาในดวงร้อนแห้ง → 主藥=財/น้ำ · 橋藥=食傷/ทอง", uniqElsBY([sealEl, controllerElementOf(dmElement)]), uniqElsBY([wealthEl]), dmElement,
+        `เดือน${ctx.monthBranch || "-"}ร้อนแห้ง + 印(${ELEMENT_TH[sealEl || "unknown"]}) count=${sealEl ? elementProfile.counts[sealEl] : "-"} และ透干=${countVisibleElementBY(ctx.pillars, sealEl)} → 子平論印 印多逢財 + 調候 ${ctx.dmStem || "-"}日${ctx.monthBranch || "-"}月 ${wealthEl ? ELEMENT_TH[wealthEl] : "-"}不可缺 · ${bridgeEl ? ELEMENT_TH[bridgeEl] : "-"}เป็น橋藥(生財/泄秀·相神)`,
+        "pattern: 印多用財 (印重+ดวงร้อนแห้ง) · 主藥=財 · 橋藥=食傷(生財/泄土·相神·忌傷官見官) · อ้าง 子平真詮論印 + 窮通寶鑑調候", ["ZPZQ-BY-08P", "ZPZQ-PRINT-001", "QTBJ-TIAOHOU-戊未"]);
+      if (bridgeEl) by08p.bridgeMedicine = [bridgeEl];
+      add(by08p);
     } else {
       add(candidateBY("BY-08", "財破印: ดาวทรัพย์ทำลายอิน/ตัวหนุน", [wealthEl], [dmElement], dmElement,
         `相神=${xiangShen?.verdict || "-"}: ${xsReason}`, "gate: ใช้เมื่อไม่เข้าเงื่อนไข從財/化格 · reason: 任從化 ต้องตาม勢ก่อนใช้สูตร扶抑", ["ZPZQ-BY-08"]));
@@ -1359,6 +1370,42 @@ function buildStrictGeJuAuditPacket(
     canonicalChinese: audit.canonicalChinese,
     noteTh: "audit-only: ใช้แยกชื่อ格ตาม月令 strict ออกจากพลังที่ engine อ่านใช้งานจริง ไม่ใช่การเปลี่ยนผลดวง",
   };
+}
+
+/* 橋藥 reconciler (30 พ.ค.) — แก้ความขัด BY-08P藥 vs usefulGods.ji
+ * ดวง印多用財: 金เป็น橋藥/相神(生水·泄土) ไม่ใช่忌本身 · ที่忌คือ傷官見官
+ * ย้าย bridge element ออกจาก blanket ji → ใส่ conditionalUse (有條件之喜)
+ * 滴天髓「隨其所向論喜忌」· ZPZQ 論相神 · ไม่แตะ wrapper-7 (ทำหลัง build)
+ * caveat: badWhen 傷官見官 เตือนเฉพาะเมื่อ官星(剋DM element)透干จริง */
+function reconcileBy08pBridgeMedicine(packet: ChartPacket): void {
+  const by = packet.bingYao;
+  const primary = by?.primary;
+  if (!primary || primary.id !== "BY-08P" || !primary.bridgeMedicine?.length) return;
+  if (!packet.usefulGods) return;
+  const dmEl = STEM_ELEMENT[packet.meta?.dayMaster || ""] || null;
+  /* 官星 = ธาตุที่剋 DM · ถ้า官透干จริง → badWhen 傷官見官 active */
+  const officerEl = dmEl ? controllerElementOf(dmEl) : null;
+  const officerVisible = officerEl
+    ? (packet.pillars as Array<{ stem?: string }>).some((p) => {
+        const st = p?.stem;
+        return st ? STEM_ELEMENT[st] === officerEl : false;
+      })
+    : false;
+  const conditional = packet.usefulGods.conditionalUse || [];
+  for (const el of primary.bridgeMedicine) {
+    /* ย้ายออกจาก blanket ji (ถ้ามี) — ไม่ใช่忌เดี่ยว */
+    if (packet.usefulGods.ji.includes(el)) {
+      packet.usefulGods.ji = packet.usefulGods.ji.filter((x) => x !== el);
+    }
+    conditional.push({
+      element: el,
+      role: "bridge_medicine_相神",
+      goodWhen: ["生水之源", "泄土之道", "傷官佩印", "開食傷"],
+      badWhen: officerVisible ? ["傷官見官(官星透干·ระวังจริง)"] : ["傷官見官(ถ้า官透干)"],
+      source: "BY-08P",
+    });
+  }
+  packet.usefulGods.conditionalUse = conditional;
 }
 
 export function buildStructuredChartPacket(
@@ -2037,6 +2084,7 @@ export function buildStructuredChartPacket(
       12,
     );
   }
+  reconcileBy08pBridgeMedicine(packet);
   return packet;
 }
 
@@ -2201,6 +2249,13 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     `ธาตุช่วยรอง=${fmtEls(packet.usefulGods.xi)} · ` +
     `ธาตุระวัง=${fmtEls(packet.usefulGods.ji)}`
   );
+  /* 有條件之喜/相神橋藥 — ธาตุที่มีบทบาทสะพาน มีเงื่อนไข (ไม่ใช่忌เดี่ยว) */
+  if (packet.usefulGods.conditionalUse?.length) {
+    const items = packet.usefulGods.conditionalUse.map((c) =>
+      `${elementTh(c.element)}(${c.role} · ดีเมื่อ ${c.goodWhen.join("/")} · ระวังเมื่อ ${c.badWhen.join("/")} · จาก ${c.source})`
+    );
+    lines.push(`ธาตุสะพาน/相神 มีเงื่อนไข (有條件之喜 · ไม่ใช่忌เดี่ยว · 滴天髓 隨其所向論喜忌): ${items.join(" · ")}`);
+  }
   /* HK_YONGSHEN_PROTOCOL_SPLIT_V1 — แยกชื่อ用神ตามตำรา ไม่เปลี่ยน logic เดิม */
   if (packet.yongShenProtocols?.tag === "HK_YONGSHEN_PROTOCOL_SPLIT_V1") {
     const yp = packet.yongShenProtocols;
@@ -2328,7 +2383,8 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       const med = p.medicineElements.length ? fmtEls(p.medicineElements) : "-";
       const dg = p.diseaseGods.length ? p.diseaseGods.map((g) => TEN_GOD_TH[g] || g).join("/") : "-";
       const mg = p.medicineGods.length ? p.medicineGods.map((g) => TEN_GOD_TH[g] || g).join("/") : "-";
-      lines.push(`病藥 (จุดเสีย/ตัวยา · ${p.id}): 病=${p.diseaseType} · ธาตุ/ดาวที่เป็น病=${dis}/${dg} · 藥=ใช้${med}/${mg}เป็นตัวยา · เหตุผล=${p.reason} · อ้างอิง=${p.sourceIds.join(",")} · guard=${p.guard} · ⚠️ นี่คือจุดเสียเชิงโครงดวง ไม่ใช่โรคสุขภาพตรงๆ`);
+      const bridgeTxt = p.bridgeMedicine?.length ? ` · 橋藥/相神(สะพาน·มีเงื่อนไข)=${p.bridgeMedicine.map((e) => elementTh(e)).join("/")}` : "";
+      lines.push(`病藥 (จุดเสีย/ตัวยา · ${p.id}): 病=${p.diseaseType} · ธาตุ/ดาวที่เป็น病=${dis}/${dg} · 主藥=ใช้${med}/${mg}เป็นตัวยาหลัก${bridgeTxt} · เหตุผล=${p.reason} · อ้างอิง=${p.sourceIds.join(",")} · guard=${p.guard} · ⚠️ นี่คือจุดเสียเชิงโครงดวง ไม่ใช่โรคสุขภาพตรงๆ`);
     } else {
       lines.push("病藥 (จุดเสีย/ตัวยา): ยังต้องให้ซินแสอ่านประกอบจาก用神/相神/รากธาตุ · engine v1 ไม่พบ病หลักที่ชัดพอจะฟันธง");
     }
