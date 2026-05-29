@@ -101,6 +101,19 @@ const stats = {
   guardFail: 0,
 };
 
+function pct(n, d) {
+  return d ? `${Math.round(n / d * 100)}%` : "0%";
+}
+
+function countBy(rows, getKey) {
+  const out = new Map();
+  for (const row of rows) {
+    const key = getKey(row) || "-";
+    out.set(key, (out.get(key) || 0) + 1);
+  }
+  return [...out.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+
 for (let i = 0; i < corpus.length; i++) {
   const rec = corpus[i];
   const natal = P(rec.pillars);
@@ -144,7 +157,7 @@ for (let i = 0; i < corpus.length; i++) {
 
 console.log("=== ZPZQ 81 命例 audit — current engine ===");
 console.log(`total: ${stats.total}`);
-console.log(`xiangShen coverage: ${stats.xiangShen}/${stats.total} (${Math.round(stats.xiangShen / stats.total * 100)}%) · null=${stats.null}`);
+console.log(`xiangShen coverage: ${stats.xiangShen}/${stats.total} (${pct(stats.xiangShen, stats.total)}) · null=${stats.null}`);
 console.log(`text polarity: positive=${stats.positive} · negative=${stats.negative} · mixed=${stats.mixed} · unlabeled=${stats.unlabeled}`);
 console.log(`strict heuristic alignment: PASS=${stats.strictPass} · FAIL=${stats.strictFail} · REVIEW=${stats.review}`);
 console.log(`guard oracle v1 (not full 81 hard-label): PASS=${stats.guardPass}/${stats.total} · FAIL=${stats.guardFail}`);
@@ -165,6 +178,11 @@ const out = {
   generatedAt: new Date().toISOString(),
   note: "Heuristic polarity audit. Corpus lacks normalized expected verdict fields; MIXED_REVIEW/UNLABELED require human labeling before hard regression.",
   stats,
+  buckets: {
+    byGe: Object.fromEntries(countBy(rows, (r) => r.ge || r.reason)),
+    byXiangShen: Object.fromEntries(countBy(rows, (r) => r.xiangShen ? `${r.xiangShen}${r.subLabel ? "/" + r.subLabel : ""}` : r.reason)),
+    reviewReasons: Object.fromEntries(countBy(rows.filter((r) => r.align === "REVIEW"), (r) => r.reason)),
+  },
   rows,
 };
 fs.mkdirSync("/tmp/hourkey-audit", { recursive: true });
@@ -177,8 +195,50 @@ fs.writeFileSync(
       .map((v) => String(v ?? "").replace(/\t/g, " ").replace(/\n/g, " ")).join("\t")),
   ].join("\n"),
 );
+const md = [
+  "# ZPZQ 81 Mingli Audit",
+  "",
+  `Generated: ${out.generatedAt}`,
+  "",
+  "## Scope",
+  "",
+  "- Audit-only runner. It does not change runtime, prompt, stream, packet, or AI Sifu behavior.",
+  "- Corpus is still raw ctext/commentary, so this is a baseline guard and review queue, not a final 81/81 doctrinal proof.",
+  "- `guard oracle v1` is intentionally narrow: known special/fallback cases are skipped from 相神 assertion; cited usable cases must not become 破格; selected resolver phrases must stay present.",
+  "",
+  "## Summary",
+  "",
+  `- total: ${stats.total}`,
+  `- xiangShen coverage: ${stats.xiangShen}/${stats.total} (${pct(stats.xiangShen, stats.total)})`,
+  `- null/special/fallback: ${stats.null}/${stats.total} (${pct(stats.null, stats.total)})`,
+  `- text polarity: positive=${stats.positive}, negative=${stats.negative}, mixed=${stats.mixed}, unlabeled=${stats.unlabeled}`,
+  `- strict heuristic alignment: PASS=${stats.strictPass}, FAIL=${stats.strictFail}, REVIEW=${stats.review}`,
+  `- guard oracle v1: PASS=${stats.guardPass}/${stats.total}, FAIL=${stats.guardFail}`,
+  "",
+  "## Review Buckets",
+  "",
+  "| Bucket | Count |",
+  "|---|---:|",
+  ...countBy(rows.filter((r) => r.align === "REVIEW"), (r) => r.reason).slice(0, 25).map(([k, v]) => `| ${String(k).replace(/\|/g, "/")} | ${v} |`),
+  "",
+  "## Guard Failures",
+  "",
+  ...(stats.guardFail
+    ? rows.filter((r) => r.guardAlign === "FAIL").map((r) => `- ${r.no}. ${r.name || "-"} · ${r.pillars} · ${r.guardNote}`)
+    : ["- none"]),
+  "",
+  "## Next Safe Steps",
+  "",
+  "1. Normalize expected labels for the 69 REVIEW cases in a separate data file; do not edit engine behavior during labeling.",
+  "2. Split special/fallback cases into explicit buckets: 從/化/專旺, 雜氣, fallback geju, and normal 8格.",
+  "3. Only after human-reviewed labels exist, convert selected rows into hard regression tests.",
+  "4. Keep all future resolver work evidence-only until the audit shows which rules are stable.",
+  "",
+].join("\n");
+fs.writeFileSync("/tmp/hourkey-audit/zpzq-81-audit.md", md);
 console.log("\noutputs:");
 console.log("  /tmp/hourkey-audit/zpzq-81-audit.json");
 console.log("  /tmp/hourkey-audit/zpzq-81-audit.tsv");
+console.log("  /tmp/hourkey-audit/zpzq-81-audit.md");
 
 process.exit(stats.strictFail || stats.guardFail ? 1 : 0);
