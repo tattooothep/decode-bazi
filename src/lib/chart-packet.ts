@@ -225,6 +225,7 @@ export type ChartPacket = {
       sourceIds: string[];
       guard: string;
     }>;
+    consistencyWarnings?: string[];
   } | null;
   /** HK_YONGSHEN_PROTOCOL_SPLIT_V1
    * ใช้แก้ชื่อให้ตรงตำรา: 子平真詮 用神(月令/格局) ≠ ธาตุช่วยรวมของ engine
@@ -1023,6 +1024,32 @@ function candidateBY(
 ): BingYaoCandidate {
   return { id, diseaseType, diseaseElements, diseaseGods, medicineElements, medicineGods, reason, sourceIds, guard };
 }
+type BingYaoContext = {
+  pillars?: Record<PillarKey, { stem: string; branch: string } | null>;
+  dmStem?: string;
+  monthBranch?: string | null;
+  climate?: string | null;
+};
+function countVisibleElementBY(pillars: BingYaoContext["pillars"], el: ElementEN | null | undefined): number {
+  if (!pillars || !el) return 0;
+  return PILLAR_KEYS.filter((k) => STEM_ELEMENT[pillars[k]?.stem || ""] === el).length;
+}
+function shouldUseSealHeavyWealthMedicine(
+  ctx: BingYaoContext,
+  dmElement: ElementEN,
+  rootedness: ChartPacket["rootedness"],
+  elementProfile: ChartPacket["elementProfile"],
+  wealthEl: ElementEN | null | undefined,
+): boolean {
+  if (!rootedness || !wealthEl) return false;
+  const sealEl = producerElementOf(dmElement);
+  const hotDryMonth = ["巳", "午", "未", "戌"].includes(ctx.monthBranch || "");
+  const sealCount = sealEl ? (elementProfile.counts[sealEl] || 0) : 0;
+  const sealVisible = countVisibleElementBY(ctx.pillars, sealEl);
+  const wealthCount = elementProfile.counts[wealthEl] || 0;
+  const dmNotWeak = !["no_root", "token_root", "partial_root"].includes(rootedness.dmLabel);
+  return hotDryMonth && sealCount >= 2 && sealVisible >= 1 && (wealthCount < 2 || dmNotWeak);
+}
 /* 病藥 v1 — จุดเสียของโครงดวง + ตัวยาแก้ (ไม่ใช่โรคสุขภาพ)
    子平真詮: 傷其扶/去其抑者為病，除病神為藥 · 滴天髓: 旺太過宜泄, 弱有根宜扶, 弱無根從勢 */
 export function buildBingYao(
@@ -1033,6 +1060,7 @@ export function buildBingYao(
   xiangShen: ChartPacket["xiangShen"] | null,
   chengBaiNow: ChartPacket["chengBaiNow"] | null,
   elementProfile: ChartPacket["elementProfile"],
+  ctx: BingYaoContext = {},
 ): ChartPacket["bingYao"] {
   if (dmElement === "unknown" || !rootedness) return { status: "needs_review", primary: null, candidates: [] };
   const yong = usefulGods.yong[0] || null;
@@ -1055,8 +1083,16 @@ export function buildBingYao(
 
   // BY-08/BY-10/BY-09/BY-05: rule-table tied to 相神/成敗 reason first.
   if (xiangShen?.subLabel === "財為忌" || /財破印|財重破印/.test(xsReason)) {
-    add(candidateBY("BY-08", "財破印: ดาวทรัพย์ทำลายอิน/ตัวหนุน", [ELEMENT_CONTROLS[dmElement]], [dmElement], dmElement,
-      `相神=${xiangShen?.verdict || "-"}: ${xsReason}`, "ถ้าเป็น從財/化格 ห้ามใช้สูตรนี้ ต้องตาม勢ก่อน", ["ZPZQ-BY-08"]));
+    const wealthEl = ELEMENT_CONTROLS[dmElement];
+    const sealEl = producerElementOf(dmElement);
+    if (shouldUseSealHeavyWealthMedicine(ctx, dmElement, rootedness, elementProfile, wealthEl)) {
+      add(candidateBY("BY-08P", "印多用財: อิน/ไฟหนาในดวงร้อนแห้ง ต้องใช้財/น้ำลดอิน", uniqElsBY([sealEl, controllerElementOf(dmElement)]), uniqElsBY([wealthEl, producerElementOf(wealthEl)]), dmElement,
+        `เดือน${ctx.monthBranch || "-"}ร้อนแห้ง + 印(${ELEMENT_TH[sealEl || "unknown"]}) count=${sealEl ? elementProfile.counts[sealEl] : "-"} และ透干=${countVisibleElementBY(ctx.pillars, sealEl)} → 子平論印 印多逢財 + 調候 ${ctx.dmStem || "-"}日${ctx.monthBranch || "-"}月 ${wealthEl ? ELEMENT_TH[wealthEl] : "-"}不可缺`,
+        "HK resolver: เมื่อดวงร้อนแห้งและ印重 ให้สูตร印多用財ชนะ財破印; BY-08 เดิมเป็นข้อมูลโครง印 ไม่ใช่โรคหลัก", ["ZPZQ-BY-08P", "ZPZQ-PRINT-001", "QTBJ-TIAOHOU-戊未"]));
+    } else {
+      add(candidateBY("BY-08", "財破印: ดาวทรัพย์ทำลายอิน/ตัวหนุน", [wealthEl], [dmElement], dmElement,
+        `相神=${xiangShen?.verdict || "-"}: ${xsReason}`, "ถ้าเป็น從財/化格 ห้ามใช้สูตรนี้ ต้องตาม勢ก่อน", ["ZPZQ-BY-08"]));
+    }
   }
   if (/煞重身輕|殺重|財黨煞|財生殺/.test(xsReason) || (xiangShen?.geZh === "七殺格" && xiangShen.verdict === "破格")) {
     add(candidateBY("BY-10", "殺重身輕/財黨殺: แรงกดดันฆาตแรงกว่าตัวดวง", [controllerElementOf(dmElement) || dmElement], uniqElsBY([ELEMENT_PRODUCES[dmElement], producerElementOf(dmElement), dmElement]), dmElement,
@@ -1101,7 +1137,13 @@ export function buildBingYao(
   }
 
   const primary = candidates[0] || null;
-  return { status: primary ? "ok" : "needs_review", primary, candidates };
+  const consistencyWarnings: string[] = [];
+  if (primary && yong && !primary.medicineElements.includes(yong)) {
+    consistencyWarnings.push(
+      `INCONSISTENT_LAYERS: 病藥藥=${primary.medicineElements.map((e) => ELEMENT_TH[e]).join("/")} แต่ engine用神หลัก=${ELEMENT_TH[yong]} · ให้ยึด用神分層/調候ก่อน แล้วใช้病藥เป็นข้อมูลรอง`
+    );
+  }
+  return { status: primary ? "ok" : "needs_review", primary, candidates, consistencyWarnings };
 }
 
 const TIAOHOU_PROTOCOL: Record<string, { regulator: ElementEN; bridge: ElementEN; th: string }> = {
@@ -1119,6 +1161,7 @@ type StrictTiaoHouRule = {
 };
 const STRICT_TIAOHOU_TABLE: Record<string, StrictTiaoHouRule> = {
   "壬|戌": { primary: ["甲"], secondary: ["丙"], tertiary: [], rationaleZh: "以甲制戌中戊土，丙火為佐" },
+  "戊|未": { primary: ["癸"], secondary: ["丙"], tertiary: ["甲"], rationaleZh: "調候為急，癸不可缺，丙火配用，土重不能無甲" },
 };
 function stemsToElements(stems: string[]): ElementEN[] {
   return uniqElsBY(stems.map((s) => STEM_ELEMENT[s]).filter(Boolean));
@@ -1867,6 +1910,7 @@ export function buildStructuredChartPacket(
     packet.xiangShen ?? null,
     packet.chengBaiNow ?? null,
     packet.elementProfile,
+    { pillars: calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>, dmStem: dm, monthBranch: calc.pillars.month?.branch, climate: calc.climate },
   );
   packet.yongShenProtocols = buildYongShenProtocols(
     packet.structure.label,
@@ -1911,8 +1955,9 @@ function normalizeLpType(t: string): InteractionTypeZh {
  * renderChartPrompt · ChartPacket → ข้อความไทย (presentation เท่านั้น)
  *   ทุกบรรทัด render จาก field ใน packet · คงโทน "key: value" แบบเดิม
  * ════════════════════════════════════════════════════════════════ */
-export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDrilldown?: boolean } = {}): string {
+export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDrilldown?: boolean; subjectLabel?: string } = {}): string {
   const includeTransitDrilldown = opts.includeTransitDrilldown !== false;
+  const subjectPrefix = opts.subjectLabel ? `[${opts.subjectLabel}] ` : "";
   const lines: string[] = [];
 
   /* รายเสา */
@@ -2020,7 +2065,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     `ธาตุช่วยจากระบบ (engine-derived · ใช้เป็นฐานให้ซินแสตัดสิน): ` +
     `ธาตุช่วยหลัก=${fmtEls(packet.usefulGods.yong)} · ` +
     `ธาตุช่วยรอง=${fmtEls(packet.usefulGods.xi)} · ` +
-    `ธาตุที่ระบบจัดเป็นธาตุระวัง=${fmtEls(packet.usefulGods.ji)}`
+    `ธาตุระวัง=${fmtEls(packet.usefulGods.ji)}`
   );
   /* HK_YONGSHEN_PROTOCOL_SPLIT_V1 — แยกชื่อ用神ตามตำรา ไม่เปลี่ยน logic เดิม */
   if (packet.yongShenProtocols?.tag === "HK_YONGSHEN_PROTOCOL_SPLIT_V1") {
@@ -2048,7 +2093,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       `用神分層 (${yp.tag} · ไทยนำจีนตาม · ใช้กันคำเรียกผิดตำรา ไม่ใช่ข้อจำกัดคำตอบ): ` +
       `格局/月令用神=${geJuForPrompt} · ` +
       `調候用神=${strictTiao} · climate補助=${tiao} · 扶抑用神=${fuyi} · 病藥=${by} · 相神=${xs} · ` +
-      `สรุปรวม engine=${fmtEls(yp.finalCombined.yong)} / 喜=${fmtEls(yp.finalCombined.xi)} / 忌=${fmtEls(yp.finalCombined.ji)} · ` +
+      `engineรวมภาพรวม=${fmtEls(yp.finalCombined.yong)} / 喜=${fmtEls(yp.finalCombined.xi)} / 忌=${fmtEls(yp.finalCombined.ji)} · ` +
       `${yp.finalCombined.noteTh} · อ้างหลัก ${yp.structure.canonicalChinese}`
     );
   }
@@ -2141,6 +2186,9 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* 病藥 v1 (28 พ.ค. · 子平真詮/滴天髓 · จุดเสียเชิงโครงสร้าง + ตัวยาแก้ · ไม่ใช่โรคสุขภาพ) */
   if (packet.bingYao) {
     const by = packet.bingYao;
+    if (by.consistencyWarnings?.length) {
+      lines.push(`病藥 consistency check: ${by.consistencyWarnings.join(" · ")}`);
+    }
     if (by.status === "not_applicable") {
       lines.push("病藥 (จุดเสีย/ตัวยา): ไม่ใช้สูตร扶抑病藥ตรงๆ เพราะดวงนี้เข้าโครงพิเศษ/從化/專旺 · ให้อ่านตาม勢ของโครงพิเศษก่อน");
     } else if (by.primary) {
@@ -2190,14 +2238,39 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
 
   /* วัยจร + ปีจร */
   lines.push(
-    `วัยจรปัจจุบัน: ${packet.currentLuck
+    `${subjectPrefix}วัยจรปัจจุบัน: ${packet.currentLuck
       ? `${STEM_TH[packet.currentLuck.stem] || packet.currentLuck.stem}/${BRANCH_TH_NAME[packet.currentLuck.branch] || packet.currentLuck.branch} อายุ ${packet.currentLuck.ageStart}-${packet.currentLuck.ageEnd} · ธาตุ${elementTh(packet.currentLuck.element)}`
       : "-"}`
   );
   /* วัยจรทั้งชีวิต + ปีครอบ · ให้ AI อ่านปีไหนใช้วัยจรของปีนั้น (กันเดาปฏิกิริยาข้ามวัยจร) */
   if (packet.luckTimeline.length) {
+    const curIdx = packet.luckTimeline.findIndex((t) => t.isCurrent);
+    const cur = curIdx >= 0 ? packet.luckTimeline[curIdx] : null;
+    const prev = curIdx > 0 ? packet.luckTimeline[curIdx - 1] : null;
+    if (cur) {
+      lines.push(
+        `${subjectPrefix}LUCK LOCK: ` +
+        `大運ปัจจุบัน=${cur.stem}${cur.branch} อายุ${cur.ageStart}-${cur.ageEnd} ปี${cur.yearStart}-${cur.yearEnd}` +
+        `${prev ? ` · 大運อดีต=${prev.stem}${prev.branch} อายุ${prev.ageStart}-${prev.ageEnd} ปี${prev.yearStart}-${prev.yearEnd}` : ""}`
+      );
+      const regulator = packet.yongShenProtocols?.tiaoHou.regulator || null;
+      const bridge = packet.yongShenProtocols?.tiaoHou.bridge || null;
+      const curStemEl = STEM_ELEMENT[cur.stem] || null;
+      const curBranchEl = BRANCH_ELEMENT[cur.branch] || null;
+      const prevStemEl = prev ? (STEM_ELEMENT[prev.stem] || null) : null;
+      const prevBranchEl = prev ? (BRANCH_ELEMENT[prev.branch] || null) : null;
+      const curHasRegulator = !!regulator && (curStemEl === regulator || curBranchEl === regulator);
+      const prevHasRegulator = !!regulator && !!prev && (prevStemEl === regulator || prevBranchEl === regulator);
+      if (regulator && curHasRegulator && !prevHasRegulator) {
+        lines.push(
+          `${subjectPrefix}จุดพลิกใหญ่ของวัยจร (大運氣候轉折): อายุ ${cur.ageStart} (ปี ${cur.yearStart}) — ` +
+          `วัยจรเริ่มพา${elementTh(regulator)}${bridge ? `+${elementTh(bridge)}` : ""}เข้าผัง · ` +
+          `用神/調候เริ่มกลับมาเดินชัดกว่ารอบก่อน → ก่อนหน้านี้คือกดสภาพเดิม หลังจากนี้คือเริ่มคลายสภาพเดิม`
+        );
+      }
+    }
     lines.push(
-      `วัยจรทั้งชีวิต (อ่านปีไหนใช้วัยจรของปีนั้น · อย่าดึงวัยจรผิดช่วงมาปน): ` +
+      `${subjectPrefix}วัยจรทั้งชีวิต (อ่านปีไหนใช้วัยจรของปีนั้น · อย่าดึงวัยจรผิดช่วงมาปน): ` +
       packet.luckTimeline
         .map((t) => `${STEM_TH[t.stem] || t.stem}/${BRANCH_TH_NAME[t.branch] || t.branch}(อายุ${t.ageStart}-${t.ageEnd}·ปี${t.yearStart}-${t.yearEnd}·ธาตุ${elementTh(t.element)})${t.isCurrent ? "◀ปัจจุบัน" : ""}`)
         .join(" · ")
@@ -2217,7 +2290,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     const impactTxt = (xs: Array<{ summaryTh: string; strength: "low" | "medium" | "high" | "critical" }>) =>
       xs.length ? xs.slice(0, 3).map((x) => `${x.summaryTh}[${strengthTh[x.strength] || x.strength}]`).join(" | ") : "-";
     const monthTxt = (m: NonNullable<NonNullable<ChartPacket["transitDrilldown"]>["currentDecade"]>["years"][number]["months"][number]) =>
-      `${String(m.month).padStart(2, "0")}${m.pillar.stem}${m.pillar.branch}/${tgTh(m.tenGod)}/${flagTh[m.flag] || m.flag}` +
+      `流月${String(m.month).padStart(2, "0")}:${m.pillar.stem}${m.pillar.branch}/${tgTh(m.tenGod)}/${flagTh[m.flag] || m.flag}` +
       `${m.jieqiStart ? `/เริ่ม${m.jieqiStart.name}:${m.jieqiStart.date}` : "/fallbackกลางเดือน"}` +
       `${m.jieqiEnd ? `/จบ${m.jieqiEnd.date}` : ""}` +
       `/ฟ้า${elementTh(m.stemElement)}=${roleTh[m.stemUsefulRole]}` +
@@ -2227,7 +2300,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       `${m.vsLuckBranch.length ? `/運:${tags(m.vsLuckBranch)}` : ""}` +
       `/กระทบ:${impactTxt(m.impacts)}`;
     const years = d.years.map((y) =>
-      `${y.year}(อายุ${y.age}) ${y.pillar.stem}${y.pillar.branch}/${tgTh(y.tenGod)}/${flagTh[y.flag] || y.flag}` +
+      `${subjectPrefix}流年${y.year}(อายุ${y.age}) ${y.pillar.stem}${y.pillar.branch}/${tgTh(y.tenGod)}/${flagTh[y.flag] || y.flag}` +
       `${y.baziYearStart ? `/เริ่ม${y.baziYearStart.name}:${y.baziYearStart.date}` : ""}` +
       `${y.baziYearEnd ? `/จบ${y.baziYearEnd.date}` : ""}` +
       `/ฟ้า${elementTh(y.stemElement)}=${roleTh[y.stemUsefulRole]}` +
@@ -2239,7 +2312,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       `; เดือนจร=${y.months.map(monthTxt).join(" | ")}`
     );
     lines.push(
-      `ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed · เสาปี/เดือนคำนวณมาแล้ว ไม่ต้องคำนวณเสาเอง · ใช้เป็นหลักฐานให้ซินแสอ่านย้อนหลัง/ล่วงหน้าได้เต็มที่): ` +
+      `${subjectPrefix}ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed · เสาปี/เดือนคำนวณมาแล้ว ไม่ต้องคำนวณเสาเอง · ใช้เป็นหลักฐานให้ซินแสอ่านย้อนหลัง/ล่วงหน้าได้เต็มที่): ` +
       `大運 ${d.luckPillar.stem}${d.luckPillar.branch} อายุ ${d.ageStartDetail || d.ageStart}-${d.ageEndDetail || d.ageEnd}` +
       `${d.startDate && d.endDate ? ` · วันที่จริง ${d.startDate} ถึงก่อน ${d.endDate}` : ""}` +
       `${d.directionTh ? ` · เดิน運 ${d.directionTh}` : ""} · ปีที่คร่อมจริง ${d.yearStart}-${d.yearEnd} · ` +

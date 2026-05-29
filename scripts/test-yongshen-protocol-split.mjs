@@ -61,7 +61,7 @@ ok("finalCombined keeps old usefulGods unchanged", JSON.stringify(p?.finalCombin
 ok("xiangShen is separate from tiaoHou/fuyi", p?.xiangShen.protocol === "相神" && p?.tiaoHou.protocol === "調候用神" && p?.fuyi.protocol === "扶抑用神");
 ok("render exposes 用神分層 to AI", prompt.includes("用神分層 (HK_YONGSHEN_PROTOCOL_SPLIT_V1"));
 ok("render says split is not a response limiter", prompt.includes("ไม่ใช่ข้อจำกัดคำตอบ"));
-ok("render keeps final engine combined wording", prompt.includes("สรุปรวม engine=") && prompt.includes("ไม่ใช่ 子平真詮 用神(月令) อย่างเดียว"));
+ok("render keeps final engine combined wording", prompt.includes("engineรวมภาพรวม=") && prompt.includes("ไม่ใช่ 子平真詮 用神(月令) อย่างเดียว"));
 ok("render does not leak raw percent from geJu basis", !/[0-9.]+%/.test(prompt));
 ok("validateChartPacket stays clean", validation.ok === true);
 
