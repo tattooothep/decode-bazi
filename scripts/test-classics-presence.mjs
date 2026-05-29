@@ -1,16 +1,17 @@
 /**
- * test-classics-presence (Gap 1 · 29 พ.ค.)
- * พิสูจน์ว่าตำรา 三命通會 + 淵海子平 ถูกโหลดเข้า prompt sifu ครบ
+ * test-classics-presence (Gap 1 · 29 พ.ค. · เพิ่ม 神峰通考 30 พ.ค.)
+ * พิสูจน์ว่าตำรา 三命通會 + 淵海子平 + 神峰通考 ถูกโหลดเข้า prompt sifu ครบ
  *
  * รัน: node scripts/test-classics-presence.mjs
  *
- * 4 จุดที่ assert:
+ * 5 จุดที่ assert:
  *   1. smtg-clean.md มีอยู่ + ขนาด > 50KB + มี keyword 神煞/納音
  *   2. yhzp-clean.md มีอยู่ + ขนาด > 50KB + มี keyword 五干通變(=傷官~金神)/喜忌
- *   3. /api/sifu/route.ts ลงทะเบียน smtg + yhzp ใน SIFU_EXTRA_FILES
- *   4. /api/sifu/group/route.ts ลงทะเบียน smtg + yhzp ใน SIFU_EXTRA_FILES
+ *   3. sftk-clean.md มีอยู่ + ขนาด > 30KB + มี keyword 病藥/動靜/合婚/蓋頭 (神峰通考 verbatim)
+ *   4. /api/sifu/route.ts ลงทะเบียน smtg + yhzp + sftk ใน SIFU_EXTRA_FILES
+ *   5. /api/sifu/group/route.ts ลงทะเบียน smtg + yhzp + sftk ใน SIFU_EXTRA_FILES
  *
- * เกณฑ์ตาม Gap 1 brief: ต้องผ่าน 4/4 + รวมกับเดิม 64/64 = 68/68
+ * เกณฑ์: ต้องผ่าน 5/5
  */
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -66,29 +67,55 @@ function t(label, ok, detail = "") {
   );
 }
 
-/* 3. /api/sifu/route.ts ลงทะเบียน */
+/* 3. 神峰通考 (sftk · 病藥論 ต้นทาง BY-08) */
+{
+  const path = join(SIFU_EXTRA, "sftk-clean.md");
+  let size = 0, text = "";
+  try {
+    size = statSync(path).size;
+    text = readFileSync(path, "utf8");
+  } catch (e) {
+    /* will fail below */
+  }
+  const exists = size > 0;
+  const big = size > 30 * 1024;
+  /* 病藥論 + 動靜説 + 男女合婚説 + 蓋頭説 (รับทั้งตัวเต็ม/ตัวย่อ) */
+  const hasBingyao = /(病藥|病药)/.test(text);
+  const hasDongjing = /(動靜|动静)/.test(text);
+  const hasHehun = /合婚/.test(text);
+  const hasGaitou = /(蓋頭|盖头)/.test(text);
+  t(
+    "sftk-clean.md present + >30KB + 病藥/動靜/合婚/蓋頭 keywords",
+    exists && big && hasBingyao && hasDongjing && hasHehun && hasGaitou,
+    `size=${size} 病藥=${hasBingyao} 動靜=${hasDongjing} 合婚=${hasHehun} 蓋頭=${hasGaitou}`,
+  );
+}
+
+/* 4. /api/sifu/route.ts ลงทะเบียน */
 {
   const path = join(ROOT, "src/app/api/sifu/route.ts");
   const text = readFileSync(path, "utf8");
   const hasSmtg = /smtg-clean\.md/.test(text);
   const hasYhzp = /yhzp-clean\.md/.test(text);
+  const hasSftk = /sftk-clean\.md/.test(text);
   t(
-    "src/app/api/sifu/route.ts registered both classics",
-    hasSmtg && hasYhzp,
-    `smtg=${hasSmtg} yhzp=${hasYhzp}`,
+    "src/app/api/sifu/route.ts registered smtg+yhzp+sftk",
+    hasSmtg && hasYhzp && hasSftk,
+    `smtg=${hasSmtg} yhzp=${hasYhzp} sftk=${hasSftk}`,
   );
 }
 
-/* 4. /api/sifu/group/route.ts ลงทะเบียน */
+/* 5. /api/sifu/group/route.ts ลงทะเบียน */
 {
   const path = join(ROOT, "src/app/api/sifu/group/route.ts");
   const text = readFileSync(path, "utf8");
   const hasSmtg = /smtg-clean\.md/.test(text);
   const hasYhzp = /yhzp-clean\.md/.test(text);
+  const hasSftk = /sftk-clean\.md/.test(text);
   t(
-    "src/app/api/sifu/group/route.ts registered both classics",
-    hasSmtg && hasYhzp,
-    `smtg=${hasSmtg} yhzp=${hasYhzp}`,
+    "src/app/api/sifu/group/route.ts registered smtg+yhzp+sftk",
+    hasSmtg && hasYhzp && hasSftk,
+    `smtg=${hasSmtg} yhzp=${hasYhzp} sftk=${hasSftk}`,
   );
 }
 
