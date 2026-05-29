@@ -37,7 +37,7 @@ type IntroBirthInput = {
 
 const TIMEOUT_MS = 600_000; // 600s · ยัดตำราคลาสสิก 4 ไฟล์เต็ม (~141KB prompt · first token ~546s) · nginx /api/sifu ต้อง >600s · ช้าค่อยตัด
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 10_000);
+const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 7_000);
 const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
 const SIFU_CONTEXT_CACHE_MS = Number(process.env.SIFU_CONTEXT_CACHE_MS || 5 * 60_000);
 const SIFU_CONTEXT_CACHE_MAX = Number(process.env.SIFU_CONTEXT_CACHE_MAX || 80);
@@ -807,15 +807,30 @@ function makeJsonlParser(onText: (text: string) => void) {
   };
 }
 
+const SIFU_WAITING_PHASES = [
+  "waiting_context",
+  "waiting_classics",
+  "waiting_transits",
+  "waiting_interactions",
+  "waiting_reasoning",
+];
+
+function rotatingWaitingPhase(count: number): string {
+  return SIFU_WAITING_PHASES[Math.max(0, count - 1) % SIFU_WAITING_PHASES.length];
+}
+
 function startSifuHeartbeat(
   send: (event: string, data: unknown) => void,
-  getPhase: () => string
+  getPhase: (count: number, elapsedMs: number) => string
 ): () => void {
   let stopped = false;
   let count = 0;
+  const startedAt = Date.now();
   const ping = () => {
     if (stopped) return;
-    send("ping", { phase: getPhase(), count: ++count, ts: Date.now() });
+    const nextCount = ++count;
+    const now = Date.now();
+    send("ping", { phase: getPhase(nextCount, now - startedAt), count: nextCount, ts: now });
   };
   const first = setTimeout(ping, SIFU_FIRST_PING_MS);
   const interval = setInterval(ping, SIFU_HEARTBEAT_MS);
@@ -986,8 +1001,8 @@ export async function POST(req: Request) {
           };
 
           send("meta", { cached: false, key: key.slice(0, 8), startedAt: t0, timing: { ctxMs, promptMs, promptChars: prompt.length, contextCache } });
-          stopHeartbeat = startSifuHeartbeat(send, () => {
-            if (!firstDeltaSeen) return "waiting_claude";
+          stopHeartbeat = startSifuHeartbeat(send, (pingCount) => {
+            if (!firstDeltaSeen) return rotatingWaitingPhase(pingCount);
             if (expectedDM && !idChecked) return "identity_lock";
             if (!firstChunkSent) return "waiting_visible_chunk";
             return "streaming";
@@ -1214,7 +1229,7 @@ export async function GET(req: Request) {
       const t0 = Date.now();
       if (mode === "intro") {
         let firstChunkSent = !!warmup;
-        stopHeartbeat = startSifuHeartbeat(send, () => firstChunkSent ? "streaming" : "waiting_openrouter");
+        stopHeartbeat = startSifuHeartbeat(send, (pingCount) => firstChunkSent ? "streaming" : rotatingWaitingPhase(pingCount));
         if (warmup) {
           send("first", { ms: 0, synthetic: true, provider: "engine" });
           send("chunk", { text: warmup });
@@ -1252,8 +1267,8 @@ export async function GET(req: Request) {
       /* identity-lock (GET Q&A) · warmup/intro = engine สรุป → skip */
       const expectedDM = warmup ? null : extractExpectedDM(ctx);
       let idBuf = "", idChecked = false, idRejected = false;
-      stopHeartbeat = startSifuHeartbeat(send, () => {
-        if (!firstDeltaSeen) return "waiting_claude";
+      stopHeartbeat = startSifuHeartbeat(send, (pingCount) => {
+        if (!firstDeltaSeen) return rotatingWaitingPhase(pingCount);
         if (expectedDM && !idChecked) return "identity_lock";
         if (!firstChunkSent) return "waiting_visible_chunk";
         return "streaming";

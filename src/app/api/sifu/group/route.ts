@@ -42,7 +42,7 @@ type Msg = { role: "user" | "assistant"; content: string };
 const TIMEOUT_MS = 600_000; // เท่ากับ /api/sifu · ตำราคลาสสิก + หลายคน = prompt ยาว
 const CHILD_USER = "jarvis";
 const MAX_GROUP = 10; // cap กัน abuse/token
-const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 10_000);
+const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 7_000);
 const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
 
 function promptSafe(raw: unknown, fallback = "—"): string {
@@ -535,15 +535,30 @@ function makeJsonlParser(onText: (text: string) => void) {
   };
 }
 
+const SIFU_WAITING_PHASES = [
+  "waiting_context",
+  "waiting_classics",
+  "waiting_transits",
+  "waiting_interactions",
+  "waiting_reasoning",
+];
+
+function rotatingWaitingPhase(count: number): string {
+  return SIFU_WAITING_PHASES[Math.max(0, count - 1) % SIFU_WAITING_PHASES.length];
+}
+
 function startSifuHeartbeat(
   send: (event: string, data: unknown) => void,
-  getPhase: () => string
+  getPhase: (count: number, elapsedMs: number) => string
 ): () => void {
   let stopped = false;
   let count = 0;
+  const startedAt = Date.now();
   const ping = () => {
     if (stopped) return;
-    send("ping", { phase: getPhase(), count: ++count, ts: Date.now() });
+    const nextCount = ++count;
+    const now = Date.now();
+    send("ping", { phase: getPhase(nextCount, now - startedAt), count: nextCount, ts: now });
   };
   const first = setTimeout(ping, SIFU_FIRST_PING_MS);
   const interval = setInterval(ping, SIFU_HEARTBEAT_MS);
@@ -666,8 +681,8 @@ export async function POST(req: Request) {
           };
 
           send("meta", { cached: false, count: ordered.length, startedAt: t0 });
-          stopHeartbeat = startSifuHeartbeat(send, () => {
-            if (!firstDeltaSeen) return "waiting_claude";
+          stopHeartbeat = startSifuHeartbeat(send, (pingCount) => {
+            if (!firstDeltaSeen) return rotatingWaitingPhase(pingCount);
             if (!idStripped) return "identity_lock";
             if (!firstChunkSent) return "waiting_visible_chunk";
             return "streaming";
