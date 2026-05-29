@@ -2032,16 +2032,16 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     const verdict = a.matchesCurrent ? "ตรงกับ engine label" : "ต่างจาก engine label";
     const stemTxt = a.selectedStem ? `${a.selectedStem}${a.tenGod ? `/${a.tenGod}` : ""}` : "-";
     const auditHead = falseFollowAudit
-      ? `raw engine候選=${a.currentLabel} · strict月令(อ่านเป็น格หลัก)=${a.strictLabel || "-"}`
+      ? `raw engine候選=${a.currentLabel} · strict月令(candidate หลัก)=${a.strictLabel || "-"}`
       : `engine=${a.currentLabel} · strict月令=${a.strictLabel || "-"}`;
     lines.push(
-      `格局 strict audit (${a.tag} · audit-only ไม่ใช่ข้อจำกัดคำตอบ): ` +
+      `格局 strict audit (audit-only): ` +
       `${auditHead} · 選用=${stemTxt} · ` +
-      `${verdict} · ${a.noteTh} · อ้างหลัก ${a.canonicalChinese}`
+      `${verdict} · ${a.noteTh} · ตำราอ้าง ${a.canonicalChinese}`
     );
     if (falseFollowAudit) {
       lines.push(
-        `從格ตรวจทาน (HK_FALSE_FOLLOW_GUARD_V1 · หลักฐานเทียบสองทาง · ไม่จำกัดลีลาซินแส): ` +
+        `從格ตรวจทาน (หลักฐานเทียบสองทาง · ไม่จำกัดลีลาซินแส): ` +
         `candidate หลัก=strict月令=${a.strictLabel || "-"} (มั่นใจ=สูง · 子平真詮 月令取用) · ` +
         `candidate รอง=raw engine=${a.currentLabel} (มั่นใจ=ต่ำ · 候選/ป้ายเตือน) · ` +
         `gate ของ從แท้: ตัวตนไร้ราก + ไม่มี印/比劫เข้ามาช่วย · ` +
@@ -2082,7 +2082,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       ? `${falseFollowAudit.strictLabel} (strict月令; raw候選=${yp.structure.geJuLabel})`
       : yp.structure.geJuLabel;
     lines.push(
-      `用神分層 (${yp.tag} · หลักฐาน 5 ชั้นตามตำรา · ไม่จำกัดสไตล์คำตอบ): ` +
+      `用神分層 (หลักฐาน 5 ชั้นตามตำรา · ไม่จำกัดสไตล์คำตอบ): ` +
       `格局/月令用神=${geJuForPrompt} · ` +
       `調候用神=${strictTiao} · climate補助=${tiao} · 扶抑用神=${fuyi} · 病藥=${by} · 相神=${xs} · ` +
       `engineรวมภาพรวม=${fmtEls(yp.finalCombined.yong)} / 喜=${fmtEls(yp.finalCombined.xi)} / 忌=${fmtEls(yp.finalCombined.ji)} · ` +
@@ -2238,9 +2238,9 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     const prev = curIdx > 0 ? packet.luckTimeline[curIdx - 1] : null;
     if (cur) {
       lines.push(
-        `${subjectPrefix}LUCK LOCK: ` +
+        `${subjectPrefix}ล็อกช่วงวัยจร (กันสับสน): ` +
         `大運ปัจจุบัน=${cur.stem}${cur.branch} อายุ${cur.ageStart}-${cur.ageEnd} ปี${cur.yearStart}-${cur.yearEnd}` +
-        `${prev ? ` · 大運อดีต=${prev.stem}${prev.branch} อายุ${prev.ageStart}-${prev.ageEnd} ปี${prev.yearStart}-${prev.yearEnd}` : ""}`
+        `${prev ? ` · 大運ก่อนหน้า=${prev.stem}${prev.branch} อายุ${prev.ageStart}-${prev.ageEnd} ปี${prev.yearStart}-${prev.yearEnd}` : ""}`
       );
       const regulator = packet.yongShenProtocols?.tiaoHou.regulator || null;
       const bridge = packet.yongShenProtocols?.tiaoHou.bridge || null;

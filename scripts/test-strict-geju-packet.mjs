@@ -56,7 +56,7 @@ ok("packet has strict geju audit tag", a?.tag === "HK_STRICT_GEJU_AUDIT_V1");
 ok("strict audit does not replace structure.label", packet.structure.label === "雜氣正印格");
 ok("strict audit catches strict label separately", a?.strictLabel === "食神格" && a?.matchesCurrent === false);
 ok("strict audit preserves source rule", a?.sourceRuleIds.includes("ZPZQ-GE-003") && a?.canonicalChinese === "不透不會，則僅以土論");
-ok("prompt renders audit-only line", prompt.includes("格局 strict audit (HK_STRICT_GEJU_AUDIT_V1") && prompt.includes("audit-only ไม่ใช่ข้อจำกัดคำตอบ"));
+ok("prompt renders audit-only line", prompt.includes("格局 strict audit (audit-only)"));
 ok("prompt does not leak raw percent", !/[0-9.]+%/.test(prompt));
 ok("validateChartPacket stays clean", validation.ok === true);
 
@@ -97,7 +97,7 @@ const paaPacket = buildStructuredChartPacket(paaCalc, paaExt, "壬", 56, {}, paa
 });
 const paaPrompt = renderChartPrompt(paaPacket);
 ok("Paa strict audit catches 七殺格 under raw 假從兒格", paaPacket.strictGeJuAudit?.strictLabel === "七殺格" && paaPacket.strictGeJuAudit?.matchesCurrent === false);
-ok("false-follow guard reaches prompt", paaPrompt.includes("HK_FALSE_FOLLOW_GUARD_V1") && paaPrompt.includes("候選/ป้ายเตือน"));
+ok("false-follow guard reaches prompt", paaPrompt.includes("從格ตรวจทาน (หลักฐานเทียบสองทาง") && paaPrompt.includes("候選/ป้ายเตือน"));
 ok("false-follow prompt promotes strict label as primary", paaPrompt.includes("candidate หลัก=七殺格") && !paaPrompt.includes("โครงดวง: 假從兒格"));
 ok("false-follow raw label is candidate only", paaPrompt.includes("raw engine候選=假從兒格") && paaPrompt.includes("candidate รอง"));
 ok("false-follow BY-11 does not call raw label the disease", !paaPrompt.includes("病=假從"));

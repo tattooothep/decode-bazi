@@ -67,8 +67,8 @@ ok("previous luck is 庚戌, not 庚辰", prev?.stem === "庚" && prev?.branch =
 ok("strict tiao hou 戊未 exposes 癸 first", packet.yongShenProtocols?.tiaoHou.strict?.dmStem === "戊" && packet.yongShenProtocols.tiaoHou.strict.monthBranch === "未" && packet.yongShenProtocols.tiaoHou.strict.primaryStems.includes("癸"));
 ok("water remains engine yong", packet.usefulGods.yong.includes("water"));
 ok("BY-08 flips to 印多用財 variant", packet.bingYao?.primary?.id === "BY-08P" && packet.bingYao.primary.diseaseElements.includes("fire") && packet.bingYao.primary.medicineElements.includes("water"));
-ok("prompt prefixes luck lines with subject label", prompt.includes("[เค็ง·06c97193] LUCK LOCK"));
-ok("prompt references current/previous luck", prompt.includes("大運ปัจจุบัน=辛亥") && prompt.includes("大運อดีต=庚戌"));
+ok("prompt prefixes luck lines with subject label", prompt.includes("[เค็ง·06c97193] ล็อกช่วงวัยจร"));
+ok("prompt references current/previous luck", prompt.includes("大運ปัจจุบัน=辛亥") && prompt.includes("大運ก่อนหน้า=庚戌"));
 ok("prompt highlights climate turning point", prompt.includes("大運氣候轉折") && prompt.includes("ปี 2021"));
 ok("prompt does not include today's directive wording", !/ให้สูตร印多用財ชนะ|ให้ยึด用神分層|ต้องใช้財|ก่อนหน้านี้คือกดสภาพเดิม|หลังจากนี้คือเริ่มคลายสภาพเดิม/.test(prompt));
 if (packet.bingYao) packet.bingYao.consistencyWarnings = ["INCONSISTENT_LAYERS: should stay internal"];
