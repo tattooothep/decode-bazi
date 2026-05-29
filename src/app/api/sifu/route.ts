@@ -103,38 +103,6 @@ const BRANCH_TH_NAME: Record<string, string> = {
   子: "ชวด", 丑: "ฉลู", 寅: "ขาล", 卯: "เถาะ", 辰: "มะโรง", 巳: "มะเส็ง",
   午: "มะเมีย", 未: "มะแม", 申: "วอก", 酉: "ระกา", 戌: "จอ", 亥: "กุน",
 };
-
-async function buildDayBoundaryCrossCheck(opts: {
-  date: string;
-  time: string;
-  lng: number;
-  gender: "M" | "F";
-  dayBoundary: "23:00" | "00:00";
-  selectedDm: string;
-}): Promise<string | null> {
-  const altBoundary: "23:00" | "00:00" = opts.dayBoundary === "00:00" ? "23:00" : "00:00";
-  try {
-    const alt = await calcBazi({
-      date: opts.date,
-      time: opts.time,
-      longitude: opts.lng,
-      gmtOffsetHours: 7,
-      gender: opts.gender,
-      dayBoundary: altBoundary,
-      birthTimeKnown: true,
-    });
-    if (alt.mode !== "4p" || alt.dayMaster === opts.selectedDm) return null;
-    return [
-      `DAY BOUNDARY CROSS-CHECK: ขอบวันปัจจุบัน ${opts.dayBoundary} → Day Master ${opts.selectedDm} (${STEM_TH[opts.selectedDm] || opts.selectedDm})`,
-      `อีกสำนัก/อีกขอบวัน ${altBoundary} → Day Master ${alt.dayMaster} (${STEM_TH[alt.dayMaster] || alt.dayMaster}) · 4 เสา 年${alt.pillarsZh.year} 月${alt.pillarsZh.month} 日${alt.pillarsZh.day} 時${alt.pillarsZh.hour}`,
-      `กฎตอบเมื่อผู้ใช้ถามว่า "ธาตุไหนกันแน่/ทองหยินหรือน้ำหยาง/23:00 หรือ 00:00": ต้องอธิบายว่าความต่างมาจากขอบวัน子時 ไม่ใช่สลับคน · ยึดขอบวันที่บันทึกเป็นค่าปัจจุบัน แล้วใช้เหตุการณ์ย้อนหลังที่ผู้ใช้เล่าช่วยชั่งน้ำหนักและสรุปให้ชัดแบบซินแส ไม่ใช่ท่อง FACT LOCK อย่างเดียว`,
-    ].join("\n");
-  } catch (e) {
-    console.warn("[sifu] day-boundary cross-check failed:", (e as Error).message);
-    return null;
-  }
-}
-
 function buildIntroWarmup(ctx: string): string | null {
   const fact = ctx.match(/FACT LOCK: Day Master = (\S+) · polarity = (\w+) · element = (\w+)/);
   if (!fact) return null;
@@ -417,16 +385,12 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
     const dmElementTh = DM_LABEL_TH[dmElement] || dmElement;
     const dmPolarityTh = DM_POLARITY_TH[dmPolarity] || dmPolarity;
     const ny = ext.nayin;
-    const boundaryCrossCheck = birthTimeKnown
-      ? await buildDayBoundaryCrossCheck({ date, time, lng, gender, dayBoundary, selectedDm: dm })
-      : null;
 
     const lines = [
       `IDENTITY CONTEXT: ผู้ถาม/เจ้าของบัญชี = ${ownerName} (profileId=${owner?.id || "unknown"}) · ดวงที่กำลังดู/ตอบ = ${subjectName} (${subjectRole}, profileId=${row.id}) · ถ้าคำถามใช้คำว่า "คุณ/ผม/เรา" ให้หมายถึงผู้ถาม; ถ้ากำลังดูดวงคนอื่นให้เรียกชื่อ/บทบาทคนที่เลือก ห้ามสลับ Day Master หรือชื่อระหว่าง profile`,
       `ชื่อ: ${row.name || "—"} · เพศ ${gender} · อายุปัจจุบันประมาณ ${ageNow}`,
       `เกิด: ${date} ${time} · ลองจิจูด ${lng}`,
       `ขอบวัน/Day boundary ที่ใช้คำนวณ: ${dayBoundary} (${dayBoundarySource})`,
-      ...(boundaryCrossCheck ? [boundaryCrossCheck] : []),
       is3p
         ? `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่ทราบเวลาเกิด) · ${g.NO_HOUR_PILLAR}`
         : `4 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時${calc.pillarsZh.hour}`,

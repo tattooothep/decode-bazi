@@ -121,37 +121,6 @@ type PersonSyn = {
   pillars: { year?: { stem: string; branch: string }; day?: { stem: string; branch: string } } | null;
 };
 
-async function buildDayBoundaryCrossCheck(opts: {
-  date: string;
-  time: string;
-  lng: number;
-  gender: "M" | "F";
-  dayBoundary: "23:00" | "00:00";
-  selectedDm: string;
-}): Promise<string | null> {
-  const altBoundary: "23:00" | "00:00" = opts.dayBoundary === "00:00" ? "23:00" : "00:00";
-  try {
-    const alt = await calcBazi({
-      date: opts.date,
-      time: opts.time,
-      longitude: opts.lng,
-      gmtOffsetHours: 7,
-      gender: opts.gender,
-      dayBoundary: altBoundary,
-      birthTimeKnown: true,
-    });
-    if (alt.mode !== "4p" || alt.dayMaster === opts.selectedDm) return null;
-    return [
-      `DAY BOUNDARY CROSS-CHECK: ขอบวันปัจจุบัน ${opts.dayBoundary} → Day Master ${opts.selectedDm} (${STEM_TH[opts.selectedDm] || opts.selectedDm})`,
-      `อีกสำนัก/อีกขอบวัน ${altBoundary} → Day Master ${alt.dayMaster} (${STEM_TH[alt.dayMaster] || alt.dayMaster}) · 4 เสา 年${alt.pillarsZh.year} 月${alt.pillarsZh.month} 日${alt.pillarsZh.day} 時${alt.pillarsZh.hour}`,
-      `กฎตอบเมื่อผู้ใช้ถามว่า "ธาตุไหนกันแน่/ทองหยินหรือน้ำหยาง/23:00 หรือ 00:00": ต้องอธิบายว่าความต่างมาจากขอบวัน子時 ไม่ใช่สลับคน · ยึดขอบวันที่บันทึกเป็นค่าปัจจุบัน แล้วใช้เหตุการณ์ย้อนหลังที่ผู้ใช้เล่าช่วยชั่งน้ำหนักและสรุปให้ชัดแบบซินแส ไม่ใช่ท่อง FACT LOCK อย่างเดียว`,
-    ].join("\n");
-  } catch (e) {
-    console.warn("[sifu/group] day-boundary cross-check failed:", (e as Error).message);
-    return null;
-  }
-}
-
 /* 通根 (root strength) จาก wrapper-7 · copy จาก /api/sifu/route.ts computeRootedness
    (group ลึกกว่าเดี่ยว 1 ชั้น → path wrapper-7 = ../../../../../data · ฐานตัดสิน 從格/用神
    ส่ง arg เข้า packet แทน null · ไม่แตะ bazi-calc/extensions/route เดี่ยว LOCKED) */
@@ -230,7 +199,7 @@ function buildSynastry(people: PersonSyn[], lang: string): string {
     ? "━━━ Cross-person reactions (synastry · neutral: 合 not always good / 冲 not always bad · weigh against each one's 用神/role) ━━━"
     : L === "zh"
     ? "━━━ 跨人互動 (synastry · 中性: 合不必吉 / 冲不必凶 · 須結合各自用神/角色判讀) ━━━"
-    : "━━━ ปฏิกิริยาข้ามคน (synastry · 合/冲 ต้องอ่านร่วม用神และบทบาทแต่ละคน · ตัดสินความเข้ากันให้ชัดแต่ไม่ตัดสินชีวิตแทนผู้ใช้) ━━━";
+    : "━━━ ปฏิกิริยาข้ามคน (synastry · กลางๆ: 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ · ต้องดูที่用神/บทบาทแต่ละคน · ห้ามฟันธงเลิก/ไม่เลิก) ━━━";
   return title + "\n" + lines.join("\n");
 }
 
@@ -318,7 +287,7 @@ function loadEngineKnowledge(): { text: string; version: string } {
 }
 
 /* คัมภีร์เจาะลึก 5 เล่ม (十神/格局/合婚/納音/神煞) · copy จาก /api/sifu/route.ts
- * 合婚 สำคัญสุดสำหรับกลุ่ม · ก่อนหน้านี้ group ไม่โหลด = ช่องโหว่ */
+ * 合婚 สำคัญสุดสำหรับกลุ่ม (กฎ "ห้ามฟันธงเลิก/ไม่เลิก") · ก่อนหน้านี้ group ไม่โหลด = ช่องโหว่ */
 const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
 const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "bazi-shishen-classical.md", label: "十神 · จิตวิทยาบทบาทสิบเทพ (子平 verbatim)" },
@@ -414,16 +383,12 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const dmElementTh = DM_LABEL_TH[dmElement] || dmElement;
     const dmPolarityTh = DM_POLARITY_TH[dmPolarity] || dmPolarity;
     const ny = ext.nayin;
-    const boundaryCrossCheck = birthTimeKnown
-      ? await buildDayBoundaryCrossCheck({ date, time, lng, gender, dayBoundary, selectedDm: dm })
-      : null;
 
     const lines = [
       `IDENTITY CONTEXT: ${displayName} = ${role} · profileId=${row.id} · ห้ามสลับชื่อ/Day Master/ขอบวันกับ profile อื่นในกลุ่ม`,
       `ชื่อ: ${row.name || "—"} · เพศ ${gender} · อายุปัจจุบันประมาณ ${ageNow}`,
       `เกิด: ${date} ${time} · ลองจิจูด ${lng}`,
       `ขอบวัน/Day boundary ที่ใช้คำนวณ: ${dayBoundary} (${dayBoundarySource})`,
-      ...(boundaryCrossCheck ? [boundaryCrossCheck] : []),
       is3p
         ? `3 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時(ไม่ทราบเวลาเกิด) · ${g.NO_HOUR_PILLAR}`
         : `4 เสา: 年${calc.pillarsZh.year} · 月${calc.pillarsZh.month} · 日${calc.pillarsZh.day} · 時${calc.pillarsZh.hour}`,
@@ -469,7 +434,7 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
 
 /* คำสั่งวิเคราะห์กลุ่ม · inline 3 ภาษา · ต่อท้าย group context */
 const GROUP_INSTRUCTION: Record<string, string> = {
-  th: "ด้านบนคือดวงของหลายคนในกลุ่มเดียวกัน · ช่วยวิเคราะห์ภาพรวมกลุ่ม ความเข้ากัน จุดเสริม-จุดชน บทบาทแต่ละคน โดยใช้กฎการอ่านเดียวกับการอ่านดวงเดี่ยว (เจาะ 3-5 จุด ระบุชื่อ+เสาที่เกี่ยวข้อง) · 合婚/ความเข้ากัน: อ่านให้ชัดว่าใครเสริมใคร ใครชนใคร อะไรควรจับมือ อะไรควรจัดบทบาทใหม่ · ผูกกลับ用神/บทบาทแต่ละคน · ใช้น้ำเสียงซินแสที่มั่นใจ ไม่ขู่",
+  th: "ด้านบนคือดวงของหลายคนในกลุ่มเดียวกัน · ช่วยวิเคราะห์ภาพรวมกลุ่ม ความเข้ากัน จุดเสริม-จุดชน บทบาทแต่ละคน โดยใช้กฎการอ่านเดียวกับการอ่านดวงเดี่ยว (เจาะ 3-5 จุด ระบุชื่อ+เสาที่เกี่ยวข้อง) · ⚠️ 合婚/ความเข้ากัน: 合ไม่ดีเสมอ 冲ไม่ร้ายเสมอ · ห้ามฟันธง 'ต้องเลิก/ไปกันไม่ได้/ห้ามคบ' · ชี้จุดเสริม-จุดต้องระวังเชิงสร้างสรรค์ ผูกกลับ用神/บทบาทแต่ละคน · ใช้คำอ่อนโยน ไม่ขู่",
   en: "Above are the charts of several people in the same group. Analyze the overall group dynamics, compatibility, mutual support and clashes, and each person's role — using the same reading rules as a single-chart reading (pick 3-5 concrete points, naming the person and the pillars involved). ⚠️ Compatibility/合婚: 合 is not always good, 冲 not always bad — never declare 'must break up / incompatible / should not associate'. Point out constructive strengths and cautions, tied back to each one's 用神/role, in a gentle, non-alarming tone.",
   zh: "以上是同一群組中多人的命盤。請分析群組整體互動、配對、相生相剋與各人角色，並沿用單一命盤的判讀規則（挑 3-5 個具體論點，標明所涉及的人與柱）。⚠️ 合婚/相合度：合不必吉、冲不必凶 — 切勿斷言「必須分開／不合／不可往來」。請以建設性方式指出助力與需留意之處，結合各自用神/角色，語氣溫和不恐嚇。",
 };
