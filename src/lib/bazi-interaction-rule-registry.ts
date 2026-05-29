@@ -194,7 +194,7 @@ export const BAZI_INTERACTION_RULES: BaziInteractionRule[] = [
     sourceAnchor: "十七．論墓庫刑衝之說",
     canonicalChinese: "刑衝未必成格",
     sourceType: "ctext_derived",
-    engineStatus: "not_supported",
+    engineStatus: "partial",
     confidence: "high",
     ruleLevel: "condition",
     shortSource: "刑衝未必成格",
