@@ -225,7 +225,6 @@ export type ChartPacket = {
       sourceIds: string[];
       guard: string;
     }>;
-    consistencyWarnings?: string[];
   } | null;
   /** HK_YONGSHEN_PROTOCOL_SPLIT_V1
    * ใช้แก้ชื่อให้ตรงตำรา: 子平真詮 用神(月令/格局) ≠ ธาตุช่วยรวมของ engine
@@ -1137,13 +1136,7 @@ export function buildBingYao(
   }
 
   const primary = candidates[0] || null;
-  const consistencyWarnings: string[] = [];
-  if (primary && yong && !primary.medicineElements.includes(yong)) {
-    consistencyWarnings.push(
-      `INCONSISTENT_LAYERS: 病藥藥=${primary.medicineElements.map((e) => ELEMENT_TH[e]).join("/")} แต่ engine用神หลัก=${ELEMENT_TH[yong]}`
-    );
-  }
-  return { status: primary ? "ok" : "needs_review", primary, candidates, consistencyWarnings };
+  return { status: primary ? "ok" : "needs_review", primary, candidates };
 }
 
 const TIAOHOU_PROTOCOL: Record<string, { regulator: ElementEN; bridge: ElementEN; th: string }> = {
@@ -2186,9 +2179,6 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* 病藥 v1 (28 พ.ค. · 子平真詮/滴天髓 · จุดเสียเชิงโครงสร้าง + ตัวยาแก้ · ไม่ใช่โรคสุขภาพ) */
   if (packet.bingYao) {
     const by = packet.bingYao;
-    if (by.consistencyWarnings?.length) {
-      lines.push(`病藥 consistency check: ${by.consistencyWarnings.join(" · ")}`);
-    }
     if (by.status === "not_applicable") {
       lines.push("病藥 (จุดเสีย/ตัวยา): ไม่ใช้สูตร扶抑病藥ตรงๆ เพราะดวงนี้เข้าโครงพิเศษ/從化/專旺 · ให้อ่านตาม勢ของโครงพิเศษก่อน");
     } else if (by.primary) {
