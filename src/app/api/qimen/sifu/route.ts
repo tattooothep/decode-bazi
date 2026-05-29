@@ -37,9 +37,13 @@ function fmtQimenCard(q: any): string {
   const palaces = q.palaces || [];
   const stored = q.stored_formations || [];
   const compound = q.compound_formations || [];
+  const fushi = chart.ctext_fushi || null;
 
   const pole = chart.ju_pole === "YIN" ? "陰" : "陽";
   const ju = chart.ju_number || "?";
+  const fushiLine = fushi
+    ? `ค่าหัวผังตาม CText: 值符星=${fushi.value_star_zh || chart.chief_star_code}@宮${fushi.value_star_palace_id || chart.zhi_fu_palace_id} · 值使門=${fushi.value_door_zh || chart.zhi_shi_door_code}@宮${fushi.value_door_palace_id || chart.zhi_shi_palace_id} · 旬首=${fushi.xun_leader_zh || chart.xun_hour_zh} · source=${fushi.source || "ctext"}`
+    : `ค่าหัวผัง: 值符=${chart.chief_star_code || "-"}@宮${chart.zhi_fu_palace_id || "?"} · 值使=${chart.zhi_shi_door_code || "-"}@宮${chart.zhi_shi_palace_id || "?"}`;
 
   const palaceLines = palaces.map((p: any) =>
     `• 宮${p.palace_id} ${p.direction}/${p.trigram_code} (${p.element_code}): 天${p.heaven_stem_code || "·"}/地${p.earth_stem_code || "·"} · 星${p.star_code} · 門${p.door_code} · 神${p.deity_code || "·"}`
@@ -53,6 +57,8 @@ function fmtQimenCard(q: any): string {
   ).join("\n");
 
   return `Yuan-Ju: ${pole}${ju}局
+時柱: ${chart.pillar_zh || "-"} · 旬首: ${chart.xun_hour_zh || fushi?.xun_leader_zh || "-"} · 遁干: ${chart.dun_gan_zh || "-"} · 八神派別: ${chart.deity_variant || "-"}
+${fushiLine}
 9 Palaces:
 ${palaceLines}
 Stored Formations:
