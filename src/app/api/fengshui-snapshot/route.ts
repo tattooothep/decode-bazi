@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { computeFlyingLayers } from "@/lib/fengshui-luxing";
 
 // ── โหลดฐานข้อมูล玄空飛星ยุค 9 (อ่านครั้งเดียว · cache module-level) ──
 type XKMountain = {
@@ -157,13 +158,18 @@ function computePalaceStars(annualCenter: number, xk: XKData | null) {
   });
   return result;
 }
+// 24 ภูเขา · ภูเขาที่ idx 0 (壬) ครอบ 337.5–352.5° ดังนั้น 0°=子 (กลางเหนือ)
+// สูตรถูก: ภูเขา i ครอบ [337.5 + i*15, +15) → idx = floor(((angle - 337.5 + 360) % 360) / 15)
+// (เดิมใช้ +7.5 ทำให้ map เพี้ยนครึ่งช่วง · 0°→壬 ผิด)
+function mountainIdxOf(angle: number): number {
+  const a = ((angle % 360) + 360) % 360;
+  return Math.floor((((a - 337.5) % 360 + 360) % 360) / 15) % 24;
+}
 function build24Mountains(faceAngle?: number) {
   let facing: string | null = null, sitting: string | null = null;
   if (faceAngle !== undefined && faceAngle !== null) {
-    const idx = Math.floor(((faceAngle + 7.5) % 360) / 15);
-    facing = MOUNTAINS[idx];
-    const sitIdx = Math.floor((((faceAngle + 180) + 7.5) % 360) / 15);
-    sitting = MOUNTAINS[sitIdx];
+    facing = MOUNTAINS[mountainIdxOf(faceAngle)];
+    sitting = MOUNTAINS[mountainIdxOf(faceAngle + 180)];
   }
   return { mountains: MOUNTAINS, facing, sitting, face_angle: faceAngle ?? null };
 }
@@ -327,6 +333,17 @@ export async function GET(req: NextRequest) {
 
     const faceAngle = house?.face_angle ? parseFloat(house.face_angle) : undefined;
 
+    // ── ดาวจร 玄空飛星 3 ชั้น (月盤/日盤/時盤) · additive · deterministic ──
+    // ใช้ component ของ dt (local civil · ตรง convention ของ getFengShuiYear)
+    let flyingLayers: ReturnType<typeof computeFlyingLayers> | null = null;
+    try {
+      flyingLayers = computeFlyingLayers(
+        dt.getFullYear(), dt.getMonth() + 1, dt.getDate(),
+        dt.getHours(), dt.getMinutes(), dt.getSeconds(),
+        "zaoming", annualCenter   // 年盤 ใช้ centre_star ปีฮวงจุ้ย (verify จาก annual table)
+      );
+    } catch { flyingLayers = null; }
+
     const layers = {
       flying_stars: { period, annual_center: annualCenter, feng_shui_year: fsYear, annual_center_source: ac.from_json ? 'json_centre_star' : 'formula_fallback', palaces: palaceStars },
       twenty_four: build24Mountains(faceAngle),
@@ -334,6 +351,12 @@ export async function GET(req: NextRequest) {
       qi_men: ephemeris?.qi_men || computeQiMenFallback(dt),
       ba_zhai: house?.family_members?.length ? buildBaZhai(house.family_members) : null,
       sixty_four: computeSixtyFour(faceAngle),
+      // ── field ใหม่ (additive · ไม่กระทบ field เดิม) ──
+      year_stars: flyingLayers?.year_stars ?? null,
+      month_stars: flyingLayers?.month_stars ?? null,
+      day_stars: flyingLayers?.day_stars ?? null,
+      hour_stars: flyingLayers?.hour_stars ?? null,
+      luxing_note: flyingLayers?.luxing_note ?? null,
     };
 
     const today = {

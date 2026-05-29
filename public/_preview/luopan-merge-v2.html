@@ -1408,6 +1408,42 @@ const dHour={fx:[{star:4},{star:8},{star:6},{star:5},{star:9},{star:2},{star:1},
 
 const demos={era:dEra, year:dYear, month:dMonth, day:dDay, hour:dHour};
 let currentTimingKey='era';
+
+/* === ดาวจรจริง 年/月/日 จาก engine GET /api/fengshui-snapshot (玄空飛星) ===
+ * เลียน fetchQimenReal pattern · swap dYear/dMonth/dDay.fx จาก hardcode → ค่าจริง
+ * เก็บ hardcode เดิมเป็น fallback ถ้า API fail/ยังไม่กลับ
+ * engine คืน layers.month_stars/day_stars/hour_stars · แต่ละอัน palaces:{N,NE,E,SE,S,SW,W,NW,C}
+ * fx array ต้องเรียงตามลำดับทิศเดียวกับ QM_DIR2IDX = N,NE,E,SE,S,SW,W,NW (8 ทิศ · ไม่รวม C/中) */
+const FS_DIR_ORDER = ['N','NE','E','SE','S','SW','W','NW']; // ตรง QM_DIR2IDX index
+window.FS_FETCH_STATE = 'idle'; // idle|loading|ok|fail
+function fsPalacesToFx(palaces){
+  /* {N:..,NE:..,...} (ดาวเดียวต่อทิศ) → [{star},...] 8 ตัวเรียงตาม FS_DIR_ORDER */
+  if(!palaces) return null;
+  return FS_DIR_ORDER.map(dir => ({ star: palaces[dir] != null ? palaces[dir] : null }));
+}
+async function fetchFengshuiReal(){
+  try{
+    window.FS_FETCH_STATE = 'loading';
+    const r = await fetch('/api/fengshui-snapshot'); // default = เวลาปัจจุบัน
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const j = await r.json();
+    const L = (j && j.layers) || {};
+    const yfx = fsPalacesToFx(L.year_stars && L.year_stars.palaces);   // เผื่อ engine เพิ่ม year_stars ภายหลัง
+    const mfx = fsPalacesToFx(L.month_stars && L.month_stars.palaces);
+    const dfx = fsPalacesToFx(L.day_stars && L.day_stars.palaces);
+    /* swap เฉพาะที่ engine ส่งมาจริง · ที่ไม่มี → คง fallback hardcode เดิม */
+    if(yfx) dYear.fx = yfx;
+    if(mfx) dMonth.fx = mfx;
+    if(dfx) dDay.fx = dfx;
+    window.FS_FETCH_STATE = (mfx || dfx || yfx) ? 'ok' : 'fail';
+    /* ถ้าหน้าค้างอยู่ที่ปุ่ม 年/月/日 ตอนข้อมูลกลับมา → render ใหม่ด้วยค่าจริง */
+    if(window.FS_FETCH_STATE === 'ok' && (currentTimingKey === 'year' || currentTimingKey === 'month' || currentTimingKey === 'day')){
+      window.setFX({mode:'single', data: demos[currentTimingKey].fx});
+    }
+  }catch(e){ console.warn('fengshui-snapshot fetch fail:', e); window.FS_FETCH_STATE = 'fail'; /* คง fallback hardcode · ไม่ทำหน้าพัง */ }
+}
+/* ดึงครั้งเดียวตอนหน้าโหลด (ไม่ block · ถ้ายังไม่กลับ ปุ่มกดได้ด้วย fallback) */
+fetchFengshuiReal();
 /* 26 พ.ค. · ฉีเหมินจริง: GET /api/qimen (proxy→qimen-api 4090 · 時家奇門 · เวลาปัจจุบัน Bangkok) → ผัง 9宮 → map direction→8ทิศ · 中5 เก็บแยก */
 window.QM_REAL = null;   // [8] ต่อทิศ {men,shen,xing,raw} · null=ยังไม่โหลด/ไม่ใช่ยาม
 window.QM_CENTER = null; // วัง中5 (ไม่มีทิศ)
@@ -1451,6 +1487,10 @@ async function applyTiming(k){
   /* ฉีเหมิน = 時家เท่านั้น (engine รองรับชั่วยาม) · ยาม=ผังจริง · ปี/เดือน/วัน/ยุค=ว่าง (ไม่หลอก) */
   if(k==='hour'){ window.setQM([]); updateInspector(); await fetchQimenReal(); updateInspector(); }
   else { window.QM_REAL=null; window.QM_CENTER=null; window.setQM([]); window.QM_FETCH_STATE='na'; updateInspector(); updateSourceStatus(); }
+  /* ปี/เดือน/วัน · ถ้าดาวจรจริงยังไม่โหลด/เคย fail → ลองดึงอีกครั้ง (fetchFengshuiReal จะ render ทับเองตอนกลับมา) */
+  if((k==='year'||k==='month'||k==='day') && window.FS_FETCH_STATE!=='loading' && window.FS_FETCH_STATE!=='ok'){
+    fetchFengshuiReal();
+  }
 }
 document.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>applyTiming(b.dataset.time)));
 document.querySelectorAll('[data-time-jump]').forEach(b=>{
