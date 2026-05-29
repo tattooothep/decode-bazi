@@ -620,11 +620,9 @@ export async function POST(req: Request) {
           let idBuf = "";          // buffer บรรทัดแรก strip ⟦ID⟧ (group = strip-only · ไม่ validate · หลาย日干)
           let idStripped = false;
           const t0 = Date.now();
-          let heartbeat: ReturnType<typeof setInterval> | null = null;
           const safeClose = () => {
             if (closed) return;
             closed = true;
-            if (heartbeat) { clearInterval(heartbeat); heartbeat = null; }
             try { controller.close(); } catch {}
           };
           const send = (event: string, data: unknown) => {
@@ -637,8 +635,6 @@ export async function POST(req: Request) {
           };
 
           send("meta", { cached: false, count: ordered.length, startedAt: t0 });
-          // กัน connection เงียบระหว่าง Claude คิด prompt ใหญ่ · ไม่แตะ prompt/คำตอบจริง
-          heartbeat = setInterval(() => send("ping", { ms: Date.now() - t0 }), 15_000);
           const child = spawnClaudeStreaming(prompt);
           activeChild = child;
           const killTimer = setTimeout(() => {

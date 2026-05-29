@@ -827,11 +827,9 @@ export async function POST(req: Request) {
           /* identity-lock: buffer บรรทัดแรก (⟦ID⟧日干=X⟧) เทียบ 日干 · ผิด/ไม่มี=ตัด stream (ไม่ retry · master ให้ถามใหม่) */
           const expectedDM = extractExpectedDM(ctx);
           let idBuf = "", idChecked = false, idRejected = false;
-          let heartbeat: ReturnType<typeof setInterval> | null = null;
           const safeClose = () => {
             if (closed) return;
             closed = true;
-            if (heartbeat) { clearInterval(heartbeat); heartbeat = null; }
             try { controller.close(); } catch {}
           };
           const send = (event: string, data: unknown) => {
@@ -844,8 +842,6 @@ export async function POST(req: Request) {
           };
 
           send("meta", { cached: false, key: key.slice(0, 8), startedAt: t0 });
-          // กัน connection เงียบระหว่าง Claude คิด prompt ใหญ่ · ไม่แตะ prompt/คำตอบจริง
-          heartbeat = setInterval(() => send("ping", { ms: Date.now() - t0 }), 15_000);
           const child = spawnClaudeStreaming(prompt);
           activeChild = child;
           const killTimer = setTimeout(() => {
@@ -1000,11 +996,9 @@ export async function GET(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       let closed = false;
-      let heartbeat: ReturnType<typeof setInterval> | null = null;
       const safeClose = () => {
         if (closed) return;
         closed = true;
-        if (heartbeat) { clearInterval(heartbeat); heartbeat = null; }
         try { controller.close(); } catch {}
       };
       const send = (event: string, data: unknown) => {
@@ -1034,8 +1028,6 @@ export async function GET(req: Request) {
         : promptBase;
 
       const t0 = Date.now();
-      // กัน connection เงียบระหว่าง Claude/OpenRouter คิด prompt ใหญ่ · ไม่แตะ prompt/คำตอบจริง
-      heartbeat = setInterval(() => send("ping", { ms: Date.now() - t0 }), 15_000);
       if (mode === "intro") {
         let firstChunkSent = !!warmup;
         if (warmup) {
