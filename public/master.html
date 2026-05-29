@@ -999,10 +999,22 @@
           let payload = {};
           try { payload = JSON.parse(data); } catch(_){}
           if (event === 'chunk' && payload.text) handlers.onChunk(payload.text);
-          else if (event === 'error') throw new Error(payload.error || 'stream error');
+          else if (event === 'error') {
+            const err = new Error(payload.error || 'stream error');
+            err.payload = payload;
+            throw err;
+          }
           else if (event === 'done') { if (handlers.onDone) handlers.onDone(payload); }
         }
       }
+    }
+    function sifuErrorText(e){
+      var msg = (e && e.message) ? String(e.message) : '';
+      if (msg.indexOf('identity_mismatch') !== -1) return 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ';
+      if (msg.indexOf('timeout') !== -1) return '⚠ ซินแสใช้เวลานานเกินไป · ลองถามให้สั้นลงหรือเลือกคนน้อยลง';
+      if (msg.indexOf('claude exit') !== -1) return '⚠ ซินแสขัดข้องระหว่างเขียนคำตอบ · ลองใหม่อีกครั้ง';
+      if (msg.indexOf('Failed to fetch') !== -1 || msg.indexOf('NetworkError') !== -1 || msg.indexOf('Load failed') !== -1) return '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+      return '⚠ ซินแสขัดข้อง' + (msg ? ': ' + msg : ' · ลองใหม่');
     }
 
     /* ════════ 🧑‍🤝‍🧑 GROUP MODE (parallel · kill-switch) ════════
@@ -1197,7 +1209,7 @@
           }
         }
       } catch(e){
-        phG.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+        phG.textContent = sifuErrorText(e);
       } finally {
         sendBtn.disabled = false;
         if (hkgGoBtn) hkgGoBtn.disabled = false;
@@ -1286,9 +1298,7 @@
           }
         }
       } catch (e) {
-        placeholder.textContent = (e && e.message && e.message.indexOf('identity_mismatch') !== -1)
-          ? 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ'
-          : '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+        placeholder.textContent = sifuErrorText(e);
       } finally {
         sendBtn.disabled = false;
         inputEl.focus();
