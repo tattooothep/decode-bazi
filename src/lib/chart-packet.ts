@@ -16,6 +16,7 @@ import type { calcBazi } from "./bazi-calc";
 import type { buildChartExtensions } from "./chart-extensions";
 import { buildConceptionPalace, buildLifePalace, buildBodyPalace, buildSiLing, buildMinorLuck } from "./chart-table";
 import { getDaymasterProfile } from "./daymaster-profile";
+import { buildHehuaVerdicts, type HehuaVerdict } from "./bazi-hehua-resolver";
 
 type Calc = Awaited<ReturnType<typeof calcBazi>>;
 type Ext = ReturnType<typeof buildChartExtensions>;
@@ -295,6 +296,9 @@ export type ChartPacket = {
     status: "resolved_partial" | "raw_only" | "none_detected";
     raw: Interaction[];
   };
+  /** 天干五合 verdict v1 · หลักฐานกลไกเสริมสำหรับ AI Sifu
+   * ใช้บอกว่า 合 นี้แปร/ไม่แปร/มีตัวแย่ง/ตัวคั่นอย่างไร · ไม่ใช่กรอบจำกัดสไตล์คำตอบ */
+  hehuaVerdicts?: HehuaVerdict[];
   luckInteractions: Interaction[];
   annualInteractions: Interaction[];
   /** สรุปปฏิกิริยาซ้อนคู่เดียวกัน (เช่น 反吟 ครอบ 六沖/天克) · derived summary ไม่ใช่ full resolver */
@@ -1512,6 +1516,7 @@ export function buildStructuredChartPacket(
     transitDrilldown,
     annualPillar: { stem: cyp?.stem || "-", branch: cyp?.branch || "-" },
     interactions: { status: interactionStatus, raw },
+    hehuaVerdicts: buildHehuaVerdicts(calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>),
     luckInteractions,
     annualInteractions,
     interactionConflictSummary: buildInteractionConflictSummary(raw, luckInteractions, annualInteractions),
@@ -1868,6 +1873,15 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
 
   /* ปฏิกิริยาในดวง */
   lines.push(renderInteractionGroup("ปฏิกิริยาในดวง", packet.interactions.raw, packet.interactions.status));
+  if (packet.hehuaVerdicts?.length) {
+    const items = packet.hehuaVerdicts.map((v) => {
+      const pairTxt = v.stems.map((s) => `${PILLAR_EN_TH[s.pillar] || s.pillar}:${s.stem}`).join("↔");
+      const confidenceTh = v.confidence === "high" ? "น้ำหนักสูง" : v.confidence === "medium" ? "น้ำหนักกลาง" : "น้ำหนักเบา";
+      const rules = v.sourceRuleIds.length ? ` · rule ${v.sourceRuleIds.join("/")}` : "";
+      return `${v.pair}(${pairTxt}) → ${v.verdictZh}/${v.finalVerdict} · ${v.thaiSummary} · ${confidenceTh}${rules}`;
+    });
+    lines.push(`ข้อมูลเสริมก้านฟ้า五合 (hehuaVerdicts · หลักฐานเสริม): ${items.join(" · ")} · ใช้ประกอบการอ่านร่วมกับ用神/忌神 วัยจร ปีจร และคำถามจริง · ไม่ลดอิสระการอ่านของซินแส`);
+  }
   if (packet.luckInteractions.length) lines.push(renderInteractionGroup("ปฏิกิริยาวัยจร×ดวงเกิด", packet.luckInteractions, "raw_only"));
   if (packet.annualInteractions.length) lines.push(renderInteractionGroup("ปฏิกิริยาปีจร×เสาวัน", packet.annualInteractions, "raw_only"));
   if (packet.interactionConflictSummary?.length) {
