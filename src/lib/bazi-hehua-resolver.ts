@@ -1,18 +1,33 @@
 import { getBaziInteractionRule } from "./bazi-interaction-rule-registry";
+import {
+  activePillars,
+  assessStemStrength,
+  distanceFor,
+  ELEMENT_CONTROLS,
+  ELEMENT_ZH,
+  hasRootForElement,
+  pillarIndex,
+  STEM_ELEMENT,
+  type BaziElement,
+  type BaziPillarLike,
+  type BaziPillarsLike,
+  type ChineseElement,
+  type HehuaDistance,
+  type PillarKey,
+  type StemStrength,
+} from "./bazi-stem-strength";
 
-export type BaziElement = "wood" | "fire" | "earth" | "metal" | "water";
-export type ChineseElement = "木" | "火" | "土" | "金" | "水";
-export type PillarKey = "year" | "month" | "day" | "hour";
-
-export type BaziPillarLike = {
-  stem: string;
-  branch: string;
-};
-
-export type BaziPillarsLike = Partial<Record<PillarKey, BaziPillarLike | null>>;
+export type {
+  BaziElement,
+  BaziPillarLike,
+  BaziPillarsLike,
+  ChineseElement,
+  HehuaDistance,
+  PillarKey,
+  StemStrength,
+} from "./bazi-stem-strength";
 
 export type HehuaPair = "甲己" | "乙庚" | "丙辛" | "丁壬" | "戊癸";
-export type HehuaDistance = "adjacent" | "gap1" | "remote";
 export type HehuaBindingStatus = "active" | "weak" | "blocked" | "contested";
 export type HehuaTransformStatus = "supported_candidate" | "not_transformed" | "not_evaluated";
 export type HehuaFinalVerdict =
@@ -74,58 +89,6 @@ export type HehuaVerdict = {
 
 type PlacedPillar = { key: PillarKey; stem: string; branch: string };
 
-type StemStrength = {
-  pillar: PillarKey;
-  stem: string;
-  element: BaziElement;
-  rooted: boolean;
-  seasonSupported: boolean;
-  distanceToCombo: HehuaDistance;
-  score: number;
-  verdict: "strong" | "weak";
-};
-
-const PILLAR_ORDER: PillarKey[] = ["year", "month", "day", "hour"];
-
-const STEM_ELEMENT: Record<string, BaziElement> = {
-  甲: "wood", 乙: "wood",
-  丙: "fire", 丁: "fire",
-  戊: "earth", 己: "earth",
-  庚: "metal", 辛: "metal",
-  壬: "water", 癸: "water",
-};
-
-const ELEMENT_ZH: Record<BaziElement, ChineseElement> = {
-  wood: "木",
-  fire: "火",
-  earth: "土",
-  metal: "金",
-  water: "水",
-};
-
-const ELEMENT_CONTROLS: Record<BaziElement, BaziElement> = {
-  wood: "earth",
-  earth: "water",
-  water: "fire",
-  fire: "metal",
-  metal: "wood",
-};
-
-const HIDDEN_STEMS: Record<string, string[]> = {
-  子: ["癸"],
-  丑: ["己", "癸", "辛"],
-  寅: ["甲", "丙", "戊"],
-  卯: ["乙"],
-  辰: ["戊", "乙", "癸"],
-  巳: ["丙", "庚", "戊"],
-  午: ["丁", "己"],
-  未: ["己", "丁", "乙"],
-  申: ["庚", "壬", "戊"],
-  酉: ["辛"],
-  戌: ["戊", "辛", "丁"],
-  亥: ["壬", "甲"],
-};
-
 const STEM_COMBO: Record<string, { partner: string; pair: HehuaPair; element: BaziElement; seasonBranches: string[] }> = {
   甲: { partner: "己", pair: "甲己", element: "earth", seasonBranches: ["辰", "戌", "丑", "未", "午"] },
   己: { partner: "甲", pair: "甲己", element: "earth", seasonBranches: ["辰", "戌", "丑", "未", "午"] },
@@ -138,44 +101,6 @@ const STEM_COMBO: Record<string, { partner: string; pair: HehuaPair; element: Ba
   戊: { partner: "癸", pair: "戊癸", element: "fire", seasonBranches: ["寅", "午", "戌", "巳"] },
   癸: { partner: "戊", pair: "戊癸", element: "fire", seasonBranches: ["寅", "午", "戌", "巳"] },
 };
-
-function pillarIndex(p: PillarKey): number {
-  return PILLAR_ORDER.indexOf(p);
-}
-
-function distanceFor(a: PillarKey, b: PillarKey): HehuaDistance {
-  const d = Math.abs(pillarIndex(a) - pillarIndex(b));
-  if (d <= 1) return "adjacent";
-  if (d === 2) return "gap1";
-  return "remote";
-}
-
-function activePillars(pillars: BaziPillarsLike): PlacedPillar[] {
-  return PILLAR_ORDER
-    .map((key) => ({ key, stem: pillars[key]?.stem || "", branch: pillars[key]?.branch || "" }))
-    .filter((p) => Boolean(p.stem && p.branch));
-}
-
-function hasBranchRootForElement(branch: string, element: BaziElement): boolean {
-  return (HIDDEN_STEMS[branch] || []).some((stem) => STEM_ELEMENT[stem] === element);
-}
-
-function hasRootForElement(pillars: BaziPillarsLike, element: BaziElement): boolean {
-  return activePillars(pillars).some((p) => hasBranchRootForElement(p.branch, element));
-}
-
-function seasonSupportsElement(monthBranch: string, element: BaziElement): boolean {
-  return hasBranchRootForElement(monthBranch, element);
-}
-
-function distanceToCombo(pillar: PillarKey, combo: [PillarKey, PillarKey]): HehuaDistance {
-  const idx = pillarIndex(pillar);
-  const min = Math.min(...combo.map(pillarIndex));
-  const max = Math.max(...combo.map(pillarIndex));
-  if (idx >= min - 1 && idx <= max + 1) return "adjacent";
-  if (idx >= min - 2 && idx <= max + 2) return "gap1";
-  return "remote";
-}
 
 function hasInterveningBlocker(
   placed: PlacedPillar[],
@@ -216,6 +141,7 @@ function findContested(
 
 function strongestVisibleBreaker(
   placed: PlacedPillar[],
+  allPillars: BaziPillarsLike,
   transformElement: BaziElement,
   comboStems: string[],
   comboPillars: [PillarKey, PillarKey],
@@ -226,20 +152,14 @@ function strongestVisibleBreaker(
     .map((p): StemStrength | null => {
       const element = STEM_ELEMENT[p.stem];
       if (!element || ELEMENT_CONTROLS[element] !== transformElement) return null;
-      const rooted = hasBranchRootForElement(p.branch, element);
-      const seasonSupported = seasonSupportsElement(monthBranch, element);
-      const distance = distanceToCombo(p.key, comboPillars);
-      const score = (rooted ? 2 : 0) + (seasonSupported ? 2 : 0) + (distance === "adjacent" ? 2 : distance === "gap1" ? 1 : 0);
-      return {
+      return assessStemStrength({
         pillar: p.key,
         stem: p.stem,
-        element,
-        rooted,
-        seasonSupported,
-        distanceToCombo: distance,
-        score,
-        verdict: rooted && distance === "adjacent" ? "strong" : "weak",
-      };
+        branch: p.branch,
+        allPillars,
+        comboPillars,
+        monthBranch,
+      });
     })
     .filter((x): x is StemStrength => Boolean(x))
     .sort((a, b) => b.score - a.score);
@@ -328,7 +248,7 @@ export function buildHehuaVerdicts(pillars: BaziPillarsLike): HehuaVerdict[] {
       const seasonSupported = info.seasonBranches.includes(monthBranch);
       const hasRootSupport = hasRootForElement(pillars, info.element);
       const hasIntervening = hasInterveningBlocker(placed, a.key, b.key, comboStems);
-      const breakerStrength = strongestVisibleBreaker(placed, info.element, comboStems, comboPillars, monthBranch);
+      const breakerStrength = strongestVisibleBreaker(placed, pillars, info.element, comboStems, comboPillars, monthBranch);
       const hasBreakerStem = Boolean(breakerStrength);
       const strongBreaker = breakerStrength?.verdict === "strong";
       const involvesDayMaster = a.key === "day" || b.key === "day";
