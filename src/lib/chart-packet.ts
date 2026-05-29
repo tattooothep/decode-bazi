@@ -1392,10 +1392,14 @@ function reconcileBy08pBridgeMedicine(packet: ChartPacket): void {
       })
     : false;
   const conditional = packet.usefulGods.conditionalUse || [];
+  const fc = packet.yongShenProtocols?.finalCombined;
   for (const el of primary.bridgeMedicine) {
-    /* ย้ายออกจาก blanket ji (ถ้ามี) — ไม่ใช่忌เดี่ยว */
+    /* ย้ายออกจาก blanket ji (ถ้ามี) — ไม่ใช่忌เดี่ยว · ทั้ง usefulGods + finalCombined (用神分層) */
     if (packet.usefulGods.ji.includes(el)) {
       packet.usefulGods.ji = packet.usefulGods.ji.filter((x) => x !== el);
+    }
+    if (fc?.ji?.includes(el)) {
+      fc.ji = fc.ji.filter((x) => x !== el);
     }
     conditional.push({
       element: el,
@@ -2591,19 +2595,22 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       (a.year ?? 0) - (b.year ?? 0) ||
       (a.month ?? 0) - (b.month ?? 0)
     );
-    const items = sorted.slice(0, 24).map((v) => {
+    /* dedup: verdict ซ้ำ (เช่นเดือนเดียวชงคลังเดิมทุกปี) ยุบเป็นรายการเดียว + ช่วงปี · กัน noise ซ้ำ 13 รอบ */
+    const seen = new Map<string, { v: typeof sorted[number]; years: number[] }>();
+    for (const v of sorted) {
+      const key = `${v.scope}|${v.branch}|${v.storageElement}|${v.verdictZh}|${v.finalVerdict}`;
+      const ex = seen.get(key);
+      if (ex) { if (v.year) ex.years.push(v.year); }
+      else seen.set(key, { v, years: v.year ? [v.year] : [] });
+    }
+    const items = Array.from(seen.values()).slice(0, 8).map(({ v, years }) => {
       const hidden = v.hiddenStems.map((h) => `${h.stem}${h.element}${h.role === "neutral" ? "" : `:${h.role}`}`).join("/");
       const rules = v.sourceRuleIds.length ? ` · rule ${v.sourceRuleIds.join("/")}` : "";
-      const label = v.label.startsWith(scopeTh[v.scope] || "") || v.label.startsWith("大運")
-        ? v.label
-        : `${scopeTh[v.scope] || v.scope} ${v.label}`;
-      const pillarText = v.label.includes(`${v.transitPillar.stem}${v.transitPillar.branch}`)
-        ? ""
-        : ` ${v.transitPillar.stem}${v.transitPillar.branch}`;
-      return `${label}${pillarText} → ชงคลัง${v.branch}${v.storageElement}庫@${PILLAR_EN_TH[v.pillar] || v.pillar} = ${v.verdictZh}/${v.finalVerdict} · 藏干 ${hidden} · ${v.thaiSummary}${rules}`;
+      const yrTxt = years.length > 1 ? `ปี${Math.min(...years)}-${Math.max(...years)}(${years.length}ครั้ง)` : (years[0] ? `ปี${years[0]}` : (scopeTh[v.scope] || v.scope));
+      return `${yrTxt} ชงคลัง${v.branch}${v.storageElement}庫@${PILLAR_EN_TH[v.pillar] || v.pillar} = ${v.verdictZh}/${v.finalVerdict} · 藏干 ${hidden} · ${v.thaiSummary}${rules}`;
     });
-    const more = sorted.length > items.length ? ` · ยังมีหลักฐานคลังตามเวลาอีก ${sorted.length - items.length} รายการใน packet` : "";
-    lines.push(`ข้อมูลเสริมคลังตามเวลา墓庫流動 (mukuTransitStates · 大運/流年/流月): ${items.join(" · ")}${more} · หลักฐานเพิ่มสำหรับอ่านจังหวะย้อนหลัง/ล่วงหน้า`);
+    const more = seen.size > items.length ? ` · ยังมีอีก ${seen.size - items.length} รูปแบบใน packet` : "";
+    lines.push(`ข้อมูลเสริมคลังตามเวลา墓庫流動 (mukuTransitStates · ยุบรายการซ้ำ · 大運/流年/流月): ${items.join(" · ")}${more} · หลักฐานเพิ่มสำหรับอ่านจังหวะย้อนหลัง/ล่วงหน้า`);
   }
   if (packet.luckInteractions.length) lines.push(renderInteractionGroup("ปฏิกิริยาวัยจร×ดวงเกิด", packet.luckInteractions, "raw_only"));
   if (packet.annualInteractions.length) lines.push(renderInteractionGroup("ปฏิกิริยาปีจร×เสาวัน", packet.annualInteractions, "raw_only"));
