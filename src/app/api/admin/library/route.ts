@@ -1,27 +1,30 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { q, q1 } from "@/lib/db";
-import { mkdirSync, writeFileSync, rmSync } from "fs";
+import { mkdirSync, writeFileSync, rmSync, unlinkSync } from "fs";
 import { join, extname } from "path";
 
 /**
- * หอสมุดคัมภีร์ (admin only) — อัพโหลดคัมภีร์เป็นไฟล์ภาพ + เขียน memo ต่อท้าย
+ * หอสมุดคัมภีร์ (admin only) — อัพโหลดคัมภีร์เป็นไฟล์ภาพ (อัพทีละรูป) + memo 1 ช่อง/เล่ม
  *
- * GET  /api/admin/library            → list คัมภีร์ทั้งหมด (+ page_count, memo_count)
- * GET  /api/admin/library?id=N       → รายละเอียดเล่ม (pages + memos)
- * POST /api/admin/library  (multipart form-data, action=create)
- *        title, category, lang, source, files[] (ภาพหลายหน้า)
- * POST /api/admin/library  (json, action=memo)   {scriptureId, pageNo?, body}
- * POST /api/admin/library  (json, action=delete-memo)       {memoId}
- * POST /api/admin/library  (json, action=delete-scripture)  {scriptureId}
+ * GET  /api/admin/library            → list คัมภีร์ (+ page_count)
+ * GET  /api/admin/library?id=N       → รายละเอียด (scripture[memo] + pages)
+ * POST (json)      action=create        {title,category,lang,source} → คืน {id}
+ * POST (multipart) scriptureId + files  → เพิ่มหน้า (อัพทีละรูปก็ได้) · page_no นับต่อ
+ * POST (json)      action=save-memo      {scriptureId, memo}
+ * POST (json)      action=delete-page    {pageId}
+ * POST (json)      action=delete-scripture {scriptureId}
  *
- * ภาพเก็บใต้ data/library-scans/<id>/<page>.<ext> (นอก public · เสิร์ฟผ่าน /api/admin/library/file ที่ guard admin)
+ * ภาพเก็บ /root/decode-shared/library-scans/<id>/<page>.<ext> (persist ข้าม deploy) · เสิร์ฟผ่าน /file (guard admin)
  */
 export const runtime = "nodejs";
-// เก็บนอก release dir → persist ข้าม blue-green deploy (release ใหม่ rsync ไม่ทับ)
 const SCAN_DIR = process.env.LIBRARY_SCAN_DIR || "/root/decode-shared/library-scans";
 const ALLOW_EXT = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"]);
-const MAX_BYTES = 25 * 1024 * 1024; // 25MB/ไฟล์
+const MAX_BYTES = 30 * 1024 * 1024;
+
+function mimeOf(ext: string) {
+  return ext === ".pdf" ? "application/pdf" : ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : ext === ".gif" ? "image/gif" : "image/jpeg";
+}
 
 export async function GET(req: Request) {
   try { await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({ ok: false, error: "auth" }, { status: 401 }); }
@@ -29,20 +32,13 @@ export async function GET(req: Request) {
   if (id) {
     const sc = await q1(`SELECT * FROM library_scriptures WHERE id=$1`, [Number(id)]);
     if (!sc) return NextResponse.json({ ok: false, error: "not found" }, { status: 404 });
-    const pages = await q(
-      `SELECT id, page_no, mime FROM library_pages WHERE scripture_id=$1 ORDER BY page_no`,
-      [Number(id)]
-    );
-    const memos = await q(
-      `SELECT id, page_no, body, created_by, created_at FROM library_memos WHERE scripture_id=$1 ORDER BY created_at DESC`,
-      [Number(id)]
-    );
-    return NextResponse.json({ ok: true, scripture: sc, pages, memos });
+    const pages = await q(`SELECT id, page_no, mime FROM library_pages WHERE scripture_id=$1 ORDER BY page_no`, [Number(id)]);
+    return NextResponse.json({ ok: true, scripture: sc, pages });
   }
   const rows = await q(
-    `SELECT s.*,
+    `SELECT s.id, s.title, s.category, s.lang, s.source, s.created_at,
        (SELECT count(*) FROM library_pages p WHERE p.scripture_id=s.id) AS page_count,
-       (SELECT count(*) FROM library_memos m WHERE m.scripture_id=s.id) AS memo_count
+       (length(coalesce(s.memo,'')) > 0) AS has_memo
      FROM library_scriptures s ORDER BY s.created_at DESC`
   );
   return NextResponse.json({ ok: true, scriptures: rows });
@@ -53,67 +49,66 @@ export async function POST(req: Request) {
   try { admin = await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({ ok: false, error: "auth" }, { status: 401 }); }
   const ctype = req.headers.get("content-type") || "";
 
-  // ── อัพโหลดคัมภีร์ใหม่ (multipart) ──
+  // ── เพิ่มหน้า (อัพรูป · ทีละไฟล์หรือหลายไฟล์) เข้าเล่มที่มีอยู่ ──
   if (ctype.includes("multipart/form-data")) {
     const form = await req.formData();
-    const title = String(form.get("title") || "").trim();
-    if (!title) return NextResponse.json({ ok: false, error: "ต้องมีชื่อคัมภีร์" }, { status: 400 });
-    const category = String(form.get("category") || "").trim();
-    const lang = String(form.get("lang") || "zh").trim();
-    const source = String(form.get("source") || "").trim();
-    const files = form.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
+    const scId = Number(form.get("scriptureId"));
+    if (!scId) return NextResponse.json({ ok: false, error: "ต้องมี scriptureId" }, { status: 400 });
+    const exists = await q1<{ id: number }>(`SELECT id FROM library_scriptures WHERE id=$1`, [scId]);
+    if (!exists) return NextResponse.json({ ok: false, error: "ไม่พบคัมภีร์" }, { status: 404 });
 
-    const row = await q1<{ id: number }>(
-      `INSERT INTO library_scriptures (title, category, lang, source, created_by)
-       VALUES ($1,$2,$3,$4,$5) RETURNING id`,
-      [title, category, lang, source, admin.email]
-    );
-    const scId = row!.id;
+    const files = form.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
     const dir = join(SCAN_DIR, String(scId));
     mkdirSync(dir, { recursive: true });
-
-    let pageNo = 0;
+    const maxRow = await q1<{ mx: number }>(`SELECT COALESCE(MAX(page_no),0) AS mx FROM library_pages WHERE scripture_id=$1`, [scId]);
+    let pageNo = Number(maxRow?.mx || 0);
+    const added: number[] = [];
     for (const file of files) {
       const ext = (extname(file.name) || ".jpg").toLowerCase();
-      if (!ALLOW_EXT.has(ext)) continue;
-      if (file.size > MAX_BYTES) continue;
+      if (!ALLOW_EXT.has(ext) || file.size > MAX_BYTES) continue;
       pageNo += 1;
       const buf = Buffer.from(await file.arrayBuffer());
       const fp = join(dir, `${pageNo}${ext}`);
       writeFileSync(fp, buf);
-      const mime = ext === ".pdf" ? "application/pdf" : ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : ext === ".gif" ? "image/gif" : "image/jpeg";
-      await q(
-        `INSERT INTO library_pages (scripture_id, page_no, file_path, mime) VALUES ($1,$2,$3,$4)`,
-        [scId, pageNo, fp, mime]
+      const r = await q1<{ id: number }>(
+        `INSERT INTO library_pages (scripture_id, page_no, file_path, mime) VALUES ($1,$2,$3,$4) RETURNING id`,
+        [scId, pageNo, fp, mimeOf(ext)]
       );
+      if (r) added.push(r.id);
     }
-    return NextResponse.json({ ok: true, id: scId, pages: pageNo });
+    return NextResponse.json({ ok: true, added: added.length, lastPage: pageNo });
   }
 
-  // ── action ที่เป็น JSON ──
   const body = await req.json().catch(() => ({}));
   const action = body.action;
 
-  if (action === "memo") {
-    const scriptureId = Number(body.scriptureId);
-    const text = String(body.body || "").trim();
-    if (!scriptureId || !text) return NextResponse.json({ ok: false, error: "ขาดข้อมูล" }, { status: 400 });
-    const pageNo = body.pageNo != null && body.pageNo !== "" ? Number(body.pageNo) : null;
+  if (action === "create") {
+    const title = String(body.title || "").trim();
+    if (!title) return NextResponse.json({ ok: false, error: "ต้องมีชื่อคัมภีร์" }, { status: 400 });
     const r = await q1<{ id: number }>(
-      `INSERT INTO library_memos (scripture_id, page_no, body, created_by) VALUES ($1,$2,$3,$4) RETURNING id`,
-      [scriptureId, pageNo, text, admin.email]
+      `INSERT INTO library_scriptures (title, category, lang, source, created_by) VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+      [title, String(body.category || ""), String(body.lang || "zh"), String(body.source || ""), admin.email]
     );
     return NextResponse.json({ ok: true, id: r!.id });
   }
 
-  if (action === "delete-memo") {
-    await q(`DELETE FROM library_memos WHERE id=$1`, [Number(body.memoId)]);
+  if (action === "save-memo") {
+    const scId = Number(body.scriptureId);
+    if (!scId) return NextResponse.json({ ok: false, error: "ขาด scriptureId" }, { status: 400 });
+    await q(`UPDATE library_scriptures SET memo=$1 WHERE id=$2`, [String(body.memo || ""), scId]);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "delete-page") {
+    const row = await q1<{ file_path: string }>(`SELECT file_path FROM library_pages WHERE id=$1`, [Number(body.pageId)]);
+    await q(`DELETE FROM library_pages WHERE id=$1`, [Number(body.pageId)]);
+    if (row) { try { unlinkSync(row.file_path); } catch {} }
     return NextResponse.json({ ok: true });
   }
 
   if (action === "delete-scripture") {
     const scId = Number(body.scriptureId);
-    await q(`DELETE FROM library_scriptures WHERE id=$1`, [scId]); // cascade → pages+memos
+    await q(`DELETE FROM library_scriptures WHERE id=$1`, [scId]);
     try { rmSync(join(SCAN_DIR, String(scId)), { recursive: true, force: true }); } catch {}
     return NextResponse.json({ ok: true });
   }
