@@ -37,6 +37,7 @@
   const I18N = {
     th: { trigger:'羅盤 ทิศ', label:'COMPASS · 羅盤',
       items: [
+        { href:'/luopan',          ico:'環', ttl:'หล่อแก 14 วง',   sub:'ดาวเหินจร · 玄空飛星' },
         { href:'/compass',         ico:'家', ttl:'บันทึกบ้าน',     sub:'HOUSE + QR · ฮวงจุ้ย' },
         { href:'/compass-studio',  ico:'盤', ttl:'วัดทิศบนแผนที่', sub:'GOOGLE MAPS · 6 LAYER' },
         { href:'/fengshui-pro',    ico:'宮', ttl:'ฮวงจุ้ย Pro',    sub:'9 พาลา · ดาวเหิน' },
@@ -45,6 +46,7 @@
     },
     en: { trigger:'羅盤 Compass', label:'COMPASS · 羅盤',
       items: [
+        { href:'/luopan',          ico:'環', ttl:'Luopan 14 Rings', sub:'FLYING STARS · 玄空' },
         { href:'/compass',         ico:'家', ttl:'Save House',     sub:'HOUSE + QR' },
         { href:'/compass-studio',  ico:'盤', ttl:'Studio',         sub:'MAPS · 6 LAYERS' },
         { href:'/fengshui-pro',    ico:'宮', ttl:'Feng Shui Pro',  sub:'9 PALACES' },
@@ -53,6 +55,7 @@
     },
     zh: { trigger:'羅盤', label:'羅盤 COMPASS',
       items: [
+        { href:'/luopan',          ico:'環', ttl:'羅盤 14環', sub:'玄空飛星 · 流星' },
         { href:'/compass',         ico:'家', ttl:'房屋',     sub:'HOUSE + QR' },
         { href:'/compass-studio',  ico:'盤', ttl:'量向',     sub:'GOOGLE MAPS' },
         { href:'/fengshui-pro',    ico:'宮', ttl:'風水 Pro', sub:'九宮 · 飛星' },
