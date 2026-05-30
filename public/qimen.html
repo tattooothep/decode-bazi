@@ -457,9 +457,9 @@
       <p class="lede">ระบบพยากรณ์ <b data-i18n="auto.q.002">9 ช่อง</b> ที่เปลี่ยนตามชั่วยาม-วัน-เดือน-ปี · เลือก <b data-i18n="auto.q.003">สำนัก 拆補 / 置閏</b> แล้วตั้งคำถามเฉพาะหน้า — ฉีเหมินตอบเรื่อง <b data-i18n="auto.q.004">ทิศ จังหวะ คน และผลลัพธ์</b></p>
     </div>
     <div class="stats" id="hk-qm-stats">
-      <div><b id="qm-stat-ju">—</b><span id="qm-stat-ju-th">局</span></div>
-      <div><b id="qm-stat-dun">—</b><span id="qm-stat-dun-th">遁干</span></div>
-      <div><b id="qm-stat-yuan">—</b><span id="qm-stat-yuan-th">元</span></div>
+      <div><b id="qm-stat-ju">—</b><span id="qm-stat-ju-th" data-i18n="q.stat.ju">ผัง(局)</span></div>
+      <div><b id="qm-stat-dun">—</b><span id="qm-stat-dun-th" data-i18n="q.stat.dun">ก้านหลบ(遁干)</span></div>
+      <div><b id="qm-stat-yuan">—</b><span id="qm-stat-yuan-th" data-i18n="q.stat.yuan">ยุค(元)</span></div>
     </div>
   </div>
 
@@ -531,10 +531,10 @@
       <div class="chart-meta" id="qm-chart-meta">
         <span class="pill"><b id="qm-pill-ju">—</b>YUAN-JU</span>
         <span class="pill"><b id="qm-pill-dun">—</b>FU TOU</span>
-        <span class="pill special"><b>直符</b><span id="qm-pill-fu">—</span></span>
-        <span class="pill special"><b>直使</b><span id="qm-pill-shi">—</span></span>
-        <span class="pill"><b>旬</b><span id="qm-pill-xun">—</span></span>
-        <span class="pill"><b>空</b><span id="qm-pill-void">—</span></span>
+        <span class="pill special"><b data-i18n="q.pill.fu">ดาวนำ(值符)</b><span id="qm-pill-fu">—</span></span>
+        <span class="pill special"><b data-i18n="q.pill.shi">ประตูนำ(值使)</b><span id="qm-pill-shi">—</span></span>
+        <span class="pill"><b data-i18n="q.pill.xun">ช่วง(旬)</b><span id="qm-pill-xun">—</span></span>
+        <span class="pill"><b data-i18n="q.pill.void">ว่าง(空)</b><span id="qm-pill-void">—</span></span>
       </div>
       <button  class="ctrl-btn" id="qm-recalc-btn" style="background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;" data-i18n="auto.q.014">↻ คำนวณใหม่</button>
     </div>
@@ -555,9 +555,9 @@
       </div>
 
       <div class="palace-legend">
-        <span><i style="background:var(--good);"></i>三吉門 開·休·生</span>
-        <span><i style="background:var(--bad);"></i>五凶門 死·驚·杜·傷·景</span>
-        <span><i style="background:var(--gold);"></i>使 = 直使 · 影 = ตรงข้าม</span>
+        <span><i style="background:var(--good);"></i><span data-i18n="q.legend.good">ประตูมงคล 3 (三吉門) 開·休·生</span></span>
+        <span><i style="background:var(--bad);"></i><span data-i18n="q.legend.bad">ประตูร้าย 5 (五凶門) 死·驚·杜·傷·景</span></span>
+        <span><i style="background:var(--gold);"></i><span data-i18n="q.legend.shi">ประตูนำ(使=直使) · เงา(影)=ตรงข้าม</span></span>
       </div>
     </div>
 
@@ -565,7 +565,7 @@
     <div class="side-pane">
       <!-- 16 พ.ค. 2026: ลบ FORECAST tab · ย้ายไป /forecast แล้ว · เหลือเฉพาะ DETAIL -->
       <div class="side-tabs" id="side-tabs" style="justify-content:flex-start;">
-        <button class="on" data-tab="detail">PALACE DETAIL · 詳</button>
+        <button class="on" data-tab="detail" data-i18n="q.tab.detail">รายละเอียดช่อง · 詳</button>
       </div>
 
       <!-- DETAIL · Step 3 (22 พ.ค.) · เนื้อหามาจาก API render ทุกครั้งหลัง loadQimen -->
@@ -711,7 +711,33 @@ window.HK_I18N = {
   'q.nav.master':  { th:'ซินแส', en:'Sifu', zh:'老師' },
   'q.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
   'q.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
-  'q.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' }
+  'q.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
+  /* stat card (hero) · 30 พ.ค. */
+  'q.stat.ju':     { th:'ผัง(局)', en:'Ju (局)', zh:'局' },
+  'q.stat.dun':    { th:'ก้านหลบ(遁干)', en:'Dun Stem (遁干)', zh:'遁干' },
+  'q.stat.yuan':   { th:'ยุค(元)', en:'Yuan (元)', zh:'元' },
+  /* chart-meta pills */
+  'q.pill.fu':     { th:'ดาวนำ(值符)', en:'Lead Star (值符)', zh:'值符' },
+  'q.pill.shi':    { th:'ประตูนำ(值使)', en:'Lead Door (值使)', zh:'值使' },
+  'q.pill.xun':    { th:'ช่วง(旬)', en:'Xun (旬)', zh:'旬' },
+  'q.pill.void':   { th:'ว่าง(空)', en:'Void (空)', zh:'空' },
+  /* palace legend */
+  'q.legend.good': { th:'ประตูมงคล 3 (三吉門) 開·休·生', en:'3 Good Doors (三吉門) 開·休·生', zh:'三吉門 開·休·生' },
+  'q.legend.bad':  { th:'ประตูร้าย 5 (五凶門) 死·驚·杜·傷·景', en:'5 Bad Doors (五凶門) 死·驚·杜·傷·景', zh:'五凶門 死·驚·杜·傷·景' },
+  'q.legend.shi':  { th:'ประตูนำ(使=直使) · เงา(影)=ตรงข้าม', en:'使 = Lead Door (直使) · 影 = opposite', zh:'使 = 直使 · 影 = 對宮' },
+  /* side tab */
+  'q.tab.detail':  { th:'รายละเอียดช่อง · 詳', en:'PALACE DETAIL · 詳', zh:'宮位詳情 · 詳' },
+  /* search panel · 30 พ.ค. */
+  'q.srch.title':  { th:'🔍 ค้นหาผังเหมาะกิจกรรม', en:'🔍 Find chart for activity', zh:'🔍 搜尋適合活動的盤' },
+  'q.srch.tab.act':{ th:'ตามกิจกรรม', en:'By activity', zh:'按活動' },
+  'q.srch.tab.spec':{ th:'ตามองค์ประกอบ', en:'By component', zh:'按組件' },
+  'q.srch.doors':  { th:'ประตู · 八門', en:'Doors · 八門', zh:'八門' },
+  'q.srch.stars':  { th:'ดาว · 九星', en:'Stars · 九星', zh:'九星' },
+  'q.srch.deities':{ th:'เทพ · 八神', en:'Deities · 八神', zh:'八神' },
+  'q.srch.from':   { th:'จาก', en:'From', zh:'從' },
+  'q.srch.to':     { th:'ถึง', en:'To', zh:'至' },
+  'q.srch.go':     { th:'🔍 ค้นหา', en:'🔍 Search', zh:'🔍 搜尋' },
+  'q.srch.ai':     { th:'💬 ขอ AI แนะนำ · เลือกอันไหนดี', en:'💬 Ask AI · which to pick', zh:'💬 問 AI · 選哪個好' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
@@ -1058,8 +1084,10 @@ window.applyI18N = applyI18N;
     const verdictText = (VERDICT_LABEL[verdictClass] && VERDICT_LABEL[verdictClass][lang]) || VERDICT_LABEL[verdictClass].th;
 
     /* score line · จาก API */
+    const lvlPart  = p.display_level ? ' · '+qmEsc(p.display_level) : '';
+    const tierPart = (p.tier_code && p.tier_code !== p.display_level) ? ' · '+qmEsc(p.tier_code) : '';
     const scoreLine = (p.display_score!=null || p.score!=null)
-      ? `<div class="detail-row"><span class="k">${qmEsc(SCORE_LABEL)}</span><span class="v"><b>${qmEsc(p.display_score!=null?p.display_score:p.score)}</b>${p.display_level?' · '+qmEsc(p.display_level):''}${p.tier_code?' · '+qmEsc(p.tier_code):''}</span></div>`
+      ? `<div class="detail-row"><span class="k">${qmEsc(SCORE_LABEL)}</span><span class="v"><b>${qmEsc(p.display_score!=null?p.display_score:p.score)}</b>${lvlPart}${tierPart}</span></div>`
       : '';
 
     host.innerHTML = `
@@ -1113,6 +1141,9 @@ window.applyI18N = applyI18N;
     /* renderPalaces เซ็ต grid.innerHTML ใหม่ · badge overlay หาย · restore */
     try { if (window._qimenUserYs && typeof applyOverlay === 'function') applyOverlay(window._qimenUserYs); }
     catch(e4){ console.warn('[qimen lang] overlay', e4); }
+    /* re-label activity grid ในกล่องค้นหา (label dependent on lang) */
+    try { if (typeof renderQimenActivityGrid === 'function') renderQimenActivityGrid(); }
+    catch(e5){ console.warn('[qimen lang] activity grid', e5); }
   }
   window.refreshQimenLanguage = refreshQimenLanguage;
 
@@ -1555,8 +1586,34 @@ window.applyI18N = applyI18N;
     {c:'SHANG_MEN',zh:'傷門',th:'บาดเจ็บ·ไม่ดี'},
     {c:'SI_MEN',zh:'死門',th:'ตาย·ไม่ดี'},
   ];
-  const STAR_OPTS = ['TIAN_PENG','TIAN_REN','TIAN_CHONG','TIAN_FU','TIAN_YING','TIAN_QIN','TIAN_ZHU','TIAN_XIN','TIAN_RUI'].map(c => ({c, zh: STAR_CN[c] || c}));
-  const DEITY_OPTS = ['ZHI_FU','TENG_SHE','TAI_YIN','LIU_HE','BAI_HU','XUAN_WU','JIU_DI','JIU_TIAN'].map(c => ({c, zh: DEITY_CN[c] || c}));
+  /* ไทยนำจีนรอง · ชื่อ 9 ดาว / 8 เทพ (ทับศัพท์) */
+  const STAR_TH = { TIAN_PENG:'เทียนเผิง', TIAN_REN:'เทียนเริ่น', TIAN_CHONG:'เทียนชง', TIAN_FU:'เทียนฝู่', TIAN_YING:'เทียนอิง', TIAN_QIN:'เทียนฉิน', TIAN_ZHU:'เทียนจู้', TIAN_XIN:'เทียนซิน', TIAN_RUI:'เทียนรุ่ย' };
+  const DEITY_TH = { ZHI_FU:'จื๋อฝู', TENG_SHE:'เถิงเสอ', TAI_YIN:'ไท่อิน', LIU_HE:'ลิ่วเหอ', BAI_HU:'ไป๋หู่', XUAN_WU:'เสวียนอู่', JIU_DI:'จิ่วตี้', JIU_TIAN:'จิ่วเทียน' };
+  const STAR_OPTS = ['TIAN_PENG','TIAN_REN','TIAN_CHONG','TIAN_FU','TIAN_YING','TIAN_QIN','TIAN_ZHU','TIAN_XIN','TIAN_RUI'].map(c => ({c, zh: STAR_CN[c] || c, th: STAR_TH[c] || ''}));
+  const DEITY_OPTS = ['ZHI_FU','TENG_SHE','TAI_YIN','LIU_HE','BAI_HU','XUAN_WU','JIU_DI','JIU_TIAN'].map(c => ({c, zh: DEITY_CN[c] || c, th: DEITY_TH[c] || ''}));
+
+  /* render activity buttons ตามภาษาปัจจุบัน · คงสถานะ on เดิม
+   * ถ้ามีปุ่มอยู่แล้ว → แก้เฉพาะ label (กัน event listener หลุด) */
+  function renderQimenActivityGrid(){
+    const ag = document.getElementById('qm-act-grid');
+    if (!ag) return;
+    const lang = (typeof getCurrentLang === 'function') ? getCurrentLang() : 'th';
+    const existing = ag.querySelectorAll('.qm-act-btn');
+    if (existing.length){
+      existing.forEach(b => {
+        const v = ACTIVITIES_TH[b.dataset.act];
+        if (!v) return;
+        const lbl = b.querySelector('span:not(.em)');
+        if (lbl) lbl.textContent = v[lang] || v.th;
+      });
+      return;
+    }
+    const active = window._qmActivity || 'wealth';
+    ag.innerHTML = Object.entries(ACTIVITIES_TH).map(([k,v]) =>
+      `<button class="qm-act-btn ${k===active?'on':''}" data-act="${k}"><span class="em">${v.emoji}</span><span>${v[lang]||v.th}</span></button>`
+    ).join('');
+  }
+  window.renderQimenActivityGrid = renderQimenActivityGrid;
 
   function ensureSearchPanel(){
     if (document.getElementById('qm-search-panel')) return;
@@ -1567,10 +1624,10 @@ window.applyI18N = applyI18N;
     panel.style.cssText = 'grid-column:1/-1;margin-top:18px;padding:18px 20px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:14px;';
     panel.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-        <h3 style="font-family:var(--serif);font-size:16px;color:var(--fg);margin:0">🔍 ค้นหาผังเหมาะกิจกรรม</h3>
+        <h3 style="font-family:var(--serif);font-size:16px;color:var(--fg);margin:0" data-i18n="q.srch.title">🔍 ค้นหาผังเหมาะกิจกรรม</h3>
         <div id="qm-search-tabs" style="display:flex;gap:6px">
-          <button class="qm-stab on" data-tab="activity">ตามกิจกรรม</button>
-          <button class="qm-stab" data-tab="spec">ตามองค์ประกอบ</button>
+          <button class="qm-stab on" data-tab="activity" data-i18n="q.srch.tab.act">ตามกิจกรรม</button>
+          <button class="qm-stab" data-tab="spec" data-i18n="q.srch.tab.spec">ตามองค์ประกอบ</button>
         </div>
       </div>
 
@@ -1580,15 +1637,15 @@ window.applyI18N = applyI18N;
       <div id="qm-tab-spec" class="qm-tab-pane" style="display:none">
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
           <div>
-            <label style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase">八門 · ประตู</label>
+            <label style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase" data-i18n="q.srch.doors">ประตู · 八門</label>
             <select id="qm-spec-doors" multiple size="4" style="width:100%;background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg);padding:6px;border-radius:6px;font-family:var(--tc);font-size:12px"></select>
           </div>
           <div>
-            <label style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase">九星 · ดาว</label>
+            <label style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase" data-i18n="q.srch.stars">ดาว · 九星</label>
             <select id="qm-spec-stars" multiple size="4" style="width:100%;background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg);padding:6px;border-radius:6px;font-family:var(--tc);font-size:12px"></select>
           </div>
           <div>
-            <label style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase">八神 · เทพ</label>
+            <label style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase" data-i18n="q.srch.deities">เทพ · 八神</label>
             <select id="qm-spec-deities" multiple size="4" style="width:100%;background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg);padding:6px;border-radius:6px;font-family:var(--tc);font-size:12px"></select>
           </div>
         </div>
@@ -1601,20 +1658,20 @@ window.applyI18N = applyI18N;
 
       <div style="display:grid;grid-template-columns:repeat(3,auto) 1fr;gap:8px;align-items:end;margin-top:12px;font-family:var(--thai);font-size:12px;color:var(--fg-soft)">
         <div>
-          <label style="font-size:9px;display:block">จาก</label>
+          <label style="font-size:9px;display:block" data-i18n="q.srch.from">จาก</label>
           <input type="date" id="qm-srch-from" style="background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg);padding:6px;border-radius:6px"/>
         </div>
         <div>
-          <label style="font-size:9px;display:block">ถึง</label>
+          <label style="font-size:9px;display:block" data-i18n="q.srch.to">ถึง</label>
           <input type="date" id="qm-srch-to" style="background:var(--bg);border:1px solid var(--tile-bd);color:var(--fg);padding:6px;border-radius:6px"/>
         </div>
-        <button id="qm-srch-go" style="background:var(--gold);color:var(--bg);padding:8px 20px;border:none;border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;cursor:pointer">🔍 ค้นหา</button>
+        <button id="qm-srch-go" style="background:var(--gold);color:var(--bg);padding:8px 20px;border:none;border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;cursor:pointer" data-i18n="q.srch.go">🔍 ค้นหา</button>
         <div style="text-align:right;font-size:10px;color:var(--fg-faint)" id="qm-srch-meta">—</div>
       </div>
 
       <div id="qm-srch-results" style="margin-top:14px;display:flex;flex-direction:column;gap:8px"></div>
       <div id="qm-srch-ai-wrap" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--tile-bd)">
-        <button id="qm-srch-ai-btn" style="font-family:var(--mono);font-size:11px;letter-spacing:.15em;padding:10px 18px;background:linear-gradient(135deg,#4c7ab8,#3a5d8f);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;text-transform:uppercase">💬 ขอ AI แนะนำ · เลือกอันไหนดี</button>
+        <button id="qm-srch-ai-btn" style="font-family:var(--mono);font-size:11px;letter-spacing:.15em;padding:10px 18px;background:linear-gradient(135deg,#4c7ab8,#3a5d8f);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700;text-transform:uppercase" data-i18n="q.srch.ai">💬 ขอ AI แนะนำ · เลือกอันไหนดี</button>
         <div id="qm-srch-ai-out" style="margin-top:12px;font-family:var(--thai);font-size:13px;color:var(--fg);line-height:1.65;white-space:pre-wrap;display:none;padding:14px 16px;background:var(--bg);border:1px solid var(--gold-line);border-radius:10px"></div>
       </div>
     `;
@@ -1637,19 +1694,16 @@ window.applyI18N = applyI18N;
       .qm-result-row .dir{font-family:var(--thai);font-size:11px;color:var(--fg-soft)}
       .qm-result-row .score{font-family:var(--mono);font-size:14px;color:var(--gold);font-weight:700;padding:4px 10px;background:var(--gold-soft);border-radius:6px}
     `);
-    /* activity grid */
-    const ag = document.getElementById('qm-act-grid');
-    if (ag) ag.innerHTML = Object.entries(ACTIVITIES_TH).map(([k,v]) =>
-      `<button class="qm-act-btn ${k==='wealth'?'on':''}" data-act="${k}"><span class="em">${v.emoji}</span><span>${v.th}</span></button>`
-    ).join('');
+    /* activity grid · ตามภาษา (ไทยนำ default) */
+    renderQimenActivityGrid();
     window._qmActivity = 'wealth';
     /* spec selects */
     const ds = document.getElementById('qm-spec-doors');
     if (ds) ds.innerHTML = DOOR_OPTS.map(d => `<option value="${d.c}">${d.zh} · ${d.th}</option>`).join('');
     const ss = document.getElementById('qm-spec-stars');
-    if (ss) ss.innerHTML = STAR_OPTS.map(s => `<option value="${s.c}">${s.zh}</option>`).join('');
+    if (ss) ss.innerHTML = STAR_OPTS.map(s => `<option value="${s.c}">${s.zh}${s.th?' · '+s.th:''}</option>`).join('');
     const es = document.getElementById('qm-spec-deities');
-    if (es) es.innerHTML = DEITY_OPTS.map(d => `<option value="${d.c}">${d.zh}</option>`).join('');
+    if (es) es.innerHTML = DEITY_OPTS.map(d => `<option value="${d.c}">${d.zh}${d.th?' · '+d.th:''}</option>`).join('');
     /* date defaults · today → +6 days */
     const today = new Date();
     const wkEnd = new Date(today.getTime() + 6*86400000);
@@ -1683,6 +1737,12 @@ window.applyI18N = applyI18N;
     /* AI advice on search results */
     const aiBtn = document.getElementById('qm-srch-ai-btn');
     if (aiBtn) aiBtn.addEventListener('click', requestSearchAdvice);
+    /* แปล label ใน panel ตามภาษาปัจจุบัน (ถ้าโหลดมาเป็น en/zh อยู่แล้ว) */
+    try {
+      if (typeof window.applyI18N === 'function' && typeof getCurrentLang === 'function') {
+        window.applyI18N(getCurrentLang());
+      }
+    } catch(e){ /* skip */ }
   }
 
   async function requestSearchAdvice(){
