@@ -25,6 +25,7 @@ import { join } from "path";
 import { q1, q } from "@/lib/db";
 import { spawnClaudeStreaming, makeJsonlParser, streamOpenRouter } from "@/lib/claude-stream";
 import { loadPromptMd } from "@/lib/prompt-md";
+import { boundaryWarning3p } from "@/lib/bazi-boundary";
 
 /* 25 พ.ค. · compare persona ย้ายไป prompts/compare-{th,en,zh}.md (section marker) · parser + fallback */
 function parseCompareSections(raw: string): Record<string, string> {
@@ -157,22 +158,25 @@ function personSummary(p: PersonCtx, label: string, lang: "th" | "en" | "zh"): s
   const climate = p.analysis?.tiao_hou?.climate || "—";
   const ys = yongList(p.yongshen_v2, "primary_yongshen");
   const js = yongList(p.yongshen_v2, "jishen");
+  // เกิดวันคาบ節氣 + ไม่รู้เวลา → เตือนเสาเดือน/ปีก้ำกึ่ง (additive · เฉพาะ 3 เสา)
+  const bw = mode === "3p" && p.birthDate ? boundaryWarning3p(String(p.birthDate).slice(0, 10)) : "";
+  const bwLine = bw ? "\n- " + bw : "";
   if (lang === "en") {
     return `${label} · ${p.name || label} (${p.gender || "?"}) · birth ${p.birthDate || "?"}${mode === "4p" ? " " + (p.birthTime || "?") : " (time unknown · 3-pillar)"}
 - Pillars: Year ${pillarStr(p.pillars.year)} · Month ${pillarStr(p.pillars.month)} · Day ${pillarStr(p.pillars.day)} · Hour ${pillarStr(p.pillars.hour)}
 - Day Master: ${dmStem} · Structure: ${ge} · Strength: ${strength} · Climate: ${climate}
-- Yongshen: ${ys} · Jishen: ${js}${mode === "3p" ? "\n- NOTE: Hour Pillar unknown · spouse/career details limited" : ""}`;
+- Yongshen: ${ys} · Jishen: ${js}${mode === "3p" ? "\n- NOTE: Hour Pillar unknown · spouse/career details limited" : ""}${bwLine}`;
   }
   if (lang === "zh") {
     return `${label} · ${p.name || label} (${p.gender || "?"}) · 生於 ${p.birthDate || "?"}${mode === "4p" ? " " + (p.birthTime || "?") : "(不知時辰 · 三柱)"}
 - 四柱: 年 ${pillarStr(p.pillars.year)} · 月 ${pillarStr(p.pillars.month)} · 日 ${pillarStr(p.pillars.day)} · 時 ${pillarStr(p.pillars.hour)}
 - 日主: ${dmStem} · 格局: ${ge} · 強弱: ${strength} · 氣候: ${climate}
-- 用神: ${ys} · 忌神: ${js}${mode === "3p" ? "\n- 註: 時柱不明 · 婚姻/事業細節有限" : ""}`;
+- 用神: ${ys} · 忌神: ${js}${mode === "3p" ? "\n- 註: 時柱不明 · 婚姻/事業細節有限" : ""}${bwLine}`;
   }
   return `${label} · ${p.name || label} (${p.gender || "?"}) · เกิด ${p.birthDate || "?"}${mode === "4p" ? " " + (p.birthTime || "?") : " (ไม่ทราบเวลา · 3 เสา)"}
 - เสา: ปี ${pillarStr(p.pillars.year)} · เดือน ${pillarStr(p.pillars.month)} · วัน ${pillarStr(p.pillars.day)} · ยาม ${pillarStr(p.pillars.hour)}
 - ตัวตน (DM): ${dmStem} · 格局: ${ge} · ความแข็งแรง: ${strength} · ภูมิอากาศ: ${climate}
-- 用神 (ธาตุที่ช่วย): ${ys} · 忌神 (ธาตุที่ขัด): ${js}${mode === "3p" ? "\n- หมายเหตุ: ไม่ทราบเสายาม · รายละเอียดคู่ครอง/อาชีพมีจำกัด" : ""}`;
+- 用神 (ธาตุที่ช่วย): ${ys} · 忌神 (ธาตุที่ขัด): ${js}${mode === "3p" ? "\n- หมายเหตุ: ไม่ทราบเสายาม · รายละเอียดคู่ครอง/อาชีพมีจำกัด" : ""}${bwLine}`;
 }
 
 /* Engine warmup · deterministic · ส่ง chunk ทันที ก่อน AI prose
@@ -304,13 +308,16 @@ function normalizePerson(p: PersonCtx) {
     hour:  p.pillars.hour  ? { stem: p.pillars.hour.stem,  branch: p.pillars.hour.branch }  : null,
     gender: p.gender || null,
     name: sanitizeName(p.name),
+    // birthDate + mode เข้า key → กัน cache ผิดคน (เสาเหมือนแต่คนละวัน) + กันคืน cache เก่าที่ยังไม่มี boundary warning
+    birthDate: String(p.birthDate || "").slice(0, 10),
+    mode: (p.mode === "3p" || !p.pillars.hour) ? "3p" : "4p",
   };
 }
 function cacheKeyFor(p1: PersonCtx, p2: PersonCtx, lang: string, protocolVersion: string = "none"): string {
-  /* v3-protocol · bump version · รวม protocol version เข้า key (Codex รอบ 51) · กัน cache เก่า v2 */
+  /* v4-boundary · bump version · เพิ่ม birthDate/mode + boundary warning (Codex รอบ 52) · กัน cache เก่า v3 */
   const a = JSON.stringify(normalizePerson(p1));
   const b = JSON.stringify(normalizePerson(p2));
-  return createHash("sha256").update(`compare:v3-protocol:${protocolVersion}:${a}:${b}:${lang}`).digest("hex").slice(0, 60);
+  return createHash("sha256").update(`compare:v4-boundary:${protocolVersion}:${a}:${b}:${lang}`).digest("hex").slice(0, 60);
 }
 
 async function getCachedReply(key: string): Promise<{ reply: string; warmup?: string } | null> {

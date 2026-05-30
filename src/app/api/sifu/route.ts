@@ -19,6 +19,7 @@ import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
+import { boundaryWarning3p } from "@/lib/bazi-boundary";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
 
@@ -459,7 +460,11 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
     }
-    if (is3p) lines.push(g.LIMIT_3P_QA); // กันเหนียว: ห้ามอ่านลูก/บั้นปลาย/命宮ที่พึ่งยาม
+    if (is3p) {
+      lines.push(g.LIMIT_3P_QA); // กันเหนียว: ห้ามอ่านลูก/บั้นปลาย/命宮ที่พึ่งยาม
+      const bw = boundaryWarning3p(date); // เกิดวันคาบ節氣 + ไม่รู้เวลา → เตือนเสาเดือน/ปีก้ำกึ่ง (additive)
+      if (bw) lines.push(bw);
+    }
     return lines.join("\n");
   } catch (e) {
     console.error("[sifu] buildBaziContext failed:", e);
@@ -611,7 +616,8 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
         `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · กำลัง${calc.strength.level}`,
         `โครงดวง: ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วย ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
         g.LIMIT_3P_INTRO,
-      ].join("\n");
+        boundaryWarning3p(input.date), // "" ถ้าไม่ก้ำกึ่ง → filter ทิ้ง
+      ].filter(Boolean).join("\n");
     }
     const startAge = await computeStartAge(input.date, input.time, input.gender, input.lng);
     const ext = buildChartExtensions(

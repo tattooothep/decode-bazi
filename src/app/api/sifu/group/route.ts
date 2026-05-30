@@ -32,6 +32,7 @@ import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
+import { boundaryWarning3p } from "@/lib/bazi-boundary";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { stripIdLine } from "@/lib/identity-lock";
 
@@ -421,7 +422,11 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
     }
-    if (is3p) lines.push(g.LIMIT_3P_QA);
+    if (is3p) {
+      lines.push(g.LIMIT_3P_QA);
+      const bw = boundaryWarning3p(date); // เกิดวันคาบ節氣 + ไม่รู้เวลา → เตือนเสาเดือน/ปีก้ำกึ่ง (additive)
+      if (bw) lines.push(bw);
+    }
     return {
       name: displayName,
       role,
