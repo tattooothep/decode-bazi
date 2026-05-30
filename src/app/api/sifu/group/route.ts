@@ -199,10 +199,10 @@ function buildSynastry(people: PersonSyn[], lang: string): string {
   }
   if (!lines.length) return "";
   const title = L === "en"
-    ? "━━━ Cross-person reactions (synastry · neutral: 合 not always good / 冲 not always bad · weigh against each one's 用神/role) ━━━"
+    ? "━━━ Cross-person reactions (synastry · 合 not always good / 冲 not always bad · weigh against each one's 用神/role · state the direction/outcome plainly · only forbidden: 'commanding' break-up/no-contact) ━━━"
     : L === "zh"
-    ? "━━━ 跨人互動 (synastry · 中性: 合不必吉 / 冲不必凶 · 須結合各自用神/角色判讀) ━━━"
-    : "━━━ ปฏิกิริยาข้ามคน (synastry · กลางๆ: 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ · ต้องดูที่用神/บทบาทแต่ละคน · ห้ามฟันธงเลิก/ไม่เลิก) ━━━";
+    ? "━━━ 跨人互動 (synastry · 合不必吉 / 冲不必凶 · 須結合各自用神/角色判讀 · 可直斷方向/結果 · 僅禁「命令式」分手/勿往來) ━━━"
+    : "━━━ ปฏิกิริยาข้ามคน (synastry · 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ · ดูที่用神/บทบาทแต่ละคน · ฟันธงทิศ/ผลได้ · ห้ามเฉพาะ 'สั่งการ' เลิก/คบ) ━━━";
   return title + "\n" + lines.join("\n");
 }
 
@@ -440,9 +440,9 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
 
 /* คำสั่งวิเคราะห์กลุ่ม · inline 3 ภาษา · ต่อท้าย group context */
 const GROUP_INSTRUCTION: Record<string, string> = {
-  th: "ด้านบนคือดวงของหลายคนในกลุ่มเดียวกัน · ช่วยวิเคราะห์ภาพรวมกลุ่ม ความเข้ากัน จุดเสริม-จุดชน บทบาทแต่ละคน โดยใช้กฎการอ่านเดียวกับการอ่านดวงเดี่ยว (เจาะ 3-5 จุด ระบุชื่อ+เสาที่เกี่ยวข้อง) · ⚠️ 合婚/ความเข้ากัน: 合ไม่ดีเสมอ 冲ไม่ร้ายเสมอ · ห้ามฟันธง 'ต้องเลิก/ไปกันไม่ได้/ห้ามคบ' · ชี้จุดเสริม-จุดต้องระวังเชิงสร้างสรรค์ ผูกกลับ用神/บทบาทแต่ละคน · ใช้คำอ่อนโยน ไม่ขู่",
-  en: "Above are the charts of several people in the same group. Analyze the overall group dynamics, compatibility, mutual support and clashes, and each person's role — using the same reading rules as a single-chart reading (pick 3-5 concrete points, naming the person and the pillars involved). ⚠️ Compatibility/合婚: 合 is not always good, 冲 not always bad — never declare 'must break up / incompatible / should not associate'. Point out constructive strengths and cautions, tied back to each one's 用神/role, in a gentle, non-alarming tone.",
-  zh: "以上是同一群組中多人的命盤。請分析群組整體互動、配對、相生相剋與各人角色，並沿用單一命盤的判讀規則（挑 3-5 個具體論點，標明所涉及的人與柱）。⚠️ 合婚/相合度：合不必吉、冲不必凶 — 切勿斷言「必須分開／不合／不可往來」。請以建設性方式指出助力與需留意之處，結合各自用神/角色，語氣溫和不恐嚇。",
+  th: "ด้านบนคือดวงของหลายคนในกลุ่มเดียวกัน · ช่วยวิเคราะห์ภาพรวมกลุ่ม ความเข้ากัน จุดเสริม-จุดชน บทบาทแต่ละคน โดยใช้กฎการอ่านเดียวกับการอ่านดวงเดี่ยว (เจาะ 3-5 จุด ระบุชื่อ+เสาที่เกี่ยวข้อง) · ⚠️ 合婚/ความเข้ากัน: อ่าน 合/冲 ตาม用神แต่ละคน (合ไม่ดีเสมอ 冲ไม่ร้ายเสมอ) · **ฟันธง 'ทิศ/ผล' ได้ตรงๆ ตามน้ำหนักดวง** (เช่น 'คู่นี้ดวงดันให้ชนกัน เสี่ยงขาดสะบั้น') · **ห้ามเฉพาะคำสั่งการ** ('ต้องเลิก/ไปกันไม่ได้/ห้ามคบ/คู่นี้แน่นอน/จะแต่ง') ไม่ใช่ห้ามบอกผล · บอกผลแล้วปิดท้ายด้วยเงื่อนไขพลิก 用神/通關 ของแต่ละคน",
+  en: "Above are the charts of several people in the same group. Analyze the overall group dynamics, compatibility, mutual support and clashes, and each person's role — using the same reading rules as a single-chart reading (pick 3-5 concrete points, naming the person and the pillars involved). ⚠️ Compatibility/合婚: read 合/冲 against each one's 用神 (合 not always good, 冲 not always bad). State the DIRECTION/OUTCOME plainly per the chart's weight (e.g. 'this pair's charts push them to clash at the core — risk of a clean break'). Only FORBIDDEN: commanding verdicts ('must break up / incompatible / should not associate / definitely marry'). Stating bad outcomes is fine — close with each one's pivot condition (用神/通關).",
+  zh: "以上是同一群組中多人的命盤。請分析群組整體互動、配對、相生相剋與各人角色，並沿用單一命盤的判讀規則（挑 3-5 個具體論點，標明所涉及的人與柱）。⚠️ 合婚/相合度：依各自用神判讀 合/冲（合不必吉、冲不必凶）。可依命盤輕重**直斷方向／結果**（例如「此二人命盤相沖於本命核心，恐有斷裂之象」）。**僅禁命令式斷語**（「必須分開／不合／不可往來／必成婚」），但可明說吉凶結果，最後以各自用神/通關之轉機收尾。",
 };
 
 /* ประกอบ prompt · reuse sifu-qa.md เป็นฐาน เหมือน buildPrompt branch Q&A ใน /api/sifu */
