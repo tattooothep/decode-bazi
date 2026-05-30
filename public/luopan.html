@@ -29,7 +29,7 @@
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--th),sans-serif;min-height:100vh;}
-  header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--panel);}
+  header{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:var(--panel);}
   header h1{margin:0;font-family:var(--tc);font-size:18px;font-weight:600;color:var(--gold-bright);letter-spacing:.06em;}
   .lp-logo{display:inline-flex;align-items:center;gap:9px;font-family:var(--tc);font-size:20px;font-weight:600;color:var(--fg);text-decoration:none;white-space:nowrap;}
   .lp-logo .seal{width:29px;height:29px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--gold);}
@@ -195,10 +195,8 @@
     <a href="/fengshui" data-r="/fengshui"><span class="glyph">方</span><span class="lbl" data-i18n="nav.fengshui">ทิศมงคล</span></a>
     <a href="/luopan" data-r="/luopan" class="on"><span class="glyph">羅</span><span class="lbl" data-i18n="nav.luopan">หล่อแก</span></a>
   </nav>
-  <small id="buildTag" style="font-family:var(--mono);font-size:10px;color:var(--fg-faint);margin-left:6px">build…</small>
   <div id="errBanner" style="display:none;position:fixed;top:0;left:0;right:0;background:#7a1c1c;color:#fff;padding:8px 16px;font-family:var(--mono);font-size:12px;z-index:9999;"></div>
-  <div class="spacer"></div>
-  <div class="top-r"><div id="hk-user-menu-mount"></div></div>
+  <div class="top-r"><small id="buildTag" style="font-family:var(--mono);font-size:10px;color:var(--fg-faint)">build…</small><div id="hk-user-menu-mount"></div></div>
 </header>
 
 <main>
