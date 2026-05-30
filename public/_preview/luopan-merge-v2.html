@@ -106,6 +106,11 @@
   .cursor-ctrl label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--fg-soft);margin-bottom:6px;letter-spacing:.04em;}
   .cursor-ctrl input[type=range]{width:100%;}
   .cursor-readout{margin-top:8px;font-family:var(--tc);font-size:14px;color:var(--gold-bright);text-align:center;padding:6px;background:var(--panel);border-radius:6px;}
+  .ai-advice-wrap{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);}
+  .ai-advice-head{display:flex;justify-content:center;align-items:center;}
+  .ai-advice-btn{min-width:220px;font-size:13px;padding:9px 14px;border-radius:10px;}
+  .ai-advice-meta{margin-top:8px;font-size:11px;color:var(--fg-soft);font-family:var(--mono);text-align:center;}
+  .ai-advice-body{margin-top:10px;padding:10px;border:1px dashed var(--line);border-radius:8px;min-height:64px;font-size:12px;line-height:1.6;white-space:pre-wrap;}
   .time-filter{margin-top:12px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
   .time-filter .btn{font-size:10px;padding:8px 4px;text-align:center;line-height:1.3;}
   .time-filter .btn b{display:block;font-family:var(--tc);font-size:14px;color:var(--gold-bright);}
@@ -195,6 +200,15 @@
     <label data-i18n="ctrl.year">ปีสร้างบ้าน</label>
     <input type="number" id="hYear" value="2026" min="1864" max="2100"/>
     <span class="auto-readout" id="hPeriod">9 · Feb 2024 - Feb 2044</span>
+    
+    <label style="margin-top:10px">โปรไฟล์เจ้าของบ้าน</label>
+    <div class="row" style="gap:6px;align-items:center">
+      <select id="profileSelect" style="flex:1;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:12px;">
+        <option value="">ยังไม่ได้เลือก</option>
+      </select>
+      <button class="btn" id="btnAddProfile" title="เพิ่มคน">+ เพิ่มคน</button>
+    </div>
+    <div class="help-line" id="profileStatus">ยังไม่มีโปรไฟล์</div>
 
     <div class="help-line" data-i18n="ctrl.helpHouse">ใช้สร้างผัง 山 ดาวภูเขา · 水 ดาวแม่น้ำ · 基 ดาวฐาน 9 ช่องตรงกลาง · ค่าเริ่มต้น S2 180° / Period 9</div>
 
@@ -227,9 +241,13 @@
       <button class="btn" data-pin="stove" title="เตาไฟ">🔥 เตา</button>
       <button class="btn" data-pin="water" title="จุดน้ำ">💧 น้ำ</button>
       <button class="btn" data-pin="desk" title="โต๊ะทำงาน">💼 โต๊ะ</button>
+      <button class="btn" data-pin="stairs" title="บันได">🪜 บันได</button>
+      <button class="btn" data-pin="window" title="หน้าต่าง">🪟 หน้าต่าง</button>
+      <button class="btn" data-pin="altar" title="หิ้งพระ">🛕 หิ้งพระ</button>
+      <button class="btn" id="pinDelete" title="ลบจุดที่เลือก">🗑 ลบจุดที่เลือก</button>
       <button class="btn" id="pinClear" title="ลบทั้งหมด">ล้าง</button>
     </div>
-    <div class="help-line">เลือกชนิด → คลิกบนแปลนเพื่อปัก · ลาก pin ได้อิสระทั้งแปลน (ไม่ล็อกในกรอบวง) · ดับเบิลคลิกเพื่อลบ · pin ที่อยู่ในวง城門 = activated</div>
+    <div class="help-line">เลือกชนิด → คลิกบนแปลนเพื่อปัก · ลาก pin ได้อิสระทั้งแปลน (ไม่ล็อกในกรอบวง) · ดับเบิลคลิกเพื่อลบ หรือกด "ลบจุดที่เลือก" · pin ที่อยู่ในวง城門 = activated</div>
 
     <label><span data-i18n="ctrl.imgRot">หมุนรูปแปลน</span> <span class="val" id="vImgRot">0°</span></label>
     <input type="range" id="imgRot" min="0" max="359" value="0"/>
@@ -363,6 +381,13 @@
       <label><span data-i18n="cursor.rot">หมุนเข็มสำรวจ · CURSOR</span> <span class="val" id="vCursorRot">180°</span></label>
       <input type="range" id="cursorRot" min="0" max="359" value="180" step="0.5"/>
       <div class="cursor-readout" id="cursorReadout">เข็มชี้ · S2 午 Wǔ · 180° · ธาตุไฟ</div>
+    </div>
+    <div class="ai-advice-wrap" id="aiAdviceWrap">
+      <div class="ai-advice-head">
+        <button class="btn ai-advice-btn" id="btnAiAdvice">✨ ซินแสแนะนำ</button>
+      </div>
+      <div class="ai-advice-meta" id="aiAdviceMeta">ยังไม่มีคำแนะนำ</div>
+      <div class="ai-advice-body" id="aiAdviceBody">กดปุ่ม “ซินแสแนะนำ” เพื่อสรุปทิศจากสถานะบ้าน/เข็ม/pin ปัจจุบัน</div>
     </div>
 
     
@@ -1368,6 +1393,14 @@ function rebuildLuopan(){
     if(g) g.style.display = cb.checked ? '' : 'none';
   });
   /* re-render overlays + restore cursor rotation */
+  if(typeof applyDialRotation==='function') applyDialRotation(); // สำคัญ: กัน state ล็อกบ้านหลุดหลัง rebuild
+  if(typeof applyDialOpacity==='function'){
+    const dialOpaEl = document.getElementById('dialOpa');
+    applyDialOpacity(dialOpaEl ? dialOpaEl.value : 100);
+  }
+  if(typeof pinMode!=='undefined'){
+    lpEl.classList.toggle('pin-mode', !!pinMode);
+  }
   if(typeof renderCastleGateOverlay==='function') renderCastleGateOverlay();
   if(typeof renderPins==='function') renderPins();
   if(typeof cursorDeg!=='undefined'){
@@ -1537,6 +1570,7 @@ function applyDialOffset(){
   lp.style.transform = `translate(${dialOffsetX}px, ${dialOffsetY}px) scale(${dialScale})`;
   document.getElementById('vCenter').textContent = `${dialOffsetX},${dialOffsetY}`;
   const v = document.getElementById('vScale'); if(v) v.textContent = Math.round(dialScale*100)+'%';
+  if(typeof renderPins==='function') renderPins(); // pin ไม่ให้ย่อ/ขยายตามวง
   try{
     localStorage.setItem('luopan-center', `${dialOffsetX},${dialOffsetY}`);
     localStorage.setItem('luopan-scale', String(dialScale));
@@ -1645,11 +1679,11 @@ window.addEventListener('touchmove', e => {
 window.addEventListener('touchend', () => { dragging = false; pinDraggingId = null; savePins(); });
 
 /* ====== Pin Tool (door/bed/stove/water/desk) ====== */
-let pinMode = null; /* 'door' | 'bed' | 'stove' | 'water' | 'desk' | null */
-let pins = []; /* {id, type, x, y} | legacy {deg,dist} */
+let pinMode = null; /* 'door' | 'bed' | 'stove' | 'water' | 'desk' | 'stairs' | 'window' | 'altar' | null */
+let pins = []; /* {id, type, sx, sy, v:2} | legacy {x,y}/{deg,dist} */
 let activePinId = null; /* pin ที่ใช้เป็นตัวอ่านการ์ดขวาแทน cursor */
-const PIN_ICONS = {door:'🚪', bed:'🛏', stove:'🔥', water:'💧', desk:'💼'};
-const PIN_LABELS_TH = {door:'ประตู', bed:'หัวเตียง', stove:'เตา', water:'น้ำ', desk:'โต๊ะ'};
+const PIN_ICONS = {door:'🚪', bed:'🛏', stove:'🔥', water:'💧', desk:'💼', stairs:'🪜', window:'🪟', altar:'🛕'};
+const PIN_LABELS_TH = {door:'ประตู', bed:'หัวเตียง', stove:'เตา', water:'น้ำ', desk:'โต๊ะ', stairs:'บันได', window:'หน้าต่าง', altar:'หิ้งพระ'};
 
 function setPinMode(m){
   pinMode = (pinMode === m) ? null : m;
@@ -1670,17 +1704,28 @@ function svgPointToPolar(ev){
   const dist = Math.sqrt(dx*dx + dy*dy);
   return { deg, dist };
 }
-function svgPointToLocal(ev){
-  // พิกัด local ภายในหล่อแก (ชดเชย translate+scale แล้ว) ใช้สำหรับ pin drag แบบอิสระ
+function svgPointToStage(ev){
+  // พิกัดบน stage จริง (ไม่ชดเชย transform) = anchor pin กับแปลนบ้าน
   const rect = lp.getBoundingClientRect();
   const sx = (ev.clientX - rect.left) * 760 / rect.width;
   const sy = (ev.clientY - rect.top) * 760 / rect.height;
-  const x = 380 + (sx - 380 - dialOffsetX) / dialScale;
-  const y = 380 + (sy - 380 - dialOffsetY) / dialScale;
-  return { x, y };
+  return { sx, sy };
+}
+function stageToLocal(pt){
+  // แปลงพิกัด stage กลับเข้า local ของกลุ่มที่โดน translate+scale
+  return {
+    x: 380 + (pt.sx - 380 - dialOffsetX) / dialScale,
+    y: 380 + (pt.sy - 380 - dialOffsetY) / dialScale,
+  };
 }
 function pinRingDeg(pin){
-  // รองรับข้อมูลเก่า (deg/dist) และข้อมูลใหม่ (x/y)
+  // รองรับข้อมูลใหม่ (sx/sy) และข้อมูลเก่า
+  if (Number.isFinite(pin?.sx) && Number.isFinite(pin?.sy)) {
+    const loc = stageToLocal({ sx: pin.sx, sy: pin.sy });
+    const dx = loc.x - 380, dy = loc.y - 380;
+    const screenDeg = ((Math.atan2(dy, dx) * 180 / Math.PI + 90) % 360 + 360) % 360;
+    return ((screenDeg + ringRotation()) % 360 + 360) % 360;
+  }
   if (Number.isFinite(pin?.x) && Number.isFinite(pin?.y)) {
     const dx = pin.x - 380, dy = pin.y - 380;
     const screenDeg = ((Math.atan2(dy, dx) * 180 / Math.PI + 90) % 360 + 360) % 360;
@@ -1695,10 +1740,10 @@ function getActivePin(){
 }
 function addPin(ev){
   if(!pinMode) return;
-  const {x, y} = svgPointToLocal(ev);
-  // pin อิสระ: ไม่บังคับให้อยู่ในกรอบวงหล่อแก
+  const {sx, sy} = svgPointToStage(ev);
+  // pin อิสระ: anchor กับแปลนโดยตรง (ไม่ผูกกับ scale วง)
   const id = Date.now() + Math.random();
-  pins.push({ id, type: pinMode, x, y });
+  pins.push({ id, type: pinMode, sx, sy, v:2 });
   activePinId = String(id);
   inspectorSource = 'pin';
   savePins();
@@ -1711,8 +1756,8 @@ function dragPinToPointer(ev, id){
   if(!p) return;
   activePinId = String(id);
   inspectorSource = 'pin';
-  const {x, y} = svgPointToLocal(ev);
-  p.x = x; p.y = y;
+  const {sx, sy} = svgPointToStage(ev);
+  p.sx = sx; p.sy = sy; p.v = 2;
   renderPins();
   updateInspector();
 }
@@ -1730,6 +1775,31 @@ function savePins(){
 function loadPins(){
   try{ const s = localStorage.getItem('luopan-pins'); if(s) pins = JSON.parse(s)||[]; }catch(e){}
 }
+function normalizePinsV2(){
+  // migrate pin เก่าให้เป็นพิกัด stage (anchor กับแปลน) เพื่อกันขยับตาม scale วง
+  let changed = false;
+  pins.forEach((p) => {
+    if (Number.isFinite(p?.sx) && Number.isFinite(p?.sy)) return;
+    if (Number.isFinite(p?.x) && Number.isFinite(p?.y)) {
+      p.sx = 380 + (p.x - 380) * dialScale + dialOffsetX;
+      p.sy = 380 + (p.y - 380) * dialScale + dialOffsetY;
+      p.v = 2;
+      changed = true;
+      return;
+    }
+    if (Number.isFinite(p?.deg) && Number.isFinite(p?.dist)) {
+      const screenDeg = ((pinRingDeg(p) - ringRotation()) % 360 + 360) % 360;
+      const rad = (screenDeg - 90) * Math.PI / 180;
+      const lx = 380 + p.dist * Math.cos(rad);
+      const ly = 380 + p.dist * Math.sin(rad);
+      p.sx = 380 + (lx - 380) * dialScale + dialOffsetX;
+      p.sy = 380 + (ly - 380) * dialScale + dialOffsetY;
+      p.v = 2;
+      changed = true;
+    }
+  });
+  if(changed) savePins();
+}
 function pinIsActivated(pin){
   if(!castleGateResult) return false;
   if(pin.type !== 'door') return false;
@@ -1746,30 +1816,38 @@ function renderPins(){
   const g = document.getElementById('pinLayer');
   if(!g) return;
   g.innerHTML = '';
+  normalizePinsV2();
+  const invScale = 1 / (dialScale || 1);
   pins.forEach(p => {
-    // ข้อมูลใหม่ใช้ x/y ตรง (ลากอิสระ) · ข้อมูลเก่า fallback จาก deg/dist
-    let x = p.x, y = p.y;
-    if (!(Number.isFinite(x) && Number.isFinite(y))) {
+    // ข้อมูลใหม่ใช้ sx/sy (พิกัด stage) · fallback legacy
+    let sx = p.sx, sy = p.sy;
+    if (!(Number.isFinite(sx) && Number.isFinite(sy))) {
       const dist = Number.isFinite(p.dist) ? p.dist : 0;
       const screenDeg = ((pinRingDeg(p) - ringRotation()) % 360 + 360) % 360;
       const rad = (screenDeg - 90) * Math.PI / 180;
-      x = 380 + dist * Math.cos(rad);
-      y = 380 + dist * Math.sin(rad);
+      const lx = 380 + dist * Math.cos(rad);
+      const ly = 380 + dist * Math.sin(rad);
+      sx = 380 + (lx - 380) * dialScale + dialOffsetX;
+      sy = 380 + (ly - 380) * dialScale + dialOffsetY;
     }
+    // แปลง stage -> local แล้วชดเชยขนาด marker ไม่ให้โต/หดตาม scale ของ lp
+    const loc = stageToLocal({ sx, sy });
+    const px = loc.x;
+    const py = loc.y;
     const isAct = pinIsActivated(p);
     const grp = document.createElementNS(NS,'g');
     grp.setAttribute('class', 'pin-marker' + (isAct?' activated':''));
     grp.dataset.pinId = p.id;
     const circle = document.createElementNS(NS,'circle');
-    circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r', 14);
+    circle.setAttribute('cx', px); circle.setAttribute('cy', py); circle.setAttribute('r', 14 * invScale);
     circle.setAttribute('fill', 'rgba(13,15,18,.85)');
     circle.setAttribute('stroke', isAct ? '#a9e1ad' : 'var(--gold)');
-    circle.setAttribute('stroke-width', isAct ? 3 : 1.5);
+    circle.setAttribute('stroke-width', (isAct ? 3 : 1.5) * invScale);
     grp.appendChild(circle);
     const txt = document.createElementNS(NS,'text');
-    txt.setAttribute('x', x); txt.setAttribute('y', y+5);
+    txt.setAttribute('x', px); txt.setAttribute('y', py + (5 * invScale));
     txt.setAttribute('text-anchor','middle');
-    txt.setAttribute('font-size','15');
+    txt.setAttribute('font-size', String(15 * invScale));
     txt.textContent = PIN_ICONS[p.type] || '·';
     grp.appendChild(txt);
     grp.addEventListener('mousedown', e => {
@@ -1795,6 +1873,15 @@ function renderPins(){
 document.getElementById('pinClear')?.addEventListener('click', () => {
   if(!pins.length) return;
   pins = []; activePinId = null; inspectorSource = 'cursor'; savePins(); renderPins(); updateInspector();
+});
+document.getElementById('pinDelete')?.addEventListener('click', () => {
+  if(!activePinId) return;
+  removePin(activePinId);
+});
+window.addEventListener('keydown', e => {
+  if((e.key === 'Delete' || e.key === 'Backspace') && activePinId){
+    removePin(activePinId);
+  }
 });
 loadPins();
 if(pins.length && !activePinId) activePinId = String(pins[0].id);
@@ -2996,13 +3083,21 @@ function updateHouseReadout(){
 /* ============== Lock / Unlock ============== */
 let houseLocked = false;
 let lockedFacing = 180, lockedYear = 2026, lockedPeriod = 9;
+function setHouseLockUiState(locked){
+  document.body.dataset.houseLocked = locked ? '1' : '0';
+}
 function applyLock(){
-  const d = Number($hFacing.value);
-  const y = Number($hYear.value);
+  const rawFacing = Number($hFacing.value);
+  const rawYear = Number($hYear.value);
+  const d = Number.isFinite(rawFacing) ? ((rawFacing % 360) + 360) % 360 : 180;
+  const y = Number.isFinite(rawYear) ? Math.max(1864, Math.min(2100, Math.round(rawYear))) : 2026;
+  $hFacing.value = String(d);
+  $hYear.value = String(y);
   const p = yearToPeriod(y);
   lockedFacing = d; lockedYear = y; lockedPeriod = p.n;
   /* ล็อก → วงหมุนให้ทิศหันหน้าขึ้นบน · เข็มแดง(บน)=หน้าบ้าน · เข็มทอง CURSOR หมุนสำรวจแยก */
   houseLocked = true;
+  setHouseLockUiState(true);
   applyDialRotation();
   [$hName,$hFacing,$hYear].forEach(el => el.disabled = true);
   document.getElementById('btnLock').textContent = '🔒 ' + ($hName.value || 'บ้าน') + ' · ล็อกแล้ว';
@@ -3016,6 +3111,7 @@ function applyLock(){
 }
 function applyUnlock(){
   houseLocked = false;
+  setHouseLockUiState(false);
   applyDialRotation(); /* วงหมุนกลับ N บน */
   [$hName,$hFacing,$hYear].forEach(el => el.disabled = false);
   document.getElementById('btnLock').textContent = '🔒 ล็อกบ้าน · เริ่มสำรวจ';
@@ -3029,6 +3125,36 @@ document.getElementById('btnUnlock').addEventListener('click', applyUnlock);
 
 /* localStorage save/load */
 const LS_KEY = 'luopan-house-v1';
+const LS_ADVICE_KEY = 'luopan-ai-advice-v1';
+const LS_PROFILES_KEY = 'luopan-profiles-v1';
+const LS_SELECTED_PROFILE_KEY = 'luopan-selected-profile-v1';
+let profiles = [];
+function saveProfiles(){ try{ localStorage.setItem(LS_PROFILES_KEY, JSON.stringify(profiles)); }catch(e){} }
+function loadProfiles(){ try{ const raw = localStorage.getItem(LS_PROFILES_KEY); profiles = raw ? (JSON.parse(raw)||[]) : []; }catch(e){ profiles=[]; } }
+function getSelectedProfileId(){ return localStorage.getItem(LS_SELECTED_PROFILE_KEY) || ''; }
+function setSelectedProfileId(id){ try{ localStorage.setItem(LS_SELECTED_PROFILE_KEY, id || ''); }catch(e){} }
+function renderProfileSelect(){
+  const sel = document.getElementById('profileSelect');
+  const st = document.getElementById('profileStatus');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">ยังไม่ได้เลือก</option>' + profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  const selected = getSelectedProfileId();
+  if(selected) sel.value = selected;
+  const cur = profiles.find(p => p.id === sel.value);
+  if(st) st.textContent = cur ? `กำลังใช้: ${cur.name}` : (profiles.length ? 'เลือกโปรไฟล์เพื่อผูกคำแนะนำ' : 'ยังไม่มีโปรไฟล์');
+}
+async function loadMasterProfiles(){
+  try{
+    const r = await fetch('/api/luopan/profiles');
+    if(!r.ok) return;
+    const d = await r.json();
+    if(!d?.ok || !Array.isArray(d.profiles)) return;
+    const localOnly = (profiles||[]).filter(p => String(p.id||'').startsWith('p_')); // local draft
+    profiles = [...d.profiles.map((p)=>({ id:p.id, name:p.name, source:'master' })), ...localOnly];
+    saveProfiles();
+    renderProfileSelect();
+  }catch(e){}
+}
 document.getElementById('btnSave').addEventListener('click', () => {
   const data = { name:$hName.value, facing:$hFacing.value, year:$hYear.value, ts:Date.now() };
   try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); $houseStatus.textContent = `บันทึกแล้ว · ${new Date().toLocaleTimeString()}`; }
@@ -3045,12 +3171,153 @@ document.getElementById('btnLoad').addEventListener('click', () => {
   } catch(e){ $houseStatus.textContent = 'โหลดไม่สำเร็จ: ' + e.message; }
 });
 
+function currentHouseSnapshotKey(){
+  const pinsSig = (pins||[]).map(p=>`${p.type}:${Math.round(p.sx||0)},${Math.round(p.sy||0)}`).join('|');
+  const facing = houseLocked ? Number(lockedFacing||0).toFixed(1) : Number($hFacing.value||0).toFixed(1);
+  const year = houseLocked ? Number(lockedYear||2026) : Number($hYear.value||2026);
+  const profileId = getSelectedProfileId() || '';
+  return `${$hName.value||''}#${facing}#${year}#${currentTimingKey}#${window.QM_SCHOOL||'chaibu'}#${profileId}#${pinsSig}`;
+}
+function setAdvice(meta, body){
+  const m = document.getElementById('aiAdviceMeta');
+  const b = document.getElementById('aiAdviceBody');
+  if(m) m.textContent = meta;
+  if(b) b.textContent = body;
+}
+function saveAdviceCache(payload){
+  try{ localStorage.setItem(LS_ADVICE_KEY, JSON.stringify(payload)); }catch(e){}
+}
+function loadAdviceCache(){
+  try{ const raw = localStorage.getItem(LS_ADVICE_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+}
+function computeLocalAdvice(){
+  const deg = getCursorRelativeDeg();
+  const r = getRingDataAt(deg);
+  const pCnt = (pins||[]).length;
+  const pinTxt = pCnt ? `มีจุดปัก ${pCnt} จุด` : 'ยังไม่มีจุดปัก';
+  const lockTxt = houseLocked ? `ล็อกบ้านแล้ว (${lockedFacing.toFixed(1)}°)` : 'ยังไม่ล็อกบ้าน';
+  const msg = [
+    `ทิศปัจจุบัน: ${r.m24.c} ${r.m24.m} ${r.m24.p} (${deg.toFixed(1)}°)`,
+    `ธาตุทิศ: ${elTH[r.m24.el]}`,
+    `${lockTxt} · ${pinTxt}`,
+    `คำแนะนำเบื้องต้น: ใช้ทิศนี้เป็นจุดอ้างอิง แล้วขยับประตู/เตียงตามผลการ์ดขวา (ดี/กลาง/เลี่ยง)`
+  ].join('\n');
+  return msg;
+}
+async function fetchEngineAdvice(){
+  const profileId = getSelectedProfileId() || null;
+  const pinPayload = (pins || []).map((p) => ({ type: p.type || "pin", degree: pinRingDeg(p) }));
+  const body = {
+    facing_deg: houseLocked ? Number(lockedFacing || 180) : Number($hFacing.value || 180),
+    year: houseLocked ? Number(lockedYear || 2026) : Number($hYear.value || 2026),
+    timing: currentTimingKey || 'era',
+    profile_id: profileId,
+    pins: pinPayload,
+  };
+  const r = await fetch('/api/luopan/degrees', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if(!r.ok) throw new Error(`engine ${r.status}`);
+  const d = await r.json();
+  if(!d?.ok) throw new Error(d?.error || 'engine failed');
+  const top = Array.isArray(d?.summary?.top_good_degrees) ? d.summary.top_good_degrees.slice(0, 5) : [];
+  const bad = Array.isArray(d?.summary?.top_bad_degrees) ? d.summary.top_bad_degrees.slice(-5) : [];
+  const focus = d?.degrees?.find?.((x) => Number(x.degree) === Math.round(getCursorRelativeDeg()) % 360) || null;
+  const lines = [];
+  lines.push(`โหมดคำนวณ: ${d?.summary?.schema_version || 'unknown'} · timing=${body.timing}`);
+  if (d?.summary?.profile_elements) {
+    const pe = d.summary.profile_elements;
+    lines.push(`ธาตุโปรไฟล์: 用=${(pe.yong||[]).join('/')} · 喜=${(pe.xi||[]).join('/')} · 忌=${(pe.ji||[]).join('/')}`);
+  }
+  if (top.length) lines.push(`ทิศเด่น: ${top.map((x)=>`${x.degree}°(${x.m24})=${x.score}`).join(' · ')}`);
+  if (bad.length) lines.push(`ทิศที่ควรเลี่ยง: ${bad.map((x)=>`${x.degree}°(${x.m24})=${x.score}`).join(' · ')}`);
+  if (focus?.scoring) {
+    lines.push(`องศาเข็มตอนนี้: ${focus.degree}° · score=${focus.scoring.final_score} · evidence=${(focus.scoring.evidence||[]).join(',')}`);
+  }
+  const engineBrief = lines.join('\n');
+  // master pipeline: ใช้ /api/sifu ตอบภาษาคน โดยแนบ profileId + context จาก engine360
+  const selected = getSelectedProfileId() || '';
+  const hasRealProfile = selected && !String(selected).startsWith('p_');
+  if (!hasRealProfile) return engineBrief + '\n(ยังไม่ได้เลือกโปรไฟล์จากระบบ master)';
+  const prompt = [
+    'ช่วยสรุปคำแนะนำการวางตำแหน่งในบ้านจากข้อมูลองศาด้านล่างแบบสั้น กระชับ ใช้ภาษาไทย',
+    'เน้น 1) ทิศที่ควรใช้ 2) ทิศที่ควรเลี่ยง 3) คำแนะนำประตู/เตียง/โต๊ะ',
+    'ข้อมูลจาก engine360:',
+    engineBrief,
+  ].join('\n');
+  const sr = await fetch('/api/sifu', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: prompt,
+      profileId: selected,
+      topic: 'overview',
+      lang: 'th',
+      history: [],
+    }),
+  });
+  if(!sr.ok) throw new Error(`sifu ${sr.status}`);
+  const sj = await sr.json();
+  const reply = (sj?.reply || '').trim();
+  if(!reply) return engineBrief + '\n(sifu empty response)';
+  return `${reply}\n\n---\n${engineBrief}`;
+}
+document.getElementById('btnAiAdvice')?.addEventListener('click', () => {
+  const btn = document.getElementById('btnAiAdvice');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ กำลังสรุป...'; }
+  const key = currentHouseSnapshotKey();
+  const cached = loadAdviceCache();
+  if(cached && cached.key === key){
+    setAdvice(`คำแนะนำล่าสุด (cache) · ${new Date(cached.ts).toLocaleString()}`, cached.body);
+    if(btn){ btn.disabled = false; btn.textContent = '✨ ซินแสแนะนำ'; }
+    return;
+  }
+  fetchEngineAdvice().then((body) => {
+    const payload = { key, ts: Date.now(), body };
+    saveAdviceCache(payload);
+    setAdvice(`อัปเดตล่าสุด · ${new Date(payload.ts).toLocaleString()} · source=engine360`, body);
+  }).catch((e) => {
+    const profileName = (profiles.find(p => p.id === getSelectedProfileId()) || {}).name || 'ยังไม่ได้เลือกโปรไฟล์';
+    const body = `โปรไฟล์: ${profileName}\n` + computeLocalAdvice() + `\n(fallback: ${e?.message || 'engine unavailable'})`;
+    const payload = { key, ts: Date.now(), body };
+    saveAdviceCache(payload);
+    setAdvice(`อัปเดตล่าสุด · ${new Date(payload.ts).toLocaleString()} · source=fallback`, body);
+  }).finally(() => {
+    if(btn){ btn.disabled = false; btn.textContent = '✨ ซินแสแนะนำ'; }
+  });
+});
+document.getElementById('profileSelect')?.addEventListener('change', (e) => {
+  const id = e.target.value || '';
+  setSelectedProfileId(id);
+  renderProfileSelect();
+});
+document.getElementById('btnAddProfile')?.addEventListener('click', () => {
+  const name = (window.prompt('ชื่อโปรไฟล์ใหม่ (เช่น คุณเอ)') || '').trim();
+  if(!name) return;
+  const id = `p_${Date.now()}`;
+  profiles.push({ id, name, createdAt: Date.now() });
+  saveProfiles();
+  setSelectedProfileId(id);
+  renderProfileSelect();
+});
+
 /* auto-load ตอนเริ่ม */
 try{
   const raw = localStorage.getItem(LS_KEY);
   if(raw){ const d = JSON.parse(raw); $hName.value = d.name || ''; $hFacing.value = d.facing || 180; $hYear.value = d.year || 2026; }
 } catch(e){}
 updateHouseReadout();
+loadProfiles();
+renderProfileSelect();
+loadMasterProfiles();
+{
+  const cached = loadAdviceCache();
+  if(cached?.body){
+    setAdvice(`คำแนะนำล่าสุด (cache) · ${new Date(cached.ts).toLocaleString()}`, cached.body);
+  }
+}
 
 /* ============== Image tools ============== */
 document.getElementById('imgCenter').addEventListener('click', () => {
@@ -3093,6 +3360,7 @@ try {
   drawPlan();
   const t = document.getElementById('buildTag');
   if(t) t.textContent = 'build ' + new Date().toISOString().slice(11,19) + ' · OK';
+  setHouseLockUiState(false);
   updateSourceStatus();
 } catch(e) {
   const b = document.getElementById('errBanner');
