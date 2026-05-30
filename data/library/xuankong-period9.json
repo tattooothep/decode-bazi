@@ -2061,7 +2061,16 @@
       "score": 5,
       "label_en": "Reigning prosperous star — governs fame, recognition, brand, celebrations",
       "label_th": "ดาวรุ่งเรืองปัจจุบัน — ควบคุมชื่อเสียง การยอมรับ แบรนด์ งานมงคล",
-      "classical_justification": "「九運是當令之星，屬旺氣之星」 (108s.tw/article/info/290)"
+      "classical_justification": "「九運是當令之星，屬旺氣之星」 (108s.tw/article/info/290)",
+      "nature_classical": {
+        "star_name_zh": "右弼",
+        "star_name_en": "Right Assistant",
+        "opening_zh": "弼星本來無正形，形隨八曜高低生。",
+        "nature_en": "Hidden brightness star — formless, latent fortune & concealed power; auspicious but subtle",
+        "nature_th": "ดาวซ่อนแสง — ไม่มีรูปตายตัว · โชคแฝง พลังเร้นลับ · เป็นมงคลแบบลึกลับ",
+        "source": "撼龍經 (楊筠松·唐) · zh.wikisource.org",
+        "note": "นิสัยดั้งเดิม北斗/巒頭(รูปภูเขา) ≠ ฐานะดาวยุค玄空(旺/死)"
+      }
     },
     {
       "star_number": 1,
@@ -2072,7 +2081,16 @@
       "score": 4,
       "label_en": "Near-prosperous growing qi — career, relationships, wisdom, romance",
       "label_th": "ดาวเจริญรุ่งเรืองใกล้ — อาชีพ ความสัมพันธ์ ปัญญา ความรัก",
-      "classical_justification": "「一白為生氣之星」 (108s.tw)"
+      "classical_justification": "「一白為生氣之星」 (108s.tw)",
+      "nature_classical": {
+        "star_name_zh": "貪狼",
+        "star_name_en": "Greedy Wolf",
+        "opening_zh": "貪狼頓起筍生峰，若是斜枝便不同。",
+        "nature_en": "Pointed bamboo-shoot peak — nobility, talent (scholar+martial), promotion, prosperity",
+        "nature_th": "ยอดแหลมเหมือนหน่อไม้ — สูงส่ง มีพรสวรรค์(บุ๋น+บู๊) เลื่อนยศ ความเจริญ",
+        "source": "撼龍經 (楊筠松·唐) · zh.wikisource.org",
+        "note": "นิสัยดั้งเดิม北斗/巒頭(รูปภูเขา) ≠ ฐานะดาวยุค玄空(旺/死)"
+      }
     },
     {
       "star_number": 2,
@@ -2083,7 +2101,16 @@
       "score": 3.5,
       "label_en": "Distant future prosperity — but underlying illness star nature still applies",
       "label_th": "ดาวรุ่งเรืองไกล แต่ยังคงพื้นฐานเป็นดาวโรคจึงต้องระวัง",
-      "classical_justification": "「二黑為遠生氣之星」 / 「二黑遠旺生氣財星」 (cafengshuinet/3323)"
+      "classical_justification": "「二黑為遠生氣之星」 / 「二黑遠旺生氣財星」 (cafengshuinet/3323)",
+      "nature_classical": {
+        "star_name_zh": "巨門",
+        "star_name_en": "Great Gate",
+        "opening_zh": "巨門尊星性端莊，才離祖宗即高昂。",
+        "nature_en": "Square dignified peak — honesty, righteousness, capable leaders/administrators, stability",
+        "nature_th": "ยอดเหลี่ยมสง่า — ซื่อสัตย์ เที่ยงธรรม ผู้นำ/นักปกครองเก่ง มั่นคง",
+        "source": "撼龍經 (楊筠松·唐) · zh.wikisource.org",
+        "note": "นิสัยดั้งเดิม北斗/巒頭(รูปภูเขา) ≠ ฐานะดาวยุค玄空(旺/死)"
+      }
     },
     {
       "star_number": 8,
@@ -2094,7 +2121,16 @@
       "score": 2.5,
       "label_en": "Just retired from P8 — residual minor wealth effect, declining",
       "label_th": "ดาว 8 เพิ่งหมดยุค P8 — เหลือพลังเล็กน้อย กำลังเสื่อม",
-      "classical_justification": "「八白…在九運已屬退氣」 (vocus.cc/648c769a)"
+      "classical_justification": "「八白…在九運已屬退氣」 (vocus.cc/648c769a)",
+      "nature_classical": {
+        "star_name_zh": "左輔",
+        "star_name_en": "Left Assistant",
+        "opening_zh": "左輔正形如襆頭，前高後低大小球。",
+        "nature_en": "Headscarf shape — assistance, protection, support, entering officialdom",
+        "nature_th": "รูปผ้าโพก — ผู้ช่วย คุ้มครอง เข้ารับราชการ",
+        "source": "撼龍經 (楊筠松·唐) · zh.wikisource.org",
+        "note": "นิสัยดั้งเดิม北斗/巒頭(รูปภูเขา) ≠ ฐานะดาวยุค玄空(旺/死)"
+      }
     },
     {
       "star_number": 7,
@@ -2105,7 +2141,16 @@
       "score": 1.5,
       "label_en": "Po Jun / dead — robbery, lawsuits, lung disease",
       "label_th": "ดาวโพจวินดับสนิท — โจร คดีฟ้องร้อง โรคปอด",
-      "classical_justification": "「七赤丁星為衰死之星」 — P7 ended 2003"
+      "classical_justification": "「七赤丁星為衰死之星」 — P7 ended 2003",
+      "nature_classical": {
+        "star_name_zh": "破軍",
+        "star_name_en": "Broken Army",
+        "opening_zh": "破軍星峰如走旗，前頭高卓尾後低。",
+        "nature_en": "Running-banner shape, jagged — danger, destruction, chaos, warfare, upheaval",
+        "nature_th": "รูปธงสะบัดขรุขระ — อันตราย ทำลาย วุ่นวาย ศึกสงคราม",
+        "source": "撼龍經 (楊筠松·唐) · zh.wikisource.org",
+        "note": "นิสัยดั้งเดิม北斗/巒頭(รูปภูเขา) ≠ ฐานะดาวยุค玄空(旺/死)"
+      }
     },
     {
       "star_number": 6,
@@ -2116,7 +2161,16 @@
       "score": 1.5,
       "label_en": "Three periods retired — fully exhausted; was prosperous in P6 (1964-1983)",
       "label_th": "ดาว 6 หมดยุคสามรอบแล้ว — พลังสิ้นเชิง",
-      "classical_justification": "by analogy 「已過兩運更衰…均為死氣」 (zhihu/p/630881305)"
+      "classical_justification": "by analogy 「已過兩運更衰…均為死氣」 (zhihu/p/630881305)",
+      "nature_classical": {
+        "star_name_zh": "武曲",
+        "star_name_en": "Military Straight",
+        "opening_zh": "武曲星峰覆鐘釜，鐘釜之形有何故。",
+        "nature_en": "Bell/cauldron shape — military prowess, strategy, stable wealth, generals, endurance",
+        "nature_th": "รูประฆัง/หม้อคว่ำ — บู๊ กลยุทธ์ ทรัพย์มั่นคง แม่ทัพ ยั่งยืน",
+        "source": "撼龍經 (楊筠松·唐) · zh.wikisource.org",
+        "note": "นิสัยดั้งเดิม北斗/巒頭(รูปภูเขา) ≠ ฐานะดาวยุค玄空(旺/死)"
+      }
     },
     {
       "star_number": 3,
@@ -2127,7 +2181,16 @@
       "score": 1.5,
       "label_en": "Untimely — quarrels, lawsuits, theft",
       "label_th": "เมื่อเสียยาม — การทะเลาะวิวาท คดีฟ้องร้อง การลักขโมย",
-      "classical_justification": "「失令口舌是非、訴訟官非」 (zh-Wikipedia 九宮飛星圖)"
+      "classical_justification": "「失令口舌是非、訴訟官非」 (zh-Wikipedia 九宮飛星圖)",
+      "nature_classical": {
+        "star_name_zh": "祿存",
+        "star_name_en": "Salary Star",
+        "opening_zh": "祿存之形如頓鼓，下生有腳如瓜瓠。",
+        "nature_en": "Drum/calabash shape — power, wealth accumulation; if ill-formed brings disease & decline",
+        "nature_th": "รูปกลอง/น้ำเต้า — อำนาจ สะสมทรัพย์ · ถ้าเสียรูป=โรค/เสื่อม",
+        "source": "撼龍經 (楊筠松·唐) · zh.wikisource.org",
+        "note": "นิสัยดั้งเดิม北斗/巒頭(รูปภูเขา) ≠ ฐานะดาวยุค玄空(旺/死)"
+      }
     },
     {
       "star_number": 4,
@@ -2138,7 +2201,16 @@
       "score": 1.5,
       "label_en": "Untimely — debauchery, vice, scandals",
       "label_th": "เมื่อเสียยาม — ความสำมะเลเทเมา อบายมุข เรื่องอื้อฉาว",
-      "classical_justification": "「失令為酒色桃花」 (zh-Wikipedia)"
+      "classical_justification": "「失令為酒色桃花」 (zh-Wikipedia)",
+      "nature_classical": {
+        "star_name_zh": "文曲",
+        "star_name_en": "Literary Curve",
+        "opening_zh": "文曲正形蛇行樣，若作淫邪如撒網。",
+        "nature_en": "Serpentine/eel-like flow — scholarship, culture; if ill-formed brings vice & wandering",
+        "nature_th": "คดเคี้ยวเหมือนงู — การเรียน ปราชญ์ · ถ้าเสียรูป=เจ้าชู้/พเนจร",
+        "source": "撼龍經 (楊筠松·唐) · zh.wikisource.org",
+        "note": "นิสัยดั้งเดิม北斗/巒頭(รูปภูเขา) ≠ ฐานะดาวยุค玄空(旺/死)"
+      }
     },
     {
       "star_number": 5,
@@ -2149,7 +2221,16 @@
       "score": 1,
       "label_en": "Perpetual great killer — death, disease, bloodshed",
       "label_th": "ดาวมรณะนิรันดร์ — ความตาย โรคร้าย โลหิตตก",
-      "classical_justification": "「五黃煞又名正關煞…代表死亡絕症、血光之災」 (Baidu Baike)"
+      "classical_justification": "「五黃煞又名正關煞…代表死亡絕症、血光之災」 (Baidu Baike)",
+      "nature_classical": {
+        "star_name_zh": "廉貞",
+        "star_name_en": "Frugal Upright",
+        "opening_zh": "廉貞如何號獨火？此星得形最高大。",
+        "nature_en": "High jagged fiery stone peak — military power; uncontrolled brings plague & disaster",
+        "nature_th": "ยอดหินสูงขรุขระดั่งไฟ — อำนาจทหาร · ถ้าคุมไม่ได้=โรคระบาด/ภัยพิบัติ",
+        "source": "撼龍經 (楊筠松·唐) · zh.wikisource.org",
+        "note": "นิสัยดั้งเดิม北斗/巒頭(รูปภูเขา) ≠ ฐานะดาวยุค玄空(旺/死)"
+      }
     }
   ],
   "annual_wuhuang_erhei": [
