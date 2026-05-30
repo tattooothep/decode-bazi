@@ -117,7 +117,14 @@ export type ChartPacketBuildOptions = {
   /** ขอบวันจริงที่ caller ใช้ตอน calcBazi · ถ้าไม่ส่ง = default 23:00 (ไม่เดาเอง) */
   dayBoundary?: DayBoundary;
   dayBoundarySource?: "explicit" | "default";
+  /** 月柱ก้ำกึ่ง節氣 (route คำนวณจาก bazi-boundary.monthPillarBoundary ส่งเข้า · เฉพาะ 3 เสา)
+   *  packet ไม่ import bazi-boundary เอง (กันคู่พึ่งพา) · inline type พอ */
+  monthBoundary?: { boundary: boolean; termName?: string; before?: string; after?: string; jieqiIctApprox?: string } | null;
 };
+
+/** field ที่ค่าพึ่งเสาเดือน(月支) → เมื่อเสาเดือนก้ำกึ่ง ทุกตัวนี้ inherit เพดานมั่นใจ "กลาง" (flat cap · ไม่ใช่ graph)
+ *  constant เดียวคุม · เพิ่ม field derive จาก月ใหม่ ต้องมาเติมที่นี่ กันหลุดเพดานเงียบ */
+const MONTH_DERIVED_FIELDS = ["格局", "司令", "空亡(เสาเดือน)", "半合/三合(子辰)", "大運ลำดับ", "synastry(เสาเดือน)"];
 
 export type ChartPacket = {
   /* ── version/level lock ── */
@@ -201,6 +208,19 @@ export type ChartPacket = {
     canonicalChinese: string;
     noteTh: string;
   };
+  /** 月柱ก้ำกึ่ง節氣 (เกิดคาบ節氣 + 3 เสาไม่รู้เวลา) → field ที่พึ่งเสาเดือน inherit เพดานมั่นใจ "กลาง"
+   *  คนละแกนกับ timePillarConfidence (นั่น=เสายาม時 คาบเที่ยงคืน · นี่=เสาเดือน月 คาบ節氣) · ห้ามยุบรวม
+   *  additive · null=เดือนนิ่ง · render path เท่านั้นที่อ่าน (ไม่กระทบ /chart) */
+  monthAmbiguity?: {
+    ambiguous: boolean;
+    termName: string;           // 立夏
+    jieqiIctApprox?: string;    // 1996-05-05 12:26 (เวลาไทยโดยประมาณ)
+    before: string;             // 壬辰 (เกิดก่อน節氣)
+    after: string;              // 癸巳 (เกิดหลัง節氣)
+    used: string;               // เสาที่ engine ฟันจริง (= เสาเดือนใน calc) → AI รู้ว่าอ่านข้างไหน
+    dependentFields: string[];  // MONTH_DERIVED_FIELDS
+    maxConfidence: "medium";    // เพดานมั่นใจ field ลูก (flat cap)
+  } | null;
   /** 真太陽時 — เวลาจริงหลังแก้ลองจิจูด+สมการเวลา (จาก calc.tst) */
   trueSolarTime?: { appliedTimeStr: string; totalShiftMin: number; dayShift: number } | null;
   /** 起運 อายุเริ่มวัยจร 大運 (จาก ext.luck_pillars[0].age_start · computeStartAge) */
@@ -711,6 +731,7 @@ function normalizeBuildOptions(opts: ChartPacketBuildOptions = {}): Required<Cha
   return {
     dayBoundary: opts.dayBoundary === "00:00" ? "00:00" : "23:00",
     dayBoundarySource: opts.dayBoundarySource || (opts.dayBoundary ? "explicit" : "default"),
+    monthBoundary: opts.monthBoundary ?? null,
   };
 }
 
@@ -1959,6 +1980,19 @@ export function buildStructuredChartPacket(
     trueSolarTime: calc.tst
       ? { appliedTimeStr: calc.tst.appliedTimeStr, totalShiftMin: calc.tst.totalShiftMin, dayShift: calc.tst.appliedDayShift }
       : null,
+    /* 月柱ก้ำกึ่ง節氣 · เฉพาะ 3 เสา (ไม่รู้เวลา → การันตีเกี่ยว) + route ส่ง boundary มา · 4 เสาเสาตายตัว=null */
+    monthAmbiguity: (calc.mode === "3p" && opts.monthBoundary?.boundary)
+      ? {
+          ambiguous: true,
+          termName: opts.monthBoundary.termName || "節氣",
+          jieqiIctApprox: opts.monthBoundary.jieqiIctApprox,
+          before: opts.monthBoundary.before || "",
+          after: opts.monthBoundary.after || "",
+          used: calc.pillars.month ? (calc.pillars.month.stem + calc.pillars.month.branch) : "",
+          dependentFields: MONTH_DERIVED_FIELDS,
+          maxConfidence: "medium" as const,
+        }
+      : null,
     startLuckAge: calc.mode === "3p" ? null : (ext.luck_pillars?.[0]?.age_start ?? null), // 3p: computeStartAge ปลอม → ตัด 起運 (กันมโนยาม)
     rootedness: rootedness ?? null,
     fivePalaces: (() => {
@@ -2168,6 +2202,11 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     }
   }
   if (packet.structure.confidence) structureLine += ` · ความมั่นใจโครง ${packet.structure.confidence}`;
+  /* 月柱ก้ำกึ่ง → suffix inline บนบรรทัด格局 · ต้องเติม "ก่อน" 化氣 block ข้างล่าง (ที่เติม \n)
+   * ไม่งั้น suffix จะหลุดไปติดบรรทัด 化氣 แทนบรรทัด格局 (Codex รอบ 54) · บทเรียน r142: เตือนต้องผูกกับ field */
+  const _ma = packet.monthAmbiguity;
+  const monthAmbSuffix = _ma ? ` ⚠️[เสาเดือนก้ำกึ่ง ${_ma.before}/${_ma.after} · มั่นใจ≤กลาง · อ่าน 2 ทาง]` : "";
+  if (_ma) structureLine += monthAmbSuffix;
   /* 🔒 化氣格 guard (27 พ.ค. · option A · 5-agent · ระดับ1+2) — engine (wrapper-3 findTransformation) declare 化X格
      จากแค่ 2/6 เงื่อนไข (五合คู่ + เดือนตรงฤดู) ไม่เช็คราก DM → over-declare 化 (用神พลิก180° อ่านผิดทั้งใบ)
      hotfix เลเยอร์ packet (rootedness จาก wrapper-7 · ไม่คำนวณใหม่ · ไม่แก้ค่าดิบ · ไม่แตะ wrapper LOCKED · /chart แยก):
@@ -2198,6 +2237,10 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     }
   }
   lines.push(structureLine);
+  if (_ma) {
+    lines.push(`⚠️ 月柱ก้ำกึ่ง(${_ma.termName}${_ma.jieqiIctApprox ? " ~" + _ma.jieqiIctApprox + " เวลาไทย" : ""}): เสาเดือนอยู่ระหว่าง "${_ma.before}"(เกิดก่อน節氣) / "${_ma.after}"(เกิดหลัง節氣) · engine ใช้ "${_ma.used}" เพราะไม่รู้เวลาเกิด`);
+    lines.push(`→ ผลที่พึ่งเสาเดือน (${_ma.dependentFields.join(" / ")}) มั่นใจไม่เกิน "กลาง" · ต้องอ่าน 2 ทางหรือบอก "ขึ้นกับเวลาเกิด" ห้ามฟันธงข้างเดียว · ผลที่พึ่ง 日干/日支/十神/大運(ทิศ順逆) ฟันธงต่อได้ตามน้ำหนักดวง`);
+  }
   /* HK_HUAQI_VERDICT_V1 (29 พ.ค. · wrapper-8 promote) — verdict block
    * 真化/假化/合而不化 จาก analyzeHuaQi (8/8 golden) · แสดงเฉพาะเมื่อมีคู่ 五合 ติด DM
    * additive · ไม่ override structure.label เดิม · ไม่กระทบ wrapper-7 */
@@ -2343,7 +2386,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* 司令 ธาตุบัญชาฤดู (27 พ.ค. · 子平真詮 · ธาตุแท้ที่คุมเดือน ณ วันเกิด · ละเอียดกว่าดูแค่เดือน) */
   if (packet.fivePalaces?.siLing) {
     const sl = packet.fivePalaces.siLing;
-    lines.push(`司令 ธาตุบัญชาฤดู (ธาตุแท้ที่คุมเดือนเกิด·ระยะ${sl.phase}): ${STEM_TH[sl.stem] || sl.stem}/${sl.tenGod} ธาตุ${elementTh(sl.element)} · ดูธาตุที่แรงจริงตามจังหวะฤดู (ระยะ本氣=เต็มแรง 中氣/餘氣=รองลงมา)`);
+    lines.push(`司令 ธาตุบัญชาฤดู (ธาตุแท้ที่คุมเดือนเกิด·ระยะ${sl.phase}): ${STEM_TH[sl.stem] || sl.stem}/${sl.tenGod} ธาตุ${elementTh(sl.element)} · ดูธาตุที่แรงจริงตามจังหวะฤดู (ระยะ本氣=เต็มแรง 中氣/餘氣=รองลงมา)${monthAmbSuffix}`);
   }
   /* 小運 วัยจรเล็ก (Option B 時柱=ขวบ1 · โชควัยเด็กก่อนเข้า大運) */
   if (packet.fivePalaces?.xiaoYun) {

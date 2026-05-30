@@ -32,7 +32,7 @@ import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
-import { boundaryWarning3p } from "@/lib/bazi-boundary";
+import { boundaryWarning3p, monthPillarBoundary } from "@/lib/bazi-boundary";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { stripIdLine } from "@/lib/identity-lock";
 
@@ -413,6 +413,7 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays, {
       dayBoundary,
       dayBoundarySource,
+      monthBoundary: is3p ? monthPillarBoundary(date) : null, // 月柱ก้ำกึ่ง節氣 → ไหล conf ลง field เดือน (กลุ่ม/synastry · เฉพาะ 3 เสา)
     });
     validateChartPacket(packet);
     // Group mode can include 10 people. Keep the single-chart prompt fully detailed,

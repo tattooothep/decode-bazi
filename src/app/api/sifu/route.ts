@@ -19,7 +19,7 @@ import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
-import { boundaryWarning3p } from "@/lib/bazi-boundary";
+import { boundaryWarning3p, monthPillarBoundary } from "@/lib/bazi-boundary";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
 
@@ -454,6 +454,7 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
     const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays, {
       dayBoundary,
       dayBoundarySource,
+      monthBoundary: is3p ? monthPillarBoundary(date) : null, // 月柱ก้ำกึ่ง節氣 → ไหล conf ลง field เดือน (เฉพาะ 3 เสา)
     });
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet, { subjectLabel: `${subjectName}·${row.id.slice(0, 8)}` }));
