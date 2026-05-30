@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
       // 17 พ.ค. · อาเจ๊กฮ้ง 4 หน้าใหม่ + 3 หน้าผม
       { source: "/compass", destination: "/compass.html" },
       { source: "/compass-studio", destination: "/compass-studio.html" },
-      { source: "/luopan", destination: "/compass-studio.html" },
+      { source: "/luopan", destination: "/luopan.html" }, // 30 พ.ค. · เลื่อนหล่อแก 14環+ดาวเหินจร (เดิมชี้ compass-studio เก่า)
       { source: "/fengshui-pro", destination: "/fengshui-pro.html" },
       { source: "/katakagae", destination: "/katakagae.html" },
       { source: "/auspicious", destination: "/auspicious.html" },
