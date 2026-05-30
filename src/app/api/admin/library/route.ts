@@ -24,7 +24,7 @@ const ALLOW_EXT = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"]);
 const MAX_BYTES = 25 * 1024 * 1024; // 25MB/ไฟล์
 
 export async function GET(req: Request) {
-  await requireAdmin();
+  try { await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({ ok: false, error: "auth" }, { status: 401 }); }
   const id = new URL(req.url).searchParams.get("id");
   if (id) {
     const sc = await q1(`SELECT * FROM library_scriptures WHERE id=$1`, [Number(id)]);
@@ -49,7 +49,8 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const admin = await requireAdmin();
+  let admin: Awaited<ReturnType<typeof requireAdmin>>;
+  try { admin = await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({ ok: false, error: "auth" }, { status: 401 }); }
   const ctype = req.headers.get("content-type") || "";
 
   // ── อัพโหลดคัมภีร์ใหม่ (multipart) ──

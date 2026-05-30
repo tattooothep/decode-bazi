@@ -9,7 +9,7 @@ import { readFileSync } from "fs";
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
-  await requireAdmin();
+  try { await requireAdmin(); } catch (e) { return e instanceof Response ? e : new Response("auth", { status: 401 }); }
   const pageId = new URL(req.url).searchParams.get("pageId");
   if (!pageId) return new Response("missing pageId", { status: 400 });
   const row = await q1<{ file_path: string; mime: string }>(
