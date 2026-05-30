@@ -270,6 +270,10 @@
   .hours-now .info h3 .tc{font-family:var(--tc);color:var(--gold);}
   .hours-now .info p{font-size:12px;color:var(--fg-soft);margin-top:2px;}
   .hours-now .verdict-mini{padding:8px 14px;background:var(--wood-bg);color:var(--wood);border:1px solid var(--wood);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;}
+  /* 30 พ.ค. · chip สีตาม quality (ดี=เขียว · กลาง=เทา · ห้าม=แดง) ตรงกับเซลล์ในตาราง */
+  .hours-now .verdict-mini.good{background:var(--wood-bg);color:var(--wood);border-color:var(--wood);}
+  .hours-now .verdict-mini.ok{background:transparent;color:var(--fg-faint);border-color:var(--tile-bd);}
+  .hours-now .verdict-mini.bad{background:rgba(176,58,46,.06);color:var(--fire);border-color:var(--fire);}
 
   .grid12{display:grid;grid-template-columns:repeat(12, 1fr);gap:6px;}
   /* 18 พ.ค. · #1 · h-reason popover (mobile tap + desktop hover) */
@@ -2518,29 +2522,37 @@ window.applyI18N = applyI18N;
             const colorMap = { wood:'var(--wood)', fire:'var(--fire)', earth:'var(--earth)', metal:'var(--metal)', water:'var(--water)' };
             const NOW_TH = { th:'ตอนนี้', en:'NOW', zh:'此刻' };
             const _lang = (localStorage.getItem('hk_locale') || document.documentElement.lang || 'th').slice(0,2);
-            /* 30 พ.ค. · 流時 deep · ใช้ liushi.hours (12 ยาม) แทนถ้ามีครบ · ปลอดภัย: deep เฉพาะ th (มีแค่ reasonTh)
-             * en/zh → คง cached.hours เดิม (มี reason_en/zh) เพื่อไม่ให้ภาษาอื่นพัง · fallback ดวงไม่มี natal → liushi=null → hours เดิม */
-            const useDeep = (_lang === 'th') && cached.liushi && Array.isArray(cached.liushi.hours) && cached.liushi.hours.length === 12;
-            const srcHours = useDeep ? cached.liushi.hours : cached.hours;
-            /* lookup label เดิมตาม branch (liushi ไม่มี label คุณภาพไทย · ยืมจาก hours เดิม) */
-            const _qlblByBranch = {}; (cached.hours || []).forEach(h => { _qlblByBranch[h.branch] = h.label; });
-            grid.innerHTML = srcHours.map(h => {
-              const cls = h.isNow ? 'now ok' : (h.quality === 'best' ? 'good' : h.quality === 'good' ? 'good' : h.quality === 'ok' ? 'ok' : 'bad');
-              const lblText = useDeep ? (_qlblByBranch[h.branch] || h.nameTh || '')
-                            : ((_lang==='en') ? (h.label_en||h.label) : (_lang==='zh') ? (h.label_zh||h.label) : h.label);
-              const lbl = h.isNow ? (NOW_TH[_lang]||NOW_TH.th) : lblText;
-              let _r;
-              if (useDeep) {
-                /* deep th · reasonTh + ปฏิกิริยา (reactions) + ดาวพิเศษ (shensha) */
-                const parts = [h.reasonTh || ''];
-                if (Array.isArray(h.reactions) && h.reactions.length) parts.push('ปฏิกิริยา: ' + h.reactions.join(' · '));
-                if (Array.isArray(h.shensha) && h.shensha.length) parts.push('ดาว: ' + h.shensha.join(' · '));
-                _r = parts.filter(Boolean).join(' · ');
-              } else {
-                _r = (_lang === 'en' && h.reason_en) ? h.reason_en
-                   : (_lang === 'zh' && h.reason_zh) ? h.reason_zh
-                   : h.reason_th || '';
+            /* 30 พ.ค. (แก้ฉันทามติ 5 agent) · cached.hours = แหล่งหลักทุกภาษา
+             *   quality/label/สี/reason จาก hours (override 沖/害/合 + verdict + 3 ภาษาครบ)
+             * liushi (流時 deep · th) = เสริม "ปฏิกิริยา×เสา + ดาว(神煞 เช่น 桃花)" ต่อท้าย reason เท่านั้น
+             *   ไม่ทับ quality · กัน liushi เข้มเกินใน today view (ยามชนเสาในดวง=ห้ามทุกวัน) */
+            const srcHours = cached.hours || [];
+            const _deepByBranch = {};
+            if (_lang === 'th' && cached.liushi && Array.isArray(cached.liushi.hours)) {
+              cached.liushi.hours.forEach(h => { _deepByBranch[h.branch] = h; });
+            }
+            const QUAL_ICON = { best:'★', good:'✓', ok:'~', bad:'⛔' };
+            /* ป้ายคุณภาพชุดเดียว ตาราง=การ์ด NOW · 3 ภาษา (จาก API label/label_en/label_zh) */
+            const _qLabel = (h) => (_lang==='en') ? (h.label_en||h.label)
+                                 : (_lang==='zh') ? (h.label_zh||h.label) : h.label;
+            /* reason หลักจาก hours (มีเหตุชน 沖/害/合 + "ห้ามทำเรื่องสำคัญ" ครบ 3 ภาษา) + เสริมปฏิกิริยา/ดาวจาก liushi (th) */
+            const _reasonOf = (h) => {
+              let r = (_lang === 'en' && h.reason_en) ? h.reason_en
+                    : (_lang === 'zh' && h.reason_zh) ? h.reason_zh
+                    : h.reason_th || '';
+              const dp = _deepByBranch[h.branch];
+              if (dp) {
+                if (Array.isArray(dp.reactions) && dp.reactions.length) r += ' · ปฏิกิริยา: ' + dp.reactions.join(' · ');
+                if (Array.isArray(dp.shensha) && dp.shensha.length) r += ' · ดาว: ' + dp.shensha.join(' · ');
               }
+              return r;
+            };
+            grid.innerHTML = srcHours.map(h => {
+              const qCls = (h.quality === 'best' || h.quality === 'good') ? 'good' : (h.quality === 'ok' ? 'ok' : 'bad');
+              const cls = (h.isNow ? 'now ' : '') + qCls; /* NOW = กรอบทอง + สีตาม quality (ไม่บังคับ ok) */
+              const lblText = _qLabel(h);
+              const lbl = h.isNow ? (NOW_TH[_lang]||NOW_TH.th) : lblText;
+              const _r = _reasonOf(h);
               const tip = _r.replace(/"/g,'&quot;');
               const rg = h.range.replace(/^(\d+):00-/,'$1-').replace(':00','');
               return `<div class="h-cell ${cls}" title="${tip}" data-reason="${tip}" data-branch="${h.branch}" data-range="${rg}" data-label="${lblText}"><div class="br" style="color:${colorMap[h.element]||'var(--fg)'}">${h.branch}</div><div class="rg">${rg}</div><div class="q">${lbl}</div></div>`;
@@ -2580,7 +2592,6 @@ window.applyI18N = applyI18N;
               const QUAL_TIP_EN = { best:'excellent · close deals', good:'go ahead · important work', ok:'calm · analytical work', bad:'rest · avoid decisions' };
               const QUAL_TIP_ZH = { best:'極佳 · 議事締約', good:'宜進 · 大事', ok:'宜靜 · 分析', bad:'宜息 · 避決' };
               const QUAL_TIP = (_lang==='en'?QUAL_TIP_EN:_lang==='zh'?QUAL_TIP_ZH:QUAL_TIP_TH);
-              const QUAL_MINI_TH = { best:'★ ดีมาก · BEST', good:'✓ ใช้ได้ · GOOD', ok:'~ ปกติ · OK', bad:'⛔ ห้าม · AVOID' };
               const icoEl = document.querySelector('.hours-now .ico');
               const h3El = document.querySelector('.hours-now h3');
               const pEl = document.querySelector('.hours-now p');
@@ -2588,20 +2599,15 @@ window.applyI18N = applyI18N;
               if (icoEl) icoEl.textContent = nowH.branch;
               if (h3El) h3El.innerHTML = '<span class="tc">'+nowH.branch+'時</span>· '+nowH.range;
               if (pEl) {
-                let reason;
-                if (useDeep) {
-                  const parts = [nowH.reasonTh || ''];
-                  if (Array.isArray(nowH.reactions) && nowH.reactions.length) parts.push(nowH.reactions.join(' · '));
-                  if (Array.isArray(nowH.shensha) && nowH.shensha.length) parts.push(nowH.shensha.join(' · '));
-                  reason = parts.filter(Boolean).join(' · ') || QUAL_TIP[nowH.quality] || '-';
-                } else {
-                  reason = ((_lang==='en'&&nowH.reason_en) ? nowH.reason_en
-                          : (_lang==='zh'&&nowH.reason_zh) ? nowH.reason_zh
-                          : nowH.reason_th) || QUAL_TIP[nowH.quality] || '-';
-                }
+                /* reason เดียวกับตาราง: hours (เหตุชน+verdict 3 ภาษา) + เสริมปฏิกิริยา/ดาวจาก liushi (th) */
+                const reason = _reasonOf(nowH) || QUAL_TIP[nowH.quality] || '-';
                 pEl.textContent = elTh+'·'+(nowH.stem?nowH.stem+' · ':'')+reason;
               }
-              if (miniEl) miniEl.textContent = QUAL_MINI_TH[nowH.quality] || 'OK';
+              if (miniEl) {
+                const mq = (nowH.quality==='best'||nowH.quality==='good') ? 'good' : (nowH.quality==='ok' ? 'ok' : 'bad');
+                miniEl.className = 'verdict-mini ' + mq; /* สี chip ตาม quality · ตรงกับเซลล์ */
+                miniEl.textContent = ((QUAL_ICON[nowH.quality]||'') + ' ' + (_qLabel(nowH) || nowH.quality || '')).trim(); /* ป้ายเดียวกับตาราง · 3 ภาษา */
+              }
             }
           };
           window.__renderHoursFromCache();
