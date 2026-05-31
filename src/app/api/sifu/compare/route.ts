@@ -25,7 +25,8 @@ import { join } from "path";
 import { q1, q } from "@/lib/db";
 import { spawnClaudeStreaming, makeJsonlParser, streamOpenRouter } from "@/lib/claude-stream";
 import { loadPromptMd } from "@/lib/prompt-md";
-import { boundaryWarning3p } from "@/lib/bazi-boundary";
+import { boundaryWarning3p, monthPillarBoundary, yearPillarBoundary } from "@/lib/bazi-boundary";
+import { buildSynastry, type PersonSyn } from "@/lib/bazi-synastry";
 
 /* 25 พ.ค. · compare persona ย้ายไป prompts/compare-{th,en,zh}.md (section marker) · parser + fallback */
 function parseCompareSections(raw: string): Record<string, string> {
@@ -39,21 +40,21 @@ const COMPARE_FALLBACK: Record<string, Record<string, string>> = {
     HEADER: "คุณคือซินแสปาจื้อระดับอาจารย์ · วิเคราะห์ความสัมพันธ์ระหว่างดวง 2 คน อย่างซื่อตรง เป็นรูปธรรม และมีคำแนะนำใช้ได้จริง",
     GUARD: "สำคัญ: อย่างน้อยฝั่งหนึ่งไม่ทราบเวลาเกิด · ห้ามอ่านส่วนที่ต้องใช้เสายาม",
     WARMUP: "หมายเหตุ: ผู้ใช้เห็นสรุปเอนจินแล้ว (DM relation · 用神 · 忌神) · ห้ามเริ่มซ้ำ ให้ต่อเป็น prose เชิงลึก",
-    STRUCTURE: "ตอบเป็น markdown 5 ส่วน:\n1. ปฏิกิริยา DM (เชิงลึก · เกินกว่าวงรอบ 5 ธาตุ)\n2. การประกบ 用神/忌神 (เชิงลึก)\n3. ปฏิกิริยา stem + branch (เอ่ยเฉพาะที่มีจริง)\n4. ความเข้ากัน (รัก · งาน · เพื่อน · 0-10 พร้อมเหตุผล)\n5. คำแนะนำใช้ได้จริง (แต่ละคน 3 ข้อ)",
+    STRUCTURE: "ตอบเป็น markdown 5 ส่วน:\n1. ปฏิกิริยา DM (เชิงลึก · เกินกว่าวงรอบ 5 ธาตุ)\n2. การประกบ 用神/忌神 (เชิงลึก)\n3. ปฏิกิริยา stem + branch ข้ามคน (ใช้เฉพาะที่ระบุในเซกชัน synastry ด้านบน · ห้ามหา/แต่งคู่เพิ่มเอง · 天干五合ข้ามคน=ผูกพัน(緣) ไม่ใช่化氣格)\n4. ความเข้ากัน (รัก · งาน · เพื่อน · 0-10 พร้อมเหตุผล)\n5. คำแนะนำใช้ได้จริง (แต่ละคน 3 ข้อ)",
     BOTH3P: "หมายเหตุ: ทั้งคู่ไม่ทราบเวลาเกิด",
   },
   en: {
     HEADER: "You are a master BaZi (Chinese astrology) compatibility reader. Analyze the relationship dynamics between two charts honestly and concretely.",
     GUARD: "IMPORTANT: At least one chart has no Hour Pillar (birth time unknown). Skip readings that depend on Hour (spouse house · 命宮 · 拱·夾).",
     WARMUP: "NOTE: User already sees a deterministic engine summary (DM relation · Yongshen overlap · Jishen). Do NOT repeat that. Build deeper prose on top.",
-    STRUCTURE: "Return 5 markdown sections:\n1. Day Master interaction (DM ↔ DM · 5-element cycle)\n2. Yongshen / Jishen overlap (deeper context)\n3. Stem & Branch interactions (天合/地合/沖/害/三合 · only existing pairs)\n4. Practical compatibility (love · work · friendship · score 0-10 with rationale)\n5. Practical advice (3 actions per person)",
+    STRUCTURE: "Return 5 markdown sections:\n1. Day Master interaction (DM ↔ DM · 5-element cycle)\n2. Yongshen / Jishen overlap (deeper context)\n3. Cross-person Stem & Branch interactions (use ONLY what is listed in the synastry section above; do not search or invent pairs; cross-person 天干五合 = affinity/bond (緣), not a 化氣格)\n4. Practical compatibility (love · work · friendship · score 0-10 with rationale)\n5. Practical advice (3 actions per person)",
     BOTH3P: "Note: both charts lack Hour Pillar.",
   },
   zh: {
     HEADER: "你是八字配對命理大師。請依下方雙命盤分析兩人的關係動態 · 誠實、具體、有實用建議。",
     GUARD: "重要: 至少一人不知時辰 (無時柱). 涉及時柱的判讀必須略過.",
     WARMUP: "註: 使用者已看到引擎速覽 (日主關係 · 用神對接 · 忌神). 請勿重複, 直接進入深度解讀.",
-    STRUCTURE: "以 markdown 回傳 5 段:\n1. 日主互動 (深度)\n2. 用神/忌神對接 (深度)\n3. 天干地支互動 (僅實際組合)\n4. 實用配對 (愛情·工作·友情 · 0-10)\n5. 實用建議 (各人 3 個)",
+    STRUCTURE: "以 markdown 回傳 5 段:\n1. 日主互動 (深度)\n2. 用神/忌神對接 (深度)\n3. 天干地支互動 (僅用上方 synastry 區段所列 · 勿自行尋找或臆測 · 跨人天干五合＝緣/相吸，非化氣格)\n4. 實用配對 (愛情·工作·友情 · 0-10)\n5. 實用建議 (各人 3 個)",
     BOTH3P: "註: 雙方皆不知時辰",
   },
 };
@@ -144,6 +145,32 @@ const KE: Record<string, string> = { wood: "earth", fire: "metal", earth: "water
 
 function pillarStr(p: Pillar): string {
   return p ? `${p.stem}${p.branch}` : "—";
+}
+
+/* 31 พ.ค. · adapter PersonCtx → PersonSyn (reuse buildSynastry · ปิดบั๊ก AI แต่ง丁壬化木/辰戌冲 เอง)
+ * field ตรงกับที่ group/route.ts สร้าง (dmEl=STEM_EL[day] · yongEls=primary_yongshen · borderline=is3p) */
+function yongElsOf(p: PersonCtx): string[] {
+  return (p.yongshen_v2?.primary_yongshen || [])
+    .map((y) => (typeof y === "string" ? y : y?.element))
+    .filter((s): s is string => !!s)
+    .map((s) => s.toLowerCase());
+}
+function toPersonSyn(p: PersonCtx, label: string): PersonSyn {
+  const is3p = (p.mode === "3p" || !p.pillars.hour);
+  const bd = String(p.birthDate || "").slice(0, 10);
+  const pk = (x: Pillar) => (x && x.stem && x.branch ? { stem: x.stem, branch: x.branch } : undefined);
+  return {
+    name: p.name || label,
+    role: label,
+    isSelf: false,
+    text: "",
+    mode: is3p ? "3p" : "4p",
+    dmEl: STEM_EL[p.pillars.day?.stem || ""] || "unknown",
+    yongEls: yongElsOf(p),
+    pillars: { year: pk(p.pillars.year), month: pk(p.pillars.month), day: pk(p.pillars.day) },
+    monthBorderline: is3p && bd ? !!monthPillarBoundary(bd).boundary : false,
+    yearBorderline: is3p && bd ? !!yearPillarBoundary(bd).boundary : false,
+  };
 }
 function yongList(v: PersonCtx["yongshen_v2"], key: "primary_yongshen" | "jishen" | "xishen"): string {
   const arr = v?.[key] || [];
@@ -278,6 +305,8 @@ function buildPrompt(p1: PersonCtx, p2: PersonCtx, lang: "th" | "en" | "zh", has
   const both3pNote = both3p ? sec("BOTH3P") : "";
   const labelA = lang === "en" ? "Person A" : lang === "zh" ? "甲方" : "คนที่ 1";
   const labelB = lang === "en" ? "Person B" : lang === "zh" ? "乙方" : "คนที่ 2";
+  /* 31 พ.ค. · synastry closed-list (日月年 ก้าน+กิ่ง · 六合冲害破 + 天干五合 raw緣) แทนการให้ AI หา合冲เอง · "" ถ้า invalid → filter ทิ้ง */
+  const synastry = buildSynastry([toPersonSyn(p1, labelA), toPersonSyn(p2, labelB)], lang);
 
   return [
     protocolBlock + header,
@@ -285,6 +314,7 @@ function buildPrompt(p1: PersonCtx, p2: PersonCtx, lang: "th" | "en" | "zh", has
     warmup,
     personSummary(p1, labelA, lang),
     personSummary(p2, labelB, lang),
+    synastry,
     structure,
     both3pNote,
   ].filter((x) => x && x.trim()).join("\n\n").trim();
@@ -314,10 +344,10 @@ function normalizePerson(p: PersonCtx) {
   };
 }
 function cacheKeyFor(p1: PersonCtx, p2: PersonCtx, lang: string, protocolVersion: string = "none"): string {
-  /* v4-boundary · bump version · เพิ่ม birthDate/mode + boundary warning (Codex รอบ 52) · กัน cache เก่า v3 */
+  /* v5-synastry · bump · เพิ่ม synastry closed-list(日月年·六合冲害破+天干五合) ใน prompt (31 พ.ค.) · กัน cache เก่า v4 ที่ไม่มี synastry */
   const a = JSON.stringify(normalizePerson(p1));
   const b = JSON.stringify(normalizePerson(p2));
-  return createHash("sha256").update(`compare:v4-boundary:${protocolVersion}:${a}:${b}:${lang}`).digest("hex").slice(0, 60);
+  return createHash("sha256").update(`compare:v5-synastry:${protocolVersion}:${a}:${b}:${lang}`).digest("hex").slice(0, 60);
 }
 
 async function getCachedReply(key: string): Promise<{ reply: string; warmup?: string } | null> {
