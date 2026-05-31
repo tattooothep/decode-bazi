@@ -46,10 +46,12 @@ ck("4 คน → 6 คู่", /เทียบครบทุกคู่ 6 ค
 ck("5 คน → 10 組 (zh)", /5 人.*全部 10 組/s.test(buildSynastry(mk(5), "zh")), "");
 
 // ─── เฟส 1: 天干五合 ข้ามคน (raw 緣 · ไม่ฟัน化) + ตัด刑 + 害/破อ่อน ───
-const PM = (name: string, dayStem: string, dayB: string, monStem: string, monB: string, yrStem: string, yrB: string, border = false, yrBorder = false): PersonSyn => ({
+const sp = (n: string) => (n && [...n].length === 2 ? { stem: [...n][0], branch: [...n][1] } : undefined);
+const PM = (name: string, dayStem: string, dayB: string, monStem: string, monB: string, yrStem: string, yrB: string, border = false, yrBorder = false, monAlt = "", yrAlt = ""): PersonSyn => ({
   name, role: "x", isSelf: false, text: "", mode: "4p", dmEl: "water", yongEls: [],
   pillars: { year: { stem: yrStem, branch: yrB }, month: { stem: monStem, branch: monB }, day: { stem: dayStem, branch: dayB } },
   monthBorderline: border, yearBorderline: yrBorder,
+  monthAlt: sp(monAlt), yearAlt: sp(yrAlt),
 });
 console.log("\n[เฟส 1 · 丁壬 ข้ามคน (Mu月干丁 × na日干壬) → 緣 ไม่ใช่化木]");
 // Mu: เดือน丁亥 · na: วัน壬寅 — 丁(เดือนMu)×壬(วันna) = 天干五合
@@ -79,9 +81,9 @@ const t3 = buildSynastry([
   PM("Mu", "己", "亥", "丁", "亥", "甲", "卯", true), // Mu เดือนก้ำกึ่ง
 ], "th");
 ck("hit ที่พึ่งเสาเดือนคนก้ำกึ่ง → มีธง 'ขึ้นกับเวลาเกิด'", /ขึ้นกับเวลาเกิด·เสาก้ำกึ่ง/.test(t3), t3.split("\n").filter(l=>/丁壬/.test(l))[0]||"");
-// Codex รอบ 55: มีคนก้ำกึ่ง → header ต้องมี NOTE ว่า absence ของ month-hit ยังไม่ final (ไม่ใช่ closed-world เต็ม)
-ck("มีคนก้ำกึ่ง → header มี NOTE 'ลิสต์ปิด=ไม่มี ยังไม่ final · อ่าน 2 ทาง'", /ยังไม่ final.*อ่าน 2 ทาง/s.test(t3), "");
-ck("ไม่มีคนก้ำกึ่ง → ไม่มี NOTE นั้น (closed-world เต็ม)", !/ยังไม่ final/.test(t1), "");
+// 31 พ.ค. what-if: มีคนก้ำกึ่ง → header NOTE บอก "คำนวณให้ทั้ง 2 ฝั่งแล้ว" (ไม่ใช่แค่เตือน absence)
+ck("มีคนก้ำกึ่ง → header มี NOTE 'คำนวณให้ทั้ง 2 ฝั่งแล้ว · อ่านแบบมีเงื่อนไข'", /คำนวณให้ทั้ง 2 ฝั่งแล้ว/.test(t3) && /อ่านแบบมีเงื่อนไข/.test(t3), "");
+ck("ไม่มีคนก้ำกึ่ง → ไม่มี NOTE นั้น (closed-world เต็ม)", !/คำนวณให้ทั้ง 2 ฝั่งแล้ว/.test(t1), "");
 // Codex รอบ 56: 立春 → เสาปีก็ก้ำกึ่ง (乙亥↔丙子) · hit ที่พึ่งเสาปีของคนนั้นต้องติดธง + blNote ต้อง trigger
 // na เสาปี子 × B เสาปี丑 = 子丑六合 (พึ่งเสาปี) · na yearBorderline(เกิด立春)
 const t4 = buildSynastry([
@@ -89,10 +91,31 @@ const t4 = buildSynastry([
   PM("B", "己", "亥", "丁", "巳", "甲", "丑"),
 ], "th");
 ck("立春 · hit ที่พึ่งเสาปีคนก้ำกึ่ง → ติดธง 'ขึ้นกับเวลาเกิด'", /เสาปี.*子.*ผสาน.*ขึ้นกับเวลาเกิด/.test(t4) || /ขึ้นกับเวลาเกิด/.test(t4.split("\n").filter(l=>/เสาปี/.test(l)).join("")), t4.split("\n").filter(l=>l.startsWith("  - "))[0]||"");
-ck("立春 · yearBorderline → blNote trigger (note พูดถึงเสาปี/立春)", /ยังไม่ final/.test(t4) && /立春|เสาปี/.test(t4), "");
+ck("立春 · yearBorderline → blNote trigger (note พูดถึงเสาปี/立春)", /คำนวณให้ทั้ง 2 ฝั่งแล้ว/.test(t4) && /立春|เสาปี/.test(t4), "");
 ck("blNote → เสาวัน(日)ยังฟันธงได้ (ไม่บอก year firm)", /เสาวัน\(日\) ยังฟันธงได้/.test(t4) && !/เสาปี ยังฟันธง/.test(t4), "");
 // Codex รอบ 56: tag generic · year hit ห้ามขึ้นคำ "เสาเดือน/月柱/month" (เพราะพึ่งเสาปี)
 ck("立春 · tag เป็น generic 'เสาก้ำกึ่ง' (ไม่ใช่ 'เสาเดือน')", /ขึ้นกับเวลาเกิด·เสาก้ำกึ่ง/.test(t4) && !/เสาเดือนก้ำกึ่ง/.test(t4), "");
 
-console.log(`\n[synastry · import จริง · เฟส 0+1] ${pass}/${pass + fail} passed`);
+console.log("\n[what-if · เสาก้ำกึ่ง คำนวณ hit ฝั่ง alt ติดธง [ถ้าเกิดอีกฝั่ง]]");
+// X เสาเดือน engine=壬辰(ก้ำกึ่ง) · alt=癸巳 · Y วัน戊亥 (癸/巳 ไม่มีในเสาหลักของใคร = hit ใดมี癸/巳 ต้องมาจาก alt เท่านั้น)
+//  - alt ก้าน 癸×戊(วันY) = 戊癸合(緣) · alt กิ่ง 巳×亥(วันY) = 六沖 → ติดธง [癸巳]
+const tw = buildSynastry([
+  PM("X", "甲", "寅", "壬", "辰", "丙", "午", true, false, "癸巳"),
+  PM("Y", "戊", "亥", "庚", "子", "甲", "申"),
+], "th");
+const twHits = tw.split("\n").filter(l => l.startsWith("  - ")).join("");
+ck("alt → ขึ้น 天干五合(戊癸合) จากก้านเดือน alt 癸", /戊癸合/.test(twHits), twHits);
+ck("戊癸合 ติดธง [ถ้าเกิดอีกฝั่ง→เสาเป็น 癸巳] ตรงตำแหน่ง", /戊癸合\) ⚠️\[ถ้าเกิดอีกฝั่ง→เสาเป็น 癸巳\]/.test(twHits), twHits);
+ck("alt → กิ่ง 巳(มะเส็ง) ขึ้น hit + ติดธง alt (巳 มาจาก alt เท่านั้น)", /มะเส็ง[\s\S]*?ถ้าเกิดอีกฝั่ง→เสาเป็น 癸巳/.test(twHits), twHits);
+ck("ไม่มี alt (t1 ปกติ) → ไม่มีธง [ถ้าเกิดอีกฝั่ง]", !/ถ้าเกิดอีกฝั่ง/.test(t1), "");
+// dedup: alt กิ่ง辰 = หลัก辰 → 辰戌冲 ต้องขึ้นครั้งเดียว (ไม่ซ้ำจาก primary+alt)
+const twDup = buildSynastry([
+  PM("X", "甲", "寅", "壬", "辰", "丙", "午", true, false, "癸辰"), // alt กิ่ง辰 ซ้ำหลัก (ก้าน癸ต่าง)
+  PM("Y", "戊", "戌", "乙", "丑", "辛", "酉"),
+], "th");
+const twDup辰戌 = (twDup.match(/เสาเดือนมะโรง×เสาวันจอ/g) || []).length; // 辰×戌(วันY) · primary+alt กิ่งเดียวกัน → ต้อง dedup เหลือ 1
+ck("dedup · alt กิ่งซ้ำหลัก → 辰戌冲 ขึ้นครั้งเดียว", twDup辰戌 === 1, "count=" + twDup辰戌);
+ck("dedup case · ก้าน alt 癸 ต่างหลัก 壬 → 戊癸合 ยังขึ้น (ไม่ถูก dedup ทิ้งผิด)", /戊癸合/.test(twDup), "");
+
+console.log(`\n[synastry · import จริง · เฟส 0+1+what-if] ${pass}/${pass + fail} passed`);
 process.exit(fail ? 1 : 0);

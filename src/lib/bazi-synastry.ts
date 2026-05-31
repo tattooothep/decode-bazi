@@ -25,7 +25,26 @@ export type PersonSyn = {
   monthBorderline?: boolean;
   /* เสาปีก้ำกึ่ง: เกิดวัน立春 (ปี干支เปลี่ยน 乙亥↔丙子) → hit ที่พึ่งเสาปี ต้องติดธงด้วย (เสาวัน日 ไม่เคยก้ำกึ่งจาก節氣) */
   yearBorderline?: boolean;
+  /* 31 พ.ค. what-if · เสา "อีกฝั่ง" ของคนก้ำกึ่ง (ฝั่งที่ engine ไม่ได้เลือก เช่น engine ใช้ 壬辰 → alt=癸巳)
+   * buildSynastry คำนวณ hit ฝั่ง alt ด้วย ติดธง [ถ้าเกิดอีกฝั่ง] (ไม่ใช่แค่เตือน · ฉันทามติ 6+พ่อ) */
+  monthAlt?: { stem: string; branch: string };
+  yearAlt?: { stem: string; branch: string };
 };
+
+/* split ชื่อเสาจีน "壬辰" → {stem,branch} · ใช้กับ before/after จาก bazi-boundary (monthPillarBoundary/yearPillarBoundary) */
+export function splitPillarName(name?: string): { stem: string; branch: string } | undefined {
+  if (!name) return undefined;
+  const ch = [...name];
+  if (ch.length !== 2) return undefined;
+  return { stem: ch[0], branch: ch[1] };
+}
+/* เลือกเสาก้ำกึ่ง "อีกฝั่ง" จากเสาที่ engine เลือก (current) · คืน undefined ถ้าไม่ก้ำกึ่ง/หาฝั่งไม่ได้ (current ไม่ตรง before/after = ไม่เดา) */
+export function altPillar(current: { stem: string; branch: string } | undefined, before?: string, after?: string): { stem: string; branch: string } | undefined {
+  if (!current || !before || !after || before === after) return undefined;
+  const cur = current.stem + current.branch;
+  const alt = cur === before ? after : cur === after ? before : undefined;
+  return splitPillarName(alt);
+}
 
 const BRANCH_TH_NAME: Record<string, string> = {
   子: "ชวด", 丑: "ฉลู", 寅: "ขาล", 卯: "เถาะ", 辰: "มะโรง", 巳: "มะเส็ง",
@@ -81,6 +100,10 @@ const SYN_AXES = ["day", "month", "year"] as const;
 const BORDER_TAG: Record<string, string> = {
   th: " ⚠️[ขึ้นกับเวลาเกิด·เสาก้ำกึ่ง]", en: " ⚠️[depends on birth time·borderline pillar]", zh: " ⚠️[視出生時辰·柱臨界]",
 };
+/* what-if · ธงเมื่อ hit คำนวณจากเสา "อีกฝั่ง" (alt) ของคนก้ำกึ่ง · {p}=ชื่อเสา alt (เช่น 癸巳) */
+const ALT_TAG: Record<string, string> = {
+  th: " ⚠️[ถ้าเกิดอีกฝั่ง→เสาเป็น {p}]", en: " ⚠️[if born other side→pillar {p}]", zh: " ⚠️[若生另一邊→柱為 {p}]",
+};
 
 /* เทียบปฏิกิริยาข้ามคน · 日月年 ก้าน+กิ่ง (六合/六冲/六害/六破 + 天干五合 raw緣) · CLOSED LIST (เช็คครบทุกคู่ · ห้ามแต่งคู่นอกลิสต์) */
 export function buildSynastry(people: PersonSyn[], lang: string): string {
@@ -96,27 +119,51 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
     for (let j = i + 1; j < valid.length; j++) {
       const A = valid[i], B = valid[j];
       const hits: string[] = [];
+      const seen = new Set<string>(); // dedupKey กัน hit ซ้ำ (เสาหลัก vs alt ที่ให้ผลเดียวกัน)
       /* tag "ขึ้นกับเวลาเกิด" เมื่อ hit พึ่งเสาเดือน(ทุก節氣)หรือเสาปี(เฉพาะ立春)ของคนที่ก้ำกึ่ง · เสาวัน(日)ไม่เคยก้ำกึ่งจาก節氣 */
       const axBorder = (k: string, p: PersonSyn) => (k === "month" && p.monthBorderline) || (k === "year" && p.yearBorderline);
-      const blTag = (ka: string, kb: string) => (axBorder(ka, A) || axBorder(kb, B)) ? BORDER_TAG[L] : "";
-      /* axis_B · กิ่ง 日+月+年 ข้ามคน (六合/六冲/六害/六破) */
-      for (const ka of SYN_AXES) {
-        for (const kb of SYN_AXES) {
-          const ba = A.pillars?.[ka]?.branch, bb = B.pillars?.[kb]?.branch;
-          if (!ba || !bb) continue;
-          const rels = branchRel(ba, bb);
-          for (const rel of rels) hits.push(`${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${REL_LABEL[rel][L]}${blTag(ka, kb)}`);
+      /* variant ต่อแกน: เสาหลัก(engine anchor) + เสาก้ำกึ่งอีกฝั่ง(alt) ถ้ามี · what-if 31 พ.ค. */
+      type Variant = { pillar: { stem: string; branch: string }; alt: boolean };
+      const variantsOf = (p: PersonSyn, k: string): Variant[] => {
+        const out: Variant[] = [];
+        const prim = p.pillars?.[k as "year" | "month" | "day"];
+        if (prim) out.push({ pillar: prim, alt: false });
+        const altP = k === "month" ? p.monthAlt : k === "year" ? p.yearAlt : undefined;
+        if (altP) out.push({ pillar: altP, alt: true });
+        return out;
+      };
+      /* ธง: ถ้าใช้ alt → [ถ้าเกิดอีกฝั่ง→เสาเป็น <alt>] · ถ้าเป็นเสาหลักที่ก้ำกึ่ง → ⚠️เสาก้ำกึ่ง */
+      const tagFor = (ka: string, kb: string, va: Variant, vb: Variant) => {
+        if (va.alt || vb.alt) {
+          const names = [va.alt ? va.pillar : null, vb.alt ? vb.pillar : null]
+            .filter((x): x is { stem: string; branch: string } => !!x).map((x) => x.stem + x.branch).join("/");
+          return ALT_TAG[L].replace("{p}", names);
         }
-      }
-      /* axis_C · 天干五合 (ก้าน 日+月+年) ข้ามคน · raw "ดึงดูด/ผูกพัน(緣)" เท่านั้น
-       * ⚠️ ไม่ฟัน化/不化 · ไม่ใส่化象/得令 (合ข้ามคน=緣 ไม่ใช่化氣格 · ดู月令รายคนในดวงเดี่ยว) */
+        return (axBorder(ka, A) || axBorder(kb, B)) ? BORDER_TAG[L] : "";
+      };
+      /* axis_B+C · กิ่ง(六合/六冲/六害/六破) + ก้าน(天干五合) ข้ามคน · วน variant(หลัก+alt) ทุกแกน
+       * ⚠️ 天干五合: raw "ดึงดูด/ผูกพัน(緣)" เท่านั้น · ไม่ฟัน化/不化 · ไม่ใส่化象/得令 (合ข้ามคน≠化氣格 · ดู月令รายคน) */
       for (const ka of SYN_AXES) {
         for (const kb of SYN_AXES) {
-          const sa = A.pillars?.[ka]?.stem, sb = B.pillars?.[kb]?.stem;
-          if (!sa || !sb) continue;
-          const combo = STEM_FIVE_HE[sa];
-          if (combo && combo.partner === sb) {
-            hits.push(`${pL(ka)}${sa}×${pL(kb)}${sb} ${HE5_LABEL[L]}(${combo.pairZh})${blTag(ka, kb)}`);
+          for (const va of variantsOf(A, ka)) {
+            for (const vb of variantsOf(B, kb)) {
+              const ba = va.pillar.branch, bb = vb.pillar.branch;
+              for (const rel of branchRel(ba, bb)) {
+                const key = `b:${ka}${ba}×${kb}${bb}:${rel}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                hits.push(`${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${REL_LABEL[rel][L]}${tagFor(ka, kb, va, vb)}`);
+              }
+              const sa = va.pillar.stem, sb = vb.pillar.stem;
+              const combo = STEM_FIVE_HE[sa];
+              if (combo && combo.partner === sb) {
+                const key = `s:${ka}${sa}×${kb}${sb}`;
+                if (!seen.has(key)) {
+                  seen.add(key);
+                  hits.push(`${pL(ka)}${sa}×${pL(kb)}${sb} ${HE5_LABEL[L]}(${combo.pairZh})${tagFor(ka, kb, va, vb)}`);
+                }
+              }
+            }
           }
         }
       }
@@ -157,15 +204,14 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
     : L === "zh"
     ? `━━━ 跨人互動 (synastry) — 封閉清單。已比對 ${M} 人 [${names}] 全部 ${totalPairs} 組配對（各取 日月年柱·干支：六合/六冲/六害/六破 + 天干五合）。下列僅為有顯著互動的 ${shown} 組；未列出之配對＝已比對且無顯著跨人互動（此為結論，非「未檢查」）。禁止為清單外之任何人／配對推衍 合/冲/破/害/天干五合。（各人命盤內部互動→依互動經典完整判讀；跨人→僅限本清單。）輕重(任鐵樵)：三合/三會強 > 六合/六冲 > 害·破弱(削之可也/不經)。天干五合跨人＝緣/相吸，吉凶視各自用神 — 非化氣格；勿斷化木/化X（保留干之本氣；化須依各自月令判）。合不必吉 / 冲不必凶 — 結合各自用神/角色，可直斷方向/結果；僅禁命令式分手/勿往來。━━━`
     : `━━━ ปฏิกิริยาข้ามคน (synastry) — ลิสต์ปิด (เช็คครบแล้ว) · เทียบครบทุกคู่ ${totalPairs} คู่ จาก ${M} คน [${names}] โดยใช้เสา 日月年 (ก้าน+กิ่ง: 六合/六冲/六害/六破 + 天干五合) · ด้านล่างขึ้นเฉพาะ ${shown} คู่ที่มีปฏิกิริยาเด่น · คู่ที่ไม่อยู่ในลิสต์ = เช็คแล้วไม่มีปฏิกิริยาข้ามคนเด่น (เป็นข้อสรุป ไม่ใช่ "ยังไม่เช็ค") · ห้ามสร้าง/สันนิษฐาน 合/冲/破/害/天干五合 ให้คน/คู่ที่ไม่อยู่ในลิสต์นี้ · (ปฏิกิริยาภายในดวงเดี่ยว → อ่านเต็มตามคัมภีร์ · ข้ามคน → เฉพาะลิสต์นี้) · ลำดับน้ำหนัก(任鐵樵): 三合/三會 แรง > 六合/六冲 > 害·破 อ่อน(削之可也/不經) · 天干五合ข้ามคน = ดึงดูด/ผูกพัน(緣) ดี-ร้ายขึ้นกับ用神แต่ละคน — ไม่ใช่化氣格 · ห้ามประกาศ化木/化X (คงธาตุก้านเดิม · การ化ต้องดู月令ของแต่ละคนเอง) · 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ — ดูที่用神/บทบาท ฟันธงทิศ/ผลได้ · ห้ามเฉพาะ 'สั่งการ' เลิก/คบ ━━━`;
-  /* 31 พ.ค. (Codex รอบ 55) · ถ้ามีคนก้ำกึ่ง節氣ในกลุ่ม → closed-list ไม่ใช่ closed-world เต็ม
-   * เพราะ helper เทียบเฉพาะเสาเดือน "ฝั่งที่ engine anchor ใช้" ไม่ได้เทียบฝั่งตรงข้าม (壬辰↔癸巳)
-   * → absence ของ hit ที่พึ่งเสาก้ำกึ่ง(月ทุก節氣/年เฉพาะ立春)คนนั้น = ยังไม่ final · อ่าน 2 ทาง (ส่วน日 ยังแน่) */
+  /* 31 พ.ค. what-if · มีคนก้ำกึ่ง節氣 → ลิสต์ "คำนวณทั้ง 2 ฝั่ง" ให้แล้ว (เสาหลัก engine + เสา alt ติดธง [ถ้าเกิดอีกฝั่ง])
+   * → AI อ่าน hit ทั้ง 2 ฝั่งได้ตรงๆ (ไม่ต้องเดาเอง) · hit ติดธง alt = มีเฉพาะถ้าเกิดอีกฝั่งของ節氣 · ส่วนเสาวัน(日)แน่นอน */
   const anyBorderline = valid.some((p) => !!p.monthBorderline || !!p.yearBorderline);
   const blNote = !anyBorderline ? "" : (L === "en"
-    ? "\n  ⚠️ NOTE: someone here has no birth time + born on a 節氣 boundary → their MONTH pillar (and YEAR pillar if born on 立春) is borderline (e.g. 壬辰↔癸巳 / 乙亥↔丙子). For any hit/absence that depends on that person's borderline pillar, the CLOSED-LIST 'no reaction' is NOT final — it depends on real birth time (the alternate pillar may add 合/冲/天干五合); read 2 ways. DAY-pillar conclusions stay firm."
+    ? "\n  ⚠️ NOTE: someone here has no birth time + born on a 節氣 boundary → their MONTH pillar (and YEAR pillar if born on 立春) is borderline (e.g. 壬辰↔癸巳 / 乙亥↔丙子). BOTH sides are already computed above: the engine-anchored side, and any 合/冲/害/破/天干五合 that appears ONLY on the alternate side is tagged ⚠️[if born other side→pillar X]. A tagged hit holds only if real birth time falls on that side — read it conditionally; recommend confirming birth time to lock it. DAY-pillar conclusions stay firm."
     : L === "zh"
-    ? "\n  ⚠️ 註：群中有人無時辰且生於節氣臨界 → 其月柱（若生於立春則年柱亦然）臨界（如 壬辰↔癸巳 / 乙亥↔丙子）。凡依賴該人臨界柱之互動／無互動，封閉清單之「無」非定論 — 視真實出生時辰（另一柱或生 合/冲/天干五合），須兩面讀；日柱之結論仍確定。"
-    : "\n  ⚠️ หมายเหตุ: มีคนในกลุ่มไม่รู้เวลาเกิด + เกิดคาบ節氣 → เสาเดือน (และเสาปีถ้าเกิดวัน立春) ก้ำกึ่ง (เช่น 壬辰↔癸巳 / 乙亥↔丙子) · ปฏิกิริยา/การไม่มีปฏิกิริยาที่พึ่งเสาก้ำกึ่งของคนนั้น 'ลิสต์ปิด=ไม่มี' ยังไม่ final — ขึ้นกับเวลาเกิดจริง (เสาอีกด้านอาจเกิด 合/冲/天干五合) ให้อ่าน 2 ทาง · ส่วนที่พึ่งเสาวัน(日) ยังฟันธงได้");
+    ? "\n  ⚠️ 註：群中有人無時辰且生於節氣臨界 → 其月柱（若生於立春則年柱亦然）臨界（如 壬辰↔癸巳 / 乙亥↔丙子）。上表已並列兩邊：引擎所取之柱，以及僅在另一柱才出現的 合/冲/害/破/天干五合（標 ⚠️[若生另一邊→柱為X]）。標記之互動僅在真實出生時辰落於該側時成立 — 須條件式判讀，建議確認時辰以鎖定；日柱之結論仍確定。"
+    : "\n  ⚠️ หมายเหตุ: มีคนในกลุ่มไม่รู้เวลาเกิด + เกิดคาบ節氣 → เสาเดือน (และเสาปีถ้าเกิดวัน立春) ก้ำกึ่ง (เช่น 壬辰↔癸巳 / 乙亥↔丙子) · ด้านบน 'คำนวณให้ทั้ง 2 ฝั่งแล้ว': เสาที่ engine เลือก + ปฏิกิริยา 合/冲/害/破/天干五合 ที่เกิดเฉพาะเสาอีกฝั่ง จะติดธง ⚠️[ถ้าเกิดอีกฝั่ง→เสาเป็น X] · hit ที่ติดธงนี้เป็นจริงเฉพาะถ้าเวลาเกิดจริงตกฝั่งนั้น — อ่านแบบมีเงื่อนไข + แนะนำให้ยืนยันเวลาเกิดเพื่อล็อก · ส่วนที่พึ่งเสาวัน(日) ยังฟันธงได้");
   if (!lines.length) {
     const none = L === "en" ? "  (no pair has a prominent cross-person reaction — all pairs checked)"
       : L === "zh" ? "  （所有配對已比對，無顯著跨人互動）"

@@ -26,7 +26,7 @@ import { q1, q } from "@/lib/db";
 import { spawnClaudeStreaming, makeJsonlParser, streamOpenRouter } from "@/lib/claude-stream";
 import { loadPromptMd } from "@/lib/prompt-md";
 import { boundaryWarning3p, monthPillarBoundary, yearPillarBoundary } from "@/lib/bazi-boundary";
-import { buildSynastry, type PersonSyn } from "@/lib/bazi-synastry";
+import { buildSynastry, altPillar, type PersonSyn } from "@/lib/bazi-synastry";
 
 /* 25 พ.ค. · compare persona ย้ายไป prompts/compare-{th,en,zh}.md (section marker) · parser + fallback */
 function parseCompareSections(raw: string): Record<string, string> {
@@ -159,6 +159,10 @@ function toPersonSyn(p: PersonCtx, label: string): PersonSyn {
   const is3p = (p.mode === "3p" || !p.pillars.hour);
   const bd = String(p.birthDate || "").slice(0, 10);
   const pk = (x: Pillar) => (x && x.stem && x.branch ? { stem: x.stem, branch: x.branch } : undefined);
+  /* 31 พ.ค. what-if · คน 3 เสาเกิดคาบ節氣 = เสาก้ำกึ่ง → ส่งเสาอีกฝั่ง(alt) ให้ buildSynastry คำนวณ hit ทั้ง 2 ฝั่ง */
+  const mb = is3p && bd ? monthPillarBoundary(bd) : { boundary: false as const };
+  const yb = is3p && bd ? yearPillarBoundary(bd) : { boundary: false as const };
+  const monthP = pk(p.pillars.month), yearP = pk(p.pillars.year);
   return {
     name: p.name || label,
     role: label,
@@ -167,9 +171,11 @@ function toPersonSyn(p: PersonCtx, label: string): PersonSyn {
     mode: is3p ? "3p" : "4p",
     dmEl: STEM_EL[p.pillars.day?.stem || ""] || "unknown",
     yongEls: yongElsOf(p),
-    pillars: { year: pk(p.pillars.year), month: pk(p.pillars.month), day: pk(p.pillars.day) },
-    monthBorderline: is3p && bd ? !!monthPillarBoundary(bd).boundary : false,
-    yearBorderline: is3p && bd ? !!yearPillarBoundary(bd).boundary : false,
+    pillars: { year: yearP, month: monthP, day: pk(p.pillars.day) },
+    monthBorderline: !!mb.boundary,
+    yearBorderline: !!yb.boundary,
+    monthAlt: mb.boundary ? altPillar(monthP, mb.before, mb.after) : undefined,
+    yearAlt: yb.boundary ? altPillar(yearP, yb.before, yb.after) : undefined,
   };
 }
 function yongList(v: PersonCtx["yongshen_v2"], key: "primary_yongshen" | "jishen" | "xishen"): string {

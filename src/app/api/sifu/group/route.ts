@@ -33,7 +33,7 @@ import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
 import { boundaryWarning3p, monthPillarBoundary, yearPillarBoundary } from "@/lib/bazi-boundary";
-import { buildSynastry, type PersonSyn } from "@/lib/bazi-synastry";
+import { buildSynastry, altPillar, type PersonSyn } from "@/lib/bazi-synastry";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { stripIdLine } from "@/lib/identity-lock";
 
@@ -271,8 +271,13 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     };
     const is3p = calc.mode === "3p";
     /* เสาเดือนคน 3 เสาเกิดคาบ節氣 = ก้ำกึ่ง → synastry hit ที่พึ่งเสาเดือนต้องติดธง · เสาปีก้ำกึ่งเฉพาะ立春 */
-    const monthBorderline = is3p ? !!monthPillarBoundary(date).boundary : false;
-    const yearBorderline = is3p ? !!yearPillarBoundary(date).boundary : false;
+    const mb = is3p ? monthPillarBoundary(date) : { boundary: false as const };
+    const yb = is3p ? yearPillarBoundary(date) : { boundary: false as const };
+    const monthBorderline = !!mb.boundary;
+    const yearBorderline = !!yb.boundary;
+    /* 31 พ.ค. what-if · เสาอีกฝั่ง(alt) ของคนก้ำกึ่ง → buildSynastry คำนวณ hit ทั้ง 2 ฝั่ง (ฉันทามติ 6+พ่อ) */
+    const monthAlt = mb.boundary ? altPillar(synPillars.month, mb.before, mb.after) : undefined;
+    const yearAlt = yb.boundary ? altPillar(synPillars.year, yb.before, yb.after) : undefined;
     /* 27 พ.ค. · 3 เสาไหลเข้า packet เต็ม (ลึกเท่า 4 เสา · ปฏิกิริยา/ดาว/通根 ของ年月日) · กันเดายาม: ไม่เรียก computeStartAge (time ปลอม → 起運ปลอม) · packet ตัด起運/เสายาม/命宮/小運 เอง */
     const startAge = is3p ? 10 : await computeStartAge(date, time, gender, lng);
     const ext = buildChartExtensions(
@@ -340,6 +345,8 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
       pillars: synPillars,
       monthBorderline,
       yearBorderline,
+      monthAlt,
+      yearAlt,
       text: lines.join("\n"),
     };
   } catch (e) {
