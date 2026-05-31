@@ -32,7 +32,7 @@ import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
-import { boundaryWarning3p, monthPillarBoundary } from "@/lib/bazi-boundary";
+import { boundaryWarning3p, monthPillarBoundary, yearPillarBoundary } from "@/lib/bazi-boundary";
 import { buildSynastry, type PersonSyn } from "@/lib/bazi-synastry";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { stripIdLine } from "@/lib/identity-lock";
@@ -74,12 +74,9 @@ const STEM_TH: Record<string, string> = {
   庚: "ทองหยาง", 辛: "ทองหยิน", 壬: "น้ำหยาง", 癸: "น้ำหยิน",
 };
 
-/* ══════ synastry · ปฏิกิริยาข้ามคน (27 พ.ค.) ══════
- * ตาราง 六合/六沖/六害/六破 + 五行生克 = ค่าคงที่ตำรา · copy จาก chart-extensions (LOCKED · private)
- * มาเป็น const ในไฟล์นี้ (เหมือน STEM_ELEMENT_MAP ที่ copy มาแล้ว) · ไม่แตะ engine
- * เทียบเฉพาะ 日柱(ตัวคน)+年柱 ข้ามคน · neutral (合ไม่ดีเสมอ 冲ไม่ร้ายเสมอ ตามคัมภีร์ 合婚) · 3 ภาษา */
-/* synastry ทั้งหมด (ตาราง SYN_*/EL_*/BRANCH_TH_NAME/REL_LABEL/branchRel/PILLAR_LABEL_SYN + PersonSyn + buildSynastry)
- * ย้ายไป src/lib/bazi-synastry.ts (31 พ.ค. · เฟส 0 · pure · test ได้ตรง) · route แค่ import + เรียก */
+/* ══════ synastry · ปฏิกิริยาข้ามคน (27 พ.ค. · ย้ายเป็น helper 31 พ.ค.) ══════
+ * ตาราง + buildSynastry ทั้งหมด → src/lib/bazi-synastry.ts (เฟส 0+1 · pure · test ได้ตรง · ไม่แตะ engine)
+ * เฟส 1: เทียบ 日月年 ก้าน+กิ่ง ข้ามคน (六合/六冲/六害/六破 + 天干五合 raw緣) · ตัด刑 · route แค่ import + เรียก */
 
 /* PersonSyn type + buildSynastry ย้ายไป @/lib/bazi-synastry (เฟส 0) */
 
@@ -269,9 +266,13 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const yongEls = (calc.yongshen || []).slice(0, 3).map((y) => String(y.element || "").toLowerCase()).filter((e) => VALID_EL.includes(e));
     const synPillars = {
       year: calc.pillars.year ? { stem: calc.pillars.year.stem, branch: calc.pillars.year.branch } : undefined,
+      month: calc.pillars.month ? { stem: calc.pillars.month.stem, branch: calc.pillars.month.branch } : undefined, // 31 พ.ค. เฟส 1: จับ 天干五合 ก้านเดือน (เช่น 丁壬)
       day: calc.pillars.day ? { stem: calc.pillars.day.stem, branch: calc.pillars.day.branch } : undefined,
     };
     const is3p = calc.mode === "3p";
+    /* เสาเดือนคน 3 เสาเกิดคาบ節氣 = ก้ำกึ่ง → synastry hit ที่พึ่งเสาเดือนต้องติดธง · เสาปีก้ำกึ่งเฉพาะ立春 */
+    const monthBorderline = is3p ? !!monthPillarBoundary(date).boundary : false;
+    const yearBorderline = is3p ? !!yearPillarBoundary(date).boundary : false;
     /* 27 พ.ค. · 3 เสาไหลเข้า packet เต็ม (ลึกเท่า 4 เสา · ปฏิกิริยา/ดาว/通根 ของ年月日) · กันเดายาม: ไม่เรียก computeStartAge (time ปลอม → 起運ปลอม) · packet ตัด起運/เสายาม/命宮/小運 เอง */
     const startAge = is3p ? 10 : await computeStartAge(date, time, gender, lng);
     const ext = buildChartExtensions(
@@ -337,6 +338,8 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
       dmEl: dmElement,
       yongEls,
       pillars: synPillars,
+      monthBorderline,
+      yearBorderline,
       text: lines.join("\n"),
     };
   } catch (e) {
@@ -552,7 +555,7 @@ export async function POST(req: Request) {
       "",
       sections.join("\n\n"),
     ].join("\n");
-    /* synastry · ปฏิกิริยาข้ามคน (日柱+年柱 · neutral) · ต่อท้ายก่อนส่ง AI */
+    /* synastry · ปฏิกิริยาข้ามคน (日月年 ก้าน+กิ่ง · 六合冲害破 + 天干五合 raw緣 · neutral) · ต่อท้ายก่อนส่ง AI */
     const syn = buildSynastry(people, lang);
     if (syn) groupCtx += "\n\n" + syn;
 

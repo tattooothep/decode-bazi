@@ -5,9 +5,10 @@
  *   - test ได้ตรง (group/route.ts import next/server → import ตรงไม่ได้)
  *   - ไม่บวม route LOCKED · ขยายปฏิกิริยา (天干五合/刑/三合/暗合) ในไฟล์เดียว
  *
- * เฟส 0 = ย้าย logic เดิม "ตรงตัว" · output ต้องเท่าเดิมเป๊ะ (เทียบ 日柱+年柱 กิ่ง六合冲害破 + ธาตุ生剋 + 用神)
+ * เฟส 0 = ย้าย logic ออกจาก route (pure) · เฟส 1 = +เสาเดือน(日月年) +天干五合(raw緣·ไม่ฟัน化) + borderline flag
  * ตาราง = ค่าคงที่ตำรา (copy จาก chart-extensions LOCKED · self-contained · ไม่แตะ engine)
- * เฟสถัดไป: +เสาเดือน/เสายาม +天干五合(得令→合而不化) +刑 +三合/暗合 (reuse bazi-hehua-resolver)
+ * ⚠️ ฉันทามติ 6 เสียง+ซินแส: 天干五合ข้ามคน = 緣(ผูกพัน) ไม่ใช่化氣格 (ห้ามฟัน化/得令 · ดู月令รายคน) · ตัด刑(任鐵樵俗謬) · 害·破อ่อน
+ * เฟสถัดไป: +เสายาม(時) +三合/三會/暗合 ข้ามคน · /api/sifu/compare
  */
 
 export type PersonSyn = {
@@ -18,7 +19,12 @@ export type PersonSyn = {
   mode: "3p" | "4p" | "err";
   dmEl: string;
   yongEls: string[];
-  pillars: { year?: { stem: string; branch: string }; day?: { stem: string; branch: string } } | null;
+  /* 31 พ.ค. เฟส 1: เพิ่ม month (จับ 天干五合 ก้านเดือน เช่น 丁壬) · hour รอเฟส 2 */
+  pillars: { year?: { stem: string; branch: string }; month?: { stem: string; branch: string }; day?: { stem: string; branch: string } } | null;
+  /* เสาเดือนคน 3 เสา (ไม่รู้เวลา) เกิดคาบ節氣 = ก้ำกึ่ง → hit ที่พึ่งเสาเดือน ต้องติดธง "ขึ้นกับเวลาเกิด" */
+  monthBorderline?: boolean;
+  /* เสาปีก้ำกึ่ง: เกิดวัน立春 (ปี干支เปลี่ยน 乙亥↔丙子) → hit ที่พึ่งเสาปี ต้องติดธงด้วย (เสาวัน日 ไม่เคยก้ำกึ่งจาก節氣) */
+  yearBorderline?: boolean;
 };
 
 const BRANCH_TH_NAME: Record<string, string> = {
@@ -52,12 +58,31 @@ function branchRel(a: string, b: string): RelZh[] {
   return out;
 }
 const PILLAR_LABEL_SYN: Record<string, Record<string, string>> = {
-  th: { day: "เสาวัน", year: "เสาปี" },
-  en: { day: "Day", year: "Year" },
-  zh: { day: "日柱", year: "年柱" },
+  th: { day: "เสาวัน", month: "เสาเดือน", year: "เสาปี" },
+  en: { day: "Day", month: "Month", year: "Year" },
+  zh: { day: "日柱", month: "月柱", year: "年柱" },
 };
 
-/* เทียบปฏิกิริยาข้ามคน · เฉพาะ 日柱+年柱 · neutral · CLOSED LIST (เช็คครบทุกคู่ · ห้ามแต่งคู่นอกลิสต์) */
+/* 天干五合 (甲己/乙庚/丙辛/丁壬/戊癸) · เฟส 1 = raw ผูกพัน(緣) เท่านั้น
+ * ⚠️ ห้ามใส่ "化象/化X/得令" ลง output (合ข้ามคน=緣 ไม่ใช่化氣格 · ต้องดู月令รายคนในดวงเดี่ยว · ฉันทามติ 6 เสียง+ซินแส) */
+const STEM_FIVE_HE: Record<string, { partner: string; pairZh: string }> = {
+  甲: { partner: "己", pairZh: "甲己合" }, 己: { partner: "甲", pairZh: "甲己合" },
+  乙: { partner: "庚", pairZh: "乙庚合" }, 庚: { partner: "乙", pairZh: "乙庚合" },
+  丙: { partner: "辛", pairZh: "丙辛合" }, 辛: { partner: "丙", pairZh: "丙辛合" },
+  丁: { partner: "壬", pairZh: "丁壬合" }, 壬: { partner: "丁", pairZh: "丁壬合" },
+  戊: { partner: "癸", pairZh: "戊癸合" }, 癸: { partner: "戊", pairZh: "戊癸合" },
+};
+const HE5_LABEL: Record<string, string> = {
+  th: "ก้านห้าฮะ·ดึงดูด/ผูกพัน(緣)", en: "Stem-Five-Harmony·affinity(緣)", zh: "天干五合·緣",
+};
+/* ลำดับเสาที่เทียบข้ามคน · เฟส 1 = 日+月+年 (hour รอเฟส 2) */
+const SYN_AXES = ["day", "month", "year"] as const;
+/* generic "เสาก้ำกึ่ง" (ใช้ทั้ง month節氣 + year立春) · ไม่ผูกชื่อเสา (label เสาอยู่ใน hit string แล้ว) */
+const BORDER_TAG: Record<string, string> = {
+  th: " ⚠️[ขึ้นกับเวลาเกิด·เสาก้ำกึ่ง]", en: " ⚠️[depends on birth time·borderline pillar]", zh: " ⚠️[視出生時辰·柱臨界]",
+};
+
+/* เทียบปฏิกิริยาข้ามคน · 日月年 ก้าน+กิ่ง (六合/六冲/六害/六破 + 天干五合 raw緣) · CLOSED LIST (เช็คครบทุกคู่ · ห้ามแต่งคู่นอกลิสต์) */
 export function buildSynastry(people: PersonSyn[], lang: string): string {
   const L = (lang === "en" || lang === "zh") ? lang : "th";
   const valid = people.filter((p) => p.pillars && p.mode !== "err");
@@ -71,13 +96,28 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
     for (let j = i + 1; j < valid.length; j++) {
       const A = valid[i], B = valid[j];
       const hits: string[] = [];
-      /* axis_B · กิ่ง 日柱+年柱 ข้ามคน */
-      for (const ka of ["day", "year"] as const) {
-        for (const kb of ["day", "year"] as const) {
+      /* tag "ขึ้นกับเวลาเกิด" เมื่อ hit พึ่งเสาเดือน(ทุก節氣)หรือเสาปี(เฉพาะ立春)ของคนที่ก้ำกึ่ง · เสาวัน(日)ไม่เคยก้ำกึ่งจาก節氣 */
+      const axBorder = (k: string, p: PersonSyn) => (k === "month" && p.monthBorderline) || (k === "year" && p.yearBorderline);
+      const blTag = (ka: string, kb: string) => (axBorder(ka, A) || axBorder(kb, B)) ? BORDER_TAG[L] : "";
+      /* axis_B · กิ่ง 日+月+年 ข้ามคน (六合/六冲/六害/六破) */
+      for (const ka of SYN_AXES) {
+        for (const kb of SYN_AXES) {
           const ba = A.pillars?.[ka]?.branch, bb = B.pillars?.[kb]?.branch;
           if (!ba || !bb) continue;
           const rels = branchRel(ba, bb);
-          for (const rel of rels) hits.push(`${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${REL_LABEL[rel][L]}`);
+          for (const rel of rels) hits.push(`${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${REL_LABEL[rel][L]}${blTag(ka, kb)}`);
+        }
+      }
+      /* axis_C · 天干五合 (ก้าน 日+月+年) ข้ามคน · raw "ดึงดูด/ผูกพัน(緣)" เท่านั้น
+       * ⚠️ ไม่ฟัน化/不化 · ไม่ใส่化象/得令 (合ข้ามคน=緣 ไม่ใช่化氣格 · ดู月令รายคนในดวงเดี่ยว) */
+      for (const ka of SYN_AXES) {
+        for (const kb of SYN_AXES) {
+          const sa = A.pillars?.[ka]?.stem, sb = B.pillars?.[kb]?.stem;
+          if (!sa || !sb) continue;
+          const combo = STEM_FIVE_HE[sa];
+          if (combo && combo.partner === sb) {
+            hits.push(`${pL(ka)}${sa}×${pL(kb)}${sb} ${HE5_LABEL[L]}(${combo.pairZh})${blTag(ka, kb)}`);
+          }
         }
       }
       /* axis_A · ธาตุวันเจ้า A↔B (生/剋/同) */
@@ -113,15 +153,24 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
   const names = valid.map((p) => p.name || "?").join(", ");
   const shown = lines.length;
   const title = L === "en"
-    ? `━━━ Cross-person reactions (synastry) — CLOSED LIST. Compared ALL ${totalPairs} pair(s) among ${M} people [${names}], using each one's 日柱(Day)+年柱(Year). Below are ONLY the ${shown} pair(s) with a prominent reaction. Any pair NOT listed = checked and has NO prominent cross-person reaction (a conclusion, NOT "unchecked"). DO NOT create or infer 合/冲/破/害 for any person/pair not in this list. (Each single person's in-chart interactions → read in full per the interaction classic; CROSS-PERSON → only this list.) 合 not always good / 冲 not always bad — weigh against each one's 用神/role, state direction/outcome plainly; only forbidden: 'commanding' break-up/no-contact. ━━━`
+    ? `━━━ Cross-person reactions (synastry) — CLOSED LIST. Compared ALL ${totalPairs} pair(s) among ${M} people [${names}], using each one's 日月年 pillars (stems+branches: 六合/六冲/六害/六破 + 天干五合). Below are ONLY the ${shown} pair(s) with a prominent reaction. Any pair NOT listed = checked and has NO prominent cross-person reaction (a conclusion, NOT "unchecked"). DO NOT create or infer 合/冲/破/害/天干五合 for any person/pair not in this list. (Each single person's in-chart interactions → read in full per the interaction classic; CROSS-PERSON → only this list.) WEIGHT (任鐵樵): 三合/三會 strong > 六合/六冲 > 害·破 weak (削之可也/不經). 天干五合 cross-person = affinity/bond (緣), good-or-bad depends on each one's 用神 — NOT a 化氣格; do NOT declare 化木/化X (keep stems' original elements; 化 is judged only per each person's own 月令). 合 not always good / 冲 not always bad — weigh against each one's 用神/role, state direction/outcome plainly; only forbidden: 'commanding' break-up/no-contact. ━━━`
     : L === "zh"
-    ? `━━━ 跨人互動 (synastry) — 封閉清單。已比對 ${M} 人 [${names}] 全部 ${totalPairs} 組配對（各取 日柱+年柱）。下列僅為有顯著互動的 ${shown} 組；未列出之配對＝已比對且無顯著跨人互動（此為結論，非「未檢查」）。禁止為清單外之任何人／配對推衍 合/冲/破/害。（各人命盤內部互動→依互動經典完整判讀；跨人→僅限本清單。）合不必吉 / 冲不必凶 — 結合各自用神/角色，可直斷方向/結果；僅禁命令式分手/勿往來。━━━`
-    : `━━━ ปฏิกิริยาข้ามคน (synastry) — ลิสต์ปิด (เช็คครบแล้ว) · เทียบครบทุกคู่ ${totalPairs} คู่ จาก ${M} คน [${names}] โดยใช้ 日柱(เสาวัน)+年柱(เสาปี) ของแต่ละคน · ด้านล่างขึ้นเฉพาะ ${shown} คู่ที่มีปฏิกิริยาเด่น · คู่ที่ไม่อยู่ในลิสต์ = เช็คแล้วไม่มีปฏิกิริยาข้ามคนเด่น (เป็นข้อสรุป ไม่ใช่ "ยังไม่เช็ค") · ห้ามสร้าง/สันนิษฐาน 合/冲/破/害 ให้คน/คู่ที่ไม่อยู่ในลิสต์นี้ · (ปฏิกิริยาภายในดวงเดี่ยวของแต่ละคน → อ่านเต็มตามคัมภีร์ปฏิกิริยา · ข้ามคน → เฉพาะลิสต์นี้) · 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ — ดูที่用神/บทบาท ฟันธงทิศ/ผลได้ · ห้ามเฉพาะ 'สั่งการ' เลิก/คบ ━━━`;
+    ? `━━━ 跨人互動 (synastry) — 封閉清單。已比對 ${M} 人 [${names}] 全部 ${totalPairs} 組配對（各取 日月年柱·干支：六合/六冲/六害/六破 + 天干五合）。下列僅為有顯著互動的 ${shown} 組；未列出之配對＝已比對且無顯著跨人互動（此為結論，非「未檢查」）。禁止為清單外之任何人／配對推衍 合/冲/破/害/天干五合。（各人命盤內部互動→依互動經典完整判讀；跨人→僅限本清單。）輕重(任鐵樵)：三合/三會強 > 六合/六冲 > 害·破弱(削之可也/不經)。天干五合跨人＝緣/相吸，吉凶視各自用神 — 非化氣格；勿斷化木/化X（保留干之本氣；化須依各自月令判）。合不必吉 / 冲不必凶 — 結合各自用神/角色，可直斷方向/結果；僅禁命令式分手/勿往來。━━━`
+    : `━━━ ปฏิกิริยาข้ามคน (synastry) — ลิสต์ปิด (เช็คครบแล้ว) · เทียบครบทุกคู่ ${totalPairs} คู่ จาก ${M} คน [${names}] โดยใช้เสา 日月年 (ก้าน+กิ่ง: 六合/六冲/六害/六破 + 天干五合) · ด้านล่างขึ้นเฉพาะ ${shown} คู่ที่มีปฏิกิริยาเด่น · คู่ที่ไม่อยู่ในลิสต์ = เช็คแล้วไม่มีปฏิกิริยาข้ามคนเด่น (เป็นข้อสรุป ไม่ใช่ "ยังไม่เช็ค") · ห้ามสร้าง/สันนิษฐาน 合/冲/破/害/天干五合 ให้คน/คู่ที่ไม่อยู่ในลิสต์นี้ · (ปฏิกิริยาภายในดวงเดี่ยว → อ่านเต็มตามคัมภีร์ · ข้ามคน → เฉพาะลิสต์นี้) · ลำดับน้ำหนัก(任鐵樵): 三合/三會 แรง > 六合/六冲 > 害·破 อ่อน(削之可也/不經) · 天干五合ข้ามคน = ดึงดูด/ผูกพัน(緣) ดี-ร้ายขึ้นกับ用神แต่ละคน — ไม่ใช่化氣格 · ห้ามประกาศ化木/化X (คงธาตุก้านเดิม · การ化ต้องดู月令ของแต่ละคนเอง) · 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ — ดูที่用神/บทบาท ฟันธงทิศ/ผลได้ · ห้ามเฉพาะ 'สั่งการ' เลิก/คบ ━━━`;
+  /* 31 พ.ค. (Codex รอบ 55) · ถ้ามีคนก้ำกึ่ง節氣ในกลุ่ม → closed-list ไม่ใช่ closed-world เต็ม
+   * เพราะ helper เทียบเฉพาะเสาเดือน "ฝั่งที่ engine anchor ใช้" ไม่ได้เทียบฝั่งตรงข้าม (壬辰↔癸巳)
+   * → absence ของ hit ที่พึ่งเสาก้ำกึ่ง(月ทุก節氣/年เฉพาะ立春)คนนั้น = ยังไม่ final · อ่าน 2 ทาง (ส่วน日 ยังแน่) */
+  const anyBorderline = valid.some((p) => !!p.monthBorderline || !!p.yearBorderline);
+  const blNote = !anyBorderline ? "" : (L === "en"
+    ? "\n  ⚠️ NOTE: someone here has no birth time + born on a 節氣 boundary → their MONTH pillar (and YEAR pillar if born on 立春) is borderline (e.g. 壬辰↔癸巳 / 乙亥↔丙子). For any hit/absence that depends on that person's borderline pillar, the CLOSED-LIST 'no reaction' is NOT final — it depends on real birth time (the alternate pillar may add 合/冲/天干五合); read 2 ways. DAY-pillar conclusions stay firm."
+    : L === "zh"
+    ? "\n  ⚠️ 註：群中有人無時辰且生於節氣臨界 → 其月柱（若生於立春則年柱亦然）臨界（如 壬辰↔癸巳 / 乙亥↔丙子）。凡依賴該人臨界柱之互動／無互動，封閉清單之「無」非定論 — 視真實出生時辰（另一柱或生 合/冲/天干五合），須兩面讀；日柱之結論仍確定。"
+    : "\n  ⚠️ หมายเหตุ: มีคนในกลุ่มไม่รู้เวลาเกิด + เกิดคาบ節氣 → เสาเดือน (และเสาปีถ้าเกิดวัน立春) ก้ำกึ่ง (เช่น 壬辰↔癸巳 / 乙亥↔丙子) · ปฏิกิริยา/การไม่มีปฏิกิริยาที่พึ่งเสาก้ำกึ่งของคนนั้น 'ลิสต์ปิด=ไม่มี' ยังไม่ final — ขึ้นกับเวลาเกิดจริง (เสาอีกด้านอาจเกิด 合/冲/天干五合) ให้อ่าน 2 ทาง · ส่วนที่พึ่งเสาวัน(日) ยังฟันธงได้");
   if (!lines.length) {
     const none = L === "en" ? "  (no pair has a prominent cross-person reaction — all pairs checked)"
       : L === "zh" ? "  （所有配對已比對，無顯著跨人互動）"
       : "  (เช็คทุกคู่แล้ว · ไม่มีคู่ใดมีปฏิกิริยาข้ามคนเด่น)";
-    return title + "\n" + none;
+    return title + blNote + "\n" + none;
   }
-  return title + "\n" + lines.join("\n");
+  return title + blNote + "\n" + lines.join("\n");
 }

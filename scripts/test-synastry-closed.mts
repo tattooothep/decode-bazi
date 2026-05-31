@@ -45,5 +45,54 @@ const mk = (n: number) => Array.from({ length: n }, (_, i) => P("p" + i, "water"
 ck("4 คน → 6 คู่", /เทียบครบทุกคู่ 6 คู่ จาก 4 คน/.test(buildSynastry(mk(4), "th")), "");
 ck("5 คน → 10 組 (zh)", /5 人.*全部 10 組/s.test(buildSynastry(mk(5), "zh")), "");
 
-console.log(`\n[synastry-closed · import จริง] ${pass}/${pass + fail} passed`);
+// ─── เฟส 1: 天干五合 ข้ามคน (raw 緣 · ไม่ฟัน化) + ตัด刑 + 害/破อ่อน ───
+const PM = (name: string, dayStem: string, dayB: string, monStem: string, monB: string, yrStem: string, yrB: string, border = false, yrBorder = false): PersonSyn => ({
+  name, role: "x", isSelf: false, text: "", mode: "4p", dmEl: "water", yongEls: [],
+  pillars: { year: { stem: yrStem, branch: yrB }, month: { stem: monStem, branch: monB }, day: { stem: dayStem, branch: dayB } },
+  monthBorderline: border, yearBorderline: yrBorder,
+});
+console.log("\n[เฟส 1 · 丁壬 ข้ามคน (Mu月干丁 × na日干壬) → 緣 ไม่ใช่化木]");
+// Mu: เดือน丁亥 · na: วัน壬寅 — 丁(เดือนMu)×壬(วันna) = 天干五合
+const t1 = buildSynastry([
+  PM("na", "壬", "寅", "丙", "辰", "丙", "子"),
+  PM("Mu", "己", "亥", "丁", "亥", "甲", "卯"),
+], "th");
+ck("丁壬 → มี 天干五合(丁壬合)", /天干五合/.test(t1) && /丁壬合/.test(t1), t1.slice(t1.indexOf("Mu") >= 0 ? 0 : 0, 0) || "");
+ck("丁壬 → มีป้าย 緣 (ดึงดูด/ผูกพัน)", /緣|ผูกพัน/.test(t1), "");
+ck("丁壬 → ห้ามมี 化木/化氣格/得令 ใน hit (raw สะอาด)", !/化木|化氣格|得令/.test(t1.split("\n").filter(l => l.startsWith("  - ")).join("")), "");
+ck("คงธาตุก้านเดิม → ไม่มี 木 โผล่ในบรรทัด hit 丁壬", !/丁壬合.*木|木.*丁壬合/.test(t1.split("\n").filter(l => l.startsWith("  - ")).join("")), "");
+
+console.log("[เฟส 1 · ตัด刑ออก · 子卯ข้ามคน ต้องไม่ออก刑]");
+const t2 = buildSynastry([PM("A", "壬", "子", "丙", "辰", "丙", "辰"), PM("B", "己", "卯", "丁", "巳", "甲", "未")], "th");
+ck("子卯 ข้ามคน → ไม่มีคำว่า 刑 (ตัดออกเฟส 1)", !/刑/.test(t2), "");
+
+console.log("[เฟส 1 · header hierarchy 任鐵樵 + 害/破อ่อน + closed-list ครอบ天干五合]");
+ck("header มีลำดับน้ำหนัก 三合/三會 > ... > 害·破 อ่อน", /三合\/三會 แรง.*害·破 อ่อน/.test(t1), "");
+ck("header อ้าง 任鐵樵 (削之可也/不經)", /任鐵樵/.test(t1) && /削之可也|不經/.test(t1), "");
+ck("closed-list ครอบ 天干五合 (ห้ามแต่งนอกลิสต์)", /ห้ามสร้าง\/สันนิษฐาน 合\/冲\/破\/害\/天干五合/.test(t1), "");
+ck("guard ห้ามประกาศ化木/化X ใน header", /ห้ามประกาศ化木\/化X/.test(t1), "");
+
+console.log("[เฟส 1 · borderline · เสาเดือนคน 3 เสาก้ำกึ่ง → ติดธง]");
+// na เป็น 3 เสา เสาเดือนก้ำกึ่ง · 丁(เดือนMu)×壬(วันna) ไม่พึ่งเดือนna · ลองให้ Mu เดือนก้ำกึ่ง (丁อยู่เดือนMu)
+const t3 = buildSynastry([
+  PM("na", "壬", "寅", "丙", "辰", "丙", "子"),
+  PM("Mu", "己", "亥", "丁", "亥", "甲", "卯", true), // Mu เดือนก้ำกึ่ง
+], "th");
+ck("hit ที่พึ่งเสาเดือนคนก้ำกึ่ง → มีธง 'ขึ้นกับเวลาเกิด'", /ขึ้นกับเวลาเกิด·เสาก้ำกึ่ง/.test(t3), t3.split("\n").filter(l=>/丁壬/.test(l))[0]||"");
+// Codex รอบ 55: มีคนก้ำกึ่ง → header ต้องมี NOTE ว่า absence ของ month-hit ยังไม่ final (ไม่ใช่ closed-world เต็ม)
+ck("มีคนก้ำกึ่ง → header มี NOTE 'ลิสต์ปิด=ไม่มี ยังไม่ final · อ่าน 2 ทาง'", /ยังไม่ final.*อ่าน 2 ทาง/s.test(t3), "");
+ck("ไม่มีคนก้ำกึ่ง → ไม่มี NOTE นั้น (closed-world เต็ม)", !/ยังไม่ final/.test(t1), "");
+// Codex รอบ 56: 立春 → เสาปีก็ก้ำกึ่ง (乙亥↔丙子) · hit ที่พึ่งเสาปีของคนนั้นต้องติดธง + blNote ต้อง trigger
+// na เสาปี子 × B เสาปี丑 = 子丑六合 (พึ่งเสาปี) · na yearBorderline(เกิด立春)
+const t4 = buildSynastry([
+  PM("na", "壬", "寅", "丙", "辰", "丙", "子", false, true), // 立春: เสาปีก้ำกึ่ง
+  PM("B", "己", "亥", "丁", "巳", "甲", "丑"),
+], "th");
+ck("立春 · hit ที่พึ่งเสาปีคนก้ำกึ่ง → ติดธง 'ขึ้นกับเวลาเกิด'", /เสาปี.*子.*ผสาน.*ขึ้นกับเวลาเกิด/.test(t4) || /ขึ้นกับเวลาเกิด/.test(t4.split("\n").filter(l=>/เสาปี/.test(l)).join("")), t4.split("\n").filter(l=>l.startsWith("  - "))[0]||"");
+ck("立春 · yearBorderline → blNote trigger (note พูดถึงเสาปี/立春)", /ยังไม่ final/.test(t4) && /立春|เสาปี/.test(t4), "");
+ck("blNote → เสาวัน(日)ยังฟันธงได้ (ไม่บอก year firm)", /เสาวัน\(日\) ยังฟันธงได้/.test(t4) && !/เสาปี ยังฟันธง/.test(t4), "");
+// Codex รอบ 56: tag generic · year hit ห้ามขึ้นคำ "เสาเดือน/月柱/month" (เพราะพึ่งเสาปี)
+ck("立春 · tag เป็น generic 'เสาก้ำกึ่ง' (ไม่ใช่ 'เสาเดือน')", /ขึ้นกับเวลาเกิด·เสาก้ำกึ่ง/.test(t4) && !/เสาเดือนก้ำกึ่ง/.test(t4), "");
+
+console.log(`\n[synastry · import จริง · เฟส 0+1] ${pass}/${pass + fail} passed`);
 process.exit(fail ? 1 : 0);
