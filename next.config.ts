@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/", destination: "/landing.html" },
       { source: "/signup", destination: "/signup.html" },
+      { source: "/reset-password/:token", destination: "/reset-password.html" }, // 31 พ.ค. · หน้าตั้งรหัสใหม่ (ปลายทางลิงก์ลืมรหัส · เดิม 404)
       { source: "/input", destination: "/input.html" },
       { source: "/goal", destination: "/goal.html" },
       { source: "/chart", destination: "/chart.html" },
