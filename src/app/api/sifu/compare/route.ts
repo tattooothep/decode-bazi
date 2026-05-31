@@ -196,18 +196,18 @@ function personSummary(p: PersonCtx, label: string, lang: "th" | "en" | "zh"): s
   const bwLine = bw ? "\n- " + bw : "";
   if (lang === "en") {
     return `${label} · ${p.name || label} (${p.gender || "?"}) · birth ${p.birthDate || "?"}${mode === "4p" ? " " + (p.birthTime || "?") : " (time unknown · 3-pillar)"}
-- Pillars: Year ${pillarStr(p.pillars.year)} · Month ${pillarStr(p.pillars.month)} · Day ${pillarStr(p.pillars.day)} · Hour ${pillarStr(p.pillars.hour)}
+- PILLAR LOCK (copy stems/branches as-is when citing any pillar · do NOT reconstruct/guess): Year ${pillarStr(p.pillars.year)} · Month ${pillarStr(p.pillars.month)} · Day ${pillarStr(p.pillars.day)} · Hour ${pillarStr(p.pillars.hour)}
 - Day Master: ${dmStem} · Structure: ${ge} · Strength: ${strength} · Climate: ${climate}
 - Yongshen: ${ys} · Jishen: ${js}${mode === "3p" ? "\n- NOTE: Hour Pillar unknown · spouse/career details limited" : ""}${bwLine}`;
   }
   if (lang === "zh") {
     return `${label} · ${p.name || label} (${p.gender || "?"}) · 生於 ${p.birthDate || "?"}${mode === "4p" ? " " + (p.birthTime || "?") : "(不知時辰 · 三柱)"}
-- 四柱: 年 ${pillarStr(p.pillars.year)} · 月 ${pillarStr(p.pillars.month)} · 日 ${pillarStr(p.pillars.day)} · 時 ${pillarStr(p.pillars.hour)}
+- PILLAR LOCK (干支照抄·引用任何柱時勿自行拼湊或臆測): 年 ${pillarStr(p.pillars.year)} · 月 ${pillarStr(p.pillars.month)} · 日 ${pillarStr(p.pillars.day)} · 時 ${pillarStr(p.pillars.hour)}
 - 日主: ${dmStem} · 格局: ${ge} · 強弱: ${strength} · 氣候: ${climate}
 - 用神: ${ys} · 忌神: ${js}${mode === "3p" ? "\n- 註: 時柱不明 · 婚姻/事業細節有限" : ""}${bwLine}`;
   }
   return `${label} · ${p.name || label} (${p.gender || "?"}) · เกิด ${p.birthDate || "?"}${mode === "4p" ? " " + (p.birthTime || "?") : " (ไม่ทราบเวลา · 3 เสา)"}
-- เสา: ปี ${pillarStr(p.pillars.year)} · เดือน ${pillarStr(p.pillars.month)} · วัน ${pillarStr(p.pillars.day)} · ยาม ${pillarStr(p.pillars.hour)}
+- PILLAR LOCK (ก้าน/กิ่งคัดตรงๆ เวลาอ้างเสาใด · ห้ามประกอบ/เดาเอง): ปี ${pillarStr(p.pillars.year)} · เดือน ${pillarStr(p.pillars.month)} · วัน ${pillarStr(p.pillars.day)} · ยาม ${pillarStr(p.pillars.hour)}
 - ตัวตน (DM): ${dmStem} · 格局: ${ge} · ความแข็งแรง: ${strength} · ภูมิอากาศ: ${climate}
 - 用神 (ธาตุที่ช่วย): ${ys} · 忌神 (ธาตุที่ขัด): ${js}${mode === "3p" ? "\n- หมายเหตุ: ไม่ทราบเสายาม · รายละเอียดคู่ครอง/อาชีพมีจำกัด" : ""}${bwLine}`;
 }
@@ -353,7 +353,7 @@ function cacheKeyFor(p1: PersonCtx, p2: PersonCtx, lang: string, protocolVersion
   /* v5-synastry · bump · เพิ่ม synastry closed-list(日月年·六合冲害破+天干五合) ใน prompt (31 พ.ค.) · กัน cache เก่า v4 ที่ไม่มี synastry */
   const a = JSON.stringify(normalizePerson(p1));
   const b = JSON.stringify(normalizePerson(p2));
-  return createHash("sha256").update(`compare:v5-synastry:${protocolVersion}:${a}:${b}:${lang}`).digest("hex").slice(0, 60);
+  return createHash("sha256").update(`compare:v6-pillarlock:${protocolVersion}:${a}:${b}:${lang}`).digest("hex").slice(0, 60);
 }
 
 async function getCachedReply(key: string): Promise<{ reply: string; warmup?: string } | null> {
