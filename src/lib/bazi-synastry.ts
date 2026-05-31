@@ -123,6 +123,8 @@ const TRIO_LABEL: Record<"三合" | "三會", Record<string, string>> = {
   "三會": { th: "วงธาตุครบ·สามฮุ่ยทิศ(三會)", en: "Directional trinity(三會)", zh: "三會" },
 };
 const BANHE_LABEL: Record<string, string> = { th: "ครึ่งวงธาตุ(半合)", en: "Half-combine(半合)", zh: "半合" };
+/* A · ลำดับน้ำหนักแสดงผล (任鐵樵: 三合/三會 แรงสุด > 六合/六冲 > 天干五合緣 > 半合 > 害·破อ่อน) · เรียง hit ก่อน join ให้ AI อ่านน้ำหนักถูก */
+const SYN_W: Record<string, number> = { "三合": 10, "三會": 11, "六合": 20, "六沖": 21, "天干五合": 30, "半合": 40, "六害": 50, "六破": 51 };
 /* generic "เสาก้ำกึ่ง" (ใช้ทั้ง month節氣 + year立春) · ไม่ผูกชื่อเสา (label เสาอยู่ใน hit string แล้ว) */
 const BORDER_TAG: Record<string, string> = {
   th: " ⚠️[ขึ้นกับเวลาเกิด·เสาก้ำกึ่ง]", en: " ⚠️[depends on birth time·borderline pillar]", zh: " ⚠️[視出生時辰·柱臨界]",
@@ -145,7 +147,7 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
   for (let i = 0; i < valid.length; i++) {
     for (let j = i + 1; j < valid.length; j++) {
       const A = valid[i], B = valid[j];
-      const hits: string[] = [];
+      const hits: { w: number; s: string }[] = []; // A · เก็บน้ำหนัก เรียงก่อน join
       const seen = new Set<string>(); // dedupKey กัน hit ซ้ำ (เสาหลัก vs alt ที่ให้ผลเดียวกัน)
       /* tag "ขึ้นกับเวลาเกิด" เมื่อ hit พึ่งเสาเดือน(ทุก節氣)หรือเสาปี(เฉพาะ立春)ของคนที่ก้ำกึ่ง · เสาวัน(日)ไม่เคยก้ำกึ่งจาก節氣 */
       const axBorder = (k: string, p: PersonSyn) => (k === "month" && p.monthBorderline) || (k === "year" && p.yearBorderline);
@@ -182,7 +184,7 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
           const someA = t.set.some((b) => aBr.includes(b)), someB = t.set.some((b) => bBr.includes(b));
           if (someA && someB && !allA && !allB) { // ครบจาก 2 คนจริง
             completedTrios.push(t.set);
-            hits.push(`${TRIO_LABEL[zh][L]} ${t.set.map((b) => bN(b)).join("")}(${elName[t.el]}) ${L === "en" ? "[cross-person]" : L === "zh" ? "[跨人]" : "[ข้ามคน·วงครบ]"}`);
+            hits.push({ w: SYN_W[zh], s: `${TRIO_LABEL[zh][L]} ${t.set.map((b) => bN(b)).join("")}(${elName[t.el]}) ${L === "en" ? "[cross-person]" : L === "zh" ? "[跨人]" : "[ข้ามคน·วงครบ]"}` });
           }
         }
       };
@@ -201,7 +203,7 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
                 const key = `b:${ka}${ba}×${kb}${bb}:${rel}`;
                 if (seen.has(key)) continue;
                 seen.add(key);
-                hits.push(`${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${REL_LABEL[rel][L]}${tagFor(ka, kb, va, vb)}`);
+                hits.push({ w: SYN_W[rel], s: `${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${REL_LABEL[rel][L]}${tagFor(ka, kb, va, vb)}` });
               }
               /* 半合 (ครึ่งวง) · กดถ้ากิ่งคู่นี้อยู่ในวง 三合 ที่ครบข้ามคนแล้ว (วงครบกลบครึ่งวง) */
               const ban = banHeEl(ba, bb);
@@ -209,7 +211,7 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
                 const key = `n:${[ba, bb].sort().join("")}`;
                 if (!seen.has(key)) {
                   seen.add(key);
-                  hits.push(`${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${BANHE_LABEL[L]}·${elName[ban]}${tagFor(ka, kb, va, vb)}`);
+                  hits.push({ w: SYN_W["半合"], s: `${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${BANHE_LABEL[L]}·${elName[ban]}${tagFor(ka, kb, va, vb)}` });
                 }
               }
               const sa = va.pillar.stem, sb = vb.pillar.stem;
@@ -218,7 +220,7 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
                 const key = `s:${ka}${sa}×${kb}${sb}`;
                 if (!seen.has(key)) {
                   seen.add(key);
-                  hits.push(`${pL(ka)}${sa}×${pL(kb)}${sb} ${HE5_LABEL[L]}(${combo.pairZh})${tagFor(ka, kb, va, vb)}`);
+                  hits.push({ w: SYN_W["天干五合"], s: `${pL(ka)}${sa}×${pL(kb)}${sb} ${HE5_LABEL[L]}(${combo.pairZh})${tagFor(ka, kb, va, vb)}` });
                 }
               }
             }
@@ -239,11 +241,13 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
       const helps: string[] = [];
       if (eb && A.yongEls.includes(eb)) helps.push(L === "en" ? "2's element aids 1's 用神" : L === "zh" ? "2之五行助1用神" : "ธาตุคน2 ช่วย用神คน1");
       if (ea && B.yongEls.includes(ea)) helps.push(L === "en" ? "1's element aids 2's 用神" : L === "zh" ? "1之五行助2用神" : "ธาตุคน1 ช่วย用神คน2");
-      /* push เฉพาะคู่ที่มีปฏิกิริยา "เด่น": กิ่ง合冲害破 หรือ 用神ช่วยกัน
-       * (ธาตุวันเจ้า生剋มีเกือบทุกคู่ = ไม่ใช่จุดเด่น · แสดงเป็น context เสริมเมื่อคู่นั้น push แล้วเท่านั้น กัน noise) */
-      if (hits.length || helps.length) {
+      /* push เฉพาะคู่ที่มีปฏิกิริยา "เด่น": กิ่ง合冲害破/วง/五合 หรือ 用神ช่วยกัน
+       * (ธาตุวันเจ้า生剋มีเกือบทุกคู่ = ไม่ใช่จุดเด่น กัน noise ในกลุ่ม)
+       * C · โหมดเทียบ 2 คน (compare): โชว์ความสัมพันธ์ธาตุวันเจ้า(รวม 比肩ธาตุเดียวกัน)เสมอ แม้ไม่มี合冲 — กันเงียบ (1 คู่ ไม่ noise) */
+      const showPair = hits.length || helps.length || (valid.length === 2 && !!elRel);
+      if (showPair) {
         const parts = [`${A.name || "?"} ↔ ${B.name || "?"}`];
-        if (hits.length) parts.push(hits.join(" · "));
+        if (hits.length) parts.push(hits.sort((x, y) => x.w - y.w).map((h) => h.s).join(" · ")); // A · เรียงตามน้ำหนัก
         if (helps.length) parts.push(helps.join(" · "));
         if (elRel) parts.push(elRel);
         lines.push("  - " + parts.join(" | "));
@@ -270,11 +274,18 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
     : L === "zh"
     ? "\n  ⚠️ 註：群中有人無時辰且生於節氣臨界 → 其月柱（若生於立春則年柱亦然）臨界（如 壬辰↔癸巳 / 乙亥↔丙子）。上表已並列兩邊：引擎所取之柱，以及僅在另一柱才出現的 合/冲/害/破/天干五合（標 ⚠️[若生另一邊→柱為X]）。標記之互動僅在真實出生時辰落於該側時成立 — 須條件式判讀，建議確認時辰以鎖定；日柱之結論仍確定。"
     : "\n  ⚠️ หมายเหตุ: มีคนในกลุ่มไม่รู้เวลาเกิด + เกิดคาบ節氣 → เสาเดือน (และเสาปีถ้าเกิดวัน立春) ก้ำกึ่ง (เช่น 壬辰↔癸巳 / 乙亥↔丙子) · ด้านบน 'คำนวณให้ทั้ง 2 ฝั่งแล้ว': เสาที่ engine เลือก + ปฏิกิริยา 合/冲/害/破/天干五合 ที่เกิดเฉพาะเสาอีกฝั่ง จะติดธง ⚠️[ถ้าเกิดอีกฝั่ง→เสาเป็น X] · hit ที่ติดธงนี้เป็นจริงเฉพาะถ้าเวลาเกิดจริงตกฝั่งนั้น — อ่านแบบมีเงื่อนไข + แนะนำให้ยืนยันเวลาเกิดเพื่อล็อก · ส่วนที่พึ่งเสาวัน(日) ยังฟันธงได้");
+  /* C · โหมดเทียบ 2 คน (M===2): คู่อาจถูกแสดงด้วย "ความสัมพันธ์ธาตุวันเจ้า(生剋/比肩)" เป็น baseline แม้ไม่มี合冲เด่น
+   * → หมายเหตุ header กัน AI ตีความว่า "เด่น" ทั้งที่เป็น baseline (พ่อ codex + ลูกน้องชี้ถ้อยคำคลาด) */
+  const cmpNote = valid.length !== 2 ? "" : (L === "en"
+    ? "\n  (2-person compare: if the pair has no prominent 合/冲/三合/五合, it still shows the Day-Master element relation 生/剋/同 as baseline context — that line is baseline, NOT a prominent reaction.)"
+    : L === "zh"
+    ? "\n  （兩人比對：若無顯著 合/冲/三合/五合，仍以日主五行關係 生/剋/同 作為基礎脈絡顯示 — 該行為基礎，非顯著互動。）"
+    : "\n  (เทียบ 2 คน: ถ้าคู่ไม่มี合/冲/三合/五合เด่น จะแสดงความสัมพันธ์ธาตุวันเจ้า 生/剋/同 เป็น baseline — บรรทัดนั้นคือพื้นฐาน ไม่ใช่ปฏิกิริยาเด่น)");
   if (!lines.length) {
     const none = L === "en" ? "  (no pair has a prominent cross-person reaction — all pairs checked)"
       : L === "zh" ? "  （所有配對已比對，無顯著跨人互動）"
       : "  (เช็คทุกคู่แล้ว · ไม่มีคู่ใดมีปฏิกิริยาข้ามคนเด่น)";
-    return title + blNote + "\n" + none;
+    return title + blNote + cmpNote + "\n" + none;
   }
-  return title + blNote + "\n" + lines.join("\n");
+  return title + blNote + cmpNote + "\n" + lines.join("\n");
 }
