@@ -198,12 +198,24 @@ function buildSynastry(people: PersonSyn[], lang: string): string {
       }
     }
   }
-  if (!lines.length) return "";
+  /* 31 พ.ค. · CLOSED LIST · loop เช็คครบทุกคู่ C(M,2) แล้ว (i×j ด้านบน) แต่ push เฉพาะคู่เด่น
+   * → header ต้องบอก AI ว่า "เช็คครบแล้ว" + ห้ามแต่งคู่นอกลิสต์ (กันบั๊ก 辰戌冲 ที่ AI เคยเอื้อมจับเอง)
+   * + แยก "ปฏิกิริยาในดวงเดี่ยว=อ่านเต็ม" vs "ข้ามคน=เฉพาะลิสต์นี้" กัน AI เอาปฏิกิริยาในดวงไปยัดข้ามคน */
+  const M = valid.length;
+  const totalPairs = (M * (M - 1)) / 2;
+  const names = valid.map((p) => p.name || "?").join(", ");
+  const shown = lines.length;
   const title = L === "en"
-    ? "━━━ Cross-person reactions (synastry · 合 not always good / 冲 not always bad · weigh against each one's 用神/role · state the direction/outcome plainly · only forbidden: 'commanding' break-up/no-contact) ━━━"
+    ? `━━━ Cross-person reactions (synastry) — CLOSED LIST. Compared ALL ${totalPairs} pair(s) among ${M} people [${names}], using each one's 日柱(Day)+年柱(Year). Below are ONLY the ${shown} pair(s) with a prominent reaction. Any pair NOT listed = checked and has NO prominent cross-person reaction (a conclusion, NOT "unchecked"). DO NOT create or infer 合/冲/破/害 for any person/pair not in this list. (Each single person's in-chart interactions → read in full per the interaction classic; CROSS-PERSON → only this list.) 合 not always good / 冲 not always bad — weigh against each one's 用神/role, state direction/outcome plainly; only forbidden: 'commanding' break-up/no-contact. ━━━`
     : L === "zh"
-    ? "━━━ 跨人互動 (synastry · 合不必吉 / 冲不必凶 · 須結合各自用神/角色判讀 · 可直斷方向/結果 · 僅禁「命令式」分手/勿往來) ━━━"
-    : "━━━ ปฏิกิริยาข้ามคน (synastry · 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ · ดูที่用神/บทบาทแต่ละคน · ฟันธงทิศ/ผลได้ · ห้ามเฉพาะ 'สั่งการ' เลิก/คบ) ━━━";
+    ? `━━━ 跨人互動 (synastry) — 封閉清單。已比對 ${M} 人 [${names}] 全部 ${totalPairs} 組配對（各取 日柱+年柱）。下列僅為有顯著互動的 ${shown} 組；未列出之配對＝已比對且無顯著跨人互動（此為結論，非「未檢查」）。禁止為清單外之任何人／配對推衍 合/冲/破/害。（各人命盤內部互動→依互動經典完整判讀；跨人→僅限本清單。）合不必吉 / 冲不必凶 — 結合各自用神/角色，可直斷方向/結果；僅禁命令式分手/勿往來。━━━`
+    : `━━━ ปฏิกิริยาข้ามคน (synastry) — ลิสต์ปิด (เช็คครบแล้ว) · เทียบครบทุกคู่ ${totalPairs} คู่ จาก ${M} คน [${names}] โดยใช้ 日柱(เสาวัน)+年柱(เสาปี) ของแต่ละคน · ด้านล่างขึ้นเฉพาะ ${shown} คู่ที่มีปฏิกิริยาเด่น · คู่ที่ไม่อยู่ในลิสต์ = เช็คแล้วไม่มีปฏิกิริยาข้ามคนเด่น (เป็นข้อสรุป ไม่ใช่ "ยังไม่เช็ค") · ห้ามสร้าง/สันนิษฐาน 合/冲/破/害 ให้คน/คู่ที่ไม่อยู่ในลิสต์นี้ · (ปฏิกิริยาภายในดวงเดี่ยวของแต่ละคน → อ่านเต็มตามคัมภีร์ปฏิกิริยา · ข้ามคน → เฉพาะลิสต์นี้) · 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ — ดูที่用神/บทบาท ฟันธงทิศ/ผลได้ · ห้ามเฉพาะ 'สั่งการ' เลิก/คบ ━━━`;
+  if (!lines.length) {
+    const none = L === "en" ? "  (no pair has a prominent cross-person reaction — all pairs checked)"
+      : L === "zh" ? "  （所有配對已比對，無顯著跨人互動）"
+      : "  (เช็คทุกคู่แล้ว · ไม่มีคู่ใดมีปฏิกิริยาข้ามคนเด่น)";
+    return title + "\n" + none;
+  }
   return title + "\n" + lines.join("\n");
 }
 
@@ -446,9 +458,9 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
 
 /* คำสั่งวิเคราะห์กลุ่ม · inline 3 ภาษา · ต่อท้าย group context */
 const GROUP_INSTRUCTION: Record<string, string> = {
-  th: "ด้านบนคือดวงของหลายคนในกลุ่มเดียวกัน · ช่วยวิเคราะห์ภาพรวมกลุ่ม ความเข้ากัน จุดเสริม-จุดชน บทบาทแต่ละคน โดยใช้กฎการอ่านเดียวกับการอ่านดวงเดี่ยว (เจาะ 3-5 จุด ระบุชื่อ+เสาที่เกี่ยวข้อง) · ⚠️ 合婚/ความเข้ากัน: อ่าน 合/冲 ตาม用神แต่ละคน (合ไม่ดีเสมอ 冲ไม่ร้ายเสมอ) · **ฟันธง 'ทิศ/ผล' ได้ตรงๆ ตามน้ำหนักดวง** (เช่น 'คู่นี้ดวงดันให้ชนกัน เสี่ยงขาดสะบั้น') · **ห้ามเฉพาะคำสั่งการ** ('ต้องเลิก/ไปกันไม่ได้/ห้ามคบ/คู่นี้แน่นอน/จะแต่ง') ไม่ใช่ห้ามบอกผล · บอกผลแล้วปิดท้ายด้วยเงื่อนไขพลิก 用神/通關 ของแต่ละคน",
-  en: "Above are the charts of several people in the same group. Analyze the overall group dynamics, compatibility, mutual support and clashes, and each person's role — using the same reading rules as a single-chart reading (pick 3-5 concrete points, naming the person and the pillars involved). ⚠️ Compatibility/合婚: read 合/冲 against each one's 用神 (合 not always good, 冲 not always bad). State the DIRECTION/OUTCOME plainly per the chart's weight (e.g. 'this pair's charts push them to clash at the core — risk of a clean break'). Only FORBIDDEN: commanding verdicts ('must break up / incompatible / should not associate / definitely marry'). Stating bad outcomes is fine — close with each one's pivot condition (用神/通關).",
-  zh: "以上是同一群組中多人的命盤。請分析群組整體互動、配對、相生相剋與各人角色，並沿用單一命盤的判讀規則（挑 3-5 個具體論點，標明所涉及的人與柱）。⚠️ 合婚/相合度：依各自用神判讀 合/冲（合不必吉、冲不必凶）。可依命盤輕重**直斷方向／結果**（例如「此二人命盤相沖於本命核心，恐有斷裂之象」）。**僅禁命令式斷語**（「必須分開／不合／不可往來／必成婚」），但可明說吉凶結果，最後以各自用神/通關之轉機收尾。",
+  th: "ด้านบนคือดวงของหลายคนในกลุ่มเดียวกัน · ช่วยวิเคราะห์ภาพรวมกลุ่ม ความเข้ากัน จุดเสริม-จุดชน บทบาทแต่ละคน โดยใช้กฎการอ่านเดียวกับการอ่านดวงเดี่ยว (เจาะ 3-5 จุด ระบุชื่อ+เสาที่เกี่ยวข้อง) · ⚠️ 合婚/ความเข้ากัน: อ่าน 合/冲 ตาม用神แต่ละคน (合ไม่ดีเสมอ 冲ไม่ร้ายเสมอ) · **ฟันธง 'ทิศ/ผล' ได้ตรงๆ ตามน้ำหนักดวง** (เช่น 'คู่นี้ดวงดันให้ชนกัน เสี่ยงขาดสะบั้น') · **ห้ามเฉพาะคำสั่งการ** ('ต้องเลิก/ไปกันไม่ได้/ห้ามคบ/คู่นี้แน่นอน/จะแต่ง') ไม่ใช่ห้ามบอกผล · บอกผลแล้วปิดท้ายด้วยเงื่อนไขพลิก 用神/通關 ของแต่ละคน · 🔒 ปฏิกิริยาข้ามคน(合/冲/破/害): ใช้เฉพาะที่ระบุในเซกชัน synastry ด้านบน (ลิสต์ปิด=เช็คครบทุกคู่แล้ว) ห้ามสร้าง/เดาคู่ใหม่นอกลิสต์ · อย่าเอาปฏิกิริยา 'ในดวงเดี่ยว' ของใครไปทำเป็นปฏิกิริยา 'ข้ามคน'",
+  en: "Above are the charts of several people in the same group. Analyze the overall group dynamics, compatibility, mutual support and clashes, and each person's role — using the same reading rules as a single-chart reading (pick 3-5 concrete points, naming the person and the pillars involved). ⚠️ Compatibility/合婚: read 合/冲 against each one's 用神 (合 not always good, 冲 not always bad). State the DIRECTION/OUTCOME plainly per the chart's weight (e.g. 'this pair's charts push them to clash at the core — risk of a clean break'). Only FORBIDDEN: commanding verdicts ('must break up / incompatible / should not associate / definitely marry'). Stating bad outcomes is fine — close with each one's pivot condition (用神/通關). 🔒 Cross-person 合/冲/破/害: use ONLY what is listed in the synastry section above (CLOSED LIST = all pairs already checked); do not create or guess pairs outside that list; never turn one person's in-chart interaction into a cross-person one.",
+  zh: "以上是同一群組中多人的命盤。請分析群組整體互動、配對、相生相剋與各人角色，並沿用單一命盤的判讀規則（挑 3-5 個具體論點，標明所涉及的人與柱）。⚠️ 合婚/相合度：依各自用神判讀 合/冲（合不必吉、冲不必凶）。可依命盤輕重**直斷方向／結果**（例如「此二人命盤相沖於本命核心，恐有斷裂之象」）。**僅禁命令式斷語**（「必須分開／不合／不可往來／必成婚」），但可明說吉凶結果，最後以各自用神/通關之轉機收尾。🔒 跨人 合/冲/破/害：僅用上方 synastry 區段所列（封閉清單＝所有配對已比對）；勿自創或臆測清單外配對；切勿將某人命盤內部之互動當作跨人互動。",
 };
 
 /* ประกอบ prompt · reuse sifu-qa.md เป็นฐาน เหมือน buildPrompt branch Q&A ใน /api/sifu */
