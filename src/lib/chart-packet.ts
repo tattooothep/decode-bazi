@@ -124,11 +124,11 @@ export type ChartPacketBuildOptions = {
 
 /** field ที่ค่าพึ่งเสาเดือน(月支) → เมื่อเสาเดือนก้ำกึ่ง ทุกตัวนี้ inherit เพดานมั่นใจ "กลาง" (flat cap · ไม่ใช่ graph)
  *  constant เดียวคุม · เพิ่ม field derive จาก月ใหม่ ต้องมาเติมที่นี่ กันหลุดเพดานเงียบ */
-const MONTH_DERIVED_FIELDS = ["格局", "司令", "空亡(เสาเดือน)", "半合/三合(子辰)", "大運ลำดับ", "synastry(เสาเดือน)"];
+const MONTH_DERIVED_FIELDS = ["格局", "司令", "空亡(เสาเดือน)", "半合/三合(子辰)", "大運ลำดับ", "synastry(เสาเดือน)", "ธาตุรวม(tally)", "ราก5ธาตุ", "透干", "用神/喜忌+ธาตุช่วย", "病藥(BY)"];
 
 export type ChartPacket = {
   /* ── version/level lock ── */
-  packetVersion: "hourkey-chart-packet-lite-v1.0";
+  packetVersion: "hourkey-chart-packet-lite-v1.1";
   packetLevel: "step1_lite";
   /* ⚠️ ยังไม่อยู่ใน Step 1 Lite (สงวนไว้ v1.1 / Step B-C) — ห้ามถือว่า "หาย":
    *   - dayMasterStrength / stemRootStatus
@@ -1926,7 +1926,7 @@ export function buildStructuredChartPacket(
   );
 
   const packet: ChartPacket = {
-    packetVersion: "hourkey-chart-packet-lite-v1.0",
+    packetVersion: "hourkey-chart-packet-lite-v1.1",
     packetLevel: "step1_lite",
     meta: {
       mode: calc.mode === "3p" ? "3p" : "4p", // 27 พ.ค. · เลิก hardcode · 3 เสาติดป้ายถูก
@@ -2207,6 +2207,22 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   const _ma = packet.monthAmbiguity;
   const monthAmbSuffix = _ma ? ` ⚠️[เสาเดือนก้ำกึ่ง ${_ma.before}/${_ma.after} · มั่นใจ≤กลาง · อ่าน 2 ทาง]` : "";
   if (_ma) structureLine += monthAmbSuffix;
+  /* 31 พ.ค. (AI sifu ภายนอกชี้) · 藏干เสาเดือน 2 ฝั่ง — กัน AI ฟันธง "ธาตุX=0" ข้างเดียว
+   * เคส na: 壬辰(藏 戊乙癸) vs 癸巳(藏 丙戊庚) → 庚金โผล่ภายใต้癸巳 = ทองไม่เป็น 0 · "ลูกขาดทอง แม่เติม" พังถ้า癸巳
+   * เลเยอร์ packet: ใช้ HIDDEN_STEMS_MAP+STEM_ELEMENT (ไม่ recompute tally engine · ไม่แตะ wrapper · กัน weight เพี้ยน) · AI ตีความเอง */
+  if (_ma && _ma.before && _ma.after) {
+    const brOf = (pillar: string) => [...pillar][1] || "";
+    const hsDesc = (br: string) => (HIDDEN_STEMS_MAP[br] || []).map((s) => `${s}(${elementTh(STEM_ELEMENT[s])})`).join(" ");
+    const elsOf = (br: string) => new Set((HIDDEN_STEMS_MAP[br] || []).map((s) => STEM_ELEMENT[s]));
+    const bBr = brOf(_ma.before), aBr = brOf(_ma.after);
+    const bEls = elsOf(bBr), aEls = elsOf(aBr);
+    const added = [...aEls].filter((e) => !bEls.has(e)).map((e) => elementTh(e));
+    const lost = [...bEls].filter((e) => !aEls.has(e)).map((e) => elementTh(e));
+    const delta = (added.length || lost.length)
+      ? `ธาตุที่เปลี่ยน: ฝั่ง${_ma.after}${added.length ? " เพิ่ม " + added.join("·") : ""}${lost.length ? " · หาย " + lost.join("·") : ""}`
+      : "ก้านซ่อนให้ธาตุชุดเดียวกัน";
+    structureLine += `\n⚠️ 藏干เสาเดือน 2 ฝั่ง (ธาตุรวม/ราก/透干/用神/病藥 ขึ้นกับฝั่งนี้ทั้งหมด · ห้ามฟันธงจำนวนธาตุ/ราก/用神 ข้างเดียว · ดู MONTH_DERIVED_FIELDS): ฝั่ง${_ma.before}=藏干 ${hsDesc(bBr)} · ฝั่ง${_ma.after}=藏干 ${hsDesc(aBr)} · ${delta} → ประเมิน 2 ทาง จนกว่าจะยืนยันเวลาเกิด`;
+  }
   /* 🔒 化氣格 guard (27 พ.ค. · option A · 5-agent · ระดับ1+2) — engine (wrapper-3 findTransformation) declare 化X格
      จากแค่ 2/6 เงื่อนไข (五合คู่ + เดือนตรงฤดู) ไม่เช็คราก DM → over-declare 化 (用神พลิก180° อ่านผิดทั้งใบ)
      hotfix เลเยอร์ packet (rootedness จาก wrapper-7 · ไม่คำนวณใหม่ · ไม่แก้ค่าดิบ · ไม่แตะ wrapper LOCKED · /chart แยก):
@@ -2765,7 +2781,7 @@ export function validateChartPacket(packet: ChartPacket): { ok: boolean; degrade
     warnings.push(`renderChartPrompt error: ${(e as Error).message}`);
   }
   /* regression guard: version/level lock ต้องตรง */
-  if (packet.packetVersion !== "hourkey-chart-packet-lite-v1.0" || packet.packetLevel !== "step1_lite") {
+  if (packet.packetVersion !== "hourkey-chart-packet-lite-v1.1" || packet.packetLevel !== "step1_lite") {
     warnings.push("packetVersion/packetLevel ไม่ตรง lock");
   }
 

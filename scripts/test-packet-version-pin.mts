@@ -11,10 +11,10 @@ let pass = 0, fail = 0;
 const ck = (l: string, c: boolean, g?: string) => { c ? (pass++, console.log("  ✅ " + l)) : (fail++, console.log("  ❌ " + l + (g ? " · " + g : ""))); };
 
 /* version ที่ตรึงไว้ (ทั้ง type lock + ค่าจริงใน buildStructuredChartPacket) */
-const EXPECT_VERSION = "hourkey-chart-packet-lite-v1.0";
+const EXPECT_VERSION = "hourkey-chart-packet-lite-v1.1";
 const EXPECT_LEVEL = "step1_lite";
 /* MONTH_DERIVED_FIELDS = ชุด field ที่ derive จากเสาเดือน · เพิ่ม/ลบ = โครง packet เปลี่ยน → ต้อง bump version */
-const EXPECT_MONTH_DERIVED = 6;
+const EXPECT_MONTH_DERIVED = 11; // 31 พ.ค. · +ธาตุรวม/ราก/透干/用神/病藥 (AI sifu: กัน金=0 ฟันธงข้างเดียว)
 
 console.log("[#3 · packet version/field drift guard]");
 const verHits = (SRC.match(new RegExp(`packetVersion:\\s*"${EXPECT_VERSION}"`, "g")) || []).length;
