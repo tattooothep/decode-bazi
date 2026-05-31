@@ -171,7 +171,7 @@ function toPersonSyn(p: PersonCtx, label: string): PersonSyn {
     mode: is3p ? "3p" : "4p",
     dmEl: STEM_EL[p.pillars.day?.stem || ""] || "unknown",
     yongEls: yongElsOf(p),
-    pillars: { year: yearP, month: monthP, day: pk(p.pillars.day) },
+    pillars: { year: yearP, month: monthP, day: pk(p.pillars.day), hour: is3p ? undefined : pk(p.pillars.hour) }, // เฟส 2: เสายาม (4p เท่านั้น)
     monthBorderline: !!mb.boundary,
     yearBorderline: !!yb.boundary,
     monthAlt: mb.boundary ? altPillar(monthP, mb.before, mb.after) : undefined,

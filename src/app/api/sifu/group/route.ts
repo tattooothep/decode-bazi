@@ -268,6 +268,7 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
       year: calc.pillars.year ? { stem: calc.pillars.year.stem, branch: calc.pillars.year.branch } : undefined,
       month: calc.pillars.month ? { stem: calc.pillars.month.stem, branch: calc.pillars.month.branch } : undefined, // 31 พ.ค. เฟส 1: จับ 天干五合 ก้านเดือน (เช่น 丁壬)
       day: calc.pillars.day ? { stem: calc.pillars.day.stem, branch: calc.pillars.day.branch } : undefined,
+      hour: calc.pillars.hour ? { stem: calc.pillars.hour.stem, branch: calc.pillars.hour.branch } : undefined, // เฟส 2: เสายาม (4p เท่านั้น · 3p = undefined auto-skip)
     };
     const is3p = calc.mode === "3p";
     /* เสาเดือนคน 3 เสาเกิดคาบ節氣 = ก้ำกึ่ง → synastry hit ที่พึ่งเสาเดือนต้องติดธง · เสาปีก้ำกึ่งเฉพาะ立春 */
