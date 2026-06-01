@@ -5,6 +5,7 @@ import { q1 } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
 import { normalizePhone, isValidThaiMobile, createOtp } from "@/lib/phone-otp";
 import { sendOtpSms, isSmsReady } from "@/lib/thaibulksms-sms";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
@@ -14,6 +15,14 @@ export async function POST(req: Request) {
 
   if (!isValidThaiMobile(phone)) {
     return NextResponse.json({ error: "เบอร์โทรไม่ถูกต้อง (เริ่มต้นด้วย 06, 08, 09 · 10 หลัก)" }, { status: 400 });
+  }
+  /* 1 มิ.ย. · กัน spam สร้างบัญชี + ยิง SMS · 5 ครั้ง/ชม. ต่อ (IP + เบอร์) */
+  const rl = rateLimit(`signupphone:${clientIp(req)}:${phone}`, 5, 3_600_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "สมัครบ่อยเกินไป · กรุณารอสักครู่" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
   }
   if (!password || password.length < 6) {
     return NextResponse.json({ error: "รหัสผ่านอย่างน้อย 6 ตัวอักษร" }, { status: 400 });

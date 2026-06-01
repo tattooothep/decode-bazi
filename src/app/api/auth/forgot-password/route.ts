@@ -5,6 +5,7 @@ import { createToken } from "@/lib/auth-tokens";
 import { sendResetEmailTbs, isEmailTbsReady } from "@/lib/thaibulksms-email";
 import { sendSms, isSmsReady } from "@/lib/thaibulksms-sms";
 import { normalizePhone, isValidThaiMobile } from "@/lib/phone-otp";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 const APP_URL = process.env.APP_URL || "https://hourkey.io";
 
@@ -12,6 +13,14 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const raw = String(body.identifier || body.email || body.phone || "").trim();
   if (!raw) return NextResponse.json({ error: "กรอกอีเมลหรือเบอร์โทร" }, { status: 400 });
+  /* 1 มิ.ย. · กันยิง email/SMS รีเซ็ตเปลืองเงิน · 3 ครั้ง/10 นาที ต่อ (IP + identifier) */
+  const rl = rateLimit(`forgot:${clientIp(req)}:${raw.toLowerCase()}`, 3, 600_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "ขอรีเซ็ตบ่อยเกินไป · กรุณารอสักครู่" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
 
   const isEmail = raw.includes("@");
   const email = isEmail ? raw.toLowerCase() : "";

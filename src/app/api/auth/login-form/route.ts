@@ -1,5 +1,6 @@
 import { q1 } from "@/lib/db";
 import { verifyPassword, signSession, setAuthCookie } from "@/lib/auth";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 function redirect303(url: string): Response {
   return new Response(null, { status: 303, headers: { Location: url } });
@@ -10,6 +11,9 @@ export async function POST(req: Request) {
   const email = String(form.get("email") || "").trim().toLowerCase();
   const password = String(form.get("password") || "");
   if (!email || !password) return redirect303("/login?err=" + encodeURIComponent("กรอก email + password"));
+  /* 1 มิ.ย. · กัน brute-force · 5 ครั้ง/นาที ต่อ (IP + อีเมล) */
+  const rl = rateLimit(`loginform:${clientIp(req)}:${email}`, 5, 60_000);
+  if (!rl.ok) return redirect303("/login?err=" + encodeURIComponent("ลองบ่อยเกินไป · รอสักครู่"));
   const user = await q1<{
     id: string; email: string; password_hash: string; current_org_id: string;
   }>("SELECT id, email, password_hash, current_org_id FROM users WHERE email=$1", [email]);

@@ -4,6 +4,7 @@ import { q1 } from "@/lib/db";
 import { signSession, setAuthCookie } from "@/lib/auth";
 import { normalizePhone, verifyOtp } from "@/lib/phone-otp";
 import { userHasProfile } from "@/lib/profile-status";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
@@ -12,6 +13,14 @@ export async function POST(req: Request) {
 
   if (!phone || !code) {
     return NextResponse.json({ error: "ระบุเบอร์และรหัส OTP" }, { status: 400 });
+  }
+  /* 1 มิ.ย. · กันเดา OTP brute-force · 5 ครั้ง/นาที ต่อ (IP + เบอร์) */
+  const rl = rateLimit(`verifyotp:${clientIp(req)}:${phone}`, 5, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "ลองยืนยันบ่อยเกินไป · กรุณารอสักครู่" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
   }
 
   const r = await verifyOtp(phone, code);

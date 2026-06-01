@@ -2,9 +2,15 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 
-const SECRET = new TextEncoder().encode(
-  process.env.AUTH_SECRET || "decode-dev-secret-change-in-production-please-2026"
-);
+/* 1 มิ.ย. · ตัด fallback secret สาธารณะ (เดิม env หาย=ใครก็ปลอม login ได้)
+ * lazy + fail-closed: ไม่มี AUTH_SECRET = throw ตอนใช้จริง (ไม่พังตอน build) */
+function getSecret(): Uint8Array {
+  const s = process.env.AUTH_SECRET;
+  if (!s || s.length < 16) {
+    throw new Error("AUTH_SECRET env is required (>=16 chars)");
+  }
+  return new TextEncoder().encode(s);
+}
 const COOKIE = "decode_auth";
 const TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
@@ -19,12 +25,12 @@ export async function signSession(s: Session): Promise<string> {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${TTL_SECONDS}s`)
-    .sign(SECRET);
+    .sign(getSecret());
 }
 
 export async function verifySession(token: string): Promise<Session | null> {
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, getSecret());
     return {
       userId: String(payload.userId),
       email: String(payload.email),

@@ -4,12 +4,21 @@ import { getSession } from "@/lib/auth";
 import { q1 } from "@/lib/db";
 import { createToken } from "@/lib/auth-tokens";
 import { sendVerifyEmail, isEmailReady } from "@/lib/email-service";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 const APP_URL = process.env.APP_URL || "https://hourkey.io";
 
 export async function POST(req: Request) {
   if (!isEmailReady()) {
     return NextResponse.json({ error: "Email service not configured" }, { status: 503 });
+  }
+  /* 1 มิ.ย. · กันยิงอีเมลยืนยันเปลืองเงิน · 3 ครั้ง/10 นาที ต่อ IP */
+  const rl = rateLimit(`emailverify:${clientIp(req)}`, 3, 600_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "ขอบ่อยเกินไป · กรุณารอสักครู่" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
   }
   // รับ email จาก session หรือ body
   let email: string | null = null;

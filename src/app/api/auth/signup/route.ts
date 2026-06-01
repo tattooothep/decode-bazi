@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
 import { hashPassword, signSession, setAuthCookie } from "@/lib/auth";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 import crypto from "node:crypto";
 
 export async function POST(req: Request) {
@@ -8,6 +9,14 @@ export async function POST(req: Request) {
   const { email, password, name } = body;
   if (!email || !password) {
     return NextResponse.json({ error: "กรอกอีเมลและรหัสผ่าน" }, { status: 400 });
+  }
+  /* 1 มิ.ย. · กัน spam สร้างบัญชี · 10 บัญชี/ชม. ต่อ IP */
+  const rl = rateLimit(`signup:${clientIp(req)}`, 10, 3_600_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "สมัครบ่อยเกินไป · กรุณารอสักครู่" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
   }
   if (password.length < 6) {
     return NextResponse.json({ error: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }, { status: 400 });
