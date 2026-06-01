@@ -1234,7 +1234,8 @@
           <div class="today-vs" id="bb-today-vs">กำลังโหลด ...</div>
         </div>
         <div  class="lab" data-i18n="auto.t.540">เทียบกับ 日支 ของคุณ</div>
-        <div style="margin-top:14px;text-align:center;">
+        <!-- ซ่อน 1 มิ.ย.: ลิงก์ดูดวงเต็ม (เจ้านายสั่งเอาออก · ใช้ display:none กัน rollback ง่าย) -->
+        <div style="margin-top:14px;text-align:center;display:none;">
           <a href="/chart" style="display:inline-block;padding:10px 22px;background:rgba(200,164,77,.12);border:1px solid rgba(200,164,77,.45);color:var(--gold);border-radius:99px;font-family:var(--thai);font-size:13px;letter-spacing:.04em;text-decoration:none;" data-i18n="t.bb.go_chart">📊 ดูดวงเต็ม · 11 sections · /chart</a>
         </div>
       </div>
@@ -1467,7 +1468,8 @@
   <!-- 📜 วิธีคิดคะแนน · ย้ายมาล่างสุด · 17 พ.ค. -->
   <!-- 📜 วิธีคิดคะแนน · ตำราคลาสสิก 5 ชั้น 10 ปรับ -->
   <style>
-    .hk-scoring-explain{margin:36px 0 24px;background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;overflow:hidden;}
+    /* ซ่อน 1 มิ.ย.: บล็อกวิธีคิดคะแนน synastry (ย้ายไปหน้า methodology แล้ว · display:none กัน rollback ง่าย) */
+    .hk-scoring-explain{display:none !important;margin:36px 0 24px;background:var(--tile);border:1px solid var(--gold-line);border-radius:14px;overflow:hidden;}
     .hk-scoring-explain > summary{cursor:pointer;padding:18px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;font-weight:700;list-style:none;display:flex;align-items:center;gap:12px;}
     .hk-scoring-explain > summary::-webkit-details-marker{display:none;}
     .hk-scoring-explain > summary::after{content:'▾';margin-left:auto;transition:.25s;color:var(--gold);font-size:14px;}
