@@ -356,6 +356,8 @@ function applyLuckAdjustment(score: number, lp: any, dm: string, yongshenPrimary
 }
 
 export async function POST(req: Request) {
+  /* 1 มิ.ย. · ดูคะแนนตัวเองในเครือข่ายต้องสมัคร/login ก่อน (เจ้านายสั่ง) */
+  if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   const body = await req.json().catch(() => ({}));
   const date = String(body.date || new Date().toISOString().slice(0, 10));
   const includeForecast = !!body.includeForecast;

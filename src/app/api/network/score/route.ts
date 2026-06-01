@@ -15,6 +15,8 @@ import { pairBaseScore, modulateByTf, type Person } from "@/lib/scoring/pair-bas
 
 
 export async function POST(req: Request) {
+  /* 1 มิ.ย. · ดูคะแนนเครือข่ายต้องสมัคร/login ก่อน (เจ้านายสั่ง) */
+  if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   let body: any;
   try { body = await req.json(); } catch { body = {}; }
   const self: Person = body.self;

@@ -173,6 +173,8 @@ function makeJsonlParser(onText: (text: string) => void) {
 }
 
 export async function POST(req: Request) {
+  /* 1 มิ.ย. · AI เครือข่ายต้องสมัคร/login ก่อน (เจ้านายสั่ง · defense-in-depth เสริม spendHours) */
+  if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   try {
     const body = await req.json().catch(() => ({}));
     const mode = (body.mode === "team" ? "team" : "pair") as "pair" | "team";

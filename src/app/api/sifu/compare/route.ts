@@ -385,6 +385,8 @@ async function saveCache(key: string, reply: string, warmup: string, lang: strin
 }
 
 export async function POST(req: Request) {
+  /* 1 มิ.ย. · AI ดูดวงเทียบคู่ต้องสมัคร/login ก่อน (เจ้านายสั่ง) */
+  if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   /* preflight common · ใช้ทั้ง JSON และ stream mode */
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim()
     || req.headers.get("x-real-ip") || "unknown";

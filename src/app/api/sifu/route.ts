@@ -946,6 +946,8 @@ export async function POST(req: Request) {
 
     /* 🔐 session → org · ดวงที่ถามได้ต้องอยู่ใน org เดียวกับผู้ login (ดวงตัวเอง+ญาติในบัญชี) · กันอ่านข้ามบัญชี */
     const session = await getSession();
+    /* 1 มิ.ย. · AI ดูดวงต้องสมัคร/login ก่อน (เจ้านายสั่ง · ตัด guest intro) */
+    if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
     const orgId = session?.orgId ?? null;
 
     const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
@@ -1164,6 +1166,8 @@ export async function GET(req: Request) {
 
   /* 🔐 session → org · เหมือน POST · กันอ่านดวงข้ามบัญชี */
   const session = await getSession();
+  /* 1 มิ.ย. · AI ดูดวงต้องสมัคร/login ก่อน (เจ้านายสั่ง · ตัด guest intro) */
+  if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   const orgId = session?.orgId ?? null;
 
   const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
