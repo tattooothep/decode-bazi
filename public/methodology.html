@@ -1885,7 +1885,7 @@ function renderInteraction(){
     });
   });
 }
-fetch('/_preview/interaction-methodology.json').then(r=>r.json()).then(d=>{ window.INTERACTION_M=d; renderInteraction(); }).catch(e=>console.warn('interaction methodology load failed:',e));
+fetch('/api/luopan/data?set=interaction').then(r=>r.json()).then(d=>{ window.INTERACTION_M=d; renderInteraction(); }).catch(e=>console.warn('interaction methodology load failed:',e));
 
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);

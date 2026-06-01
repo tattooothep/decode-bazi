@@ -445,6 +445,14 @@
 </main>
 
 <script>
+/* 1 มิ.ย. · luopan บังคับ login (เจ้านายเคาะ · ตำราเป็น engine IP) · กำแพงจริง=API 401 · นี่=UX redirect */
+(async () => {
+  try {
+    const r = await fetch('/api/auth/me', { credentials: 'same-origin' });
+    const d = await r.json();
+    if (!d || !d.user) window.location.replace('/signup?next=' + encodeURIComponent('/luopan'));
+  } catch (_) { window.location.replace('/signup?next=' + encodeURIComponent('/luopan')); }
+})();
 /* === embedded luopan-data.js === */
 /* ════════════════════════════════════════════════════════════════
  * Luopan Data v2 — 22 rings · authentic Chinese Feng Shui Luopan
@@ -2276,28 +2284,28 @@ function updateCastleGate(){
 
 /* ============== Inspector · อ่านทุกศาสตร์ที่เข็มผ่าน ============== */
 window.LUOPAN_DATA = null;
-fetch('/_preview/luopan_complete.json').then(r => r.json()).then(d => {
+fetch('/api/luopan/data?set=luopan').then(r => r.json()).then(d => {
   window.LUOPAN_DATA = d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('luopan data load failed:', e));
 
 /* 24 พ.ค. · 地盤象意 (12地支+10天干 · score+เหตุผล+recommendation) จาก JSON ซินแส v1.1 */
 window.EARTH_SYMBOLIC = null;
-fetch('/_preview/earth-plate-symbolic.json').then(r => r.json()).then(d => {
+fetch('/api/luopan/data?set=earth').then(r => r.json()).then(d => {
   window.EARTH_SYMBOLIC = d.earth_plate_symbolic_layers || d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('earth-plate symbolic load failed:', e));
 
 /* 24 พ.ค. · 太歲/三煞/歲破 ดาวเตือนปี จาก JSON ซินแส v1.0 (score 2/1/2 · 三煞 5 ขุนเขา 75°) */
 window.ANNUAL_WARNING = null;
-fetch('/_preview/annual-warning.json').then(r => r.json()).then(d => {
+fetch('/api/luopan/data?set=annual').then(r => r.json()).then(d => {
   window.ANNUAL_WARNING = d.annual_warning_layer || d;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('annual-warning load failed:', e));
 
 /* 24 พ.ค. · 玄空大卦 64卦 + 卦運(ยุค) + 卦氣(ชั้น) · guaYun + guaQi เติมครบ 64 (玄空大卦 เต็มรูปแบบ) */
 window.XKDG = null;
-fetch('/_preview/xkdg-64-gua.json').then(r => r.json()).then(d => {
+fetch('/api/luopan/data?set=xkdg').then(r => r.json()).then(d => {
   const byId = {}; (d.hexagrams || []).forEach(h => { byId[h.id] = h; }); d.byId = byId;
   /* map ชื่อกว้าสั้น (HEXAGRAMS_64) → guaYun ผ่าน King Wen id · ใช้ในวง rKU บนหล่อแก */
   const guaYunByName = {};
@@ -2320,14 +2328,14 @@ fetch('/_preview/xkdg-64-gua.json').then(r => r.json()).then(d => {
 
 /* 24 พ.ค. · core-sciences ซินแส (後天/先天/五行 · familyRole·lifeArea·cycles·relationLogic) — เสริม score/general/home เดิม */
 window.CORE_SCI = null;
-fetch('/_preview/core-sciences.json').then(r => r.json()).then(d => {
+fetch('/api/luopan/data?set=core').then(r => r.json()).then(d => {
   window.CORE_SCI = {}; (Array.isArray(d)?d:[]).forEach(s => window.CORE_SCI[s.id] = s);
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('core-sciences load failed:', e));
 
 /* 26 พ.ค. · 楊公120分金 (人紀/立向) · 120 ช่อง 3° · index0=337.5° · 旺5相4孤虛2火坑1 · 48 ใช้ได้ · interp 3 ภาษา (ตรวจ 120/48/60 ผ่าน) */
 window.FENJIN120 = null;
-fetch('/_preview/fenjin120.json').then(r => r.json()).then(d => {
+fetch('/api/luopan/data?set=fenjin').then(r => r.json()).then(d => {
   window.FENJIN120 = (d && d.fenjin) ? d.fenjin : null;
   /* re-render วง r120 ด้วยข้อมูลจริงตำรา (ตอน build ครั้งแรกยังไม่โหลด → ใช้ fallback) */
   try {
@@ -2339,7 +2347,7 @@ fetch('/_preview/fenjin120.json').then(r => r.json()).then(d => {
 
 /* 26 พ.ค. · 周易384爻辭 (เส้นเหย้า ~0.9375°) · 64卦×6เส้น + บทจีน+ไทย3ช่อง+score(จากคำมงคล) · ซินแสร่างไทย 386 entries (รวม用九用六) · index byGua[ชื่อกว้า]=[6เส้น 初→上] */
 window.YAO384 = null;
-fetch('/_preview/yao384.json').then(r => r.json()).then(d => {
+fetch('/api/luopan/data?set=yao').then(r => r.json()).then(d => {
   const byGua = {};
   (d.lines || []).forEach(l => { if(!l.bonus){ (byGua[l.gua] = byGua[l.gua] || []).push(l); } });
   window.YAO384 = byGua;
