@@ -4,10 +4,10 @@
  * Codex direction:
  *   - active `star × pillar` reading (ไม่ใช่ flat 14-star catalog)
  *   - 3-lang schema (th/en/zh) · null ถ้าไม่มี
- *   - import sesheta-v5 JSON
+ *   - import hourkey-v5 JSON
  */
 
-import personalStarsJson from "../../data/sesheta-v5/sesheta-personal-stars-bilingual.json";
+import personalStarsJson from "../../data/hourkey-v5/hourkey-personal-stars-bilingual.json";
 import { detectShenSha62, type StarHit, type Pillars } from "./chart-table";
 
 type DictReading = {

@@ -3,7 +3,7 @@
  *
  * คืน top 5 yongshen ตาม DM พร้อม priority + reason
  *
- * Source: sesheta-useful-god-ranks.json (verified 10 stems)
+ * Source: hourkey-useful-god-ranks.json (verified 10 stems)
  */
 
 const S = require('./shared');

@@ -665,7 +665,7 @@ export async function loadProfileChart(profileId: string, orgId: string) {
 }
 
 // ── Helper data loaders for 4 new sections ──
-import naYinData from "../../../data/sesheta-v3/sesheta-na-yin-60.json";
+import naYinData from "../../../data/hourkey-v3/hourkey-na-yin-60.json";
 
 type StarHit = { code: string; zh: string; th: string; polarity: 'good'|'bad'|'neutral'; pillars: string[] };
 

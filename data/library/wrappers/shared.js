@@ -31,7 +31,7 @@ const BRANCH_POLARITY = {
 };
 
 // 12 branches → hidden stems (main, middle, residual)
-// from sesheta-bazi-lookup-tables.json (verified 12/12 against classical)
+// from hourkey-bazi-lookup-tables.json (verified 12/12 against classical)
 const HIDDEN_STEMS = {
   子: { main: '癸', middle: null, residual: null },
   丑: { main: '己', middle: '癸', residual: '辛' },
@@ -86,7 +86,7 @@ function tenGod(dayMaster, targetStem) {
   return null;
 }
 
-// Useful God 5-rank per DM (from sesheta-useful-god-ranks.json · verified)
+// Useful God 5-rank per DM (from hourkey-useful-god-ranks.json · verified)
 const USEFUL_GOD_RANKS = {
   甲: ['甲','乙','庚','壬','癸'],
   乙: ['甲','乙','辛','壬','癸'],
@@ -147,7 +147,7 @@ const CRISIS_SEASON = {
 const HEATER = ['丙','丁','午','巳'];     // strong fire
 const COOLER = ['壬','癸','子','亥'];     // strong water
 
-// Strength: 12 phases multipliers (Sesheta)
+// Strength: 12 phases multipliers (Hourkey)
 const TWELVE_PHASE_MULT = {
   '帝旺':1.5, '臨官':1.4, '長生':1.3, '冠帶':1.2, '沐浴':1.1,
   '養':0.7, '胎':0.6, '絕':0.5, '墓':0.6, '死':0.7, '病':0.8, '衰':0.9,
@@ -173,7 +173,7 @@ function twelvePhase(stem, branch) {
   return PHASE_ORDER[offset];
 }
 
-// Position weights (Sesheta scoring engine)
+// Position weights (Hourkey scoring engine)
 const POSITION_WEIGHT = { year:0.8, month:1.6, day:1.0, hour:0.9 };
 
 module.exports = {

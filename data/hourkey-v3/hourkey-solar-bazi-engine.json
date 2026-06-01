@@ -1,5 +1,5 @@
 {
-  "description": "Sesheta's complete BaZi calculation engine — decoded from minified JS",
+  "description": "Hourkey's complete BaZi calculation engine — decoded from minified JS",
   "year_pillar_calculation": {
     "function": "c2(date)",
     "logic": "\n1. Get year Y from date\n2. Check if before 立春 (Li Chun) of year Y in solar term table I[Y].寅\n   - If yes, year = Y - 1 (year hasn't advanced)\n3. Calculate stem index: ((Y - 4) % 10 + 10) % 10\n4. Calculate branch index: ((Y - 4) % 12 + 12) % 12\n5. Return stems[stem_idx] + branches[branch_idx]\n",
@@ -23,24 +23,24 @@
   },
   "day_pillar_calculation": {
     "function": "g2(date)",
-    "logic": "\n1. Reference date = Jan 1, 1900 (anchor day = 庚午)\n2. Days elapsed = floor((date - 1900-01-01) / 86400000)\n3. Stem index = days % 10\n4. Branch index = (days % 12 + 10) % 12 (offset for Jan 1 1900 = 庚午)\n5. Note: Sesheta uses local time, NOT UTC for day boundary\n",
-    "note": "Day boundary at midnight local time (Sesheta default)"
+    "logic": "\n1. Reference date = Jan 1, 1900 (anchor day = 庚午)\n2. Days elapsed = floor((date - 1900-01-01) / 86400000)\n3. Stem index = days % 10\n4. Branch index = (days % 12 + 10) % 12 (offset for Jan 1 1900 = 庚午)\n5. Note: Hourkey uses local time, NOT UTC for day boundary\n",
+    "note": "Day boundary at midnight local time (Hourkey default)"
   },
   "hour_pillar_calculation": {
     "function": "Dr(date)",
     "logic": "\n1. Get hour H from date.getHours() (24-hour format)\n2. Calculate hour branch index: floor((H + 1) % 24 / 2)\n   - 23:00-00:59 → 子 (0)\n   - 01:00-02:59 → 丑 (1)\n   - ...\n   - 21:00-22:59 → 亥 (11)\n3. Get day stem from g2(date)\n4. Apply 五鼠遁元 (Five Rats Driving) rule:\n   stem index = (day_stem_idx * 2 + hour_branch_idx) % 10\n",
-    "note": "Sesheta does NOT apply true solar time correction (longitude offset). Uses local clock time.",
+    "note": "Hourkey does NOT apply true solar time correction (longitude offset). Uses local clock time.",
     "decode_advantage": "Decode can ADD true solar time correction for accuracy"
   },
   "luck_pillar_calculation": {
     "function": "_r(birthDate, yearStem, monthBranch, monthStem, gender)",
-    "logic": "\nDirection (forward/reverse):\n  - Yang year (甲丙戊庚壬) + Male → forward\n  - Yang year + Female → reverse\n  - Yin year (乙丁己辛癸) + Male → reverse\n  - Yin year + Female → forward\n\nAnchor solar term:\n  - If forward: next 節氣 (Jie Qi) after birth\n  - If reverse: previous 節氣 before birth\n\nGap calculation (Mr function):\n  - Total minutes = |anchor_time - birth_time| / 60000\n  - Days from minutes (1 day = 4320 min in luck calc!)\n    Actually: gap_days = floor(total_min / 4320)\n    \nWait — 4320 minutes = 72 hours = 3 days? No:\n  - 1 hour = 60 min, 1 day = 24*60 = 1440 min\n  - 4320 / 1440 = 3 days\n  - So 4320 min = 3 actual days\n  - Sesheta uses 3 hours = 1 day, 3 days = 1 month, 1 year = 12 months\n  \nRecheck:\n  - years = floor(total_min / 4320)\n  - But this seems wrong. Let me verify.\n  \nACTUAL CONSTANTS in Mr function:\n  - years = Math.floor(total_minutes / 4320)\n  - 4320 minutes = 3 days\n  - So 3 days = 1 year of luck (this is the traditional rule!)\n  \nPillars (br function):\n  - Get sexagenary index of month pillar (in 60 cycle)\n  - For 9 future luck pillars:\n    - If forward: next pillar (s+1)%60\n    - If reverse: previous pillar (s-1+60)%60\n  - Each pillar lasts 10 years\n  - First pillar starts at calculated start_age\n",
+    "logic": "\nDirection (forward/reverse):\n  - Yang year (甲丙戊庚壬) + Male → forward\n  - Yang year + Female → reverse\n  - Yin year (乙丁己辛癸) + Male → reverse\n  - Yin year + Female → forward\n\nAnchor solar term:\n  - If forward: next 節氣 (Jie Qi) after birth\n  - If reverse: previous 節氣 before birth\n\nGap calculation (Mr function):\n  - Total minutes = |anchor_time - birth_time| / 60000\n  - Days from minutes (1 day = 4320 min in luck calc!)\n    Actually: gap_days = floor(total_min / 4320)\n    \nWait — 4320 minutes = 72 hours = 3 days? No:\n  - 1 hour = 60 min, 1 day = 24*60 = 1440 min\n  - 4320 / 1440 = 3 days\n  - So 4320 min = 3 actual days\n  - Hourkey uses 3 hours = 1 day, 3 days = 1 month, 1 year = 12 months\n  \nRecheck:\n  - years = floor(total_min / 4320)\n  - But this seems wrong. Let me verify.\n  \nACTUAL CONSTANTS in Mr function:\n  - years = Math.floor(total_minutes / 4320)\n  - 4320 minutes = 3 days\n  - So 3 days = 1 year of luck (this is the traditional rule!)\n  \nPillars (br function):\n  - Get sexagenary index of month pillar (in 60 cycle)\n  - For 9 future luck pillars:\n    - If forward: next pillar (s+1)%60\n    - If reverse: previous pillar (s-1+60)%60\n  - Each pillar lasts 10 years\n  - First pillar starts at calculated start_age\n",
     "traditional_rule": "3 days = 1 year of life (老黃曆 method)",
     "decode_enhancement": "Could refine with hour-precision (some schools use 1 hour = 5 days)"
   },
   "true_solar_time_correction": {
-    "sesheta_status": "NOT IMPLEMENTED",
+    "hourkey_status": "NOT IMPLEMENTED",
     "correct_formula": "\n1. Convert birth time to UTC\n2. Add longitude offset:\n   - Standard meridian for timezone (e.g., Asia/Bangkok = 105°E)\n   - Birth longitude (e.g., Bangkok = 100.5°E)\n   - Offset minutes = (birth_lon - meridian_lon) * 4\n   - For Bangkok: (100.5 - 105) * 4 = -18 min\n3. Add Equation of Time (EoT):\n   - Variable correction throughout year (-14 to +16 min)\n4. Result = True Solar Time (apparent sun position)\n",
-    "decode_advantage": "🎯 Decode implements this for hour-pillar accuracy = key differentiator vs Sesheta"
+    "decode_advantage": "🎯 Decode implements this for hour-pillar accuracy = key differentiator vs Hourkey"
   }
 }

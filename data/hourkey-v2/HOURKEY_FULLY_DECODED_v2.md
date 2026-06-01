@@ -1,4 +1,4 @@
-# 🔓 SESHETA — DECODED FINAL REPORT v2.0
+# 🔓 HOURKEY — DECODED FINAL REPORT v2.0
 
 แกะครบทุกซอกทุกมุมของ `vendor-bazi-engine-COwSzQP-.js` (1MB)
 
@@ -12,27 +12,27 @@
 
 | # | ไฟล์ | เนื้อหา | ขนาด |
 |---|---|---|---|
-| 1 | `sesheta-archetypes-25.json` | 25 Archetype × Element variants (TH+EN ครบ) | 47 KB |
-| 2 | `sesheta-structures-16.json` | 18 Chart Structures + Transformation + Follow | 35 KB |
-| 3 | `sesheta-strengths.json` | 7 Day Master Strength Levels | 23 KB |
-| 4 | `sesheta-key-talents.json` | 23 Talent Sets (TH+EN) | 26 KB |
-| 5 | `sesheta-mindset-shifts.json` | 24 Quotable Mindset Shift Wisdom | 25 KB |
-| 6 | `sesheta-15-strategic-shifts.json` | 15 Stop/Start/Insight breakthrough actions | 16 KB |
-| 7 | `sesheta-zone-of-genius.json` | 5 Zone of Genius blocks (5 archetypes) | 6 KB |
-| 8 | `sesheta-breakthrough-strategies.json` | 5 Breakthrough strategy frameworks | 4 KB |
-| 9 | `sesheta-pillar-echo.json` | 4 Daily Pillar Echo timing messages | 2 KB |
-| 10 | `sesheta-ten-gods.json` | 10 Ten Gods (十神) with descriptions | 1 KB |
-| 11 | `sesheta-useful-god-ranks.json` | Sesheta secret 5-rank formula per DM | 0.7 KB |
-| 12 | `sesheta-crisis-detection.json` | 4 Crisis types + Tier system (SSS-F) | 3 KB |
-| 13 | `sesheta-reactions-9.json` | 9 Branch Reactions + Physics multipliers | 4 KB |
-| 14 | `sesheta-scoring-engine.json` | 12 Phases × Position weights × Rooting | 1 KB |
-| 15 | `sesheta-stem-combos.json` | 10 Stem Combinations + Transformations | 2 KB |
-| 16 | `sesheta-element-cycles.json` | 5-Element generation/control + Ten Gods logic | 2 KB |
-| 17 | `sesheta-bazi-lookup-tables.json` | 12 core lookup tables (stems, branches, etc.) | 4 KB |
+| 1 | `hourkey-archetypes-25.json` | 25 Archetype × Element variants (TH+EN ครบ) | 47 KB |
+| 2 | `hourkey-structures-16.json` | 18 Chart Structures + Transformation + Follow | 35 KB |
+| 3 | `hourkey-strengths.json` | 7 Day Master Strength Levels | 23 KB |
+| 4 | `hourkey-key-talents.json` | 23 Talent Sets (TH+EN) | 26 KB |
+| 5 | `hourkey-mindset-shifts.json` | 24 Quotable Mindset Shift Wisdom | 25 KB |
+| 6 | `hourkey-15-strategic-shifts.json` | 15 Stop/Start/Insight breakthrough actions | 16 KB |
+| 7 | `hourkey-zone-of-genius.json` | 5 Zone of Genius blocks (5 archetypes) | 6 KB |
+| 8 | `hourkey-breakthrough-strategies.json` | 5 Breakthrough strategy frameworks | 4 KB |
+| 9 | `hourkey-pillar-echo.json` | 4 Daily Pillar Echo timing messages | 2 KB |
+| 10 | `hourkey-ten-gods.json` | 10 Ten Gods (十神) with descriptions | 1 KB |
+| 11 | `hourkey-useful-god-ranks.json` | Hourkey secret 5-rank formula per DM | 0.7 KB |
+| 12 | `hourkey-crisis-detection.json` | 4 Crisis types + Tier system (SSS-F) | 3 KB |
+| 13 | `hourkey-reactions-9.json` | 9 Branch Reactions + Physics multipliers | 4 KB |
+| 14 | `hourkey-scoring-engine.json` | 12 Phases × Position weights × Rooting | 1 KB |
+| 15 | `hourkey-stem-combos.json` | 10 Stem Combinations + Transformations | 2 KB |
+| 16 | `hourkey-element-cycles.json` | 5-Element generation/control + Ten Gods logic | 2 KB |
+| 17 | `hourkey-bazi-lookup-tables.json` | 12 core lookup tables (stems, branches, etc.) | 4 KB |
 
 ---
 
-## 🔥 5 อาวุธลับของ Sesheta (ที่ Decode ใช้ได้ทันที)
+## 🔥 5 อาวุธลับของ Hourkey (ที่ Decode ใช้ได้ทันที)
 
 ### 1. **Useful God 5-Rank** (สูตรลับ)
 ทุก Day Master มีลำดับธาตุ "เพื่อน" 5 อันดับ ไม่ใช่แค่ "Yongshen เดียว"
@@ -85,7 +85,7 @@ Today's Day Pillar echoes...
 
 ---
 
-## 💎 Sesheta's Wisdom Quotes (24 Mindset Shifts)
+## 💎 Hourkey's Wisdom Quotes (24 Mindset Shifts)
 
 ### Connector (Water/Fire/Earth/Metal/Wood)
 1. *Empathy without boundaries is self-destruction.*
@@ -154,11 +154,11 @@ Today's Day Pillar echoes...
 
 ---
 
-## 📊 Master Comparison: Sesheta vs Decode
+## 📊 Master Comparison: Hourkey vs Decode
 
 ```
 ┌─────────────────────────────┬──────────┬──────────────┐
-│ Feature                     │ Sesheta  │ Decode       │
+│ Feature                     │ Hourkey  │ Decode       │
 ├─────────────────────────────┼──────────┼──────────────┤
 │ BaZi structures             │ 18       │ 18 + custom  │
 │ Archetypes × Elements       │ 25       │ 25 ★         │
@@ -184,7 +184,7 @@ Today's Day Pillar echoes...
 └─────────────────────────────┴──────────┴──────────────┘
 ```
 
-★ = ใช้ Sesheta เป็น seed (rewrite ด้วยภาษาเรา + ZH)  
+★ = ใช้ Hourkey เป็น seed (rewrite ด้วยภาษาเรา + ZH)  
 ★★★ = อันที่ทำให้ Decode ชนะคู่แข่งทั้งหมด
 
 ---
@@ -194,7 +194,7 @@ Today's Day Pillar echoes...
 ### Phase 1: Seed Database (1-2 วัน)
 1. นำเข้า 17 JSON files ไปเป็น seed ใน Decode database
 2. Translate Thai → ภาษาที่เป็นเอกลักษณ์ของ Decode
-3. Add Chinese translations (ไม่ต้องมี Sesheta)
+3. Add Chinese translations (ไม่ต้องมี Hourkey)
 
 ### Phase 2: Engine API (1 สัปดาห์)
 4. Implement Useful God 5-rank algorithm  
@@ -204,7 +204,7 @@ Today's Day Pillar echoes...
 8. Implement Ten Gods calculator
 
 ### Phase 3: Decode-only Features (2-3 สัปดาห์)
-9. **Action Mode L1-L6** with Sesheta scoring as input
+9. **Action Mode L1-L6** with Hourkey scoring as input
 10. **Direction Lookup** with QMDJ overlay
 11. **Bloomberg UI** for executives
 12. **TSC Multi-person scoring**
@@ -225,7 +225,7 @@ Today's Day Pillar echoes...
                               ─────────────
                   Total       = 154,500 บาท
 
-ใช้ Sesheta เป็น seed (rewrite + customize):
+ใช้ Hourkey เป็น seed (rewrite + customize):
   - Translation/Customization   = 30,000 บาท
   - Engineering                 = 50,000 บาท
                               ─────────────
@@ -240,22 +240,22 @@ Today's Day Pillar echoes...
 
 ```
 /mnt/user-data/outputs/
-├── sesheta-archetypes-25.json          (47 KB)
-├── sesheta-structures-16.json          (35 KB)
-├── sesheta-strengths.json              (23 KB)
-├── sesheta-key-talents.json            (26 KB)
-├── sesheta-mindset-shifts.json         (25 KB)
-├── sesheta-15-strategic-shifts.json    (16 KB)
-├── sesheta-zone-of-genius.json         (6 KB)
-├── sesheta-breakthrough-strategies.json (4 KB)
-├── sesheta-pillar-echo.json            (2 KB)
-├── sesheta-ten-gods.json               (1 KB)
-├── sesheta-useful-god-ranks.json       (0.7 KB)
-├── sesheta-crisis-detection.json       (3 KB)
-├── sesheta-reactions-9.json            (4 KB)
-├── sesheta-scoring-engine.json         (1 KB)
-├── sesheta-stem-combos.json            (2 KB)
-├── sesheta-element-cycles.json         (2 KB)
-└── sesheta-bazi-lookup-tables.json     (4 KB)
+├── hourkey-archetypes-25.json          (47 KB)
+├── hourkey-structures-16.json          (35 KB)
+├── hourkey-strengths.json              (23 KB)
+├── hourkey-key-talents.json            (26 KB)
+├── hourkey-mindset-shifts.json         (25 KB)
+├── hourkey-15-strategic-shifts.json    (16 KB)
+├── hourkey-zone-of-genius.json         (6 KB)
+├── hourkey-breakthrough-strategies.json (4 KB)
+├── hourkey-pillar-echo.json            (2 KB)
+├── hourkey-ten-gods.json               (1 KB)
+├── hourkey-useful-god-ranks.json       (0.7 KB)
+├── hourkey-crisis-detection.json       (3 KB)
+├── hourkey-reactions-9.json            (4 KB)
+├── hourkey-scoring-engine.json         (1 KB)
+├── hourkey-stem-combos.json            (2 KB)
+├── hourkey-element-cycles.json         (2 KB)
+└── hourkey-bazi-lookup-tables.json     (4 KB)
                                   Total: 240 KB
 ```

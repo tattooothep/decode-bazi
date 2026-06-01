@@ -1,6 +1,6 @@
 /**
  * Seed Reference Tables · 12 ref_* tables in decode-postgres
- * Source: 47 Sesheta JSON files + solar_terms_full.py
+ * Source: 47 Hourkey JSON files + solar_terms_full.py
  * Run: node scripts/seed-reference-tables.js
  */
 
@@ -39,7 +39,7 @@ async function main() {
   console.log('✓ cleaned 12 tables');
 
   // 1) ref_heavenly_stems · 10 row
-  const lt = JSON.parse(fs.readFileSync(`${DATA}/sesheta/sesheta-bazi-lookup-tables.json`));
+  const lt = JSON.parse(fs.readFileSync(`${DATA}/hourkey/hourkey-bazi-lookup-tables.json`));
   let n = 0;
   for (let i = 0; i < 10; i++) {
     const s = STEMS[i];
@@ -93,7 +93,7 @@ async function main() {
   console.log(`✓ ref_kong_wang_xun: 6`);
 
   // 5) ref_jia_zi_60 · 60 row from na-yin
-  const ny = JSON.parse(fs.readFileSync(`${DATA}/sesheta-v3/sesheta-na-yin-60.json`));
+  const ny = JSON.parse(fs.readFileSync(`${DATA}/hourkey-v3/hourkey-na-yin-60.json`));
   const naYinElToEnum = {Metal:'Metal',Fire:'Fire',Wood:'Wood',Earth:'Earth',Water:'Water'};
   // Compute kong_wang_xun for each pillar
   function getXunIdx(pillar) {
@@ -122,7 +122,7 @@ async function main() {
   console.log(`✓ ref_jia_zi_60: ${n}`);
 
   // 6) ref_archetypes_25
-  const arch = JSON.parse(fs.readFileSync(`${DATA}/sesheta/sesheta-archetypes-25.json`));
+  const arch = JSON.parse(fs.readFileSync(`${DATA}/hourkey/hourkey-archetypes-25.json`));
   const archMap = {Influence:'Leader'};  // DB allows Leader, JSON uses Influence
   n = 0;
   for (const a of arch) {
@@ -134,7 +134,7 @@ async function main() {
   console.log(`✓ ref_archetypes_25: ${n}`);
 
   // 7) ref_structures_18
-  const st = JSON.parse(fs.readFileSync(`${DATA}/sesheta/sesheta-structures-16.json`));
+  const st = JSON.parse(fs.readFileSync(`${DATA}/hourkey/hourkey-structures-16.json`));
   n = 0;
   for (const s of st) {
     const cat = s.key?.includes('Transformation') ? 'transformation' :
@@ -147,7 +147,7 @@ async function main() {
   console.log(`✓ ref_structures_18: ${n}`);
 
   // 8) ref_strengths
-  const str = JSON.parse(fs.readFileSync(`${DATA}/sesheta/sesheta-strengths.json`));
+  const str = JSON.parse(fs.readFileSync(`${DATA}/hourkey/hourkey-strengths.json`));
   n = 0;
   const codeMap = {extremely_weak:'extremely_weak',very_weak:'very_weak',weak:'weak',slightly_weak:'slightly_weak',balanced:'balanced',slightly_strong:'slightly_strong',strong:'strong',very_strong:'very_strong',extremely_strong:'extremely_strong',transformed:'transformed'};
   for (const s of str) {
@@ -162,8 +162,8 @@ async function main() {
   console.log(`✓ ref_strengths: ${n}`);
 
   // 9) ref_personal_stars · 14 stars
-  const ps = JSON.parse(fs.readFileSync(`${DATA}/sesheta-v5/sesheta-personal-stars-bilingual.json`));
-  const sr = JSON.parse(fs.readFileSync(`${DATA}/sesheta-v5/sesheta-star-readings-bilingual.json`));
+  const ps = JSON.parse(fs.readFileSync(`${DATA}/hourkey-v5/hourkey-personal-stars-bilingual.json`));
+  const sr = JSON.parse(fs.readFileSync(`${DATA}/hourkey-v5/hourkey-star-readings-bilingual.json`));
   const STAR_ZH = {'Nobleman Star':'天乙貴人','Peach Blossom':'桃花','Sky Horse':'驛馬','Intelligence':'文昌','Kong Wang':'空亡','Elegant Seal':'華蓋','The General Star':'將星','Blood Knife':'血刃','Solitary':'孤辰','Lonesome':'寡宿','Funeral Door':'喪門','Robbery Sha':'劫煞','Separating Edge':'天醫','Death God':'亡神','Salty Pool':'鹹池','Thriving':'祿神','Goat Blade':'羊刃','Red Chamber':'紅艷','Study Hall':'學堂','Cascading Clouds':'紫雲','Flying Blade':'飛刃','Gold Carriage':'金舆','Heavenly Wealth':'天厨'};
   n = 0;
   const starIds = {};
@@ -192,7 +192,7 @@ async function main() {
   console.log(`✓ ref_star_pillar_readings: ${n}`);
 
   // 11) ref_six_destructions · 6 row
-  const sd = JSON.parse(fs.readFileSync(`${DATA}/sesheta-v4/decode-six-destructions.json`));
+  const sd = JSON.parse(fs.readFileSync(`${DATA}/hourkey-v4/decode-six-destructions.json`));
   n = 0;
   for (const d of sd.destruction_pairs || []) {
     const pair = d.branches || d.pair || [];

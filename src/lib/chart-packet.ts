@@ -484,7 +484,7 @@ export type ChartPacket = {
   interactionConflictSummary: InteractionConflictSummary[];
   profile?: {
     daymaster?: string;
-    /** ตัวตนเชิงลึก (Sesheta · getDaymasterProfile) · presentation พร้อมใช้ */
+    /** ตัวตนเชิงลึก (Hourkey · getDaymasterProfile) · presentation พร้อมใช้ */
     daymasterDeep?: string;
     fiveStructure?: string;
     careerIndustries?: string[];

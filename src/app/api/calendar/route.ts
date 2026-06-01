@@ -384,7 +384,7 @@ export async function GET(req: Request) {
       const rawJi = ld.getAvoids().map((x: { getName(): string }) => x.getName());
       const fixed = filterYiJiByOfficer(rawYi, rawJi, officerName);
 
-      /* 17 พ.ค. · 4 pillars + 64卦 · Sesheta-style "สี่เสาของวันนี้" */
+      /* 17 พ.ค. · 4 pillars + 64卦 · Hourkey-style "สี่เสาของวันนี้" */
       const yearPillarStr = ec.getYear().getName();
       const ys = yearPillarStr[0], yb = yearPillarStr[1];
       const ms = dayMonthPillar[0], mb = dayMonthPillar[1];
@@ -430,7 +430,7 @@ export async function GET(req: Request) {
         yi: fixed.yi.slice(0, 8),
         ji: fixed.ji.slice(0, 8),
         gods: cls,
-        /* 17 พ.ค. · Sesheta-style stars · ชื่อไทย + คะแนน + อธิบาย */
+        /* 17 พ.ค. · Hourkey-style stars · ชื่อไทย + คะแนน + อธิบาย */
         stars_detail: starSummary,
         pillars_full,
         verdict,

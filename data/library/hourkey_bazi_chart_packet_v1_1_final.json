@@ -1281,7 +1281,7 @@
     "dataVersion": {
       "hiddenStemsTable": "hourkey-bazi-core-v1",
       "tenGodMapping": "hourkey-bazi-core-v1",
-      "shenShaTable": "hourkey-sesheta-stars-v1",
+      "shenShaTable": "hourkey-hourkey-stars-v1",
       "interactionRules": "hourkey-interaction-master-v1",
       "growthStages": "hourkey-12changsheng-v1"
     },

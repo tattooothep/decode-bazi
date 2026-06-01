@@ -12,7 +12,7 @@
  * }
  *
  * Logic: stem 合/沖 + branch 六合/三合/沖/刑/害/破 + element 生/克/比 → × tf weight
- * Source: data/sesheta-v8/decode-interaction-matrix.json (scoring_weights · interaction tables)
+ * Source: data/hourkey-v8/decode-interaction-matrix.json (scoring_weights · interaction tables)
  */
 // pair-base.ts · extracted 18 พ.ค. จาก /api/network/score · Single Source of Truth (อากง 10 rules)
 

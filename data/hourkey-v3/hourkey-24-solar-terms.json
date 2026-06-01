@@ -173,5 +173,5 @@
     "大雪",
     "冬至"
   ],
-  "note": "Sesheta uses these to determine month pillar boundaries. Year pillar changes at 立春, NOT at 1 Jan."
+  "note": "Hourkey uses these to determine month pillar boundaries. Year pillar changes at 立春, NOT at 1 Jan."
 }

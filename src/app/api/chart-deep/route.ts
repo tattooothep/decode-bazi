@@ -5,6 +5,7 @@
  * Auth: requires session cookie · scoped to session.orgId
  */
 import { NextResponse } from "next/server";
+import { NO_STORE_HEADERS, scrubFormulaTrace } from "@/lib/api-scrub";
 import { getSession } from "@/lib/auth";
 import { loadProfileChart } from "../../chart-v2/load-profile";
 
@@ -12,20 +13,20 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const profileId = url.searchParams.get("profile");
   if (!profileId) {
-    return NextResponse.json({ error: "profile required (?profile=<uuid>)" }, { status: 400 });
+    return NextResponse.json({ error: "profile required (?profile=<uuid>)" }, { status: 400, headers: NO_STORE_HEADERS });
   }
 
   const session = await getSession();
   if (!session?.orgId) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: NO_STORE_HEADERS });
   }
 
   const r = await loadProfileChart(profileId, session.orgId);
   if (!r) {
-    return NextResponse.json({ error: "profile not found" }, { status: 404 });
+    return NextResponse.json({ error: "profile not found" }, { status: 404, headers: NO_STORE_HEADERS });
   }
 
-  return NextResponse.json({
+  const response = {
     schema: "decode-chart-deep-v1",
     generated_at: new Date().toISOString(),
     profile_id: profileId,
@@ -101,5 +102,7 @@ export async function GET(req: Request) {
       stemMatrix: r.STEM_MATRIX,
       branchMatrix: r.BRANCH_MATRIX,
     },
-  });
+  };
+
+  return NextResponse.json(scrubFormulaTrace(response), { headers: NO_STORE_HEADERS });
 }

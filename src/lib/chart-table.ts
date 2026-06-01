@@ -2,11 +2,11 @@
  * chart-table.ts · helpers สำหรับ §02 Four Pillars table (Joey Yap-style)
  *
  * Codex direction: extract local logic · no DB queries on /api/chart hot path.
- * Source of truth ของ tables ทั้งหมด: data/sesheta-v3/sesheta-na-yin-60.json
+ * Source of truth ของ tables ทั้งหมด: data/hourkey-v3/hourkey-na-yin-60.json
  * + คลาสสิก formulas ที่ใช้ใน /chart-v2/load-profile.ts (locked · ไม่แตะ).
  */
 
-import naYinData from "../../data/sesheta-v3/sesheta-na-yin-60.json";
+import naYinData from "../../data/hourkey-v3/hourkey-na-yin-60.json";
 
 export type Pillar = { stem: string; branch: string };
 export type Pillars = { year: Pillar; month: Pillar; day: Pillar; hour: Pillar | null };

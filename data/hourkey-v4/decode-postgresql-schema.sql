@@ -4,7 +4,7 @@
 -- =============================================================
 -- Version: 1.0
 -- Date: 2026-05-05
--- Built from: 35 extracted JSON sources + 7 Sesheta tables analyzed
+-- Built from: 35 extracted JSON sources + 7 Hourkey tables analyzed
 -- Owner: Aeaw / WeWealth Trading Co., Ltd
 -- =============================================================
 
@@ -205,7 +205,7 @@ CREATE TABLE ref_structures_18 (
     donts_th JSONB
 );
 
--- 9 Day Master Strengths (Sesheta uses 7 + Decode adds 2)
+-- 9 Day Master Strengths (Hourkey uses 7 + Decode adds 2)
 CREATE TABLE ref_strengths (
     id SMALLINT PRIMARY KEY,
     code day_master_strength NOT NULL UNIQUE,
@@ -225,7 +225,7 @@ CREATE TABLE ref_strengths (
     strength_percentage_max SMALLINT
 );
 
--- 23 Personal Stars (Sesheta full set)
+-- 23 Personal Stars (Hourkey full set)
 CREATE TABLE ref_personal_stars (
     id SMALLINT PRIMARY KEY,
     name_en VARCHAR(40) NOT NULL UNIQUE,
@@ -251,7 +251,7 @@ CREATE TABLE ref_star_pillar_readings (
     PRIMARY KEY (star_id, pillar_position)
 );
 
--- 6 Branch Destructions (Decode-exclusive — Sesheta missing)
+-- 6 Branch Destructions (Decode-exclusive — Hourkey missing)
 CREATE TABLE ref_six_destructions (
     id SMALLINT PRIMARY KEY CHECK (id BETWEEN 1 AND 6),
     branch_a CHAR(1) NOT NULL,
@@ -308,7 +308,7 @@ CREATE TABLE user_birth_profiles (
     birth_timezone TEXT DEFAULT 'Asia/Bangkok',
     gender VARCHAR(10) CHECK (gender IN ('male','female','unknown')),
     
-    -- Solar Time correction (Decode advantage over Sesheta)
+    -- Solar Time correction (Decode advantage over Hourkey)
     use_true_solar_time BOOLEAN DEFAULT TRUE,
     longitude_correction_minutes NUMERIC(5,2),
     equation_of_time_minutes NUMERIC(5,2),
@@ -374,7 +374,7 @@ CREATE TABLE bazi_charts (
     -- Six Destructions (Decode-exclusive)
     six_destructions_detected JSONB,  -- [{pair_id, branches, severity}]
     
-    -- Branch reactions (9 layer Sesheta scoring)
+    -- Branch reactions (9 layer Hourkey scoring)
     branch_reactions JSONB,
     
     -- Luck pillars (10 forward pillars)
@@ -472,7 +472,7 @@ CREATE TABLE user_subscriptions (
 );
 CREATE INDEX idx_user_subs_active ON user_subscriptions(user_id, is_active, expires_at);
 
--- AI Credits ("Cosmic Ink" in Sesheta, "Decode Tokens" in Decode)
+-- AI Credits ("Cosmic Ink" in Hourkey, "Decode Tokens" in Decode)
 CREATE TABLE ai_credits (
     user_id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
     credits_remaining NUMERIC(10,2) DEFAULT 0,
@@ -508,13 +508,13 @@ CREATE INDEX idx_charts_useful_god ON bazi_charts(useful_god_best_element);
 CREATE INDEX idx_readings_action ON daily_readings(action_mode, reading_date);
 
 -- =============================================================
--- DECODE-EXCLUSIVE FEATURES vs Sesheta:
+-- DECODE-EXCLUSIVE FEATURES vs Hourkey:
 -- 1. Six Destructions table + tracking
 -- 2. True Solar Time correction (longitude + EoT)
--- 3. 25 Archetypes (vs Sesheta's 5 base)
--- 4. Action Mode L1-L6 (vs Sesheta's resonance levels)
+-- 3. 25 Archetypes (vs Hourkey's 5 base)
+-- 4. Action Mode L1-L6 (vs Hourkey's resonance levels)
 -- 5. Multi-language (TH+EN+ZH) from launch
--- 6. Na Yin 60 lookup (Sesheta has zero)
+-- 6. Na Yin 60 lookup (Hourkey has zero)
 -- 7. Crisis tier with structured detection
 -- 8. Hour-by-hour luck refinement (separate hour_advisor table)
 -- =============================================================

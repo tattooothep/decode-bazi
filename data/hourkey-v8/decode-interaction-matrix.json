@@ -6,7 +6,7 @@
     "description": "Cross-pillar interaction taxonomy: 4 natal pillars × 5 transit layers = 20 base cases + multi-layer stack detection. Maps each activation to verdict, intensity, domain, affected pillar, and tri-lingual narrative.",
     "version": "1.1",
     "created": "2026-05-06",
-    "scope": "Decode v2 BaZi engine — replaces Sesheta's free-text approach with structured detection",
+    "scope": "Decode v2 BaZi engine — replaces Hourkey's free-text approach with structured detection",
     "natal_positions": [
       "year",
       "month",

@@ -4,7 +4,7 @@
  * รับ: { day_master, strength_level, lang? }
  * คืน: { strength: { label, metaphor, meaning, core_strategy, dos[], donts[] }, yongshen_advice: [{element, rank, meaning, strategy}] }
  *
- * Source: ref_strengths + ref_yongshen_ranks (Sesheta canon · 3 ภาษา)
+ * Source: ref_strengths + ref_yongshen_ranks (Hourkey canon · 3 ภาษา)
  */
 import { NextResponse } from "next/server";
 import { q1, q } from "@/lib/db";

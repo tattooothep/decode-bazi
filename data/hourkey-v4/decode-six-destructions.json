@@ -2,7 +2,7 @@
   "metadata": {
     "title": "六破 Six Destructions",
     "title_th": "ลิ่วโผ่ การทำลายหก",
-    "description": "Six pairs of branches that destabilize each other through mutual undermining. Sesheta does NOT track this; Decode-exclusive feature.",
+    "description": "Six pairs of branches that destabilize each other through mutual undermining. Hourkey does NOT track this; Decode-exclusive feature.",
     "source": "Classical BaZi 子平真詮",
     "decoded_by": "Aeaw + Claude (Decode v1)",
     "version": "1.0"
@@ -104,11 +104,11 @@
   "calculation_logic": {
     "detection_function": "function detectSixDestructions(pillars) {\n  const branches = [pillars.year.branch, pillars.month.branch, pillars.day.branch, pillars.hour.branch];\n  const destructions = [];\n  for (const pair of DESTRUCTION_PAIRS) {\n    if (branches.includes(pair.branches[0]) && branches.includes(pair.branches[1])) {\n      destructions.push(pair);\n    }\n  }\n  return destructions;\n}",
     "intensity_modifier": "Each destruction reduces overall chart harmony by strength_modifier. Sum total caps at -0.50 to prevent over-penalty.",
-    "interaction_with_sesheta": "Apply AFTER Sesheta's 9 reactions (sanHui, sanHe, liuHe, etc.) since destructions are weaker than combinations. If a destruction branch is also locked in a combination, the destruction is suppressed."
+    "interaction_with_hourkey": "Apply AFTER Hourkey's 9 reactions (sanHui, sanHe, liuHe, etc.) since destructions are weaker than combinations. If a destruction branch is also locked in a combination, the destruction is suppressed."
   },
 
   "decode_advantage": {
-    "competitive_edge": "Sesheta's vendor-bazi-engine.js does NOT include 六破 Six Destructions logic. Verified by searching for keywords: '破', 'destruction', 'sixDestruction' — all absent.",
+    "competitive_edge": "Hourkey's vendor-bazi-engine.js does NOT include 六破 Six Destructions logic. Verified by searching for keywords: '破', 'destruction', 'sixDestruction' — all absent.",
     "why_it_matters": "六破 catches subtle dysfunctions that 沖 (Clash) and 害 (Harm) miss. Particularly important for Aeaw's chart (己亥 Day): 亥 paired with 寅 in luck cycles activates Pair #3 paradox.",
     "implementation": "Add as 10th branch reaction layer in scoring-engine.js; integrate into Daily Trader Engine for finer-grained risk detection."
   }

@@ -769,7 +769,7 @@ export const TYPES: Record<string, ParaphraseType> = {
       { key: "tian_yi_star_zh", label: "Tian Yi" },
     ],
   },
-  /* ─────────── Phase 18C · Sesheta JSON 12 หมวด ─────────── */
+  /* ─────────── Phase 18C · Hourkey JSON 12 หมวด ─────────── */
   jiazi_year: {
     type: "jiazi_year",
     table: "ref_jiazi_year_table",

@@ -115,7 +115,7 @@ console.log(`Active stars: ${stars.map(s => s.star_zh).join(', ')}`);
 2. **Confidence ติด ceiling 100** เร็วเมื่อมี multi-stack activate — อาจปรับ formula ลด weight stack_modifier ใน v1.2
 3. **kong_wang_void_collision** activate บน 巳 (Aeaw's void from 甲午 xun) ตอนนี้รายงานเป็น neutral แต่จริงๆ ควรเตือนว่า "ปีนี้เหตุการณ์ใน{domain}อาจรู้สึกห่างไกล/ไม่จริง"
 4. **Yin modifier** ตอนนี้ +10 per yin hit แต่ Aeaw 2026 มี half_fan_yin กับเสาเดือน — ควรขึ้นเป็น +20 สำหรับ pillar ที่ critical (month)
-5. **Need to wire** — เชื่อมกับ Sesheta Daily Trader Engine 4-layer scoring เพื่อให้ Action Mode L1-L6 รู้ว่า "ปี/เดือน/วัน/ชั่วโมง confidence รวมเท่าไร"
+5. **Need to wire** — เชื่อมกับ Hourkey Daily Trader Engine 4-layer scoring เพื่อให้ Action Mode L1-L6 รู้ว่า "ปี/เดือน/วัน/ชั่วโมง confidence รวมเท่าไร"
 
 ---
 

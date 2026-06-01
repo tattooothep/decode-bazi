@@ -5,9 +5,16 @@
  * 19 พ.ค. Option α · birthTimeKnown:false → 3p mode · hour null · skip ChildLimit/getSolarTimeAtTST/hsHhs[hour]
  */
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
+import { NO_STORE_HEADERS, sanitizeChartPayload } from "@/lib/api-scrub";
 import { getDaymasterProfile } from "@/lib/daymaster-profile";
 
 export async function POST(req: Request) {
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401, headers: NO_STORE_HEADERS });
+  }
+
   const body = await req.json().catch(() => ({}));
   const {
     date,
@@ -17,13 +24,13 @@ export async function POST(req: Request) {
     dayBoundary = "23:00",
     birthTimeKnown: birthTimeKnownRaw,
   } = body;
-  if (!date) return NextResponse.json({ error: "date required (YYYY-MM-DD)" }, { status: 400 });
+  if (!date) return NextResponse.json({ error: "date required (YYYY-MM-DD)" }, { status: 400, headers: NO_STORE_HEADERS });
 
   const birthTimeKnown = birthTimeKnownRaw !== false;             /* default true · backward compat */
   const time = birthTimeKnown ? (timeRaw || "12:00") : "12:00";    /* anchor only · ไม่ใช่ pillar ใน 3p */
 
   const [yy, mm, dd] = date.split("-").map(Number);
-  if (!yy || !mm || !dd) return NextResponse.json({ error: "invalid date" }, { status: 400 });
+  if (!yy || !mm || !dd) return NextResponse.json({ error: "invalid date" }, { status: 400, headers: NO_STORE_HEADERS });
 
   try {
     // Use shared helper (TST applied · single source of truth)
@@ -189,7 +196,7 @@ export async function POST(req: Request) {
         console.warn("[chart] 3p functional override failed", e);
       }
 
-      return NextResponse.json({
+      const response = {
         input: { date, time: null, longitude, gender, birthTimeKnown: false },
         pillars: natal,
         pillarsZh: calc.pillarsZh,
@@ -260,7 +267,8 @@ export async function POST(req: Request) {
         yongshen_v2: yongshenV2_3p,
         heluo_astrology: null,        /* 3p · ต้องการ hour pillar · skip */
         solar_terms_birth: null,       /* 3p · ต้องการ time precise · skip */
-      });
+      };
+      return NextResponse.json(sanitizeChartPayload(response), { headers: NO_STORE_HEADERS });
     }
 
     /* 4p path · เดิม · backward compat 100% (TS narrowed calc to BaziAnalysis4p จาก early return) */
@@ -456,7 +464,7 @@ export async function POST(req: Request) {
       console.error("chart-carry detect failed:", e);
     }
 
-    return NextResponse.json({
+    const response = {
       input: { date, time, longitude, gender, birthTimeKnown: true },
       pillars: natal,
       pillarsZh: calc.pillarsZh,
@@ -534,9 +542,10 @@ export async function POST(req: Request) {
       })(),
       /* 📜 อากง v3 · 24 節氣 ของปีเกิด + jieqi ของเดือนเกิด · 16 พ.ค. */
       solar_terms_birth: solarTermsBirth,
-    });
+    };
+    return NextResponse.json(sanitizeChartPayload(response), { headers: NO_STORE_HEADERS });
   } catch (e: unknown) {
     console.error("[chart] error:", e);  // 1 มิ.ย. · log เต็มฝั่ง server · ไม่คืน stack/message ดิบให้ client
-    return NextResponse.json({ error: "internal error" }, { status: 500 });
+    return NextResponse.json({ error: "internal error" }, { status: 500, headers: NO_STORE_HEADERS });
   }
 }

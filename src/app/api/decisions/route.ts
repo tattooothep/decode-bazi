@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     const w5 = await import("../../../../data/library/wrappers/5-tiao-hou.js");
     const w6 = await import("../../../../data/library/wrappers/6-strength-yongshen.js");
     // interaction detector v8
-    const det = await import("../../../../data/sesheta-v8/decode-interaction-detector.js" as string).catch(() => null);
+    const det = await import("../../../../data/hourkey-v8/decode-interaction-detector.js" as string).catch(() => null);
 
     // Calc natal (TST)
     const natalCalc = await calcBazi({ date: natal_date, time: natal_time, longitude: 100.5018, gmtOffsetHours: 7 });

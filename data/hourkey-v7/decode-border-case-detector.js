@@ -5,7 +5,7 @@
  * of a solar term boundary, meaning month pillar (or year pillar near 立春)
  * could be EITHER side. User must verify with classical reference.
  * 
- * Critical for accuracy — Sesheta and most apps silently pick a side without warning.
+ * Critical for accuracy — Hourkey and most apps silently pick a side without warning.
  */
 
 const SOLAR_TERMS_2026 = [

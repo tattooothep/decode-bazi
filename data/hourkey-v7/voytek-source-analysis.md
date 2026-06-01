@@ -40,7 +40,7 @@ Month begins: 2026-05-05 18:46 GMT+7 (18:27 LMT)
 Border case - some pillars are on borderline (Month).
 ```
 → Voytek warns when birth time falls within solar term boundary
-→ Sesheta + Decode currently DON'T do this
+→ Hourkey + Decode currently DON'T do this
 → Critical for late-Jan/early-Feb births especially
 
 ### CSS Classes for elements

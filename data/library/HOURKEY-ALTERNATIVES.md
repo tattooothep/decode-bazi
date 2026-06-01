@@ -1,4 +1,4 @@
-# 🎯 Sesheta Alternatives — Open Source QMDJ + BaZi Engines
+# 🎯 Hourkey Alternatives — Open Source QMDJ + BaZi Engines
 
 ## 🥇 #1: tyme4ts — THE WINNER (300KB JS)
 - Repo: https://github.com/6tail/tyme4ts
@@ -63,7 +63,7 @@ TwentyEightStar, TenStar, NaYin, Element, HeavenStem, EarthBranch, ...
 
 ## 📊 Comparison
 
-| Need | Sesheta | tyme4ts | bazica | bazi-mcp | kinqimen | taobi |
+| Need | Hourkey | tyme4ts | bazica | bazi-mcp | kinqimen | taobi |
 |------|---------|---------|--------|----------|----------|-------|
 | BaZi 4 Pillars | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
 | QMDJ engine | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
@@ -88,10 +88,10 @@ TwentyEightStar, TenStar, NaYin, Element, HeavenStem, EarthBranch, ...
 - Render Tong Shu page just like chinesemetasoft.com
 - Output: 黄历/二十八宿/彭祖百忌/纳音/喜神方位/冲煞/宜/忌
 
-### Phase 2 — Sesheta unique features (already in plan Sprint 8.2)
-- Useful God 7-tier (port from sesheta.txt)
-- Crisis Detection (port from sesheta.txt)
-- Bridge Element (port from sesheta.txt)
-- Hexagram 60-pillar (port from sesheta.txt)
+### Phase 2 — Hourkey unique features (already in plan Sprint 8.2)
+- Useful God 7-tier (port from hourkey.txt)
+- Crisis Detection (port from hourkey.txt)
+- Bridge Element (port from hourkey.txt)
+- Hexagram 60-pillar (port from hourkey.txt)
 
-### Result: Decode v2 = Sesheta + tyme4ts + own Qi Men engine = beat chinesemetasoft.com on BaZi+Tong Shu+QMDJ
+### Result: Decode v2 = Hourkey + tyme4ts + own Qi Men engine = beat chinesemetasoft.com on BaZi+Tong Shu+QMDJ

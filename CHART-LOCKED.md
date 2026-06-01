@@ -378,7 +378,7 @@ confidence         = "high"
 |---|---|
 | `src/lib/chart-extensions.ts` | Engine 1+2 · LP×natal · 天地合 · 流年 timeline · ดวงพิเศษ · spouse · career · health · Voytek strength |
 | `src/lib/chart-table.ts` | **62 神煞 detector** · Voytek anchors (YP/DP/MP/DS) · Kong Wang 2 xun · 12 phases · Na Yin · Life Palace · 5 Structure |
-| `src/lib/chart-personal-stars.ts` | 14 personal stars · Sesheta v5 bilingual |
+| `src/lib/chart-personal-stars.ts` | 14 personal stars · Hourkey v5 bilingual |
 | `src/lib/qimen-destiny.ts` | QiMen natal mini-card · async timeout |
 
 ### Layer 0-1 (already SINGLE SOURCE LOCKED · ดูใน AGENTS.md หลัก)
@@ -408,7 +408,7 @@ confidence         = "high"
 06 ELEMENTS (5 ธาตุ %)
 07 INTERACTIONS (4 cards · 合·沖·三合·害刑·吟)
 08 大運 (8 เสาโชค + interaction tags)
-09 個人星 (14 ดาว Sesheta)
+09 個人星 (14 ดาว Hourkey)
 10 基礎 (BaZi basic + matrix)
 11 流年 (timeline 10 ปี + ซินแสตอบ)
 ```
@@ -421,10 +421,10 @@ confidence         = "high"
 
 | Path | Use |
 |---|---|
-| `data/sesheta-v5/sesheta-personal-stars-bilingual.json` | 14 personal stars 3 ภาษา |
-| `data/sesheta-v3/sesheta-na-yin-60.json` | Na Yin 60 jiazi |
-| `data/sesheta-v8/decode-fan-yin-fu-yin-detector.js` | Fan/Fu Yin classical |
-| `data/sesheta-v8/decode-interaction-matrix.json` | 11 patterns prose |
+| `data/hourkey-v5/hourkey-personal-stars-bilingual.json` | 14 personal stars 3 ภาษา |
+| `data/hourkey-v3/hourkey-na-yin-60.json` | Na Yin 60 jiazi |
+| `data/hourkey-v8/decode-fan-yin-fu-yin-detector.js` | Fan/Fu Yin classical |
+| `data/hourkey-v8/decode-interaction-matrix.json` | 11 patterns prose |
 
 ---
 

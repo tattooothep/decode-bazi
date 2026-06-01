@@ -172,7 +172,7 @@ Possible future small PRs:
    - heluo/network/qimen/sifu endpoints need separate investigation
    - do not mix with frontend or auth
 
-4. Sesheta/data/lib inventory:
+4. Hourkey/data/lib inventory:
 
    - do not restore in bulk
    - no `git add .`

@@ -331,7 +331,7 @@ docker exec decode-postgres pg_dump -U decode_user decode_db > /root/backups/<na
 - Regression test: `scripts/test-bazi-calc.cjs`
 - Migration tool: `scripts/migrate-tst.cjs`
 - Backup dir: `/root/backups/safe-refactor-*/`
-- Sesheta source: `data/sesheta · sesheta-v2..v8` · 47 ไฟล์ · 662 KB
+- Hourkey source: `data/hourkey · hourkey-v2..v8` · 47 ไฟล์ · 662 KB
 
 ## 🔒 38 Engine Modules Map · LOCKED (อ่านก่อนแตะ /chart-v2)
 
@@ -392,10 +392,10 @@ src/lib/bazi-calc.ts       · calcBazi()
 src/app/chart-v2/load-profile.ts   · 39 หมวด loader
 ```
 
-### Sesheta JSON source (เพื่อนยกให้ commercial เต็มสิทธิ์):
+### Hourkey JSON source (เพื่อนยกให้ commercial เต็มสิทธิ์):
 ```
-data/sesheta/         (9 files · core)
-data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
+data/hourkey/         (9 files · core)
+data/hourkey-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 ```
 
 **ก่อนแตะ /chart-v2 หรือ load-profile.ts:** ตอบ 5 ข้อใน section "🛡 10 ข้อ" ข้างล่างให้ครบก่อน
@@ -510,7 +510,7 @@ data/sesheta-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 ### Engine
 - `src/lib/chart-extensions.ts` · Engine 1+2 · LP×natal · 天地合 · 流年 timeline · ดวงพิเศษ · spouse · career · health
 - `src/lib/chart-table.ts` · **62 ดาว 神煞** · Voytek anchors (YP/DP/MP/DS) · 14 personal stars · Kong Wang 2 xun
-- `src/lib/chart-personal-stars.ts` · 14 ดาว Sesheta v5
+- `src/lib/chart-personal-stars.ts` · 14 ดาว Hourkey v5
 - `src/lib/qimen-destiny.ts` · QiMen mini-card
 
 ### API

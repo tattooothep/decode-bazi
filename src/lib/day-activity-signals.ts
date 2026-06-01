@@ -1,6 +1,6 @@
 // Day Activity Signal Aggregator · §11
-// อ่าน source: bazi-calc + wrappers/shared.js + sesheta-v6/decode-stars-detector.js
-//             + sesheta-v8/decode-interaction-detector.js
+// อ่าน source: bazi-calc + wrappers/shared.js + hourkey-v6/decode-stars-detector.js
+//             + hourkey-v8/decode-interaction-detector.js
 // Output: 16 fields ใน JSON เดียวให้ rule engine consume
 // Status: staging/debug · ไม่มี wording · ไม่ recommend activity จนกว่าจะมี formula ซินแส
 
@@ -150,7 +150,7 @@ export async function computeDayActivitySignals(input: {
 }): Promise<SignalOutput> {
   const { calcBazi } = await import("./bazi-calc");
   const sharedMod = await import("../../data/library/wrappers/shared.js");
-  const starsMod = await import("../../data/sesheta-v6/decode-stars-detector.js");
+  const starsMod = await import("../../data/hourkey-v6/decode-stars-detector.js");
 
   const shared = (sharedMod as unknown as { default?: typeof sharedMod }).default ?? sharedMod;
   const stars = (starsMod as unknown as { default?: typeof starsMod }).default ?? starsMod;
@@ -266,10 +266,10 @@ export async function computeDayActivitySignals(input: {
     { field: "hour_branch", source: "src/lib/bazi-calc.ts:calcBazi() → pillars.hour.branch", detail: overrideHour ? `overridden to ${overrideHour}` : "from chart" },
     { field: "day_master", source: "pillars.day.stem" },
     { field: "qi_phase", source: "data/library/wrappers/shared.js:twelvePhase(day_master, hour_branch)" },
-    { field: "wen_chang_active", source: "data/sesheta-v6/decode-stars-detector.js:detectWenChang() · hour pos" },
-    { field: "tian_yi_active", source: "data/sesheta-v6/decode-stars-detector.js:detectTianYiNobleman() · hour pos" },
-    { field: "yi_ma_active", source: "data/sesheta-v6/decode-stars-detector.js:detectYiMa() · hour pos" },
-    { field: "kong_wang_hour", source: "data/sesheta-v6/decode-stars-detector.js:detectKongWang() · hour pos" },
+    { field: "wen_chang_active", source: "data/hourkey-v6/decode-stars-detector.js:detectWenChang() · hour pos" },
+    { field: "tian_yi_active", source: "data/hourkey-v6/decode-stars-detector.js:detectTianYiNobleman() · hour pos" },
+    { field: "yi_ma_active", source: "data/hourkey-v6/decode-stars-detector.js:detectYiMa() · hour pos" },
+    { field: "kong_wang_hour", source: "data/hourkey-v6/decode-stars-detector.js:detectKongWang() · hour pos" },
     { field: "wealth_star_visible", source: "tenGod() applied to all 4 pillar stems + hidden stems · category=wealth" },
     { field: "wealth_is_yongshen", source: "wealth element ∈ top-3 USEFUL_GOD_RANKS[day_master]" },
     { field: "wealth_is_jishen", source: "wealth element ∉ top-3 USEFUL_GOD_RANKS[day_master] (jishen set)" },

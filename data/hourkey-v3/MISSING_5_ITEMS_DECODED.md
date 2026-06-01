@@ -6,7 +6,7 @@
 
 ## 📋 ผลสำรวจ — ทุกรายการที่พี่ระบุ
 
-| # | รายการ | สถานะ Sesheta | ผลลัพธ์ |
+| # | รายการ | สถานะ Hourkey | ผลลัพธ์ |
 |---|---|---|---|
 | 1 | **60 JiaZi cycle table** | ⚠️ มีแค่ Year lookup 1919-2100 | ✅ Build เพิ่มเอง 60 ตัว |
 | 2 | **Na Yin 60 คู่** | ❌ ไม่มี | ✅ Build เพิ่มเอง — Decode exclusive |
@@ -20,7 +20,7 @@
 ## 1. 🆕 60 JiaZi Cycle Table
 
 ```
-Sesheta มีแค่ year-pillar lookup (181 ปี: 1919-2100)
+Hourkey มีแค่ year-pillar lookup (181 ปี: 1919-2100)
 NOT มี standalone 60 JiaZi reference table
 
 → Decode ใช้ formula:
@@ -29,7 +29,7 @@ NOT มี standalone 60 JiaZi reference table
    ใช้สร้าง 60 JiaZi cycle ได้ทันที
 ```
 
-📁 **File**: `sesheta-jiazi-year-table.json` — 181 years (1919-2100)
+📁 **File**: `hourkey-jiazi-year-table.json` — 181 years (1919-2100)
 
 **ตัวอย่าง:**
 - 1924 → 甲子
@@ -43,11 +43,11 @@ NOT มี standalone 60 JiaZi reference table
 ## 2. 🆕 Na Yin 60 (納音) — DECODE EXCLUSIVE!
 
 ```
-❌ Sesheta ไม่มี Na Yin เลย
+❌ Hourkey ไม่มี Na Yin เลย
 ✅ Decode build 60 ตัวพร้อม element + symbol
 ```
 
-📁 **File**: `sesheta-na-yin-60.json` — 60 sound elements (5 categories × 12)
+📁 **File**: `hourkey-na-yin-60.json` — 60 sound elements (5 categories × 12)
 
 ### Aeaw's Family Na Yin
 
@@ -86,9 +86,9 @@ NOT มี standalone 60 JiaZi reference table
 
 ---
 
-## 3. ✅ Kong Wang (空亡) — Sesheta มี!
+## 3. ✅ Kong Wang (空亡) — Hourkey มี!
 
-### Sesheta's Algorithm (decoded)
+### Hourkey's Algorithm (decoded)
 
 ```javascript
 function calculateKongWang(dayStem, dayBranch) {
@@ -104,7 +104,7 @@ function calculateKongWang(dayStem, dayBranch) {
 }
 ```
 
-📁 **File**: `sesheta-kongwang-60-table.json` — All 60 pillars
+📁 **File**: `hourkey-kongwang-60-table.json` — All 60 pillars
 
 ### 6 Xuns (旬) Reference
 
@@ -135,10 +135,10 @@ Trader's insight:
 
 ---
 
-## 4. ⚠️ 六破 (Six Destructions) — Sesheta ไม่มี
+## 4. ⚠️ 六破 (Six Destructions) — Hourkey ไม่มี
 
 ### สถานะ
-- Sesheta **ไม่ implement** 六破
+- Hourkey **ไม่ implement** 六破
 - Decode สามารถ **เพิ่มเป็น differentiator**
 
 ### 六破 Reference (เพิ่มเองให้ Decode)
@@ -156,11 +156,11 @@ Trader's insight:
 
 ---
 
-## 5. ✅ Solar → BaZi Conversion — Sesheta มีครบ (ยกเว้นข้อ 1)
+## 5. ✅ Solar → BaZi Conversion — Hourkey มีครบ (ยกเว้นข้อ 1)
 
-📁 **File**: `sesheta-solar-bazi-engine.json` — Algorithm ครบทุก function
+📁 **File**: `hourkey-solar-bazi-engine.json` — Algorithm ครบทุก function
 
-### Sesheta's Conversion Pipeline (decoded)
+### Hourkey's Conversion Pipeline (decoded)
 
 ```
 Birth Date/Time
@@ -198,7 +198,7 @@ Birth Date/Time
 
 ### 24 Solar Terms ครบ (extracted)
 
-📁 **File**: `sesheta-24-solar-terms.json`
+📁 **File**: `hourkey-24-solar-terms.json`
 
 ```
 12 Jie Qi (節氣 - Start of months):
@@ -215,7 +215,7 @@ Birth Date/Time
 ### 🎯 Decode's Edge: Add True Solar Time
 
 ```javascript
-// Decode enhancement (Sesheta doesn't have)
+// Decode enhancement (Hourkey doesn't have)
 function trueSolarTimeCorrection(date, longitude) {
   // 1. Standard meridian for timezone
   const standardLon = 105  // Asia/Bangkok = 105°E
@@ -236,9 +236,9 @@ function trueSolarTimeCorrection(date, longitude) {
 
 ---
 
-## 6. ✅ Luck Pillar (大運) — Sesheta มี!
+## 6. ✅ Luck Pillar (大運) — Hourkey มี!
 
-### Sesheta's Algorithm (decoded — `_r`, `br`, `wr`, `Mr` functions)
+### Hourkey's Algorithm (decoded — `_r`, `br`, `wr`, `Mr` functions)
 
 ```
 1. Direction (forward/reverse):
@@ -310,7 +310,7 @@ Forward Luck Pillars (each 10 years):
 ║  ✅ 60 JiaZi: Built (181 years)                       ║
 ║  ✅ Na Yin: Built (Decode-exclusive)                  ║
 ║  ✅ Kong Wang: Decoded + 6 Xuns                       ║
-║  ⚠️  Six Destructions: Sesheta missing - Decode add    ║
+║  ⚠️  Six Destructions: Hourkey missing - Decode add    ║
 ║  ✅ Solar→BaZi: Full algorithm decoded                ║
 ║  ✅ Luck Pillar: Full algorithm decoded               ║
 ║                                                        ║
@@ -321,17 +321,17 @@ Forward Luck Pillars (each 10 years):
 
 ---
 
-## 🎯 Decode's Competitive Edge ที่ "ขาด" จาก Sesheta
+## 🎯 Decode's Competitive Edge ที่ "ขาด" จาก Hourkey
 
 ```
-สิ่งที่ Sesheta ไม่มี (Decode เพิ่มได้ทันที):
+สิ่งที่ Hourkey ไม่มี (Decode เพิ่มได้ทันที):
 
 1. 60 Na Yin (60 納音) ★★★    ← Already built
 2. True Solar Time correction ★★★
 3. 六破 Six Destructions ★★
 4. Multi-school luck calc (1hr=5day variant) ★
 5. Hour-by-hour luck refinement ★
-6. Multi-language ZH support (Sesheta = TH+EN only)
+6. Multi-language ZH support (Hourkey = TH+EN only)
 7. Bloomberg-style executive UI
 8. Action Mode L1-L6
 ```
@@ -342,11 +342,11 @@ Forward Luck Pillars (each 10 years):
 
 ```
 /mnt/user-data/outputs/
-├── sesheta-jiazi-year-table.json       ✨ NEW (3 KB)
-├── sesheta-kongwang-60-table.json      ✨ NEW (6 KB)
-├── sesheta-na-yin-60.json              ✨ NEW Decode-exclusive (7 KB)
-├── sesheta-24-solar-terms.json         ✨ NEW (4 KB)
-├── sesheta-solar-bazi-engine.json      ✨ NEW (5 KB)
-├── sesheta-month-jieqi.json            ✨ NEW (0.1 KB)
+├── hourkey-jiazi-year-table.json       ✨ NEW (3 KB)
+├── hourkey-kongwang-60-table.json      ✨ NEW (6 KB)
+├── hourkey-na-yin-60.json              ✨ NEW Decode-exclusive (7 KB)
+├── hourkey-24-solar-terms.json         ✨ NEW (4 KB)
+├── hourkey-solar-bazi-engine.json      ✨ NEW (5 KB)
+├── hourkey-month-jieqi.json            ✨ NEW (0.1 KB)
 └── ... 18 ไฟล์อื่นที่แกะมาแล้ว
 ```

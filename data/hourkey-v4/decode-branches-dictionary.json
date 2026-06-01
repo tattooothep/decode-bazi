@@ -4,7 +4,7 @@
     "title_th": "พจนานุกรมสิบสองเสาดิน",
     "description": "Comprehensive 12-branch reference: hidden stems, animal, element, season, direction, hour, organ, color, peach blossom association, classical attributes",
     "version": "1.0",
-    "consolidates": ["sesheta-bazi-lookup-tables.json (hidden_stems s0)", "sesheta-12-phases-engine.json (Ze anchors)", "sesheta-stem-combos.json"]
+    "consolidates": ["hourkey-bazi-lookup-tables.json (hidden_stems s0)", "hourkey-12-phases-engine.json (Ze anchors)", "hourkey-stem-combos.json"]
   },
 
   "branches": [

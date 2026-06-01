@@ -3,7 +3,7 @@
     "title": "Decode Luck Cycles & Transit Pillars Engine",
     "title_th": "เครื่องยนต์รอบโชคและเสาเดินผ่าน",
     "title_zh": "运行周期和过路柱引擎",
-    "description": "Complete algorithm suite for Da Yun (大運 luck pillars), Liu Nian (流年 annual), Liu Yue (流月 monthly), Liu Ri (流日 daily), Liu Shi (流時 hourly). Sesheta has Da Yun + direction but NOT Liu Yue/Ri/Shi as separate algorithms. Decode adds full transit cycle.",
+    "description": "Complete algorithm suite for Da Yun (大運 luck pillars), Liu Nian (流年 annual), Liu Yue (流月 monthly), Liu Ri (流日 daily), Liu Shi (流時 hourly). Hourkey has Da Yun + direction but NOT Liu Yue/Ri/Shi as separate algorithms. Decode adds full transit cycle.",
     "version": "1.0",
     "verified": "Algorithms tested against Aeaw chart 甲子/丙子/己亥/辛未"
   },
@@ -40,8 +40,8 @@
   "2_liu_nian_annual_pillar": {
     "name": "流年 Liu Nian (Annual Pillar)",
     "name_th": "หลิวเหนียน / เสาประจำปี",
-    "description": "The Year Pillar of any given year. Calculated using Sesheta's c2() function with ANY date.",
-    "calculation_function": "function getLiuNian(year) {\n  // Get year stem-branch using Jia Zi cycle\n  // Anchor: 1900 = 庚子 (year stem 庚 idx=6, branch 子 idx=0)\n  // Or use 立春 boundary check via solar term table\n  const date = new Date(year, 1, 5); // Feb 5 = past 立春\n  return c2(date); // Sesheta's verified function\n}",
+    "description": "The Year Pillar of any given year. Calculated using Hourkey's c2() function with ANY date.",
+    "calculation_function": "function getLiuNian(year) {\n  // Get year stem-branch using Jia Zi cycle\n  // Anchor: 1900 = 庚子 (year stem 庚 idx=6, branch 子 idx=0)\n  // Or use 立春 boundary check via solar term table\n  const date = new Date(year, 1, 5); // Feb 5 = past 立春\n  return c2(date); // Hourkey's verified function\n}",
     "boundary_rule": "Year changes at 立春 (Start of Spring, ~Feb 4). NOT January 1. Critical for late Jan/early Feb births.",
     "interpretation_layers": [
       "1. Compare Liu Nian stem-branch with each natal pillar (year/month/day/hour)",
@@ -62,7 +62,7 @@
   "3_liu_yue_monthly_pillar": {
     "name": "流月 Liu Yue (Monthly Pillar)",
     "name_th": "หลิวเย่ว / เสาประจำเดือน",
-    "description": "Month Pillar of any given month. Calculated using Sesheta's Er() function.",
+    "description": "Month Pillar of any given month. Calculated using Hourkey's Er() function.",
     "calculation_function": "function getLiuYue(year, month) {\n  // Month boundary follows solar terms (jie qi)\n  // Use mid-month date to be safe\n  const date = new Date(year, month - 1, 15);\n  return Er(date);\n}",
     "boundary_rule": "Month changes at 節 (jie) solar terms — 立春/驚蟄/清明/立夏/芒種/小暑/立秋/白露/寒露/立冬/大雪/小寒",
     "month_branch_table": {
@@ -100,13 +100,13 @@
   "4_liu_ri_daily_pillar": {
     "name": "流日 Liu Ri (Daily Pillar)",
     "name_th": "หลิวรื่อ / เสาประจำวัน",
-    "description": "Day Pillar of any given day. Calculated using Sesheta's g2() function.",
+    "description": "Day Pillar of any given day. Calculated using Hourkey's g2() function.",
     "calculation_function": "function getLiuRi(date) {\n  // Anchor: 1900-01-01 = 甲戌 day\n  // Day pillar advances by 1 each day in Jia Zi cycle\n  return g2(date);\n}",
     "verified_anchor": {
       "date": "1900-01-01",
       "stem": "甲",  
       "branch": "戌",
-      "comment": "Verified in Sesheta's vendor-bazi-engine.js function g2()"
+      "comment": "Verified in Hourkey's vendor-bazi-engine.js function g2()"
     },
     "boundary_rule": "Day changes at 子 hour (23:00). Births at 23:00-00:59 use NEXT day's pillar but PREVIOUS day's date for hour calculation.",
     "interpretation_layers": [
@@ -142,7 +142,7 @@
   "5_liu_shi_hourly_pillar": {
     "name": "流時 Liu Shi (Hourly Pillar)",
     "name_th": "หลิวสือ / เสาประจำชั่วโมง",
-    "description": "Hour Pillar at any given moment. Each hour pillar covers 2 hours. Calculated using Sesheta's Dr() function.",
+    "description": "Hour Pillar at any given moment. Each hour pillar covers 2 hours. Calculated using Hourkey's Dr() function.",
     "calculation_function": "function getLiuShi(date) {\n  // Hour branch determined by 2-hour blocks\n  // Hour stem = (day_stem_index * 2 + hour_branch_index) % 10\n  return Dr(date);\n}",
     "two_hour_blocks": {
       "子": "23:00-00:59",
@@ -178,7 +178,7 @@
       "Important phone calls / negotiations"
     ],
     "scoring_method": "Same as Daily but with Hour pillar. Each day has 12 hour scores. Best 2-3 hours can be identified.",
-    "decode_advantage": "Sesheta only shows daily reading. Decode shows hour-by-hour for trading-grade timing.",
+    "decode_advantage": "Hourkey only shows daily reading. Decode shows hour-by-hour for trading-grade timing.",
     "aeaw_optimal_hours_general": {
       "best_hours": ["巳 (9-11am) — Fire + Hidden 庚 wealth", "午 (11am-1pm) — Fire peak"],
       "avoid_hours": ["子 (11pm-1am) — Water peak, freezes chart", "亥 (9-11pm) — Water + clash with self"],

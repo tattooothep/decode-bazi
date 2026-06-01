@@ -4,7 +4,7 @@
  * map ดวง → 4 climates: cold (frozen) · damp · scorched · dry
  * คืน regulating element + bridge element + heater/cooler list
  *
- * Source: sesheta-crisis-detection.json (alias เป็น Tiao Hou)
+ * Source: hourkey-crisis-detection.json (alias เป็น Tiao Hou)
  */
 
 const S = require('./shared');

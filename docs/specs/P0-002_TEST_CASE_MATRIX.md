@@ -33,9 +33,9 @@ Matrix ฉบับนี้ระบุชุด test case ที่ engine §1
 | Formula registry | `data/i18n/formula.json:daily.§11.day_activity` (`requires_sinsae_formula:true` · `status:needs_sinsae`) |
 | Staging text | `data/i18n/decode.staging.json:activity_*` (6 codes) |
 | Code registry | `data/i18n/code-registry/natal-daily-overview.json` (ไม่ครอบคลุม activity_*) |
-| Interaction matrix | `data/sesheta-v8/decode-interaction-matrix.json` (11 trigger types) |
-| Stars detector | `data/sesheta-v6/decode-stars-detector.js` (天乙·文昌·桃花·驛馬·華蓋·將星·天德) |
-| Star activation | `data/sesheta-v8/decode-star-activation-by-transit.js` (domain tagging) |
+| Interaction matrix | `data/hourkey-v8/decode-interaction-matrix.json` (11 trigger types) |
+| Stars detector | `data/hourkey-v6/decode-stars-detector.js` (天乙·文昌·桃花·驛馬·華蓋·將星·天德) |
+| Star activation | `data/hourkey-v8/decode-star-activation-by-transit.js` (domain tagging) |
 | Sheet of record | `07 · Frontend_Text 💬` row 69–74 (status: `needs_sinsae_review`) |
 
 ---
@@ -232,7 +232,7 @@ Distribution ของ expected output ใน matrix:
 | no_medical | "รักษา/หาย/ป่วย/ยา/วินิจฉัย/อาการ" | "ฟื้นแรง/ปรับสมดุล/หายใจช้า" |
 | no_financial_advice | "ลงทุน/ซื้อหุ้น/ซื้อคริปโต/ซื้อทอง/การันตีผลตอบแทน" | "ทบทวนตัวเลข/วางงบ/จัดลำดับทรัพยากร" + disclaimer "ไม่ใช่คำแนะนำการลงทุน" |
 | no_relationship_verdict | "ต้องเลิก/คู่นี้แน่/จะแต่ง/ปิดดีลแน่" | "เปิดบทสนทนา/ฟังครบ/สรุปข้อตกลง" |
-| no_dev_narrative | dev-written text | Sesheta source หรือซินแส approved text เท่านั้น |
+| no_dev_narrative | dev-written text | Hourkey source หรือซินแส approved text เท่านั้น |
 
 ### Block emission rules
 

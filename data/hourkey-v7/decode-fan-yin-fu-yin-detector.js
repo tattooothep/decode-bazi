@@ -4,7 +4,7 @@
  * 反吟 Fan Yin = Total opposition (stem clash + branch clash with natal pillar)
  * 伏吟 Fu Yin  = Total repetition (same stem + same branch as natal pillar)
  * 
- * These are CRITICAL classical concepts that Voytek shows but Sesheta + 
+ * These are CRITICAL classical concepts that Voytek shows but Hourkey + 
  * basic Decode currently miss. Both indicate major life events during transit.
  * 
  * Source: Classical 子平真詮 + verified against bazi-calculator.com output

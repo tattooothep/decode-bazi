@@ -3,7 +3,7 @@
     "title": "Decode Symbolic Stars Engine — 25 Stars Complete",
     "title_th": "เครื่องยนต์ดวงดาวเชิงสัญลักษณ์ — 25 ดวง ครบสมบูรณ์",
     "title_zh": "符号星完整引擎 — 25 颗星",
-    "description": "Complete detection algorithms + interpretation for all 25 classical Chinese metaphysics symbolic stars. Sesheta only implements 4 (Nobleman, Peach Blossom, Sky Horse, Intelligence) but has text readings for 23. Decode adds detection logic for ALL 25 + activation conditions.",
+    "description": "Complete detection algorithms + interpretation for all 25 classical Chinese metaphysics symbolic stars. Hourkey only implements 4 (Nobleman, Peach Blossom, Sky Horse, Intelligence) but has text readings for 23. Decode adds detection logic for ALL 25 + activation conditions.",
     "source": "Classical 子平真詮 + 滴天髓 + 三命通會 + Joey Yap + verified algorithms",
     "decode_advantage": "First Chinese metaphysics platform with full 25-star detection engine",
     "version": "1.0",

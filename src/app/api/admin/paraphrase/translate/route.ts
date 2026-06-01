@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/admin-guard";
  * body: { text: string, sourceLang: 'en'|'th'|'zh', targetLang: 'en'|'th'|'zh', context?: string }
  * Returns: { translated: string }
  *
- * Uses OpenRouter Haiku — Decode voice (no Sesheta mention)
+ * Uses OpenRouter Haiku — Decode voice (no Hourkey mention)
  */
 export async function POST(req: Request) {
   try {
