@@ -355,6 +355,8 @@ export async function POST(req: Request) {
   }
   const hash = pillarsHash(body.pillars);
   const session = question ? await getSession() : null;
+  /* 1 มิ.ย. · ถามซินแส (question mode = spawn Claude) ต้อง login ก่อน (กัน anonymous ยิง AI ฟรี · cost) */
+  if (question && !session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   /* check cache first · ไม่ regen ถ้า exist (user ต้องกด force) */
   if (!question && !body.force) {
     const cached = await q1<{ content: string }>(

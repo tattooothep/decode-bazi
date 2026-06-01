@@ -304,6 +304,8 @@ async function runClaudeCli(prompt: string): Promise<string> {
 
 export async function POST(req: Request) {
   try {
+    /* 1 มิ.ย. · AI พยากรณ์ต้องสมัคร/login ก่อน (กัน anonymous spawn Claude ฟรี · cost abuse) */
+    if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
     const body = await req.json().catch(() => ({}));
     const question: string = (body.question || "").trim();
     const method: Method = ["meihua", "qmdj", "coin"].includes(body.method) ? body.method : "qmdj";

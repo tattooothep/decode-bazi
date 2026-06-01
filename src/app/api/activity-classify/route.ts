@@ -95,7 +95,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Layer 2 · AI fallback (Claude Max CLI · best-effort · timeout 8s)
-    try {
+    // 1 มิ.ย. · AI fallback ต้อง login (กัน guest spawn Claude ฟรี · keyword Layer1 + default Layer3 ยังเปิด guest)
+    const _aiSes = await (await import("@/lib/auth")).getSession();
+    if (_aiSes) try {
       const { spawn } = await import('child_process');
       const { loadPromptMd } = await import('@/lib/prompt-md');
       /* 25 พ.ค. · prompt ย้ายไป prompts/activity-classify.md (แก้ผ่าน /admin/sifu-prompts) · {{QUERY}}=dynamic · fallback กันพัง */
