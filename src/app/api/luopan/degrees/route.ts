@@ -13,6 +13,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 
 type TimingKey = "era" | "year" | "month" | "day" | "hour";
 type Dir8 = "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
@@ -92,9 +93,9 @@ function pinProximityScore(targetDeg: number, pinDegs: number[]): number {
   return 0;
 }
 
-async function loadProfileElements(profileId: string | null): Promise<{ yong: ElementEN[]; xi: ElementEN[]; ji: ElementEN[] } | null> {
-  if (!profileId) return null;
-  const row = await q1<{ yongshen: any }>("SELECT yongshen FROM profiles WHERE id=$1", [profileId]);
+async function loadProfileElements(profileId: string | null, orgId: string | null): Promise<{ yong: ElementEN[]; xi: ElementEN[]; ji: ElementEN[] } | null> {
+  if (!profileId || !orgId) return null;  // 1 มิ.ย. ปิด IDOR: ต้องมี org + เป็นเจ้าของ (เดิมดึง用神ดวงคนอื่นได้)
+  const row = await q1<{ yongshen: any }>("SELECT yongshen FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false", [profileId, orgId]);
   if (!row?.yongshen) return null;
   const top3 = Array.isArray(row.yongshen?.top3) ? row.yongshen.top3 : [];
   const toEl = (v: unknown): ElementEN | null => {
@@ -118,7 +119,8 @@ export async function POST(req: NextRequest) {
     const profileId = body.profile_id ? String(body.profile_id) : null;
     const pins = Array.isArray(body.pins) ? (body.pins as Array<{ degree?: number }>) : [];
     const pinDegs = pins.map((p) => Number(p.degree)).filter((d) => Number.isFinite(d)).map(normalizeDeg);
-    const profileElements = await loadProfileElements(profileId);
+    const s = await getSession();
+    const profileElements = await loadProfileElements(profileId, s?.orgId ?? null);
 
     const degrees = Array.from({ length: 360 }, (_, degree) => {
       const relativeDeg = normalizeDeg(degree + facingDeg);

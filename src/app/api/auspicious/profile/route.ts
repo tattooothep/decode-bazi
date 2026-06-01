@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { q, q1 } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
+import { getSession } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +15,13 @@ export async function POST(req: NextRequest) {
     const { personId, birthDate, birthTime = "12:00", longitude = 100.5018, gender = "M" } = body;
     const birthTimeKnown = body.birthTimeKnown !== false;
     if (!personId || !birthDate) return NextResponse.json({ error: "personId + birthDate required" }, { status: 400 });
+    /* 1 มิ.ย. ปิด IDOR: ต้อง login + personId(hk_<uuid>) เป็นดวงใน org ตัวเอง (เดิมเขียน/DELETE cache คนอื่นได้) */
+    const s = await getSession();
+    if (!s?.orgId) return NextResponse.json({ error: "not logged in" }, { status: 401 });
+    const ownUuid = String(personId).replace(/^hk_/, "");
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ownUuid)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    const owns = await q1<{ id: string }>("SELECT id FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false", [ownUuid, s.orgId]);
+    if (!owns) return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
     const c = birthTimeKnown
       ? await calcBazi({

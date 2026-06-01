@@ -22,6 +22,7 @@ import { q, q1 } from "@/lib/db";
 import { ALL_MODULES, UNIVERSAL_MODULES, PERSONAL_MODULES } from "@/lib/luck-engine/types";
 import type { ModuleKey, ActivityType, CandidateSlot, ModuleResult, FunnelStats, SearchResponse, PersonProfile } from "@/lib/luck-engine/types";
 import { combineScores, scoreToTier, tierToAction, TIER_LABELS } from "@/lib/luck-engine/combineScores";
+import { getSession } from "@/lib/auth";
 
 const ZODIAC_CLASH_MAP: Record<string, string> = {
   "子":"午","丑":"未","寅":"申","卯":"酉","辰":"戌","巳":"亥",
@@ -80,6 +81,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required: activityType, dateFrom, dateTo, activeModules[]" }, { status: 400 });
     }
 
+    /* 1 มิ.ย. ปิด IDOR: ถ้าผูกดวงส่วนตัว (peopleIds) ต้อง login + กรองเหลือเฉพาะดวงใน org ตัวเอง (กันดึง/อ่าน cache ดวงคนอื่น) · ค้นฤกษ์ universal (ไม่มี peopleIds) ยังเปิด guest */
+    let ownedPeopleIds: string[] = peopleIds;
+    if (peopleIds.length > 0) {
+      const s = await getSession();
+      if (!s?.orgId) return NextResponse.json({ error: "not logged in" }, { status: 401 });
+      const uuids = peopleIds.map((i: string) => String(i).replace(/^hk_/, "")).filter((u: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(u));
+      const rows = await q<{ id: string }>("SELECT id FROM profiles WHERE id = ANY($1::uuid[]) AND org_id=$2 AND is_archived=false", [uuids, s.orgId]).catch(() => []);
+      const ok = new Set(rows.map(r => "hk_" + r.id));
+      ownedPeopleIds = peopleIds.filter((i: string) => ok.has(i));
+    }
+
     // CACHE: ตรวจ in-memory cache (TTL 60s) · ลด DB load จาก concurrent traffic
     const ck = cacheKey(body);
     const cached = _ausCache.get(ck);
@@ -88,7 +100,7 @@ export async function POST(req: NextRequest) {
     }
 
     // STEP 1: Load people profiles (best-effort · ไม่ fail ถ้าไม่มี)
-    const profiles = await loadPersonProfiles(peopleIds);
+    const profiles = await loadPersonProfiles(ownedPeopleIds);
     const customer = profiles[0] || null;
     const avoidZodiacs = collectClashZodiacs(profiles);
 

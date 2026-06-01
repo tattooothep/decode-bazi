@@ -96,11 +96,12 @@ export async function POST(req: NextRequest) {
     const facingDir = angleToDir(faceAngle);
     const sittingDir = angleToDir(sitAngle);
 
-    // load person KUA (จาก profiles · ใช้ year ของ birth)
+    // load person KUA (จาก profiles) — 1 มิ.ย. ปิด IDOR fail-closed: ต้อง login + เจ้าของ org เดียวกัน (เดิม fail-open ดึงดวงคนอื่นได้ตอนไม่ login)
     const s = await getSession();
+    if (!s?.orgId) return NextResponse.json({ error: "not logged in" }, { status: 401 });
     const person = await q1<{ id: string; name: string; nickname: string; bazi_pillars: any }>(
-      `SELECT id, name, nickname, bazi_pillars FROM profiles WHERE id=$1${s ? ' AND org_id=$2' : ''}`,
-      s ? [person_id, s.orgId] : [person_id]
+      `SELECT id, name, nickname, bazi_pillars FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
+      [person_id, s.orgId]
     );
     if (!person) return NextResponse.json({ error: 'Person not found' }, { status: 404 });
     // Calc KUA simplified · use year stem-branch index % 9 ถ้าไม่มี kua precomputed
