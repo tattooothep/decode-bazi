@@ -55,6 +55,8 @@ export const INTENTS: IntentMeta[] = [
   /* กลุ่ม 5 · เดินทาง/สุขภาพ · 2 หมวด */
   { id:'travel',         group:'travel', icon:'🚗', label_th:'เดินทาง/ออกรถ', label_en:'Travel', label_zh:'出行', zh_keys:['出行','遠行','远行','納畜','纳畜'] },
   { id:'pray_heal',      group:'travel', icon:'🙏', label_th:'ไหว้พระ/หาหมอ/เคลียร์', label_en:'Pray/Heal/Cleanse', label_zh:'祈福', zh_keys:['祈福','祭祀','求醫','求医','治病','解除','破屋'], is_destruction: true },
+  /* 1 มิ.ย. · เพิ่มสัญญาณสุขภาพให้เป้า 健 ไม่ bias จาก tag เดียว (พ่อ/Codex สั่ง) · คำที่ pray_heal ยังไม่ครอบ · is_destruction (วันร้ายยังรักษาได้) */
+  { id:'medical',        group:'travel', icon:'🩺', label_th:'รักษา/พบแพทย์/พักฟื้น', label_en:'Medical/Recover', label_zh:'療病', zh_keys:['探病','針灸','针灸','服藥','服药','療目','疗目','整手足甲'], is_destruction: true },
 ];
 
 const HARD_BLOCK_GODS = new Set(['月破','岁破','歲破','日破','四離','四绝','四絕','四离']);

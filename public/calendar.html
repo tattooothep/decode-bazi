@@ -769,10 +769,16 @@
 
     /* 19 พ.ค. เจ้านาย · ฐาน 100 · ไม่ใช้ ±50 อีกต่อไป · spec #2 final */
     days.forEach(d=>{
-      const baseScore = d.verdict ? d.verdict.score : 50;
-      /* 18 พ.ค. unified · "ทั้งหมด" = baseScore (จาก computeUserDayScore · Single Source of Truth)
-       * เลิกใช้ avg goals · baseScore เท่ากันทุกหน้า · goals = goal-specific adjustment */
-      const score100 = state.goal==='all' ? baseScore : ((d.goals && d.goals[state.goal] != null) ? d.goals[state.goal] : baseScore);
+      /* 1 มิ.ย. · เลือกแหล่งคะแนนตามโหมด · personal=ดวงฉัน(verdict) · tongshu=ทั่วไป黃曆(universal · ไม่ขึ้นดวง) */
+      const isTongshu = state.overlay === 'tongshu';
+      const baseScore = isTongshu
+        ? (d.universal_verdict ? d.universal_verdict.score : 50)
+        : (d.verdict ? d.verdict.score : 50);
+      /* 18 พ.ค. unified · "ทั้งหมด" = baseScore · goals = goal-specific adjustment */
+      const score100 = state.goal==='all' ? baseScore
+        : isTongshu
+          ? ((d.universal_goals && d.universal_goals[state.goal]) ? d.universal_goals[state.goal].score : baseScore)
+          : ((d.goals && d.goals[state.goal] != null) ? d.goals[state.goal] : baseScore);
       /* score · ตัวแปรนำเอาไปใช้ใน sClass/scoreColor ต่อ · keep ±50 sign for legacy logic */
       const score = Math.round(score100 - 50);
       const sClass = scoreClass(score);

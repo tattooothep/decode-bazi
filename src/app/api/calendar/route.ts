@@ -11,6 +11,7 @@
 import { NextResponse } from "next/server";
 import { summarizeStars } from "@/lib/star-dict-th";
 import { computeIntentStatus, pickTopWorst } from "@/lib/tongshu-intents";
+import { universalDayScore, universalGoals } from "@/lib/tongshu-universal";
 
 /* 19 พ.ค. spec #2 · 六沖 dict สำหรับ branchClash check ใน intent system */
 const SIX_CLASHES_CAL: Record<string, string> = {
@@ -107,6 +108,9 @@ type DayCell = {
   intentStatus?: Record<string, 'good'|'neutral'|'bad'>;
   topIntents?: Array<{ id: string; label: string; tier: 'good'|'neutral'|'bad'; icon: string }>;
   worstIntents?: Array<{ id: string; label: string; tier: 'good'|'neutral'|'bad'; icon: string }>;
+  /* 1 มิ.ย. · คะแนน Tongshu สากล (ไม่ขึ้นดวง) · โหมด "ทั่วไป·黃曆" */
+  universal_verdict?: { score: number; level: string; hardBlocked: boolean };
+  universal_goals?: Record<string, { score: number; level: string }>;
 };
 
 /* ตำราคลาสสิก · ดาวมงคล/อัปมงคล · ใช้ classify gods array จาก tyme4ts
@@ -406,6 +410,11 @@ export async function GET(req: Request) {
       const branchClash = userBranch && SIX_CLASHES_CAL[userBranch] === branch;
       const intentStatus = computeIntentStatus(fixed.yi, fixed.ji, cls.bad, !!branchClash);
       const topWorst = pickTopWorst(intentStatus, 'th');
+      /* 1 มิ.ย. · คะแนน Tongshu สากล (ไม่ขึ้นดวง user) · โหมด "ทั่วไป·黃曆" · ฉันทามติ 3 agent + พ่อ APPROVE */
+      const twelveStarName = ld.getTwelveStar().getName();
+      const starSummary = summarizeStars(godsArr);
+      const universalVerdict = universalDayScore(officerName, twelveStarName, starSummary, fixed.yi, fixed.ji, godsArr);
+      const universalGoalsObj = universalGoals(universalVerdict.score, intentStatus, universalVerdict.hardBlocked);
       days.push({
         date: `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`,
         day: d,
@@ -416,13 +425,13 @@ export async function GET(req: Request) {
         branch_element: branchEl,
         lunar: ld.toString(),
         day_officer: officerName,
-        twelve_star: ld.getTwelveStar().getName(),
+        twelve_star: twelveStarName,
         ten_god: tg,
         yi: fixed.yi.slice(0, 8),
         ji: fixed.ji.slice(0, 8),
         gods: cls,
         /* 17 พ.ค. · Sesheta-style stars · ชื่อไทย + คะแนน + อธิบาย */
-        stars_detail: summarizeStars(godsArr),
+        stars_detail: starSummary,
         pillars_full,
         verdict,
         goals,
@@ -430,6 +439,9 @@ export async function GET(req: Request) {
         intentStatus,
         topIntents: topWorst.top,
         worstIntents: topWorst.worst,
+        /* 1 มิ.ย. · คะแนนสากล (Tongshu · ไม่ขึ้นดวง) · โหมด "ทั่วไป·黃曆" */
+        universal_verdict: universalVerdict,
+        universal_goals: universalGoalsObj,
       });
     }
 
