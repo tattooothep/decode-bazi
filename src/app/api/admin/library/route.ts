@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { q, q1 } from "@/lib/db";
-import { mkdirSync, writeFileSync, rmSync, unlinkSync } from "fs";
+import { mkdirSync, writeFileSync, readFileSync, unlinkSync } from "fs";
 import { join, extname } from "path";
 
 /**
@@ -22,6 +22,21 @@ const SCAN_DIR = process.env.LIBRARY_SCAN_DIR || "/root/decode-shared/library-sc
 const ALLOW_EXT = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf"]);
 const MAX_BYTES = 30 * 1024 * 1024;
 
+/* 1 มิ.ย. · ลบเล่ม = "ซ่อนด้านนอก" เท่านั้น (เจ้านายสั่ง: ห้ามลบในฐานข้อมูล)
+ * รายการ id ที่ซ่อนเก็บเป็นไฟล์นอก DB · persist ข้าม deploy · DB/row/memo/ไฟล์สแกน ไม่ถูกแตะ
+ * ต้องใส่รหัส LIBRARY_DELETE_PIN ก่อน (fail-closed: ไม่ตั้ง env = ห้ามลบทุกกรณี) */
+const HIDDEN_FILE = process.env.LIBRARY_HIDDEN_FILE || join(SCAN_DIR, "_hidden.json");
+function readHidden(): number[] {
+  try {
+    const arr = JSON.parse(readFileSync(HIDDEN_FILE, "utf8"));
+    return Array.isArray(arr) ? arr.map(Number).filter((n) => Number.isFinite(n)) : [];
+  } catch { return []; }
+}
+function writeHidden(ids: number[]): void {
+  mkdirSync(SCAN_DIR, { recursive: true });
+  writeFileSync(HIDDEN_FILE, JSON.stringify(Array.from(new Set(ids)).sort((a, b) => a - b)));
+}
+
 function mimeOf(ext: string) {
   return ext === ".pdf" ? "application/pdf" : ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : ext === ".gif" ? "image/gif" : "image/jpeg";
 }
@@ -30,18 +45,23 @@ export async function GET(req: Request) {
   try { await requireAdmin(); } catch (e) { return e instanceof Response ? e : NextResponse.json({ ok: false, error: "auth" }, { status: 401 }); }
   const id = new URL(req.url).searchParams.get("id");
   if (id) {
+    /* เล่มที่ซ่อนด้านนอก → ปฏิบัติเหมือนไม่มี (กดเข้าไม่ได้) · DB ยังมีจริง กู้ได้ผ่านไฟล์ซ่อน */
+    if (readHidden().includes(Number(id))) return NextResponse.json({ ok: false, error: "not found" }, { status: 404 });
     const sc = await q1(`SELECT * FROM library_scriptures WHERE id=$1`, [Number(id)]);
     if (!sc) return NextResponse.json({ ok: false, error: "not found" }, { status: 404 });
     const pages = await q(`SELECT id, page_no, mime FROM library_pages WHERE scripture_id=$1 ORDER BY page_no`, [Number(id)]);
     return NextResponse.json({ ok: true, scripture: sc, pages });
   }
-  const rows = await q(
+  const rows = await q<{ id: number }>(
     `SELECT s.id, s.title, s.category, s.lang, s.source, s.created_at,
        (SELECT count(*) FROM library_pages p WHERE p.scripture_id=s.id) AS page_count,
        (length(coalesce(s.memo,'')) > 0) AS has_memo
      FROM library_scriptures s ORDER BY s.created_at DESC`
   );
-  return NextResponse.json({ ok: true, scriptures: rows });
+  /* ซ่อน "ด้านนอก" · กรอง id ที่อยู่ในไฟล์ซ่อน (DB ยังมีครบ) */
+  const hidden = new Set(readHidden());
+  const visible = rows.filter((r) => !hidden.has(Number(r.id)));
+  return NextResponse.json({ ok: true, scriptures: visible });
 }
 
 export async function POST(req: Request) {
@@ -108,9 +128,17 @@ export async function POST(req: Request) {
 
   if (action === "delete-scripture") {
     const scId = Number(body.scriptureId);
-    await q(`DELETE FROM library_scriptures WHERE id=$1`, [scId]);
-    try { rmSync(join(SCAN_DIR, String(scId)), { recursive: true, force: true }); } catch {}
-    return NextResponse.json({ ok: true });
+    if (!scId) return NextResponse.json({ ok: false, error: "ขาด scriptureId" }, { status: 400 });
+    /* ต้องใส่รหัสก่อนลบ · fail-closed: env ไม่ตั้ง = ห้ามลบ */
+    const pin = process.env.LIBRARY_DELETE_PIN || "";
+    if (!pin || String(body.password || "") !== pin) {
+      return NextResponse.json({ ok: false, error: "รหัสผ่านไม่ถูกต้อง" }, { status: 403 });
+    }
+    /* ซ่อน "ด้านนอก" เท่านั้น · ห้ามลบ row/memo/ไฟล์สแกนใน DB (เจ้านายสั่ง · 1 มิ.ย.) */
+    const hidden = readHidden();
+    if (!hidden.includes(scId)) hidden.push(scId);
+    writeHidden(hidden);
+    return NextResponse.json({ ok: true, hidden: true });
   }
 
   return NextResponse.json({ ok: false, error: "unknown action" }, { status: 400 });

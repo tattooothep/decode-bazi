@@ -81,8 +81,13 @@ export default function LibraryAdmin({ email }: { email: string }) {
     loadDetail(detail.scripture.id); loadList();
   }
   async function delScripture(id: number) {
-    if (!confirm("ลบคัมภีร์ทั้งเล่ม (ภาพ+memo)?")) return;
-    await fetch("/api/admin/library", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete-scripture", scriptureId: id }) });
+    /* ลบ = ซ่อนด้านนอกเท่านั้น (ข้อมูลใน DB ยังอยู่ครบ) · ต้องใส่รหัสก่อน */
+    const password = prompt("ลบเล่มนี้ออกจากหน้า (ข้อมูลใน DB ยังอยู่ · กู้คืนได้)\nใส่รหัสผ่านเพื่อยืนยัน:");
+    if (password == null) return;
+    const res = await fetch("/api/admin/library", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "delete-scripture", scriptureId: id, password }) });
+    const j = await res.json().catch(() => ({}));
+    if (!j.ok) { setMsg("✗ " + (j.error || "ลบไม่สำเร็จ")); return; }
+    setMsg("✓ ซ่อนเล่มแล้ว (ข้อมูลใน DB ยังอยู่)");
     setSel(null); loadList();
   }
 
@@ -134,7 +139,7 @@ export default function LibraryAdmin({ email }: { email: string }) {
                     <h2 className="text-xl">{detail.scripture.title}</h2>
                     <div className="text-xs text-foreground/40">{detail.scripture.category} · {detail.scripture.lang} · ที่มา: {detail.scripture.source || "—"} · {pages.length} หน้า</div>
                   </div>
-                  <button onClick={() => delScripture(detail.scripture.id)} className="text-xs text-red-400/70 hover:text-red-400">ลบเล่ม</button>
+                  <button onClick={() => delScripture(detail.scripture.id)} className="text-xs text-red-400/70 hover:text-red-400" title="ซ่อนออกจากหน้า · ข้อมูลใน DB ยังอยู่ · ต้องใส่รหัส">🔒 ซ่อนเล่ม</button>
                 </div>
 
                 {/* อัพรูป (ทีละรูปอัตโนมัติ) */}
