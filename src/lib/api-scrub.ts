@@ -17,6 +17,7 @@ const FORMULA_TRACE_KEYS = new Set([
   "finalScore",
   "final_score",
   "functional_pct",
+  "hs_trace",          /* element_distribution: rule-level score/classify ต่อเสา = สูตร · chart.html ไม่ใช้ */
   "net_weight",
   "position_factor",
   "reason",
@@ -41,6 +42,7 @@ const FORMULA_TRACE_KEYS = new Set([
   "sources",
   "tiaohou_weight",
   "trace",
+  "vhs_trace",         /* element_distribution: rule-level stability/score กิ่งซ่อน = สูตร · chart.html ไม่ใช้ */
   "weight",
   "weights",
 ]);
