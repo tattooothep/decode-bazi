@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       interactions,
     });
   } catch (e: unknown) {
-    const err = e as Error;
-    return NextResponse.json({ error: err.message, stack: err.stack }, { status: 500 });
+    console.error("[decisions] error:", e);  // 1 มิ.ย. · log server · ไม่คืน stack ให้ client
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
   }
 }

@@ -536,7 +536,7 @@ export async function POST(req: Request) {
       solar_terms_birth: solarTermsBirth,
     });
   } catch (e: unknown) {
-    const err = e as Error;
-    return NextResponse.json({ error: err.message, stack: err.stack }, { status: 500 });
+    console.error("[chart] error:", e);  // 1 มิ.ย. · log เต็มฝั่ง server · ไม่คืน stack/message ดิบให้ client
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
   }
 }

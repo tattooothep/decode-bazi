@@ -12,7 +12,7 @@ export const pool: Pool =
     port: Number(process.env.PGPORT || 5433),
     database: process.env.PGDATABASE || "decode_db",
     user: process.env.PGUSER || "decode_user",
-    password: process.env.PGPASSWORD || "98a1021d6df0d117cff8d7aef3be275e",
+    password: process.env.PGPASSWORD,  // 1 มิ.ย. · ย้ายไป .env.local (เลิก hardcoded รหัส DB ในโค้ด/zip)
     max: 10,
   });
 

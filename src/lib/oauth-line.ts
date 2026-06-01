@@ -11,7 +11,7 @@ const CALLBACK_URL =
   "https://hourkey.io/api/auth/line/callback";
 
 const STATE_SECRET = new TextEncoder().encode(
-  process.env.AUTH_SECRET || "decode-dev-secret-change-in-production-please-2026"
+  process.env.AUTH_SECRET || (() => { throw new Error("AUTH_SECRET required (oauth-line)"); })()  // 1 มิ.ย. · เลิก dev-secret fallback ที่หลุดผ่าน zip · fail-closed
 );
 
 const SCOPES = ["profile", "openid", "email"];

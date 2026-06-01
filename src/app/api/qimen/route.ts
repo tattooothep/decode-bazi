@@ -65,8 +65,8 @@ export async function GET(req: Request) {
     const data = await callQimen(date, time, lng, lat, school);
     return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school }, ...data });
   } catch (e: unknown) {
-    const err = e as Error;
-    return NextResponse.json({ error: err.message, hint: `qimen-api at ${QIMEN_BASE}` }, { status: 503 });
+    console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
+    return NextResponse.json({ error: "service unavailable" }, { status: 503 });
   }
 }
 
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     const data = await callQimen(date, time, lng, lat, school);
     return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school }, ...data });
   } catch (e: unknown) {
-    const err = e as Error;
-    return NextResponse.json({ error: err.message, hint: `qimen-api at ${QIMEN_BASE}` }, { status: 503 });
+    console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
+    return NextResponse.json({ error: "service unavailable" }, { status: 503 });
   }
 }
