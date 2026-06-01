@@ -6,13 +6,71 @@
  */
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
+import { readFileSync, statSync } from "fs";
+import { join } from "path";
 import { loadPromptMd } from "@/lib/prompt-md";
 
 /* 25 พ.ค. · persona ย้ายไป prompts/qimen-sifu.md (แก้ผ่าน /admin/sifu-prompts) · {{BODY}}=dynamic · fallback กันพัง */
 const QIMEN_TPL_FALLBACK = `คุณคือซินแสฉีเหมินตุ้นเจี่ย · ตำรา 煙波釣叟賦·奇門遁甲統宗\n{{BODY}}\nตอบสั้นกระชับ · เน้นตำรา · ใช้ผังจริง + ดวงผู้ใช้ + ผลค้นหาผสมกัน · เลี่ยงคำว่าโชค/ฟลุค:`;
 
+/* 1 มิ.ย. · เสียบคัมภีร์ฉีเหมินต้นฉบับเข้า prompt (เหมือน loadEngineKnowledge ของปาจื้อ)
+ * เดิม AI เห็นแค่ "ชื่อ"ตำรา 2 บรรทัด · ตอนนี้ป้อนเนื้อจีน verbatim 3 เล่ม → ตีความอิงตำราจริง
+ * cache ตาม mtime · ไฟล์หาย = ข้ามเล่มนั้น (กันพัง) · ห้ามลด/เจือจาง (กฎ ai_quality) */
+const QMDJ_DIR = join(process.cwd(), "data/library/qmdj");
+const QMDJ_FILES = [
+  "yanbo-diaosou-ge.md",     // 煙波釣叟歌 · กลอนแม่บท (สำคัญสุด)
+  "qimen-tongzong-clean.md", // 奇門遁甲統宗 · แก่นเต็ม
+  "dunjia-yanyi-juan2.md",   // 遁甲演義 卷2
+];
+let _qimenKnow: { text: string; version: string } | null = null;
+let _qimenSig = "";
+function loadQimenKnowledge(): { text: string; version: string } {
+  /* signature ครบทุกไฟล์ (name:mtime:size) → จับเพิ่ม/ลบ/แก้ทุกเล่ม ไม่ใช่แค่ mtime สูงสุด (พ่อ flag #1)
+   * statSync เบา → ถ้า signature เดิม คืน cache ไม่อ่านเนื้อ 62KB ซ้ำ (scale 5000 user) */
+  const present: string[] = [];
+  const sigParts: string[] = [];
+  for (const f of QMDJ_FILES) {
+    try {
+      const st = statSync(join(QMDJ_DIR, f));
+      present.push(f);
+      sigParts.push(`${f}:${Math.round(st.mtimeMs)}:${st.size}`);
+    } catch {
+      /* ไฟล์หาย = ข้ามเล่มนั้น · ไม่ทำ request ล้ม */
+    }
+  }
+  if (!present.length) return { text: "", version: "none" };
+  const sig = sigParts.join("|");
+  if (_qimenKnow && sig === _qimenSig) return _qimenKnow;
+  /* cache miss (ครั้งแรก/ไฟล์เปลี่ยน) เท่านั้น ถึงอ่านเนื้อจริง */
+  const parts: string[] = [];
+  for (const f of present) {
+    try {
+      parts.push(`\n===== คัมภีร์ต้นฉบับ: ${f} =====\n${readFileSync(join(QMDJ_DIR, f), "utf8")}`);
+    } catch {
+      /* แข่งกับการลบไฟล์ระหว่าง stat→read · ข้ามเล่ม */
+    }
+  }
+  if (!parts.length) return { text: "", version: "none" };
+  _qimenSig = sig;
+  _qimenKnow = { text: parts.join("\n"), version: `qmdj-${parts.length}` };
+  return _qimenKnow;
+}
+
 const CHILD_USER = "jarvis";
-const TIMEOUT_MS = 60_000;
+/* 1 มิ.ย. · 60→180 วิ · prompt โตขึ้น +คัมภีร์ ~50K token · qimen เรียกแบบ blocking (รอครบก้อน) กันชน timeout */
+const TIMEOUT_MS = 180_000;
+
+/* 1 มิ.ย. · พ่อ flag #2 · cap เฉพาะ "ส่วนผันแปร" (input ผู้ใช้) กัน prompt บวมเกินคาด · คัมภีร์คงเต็ม (กฎ ai_quality) */
+const MAX_MSG_CHARS = 2_000;
+const MAX_HIST_ITEM_CHARS = 1_000;
+const MAX_SEARCH_CHARS = 4_000;
+const clip = (s: string, n: number): string => (s.length > n ? s.slice(0, n) + "…" : s);
+
+/* 1 มิ.ย. · พ่อ flag #3 · in-flight limiter รอบ runClaudeCli (route นี้ spawn subprocess Claude หนัก)
+ * spendHours=เศรษฐกิจ ไม่ใช่ขอบ execution · กัน funded user fan-out หลาย process พร้อมกัน (กฎ scale 5000 user)
+ * cap ระดับ process (Next.js node เดียว) · เต็ม → 429 ให้ client ลองใหม่ */
+const MAX_INFLIGHT = Number(process.env.QIMEN_SIFU_MAX_INFLIGHT || 6);
+let _inflight = 0;
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -90,10 +148,15 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
   const activity = payload?.activity;
   const focus = topic && TOPIC_FOCUS[topic] ? `\nหัวข้อ: ${TOPIC_FOCUS[topic]}` : "";
   const histText = history.length
-    ? "\n\nประวัติคำถาม:\n" + history.map(h => `[${h.role}] ${h.content}`).join("\n")
+    ? "\n\nประวัติคำถาม:\n" + history.map(h => `[${h.role}] ${clip(String(h.content || ""), MAX_HIST_ITEM_CHARS)}`).join("\n")
     : "";
-  const searchText = fmtSearchResults(searchResults, activity);
-  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n\nผังเวลา (QiMen Chart):\n${fmtQimenCard(qimen)}\n\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${searchText}${focus}${histText}\n\nคำถาม: ${message}\n`;
+  const searchText = clip(fmtSearchResults(searchResults, activity), MAX_SEARCH_CHARS);
+  const msgClipped = clip(message, MAX_MSG_CHARS);
+  const know = loadQimenKnowledge();
+  const canonBlock = know.text
+    ? `\n📜 คัมภีร์ต้นฉบับฉีเหมิน (ใช้เป็นฐานการตีความ · อ้างวรรค/หลักจากตำราจริง · ห้ามมั่วนอกตำรา):\n${know.text}\n\n— จบคัมภีร์ —\n`
+    : "";
+  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${canonBlock}\nผังเวลา (QiMen Chart):\n${fmtQimenCard(qimen)}\n\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
   return loadPromptMd("prompts/qimen-sifu.md", QIMEN_TPL_FALLBACK).replace("{{BODY}}", body);
 }
 
@@ -126,13 +189,24 @@ export async function POST(req: Request) {
 
     if (!message) return NextResponse.json({ error: "message required" }, { status: 400 });
 
+    /* in-flight limiter · กันยิง subprocess Claude พร้อมกันเกิน (เช็คก่อนหัก 時 · เต็ม=429 ไม่หักเครดิต) */
+    if (_inflight >= MAX_INFLIGHT) {
+      return NextResponse.json({ error: "ระบบกำลังประมวลผลคำถามอื่นอยู่ · กรุณาลองใหม่อีกครั้งใน 1-2 นาที" }, { status: 429 });
+    }
+
     /* 📜 spend 8 時 ก่อนเรียก Claude · 15 พ.ค. */
     const { spendHours } = await import("@/lib/spend-hours");
     const spend = await spendHours(8, "sifu_qimen");
     if (!spend.ok) return NextResponse.json(spend, { status: spend.status });
 
     const prompt = buildPrompt({ message, history, lang, topic, payload });
-    const reply = await runClaudeCli(prompt);
+    _inflight++;
+    let reply: string;
+    try {
+      reply = await runClaudeCli(prompt);
+    } finally {
+      _inflight--;
+    }
     return NextResponse.json({ reply, model: "claude-max-cli", balance_after: spend.balance_after, spent: spend.spent });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
