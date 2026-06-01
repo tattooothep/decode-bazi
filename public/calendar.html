@@ -901,12 +901,18 @@
   function renderSide(){
     const d = (MONTH_DATA.days||[]).find(x=>x.day===state.selected);
     if(!d) return;
-    /* แปลง 0-100 → -50..+50 visual */
-    const baseScore = d.verdict ? d.verdict.score : 50;
+    /* แปลง 0-100 → -50..+50 visual · 1 มิ.ย. เลือก source ตามโหมดให้ตรง grid (personal=verdict · tongshu=universal สากล) */
+    const isTongshu = state.overlay === 'tongshu';
+    const baseScore = isTongshu
+      ? (d.universal_verdict ? d.universal_verdict.score : 50)
+      : (d.verdict ? d.verdict.score : 50);
     /* 17 พ.ค. fix · goals=0 valid · ใช้ != null แทน || · กัน fallback ผิด */
-    /* 17 พ.ค. debug · บอกชัดว่า goal ไหน active + มี goals field หรือไม่ */
-    const hasGoals = !!(d.goals && Object.keys(d.goals).length);
-    const goalRaw  = (hasGoals && d.goals[state.goal] != null) ? d.goals[state.goal] : null;
+    const hasGoals = isTongshu
+      ? !!(d.universal_goals && Object.keys(d.universal_goals).length)
+      : !!(d.goals && Object.keys(d.goals).length);
+    const goalRaw  = isTongshu
+      ? ((d.universal_goals && d.universal_goals[state.goal]) ? d.universal_goals[state.goal].score : null)
+      : ((hasGoals && d.goals[state.goal] != null) ? d.goals[state.goal] : null);
     /* 18 พ.ค. unified · "ทั้งหมด" = baseScore (Single Source of Truth)
      * เลิก avg goals · baseScore เท่ากัน /today /calendar /network */
     const rawScore  = state.goal==='all' ? baseScore : (goalRaw != null ? goalRaw : baseScore);
