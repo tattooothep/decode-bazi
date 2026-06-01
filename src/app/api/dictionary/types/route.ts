@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
 import { TYPES } from "@/lib/paraphrase-types";
 import { q } from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/dictionary-cache";
 
 export async function GET() {
+  /* 1 มิ.ย. · กัน scrape ตำรา: ต้อง login (caller=0 ไม่ break) */
+  if (!(await getSession())) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const k = "dict:types";
   const hit = cacheGet<unknown>(k);
   if (hit) return NextResponse.json(hit);

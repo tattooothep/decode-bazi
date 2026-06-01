@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
 import { TYPES } from "@/lib/paraphrase-types";
 import { q } from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/dictionary-cache";
@@ -8,6 +9,8 @@ import { cacheGet, cacheSet } from "@/lib/dictionary-cache";
  * Cross-table search ทุก trilingual title fields
  */
 export async function GET(req: Request) {
+  /* 1 มิ.ย. · กัน scrape ตำรา: ต้อง login (caller=0 ไม่ break) */
+  if (!(await getSession())) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const url = new URL(req.url);
   const q_ = (url.searchParams.get("q") || "").trim();
   const limit = Math.min(Number(url.searchParams.get("limit") || 30) || 30, 100);

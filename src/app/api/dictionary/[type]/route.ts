@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
 import { TYPES } from "@/lib/paraphrase-types";
 import { q } from "@/lib/db";
 import { cacheGet, cacheSet } from "@/lib/dictionary-cache";
 
 export async function GET(req: Request, ctx: { params: Promise<{ type: string }> }) {
+  /* 1 มิ.ย. · กัน scrape ตำรา paraphrase: ต้อง login (caller=0 ในเว็บ ไม่ break) */
+  if (!(await getSession())) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const { type } = await ctx.params;
   const def = TYPES[type];
   if (!def) return NextResponse.json({ error: "unknown type" }, { status: 404 });

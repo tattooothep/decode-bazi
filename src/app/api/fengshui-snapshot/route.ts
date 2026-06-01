@@ -5,6 +5,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { q1 } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { computeFlyingLayers } from "@/lib/fengshui-luxing";
@@ -312,10 +313,12 @@ export async function GET(req: NextRequest) {
     const houseId = searchParams.get('house_id') ? parseInt(searchParams.get('house_id')!, 10) : null;
     const dt = searchParams.get('datetime') ? new Date(searchParams.get('datetime')!) : new Date();
 
-    // load house (จาก ka_houses ของ Phase C2)
+    // load house (จาก ka_houses ของ Phase C2) — 1 มิ.ย. ปิด IDOR: ต้อง login + เป็นเจ้าของบ้าน (กันดึงพิกัด/family_members บ้านคนอื่น)
     let house: any = null;
     if (houseId) {
-      house = await q1<any>(`SELECT id, name, lat, lng, face_angle, sit_angle, facing_mountain, facing_direction, family_members FROM ka_houses WHERE id=$1`, [houseId]);
+      const s = await getSession();
+      if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
+      house = await q1<any>(`SELECT id, name, lat, lng, face_angle, sit_angle, facing_mountain, facing_direction, family_members FROM ka_houses WHERE id=$1 AND user_id=$2`, [houseId, s.userId]);
     }
     // load ephemeris (จาก aj_ephemeris_cache ของ datepick)
     const ephemeris = await q1<any>(
