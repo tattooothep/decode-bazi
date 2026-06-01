@@ -9,8 +9,25 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { join } from "path";
 
 type Ctx = { params: Promise<{ id: string }> };
+
+/* 1 มิ.ย. · snapshot ดวงเดิมก่อนเขียนทับ (PUT recompute ทับ 4เสา/用神 ถาวร · เดิมกู้ไม่ได้ · กฎ BaZi #6)
+ * เก็บไฟล์นอก DB · เก็บ 20 ครั้งล่าสุด/ดวง · ไม่แตะ calcBazi/schema · best-effort (พังไม่ขวาง update) */
+const SNAP_DIR = process.env.PROFILE_SNAPSHOT_DIR || "/root/decode-shared/profile-snapshots";
+function snapshotProfile(id: string, orgId: string | null, old: Record<string, unknown>): void {
+  try {
+    mkdirSync(SNAP_DIR, { recursive: true });
+    const f = join(SNAP_DIR, `${id}.jsonl`);
+    let lines: string[] = [];
+    try { lines = readFileSync(f, "utf8").split("\n").filter(Boolean); } catch {}
+    lines.push(JSON.stringify({ saved_at: new Date().toISOString(), id, org_id: orgId, ...old }));
+    if (lines.length > 20) lines = lines.slice(-20);
+    writeFileSync(f, lines.join("\n") + "\n");
+  } catch { /* snapshot ล้มเหลว = ไม่ขวางการบันทึก (ข้อมูลผู้ใช้สำคัญกว่า log) */ }
+}
 
 export async function GET(_req: Request, ctx: Ctx) {
   const s = await getSession();
@@ -39,8 +56,11 @@ export async function PUT(req: Request, ctx: Ctx) {
     birthTimeKnown: birthTimeKnownRaw,
   } = body;
 
-  const existing = await q1<{ birth_datetime: string; birth_time_known: boolean; birth_lng: string | null; day_boundary: string | null }>(
-    `SELECT id, birth_lng, birth_time_known, day_boundary,
+  const existing = await q1<{ birth_datetime: string; birth_time_known: boolean; birth_lng: string | null; day_boundary: string | null;
+    name: string | null; gender: string | null; birth_lat: string | null; birth_location_name: string | null;
+    day_master: string | null; day_master_strength: string | null; yongshen: unknown; bazi_pillars: unknown }>(
+    `SELECT id, birth_lng, birth_time_known, day_boundary, name, gender, birth_lat, birth_location_name,
+            day_master, day_master_strength, yongshen, bazi_pillars,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime
      FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
     [id, s.orgId]
@@ -127,6 +147,16 @@ export async function PUT(req: Request, ctx: Ctx) {
   }
 
   if (sets.length === 0) return NextResponse.json({ ok: true, unchanged: true });
+  /* snapshot ค่าเดิมก่อนเขียนทับ (กู้คืนได้ · โดยเฉพาะ 4เสา/用神 ที่ recompute ทับถาวร) */
+  snapshotProfile(id, s.orgId ?? null, {
+    name: existing.name, gender: existing.gender,
+    birth_datetime: existing.birth_datetime, birth_lat: existing.birth_lat,
+    birth_lng: existing.birth_lng, birth_location_name: existing.birth_location_name,
+    birth_time_known: existing.birth_time_known, day_boundary: existing.day_boundary,
+    day_master: existing.day_master, day_master_strength: existing.day_master_strength,
+    yongshen: existing.yongshen, bazi_pillars: existing.bazi_pillars,
+    recompute,
+  });
   /* Codex direction: audit trail · always set updated_at on any change */
   sets.push(`"updated_at"=now()`);
   params.push(id, s.orgId);

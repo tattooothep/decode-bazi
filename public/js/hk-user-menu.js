@@ -316,7 +316,7 @@
           window.HK_openSettings();
         } else {
           var s = document.createElement('script');
-          s.src = '/js/hk-settings-drawer.js?v=9';
+          s.src = '/js/hk-settings-drawer.js?v=10';
           s.onload = function(){ if (typeof window.HK_openSettings === 'function') window.HK_openSettings(); };
           document.head.appendChild(s);
         }

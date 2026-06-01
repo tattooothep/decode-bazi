@@ -2719,7 +2719,7 @@ window.applyI18N = applyI18N;
       /* drawer ยังไม่ load · ดึง drawer ก่อน */
       try {
         const s = document.createElement('script');
-        s.src = '/js/hk-settings-drawer.js?v=9';
+        s.src = '/js/hk-settings-drawer.js?v=10';
         s.defer = true;
         await new Promise(res=>{ s.onload = res; s.onerror = res; document.head.appendChild(s); setTimeout(res, 3000); });
       } catch(_){}
@@ -5477,7 +5477,7 @@ window.applyI18N = applyI18N;
 })();
 </script>
 
-<script src="/js/hk-settings-drawer.js?v=9" defer></script>
+<script src="/js/hk-settings-drawer.js?v=10" defer></script>
 <script src="/js/hk-user-menu.js?v=16" defer></script>
 <script src="/js/hk-method-link.js?v=20260518a" defer></script>
 </body>

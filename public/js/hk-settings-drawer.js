@@ -144,24 +144,22 @@
       var pr = await fetch('/api/profile');
       var pj = await pr.json();
       var arr = (pj.profiles || []).filter(function(p){ return !p.is_archived; });
-      // Find: prefer backend active_profile / is_self (เชื่อแหล่งจริงจากระบบ)
-      // hk_profile_id ใช้ fallback เท่านั้น เพราะอาจค้างเป็นดวงญาติจากหน้าอื่น
-      var activeId = (pj && pj.active_profile && pj.active_profile.id) || null;
-      if (!activeId) {
-        var selfP = arr.find(function(p){ return !!p.is_self; });
-        activeId = selfP ? selfP.id : null;
-      }
-      if (!activeId) {
-        try { activeId = localStorage.getItem('hk_profile_id'); } catch(e){}
-      }
-      profile = arr.find(function(p){ return p.id === activeId; }) || arr[0] || null;
+      /* B (1 มิ.ย.) · drawer "ตั้งค่าดวงของฉัน" = ดวง self เท่านั้น
+       * เลิก fallback localStorage(hk_profile_id)/arr[0] ที่อาจค้างเป็นดวงญาติ → เขียนทับดวง self = "รวมดวง"
+       * ยึดแหล่งจริง is_self อย่างเดียว · ไม่เจอ self = ไม่เปิดฟอร์ม (กันเขียนผิดดวง · ทริค #6/#27/#30) */
+      profile = arr.find(function(p){ return !!p.is_self; }) || null;
     } catch(e) { console.warn('settings load', e); }
 
     var body = drawer.querySelector('#hk-set-body');
     if (!profile) {
-      body.innerHTML = '<div class="hk-set-loading">ยังไม่มีดวงในระบบ · <a href="/input" style="color:var(--gold);text-decoration:underline">เพิ่มดวงแรก</a></div>';
+      body.innerHTML = '<div class="hk-set-loading">ยังไม่มีดวงของคุณในระบบ · <a href="/input" style="color:var(--gold);text-decoration:underline">เพิ่มดวงของคุณ</a></div>';
       return;
     }
+    /* โชว์ชื่อดวง self ที่หัว + ลิงก์แก้ดวงญาติ → /yongsennetwork (กันเข้าใจผิดว่ากำลังแก้ดวงที่ดูอยู่) */
+    try {
+      var hd = drawer.querySelector('.hk-set-head h3');
+      if (hd) hd.textContent = '⚙ ตั้งค่าดวงของฉัน · ' + (profile.name || '');
+    } catch(_){}
 
     var dt = new Date(profile.birth_datetime);
     // Use original Asia/Bangkok components
@@ -231,6 +229,7 @@
         <div class="hk-set-loading-hint" id="set-day-boundary-hint">มีผลกับคนที่เกิดช่วง 23:00-23:59 เท่านั้น</div>
       </div>
       <button class="hk-set-save" id="set-save">💾 บันทึก</button>
+      <div style="margin-top:12px;font-size:11px;text-align:center;opacity:.55;">หน้านี้แก้เฉพาะ<b>ดวงของคุณ</b> · แก้ดวงญาติที่ <a href="/yongsennetwork" style="color:var(--gold);text-decoration:underline;">เครือข่าย</a></div>
     `;
     /* restore from DB first · localStorage only legacy fallback */
     try {
