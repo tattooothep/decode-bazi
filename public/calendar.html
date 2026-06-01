@@ -1220,10 +1220,9 @@
         /* 18 พ.ค. · 2 cards คู่ขนาน · ฐาน 100 (อาม่าอากง) · Option A
          * วันสากล = officer+黄道+神煞 · ดวงคุณ = personal (pair-base) */
         const personalScore = Math.max(0, Math.min(100, Math.round(rawScore)));
-        /* universal · จาก stars_detail.total (officer/huangdao/gods weighted) */
-        const sd = d.stars_detail || { total:0 };
-        const universalRaw = 50 + (sd.total || 0);
-        const universalScore = Math.max(0, Math.min(100, Math.round(universalRaw)));
+        /* 1 มิ.ย. · ใช้คะแนน universal จาก backend (สูตร 建除+黃黑道+神煞+宜忌 · พ่อ approve) ให้ตรง grid · เลิกคำนวณ 50+total ดิบเอง (เดิมได้ 100) */
+        const universalScore = d.universal_verdict ? d.universal_verdict.score
+          : Math.max(0, Math.min(100, Math.round(50 + ((d.stars_detail||{}).total || 0))));
         const delta = personalScore - universalScore;
         const VINFO_BASE = (s) => {
           if (s >= 80) return { ico:'⭐', th:'ดีมาก',   han:'大吉', col:'var(--good)', bg:'var(--wood-bg)' };
@@ -1232,7 +1231,15 @@
           if (s >= 30) return { ico:'⚠',  th:'ระวัง',   han:'凶',   col:'var(--bad)',  bg:'var(--fire-bg)' };
           return            { ico:'⛔', th:'ห้าม',    han:'大凶', col:'var(--bad)',  bg:'var(--fire-bg)' };
         };
-        const uV = VINFO_BASE(universalScore);
+        /* 1 มิ.ย. · label การ์ดวันสากล ใช้ level จาก backend (band เดียวกับ grid best≥84) ให้ป้ายตรงกัน · personal คงใช้ VINFO_BASE เดิม */
+        const U_LEVEL_VINFO = {
+          best:   { ico:'⭐', th:'ดีมาก',   han:'大吉', col:'var(--good)', bg:'var(--wood-bg)' },
+          good:   { ico:'✓',  th:'ดี',     han:'吉',   col:'var(--good)', bg:'var(--wood-bg)' },
+          ok:     { ico:'⚖',  th:'ปานกลาง', han:'中和', col:'var(--gold)', bg:'rgba(200,164,77,.08)' },
+          caution:{ ico:'⚠',  th:'ระวัง',   han:'凶',   col:'var(--bad)',  bg:'var(--fire-bg)' },
+          avoid:  { ico:'⛔', th:'ห้าม',    han:'大凶', col:'var(--bad)',  bg:'var(--fire-bg)' },
+        };
+        const uV = (d.universal_verdict && U_LEVEL_VINFO[d.universal_verdict.level]) ? U_LEVEL_VINFO[d.universal_verdict.level] : VINFO_BASE(universalScore);
         const pV = VINFO_BASE(personalScore);
         const officerName = d.day_officer || '—';
         const star12 = d.twelve_star || '';
