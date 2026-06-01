@@ -906,7 +906,7 @@
       return { auth: false, profile: null };
     }
   }
-  /* resolution: ?as → DB → localStorage → /input (no Aeaw demo fallback) */
+  /* resolution: ?as → DB → localStorage → /input (no demo fallback) */
   async function readChartSnapshot(){
     var params = new URLSearchParams(location.search);
 	    /* 1. view-as · strict ?as= match เท่านั้น · ห้าม /api/profile · ห้าม localStorage write */
@@ -1643,7 +1643,7 @@
         <span class="num">09 · 個人星</span>
         <h2><span class="tc">個人星</span>ดาวประจำตัว · Personal Stars<span class="hk-help" data-help="s.pstar"></span></h2>
       </div>
-      <span  class="sub" data-i18n="auto.c.518">ดาวที่ทำงานในดวง · แยกตามเสาที่ตก · ความหมายตามตำรา Sesheta</span>
+      <span  class="sub" data-i18n="auto.c.518">ดาวที่ทำงานในดวง · แยกตามเสาที่ตก · ความหมายตามตำรา hourkey</span>
     </div>
     <style>
       .hk-ps-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px;}
@@ -1849,7 +1849,7 @@ window.HK_I18N = {
   'auto.c.515': { th:'ตัด · กฎเกณฑ์', en:'Cut · Rules', zh:'裁斷·法度' },
   'auto.c.516': { th:'น้ำ · WATER', en:'WATER · 水', zh:'水·WATER' },
   'auto.c.517': { th:'คิด · ลื่นไหล', en:'Think · Flow', zh:'思考·流通' },
-  'auto.c.518': { th:'ดาวที่ทำงานในดวง · แยกตามเสาที่ตก · ความหมายตามตำรา Sesheta', en:'Active stars · by pillar · meanings per Sesheta classics', zh:'活躍之星·按柱位·依Sesheta古籍釋義' },
+  'auto.c.518': { th:'ดาวที่ทำงานในดวง · แยกตามเสาที่ตก · ความหมายตามตำรา hourkey', en:'Active stars · by pillar · meanings per hourkey classics', zh:'活躍之星·按柱位·依hourkey古籍釋義' },
   'auto.c.519': { th:'ข้อมูลซินแสตรวจสอบ · TH / EN / ZH', en:'Master-verified data · TH / EN / ZH', zh:'師父驗證資料·中英泰三語' },
   'auto.c.520': { th:'四柱 · Four Pillars · เสาทั้งสี่', en:'四柱 · Four Pillars', zh:'四柱·Four Pillars' },
   'auto.c.521': { th:'年 · YEAR · ปี', en:'年 · YEAR', zh:'年·YEAR' },

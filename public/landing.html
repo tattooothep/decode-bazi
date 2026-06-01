@@ -601,7 +601,7 @@ window.HK_I18N = {
   'm18.combo.d':    { th:'Combinations · 三合 三會 六合', en:'Three Harmony · Three Meeting · Six Combine', zh:'三合 · 三會 · 六合' },
   'm18.fanfu.t':    { th:'สะท้อน·สะกด', en:'Self-clash', zh:'反吟·伏吟' },
   'm18.fanfu.d':    { th:'Self-clash patterns', en:'Self-clash patterns', zh:'反吟伏吟之局' },
-  'm18.foot':       { th:'+ ฉีเหมินตุ้นเจี่ย 奇門遁甲 · ปฏิทินมงคล 黃曆 · AI สรุปภาษาไทย (Sesheta paraphrase)',
+  'm18.foot':       { th:'+ ฉีเหมินตุ้นเจี่ย 奇門遁甲 · ปฏิทินมงคล 黃曆 · AI สรุปภาษาไทย',
                       en:'+ Qi Men Dun Jia 奇門遁甲 · Tongshu Almanac 黃曆 · AI summary',
                       zh:'+ 奇門遁甲 · 黃曆 · AI 解語' },
   'm18.foot.tst':   { th:'+ ✓ True Solar Time · เวลาจริงของดวงอาทิตย์ →',
@@ -612,7 +612,7 @@ window.HK_I18N = {
   'mtst.sub':     { th:'หัวใจของ BaZi · ที่แอปดูดวงทั่วไปไม่ทำ', en:'The heart of BaZi · which generic apps skip', zh:'八字之核 · 一般命理應用未實作' },
   'mtst.why':     { th:'ทำไมต้องใช้ TST', en:'Why TST matters', zh:'為何需用真太陽時' },
   'mtst.formula': { th:'สูตร TST · 3 ส่วน', en:'TST formula · 3 components', zh:'真太陽時公式 · 三項' },
-  'mtst.example': { th:'ตัวอย่าง · Aeaw 1984-12-31 13:15 Bangkok', en:'Example · Aeaw 1984-12-31 13:15 Bangkok', zh:'例 · Aeaw 1984-12-31 13:15 曼谷' },
+  'mtst.example': { th:'ตัวอย่าง · Demo 1990-01-15 10:30 Bangkok', en:'Example · Demo 1990-01-15 10:30 Bangkok', zh:'例 · Demo 1990-01-15 10:30 曼谷' },
   'mtst.why.p1': { th:'Hour pillar 時柱 อิง <b>ตำแหน่งดวงอาทิตย์จริง</b> ในแต่ละพิกัด · ไม่ใช่เวลานาฬิกา (Standard Time) ที่อิง meridian ของ timezone',
                    en:'The Hour pillar 時柱 follows <b>the real sun position</b> at each location · not the clock (Standard Time) that follows a timezone meridian',
                    zh:'時柱依各地<b>太陽真實位置</b>而定 · 並非依時區子午線之鐘錶時間' },
@@ -1058,9 +1058,9 @@ window.applyI18N = applyI18N;
     </div>
 
     <div class="hk-tst-example">
-      <h4 data-i18n="mtst.example">ตัวอย่าง · Aeaw 1984-12-31 13:15 Bangkok</h4>
+      <h4 data-i18n="mtst.example">ตัวอย่าง · Demo 1990-01-15 10:30 Bangkok</h4>
       <table class="hk-tst-table">
-        <tr><td data-i18n="mtst.row.std">Standard Time</td><td><b>13:15</b></td></tr>
+        <tr><td data-i18n="mtst.row.std">Standard Time</td><td><b>10:30</b></td></tr>
         <tr><td data-i18n="mtst.row.lng">Longitude shift · (100.5018 − 105) × 4</td><td><b data-i18n="mtst.row.lng.v">−18 นาที</b></td></tr>
         <tr><td data-i18n="mtst.row.eot">Equation of Time (Dec 31)</td><td><b data-i18n="mtst.row.eot.v">−2.9 นาที</b></td></tr>
         <tr><td data-i18n="mtst.row.sum">รวม</td><td><b data-i18n="mtst.row.sum.v">−20.9 นาที</b></td></tr>
@@ -1131,7 +1131,7 @@ window.applyI18N = applyI18N;
       <div class="hk-18-item"><span class="zh">三合·三會·六合</span><div class="th" data-i18n="m18.combo.t">การจับคู่</div><div class="en" data-i18n="m18.combo.d">Combinations</div></div>
       <div class="hk-18-item"><span class="zh">反吟·伏吟</span><div class="th" data-i18n="m18.fanfu.t">สะท้อน·สะกด</div><div class="en" data-i18n="m18.fanfu.d">Self-clash patterns</div></div>
     </div>
-    <p class="hk-18-foot"><span data-i18n="m18.foot">+ ฉีเหมินตุ้นเจี่ย 奇門遁甲 · ปฏิทินมงคล 黃曆 · AI สรุปภาษาไทย (Sesheta paraphrase)</span><br/><a href="#" onclick="document.getElementById('hk-18modal').classList.remove('show');setTimeout(function(){document.getElementById('hk-tst-modal').classList.add('show');},200);return false;" style="color:#c8a44d;text-decoration:none;font-weight:600;"><span data-i18n="m18.foot.tst">+ ✓ True Solar Time · เวลาจริงของดวงอาทิตย์ →</span></a></p>
+    <p class="hk-18-foot"><span data-i18n="m18.foot">+ ฉีเหมินตุ้นเจี่ย 奇門遁甲 · ปฏิทินมงคล 黃曆 · AI สรุปภาษาไทย</span><br/><a href="#" onclick="document.getElementById('hk-18modal').classList.remove('show');setTimeout(function(){document.getElementById('hk-tst-modal').classList.add('show');},200);return false;" style="color:#c8a44d;text-decoration:none;font-weight:600;"><span data-i18n="m18.foot.tst">+ ✓ True Solar Time · เวลาจริงของดวงอาทิตย์ →</span></a></p>
   </div>
 </div>
 <style>

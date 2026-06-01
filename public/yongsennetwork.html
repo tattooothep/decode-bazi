@@ -757,7 +757,7 @@
      E. Team Build       = Σ Score(a,b) ทุก pair / max_pairs · normalized 0-100
      F. Print            = window.print() + @media print CSS
      ─────────────────────────────────────────────────────────────────
-     Sesheta sources: sesheta-v2/sesheta-reactions-9.json,
+     hourkey sources: reaction matrix + interaction rules,
                       sesheta-v8/decode-interaction-matrix.json,
                       sesheta-v2/sesheta-ten-gods.json
      ═════════════════════════════════════════════════════════════════ */
@@ -1060,7 +1060,7 @@
     REL[a][b] = {scores, tags};
     REL[b][a] = {scores, tags};
   }
-  // Self relationships (from Aeaw's perspective)
+  // Self relationships (from the active profile perspective)
   setRel('self','mai',  {day:70,week:82,month:76,year:88,luck:85}, ['合','用神 金','三合']);
   setRel('self','pun',  {day:38,week:42,month:35,year:45,luck:60}, ['正印','支持']);
   setRel('self','pete', {day:60,week:71,month:22,year:-28,luck:40}, ['三合','傷官 + 正官']);

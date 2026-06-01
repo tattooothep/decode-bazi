@@ -18,6 +18,7 @@ import { getSession } from "@/lib/auth";
 type TimingKey = "era" | "year" | "month" | "day" | "hour";
 type Dir8 = "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
 type ElementEN = "wood" | "fire" | "earth" | "metal" | "water";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const MOUNTAINS_24 = [
   { c: "壬", t: "干", el: "water", grp: "坎" }, { c: "子", t: "支", el: "water", grp: "坎" }, { c: "癸", t: "干", el: "water", grp: "坎" },
@@ -117,10 +118,16 @@ export async function POST(req: NextRequest) {
     const year = Number.isFinite(Number(body.year)) ? Number(body.year) : new Date().getFullYear();
     const timing = (["era", "year", "month", "day", "hour"].includes(String(body.timing)) ? body.timing : "era") as TimingKey;
     const profileId = body.profile_id ? String(body.profile_id) : null;
+    const s = await getSession();
+    if (!s?.orgId) {
+      return NextResponse.json({ ok: false, error: "Login required" }, { status: 401 });
+    }
+    if (profileId && !UUID_RE.test(profileId)) {
+      return NextResponse.json({ ok: false, error: "Invalid profile_id" }, { status: 400 });
+    }
     const pins = Array.isArray(body.pins) ? (body.pins as Array<{ degree?: number }>) : [];
     const pinDegs = pins.map((p) => Number(p.degree)).filter((d) => Number.isFinite(d)).map(normalizeDeg);
-    const s = await getSession();
-    const profileElements = await loadProfileElements(profileId, s?.orgId ?? null);
+    const profileElements = await loadProfileElements(profileId, s.orgId);
 
     const degrees = Array.from({ length: 360 }, (_, degree) => {
       const relativeDeg = normalizeDeg(degree + facingDeg);

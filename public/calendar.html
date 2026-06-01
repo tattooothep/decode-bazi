@@ -971,7 +971,7 @@
 
     /* yi/ji + stars จาก API จริง · ไม่มี hardcode */
     const yj = { yi: (d.yi||[]).map(x=>x), ji: (d.ji||[]).map(x=>x) };
-    /* 17 พ.ค. · Sesheta-style: ใช้ stars_detail (มีคะแนน + ชื่อไทย + อธิบาย) */
+    /* 17 พ.ค. · hourkey-style: ใช้ stars_detail (มีคะแนน + ชื่อไทย + อธิบาย) */
     const sd = d.stars_detail || { good:[], bad:[], total:0, unknown:[] };
     const stars = d.gods && (d.gods.good || d.gods.bad)
       ? { good: d.gods.good || [], bad: d.gods.bad || [] }
@@ -1143,7 +1143,7 @@
             </div>
           </div>`;
         })()}
-        <!-- 17 พ.ค. · Sesheta-style 4 pillars + 64卦 · ใหม่ (Option A · stem/branch ใหญ่ สีตามธาตุ) -->
+        <!-- 17 พ.ค. · hourkey-style 4 pillars + 64卦 · ใหม่ (Option A · stem/branch ใหญ่ สีตามธาตุ) -->
         ${d.pillars_full ? (() => {
           /* stem + ธาตุ + หยิน/หยาง */
           const STEM_INFO = {
