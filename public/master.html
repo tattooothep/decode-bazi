@@ -200,6 +200,17 @@
   .msg.master .msg-bubble{background:var(--bg-2);border:1px solid var(--gold-line);border-top-left-radius:4px;}
   .msg.user .msg-bubble{background:var(--gold-soft);border:1px solid var(--gold-line);border-top-right-radius:4px;}
   .msg-bubble b{color:var(--gold);}
+  /* markdown render คำตอบซินแส (เฟส 1 · 2 มิ.ย.) */
+  .md-body h2{font-size:15px;margin:10px 0 4px;color:var(--gold);font-family:var(--thai);}
+  .md-body h3{font-size:14px;margin:8px 0 3px;color:var(--gold);font-family:var(--thai);}
+  .md-body p{margin:6px 0;}
+  .md-body ul{margin:6px 0;padding-left:20px;}
+  .md-body li{margin:3px 0;}
+  .md-body strong{color:var(--fg);font-weight:700;}
+  .md-body blockquote{margin:6px 0;padding:4px 12px;border-left:2px solid var(--gold-line);color:var(--fg-soft);}
+  .md-body code{background:rgba(200,164,77,.12);padding:1px 5px;border-radius:4px;font-family:var(--mono);font-size:12px;}
+  .md-body .md-pre{background:rgba(0,0,0,.25);padding:10px;border-radius:8px;overflow-x:auto;margin:6px 0;}
+  .md-body .md-pre code{background:none;padding:0;}
   .msg-bubble .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
   .msg-bubble .quote{display:block;font-family:var(--serif);font-size:16px;font-style:italic;color:var(--fg);padding:8px 12px;background:var(--gold-soft);border-left:2px solid var(--gold);margin:8px 0;border-radius:4px;}
 
@@ -883,6 +894,29 @@
       return div;
     }
 
+    /* ── markdown render (เฟส 1 · 2 มิ.ย.) · render หลัง stream จบเท่านั้น · ไม่แตะ readSifuStream/onChunk ── */
+    /* escape [&<>] ก่อนเสมอ (กัน HTML/script จาก LLM · user ป้อน question ได้) · tag สร้างหลัง escape จึงปลอดภัย */
+    function mdMaster(md){
+      if (!md) return '';
+      var s = String(md).replace(/[&<>]/g, function(ch){ return ({'&':'&amp;','<':'&lt;','>':'&gt;'})[ch]; });
+      s = s.replace(/```[\w]*\n?([\s\S]*?)```/g, function(_m, code){ return '<pre class="md-pre"><code>' + code.replace(/\n+$/,'') + '</code></pre>'; });
+      s = s.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>').replace(/^##\s+(.+)$/gm, '<h2>$1</h2>').replace(/^#\s+(.+)$/gm, '<h2>$1</h2>');
+      s = s.replace(/^&gt;\s?(.+)$/gm, '<blockquote>$1</blockquote>').replace(/<\/blockquote>\n?<blockquote>/g, '<br>');
+      s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+?)`/g, '<code>$1</code>');
+      s = s.replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>').replace(/(<li>[\s\S]*?<\/li>\n?)+/g, '<ul>$&</ul>');
+      return s.split(/\n\n+/).map(function(p){ p = p.trim(); if (!p) return ''; if (/^<(h2|h3|ul|pre|blockquote)/.test(p)) return p; return '<p>' + p.replace(/\n/g, '<br>') + '</p>'; }).join('\n');
+    }
+    /* swap textContent → innerHTML · กัน scroll jump · เก็บ raw (เผื่อ copy/regen ชิ้น 2) */
+    function renderMd(el, raw){
+      if (!el) return;
+      var atBottom = msgBox ? (msgBox.scrollHeight - msgBox.scrollTop - msgBox.clientHeight < 40) : true;
+      el.dataset.raw = raw || '';
+      el.classList.add('md-body');
+      el.style.whiteSpace = 'normal';
+      el.innerHTML = mdMaster(raw);
+      if (atBottom && msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+    }
+
     /* โหลดประวัติแชทเก่าของดวงที่เลือก → render เป็นฟอง */
     function loadHistory(){
       history = [];
@@ -890,7 +924,7 @@
         const saved = JSON.parse(localStorage.getItem(storeKey()) || '[]');
         if (Array.isArray(saved) && saved.length) {
           history = saved.slice(-40);
-          history.forEach(function(m){ addMsg(m.role === 'user' ? 'user' : 'sifu', m.content); });
+          history.forEach(function(m){ var dv = addMsg(m.role === 'user' ? 'user' : 'sifu', m.content); if (m.role !== 'user') renderMd(dv, m.content); });
         }
       } catch(_){}
     }
@@ -1178,7 +1212,7 @@
             }
           });
           if (replyG.trim()){
-            phG.textContent = replyG;
+            renderMd(phG, replyG);
             history.push({ role:'user', content:text });
             history.push({ role:'assistant', content:replyG.trim() });
             persist();
@@ -1187,7 +1221,7 @@
           }
         } else {
           var dG = await rG.json().catch(function(){ return {}; });
-          phG.textContent = (rG.ok && dG.reply) ? dG.reply : ('⚠ ขัดข้อง: ' + (dG.error || rG.status));
+          if (rG.ok && dG.reply) renderMd(phG, dG.reply); else phG.textContent = '⚠ ขัดข้อง: ' + (dG.error || rG.status);
           if (rG.ok && dG.reply){
             history.push({ role:'user', content:text });
             history.push({ role:'assistant', content:dG.reply });
@@ -1265,7 +1299,7 @@
             }
           });
           if (reply.trim()) {
-            placeholder.textContent = reply;
+            renderMd(placeholder, reply);
             history.push({ role: 'user', content: text });
             history.push({ role: 'assistant', content: reply.trim() });
             persist();
@@ -1276,7 +1310,7 @@
           /* fallback · JSON ก้อนเดียว (กันพังถ้า server ไม่ stream) */
           const d = await r.json().catch(function(){ return {}; });
           if (r.ok && d.reply) {
-            placeholder.textContent = d.reply;
+            renderMd(placeholder, d.reply);
             history.push({ role: 'user', content: text });
             history.push({ role: 'assistant', content: d.reply });
             persist();
