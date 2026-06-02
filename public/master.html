@@ -806,6 +806,8 @@
       el.dataset.raw = raw || '';
       el.classList.add('md-body');
       el.style.whiteSpace = 'normal';
+      el.style.display = 'block';   /* ปลด display:flex ที่ค้างจาก .msg → ลูก <p>/<ul> ไม่กลายเป็น flex item เรียงแนวตั้ง (3 agent root cause) */
+      el.style.width = '100%';      /* กัน flex item หด fit-content → ข้อความเต็มคอลัมน์ 760 */
       el.innerHTML = mdMaster(raw);
       attachMsgActions(el, raw);                /* แถบปุ่ม copy · ผูกหลัง innerHTML จึงไม่ถูกล้าง */
       if (atBottom && msgBox) window.scrollTo(0, document.documentElement.scrollHeight);
