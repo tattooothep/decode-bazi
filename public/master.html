@@ -207,6 +207,7 @@
   .msg.user .msg-bubble{background:var(--gold-soft);border:1px solid var(--gold-line);border-top-right-radius:4px;}
   .msg-bubble b{color:var(--gold);}
   /* markdown render คำตอบซินแส (เฟส 1 · 2 มิ.ย.) */
+  .md-body{display:block;width:100%;}   /* ปลด display:flex ที่ค้างจาก .msg (3 agent · agent3 ขอย้าย inline→CSS) · ลูก p/ul ไม่กลายเป็น flex item เรียงตั้ง */
   .md-body h2{font-size:15px;margin:10px 0 4px;color:var(--gold);font-family:var(--thai);}
   .md-body h3{font-size:14px;margin:8px 0 3px;color:var(--gold);font-family:var(--thai);}
   .md-body p{margin:6px 0;}
@@ -805,9 +806,7 @@
       var atBottom = (document.documentElement.scrollHeight - window.scrollY - window.innerHeight < 120);
       el.dataset.raw = raw || '';
       el.classList.add('md-body');
-      el.style.whiteSpace = 'normal';
-      el.style.display = 'block';   /* ปลด display:flex ที่ค้างจาก .msg → ลูก <p>/<ul> ไม่กลายเป็น flex item เรียงแนวตั้ง (3 agent root cause) */
-      el.style.width = '100%';      /* กัน flex item หด fit-content → ข้อความเต็มคอลัมน์ 760 */
+      el.style.whiteSpace = 'normal';   /* คง inline · cssText sifu มี pre-wrap (inline ชนะ class) ต้อง override ด้วย inline · display/width ย้ายไป CSS .md-body แล้ว */
       el.innerHTML = mdMaster(raw);
       attachMsgActions(el, raw);                /* แถบปุ่ม copy · ผูกหลัง innerHTML จึงไม่ถูกล้าง */
       if (atBottom && msgBox) window.scrollTo(0, document.documentElement.scrollHeight);
