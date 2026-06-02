@@ -176,8 +176,8 @@
   .fc-meta b{color:var(--gold);}
 
   /* ═══════════ CHAT SECTION ═══════════ */
-  /* Claude-style · ไม่มี card กล่อง · แชทเต็มจอ (2 มิ.ย.) */
-  .chat-section{background:none;border:none;border-radius:0;padding:0;display:flex;flex-direction:column;height:calc(100dvh - 140px);}
+  /* Claude-style · window scroll (ไม่มีกล่อง scroll) · input ติดล่าง (2 มิ.ย.) */
+  .chat-section{background:none;border:none;border-radius:0;padding:0;}
   .chat-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;gap:14px;}
   .chat-head h2{font-family:var(--serif);font-size:32px;font-weight:300;letter-spacing:-.02em;}
   .chat-head h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-right:6px;}
@@ -191,11 +191,8 @@
   .chat-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px 18px;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--gold-line);}
   .chat-title{display:inline-flex;align-items:center;gap:8px;font-family:var(--serif);font-size:18px;font-weight:600;color:var(--fg);margin-right:auto;}
   .chat-title .tc{font-family:var(--tc);color:var(--gold);}
-  .messages{display:flex;flex-direction:column;gap:14px;margin-bottom:16px;flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--gold-line) transparent;}
-  .messages::-webkit-scrollbar{width:6px;}
-  .messages::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:3px;}
-  .messages::-webkit-scrollbar-track{background:transparent;}
-  .chat-toolbar{flex-shrink:0;} .chat-input{flex-shrink:0;}
+  .messages{display:flex;flex-direction:column;gap:14px;margin-bottom:16px;padding-bottom:8px;}
+  .chat-toolbar{position:sticky;top:60px;background:var(--bg);z-index:9;padding-top:10px;}
   .messages::-webkit-scrollbar{width:4px;}
   .messages::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:2px;}
 
@@ -263,7 +260,7 @@
     .hkg-count{width:100%;}
     .hkg-go{width:100%;justify-content:center;}
   }
-  .chat-input{display:flex;gap:8px;align-items:flex-end;}
+  .chat-input{display:flex;gap:8px;align-items:flex-end;position:sticky;bottom:0;background:var(--bg);padding:12px 0 16px;z-index:10;}
   .chat-input textarea{flex:1;background:var(--bg-2);color:var(--fg);border:1px solid var(--gold-line);border-radius:12px;padding:14px 16px;font-family:var(--thai);font-size:14px;line-height:1.5;resize:none;min-height:52px;max-height:120px;}
   .chat-input textarea::placeholder{color:var(--fg);opacity:.45;}
   .chat-input textarea:focus{outline:none;border-color:var(--gold);}
@@ -786,7 +783,7 @@
         : 'margin:14px 0;padding:14px 18px;background:rgba(38,42,50,.5);border:1px solid rgba(246,241,230,.1);border-radius:14px 14px 14px 4px;max-width:90%;font-family:var(--thai,"Noto Serif Thai");font-size:14px;line-height:1.7;color:var(--fg,#f6f1e6);white-space:pre-wrap;';
       div.textContent = text;
       msgBox.appendChild(div);
-      msgBox.scrollTop = msgBox.scrollHeight;
+      window.scrollTo(0, document.documentElement.scrollHeight);
       return div;
     }
 
@@ -805,13 +802,13 @@
     /* swap textContent → innerHTML · กัน scroll jump · เก็บ raw (เผื่อ copy/regen ชิ้น 2) */
     function renderMd(el, raw){
       if (!el) return;
-      var atBottom = msgBox ? (msgBox.scrollHeight - msgBox.scrollTop - msgBox.clientHeight < 40) : true;
+      var atBottom = (document.documentElement.scrollHeight - window.scrollY - window.innerHeight < 120);
       el.dataset.raw = raw || '';
       el.classList.add('md-body');
       el.style.whiteSpace = 'normal';
       el.innerHTML = mdMaster(raw);
       attachMsgActions(el, raw);                /* แถบปุ่ม copy · ผูกหลัง innerHTML จึงไม่ถูกล้าง */
-      if (atBottom && msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+      if (atBottom && msgBox) window.scrollTo(0, document.documentElement.scrollHeight);
     }
     /* ── แถบปุ่มใต้คำตอบซินแส (เฟส1-ชิ้น2 · 2 มิ.ย.) ── */
     function mstActLabel(key, fallback){
@@ -1125,7 +1122,7 @@
               if (!clearedG){ phG.textContent = ''; clearedG = true; }
               replyG += chunk;
               phG.textContent = replyG;
-              msgBox.scrollTop = msgBox.scrollHeight;
+              window.scrollTo(0, document.documentElement.scrollHeight);
             }
           });
           if (replyG.trim()){
@@ -1212,7 +1209,7 @@
               if (!cleared) { placeholder.textContent = ''; cleared = true; }
               reply += chunk;
               placeholder.textContent = reply;
-              msgBox.scrollTop = msgBox.scrollHeight;
+              window.scrollTo(0, document.documentElement.scrollHeight);
             }
           });
           if (reply.trim()) {
