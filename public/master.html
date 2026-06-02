@@ -187,6 +187,30 @@
   @keyframes pulse{0%,100%{opacity:.5;}50%{opacity:1;}}
 
   /* messages */
+  /* ═══ Sidebar ประวัติแชท (Claude-style · 2 มิ.ย.) ═══ */
+  :root{--hk-side-w:260px;}
+  .hk-side{position:fixed;top:0;left:0;bottom:0;width:var(--hk-side-w);z-index:60;display:flex;flex-direction:column;background:var(--bg-2);border-right:1px solid var(--gold-line);transition:transform .28s;}
+  .hk-newchat{margin:16px 14px 8px;padding:11px 14px;display:flex;align-items:center;gap:8px;justify-content:center;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:10px;color:var(--gold);font-family:var(--thai);font-size:14px;font-weight:600;cursor:pointer;transition:.2s;}
+  .hk-newchat:hover{background:var(--gold);color:var(--bg);}
+  .hk-newchat .tc{font-family:var(--tc);font-weight:700;}
+  .hk-side-list{flex:1;overflow-y:auto;padding:6px 8px;display:flex;flex-direction:column;gap:2px;}
+  .hk-side-list::-webkit-scrollbar{width:4px;}
+  .hk-side-list::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:2px;}
+  .hk-side-empty{padding:24px 12px;font-size:12px;color:var(--fg-faint);text-align:center;font-family:var(--thai);}
+  .hk-chat-item{display:flex;align-items:center;gap:6px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--fg-soft);transition:background .15s;}
+  .hk-chat-item:hover{background:var(--gold-soft);color:var(--fg);}
+  .hk-chat-item.active{background:var(--gold-soft);color:var(--gold);}
+  .hk-chat-item .ci-body{flex:1;min-width:0;font-family:var(--thai);}
+  .hk-chat-item .ci-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;}
+  .hk-chat-item .ci-time{display:block;font-family:var(--mono);font-size:9px;color:var(--fg-faint);margin-top:2px;}
+  .hk-chat-del{flex-shrink:0;border:none;background:none;color:var(--fg-faint);font-size:16px;line-height:1;cursor:pointer;padding:0 4px;border-radius:6px;opacity:0;transition:.15s;}
+  .hk-chat-item:hover .hk-chat-del{opacity:1;}
+  .hk-chat-del:hover{color:#e26b5d;}
+  .hk-side-toggle{display:none;background:none;border:1px solid var(--gold-line);color:var(--fg-soft);width:34px;height:34px;border-radius:8px;font-size:16px;cursor:pointer;align-items:center;justify-content:center;}
+  .hk-side-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55;}
+  .hk-side-ov.on{display:block;}
+  @media(min-width:981px){ body.hk-has-side .topbar,body.hk-has-side .stage{margin-left:var(--hk-side-w);} }
+  @media(max-width:980px){ .hk-side{transform:translateX(-100%);box-shadow:2px 0 24px rgba(0,0,0,.4);} body.hk-side-open .hk-side{transform:none;} .hk-side-toggle{display:inline-flex;} }
   /* Claude-style chat shell toolbar (2 มิ.ย.) */
   .chat-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px 18px;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--gold-line);}
   .chat-title{display:inline-flex;align-items:center;gap:8px;font-family:var(--serif);font-size:18px;font-weight:600;color:var(--fg);margin-right:auto;}
@@ -398,6 +422,13 @@
 </head>
 <body>
 
+<!-- ═══ Sidebar ประวัติแชท (Claude-style · 2 มิ.ย.) ═══ -->
+<div class="hk-side-ov" id="hk-side-ov"></div>
+<aside class="hk-side" id="hk-side">
+  <button class="hk-newchat" id="hk-newchat"><span class="tc">新</span><span data-i18n="mst.side.new">แชทใหม่</span></button>
+  <div class="hk-side-list" id="hk-side-list"></div>
+</aside>
+
 <div class="sinsae-intro" id="sinsae-intro" aria-modal="true" role="dialog">
   <div class="sinsae-oracle-field" aria-hidden="true">
     <div class="sinsae-gate-light"></div>
@@ -443,6 +474,7 @@
 </div>
 
 <header class="topbar">
+  <button class="hk-side-toggle" id="hk-side-toggle" aria-label="ประวัติแชท">☰</button>
   <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
   <nav class="nav" id="hk-topnav">
     <a href="/chart" data-r="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="mst.nav.chart">ดวง</span></a>
@@ -772,9 +804,33 @@
       if (!p) return safeKeyPart(id || 'anon');
       return [id || 'anon', p.day_master || 'nodm', p.day_boundary || p.dayBoundary || 'nodb', p.birth_datetime || 'nobt'].map(safeKeyPart).join('_');
     }
-    function storeKey(){ return 'hk_sifu_chat_' + profileStoreSig(selectedProfileId || 'anon'); } /* ประวัติแชทแยกตามดวง+signature */
+    function storeKey(){ return 'hk_sifu_chat_' + profileStoreSig(selectedProfileId || 'anon'); } /* legacy · migrate ของเก่า */
     let history = [];
-    function persist(){ try { localStorage.setItem(storeKey(), JSON.stringify(history.slice(-40))); } catch(_){} }
+    /* ═══ ประวัติแชทแบบ thread (รวม · ไม่แยกดวง · sidebar Claude-style · 2 มิ.ย. เจ้านายสั่ง) ═══ */
+    var THREADS_KEY = 'hk_sifu_threads';
+    var currentThreadId = '';
+    window._sifuStreaming = false;
+    function loadThreads(){ try{ var o=JSON.parse(localStorage.getItem(THREADS_KEY)||'null'); if(o&&Array.isArray(o.threads)) return o; }catch(_){} return {activeId:'',threads:[]}; }
+    function saveThreads(o){ try{ localStorage.setItem(THREADS_KEY, JSON.stringify(o)); }catch(_){} }
+    function genTid(){ return 't'+Date.now()+Math.floor(Math.random()*9000+1000); }
+    function tLoc(){ try{return localStorage.getItem('hk_locale')||'th';}catch(_){return 'th';} }
+    function relTime(ts){ var now=new Date(), d=new Date(ts), L=tLoc(); var dd=Math.floor((now-d)/86400000); if(now.toDateString()===d.toDateString()) return L==='th'?'วันนี้':L==='zh'?'今天':'Today'; if(dd<=1) return L==='th'?'เมื่อวาน':L==='zh'?'昨天':'Yesterday'; return L==='th'?(dd+' วันก่อน'):L==='zh'?(dd+'天前'):(dd+'d'); }
+    function persist(){ try{
+      if(!history.length) return;   /* กัน thread ว่างตอนสลับดวง/กด New ซ้ำ (3 agent · agent2) */
+      var o=loadThreads();
+      var t=o.threads.find(function(x){return x.id===currentThreadId;});
+      if(!t){ if(!currentThreadId) currentThreadId=genTid(); t={id:currentThreadId,title:'',ts:Date.now(),msgs:[]}; o.threads.unshift(t); }
+      t.msgs=history.slice(-40);
+      if(!t.title){ var u=history.find(function(m){return m.role==='user';}); if(u) t.title=String(u.content).replace(/\s+/g,' ').trim().slice(0,42); }
+      t.ts=Date.now(); o.activeId=currentThreadId; o.threads.sort(function(a,b){return b.ts-a.ts;});
+      saveThreads(o); renderSidebar();
+    }catch(_){} }
+    function renderThreadMsgs(t){ history=(t&&t.msgs?t.msgs.slice(-40):[]); msgBox.innerHTML=''; if(!history.length){ addWelcomeMsg(); return; } history.forEach(function(m){ var dv=addMsg(m.role==='user'?'user':'sifu',m.content); if(m.role!=='user') renderMd(dv,m.content); }); }
+    function openThread(id){ if(window._sifuStreaming) return; persist(); currentThreadId=id; var o=loadThreads(); o.activeId=id; saveThreads(o); renderThreadMsgs(o.threads.find(function(x){return x.id===id;})); renderSidebar(); document.body.classList.remove('hk-side-open'); window.scrollTo(0,0); }
+    function newThread(){ if(window._sifuStreaming) return; persist(); var o=loadThreads(); var t={id:genTid(),title:'',ts:Date.now(),msgs:[]}; o.threads.unshift(t); currentThreadId=t.id; o.activeId=t.id; saveThreads(o); history=[]; msgBox.innerHTML=''; addWelcomeMsg(); renderSidebar(); document.body.classList.remove('hk-side-open'); }
+    function deleteThread(id){ var o=loadThreads(); o.threads=o.threads.filter(function(x){return x.id!==id;}); var wasA=(currentThreadId===id); if(wasA){ currentThreadId=o.threads[0]?o.threads[0].id:genTid(); o.activeId=currentThreadId; } saveThreads(o); if(wasA){ renderThreadMsgs(o.threads.find(function(x){return x.id===currentThreadId;})); } renderSidebar(); }
+    function renderSidebar(){ var box=document.getElementById('hk-side-list'); if(!box) return; var o=loadThreads(); if(!o.threads.length){ box.innerHTML='<div class="hk-side-empty" data-i18n="mst.side.empty">ยังไม่มีบทสนทนา</div>'; return; } var h=''; o.threads.forEach(function(t){ var a=t.id===currentThreadId?' active':''; var ti=(t.title||'แชทใหม่').replace(/[<>&"]/g,''); h+='<div class="hk-chat-item'+a+'" data-tid="'+t.id+'"><div class="ci-body"><span class="ci-title">'+ti+'</span><span class="ci-time">'+relTime(t.ts)+'</span></div><button class="hk-chat-del" data-del="'+t.id+'" aria-label="ลบ">×</button></div>'; }); box.innerHTML=h; if(window.applyI18N) applyI18N(tLoc()); }
+    function addWelcomeMsg(){ var d=addMsg('sifu',''); renderMd(d,'สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ'); }
 
     function addMsg(role, text){
       const div = document.createElement('div');
@@ -834,16 +890,39 @@
 
     /* โหลดประวัติแชทเก่าของดวงที่เลือก → render เป็นฟอง */
     function loadHistory(){
-      history = [];
-      try {
-        const saved = JSON.parse(localStorage.getItem(storeKey()) || '[]');
-        if (Array.isArray(saved) && saved.length) {
-          history = saved.slice(-40);
-          history.forEach(function(m){ var dv = addMsg(m.role === 'user' ? 'user' : 'sifu', m.content); if (m.role !== 'user') renderMd(dv, m.content); });
-        }
-      } catch(_){}
+      history = []; msgBox.innerHTML = '';
+      var o = loadThreads();
+      /* migrate ของเก่า hk_sifu_chat_* (แยกดวง) → รวมเป็น threads (ครั้งเดียว · ไม่ให้ประวัติหาย) */
+      if (!o.threads.length){
+        try { for (var i=0;i<localStorage.length;i++){ var k=localStorage.key(i);
+          if (k && k.indexOf('hk_sifu_chat_')===0){ var arr=JSON.parse(localStorage.getItem(k)||'[]');
+            if (Array.isArray(arr) && arr.length){ var u=arr.find(function(m){return m.role==='user';});
+              o.threads.push({ id:genTid(), title:u?String(u.content).replace(/\s+/g,' ').trim().slice(0,42):'แชทเก่า', ts:Date.now()-o.threads.length*60000, msgs:arr.slice(-40) }); } } }
+          if (o.threads.length){ o.threads.sort(function(a,b){return b.ts-a.ts;}); o.activeId=o.threads[0].id; saveThreads(o); }
+        } catch(_){}
+      }
+      currentThreadId = o.activeId || (o.threads[0] && o.threads[0].id) || '';
+      var t = o.threads.find(function(x){return x.id===currentThreadId;});
+      if (t && t.msgs && t.msgs.length){ history=t.msgs.slice(-40); history.forEach(function(m){ var dv=addMsg(m.role==='user'?'user':'sifu',m.content); if(m.role!=='user') renderMd(dv,m.content); }); }
+      else { addWelcomeMsg(); }
+      renderSidebar();
     }
     loadHistory();
+
+    /* ═══ wire sidebar (Claude-style · 2 มิ.ย.) ═══ */
+    document.body.classList.add('hk-has-side');
+    (function wireSidebar(){
+      var nc=document.getElementById('hk-newchat'), list=document.getElementById('hk-side-list'),
+          tog=document.getElementById('hk-side-toggle'), ov=document.getElementById('hk-side-ov');
+      if(nc) nc.addEventListener('click', function(){ newThread(); });
+      if(list) list.addEventListener('click', function(e){
+        var del=e.target.closest('.hk-chat-del'); if(del){ e.stopPropagation(); deleteThread(del.getAttribute('data-del')); return; }
+        var it=e.target.closest('.hk-chat-item'); if(it){ openThread(it.getAttribute('data-tid')); }
+      });
+      if(tog) tog.addEventListener('click', function(){ var on=document.body.classList.toggle('hk-side-open'); if(ov) ov.classList.toggle('on', on); });
+      if(ov) ov.addEventListener('click', function(){ document.body.classList.remove('hk-side-open'); ov.classList.remove('on'); });
+      renderSidebar();
+    })();
 
     /* 🧑‍🤝‍🧑 dropdown เลือกดวง · โหลดรายชื่อโปรไฟล์ในบัญชีจาก /api/profile (ตัวเอง+ญาติ org เดียวกัน) */
     var relSelf = (window.HK_I18N && window.HK_I18N['mst.ask.self']) ? window.HK_I18N['mst.ask.self'] : { th:'ตัวเอง', en:'Self', zh:'本人' };
@@ -1095,7 +1174,7 @@
         return true;
       }
       if (echoUser) addMsg('user', text);
-      sendBtn.disabled = true;
+      sendBtn.disabled = true; window._sifuStreaming = true;
       if (hkgGoBtn) hkgGoBtn.disabled = true;
       var phG = addMsg('sifu', 'ซินแสกำลังคิด ...');
       try {
@@ -1146,7 +1225,7 @@
       } catch(e){
         phG.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
       } finally {
-        sendBtn.disabled = false;
+        sendBtn.disabled = false; window._sifuStreaming = false;
         if (hkgGoBtn) hkgGoBtn.disabled = false;
         inputEl.focus();
       }
@@ -1167,7 +1246,7 @@
       const text = inputEl.value.trim();
       if (!text) return;
       inputEl.value = '';
-      sendBtn.disabled = true;
+      sendBtn.disabled = true; window._sifuStreaming = true;
       addMsg('user', text);
 
       /* 🧑‍🤝‍🧑 GROUP MODE branch · เลือกกลุ่ม ≠ "-" → delegate ไป hkgRun (ยิง /api/sifu/group · reuse readSifuStream)
@@ -1240,7 +1319,7 @@
           ? 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ'
           : '⚠ เครือข่ายขัดข้อง · ลองใหม่';
       } finally {
-        sendBtn.disabled = false;
+        sendBtn.disabled = false; window._sifuStreaming = false;
         inputEl.focus();
       }
     }
@@ -1336,7 +1415,9 @@ window.HK_I18N = {
   'mst.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
   /* แถบปุ่มแชท (เฟส1-ชิ้น2) */
   'mst.act.copy':   { th:'คัดลอก', en:'Copy', zh:'複製' },
-  'mst.act.copied': { th:'คัดลอกแล้ว', en:'Copied', zh:'已複製' }
+  'mst.act.copied': { th:'คัดลอกแล้ว', en:'Copied', zh:'已複製' },
+  'mst.side.new':   { th:'แชทใหม่', en:'New chat', zh:'新對話' },
+  'mst.side.empty': { th:'ยังไม่มีบทสนทนา', en:'No conversations yet', zh:'尚無對話' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
