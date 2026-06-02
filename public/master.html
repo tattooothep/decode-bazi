@@ -186,7 +186,7 @@
   @keyframes pulse{0%,100%{opacity:.5;}50%{opacity:1;}}
 
   /* messages */
-  .messages{display:flex;flex-direction:column;gap:14px;margin-bottom:18px;max-height:420px;overflow-y:auto;padding-right:6px;}
+  .messages{display:flex;flex-direction:column;gap:14px;margin-bottom:18px;max-height:62vh;min-height:340px;overflow-y:auto;padding-right:6px;}
   .messages::-webkit-scrollbar{width:4px;}
   .messages::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:2px;}
 
@@ -347,7 +347,7 @@
       opacity:1 !important;
       transform:none !important;
     }
-    .messages{max-height:360px;}
+    .messages{max-height:68vh;}
     .msg-bubble{max-width:88%;}
     .chat-input{align-items:stretch;}
     .chat-input textarea{min-height:58px;}
@@ -475,86 +475,10 @@
       </div>
     </div>
 
-    <!-- Greeting text -->
-    <div class="master-greeting">
-      <div class="salute">時 SINSAE · DAILY ORACLE</div>
-      <h1>สวัสดีตอนบ่าย<br/><i data-i18n="auto.m.001">คุณไนท์</i> <span class="tc">敬</span></h1>
-      <div class="name">วันนี้คือ <b data-i18n="auto.m.002">พฤหัส 7 พ.ค. 2569</b> · 三月廿三 · ชั่วยาม <b>未時 </b>ตอนนี้</div>
-
-      <div class="day-pills">
-        <span class="pill"><span class="tc">日</span>辛巳</span>
-        <span class="pill"><span class="tc">月</span>癸巳</span>
-        <span class="pill"><span class="tc">年</span>丙午</span>
-        <span class="pill gold"><span class="tc">運</span>72/100 OPEN</span>
-      </div>
-
-      <div class="verdict-line">
-        <span class="tc">告</span>วันนี้ <b data-i18n="auto.m.003">ทรัพย์ไหลมา</b> · เหมาะ <b data-i18n="auto.m.004">ปิดดีล · ทวงเงิน · ตามหนี้</b><br/>
-        จงระวัง <b data-i18n="auto.m.005">คนที่เกิดวันชง 亥 — มิ้นท์, อรุณ</b> · เลี่ยง <b data-i18n="auto.m.006">ตัดสินใจหลัง 17:00</b>
-      </div>
-    </div>
+    <!-- greeting (DAILY ORACLE mockup) ถอดออก 2 มิ.ย. · เจ้านายสั่ง · รอ wire engine จริง -->
   </div>
 
-  <!-- ═══════════ FORECAST GRID ═══════════ -->
-  <div class="section-head">
-    <div>
-      <div  class="label" data-i18n="auto.m.007">FORECAST · 預言 · เห็นล่วงหน้า</div>
-      <h2><span class="tc">前</span>เห็นไกล<i data-i18n="auto.m.008">ก่อน</i>ก้าว</h2>
-    </div>
-    <div  class="right" data-i18n="auto.m.009">3 ช่วงเวลา · 流時 流日 流月</div>
-  </div>
-
-  <div class="forecast-grid">
-
-    <!-- NOW -->
-    <div class="fc-card now">
-      <div class="fc-when">
-        <div class="tc">未</div>
-        <div class="label">SHICHEN<small>13:00 — 15:00</small></div>
-      </div>
-      <div class="fc-headline">2 ชั่วโมงนี้ · <b data-i18n="auto.m.010">นั่งวิเคราะห์</b> · ไม่เหมาะเจรจา</div>
-      <div class="fc-detail">未時 ดิน·ดิน — สงบ · เหมาะ <b data-i18n="auto.m.011">review เอกสาร</b> · <b data-i18n="auto.m.012">เก็บข้อมูล</b> · <b data-i18n="auto.m.013">เตรียมพรีเซน</b> ให้เสร็จก่อน <b>17:00</b> ก่อนเข้าชั่วยาม 申 ที่ห้ามตัดสินใจ</div>
-      <div class="fc-tags">
-        <span  class="mid" data-i18n="auto.m.014">นั่งคิด</span>
-        <span  class="good" data-i18n="auto.m.015">วินัย</span>
-        <span  class="bad" data-i18n="auto.m.016">ห้ามเจรจา</span>
-      </div>
-      <div class="fc-meta">SCORE <b>+45</b> · 比肩 · 平和</div>
-    </div>
-
-    <!-- TODAY -->
-    <div class="fc-card">
-      <div class="fc-when">
-        <div class="tc">日</div>
-        <div class="label">ทั้งวัน<small data-i18n="auto.m.017">วันนี้</small></div>
-      </div>
-      <div class="fc-headline">วัน <b>正財透干</b> · <b data-i18n="auto.m.018">เปิดดวงเงิน</b></div>
-      <div class="fc-detail">辛巳 · ทอง·ไฟ — ทรัพย์ไหลมาทาง <b data-i18n="auto.m.019">ดีลที่ค้าง</b> · ช่วงทอง <b>09:00-13:00</b> · มี <b data-i18n="auto.m.020">3 คนสำคัญ</b> ตอบรับวันนี้: <b data-i18n="auto.m.021">ใหม่ · พีท · ก้อง</b></div>
-      <div class="fc-tags">
-        <span class="good">正財</span>
-        <span class="good">納財</span>
-        <span class="mid">沖 子</span>
-      </div>
-      <div class="fc-meta">SCORE <b>+72</b> · DM <b>己</b> · 開門</div>
-    </div>
-
-    <!-- THIS MONTH -->
-    <div class="fc-card">
-      <div class="fc-when">
-        <div class="tc">月</div>
-        <div class="label">เดือน<small data-i18n="auto.m.022">พฤษภาคม 2569</small></div>
-      </div>
-      <div class="fc-headline">月柱 <b>癸巳</b> · <b data-i18n="auto.m.023">ตั้งหลัก-วาง基</b></div>
-      <div class="fc-detail">เดือนหน้าฤกษ์ใหญ่: <b data-i18n="auto.m.024">13 พ.ค.</b> เซ็นสัญญา (★★★) · <b data-i18n="auto.m.025">15 พ.ค.</b> เจรจา · ระวัง <b data-i18n="auto.m.026">22-24 พ.ค.</b> ดวงตก · ไม่ตัดสินใจใหญ่</div>
-      <div class="fc-tags">
-        <span  class="good" data-i18n="auto.m.027">14 ฤกษ์ดี</span>
-        <span  class="bad" data-i18n="auto.m.028">3 วันตก</span>
-        <span class="mid">立夏 → 小滿</span>
-      </div>
-      <div class="fc-meta">AVG <b>+58</b> · BEST DAY <b data-i18n="auto.m.029">13 พ.ค.</b></div>
-    </div>
-
-  </div>
+  <!-- FORECAST GRID (mockup) ถอดออก 2 มิ.ย. · เจ้านายสั่ง · รอ wire engine จริง -->
 
   <!-- ═══════════ CHAT WITH MASTER ═══════════ -->
   <div class="section-head">
