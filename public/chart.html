@@ -4069,7 +4069,8 @@ window.addEventListener('resize', function(){
   .hk-people-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:99px;border:1px solid var(--gold-line);background:var(--tile);color:var(--fg);font-family:var(--thai,'IBM Plex Sans Thai',sans-serif);font-size:12px;cursor:pointer;transition:.18s;line-height:1;}
   .hk-people-btn:hover{background:var(--gold);color:var(--bg);}
   .hk-people-btn .glyph{font-family:var(--tc);font-size:15px;}
-  @media(max-width:600px){.hk-people-btn .lbl{display:none;} .hk-people-btn{padding:7px 10px;}}
+  /* มือถือ: โชว์ป้ายตามภาษา (ไทย=เปลี่ยนดวง · EN=Switch chart · ZH=換盤) แทน glyph 換 + กันทับ avatar (2 มิ.ย.) */
+  @media(max-width:600px){.hk-people-btn .glyph{display:none;} .hk-people-btn .lbl{display:inline;white-space:nowrap;} .hk-people-btn{padding:7px 12px;flex-shrink:0;} .top-r #hk-user-menu-mount{flex-shrink:0;}}
   .hkp-overlay{position:fixed;inset:0;z-index:9996;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);opacity:0;transition:opacity .25s;}
   .hkp-overlay.on{opacity:1;}
   .hkp-drawer{position:fixed;top:0;right:0;height:100%;width:min(420px,92vw);z-index:9997;background:var(--bg);border-left:1px solid var(--gold-line);box-shadow:-12px 0 40px rgba(0,0,0,.4);transform:translateX(102%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;font-family:var(--thai,'IBM Plex Sans Thai',sans-serif);}
