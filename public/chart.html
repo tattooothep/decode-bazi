@@ -2821,6 +2821,8 @@ window.addEventListener('resize', function(){
         function md2html(md){
           if (!md) return '';
           return md
+            /* 2 มิ.ย. · escape <>& ก่อนแปลง markdown · กัน HTML/script injection จาก LLM output (ผู้ใช้ป้อน question ได้) · tag ที่เราสร้างเอง (h2/strong/li) มาหลัง escape จึงไม่โดน */
+            .replace(/[&<>]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]))
             .replace(/^## (.+)$/gm, '<h2>$1</h2>')
             .replace(/^### (.+)$/gm, '<h3>$1</h3>')
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')

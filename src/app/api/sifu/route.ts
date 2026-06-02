@@ -743,9 +743,32 @@ function dumpPromptIfDebug(prompt: string, tag: string) {
   } catch (e) { console.error("[sifu][DUMP] fail:", (e as Error).message); }
 }
 
+/* 2 มิ.ย. · in-flight semaphore แบบ "เข้าคิว" (ไม่บล็อก/ไม่เด้ง error ทันที · กันหลายคนยิง spawn Claude พร้อมกันจน fork เดียวล่ม)
+ * cap ระดับ process · เกิน → รอคิวจน slot ว่าง · คิวเต็มจริง (MAX_QUEUE) → false ให้ caller เด้ง safety
+ * ⚠️ horizontal scale: counter นี้ per-process · ขึ้นหลาย instance ต้องย้ายไป Redis (ดู memory) */
+const SIFU_MAX_INFLIGHT = Number(process.env.SIFU_MAX_INFLIGHT || 6);
+const SIFU_MAX_QUEUE = Number(process.env.SIFU_MAX_QUEUE || 60);
+let _sifuInflight = 0;
+const _sifuWaiters: Array<() => void> = [];
+function acquireSifuSlot(): Promise<boolean> {
+  if (_sifuInflight < SIFU_MAX_INFLIGHT) { _sifuInflight++; return Promise.resolve(true); }
+  if (_sifuWaiters.length >= SIFU_MAX_QUEUE) return Promise.resolve(false);
+  return new Promise<boolean>((resolve) => {
+    _sifuWaiters.push(() => { _sifuInflight++; resolve(true); });
+  });
+}
+function releaseSifuSlot() {
+  _sifuInflight = Math.max(0, _sifuInflight - 1);
+  const next = _sifuWaiters.shift();
+  if (next) next();
+}
+
 async function runClaudeCli(prompt: string): Promise<string> {
   dumpPromptIfDebug(prompt, "cli");
-  return new Promise((resolve, reject) => {
+  const _slotOk = await acquireSifuSlot();
+  if (!_slotOk) throw new Error("sifu_busy · ระบบกำลังประมวลผลคำถามจำนวนมาก");
+  try {
+  return await new Promise<string>((resolve, reject) => {
     const claudeArgs = [
       "-p",
       "--output-format", "text",
@@ -773,6 +796,9 @@ async function runClaudeCli(prompt: string): Promise<string> {
     c.stdin.write(prompt);
     c.stdin.end();
   });
+  } finally {
+    releaseSifuSlot();
+  }
 }
 
 /* 🌊 Streaming version · pipe stdout เป็น chunks · ใช้ใน SSE
@@ -990,7 +1016,7 @@ export async function POST(req: Request) {
       const encoder = new TextEncoder();
       let activeChild: ReturnType<typeof spawnClaudeStreaming> | null = null;
       const stream = new ReadableStream({
-        start(controller) {
+        async start(controller) {
           let closed = false;
           let full = "";
           let firstChunkSent = false;
@@ -1023,8 +1049,14 @@ export async function POST(req: Request) {
             if (!firstChunkSent) return "waiting_visible_chunk";
             return "streaming";
           });
+          /* 2 มิ.ย. · เข้าคิว slot ก่อน spawn · ถ้าเต็มเกิน MAX_QUEUE → เด้ง safety · heartbeat ข้างบนส่ง ping ระหว่างรอคิว user จึงไม่เห็นค้าง */
+          const _slotOk = await acquireSifuSlot();
+          if (!_slotOk) { send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
+          let _slotReleased = false;
+          const releaseSlotOnce = () => { if (!_slotReleased) { _slotReleased = true; releaseSifuSlot(); } };
           const child = spawnClaudeStreaming(prompt);
           activeChild = child;
+          child.on("error", releaseSlotOnce);
           const killTimer = setTimeout(() => {
             try { child.kill("SIGKILL"); } catch {}
             send("error", { error: "timeout" });
@@ -1071,6 +1103,7 @@ export async function POST(req: Request) {
             console.warn("[sifu sse stderr]", chunk.toString().slice(0, 200));
           });
           child.on("close", (code) => {
+            releaseSlotOnce();
             activeChild = null;
             clearTimeout(killTimer);
             if (idRejected) { safeClose(); return; } // ตัดไปแล้วจาก identity-lock
@@ -1277,7 +1310,13 @@ export async function GET(req: Request) {
         return;
       }
 
+      /* 2 มิ.ย. · เข้าคิว slot ก่อน spawn (เหมือน POST · heartbeat ส่ง ping ระหว่างรอ) */
+      const _slotOkG = await acquireSifuSlot();
+      if (!_slotOkG) { send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
+      let _slotReleasedG = false;
+      const releaseSlotOnceG = () => { if (!_slotReleasedG) { _slotReleasedG = true; releaseSifuSlot(); } };
       const c = spawnClaudeStreaming(prompt);
+      c.on("error", releaseSlotOnceG);
       let full = "";
       let firstChunkSent = false;
       let firstMs: number | null = null;
@@ -1338,6 +1377,7 @@ export async function GET(req: Request) {
         console.warn("[sifu sse stderr]", chunk.toString().slice(0, 200));
       });
       c.on("close", (code) => {
+        releaseSlotOnceG();
         clearTimeout(killTimer);
         if (idRejected) { safeClose(); return; }
         const ms = Date.now() - t0;
