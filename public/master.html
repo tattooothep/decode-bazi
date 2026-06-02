@@ -210,15 +210,6 @@
   .typing span:nth-child(3){animation-delay:.4s;}
   @keyframes typing{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-4px);}}
 
-  /* suggestion chips */
-  .suggest-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
-  .suggest-chips button{background:var(--bg-2);border:1px solid var(--tile-bd);color:var(--fg-soft);padding:8px 14px;border-radius:99px;font-family:var(--thai);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.2s;}
-  .suggest-chips button:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
-  .suggest-chips button .tc{font-family:var(--tc);font-weight:700;color:var(--gold);}
-  /* ปุ่มกดเปิดคำถามแนะนำ (2 มิ.ย.) */
-  .suggest-toggle{background:var(--bg-2);border:1px solid var(--tile-bd);color:var(--fg-soft);padding:7px 14px;border-radius:99px;font-family:var(--thai);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.2s;margin-bottom:14px;}
-  .suggest-toggle:hover,.suggest-toggle.on{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
-  .suggest-toggle .tc{font-family:var(--tc);font-weight:700;color:var(--gold);}
 
   /* input */
   .profile-pick{display:none;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
@@ -360,7 +351,6 @@
     .msg{gap:8px;}
     .msg-ava{width:30px;height:30px;font-size:14px;}
     .msg-bubble{max-width:100%;padding:12px 14px;font-size:13px;}
-    .suggest-chips button{font-size:11px;padding:7px 10px;}
     .chat-input{flex-direction:column;}
     .send-btn{width:100%;padding:12px 16px;}
     .sinsae-intro-card{padding:22px 18px;border-radius:14px;}
@@ -590,12 +580,6 @@
 
     </div>
 
-    <!-- suggestions · render โดย JS (i18n 3 ภาษา + dynamic-ready ผ่าน window.hkSetSuggestChips) -->
-    <!-- suggestions · ซ่อนเริ่มต้น · กดปุ่มเปิด (2 มิ.ย.) -->
-    <div class="suggest-area">
-      <button type="button" id="suggest-toggle" class="suggest-toggle"><span class="tc">問</span><span data-i18n="mst.sug.toggle">แนะนำคำถาม</span></button>
-      <div class="suggest-chips" id="suggest-chips" style="display:none"></div>
-    </div>
 
     <!-- profile picker · เลือกดวงในบัญชีที่จะถามซินแส -->
     <div class="profile-pick" id="sifu-profile-wrap">
@@ -861,57 +845,7 @@
     });
   })();
 
-  // suggest chips · i18n 3 ภาษา + dynamic-ready (เคลียร์ hardcode 2 มิ.ย.)
-  var SUGGEST_DEFAULT = [
-    { tc:'財', i18n:'mst.sug.money' },
-    { tc:'業', i18n:'mst.sug.work' },
-    { tc:'人', i18n:'mst.sug.people' },
-    { tc:'忌', i18n:'mst.sug.avoid' },
-    { tc:'時', i18n:'mst.sug.hour' },
-    { tc:'方', i18n:'mst.sug.dir' },
-  ];
-  function renderSuggestChips(list){
-    var box = document.getElementById('suggest-chips');
-    if (!box) return;
-    var lang = document.documentElement.getAttribute('data-lang') || 'th';
-    box.innerHTML = '';
-    (list || []).forEach(function(c){
-      var b = document.createElement('button');
-      if (c.tc){ var s = document.createElement('span'); s.className = 'tc'; s.textContent = c.tc; b.appendChild(s); }
-      var t = document.createElement('span');
-      if (c.i18n){
-        t.setAttribute('data-i18n', c.i18n);          /* applyI18N เติม/อัปเดตตอนสลับภาษา */
-        var d = window.HK_I18N && window.HK_I18N[c.i18n];
-        t.textContent = d ? (d[lang] || d.th || '') : (c.text || '');
-      } else { t.textContent = c.text || ''; }
-      b.appendChild(t);
-      box.appendChild(b);
-    });
-  }
-  /* dynamic hook · กลุ่ม A (AI แนะนำคำถามตามดวง) เรียกตัวนี้แทน default · ส่ง list ว่าง = กลับ default */
-  window.hkSetSuggestChips = function(list){ renderSuggestChips(list && list.length ? list : SUGGEST_DEFAULT); };
-  /* ปุ่มกดเปิด chips · ซ่อนตอนเริ่ม ไม่โชว์ตลอด (2 มิ.ย. · เจ้านายสั่ง) */
-  (function(){
-    var box = document.getElementById('suggest-chips');
-    var toggle = document.getElementById('suggest-toggle');
-    if (!box) return;
-    if (toggle){
-      toggle.addEventListener('click', function(){
-        var open = box.style.display !== 'none';
-        if (open){ box.style.display = 'none'; toggle.classList.remove('on'); }
-        else { if (!box.children.length) renderSuggestChips(SUGGEST_DEFAULT); box.style.display = 'flex'; toggle.classList.add('on'); }
-      });
-    }
-    /* click chip → ใส่ข้อความ (เฉพาะ text span · ไม่รวมตัวจีน tc) ลงช่องถาม + ซ่อน chips กลับ */
-    box.addEventListener('click', function(e){
-      var btn = e.target.closest('button'); if (!btn || !box.contains(btn)) return;
-      var ts = btn.querySelector('span:not(.tc)');
-      input.value = (ts ? ts.textContent : btn.textContent).trim();
-      input.focus();
-      box.style.display = 'none';
-      if (toggle) toggle.classList.remove('on');
-    });
-  })();
+  /* suggest chips ถูกถอดออก (2 มิ.ย. · เจ้านายสั่ง · กินที่) · idea: คำถามแนะนำขึ้นในช่องแชท 3-4 ข้อ = ทำตอนเฟส 1 */
 
   /* ── Wire OpenRouter (gpt-5) via /api/sifu ── */
   (function wireSifu(){
@@ -1450,15 +1384,7 @@ window.HK_I18N = {
   'mst.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
   'mst.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
   'mst.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
-  'mst.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
-  /* suggest chips · เคลียร์ hardcode (2 มิ.ย.) · default · กลุ่ม A แทนด้วย dynamic ตามดวงผ่าน window.hkSetSuggestChips */
-  'mst.sug.money':  { th:'เรื่องเงินวันนี้', en:'Money today', zh:'今日財運' },
-  'mst.sug.work':   { th:'งานที่ค้างอยู่', en:'Pending work', zh:'未了之事' },
-  'mst.sug.people': { th:'คนที่ต้องคุย', en:'People to talk to', zh:'該談的人' },
-  'mst.sug.avoid':  { th:'วันนี้เลี่ยงอะไร', en:'What to avoid', zh:'今日所忌' },
-  'mst.sug.hour':   { th:'ชั่วยามที่ดีที่สุด', en:'Best hour', zh:'最佳時辰' },
-  'mst.sug.dir':    { th:'ทิศที่ควรนั่ง', en:'Best direction', zh:'宜坐方位' },
-  'mst.sug.toggle': { th:'แนะนำคำถาม', en:'Suggest questions', zh:'推薦提問' }
+  'mst.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
