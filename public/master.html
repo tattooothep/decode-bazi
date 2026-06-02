@@ -191,8 +191,8 @@
   .chat-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px 18px;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--gold-line);}
   .chat-title{display:inline-flex;align-items:center;gap:8px;font-family:var(--serif);font-size:18px;font-weight:600;color:var(--fg);margin-right:auto;}
   .chat-title .tc{font-family:var(--tc);color:var(--gold);}
-  .messages{display:flex;flex-direction:column;gap:14px;margin-bottom:16px;padding-bottom:8px;}
-  .chat-toolbar{position:sticky;top:60px;background:var(--bg);z-index:9;padding-top:10px;}
+  .messages{display:flex;flex-direction:column;gap:14px;margin:0 auto 16px;padding-bottom:8px;max-width:760px;width:100%;}
+  .chat-toolbar{position:sticky;top:60px;background:var(--bg);z-index:9;padding-top:10px;max-width:760px;width:100%;margin:0 auto;}
   .messages::-webkit-scrollbar{width:4px;}
   .messages::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:2px;}
 
@@ -260,7 +260,7 @@
     .hkg-count{width:100%;}
     .hkg-go{width:100%;justify-content:center;}
   }
-  .chat-input{display:flex;gap:8px;align-items:flex-end;position:sticky;bottom:0;background:var(--bg);padding:12px 0 16px;z-index:10;}
+  .chat-input{display:flex;gap:8px;align-items:flex-end;position:sticky;bottom:0;background:var(--bg);padding:12px 0 16px;z-index:10;max-width:760px;width:100%;margin:0 auto;}
   .chat-input textarea{flex:1;background:var(--bg-2);color:var(--fg);border:1px solid var(--gold-line);border-radius:12px;padding:14px 16px;font-family:var(--thai);font-size:14px;line-height:1.5;resize:none;min-height:52px;max-height:120px;}
   .chat-input textarea::placeholder{color:var(--fg);opacity:.45;}
   .chat-input textarea:focus{outline:none;border-color:var(--gold);}
@@ -779,8 +779,8 @@
       const div = document.createElement('div');
       div.className = 'msg ' + (role === 'user' ? 'user' : 'sifu');
       div.style.cssText = role === 'user'
-        ? 'margin:14px 0;padding:12px 16px;background:rgba(200,164,77,.14);border:1px solid rgba(200,164,77,.3);border-radius:14px 14px 4px 14px;align-self:flex-end;max-width:85%;margin-left:auto;font-family:var(--thai,"Noto Serif Thai");font-size:14px;line-height:1.6;'
-        : 'margin:14px 0;padding:14px 18px;background:rgba(38,42,50,.5);border:1px solid rgba(246,241,230,.1);border-radius:14px 14px 14px 4px;max-width:90%;font-family:var(--thai,"Noto Serif Thai");font-size:14px;line-height:1.7;color:var(--fg,#f6f1e6);white-space:pre-wrap;';
+        ? 'margin:16px 0 4px;padding:11px 15px;background:rgba(200,164,77,.14);border:1px solid rgba(200,164,77,.3);border-radius:14px 14px 4px 14px;align-self:flex-end;max-width:80%;margin-left:auto;font-family:var(--thai,"Noto Serif Thai");font-size:14px;line-height:1.6;'
+        : 'margin:6px 0 14px;padding:2px 0;align-self:stretch;max-width:100%;font-family:var(--thai,"Noto Serif Thai");font-size:15px;line-height:1.75;color:var(--fg,#f6f1e6);white-space:pre-wrap;';
       div.textContent = text;
       msgBox.appendChild(div);
       window.scrollTo(0, document.documentElement.scrollHeight);
