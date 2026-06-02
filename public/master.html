@@ -586,15 +586,8 @@
 
     </div>
 
-    <!-- suggestions -->
-    <div class="suggest-chips">
-      <button><span class="tc">財</span>เรื่องเงินวันนี้</button>
-      <button><span class="tc">業</span>งานที่ค้างอยู่</button>
-      <button><span class="tc">人</span>คนที่ต้องคุย</button>
-      <button><span class="tc">忌</span>วันนี้เลี่ยงอะไร</button>
-      <button><span class="tc">時</span>ชั่วยามที่ดีที่สุด</button>
-      <button><span class="tc">方</span>ทิศที่ควรนั่ง</button>
-    </div>
+    <!-- suggestions · render โดย JS (i18n 3 ภาษา + dynamic-ready ผ่าน window.hkSetSuggestChips) -->
+    <div class="suggest-chips" id="suggest-chips"></div>
 
     <!-- profile picker · เลือกดวงในบัญชีที่จะถามซินแส -->
     <div class="profile-pick" id="sifu-profile-wrap">
@@ -860,13 +853,47 @@
     });
   })();
 
-  // suggest chips
-  document.querySelectorAll('.suggest-chips button').forEach(b=>{
-    b.addEventListener('click', ()=>{
-      input.value = b.textContent.trim().replace(/^[^\s]+\s*/, '');
+  // suggest chips · i18n 3 ภาษา + dynamic-ready (เคลียร์ hardcode 2 มิ.ย.)
+  var SUGGEST_DEFAULT = [
+    { tc:'財', i18n:'mst.sug.money' },
+    { tc:'業', i18n:'mst.sug.work' },
+    { tc:'人', i18n:'mst.sug.people' },
+    { tc:'忌', i18n:'mst.sug.avoid' },
+    { tc:'時', i18n:'mst.sug.hour' },
+    { tc:'方', i18n:'mst.sug.dir' },
+  ];
+  function renderSuggestChips(list){
+    var box = document.getElementById('suggest-chips');
+    if (!box) return;
+    var lang = document.documentElement.getAttribute('data-lang') || 'th';
+    box.innerHTML = '';
+    (list || []).forEach(function(c){
+      var b = document.createElement('button');
+      if (c.tc){ var s = document.createElement('span'); s.className = 'tc'; s.textContent = c.tc; b.appendChild(s); }
+      var t = document.createElement('span');
+      if (c.i18n){
+        t.setAttribute('data-i18n', c.i18n);          /* applyI18N เติม/อัปเดตตอนสลับภาษา */
+        var d = window.HK_I18N && window.HK_I18N[c.i18n];
+        t.textContent = d ? (d[lang] || d.th || '') : (c.text || '');
+      } else { t.textContent = c.text || ''; }
+      b.appendChild(t);
+      box.appendChild(b);
+    });
+  }
+  /* dynamic hook · กลุ่ม A (AI แนะนำคำถามตามดวง) เรียกตัวนี้แทน default · ส่ง list ว่าง = กลับ default */
+  window.hkSetSuggestChips = function(list){ renderSuggestChips(list && list.length ? list : SUGGEST_DEFAULT); };
+  renderSuggestChips(SUGGEST_DEFAULT);
+  /* click → ใส่ข้อความ (เฉพาะ text span · ไม่รวมตัวจีน tc) ลงช่องถาม */
+  (function(){
+    var box = document.getElementById('suggest-chips');
+    if (!box) return;
+    box.addEventListener('click', function(e){
+      var btn = e.target.closest('button'); if (!btn || !box.contains(btn)) return;
+      var ts = btn.querySelector('span:not(.tc)');
+      input.value = (ts ? ts.textContent : btn.textContent).trim();
       input.focus();
     });
-  });
+  })();
 
   /* ── Wire OpenRouter (gpt-5) via /api/sifu ── */
   (function wireSifu(){
@@ -1405,7 +1432,14 @@ window.HK_I18N = {
   'mst.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
   'mst.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
   'mst.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
-  'mst.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' }
+  'mst.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
+  /* suggest chips · เคลียร์ hardcode (2 มิ.ย.) · default · กลุ่ม A แทนด้วย dynamic ตามดวงผ่าน window.hkSetSuggestChips */
+  'mst.sug.money':  { th:'เรื่องเงินวันนี้', en:'Money today', zh:'今日財運' },
+  'mst.sug.work':   { th:'งานที่ค้างอยู่', en:'Pending work', zh:'未了之事' },
+  'mst.sug.people': { th:'คนที่ต้องคุย', en:'People to talk to', zh:'該談的人' },
+  'mst.sug.avoid':  { th:'วันนี้เลี่ยงอะไร', en:'What to avoid', zh:'今日所忌' },
+  'mst.sug.hour':   { th:'ชั่วยามที่ดีที่สุด', en:'Best hour', zh:'最佳時辰' },
+  'mst.sug.dir':    { th:'ทิศที่ควรนั่ง', en:'Best direction', zh:'宜坐方位' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
