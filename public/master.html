@@ -895,7 +895,7 @@
           if (String(p.id) === preferId) o.selected = true;
           sel.appendChild(o);
         });
-        wrap.style.display = 'flex';
+        wrap.style.display = 'none';   /* 2 มิ.ย. · ซ่อน dropdown เลือกดวงเดี่ยว · default=self เสมอ (AI รู้ self จาก IDENTITY CONTEXT) · logic resolve/reload-history ยังทำงานครบ · group picker เก็บไว้ */
         sel.addEventListener('change', function(){ switchProfile(sel.value); });
         /* ถ้า default (ดวงตัวเอง) ต่างจากที่ตั้งไว้ตอนเริ่ม → สลับไปดวงตัวเอง + โหลดประวัติให้ตรงดวง (ไม่ปน) · switchProfile กัน no-op ถ้าตรงกันอยู่แล้ว */
         if (preferId !== selectedProfileId) switchProfile(preferId);
