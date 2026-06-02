@@ -211,6 +211,10 @@
   .md-body code{background:rgba(200,164,77,.12);padding:1px 5px;border-radius:4px;font-family:var(--mono);font-size:12px;}
   .md-body .md-pre{background:rgba(0,0,0,.25);padding:10px;border-radius:8px;overflow-x:auto;margin:6px 0;}
   .md-body .md-pre code{background:none;padding:0;}
+  /* แถบปุ่มใต้คำตอบ (copy/regen · เฟส1-ชิ้น2) */
+  .msg-actions{display:flex;gap:8px;margin-top:10px;}
+  .msg-act{background:none;border:1px solid var(--gold-line);color:var(--fg-soft);padding:3px 11px;border-radius:99px;font-size:11px;cursor:pointer;font-family:var(--thai);transition:.2s;}
+  .msg-act:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
   .msg-bubble .tc{font-family:var(--tc);color:var(--gold);font-weight:700;}
   .msg-bubble .quote{display:block;font-family:var(--serif);font-size:16px;font-style:italic;color:var(--fg);padding:8px 12px;background:var(--gold-soft);border-left:2px solid var(--gold);margin:8px 0;border-radius:4px;}
 
@@ -838,7 +842,28 @@
       el.classList.add('md-body');
       el.style.whiteSpace = 'normal';
       el.innerHTML = mdMaster(raw);
+      attachMsgActions(el, raw);                /* แถบปุ่ม copy · ผูกหลัง innerHTML จึงไม่ถูกล้าง */
       if (atBottom && msgBox) msgBox.scrollTop = msgBox.scrollHeight;
+    }
+    /* ── แถบปุ่มใต้คำตอบซินแส (เฟส1-ชิ้น2 · 2 มิ.ย.) ── */
+    function mstActLabel(key, fallback){
+      var loc; try { loc = localStorage.getItem('hk_locale') || 'th'; } catch(_){ loc = 'th'; }
+      var d = window.HK_I18N && window.HK_I18N[key];
+      return d ? (d[loc] || d.th || fallback) : fallback;
+    }
+    function copyText(raw, btn){
+      var ok = function(){ var old = btn.dataset.lbl; btn.textContent = '✓ ' + mstActLabel('mst.act.copied','คัดลอกแล้ว'); setTimeout(function(){ btn.textContent = old; }, 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(raw).then(ok).catch(function(){}); }
+      else { try { var ta = document.createElement('textarea'); ta.value = raw; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); ok(); } catch(_){} }
+    }
+    function attachMsgActions(el, raw){
+      if (!el || el.querySelector('.msg-actions')) return;
+      var bar = document.createElement('div'); bar.className = 'msg-actions';
+      var copyBtn = document.createElement('button'); copyBtn.type = 'button'; copyBtn.className = 'msg-act';
+      copyBtn.dataset.lbl = '📋 ' + mstActLabel('mst.act.copy','คัดลอก'); copyBtn.textContent = copyBtn.dataset.lbl;
+      copyBtn.addEventListener('click', function(){ copyText(raw || el.dataset.raw || '', copyBtn); });
+      bar.appendChild(copyBtn);
+      el.appendChild(bar);
     }
 
     /* โหลดประวัติแชทเก่าของดวงที่เลือก → render เป็นฟอง */
@@ -1342,7 +1367,10 @@ window.HK_I18N = {
   'mst.nav.picker':  { th:'วางฤกษ์', en:'Picker', zh:'擇日' },
   'mst.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
   'mst.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
-  'mst.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' }
+  'mst.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
+  /* แถบปุ่มแชท (เฟส1-ชิ้น2) */
+  'mst.act.copy':   { th:'คัดลอก', en:'Copy', zh:'複製' },
+  'mst.act.copied': { th:'คัดลอกแล้ว', en:'Copied', zh:'已複製' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
