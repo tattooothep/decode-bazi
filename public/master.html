@@ -796,7 +796,7 @@
       s = s.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>').replace(/^##\s+(.+)$/gm, '<h2>$1</h2>').replace(/^#\s+(.+)$/gm, '<h2>$1</h2>');
       s = s.replace(/^&gt;\s?(.+)$/gm, '<blockquote>$1</blockquote>').replace(/<\/blockquote>\n?<blockquote>/g, '<br>');
       s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+?)`/g, '<code>$1</code>');
-      s = s.replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>').replace(/(<li>[\s\S]*?<\/li>\n?)+/g, '<ul>$&</ul>');
+      s = s.replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>').replace(/(<li>[\s\S]*?<\/li>\n?)+/g, '\n\n<ul>$&</ul>\n\n');
       return s.split(/\n\n+/).map(function(p){ p = p.trim(); if (!p) return ''; if (/^<(h2|h3|ul|pre|blockquote)/.test(p)) return p; return '<p>' + p.replace(/\n/g, '<br>') + '</p>'; }).join('\n');
     }
     /* swap textContent → innerHTML · กัน scroll jump · เก็บ raw (เผื่อ copy/regen ชิ้น 2) */
