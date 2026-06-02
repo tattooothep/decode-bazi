@@ -186,6 +186,10 @@
   @keyframes pulse{0%,100%{opacity:.5;}50%{opacity:1;}}
 
   /* messages */
+  /* Claude-style chat shell toolbar (2 มิ.ย.) */
+  .chat-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px 18px;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--gold-line);}
+  .chat-title{display:inline-flex;align-items:center;gap:8px;font-family:var(--serif);font-size:18px;font-weight:600;color:var(--fg);margin-right:auto;}
+  .chat-title .tc{font-family:var(--tc);color:var(--gold);}
   .messages{display:flex;flex-direction:column;gap:14px;margin-bottom:18px;max-height:62vh;min-height:340px;overflow-y:auto;padding-right:6px;}
   .messages::-webkit-scrollbar{width:4px;}
   .messages::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:2px;}
@@ -456,47 +460,32 @@
 
 <div class="stage">
 
-  <!-- ═══════════ MASTER ENTRANCE ═══════════ -->
-  <div class="master-section">
-
-    <!-- Animated master orb -->
-    <div class="master-orb">
-      <div class="orb-rings">
-        <div class="ring r3"></div>
-        <div class="ring r2"></div>
-        <div class="ring r1"></div>
-      </div>
-      <div class="orb-zodiac">
-        <span>子</span><span>丑</span><span>寅</span><span>卯</span><span>辰</span><span>巳</span>
-        <span>午</span><span>未</span><span>申</span><span>酉</span><span>戌</span><span>亥</span>
-      </div>
-      <div class="trigrams">
-        <span>☰</span><span>☱</span><span>☲</span>
-        <span>☳</span><span>☴</span><span>☵</span>
-      </div>
-      <div class="orb-core">
-        <div class="glyph">師</div>
-      </div>
-    </div>
-
-    <!-- greeting (DAILY ORACLE mockup) ถอดออก 2 มิ.ย. · เจ้านายสั่ง · รอ wire engine จริง -->
-  </div>
-
-  <!-- FORECAST GRID (mockup) ถอดออก 2 มิ.ย. · เจ้านายสั่ง · รอ wire engine จริง -->
-
-  <!-- ═══════════ CHAT WITH MASTER ═══════════ -->
-  <div class="section-head">
-    <div>
-      <div  class="label" data-i18n="auto.m.030">ASK · 問師 · ถามซินแส</div>
-      <h2><span class="tc">問</span>ถาม<i data-i18n="auto.m.031">อะไรก็ได้</i></h2>
-    </div>
-    <div class="right">SINSAE AI · 神算</div>
-  </div>
-
+  <!-- ═══════════ CHAT WITH SINSAE · Claude-style shell (2 มิ.ย.) ═══════════ -->
   <div class="chat-section">
-    <div class="chat-head">
-      <h2><span class="tc">師</span>ซินแส<i data-i18n="auto.m.032">กล่าว</i></h2>
-      <div  class="lbl" data-i18n="auto.m.033">ออนไลน์ · LISTENING</div>
+
+    <!-- toolbar: เลือกดวง + กลุ่ม (ย้ายขึ้นบนแชท · แบบ Claude) -->
+    <div class="chat-toolbar">
+      <div class="chat-title"><span class="tc">師</span><span data-i18n="auto.m.030">ถามซินแส</span></div>
+      <div class="profile-pick" id="sifu-profile-wrap">
+        <span class="pp-label" data-i18n="mst.ask.for">ดูดวงของ:</span>
+        <select id="sifu-profile" aria-label="เลือกโปรไฟล์"></select>
+      </div>
+      <div class="hkg-pick" id="hkg-wrap" style="display:none;">
+        <span class="hkg-label" data-i18n="hkg.label">โหมดกลุ่ม:</span>
+        <select id="hkg-group" aria-label="เลือกกลุ่ม">
+          <option value="-" data-i18n="hkg.opt.none">-</option>
+          <option value="family" data-i18n="hkg.opt.family">家 ครอบครัว</option>
+          <option value="friend" data-i18n="hkg.opt.friend">友 เพื่อน</option>
+          <option value="work" data-i18n="hkg.opt.work">業 ที่ทำงาน</option>
+          <option value="love" data-i18n="hkg.opt.love">情 คนรัก</option>
+          <option value="rival" data-i18n="hkg.opt.rival">競 คู่แข่ง</option>
+        </select>
+        <span class="hkg-count" id="hkg-count"></span>
+      </div>
+      <div class="hkg-members" id="hkg-members">
+        <span class="hkg-chips" id="hkg-chips" style="display:inline-flex;flex-wrap:wrap;gap:6px;"></span>
+        <button class="hkg-go" id="hkg-go" data-i18n="hkg.go"><span class="tc">合</span>ให้ซินแสดูทั้งกลุ่ม</button>
+      </div>
     </div>
 
     <!-- messages -->
@@ -519,32 +508,6 @@
 
     </div>
 
-
-    <!-- profile picker · เลือกดวงในบัญชีที่จะถามซินแส -->
-    <div class="profile-pick" id="sifu-profile-wrap">
-      <span class="pp-label" data-i18n="mst.ask.for">ดูดวงของ:</span>
-      <select id="sifu-profile" aria-label="เลือกโปรไฟล์"></select>
-    </div>
-
-    <!-- 🧑‍🤝‍🧑 group picker (group mode · ขนาน · "-" = โหมดเดี่ยวเดิม · kill-switch ลบบล็อกนี้ได้) -->
-    <div class="hkg-pick" id="hkg-wrap" style="display:none;">
-      <span class="hkg-label" data-i18n="hkg.label">โหมดกลุ่ม:</span>
-      <select id="hkg-group" aria-label="เลือกกลุ่ม">
-        <option value="-" data-i18n="hkg.opt.none">-</option>
-        <option value="family" data-i18n="hkg.opt.family">家 ครอบครัว</option>
-        <option value="friend" data-i18n="hkg.opt.friend">友 เพื่อน</option>
-        <option value="work" data-i18n="hkg.opt.work">業 ที่ทำงาน</option>
-        <option value="love" data-i18n="hkg.opt.love">情 คนรัก</option>
-        <option value="rival" data-i18n="hkg.opt.rival">競 คู่แข่ง</option>
-      </select>
-      <span class="hkg-count" id="hkg-count"></span>
-    </div>
-
-    <!-- 🧑‍🤝‍🧑 group members (chips ย่อ) + ปุ่มให้ซินแสดูทั้งกลุ่ม · แสดงเมื่อเลือกกลุ่ม -->
-    <div class="hkg-members" id="hkg-members">
-      <span class="hkg-chips" id="hkg-chips" style="display:inline-flex;flex-wrap:wrap;gap:6px;"></span>
-      <button class="hkg-go" id="hkg-go" data-i18n="hkg.go"><span class="tc">合</span>ให้ซินแสดูทั้งกลุ่ม</button>
-    </div>
 
     <!-- input -->
     <div class="chat-input">
