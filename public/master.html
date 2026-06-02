@@ -176,7 +176,8 @@
   .fc-meta b{color:var(--gold);}
 
   /* ═══════════ CHAT SECTION ═══════════ */
-  .chat-section{background:var(--tile);border:1px solid var(--gold-line);border-radius:18px;padding:24px 28px;animation:fadeUp 1s 2s both ease-out;display:flex;flex-direction:column;height:calc(100dvh - 168px);}
+  /* Claude-style · ไม่มี card กล่อง · แชทเต็มจอ (2 มิ.ย.) */
+  .chat-section{background:none;border:none;border-radius:0;padding:0;display:flex;flex-direction:column;height:calc(100dvh - 140px);}
   .chat-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;gap:14px;}
   .chat-head h2{font-family:var(--serif);font-size:32px;font-weight:300;letter-spacing:-.02em;}
   .chat-head h2 .tc{font-family:var(--tc);color:var(--gold);font-weight:700;margin-right:6px;}
@@ -190,7 +191,10 @@
   .chat-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px 18px;padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid var(--gold-line);}
   .chat-title{display:inline-flex;align-items:center;gap:8px;font-family:var(--serif);font-size:18px;font-weight:600;color:var(--fg);margin-right:auto;}
   .chat-title .tc{font-family:var(--tc);color:var(--gold);}
-  .messages{display:flex;flex-direction:column;gap:14px;margin-bottom:16px;flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:6px;}
+  .messages{display:flex;flex-direction:column;gap:14px;margin-bottom:16px;flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--gold-line) transparent;}
+  .messages::-webkit-scrollbar{width:6px;}
+  .messages::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:3px;}
+  .messages::-webkit-scrollbar-track{background:transparent;}
   .chat-toolbar{flex-shrink:0;} .chat-input{flex-shrink:0;}
   .messages::-webkit-scrollbar{width:4px;}
   .messages::-webkit-scrollbar-thumb{background:var(--gold-line);border-radius:2px;}
