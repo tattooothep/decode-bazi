@@ -329,8 +329,9 @@
   .inter-card.good .ty{color:var(--wood);}
   .inter-card h4{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:6px;}
   .inter-card p{font-size:13px;color:var(--fg-soft);line-height:1.7;}
-  .inter-card .glyphs{display:flex;gap:6px;margin-top:10px;font-family:var(--tc);font-size:14px;color:var(--gold);}
-  .inter-card .glyphs span{padding:3px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--tile-bd);}
+  .inter-card .glyphs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-family:var(--thai);font-size:12px;color:var(--gold);}
+  .inter-card .glyphs span{padding:4px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--tile-bd);line-height:1.45;}
+  .inter-card .glyphs .zh{font-family:var(--tc);opacity:.62;font-size:11px;margin-left:3px;}
 
   /* advanced */
   .advanced{margin-top:64px;padding:32px;background:var(--bg-2);border:1px dashed var(--gold-line);border-radius:18px;}
@@ -1565,10 +1566,10 @@
   <section class="sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">07 · INTERACTIONS</span>
-        <h2><span class="tc">關係</span>ปฏิกิริยาในดวง<span class="hk-help" data-help="i.harmony"></span></h2>
+        <span class="num">07 · ปฏิกิริยา</span>
+        <h2>แรงหนุนและแรงชนในดวง <span class="tc">關係</span><span class="hk-help" data-help="i.harmony"></span></h2>
       </div>
-      <span class="sub" data-i18n="c.sec5.sub">แรงปะทะและการเสริมในชะตา</span>
+      <span class="sub" data-i18n="c.sec5.sub">ดูว่าเสาในดวงช่วยกัน ชนกัน หรือทำให้เรื่องเดิมวนซ้ำตรงไหน</span>
     </div>
     <div class="inter-grid">
       <article class="inter-card">
@@ -1811,10 +1812,10 @@ window.HK_HELP = {
   'p.career':  { th:'<b>อาชีพที่เหมาะ</b> · เลือกจากธาตุ用神 + ธาตุ DM · ระบบจับคู่กับอุตสาหกรรม 5 ธาตุ', en:'<b>Recommended Industry</b> · based on yongshen + DM element · matched to 5-element industries', zh:'<b>適合行業</b> · 用神+日主 · 五行行業匹配' },
   'p.health':  { th:'<b>สุขภาพ (TCM)</b> · ธาตุที่อ่อน/แรงเกิน → อวัยวะที่เปราะ · ใช้ตำราจีน 5 ธาตุ→อวัยวะ (ไม้=ตับ · ไฟ=หัวใจ · ดิน=ม้าม · ทอง=ปอด · น้ำ=ไต)', en:'<b>Health (TCM)</b> · weak/excess elements → vulnerable organs · 5-element mapping', zh:'<b>健康 (中醫)</b> · 五行偏衰旺→五臟' },
   /* §07 Interactions cards */
-  'i.harmony':  { th:'<b>合 (HARMONY)</b> · 六合=กิ่งคู่ผสาน · 五合=ก้านคู่ผสาน · มีในดวง=มีพันธมิตร', en:'<b>Harmony</b> · Six Combinations + Five Combinations · alliances', zh:'<b>合</b> · 六合·五合 · 貴人' },
-  'i.clash':    { th:'<b>沖 (CLASH)</b> · กิ่งปะทะ 180° · มีในดวง=จุดปะทะภายใน', en:'<b>Clash</b> · branch opposition 180° · internal conflicts', zh:'<b>沖</b> · 地支對沖' },
-  'i.alliance': { th:'<b>三合/三會/半合 (ALLIANCE)</b> · 3 กิ่งรวมธาตุ · ยิ่งครบยิ่งแรง · 半合=2 ใน 3', en:'<b>Trio</b> · 3-branch elemental alliance · partial = 半合', zh:'<b>三合·三會·半合</b> · 三支聚化' },
-  'i.discord':  { th:'<b>害/刑/吟 (DISCORD)</b> · 六害=ปะทะแบบเฉียง · 刑=ลงโทษกัน · 反吟/伏吟=พลิกซ้ำ · จุดร้าวในดวง', en:'<b>Harm/Punish/Repeat</b> · subtle conflicts · self-clash patterns', zh:'<b>害·刑·吟</b> · 隱性沖突' },
+  'i.harmony':  { th:'<b>แรงผสาน (合)</b> · กิ่ง/ก้านที่ดึงเข้าหากัน · อ่านเป็นแรงช่วย ความร่วมมือ หรือความสัมพันธ์ที่ต่อกันได้', en:'<b>Harmony</b> · Six/Five combinations · alliances and cooperation', zh:'<b>合</b> · 六合·五合 · 貴人' },
+  'i.clash':    { th:'<b>แรงชน (沖)</b> · กิ่งที่ดึงกันคนละทาง · อ่านเป็นจุดเปลี่ยน ความตึง หรือเรื่องที่ต้องวางจังหวะ', en:'<b>Clash</b> · branch opposition · tension and change points', zh:'<b>沖</b> · 地支對沖' },
+  'i.alliance': { th:'<b>แรงรวมกลุ่ม (三合/三會/半合)</b> · หลายกิ่งรวมธาตุเดียวกัน · อ่านเป็นแรงทีม เครือข่าย หรือแรงสนับสนุน', en:'<b>Trio</b> · branch alliances · group support', zh:'<b>三合·三會·半合</b> · 三支聚化' },
+  'i.discord':  { th:'<b>จุดร้าว (害/刑/破/吟)</b> · แรงเสียดทานหรือเรื่องเดิมวนซ้ำ · ไม่ใช่แย่เสมอไป แต่ต้องระวังจังหวะ', en:'<b>Discord</b> · hidden friction, punishment, break, repeat', zh:'<b>害·刑·破·吟</b> · 隱性沖突' },
   /* §08 Luck Pillars */
   'l.dayun':   { th:'<b>大運 (เสาโชค 10 ปี)</b> · 8 รอบ × 10 ปี · ทิศ forward/backward จาก year stem polarity + เพศ · startAge คำนวณจาก jieqi', en:'<b>Luck Pillars</b> · 10-year cycles · direction from year polarity + gender', zh:'<b>大運</b> · 10 年一柱 · 年干陰陽×性別決定方向' },
   's.month_jieqi': { th:'<b>📐 เดือน BaZi เริ่มที่ 節 (jieqi) · ไม่ใช่วันที่ 1</b><br/>เดือน寅 = 立春 · เดือน卯 = 驚蟄 · ... · ปีจีน = 立春 (ไม่ใช่ตรุษจีน)<br/><br/>🎯 <b>ของเราใช้ tyme4ts + 紫金山天文臺</b> precision นาที · True Solar Time + Equation of Time + Longitude · ตรงซินแสจริง 100%<br/><br/>ดู /chart §13 (24 節氣 ปีเกิด) เพื่อเห็น jieqi ที่กำหนดเดือนเกิดคุณ',
@@ -1918,7 +1919,7 @@ window.HK_I18N = {
   /* c.sec3.* removed · §05 INSIGHTS ถูกลบเพราะซ้ำ §04/§06/§06b (20 พ.ค. 2026) */
   'c.sec4.h2':     { th:'<span class="tc">四柱</span>โครงดวง 4 เสา', en:'<span class="tc">四柱</span>Four Pillars frame', zh:'<span class="tc">四柱</span>命局四柱' },
   'c.sec4.sub':    { th:'หลักของชะตา · กดเสาเพื่อดูรายละเอียด', en:'The chart frame · tap a pillar for detail', zh:'命之主軸 · 點選柱以查看詳情' },
-  'c.sec5.sub':    { th:'แรงปะทะและการเสริมในชะตา', en:'Clashes and combinations in your chart', zh:'命局沖合化合' },
+  'c.sec5.sub':    { th:'ดูว่าเสาในดวงช่วยกัน ชนกัน หรือทำให้เรื่องเดิมวนซ้ำตรงไหน', en:'See where your pillars support, clash, or repeat old themes', zh:'看命局中相助、相沖與重複之處' },
   'c.cta.calendar':{ th:'ปฏิทินมงคลของฉัน →', en:'My auspicious calendar →', zh:'我的吉曆 →' },
   'c.cta.print':   { th:'🖨 พิมพ์ดวง · 印刷', en:'🖨 Print chart · 印刷', zh:'🖨 列印命盤' },
   'c.cta.deep':    { th:'📜 ดูเชิงลึก 38 หมวด · 詳細', en:'📜 Full 38 sections · 詳細', zh:'📜 詳細 38 項' },
@@ -3340,13 +3341,20 @@ window.addEventListener('resize', function(){
     const cb=a.combinations||{san_he:[],san_hui:[]};
     /* Phase 19-C · ไทยนำ ZH รอง · dict ของ §07 */
     const INTER_TH_07 = {
-      '六合':'จับคู่','五合':'ก้านผสาน','六沖':'ปะทะ','六害':'ทำลาย','六破':'บั่นทอน',
-      '三合':'สามผสาน','三會':'สามฤดู','半合':'ครึ่งผสาน','三刑':'ลงโทษ','自刑':'ทำร้ายตัว','同刑':'ลงโทษร่วม',
-      '反吟':'เสียงสะท้อน','伏吟':'เสียงซ้อน','伏吟·กิ่ง':'กิ่งซ้อน','伏吟·ก้าน':'ก้านซ้อน','反吟·ก้าน':'ก้านสะท้อน','反吟·กิ่ง':'กิ่งสะท้อน',
-      '天克':'ฟ้าตัด','天地合':'ฟ้าดินผสาน'
+      '六合':'กิ่งจับคู่','五合':'ก้านฟ้าผสาน','六沖':'กิ่งชน','六害':'แอบขัดกัน','六破':'จุดแตก',
+      '三合':'สามกิ่งรวมธาตุ','三會':'สามกิ่งรวมทิศ','半合':'ครึ่งวงธาตุ','三刑':'แรงกด/ลงโทษ','自刑':'กดตัวเอง','同刑':'กดกันเอง',
+      '反吟':'พลิกซ้ำแรง','伏吟':'เรื่องเดิมวนซ้ำ','伏吟·กิ่ง':'กิ่งเดิมวนซ้ำ','伏吟·ก้าน':'ก้านเดิมวนซ้ำ','反吟·ก้าน':'ก้านพลิกซ้ำ','反吟·กิ่ง':'กิ่งพลิกซ้ำ',
+      '天克':'ก้านฟ้าชน','天地合':'ฟ้าดินผสาน'
     };
     function hi07(t){ return INTER_TH_07[t] || t; }
-    function wrapTh(zh){ const th=hi07(zh); return th!==zh ? `<b>${th}</b><span style="opacity:.6;font-size:10px;margin-left:3px">${zh}</span>` : zh; }
+    function wrapTh(zh){ const th=hi07(zh); return th!==zh ? `<b>${th}</b><span class="zh">${zh}</span>` : zh; }
+    const STEM_TH_07 = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
+    const BRANCH_TH_07 = {子:'หนู/น้ำ',丑:'วัว/ดิน',寅:'เสือ/ไม้',卯:'กระต่าย/ไม้',辰:'มังกร/ดิน',巳:'งู/ไฟ',午:'ม้า/ไฟ',未:'แพะ/ดิน',申:'ลิง/ทอง',酉:'ไก่/ทอง',戌:'หมา/ดิน',亥:'หมู/น้ำ'};
+    function stemTok07(s){ return `${STEM_TH_07[s]||'ก้าน'} <span class="zh">${s}</span>`; }
+    function branchTok07(b){ return `${BRANCH_TH_07[b]||'กิ่ง'} <span class="zh">${b}</span>`; }
+    function branchPair07(pair, sep='↔'){ return `${branchTok07(pair[0])} ${sep} ${branchTok07(pair[1])}`; }
+    function stemPair07(pair, sep='-'){ return `${stemTok07(pair[0])} ${sep} ${stemTok07(pair[1])}`; }
+    function pillar07(pil){ return `${stemTok07(pil.stem)} · ${branchTok07(pil.branch)}`; }
     function fillCard(c, tyText, h4Text, pText, glyphsArr, isGood){
       if(!c) return;
       const ty=c.querySelector('.ty'), h4=c.querySelector('h4'), pTag=c.querySelector('p'), gly=c.querySelector('.glyphs');
@@ -3362,29 +3370,29 @@ window.addEventListener('resize', function(){
     const wuHeList = (a.stem_interactions || []).filter(f=>f.type==='五合');
     const harmonyTotal = heList.length + wuHeList.length;
     fillCard(interCards[0],
-      `ผสาน · HARMONY (${harmonyTotal}) · 六合 / 五合`,
-      harmonyTotal?'มีคู่สนับสนุนในดวง':'ไม่มีคู่ผสานในดวงเกิด',
-      harmonyTotal?'มีคู่หลอมรวมในดวง · เสริมสัมพันธ์/พันธมิตร':'ไม่มีคู่ผสาน · ต้องสร้างพันธมิตรเอง',
+      `แรงผสาน (${harmonyTotal}) · 合`,
+      harmonyTotal?'มีคู่ที่ดึงเข้าหากัน':'ไม่มีแรงผสานเด่นในดวงเกิด',
+      harmonyTotal?'ช่วยเรื่องคนช่วย งานร่วมมือ และความสัมพันธ์ที่ต่อกันได้':'เรื่องคนช่วยยังไม่เด่น ต้องสร้างความร่วมมือด้วยการลงมือเอง',
       [
-        ...heList.map(f=>wrapTh('六合')+' '+f.pair[0]+'↔'+f.pair[1]),
-        ...wuHeList.map(f=>wrapTh('五合')+' '+f.pair.join('')+(f.transformed?'→'+(EL_TH_ALLIANCE[f.element]||f.element):''))
+        ...heList.map(f=>wrapTh('六合')+' · '+branchPair07(f.pair)),
+        ...wuHeList.map(f=>wrapTh('五合')+' · '+stemPair07(f.pair, '+')+(f.transformed?' → ธาตุ'+(EL_TH_ALLIANCE[f.element]||f.element):''))
       ], harmonyTotal>0);
     const chongList=it.filter(f=>f.type==='六沖');
     fillCard(interCards[1],
-      `ปะทะ · CLASH (${chongList.length}) · 六沖`,
-      chongList.length?'มีจุดต้องระวัง':'ไม่มีจุดปะทะในดวงเกิด',
-      chongList.length?'มีแรงปะทะภายในดวง · ระวังจังหวะแตก':'ไม่มีแรงปะทะใหญ่ · จังหวะเสถียร',
-      chongList.map(f=>`${f.pair[0]} ↔ ${f.pair[1]}`), false);
+      `แรงชน (${chongList.length}) · 沖`,
+      chongList.length?'มีจุดที่ดึงกันคนละทาง':'ไม่มีแรงชนใหญ่ในดวงเกิด',
+      chongList.length?'เรื่องนั้นมักเปลี่ยนเร็วหรือแตกง่าย ควรวางจังหวะก่อนตัดสินใจ':'จังหวะพื้นฐานค่อนข้างนิ่ง ไม่มีแรงชนใหญ่ในดวงเกิด',
+      chongList.map(f=>wrapTh('六沖')+' · '+branchPair07(f.pair)), false);
     const banHeList = cb.ban_he || [];
     const allianceTotal=(cb.san_he||[]).length+(cb.san_hui||[]).length+banHeList.length;
     fillCard(interCards[2],
-      `พันธมิตร · ALLIANCE (${allianceTotal}) · 三會/三合/半合`,
-      allianceTotal?'มีพันธมิตรในดวง':'ไม่มีพันธมิตรกลุ่ม',
-      allianceTotal?'คนรอบตัวมักเสริมกัน · มีกลุ่มสนับสนุน':'ไม่มีกลุ่มสนับสนุน · เน้นทำงานเดี่ยว',
+      `แรงรวมกลุ่ม (${allianceTotal}) · 三合`,
+      allianceTotal?'มีแรงทีม/เครือข่ายช่วย':'ไม่มีแรงกลุ่มเด่นในดวงเกิด',
+      allianceTotal?'เหมาะใช้คนรอบตัว ระบบ หรือทีมช่วยดันงานให้ไปต่อ':'แรงทีมไม่เด่น ควรวางระบบเองและเลือกคนช่วยให้ชัด',
       [
-        ...(cb.san_he||[]).map(s=>wrapTh('三合')+' '+s.join('')),
-        ...(cb.san_hui||[]).map(s=>wrapTh('三會')+' '+s.join('')),
-        ...banHeList.map(b=>wrapTh('半合')+' '+b.pair[0]+b.pair[1]+' · '+(EL_TH_ALLIANCE[b.element]||b.element))
+        ...(cb.san_he||[]).map(s=>wrapTh('三合')+' · '+s.map(branchTok07).join(' + ')),
+        ...(cb.san_hui||[]).map(s=>wrapTh('三會')+' · '+s.map(branchTok07).join(' + ')),
+        ...banHeList.map(b=>wrapTh('半合')+' · '+branchPair07(b.pair, '+')+' · ธาตุ'+(EL_TH_ALLIANCE[b.element]||b.element))
       ],
       allianceTotal>0);
     const harmList=it.filter(f=>f.type==='六害'||f.type==='六破');
@@ -3396,14 +3404,14 @@ window.addEventListener('resize', function(){
     const tianKe = stemInts.filter(f=>f.type==='天克');
     const discordTotal=harmList.length+pn.length+fyNatal.length+tianKe.length;
     fillCard(interCards[3],
-      `จุดร้าว · DISCORD (${discordTotal}) · 害 / 刑 / 吟`,
-      discordTotal?'มีจุดร้าวในดวง':'ไม่มีจุดร้าว',
-      discordTotal?'ระวังจังหวะแตก · ปะทะแบบไม่ตรง':'ไม่มีจุดร้าวใหญ่',
+      `จุดร้าว (${discordTotal}) · 害/刑/吟`,
+      discordTotal?'มีแรงเสียดทานที่ต้องอ่านให้ดี':'ไม่มีจุดร้าวใหญ่ในดวงเกิด',
+      discordTotal?'ไม่ใช่เสียเสมอไป แต่ควรระวังคำพูด จังหวะ และการตัดสินใจเร็ว':'พื้นดวงไม่มีแรงร้าวเด่น เรื่องแตกหักมักมาจากจังหวะภายนอกมากกว่า',
       [
-        ...harmList.map(f=>wrapTh(f.type)+' '+f.pair.join('')),
-        ...pn.map(f=>wrapTh(f.type)+' '+f.branches.join('')),
-        ...fyNatal.map(f=>wrapTh(f.type)+' '+f.natal.stem+f.natal.branch+'↔'+f.other.stem+f.other.branch),
-        ...tianKe.map(f=>wrapTh('天克')+' '+f.pair.join(' - '))
+        ...harmList.map(f=>wrapTh(f.type)+' · '+branchPair07(f.pair)),
+        ...pn.map(f=>wrapTh(f.type)+' · '+f.branches.map(branchTok07).join(' + ')),
+        ...fyNatal.map(f=>wrapTh(f.type)+' · '+pillar07(f.natal)+' ↔ '+pillar07(f.other)),
+        ...tianKe.map(f=>wrapTh('天克')+' · '+stemPair07(f.pair))
       ],
       false);
 
