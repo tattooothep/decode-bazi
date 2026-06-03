@@ -1,9 +1,9 @@
 /**
  * hk-settings-drawer.js · กล่องตั้งค่า slide-in
- * - ดึงดวงตัวเอง (active profile) จาก /api/profile
- * - แก้: name, birth_datetime (date+time), location, gender
+ * - ดึงชื่อบัญชีจาก /api/auth/me + ดึงดวงตัวเองจาก /api/profile
+ * - แก้: account name, self profile name, birth_datetime (date+time), location, gender
  * - แสดง TST (true solar time) อัตโนมัติ
- * - บันทึก PUT /api/profile/[id]
+ * - บันทึก PUT /api/auth/me และ PUT /api/profile/[id]
  *
  * ใช้ผ่าน window.HK_openSettings()
  */
@@ -27,8 +27,10 @@
     .hk-set-grp label{display:block;font-size:11px;letter-spacing:.06em;color:rgba(246,241,230,.55);margin-bottom:6px;text-transform:uppercase;}
     .hk-set-grp input, .hk-set-grp select{width:100%;padding:9px 11px;font-size:14px;background:rgba(38,42,50,.55);border:1px solid rgba(246,241,230,.10);color:inherit;outline:none;font-family:inherit;}
     .hk-set-grp input:focus{border-color:rgba(200,164,77,.55);}
+    .hk-set-note{margin-top:5px;font-size:11px;line-height:1.55;color:rgba(246,241,230,.48);}
     body.light .hk-set-drawer{background:#f6f1e6;color:#1a1d24;}
     body.light .hk-set-grp input,body.light .hk-set-grp select{background:rgba(255,253,247,.7);border-color:rgba(26,29,36,.15);}
+    body.light .hk-set-note{color:rgba(26,29,36,.58);}
     .hk-set-row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
     .hk-set-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
     .hk-set-tst{margin-top:6px;padding:11px 13px;border:1px solid rgba(200,164,77,.28);background:rgba(200,164,77,.08);font-family:var(--mono,'JetBrains Mono',monospace);font-size:11px;line-height:1.7;}
@@ -120,7 +122,7 @@
     drawer.className = 'hk-set-drawer';
     drawer.innerHTML = `
       <div class="hk-set-head">
-        <h3>⚙ ตั้งค่าดวงของฉัน</h3>
+        <h3>⚙ ตั้งค่าบัญชีและดวง</h3>
         <button class="hk-set-close" id="hk-set-close" aria-label="ปิด">✕</button>
       </div>
       <div class="hk-set-body" id="hk-set-body">
@@ -138,7 +140,15 @@
     overlay.addEventListener('click', close);
     drawer.querySelector('#hk-set-close').addEventListener('click', close);
 
-    // Fetch active profile
+    // Fetch account + active self profile
+    var authUser = null;
+    try {
+      var aj = window.__hkFetchAuthMe
+        ? await window.__hkFetchAuthMe()
+        : await fetch('/api/auth/me', { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.json(); });
+      authUser = aj && aj.user ? aj.user : null;
+    } catch(e) { console.warn('account settings load', e); }
+
     var profile = null;
     try {
       var pr = await fetch('/api/profile');
@@ -151,14 +161,57 @@
     } catch(e) { console.warn('settings load', e); }
 
     var body = drawer.querySelector('#hk-set-body');
+    async function saveAccountName(inputId) {
+      var el = document.getElementById(inputId);
+      if (!el) return null;
+      var accountName = el.value.trim();
+      if (!authUser && !accountName) return null;
+      if (!accountName) throw new Error('กรุณากรอกชื่อบัญชี');
+      if (authUser && accountName === String(authUser.name || '').trim()) return null;
+      var r = await fetch('/api/auth/me', {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        credentials: 'same-origin',
+        body: JSON.stringify({ name: accountName })
+      });
+      var j = await r.json().catch(function(){ return {}; });
+      if (!r.ok || !j.ok) throw new Error(j.error || 'บันทึกชื่อบัญชีไม่สำเร็จ');
+      authUser = j.user || authUser;
+      try { if (window.__hkClearMeCache) window.__hkClearMeCache(); } catch(_){}
+      return j.user;
+    }
+
     if (!profile) {
-      body.innerHTML = '<div class="hk-set-loading">ยังไม่มีดวงของคุณในระบบ · <a href="/input" style="color:var(--gold);text-decoration:underline">เพิ่มดวงของคุณ</a></div>';
+      body.innerHTML = `
+        <div class="hk-set-grp">
+          <label>ชื่อบัญชี · Account name</label>
+          <input id="set-account-name-only" type="text" maxlength="80" value="${escapeHtml((authUser && authUser.name) || '')}" placeholder="ชื่อที่แสดงบน avatar/menu">
+          <div class="hk-set-note">ชื่อนี้ใช้แสดงในเมนูบัญชี ไม่ใช่ชื่อที่ AI ใช้อ่านดวง</div>
+        </div>
+        <button class="hk-set-save" id="set-account-save-only">💾 บันทึกชื่อบัญชี</button>
+        <div class="hk-set-loading" style="padding:24px 0 0">ยังไม่มีดวงของคุณในระบบ · <a href="/input" style="color:var(--gold);text-decoration:underline">เพิ่มดวงของคุณ</a></div>
+      `;
+      document.getElementById('set-account-save-only').addEventListener('click', async function(){
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = '⏳ กำลังบันทึก…';
+        try {
+          await saveAccountName('set-account-name-only');
+          toast('✓ บันทึกชื่อบัญชีแล้ว', 'ok');
+          setTimeout(function(){ close(); setTimeout(function(){ location.reload(); }, 200); }, 700);
+        } catch(e) {
+          toast('✗ ' + (e.message || 'ผิดพลาด'), 'err');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '💾 บันทึกชื่อบัญชี';
+        }
+      });
       return;
     }
     /* โชว์ชื่อดวง self ที่หัว + ลิงก์แก้ดวงญาติ → /yongsennetwork (กันเข้าใจผิดว่ากำลังแก้ดวงที่ดูอยู่) */
     try {
       var hd = drawer.querySelector('.hk-set-head h3');
-      if (hd) hd.textContent = '⚙ ตั้งค่าดวงของฉัน · ' + (profile.name || '');
+      if (hd) hd.textContent = '⚙ ตั้งค่าบัญชีและดวง · ' + (profile.name || '');
     } catch(_){}
 
     var dt = new Date(profile.birth_datetime);
@@ -174,8 +227,14 @@
 
     body.innerHTML = `
       <div class="hk-set-grp">
-        <label>ชื่อ / Profile name</label>
+        <label>ชื่อบัญชี · Account name</label>
+        <input id="set-account-name" type="text" maxlength="80" value="${escapeHtml((authUser && authUser.name) || '')}" placeholder="ชื่อที่แสดงบน avatar/menu">
+        <div class="hk-set-note">ชื่อนี้ใช้แสดงในเมนูบัญชีและหัว avatar เท่านั้น</div>
+      </div>
+      <div class="hk-set-grp">
+        <label>ชื่อดวงเจ้าของ · Self chart name</label>
         <input id="set-name" type="text" value="${escapeHtml(profile.name || '')}">
+        <div class="hk-set-note">ชื่อนี้คือชื่อบนดวงของคุณ และเป็นชื่อที่ AI Sifu ใช้อ้างอิงตอนอ่านดวง</div>
       </div>
       <div class="hk-set-grp">
         <label>วันเกิด · DD / MM / YYYY</label>
@@ -343,11 +402,18 @@
         btn.textContent = '💾 บันทึก';
         return;
       }
+      var selfChartName = document.getElementById('set-name').value.trim();
+      if (!selfChartName) {
+        toast('กรุณากรอกชื่อดวงเจ้าของ', 'err');
+        btn.disabled = false;
+        btn.textContent = '💾 บันทึก';
+        return;
+      }
       /* 19 พ.ค. Option α · ไม่ทราบเวลาเกิด → birthTimeKnown=false */
       var noBtimeEl = document.getElementById('set-no-btime');
       var birthTimeKnown = !(noBtimeEl && noBtimeEl.checked);
       var payload = {
-        name: document.getElementById('set-name').value.trim(),
+        name: selfChartName,
         birthDate: String(y) + '-' + m + '-' + d,
         birthTime: hh + ':' + mn,
         birthLng: Number(document.getElementById('set-lng').value),
@@ -358,6 +424,7 @@
         dayBoundary: (document.getElementById('set-day-boundary').value === '00:00' ? '00:00' : '23:00'),
       };
       try {
+        await saveAccountName('set-account-name');
         var r = await fetch('/api/profile/' + profile.id, {
           method: 'PUT', headers: {'Content-Type':'application/json'},
           body: JSON.stringify(payload)
