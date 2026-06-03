@@ -7,7 +7,7 @@ const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
 const QTBJ_TIAOHOU_FILE = "qtbj-tiaohou-clean.md";
 const QTBJ_TIAOHOU_LOOKUP_FILE = "qtbj-tiaohou-lookup.md";
 
-export const SIFU_CODEX_QTBJ_RETRIEVAL_VERSION = "codex-qtbj-retrieval-v4-canon1";
+export const SIFU_CODEX_QTBJ_RETRIEVAL_VERSION = "codex-qtbj-retrieval-v5-canon2";
 
 const STEMS = "甲乙丙丁戊己庚辛壬癸";
 const BRANCHES = "子丑寅卯辰巳午未申酉戌亥";
@@ -226,11 +226,17 @@ function describePairs(pairs: QtbjPair[]): string {
   }).join(" | ");
 }
 
-export function loadQtbjTiaohouCompactKnowledge(query: string): { text: string; version: string; pairs: string[]; chars: number } {
+type QtbjCompactOptions = {
+  qtbjMaxChars?: number;
+  baseCanonMaxChars?: number;
+  maxPairs?: number;
+};
+
+export function loadQtbjTiaohouCompactKnowledge(query: string, opts: QtbjCompactOptions = {}): { text: string; version: string; pairs: string[]; chars: number } {
   try {
-    const qtbjMaxChars = Math.max(8_000, Number(process.env.SIFU_CODEX_QTBJ_MAX_CHARS || 24_000));
-    const baseCanonMaxChars = Math.max(10_000, Number(process.env.SIFU_CODEX_BASE_CANON_MAX_CHARS || 22_000));
-    const maxPairs = Math.max(1, Number(process.env.SIFU_CODEX_QTBJ_MAX_PAIRS || 4));
+    const qtbjMaxChars = Math.max(6_000, Number(opts.qtbjMaxChars || process.env.SIFU_CODEX_QTBJ_MAX_CHARS || 24_000));
+    const baseCanonMaxChars = Math.max(8_000, Number(opts.baseCanonMaxChars || process.env.SIFU_CODEX_BASE_CANON_MAX_CHARS || 22_000));
+    const maxPairs = Math.max(1, Number(opts.maxPairs || process.env.SIFU_CODEX_QTBJ_MAX_PAIRS || 4));
     const src = loadQtbjSource();
     const pairs = extractQtbjPairs(query, maxPairs);
     const canonicalBudget = Math.min(8_000, Math.floor(qtbjMaxChars * 0.35));

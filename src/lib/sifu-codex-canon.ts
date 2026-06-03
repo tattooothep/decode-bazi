@@ -1,4 +1,4 @@
-export const SIFU_CODEX_BASE_CANON_VERSION = "codex-base-canon-v1";
+export const SIFU_CODEX_BASE_CANON_VERSION = "codex-base-canon-v2";
 
 export const SIFU_CODEX_BASE_CANON = `
 # Codex base canon pack · BaZi compact classics
@@ -138,6 +138,73 @@ Medicine logic:
 - Medicine must solve the main illness, not only look favorable by element name.
 - If medicine appears in luck/year, explain timing: activation, relief, pressure, or test.
 - A medicine can become overdose if it is too strong or badly placed.
+
+## 子平真詮 · Xiangshen, Chengbai, Rescue
+
+Use this layer when the question asks "why this chart works/fails", career rank, turning points, or whether luck helps.
+
+Key rules:
+
+- 月令 gives the structural useful frame. 相神 is the helper that lets the frame work.
+- 成格 means the frame has helper, purity, root, and no fatal damage.
+- 破格 means the frame or helper is broken and has no rescue.
+- 帶忌 means the chart works but carries a damaging factor; explain the weakness clearly.
+- 救應 means a failing frame is rescued by combination, control, transformation, or mediator.
+- 四吉神 (財官印食) are generally used by support/flow. 四凶神 (殺傷劫刃) are generally used by control, transformation, or disciplined outlet.
+
+Practical rescue map:
+
+- 正官 damaged by 傷官: look for 印 to restrain 傷, 合/制 to remove 傷, or clear 官殺.
+- 七殺 too harsh: look for 食神制殺, 印化殺, or controlled 羊刃合殺.
+- 財 damaged by 比劫: look for 食傷化劫生財 or 官殺制劫.
+- 印 damaged by 財: look for 比劫解財 or 合財存印.
+- 食神 damaged by 梟印: look for 財護食 or a valid route that abandons 食 and uses 殺印.
+- 傷官見官: do not call it bad automatically. Check 金水/木火 context, 印, 財通關, and whether 官 is actually needed.
+
+## Timing · Luck And Year Activation
+
+Use this layer for 大運, 流年, "ช่วงนี้", and event timing. Do not predict exact future dates if the packet does not lock them.
+
+Key rules:
+
+- 大運重地支: luck branch carries the ten-year environment, root, combination, and clash.
+- 流年重天干: annual stem often triggers visible event tone, role, pressure, or opportunity.
+- Read luck and year together. A good luck pillar can be cut by year clash; a bad luck pillar can be rescued by year mediator.
+- 成格 can become 破 in bad luck; 破格 can become usable when luck supplies the missing helper or medicine.
+- 蓋頭: stem attacks its own branch, reducing usable force.
+- 截腳: branch cuts the stem root, often harsher than 蓋頭.
+- 天克地沖 is a heavy trigger, but weight still depends on Day Master strength, useful-god status, proximity, and whether a mediator exists.
+- For weak Day Masters, harsh luck/year clashes hit harder. For rooted/strong Day Masters, the same clash can become movement, workload, exposure, or breakthrough.
+
+## Two-Chart / Compatibility Discipline
+
+Use this layer for pair mode, family, team, love, business partners, or any cross-person question.
+
+Key rules:
+
+- Classical 子平 mostly reads marriage from one person's chart: spouse star, spouse palace, useful structure, and luck. Systematic two-chart matching is a later derived use.
+- Never decide compatibility from zodiac/year branch alone.
+- Never say 合 is always good or 沖 is always bad. A combination can bind or distract; a clash can open a vault, move a stuck issue, or expose a hidden conflict.
+- First read each person's own chart need. Then compare whether the other person's chart supplies support, pressure, mediator, or overdose.
+- 用神互補 is derived. Treat it as a flow/medicine clue, not a final verdict.
+- Ten-god complementarity can matter: excessive 比劫 may need 食傷 outlet; excessive 食傷 may need 印/財/官 route depending on chart structure.
+- Day-branch or day-pillar contact is only one evidence layer. Cross-person evidence must be named: "ดวง A ส่ง X ไปกระทบเรือน/ดาว Y ของดวง B".
+- For love/marriage: combine spouse star, spouse palace, cross-person interactions, useful-god impact, and current luck. Do not command "must break up" or "must marry".
+- For work/team: translate support/clash into roles: leader, stabilizer, producer, critic, connector, risk carrier, or resource gate.
+
+## Hechong Resolution · Combining And Clashing
+
+Use this layer when reading 合沖刑害破, 三合, 三會, 暗合, 墓庫, and cross-person synastry.
+
+Key rules:
+
+- 合化 is strict. It needs season, root, clear route, and no serious obstruction. Otherwise treat it as 合絆: binding, distraction, or temporary capture.
+- 貪合忘沖: a combination can reduce a clash if it is close and strong enough.
+- 合處逢沖: a clash can open a combination or break a binding.
+- 刑沖 can be rescued by 會合, 制, 化, or 通關 when the mediator is real.
+- 辰戌丑未 are vaults. 財官入庫 can need clash to open, so clash to vault is not automatically bad.
+- 刑害破 are secondary unless they attack a locked useful god, spouse palace, health signal, or activated luck/year point.
+- Rank interactions by packet evidence first, then proximity, month season, root, stem visibility, luck/year activation, and whether the affected element is useful or harmful.
 
 ## Interaction Discipline
 

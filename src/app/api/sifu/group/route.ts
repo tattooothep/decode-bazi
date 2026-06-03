@@ -53,6 +53,9 @@ const CODEX_GROUP_MAX = Number.isFinite(CODEX_GROUP_MAX_RAW)
 const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 7_000);
 const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
 const CODEX_CLI_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
+const CODEX_GROUP_BASE_CANON_MAX_CHARS = Number(process.env.SIFU_CODEX_GROUP_BASE_CANON_MAX_CHARS || 18_000);
+const CODEX_GROUP_QTBJ_MAX_CHARS = Number(process.env.SIFU_CODEX_GROUP_QTBJ_MAX_CHARS || 18_000);
+const CODEX_GROUP_QTBJ_MAX_PAIRS = Number(process.env.SIFU_CODEX_GROUP_QTBJ_MAX_PAIRS || 2);
 const CODEX_COMPACT_KNOWLEDGE = [
   "Codex compact mode: ใช้ข้อมูลดวง/packet/interactions ที่ส่งมาเป็น source of truth สูงสุด",
   "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน 用神/忌神 หรือวัยจรที่ packet ไม่ได้ให้",
@@ -413,7 +416,13 @@ function buildGroupPrompt(opts: { ctx: string; message: string; history: Msg[]; 
   const extraBlock = extraKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => extraKnow.text) + "\n"
     : "";
-  const qtbjCompact = compact ? loadQtbjTiaohouCompactKnowledge(`${opts.message}\n${histText}\n${opts.ctx}`) : { text: "", version: "full-extra" };
+  const qtbjCompact = compact
+    ? loadQtbjTiaohouCompactKnowledge(`${opts.message}\n${histText}\n${opts.ctx}`, {
+        baseCanonMaxChars: CODEX_GROUP_BASE_CANON_MAX_CHARS,
+        qtbjMaxChars: CODEX_GROUP_QTBJ_MAX_CHARS,
+        maxPairs: CODEX_GROUP_QTBJ_MAX_PAIRS,
+      })
+    : { text: "", version: "full-extra" };
   const qtbjCompactBlock = qtbjCompact.text
     ? "\n\n=== 📜 窮通寶鑑 · 調候用神 compact source ===\n" + qtbjCompact.text + "\n=== จบ 窮通寶鑑 compact source ===\n"
     : "";
