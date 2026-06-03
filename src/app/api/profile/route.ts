@@ -16,7 +16,7 @@ export async function GET() {
     `SELECT id, name, nickname,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
             birth_lat, birth_lng, birth_location_name, gender,
-            relationship_type,
+            relationship_type, network_group, network_group_label,
             day_master, day_master_strength, yongshen, bazi_pillars,
             birth_time_known, day_boundary, is_archived, created_at,
             (created_by_user_id=$2 AND (relationship_type IS NULL OR btrim(relationship_type) = '')) AS is_self
@@ -61,7 +61,8 @@ export async function POST(req: Request) {
   });
 
   const row = await q1(
-    `SELECT id, name, day_master, day_master_strength, yongshen, bazi_pillars, birth_time_known, day_boundary
+    `SELECT id, name, nickname, day_master, day_master_strength, yongshen, bazi_pillars,
+            relationship_type, network_group, network_group_label, birth_time_known, day_boundary
      FROM profiles WHERE id=$1`,
     [result.id]
   );

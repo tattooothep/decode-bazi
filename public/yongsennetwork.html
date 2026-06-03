@@ -692,8 +692,9 @@
   <!-- ─── VIEW 2: GRID ─── -->
   <div class="view-panel" id="view-grid">
     <div class="group-chips">
-      <button class="on" data-g="all"><span data-i18n="n.g.all">ทั้งหมด</span> <span class="count" data-count="all">0</span></button>
-      <button data-g="family"><span data-i18n="n.g.family">家 · ครอบครัว</span> <span class="count" data-count="family">0</span></button>
+	      <button class="on" data-g="all"><span data-i18n="n.g.all">ทั้งหมด</span> <span class="count" data-count="all">0</span></button>
+	      <button data-g="general"><span data-i18n="n.g.general">ทั่วไป</span> <span class="count" data-count="general">0</span></button>
+	      <button data-g="family"><span data-i18n="n.g.family">家 · ครอบครัว</span> <span class="count" data-count="family">0</span></button>
       <button data-g="friend"><span data-i18n="n.g.friend">友 · เพื่อน</span> <span class="count" data-count="friend">0</span></button>
       <button data-g="love"><span data-i18n="n.g.love">情 · ความรัก</span> <span class="count" data-count="love">0</span></button>
       <button data-g="work"><span data-i18n="n.g.work">業 · ที่ทำงาน</span> <span class="count" data-count="work">0</span></button>
@@ -923,8 +924,18 @@
   }
   function normalizeNetworkGroup(g){
     const v = String(g || '').trim().toLowerCase();
-    if (['family','friend','work','rival','love'].includes(v)) return v;
+    if (['general','family','friend','work','rival','love','self'].includes(v)) return v;
     return '';
+  }
+  function fallbackRelationshipForGroup(group){
+    switch (normalizeNetworkGroup(group) || 'general') {
+      case 'family': return 'คนในครอบครัว';
+      case 'friend': return 'เพื่อนในเครือข่าย';
+      case 'work': return 'คนในงาน';
+      case 'love': return 'คนรัก';
+      case 'rival': return 'คู่แข่ง';
+      default: return 'คนในเครือข่าย';
+    }
   }
   function inferNetworkGroup(rel, name, nickname){
     const relText = String(rel || '').trim().toLowerCase();
@@ -953,7 +964,7 @@
     if (byRel) return byRel;
     const byName = classify(fallbackText);
     if (byName) return byName;
-    return relText || fallbackText ? { group:'friend', confidence:'weak' } : null;
+    return relText || fallbackText ? { group:'general', confidence:'weak' } : null;
   }
   async function loadPeopleFromDB(){
     try {
@@ -1006,10 +1017,12 @@
           elem: ELEM_OF[dmStem] || 'earth',
           group: (function(){
             if (isSelf) return 'self';
+            const dbGroup = normalizeNetworkGroup(p.network_group);
             const inferred = inferNetworkGroup(p.relationship_type, p.name, p.nickname);
             try {
               const map = JSON.parse(localStorage.getItem('hk_network_groups')||'{}');
               const saved = normalizeNetworkGroup(map[p.id]);
+              if (dbGroup && dbGroup !== 'self') return dbGroup;
               if (saved) {
                 /* กัน map เก่าที่เคย default เป็น friend ทับความสัมพันธ์ครอบครัว/งาน/คู่รักชัดเจน */
                 if (saved === 'friend' && inferred && inferred.group !== 'friend' && inferred.confidence === 'strong') {
@@ -1018,7 +1031,7 @@
                 return saved;
               }
             } catch(_){}
-            return inferred ? inferred.group : 'friend';
+            return inferred ? inferred.group : 'general';
           })(),
           pillars: bp.day ? bp : null,  /* ต้องมี pillars · ไม่งั้นใช้ DEMO เสริม */
           profileId: p.id,
@@ -1376,6 +1389,7 @@
   function fmt(s){ return s>0?`+${s}`:s<0?`−${Math.abs(s)}`:'0'; }
 
 	  const SOLAR_GROUPS = [
+	    { key:'general', glyph:'人', label:'ทั่วไป', hint:'ยังไม่ได้จัดหมวดเฉพาะ' },
 	    { key:'family', glyph:'家', label:'ครอบครัว', hint:'บ้านและญาติใกล้ตัว' },
 	    { key:'work', glyph:'業', label:'งาน / ทีม', hint:'งาน ลูกค้า หุ้นส่วน' },
 	    { key:'friend', glyph:'友', label:'เพื่อน', hint:'เพื่อนและคนรู้จัก' },
@@ -2371,7 +2385,7 @@
 
   function updateGroupCounts(){
     const peers = PEOPLE.filter(p=>p.id!=='self');
-    const counts = { all: peers.length, family:0, friend:0, love:0, work:0, rival:0 };
+	    const counts = { all: peers.length, general:0, family:0, friend:0, love:0, work:0, rival:0 };
     peers.forEach(p=>{ if (counts[p.group]!=null) counts[p.group]++; });
     Object.keys(counts).forEach(g=>{
       const el = document.querySelector(`.count[data-count="${g}"]`);
@@ -2854,6 +2868,7 @@ window.HK_I18N = {
   'n.tip.hint':    { th:'👆 คลิก = ดูดวง · กดค้าง = ย้ายดวงกลาง', en:'👆 Click = chart · Long-press = recenter', zh:'👆 點 = 命盤 · 長按 = 重設中心' },
   /* group chips */
   'n.g.all':       { th:'ทั้งหมด', en:'All', zh:'全部' },
+  'n.g.general':   { th:'ทั่วไป', en:'General', zh:'一般' },
   'n.gmode.impact':{ th:'⚡ ผลกระทบกับเรา', en:'⚡ Impact on me', zh:'⚡ 對我的影響' },
   'n.gmode.own':   { th:'🌟 ดวงของเค้าเอง', en:'🌟 Their own chart', zh:'🌟 他們自己的命' },
   'n.gmode.loading': { th:'กำลังคำนวณ...', en:'Computing...', zh:'計算中...' },
@@ -3012,13 +3027,14 @@ window.applyI18N = applyI18N;
       <label><span data-i18n="n.pm.f.name">ชื่อ</span>
         <input type="text" id="pm-name" required maxlength="40" placeholder="เช่น พีท · ใหม่" />
       </label>
-      <label><span data-i18n="n.pm.f.role">บทบาท</span>
-        <input type="text" id="pm-role" required maxlength="60" placeholder="เช่น ผู้ร่วมก่อตั้ง · ที่ทำงาน" />
-      </label>
-      <label><span data-i18n="n.pm.f.group">กลุ่ม</span>
-        <select id="pm-group">
-          <option value="family">家 · ครอบครัว</option>
-          <option value="friend">友 · เพื่อน</option>
+	      <label><span data-i18n="n.pm.f.role">บทบาท</span>
+	        <input type="text" id="pm-role" maxlength="60" placeholder="เช่น ผู้ร่วมก่อตั้ง · ที่ทำงาน (ไม่บังคับ)" />
+	      </label>
+	      <label><span data-i18n="n.pm.f.group">กลุ่ม</span>
+	        <select id="pm-group">
+	          <option value="general">ทั่วไป</option>
+	          <option value="family">家 · ครอบครัว</option>
+	          <option value="friend">友 · เพื่อน</option>
           <option value="work" selected>業 · ที่ทำงาน</option>
           <option value="rival">競 · คู่แข่ง</option>
           <option value="self">ตัวเอง</option>
@@ -3217,8 +3233,8 @@ window.applyI18N = applyI18N;
   window.savePerson = async function(){
     const id = document.getElementById('pm-id').value;
     const name = document.getElementById('pm-name').value.trim();
-    const role = document.getElementById('pm-role').value.trim();
-    const group = document.getElementById('pm-group').value;
+	    const role = document.getElementById('pm-role').value.trim();
+	    const group = normalizeNetworkGroup(document.getElementById('pm-group').value) || 'general';
     const birthDate = document.getElementById('pm-bdate').value;
     const birthTime = document.getElementById('pm-btime').value || '12:00';
     const gender = document.getElementById('pm-gender').value || 'M';
@@ -3229,7 +3245,8 @@ window.applyI18N = applyI18N;
     /* 19 พ.ค. Option α */
     const noBtimeChk2 = document.getElementById('pm-no-btime');
     const birthTimeKnown = !(noBtimeChk2 && noBtimeChk2.checked);
-    if (!name || !role || !birthDate){ alert('กรุณากรอกชื่อ · บทบาท · วันเกิด'); return; }
+	    const roleForSave = role || fallbackRelationshipForGroup(group);
+	    if (!name || !birthDate){ alert('กรุณากรอกชื่อ · วันเกิด'); return; }
 
     /* show loading */
     document.getElementById('pm-loading').style.display = 'flex';
@@ -3248,7 +3265,7 @@ window.applyI18N = applyI18N;
 
       const obj = {
         id: id || ('p_'+Date.now()),
-        name, role, group,
+	        name, role: roleForSave, group,
         birthDate, birthTime, gender, longitude, latitude, locationName, dayBoundary,
         birthTimeKnown,                /* 19 พ.ค. Option α · เก็บ flag ใน local PEOPLE */
         glyph: dayStem,
@@ -3285,7 +3302,9 @@ window.applyI18N = applyI18N;
               method:'PUT', headers:{'Content-Type':'application/json'},
               credentials:'include',
               body: JSON.stringify({
-                name, nickname: name,
+	                name,
+	                relationshipType: roleForSave,
+	                networkGroup: group,
                 birthDate, birthTime,
                 birthLat: latitude, birthLng: longitude, locationName,
                 gender,
@@ -3786,10 +3805,11 @@ window.applyI18N = applyI18N;
         <div class="addp-city-list" id="addp-city-list"></div>
         <span  class="hint" id="addp-city-hint" data-i18n="auto.n.584">ค่าเริ่มต้น: กรุงเทพฯ (100.5018°E) · กำลังโหลดระบบค้นหาเมือง...</span>
       </div>
-      <div class="addp-field">
-        <label data-i18n="n.addp.group">กลุ่ม</label>
-        <select id="addp-group">
-          <option value="family" data-i18n="n.addp.g.family">家 · ครอบครัว</option>
+	      <div class="addp-field">
+	        <label data-i18n="n.addp.group">กลุ่ม</label>
+	        <select id="addp-group">
+	          <option value="general" data-i18n="n.addp.g.general">ทั่วไป</option>
+	          <option value="family" data-i18n="n.addp.g.family">家 · ครอบครัว</option>
           <option value="friend" data-i18n="n.addp.g.friend">友 · เพื่อน</option>
           <option value="work" data-i18n="n.addp.g.work">業 · ที่ทำงาน</option>
           <option value="love" data-i18n="n.addp.g.love">情 · ความรัก</option>
@@ -4008,6 +4028,7 @@ window.applyI18N = applyI18N;
     'n.addp.btime.hint':{ th:'ถ้าไม่รู้ ใช้ 12:00', en:'Unknown? Use 12:00', zh:'不詳則 12:00' },
     'n.addp.city':     { th:'เมืองเกิด · พิมพ์เพื่อค้นหา', en:'Birth City · type to search', zh:'出生城市 · 鍵入搜尋' },
     'n.addp.group':    { th:'กลุ่ม', en:'Group', zh:'群組' },
+    'n.addp.g.general': { th:'ทั่วไป', en:'General', zh:'一般' },
     'n.addp.g.family': { th:'家 · ครอบครัว', en:'家 · Family', zh:'家' },
     'n.addp.g.friend': { th:'友 · เพื่อน', en:'友 · Friend', zh:'友' },
     'n.addp.g.work':   { th:'業 · ที่ทำงาน', en:'業 · Work', zh:'業' },
@@ -4438,8 +4459,8 @@ window.applyI18N = applyI18N;
     const self = all.find(p => p.id === 'self');
     let members = all.filter(p => p.id !== 'self' && p.pillars && p.pillars.day);
     if (grp !== 'all') {
-      const grpMap = JSON.parse(localStorage.getItem('hk_network_groups')||'{}');
-      members = members.filter(p => (grpMap[p.id] || p.group || 'friend') === grp);
+	      const grpMap = JSON.parse(localStorage.getItem('hk_network_groups')||'{}');
+	      members = members.filter(p => (normalizeNetworkGroup(grpMap[p.profileId] || grpMap[p.id] || p.group) || 'general') === grp);
     }
     return { self, members };
   }
@@ -4630,7 +4651,7 @@ window.applyI18N = applyI18N;
     const dEl = document.getElementById('addp-bdate'); if (dEl) dEl.value = today.toISOString().slice(0,10);
     const tEl = document.getElementById('addp-btime'); if (tEl) tEl.value = '12:00';
     const gEl = document.getElementById('addp-gender'); if (gEl) gEl.value = 'M';
-    const grpEl = document.getElementById('addp-group'); if (grpEl) grpEl.value = 'friend';
+	    const grpEl = document.getElementById('addp-group'); if (grpEl) grpEl.value = 'general';
     const dbEl = document.getElementById('addp-day-boundary'); if (dbEl) dbEl.value = '23:00';
     const stEl = document.getElementById('addp-status'); if (stEl){ stEl.textContent=''; stEl.className='addp-status'; }
     window._addpCity = HK_CITIES[0];
@@ -4733,7 +4754,8 @@ window.applyI18N = applyI18N;
         birthLat: city.lat,
         locationName: city.en,
         gender: document.getElementById('addp-gender')?.value || 'M',
-        relationshipType: (document.getElementById('addp-rel')?.value || '').trim() || null,
+	        relationshipType: (document.getElementById('addp-rel')?.value || '').trim() || fallbackRelationshipForGroup(document.getElementById('addp-group')?.value || 'general'),
+	        networkGroup: normalizeNetworkGroup(document.getElementById('addp-group')?.value) || 'general',
         /* 16 พ.ค. 2026: dayBoundary 23:00 (early 子) หรือ 00:00 (late 子/Voytek) */
         dayBoundary: document.getElementById('addp-day-boundary')?.value || '23:00',
         /* 19 พ.ค. Option α */
@@ -4754,7 +4776,7 @@ window.applyI18N = applyI18N;
         /* บันทึก group ใน localStorage map */
         try {
           const map = JSON.parse(localStorage.getItem('hk_network_groups')||'{}');
-          map[j.profile.id] = document.getElementById('addp-group')?.value || 'friend';
+          map[j.profile.id] = document.getElementById('addp-group')?.value || 'general';
           localStorage.setItem('hk_network_groups', JSON.stringify(map));
         } catch(_){}
         if (stEl){ stEl.className='addp-status ok'; stEl.textContent = tx('n.addp.ok')||'✓ บันทึกสำเร็จ'; }
@@ -5924,9 +5946,10 @@ window.applyI18N = applyI18N;
               birthDate: p.birthDate, birthTime: p.birthTime || '12:00',
               birthLng: p.lng || 100.5018, birthLat: p.lat || 13.7563,
               locationName: p.city || 'Bangkok',
-              gender: p.gender || 'M',
-              relationshipType: 'AI batch',
-              dayBoundary,
+	              gender: p.gender || 'M',
+	              relationshipType: 'AI batch',
+	              networkGroup: 'general',
+	              dayBoundary,
               /* 19 พ.ค. Option α · AI parser อาจ extract time ไม่ได้ → 3p */
               birthTimeKnown: p.birthTime ? true : false,
             })

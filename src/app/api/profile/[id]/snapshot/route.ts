@@ -32,9 +32,11 @@ export async function GET(_req: Request, ctx: Ctx) {
     birth_location_name: string | null;
     gender: string | null;
     birth_time_known: boolean;
-    day_boundary: string | null;
-    relationship_type: string | null;
-    bazi_pillars: any;
+	    day_boundary: string | null;
+	    relationship_type: string | null;
+	    network_group: string | null;
+	    network_group_label: string | null;
+	    bazi_pillars: any;
     day_master: string | null;
   }>(
     `SELECT
@@ -44,7 +46,7 @@ export async function GET(_req: Request, ctx: Ctx) {
        to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD') AS birth_date,
        to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'HH24:MI') AS birth_time,
        birth_lat, birth_lng, birth_location_name,
-       gender, birth_time_known, day_boundary, relationship_type,
+	       gender, birth_time_known, day_boundary, relationship_type, network_group, network_group_label,
        bazi_pillars, day_master
      FROM profiles
      WHERE id=$1 AND org_id=$2 AND is_archived=false`,
@@ -67,8 +69,10 @@ export async function GET(_req: Request, ctx: Ctx) {
       latitude: row.birth_lat ? parseFloat(row.birth_lat) : 13.7563,
       locationName: row.birth_location_name,
       gender: row.gender,
-      relationshipType: row.relationship_type,
-      pillars: row.bazi_pillars,
+	      relationshipType: row.relationship_type,
+	      networkGroup: row.network_group,
+	      networkGroupLabel: row.network_group_label,
+	      pillars: row.bazi_pillars,
       dayMaster: row.day_master,
     },
   });

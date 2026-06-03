@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
+import { normalizeNetworkGroup, normalizeNonSelfRelationship } from "@/lib/profile-groups";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
@@ -37,7 +38,8 @@ export async function GET(_req: Request, ctx: Ctx) {
     `SELECT id, name, nickname,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
             birth_lat, birth_lng, birth_location_name,
-            gender, day_master, day_master_strength, yongshen, bazi_pillars,
+            gender, relationship_type, network_group, network_group_label,
+            day_master, day_master_strength, yongshen, bazi_pillars,
             birth_time_known, day_boundary, is_archived, created_at
      FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
     [id, s.orgId]
@@ -51,15 +53,19 @@ export async function PUT(req: Request, ctx: Ctx) {
   if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const { id } = await ctx.params;
   const body = await req.json().catch(() => ({}));
-  const { name, birthDate, birthTime, birthLat, birthLng, locationName, gender, nickname, dayBoundary: dayBoundaryRaw,
+  const { name, birthDate, birthTime, birthLat, birthLng, locationName, gender, nickname,
+    relationshipType, networkGroup, networkGroupLabel, dayBoundary: dayBoundaryRaw,
     /* 19 พ.ค. Option α · birthTimeKnown (optional) · ถ้าไม่ส่ง = keep existing */
     birthTimeKnown: birthTimeKnownRaw,
   } = body;
 
   const existing = await q1<{ birth_datetime: string; birth_time_known: boolean; birth_lng: string | null; day_boundary: string | null;
     name: string | null; gender: string | null; birth_lat: string | null; birth_location_name: string | null;
+    relationship_type: string | null; network_group: string | null; network_group_label: string | null; is_self: boolean;
     day_master: string | null; day_master_strength: string | null; yongshen: unknown; bazi_pillars: unknown }>(
     `SELECT id, birth_lng, birth_time_known, day_boundary, name, gender, birth_lat, birth_location_name,
+            relationship_type, network_group, network_group_label,
+            (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self,
             day_master, day_master_strength, yongshen, bazi_pillars,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime
      FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
@@ -88,6 +94,25 @@ export async function PUT(req: Request, ctx: Ctx) {
       sets.push(`"${k}"=$${i++}`);
       params.push(v);
     }
+  }
+
+  const requestedGroupRaw = networkGroup !== undefined ? normalizeNetworkGroup(networkGroup, "general") : null;
+  const requestedGroup = requestedGroupRaw === "self" && !existing.is_self ? "general" : requestedGroupRaw;
+  if (requestedGroup !== null) {
+    sets.push(`"network_group"=$${i++}`);
+    params.push(existing.is_self ? "self" : requestedGroup);
+  }
+  if (networkGroupLabel !== undefined) {
+    const label = typeof networkGroupLabel === "string" && networkGroupLabel.trim()
+      ? networkGroupLabel.trim().slice(0, 80)
+      : null;
+    sets.push(`"network_group_label"=$${i++}`);
+    params.push(label);
+  }
+  if (!existing.is_self && relationshipType !== undefined) {
+    const groupForRelation = requestedGroup || existing.network_group || "general";
+    sets.push(`"relationship_type"=$${i++}`);
+    params.push(normalizeNonSelfRelationship(relationshipType, groupForRelation));
   }
 
   /* If birthDate/birthTime/birthLng/birthTimeKnown change → recompute BaZi via Layer 1 (calcBazi)
@@ -150,6 +175,9 @@ export async function PUT(req: Request, ctx: Ctx) {
   /* snapshot ค่าเดิมก่อนเขียนทับ (กู้คืนได้ · โดยเฉพาะ 4เสา/用神 ที่ recompute ทับถาวร) */
   snapshotProfile(id, s.orgId ?? null, {
     name: existing.name, gender: existing.gender,
+    relationship_type: existing.relationship_type,
+    network_group: existing.network_group,
+    network_group_label: existing.network_group_label,
     birth_datetime: existing.birth_datetime, birth_lat: existing.birth_lat,
     birth_lng: existing.birth_lng, birth_location_name: existing.birth_location_name,
     birth_time_known: existing.birth_time_known, day_boundary: existing.day_boundary,
@@ -170,7 +198,8 @@ export async function PUT(req: Request, ctx: Ctx) {
     `SELECT id, name, nickname,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
             birth_lat, birth_lng, birth_location_name,
-            gender, day_master, day_master_strength, yongshen, bazi_pillars, birth_time_known, day_boundary
+            gender, relationship_type, network_group, network_group_label,
+            day_master, day_master_strength, yongshen, bazi_pillars, birth_time_known, day_boundary
      FROM profiles WHERE id=$1 AND org_id=$2`,
     [id, s.orgId]
   );

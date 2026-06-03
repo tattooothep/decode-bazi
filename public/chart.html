@@ -4145,19 +4145,19 @@ window.addEventListener('resize', function(){
     th:{ title:'เปลี่ยนดวง', list:'รายชื่อ', add:'กรอกใหม่', search:'ค้นหาชื่อ…', empty:'ยังไม่มีรายชื่อที่บันทึก<br>ลองกรอกดวงใหม่ที่แท็บ "กรอกใหม่"', noTime:'(ไม่ทราบเวลา · 3 เสา)',
          name:'ชื่อ (ไม่บังคับ)', namePh:'เช่น คุณแม่, เพื่อน, ลูกค้า', dob:'วันเกิด · วัน / เดือน / ปี (ค.ศ.)', d:'วัน', m:'เดือน', y:'ปี ค.ศ.',
          time:'เวลาเกิด · ชม. : นาที', noBtime:'ไม่ทราบเวลาเกิด (ดูดวงแบบ 3 เสา)', gender:'เพศ', male:'ชาย', female:'หญิง', city:'เมืองเกิด', cityPh:'พิมพ์ชื่อเมือง เช่น Bangkok',
-         role:'บทบาท / ความสัมพันธ์', rolePh:'เช่น พี่สาว · เพื่อน · ลูกค้า', group:'กลุ่ม', gFamily:'家 ครอบครัว', gFriend:'友 เพื่อน', gWork:'業 ที่ทำงาน', gLove:'情 คนรัก', gRival:'競 คู่แข่ง',
+         role:'บทบาท / ความสัมพันธ์', rolePh:'เช่น พี่สาว · เพื่อน · ลูกค้า', group:'กลุ่ม', gGeneral:'ทั่วไป', gFamily:'家 ครอบครัว', gFriend:'友 เพื่อน', gWork:'業 ที่ทำงาน', gLove:'情 คนรัก', gRival:'競 คู่แข่ง',
          lng:'ลองจิจูด', gmt:'เขตเวลา', corr:'แก้เวลาสุริยะ', eot:'สมการเวลา', tstNote:'⏱ คำนวณอัตโนมัติจากเมืองเกิด · 真太陽時 (節氣เดือนเกิด ดูใน §13 หลังเปิดดวง)',
          view:'ดูเลย', save:'บันทึก + ดู', errDate:'กรุณากรอกวันเกิดให้ครบ', errTime:'กรุณากรอกเวลา หรือเลือก "ไม่ทราบเวลา"', saving:'กำลังบันทึก…', loading:'กำลังโหลด…' },
     en:{ title:'Switch Chart', list:'People', add:'New', search:'Search name…', empty:'No saved people yet<br>Try the "New" tab to add a chart', noTime:'(no time · 3 pillars)',
          name:'Name (optional)', namePh:'e.g. Mom, Friend, Client', dob:'Birth date · D / M / Y (CE)', d:'Day', m:'Mon', y:'Year CE',
          time:'Birth time · HH : MM', noBtime:'Unknown birth time (3-pillar chart)', gender:'Gender', male:'Male', female:'Female', city:'Birth city', cityPh:'Type a city e.g. Bangkok',
-         role:'Role / Relationship', rolePh:'e.g. Sister · Friend · Client', group:'Group', gFamily:'家 Family', gFriend:'友 Friend', gWork:'業 Work', gLove:'情 Love', gRival:'競 Rival',
+         role:'Role / Relationship', rolePh:'e.g. Sister · Friend · Client', group:'Group', gGeneral:'General', gFamily:'家 Family', gFriend:'友 Friend', gWork:'業 Work', gLove:'情 Love', gRival:'競 Rival',
          lng:'Longitude', gmt:'Time zone', corr:'Solar correction', eot:'Equation of Time', tstNote:'⏱ Auto-computed from birth city · True Solar Time (birth-month 節氣 shown in §13 after loading)',
          view:'View now', save:'Save + view', errDate:'Please fill the full birth date', errTime:'Enter a time or tick "Unknown time"', saving:'Saving…', loading:'Loading…' },
     zh:{ title:'換盤', list:'名單', add:'新增', search:'搜尋姓名…', empty:'尚無已存名單<br>請在「新增」分頁建立命盤', noTime:'(無時辰 · 三柱)',
          name:'姓名(可選)', namePh:'例:母親、朋友、客戶', dob:'出生日期 · 日 / 月 / 年(西元)', d:'日', m:'月', y:'西元年', time:'出生時間 · 時 : 分',
          noBtime:'不知出生時間(三柱盤)', gender:'性別', male:'男', female:'女', city:'出生城市', cityPh:'輸入城市 如 Bangkok',
-         role:'角色 / 關係', rolePh:'如 姐姐 · 朋友 · 客戶', group:'群組', gFamily:'家 家人', gFriend:'友 朋友', gWork:'業 工作', gLove:'情 戀人', gRival:'競 對手',
+         role:'角色 / 關係', rolePh:'如 姐姐 · 朋友 · 客戶', group:'群組', gGeneral:'一般', gFamily:'家 家人', gFriend:'友 朋友', gWork:'業 工作', gLove:'情 戀人', gRival:'競 對手',
          lng:'經度', gmt:'時區', corr:'真太陽時差', eot:'均時差', tstNote:'⏱ 依出生城市自動計算 · 真太陽時(出生月節氣見載入後 §13)',
          view:'立即查看', save:'儲存 + 查看', errDate:'請填寫完整出生日期', errTime:'請輸入時間或勾選「不知時間」', saving:'儲存中…', loading:'載入中…' }
   };
@@ -4297,8 +4297,9 @@ window.addEventListener('resize', function(){
           '<div class="hkp-grp" style="margin-bottom:0"><label>'+esc(t('role'))+'</label><input type="text" id="hkp-role" placeholder="'+esc(t('rolePh'))+'" autocomplete="off"></div>'+
           '<div class="hkp-grp" style="margin-bottom:0"><label>'+esc(t('group'))+'</label>'+
             '<select id="hkp-group" class="hkp-search" style="margin-bottom:0;cursor:pointer">'+
-              '<option value="family">'+esc(t('gFamily'))+'</option>'+
-              '<option value="friend" selected>'+esc(t('gFriend'))+'</option>'+
+	              '<option value="general" selected>'+esc(t('gGeneral'))+'</option>'+
+	              '<option value="family">'+esc(t('gFamily'))+'</option>'+
+	              '<option value="friend">'+esc(t('gFriend'))+'</option>'+
               '<option value="work">'+esc(t('gWork'))+'</option>'+
               '<option value="love">'+esc(t('gLove'))+'</option>'+
               '<option value="rival">'+esc(t('gRival'))+'</option></select></div></div>'+
@@ -4357,7 +4358,7 @@ window.addEventListener('resize', function(){
         } catch(e){ console.warn('[hkp] places', e); }
       })();
 
-      function collect(){
+	      function collect(){
         $('hkp-err').textContent='';
         var d=parseInt($('hkp-d').value,10), m=parseInt($('hkp-m').value,10), y = normalizeYearCE($('hkp-y').value);
         if (isFinite(y)) $('hkp-y').value = String(y);
@@ -4373,10 +4374,20 @@ window.addEventListener('resize', function(){
         return { source:'adhoc', profileId:'', name:$('hkp-name').value.trim(),
           nickname: $('hkp-nickname').value.trim(),
           date: y+'-'+pad(m,2)+'-'+pad(d,2), time: time, birthTimeKnown: !noBt, gender: g,
-          role: $('hkp-role').value.trim(), group: $('hkp-group').value || 'friend',
+	          role: $('hkp-role').value.trim(), group: $('hkp-group').value || 'general',
           place: $('hkp-city').value.trim()||'Bangkok',
-          longitude: parseFloat($('hkp-lng').value)||100.5018, latitude: parseFloat($('hkp-lat').value)||13.7563 };
-      }
+	          longitude: parseFloat($('hkp-lng').value)||100.5018, latitude: parseFloat($('hkp-lat').value)||13.7563 };
+	      }
+	      function fallbackRelationshipForGroup(group){
+	        switch (group || 'general') {
+	          case 'family': return 'คนในครอบครัว';
+	          case 'friend': return 'เพื่อนในเครือข่าย';
+	          case 'work': return 'คนในงาน';
+	          case 'love': return 'คนรัก';
+	          case 'rival': return 'คู่แข่ง';
+	          default: return 'คนในเครือข่าย';
+	        }
+	      }
 
       $('hkp-view').addEventListener('click', function(){
         var snap = collect(); if (!snap) return;
@@ -4391,9 +4402,10 @@ window.addEventListener('resize', function(){
         try {
           var dayBoundary='23:00'; try { if (localStorage.getItem('hk_day_boundary')==='00:00') dayBoundary='00:00'; } catch(_){}
           var r = await fetch('/api/profile/create', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
-            body: JSON.stringify({ name: snap.name||'(ไม่ระบุชื่อ)', nickname: (snap.nickname || '').trim() || null, birthDate: snap.date, birthTime: snap.time||'12:00',
-              birthLat: snap.latitude, birthLng: snap.longitude, locationName: snap.place, gender: snap.gender,
-              relationshipType: snap.role || 'friend', dayBoundary: dayBoundary, birthTimeKnown: snap.birthTimeKnown }) });
+	            body: JSON.stringify({ name: snap.name||'(ไม่ระบุชื่อ)', nickname: (snap.nickname || '').trim() || null, birthDate: snap.date, birthTime: snap.time||'12:00',
+	              birthLat: snap.latitude, birthLng: snap.longitude, locationName: snap.place, gender: snap.gender,
+	              relationshipType: snap.role || fallbackRelationshipForGroup(snap.group), networkGroup: snap.group || 'general',
+	              dayBoundary: dayBoundary, birthTimeKnown: snap.birthTimeKnown }) });
           if (!r.ok) throw new Error('create '+r.status);
           var j = await r.json();
           var newId = (j && (j.id || (j.profile && j.profile.id))) || '';

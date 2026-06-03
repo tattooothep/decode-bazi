@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
+import { normalizeNetworkGroup, normalizeNonSelfRelationship } from "@/lib/profile-groups";
 
 export async function POST(req: Request) {
   const s = await getSession();
@@ -26,6 +27,8 @@ export async function POST(req: Request) {
     locationName,
     gender,
     relationshipType,
+    networkGroup,
+    networkGroupLabel,
     /* 16 พ.ค. 2026: รับ dayBoundary "23:00" (early 子) หรือ "00:00" (late 子/Voytek) */
     dayBoundary,
     /* 19 พ.ค. Option α · birthTimeKnown=false → 3p mode (no hour pillar) */
@@ -40,13 +43,12 @@ export async function POST(req: Request) {
   const birthTime = birthTimeKnown ? (birthTimeRaw || "12:00") : "12:00"; /* 3p ใช้ 12:00 เป็น DB anchor เท่านั้น · ไม่ใช่ pillar */
   const dayBoundaryNorm = dayBoundary === "00:00" ? "00:00" : "23:00";
 
-  const relation = String(relationshipType || "").trim();
-  if (!relation || relation.toLowerCase() === "self" || relation === "ตัวเอง") {
-    return NextResponse.json(
-      { error: "relationshipType required for non-self profile" },
-      { status: 400 }
-    );
-  }
+  const groupRaw = normalizeNetworkGroup(networkGroup, "general");
+  const group = groupRaw === "self" ? "general" : groupRaw;
+  const relation = normalizeNonSelfRelationship(relationshipType, group);
+  const groupLabel = typeof networkGroupLabel === "string" && networkGroupLabel.trim()
+    ? networkGroupLabel.trim().slice(0, 80)
+    : null;
 
   // duplicate guard: same org + same person payload (name/relationship/datetime) and not archived
   // ป้องกันกดซ้ำ/ยิงซ้ำจาก UI แล้วเกิด profile โคลน
@@ -66,9 +68,16 @@ export async function POST(req: Request) {
     [s.orgId, String(name), relation, birthTimeKnown, birthDate, birthTime, dayBoundaryNorm]
   );
   if (existed?.id) {
+    await q(
+      `UPDATE profiles
+          SET network_group=$1, network_group_label=$2, updated_at=now()
+        WHERE id=$3 AND org_id=$4`,
+      [group, groupLabel, existed.id, s.orgId]
+    );
     const fullExisting = await q1(
       `SELECT id, name, nickname, day_master, day_master_strength, yongshen, bazi_pillars,
-              relationship_type, gender, birth_lng, birth_lat, birth_time_known, day_boundary,
+              relationship_type, network_group, network_group_label,
+              gender, birth_lng, birth_lat, birth_time_known, day_boundary,
               to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime
        FROM profiles WHERE id=$1`,
       [existed.id]
@@ -126,7 +135,7 @@ export async function POST(req: Request) {
        id,
        org_id, created_by_user_id, name, nickname,
        birth_datetime, birth_lat, birth_lng, birth_location_name, gender,
-       relationship_type,
+       relationship_type, network_group, network_group_label,
        day_master, day_master_strength, yongshen, bazi_pillars,
        birth_source, birth_time_known, day_boundary, is_archived, created_at, updated_at
      )
@@ -135,9 +144,9 @@ export async function POST(req: Request) {
        $1, $2, $3, $4,
        ($5::text || ' ' || $6::text || ':00 Asia/Bangkok')::timestamptz,
        $7, $8, $9, $10,
-       $11,
-       $12, $13, $14::jsonb, $15::jsonb,
-       'self_reported', $16, $17, false, now(), now()
+       $11, $12, $13,
+       $14, $15, $16::jsonb, $17::jsonb,
+       'self_reported', $18, $19, false, now(), now()
      )
      RETURNING id`,
     [
@@ -147,7 +156,7 @@ export async function POST(req: Request) {
       birthLng != null ? String(birthLng) : null,
       locationName ?? null,
       gender ?? null,
-      relation,
+      relation, group, groupLabel,
       dayMaster, strength, yongshen, baziPillars,
       birthTimeKnown,
       dayBoundaryNorm,
@@ -157,7 +166,8 @@ export async function POST(req: Request) {
 
   const full = await q1(
     `SELECT id, name, nickname, day_master, day_master_strength, yongshen, bazi_pillars,
-            relationship_type, gender, birth_lng, birth_lat, birth_time_known, day_boundary,
+            relationship_type, network_group, network_group_label,
+            gender, birth_lng, birth_lat, birth_time_known, day_boundary,
             to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime
      FROM profiles WHERE id=$1`,
     [row.id]

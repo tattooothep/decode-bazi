@@ -591,8 +591,9 @@
       <div class="hkg-pick" id="hkg-wrap" style="display:none;">
         <span class="hkg-label" data-i18n="hkg.label">โหมดกลุ่ม:</span>
         <select id="hkg-group" aria-label="เลือกกลุ่ม">
-          <option value="-" data-i18n="hkg.opt.none">-</option>
-          <option value="family" data-i18n="hkg.opt.family">家 ครอบครัว</option>
+	          <option value="-" data-i18n="hkg.opt.none">-</option>
+	          <option value="general" data-i18n="hkg.opt.general">ทั่วไป</option>
+	          <option value="family" data-i18n="hkg.opt.family">家 ครอบครัว</option>
           <option value="friend" data-i18n="hkg.opt.friend">友 เพื่อน</option>
           <option value="work" data-i18n="hkg.opt.work">業 ที่ทำงาน</option>
           <option value="love" data-i18n="hkg.opt.love">情 คนรัก</option>
@@ -1276,14 +1277,19 @@
     var hkgMembersEl = document.getElementById('hkg-members');
     var hkgChipsEl   = document.getElementById('hkg-chips');
     var hkgGoBtn     = document.getElementById('hkg-go');
-    var HKG_LABELS = {
-      family:{ th:'กลุ่มครอบครัว', en:'Family group', zh:'家人群組' },
+	    var HKG_LABELS = {
+	      general:{ th:'กลุ่มทั่วไป', en:'General group', zh:'一般群組' },
+	      family:{ th:'กลุ่มครอบครัว', en:'Family group', zh:'家人群組' },
       friend:{ th:'กลุ่มเพื่อน',   en:'Friends group', zh:'朋友群組' },
       work:  { th:'กลุ่มที่ทำงาน', en:'Work group', zh:'同事群組' },
       love:  { th:'กลุ่มคนรัก',    en:'Love group', zh:'伴侶群組' },
       rival: { th:'กลุ่มคู่แข่ง',   en:'Rivals group', zh:'對手群組' }
     };
-    function hkgI18n(key){ return (window.HK_I18N && window.HK_I18N[key]) || null; }
+	    function hkgI18n(key){ return (window.HK_I18N && window.HK_I18N[key]) || null; }
+	    function hkgNormGroup(g){
+	      var v = String(g || '').trim().toLowerCase();
+	      return ['general','family','friend','work','love','rival'].indexOf(v) >= 0 ? v : '';
+	    }
     /* ดึง map กลุ่มจาก localStorage hk_network_groups {profileId: group} (เขียนโดยหน้าดวง) */
     function hkgGroupMap(){ try { return JSON.parse(localStorage.getItem('hk_network_groups')||'{}') || {}; } catch(_){ return {}; } }
     /* infer กลุ่มจาก relationship_type/ชื่อ · ยกจาก yongsennetwork · ให้คนเก่า (ยังไม่ tag) เข้ากลุ่มอัตโนมัติ */
@@ -1302,15 +1308,18 @@
       }
       var byRel = classify(relText); if (byRel) return byRel;
       var byName = classify(fallbackText); if (byName) return byName;
-      return (relText || fallbackText) ? { group:'friend' } : null;
+	      return (relText || fallbackText) ? { group:'general' } : null;
     }
     /* กลุ่มของ profile · tag ตรง (hk_network_groups) ชนะก่อน · ไม่มีค่อย infer */
     function hkgGroupOf(p){
-      var map = hkgGroupMap();
-      var pid = String(p.id);
-      if (map[pid]) return map[pid];
-      var inf = inferNetworkGroup(p.relationship_type, p.name, p.nickname);
-      return inf ? inf.group : null;
+	      var map = hkgGroupMap();
+	      var pid = String(p.id);
+	      var dbGroup = hkgNormGroup(p.network_group);
+	      if (dbGroup) return dbGroup;
+	      var saved = hkgNormGroup(map[pid]);
+	      if (saved) return saved;
+	      var inf = inferNetworkGroup(p.relationship_type, p.name, p.nickname);
+	      return inf ? inf.group : null;
     }
     /* คำนวณ ids ของกลุ่มที่เลือก · รวมดวงตัวเองเสมอ · cap 10 */
     function hkgMemberIds(group){
@@ -1631,6 +1640,7 @@ window.HK_I18N = {
   /* 🧑‍🤝‍🧑 group mode (26 พ.ค.) */
   'hkg.label':       { th:'โหมดกลุ่ม:', en:'Group:', zh:'群組：' },
   'hkg.opt.none':    { th:'-', en:'-', zh:'-' },
+  'hkg.opt.general': { th:'ทั่วไป', en:'General', zh:'一般' },
   'hkg.opt.family':  { th:'家 ครอบครัว', en:'家 Family', zh:'家 家人' },
   'hkg.opt.friend':  { th:'友 เพื่อน', en:'友 Friends', zh:'友 朋友' },
   'hkg.opt.work':    { th:'業 ที่ทำงาน', en:'業 Work', zh:'業 同事' },

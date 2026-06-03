@@ -399,8 +399,9 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
         <div class="desc">เลือกหมวด → ติ๊กดวงที่ใช้ตัดวันชง · กิจกรรมต่างหมวดใช้คนต่างกัน</div>
         <!-- group selector pills -->
         <div id="peopleGroupBar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
-          <button class="pg-btn active" data-grp="all" style="padding:8px 14px;background:var(--gold);color:var(--bg);border:none;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;font-weight:600;">ทั้งหมด</button>
-          <button class="pg-btn" data-grp="family" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">家 ครอบครัว</button>
+	          <button class="pg-btn active" data-grp="all" style="padding:8px 14px;background:var(--gold);color:var(--bg);border:none;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;font-weight:600;">ทั้งหมด</button>
+	          <button class="pg-btn" data-grp="general" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">ทั่วไป</button>
+	          <button class="pg-btn" data-grp="family" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">家 ครอบครัว</button>
           <button class="pg-btn" data-grp="work" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">業 ทีมงาน</button>
           <button class="pg-btn" data-grp="friend" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">友 เพื่อน</button>
           <button class="pg-btn" data-grp="love" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">情 คู่รัก</button>
@@ -854,9 +855,13 @@ async function loadNetworkPeople(){
     const d = await r.json();
     const profiles = (d.profiles||[]).filter(p => !p.is_archived);
     if (!profiles.length) return;
-    /* group map จาก localStorage */
+    /* group map จาก localStorage เก่าเป็น fallback; DB network_group ชนะก่อน */
     let groupMap = {};
     try { groupMap = JSON.parse(localStorage.getItem('hk_network_groups')||'{}'); } catch(_){}
+    function normGroup(g){
+      const v = String(g || '').trim().toLowerCase();
+      return ['general','family','friend','work','love','rival'].includes(v) ? v : '';
+    }
     const network = profiles.map(p => {
       const bp = (p.bazi_pillars||{}).pillars || p.bazi_pillars || {};
       const yearBranch = bp.year?.branch || '';
@@ -868,7 +873,7 @@ async function loadNetworkPeople(){
         branch: yearBranch,
         dm: dm,
         kua: 0,
-        group: groupMap[p.id] || (p.relationship_type ? 'family' : 'friend'),
+        group: normGroup(p.network_group) || normGroup(groupMap[p.id]) || (p.relationship_type ? 'general' : 'friend'),
         enabled: true,
         profileId: p.id,
         personId: 'hk_' + p.id, // aj_user_profile.person_id mapping

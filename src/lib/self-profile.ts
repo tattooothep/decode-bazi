@@ -100,8 +100,8 @@ export async function upsertSelfProfile(
         `UPDATE profiles SET
            name=$1, nickname=$2,
            birth_datetime=$3, birth_lat=$4, birth_lng=$5, birth_location_name=$6, gender=$7,
-           day_master=$8, day_master_strength=$9, yongshen=$10, bazi_pillars=$11,
-           birth_time_known=$12, day_boundary=$13,
+          day_master=$8, day_master_strength=$9, yongshen=$10, bazi_pillars=$11,
+          birth_time_known=$12, day_boundary=$13, network_group='self', network_group_label=NULL,
            updated_at=now()
          WHERE id=$14`,
         [
@@ -130,9 +130,9 @@ export async function upsertSelfProfile(
       `INSERT INTO profiles (
          id, org_id, created_by_user_id, name, nickname,
          birth_datetime, birth_lat, birth_lng, birth_location_name, gender,
-         relationship_type, day_master, day_master_strength, yongshen, bazi_pillars,
+         relationship_type, network_group, network_group_label, day_master, day_master_strength, yongshen, bazi_pillars,
          birth_source, birth_time_known, day_boundary, is_archived, created_at, updated_at
-       ) VALUES ($1,$2,$3,$4,$5, $6,$7,$8,$9,$10, NULL, $11,$12,$13,$14, 'self_reported', $15, $16, false, now(), now())`,
+       ) VALUES ($1,$2,$3,$4,$5, $6,$7,$8,$9,$10, NULL, 'self', NULL, $11,$12,$13,$14, 'self_reported', $15, $16, false, now(), now())`,
       [
         id,
         orgId,
