@@ -321,7 +321,7 @@
     .pt-phases{font-size:10px;}
   }
 
-  /* §6 interactions */
+  /* §07 ปฏิกิริยา */
   .inter-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
   .inter-card{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:22px;border-left:3px solid var(--fire);}
   .inter-card.good{border-left-color:var(--wood);}
@@ -330,8 +330,13 @@
   .inter-card h4{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:6px;}
   .inter-card p{font-size:13px;color:var(--fg-soft);line-height:1.7;}
   .inter-card .glyphs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-family:var(--thai);font-size:12px;color:var(--gold);}
-  .inter-card .glyphs span{padding:4px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--tile-bd);line-height:1.45;}
-  .inter-card .glyphs .zh{font-family:var(--tc);opacity:.62;font-size:11px;margin-left:3px;}
+  .inter-card .glyphs > span{padding:4px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--tile-bd);line-height:1.45;}
+  .inter-card .glyphs .zh{font-family:var(--tc);opacity:.62;font-size:11px;margin-left:3px;padding:0;background:transparent;border:0;}
+  .inter-card .glyphs .el-wood{color:var(--wood);font-weight:700;padding:0;background:transparent;border:0;}
+  .inter-card .glyphs .el-fire{color:var(--fire);font-weight:700;padding:0;background:transparent;border:0;}
+  .inter-card .glyphs .el-earth{color:var(--earth);font-weight:700;padding:0;background:transparent;border:0;}
+  .inter-card .glyphs .el-metal{color:var(--metal);font-weight:700;padding:0;background:transparent;border:0;}
+  .inter-card .glyphs .el-water{color:var(--water);font-weight:700;padding:0;background:transparent;border:0;}
 
   /* advanced */
   .advanced{margin-top:64px;padding:32px;background:var(--bg-2);border:1px dashed var(--gold-line);border-radius:18px;}
@@ -1140,7 +1145,7 @@
         <p class="lede"></p>
       </div>
       <div class="dm-card">
-        <div class="dm-label" data-i18n="c.dm.label">DAY MASTER · 日主</div>
+        <div class="dm-label" data-i18n="c.dm.label">วันเกิดหลัก · 日主</div>
         <div class="dm-glyph">—</div>
         <div class="dm-name">—</div>
         <div class="dm-th">—</div>
@@ -1276,61 +1281,61 @@
             <td class="tg-month"><span class="pt-empty">—</span></td>
             <td class="tg-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="hs"><th><span class="th-lead">ต้นฟ้า</span><span class="tc">天干</span><span class="en-sub">HS</span><span class="hk-help" data-help="r.hs"></span></th>
+          <tr data-row="hs"><th><span class="th-lead">ก้านฟ้า</span><span class="tc">天干</span><span class="en-sub">ธาตุบนฟ้า</span><span class="hk-help" data-help="r.hs"></span></th>
             <td class="hs-hour"><span class="pt-empty">—</span></td>
             <td class="col-day hs-day"><span class="pt-empty">—</span></td>
             <td class="hs-month"><span class="pt-empty">—</span></td>
             <td class="hs-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="eb"><th><span class="th-lead">กิ่งดิน</span><span class="tc">地支</span><span class="en-sub">EB</span><span class="hk-help" data-help="r.eb"></span></th>
+          <tr data-row="eb"><th><span class="th-lead">กิ่งดิน</span><span class="tc">地支</span><span class="en-sub">ธาตุบนดิน</span><span class="hk-help" data-help="r.eb"></span></th>
             <td class="eb-hour"><span class="pt-empty">—</span></td>
             <td class="col-day eb-day"><span class="pt-empty">—</span></td>
             <td class="eb-month"><span class="pt-empty">—</span></td>
             <td class="eb-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="hhs"><th><span class="th-lead">ก้านซ่อน</span><span class="tc">藏干</span><span class="en-sub">HHS</span><span class="hk-help" data-help="r.hhs"></span></th>
+          <tr data-row="hhs"><th><span class="th-lead">ก้านซ่อน</span><span class="tc">藏干</span><span class="en-sub">ธาตุที่ซ่อนอยู่</span><span class="hk-help" data-help="r.hhs"></span></th>
             <td class="hhs-hour"><span class="pt-empty">—</span></td>
             <td class="col-day hhs-day"><span class="pt-empty">—</span></td>
             <td class="hhs-month"><span class="pt-empty">—</span></td>
             <td class="hhs-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="nayin"><th><span class="th-lead">ธาตุเสียง</span><span class="tc">納音</span><span class="en-sub">Na Yin</span><span class="hk-help" data-help="r.nayin"></span></th>
+          <tr data-row="nayin"><th><span class="th-lead">ธาตุเสียง</span><span class="tc">納音</span><span class="en-sub">ภาพธาตุของเสา</span><span class="hk-help" data-help="r.nayin"></span></th>
             <td class="ny-hour"><span class="pt-empty">—</span></td>
             <td class="col-day ny-day"><span class="pt-empty">—</span></td>
             <td class="ny-month"><span class="pt-empty">—</span></td>
             <td class="ny-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="phases"><th><span class="th-lead">12 ระยะชีวิต</span><span class="tc">十二長生</span><span class="en-sub">3 phases</span><span class="hk-help" data-help="r.phase"></span></th>
+          <tr data-row="phases"><th><span class="th-lead">12 ระยะชีวิต</span><span class="tc">十二長生</span><span class="en-sub">จังหวะพลัง</span><span class="hk-help" data-help="r.phase"></span></th>
             <td class="ph-hour"><span class="pt-empty">—</span></td>
             <td class="col-day ph-day"><span class="pt-empty">—</span></td>
             <td class="ph-month"><span class="pt-empty">—</span></td>
             <td class="ph-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="kong"><th><span class="th-lead">ดวงว่าง</span><span class="tc">空亡</span><span class="en-sub">DHHS</span><span class="hk-help" data-help="r.kwdhhs"></span></th>
+          <tr data-row="kong"><th><span class="th-lead">ดวงว่าง</span><span class="tc">空亡</span><span class="en-sub">จุดที่พลังไม่เต็ม</span><span class="hk-help" data-help="r.kwdhhs"></span></th>
             <td class="kw-hour"><span class="pt-empty">—</span></td>
             <td class="col-day kw-day"><span class="pt-empty">—</span></td>
             <td class="kw-month"><span class="pt-empty">—</span></td>
             <td class="kw-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="stars"><th><span class="th-lead">ดาวพิเศษ</span><span class="tc">神煞</span><span class="en-sub">Stars</span><span class="hk-help" data-help="r.stars"></span></th>
+          <tr data-row="stars"><th><span class="th-lead">ดาวพิเศษ</span><span class="tc">神煞</span><span class="en-sub">สัญญาณเสริม</span><span class="hk-help" data-help="r.stars"></span></th>
             <td class="ss-hour"><span class="pt-empty">—</span></td>
             <td class="col-day ss-day"><span class="pt-empty">—</span></td>
             <td class="ss-month"><span class="pt-empty">—</span></td>
             <td class="ss-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="react"><th><span class="th-lead">ปฏิกิริยา</span><span class="tc">反應</span><span class="en-sub">React.</span><span class="hk-help" data-help="r.react"></span></th>
+          <tr data-row="react"><th><span class="th-lead">ปฏิกิริยา</span><span class="tc">反應</span><span class="en-sub">ชนหรือหนุน</span><span class="hk-help" data-help="r.react"></span></th>
             <td class="rx-hour"><span class="pt-empty">—</span></td>
             <td class="col-day rx-day"><span class="pt-empty">—</span></td>
             <td class="rx-month"><span class="pt-empty">—</span></td>
             <td class="rx-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="palace"><th><span class="th-lead">ตำแหน่งวัง</span><span class="tc">宮位</span><span class="en-sub">Palace</span><span class="hk-help" data-help="r.palace"></span></th>
+          <tr data-row="palace"><th><span class="th-lead">ตำแหน่งวัง</span><span class="tc">宮位</span><span class="en-sub">เรือนชีวิต</span><span class="hk-help" data-help="r.palace"></span></th>
             <td class="pal-hour"><span class="pt-empty">—</span></td>
             <td class="col-day pal-day"><span class="pt-empty">—</span></td>
             <td class="pal-month"><span class="pt-empty">—</span></td>
             <td class="pal-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="hex-natal"><th><span class="th-lead">สัญลักษณ์เสา 64</span><span class="tc">易</span><span class="en-sub">Hex Natal</span><span class="hk-help" data-help="r.hex_natal"></span></th>
+          <tr data-row="hex-natal"><th><span class="th-lead">สัญลักษณ์เสา 64</span><span class="tc">易</span><span class="en-sub">ภาพอ่านเสา</span><span class="hk-help" data-help="r.hex_natal"></span></th>
             <td class="hex-hour"><span class="pt-empty">—</span></td>
             <td class="col-day hex-day"><span class="pt-empty">—</span></td>
             <td class="hex-month"><span class="pt-empty">—</span></td>
@@ -1562,7 +1567,7 @@
     </div>
   </section>
 
-  <!-- §6 INTERACTIONS -->
+  <!-- §07 ปฏิกิริยา -->
   <section class="sec">
     <div class="sec-head">
       <div class="l">
@@ -1642,7 +1647,7 @@
     <div class="sec-head">
       <div class="l">
         <span class="num">09 · 個人星</span>
-        <h2><span class="tc">個人星</span>ดาวประจำตัว · Personal Stars<span class="hk-help" data-help="s.pstar"></span></h2>
+        <h2><span class="tc">個人星</span>ดาวประจำตัว · 神煞<span class="hk-help" data-help="s.pstar"></span></h2>
       </div>
       <span  class="sub" data-i18n="auto.c.518">ดาวที่ทำงานในดวง · แยกตามเสาที่ตก · ความหมายตามตำรา hourkey</span>
     </div>
@@ -1795,8 +1800,8 @@ window.HK_HELP = {
   'r.hhs':   { th:'<b>藏干 (ก้านซ่อน)</b> · ก้านที่ซ่อนอยู่ในกิ่ง 1-3 ตัว · พลังภายในที่ผลักดันลึก ๆ ใช้ดู用神และ強弱', en:'<b>Hidden Stems</b> · 1-3 stems hidden inside each branch · inner force used for yongshen + strength', zh:'<b>藏干</b> · 支中藏 1-3 干 · 用於用神與強弱' },
   'r.nayin': { th:'<b>納音 (เสียงทอง 60 jiazi)</b> · ธาตุประจำคู่เสา-กิ่ง · ตำราจีนเก่าแก่ใช้ดูบุคลิกองค์รวมและความเข้ากันของคน 2 คน', en:'<b>Na Yin (60 jiazi)</b> · element-sound pair · used for overall personality + compatibility', zh:'<b>納音</b> · 60 甲子之音 · 整體性格與配對' },
   'r.phase': { th:'<b>十二長生 (12 จังหวะชีวิต)</b> · ก้านวิ่งอยู่ในกิ่งแล้วแกร่ง/อ่อนแค่ไหน · 帝旺=สุดยอด · 臨官=แข็งแรง · 死=อ่อนสุด · 絕=สิ้นสุด', en:'<b>12 Phases of Qi</b> · how strong stem is in each branch · Di Wang=peak · Jue=ending', zh:'<b>十二長生</b> · 天干在地支的旺衰 · 帝旺·臨官·絕等' },
-  'r.kwdhhs':{ th:'<b>空亡 + DHHS</b> · DHHS=ก้านหลักในกิ่ง (本氣) · 空亡=เสาว่าง พลังลด · 年空亡=ว่างจากปี · 日空亡=ว่างจากวัน', en:'<b>Void + Dominant Hidden Stem</b> · DHHS=main qi of branch · Void weakens pillar', zh:'<b>空亡 + 本氣</b> · 本氣為主 · 空亡使柱失力' },
-  'r.stars': { th:'<b>神煞 (ดาว 62 ดวง)</b> · ดาวพิเศษเสริม/เตือนตามตำราคลาสสิก · <b>YP</b>=คำนวณจากกิ่งปี · <b>DP</b>=กิ่งวัน · <b>DS</b>=ก้านวัน · <b>MP</b>=กิ่งเดือน', en:'<b>Symbolic Stars (62)</b> · auxiliary stars · YP=Year anchor · DP=Day · DS=Day stem · MP=Month', zh:'<b>神煞</b> · 輔助星 62 顆 · YP=年柱·DP=日柱·DS=日干·MP=月柱' },
+  'r.kwdhhs':{ th:'<b>空亡 + 本氣</b> · 本氣=ก้านหลักที่ซ่อนในกิ่ง · 空亡=เสาว่าง พลังลด · 年空亡=ว่างจากปี · 日空亡=ว่างจากวัน', en:'<b>Void + Dominant Hidden Stem</b> · DHHS=main qi of branch · Void weakens pillar', zh:'<b>空亡 + 本氣</b> · 本氣為主 · 空亡使柱失力' },
+  'r.stars': { th:'<b>神煞 (ดาว 62 ดวง)</b> · ดาวพิเศษเสริม/เตือนตามตำราคลาสสิก · จุดอ้างอิงคือกิ่งปี กิ่งวัน ก้านวัน หรือกิ่งเดือน', en:'<b>Symbolic Stars (62)</b> · auxiliary stars · YP=Year anchor · DP=Day · DS=Day stem · MP=Month', zh:'<b>神煞</b> · 輔助星 62 顆 · YP=年柱·DP=日柱·DS=日干·MP=月柱' },
   'r.react': { th:'<b>反應 (ปฏิสัมพันธ์ระหว่างเสา)</b> · 六沖=ปะทะ · 五合=ผสาน · 天克=ก้านชน · 反吟=พลิกซ้ำ · ดูพลังเสานี้ปะทะหรือสนับสนุนเสาอื่น', en:'<b>Pillar Interactions</b> · clash·combo·repeat·invert · shows how pillars interact', zh:'<b>柱間互動</b> · 沖·合·克·吟' },
   'r.palace':{ th:'<b>宮位 (วังประจำเสา)</b> · พื้นที่ชีวิตในวัย · 年=บรรพบุรุษ/วัยเด็ก (0-16) · 月=พ่อแม่/อาชีพ (17-32) · 日=ตนเอง/คู่ครอง (33-48) · 時=ลูก/บั้นปลาย (49+)', en:'<b>Palaces</b> · life areas per pillar · Year=ancestor·child · Month=parent·career · Day=self·spouse · Hour=child·late life', zh:'<b>宮位</b> · 年=祖·月=父母·日=夫妻·時=子女' },
   'r.hex_natal':{ th:'<b>易 64卦 ดวงเกิด</b> · คำนวณจากก้าน+กิ่งของแต่ละเสา (Mei Hua Yi Shu) · พลังโดยกำเนิดในวังนั้น', en:'<b>易 64 Hexagram Natal</b> · per pillar stem+branch (Mei Hua) · innate energy at that palace', zh:'<b>易 64 卦 本命</b> · 柱干支推算 (梅花易數) · 該宮先天能量' },
@@ -1827,7 +1832,7 @@ window.HK_HELP = {
   's.yongshen':{ th:'<b>用神 (เทพประจำ)</b> · ธาตุที่ดวงต้องการมากที่สุด · ขาดแล้วชีวิตติด · เลือกอาชีพ/สีตามนี้', en:'<b>Useful God</b> · most-needed element · pick career/color', zh:'<b>用神</b> · 最需之神 · 選擇職業·顏色' },
   's.climate': { th:'<b>調候 (ภูมิอากาศ)</b> · ดวงเย็นเกินต้องไฟ · ดวงร้อนเกินต้องน้ำ · ปรับสมดุล', en:'<b>Climate</b> · cold needs fire · hot needs water · balance', zh:'<b>調候</b> · 寒暖燥濕之調' },
   's.element': { th:'<b>5 ธาตุ %</b> · พลังใช้ได้จริง · นับเฉพาะธาตุที่มี "ราก" ในผัง (根氣折算) · จึงอาจต่างจาก % แบบนับก้านเต็มที่ให้ค่าสูงกว่าได้', en:'<b>5 Elements % (Functional)</b> · usable power · counts only rooted elements · may differ from count-based "stem counting" methods', zh:'<b>五行 %（根氣折算）</b> · 可用之力 · 只計通根之力 · 可能與「按天干數量」的算法不同' },
-  's.pstar':   { th:'<b>個人星 14 ดวง</b> · ดาวประจำตัวที่ active ในดวง · เลือกจาก 神煞 62 ดวง · เน้นดาวสำคัญต่อชีวิต', en:'<b>Personal Stars (14)</b> · active stars · key life impact', zh:'<b>個人星 14</b> · 重要神煞' },
+  's.pstar':   { th:'<b>個人星 14 ดวง</b> · ดาวประจำตัวที่ทำงานอยู่ในดวง · เลือกจาก 神煞 62 ดวง · เน้นดาวสำคัญต่อชีวิต', en:'<b>Personal Stars (14)</b> · active stars · key life impact', zh:'<b>個人星 14</b> · 重要神煞' },
   's.basic':   { th:'<b>基礎</b> · ตัวเลขพื้นฐานของดวง · matrix score + jishen + wealth role', en:'<b>Basics</b> · base metrics · matrix + jishen + wealth role', zh:'<b>基礎</b> · 基本數據' },
 };
 
@@ -3350,8 +3355,12 @@ window.addEventListener('resize', function(){
     function wrapTh(zh){ const th=hi07(zh); return th!==zh ? `<b>${th}</b><span class="zh">${zh}</span>` : zh; }
     const STEM_TH_07 = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
     const BRANCH_TH_07 = {子:'หนู/น้ำ',丑:'วัว/ดิน',寅:'เสือ/ไม้',卯:'กระต่าย/ไม้',辰:'มังกร/ดิน',巳:'งู/ไฟ',午:'ม้า/ไฟ',未:'แพะ/ดิน',申:'ลิง/ทอง',酉:'ไก่/ทอง',戌:'หมา/ดิน',亥:'หมู/น้ำ'};
-    function stemTok07(s){ return `${STEM_TH_07[s]||'ก้าน'} <span class="zh">${s}</span>`; }
-    function branchTok07(b){ return `${BRANCH_TH_07[b]||'กิ่ง'} <span class="zh">${b}</span>`; }
+    const STEM_EL_07 = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
+    const BRANCH_EL_07 = {子:'water',丑:'earth',寅:'wood',卯:'wood',辰:'earth',巳:'fire',午:'fire',未:'earth',申:'metal',酉:'metal',戌:'earth',亥:'water'};
+    const EL_ZH_07 = {wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
+    function elemName07(el){ const th=EL_TH_ALLIANCE[el]||el; const zh=EL_ZH_07[el]||''; return `<span class="el-${el||'earth'}">${th}${zh?` <span class="zh">${zh}</span>`:''}</span>`; }
+    function stemTok07(s){ const el=STEM_EL_07[s]||'earth'; return `<span class="el-${el}">${STEM_TH_07[s]||'ก้าน'} <span class="zh">${s}</span></span>`; }
+    function branchTok07(b){ const el=BRANCH_EL_07[b]||'earth'; return `<span class="el-${el}">${BRANCH_TH_07[b]||'กิ่ง'} <span class="zh">${b}</span></span>`; }
     function branchPair07(pair, sep='↔'){ return `${branchTok07(pair[0])} ${sep} ${branchTok07(pair[1])}`; }
     function stemPair07(pair, sep='-'){ return `${stemTok07(pair[0])} ${sep} ${stemTok07(pair[1])}`; }
     function pillar07(pil){ return `${stemTok07(pil.stem)} · ${branchTok07(pil.branch)}`; }
@@ -3375,7 +3384,7 @@ window.addEventListener('resize', function(){
       harmonyTotal?'ช่วยเรื่องคนช่วย งานร่วมมือ และความสัมพันธ์ที่ต่อกันได้':'เรื่องคนช่วยยังไม่เด่น ต้องสร้างความร่วมมือด้วยการลงมือเอง',
       [
         ...heList.map(f=>wrapTh('六合')+' · '+branchPair07(f.pair)),
-        ...wuHeList.map(f=>wrapTh('五合')+' · '+stemPair07(f.pair, '+')+(f.transformed?' → ธาตุ'+(EL_TH_ALLIANCE[f.element]||f.element):''))
+        ...wuHeList.map(f=>wrapTh('五合')+' · '+stemPair07(f.pair, '+')+(f.transformed?' → ธาตุ'+elemName07(f.element):''))
       ], harmonyTotal>0);
     const chongList=it.filter(f=>f.type==='六沖');
     fillCard(interCards[1],
@@ -3392,7 +3401,7 @@ window.addEventListener('resize', function(){
       [
         ...(cb.san_he||[]).map(s=>wrapTh('三合')+' · '+s.map(branchTok07).join(' + ')),
         ...(cb.san_hui||[]).map(s=>wrapTh('三會')+' · '+s.map(branchTok07).join(' + ')),
-        ...banHeList.map(b=>wrapTh('半合')+' · '+branchPair07(b.pair, '+')+' · ธาตุ'+(EL_TH_ALLIANCE[b.element]||b.element))
+        ...banHeList.map(b=>wrapTh('半合')+' · '+branchPair07(b.pair, '+')+' · ธาตุ'+elemName07(b.element))
       ],
       allianceTotal>0);
     const harmList=it.filter(f=>f.type==='六害'||f.type==='六破');
@@ -3955,9 +3964,9 @@ window.addEventListener('resize', function(){
     if (tdh.length) {
       const allianceCard = interCards[2];
       if (allianceCard) {
-        const tdhHtml = tdh.map(t => `天地合 ${t.pair[0]}↔${t.pair[1]}·${EL_TH_ALLIANCE[t.element]||t.element}`).join(' / ');
+        const tdhHtml = tdh.map(t => `${wrapTh('天地合')} · ${t.pair[0]}↔${t.pair[1]} · ธาตุ${elemName07(t.element)}`).join(' / ');
         const pTag = allianceCard.querySelector('p');
-        if (pTag) pTag.textContent = (pTag.textContent || '') + ' · 天地合: ' + tdhHtml;
+        if (pTag) pTag.innerHTML = (pTag.textContent || '') + ' · ฟ้าดินผสาน: ' + tdhHtml;
       }
     }
   };
