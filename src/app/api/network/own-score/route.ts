@@ -7,6 +7,7 @@
  */
 import { NextResponse } from "next/server";
 import { computeUserDayScore } from "@/lib/scoring/pair-base";
+import { computeDailyPersonalVerdict } from "@/lib/daily-personal-verdict";
 
 type Pillar = { stem: string; branch: string };
 type PersonInput = {
@@ -17,6 +18,7 @@ type PersonInput = {
   birthDate?: string;
   birthTime?: string;
   birthTimeKnown?: boolean;
+  dayBoundary?: "23:00" | "00:00";
   longitude?: number;
   gender?: "M" | "F";
 };
@@ -380,7 +382,36 @@ export async function POST(req: Request) {
   const diseases = yv2?.diseases || [];
 
   const userP = person.pillars as any;
-  const day = scorePillar({ label:"วัน", dm, natalBranch, pillar: transit.day, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
+  const dayBase = scorePillar({ label:"วัน", dm, natalBranch, pillar: transit.day, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
+  const dayVerdict = await computeDailyPersonalVerdict({
+    date,
+    userChart: userP,
+    dayPillar: pillarName(transit.day),
+    yongshen: yongshenPrimary,
+    jishen,
+    birthDate: person.birthDate,
+    birthTime: person.birthTime || "12:00",
+    birthLng: person.longitude || 100.5018,
+    birthTimeKnown: person.birthTimeKnown !== false,
+    gender: person.gender || "M",
+    dayBoundary: person.dayBoundary || "23:00",
+  });
+  const day = {
+    ...dayBase,
+    score: dayVerdict.score,
+    label: dayVerdict.label,
+    level: dayVerdict.level,
+    tags: dayVerdict.tags || dayBase.tags,
+    flags: dayVerdict.flags || dayBase.flags,
+    breakdown: {
+      ...dayBase.breakdown,
+      daily_personal_verdict: {
+        source: dayVerdict.source,
+        engine: dayVerdict.engine,
+        legacy: dayVerdict.legacy,
+      },
+    },
+  };
   const month = scorePillar({ label:"เดือน", dm, natalBranch, pillar: transit.month, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
   const year = scorePillar({ label:"ปี", dm, natalBranch, pillar: transit.year, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
 
@@ -450,13 +481,26 @@ export async function POST(req: Request) {
       const d = addDays(date, i);
       const t = await getPillarsForDate(d);
       const sc = scorePillar({ label:"วัน", dm, natalBranch, pillar: t.day, yongshenTop3: yongshenPrimary, jishen, userPillars: userP });
+      const dv = await computeDailyPersonalVerdict({
+        date: d,
+        userChart: userP,
+        dayPillar: pillarName(t.day),
+        yongshen: yongshenPrimary,
+        jishen,
+        birthDate: person.birthDate,
+        birthTime: person.birthTime || "12:00",
+        birthLng: person.longitude || 100.5018,
+        birthTimeKnown: person.birthTimeKnown !== false,
+        gender: person.gender || "M",
+        dayBoundary: person.dayBoundary || "23:00",
+      });
       days.push({
         date: d,
         pillar: pillarName(t.day),
-        score: sc.score,
-        level: sc.level,
-        summary: summarizePillar({ label:"วัน", dm, natalBranch, pillar: t.day, score: sc.score, yongshenPrimary, xishen, jishen, diseases }),
-        tags: sc.tags.slice(0, 4),
+        score: dv.score,
+        level: dv.level,
+        summary: summarizePillar({ label:"วัน", dm, natalBranch, pillar: t.day, score: dv.score, yongshenPrimary, xishen, jishen, diseases }),
+        tags: dv.tags.slice(0, 4),
       });
     }
 

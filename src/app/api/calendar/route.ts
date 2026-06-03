@@ -12,6 +12,7 @@ import { NextResponse } from "next/server";
 import { summarizeStars } from "@/lib/star-dict-th";
 import { computeIntentStatus, pickTopWorst } from "@/lib/tongshu-intents";
 import { universalDayScore, universalGoals } from "@/lib/tongshu-universal";
+import { computeDailyPersonalVerdict } from "@/lib/daily-personal-verdict";
 
 /* 19 พ.ค. spec #2 · 六沖 dict สำหรับ branchClash check ใน intent system */
 const SIX_CLASHES_CAL: Record<string, string> = {
@@ -19,7 +20,6 @@ const SIX_CLASHES_CAL: Record<string, string> = {
   卯:'酉', 酉:'卯', 辰:'戌', 戌:'辰', 巳:'亥', 亥:'巳',
 };
 import { hexagramForStemBranch } from "@/lib/year-hexagram";
-import { computeUserDayScore } from "@/lib/scoring/pair-base";
 
 const STEM_ELEM: Record<string, string> = {
   甲: "wood", 乙: "wood", 丙: "fire", 丁: "fire",
@@ -99,6 +99,9 @@ type DayCell = {
     level: "best" | "good" | "ok" | "caution" | "avoid";
     tags?: string[];
     flags?: string[];
+    source?: string;
+    engine?: string;
+    legacy?: { score: number; label: string; level: string; raw: number; source: string };
     role?: "yongshen" | "xishen" | "jishen" | "neutral";
     role_element?: string | null;
     role_label?: string;
@@ -229,6 +232,8 @@ export async function GET(req: Request) {
   const birthTime = url.searchParams.get("birthTime") || "12:00";
   const birthTimeKnown = url.searchParams.get("birthTimeKnown") !== "false";
   const birthLng = parseFloat(url.searchParams.get("birthLng") || "100.5018");
+  const gender = ((url.searchParams.get("gender") || "M").toLowerCase().startsWith("f") ? "F" : "M") as "M" | "F";
+  const dayBoundary = url.searchParams.get("dayBoundary") === "00:00" ? "00:00" : "23:00";
   if (!year || !month || month < 1 || month > 12) {
     return NextResponse.json({ error: "year + month (1-12) required" }, { status: 400 });
   }
@@ -318,6 +323,7 @@ export async function GET(req: Request) {
     const totalDays = new Date(year, month, 0).getDate();
     const days: DayCell[] = [];
     for (let d = 1; d <= totalDays; d++) {
+      const isoDate = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       const st = tyme.SolarTime.fromYmdHms(year, month, d, 12, 0, 0);
       const lh = st.getLunarHour();
       const ld = lh.getLunarDay();
@@ -338,10 +344,37 @@ export async function GET(req: Request) {
         let tags: string[] = [];
         let flags: string[] = [];
         if (userPillars) {
-          const r = computeUserDayScore(userPillars, dayPillar, friendly, jishenElements);
+          const r = await computeDailyPersonalVerdict({
+            date: isoDate,
+            userChart: userPillars,
+            dayPillar,
+            yongshen: friendly,
+            jishen: jishenElements,
+            birthDate,
+            birthTime,
+            birthLng,
+            birthTimeKnown,
+            gender,
+            dayBoundary,
+          });
           score = r.score;
           tags = r.tags || [];
           flags = r.flags || [];
+          const lvl = r.level;
+          const role = classifyWrapper7DayRole(stemEl, branchEl, primaryYongshen.length ? primaryYongshen : friendly, xishenElements, jishenElements);
+          verdict = {
+            score,
+            label: r.label,
+            level: lvl,
+            tags,
+            flags,
+            source: r.source,
+            engine: r.engine,
+            legacy: r.legacy,
+            role: role.role,
+            role_element: role.element,
+            role_label: role.label,
+          };
         } else {
           const stemAligned = friendly.includes(stemEl);
           const branchAligned = friendly.includes(branchEl);
@@ -349,20 +382,20 @@ export async function GET(req: Request) {
           if (stemAligned) score += 18;
           if (branchAligned) score += 14;
           if (!stemAligned && !branchAligned) score -= 12;
+          score = clip(score);
+          const lvl = levelOf(score);
+          const role = classifyWrapper7DayRole(stemEl, branchEl, primaryYongshen.length ? primaryYongshen : friendly, xishenElements, jishenElements);
+          verdict = {
+            score,
+            label: lvl.toUpperCase(),
+            level: lvl,
+            tags,
+            flags,
+            role: role.role,
+            role_element: role.element,
+            role_label: role.label,
+          };
         }
-        score = clip(score);
-        const lvl = levelOf(score);
-        const role = classifyWrapper7DayRole(stemEl, branchEl, primaryYongshen.length ? primaryYongshen : friendly, xishenElements, jishenElements);
-        verdict = {
-          score,
-          label: lvl.toUpperCase(),
-          level: lvl,
-          tags,
-          flags,
-          role: role.role,
-          role_element: role.element,
-          role_label: role.label,
-        };
 
         /* 6 goals · base = verdict score · + ten god boost */
         const boost = tg ? GOAL_BOOST[tg] || {} : {};
@@ -416,7 +449,7 @@ export async function GET(req: Request) {
       const universalVerdict = universalDayScore(officerName, twelveStarName, starSummary, fixed.yi, fixed.ji, godsArr);
       const universalGoalsObj = universalGoals(universalVerdict.score, intentStatus, universalVerdict.hardBlocked);
       days.push({
-        date: `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`,
+        date: isoDate,
         day: d,
         pillar: dayPillar,
         month_pillar: dayMonthPillar,

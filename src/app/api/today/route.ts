@@ -5,7 +5,7 @@
  * Returns: today's pillar + Tongshu (黃曆) + verdict
  */
 import { NextResponse } from "next/server";
-import { computeUserDayScore } from "@/lib/scoring/pair-base";
+import { computeDailyPersonalVerdict } from "@/lib/daily-personal-verdict";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({} as any));
@@ -19,6 +19,8 @@ export async function POST(req: Request) {
   const birthTimeKnown = body.birthTimeKnown !== false;
   const birthTime = body.birthTime || '12:00';
   const birthLng  = parseFloat(body.birthLng ?? body.longitude ?? '100.5018');
+  const gender = body.gender || body.birthGender || 'M';
+  const dayBoundary = body.dayBoundary || body.day_boundary || '23:00';
   /* 18 พ.ค. · เพิ่ม userSummary 1 บรรทัด · สรุปดวงคุณให้ user อ่านง่าย
    * Codex flag #4 · ใช้ shared cache (yongshen-cache.ts) กัน double-call */
   let userSummary: any = null;
@@ -84,13 +86,19 @@ export async function POST(req: Request) {
   const resp = await GET(fakeReq);
   const data = await resp.json();
   if (data && userChart?.day?.stem && userChart.day.branch && data.pillars?.day) {
-    const result = computeUserDayScore(userChart, data.pillars.day, yongshen, jishen);
-    data.verdict = {
-      score: result.score, label: result.label.toUpperCase(), level: result.level,
-      raw: result.raw, tags: result.tags, flags: result.flags,
-      yongshen: yongshen || [], jishen: jishen || [],
-      source: 'unified-pair-base',
-    };
+    data.verdict = await computeDailyPersonalVerdict({
+      date,
+      userChart,
+      dayPillar: data.pillars.day,
+      yongshen,
+      jishen,
+      birthDate,
+      birthTime,
+      birthLng,
+      birthTimeKnown,
+      gender,
+      dayBoundary,
+    });
   }
   if (userSummary) data.userSummary = userSummary;
   return NextResponse.json(data);

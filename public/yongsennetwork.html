@@ -1584,7 +1584,8 @@
 	        birthTime: person.birthTime || '12:00',
 	        birthTimeKnown: person.birthTimeKnown !== false,
 	        longitude: person.longitude || 100.5018,
-	        gender: person.gender || 'M'
+	        gender: person.gender || 'M',
+	        dayBoundary: person.dayBoundary || '23:00'
       }
     };
   }
@@ -1594,7 +1595,7 @@
     if (!dm) return {day:50, week:50, month:50, year:50};
     const today = new Date();
     const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-    const cacheKey = 'own_api_' + dateStr + '_' + person.id + '_' + (person.birthTimeKnown === false ? '3p' : '4p') + (opts.includeForecast ? '_forecast' : '');
+    const cacheKey = 'own_api_' + dateStr + '_' + person.id + '_' + (person.birthTimeKnown === false ? '3p' : '4p') + '_' + (person.dayBoundary || '23:00') + (opts.includeForecast ? '_forecast' : '');
     window._ownScoreApiCache = window._ownScoreApiCache || {};
     if (window._ownScoreApiCache[cacheKey]) return window._ownScoreApiCache[cacheKey];
     try {

@@ -250,6 +250,14 @@
   .rel.bad .ty{color:var(--fire);}
   .rel b{font-family:var(--tc);font-size:18px;font-weight:700;color:var(--gold);}
   .rel p{font-size:11px;color:var(--fg-soft);margin-top:2px;}
+  .daily-practical{position:relative;z-index:2;background:linear-gradient(135deg,rgba(200,164,77,.08),rgba(200,164,77,.03));border:1px solid var(--gold-line);border-radius:12px;padding:12px 14px;display:grid;gap:8px;}
+  .daily-practical.compact{margin:-4px 0 14px;}
+  .daily-practical.wide{margin-bottom:14px;}
+  .daily-practical .pr-row{display:grid;grid-template-columns:78px 1fr;gap:10px;align-items:start;font-size:12px;line-height:1.65;color:var(--fg-soft);}
+  .daily-practical .pr-row b{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;font-weight:700;padding-top:2px;}
+  .daily-practical .pr-row span strong{color:var(--fg);font-weight:700;}
+  .daily-practical[data-level="caution"], .daily-practical[data-level="avoid"]{background:rgba(176,58,46,.045);border-color:rgba(226,107,93,.28);}
+  .daily-practical[data-level="caution"] .pr-row b, .daily-practical[data-level="avoid"] .pr-row b{color:var(--fire);}
 
   /* section header */
   .sec{margin-top:36px;}
@@ -666,9 +674,10 @@
 	          time: b.time || '12:00',
 	          gender: b.gender || 'M',
 	          longitude: Number(b.longitude || b.lng || 100.5018),
-	          birthTimeKnown: b.birthTimeKnown !== false
+	          birthTimeKnown: b.birthTimeKnown !== false,
+	          dayBoundary: b.dayBoundary === '00:00' ? '00:00' : '23:00'
 	        };
-	        var key = norm.date + '|' + norm.time + '|' + (norm.birthTimeKnown ? '4p' : '3p');
+	        var key = norm.date + '|' + norm.time + '|' + (norm.birthTimeKnown ? '4p' : '3p') + '|' + norm.dayBoundary;
         if (chartCache.has(key)) return chartCache.get(key);
         var p = fetch('/api/chart', {
           method:'POST',
@@ -1055,6 +1064,11 @@
         <div class="gz-cell metal" id="t-day-branch">酉</div>
       </div>
       <div class="gz-name" id="t-day-name"><span style="opacity:.5">— · —</span><br/><span  style="font-size:13px;color:var(--fg-soft);font-family:var(--mono);letter-spacing:.18em;opacity:.5" data-i18n="auto.t.508">กำลังคำนวณ…</span></div>
+      <div class="daily-practical" id="t-pillar-practical" data-level="ok">
+        <div class="pr-row"><b>FOCUS</b><span>รอคะแนนดวงวันนี้จาก packet ซินแส</span></div>
+        <div class="pr-row"><b>DO</b><span>เลือกงานตามคะแนนรวมของวัน</span></div>
+        <div class="pr-row"><b>AVOID</b><span>เลี่ยงเรื่องใหญ่ถ้าคะแนนวันต่ำ</span></div>
+      </div>
       <div class="relations" id="t-relations">
         <div class="rel good" data-rel="dm" id="t-rel-dm">
           <div class="ty"><span  class="hk-rel-key" id="t-rel-dm-key" data-i18n="auto.t.509">VS DM · ยินดิน</span></div>
@@ -1099,6 +1113,10 @@
         </div>
         <div class="verdict-mini">—</div>
       </div>
+      <div class="daily-practical compact" id="t-hours-guide" data-level="ok">
+        <div class="pr-row"><b>USE</b><span>เลือกชั่วโมงดีตามคะแนนรวมของวัน</span></div>
+        <div class="pr-row"><b>RULE</b><span>ถ้าวันระวัง ใช้ชั่วโมงดีเฉพาะงานเบาและงานที่แก้ได้</span></div>
+      </div>
 
       <div class="grid12" id="t-hours-grid">
         <div class="h-cell bad"><div class="br" style="color:var(--water)">子</div><div class="rg">23-01</div><div class="q" data-i18n="t.s3.q.bad">ห้าม</div></div>
@@ -1137,6 +1155,10 @@
       <div class="r" data-i18n="t.s4.tag">PERSONALIZED</div>
     </div>
 
+    <div class="daily-practical wide" id="t-actions-guard" data-level="ok">
+      <div class="pr-row"><b>MODE</b><span>รอคะแนนรวมของวันก่อนจัดคำแนะนำ</span></div>
+      <div class="pr-row"><b>RULE</b><span>การ์ดนี้จะไม่ดัน HIGH ถ้าคะแนนวันเป็นระวัง/ห้าม</span></div>
+    </div>
     <div class="actions-grid" id="t-actions-grid">
       <article class="act-card wealth">
         <div class="h"><div class="ico">財</div><h4 data-i18n="t.s4.w.h"><span class="tc">財</span>เงิน · ทรัพย์</h4></div>
@@ -1919,8 +1941,20 @@ window.applyI18N = applyI18N;
         viewAs = null;
       }
     } catch(e){ viewAs = null; }
-    if (viewAs && viewAs.pillars) userChart = viewAs.pillars;
     let selfBirth = null;
+    if (viewAs && viewAs.pillars) {
+      userChart = viewAs.pillars;
+      selfBirth = {
+        date: viewAs.birthDate || viewAs.date || null,
+        time: viewAs.birthTime || viewAs.time || '12:00',
+        gender: viewAs.gender || 'M',
+        longitude: Number(viewAs.longitude || viewAs.lng || 100.5018),
+        lng: Number(viewAs.lng || viewAs.longitude || 100.5018),
+        profileId: viewAs.id || null,
+        birthTimeKnown: viewAs.birthTimeKnown !== false,
+        dayBoundary: viewAs.dayBoundary === '00:00' ? '00:00' : '23:00'
+      };
+    }
     if (!userChart && window.__hkProfileReady) {
       try { await window.__hkProfileReady; } catch(_){}
     }
@@ -1939,10 +1973,11 @@ window.applyI18N = applyI18N;
             const gender = myself.gender === 'female' ? 'F' : 'M';
             const lng = Number(myself.birth_lng || 100.5018);
 	            const birthTimeKnown = myself.birth_time_known !== false;
-	            const cd = await window.__hkFetchChart({ date: dpart, time: tpart, longitude: lng, gender, birthTimeKnown });
+	            const dayBoundary = myself.day_boundary === '00:00' ? '00:00' : '23:00';
+	            const cd = await window.__hkFetchChart({ date: dpart, time: tpart, longitude: lng, gender, birthTimeKnown, dayBoundary });
             if (cd && cd.pillars) {
               userChart = cd.pillars;
-	              selfBirth = { date: dpart, time: tpart, gender, longitude: lng, lng, profileId: myself.id, birthTimeKnown };
+	              selfBirth = { date: dpart, time: tpart, gender, longitude: lng, lng, profileId: myself.id, birthTimeKnown, dayBoundary };
               try { localStorage.setItem('hk_birth', JSON.stringify(selfBirth)); localStorage.setItem('hk_profile_id', myself.id); } catch(_){}
             }
           }
@@ -1953,7 +1988,7 @@ window.applyI18N = applyI18N;
       try {
         const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
         if (birth && birth.date) {
-	          const cd = await window.__hkFetchChart({ date: birth.date, time: birth.time||'12:00', gender: birth.gender||'M', longitude: Number(birth.longitude || birth.lng || 100.5018), birthTimeKnown: birth.birthTimeKnown !== false });
+	          const cd = await window.__hkFetchChart({ date: birth.date, time: birth.time||'12:00', gender: birth.gender||'M', longitude: Number(birth.longitude || birth.lng || 100.5018), birthTimeKnown: birth.birthTimeKnown !== false, dayBoundary: birth.dayBoundary || '23:00' });
           if (cd && cd.pillars) {
             userChart = cd.pillars;
             selfBirth = birth;
@@ -1965,10 +2000,12 @@ window.applyI18N = applyI18N;
     /* 3. fetch /api/today · 18 พ.ค. unified: POST + userChart + birth → pair-base.ts (Single Source)
      * ส่ง birth ให้ backend calc yongshen ภายใน · score ตรง /calendar + /network */
     const dmStem = userChart?.day?.stem || '';
-    let _birth = null;
-    try { _birth = JSON.parse(localStorage.getItem('hk_birth') || 'null'); } catch(_){}
+    let _birth = selfBirth || null;
+    if (!_birth) {
+      try { _birth = JSON.parse(localStorage.getItem('hk_birth') || 'null'); } catch(_){}
+    }
     const _postBody = { date: dateStr, userChart };
-	    if (_birth && _birth.date) { _postBody.birthDate = _birth.date; _postBody.birthTime = _birth.time || '12:00'; _postBody.birthLng = _birth.lng || _birth.longitude || 100.5018; _postBody.birthTimeKnown = _birth.birthTimeKnown !== false; }
+	    if (_birth && _birth.date) { _postBody.birthDate = _birth.date; _postBody.birthTime = _birth.time || '12:00'; _postBody.birthLng = _birth.lng || _birth.longitude || 100.5018; _postBody.birthTimeKnown = _birth.birthTimeKnown !== false; _postBody.gender = _birth.gender || 'M'; _postBody.dayBoundary = _birth.dayBoundary || '23:00'; }
     const tr = (userChart && userChart.day && userChart.day.branch)
       ? await fetch('/api/today', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(_postBody) })
       : await fetch('/api/today?date=' + encodeURIComponent(dateStr) + (dmStem ? '&dm=' + encodeURIComponent(dmStem) : ''));
@@ -2327,6 +2364,61 @@ window.applyI18N = applyI18N;
       return         { key:'avoid',   th:'ห้าม',    en:'AVOID',     segIdx:0 };
     }
     const lv = levelOf(score);
+    window._dailyVerdictLevel = lv.key;
+    window._dailyVerdictScore = score;
+
+    function termPlain(term){
+      const tx = TONGSHU_TERM_TX[term];
+      return tx && tx.th ? `${term} ${tx.th}` : String(term || '');
+    }
+    function setPracticalBox(id, rows){
+      const box = document.getElementById(id);
+      if (!box) return;
+      box.setAttribute('data-level', lv.key);
+      box.innerHTML = rows.map(([k, v]) => `<div class="pr-row"><b>${escHtml(k)}</b><span>${escHtml(v)}</span></div>`).join('');
+    }
+    const yiTop = (d.tongshu.yi || []).slice(0, 3).map(termPlain).filter(Boolean).join(' · ');
+    const jiTop = (d.tongshu.ji || []).slice(0, 3).map(termPlain).filter(Boolean).join(' · ');
+    const dayAdvice = {
+      best: {
+        focus: 'วันเปิดสูง ใช้กับเรื่องที่ต้องการผลลัพธ์ชัดเจนและมีคนเกี่ยวข้อง',
+        do: 'เสนอราคา นัดคุยคนสำคัญ เปิดงานใหม่ หรือปิดดีลที่เตรียมไว้แล้ว',
+        avoid: 'อย่าใช้ความมั่นใจแทนข้อมูล ตรวจเงื่อนไขเงินและเอกสารก่อนกดตกลง',
+      },
+      good: {
+        focus: 'วันเดินหน้าได้ เหมาะกับงานที่ต้องสื่อสาร ตัดสินใจ และผลักเรื่องให้คืบ',
+        do: 'เลือกเรื่องสำคัญ 1-2 เรื่องแล้วทำให้จบ ใช้ชั่วโมงดีช่วยล็อกจังหวะ',
+        avoid: 'อย่ากระจายงานหลายทิศเกินไป และอย่าเปิดประเด็นที่ยังไม่มีข้อมูล',
+      },
+      ok: {
+        focus: 'วันกลาง ใช้กับงานประจำ งานแก้รายละเอียด และการเตรียมของสำหรับวันใหญ่',
+        do: 'เคลียร์คิว ตอบข้อความ จัดเอกสาร ทดลองแผน หรือคุยเบื้องต้นแบบไม่ผูกมัด',
+        avoid: 'เลี่ยงตัดสินใจเงินก้อน สัญญายาว หรือคำตอบที่ย้อนกลับมายาก',
+      },
+      caution: {
+        focus: 'วันระวัง ลดขนาดเดิมพัน ทำเรื่องที่คุมผลเสียได้ และเว้นช่องให้แก้ตัว',
+        do: 'ทบทวน ตรวจสัญญา แก้ปัญหาเก่า คุยแบบเก็บข้อมูลมากกว่าปิดดีล',
+        avoid: 'อย่าเริ่มงานใหญ่ อย่าใช้อารมณ์ตอบทันที และอย่าเซ็นเรื่องที่ยังไม่ชัด',
+      },
+      avoid: {
+        focus: 'วันปิดเกม ไม่เหมาะเสี่ยงใหญ่ ใช้พัก ฟื้นตัว เคลียร์ของเก่า และชะลอคำตอบ',
+        do: 'จัดบ้าน ปิดงานค้าง สำรองข้อมูล พักร่างกาย และเลื่อนเรื่องที่มีเดิมพันสูง',
+        avoid: 'เลี่ยงสัญญา เงินก้อน การปะทะ และการตัดสินใจจากแรงกดดัน',
+      },
+    }[lv.key];
+    setPracticalBox('t-pillar-practical', [
+      ['FOCUS', `${lv.th} ${score}/100 · ${dayAdvice.focus}`],
+      ['DO', yiTop ? `${dayAdvice.do} · ฤกษ์ช่วย: ${yiTop}` : dayAdvice.do],
+      ['AVOID', jiTop ? `${dayAdvice.avoid} · ควรเลี่ยง: ${jiTop}` : dayAdvice.avoid],
+    ]);
+    setPracticalBox('t-hours-guide', [
+      ['USE', (lv.key === 'caution' || lv.key === 'avoid') ? 'ช่องที่ดูดีคือช่วงผ่อนแรง ใช้กับงานเบา งานแก้ได้ หรือคุยเพื่อเก็บข้อมูล' : 'ช่องเขียวคือเวลาที่แรงต้านน้อยกว่า เหมาะนัดคุย ส่งงาน หรือปิดเรื่องที่เตรียมพร้อมแล้ว'],
+      ['RULE', (lv.key === 'caution' || lv.key === 'avoid') ? 'คะแนนวันต่ำกว่าชั่วโมงดีเสมอ จึงไม่ใช้ชั่วโมงเขียวเป็นไฟเขียวสำหรับสัญญา/เงินก้อน' : 'ถ้างานมีเดิมพันสูง ให้เลือกทั้งคะแนนวันดีและชั่วโมงดีพร้อมกัน'],
+    ]);
+    setPracticalBox('t-actions-guard', [
+      ['MODE', (lv.key === 'caution' || lv.key === 'avoid') ? `${lv.th} ${score}/100 · การ์ด 04 จะแปลงเป็น micro-action และลด HIGH อัตโนมัติ` : `${lv.th} ${score}/100 · เลือกการ์ดที่ตรงเป้าหมาย แล้วทำในช่วงเวลาที่ดีที่สุด`],
+      ['RULE', (lv.key === 'caution' || lv.key === 'avoid') ? 'ทำเฉพาะงานที่เสียหายน้อย ถ้าติดขัดให้หยุด ไม่ฝืนปิดดีล' : 'เริ่มจากงานที่เตรียมข้อมูลครบ อย่าใช้คะแนนดีแทนการตรวจรายละเอียด'],
+    ]);
 
     /* ป้ายระดับ · ดวงคุณ (Personal · DM analysis) */
     const tagEl = document.getElementById('t-verdict-tag');
@@ -2388,9 +2480,11 @@ window.applyI18N = applyI18N;
     if (h2 && d.universal.breakdown) {
       const officer = d.universal.breakdown.officer;
       /* บรรทัด 1 · ดวงคุณ (tier ของวันนี้) */
-      const personalLine = officer.tier === 'favorable' ? 'วันดี · <b>เหมาะลงมือเดินหน้า</b>' :
-                           officer.tier === 'critical'  ? 'วันระวัง · <b>ถอยตั้งหลัก</b>' :
-                           'วันธรรมดา · <b>ทำกิจวัตรได้</b> · เลี่ยงเริ่มงานใหญ่';
+      const personalLine = lv.key === 'best'    ? `ดวงคุณ ${score}/100 · <b>วันเปิดสูง</b> · ใช้กับเรื่องสำคัญได้` :
+                           lv.key === 'good'    ? `ดวงคุณ ${score}/100 · <b>วันดี</b> · เดินหน้าแบบมีแผน` :
+                           lv.key === 'ok'      ? `ดวงคุณ ${score}/100 · <b>วันกลาง</b> · ทำงานประจำและเตรียมของ` :
+                           lv.key === 'caution' ? `ดวงคุณ ${score}/100 · <b>วันระวัง</b> · ลดเดิมพันและตรวจซ้ำ` :
+                                                   `ดวงคุณ ${score}/100 · <b>วันห้าม</b> · พักและเลี่ยงเรื่องใหญ่`;
       /* บรรทัด 2 · ปฏิทินจีน · 12 ฤกษ์ + hint ภาษาคน */
       const OFFICER_TH = {
         '建':{th:'เริ่ม',hint:'เริ่มงานใหม่'},
@@ -2472,6 +2566,17 @@ window.applyI18N = applyI18N;
       }
       const bm = labelTH[pick];
       renderRel('t-rel-br', 't-rel-br-key', 't-rel-br-name', 't-rel-br-desc', bm.k, bm.n, bm.d, bm.c);
+    } else if (td.verdict) {
+      const ev = td.verdict.evidence || {};
+      const yong = (td.verdict.yongshen || ev.usefulGods?.yong || []).join(' · ') || '—';
+      const ji = (td.verdict.jishen || ev.usefulGods?.ji || []).slice(0,3).join(' · ') || '—';
+      const ap = ev.annualPillar ? `${ev.annualPillar.stem || ''}${ev.annualPillar.branch || ''}` : '—';
+      const cb = ev.chengBaiNow?.verdict || '—';
+      const klass = (lv.key === 'caution' || lv.key === 'avoid') ? 'bad' : (lv.key === 'ok' ? '' : 'good');
+      renderRel('t-rel-dm', 't-rel-dm-key', 't-rel-dm-name', 't-rel-dm-desc',
+                'PACKET · 用神/忌神', `${td.verdict.label || lv.th} · ${score}/100`, `ของช่วย: ${yong} · ของแสลง: ${ji}`, klass);
+      renderRel('t-rel-br', 't-rel-br-key', 't-rel-br-name', 't-rel-br-desc',
+                'TRANSIT · 行運', `ปีจร ${ap} · 成敗 ${cb}`, 'คะแนนนี้อ่านร่วมกับเสาวัน วัยจร ปีจร 病藥 และ成敗 ชุดเดียวกับซินแส', klass);
     }
 
     /* === 5.2 Wire 宜 / 忌 จาก tongshu (ตำราคลาสสิก · 3 lang TH/EN/ZH · 17 พ.ค.) === */
@@ -2505,7 +2610,7 @@ window.applyI18N = applyI18N;
         const hourBody = { date: dateStr };
         if (userChart) hourBody.userChart = userChart;
         /* 18 พ.ค. · ส่ง birth → backend calc yongshen → qualityFor ตามตำราอาเจ๊กฮ้ง */
-	        if (_birth && _birth.date) { hourBody.birthDate = _birth.date; hourBody.birthTime = _birth.time || '12:00'; hourBody.birthLng = _birth.lng || _birth.longitude || 100.5018; hourBody.birthTimeKnown = _birth.birthTimeKnown !== false; }
+	        if (_birth && _birth.date) { hourBody.birthDate = _birth.date; hourBody.birthTime = _birth.time || '12:00'; hourBody.birthLng = _birth.lng || _birth.longitude || 100.5018; hourBody.birthTimeKnown = _birth.birthTimeKnown !== false; hourBody.gender = _birth.gender || 'M'; hourBody.dayBoundary = _birth.dayBoundary || '23:00'; }
         /* 30 พ.ค. · 流時 deep · ส่งกิ่งปีปัจจุบัน (流年) → backend เทียบยาม×ปีจร · หน้านี้ไม่มีตัวแปร 大運/流月 จึงส่งแค่ flowYearBranch */
         try { hourBody.flowYearBranch = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'][((new Date().getFullYear())-4)%12]; } catch(_){}
         const hr = await fetch('/api/today/hours', {
@@ -2537,6 +2642,24 @@ window.applyI18N = applyI18N;
             /* ป้ายคุณภาพชุดเดียว ตาราง=การ์ด NOW · 3 ภาษา (จาก API label/label_en/label_zh) */
             const _qLabel = (h) => (_lang==='en') ? (h.label_en||h.label)
                                  : (_lang==='zh') ? (h.label_zh||h.label) : h.label;
+            const _gateQuality = (q) => {
+              if (lv.key === 'avoid') return q === 'bad' ? 'bad' : 'ok';
+              if (lv.key === 'caution' && (q === 'best' || q === 'good')) return 'ok';
+              return q;
+            };
+            const _gatedHourLabel = (h, q) => {
+              const base = _qLabel(h);
+              if (q === h.quality) return base;
+              if (_lang === 'en') return 'light only';
+              if (_lang === 'zh') return '宜輕事';
+              return 'งานเบา';
+            };
+            const _gateNote = () => {
+              if (lv.key !== 'caution' && lv.key !== 'avoid') return '';
+              if (_lang === 'en') return ' · day score is low: keep it reversible';
+              if (_lang === 'zh') return ' · 日分偏低：只宜可回頭之事';
+              return ' · คะแนนวันต่ำ: ใช้เฉพาะงานที่แก้กลับได้';
+            };
             /* reason หลักจาก hours (มีเหตุชน 沖/害/合 + "ห้ามทำเรื่องสำคัญ" ครบ 3 ภาษา) + เสริมปฏิกิริยา/ดาวจาก liushi (th) */
             const _reasonOf = (h) => {
               let r = (_lang === 'en' && h.reason_en) ? h.reason_en
@@ -2550,11 +2673,12 @@ window.applyI18N = applyI18N;
               return r;
             };
             grid.innerHTML = srcHours.map(h => {
-              const qCls = (h.quality === 'best' || h.quality === 'good') ? 'good' : (h.quality === 'ok' ? 'ok' : 'bad');
+              const displayQuality = _gateQuality(h.quality);
+              const qCls = (displayQuality === 'best' || displayQuality === 'good') ? 'good' : (displayQuality === 'ok' ? 'ok' : 'bad');
               const cls = (h.isNow ? 'now ' : '') + qCls; /* NOW = กรอบทอง + สีตาม quality (ไม่บังคับ ok) */
-              const lblText = _qLabel(h);
+              const lblText = _gatedHourLabel(h, displayQuality);
               const lbl = h.isNow ? (NOW_TH[_lang]||NOW_TH.th) : lblText;
-              const _r = _reasonOf(h);
+              const _r = _reasonOf(h) + (displayQuality !== h.quality ? _gateNote() : '');
               const tip = _r.replace(/"/g,'&quot;');
               const rg = h.range.replace(/^(\d+):00-/,'$1-').replace(':00','');
               return `<div class="h-cell ${cls}" title="${tip}" data-reason="${tip}" data-branch="${h.branch}" data-range="${rg}" data-label="${lblText}"><div class="br" style="color:${colorMap[h.element]||'var(--fg)'}">${h.branch}</div><div class="rg">${rg}</div><div class="q">${lbl}</div></div>`;
@@ -2602,13 +2726,15 @@ window.applyI18N = applyI18N;
               if (h3El) h3El.innerHTML = '<span class="tc">'+nowH.branch+'時</span>· '+nowH.range;
               if (pEl) {
                 /* reason เดียวกับตาราง: hours (เหตุชน+verdict 3 ภาษา) + เสริมปฏิกิริยา/ดาวจาก liushi (th) */
-                const reason = _reasonOf(nowH) || QUAL_TIP[nowH.quality] || '-';
+                const displayQuality = _gateQuality(nowH.quality);
+                const reason = (_reasonOf(nowH) || QUAL_TIP[nowH.quality] || '-') + (displayQuality !== nowH.quality ? _gateNote() : '');
                 pEl.textContent = elTh+'·'+(nowH.stem?nowH.stem+' · ':'')+reason;
               }
               if (miniEl) {
-                const mq = (nowH.quality==='best'||nowH.quality==='good') ? 'good' : (nowH.quality==='ok' ? 'ok' : 'bad');
+                const displayQuality = _gateQuality(nowH.quality);
+                const mq = (displayQuality==='best'||displayQuality==='good') ? 'good' : (displayQuality==='ok' ? 'ok' : 'bad');
                 miniEl.className = 'verdict-mini ' + mq; /* สี chip ตาม quality · ตรงกับเซลล์ */
-                miniEl.textContent = ((QUAL_ICON[nowH.quality]||'') + ' ' + (_qLabel(nowH) || nowH.quality || '')).trim(); /* ป้ายเดียวกับตาราง · 3 ภาษา */
+                miniEl.textContent = ((QUAL_ICON[displayQuality]||'') + ' ' + (_gatedHourLabel(nowH, displayQuality) || displayQuality || '')).trim(); /* ป้ายเดียวกับตาราง · 3 ภาษา */
               }
             }
           };
@@ -2684,14 +2810,34 @@ window.applyI18N = applyI18N;
           const goalClass = { wealth:'wealth', career:'work', love:'love', health:'health' };
           const sigClass = { HIGH:'up', STEADY:'flat', LOW:'down' };
           const sigLabel = { HIGH:'▲ HIGH SIGNAL', STEADY:'— STEADY', LOW:'▼ LOW · ระวัง' };
+          const gateSignal = (signal) => {
+            if (lv.key === 'avoid') return 'LOW';
+            if (lv.key === 'caution' && signal === 'HIGH') return 'STEADY';
+            return signal || 'STEADY';
+          };
+          const goalMicro = {
+            wealth: 'เช็กตัวเลข · ตามเอกสาร · ยังไม่โอนเงินก้อน',
+            career: 'จัดลำดับงาน · ตรวจรายละเอียด · ส่งงานที่แก้ได้',
+            love: 'ฟังมากกว่าพูด · เลี่ยงตัดสินใจความสัมพันธ์',
+            health: 'พักให้พอ · เดินเบา ๆ · ลดสิ่งกระตุ้น',
+          };
+          const guardTips = (a, signal) => {
+            const tips = (a.tips || []).slice(0, 3);
+            if (lv.key === 'avoid') return [`วันนี้คะแนนต่ำ ให้ทำแบบปิดความเสี่ยง: ${goalMicro[a.goal] || 'งานเล็กที่แก้กลับได้'}`, ...tips.slice(0, 2)];
+            if (lv.key === 'caution' && signal !== a.signal) return [`ลดจาก HIGH เป็น STEADY เพราะคะแนนวันระวัง: ${goalMicro[a.goal] || 'ทำทีละขั้น'}`, ...tips.slice(0, 2)];
+            if (lv.key === 'ok' && a.signal === 'HIGH') return [`ทำได้ แต่ให้เริ่มจากขั้นที่ผูกมัดน้อยก่อน`, ...tips.slice(0, 2)];
+            return tips;
+          };
           grid.innerHTML = ad.actions.map(a => {
             const w = goalWindow[a.goal];
             const winHtml = w ? `<div class="when" style="margin-top:4px;font-size:11px;opacity:.85">${w.label} · <b>${w.t}</b></div>` : '';
+            const displaySignal = gateSignal(a.signal);
+            const tips = guardTips(a, displaySignal);
             return `
             <article class="act-card ${goalClass[a.goal]||''}">
               <div class="h"><div class="ico">${a.icon}</div><h4><span class="tc">${a.icon}</span>${a.title}</h4></div>
-              <span class="signal ${sigClass[a.signal]||'flat'}">${sigLabel[a.signal]||a.signal}</span>
-              <ul>${a.tips.map(t => `<li>${t}</li>`).join('')}</ul>
+              <span class="signal ${sigClass[displaySignal]||'flat'}">${sigLabel[displaySignal]||displaySignal}</span>
+              <ul>${tips.map(t => `<li>${t}</li>`).join('')}</ul>
               <div class="when"><b>${a.tenGod || '—'}</b> · ${a.narrative}</div>
               ${winHtml}
             </article>

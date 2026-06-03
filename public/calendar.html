@@ -1690,7 +1690,7 @@
       try {
         const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
         if (b && b.date) {
-	          bUrl = `&birthDate=${encodeURIComponent(b.date)}&birthTime=${encodeURIComponent(b.time||'12:00')}&birthLng=${encodeURIComponent(b.lng||100.5018)}&birthTimeKnown=${b.birthTimeKnown !== false ? 'true' : 'false'}`;
+	          bUrl = `&birthDate=${encodeURIComponent(b.date)}&birthTime=${encodeURIComponent(b.time||'12:00')}&birthLng=${encodeURIComponent(b.lng||100.5018)}&birthTimeKnown=${b.birthTimeKnown !== false ? 'true' : 'false'}&gender=${encodeURIComponent(b.gender||'M')}&dayBoundary=${encodeURIComponent(b.dayBoundary||'23:00')}`;
         }
       } catch(_){}
       const r = await fetch(`/api/calendar?year=${year}&month=${month}&dm=${encodeURIComponent(SELF_DM)}${bUrl}`);
