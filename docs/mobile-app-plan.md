@@ -46,7 +46,7 @@ Sensitive mobile calls should use versioned endpoints:
 - `POST /api/mobile/v1/today`
 - `POST /api/mobile/v1/datepick`
 - `POST /api/mobile/v1/network/score`
-- `POST /api/mobile/v1/sifu`
+- `POST /api/mobile/v1/sifu/chat`
 - `GET /api/mobile/v1/sifu/history`
 
 ## Auth Boundary
