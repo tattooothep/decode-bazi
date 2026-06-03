@@ -19,6 +19,13 @@ const QIMEN_BASE = process.env.QIMEN_API_URL || "http://localhost:4090";
 const SCHOOL_TO_PROFILE: Record<string, number> = {
   zhirun: 4, chaibu: 1, yinpan: 5,
 };
+function isEnabled(v: unknown): boolean {
+  return v === true || v === "true";
+}
+function resolveSchool(school?: string | null): string | null {
+  const s = (school || "chaibu").toLowerCase();
+  return SCHOOL_TO_PROFILE[s] ? s : null;
+}
 
 /* 📜 12 ชั่วยาม starts (00, 02, 04, ..., 22) */
 const HOUR_STARTS = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22];
@@ -90,7 +97,7 @@ const ACTIVITIES: Record<string, Activity> = {
 const _qimenCache = new Map<string, { data: unknown; expires: number }>();
 const QIMEN_CACHE_TTL = 60 * 60 * 1000; // 1 hour
 async function callQimen(datetime: string, lng: number, lat: number, school: string): Promise<any> {
-  const profile_id = SCHOOL_TO_PROFILE[school] || 1;
+  const profile_id = SCHOOL_TO_PROFILE[school];
   const cacheKey = `${datetime}|${profile_id}|${lng.toFixed(4)}|${lat.toFixed(4)}`;
   const cached = _qimenCache.get(cacheKey);
   if (cached && cached.expires > Date.now()) return cached.data;
@@ -231,9 +238,9 @@ const HELUO_NATURE_SCORE: Record<string, number> = {
   '9':+5,'九':+5, // 九紫右弼 · 大吉 (joy·marriage · 9運當令)
 };
 
-async function fetchTongshuForDay(date: string): Promise<{ yi: string[]; ji: string[]; day_officer: string; day_pillar: string; year_pillar: string; xiu28: string; star12: string; star9: string; gods: string[] } | null> {
+async function fetchTongshuForDay(date: string, origin: string): Promise<{ yi: string[]; ji: string[]; day_officer: string; day_pillar: string; year_pillar: string; xiu28: string; star12: string; star9: string; gods: string[] } | null> {
   try {
-    const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3102";
+    const base = origin.replace(/\/$/, "");
     const r = await fetch(`${base}/api/today?date=${date}`, { signal: AbortSignal.timeout(3000) });
     if (!r.ok) return null;
     const d = await r.json();
@@ -257,21 +264,22 @@ export async function POST(req: Request) {
   const mode = (body.mode === "spec" ? "spec" : "activity") as "activity" | "spec";
   const activity = body.activity || "work_start";
   const spec = body.spec || {};
-  const school = body.school || "chaibu";
+  const school = resolveSchool(body.school);
+  if (!school) return NextResponse.json({ error: "unsupported qimen school" }, { status: 400 });
   const lng = Number(body.lng ?? 100.5018);
   const lat = Number(body.lat ?? 13.7563);
   const limit = Math.min(Number(body.limit) || 10, 30);
   /* 16 พ.ค.: 5 ศาสตร์ filters · ส่งมาจาก frontend */
-  const useTongshu: boolean = body.useTongshu !== false;
-  const useBazi:    boolean = body.useBazi !== false;
-  const useJianchu: boolean = body.useJianchu !== false;
-  const useTaisui:  boolean = body.useTaisui !== false;
+  const useTongshu: boolean = isEnabled(body.useTongshu);
+  const useBazi:    boolean = isEnabled(body.useBazi);
+  const useJianchu: boolean = isEnabled(body.useJianchu);
+  const useTaisui:  boolean = isEnabled(body.useTaisui);
   const peopleBranches: string[] = Array.isArray(body.peopleBranches) ? body.peopleBranches : [];
   /* P6 16 พ.ค. (อากง tier 1+2): 28宿 · 12神煞 · 9飛星 · 用神 filter */
-  const useXiu28:    boolean = body.useXiu28 !== false;
-  const useShen12:   boolean = body.useShen12 !== false;
-  const useFly9:     boolean = body.useFly9 !== false;
-  const useHeluo:    boolean = body.useHeluo !== false; // P7 อากงตำรา 河洛
+  const useXiu28:    boolean = isEnabled(body.useXiu28);
+  const useShen12:   boolean = isEnabled(body.useShen12);
+  const useFly9:     boolean = isEnabled(body.useFly9);
+  const useHeluo:    boolean = isEnabled(body.useHeluo); // P7 อากงตำรา 河洛
   const userYongshen: string[] = Array.isArray(body.userYongshen) ? body.userYongshen : [];
 
   const today = new Date();
@@ -285,15 +293,20 @@ export async function POST(req: Request) {
   if (mode === "activity" && !rule) {
     return NextResponse.json({ error: `unknown activity: ${activity}` }, { status: 400 });
   }
+  const hasSpec = ["doors", "stars", "deities", "sanqi"].some(k => Array.isArray(spec[k]) && spec[k].length > 0);
+  if (mode === "spec" && !hasSpec) {
+    return NextResponse.json({ error: "choose at least one qimen component" }, { status: 400 });
+  }
 
   /* P5 16 พ.ค. A+B: ขยาย scan 7 วัน → 30 วัน · BATCH 6→12 · timeout เร็วขึ้น */
   const slots = [...timeSlots(dateFrom, dateTo)].slice(0, 360); // max 30 วัน × 12 ชั่วยาม
   /* P5 16 พ.ค.: pre-fetch Tongshu สำหรับแต่ละวัน (cache · 1 req/วัน) */
   const uniqueDates = Array.from(new Set(slots.map(s => s.date)));
   const tongshuCache: Record<string, Awaited<ReturnType<typeof fetchTongshuForDay>>> = {};
-  if (useTongshu || useBazi || useJianchu || useTaisui) {
+  const todayOrigin = new URL(req.url).origin;
+  if (useTongshu || useBazi || useJianchu || useTaisui || useXiu28 || useShen12 || useFly9 || useHeluo || userYongshen.length > 0) {
     await Promise.allSettled(uniqueDates.map(async dt => {
-      tongshuCache[dt] = await fetchTongshuForDay(dt);
+      tongshuCache[dt] = await fetchTongshuForDay(dt, todayOrigin);
     }));
   }
   const tongshuRule = ACTIVITY_TONGSHU[activity] || { good_keywords: [], bad_keywords: [] };
@@ -423,7 +436,9 @@ export async function POST(req: Request) {
     total_scanned: slots.length, total_matched: results.length,
     top,
     /* P5 16 พ.ค.: 5 ศาสตร์ stats */
-    filters: { useTongshu, useBazi, useJianchu, useTaisui, peopleBranches },
+    filters: { useTongshu, useBazi, useJianchu, useTaisui, useXiu28, useShen12, useFly9, useHeluo, peopleBranches },
+    today_loaded_dates: Object.values(tongshuCache).filter(Boolean).length,
+    today_failed_dates: Object.values(tongshuCache).filter(v => !v).length,
     stats,
   });
 }

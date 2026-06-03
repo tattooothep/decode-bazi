@@ -13,16 +13,15 @@ const SCHOOL_TO_PROFILE: Record<string, number> = {
   yinpan: 5,    // 陰盤 · สำหรับของหาย/ฝัน/เรื่องลึก
   // maoshan: ❌ engine ไม่รองรับ · รอ phase 2
 };
-function resolveProfileId(school?: string | null): number {
-  if (!school) return 1;
-  const id = SCHOOL_TO_PROFILE[school.toLowerCase()];
-  return id || 1;
+function resolveSchool(school?: string | null): string | null {
+  const s = (school || "chaibu").toLowerCase();
+  return SCHOOL_TO_PROFILE[s] ? s : null;
 }
 
-async function callQimen(date: string, time: string, lng: number, lat: number, school?: string | null) {
+async function callQimen(date: string, time: string, lng: number, lat: number, school: string) {
   const target = `${QIMEN_BASE}/api/qimen/calculate`;
   const datetime = `${date}T${time}:00`;
-  const profile_id = resolveProfileId(school);
+  const profile_id = SCHOOL_TO_PROFILE[school];
   const r = await fetch(target, {
     method: "POST",
     headers: { "Content-Type": "application/json", "User-Agent": "decode-app/1.0" },
@@ -35,7 +34,7 @@ async function callQimen(date: string, time: string, lng: number, lat: number, s
   }
   const json = await r.json();
   json._profile_id = profile_id;
-  json._school = school || "chaibu";
+  json._school = school;
   return json;
 }
 
@@ -59,7 +58,8 @@ export async function GET(req: Request) {
   const time = url.searchParams.get("time") || dt.time;
   const lng = Number(url.searchParams.get("lng") || 100.5018);
   const lat = Number(url.searchParams.get("lat") || 13.7563);
-  const school = url.searchParams.get("school") || "chaibu";
+  const school = resolveSchool(url.searchParams.get("school"));
+  if (!school) return NextResponse.json({ error: "unsupported qimen school" }, { status: 400 });
 
   try {
     const data = await callQimen(date, time, lng, lat, school);
@@ -77,7 +77,8 @@ export async function POST(req: Request) {
   const time = body.time || dt.time;
   const lng = Number(body.lng ?? body.longitude ?? 100.5018);
   const lat = Number(body.lat ?? body.latitude ?? 13.7563);
-  const school = body.school || "chaibu";
+  const school = resolveSchool(body.school);
+  if (!school) return NextResponse.json({ error: "unsupported qimen school" }, { status: 400 });
 
   try {
     const data = await callQimen(date, time, lng, lat, school);

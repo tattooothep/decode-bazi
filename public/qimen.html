@@ -529,12 +529,12 @@
     <div class="config-row">
       <div class="cfg-label"><span class="tc">局</span> ผังที่ใช้</div>
       <div class="chart-meta" id="qm-chart-meta">
-        <span class="pill"><b id="qm-pill-ju">—</b>YUAN-JU</span>
-        <span class="pill"><b id="qm-pill-dun">—</b>FU TOU</span>
-        <span class="pill special"><b data-i18n="q.pill.fu">ดาวนำ(值符)</b><span id="qm-pill-fu">—</span></span>
-        <span class="pill special"><b data-i18n="q.pill.shi">ประตูนำ(值使)</b><span id="qm-pill-shi">—</span></span>
-        <span class="pill"><b data-i18n="q.pill.xun">ช่วง(旬)</b><span id="qm-pill-xun">—</span></span>
-        <span class="pill"><b data-i18n="q.pill.void">ว่าง(空)</b><span id="qm-pill-void">—</span></span>
+        <span class="pill"><b id="qm-pill-ju">—</b>ผัง · 局</span>
+        <span class="pill"><b id="qm-pill-dun">—</b>ก้านหลบ · 遁干</span>
+        <span class="pill special"><b data-i18n="q.pill.fu">ดาวนำ · 值符</b><span id="qm-pill-fu">—</span></span>
+        <span class="pill special"><b data-i18n="q.pill.shi">ประตูนำ · 值使</b><span id="qm-pill-shi">—</span></span>
+        <span class="pill"><b data-i18n="q.pill.xun">ช่วง · 旬</b><span id="qm-pill-xun">—</span></span>
+        <span class="pill"><b data-i18n="q.pill.void">ว่าง · 空亡</b><span id="qm-pill-void">—</span></span>
       </div>
       <button  class="ctrl-btn" id="qm-recalc-btn" style="background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;" data-i18n="auto.q.014">↻ คำนวณใหม่</button>
     </div>
@@ -714,14 +714,14 @@ window.HK_I18N = {
   'q.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
   'q.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
   /* stat card (hero) · 30 พ.ค. */
-  'q.stat.ju':     { th:'ผัง(局)', en:'Ju (局)', zh:'局' },
-  'q.stat.dun':    { th:'ก้านหลบ(遁干)', en:'Dun Stem (遁干)', zh:'遁干' },
-  'q.stat.yuan':   { th:'ยุค(元)', en:'Yuan (元)', zh:'元' },
+  'q.stat.ju':     { th:'ผัง · 局', en:'Ju · 局', zh:'局' },
+  'q.stat.dun':    { th:'ก้านหลบ · 遁干', en:'Dun Stem · 遁干', zh:'遁干' },
+  'q.stat.yuan':   { th:'ห้วง · 元', en:'Yuan · 元', zh:'元' },
   /* chart-meta pills */
-  'q.pill.fu':     { th:'ดาวนำ(值符)', en:'Lead Star (值符)', zh:'值符' },
-  'q.pill.shi':    { th:'ประตูนำ(值使)', en:'Lead Door (值使)', zh:'值使' },
-  'q.pill.xun':    { th:'ช่วง(旬)', en:'Xun (旬)', zh:'旬' },
-  'q.pill.void':   { th:'ว่าง(空)', en:'Void (空)', zh:'空' },
+  'q.pill.fu':     { th:'ดาวนำ · 值符', en:'Lead Star · 值符', zh:'值符' },
+  'q.pill.shi':    { th:'ประตูนำ · 值使', en:'Lead Door · 值使', zh:'值使' },
+  'q.pill.xun':    { th:'ช่วง · 旬', en:'Xun · 旬', zh:'旬' },
+  'q.pill.void':   { th:'ว่าง · 空亡', en:'Void · 空亡', zh:'空亡' },
   /* palace legend */
   'q.legend.good': { th:'ประตูมงคล 3 (三吉門) 開·休·生', en:'3 Good Doors (三吉門) 開·休·生', zh:'三吉門 開·休·生' },
   'q.legend.bad':  { th:'ประตูร้าย 5 (五凶門) 死·驚·杜·傷·景', en:'5 Bad Doors (五凶門) 死·驚·杜·傷·景', zh:'五凶門 死·驚·杜·傷·景' },
@@ -873,6 +873,34 @@ window.applyI18N = applyI18N;
       .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
+  function normalizeQimenQuality(q){
+    const s = String(q || '').toLowerCase();
+    if (!s) return 'mid';
+    if (s.includes('great') || s.includes('auspicious') || s === 'good') return 'good';
+    if (s.includes('bad') || s.includes('inauspicious') || s.includes('danger') || s.includes('avoid')) return 'bad';
+    return 'mid';
+  }
+  function qimenVerdictClass(p){
+    const score = Number(p?.display_score ?? p?.score);
+    const level = String(p?.display_level || p?.tier_code || '').toUpperCase();
+    const color = String(p?.display_color || '').toLowerCase();
+    if (Number.isFinite(score)) {
+      if (score >= 65) return 'good';
+      if (score <= 35) return 'bad';
+      return 'mid';
+    }
+    if (level === 'L1' || level === 'L2') return 'good';
+    if (level === 'L5' || level === 'L6') return 'bad';
+    if (color.includes('22c55e') || color.includes('16a34a')) return 'good';
+    if (color.includes('991b1b') || color.includes('ef4444') || color.includes('dc2626')) return 'bad';
+    return normalizeQimenQuality(p?.display_level || p?.star_quality);
+  }
+  function qimenTermLabel(th, zh, palaceId){
+    const left = th && th !== zh ? th : '';
+    const core = [left, zh].filter(Boolean).join(' ');
+    return core + (palaceId ? ` · วัง ${palaceId}` : '');
+  }
+
   /* grid positions: row,col → DOM order in template */
   function gridIdx(row, col){ return (row-1)*3 + (col-1); }
 
@@ -909,9 +937,9 @@ window.applyI18N = applyI18N;
       const star = p.star_zh || p.star_code;
       const door = p.door_zh || p.door_code;
       const dty  = p.deity_zh || p.deity_code;
-      const starQ = (p.star_quality||'').toLowerCase() || 'mid';
-      const doorQ = (p.door_quality||'').toLowerCase() || 'mid';
-      const deityQ = (p.deity_quality||'').toLowerCase() || 'mid';
+      const starQ = normalizeQimenQuality(p.star_quality);
+      const doorQ = normalizeQimenQuality(p.door_quality);
+      const deityQ = normalizeQimenQuality(p.deity_quality);
       const dir  = DIR_TH[p.direction] || p.direction;
       const trigZh = p.trigram_zh || '';
       /* names per lang */
@@ -981,19 +1009,22 @@ window.applyI18N = applyI18N;
       pw.appendChild(host);
     }
     const items = [...(stored||[]), ...(compound||[])];
-    if (!items.length){ host.innerHTML = '<div style="font-family:var(--mono);font-size:10px;color:var(--fg-faint);letter-spacing:.15em">⊘ NO FORMATIONS</div>'; return; }
-    host.innerHTML = '<div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:4px">格局 · FORMATIONS</div>' +
+    if (!items.length){ host.innerHTML = '<div style="font-family:var(--thai);font-size:12px;color:var(--fg-faint);">ยังไม่พบรูปแบบพิเศษ · 無格局</div>'; return; }
+    host.innerHTML = '<div style="font-family:var(--thai);font-size:12px;letter-spacing:.03em;color:var(--gold);margin-bottom:4px">รูปแบบพิเศษ · 格局</div>' +
       items.map(f => {
         const q = f.quality || 'neutral';
         const color = q==='good' ? '#2ea043' : q==='bad' ? '#d96650' : 'var(--gold)';
         const nameTh = f.name_th || f.formation_code || '—';
         const nameZh = f.name_zh || '';
-        const note = f.note || f.reason || '';
+        const rawNote = f.note || f.reason || '';
+        const note = String(rawNote).includes('Weak signal only')
+          ? 'เป็นสัญญาณอ่อนเท่านั้น · ต้องอ่านร่วมกับประตู ดาว เทพ และก้านในวังจริง'
+          : rawNote;
         const scope = f.scope ? `(${f.scope}${f.scope_ref ? ' ' + f.scope_ref : ''})` : '';
         return `<div style="display:flex;flex-direction:column;gap:3px;padding:8px 10px;background:var(--bg);border-left:3px solid ${color};border-radius:6px">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-family:var(--thai);font-size:13px;color:var(--fg);font-weight:600">
-            <span class="tc" style="font-family:var(--tc);color:${color}">${nameZh}</span>
             <span>${nameTh}</span>
+            ${nameZh ? `<span class="tc" style="font-family:var(--tc);color:${color}">${nameZh}</span>` : ''}
             <span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--fg-faint);text-transform:uppercase;margin-left:auto">${scope}</span>
           </div>
           ${note ? `<div style="font-family:var(--thai);font-size:11px;color:var(--fg-soft);line-height:1.5">${note}</div>`:''}
@@ -1051,24 +1082,21 @@ window.applyI18N = applyI18N;
     const stemNameTh = p['stem_combo_name_'+lang] || p.stem_combo_name_th || p.stem_combo_name_zh || '';
     const stemDescTh = p['stem_combo_description_'+lang] || p.stem_combo_description_th || '';
 
-    /* verdict tone */
-    const tone = (p.display_color || p.display_level || p.star_quality || 'mid').toLowerCase();
-    const verdictClass = (tone === 'good' || tone === 'auspicious' || tone === 'green') ? 'good'
-                       : (tone === 'bad'  || tone === 'avoid'      || tone === 'red')   ? 'bad'
-                       : 'mid';
+    /* verdict tone · อิงคะแนน/สี/level จาก engine จริง ไม่เดาจากดาวอย่างเดียว */
+    const verdictClass = qimenVerdictClass(p);
     const VERDICT_LABEL = {
-      good: { th:'★ ตำแหน่งดี · 吉',     en:'★ Auspicious · 吉',  zh:'★ 吉位 · 吉' },
-      bad:  { th:'⚠ ตำแหน่งระวัง · 凶',   en:'⚠ Caution · 凶',     zh:'⚠ 凶位 · 凶' },
-      mid:  { th:'· ตำแหน่งกลาง · 平',   en:'· Neutral · 平',     zh:'· 平位 · 平' },
+      good: { th:'★ วังนี้ใช้ได้ดี · 吉',        en:'★ Auspicious palace · 吉',  zh:'★ 吉位 · 吉' },
+      bad:  { th:'⚠ วังนี้ต้องระวังจริง · 凶',    en:'⚠ Real caution palace · 凶', zh:'⚠ 凶位 · 凶' },
+      mid:  { th:'· วังนี้ต้องดูบริบท · 平',      en:'· Context palace · 平',      zh:'· 平位 · 平' },
     };
     const K_LABEL = {
-      heaven:{th:'天干',en:'Stems',zh:'天干'},
-      door:  {th:'八門',en:'Door', zh:'八門'},
-      star:  {th:'九星',en:'Star', zh:'九星'},
-      deity: {th:'八神',en:'Deity',zh:'八神'},
-      dir:   {th:'ทิศ', en:'Dir',  zh:'方位'},
-      score: {th:'คะแนน',en:'Score',zh:'評分'},
-      use:   {th:'用法',en:'Use',  zh:'用法'},
+      heaven:{th:'ก้านฟ้า/ก้านดิน · 天干',en:'Stems · 天干',zh:'天干'},
+      door:  {th:'ประตู · 八門',en:'Door · 八門', zh:'八門'},
+      star:  {th:'ดาว · 九星',en:'Star · 九星', zh:'九星'},
+      deity: {th:'เทพ · 八神',en:'Deity · 八神',zh:'八神'},
+      dir:   {th:'ทิศ/วัง · 方位', en:'Direction · 方位',  zh:'方位'},
+      score: {th:'คะแนนจริง · 分',en:'Score · 分',zh:'評分'},
+      use:   {th:'ใช้ทำอะไร · 用法',en:'Use · 用法',zh:'用法'},
     };
     const SCORE_LABEL = (lang==='th') ? 'คะแนน' : (lang==='en' ? 'Score' : '評分');
 
@@ -1081,7 +1109,7 @@ window.applyI18N = applyI18N;
     if (p.is_traveling_horse) marks.push('<span style="font-size:14px" title="馬星">🐎</span>');
     if (p.is_void_any) marks.push('<span style="font-family:var(--tc);font-size:11px;color:#d96650;padding:0 4px;border:1px solid #d96650;border-radius:3px">空</span>');
 
-    const posName = (trigZh ? `<span class="tc">${qmEsc(trigZh)}</span>` : '') + ' ' + qmEsc(dirCode) + ' · ' + qmEsc(palaceN) + '宮';
+    const posName = `วัง ${qmEsc(palaceN)} · ${trigZh ? `<span class="tc">${qmEsc(trigZh)}</span>` : ''} ${qmEsc(dirCode)} · ${qmEsc(palaceN)}宮`;
     const verdictText = (VERDICT_LABEL[verdictClass] && VERDICT_LABEL[verdictClass][lang]) || VERDICT_LABEL[verdictClass].th;
 
     /* score line · จาก API */
@@ -1090,16 +1118,22 @@ window.applyI18N = applyI18N;
     const scoreLine = (p.display_score!=null || p.score!=null)
       ? `<div class="detail-row"><span class="k">${qmEsc(SCORE_LABEL)}</span><span class="v"><b>${qmEsc(p.display_score!=null?p.display_score:p.score)}</b>${lvlPart}${tierPart}</span></div>`
       : '';
+    const engineWhy = [
+      doorCn ? `ประตู ${doorName || ''} ${doorCn}${doorDesc ? ' · ' + doorDesc : ''}` : '',
+      starCn ? `ดาว ${starName || ''} ${starCn}${starDesc ? ' · ' + starDesc : ''}` : '',
+      deityCn ? `เทพ ${deityName || ''} ${deityCn}${deityAdv ? ' · ' + deityAdv : ''}` : '',
+    ].filter(Boolean).join('\n');
 
     host.innerHTML = `
       <div class="detail-head">
         <div class="pos-name">${posName} ${marks.join(' ')}</div>
-        <div class="pos-meta">PALACE ${qmEsc(palaceN)} · ${qmEsc(starCn)} · ${qmEsc(doorCn)} · ${qmEsc(deityCn)}</div>
+        <div class="pos-meta">รายละเอียดช่อง · 詳 · ${qmEsc(starCn)} · ${qmEsc(doorCn)} · ${qmEsc(deityCn)}</div>
       </div>
       <div class="verdict-card ${verdictClass}">
         <h5>${qmEsc(verdictText)}</h5>
-        ${stemDescTh ? `<p>${qmEsc(stemDescTh)}</p>` : ''}
-        ${doorAdv ? `<p style="margin-top:8px">${qmEsc(doorAdv)}</p>` : ''}
+        ${scoreLine ? `<p>${qmEsc(SCORE_LABEL)}: ${qmEsc(p.display_score!=null?p.display_score:p.score)}${lvlPart}${tierPart}</p>` : ''}
+        ${engineWhy ? `<p style="margin-top:8px;white-space:pre-line">${qmEsc(engineWhy)}</p>` : ''}
+        ${stemDescTh ? `<p style="margin-top:8px">${qmEsc(stemDescTh)}</p>` : ''}
       </div>
       <div class="detail-row">
         <span class="k">${qmEsc(K_LABEL.heaven[lang]||K_LABEL.heaven.th)}</span>
@@ -1148,11 +1182,21 @@ window.applyI18N = applyI18N;
   }
   window.refreshQimenLanguage = refreshQimenLanguage;
 
-  function renderHeader(chart){
+  function renderHeader(chart, palaces){
     if (!chart) return;
+    palaces = Array.isArray(palaces) ? palaces : [];
     const pole = (chart.dun_type === 'yin' || chart.dun_type === 'YIN') ? '陰' : '陽';
     const num  = chart.ju_number || '?';
     const juZh = `${pole}${num}局`;
+    const fushi = chart.ctext_fushi || {};
+    const fuPalaceId = fushi.value_star_palace_id || chart.zhi_fu_palace_id;
+    const shiPalaceId = fushi.value_door_palace_id || chart.zhi_shi_palace_id;
+    const fuPalace = palaces.find(p => p && p.palace_id === fuPalaceId);
+    const shiPalace = palaces.find(p => p && p.palace_id === shiPalaceId);
+    const leadStarZh = fushi.value_star_zh || fuPalace?.star_zh || chart.chief_star_code || '—';
+    const leadStarTh = fuPalace?.star_name_th || '';
+    const leadDoorZh = fushi.value_door_zh || shiPalace?.door_zh || (DOOR_CN[chart.zhi_shi_door_code]?.zh) || chart.zhi_shi_door_code || '—';
+    const leadDoorTh = shiPalace?.door_name_th || '';
     /* yuanju · header palace-wrap */
     const yEl = document.getElementById('qm-head-ju');
     if (yEl) yEl.textContent = juZh + ' · ' + (pole==='陰'?'YIN':'YANG') + ' ' + num;
@@ -1167,8 +1211,8 @@ window.applyI18N = applyI18N;
     /* chart-meta pill bar */
     _set('qm-pill-ju',   juZh);
     _set('qm-pill-dun',  chart.dun_gan_zh || '—');
-    _set('qm-pill-fu',   chart.tian_yi_star_zh || (chart.chief_star_code || '—'));
-    _set('qm-pill-shi',  chart.zhi_shi_door_code || '—');
+    _set('qm-pill-fu',   qimenTermLabel(leadStarTh, leadStarZh, fuPalaceId));
+    _set('qm-pill-shi',  qimenTermLabel(leadDoorTh, leadDoorZh, shiPalaceId));
     _set('qm-pill-xun',  (chart.xun_hour_zh || '—') + '旬');
     const voids = chart.void_hour_zh;
     _set('qm-pill-void', Array.isArray(voids) ? voids.join('') : (voids || '—'));
@@ -1255,7 +1299,7 @@ window.applyI18N = applyI18N;
       if (!j.ok && !j.data) { console.warn('[qimen] api error', j); return; }
       const d = j.data || j;
       window._qimenLast = d;
-      renderHeader(d.chart || {});
+      renderHeader(d.chart || {}, d.palaces || []);
       renderPalaces(d.palaces || []);
       renderFormations(d.stored_formations || [], d.compound_formations || []);
       /* Step 3 · render detail panel หลัง palaces พร้อม · default = 直符 palace */
@@ -1578,20 +1622,27 @@ window.applyI18N = applyI18N;
     health:     {emoji:'🏥', th:'รักษา · สุขภาพ', en:'Health', zh:'療病'},
   };
   const DOOR_OPTS = [
-    {c:'KAI_MEN',zh:'開門',th:'เปิด·ดี'},
-    {c:'XIU_MEN',zh:'休門',th:'พัก·ดี'},
-    {c:'SHENG_MEN',zh:'生門',th:'เกิด·ดี'},
-    {c:'JING_VIEW_MEN',zh:'景門',th:'ดู·กลาง'},
-    {c:'DU_MEN',zh:'杜門',th:'ปิด·กลาง'},
-    {c:'JING_FEAR_MEN',zh:'驚門',th:'ตกใจ·ไม่ดี'},
-    {c:'SHANG_MEN',zh:'傷門',th:'บาดเจ็บ·ไม่ดี'},
-    {c:'SI_MEN',zh:'死門',th:'ตาย·ไม่ดี'},
+    {c:'KAI_MEN',zh:'開門',th:'ประตูเปิด · ดี'},
+    {c:'XIU_MEN',zh:'休門',th:'ประตูพัก · ดี'},
+    {c:'SHENG_MEN',zh:'生門',th:'ประตูเกิด · ดี'},
+    {c:'JING_VIEW_MEN',zh:'景門',th:'ประตูสว่าง · กลาง'},
+    {c:'DU_MEN',zh:'杜門',th:'ประตูปิด · กลาง/งานลับ'},
+    {c:'JING_FEAR_MEN',zh:'驚門',th:'ประตูตกใจ · ระวัง'},
+    {c:'SHANG_MEN',zh:'傷門',th:'ประตูบาดเจ็บ · ระวัง'},
+    {c:'SI_MEN',zh:'死門',th:'ประตูตาย · เลี่ยง'},
   ];
   /* ไทยนำจีนรอง · ชื่อ 9 ดาว / 8 เทพ (ทับศัพท์) */
   const STAR_TH = { TIAN_PENG:'เทียนเผิง', TIAN_REN:'เทียนเริ่น', TIAN_CHONG:'เทียนชง', TIAN_FU:'เทียนฝู่', TIAN_YING:'เทียนอิง', TIAN_QIN:'เทียนฉิน', TIAN_ZHU:'เทียนจู้', TIAN_XIN:'เทียนซิน', TIAN_RUI:'เทียนรุ่ย' };
   const DEITY_TH = { ZHI_FU:'จื๋อฝู', TENG_SHE:'เถิงเสอ', TAI_YIN:'ไท่อิน', LIU_HE:'ลิ่วเหอ', BAI_HU:'ไป๋หู่', XUAN_WU:'เสวียนอู่', JIU_DI:'จิ่วตี้', JIU_TIAN:'จิ่วเทียน' };
   const STAR_OPTS = ['TIAN_PENG','TIAN_REN','TIAN_CHONG','TIAN_FU','TIAN_YING','TIAN_QIN','TIAN_ZHU','TIAN_XIN','TIAN_RUI'].map(c => ({c, zh: STAR_CN[c] || c, th: STAR_TH[c] || ''}));
   const DEITY_OPTS = ['ZHI_FU','TENG_SHE','TAI_YIN','LIU_HE','BAI_HU','XUAN_WU','JIU_DI','JIU_TIAN'].map(c => ({c, zh: DEITY_CN[c] || c, th: DEITY_TH[c] || ''}));
+  const DOOR_BY_ZH = Object.fromEntries(DOOR_OPTS.map(x => [x.zh, x.th]));
+  const STAR_BY_ZH = Object.fromEntries(STAR_OPTS.map(x => [x.zh, x.th]));
+  const DEITY_BY_ZH = Object.fromEntries(DEITY_OPTS.map(x => [x.zh, x.th]));
+  function qmSearchTermLabel(zh){
+    const th = DOOR_BY_ZH[zh] || STAR_BY_ZH[zh] || DEITY_BY_ZH[zh] || '';
+    return th ? `${th} ${zh}` : (zh || '·');
+  }
 
   /* render activity buttons ตามภาษาปัจจุบัน · คงสถานะ on เดิม
    * ถ้ามีปุ่มอยู่แล้ว → แก้เฉพาะ label (กัน event listener หลุด) */
@@ -1700,11 +1751,11 @@ window.applyI18N = applyI18N;
     window._qmActivity = 'wealth';
     /* spec selects */
     const ds = document.getElementById('qm-spec-doors');
-    if (ds) ds.innerHTML = DOOR_OPTS.map(d => `<option value="${d.c}">${d.zh} · ${d.th}</option>`).join('');
+    if (ds) ds.innerHTML = DOOR_OPTS.map(d => `<option value="${d.c}">${d.th} · ${d.zh}</option>`).join('');
     const ss = document.getElementById('qm-spec-stars');
-    if (ss) ss.innerHTML = STAR_OPTS.map(s => `<option value="${s.c}">${s.zh}${s.th?' · '+s.th:''}</option>`).join('');
+    if (ss) ss.innerHTML = STAR_OPTS.map(s => `<option value="${s.c}">${s.th || s.c} · ${s.zh}</option>`).join('');
     const es = document.getElementById('qm-spec-deities');
-    if (es) es.innerHTML = DEITY_OPTS.map(d => `<option value="${d.c}">${d.zh}${d.th?' · '+d.th:''}</option>`).join('');
+    if (es) es.innerHTML = DEITY_OPTS.map(d => `<option value="${d.c}">${d.th || d.c} · ${d.zh}</option>`).join('');
     /* date defaults · today → +6 days */
     const today = new Date();
     const wkEnd = new Date(today.getTime() + 6*86400000);
@@ -1805,6 +1856,11 @@ window.applyI18N = applyI18N;
       const deities= [...(document.getElementById('qm-spec-deities')?.selectedOptions||[])].map(o=>o.value);
       const sanqi  = [['qm-spec-yi','YI'],['qm-spec-bing','BING'],['qm-spec-ding','DING']]
         .filter(([id])=>document.getElementById(id)?.checked).map(([_,v])=>v);
+      if (!doors.length && !stars.length && !deities.length && !sanqi.length) {
+        if (meta) meta.textContent = 'กรุณาเลือกอย่างน้อย 1 องค์ประกอบ · 門/星/神/三奇';
+        if (goBtn) goBtn.disabled = false;
+        return;
+      }
       payload.spec = { doors, stars, deities, sanqi };
     }
     try {
@@ -1817,7 +1873,9 @@ window.applyI18N = applyI18N;
       const aiOut  = document.getElementById('qm-srch-ai-out');
       if (aiOut) { aiOut.style.display = 'none'; aiOut.textContent = ''; }
       if (!j.ok) { if (meta) meta.textContent = '❌ ' + (j.error||'error'); if (aiWrap) aiWrap.style.display='none'; return; }
-      if (meta) meta.textContent = `สแกน ${j.total_scanned} ชั่วยาม · ตรง ${j.total_matched} · top ${j.top.length}`;
+      if (meta) meta.textContent = mode === 'activity'
+        ? `สแกน ${j.total_scanned} ชั่วยาม · จัดอันดับ ${j.total_matched} ชั่วยาม · top ${j.top.length}`
+        : `สแกน ${j.total_scanned} ชั่วยาม · ตรงเงื่อนไข ${j.total_matched} · top ${j.top.length}`;
       window._qmLastSearch = j; /* cache สำหรับ AI advice */
       if (!j.top.length){
         if (out) out.innerHTML = '<div style="text-align:center;color:var(--fg-faint);padding:20px;font-family:var(--thai);font-size:13px">ไม่เจอผังที่ตรง</div>';
@@ -1835,7 +1893,7 @@ window.applyI18N = applyI18N;
         return `<div class="qm-result-row" data-date="${qmEsc(t.date)}" data-time="${qmEsc(t.time)}">
           <div class="dt">${qmEsc(dtTh)}</div>
           <div class="body">
-            <div class="head">${qmEsc(t.door||'·')} · ${qmEsc(t.star||'·')} · ${qmEsc(t.deity||'·')}</div>
+            <div class="head">${qmEsc(qmSearchTermLabel(t.door))} · ${qmEsc(qmSearchTermLabel(t.star))} · ${qmEsc(qmSearchTermLabel(t.deity))}</div>
             <div class="dir">วัง ${qmEsc(t.palace_id)} ${qmEsc(t.direction||'')} · 天${qmEsc(t.heaven_stem||'·')}/地${qmEsc(t.earth_stem||'·')} · ${juPole}${qmEsc(t.ju_number||'')}局 ${matchesHtml}</div>
           </div>
           <div class="score">${qmEsc(t.score)}</div>
