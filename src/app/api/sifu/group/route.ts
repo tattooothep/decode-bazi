@@ -40,12 +40,19 @@ import { stripIdLine } from "@/lib/identity-lock";
 export const runtime = "nodejs"; // child_process spawn (เหมือน /api/sifu)
 
 type Msg = { role: "user" | "assistant"; content: string };
+type SifuModel = "claude-max-cli" | "codex-cli";
 
 const TIMEOUT_MS = 600_000; // เท่ากับ /api/sifu · ตำราคลาสสิก + หลายคน = prompt ยาว
 const CHILD_USER = "jarvis";
 const MAX_GROUP = 10; // cap กัน abuse/token
 const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 7_000);
 const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
+const CODEX_CLI_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
+
+function resolveSifuModel(raw: unknown): SifuModel {
+  const s = String(raw || "").trim().toLowerCase();
+  return s === "codex" || s === "codex-cli" ? "codex-cli" : "claude-max-cli";
+}
 
 function promptSafe(raw: unknown, fallback = "—"): string {
   const s = String(raw ?? "").replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
@@ -435,6 +442,89 @@ function spawnClaudeStreaming(prompt: string) {
   return c;
 }
 
+function codexCliArgs(): string[] {
+  const args = [
+    "exec",
+    "--json",
+    "--ephemeral",
+    "--sandbox", "read-only",
+    "--skip-git-repo-check",
+    "-C", "/tmp",
+  ];
+  if (CODEX_CLI_MODEL) args.push("-m", CODEX_CLI_MODEL);
+  args.push("-");
+  return args;
+}
+
+function codexErrorMessage(err: string): string {
+  if (/401 Unauthorized|Missing bearer|authentication/i.test(err)) {
+    return "codex_cli_auth_required · Codex CLI ยังไม่ได้ login สำหรับ user jarvis";
+  }
+  return err.slice(0, 300) || "codex cli failed";
+}
+
+function cliErrorMessage(model: SifuModel, err: string): string {
+  return model === "codex-cli" ? codexErrorMessage(err) : (err.slice(0, 300) || "claude cli failed");
+}
+
+async function runCodexCli(prompt: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const c = spawn("sudo", ["-u", CHILD_USER, "-H", "codex", ...codexCliArgs()], {
+      cwd: "/tmp",
+      env: process.env,
+    });
+    let rawOut = "";
+    let finalText = "";
+    let err = "";
+    const timer = setTimeout(() => { try { c.kill("SIGKILL"); } catch {} reject(new Error("timeout")); }, TIMEOUT_MS);
+    c.stdout.on("data", chunk => {
+      const text = chunk.toString();
+      rawOut += text;
+      for (const line of text.split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        try {
+          const obj = JSON.parse(trimmed);
+          if (obj.type === "item.completed" && obj.item?.type === "agent_message" && typeof obj.item.text === "string") {
+            finalText = obj.item.text;
+          } else if (obj.type === "turn.failed" && obj.error?.message) {
+            err += "\n" + obj.error.message;
+          } else if (obj.type === "error" && obj.message) {
+            err += "\n" + obj.message;
+          }
+        } catch {}
+      }
+    });
+    c.stderr.on("data", chunk => { err += chunk.toString(); });
+    c.on("close", code => {
+      clearTimeout(timer);
+      const out = finalText || rawOut;
+      if (code === 0 && out.trim()) resolve(out.trim());
+      else reject(new Error(`codex exit ${code} · ${codexErrorMessage(err)}`));
+    });
+    c.stdin.write(prompt);
+    c.stdin.end();
+  });
+}
+
+async function runSifuCli(prompt: string, model: SifuModel): Promise<string> {
+  return model === "codex-cli" ? runCodexCli(prompt) : runClaudeCli(prompt);
+}
+
+function spawnCodexStreaming(prompt: string) {
+  const c = spawn("sudo", ["-u", CHILD_USER, "-H", "codex", ...codexCliArgs()], {
+    cwd: "/tmp",
+    env: process.env,
+  });
+  c.stdin.write(prompt);
+  c.stdin.end();
+  return c;
+}
+
+function spawnSifuStreaming(prompt: string, model: SifuModel) {
+  return model === "codex-cli" ? spawnCodexStreaming(prompt) : spawnClaudeStreaming(prompt);
+}
+
 /* Parser · stream-json line-by-line · copy จาก /api/sifu makeJsonlParser */
 function makeJsonlParser(onText: (text: string) => void) {
   let buf = "";
@@ -456,6 +546,40 @@ function makeJsonlParser(onText: (text: string) => void) {
       }
     }
   };
+}
+
+function makeCodexJsonlParser(onText: (text: string) => void, onError: (text: string) => void) {
+  let buf = "";
+  const decoder = new StringDecoder("utf8");
+  return (chunk: Buffer) => {
+    buf += decoder.write(chunk);
+    let nl;
+    while ((nl = buf.indexOf("\n")) !== -1) {
+      const line = buf.slice(0, nl).trim();
+      buf = buf.slice(nl + 1);
+      if (!line) continue;
+      try {
+        const obj = JSON.parse(line);
+        if (obj.type === "item.completed" && obj.item?.type === "agent_message" && typeof obj.item.text === "string") {
+          onText(obj.item.text);
+        } else if (obj.type === "turn.failed" && obj.error?.message) {
+          onError(obj.error.message);
+        } else if (obj.type === "error" && obj.message) {
+          onError(obj.message);
+        }
+      } catch {
+        onError(line);
+      }
+    }
+  };
+}
+
+function makeSifuCliParser(
+  model: SifuModel,
+  onText: (text: string) => void,
+  onError: (text: string) => void
+) {
+  return model === "codex-cli" ? makeCodexJsonlParser(onText, onError) : makeJsonlParser(onText);
 }
 
 const SIFU_WAITING_PHASES = [
@@ -501,6 +625,7 @@ export async function POST(req: Request) {
     const history: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
     const groupLabel: string = (body.groupLabel || "กลุ่ม").toString().trim().slice(0, 60) || "กลุ่ม";
     const lang: string = ["th", "en", "zh"].includes(body.lang) ? body.lang : "th";
+    const sifuModel = resolveSifuModel(body.model);
 
     if (!message) return NextResponse.json({ error: "no message" }, { status: 400 });
     if (message.length > 2000) return NextResponse.json({ error: "message too long" }, { status: 400 });
@@ -577,7 +702,7 @@ export async function POST(req: Request) {
       (req.headers.get("accept") || "").includes("text/event-stream") || body.stream === true;
     if (wantsStream) {
       const encoder = new TextEncoder();
-      let activeChild: ReturnType<typeof spawnClaudeStreaming> | null = null;
+      let activeChild: ReturnType<typeof spawnSifuStreaming> | null = null;
       const stream = new ReadableStream({
         start(controller) {
           let closed = false;
@@ -603,15 +728,16 @@ export async function POST(req: Request) {
             }
           };
 
-          send("meta", { cached: false, count: ordered.length, startedAt: t0 });
+          send("meta", { cached: false, count: ordered.length, model: sifuModel, startedAt: t0 });
           stopHeartbeat = startSifuHeartbeat(send, (pingCount) => {
             if (!firstDeltaSeen) return rotatingWaitingPhase(pingCount);
             if (!idStripped) return "identity_lock";
             if (!firstChunkSent) return "waiting_visible_chunk";
             return "streaming";
           });
-          const child = spawnClaudeStreaming(prompt);
+          const child = spawnSifuStreaming(prompt, sifuModel);
           activeChild = child;
+          let cliErr = "";
           const killTimer = setTimeout(() => {
             try { child.kill("SIGKILL"); } catch {}
             send("error", { error: "timeout" });
@@ -621,11 +747,11 @@ export async function POST(req: Request) {
           const sendFirstOnce = () => {
             if (!firstChunkSent) {
               firstChunkSent = true;
-              send("first", { ms: Date.now() - t0, model: "claude-max-cli" });
+              send("first", { ms: Date.now() - t0, model: sifuModel });
             }
           };
           const emit = (text: string) => { full += text; sendFirstOnce(); send("chunk", { text }); };
-          const parser = makeJsonlParser((text) => {
+          const parser = makeSifuCliParser(sifuModel, (text) => {
             firstDeltaSeen = true;
             if (!idStripped) {
               idBuf += text;
@@ -642,10 +768,14 @@ export async function POST(req: Request) {
               return;
             }
             emit(text);
+          }, (text) => {
+            cliErr += "\n" + text;
           });
           child.stdout.on("data", parser);
           child.stderr.on("data", (chunk: Buffer) => {
-            console.warn("[sifu/group sse stderr]", chunk.toString().slice(0, 200));
+            const text = chunk.toString();
+            cliErr += text;
+            console.warn("[sifu/group sse stderr]", text.slice(0, 200));
           });
           child.on("close", (code) => {
             activeChild = null;
@@ -654,9 +784,9 @@ export async function POST(req: Request) {
             if (!idStripped && idBuf) { idStripped = true; const r = stripIdLine(idBuf); if (r) emit(r); }
             const ms = Date.now() - t0;
             if (code === 0 && full.trim()) {
-              send("done", { ms, model: "claude-max-cli", cached: false, chars: full.length });
+              send("done", { ms, model: sifuModel, cached: false, chars: full.length });
             } else {
-              send("error", { error: `claude exit ${code}`, ms });
+              send("error", { error: `${sifuModel} exit ${code} · ${cliErrorMessage(sifuModel, cliErr)}`, ms });
             }
             safeClose();
           });
@@ -677,8 +807,8 @@ export async function POST(req: Request) {
     }
 
     /* JSON mode */
-    const reply = stripIdLine(await runClaudeCli(prompt));  // strip ⟦ID⟧ บรรทัดแรก (กันหลุดจอ group)
-    return NextResponse.json({ reply, model: "claude-max-cli" });
+    const reply = stripIdLine(await runSifuCli(prompt, sifuModel));  // strip ⟦ID⟧ บรรทัดแรก (กันหลุดจอ group)
+    return NextResponse.json({ reply, model: sifuModel });
   } catch (e: unknown) {
     const err = e as Error;
     console.error("[sifu/group] error:", err);
