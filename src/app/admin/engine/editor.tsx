@@ -46,7 +46,7 @@ const MODULE_LABEL: Record<string, string> = {
   yongshen: "§3 用神 · Yongshen ranks",
   interactions: "§7 9 Interactions · 三合/六合/沖/破",
   luck_cycles: "§10 大運 · §19 流月日時 · §34 月運",
-  symbolic_stars: "§20 神煞 62 · polarity",
+  symbolic_stars: "§20 神煞 67 · polarity",
   annual_stars: "§33 流年神煞 · activation",
   fan_fu_yin: "§35 反吟/伏吟 · severity",
   border_case: "§38 Border Case · thresholds",

@@ -166,7 +166,7 @@ export function detectShenShaStars(pillars: Pillars): StarHit[] {
     tianDe:{zh:"天德貴人",th:"คุณฟ้า",polarity:"good"},
     yueDe:{zh:"月德貴人",th:"คุณเดือน",polarity:"good"},
     tianGuan:{zh:"天官貴人",th:"คุณราชการ",polarity:"good"},
-    /* +10 ใหม่ · เติมให้ครบ 62 ดวงเทียบ Voytek */
+    /* +10 ใหม่ · ชั้นฐาน 62 ดวงเทียบ Voytek */
     longDe:{zh:"龍德",th:"คุณมังกร",polarity:"good"},
     fuDe:{zh:"福德",th:"คุณบุญ",polarity:"good"},
     wuGui:{zh:"五鬼",th:"ห้าผี · แทงข้างหลัง",polarity:"bad"},
@@ -286,11 +286,16 @@ export function detectShenSha62(pillars: Pillars): StarHit[] {
     yueKong:{zh:"月空",th:"ฟ้าโล่งเดือน",polarity:"neutral"},
     liuXia:{zh:"流霞",th:"แสงร่วง",polarity:"bad"},
     taoHuaSha:{zh:"桃花殺",th:"เสน่ห์สังหาร",polarity:"bad"},
+    yinCuo:{zh:"陰錯",th:"หยินคลาด",polarity:"bad"},
+    yangCha:{zh:"陽差",th:"หยางคลาด",polarity:"bad"},
+    guLuan:{zh:"孤鸞",th:"หงส์เดี่ยว",polarity:"bad"},
+    luKu:{zh:"祿庫",th:"คลังลาภ",polarity:"neutral"},
+    jieLuKongWang:{zh:"截路空亡",th:"ทางตันว่าง",polarity:"bad"},
   };
-  const push = (code: string, hits: typeof positions[number][]) => {
+  const push = (code: string, hits: typeof positions[number][], anchor?: StarHit["anchor"]) => {
     if (hits.length === 0) return;
     const m = META_EXT[code]; if (!m) return;
-    extra.push({ code, ...m, pillars: hits });
+    extra.push({ code, ...m, pillars: hits, ...(anchor ? { anchor } : {}) });
   };
 
   /* A. Day Stem driver */
@@ -336,6 +341,35 @@ export function detectShenSha62(pillars: Pillars): StarHit[] {
   if (KUIGANG.includes(dayPillar)) push("kuiGang", ["day"]);
   const SHIEDAY = ["甲辰","乙巳","丙申","丁亥","戊戌","己丑","庚辰","辛巳","壬申","癸亥"];
   if (SHIEDAY.includes(dayPillar)) push("shiE", ["day"]);
+  /* 陰陽差錯日 · canonical 12-day list, split by day-stem parity for UI labels. */
+  const YANG_CHA_DAYS = ["丙子","戊寅","壬辰","丙午","戊申","壬戌"];
+  const YIN_CUO_DAYS = ["丁丑","辛卯","癸巳","丁未","辛酉","癸亥"];
+  if (YANG_CHA_DAYS.includes(dayPillar)) push("yangCha", ["day"], "DP");
+  if (YIN_CUO_DAYS.includes(dayPillar)) push("yinCuo", ["day"], "DP");
+  const GU_LUAN_DAYS = ["乙巳","丁巳","辛亥","戊申","甲寅","丙午","戊午","壬子"];
+  if (GU_LUAN_DAYS.includes(dayPillar)) push("guLuan", ["day"], "DP");
+  /* 祿庫 · static wealth-vault marker only; mukuStates decides open/closed/useful/harmful. */
+  const LU_KU_BY_DAY_STEM: Record<string, string[]> = {
+    甲:["戌","丑"], 乙:["戌","丑"], /* 木日財(土) controversial; mark only 戊/己 tombs, not all four earth branches. */
+    丙:["丑"], 丁:["丑"],
+    戊:["辰"], 己:["辰"],
+    庚:["未"], 辛:["未"],
+    壬:["戌"], 癸:["戌"],
+  };
+  const luKuTargets = LU_KU_BY_DAY_STEM[ds] || [];
+  const luKuHits = positions.filter(p => luKuTargets.includes(pillars[p]!.branch));
+  push("luKu", luKuHits, "DS");
+  /* 截路空亡 · 三命通會: 只以日取時見之. Do not emit without a known hour pillar. */
+  const JIE_LU_KONG_WANG_HOUR: Record<string, string[]> = {
+    甲:["申","酉"], 己:["申","酉"],
+    乙:["午","未"], 庚:["午","未"],
+    丙:["辰","巳"], 辛:["辰","巳"],
+    丁:["寅","卯"], 壬:["寅","卯"],
+    戊:["戌","亥"], 癸:["戌","亥"],
+  };
+  if (pillars.hour && (JIE_LU_KONG_WANG_HOUR[ds] || []).includes(pillars.hour.branch)) {
+    push("jieLuKongWang", ["hour"], "DS");
+  }
   /* E. 飛刃 (沖 of 羊刃) */
   const yangRen: Record<string,string> = {"甲":"卯","乙":"寅","丙":"午","丁":"巳","戊":"午","己":"巳","庚":"酉","辛":"申","壬":"子","癸":"亥"};
   const yangRenBr = yangRen[ds];

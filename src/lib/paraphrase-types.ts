@@ -190,7 +190,7 @@ export const TYPES: Record<string, ParaphraseType> = {
   symbolic_star: {
     type: "symbolic_star",
     table: "ref_symbolic_stars_62",
-    section: "§20 Symbolic Stars · 神煞 62 (25 seeded · ขาดอีก 37)",
+    section: "§20 Symbolic Stars · 神煞 67 (25 seeded · ขาดอีก 42)",
     pkColumn: "id",
     listColumns: ["id", "zh", "title_en", "polarity", "category"],
     fields: [

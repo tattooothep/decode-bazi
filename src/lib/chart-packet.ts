@@ -1480,11 +1480,11 @@ export function buildStructuredChartPacket(
     }));
     const phase = ext.three_phases[k];
     /* 神煞: เรียงดาวร้ายขึ้นก่อน (กัน slice ตัดดาวร้ายสำคัญ 災煞/劍鋒/歲破 ที่อยู่ท้าย array ทิ้ง)
-     * cap 8/เสา กัน prompt ยาว · ส่ง polarity ไปด้วย AI จะได้ไม่เดาดี-ร้าย (เคยขาด → อ่านอุบัติเหตุ/ขัดแย้งไม่ได้) */
+     * cap 15/เสา ให้ AI เห็นดาวช่วยสำคัญที่มักตามหลังดาวเตือน · ส่ง polarity ไปด้วย AI จะได้ไม่เดาดี-ร้าย */
     const POL_ORDER: Record<string, number> = { bad: 0, good: 1, neutral: 2 };
     const stars = [...(ext.special_stars[k] || [])]
       .sort((a, b) => (POL_ORDER[a.polarity] ?? 3) - (POL_ORDER[b.polarity] ?? 3))
-      .slice(0, 8)
+      .slice(0, 15)
       .map((s) => ({ name: s.th || s.zh, polarity: s.polarity }));
     const hex = ext.palace_readings[k]?.hex;
     const ny = ext.nayin[k];
