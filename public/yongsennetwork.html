@@ -127,7 +127,7 @@
   .center-node:hover{box-shadow:0 0 80px var(--solar-glow);}
   .center-node .glyph{font-family:var(--tc);font-size:64px;font-weight:700;color:var(--gold);line-height:1;}
   .center-node .name{font-family:var(--serif);font-size:14px;font-weight:500;margin-top:4px;}
-  .center-node .role{font-family:var(--mono);font-size:8px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-top:2px;}
+  .center-node .role{font-family:var(--thai);font-size:10px;letter-spacing:0;color:var(--gold);margin-top:2px;}
 
   /* person nodes */
   .node{position:absolute;width:88px;height:88px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border:2px solid;background:var(--bg-2);transition:opacity .4s ease, border-color .3s, background .3s;}
@@ -149,7 +149,7 @@
   .node.elem-metal .ng{color:var(--metal);}
   .node.elem-water .ng{color:var(--water);}
 	  .node.is-self{box-shadow:0 0 0 3px var(--gold-soft), 0 0 0 1px var(--gold);}
-	  .node.is-self::before{content:'YOU';position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--gold);background:var(--bg);padding:2px 6px;border-radius:99px;border:1px solid var(--gold);}
+	  .node.is-self::before{content:'คุณ';position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:var(--thai);font-size:9px;letter-spacing:0;color:var(--gold);background:var(--bg);padding:2px 7px;border-radius:99px;border:1px solid var(--gold);}
 
 	  .group-node{position:absolute;width:152px;min-height:104px;border-radius:12px;border:1px solid var(--tile-bd);background:linear-gradient(160deg,var(--tile),var(--bg-2));display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;padding:14px 16px;cursor:pointer;z-index:8;box-shadow:0 14px 38px rgba(0,0,0,.18);transition:transform .2s,border-color .2s,background .2s;}
 	  .group-node:hover{transform:translate(-50%,-50%) scale(1.04);border-color:var(--gold);z-index:22;}
@@ -170,14 +170,14 @@
 	  .lines{position:absolute;inset:0;pointer-events:none;z-index:1;}
 
   /* 🌌 node role label */
-  .node .rl{font-family:var(--mono);font-size:7px;letter-spacing:.05em;color:var(--fg-faint);text-transform:uppercase;margin-top:1px;text-align:center;line-height:1.1;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .node .rl{font-family:var(--thai);font-size:8px;letter-spacing:0;color:var(--fg-faint);margin-top:1px;text-align:center;line-height:1.1;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
   /* 🛈 hover tooltip */
   .hk-node-tip{position:fixed;z-index:60;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(14px);border:1px solid var(--gold);border-radius:12px;padding:14px 16px;min-width:200px;max-width:280px;box-shadow:0 8px 24px rgba(0,0,0,.45);font-family:var(--thai);font-size:12px;color:var(--fg);pointer-events:none;opacity:0;transform:translateY(4px);transition:.15s;}
   .hk-node-tip.show{opacity:1;transform:translateY(0);}
   .hk-node-tip .ng{font-family:var(--tc);font-size:22px;font-weight:700;color:var(--gold);}
   .hk-node-tip .nm{font-family:var(--serif);font-size:16px;color:var(--fg);margin-top:2px;}
-  .hk-node-tip .rl{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-top:2px;}
+  .hk-node-tip .rl{font-family:var(--thai);font-size:11px;letter-spacing:0;color:var(--fg-faint);margin-top:2px;}
   .hk-node-tip .sc{margin-top:8px;padding-top:8px;border-top:1px dashed var(--tile-bd);}
   .hk-node-tip .sc b{font-family:var(--serif);font-size:24px;font-weight:300;font-style:italic;}
   .hk-node-tip .sc.pos b{color:var(--good);}
@@ -275,9 +275,16 @@
   .pc-avatar.elem-earth{border-color:var(--earth);background:var(--earth-bg);color:var(--earth);}
   .pc-avatar.elem-metal{border-color:var(--metal);background:var(--metal-bg);color:var(--metal);}
   .pc-avatar.elem-water{border-color:var(--water);background:var(--water-bg);color:var(--water);}
+  .hk-term{display:inline-flex;align-items:center;gap:4px;font-family:var(--thai);font-weight:700;letter-spacing:0;white-space:nowrap;}
+  .hk-term .zh{font-family:var(--tc);font-weight:700;opacity:.78;}
+  .hk-term.elem-wood{color:var(--wood);}
+  .hk-term.elem-fire{color:var(--fire);}
+  .hk-term.elem-earth{color:var(--earth);}
+  .hk-term.elem-metal{color:var(--metal);}
+  .hk-term.elem-water{color:var(--water);}
   .pc-meta{flex:1;min-width:0;}
   .pc-name{font-family:var(--serif);font-size:18px;font-weight:500;color:var(--fg);}
-  .pc-role{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--fg-faint);text-transform:uppercase;margin-top:2px;}
+  .pc-role{font-family:var(--thai);font-size:11px;letter-spacing:0;color:var(--fg-faint);margin-top:2px;}
   .pc-tag{font-family:var(--thai);font-size:11px;color:var(--fg-soft);margin-top:4px;}
   .pc-overview-btn{display:none;align-self:flex-start;background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--gold);padding:7px 10px;border-radius:999px;font-family:var(--mono);font-size:9px;letter-spacing:.12em;white-space:nowrap;cursor:pointer;transition:.2s;}
   .person-card.own-mode .pc-overview-btn{display:inline-flex;align-items:center;gap:4px;}
@@ -532,9 +539,9 @@
     <div class="sub" data-i18n="n.coach.sub">3 วงโคจร · ใกล้ = ผลมาก · ทำตามนี้ได้เลย</div>
     <div class="hk-coach-tips">
       <div class="hk-coach-tip"><span class="ico">👆</span><span class="txt" data-i18n="n.coach.t1"><b data-i18n="auto.n.501">คลิกคน</b> ในวงโคจร — เปิดดูดวงคนนั้นเต็มๆ</span></div>
-      <div class="hk-coach-tip"><span class="ico">🖐</span><span class="txt" data-i18n="n.coach.t2"><b data-i18n="auto.n.502">กดค้าง</b> หรือ <b data-i18n="auto.n.503">Shift+คลิก</b> — ย้าย Center มาที่คนนั้น · เห็นโลกในมุมเขา</span></div>
-      <div class="hk-coach-tip"><span class="ico">🛈</span><span class="txt" data-i18n="n.coach.t3"><b data-i18n="auto.n.504">วาง mouse ค้าง</b> ที่คน — เห็นคะแนน + คำอธิบายไทย</span></div>
-      <div class="hk-coach-tip"><span class="ico">↺</span><span class="txt" data-i18n="n.coach.t4">ปุ่ม <b data-i18n="auto.n.505">"กลับไปดวงฉัน"</b> ขวาบน — รีเซ็ต Center</span></div>
+      <div class="hk-coach-tip"><span class="ico">🖐</span><span class="txt" data-i18n="n.coach.t2"><b data-i18n="auto.n.502">กดค้าง</b> หรือ <b data-i18n="auto.n.503">Shift+คลิก</b> — ย้ายดวงกลางมาที่คนนั้น · เห็นโลกในมุมเขา</span></div>
+      <div class="hk-coach-tip"><span class="ico">🛈</span><span class="txt" data-i18n="n.coach.t3"><b data-i18n="auto.n.504">วางเมาส์ค้าง</b> ที่คน — เห็นคะแนน + คำอธิบายไทย</span></div>
+      <div class="hk-coach-tip"><span class="ico">↺</span><span class="txt" data-i18n="n.coach.t4">ปุ่ม <b data-i18n="auto.n.505">"กลับไปดวงฉัน"</b> ขวาบน — รีเซ็ตดวงกลาง</span></div>
     </div>
     <button class="hk-coach-btn" id="hk-coach-dismiss" data-i18n="n.coach.btn">เข้าใจแล้ว · เริ่มเลย</button>
   </div>
@@ -544,7 +551,7 @@
     <div class="hk-luck-head">
       <div>
         <h3 id="hk-luck-title">ดูที่มาคะแนน</h3>
-        <div class="sub" id="hk-luck-sub">wrapper7 · own luck timeline</div>
+        <div class="sub" id="hk-luck-sub">ที่มาคะแนน · ดวงของเขาเอง</div>
       </div>
       <button class="hk-luck-close" id="hk-luck-close" type="button">×</button>
     </div>
@@ -576,14 +583,14 @@
 </header>
 
 <div class="stage">
-  <div class="crumb"><a href="/" data-i18n="n.crumb.home">หน้าหลัก</a> <span>/</span> <span data-i18n="n.crumb.cur">เครือข่าย · 用神 NETWORK</span></div>
+  <div class="crumb"><a href="/" data-i18n="n.crumb.home">หน้าหลัก</a> <span>/</span> <span data-i18n="n.crumb.cur">เครือข่ายธาตุช่วย · 用神</span></div>
 
   <!-- HERO HEAD -->
   <div class="hero-head">
     <div>
-      <div class="label" data-i18n="n.h.label">用神 · YONGSHEN NETWORK</div>
+      <div class="label" data-i18n="n.h.label">เครือข่ายธาตุช่วย · 用神</div>
       <h1 data-i18n="n.h.h1">คนรอบตัวคุณ <span class="tc">關係</span></h1>
-      <p class="lede" data-i18n="n.h.lede">วิเคราะห์ปฏิกิริยาระหว่างดวงคุณกับ <b data-i18n="auto.n.506">11 คน</b> ที่บันทึกไว้ — ใครหนุน · ใครชง · ใครเหมาะร่วมงาน · ใครควรระวัง <b data-i18n="auto.n.507">เปลี่ยนตามเวลา</b> ที่เลือก · <b data-i18n="auto.n.508">คลิกคนใดในวงโคจรเพื่อย้าย Center</b></p>
+      <p class="lede" data-i18n="n.h.lede">วิเคราะห์ปฏิกิริยาระหว่างดวงคุณกับ <b data-i18n="auto.n.506">11 คน</b> ที่บันทึกไว้ — ใครหนุน · ใครชง · ใครเหมาะร่วมงาน · ใครควรระวัง <b data-i18n="auto.n.507">เปลี่ยนตามเวลา</b> ที่เลือก · <b data-i18n="auto.n.508">คลิกคนใดในวงโคจรเพื่อย้ายดวงกลาง</b></p>
     </div>
     <div class="stats">
       <div><b id="stat-all">0</b><span data-i18n="n.h.s.all">คนทั้งหมด</span></div>
@@ -595,7 +602,7 @@
 
   <!-- TIME FILTER -->
   <div class="filter-bar">
-    <span class="label" data-i18n="n.f.label">⏱ TIME RANGE · 流</span>
+    <span class="label" data-i18n="n.f.label">⏱ ช่วงเวลา · 流</span>
     <div class="time-pills" id="time-pills">
       <button data-tf="day" data-i18n="n.f.day">วันนี้ · 流日</button>
       <button class="on" data-tf="week" data-i18n="n.f.week">สัปดาห์ · 週</button>
@@ -604,12 +611,12 @@
       <button data-tf="luck" data-i18n="n.f.luck">10 ปี · 大運</button>
     </div>
     <div class="filter-meta">
-      <span data-i18n="n.f.meta.dm">DM</span> <b id="meta-dm">己土</b> ·
+      <span data-i18n="n.f.meta.dm">วันเกิดหลัก</span> <b id="meta-dm">己土</b> ·
       <span data-i18n="n.f.meta.period">ช่วง</span> <b  id="meta-period" data-i18n="auto.n.509">7-13 พ.ค.</b> ·
-      <span data-i18n="n.f.meta.favor">ดวงเด่น</span> <b id="meta-favor">金 · 木</b>
+      <span data-i18n="n.f.meta.favor">ดวงเด่น</span> <b id="meta-favor"><span class="hk-term elem-metal">ทอง <span class="zh">金</span></span> · <span class="hk-term elem-wood">ไม้ <span class="zh">木</span></span></b>
     </div>
     <button id="hk-sync-db-btn" class="sync-db-btn" data-i18n="n.sync.btn" title="ดึงดวงจาก DB ใหม่ · ล้าง cache">🔄 ซิงค์</button>
-    <button id="hk-team-ai-btn" class="team-ai-btn" data-i18n="n.team.btn">💬 วิเคราะห์ทั้งทีม · AI</button>
+    <button id="hk-team-ai-btn" class="team-ai-btn" data-i18n="n.team.btn">💬 วิเคราะห์ทั้งทีม · ซินแสดิจิทัล</button>
   </div>
 
   <!-- 📜 วิธีคิดคะแนน · ตำราคลาสสิก ๕ ชั้น ๑๐ ปรับ -->
@@ -643,9 +650,9 @@
 
   <!-- VIEW MODE TABS -->
   <div class="view-tabs" id="view-tabs">
-    <button class="on" data-view="solar" data-i18n="n.vt.solar"><span class="tc">系</span>SOLAR SYSTEM · ภาพรวม</button>
-    <button data-view="grid" data-i18n="n.vt.grid"><span class="tc">人</span>PEOPLE GRID · การ์ดคน</button>
-    <button data-view="team" data-i18n="n.vt.team"><span class="tc">隊</span>TEAM BUILDER · จัดทีม</button>
+    <button class="on" data-view="solar" data-i18n="n.vt.solar"><span class="tc">系</span>ภาพรวมหมวด</button>
+    <button data-view="grid" data-i18n="n.vt.grid"><span class="tc">人</span>การ์ดรายคน</button>
+    <button data-view="team" data-i18n="n.vt.team"><span class="tc">隊</span>จัดทีม</button>
   </div>
 
   <!-- ─── VIEW 1: SOLAR ─── -->
@@ -659,7 +666,7 @@
       <div class="orbit-label o3" data-i18n="n.orb.far">◌ ไกล · ผลน้อย</div>
 
 	      <div class="center-info" id="center-info" style="display:none;">
-	        <span>CENTER · <b id="center-info-name">—</b></span>
+	        <span>ดวงกลาง · <b id="center-info-name">—</b></span>
 	        <button class="reset" id="center-reset" data-i18n="n.ci.reset">↺ กลับไปดวงฉัน</button>
 	      </div>
 	      <div class="solar-scope" id="solar-scope" style="display:none;"></div>
@@ -671,8 +678,8 @@
       <div class="solar-legend">
         <div class="lg-row"><div class="lg-line good"></div><span data-i18n="n.lg.good">หนุน · 合 · 用神</span></div>
         <div class="lg-row"><div class="lg-line bad"></div><span data-i18n="n.lg.bad">ชง · 沖 · 忌神</span></div>
-        <div class="lg-row"><div class="lg-line mid"></div><span data-i18n="n.lg.mid">กลาง · neutral</span></div>
-	        <div class="lg-row" style="margin-top:6px;color:var(--fg-faint);font-size:9px;" data-i18n="n.lg.tip">เริ่มจากหมวด · คลิกหมวดเพื่อดูคน · กดค้างคนเพื่อย้าย Center</div>
+        <div class="lg-row"><div class="lg-line mid"></div><span data-i18n="n.lg.mid">กลาง · ดูบริบท</span></div>
+	        <div class="lg-row" style="margin-top:6px;color:var(--fg-faint);font-size:9px;" data-i18n="n.lg.tip">เริ่มจากหมวด · คลิกหมวดเพื่อดูคน · กดค้างคนเพื่อย้ายดวงกลาง</div>
       </div>
 
       <div class="solar-controls">
@@ -705,49 +712,49 @@
   <div class="view-panel" id="view-team">
     <div class="compare-board">
       <div class="cmp-head">
-        <h3 data-i18n="n.t.h">จัดทีม <span class="tc">隊</span> · Team Synergy</h3>
-        <div class="syn" id="tb-syn-display" data-i18n="n.t.syn.loading">SYNERGY <b>—</b> / 100</div>
+        <h3 data-i18n="n.t.h">จัดทีม <span class="tc">隊</span> · แรงรวมทีม</h3>
+        <div class="syn" id="tb-syn-display" data-i18n="n.t.syn.loading">แรงรวมทีม <b>—</b> / 100</div>
       </div>
 
       <div class="team-activity-bar">
         <label>
           <span>กิจกรรม</span>
           <select id="tb-activity-select">
-            <optgroup label="Business">
+            <optgroup label="ธุรกิจ">
               <option value="deal_closing">เจรจา / ปิดดีล</option>
               <option value="client_meeting">ประชุมลูกค้า</option>
-              <option value="pitch_deck">Pitch / Presentation</option>
+              <option value="pitch_deck">นำเสนอ / พรีเซนต์</option>
               <option value="contract_negotiation">ต่อรองสัญญา</option>
               <option value="pricing">ตั้งราคา / แพ็กเกจ</option>
               <option value="product_launch">เปิดตัวสินค้า</option>
               <option value="investor_meeting">คุยนักลงทุน</option>
               <option value="board_meeting">ประชุมบอร์ด</option>
             </optgroup>
-            <optgroup label="Team / Work">
+            <optgroup label="ทีม / งาน">
               <option value="strategy">วางกลยุทธ์</option>
               <option value="project_kickoff">เริ่มโปรเจกต์</option>
-              <option value="roadmap">ทำ Roadmap</option>
+              <option value="roadmap">ทำแผนลำดับงาน</option>
               <option value="execution">ลุยงาน / ส่งมอบ</option>
               <option value="deadline_push">ดันงานใกล้เดดไลน์</option>
-              <option value="qa_review">ตรวจงาน / QA</option>
-              <option value="operations">วางระบบ / Operations</option>
-              <option value="training">สอนงาน / Training</option>
+              <option value="qa_review">ตรวจงาน / คุมคุณภาพ</option>
+              <option value="operations">วางระบบปฏิบัติการ</option>
+              <option value="training">สอนงาน</option>
               <option value="retrospective">สรุปบทเรียน</option>
             </optgroup>
-            <optgroup label="People">
+            <optgroup label="คน">
               <option value="hiring_interview">สัมภาษณ์คน</option>
-              <option value="performance_review">Feedback / ประเมินผลงาน</option>
+              <option value="performance_review">ให้คำแนะนำ / ประเมินผลงาน</option>
               <option value="conflict_resolution">ไกล่เกลี่ยความขัดแย้ง</option>
               <option value="partner_selection">เลือกพาร์ตเนอร์</option>
             </optgroup>
-            <optgroup label="Creative / Risk">
+            <optgroup label="สร้างสรรค์ / ความเสี่ยง">
               <option value="creative">ครีเอทีฟ / แคมเปญ</option>
               <option value="content_planning">วางคอนเทนต์</option>
               <option value="crisis">แก้วิกฤต</option>
-              <option value="legal_review">ตรวจความเสี่ยง / Legal</option>
+              <option value="legal_review">ตรวจความเสี่ยง / กฎหมาย</option>
               <option value="investment_decision">ตัดสินใจลงทุน</option>
             </optgroup>
-            <optgroup label="Family / Life">
+            <optgroup label="ครอบครัว / ชีวิต">
               <option value="family_money">คุยเงินในครอบครัว</option>
               <option value="elder_talk">คุยกับผู้ใหญ่</option>
               <option value="home_purchase">ซื้อบ้าน / ทรัพย์สิน</option>
@@ -765,8 +772,8 @@
           </select>
         </label>
         <div class="team-activity-actions">
-          <span>AI Assist</span>
-          <button id="tb-ai-plan-btn" type="button">💬 AI จัดทีมให้</button>
+          <span>ระบบช่วยจัดทีม</span>
+          <button id="tb-ai-plan-btn" type="button">💬 ให้ซินแสดิจิทัลช่วยจัดทีม</button>
         </div>
       </div>
 
@@ -777,8 +784,8 @@
 
       <details class="matrix team-advanced">
         <summary>
-          <span data-i18n="n.m.h">關係 MATRIX · ปฏิกิริยาในทีม</span>
-          <span style="color:var(--fg-faint);" data-i18n="n.m.dm">DM ปะทะกัน</span>
+          <span data-i18n="n.m.h">ปฏิกิริยาในทีม · 關係</span>
+          <span style="color:var(--fg-faint);" data-i18n="n.m.dm">วันเกิดหลักปะทะกัน</span>
         </summary>
         <div class="matrix-table" id="tb-matrix"></div>
       </details>
@@ -1123,7 +1130,7 @@
   setRel('self','pete', {day:60,week:71,month:22,year:-28,luck:40}, ['三合','傷官 + 正官']);
   setRel('self','gong', {day:48,week:45,month:52,year:18,luck:55}, ['用神 金','傷官']);
   setRel('self','aey',  {day:15,week:12,month:-8,year:5,luck:10},  ['比肩','同類']);
-  setRel('self','bee',  {day:5,week:8,month:14,year:22,luck:18},   ['七殺 ปะ DM','化']);
+  setRel('self','bee',  {day:5,week:8,month:14,year:22,luck:18},   ['七殺 ปะวันเกิดหลัก','化']);
   setRel('self','cee',  {day:8,week:6,month:18,year:12,luck:5},    ['正財 น้อย']);
   setRel('self','arun', {day:-65,week:-58,month:-70,year:-50,luck:-45}, ['沖 ปี','忌神 火','七殺']);
   setRel('self','mint', {day:-42,week:-48,month:-36,year:-16,luck:-22}, ['忌神 火','正印 ไป印旺']);
@@ -1526,7 +1533,7 @@
     c.dataset.id = center.id;
     c.innerHTML = `<div class="glyph">${center.glyph}</div>
       <div class="name">${center.name}</div>
-      <div class="role">${center.id==='self'?'YOU · 自':'CENTER'}</div>`;
+      <div class="role">${center.id==='self'?'คุณ · 自':'ดวงกลาง'}</div>`;
     if(center.id!=='self'){
       c.title='คลิกที่ "↺ กลับไปดวงฉัน" เพื่อรีเซ็ต';
 	    }
@@ -2144,7 +2151,7 @@
     if (!modal || !body) return;
     const tfLabel = {day:'วันนี้', week:'สัปดาห์', month:'เดือน', year:'ปี'}[tf] || tf;
     title.textContent = `${p.name} · ${tfLabel} ${tf === 'day' ? '流日' : tf === 'month' ? '流月' : tf === 'year' ? '流年' : '週'}`;
-    sub.textContent = 'wrapper7 · 用神 / 喜神 / 忌神 · 30 วัน / 12 เดือน / ปี';
+    sub.textContent = 'อ่านจากธาตุช่วย 用神 · ธาตุเสริม 喜神 · ธาตุควรระวัง 忌神 · 30 วัน / 12 เดือน / ปี';
     body.innerHTML = '<div style="color:var(--fg-soft);font-size:13px;">กำลังโหลดภาพรวม...</div>';
     modal.classList.add('show');
     modal.setAttribute('aria-hidden','false');
@@ -2156,7 +2163,7 @@
         <div class="hk-luck-big">${escHtml(score)}/100</div>
         <div class="hk-luck-reason">
           <b>${escHtml(tfLabel)}</b> · ${escHtml(sc.pillars?.[tf === 'day' ? 'day' : tf === 'month' ? 'month' : tf === 'year' ? 'year' : 'day'] || '')}<br>
-          ${colorizeLuckText(reason || sc.insight?.element || 'คะแนนนี้คำนวณจากเสาจรเทียบ wrapper7 ของดวงนี้')}
+          ${colorizeLuckText(reason || sc.insight?.element || 'คะแนนนี้คำนวณจากเสาจรเทียบธาตุที่ดวงนี้ต้องการ')}
         </div>
       </div>
       ${renderBreakdownBlock(tf, sc)}
@@ -2314,14 +2321,24 @@
     '己':'己土','庚':'庚金','辛':'辛金','壬':'壬水','癸':'癸水'
   };
   const ELEM_ZH = { wood:'木', fire:'火', earth:'土', metal:'金', water:'水' };
+  const STEM_TH_NAME = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
+  const ELEM_TH_NAME = { wood:'ไม้', fire:'ไฟ', earth:'ดิน', metal:'ทอง', water:'น้ำ' };
+  function stemTermHtml(stem){
+    const elem = elemFromStem(stem);
+    return `<span class="hk-term elem-${elem}">${escHtml(STEM_TH_NAME[stem] || stem)} <span class="zh">${escHtml(STEM_ZH_TH[stem] || stem)}</span></span>`;
+  }
+  function elemTermHtml(elem){
+    return `<span class="hk-term elem-${elem}">${escHtml(ELEM_TH_NAME[elem] || elem)} <span class="zh">${escHtml(ELEM_ZH[elem] || '')}</span></span>`;
+  }
   function updateMeta(){
     const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+    const setHtml = (id,v)=>{ const el=document.getElementById(id); if(el) el.innerHTML=v; };
     /* 1) DM · จาก self profile pillars */
-    let dm = '己土';
+    let dm = '己';
     const self = (typeof PEOPLE !== 'undefined') ? PEOPLE.find(p=>p.id==='self') : null;
     if (self && self.pillars && self.pillars.day && self.pillars.day.stem) {
       const s = self.pillars.day.stem;
-      dm = STEM_ZH_TH[s] || s;
+      dm = s;
     }
     /* 2) Period · range ตาม timeframe */
     const now = new Date();
@@ -2329,7 +2346,7 @@
     const days = tfMap[state.timeframe]||7;
     const end = new Date(now.getTime() + days*86400000);
     const fmtD = d => `${d.getDate()}/${d.getMonth()+1}`;
-    set('meta-dm', dm);
+    setHtml('meta-dm', stemTermHtml(dm));
     set('meta-period', `${fmtD(now)}-${fmtD(end)}`);
     /* 3) Favor · ดึงจาก yongshen 2 อันดับแรกจาก /api/chart (wrapper-6) */
     if (self && self.pillars && self.pillars.day && self.pillars.day.stem && !window._cachedFavor) {
@@ -2341,14 +2358,14 @@
           .then(d=>{
             if (!d) return;
             const ys = d.analysis?.strength_yongshen?.yongshenFinal || [];
-            const top2 = ys.slice(0,2).map(y => ELEM_ZH[y.element] || '');
-            window._cachedFavor = top2.length ? top2.filter(Boolean).join(' · ') : '';
-            if (window._cachedFavor) set('meta-favor', window._cachedFavor);
+            const top2 = ys.slice(0,2).map(y => y.element).filter(Boolean);
+            window._cachedFavor = top2.length ? top2.map(elemTermHtml).join(' · ') : '';
+            if (window._cachedFavor) setHtml('meta-favor', window._cachedFavor);
           })
           .catch(_=>{});
       }
     } else if (window._cachedFavor) {
-      set('meta-favor', window._cachedFavor);
+      setHtml('meta-favor', window._cachedFavor);
     }
   }
 
@@ -2581,7 +2598,7 @@
 	        <div class="ng">${escHtml(g.glyph || solarGroupGlyph(g.key))}</div>
 	        <div class="nm">${escHtml(g.label || solarGroupLabel(g.key))}</div>
 	        <div class="rl">${escHtml(g.hint || '')}</div>
-	        <div class="sc ${sc}"><b>${fmt(g.avg || 0)}</b> <span style="font-size:10px;color:var(--fg-faint);margin-left:6px;letter-spacing:.15em;">AVG</span></div>
+	        <div class="sc ${sc}"><b>${fmt(g.avg || 0)}</b> <span style="font-family:var(--thai);font-size:11px;color:var(--fg-faint);margin-left:6px;letter-spacing:0;">ค่าเฉลี่ย</span></div>
 	        <div class="rx ${sc}"><div class="rx-l">สรุปหมวด</div><div class="rx-t">ทั้งหมด ${g.people.length} คน · หนุน ${g.pos} · กลาง ${g.mid} · ระวัง ${g.neg} · คลิกเพื่อดูเฉพาะคนในหมวดนี้</div></div>
 	      `;
 	      _tipEl.classList.add('show');
@@ -2601,7 +2618,7 @@
 	      <div class="rl">${role||''}</div>
 	      <div class="sc ${sc}"><b>${score>0?'+'+score:score}</b> <span style="font-size:10px;color:var(--fg-faint);margin-left:6px;letter-spacing:.15em;">${state.timeframe.toUpperCase()}</span></div>
 	      ${renderPairTooltip(explain)}
-	      <div class="hint" data-i18n="n.tip.hint">👆 คลิก = ดูดวง · กดค้าง = ย้าย Center</div>
+	      <div class="hint" data-i18n="n.tip.hint">👆 คลิก = ดูดวง · กดค้าง = ย้ายดวงกลาง</div>
 	    `;
     _tipEl.classList.add('show');
   });
@@ -2699,7 +2716,7 @@ window.HK_I18N = {
   'auto.n.505': { th:'"กลับไปดวงฉัน"', en:'"Back to my chart"', zh:'"返回我的命盤"' },
   'auto.n.506': { th:'11 คน', en:'11 people', zh:'11人' },
   'auto.n.507': { th:'เปลี่ยนตามเวลา', en:'Changes over time', zh:'隨時間變化' },
-  'auto.n.508': { th:'คลิกคนใดในวงโคจรเพื่อย้าย Center', en:'Click anyone in orbit to recenter', zh:'點擊軌道中任一人以移動中心' },
+  'auto.n.508': { th:'คลิกคนใดในวงโคจรเพื่อย้ายดวงกลาง', en:'Click anyone in orbit to recenter', zh:'點擊軌道中任一人以移動中心' },
   'auto.n.509': { th:'7-13 พ.ค.', en:'May 7-13', zh:'5月7-13日' },
   'auto.n.510': { th:'7 มิติซ้อนกัน', en:'7 dimensions layered', zh:'7維度疊加' },
   'auto.n.511': { th:'15 ข้อ', en:'15 rules', zh:'15條' },
@@ -2732,30 +2749,30 @@ window.HK_I18N = {
   'auto.n.538': { th:'๑๑ · 調候กั้น 真從', en:'11 · 調候 blocks 真從', zh:'十一·調候阻真從' },
   'auto.n.539': { th:'ไฟจริง', en:'True fire', zh:'真火' },
   'auto.n.540': { th:'๑๒ · รากจริง (本氣/中氣/餘氣)', en:'12 · True root (本氣/中氣/餘氣)', zh:'十二·真根 (本氣/中氣/餘氣)' },
-  'auto.n.541': { th:'๑๓ · Self-Refutation', en:'13 · Self-Refutation', zh:'十三·自我否定' },
+  'auto.n.541': { th:'๑๓ · ทดสอบหักล้างตัวเอง', en:'13 · Self-Refutation', zh:'十三·自我否定' },
   'auto.n.542': { th:'ยงเสินปกติอธิบายดีกว่า', en:'Standard 用神 explains better', zh:'普通用神解釋更佳' },
   'auto.n.543': { th:'ปฏิเสธ', en:'Refute', zh:'否定' },
-  'auto.n.544': { th:'๑๔ · Structure Resonance', en:'14 · Structure Resonance', zh:'十四·格局共鳴' },
+  'auto.n.544': { th:'๑๔ · โครงสร้างดวงสะท้อนกัน', en:'14 · Structure Resonance', zh:'十四·格局共鳴' },
   'auto.n.545': { th:'โครงสร้างกับโครงสร้าง', en:'Structure to structure', zh:'格局對格局' },
-  'auto.n.546': { th:'๑๕ · Sentimental vs Non-Sentimental', en:'15 · Sentimental vs Non-Sentimental', zh:'十五·有情與無情' },
+  'auto.n.546': { th:'๑๕ · มีใจสัมพันธ์ vs ไม่มีใจสัมพันธ์', en:'15 · Sentimental vs Non-Sentimental', zh:'十五·有情與無情' },
   'auto.n.547': { th:'🔬 ส่วนเพิ่มของระบบ · ตำราเชิงลึก', en:'🔬 System extensions · in-depth classical', zh:'🔬 系統延伸·深層古籍' },
-  'auto.n.548': { th:'เทียบครบ ๔ หลัก (Four Pillars)', en:'Full Four Pillars comparison', zh:'四柱全對' },
+  'auto.n.548': { th:'เทียบครบ ๔ เสา', en:'Full Four Pillars comparison', zh:'四柱全對' },
   'auto.n.549': { th:'ก้านวัน', en:'Day stem', zh:'日干' },
   'auto.n.550': { th:'ก้านปี · ก้านเดือน · ก้านยาม', en:'Year · Month · Hour stems', zh:'年干·月干·時干' },
   'auto.n.551': { th:'หลายชั้น', en:'Multiple layers', zh:'多層' },
-  'auto.n.552': { th:'กิ่งข้ามผัง (Cross-pillar branch)', en:'Cross-pillar branch', zh:'跨柱地支' },
+  'auto.n.552': { th:'กิ่งข้ามเสา', en:'Cross-pillar branch', zh:'跨柱地支' },
   'auto.n.553': { th:'กิ่งปี-กิ่งปี · กิ่งเดือน-กิ่งเดือน · กิ่งยาม-กิ่งยาม', en:'Year-Year · Month-Month · Hour-Hour branches', zh:'年支-年支·月支-月支·時支-時支' },
   'auto.n.554': { th:'"จุดเชื่อม"', en:'"Connection point"', zh:'"接點"' },
   'auto.n.555': { th:'"จุดสะดุด"', en:'"Friction point"', zh:'"絆點"' },
-  'auto.n.556': { th:'คะแนนแยก ๒ ทิศ (Directional · A → B / B → A)', en:'Directional score (A → B / B → A)', zh:'雙向計分 (A→B / B→A)' },
+  'auto.n.556': { th:'คะแนนสองทิศ · A → B / B → A', en:'Directional score (A → B / B → A)', zh:'雙向計分 (A→B / B→A)' },
   'auto.n.557': { th:'เราหนุนเขา', en:'We support them', zh:'我扶他' },
   'auto.n.558': { th:'เขาดูดพลังเรา', en:'They drain our energy', zh:'他洩我' },
   'auto.n.559': { th:'แนะนำตามเจตนา · ๗๐% ไม่ฟันธง', en:'Guidance by intent · 70% non-deterministic', zh:'依意圖指引・70%不下定論' },
-  'auto.n.560': { th:'guidance ๓ มุม', en:'3-angle guidance', zh:'三角度指引' },
+  'auto.n.560': { th:'คำแนะนำ ๓ มุม', en:'3-angle guidance', zh:'三角度指引' },
   'auto.n.561': { th:'๗๐% ของผลขึ้นกับการตัดสินใจของคุณ', en:'70% of outcome depends on your decision', zh:'七成結果取決於你的抉擇' },
-  'auto.n.562': { th:'🤖 AI Sifu · ซินแสในระบบ', en:'🤖 AI Sifu · in-system master', zh:'🤖 AI師父・系統內師父' },
+  'auto.n.562': { th:'🤖 ซินแสดิจิทัลในระบบ', en:'🤖 AI Sifu · in-system master', zh:'🤖 AI師父・系統內師父' },
   'auto.n.563': { th:'โครงสร้างผังที่คำนวณเอง', en:'Self-computed chart structure', zh:'自算命盤格局' },
-  'auto.n.564': { th:'structure_label + 病 + 藥 + 通關 + tags จริง', en:'Real structure_label + 病 + 藥 + 通關 + tags', zh:'真實 structure_label + 病 + 藥 + 通關 + tags' },
+  'auto.n.564': { th:'ชื่อโครงสร้าง + 病 + 藥 + 通關 + รหัสปฏิกิริยาจริง', en:'Real structure_label + 病 + 藥 + 通關 + tags', zh:'真實 structure_label + 病 + 藥 + 通關 + tags' },
   'auto.n.565': { th:'ไนท์', en:'Night', zh:'Night' },
   'auto.n.566': { th:'พีท', en:'Pete', zh:'Pete' },
   'auto.n.567': { th:'ใหม่', en:'Mai', zh:'Mai' },
@@ -2768,14 +2785,14 @@ window.HK_I18N = {
   'auto.n.574': { th:'การวางกลยุทธ์ชัดและไหลลื่น', en:'Strategy clear and flowing', zh:'策略清晰流暢' },
   'auto.n.575': { th:'ใหม่คือคนตัดสินใจที่ไนท์ควรฟัง', en:'Mai is the decision-maker Night should heed', zh:'Mai是Night應聽從的決策者' },
   'auto.n.576': { th:'คุยกันเองได้ ไม่ต้องไนท์เป็นคนกลาง', en:'Can talk directly, no need for Night as middleman', zh:'可直接對話・無需Night中介' },
-  'auto.n.577': { th:'balance ดี', en:'Good balance', zh:'平衡良好' },
-  'auto.n.578': { th:'ไม้ (creativity)', en:'Wood (creativity)', zh:'木(創意)' },
-  'auto.n.579': { th:'ไฟ (drive)', en:'Fire (drive)', zh:'火(動力)' },
+  'auto.n.577': { th:'สมดุลดี', en:'Good balance', zh:'平衡良好' },
+  'auto.n.578': { th:'ไม้ 木 (ความคิดสร้างสรรค์)', en:'Wood (creativity)', zh:'木(創意)' },
+  'auto.n.579': { th:'ไฟ 火 (แรงขับ)', en:'Fire (drive)', zh:'火(動力)' },
   'auto.n.580': { th:'木 หรือ 火', en:'木 or 火', zh:'木或火' },
   'auto.n.581': { th:'อย่ามอบดีลใหญ่ให้พีททำคนเดียว', en:'Don\'t give Pete big deals to handle alone', zh:'勿讓Pete獨自處理大案' },
-  'auto.n.582': { th:'กำลังโหลด Google Places…', en:'Loading Google Places…', zh:'載入Google Places…' },
-  'auto.n.583': { th:'4 หลัก · DM · ธาตุ', en:'4 pillars · DM · elements', zh:'四柱·日主·五行' },
-  'auto.n.584': { th:'ค่าเริ่มต้น: Bangkok (100.5018°E)', en:'Default: Bangkok (100.5018°E)', zh:'預設：曼谷 (100.5018°E)' },
+  'auto.n.582': { th:'กำลังโหลดระบบค้นหาเมือง…', en:'Loading Google Places…', zh:'載入Google Places…' },
+  'auto.n.583': { th:'4 เสา · วันเกิดหลัก · ธาตุ', en:'4 pillars · DM · elements', zh:'四柱·日主·五行' },
+  'auto.n.584': { th:'ค่าเริ่มต้น: กรุงเทพฯ (100.5018°E)', en:'Default: Bangkok (100.5018°E)', zh:'預設：曼谷 (100.5018°E)' },
   'auto.n.585': { th:'ทั้งหมด', en:'All', zh:'全部' },
   'auto.n.586': { th:'คุณ', en:'You', zh:'你' },
   'auto.n.587': { th:'คุณ', en:'You', zh:'你' },
@@ -2792,34 +2809,34 @@ window.HK_I18N = {
   'n.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
   /* breadcrumb */
   'n.crumb.home':  { th:'หน้าหลัก', en:'Home', zh:'首頁' },
-  'n.crumb.cur':   { th:'เครือข่าย · 用神 NETWORK', en:'Network · 用神 NETWORK', zh:'人脈 · 用神 NETWORK' },
+  'n.crumb.cur':   { th:'เครือข่ายธาตุช่วย · 用神', en:'Network · 用神 NETWORK', zh:'人脈 · 用神 NETWORK' },
   /* hero head */
-  'n.h.label':     { th:'用神 · YONGSHEN NETWORK', en:'用神 · YONGSHEN NETWORK', zh:'用神 · YONGSHEN NETWORK' },
+  'n.h.label':     { th:'เครือข่ายธาตุช่วย · 用神', en:'用神 · YONGSHEN NETWORK', zh:'用神 · YONGSHEN NETWORK' },
   'n.h.h1':        { th:'คนรอบตัวคุณ <span class="tc">關係</span>', en:'People around you <span class="tc">關係</span>', zh:'身邊之人 <span class="tc">關係</span>' },
-  'n.h.lede':      { th:'วิเคราะห์ปฏิกิริยาระหว่างดวงคุณกับ <b>11 คน</b> ที่บันทึกไว้ — ใครหนุน · ใครชง · ใครเหมาะร่วมงาน · ใครควรระวัง <b>เปลี่ยนตามเวลา</b> ที่เลือก · <b>คลิกคนใดในวงโคจรเพื่อย้าย Center</b>', en:'Reactions between your chart and <b>11 saved people</b> — who supports · who clashes · who fits · who to watch · <b>changes with time</b> · <b>click anyone to recenter</b>', zh:'解析您與 <b>11 位記錄之人</b> 的命盤互動 — 誰助 · 誰沖 · 誰宜共事 · 誰當慎 · <b>隨時間改變</b> · <b>點選任一人重設中心</b>' },
+  'n.h.lede':      { th:'วิเคราะห์ปฏิกิริยาระหว่างดวงคุณกับ <b>11 คน</b> ที่บันทึกไว้ — ใครหนุน · ใครชง · ใครเหมาะร่วมงาน · ใครควรระวัง <b>เปลี่ยนตามเวลา</b> ที่เลือก · <b>คลิกคนใดในวงโคจรเพื่อย้ายดวงกลาง</b>', en:'Reactions between your chart and <b>11 saved people</b> — who supports · who clashes · who fits · who to watch · <b>changes with time</b> · <b>click anyone to recenter</b>', zh:'解析您與 <b>11 位記錄之人</b> 的命盤互動 — 誰助 · 誰沖 · 誰宜共事 · 誰當慎 · <b>隨時間改變</b> · <b>點選任一人重設中心</b>' },
   'n.h.s.all':     { th:'คนทั้งหมด', en:'all people', zh:'全部' },
   'n.h.s.good':    { th:'หนุน', en:'support', zh:'助' },
   'n.h.s.bad':     { th:'ชง', en:'clash', zh:'沖' },
   'n.h.s.mid':     { th:'กลาง', en:'neutral', zh:'中' },
   /* filter bar */
-  'n.f.label':     { th:'⏱ TIME RANGE · 流', en:'⏱ TIME RANGE · 流', zh:'⏱ 時段 · 流' },
+  'n.f.label':     { th:'⏱ ช่วงเวลา · 流', en:'⏱ TIME RANGE · 流', zh:'⏱ 時段 · 流' },
   'n.f.day':       { th:'วันนี้ · 流日', en:'Today · 流日', zh:'今日 · 流日' },
   'n.f.week':      { th:'สัปดาห์ · 週', en:'Week · 週', zh:'週 · 週' },
   'n.f.month':     { th:'เดือน · 流月', en:'Month · 流月', zh:'月 · 流月' },
   'n.f.year':      { th:'ปี · 流年', en:'Year · 流年', zh:'年 · 流年' },
   'n.f.luck':      { th:'10 ปี · 大運', en:'10 yrs · 大運', zh:'十年 · 大運' },
-  'n.f.meta.dm':     { th:'DM', en:'DM', zh:'日主' },
+  'n.f.meta.dm':     { th:'วันเกิดหลัก', en:'DM', zh:'日主' },
   'n.f.meta.period': { th:'ช่วง', en:'Period', zh:'期' },
   'n.f.meta.favor':  { th:'ดวงเด่น', en:'Favor', zh:'喜' },
   /* view tabs */
-  'n.vt.solar':    { th:'<span class="tc">系</span>SOLAR SYSTEM · ภาพรวม', en:'<span class="tc">系</span>SOLAR SYSTEM · overview', zh:'<span class="tc">系</span>太陽系 · 總覽' },
-  'n.vt.grid':     { th:'<span class="tc">人</span>PEOPLE GRID · การ์ดคน', en:'<span class="tc">人</span>PEOPLE GRID · cards', zh:'<span class="tc">人</span>人脈卡片' },
-  'n.vt.team':     { th:'<span class="tc">隊</span>TEAM BUILDER · จัดทีม', en:'<span class="tc">隊</span>TEAM BUILDER · build', zh:'<span class="tc">隊</span>組隊' },
+  'n.vt.solar':    { th:'<span class="tc">系</span>ภาพรวมหมวด', en:'<span class="tc">系</span>SOLAR SYSTEM · overview', zh:'<span class="tc">系</span>太陽系 · 總覽' },
+  'n.vt.grid':     { th:'<span class="tc">人</span>การ์ดรายคน', en:'<span class="tc">人</span>PEOPLE GRID · cards', zh:'<span class="tc">人</span>人脈卡片' },
+  'n.vt.team':     { th:'<span class="tc">隊</span>จัดทีม', en:'<span class="tc">隊</span>TEAM BUILDER · build', zh:'<span class="tc">隊</span>組隊' },
   /* solar legend */
-  'n.lg.good':     { th:'หนุน · 合 · 用神', en:'support · 合 · 用神', zh:'助 · 合 · 用神' },
-  'n.lg.bad':      { th:'ชง · 沖 · 忌神', en:'clash · 沖 · 忌神', zh:'沖 · 忌神' },
-  'n.lg.mid':      { th:'กลาง · neutral', en:'neutral', zh:'中性' },
-  'n.lg.tip':      { th:'เริ่มจากหมวด · คลิกหมวดเพื่อดูคน · กดค้างคนเพื่อย้าย Center', en:'Start by group · click a group to see people · long-press a person to recenter', zh:'先看群組 · 點群組看人 · 長按人物重設中心' },
+  'n.lg.good':     { th:'หนุน · ผสาน 合 · ธาตุที่ดวงต้องการ 用神', en:'support · 合 · 用神', zh:'助 · 合 · 用神' },
+  'n.lg.bad':      { th:'ชง · ปะทะ 沖 · ธาตุที่กดดวง 忌神', en:'clash · 沖 · 忌神', zh:'沖 · 忌神' },
+  'n.lg.mid':      { th:'กลาง · ดูบริบท', en:'neutral', zh:'中性' },
+  'n.lg.tip':      { th:'เริ่มจากหมวด · คลิกหมวดเพื่อดูคน · กดค้างคนเพื่อย้ายดวงกลาง', en:'Start by group · click a group to see people · long-press a person to recenter', zh:'先看群組 · 點群組看人 · 長按人物重設中心' },
   'n.cta.add':     { th:'+ เพิ่มคน', en:'+ Add person', zh:'+ 新增' },
   'n.ci.reset':    { th:'↺ กลับไปดวงฉัน', en:'↺ Back to me', zh:'↺ 回到我' },
   /* 🛈 orbit labels */
@@ -2830,25 +2847,25 @@ window.HK_I18N = {
   'n.coach.title': { th:'วิธีใช้ภาพรวมเครือข่าย', en:'How to use Network View', zh:'人脈圖使用說明' },
   'n.coach.sub':   { th:'3 วงโคจร · ใกล้ = ผลมาก · ทำตามนี้ได้เลย', en:'3 orbits · closer = stronger · here\'s how', zh:'三軌道 · 近者影響大' },
   'n.coach.t1':    { th:'<b>คลิกคน</b> ในวงโคจร — เปิดดูดวงคนนั้นเต็มๆ', en:'<b>Click</b> a person — open their full chart', zh:'<b>點選</b> 任一人 — 開啟其完整命盤' },
-  'n.coach.t2':    { th:'<b>กดค้าง</b> หรือ <b>Shift+คลิก</b> — ย้าย Center มาที่คนนั้น · เห็นโลกในมุมเขา', en:'<b>Long-press</b> or <b>Shift+click</b> — recenter to that person\'s view', zh:'<b>長按</b> 或 <b>Shift+點選</b> — 重設中心至此人' },
+  'n.coach.t2':    { th:'<b>กดค้าง</b> หรือ <b>Shift+คลิก</b> — ย้ายดวงกลางมาที่คนนั้น · เห็นโลกในมุมเขา', en:'<b>Long-press</b> or <b>Shift+click</b> — recenter to that person\'s view', zh:'<b>長按</b> 或 <b>Shift+點選</b> — 重設中心至此人' },
   'n.coach.t3':    { th:'<b>วาง mouse ค้าง</b> ที่คน — เห็นคะแนน + คำอธิบายไทย', en:'<b>Hover</b> a person — see score + plain-language reading', zh:'<b>滑鼠停留</b> — 查看分數與白話解讀' },
-  'n.coach.t4':    { th:'ปุ่ม <b>"กลับไปดวงฉัน"</b> ขวาบน — รีเซ็ต Center', en:'Use <b>"Back to me"</b> top-right — reset center', zh:'右上角 <b>"回到我"</b> — 重設中心' },
+  'n.coach.t4':    { th:'ปุ่ม <b>"กลับไปดวงฉัน"</b> ขวาบน — รีเซ็ตดวงกลาง', en:'Use <b>"Back to me"</b> top-right — reset center', zh:'右上角 <b>"回到我"</b> — 重設中心' },
   'n.coach.btn':   { th:'เข้าใจแล้ว · เริ่มเลย', en:'Got it · Start', zh:'明白 · 開始' },
-  'n.tip.hint':    { th:'👆 คลิก = ดูดวง · กดค้าง = ย้าย Center', en:'👆 Click = chart · Long-press = recenter', zh:'👆 點 = 命盤 · 長按 = 重設中心' },
+  'n.tip.hint':    { th:'👆 คลิก = ดูดวง · กดค้าง = ย้ายดวงกลาง', en:'👆 Click = chart · Long-press = recenter', zh:'👆 點 = 命盤 · 長按 = 重設中心' },
   /* group chips */
   'n.g.all':       { th:'ทั้งหมด', en:'All', zh:'全部' },
   'n.gmode.impact':{ th:'⚡ ผลกระทบกับเรา', en:'⚡ Impact on me', zh:'⚡ 對我的影響' },
   'n.gmode.own':   { th:'🌟 ดวงของเค้าเอง', en:'🌟 Their own chart', zh:'🌟 他們自己的命' },
   'n.gmode.loading': { th:'กำลังคำนวณ...', en:'Computing...', zh:'計算中...' },
   'own.sum':   { th:'🌟 วิธีคิดคะแนน · "ดวงของเค้าเอง" 1-100 · ตามตำราอากง', en:'🌟 Scoring Methodology · "Their Own Chart" 1-100 · Per Grandmaster\'s Teaching', zh:'🌟 評分方法 · 「他們自己的命」1-100 · 依老師父教導' },
-  'own.5core': { th:'ปาจื้อตามตำรา <b>子平真詮·滴天髓·三命通會·窮通寶鑒</b> ใช้ <b>5 องค์ประกอบ</b>: <b>① 60 甲子 cycle</b> · <b>② 12 神煞</b> (ไม่ใช่ 28 นักษัตร — นั่นคือ通書ฤกษ์) · <b>③ 用神/忌神</b> · <b>④ 大運</b> · <b>⑤ 格局</b>', en:'Classical BaZi (子平真詮·滴天髓·三命通會·窮通寶鑒) uses <b>5 components</b>: <b>① 60 Jiazi cycle</b> · <b>② 12 Spirits</b> (NOT 28 Constellations — those are Tongshu omens) · <b>③ Yongshen/Jishen</b> · <b>④ Luck Pillar</b> · <b>⑤ Geju structure</b>', zh:'子平命理 (子平真詮·滴天髓·三命通會·窮通寶鑒) 用 <b>五要素</b>：<b>① 六十甲子</b> · <b>② 十二神煞</b> (非二十八宿——彼乃通書擇日) · <b>③ 用神/忌神</b> · <b>④ 大運</b> · <b>⑤ 格局</b>' },
-  'own.intro': { th:'โหมด <b>🌟 ดวงของเค้าเอง</b> ตอบคำถามว่า "วันนี้/สัปดาห์/เดือน/ปี ของคนนี้ดีไหม" · ใช้ตำราคลาสสิก <b>子平真詮 · 滴天髓 · 三命通會</b> เทียบ <b>วันเจ้า (DM)</b> ของเค้ากับ <b>เสาเวลาปัจจุบัน</b>', en:'<b>🌟 Their own chart</b> mode answers "How good is today/week/month/year for this person?" · Uses classical sources <b>子平真詮 · 滴天髓 · 三命通會</b> comparing their <b>Day Master (DM)</b> against <b>current time pillars</b>', zh:'<b>🌟 他們自己的命</b> 模式回答「此人今日/本週/本月/本年如何」· 使用經典 <b>子平真詮·滴天髓·三命通會</b> 將其 <b>日主 (DM)</b> 對照 <b>當下時柱</b>' },
-  'own.day':   { th:'ดึงจาก <b>/api/today verdict.score</b> · engine ดู <b>วันเจ้าเทียบกับเสาวัน</b> + <b>12 神煞</b> + <b>60甲子</b> · 5 ชั้น (用神/忌神 · 神煞 · 通書 · 五行 · clash/合)', en:'From <b>/api/today verdict.score</b> · engine reads <b>DM vs day pillar</b> + <b>12 Spirits (神煞)</b> + <b>60 Jiazi cycle</b> · 5 layers (Yongshen/Jishen · Spirits · Tongshu · 5 Elements · clash/合)', zh:'取自 <b>/api/today verdict.score</b> · 引擎讀 <b>日主對照當日日柱</b> + <b>十二神煞</b> + <b>六十甲子</b> · 五層 (用神/忌神·神煞·通書·五行·沖合)' },
-  'own.week':  { th:'approx จากคะแนนวันนี้ blend กับวันรอบ ๆ (±3 วัน) · ตามตำรา <b>三才</b> 天時 ครอบ 7 วัน · score เคลื่อนแบบ <b>moving average</b>', en:'Approx from today\'s score blended with surrounding ±3 days · per <b>三才</b> doctrine: 天時 spans 7 days · <b>moving average</b>', zh:'從今日分數混合前後 ±3 日 · 依 <b>三才</b> 教義：天時涵蓋 7 日 · <b>移動平均</b>' },
-  'own.month': { th:'P2 ✨ (16 พ.ค. 2026): ใช้ <b>用神 top-3</b> (wrapper-7 v2 engine) เทียบ <b>เสาเดือน</b> · ตรง用神 #1=+25 · #2=+15 · #3=+8 · 比和=+5 · 克我ไม่ใช่用神=−15 · baseline 55', en:'P2 ✨: Uses <b>Yongshen top-3</b> (wrapper-7 v2) vs <b>Month Pillar</b> · matches Yongshen #1=+25 · #2=+15 · #3=+8 · same DM element=+5 · 克我 non-Yongshen=−15 · baseline 55', zh:'P2 ✨：採 <b>用神 top-3</b> (wrapper-7 v2) 對 <b>月柱</b> · 中用神 #1=+25 · #2=+15 · #3=+8 · 比和=+5 · 克我非用神=−15 · 基線 55' },
-  'own.year':  { th:'P2: ใช้ <b>用神 top-3</b> เทียบ <b>เสาปี (流年)</b> · formula เดียวกับเดือน · ตำรา <b>三命通會</b> ว่าปีคือ <b>大運แห่งฟ้า</b> · clamp 25-95', en:'P2: <b>Yongshen top-3</b> vs <b>Year Pillar (流年)</b> · same formula as month · per <b>三命通會</b>: year is <b>Heaven\'s Major Cycle</b> · clamp 25-95', zh:'P2：<b>用神 top-3</b> 對 <b>流年</b> · 公式同月柱 · 依 <b>三命通會</b>：年為 <b>天之大運</b> · 鎖定 25-95' },
-  'own.lp':    { th:'P3 (16 พ.ค. 2026): เพิ่ม <b>④ 大運</b> · เสาโชค 10 ปี ขึ้นกับ <b>วันเกิด + เพศ + 起運</b> · ตำรา <b>三命通會</b>: 大運 = "พื้นหลัง 10 ปี" · LP ตรง用神 #1=+10·#2=+6·#3=+3·比和=+2·克我ไม่ใช่用神=−8 · ตำรา <b>淵海子平</b>: "大運 1 ตัว = 流年 3 ตัว"', en:'P3 (May 16 2026): adds <b>④ Luck Pillar (大運)</b> · 10-year cycle per <b>birth + gender + 起運</b> · per <b>三命通會</b>: LP = "10-year backdrop" · LP matches Yongshen #1=+10·#2=+6·#3=+3·比和=+2·克我 non-Yongshen=−8 · per <b>淵海子平</b>: "one LP = three annual pillars"', zh:'P3 (2026年5月16日)：增 <b>④ 大運</b> · 十年運 依 <b>生辰+性別+起運</b> · 依 <b>三命通會</b>：大運 = 「十年背景」· LP 中用神 #1=+10·#2=+6·#3=+3·比和=+2·克我非用神=−8 · 依 <b>淵海子平</b>：「一大運 = 三流年」' },
-  'own.limits':{ th:'<b style="color:#7dd37b">✓ P3 เสร็จ:</b> เพิ่ม ④ 大運 (LP) · cache 24h · 1 fetch/คน/วัน · <b>P4 จะเพิ่ม ⑤ 格局</b> (從強·從旺·從財·化氣·假從·專旺) + <b>interactions</b> (合化·沖去·三會·三合) → +5% · <b>เป้าหมายสุดท้าย ~95%</b> ≈ ซินแสจริง', en:'<b style="color:#7dd37b">✓ P3 done:</b> added ④ Luck Pillar · 24h cache · 1 fetch/person/day · <b>P4 will add ⑤ Geju</b> (從強·從旺·從財·化氣·假從·專旺) + <b>interactions</b> (合化·沖去·三會·三合) → +5% · <b>Final target ~95%</b> ≈ professional master', zh:'<b style="color:#7dd37b">✓ P3 完成:</b> 增 ④ 大運 · 24小時快取 · 每人每日1次 · <b>P4 將加 ⑤ 格局</b> (從強·從旺·從財·化氣·假從·專旺) + <b>互動</b> (合化·沖去·三會·三合) → +5% · <b>終極目標 ~95%</b> ≈ 真師父' },
+  'own.5core': { th:'ปาจื้อตามตำรา <b>子平真詮·滴天髓·三命通會·窮通寶鑒</b> ใช้ <b>5 องค์ประกอบ</b>: <b>① วัฏจักร 60 甲子</b> · <b>② 12 神煞</b> · <b>③ 用神/忌神</b> · <b>④ 大運</b> · <b>⑤ 格局</b>', en:'Classical BaZi (子平真詮·滴天髓·三命通會·窮通寶鑒) uses <b>5 components</b>: <b>① 60 Jiazi cycle</b> · <b>② 12 Spirits</b> (NOT 28 Constellations — those are Tongshu omens) · <b>③ Yongshen/Jishen</b> · <b>④ Luck Pillar</b> · <b>⑤ Geju structure</b>', zh:'子平命理 (子平真詮·滴天髓·三命通會·窮通寶鑒) 用 <b>五要素</b>：<b>① 六十甲子</b> · <b>② 十二神煞</b> (非二十八宿——彼乃通書擇日) · <b>③ 用神/忌神</b> · <b>④ 大運</b> · <b>⑤ 格局</b>' },
+  'own.intro': { th:'โหมด <b>🌟 ดวงของเค้าเอง</b> ตอบคำถามว่า "วันนี้/สัปดาห์/เดือน/ปี ของคนนี้ดีไหม" · ใช้ตำราคลาสสิก <b>子平真詮 · 滴天髓 · 三命通會</b> เทียบ <b>วันเกิดหลัก</b> ของเค้ากับ <b>เสาเวลาปัจจุบัน</b>', en:'<b>🌟 Their own chart</b> mode answers "How good is today/week/month/year for this person?" · Uses classical sources <b>子平真詮 · 滴天髓 · 三命通會</b> comparing their <b>Day Master (DM)</b> against <b>current time pillars</b>', zh:'<b>🌟 他們自己的命</b> 模式回答「此人今日/本週/本月/本年如何」· 使用經典 <b>子平真詮·滴天髓·三命通會</b> 將其 <b>日主 (DM)</b> 對照 <b>當下時柱</b>' },
+  'own.day':   { th:'ดึงจาก <b>คะแนนวันนี้</b> · ระบบดู <b>วันเกิดหลักเทียบกับเสาวัน</b> + <b>12 神煞</b> + <b>60甲子</b> · 5 ชั้น (用神/忌神 · 神煞 · 通書 · 五行 · 沖/合)', en:'From <b>/api/today verdict.score</b> · engine reads <b>DM vs day pillar</b> + <b>12 Spirits (神煞)</b> + <b>60 Jiazi cycle</b> · 5 layers (Yongshen/Jishen · Spirits · Tongshu · 5 Elements · clash/合)', zh:'取自 <b>/api/today verdict.score</b> · 引擎讀 <b>日主對照當日日柱</b> + <b>十二神煞</b> + <b>六十甲子</b> · 五層 (用神/忌神·神煞·通書·五行·沖合)' },
+  'own.week':  { th:'คำนวณจากคะแนนวันนี้ผสมวันรอบ ๆ (±3 วัน) · ตามหลัก <b>三才</b> ช่วงฟ้ามีผลต่อเนื่อง 7 วัน · ใช้ค่าเฉลี่ยเพื่อไม่ให้คะแนนเหวี่ยงเกินจริง', en:'Approx from today\'s score blended with surrounding ±3 days · per <b>三才</b> doctrine: 天時 spans 7 days · <b>moving average</b>', zh:'從今日分數混合前後 ±3 日 · 依 <b>三才</b> 教義：天時涵蓋 7 日 · <b>移動平均</b>' },
+  'own.month': { th:'คะแนนเดือนดูว่า <b>เสาเดือน</b> ไปช่วยหรือไปกดธาตุที่ดวงต้องการ <b>用神</b> · ถ้าชนธาตุเสีย <b>忌神</b> คะแนนจะลด · ถ้าเสริมธาตุช่วยคะแนนจะขึ้น', en:'P2 ✨: Uses <b>Yongshen top-3</b> (wrapper-7 v2) vs <b>Month Pillar</b> · matches Yongshen #1=+25 · #2=+15 · #3=+8 · same DM element=+5 · 克我 non-Yongshen=−15 · baseline 55', zh:'P2 ✨：採 <b>用神 top-3</b> (wrapper-7 v2) 對 <b>月柱</b> · 中用神 #1=+25 · #2=+15 · #3=+8 · 比和=+5 · 克我非用神=−15 · 基線 55' },
+  'own.year':  { th:'คะแนนปีดูกระแสปีจร <b>流年</b> ว่าเข้ามาหนุนหรือปะทะดวงเดิม · ปีที่เสริม <b>用神</b> จะใช้ง่ายขึ้น · ปีที่กระตุ้น <b>忌神</b> ต้องวางแผนรอบคอบ', en:'P2: <b>Yongshen top-3</b> vs <b>Year Pillar (流年)</b> · same formula as month · per <b>三命通會</b>: year is <b>Heaven\'s Major Cycle</b> · clamp 25-95', zh:'P2：<b>用神 top-3</b> 對 <b>流年</b> · 公式同月柱 · 依 <b>三命通會</b>：年為 <b>天之大運</b> · 鎖定 25-95' },
+  'own.lp':    { th:'วัยจร <b>大運</b> คือพื้นหลัง 10 ปีของชีวิต · ถ้าวัยจรช่วยธาตุที่ดวงต้องการ คะแนนช่วงนั้นจะนิ่งขึ้น · ถ้าวัยจรกดดวง ต้องใช้คน/เวลา/แผนมาช่วยประคอง', en:'P3 (May 16 2026): adds <b>④ Luck Pillar (大運)</b> · 10-year cycle per <b>birth + gender + 起運</b> · per <b>三命通會</b>: LP = "10-year backdrop" · LP matches Yongshen #1=+10·#2=+6·#3=+3·比和=+2·克我 non-Yongshen=−8 · per <b>淵海子平</b>: "one LP = three annual pillars"', zh:'P3 (2026年5月16日)：增 <b>④ 大運</b> · 十年運 依 <b>生辰+性別+起運</b> · 依 <b>三命通會</b>：大運 = 「十年背景」· LP 中用神 #1=+10·#2=+6·#3=+3·比和=+2·克我非用神=−8 · 依 <b>淵海子平</b>：「一大運 = 三流年」' },
+  'own.limits':{ th:'คะแนนนี้เป็นคะแนนเชิงปฏิกิริยาจากดวงและเวลา · ใช้ดูแนวโน้ม ไม่ใช่คำตัดสินเด็ดขาด · ถ้าคะแนนต่ำให้ลดงานเสี่ยง เพิ่มตัวช่วย และเลือกเวลาที่นิ่งกว่า', en:'<b style="color:#7dd37b">✓ P3 done:</b> added ④ Luck Pillar · 24h cache · 1 fetch/person/day · <b>P4 will add ⑤ Geju</b> (從強·從旺·從財·化氣·假從·專旺) + <b>interactions</b> (合化·沖去·三會·三合) → +5% · <b>Final target ~95%</b> ≈ professional master', zh:'<b style="color:#7dd37b">✓ P3 完成:</b> 增 ④ 大運 · 24小時快取 · 每人每日1次 · <b>P4 將加 ⑤ 格局</b> (從強·從旺·從財·化氣·假從·專旺) + <b>互動</b> (合化·沖去·三會·三合) → +5% · <b>終極目標 ~95%</b> ≈ 真師父' },
   'n.g.family':    { th:'家 · ครอบครัว', en:'家 · Family', zh:'家 · 家庭' },
   'n.g.friend':    { th:'友 · เพื่อน', en:'友 · Friends', zh:'友 · 朋友' },
   'n.g.love':      { th:'情 · ความรัก', en:'情 · Love', zh:'情 · 感情' },
@@ -2856,43 +2873,44 @@ window.HK_I18N = {
   'n.g.rival':     { th:'競 · คู่แข่ง', en:'競 · Rivals', zh:'競 · 競爭' },
   'n.g.new':       { th:'+ สร้างกลุ่ม', en:'+ New group', zh:'+ 新群' },
   /* team builder */
-  'n.t.h':         { th:'จัดทีม <span class="tc">隊</span> · Team Synergy', en:'Team Build <span class="tc">隊</span> · Synergy', zh:'組隊 <span class="tc">隊</span> · 協同' },
-  'n.t.syn':       { th:'SYNERGY <b>+74</b> / 100 ★ ทีมหนุนกัน', en:'SYNERGY <b>+74</b> / 100 ★ team supports', zh:'協同 <b>+74</b> / 100 ★ 團隊互助' },
-  'n.t.you':       { th:'YOU · CEO', en:'YOU · CEO', zh:'您 · CEO' },
-  'n.t.center':    { th:'CENTER', en:'CENTER', zh:'中心' },
-  'n.t.cof':       { th:'CO-FOUNDER', en:'CO-FOUNDER', zh:'共同創辦人' },
-  'n.t.spo':       { th:'SPOUSE · ที่ปรึกษา', en:'SPOUSE · advisor', zh:'配偶 · 顧問' },
+  'n.t.h':         { th:'จัดทีม <span class="tc">隊</span> · แรงรวมทีม', en:'Team Build <span class="tc">隊</span> · Synergy', zh:'組隊 <span class="tc">隊</span> · 協同' },
+  'n.t.syn':       { th:'แรงรวมทีม <b>+74</b> / 100 ★ ทีมหนุนกัน', en:'SYNERGY <b>+74</b> / 100 ★ team supports', zh:'協同 <b>+74</b> / 100 ★ 團隊互助' },
+  'n.t.syn.loading': { th:'แรงรวมทีม <b>—</b> / 100', en:'SYNERGY <b>—</b> / 100', zh:'協同 <b>—</b> / 100' },
+  'n.t.you':       { th:'คุณ · ผู้บริหาร', en:'YOU · CEO', zh:'您 · CEO' },
+  'n.t.center':    { th:'ดวงกลาง', en:'CENTER', zh:'中心' },
+  'n.t.cof':       { th:'ผู้ร่วมก่อตั้ง', en:'CO-FOUNDER', zh:'共同創辦人' },
+  'n.t.spo':       { th:'คู่ครอง · ที่ปรึกษา', en:'SPOUSE · advisor', zh:'配偶 · 顧問' },
   'n.t.add':       { th:'เพิ่มคน', en:'Add person', zh:'新增成員' },
   'n.t.addsub':    { th:'เลือกจากเครือข่าย', en:'pick from network', zh:'從人脈選取' },
-  'n.t.r.sup':     { th:'三合 หนุน', en:'三合 support', zh:'三合 助' },
-  'n.t.r.use':     { th:'用神 金', en:'用神 Metal', zh:'用神 金' },
-  'n.m.h':         { th:'關係 MATRIX · ปฏิกิริยาในทีม', en:'關係 MATRIX · team reactions', zh:'關係矩陣 · 團隊互動' },
-  'n.m.dm':        { th:'DM ปะทะกัน', en:'DM clashes', zh:'日主沖' },
-  'n.m.self':      { th:'SELF', en:'SELF', zh:'自身' },
-  'n.m.empty':     { th:'empty', en:'empty', zh:'空' },
-  'n.m.slot4':     { th:'slot 4', en:'slot 4', zh:'位 4' },
+  'n.t.r.sup':     { th:'สามกิ่งรวมธาตุ 三合 · หนุน', en:'三合 support', zh:'三合 助' },
+  'n.t.r.use':     { th:'ธาตุที่ดวงต้องการ 用神 · ทอง 金', en:'用神 Metal', zh:'用神 金' },
+  'n.m.h':         { th:'ปฏิกิริยาในทีม · 關係', en:'關係 MATRIX · team reactions', zh:'關係矩陣 · 團隊互動' },
+  'n.m.dm':        { th:'วันเกิดหลักปะทะกัน', en:'DM clashes', zh:'日主沖' },
+  'n.m.self':      { th:'ตัวเอง', en:'SELF', zh:'自身' },
+  'n.m.empty':     { th:'ว่าง', en:'empty', zh:'空' },
+  'n.m.slot4':     { th:'ช่องที่ 4', en:'slot 4', zh:'位 4' },
   /* insights */
   'n.in.good.h':   { th:'<span style="font-family:var(--tc);">強</span> ทีมเสริมกัน', en:'<span style="font-family:var(--tc);">強</span> Team strengths', zh:'<span style="font-family:var(--tc);">強</span> 團隊優勢' },
-  'n.in.good.l1':  { th:'三合 น้ำ (己·壬) ทำให้ <b>การวางกลยุทธ์ชัดและไหลลื่น</b>', en:'三合 Water (己·壬) makes <b>strategy clear and flowing</b>', zh:'三合 水 (己·壬) <b>策略清晰流暢</b>' },
-  'n.in.good.l2':  { th:'用神 金 ของไนท์ ตรงกับ DM ใหม่ — <b>ใหม่คือคนตัดสินใจที่ไนท์ควรฟัง</b>', en:"Knight's 用神 金 = Mai's DM — <b>Mai is the decision-maker Knight should listen to</b>", zh:'Knight 用神 金 = Mai 日主 — <b>Mai 是 Knight 應聽從之決策者</b>' },
+  'n.in.good.l1':  { th:'สามกิ่งรวมธาตุน้ำ 三合 ทำให้ <b>การวางกลยุทธ์ชัดและไหลลื่น</b>', en:'三合 Water (己·壬) makes <b>strategy clear and flowing</b>', zh:'三合 水 (己·壬) <b>策略清晰流暢</b>' },
+  'n.in.good.l2':  { th:'ธาตุที่ไนท์ต้องการ 用神 คือทอง 金 และตรงกับวันเกิดหลักของใหม่ — <b>ใหม่คือคนตัดสินใจที่ไนท์ควรฟัง</b>', en:"Knight's 用神 金 = Mai's DM — <b>Mai is the decision-maker Knight should listen to</b>", zh:'Knight 用神 金 = Mai 日主 — <b>Mai 是 Knight 應聽從之決策者</b>' },
   'n.in.good.l3':  { th:'พีท + ใหม่ มี合 ระหว่างกัน — <b>คุยกันเองได้ ไม่ต้องไนท์เป็นคนกลาง</b>', en:'Pete + Mai have 合 — <b>can talk directly, no need for Knight as mediator</b>', zh:'Pete + Mai 有合 — <b>可直接溝通 · 不需 Knight 居中</b>' },
-  'n.in.good.l4':  { th:'ทีมมี ดิน · น้ำ · ทอง ครบ 3 ธาตุ — <b>balance ดี</b>', en:'Team has Earth · Water · Metal — <b>good balance</b>', zh:'團隊有土水金 — <b>平衡良好</b>' },
+  'n.in.good.l4':  { th:'ทีมมี ดิน 土 · น้ำ 水 · ทอง 金 ครบ 3 ธาตุ — <b>สมดุลดี</b>', en:'Team has Earth · Water · Metal — <b>good balance</b>', zh:'團隊有土水金 — <b>平衡良好</b>' },
   'n.in.bad.h':    { th:'<span style="font-family:var(--tc);">慎</span> จุดต้องระวัง', en:'<span style="font-family:var(--tc);">慎</span> Cautions', zh:'<span style="font-family:var(--tc);">慎</span> 當慎之處' },
-  'n.in.bad.l1':   { th:'ทีมขาด <b>ไม้ (creativity)</b> และ <b>ไฟ (drive)</b> — งานสร้างสรรค์อาจช้า', en:'Team lacks <b>Wood (creativity)</b> and <b>Fire (drive)</b> — creative work may slow', zh:'團隊缺 <b>木 (創意)</b> 與 <b>火 (動力)</b> — 創意工作恐遲' },
-  'n.in.bad.l2':   { th:'คนที่ 4 ที่ควรหา: ดวง <b>木 หรือ 火</b> ที่ไม่ชงไนท์', en:'4th member to seek: <b>Wood or Fire</b> that doesn\'t clash with Knight', zh:'宜尋第 4 人: <b>木或火</b> 而不沖 Knight 者' },
+  'n.in.bad.l1':   { th:'ทีมขาด <b>ไม้ 木 (ความคิดสร้างสรรค์)</b> และ <b>ไฟ 火 (แรงขับ)</b> — งานสร้างสรรค์อาจช้า', en:'Team lacks <b>Wood (creativity)</b> and <b>Fire (drive)</b> — creative work may slow', zh:'團隊缺 <b>木 (創意)</b> 與 <b>火 (動力)</b> — 創意工作恐遲' },
+  'n.in.bad.l2':   { th:'คนที่ 4 ที่ควรหา: ดวง <b>ไม้ 木 หรือ ไฟ 火</b> ที่ไม่ชงไนท์', en:'4th member to seek: <b>Wood or Fire</b> that doesn\'t clash with Knight', zh:'宜尋第 4 人: <b>木或火</b> 而不沖 Knight 者' },
   'n.in.bad.l3':   { th:'เลี่ยงเพิ่มคนดวง 丁火 หรือ 丙火 — <b>忌神</b> ของไนท์', en:'Avoid 丁火 or 丙火 — <b>忌神</b> of Knight', zh:'忌增 丁火 或 丙火 — Knight 之 <b>忌神</b>' },
   'n.in.bad.l4':   { th:'ช่วงเดือนนี้ พีทคะแนนกลาง — <b>อย่ามอบดีลใหญ่ให้พีททำคนเดียว</b>', en:"This month Pete's score is mid — <b>don't give big deals to Pete alone</b>", zh:'本月 Pete 中等 — <b>勿單獨交付大案</b>' },
   /* role keys (bug 5) */
-  'n.role.self':     { th:'YOU · CEO', en:'YOU · CEO', zh:'您 · CEO' },
-  'n.role.spouse':   { th:'SPOUSE · ครอบครัว', en:'SPOUSE · Family', zh:'配偶 · 家庭' },
-  'n.role.child':    { th:'CHILD · ครอบครัว', en:'CHILD · Family', zh:'子女 · 家庭' },
-  'n.role.cof':      { th:'CO-FOUNDER · ที่ทำงาน', en:'CO-FOUNDER · Work', zh:'共同創辦人 · 工作' },
-  'n.role.cto':      { th:'CTO · ที่ทำงาน', en:'CTO · Work', zh:'技術總監 · 工作' },
-  'n.role.friend':   { th:'FRIEND · เพื่อน', en:'FRIEND', zh:'朋友' },
-  'n.role.investor': { th:'INVESTOR · คู่แข่ง', en:'INVESTOR · Rival', zh:'投資人 · 競爭' },
-  'n.role.consult':  { th:'CONSULTANT · คู่แข่ง', en:'CONSULTANT · Rival', zh:'顧問 · 競爭' },
-  'n.role.client':   { th:'CLIENT · ที่ทำงาน', en:'CLIENT · Work', zh:'客戶 · 工作' },
-  'n.role.expart':   { th:'EX-PARTNER · คู่แข่ง', en:'EX-PARTNER · Rival', zh:'前夥伴 · 競爭' },
+  'n.role.self':     { th:'คุณ · ผู้บริหาร', en:'YOU · CEO', zh:'您 · CEO' },
+  'n.role.spouse':   { th:'คู่ครอง · ครอบครัว', en:'SPOUSE · Family', zh:'配偶 · 家庭' },
+  'n.role.child':    { th:'ลูก · ครอบครัว', en:'CHILD · Family', zh:'子女 · 家庭' },
+  'n.role.cof':      { th:'ผู้ร่วมก่อตั้ง · ที่ทำงาน', en:'CO-FOUNDER · Work', zh:'共同創辦人 · 工作' },
+  'n.role.cto':      { th:'ฝ่ายเทคนิค · ที่ทำงาน', en:'CTO · Work', zh:'技術總監 · 工作' },
+  'n.role.friend':   { th:'เพื่อน', en:'FRIEND', zh:'朋友' },
+  'n.role.investor': { th:'นักลงทุน · คู่แข่ง', en:'INVESTOR · Rival', zh:'投資人 · 競爭' },
+  'n.role.consult':  { th:'ที่ปรึกษา · คู่แข่ง', en:'CONSULTANT · Rival', zh:'顧問 · 競爭' },
+  'n.role.client':   { th:'ลูกค้า · ที่ทำงาน', en:'CLIENT · Work', zh:'客戶 · 工作' },
+  'n.role.expart':   { th:'อดีตพาร์ทเนอร์ · คู่แข่ง', en:'EX-PARTNER · Rival', zh:'前夥伴 · 競爭' },
   /* birthdate tags (bug 5) */
   'n.bd.self':  { th:'己土 · 31 ธ.ค. 2527', en:'己 Earth · 31 Dec 1984', zh:'己土 · 1984年12月31日' },
   'n.bd.mai':   { th:'辛金 · 8 เม.ย. 2529', en:'辛 Metal · 8 Apr 1986', zh:'辛金 · 1986年4月8日' },
@@ -2991,13 +3009,13 @@ window.applyI18N = applyI18N;
     <div class="sub" data-i18n="n.pm.sub">กรอกข้อมูลคนที่จะเพิ่มเข้าเครือข่าย · ระบบจะคำนวณปฏิกิริยาให้</div>
     <form class="hk-net-form" id="pm-form" onsubmit="event.preventDefault();savePerson();">
       <input type="hidden" id="pm-id" />
-      <label><span data-i18n="n.pm.f.name">ชื่อ · NAME</span>
+      <label><span data-i18n="n.pm.f.name">ชื่อ</span>
         <input type="text" id="pm-name" required maxlength="40" placeholder="เช่น พีท · ใหม่" />
       </label>
-      <label><span data-i18n="n.pm.f.role">บทบาท · ROLE</span>
-        <input type="text" id="pm-role" required maxlength="60" placeholder="เช่น CO-FOUNDER · ที่ทำงาน" />
+      <label><span data-i18n="n.pm.f.role">บทบาท</span>
+        <input type="text" id="pm-role" required maxlength="60" placeholder="เช่น ผู้ร่วมก่อตั้ง · ที่ทำงาน" />
       </label>
-      <label><span data-i18n="n.pm.f.group">กลุ่ม · GROUP</span>
+      <label><span data-i18n="n.pm.f.group">กลุ่ม</span>
         <select id="pm-group">
           <option value="family">家 · ครอบครัว</option>
           <option value="friend">友 · เพื่อน</option>
@@ -3007,26 +3025,26 @@ window.applyI18N = applyI18N;
         </select>
       </label>
       <div class="row2">
-        <label><span data-i18n="n.pm.f.bdate">วันเกิด · BIRTH DATE</span>
+        <label><span data-i18n="n.pm.f.bdate">วันเกิด</span>
           <input type="date" id="pm-bdate" required min="1900-01-01" max="2030-12-31" />
         </label>
-        <label><span data-i18n="n.pm.f.btime">เวลาเกิด · BIRTH TIME</span>
+        <label><span data-i18n="n.pm.f.btime">เวลาเกิด</span>
           <input type="time" id="pm-btime" required value="12:00" />
         </label>
       </div>
       <!-- 19 พ.ค. Option α · ไม่ทราบเวลาเกิด · 3-pillar mode -->
       <label style="display:flex;align-items:center;gap:8px;margin:6px 0 10px;cursor:pointer;font-size:13px;">
         <input type="checkbox" id="pm-no-btime" style="width:16px;height:16px;cursor:pointer;"/>
-        <span data-i18n="n.pm.f.notime">ไม่ทราบเวลาเกิด · 3 เสา (no Hour) · 不知時辰</span>
+        <span data-i18n="n.pm.f.notime">ไม่ทราบเวลาเกิด · 3 เสา · ไม่ใส่เสายาม · 不知時辰</span>
       </label>
       <div class="row2">
-        <label><span data-i18n="n.pm.f.gender">เพศ · GENDER</span>
+        <label><span data-i18n="n.pm.f.gender">เพศ</span>
           <select id="pm-gender">
-            <option value="M" selected data-i18n="n.pm.gender.m">ชาย · Male</option>
-            <option value="F" data-i18n="n.pm.gender.f">หญิง · Female</option>
+            <option value="M" selected data-i18n="n.pm.gender.m">ชาย</option>
+            <option value="F" data-i18n="n.pm.gender.f">หญิง</option>
           </select>
         </label>
-        <label><span data-i18n="n.pm.f.dayb">ขอบเขตวันเปลี่ยน · DAY BOUNDARY</span>
+        <label><span data-i18n="n.pm.f.dayb">ขอบเขตวันเปลี่ยน</span>
           <select id="pm-day-boundary">
             <option value="23:00" selected>23:00 · ตำราคลาสสิก (早子時)</option>
             <option value="00:00">00:00 · สากล (Voytek/晚子時)</option>
@@ -3035,14 +3053,14 @@ window.applyI18N = applyI18N;
       </div>
       <div>
         <label><span data-i18n="n.pm.f.city">จังหวัด / เมือง</span>
-          <input type="text" id="pm-city-input" placeholder="พิมพ์ชื่อเมือง · เช่น Bangkok, Tokyo, London" autocomplete="off" />
+          <input type="text" id="pm-city-input" placeholder="พิมพ์ชื่อเมือง · เช่น กรุงเทพฯ · โตเกียว · ลอนดอน" autocomplete="off" />
           <input type="hidden" id="pm-lat"      value="13.7563" />
           <input type="hidden" id="pm-lng"      value="100.5018" />
           <input type="hidden" id="pm-loc-name" value="Bangkok" />
-          <div  class="hk-net-help" id="pm-city-hint" style="display:none;margin-top:6px;font-size:11px;" data-i18n="auto.n.582">กำลังโหลด Google Places…</div>
+          <div  class="hk-net-help" id="pm-city-hint" style="display:none;margin-top:6px;font-size:11px;" data-i18n="auto.n.582">กำลังโหลดระบบค้นหาเมือง…</div>
         </label>
       </div>
-      <div class="hk-net-help" id="pm-help" data-i18n="n.pm.help">ระบบจะคำนวณ <b data-i18n="auto.n.583">4 หลัก · DM · ธาตุ</b> จากวันเดือนปีให้อัตโนมัติ · ไม่ต้องรู้ล่วงหน้า</div>
+      <div class="hk-net-help" id="pm-help" data-i18n="n.pm.help">ระบบจะคำนวณ <b data-i18n="auto.n.583">4 เสา · วันเกิดหลัก · ธาตุ</b> จากวันเดือนปีให้อัตโนมัติ · ไม่ต้องรู้ล่วงหน้า</div>
       <div class="hk-net-loading" id="pm-loading" style="display:none;">
         <span class="spin">⟳</span> <span data-i18n="n.pm.calc">กำลังคำนวณดวง...</span>
       </div>
@@ -3065,21 +3083,21 @@ window.applyI18N = applyI18N;
     'n.pm.title-add':  { th:'เพิ่มคนใหม่', en:'Add Person', zh:'新增人物' },
     'n.pm.title-edit': { th:'แก้ไขข้อมูล', en:'Edit Person', zh:'編輯人物' },
     'n.pm.sub':        { th:'กรอกแค่ชื่อ · บทบาท · วันเดือนปี เกิด · ระบบคำนวณดวงให้', en:'Fill name · role · birthdate · system computes chart', zh:'填寫姓名 · 角色 · 生辰 · 系統自動計算命盤' },
-    'n.pm.f.name':     { th:'ชื่อ · NAME', en:'NAME · ชื่อ', zh:'姓名 · NAME' },
-    'n.pm.f.role':     { th:'บทบาท · ROLE', en:'ROLE · บทบาท', zh:'角色 · ROLE' },
-    'n.pm.f.group':    { th:'กลุ่ม · GROUP', en:'GROUP', zh:'組別' },
-    'n.pm.f.bdate':    { th:'วันเกิด · BIRTH DATE', en:'BIRTH DATE', zh:'生日' },
-    'n.pm.f.btime':    { th:'เวลาเกิด · BIRTH TIME', en:'BIRTH TIME', zh:'時辰' },
+    'n.pm.f.name':     { th:'ชื่อ', en:'NAME · ชื่อ', zh:'姓名 · NAME' },
+    'n.pm.f.role':     { th:'บทบาท', en:'ROLE · บทบาท', zh:'角色 · ROLE' },
+    'n.pm.f.group':    { th:'กลุ่ม', en:'GROUP', zh:'組別' },
+    'n.pm.f.bdate':    { th:'วันเกิด', en:'BIRTH DATE', zh:'生日' },
+    'n.pm.f.btime':    { th:'เวลาเกิด', en:'BIRTH TIME', zh:'時辰' },
     /* 19 พ.ค. Option α · no-hour mode */
-    'n.pm.f.notime':   { th:'ไม่ทราบเวลาเกิด · 3 เสา (no Hour) · 不知時辰', en:"Don't know birth time · 3-pillar (no Hour)", zh:'不知道出生時辰 · 三柱推算 (略時柱)' },
+    'n.pm.f.notime':   { th:'ไม่ทราบเวลาเกิด · 3 เสา · ไม่ใส่เสายาม · 不知時辰', en:"Don't know birth time · 3-pillar (no Hour)", zh:'不知道出生時辰 · 三柱推算 (略時柱)' },
     'n.addp.notime':   { th:'ไม่ทราบเวลาเกิด · 3 เสา · 不知時辰', en:"Don't know birth time · 3-pillar", zh:'不知道出生時辰 · 三柱' },
-    'n.pm.f.gender':   { th:'เพศ · GENDER', en:'GENDER', zh:'性別' },
-    'n.pm.f.lng':      { th:'ลองจิจูด (option)', en:'Longitude (option)', zh:'經度（選填）' },
+    'n.pm.f.gender':   { th:'เพศ', en:'GENDER', zh:'性別' },
+    'n.pm.f.lng':      { th:'ลองจิจูด (ไม่บังคับ)', en:'Longitude (option)', zh:'經度（選填）' },
     'n.pm.f.city':     { th:'จังหวัด / เมือง',     en:'City',              zh:'城市' },
-    'n.pm.f.dayb':     { th:'ขอบเขตวันเปลี่ยน · DAY BOUNDARY', en:'Day Boundary', zh:'日界' },
-    'n.pm.gender.m':   { th:'ชาย · Male', en:'Male', zh:'男' },
-    'n.pm.gender.f':   { th:'หญิง · Female', en:'Female', zh:'女' },
-    'n.pm.help':       { th:'ระบบจะคำนวณ <b>4 หลัก · DM · ธาตุ</b> จากวันเดือนปีให้อัตโนมัติ · ไม่ต้องรู้ล่วงหน้า', en:'System computes <b>4 pillars · DM · element</b> from birth date — no need to know in advance', zh:'系統將自動由生辰計算 <b>四柱 · 日主 · 五行</b> · 不需事先知曉' },
+    'n.pm.f.dayb':     { th:'ขอบเขตวันเปลี่ยน', en:'Day Boundary', zh:'日界' },
+    'n.pm.gender.m':   { th:'ชาย', en:'Male', zh:'男' },
+    'n.pm.gender.f':   { th:'หญิง', en:'Female', zh:'女' },
+    'n.pm.help':       { th:'ระบบจะคำนวณ <b>4 เสา · วันเกิดหลัก · ธาตุ</b> จากวันเดือนปีให้อัตโนมัติ · ไม่ต้องรู้ล่วงหน้า', en:'System computes <b>4 pillars · DM · element</b> from birth date — no need to know in advance', zh:'系統將自動由生辰計算 <b>四柱 · 日主 · 五行</b> · 不需事先知曉' },
     'n.pm.calc':       { th:'กำลังคำนวณดวง...', en:'Computing chart...', zh:'計算命盤中...' },
     'n.pm.btn.del':    { th:'🗑 ลบ', en:'🗑 Delete', zh:'🗑 刪除' },
     'n.pm.btn.cancel': { th:'ยกเลิก', en:'Cancel', zh:'取消' },
@@ -3132,7 +3150,7 @@ window.applyI18N = applyI18N;
     if (noBtimeChk) noBtimeChk.checked = isEdit && person.birthTimeKnown === false;
     document.getElementById('pm-gender').value = isEdit ? (person.gender||'M') : 'M';
     /* City + lat/lng (เหมือน drawer) */
-    document.getElementById('pm-city-input').value = isEdit ? (person.locationName||'Bangkok') : 'Bangkok';
+    document.getElementById('pm-city-input').value = isEdit ? ((person.locationName === 'Bangkok' ? 'กรุงเทพฯ' : person.locationName)||'กรุงเทพฯ') : 'กรุงเทพฯ';
     document.getElementById('pm-loc-name').value   = isEdit ? (person.locationName||'Bangkok') : 'Bangkok';
     document.getElementById('pm-lat').value        = isEdit ? (person.latitude||13.7563)  : 13.7563;
     document.getElementById('pm-lng').value        = isEdit ? (person.longitude||100.5018) : 100.5018;
@@ -3187,7 +3205,7 @@ window.applyI18N = applyI18N;
       });
       _pmCityWired = true;
     } catch(e){
-      if (hint) { hint.textContent = 'โหลด Google Places ไม่สำเร็จ · ใช้ Bangkok default'; hint.style.color = 'var(--bad)'; }
+      if (hint) { hint.textContent = 'โหลดระบบค้นหาเมืองไม่สำเร็จ · ใช้ค่าเริ่มต้นกรุงเทพฯ'; hint.style.color = 'var(--bad)'; }
     }
   }
 
@@ -3727,11 +3745,11 @@ window.applyI18N = applyI18N;
     </div>
     <div class="addp-body">
       <div class="addp-field full">
-        <label data-i18n="n.addp.name">ชื่อ / Name</label>
+        <label data-i18n="n.addp.name">ชื่อ</label>
         <input type="text" id="addp-name" placeholder="เช่น แม่ · พี่ชาย · เพื่อนสนิท" />
       </div>
       <div class="addp-field">
-        <label data-i18n="n.addp.nickname">ชื่อเล่น / Nickname</label>
+        <label data-i18n="n.addp.nickname">ชื่อเล่น</label>
         <input type="text" id="addp-nickname" placeholder="ตัวเล่น (ไม่บังคับ)" />
       </div>
       <div class="addp-field">
@@ -3742,11 +3760,11 @@ window.applyI18N = applyI18N;
         </select>
       </div>
       <div class="addp-field">
-        <label data-i18n="n.addp.bdate">วันเกิด / Date</label>
+        <label data-i18n="n.addp.bdate">วันเกิด</label>
         <input type="date" id="addp-bdate" />
       </div>
       <div class="addp-field">
-        <label data-i18n="n.addp.btime">เวลาเกิด / Time</label>
+        <label data-i18n="n.addp.btime">เวลาเกิด</label>
         <input type="time" id="addp-btime" value="12:00" step="60" />
         <!-- 19 พ.ค. Option α · ไม่ทราบเวลาเกิด · 3-pillar -->
         <label style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;cursor:pointer;">
@@ -3755,7 +3773,7 @@ window.applyI18N = applyI18N;
         </label>
       </div>
       <div class="addp-field">
-        <label data-i18n="n.addp.dayb">ขอบเขตวันเปลี่ยน · DAY BOUNDARY</label>
+        <label data-i18n="n.addp.dayb">ขอบเขตวันเปลี่ยน</label>
         <select id="addp-day-boundary">
           <option value="23:00" selected>23:00 · ตำราคลาสสิก (早子時)</option>
           <option value="00:00">00:00 · สากล (Voytek/晚子時)</option>
@@ -3763,10 +3781,10 @@ window.applyI18N = applyI18N;
         <span class="hint" data-i18n="n.addp.dayb.hint">มีผลกับคนที่เกิดช่วง 23:00-23:59 เท่านั้น</span>
       </div>
       <div class="addp-field full addp-city-wrap">
-        <label data-i18n="n.addp.city">เมืองเกิด · ค้นหาแบบละเอียด (Google Places)</label>
-        <input type="text" id="addp-city" placeholder="พิมพ์ชื่อเมือง เช่น บ้านบึง · Bangkok · 北京" autocomplete="off" />
+        <label data-i18n="n.addp.city">เมืองเกิด · พิมพ์เพื่อค้นหา</label>
+        <input type="text" id="addp-city" placeholder="พิมพ์ชื่อเมือง เช่น บ้านบึง · กรุงเทพฯ · 北京" autocomplete="off" />
         <div class="addp-city-list" id="addp-city-list"></div>
-        <span  class="hint" id="addp-city-hint" data-i18n="auto.n.584">ค่าเริ่มต้น: Bangkok (100.5018°E) · กำลังโหลด Google Places...</span>
+        <span  class="hint" id="addp-city-hint" data-i18n="auto.n.584">ค่าเริ่มต้น: กรุงเทพฯ (100.5018°E) · กำลังโหลดระบบค้นหาเมือง...</span>
       </div>
       <div class="addp-field">
         <label data-i18n="n.addp.group">กลุ่ม</label>
@@ -3794,12 +3812,12 @@ window.applyI18N = applyI18N;
 <div class="team-modal" id="hk-team-modal" onclick="if(event.target===this)closeTeamModal()">
   <div class="team-modal-card">
     <div class="team-modal-head">
-      <h3 data-i18n="n.team.title">💬 วิเคราะห์ภาพรวมทีม · AI Sifu</h3>
+      <h3 data-i18n="n.team.title">💬 วิเคราะห์ภาพรวมทีม · ซินแสดิจิทัล</h3>
       <button class="close" onclick="closeTeamModal()">×</button>
     </div>
     <div class="team-modal-body">
       <div class="team-modal-meta">
-        <span data-i18n="n.team.meta.center">ศูนย์กลาง:</span> <b id="team-center">—</b> ·
+        <span data-i18n="n.team.meta.center">ดวงกลาง:</span> <b id="team-center">—</b> ·
         <span data-i18n="n.team.meta.members">สมาชิก:</span> <b id="team-count">0</b> ·
         <span data-i18n="n.team.meta.group">กลุ่ม:</span> <b  id="team-group-cur" data-i18n="auto.n.585">ทั้งหมด</b>
       </div>
@@ -3825,7 +3843,7 @@ window.applyI18N = applyI18N;
           <input type="text" id="team-sifu-input" class="sifu-input" placeholder="ถามซินแสได้เลย · เช่น 'ทีมนี้ขาดธาตุอะไร'" />
           <button id="team-sifu-send" class="sifu-send" data-i18n="n.sifu.send">ส่ง</button>
         </div>
-        <div class="sifu-hint" data-i18n="n.sifu.hint">ใช้ Claude AI · 10-30 วินาที</div>
+        <div class="sifu-hint" data-i18n="n.sifu.hint">ใช้ซินแสดิจิทัล · 10-30 วินาที</div>
       </div>
     </div>
   </div>
@@ -3844,10 +3862,10 @@ window.applyI18N = applyI18N;
     </div>
 
     <div class="pcm-section">
-      <h4 data-i18n="n.cm.pillars">四柱 · Four Pillars</h4>
+      <h4 data-i18n="n.cm.pillars">โครงดวง 4 เสา · 四柱</h4>
       <div class="pcm-pillars">
         <div class="pcm-pillar"><div class="lab">時 HOUR</div><div class="stem" id="cm-h-s">—</div><div class="branch" id="cm-h-b">—</div></div>
-        <div class="pcm-pillar dm"><div class="lab">日 DM</div><div class="stem" id="cm-d-s">—</div><div class="branch" id="cm-d-b">—</div></div>
+        <div class="pcm-pillar dm"><div class="lab">日 วันเกิดหลัก</div><div class="stem" id="cm-d-s">—</div><div class="branch" id="cm-d-b">—</div></div>
         <div class="pcm-pillar"><div class="lab">月 MONTH</div><div class="stem" id="cm-m-s">—</div><div class="branch" id="cm-m-b">—</div></div>
         <div class="pcm-pillar"><div class="lab">年 YEAR</div><div class="stem" id="cm-y-s">—</div><div class="branch" id="cm-y-b">—</div></div>
       </div>
@@ -3917,14 +3935,14 @@ window.applyI18N = applyI18N;
     </div>
 
     <div class="pcm-section" id="cm-rel-section">
-      <h4 data-i18n="n.cm.rel">關係 · ปฏิกิริยากับคุณ · 5 timeframe</h4>
+      <h4 data-i18n="n.cm.rel">關係 · ปฏิกิริยากับคุณ · 5 ช่วงเวลา</h4>
       <div id="cm-rel-rows"></div>
       <div class="pcm-tags" id="cm-tags"></div>
     </div>
 
     <!-- 📜 AI Sifu · pair chat · อากง 15 พ.ค. -->
     <div class="pcm-section" id="cm-sifu-section" style="display:none">
-      <h4 data-i18n="n.cm.sifu">💬 ซินแส AI · คุยเรื่องคู่นี้</h4>
+      <h4 data-i18n="n.cm.sifu">💬 ซินแสดิจิทัล · คุยเรื่องคู่นี้</h4>
       <div class="sifu-chat" id="cm-sifu-chat">
         <div class="sifu-topics" id="cm-sifu-topics">
           <button class="sifu-quick" data-topic="overview" data-i18n="n.sifu.t.ov">ภาพรวม</button>
@@ -3939,14 +3957,14 @@ window.applyI18N = applyI18N;
           <input type="text" id="cm-sifu-input" class="sifu-input" placeholder="ถามซินแสได้เลย · เช่น ‘คู่นี้เหมาะร่วมงานมั๊ย’" />
           <button id="cm-sifu-send" class="sifu-send" data-i18n="n.sifu.send">ส่ง</button>
         </div>
-        <div class="sifu-hint" data-i18n="n.sifu.hint">ใช้ Claude AI · อ้างอิงโครงสร้างใหม่ v2 · ใช้เวลา 10-30 วินาที</div>
+        <div class="sifu-hint" data-i18n="n.sifu.hint">ใช้ซินแสดิจิทัล · อ้างอิงโครงสร้างใหม่ · ใช้เวลา 10-30 วินาที</div>
       </div>
     </div>
 
     <div class="pcm-cta">
-      <button class="primary" onclick="(function(){var p=(window.PEOPLE||[]).find(x=>x.id===currentChartPersonId);if(p&&window.viewAsPerson)window.viewAsPerson(p);})()" data-i18n="n.cm.viewfull">📊 ดูดวงเต็มหน้า /chart</button>
+      <button class="primary" onclick="(function(){var p=(window.PEOPLE||[]).find(x=>x.id===currentChartPersonId);if(p&&window.viewAsPerson)window.viewAsPerson(p);})()" data-i18n="n.cm.viewfull">📊 ดูดวงเต็มหน้า</button>
       <button onclick="window.print()" data-i18n="n.cm.print">🖨 พิมพ์ดวง</button>
-      <button onclick="addToTeam(currentChartPersonId)" data-i18n="n.cm.team">+ เข้า Team Builder</button>
+      <button onclick="addToTeam(currentChartPersonId)" data-i18n="n.cm.team">+ เข้าชุดทีม</button>
       <button onclick="closeChartModal()" data-i18n="n.cm.close">ปิด</button>
     </div>
   </div>
@@ -3956,13 +3974,13 @@ window.applyI18N = applyI18N;
 /* ═══════════ Phase 2B handlers · Person Chart Modal ═══════════ */
 (function(){
   Object.assign(window.HK_I18N, {
-    'n.cm.pillars': { th:'四柱 · Four Pillars', en:'四柱 · Four Pillars', zh:'四柱' },
-    'n.cm.rel':     { th:'關係 · ปฏิกิริยากับคุณ · 5 timeframe', en:'關係 · Reactions with you · 5 tf', zh:'關係 · 與您之互動 · 五時段' },
+    'n.cm.pillars': { th:'โครงดวง 4 เสา · 四柱', en:'四柱 · Four Pillars', zh:'四柱' },
+    'n.cm.rel':     { th:'關係 · ปฏิกิริยากับคุณ · 5 ช่วงเวลา', en:'關係 · Reactions with you · 5 tf', zh:'關係 · 與您之互動 · 五時段' },
     'n.cm.viewfull':{ th:'📊 ดูดวงเต็มหน้า', en:'📊 View Full Chart', zh:'📊 查看完整命盤' },
     'n.cm.print':   { th:'🖨 พิมพ์ดวง', en:'🖨 Print', zh:'🖨 列印' },
-    'n.cm.team':    { th:'+ เข้า Team Builder', en:'+ To Team', zh:'+ 加入團隊' },
+    'n.cm.team':    { th:'+ เข้าชุดทีม', en:'+ To Team', zh:'+ 加入團隊' },
     'n.cm.close':      { th:'ปิด', en:'Close', zh:'關閉' },
-    'n.cm.sifu':       { th:'💬 ซินแส AI · คุยเรื่องคู่นี้', en:'💬 AI Sifu · Discuss this pair', zh:'💬 AI 師父 · 談此對' },
+    'n.cm.sifu':       { th:'💬 ซินแสดิจิทัล · คุยเรื่องคู่นี้', en:'💬 AI Sifu · Discuss this pair', zh:'💬 AI 師父 · 談此對' },
     'n.sifu.t.ov':     { th:'ภาพรวม', en:'Overview', zh:'總覽' },
     'n.sifu.t.wk':     { th:'งาน', en:'Work', zh:'事業' },
     'n.sifu.t.lv':     { th:'รัก', en:'Love', zh:'情' },
@@ -3970,10 +3988,10 @@ window.applyI18N = applyI18N;
     'n.sifu.t.fm':     { th:'ครอบครัว', en:'Family', zh:'家' },
     'n.sifu.t.bs':     { th:'หุ้นส่วน', en:'Partner', zh:'合夥' },
     'n.sifu.send':     { th:'ส่ง', en:'Send', zh:'送' },
-    'n.sifu.hint':     { th:'ใช้ Claude AI · อ้างอิงโครงสร้างใหม่ v2 · 10-30 วินาที', en:'Powered by Claude AI · uses v2 structure · 10-30s', zh:'Claude AI · 用 v2 結構 · 10-30 秒' },
+    'n.sifu.hint':     { th:'ใช้ซินแสดิจิทัล · อ้างอิงโครงสร้างใหม่ · 10-30 วินาที', en:'Powered by Claude AI · uses v2 structure · 10-30s', zh:'Claude AI · 用 v2 結構 · 10-30 秒' },
     'n.sifu.thinking': { th:'ซินแสกำลังคิด...', en:'Sifu is thinking...', zh:'師父思考中...' },
     'n.sifu.err':      { th:'ขออภัย · ขัดข้องชั่วคราว', en:'Sorry, temporary error', zh:'抱歉 · 暫時錯誤' },
-    'n.team.btn':      { th:'💬 วิเคราะห์ทั้งทีม · AI', en:'💬 Analyze Team · AI', zh:'💬 分析全隊 · AI' },
+    'n.team.btn':      { th:'💬 วิเคราะห์ทั้งทีม · ซินแสดิจิทัล', en:'💬 Analyze Team · AI', zh:'💬 分析全隊 · AI' },
     'n.sync.btn':      { th:'🔄 ซิงค์', en:'🔄 Sync', zh:'🔄 同步' },
     'n.empty.title':   { th:'ยังไม่มีดวงในเครือข่าย', en:'No profiles in network yet', zh:'網絡中尚無命盤' },
     'n.empty.body':    { th:'เพิ่มดวงคนรอบตัวคุณ · ครอบครัว · เพื่อน · ทีมงาน · เพื่อดูปฏิกิริยาระหว่างกัน', en:'Add profiles around you · family · friends · team · to see relationships', zh:'添加身邊的命盤 · 家人 · 朋友 · 團隊 · 查看互動' },
@@ -4002,8 +4020,8 @@ window.applyI18N = applyI18N;
     'n.addp.ok':       { th:'✓ บันทึกสำเร็จ', en:'✓ Saved', zh:'✓ 已儲存' },
     'n.addp.err':      { th:'❌ ขัดข้อง:', en:'❌ Error:', zh:'❌ 錯誤:' },
     'n.addp.req':      { th:'กรุณากรอกชื่อและวันเกิด', en:'Please fill name and birth date', zh:'請填寫姓名與生日' },
-    'n.team.title':    { th:'💬 วิเคราะห์ภาพรวมทีม · AI Sifu', en:'💬 Team Overview · AI Sifu', zh:'💬 全隊分析 · AI 師父' },
-    'n.team.meta.center':  { th:'ศูนย์กลาง:', en:'Center:', zh:'中心:' },
+    'n.team.title':    { th:'💬 วิเคราะห์ภาพรวมทีม · ซินแสดิจิทัล', en:'💬 Team Overview · AI Sifu', zh:'💬 全隊分析 · AI 師父' },
+    'n.team.meta.center':  { th:'ดวงกลาง:', en:'Center:', zh:'中心:' },
     'n.team.meta.members': { th:'สมาชิก:', en:'Members:', zh:'成員:' },
     'n.team.meta.group':   { th:'กลุ่ม:', en:'Group:', zh:'組:' },
     'n.team.g.all':    { th:'ทั้งหมด', en:'All', zh:'全部' },
@@ -4157,7 +4175,7 @@ window.applyI18N = applyI18N;
     } else {
       if (resSection) resSection.style.display = '';
       const selfP = (window.PEOPLE||[]).find(p=>p.id==='self');
-      const selfName = selfP ? selfP.name : 'You';
+      const selfName = selfP ? selfP.name : 'คุณ';
       const dir = (window._engineDirectional||{}).self?.[person.id];
       const bd  = (window._engineBreakdown  ||{}).self?.[person.id];
       const lab = (window._engineLabels     ||{}).self?.[person.id];
@@ -4271,7 +4289,7 @@ window.applyI18N = applyI18N;
     const d = document.createElement('div');
     d.className = 'sifu-msg ' + role + (opts?.loading ? ' loading' : '');
     const roleLab = role === 'user' ? (document.documentElement.getAttribute('data-lang')==='en'?'YOU':'ผม')
-                  : role === 'sifu' ? 'SIFU'
+                  : role === 'sifu' ? 'ซินแส'
                   : '...';
     /* light markdown: **bold** + newlines preserved by white-space:pre-wrap */
     const bodyHtml = String(text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
@@ -4368,7 +4386,7 @@ window.applyI18N = applyI18N;
     const d = document.createElement('div');
     d.className = 'sifu-msg ' + role + (opts?.loading ? ' loading' : '');
     const lang = document.documentElement.getAttribute('data-lang')||'th';
-    const roleLab = role === 'user' ? (lang==='en'?'YOU':'ผม') : role === 'sifu' ? 'SIFU' : '...';
+    const roleLab = role === 'user' ? (lang==='en'?'YOU':'ผม') : role === 'sifu' ? 'ซินแส' : '...';
     const bodyHtml = String(text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
     d.innerHTML = `<span class="role">${roleLab}</span><div class="body">${bodyHtml}</div>`;
     log.appendChild(d);
@@ -4580,7 +4598,7 @@ window.applyI18N = applyI18N;
 
   /* 📜 Add Person Modal handlers · 15 พ.ค. */
   const HK_CITIES = [
-    {th:'กรุงเทพ · Bangkok', en:'Bangkok', zh:'曼谷', lat:13.7563, lng:100.5018},
+    {th:'กรุงเทพฯ', en:'Bangkok', zh:'曼谷', lat:13.7563, lng:100.5018},
     {th:'เชียงใหม่ · Chiang Mai', en:'Chiang Mai', zh:'清邁', lat:18.7883, lng:98.9853},
     {th:'ภูเก็ต · Phuket', en:'Phuket', zh:'普吉', lat:7.8804, lng:98.3923},
     {th:'พัทยา · Pattaya', en:'Pattaya', zh:'芭達雅', lat:12.9236, lng:100.8825},
@@ -4617,7 +4635,7 @@ window.applyI18N = applyI18N;
     const stEl = document.getElementById('addp-status'); if (stEl){ stEl.textContent=''; stEl.className='addp-status'; }
     window._addpCity = HK_CITIES[0];
     const hint = document.getElementById('addp-city-hint');
-    if (hint) hint.textContent = `Bangkok (${HK_CITIES[0].lng}°E) · กำลังโหลด Google Places...`;
+    if (hint) hint.textContent = `กรุงเทพฯ (${HK_CITIES[0].lng}°E) · กำลังโหลดระบบค้นหาเมือง...`;
     m.classList.add('show');
     setTimeout(()=>{ const n=document.getElementById('addp-name'); if(n) n.focus(); }, 60);
     /* 16 พ.ค. 2026: lazy-load Google Places · attach autocomplete แบบละเอียด (เช่น "บ้านบึง") */
@@ -4642,12 +4660,12 @@ window.applyI18N = applyI18N;
             if (dlist) dlist.classList.remove('show');
           });
           window._addpPlacesAttached = true;
-          if (hint) hint.textContent = `Bangkok (100.5018°E) · พิมพ์ค้นหาเมืองได้เลย`;
+          if (hint) hint.textContent = `กรุงเทพฯ (100.5018°E) · พิมพ์ค้นหาเมืองได้เลย`;
           console.log('[addp] Google Places autocomplete attached');
         } catch(e){ console.warn('[addp] places attach failed:', e); }
       }).catch(function(err){
         console.warn('[addp] places load failed:', err);
-        if (hint) hint.textContent = `Bangkok (100.5018°E) · ใช้รายการเมืองหลัก (Google Places โหลดไม่สำเร็จ)`;
+        if (hint) hint.textContent = `กรุงเทพฯ (100.5018°E) · ใช้รายการเมืองหลักเมื่อระบบค้นหาเมืองโหลดไม่สำเร็จ`;
       });
     }
   };
@@ -4792,8 +4810,8 @@ window.applyI18N = applyI18N;
 <div class="hk-net-modal" id="hk-pick-modal" onclick="if(event.target===this)closePickModal()">
   <div class="hk-net-card hk-net-pick-card">
     <button class="x" onclick="closePickModal()">×</button>
-    <h3><span class="tc">隊</span><span data-i18n="n.tp.title">เลือกคนเข้า Team Builder</span></h3>
-    <div class="sub" data-i18n="n.tp.sub">กดเพื่อใส่ลง slot · เห็นคะแนนปฏิกิริยากับคุณ</div>
+    <h3><span class="tc">隊</span><span data-i18n="n.tp.title">เลือกคนเข้าชุดทีม</span></h3>
+    <div class="sub" data-i18n="n.tp.sub">กดเพื่อใส่ลงช่องทีม · เห็นคะแนนปฏิกิริยากับคุณ</div>
     <div class="tp-list" id="tp-list"></div>
   </div>
 </div>
@@ -4802,8 +4820,8 @@ window.applyI18N = applyI18N;
 /* ═══════════ Phase 2C handlers · Team Builder full ═══════════ */
 (function(){
   Object.assign(window.HK_I18N, {
-    'n.tp.title':  { th:'เลือกคนเข้า Team Builder', en:'Pick Team Member', zh:'選擇團隊成員' },
-    'n.tp.sub':    { th:'กดเพื่อใส่ลง slot · เห็นคะแนนปฏิกิริยากับคุณ', en:'Tap to add to slot · view reaction score', zh:'點選加入空格 · 查看互動分' },
+    'n.tp.title':  { th:'เลือกคนเข้าชุดทีม', en:'Pick Team Member', zh:'選擇團隊成員' },
+    'n.tp.sub':    { th:'กดเพื่อใส่ลงช่องทีม · เห็นคะแนนปฏิกิริยากับคุณ', en:'Tap to add to slot · view reaction score', zh:'點選加入空格 · 查看互動分' },
     'n.tp.empty':  { th:'ทุกคนอยู่ในทีมแล้ว · เพิ่มคนใหม่ที่ Solar', en:'Everyone in team · add new from Solar', zh:'全員已在團隊 · 從太陽系新增' }
   });
   function tx(k){
@@ -4839,10 +4857,10 @@ window.applyI18N = applyI18N;
   state.teamPriority = state.teamPriority || 'balanced';
 
   const TEAM_EL = {
-    wood:  { zh:'木', th:'ไม้',  icon:'木', role:'ไอเดีย · เติบโต · relationship' },
-    fire:  { zh:'火', th:'ไฟ',   icon:'火', role:'เปิดเกม · พูด · สร้าง momentum' },
+    wood:  { zh:'木', th:'ไม้',  icon:'木', role:'ไอเดีย · เติบโต · เชื่อมสัมพันธ์' },
+    fire:  { zh:'火', th:'ไฟ',   icon:'火', role:'เปิดเกม · พูด · สร้างแรงส่ง' },
     earth: { zh:'土', th:'ดิน',  icon:'土', role:'ความน่าเชื่อถือ · ประคอง · ทำให้เป็นจริง' },
-    metal: { zh:'金', th:'ทอง', icon:'金', role:'ตัดสิน · ต่อรอง · QA/Legal/กรอบ' },
+    metal: { zh:'金', th:'ทอง', icon:'金', role:'ตัดสิน · ต่อรอง · คุมคุณภาพ/กฎหมาย/กรอบ' },
     water: { zh:'水', th:'น้ำ', icon:'水', role:'ฟัง · อ่านจังหวะ · วิเคราะห์ลึก' },
   };
   const TEAM_ACTIVITIES = {
@@ -4852,12 +4870,12 @@ window.applyI18N = applyI18N;
       required:['fire','water','metal'],
       support:['earth'],
       roles:[
-        { id:'opener', label:'Opener / Presenter', elements:['fire','wood'], text:'เปิดห้อง พรีเซนต์ สร้างแรงส่ง' },
-        { id:'listener', label:'Listener / Stabilizer', elements:['water','earth'], text:'ฟัง pain point ประคองอารมณ์ คุมจังหวะ' },
-        { id:'closer', label:'Closer / Deal Terms', elements:['metal'], text:'ปิดเงื่อนไข ต่อรอง ตรวจสัญญา' },
-        { id:'decision', label:'Decision Owner', elements:['earth','metal'], center:true, text:'ตัดสินใจสุดท้ายและรับผิดชอบกรอบดีล' },
+        { id:'opener', label:'คนเปิดห้อง · ไฟ 火', elements:['fire','wood'], text:'เปิดห้อง พรีเซนต์ สร้างแรงส่ง' },
+        { id:'listener', label:'คนฟังและประคอง · น้ำ 水 / ดิน 土', elements:['water','earth'], text:'ฟังปัญหาจริง ประคองอารมณ์ คุมจังหวะ' },
+        { id:'closer', label:'คนปิดเงื่อนไข · ทอง 金', elements:['metal'], text:'ปิดเงื่อนไข ต่อรอง ตรวจสัญญา' },
+        { id:'decision', label:'คนตัดสินใจสุดท้าย · ดิน 土 / ทอง 金', elements:['earth','metal'], center:true, text:'ตัดสินใจสุดท้ายและรับผิดชอบกรอบดีล' },
       ],
-      manual:['ให้คนไฟ/ไม้เปิด presentation','ให้คนน้ำฟัง pain point และอ่านจังหวะ','ให้คนทองหรือ checklist ปิดเงื่อนไขก่อนเซ็น','คนที่เป็น忌神ให้ใช้ก่อนเข้าห้องเป็น challenger ไม่ใช่เถียงกลางดีล'],
+      manual:['ให้คนไฟ/ไม้เปิดการนำเสนอ','ให้คนน้ำฟังปัญหาจริงและอ่านจังหวะ','ให้คนทองหรือรายการตรวจปิดเงื่อนไขก่อนเซ็น','คนที่เป็น忌神ให้ใช้ก่อนเข้าห้องเป็นคนท้วง ไม่ใช่เถียงกลางดีล'],
     },
     strategy: {
       label:'วางกลยุทธ์',
@@ -4865,12 +4883,12 @@ window.applyI18N = applyI18N;
       required:['water','wood','earth'],
       support:['metal'],
       roles:[
-        { id:'insight', label:'Insight Lead', elements:['water'], text:'อ่านข้อมูล เห็น pattern และความเสี่ยงลึก' },
-        { id:'vision', label:'Vision Builder', elements:['wood','fire'], text:'วางทิศทาง โอกาสใหม่ และภาพอนาคต' },
-        { id:'planner', label:'Planner / Grounding', elements:['earth'], text:'แปลง strategy เป็น milestone และ ownership' },
-        { id:'critic', label:'Strategic Critic', elements:['metal'], text:'ตัดสิ่งฟุ้ง ตรวจสมมติฐาน และตั้งเกณฑ์ตัดสิน' },
+        { id:'insight', label:'คนอ่านข้อมูล · น้ำ 水', elements:['water'], text:'อ่านข้อมูล เห็นรูปแบบซ้ำ และความเสี่ยงลึก' },
+        { id:'vision', label:'คนสร้างภาพอนาคต · ไม้ 木 / ไฟ 火', elements:['wood','fire'], text:'วางทิศทาง โอกาสใหม่ และภาพอนาคต' },
+        { id:'planner', label:'คนวางแผน · ดิน 土', elements:['earth'], text:'แปลงภาพใหญ่ให้เป็นขั้นตอน งานเจ้าของชัด และทำต่อได้จริง' },
+        { id:'critic', label:'คนตรวจกรอบ · ทอง 金', elements:['metal'], text:'ตัดสิ่งฟุ้ง ตรวจสมมติฐาน และตั้งเกณฑ์ตัดสิน' },
       ],
-      manual:['เริ่มจาก insight ไม่ใช่ solution','ให้ไม้/ไฟเปิดทางเลือกหลายแบบ','ให้ดินสรุปเป็นแผนจริง','ให้ทองตรวจสมมติฐานก่อนประกาศใช้'],
+      manual:['เริ่มจากข้อมูลเชิงลึก ไม่ใช่รีบหาคำตอบ','ให้ไม้/ไฟเปิดทางเลือกหลายแบบ','ให้ดินสรุปเป็นแผนจริง','ให้ทองตรวจสมมติฐานก่อนประกาศใช้'],
     },
     execution: {
       label:'ลุยงาน / ส่งมอบ',
@@ -4878,12 +4896,12 @@ window.applyI18N = applyI18N;
       required:['fire','earth','metal'],
       support:['wood'],
       roles:[
-        { id:'driver', label:'Driver', elements:['fire'], text:'เร่ง momentum ตัดสินใจเร็ว ดันงานเดิน' },
-        { id:'owner', label:'Delivery Owner', elements:['earth'], text:'คุม timeline ติดตามงานและความรับผิดชอบ' },
-        { id:'qa', label:'QA / Boundary', elements:['metal'], text:'ตรวจงาน วางกรอบ และกัน scope creep' },
-        { id:'builder', label:'Builder / Improver', elements:['wood'], text:'แก้ปัญหาเฉพาะหน้าและทำให้ระบบโตต่อ' },
+        { id:'driver', label:'คนดันงาน · ไฟ 火', elements:['fire'], text:'เร่งแรงส่ง ตัดสินใจเร็ว และทำให้งานเดินต่อ' },
+        { id:'owner', label:'คนคุมส่งมอบ · ดิน 土', elements:['earth'], text:'คุมเวลา ติดตามงาน และทำให้ความรับผิดชอบชัด' },
+        { id:'qa', label:'คนตรวจขอบเขต · ทอง 金', elements:['metal'], text:'ตรวจงาน วางกรอบ และกันงานบานปลาย' },
+        { id:'builder', label:'คนแก้และต่อยอด · ไม้ 木', elements:['wood'], text:'แก้ปัญหาเฉพาะหน้าและทำให้ระบบโตต่อ' },
       ],
-      manual:['กำหนด owner ชัดคนเดียว','ใช้ไฟเปิด daily momentum','ใช้ดินติดตาม commitment','ใช้ทองปิด scope และตรวจคุณภาพก่อนส่ง'],
+      manual:['กำหนดเจ้าของงานชัดคนเดียว','ใช้ไฟเปิดแรงส่งประจำวัน','ใช้ดินติดตามคำมั่นและกำหนดส่ง','ใช้ทองปิดขอบเขตงานและตรวจคุณภาพก่อนส่ง'],
     },
     operations: {
       label:'วางระบบ / Operations',
@@ -4891,12 +4909,12 @@ window.applyI18N = applyI18N;
       required:['earth','metal'],
       support:['water'],
       roles:[
-        { id:'operator', label:'Operator', elements:['earth'], text:'ทำระบบให้เสถียร ดูแล process และ routine' },
-        { id:'controller', label:'Controller / Compliance', elements:['metal'], text:'กฎเกณฑ์ QA ตัวเลข กฎหมาย และมาตรฐาน' },
-        { id:'analyst', label:'Analyst', elements:['water'], text:'อ่านข้อมูล flow และ bottleneck' },
-        { id:'trainer', label:'Trainer', elements:['fire','wood'], text:'สื่อสารวิธีใช้ระบบและทำให้คนยอมรับ' },
+        { id:'operator', label:'คนเดินระบบ · ดิน 土', elements:['earth'], text:'ทำระบบให้เสถียร ดูแลขั้นตอนและงานประจำ' },
+        { id:'controller', label:'คนคุมมาตรฐาน · ทอง 金', elements:['metal'], text:'คุมกฎเกณฑ์ คุณภาพ ตัวเลข กฎหมาย และมาตรฐาน' },
+        { id:'analyst', label:'คนอ่านข้อมูล · น้ำ 水', elements:['water'], text:'อ่านข้อมูล ทางไหลของงาน และจุดติดขัด' },
+        { id:'trainer', label:'คนสอนระบบ · ไฟ 火 / ไม้ 木', elements:['fire','wood'], text:'สื่อสารวิธีใช้ระบบและทำให้คนยอมรับ' },
       ],
-      manual:['เริ่มจาก process map','กำหนด checklist และ owner','วัด bottleneck ด้วยข้อมูล','ให้คนไฟช่วยสื่อสาร adoption แต่อย่าให้เปลี่ยนระบบถี่เกิน'],
+      manual:['เริ่มจากแผนผังขั้นตอนงาน','กำหนดรายการตรวจและเจ้าของงาน','วัดจุดติดขัดด้วยข้อมูล','ให้คนไฟช่วยสื่อสารการใช้งาน แต่อย่าเปลี่ยนระบบถี่เกิน'],
     },
     creative: {
       label:'ครีเอทีฟ / แคมเปญ',
@@ -4904,12 +4922,12 @@ window.applyI18N = applyI18N;
       required:['wood','fire','water'],
       support:['earth'],
       roles:[
-        { id:'ideator', label:'Ideator', elements:['wood'], text:'สร้าง concept และทางเลือกใหม่' },
-        { id:'storyteller', label:'Storyteller', elements:['fire'], text:'เล่าเรื่อง พรีเซนต์ ทำให้คนรู้สึก' },
-        { id:'researcher', label:'Audience Reader', elements:['water'], text:'อ่านผู้ชม insight และจังหวะตลาด' },
-        { id:'producer', label:'Producer', elements:['earth','metal'], text:'ทำให้ไอเดียออกมาเป็นชิ้นงานจริง' },
+        { id:'ideator', label:'คนแตกไอเดีย · ไม้ 木', elements:['wood'], text:'สร้างแนวคิดและทางเลือกใหม่' },
+        { id:'storyteller', label:'คนเล่าเรื่อง · ไฟ 火', elements:['fire'], text:'เล่าเรื่อง พรีเซนต์ ทำให้คนรู้สึก' },
+        { id:'researcher', label:'คนอ่านผู้ชม · น้ำ 水', elements:['water'], text:'อ่านผู้ชม ข้อมูลเชิงลึก และจังหวะตลาด' },
+        { id:'producer', label:'คนทำให้เกิดจริง · ดิน 土 / ทอง 金', elements:['earth','metal'], text:'ทำให้ไอเดียออกมาเป็นชิ้นงานจริง' },
       ],
-      manual:['เปิดด้วย brainstorm แบบไม่ตัดสินเร็ว','ให้คนไฟคัด narrative ที่มีแรง','ให้คนน้ำเช็ค insight ผู้ชม','ให้ดิน/ทองล็อก production และ deadline'],
+      manual:['เปิดด้วยระดมไอเดียแบบไม่ตัดสินเร็ว','ให้คนไฟคัดเรื่องเล่าที่มีแรง','ให้คนน้ำเช็คข้อมูลผู้ชม','ให้ดิน/ทองล็อกการผลิตและกำหนดส่ง'],
     },
     crisis: {
       label:'แก้วิกฤต',
@@ -4917,40 +4935,40 @@ window.applyI18N = applyI18N;
       required:['water','metal','earth'],
       support:['fire'],
       roles:[
-        { id:'sensemaker', label:'Sensemaker', elements:['water'], text:'อ่านสถานการณ์ แยก noise ออกจาก signal' },
-        { id:'commander', label:'Commander', elements:['metal'], text:'ตัดสินใจเร็ว วางกรอบและคำสั่งชัด' },
-        { id:'stabilizer', label:'Stabilizer', elements:['earth'], text:'ประคองคน ทรัพยากร และระบบให้ไม่แตก' },
-        { id:'speaker', label:'Spokesperson', elements:['fire'], text:'สื่อสารภายนอก ลด panic และสร้างความมั่นใจ' },
+        { id:'sensemaker', label:'คนอ่านสถานการณ์ · น้ำ 水', elements:['water'], text:'อ่านสถานการณ์ แยกเสียงรบกวนออกจากสัญญาณจริง' },
+        { id:'commander', label:'คนสั่งการ · ทอง 金', elements:['metal'], text:'ตัดสินใจเร็ว วางกรอบและคำสั่งชัด' },
+        { id:'stabilizer', label:'คนประคองระบบ · ดิน 土', elements:['earth'], text:'ประคองคน ทรัพยากร และระบบให้ไม่แตก' },
+        { id:'speaker', label:'คนสื่อสาร · ไฟ 火', elements:['fire'], text:'สื่อสารภายนอก ลดความตื่นตระหนก และสร้างความมั่นใจ' },
       ],
-      manual:['ตั้ง war room เล็กและ role ชัด','ให้คนน้ำรวมข้อเท็จจริงก่อน','ให้ทองตัดสินใจและล็อกกรอบ','ให้ไฟสื่อสารหลังข้อเท็จจริงนิ่งแล้ว'],
+      manual:['ตั้งห้องตัดสินใจเล็กและบทบาทชัด','ให้คนน้ำรวมข้อเท็จจริงก่อน','ให้ทองตัดสินใจและล็อกกรอบ','ให้ไฟสื่อสารหลังข้อเท็จจริงนิ่งแล้ว'],
     },
   };
   Object.assign(TEAM_ACTIVITIES, {
     client_meeting: {
       label:'ประชุมลูกค้า',
-      summary:'ทีมนี้ต้องสร้างความน่าเชื่อถือ ฟังความต้องการ และพาอีกฝ่ายไปสู่ next step',
+      summary:'ทีมนี้ต้องสร้างความน่าเชื่อถือ ฟังความต้องการ และพาอีกฝ่ายไปสู่ขั้นถัดไป',
       required:['earth','water','fire'],
       support:['metal'],
       roles:[
-        { id:'host', label:'Room Host', elements:['fire','earth'], text:'เปิดห้อง คุมบรรยากาศ และทำให้ลูกค้ารู้สึกมั่นใจ' },
-        { id:'listener', label:'Need Reader', elements:['water'], text:'ฟัง requirement อ่าน pain point และจับสิ่งที่ลูกค้าไม่พูดตรงๆ' },
-        { id:'expert', label:'Credibility Builder', elements:['earth','metal'], text:'ตอบเชิงหลักฐาน กรอบงาน ราคา และข้อจำกัด' },
-        { id:'next', label:'Next-step Closer', elements:['metal','fire'], text:'สรุป action item และล็อกเจ้าของงานถัดไป' },
+        { id:'host', label:'คนเปิดห้อง · ไฟ 火 / ดิน 土', elements:['fire','earth'], text:'เปิดห้อง คุมบรรยากาศ และทำให้ลูกค้ารู้สึกมั่นใจ' },
+        { id:'listener', label:'คนอ่านความต้องการ · น้ำ 水', elements:['water'], text:'ฟังสิ่งที่ลูกค้าต้องการ อ่านปัญหาจริง และจับเรื่องที่ลูกค้าไม่พูดตรงๆ' },
+        { id:'expert', label:'คนสร้างความน่าเชื่อถือ · ดิน 土 / ทอง 金', elements:['earth','metal'], text:'ตอบเชิงหลักฐาน กรอบงาน ราคา และข้อจำกัด' },
+        { id:'next', label:'คนสรุปขั้นถัดไป · ทอง 金 / ไฟ 火', elements:['metal','fire'], text:'สรุปงานที่ต้องทำต่อและล็อกเจ้าของงานถัดไป' },
       ],
-      manual:['ให้คนน้ำถามก่อน ไม่รีบขาย','ให้ดินตอบความน่าเชื่อถือและ timeline','ให้ไฟพรีเซนต์เฉพาะช่วงที่ต้องดันอารมณ์','ให้ทองสรุป next step เป็นลายลักษณ์อักษร'],
+      manual:['ให้คนน้ำถามก่อน ไม่รีบขาย','ให้ดินตอบความน่าเชื่อถือและกรอบเวลา','ให้ไฟพรีเซนต์เฉพาะช่วงที่ต้องดันอารมณ์','ให้ทองสรุปขั้นถัดไปเป็นลายลักษณ์อักษร'],
     },
     pitch_deck: {
-      label:'Pitch / Presentation',
+      label:'นำเสนอ / พรีเซนต์',
       summary:'ทีมนี้ต้องเล่าเรื่องคม มีภาพอนาคต และรองรับคำถามหนักได้',
       required:['fire','wood','metal'],
       support:['water','earth'],
       roles:[
-        { id:'story', label:'Story Lead', elements:['fire'], text:'เล่าเรื่องให้จำง่ายและมีแรงส่ง' },
-        { id:'concept', label:'Concept Builder', elements:['wood'], text:'วาง big idea และ narrative หลัก' },
-        { id:'proof', label:'Proof / Numbers', elements:['metal','earth'], text:'ทำตัวเลข กรอบเหตุผล และหลักฐานรองรับ' },
-        { id:'qa', label:'Q&A Shield', elements:['water','metal'], text:'อ่านคำถามยากและเตรียมคำตอบไม่ให้หลุด' },
+        { id:'story', label:'คนเล่าเรื่อง · ไฟ 火', elements:['fire'], text:'เล่าเรื่องให้จำง่ายและมีแรงส่ง' },
+        { id:'concept', label:'คนวางแนวคิด · ไม้ 木', elements:['wood'], text:'วางไอเดียหลักและเรื่องเล่าหลัก' },
+        { id:'proof', label:'คนคุมหลักฐาน/ตัวเลข · ทอง 金 / ดิน 土', elements:['metal','earth'], text:'ทำตัวเลข กรอบเหตุผล และหลักฐานรองรับ' },
+        { id:'qa', label:'คนกันคำถามยาก · น้ำ 水 / ทอง 金', elements:['water','metal'], text:'อ่านคำถามยากและเตรียมคำตอบไม่ให้หลุด' },
       ],
-      manual:['เริ่มจาก one-line message ก่อนทำ slide','ให้ไฟซ้อม delivery','ให้ทองตัด slide ที่ไม่จำเป็น','ให้คนน้ำเตรียม objection list'],
+      manual:['เริ่มจากประโยคหลัก 1 ประโยคก่อนทำสไลด์','ให้ไฟซ้อมการพูด','ให้ทองตัดสไลด์ที่ไม่จำเป็น','ให้คนน้ำเตรียมคำถามคัดค้านล่วงหน้า'],
     },
     contract_negotiation: {
       label:'ต่อรองสัญญา',
@@ -4958,10 +4976,10 @@ window.applyI18N = applyI18N;
       required:['metal','water','earth'],
       support:['fire'],
       roles:[
-        { id:'terms', label:'Terms Owner', elements:['metal'], text:'คุมข้อสัญญา เงื่อนไข และ boundary' },
-        { id:'reader', label:'Counterparty Reader', elements:['water'], text:'อ่านเจตนา อำนาจต่อรอง และจังหวะถอย/รุก' },
-        { id:'anchor', label:'Business Anchor', elements:['earth'], text:'ยึดเป้าธุรกิจ ต้นทุน และความเสี่ยงจริง' },
-        { id:'speaker', label:'Relationship Speaker', elements:['fire'], text:'รักษาบรรยากาศไม่ให้แข็งเกินไป' },
+        { id:'terms', label:'คนคุมเงื่อนไข · ทอง 金', elements:['metal'], text:'คุมข้อสัญญา เงื่อนไข และขอบเขต' },
+        { id:'reader', label:'คนอ่านอีกฝ่าย · น้ำ 水', elements:['water'], text:'อ่านเจตนา อำนาจต่อรอง และจังหวะถอย/รุก' },
+        { id:'anchor', label:'คนยึดเป้าธุรกิจ · ดิน 土', elements:['earth'], text:'ยึดเป้าธุรกิจ ต้นทุน และความเสี่ยงจริง' },
+        { id:'speaker', label:'คนรักษาความสัมพันธ์ · ไฟ 火', elements:['fire'], text:'รักษาบรรยากาศไม่ให้แข็งเกินไป' },
       ],
       manual:['ตั้ง walk-away point ก่อนคุย','ให้ทองถือเอกสารหลัก','ให้คนน้ำอ่านภาษากายและเจตนา','ห้ามให้คนไฟตัดสินใจเดี่ยวถ้าเงื่อนไขยังไม่นิ่ง'],
     },
@@ -4971,12 +4989,12 @@ window.applyI18N = applyI18N;
       required:['earth','metal','water'],
       support:['fire'],
       roles:[
-        { id:'cost', label:'Cost Owner', elements:['earth'], text:'คุมต้นทุน margin และความเป็นไปได้' },
-        { id:'structure', label:'Package Architect', elements:['metal'], text:'จัด tier เงื่อนไข และข้อยกเว้นให้ชัด' },
-        { id:'market', label:'Market Listener', elements:['water'], text:'อ่าน willingness to pay และคู่แข่ง' },
-        { id:'value', label:'Value Seller', elements:['fire'], text:'ทำให้ราคาถูกเชื่อมกับคุณค่า ไม่ใช่แค่ตัวเลข' },
+        { id:'cost', label:'คนคุมต้นทุน · ดิน 土', elements:['earth'], text:'คุมต้นทุน กำไร และความเป็นไปได้' },
+        { id:'structure', label:'คนจัดแพ็กเกจ · ทอง 金', elements:['metal'], text:'จัดระดับราคา เงื่อนไข และข้อยกเว้นให้ชัด' },
+        { id:'market', label:'คนฟังตลาด · น้ำ 水', elements:['water'], text:'อ่านกำลังจ่ายของลูกค้าและคู่แข่ง' },
+        { id:'value', label:'คนขายคุณค่า · ไฟ 火', elements:['fire'], text:'ทำให้ราคาถูกเชื่อมกับคุณค่า ไม่ใช่แค่ตัวเลข' },
       ],
-      manual:['แยกต้นทุนจริงกับ perceived value','ตั้งราคา 3 tier','ให้คนน้ำเช็คเสียงตลาด','ให้ทองล็อกเงื่อนไข discount'],
+      manual:['แยกต้นทุนจริงกับคุณค่าที่ลูกค้ารับรู้','ตั้งราคา 3 ระดับ','ให้คนน้ำเช็คเสียงตลาด','ให้ทองล็อกเงื่อนไขส่วนลด'],
     },
     product_launch: {
       label:'เปิดตัวสินค้า',
@@ -4984,12 +5002,12 @@ window.applyI18N = applyI18N;
       required:['fire','wood','earth'],
       support:['water','metal'],
       roles:[
-        { id:'launch', label:'Launch Lead', elements:['fire'], text:'เปิด momentum และคุมจังหวะประกาศ' },
-        { id:'growth', label:'Growth / Channel', elements:['wood'], text:'หาโอกาส ช่องทาง และ partnership' },
-        { id:'ops', label:'Ops Owner', elements:['earth'], text:'คุม supply, support, และ delivery หลัง launch' },
-        { id:'risk', label:'Risk Gate', elements:['metal','water'], text:'ตรวจ bug, legal, และ sentiment ก่อนปล่อย' },
+        { id:'launch', label:'คนเปิดตัว · ไฟ 火', elements:['fire'], text:'เปิดแรงส่งและคุมจังหวะประกาศ' },
+        { id:'growth', label:'คนหาช่องทาง · ไม้ 木', elements:['wood'], text:'หาโอกาส ช่องทาง และพันธมิตร' },
+        { id:'ops', label:'คนคุมหลังบ้าน · ดิน 土', elements:['earth'], text:'คุมของ ทีมช่วยเหลือ และการส่งมอบหลังเปิดตัว' },
+        { id:'risk', label:'คนตรวจความเสี่ยง · ทอง 金 / น้ำ 水', elements:['metal','water'], text:'ตรวจข้อผิดพลาด กฎหมาย และเสียงตลาดก่อนปล่อย' },
       ],
-      manual:['ทำ launch checklist','ให้ไฟคุม moment สำคัญ','ให้ดินคุม backend และ support','ให้ทอง/น้ำทำ go-no-go ก่อนประกาศ'],
+      manual:['ทำรายการตรวจวันเปิดตัว','ให้ไฟคุมจังหวะสำคัญ','ให้ดินคุมหลังบ้านและทีมช่วยเหลือ','ให้ทอง/น้ำตัดสินใจปล่อยหรือหยุดก่อนประกาศ'],
     },
     investor_meeting: {
       label:'คุยนักลงทุน',
@@ -4997,12 +5015,12 @@ window.applyI18N = applyI18N;
       required:['fire','earth','metal'],
       support:['water','wood'],
       roles:[
-        { id:'vision', label:'Vision Speaker', elements:['fire','wood'], text:'เล่าตลาด โอกาส และภาพเติบโต' },
-        { id:'finance', label:'Finance / Unit Economics', elements:['earth','metal'], text:'ตอบตัวเลข runway, margin, และแผนใช้เงิน' },
-        { id:'risk', label:'Risk Reader', elements:['water','metal'], text:'อ่านคำถามแฝงและเตรียม risk mitigation' },
-        { id:'followup', label:'Follow-up Owner', elements:['earth'], text:'ส่งเอกสารและ next step ให้ครบหลังประชุม' },
+        { id:'vision', label:'คนเล่าวิสัยทัศน์ · ไฟ 火 / ไม้ 木', elements:['fire','wood'], text:'เล่าตลาด โอกาส และภาพเติบโต' },
+        { id:'finance', label:'คนตอบตัวเลข · ดิน 土 / ทอง 金', elements:['earth','metal'], text:'ตอบตัวเลขเงินสด กำไร และแผนใช้เงิน' },
+        { id:'risk', label:'คนอ่านความเสี่ยง · น้ำ 水 / ทอง 金', elements:['water','metal'], text:'อ่านคำถามแฝงและเตรียมวิธีลดความเสี่ยง' },
+        { id:'followup', label:'คนตามเอกสาร · ดิน 土', elements:['earth'], text:'ส่งเอกสารและขั้นถัดไปให้ครบหลังประชุม' },
       ],
-      manual:['ให้ไฟเปิดด้วย narrative แต่ไม่ overpromise','ให้ดินถือ model ตัวเลข','ให้ทองตอบ governance และเงื่อนไข','ให้คนน้ำจับสัญญาณ investor fit'],
+      manual:['ให้ไฟเปิดด้วยเรื่องเล่า แต่ไม่สัญญาเกินจริง','ให้ดินถือแบบจำลองตัวเลข','ให้ทองตอบธรรมาภิบาลและเงื่อนไข','ให้คนน้ำจับสัญญาณว่านักลงทุนเหมาะกับเราหรือไม่'],
     },
     board_meeting: {
       label:'ประชุมบอร์ด',
@@ -5010,12 +5028,12 @@ window.applyI18N = applyI18N;
       required:['earth','metal','water'],
       support:['fire'],
       roles:[
-        { id:'agenda', label:'Agenda Owner', elements:['earth'], text:'คุมวาระ เวลา และการตัดสินใจที่ต้องได้' },
-        { id:'governance', label:'Governance / Risk', elements:['metal'], text:'ตรวจความถูกต้อง กฎ และผลผูกพัน' },
-        { id:'context', label:'Context Reader', elements:['water'], text:'อ่านความกังวลของผู้ใหญ่และประเด็นที่ยังไม่พูด' },
-        { id:'presenter', label:'Presenter', elements:['fire'], text:'สรุปให้เข้าใจง่ายและไม่เยิ่นเย้อ' },
+        { id:'agenda', label:'คนคุมวาระ · ดิน 土', elements:['earth'], text:'คุมวาระ เวลา และการตัดสินใจที่ต้องได้' },
+        { id:'governance', label:'คนคุมกฎ/ความเสี่ยง · ทอง 金', elements:['metal'], text:'ตรวจความถูกต้อง กฎ และผลผูกพัน' },
+        { id:'context', label:'คนอ่านบริบท · น้ำ 水', elements:['water'], text:'อ่านความกังวลของผู้ใหญ่และประเด็นที่ยังไม่พูด' },
+        { id:'presenter', label:'คนนำเสนอ · ไฟ 火', elements:['fire'], text:'สรุปให้เข้าใจง่ายและไม่เยิ่นเย้อ' },
       ],
-      manual:['ส่ง pre-read ก่อน','แยก inform / discuss / approve ให้ชัด','ให้ทองตรวจเอกสาร','ให้คนน้ำเตรียมคำตอบเรื่องความเสี่ยง'],
+      manual:['ส่งเอกสารให้อ่านก่อนประชุม','แยกเรื่องแจ้งให้ทราบ / เรื่องหารือ / เรื่องขออนุมัติให้ชัด','ให้ทองตรวจเอกสาร','ให้คนน้ำเตรียมคำตอบเรื่องความเสี่ยง'],
     },
     project_kickoff: {
       label:'เริ่มโปรเจกต์',
@@ -5023,12 +5041,12 @@ window.applyI18N = applyI18N;
       required:['fire','earth','wood'],
       support:['metal'],
       roles:[
-        { id:'sponsor', label:'Sponsor / Why', elements:['fire'], text:'เปิดเหตุผลและแรงส่งของงาน' },
-        { id:'scope', label:'Scope Owner', elements:['earth','metal'], text:'กำหนดขอบเขต deadline และนิยามคำว่าเสร็จ' },
-        { id:'builder', label:'Builder', elements:['wood'], text:'แตกงาน ทดลองทางเลือก และปลดล็อกปัญหา' },
-        { id:'tracker', label:'Tracker', elements:['earth'], text:'ติดตาม commitment หลัง kickoff' },
+        { id:'sponsor', label:'คนเปิดเหตุผล · ไฟ 火', elements:['fire'], text:'เปิดเหตุผลและแรงส่งของงาน' },
+        { id:'scope', label:'คนคุมขอบเขต · ดิน 土 / ทอง 金', elements:['earth','metal'], text:'กำหนดขอบเขต กำหนดส่ง และนิยามคำว่าเสร็จ' },
+        { id:'builder', label:'คนแตกงาน · ไม้ 木', elements:['wood'], text:'แตกงาน ทดลองทางเลือก และปลดล็อกปัญหา' },
+        { id:'tracker', label:'คนตามงาน · ดิน 土', elements:['earth'], text:'ติดตามคำมั่นหลังเริ่มงาน' },
       ],
-      manual:['จบประชุมต้องมี owner ทุกชิ้น','เขียน done definition','กัน scope creep ด้วยทอง','เปิดช่องทดลองด้วยไม้แต่อย่าให้หลุด timeline'],
+      manual:['จบประชุมต้องมีเจ้าของงานทุกชิ้น','เขียนนิยามคำว่าเสร็จ','กันงานบานด้วยทอง','เปิดช่องทดลองด้วยไม้แต่อย่าให้หลุดกำหนดเวลา'],
     },
     roadmap: {
       label:'ทำ Roadmap',
@@ -5036,38 +5054,38 @@ window.applyI18N = applyI18N;
       required:['water','wood','earth'],
       support:['metal'],
       roles:[
-        { id:'insight', label:'User / Market Insight', elements:['water'], text:'อ่านข้อมูลผู้ใช้ ตลาด และ pattern' },
-        { id:'growth', label:'Opportunity Builder', elements:['wood'], text:'หาเส้นทางเติบโตและ option ใหม่' },
-        { id:'sequence', label:'Sequencer', elements:['earth','metal'], text:'จัดลำดับตาม capacity, dependency และ risk' },
-        { id:'gate', label:'Decision Gate', elements:['metal'], text:'ตัดของที่ไม่คุ้มและตั้งเกณฑ์เข้า roadmap' },
+        { id:'insight', label:'คนอ่านผู้ใช้/ตลาด · น้ำ 水', elements:['water'], text:'อ่านข้อมูลผู้ใช้ ตลาด และรูปแบบซ้ำ' },
+        { id:'growth', label:'คนหาโอกาสโต · ไม้ 木', elements:['wood'], text:'หาเส้นทางเติบโตและทางเลือกใหม่' },
+        { id:'sequence', label:'คนจัดลำดับ · ดิน 土 / ทอง 金', elements:['earth','metal'], text:'จัดลำดับตามกำลังทีม งานพึ่งพากัน และความเสี่ยง' },
+        { id:'gate', label:'คนตั้งเกณฑ์ตัดสิน · ทอง 金', elements:['metal'], text:'ตัดของที่ไม่คุ้มและตั้งเกณฑ์เข้าแผนงาน' },
       ],
-      manual:['ใช้ impact x effort','แยก must/should/could','ให้คนน้ำเริ่มด้วยข้อมูล','ให้ทองล็อก decision rule'],
+      manual:['เทียบผลกระทบกับแรงที่ต้องใช้','แยกต้องทำ/ควรทำ/ทำได้ถ้ามีเวลา','ให้คนน้ำเริ่มด้วยข้อมูล','ให้ทองล็อกกฎตัดสินใจ'],
     },
     deadline_push: {
-      label:'ดันงานใกล้เดดไลน์',
-      summary:'ทีมนี้ต้องเร่งแต่ไม่มั่ว ตัด scope เป็น และปิดงานที่ส่งมอบได้จริง',
+      label:'ดันงานใกล้กำหนดส่ง',
+      summary:'ทีมนี้ต้องเร่งแต่ไม่มั่ว ตัดขอบเขตเป็น และปิดงานที่ส่งมอบได้จริง',
       required:['fire','earth','metal'],
       support:['water'],
       roles:[
-        { id:'warrior', label:'Momentum Lead', elements:['fire'], text:'เร่งพลังทีมและ unblock เร็ว' },
-        { id:'owner', label:'Delivery Captain', elements:['earth'], text:'คุมสิ่งที่ต้องส่งวันนี้และคนรับผิดชอบ' },
-        { id:'scope', label:'Scope Cutter', elements:['metal'], text:'ตัดสิ่งที่ไม่จำเป็นและกันงานบาน' },
-        { id:'triage', label:'Triage Reader', elements:['water'], text:'อ่านว่าปัญหาไหนทำให้ล้มจริง' },
+        { id:'warrior', label:'คนเร่งแรงส่ง · ไฟ 火', elements:['fire'], text:'เร่งพลังทีมและปลดล็อกเร็ว' },
+        { id:'owner', label:'คนคุมส่งมอบ · ดิน 土', elements:['earth'], text:'คุมสิ่งที่ต้องส่งวันนี้และคนรับผิดชอบ' },
+        { id:'scope', label:'คนตัดขอบเขต · ทอง 金', elements:['metal'], text:'ตัดสิ่งที่ไม่จำเป็นและกันงานบาน' },
+        { id:'triage', label:'คนอ่านปัญหาหนัก · น้ำ 水', elements:['water'], text:'อ่านว่าปัญหาไหนทำให้งานล้มจริง' },
       ],
-      manual:['ตั้ง cut line ชัด','เลิกคุยเรื่องใหม่จนกว่าส่งของหลัก','ให้ทองตัด scope','ให้ไฟใช้กับ momentum ไม่ใช่ drama'],
+      manual:['ตั้งเส้นตัดงานชัด','เลิกคุยเรื่องใหม่จนกว่าส่งของหลัก','ให้ทองตัดขอบเขตงาน','ให้ไฟใช้กับแรงส่ง ไม่ใช่อารมณ์ดราม่า'],
     },
     qa_review: {
-      label:'ตรวจงาน / QA',
+      label:'ตรวจงาน / คุมคุณภาพ',
       summary:'ทีมนี้ต้องละเอียด เป็นธรรม และจับจุดเสี่ยงก่อนส่งออกจริง',
       required:['metal','water','earth'],
       support:['fire'],
       roles:[
-        { id:'checker', label:'QA Lead', elements:['metal'], text:'ตรวจมาตรฐาน ข้อผิดพลาด และ edge case' },
-        { id:'reader', label:'User Scenario Reader', elements:['water'], text:'อ่านพฤติกรรมใช้งานจริงและสิ่งที่อาจหลุด' },
-        { id:'owner', label:'Fix Owner', elements:['earth'], text:'จัดลำดับ fix และติดตามจนจบ' },
-        { id:'communicator', label:'Release Communicator', elements:['fire'], text:'สื่อสาร known issue และการเปลี่ยนแปลง' },
+        { id:'checker', label:'คนคุมคุณภาพ · ทอง 金', elements:['metal'], text:'ตรวจมาตรฐาน ข้อผิดพลาด และกรณีใช้งานยาก' },
+        { id:'reader', label:'คนลองแบบผู้ใช้จริง · น้ำ 水', elements:['water'], text:'อ่านพฤติกรรมใช้งานจริงและสิ่งที่อาจหลุด' },
+        { id:'owner', label:'คนตามแก้ · ดิน 土', elements:['earth'], text:'จัดลำดับสิ่งที่ต้องแก้และติดตามจนจบ' },
+        { id:'communicator', label:'คนสื่อสารการปล่อยงาน · ไฟ 火', elements:['fire'], text:'สื่อสารปัญหาที่รู้แล้วและการเปลี่ยนแปลง' },
       ],
-      manual:['แยก blocker/major/minor','ให้ทองถือ checklist','ให้คนน้ำลอง flow เหมือน user จริง','ให้ดินตามปิด issue ไม่ให้ค้าง'],
+      manual:['แยกปัญหาบล็อกงาน/ปัญหาใหญ่/ปัญหาเล็ก','ให้ทองถือรายการตรวจ','ให้คนน้ำลองทางใช้งานเหมือนผู้ใช้จริง','ให้ดินตามปิดปัญหาไม่ให้ค้าง'],
     },
     training: {
       label:'สอนงาน / Training',
@@ -5075,12 +5093,12 @@ window.applyI18N = applyI18N;
       required:['fire','earth','water'],
       support:['wood'],
       roles:[
-        { id:'teacher', label:'Trainer', elements:['fire'], text:'อธิบายให้เข้าใจง่ายและมีพลัง' },
-        { id:'curriculum', label:'Curriculum Owner', elements:['earth','metal'], text:'จัดบทเรียน step, checklist และแบบฝึก' },
-        { id:'listener', label:'Learner Reader', elements:['water'], text:'ดูว่าคนเรียนติดตรงไหนและปรับจังหวะ' },
-        { id:'coach', label:'Coach', elements:['wood'], text:'ต่อยอดและทำให้คนเรียนกล้าลอง' },
+        { id:'teacher', label:'คนสอน · ไฟ 火', elements:['fire'], text:'อธิบายให้เข้าใจง่ายและมีพลัง' },
+        { id:'curriculum', label:'คนจัดบทเรียน · ดิน 土 / ทอง 金', elements:['earth','metal'], text:'จัดบทเรียน ขั้นตอน รายการตรวจ และแบบฝึก' },
+        { id:'listener', label:'คนอ่านผู้เรียน · น้ำ 水', elements:['water'], text:'ดูว่าคนเรียนติดตรงไหนและปรับจังหวะ' },
+        { id:'coach', label:'คนโค้ชต่อยอด · ไม้ 木', elements:['wood'], text:'ต่อยอดและทำให้คนเรียนกล้าลอง' },
       ],
-      manual:['เริ่มจากสิ่งที่คนเรียนต้องใช้จริง','ใช้ example สั้นๆ','ให้คนน้ำเช็คความเข้าใจ','ให้ดินทำคู่มือหลังสอน'],
+      manual:['เริ่มจากสิ่งที่คนเรียนต้องใช้จริง','ใช้ตัวอย่างสั้นๆ','ให้คนน้ำเช็คความเข้าใจ','ให้ดินทำคู่มือหลังสอน'],
     },
     retrospective: {
       label:'สรุปบทเรียน',
@@ -5088,12 +5106,12 @@ window.applyI18N = applyI18N;
       required:['water','earth','metal'],
       support:['fire'],
       roles:[
-        { id:'facilitator', label:'Facilitator', elements:['water','earth'], text:'เปิดพื้นที่ปลอดภัยและจับ pattern' },
-        { id:'truth', label:'Truth / Root Cause', elements:['metal'], text:'แยกสาเหตุจริงจากข้อแก้ตัว' },
-        { id:'action', label:'Action Owner', elements:['earth'], text:'แปลงบทเรียนเป็น action item' },
-        { id:'energy', label:'Team Energy', elements:['fire'], text:'รักษาขวัญและสรุปให้ทีมอยากไปต่อ' },
+        { id:'facilitator', label:'คนพาคุย · น้ำ 水 / ดิน 土', elements:['water','earth'], text:'เปิดพื้นที่ปลอดภัยและจับรูปแบบซ้ำ' },
+        { id:'truth', label:'คนหาสาเหตุจริง · ทอง 金', elements:['metal'], text:'แยกสาเหตุจริงจากข้อแก้ตัว' },
+        { id:'action', label:'คนแปลงเป็นงาน · ดิน 土', elements:['earth'], text:'แปลงบทเรียนเป็นสิ่งที่ต้องทำต่อ' },
+        { id:'energy', label:'คนรักษาขวัญทีม · ไฟ 火', elements:['fire'], text:'รักษาขวัญและสรุปให้ทีมอยากไปต่อ' },
       ],
-      manual:['ถาม what happened ก่อน who did it','ใช้ data ไม่ใช้ความรู้สึกอย่างเดียว','ให้ทองจับ root cause','ปิดด้วย action owner และ deadline'],
+      manual:['ถามว่าเกิดอะไรขึ้น ก่อนถามว่าใครทำ','ใช้ข้อมูล ไม่ใช้ความรู้สึกอย่างเดียว','ให้ทองจับสาเหตุราก','ปิดด้วยเจ้าของงานและกำหนดส่ง'],
     },
     hiring_interview: {
       label:'สัมภาษณ์คน',
@@ -5101,25 +5119,25 @@ window.applyI18N = applyI18N;
       required:['water','metal','earth'],
       support:['fire','wood'],
       roles:[
-        { id:'reader', label:'Candidate Reader', elements:['water'], text:'อ่านเจตนา depth และความจริงหลังคำตอบ' },
-        { id:'standard', label:'Competency Gate', elements:['metal'], text:'ตั้งเกณฑ์และตรวจทักษะตามหลักฐาน' },
-        { id:'culture', label:'Culture / Fit', elements:['earth'], text:'ดูความเสถียรและ fit กับทีมจริง' },
-        { id:'sell', label:'Opportunity Seller', elements:['fire','wood'], text:'ขายวิสัยทัศน์และเส้นทางเติบโตให้คนเก่ง' },
+        { id:'reader', label:'คนอ่านผู้สมัคร · น้ำ 水', elements:['water'], text:'อ่านเจตนา ความลึก และความจริงหลังคำตอบ' },
+        { id:'standard', label:'คนตั้งเกณฑ์ทักษะ · ทอง 金', elements:['metal'], text:'ตั้งเกณฑ์และตรวจทักษะตามหลักฐาน' },
+        { id:'culture', label:'คนดูความเข้ากับทีม · ดิน 土', elements:['earth'], text:'ดูความเสถียรและความเข้ากับทีมจริง' },
+        { id:'sell', label:'คนขายโอกาส · ไฟ 火 / ไม้ 木', elements:['fire','wood'], text:'ขายวิสัยทัศน์และเส้นทางเติบโตให้คนเก่ง' },
       ],
-      manual:['ใช้คำถาม behavior-based','ให้ทองทำ scorecard','ให้คนน้ำฟังสิ่งที่ไม่พูด','ห้ามตัดสินจากความถูกใจอย่างเดียว'],
+      manual:['ใช้คำถามจากพฤติกรรมจริง','ให้ทองทำเกณฑ์ให้คะแนน','ให้คนน้ำฟังสิ่งที่ไม่พูด','ห้ามตัดสินจากความถูกใจอย่างเดียว'],
     },
     performance_review: {
-      label:'Feedback / ประเมินผลงาน',
+      label:'ให้คำแนะนำ / ประเมินผลงาน',
       summary:'ทีมนี้ต้องตรง ยุติธรรม และทำให้คนรู้ว่าจะพัฒนาอย่างไร',
       required:['earth','metal','water'],
       support:['fire'],
       roles:[
-        { id:'manager', label:'Manager / Context', elements:['earth'], text:'ให้ภาพรวม expectation และผลกระทบต่องาน' },
-        { id:'standard', label:'Standard Keeper', elements:['metal'], text:'ยึด metric และเกณฑ์เดียวกัน' },
-        { id:'listener', label:'Empathy Listener', elements:['water'], text:'ฟังเหตุผลและข้อจำกัดของคนถูก review' },
-        { id:'encourage', label:'Growth Energy', elements:['fire','wood'], text:'ทำให้ feedback กลายเป็นแรงพัฒนา' },
+        { id:'manager', label:'คนให้บริบท · ดิน 土', elements:['earth'], text:'ให้ภาพรวมความคาดหวังและผลกระทบต่องาน' },
+        { id:'standard', label:'คนคุมมาตรฐาน · ทอง 金', elements:['metal'], text:'ยึดตัวชี้วัดและเกณฑ์เดียวกัน' },
+        { id:'listener', label:'คนฟังข้อจำกัด · น้ำ 水', elements:['water'], text:'ฟังเหตุผลและข้อจำกัดของคนถูกประเมิน' },
+        { id:'encourage', label:'คนเติมแรงพัฒนา · ไฟ 火 / ไม้ 木', elements:['fire','wood'], text:'ทำให้คำแนะนำกลายเป็นแรงพัฒนา' },
       ],
-      manual:['เริ่มด้วย facts ไม่ใช่ judgment','แยก performance กับตัวตน','ให้ทองถือเกณฑ์','จบด้วย growth plan ที่วัดได้'],
+      manual:['เริ่มด้วยข้อเท็จจริง ไม่ใช่การตัดสินตัวคน','แยกผลงานกับตัวตน','ให้ทองถือเกณฑ์','จบด้วยแผนพัฒนาที่วัดได้'],
     },
     conflict_resolution: {
       label:'ไกล่เกลี่ยความขัดแย้ง',
@@ -5127,12 +5145,12 @@ window.applyI18N = applyI18N;
       required:['water','earth','metal'],
       support:['fire'],
       roles:[
-        { id:'mediator', label:'Mediator', elements:['water','earth'], text:'ฟังทั้งสองฝ่ายและทำให้พื้นที่ปลอดภัย' },
-        { id:'rule', label:'Boundary Setter', elements:['metal'], text:'ตั้งกติกาและขอบเขตที่ทุกฝ่ายยอมรับ' },
-        { id:'bridge', label:'Bridge Builder', elements:['wood'], text:'หา option ที่ไม่ใช่แพ้/ชนะ' },
-        { id:'speaker', label:'Tone Keeper', elements:['fire'], text:'สื่อสารให้ไม่แข็งหรือเย็นเกินไป' },
+        { id:'mediator', label:'คนไกล่เกลี่ย · น้ำ 水 / ดิน 土', elements:['water','earth'], text:'ฟังทั้งสองฝ่ายและทำให้พื้นที่ปลอดภัย' },
+        { id:'rule', label:'คนตั้งขอบเขต · ทอง 金', elements:['metal'], text:'ตั้งกติกาและขอบเขตที่ทุกฝ่ายยอมรับ' },
+        { id:'bridge', label:'คนหาทางออกกลาง · ไม้ 木', elements:['wood'], text:'หาทางเลือกที่ไม่ใช่แพ้/ชนะ' },
+        { id:'speaker', label:'คนคุมโทนการพูด · ไฟ 火', elements:['fire'], text:'สื่อสารให้ไม่แข็งหรือเย็นเกินไป' },
       ],
-      manual:['ห้ามเริ่มด้วยการหาคนผิด','ให้คนน้ำสะท้อน pain ของแต่ละฝ่าย','ให้ทองตั้งกติกา','จบด้วย next behavior ไม่ใช่แค่ขอโทษ'],
+      manual:['ห้ามเริ่มด้วยการหาคนผิด','ให้คนน้ำสะท้อนความเจ็บของแต่ละฝ่าย','ให้ทองตั้งกติกา','จบด้วยพฤติกรรมถัดไป ไม่ใช่แค่ขอโทษ'],
     },
     partner_selection: {
       label:'เลือกพาร์ตเนอร์',
@@ -5140,25 +5158,25 @@ window.applyI18N = applyI18N;
       required:['water','metal','earth'],
       support:['wood','fire'],
       roles:[
-        { id:'due', label:'Due Diligence', elements:['water','metal'], text:'ตรวจข้อมูล เจตนา และความเสี่ยงแฝง' },
-        { id:'fit', label:'Fit / Values', elements:['earth'], text:'ดูความเข้ากันด้านวิธีทำงานและความน่าเชื่อถือ' },
-        { id:'growth', label:'Growth Case', elements:['wood','fire'], text:'เห็นโอกาสร่วมและ narrative ที่โตได้' },
-        { id:'terms', label:'Terms Gate', elements:['metal'], text:'ล็อกเงื่อนไข exit, ownership และผลประโยชน์' },
+        { id:'due', label:'คนตรวจข้อมูล · น้ำ 水 / ทอง 金', elements:['water','metal'], text:'ตรวจข้อมูล เจตนา และความเสี่ยงแฝง' },
+        { id:'fit', label:'คนดูค่านิยมร่วม · ดิน 土', elements:['earth'], text:'ดูความเข้ากันด้านวิธีทำงานและความน่าเชื่อถือ' },
+        { id:'growth', label:'คนเห็นโอกาสร่วม · ไม้ 木 / ไฟ 火', elements:['wood','fire'], text:'เห็นโอกาสร่วมและเรื่องเล่าที่โตได้' },
+        { id:'terms', label:'คนล็อกเงื่อนไข · ทอง 金', elements:['metal'], text:'ล็อกเงื่อนไขทางออก ความเป็นเจ้าของ และผลประโยชน์' },
       ],
-      manual:['ตรวจประวัติก่อนชอบเขา','ทำ small pilot ก่อนผูกยาว','ให้ทองถือสัญญา','ให้คนน้ำอ่าน red flag'],
+      manual:['ตรวจประวัติก่อนชอบเขา','ทำการทดลองเล็กก่อนผูกยาว','ให้ทองถือสัญญา','ให้คนน้ำอ่านสัญญาณอันตราย'],
     },
     content_planning: {
       label:'วางคอนเทนต์',
-      summary:'ทีมนี้ต้องรู้ audience มีไอเดียต่อเนื่อง และทำจริงตาม calendar',
+      summary:'ทีมนี้ต้องรู้ผู้ชม มีไอเดียต่อเนื่อง และทำจริงตามตาราง',
       required:['wood','fire','water'],
       support:['earth'],
       roles:[
-        { id:'idea', label:'Idea Bank', elements:['wood'], text:'แตก angle และ series ได้ต่อเนื่อง' },
-        { id:'voice', label:'Voice / Hook', elements:['fire'], text:'ทำ hook, headline, และ tone ให้มีชีวิต' },
-        { id:'audience', label:'Audience Insight', elements:['water'], text:'อ่านสิ่งที่ผู้ชมสนใจจริงและ timing' },
-        { id:'calendar', label:'Calendar Owner', elements:['earth','metal'], text:'จัดตาราง production และ publish ให้ไม่หลุด' },
+        { id:'idea', label:'คนคลังไอเดีย · ไม้ 木', elements:['wood'], text:'แตกมุมเล่าและชุดเนื้อหาได้ต่อเนื่อง' },
+        { id:'voice', label:'คนคุมเสียงเล่า · ไฟ 火', elements:['fire'], text:'ทำประโยคเปิด หัวข้อ และโทนให้มีชีวิต' },
+        { id:'audience', label:'คนอ่านผู้ชม · น้ำ 水', elements:['water'], text:'อ่านสิ่งที่ผู้ชมสนใจจริงและจังหวะเวลา' },
+        { id:'calendar', label:'คนคุมตาราง · ดิน 土 / ทอง 金', elements:['earth','metal'], text:'จัดตารางผลิตและเผยแพร่ให้ไม่หลุด' },
       ],
-      manual:['เริ่มจาก audience pain','แยก pillar content','ให้ไฟทำ hook','ให้ดินล็อก calendar และ owner'],
+      manual:['เริ่มจากปัญหาจริงของผู้ชม','แยกเสาหลักเนื้อหา','ให้ไฟทำประโยคเปิด','ให้ดินล็อกตารางและเจ้าของงาน'],
     },
     legal_review: {
       label:'ตรวจความเสี่ยง / Legal',
@@ -5166,12 +5184,12 @@ window.applyI18N = applyI18N;
       required:['metal','water','earth'],
       support:['fire'],
       roles:[
-        { id:'legal', label:'Legal Gate', elements:['metal'], text:'ตรวจข้อผูกพัน กฎหมาย และมาตรฐาน' },
-        { id:'risk', label:'Risk Mapper', elements:['water'], text:'อ่านความเสี่ยงแฝงและ scenario ที่อาจเกิด' },
-        { id:'business', label:'Business Reality', elements:['earth'], text:'บอกผลกระทบจริงต่อเวลา เงิน และ operation' },
-        { id:'explain', label:'Plain-language Explainer', elements:['fire'], text:'แปล legal ให้ทีมเข้าใจและตัดสินใจได้' },
+        { id:'legal', label:'คนคุมกฎหมาย · ทอง 金', elements:['metal'], text:'ตรวจข้อผูกพัน กฎหมาย และมาตรฐาน' },
+        { id:'risk', label:'คนวาดแผนความเสี่ยง · น้ำ 水', elements:['water'], text:'อ่านความเสี่ยงแฝงและเหตุการณ์ที่อาจเกิด' },
+        { id:'business', label:'คนดูผลกระทบธุรกิจ · ดิน 土', elements:['earth'], text:'บอกผลกระทบจริงต่อเวลา เงิน และการปฏิบัติงาน' },
+        { id:'explain', label:'คนแปลภาษากฎหมาย · ไฟ 火', elements:['fire'], text:'แปลกฎหมายให้ทีมเข้าใจและตัดสินใจได้' },
       ],
-      manual:['ทำ risk register','แยก must fix กับ acceptable risk','ให้ทองอ่านเอกสารจริง','ห้ามให้ไฟสรุปแทน legal ถ้ายังไม่ตรวจ'],
+      manual:['ทำทะเบียนความเสี่ยง','แยกเรื่องที่ต้องแก้กับเรื่องที่ยอมรับได้','ให้ทองอ่านเอกสารจริง','ห้ามให้ไฟสรุปแทนฝ่ายกฎหมายถ้ายังไม่ตรวจ'],
     },
     investment_decision: {
       label:'ตัดสินใจลงทุน',
@@ -5179,12 +5197,12 @@ window.applyI18N = applyI18N;
       required:['water','earth','metal'],
       support:['fire'],
       roles:[
-        { id:'research', label:'Research Lead', elements:['water'], text:'อ่านข้อมูล macro, timing, และ pattern' },
-        { id:'risk', label:'Risk / Position Sizing', elements:['metal'], text:'ตั้ง stop, exposure, และเงื่อนไขออก' },
-        { id:'capital', label:'Capital Owner', elements:['earth'], text:'ดูเงินสด ภาระ และความเสถียรระยะยาว' },
-        { id:'conviction', label:'Conviction Speaker', elements:['fire'], text:'อธิบาย thesis ให้ชัด แต่ไม่ลากทีมด้วยอารมณ์' },
+        { id:'research', label:'คนอ่านข้อมูลลงทุน · น้ำ 水', elements:['water'], text:'อ่านภาพใหญ่ จังหวะเวลา และรูปแบบซ้ำ' },
+        { id:'risk', label:'คนคุมขนาดความเสี่ยง · ทอง 金', elements:['metal'], text:'ตั้งจุดหยุด ขนาดเงิน และเงื่อนไขออก' },
+        { id:'capital', label:'คนคุมเงินทุน · ดิน 土', elements:['earth'], text:'ดูเงินสด ภาระ และความเสถียรระยะยาว' },
+        { id:'conviction', label:'คนอธิบายเหตุผลลงทุน · ไฟ 火', elements:['fire'], text:'อธิบายเหตุผลให้ชัด แต่ไม่ลากทีมด้วยอารมณ์' },
       ],
-      manual:['เขียน thesis ก่อนซื้อ','กำหนด downside ก่อน upside','ให้ทองถือกติกา exit','ถ้าไฟแรงเกินให้คนน้ำถาม evidence เพิ่ม'],
+      manual:['เขียนเหตุผลลงทุนก่อนซื้อ','กำหนดด้านเสียก่อนด้านได้','ให้ทองถือกติกาออก','ถ้าไฟแรงเกินให้คนน้ำถามหลักฐานเพิ่ม'],
     },
     family_money: {
       label:'คุยเงินในครอบครัว',
@@ -5192,10 +5210,10 @@ window.applyI18N = applyI18N;
       required:['earth','water','metal'],
       support:['fire'],
       roles:[
-        { id:'anchor', label:'Family Anchor', elements:['earth'], text:'ประคองความมั่นคงและความไว้ใจ' },
-        { id:'listener', label:'Emotion Listener', elements:['water'], text:'ฟังความกังวลและเรื่องที่พูดยาก' },
-        { id:'boundary', label:'Boundary / Agreement', elements:['metal'], text:'ตั้งเงื่อนไข ตัวเลข และขอบเขตให้ชัด' },
-        { id:'warmth', label:'Warm Communicator', elements:['fire'], text:'ทำให้การคุยไม่เย็นหรือเป็นการตำหนิ' },
+        { id:'anchor', label:'คนประคองครอบครัว · ดิน 土', elements:['earth'], text:'ประคองความมั่นคงและความไว้ใจ' },
+        { id:'listener', label:'คนฟังอารมณ์ · น้ำ 水', elements:['water'], text:'ฟังความกังวลและเรื่องที่พูดยาก' },
+        { id:'boundary', label:'คนตั้งข้อตกลง · ทอง 金', elements:['metal'], text:'ตั้งเงื่อนไข ตัวเลข และขอบเขตให้ชัด' },
+        { id:'warmth', label:'คนสื่อสารให้อุ่น · ไฟ 火', elements:['fire'], text:'ทำให้การคุยไม่เย็นหรือเป็นการตำหนิ' },
       ],
       manual:['คุยตัวเลขบนกระดาษ ไม่คุยจากความจำ','แยกเงินกับคุณค่าของคน','ให้ทองเขียนข้อตกลง','ให้คนน้ำฟังความกลัวก่อนสรุป'],
     },
@@ -5205,10 +5223,10 @@ window.applyI18N = applyI18N;
       required:['earth','water','fire'],
       support:['metal'],
       roles:[
-        { id:'respect', label:'Respect Anchor', elements:['earth'], text:'ให้เกียรติและรักษาหน้าทุกฝ่าย' },
-        { id:'reader', label:'Mood Reader', elements:['water'], text:'อ่านจังหวะที่ควรพูดหรือควรหยุด' },
-        { id:'speaker', label:'Warm Speaker', elements:['fire'], text:'สื่อสารให้เข้าใจง่ายและไม่แข็ง' },
-        { id:'terms', label:'Agreement Keeper', elements:['metal'], text:'สรุปสิ่งที่ตกลงกันแบบไม่ทำให้รู้สึกถูกบังคับ' },
+        { id:'respect', label:'คนรักษาหน้า · ดิน 土', elements:['earth'], text:'ให้เกียรติและรักษาหน้าทุกฝ่าย' },
+        { id:'reader', label:'คนอ่านอารมณ์ห้อง · น้ำ 水', elements:['water'], text:'อ่านจังหวะที่ควรพูดหรือควรหยุด' },
+        { id:'speaker', label:'คนพูดให้อุ่น · ไฟ 火', elements:['fire'], text:'สื่อสารให้เข้าใจง่ายและไม่แข็ง' },
+        { id:'terms', label:'คนเก็บข้อตกลง · ทอง 金', elements:['metal'], text:'สรุปสิ่งที่ตกลงกันแบบไม่ทำให้รู้สึกถูกบังคับ' },
       ],
       manual:['เริ่มจากความตั้งใจดี','อย่าเปิดด้วยการโต้แย้ง','ให้คนน้ำจับอารมณ์ห้อง','ให้ดินสรุปทางออกที่ทุกคนรับได้'],
     },
@@ -5218,12 +5236,12 @@ window.applyI18N = applyI18N;
       required:['earth','metal','water'],
       support:['fire','wood'],
       roles:[
-        { id:'finance', label:'Finance Anchor', elements:['earth'], text:'ดูงบ ผ่อน ภาระ และเงินสำรอง' },
-        { id:'document', label:'Document / Legal', elements:['metal'], text:'ตรวจสัญญา โฉนด เงื่อนไข และข้อผูกพัน' },
-        { id:'location', label:'Location Reader', elements:['water','wood'], text:'อ่านทำเล flow ชีวิต และศักยภาพโต' },
-        { id:'family', label:'Family Buy-in', elements:['fire'], text:'ทำให้คนในบ้านเห็นภาพและตัดสินใจร่วมกัน' },
+        { id:'finance', label:'คนคุมงบ · ดิน 土', elements:['earth'], text:'ดูงบ ผ่อน ภาระ และเงินสำรอง' },
+        { id:'document', label:'คนตรวจเอกสาร · ทอง 金', elements:['metal'], text:'ตรวจสัญญา โฉนด เงื่อนไข และข้อผูกพัน' },
+        { id:'location', label:'คนอ่านทำเล · น้ำ 水 / ไม้ 木', elements:['water','wood'], text:'อ่านทำเล ทางไหลของชีวิต และศักยภาพโต' },
+        { id:'family', label:'คนทำให้ครอบครัวเห็นร่วมกัน · ไฟ 火', elements:['fire'], text:'ทำให้คนในบ้านเห็นภาพและตัดสินใจร่วมกัน' },
       ],
-      manual:['อย่าตัดสินจากความชอบวันแรก','ให้ทองตรวจเอกสารก่อนวางเงินใหญ่','ให้ดินคำนวณ worst case','ให้คนน้ำดู flow ชีวิตจริงในพื้นที่'],
+      manual:['อย่าตัดสินจากความชอบวันแรก','ให้ทองตรวจเอกสารก่อนวางเงินใหญ่','ให้ดินคำนวณกรณีแย่สุด','ให้คนน้ำดูทางไหลของชีวิตจริงในพื้นที่'],
     },
   });
   window.TEAM_EL = TEAM_EL;
@@ -5238,7 +5256,16 @@ window.applyI18N = applyI18N;
   function clampTeamScore(n){ return Math.max(0, Math.min(100, Math.round(n))); }
   function teamElemLabel(el){
     const e = TEAM_EL[el] || { zh:el, th:el, role:'' };
-    return `${e.zh} ${e.th}`;
+    return `${e.th} ${e.zh}`;
+  }
+  function colorizeTeamText(text){
+    const safe = escHtml(text || '');
+    return safe
+      .replace(/ไม้ 木/g, '<span class="hk-term elem-wood">ไม้ 木</span>')
+      .replace(/ไฟ 火/g, '<span class="hk-term elem-fire">ไฟ 火</span>')
+      .replace(/ดิน 土/g, '<span class="hk-term elem-earth">ดิน 土</span>')
+      .replace(/ทอง 金/g, '<span class="hk-term elem-metal">ทอง 金</span>')
+      .replace(/น้ำ 水/g, '<span class="hk-term elem-water">น้ำ 水</span>');
   }
   function memberProfileLine(p){
     const elem = TEAM_EL[p.elem] || {};
@@ -5311,38 +5338,38 @@ window.applyI18N = applyI18N;
       const isMissing = !members.length;
       return `<div class="team-cov-row ${isMissing?'missing':''}">
         <div class="team-cov-icon el-${e}">${info.icon || e}</div>
-        <div><b>${isMissing?'✕':'✓'} ${teamElemLabel(e)}</b><p>${isMissing ? `ขาดบทบาท: ${info.role || ''}` : `${members.map(p=>escHtml(p.name)).join(', ')} · ${info.role || ''}`}</p></div>
+        <div><b>${isMissing?'✕':'✓'} ${colorizeTeamText(teamElemLabel(e))}</b><p>${isMissing ? `ขาดบทบาท: ${colorizeTeamText(info.role || '')}` : `${members.map(p=>escHtml(p.name)).join(', ')} · ${colorizeTeamText(info.role || '')}`}</p></div>
       </div>`;
     }).join('');
     const roleRows = r.assignments.map(a => {
       const p = a.person;
       if (!p) return '';
       const warn = a.score < 30 ? ' · ยังไม่ชัด' : '';
-      const pair = p.id === r.center?.id ? 'CENTER' : `${a.pairScore>0?'+':''}${a.pairScore}`;
+      const pair = p.id === r.center?.id ? 'ดวงกลาง' : `${a.pairScore>0?'+':''}${a.pairScore}`;
       return `<div class="team-role-row">
         <div class="team-role-glyph elem-${p.elem}">${escHtml(p.glyph)}</div>
-        <div><b>${escHtml(p.name)} = ${escHtml(a.role.label)}${warn}</b><p>${escHtml(a.role.text)} · ${escHtml(memberProfileLine(p))} · synergy ${pair}</p></div>
+        <div><b>${escHtml(p.name)} = ${colorizeTeamText(a.role.label)}${warn}</b><p>${colorizeTeamText(a.role.text)} · ${colorizeTeamText(memberProfileLine(p))} · แรงคู่ ${pair}</p></div>
       </div>`;
     }).join('');
     const manual = [
       ...(r.tpl.manual || []),
       ...(r.missing.length ? [`เพิ่มคนหรือ checklist สาย ${r.missing.map(teamElemLabel).join(' / ')} ก่อนใช้ทีมนี้จริง`] : []),
       ...(r.riskPairs ? ['คู่ที่ปะทะให้ใช้ moderator หรือกำหนดกติกาก่อนประชุม'] : []),
-    ].slice(0,6).map(x => `<li>${escHtml(x)}</li>`).join('');
+    ].slice(0,6).map(x => `<li>${colorizeTeamText(x)}</li>`).join('');
     el.innerHTML = `
       <div class="team-fit-grid">
-        <div class="team-fit-card main"><div class="k">TEAM FIT · ${escHtml(r.tpl.label)}</div><div class="v">${r.fit}</div><div class="sub">${fitLabel} · ${escHtml(missingText)}</div></div>
-        <div class="team-fit-card"><div class="k">COVERAGE</div><div class="v">${r.coverage}</div><div class="sub">${r.covered.length}/${r.tpl.required.length} ธาตุหลัก</div></div>
-        <div class="team-fit-card"><div class="k">SYNERGY</div><div class="v">${r.synergy}</div><div class="sub">avg ${r.avg>0?'+':''}${r.avg}</div></div>
-        <div class="team-fit-card"><div class="k">RISK CTRL</div><div class="v">${r.riskControl}</div><div class="sub">${r.riskPairs} คู่ต้องคุม</div></div>
-        <div class="team-fit-card"><div class="k">ROLE CLARITY</div><div class="v">${r.roleClarity}</div><div class="sub">${r.assignments.length} บทบาท</div></div>
+        <div class="team-fit-card main"><div class="k">ความเหมาะของทีม · ${escHtml(r.tpl.label)}</div><div class="v">${r.fit}</div><div class="sub">${fitLabel} · ${escHtml(missingText)}</div></div>
+        <div class="team-fit-card"><div class="k">ธาตุครบไหม</div><div class="v">${r.coverage}</div><div class="sub">${r.covered.length}/${r.tpl.required.length} ธาตุหลัก</div></div>
+        <div class="team-fit-card"><div class="k">แรงรวมทีม</div><div class="v">${r.synergy}</div><div class="sub">เฉลี่ย ${r.avg>0?'+':''}${r.avg}</div></div>
+        <div class="team-fit-card"><div class="k">คุมความเสี่ยง</div><div class="v">${r.riskControl}</div><div class="sub">${r.riskPairs} คู่ต้องคุม</div></div>
+        <div class="team-fit-card"><div class="k">บทบาทชัดไหม</div><div class="v">${r.roleClarity}</div><div class="sub">${r.assignments.length} บทบาท</div></div>
       </div>
-      <div class="team-panel"><h4>ภาพรวมกิจกรรม</h4><div style="font-family:var(--thai);font-size:14px;color:var(--fg-soft);line-height:1.65;">${escHtml(r.tpl.summary)} · Center คือ <b style="color:var(--gold);">${escHtml(r.center?.name || '—')}</b> · ${escHtml(missingText)}</div></div>
+      <div class="team-panel"><h4>ภาพรวมกิจกรรม</h4><div style="font-family:var(--thai);font-size:14px;color:var(--fg-soft);line-height:1.65;">${escHtml(r.tpl.summary)} · ดวงกลางคือ <b style="color:var(--gold);">${escHtml(r.center?.name || '—')}</b> · ${escHtml(missingText)}</div></div>
       <div class="team-activity-main">
         <div class="team-panel"><h4>ธาตุที่กิจกรรมนี้ต้องใช้</h4><div class="team-coverage-list">${covRows}</div></div>
         <div class="team-panel"><h4>บทบาทแนะนำ</h4><div class="team-role-list">${roleRows}</div></div>
       </div>
-      <div class="team-panel"><h4>Operating Manual</h4><ul class="team-manual-list">${manual}</ul></div>
+      <div class="team-panel"><h4>คู่มือใช้งานทีม</h4><ul class="team-manual-list">${manual}</ul></div>
     `;
   }
 
@@ -5378,13 +5405,13 @@ window.applyI18N = applyI18N;
       const sc = score>=20?'pos':score<=-20?'neg':'mid';
       const role = p.role || tx(p.roleKey||'');
       const centerBadge = isCenter
-        ? `<div class="role" style="margin-top:6px;color:var(--gold);font-weight:700;">★ CENTER</div>`
+        ? `<div class="role" style="margin-top:6px;color:var(--gold);font-weight:700;">★ ดวงกลาง</div>`
         : `<div style="margin-top:6px;display:flex;gap:4px;justify-content:center;">
              <div class="role">${sc==='pos'?'+合':sc==='neg'?'沖':'平'}</div>
-             <button data-set-center="${p.id}" style="background:transparent;border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:8px;letter-spacing:1px;padding:2px 6px;border-radius:99px;cursor:pointer;" title="ตั้งเป็น center">★</button>
+             <button data-set-center="${p.id}" style="background:transparent;border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:8px;letter-spacing:1px;padding:2px 6px;border-radius:99px;cursor:pointer;" title="ตั้งเป็นดวงกลาง">★</button>
            </div>`;
       teamHTML.push(`<div class="cmp-card score-${sc}${isCenter?' is-center':''}" data-slot="${i}" data-id="${p.id}" ${isCenter?'style="box-shadow:inset 0 0 0 2px var(--gold);"':''}>
-        <button class="x-btn" onclick="event.stopPropagation();window.tbRemove(${i});return false;" title="${isCenter?'ลบ center · ระบบจะเลื่อนคนถัดไปเป็น center':'ลบออกจากทีม'}" style="z-index:5;">×</button>
+        <button class="x-btn" onclick="event.stopPropagation();window.tbRemove(${i});return false;" title="${isCenter?'ลบดวงกลาง · ระบบจะเลื่อนคนถัดไปเป็นดวงกลาง':'ลบออกจากทีม'}" style="z-index:5;">×</button>
         <div class="cmp-avatar elem-${p.elem}" style="border-color:var(--${p.elem});background:var(--${p.elem}-bg);color:var(--${p.elem});">${p.glyph}</div>
         <div class="name">${p.name}</div>
         <div class="role">${role}</div>
@@ -5414,11 +5441,11 @@ window.applyI18N = applyI18N;
     const centerOptions = teamPersons.map(p => `<option value="${escHtml(p.id)}" ${p.id === state.teamCenter ? 'selected' : ''}>${escHtml(p.glyph)} · ${escHtml(p.name)}</option>`).join('');
     toolbar.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <span>★ CENTER:</span>
+        <span>★ ดวงกลาง:</span>
         <select id="tb-center-select" style="background:var(--bg);border:1px solid var(--gold-line);color:var(--fg);border-radius:8px;padding:6px 10px;font-family:var(--thai);font-size:12px;">
           ${centerOptions}
         </select>
-        <span>· คนอื่นคำนวณ vs <b style="color:var(--gold);">${escHtml(centerPerson?.name || 'center')}</b> · สมาชิก <b style="color:var(--gold);">${teamPersons.length}</b> คน</span>
+        <span>· คนอื่นคำนวณเทียบ <b style="color:var(--gold);">${escHtml(centerPerson?.name || 'ดวงกลาง')}</b> · สมาชิก <b style="color:var(--gold);">${teamPersons.length}</b> คน</span>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
         <button id="tb-add-btn" style="background:transparent;border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:1.5px;padding:6px 12px;border-radius:99px;cursor:pointer;text-transform:uppercase;">＋ เพิ่มคน</button>
@@ -5438,7 +5465,7 @@ window.applyI18N = applyI18N;
       }
       const norm = pairs ? Math.round(total/pairs) : 0;
       const tag = norm>=20?'★ ทีมหนุนกัน':norm<=-20?'⚠ ทีมปะทะ':'· ทีมกลาง';
-      synEl.innerHTML = `SYNERGY <b>${norm>0?'+'+norm:norm===0?'0':norm}</b> / 100 ${tag}`;
+      synEl.innerHTML = `แรงรวมทีม <b>${norm>0?'+'+norm:norm===0?'0':norm}</b> / 100 ${tag}`;
     }
     /* 16 พ.ค. (เจ้านาย): dynamic matrix · ทีม NxN */
     const matrixEl = document.getElementById('tb-matrix');
@@ -5446,7 +5473,7 @@ window.applyI18N = applyI18N;
       const ids = state.team.filter(Boolean);
       const team = ids.map(id => PEOPLE.find(p => p.id === id)).filter(Boolean);
       if (!team.length) {
-        matrixEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-faint);font-family:var(--mono);font-size:11px;letter-spacing:2px;">— เพิ่มคนเข้าทีมเพื่อดู MATRIX —</div>';
+        matrixEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-faint);font-family:var(--thai);font-size:12px;letter-spacing:0;">— เพิ่มคนเข้าทีมเพื่อดูปฏิกิริยาในทีม —</div>';
       } else {
         const N = team.length;
         const cellsHTML = [];
@@ -5456,7 +5483,7 @@ window.applyI18N = applyI18N;
           cellsHTML.push(`<div class="cell row-head">${rowP.glyph} · ${rowP.name}</div>`);
           team.forEach((colP) => {
             if (rowP.id === colP.id) {
-              cellsHTML.push('<div class="cell self">SELF</div>');
+              cellsHTML.push('<div class="cell self">ตัวเอง</div>');
             } else {
               const s = typeof getScore==='function' ? getScore(rowP.id, colP.id, state.timeframe) : 0;
               const cls = s>=20?'good':s<=-20?'bad':'';
@@ -5482,8 +5509,8 @@ window.applyI18N = applyI18N;
         /* 1. wuxing coverage */
         const elems = new Set(team.map(p => p.elem));
         const missing = ['wood','fire','earth','metal','water'].filter(e => !elems.has(e));
-        const EL_TH3 = {wood:'木 ไม้', fire:'火 ไฟ', earth:'土 ดิน', metal:'金 ทอง', water:'水 น้ำ'};
-        if (elems.size >= 4) goodList.push(`✓ ทีมมี <b>${elems.size}/5 ธาตุ</b> ครบ — balance ดี`);
+        const EL_TH3 = {wood:'ไม้ 木', fire:'ไฟ 火', earth:'ดิน 土', metal:'ทอง 金', water:'น้ำ 水'};
+        if (elems.size >= 4) goodList.push(`✓ ทีมมี <b>${elems.size}/5 ธาตุ</b> ครบ — สมดุลดี`);
         else if (elems.size === 3) goodList.push(`· ทีมมี 3 ธาตุ — กลาง · ขาด ${missing.map(e => EL_TH3[e]).join(' · ')}`);
         if (missing.length) badList.push(`⚠ ขาดธาตุ <b>${missing.map(e => EL_TH3[e]).join(' · ')}</b> — งานบางด้านอาจขาดมิติ`);
         /* 2. center 用神 match กับคนในทีม (เปลี่ยน center ได้) */
@@ -5496,7 +5523,7 @@ window.applyI18N = applyI18N;
           const yong1TH = EL_TH3[yong1] || yong1;
           const matchers = team.filter(p => p.id !== self.id && p.elem === yong1);
           if (matchers.length) {
-            goodList.push(`✓ <b>用神 ${yong1TH}</b> ของคุณ ตรง DM ของ <b>${matchers.map(p => p.name).join(', ')}</b> — ฟังคนนี้ช่วยตัดสินใจ`);
+            goodList.push(`✓ <b>用神 ${yong1TH}</b> ของคุณ ตรงวันเกิดหลักของ <b>${matchers.map(p => p.name).join(', ')}</b> — ฟังคนนี้ช่วยตัดสินใจ`);
           } else {
             badList.push(`· ยังไม่มีคนใน用神 <b>${yong1TH}</b> — ลองหาเพิ่ม`);
           }
@@ -5509,14 +5536,14 @@ window.applyI18N = applyI18N;
             const byEl = {};
             jishenMembers.forEach(p => { (byEl[p.elem] = byEl[p.elem] || []).push(p); });
             Object.keys(byEl).forEach(el => {
-              badList.push(`⚠ <b>忌神 ${EL_TH3[el]||el}</b> มาจาก <b>${byEl[el].map(p => p.name).join(', ')}</b> — ใช้เป็น Challenger/Blind spot checker · ไม่ควรเป็น final approver เดี่ยว`);
+              badList.push(`⚠ <b>忌神 ${EL_TH3[el]||el}</b> มาจาก <b>${byEl[el].map(p => p.name).join(', ')}</b> — ใช้เป็นคนท้วงหรือคนเช็กจุดบอด · ไม่ควรเป็นคนอนุมัติสุดท้ายคนเดียว`);
             });
           } else if (dmEl) {
             const PRESSURE_EL = {wood:'metal', fire:'water', earth:'wood', metal:'fire', water:'earth'};
             const pressure = PRESSURE_EL[dmEl];
             const challengers = pressure ? team.filter(p => p.id !== self.id && p.elem === pressure) : [];
             if (challengers.length) {
-              badList.push(`⚠ ธาตุ <b>${EL_TH3[pressure]||pressure}</b> จาก <b>${challengers.map(p => p.name).join(', ')}</b> กดจังหวะของ center — ใช้เป็น Challenger ได้ แต่ต้องมี moderator ตอนตัดสินใจ`);
+              badList.push(`⚠ ธาตุ <b>${EL_TH3[pressure]||pressure}</b> จาก <b>${challengers.map(p => p.name).join(', ')}</b> กดจังหวะของดวงกลาง — ใช้เป็นคนท้วงได้ แต่ต้องมีคนกลางตอนตัดสินใจ`);
             }
           }
         }
@@ -5648,7 +5675,7 @@ window.applyI18N = applyI18N;
           <div style="max-width:380px;width:100%;background:linear-gradient(160deg,var(--bg-2),var(--bg-3));border:1px solid var(--gold);border-radius:16px;padding:32px 28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);">
             <div style="font-family:var(--tc);font-size:48px;color:var(--gold);line-height:1;margin-bottom:14px;">隊</div>
             <h3 style="font-family:var(--serif);font-size:22px;color:var(--fg);font-weight:500;margin-bottom:8px;">สร้างทีมใหม่?</h3>
-            <p style="font-family:var(--thai);font-size:13px;color:var(--fg-soft);line-height:1.65;margin-bottom:24px;">ระบบจะ <b style="color:var(--gold);">ล้าง center + slots ทั้งหมด</b><br/>เริ่มต้นใหม่ด้วยตัวคุณเป็น center · เพิ่มคนได้ใหม่ทีหลัง</p>
+            <p style="font-family:var(--thai);font-size:13px;color:var(--fg-soft);line-height:1.65;margin-bottom:24px;">ระบบจะ <b style="color:var(--gold);">ล้างดวงกลางและช่องทีมทั้งหมด</b><br/>เริ่มต้นใหม่ด้วยตัวคุณเป็นดวงกลาง · เพิ่มคนได้ใหม่ทีหลัง</p>
             <div style="display:flex;gap:10px;justify-content:center;">
               <button id="tb-confirm-no" style="flex:1;background:transparent;border:1px solid var(--fg-faint);color:var(--fg-soft);padding:12px 20px;border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:.2s;">ยกเลิก</button>
               <button id="tb-confirm-yes" style="flex:1;background:var(--gold);color:var(--bg);border:none;padding:12px 20px;border-radius:8px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-weight:700;transition:.2s;">🆕 ลุย</button>
@@ -5802,12 +5829,12 @@ window.applyI18N = applyI18N;
 <div class="hk-bulk-modal" id="hk-bulk-modal" onclick="if(event.target===this)closeBulkModal()">
   <div class="hk-bulk-card">
     <div class="hk-bulk-head">
-      <h3 data-i18n="n.bulk.title">🤖 เพิ่มหลายคน · AI ช่วยกรอก</h3>
+      <h3 data-i18n="n.bulk.title">🤖 เพิ่มหลายคน · ระบบช่วยกรอก</h3>
       <button class="x" onclick="closeBulkModal()">×</button>
     </div>
     <div class="hk-bulk-body">
       <div class="hint" data-i18n="n.bulk.hint">
-        พิมพ์ list คน · <b>1 คน 1 บรรทัด</b> · AI จะ parse ให้อัตโนมัติ<br/>
+        พิมพ์รายชื่อคน · <b>1 คน 1 บรรทัด</b> · ระบบจะอ่านให้อัตโนมัติ<br/>
         <b>ตัวอย่าง:</b><br/>
         พีท เกิด 12 ส.ค. 1985 บ่ายโมง กรุงเทพ ชาย<br/>
         มิ้น 15 เม.ย. 1990 9 โมงเช้า เชียงใหม่ หญิง<br/>
@@ -5818,7 +5845,7 @@ window.applyI18N = applyI18N;
     </div>
     <div class="hk-bulk-actions">
       <button onclick="closeBulkModal()" data-i18n="n.bulk.cancel">ยกเลิก</button>
-      <button class="primary" id="hk-bulk-go" onclick="runBulkAI()" data-i18n="n.bulk.go">🤖 ลุย AI</button>
+      <button class="primary" id="hk-bulk-go" onclick="runBulkAI()" data-i18n="n.bulk.go">🤖 เริ่มกรอกอัตโนมัติ</button>
     </div>
   </div>
 </div>
@@ -5827,16 +5854,16 @@ window.applyI18N = applyI18N;
 (function(){
   Object.assign(window.HK_I18N, {
     'n.cta.bulk':     { th:'🤖 เพิ่มหลายคน', en:'🤖 Add bulk', zh:'🤖 批量新增' },
-    'n.bulk.title':   { th:'🤖 เพิ่มหลายคน · AI ช่วยกรอก', en:'🤖 Bulk Add · AI Assist', zh:'🤖 批量新增 · AI 協助' },
-    'n.bulk.hint':    { th:'พิมพ์ list คน · <b>1 คน 1 บรรทัด</b> · AI จะ parse ให้อัตโนมัติ', en:'Type list · <b>1 person per line</b> · AI will parse', zh:'輸入名單 · <b>每行一人</b> · AI 自動解析' },
+    'n.bulk.title':   { th:'🤖 เพิ่มหลายคน · ระบบช่วยกรอก', en:'🤖 Bulk Add · AI Assist', zh:'🤖 批量新增 · AI 協助' },
+    'n.bulk.hint':    { th:'พิมพ์รายชื่อคน · <b>1 คน 1 บรรทัด</b> · ระบบจะอ่านให้อัตโนมัติ', en:'Type list · <b>1 person per line</b> · AI will parse', zh:'輸入名單 · <b>每行一人</b> · AI 自動解析' },
     'n.bulk.cancel':  { th:'ยกเลิก', en:'Cancel', zh:'取消' },
-    'n.bulk.go':      { th:'🤖 ลุย AI', en:'🤖 Run AI', zh:'🤖 啟動 AI' },
-    'n.bulk.parsing': { th:'⏳ AI กำลังตรวจรายการ...', en:'⏳ AI parsing...', zh:'⏳ AI 解析中...' },
+    'n.bulk.go':      { th:'🤖 เริ่มกรอกอัตโนมัติ', en:'🤖 Run AI', zh:'🤖 啟動 AI' },
+    'n.bulk.parsing': { th:'⏳ ระบบกำลังตรวจรายการ...', en:'⏳ AI parsing...', zh:'⏳ AI 解析中...' },
     'n.bulk.saving':  { th:'⏳ กำลังบันทึก {n} คน...', en:'⏳ Saving {n} people...', zh:'⏳ 儲存 {n} 人...' },
     'n.bulk.ok':      { th:'✓ เพิ่มสำเร็จ {ok}/{total} คน', en:'✓ Added {ok}/{total}', zh:'✓ 已新增 {ok}/{total}' },
     'n.bulk.err':     { th:'❌ ขัดข้อง:', en:'❌ Error:', zh:'❌ 錯誤:' },
     'n.bulk.empty':   { th:'⚠ กรุณาพิมพ์รายชื่อคนอย่างน้อย 1 คน', en:'⚠ Please enter at least 1 person', zh:'⚠ 請輸入至少 1 人' },
-    'n.bulk.noparse': { th:'⚠ AI ไม่สามารถ parse ข้อมูลใดได้ · ตรวจรูปแบบ', en:'⚠ AI could not parse · check format', zh:'⚠ AI 無法解析 · 請檢查格式' },
+    'n.bulk.noparse': { th:'⚠ ระบบอ่านข้อมูลไม่ได้ · ตรวจรูปแบบวันเกิด/เวลา/สถานที่', en:'⚠ AI could not parse · check format', zh:'⚠ AI 無法解析 · 請檢查格式' },
   });
   function tx(k){
     const t = window.HK_I18N[k]; if(!t) return k;
