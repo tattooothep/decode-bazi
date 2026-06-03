@@ -208,6 +208,8 @@ function loadEngineKnowledge(): { text: string; version: string } {
  * ไม่แตะ 3 loader เดิม (ajek/interaction/engine) · เติมของใหม่ ห้ามกระทบเดิม */
 const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
 const QTBJ_TIAOHOU_FILE = "qtbj-tiaohou-clean.md";
+const QTBJ_TIAOHOU_THAI_NOTES_FILE = "qtbj-tiaohou-thai-notes.md";
+const QTBJ_TIAOHOU_LOOKUP_FILE = "qtbj-tiaohou-lookup.md";
 const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "bazi-shishen-classical.md", label: "十神 · จิตวิทยาบทบาทสิบเทพ (子平 verbatim)" },
   { file: "bazi-geju-master.md", label: "格局 · โครงสร้างดวง 子平真詮 spec" },
@@ -220,6 +222,7 @@ const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "zpzq-zhenquan-clean.md", label: "📜 子平真詮評註 ตัวบทจริง verbatim (ctext · GROUND TRUTH เหนือ reconstruction · บท合化→48 + 74命例เฉลยจริง) · ใช้ quote/เทียบ案例 · ห้ามคัดจีนดิบ แปลไทยตามกฎ9" },
   { file: "dts-zhentian-clean.md", label: "📜 滴天髓闡微 ตัวบทจริง verbatim (ctext · 任鐵樵注 · GROUND TRUTH เหนือ reconstruction · 62 บท) · สาย旺衰氣勢: ยึดตอนอ่าน旺衰/化氣-從格/調候(寒暖燥濕)/通關/性情/疾病/女命/何知章 · 格局/相神ยึด子平真詮 · ห้ามคัดจีนดิบ แปลไทยตามกฎ9" },
   { file: QTBJ_TIAOHOU_FILE, label: "📜 窮通寶鑑 · 調候用神/月令 ตัวบทจริง canonical (admin library id 13 · 10干×12เดือน · ใช้เติมชั้นร้อนเย็นแห้งชื้น ห้าม override packet)" },
+  { file: QTBJ_TIAOHOU_THAI_NOTES_FILE, label: "📘 窮通寶鑑 · Thai teaching notes จาก memo id 13 (ชั้นอธิบาย 調候/月令 เป็นไทย · ใช้เสริม canonical ห้าม override packet)" },
   { file: "smtg-clean.md", label: "📜 三命通會 (萬民英 · 明 1578 · 神煞+納音+論女命 verbatim)" },
   { file: "yhzp-clean.md", label: "📜 淵海子平 (徐升 · 宋 1271 · 子平 ต้นน้ำ · 五干通變圖+喜忌篇 verbatim)" },
   { file: "sftk-clean.md", label: "📜 神峰通考 (張楠 · 明 · 命理正宗 · 病藥論+動靜說+蓋頭說+男女合婚說 verbatim · ต้นทาง BY-08)" },
@@ -249,15 +252,25 @@ let _qtbjTiaohouCache: { text: string; ts: number; version: string } | null = nu
 function loadQtbjTiaohouKnowledge(): { text: string; version: string } {
   const now = Date.now();
   if (_qtbjTiaohouCache && now - _qtbjTiaohouCache.ts < 60_000) return _qtbjTiaohouCache;
-  try {
-    const text = readFileSync(join(SIFU_EXTRA_DIR, QTBJ_TIAOHOU_FILE), "utf8");
-    const version = createHash("sha1").update(QTBJ_TIAOHOU_FILE).update(text).digest("hex").slice(0, 12);
-    _qtbjTiaohouCache = { text, ts: now, version };
-    return _qtbjTiaohouCache;
-  } catch (e) {
-    console.warn("[sifu] qtbj tiaohou missing:", (e as Error).message);
-    return { text: "", version: "none" };
+  const compactFiles: { file: string; label: string }[] = [
+    { file: QTBJ_TIAOHOU_FILE, label: "canonical raw" },
+    { file: QTBJ_TIAOHOU_LOOKUP_FILE, label: "Thai compact lookup" },
+  ];
+  const parts: string[] = [];
+  const hash = createHash("sha1");
+  for (const { file, label } of compactFiles) {
+    try {
+      const text = readFileSync(join(SIFU_EXTRA_DIR, file), "utf8");
+      hash.update(file).update(text);
+      parts.push(`\n──── 窮通寶鑑 compact: ${label} ────\n${text}`);
+    } catch (e) {
+      console.warn("[sifu] qtbj compact missing:", file, (e as Error).message);
+    }
   }
+  const text = parts.join("\n");
+  const version = text ? hash.digest("hex").slice(0, 12) : "none";
+  _qtbjTiaohouCache = { text, ts: now, version };
+  return _qtbjTiaohouCache;
 }
 
 /* 💾 DB result cache · TTL 24h */
