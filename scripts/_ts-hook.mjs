@@ -1,6 +1,9 @@
 import { pathToFileURL } from 'node:url';
 const ROOT = process.cwd();
 export async function resolve(spec, ctx, next) {
+  if (spec === 'next/server') {
+    return next('next/server.js', ctx);
+  }
   // @/ alias → src/ (เลียน tsconfig paths · เฉพาะ test)
   if (spec.startsWith('@/')) {
     const rel = pathToFileURL(`${ROOT}/src/${spec.slice(2)}`).href;

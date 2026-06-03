@@ -1095,12 +1095,14 @@
   window._engineLabels      = window._engineLabels      || {};  // {a: {b: {th, en}}}
   window._engineGuidance    = window._engineGuidance    || {};  // {a: {b: {confidence, primary, context, intent, cautions}}}
   window._engineYongshenV2  = window._engineYongshenV2  || {};  // {pid: {structure_label, engine_type, primary, ...}} · per person · 15 พ.ค.
+  const NETWORK_SCORING_VERSION = 'v2';
 
   function getScore(a, b, tf){
     if(a===b) return null;
     /* 1. engine cache ก่อน */
     const eng = window._engineScores[a]?.[b];
     if (eng && (eng[tf] !== undefined && eng[tf] !== null)) return eng[tf];
+    if (NETWORK_SCORING_VERSION === 'v2') return 0;
     /* 2. fallback DEMO REL */
     const r = REL[a]?.[b];
     if(r) return r.scores[tf] ?? 0;
@@ -1109,6 +1111,7 @@
   function getTags(a, b){
     const eng = window._engineTags[a]?.[b];
     if (eng && eng.length) return eng;
+    if (NETWORK_SCORING_VERSION === 'v2') return [];
     return REL[a]?.[b]?.tags || [];
   }
   /* batch fetch · เรียกหลัง PEOPLE เปลี่ยน · cache ทั้ง self↔others */
@@ -1157,6 +1160,7 @@
       const r = await fetch('/api/network/score', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
+          scoringVersion: NETWORK_SCORING_VERSION,
           self: self.pillars,
           others: others.map(p=>({id:p.id, ...p.pillars})),
           date: dateStr,
@@ -1179,13 +1183,17 @@
       others.forEach(p=>{
         if (data.scores && data.scores[p.id]) {
           window._engineScores['self'][p.id] = data.scores[p.id];
-          window._engineScores[p.id] = window._engineScores[p.id] || {};
-          window._engineScores[p.id]['self'] = data.scores[p.id];
+          if (NETWORK_SCORING_VERSION !== 'v2') {
+            window._engineScores[p.id] = window._engineScores[p.id] || {};
+            window._engineScores[p.id]['self'] = data.scores[p.id];
+          }
         }
         if (data.tags && data.tags[p.id]) {
           window._engineTags['self'][p.id] = data.tags[p.id];
-          window._engineTags[p.id] = window._engineTags[p.id] || {};
-          window._engineTags[p.id]['self'] = data.tags[p.id];
+          if (NETWORK_SCORING_VERSION !== 'v2') {
+            window._engineTags[p.id] = window._engineTags[p.id] || {};
+            window._engineTags[p.id]['self'] = data.tags[p.id];
+          }
         }
         if (data.directional && data.directional[p.id]) {
           window._engineDirectional['self'][p.id] = data.directional[p.id];
@@ -1232,6 +1240,7 @@
       const r = await fetch('/api/network/score', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
+          scoringVersion: NETWORK_SCORING_VERSION,
           self: center.pillars,
           others: missing.map(p=>({id:p.id, ...p.pillars})),
           date: dateStr
@@ -1242,14 +1251,32 @@
       if (!data.scores) return;
       window._engineScores[centerId] = window._engineScores[centerId] || {};
       window._engineTags[centerId]   = window._engineTags[centerId]   || {};
+      window._engineDirectional[centerId] = window._engineDirectional[centerId] || {};
+      window._engineBreakdown[centerId]   = window._engineBreakdown[centerId]   || {};
+      window._engineLabels[centerId]      = window._engineLabels[centerId]      || {};
+      window._engineGuidance[centerId]    = window._engineGuidance[centerId]    || {};
       missing.forEach(p=>{
         if (data.scores[p.id]) {
           window._engineScores[centerId][p.id] = data.scores[p.id];
-          window._engineScores[p.id] = window._engineScores[p.id] || {};
-          window._engineScores[p.id][centerId] = data.scores[p.id];
+          if (NETWORK_SCORING_VERSION !== 'v2') {
+            window._engineScores[p.id] = window._engineScores[p.id] || {};
+            window._engineScores[p.id][centerId] = data.scores[p.id];
+          }
         }
         if (data.tags && data.tags[p.id]) {
           window._engineTags[centerId][p.id] = data.tags[p.id];
+        }
+        if (data.directional && data.directional[p.id]) {
+          window._engineDirectional[centerId][p.id] = data.directional[p.id];
+        }
+        if (data.breakdown && data.breakdown[p.id]) {
+          window._engineBreakdown[centerId][p.id] = data.breakdown[p.id];
+        }
+        if (data.labels && data.labels[p.id]) {
+          window._engineLabels[centerId][p.id] = data.labels[p.id];
+        }
+        if (data.guidance && data.guidance[p.id]) {
+          window._engineGuidance[centerId][p.id] = data.guidance[p.id];
         }
       });
       /* yongshen v2 · per-person cache (center + others) */
@@ -2088,7 +2115,6 @@
   let _pressedFired = false;
   async function _recenterTo(nodeId){
     state.centerId = nodeId;
-    renderSolar();
     if (window.ensureCenterScores) await window.ensureCenterScores(state.centerId);
     renderSolar();
   }
@@ -2217,12 +2243,11 @@
     document.querySelector('#view-tabs button[data-view="solar"]').classList.add('on');
     document.querySelectorAll('.view-panel').forEach(p=>p.classList.remove('on'));
     document.getElementById('view-solar').classList.add('on');
-    setTimeout(renderSolar, 50);
     /* lazy fetch · refresh หลังได้ scores จริง */
     if (window.ensureCenterScores) {
       await window.ensureCenterScores(state.centerId);
-      renderSolar();
     }
+    renderSolar();
   });
 
   // resize → recompute positions
@@ -5094,23 +5119,28 @@ window.applyI18N = applyI18N;
   }
 
   /* 16 พ.ค. (เจ้านาย): tbRemove · inline onclick กัน handler conflict */
-  window.tbRemove = function(slot){
+  window.tbRemove = async function(slot){
     const removedId = state.team[slot];
     state.team[slot] = null;
     state.team = state.team.filter(Boolean);
+    let centerChanged = false;
     if (removedId === state.teamCenter) {
       state.teamCenter = state.team[0] || 'self';
+      centerChanged = true;
       if (!state.team.length) {
         state.team = ['self'];
         state.teamCenter = 'self';
       }
     }
     saveTeam();
+    if (centerChanged && window.ensureCenterScores) {
+      await window.ensureCenterScores(state.teamCenter);
+    }
     renderTeam();
   };
 
   /* 16 พ.ค. (เจ้านาย): click handlers สำหรับ "ตั้ง center" + "สร้างทีมใหม่" */
-  document.addEventListener('click', function(e){
+  document.addEventListener('click', async function(e){
     /* ตั้งเป็น center */
     const ctrBtn = e.target.closest('button[data-set-center]');
     if (ctrBtn) {
@@ -5119,6 +5149,7 @@ window.applyI18N = applyI18N;
       if (newCenter && PEOPLE.find(p => p.id === newCenter)) {
         state.teamCenter = newCenter;
         saveTeam();
+        if (window.ensureCenterScores) await window.ensureCenterScores(newCenter);
         renderTeam();
       }
       return;
@@ -5242,7 +5273,7 @@ window.applyI18N = applyI18N;
   };
 
   /* delegate clicks on team panel + pick list */
-  document.addEventListener('click', function(e){
+  document.addEventListener('click', async function(e){
     /* 1. click empty slot → open picker */
     const empty = e.target.closest('#view-team .cmp-card.empty');
     if (empty) {
@@ -5258,9 +5289,11 @@ window.applyI18N = applyI18N;
       const removedId = state.team[slot];
       state.team[slot] = null;
       state.team = state.team.filter(Boolean);
+      let centerChanged = false;
       /* ถ้าลบ center → ตั้ง center เป็นคนถัดไปใน team (auto-promote) */
       if (removedId === state.teamCenter) {
         state.teamCenter = state.team[0] || 'self';
+        centerChanged = true;
         /* ถ้าไม่มีใครเหลือ → ใส่ self กลับ */
         if (!state.team.length) {
           state.team = ['self'];
@@ -5268,6 +5301,9 @@ window.applyI18N = applyI18N;
         }
       }
       saveTeam();
+      if (centerChanged && window.ensureCenterScores) {
+        await window.ensureCenterScores(state.teamCenter);
+      }
       renderTeam();
       return;
     }

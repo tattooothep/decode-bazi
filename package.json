@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "check:pair-v2": "node scripts/check-pair-reaction-v2.mjs",
     "start": "next start"
   },
   "dependencies": {
