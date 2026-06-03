@@ -1,12 +1,13 @@
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { SIFU_CODEX_BASE_CANON, SIFU_CODEX_BASE_CANON_VERSION } from "./sifu-codex-canon";
 
 const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
 const QTBJ_TIAOHOU_FILE = "qtbj-tiaohou-clean.md";
 const QTBJ_TIAOHOU_LOOKUP_FILE = "qtbj-tiaohou-lookup.md";
 
-export const SIFU_CODEX_QTBJ_RETRIEVAL_VERSION = "codex-qtbj-retrieval-v3";
+export const SIFU_CODEX_QTBJ_RETRIEVAL_VERSION = "codex-qtbj-retrieval-v4-canon1";
 
 const STEMS = "甲乙丙丁戊己庚辛壬癸";
 const BRANCHES = "子丑寅卯辰巳午未申酉戌亥";
@@ -227,11 +228,12 @@ function describePairs(pairs: QtbjPair[]): string {
 
 export function loadQtbjTiaohouCompactKnowledge(query: string): { text: string; version: string; pairs: string[]; chars: number } {
   try {
-    const maxChars = Math.max(8_000, Number(process.env.SIFU_CODEX_QTBJ_MAX_CHARS || 24_000));
+    const qtbjMaxChars = Math.max(8_000, Number(process.env.SIFU_CODEX_QTBJ_MAX_CHARS || 24_000));
+    const baseCanonMaxChars = Math.max(10_000, Number(process.env.SIFU_CODEX_BASE_CANON_MAX_CHARS || 22_000));
     const maxPairs = Math.max(1, Number(process.env.SIFU_CODEX_QTBJ_MAX_PAIRS || 4));
     const src = loadQtbjSource();
     const pairs = extractQtbjPairs(query, maxPairs);
-    const canonicalBudget = Math.min(8_000, Math.floor(maxChars * 0.35));
+    const canonicalBudget = Math.min(8_000, Math.floor(qtbjMaxChars * 0.35));
     const perPairCanonical = pairs.length ? Math.max(900, Math.floor(canonicalBudget / pairs.length)) : 0;
     const canonical = pairs
       .map(pair => ({ pair, text: extractCanonicalSnippet(src.clean, pair, perPairCanonical) }))
@@ -240,11 +242,17 @@ export function loadQtbjTiaohouCompactKnowledge(query: string): { text: string; 
     const priorityGuards = pairs
       .map(canonicalPriorityGuard)
       .filter((x): x is string => Boolean(x));
-    const lookupBudget = Math.max(4_000, maxChars - canonical.join("\n\n").length - 1_200);
+    const lookupBudget = Math.max(4_000, qtbjMaxChars - canonical.join("\n\n").length - 1_200);
     const lookup = selectLookupBlocks(src.lookup, pairs, lookupBudget)
       .map((block, idx) => `### Thai lookup ${idx + 1}\n${block}`);
 
-    const text = [
+    const baseCanonText = [
+      "# Codex base canon compact source",
+      `Version: ${SIFU_CODEX_BASE_CANON_VERSION}`,
+      SIFU_CODEX_BASE_CANON,
+    ].join("\n\n").slice(0, baseCanonMaxChars);
+
+    const qtbjText = [
       "# 窮通寶鑑 · Codex targeted retrieval",
       `Version: ${SIFU_CODEX_QTBJ_RETRIEVAL_VERSION}/${src.version}`,
       `Matched pairs: ${describePairs(pairs)}`,
@@ -256,9 +264,14 @@ export function loadQtbjTiaohouCompactKnowledge(query: string): { text: string; 
       ...canonical,
       lookup.length ? "## Thai teaching lookup" : "",
       ...lookup,
-    ].filter(Boolean).join("\n\n").slice(0, maxChars);
+    ].filter(Boolean).join("\n\n").slice(0, qtbjMaxChars);
 
-    return { text, version: `${SIFU_CODEX_QTBJ_RETRIEVAL_VERSION}-${src.version}`, pairs: pairs.map(pairKey), chars: text.length };
+    const text = [
+      baseCanonText,
+      qtbjText,
+    ].filter(Boolean).join("\n\n");
+
+    return { text, version: `${SIFU_CODEX_QTBJ_RETRIEVAL_VERSION}-${SIFU_CODEX_BASE_CANON_VERSION}-${src.version}`, pairs: pairs.map(pairKey), chars: text.length };
   } catch (e) {
     console.warn("[sifu] qtbj targeted retrieval failed:", (e as Error).message);
     return { text: "", version: "none", pairs: [], chars: 0 };
