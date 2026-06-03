@@ -166,7 +166,7 @@
   .hk-node-tip .sc.neg b{color:var(--bad);}
   .hk-node-tip .sc.mid b{color:var(--neutral);}
   .hk-node-tip .rx{margin-top:8px;padding-top:8px;border-top:1px dashed var(--tile-bd);line-height:1.45;}
-  .hk-node-tip .rx .rx-l{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--neutral);}
+  .hk-node-tip .rx .rx-l{font-family:var(--thai);font-size:12px;letter-spacing:0;color:var(--neutral);font-weight:700;}
   .hk-node-tip .rx.pos .rx-l{color:var(--good);}
   .hk-node-tip .rx.neg .rx-l{color:var(--bad);}
   .hk-node-tip .rx .rx-t{margin-top:4px;color:var(--fg-soft);}
@@ -320,18 +320,18 @@
   .pc-rel{margin-top:14px;padding-top:14px;border-top:1px dashed var(--tile-bd);}
   .pc-verdict{display:flex;flex-direction:column;gap:8px;font-family:var(--thai);}
   .pc-v-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
-  .pc-v-label{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--neutral);white-space:nowrap;}
+  .pc-v-label{font-family:var(--thai);font-size:12px;letter-spacing:0;color:var(--neutral);white-space:nowrap;font-weight:700;}
   .pc-verdict.pos .pc-v-label{color:var(--good);}
   .pc-verdict.neg .pc-v-label{color:var(--bad);}
   .pc-v-score{font-family:var(--mono);font-size:9px;color:var(--fg-faint);white-space:nowrap;}
-  .pc-v-text{font-size:12px;line-height:1.55;color:var(--fg-soft);}
+  .pc-v-text{font-size:12.5px;line-height:1.65;color:var(--fg-soft);}
   .pc-v-chips{display:flex;flex-wrap:wrap;gap:6px;}
-  .pc-v-chip{font-family:var(--mono);font-size:9px;letter-spacing:.08em;padding:3px 8px;border-radius:99px;border:1px solid var(--neutral);color:var(--neutral);background:var(--metal-bg);}
+  .pc-v-chip{font-family:var(--thai);font-size:11px;letter-spacing:0;padding:4px 8px;border-radius:6px;border:1px solid var(--neutral);color:var(--neutral);background:var(--metal-bg);line-height:1.35;}
   .pc-v-chip.good{border-color:var(--good);color:var(--good);background:var(--wood-bg);}
   .pc-v-chip.bad{border-color:var(--bad);color:var(--bad);background:var(--fire-bg);}
   .pc-v-chip.ctx{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
   .pc-raw-tags{margin-top:2px;}
-  .pc-raw-tags summary{cursor:pointer;list-style:none;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--fg-faint);text-transform:uppercase;}
+  .pc-raw-tags summary{cursor:pointer;list-style:none;font-family:var(--thai);font-size:11px;letter-spacing:0;color:var(--fg-faint);}
   .pc-raw-tags summary::-webkit-details-marker{display:none;}
   .pc-raw-tags summary::after{content:' +';color:var(--gold);}
   .pc-raw-tags[open] summary::after{content:' -';}
@@ -500,7 +500,7 @@
     <div class="hk-coach-tips">
       <div class="hk-coach-tip"><span class="ico">👆</span><span class="txt" data-i18n="n.coach.t1"><b data-i18n="auto.n.501">คลิกคน</b> ในวงโคจร — เปิดดูดวงคนนั้นเต็มๆ</span></div>
       <div class="hk-coach-tip"><span class="ico">🖐</span><span class="txt" data-i18n="n.coach.t2"><b data-i18n="auto.n.502">กดค้าง</b> หรือ <b data-i18n="auto.n.503">Shift+คลิก</b> — ย้าย Center มาที่คนนั้น · เห็นโลกในมุมเขา</span></div>
-      <div class="hk-coach-tip"><span class="ico">🛈</span><span class="txt" data-i18n="n.coach.t3"><b data-i18n="auto.n.504">วาง mouse ค้าง</b> ที่คน — เห็นรายละเอียดคะแนน + tags</span></div>
+      <div class="hk-coach-tip"><span class="ico">🛈</span><span class="txt" data-i18n="n.coach.t3"><b data-i18n="auto.n.504">วาง mouse ค้าง</b> ที่คน — เห็นคะแนน + คำอธิบายไทย</span></div>
       <div class="hk-coach-tip"><span class="ico">↺</span><span class="txt" data-i18n="n.coach.t4">ปุ่ม <b data-i18n="auto.n.505">"กลับไปดวงฉัน"</b> ขวาบน — รีเซ็ต Center</span></div>
     </div>
     <button class="hk-coach-btn" id="hk-coach-dismiss" data-i18n="n.coach.btn">เข้าใจแล้ว · เริ่มเลย</button>
@@ -1734,22 +1734,67 @@
     return t;
   }
 
-  function uniqueCompactTags(tags){
+  function pairTagInfo(tag){
+    const t = String(tag || '');
+    const pick = (key, th, zh, tone) => ({ key, th, zh, tone: tone || pairTagTone(t), raw: t });
+    if (/沖去忌神/.test(t)) return pick('clash-removes-avoid', 'แรงชนช่วยตัดตัวกดดวง', '沖去忌神', 'ctx');
+    if (/沖動用神/.test(t)) return pick('clash-hits-useful', 'แรงชนกระทบตัวช่วย', '沖動用神', 'bad');
+    if (/合勢忌神/.test(t)) return pick('combo-to-avoid', 'แรงประสานไปทางที่กดดวง', '合勢忌神', 'bad');
+    if (/合勢喜神|六合勢喜神/.test(t)) return pick('combo-to-helpful', 'แรงประสานช่วยเสริมดวง', '合勢喜神', 'ctx');
+    if (/六合勢用神/.test(t)) return pick('liuhe-to-useful', 'คู่ประสานช่วยตัวหลักของดวง', '六合勢用神', 'ctx');
+    if (/半三合忌神|三合忌神/.test(t)) return pick('sanhe-to-avoid', 'แรงรวมกลุ่มไปทางที่กดดวง', /半/.test(t) ? '半三合忌神' : '三合忌神', 'bad');
+    if (/半三會忌神|三會忌神/.test(t)) return pick('sanhui-to-avoid', 'แรงกลุ่มฤดูไปทางที่กดดวง', /半/.test(t) ? '半三會忌神' : '三會忌神', 'bad');
+    if (/半三合用神|三合用神/.test(t)) return pick('sanhe-to-useful', 'แรงรวมกลุ่มช่วยตัวหลักของดวง', /半/.test(t) ? '半三合用神' : '三合用神', 'ctx');
+    if (/半三會用神|三會用神/.test(t)) return pick('sanhui-to-useful', 'แรงกลุ่มฤดูช่วยตัวหลักของดวง', /半/.test(t) ? '半三會用神' : '三會用神', 'ctx');
+    if (/半三合喜神|三合喜神/.test(t)) return pick('sanhe-to-helpful', 'แรงรวมกลุ่มช่วยเสริมดวง', /半/.test(t) ? '半三合喜神' : '三合喜神', 'ctx');
+    if (/半三會喜神|三會喜神/.test(t)) return pick('sanhui-to-helpful', 'แรงกลุ่มฤดูช่วยเสริมดวง', /半/.test(t) ? '半三會喜神' : '三會喜神', 'ctx');
+    if (/跨柱天干沖|天干沖/.test(t)) return pick('stem-clash', 'ความคิดหรือคำพูดปะทะกัน', '天干沖', 'bad');
+    if (/跨柱天干合|天干合/.test(t)) return pick('stem-combine', 'ความคิดหรือจังหวะประสานกัน', '天干合', 'good');
+    if (/跨柱破|破/.test(t)) return pick('break', 'จุดแตกหรือเสียจังหวะ', '破', 'bad');
+    if (/跨柱害|害/.test(t)) return pick('harm', 'แผลซ่อนหรือเรื่องค้างใจ', '害', 'bad');
+    if (/跨柱刑|刑/.test(t)) return pick('pressure', 'แรงกดดันและบีบใจ', '刑', 'bad');
+    if (/跨柱沖|沖/.test(t)) return pick('clash', 'แรงปะทะตรง ต้องคุยให้ชัด', '沖', 'bad');
+    if (/忌神/.test(t)) return pick('avoid-element', 'ธาตุที่กดดวง', '忌神', 'bad');
+    if (/用神/.test(t)) return pick('useful-element', 'ธาตุที่ดวงต้องการ', '用神', 'good');
+    if (/喜神/.test(t)) return pick('helpful-element', 'ธาตุที่ช่วยเสริมดวง', '喜神', 'good');
+    if (/六合/.test(t)) return pick('six-combine', 'เข้ากันง่าย คุยกันติด', '六合', 'good');
+    if (/半三合|三合/.test(t)) return pick('three-combine', /半/.test(t) ? 'มีแรงรวมกลุ่มบางส่วน' : 'แรงร่วมมือระยะยาว', /半/.test(t) ? '半三合' : '三合', 'good');
+    if (/半三會|三會/.test(t)) return pick('season-group', /半/.test(t) ? 'พลังกลุ่มฤดูเริ่มจับตัว' : 'พลังกลุ่มฤดูชัด', /半/.test(t) ? '半三會' : '三會', 'good');
+    if (/生我/.test(t)) return pick('supports-me', 'เขาช่วยพยุงเรา', '生我', 'good');
+    if (/我生/.test(t)) return pick('i-feed', 'เราต้องจ่ายพลังให้เขา', '我生', 'bad');
+    if (/我克/.test(t)) return pick('i-control', 'เราคุมเกมหรือจัดการได้', '我克', 'good');
+    if (/克我/.test(t)) return pick('controls-me', 'เขากดหรือคุมเรา', '克我', 'bad');
+    if (/比和/.test(t)) return pick('same-force', 'พลังคล้ายกัน เข้าใจง่ายแต่ชนกันได้', '比和', 'mid');
+    if (/藥/.test(t)) return pick('medicine', 'ตัวแก้อาการของดวง', '藥', 'ctx');
+    if (/病/.test(t)) return pick('disease', 'จุดป่วยของดวงถูกกระตุ้น', '病', 'bad');
+    return pick(pairTagShort(t), pairTagShort(t), '', pairTagTone(t));
+  }
+
+  function pairTagLabel(info, withChinese = true){
+    const i = typeof info === 'string' ? pairTagInfo(info) : info;
+    return withChinese && i.zh ? `${i.th} (${i.zh})` : i.th;
+  }
+
+  function compactTagInfos(tags){
     const seen = new Set();
-    return (tags || []).map(pairTagShort).filter(t => {
-      if (!t || seen.has(t)) return false;
-      seen.add(t);
+    return (tags || []).map(pairTagInfo).filter(info => {
+      if (!info.key || seen.has(info.key)) return false;
+      seen.add(info.key);
       return true;
     });
   }
 
+  function uniqueCompactTags(tags){
+    return compactTagInfos(tags).map(info => pairTagLabel(info));
+  }
+
   function pairScoreBand(score){
     const s = Number(score) || 0;
-    if (s >= 20) return { tone:'pos', label:'หนุนชัด' };
-    if (s >= 5) return { tone:'pos', label:'หนุนเบา' };
+    if (s >= 20) return { tone:'pos', label:'หนุนกันดี' };
+    if (s >= 5) return { tone:'pos', label:'พอหนุนกัน' };
     if (s <= -20) return { tone:'neg', label:'ปะทะชัด' };
-    if (s <= -5) return { tone:'neg', label:'ระวัง' };
-    return { tone:'mid', label:'กลาง / ผสม' };
+    if (s <= -5) return { tone:'neg', label:'ควรระวัง' };
+    return { tone:'mid', label:'กลาง ๆ / ดูบริบท' };
   }
 
   function getPairExplanation(a, b, tf){
@@ -1787,20 +1832,24 @@
 
     let label = band.label;
     if (supportPower >= 25 && riskPower >= 25) {
-      label = score >= 10 ? 'หนุนแบบมีเงื่อนไข' : score <= -10 ? 'ระวังแต่มีตัวช่วย' : 'ผสมแรง';
+      label = score >= 10 ? 'ดีแต่มีเงื่อนไข' : score <= -10 ? 'ระวังแต่ยังมีตัวช่วย' : 'ทั้งดีทั้งกด';
     }
 
-    const supportText = uniqueCompactTags(grouped.support).slice(0, 3).join(' · ');
-    const riskText = uniqueCompactTags(grouped.risk).slice(0, 3).join(' · ');
+    const supportItems = compactTagInfos(grouped.support).slice(0, 3);
+    const riskItems = compactTagInfos(grouped.risk).slice(0, 3);
+    const supportText = supportItems.slice(0, 2).map(i => pairTagLabel(i)).join(' · ');
+    const riskText = riskItems.slice(0, 2).map(i => pairTagLabel(i)).join(' · ');
+    const supportMore = supportItems.length > 2 ? ' และแรงเสริมอื่น ๆ' : '';
+    const riskMore = riskItems.length > 2 ? ' และจุดเสี่ยงอื่น ๆ' : '';
     let summary;
     if (supportText && riskText) {
-      if (score >= 5) summary = `คะแนนบวกเพราะ ${supportText} ชนะน้ำหนักปะทะ แต่ยังต้องระวัง ${riskText}`;
-      else if (score <= -5) summary = `คะแนนลบเพราะ ${riskText} แรงกว่าแรงหนุน ${supportText}`;
-      else summary = `แรงหนุน ${supportText} กับแรงปะทะ ${riskText} ถ่วงกัน จึงออกกลาง`;
+      if (score >= 5) summary = `ช่วงนี้ยังใช้ความสัมพันธ์นี้ได้ เพราะมี ${supportText}${supportMore} หนุนอยู่ แต่ควรระวัง ${riskText}${riskMore}`;
+      else if (score <= -5) summary = `ช่วงนี้ควรระวัง: ${riskText}${riskMore} หนักกว่าแรงช่วย ${supportText}${supportMore} เหมาะคุยขอบเขต ไม่เร่งเรื่องใหญ่`;
+      else summary = `มีทั้งแรงช่วย ${supportText}${supportMore} และแรงกด ${riskText}${riskMore} น้ำหนักใกล้กัน ใช้ได้ถ้าวางขอบเขตชัด`;
     } else if (supportText) {
-      summary = `แรงหนุนหลักมาจาก ${supportText} เหมาะใช้สัมพันธ์นี้ในงานที่ต้องพยุงกัน`;
+      summary = `ช่วงนี้มีแรงหนุนจาก ${supportText}${supportMore} เหมาะใช้สัมพันธ์นี้ในงานที่ต้องพยุงหรือประสานกัน`;
     } else if (riskText) {
-      summary = `แรงกดหลักมาจาก ${riskText} ควรคุยขอบเขตและเวลาให้ชัดก่อนลงมือ`;
+      summary = `ช่วงนี้แรงกดเด่นจาก ${riskText}${riskMore} ควรคุยขอบเขต เวลา และความคาดหวังให้ชัดก่อนลงมือ`;
     } else {
       summary = guidance?.primary || 'ปฏิกิริยาไม่เด่นมาก คะแนนจึงใกล้กลาง ใช้ตามบริบทจริงเป็นหลัก';
     }
@@ -1822,26 +1871,28 @@
   }
 
   function renderPairChip(tag, tone){
-    const cls = tone || pairTagTone(tag);
+    const info = typeof tag === 'string' ? pairTagInfo(tag) : tag;
+    const cls = tone || info.tone || pairTagTone(info.raw);
     const css = cls === 'bad' ? 'bad' : cls === 'ctx' ? 'ctx' : cls === 'good' ? 'good' : 'mid';
-    return `<span class="pc-v-chip ${css}">${escHtml(pairTagShort(tag))}</span>`;
+    return `<span class="pc-v-chip ${css}">${escHtml(pairTagLabel(info))}</span>`;
   }
 
   function renderRawTagChip(tag){
-    const cls = pairTagTone(tag);
+    const info = pairTagInfo(tag);
+    const cls = info.tone || pairTagTone(tag);
     const css = cls === 'bad' ? 'bad' : cls === 'ctx' ? 'ctx' : cls === 'good' ? 'good' : 'mid';
-    return `<span class="b ${css}">${escHtml(tag)}</span>`;
+    return `<span class="b ${css}" title="${escHtml(tag)}">${escHtml(pairTagLabel(info))}</span>`;
   }
 
   function renderPairExplanation(explain, opts){
     if (!explain) return '';
     const tfLabel = ({day:'วันนี้', week:'สัปดาห์', month:'เดือน', year:'ปี', luck:'10ปี'})[explain.tf] || explain.tf || '';
-    const support = uniqueCompactTags(explain.support).slice(0, 2).map(t => renderPairChip(t, 'good'));
-    const risk = uniqueCompactTags(explain.risk).slice(0, 2).map(t => renderPairChip(t, 'bad'));
-    const mixed = (!support.length && !risk.length ? uniqueCompactTags(explain.mixed).slice(0, 2).map(t => renderPairChip(t, 'mid')) : []);
+    const support = compactTagInfos(explain.support).slice(0, 2).map(t => renderPairChip(t, t.tone === 'ctx' ? 'ctx' : 'good'));
+    const risk = compactTagInfos(explain.risk).slice(0, 2).map(t => renderPairChip(t, 'bad'));
+    const mixed = (!support.length && !risk.length ? compactTagInfos(explain.mixed).slice(0, 2).map(t => renderPairChip(t, 'mid')) : []);
     const chips = support.concat(risk, mixed).join('');
     const raw = (explain.tags || []).length
-      ? `<details class="pc-raw-tags"><summary>${escHtml(opts?.rawLabel || 'tags ดิบ')}</summary><div class="pc-raw-list">${explain.tags.map(renderRawTagChip).join('')}</div></details>`
+      ? `<details class="pc-raw-tags"><summary>${escHtml(opts?.rawLabel || 'ดูรหัสตำรา')}</summary><div class="pc-raw-list">${explain.tags.map(renderRawTagChip).join('')}</div></details>`
       : '';
     return `<div class="pc-verdict ${explain.tone}">
       <div class="pc-v-head"><span class="pc-v-label">${escHtml(explain.label)}</span><span class="pc-v-score">${escHtml(tfLabel)} ${fmt(explain.score || 0)}</span></div>
@@ -2055,7 +2106,7 @@
 
 	      const explainTf = state.timeframe || 'day';
 	      const relExplain = (!isOwn && !isSelfCard) ? getPairExplanation('self', p.id, explainTf) : null;
-	      const relationHTML = relExplain ? renderPairExplanation(relExplain, { rawLabel:'รายละเอียด tags' }) : '';
+	      const relationHTML = relExplain ? renderPairExplanation(relExplain, { rawLabel:'ดูรหัสตำรา' }) : '';
 
       grid.insertAdjacentHTML('beforeend', `
         <div class="person-card score-${sClass}${isOwn ? ' own-mode' : ''}" data-id="${p.id}">
@@ -2583,7 +2634,7 @@ window.HK_I18N = {
   'n.coach.sub':   { th:'3 วงโคจร · ใกล้ = ผลมาก · ทำตามนี้ได้เลย', en:'3 orbits · closer = stronger · here\'s how', zh:'三軌道 · 近者影響大' },
   'n.coach.t1':    { th:'<b>คลิกคน</b> ในวงโคจร — เปิดดูดวงคนนั้นเต็มๆ', en:'<b>Click</b> a person — open their full chart', zh:'<b>點選</b> 任一人 — 開啟其完整命盤' },
   'n.coach.t2':    { th:'<b>กดค้าง</b> หรือ <b>Shift+คลิก</b> — ย้าย Center มาที่คนนั้น · เห็นโลกในมุมเขา', en:'<b>Long-press</b> or <b>Shift+click</b> — recenter to that person\'s view', zh:'<b>長按</b> 或 <b>Shift+點選</b> — 重設中心至此人' },
-  'n.coach.t3':    { th:'<b>วาง mouse ค้าง</b> ที่คน — เห็นรายละเอียดคะแนน + tags', en:'<b>Hover</b> a person — see score + tag details', zh:'<b>滑鼠停留</b> — 查看分數與標籤' },
+  'n.coach.t3':    { th:'<b>วาง mouse ค้าง</b> ที่คน — เห็นคะแนน + คำอธิบายไทย', en:'<b>Hover</b> a person — see score + plain-language reading', zh:'<b>滑鼠停留</b> — 查看分數與白話解讀' },
   'n.coach.t4':    { th:'ปุ่ม <b>"กลับไปดวงฉัน"</b> ขวาบน — รีเซ็ต Center', en:'Use <b>"Back to me"</b> top-right — reset center', zh:'右上角 <b>"回到我"</b> — 重設中心' },
   'n.coach.btn':   { th:'เข้าใจแล้ว · เริ่มเลย', en:'Got it · Start', zh:'明白 · 開始' },
   'n.tip.hint':    { th:'👆 คลิก = ดูดวง · กดค้าง = ย้าย Center', en:'👆 Click = chart · Long-press = recenter', zh:'👆 點 = 命盤 · 長按 = 重設中心' },
@@ -3455,7 +3506,7 @@ window.applyI18N = applyI18N;
 .pcm-rel-explain{margin-top:12px;padding:12px 0;border-top:1px dashed var(--tile-bd);font-family:var(--thai);}
 .pcm-rel-explain .pc-verdict{gap:9px;}
 .pcm-tags{display:block;margin-top:8px;}
-.pcm-tags .b{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:4px 10px;border-radius:99px;border:1px solid var(--gold);color:var(--gold);background:var(--gold-soft);}
+.pcm-tags .b{font-family:var(--thai);font-size:11px;letter-spacing:0;padding:4px 10px;border-radius:6px;border:1px solid var(--gold);color:var(--gold);background:var(--gold-soft);line-height:1.35;}
 .pcm-cta{display:flex;gap:8px;margin-top:20px;padding-top:18px;border-top:1px solid var(--tile-bd);}
 .pcm-cta a, .pcm-cta button{flex:1;padding:12px;background:transparent;border:1px solid var(--tile-bd);color:var(--fg-soft);border-radius:8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;text-decoration:none;text-align:center;transition:.2s;}
 .pcm-cta a:hover, .pcm-cta button:hover{border-color:var(--gold);color:var(--gold);}
@@ -3899,7 +3950,7 @@ window.applyI18N = applyI18N;
         return `<div class="pcm-scoreline ${sc}"><span class="lbl">${tfLabels[tf]}</span><div class="bar"><div class="bar-fill" style="${fs}"></div></div><span class="num">${s>0?'+'+s:s===0?'0':s}</span></div>`;
       }).join('');
 	      const relExplain = getPairExplanation('self', person.id, state.timeframe || 'day');
-	      tagsBox.innerHTML = `<div class="pcm-rel-explain">${renderPairExplanation(relExplain, { rawLabel:'รายละเอียด tags ดิบ' })}</div>`;
+	      tagsBox.innerHTML = `<div class="pcm-rel-explain">${renderPairExplanation(relExplain, { rawLabel:'ดูรหัสตำรา' })}</div>`;
 	    }
 
     /* Phase 3.2: render result + breakdown */
