@@ -55,6 +55,7 @@ const CODEX_CLI_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
 const CODEX_COMPACT_KNOWLEDGE = [
   "Codex compact mode: ใช้ข้อมูลดวง/packet/interactions ที่ส่งมาเป็น source of truth สูงสุด",
   "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน 用神/忌神 หรือวัยจรที่ packet ไม่ได้ให้",
+  "ถ้ามี block 窮通寶鑑 ให้ใช้เฉพาะชั้น 調候/月令 เพื่ออธิบายความร้อน-เย็น-แห้ง-ชื้น ห้าม override 用神/喜忌/格局 ที่ packet ล็อคมา",
   "ไทยนำ จีนรอง อธิบายผลจริงตรงคำถาม และรักษา ID line ตามกฎ prompt หลัก",
 ].join("\n");
 
@@ -207,6 +208,7 @@ function loadEngineKnowledge(): { text: string; version: string } {
 /* คัมภีร์เจาะลึก 5 เล่ม (十神/格局/合婚/納音/神煞) · copy จาก /api/sifu/route.ts
  * 合婚 สำคัญสุดสำหรับกลุ่ม (กฎ "ห้ามฟันธงเลิก/ไม่เลิก") · ก่อนหน้านี้ group ไม่โหลด = ช่องโหว่ */
 const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
+const QTBJ_TIAOHOU_FILE = "qtbj-tiaohou-clean.md";
 const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "bazi-shishen-classical.md", label: "十神 · จิตวิทยาบทบาทสิบเทพ (子平 verbatim)" },
   { file: "bazi-geju-master.md", label: "格局 · โครงสร้างดวง 子平真詮 spec" },
@@ -218,6 +220,7 @@ const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "bazi-conghua-master.md", label: "從格/化格 · ดวงตาม/แปรธาตุ + 真假 boundary + 合化 (滴天髓+三命通會)" },
   { file: "zpzq-zhenquan-clean.md", label: "📜 子平真詮評註 ตัวบทจริง verbatim (ctext · GROUND TRUTH เหนือ reconstruction · บท合化→48 + 74命例เฉลยจริง) · ใช้ quote/เทียบ案例 · ห้ามคัดจีนดิบ แปลไทยตามกฎ9" },
   { file: "dts-zhentian-clean.md", label: "📜 滴天髓闡微 ตัวบทจริง verbatim (ctext · 任鐵樵注 · GROUND TRUTH เหนือ reconstruction · 62 บท) · สาย旺衰氣勢: ยึดตอนอ่าน旺衰/化氣-從格/調候(寒暖燥濕)/通關/性情/疾病/女命/何知章 · 格局/相神ยึด子平真詮 · ห้ามคัดจีนดิบ แปลไทยตามกฎ9" },
+  { file: QTBJ_TIAOHOU_FILE, label: "📜 窮通寶鑑 · 調候用神/月令 ตัวบทจริง canonical (admin library id 13 · 10干×12เดือน · ใช้เติมชั้นร้อนเย็นแห้งชื้น ห้าม override packet)" },
   { file: "smtg-clean.md", label: "📜 三命通會 (萬民英 · 明 1578 · 神煞+納音+論女命 verbatim)" },
   { file: "yhzp-clean.md", label: "📜 淵海子平 (徐升 · 宋 1271 · 子平 ต้นน้ำ · 五干通變圖+喜忌篇 verbatim)" },
   { file: "sftk-clean.md", label: "📜 神峰通考 (張楠 · 明 · 命理正宗 · 病藥論+動靜說+蓋頭說+男女合婚說 verbatim · ต้นทาง BY-08)" },
@@ -242,6 +245,20 @@ function loadSifuExtraKnowledge(): { text: string; version: string } {
   const version = text ? hash.digest("hex").slice(0, 12) : "none";
   _sifuExtraCache = { text, ts: now, version };
   return _sifuExtraCache;
+}
+let _qtbjTiaohouCache: { text: string; ts: number; version: string } | null = null;
+function loadQtbjTiaohouKnowledge(): { text: string; version: string } {
+  const now = Date.now();
+  if (_qtbjTiaohouCache && now - _qtbjTiaohouCache.ts < 60_000) return _qtbjTiaohouCache;
+  try {
+    const text = readFileSync(join(SIFU_EXTRA_DIR, QTBJ_TIAOHOU_FILE), "utf8");
+    const version = createHash("sha1").update(QTBJ_TIAOHOU_FILE).update(text).digest("hex").slice(0, 12);
+    _qtbjTiaohouCache = { text, ts: now, version };
+    return _qtbjTiaohouCache;
+  } catch (e) {
+    console.warn("[sifu/group] qtbj tiaohou missing:", (e as Error).message);
+    return { text: "", version: "none" };
+  }
 }
 
 type ProfileRow = {
@@ -408,12 +425,16 @@ function buildGroupPrompt(opts: { ctx: string; message: string; history: Msg[]; 
   const extraBlock = extraKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => extraKnow.text) + "\n"
     : "";
+  const qtbjCompact = compact ? loadQtbjTiaohouKnowledge() : { text: "", version: "full-extra" };
+  const qtbjCompactBlock = qtbjCompact.text
+    ? "\n\n=== 📜 窮通寶鑑 · 調候用神 compact source ===\n" + qtbjCompact.text + "\n=== จบ 窮通寶鑑 compact source ===\n"
+    : "";
   const qaLang = loadPromptSections("prompts/sifu-lang.md");
   const groupInstruction = "\n\n" + (GROUP_INSTRUCTION[opts.lang] || GROUP_INSTRUCTION.th);
   return loadPromptMd("prompts/sifu-qa.md")
     .replace("{{LANG}}", () => qaLang[langKey] || qaLang.TH || "")
     .replace("{{RULES}}", () => rulesBlock)
-    .replace("{{INTERACTION}}", () => interactionBlock + engineBlock + extraBlock)
+    .replace("{{INTERACTION}}", () => interactionBlock + engineBlock + extraBlock + qtbjCompactBlock)
     .replace("{{CTX}}", () => opts.ctx + groupInstruction)
     .replace("{{FOCUS_HIST}}", () => histText)
     .replace("{{MESSAGE}}", () => opts.message);

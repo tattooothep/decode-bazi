@@ -1,0 +1,1406 @@
+{
+  "source": "admin_library_id_13_memo: 滴天髓·穷通宝鉴",
+  "extractedAt": "2026-06-03",
+  "cleanFile": "data/library/sifu-extra/qtbj-tiaohou-clean.md",
+  "sectionStartLine": 2665,
+  "rawChineseStartLine": 8837,
+  "sizeBytes": 102598,
+  "pageHeadingCount": 78,
+  "rawMonthlyHeadingCount": 198,
+  "coverage": {
+    "甲木": 14,
+    "乙木": 13,
+    "丙火": 24,
+    "丁火": 17,
+    "戊土": 17,
+    "己土": 6,
+    "庚金": 25,
+    "辛金": 27,
+    "壬水": 28,
+    "癸水": 27
+  },
+  "pageHeadings": [
+    {
+      "sourceLine": 2674,
+      "page": "2",
+      "title": "五行總論 — ทฤษฎีรวมห้าธาตุ"
+    },
+    {
+      "sourceLine": 2724,
+      "page": "3",
+      "title": "五行總論 (ต่อ) · 論木"
+    },
+    {
+      "sourceLine": 2787,
+      "page": "4",
+      "title": "論木 (ต่อ) — ไม้ตามฤดู"
+    },
+    {
+      "sourceLine": 2841,
+      "page": "๕",
+      "title": "甲木 乙木 — ลักษณะและปฏิกิริยาดวงของธาตุไม้"
+    },
+    {
+      "sourceLine": 2940,
+      "page": "๖",
+      "title": "甲木 · 正月 (เดือน ๑ / เดือนขาล寅月) — ตัวอย่างดวงและปฏิกิริยาดวงรายเดือน"
+    },
+    {
+      "sourceLine": 3026,
+      "page": "๗",
+      "title": "甲木· เดือน ๒ และ ๓ (二月三月) · ตัวอย่างดวงจริง"
+    },
+    {
+      "sourceLine": 3120,
+      "page": "๘",
+      "title": "甲木· เดือน ๔, ๕, ๖ (四月五月六月) — ฤดูร้อนของ甲木"
+    },
+    {
+      "sourceLine": 3212,
+      "page": "๙",
+      "title": "甲木· เดือน ๕-๖ ต่อ (五月六月) — วิเคราะห์ลึกฤดูร้อน"
+    },
+    {
+      "sourceLine": 3309,
+      "page": "๑๐",
+      "title": "甲木· ตัวอย่างดวง 六月 ต่อ และ 三秋甲木 (เดือน ๗-๙)"
+    },
+    {
+      "sourceLine": 3394,
+      "page": "๑๑",
+      "title": "甲木· เดือน ๗ (七月申月) และกรณีพิเศษต่างๆ"
+    },
+    {
+      "sourceLine": 3474,
+      "page": "๑๒",
+      "title": "甲木· เดือน ๘ (八月酉月) และ ๙ (九月戌月)"
+    },
+    {
+      "sourceLine": 3562,
+      "page": "๑๓",
+      "title": "甲木· เดือน ๙ ต่อ และ กรณีพิเศษรายบุคคล"
+    },
+    {
+      "sourceLine": 3648,
+      "page": "๑๔",
+      "title": "甲木· เดือน ๙ สรุป และ เดือน ๑๐ (十月亥月)"
+    },
+    {
+      "sourceLine": 3728,
+      "page": "๑๕",
+      "title": "甲木· เดือน ๑๐ ต่อ และ เดือน ๑๑ (十一月子月)"
+    },
+    {
+      "sourceLine": 3822,
+      "page": "๑๖",
+      "title": "甲木· เดือน ๑๒ (十二月丑月) — สรุปทั้งปีของ甲木"
+    },
+    {
+      "sourceLine": 3911,
+      "page": "๑๗",
+      "title": "乙木 — ธาตุไม้ Yin (乙木) เริ่มต้น และ สาม月ฤดูใบไม้ผลิ"
+    },
+    {
+      "sourceLine": 3998,
+      "page": "๑๘",
+      "title": "乙木· เดือน ๑ ต่อ, เดือน ๒-๓ (一月二月三月乙木)"
+    },
+    {
+      "sourceLine": 4101,
+      "page": "๑๙",
+      "title": "乙木· เดือน ๓ สรุป, สามฤดูร้อน (三夏) และ เดือน ๔"
+    },
+    {
+      "sourceLine": 4192,
+      "page": "๒๐",
+      "title": "乙木· เดือน ๔ ต่อ, เดือน ๕ (五月) และ เดือน ๖ (六月)"
+    },
+    {
+      "sourceLine": 4280,
+      "page": "๒๑",
+      "title": "乙木· สรุปฤดูร้อน, สามฤดูใบไม้ร่วง (三秋) และ เดือน ๗ (七月)"
+    },
+    {
+      "sourceLine": 4362,
+      "page": "๒๒",
+      "title": "乙木· เดือน ๗ ต่อ, ตัวอย่างดวง, เดือน ๘ (八月酉月)"
+    },
+    {
+      "sourceLine": 4448,
+      "page": "๒๓",
+      "title": "乙木· เดือน ๘ ต่อ, เดือน ๙ (九月) และ เดือน ๑๐ (十月)"
+    },
+    {
+      "sourceLine": 4533,
+      "page": "๒๔",
+      "title": "乙木· เดือน ๑๐ ต่อ และ เดือน ๑๑ (十一月子月)"
+    },
+    {
+      "sourceLine": 4617,
+      "page": "๒๕",
+      "title": "乙木· เดือน ๑๑ สรุป, เดือน ๑๒ (十二月) และ เริ่ม 論火 (ธาตุไฟ)"
+    },
+    {
+      "sourceLine": 4695,
+      "page": "๒๖",
+      "title": "論火 — ทฤษฎีธาตุไฟ (丙火丁火) บทนำสำคัญ"
+    },
+    {
+      "sourceLine": 4782,
+      "page": "๒๗",
+      "title": "丙火 — ธาตุไฟ Yang (丙火) ฤดูใบไม้ผลิ (三春) และ เดือน ๑"
+    },
+    {
+      "sourceLine": 4859,
+      "page": "๒๘",
+      "title": "丙火· เดือน ๑ ต่อ, ตัวอย่างดวง, และ เดือน ๒ (二月卯月)"
+    },
+    {
+      "sourceLine": 4944,
+      "page": "๒๙",
+      "title": "丙Fire· เดือน ๒ ต่อ, ตัวอย่างดวง, และ เดือน ๓ (三月辰月)"
+    },
+    {
+      "sourceLine": 5028,
+      "page": "๓๐",
+      "title": "丙Fire· ตัวอย่างดวง เดือน ๓, สามฤดูร้อน (三夏) และ เดือน ๔"
+    },
+    {
+      "sourceLine": 5108,
+      "page": "๓๑",
+      "title": "丙Fire· เดือน ๕ (五月午月) — ร้อนสูงสุด"
+    },
+    {
+      "sourceLine": 5186,
+      "page": "๓๒",
+      "title": "丙Fire· เดือน ๖ (六月未月) และ เดือน ๗ (七月申月)"
+    },
+    {
+      "sourceLine": 5265,
+      "page": "๓๓",
+      "title": "丙Fire· เดือน ๗ สรุป, ตัวอย่างดวง, เดือน ๘ (八月酉月)"
+    },
+    {
+      "sourceLine": 5334,
+      "page": "๓๔",
+      "title": "丙Fire· เดือน ๙ (九月戌月), ตัวอย่างดวง, และ เดือน ๑๐ (十月亥月)"
+    },
+    {
+      "sourceLine": 5400,
+      "page": "๓๕",
+      "title": "丙Fire· เดือน ๑๐ ต่อ, ตัวอย่างดวง, และ เดือน ๑๑ (十一月子月)"
+    },
+    {
+      "sourceLine": 5480,
+      "page": "๓๖",
+      "title": "丙Fire เดือน ๑๒ (十二月) และ 丁Fire เริ่ม 正月 (เดือน ๑)"
+    },
+    {
+      "sourceLine": 5547,
+      "page": "๓๗",
+      "title": "丁Fire· เดือน ๑ ต่อ และ เดือน ๒ (二月卯月)"
+    },
+    {
+      "sourceLine": 5615,
+      "page": "๓๘",
+      "title": "丁Fire· เดือน ๒ สรุป, เดือน ๓ (三月辰月), เดือน ๔ (四月巳月)"
+    },
+    {
+      "sourceLine": 5688,
+      "page": "๓๙",
+      "title": "丁Fire· เดือน ๔ ต่อ, เดือน ๕ (五月午月)"
+    },
+    {
+      "sourceLine": 5751,
+      "page": "๔๐",
+      "title": "丁Fire· เดือน ๕ สรุป และ เดือน ๖ (六月未月)"
+    },
+    {
+      "sourceLine": 5814,
+      "page": "๔๑",
+      "title": "丁Fire· เดือน ๖ ต่อ, สามฤดูใบไม้ร่วง (三秋丁Fire เดือน ๗-๙)"
+    },
+    {
+      "sourceLine": 5882,
+      "page": "๔๒",
+      "title": "丁Fire· ตัวอย่างดวงสาม秋 และ สามฤดูหนาว (三冬) เดือน ๑๐-๑๒"
+    },
+    {
+      "sourceLine": 5934,
+      "page": "๔๓",
+      "title": "丁Fire· สามฤดูหนาว (三冬) ต่อ, ตัวอย่างดวงมากมาย"
+    },
+    {
+      "sourceLine": 5994,
+      "page": "44",
+      "title": "三冬丁Fire — ตัวอย่างดวงสูง (ต่อ) และ 穷通宝鉴 卷上 สิ้นสุด"
+    },
+    {
+      "sourceLine": 6051,
+      "page": "45",
+      "title": "穷通宝鉴 卷上 終 — ปิดท้ายเล่มบน"
+    },
+    {
+      "sourceLine": 6072,
+      "page": "46",
+      "title": "穷通宝鉴 卷下 — 論土 (ทฤษฎีธาตุดิน)"
+    },
+    {
+      "sourceLine": 6114,
+      "page": "47",
+      "title": "論土 (ต่อ) + 戊土 三春 (เดือน 1-3)"
+    },
+    {
+      "sourceLine": 6174,
+      "page": "48",
+      "title": "三春戊土 — กฎรายละเอียดและรูปแบบดวงต่างๆ"
+    },
+    {
+      "sourceLine": 6238,
+      "page": "49",
+      "title": "三春戊土 — ตัวอย่างดวง + 四月戊土 (เดือน 4 — ฤดูร้อนต้น)"
+    },
+    {
+      "sourceLine": 6307,
+      "page": "50",
+      "title": "四月戊土 ตัวอย่าง + 五月戊土 + 六月戊土"
+    },
+    {
+      "sourceLine": 6382,
+      "page": "51",
+      "title": "六月戊土 ตัวอย่าง + 七月戊土 + 八月戊土"
+    },
+    {
+      "sourceLine": 6458,
+      "page": "52",
+      "title": "八月戊土 (ต่อ) + 九月戊土 + ตัวอย่างดวง"
+    },
+    {
+      "sourceLine": 6524,
+      "page": "53",
+      "title": "十月戊土 + ตัวอย่าง + 十一月/十二月戊土"
+    },
+    {
+      "sourceLine": 6595,
+      "page": "54",
+      "title": "สิ้นสุด三冬戊土 + ตัวอย่าง + เริ่ม 己土 正月"
+    },
+    {
+      "sourceLine": 6659,
+      "page": "55",
+      "title": "正月己土 (ต่อ) + 二月己土 + สามเดือนต้น"
+    },
+    {
+      "sourceLine": 6724,
+      "page": "56",
+      "title": "สิ้นสุด三月己土 + ตัวอย่าง + 三夏己土 (เดือน 4-6)"
+    },
+    {
+      "sourceLine": 6786,
+      "page": "57",
+      "title": "三夏己土 ตัวอย่าง + 三秋己土 (เดือน 7-9)"
+    },
+    {
+      "sourceLine": 6852,
+      "page": "58",
+      "title": "三秋己土 (ต่อ) ตัวอย่าง + 三冬己土 (เดือน 10-12)"
+    },
+    {
+      "sourceLine": 6912,
+      "page": "59",
+      "title": "三冬己土 ตัวอย่าง + 論金 (ทฤษฎีธาตุทอง)"
+    },
+    {
+      "sourceLine": 6978,
+      "page": "60",
+      "title": "論金 (ต่อ) — ตามฤดูกาล + 正月庚金"
+    },
+    {
+      "sourceLine": 7041,
+      "page": "61",
+      "title": "正月庚金 (ต่อ) ตัวอย่าง + 二月庚金"
+    },
+    {
+      "sourceLine": 7099,
+      "page": "62",
+      "title": "二月庚金 (ต่อ) ตัวอย่าง + 三月庚金"
+    },
+    {
+      "sourceLine": 7162,
+      "page": "63",
+      "title": "四月庚金 + 五月庚金"
+    },
+    {
+      "sourceLine": 7218,
+      "page": "64",
+      "title": "五月庚金 (ต่อ) + 六月庚金 + ตัวอย่าง"
+    },
+    {
+      "sourceLine": 7281,
+      "page": "65",
+      "title": "七月庚金 + 八月庚金"
+    },
+    {
+      "sourceLine": 7338,
+      "page": "66",
+      "title": "八月庚金 ตัวอย่าง + 九月/十月庚金"
+    },
+    {
+      "sourceLine": 7409,
+      "page": "67",
+      "title": "十月庚金 (ต่อ) ตัวอย่าง + 十一月庚金"
+    },
+    {
+      "sourceLine": 7467,
+      "page": "68",
+      "title": "十一月庚金 (ตัวอย่างดวง) + 十二月庚金"
+    },
+    {
+      "sourceLine": 7486,
+      "page": "68 ต่อ",
+      "title": "十二月庚金"
+    },
+    {
+      "sourceLine": 7522,
+      "page": "69",
+      "title": "論辛金 · 正月辛金 + 二月辛金"
+    },
+    {
+      "sourceLine": 7628,
+      "page": "70",
+      "title": "三月辛金 + 四月辛金 + 五月辛金"
+    },
+    {
+      "sourceLine": 7725,
+      "page": "71",
+      "title": "六月辛金 + 七月辛金 + 八月辛金"
+    },
+    {
+      "sourceLine": 7860,
+      "page": "72",
+      "title": "九月辛金 + 十月辛金 + 十一月辛金 + 十二月辛金"
+    },
+    {
+      "sourceLine": 8006,
+      "page": "73",
+      "title": "論水 + 論壬水 · 正月–三月壬水"
+    },
+    {
+      "sourceLine": 8135,
+      "page": "74",
+      "title": "四月–八月壬水"
+    },
+    {
+      "sourceLine": 8307,
+      "page": "75",
+      "title": "九月–十二月壬水 + 論癸水 + 正月–三月癸水"
+    },
+    {
+      "sourceLine": 8523,
+      "page": "76",
+      "title": "三月癸水 (ต่อ) + 四月–六月癸水"
+    },
+    {
+      "sourceLine": 8625,
+      "page": "77",
+      "title": "七月–十月癸水"
+    },
+    {
+      "sourceLine": 8748,
+      "page": "78",
+      "title": "十一月癸水 + 十二月癸水 — จบคัมภีร์"
+    }
+  ],
+  "rawMonthlyHeadings": [
+    {
+      "sourceLine": 8856,
+      "canonicalLine": 19,
+      "key": "正月甲木"
+    },
+    {
+      "sourceLine": 8857,
+      "canonicalLine": 20,
+      "key": "正二月甲木"
+    },
+    {
+      "sourceLine": 8862,
+      "canonicalLine": 25,
+      "key": "二月甲木"
+    },
+    {
+      "sourceLine": 8863,
+      "canonicalLine": 26,
+      "key": "三月甲木"
+    },
+    {
+      "sourceLine": 8871,
+      "canonicalLine": 34,
+      "key": "四月甲木"
+    },
+    {
+      "sourceLine": 8875,
+      "canonicalLine": 38,
+      "key": "五六月甲木"
+    },
+    {
+      "sourceLine": 8878,
+      "canonicalLine": 41,
+      "key": "五六月甲木"
+    },
+    {
+      "sourceLine": 8893,
+      "canonicalLine": 56,
+      "key": "七月甲木"
+    },
+    {
+      "sourceLine": 8894,
+      "canonicalLine": 57,
+      "key": "八月甲木"
+    },
+    {
+      "sourceLine": 8901,
+      "canonicalLine": 64,
+      "key": "九月甲木"
+    },
+    {
+      "sourceLine": 8909,
+      "canonicalLine": 72,
+      "key": "九月甲木"
+    },
+    {
+      "sourceLine": 8912,
+      "canonicalLine": 75,
+      "key": "十月甲木"
+    },
+    {
+      "sourceLine": 8916,
+      "canonicalLine": 79,
+      "key": "十一月甲木"
+    },
+    {
+      "sourceLine": 8920,
+      "canonicalLine": 83,
+      "key": "十二月甲木"
+    },
+    {
+      "sourceLine": 8926,
+      "canonicalLine": 89,
+      "key": "正月乙木"
+    },
+    {
+      "sourceLine": 8929,
+      "canonicalLine": 92,
+      "key": "二月乙木"
+    },
+    {
+      "sourceLine": 8931,
+      "canonicalLine": 94,
+      "key": "二月乙木"
+    },
+    {
+      "sourceLine": 8934,
+      "canonicalLine": 97,
+      "key": "三月乙木"
+    },
+    {
+      "sourceLine": 8944,
+      "canonicalLine": 107,
+      "key": "四月乙木"
+    },
+    {
+      "sourceLine": 8947,
+      "canonicalLine": 110,
+      "key": "五月乙木"
+    },
+    {
+      "sourceLine": 8950,
+      "canonicalLine": 113,
+      "key": "六月乙木"
+    },
+    {
+      "sourceLine": 8961,
+      "canonicalLine": 124,
+      "key": "七月乙木"
+    },
+    {
+      "sourceLine": 8965,
+      "canonicalLine": 128,
+      "key": "八月乙木"
+    },
+    {
+      "sourceLine": 8972,
+      "canonicalLine": 135,
+      "key": "九月乙木"
+    },
+    {
+      "sourceLine": 8976,
+      "canonicalLine": 139,
+      "key": "十月乙木"
+    },
+    {
+      "sourceLine": 8978,
+      "canonicalLine": 141,
+      "key": "十一月乙木"
+    },
+    {
+      "sourceLine": 8984,
+      "canonicalLine": 147,
+      "key": "十一月乙木"
+    },
+    {
+      "sourceLine": 8990,
+      "canonicalLine": 153,
+      "key": "正月丙火"
+    },
+    {
+      "sourceLine": 8991,
+      "canonicalLine": 154,
+      "key": "正月丙火"
+    },
+    {
+      "sourceLine": 9012,
+      "canonicalLine": 175,
+      "key": "二月丙火"
+    },
+    {
+      "sourceLine": 9013,
+      "canonicalLine": 176,
+      "key": "二月丙火"
+    },
+    {
+      "sourceLine": 9024,
+      "canonicalLine": 187,
+      "key": "三月丙火"
+    },
+    {
+      "sourceLine": 9025,
+      "canonicalLine": 188,
+      "key": "三月丙火"
+    },
+    {
+      "sourceLine": 9033,
+      "canonicalLine": 196,
+      "key": "四月丙火"
+    },
+    {
+      "sourceLine": 9034,
+      "canonicalLine": 197,
+      "key": "四月丙火"
+    },
+    {
+      "sourceLine": 9049,
+      "canonicalLine": 212,
+      "key": "五月丙火"
+    },
+    {
+      "sourceLine": 9050,
+      "canonicalLine": 213,
+      "key": "五月丙火"
+    },
+    {
+      "sourceLine": 9061,
+      "canonicalLine": 224,
+      "key": "六月丙火"
+    },
+    {
+      "sourceLine": 9062,
+      "canonicalLine": 225,
+      "key": "六月丙火"
+    },
+    {
+      "sourceLine": 9073,
+      "canonicalLine": 236,
+      "key": "七月丙火"
+    },
+    {
+      "sourceLine": 9074,
+      "canonicalLine": 237,
+      "key": "七月丙火"
+    },
+    {
+      "sourceLine": 9082,
+      "canonicalLine": 245,
+      "key": "八月丙火"
+    },
+    {
+      "sourceLine": 9083,
+      "canonicalLine": 246,
+      "key": "八月丙火"
+    },
+    {
+      "sourceLine": 9094,
+      "canonicalLine": 257,
+      "key": "九月丙火"
+    },
+    {
+      "sourceLine": 9095,
+      "canonicalLine": 258,
+      "key": "九月丙火"
+    },
+    {
+      "sourceLine": 9107,
+      "canonicalLine": 270,
+      "key": "十月丙火"
+    },
+    {
+      "sourceLine": 9108,
+      "canonicalLine": 271,
+      "key": "十月丙火"
+    },
+    {
+      "sourceLine": 9120,
+      "canonicalLine": 283,
+      "key": "十一月丙火"
+    },
+    {
+      "sourceLine": 9121,
+      "canonicalLine": 284,
+      "key": "十一月丙火"
+    },
+    {
+      "sourceLine": 9134,
+      "canonicalLine": 297,
+      "key": "十二月丙火"
+    },
+    {
+      "sourceLine": 9135,
+      "canonicalLine": 298,
+      "key": "十二月丙火"
+    },
+    {
+      "sourceLine": 9152,
+      "canonicalLine": 315,
+      "key": "正月丁火"
+    },
+    {
+      "sourceLine": 9153,
+      "canonicalLine": 316,
+      "key": "正月丁火"
+    },
+    {
+      "sourceLine": 9165,
+      "canonicalLine": 328,
+      "key": "二月丁火"
+    },
+    {
+      "sourceLine": 9166,
+      "canonicalLine": 329,
+      "key": "二月丁火"
+    },
+    {
+      "sourceLine": 9178,
+      "canonicalLine": 341,
+      "key": "三月丁火"
+    },
+    {
+      "sourceLine": 9179,
+      "canonicalLine": 342,
+      "key": "三月丁火"
+    },
+    {
+      "sourceLine": 9184,
+      "canonicalLine": 347,
+      "key": "四月丁火"
+    },
+    {
+      "sourceLine": 9185,
+      "canonicalLine": 348,
+      "key": "四月丁火"
+    },
+    {
+      "sourceLine": 9195,
+      "canonicalLine": 358,
+      "key": "五月丁火"
+    },
+    {
+      "sourceLine": 9196,
+      "canonicalLine": 359,
+      "key": "五月丁火"
+    },
+    {
+      "sourceLine": 9214,
+      "canonicalLine": 377,
+      "key": "六月丁火"
+    },
+    {
+      "sourceLine": 9215,
+      "canonicalLine": 378,
+      "key": "六月丁火"
+    },
+    {
+      "sourceLine": 9226,
+      "canonicalLine": 389,
+      "key": "七月丁火"
+    },
+    {
+      "sourceLine": 9227,
+      "canonicalLine": 390,
+      "key": "七月丁火"
+    },
+    {
+      "sourceLine": 9240,
+      "canonicalLine": 403,
+      "key": "八九月丁火"
+    },
+    {
+      "sourceLine": 9253,
+      "canonicalLine": 416,
+      "key": "十月丁火"
+    },
+    {
+      "sourceLine": 9267,
+      "canonicalLine": 430,
+      "key": "十一月丁火"
+    },
+    {
+      "sourceLine": 9295,
+      "canonicalLine": 458,
+      "key": "正二月戊土"
+    },
+    {
+      "sourceLine": 9300,
+      "canonicalLine": 463,
+      "key": "三月戊土"
+    },
+    {
+      "sourceLine": 9301,
+      "canonicalLine": 464,
+      "key": "三月戊土"
+    },
+    {
+      "sourceLine": 9317,
+      "canonicalLine": 480,
+      "key": "四月戊土"
+    },
+    {
+      "sourceLine": 9318,
+      "canonicalLine": 481,
+      "key": "四月戊土"
+    },
+    {
+      "sourceLine": 9329,
+      "canonicalLine": 492,
+      "key": "五月戊土"
+    },
+    {
+      "sourceLine": 9330,
+      "canonicalLine": 493,
+      "key": "五月戊土"
+    },
+    {
+      "sourceLine": 9335,
+      "canonicalLine": 498,
+      "key": "六月戊土"
+    },
+    {
+      "sourceLine": 9336,
+      "canonicalLine": 499,
+      "key": "六月戊土"
+    },
+    {
+      "sourceLine": 9347,
+      "canonicalLine": 510,
+      "key": "七月戊土"
+    },
+    {
+      "sourceLine": 9348,
+      "canonicalLine": 511,
+      "key": "七月戊土"
+    },
+    {
+      "sourceLine": 9358,
+      "canonicalLine": 521,
+      "key": "八月戊土"
+    },
+    {
+      "sourceLine": 9359,
+      "canonicalLine": 522,
+      "key": "八月戊土"
+    },
+    {
+      "sourceLine": 9364,
+      "canonicalLine": 527,
+      "key": "九月戊土"
+    },
+    {
+      "sourceLine": 9365,
+      "canonicalLine": 528,
+      "key": "九月戊土"
+    },
+    {
+      "sourceLine": 9382,
+      "canonicalLine": 545,
+      "key": "十月戊土"
+    },
+    {
+      "sourceLine": 9383,
+      "canonicalLine": 546,
+      "key": "十月戊土"
+    },
+    {
+      "sourceLine": 9410,
+      "canonicalLine": 573,
+      "key": "正月己土"
+    },
+    {
+      "sourceLine": 9411,
+      "canonicalLine": 574,
+      "key": "正月己土"
+    },
+    {
+      "sourceLine": 9418,
+      "canonicalLine": 581,
+      "key": "二月己土"
+    },
+    {
+      "sourceLine": 9419,
+      "canonicalLine": 582,
+      "key": "二月己土"
+    },
+    {
+      "sourceLine": 9429,
+      "canonicalLine": 592,
+      "key": "三月己土"
+    },
+    {
+      "sourceLine": 9430,
+      "canonicalLine": 593,
+      "key": "三月己土"
+    },
+    {
+      "sourceLine": 9493,
+      "canonicalLine": 656,
+      "key": "正月庚金"
+    },
+    {
+      "sourceLine": 9494,
+      "canonicalLine": 657,
+      "key": "正月庚金"
+    },
+    {
+      "sourceLine": 9505,
+      "canonicalLine": 668,
+      "key": "二月庚金"
+    },
+    {
+      "sourceLine": 9506,
+      "canonicalLine": 669,
+      "key": "二月庚金"
+    },
+    {
+      "sourceLine": 9520,
+      "canonicalLine": 683,
+      "key": "三月庚金"
+    },
+    {
+      "sourceLine": 9521,
+      "canonicalLine": 684,
+      "key": "三月庚金"
+    },
+    {
+      "sourceLine": 9530,
+      "canonicalLine": 693,
+      "key": "四月庚金"
+    },
+    {
+      "sourceLine": 9531,
+      "canonicalLine": 694,
+      "key": "四月庚金"
+    },
+    {
+      "sourceLine": 9534,
+      "canonicalLine": 697,
+      "key": "四月庚金"
+    },
+    {
+      "sourceLine": 9536,
+      "canonicalLine": 699,
+      "key": "五月庚金"
+    },
+    {
+      "sourceLine": 9537,
+      "canonicalLine": 700,
+      "key": "五月庚金"
+    },
+    {
+      "sourceLine": 9542,
+      "canonicalLine": 705,
+      "key": "六月庚金"
+    },
+    {
+      "sourceLine": 9543,
+      "canonicalLine": 706,
+      "key": "六月庚金"
+    },
+    {
+      "sourceLine": 9556,
+      "canonicalLine": 719,
+      "key": "七月庚金"
+    },
+    {
+      "sourceLine": 9557,
+      "canonicalLine": 720,
+      "key": "七月庚金"
+    },
+    {
+      "sourceLine": 9561,
+      "canonicalLine": 724,
+      "key": "八月庚金"
+    },
+    {
+      "sourceLine": 9562,
+      "canonicalLine": 725,
+      "key": "八月庚金"
+    },
+    {
+      "sourceLine": 9574,
+      "canonicalLine": 737,
+      "key": "九月庚金"
+    },
+    {
+      "sourceLine": 9575,
+      "canonicalLine": 738,
+      "key": "九月庚金"
+    },
+    {
+      "sourceLine": 9586,
+      "canonicalLine": 749,
+      "key": "十月庚金"
+    },
+    {
+      "sourceLine": 9587,
+      "canonicalLine": 750,
+      "key": "十月庚金"
+    },
+    {
+      "sourceLine": 9596,
+      "canonicalLine": 759,
+      "key": "十一月庚金"
+    },
+    {
+      "sourceLine": 9597,
+      "canonicalLine": 760,
+      "key": "十一月庚金"
+    },
+    {
+      "sourceLine": 9608,
+      "canonicalLine": 771,
+      "key": "十二月庚金"
+    },
+    {
+      "sourceLine": 9609,
+      "canonicalLine": 772,
+      "key": "十二月庚金"
+    },
+    {
+      "sourceLine": 9618,
+      "canonicalLine": 781,
+      "key": "正月辛金"
+    },
+    {
+      "sourceLine": 9619,
+      "canonicalLine": 782,
+      "key": "正月辛金"
+    },
+    {
+      "sourceLine": 9627,
+      "canonicalLine": 790,
+      "key": "二月辛金"
+    },
+    {
+      "sourceLine": 9628,
+      "canonicalLine": 791,
+      "key": "二月辛金"
+    },
+    {
+      "sourceLine": 9646,
+      "canonicalLine": 809,
+      "key": "三月辛金"
+    },
+    {
+      "sourceLine": 9647,
+      "canonicalLine": 810,
+      "key": "三月辛金"
+    },
+    {
+      "sourceLine": 9652,
+      "canonicalLine": 815,
+      "key": "四月辛金"
+    },
+    {
+      "sourceLine": 9653,
+      "canonicalLine": 816,
+      "key": "四月辛金"
+    },
+    {
+      "sourceLine": 9660,
+      "canonicalLine": 823,
+      "key": "五月辛金"
+    },
+    {
+      "sourceLine": 9661,
+      "canonicalLine": 824,
+      "key": "五月辛金"
+    },
+    {
+      "sourceLine": 9662,
+      "canonicalLine": 825,
+      "key": "五月辛金"
+    },
+    {
+      "sourceLine": 9668,
+      "canonicalLine": 831,
+      "key": "六月辛金"
+    },
+    {
+      "sourceLine": 9669,
+      "canonicalLine": 832,
+      "key": "六月辛金"
+    },
+    {
+      "sourceLine": 9676,
+      "canonicalLine": 839,
+      "key": "七月辛金"
+    },
+    {
+      "sourceLine": 9677,
+      "canonicalLine": 840,
+      "key": "七月辛金"
+    },
+    {
+      "sourceLine": 9681,
+      "canonicalLine": 844,
+      "key": "七月辛金"
+    },
+    {
+      "sourceLine": 9685,
+      "canonicalLine": 848,
+      "key": "八月辛金"
+    },
+    {
+      "sourceLine": 9686,
+      "canonicalLine": 849,
+      "key": "八月辛金"
+    },
+    {
+      "sourceLine": 9704,
+      "canonicalLine": 867,
+      "key": "九月辛金"
+    },
+    {
+      "sourceLine": 9705,
+      "canonicalLine": 868,
+      "key": "九月辛金"
+    },
+    {
+      "sourceLine": 9711,
+      "canonicalLine": 874,
+      "key": "九月辛金"
+    },
+    {
+      "sourceLine": 9719,
+      "canonicalLine": 882,
+      "key": "十月辛金"
+    },
+    {
+      "sourceLine": 9720,
+      "canonicalLine": 883,
+      "key": "十月辛金"
+    },
+    {
+      "sourceLine": 9725,
+      "canonicalLine": 888,
+      "key": "十一月辛金"
+    },
+    {
+      "sourceLine": 9726,
+      "canonicalLine": 889,
+      "key": "十一月辛金"
+    },
+    {
+      "sourceLine": 9731,
+      "canonicalLine": 894,
+      "key": "十二月辛金"
+    },
+    {
+      "sourceLine": 9732,
+      "canonicalLine": 895,
+      "key": "十二月辛金"
+    },
+    {
+      "sourceLine": 9755,
+      "canonicalLine": 918,
+      "key": "正月壬水"
+    },
+    {
+      "sourceLine": 9756,
+      "canonicalLine": 919,
+      "key": "正月壬水"
+    },
+    {
+      "sourceLine": 9765,
+      "canonicalLine": 928,
+      "key": "二月壬水"
+    },
+    {
+      "sourceLine": 9766,
+      "canonicalLine": 929,
+      "key": "二月壬水"
+    },
+    {
+      "sourceLine": 9772,
+      "canonicalLine": 935,
+      "key": "三月壬水"
+    },
+    {
+      "sourceLine": 9773,
+      "canonicalLine": 936,
+      "key": "三月壬水"
+    },
+    {
+      "sourceLine": 9781,
+      "canonicalLine": 944,
+      "key": "四月壬水"
+    },
+    {
+      "sourceLine": 9782,
+      "canonicalLine": 945,
+      "key": "四月壬水"
+    },
+    {
+      "sourceLine": 9795,
+      "canonicalLine": 958,
+      "key": "五月壬水"
+    },
+    {
+      "sourceLine": 9796,
+      "canonicalLine": 959,
+      "key": "五月壬水"
+    },
+    {
+      "sourceLine": 9804,
+      "canonicalLine": 967,
+      "key": "六月壬水"
+    },
+    {
+      "sourceLine": 9805,
+      "canonicalLine": 968,
+      "key": "六月壬水"
+    },
+    {
+      "sourceLine": 9809,
+      "canonicalLine": 972,
+      "key": "七月壬水"
+    },
+    {
+      "sourceLine": 9810,
+      "canonicalLine": 973,
+      "key": "七月壬水"
+    },
+    {
+      "sourceLine": 9813,
+      "canonicalLine": 976,
+      "key": "七月壬水"
+    },
+    {
+      "sourceLine": 9821,
+      "canonicalLine": 984,
+      "key": "八月壬水"
+    },
+    {
+      "sourceLine": 9822,
+      "canonicalLine": 985,
+      "key": "八月壬水"
+    },
+    {
+      "sourceLine": 9826,
+      "canonicalLine": 989,
+      "key": "八月壬水"
+    },
+    {
+      "sourceLine": 9836,
+      "canonicalLine": 999,
+      "key": "九月壬水"
+    },
+    {
+      "sourceLine": 9837,
+      "canonicalLine": 1000,
+      "key": "九月壬水"
+    },
+    {
+      "sourceLine": 9841,
+      "canonicalLine": 1004,
+      "key": "九月壬水"
+    },
+    {
+      "sourceLine": 9847,
+      "canonicalLine": 1010,
+      "key": "十月壬水"
+    },
+    {
+      "sourceLine": 9848,
+      "canonicalLine": 1011,
+      "key": "十月壬水"
+    },
+    {
+      "sourceLine": 9857,
+      "canonicalLine": 1020,
+      "key": "十一月壬水"
+    },
+    {
+      "sourceLine": 9858,
+      "canonicalLine": 1021,
+      "key": "十一月壬水"
+    },
+    {
+      "sourceLine": 9863,
+      "canonicalLine": 1026,
+      "key": "十一月壬水"
+    },
+    {
+      "sourceLine": 9869,
+      "canonicalLine": 1032,
+      "key": "十二月壬水"
+    },
+    {
+      "sourceLine": 9870,
+      "canonicalLine": 1033,
+      "key": "十二月壬水"
+    },
+    {
+      "sourceLine": 9878,
+      "canonicalLine": 1041,
+      "key": "正月癸水"
+    },
+    {
+      "sourceLine": 9879,
+      "canonicalLine": 1042,
+      "key": "正月癸水"
+    },
+    {
+      "sourceLine": 9883,
+      "canonicalLine": 1046,
+      "key": "正月癸水"
+    },
+    {
+      "sourceLine": 9885,
+      "canonicalLine": 1048,
+      "key": "二月癸水"
+    },
+    {
+      "sourceLine": 9896,
+      "canonicalLine": 1059,
+      "key": "三月癸水"
+    },
+    {
+      "sourceLine": 9897,
+      "canonicalLine": 1060,
+      "key": "三月癸水"
+    },
+    {
+      "sourceLine": 9898,
+      "canonicalLine": 1061,
+      "key": "三月癸水"
+    },
+    {
+      "sourceLine": 9902,
+      "canonicalLine": 1065,
+      "key": "三月癸水"
+    },
+    {
+      "sourceLine": 9912,
+      "canonicalLine": 1075,
+      "key": "四月癸水"
+    },
+    {
+      "sourceLine": 9913,
+      "canonicalLine": 1076,
+      "key": "四月癸水"
+    },
+    {
+      "sourceLine": 9915,
+      "canonicalLine": 1078,
+      "key": "五月癸水"
+    },
+    {
+      "sourceLine": 9916,
+      "canonicalLine": 1079,
+      "key": "五月癸水"
+    },
+    {
+      "sourceLine": 9920,
+      "canonicalLine": 1083,
+      "key": "六月癸水"
+    },
+    {
+      "sourceLine": 9921,
+      "canonicalLine": 1084,
+      "key": "六月癸水"
+    },
+    {
+      "sourceLine": 9927,
+      "canonicalLine": 1090,
+      "key": "七月癸水"
+    },
+    {
+      "sourceLine": 9928,
+      "canonicalLine": 1091,
+      "key": "七月癸水"
+    },
+    {
+      "sourceLine": 9937,
+      "canonicalLine": 1100,
+      "key": "八月癸水"
+    },
+    {
+      "sourceLine": 9938,
+      "canonicalLine": 1101,
+      "key": "八月癸水"
+    },
+    {
+      "sourceLine": 9944,
+      "canonicalLine": 1107,
+      "key": "九月癸水"
+    },
+    {
+      "sourceLine": 9945,
+      "canonicalLine": 1108,
+      "key": "九月癸水"
+    },
+    {
+      "sourceLine": 9948,
+      "canonicalLine": 1111,
+      "key": "九月癸水"
+    },
+    {
+      "sourceLine": 9954,
+      "canonicalLine": 1117,
+      "key": "十月癸水"
+    },
+    {
+      "sourceLine": 9955,
+      "canonicalLine": 1118,
+      "key": "十月癸水"
+    },
+    {
+      "sourceLine": 9965,
+      "canonicalLine": 1128,
+      "key": "十一月癸水"
+    },
+    {
+      "sourceLine": 9966,
+      "canonicalLine": 1129,
+      "key": "十一月癸水"
+    },
+    {
+      "sourceLine": 9972,
+      "canonicalLine": 1135,
+      "key": "十二月癸水"
+    },
+    {
+      "sourceLine": 9973,
+      "canonicalLine": 1136,
+      "key": "十二月癸水"
+    }
+  ]
+}
