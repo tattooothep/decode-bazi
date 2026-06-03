@@ -1030,6 +1030,21 @@ const QIMEN_DEITY_TH = {
   值符:'เทพจื๋อฟู', 螣蛇:'เทพเถิงเสอ', 太陰:'เทพไท่อิน', 六合:'เทพลิ่วเหอ',
   白虎:'เทพเสือขาว', 玄武:'เทพเสวียนอู่', 九地:'เทพเก้าดิน', 九天:'เทพเก้าฟ้า',
 };
+const QIMEN_DOOR_HINT = {
+  休門:'เหมาะพัก เจรจานุ่ม ๆ ฟื้นตัว', 生門:'เหมาะเติบโต เงิน งานที่อยากให้เกิดผล', 傷門:'แรงปะทะสูง เหมาะแก้ปัญหาแต่ไม่เหมาะงานมงคล',
+  杜門:'เหมาะเก็บตัว วางแผน ไม่เด่นเรื่องเปิดเผย', 景門:'เหมาะชื่อเสียง สื่อสาร พรีเซนต์', 死門:'พลังนิ่งหนัก ไม่เหมาะเริ่มเรื่องสำคัญ',
+  驚門:'ข่าวเร็ว ความตื่นตัวสูง ต้องคุมคำพูด', 開門:'เหมาะเปิดทาง เซ็นสัญญา พบผู้ใหญ่'
+};
+const QIMEN_STAR_HINT = {
+  天蓬:'พลังเสี่ยง/ความลับ ต้องคุมความโลภ', 天任:'มั่นคง อดทน เหมาะงานระยะยาว', 天沖:'เคลื่อนเร็ว เหมาะผลักดันแต่ระวังชน',
+  天輔:'หนุนเอกสาร ความรู้ ผู้ช่วย และที่ปรึกษา', 天英:'เด่นภาพลักษณ์ ไฟแรง ต้องคุมอารมณ์', 天芮:'เรื่องป่วย/ภาระ ต้องตรวจรายละเอียด',
+  天柱:'แรงกดดัน กฎเกณฑ์ คดี/เอกสารต้องรอบคอบ', 天心:'หนุนการตัดสินใจ แพทย์ แผน และการแก้ปัญหา', 天禽:'แรงกลาง ช่วยประคองภาพรวม'
+};
+const QIMEN_DEITY_HINT = {
+  值符:'พลังผู้ใหญ่/อำนาจหลัก ช่วยให้งานมีน้ำหนัก', 螣蛇:'ระวังความสับสน ข่าวลือ หรือเรื่องคลุมเครือ', 太陰:'เหมาะงานหลังบ้าน ความละเอียด และการเจรจาเงียบ',
+  六合:'หนุนคู่ค้า ทีม พันธมิตร และการตกลงร่วมกัน', 白虎:'แรงปะทะ/ความกดดันสูง ต้องเลี่ยงความหุนหัน', 玄武:'ระวังข้อมูลซ่อนเร้น เอกสาร และความเข้าใจผิด',
+  九地:'เหมาะตั้งหลัก งานมั่นคง เก็บรายละเอียด', 九天:'เหมาะขยาย เปิดตัว ประกาศ และงานที่ต้องยกภาพใหญ่'
+};
 const FLYING_STAR_TH = {
   '1白':'ดาวหนึ่งขาว', '2黑':'ดาวสองดำ', '3碧':'ดาวสามเขียว', '4綠':'ดาวสี่เขียว',
   '5黃':'ดาวห้าเหลือง', '5黄':'ดาวห้าเหลือง', '6白':'ดาวหกขาว', '7赤':'ดาวเจ็ดแดง',
@@ -1056,12 +1071,26 @@ const OFFICER_TH = {
   定日:'วันกำหนด', 執日:'วันยึด', 执日:'วันยึด', 破日:'วันทำลาย', 危日:'วันอันตราย',
   成日:'วันสำเร็จ', 收日:'วันเก็บ', 開日:'วันเปิด', 开日:'วันเปิด', 閉日:'วันปิด', 闭日:'วันปิด',
 };
+const TONGSHU_AUSPICIOUS = {
+  yue_de: { han:'月德', th:'ดาวคุณธรรมเดือน', meaning:'แรงมงคลช่วยลดแรงปะทะ เหมาะเอามาหนุนงานดี งานเจรจา และการเริ่มเรื่องสำคัญ' },
+  tian_de: { han:'天德', th:'ดาวคุณธรรมฟ้า', meaning:'แรงเมตตาจากฟ้า ช่วยให้เรื่องสำคัญราบรื่นขึ้น' },
+  tian_en: { han:'天恩', th:'ดาวอุปถัมภ์ฟ้า', meaning:'มีแรงช่วยเหลือ เหมาะขอความร่วมมือหรือเริ่มเรื่องที่ต้องพึ่งคน' },
+  yue_en: { han:'月恩', th:'ดาวอุปถัมภ์เดือน', meaning:'มีแรงสนับสนุนจากจังหวะเดือน เหมาะทำเรื่องที่ต้องการคนช่วย' },
+  tian_xi: { han:'天喜', th:'ดาวยินดีฟ้า', meaning:'เหมาะงานมงคล ความสัมพันธ์ งานพบปะ และเรื่องที่ต้องการบรรยากาศดี' },
+  jin_kui: { han:'金匱', th:'ดาวคลังทอง', meaning:'หนุนทรัพย์ เอกสารสำคัญ และการเก็บรักษาผลประโยชน์' },
+};
 
 function qimenLabel(kind, zh){
   if (!zh || zh === '·' || zh === '—') return zh || '—';
   const dict = kind === 'door' ? QIMEN_DOOR_TH : kind === 'star' ? QIMEN_STAR_TH : QIMEN_DEITY_TH;
   const th = dict[zh];
   return th ? `${th} · ${zh}` : zh;
+}
+
+function qimenPartReading(kind, zh){
+  if (!zh || zh === '·' || zh === '—') return '';
+  const hint = kind === 'door' ? QIMEN_DOOR_HINT[zh] : kind === 'star' ? QIMEN_STAR_HINT[zh] : QIMEN_DEITY_HINT[zh];
+  return `${qimenLabel(kind, zh)}${hint ? ` · ${hint}` : ''}`;
 }
 
 function localizeQimenReason(text){
@@ -1078,6 +1107,11 @@ function thZh(dict, zh){
 
 function localizeAuspiciousReason(text){
   return localizeQimenReason(text)
+    .replace(/月德/g, 'ดาวคุณธรรมเดือน · 月德')
+    .replace(/天德/g, 'ดาวคุณธรรมฟ้า · 天德')
+    .replace(/天恩/g, 'ดาวอุปถัมภ์ฟ้า · 天恩')
+    .replace(/月恩/g, 'ดาวอุปถัมภ์เดือน · 月恩')
+    .replace(/天喜/g, 'ดาวยินดีฟ้า · 天喜')
     .replace(/\b([1-9][白黑碧綠绿黃黄赤紫])(?=\s|$|[（(])/g, (m) => thZh(FLYING_STAR_TH, m))
     .replace(/\b([1-9])星\b/g, (m, n) => `${FLYING_STAR_NUM_TH[n] || `ดาว ${n}`} · ${m}`)
     .replace(/(^|[\s·(（])([1-9])星(?=\s|$|[)）])/g, (_, pre, n) => `${pre}${FLYING_STAR_NUM_TH[n] || `ดาว ${n}`} · ${n}星`)
@@ -1154,6 +1188,90 @@ function scoreOnlyScienceItem(key, score){
   return { text:'กลาง · ผ่านได้ แต่ไม่ได้เป็นตัวหนุนหลักของฤกษ์นี้', delta:0, kind:'note', label:'กลาง' };
 }
 
+function ensureScienceSection(sections, key, moduleScores){
+  let sec = sections.find(s => s.key === key);
+  if (sec) return sec;
+  const meta = MODULE_LABELS[key] || { th:key, zh:key };
+  sec = {
+    key, th:meta.th, zh:meta.zh,
+    score: moduleScores && moduleScores[key] != null ? Math.round(moduleScores[key]) : null,
+    items: [], good:0, warn:0, neutral:1,
+  };
+  sections.push(sec);
+  return sec;
+}
+
+function addScienceItemOnce(sec, item){
+  const text = String(item.text || '');
+  if (!text || sec.items.some(x => String(x.text || '') === text)) return;
+  sec.items.push(item);
+  if (item.kind === 'good') sec.good = (sec.good || 0) + 1;
+  else if (item.kind === 'warn') sec.warn = (sec.warn || 0) + 1;
+  else sec.neutral = (sec.neutral || 0) + 1;
+}
+
+function tongshuSignalFromAny(v){
+  const s = String(v || '');
+  if (/YUE_DE|yue_de|月德/.test(s)) return TONGSHU_AUSPICIOUS.yue_de;
+  if (/TIAN_DE|tian_de|天德/.test(s)) return TONGSHU_AUSPICIOUS.tian_de;
+  if (/TIAN_EN|tian_en|天恩/.test(s)) return TONGSHU_AUSPICIOUS.tian_en;
+  if (/YUE_EN|yue_en|月恩/.test(s)) return TONGSHU_AUSPICIOUS.yue_en;
+  if (/TIAN_XI|tian_xi|天喜/.test(s)) return TONGSHU_AUSPICIOUS.tian_xi;
+  if (/JIN_KUI|jin_kui|金匱|金匮/.test(s)) return TONGSHU_AUSPICIOUS.jin_kui;
+  return null;
+}
+
+function tongshuSignalsForSlot(t){
+  const raw = [
+    ...(t.tongshu_tags || []),
+    ...(t.tongshu_reasons || []),
+    ...(t.matches || []).filter(x => scienceKeyFromReason(x) === 'ze_ri'),
+  ];
+  const seen = new Set();
+  const out = [];
+  raw.forEach((x) => {
+    const sig = tongshuSignalFromAny(typeof x === 'string' ? x : JSON.stringify(x));
+    if (!sig || seen.has(sig.han)) return;
+    seen.add(sig.han);
+    out.push(sig);
+  });
+  return out;
+}
+
+function enrichScienceSectionsForSlot(sections, t){
+  const moduleScores = t.moduleScores || {};
+  if (moduleScores.qi_men != null) {
+    const parts = [
+      qimenPartReading('door', t.door),
+      qimenPartReading('star', t.star),
+      qimenPartReading('deity', t.deity),
+    ].filter(Boolean);
+    if (parts.length) {
+      const sec = ensureScienceSection(sections, 'qi_men', moduleScores);
+      addScienceItemOnce(sec, {
+        text:`อ่านฉีเหมินครบ 3 ชั้น: ${parts.join(' | ')}`,
+        delta:0, kind:'note', label:'อ่าน',
+      });
+    }
+  }
+  if (moduleScores.ze_ri != null) {
+    const signals = tongshuSignalsForSlot(t);
+    if (signals.length) {
+      const sec = ensureScienceSection(sections, 'ze_ri', moduleScores);
+      const activityName = t.activity_name || ACTIVITY_RULES[state.activity]?.name || 'กิจกรรมที่เลือก';
+      const activityHan = t.activity_han || ACTIVITY_RULES[state.activity]?.han || '';
+      const signalText = signals.map(s => `${s.th} · ${s.han}`).join(' · ');
+      const meaning = signals[0]?.meaning || 'เป็นแรงมงคลเสริม';
+      addScienceItemOnce(sec, {
+        text:`วันมงคลที่ใช้หนุน${activityName}${activityHan ? ` · ${activityHan}` : ''}: ${signalText} · ${meaning}`,
+        delta:0, kind:'good', label:'มงคล',
+      });
+    }
+  }
+  const order = ['qi_men','ze_ri','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
+  return sections.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+}
+
 function buildScienceSections(matches, moduleScores){
   const order = ['qi_men','ze_ri','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
   const map = new Map();
@@ -1198,6 +1316,7 @@ function buildScienceSections(matches, moduleScores){
 function scienceTone(sec){
   if (sec.warn && sec.good) return 'mixed';
   if (sec.warn) return 'warn';
+  if (sec.good) return 'good';
   if (sec.neutral) return 'neutral';
   return 'good';
 }
@@ -1443,6 +1562,7 @@ async function performSearch(){
           const localISO = new Date(dLocal.getTime() + 7*60*60*1000).toISOString();
           const qm = c.modules?.qi_men?.raw || {};
           const h64 = c.modules?.hex64?.raw || {};
+          const zr = c.modules?.ze_ri || {};
           return {
             datetime: localISO, date: localISO.slice(0,10), time: localISO.slice(11,16),
             score: Math.round(c.scoring.finalScore),
@@ -1460,7 +1580,16 @@ async function performSearch(){
             hex_name: h64.hex_name || null,
             changing_line: h64.changing_line || null,
             element: STEM_ELEMENT[c.pillars?.hour?.stem] || null,
+            activity_key: state.activity,
+            activity_name: ACTIVITY_RULES[state.activity]?.name || 'กิจกรรมที่เลือก',
+            activity_han: ACTIVITY_RULES[state.activity]?.han || ajActivity,
             moduleScores: c.scoring?.moduleScores || {},
+            tongshu_tags: zr.tags || [],
+            tongshu_reasons: [
+              ...(zr.reasons?.up || []),
+              ...(zr.reasons?.down || []),
+              ...(zr.reasons?.warning || []),
+            ],
             matches: [
               ...(c.scoring?.reasonsUp||[]).map(r => localizeAuspiciousReason(`${r.delta>0?'+':''}${r.delta} ${r.thai}`)),
               ...(c.scoring?.reasonsDown||[]).map(r => localizeAuspiciousReason(`${r.delta} ${r.thai}`)),
@@ -1564,7 +1693,7 @@ function renderRealResults(items){
       const m = MODULE_LABELS[k] || { th:k, zh:k };
       return `<span class="score-pill">${escHtml(m.th)} <span class="zh">${escHtml(m.zh)}</span> <b>${Math.round(v)}</b></span>`;
     }).join('');
-    const scienceSections = buildScienceSections(t.matches || [], t.moduleScores || {});
+    const scienceSections = enrichScienceSectionsForSlot(buildScienceSections(t.matches || [], t.moduleScores || {}), t);
     const scienceSummary = summarizeScience(scienceSections);
     const verdict = `${explainScore(t.score, i + 1, items.length)}${scienceSummary ? ` · ${scienceSummary}` : ''}`;
     const directionText = DIRECTION_TH[t.direction] ? `${DIRECTION_TH[t.direction]} (${t.direction})` : (t.direction || '·');
