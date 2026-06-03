@@ -112,16 +112,18 @@
   /* ──────── SOLAR SYSTEM ──────── */
   .solar{position:relative;height:720px;background:radial-gradient(circle at center, var(--solar-glow), transparent 70%);border:1px solid var(--gold-line);border-radius:18px;overflow:hidden;}
   .orbit{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px dashed var(--gold-line);border-radius:50%;pointer-events:none;}
-  .orbit.o1{width:220px;height:220px;animation:rot 80s linear infinite;}
-  .orbit.o2{width:380px;height:380px;animation:rot 140s linear infinite reverse;}
-  .orbit.o3{width:560px;height:560px;animation:rot 220s linear infinite;}
-  @keyframes rot{to{transform:translate(-50%,-50%) rotate(360deg);}}
+	  .orbit.o1{width:220px;height:220px;animation:rot 80s linear infinite;}
+	  .orbit.o2{width:380px;height:380px;animation:rot 140s linear infinite reverse;}
+	  .orbit.o3{width:560px;height:560px;animation:rot 220s linear infinite;}
+	  .solar.group-overview .orbit{opacity:.38;}
+	  .solar.group-overview .orbit-label{display:none;}
+	  @keyframes rot{to{transform:translate(-50%,-50%) rotate(360deg);}}
 
   /* center node */
   .center-node{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:140px;height:140px;border-radius:50%;background:linear-gradient(160deg, var(--earth-bg), var(--gold-soft));border:2px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;box-shadow:0 0 60px var(--solar-glow);transition:box-shadow .6s, background .4s, opacity .4s;cursor:pointer;}
   /* 19 พ.ค. spec ฟีเจอร์ 4 · Perspective Shift · swap effect (opacity only · ไม่ใช้ transform) */
   .solar.swapping .center-node{opacity:.45;transition:opacity .35s ease;}
-  .solar.swapping .node{opacity:.25;transition:opacity .35s ease;}
+	  .solar.swapping .node,.solar.swapping .group-node{opacity:.25;transition:opacity .35s ease;}
   .center-node:hover{box-shadow:0 0 80px var(--solar-glow);}
   .center-node .glyph{font-family:var(--tc);font-size:64px;font-weight:700;color:var(--gold);line-height:1;}
   .center-node .name{font-family:var(--serif);font-size:14px;font-weight:500;margin-top:4px;}
@@ -146,10 +148,26 @@
   .node.elem-earth .ng{color:var(--earth);}
   .node.elem-metal .ng{color:var(--metal);}
   .node.elem-water .ng{color:var(--water);}
-  .node.is-self{box-shadow:0 0 0 3px var(--gold-soft), 0 0 0 1px var(--gold);}
-  .node.is-self::before{content:'YOU';position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--gold);background:var(--bg);padding:2px 6px;border-radius:99px;border:1px solid var(--gold);}
+	  .node.is-self{box-shadow:0 0 0 3px var(--gold-soft), 0 0 0 1px var(--gold);}
+	  .node.is-self::before{content:'YOU';position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--gold);background:var(--bg);padding:2px 6px;border-radius:99px;border:1px solid var(--gold);}
 
-  .lines{position:absolute;inset:0;pointer-events:none;z-index:1;}
+	  .group-node{position:absolute;width:152px;min-height:104px;border-radius:12px;border:1px solid var(--tile-bd);background:linear-gradient(160deg,var(--tile),var(--bg-2));display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;padding:14px 16px;cursor:pointer;z-index:8;box-shadow:0 14px 38px rgba(0,0,0,.18);transition:transform .2s,border-color .2s,background .2s;}
+	  .group-node:hover{transform:translate(-50%,-50%) scale(1.04);border-color:var(--gold);z-index:22;}
+	  .group-node.score-pos{border-color:rgba(90,138,72,.55);background:linear-gradient(160deg,var(--wood-bg),var(--bg-2));}
+	  .group-node.score-neg{border-color:rgba(176,58,46,.55);background:linear-gradient(160deg,var(--fire-bg),var(--bg-2));}
+	  .group-node.score-mid{border-color:var(--gold-line);}
+	  .group-node .gh{display:flex;align-items:center;gap:8px;width:100%;}
+	  .group-node .tc{font-family:var(--tc);font-size:22px;color:var(--gold);font-weight:700;line-height:1;}
+	  .group-node .gn{font-family:var(--thai);font-size:14px;color:var(--fg);font-weight:700;line-height:1.2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+	  .group-node .gm{font-family:var(--thai);font-size:11px;color:var(--fg-soft);line-height:1.35;}
+	  .group-node .gs{display:flex;gap:6px;flex-wrap:wrap;font-family:var(--mono);font-size:9px;}
+	  .group-node .pill{border:1px solid var(--tile-bd);border-radius:99px;padding:2px 6px;background:var(--bg);color:var(--fg-faint);}
+	  .group-node .pill.good{color:var(--good);border-color:rgba(90,138,72,.45);background:var(--wood-bg);}
+	  .group-node .pill.bad{color:var(--bad);border-color:rgba(176,58,46,.45);background:var(--fire-bg);}
+	  .group-node .pill.mid{color:var(--neutral);}
+	  .group-node .hint{font-family:var(--thai);font-size:10px;color:var(--gold);margin-top:1px;}
+
+	  .lines{position:absolute;inset:0;pointer-events:none;z-index:1;}
 
   /* 🌌 node role label */
   .node .rl{font-family:var(--mono);font-size:7px;letter-spacing:.05em;color:var(--fg-faint);text-transform:uppercase;margin-top:1px;text-align:center;line-height:1.1;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -215,11 +233,15 @@
   .ctrl-btn:hover{color:var(--gold);border-color:var(--gold);}
   .ctrl-btn.is-active{color:var(--gold);border-color:var(--gold);background:var(--gold-soft);}
 
-  /* center-as info banner */
-  .center-info{position:absolute;left:50%;top:24px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:color-mix(in srgb, var(--bg) 70%, transparent);backdrop-filter:blur(8px);padding:8px 16px;border-radius:99px;border:1px solid var(--gold-line);font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase;z-index:30;}
+	  /* center-as info banner */
+	  .center-info{position:absolute;left:50%;top:24px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:color-mix(in srgb, var(--bg) 70%, transparent);backdrop-filter:blur(8px);padding:8px 16px;border-radius:99px;border:1px solid var(--gold-line);font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--fg-soft);text-transform:uppercase;z-index:30;}
   .center-info b{color:var(--gold);}
   .center-info .reset{margin-left:6px;background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:4px 10px;border-radius:99px;font-size:9px;cursor:pointer;}
-  .center-info .reset:hover{background:var(--gold);color:var(--bg);}
+	  .center-info .reset:hover{background:var(--gold);color:var(--bg);}
+	  .solar-scope{position:absolute;left:24px;top:24px;display:flex;align-items:center;gap:10px;max-width:min(540px,calc(100% - 250px));background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(8px);padding:9px 14px;border-radius:12px;border:1px solid var(--gold-line);font-family:var(--thai);font-size:12px;color:var(--fg-soft);z-index:30;line-height:1.45;}
+	  .solar-scope b{color:var(--gold);font-weight:700;}
+	  .solar-scope button{background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);border-radius:99px;padding:5px 10px;font-family:var(--thai);font-size:11px;cursor:pointer;white-space:nowrap;}
+	  .solar-scope button:hover{background:var(--gold);color:var(--bg);}
 
   /* ──────── group chips ──────── */
   .group-chips{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0;}
@@ -455,13 +477,18 @@
     .hero-head .stats{gap:14px;}
     .hero-head .stats b{font-size:24px;}
     .solar{height:560px;}
-    .center-node{width:104px;height:104px;}
-    .center-node .glyph{font-size:48px;}
-    .center-node .name{font-size:12px;}
-    .node{width:64px;height:64px;}
-    .node .ng{font-size:18px;}
-    .node .nm{font-size:8px;}
-    .node .sc{font-size:7px;}
+	    .center-node{width:104px;height:104px;}
+	    .center-node .glyph{font-size:48px;}
+	    .center-node .name{font-size:12px;}
+	    .node{width:64px;height:64px;}
+	    .group-node{width:128px;min-height:92px;padding:12px;}
+	    .group-node .tc{font-size:18px;}
+	    .group-node .gn{font-size:12px;}
+	    .group-node .gm{font-size:10px;}
+	    .solar-scope{left:14px;right:14px;top:14px;max-width:none;font-size:11px;align-items:flex-start;}
+	    .node .ng{font-size:18px;}
+	    .node .nm{font-size:8px;}
+	    .node .sc{font-size:7px;}
     .people-grid{grid-template-columns:1fr;}
     .team-fit-grid{grid-template-columns:1fr 1fr;}
     .team-fit-card.main{grid-column:1/-1;}
@@ -480,10 +507,16 @@
     .cmp-row{grid-template-columns:1fr;}
     .matrix-table{font-size:9px;}
     .solar{height:480px;}
-    .center-node{width:88px;height:88px;}
-    .center-node .glyph{font-size:38px;}
-    .node{width:54px;height:54px;}
-    .node .ng{font-size:15px;}
+	    .center-node{width:88px;height:88px;}
+	    .center-node .glyph{font-size:38px;}
+	    .node{width:54px;height:54px;}
+	    .group-node{width:116px;min-height:84px;padding:10px;}
+	    .group-node .gh{gap:5px;}
+	    .group-node .tc{font-size:16px;}
+	    .group-node .gn{font-size:11px;}
+	    .group-node .gm{display:none;}
+	    .group-node .hint{display:none;}
+	    .node .ng{font-size:15px;}
   }
 </style>
 <link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
@@ -625,12 +658,13 @@
       <div class="orbit-label o2" data-i18n="n.orb.mid">○ กลาง</div>
       <div class="orbit-label o3" data-i18n="n.orb.far">◌ ไกล · ผลน้อย</div>
 
-      <div class="center-info" id="center-info" style="display:none;">
-        <span>CENTER · <b id="center-info-name">—</b></span>
-        <button class="reset" id="center-reset" data-i18n="n.ci.reset">↺ กลับไปดวงฉัน</button>
-      </div>
+	      <div class="center-info" id="center-info" style="display:none;">
+	        <span>CENTER · <b id="center-info-name">—</b></span>
+	        <button class="reset" id="center-reset" data-i18n="n.ci.reset">↺ กลับไปดวงฉัน</button>
+	      </div>
+	      <div class="solar-scope" id="solar-scope" style="display:none;"></div>
 
-      <svg class="lines" id="solar-lines" viewBox="0 0 1000 720" preserveAspectRatio="none"></svg>
+	      <svg class="lines" id="solar-lines" viewBox="0 0 1000 720" preserveAspectRatio="none"></svg>
 
       <!-- nodes injected by JS -->
 
@@ -638,7 +672,7 @@
         <div class="lg-row"><div class="lg-line good"></div><span data-i18n="n.lg.good">หนุน · 合 · 用神</span></div>
         <div class="lg-row"><div class="lg-line bad"></div><span data-i18n="n.lg.bad">ชง · 沖 · 忌神</span></div>
         <div class="lg-row"><div class="lg-line mid"></div><span data-i18n="n.lg.mid">กลาง · neutral</span></div>
-        <div class="lg-row" style="margin-top:6px;color:var(--fg-faint);font-size:9px;" data-i18n="n.lg.tip">วงโคจรใกล้ = ผลกระทบสูง · คลิกคนเพื่อย้าย Center</div>
+	        <div class="lg-row" style="margin-top:6px;color:var(--fg-faint);font-size:9px;" data-i18n="n.lg.tip">เริ่มจากหมวด · คลิกหมวดเพื่อดูคน · กดค้างคนเพื่อย้าย Center</div>
       </div>
 
       <div class="solar-controls">
@@ -1320,26 +1354,105 @@
   setTimeout(()=>{ if (PEOPLE.length && !window._engineScores?.['self']) recomputeAllScores(); }, 1500);
 
   // ───────── STATE ─────────
-  let state = {
-    centerId: 'self',
-    timeframe: 'week',
-    view: 'solar',
-    group: 'all',
-    theme: 'dark'
-  };
+	  let state = {
+	    centerId: 'self',
+	    timeframe: 'week',
+	    view: 'solar',
+	    group: 'all',
+	    solarGroup: null,
+	    solarLimit: 10,
+	    theme: 'dark'
+	  };
 
   // ───────── HELPERS ─────────
   function scoreClass(s){ return s>=20?'pos': s<=-20?'neg':'mid'; }
   function fmt(s){ return s>0?`+${s}`:s<0?`−${Math.abs(s)}`:'0'; }
 
-  // 19 พ.ค. spec ฟีเจอร์ 1 · Dynamic Orbit & Gravity
-  // radius = continuous function ของ |impact| · คะแนนสูง → ใกล้ center
-  // ยังจัด 3 ring เพื่อกันชน · แต่ radius ปรับตาม |score| ภายใน ring
-  function calcPositions(centerId, tf){
-    const W = 1000, H = 720, CX = W/2, CY = H/2;
-    const peers = PEOPLE.filter(p=>p.id!==centerId);
-    const sorted = peers.map(p=>({...p, score:getScore(centerId,p.id,tf)}))
-      .sort((a,b)=>Math.abs(b.score)-Math.abs(a.score));
+	  const SOLAR_GROUPS = [
+	    { key:'family', glyph:'家', label:'ครอบครัว', hint:'บ้านและญาติใกล้ตัว' },
+	    { key:'work', glyph:'業', label:'งาน / ทีม', hint:'งาน ลูกค้า หุ้นส่วน' },
+	    { key:'friend', glyph:'友', label:'เพื่อน', hint:'เพื่อนและคนรู้จัก' },
+	    { key:'love', glyph:'情', label:'ความรัก', hint:'คู่ ความสัมพันธ์ส่วนตัว' },
+	    { key:'rival', glyph:'競', label:'ควรระวัง', hint:'คนที่มีแรงปะทะสูง' },
+	    { key:'self', glyph:'己', label:'เรา', hint:'มุมเราในดวงคนอื่น' },
+	    { key:'other', glyph:'人', label:'อื่น ๆ', hint:'ยังไม่ได้จัดหมวด' },
+	  ];
+	  const SOLAR_GROUP_META = Object.fromEntries(SOLAR_GROUPS.map(g => [g.key, g]));
+
+	  function solarGroupKey(p){
+	    if (!p) return 'other';
+	    if (p.id === 'self') return 'self';
+	    return SOLAR_GROUP_META[p.group] ? p.group : 'other';
+	  }
+
+	  function solarGroupLabel(key){
+	    return (SOLAR_GROUP_META[key] || SOLAR_GROUP_META.other).label;
+	  }
+
+	  function solarGroupGlyph(key){
+	    return (SOLAR_GROUP_META[key] || SOLAR_GROUP_META.other).glyph;
+	  }
+
+	  function solarPeers(centerId){
+	    return PEOPLE.filter(p => p.id !== centerId);
+	  }
+
+	  function buildSolarGroups(centerId, tf){
+	    const map = {};
+	    solarPeers(centerId).forEach(p => {
+	      const key = solarGroupKey(p);
+	      map[key] = map[key] || { ...(SOLAR_GROUP_META[key] || SOLAR_GROUP_META.other), key, people: [], scores: [] };
+	      const score = getScore(centerId, p.id, tf);
+	      map[key].people.push(p);
+	      map[key].scores.push(score);
+	    });
+	    return SOLAR_GROUPS
+	      .map(meta => map[meta.key])
+	      .filter(Boolean)
+	      .map(g => {
+	        const scores = g.scores || [];
+	        const avg = scores.length ? Math.round(scores.reduce((sum, s) => sum + (Number(s) || 0), 0) / scores.length) : 0;
+	        const pos = scores.filter(s => s >= 5).length;
+	        const neg = scores.filter(s => s <= -5).length;
+	        const mid = Math.max(0, scores.length - pos - neg);
+	        const strongest = g.people
+	          .map(p => ({ p, score: getScore(centerId, p.id, tf) }))
+	          .sort((a, b) => Math.abs(b.score) - Math.abs(a.score))[0];
+	        return { ...g, avg, pos, neg, mid, strongest };
+	      })
+	      .sort((a, b) => {
+	        const ai = SOLAR_GROUPS.findIndex(g => g.key === a.key);
+	        const bi = SOLAR_GROUPS.findIndex(g => g.key === b.key);
+	        return ai - bi;
+	      });
+	  }
+
+	  function calcGroupPositions(groups){
+	    const W = 1000, H = 720, CX = W/2, CY = H/2;
+	    const n = Math.max(1, groups.length);
+	    const rx = n <= 4 ? 315 : 350;
+	    const ry = n <= 4 ? 220 : 250;
+	    const start = -Math.PI / 2;
+	    const positions = {};
+	    groups.forEach((g, i) => {
+	      const angle = start + (Math.PI * 2 / n) * i;
+	      positions[g.key] = {
+	        x: CX + Math.cos(angle) * rx,
+	        y: CY + Math.sin(angle) * ry,
+	        score: g.avg,
+	      };
+	    });
+	    return positions;
+	  }
+
+	  // 19 พ.ค. spec ฟีเจอร์ 1 · Dynamic Orbit & Gravity
+	  // radius = continuous function ของ |impact| · คะแนนสูง → ใกล้ center
+	  // ยังจัด 3 ring เพื่อกันชน · แต่ radius ปรับตาม |score| ภายใน ring
+	  function calcPositions(centerId, tf, peersOverride){
+	    const W = 1000, H = 720, CX = W/2, CY = H/2;
+	    const peers = peersOverride || PEOPLE.filter(p=>p.id!==centerId);
+	    const sorted = peers.map(p=>({...p, score:getScore(centerId,p.id,tf)}))
+	      .sort((a,b)=>Math.abs(b.score)-Math.abs(a.score));
     // จัดวง: top 3 → ring 1 · next 4 → ring 2 · rest → ring 3
     // radius base 130/210/300 · ขยับ ±25 ตาม |score|/100 · gravity pull
     const rings = [
@@ -1374,17 +1487,38 @@
     return positions;
   }
 
-  // ───────── RENDER: SOLAR ─────────
-  function renderSolar(){
-    const solar = document.getElementById('solar');
-    const lines = document.getElementById('solar-lines');
-    const center = PEOPLE.find(p=>p.id===state.centerId);
-    const positions = calcPositions(state.centerId, state.timeframe);
+	  // ───────── RENDER: SOLAR ─────────
+	  function renderSolar(){
+	    const solar = document.getElementById('solar');
+	    const lines = document.getElementById('solar-lines');
+	    const center = PEOPLE.find(p=>p.id===state.centerId);
+	    if (!solar || !lines || !center) return;
+	    const W = 1000, H = 720, CX = W/2, CY = H/2;
+	    const pxPos = (pos) => ({
+	      x: (pos.x / W) * (solar.clientWidth || W),
+	      y: (pos.y / H) * (solar.clientHeight || H),
+	    });
+	    const drawLine = (pos, score, attrs = {}) => {
+	      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+	      line.setAttribute('x1', CX);
+	      line.setAttribute('y1', CY);
+	      line.setAttribute('x2', pos.x);
+	      line.setAttribute('y2', pos.y);
+	      const stroke = score>=20?'var(--good)': score<=-20?'var(--bad)':'var(--neutral)';
+	      const opacity = attrs.opacity ?? Math.min(0.55, 0.16 + Math.abs(score)/230);
+	      const strokeW = attrs.strokeWidth ?? Math.max(0.5, Math.min(2, Math.abs(score)/55));
+	      line.setAttribute('stroke', stroke);
+	      line.setAttribute('stroke-width', strokeW);
+	      line.setAttribute('opacity', opacity);
+	      if(score<=-20) line.setAttribute('stroke-dasharray','4 3');
+	      if(attrs.group) line.dataset.group = attrs.group;
+	      lines.appendChild(line);
+	    };
 
-    // remove old nodes
-    solar.querySelectorAll('.center-node, .node').forEach(n=>n.remove());
-    // clear lines
-    lines.innerHTML='';
+	    // remove old nodes
+	    solar.querySelectorAll('.center-node, .node, .group-node').forEach(n=>n.remove());
+	    // clear lines
+	    lines.innerHTML='';
 
     // draw center
     const c = document.createElement('div');
@@ -1395,55 +1529,80 @@
       <div class="role">${center.id==='self'?'YOU · 自':'CENTER'}</div>`;
     if(center.id!=='self'){
       c.title='คลิกที่ "↺ กลับไปดวงฉัน" เพื่อรีเซ็ต';
-    }
-    solar.appendChild(c);
+	    }
+	    solar.appendChild(c);
 
-    // draw lines + nodes
-    PEOPLE.forEach(p=>{
-      if(p.id===state.centerId) return;
-      const pos = positions[p.id];
-      const score = pos.score;
-      const sClass = scoreClass(score);
-      const W = 1000, H = 720, CX = W/2, CY = H/2;
+	    const scope = document.getElementById('solar-scope');
+	    const groups = buildSolarGroups(state.centerId, state.timeframe);
+	    const currentGroup = groups.find(g => g.key === state.solarGroup);
+	    if (state.solarGroup && !currentGroup) state.solarGroup = null;
+	    solar.classList.toggle('group-overview', !state.solarGroup);
+	    solar.classList.toggle('group-drilldown', !!state.solarGroup);
 
-      // line
-      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-      line.setAttribute('x1', CX);
-      line.setAttribute('y1', CY);
-      line.setAttribute('x2', pos.x);
-      line.setAttribute('y2', pos.y);
-      const stroke = score>=20?'var(--good)': score<=-20?'var(--bad)':'var(--neutral)';
-      const opacity = Math.min(0.7, 0.2 + Math.abs(score)/200);
-      const strokeW = Math.max(0.5, Math.min(2, Math.abs(score)/50));
-      line.setAttribute('stroke', stroke);
-      line.setAttribute('stroke-width', strokeW);
-      line.setAttribute('opacity', opacity);
-      if(score<=-20) line.setAttribute('stroke-dasharray','4 3');
-      lines.appendChild(line);
+	    if (!state.solarGroup) {
+	      if (scope) {
+	        scope.style.display = 'flex';
+	        scope.innerHTML = `<span><b>ภาพรวมหมวด</b> · คลิกหมวดเพื่อดูคนในกลุ่มนั้น ลดเส้นรกและอ่านง่ายขึ้น</span>`;
+	      }
+	      const gpos = calcGroupPositions(groups);
+	      groups.forEach(g => {
+	        const pos = gpos[g.key];
+	        const score = g.avg || 0;
+	        drawLine(pos, score, { opacity:0.28, strokeWidth:Math.max(0.7, Math.min(2.4, Math.abs(score)/42)), group:g.key });
+	        const gp = pxPos(pos);
+	        const node = document.createElement('div');
+	        node.className = `group-node score-${scoreClass(score)}`;
+	        node.dataset.group = g.key;
+	        node.dataset.score = score;
+	        node.style.left = gp.x + 'px';
+	        node.style.top = gp.y + 'px';
+	        node.style.transform = 'translate(-50%,-50%)';
+	        const strongest = g.strongest ? `${g.strongest.p.name} ${fmt(g.strongest.score)}` : 'ยังไม่มีข้อมูล';
+	        node.innerHTML = `
+	          <div class="gh"><span class="tc">${escHtml(g.glyph || solarGroupGlyph(g.key))}</span><span class="gn">${escHtml(g.label || solarGroupLabel(g.key))}</span></div>
+	          <div class="gm">${g.people.length} คน · เฉลี่ย ${fmt(score)} · เด่นสุด ${escHtml(strongest)}</div>
+	          <div class="gs"><span class="pill good">หนุน ${g.pos}</span><span class="pill mid">กลาง ${g.mid}</span><span class="pill bad">ระวัง ${g.neg}</span></div>
+	          <div class="hint">คลิกเพื่อดูคนในหมวดนี้</div>`;
+	        solar.appendChild(node);
+	      });
+	    } else {
+	      const group = currentGroup;
+	      const allPeople = group.people
+	        .map(p => ({ ...p, score:getScore(state.centerId, p.id, state.timeframe) }))
+	        .sort((a,b)=>Math.abs(b.score)-Math.abs(a.score));
+	      const shown = allPeople.slice(0, state.solarLimit || 10);
+	      if (scope) {
+	        scope.style.display = 'flex';
+	        const more = allPeople.length > shown.length ? `<button data-solar-more="1">ดูเพิ่ม ${allPeople.length - shown.length}</button>` : '';
+	        scope.innerHTML = `<button data-solar-back="1">← ภาพรวมหมวด</button><span>กำลังดู <b>${escHtml(group.label || solarGroupLabel(group.key))}</b> · แสดง ${shown.length}/${allPeople.length} คน · จัดตามแรงกระทบสูงสุดก่อน</span>${more}`;
+	      }
+	      const positions = calcPositions(state.centerId, state.timeframe, shown);
+	      shown.forEach(p=>{
+	        const pos = positions[p.id];
+	        if(!pos) return;
+	        const score = pos.score;
+	        const sClass = scoreClass(score);
+	        drawLine(pos, score, { opacity: Math.min(0.62, 0.22 + Math.abs(score)/220) });
 
-      // node
-      const n = document.createElement('div');
-      n.className = `node elem-${p.elem} score-${sClass}`;
-      n.dataset.id = p.id;
-      // convert viewBox coords to actual pixels — solar uses 100% width/height
-      const w = solar.clientWidth || 1000;
-      const h = solar.clientHeight || 720;
-      const px = (pos.x / W) * w;
-      const py = (pos.y / H) * h;
-      n.style.left = px + 'px';
-      n.style.top = py + 'px';
-      n.style.transform = 'translate(-50%,-50%)';
-      const roleShort = (resolveRole(p)||'').split(/[·\-]/)[0].trim().slice(0,8);
-      n.innerHTML = `<div class="ng">${p.glyph}</div>
-        <div class="nm">${p.name}</div>
-        <div class="sc">${fmt(score)}</div>
-        ${roleShort ? `<div class="rl">${roleShort}</div>` : ''}`;
-      n.dataset.score = score;
-      solar.appendChild(n);
-    });
+	        const n = document.createElement('div');
+	        n.className = `node elem-${p.elem} score-${sClass}`;
+	        n.dataset.id = p.id;
+	        const px = pxPos(pos);
+	        n.style.left = px.x + 'px';
+	        n.style.top = px.y + 'px';
+	        n.style.transform = 'translate(-50%,-50%)';
+	        const roleShort = (resolveRole(p)||'').split(/[·\-]/)[0].trim().slice(0,8);
+	        n.innerHTML = `<div class="ng">${p.glyph}</div>
+	          <div class="nm">${p.name}</div>
+	          <div class="sc">${fmt(score)}</div>
+	          ${roleShort ? `<div class="rl">${roleShort}</div>` : ''}`;
+	        n.dataset.score = score;
+	        solar.appendChild(n);
+	      });
+	    }
 
-    // center info banner
-    const info = document.getElementById('center-info');
+	    // center info banner
+	    const info = document.getElementById('center-info');
     const infoName = document.getElementById('center-info-name');
     if(state.centerId==='self'){
       info.style.display='none';
@@ -2331,13 +2490,15 @@
    */
   const solarEl = document.getElementById('solar');
   let _pressTimer = null;
-  let _pressedNode = null;
-  let _pressedFired = false;
-  async function _recenterTo(nodeId){
-    state.centerId = nodeId;
-    if (window.ensureCenterScores) await window.ensureCenterScores(state.centerId);
-    renderSolar();
-  }
+	  let _pressedNode = null;
+	  let _pressedFired = false;
+	  async function _recenterTo(nodeId){
+	    state.centerId = nodeId;
+	    state.solarGroup = null;
+	    state.solarLimit = 10;
+	    if (window.ensureCenterScores) await window.ensureCenterScores(state.centerId);
+	    renderSolar();
+	  }
   function _openChart(nodeId){
     const p = PEOPLE.find(x=>x.id===nodeId);
     if (p && typeof openChartModal === 'function') openChartModal(p);
@@ -2371,10 +2532,30 @@
   solarEl.addEventListener('touchend', ()=>{
     if (_pressTimer) { clearTimeout(_pressTimer); _pressTimer = null; }
   });
-  solarEl.addEventListener('click', (e)=>{
-    const node = e.target.closest('.node');
-    if (!node || !node.dataset.id) return;
-    /* ถ้า long-press fired แล้ว · ไม่ open chart */
+	  solarEl.addEventListener('click', (e)=>{
+	    const backBtn = e.target.closest('[data-solar-back]');
+	    if (backBtn) {
+	      state.solarGroup = null;
+	      state.solarLimit = 10;
+	      renderSolar();
+	      return;
+	    }
+	    const moreBtn = e.target.closest('[data-solar-more]');
+	    if (moreBtn) {
+	      state.solarLimit = (state.solarLimit || 10) + 10;
+	      renderSolar();
+	      return;
+	    }
+	    const groupNode = e.target.closest('.group-node');
+	    if (groupNode && groupNode.dataset.group) {
+	      state.solarGroup = groupNode.dataset.group;
+	      state.solarLimit = 10;
+	      renderSolar();
+	      return;
+	    }
+	    const node = e.target.closest('.node');
+	    if (!node || !node.dataset.id) return;
+	    /* ถ้า long-press fired แล้ว · ไม่ open chart */
     if (_pressedFired) { _pressedFired = false; return; }
     /* shift+click = recenter */
     if (e.shiftKey) { _recenterTo(node.dataset.id); return; }
@@ -2388,11 +2569,27 @@
   });
 
   /* 🛈 Hover tooltip */
-  const _tipEl = document.getElementById('hk-node-tip');
-  solarEl.addEventListener('mouseover', (e)=>{
-    const node = e.target.closest('.node');
-    if (!node || !node.dataset.id) return;
-	    const p = PEOPLE.find(x=>x.id===node.dataset.id);
+	  const _tipEl = document.getElementById('hk-node-tip');
+	  solarEl.addEventListener('mouseover', (e)=>{
+	    const groupNode = e.target.closest('.group-node');
+	    if (groupNode && groupNode.dataset.group) {
+	      const groups = buildSolarGroups(state.centerId, state.timeframe);
+	      const g = groups.find(x => x.key === groupNode.dataset.group);
+	      if (!g) return;
+	      const sc = scoreClass(g.avg || 0);
+	      _tipEl.innerHTML = `
+	        <div class="ng">${escHtml(g.glyph || solarGroupGlyph(g.key))}</div>
+	        <div class="nm">${escHtml(g.label || solarGroupLabel(g.key))}</div>
+	        <div class="rl">${escHtml(g.hint || '')}</div>
+	        <div class="sc ${sc}"><b>${fmt(g.avg || 0)}</b> <span style="font-size:10px;color:var(--fg-faint);margin-left:6px;letter-spacing:.15em;">AVG</span></div>
+	        <div class="rx ${sc}"><div class="rx-l">สรุปหมวด</div><div class="rx-t">ทั้งหมด ${g.people.length} คน · หนุน ${g.pos} · กลาง ${g.mid} · ระวัง ${g.neg} · คลิกเพื่อดูเฉพาะคนในหมวดนี้</div></div>
+	      `;
+	      _tipEl.classList.add('show');
+	      return;
+	    }
+	    const node = e.target.closest('.node');
+	    if (!node || !node.dataset.id) return;
+		    const p = PEOPLE.find(x=>x.id===node.dataset.id);
 	    if (!p) return;
 	    const score = parseInt(node.dataset.score) || 0;
 	    const sc = scoreClass(score);
@@ -2415,10 +2612,10 @@
     _tipEl.style.left = x + 'px';
     _tipEl.style.top  = y + 'px';
   });
-  solarEl.addEventListener('mouseout', (e)=>{
-    const to = e.relatedTarget;
-    if (!to || !to.closest || !to.closest('.node')) _tipEl.classList.remove('show');
-  });
+	  solarEl.addEventListener('mouseout', (e)=>{
+	    const to = e.relatedTarget;
+	    if (!to || !to.closest || (!to.closest('.node') && !to.closest('.group-node'))) _tipEl.classList.remove('show');
+	  });
 
   /* 🎓 Coach mark · first-time only */
   (function initCoach(){
@@ -2622,7 +2819,7 @@ window.HK_I18N = {
   'n.lg.good':     { th:'หนุน · 合 · 用神', en:'support · 合 · 用神', zh:'助 · 合 · 用神' },
   'n.lg.bad':      { th:'ชง · 沖 · 忌神', en:'clash · 沖 · 忌神', zh:'沖 · 忌神' },
   'n.lg.mid':      { th:'กลาง · neutral', en:'neutral', zh:'中性' },
-  'n.lg.tip':      { th:'วงโคจรใกล้ = ผลกระทบสูง · คลิกคนเพื่อย้าย Center', en:'Closer orbit = stronger impact · click to recenter', zh:'軌道近 = 影響大 · 點選重設中心' },
+  'n.lg.tip':      { th:'เริ่มจากหมวด · คลิกหมวดเพื่อดูคน · กดค้างคนเพื่อย้าย Center', en:'Start by group · click a group to see people · long-press a person to recenter', zh:'先看群組 · 點群組看人 · 長按人物重設中心' },
   'n.cta.add':     { th:'+ เพิ่มคน', en:'+ Add person', zh:'+ 新增' },
   'n.ci.reset':    { th:'↺ กลับไปดวงฉัน', en:'↺ Back to me', zh:'↺ 回到我' },
   /* 🛈 orbit labels */
