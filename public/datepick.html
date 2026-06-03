@@ -238,15 +238,28 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .result-verdict b{color:var(--gold);font-size:13px;white-space:nowrap;}
 .module-score-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center;}
 .module-score-row .mini-title{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--fg-faint);margin-right:2px;}
-.reason-board{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
-.reason-col{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
-.reason-col.good{border-color:rgba(125,211,123,.32);}
-.reason-col.warn{border-color:rgba(226,107,93,.32);}
-.reason-col .reason-title{font-family:var(--mono);font-size:9px;letter-spacing:.14em;margin-bottom:6px;}
-.reason-col.good .reason-title{color:#7dd37b;}
-.reason-col.warn .reason-title{color:#e26b5d;}
-.reason-col ul{margin:0;padding-left:16px;font-size:12px;color:var(--fg-soft);line-height:1.55;}
-.reason-col li{margin-bottom:3px;}
+.science-board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px;}
+.science-card{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;}
+.science-card.good{border-color:rgba(125,211,123,.34);}
+.science-card.warn{border-color:rgba(226,107,93,.34);}
+.science-card.mixed{border-color:rgba(247,185,85,.34);}
+.science-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px;}
+.science-name{font-size:13px;color:var(--fg);font-weight:700;line-height:1.35;}
+.science-name .zh{font-family:var(--tc);font-size:13px;color:var(--gold);font-weight:700;margin-left:4px;}
+.science-meta{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.science-score{font-family:var(--mono);font-size:10px;color:var(--gold);border:1px solid var(--gold-line);border-radius:99px;padding:1px 7px;background:rgba(200,164,77,.08);}
+.science-status{font-family:var(--mono);font-size:8px;letter-spacing:.08em;border-radius:99px;padding:2px 6px;}
+.science-status.good{background:rgba(125,211,123,.13);color:#7dd37b;}
+.science-status.warn{background:rgba(226,107,93,.13);color:#e26b5d;}
+.science-status.mixed{background:rgba(247,185,85,.13);color:#f7b955;}
+.science-list{display:flex;flex-direction:column;gap:5px;}
+.science-item{display:grid;grid-template-columns:auto 1fr;gap:7px;align-items:start;font-size:12px;line-height:1.5;color:var(--fg-soft);}
+.science-item .delta{font-family:var(--mono);font-size:10px;min-width:30px;text-align:right;}
+.science-item.good .delta{color:#7dd37b;}
+.science-item.warn .delta{color:#e26b5d;}
+.science-item.note .delta{color:var(--fg-faint);}
+.science-item .txt b{color:var(--fg);font-weight:700;}
+.science-empty{font-size:12px;color:var(--fg-faint);line-height:1.5;}
 /* 17 พ.ค.: score progress bar + percentile */
 .score-bar{height:6px;background:var(--bg-4);border-radius:99px;overflow:hidden;margin-top:6px;}
 .score-bar .fill{height:100%;background:linear-gradient(90deg,#e26b5d 0%,#f7b955 40%,#7dd37b 70%,#5ba0ff 100%);border-radius:99px;transition:width .8s ease;}
@@ -257,15 +270,15 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .result-body .r-line{display:flex;gap:8px;font-size:12px;}
 .result-body .r-line .k{font-family:var(--tc);color:var(--gold);font-weight:600;min-width:40px;}
 .result-body .r-line .v{color:var(--fg);}
-.result-matches{display:flex;flex-wrap:wrap;gap:5px;padding-top:6px;border-top:1px dashed var(--line);}
-.result-matches .match-tag{font-family:var(--mono);font-size:9px;letter-spacing:.05em;padding:2px 7px;border-radius:99px;background:rgba(180,144,82,.10);border:1px solid rgba(180,144,82,.3);color:var(--gold);}
-.el-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-family:var(--mono);font-size:9px;letter-spacing:.06em;border:1px solid currentColor;background:rgba(255,255,255,.04);}
-.el-chip b{font-family:var(--tc);font-size:12px;line-height:1;}
-.el-wood{color:#72c987;background:rgba(114,201,135,.12);}
-.el-fire{color:#ff8a63;background:rgba(255,138,99,.12);}
-.el-earth{color:#d4aa62;background:rgba(212,170,98,.12);}
-.el-metal{color:#d8d8ce;background:rgba(216,216,206,.12);}
-.el-water{color:#6fb7ff;background:rgba(111,183,255,.12);}
+.el-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.03em;border:1px solid currentColor;background:rgba(255,255,255,.04);font-weight:700;}
+.el-chip::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor;}
+.el-chip b{font-family:var(--tc);font-size:13px;line-height:1;}
+.el-chip .th{font-family:var(--th);font-size:11px;letter-spacing:0;}
+.el-wood{color:#52c86f;background:rgba(82,200,111,.14);}
+.el-fire{color:#ff6f4a;background:rgba(255,111,74,.16);}
+.el-earth{color:#d7a24b;background:rgba(215,162,75,.16);}
+.el-metal{color:#e6e1d0;background:rgba(230,225,208,.14);}
+.el-water{color:#4aa3ff;background:rgba(74,163,255,.16);}
 .layer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:12px;}
 .layer-card{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
 .layer-card .top{display:flex;justify-content:space-between;gap:8px;align-items:start;}
@@ -277,6 +290,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .layer-card .fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-bright));}
 .layer-card .desc{font-size:11px;color:var(--fg-soft);line-height:1.45;margin:0;}
 .score-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--gold-line);border-radius:99px;padding:2px 8px;font-family:var(--mono);font-size:9px;color:var(--gold);background:rgba(200,164,77,.08);}
+.score-pill .zh{font-family:var(--tc);font-size:10px;color:var(--fg-faint);}
 /* 📜 17 พ.ค.: สี tag ตามชนิดศาสตร์ + คะแนน */
 .match-tag.t-qm{background:rgba(91,160,255,.12);border-color:rgba(91,160,255,.4);color:#5ba0ff;}
 .match-tag.t-bz{background:rgba(180,128,220,.12);border-color:rgba(180,128,220,.4);color:#b480dc;}
@@ -308,7 +322,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 @media (max-width:768px){
   .result-body{grid-template-columns:1fr;gap:4px;}
   .result-head .rscore .num{font-size:20px;}
-  .reason-board{grid-template-columns:1fr;}
+  .science-board{grid-template-columns:1fr;}
   .result-verdict{flex-direction:column;gap:4px;}
   .dp-sifu-btn{font-size:10px;padding:9px 14px;letter-spacing:.12em;}
   .dp-sifu-log{max-height:280px;font-size:12px;}
@@ -1013,6 +1027,10 @@ const FLYING_STAR_TH = {
   '5黃':'ดาวห้าเหลือง', '5黄':'ดาวห้าเหลือง', '6白':'ดาวหกขาว', '7赤':'ดาวเจ็ดแดง',
   '8白':'ดาวแปดขาว', '9紫':'ดาวเก้าม่วง', '9白':'ดาวเก้าขาว',
 };
+const FLYING_STAR_NUM_TH = {
+  '1':'ดาวหนึ่งขาว', '2':'ดาวสองดำ', '3':'ดาวสามเขียว', '4':'ดาวสี่เขียว',
+  '5':'ดาวห้าเหลือง', '6':'ดาวหกขาว', '7':'ดาวเจ็ดแดง', '8':'ดาวแปดขาว', '9':'ดาวเก้าม่วง',
+};
 const CONSTELLATION_TH = {
   角宿:'ดาวเจี่ยว', 亢宿:'ดาวคัง', 氐宿:'ดาวตี', 房宿:'ดาวฝาง', 心宿:'ดาวซิน', 尾宿:'ดาวเว่ย', 箕宿:'ดาวจี',
   斗宿:'ดาวโต่ว', 牛宿:'ดาวหนิว', 女宿:'ดาวหนวี่', 虛宿:'ดาวซวี', 虚宿:'ดาวซวี', 危宿:'ดาวเวย', 室宿:'ดาวซื่อ', 壁宿:'ดาวปี้',
@@ -1053,6 +1071,7 @@ function thZh(dict, zh){
 function localizeAuspiciousReason(text){
   return localizeQimenReason(text)
     .replace(/\b([1-9][白黑碧綠绿黃黄赤紫])(?=\s|$|[（(])/g, (m) => thZh(FLYING_STAR_TH, m))
+    .replace(/\b([1-9])星\b/g, (m, n) => `${FLYING_STAR_NUM_TH[n] || `ดาว ${n}`} · ${m}`)
     .replace(/(角宿|亢宿|氐宿|房宿|心宿|尾宿|箕宿|斗宿|牛宿|女宿|虛宿|虚宿|危宿|室宿|壁宿|奎宿|婁宿|娄宿|胃宿|昴宿|畢宿|毕宿|觜宿|參宿|参宿|井宿|鬼宿|柳宿|星宿|張宿|张宿|翼宿|軫宿|轸宿)(?=\s|$|[（(])/g, (m) => thZh(CONSTELLATION_TH, m))
     .replace(/(青龍|青龙|明堂|金匱|金匮|天德|玉堂|司命|天刑|朱雀|白虎|天牢|玄武|勾陳|勾陈)(?=\s|$|[（(])/g, (m) => thZh(SPIRIT_TH, m))
     .replace(/(建日|除日|滿日|满日|平日|定日|執日|执日|破日|危日|成日|收日|開日|开日|閉日|闭日)(?=\s|$|[（(])/g, (m) => thZh(OFFICER_TH, m));
@@ -1078,24 +1097,110 @@ function cleanReasonText(text){
     .replace(/\bYongshen\b/g, 'ธาตุช่วย');
 }
 
-function reasonLists(matches){
-  const good = [];
-  const warn = [];
-  (matches || []).forEach((m) => {
-    const s = String(m || '');
-    if (s.startsWith('-') || s.includes('ระวัง')) warn.push(cleanReasonText(s));
-    else if (s.startsWith('+')) good.push(cleanReasonText(s));
+function reasonDelta(raw){
+  const m = String(raw || '').trim().match(/^([+-]?\d+)/);
+  return m ? Number(m[1]) : 0;
+}
+
+function scienceKeyFromReason(raw){
+  const s = String(raw || '');
+  if (/奇門|奇门/.test(s)) return 'qi_men';
+  if (/12建除|建除/.test(s)) return 'twelve_officers';
+  if (/28宿|二十八宿/.test(s)) return 'twenty_eight';
+  if (/12神煞|神煞/.test(s)) return 'twelve_spirits';
+  if (/飛星|飞星|[1-9]星/.test(s)) return 'nine_stars';
+  if (/用神/.test(s)) return 'yong_shen';
+  if (/河洛|二旺|一財|一财|旺/.test(s)) return 'he_luo';
+  if (/64卦|卦\d+|爻/.test(s)) return 'hex64';
+  if (/太歲|太岁/.test(s)) return 'tai_sui';
+  if (/八字|沖|冲|刑|害|六合|三合/.test(s)) return 'ba_zi';
+  if (/通書|通书|擇日|择日|宜|忌/.test(s)) return 'ze_ri';
+  return 'ze_ri';
+}
+
+function displayReasonText(raw){
+  let s = cleanReasonText(raw)
+    .replace(/^ระวัง\s*/,'')
+    .replace(/[🚪⭐✨📜✓⚠📊]\s*/g,'')
+    .replace(/\s*\((奇門星|奇門|奇门|12建除|28宿|12神煞|飛星|飞星|河洛|八字|太歲|太岁|通書|通书|擇日|择日)\)/g,'')
+    .replace(/用神\s*日(ไม้|ไฟ|ดิน|ทอง|น้ำ)\s*ตรง/g,'ธาตุช่วยตรงก้านวัน: $1 · 用神')
+    .replace(/用神\s*時(ไม้|ไฟ|ดิน|ทอง|น้ำ)\s*ตรง/g,'ธาตุช่วยตรงก้านยาม: $1 · 用神')
+    .replace(/卦(\d+)\s*([^\s爻]+)?\s*爻(\d+)/g, (_, n, name, line) => `ข่วย ${n}${name ? ` · ${name}` : ''} · เส้น ${line}`)
+    .replace(/二旺一財\s*·\s*รุ่ง\+ทรัพย์/g,'รุ่งและมีแรงทรัพย์ · 二旺一財')
+    .replace(/\s+/g,' ')
+    .trim();
+  if (!s) s = 'มีผลต่อคะแนน';
+  return s;
+}
+
+function buildScienceSections(matches, moduleScores){
+  const order = ['qi_men','ze_ri','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
+  const map = new Map();
+  const seen = new Set();
+  (matches || []).forEach((raw) => {
+    const key = scienceKeyFromReason(raw);
+    const meta = MODULE_LABELS[key] || { th:key, zh:key };
+    const delta = reasonDelta(raw);
+    const isWarn = delta < 0 || String(raw || '').includes('ระวัง') || String(raw || '').includes('⚠');
+    const text = displayReasonText(raw);
+    const sig = `${key}|${isWarn ? 'warn' : 'good'}|${text}`;
+    if (seen.has(sig)) return;
+    seen.add(sig);
+    if (!map.has(key)) map.set(key, {
+      key, th:meta.th, zh:meta.zh,
+      score: moduleScores && moduleScores[key] != null ? Math.round(moduleScores[key]) : null,
+      items: [], good:0, warn:0,
+    });
+    const sec = map.get(key);
+    const kind = isWarn ? 'warn' : delta > 0 ? 'good' : 'note';
+    if (kind === 'warn') sec.warn += 1;
+    if (kind === 'good') sec.good += 1;
+    sec.items.push({ text, delta, kind });
   });
-  return {
-    good: good.slice(0, 4),
-    warn: warn.slice(0, 4),
-  };
+  return order.filter(k => map.has(k)).map(k => map.get(k));
+}
+
+function scienceTone(sec){
+  if (sec.warn && sec.good) return 'mixed';
+  if (sec.warn) return 'warn';
+  return 'good';
+}
+
+function renderScienceSections(sections){
+  if (!sections.length) return '';
+  return `<div class="science-board">${sections.map(sec => {
+    const tone = scienceTone(sec);
+    const status = tone === 'mixed' ? 'มีทั้งหนุน/หัก' : tone === 'warn' ? 'ต้องระวัง' : 'เป็นแรงหนุน';
+    const items = sec.items.slice(0, 5).map(it => {
+      const delta = it.delta ? (it.delta > 0 ? `+${it.delta}` : `${it.delta}`) : (it.kind === 'warn' ? 'ระวัง' : 'อ่าน');
+      return `<div class="science-item ${it.kind}"><span class="delta">${escHtml(delta)}</span><span class="txt">${escHtml(it.text)}</span></div>`;
+    }).join('');
+    return `<section class="science-card ${tone}">
+      <div class="science-head">
+        <div class="science-name">${escHtml(sec.th)} <span class="zh">${escHtml(sec.zh)}</span></div>
+        <div class="science-meta">
+          ${sec.score == null ? '' : `<span class="science-score">${sec.score}</span>`}
+          <span class="science-status ${tone}">${status}</span>
+        </div>
+      </div>
+      <div class="science-list">${items || '<div class="science-empty">ไม่มีรายละเอียดเด่นในชั้นนี้</div>'}</div>
+    </section>`;
+  }).join('')}</div>`;
+}
+
+function summarizeScience(sections){
+  const good = sections.filter(s => s.good).slice(0,3).map(s => s.th);
+  const warn = sections.filter(s => s.warn).slice(0,2).map(s => s.th);
+  const parts = [];
+  if (good.length) parts.push(`แรงหนุนหลัก: ${good.join(' · ')}`);
+  if (warn.length) parts.push(`จุดที่ต้องอ่านก่อนใช้: ${warn.join(' · ')}`);
+  return parts.join(' | ');
 }
 
 function elementChipFromStem(stem){
   const el = STEM_ELEMENT[stem] || '';
   if (!el) return '';
-  return `<span class="el-chip el-${el}"><b>${ELEMENT_ZH[el]}</b>${ELEMENT_TH[el]}</span>`;
+  return `<span class="el-chip el-${el}" title="ธาตุ${ELEMENT_TH[el]}"><span class="th">ธาตุ${ELEMENT_TH[el]}</span><b>${ELEMENT_ZH[el]}</b></span>`;
 }
 
 function escHtml(v){
@@ -1363,6 +1468,7 @@ function renderRealResults(items){
   const maxSc = Math.max(...items.map(x=>x.score||0), 100);
   const minSc = Math.min(...items.map(x=>x.score||0), 0);
   const SHICHEN_NAME = {子:'子時',丑:'丑時',寅:'寅時',卯:'卯時',辰:'辰時',巳:'巳時',午:'午時',未:'未時',申:'申時',酉:'酉時',戌:'戌時',亥:'亥時'};
+  const DIRECTION_TH = {N:'เหนือ',NE:'ตะวันออกเฉียงเหนือ',E:'ตะวันออก',SE:'ตะวันออกเฉียงใต้',S:'ใต้',SW:'ตะวันตกเฉียงใต้',W:'ตะวันตก',NW:'ตะวันตกเฉียงเหนือ'};
   c.innerHTML = items.map((t,i) => {
     const d = new Date(t.datetime);
     const dateThai = formatThaiDate(d);
@@ -1374,29 +1480,12 @@ function renderRealResults(items){
     const stemChip = elementChipFromStem(t.heaven_stem);
     const modulePills = Object.entries(t.moduleScores || {}).slice(0,6).map(([k,v]) => {
       const m = MODULE_LABELS[k] || { th:k, zh:k };
-      return `<span class="score-pill">${escHtml(m.th)} <b>${Math.round(v)}</b></span>`;
+      return `<span class="score-pill">${escHtml(m.th)} <span class="zh">${escHtml(m.zh)}</span> <b>${Math.round(v)}</b></span>`;
     }).join('');
-    const reasons = reasonLists(t.matches || []);
-    const verdict = explainScore(t.score, i + 1, items.length);
-    const matchTags = (t.matches||[]).slice(0,12).map(m => {
-      let cls = 'match-tag ';
-      const d = parseInt(String(m).match(/^[+-]?(\d+)/)?.[1] || '0', 10);
-      const isPos = m.startsWith('+') && d > 0;
-      const isNeg = m.startsWith('-');
-      if (m.includes('門 ') || m.includes('星 ') || m.includes('神 ') || m.includes('飛星')) cls += 't-qm';
-      else if (m.includes('八字') || m.includes('三合') || m.includes('沖')) cls += 'bz';
-      else if (m.includes('用神')) cls += 't-ys';
-      else if (m.includes('期9') || m.includes('河洛')) cls += 't-hl';
-      else if (m.includes('64卦')) cls += 't-hex';
-      else if (m.includes('太歲')) cls += 't-ts';
-      else if (m.includes('天德') || m.includes('月德') || m.includes('擇日')) cls += 't-zr';
-      else if (m.includes('12建除') || m.includes('28宿') || m.includes('12神煞')) cls += 't-zr';
-      else cls += 'default';
-      if (isPos && d >= 25) cls += ' t-good';
-      else if (isNeg) cls += ' t-bad';
-      else if (d === 0) cls += ' t-neutral';
-      return `<span class="${cls}">${cleanReasonText(m)}</span>`;
-    }).join('');
+    const scienceSections = buildScienceSections(t.matches || [], t.moduleScores || {});
+    const scienceSummary = summarizeScience(scienceSections);
+    const verdict = `${explainScore(t.score, i + 1, items.length)}${scienceSummary ? ` · ${scienceSummary}` : ''}`;
+    const directionText = DIRECTION_TH[t.direction] ? `${DIRECTION_TH[t.direction]} (${t.direction})` : (t.direction || '·');
     const pole = t.ju_pole === 'yin' ? '陰' : '陽';
     return `<div class="result-card ${scoreColor}">
       <div class="result-head">
@@ -1404,7 +1493,7 @@ function renderRealResults(items){
         <div class="rdate">
           <div class="dt">🗓 ${dateThai} · ${t.time} น. <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip}</div>
           <div class="ctx">
-            <span>ทิศที่เด่น: ${t.direction} · วัง ${t.palace_id}</span>
+            <span>ทิศที่เด่น: ${directionText} · วัง ${t.palace_id}</span>
             <span>· ผังฉีเหมิน ${pole}${t.ju_number}局</span>
           </div>
           <div class="ctx">
@@ -1425,12 +1514,8 @@ function renderRealResults(items){
         <div class="r-line"><span class="k">ฟ้า/ดิน · 天地</span><span class="v">${t.heaven_stem||'·'} / ${t.earth_stem||'·'} ${stemChip}</span></div>
         <div class="r-line"><span class="k">ผัง · 局</span><span class="v">${pole}${t.ju_number||'?'}局</span></div>
       </div>
-      ${modulePills ? `<div class="module-score-row"><span class="mini-title">คะแนนย่อย</span>${modulePills}</div>` : ''}
-      ${(reasons.good.length || reasons.warn.length) ? `<div class="reason-board">
-        <div class="reason-col good"><div class="reason-title">แรงหนุน</div><ul>${(reasons.good.length ? reasons.good : ['ไม่มีแรงหนุนเด่นเป็นพิเศษ']).map(x=>`<li>${escHtml(x)}</li>`).join('')}</ul></div>
-        <div class="reason-col warn"><div class="reason-title">ข้อควรระวัง</div><ul>${(reasons.warn.length ? reasons.warn : ['ยังไม่พบข้อเสียหนักจากชั้นที่เปิดใช้']).map(x=>`<li>${escHtml(x)}</li>`).join('')}</ul></div>
-      </div>` : ''}
-      ${matchTags ? `<div class="result-matches">${matchTags}</div>` : ''}
+      ${modulePills ? `<div class="module-score-row"><span class="mini-title">คะแนนตามศาสตร์</span>${modulePills}</div>` : ''}
+      ${renderScienceSections(scienceSections)}
       ${t.hex_num ? `<div style="margin-top:8px;text-align:right;"><button onclick="showHexDeep(${t.hex_num},${t.changing_line||0})" style="background:rgba(200,164,77,.1);border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:10px;padding:5px 11px;border-radius:99px;cursor:pointer;letter-spacing:.05em;">📜 ดูตำรา 卦${t.hex_num} ${t.hex_name||''} เส้น${t.changing_line||'-'}</button></div>` : ''}
     </div>`;
   }).join('');
