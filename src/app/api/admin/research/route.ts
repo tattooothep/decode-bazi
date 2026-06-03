@@ -12,7 +12,19 @@ function cleanUuid(v: unknown): string | null {
 
 function cleanStatus(v: unknown): string {
   const s = typeof v === "string" ? v.trim().toLowerCase() : "";
-  return ["active", "watch", "paused", "done", "excluded"].includes(s) ? s : "active";
+  return [
+    "pending",
+    "verbal_consent",
+    "declined",
+    "withdrawn",
+    "watch",
+    "done",
+    "test",
+    "excluded",
+    /* legacy values kept readable for old rows */
+    "active",
+    "paused",
+  ].includes(s) ? s : "pending";
 }
 
 function cleanText(v: unknown, max = 500): string | null {
@@ -33,7 +45,7 @@ export async function GET(req: Request) {
   const daysRaw = Number(url.searchParams.get("days") || 30);
   const days = Math.max(1, Math.min(365, Number.isFinite(daysRaw) ? Math.floor(daysRaw) : 30));
   const limitRaw = Number(url.searchParams.get("limit") || 80);
-  const limit = Math.max(20, Math.min(200, Number.isFinite(limitRaw) ? Math.floor(limitRaw) : 80));
+  const limit = Math.max(20, Math.min(500, Number.isFinite(limitRaw) ? Math.floor(limitRaw) : 80));
   const search = (url.searchParams.get("q") || "").trim();
   const orgParam = admin.role === "env_admin" ? cleanUuid(url.searchParams.get("org")) : null;
   const scopeOrgId = admin.role === "env_admin" ? orgParam : (admin.orgId || null);
@@ -45,17 +57,43 @@ export async function GET(req: Request) {
     users_total: number;
     users_recent: number;
     participants_total: number;
+    consent_pending_total: number;
+    consent_granted_total: number;
+    test_users_total: number;
+    real_users_total: number;
     profiles_total: number;
     qna_total: number;
     qna_recent: number;
     events_recent: number;
   }>(
-    `WITH scoped_users AS (
-       SELECT u.id
+     `WITH scoped_users AS (
+       SELECT u.id, u.email, u.phone,
+              (
+                u.email LIKE 'sim_%@decode.test'
+                OR u.email LIKE '%@decode.local'
+                OR u.email LIKE '%@test.local'
+                OR u.email LIKE '%test%@hourkey.io'
+                OR u.email LIKE '%@deadbeef.local'
+                OR u.email LIKE 'dummy_%'
+                OR u.email LIKE 'cookie_test_%'
+                OR u.email LIKE 'htmlform_%'
+                OR u.email LIKE 'profile-test@%'
+                OR u.email LIKE '%@decode.app'
+                OR COALESCE(u.phone, '') LIKE '089999999%'
+              ) AS is_test_account
        FROM users u
        WHERE ($1::uuid IS NULL
           OR u.current_org_id=$1::uuid
           OR EXISTS (SELECT 1 FROM org_members om WHERE om.user_id=u.id AND om.org_id=$1::uuid AND om.status='active'))
+     ),
+     participant_state AS (
+       SELECT
+         rp.user_id,
+         CASE
+           WHEN rp.status='active' AND rp.notes='Backfilled from existing users on 2026-06-03' THEN 'pending'
+           ELSE COALESCE(rp.status, 'pending')
+         END AS normalized_status
+       FROM research_participants rp
      ),
      qna AS (
        SELECT user_id, created_at FROM research_ai_messages WHERE ($1::uuid IS NULL OR org_id=$1::uuid)
@@ -65,7 +103,11 @@ export async function GET(req: Request) {
      SELECT
        (SELECT COUNT(*)::int FROM scoped_users) AS users_total,
        (SELECT COUNT(*)::int FROM users u JOIN scoped_users su ON su.id=u.id WHERE u.last_active_at >= now() - ($2::int || ' days')::interval) AS users_recent,
-       (SELECT COUNT(*)::int FROM research_participants rp JOIN scoped_users su ON su.id=rp.user_id WHERE rp.status <> 'excluded') AS participants_total,
+       (SELECT COUNT(*)::int FROM participant_state ps JOIN scoped_users su ON su.id=ps.user_id WHERE ps.normalized_status NOT IN ('excluded','test') AND NOT su.is_test_account) AS participants_total,
+       (SELECT COUNT(*)::int FROM participant_state ps JOIN scoped_users su ON su.id=ps.user_id WHERE ps.normalized_status='pending' AND NOT su.is_test_account) AS consent_pending_total,
+       (SELECT COUNT(*)::int FROM participant_state ps JOIN scoped_users su ON su.id=ps.user_id WHERE ps.normalized_status IN ('verbal_consent','active','watch','done') AND NOT su.is_test_account) AS consent_granted_total,
+       (SELECT COUNT(*)::int FROM scoped_users su WHERE su.is_test_account) AS test_users_total,
+       (SELECT COUNT(*)::int FROM scoped_users su WHERE NOT su.is_test_account) AS real_users_total,
        (SELECT COUNT(*)::int FROM profiles p WHERE ($1::uuid IS NULL OR p.org_id=$1::uuid) AND p.is_archived=false) AS profiles_total,
        (SELECT COUNT(*)::int FROM qna) AS qna_total,
        (SELECT COUNT(*)::int FROM qna WHERE created_at >= now() - ($2::int || ' days')::interval) AS qna_recent,
@@ -104,7 +146,26 @@ export async function GET(req: Request) {
      )
      SELECT su.id, su.email, su.name, su.phone, su.locale, su.tier, su.hour_balance,
             su.created_at, su.last_active_at,
-            COALESCE(rp.status, 'active') AS research_status,
+            CASE
+              WHEN su.email LIKE 'sim_%@decode.test'
+                OR su.email LIKE '%@decode.local'
+                OR su.email LIKE '%@test.local'
+                OR su.email LIKE '%test%@hourkey.io'
+                OR su.email LIKE '%@deadbeef.local'
+                OR su.email LIKE 'dummy_%'
+                OR su.email LIKE 'cookie_test_%'
+                OR su.email LIKE 'htmlform_%'
+                OR su.email LIKE 'profile-test@%'
+                OR su.email LIKE '%@decode.app'
+                OR COALESCE(su.phone, '') LIKE '089999999%'
+                THEN 'test'
+              WHEN su.email LIKE 'phone.%@hourkey.local' THEN 'phone_user'
+              ELSE 'real'
+            END AS account_kind,
+            CASE
+              WHEN rp.status='active' AND rp.notes='Backfilled from existing users on 2026-06-03' THEN 'pending'
+              ELSE COALESCE(rp.status, 'pending')
+            END AS research_status,
             rp.cohort, rp.consent_at, rp.notes, rp.labels,
             COALESCE(pc.profile_count, 0) AS profile_count,
             COALESCE(qc.qna_count, 0) AS qna_count,
