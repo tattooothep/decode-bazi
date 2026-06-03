@@ -269,6 +269,10 @@
   .profile-pick .pp-label{font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
   .profile-pick select{background:var(--bg-2);color:var(--fg);border:1px solid var(--gold-line);border-radius:10px;padding:7px 12px;font-family:var(--thai);font-size:13px;cursor:pointer;max-width:240px;}
   .profile-pick select:focus{outline:none;border-color:var(--gold);}
+  .sifu-model-pick{display:inline-flex;align-items:center;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
+  .sifu-model-pick .smp-label{font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
+  .sifu-model-pick select{background:var(--bg-2);color:var(--fg);border:1px solid var(--gold-line);border-radius:10px;padding:7px 28px 7px 12px;font-family:var(--thai);font-size:13px;cursor:pointer;max-width:180px;}
+  .sifu-model-pick select:focus{outline:none;border-color:var(--gold);}
   /* 🧑‍🤝‍🧑 group picker (group mode · kill-switch · ลบบล็อกนี้ + HTML #hkg-wrap ได้) */
   .hkg-pick{display:none;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
   .hkg-pick .hkg-label{font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
@@ -421,6 +425,8 @@
     .fc-headline{font-size:16px;margin-bottom:8px;}
     .fc-detail{font-size:12px;line-height:1.55;margin-bottom:10px;}
     .chat-title{font-size:17px;}
+    .sifu-model-pick{width:100%;}
+    .sifu-model-pick select{flex:1;max-width:none;min-width:0;}
     .profile-pick{width:100%;}
     .profile-pick select{flex:1;max-width:none;min-width:0;}
     .hkg-pick select{min-width:0;}
@@ -553,6 +559,13 @@
     <!-- toolbar: เลือกดวง + กลุ่ม (ย้ายขึ้นบนแชท · แบบ Claude) -->
     <div class="chat-toolbar">
       <div class="chat-title"><span class="tc">師</span><span data-i18n="auto.m.030">ถามซินแส</span></div>
+      <div class="sifu-model-pick" id="sifu-model-wrap">
+        <span class="smp-label">โมเดล:</span>
+        <select id="sifu-model" aria-label="เลือกโมเดลซินแส">
+          <option value="claude-max-cli">Claude CLI</option>
+          <option value="codex-cli">Codex CLI</option>
+        </select>
+      </div>
       <div class="profile-pick" id="sifu-profile-wrap">
         <span class="pp-label" data-i18n="mst.ask.for">ดูดวงของ:</span>
         <select id="sifu-profile" aria-label="เลือกโปรไฟล์"></select>
@@ -841,6 +854,7 @@
     const sendBtn = document.getElementById('send');
     const inputEl = document.getElementById('chat-input');
     const msgBox = document.getElementById('messages');
+    const modelSel = document.getElementById('sifu-model');
     if (!sendBtn || !inputEl || !msgBox) return;
 
     /* รับพารามิเตอร์จากหน้าดวง (chart เด้งมา) · ดวงที่ส่งมา = ดวงปัจจุบัน */
@@ -849,6 +863,19 @@
     /* 🧑‍🤝‍🧑 ดวงที่เลือกถามได้ = ดวงในบัญชี (ตัวเอง+ญาติ) · เริ่มที่ดวง self · dropdown สลับได้ · ไม่ทับ window.hkActiveProfileId (ดวง self ของ intro) */
     let selectedProfileId = '';
     try { selectedProfileId = String(urlPid || window.hkActiveProfileId || ''); } catch(_){}
+    function selectedSifuModel(){
+      var v = modelSel && modelSel.value;
+      return v === 'codex-cli' ? 'codex-cli' : 'claude-max-cli';
+    }
+    if (modelSel) {
+      try {
+        var savedModel = localStorage.getItem('hk_sifu_model');
+        if (savedModel === 'codex-cli' || savedModel === 'claude-max-cli') modelSel.value = savedModel;
+      } catch(_) {}
+      modelSel.addEventListener('change', function(){
+        try { localStorage.setItem('hk_sifu_model', selectedSifuModel()); } catch(_) {}
+      });
+    }
     var sifuProfileSigById = {}; /* profileId → signature ปัจจุบันของดวง (กัน history น้ำหยาง/ทองหยินปนหลังแก้วันเกิด/dayBoundary) */
     function safeKeyPart(v){ return String(v || '').replace(/[^\w:-]+/g, '_').slice(0, 96); }
     function profileStoreSig(id){
@@ -1345,6 +1372,7 @@
             message: text,
             history: history.slice(-8),   /* จำบทสนทนา · backend ตัด 6 อีกชั้น */
             profileId: pid || undefined,
+            model: selectedSifuModel(),
           }),
         });
         const ct = r.headers.get('content-type') || '';
@@ -1381,14 +1409,19 @@
             persist();
           } else if (d.error === 'identity_mismatch') {
             placeholder.textContent = 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ';
+          } else if (String(d.error || '').indexOf('codex_cli_auth_required') !== -1) {
+            placeholder.textContent = '⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis';
           } else {
             placeholder.textContent = '⚠ ขัดข้อง: ' + (d.error || r.status) + (d.detail ? '\n' + d.detail : '');
           }
         }
       } catch (e) {
-        placeholder.textContent = (e && e.message && e.message.indexOf('identity_mismatch') !== -1)
+        var em = e && e.message ? String(e.message) : '';
+        placeholder.textContent = em.indexOf('identity_mismatch') !== -1
           ? 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ'
-          : '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+          : em.indexOf('codex_cli_auth_required') !== -1
+            ? '⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis'
+            : '⚠ เครือข่ายขัดข้อง · ลองใหม่';
       } finally {
         sendBtn.disabled = false; window._sifuStreaming = false;
         inputEl.focus();
