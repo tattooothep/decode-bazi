@@ -558,6 +558,7 @@ function makeCodexJsonlParser(onText: (text: string) => void, onError: (text: st
       const line = buf.slice(0, nl).trim();
       buf = buf.slice(nl + 1);
       if (!line) continue;
+      if (line === "Reading additional input from stdin...") continue;
       try {
         const obj = JSON.parse(line);
         if (obj.type === "item.completed" && obj.item?.type === "agent_message" && typeof obj.item.text === "string") {
@@ -620,12 +621,13 @@ function startSifuHeartbeat(
 
 export async function POST(req: Request) {
   try {
+    const url = new URL(req.url);
     const body = await req.json().catch(() => ({}));
     const message: string = (body.message || "").trim();
     const history: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
     const groupLabel: string = (body.groupLabel || "กลุ่ม").toString().trim().slice(0, 60) || "กลุ่ม";
     const lang: string = ["th", "en", "zh"].includes(body.lang) ? body.lang : "th";
-    const sifuModel = resolveSifuModel(body.model);
+    const sifuModel = resolveSifuModel(body.model || url.searchParams.get("model"));
 
     if (!message) return NextResponse.json({ error: "no message" }, { status: 400 });
     if (message.length > 2000) return NextResponse.json({ error: "message too long" }, { status: 400 });
@@ -644,6 +646,7 @@ export async function POST(req: Request) {
     profileIds = [...new Set(profileIds)]; // unique
     if (profileIds.length === 0) return NextResponse.json({ error: "profileIds ว่าง" }, { status: 400 });
     if (profileIds.length > MAX_GROUP) profileIds = profileIds.slice(0, MAX_GROUP); // cap 10
+    console.log(`[sifu/group model] model=${sifuModel} stream=${body.stream === true ? "1" : "0"} count=${profileIds.length}`);
 
     /* 🔐 org guard · ดึงทุก profile ใน org เดียวกันเท่านั้น (กัน IDOR · สำคัญสุด) */
     const rows = await q<ProfileRow>(
@@ -784,8 +787,10 @@ export async function POST(req: Request) {
             if (!idStripped && idBuf) { idStripped = true; const r = stripIdLine(idBuf); if (r) emit(r); }
             const ms = Date.now() - t0;
             if (code === 0 && full.trim()) {
+              console.log(`[sifu/group done] model=${sifuModel} ms=${ms} chars=${full.length}`);
               send("done", { ms, model: sifuModel, cached: false, chars: full.length });
             } else {
+              console.warn(`[sifu/group error] model=${sifuModel} code=${code} ms=${ms} err=${cliErrorMessage(sifuModel, cliErr)}`);
               send("error", { error: `${sifuModel} exit ${code} · ${cliErrorMessage(sifuModel, cliErr)}`, ms });
             }
             safeClose();

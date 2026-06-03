@@ -1119,6 +1119,8 @@
           let payload = {};
           try { payload = JSON.parse(data); } catch(_){}
           if (event === 'chunk' && payload.text) handlers.onChunk(payload.text);
+          else if (event === 'meta' && handlers.onMeta) handlers.onMeta(payload);
+          else if (event === 'first' && handlers.onFirst) handlers.onFirst(payload);
           else if (event === 'ping' && handlers.onPing) handlers.onPing(payload);
           else if (event === 'error') throw new Error(payload.error || 'stream error');
           else if (event === 'done') { if (handlers.onDone) handlers.onDone(payload); }
@@ -1276,7 +1278,8 @@
       if (hkgGoBtn) hkgGoBtn.disabled = true;
       var phG = addMsg('sifu', 'ซินแสกำลังคิด ...');
       try {
-        var rG = await fetch('/api/sifu/group', {
+        var modelG = selectedSifuModel();
+        var rG = await fetch('/api/sifu/group?model=' + encodeURIComponent(modelG), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
           body: JSON.stringify({
@@ -1285,7 +1288,7 @@
             message: text,
             history: history.slice(-8),
             lang: locG,
-            model: selectedSifuModel(),
+            model: modelG,
             stream: true
           })
         });
@@ -1294,6 +1297,9 @@
           var replyG = '';
           var clearedG = false;
           await readSifuStream(rG, {
+            onMeta: function(p){
+              if (p && p.model && location.search.indexOf('debug') >= 0) console.log('[sifu/group] model', p.model);
+            },
             onPing: function(p){
               if (!clearedG) phG.textContent = sifuPhaseText(p && p.phase);
             },
@@ -1322,7 +1328,12 @@
           }
         }
       } catch(e){
-        phG.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+        var emG = e && e.message ? String(e.message) : '';
+        phG.textContent = emG.indexOf('codex_cli_auth_required') !== -1
+          ? '⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis'
+          : emG.indexOf('identity_mismatch') !== -1
+            ? 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ'
+            : '⚠ ขัดข้อง: ' + (emG || 'เครือข่ายขัดข้อง · ลองใหม่');
       } finally {
         sendBtn.disabled = false; window._sifuStreaming = false;
         if (hkgGoBtn) hkgGoBtn.disabled = false;
