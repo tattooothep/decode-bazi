@@ -36,6 +36,7 @@ import { boundaryWarning3p, monthPillarBoundary, yearPillarBoundary } from "@/li
 import { buildSynastry, altPillar, type PersonSyn } from "@/lib/bazi-synastry";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { stripIdLine } from "@/lib/identity-lock";
+import { loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 
 export const runtime = "nodejs"; // child_process spawn (เหมือน /api/sifu)
 
@@ -210,7 +211,6 @@ function loadEngineKnowledge(): { text: string; version: string } {
 const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
 const QTBJ_TIAOHOU_FILE = "qtbj-tiaohou-clean.md";
 const QTBJ_TIAOHOU_THAI_NOTES_FILE = "qtbj-tiaohou-thai-notes.md";
-const QTBJ_TIAOHOU_LOOKUP_FILE = "qtbj-tiaohou-lookup.md";
 const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "bazi-shishen-classical.md", label: "十神 · จิตวิทยาบทบาทสิบเทพ (子平 verbatim)" },
   { file: "bazi-geju-master.md", label: "格局 · โครงสร้างดวง 子平真詮 spec" },
@@ -249,31 +249,6 @@ function loadSifuExtraKnowledge(): { text: string; version: string } {
   _sifuExtraCache = { text, ts: now, version };
   return _sifuExtraCache;
 }
-let _qtbjTiaohouCache: { text: string; ts: number; version: string } | null = null;
-function loadQtbjTiaohouKnowledge(): { text: string; version: string } {
-  const now = Date.now();
-  if (_qtbjTiaohouCache && now - _qtbjTiaohouCache.ts < 60_000) return _qtbjTiaohouCache;
-  const compactFiles: { file: string; label: string }[] = [
-    { file: QTBJ_TIAOHOU_FILE, label: "canonical raw" },
-    { file: QTBJ_TIAOHOU_LOOKUP_FILE, label: "Thai compact lookup" },
-  ];
-  const parts: string[] = [];
-  const hash = createHash("sha1");
-  for (const { file, label } of compactFiles) {
-    try {
-      const text = readFileSync(join(SIFU_EXTRA_DIR, file), "utf8");
-      hash.update(file).update(text);
-      parts.push(`\n──── 窮通寶鑑 compact: ${label} ────\n${text}`);
-    } catch (e) {
-      console.warn("[sifu/group] qtbj compact missing:", file, (e as Error).message);
-    }
-  }
-  const text = parts.join("\n");
-  const version = text ? hash.digest("hex").slice(0, 12) : "none";
-  _qtbjTiaohouCache = { text, ts: now, version };
-  return _qtbjTiaohouCache;
-}
-
 type ProfileRow = {
   id: string;
   name?: string;
@@ -438,7 +413,7 @@ function buildGroupPrompt(opts: { ctx: string; message: string; history: Msg[]; 
   const extraBlock = extraKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => extraKnow.text) + "\n"
     : "";
-  const qtbjCompact = compact ? loadQtbjTiaohouKnowledge() : { text: "", version: "full-extra" };
+  const qtbjCompact = compact ? loadQtbjTiaohouCompactKnowledge(`${opts.message}\n${histText}\n${opts.ctx}`) : { text: "", version: "full-extra" };
   const qtbjCompactBlock = qtbjCompact.text
     ? "\n\n=== 📜 窮通寶鑑 · 調候用神 compact source ===\n" + qtbjCompact.text + "\n=== จบ 窮通寶鑑 compact source ===\n"
     : "";

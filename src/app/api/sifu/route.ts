@@ -22,6 +22,7 @@ import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } fr
 import { boundaryWarning3p, monthPillarBoundary } from "@/lib/bazi-boundary";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
+import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type SifuModel = "claude-max-cli" | "codex-cli";
@@ -209,7 +210,6 @@ function loadEngineKnowledge(): { text: string; version: string } {
 const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
 const QTBJ_TIAOHOU_FILE = "qtbj-tiaohou-clean.md";
 const QTBJ_TIAOHOU_THAI_NOTES_FILE = "qtbj-tiaohou-thai-notes.md";
-const QTBJ_TIAOHOU_LOOKUP_FILE = "qtbj-tiaohou-lookup.md";
 const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "bazi-shishen-classical.md", label: "十神 · จิตวิทยาบทบาทสิบเทพ (子平 verbatim)" },
   { file: "bazi-geju-master.md", label: "格局 · โครงสร้างดวง 子平真詮 spec" },
@@ -248,31 +248,6 @@ function loadSifuExtraKnowledge(): { text: string; version: string } {
   _sifuExtraCache = { text, ts: now, version };
   return _sifuExtraCache;
 }
-let _qtbjTiaohouCache: { text: string; ts: number; version: string } | null = null;
-function loadQtbjTiaohouKnowledge(): { text: string; version: string } {
-  const now = Date.now();
-  if (_qtbjTiaohouCache && now - _qtbjTiaohouCache.ts < 60_000) return _qtbjTiaohouCache;
-  const compactFiles: { file: string; label: string }[] = [
-    { file: QTBJ_TIAOHOU_FILE, label: "canonical raw" },
-    { file: QTBJ_TIAOHOU_LOOKUP_FILE, label: "Thai compact lookup" },
-  ];
-  const parts: string[] = [];
-  const hash = createHash("sha1");
-  for (const { file, label } of compactFiles) {
-    try {
-      const text = readFileSync(join(SIFU_EXTRA_DIR, file), "utf8");
-      hash.update(file).update(text);
-      parts.push(`\n──── 窮通寶鑑 compact: ${label} ────\n${text}`);
-    } catch (e) {
-      console.warn("[sifu] qtbj compact missing:", file, (e as Error).message);
-    }
-  }
-  const text = parts.join("\n");
-  const version = text ? hash.digest("hex").slice(0, 12) : "none";
-  _qtbjTiaohouCache = { text, ts: now, version };
-  return _qtbjTiaohouCache;
-}
-
 /* 💾 DB result cache · TTL 24h */
 const CACHE_TTL_HOURS = 24;
 function resolveSifuModel(raw: unknown): SifuModel {
@@ -772,7 +747,7 @@ function buildPrompt(opts: {
   const extraBlock = extraKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => extraKnow.text) + "\n"
     : "";
-  const qtbjCompact = compact ? loadQtbjTiaohouKnowledge() : { text: "", version: "full-extra" };
+  const qtbjCompact = compact ? loadQtbjTiaohouCompactKnowledge(`${opts.message}\n${histText}\n${opts.ctx}`) : { text: "", version: "full-extra" };
   const qtbjCompactBlock = qtbjCompact.text
     ? "\n\n=== 📜 窮通寶鑑 · 調候用神 compact source ===\n" + qtbjCompact.text + "\n=== จบ 窮通寶鑑 compact source ===\n"
     : "";
@@ -1158,7 +1133,7 @@ export async function POST(req: Request) {
     if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
     const orgId = session?.orgId ?? null;
 
-    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
+    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION + "-idlock1-dayboundary1";
     const dayKey = await getDayPillarKey();
     const ctxT0 = Date.now();
     let contextCache: SifuContextCacheStatus = "skip";
@@ -1391,7 +1366,7 @@ export async function GET(req: Request) {
   if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   const orgId = session?.orgId ?? null;
 
-  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
+  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION + "-idlock1-dayboundary1";
   const dayKey = await getDayPillarKey();
   const ctxT0 = Date.now();
   let contextCache: SifuContextCacheStatus = "skip";
