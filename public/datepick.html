@@ -170,12 +170,21 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* People mini-card */
-.people-mini{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
-.person-mini{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg-3);border-radius:8px;border-left:2.5px solid var(--gold);}
-.person-mini input[type="checkbox"]{width:14px;height:14px;}
-.person-mini .nm{font-family:var(--serif);font-size:14px;color:var(--fg);}
-.person-mini .stats{font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.08em;margin-left:auto;text-transform:uppercase;}
-.person-mini .stats .han{font-family:var(--tc);font-size:12px;color:var(--gold);letter-spacing:0;font-weight:600;}
+.people-selected{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px;min-height:28px;}
+.people-selected .chip{display:inline-flex;align-items:center;gap:6px;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:99px;padding:5px 8px;font-size:11px;color:var(--fg);}
+.people-selected .chip button{border:none;background:transparent;color:var(--gold);cursor:pointer;font-size:12px;padding:0;}
+.people-search{width:100%;background:var(--bg-3);border:1px solid var(--gold-line);border-radius:8px;color:var(--fg);font-size:12px;padding:9px 11px;margin-bottom:9px;outline:none;}
+.people-mini{display:grid;grid-template-columns:1fr;gap:7px;margin-bottom:10px;}
+.person-mini{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:9px 10px;background:var(--bg-3);border-radius:9px;border:1px solid var(--line);transition:.18s;}
+.person-mini.on{background:rgba(200,164,77,.08);border-color:var(--gold-line);}
+.person-mini .nm{font-family:var(--serif);font-size:14px;color:var(--fg);line-height:1.35;}
+.person-mini .rel{color:var(--fg-faint);font-size:12px;}
+.person-mini .stats{font-size:11px;color:var(--fg-soft);line-height:1.45;margin-top:3px;}
+.person-mini .stats .han{font-family:var(--tc);font-size:13px;color:var(--gold);letter-spacing:0;font-weight:600;}
+.person-mini .stats .el-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:4px;box-shadow:0 0 8px currentColor;}
+.person-mini .pick{border:1px solid var(--gold-line);background:transparent;color:var(--gold);border-radius:99px;padding:6px 10px;font-size:11px;cursor:pointer;white-space:nowrap;}
+.person-mini.on .pick{background:var(--gold);color:var(--bg);font-weight:700;}
+.people-more{width:100%;border:1px dashed var(--gold-line);background:transparent;color:var(--gold);border-radius:8px;padding:8px 10px;font-size:11px;cursor:pointer;}
 
 /* Mobile */
 @media(max-width:640px){
@@ -418,7 +427,9 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
       <!-- 3. People · 16 พ.ค. (เจ้านาย): ดึง network จริง + group filter -->
       <div class="card">
         <h3><span class="num">03</span> คนที่เกี่ยวข้อง <span class="han">人</span></h3>
-        <div class="desc">เลือกหมวด → ติ๊กดวงที่ใช้ตัดวันชง · กิจกรรมต่างหมวดใช้คนต่างกัน</div>
+        <div class="desc">เริ่มจากไม่เลือกใคร · ค่อย ๆ เพิ่มเฉพาะคนที่ต้องใช้ตัดวันชงของกิจกรรมนั้น</div>
+        <div class="people-selected" id="peopleSelected"></div>
+        <input id="peopleSearch" class="people-search" type="search" placeholder="ค้นหาชื่อหรือความสัมพันธ์..."/>
         <!-- group selector pills -->
         <div id="peopleGroupBar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
 	          <button class="pg-btn active" data-grp="all" style="padding:8px 14px;background:var(--gold);color:var(--bg);border:none;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;font-weight:600;">ทั้งหมด</button>
@@ -429,11 +440,11 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
           <button class="pg-btn" data-grp="love" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">情 คู่รัก</button>
           <button class="pg-btn" data-grp="rival" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">競 คู่แข่ง</button>
         </div>
-        <!-- mini toolbar: select all/none + count -->
+        <!-- mini toolbar: scoped add/clear + count -->
         <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10px;color:var(--fg-soft);margin-bottom:10px;">
           <span id="peopleCount">เลือก 0 / 0 คน</span>
           <span style="display:flex;gap:8px;">
-            <button id="peopleSelectAll" style="background:none;border:none;color:var(--gold);cursor:pointer;font-family:var(--mono);font-size:10px;text-decoration:underline;">เลือกทั้งหมด</button>
+            <button id="peopleSelectAll" style="background:none;border:none;color:var(--gold);cursor:pointer;font-family:var(--mono);font-size:10px;text-decoration:underline;">เพิ่มหมวดนี้</button>
             <button id="peopleClear" style="background:none;border:none;color:var(--fg-soft);cursor:pointer;font-family:var(--mono);font-size:10px;text-decoration:underline;">ล้าง</button>
           </span>
         </div>
@@ -671,6 +682,9 @@ const state = {
   dateStart: null,
   dateEnd: null,
   people: [],
+  peopleGroup: 'all',
+  peopleQuery: '',
+  peopleVisible: 6,
   filters: { tongshu:true, bazi:true, qimen:true, heluo:false, hex:false },
   qmCalc: 'chaibu',
   bzChong: true,
@@ -869,7 +883,13 @@ function init(){
 }
 
 /* 16 พ.ค. 2026 (เจ้านาย): ดึง network จริงจาก /api/profile + group filter */
-state.peopleGroup = 'all';
+const PEOPLE_BATCH_SIZE = 6;
+const PERSON_STEM_ELEMENT = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
+const PERSON_ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+const PERSON_ELEMENT_ZH = {wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
+const PERSON_BRANCH_TH = {子:'ชวด',丑:'ฉลู',寅:'ขาล',卯:'เถาะ',辰:'มะโรง',巳:'มะเส็ง',午:'มะเมีย',未:'มะแม',申:'วอก',酉:'ระกา',戌:'จอ',亥:'กุน'};
+const PERSON_GROUP_TH = {all:'ทั้งหมด',general:'ทั่วไป',family:'ครอบครัว',work:'ทีมงาน',friend:'เพื่อน',love:'คู่รัก',rival:'คู่แข่ง'};
+
 async function loadNetworkPeople(){
   try {
     const r = await fetch('/api/profile', { credentials:'include' });
@@ -896,7 +916,7 @@ async function loadNetworkPeople(){
         dm: dm,
         kua: 0,
         group: normGroup(p.network_group) || normGroup(groupMap[p.id]) || (p.relationship_type ? 'general' : 'friend'),
-        enabled: true,
+        enabled: false,
         profileId: p.id,
         personId: 'hk_' + p.id, // aj_user_profile.person_id mapping
 	        birthDate: p.birth_datetime ? p.birth_datetime.slice(0,10) : null,
@@ -930,30 +950,72 @@ async function ensureAjProfiles(people){
     } catch(_){}
   }
 }
+
+function peopleFiltered(){
+  const grp = state.peopleGroup || 'all';
+  const q = String(state.peopleQuery || '').trim().toLowerCase();
+  return state.people.filter((p) => {
+    const inGroup = grp === 'all' || p.group === grp;
+    if (!inGroup) return false;
+    if (!q) return true;
+    return [p.name, p.rel, p.dm, p.branch, PERSON_BRANCH_TH[p.branch], PERSON_GROUP_TH[p.group]]
+      .filter(Boolean).join(' ').toLowerCase().includes(q);
+  });
+}
+
+function personAstroText(p){
+  const el = PERSON_STEM_ELEMENT[p.dm] || '';
+  const elTh = PERSON_ELEMENT_TH[el] || 'ไม่ทราบธาตุ';
+  const elZh = PERSON_ELEMENT_ZH[el] || '';
+  const branchTh = PERSON_BRANCH_TH[p.branch] || 'ไม่ทราบปีนักษัตร';
+  const dot = el ? `<span class="el-dot el-${el}"></span>` : '';
+  return `${dot}ธาตุ${escHtml(elTh)}${elZh ? ` <span class="han">${escHtml(elZh)}</span>` : ''} · ก้านวัน <span class="han">${escHtml(p.dm || '-')}</span>${p.branch ? ` · ปี${escHtml(branchTh)} <span class="han">${escHtml(p.branch)}</span>` : ''}`;
+}
+
+function renderSelectedPeople(){
+  const el = document.getElementById('peopleSelected');
+  if (!el) return;
+  const selected = state.people.filter(p => p.enabled);
+  if (!selected.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--fg-faint);line-height:1.5;">ยังไม่เลือกคน · ถ้าไม่เลือก ระบบจะไม่ตัดวันชงจากดวงคน</div>';
+    return;
+  }
+  el.innerHTML = selected.map((p) => {
+    const idx = state.people.indexOf(p);
+    return `<span class="chip">${escHtml(p.name)}<button type="button" title="เอาออก" onclick="state.people[${idx}].enabled=false;renderPeople();">×</button></span>`;
+  }).join('');
+}
+
 function renderPeople(){
   const c = document.getElementById('peopleMini');
-  const grp = state.peopleGroup || 'all';
-  const filtered = state.people.filter(p => grp === 'all' || p.group === grp);
+  const filtered = peopleFiltered();
   if (!filtered.length) {
-    c.innerHTML = '<div style="padding:20px;text-align:center;color:var(--fg-faint);font-family:var(--mono);font-size:11px;">ไม่มีคนในหมวด "'+grp+'" · เพิ่มได้ที่ /yongsennetwork</div>';
+    c.innerHTML = '<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.6;">ไม่พบคนในเงื่อนไขนี้ · ลองเปลี่ยนหมวดหรือคำค้นหา</div>';
+    renderSelectedPeople();
     updatePeopleCount();
     return;
   }
-  c.innerHTML = filtered.map((p) => {
+  const visible = filtered.slice(0, state.peopleVisible || PEOPLE_BATCH_SIZE);
+  c.innerHTML = visible.map((p) => {
     const idx = state.people.indexOf(p);
-    return `<label class="person-mini">
-      <input type="checkbox" ${p.enabled?'checked':''} onchange="state.people[${idx}].enabled=this.checked;updatePeopleCount();"/>
-      <span class="nm">${p.name}${p.rel?' · '+p.rel:''}</span>
-      <span class="stats">DM <span class="han">${p.dm}</span>${p.branch?' · 支 <span class="han">'+p.branch+'</span>':''}</span>
-    </label>`;
-  }).join('');
+    return `<div class="person-mini ${p.enabled ? 'on' : ''}">
+      <div>
+        <div class="nm">${escHtml(p.name)}${p.rel ? ` <span class="rel">· ${escHtml(p.rel)}</span>` : ''}</div>
+        <div class="stats">${personAstroText(p)}</div>
+      </div>
+      <button type="button" class="pick" onclick="state.people[${idx}].enabled=!state.people[${idx}].enabled;renderPeople();">${p.enabled ? 'เลือกแล้ว' : '+ เพิ่ม'}</button>
+    </div>`;
+  }).join('') + (filtered.length > visible.length ? `<button type="button" class="people-more" onclick="state.peopleVisible += ${PEOPLE_BATCH_SIZE};renderPeople();">แสดงเพิ่ม ${Math.min(PEOPLE_BATCH_SIZE, filtered.length - visible.length)} คน</button>` : '');
+  renderSelectedPeople();
   updatePeopleCount();
 }
 function updatePeopleCount(){
   const enabled = state.people.filter(p=>p.enabled).length;
   const total = state.people.length;
   const el = document.getElementById('peopleCount');
-  if (el) el.textContent = 'เลือก ' + enabled + ' / ' + total + ' คน';
+  const filtered = peopleFiltered().length;
+  const grp = PERSON_GROUP_TH[state.peopleGroup || 'all'] || 'ทั้งหมด';
+  if (el) el.textContent = `เลือก ${enabled} / ${total} คน · กำลังดู ${grp} ${filtered} คน`;
 }
 /* bind group selector + toolbar (ครั้งเดียวตอน DOM ready) */
 function bindPeopleControls(){
@@ -970,11 +1032,17 @@ function bindPeopleControls(){
       b.style.color = 'var(--bg)';
       b.style.border = 'none';
       state.peopleGroup = b.dataset.grp;
+      state.peopleVisible = PEOPLE_BATCH_SIZE;
       renderPeople();
     });
   });
+  document.getElementById('peopleSearch')?.addEventListener('input', (e) => {
+    state.peopleQuery = e.target.value || '';
+    state.peopleVisible = PEOPLE_BATCH_SIZE;
+    renderPeople();
+  });
   document.getElementById('peopleSelectAll')?.addEventListener('click', () => {
-    state.people.forEach(p => p.enabled = true);
+    peopleFiltered().forEach(p => p.enabled = true);
     renderPeople();
   });
   document.getElementById('peopleClear')?.addEventListener('click', () => {
