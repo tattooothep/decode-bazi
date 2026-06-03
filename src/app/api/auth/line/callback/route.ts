@@ -5,8 +5,10 @@ import {
   verifyState,
   handleCallback,
   findOrCreateUser,
+  linkLineToUser,
 } from "@/lib/oauth-line";
-import { signSession, setAuthCookie } from "@/lib/auth";
+import { getSession, signSession, setAuthCookie } from "@/lib/auth";
+import { userHasProfile } from "@/lib/profile-status";
 
 function redirect(url: string): Response {
   return new Response(null, { status: 302, headers: { Location: url } });
@@ -46,9 +48,12 @@ export async function GET(req: Request) {
     return redirect(`/signup?tab=login&err=${encodeURIComponent(msg)}`);
   }
 
+  const current = await getSession();
   let user;
   try {
-    user = await findOrCreateUser(profile);
+    user = current?.userId
+      ? await linkLineToUser(current.userId, profile)
+      : await findOrCreateUser(profile);
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "create user failed";
     return redirect(`/signup?tab=login&err=${encodeURIComponent(msg)}`);
@@ -61,5 +66,6 @@ export async function GET(req: Request) {
   });
   await setAuthCookie(token);
 
-  return redirect("/master?intro=1&next=%2Ftoday");
+  const hasProfile = await userHasProfile(user.id);
+  return redirect(hasProfile ? "/master?intro=1&next=%2Ftoday" : "/input");
 }

@@ -158,3 +158,46 @@ export async function findOrCreateUser(p: GoogleProfile): Promise<UserRow> {
     is_new: true,
   };
 }
+
+export async function linkGoogleToUser(userId: string, p: GoogleProfile): Promise<UserRow> {
+  const linked = await q1<{ id: string }>(
+    `SELECT id FROM users WHERE google_user_id=$1`,
+    [p.google_sub]
+  );
+  if (linked && linked.id !== userId) {
+    throw new Error("Google นี้ถูกผูกกับบัญชีอื่นแล้ว");
+  }
+
+  const emailOwner = await q1<{ id: string }>(
+    `SELECT id FROM users WHERE email=$1`,
+    [p.email]
+  );
+  if (emailOwner && emailOwner.id !== userId) {
+    throw new Error("อีเมล Google นี้มีบัญชีอยู่แล้ว · กรุณาเข้าสู่บัญชีนั้นก่อนรวมบัญชี");
+  }
+
+  const user = await q1<{
+    id: string;
+    email: string;
+    name: string | null;
+    current_org_id: string | null;
+  }>(
+    `UPDATE users
+        SET google_user_id=$2,
+            email=CASE
+              WHEN email LIKE 'phone.%@hourkey.local' OR email LIKE 'line.%@line.local' THEN $4
+              ELSE email
+            END,
+            avatar_url=COALESCE($3, avatar_url),
+            email_verified=CASE
+              WHEN email=$4 OR email LIKE 'phone.%@hourkey.local' OR email LIKE 'line.%@line.local' THEN true
+              ELSE email_verified
+            END,
+            last_active_at=now()
+      WHERE id=$1
+      RETURNING id, email, name, current_org_id`,
+    [userId, p.google_sub, p.picture, p.email]
+  );
+  if (!user) throw new Error("ไม่พบบัญชีที่กำลังใช้งาน");
+  return { ...user, is_new: false };
+}

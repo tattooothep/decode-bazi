@@ -1,6 +1,7 @@
 import { q1 } from "@/lib/db";
 import { verifyPassword, signSession, setAuthCookie } from "@/lib/auth";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { userHasProfile } from "@/lib/profile-status";
 
 function redirect303(url: string): Response {
   return new Response(null, { status: 303, headers: { Location: url } });
@@ -23,5 +24,6 @@ export async function POST(req: Request) {
   const token = await signSession({ userId: user.id, email: user.email, orgId: user.current_org_id });
   await setAuthCookie(token);
   await q1("UPDATE users SET last_active_at=now() WHERE id=$1", [user.id]);
-  return redirect303("/master?intro=1&next=" + encodeURIComponent("/today"));
+  const hasProfile = await userHasProfile(user.id);
+  return redirect303(hasProfile ? "/master?intro=1&next=" + encodeURIComponent("/today") : "/input");
 }

@@ -154,6 +154,10 @@
 	      return (path && path.charAt(0)==='/' && path.charAt(1)!=='/') ? path : '';
 	    }
 	    function afterLogin(hasProfile){
+	      if (!hasProfile) {
+	        window.location.href = '/input';
+	        return;
+	      }
 	      const next = safeNext(nextParam);
 	      const target = encodeURIComponent(next || '/today');
 	      window.location.href = '/master?intro=1&next=' + target;
@@ -500,7 +504,8 @@
         });
         if (r.ok) {
           try { localStorage.setItem('hk_email', email); } catch(_) {}
-          window.location.href = '/master?intro=1&next=' + encodeURIComponent('/today');
+          const j = await r.json().catch(function(){ return {}; });
+          window.hkAfterLogin(j.has_profile);
         } else {
           const j = await r.json().catch(function(){ return {}; });
           if (r.status === 409) {

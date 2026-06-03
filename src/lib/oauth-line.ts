@@ -198,3 +198,52 @@ export async function findOrCreateUser(p: LineProfile): Promise<UserRow> {
     is_new: true,
   };
 }
+
+export async function linkLineToUser(userId: string, p: LineProfile): Promise<UserRow> {
+  const linked = await q1<{ id: string }>(
+    `SELECT id FROM users WHERE line_user_id=$1`,
+    [p.line_sub]
+  );
+  if (linked && linked.id !== userId) {
+    throw new Error("LINE นี้ถูกผูกกับบัญชีอื่นแล้ว");
+  }
+
+  if (p.email) {
+    const emailOwner = await q1<{ id: string }>(
+      `SELECT id FROM users WHERE email=$1`,
+      [p.email]
+    );
+    if (emailOwner && emailOwner.id !== userId) {
+      throw new Error("อีเมล LINE นี้มีบัญชีอยู่แล้ว · กรุณาเข้าสู่บัญชีนั้นก่อนรวมบัญชี");
+    }
+  }
+
+  const user = await q1<{
+    id: string;
+    email: string;
+    name: string | null;
+    current_org_id: string | null;
+  }>(
+    `UPDATE users
+        SET line_user_id=$2,
+            email=CASE
+              WHEN $4::text IS NOT NULL
+               AND (email LIKE 'phone.%@hourkey.local' OR email LIKE 'line.%@line.local')
+              THEN $4
+              ELSE email
+            END,
+            avatar_url=COALESCE($3, avatar_url),
+            email_verified=CASE
+              WHEN $4::text IS NOT NULL
+               AND (email=$4 OR email LIKE 'phone.%@hourkey.local' OR email LIKE 'line.%@line.local')
+              THEN true
+              ELSE email_verified
+            END,
+            last_active_at=now()
+      WHERE id=$1
+      RETURNING id, email, name, current_org_id`,
+    [userId, p.line_sub, p.picture, p.email]
+  );
+  if (!user) throw new Error("ไม่พบบัญชีที่กำลังใช้งาน");
+  return { ...user, is_new: false };
+}

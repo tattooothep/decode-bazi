@@ -1,7 +1,7 @@
 /**
  * POST /api/auth/signup-form
  * HTML form fallback (works without JS)
- * Returns 303 redirect to /onboarding (success) or /signup?err=... (error)
+ * Returns 303 redirect to /input (success) or /signup?err=... (error)
  */
 import { q1 } from "@/lib/db";
 import { hashPassword, signSession, setAuthCookie } from "@/lib/auth";
@@ -50,5 +50,5 @@ export async function POST(req: Request) {
   const token = await signSession({ userId, email, orgId });
   await setAuthCookie(token);
 
-  return redirect303("/onboarding");
+  return redirect303("/input");
 }
