@@ -234,6 +234,19 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .result-head .rscore{text-align:right;}
 .result-head .rscore .num{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--gold);line-height:1;}
 .result-head .rscore .lbl{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;}
+.result-verdict{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:rgba(200,164,77,.07);border:1px solid var(--gold-line);border-radius:10px;font-size:12px;color:var(--fg-soft);line-height:1.55;}
+.result-verdict b{color:var(--gold);font-size:13px;white-space:nowrap;}
+.module-score-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center;}
+.module-score-row .mini-title{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--fg-faint);margin-right:2px;}
+.reason-board{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.reason-col{background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+.reason-col.good{border-color:rgba(125,211,123,.32);}
+.reason-col.warn{border-color:rgba(226,107,93,.32);}
+.reason-col .reason-title{font-family:var(--mono);font-size:9px;letter-spacing:.14em;margin-bottom:6px;}
+.reason-col.good .reason-title{color:#7dd37b;}
+.reason-col.warn .reason-title{color:#e26b5d;}
+.reason-col ul{margin:0;padding-left:16px;font-size:12px;color:var(--fg-soft);line-height:1.55;}
+.reason-col li{margin-bottom:3px;}
 /* 17 พ.ค.: score progress bar + percentile */
 .score-bar{height:6px;background:var(--bg-4);border-radius:99px;overflow:hidden;margin-top:6px;}
 .score-bar .fill{height:100%;background:linear-gradient(90deg,#e26b5d 0%,#f7b955 40%,#7dd37b 70%,#5ba0ff 100%);border-radius:99px;transition:width .8s ease;}
@@ -295,6 +308,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 @media (max-width:768px){
   .result-body{grid-template-columns:1fr;gap:4px;}
   .result-head .rscore .num{font-size:20px;}
+  .reason-board{grid-template-columns:1fr;}
+  .result-verdict{flex-direction:column;gap:4px;}
   .dp-sifu-btn{font-size:10px;padding:9px 14px;letter-spacing:.12em;}
   .dp-sifu-log{max-height:280px;font-size:12px;}
 }
@@ -322,7 +337,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 
 <header class="hero">
   <div class="crest">擇吉</div>
-  <h1>วาง <b data-i18n="auto.d.001">ฤกษ์</b> · Date Picking</h1>
+  <h1>วาง <b data-i18n="auto.d.001">ฤกษ์</b> · <span class="tc">擇日</span></h1>
   <p  class="sub" data-i18n="auto.d.002">เลือกวันและยามที่เหมาะสำหรับกิจกรรมสำคัญ — คำนวณด้วย engine มาตรฐานหลายศาสตร์ซ้อนกัน</p>
   <div class="meta">通書 · 八字 · 奇門 · 河洛 · 六十四卦</div>
 </header>
@@ -336,18 +351,18 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
       <!-- 1. Activity -->
       <div class="card">
         <h3><span class="num">01</span> กิจกรรม <span class="han">事</span></h3>
-        <div  class="desc" data-i18n="auto.d.003">เลือกประเภทกิจกรรมที่จะวางฤกษ์ — แต่ละกิจกรรมมีกฎ Tong Shu 宜/忌 ต่างกัน</div>
+        <div  class="desc" data-i18n="auto.d.003">เลือกประเภทกิจกรรมที่จะวางฤกษ์ — แต่ละกิจกรรมมีกฎ 宜/忌 ของปฏิทินจีนไม่เหมือนกัน</div>
         <div class="activity-grid">
         </div>
         <!-- 17 พ.ค. · Smart Activity Picker · เจ้านาย idea · Hybrid Keyword + AI -->
         <div style="margin-bottom:14px;padding:14px;background:linear-gradient(135deg,rgba(200,164,77,.06),transparent);border:1px solid var(--gold-line);border-radius:10px;">
-          <label style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;display:block;">🤖 อธิบายกิจกรรมเอง · AI จับให้</label>
+          <label style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;display:block;">🤖 อธิบายกิจกรรมเอง · ระบบช่วยจับหมวด</label>
           <div style="display:flex;gap:6px;">
             <input id="act-query" type="text" placeholder="เช่น อยากเปิดร้านกาแฟ · เซ็นสัญญาบ้าน · ลงทุนหุ้น..." style="flex:1;padding:9px 12px;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--th);font-size:13px;border-radius:6px;outline:none;"/>
             <button id="act-classify-btn" style="padding:9px 14px;background:var(--gold);color:var(--bg);border:none;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;font-weight:600;letter-spacing:.1em;">🔍 จับ</button>
           </div>
           <div id="act-result" style="margin-top:8px;font-size:12px;color:var(--fg-soft);display:none;"></div>
-          <div style="margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.05em;">⚡ Keyword instant · 🤖 AI fallback ถ้าไม่เจอ</div>
+          <div style="margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.05em;">⚡ จับจากคำสำคัญก่อน · ถ้าไม่เจอค่อยให้ระบบช่วยวิเคราะห์</div>
         </div>
         <div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:6px;">หรือเลือกจากปุ่ม ↓</div>
         <div class="activity-grid">
@@ -428,7 +443,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl"><span class="han">通書</span> Tong Shu <span  class="level hard" data-i18n="auto.d.009">ห้าม</span><button class="help-icon" onclick="showHelp('tongshu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="ttl">ปฏิทินจีน <span class="han">通書</span> <span  class="level hard" data-i18n="auto.d.009">ตัดวันห้าม</span><button class="help-icon" onclick="showHelp('tongshu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div  class="sub" data-i18n="auto.d.010">ปฏิทินจีน · กรองวันที่ 忌 (ห้าม) สำหรับกิจกรรมนี้</div>
               </div>
             </div>
@@ -439,8 +454,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl"><span class="han">八字</span> Ba Zi <span  class="level hard" data-i18n="auto.d.011">ห้าม</span><button class="help-icon" onclick="showHelp('bazi');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div  class="sub" data-i18n="auto.d.012">เช็คดวงคน — วันชง · 刑 · 害 · ชน Day Master</div>
+                <div class="ttl">ดวงคนที่เกี่ยวข้อง <span class="han">八字</span> <span  class="level hard" data-i18n="auto.d.011">ตัดวันชง</span><button class="help-icon" onclick="showHelp('bazi');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div  class="sub" data-i18n="auto.d.012">เช็คดวงคน — วันชง · 刑 · 害 · กระทบวันเกิดหลัก</div>
               </div>
             </div>
             <div class="filter-sub">
@@ -450,7 +465,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
               </div>
               <div class="sub-row">
                 <input type="checkbox" id="bz-xing"/>
-                <label  for="bz-xing" data-i18n="auto.d.013">刑/害 (warning เฉยๆ)</label>
+                <label  for="bz-xing" data-i18n="auto.d.013">刑/害 (เตือนเฉย ๆ ไม่ตัดทิ้ง)</label>
               </div>
             </div>
           </label>
@@ -460,7 +475,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl"><span class="han">奇門</span> Qi Men <span  class="level soft" data-i18n="auto.d.014">เลี่ยง</span><button class="help-icon" onclick="showHelp('qimen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="ttl">ฉีเหมิน <span class="han">奇門</span> <span  class="level soft" data-i18n="auto.d.014">คัดยาม</span><button class="help-icon" onclick="showHelp('qimen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div  class="sub" data-i18n="auto.d.015">ดูประตู+ดาว+เทพ ของยาม — ตัดยามที่ตก 死/驚/傷</div>
               </div>
             </div>
@@ -468,8 +483,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
               <div class="sub-row">
                 <span data-i18n="auto.d.016">ค่ายคำนวณ:</span>
                 <div class="sub-pills">
-                  <button class="sub-pill active" data-qm="chaibu">拆補 ChaiBu</button>
-                  <button class="sub-pill" data-qm="zhirun">置閏 ZhiRun</button>
+                  <button class="sub-pill active" data-qm="chaibu">拆補 คำนวณแบบชดเชย</button>
+                  <button class="sub-pill" data-qm="zhirun">置閏 คำนวณแบบแทรกเดือน</button>
                 </div>
               </div>
               <div class="sub-row">
@@ -484,8 +499,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl"><span class="han">太歲</span> Tai Sui <span class="level hard">ห้าม</span><button class="help-icon" onclick="showHelp('taisui');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">流年沖日柱 · ตัดวันที่ branch ของวันชงกับ branch ของปี (丙午年 → cut 子日)</div>
+                <div class="ttl">ไท้ส่วย <span class="han">太歲</span> <span class="level hard">ตัดชนปี</span><button class="help-icon" onclick="showHelp('taisui');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">流年沖日柱 · ตัดวันที่กิ่งวันชงกับกิ่งปี (ปี丙午 → เลี่ยงวัน子)</div>
               </div>
             </div>
           </label>
@@ -495,8 +510,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl"><span class="han">十二建除</span> 12 Officers <span class="level score">bonus</span><button class="help-icon" onclick="showHelp('jianchu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">建·除·满·平·定·执·破·危·成·收·开·闭 · 開/成/除 +5 · 破/闭/危 −5 ตำราจริง</div>
+                <div class="ttl">สิบสองจังหวะวัน <span class="han">十二建除</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('jianchu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">ดูจังหวะวัน เช่น 開/成/除 ช่วยเพิ่มคะแนน · 破/閉/危 ลดคะแนน</div>
               </div>
             </div>
           </label>
@@ -506,8 +521,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl"><span class="han">二十八宿</span> 28 Constellations <span class="level score">bonus</span><button class="help-icon" onclick="showHelp('xiu28');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">通書ฤกษ์ · 7 宿ดี (房·箕·胃·昴·毕·觜·参) +5 · 7 宿ร้าย (亢·女·虚·危·娄·鬼·牛) −5</div>
+                <div class="ttl">ยี่สิบแปดดาวฤกษ์ <span class="han">二十八宿</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('xiu28');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">ดาวฤกษ์ที่ดีช่วยดันคะแนน · ดาวฤกษ์ที่เสียจะลดคะแนนตามกิจกรรม</div>
               </div>
             </div>
           </label>
@@ -517,8 +532,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl"><span class="han">十二神煞</span> 12 Spirits <span class="level score">bonus</span><button class="help-icon" onclick="showHelp('shen12');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">青龙·明堂·金匮·天德 (吉) +4-5 · 白虎·天刑·朱雀·玄武 (凶) −3-5</div>
+                <div class="ttl">สิบสองเทพประจำวัน <span class="han">十二神煞</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('shen12');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">เทพดี เช่น 青龍/明堂 ช่วยเพิ่มคะแนน · เทพเสีย เช่น 白虎/天刑 ลดคะแนน</div>
               </div>
             </div>
           </label>
@@ -528,8 +543,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl"><span class="han">九飛星</span> 9 Flying Stars <span class="level score">bonus</span><button class="help-icon" onclick="showHelp('fly9');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">玄空·ดาว 1·6·8 (吉) +3-5 · ดาว 2·5 (病·廉) −5 · ดาว 9·3·4 +2-3</div>
+                <div class="ttl">เก้าดาวเหิน <span class="han">九飛星</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('fly9');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">ดูดาวเหินของวัน/ยาม · ดาวดีช่วยหนุน ดาวเสียลดคะแนน</div>
               </div>
             </div>
           </label>
@@ -539,8 +554,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl"><span class="han">用神</span> Yongshen <span class="level score">bonus</span><button class="help-icon" onclick="showHelp('yongshen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">ใช้ 用神 top-3 ของคุณ (จาก /chart) · hour stem element ตรง用神 #1 +8 · #2 +5 · #3 +3</div>
+                <div class="ttl">ธาตุที่ดวงต้องการ <span class="han">用神</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('yongshen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">ใช้ธาตุช่วยของคุณจากหน้า /chart · ถ้าวัน/ยามหนุนธาตุช่วย คะแนนจะเพิ่ม</div>
               </div>
             </div>
           </label>
@@ -550,8 +565,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl"><span class="han">河洛</span> He Luo <span class="level score">bonus ✓ อากง</span><button class="help-icon" onclick="showHelp('heluo');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">河圖+洛書 ดาวเหิน 9 ดาว · 一白(桃花) 六白(權貴) 八白(財祿) · ตำราอากง v1.0 (15 KB)</div>
+                <div class="ttl">เหอหลัว <span class="han">河洛</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('heluo');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">อ่านจังหวะตัวเลขและดาวเหิน 9 ดาว · ใช้เป็นคะแนนเสริม ไม่ใช่ตัวตัดหลัก</div>
               </div>
             </div>
             <div class="filter-sub">
@@ -567,8 +582,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox"/>
               <div class="info">
-                <div class="ttl"><span class="han">六十四卦</span> 64 Hex <span  class="level note" data-i18n="auto.d.021">ตีความ</span><button class="help-icon" onclick="showHelp('hex');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div  class="sub" data-i18n="auto.d.022">เพิ่มการตีความ hexagram ของยาม — commentary ไม่กรอง</div>
+                <div class="ttl">หกสิบสี่ข่วย <span class="han">六十四卦</span> <span  class="level note" data-i18n="auto.d.021">ตีความ</span><button class="help-icon" onclick="showHelp('hex');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div  class="sub" data-i18n="auto.d.022">เพิ่มคำอ่านข่วยของยาม — ใช้อธิบาย ไม่ได้ตัดวันทิ้ง</div>
               </div>
             </div>
           </label>
@@ -578,7 +593,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
         <button  class="btn-search" id="btnSearch" data-i18n="auto.d.023">⚡ ค้นหาฤกษ์</button>
         <label hidden style="display:none;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:rgba(200,164,77,.08);border-radius:8px;font-size:11px;color:var(--fg-soft);cursor:pointer;">
           <input type="checkbox" id="cb-aj-engine" checked/>
-          <span>🚀 <b>Engine อาเจ๊กฮ้ง v1</b> · เร็ว 21× · pre-compute 4380 slots · p95 366ms</span>
+          <span>🚀 <b>Engine อาเจ๊กฮ้ง v1</b> · เร็ว 21× · คำนวณล่วงหน้า 4,380 ช่วงเวลา · p95 366ms</span>
         </label>
         <script>try{localStorage.setItem('hk_use_aj_engine','1');}catch(_){}</script>
       </div>
@@ -589,14 +604,14 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
     <section>
 
       <div class="results-head">
-        <h2><span class="han">結果</span> ผลลัพธ์</h2>
+        <h2>ผลลัพธ์ <span class="han">結果</span></h2>
         <div  class="results-meta" id="resultsMeta" data-i18n="auto.d.024">รอการค้นหา</div>
       </div>
 
       <!-- Funnel viz (shows after search) -->
       <div class="funnel" id="funnel" style="display:none;">
         <div class="funnel-title">
-          <span data-i18n="auto.d.025">🔍 Filter Funnel · ขั้นตอนการกรอง</span>
+          <span data-i18n="auto.d.025">🔍 ขั้นตอนการกรอง · 漏斗</span>
           <span id="funnelTotal"></span>
         </div>
         <div id="funnelRows"></div>
@@ -604,10 +619,10 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 
       <!-- 📜 AI Sifu button + panel · 15 พ.ค. -->
       <div class="dp-sifu-bar">
-        <button class="dp-sifu-btn" id="dp-sifu-btn" data-i18n="dp.sifu.btn">💬 ขอวิเคราะห์ผลค้นหา · AI Sifu</button>
+        <button class="dp-sifu-btn" id="dp-sifu-btn" data-i18n="dp.sifu.btn">💬 ขอซินแสช่วยอ่านผล</button>
       </div>
       <div class="dp-sifu-panel" id="dp-sifu-panel">
-        <h3 data-i18n="auto.d.026">💬 ซินแสวางฤกษ์ · AI Sifu</h3>
+        <h3 data-i18n="auto.d.026">💬 ซินแสวางฤกษ์ · ระบบช่วยอ่านผล</h3>
         <div class="dp-sifu-log" id="dp-sifu-log"></div>
       </div>
 
@@ -1038,6 +1053,40 @@ function localizeAuspiciousReason(text){
     .replace(/(建日|除日|滿日|满日|平日|定日|執日|执日|破日|危日|成日|收日|開日|开日|閉日|闭日)(?=\s|$|[（(])/g, (m) => thZh(OFFICER_TH, m));
 }
 
+function explainScore(score, rank, total){
+  if (score >= 80) return `เหมาะมาก · เป็นตัวเลือกอันดับ ${rank}/${total} ใช้เป็นฤกษ์หลักได้`;
+  if (score >= 70) return `เหมาะ · ผ่านชั้นตัดหลักและมีแรงหนุนหลายจุด`;
+  if (score >= 55) return `พอใช้ · มีตัวช่วย แต่ควรอ่านข้อควรระวังก่อนเลือก`;
+  return `ควรระวัง · ผ่านเข้ารอบแต่แรงหนุนยังไม่เด่นพอ`;
+}
+
+function cleanReasonText(text){
+  return String(text || '')
+    .replace(/^[+-]?\d+\s*/, '')
+    .replace(/\b64卦\b/g, 'หกสิบสี่ข่วย')
+    .replace(/\b12建除\b/g, 'สิบสองจังหวะวัน')
+    .replace(/\b28宿\b/g, 'ยี่สิบแปดดาวฤกษ์')
+    .replace(/\b12神煞\b/g, 'สิบสองเทพประจำวัน')
+    .replace(/\bQi Men\b/g, 'ฉีเหมิน')
+    .replace(/\bBa Zi\b/g, 'ดวงปาจื้อ')
+    .replace(/\bTong Shu\b/g, 'ปฏิทินจีน')
+    .replace(/\bYongshen\b/g, 'ธาตุช่วย');
+}
+
+function reasonLists(matches){
+  const good = [];
+  const warn = [];
+  (matches || []).forEach((m) => {
+    const s = String(m || '');
+    if (s.startsWith('-') || s.includes('ระวัง')) warn.push(cleanReasonText(s));
+    else if (s.startsWith('+')) good.push(cleanReasonText(s));
+  });
+  return {
+    good: good.slice(0, 4),
+    warn: warn.slice(0, 4),
+  };
+}
+
 function elementChipFromStem(stem){
   const el = STEM_ELEMENT[stem] || '';
   if (!el) return '';
@@ -1288,7 +1337,7 @@ async function performSearch(){
       ? ` · หลังตัดดวงคน/ชั้นห้าม เหลือ ${data.candidate_pool} ยาม`
       : '';
     document.getElementById('resultsMeta').innerHTML =
-      `กิจกรรม <b>${actHan}</b> (${activity}) · พบ <b>${data.top.length}</b> ฤกษ์ จาก ${data.total_scanned} ยาม${poolNote}`;
+      `กิจกรรม <b>${ACTIVITY_RULES[state.activity]?.name || 'กิจกรรม'}</b> <span style="font-family:var(--tc);color:var(--gold);">${actHan}</span> · พบ <b>${data.top.length}</b> ฤกษ์ จาก ${data.total_scanned} ยาม${poolNote}`;
     /* show AI Sifu button */
     const sifuBtn = document.getElementById('dp-sifu-btn');
     if (sifuBtn) sifuBtn.style.display = 'inline-flex';
@@ -1322,6 +1371,8 @@ function renderRealResults(items){
       const m = MODULE_LABELS[k] || { th:k, zh:k };
       return `<span class="score-pill">${escHtml(m.th)} <b>${Math.round(v)}</b></span>`;
     }).join('');
+    const reasons = reasonLists(t.matches || []);
+    const verdict = explainScore(t.score, i + 1, items.length);
     const matchTags = (t.matches||[]).slice(0,12).map(m => {
       let cls = 'match-tag ';
       const d = parseInt(String(m).match(/^[+-]?(\d+)/)?.[1] || '0', 10);
@@ -1339,7 +1390,7 @@ function renderRealResults(items){
       if (isPos && d >= 25) cls += ' t-good';
       else if (isNeg) cls += ' t-bad';
       else if (d === 0) cls += ' t-neutral';
-      return `<span class="${cls}">${m}</span>`;
+      return `<span class="${cls}">${cleanReasonText(m)}</span>`;
     }).join('');
     const pole = t.ju_pole === 'yin' ? '陰' : '陽';
     return `<div class="result-card ${scoreColor}">
@@ -1361,6 +1412,7 @@ function renderRealResults(items){
           <div class="score-pct">อันดับ ${i+1}/${items.length}</div>
         </div>
       </div>
+      <div class="result-verdict"><b>คำอ่านรวม</b><span>${escHtml(verdict)}</span></div>
       <div class="result-body">
         <div class="r-line"><span class="k">ประตู · 門</span><span class="v">${t.door_label || qimenLabel('door', t.door)}</span></div>
         <div class="r-line"><span class="k">ดาว · 星</span><span class="v">${t.star_label || qimenLabel('star', t.star)}</span></div>
@@ -1368,7 +1420,11 @@ function renderRealResults(items){
         <div class="r-line"><span class="k">ฟ้า/ดิน · 天地</span><span class="v">${t.heaven_stem||'·'} / ${t.earth_stem||'·'} ${stemChip}</span></div>
         <div class="r-line"><span class="k">ผัง · 局</span><span class="v">${pole}${t.ju_number||'?'}局</span></div>
       </div>
-      ${modulePills ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;">${modulePills}</div>` : ''}
+      ${modulePills ? `<div class="module-score-row"><span class="mini-title">คะแนนย่อย</span>${modulePills}</div>` : ''}
+      ${(reasons.good.length || reasons.warn.length) ? `<div class="reason-board">
+        <div class="reason-col good"><div class="reason-title">แรงหนุน</div><ul>${(reasons.good.length ? reasons.good : ['ไม่มีแรงหนุนเด่นเป็นพิเศษ']).map(x=>`<li>${escHtml(x)}</li>`).join('')}</ul></div>
+        <div class="reason-col warn"><div class="reason-title">ข้อควรระวัง</div><ul>${(reasons.warn.length ? reasons.warn : ['ยังไม่พบข้อเสียหนักจากชั้นที่เปิดใช้']).map(x=>`<li>${escHtml(x)}</li>`).join('')}</ul></div>
+      </div>` : ''}
       ${matchTags ? `<div class="result-matches">${matchTags}</div>` : ''}
       ${t.hex_num ? `<div style="margin-top:8px;text-align:right;"><button onclick="showHexDeep(${t.hex_num},${t.changing_line||0})" style="background:rgba(200,164,77,.1);border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:10px;padding:5px 11px;border-radius:99px;cursor:pointer;letter-spacing:.05em;">📜 ดูตำรา 卦${t.hex_num} ${t.hex_name||''} เส้น${t.changing_line||'-'}</button></div>` : ''}
     </div>`;
@@ -1425,47 +1481,47 @@ window.showHexDeep = showHexDeep;
 
 /* 17 พ.ค.: HELP popup สำหรับ 11 ศาสตร์ · 3 ภาษา · อาม่าฉลาดมาก */
 const HELP_DATA = {
-  tongshu: { han:'通書', name:'TONG SHU',
+  tongshu: { han:'通書', name:'ปฏิทินจีน',
     th:{what:'ปฏิทินจีนคลาสสิก · บอกว่าวันนี้ทำอะไรดี (宜) ห้ามทำอะไร (忌)',how:['เช็คกิจกรรมที่เลือก vs ตาราง 宜/忌 ของวันนั้น','หากตรงกับ 忌 → ตัดทิ้ง','ใช้กับทุก slot ของวันเดียวกัน'],src:'通書 (4000 ปี) + 協紀辨方書 (1739)'},
     en:{what:'Classical Chinese almanac · what to do (宜) vs avoid (忌)',how:['Match activity vs day\'s 宜/忌 table','If in 忌 → filter out','Applied to all slots'],src:'Tong Shu + Xie Ji Bian Fang (1739)'},
     zh:{what:'中國通書 · 告知今日宜忌',how:['對照活動 vs 當日宜忌','若屬忌 → 過濾','應用於當日所有時辰'],src:'通書 + 協紀辨方書 (1739)'} },
-  bazi: { han:'八字', name:'BAZI · 6 RELATIONS',
+  bazi: { han:'八字', name:'ดวงปาจื้อ · ปฏิกิริยาคน',
     th:{what:'เช็คดวง 4 เสาลูกค้า vs slot · ตรวจ 六沖/六合/三合/刑/害',how:['沖 ปะทะ: day/hour slot ปะทะปีนักษัตรลูกค้า → −25','三合: slot อยู่ใน 3 ตัวประสานกับ zodiac → +12','ตรงนักษัตร: slot day = ปีนักษัตร → +10'],src:'子平真詮 + 滴天髓 + ตำราอากง 95 ปี'},
     en:{what:'Customer 4 pillars vs slot · clash/harmony',how:['Clash: slot day/hour clashes zodiac → −25','Sanhe: slot in 3-harmony → +12','Same: slot day = zodiac → +10'],src:'Zi Ping + Di Tian Sui + Grandpa 95yr'},
     zh:{what:'命四柱 vs 時辰 · 六沖/六合/三合',how:['沖: 日/時沖年支 → −25','三合: 日支屬三合 → +12','同支: 日支同年支 → +10'],src:'子平真詮 · 滴天髓'} },
-  qimen: { han:'奇門', name:'QI MEN DUN JIA',
+  qimen: { han:'奇門', name:'ฉีเหมินตุ้นเจี่ย',
     th:{what:'แผนผัง 9 วัง · 8 ประตู + 9 ดาว + 8 เทพ ของยาม',how:['ประตู: 生/開/休 ดี · 死/驚/傷 ตัดทิ้ง','ดาว: 天輔/天心 ดี · 天蓬/天芮 ระวัง','三奇 (乙丙丁) → +12'],src:'奇門遁甲統宗大全 + qimen-api ที่ซินแสฮวง+โจ verify'},
     en:{what:'9-palace · 8 doors + 9 stars + 8 deities',how:['Door: 生/開/休 good · 死/驚/傷 filtered','Star: 天輔/天心 good','三奇 → +12'],src:'Qi Men Tong Zong + Sifu verified'},
     zh:{what:'九宮 · 八門+九星+八神',how:['門: 生/開/休吉','星: 天輔/天心吉','三奇 → +12'],src:'奇門遁甲統宗大全'} },
-  taisui: { han:'太歲', name:'TAI SUI',
+  taisui: { han:'太歲', name:'ไท้ส่วย',
     th:{what:'เทพปี · ปะทะปีนักษัตร = หายนะ',how:['ปี 2026=丙午 · clash=子','ถ้า slot day/hour = 子 → ปะทะ → ตัดทิ้ง','คนปีหนูเลี่ยง 午日 ในปี 2026'],src:'太歲神 · ตำรา 2000 ปี'},
     en:{what:'Year deity · clash = disaster',how:['2026=丙午 · clash=子','If slot=子 → conflicts → filter','Rat-born avoid 午-day in 2026'],src:'Tai Sui doctrine'},
     zh:{what:'太歲神 · 沖則大凶',how:['2026丙午 · 沖子','日/時為子 → 沖太歲','子年生忌2026午日'],src:'太歲神信仰'} },
-  jianchu: { han:'12建除', name:'12 OFFICERS',
+  jianchu: { han:'12建除', name:'สิบสองจังหวะวัน',
     th:{what:'12 ตัวแทนวัน หมุนตามเดือน · 成/開/收 ดี · 破/閉/危 เลี่ยง',how:['คำนวณจาก month vs day branch','滿/定/成 → +25 ถึง +35','破/閉/危 → −10 ถึง −25'],src:'通書 · 建除十二神'},
     en:{what:'12 officer days · 成/開/收 best · 破/閉/危 avoid',how:['From month vs day branch','滿/定/成 → +25 to +35','破/閉/危 → −10 to −25'],src:'Tong Shu · 12 Officers'},
     zh:{what:'十二建除 · 成/開/收吉 · 破/閉/危凶',how:['月支對日支推算','滿/定/成 +25至+35','破/閉/危 −10至−25'],src:'通書 十二建除'} },
-  xiu28: { han:'28宿', name:'28 CONSTELLATIONS',
+  xiu28: { han:'28宿', name:'ยี่สิบแปดดาวฤกษ์',
     th:{what:'ดาว 28 ดวง หมุน 28 วัน · 7 ดี (房·箕·胃·昴·畢·觜·參)',how:['คำนวณจาก day index % 28','吉宿 (75-80) → +25 ถึง +30','凶宿 (25-35) → −15 ถึง −25'],src:'通書 · 二十八宿'},
     en:{what:'28 lunar stars · 7 good (房箕胃昴畢觜參)',how:['day index % 28','Good (75-80) → +25 to +30','Bad (25-35) → −15 to −25'],src:'Tong Shu · 28 Xiu'},
     zh:{what:'28宿 · 七吉七凶',how:['日序%28','吉宿+25至+30','凶宿−15至−25'],src:'通書 二十八宿'} },
-  shen12: { han:'12神煞', name:'12 SPIRITS',
+  shen12: { han:'12神煞', name:'สิบสองเทพประจำวัน',
     th:{what:'เทพประจำวัน 12 องค์ · 青龍/明堂/金匱/天德 ดี · 白虎/天刑 ร้าย',how:['คำนวณจาก day_branch','吉神 (75-85) → +25 ถึง +35','凶神 (25-40) → −10 ถึง −25'],src:'通書 · 黃黑道神煞'},
     en:{what:'12 day deities · 青龍/明堂/金匱/天德 good',how:['From day_branch','Good (75-85) → +25 to +35','Bad (25-40) → −10 to −25'],src:'Tong Shu · 12 Spirits'},
     zh:{what:'十二神煞 · 青龍/明堂吉 · 白虎/天刑凶',how:['由日支推算','吉神+25至+35','凶神−10至−25'],src:'通書 黃黑道神煞'} },
-  fly9: { han:'9飛星', name:'9 FLYING STARS',
+  fly9: { han:'9飛星', name:'เก้าดาวเหิน',
     th:{what:'ดาวเหิน 9 ดวง · ยุค 9 (2024-2043) · ดาว 1·6·8·9 ดี · 2·5·7 ร้าย',how:['ดาว 8 ทรัพย์ · 1 เสน่ห์ · 9 มงคล','ดาว 5 (黃) เคราะห์ · 2 (黑) โรค','คำนวณจาก day_branch % 9'],src:'玄空飛星派 · 沈氏玄空學'},
     en:{what:'9 flying stars · Period 9 · 1·6·8·9 good · 2·5·7 bad',how:['Star 8 wealth · 1 charm · 9 auspicious','Star 5 calamity · 2 illness','day_branch % 9'],src:'Xuan Kong Fei Xing'},
     zh:{what:'九飛星 · 九運 · 1·6·8·9白吉 · 2·5·7凶',how:['八白財 · 一白桃花 · 九紫','五黃災 · 二黑病','日支%9'],src:'玄空飛星 沈氏玄空學'} },
-  yongshen: { han:'用神', name:'USEFUL GOD',
-    th:{what:'ธาตุที่ดีกับดวงลูกค้า (top-3) · slot ตรงธาตุ用神 = bonus',how:['ดึง用神จาก /chart ลูกค้า (เช่น fire/wood/fire)','slot day stem ตรง → +25','slot hour stem ตรง → +15'],src:'子平真詮 + wrapper-7 อากง v2'},
+  yongshen: { han:'用神', name:'ธาตุที่ดวงต้องการ',
+    th:{what:'ธาตุที่ดีกับดวงลูกค้า 3 อันดับแรก · วันหรือยามตรงธาตุ用神 = ได้คะแนนเพิ่ม',how:['ดึง用神จาก /chart ลูกค้า เช่น ไฟ/ไม้/ไฟ','ก้านวันตรงธาตุที่ดวงต้องการ → +25','ก้านยามตรงธาตุที่ดวงต้องการ → +15'],src:'子平真詮 + wrapper-7 อากง v2'},
     en:{what:'Customer\'s best elements (top-3) · matching = bonus',how:['Pull 用神 from /chart','Day stem matches → +25','Hour stem matches → +15'],src:'Zi Ping + wrapper-7 v2'},
     zh:{what:'命主用神 (top-3) · 干屬此五行 = 加分',how:['由 /chart 取用神','日干屬 +25','時干屬 +15'],src:'子平真詮 · wrapper-7'} },
-  heluo: { han:'河洛', name:'HE LUO',
+  heluo: { han:'河洛', name:'เหอหลัว',
     th:{what:'ดาวเหิน 9 ดวง × ยุคปัจจุบัน · ยุค 9 ชอบไฟ/ไม้',how:['ยุค 9 = 2024-2043 = ไฟ','slot day stem ไม้/ไฟ → +10','น้ำ → −10 (ดับไฟ)'],src:'河圖 + 洛書 + 紫白訣 + อากง v1'},
     en:{what:'9 stars × current era · Period 9 favors fire/wood',how:['Period 9 = 2024-2043 fire','Day stem wood/fire → +10','Water → −10 (douses fire)'],src:'He Tu + Luo Shu + Zi Bai Jue'},
     zh:{what:'九星×當運 · 九運喜火木',how:['九運 = 火','日干木/火 → +10','水 → −10 (剋火)'],src:'河圖洛書 紫白訣'} },
-  hex: { han:'64卦', name:'64 HEXAGRAMS',
+  hex: { han:'64卦', name:'หกสิบสี่ข่วย',
     th:{what:'易經 64 รูปแบบ + 384 爻辭 · derive จาก day×hour×zodiac',how:['hex = (day×12+hour×7+zodiac)%64+1','吉卦 15 ตัว (乾·泰·大有...) → +30 ถึง +39','凶卦 9 ตัว (否·剝·坎...) → −10 ถึง −20','กดปุ่ม 📜 ดูตำราเต็ม'],src:'周易 + Zhu Xi + อากง v3 (384 爻辭)'},
     en:{what:'I-Ching 64 + 384 line statements · from day×hour×zodiac',how:['hex = (day×12+hour×7+zodiac)%64+1','15 good (乾泰大有) → +30 to +39','9 bad (否剝坎) → −10 to −20','Click 📜 for full text'],src:'Zhou Yi + Zhu Xi + Grandpa v3'},
     zh:{what:'易經64卦+384爻辭 · 由日×時×年生支',how:['卦=(日×12+時×7+年生)%64+1','15吉卦 → +30至+39','9凶卦 → −10至−20','點 📜 看全文'],src:'周易 · 周易本義 · 阿公v3'} },
@@ -1501,7 +1557,7 @@ function dpAppendMsg(role, text, loading){
   if (!log) return null;
   const d = document.createElement('div');
   d.className = 'dp-msg ' + role + (loading?' loading':'');
-  const roleLab = role==='user'?'ผม':role==='sifu'?'SIFU':'...';
+  const roleLab = role==='user'?'ผม':role==='sifu'?'ซินแส':'...';
   const html = String(text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
   d.innerHTML = '<span class="role">'+roleLab+'</span><div class="body">'+html+'</div>';
   log.appendChild(d);
@@ -1675,7 +1731,7 @@ function renderFunnel(rows){
   const hardCuts = []; const scoring = [];
   let prevCount = max;
   rows.forEach((r, i) => {
-    if (i === 0) { hardCuts.push({...r, name:'總 Total', diff:0, isFirst:true}); return; }
+    if (i === 0) { hardCuts.push({...r, name:'ทั้งหมด', diff:0, isFirst:true}); return; }
     const diff = prevCount - r.count;
     if (diff > 0) { hardCuts.push({...r, diff}); prevCount = r.count; }
     else { scoring.push(r); }
@@ -1684,10 +1740,10 @@ function renderFunnel(rows){
   document.getElementById('funnelTotal').textContent = `${survivors} / ${max} ผ่าน`;
   // Hard Filter table
   const hardHtml = `
-    <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--bad);text-transform:uppercase;margin-bottom:8px;">🚫 Hard Filter · ตัดทิ้ง</div>
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--bad);text-transform:uppercase;margin-bottom:8px;">🚫 ชั้นที่ตัดทิ้ง</div>
     <table style="width:100%;font-family:var(--mono);font-size:11px;border-collapse:collapse;margin-bottom:14px;">
       <thead><tr style="border-bottom:1px solid var(--gold-line);">
-        <th style="text-align:left;padding:6px 4px;color:var(--gold);">Layer</th>
+        <th style="text-align:left;padding:6px 4px;color:var(--gold);">ชั้นตรวจ</th>
         <th style="text-align:right;padding:6px 4px;color:var(--gold);">เหลือ</th>
         <th style="text-align:right;padding:6px 4px;color:var(--gold);">ตัด</th>
       </tr></thead>
@@ -1701,12 +1757,12 @@ function renderFunnel(rows){
     </table>`;
   // Scoring Layers (applied to survivors)
   const scoringHtml = scoring.length ? `
-    <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">📊 Scoring Layers · บวก/ลบกับ ${survivors} ฤกษ์ที่รอด</div>
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">📊 ชั้นที่ให้คะแนน · บวก/ลบกับ ${survivors} ฤกษ์ที่รอด</div>
     <table style="width:100%;font-family:var(--mono);font-size:11px;border-collapse:collapse;">
       <tbody>
         ${scoring.map(r => `<tr style="border-bottom:1px dashed var(--line);">
           <td style="padding:6px 4px;"><span class="han" style="font-family:var(--tc);color:var(--gold);font-size:14px;margin-right:6px;">${r.han||''}</span>${r.name}</td>
-          <td style="padding:6px 4px;text-align:right;color:#7dd37b;letter-spacing:.1em;">${r.han==='卦' ? 'commentary' : 'applied'}</td>
+          <td style="padding:6px 4px;text-align:right;color:#7dd37b;letter-spacing:.1em;">${r.han==='卦' ? 'อ่านประกอบ' : 'ใช้แล้ว'}</td>
         </tr>`).join('')}
       </tbody>
     </table>` : '';
@@ -1723,7 +1779,7 @@ function renderResults(items){
       <div class="empty-state">
         <div class="ic">⚠️</div>
         <h4>ไม่พบฤกษ์ที่ผ่านทุกเกณฑ์</h4>
-        <p>ลองขยายช่วงวัน · ลดเกณฑ์กรอง · หรือลด strict mode ใน Qi Men</p>
+        <p>ลองขยายช่วงวัน · ลดเกณฑ์กรอง · หรือปิดโหมดเข้มงวดของฉีเหมิน</p>
       </div>`;
     return;
   }
@@ -1736,36 +1792,36 @@ function renderResults(items){
           <div class="result-date">${it.dateThai} <span class="han">時 ${it.shichen}</span></div>
           <div class="result-meta">${it.shichenTime} · ${it.date}</div>
         </div>
-        <div class="result-score">${it.score}<small>SCORE</small></div>
+        <div class="result-score">${it.score}<small>คะแนน</small></div>
         <div class="result-tags">${it.tags.map(t => `<span class="tag info">${t}</span>`).join('')}</div>
         <span class="expand-arrow">▾</span>
       </div>
       <div class="result-detail">
         <div class="detail-grid">
           <div class="detail-cell">
-            <h5><span class="han">通書</span> Tong Shu</h5>
+            <h5><span class="han">通書</span> ปฏิทินจีน</h5>
             <div class="body">วันนี้ <i>宜 ${it.tongshu.yi}</i><small>ปฏิทินจีนรับรอง</small></div>
           </div>
           <div class="detail-cell">
-            <h5><span class="han">八字</span> Ba Zi</h5>
+            <h5><span class="han">八字</span> ดวงคนที่เกี่ยวข้อง</h5>
             <div class="body">${it.bazi.map(p => `<div>${p.name} · ${p.clash?`<span style="color:var(--bad)">⚠ ${p.clash}</span>`:'<span style="color:var(--ok)">✓ ผ่าน</span>'}</div>`).join('')}</div>
           </div>
           <div class="detail-cell">
-            <h5><span class="han">奇門</span> Qi Men</h5>
+            <h5><span class="han">奇門</span> ฉีเหมิน</h5>
             <div class="body"><i>${it.qimen.gate}門</i> · ${it.qimen.star} · ${it.qimen.deity}<small>${it.qimen.gateDesc}</small></div>
           </div>
           <div class="detail-cell">
-            <h5><span class="han">河洛</span> He Luo</h5>
+            <h5><span class="han">河洛</span> เหอหลัว</h5>
             <div class="body"><i>${it.heluo.name}</i> · ${it.heluo.th}<small>Score: ${it.heluo.score}</small></div>
           </div>
           <div class="detail-cell">
-            <h5><span class="han">六十四卦</span> Hex</h5>
+            <h5><span class="han">六十四卦</span> ข่วย</h5>
             <div class="body"><i>${it.hex.num}. ${it.hex.name}</i> · ${it.hex.th}</div>
           </div>
         </div>
         <div class="detail-actions">
           <button class="detail-btn primary">📌 บันทึกฤกษ์นี้</button>
-          <button class="detail-btn">🧭 ดูทิศจาก Qi Men</button>
+          <button class="detail-btn">🧭 ดูทิศจากฉีเหมิน</button>
           <button class="detail-btn">📅 เพิ่มในปฏิทิน</button>
           <button class="detail-btn">🤖 ขอ AI วิเคราะห์เพิ่ม</button>
         </div>
@@ -1820,35 +1876,35 @@ window.HK_I18N = window.HK_I18N || {};
 Object.assign(window.HK_I18N, {
   /* 🤖 auto-translated · 15 พ.ค. 2026 · L3 */
   'auto.d.001': { th:'ฤกษ์', en:'Auspicious Timing', zh:'擇吉' },
-  'auto.d.002': { th:'เลือกวันและยามที่เหมาะสำหรับกิจกรรมสำคัญ — กรองด้วย 5 ศาสตร์ซ้อนกัน · จากใหญ่ไปเล็ก', en:'Pick the best day & hour for key events — 5-layer filter, top-down', zh:'擇吉日吉時 — 五層濾網·由大至小' },
-  'auto.d.003': { th:'เลือกประเภทกิจกรรมที่จะวางฤกษ์ — แต่ละกิจกรรมมีกฎ Tong Shu 宜/忌 ต่างกัน', en:'Choose activity type — each has different Tong Shu 宜/忌 rules', zh:'選活動類型 — 各依通書宜忌' },
+  'auto.d.002': { th:'เลือกวันและยามที่เหมาะสำหรับกิจกรรมสำคัญ — กรองด้วยหลายศาสตร์ซ้อนกัน · จากชั้นตัดจริงไปถึงชั้นให้คะแนน', en:'Pick the best day & hour for key events — multi-layer filter, top-down', zh:'擇吉日吉時 — 多層濾網·由大至小' },
+  'auto.d.003': { th:'เลือกประเภทกิจกรรมที่จะวางฤกษ์ — แต่ละกิจกรรมมีกฎ 宜/忌 ของปฏิทินจีนไม่เหมือนกัน', en:'Choose activity type — each has different Tong Shu 宜/忌 rules', zh:'選活動類型 — 各依通書宜忌' },
   'auto.d.004': { th:'เลือกช่วงเวลาที่จะค้นหา — แนะนำ 30-60 วัน', en:'Choose date range — 30-60 days recommended', zh:'選日期區間 — 建議 30-60 天' },
   'auto.d.005': { th:'เริ่มต้น', en:'Start', zh:'起始' },
   'auto.d.006': { th:'สิ้นสุด', en:'End', zh:'結束' },
-  'auto.d.007': { th:'ติ๊กคนที่ต้องเช็คดวง — ระบบจะตัดวันที่ชน Day Master หรือกระทบหนัก', en:'Tick people to check — system filters Day Master clashes', zh:'勾選須查命的人 — 過濾沖剋日主' },
-  'auto.d.008': { th:'ติ๊กเกณฑ์ที่ใช้ — กรองจากเข้มไปอ่อน · ติ๊กหมดวันจะเหลือน้อย', en:'Tick criteria — strict to loose; all on = fewer days', zh:'勾選條件 — 嚴至寬·全勾則少' },
-  'auto.d.009': { th:'ห้าม', en:'Forbidden', zh:'忌' },
+  'auto.d.007': { th:'ติ๊กคนที่ต้องเช็คดวง — ระบบจะตัดวันที่ชงกับวันเกิดหลักหรือกระทบหนัก', en:'Tick people to check — system filters Day Master clashes', zh:'勾選須查命的人 — 過濾沖剋日主' },
+  'auto.d.008': { th:'ติ๊กเกณฑ์ที่ใช้ — ชั้นสีแดงคือตัดวัน/ยามทิ้ง · ชั้นสีน้ำเงินคือให้คะแนนเพิ่มหรือลด', en:'Tick criteria — strict to loose; all on = fewer days', zh:'勾選條件 — 嚴至寬·全勾則少' },
+  'auto.d.009': { th:'ตัดวันห้าม', en:'Forbidden', zh:'忌' },
   'auto.d.010': { th:'ปฏิทินจีน · กรองวันที่ 忌 (ห้าม) สำหรับกิจกรรมนี้', en:'Chinese almanac · filter 忌 days for this activity', zh:'通書·過濾本活動忌日' },
-  'auto.d.011': { th:'ห้าม', en:'Forbidden', zh:'忌' },
-  'auto.d.012': { th:'เช็คดวงคน — วันชง · 刑 · 害 · ชน Day Master', en:'Check person\'s chart — 沖 · 刑 · 害 · Day Master clash', zh:'查命 — 沖·刑·害·剋日主' },
-  'auto.d.013': { th:'刑/害 (warning เฉยๆ)', en:'刑/害 (warning only)', zh:'刑/害 (僅警告)' },
-  'auto.d.014': { th:'เลี่ยง', en:'Avoid', zh:'避' },
+  'auto.d.011': { th:'ตัดวันชง', en:'Forbidden', zh:'忌' },
+  'auto.d.012': { th:'เช็คดวงคน — วันชง · 刑 · 害 · กระทบวันเกิดหลัก', en:'Check person\'s chart — 沖 · 刑 · 害 · Day Master clash', zh:'查命 — 沖·刑·害·剋日主' },
+  'auto.d.013': { th:'刑/害 (เตือนเฉย ๆ ไม่ตัดทิ้ง)', en:'刑/害 (warning only)', zh:'刑/害 (僅警告)' },
+  'auto.d.014': { th:'คัดยาม', en:'Avoid', zh:'避' },
   'auto.d.015': { th:'ดูประตู+ดาว+เทพ ของยาม — ตัดยามที่ตก 死/驚/傷', en:'Check 門+星+神 of hour — drop 死/驚/傷', zh:'察時辰門星神 — 去死/驚/傷' },
   'auto.d.016': { th:'ค่ายคำนวณ:', en:'Calc School:', zh:'算法派:' },
   'auto.d.017': { th:'เข้มงวด · ตัดถ้าประตูร้าย', en:'Strict · drop if inauspicious door', zh:'嚴格·凶門即去' },
   'auto.d.018': { th:'คะแนน', en:'Score', zh:'分數' },
-  'auto.d.019': { th:'Pattern ธาตุของยาม — score 25-90 · ใช้กรองและจัดอันดับ', en:'Element pattern of hour — score 25-90 · used to filter & rank', zh:'時辰五行格局 — 25-90分·篩選排序' },
+  'auto.d.019': { th:'รูปแบบธาตุของยาม — ให้คะแนน 25-90 · ใช้กรองและจัดอันดับ', en:'Element pattern of hour — score 25-90 · used to filter & rank', zh:'時辰五行格局 — 25-90分·篩選排序' },
   'auto.d.020': { th:'คะแนนขั้นต่ำ:', en:'Minimum score:', zh:'最低分數:' },
   'auto.d.021': { th:'ตีความ', en:'Interpret', zh:'釋義' },
-  'auto.d.022': { th:'เพิ่มการตีความ hexagram ของยาม — commentary ไม่กรอง', en:'Add hexagram interpretation — commentary, not filtered', zh:'加卦象釋義 — 評語·不過濾' },
+  'auto.d.022': { th:'เพิ่มคำอ่านข่วยของยาม — ใช้อธิบาย ไม่ได้ตัดวันทิ้ง', en:'Add hexagram interpretation — commentary, not filtered', zh:'加卦象釋義 — 評語·不過濾' },
   'auto.d.023': { th:'⚡ ค้นหาฤกษ์', en:'⚡ Search Auspicious Time', zh:'⚡ 搜尋吉時' },
   'auto.d.024': { th:'รอการค้นหา', en:'Awaiting search', zh:'待搜尋' },
-  'auto.d.025': { th:'🔍 Filter Funnel · ขั้นตอนการกรอง', en:'🔍 Filter Funnel · Filtering Steps', zh:'🔍 濾網漏斗·過濾步驟' },
-  'auto.d.026': { th:'💬 ซินแสวางฤกษ์ · AI Sifu', en:'💬 Sifu Auspicious Timing · AI Sifu', zh:'💬 師父擇吉 · AI Sifu' },
+  'auto.d.025': { th:'🔍 ขั้นตอนการกรอง · 漏斗', en:'🔍 Filter Funnel · Filtering Steps', zh:'🔍 濾網漏斗·過濾步驟' },
+  'auto.d.026': { th:'💬 ซินแสวางฤกษ์ · ระบบช่วยอ่านผล', en:'💬 Sifu Auspicious Timing · AI Sifu', zh:'💬 師父擇吉 · AI Sifu' },
   'auto.d.027': { th:'วางฤกษ์ของท่าน', en:'Your auspicious timing', zh:'為您擇吉' },
   /* AI Sifu + results · 15 พ.ค. */
-  'dp.sifu.btn':     { th:'💬 ขอวิเคราะห์ผลค้นหา · AI Sifu', en:'💬 Analyze search · AI Sifu', zh:'💬 分析搜尋 · AI 師父' },
-  'dp.sifu.h3':      { th:'💬 ซินแสวางฤกษ์ · AI Sifu', en:'💬 Date-Picking Sifu · AI', zh:'💬 擇日師父 · AI' },
+  'dp.sifu.btn':     { th:'💬 ขอซินแสช่วยอ่านผล', en:'💬 Analyze search · AI Sifu', zh:'💬 分析搜尋 · AI 師父' },
+  'dp.sifu.h3':      { th:'💬 ซินแสวางฤกษ์ · ระบบช่วยอ่านผล', en:'💬 Date-Picking Sifu · AI', zh:'💬 擇日師父 · AI' },
   'dp.sifu.thinking':{ th:'ซินแสกำลังคิด...', en:'Sifu is thinking...', zh:'師父思考中...' },
   'dp.sifu.err':     { th:'ขัดข้อง', en:'Error', zh:'錯誤' },
   'dp.search.alert': { th:'กรุณาค้นหาฤกษ์ก่อน', en:'Please search first', zh:'請先搜尋日子' },
@@ -1858,7 +1914,7 @@ Object.assign(window.HK_I18N, {
   'dp.search.notfound':{ th:'ไม่พบฤกษ์ที่ผ่านเกณฑ์', en:'No suitable dates found', zh:'未找到合適日子' },
   'dp.search.hint':  { th:'ลองขยายช่วงวัน · เปลี่ยนสำนัก · หรือเลือกกิจกรรมอื่น', en:'Try wider date range · different school · or other activity', zh:'試擴大日期 · 換派 · 或選別活動' },
   'dp.search.searching':{ th:'กำลังค้นหา...', en:'Searching...', zh:'搜尋中...' },
-  'dp.search.searching_full':{ th:'กำลังค้นฤกษ์จริงผ่าน Qimen API + กรอง 5 ชั้น...', en:'Searching via Qimen API + 5-layer filter...', zh:'透過 Qimen API 搜尋 + 5 層篩選...' },
+  'dp.search.searching_full':{ th:'กำลังค้นฤกษ์จริงผ่าน engine + กรองหลายชั้น...', en:'Searching via Qimen API + 5-layer filter...', zh:'透過 Qimen API 搜尋 + 5 層篩選...' },
   'dp.search.btn':   { th:'⚡ ค้นหาฤกษ์', en:'⚡ Find Best Dates', zh:'⚡ 擇日' },
   'dp.search.searching_btn':{ th:'⏳ กำลังค้นหา...', en:'⏳ Searching...', zh:'⏳ 搜尋中...' },
   'hk.nav.chart':   { th:'ดวง',       en:'Chart',    zh:'命盤' },

@@ -4,6 +4,7 @@ const files = [
   'public/chart.html',
   'public/today.html',
   'public/yongsennetwork.html',
+  'public/datepick.html',
 ];
 
 let failed = false;
