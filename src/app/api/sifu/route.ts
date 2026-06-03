@@ -248,6 +248,11 @@ function loadSifuExtraKnowledge(): { text: string; version: string } {
   _sifuExtraCache = { text, ts: now, version };
   return _sifuExtraCache;
 }
+
+function buildSifuRuleVersion(model: SifuModel): string {
+  const baseVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
+  return model === "codex-cli" ? baseVersion + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION : baseVersion;
+}
 /* 💾 DB result cache · TTL 24h */
 const CACHE_TTL_HOURS = 24;
 function resolveSifuModel(raw: unknown): SifuModel {
@@ -1133,7 +1138,7 @@ export async function POST(req: Request) {
     if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
     const orgId = session?.orgId ?? null;
 
-    const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION + "-idlock1-dayboundary1";
+    const ajekVersion = buildSifuRuleVersion(sifuModel);
     const dayKey = await getDayPillarKey();
     const ctxT0 = Date.now();
     let contextCache: SifuContextCacheStatus = "skip";
@@ -1366,7 +1371,7 @@ export async function GET(req: Request) {
   if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   const orgId = session?.orgId ?? null;
 
-  const ajekVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION + "-idlock1-dayboundary1";
+  const ajekVersion = buildSifuRuleVersion(sifuModel);
   const dayKey = await getDayPillarKey();
   const ctxT0 = Date.now();
   let contextCache: SifuContextCacheStatus = "skip";
