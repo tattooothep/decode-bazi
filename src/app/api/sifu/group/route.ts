@@ -45,9 +45,18 @@ type SifuModel = "claude-max-cli" | "codex-cli";
 const TIMEOUT_MS = 600_000; // เท่ากับ /api/sifu · ตำราคลาสสิก + หลายคน = prompt ยาว
 const CHILD_USER = "jarvis";
 const MAX_GROUP = 10; // cap กัน abuse/token
+const CODEX_GROUP_MAX_RAW = Number(process.env.SIFU_CODEX_GROUP_MAX || 3);
+const CODEX_GROUP_MAX = Number.isFinite(CODEX_GROUP_MAX_RAW)
+  ? Math.max(1, Math.min(MAX_GROUP, CODEX_GROUP_MAX_RAW))
+  : 3;
 const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 7_000);
 const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
 const CODEX_CLI_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
+const CODEX_COMPACT_KNOWLEDGE = [
+  "Codex compact mode: ใช้ข้อมูลดวง/packet/interactions ที่ส่งมาเป็น source of truth สูงสุด",
+  "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน 用神/忌神 หรือวัยจรที่ packet ไม่ได้ให้",
+  "ไทยนำ จีนรอง อธิบายผลจริงตรงคำถาม และรักษา ID line ตามกฎ prompt หลัก",
+].join("\n");
 
 function resolveSifuModel(raw: unknown): SifuModel {
   const s = String(raw || "").trim().toLowerCase();
@@ -373,24 +382,29 @@ const GROUP_INSTRUCTION: Record<string, string> = {
 };
 
 /* ประกอบ prompt · reuse sifu-qa.md เป็นฐาน เหมือน buildPrompt branch Q&A ใน /api/sifu */
-function buildGroupPrompt(opts: { ctx: string; message: string; history: Msg[]; lang: string }): string {
+function buildGroupPrompt(opts: { ctx: string; message: string; history: Msg[]; lang: string; compactKnowledge?: boolean }): string {
   const langKey = (opts.lang || "th").toUpperCase();
   const histText = opts.history.length
     ? "\n\nประวัติคำถาม:\n" + opts.history.map(h => `[${h.role}] ${h.content}`).join("\n")
     : "";
-  const ajek = loadAjekRules();
-  const rulesBlock = ajek.text
-    ? "\n\n" + loadPromptMd("prompts/sifu-rules-header.md").trim().replace("{{RULES}}", () => ajek.text) + "\n"
-    : "";
-  const interaction = loadInteractionMaster();
-  const interactionBlock = interaction.text
-    ? "\n\n" + loadPromptMd("prompts/sifu-interaction-header.md").trim().replace("{{INTERACTION}}", () => interaction.text) + "\n"
-    : "";
-  const engineKnow = loadEngineKnowledge();
+  const compact = opts.compactKnowledge === true;
+  const ajek = compact ? { text: "", version: "codex-compact" } : loadAjekRules();
+  const rulesBlock = compact
+    ? "\n\n" + CODEX_COMPACT_KNOWLEDGE + "\n"
+    : ajek.text
+      ? "\n\n" + loadPromptMd("prompts/sifu-rules-header.md").trim().replace("{{RULES}}", () => ajek.text) + "\n"
+      : "";
+  const interaction = compact ? { text: "", version: "codex-compact" } : loadInteractionMaster();
+  const interactionBlock = compact
+    ? "\n\nปฏิกิริยา: ใช้เฉพาะรายการ interaction/synastry ที่ packet ส่งมา เช่น ปฏิกิริยาในดวง วัยจร×ดวงเกิด ปีจร×เสาวัน และข้ามคน · ห้ามสร้างคู่ใหม่เอง\n"
+    : interaction.text
+      ? "\n\n" + loadPromptMd("prompts/sifu-interaction-header.md").trim().replace("{{INTERACTION}}", () => interaction.text) + "\n"
+      : "";
+  const engineKnow = compact ? { text: "", version: "codex-compact" } : loadEngineKnowledge();
   const engineBlock = engineKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-engine-header.md").trim().replace("{{ENGINE}}", () => engineKnow.text) + "\n"
     : "";
-  const extraKnow = loadSifuExtraKnowledge();
+  const extraKnow = compact ? { text: "", version: "codex-compact" } : loadSifuExtraKnowledge();
   const extraBlock = extraKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => extraKnow.text) + "\n"
     : "";
@@ -646,6 +660,10 @@ export async function POST(req: Request) {
     profileIds = [...new Set(profileIds)]; // unique
     if (profileIds.length === 0) return NextResponse.json({ error: "profileIds ว่าง" }, { status: 400 });
     if (profileIds.length > MAX_GROUP) profileIds = profileIds.slice(0, MAX_GROUP); // cap 10
+    if (sifuModel === "codex-cli" && profileIds.length > CODEX_GROUP_MAX) {
+      console.log(`[sifu/group guard] model=codex-cli count=${profileIds.length} max=${CODEX_GROUP_MAX}`);
+      return NextResponse.json({ error: "codex_context_limit_group_size", max: CODEX_GROUP_MAX, count: profileIds.length }, { status: 400 });
+    }
     console.log(`[sifu/group model] model=${sifuModel} stream=${body.stream === true ? "1" : "0"} count=${profileIds.length}`);
 
     /* 🔐 org guard · ดึงทุก profile ใน org เดียวกันเท่านั้น (กัน IDOR · สำคัญสุด) */
@@ -697,7 +715,11 @@ export async function POST(req: Request) {
     const syn = buildSynastry(people, lang);
     if (syn) groupCtx += "\n\n" + syn;
 
-    const prompt = buildGroupPrompt({ ctx: groupCtx, message, history, lang });
+    const compactKnowledge = sifuModel === "codex-cli";
+    const prompt = buildGroupPrompt({ ctx: groupCtx, message, history, lang, compactKnowledge });
+    if (compactKnowledge) {
+      console.log(`[sifu/group prompt] model=${sifuModel} compact=1 count=${ordered.length} chars=${prompt.length}`);
+    }
 
     /* 🌊 SSE เมื่อ Accept: text/event-stream หรือ stream===true · ยก pattern จาก POST /api/sifu เป๊ะ
      * ห้ามใส่ AbortController / idle-timeout / reader.cancel (บทเรียน stream พัง) */

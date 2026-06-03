@@ -1279,6 +1279,10 @@
       var phG = addMsg('sifu', 'ซินแสกำลังคิด ...');
       try {
         var modelG = selectedSifuModel();
+        if (modelG === 'codex-cli' && hkgG.ids.length > 3) {
+          phG.textContent = '⚠ Codex CLI รับโหมดกลุ่มได้สูงสุด 3 คนต่อครั้ง เพราะ packet ดวงหลายคนยาวเกิน context · ถ้าจะอ่าน 10 คนให้เลือก Claude CLI หรือแบ่งกลุ่มย่อย';
+          return true;
+        }
         var rG = await fetch('/api/sifu/group?model=' + encodeURIComponent(modelG), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
@@ -1320,7 +1324,9 @@
           }
         } else {
           var dG = await rG.json().catch(function(){ return {}; });
-          if (rG.ok && dG.reply) renderMd(phG, dG.reply); else phG.textContent = '⚠ ขัดข้อง: ' + (dG.error || rG.status);
+          if (rG.ok && dG.reply) renderMd(phG, dG.reply);
+          else if (dG.error === 'codex_context_limit_group_size') phG.textContent = '⚠ Codex CLI รับโหมดกลุ่มได้สูงสุด ' + (dG.max || 3) + ' คนต่อครั้ง · ถ้าจะอ่าน ' + (dG.count || 'หลาย') + ' คนให้เลือก Claude CLI หรือแบ่งกลุ่มย่อย';
+          else phG.textContent = '⚠ ขัดข้อง: ' + (dG.error || rG.status);
           if (rG.ok && dG.reply){
             history.push({ role:'user', content:text });
             history.push({ role:'assistant', content:dG.reply });
@@ -1333,7 +1339,9 @@
           ? '⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis'
           : emG.indexOf('identity_mismatch') !== -1
             ? 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ'
-            : '⚠ ขัดข้อง: ' + (emG || 'เครือข่ายขัดข้อง · ลองใหม่');
+            : (emG.indexOf('codex_context_limit_group_size') !== -1 || emG.indexOf('context window') !== -1)
+              ? '⚠ Codex CLI รับ prompt นี้ไม่ไหวเพราะ context เต็ม · ใช้ Claude CLI หรือแบ่งกลุ่มให้เล็กลง'
+              : '⚠ ขัดข้อง: ' + (emG || 'เครือข่ายขัดข้อง · ลองใหม่');
       } finally {
         sendBtn.disabled = false; window._sifuStreaming = false;
         if (hkgGoBtn) hkgGoBtn.disabled = false;

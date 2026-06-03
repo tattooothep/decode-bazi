@@ -85,6 +85,11 @@ async function computeRootedness(pillars: { year: { stem: string; branch: string
 const INTRO_OPENROUTER_MODEL = process.env.SIFU_INTRO_MODEL || "anthropic/claude-opus-4.7";
 const CHILD_USER = "jarvis";
 const CODEX_CLI_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
+const CODEX_COMPACT_KNOWLEDGE = [
+  "Codex compact mode: ใช้ข้อมูลดวง/packet/interactions ที่ส่งมาเป็น source of truth สูงสุด",
+  "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน 用神/忌神 หรือวัยจรที่ packet ไม่ได้ให้",
+  "ไทยนำ จีนรอง อธิบายผลจริงตรงคำถาม และรักษา ID line ตามกฎ prompt หลัก",
+].join("\n");
 const STEM_ELEMENT_MAP: Record<string, string> = {
   甲: "wood", 乙: "wood", 丙: "fire", 丁: "fire", 戊: "earth", 己: "earth",
   庚: "metal", 辛: "metal", 壬: "water", 癸: "water",
@@ -685,6 +690,7 @@ function buildPrompt(opts: {
   topic?: string;
   lang: string;
   mode?: string;
+  compactKnowledge?: boolean;
 }): string {
   /* 25 พ.ค. · ทุก persona/คำสั่ง/ภาษา/หัวคัมภีร์ อ่านจาก md (แก้ผ่าน /admin/sifu-prompts) · ไม่มี persona ผูกในโค้ด · .default.md = ตัวกันพัง */
   const langKey = (opts.lang || "th").toUpperCase();
@@ -715,19 +721,24 @@ function buildPrompt(opts: {
     : "";
   const topicMap = loadPromptKV("prompts/sifu-topics.md");
   const focus = opts.topic && topicMap[opts.topic] ? `\nหัวข้อ: ${topicMap[opts.topic]}` : "";
-  const ajek = loadAjekRules();
-  const rulesBlock = ajek.text
-    ? "\n\n" + loadPromptMd("prompts/sifu-rules-header.md").trim().replace("{{RULES}}", () => ajek.text) + "\n"
-    : "";
-  const interaction = loadInteractionMaster();
-  const interactionBlock = interaction.text
-    ? "\n\n" + loadPromptMd("prompts/sifu-interaction-header.md").trim().replace("{{INTERACTION}}", () => interaction.text) + "\n"
-    : "";
-  const engineKnow = loadEngineKnowledge();
+  const compact = opts.compactKnowledge === true;
+  const ajek = compact ? { text: "", version: "codex-compact" } : loadAjekRules();
+  const rulesBlock = compact
+    ? "\n\n" + CODEX_COMPACT_KNOWLEDGE + "\n"
+    : ajek.text
+      ? "\n\n" + loadPromptMd("prompts/sifu-rules-header.md").trim().replace("{{RULES}}", () => ajek.text) + "\n"
+      : "";
+  const interaction = compact ? { text: "", version: "codex-compact" } : loadInteractionMaster();
+  const interactionBlock = compact
+    ? "\n\nปฏิกิริยา: ใช้เฉพาะรายการ interaction ที่ packet ส่งมา เช่น ปฏิกิริยาในดวง วัยจร×ดวงเกิด และปีจร×เสาวัน · ห้ามสร้างคู่ใหม่เอง\n"
+    : interaction.text
+      ? "\n\n" + loadPromptMd("prompts/sifu-interaction-header.md").trim().replace("{{INTERACTION}}", () => interaction.text) + "\n"
+      : "";
+  const engineKnow = compact ? { text: "", version: "codex-compact" } : loadEngineKnowledge();
   const engineBlock = engineKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-engine-header.md").trim().replace("{{ENGINE}}", () => engineKnow.text) + "\n"
     : "";
-  const extraKnow = loadSifuExtraKnowledge();
+  const extraKnow = compact ? { text: "", version: "codex-compact" } : loadSifuExtraKnowledge();
   const extraBlock = extraKnow.text
     ? "\n\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => extraKnow.text) + "\n"
     : "";
@@ -1141,7 +1152,7 @@ export async function POST(req: Request) {
     }
     /* ⚠️ ส่ง history จริงเข้า prompt (ไม่ใช่ history:[] แบบ GET) · คำตอบต้องจำบทสนทนา */
     const promptT0 = Date.now();
-    const prompt = buildPrompt({ ctx, message, history, topic, lang, mode });
+    const prompt = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: sifuModel === "codex-cli" });
     const promptMs = Date.now() - promptT0;
 
     /* 🌊 SSE streaming เมื่อ Accept: text/event-stream หรือ body.stream === true
@@ -1413,7 +1424,7 @@ export async function GET(req: Request) {
       // 2. Cache miss → spawn Claude + pipe stdout chunk-by-chunk
       const warmup = mode === "intro" ? buildIntroWarmup(ctx) : null;
       const promptT0 = Date.now();
-      const promptBase = buildPrompt({ ctx, message, history: [], topic, lang, mode });
+      const promptBase = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: sifuModel === "codex-cli" });
       const prompt = warmup
         ? `${promptBase}\n\n${loadPromptMd("prompts/sifu-intro-resume-note.md").trim()}`
         : promptBase;
