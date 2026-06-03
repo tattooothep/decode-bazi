@@ -165,6 +165,11 @@
   .hk-node-tip .sc.pos b{color:var(--good);}
   .hk-node-tip .sc.neg b{color:var(--bad);}
   .hk-node-tip .sc.mid b{color:var(--neutral);}
+  .hk-node-tip .rx{margin-top:8px;padding-top:8px;border-top:1px dashed var(--tile-bd);line-height:1.45;}
+  .hk-node-tip .rx .rx-l{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--neutral);}
+  .hk-node-tip .rx.pos .rx-l{color:var(--good);}
+  .hk-node-tip .rx.neg .rx-l{color:var(--bad);}
+  .hk-node-tip .rx .rx-t{margin-top:4px;color:var(--fg-soft);}
   .hk-node-tip .tg{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
   .hk-node-tip .tg span{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:99px;border:1px solid var(--gold-line);color:var(--gold);}
   .hk-node-tip .hint{margin-top:10px;padding-top:8px;border-top:1px dashed var(--tile-bd);font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.1em;}
@@ -312,7 +317,25 @@
     .hk-forecast-item{grid-template-columns:64px 50px 1fr;}
   }
 
-  .pc-rel{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;padding-top:14px;border-top:1px dashed var(--tile-bd);}
+  .pc-rel{margin-top:14px;padding-top:14px;border-top:1px dashed var(--tile-bd);}
+  .pc-verdict{display:flex;flex-direction:column;gap:8px;font-family:var(--thai);}
+  .pc-v-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+  .pc-v-label{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--neutral);white-space:nowrap;}
+  .pc-verdict.pos .pc-v-label{color:var(--good);}
+  .pc-verdict.neg .pc-v-label{color:var(--bad);}
+  .pc-v-score{font-family:var(--mono);font-size:9px;color:var(--fg-faint);white-space:nowrap;}
+  .pc-v-text{font-size:12px;line-height:1.55;color:var(--fg-soft);}
+  .pc-v-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .pc-v-chip{font-family:var(--mono);font-size:9px;letter-spacing:.08em;padding:3px 8px;border-radius:99px;border:1px solid var(--neutral);color:var(--neutral);background:var(--metal-bg);}
+  .pc-v-chip.good{border-color:var(--good);color:var(--good);background:var(--wood-bg);}
+  .pc-v-chip.bad{border-color:var(--bad);color:var(--bad);background:var(--fire-bg);}
+  .pc-v-chip.ctx{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);}
+  .pc-raw-tags{margin-top:2px;}
+  .pc-raw-tags summary{cursor:pointer;list-style:none;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--fg-faint);text-transform:uppercase;}
+  .pc-raw-tags summary::-webkit-details-marker{display:none;}
+  .pc-raw-tags summary::after{content:' +';color:var(--gold);}
+  .pc-raw-tags[open] summary::after{content:' -';}
+  .pc-raw-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .pc-rel .b{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:4px 8px;border-radius:99px;border:1px solid;}
   .pc-rel .b.good{color:var(--good);border-color:var(--good);background:var(--wood-bg);}
   .pc-rel .b.bad{color:var(--bad);border-color:var(--bad);background:var(--fire-bg);}
@@ -1682,6 +1705,160 @@
   function escHtml(s){
     return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
+
+  function pairTagTone(tag){
+    const t = String(tag || '');
+    if (/沖去忌神|合勢喜神|六合勢喜神|六合勢用神|半三合用神|半三會用神|三合用神|三會用神|合化用神/.test(t)) return 'ctx';
+    if (/忌神|病|沖動用神|跨柱沖|跨柱刑|跨柱破|跨柱害|天干沖|合勢忌神|三會忌神|三合忌神|半三合忌神|半三會忌神|沖|刑|害|破|克我|我生|生·เสียพลัง/.test(t)) return 'bad';
+    if (/用神|喜神|藥|六合|三合|三會|半三合|半三會|天干合|合|比和|生我|我克/.test(t)) return 'good';
+    return 'mid';
+  }
+
+  function pairTagShort(tag){
+    const t = String(tag || '');
+    if (/沖去忌神/.test(t)) return '沖去忌神';
+    if (/沖動用神/.test(t)) return '沖動用神';
+    if (/六合/.test(t)) return '六合';
+    if (/三合/.test(t)) return '三合';
+    if (/三會/.test(t)) return '三會';
+    if (/天干沖/.test(t)) return '天干沖';
+    if (/天干合/.test(t)) return '天干合';
+    if (/用神/.test(t)) return '用神';
+    if (/喜神/.test(t)) return '喜神';
+    if (/忌神/.test(t)) return '忌神';
+    if (/沖/.test(t)) return '沖';
+    if (/刑/.test(t)) return '刑';
+    if (/害/.test(t)) return '害';
+    if (/破/.test(t)) return '破';
+    if (/生我|我生|我克|克我|比和/.test(t)) return t.match(/生我|我生|我克|克我|比和/)?.[0] || t;
+    return t;
+  }
+
+  function uniqueCompactTags(tags){
+    const seen = new Set();
+    return (tags || []).map(pairTagShort).filter(t => {
+      if (!t || seen.has(t)) return false;
+      seen.add(t);
+      return true;
+    });
+  }
+
+  function pairScoreBand(score){
+    const s = Number(score) || 0;
+    if (s >= 20) return { tone:'pos', label:'หนุนชัด' };
+    if (s >= 5) return { tone:'pos', label:'หนุนเบา' };
+    if (s <= -20) return { tone:'neg', label:'ปะทะชัด' };
+    if (s <= -5) return { tone:'neg', label:'ระวัง' };
+    return { tone:'mid', label:'กลาง / ผสม' };
+  }
+
+  function getPairExplanation(a, b, tf){
+    if (!a || !b || a === b) return null;
+    const cache = window._engineScores?.[a]?.[b];
+    if (NETWORK_SCORING_VERSION === 'v2' && !cache) {
+      return {
+        pending: true,
+        score: 0,
+        tone: 'mid',
+        label: 'กำลังคำนวณ',
+        summary: 'รอคะแนนปฏิกิริยาจาก engine · เดี๋ยวหน้ารีเฟรชข้อมูลให้อัตโนมัติ',
+        tags: [],
+        support: [],
+        risk: [],
+        mixed: [],
+        tf: tf || 'week',
+      };
+    }
+    const score = typeof getScore === 'function' ? getScore(a, b, tf || 'week') : 0;
+    const tags = typeof getTags === 'function' ? getTags(a, b) : [];
+    const grouped = { support: [], risk: [], mixed: [] };
+    (tags || []).forEach(tag => {
+      const tone = pairTagTone(tag);
+      if (tone === 'good' || tone === 'ctx') grouped.support.push(tag);
+      else if (tone === 'bad') grouped.risk.push(tag);
+      else grouped.mixed.push(tag);
+    });
+
+    const bd = window._engineBreakdown?.[a]?.[b]?.atob || {};
+    const supportPower = Math.round((bd.support || 0) + (bd.bond || 0));
+    const riskPower = Math.round((bd.friction || 0) + (bd.volatility || 0));
+    const guidance = window._engineGuidance?.[a]?.[b];
+    const band = pairScoreBand(score);
+
+    let label = band.label;
+    if (supportPower >= 25 && riskPower >= 25) {
+      label = score >= 10 ? 'หนุนแบบมีเงื่อนไข' : score <= -10 ? 'ระวังแต่มีตัวช่วย' : 'ผสมแรง';
+    }
+
+    const supportText = uniqueCompactTags(grouped.support).slice(0, 3).join(' · ');
+    const riskText = uniqueCompactTags(grouped.risk).slice(0, 3).join(' · ');
+    let summary;
+    if (supportText && riskText) {
+      if (score >= 5) summary = `คะแนนบวกเพราะ ${supportText} ชนะน้ำหนักปะทะ แต่ยังต้องระวัง ${riskText}`;
+      else if (score <= -5) summary = `คะแนนลบเพราะ ${riskText} แรงกว่าแรงหนุน ${supportText}`;
+      else summary = `แรงหนุน ${supportText} กับแรงปะทะ ${riskText} ถ่วงกัน จึงออกกลาง`;
+    } else if (supportText) {
+      summary = `แรงหนุนหลักมาจาก ${supportText} เหมาะใช้สัมพันธ์นี้ในงานที่ต้องพยุงกัน`;
+    } else if (riskText) {
+      summary = `แรงกดหลักมาจาก ${riskText} ควรคุยขอบเขตและเวลาให้ชัดก่อนลงมือ`;
+    } else {
+      summary = guidance?.primary || 'ปฏิกิริยาไม่เด่นมาก คะแนนจึงใกล้กลาง ใช้ตามบริบทจริงเป็นหลัก';
+    }
+
+    return {
+      pending: false,
+      score,
+      tone: band.tone,
+      label,
+      summary,
+      tags: tags || [],
+      support: grouped.support,
+      risk: grouped.risk,
+      mixed: grouped.mixed,
+      supportPower,
+      riskPower,
+      tf: tf || 'week',
+    };
+  }
+
+  function renderPairChip(tag, tone){
+    const cls = tone || pairTagTone(tag);
+    const css = cls === 'bad' ? 'bad' : cls === 'ctx' ? 'ctx' : cls === 'good' ? 'good' : 'mid';
+    return `<span class="pc-v-chip ${css}">${escHtml(pairTagShort(tag))}</span>`;
+  }
+
+  function renderRawTagChip(tag){
+    const cls = pairTagTone(tag);
+    const css = cls === 'bad' ? 'bad' : cls === 'ctx' ? 'ctx' : cls === 'good' ? 'good' : 'mid';
+    return `<span class="b ${css}">${escHtml(tag)}</span>`;
+  }
+
+  function renderPairExplanation(explain, opts){
+    if (!explain) return '';
+    const tfLabel = ({day:'วันนี้', week:'สัปดาห์', month:'เดือน', year:'ปี', luck:'10ปี'})[explain.tf] || explain.tf || '';
+    const support = uniqueCompactTags(explain.support).slice(0, 2).map(t => renderPairChip(t, 'good'));
+    const risk = uniqueCompactTags(explain.risk).slice(0, 2).map(t => renderPairChip(t, 'bad'));
+    const mixed = (!support.length && !risk.length ? uniqueCompactTags(explain.mixed).slice(0, 2).map(t => renderPairChip(t, 'mid')) : []);
+    const chips = support.concat(risk, mixed).join('');
+    const raw = (explain.tags || []).length
+      ? `<details class="pc-raw-tags"><summary>${escHtml(opts?.rawLabel || 'tags ดิบ')}</summary><div class="pc-raw-list">${explain.tags.map(renderRawTagChip).join('')}</div></details>`
+      : '';
+    return `<div class="pc-verdict ${explain.tone}">
+      <div class="pc-v-head"><span class="pc-v-label">${escHtml(explain.label)}</span><span class="pc-v-score">${escHtml(tfLabel)} ${fmt(explain.score || 0)}</span></div>
+      <div class="pc-v-text">${escHtml(explain.summary)}</div>
+      ${chips ? `<div class="pc-v-chips">${chips}</div>` : ''}
+      ${raw}
+    </div>`;
+  }
+
+  function renderPairTooltip(explain){
+    if (!explain) return '';
+    return `<div class="rx ${explain.tone}">
+      <div class="rx-l">${escHtml(explain.label)}</div>
+      <div class="rx-t">${escHtml(explain.summary)}</div>
+    </div>`;
+  }
+
   function colorizeLuckText(s){
     let out = escHtml(s);
     [
@@ -1876,17 +2053,9 @@
         rows = tfs.map(tf => renderRow(tfLabels[tf], getScore('self', p.id, tf), false)).join('');
       }
 
-      const tags = getTags('self', p.id);
-      const tagsHTML = tags.map(t=>{
-        /* 📜 context-aware tag classification */
-        let cls;
-        if (/⚠⚠|忌神แรง|多沖/.test(t)) cls = 'warn';
-        else if (/調候|用神·根|沖·ผสม|合化用神|沖去忌神/.test(t)) cls = 'ctx';
-        else if (/用神|合|生|被生|三合|三會|半合|半三會/.test(t)) cls = 'good';
-        else if (/沖|忌神|刑|害|破|被克|剋|生·เสียพลัง|แรงขับ/.test(t)) cls = 'bad';
-        else cls = 'mid';
-        return `<span class="b ${cls}">${t}</span>`;
-      }).join('');
+	      const explainTf = state.timeframe || 'day';
+	      const relExplain = (!isOwn && !isSelfCard) ? getPairExplanation('self', p.id, explainTf) : null;
+	      const relationHTML = relExplain ? renderPairExplanation(relExplain, { rawLabel:'รายละเอียด tags' }) : '';
 
       grid.insertAdjacentHTML('beforeend', `
         <div class="person-card score-${sClass}${isOwn ? ' own-mode' : ''}" data-id="${p.id}">
@@ -1900,7 +2069,7 @@
             <button class="pc-overview-btn" data-own-overview="1" data-person-id="${escHtml(p.id)}" type="button">ดูภาพรวม</button>
           </div>
           <div class="pc-scores-block">${rows}</div>
-          <div class="pc-rel">${isOwn ? '' : tagsHTML}</div>
+	          <div class="pc-rel">${isOwn ? '' : relationHTML}</div>
           <div class="pc-actions">
             <button data-compare="${p.id}" data-i18n="n.pc.compare">+ เปรียบเทียบ</button>
             <button data-set-center="${p.id}">มุมมอง ${p.name} →</button>
@@ -2172,20 +2341,20 @@
   solarEl.addEventListener('mouseover', (e)=>{
     const node = e.target.closest('.node');
     if (!node || !node.dataset.id) return;
-    const p = PEOPLE.find(x=>x.id===node.dataset.id);
-    if (!p) return;
-    const score = parseInt(node.dataset.score) || 0;
-    const sc = scoreClass(score);
-    const tags = getTags(state.centerId, p.id);
-    const role = resolveRole(p);
-    _tipEl.innerHTML = `
-      <div class="ng">${p.glyph}</div>
-      <div class="nm">${p.name}</div>
-      <div class="rl">${role||''}</div>
-      <div class="sc ${sc}"><b>${score>0?'+'+score:score}</b> <span style="font-size:10px;color:var(--fg-faint);margin-left:6px;letter-spacing:.15em;">${state.timeframe.toUpperCase()}</span></div>
-      ${tags.length ? `<div class="tg">${tags.map(t=>`<span>${t}</span>`).join('')}</div>` : ''}
-      <div class="hint" data-i18n="n.tip.hint">👆 คลิก = ดูดวง · กดค้าง = ย้าย Center</div>
-    `;
+	    const p = PEOPLE.find(x=>x.id===node.dataset.id);
+	    if (!p) return;
+	    const score = parseInt(node.dataset.score) || 0;
+	    const sc = scoreClass(score);
+	    const explain = getPairExplanation(state.centerId, p.id, state.timeframe);
+	    const role = resolveRole(p);
+	    _tipEl.innerHTML = `
+	      <div class="ng">${p.glyph}</div>
+	      <div class="nm">${p.name}</div>
+	      <div class="rl">${role||''}</div>
+	      <div class="sc ${sc}"><b>${score>0?'+'+score:score}</b> <span style="font-size:10px;color:var(--fg-faint);margin-left:6px;letter-spacing:.15em;">${state.timeframe.toUpperCase()}</span></div>
+	      ${renderPairTooltip(explain)}
+	      <div class="hint" data-i18n="n.tip.hint">👆 คลิก = ดูดวง · กดค้าง = ย้าย Center</div>
+	    `;
     _tipEl.classList.add('show');
   });
   solarEl.addEventListener('mousemove', (e)=>{
@@ -3283,7 +3452,9 @@ window.applyI18N = applyI18N;
 .pcm-scoreline.pos .num{color:var(--good);}
 .pcm-scoreline.neg .num{color:var(--bad);}
 .pcm-scoreline.mid .num{color:var(--neutral);}
-.pcm-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.pcm-rel-explain{margin-top:12px;padding:12px 0;border-top:1px dashed var(--tile-bd);font-family:var(--thai);}
+.pcm-rel-explain .pc-verdict{gap:9px;}
+.pcm-tags{display:block;margin-top:8px;}
 .pcm-tags .b{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:4px 10px;border-radius:99px;border:1px solid var(--gold);color:var(--gold);background:var(--gold-soft);}
 .pcm-cta{display:flex;gap:8px;margin-top:20px;padding-top:18px;border-top:1px solid var(--tile-bd);}
 .pcm-cta a, .pcm-cta button{flex:1;padding:12px;background:transparent;border:1px solid var(--tile-bd);color:var(--fg-soft);border-radius:8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;text-decoration:none;text-align:center;transition:.2s;}
@@ -3727,9 +3898,9 @@ window.applyI18N = applyI18N;
         const fs = s===0 ? 'display:none;' : (s>0 ? `left:50%;width:${fillW}%;` : `right:50%;left:auto;width:${fillW}%;`);
         return `<div class="pcm-scoreline ${sc}"><span class="lbl">${tfLabels[tf]}</span><div class="bar"><div class="bar-fill" style="${fs}"></div></div><span class="num">${s>0?'+'+s:s===0?'0':s}</span></div>`;
       }).join('');
-      const tags = (typeof getTags==='function') ? getTags('self', person.id) : [];
-      tagsBox.innerHTML = tags.map(t=>`<span class="b">${t}</span>`).join('');
-    }
+	      const relExplain = getPairExplanation('self', person.id, state.timeframe || 'day');
+	      tagsBox.innerHTML = `<div class="pcm-rel-explain">${renderPairExplanation(relExplain, { rawLabel:'รายละเอียด tags ดิบ' })}</div>`;
+	    }
 
     /* Phase 3.2: render result + breakdown */
     const resSection = document.getElementById('cm-result-section');
