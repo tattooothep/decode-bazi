@@ -36,10 +36,10 @@ export async function GET(req: Request) {
   const limit = Math.max(20, Math.min(200, Number.isFinite(limitRaw) ? Math.floor(limitRaw) : 80));
   const search = (url.searchParams.get("q") || "").trim();
   const orgParam = admin.role === "env_admin" ? cleanUuid(url.searchParams.get("org")) : null;
-  const scopeOrgId = orgParam || admin.orgId || null;
+  const scopeOrgId = admin.role === "env_admin" ? orgParam : (admin.orgId || null);
   const searchLike = search ? `%${search}%` : null;
 
-  const params = [scopeOrgId, days, limit, searchLike];
+  try {
 
   const summary = await q1<{
     users_total: number;
@@ -70,7 +70,7 @@ export async function GET(req: Request) {
        (SELECT COUNT(*)::int FROM qna) AS qna_total,
        (SELECT COUNT(*)::int FROM qna WHERE created_at >= now() - ($2::int || ' days')::interval) AS qna_recent,
        (SELECT COUNT(*)::int FROM research_events e WHERE ($1::uuid IS NULL OR e.org_id=$1::uuid) AND e.created_at >= now() - ($2::int || ' days')::interval) AS events_recent`,
-    params
+    [scopeOrgId, days]
   );
 
   const users = await q(
@@ -116,10 +116,10 @@ export async function GET(req: Request) {
        LEFT JOIN qna_counts qc ON qc.user_id=su.id
        LEFT JOIN event_counts ec ON ec.user_id=su.id
        LEFT JOIN profile_counts pc ON pc.user_id=su.id
-      WHERE ($4::text IS NULL OR su.email ILIKE $4 OR su.name ILIKE $4 OR su.phone ILIKE $4)
+      WHERE ($3::text IS NULL OR su.email ILIKE $3 OR su.name ILIKE $3 OR su.phone ILIKE $3)
       ORDER BY COALESCE(ec.last_event_at, qc.last_qna_at, su.last_active_at, su.created_at) DESC NULLS LAST
-      LIMIT $3`,
-    params
+      LIMIT $2::int`,
+    [scopeOrgId, limit, searchLike]
   );
 
   const qna = await q(
@@ -172,10 +172,10 @@ export async function GET(req: Request) {
        FROM merged
        LEFT JOIN users u ON u.id=merged.user_id
        LEFT JOIN profiles p ON p.id=merged.profile_id
-      WHERE ($4::text IS NULL OR u.email ILIKE $4 OR u.name ILIKE $4 OR p.name ILIKE $4 OR merged.question ILIKE $4)
+      WHERE ($3::text IS NULL OR u.email ILIKE $3 OR u.name ILIKE $3 OR p.name ILIKE $3 OR merged.question ILIKE $3)
       ORDER BY merged.created_at DESC
-      LIMIT $3`,
-    params
+      LIMIT $2::int`,
+    [scopeOrgId, limit, searchLike]
   );
 
   const trafficByPath = await q(
@@ -190,7 +190,7 @@ export async function GET(req: Request) {
       GROUP BY page_path, event_name
       ORDER BY count DESC, last_at DESC
       LIMIT 40`,
-    params
+    [scopeOrgId, days]
   );
 
   const recentEvents = await q(
@@ -198,12 +198,12 @@ export async function GET(req: Request) {
             e.payload, e.created_at,
             u.email, u.name AS user_name, p.name AS profile_name
        FROM research_events e
-       LEFT JOIN users u ON u.id=e.user_id
-       LEFT JOIN profiles p ON p.id=e.profile_id
+      LEFT JOIN users u ON u.id=e.user_id
+      LEFT JOIN profiles p ON p.id=e.profile_id
       WHERE ($1::uuid IS NULL OR e.org_id=$1::uuid)
       ORDER BY e.created_at DESC
-      LIMIT $3`,
-    params
+      LIMIT $2::int`,
+    [scopeOrgId, limit]
   );
 
   return NextResponse.json({
@@ -216,6 +216,11 @@ export async function GET(req: Request) {
     traffic_by_path: trafficByPath,
     recent_events: recentEvents,
   }, { headers: { "Cache-Control": "no-store, max-age=0" } });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "research query failed";
+    console.error("[admin/research] GET failed:", e);
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
 }
 
 export async function PATCH(req: Request) {
