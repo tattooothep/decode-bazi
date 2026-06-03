@@ -13,6 +13,7 @@
  * 15 พ.ค. 2026 · อากง
  */
 import { NextResponse } from "next/server";
+import { GET as getToday } from "@/app/api/today/route";
 
 const QIMEN_BASE = process.env.QIMEN_API_URL || "http://localhost:4090";
 
@@ -238,10 +239,9 @@ const HELUO_NATURE_SCORE: Record<string, number> = {
   '9':+5,'九':+5, // 九紫右弼 · 大吉 (joy·marriage · 9運當令)
 };
 
-async function fetchTongshuForDay(date: string, origin: string): Promise<{ yi: string[]; ji: string[]; day_officer: string; day_pillar: string; year_pillar: string; xiu28: string; star12: string; star9: string; gods: string[] } | null> {
+async function fetchTongshuForDay(date: string): Promise<{ yi: string[]; ji: string[]; day_officer: string; day_pillar: string; year_pillar: string; xiu28: string; star12: string; star9: string; gods: string[] } | null> {
   try {
-    const base = origin.replace(/\/$/, "");
-    const r = await fetch(`${base}/api/today?date=${date}`, { signal: AbortSignal.timeout(3000) });
+    const r = await getToday(new Request(`http://internal.hourkey/api/today?date=${encodeURIComponent(date)}`));
     if (!r.ok) return null;
     const d = await r.json();
     return {
@@ -303,10 +303,9 @@ export async function POST(req: Request) {
   /* P5 16 พ.ค.: pre-fetch Tongshu สำหรับแต่ละวัน (cache · 1 req/วัน) */
   const uniqueDates = Array.from(new Set(slots.map(s => s.date)));
   const tongshuCache: Record<string, Awaited<ReturnType<typeof fetchTongshuForDay>>> = {};
-  const todayOrigin = new URL(req.url).origin;
   if (useTongshu || useBazi || useJianchu || useTaisui || useXiu28 || useShen12 || useFly9 || useHeluo || userYongshen.length > 0) {
     await Promise.allSettled(uniqueDates.map(async dt => {
-      tongshuCache[dt] = await fetchTongshuForDay(dt, todayOrigin);
+      tongshuCache[dt] = await fetchTongshuForDay(dt);
     }));
   }
   const tongshuRule = ACTIVITY_TONGSHU[activity] || { good_keywords: [], bad_keywords: [] };
