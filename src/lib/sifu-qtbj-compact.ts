@@ -6,7 +6,7 @@ const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
 const QTBJ_TIAOHOU_FILE = "qtbj-tiaohou-clean.md";
 const QTBJ_TIAOHOU_LOOKUP_FILE = "qtbj-tiaohou-lookup.md";
 
-export const SIFU_CODEX_QTBJ_RETRIEVAL_VERSION = "codex-qtbj-retrieval-v2";
+export const SIFU_CODEX_QTBJ_RETRIEVAL_VERSION = "codex-qtbj-retrieval-v3";
 
 const STEMS = "甲乙丙丁戊己庚辛壬癸";
 const BRANCHES = "子丑寅卯辰巳午未申酉戌亥";
@@ -204,6 +204,19 @@ function extractCanonicalSnippet(clean: string, pair: QtbjPair, maxChars: number
   return picked.join("\n").slice(0, maxChars).trim();
 }
 
+function canonicalPriorityGuard(pair: QtbjPair): string | null {
+  const key = pairKey(pair);
+  if (key === "甲寅") {
+    return [
+      "### Canonical priority 甲寅",
+      "正月甲木/甲木生寅月: 調候/月令 anchor is 丙癸, especially 癸藏丙透 = 寒木向陽.",
+      "When summarizing 主用/次用 for climate, answer 丙 as the warming lead and 癸 as the moistening support.",
+      "庚 may appear in later notes about 旺木斫鑿/陽刃架殺/成材, but do not promote 庚 to default 調候次用 unless the chart packet explicitly asks about over-strong wood shaping.",
+    ].join("\n");
+  }
+  return null;
+}
+
 function describePairs(pairs: QtbjPair[]): string {
   if (!pairs.length) return "ไม่พบคู่ดิถี+เดือนจาก PILLAR LOCK หรือคำถามโดยตรง";
   return pairs.map(p => {
@@ -224,6 +237,9 @@ export function loadQtbjTiaohouCompactKnowledge(query: string): { text: string; 
       .map(pair => ({ pair, text: extractCanonicalSnippet(src.clean, pair, perPairCanonical) }))
       .filter(x => x.text)
       .map(x => `### Canonical ${pairKey(x.pair)}\n${x.text}`);
+    const priorityGuards = pairs
+      .map(canonicalPriorityGuard)
+      .filter((x): x is string => Boolean(x));
     const lookupBudget = Math.max(4_000, maxChars - canonical.join("\n\n").length - 1_200);
     const lookup = selectLookupBlocks(src.lookup, pairs, lookupBudget)
       .map((block, idx) => `### Thai lookup ${idx + 1}\n${block}`);
@@ -233,6 +249,9 @@ export function loadQtbjTiaohouCompactKnowledge(query: string): { text: string; 
       `Version: ${SIFU_CODEX_QTBJ_RETRIEVAL_VERSION}/${src.version}`,
       `Matched pairs: ${describePairs(pairs)}`,
       "Contract: ใช้เฉพาะชั้น 調候/月令 เพื่ออธิบายร้อน-เย็น-แห้ง-ชื้น; chart packet/engine เป็น source of truth สูงสุด; ถ้า block นี้ไม่มีคู่ที่ถาม ห้ามเดาตำราเพิ่มเอง",
+      "Priority: Canonical snippets and Canonical priority notes win over Thai lookup notes. Thai lookup is only an index/teaching memo and may contain conditional reaction examples; do not turn conditional examples into default 主用/次用.",
+      priorityGuards.length ? "## Canonical priority notes" : "",
+      ...priorityGuards,
       canonical.length ? "## Canonical snippets" : "",
       ...canonical,
       lookup.length ? "## Thai teaching lookup" : "",
