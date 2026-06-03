@@ -203,6 +203,17 @@
   .hk-chat-item .ci-body{flex:1;min-width:0;font-family:var(--thai);}
   .hk-chat-item .ci-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;}
   .hk-chat-item .ci-time{display:block;font-family:var(--mono);font-size:9px;color:var(--fg-faint);margin-top:2px;}
+  .hk-chat-item.renaming{background:var(--gold-soft);cursor:default;color:var(--fg);}
+  .hk-chat-item.renaming .ci-body{display:flex;align-items:center;gap:6px;}
+  .hk-chat-item.renaming .hk-chat-menu{display:none;}
+  .ci-rename{display:flex;align-items:center;gap:6px;width:100%;min-width:0;}
+  .ci-rename-input{flex:1;min-width:0;height:30px;border:1px solid var(--gold-line);border-radius:8px;background:rgba(255,255,255,.04);color:var(--fg);font-family:var(--thai);font-size:13px;padding:0 9px;outline:none;}
+  .ci-rename-input:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-soft);}
+  .ci-rename-actions{display:inline-flex;gap:3px;flex-shrink:0;}
+  .ci-rename-btn{width:28px;height:28px;border:1px solid var(--gold-line);border-radius:7px;background:var(--tile);color:var(--fg-soft);font-family:var(--mono);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+  .ci-rename-btn:hover{background:var(--gold-soft);color:var(--fg);}
+  .ci-rename-btn.save{color:var(--good);border-color:rgba(143,195,124,.35);}
+  .ci-rename-btn.cancel{color:var(--fg-faint);}
   .hk-chat-menu{flex-shrink:0;border:none;background:none;color:var(--fg-faint);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:6px;opacity:0;transition:.15s;}
   .hk-chat-item:hover .hk-chat-menu,.hk-chat-item.active .hk-chat-menu{opacity:.65;}
   .hk-chat-menu:hover{opacity:1;color:var(--fg);background:var(--gold-line);}
@@ -888,11 +899,13 @@
     /* ═══ ประวัติแชทแบบ thread (รวม · ไม่แยกดวง · sidebar Claude-style · 2 มิ.ย. เจ้านายสั่ง) ═══ */
     var THREADS_KEY = 'hk_sifu_threads';
     var currentThreadId = '';
+    var renamingThreadId = '';
     window._sifuStreaming = false;
     function loadThreads(){ try{ var o=JSON.parse(localStorage.getItem(THREADS_KEY)||'null'); if(o&&Array.isArray(o.threads)) return o; }catch(_){} return {activeId:'',threads:[]}; }
     function saveThreads(o){ try{ localStorage.setItem(THREADS_KEY, JSON.stringify(o)); }catch(_){} }
     function genTid(){ return 't'+Date.now()+Math.floor(Math.random()*9000+1000); }
     function tLoc(){ try{return localStorage.getItem('hk_locale')||'th';}catch(_){return 'th';} }
+    function escHtml(v){ return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
     function relTime(ts){ var now=new Date(), d=new Date(ts), L=tLoc(); var dd=Math.floor((now-d)/86400000); if(now.toDateString()===d.toDateString()) return L==='th'?'วันนี้':L==='zh'?'今天':'Today'; if(dd<=1) return L==='th'?'เมื่อวาน':L==='zh'?'昨天':'Yesterday'; return L==='th'?(dd+' วันก่อน'):L==='zh'?(dd+'天前'):(dd+'d'); }
     function persist(){ try{
       if(!history.length) return;   /* กัน thread ว่างตอนสลับดวง/กด New ซ้ำ (3 agent · agent2) */
@@ -905,11 +918,29 @@
       saveThreads(o); renderSidebar();
     }catch(_){} }
     function renderThreadMsgs(t){ history=(t&&t.msgs?t.msgs.slice(-40):[]); msgBox.innerHTML=''; if(!history.length){ addWelcomeMsg(); return; } history.forEach(function(m){ var dv=addMsg(m.role==='user'?'user':'sifu',m.content); if(m.role!=='user') renderMd(dv,m.content); }); }
-    function openThread(id){ if(window._sifuStreaming) return; persist(); currentThreadId=id; var o=loadThreads(); o.activeId=id; saveThreads(o); renderThreadMsgs(o.threads.find(function(x){return x.id===id;})); renderSidebar(); document.body.classList.remove('hk-side-open'); window.scrollTo(0,0); }
+    function openThread(id){ if(window._sifuStreaming) return; renamingThreadId=''; persist(); currentThreadId=id; var o=loadThreads(); o.activeId=id; saveThreads(o); renderThreadMsgs(o.threads.find(function(x){return x.id===id;})); renderSidebar(); document.body.classList.remove('hk-side-open'); window.scrollTo(0,0); }
     function newThread(){ if(window._sifuStreaming) return; persist(); var o=loadThreads(); var t={id:genTid(),title:'',ts:Date.now(),msgs:[]}; o.threads.unshift(t); currentThreadId=t.id; o.activeId=t.id; saveThreads(o); history=[]; msgBox.innerHTML=''; addWelcomeMsg(); renderSidebar(); document.body.classList.remove('hk-side-open'); }
     function deleteThread(id){ if(window._sifuStreaming) return; var o=loadThreads(); o.threads=o.threads.filter(function(x){return x.id!==id;}); var wasA=(currentThreadId===id); if(wasA){ currentThreadId=o.threads[0]?o.threads[0].id:genTid(); o.activeId=currentThreadId; } saveThreads(o); if(wasA){ renderThreadMsgs(o.threads.find(function(x){return x.id===currentThreadId;})); } renderSidebar(); }
     function togglePin(id){ if(window._sifuStreaming) return; var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id;}); if(t){ t.pinned=!t.pinned; saveThreads(o); renderSidebar(); } }
-    function renameThread(id){ if(window._sifuStreaming) return; var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id;}); if(!t) return; var L=tLoc(); var nv=window.prompt(L==='th'?'ตั้งชื่อแชท:':L==='zh'?'重命名对话:':'Rename chat:', t.title||''); if(nv==null) return; nv=String(nv).replace(/\s+/g,' ').trim().slice(0,42); if(!nv) return; t.title=nv; saveThreads(o); renderSidebar(); }
+    function renameThread(id){
+      if(window._sifuStreaming) return;
+      var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id;});
+      if(!t) return;
+      renamingThreadId=id;
+      renderSidebar();
+      setTimeout(function(){ var inp=document.querySelector('.ci-rename-input[data-tid="'+id+'"]'); if(inp){ inp.focus(); inp.select(); } },0);
+    }
+    function finishRenameThread(id, save){
+      var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id;});
+      if(!t){ renamingThreadId=''; renderSidebar(); return; }
+      if(save){
+        var inp=document.querySelector('.ci-rename-input[data-tid="'+id+'"]');
+        var nv=inp?String(inp.value||'').replace(/\s+/g,' ').trim().slice(0,42):'';
+        if(nv){ t.title=nv; saveThreads(o); }
+      }
+      renamingThreadId='';
+      renderSidebar();
+    }
     function closeCtxMenu(){ var m=document.getElementById('hk-ctx-menu'); if(m) m.remove(); document.removeEventListener('click',closeCtxMenu,true); }
     function openCtxMenu(anchor, id){
       closeCtxMenu();
@@ -927,7 +958,27 @@
       m.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return; e.stopPropagation(); var act=b.getAttribute('data-act'); closeCtxMenu(); if(act==='pin') togglePin(id); else if(act==='rename') renameThread(id); else if(act==='del') deleteThread(id); });
       setTimeout(function(){ document.addEventListener('click', closeCtxMenu, true); }, 0);
     }
-    function renderSidebar(){ var box=document.getElementById('hk-side-list'); if(!box) return; var o=loadThreads(); if(!o.threads.length){ box.innerHTML='<div class="hk-side-empty" data-i18n="mst.side.empty">ยังไม่มีบทสนทนา</div>'; return; } var arr=o.threads.slice().sort(function(a,b){ var pa=a.pinned?1:0,pb=b.pinned?1:0; if(pa!==pb) return pb-pa; return b.ts-a.ts; }); var h=''; arr.forEach(function(t){ var a=t.id===currentThreadId?' active':''; var ti=(t.title||'แชทใหม่').replace(/[<>&"]/g,''); var st=t.pinned?'<span class="ci-star">★</span>':''; h+='<div class="hk-chat-item'+a+'" data-tid="'+t.id+'"><div class="ci-body"><span class="ci-title">'+st+ti+'</span><span class="ci-time">'+relTime(t.ts)+'</span></div><button class="hk-chat-menu" data-menu="'+t.id+'" aria-label="เมนู">⋯</button></div>'; }); box.innerHTML=h; if(window.applyI18N) applyI18N(tLoc()); }
+    function renderSidebar(){
+      var box=document.getElementById('hk-side-list'); if(!box) return;
+      var o=loadThreads();
+      if(!o.threads.length){ box.innerHTML='<div class="hk-side-empty" data-i18n="mst.side.empty">ยังไม่มีบทสนทนา</div>'; return; }
+      var arr=o.threads.slice().sort(function(a,b){ var pa=a.pinned?1:0,pb=b.pinned?1:0; if(pa!==pb) return pb-pa; return b.ts-a.ts; });
+      var L=tLoc(), ph=L==='th'?'ตั้งชื่อแชท':L==='zh'?'输入对话名称':'Chat name';
+      var h='';
+      arr.forEach(function(t){
+        var a=t.id===currentThreadId?' active':'';
+        var isRen=t.id===renamingThreadId;
+        var st=t.pinned?'<span class="ci-star">★</span>':'';
+        var cls='hk-chat-item'+a+(isRen?' renaming':'');
+        if(isRen){
+          h+='<div class="'+cls+'" data-tid="'+escHtml(t.id)+'"><div class="ci-body"><div class="ci-rename"><input class="ci-rename-input" data-tid="'+escHtml(t.id)+'" maxlength="42" value="'+escHtml(t.title||'')+'" placeholder="'+escHtml(ph)+'"><span class="ci-rename-actions"><button class="ci-rename-btn save" data-rename-save="'+escHtml(t.id)+'" title="บันทึก">✓</button><button class="ci-rename-btn cancel" data-rename-cancel="'+escHtml(t.id)+'" title="ยกเลิก">×</button></span></div></div></div>';
+        } else {
+          h+='<div class="'+cls+'" data-tid="'+escHtml(t.id)+'"><div class="ci-body"><span class="ci-title">'+st+escHtml(t.title||'แชทใหม่')+'</span><span class="ci-time">'+relTime(t.ts)+'</span></div><button class="hk-chat-menu" data-menu="'+escHtml(t.id)+'" aria-label="เมนู">⋯</button></div>';
+        }
+      });
+      box.innerHTML=h;
+      if(window.applyI18N) applyI18N(tLoc());
+    }
     function addWelcomeMsg(){ var d=addMsg('sifu',''); renderMd(d,'สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ'); }
 
     function addMsg(role, text){
@@ -1014,8 +1065,16 @@
           tog=document.getElementById('hk-side-toggle'), ov=document.getElementById('hk-side-ov');
       if(nc) nc.addEventListener('click', function(){ newThread(); });
       if(list) list.addEventListener('click', function(e){
+        var save=e.target.closest('[data-rename-save]'); if(save){ e.preventDefault(); e.stopPropagation(); finishRenameThread(save.getAttribute('data-rename-save'), true); return; }
+        var cancel=e.target.closest('[data-rename-cancel]'); if(cancel){ e.preventDefault(); e.stopPropagation(); finishRenameThread(cancel.getAttribute('data-rename-cancel'), false); return; }
+        if(e.target.closest('.ci-rename-input')){ e.stopPropagation(); return; }
         var mb=e.target.closest('.hk-chat-menu'); if(mb){ e.stopPropagation(); openCtxMenu(mb, mb.getAttribute('data-menu')); return; }
-        var it=e.target.closest('.hk-chat-item'); if(it){ openThread(it.getAttribute('data-tid')); }
+        var it=e.target.closest('.hk-chat-item'); if(it && !it.classList.contains('renaming')){ openThread(it.getAttribute('data-tid')); }
+      });
+      if(list) list.addEventListener('keydown', function(e){
+        var inp=e.target.closest('.ci-rename-input'); if(!inp) return;
+        if(e.key==='Enter'){ e.preventDefault(); finishRenameThread(inp.getAttribute('data-tid'), true); }
+        else if(e.key==='Escape'){ e.preventDefault(); finishRenameThread(inp.getAttribute('data-tid'), false); }
       });
       if(tog) tog.addEventListener('click', function(){ var on=document.body.classList.toggle('hk-side-open'); if(ov) ov.classList.toggle('on', on); });
       if(ov) ov.addEventListener('click', function(){ document.body.classList.remove('hk-side-open'); ov.classList.remove('on'); });
