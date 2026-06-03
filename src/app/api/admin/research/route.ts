@@ -172,7 +172,7 @@ export async function GET(req: Request) {
        FROM merged
        LEFT JOIN users u ON u.id=merged.user_id
        LEFT JOIN profiles p ON p.id=merged.profile_id
-      WHERE ($3::text IS NULL OR u.email ILIKE $3 OR u.name ILIKE $3 OR p.name ILIKE $3 OR merged.question ILIKE $3)
+      WHERE ($3::text IS NULL OR u.email ILIKE $3 OR u.name ILIKE $3 OR u.phone ILIKE $3 OR p.name ILIKE $3 OR merged.question ILIKE $3)
       ORDER BY merged.created_at DESC
       LIMIT $2::int`,
     [scopeOrgId, limit, searchLike]

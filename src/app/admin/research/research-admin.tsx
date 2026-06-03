@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIcon,
   BarChart3Icon,
@@ -216,6 +216,7 @@ export default function ResearchAdmin({ email }: { email: string }) {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
   const [selected, setSelected] = useState<UserRow | null>(null);
+  const detailRef = useRef<HTMLElement | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -290,6 +291,15 @@ export default function ResearchAdmin({ email }: { email: string }) {
     }
     setMsg("บันทึกสถานะแล้ว");
     await load();
+  }
+
+  function selectUser(user: UserRow) {
+    setSelected(user);
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1279px)").matches) {
+      window.requestAnimationFrame(() => {
+        detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
   }
 
   return (
@@ -368,13 +378,13 @@ export default function ResearchAdmin({ email }: { email: string }) {
               </div>
               <UsersIcon className="h-4 w-4 text-foreground/45" aria-hidden="true" />
             </div>
-            <div className="max-h-[72vh] overflow-auto">
+            <div className="max-h-[42vh] overflow-auto xl:max-h-[72vh]">
               {(data?.users || []).map((u) => {
                 const active = selected?.id === u.id;
                 return (
                   <button
                     key={u.id}
-                    onClick={() => setSelected(u)}
+                    onClick={() => selectUser(u)}
                     className={`w-full border-b border-foreground/8 px-4 py-3 text-left transition-colors hover:bg-foreground/[.035] ${active ? "bg-[var(--cinnabar)]/8 shadow-[inset_3px_0_0_var(--cinnabar)]" : ""}`}
                   >
                     <div className="flex items-start gap-3">
@@ -404,7 +414,7 @@ export default function ResearchAdmin({ email }: { email: string }) {
             </div>
           </aside>
 
-          <section className="min-w-0 rounded-md border border-foreground/10 bg-card/35">
+          <section ref={detailRef} className="min-w-0 scroll-mt-4 rounded-md border border-foreground/10 bg-card/35">
             {selected ? (
               <div>
                 <div className="border-b border-foreground/10 p-4 md:p-5">
@@ -562,7 +572,9 @@ export default function ResearchAdmin({ email }: { email: string }) {
                       ))}
                       {!selectedQna.length && (
                         <div className="rounded-md border border-dashed border-foreground/15 p-8 text-center text-sm text-foreground/45">
-                          ยังไม่มี Q&A ของคนนี้ในชุดข้อมูลที่โหลด
+                          {selected.qna_count > 0
+                            ? `คนนี้มี Q&A ${selected.qna_count} รายการ แต่ไม่อยู่ในชุดล่าสุดที่โหลด ลองค้นชื่อ/เบอร์ของคนนี้แล้วรีเฟรช`
+                            : "ยังไม่มี Q&A ของคนนี้ในชุดข้อมูลที่โหลด"}
                         </div>
                       )}
                     </section>
