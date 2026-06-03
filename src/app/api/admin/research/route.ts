@@ -1,0 +1,256 @@
+import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin-guard";
+import { q, q1 } from "@/lib/db";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i;
+
+function cleanUuid(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  return UUID_RE.test(s) ? s : null;
+}
+
+function cleanStatus(v: unknown): string {
+  const s = typeof v === "string" ? v.trim().toLowerCase() : "";
+  return ["active", "watch", "paused", "done", "excluded"].includes(s) ? s : "active";
+}
+
+function cleanText(v: unknown, max = 500): string | null {
+  if (v == null) return null;
+  const s = String(v).trim();
+  return s ? s.slice(0, max) : null;
+}
+
+export async function GET(req: Request) {
+  let admin;
+  try {
+    admin = await requireAdmin();
+  } catch (e) {
+    return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
+  }
+
+  const url = new URL(req.url);
+  const daysRaw = Number(url.searchParams.get("days") || 30);
+  const days = Math.max(1, Math.min(365, Number.isFinite(daysRaw) ? Math.floor(daysRaw) : 30));
+  const limitRaw = Number(url.searchParams.get("limit") || 80);
+  const limit = Math.max(20, Math.min(200, Number.isFinite(limitRaw) ? Math.floor(limitRaw) : 80));
+  const search = (url.searchParams.get("q") || "").trim();
+  const orgParam = admin.role === "env_admin" ? cleanUuid(url.searchParams.get("org")) : null;
+  const scopeOrgId = orgParam || admin.orgId || null;
+  const searchLike = search ? `%${search}%` : null;
+
+  const params = [scopeOrgId, days, limit, searchLike];
+
+  const summary = await q1<{
+    users_total: number;
+    users_recent: number;
+    participants_total: number;
+    profiles_total: number;
+    qna_total: number;
+    qna_recent: number;
+    events_recent: number;
+  }>(
+    `WITH scoped_users AS (
+       SELECT u.id
+       FROM users u
+       WHERE ($1::uuid IS NULL
+          OR u.current_org_id=$1::uuid
+          OR EXISTS (SELECT 1 FROM org_members om WHERE om.user_id=u.id AND om.org_id=$1::uuid AND om.status='active'))
+     ),
+     qna AS (
+       SELECT user_id, created_at FROM research_ai_messages WHERE ($1::uuid IS NULL OR org_id=$1::uuid)
+       UNION ALL
+       SELECT h.user_id, h.created_at FROM chart_sifu_history h JOIN scoped_users su ON su.id=h.user_id WHERE h.is_archived=false
+     )
+     SELECT
+       (SELECT COUNT(*)::int FROM scoped_users) AS users_total,
+       (SELECT COUNT(*)::int FROM users u JOIN scoped_users su ON su.id=u.id WHERE u.last_active_at >= now() - ($2::int || ' days')::interval) AS users_recent,
+       (SELECT COUNT(*)::int FROM research_participants rp JOIN scoped_users su ON su.id=rp.user_id WHERE rp.status <> 'excluded') AS participants_total,
+       (SELECT COUNT(*)::int FROM profiles p WHERE ($1::uuid IS NULL OR p.org_id=$1::uuid) AND p.is_archived=false) AS profiles_total,
+       (SELECT COUNT(*)::int FROM qna) AS qna_total,
+       (SELECT COUNT(*)::int FROM qna WHERE created_at >= now() - ($2::int || ' days')::interval) AS qna_recent,
+       (SELECT COUNT(*)::int FROM research_events e WHERE ($1::uuid IS NULL OR e.org_id=$1::uuid) AND e.created_at >= now() - ($2::int || ' days')::interval) AS events_recent`,
+    params
+  );
+
+  const users = await q(
+    `WITH scoped_users AS (
+       SELECT u.*
+       FROM users u
+       WHERE ($1::uuid IS NULL
+          OR u.current_org_id=$1::uuid
+          OR EXISTS (SELECT 1 FROM org_members om WHERE om.user_id=u.id AND om.org_id=$1::uuid AND om.status='active'))
+     ),
+     qna_counts AS (
+       SELECT user_id, COUNT(*)::int AS qna_count, MAX(created_at) AS last_qna_at
+       FROM (
+         SELECT user_id, created_at FROM research_ai_messages WHERE ($1::uuid IS NULL OR org_id=$1::uuid)
+         UNION ALL
+         SELECT h.user_id, h.created_at FROM chart_sifu_history h JOIN scoped_users su ON su.id=h.user_id WHERE h.is_archived=false
+       ) x
+       GROUP BY user_id
+     ),
+     event_counts AS (
+       SELECT user_id, COUNT(*)::int AS event_count, MAX(created_at) AS last_event_at
+       FROM research_events
+       WHERE ($1::uuid IS NULL OR org_id=$1::uuid)
+       GROUP BY user_id
+     ),
+     profile_counts AS (
+       SELECT created_by_user_id AS user_id, COUNT(*)::int AS profile_count
+       FROM profiles
+       WHERE ($1::uuid IS NULL OR org_id=$1::uuid) AND is_archived=false
+       GROUP BY created_by_user_id
+     )
+     SELECT su.id, su.email, su.name, su.phone, su.locale, su.tier, su.hour_balance,
+            su.created_at, su.last_active_at,
+            COALESCE(rp.status, 'active') AS research_status,
+            rp.cohort, rp.consent_at, rp.notes, rp.labels,
+            COALESCE(pc.profile_count, 0) AS profile_count,
+            COALESCE(qc.qna_count, 0) AS qna_count,
+            qc.last_qna_at,
+            COALESCE(ec.event_count, 0) AS event_count,
+            ec.last_event_at
+       FROM scoped_users su
+       LEFT JOIN research_participants rp ON rp.user_id=su.id
+       LEFT JOIN qna_counts qc ON qc.user_id=su.id
+       LEFT JOIN event_counts ec ON ec.user_id=su.id
+       LEFT JOIN profile_counts pc ON pc.user_id=su.id
+      WHERE ($4::text IS NULL OR su.email ILIKE $4 OR su.name ILIKE $4 OR su.phone ILIKE $4)
+      ORDER BY COALESCE(ec.last_event_at, qc.last_qna_at, su.last_active_at, su.created_at) DESC NULLS LAST
+      LIMIT $3`,
+    params
+  );
+
+  const qna = await q(
+    `WITH scoped_users AS (
+       SELECT u.id
+       FROM users u
+       WHERE ($1::uuid IS NULL
+          OR u.current_org_id=$1::uuid
+          OR EXISTS (SELECT 1 FROM org_members om WHERE om.user_id=u.id AND om.org_id=$1::uuid AND om.status='active'))
+     ),
+     merged AS (
+       SELECT
+         'chart_overview'::text AS feature,
+         h.id::text AS id,
+         h.user_id,
+         h.profile_id,
+         NULL::text AS mode,
+         NULL::text AS topic,
+         h.lang,
+         h.question,
+         h.answer,
+         NULL::jsonb AS history,
+         jsonb_build_object('source','chart_sifu_history','daymaster_profile_key',h.daymaster_profile_key) AS response_meta,
+         NULL::text AS model,
+         'ok'::text AS status,
+         h.created_at
+       FROM chart_sifu_history h
+       JOIN scoped_users su ON su.id=h.user_id
+       WHERE h.is_archived=false
+       UNION ALL
+       SELECT
+         m.feature,
+         m.id::text,
+         m.user_id,
+         m.profile_id,
+         m.mode,
+         m.topic,
+         m.lang,
+         m.question,
+         m.answer,
+         m.history,
+         m.response_meta,
+         m.model,
+         m.status,
+         m.created_at
+       FROM research_ai_messages m
+       WHERE ($1::uuid IS NULL OR m.org_id=$1::uuid)
+     )
+     SELECT merged.*, u.email, u.name AS user_name, p.name AS profile_name
+       FROM merged
+       LEFT JOIN users u ON u.id=merged.user_id
+       LEFT JOIN profiles p ON p.id=merged.profile_id
+      WHERE ($4::text IS NULL OR u.email ILIKE $4 OR u.name ILIKE $4 OR p.name ILIKE $4 OR merged.question ILIKE $4)
+      ORDER BY merged.created_at DESC
+      LIMIT $3`,
+    params
+  );
+
+  const trafficByPath = await q(
+    `SELECT COALESCE(page_path, '(unknown)') AS page_path,
+            event_name,
+            COUNT(*)::int AS count,
+            COUNT(DISTINCT user_id)::int AS users,
+            MAX(created_at) AS last_at
+       FROM research_events
+      WHERE ($1::uuid IS NULL OR org_id=$1::uuid)
+        AND created_at >= now() - ($2::int || ' days')::interval
+      GROUP BY page_path, event_name
+      ORDER BY count DESC, last_at DESC
+      LIMIT 40`,
+    params
+  );
+
+  const recentEvents = await q(
+    `SELECT e.id, e.event_name, e.page_path, e.referrer, e.session_key,
+            e.payload, e.created_at,
+            u.email, u.name AS user_name, p.name AS profile_name
+       FROM research_events e
+       LEFT JOIN users u ON u.id=e.user_id
+       LEFT JOIN profiles p ON p.id=e.profile_id
+      WHERE ($1::uuid IS NULL OR e.org_id=$1::uuid)
+      ORDER BY e.created_at DESC
+      LIMIT $3`,
+    params
+  );
+
+  return NextResponse.json({
+    ok: true,
+    scope_org_id: scopeOrgId,
+    days,
+    summary: summary || {},
+    users,
+    qna,
+    traffic_by_path: trafficByPath,
+    recent_events: recentEvents,
+  }, { headers: { "Cache-Control": "no-store, max-age=0" } });
+}
+
+export async function PATCH(req: Request) {
+  let admin;
+  try {
+    admin = await requireAdmin();
+  } catch (e) {
+    return e instanceof Response ? e : NextResponse.json({ error: "auth" }, { status: 401 });
+  }
+  const body = await req.json().catch(() => ({}));
+  const userId = cleanUuid(body.userId);
+  if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
+
+  const status = cleanStatus(body.status);
+  const cohort = cleanText(body.cohort, 80);
+  const notes = cleanText(body.notes, 2_000);
+  const labels = Array.isArray(body.labels)
+    ? body.labels.map((x: unknown) => cleanText(x, 40)).filter(Boolean).slice(0, 12)
+    : [];
+
+  const row = await q1<{ user_id: string }>(
+    `INSERT INTO research_participants
+       (user_id, org_id, status, cohort, notes, labels, consent_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6::text[], CASE WHEN $3 <> 'excluded' THEN now() ELSE NULL END, now())
+     ON CONFLICT (user_id) DO UPDATE SET
+       org_id=COALESCE(EXCLUDED.org_id, research_participants.org_id),
+       status=EXCLUDED.status,
+       cohort=EXCLUDED.cohort,
+       notes=EXCLUDED.notes,
+       labels=EXCLUDED.labels,
+       consent_at=COALESCE(research_participants.consent_at, EXCLUDED.consent_at),
+       updated_at=now()
+     RETURNING user_id`,
+    [userId, admin.orgId, status, cohort, notes, labels]
+  );
+
+  return NextResponse.json({ ok: true, user_id: row?.user_id || userId });
+}

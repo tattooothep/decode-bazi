@@ -11,6 +11,8 @@
 import { NextResponse } from "next/server";
 import { spawn } from "child_process";
 import { loadPromptMd } from "@/lib/prompt-md";
+import { getSession } from "@/lib/auth";
+import { logResearchAiMessageSafe } from "@/lib/research-log";
 
 /* 25 พ.ค. · persona ย้ายไป md (แก้ผ่าน /admin/sifu-prompts) · {{BODY}} = ส่วน dynamic · fallback กันพัง */
 const PAIR_TPL_FALLBACK = `คุณคือซินแสปาจื้อ · กำลังวิเคราะห์ความสัมพันธ์ระหว่าง 2 คน · ตำรา子平真詮·三命通會\n{{BODY}}\nตอบสั้นกระชับ · เน้นหลักตำรา · อย่าโฆษณา · ตรงประเด็น:`;
@@ -174,8 +176,10 @@ function makeJsonlParser(onText: (text: string) => void) {
 
 export async function POST(req: Request) {
   /* 1 มิ.ย. · AI เครือข่ายต้องสมัคร/login ก่อน (เจ้านายสั่ง · defense-in-depth เสริม spendHours) */
-  if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  const session = await getSession();
+  if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   try {
+    const reqT0 = Date.now();
     const body = await req.json().catch(() => ({}));
     const mode = (body.mode === "team" ? "team" : "pair") as "pair" | "team";
     const message: string = (body.message || "").trim();
@@ -195,6 +199,9 @@ export async function POST(req: Request) {
     const prompt = mode === "team"
       ? buildTeamPrompt({ message, history, lang, payload })
       : buildPairPrompt({ message, history, lang, topic, payload });
+    const profileId = mode === "team"
+      ? (payload?.team_center || payload?.self?.id || null)
+      : (payload?.self?.id || null);
 
     const wantsStream = (req.headers.get("accept") || "").includes("text/event-stream") || body.stream === true;
     if (wantsStream) {
@@ -246,6 +253,24 @@ export async function POST(req: Request) {
             clearTimeout(timer);
             const ms = Date.now() - t0;
             if (code === 0 && full.trim()) {
+              logResearchAiMessageSafe({
+                session,
+                req,
+                feature: "network_sifu",
+                mode,
+                topic,
+                lang,
+                profileId,
+                question: message,
+                answer: full.trim(),
+                history,
+                requestPayload: { mode, topic, payload },
+                responseMeta: { stream: true, chars: full.length },
+                model: "claude-max-cli",
+                spent: spend.spent,
+                balanceAfter: spend.balance_after,
+                durationMs: Date.now() - reqT0,
+              });
               send("done", { ms, mode, model: "claude-max-cli", chars: full.length, cached: false });
             } else {
               send("error", { error: `claude exit ${code}`, ms });
@@ -268,6 +293,24 @@ export async function POST(req: Request) {
     }
 
     const reply = await runClaudeCli(prompt);
+    logResearchAiMessageSafe({
+      session,
+      req,
+      feature: "network_sifu",
+      mode,
+      topic,
+      lang,
+      profileId,
+      question: message,
+      answer: reply,
+      history,
+      requestPayload: { mode, topic, payload },
+      responseMeta: { stream: false, chars: reply.length },
+      model: "claude-max-cli",
+      spent: spend.spent,
+      balanceAfter: spend.balance_after,
+      durationMs: Date.now() - reqT0,
+    });
     return NextResponse.json({ reply, mode, model: "claude-max-cli", balance_after: spend.balance_after, spent: spend.spent });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });

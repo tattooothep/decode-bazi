@@ -43,6 +43,50 @@
     inflight.auth = null; inflight.account = null;
   };
 
+  function researchSessionKey(){
+    try {
+      var k = sessionStorage.getItem('hk_research_session');
+      if (!k) {
+        k = 'rs_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+        sessionStorage.setItem('hk_research_session', k);
+      }
+      return k;
+    } catch(_) {
+      return null;
+    }
+  }
+  function researchTrack(eventName, payload){
+    try {
+      var body = {
+        eventName: eventName || 'ui_action',
+        pagePath: location.pathname + location.search,
+        referrer: document.referrer || null,
+        sessionKey: researchSessionKey(),
+        profileId: localStorage.getItem('hk_profile_id') || null,
+        payload: payload || null
+      };
+      var text = JSON.stringify(body);
+      if (navigator.sendBeacon) {
+        var blob = new Blob([text], { type: 'application/json' });
+        if (navigator.sendBeacon('/api/research/event', blob)) return;
+      }
+      fetch('/api/research/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        keepalive: true,
+        body: text
+      }).catch(function(){});
+    } catch(_) {}
+  }
+  window.__hkResearchTrack = researchTrack;
+  setTimeout(function(){
+    researchTrack('page_view', {
+      title: document.title || '',
+      lang: document.documentElement.lang || localStorage.getItem('hk_locale') || 'th'
+    });
+  }, 1200);
+
   var SINSAE_INTRO_VERSION = 'sinsae_intro_20260517';
   function maybeOpenSinsaeGate(){
     try {

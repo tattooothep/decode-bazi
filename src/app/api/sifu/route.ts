@@ -23,6 +23,7 @@ import { boundaryWarning3p, monthPillarBoundary } from "@/lib/bazi-boundary";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
 import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
+import { logResearchAiMessageSafe } from "@/lib/research-log";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type SifuModel = "claude-max-cli" | "codex-cli";
@@ -1158,6 +1159,23 @@ export async function POST(req: Request) {
     const useCache = mode !== "intro";
     const cached = useCache ? await getCachedReply(key) : null;
     if (cached) {
+      logResearchAiMessageSafe({
+        session,
+        req,
+        feature: "sifu_master",
+        mode: mode || null,
+        topic,
+        lang,
+        profileId: profileId || null,
+        question: message,
+        answer: cached.reply,
+        history,
+        requestPayload: { topic, mode, model: sifuModel },
+        responseMeta: { cache_key: key.slice(0, 8), context_cache: contextCache },
+        model: cached.model,
+        durationMs: Date.now() - reqT0,
+        cached: true,
+      });
       sifuTimingLog("reply-cache-hit", {
         route: "POST", mode, stream: false, profileId, contextCache, ctxMs,
         promptMs: 0, promptChars: 0, totalMs: Date.now() - reqT0, cached: true,
@@ -1283,6 +1301,23 @@ export async function POST(req: Request) {
             if (code === 0 && full.trim()) {
               const payload = { reply: full.trim(), model: sifuModel }; // full = strip ID แล้ว (idBuf ไม่เข้า full)
               if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+              logResearchAiMessageSafe({
+                session,
+                req,
+                feature: "sifu_master",
+                mode: mode || null,
+                topic,
+                lang,
+                profileId: profileId || null,
+                question: message,
+                answer: payload.reply,
+                history,
+                requestPayload: { topic, mode, model: sifuModel },
+                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length },
+                model: payload.model,
+                durationMs: Date.now() - reqT0,
+                cached: false,
+              });
               send("done", { ms, model: payload.model, cached: false, chars: full.length });
               sifuTimingLog("stream-done", {
                 route: "POST", mode, stream: true, profileId, contextCache, ctxMs,
@@ -1332,6 +1367,23 @@ export async function POST(req: Request) {
     const ms = Date.now() - t0;
     const payload = { reply: cleanReply, model: sifuModel };
     if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {}); // cache เฉพาะที่ผ่าน id-check แล้ว (ถึงบรรทัดนี้=ผ่าน)
+    logResearchAiMessageSafe({
+      session,
+      req,
+      feature: "sifu_master",
+      mode: mode || null,
+      topic,
+      lang,
+      profileId: profileId || null,
+      question: message,
+      answer: payload.reply,
+      history,
+      requestPayload: { topic, mode, model: sifuModel },
+      responseMeta: { stream: false, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length },
+      model: payload.model,
+      durationMs: Date.now() - reqT0,
+      cached: false,
+    });
     sifuTimingLog("json-done", {
       route: "POST", mode, stream: false, profileId, contextCache, ctxMs,
       promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,

@@ -9,6 +9,8 @@ import { spawn } from "child_process";
 import { readFileSync, statSync } from "fs";
 import { join } from "path";
 import { loadPromptMd } from "@/lib/prompt-md";
+import { getSession } from "@/lib/auth";
+import { logResearchAiMessageSafe } from "@/lib/research-log";
 
 /* 25 พ.ค. · persona ย้ายไป prompts/qimen-sifu.md (แก้ผ่าน /admin/sifu-prompts) · {{BODY}}=dynamic · fallback กันพัง */
 const QIMEN_TPL_FALLBACK = `คุณคือซินแสฉีเหมินตุ้นเจี่ย · ตำรา 煙波釣叟賦·奇門遁甲統宗\n{{BODY}}\nตอบสั้นกระชับ · เน้นตำรา · ใช้ผังจริง + ดวงผู้ใช้ + ผลค้นหาผสมกัน · เลี่ยงคำว่าโชค/ฟลุค:`;
@@ -180,8 +182,10 @@ async function runClaudeCli(prompt: string): Promise<string> {
 
 export async function POST(req: Request) {
   /* 1 มิ.ย. · AI ฉีเหมินต้องสมัคร/login ก่อน (เจ้านายสั่ง · defense-in-depth เสริม spendHours) */
-  if (!(await (await import("@/lib/auth")).getSession())) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  const session = await getSession();
+  if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   try {
+    const reqT0 = Date.now();
     const body = await req.json().catch(() => ({}));
     const message: string = (body.message || "").trim();
     const history: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
@@ -209,6 +213,33 @@ export async function POST(req: Request) {
     } finally {
       _inflight--;
     }
+    logResearchAiMessageSafe({
+      session,
+      req,
+      feature: "qimen_sifu",
+      mode: "qimen",
+      topic,
+      lang,
+      profileId: payload?.profile_id || payload?.profileId || null,
+      question: message,
+      answer: reply,
+      history,
+      requestPayload: {
+        topic,
+        activity: payload?.activity || null,
+        qimen_summary: payload?.qimen?.chart ? {
+          pillar_zh: payload.qimen.chart.pillar_zh,
+          ju_pole: payload.qimen.chart.ju_pole,
+          ju_number: payload.qimen.chart.ju_number,
+        } : null,
+        search_count: Array.isArray(payload?.search_results) ? payload.search_results.length : 0,
+      },
+      responseMeta: { chars: reply.length },
+      model: "claude-max-cli",
+      spent: spend.spent,
+      balanceAfter: spend.balance_after,
+      durationMs: Date.now() - reqT0,
+    });
     return NextResponse.json({ reply, model: "claude-max-cli", balance_after: spend.balance_after, spent: spend.spent });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
