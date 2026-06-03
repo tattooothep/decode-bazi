@@ -55,7 +55,8 @@ SELECT
   ),
   p.created_at
 FROM profiles p
-WHERE NOT EXISTS (
+WHERE p.is_archived=false
+  AND NOT EXISTS (
   SELECT 1 FROM research_events e
   WHERE e.event_name='profile_created' AND e.profile_id=p.id
 );

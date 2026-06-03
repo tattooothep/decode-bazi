@@ -10,6 +10,7 @@ import { getSession } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
 import { normalizeNetworkGroup, normalizeNonSelfRelationship } from "@/lib/profile-groups";
+import { findMatchingSelfProfile } from "@/lib/profile-clone-guard";
 
 export async function POST(req: Request) {
   const s = await getSession();
@@ -49,6 +50,27 @@ export async function POST(req: Request) {
   const groupLabel = typeof networkGroupLabel === "string" && networkGroupLabel.trim()
     ? networkGroupLabel.trim().slice(0, 80)
     : null;
+
+  const selfMatch = await findMatchingSelfProfile({
+    orgId: s.orgId,
+    userId: s.userId,
+    name,
+    nickname,
+    birthDate,
+    birthTime,
+    birthTimeKnown,
+    dayBoundary: dayBoundaryNorm,
+  });
+  if (selfMatch) {
+    return NextResponse.json(
+      {
+        error: "ดวงนี้ตรงกับดวงเจ้าของบัญชีอยู่แล้ว · ไม่สร้างสำเนาเป็นคนอื่น",
+        code: "self_profile_clone",
+        selfProfileId: selfMatch.id,
+      },
+      { status: 409 }
+    );
+  }
 
   // duplicate guard: same org + same person payload (name/relationship/datetime) and not archived
   // ป้องกันกดซ้ำ/ยิงซ้ำจาก UI แล้วเกิด profile โคลน

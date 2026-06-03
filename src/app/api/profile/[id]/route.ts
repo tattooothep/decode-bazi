@@ -10,6 +10,7 @@ import { getSession } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
 import { calcBazi } from "@/lib/bazi-calc";
 import { normalizeNetworkGroup, normalizeNonSelfRelationship } from "@/lib/profile-groups";
+import { findMatchingSelfProfile } from "@/lib/profile-clone-guard";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
@@ -60,10 +61,10 @@ export async function PUT(req: Request, ctx: Ctx) {
   } = body;
 
   const existing = await q1<{ birth_datetime: string; birth_time_known: boolean; birth_lng: string | null; day_boundary: string | null;
-    name: string | null; gender: string | null; birth_lat: string | null; birth_location_name: string | null;
+    name: string | null; nickname: string | null; gender: string | null; birth_lat: string | null; birth_location_name: string | null;
     relationship_type: string | null; network_group: string | null; network_group_label: string | null; is_self: boolean;
     day_master: string | null; day_master_strength: string | null; yongshen: unknown; bazi_pillars: unknown }>(
-    `SELECT id, birth_lng, birth_time_known, day_boundary, name, gender, birth_lat, birth_location_name,
+    `SELECT id, birth_lng, birth_time_known, day_boundary, name, nickname, gender, birth_lat, birth_location_name,
             relationship_type, network_group, network_group_label,
             (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self,
             day_master, day_master_strength, yongshen, bazi_pillars,
@@ -169,6 +170,32 @@ export async function PUT(req: Request, ctx: Ctx) {
   if (typeof birthTimeKnownRaw === 'boolean') {
     sets.push(`"birth_time_known"=$${i++}`);
     params.push(birthTimeKnownRaw);
+  }
+
+  if (!existing.is_self && sets.length > 0) {
+    const targetDate = birthDate || existing.birth_datetime.slice(0, 10);
+    const targetTime = newBirthTimeKnown ? (birthTime || existing.birth_datetime.slice(11, 16)) : "12:00";
+    const selfMatch = await findMatchingSelfProfile({
+      orgId: s.orgId!,
+      userId: s.userId,
+      name: name ?? existing.name,
+      nickname: nickname !== undefined ? nickname : existing.nickname,
+      birthDate: targetDate,
+      birthTime: targetTime,
+      birthTimeKnown: newBirthTimeKnown,
+      dayBoundary,
+      excludeProfileId: id,
+    });
+    if (selfMatch) {
+      return NextResponse.json(
+        {
+          error: "ดวงนี้ตรงกับดวงเจ้าของบัญชีอยู่แล้ว · ไม่บันทึกเป็นคนอื่น",
+          code: "self_profile_clone",
+          selfProfileId: selfMatch.id,
+        },
+        { status: 409 }
+      );
+    }
   }
 
   if (sets.length === 0) return NextResponse.json({ ok: true, unchanged: true });
