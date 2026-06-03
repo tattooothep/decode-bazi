@@ -37,6 +37,7 @@ import { buildSynastry, altPillar, type PersonSyn } from "@/lib/bazi-synastry";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { stripIdLine } from "@/lib/identity-lock";
 import { loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
+import { logResearchAiMessageSafe } from "@/lib/research-log";
 
 export const runtime = "nodejs"; // child_process spawn (เหมือน /api/sifu)
 
@@ -627,6 +628,12 @@ function rotatingWaitingPhase(count: number): string {
   return SIFU_WAITING_PHASES[Math.max(0, count - 1) % SIFU_WAITING_PHASES.length];
 }
 
+function cleanSifuThreadId(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim().replace(/[^\w:.-]+/g, "_").slice(0, 80);
+  return s || null;
+}
+
 function startSifuHeartbeat(
   send: (event: string, data: unknown) => void,
   getPhase: (count: number, elapsedMs: number) => string
@@ -652,6 +659,7 @@ function startSifuHeartbeat(
 }
 
 export async function POST(req: Request) {
+  const reqT0 = Date.now();
   try {
     const url = new URL(req.url);
     const body = await req.json().catch(() => ({}));
@@ -660,6 +668,7 @@ export async function POST(req: Request) {
     const groupLabel: string = (body.groupLabel || "กลุ่ม").toString().trim().slice(0, 60) || "กลุ่ม";
     const lang: string = ["th", "en", "zh"].includes(body.lang) ? body.lang : "th";
     const sifuModel = resolveSifuModel(body.model || url.searchParams.get("model"));
+    const threadId = cleanSifuThreadId(body.threadId);
 
     if (!message) return NextResponse.json({ error: "no message" }, { status: 400 });
     if (message.length > 2000) return NextResponse.json({ error: "message too long" }, { status: 400 });
@@ -828,6 +837,21 @@ export async function POST(req: Request) {
             const ms = Date.now() - t0;
             if (code === 0 && full.trim()) {
               console.log(`[sifu/group done] model=${sifuModel} ms=${ms} chars=${full.length}`);
+              logResearchAiMessageSafe({
+                session,
+                req,
+                feature: "sifu_group",
+                lang,
+                profileId: ordered[0]?.id || null,
+                question: message,
+                answer: full.trim(),
+                history,
+                requestPayload: { groupLabel, profileIds: ordered.map((r) => r.id), count: ordered.length, model: sifuModel, thread_id: threadId },
+                responseMeta: { stream: true, chars: full.length, thread_id: threadId },
+                model: sifuModel,
+                durationMs: Date.now() - reqT0,
+                cached: false,
+              });
               send("done", { ms, model: sifuModel, cached: false, chars: full.length });
             } else {
               console.warn(`[sifu/group error] model=${sifuModel} code=${code} ms=${ms} err=${cliErrorMessage(sifuModel, cliErr)}`);
@@ -853,6 +877,21 @@ export async function POST(req: Request) {
 
     /* JSON mode */
     const reply = stripIdLine(await runSifuCli(prompt, sifuModel));  // strip ⟦ID⟧ บรรทัดแรก (กันหลุดจอ group)
+    logResearchAiMessageSafe({
+      session,
+      req,
+      feature: "sifu_group",
+      lang,
+      profileId: ordered[0]?.id || null,
+      question: message,
+      answer: reply,
+      history,
+      requestPayload: { groupLabel, profileIds: ordered.map((r) => r.id), count: ordered.length, model: sifuModel, thread_id: threadId },
+      responseMeta: { stream: false, chars: reply.length, thread_id: threadId },
+      model: sifuModel,
+      durationMs: Date.now() - reqT0,
+      cached: false,
+    });
     return NextResponse.json({ reply, model: sifuModel });
   } catch (e: unknown) {
     const err = e as Error;

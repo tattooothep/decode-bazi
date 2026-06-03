@@ -43,6 +43,12 @@ const TIMEOUT_MS = 600_000; // 600s · ยัดตำราคลาสสิ�
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 7_000);
 const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
+
+function cleanSifuThreadId(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim().replace(/[^\w:.-]+/g, "_").slice(0, 80);
+  return s || null;
+}
 const SIFU_CONTEXT_CACHE_MS = Number(process.env.SIFU_CONTEXT_CACHE_MS || 5 * 60_000);
 const SIFU_CONTEXT_CACHE_MAX = Number(process.env.SIFU_CONTEXT_CACHE_MAX || 80);
 const SIFU_TIMING_LOG = process.env.SIFU_TIMING_LOG !== "0";
@@ -1125,6 +1131,7 @@ export async function POST(req: Request) {
     const lang: string = ["th", "en", "zh"].includes(body.lang) ? body.lang : "th";
     const mode: string | undefined = body.mode === "intro" ? "intro" : undefined;
     const sifuModel = resolveSifuModel(body.model);
+    const threadId = cleanSifuThreadId(body.threadId);
 
     if (!message) {
       return NextResponse.json({ error: "no message" }, { status: 400 });
@@ -1170,8 +1177,8 @@ export async function POST(req: Request) {
         question: message,
         answer: cached.reply,
         history,
-        requestPayload: { topic, mode, model: sifuModel },
-        responseMeta: { cache_key: key.slice(0, 8), context_cache: contextCache },
+        requestPayload: { topic, mode, model: sifuModel, thread_id: threadId },
+        responseMeta: { cache_key: key.slice(0, 8), context_cache: contextCache, thread_id: threadId },
         model: cached.model,
         durationMs: Date.now() - reqT0,
         cached: true,
@@ -1312,8 +1319,8 @@ export async function POST(req: Request) {
                 question: message,
                 answer: payload.reply,
                 history,
-                requestPayload: { topic, mode, model: sifuModel },
-                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length },
+                requestPayload: { topic, mode, model: sifuModel, thread_id: threadId },
+                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId },
                 model: payload.model,
                 durationMs: Date.now() - reqT0,
                 cached: false,
@@ -1378,8 +1385,8 @@ export async function POST(req: Request) {
       question: message,
       answer: payload.reply,
       history,
-      requestPayload: { topic, mode, model: sifuModel },
-      responseMeta: { stream: false, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length },
+      requestPayload: { topic, mode, model: sifuModel, thread_id: threadId },
+      responseMeta: { stream: false, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId },
       model: payload.model,
       durationMs: Date.now() - reqT0,
       cached: false,

@@ -912,6 +912,7 @@
     function loadThreads(){ try{ var o=JSON.parse(localStorage.getItem(THREADS_KEY)||'null'); if(o&&Array.isArray(o.threads)) return o; }catch(_){} return {activeId:'',threads:[]}; }
     function saveThreads(o){ try{ localStorage.setItem(THREADS_KEY, JSON.stringify(o)); }catch(_){} }
     function genTid(){ return 't'+Date.now()+Math.floor(Math.random()*9000+1000); }
+    function activeThreadId(){ if(!currentThreadId) currentThreadId=genTid(); return currentThreadId; }
     function tLoc(){ try{return localStorage.getItem('hk_locale')||'th';}catch(_){return 'th';} }
     function escHtml(v){ return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
     function relTime(ts){ var now=new Date(), d=new Date(ts), L=tLoc(); var dd=Math.floor((now-d)/86400000); if(now.toDateString()===d.toDateString()) return L==='th'?'วันนี้':L==='zh'?'今天':'Today'; if(dd<=1) return L==='th'?'เมื่อวาน':L==='zh'?'昨天':'Yesterday'; return L==='th'?(dd+' วันก่อน'):L==='zh'?(dd+'天前'):(dd+'d'); }
@@ -989,6 +990,104 @@
     }
     function addWelcomeMsg(){ var d=addMsg('sifu',''); renderMd(d,'สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ'); }
 
+    /* account history sync · DB เป็นชั้นกลางให้ desktop/mobile เห็น Q&A เดียวกัน */
+    var SERVER_HISTORY_IMPORTED_KEY = 'hk_sifu_history_import_v1';
+    var serverHistorySyncing = false;
+    function payloadObj(v){ return (v && typeof v === 'object') ? v : {}; }
+    function serverThreadId(row){
+      var rp = payloadObj(row.request_payload), rm = payloadObj(row.response_meta);
+      var id = rp.thread_id || rp.local_thread_id || rm.thread_id || rm.local_thread_id;
+      if (id) return String(id).replace(/[^\w:.-]+/g,'_').slice(0,80);
+      return 'srv_' + String(row.feature || 'sifu') + '_' + String(row.profile_id || 'all');
+    }
+    function threadTitleFromMsgs(msgs){
+      var u = (msgs || []).find(function(m){ return m.role === 'user' && m.content; });
+      return u ? String(u.content).replace(/\s+/g,' ').trim().slice(0,42) : 'ประวัติจากบัญชี';
+    }
+    function serverRowsToThreads(rows){
+      var groups = {};
+      (rows || []).slice().reverse().forEach(function(r){
+        if (!r || !r.question || !r.answer) return;
+        var tid = serverThreadId(r);
+        if (!groups[tid]) groups[tid] = { id:tid, title:'', ts:0, msgs:[] };
+        var g = groups[tid];
+        g.msgs.push({ role:'user', content:String(r.question || '') });
+        g.msgs.push({ role:'assistant', content:String(r.answer || '') });
+        var ts = Date.parse(r.created_at || '') || Date.now();
+        g.ts = Math.max(g.ts || 0, ts);
+      });
+      return Object.keys(groups).map(function(k){
+        var t = groups[k];
+        t.msgs = t.msgs.slice(-40);
+        t.title = threadTitleFromMsgs(t.msgs);
+        return t;
+      }).sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+    }
+    function mergeThreadMsgs(oldMsgs, newMsgs){
+      var seen = {};
+      var out = [];
+      (oldMsgs || []).concat(newMsgs || []).forEach(function(m){
+        if (!m || !m.content) return;
+        var role = m.role === 'user' ? 'user' : 'assistant';
+        var key = role + '|' + String(m.content);
+        if (seen[key]) return;
+        seen[key] = 1;
+        out.push({ role:role, content:String(m.content) });
+      });
+      return out.slice(-40);
+    }
+    function mergeServerThreads(rows){
+      var serverThreads = serverRowsToThreads(rows);
+      if (!serverThreads.length) return;
+      var o = loadThreads();
+      serverThreads.forEach(function(st){
+        var t = o.threads.find(function(x){ return String(x.id) === String(st.id); });
+        if (!t) {
+          o.threads.push(st);
+        } else {
+          t.msgs = mergeThreadMsgs(t.msgs, st.msgs);
+          t.title = t.title || st.title;
+          t.ts = Math.max(t.ts || 0, st.ts || 0);
+        }
+      });
+      o.threads.sort(function(a,b){ var pa=a.pinned?1:0,pb=b.pinned?1:0; if(pa!==pb) return pb-pa; return (b.ts||0)-(a.ts||0); });
+      if (!o.activeId && o.threads[0]) o.activeId = o.threads[0].id;
+      saveThreads(o);
+      var active = o.threads.find(function(x){ return x.id === currentThreadId; });
+      if (!history.length || !active) {
+        currentThreadId = o.activeId || (o.threads[0] && o.threads[0].id) || currentThreadId;
+        renderThreadMsgs(o.threads.find(function(x){ return x.id === currentThreadId; }));
+      }
+      renderSidebar();
+    }
+    async function syncServerHistory(){
+      if (serverHistorySyncing) return;
+      serverHistorySyncing = true;
+      try {
+        var o = loadThreads();
+        var imported = false;
+        try { imported = localStorage.getItem(SERVER_HISTORY_IMPORTED_KEY) === '1'; } catch(_){}
+        if (!imported && o.threads && o.threads.length) {
+          var im = await fetch('/api/sifu/history', {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json' },
+            credentials:'same-origin',
+            body: JSON.stringify({ lang:tLoc(), threads:o.threads.slice(0,30) })
+          }).catch(function(){ return null; });
+          if (im && im.ok) {
+            try { localStorage.setItem(SERVER_HISTORY_IMPORTED_KEY, '1'); } catch(_){}
+          }
+        }
+        var r = await fetch('/api/sifu/history?limit=120', { credentials:'same-origin', cache:'no-store' });
+        if (!r.ok) return;
+        var j = await r.json().catch(function(){ return null; });
+        if (j && Array.isArray(j.history)) mergeServerThreads(j.history);
+      } catch(_) {
+      } finally {
+        serverHistorySyncing = false;
+      }
+    }
+
     function addMsg(role, text){
       const div = document.createElement('div');
       div.className = 'msg ' + (role === 'user' ? 'user' : 'sifu');
@@ -1065,6 +1164,7 @@
       renderSidebar();
     }
     loadHistory();
+    syncServerHistory();
 
     /* ═══ wire sidebar (Claude-style · 2 มิ.ย.) ═══ */
     document.body.classList.add('hk-has-side');
@@ -1447,6 +1547,7 @@
             groupLabel: hkgG.label,
             message: text,
             history: history.slice(-8),
+            threadId: activeThreadId(),
             lang: locG,
             model: modelG,
             stream: true
@@ -1548,6 +1649,7 @@
             message: text,
             history: history.slice(-8),   /* จำบทสนทนา · backend ตัด 6 อีกชั้น */
             profileId: pid || undefined,
+            threadId: activeThreadId(),
             model: selectedSifuModel(),
           }),
         });

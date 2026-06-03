@@ -650,6 +650,20 @@
   const msgBox = document.getElementById('messages');
   if (!sendBtn || !inputEl || !msgBox) return;
   const history = [];
+  const THREAD_ID_KEY = 'hk_sifu_mobile_thread_id';
+
+  function threadId(){
+    try {
+      let id = localStorage.getItem(THREAD_ID_KEY);
+      if (!id) {
+        id = 'm' + Date.now() + Math.floor(Math.random() * 9000 + 1000);
+        localStorage.setItem(THREAD_ID_KEY, id);
+      }
+      return id;
+    } catch(_) {
+      return 'm' + Date.now();
+    }
+  }
 
   function addMsg(role, text){
     const div = document.createElement('div');
@@ -660,6 +674,29 @@
     msgBox.appendChild(div);
     msgBox.scrollTop = msgBox.scrollHeight;
     return div;
+  }
+
+  async function loadServerHistory(){
+    try {
+      const pid = localStorage.getItem('hk_profile_id') || '';
+      const qs = new URLSearchParams({ limit:'40' });
+      if (pid) qs.set('profileId', pid);
+      const r = await fetch('/api/sifu/history?' + qs.toString(), { credentials:'include', cache:'no-store' });
+      if (!r.ok) return;
+      const j = await r.json();
+      const rows = Array.isArray(j.history) ? j.history.slice().reverse() : [];
+      if (!rows.length) return;
+      msgBox.innerHTML = '';
+      history.length = 0;
+      rows.forEach(function(x){
+        if (!x || !x.question || !x.answer) return;
+        addMsg('user', x.question);
+        addMsg('sifu', x.answer);
+        history.push({ role:'user', content:String(x.question) });
+        history.push({ role:'assistant', content:String(x.answer) });
+      });
+      if (history.length > 40) history.splice(0, history.length - 40);
+    } catch(_) {}
   }
 
   async function send(){
@@ -676,6 +713,7 @@
         body: JSON.stringify({
           message: text, history: history,
           profileId: localStorage.getItem('hk_profile_id') || undefined,
+          threadId: threadId(),
         }),
       });
       const d = await r.json();
@@ -692,6 +730,7 @@
   inputEl.addEventListener('keydown', function(e){
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   });
+  loadServerHistory();
 })();
 </script>
 
