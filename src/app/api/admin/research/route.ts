@@ -178,6 +178,35 @@ export async function GET(req: Request) {
     [scopeOrgId, limit, searchLike]
   );
 
+  const profiles = await q(
+    `WITH scoped_users AS (
+       SELECT u.id, u.email, u.name AS user_name, u.phone
+       FROM users u
+       WHERE ($1::uuid IS NULL
+          OR u.current_org_id=$1::uuid
+          OR EXISTS (SELECT 1 FROM org_members om WHERE om.user_id=u.id AND om.org_id=$1::uuid AND om.status='active'))
+     )
+     SELECT p.id, p.created_by_user_id, p.name, p.nickname, p.gender,
+            p.relationship_type, p.network_group, p.network_group_label,
+            p.day_master, p.day_master_strength, p.birth_datetime,
+            p.birth_location_name, p.is_archived, p.created_at,
+            su.email, su.user_name
+       FROM profiles p
+       JOIN scoped_users su ON su.id=p.created_by_user_id
+      WHERE p.is_archived=false
+        AND ($3::text IS NULL
+          OR p.name ILIKE $3
+          OR p.nickname ILIKE $3
+          OR p.relationship_type ILIKE $3
+          OR p.network_group_label ILIKE $3
+          OR su.email ILIKE $3
+          OR su.user_name ILIKE $3
+          OR su.phone ILIKE $3)
+      ORDER BY p.created_at DESC
+      LIMIT $2::int`,
+    [scopeOrgId, 500, searchLike]
+  );
+
   const trafficByPath = await q(
     `SELECT COALESCE(page_path, '(unknown)') AS page_path,
             event_name,
@@ -194,7 +223,7 @@ export async function GET(req: Request) {
   );
 
   const recentEvents = await q(
-    `SELECT e.id, e.event_name, e.page_path, e.referrer, e.session_key,
+    `SELECT e.id, e.user_id, e.profile_id, e.event_name, e.page_path, e.referrer, e.session_key,
             e.payload, e.created_at,
             u.email, u.name AS user_name, p.name AS profile_name
        FROM research_events e
@@ -213,6 +242,7 @@ export async function GET(req: Request) {
     summary: summary || {},
     users,
     qna,
+    profiles,
     traffic_by_path: trafficByPath,
     recent_events: recentEvents,
   }, { headers: { "Cache-Control": "no-store, max-age=0" } });
