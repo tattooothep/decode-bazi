@@ -1,87 +1,176 @@
 <!DOCTYPE html>
-<html lang="th" data-lang="th">
+<html lang="th" data-lang="th" data-theme="dark">
 <head>
   <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>hourkey · บัญชี · 帳戶</title>
-<style>
-:root{
-  --bg:#0d0f12; --bg-2:#16191e; --tile:#1b1f25; --tile-bd:rgba(200,164,77,.18);
-  --fg:#f6f1e6; --fg-soft:rgba(246,241,230,.65); --fg-faint:rgba(246,241,230,.35);
-  --gold:#c8a44d; --gold-soft:rgba(200,164,77,.12); --gold-deep:#8b6e2f; --gold-line:rgba(200,164,77,.25);
-  --good:#7dd37b; --bad:#e26b5d; --line:rgba(200,164,77,.18);
-}
-[data-theme="light"]{ --bg:#fbf7eb; --bg-2:#f3ecda; --tile:#fff8e8; --fg:#1a1a1a; --fg-soft:#555; --fg-faint:#888; --tile-bd:rgba(138,109,42,.25); --line:rgba(138,109,42,.25); }
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--fg);font-family:'Noto Sans Thai','Inter',sans-serif;min-height:100vh;}
-.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:rgba(13,15,18,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--gold-line);}
-.logo{display:inline-flex;gap:10px;align-items:center;font-family:'Noto Serif TC',serif;font-size:20px;color:var(--fg);text-decoration:none;font-weight:600;}
-.logo .seal{width:28px;height:28px;border:1px solid var(--gold);display:inline-flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:12px;color:var(--gold);}
-.lang{display:inline-flex;background:var(--tile);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
-.lang button{width:28px;height:28px;border:none;background:transparent;color:var(--fg-soft);border-radius:50%;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;}
-.lang button.on{background:var(--gold);color:var(--bg);}
-.stage{max-width:920px;margin:0 auto;padding:30px 20px 60px;}
-.hero{margin-bottom:24px;}
-.hero h1{font-family:'Noto Serif TC',serif;font-size:32px;margin-bottom:6px;}
-.hero .sub{font-size:13px;color:var(--fg-soft);}
-/* tier card */
-.tier-card{background:linear-gradient(160deg,var(--gold-soft),var(--tile));border:1px solid var(--gold);border-radius:18px;padding:24px;margin-bottom:18px;display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:center;}
-.tier-card .badge{font-family:'Noto Serif TC',serif;font-size:42px;color:var(--gold);text-align:center;line-height:1;}
-.tier-card .info .label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
-.tier-card .info .tier-name{font-family:'Noto Serif Thai',serif;font-size:22px;color:var(--fg);font-weight:600;margin-top:4px;}
-.tier-card .info .sub-exp{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fg-soft);margin-top:6px;}
-.tier-card .balance{text-align:right;}
-.tier-card .balance .num{font-family:'Noto Serif TC',serif;font-size:36px;font-weight:600;color:var(--gold);line-height:1;}
-.tier-card .balance .unit{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--fg-soft);margin-top:4px;}
-/* packages */
-.section{margin-top:30px;}
-.section-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
-.pkg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
-.pkg{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:18px;transition:.2s;}
-.pkg.featured{border-color:var(--gold);background:linear-gradient(160deg,var(--gold-soft),var(--tile));position:relative;}
-.pkg.featured::before{content:"⭐ คุ้มสุด";position:absolute;top:-10px;right:14px;background:var(--gold);color:var(--bg);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;padding:3px 10px;border-radius:99px;font-weight:700;}
-.pkg .hours{font-family:'Noto Serif TC',serif;font-size:28px;color:var(--gold);font-weight:600;}
-.pkg .label{font-family:'Noto Sans Thai',sans-serif;font-size:13px;color:var(--fg);margin-top:6px;}
-.pkg .price{font-family:'Noto Serif TC',serif;font-size:24px;color:var(--fg);font-weight:600;margin-top:10px;}
-.pkg .price .cur{font-size:12px;color:var(--fg-soft);}
-.pkg .buy{display:block;width:100%;margin-top:14px;padding:10px;background:var(--gold);color:var(--bg);border:none;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;cursor:pointer;}
-.pkg .buy:hover{background:var(--gold-deep);}
-.pkg .buy:disabled{opacity:.5;cursor:not-allowed;}
-.pkg .note{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--fg-faint);margin-top:8px;letter-spacing:.05em;}
-/* history */
-.history-list{display:flex;flex-direction:column;gap:6px;}
-.tx-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;padding:10px 14px;background:var(--tile);border:1px solid var(--tile-bd);border-radius:8px;font-size:12px;align-items:center;}
-.tx-row .when{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--fg-faint);}
-.tx-row .what{font-family:'Noto Sans Thai',sans-serif;color:var(--fg);}
-.tx-row .delta{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;}
-.tx-row .delta.pos{color:var(--good);}
-.tx-row .delta.neg{color:var(--bad);}
-.tx-row .bal{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--fg-soft);}
-.empty{padding:30px;text-align:center;color:var(--fg-faint);font-style:italic;}
-/* alerts */
-.alert{padding:14px 18px;border-radius:10px;margin-bottom:18px;font-size:13px;}
-.alert.success{background:rgba(125,211,123,.10);border:1px solid var(--good);color:var(--good);}
-.alert.error{background:rgba(226,107,93,.10);border:1px solid var(--bad);color:var(--bad);}
-.alert.info{background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);}
-.center{text-align:center;}
-@media(max-width:640px){
-  .tier-card{grid-template-columns:1fr;text-align:center;gap:14px;}
-  .tier-card .balance{text-align:center;}
-}
-</style>
-<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
-<script src="/js/hk-profile-sync.js?v=20260517b"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>hourkey · บัญชี</title>
+  <style>
+  :root{
+    --bg:#0d0f12;
+    --bg-2:#151820;
+    --panel:#191d25;
+    --panel-2:#202530;
+    --line:rgba(200,164,77,.20);
+    --line-soft:rgba(246,241,230,.08);
+    --fg:#f6f1e6;
+    --fg-soft:rgba(246,241,230,.68);
+    --fg-faint:rgba(246,241,230,.42);
+    --gold:#c8a44d;
+    --gold-2:#8b6e2f;
+    --gold-soft:rgba(200,164,77,.12);
+    --green:#72c27d;
+    --red:#df6c5f;
+    --blue:#74a9df;
+    --shadow:0 20px 55px rgba(0,0,0,.30);
+  }
+  [data-theme="light"]{
+    --bg:#f5efe2;
+    --bg-2:#ece2cf;
+    --panel:#fffaf0;
+    --panel-2:#f9f1df;
+    --line:rgba(138,109,42,.26);
+    --line-soft:rgba(26,22,18,.08);
+    --fg:#1a1612;
+    --fg-soft:rgba(26,22,18,.68);
+    --fg-faint:rgba(26,22,18,.42);
+    --gold:#8a6d2a;
+    --gold-2:#6f5723;
+    --gold-soft:rgba(138,109,42,.11);
+    --green:#4f8a58;
+    --red:#b04d41;
+    --blue:#3c6f9e;
+    --shadow:0 18px 45px rgba(86,63,27,.13);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{background:var(--bg);}
+  body{min-height:100vh;background:
+    linear-gradient(180deg,rgba(200,164,77,.075),transparent 240px),
+    radial-gradient(circle at 82% 4%,rgba(116,169,223,.10),transparent 360px),
+    var(--bg);
+    color:var(--fg);font-family:'Noto Sans Thai','Inter',system-ui,sans-serif;
+  }
+  a{color:inherit;text-decoration:none;}
+  button{font:inherit;}
+  .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);}
+  .brand{display:inline-flex;align-items:center;gap:10px;font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:20px;font-weight:650;letter-spacing:.01em;}
+  .seal{width:30px;height:30px;border:1px solid var(--gold);display:inline-flex;align-items:center;justify-content:center;color:var(--gold);font-size:13px;}
+  .nav-actions{display:flex;align-items:center;gap:10px;min-width:0;}
+  .nav-link{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border:1px solid var(--line);background:rgba(255,255,255,.025);color:var(--fg-soft);font-size:12px;white-space:nowrap;}
+  .nav-link:hover{border-color:var(--gold);color:var(--fg);}
+  .lang{display:inline-flex;background:var(--panel);border:1px solid var(--line);padding:3px;gap:2px;}
+  .lang button{height:28px;min-width:30px;border:none;background:transparent;color:var(--fg-soft);cursor:pointer;font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px;font-weight:700;border-radius:0;}
+  .lang button.on{background:var(--gold);color:var(--bg);}
+  .stage{width:min(1180px,100%);margin:0 auto;padding:30px 22px 70px;}
+  .hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:22px;align-items:end;margin-bottom:22px;}
+  .eyebrow{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+  h1{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:clamp(30px,4vw,48px);font-weight:650;line-height:1.12;letter-spacing:0;}
+  .hero p{max-width:660px;color:var(--fg-soft);font-size:14px;line-height:1.8;margin-top:10px;}
+  .hero-cta{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 14px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer;font-size:13px;white-space:nowrap;}
+  .btn.primary{background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:700;}
+  .btn:hover{border-color:var(--gold);}
+  .btn:disabled{opacity:.55;cursor:wait;}
+  .account-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:18px;align-items:stretch;}
+  .panel{background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 78%,var(--bg)));border:1px solid var(--line);box-shadow:var(--shadow);}
+  .summary{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;padding:22px;}
+  .avatar{width:74px;height:74px;border:1px solid var(--line);background:var(--gold-soft);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono','SF Mono',monospace;font-size:24px;font-weight:800;overflow:hidden;}
+  .avatar img{width:100%;height:100%;object-fit:cover;}
+  .account-name{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:26px;font-weight:650;line-height:1.25;}
+  .account-email{margin-top:3px;color:var(--fg-soft);font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px;word-break:break-all;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:rgba(255,255,255,.025);padding:7px 10px;color:var(--fg-soft);font-size:12px;}
+  .chip strong{color:var(--fg);font-weight:650;}
+  .balance-card{padding:22px;display:grid;gap:16px;}
+  .balance-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
+  .balance-num{font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:56px;font-weight:700;color:var(--gold);line-height:.95;}
+  .balance-unit{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--fg-soft);margin-top:6px;text-transform:uppercase;}
+  .tier-badge{min-width:54px;height:54px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:'Noto Serif TC',serif;font-size:25px;background:var(--gold-soft);}
+  .balance-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .metric{border:1px solid var(--line-soft);background:rgba(255,255,255,.025);padding:12px;}
+  .metric span{display:block;color:var(--fg-faint);font-size:11px;margin-bottom:3px;}
+  .metric b{font-size:14px;font-weight:650;}
+  .notice{margin-top:18px;border:1px solid var(--line);background:var(--gold-soft);padding:14px 16px;color:var(--fg-soft);font-size:13px;line-height:1.7;}
+  .notice b{color:var(--gold);}
+  .section{margin-top:28px;}
+  .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:12px;}
+  .section-title{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:22px;font-weight:650;}
+  .section-sub{font-size:12px;color:var(--fg-faint);line-height:1.6;}
+  .pkg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+  .sub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+  .pkg{position:relative;display:flex;flex-direction:column;gap:14px;background:var(--panel);border:1px solid var(--line);padding:18px;min-height:238px;}
+  .pkg.featured{border-color:var(--gold);background:linear-gradient(160deg,var(--gold-soft),var(--panel));}
+  .pkg-tag{align-self:flex-start;border:1px solid var(--line);color:var(--gold);padding:5px 8px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;}
+  .pkg-name{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:21px;font-weight:650;line-height:1.25;}
+  .pkg-desc{color:var(--fg-soft);font-size:13px;line-height:1.65;min-height:42px;}
+  .pkg-main{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:auto;}
+  .pkg-hours{font-family:'Noto Serif TC','Noto Serif Thai',serif;font-size:34px;color:var(--gold);font-weight:700;line-height:1;}
+  .pkg-hours small{font-family:'Noto Sans Thai',sans-serif;font-size:12px;color:var(--fg-soft);font-weight:500;margin-left:4px;}
+  .pkg-price{text-align:right;}
+  .pkg-price b{display:block;font-size:24px;line-height:1.1;}
+  .pkg-price span{display:block;color:var(--fg-faint);font-size:11px;margin-top:2px;}
+  .pkg-benefits{display:grid;gap:7px;border-top:1px solid var(--line-soft);padding-top:12px;color:var(--fg-soft);font-size:12px;line-height:1.45;}
+  .pkg-benefits div{display:flex;gap:8px;align-items:flex-start;}
+  .pkg-benefits i{width:6px;height:6px;background:var(--gold);margin-top:8px;flex:0 0 auto;}
+  .buy{width:100%;min-height:40px;border:1px solid var(--gold);background:var(--gold);color:var(--bg);cursor:pointer;font-weight:750;font-size:13px;}
+  .buy:hover{background:var(--gold-2);border-color:var(--gold-2);}
+  .tools-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+  .tool{border:1px solid var(--line);background:var(--panel);padding:15px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;}
+  .tool b{font-size:15px;font-weight:650;}
+  .tool span{display:block;color:var(--fg-soft);font-size:12px;line-height:1.55;margin-top:5px;}
+  .tool .arrow{color:var(--gold);font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px;margin-top:12px;}
+  .history-panel{border:1px solid var(--line);background:var(--panel);overflow:hidden;}
+  .history-list{display:grid;}
+  .tx-row{display:grid;grid-template-columns:170px minmax(0,1fr) 110px 100px;gap:14px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--line-soft);font-size:13px;}
+  .tx-row:last-child{border-bottom:0;}
+  .tx-head{color:var(--fg-faint);font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;background:rgba(255,255,255,.025);}
+  .when{font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;color:var(--fg-faint);}
+  .what{color:var(--fg);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .delta{font-family:'JetBrains Mono','SF Mono',monospace;font-weight:750;text-align:right;}
+  .delta.pos{color:var(--green);}
+  .delta.neg{color:var(--red);}
+  .bal{font-family:'JetBrains Mono','SF Mono',monospace;text-align:right;color:var(--fg-soft);font-size:12px;}
+  .empty{padding:34px 18px;text-align:center;color:var(--fg-faint);font-size:13px;line-height:1.7;}
+  .alert{padding:14px 16px;border:1px solid var(--line);background:var(--panel);margin-bottom:16px;font-size:13px;line-height:1.7;}
+  .alert.success{border-color:color-mix(in srgb,var(--green) 65%,transparent);background:color-mix(in srgb,var(--green) 12%,var(--panel));color:var(--green);}
+  .alert.error{border-color:color-mix(in srgb,var(--red) 65%,transparent);background:color-mix(in srgb,var(--red) 12%,var(--panel));color:var(--red);}
+  .alert.info{border-color:var(--line);background:var(--gold-soft);color:var(--fg);}
+  .skeleton{position:relative;overflow:hidden;color:transparent!important;background:rgba(255,255,255,.06)!important;}
+  .skeleton::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent);animation:shine 1.2s infinite;}
+  @keyframes shine{to{transform:translateX(100%);}}
+  @media(max-width:920px){
+    .account-grid{grid-template-columns:1fr;}
+    .pkg-grid,.sub-grid{grid-template-columns:1fr 1fr;}
+    .tools-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media(max-width:700px){
+    .topbar{padding:12px 14px;}
+    .nav-link{display:none;}
+    .stage{padding:22px 14px 50px;}
+    .hero{grid-template-columns:1fr;align-items:start;}
+    .hero-cta{justify-content:flex-start;}
+    .summary{grid-template-columns:1fr;}
+    .balance-meta{grid-template-columns:1fr;}
+    .pkg-grid,.sub-grid,.tools-grid{grid-template-columns:1fr;}
+    .tx-head{display:none;}
+    .tx-row{grid-template-columns:1fr auto;gap:8px 12px;}
+    .tx-row .when{grid-column:1 / -1;}
+    .tx-row .what{white-space:normal;}
+    .tx-row .bal{grid-column:1 / -1;text-align:left;}
+  }
+  </style>
+  <link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+  <script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
-<body data-theme="dark">
-
+<body>
 <header class="topbar">
-  <a href="/" class="logo"><span class="seal">時</span>hourkey</a>
-  <div style="display:flex;gap:12px;align-items:center;">
-    <a href="/chart" style="color:var(--fg-soft);font-size:12px;text-decoration:none;" data-i18n="ac.nav.back">← กลับดวง</a>
-    <div class="lang" id="lang-switch">
+  <a href="/" class="brand"><span class="seal">時</span><span>hourkey</span></a>
+  <div class="nav-actions">
+    <a href="/today" class="nav-link" data-i18n="ac.nav.today">วันนี้</a>
+    <a href="/chart" class="nav-link" data-i18n="ac.nav.chart">ดวงของฉัน</a>
+    <div class="lang" id="lang-switch" aria-label="language">
       <button data-lang="th" class="on">TH</button>
       <button data-lang="en">EN</button>
       <button data-lang="zh">中</button>
@@ -90,166 +179,428 @@ body{background:var(--bg);color:var(--fg);font-family:'Noto Sans Thai','Inter',s
   </div>
 </header>
 
-<div class="stage">
-  <div class="hero">
-    <h1 data-i18n="ac.h1">บัญชีของคุณ · 帳戶</h1>
-    <p class="sub" data-i18n="ac.sub">จัดการสมาชิก · ดู 時 (ยาม) คงเหลือ · เติมแพ็กเกจ</p>
-  </div>
+<main class="stage">
+  <section class="hero">
+    <div>
+      <div class="eyebrow" data-i18n="ac.eyebrow">ACCOUNT CONSOLE</div>
+      <h1 data-i18n="ac.h1">บัญชีและเครดิตของคุณ</h1>
+      <p data-i18n="ac.sub">ดูสถานะสมาชิก ยามคงเหลือ แพ็กเกจ และประวัติการใช้งานในที่เดียว จัดหน้าให้พร้อมสำหรับระบบชำระเงินจริงในอนาคต</p>
+    </div>
+    <div class="hero-cta">
+      <button class="btn" type="button" onclick="openSettings()" data-i18n="ac.settings">ตั้งค่าบัญชี</button>
+      <a class="btn primary" href="/master" data-i18n="ac.ask">ถามซินแส</a>
+    </div>
+  </section>
 
   <div id="alert-area"></div>
 
-  <!-- tier + balance -->
-  <div class="tier-card" id="tier-card">
-    <div class="badge" id="tier-badge">新</div>
-    <div class="info">
-      <div class="label" data-i18n="ac.tier.label">สมาชิกปัจจุบัน</div>
-      <div class="tier-name" id="tier-name">—</div>
-      <div class="sub-exp" id="tier-exp"></div>
+  <section class="account-grid" aria-label="account summary">
+    <div class="panel summary">
+      <div class="avatar" id="account-avatar">HK</div>
+      <div>
+        <div class="eyebrow" data-i18n="ac.profile.label">โปรไฟล์บัญชี</div>
+        <div class="account-name" id="account-name">—</div>
+        <div class="account-email" id="account-email">—</div>
+        <div class="chips">
+          <span class="chip"><span data-i18n="ac.tier.label">สมาชิก</span> <strong id="tier-name">—</strong></span>
+          <span class="chip"><span data-i18n="ac.status.label">สถานะ</span> <strong id="account-status">—</strong></span>
+          <span class="chip"><span data-i18n="ac.exp.label">หมดอายุ</span> <strong id="tier-exp">—</strong></span>
+        </div>
+      </div>
     </div>
-    <div class="balance">
-      <div class="num" id="hour-balance">—</div>
-      <div class="unit" data-i18n="ac.balance.unit">時 ยาม คงเหลือ</div>
+    <div class="panel balance-card">
+      <div class="balance-top">
+        <div>
+          <div class="balance-num" id="hour-balance">—</div>
+          <div class="balance-unit" data-i18n="ac.balance.unit">ยามคงเหลือ</div>
+        </div>
+        <div class="tier-badge" id="tier-badge">新</div>
+      </div>
+      <div class="balance-meta">
+        <div class="metric"><span data-i18n="ac.metric.currency">หน่วยระบบ</span><b>時</b></div>
+        <div class="metric"><span data-i18n="ac.metric.mode">โหมดชำระเงิน</span><b data-i18n="ac.metric.mock">ทดสอบ</b></div>
+      </div>
     </div>
+  </section>
+
+  <div class="notice">
+    <b data-i18n="ac.notice.head">ก่อนเปิดชำระเงินจริง:</b>
+    <span data-i18n="ac.notice.body">หน้านี้ใช้แพ็กเกจทดสอบเพื่อเช็ค flow บัญชี เครดิต และประวัติรายการ ยังไม่ตัดเงินจริง</span>
   </div>
 
-  <!-- packages -->
-  <div class="section">
-    <div class="section-title" data-i18n="ac.pkg.title">⏳ เติมยาม · TOP UP</div>
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title" data-i18n="ac.pkg.title">เติมยาม</div>
+        <div class="section-sub" data-i18n="ac.pkg.sub">เลือกจำนวนเครดิตสำหรับใช้กับซินแสและเครื่องมือรายวัน</div>
+      </div>
+    </div>
     <div class="pkg-grid" id="pkg-grid"></div>
-  </div>
+  </section>
 
-  <!-- subscriptions -->
-  <div class="section">
-    <div class="section-title" data-i18n="ac.sub.title">⭐ ยกระดับสมาชิก · UPGRADE</div>
-    <div class="pkg-grid" id="sub-grid"></div>
-  </div>
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title" data-i18n="ac.sub.title">สมาชิก</div>
+        <div class="section-sub" data-i18n="ac.sub.sub">ยกระดับสิทธิ์และรับเครดิตเริ่มต้นสำหรับการใช้งานระยะยาว</div>
+      </div>
+    </div>
+    <div class="sub-grid" id="sub-grid"></div>
+  </section>
 
-  <!-- history -->
-  <div class="section">
-    <div class="section-title" data-i18n="ac.hist.title">📜 ประวัติทำรายการ · HISTORY</div>
-    <div class="history-list" id="history-list"><div class="empty" data-i18n="ac.hist.loading">กำลังโหลด...</div></div>
-  </div>
-</div>
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title" data-i18n="ac.tools.title">เครื่องมือของบัญชี</div>
+        <div class="section-sub" data-i18n="ac.tools.sub">ทางลัดไปงานที่ใช้บ่อยหลังเข้าสู่ระบบ</div>
+      </div>
+    </div>
+    <div class="tools-grid">
+      <a class="tool" href="/chart"><div><b data-i18n="ac.tool.chart">ดวงของฉัน</b><span data-i18n="ac.tool.chart.desc">ดูเสาหลักและภาพรวมดวง</span></div><div class="arrow">OPEN</div></a>
+      <a class="tool" href="/today"><div><b data-i18n="ac.tool.today">วันนี้</b><span data-i18n="ac.tool.today.desc">เช็คคะแนนรายวันและคำแนะนำ</span></div><div class="arrow">OPEN</div></a>
+      <a class="tool" href="/yongsennetwork"><div><b data-i18n="ac.tool.network">เครือข่าย</b><span data-i18n="ac.tool.network.desc">ดูปฏิกิริยากับคนรอบตัว</span></div><div class="arrow">OPEN</div></a>
+      <button class="tool" type="button" onclick="openSettings()"><div><b data-i18n="ac.tool.settings">ตั้งค่า</b><span data-i18n="ac.tool.settings.desc">แก้ชื่อบัญชีและข้อมูลดวงหลัก</span></div><div class="arrow">EDIT</div></button>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <div class="section-title" data-i18n="ac.hist.title">ประวัติรายการ</div>
+        <div class="section-sub" data-i18n="ac.hist.sub">รายการล่าสุดของเครดิตและการเติมแพ็กเกจ</div>
+      </div>
+    </div>
+    <div class="history-panel">
+      <div class="history-list" id="history-list">
+        <div class="empty" data-i18n="ac.hist.loading">กำลังโหลด...</div>
+      </div>
+    </div>
+  </section>
+</main>
 
 <script>
-/* dict */
 window.HK_I18N = {
-  'ac.nav.back':    { th:'← กลับดวง', en:'← Back to Chart', zh:'← 返回命盤' },
-  'ac.h1':          { th:'บัญชีของคุณ · 帳戶', en:'Your Account · 帳戶', zh:'您的帳戶' },
-  'ac.sub':         { th:'จัดการสมาชิก · ดู 時 (ยาม) คงเหลือ · เติมแพ็กเกจ', en:'Manage membership · check 時 balance · top up', zh:'管理會員 · 查看 時 餘額 · 加值' },
-  'ac.tier.label':  { th:'สมาชิกปัจจุบัน', en:'Current Tier', zh:'目前會員' },
-  'ac.balance.unit':{ th:'時 ยาม คงเหลือ', en:'時 (Hours) remaining', zh:'時 餘額' },
-  'ac.pkg.title':   { th:'⏳ เติมยาม · TOP UP', en:'⏳ Top Up · 加值', zh:'⏳ 加值 時' },
-  'ac.sub.title':   { th:'⭐ ยกระดับสมาชิก · UPGRADE', en:'⭐ Upgrade Tier', zh:'⭐ 升級會員' },
-  'ac.hist.title':  { th:'📜 ประวัติทำรายการ · HISTORY', en:'📜 Transaction History', zh:'📜 交易紀錄' },
-  'ac.hist.loading':{ th:'กำลังโหลด...', en:'Loading...', zh:'載入中...' },
-  'ac.hist.empty':  { th:'ยังไม่มีรายการ', en:'No transactions yet', zh:'尚無交易' },
-  'ac.buy':         { th:'ซื้อเลย', en:'Buy Now', zh:'立即購買' },
-  'ac.tier.free':   { th:'มือใหม่ · Free', en:'Newbie · Free', zh:'新人' },
-  'ac.tier.premium':{ th:'ผู้รู้ · Premium', en:'Sage · Premium', zh:'賢者' },
-  'ac.tier.master': { th:'ปรมาจารย์ · Master', en:'Master', zh:'大師' },
-  'ac.tier.exp':    { th:'หมดอายุ {DATE}', en:'expires {DATE}', zh:'到期 {DATE}' },
-  'ac.purchase.ok': { th:'ซื้อสำเร็จ · ได้ {N} 時 · ยอดคงเหลือ {B} 時', en:'Purchase ok · got {N} 時 · balance {B} 時', zh:'購買成功 · +{N} 時 · 餘 {B}' },
-  'ac.purchase.err':{ th:'ผิดพลาด: {E}', en:'Error: {E}', zh:'錯誤: {E}' },
-  'ac.must.login':  { th:'ต้องเข้าสู่ระบบก่อน', en:'Please login first', zh:'請先登入' },
+  'ac.nav.today': { th:'วันนี้', en:'Today', zh:'今日' },
+  'ac.nav.chart': { th:'ดวงของฉัน', en:'My Chart', zh:'我的命盤' },
+  'ac.eyebrow': { th:'ACCOUNT CONSOLE', en:'ACCOUNT CONSOLE', zh:'帳戶控制台' },
+  'ac.h1': { th:'บัญชีและเครดิตของคุณ', en:'Account and Credits', zh:'帳戶與額度' },
+  'ac.sub': {
+    th:'ดูสถานะสมาชิก ยามคงเหลือ แพ็กเกจ และประวัติการใช้งานในที่เดียว จัดหน้าให้พร้อมสำหรับระบบชำระเงินจริงในอนาคต',
+    en:'Manage membership, remaining credits, packages, and transaction history in one focused account console.',
+    zh:'集中管理會員狀態、時額度、方案與交易紀錄。'
+  },
+  'ac.settings': { th:'ตั้งค่าบัญชี', en:'Account settings', zh:'帳戶設定' },
+  'ac.ask': { th:'ถามซินแส', en:'Ask Sifu', zh:'問師傅' },
+  'ac.profile.label': { th:'โปรไฟล์บัญชี', en:'Account profile', zh:'帳戶資料' },
+  'ac.tier.label': { th:'สมาชิก', en:'Tier', zh:'會員' },
+  'ac.status.label': { th:'สถานะ', en:'Status', zh:'狀態' },
+  'ac.exp.label': { th:'หมดอายุ', en:'Expires', zh:'到期' },
+  'ac.balance.unit': { th:'ยามคงเหลือ', en:'Credits remaining', zh:'時 餘額' },
+  'ac.metric.currency': { th:'หน่วยระบบ', en:'Unit', zh:'單位' },
+  'ac.metric.mode': { th:'โหมดชำระเงิน', en:'Payment mode', zh:'付款模式' },
+  'ac.metric.mock': { th:'ทดสอบ', en:'Test', zh:'測試' },
+  'ac.notice.head': { th:'ก่อนเปิดชำระเงินจริง:', en:'Before real payments:', zh:'正式付款前：' },
+  'ac.notice.body': {
+    th:'หน้านี้ใช้แพ็กเกจทดสอบเพื่อเช็ค flow บัญชี เครดิต และประวัติรายการ ยังไม่ตัดเงินจริง',
+    en:'These packages run in test mode to verify account, credit, and history flows. No real payment is charged.',
+    zh:'目前為測試方案，用於驗證帳戶、額度與交易流程，尚未扣款。'
+  },
+  'ac.pkg.title': { th:'เติมยาม', en:'Top up credits', zh:'加值時' },
+  'ac.pkg.sub': { th:'เลือกจำนวนเครดิตสำหรับใช้กับซินแสและเครื่องมือรายวัน', en:'Choose credits for Sifu and daily tools.', zh:'選擇用於師傅與日常工具的額度。' },
+  'ac.sub.title': { th:'สมาชิก', en:'Membership', zh:'會員' },
+  'ac.sub.sub': { th:'ยกระดับสิทธิ์และรับเครดิตเริ่มต้นสำหรับการใช้งานระยะยาว', en:'Upgrade access and receive starter credits for longer-term usage.', zh:'升級權限並獲得初始時額度。' },
+  'ac.tools.title': { th:'เครื่องมือของบัญชี', en:'Account tools', zh:'帳戶工具' },
+  'ac.tools.sub': { th:'ทางลัดไปงานที่ใช้บ่อยหลังเข้าสู่ระบบ', en:'Fast access to common signed-in workflows.', zh:'登入後常用工具。' },
+  'ac.tool.chart': { th:'ดวงของฉัน', en:'My Chart', zh:'我的命盤' },
+  'ac.tool.chart.desc': { th:'ดูเสาหลักและภาพรวมดวง', en:'Review your chart and core reading.', zh:'查看命盤與總覽。' },
+  'ac.tool.today': { th:'วันนี้', en:'Today', zh:'今日' },
+  'ac.tool.today.desc': { th:'เช็คคะแนนรายวันและคำแนะนำ', en:'Check daily score and guidance.', zh:'查看今日分數與建議。' },
+  'ac.tool.network': { th:'เครือข่าย', en:'Network', zh:'人脈網' },
+  'ac.tool.network.desc': { th:'ดูปฏิกิริยากับคนรอบตัว', en:'See reactions with people around you.', zh:'查看與身邊人的互動。' },
+  'ac.tool.settings': { th:'ตั้งค่า', en:'Settings', zh:'設定' },
+  'ac.tool.settings.desc': { th:'แก้ชื่อบัญชีและข้อมูลดวงหลัก', en:'Edit account name and main birth profile.', zh:'編輯帳戶與主要命盤。' },
+  'ac.hist.title': { th:'ประวัติรายการ', en:'Transaction history', zh:'交易紀錄' },
+  'ac.hist.sub': { th:'รายการล่าสุดของเครดิตและการเติมแพ็กเกจ', en:'Latest credit and package activity.', zh:'最近額度與方案紀錄。' },
+  'ac.hist.loading': { th:'กำลังโหลด...', en:'Loading...', zh:'載入中...' },
+  'ac.hist.empty': { th:'ยังไม่มีรายการในบัญชีนี้', en:'No transactions yet.', zh:'尚無交易紀錄。' },
+  'ac.hist.when': { th:'เวลา', en:'Date', zh:'時間' },
+  'ac.hist.what': { th:'รายการ', en:'Item', zh:'項目' },
+  'ac.hist.delta': { th:'เปลี่ยนแปลง', en:'Change', zh:'變動' },
+  'ac.hist.balance': { th:'คงเหลือ', en:'Balance', zh:'餘額' },
+  'ac.buy': { th:'เติมแพ็กเกจ', en:'Top up', zh:'加值' },
+  'ac.upgrade': { th:'ยกระดับสมาชิก', en:'Upgrade', zh:'升級' },
+  'ac.login.title': { th:'ต้องเข้าสู่ระบบก่อน', en:'Please sign in first', zh:'請先登入' },
+  'ac.login.body': { th:'เข้าสู่ระบบเพื่อดูเครดิต สมาชิก และประวัติรายการของบัญชี', en:'Sign in to view credits, membership, and account history.', zh:'登入後可查看時額度、會員與交易紀錄。' },
+  'ac.login.btn': { th:'เข้าสู่ระบบ', en:'Sign in', zh:'登入' },
+  'ac.active': { th:'ใช้งานได้', en:'Active', zh:'可用' },
+  'ac.free': { th:'ยังไม่เป็นสมาชิก', en:'Free account', zh:'免費帳戶' },
+  'ac.noexp': { th:'ไม่มีวันหมดอายุ', en:'No expiry', zh:'無到期日' },
+  'ac.purchase.ok': { th:'เติมสำเร็จ ได้ {N} 時 ยอดคงเหลือ {B} 時', en:'Top up complete. +{N} 時, balance {B} 時.', zh:'加值成功，+{N} 時，餘額 {B} 時。' },
+  'ac.purchase.err': { th:'ทำรายการไม่สำเร็จ: {E}', en:'Transaction failed: {E}', zh:'交易失敗：{E}' }
 };
-const TIER_BADGE = {free:'新', premium:'賢', master:'大'};
-const TIER_KEY = {free:'ac.tier.free', premium:'ac.tier.premium', master:'ac.tier.master'};
-function tx(k, fb){ const t = window.HK_I18N[k]; if (!t) return fb; return t[document.documentElement.getAttribute('data-lang')||'th'] || t.th || fb; }
+
+const TIER_BADGE = { free:'新', premium:'賢', master:'大' };
+const TIER_LABEL = {
+  free:{ th:'Free', en:'Free', zh:'新人' },
+  premium:{ th:'Premium', en:'Premium', zh:'賢者' },
+  master:{ th:'Master', en:'Master', zh:'大師' }
+};
+const PACKAGE_META = {
+  hour_100:{
+    tag:{ th:'เริ่มต้น', en:'Starter', zh:'入門' },
+    name:{ th:'100 ยาม', en:'100 credits', zh:'100 時' },
+    desc:{ th:'เหมาะกับลองใช้ซินแสและเช็คเครื่องมือสำคัญเป็นครั้งคราว', en:'Good for occasional Sifu questions and tool checks.', zh:'適合偶爾使用師傅與工具。' },
+    benefits:{ th:['เครดิตพื้นฐานสำหรับทดลอง flow','เหมาะกับบัญชีเริ่มต้น'], en:['Basic test credits','Best for a new account'], zh:['基礎測試額度','適合新帳戶'] }
+  },
+  hour_500:{
+    tag:{ th:'คุ้มสุด', en:'Best value', zh:'推薦' },
+    name:{ th:'550 ยาม', en:'550 credits', zh:'550 時' },
+    desc:{ th:'แพ็กหลักสำหรับใช้งานประจำ มีเครดิตพิเศษจากแพ็ก 500', en:'Main recurring package with bonus credits.', zh:'日常使用方案，含加贈額度。' },
+    benefits:{ th:['ได้ 500 + 50 ยาม','ต้นทุนต่อยามลดลง'], en:['500 + 50 bonus credits','Lower unit cost'], zh:['500 + 50 加贈','單位成本較低'] }
+  },
+  hour_1500:{
+    tag:{ th:'งานหนัก', en:'Power', zh:'大量' },
+    name:{ th:'1,700 ยาม', en:'1,700 credits', zh:'1,700 時' },
+    desc:{ th:'เหมาะกับผู้ใช้หลายเครื่องมือ หรือมีทีม/เครือข่ายที่ต้องดูบ่อย', en:'For heavier use across tools, teams, or network work.', zh:'適合大量工具與人脈分析。' },
+    benefits:{ th:['ได้ 1,500 + 200 ยาม','เหมาะกับงานวิจัย/ทีม'], en:['1,500 + 200 bonus credits','Useful for team work'], zh:['1,500 + 200 加贈','適合團隊使用'] }
+  },
+  premium_1y:{
+    tag:{ th:'รายปี', en:'Annual', zh:'年費' },
+    name:{ th:'Premium 1 ปี', en:'Premium annual', zh:'賢者一年' },
+    desc:{ th:'ยกระดับบัญชีสำหรับผู้ใช้จริงจัง พร้อมเครดิตเริ่มต้น', en:'Upgrade access for committed personal use with starter credits.', zh:'升級個人使用權限並附起始額度。' },
+    benefits:{ th:['สถานะ Premium 365 วัน','แถม 120 ยาม'], en:['Premium for 365 days','Includes 120 credits'], zh:['賢者 365 天','含 120 時'] }
+  },
+  master_1y:{
+    tag:{ th:'มืออาชีพ', en:'Professional', zh:'專業' },
+    name:{ th:'Master 1 ปี', en:'Master annual', zh:'大師一年' },
+    desc:{ th:'สำหรับผู้ใช้ระดับงานจริง มีเครดิตจำนวนมากสำหรับการวิเคราะห์ต่อเนื่อง', en:'For professional usage with larger credits for ongoing analysis.', zh:'專業使用，適合連續分析。' },
+    benefits:{ th:['สถานะ Master 365 วัน','แถม 1,200 ยาม'], en:['Master for 365 days','Includes 1,200 credits'], zh:['大師 365 天','含 1,200 時'] }
+  }
+};
+
+const state = { me:null, packages:[], history:[], lang:'th', purchasing:null };
+
+function lang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
+function pick(value, fb){ return value && (value[lang()] || value.th || value.en) || fb || ''; }
+function tx(k, fb){ return pick(window.HK_I18N[k], fb || k); }
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function fmtDate(value){
+  if (!value) return tx('ac.noexp','ไม่มีวันหมดอายุ');
+  try { return new Date(value).toLocaleDateString(lang()==='th' ? 'th-TH' : (lang()==='zh' ? 'zh-TW' : 'en-US')); }
+  catch(_) { return String(value); }
+}
+function fmtDateTime(value){
+  try { return new Date(value).toLocaleString(lang()==='th' ? 'th-TH' : (lang()==='zh' ? 'zh-TW' : 'en-US')); }
+  catch(_) { return String(value || ''); }
+}
 function alertMsg(html, type){
   const a = document.getElementById('alert-area');
-  a.innerHTML = `<div class="alert ${type||'info'}">${html}</div>`;
-  setTimeout(()=>{ if (a.firstChild) a.firstChild.style.opacity='0'; setTimeout(()=>a.innerHTML='', 600); }, 5000);
+  a.innerHTML = `<div class="alert ${type || 'info'}">${html}</div>`;
+  setTimeout(() => {
+    const el = a.firstChild;
+    if (!el) return;
+    el.style.opacity = '0';
+    el.style.transition = 'opacity .35s';
+    setTimeout(() => { if (a.firstChild === el) a.innerHTML = ''; }, 420);
+  }, 5200);
+}
+function setThemeFromStorage(){
+  try {
+    const saved = localStorage.getItem('hk-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
+    document.body.classList.toggle('light', saved === 'light');
+  } catch(_) {}
+}
+function openSettings(){
+  if (typeof window.HK_openSettings === 'function') window.HK_openSettings();
+}
+window.openSettings = openSettings;
+
+function renderStaticText(){
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (window.HK_I18N[k]) el.textContent = tx(k, el.textContent);
+  });
+  document.querySelectorAll('#lang-switch button').forEach(b => b.classList.toggle('on', b.dataset.lang === lang()));
+}
+function renderMe(){
+  const me = state.me;
+  const avatar = document.getElementById('account-avatar');
+  if (!me) {
+    document.getElementById('account-name').textContent = tx('ac.login.title','ต้องเข้าสู่ระบบก่อน');
+    document.getElementById('account-email').textContent = tx('ac.login.body','เข้าสู่ระบบเพื่อดูเครดิต สมาชิก และประวัติรายการของบัญชี');
+    document.getElementById('tier-name').textContent = '—';
+    document.getElementById('account-status').textContent = '—';
+    document.getElementById('tier-exp').textContent = '—';
+    document.getElementById('hour-balance').textContent = '—';
+    document.getElementById('tier-badge').textContent = '新';
+    avatar.textContent = 'HK';
+    return;
+  }
+  const displayName = me.name || me.email || 'hourkey';
+  document.getElementById('account-name').textContent = displayName;
+  document.getElementById('account-email').textContent = me.email || '';
+  document.getElementById('tier-name').textContent = pick(TIER_LABEL[me.tier || 'free'], me.tier || 'Free');
+  document.getElementById('account-status').textContent = me.sub_active ? tx('ac.active','ใช้งานได้') : tx('ac.free','ยังไม่เป็นสมาชิก');
+  document.getElementById('tier-exp').textContent = me.sub_active ? fmtDate(me.sub_expires_at) : tx('ac.noexp','ไม่มีวันหมดอายุ');
+  document.getElementById('hour-balance').textContent = Number(me.hour_balance || 0).toLocaleString();
+  document.getElementById('tier-badge').textContent = TIER_BADGE[me.tier] || '新';
+  if (me.avatar_url) {
+    avatar.innerHTML = `<img src="${esc(me.avatar_url)}" alt="">`;
+  } else {
+    const initials = String(displayName).trim().slice(0,2).toUpperCase() || 'HK';
+    avatar.textContent = initials;
+  }
+}
+function packageCard(p, featured){
+  const meta = PACKAGE_META[p.key] || {};
+  const unit = p.hours ? Math.round((p.price_thb / p.hours) * 100) / 100 : 0;
+  const benefits = pick(meta.benefits, []).map(x => `<div><i></i><span>${esc(x)}</span></div>`).join('');
+  const isSub = !!p.tier;
+  const btn = isSub ? tx('ac.upgrade','ยกระดับสมาชิก') : tx('ac.buy','เติมแพ็กเกจ');
+  return `<article class="pkg ${featured ? 'featured' : ''}">
+    <div class="pkg-tag">${esc(pick(meta.tag, isSub ? 'MEMBER' : 'TOP UP'))}</div>
+    <div>
+      <div class="pkg-name">${esc(pick(meta.name, p.label || p.key))}</div>
+      <div class="pkg-desc">${esc(pick(meta.desc, p.label || ''))}</div>
+    </div>
+    <div class="pkg-main">
+      <div class="pkg-hours">${Number(p.hours || 0).toLocaleString()}<small>時</small></div>
+      <div class="pkg-price"><b>฿${Number(p.price_thb || 0).toLocaleString()}</b><span>~฿${unit.toFixed(2)} / 時</span></div>
+    </div>
+    <div class="pkg-benefits">${benefits}</div>
+    <button class="buy" type="button" onclick="purchase('${esc(p.key)}')" ${state.purchasing===p.key ? 'disabled' : ''}>${state.purchasing===p.key ? '...' : esc(btn)}</button>
+  </article>`;
+}
+function renderPackages(){
+  const hourWrap = document.getElementById('pkg-grid');
+  const subWrap = document.getElementById('sub-grid');
+  if (!state.packages.length) {
+    const sk = '<div class="pkg skeleton"></div><div class="pkg skeleton"></div><div class="pkg skeleton"></div>';
+    hourWrap.innerHTML = sk;
+    subWrap.innerHTML = '<div class="pkg skeleton"></div><div class="pkg skeleton"></div>';
+    return;
+  }
+  const hourPkgs = state.packages.filter(p => !p.tier);
+  const subPkgs = state.packages.filter(p => p.tier);
+  hourWrap.innerHTML = hourPkgs.map(p => packageCard(p, p.key === 'hour_500')).join('');
+  subWrap.innerHTML = subPkgs.map(p => packageCard(p, p.key === 'master_1y')).join('');
+}
+function renderHistory(){
+  const list = document.getElementById('history-list');
+  if (!state.history.length) {
+    list.innerHTML = `<div class="empty">${esc(tx('ac.hist.empty','ยังไม่มีรายการในบัญชีนี้'))}</div>`;
+    return;
+  }
+  const head = `<div class="tx-row tx-head">
+    <div>${esc(tx('ac.hist.when','เวลา'))}</div>
+    <div>${esc(tx('ac.hist.what','รายการ'))}</div>
+    <div style="text-align:right">${esc(tx('ac.hist.delta','เปลี่ยนแปลง'))}</div>
+    <div style="text-align:right">${esc(tx('ac.hist.balance','คงเหลือ'))}</div>
+  </div>`;
+  const rows = state.history.map(t => {
+    const delta = Number(t.delta || 0);
+    const cls = delta >= 0 ? 'pos' : 'neg';
+    const sign = delta > 0 ? '+' : '';
+    const what = t.note || t.ref_feature || t.reason || '—';
+    return `<div class="tx-row">
+      <div class="when">${esc(fmtDateTime(t.created_at))}</div>
+      <div class="what">${esc(what)}</div>
+      <div class="delta ${cls}">${sign}${delta.toLocaleString()} 時</div>
+      <div class="bal">${Number(t.balance_after || 0).toLocaleString()}</div>
+    </div>`;
+  }).join('');
+  list.innerHTML = head + rows;
+}
+function renderAll(){
+  renderStaticText();
+  renderMe();
+  renderPackages();
+  renderHistory();
 }
 async function loadMe(){
   try {
-    const r = await fetch('/api/account/me', { credentials:'include' });
-    if (r.status === 401){ alertMsg(tx('ac.must.login','ต้องเข้าสู่ระบบก่อน'), 'error'); return null; }
-    const d = await r.json();
-    document.getElementById('tier-badge').textContent = TIER_BADGE[d.tier] || '新';
-    document.getElementById('tier-name').textContent = tx(TIER_KEY[d.tier]||'ac.tier.free', d.tier);
-    document.getElementById('hour-balance').textContent = d.hour_balance.toLocaleString();
-    const expEl = document.getElementById('tier-exp');
-    if (d.sub_active && d.sub_expires_at){
-      const dt = new Date(d.sub_expires_at).toLocaleDateString();
-      expEl.textContent = tx('ac.tier.exp','หมดอายุ {DATE}').replace('{DATE}', dt);
-    } else { expEl.textContent = ''; }
-    return d;
-  } catch(e){ alertMsg('Network error: ' + e.message, 'error'); return null; }
+    const r = await fetch('/api/account/me', { credentials:'include', cache:'no-store' });
+    if (r.status === 401) {
+      alertMsg(`${esc(tx('ac.login.body','เข้าสู่ระบบเพื่อดูเครดิต สมาชิก และประวัติรายการของบัญชี'))} <a href="/login?next=/account.html" style="color:var(--gold);text-decoration:underline">${esc(tx('ac.login.btn','เข้าสู่ระบบ'))}</a>`, 'error');
+      return null;
+    }
+    if (!r.ok) throw new Error('account ' + r.status);
+    return await r.json();
+  } catch(e) {
+    alertMsg('Network: ' + esc(e.message), 'error');
+    return null;
+  }
 }
 async function loadPackages(){
-  const r = await fetch('/api/account/mock-purchase');
+  const r = await fetch('/api/account/mock-purchase', { cache:'no-store' });
+  if (!r.ok) throw new Error('packages ' + r.status);
   const d = await r.json();
-  const hourPkgs = d.packages.filter(p => !p.tier);
-  const subPkgs = d.packages.filter(p => p.tier);
-  const pkgHtml = (p, featured) => {
-    const buyLbl = tx('ac.buy','ซื้อเลย');
-    return `<div class="pkg ${featured?'featured':''}">
-      <div class="hours">${p.hours.toLocaleString()} 時</div>
-      <div class="label">${p.label}</div>
-      <div class="price">฿${p.price_thb.toLocaleString()} <span class="cur">THB</span></div>
-      <button class="buy" onclick="purchase('${p.key}')">${buyLbl}</button>
-      <div class="note">${p.tier ? '🎁 +' + p.hours + ' 時 starter · ' + Math.round(p.price_thb*100/p.hours)/100 + '/時' : '~฿' + (p.price_thb/p.hours).toFixed(2) + '/時'}</div>
-    </div>`;
-  };
-  document.getElementById('pkg-grid').innerHTML = hourPkgs.map((p,i) => pkgHtml(p, i===1)).join('');
-  document.getElementById('sub-grid').innerHTML = subPkgs.map((p,i) => pkgHtml(p, i===0)).join('');
+  return d.packages || [];
+}
+async function loadHistory(){
+  const r = await fetch('/api/account/history', { credentials:'include', cache:'no-store' });
+  if (r.status === 401) return [];
+  if (!r.ok) throw new Error('history ' + r.status);
+  const d = await r.json();
+  return d.transactions || [];
 }
 async function purchase(key){
+  if (state.purchasing) return;
+  state.purchasing = key;
+  renderPackages();
   try {
     const r = await fetch('/api/account/mock-purchase', {
-      method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
-      body: JSON.stringify({ package: key })
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      credentials:'include',
+      body: JSON.stringify({ package:key })
     });
-    const d = await r.json();
-    if (!r.ok){ alertMsg(tx('ac.purchase.err','ผิดพลาด: {E}').replace('{E}', d.error||r.statusText), 'error'); return; }
-    alertMsg(tx('ac.purchase.ok','ซื้อสำเร็จ · ได้ {N} 時 · ยอดคงเหลือ {B} 時').replace('{N}', d.hours_added).replace('{B}', d.balance_after.toLocaleString()), 'success');
-    loadMe();
-    loadHistory();
-  } catch(e){ alertMsg('Network: '+e.message, 'error'); }
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      alertMsg(tx('ac.purchase.err','ทำรายการไม่สำเร็จ: {E}').replace('{E}', esc(d.error || r.statusText)), 'error');
+      return;
+    }
+    alertMsg(tx('ac.purchase.ok','เติมสำเร็จ ได้ {N} 時 ยอดคงเหลือ {B} 時')
+      .replace('{N}', Number(d.hours_added || 0).toLocaleString())
+      .replace('{B}', Number(d.balance_after || 0).toLocaleString()), 'success');
+    state.me = await loadMe();
+    state.history = await loadHistory();
+  } catch(e) {
+    alertMsg('Network: ' + esc(e.message), 'error');
+  } finally {
+    state.purchasing = null;
+    renderAll();
+  }
 }
 window.purchase = purchase;
-async function loadHistory(){
-  const r = await fetch('/api/account/history', { credentials:'include' });
-  if (!r.ok) return;
-  const d = await r.json();
-  const list = document.getElementById('history-list');
-  if (!d.transactions?.length){ list.innerHTML = `<div class="empty">${tx('ac.hist.empty','ยังไม่มีรายการ')}</div>`; return; }
-  list.innerHTML = d.transactions.map(t => {
-    const dt = new Date(t.created_at).toLocaleString();
-    const cls = t.delta > 0 ? 'pos' : 'neg';
-    const sign = t.delta > 0 ? '+' : '';
-    return `<div class="tx-row">
-      <span class="when">${dt}</span>
-      <span class="what">${t.note || t.ref_feature || t.reason}</span>
-      <span class="delta ${cls}">${sign}${t.delta} 時</span>
-      <span class="bal">→ ${t.balance_after.toLocaleString()}</span>
-    </div>`;
-  }).join('');
+
+function applyLang(nextLang){
+  state.lang = nextLang || 'th';
+  document.documentElement.setAttribute('data-lang', state.lang);
+  document.documentElement.setAttribute('lang', state.lang);
+  try { localStorage.setItem('hk_locale', state.lang); } catch(_){}
+  renderAll();
 }
-function applyLang(lang){
-  document.documentElement.setAttribute('data-lang', lang);
-  try { localStorage.setItem('hk_locale', lang); } catch(_){}
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const k = el.getAttribute('data-i18n');
-    const t = window.HK_I18N[k];
-    if (t && t[lang]) el.innerHTML = t[lang];
-  });
-  document.querySelectorAll('#lang-switch button').forEach(b => {
-    b.classList.toggle('on', b.dataset.lang === lang);
-  });
-  loadMe(); loadPackages(); loadHistory();
-}
-document.querySelectorAll('#lang-switch button').forEach(b => {
-  b.addEventListener('click', () => applyLang(b.dataset.lang));
-});
-try {
-  const saved = localStorage.getItem('hk_locale');
-  if (saved) applyLang(saved); else applyLang('th');
-} catch(_){ applyLang('th'); }
-loadMe();
-loadPackages();
-loadHistory();
+document.querySelectorAll('#lang-switch button').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
+setThemeFromStorage();
+try { applyLang(localStorage.getItem('hk_locale') || 'th'); } catch(_) { applyLang('th'); }
+(async function init(){
+  renderPackages();
+  try {
+    const [me, packages, history] = await Promise.all([loadMe(), loadPackages(), loadHistory()]);
+    state.me = me;
+    state.packages = packages;
+    state.history = history;
+  } catch(e) {
+    alertMsg('Network: ' + esc(e.message), 'error');
+  }
+  renderAll();
+})();
 </script>
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
 <script src="/js/hk-user-menu.js?v=16" defer></script>
