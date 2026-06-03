@@ -280,6 +280,9 @@
   .profile-pick .pp-label{font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
   .profile-pick select{background:var(--bg-2);color:var(--fg);border:1px solid var(--gold-line);border-radius:10px;padding:7px 12px;font-family:var(--thai);font-size:13px;cursor:pointer;max-width:240px;}
   .profile-pick select:focus{outline:none;border-color:var(--gold);}
+  .profile-pick .pp-second{margin-left:2px;}
+  .hkp-count{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--gold);}
+  .hkp-count.pair{color:var(--good);}
   .sifu-model-pick{display:inline-flex;align-items:center;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
   .sifu-model-pick .smp-label{font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
   .sifu-model-pick select{background:var(--bg-2);color:var(--fg);border:1px solid var(--gold-line);border-radius:10px;padding:7px 28px 7px 12px;font-family:var(--thai);font-size:13px;cursor:pointer;max-width:180px;}
@@ -440,6 +443,7 @@
     .sifu-model-pick select{flex:1;max-width:none;min-width:0;}
     .profile-pick{width:100%;}
     .profile-pick select{flex:1;max-width:none;min-width:0;}
+    .profile-pick .pp-second{margin-left:0;}
     .hkg-pick select{min-width:0;}
     .hk-ctx-menu{max-width:calc(100vw - 16px);}
     .msg-bubble{max-width:calc(100% - 44px);font-size:13px;line-height:1.55;}
@@ -580,6 +584,9 @@
       <div class="profile-pick" id="sifu-profile-wrap">
         <span class="pp-label" data-i18n="mst.ask.for">ดูดวงของ:</span>
         <select id="sifu-profile" aria-label="เลือกโปรไฟล์"></select>
+        <span class="pp-label pp-second" data-i18n="mst.ask.plus">เพิ่มดวงที่สอง:</span>
+        <select id="sifu-profile-2" aria-label="เลือกดวงที่สอง"></select>
+        <span class="hkp-count" id="sifu-pair-count">1/2</span>
       </div>
       <div class="hkg-pick" id="hkg-wrap" style="display:none;">
         <span class="hkg-label" data-i18n="hkg.label">โหมดกลุ่ม:</span>
@@ -1095,6 +1102,66 @@
     /* 🧑‍🤝‍🧑 group mode · เก็บ list โปรไฟล์ + self id ไว้ให้บล็อกกลุ่มใช้ (parallel · ไม่แตะ flow เดี่ยว) */
     var hkgProfiles = [];      /* profiles ทั้งหมดจาก /api/profile */
     var hkgSelfId = '';        /* id ดวงตัวเอง (self/active) · รวมในกลุ่มเสมอ */
+    function hkpNameOf(pid){
+      var p = hkgProfiles.find(function(x){ return String(x.id) === String(pid); });
+      if (!p) return '—';
+      return p.name || p.nickname || '—';
+    }
+    function hkpSelectedIds(){
+      var ids = [];
+      var first = '';
+      try { first = String((document.getElementById('sifu-profile') || {}).value || selectedProfileId || ''); } catch(_){}
+      var second = '';
+      try { second = String((document.getElementById('sifu-profile-2') || {}).value || ''); } catch(_){}
+      if (first) ids.push(first);
+      if (second && ids.indexOf(second) < 0) ids.push(second);
+      return ids.slice(0, 2);
+    }
+    function hkpPairLabel(ids){
+      var loc = curLocale();
+      var names = (ids || []).map(hkpNameOf).filter(Boolean).join(' + ');
+      return (loc === 'zh' ? '自選雙命盤' : loc === 'en' ? 'Selected pair' : 'ดวงที่เลือก') + (names ? ': ' + names : '');
+    }
+    function hkpActivePair(){
+      var ids = hkpSelectedIds();
+      return ids.length >= 2 ? { group:'manual-pair', ids:ids, label:hkpPairLabel(ids) } : null;
+    }
+    function hkpFillSecondSelect(ordered, firstId){
+      var sel2 = document.getElementById('sifu-profile-2');
+      if (!sel2) return;
+      var prev = String(sel2.value || '');
+      var loc = curLocale();
+      sel2.innerHTML = '';
+      var none = document.createElement('option');
+      none.value = '';
+      none.textContent = loc === 'zh' ? '不增加' : loc === 'en' ? 'No second chart' : 'ไม่เพิ่ม';
+      sel2.appendChild(none);
+      (ordered || []).forEach(function(p){
+        var o = document.createElement('option');
+        o.value = p.id;
+        o.disabled = String(p.id) === String(firstId || selectedProfileId || '');
+        var rel = p.is_self ? (relSelf[loc] || relSelf.th) : (p.relationship_type || '');
+        var nm = p.name || p.nickname || '—';
+        o.textContent = (p.is_self ? '⭐ ' : '') + nm + (rel ? ' (' + rel + ')' : '');
+        if (prev && String(p.id) === prev && !o.disabled) o.selected = true;
+        sel2.appendChild(o);
+      });
+      if (sel2.selectedOptions[0] && sel2.selectedOptions[0].disabled) sel2.value = '';
+    }
+    function hkpUpdatePairUI(){
+      var count = document.getElementById('sifu-pair-count');
+      var sel2 = document.getElementById('sifu-profile-2');
+      if (sel2 && String(sel2.value || '') === String(selectedProfileId || '')) sel2.value = '';
+      var ids = hkpSelectedIds();
+      if (count){
+        count.textContent = ids.length + '/2';
+        count.classList.toggle('pair', ids.length >= 2);
+      }
+      if (ids.length >= 2 && hkgGroupSel && hkgGroupSel.value !== '-'){
+        hkgGroupSel.value = '-';
+        hkgUpdateCount();
+      }
+    }
     fetch('/api/profile', { credentials:'same-origin', cache:'no-store' })
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(j){
@@ -1112,6 +1179,7 @@
         hkgSelfId = String((j.active_profile && j.active_profile.id) || (selfPg && selfPg.id) || j.profiles[0].id || '');
         if (window.hkgInitGroup) window.hkgInitGroup();
         var sel = document.getElementById('sifu-profile');
+        var sel2 = document.getElementById('sifu-profile-2');
         var wrap = document.getElementById('sifu-profile-wrap');
         if (!sel || !wrap) return;
         var loc = curLocale();
@@ -1131,11 +1199,22 @@
           if (String(p.id) === preferId) o.selected = true;
           sel.appendChild(o);
         });
-        wrap.style.display = 'none';   /* 2 มิ.ย. · ซ่อน dropdown เลือกดวงเดี่ยว · default=self เสมอ (AI รู้ self จาก IDENTITY CONTEXT) · logic resolve/reload-history ยังทำงานครบ · group picker เก็บไว้ */
-        sel.addEventListener('change', function(){ switchProfile(sel.value); });
+        hkpFillSecondSelect(ordered, preferId);
+        wrap.style.display = 'flex';   /* r207 · เปิดเลือกดวงเดี่ยวกลับมา + เพิ่มดวงที่สอง optional สำหรับ Codex/pair context */
+        sel.addEventListener('change', function(){
+          hkpFillSecondSelect(ordered, sel.value);
+          hkpUpdatePairUI();
+          switchProfile(sel.value);
+        });
+        if (sel2) sel2.addEventListener('change', hkpUpdatePairUI);
+        var swp = document.getElementById('hk-lang-switch');
+        if (swp) swp.querySelectorAll('button').forEach(function(b){
+          b.addEventListener('click', function(){ setTimeout(function(){ hkpFillSecondSelect(ordered, sel.value); hkpUpdatePairUI(); }, 0); });
+        });
         /* ถ้า default (ดวงตัวเอง) ต่างจากที่ตั้งไว้ตอนเริ่ม → สลับไปดวงตัวเอง + โหลดประวัติให้ตรงดวง (ไม่ปน) · switchProfile กัน no-op ถ้าตรงกันอยู่แล้ว */
         if (preferId !== selectedProfileId) switchProfile(preferId);
         else switchProfile(preferId, { force:true, skipPersist:true }); /* profile signature เพิ่งโหลด: reload history จาก key ใหม่ ไม่เอาคำตอบดวงเก่าปน */
+        hkpUpdatePairUI();
       })
       .catch(function(){});
 
@@ -1245,6 +1324,8 @@
     }
     /* state ปัจจุบัน · null = โหมดเดี่ยว */
     function hkgActiveGroup(){
+      var pair = hkpActivePair();
+      if (pair) return pair;
       if (!hkgGroupSel) return null;
       var g = hkgGroupSel.value;
       if (!g || g === '-') return null;
@@ -1315,7 +1396,14 @@
       hkgUpdateCount();
     };
     if (hkgGroupSel){
-      hkgGroupSel.addEventListener('change', hkgUpdateCount);
+      hkgGroupSel.addEventListener('change', function(){
+        if (hkgGroupSel.value && hkgGroupSel.value !== '-'){
+          var sel2 = document.getElementById('sifu-profile-2');
+          if (sel2) sel2.value = '';
+          hkpUpdatePairUI();
+        }
+        hkgUpdateCount();
+      });
       /* รีเฟรช label/count/chips เมื่อสลับภาษา */
       var sw = document.getElementById('hk-lang-switch');
       if (sw) sw.querySelectorAll('button').forEach(function(b){ b.addEventListener('click', function(){ setTimeout(hkgUpdateCount, 0); }); });
@@ -1338,8 +1426,8 @@
       var phG = addMsg('sifu', 'ซินแสกำลังคิด ...');
       try {
         var modelG = selectedSifuModel();
-        if (modelG === 'codex-cli' && hkgG.ids.length > 3) {
-          phG.textContent = '⚠ Codex CLI รับโหมดกลุ่มได้สูงสุด 3 คนต่อครั้ง เพราะ packet ดวงหลายคนยาวเกิน context · ถ้าจะอ่าน 10 คนให้เลือก Claude CLI หรือแบ่งกลุ่มย่อย';
+        if (modelG === 'codex-cli' && hkgG.ids.length > 2) {
+          phG.textContent = '⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง เพราะ packet ดวงหลายคนยาวเกิน context · เลือกดวงที่สองเอง หรือใช้ Claude CLI สำหรับกลุ่มใหญ่';
           return true;
         }
         var rG = await fetch('/api/sifu/group?model=' + encodeURIComponent(modelG), {
@@ -1384,7 +1472,7 @@
         } else {
           var dG = await rG.json().catch(function(){ return {}; });
           if (rG.ok && dG.reply) renderMd(phG, dG.reply);
-          else if (dG.error === 'codex_context_limit_group_size') phG.textContent = '⚠ Codex CLI รับโหมดกลุ่มได้สูงสุด ' + (dG.max || 3) + ' คนต่อครั้ง · ถ้าจะอ่าน ' + (dG.count || 'หลาย') + ' คนให้เลือก Claude CLI หรือแบ่งกลุ่มย่อย';
+          else if (dG.error === 'codex_context_limit_group_size') phG.textContent = '⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง · ถ้าจะอ่าน ' + (dG.count || 'หลาย') + ' คนให้เลือก Claude CLI หรือเลือกทีละคู่';
           else phG.textContent = '⚠ ขัดข้อง: ' + (dG.error || rG.status);
           if (rG.ok && dG.reply){
             history.push({ role:'user', content:text });
@@ -1538,6 +1626,7 @@
 window.HK_I18N = {
   /* 🧑‍🤝‍🧑 dropdown เลือกดวง (26 พ.ค.) */
   'mst.ask.for': { th:'ดูดวงของ:', en:'Reading for:', zh:'查看命盘：' },
+  'mst.ask.plus': { th:'เพิ่มดวงที่สอง:', en:'Second chart:', zh:'第二命盘：' },
   'mst.ask.self': { th:'ตัวเอง', en:'Self', zh:'本人' },
   /* 🧑‍🤝‍🧑 group mode (26 พ.ค.) */
   'hkg.label':       { th:'โหมดกลุ่ม:', en:'Group:', zh:'群組：' },
