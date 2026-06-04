@@ -234,6 +234,7 @@ const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "yhzp-clean.md", label: "📜 淵海子平 (徐升 · 宋 1271 · 子平 ต้นน้ำ · 五干通變圖+喜忌篇 verbatim)" },
   { file: "sftk-clean.md", label: "📜 神峰通考 (張楠 · 明 · 命理正宗 · 病藥論+動靜說+蓋頭說+男女合婚說 verbatim · ต้นทาง BY-08)" },
   { file: "bazi-zixi-mangpai.md", label: "📜 論妻子 · ดูคู่+ดูบุตร (子平真詮 verbatim แกน · นับลูก長生沐浴之歌 + เพศ庚男辛女/陽男陰女 · มุม盲派暗藏เสริมไม่ทับ)" },
+  { file: "yhzp-juan3-koujue.md", label: "📜 口訣淵海子平卷三 · บทพยากรณ์ verbatim+แปลไทย (寸金搜髓論+傷官說+心鏡歌+妖祥賦+綜釋賦+玄機賦 · 113口訣 · แกน格局成敗·官殺印財·傷官用神 + 調候/六親宮位/相克致病 · ไม่ซ้ำเล่มอื่น)" },
 ];
 let _sifuExtraCache: { text: string; ts: number; version: string } | null = null;
 function loadSifuExtraKnowledge(): { text: string; version: string } {
