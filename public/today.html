@@ -417,13 +417,31 @@
   .extra-card{background:var(--tile);border:1px solid var(--tile-bd);border-radius:12px;padding:18px;}
   .extra-card h4{font-family:var(--serif);font-size:18px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
   .extra-card h4 .tc{font-family:var(--tc);color:var(--gold);font-size:14px;font-weight:700;}
-  .compass{position:relative;width:200px;height:200px;margin:8px auto;border:1.5px solid var(--gold-line);border-radius:50%;}
-  .compass .dot{position:absolute;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;font-weight:700;background:var(--bg-2);border:1.5px solid var(--tile-bd);transform:translate(-50%,-50%);}
+  .compass{position:relative;width:228px;height:228px;margin:8px auto;border:1.5px solid var(--gold-line);border-radius:50%;}
+  .compass .dot{position:absolute;width:76px;min-height:32px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--thai);font-size:9px;line-height:1.1;font-weight:700;text-align:center;background:var(--bg-2);border:1.5px solid var(--tile-bd);transform:translate(-50%,-50%);letter-spacing:0;}
+  .compass .dot .tc{font-family:var(--tc);font-size:12px;line-height:1;color:var(--gold);}
   body.light .compass .dot{background:var(--bg-3);}
   .compass .dot.good{background:var(--wood);color:var(--bg);border-color:var(--wood);box-shadow:0 0 14px rgba(78,169,106,.5);}
-  .compass .dot.bad{background:transparent;color:var(--fire);border-color:var(--fire);border-style:dashed;}
-  .compass .center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--tc);font-size:24px;color:var(--gold);font-weight:700;}
-  .tongshu-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .compass .dot.good .tc{color:var(--bg);}
+	  .compass .dot.bad{background:transparent;color:var(--fire);border-color:var(--fire);border-style:dashed;}
+  .compass .dot.bad .tc{color:var(--fire);}
+	  .compass .center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--tc);font-size:24px;color:var(--gold);font-weight:700;}
+	  .dir-panels{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+	  .dir-panel{background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:10px;padding:10px 12px;min-width:0;}
+	  body.light .dir-panel{background:var(--bg-3);}
+	  .dir-panel .dh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;}
+	  .dir-panel .dh .tc{font-family:var(--tc);font-size:13px;letter-spacing:0;}
+	  .dir-line{font-family:var(--thai);font-size:12px;line-height:1.65;color:var(--fg-soft);}
+	  .dir-line b{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-right:5px;}
+	  .dir-line.good b{color:var(--wood);}
+	  .dir-line.bad b{color:var(--fire);}
+	  .dir-chips,.star-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;}
+	  .dir-chip,.star-chip{display:inline-flex;align-items:center;gap:4px;min-height:22px;padding:3px 7px;border-radius:99px;border:1px solid var(--tile-bd);font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--fg-soft);background:transparent;}
+	  .dir-chip.good,.star-chip.good{border-color:var(--wood);color:var(--wood);background:var(--wood-bg);}
+	  .dir-chip.bad,.star-chip.bad{border-color:var(--fire);color:var(--fire);background:rgba(176,58,46,.06);}
+	  .dir-chip .tc,.star-chip .tc{font-family:var(--tc);font-size:11px;letter-spacing:0;}
+	  .star-chip{border-radius:8px;}
+	  .tongshu-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
   .ts-grp{padding:10px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:8px;}
   body.light .ts-grp{background:var(--bg-3);}
   .ts-grp.yi{border-left:3px solid var(--wood);}
@@ -434,6 +452,131 @@
   .ts-grp ul{list-style:none;}
   .ts-grp li{font-family:var(--tc);font-size:13px;padding:3px 0;color:var(--fg);}
   .ts-grp li span{font-family:var(--thai);font-size:10px;color:var(--fg-soft);margin-left:4px;}
+
+  /* direction energy board · Thai first, Chinese secondary */
+  .de-board{margin:2px 0 30px;}
+  .de-shell{background:linear-gradient(145deg,rgba(200,164,77,.08),rgba(123,168,200,.05),rgba(20,23,28,.35));border:1px solid var(--gold-line);border-radius:18px;padding:22px;overflow:hidden;}
+  body.light .de-shell{background:linear-gradient(145deg,rgba(168,132,45,.10),rgba(123,168,200,.08),rgba(255,253,247,.55));}
+  .de-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:18px;}
+  .de-head .nu{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase;margin-bottom:5px;}
+  .de-head h2{font-family:var(--thai);font-size:28px;font-weight:700;line-height:1.2;}
+  .de-head h2 .tc{font-family:var(--tc);font-size:17px;color:var(--gold);font-weight:700;margin-left:8px;white-space:nowrap;}
+  .de-head p{font-size:12px;line-height:1.65;color:var(--fg-soft);margin-top:6px;max-width:700px;}
+  .de-control{display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex-shrink:0;}
+  .de-updated{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--fg-soft);text-transform:uppercase;}
+  .de-updated b{color:var(--gold);font-weight:800;}
+  .de-school{display:inline-flex;gap:4px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:12px;padding:4px;}
+  body.light .de-school{background:var(--bg-3);}
+  .de-school button{min-width:118px;padding:8px 10px;border:none;border-radius:9px;background:transparent;color:var(--fg-soft);font-family:var(--thai);font-size:11px;line-height:1.25;text-align:left;cursor:pointer;}
+  .de-school button b{display:block;font-family:var(--tc);font-size:14px;letter-spacing:0;color:var(--gold);}
+  .de-school button span{display:block;margin-top:2px;white-space:nowrap;}
+  .de-school button.on{background:var(--gold);color:var(--bg);}
+  .de-school button.on b{color:var(--bg);}
+  .de-layout{display:grid;grid-template-columns:1.1fr 1.4fr;gap:14px;align-items:stretch;}
+  .de-hero{background:rgba(20,23,28,.72);border:1px solid var(--gold-line);border-radius:14px;padding:18px;display:grid;gap:14px;min-width:0;}
+  body.light .de-hero{background:rgba(255,253,247,.70);}
+  .de-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .de-k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;}
+  .de-dir-name{font-family:var(--thai);font-size:30px;font-weight:800;line-height:1.1;margin-top:4px;}
+  .de-dir-name .tc{font-family:var(--tc);font-size:20px;color:var(--gold);font-weight:700;margin-left:6px;}
+  .de-score{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+  .de-score .n{font-family:var(--serif);font-size:62px;line-height:.85;font-weight:400;color:var(--fg);}
+  .de-score .lbl{font-family:var(--thai);font-size:13px;font-weight:800;padding:4px 10px;border-radius:99px;border:1px solid var(--tile-bd);}
+  .de-score.best .lbl,.de-score.good .lbl{color:var(--wood);border-color:var(--wood);background:var(--wood-bg);}
+  .de-score.ok .lbl{color:var(--gold);border-color:var(--gold-line);background:var(--gold-soft);}
+  .de-score.caution .lbl,.de-score.avoid .lbl{color:var(--fire);border-color:var(--fire);background:rgba(176,58,46,.07);}
+  .de-mini-bars{display:grid;gap:8px;}
+  .de-bar{display:grid;grid-template-columns:96px 1fr 54px;gap:10px;align-items:center;font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
+  .de-bar b{font-family:var(--thai);color:var(--fg);font-weight:700;}
+  .de-bar-track{height:7px;border-radius:99px;background:var(--bg);border:1px solid var(--tile-bd);overflow:hidden;}
+  body.light .de-bar-track{background:var(--bg-3);}
+  .de-bar-track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--fire),var(--gold),var(--wood));}
+  .de-signal{font-family:var(--thai);font-size:11px;color:var(--gold);font-weight:800;text-align:right;}
+  .de-note{font-size:12px;line-height:1.6;color:var(--fg-soft);border-top:1px dashed var(--tile-bd);padding-top:10px;}
+  .de-detail{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0;}
+  .de-panel{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:14px;min-width:0;}
+  .de-panel h3{font-family:var(--thai);font-size:16px;font-weight:800;line-height:1.25;margin-bottom:10px;}
+  .de-panel h3 .tc{font-family:var(--tc);font-size:13px;color:var(--gold);font-weight:700;margin-left:5px;}
+  .de-rows{display:grid;gap:8px;}
+  .de-row{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:start;font-size:12px;line-height:1.45;color:var(--fg-soft);}
+  .de-row .tag{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;padding-top:2px;}
+  .de-row b{display:block;font-family:var(--thai);font-size:13px;color:var(--fg);font-weight:800;}
+  .de-row .tc{font-family:var(--tc);font-size:13px;color:var(--gold);margin-left:4px;}
+  .de-stars{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .de-star{display:grid;grid-template-columns:34px 1fr;gap:8px;align-items:center;border:1px solid var(--tile-bd);border-radius:10px;padding:8px;min-height:48px;}
+  .de-star.good{border-color:var(--wood);background:var(--wood-bg);}
+  .de-star.bad{border-color:var(--fire);background:rgba(176,58,46,.07);}
+	  .de-star .num{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;border:1px solid currentColor;font-family:var(--tc);font-size:18px;font-weight:900;}
+	  .de-star.good .num{color:var(--wood);}
+	  .de-star.bad .num{color:var(--fire);}
+	  .de-star b{display:block;font-size:12px;line-height:1.2;color:var(--fg);}
+	  .de-star span{display:block;font-size:11px;line-height:1.25;color:var(--fg-soft);margin-top:2px;}
+  .de-map-panel{background:var(--tile);border:1px solid var(--tile-bd);border-radius:14px;padding:14px;min-width:0;}
+  .de-map-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  .de-map-head h3{font-family:var(--thai);font-size:16px;font-weight:800;line-height:1.2;}
+  .de-map-head h3 .tc{font-family:var(--tc);font-size:13px;color:var(--gold);margin-left:5px;}
+  .de-map-head span{font-size:11px;line-height:1.35;color:var(--fg-soft);text-align:right;}
+  .de-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  .de-map-cell,.de-map-center{min-height:106px;border:1px solid var(--tile-bd);border-radius:12px;padding:9px 8px;background:rgba(255,255,255,.02);color:var(--fg);text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-width:0;}
+  .de-map-cell{appearance:none;-webkit-appearance:none;font:inherit;cursor:pointer;transition:transform .16s,border-color .16s,background .16s;}
+  .de-map-cell:hover{transform:translateY(-1px);border-color:var(--gold);}
+  .de-map-cell.is-selected{border-color:var(--gold);background:var(--gold-soft);box-shadow:0 0 0 1px rgba(200,164,77,.18) inset;}
+  .de-map-cell.best,.de-map-cell.good{border-color:rgba(78,169,106,.55);}
+  .de-map-cell.best.is-selected,.de-map-cell.good.is-selected{background:var(--wood-bg);}
+  .de-map-cell.caution,.de-map-cell.avoid{border-color:rgba(226,107,93,.58);}
+  .de-map-cell.caution.is-selected,.de-map-cell.avoid.is-selected{background:rgba(176,58,46,.08);}
+  .de-cell-dir{display:flex;align-items:flex-start;justify-content:space-between;gap:5px;font-family:var(--thai);font-size:10px;font-weight:800;line-height:1.18;word-break:normal;}
+  .de-cell-dir .tc{font-family:var(--tc);font-size:13px;color:var(--gold);white-space:nowrap;}
+  .de-cell-score{display:flex;align-items:flex-end;gap:4px;font-family:var(--mono);color:var(--gold);font-weight:900;}
+  .de-cell-score b{font-size:22px;line-height:.9;}
+	  .de-cell-score span{font-size:9px;color:var(--fg-soft);font-weight:700;}
+  .de-cell-lines{display:flex;gap:4px;flex-wrap:wrap;align-items:center;}
+  .de-mini-tag{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--tile-bd);border-radius:99px;padding:2px 5px;font-family:var(--thai);font-size:9px;line-height:1.15;color:var(--fg-soft);background:rgba(255,255,255,.02);}
+  .de-mini-tag.good{border-color:rgba(78,169,106,.65);color:var(--wood);background:var(--wood-bg);}
+  .de-mini-tag.ok{border-color:var(--gold-line);color:var(--gold);background:var(--gold-soft);}
+  .de-mini-tag.caution,.de-mini-tag.bad{border-color:rgba(226,107,93,.58);color:var(--fire);background:rgba(176,58,46,.08);}
+  .de-mini-tag i{font-family:var(--tc);font-style:normal;font-size:10px;line-height:1;}
+	  .de-cell-token{font-family:var(--thai);font-size:10px;line-height:1.25;color:var(--fg);font-weight:700;white-space:normal;}
+	  .de-cell-token .tc,.de-map-center .tc{font-family:var(--tc);color:var(--gold);}
+  .de-map-center{align-items:center;justify-content:center;text-align:center;border-color:var(--gold-line);background:rgba(200,164,77,.06);}
+  .de-map-center b{display:block;font-family:var(--thai);font-size:15px;line-height:1.15;}
+  .de-map-center .tm{font-family:var(--mono);font-size:18px;color:var(--gold);font-weight:900;margin:4px 0;}
+  .de-map-center span{font-size:10px;line-height:1.35;color:var(--fg-soft);}
+  .de-selected{margin-top:12px;border:1px solid var(--gold-line);border-radius:14px;background:rgba(200,164,77,.05);padding:14px;}
+  .de-selected-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .de-selected-head h3{font-family:var(--thai);font-size:18px;font-weight:900;line-height:1.2;}
+  .de-selected-head h3 .tc{font-family:var(--tc);font-size:15px;color:var(--gold);margin-left:5px;}
+  .de-selected-head .pts{font-family:var(--mono);font-size:24px;color:var(--gold);font-weight:900;text-align:right;line-height:1;}
+  .de-selected-head .pts span{display:block;font-family:var(--thai);font-size:11px;color:var(--fg-soft);font-weight:700;margin-top:3px;}
+  .de-selected-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .de-selected-item{border:1px solid var(--tile-bd);border-radius:10px;padding:10px;background:rgba(255,255,255,.02);min-width:0;}
+  .de-selected-item span{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+	  .de-selected-item b{display:block;font-family:var(--thai);font-size:13px;line-height:1.35;color:var(--fg);}
+	  .de-selected-item em{display:block;font-style:normal;font-size:11px;line-height:1.45;color:var(--fg-soft);margin-top:3px;}
+	  .de-selected-item .tc{font-family:var(--tc);color:var(--gold);}
+  .de-factor-row{display:grid;gap:6px;}
+  .de-factor{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;border:1px solid var(--tile-bd);border-radius:10px;padding:7px;background:rgba(255,255,255,.02);}
+  .de-factor .mark{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:15px;font-weight:900;border:1px solid currentColor;}
+  .de-factor b{font-size:12px;line-height:1.25;}
+  .de-factor em{margin:1px 0 0;font-size:10px;}
+  .de-factor .state{font-family:var(--thai);font-size:10px;font-weight:800;border-radius:99px;padding:3px 7px;border:1px solid currentColor;white-space:nowrap;}
+  .de-factor.good{border-color:rgba(78,169,106,.65);background:var(--wood-bg);}
+  .de-factor.good .mark,.de-factor.good .state{color:var(--wood);}
+  .de-factor.ok{border-color:var(--gold-line);background:var(--gold-soft);}
+  .de-factor.ok .mark,.de-factor.ok .state{color:var(--gold);}
+  .de-factor.caution,.de-factor.bad{border-color:rgba(226,107,93,.58);background:rgba(176,58,46,.08);}
+  .de-factor.caution .mark,.de-factor.caution .state,.de-factor.bad .mark,.de-factor.bad .state{color:var(--fire);}
+	  .de-list{margin-top:14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+  .de-dir-card{border:1px solid var(--tile-bd);border-radius:12px;padding:10px;background:rgba(255,255,255,.02);min-width:0;}
+  .de-dir-card.best,.de-dir-card.good{border-color:rgba(78,169,106,.55);}
+  .de-dir-card.avoid,.de-dir-card.caution{border-color:rgba(226,107,93,.55);}
+  .de-dir-card .name{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--thai);font-size:12px;font-weight:800;color:var(--fg);}
+  .de-dir-card .name .tc{font-family:var(--tc);font-size:13px;color:var(--gold);}
+  .de-dir-card .pts{font-family:var(--mono);font-size:18px;color:var(--gold);font-weight:800;margin-top:5px;}
+  .de-dir-card .parts{font-family:var(--mono);font-size:9px;color:var(--fg-soft);line-height:1.6;margin-top:4px;}
+  .de-avoid-line{margin-top:12px;font-size:12px;line-height:1.6;color:var(--fg-soft);}
+  .de-avoid-line b{color:var(--fire);font-weight:800;}
+  .de-empty{padding:18px;border:1px dashed var(--gold-line);border-radius:12px;font-size:13px;color:var(--fg-soft);text-align:center;}
 
   /* deep links cta */
   .deeplinks{margin-top:36px;display:grid;grid-template-columns:1fr 1fr;gap:18px;}
@@ -449,6 +592,10 @@
 
   @media (max-width:980px){
     .hero,.row2,.extras-body,.deeplinks{grid-template-columns:1fr;}
+    .de-head,.de-layout{grid-template-columns:1fr;flex-direction:column;}
+    .de-control{align-items:flex-start;width:100%;}
+    .de-school{width:100%;display:grid;grid-template-columns:1fr 1fr;}
+    .de-list{grid-template-columns:1fr 1fr;}
     .actions-grid{grid-template-columns:1fr 1fr;}
     .grid12{grid-template-columns:repeat(6, 1fr);}
   }
@@ -498,6 +645,32 @@
 
     .legend{flex-wrap:wrap;font-size:10px;gap:8px;}
 
+    /* direction energy board */
+    .de-board{margin:0 0 22px;}
+    .de-shell{padding:16px 14px;border-radius:14px;}
+    .de-head{gap:12px;margin-bottom:14px;}
+    .de-head h2{font-size:21px;}
+    .de-head h2 .tc{display:block;margin:5px 0 0;font-size:14px;}
+    .de-head p{font-size:12px;line-height:1.55;}
+    .de-school button{min-width:0;padding:8px 7px;}
+    .de-school button span{white-space:normal;}
+	    .de-layout,.de-detail{grid-template-columns:1fr;gap:10px;}
+	    .de-hero,.de-panel{padding:13px;}
+	    .de-dir-name{font-size:24px;}
+	    .de-score .n{font-size:52px;}
+	    .de-bar{grid-template-columns:76px 1fr 46px;gap:8px;}
+	    .de-stars{grid-template-columns:1fr;}
+    .de-map-panel,.de-selected{padding:12px;}
+    .de-map{gap:5px;}
+    .de-map-cell,.de-map-center{min-height:96px;padding:7px 5px;border-radius:10px;}
+    .de-cell-dir{font-size:8.5px;}
+    .de-cell-dir .tc{font-size:11px;}
+    .de-cell-score b{font-size:18px;}
+    .de-cell-lines{font-size:8px;}
+    .de-cell-token{font-size:8.5px;}
+    .de-selected-grid{grid-template-columns:1fr;}
+	    .de-list{grid-template-columns:1fr;gap:7px;}
+
     /* actions */
     .actions-grid{grid-template-columns:1fr;gap:10px;}
     .actions-grid > div{padding:16px 14px;}
@@ -517,9 +690,10 @@
 
     /* tongshu / compass extras */
     .extras{margin-top:18px;}
-    .extras-body{grid-template-columns:1fr;padding:14px;gap:14px;}
-    .tongshu-list{grid-template-columns:1fr;gap:6px;}
-    .gz-cell{font-size:10px;padding:8px;}
+	    .extras-body{grid-template-columns:1fr;padding:14px;gap:14px;}
+	    .tongshu-list{grid-template-columns:1fr;gap:6px;}
+	    .dir-panels{grid-template-columns:1fr;}
+	    .gz-cell{font-size:10px;padding:8px;}
 
     /* deep links */
     .deeplinks{grid-template-columns:1fr;margin-top:24px;gap:10px;}
@@ -1091,6 +1265,29 @@
     </div>
   </div>
 
+  <!-- direction energy: Qimen + Zi Bai, not mixed with personal chart -->
+  <section class="de-board" id="t-de-board">
+    <div class="de-shell">
+      <div class="de-head">
+        <div>
+          <div class="nu" data-i18n="t.de.nu">02 · ทิศใช้วันนี้ · พลังทิศกลาง</div>
+          <h2 data-i18n="t.de.h2">ทิศใช้วันนี้ <span class="tc">奇門 · 紫白飛星</span></h2>
+          <p data-i18n="t.de.sub">คะแนนพลังทิศคำนวณจากฉีเหมินและดาวจรจื่อไป๋เท่านั้น ไม่รวมดวงคน</p>
+        </div>
+        <div class="de-control">
+          <div class="de-updated" id="t-de-updated">คำนวณล่าสุด <b>—</b></div>
+          <div class="de-school" aria-label="เลือกวิธีผูกฤกษ์">
+            <button type="button" class="on" data-dir-school="chaibu"><b>拆補 Chaibu</b><span>สถานการณ์เฉพาะหน้า</span></button>
+            <button type="button" data-dir-school="zhirun"><b>置閏 Zhirun</b><span>เหตุการณ์ใหญ่ / รอบใหญ่</span></button>
+          </div>
+        </div>
+      </div>
+      <div id="t-de-content">
+        <div class="de-empty" data-i18n="t.de.loading">กำลังโหลดพลังทิศจาก engine จริง...</div>
+      </div>
+    </div>
+  </section>
+
   <!-- §3 lucky hours -->
   <section class="sec">
     <div class="sec-h">
@@ -1460,22 +1657,28 @@
       <div class="extra-card">
         <h4 data-i18n="t.ex.dir.h"><span class="tc">八方</span>8 ทิศมงคลวันนี้</h4>
         <div class="compass" id="t-compass">
-          <div class="dot good" style="left:50%;top:8%">N</div>
-          <div class="dot" style="left:84%;top:18%">NE</div>
-          <div class="dot good" style="left:92%;top:50%">E</div>
-          <div class="dot" style="left:84%;top:82%">SE</div>
-          <div class="dot bad" style="left:50%;top:92%">S</div>
-          <div class="dot" style="left:16%;top:82%">SW</div>
-          <div class="dot good" style="left:8%;top:50%">W</div>
-          <div class="dot bad" style="left:16%;top:18%">NW</div>
+          <div class="dot good" style="left:50%;top:8%">ทิศเหนือ<span class="tc">北</span></div>
+          <div class="dot" style="left:84%;top:18%">ทิศตะวันออกเฉียงเหนือ<span class="tc">東北</span></div>
+          <div class="dot good" style="left:92%;top:50%">ทิศตะวันออก<span class="tc">東</span></div>
+          <div class="dot" style="left:84%;top:82%">ทิศตะวันออกเฉียงใต้<span class="tc">東南</span></div>
+          <div class="dot bad" style="left:50%;top:92%">ทิศใต้<span class="tc">南</span></div>
+          <div class="dot" style="left:16%;top:82%">ทิศตะวันตกเฉียงใต้<span class="tc">西南</span></div>
+          <div class="dot good" style="left:8%;top:50%">ทิศตะวันตก<span class="tc">西</span></div>
+          <div class="dot bad" style="left:16%;top:18%">ทิศตะวันตกเฉียงเหนือ<span class="tc">西北</span></div>
           <div class="center">辛巳</div>
         </div>
-        <div id="t-dir-summary" style="display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--fg-soft);justify-content:center;">
-          <span style="color:var(--fg-soft)">กำลังโหลดทิศจริง…</span>
-        </div>
-      </div>
-    </div>
-  </details>
+	        <div id="t-dir-summary" style="display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--fg-soft);justify-content:center;">
+	          <span style="color:var(--fg-soft)">กำลังโหลดทิศจริง…</span>
+	        </div>
+	        <div class="dir-panels" id="t-dir-layers">
+	          <div class="dir-panel"><div class="dh"><span><span class="tc">奇日</span> Qimen day</span></div><div class="dir-line">กำลังโหลด…</div></div>
+	          <div class="dir-panel"><div class="dh"><span><span class="tc">奇時</span> Qimen hour</span></div><div class="dir-line">กำลังโหลด…</div></div>
+	          <div class="dir-panel"><div class="dh"><span><span class="tc">飛日</span> Flying day</span></div><div class="dir-line">กำลังโหลด…</div></div>
+	          <div class="dir-panel"><div class="dh"><span><span class="tc">飛時</span> Flying hour</span></div><div class="dir-line">กำลังโหลด…</div></div>
+	        </div>
+	      </div>
+	    </div>
+	  </details>
 
   <!-- deep links: qimen + tongshu full · ซ่อน 1 มิ.ย.: มี navbar เข้าถึงแล้ว (display:none กัน rollback ง่าย) -->
   <div class="deeplinks" style="display:none">
@@ -1807,12 +2010,17 @@ window.HK_I18N = {
   't.r.col.use.s': { th:'ใส่แดง · ส้ม', en:'Wear red · orange', zh:'著紅橙' },
   't.r.col.skip.b':{ th:'เลี่ยง น้ำ', en:'Avoid Water', zh:'避水' },
   't.r.col.skip.s':{ th:'ลดน้ำเงิน · ดำ', en:'Reduce blue · black', zh:'減藍黑' },
+  /* direction energy */
+  't.de.nu':       { th:'02 · ทิศใช้วันนี้ · พลังทิศกลาง', en:'02 · DIRECTION ENERGY', zh:'02 · 方位氣勢' },
+  't.de.h2':       { th:'ทิศใช้วันนี้ <span class="tc">奇門 · 紫白飛星</span>', en:'Direction to use today <span class="tc">奇門 · 紫白飛星</span>', zh:'今日可用方位 <span class="tc">奇門 · 紫白飛星</span>' },
+  't.de.sub':      { th:'คะแนนพลังทิศคำนวณจากฉีเหมินและดาวจรจื่อไป๋เท่านั้น ไม่รวมดวงคน', en:'Direction energy uses Qi Men and Zi Bai moving stars only, not personal chart scoring.', zh:'方位分只取奇門與紫白飛星，不混入個人命盤。' },
+  't.de.loading':  { th:'กำลังโหลดพลังทิศจาก engine จริง...', en:'Loading live direction energy...', zh:'正在讀取方位氣勢...' },
   /* extras */
-  't.ex.sum':      { th:'เคล็ดเสริมตามตำรา · 黃曆 + 8 ทิศ', en:'Classical extras · 黃曆 + 8 directions', zh:'古籍精要 · 黃曆 + 八方' },
+	  't.ex.sum':      { th:'เคล็ดเสริมตามตำรา · 黃曆 + 8 ทิศ + 奇門/飛星', en:'Classical extras · 黃曆 + directions + Qi Men/Flying Stars', zh:'古籍精要 · 黃曆 + 八方 + 奇門/飛星' },
   't.bb.today.h':  { th:'今日 · Today vs Natal · วันนี้ปะทะ/รวมกับดวงคุณ', en:'今日 · Today vs Natal · How today interacts with your chart', zh:'今日 · 與本命四柱互動' },
   't.bb.go_chart': { th:'📊 ดูดวงเต็ม · 11 sections · /chart', en:'📊 View full chart · 11 sections · /chart', zh:'📊 查看完整命盤 · 11節 · /chart' },
   't.ex.ts.h':     { th:'<span class="tc">黃曆</span>Tongshu · ทำได้ / ห้ามทำ', en:'<span class="tc">黃曆</span>Tongshu · do / avoid', zh:'<span class="tc">黃曆</span>通書 · 宜 / 忌' },
-  't.ex.dir.h':    { th:'<span class="tc">八方</span>8 ทิศมงคลวันนี้', en:'<span class="tc">八方</span>8 directions today', zh:'<span class="tc">八方</span>今日八方' },
+	  't.ex.dir.h':    { th:'<span class="tc">八方</span>ทิศมงคล · ฉีเหมิน/ดาวเหิน', en:'<span class="tc">八方</span>Directions · Qi Men/Flying Stars', zh:'<span class="tc">八方</span>方位 · 奇門/飛星' },
   /* deeplinks */
   't.dl.q.nu':     { th:'DEEP · ขั้นเทพ', en:'DEEP · advanced', zh:'深度 · 進階' },
   't.dl.q.h':      { th:'<span class="tc">奇門</span>ฉีเหมินตอนนี้', en:'<span class="tc">奇門</span>Qi Men now', zh:'<span class="tc">奇門</span>當下奇門' },
@@ -1851,10 +2059,11 @@ function applyI18N(lang){
     var lk = (lang === 'en' || lang === 'zh') ? lang : 'th';
     spLab.innerHTML = '<span class="tc">'+nm[lk][0]+'</span>'+nm[lk][1];
   }
-  if (window.__renderTodayTongshuExtras) window.__renderTodayTongshuExtras(lang);
-  if (window.__renderTodayRelYiJi) window.__renderTodayRelYiJi(lang);
-  if (window.__renderBbToday) window.__renderBbToday(lang);
-}
+	  if (window.__renderTodayTongshuExtras) window.__renderTodayTongshuExtras(lang);
+	  if (window.__renderTodayRelYiJi) window.__renderTodayRelYiJi(lang);
+	  if (window.__renderTodayDirections) window.__renderTodayDirections(lang);
+	  if (window.__renderBbToday) window.__renderBbToday(lang);
+	}
 window.applyI18N = applyI18N;
 (function(){
   var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
@@ -2857,39 +3066,221 @@ window.applyI18N = applyI18N;
 
     /* === 8. Wire 8 DIRECTIONS (Phase C2) === */
     try {
-      const dirBody = { date: dateStr };
-      if (userChart) dirBody.userChart = userChart;
-      const dr = await fetch('/api/today/directions', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(dirBody)
-      });
-      const dd = await dr.json();
-      if (dr.ok && dd.directions) {
-        const compass = document.getElementById('t-compass');
-        if (compass) {
-          /* preserve center · only update dots */
-          const positions = { N:'left:50%;top:8%', NE:'left:84%;top:18%', E:'left:92%;top:50%', SE:'left:84%;top:82%',
-                              S:'left:50%;top:92%', SW:'left:16%;top:82%', W:'left:8%;top:50%', NW:'left:16%;top:18%' };
-          const html = dd.directions.map(dir => {
-            const cls = dir.quality === 'best' || dir.quality === 'good' ? 'good' : dir.quality === 'avoid' ? 'bad' : '';
-            return `<div class="dot ${cls}" style="${positions[dir.direction]}">${dir.direction}</div>`;
-          }).join('') + `<div class="center">${d.dayPillar.stem}${d.dayPillar.branch}</div>`;
-          compass.innerHTML = html;
-        }
-        /* update summary text · ดี: N · เลี่ยง: S */
-        const dirSummary = document.getElementById('t-dir-summary');
-        if (dirSummary) {
-          const summary = dd.summary || {
-            good: dd.directions.filter(dir => dir.quality === 'best' || dir.quality === 'good').map(dir => dir.direction),
-            avoid: dd.directions.filter(dir => dir.quality === 'avoid').map(dir => dir.direction),
-          };
-          const goodTxt = summary.good.length ? summary.good.join(' · ') : 'ไม่มี';
-          const avoidTxt = summary.avoid.length ? summary.avoid.join(' · ') : 'ไม่มี';
-          dirSummary.innerHTML = `<span style="color:var(--wood)">● ดี: ${goodTxt}</span><span style="color:var(--fire)">● เลี่ยง: ${avoidTxt}</span>`;
-        }
-        window._directions = dd;
+      function preferredSchool(){
+        try {
+          const s = localStorage.getItem('hk_today_qimen_school');
+          return s === 'zhirun' ? 'zhirun' : 'chaibu';
+        } catch(_) { return 'chaibu'; }
       }
-    } catch(e){ console.warn('wireDirections failed:', e); }
+      function setSchoolButtons(school){
+        document.querySelectorAll('[data-dir-school]').forEach(btn => {
+          btn.classList.toggle('on', btn.getAttribute('data-dir-school') === school);
+        });
+      }
+      function dirRequestBody(school){
+        const body = { date: dateStr, school };
+        if (userChart) body.userChart = userChart;
+        return body;
+      }
+      const labelText = {
+        best: 'ดีมาก', good: 'ดี', ok: 'กลางบวก', caution: 'ระวัง', avoid: 'เลี่ยง',
+      };
+      const fullDir = x => x?.direction_th_long || x?.direction_th || x?.direction || '—';
+      function renderDirectionEnergy(dd, lang){
+        const box = document.getElementById('t-de-content');
+        const upd = document.getElementById('t-de-updated');
+        const en = dd?.direction_energy;
+        if (!box || !en?.scores?.length) return;
+	        const curLang = (lang === 'en' || lang === 'zh') ? lang : 'th';
+	        const top = en.best?.[0] || en.scores[0];
+	        const scoreByDir = new Map((en.scores || []).map(x => [x.direction, x]));
+	        const savedDir = window.__todayDirSelected;
+	        const selectedDir = scoreByDir.has(savedDir) ? savedDir : top.direction;
+	        window.__todayDirSelected = selectedDir;
+	        const selected = scoreByDir.get(selectedDir) || top;
+	        const sqh = selected.qimen?.hour || null;
+	        const sqd = selected.qimen?.day || null;
+	        const szh = selected.zibai?.hour || null;
+	        const szd = selected.zibai?.day || null;
+	        const hourStars = dd.flying_focus?.hour?.stars || [];
+	        const dayStars = dd.flying_focus?.day?.stars || [];
+	        const starLine = s => s
+	          ? `${escHtml(s.star)} ${escHtml(s.th || '')} <span class="tc">${escHtml(s.zh || '')}</span>`
+	          : 'ไม่มีดาว 1/2/5/9 จรเด่น';
+	        const levelFromScore = score => {
+	          const n = Number(score);
+	          if (!Number.isFinite(n)) return { cls:'ok', text:'กลาง' };
+	          if (n >= 70) return { cls:'good', text:'ดี' };
+	          if (n >= 55) return { cls:'ok', text:'กลางบวก' };
+	          if (n >= 40) return { cls:'caution', text:'ระวัง' };
+	          return { cls:'bad', text:'เลี่ยง' };
+	        };
+	        const levelFromDelta = delta => {
+	          const n = Number(delta || 0);
+	          if (n >= 7) return { cls:'good', text:'หนุนมาก' };
+	          if (n >= 2) return { cls:'good', text:'หนุน' };
+	          if (n > -4) return { cls:'ok', text:'กลาง' };
+	          if (n > -8) return { cls:'caution', text:'กด' };
+	          return { cls:'bad', text:'เลี่ยง' };
+	        };
+	        const miniTag = (mark, level) => `<span class="de-mini-tag ${escHtml(level.cls)}"><i>${escHtml(mark)}</i>${escHtml(level.text)}</span>`;
+	        const qimenLevel = x => levelFromScore(x.qimen?.score);
+	        const zibaiLevel = x => levelFromScore(x.zibai?.score);
+	        const factor = (mark, main, sub, level) => `
+	          <div class="de-factor ${escHtml(level.cls)}">
+	            <div class="mark">${escHtml(mark)}</div>
+	            <div><b>${main}</b><em>${sub || ''}</em></div>
+	            <div class="state">${escHtml(level.text)}</div>
+	          </div>`;
+	        const qimenFactors = (p, scoreLabel) => p ? `
+	          <div class="de-factor-row">
+	            ${factor('門', `${escHtml(p.door_th || '—')} <span class="tc">${escHtml(p.door || '')}</span>`, escHtml(fullDir(p)), levelFromDelta(p.door_score))}
+	            ${factor('星', `${escHtml(p.star_th || '—')} <span class="tc">${escHtml(p.star || '')}</span>`, `${escHtml(scoreLabel || 'คะแนนฉีเหมิน')} ${escHtml(p.score ?? '—')}`, levelFromDelta(p.star_score))}
+	            ${factor('神', `${escHtml(p.deity_th || '—')} <span class="tc">${escHtml(p.deity || '')}</span>`, '', levelFromDelta(p.deity_score))}
+	          </div>` : 'ไม่มีข้อมูลฉีเหมิน';
+	        const zibaiFactor = (s, fallback) => {
+	          const level = s?.quality === 'good' ? { cls:'good', text:'หนุน' } : s?.quality === 'bad' ? { cls:'bad', text:'เลี่ยง' } : { cls:'ok', text:'กลาง' };
+	          return factor('飛', s ? starLine(s) : 'ไม่มีดาว 1/2/5/9 จรเด่น', s ? escHtml(s.direction_th_long || s.direction_th || '') : fallback, level);
+	        };
+	        const mapCell = dir => {
+	          const x = scoreByDir.get(dir);
+	          if (!x) return '<div class="de-map-cell"></div>';
+	          const qh = x.qimen?.hour || null;
+	          const zh = x.zibai?.hour || null;
+	          const active = x.direction === selected.direction ? ' is-selected' : '';
+	          const zToken = zh ? `${escHtml(zh.star)} ${escHtml(zh.th || '')} <span class="tc">${escHtml(zh.zh || '')}</span>` : 'ดาวจร -';
+	          return `<button type="button" class="de-map-cell ${escHtml(x.label)}${active}" data-de-dir="${escHtml(x.direction)}">
+	            <div class="de-cell-dir"><span>${escHtml(x.direction_th_long || x.direction_th || x.direction)}</span><span class="tc">${escHtml(x.direction_zh || '')}</span></div>
+	            <div class="de-cell-score"><b>${escHtml(x.score)}</b><span>คะแนน</span></div>
+	            <div class="de-cell-lines">${miniTag('門', qimenLevel(x))}${miniTag('飛', zibaiLevel(x))}</div>
+	            <div class="de-cell-token">${qh ? `${escHtml(qh.door_th || qh.door || '')} <span class="tc">${escHtml(qh.door || '')}</span>` : 'ประตู -'} · ${zToken}</div>
+	          </button>`;
+	        };
+	        const centerStar = hourStars.find(s => s.direction === 'C') || dayStars.find(s => s.direction === 'C') || null;
+	        const mapHtml = `
+	          <div class="de-map">
+	            ${mapCell('SE')}${mapCell('S')}${mapCell('SW')}
+	            ${mapCell('E')}
+	            <div class="de-map-center">
+	              <b>กลาง <span class="tc">中</span></b>
+	              <div class="tm">${escHtml(en.updated_time || '—')}</div>
+	              <span>${escHtml(en.school_label || '')}</span>
+	              <span>${starLine(centerStar)}</span>
+	            </div>
+	            ${mapCell('W')}
+	            ${mapCell('NE')}${mapCell('N')}${mapCell('NW')}
+	          </div>
+	        `;
+	        const avoidNames = (en.scores || [])
+	          .filter(x => x.label === 'avoid' || x.label === 'caution')
+          .sort((a,b) => a.score - b.score)
+          .slice(0, 4)
+          .map(x => x.direction_th_long || x.direction_th || x.direction);
+        if (upd) upd.innerHTML = `คำนวณล่าสุด <b>${escHtml(en.updated_time || '—')}</b> · ${escHtml(en.school_label || '')}`;
+        const sourceNote = en.source?.degraded ? `<br/>แหล่งข้อมูล: ${escHtml(en.source?.note_th || 'ข้อมูลฉีเหมินมาไม่ครบ')}` : '';
+        box.innerHTML = `
+          <div class="de-layout">
+            <div class="de-hero">
+              <div class="de-hero-top">
+                <div>
+                  <div class="de-k">ทิศเด่นตอนนี้</div>
+                  <div class="de-dir-name">${escHtml(top.direction_th_long || top.direction_th || top.direction)} <span class="tc">${escHtml(top.direction_zh || '')}</span></div>
+                </div>
+                <div class="de-score ${escHtml(top.label)}">
+                  <div class="n">${escHtml(top.score)}</div>
+                  <div class="lbl">${escHtml(top.label_th || labelText[top.label] || '')}</div>
+                </div>
+	              </div>
+	              <div class="de-mini-bars">
+	                <div class="de-bar"><b>ฉีเหมิน</b><div class="de-bar-track"><i style="width:${Math.max(0, Math.min(100, top.qimen?.score || 0))}%"></i></div><span class="de-signal">${escHtml(qimenLevel(top).text)}</span></div>
+	                <div class="de-bar"><b>จื่อไป๋</b><div class="de-bar-track"><i style="width:${Math.max(0, Math.min(100, top.zibai?.score || 0))}%"></i></div><span class="de-signal">${escHtml(zibaiLevel(top).text)}</span></div>
+              </div>
+              <div class="de-note">${escHtml(en.scoring_note || 'พลังทิศไม่รวมดวงคน')}<br/>สำหรับคุณ: ${escHtml(en.personal_overlay?.note_th || 'แยกจากคะแนนพลังทิศ')}${sourceNote}</div>
+	            </div>
+	            <div class="de-map-panel">
+	              <div class="de-map-head">
+	                <h3>ผัง 9 ช่อง <span class="tc">九宮</span></h3>
+	                <span>แตะทิศเพื่อดูรายละเอียด</span>
+	              </div>
+	              ${mapHtml}
+	            </div>
+	          </div>
+	          <div class="de-selected">
+	            <div class="de-selected-head">
+	              <h3>${escHtml(selected.direction_th_long || selected.direction_th || selected.direction)} <span class="tc">${escHtml(selected.direction_zh || '')}</span></h3>
+	              <div class="pts">${escHtml(selected.score)}<span>${escHtml(selected.label_th || labelText[selected.label] || '')}</span></div>
+	            </div>
+	            <div class="de-selected-grid">
+	              <div class="de-selected-item"><span>ฉีเหมินยาม 奇時</span>${qimenFactors(sqh, 'คะแนนฉีเหมินยาม')}</div>
+	              <div class="de-selected-item"><span>จื่อไป๋ยาม 紫白時</span>${zibaiFactor(szh, 'ไม่มีดาวจรโฟกัสในทิศนี้')}</div>
+	              <div class="de-selected-item"><span>ฉีเหมินวัน 奇日 · เวลา ${escHtml(dd.qimen?.day?.time || '12:00')}</span>${qimenFactors(sqd, 'คะแนนฉีเหมินวัน')}</div>
+	              <div class="de-selected-item"><span>จื่อไป๋วัน 紫白日</span>${zibaiFactor(szd, 'ไม่มีดาวจรโฟกัสในทิศนี้')}</div>
+	            </div>
+	          </div>
+	          <div class="de-avoid-line"><b>ควรเลี่ยง:</b> ${avoidNames.length ? escHtml(avoidNames.join(' · ')) : 'ไม่มีทิศเลี่ยงเด่นในชั้นพลังทิศ'}</div>
+	        `;
+	        box.querySelectorAll('[data-de-dir]').forEach(btn => {
+	          btn.addEventListener('click', () => {
+	            window.__todayDirSelected = btn.getAttribute('data-de-dir');
+	            renderDirectionEnergy(dd, lang);
+	          });
+	        });
+	      }
+      window.__renderTodayDirections = function(lang){
+        const dd = window._directions;
+        if (!dd?.directions) return;
+        const curLang = (lang === 'en' || lang === 'zh') ? lang : 'th';
+        const compass = document.getElementById('t-compass');
+        const dirSummary = document.getElementById('t-dir-summary');
+        const layerBox = document.getElementById('t-dir-layers');
+        const positions = { N:'left:50%;top:8%', NE:'left:84%;top:18%', E:'left:92%;top:50%', SE:'left:84%;top:82%',
+                            S:'left:50%;top:92%', SW:'left:16%;top:82%', W:'left:8%;top:50%', NW:'left:16%;top:18%' };
+        const empty = curLang === 'en' ? 'none' : curLang === 'zh' ? '無' : 'ไม่มี';
+        const goodLabel = curLang === 'en' ? 'Good' : curLang === 'zh' ? '吉' : 'ดี';
+        const avoidLabel = curLang === 'en' ? 'Avoid' : curLang === 'zh' ? '忌' : 'เลี่ยง';
+        if (compass) {
+          compass.innerHTML = dd.directions.map(dir => {
+            const cls = dir.quality === 'best' || dir.quality === 'good' ? 'good' : dir.quality === 'avoid' ? 'bad' : '';
+            const title = `${dir.direction_th_long || dir.direction_th || dir.direction} · ${dir.direction_zh || ''} · ${dir.quality}`;
+            return `<div class="dot ${cls}" title="${escHtml(title)}" style="${positions[dir.direction]}">${escHtml(dir.direction_th_long || dir.direction_th || dir.direction)}<span class="tc">${escHtml(dir.direction_zh || '')}</span></div>`;
+          }).join('') + `<div class="center">${d.dayPillar.stem}${d.dayPillar.branch}</div>`;
+        }
+        if (dirSummary) {
+          const summary = {
+            good: dd.directions.filter(dir => dir.quality === 'best' || dir.quality === 'good').map(dir => dir.direction_th_long || dir.direction_th || dir.direction),
+            avoid: dd.directions.filter(dir => dir.quality === 'avoid').map(dir => dir.direction_th_long || dir.direction_th || dir.direction),
+          };
+          const goodTxt = summary.good.length ? summary.good.join(' · ') : empty;
+          const avoidTxt = summary.avoid.length ? summary.avoid.join(' · ') : empty;
+          dirSummary.innerHTML = `<span style="color:var(--wood)">● ${goodLabel}: ${escHtml(goodTxt)}</span><span style="color:var(--fire)">● ${avoidLabel}: ${escHtml(avoidTxt)}</span>`;
+        }
+        renderDirectionEnergy(dd, curLang);
+        if (!layerBox) return;
+        layerBox.style.display = 'none';
+      };
+	      async function loadDirectionsForSchool(school){
+	        window.__todayDirSelected = null;
+	        setSchoolButtons(school);
+        const deBox = document.getElementById('t-de-content');
+        if (deBox) deBox.innerHTML = '<div class="de-empty">กำลังโหลดพลังทิศจาก engine จริง...</div>';
+        const dr = await fetch('/api/today/directions', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(dirRequestBody(school))
+        });
+        const dd = await dr.json();
+        if (!dr.ok || !dd.directions) throw new Error(dd?.error || 'directions failed');
+        window._directions = dd;
+        try { localStorage.setItem('hk_today_qimen_school', school); } catch(_){}
+        window.__renderTodayDirections(document.documentElement.getAttribute('data-lang') || 'th');
+      }
+      document.querySelectorAll('[data-dir-school]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const school = btn.getAttribute('data-dir-school') === 'zhirun' ? 'zhirun' : 'chaibu';
+          loadDirectionsForSchool(school).catch(e => console.warn('loadDirectionsForSchool failed:', e));
+        });
+      });
+      await loadDirectionsForSchool(preferredSchool());
+	    } catch(e){ console.warn('wireDirections failed:', e); }
 
     /* === 9. Wire COLORS · ผูก 用神 element · ใช้ DM/yongshen ของ user === */
     try {

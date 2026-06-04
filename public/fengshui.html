@@ -92,6 +92,7 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .fs-step-body{padding:18px;}
 .fs-step-body.no-pad{padding:0;}
 .fs-measure-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start;}
+.fs-measure-grid.map-only{grid-template-columns:1fr;}
 .fs-compass-drawer{display:block;}
 .fs-compass-drawer summary{cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg-3);margin-bottom:12px;}
 .fs-compass-drawer .compass-card{max-width:none;}
@@ -102,6 +103,13 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .fs-action-btn{background:var(--gold);border:0;color:var(--bg);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;border-radius:8px;padding:9px 12px;cursor:pointer;}
 .fs-action-btn:hover{background:var(--gold-bright);}
 .fs-save-status{font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
+.fs-luopan-cta{margin-top:14px;padding:16px 18px;border:1px solid var(--gold-line);border-radius:14px;background:linear-gradient(135deg,rgba(200,164,77,.12),rgba(13,15,18,.16));display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+.fs-luopan-cta-title{font-family:var(--serif);font-size:22px;font-weight:500;color:var(--fg);line-height:1.15;}
+.fs-luopan-cta-title .tc{font-family:var(--tc);color:var(--gold);}
+.fs-luopan-cta-meta{font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.55;margin-top:4px;}
+.fs-luopan-cta a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 18px;border-radius:10px;background:var(--gold);color:var(--bg);text-decoration:none;font-family:var(--mono);font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;}
+.fs-luopan-cta a:hover{background:var(--gold-bright);}
+.fs-luopan-cta a.disabled{opacity:.55;background:var(--bg-3);color:var(--fg-faint);border:1px solid var(--line);}
 @media(max-width:1080px){.fs-measure-grid,.fs-house-layout,.fs-timing-layout{grid-template-columns:1fr;}}
 .grid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
 @media(max-width:1080px){.grid{grid-template-columns:1fr;}}
@@ -619,6 +627,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         ใช้สร้างผัง <b>山 ดาวภูเขา</b> · <b>水 ดาวแม่น้ำ</b> · <b>基 ดาวฐาน</b> ตรงกลาง 9 ช่อง · ค่าเริ่มต้น S2 180° / Period 9
         <div class="fs-action-row">
           <button class="fs-action-btn" id="btnCalcHouseChart">คำนวณผัง</button>
+          <button class="fs-action-btn" id="btnOpenLuopanFromHouse">วิเคราะห์เต็มในหล่อแก</button>
           <button class="fs-action-btn" id="btnSaveHouse">บันทึกบ้าน</button>
           <button class="fs-action-btn" id="btnLoadHouse">โหลดบ้าน</button>
           <span class="fs-save-status" id="houseSaveStatus">บันทึกในเครื่องนี้อัตโนมัติ</span>
@@ -692,9 +701,9 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
 <div class="geo-sec">
   <div class="geo-head">
-    <div class="label">羅盤 · GEO COMPASS · 9 STARS</div>
+    <div class="label">羅盤 · GOOGLE MAP · 9 STARS</div>
     <h2>ค้นหา <span class="tc">坐向</span> ทิศบ้าน · กำหนดทิศมงคล</h2>
-    <p>2 วิธีหาทิศ — <b data-i18n="auto.f.008">① Live Compass บนโทรศัพท์</b> (ต้อง HTTPS · iOS ต้องอนุญาต) · <b data-i18n="auto.f.009">② ปักหมุดบนแผนที่ดาวเทียม</b> (จุดยืน → จุดทิศหันออก · ระบบคำนวณองศาให้)</p>
+    <p>หา Facing จากแผนที่ดาวเทียม — ลากเส้น A→B ทาบผนังหน้าบ้าน แล้วระบบคำนวณทิศหันหน้าและส่งไปล็อกในหล่อแกเต็มได้ทันที</p>
   </div>
 
   <div class="geo-grid">
@@ -903,7 +912,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-//  WORKFLOW LAYOUT · reorder existing blocks into 4 clear cards
+//  WORKFLOW LAYOUT · map-first overview, then full analysis in Luopan
 // ═══════════════════════════════════════════════════════════════
 (function arrangeFengshuiWorkflow(){
   const main = document.querySelector('main');
@@ -911,11 +920,11 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   const topbar = document.querySelector('.topbar');
   const schoolRow = document.querySelector('.school-row');
   const mapCard = document.querySelector('.map-card');
-  const compassCard = document.querySelector('.compass-card');
   const palaceGrid = document.querySelector('.palace-grid-wrap');
   const side = document.querySelector('.side');
   const planCard = document.getElementById('planCard');
   if(!mapCard || !palaceGrid || !side || !planCard) return;
+  planCard.remove();
 
   function step(no, zh, title, desc, badge){
     const wrap = document.createElement('section');
@@ -939,16 +948,19 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
   const s1 = step(1, '坐向', 'หาทิศบ้าน · <span class="tc">Facing</span>', 'ใช้ Google Map ลากผนัง A→B แล้วปรับ +/− 0.1° ให้เส้นทองขนานขอบบ้าน จากนั้นกดล็อกทิศบ้านเพื่อส่งองศาไปทุกการ์ด', 'INPUT');
   const measure = document.createElement('div');
-  measure.className = 'fs-measure-grid';
+  measure.className = 'fs-measure-grid map-only';
   measure.appendChild(mapCard);
-  if(compassCard){
-    const details = document.createElement('details');
-    details.className = 'fs-compass-drawer';
-    details.innerHTML = '<summary>เปิด Live Compass เสริม · ใช้ตอนอยู่นอกบ้าน</summary>';
-    details.appendChild(compassCard);
-    measure.appendChild(details);
-  }
   s1.body.appendChild(measure);
+  const cta = document.createElement('div');
+  cta.className = 'fs-luopan-cta';
+  cta.innerHTML = `
+    <div>
+      <div class="fs-luopan-cta-title">ไปวิเคราะห์เต็มใน <span class="tc">羅盤</span> หล่อแก</div>
+      <div class="fs-luopan-cta-meta" id="luopanCtaMeta">ลากผนังหรือกดล็อกทิศบ้านก่อน แล้วระบบจะส่งองศา Facing ไปล็อกในหน้าหล่อแกอัตโนมัติ</div>
+    </div>
+    <a href="/luopan" id="btnOpenLuopanFull" class="disabled">วิเคราะห์เต็มในหล่อแก →</a>
+  `;
+  s1.body.appendChild(cta);
 
   const s2 = step(2, '宅盤', 'ผังบ้านหลังนี้ · <span class="tc">Flying Star</span>', 'ตั้งชื่อบ้าน ปีสร้าง/ปีรีโนเวทใหญ่ และ Period เพื่อคำนวณดาวภูเขา 山 ดาวแม่น้ำ 水 และดาวฐาน 基 ของบ้านหลังนี้', 'HOUSE');
   if(topbar) s2.body.appendChild(topbar);
@@ -960,11 +972,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   if(peopleCard) houseLayout.appendChild(peopleCard);
   s2.body.appendChild(houseLayout);
 
-  const s3 = step(3, '平面圖', 'แปลนบ้านจริง · <span class="tc">Floor Plan</span>', 'อัปโหลดแปลนบ้าน หมุนรูปให้ตรง วางจุดกลาง 中 แล้วใช้ทิศที่ล็อกจากการ์ดแรกเป็นแกนของวง 24 ขุนเขาและดาวบนพื้นที่จริง', 'PLAN');
-  s3.body.classList.add('no-pad');
-  s3.body.appendChild(planCard);
-
-  const s4 = step(4, '流年流月', 'จังหวะปัจจุบัน · <span class="tc">Timing</span>', 'ชั้นนี้คือความมงคลชั่วคราวของปี เดือน วัน ยาม รวมถึงไท่ซุ่ย 3 ชะ 5 เหลือง และรายละเอียดรายวัง ไม่ใช่โครงบ้านถาวร', 'LIVE');
+  const s4 = step(3, '流年流月', 'จังหวะปัจจุบัน · <span class="tc">Timing</span>', 'ชั้นนี้คือความมงคลชั่วคราวของปี เดือน วัน ยาม รวมถึงไท่ซุ่ย 3 ชะ 5 เหลือง และรายละเอียดรายวัง ไม่ใช่โครงบ้านถาวร', 'LIVE');
   const timingLayout = document.createElement('div');
   timingLayout.className = 'fs-timing-layout';
   const timingStack = document.createElement('div');
@@ -978,7 +986,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   if(palaceDetail) timingLayout.appendChild(palaceDetail);
   s4.body.appendChild(timingLayout);
 
-  [s1.wrap, s2.wrap, s3.wrap, s4.wrap].forEach(x => flow.appendChild(x));
+  [s1.wrap, s2.wrap, s4.wrap].forEach(x => flow.appendChild(x));
   main.dataset.fsArranged = '1';
   main.replaceChildren(flow);
 })();
@@ -1559,6 +1567,7 @@ let currentBearing = null;
 let facingMode = 'facing';
 let lastFacingBearing = null;
 let lastSittingBearing = null;
+let measuredFacingReady = false;
 
 function getCurrentTimeframe(){
   const yearVal = parseInt(document.getElementById('setYear').value);
@@ -1941,7 +1950,70 @@ function setHouseFacingFromDegree(deg, scrollToGrid=false){
   syncHouseMountainFromDegree(true);
   renderGrid();
   if(typeof drawFloorPlan === 'function') drawFloorPlan();
+  updateLuopanCta(normalized);
   if(scrollToGrid) document.querySelector('.palace-grid-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function getLuopanCtaDegree(){
+  const headingText = String(document.getElementById('mrHeading')?.textContent || '');
+  const headingMatch = headingText.match(/-?\d+(?:\.\d+)?/);
+  const readDegreeInput = (id) => {
+    const raw = String(document.getElementById(id)?.value ?? '').trim();
+    if(raw === '') return null;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : null;
+  };
+  const candidates = measuredFacingReady
+    ? [
+      currentBearing,
+      lastFacingBearing,
+      window._currentWallFacing,
+      headingMatch ? Number(headingMatch[0]) : null,
+      readDegreeInput('houseFacingDeg')
+    ]
+    : [readDegreeInput('houseFacingDeg')];
+  for(const x of candidates){
+    const n = Number(x);
+    if(Number.isFinite(n)) return normalizeDeg(n);
+  }
+  return null;
+}
+function updateLuopanCta(deg){
+  const btn = document.getElementById('btnOpenLuopanFull');
+  const meta = document.getElementById('luopanCtaMeta');
+  if(!btn || !meta) return;
+  const n = Number(deg);
+  if(!Number.isFinite(n)){
+    btn.href = '/luopan';
+    btn.classList.add('disabled');
+    meta.textContent = 'ลากผนังหรือกดล็อกทิศบ้านก่อน แล้วระบบจะส่งองศา Facing ไปล็อกในหน้าหล่อแกอัตโนมัติ';
+    return;
+  }
+  const facing = Math.round(normalizeDeg(n) * 10) / 10;
+  const rawYear = String(document.getElementById('houseConstructionYear')?.value ?? '').trim();
+  const parsedYear = Number(rawYear);
+  const year = rawYear !== '' && Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
+  const m = get24Mountain(facing);
+  const qs = new URLSearchParams({
+    facing: String(facing),
+    year: String(Number.isFinite(year) ? year : new Date().getFullYear()),
+    source: 'fengshui'
+  });
+  btn.href = `/luopan?${qs.toString()}`;
+  btn.classList.remove('disabled');
+  meta.textContent = `พร้อมส่ง Facing ${facing}° · ${m.code || ''} ${m.h} ${m.pinyin} ไปล็อกในหน้าหล่อแกอัตโนมัติ`;
+}
+function openLuopanFullFromCta(ev){
+  ev.preventDefault();
+  const deg = getLuopanCtaDegree();
+  const meta = document.getElementById('luopanCtaMeta');
+  if(deg == null){
+    if(meta) meta.textContent = 'ยังไม่มีองศา Facing · ลากผนังบนแผนที่หรือกรอก Facing degrees ก่อน';
+    return;
+  }
+  setHouseFacingFromDegree(deg, false);
+  updateLuopanCta(deg);
+  const href = document.getElementById('btnOpenLuopanFull')?.href || `/luopan?facing=${Math.round(deg * 10) / 10}&source=fengshui`;
+  window.location.href = href;
 }
 function lockMeasuredFacingToHouse(){
   if(currentBearing == null || !Number.isFinite(Number(currentBearing))){
@@ -1952,6 +2024,7 @@ function lockMeasuredFacingToHouse(){
   setHouseFacingFromDegree(currentBearing, true);
   const st = document.getElementById('houseSaveStatus');
   if(st) st.textContent = 'ล็อกทิศจากแผนที่แล้ว';
+  updateLuopanCta(currentBearing);
 }
 function calculateHouseChart(){
   syncHouseMountainFromDegree(false);
@@ -1966,8 +2039,11 @@ function calculateHouseChart(){
   if(st) st.textContent = `คำนวณผังแล้ว · Facing ${document.getElementById('houseFacingDeg').value}° · ${document.getElementById('houseFacingMountain').selectedOptions[0]?.textContent || ''}`;
 }
 initHouseInputs();
+updateLuopanCta(getLuopanCtaDegree());
 
 document.getElementById('houseName').addEventListener('change', saveHouseInputs);
+document.getElementById('btnOpenLuopanFull')?.addEventListener('click', openLuopanFullFromCta);
+document.getElementById('btnOpenLuopanFromHouse')?.addEventListener('click', openLuopanFullFromCta);
 document.getElementById('btnCalcHouseChart').addEventListener('click', calculateHouseChart);
 document.getElementById('btnSaveHouse').addEventListener('click', ()=>{ saveHouseInputs(); calculateHouseChart(); });
 document.getElementById('btnLoadHouse').addEventListener('click', ()=>{
@@ -1983,9 +2059,10 @@ document.getElementById('setDate').addEventListener('change', ()=>{
   renderGrid();
 });
 document.getElementById('setTime').addEventListener('change', renderGrid);
-document.getElementById('houseFacingDeg').addEventListener('change', ()=>{ syncHouseMountainFromDegree(); renderGrid(); });
-document.getElementById('houseFacingMountain').addEventListener('change', ()=>{ syncHouseDegreeFromMountain(); renderGrid(); });
-document.getElementById('houseConstructionYear').addEventListener('change', ()=>{ syncHousePeriodFromYear(); renderGrid(); });
+document.getElementById('houseFacingDeg').addEventListener('input', ()=>{ syncHouseMountainFromDegree(false); updateLuopanCta(getLuopanCtaDegree()); });
+document.getElementById('houseFacingDeg').addEventListener('change', ()=>{ syncHouseMountainFromDegree(); renderGrid(); updateLuopanCta(getLuopanCtaDegree()); });
+document.getElementById('houseFacingMountain').addEventListener('change', ()=>{ syncHouseDegreeFromMountain(); renderGrid(); updateLuopanCta(Number(document.getElementById('houseFacingDeg').value)); });
+document.getElementById('houseConstructionYear').addEventListener('change', ()=>{ syncHousePeriodFromYear(); renderGrid(); updateLuopanCta(getLuopanCtaDegree()); });
 document.getElementById('housePeriod').addEventListener('change', ()=>{ saveHouseInputs(); renderGrid(); });
 
 document.querySelectorAll('.layer-btn').forEach(btn=>{
@@ -2293,6 +2370,7 @@ renderGrid();
 function buildCompass(){
   const dirRing = document.getElementById('dirRing');
   const mountainRing = document.getElementById('mountainRing');
+  if(!dirRing || !mountainRing) return;
   const cx = 200, cy = 200;
   /* iPhone-Compass style · N เด่น · 4 ทิศหลักใหญ่ · 4 ทิศรองเล็ก · 22 พ.ค. */
   const dirs = [
@@ -2492,6 +2570,7 @@ let orientHandler = null;
 function startCompass(){
   if(compassWatching) return;
   const status = document.getElementById('compassStatus');
+  if(!status) return;
   if(!('DeviceOrientationEvent' in window)){
     status.innerHTML = '⚠️ <b>เบราว์เซอร์ไม่รองรับ</b><br/>ใช้แผนที่แทน';
     return;
@@ -2513,6 +2592,7 @@ function attachOrientation(){
   const deg = document.getElementById('compassDeg');
   const needle = document.getElementById('compassNeedle');
   const lockBtn = document.getElementById('btnLockFacing');
+  if(!status || !deg || !needle || !lockBtn) return;
 
   /* Smooth compass · EMA + Shortest path + rAF · 22 พ.ค. */
   const EMA_ALPHA = 0.18;      /* smaller = นิ่ง · ใหญ่ = ไว */
@@ -2587,8 +2667,10 @@ function attachOrientation(){
   window.addEventListener('deviceorientation', orientHandler, true);
   compassWatching = true;
   const btn = document.getElementById('btnCompassStart');
-  btn.textContent = '⏸ หยุด Compass';
-  btn.onclick = stopCompass;
+  if(btn){
+    btn.textContent = '⏸ หยุด Compass';
+    btn.onclick = stopCompass;
+  }
 }
 
 function stopCompass(){
@@ -2600,23 +2682,26 @@ function stopCompass(){
   if (typeof window._fsCompassRafCancel === 'function') window._fsCompassRafCancel();
   compassWatching = false;
   const btn = document.getElementById('btnCompassStart');
-  btn.textContent = 'เริ่ม Live Compass';
-  btn.onclick = startCompass;
-  document.getElementById('compassStatus').innerHTML = 'หยุดอ่านเซ็นเซอร์แล้ว';
+  if(btn){
+    btn.textContent = 'เริ่ม Live Compass';
+    btn.onclick = startCompass;
+  }
+  const status = document.getElementById('compassStatus');
+  if(status) status.innerHTML = 'หยุดอ่านเซ็นเซอร์แล้ว';
 }
 
-document.getElementById('btnCompassStart').addEventListener('click', startCompass);
+document.getElementById('btnCompassStart')?.addEventListener('click', startCompass);
 
-document.getElementById('btnLockFacing').addEventListener('click', ()=>{
+document.getElementById('btnLockFacing')?.addEventListener('click', ()=>{
   lastFacingBearing = lastHeading;
   lastSittingBearing = (lastHeading + 180) % 360;
   setFacingMode('facing');
-  document.getElementById('btnFlipFacing').disabled = false;
+  setFlipFacingEnabled(true);
   setCompassArrow(lastHeading);
-  applyFacing(lastHeading);
+  applyFacing(lastHeading, true);
   if(typeof setHouseFacingFromDegree === 'function') setHouseFacingFromDegree(lastHeading, true);
 });
-document.getElementById('btnFlipFacing').addEventListener('click', ()=>{
+document.getElementById('btnFlipFacing')?.addEventListener('click', ()=>{
   setFacingMode(facingMode === 'facing' ? 'sitting' : 'facing');
   applyStoredFacingMode();
 });
@@ -2684,7 +2769,8 @@ function updateDirectionBreakdown(dir8, deg){
 
 function get24Mountain(deg){ return get24MountainByDeg(deg); }
 
-function applyFacing(deg){
+function applyFacing(deg, measured=false){
+  if(measured) measuredFacingReady = true;
   currentBearing = ((deg % 360) + 360) % 360;
   document.getElementById('mrHeading').textContent = `${(Math.round(deg*10)/10)} °`;
   document.getElementById('mrDirection').textContent = getDirectionName(deg);
@@ -2705,16 +2791,18 @@ function applyFacing(deg){
   }
   document.getElementById('mrVerdict').textContent = verdict;
   updateDirectionBreakdown(dir8, deg);
+  if(measuredFacingReady) updateLuopanCta(deg);
 }
 function setCompassArrow(deg){
   const arrow = document.getElementById('facingArrow');
+  if(!arrow) return;
   arrow.style.display = 'block';
   arrow.style.transform = `rotate(${deg}deg)`;
 }
 function selectCompassDirection(deg, dir){
   activeDir = dir || getDirCode(deg).en;
   setCompassArrow(deg);
-  applyFacing(deg);
+  applyFacing(deg, true);
   document.querySelectorAll('.pcell').forEach(p => p.classList.toggle('active', p.dataset.dir === activeDir));
   if(window._currentYearGrid && window._currentMonthGrid && window._currentDayGrid && window._currentPeriodGrid){
     renderPalaceDetail(
@@ -2735,11 +2823,15 @@ function setFacingMode(mode){
   const btn = document.getElementById('btnFlipFacing');
   if(btn) btn.textContent = mode === 'facing' ? '↔ แสดง Sitting' : '↔ แสดง Facing';
 }
+function setFlipFacingEnabled(enabled){
+  const btn = document.getElementById('btnFlipFacing');
+  if(btn) btn.disabled = !enabled;
+}
 function applyStoredFacingMode(){
   const deg = facingMode === 'sitting' ? lastSittingBearing : lastFacingBearing;
   if(deg == null) return;
   setCompassArrow(deg);
-  applyFacing(deg);
+  applyFacing(deg, true);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2993,11 +3085,11 @@ function updateWallTempLine(currentPos){
   lastFacingBearing = facingBearing;
   lastSittingBearing = (facingBearing + 180) % 360;
   setFacingMode('facing');
-  document.getElementById('btnFlipFacing').disabled = false;
+  setFlipFacingEnabled(true);
   
   // update HUD live
   setCompassArrow(facingBearing);
-  applyFacing(facingBearing);
+  applyFacing(facingBearing, true);
 }
 
 function wallMouseUp(e){
@@ -3151,8 +3243,8 @@ function drawWallFromMarkers(){
   lastFacingBearing = facingBearing;
   lastSittingBearing = sittingBearing;
   setFacingMode('facing');
-  document.getElementById('btnFlipFacing').disabled = false;
-  applyFacing(facingBearing);
+  setFlipFacingEnabled(true);
+  applyFacing(facingBearing, true);
   
   // update compass arrow
   setCompassArrow(facingBearing);
@@ -3608,8 +3700,8 @@ function updateLine(){
   lastFacingBearing = bearing;
   lastSittingBearing = (bearing + 180) % 360;
   setFacingMode('facing');
-  document.getElementById('btnFlipFacing').disabled = false;
-  applyFacing(bearing);
+  setFlipFacingEnabled(true);
+  applyFacing(bearing, true);
   // update facing arrow on compass too
   setCompassArrow(bearing);
 }
@@ -4462,9 +4554,12 @@ document.getElementById('btnClear').addEventListener('click', ()=>{
   lastFacingBearing = null;
   lastSittingBearing = null;
   currentBearing = null;
+  measuredFacingReady = false;
   setFacingMode('facing');
-  document.getElementById('btnFlipFacing').disabled = true;
-  document.getElementById('facingArrow').style.display = 'none';
+  setFlipFacingEnabled(false);
+  const facingArrow = document.getElementById('facingArrow');
+  if(facingArrow) facingArrow.style.display = 'none';
+  updateLuopanCta(getLuopanCtaDegree());
   activeDir = 'C';
   document.querySelectorAll('.pcell').forEach(p => p.classList.toggle('active', p.dataset.dir === activeDir));
   resetDirectionBreakdown();
