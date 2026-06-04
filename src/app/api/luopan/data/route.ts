@@ -18,6 +18,12 @@ const SETS: Record<string, string> = {
   fenjin:      "fenjin120.json",
   yao:         "yao384.json",
   interaction: "interaction-methodology.json",
+  interpretation_template: "00_interpretation_template.json",
+  najia:       "01_najia.json",
+  basha_huangquan: "02_ba_sha_huang_quan.json",
+  basha_huangquan_interpreted: "02b_ba_sha_huang_quan_interpreted.json",
+  tigua:       "03_tigua.json",
+  sanyuan_long: "04_sanyuan_long.json",
 };
 const DIR = path.join(process.cwd(), "data", "luopan-private");
 const cache = new Map<string, string>();

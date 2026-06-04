@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="th" data-theme="dark" data-lang="th">
 <head>
+<link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
+<link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>hourkey · หล่อแก 22 วง · 羅盤</title>
@@ -40,6 +43,17 @@
   .hk-nav a .lbl{font-size:12px;}
   .hk-nav a:hover,.hk-nav a.on{color:var(--gold);}
   .top-r{display:flex;align-items:center;gap:12px;}
+  #hk-user-menu-mount{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 40px;}
+  #hk-user-menu-root.hk-um-wrap.inline{width:40px;height:40px;display:inline-flex;flex:0 0 40px;}
+  #hk-user-menu-mount .hk-um-trigger{width:40px;height:40px;padding:0;overflow:hidden;background:var(--panel);border:1px solid rgba(246,241,230,.18);color:var(--gold-bright);box-shadow:none;}
+  #hk-user-menu-mount .hk-um-trigger:hover{transform:none;border-color:var(--gold);box-shadow:0 0 0 1px rgba(200,164,77,.18);}
+  #hk-user-menu-mount .hk-um-trigger img{display:block;width:100%;height:100%;border-radius:50%;object-fit:cover;}
+  header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;}
+  .lp-logo{grid-column:1;min-width:0;}
+  .hk-nav{grid-column:2;justify-content:center;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .hk-nav::-webkit-scrollbar{display:none;}
+  .hk-nav a{flex:0 0 auto;}
+  .top-r{grid-column:3;position:relative;z-index:80;justify-content:flex-end;min-width:40px;}
   @media(max-width:1100px){
     header{padding:12px 16px;gap:10px;}
     .hk-nav{gap:13px;}
@@ -48,12 +62,11 @@
     .hk-nav a .lbl{display:inline;font-size:11px;}
   }
   @media(max-width:760px){
-    header{align-items:center;padding:12px 14px 10px;}
-    .lp-logo{order:1;font-size:18px;}
+    header{grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:12px 14px 10px;}
+    .lp-logo{grid-column:1;order:1;font-size:18px;}
     .lp-logo .seal{width:26px;height:26px;font-size:12px;}
-    .top-r{order:2;margin-left:auto;gap:8px;}
-    .top-r #buildTag{display:none;}
-    .hk-nav{order:3;width:100%;flex-wrap:nowrap;gap:15px;overflow-x:auto;padding:8px 0 2px;border-top:1px solid var(--line);-webkit-overflow-scrolling:touch;}
+    .top-r{grid-column:2;order:2;margin-left:auto;gap:8px;}
+    .hk-nav{grid-column:1 / -1;order:3;width:100%;justify-content:flex-start;flex-wrap:nowrap;gap:15px;overflow-x:auto;padding:8px 0 2px;border-top:1px solid var(--line);-webkit-overflow-scrolling:touch;}
     .hk-nav::-webkit-scrollbar{display:none;}
     .hk-nav a{flex:0 0 auto;padding:4px 0;font-size:11px;}
     .hk-nav a .glyph{font-size:14px;}
@@ -216,7 +229,7 @@
     <a href="/luopan" data-r="/luopan" class="on"><span class="glyph">羅</span><span class="lbl" data-i18n="nav.luopan">หล่อแก</span></a>
   </nav>
   <div id="errBanner" style="display:none;position:fixed;top:0;left:0;right:0;background:#7a1c1c;color:#fff;padding:8px 16px;font-family:var(--mono);font-size:12px;z-index:9999;"></div>
-  <div class="top-r"><small id="buildTag" style="font-family:var(--mono);font-size:10px;color:var(--fg-faint)">build…</small><div id="hk-user-menu-mount"></div></div>
+  <div class="top-r"><div id="hk-user-menu-mount"></div></div>
 </header>
 
 <main>
@@ -315,7 +328,7 @@
       <button class="btn" id="scaleReset" title="100%">100</button>
     </div>
 
-    <h3 style="margin-top:18px" data-i18n="ctrl.layers">22 ชั้นวง · filter</h3>
+    <h3 style="margin-top:18px" data-i18n="ctrl.layers">ชั้นศาสตร์ · filter</h3>
     <div class="btn-grp" style="margin-top:6px">
       <button class="btn" id="layerAll" data-i18n="layer.all">เปิดหมด</button>
       <button class="btn" id="layerNone" data-i18n="layer.none">ปิดหมด</button>
@@ -335,12 +348,15 @@
         <label><input type="checkbox" data-r="rPool" data-cg="1" checked><span class="lbl-th">บ่อฟ้า · เข็มแม่เหล็ก</span><span class="lbl-cn">天池</span></label>
         <label><input type="checkbox" data-r="rDg" data-cg="1" checked><span class="lbl-th">องศา 360°</span><span class="lbl-cn">度數</span></label>
         <label><input type="checkbox" data-r="r24" data-cg="1" checked><span class="lbl-th">24 ขุนเขา · ทิศหลัก</span><span class="lbl-cn">24山 / 地盤</span></label>
+        <label><input type="checkbox" data-r="rSYL" data-cg="1" checked><span class="lbl-th">มังกรสามหยวน · 地/天/人</span><span class="lbl-cn">三元龍</span></label>
         <label><input type="checkbox" data-r="rCd" data-cg="1" checked><span class="lbl-th">รหัสทิศ N1-NW3</span><span class="lbl-cn">山編碼</span></label>
         <label><input type="checkbox" data-r="rRN" data-cg="1" checked><span class="lbl-th">เข็มคน · ดูคน</span><span class="lbl-cn">人盤</span></label>
         <label><input type="checkbox" data-r="rTN" data-cg="1" checked><span class="lbl-th">เข็มฟ้า · ดูน้ำ</span><span class="lbl-cn">天盤</span></label>
+        <label><input type="checkbox" data-r="rShuiFa" data-cg="1"><span class="lbl-th">กฎน้ำจริง · ต้องมีน้ำเข้า/ออก</span><span class="lbl-cn">水法</span></label>
         <label><input type="checkbox" data-r="rDZ" data-cg="1" checked><span class="lbl-th">12 กิ่งดิน · นักษัตร</span><span class="lbl-cn">地支</span></label>
         <label><input type="checkbox" data-r="rTG" data-cg="1" checked><span class="lbl-th">10 ก้านฟ้า · ธาตุสวรรค์</span><span class="lbl-cn">天干</span></label>
         <label><input type="checkbox" data-r="rWarn" data-cg="1" checked><span class="lbl-th">太歲/三煞/歲破 · ดาวเตือนปี</span><span class="lbl-cn">警示</span></label>
+        <label><input type="checkbox" data-r="rBasha" data-cg="1" checked><span class="lbl-th">แปดสังหาร/หวงเฉวียน · ห้ามกระตุ้น</span><span class="lbl-cn">八煞黃泉</span></label>
       </div>
     </div>
 
@@ -355,6 +371,7 @@
         <label><input type="checkbox" data-r="r64" data-cg="2" checked><span class="lbl-th">64 กว้า · ความหมายละเอียด</span><span class="lbl-cn">64卦</span></label>
         <label><input type="checkbox" data-r="rKU" data-cg="2" checked><span class="lbl-th">ยุคของกว้า · ช่วงเวลา</span><span class="lbl-cn">卦運</span></label>
         <label><input type="checkbox" data-r="rGate" data-cg="2"><span class="lbl-th">城門ประตูเมือง · ประตูข้างมงคล</span><span class="lbl-cn">城門訣</span></label>
+        <label><input type="checkbox" data-r="rTGua" data-cg="2" checked><span class="lbl-th">ดาวแทนเมื่อทับเส้น · เช็ค兼向</span><span class="lbl-cn">替卦</span></label>
         <label><input type="checkbox" data-r="r8Z" data-cg="2"><span class="lbl-th">八宅แปดบ้าน · ดาวมงคล/ร้ายตามทิศ (ล็อกบ้านก่อน)</span><span class="lbl-cn">八宅</span></label>
         <label><input type="checkbox" data-r="rZL" data-cg="2"><span class="lbl-th">正神零神 · ทิศควรสูง / ควรมีน้ำ (ล็อกบ้านก่อน)</span><span class="lbl-cn">正神零神</span></label>
       </div>
@@ -373,6 +390,7 @@
         <label><input type="checkbox" data-r="r28" data-cg="3" checked><span class="lbl-th">28 ดาวฤกษ์ · ฤกษ์ก่อสร้าง</span><span class="lbl-cn">28宿</span></label>
         <label><input type="checkbox" data-r="rJQ" data-cg="3" checked><span class="lbl-th">24 ฤดูสุริยะ · ช่วงเวลามงคล</span><span class="lbl-cn">24節氣</span></label>
         <label><input type="checkbox" data-r="r5H" data-cg="3" checked><span class="lbl-th">ธาตุของ 64 กว้า</span><span class="lbl-cn">64卦五行</span></label>
+        <label><input type="checkbox" data-r="rNajia" data-cg="3"><span class="lbl-th">น่าจยา · กว้าเข้าก้านกิ่ง</span><span class="lbl-cn">納甲</span></label>
       </div>
     </div>
 
@@ -383,6 +401,7 @@
       <div class="layer-grid">
         <label><input type="checkbox" data-r="rFX" data-cg="4" checked><span class="lbl-th">ดาวเหิน 山/向/基 · ทิศบ้าน+ยุค</span><span class="lbl-cn">飛星</span></label>
         <label><input type="checkbox" data-r="rQM" data-cg="4" checked><span class="lbl-th">ฉีเหมิน 門/神/星 · ยามจริง (時家)</span><span class="lbl-cn">奇門</span></label>
+        <label><input type="checkbox" data-r="rDaySha" data-cg="4"><span class="lbl-th">ซารายเดือน/รายวัน · ยังไม่ใช่ดาวจร</span><span class="lbl-cn">月煞/日煞</span></label>
       </div>
       <div class="btn-grp" style="margin-top:6px">
         <button class="btn active" id="qmSchoolChaibu" data-qm-school="chaibu">拆補</button>
@@ -470,8 +489,12 @@
   try {
     const r = await fetch('/api/auth/me', { credentials: 'same-origin' });
     const d = await r.json();
-    if (!d || !d.user) window.location.replace('/signup?next=' + encodeURIComponent('/luopan'));
-  } catch (_) { window.location.replace('/signup?next=' + encodeURIComponent('/luopan')); }
+    const next = (window.location.pathname || '/luopan') + (window.location.search || '') + (window.location.hash || '');
+    if (!d || !d.user) window.location.replace('/signup?next=' + encodeURIComponent(next));
+  } catch (_) {
+    const next = (window.location.pathname || '/luopan') + (window.location.search || '') + (window.location.hash || '');
+    window.location.replace('/signup?next=' + encodeURIComponent(next));
+  }
 })();
 /* === embedded luopan-data.js === */
 /* ════════════════════════════════════════════════════════════════
@@ -1021,6 +1044,22 @@ function r_24mountains() {
   return g;
 }
 
+// ─── Structural overlay · 三元龍 (shares 24山 band; no extra radius)
+function r_sanyuan_long() {
+  const r1 = 220, r2 = 244;
+  let g = ring(r1 + 6, `stroke="rgba(200,164,77,.18)" stroke-width=".35" stroke-dasharray="1.2 2.4"`);
+  const yuanShort = ['地','天','人'];
+  const yuanColor = { 地:'#a77a61', 天:'#6fa8ff', 人:'#78b980' };
+  const xkYY = {壬:'陽',甲:'陽',庚:'陽',丙:'陽',乾:'陽',坤:'陽',艮:'陽',巽:'陽',寅:'陽',申:'陽',巳:'陽',亥:'陽',子:'陰',午:'陰',卯:'陰',酉:'陰',癸:'陰',丁:'陰',乙:'陰',辛:'陰',丑:'陰',未:'陰',辰:'陰',戌:'陰'};
+  D.MOUNTAINS_24.forEach((m, i) => {
+    const center = 345 + i * 15;
+    const y = yuanShort[i % 3];
+    g += rt(223.8, ((center % 360) + 360) % 360, y, { fs:7.4, fw:800, fill:yuanColor[y], fam:'var(--tc)', op:.96 });
+    g += rt(240.3, ((center % 360) + 360) % 360, xkYY[m.c] || '', { fs:4.8, fw:600, fill:'rgba(240,230,207,.55)', fam:'var(--tc)', op:.8 });
+  });
+  return g;
+}
+
 // ─── Ring 5 · 人盤 24山 (244-256, offset +7.5°)
 function r_renpan() {
   const r1 = 244, r2 = 256;
@@ -1308,7 +1347,7 @@ function buildLuopan() {
       <!-- translucent sector tints under all rings -->
       <g id="sector-tints">${r_sectorTints()}</g>
 
-      <!-- 22 rings, outer → inner -->
+      <!-- rings + structural overlays, outer → inner -->
       <g id="r28" class="ring spin-a">${r_28mansions()}</g>
       <g id="r384" class="ring">${r_384yao()}</g>
       <g id="rKU" class="ring spin-b">${r_64period()}</g>
@@ -1320,6 +1359,7 @@ function buildLuopan() {
       <g id="rCd" class="ring">${r_codes()}</g>
       <g id="rRN" class="ring">${r_renpan()}</g>
       <g id="r24" class="ring">${r_24mountains()}</g>
+      <g id="rSYL" class="ring">${r_sanyuan_long()}</g>
       <g id="rTN" class="ring">${r_tianpan()}</g>
       <g id="r72" class="ring spin-d">${r_72dragons()}</g>
       <g id="r60D" class="ring spin-d">${r_jiazi60()}</g>
@@ -1333,6 +1373,11 @@ function buildLuopan() {
       <g id="rDZ" class="ring">${r_dizhi()}</g>
       <!-- Castle Gate overlay (toggle via filter) -->
       <g id="rGate" style="display:none"></g>
+      <g id="rBasha" style="display:none"></g>
+      <g id="rTGua" style="display:none"></g>
+      <g id="rNajia" style="display:none"></g>
+      <g id="rShuiFa" style="display:none"></g>
+      <g id="rDaySha" style="display:none"></g>
       <!-- 八宅 + 正神零神 overlay (toggle via filter · ล็อกบ้านก่อน) -->
       <g id="r8Z" style="display:none"></g>
       <g id="rZL" style="display:none"></g>
@@ -1361,9 +1406,9 @@ window.buildLuopanInner = buildLuopan;
 <script>
 /* ============== i18n ============== */
 const I18N = {
-  th:{'nav.chart':'ดวง','nav.today':'วันนี้','nav.calendar':'ปฏิทิน','nav.network':'เครือข่าย','nav.qimen':'ฉีเหมิน','nav.forecast':'พยากรณ์','nav.master':'ซินแส','nav.picker':'วางฤกษ์','nav.fengshui':'ทิศมงคล','nav.luopan':'หล่อแก','title.sub':'หล่อแก 22 วง · ทับแปลนบ้าน','btn.theme':'สลับธีม','ctrl.house':'ตั้งค่าบ้าน · 坐向','ctrl.houseName':'ชื่อบ้าน','ctrl.facingDeg':'หันหน้า · องศา (0-359)','ctrl.year':'ปีสร้างบ้าน','ctrl.helpHouse':'ใช้สร้างผัง 山 ดาวภูเขา · 水 ดาวแม่น้ำ · 基 ดาวฐาน 9 ช่องตรงกลาง · ค่าเริ่มต้น S2 180° / Period 9','ctrl.helpSave':'บันทึกในเครื่องนี้อัตโนมัติ','btn.lock':'🔒 ล็อกบ้าน · เริ่มสำรวจ','btn.unlock':'🔓 ปลด','btn.save':'บันทึก','btn.load':'โหลด','ctrl.upload':'อัพแปลนบ้าน · 平面圖','ctrl.choose':'เลือกไฟล์รูป · ลากวางได้','img.center':'จัดกลาง','img.clear':'ล้างรูป','ctrl.imgRot':'หมุนรูปแปลน','ctrl.imgOpa':'ความเข้มวง','ctrl.layers':'22 ชั้นวง · filter','layer.all':'เปิดหมด','layer.none':'ปิดหมด','layer.core':'เฉพาะหลัก','lock.unlocked':'ยังไม่ล็อกบ้าน','lock.fillFirst':'กรอกข้อมูลซ้ายแล้วกดล็อก','cursor.rot':'หมุนเข็มสำรวจ · CURSOR','t.era':'ยุค','t.year':'ปี','t.month':'เดือน','t.day':'วัน','t.hour':'ยาม','time.period':'ยุค','time.year':'ดาวปี','time.month':'ดาวเดือน','time.blocker':'太歲/歲破','legend.good':'ดี','legend.mid':'กลาง','legend.bad':'ไม่ดี','insp.title':'ผลลัพธ์ตามเข็ม','insp.cursor':'เข็มชี้','insp.element':'ธาตุ','insp.consensus':'consensus','insp.rings':'ทุกศาสตร์ที่เข็มผ่าน','insp.use':'เหมาะใช้','insp.door':'ประตู','insp.bed':'หัวเตียง','insp.stove':'เตาไฟ','insp.water':'จุดน้ำ','insp.good':'ดี','insp.mid':'กลาง','insp.bad':'เลี่ยง','r.deg':'องศา','r.code':'รหัส','r.element':'ธาตุ','time.period':'ยุค 9','time.year':'ดาวปี','time.month':'ดาวเดือน','time.blocker':'太歲/歲破','legend.block':'ดาวต้องเลี่ยง (5黃 / 2黑 / 太歲 / 三煞)','legend.consensus':'consensus หลายศาสตร์ซ้อน','insp.title':'รายละเอียดทิศ','insp.facing':'หันหน้า','insp.sitting':'นั่งหลัง','insp.period':'ยุค','insp.element':'ธาตุประจำหน้าบ้าน','insp.consensus':'consensus','insp.taisui':'太歲 ตำแหน่ง','insp.yearbreak':'歲破 ตำแหน่ง','insp.threekill':'三煞 ตำแหน่ง','insp.use':'เหมาะใช้','insp.door':'ประตู','insp.bed':'หัวเตียง','insp.stove':'เตาไฟ','insp.water':'จุดน้ำ','insp.good':'ดี','insp.mid':'กลาง','insp.bad':'เลี่ยง'},
-  en:{'nav.chart':'Chart','nav.today':'Today','nav.calendar':'Calendar','nav.network':'Network','nav.qimen':'QiMen','nav.forecast':'Forecast','nav.master':'Master','nav.picker':'Date Pick','nav.fengshui':'Direction','nav.luopan':'Luopan','title.sub':'22-ring compass · floor plan overlay','btn.theme':'Theme','ctrl.house':'House setup · 坐向','ctrl.houseName':'House name','ctrl.facingDeg':'Facing degree (0-359)','ctrl.year':'Construction year','ctrl.helpHouse':'Used to build 山 mountain · 水 water · 基 base star chart in 9 palaces · default S2 180° / Period 9','ctrl.helpSave':'Auto-saved on this device','btn.calc':'Calculate','btn.save':'Save','btn.load':'Load','ctrl.upload':'Upload floor plan · 平面圖','ctrl.choose':'Pick image · drag-drop ok','img.center':'Center','img.clear':'Clear','ctrl.imgRot':'Rotate plan','ctrl.imgOpa':'Plan opacity','ctrl.dialRot':'Rotate dial (Facing)','ctrl.dialOpa':'Dial opacity','ctrl.layers':'22 Rings · filter','ctrl.timing':'Time layer','layer.all':'All on','layer.none':'All off','layer.core':'Core only','r.deg':'Degree','r.code':'Code','r.element':'Element','time.period':'Period 9','time.year':'Year star','time.month':'Month star','time.blocker':'Year stars','legend.block':'Avoid stars (5黃 / 2黑 / 太歲 / 三煞)','legend.consensus':'Multi-school consensus','insp.title':'Direction detail','insp.facing':'Facing','insp.sitting':'Sitting','insp.period':'Period','insp.element':'Facing element','insp.consensus':'Consensus','insp.taisui':'太歲 Tai Sui','insp.yearbreak':'歲破 Year Breaker','insp.threekill':'三煞 Three Killings','insp.use':'Best for','insp.door':'Door','insp.bed':'Bed head','insp.stove':'Stove','insp.water':'Water','insp.good':'Good','insp.mid':'Mid','insp.bad':'Avoid'},
-  zh:{'nav.chart':'命盤','nav.today':'今日','nav.calendar':'曆','nav.network':'人脈','nav.qimen':'奇門','nav.forecast':'占卜','nav.master':'師','nav.picker':'擇日','nav.fengshui':'方位','nav.luopan':'羅盤','title.sub':'廿二環羅盤 · 套疊平面圖','btn.theme':'主題','ctrl.house':'坐向設定','ctrl.houseName':'宅名','ctrl.facingDeg':'向首 · 度數 (0-359)','ctrl.year':'建造年','ctrl.helpHouse':'用於建立 山星 · 水星 · 基星 九宮圖 · 預設 S2 180° / 九運','ctrl.helpSave':'自動儲存於本機','btn.calc':'計算','btn.save':'儲存','btn.load':'載入','ctrl.upload':'上傳平面圖','ctrl.choose':'選擇圖片 · 可拖放','img.center':'置中','img.clear':'清除','ctrl.imgRot':'旋轉平面圖','ctrl.imgOpa':'平面圖不透明','ctrl.dialRot':'旋轉羅盤 (向)','ctrl.dialOpa':'羅盤不透明','ctrl.layers':'廿二環 · 篩選','ctrl.timing':'時間環','layer.all':'全開','layer.none':'全關','layer.core':'主要','r.deg':'度數','r.code':'代號','r.element':'五行','time.period':'運九','time.year':'年星','time.month':'月星','time.blocker':'年值','legend.block':'須避之星 (5黃 / 2黑 / 太歲 / 三煞)','legend.consensus':'多派共識','insp.title':'方位細節','insp.facing':'向','insp.sitting':'坐','insp.period':'運','insp.element':'向首五行','insp.consensus':'共識','insp.taisui':'太歲方位','insp.yearbreak':'歲破方位','insp.threekill':'三煞方位','insp.use':'宜','insp.door':'門','insp.bed':'床頭','insp.stove':'灶','insp.water':'水','insp.good':'吉','insp.mid':'平','insp.bad':'避'}
+  th:{'nav.chart':'ดวง','nav.today':'วันนี้','nav.calendar':'ปฏิทิน','nav.network':'เครือข่าย','nav.qimen':'ฉีเหมิน','nav.forecast':'พยากรณ์','nav.master':'ซินแส','nav.picker':'วางฤกษ์','nav.fengshui':'ทิศมงคล','nav.luopan':'หล่อแก','title.sub':'หล่อแก 22 วง · ทับแปลนบ้าน','btn.theme':'สลับธีม','ctrl.house':'ตั้งค่าบ้าน · 坐向','ctrl.houseName':'ชื่อบ้าน','ctrl.facingDeg':'หันหน้า · องศา (0-359)','ctrl.year':'ปีสร้างบ้าน','ctrl.helpHouse':'ใช้สร้างผัง 山 ดาวภูเขา · 水 ดาวแม่น้ำ · 基 ดาวฐาน 9 ช่องตรงกลาง · ค่าเริ่มต้น S2 180° / Period 9','ctrl.helpSave':'บันทึกในเครื่องนี้อัตโนมัติ','btn.lock':'🔒 ล็อกบ้าน · เริ่มสำรวจ','btn.unlock':'🔓 ปลด','btn.save':'บันทึก','btn.load':'โหลด','ctrl.upload':'อัพแปลนบ้าน · 平面圖','ctrl.choose':'เลือกไฟล์รูป · ลากวางได้','img.center':'จัดกลาง','img.clear':'ล้างรูป','ctrl.imgRot':'หมุนรูปแปลน','ctrl.imgOpa':'ความเข้มวง','ctrl.layers':'ชั้นศาสตร์ · filter','layer.all':'เปิดหมด','layer.none':'ปิดหมด','layer.core':'เฉพาะหลัก','lock.unlocked':'ยังไม่ล็อกบ้าน','lock.fillFirst':'กรอกข้อมูลซ้ายแล้วกดล็อก','cursor.rot':'หมุนเข็มสำรวจ · CURSOR','t.era':'ยุค','t.year':'ปี','t.month':'เดือน','t.day':'วัน','t.hour':'ยาม','time.period':'ยุค','time.year':'ดาวปี','time.month':'ดาวเดือน','time.blocker':'太歲/歲破','legend.good':'ดี','legend.mid':'กลาง','legend.bad':'ไม่ดี','insp.title':'ผลลัพธ์ตามเข็ม','insp.cursor':'เข็มชี้','insp.element':'ธาตุ','insp.consensus':'consensus','insp.rings':'ทุกศาสตร์ที่เข็มผ่าน','insp.use':'เหมาะใช้','insp.door':'ประตู','insp.bed':'หัวเตียง','insp.stove':'เตาไฟ','insp.water':'จุดน้ำ','insp.good':'ดี','insp.mid':'กลาง','insp.bad':'เลี่ยง','r.deg':'องศา','r.code':'รหัส','r.element':'ธาตุ','time.period':'ยุค 9','time.year':'ดาวปี','time.month':'ดาวเดือน','time.blocker':'太歲/歲破','legend.block':'ดาวต้องเลี่ยง (5黃 / 2黑 / 太歲 / 三煞)','legend.consensus':'consensus หลายศาสตร์ซ้อน','insp.title':'รายละเอียดทิศ','insp.facing':'หันหน้า','insp.sitting':'นั่งหลัง','insp.period':'ยุค','insp.element':'ธาตุประจำหน้าบ้าน','insp.consensus':'consensus','insp.taisui':'太歲 ตำแหน่ง','insp.yearbreak':'歲破 ตำแหน่ง','insp.threekill':'三煞 ตำแหน่ง','insp.use':'เหมาะใช้','insp.door':'ประตู','insp.bed':'หัวเตียง','insp.stove':'เตาไฟ','insp.water':'จุดน้ำ','insp.good':'ดี','insp.mid':'กลาง','insp.bad':'เลี่ยง'},
+  en:{'nav.chart':'Chart','nav.today':'Today','nav.calendar':'Calendar','nav.network':'Network','nav.qimen':'QiMen','nav.forecast':'Forecast','nav.master':'Master','nav.picker':'Date Pick','nav.fengshui':'Direction','nav.luopan':'Luopan','title.sub':'22-ring compass · floor plan overlay','btn.theme':'Theme','ctrl.house':'House setup · 坐向','ctrl.houseName':'House name','ctrl.facingDeg':'Facing degree (0-359)','ctrl.year':'Construction year','ctrl.helpHouse':'Used to build 山 mountain · 水 water · 基 base star chart in 9 palaces · default S2 180° / Period 9','ctrl.helpSave':'Auto-saved on this device','btn.calc':'Calculate','btn.save':'Save','btn.load':'Load','ctrl.upload':'Upload floor plan · 平面圖','ctrl.choose':'Pick image · drag-drop ok','img.center':'Center','img.clear':'Clear','ctrl.imgRot':'Rotate plan','ctrl.imgOpa':'Plan opacity','ctrl.dialRot':'Rotate dial (Facing)','ctrl.dialOpa':'Dial opacity','ctrl.layers':'Science layers · filter','ctrl.timing':'Time layer','layer.all':'All on','layer.none':'All off','layer.core':'Core only','r.deg':'Degree','r.code':'Code','r.element':'Element','time.period':'Period 9','time.year':'Year star','time.month':'Month star','time.blocker':'Year stars','legend.block':'Avoid stars (5黃 / 2黑 / 太歲 / 三煞)','legend.consensus':'Multi-school consensus','insp.title':'Direction detail','insp.facing':'Facing','insp.sitting':'Sitting','insp.period':'Period','insp.element':'Facing element','insp.consensus':'Consensus','insp.taisui':'太歲 Tai Sui','insp.yearbreak':'歲破 Year Breaker','insp.threekill':'三煞 Three Killings','insp.use':'Best for','insp.door':'Door','insp.bed':'Bed head','insp.stove':'Stove','insp.water':'Water','insp.good':'Good','insp.mid':'Mid','insp.bad':'Avoid'},
+  zh:{'nav.chart':'命盤','nav.today':'今日','nav.calendar':'曆','nav.network':'人脈','nav.qimen':'奇門','nav.forecast':'占卜','nav.master':'師','nav.picker':'擇日','nav.fengshui':'方位','nav.luopan':'羅盤','title.sub':'廿二環羅盤 · 套疊平面圖','btn.theme':'主題','ctrl.house':'坐向設定','ctrl.houseName':'宅名','ctrl.facingDeg':'向首 · 度數 (0-359)','ctrl.year':'建造年','ctrl.helpHouse':'用於建立 山星 · 水星 · 基星 九宮圖 · 預設 S2 180° / 九運','ctrl.helpSave':'自動儲存於本機','btn.calc':'計算','btn.save':'儲存','btn.load':'載入','ctrl.upload':'上傳平面圖','ctrl.choose':'選擇圖片 · 可拖放','img.center':'置中','img.clear':'清除','ctrl.imgRot':'旋轉平面圖','ctrl.imgOpa':'平面圖不透明','ctrl.dialRot':'旋轉羅盤 (向)','ctrl.dialOpa':'羅盤不透明','ctrl.layers':'術數層 · 篩選','ctrl.timing':'時間環','layer.all':'全開','layer.none':'全關','layer.core':'主要','r.deg':'度數','r.code':'代號','r.element':'五行','time.period':'運九','time.year':'年星','time.month':'月星','time.blocker':'年值','legend.block':'須避之星 (5黃 / 2黑 / 太歲 / 三煞)','legend.consensus':'多派共識','insp.title':'方位細節','insp.facing':'向','insp.sitting':'坐','insp.period':'運','insp.element':'向首五行','insp.consensus':'共識','insp.taisui':'太歲方位','insp.yearbreak':'歲破方位','insp.threekill':'三煞方位','insp.use':'宜','insp.door':'門','insp.bed':'床頭','insp.stove':'灶','insp.water':'水','insp.good':'吉','insp.mid':'平','insp.bad':'避'}
 };
 /* expose key-major HK_I18N ให้ hk-user-menu (อวตาร) สลับภาษาแล้วแปลเนื้อ luopan ได้ */
 window.HK_I18N = (function(){ var o={}; ['th','en','zh'].forEach(function(L){ var d=I18N[L]||{}; for(var k in d){ (o[k]=o[k]||{})[L]=d[k]; } }); return o; })();
@@ -1450,6 +1495,7 @@ function rebuildLuopan(){
     lpEl.classList.toggle('pin-mode', !!pinMode);
   }
   if(typeof renderCastleGateOverlay==='function') renderCastleGateOverlay();
+  if(typeof renderBashaOverlay==='function') renderBashaOverlay();
   if(typeof renderPins==='function') renderPins();
   if(typeof cursorDeg!=='undefined'){
     const cn=document.getElementById('cursorNeedle');
@@ -1537,7 +1583,8 @@ function updateSourceStatus(){
   const qmTxt = (currentTimingKey === 'hour')
     ? (window.QM_FETCH_STATE === 'ok' ? `QM:/api/qimen(${window.QM_SCHOOL}) ✓` : window.QM_FETCH_STATE === 'loading' ? `QM:${window.QM_SCHOOL} loading…` : `QM:/api/qimen(${window.QM_SCHOOL}) ✗`)
     : 'QM:hour-only';
-  t.textContent = `FX:玄空公式+JSON · ${qmTxt}`;
+  t.textContent = '';
+  t.title = `FX:玄空公式+JSON · ${qmTxt}`;
 }
 async function fetchQimenReal(){
   try{
@@ -2187,6 +2234,67 @@ function renderCastleGateOverlay(){
   });
 }
 
+/* ====== 八煞黃泉 overlay · warning sectors only when house is locked ====== */
+function firstHan(s){
+  const m = String(s || '').match(/[\u3400-\u9fff]/);
+  return m ? m[0] : '';
+}
+function cgMountainByName(name){ return CG_MOUNTAINS_24.find(m => m.name === name) || null; }
+function cgMountainSector(name){
+  const m = cgMountainByName(name);
+  if(!m) return null;
+  const start = m.start, end = m.end;
+  const mid = start < end ? (start + end) / 2 : cgNormDeg((start + end + 360) / 2);
+  return { mountain:m, start, end, mid };
+}
+function getBashaContext(){
+  if(!houseLocked) return null;
+  const BH = window.BASHA_HQ;
+  const facing = cgFindMtn(lockedFacing);
+  const sitting = cgFindMtn(lockedFacing + 180);
+  if(!BH || !facing || !sitting) return { loading:!BH, facing, sitting, longRule:null, hqRule:null };
+  const longRule = (BH.long_shang_ba_sha?.rules || []).find(rule => (rule.sit_mountains || []).includes(sitting.name)) || null;
+  const hqRule = (BH.ba_lu_si_lu_huang_quan?.rules || []).find(rule => firstHan(rule.facing) === facing.name) || null;
+  return { loading:false, facing, sitting, longRule, hqRule };
+}
+function renderBashaOverlay(){
+  const g = document.getElementById('rBasha');
+  if(!g) return;
+  g.innerHTML = '';
+  const ctx = getBashaContext();
+  if(!ctx || !houseLocked) return;
+  const NS='http://www.w3.org/2000/svg', cx=380, cy=380, r1=208, r2=244;
+  function rad(d){ return (d-90)*Math.PI/180; }
+  function pt(r,a){ return [cx+r*Math.cos(rad(a)), cy+r*Math.sin(rad(a))]; }
+  function sector(start,end,fill,label,stroke){
+    if(end < start) end += 360;
+    const a1=pt(r1,start), a2=pt(r2,start), b1=pt(r1,end), b2=pt(r2,end);
+    const d=`M${a1[0]},${a1[1]} L${a2[0]},${a2[1]} A${r2},${r2} 0 0,1 ${b2[0]},${b2[1]} L${b1[0]},${b1[1]} A${r1},${r1} 0 0,0 ${a1[0]},${a1[1]} Z`;
+    const p=document.createElementNS(NS,'path');
+    p.setAttribute('d',d); p.setAttribute('fill',fill); p.setAttribute('opacity','.34');
+    p.setAttribute('stroke',stroke||fill); p.setAttribute('stroke-width','1.2'); p.setAttribute('pointer-events','none');
+    g.appendChild(p);
+    const mid=cgNormDeg((start+end)/2);
+    const [x,y]=pt(236,mid);
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',x.toFixed(1)); t.setAttribute('y',y.toFixed(1));
+    t.setAttribute('text-anchor','middle'); t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-family','var(--tc)'); t.setAttribute('font-size','10'); t.setAttribute('font-weight','800');
+    t.setAttribute('fill','#ffe2dc'); t.setAttribute('paint-order','stroke'); t.setAttribute('stroke','#140705'); t.setAttribute('stroke-width','3');
+    t.setAttribute('transform',`rotate(${mid>90&&mid<270?mid+180:mid} ${x.toFixed(1)} ${y.toFixed(1)})`);
+    t.textContent=label;
+    g.appendChild(t);
+  }
+  if(ctx.longRule){
+    const s=cgMountainSector(firstHan(ctx.longRule.sha_at));
+    if(s) sector(s.start, s.end, '#c62828', '八煞', '#ff7b70');
+  }
+  if(ctx.hqRule){
+    const s=cgMountainSector(firstHan(ctx.hqRule.forbidden_at));
+    if(s) sector(s.start, s.end, '#7b1b1b', '黃泉', '#ff5d4f');
+  }
+}
+
 /* overlay 八宅 (8 ทิศ มงคล/ร้าย) + 正神零神 (山/水) บนหล่อแก · วาดเมื่อล็อกบ้าน */
 function renderBazhaiOverlay(){
   const g8=document.getElementById('r8Z'), gz=document.getElementById('rZL');
@@ -2292,10 +2400,11 @@ function renderGeju(){
   } else { gb.style.display='none'; }
 }
 function updateCastleGate(){
-  if(!houseLocked){ castleGateResult = null; renderCastleGateOverlay(); if(typeof renderBazhaiOverlay==='function') renderBazhaiOverlay(); if(typeof renderPins==='function') renderPins(); syncFlyingStars(); renderGeju(); return; }
+  if(!houseLocked){ castleGateResult = null; renderCastleGateOverlay(); if(typeof renderBashaOverlay==='function') renderBashaOverlay(); if(typeof renderBazhaiOverlay==='function') renderBazhaiOverlay(); if(typeof renderPins==='function') renderPins(); syncFlyingStars(); renderGeju(); return; }
   try{ castleGateResult = calculateCastleGateV22(lockedFacing, lockedPeriod); }
   catch(e){ console.warn('castle gate calc failed:', e); castleGateResult = null; }
   renderCastleGateOverlay();
+  if(typeof renderBashaOverlay==='function') renderBashaOverlay();
   renderGeju();
   if(typeof renderBazhaiOverlay==='function') renderBazhaiOverlay();
   if(typeof renderPins==='function') renderPins();
@@ -2373,6 +2482,32 @@ fetch('/api/luopan/data?set=yao').then(r => r.json()).then(d => {
   window.YAO384 = byGua;
   if(typeof updateInspector === 'function') updateInspector();
 }).catch(e => console.warn('yao384 load failed:', e));
+
+/* 4 มิ.ย. · missing luopan modules from ซินแส zip · private API only */
+window.SANYUAN_LONG = null;
+fetch('/api/luopan/data?set=sanyuan_long').then(r => r.json()).then(d => {
+  window.SANYUAN_LONG = d;
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('sanyuan long load failed:', e));
+
+window.TIGUA_RULES = null;
+fetch('/api/luopan/data?set=tigua').then(r => r.json()).then(d => {
+  window.TIGUA_RULES = d;
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('tigua load failed:', e));
+
+window.NAJIA_RULES = null;
+fetch('/api/luopan/data?set=najia').then(r => r.json()).then(d => {
+  window.NAJIA_RULES = d;
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('najia load failed:', e));
+
+window.BASHA_HQ = null;
+fetch('/api/luopan/data?set=basha_huangquan_interpreted').then(r => r.json()).then(d => {
+  window.BASHA_HQ = d;
+  if(typeof renderBashaOverlay === 'function') renderBashaOverlay();
+  if(typeof updateInspector === 'function') updateInspector();
+}).catch(e => console.warn('basha/huangquan load failed:', e));
 
 function getCursorRelativeDeg(){
   /* ทิศจริงบนวง = มุมเข็ม(screen) + การหมุนวง (facing เมื่อล็อก) */
@@ -2603,6 +2738,68 @@ function bzYounian(seatGua, dirGua){
 const BZ_LOSHU_GUA={1:'坎',2:'坤',3:'震',4:'巽',6:'乾',7:'兌',8:'艮',9:'離'};
 function bzZhengLing(period){ const z=BZ_LOSHU_GUA[period], l=BZ_LOSHU_GUA[10-period]; return z&&l?{zheng:z,ling:l}:null; }
 
+const FIVE_AGENT_SIGN = `<div style="margin-top:6px;color:var(--fg-faint);font-size:10px;line-height:1.55">ลายเซ็น 5 agent: Aristotle สูตร · Godel API/UI · Anscombe UX · Boyle caveat · Galileo test ✓</div>`;
+const SY_YUAN_TH = {地元:'ดินหยวน',天元:'ฟ้าหยวน',人元:'คนหยวน',Earth:'ดินหยวน',Heaven:'ฟ้าหยวน',Man:'คนหยวน'};
+const SY_YUAN_CN = {Earth:'地元',Heaven:'天元',Man:'人元'};
+function mountainCanonical(name){ return CG_MOUNTAINS_24.find(m => m.name === name) || null; }
+function getSanyuanReading(name){
+  const data = window.SANYUAN_LONG;
+  const m = (data?.mountains || []).find(x => x.mt === name);
+  const c = mountainCanonical(name);
+  if(!m && !c) return null;
+  const yuan = m?.yuan || SY_YUAN_CN[c?.yuan] || c?.yuan || '';
+  const yy = m?.yinyang || CG_MTN_YINYANG[name] || '';
+  const gua = m?.gua || c?.trigram || '';
+  const info = data?.interpretation_th?.[yuan] || null;
+  return { name, yuan, yy, gua, info };
+}
+function signedAngleDelta(a,b){ return ((((a-b)%360)+540)%360)-180; }
+function getTiguaReading(deg){
+  const rules = window.TIGUA_RULES;
+  const m = cgFindMtn(deg);
+  if(!m) return null;
+  const center = cgGetMid(m);
+  const delta = signedAngleDelta(deg, center);
+  const abs = Math.abs(delta);
+  const idx = cgGetIdx(m.name);
+  const side = abs <= 4.5 ? null : (delta < 0 ? 'left' : 'right');
+  const neighbor = side ? CG_MOUNTAINS_24[(idx + (side==='left' ? -1 : 1) + 24) % 24] : null;
+  const sameGua = neighbor ? neighbor.trigram === m.trigram : true;
+  const yy = CG_MTN_YINYANG[m.name], nyy = neighbor ? CG_MTN_YINYANG[neighbor.name] : null;
+  let reason = 'องศาอยู่กลางซาน 9° ใช้下卦ตามปกติ';
+  let needs = false;
+  if(neighbor){
+    if(!sameGua){ needs = true; reason = `兼ออกนอกกง ${m.trigram}→${neighbor.trigram} ถือเป็น出卦`; }
+    else if(yy !== nyy){ needs = true; reason = `兼ในกงเดียวแต่陰陽ต่างกัน ${yy}/${nyy}`; }
+    else { reason = `兼ในกงเดียวและ陰陽เดียวกัน ${yy}/${nyy} ใช้下卦`; }
+  }
+  const replacement = rules?.replacement_table?.[m.name] || null;
+  const hasNoReplacement = (rules?.no_replacement_mountains || []).includes(m.name);
+  const actualReplacement = needs && replacement ? replacement : null;
+  const zone = abs <= 4.5 ? '下卦' : (abs >= 6.0 ? '兼向ลึก' : '兼向');
+  return { loading:!rules, mountain:m, center, delta, abs, side, neighbor, sameGua, yy, nyy, needs, replacement, actualReplacement, hasNoReplacement, zone, reason };
+}
+function getNajiaReading(name){
+  const data = window.NAJIA_RULES;
+  const c = mountainCanonical(name);
+  const gua = c?.trigram;
+  if(!data || !gua) return null;
+  return { gua, stems:data.gua_to_stem?.[gua] || [], branches:data.gua_branches?.[gua] || [], guangui:data.guanggui_yao?.[gua] || '' };
+}
+function getBashaHitsAt(name){
+  const ctx = getBashaContext();
+  const hits = [];
+  if(!ctx) return { locked:false, hits };
+  if(ctx.loading) return { locked:true, loading:true, ctx, hits };
+  if(ctx.longRule && firstHan(ctx.longRule.sha_at) === name){
+    hits.push({ type:'long', rule:ctx.longRule, score:1, title:'龍上八煞', target:firstHan(ctx.longRule.sha_at) });
+  }
+  if(ctx.hqRule && firstHan(ctx.hqRule.forbidden_at) === name){
+    hits.push({ type:'huangquan', rule:ctx.hqRule, score:1, title:'黃泉煞', target:firstHan(ctx.hqRule.forbidden_at) });
+  }
+  return { locked:true, ctx, hits };
+}
+
 function updateInspector(){
   const ap = getActivePin();
   const usingPin = !!ap;
@@ -2639,6 +2836,8 @@ function updateInspector(){
     '奇門·門':['ฉีเหมิน ประตู','奇門 門'],'奇門·神':['ฉีเหมิน เทพ','奇門 神'],'奇門·星':['ฉีเหมิน ดาว','奇門 星'],'奇門·中宮':['ฉีเหมิน วังกลาง','奇門 中宮'],
     '地盤':['24 ขุนเขา','地盤'],'地支':['12 กิ่งดิน','地支'],'天干':['10 ก้านฟ้า','天干'],
     '三盤':['3 เข็ม','三盤'],'天池':['บ่อฟ้า','天池'],'人盤':['เข็มคน','人盤'],'天盤':['เข็มฟ้า','天盤'],
+    '三元龍':['มังกรสามหยวน','三元龍'],'替卦':['ดาวแทน','替卦'],'納甲':['น่าจยา','納甲'],
+    '八煞':['แปดสังหาร','八煞'],'黃泉':['หวงเฉวียน','黃泉'],'水法':['กฎน้ำ','水法'],'月日煞':['ซารายเดือน/วัน','月煞/日煞'],
     '28宿':['28 ดาวฤกษ์','28宿'],'24節氣':['24 ฤดูสุริยะ','24節氣'],
     '60甲子':['60 จื่อจี๊','60甲子'],'穿山72龍':['72 มังกรเจาะภู','穿山72龍'],'透地60龍':['60 มังกรทะลุดิน','透地60龍'],'120分金':['120 ส่วนทอง','120分金'],
     '城門':['ประตูเมือง','城門'],
@@ -2648,7 +2847,7 @@ function updateInspector(){
   const ELZ = {水:'น้ำ',木:'ไม้',火:'ไฟ',土:'ดิน',金:'ทอง'}; /* ธาตุจีน→ไทย */
   const DIR_TH = {N:'เหนือ',NE:'อีสาน',E:'ตะวันออก',SE:'อาคเนย์',S:'ใต้',SW:'หรดี',W:'ตะวันตก',NW:'พายัพ'};
   /* ศาสตร์ → checkbox วง (การ์ดซ้าย) · ปิด checkbox → row หายจากการ์ด 3 ด้วย */
-  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','奇門·中宮':'rQM','64卦':'r64','64卦五行':'r5H','384爻':'r384','卦運':'rKU','五行':'r5E','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','穿山72龍':'r72','透地60龍':'r60M','120分金':'r120','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
+  const HAN_RING = {'後天':'rLH','先天':'rEH','飛星山':'rFX','飛星水':'rFX','飛星基':'rFX','飛星':'rFX','奇門·門':'rQM','奇門·神':'rQM','奇門·星':'rQM','奇門·中宮':'rQM','64卦':'r64','64卦五行':'r5H','384爻':'r384','卦運':'rKU','五行':'r5E','城門':'rGate','八宅':'r8Z','正神零神':'rZL','地盤':'r24','三元龍':'rSYL','替卦':'rTGua','納甲':'rNajia','八煞':'rBasha','黃泉':'rBasha','水法':'rShuiFa','月日煞':'rDaySha','地支':'rDZ','天干':'rTG','28宿':'r28','24節氣':'rJQ','60甲子':'r60D','穿山72龍':'r72','透地60龍':'r60M','120分金':'r120','天池':'rPool','三盤':'r24','警示':'rWarn','人盤':'rRN','天盤':'rTN'};
   function row(cat, han, head, score, general, home, rich){
     const rid = HAN_RING[han];
     if(rid){ const cb=document.querySelector('input[data-r="'+rid+'"]'); if(cb && !cb.checked) return; } /* ศาสตร์ถูกปิด filter */
@@ -2867,6 +3066,10 @@ function updateInspector(){
     row('cat4','奇門·門', `<b>ฉีเหมินระดับนี้ยังไม่รองรับ</b>`, null,
         'วิชาฉีเหมินบนระบบนี้คำนวณเฉพาะระดับ "ยาม" (時家奇門) จาก engine จริง · กดปุ่ม 時 (ยาม) เพื่อดูผัง 8 ทิศจริง', null);
   }
+  row('cat4','月日煞', `<b>ซารายเดือน/รายวันยังไม่มี</b> <span style="color:var(--fg-faint)">· 月煞/日煞未啟用</span>`, null,
+      `ปุ่มเดือน/วันตอนนี้คือชั้นดาวจร/ข้อมูลเวลา ไม่ใช่ระบบ煞รายเดือนหรือรายวัน`,
+      `ยังไม่ควรใช้หน้านี้ตัดสิน月煞/日煞 จนกว่าจะเพิ่มตารางสูตรเฉพาะและ test รายเดือน/รายวัน${FIVE_AGENT_SIGN}`,
+      true);
 
   /* === หมวด 1 โครงสร้างพื้นฐาน === */
   /* 24 ขุนเขา + ธาตุ */
@@ -2878,6 +3081,20 @@ function updateInspector(){
   if(fe) diHome = `${elObj?.home||''}<div style="margin-top:6px;color:var(--fg-faint);line-height:1.7">✨ ${fe.qualities.join(' · ')}<br>🔷 รูปทรง: ${fe.forms.join(' ')} · 🧱 วัสดุ: ${fe.materials.join(' ')}</div>`;
   row('cat1','地盤', `<b>ทิศ${DIR_TH[r.dir8]||''}</b> <span style="color:var(--fg-faint)">${r.m24.m} ${r.m24.p} ${r.m24.c}</span> <span style="color:var(--${r.m24.el})">· ${elTH[r.m24.el]}</span>`,
       elObj?.score, elObj?.general, diHome, true);
+  /* 三元龍 · structural 24山 metadata, not standalone auspicious verdict */
+  {
+    const sy = getSanyuanReading(r.m24.m);
+    if(sy){
+      const info = sy.info || {};
+      const yTh = SY_YUAN_TH[sy.yuan] || sy.yuan;
+      row('cat1','三元龍',
+        `<b>${yTh}</b> <span style="color:var(--fg-faint)">· ${sy.yuan} · ${sy.yy} · กง${sy.gua}</span>`,
+        null,
+        `${fsEsc(info.meaning_th || 'ใช้ระบุ 地元/天元/人元 ของ 24 ขุนเขา เพื่อประกอบการเดินดาวและเงื่อนไข下卦/替卦 ไม่ใช่คำตัดสินดีร้ายเดี่ยว')}`,
+        `${fsEsc(info.rule_th || 'ข้อมูลนี้เป็นชั้นโครงสร้างของหล่อแกกลาง ใช้กับองศาที่เข็มชี้และทิศบ้านที่ล็อก')}${FIVE_AGENT_SIGN}`,
+        true);
+    }
+  }
   /* 五行 สร้าง/ทำลาย (生/克) ของธาตุประจำทิศ · checkbox r5E */
   {
     const SH={wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};   /* 生 สร้าง */
@@ -2891,6 +3108,34 @@ function updateInspector(){
       null,
       `🟢 <b>สร้าง (生)</b>: ${C(el)} → ${C(SH[el])}　·　ถูกสร้างโดย ${C(genBy)}<br>🔴 <b>ทำลาย/คุม (克)</b>: ${C(el)} → ${C(KE[el])}　·　ถูกคุมโดย ${C(ctrlBy)}`,
       '', true);
+  }
+  /* 替卦 · degree-zone warning for facing/cursor; chart replacement engine is intentionally not silently applied */
+  {
+    const tDeg = houseLocked ? lockedFacing : deg;
+    const tg = getTiguaReading(tDeg);
+    if(tg){
+      const src = houseLocked ? 'ทิศหน้าบ้านที่ล็อก' : 'เข็ม/ตำแหน่งที่กำลังชี้';
+      const repl = tg.loading ? 'กำลังโหลดตาราง替卦' : (tg.actualReplacement ? `ใช้ดาวแทน ${tg.actualReplacement.star}${tg.actualReplacement.num}` : (tg.hasNoReplacement ? 'ซานนี้ไม่มีดาวแทน ใช้自身/下卦' : 'ยังไม่ต้องใช้ดาวแทน'));
+      const nb = tg.neighbor ? ` · 兼ไปทาง ${tg.neighbor.name}${tg.neighbor.code||''}` : '';
+      row('cat2','替卦',
+        `<b>${tg.loading?'กำลังโหลด':(tg.actualReplacement?'ควรใช้替卦':'下卦')}</b> <span style="color:var(--fg-faint)">· ${tg.mountain.name}${tg.mountain.code} · ${tg.zone}${nb}</span>`,
+        null,
+        `${src} ${tDeg.toFixed(1)}° · ห่างกลางซาน ${tg.delta.toFixed(1)}° · ${tg.reason} · ${repl}`,
+        `หมายเหตุ: แถวนี้เป็นตัวตรวจเขต兼向/替卦จากตารางซินแส ยังไม่แอบเปลี่ยนผัง玄空หลักถ้าไม่ได้เปิด engine 替卦เต็มรูปแบบ เพื่อกันผลลัพธ์หลอก${FIVE_AGENT_SIGN}`,
+        true);
+    }
+  }
+  /* 納甲 · support layer for 八煞, expert-only by left filter */
+  {
+    const nj = getNajiaReading(r.m24.m);
+    if(nj){
+      row('cat3','納甲',
+        `<b>กง${nj.gua}</b> <span style="color:var(--fg-faint)">· 納 ${nj.stems.join('·') || '—'} · 官鬼 ${nj.guangui || '—'}</span>`,
+        null,
+        `น่าจยาเป็นฐานผูก八卦เข้าก้านกิ่ง ใช้เป็นรากของ龍上八煞 ไม่ใช่คะแนนดีร้ายโดยตัวเอง`,
+        `หก爻ของกงนี้: ${nj.branches.join(' · ') || '—'}${FIVE_AGENT_SIGN}`,
+        true);
+    }
   }
   /* 12 กิ่งดิน · ใช้ JSON ซินแส 象意 (score+เหตุผล+recommendation) → fallback luopan_complete */
   const ES = window.EARTH_SYMBOLIC;
@@ -2961,6 +3206,10 @@ function updateInspector(){
   row('cat1','天盤', `<b>เข็มดูน้ำ</b>${rvT?` <span class="rn-val badge ${rvT.cls>=4?'green':rvT.cls<=2?'red':''}">${rvT.badge}</span>`:''} <span style="color:var(--fg-faint)">· 天盤 · ${r.tianpan.m}(${r.tianpan.c})</span>`, rvT?rvT.cls:null,
       `เข็มดูน้ำ (納水 · 玄空ใช้向星ยุค ไม่ใช่五行)${rvT?` · ทิศนี้: ${rvT.th}`:''}`,
       `<b>ทิศนี้:</b> ${rvT?rvT.badge+' — '+rvT.th:'ล็อกบ้านก่อน'}<br>✅ ทิศ向星旺(ยุค) = ควรมีน้ำ รับทรัพย์ · ⚠ ทิศดาวร้าย(2/5) = ห้ามมีน้ำ<br><span style="color:#ffcf8a">※ ดูน้ำจริง "ดี-ร้าย" แม่นยำ ต้องระบุ <b>ชนิดน้ำ + ทิศน้ำไหลเข้า/ออก (來水/去水)</b> ด้วยวิชา 三合水法 — ระบบยังไม่มีข้อมูลส่วนนี้</span>`, true);
+  row('cat1','水法', `<b>น้ำจริงยังไม่ครบสูตร</b> <span style="color:var(--fg-faint)">· 水法未啟用</span>`, null,
+      `ตอนนี้หล่อแกอ่านน้ำจาก天盤/向星玄空เบื้องต้นเท่านั้น ยังไม่มีข้อมูล來水/去水/水口`,
+      `ถ้าจะตัดสิน水法จริง ต้องให้ผู้ใช้ปักชนิดน้ำ + ทิศน้ำไหลเข้า/ออกก่อน แล้วค่อยใช้三合水法/黃泉ซ้อน${FIVE_AGENT_SIGN}`,
+      true);
   /* 天池 */
   if(L.sky_pool?.interpretation){
     const sp=L.sky_pool.interpretation;
@@ -3015,6 +3264,46 @@ function updateInspector(){
     const head=`<b>分金 ${f.ganzhi}</b> <span style="color:var(--fg-faint)">· ${st.th||''}${st.zh?' ('+st.zh+')':''} · 納音${f.nayin||''} · ภู${f.mountain||''} · ${f.usable?'✅ ตั้งทิศได้':'⛔ เลี่ยง'}</span>`;
     const home=f.usable ? 'เส้นมงคล — ตั้งทิศประตู/หันบ้าน/ฮวงซุ้ยได้' : 'เลี่ยงตั้งทิศ ประตู หรือเตา ตรงเส้นนี้ (分金差一線 富貴不相見)';
     row('cat3','120分金', head, f.score, f.interp_th||'', home);
+  }
+
+  /* 八煞黃泉 · structural/water hard warnings tied to locked house + current cursor/pin mountain */
+  {
+    const bs = getBashaHitsAt(r.m24.m);
+    if(!bs.locked){
+      row('warn','八煞', `<b>ล็อกบ้านก่อน</b> <span style="color:var(--fg-faint)">· 八煞黃泉</span>`, null,
+        `ต้องรู้坐山/向山ก่อนจึงจะคำนวณ龍上八煞และ黃泉ได้`,
+        `กรอกองศาหน้าบ้านแล้วกดล็อกบ้าน ระบบจะเทียบ sector บนหล่อแกกลางกับตารางซินแส${FIVE_AGENT_SIGN}`,
+        true);
+    } else if(bs.loading){
+      row('warn','八煞', `<b>กำลังโหลดตาราง 八煞黃泉</b> <span style="color:var(--fg-faint)">· private data</span>`, null,
+        `โหลดข้อมูลซินแสจาก /api/luopan/data ก่อนจึงจะตัดสิน sector เตือนได้`,
+        `ระบบจะรีเฟรชการ์ดนี้อัตโนมัติเมื่อข้อมูลพร้อม${FIVE_AGENT_SIGN}`,
+        true);
+    } else if(bs.hits.length){
+      bs.hits.forEach(h => {
+        const rule = h.rule || {};
+        if(h.type === 'long'){
+          row('warn','八煞',
+            `<b>${h.title}</b> <span style="color:var(--fg-faint)">· 坐 ${bs.ctx.sitting.name}${bs.ctx.sitting.code} → 煞 ${h.target}</span>`,
+            h.score,
+            `${rule.meaning_th || 'บ้านนั่งกงนี้ห้ามของสูง/ของแหลมในทิศ煞'} · ทิศที่เข็มชี้ตอนนี้ตรง ${r.m24.m}`,
+            `<b>ห้าม:</b> ${(rule.dont_th||[]).join(' · ') || 'ของแหลม/ตึก/เสา/หินพุ่ง'}<br><b>ผลบ้าน:</b> ${rule.effect_home_th||'เสี่ยงสุขภาพและอุบัติเหตุ'}<br><b>แก้:</b> ${(rule.fix_th||[]).join(' · ') || 'ย้าย/บัง/ลดแรงปะทะ'}${FIVE_AGENT_SIGN}`,
+            true);
+        } else {
+          row('warn','黃泉',
+            `<b>${h.title}</b> <span style="color:var(--fg-faint)">· 向 ${bs.ctx.facing.name}${bs.ctx.facing.code} → 忌 ${h.target}</span>`,
+            h.score,
+            `${rule.meaning_th || 'หน้าบ้านนี้ห้ามน้ำ/ประตูน้ำในทิศ黃泉'} · ทิศที่เข็มชี้ตอนนี้ตรง ${r.m24.m}`,
+            `<b>ห้าม:</b> ${(rule.dont_th||[]).join(' · ') || 'น้ำเข้า น้ำออก ท่อหลัก ประตูใหญ่'}<br><b>ผลบ้าน:</b> ${rule.effect_home_th||'เงินรั่วและสุขภาพถดถอย'}<br><b>แก้:</b> ${(rule.fix_th||[]).join(' · ') || 'ย้ายหรือเบนทางน้ำ'}${FIVE_AGENT_SIGN}`,
+            true);
+        }
+      });
+    } else {
+      row('warn','八煞', `<b>ไม่โดน 八煞/黃泉 ในองศานี้</b> <span style="color:var(--fg-faint)">· ${r.m24.m} ${r.m24.c}</span>`, null,
+        `บ้านล็อกแล้ว: 坐 ${bs.ctx.sitting.name}${bs.ctx.sitting.code} · 向 ${bs.ctx.facing.name}${bs.ctx.facing.code} · เข็มชี้ ${r.m24.m} ยังไม่ตรง sector เตือน`,
+        `ยังเป็นการตรวจเฉพาะ龍上八煞/黃泉จากไฟล์ซินแส ไม่ใช่水法เต็มรูปแบบ${FIVE_AGENT_SIGN}`,
+        true);
+    }
   }
 
   /* === คำเตือน (太歲/歲破/三煞) · dynamic จากปีที่ล็อก === */
@@ -3117,6 +3406,21 @@ const $hYear = document.getElementById('hYear');
 const $hMountain = document.getElementById('hMountain');
 const $hPeriod = document.getElementById('hPeriod');
 const $houseStatus = document.getElementById('houseStatus');
+function readIncomingHouseFromQuery(){
+  const params = new URLSearchParams(window.location.search || '');
+  const rawFacing = params.get('facing') || params.get('bearing');
+  if(rawFacing == null || rawFacing === '') return null;
+  const facing = Number(rawFacing);
+  if(!Number.isFinite(facing)) return null;
+  const rawYear = params.get('year');
+  const year = Number(rawYear);
+  return {
+    facing: ((facing % 360) + 360) % 360,
+    year: Number.isFinite(year) ? Math.max(1864, Math.min(2100, Math.round(year))) : null,
+    source: params.get('source') || 'link'
+  };
+}
+const incomingHouseFromQuery = readIncomingHouseFromQuery();
 
 function updateHouseReadout(){
   const d = Number($hFacing.value);
@@ -3170,6 +3474,15 @@ function applyUnlock(){
 }
 document.getElementById('btnLock').addEventListener('click', applyLock);
 document.getElementById('btnUnlock').addEventListener('click', applyUnlock);
+function applyIncomingHouseAutoLock(){
+  if(!incomingHouseFromQuery) return;
+  applyLock();
+  const d = lockedFacing;
+  const m = degToMountain(d);
+  const src = incomingHouseFromQuery.source === 'fengshui' ? 'Feng Shui' : 'ลิงก์';
+  document.getElementById('lockStatus').innerHTML = `<span>🔒 รับทิศจาก <b>${src}</b> · ${m.c} ${m.m} · ${d}° · ยุค ${lockedPeriod}</span><span style="margin-left:auto;color:var(--fg-soft)">ล็อกอัตโนมัติแล้ว · หมุนเข็มทอง CURSOR เพื่อสำรวจ →</span>`;
+  $houseStatus.textContent = `ล็อกอัตโนมัติจาก ${src} · ${m.c} · ${d}° · period ${lockedPeriod}`;
+}
 
 /* localStorage save/load */
 const LS_KEY = 'luopan-house-v1';
@@ -3356,6 +3669,11 @@ try{
   const raw = localStorage.getItem(LS_KEY);
   if(raw){ const d = JSON.parse(raw); $hName.value = d.name || ''; $hFacing.value = d.facing || 180; $hYear.value = d.year || 2026; }
 } catch(e){}
+if(incomingHouseFromQuery){
+  $hFacing.value = String(Math.round(incomingHouseFromQuery.facing * 10) / 10);
+  if(incomingHouseFromQuery.year) $hYear.value = String(incomingHouseFromQuery.year);
+  if(!$hName.value) $hName.value = 'บ้านจาก Feng Shui';
+}
 updateHouseReadout();
 loadProfiles();
 renderProfileSelect();
@@ -3407,9 +3725,10 @@ try {
   setCursor(180);
   drawPlan();
   const t = document.getElementById('buildTag');
-  if(t) t.textContent = 'build ' + new Date().toISOString().slice(11,19) + ' · OK';
+  if(t) t.title = 'build ' + new Date().toISOString().slice(11,19) + ' · OK';
   setHouseLockUiState(false);
   updateSourceStatus();
+  applyIncomingHouseAutoLock();
 } catch(e) {
   const b = document.getElementById('errBanner');
   if(b){ b.style.display='block'; b.textContent = '⚠ Init error: ' + e.message + ' @ ' + (e.stack||'').split('\n').slice(0,3).join(' | '); }

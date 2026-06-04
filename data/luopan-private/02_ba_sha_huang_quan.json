@@ -1,0 +1,50 @@
+{
+  "module": "ba_sha_huang_quan",
+  "title": "八煞 + 黃泉 警示層",
+  "verse": "坎龍坤兔震山猴，巽雞乾馬兌蛇頭，艮虎離豬為煞曜，宅墓逢之一時休",
+  "branch_alias": {
+    "龍": "辰", "兔": "卯", "猴": "申", "雞": "酉",
+    "馬": "午", "蛇": "巳", "虎": "寅", "豬": "亥"
+  },
+
+  "long_shang_ba_sha": {
+    "type": "龍上八煞",
+    "scope": "龍沙之法 — 針對入首龍/坐山，最忌煞方有破峰・直砂・直路沖射・尖物・高樓・電桿・巨石・枯井",
+    "warning_class": "structure",
+    "rules": [
+      { "gua": "坎", "mountains": ["壬","子","癸"], "sha_branch": "辰", "reason": "辰土克坎水" },
+      { "gua": "坤", "mountains": ["未","坤","申"], "sha_branch": "卯", "reason": "卯木克坤土" },
+      { "gua": "震", "mountains": ["甲","卯","乙"], "sha_branch": "申", "reason": "申金克震木" },
+      { "gua": "巽", "mountains": ["辰","巽","巳"], "sha_branch": "酉", "reason": "酉金克巽木" },
+      { "gua": "乾", "mountains": ["戌","乾","亥"], "sha_branch": "午", "reason": "午火克乾金" },
+      { "gua": "兌", "mountains": ["庚","酉","辛"], "sha_branch": "巳", "reason": "巳火克兌金" },
+      { "gua": "艮", "mountains": ["丑","艮","寅"], "sha_branch": "寅", "reason": "寅木克艮土" },
+      { "gua": "離", "mountains": ["丙","午","丁"], "sha_branch": "亥", "reason": "亥水克離火" }
+    ]
+  },
+
+  "ba_lu_si_lu_huang_quan": {
+    "type": "八煞黃泉 (八路四路黃泉)",
+    "alias": "殺人大黃泉",
+    "scope": "水法 — 忌此向見水來/水去/開門/放水。分救貧黃泉與殺人黃泉",
+    "warning_class": "water",
+    "verse": "庚丁坤上是黃泉，乙丙須防巽水先，甲癸向中休見艮，辛壬水路怕當乾",
+    "_note": "下表為四路黃泉(救貧/殺人)合併。direction=向, forbidden=該向所忌之水方位",
+    "rules": [
+      { "facing": "庚", "forbidden": "坤" },
+      { "facing": "丁", "forbidden": "坤" },
+      { "facing": "乙", "forbidden": "巽" },
+      { "facing": "丙", "forbidden": "巽" },
+      { "facing": "甲", "forbidden": "艮" },
+      { "facing": "癸", "forbidden": "艮" },
+      { "facing": "辛", "forbidden": "乾" },
+      { "facing": "壬", "forbidden": "乾" }
+    ]
+  },
+
+  "ui_spec": {
+    "badge_structure": { "label": "龍上八煞", "color": "#C62828", "scope_text": "ห้ามมีของแหลม/ตึก/เสา/หินทิ่มทิศนี้" },
+    "badge_water": { "label": "黃泉煞", "color": "#B71C1C", "scope_text": "ห้ามน้ำเข้า/น้ำออก/เปิดประตู/ทำน้ำพุทิศนี้" },
+    "render_rule": "ทั้งสอง type แสดงแยก badge บนวงโลผัน 24山 ตามที่เลือก"
+  }
+}
