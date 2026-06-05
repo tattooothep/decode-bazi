@@ -191,6 +191,7 @@
   .palace.q10x .p0-mk.p0-good{border-color:rgba(46,160,67,.45);background:rgba(46,160,67,.12);color:#2ea043;}
   .palace.q10x .p0-mk.p0-bad{border-color:rgba(217,102,80,.55);background:rgba(217,102,80,.12);color:#d96650;}
   .palace.q10x .p0-mk.p0-use{font-family:var(--tc);border-color:rgba(180,144,82,.65);background:var(--gold-soft);color:var(--gold);}
+  .palace.q10x .p0-mk.p0-stem{font-family:var(--tc);border-color:rgba(180,144,82,.55);background:rgba(180,144,82,.10);color:var(--gold);}
   .palace.q10x.q-good{border-left:3px solid #2ea043;}
   .palace.q10x.q-bad{border-left:3px solid #d96650;}
   .school-toggle button:disabled{opacity:.5;cursor:not-allowed;}
@@ -1135,6 +1136,20 @@ window.applyI18N = applyI18N;
     const warn = (target?.warning_flags || []).slice(0, 3).map(x => `<li><b>คำเตือน</b> · ${qmEsc(x)}</li>`).join('');
     return `<div class="qm-detail-extra"><h5>วังนี้ตรงตัวแทนเรื่อง · 用神</h5><ul><li><b>${qmEsc(selector.intent?.label_th || 'ภาพรวม')} ${selector.intent?.label_zh ? `<span class="tc">${qmEsc(selector.intent.label_zh)}</span>` : ''}</b> · ${qmEsc(target?.status_th || 'อ่านประกอบ')} · selector ${qmEsc(target?.selector_score ?? p?.yongshen_selector_score ?? 0)}</li>${reasons}${warn}<li>หมายเหตุ: 用神 คือวังที่ควรอ่านตามคำถาม ไม่ใช่คะแนนฤกษ์สุดท้าย</li></ul></div>`;
   }
+  function buildStemResponseHtml(p){
+    const r = p?.stem_response;
+    if (!r) return '';
+    const cls = r.is_source_governed ? (r.severity === 'good' ? 'good' : (r.severity === 'bad' ? 'bad' : '')) : '';
+    const title = r.title_th || r.status_th || 'ยังไม่ตัดสิน';
+    const zh = r.title_zh || r.notation_zh || '';
+    const src = (r.source_trace || []).slice(0, 3).map(s =>
+      `<li>แหล่ง ${qmEsc(s.source_id || s.title_zh || 'source')} · บรรทัด ${qmEsc(s.line_range || '-')}</li>`
+    ).join('');
+    const dict = (!r.is_source_governed && r.dictionary?.name_th)
+      ? `<li>ชื่อเดิมในพจนานุกรม: ${qmEsc(r.dictionary.name_th)} ${r.dictionary.name_zh ? `<span class="tc">${qmEsc(r.dictionary.name_zh)}</span>` : ''} · ยังไม่ใช้ฟันธง</li>`
+      : '';
+    return `<div class="qm-detail-extra ${cls}"><h5>ปฏิกิริยาก้านฟ้า · 十干克應</h5><ul><li><b>${qmEsc(title)} ${zh ? `<span class="tc">${qmEsc(zh)}</span>` : ''}</b> · ${qmEsc(r.notation_zh || '')}</li><li>${qmEsc(r.beginner_th || r.status_th || '')}</li><li>${qmEsc(r.detail_th || '')}</li>${dict}${src}<li>หมายเหตุ: ${qmEsc(r.caveat_th || 'อ่านร่วมกับประตู ดาว เทพ และ flags อื่น ห้ามใช้เดี่ยวเป็นคะแนนฤกษ์')}</li></ul></div>`;
+  }
   function internalExternalLabel(dir){
     if (!dir || dir === 'C') return { zh:'中', th:'กลาง', cls:'mid' };
     return INTERNAL_DIRS.has(dir)
@@ -1296,6 +1311,7 @@ window.applyI18N = applyI18N;
       const ysSelector = qimenYongshenSelector(window._qimenLast);
       const ysTargetIds = new Set((ysSelector?.target_palaces || []).map(x => Number(x.palace_id)));
       const ysMk = (p.is_yongshen_target || ysTargetIds.has(Number(p.palace_id))) ? '<span class="p0-mk p0-use" title="วังตัวแทนเรื่อง · 用神">用</span>' : '';
+      const stemMk = p.stem_response?.show_grid_badge ? `<span class="p0-mk p0-stem" title="ปฏิกิริยาก้านฟ้า · 十干克應">${qmEsc(p.stem_response.badge || '干')}</span>` : '';
 
       /* 📜 中宮 (palace 5) · 寄宮 ตามตำราคลาสสิก 煙波釣叟賦
          · ไม่มี 八門 (door) + ไม่มี 八神 (deity) — 八 = 8 ทิศ ไม่นับกลาง
@@ -1307,7 +1323,7 @@ window.applyI18N = applyI18N;
 
       return `<div class="palace q10x q-${starQ}${isCenterPalace ? ' palace-center' : ''}" data-pos="${p.palace_id}">
         <div class="p-corner-tl">
-          ${voidMk}${nobleMk}${clashMk}${ioMk}${fmMk}${home}${chartMk}${ysMk}${p0Mk}
+          ${voidMk}${nobleMk}${clashMk}${ioMk}${fmMk}${home}${chartMk}${ysMk}${stemMk}${p0Mk}
         </div>
         <div class="p-corner-tr">
           ${horse}<div class="stem heaven">${sH}${threeQiH}</div>
@@ -1453,6 +1469,10 @@ window.applyI18N = applyI18N;
     const deityName = lang==='zh' ? deityCn : (p['deity_name_'+lang] || p.deity_name_th || '');
     const sH = p.heaven_stem_zh || '';
     const sE = p.earth_stem_zh || '';
+    const stemResponse = p.stem_response || null;
+    const stemNameSafe = stemResponse?.is_source_governed
+      ? `${stemResponse.title_th || ''}${stemResponse.title_zh ? ' '+stemResponse.title_zh : ''}`.trim()
+      : '';
 
     /* descriptions · 3 ภาษา */
     const doorDesc  = pick('door_zh',   'door_description');
@@ -1504,7 +1524,7 @@ window.applyI18N = applyI18N;
       starCn ? `ดาว ${starName || ''} ${starCn}${starDesc ? ' · ' + starDesc : ''}` : '',
       deityCn ? `เทพ ${deityName || ''} ${deityCn}${deityAdv ? ' · ' + deityAdv : ''}` : '',
     ].filter(Boolean).join('\n');
-    const extraHtml = buildPalaceExtraHtml(p, last) + buildYongshenHtml(p, last) + buildP0SourceTraceHtml(p, last);
+    const extraHtml = buildPalaceExtraHtml(p, last) + buildStemResponseHtml(p) + buildYongshenHtml(p, last) + buildP0SourceTraceHtml(p, last);
 
     host.innerHTML = `
       <div class="detail-head">
@@ -1515,11 +1535,11 @@ window.applyI18N = applyI18N;
         <h5>${qmEsc(verdictText)}</h5>
         ${scoreLine ? `<p>${qmEsc(SCORE_LABEL)}: ${qmEsc(p.display_score!=null?p.display_score:p.score)}${lvlPart}${tierPart}</p>` : ''}
         ${engineWhy ? `<p style="margin-top:8px;white-space:pre-line">${qmEsc(engineWhy)}</p>` : ''}
-        ${stemDescTh ? `<p style="margin-top:8px">${qmEsc(stemDescTh)}</p>` : ''}
+        ${(!stemResponse && stemDescTh) ? `<p style="margin-top:8px">${qmEsc(stemDescTh)}</p>` : ''}
       </div>
       <div class="detail-row">
         <span class="k">${qmEsc(K_LABEL.heaven[lang]||K_LABEL.heaven.th)}</span>
-        <span class="v">${sH?`<span class="tc">${qmEsc(sH)}</span>`:''}${(sH&&sE)?' · ':''}${sE?`<span class="tc">${qmEsc(sE)}</span>`:''}${stemNameTh?` · <b>${qmEsc(stemNameTh)}</b>`:''}</span>
+        <span class="v">${sH?`<span class="tc">${qmEsc(sH)}</span>`:''}${(sH&&sE)?' · ':''}${sE?`<span class="tc">${qmEsc(sE)}</span>`:''}${stemNameSafe?` · <b>${qmEsc(stemNameSafe)}</b>`:''}</span>
       </div>
       <div class="detail-row">
         <span class="k">${qmEsc(K_LABEL.door[lang]||K_LABEL.door.th)}</span>

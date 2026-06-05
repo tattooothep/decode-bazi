@@ -362,6 +362,7 @@ function fmtQimenCard(q: any): string {
   const stored = q.stored_formations || [];
   const compound = q.compound_formations || [];
   const selector = q.yongshen_selector || chart.yongshen_selector || null;
+  const stemCoverage = q.stem_response_coverage || chart.stem_response_coverage || null;
   const fushi = chart.ctext_fushi || null;
 
   const poleRaw = String(chart.dun_type || chart.ju_pole || "").toLowerCase();
@@ -375,6 +376,10 @@ function fmtQimenCard(q: any): string {
     const door = labelThZh(p.door_name_th, p.door_zh, p.door_code, DOOR_TH);
     const star = labelThZh(p.star_name_th, p.star_zh, p.star_code, STAR_TH);
     const deity = labelThZh(p.deity_name_th, p.deity_zh, p.deity_code, DEITY_TH);
+    const stemResponse = p.stem_response || null;
+    const stemResponseLine = stemResponse?.is_source_governed
+      ? ` · 干應 ${stemResponse.title_th || "ปฏิกิริยาก้าน"} ${stemResponse.title_zh || ""} (${stemResponse.beginner_th || "อ่านประกอบ"})`
+      : (stemResponse?.status_th ? ` · 干應 ${stemResponse.status_th}` : "");
     const flags = [
       p.is_void_any || p.is_void ? "ช่องว่าง 空亡" : "",
       p.is_traveling_horse ? "ม้าเดินทาง 驛馬" : "",
@@ -382,7 +387,7 @@ function fmtQimenCard(q: any): string {
       p.is_ji_xing || p.is_punishment ? "ถูกลงโทษ 擊刑" : "",
       p.is_men_po || p.is_door_oppressed ? "ประตูบีบวัง 門迫" : "",
     ].filter(Boolean).join(" · ");
-    return `• วัง ${p.palace_id} · ${directionLabel(p)} · ${p.trigram_zh || p.trigram_code || "-"} (${p.element_code || "?"}): ฟ้า ${p.heaven_stem_zh || p.heaven_stem_code || "·"} / ดิน ${p.earth_stem_zh || p.earth_stem_code || "·"} · ${door} · ${star} · ${deity} · คะแนน engine=${p.display_score ?? p.score ?? "ไม่ระบุ"} ${p.display_level || ""}${flags ? ` · flags: ${flags}` : ""}`;
+    return `• วัง ${p.palace_id} · ${directionLabel(p)} · ${p.trigram_zh || p.trigram_code || "-"} (${p.element_code || "?"}): ฟ้า ${p.heaven_stem_zh || p.heaven_stem_code || "·"} / ดิน ${p.earth_stem_zh || p.earth_stem_code || "·"} · ${door} · ${star} · ${deity}${stemResponseLine} · คะแนน engine=${p.display_score ?? p.score ?? "ไม่ระบุ"} ${p.display_level || ""}${flags ? ` · flags: ${flags}` : ""}`;
   }).join("\n");
 
   const stLines = stored.map((f: any) =>
@@ -402,6 +407,7 @@ function fmtQimenCard(q: any): string {
 Yuan-Ju: ${pole}${ju}局
 時柱: ${chart.pillar_zh || "-"} · 旬首: ${chart.xun_hour_zh || fushi?.xun_leader_zh || "-"} · 遁干: ${chart.dun_gan_zh || "-"} · 八神派別: ${chart.deity_variant || "-"} · chart_source=${chart.source || chart.engine_source || "payload.qimen"}
 ${fushiLine}
+十干克應 coverage: ${stemCoverage ? `${stemCoverage.status_th || "เปิดเฉพาะ source-governed"} · full81=${stemCoverage.full_81_complete ? "yes" : "no"}` : "ไม่มีใน packet"}
 9 Palaces:
 ${palaceLines}
 Stored Formations:
