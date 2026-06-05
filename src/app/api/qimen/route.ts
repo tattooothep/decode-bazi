@@ -6,6 +6,16 @@ import { NextResponse } from "next/server";
 
 const QIMEN_BASE = process.env.QIMEN_API_URL || "http://localhost:4090";
 
+class QimenApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "QimenApiError";
+    this.status = status;
+  }
+}
+
 /* 📜 school → profile_id mapping · อากง 15 พ.ค. 2026 */
 const SCHOOL_TO_PROFILE: Record<string, number> = {
   zhirun: 4,    // zhi_run + true_solar + zhu_que summer (classical)
@@ -23,7 +33,7 @@ async function callQimen(date: string, time: string, lng: number, lat: number, s
   const datetime = `${date}T${time}:00`;
   const profile_id = SCHOOL_TO_PROFILE[school];
   const payload: Record<string, unknown> = { datetime, longitude: lng, latitude: lat, profile_id };
-  for (const key of ["question", "use_case", "activity", "purpose"]) {
+  for (const key of ["question", "use_case", "activity", "purpose", "system_type", "chart_type"]) {
     if (context[key]) payload[key] = context[key];
   }
   const r = await fetch(target, {
@@ -34,7 +44,14 @@ async function callQimen(date: string, time: string, lng: number, lat: number, s
   });
   if (!r.ok) {
     const errText = await r.text().catch(() => "");
-    throw new Error(`qimen-api ${r.status}: ${errText.slice(0, 200)}`);
+    let message = errText.slice(0, 200) || "qimen-api request failed";
+    try {
+      const parsed = JSON.parse(errText);
+      if (parsed?.error) message = String(parsed.error);
+    } catch {
+      // Keep plain text.
+    }
+    throw new QimenApiError(r.status, message);
   }
   const json = await r.json();
   json._profile_id = profile_id;
@@ -69,13 +86,17 @@ export async function GET(req: Request) {
     use_case: url.searchParams.get("use_case") || undefined,
     activity: url.searchParams.get("activity") || undefined,
     purpose: url.searchParams.get("purpose") || undefined,
+    system_type: url.searchParams.get("system_type") || url.searchParams.get("chart_type") || undefined,
   };
 
   try {
     const data = await callQimen(date, time, lng, lat, school, context);
-    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school }, ...data });
+    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school, system_type: context.system_type }, ...data });
   } catch (e: unknown) {
     console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
+    if (e instanceof QimenApiError && e.status >= 400 && e.status < 500) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
     return NextResponse.json({ error: "service unavailable" }, { status: 503 });
   }
 }
@@ -94,13 +115,17 @@ export async function POST(req: Request) {
     use_case: body.use_case,
     activity: body.activity,
     purpose: body.purpose,
+    system_type: body.system_type || body.chart_type,
   };
 
   try {
     const data = await callQimen(date, time, lng, lat, school, context);
-    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school }, ...data });
+    return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school, system_type: context.system_type }, ...data });
   } catch (e: unknown) {
     console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
+    if (e instanceof QimenApiError && e.status >= 400 && e.status < 500) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
     return NextResponse.json({ error: "service unavailable" }, { status: 503 });
   }
 }
