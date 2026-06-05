@@ -190,6 +190,7 @@
   .palace.q10x .p0-mk{font-family:var(--thai);font-size:9px;line-height:1;padding:2px 5px;border-radius:999px;border:1px solid var(--tile-bd);background:var(--tile);color:var(--fg-soft);max-width:46px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .palace.q10x .p0-mk.p0-good{border-color:rgba(46,160,67,.45);background:rgba(46,160,67,.12);color:#2ea043;}
   .palace.q10x .p0-mk.p0-bad{border-color:rgba(217,102,80,.55);background:rgba(217,102,80,.12);color:#d96650;}
+  .palace.q10x .p0-mk.p0-use{font-family:var(--tc);border-color:rgba(180,144,82,.65);background:var(--gold-soft);color:var(--gold);}
   .palace.q10x.q-good{border-left:3px solid #2ea043;}
   .palace.q10x.q-bad{border-left:3px solid #d96650;}
   .school-toggle button:disabled{opacity:.5;cursor:not-allowed;}
@@ -1071,6 +1072,9 @@ window.applyI18N = applyI18N;
     if (typeof raw === 'object') return raw.source_id || raw.id || raw.title_th || raw.file_path || '';
     return String(raw);
   }
+  function qimenYongshenSelector(last){
+    return last?.yongshen_selector || last?.chart?.yongshen_selector || null;
+  }
   function qimenP0SignalsForPalace(p, last){
     const pid = Number(p?.palace_id);
     const out = [];
@@ -1120,6 +1124,17 @@ window.applyI18N = applyI18N;
     const more = signals.length > 8 ? `<li>ยังมี source trace เพิ่มอีก ${signals.length - 8} รายการ · เปิดดูในโหมดผู้เชี่ยวชาญเมื่อพร้อม</li>` : '';
     return `<div class="qm-detail-extra"><h5>สัญญาณ P0/source จากตำรา · P0/來源</h5><ul>${rows}${more}<li>หมายเหตุ: UI แสดงตาม detector ที่ API ส่งมา ไม่เดาเอง และต้องอ่านร่วมกับประตู ดาว เทพ และก้านในวังนี้</li></ul></div>`;
   }
+  function buildYongshenHtml(p, last){
+    const selector = qimenYongshenSelector(last);
+    if (!selector) return '';
+    const target = (selector.target_palaces || []).find(x => Number(x.palace_id) === Number(p?.palace_id));
+    if (!target && !p?.is_yongshen_target) return '';
+    const reasons = (target?.reasons || p?.yongshen_hits || []).slice(0, 5).map(r =>
+      `<li><b>${qmEsc(r.label_th || r.kind || 'ตัวแทนเรื่อง')} ${r.label_zh ? `<span class="tc">${qmEsc(r.label_zh)}</span>` : ''}</b> · น้ำหนักอ่านวัง ${qmEsc(r.weight ?? '')}${r.source_id ? ` · แหล่ง ${qmEsc(r.source_id)}` : ''}</li>`
+    ).join('');
+    const warn = (target?.warning_flags || []).slice(0, 3).map(x => `<li><b>คำเตือน</b> · ${qmEsc(x)}</li>`).join('');
+    return `<div class="qm-detail-extra"><h5>วังนี้ตรงตัวแทนเรื่อง · 用神</h5><ul><li><b>${qmEsc(selector.intent?.label_th || 'ภาพรวม')} ${selector.intent?.label_zh ? `<span class="tc">${qmEsc(selector.intent.label_zh)}</span>` : ''}</b> · ${qmEsc(target?.status_th || 'อ่านประกอบ')} · selector ${qmEsc(target?.selector_score ?? p?.yongshen_selector_score ?? 0)}</li>${reasons}${warn}<li>หมายเหตุ: 用神 คือวังที่ควรอ่านตามคำถาม ไม่ใช่คะแนนฤกษ์สุดท้าย</li></ul></div>`;
+  }
   function internalExternalLabel(dir){
     if (!dir || dir === 'C') return { zh:'中', th:'กลาง', cls:'mid' };
     return INTERNAL_DIRS.has(dir)
@@ -1157,12 +1172,17 @@ window.applyI18N = applyI18N;
     const clashDay = chart?.clash?.day?.branch || '';
     const clashHour = chart?.clash?.hour?.branch || '';
     const xiu = chart?.twenty_eight || {};
+    const selector = chart?.yongshen_selector || qimenYongshenSelector(window._qimenLast);
+    const ysTop = (selector?.target_palaces || []).slice(0, 3)
+      .map(x => `${x.direction_label_th || x.direction || 'ทิศ?'} ${x.direction_label_zh || ''} วัง${x.palace_id}`)
+      .join(' · ');
     grid.innerHTML = [
       `<div class="qm-context-chip warn"><div class="k">ช่องว่าง 空亡</div><div class="v">วัน ${qmEsc(voidDay || '—')} · ยาม ${qmEsc(voidHour || '—')}</div><div class="note">พลังยังไม่เต็ม เรื่องอาจช้า/ว่าง ต้องอ่านร่วมกับวัง</div></div>`,
       `<div class="qm-context-chip good"><div class="k">ม้าเดินทาง 驛馬</div><div class="v">วัน ${qmEsc(horseDay || '—')} · ยาม ${qmEsc(horseHour || '—')}</div><div class="note">แรงเคลื่อนไหว เดินทาง ติดต่อ หรือเรื่องที่ต้องให้ขยับ</div></div>`,
       `<div class="qm-context-chip good"><div class="k">คนช่วย 貴人</div><div class="v">วัน ${qmEsc(nobleDay || '—')} · ยาม ${qmEsc(nobleHour || '—')}</div><div class="note">ผู้ใหญ่ ผู้สนับสนุน ช่องทางช่วยเหลือ</div></div>`,
       `<div class="qm-context-chip warn"><div class="k">วัน/ยามปะทะ 日時冲</div><div class="v">วัน ${qmEsc(clashDay || '—')} · ยาม ${qmEsc(clashHour || '—')}</div><div class="note">เป็นกิ่งที่ถูกปะทะ ไม่ใช่ดวงเจ้าของงานโดยตรง</div></div>`,
       `<div class="qm-context-chip"><div class="k">28 ดาวฤกษ์ 二十八宿</div><div class="v">${qmEsc(xiu.number || '—')} · ${qmEsc(xiu.zh || '—')}宿</div><div class="note">${qmEsc(xiu.group_zh || 'ชั้นเวลา')} ${xiu.palace_zh ? '· '+qmEsc(xiu.palace_zh) : ''}</div></div>`,
+      `<div class="qm-context-chip good"><div class="k">ตัวแทนเรื่อง 用神</div><div class="v">${qmEsc(selector?.intent?.label_th || 'ภาพรวม')} ${selector?.intent?.label_zh ? '· '+qmEsc(selector.intent.label_zh) : ''}</div><div class="note">${qmEsc(ysTop || 'ใช้日干/值符เป็นภาพรวม')} · ไม่ใช่คะแนนฤกษ์</div></div>`,
       `<div class="qm-context-chip"><div class="k">วังใน/วังนอก 內外</div><div class="v">內 N·NE·E·SE / 外 S·SW·W·NW</div><div class="note">เรื่องใกล้ตัว/ในองค์กร เทียบกับเรื่องภายนอก/ตลาด/เดินทาง</div></div>`,
     ].join('');
   }
@@ -1273,6 +1293,9 @@ window.applyI18N = applyI18N;
       const isZhiShi = ch.zhi_shi_palace_id === p.palace_id;
       const chartMk = (isZhiFu ? '<span class="fu-mk" title="直符">符</span>' : '') + (isZhiShi ? '<span class="shi-mk" title="值使">使</span>' : '');
       const p0Mk = renderP0GridBadges(qimenP0SignalsForPalace(p, window._qimenLast));
+      const ysSelector = qimenYongshenSelector(window._qimenLast);
+      const ysTargetIds = new Set((ysSelector?.target_palaces || []).map(x => Number(x.palace_id)));
+      const ysMk = (p.is_yongshen_target || ysTargetIds.has(Number(p.palace_id))) ? '<span class="p0-mk p0-use" title="วังตัวแทนเรื่อง · 用神">用</span>' : '';
 
       /* 📜 中宮 (palace 5) · 寄宮 ตามตำราคลาสสิก 煙波釣叟賦
          · ไม่มี 八門 (door) + ไม่มี 八神 (deity) — 八 = 8 ทิศ ไม่นับกลาง
@@ -1284,7 +1307,7 @@ window.applyI18N = applyI18N;
 
       return `<div class="palace q10x q-${starQ}${isCenterPalace ? ' palace-center' : ''}" data-pos="${p.palace_id}">
         <div class="p-corner-tl">
-          ${voidMk}${nobleMk}${clashMk}${ioMk}${fmMk}${home}${chartMk}${p0Mk}
+          ${voidMk}${nobleMk}${clashMk}${ioMk}${fmMk}${home}${chartMk}${ysMk}${p0Mk}
         </div>
         <div class="p-corner-tr">
           ${horse}<div class="stem heaven">${sH}${threeQiH}</div>
@@ -1481,7 +1504,7 @@ window.applyI18N = applyI18N;
       starCn ? `ดาว ${starName || ''} ${starCn}${starDesc ? ' · ' + starDesc : ''}` : '',
       deityCn ? `เทพ ${deityName || ''} ${deityCn}${deityAdv ? ' · ' + deityAdv : ''}` : '',
     ].filter(Boolean).join('\n');
-    const extraHtml = buildPalaceExtraHtml(p, last) + buildP0SourceTraceHtml(p, last);
+    const extraHtml = buildPalaceExtraHtml(p, last) + buildYongshenHtml(p, last) + buildP0SourceTraceHtml(p, last);
 
     host.innerHTML = `
       <div class="detail-head">
@@ -2352,13 +2375,24 @@ window.applyI18N = applyI18N;
     const send = document.getElementById('qm-sifu-send');
     if (send) send.disabled = true;
     try {
+      let qimenPayload = window._qimenLast;
+      try {
+        const inp = window._qimenInput || {};
+        if (inp.date && inp.time) {
+          const intentUrl = `/api/qimen?date=${encodeURIComponent(inp.date)}&time=${encodeURIComponent(inp.time)}&lng=${encodeURIComponent(inp.lng ?? DEFAULT_QIMEN_LOCATION.lng)}&lat=${encodeURIComponent(inp.lat ?? DEFAULT_QIMEN_LOCATION.lat)}&school=${encodeURIComponent(inp.school || getCurrentSchool())}&question=${encodeURIComponent(message)}`;
+          const intentResp = await fetch(intentUrl, { cache:'no-store' });
+          const intentJson = await intentResp.json().catch(() => null);
+          if (intentResp.ok && (intentJson?.ok || intentJson?.data)) qimenPayload = intentJson.data || intentJson;
+        }
+      } catch(eIntent) { console.warn('[qimen sifu] intent selector refresh failed', eIntent); }
       const r = await fetch('/api/qimen/sifu', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           message, history: window._qmSifuHist.slice(-6), lang:'th', topic,
           payload: {
-            qimen: window._qimenLast,
+            qimen: qimenPayload,
             user_yongshen_v2: window._qimenUserYs || null,
+            qimen_request_intent: { message, topic },
           }
         })
       });

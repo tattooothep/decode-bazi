@@ -97,9 +97,10 @@ const ACTIVITIES: Record<string, Activity> = {
 /* P9 16 พ.ค. (rate limit fix): in-memory cache + retry · qimen result คงที่ใน 1 ชั่วโมง */
 const _qimenCache = new Map<string, { data: unknown; expires: number }>();
 const QIMEN_CACHE_TTL = 60 * 60 * 1000; // 1 hour
-async function callQimen(datetime: string, lng: number, lat: number, school: string): Promise<any> {
+async function callQimen(datetime: string, lng: number, lat: number, school: string, context: { activity?: string } = {}): Promise<any> {
   const profile_id = SCHOOL_TO_PROFILE[school];
-  const cacheKey = `${datetime}|${profile_id}|${lng.toFixed(4)}|${lat.toFixed(4)}`;
+  const intentKey = context.activity || "";
+  const cacheKey = `${datetime}|${profile_id}|${lng.toFixed(4)}|${lat.toFixed(4)}|${intentKey}`;
   const cached = _qimenCache.get(cacheKey);
   if (cached && cached.expires > Date.now()) return cached.data;
   /* retry up to 3 times on 429 · backoff 200ms/400ms */
@@ -108,7 +109,7 @@ async function callQimen(datetime: string, lng: number, lat: number, school: str
       const r = await fetch(`${QIMEN_BASE}/api/qimen/calculate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ datetime, longitude: lng, latitude: lat, profile_id }),
+        body: JSON.stringify({ datetime, longitude: lng, latitude: lat, profile_id, activity: context.activity, use_case: context.activity }),
         signal: AbortSignal.timeout(5000),
       });
       if (!r.ok) {
@@ -320,7 +321,7 @@ export async function POST(req: Request) {
     const chunk = slots.slice(i, i + BATCH);
     const batch = await Promise.allSettled(chunk.map(async s => {
       const datetime = `${s.date}T${s.time}:00`;
-      const d = await callQimen(datetime, lng, lat, school);
+      const d = await callQimen(datetime, lng, lat, school, { activity });
       if (!d) return null;
       const palaces = d.palaces || [];
       /* P5+P6 16 พ.ค.: 8 ศาสตร์ filters · Tongshu/BaZi/JianChu/Taisui/Xiu28/Shen12/Fly9/Yongshen */
@@ -402,6 +403,8 @@ export async function POST(req: Request) {
             heaven_stem: bestPalace.heaven_stem_zh, earth_stem: bestPalace.earth_stem_zh,
             matches: allMatches,
             ju_pole: d.chart?.dun_type, ju_number: d.chart?.ju_number,
+            yongshen_intent: d.yongshen_selector?.intent?.label_th || d.chart?.yongshen_selector?.intent?.label_th || null,
+            yongshen_targets: (d.yongshen_selector?.target_palaces || d.chart?.yongshen_selector?.target_palaces || []).slice(0, 3),
             tongshu: ts ? { day_officer: ts.day_officer, yi: ts.yi.slice(0,3), ji: ts.ji.slice(0,3) } : null,
           };
         }
@@ -416,6 +419,8 @@ export async function POST(req: Request) {
             door: p.door_zh, star: p.star_zh, deity: p.deity_zh,
             heaven_stem: p.heaven_stem_zh, earth_stem: p.earth_stem_zh,
             ju_pole: d.chart?.dun_type, ju_number: d.chart?.ju_number,
+            yongshen_intent: d.yongshen_selector?.intent?.label_th || d.chart?.yongshen_selector?.intent?.label_th || null,
+            yongshen_targets: (d.yongshen_selector?.target_palaces || d.chart?.yongshen_selector?.target_palaces || []).slice(0, 3),
             matched_palaces: matchedPalaces.length,
           };
         }

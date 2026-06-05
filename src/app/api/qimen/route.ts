@@ -18,14 +18,18 @@ function resolveSchool(school?: string | null): string | null {
   return SCHOOL_TO_PROFILE[s] ? s : null;
 }
 
-async function callQimen(date: string, time: string, lng: number, lat: number, school: string) {
+async function callQimen(date: string, time: string, lng: number, lat: number, school: string, context: Record<string, unknown> = {}) {
   const target = `${QIMEN_BASE}/api/qimen/calculate`;
   const datetime = `${date}T${time}:00`;
   const profile_id = SCHOOL_TO_PROFILE[school];
+  const payload: Record<string, unknown> = { datetime, longitude: lng, latitude: lat, profile_id };
+  for (const key of ["question", "use_case", "activity", "purpose"]) {
+    if (context[key]) payload[key] = context[key];
+  }
   const r = await fetch(target, {
     method: "POST",
     headers: { "Content-Type": "application/json", "User-Agent": "decode-app/1.0" },
-    body: JSON.stringify({ datetime, longitude: lng, latitude: lat, profile_id }),
+    body: JSON.stringify(payload),
     signal: AbortSignal.timeout(8000),
   });
   if (!r.ok) {
@@ -60,9 +64,15 @@ export async function GET(req: Request) {
   const lat = Number(url.searchParams.get("lat") || 13.7563);
   const school = resolveSchool(url.searchParams.get("school"));
   if (!school) return NextResponse.json({ error: "unsupported qimen school" }, { status: 400 });
+  const context = {
+    question: url.searchParams.get("question") || undefined,
+    use_case: url.searchParams.get("use_case") || undefined,
+    activity: url.searchParams.get("activity") || undefined,
+    purpose: url.searchParams.get("purpose") || undefined,
+  };
 
   try {
-    const data = await callQimen(date, time, lng, lat, school);
+    const data = await callQimen(date, time, lng, lat, school, context);
     return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school }, ...data });
   } catch (e: unknown) {
     console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
@@ -79,9 +89,15 @@ export async function POST(req: Request) {
   const lat = Number(body.lat ?? body.latitude ?? 13.7563);
   const school = resolveSchool(body.school);
   if (!school) return NextResponse.json({ error: "unsupported qimen school" }, { status: 400 });
+  const context = {
+    question: body.question,
+    use_case: body.use_case,
+    activity: body.activity,
+    purpose: body.purpose,
+  };
 
   try {
-    const data = await callQimen(date, time, lng, lat, school);
+    const data = await callQimen(date, time, lng, lat, school, context);
     return NextResponse.json({ source: "qimen-api", input: { date, time, lng, lat, school }, ...data });
   } catch (e: unknown) {
     console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client

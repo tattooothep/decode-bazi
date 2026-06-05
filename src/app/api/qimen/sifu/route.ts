@@ -361,6 +361,7 @@ function fmtQimenCard(q: any): string {
   const palaces = q.palaces || [];
   const stored = q.stored_formations || [];
   const compound = q.compound_formations || [];
+  const selector = q.yongshen_selector || chart.yongshen_selector || null;
   const fushi = chart.ctext_fushi || null;
 
   const poleRaw = String(chart.dun_type || chart.ju_pole || "").toLowerCase();
@@ -390,6 +391,12 @@ function fmtQimenCard(q: any): string {
   const cpLines = compound.map((f: any) =>
     `  - ${f.name_zh || f.formation_code} [${f.quality || "?"}] (${f.scope}${f.scope_ref ? " " + f.scope_ref : ""}): ${f.note || ""}`
   ).join("\n");
+  const selectorLines = selector ? [
+    `用神 selector: ${selector.intent?.label_th || "ไม่ระบุ"} ${selector.intent?.label_zh || ""} · intent=${selector.intent?.code || "unknown"} · confidence=${selector.intent?.confidence || "?"}`,
+    `หลักอ่าน: ${(selector.primary_symbols || []).slice(0, 6).map((s: any) => `${s.label_th || s.kind} ${s.label_zh || s.code || ""}`).join(" · ") || "ไม่ระบุ"}`,
+    `วังเป้าหมาย: ${(selector.target_palaces || []).slice(0, 4).map((p: any) => `${p.direction_label_th || p.direction || "ทิศ?"} ${p.direction_label_zh || ""} วัง${p.palace_id} (${p.status_th || "อ่านประกอบ"})`).join(" · ") || "ไม่พบในผังนี้"}`,
+    `ข้อจำกัด: ${selector.caveat_th || "selector ใช้เลือกวังอ่าน ไม่ใช่คะแนนฤกษ์สุดท้าย"}`,
+  ].join("\n") : "用神 selector: ไม่ได้ส่งมากับ engine packet";
 
   return `Engine packet คือ source of truth ถ้า field ขาดให้ตอบว่า "ข้อมูลไม่พอ" ห้ามสร้างค่าเอง
 Yuan-Ju: ${pole}${ju}局
@@ -400,7 +407,8 @@ ${palaceLines}
 Stored Formations:
 ${stLines || "  (none)"}
 Compound Formations:
-${cpLines || "  (none)"}`;
+${cpLines || "  (none)"}
+${selectorLines}`;
 }
 
 function fmtUserYs(ys: any): string {
@@ -413,7 +421,7 @@ TiaoHou: ${ys.tiaohou_required || "-"} · 病: ${(ys.diseases || []).join(",") |
 function fmtSearchResults(searchResults: any[], activity?: string): string {
   if (!searchResults || !searchResults.length) return "";
   const lines = searchResults.slice(0, 8).map((t: any, i: number) =>
-    `${i+1}. ${t.datetime || `${t.date} ${t.time}`} · 宮${t.palace_id}${t.direction} · ${t.door}+${t.star}+${t.deity} · ${t.heaven_stem}/${t.earth_stem} · ${t.ju_pole==='yin'?'陰':'陽'}${t.ju_number}局 · score ${t.score}${t.matches?.length ? ` [${t.matches.slice(0,3).join(', ')}]` : ''}`
+    `${i+1}. ${t.datetime || `${t.date} ${t.time}`} · 宮${t.palace_id}${t.direction} · ${t.door}+${t.star}+${t.deity} · ${t.heaven_stem}/${t.earth_stem} · ${t.ju_pole==='yin'?'陰':'陽'}${t.ju_number}局 · score ${t.score}${t.matches?.length ? ` [${t.matches.slice(0,3).join(', ')}]` : ''}${t.yongshen_intent ? ` · 用神=${t.yongshen_intent}` : ''}`
   ).join("\n");
   return `\n\nผลค้นหาผัง (top ${searchResults.length}${activity ? ` · กิจกรรม=${activity}` : ''}):\n${lines}`;
 }
