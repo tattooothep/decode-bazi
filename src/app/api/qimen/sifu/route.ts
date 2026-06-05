@@ -340,6 +340,146 @@ function directionLabel(p: any): string {
   return DIR_LABEL_TH_ZH[code] || String(p.direction || p.trigram_zh || "ไม่ระบุทิศ");
 }
 
+function asPacketArray(value: any): any[] {
+  if (value == null || value === false) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    const text = value.trim();
+    if (!text) return [];
+    if (text.startsWith("[") || text.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? parsed : [parsed];
+      } catch {
+        return [text];
+      }
+    }
+    return [text];
+  }
+  return [value];
+}
+
+function packetText(value: unknown, fallback = ""): string {
+  return clip(String(value ?? fallback ?? "").replace(/\s+/g, " ").trim(), 180);
+}
+
+function shortThZh(th: unknown, zh: unknown, fallback = "ไม่ระบุ"): string {
+  const thText = packetText(th);
+  const zhText = packetText(zh);
+  if (thText && zhText && thText !== zhText) return `${thText} ${zhText}`;
+  return thText || zhText || fallback;
+}
+
+function sourceRefText(value: any, max = 2): string {
+  const refs = asPacketArray(value)
+    .map((raw: any) => {
+      if (!raw) return "";
+      if (typeof raw === "object") {
+        const id = raw.source_id || raw.id || raw.source || raw.file_id || raw.title;
+        const line = raw.line_range || raw.lines || raw.range;
+        return [id, line].filter(Boolean).join(":");
+      }
+      return String(raw);
+    })
+    .filter(Boolean)
+    .map((s: string) => {
+      const compact = packetText(s, "").replace(/\\/g, "/");
+      return compact.includes("/") ? compact.split("/").pop() || compact : compact;
+    });
+  return refs.slice(0, max).join(", ");
+}
+
+function formatBeginnerReasons(reading: any, max = 3): string {
+  const rows = asPacketArray(reading?.reasons).slice(0, max).map((r: any) => {
+    if (typeof r !== "object") return packetText(r);
+    const label = shortThZh(r.label_th || r.name_th || r.note_th, r.label_zh || r.name_zh || r.code, "เหตุผล");
+    const tone = r.tone || r.kind ? ` (${[r.kind, r.tone].filter(Boolean).join("/")})` : "";
+    return `${label}${tone}`;
+  }).filter(Boolean);
+  return rows.length ? rows.join(" | ") : "ไม่มีเหตุผลย่อยใน packet";
+}
+
+function formatCheckNext(reading: any, max = 2): string {
+  const rows = asPacketArray(reading?.check_next).slice(0, max).map((r: any) => packetText(r)).filter(Boolean);
+  return rows.length ? rows.join(" | ") : "ไม่มีรายการเช็กต่อใน packet";
+}
+
+function formatBeginnerReading(p: any): string {
+  const reading = p?.beginner_reading;
+  if (!reading || typeof reading !== "object") {
+    return " · สถานะอ่านเร็ว 入門: ต้องดูบริบท 需看局 · เพราะอะไร: ระบบยังไม่ส่ง beginner_reading ที่เชื่อถือได้ · ต้องเช็กต่อ: รอข้อมูลระบบก่อนใช้เป็นคำแนะนำ · หมายเหตุ: ใช้เป็นตัวหลักไม่ได้; ไม่แก้คะแนนจริง; guard fields: is_actionable=false; has_engine_score=false; no_score_mutation=yes";
+  }
+  const label = shortThZh(reading.label_th, reading.label_zh, "ต้องดูบริบท 需看局");
+  const summary = packetText(reading.summary_th || reading.summary || "อ่านเป็นบริบท");
+  const actionPolicy = reading.is_actionable ? "ใช้เป็นตัวหลักได้ถ้าตรงคำถาม" : "ใช้เป็นตัวหลักไม่ได้";
+  const actionField = reading.is_actionable ? "true" : "false";
+  const scoreState = reading.has_engine_score ? `คะแนนระบบ=${reading.engine_score ?? p.display_score ?? p.score ?? "มี"}` : "ไม่มีคะแนนรวมจากระบบ";
+  const scoreField = reading.has_engine_score ? "true" : "false";
+  const mutationState = reading.no_score_mutation === true ? "ไม่แก้คะแนนจริง" : reading.no_score_mutation === false ? "ไม่ยืนยันนโยบายคะแนน" : "นโยบายคะแนนไม่ชัด";
+  const mutationField = reading.no_score_mutation === true ? "yes" : reading.no_score_mutation === false ? "no" : "unknown";
+  const targetState = reading.is_yongshen_target ? "ตรง用神" : "ไม่ใช่用神หลัก";
+  const caveat = packetText(reading.caveat_th || reading.score_policy_th || "ป้ายนี้ไม่ใช่ฤกษ์สุดท้าย");
+  return [
+    ` · สถานะอ่านเร็ว 入門: ${label}`,
+    ` · เพราะอะไร: ${formatBeginnerReasons(reading)}`,
+    ` · ต้องเช็กต่อ: ${formatCheckNext(reading)}`,
+    ` · หมายเหตุ: ${[summary, caveat, actionPolicy, scoreState, mutationState, targetState, `guard fields: is_actionable=${actionField}; has_engine_score=${scoreField}; no_score_mutation=${mutationField}`].filter(Boolean).join("; ")}`,
+  ].join("");
+}
+
+function selectorTargetForPalace(selector: any, palace: any): any {
+  const palaceId = Number(palace?.palace_id);
+  return asPacketArray(selector?.target_palaces).find((p: any) => Number(p?.palace_id) === palaceId) || null;
+}
+
+function formatYongshenPalace(selector: any, p: any): string {
+  const target = selectorTargetForPalace(selector, p);
+  if (!target && !p?.is_yongshen_target) return "";
+  const status = packetText(target?.status_th || p?.yongshen_status_th || "วังเป้าหมายของเรื่องที่ถาม");
+  const warnings = asPacketArray(target?.warning_flags || p?.yongshen_warning_flags).slice(0, 2).map((w: any) => packetText(w)).filter(Boolean).join(" | ");
+  const source = sourceRefText(target?.source_refs || target?.source_trace || target?.source_id, 1);
+  return ` · 用神 selector: ${status}${warnings ? ` · เตือน: ${warnings}` : ""}${source ? ` · source=${source}` : ""}`;
+}
+
+function formatTraceItem(item: any): string {
+  if (!item) return "";
+  if (typeof item !== "object") return packetText(item);
+  const label = shortThZh(item.name_th || item.label_th || item.note_th || item.title_th, item.name_zh || item.label_zh || item.formation_code || item.code, "สัญญาณ");
+  const sev = item.severity || item.tone || item.quality || item.base_quality;
+  const refs = sourceRefText(item.source_refs || item.source_trace || item.refs, 1);
+  return `${label}${sev ? ` (${sev})` : ""}${refs ? ` source=${refs}` : ""}`;
+}
+
+function formatPalaceSourceFlags(p: any): string {
+  const flags = [
+    ...asPacketArray(p?.qimen_trace),
+    ...asPacketArray(p?.classical_flags),
+    ...asPacketArray(p?.p0_badges),
+    ...asPacketArray(p?.source_trace),
+  ];
+  const seen = new Set<string>();
+  const rows = flags.map(formatTraceItem).filter(Boolean).filter((line: string) => {
+    const key = line.split(" source=")[0];
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 3);
+  return rows.length ? ` · source flags: ${rows.join(" | ")}` : "";
+}
+
+function formatStemResponse(stemResponse: any): string {
+  if (!stemResponse) return "";
+  if (stemResponse.is_source_governed) {
+    const title = shortThZh(stemResponse.title_th || "ปฏิกิริยาก้าน", stemResponse.title_zh || stemResponse.notation_zh, "ปฏิกิริยาก้าน 十干克應");
+    const beginner = packetText(stemResponse.beginner_th || stemResponse.caveat_th || "อ่านประกอบ");
+    const refs = sourceRefText(stemResponse.source_trace || stemResponse.source_refs, 2);
+    return ` · 干應 ${title} (${beginner}${refs ? ` · source=${refs}` : ""})`;
+  }
+  return stemResponse.status_th
+    ? ` · 干應 ${packetText(stemResponse.status_th)} · ยังไม่ตัดสินจากตำราในระบบ`
+    : " · 干應 ยังไม่มี source-governed verdict";
+}
+
 const LANG_INSTR: Record<string, string> = {
   th: "ตอบเป็นภาษาไทยสำหรับคนทั่วไป · ไทยนำจีนรอง · กระชับ · อธิบายศัพท์จีนทุกคำที่ใช้",
   en: "Reply in English · concise · markdown · classical QiMen sources",
@@ -363,6 +503,7 @@ function fmtQimenCard(q: any): string {
   const compound = q.compound_formations || [];
   const selector = q.yongshen_selector || chart.yongshen_selector || null;
   const stemCoverage = q.stem_response_coverage || chart.stem_response_coverage || null;
+  const beginnerCoverage = q.beginner_reading_coverage || chart.beginner_reading_coverage || null;
   const fushi = chart.ctext_fushi || null;
 
   const poleRaw = String(chart.dun_type || chart.ju_pole || "").toLowerCase();
@@ -376,10 +517,6 @@ function fmtQimenCard(q: any): string {
     const door = labelThZh(p.door_name_th, p.door_zh, p.door_code, DOOR_TH);
     const star = labelThZh(p.star_name_th, p.star_zh, p.star_code, STAR_TH);
     const deity = labelThZh(p.deity_name_th, p.deity_zh, p.deity_code, DEITY_TH);
-    const stemResponse = p.stem_response || null;
-    const stemResponseLine = stemResponse?.is_source_governed
-      ? ` · 干應 ${stemResponse.title_th || "ปฏิกิริยาก้าน"} ${stemResponse.title_zh || ""} (${stemResponse.beginner_th || "อ่านประกอบ"})`
-      : (stemResponse?.status_th ? ` · 干應 ${stemResponse.status_th}` : "");
     const flags = [
       p.is_void_any || p.is_void ? "ช่องว่าง 空亡" : "",
       p.is_traveling_horse ? "ม้าเดินทาง 驛馬" : "",
@@ -387,7 +524,7 @@ function fmtQimenCard(q: any): string {
       p.is_ji_xing || p.is_punishment ? "ถูกลงโทษ 擊刑" : "",
       p.is_men_po || p.is_door_oppressed ? "ประตูบีบวัง 門迫" : "",
     ].filter(Boolean).join(" · ");
-    return `• วัง ${p.palace_id} · ${directionLabel(p)} · ${p.trigram_zh || p.trigram_code || "-"} (${p.element_code || "?"}): ฟ้า ${p.heaven_stem_zh || p.heaven_stem_code || "·"} / ดิน ${p.earth_stem_zh || p.earth_stem_code || "·"} · ${door} · ${star} · ${deity}${stemResponseLine} · คะแนน engine=${p.display_score ?? p.score ?? "ไม่ระบุ"} ${p.display_level || ""}${flags ? ` · flags: ${flags}` : ""}`;
+    return `• วัง ${p.palace_id} · ${directionLabel(p)} · ${p.trigram_zh || p.trigram_code || "-"} (${p.element_code || "?"}): ฟ้า ${p.heaven_stem_zh || p.heaven_stem_code || "·"} / ดิน ${p.earth_stem_zh || p.earth_stem_code || "·"} · ${door} · ${star} · ${deity}${formatStemResponse(p.stem_response)} · คะแนนระบบ=${p.display_score ?? p.score ?? "ไม่ระบุ"} ${p.display_level || ""}${flags ? ` · flags: ${flags}` : ""}${formatBeginnerReading(p)}${formatYongshenPalace(selector, p)}${formatPalaceSourceFlags(p)}`;
   }).join("\n");
 
   const stLines = stored.map((f: any) =>
@@ -408,6 +545,7 @@ Yuan-Ju: ${pole}${ju}局
 時柱: ${chart.pillar_zh || "-"} · 旬首: ${chart.xun_hour_zh || fushi?.xun_leader_zh || "-"} · 遁干: ${chart.dun_gan_zh || "-"} · 八神派別: ${chart.deity_variant || "-"} · chart_source=${chart.source || chart.engine_source || "payload.qimen"}
 ${fushiLine}
 十干克應 coverage: ${stemCoverage ? `${stemCoverage.status_th || "เปิดเฉพาะ source-governed"} · full81=${stemCoverage.full_81_complete ? "yes" : "no"}` : "ไม่มีใน packet"}
+นโยบายอ่านเร็ว 入門: ${beginnerCoverage ? `${beginnerCoverage.version || "unknown"} · ไม่แก้คะแนนจริง=${beginnerCoverage.no_score_mutation === true ? "yes" : "unknown"} · จำนวนป้าย=${JSON.stringify(beginnerCoverage.counts || {})}` : "ไม่มีใน packet"}
 9 Palaces:
 ${palaceLines}
 Stored Formations:
@@ -456,7 +594,12 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
 4. คะแนน/ระดับเป็น heuristic ของ Hourkey ให้พูดว่า "คะแนนระบบ" หรือ "น้ำหนักระบบ" ไม่ใช่เลขจากตำราโบราณ
 5. ถ้าพูดเรื่องต่างสำนัก เช่น 年/月/日家, 八神, 寄宮, 五不遇時 ให้ใส่ caveat ว่าสายตำราอาจต่างกัน
 6. ถ้าใช้ BaZi ให้แยกเป็น "ตัวกรองส่วนบุคคล" ไม่ปนเป็นคำตัดสินฉีเหมินหลัก
-7. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุ source id ที่ใช้ 1-3 ตัวจาก Source trace`;
+7. สถานะอ่านเร็ว 入門 จาก beginner_reading เป็นป้ายช่วยอ่านของ engine ไม่ใช่คะแนนฤกษ์และห้ามแก้คะแนน
+8. ถ้า beginner_reading.is_actionable=false หรือ has_engine_score=false ห้ามแนะนำให้ใช้ทิศนั้นเป็นตัวหลัก ให้พูดว่า "อ่านเป็นบริบท/ต้องเช็กต่อ"
+9. ถ้า no_score_mutation ไม่ใช่ yes ให้เตือนว่า packet ไม่ยืนยันนโยบายคะแนน ห้ามฟันธง
+10. เมื่อตอบว่าทิศไหนดี/เสีย ต้องอ้างวังจริง: ทิศ + ประตู + ดาว + เทพ + ก้าน + flags/source flags + เหตุผลจากระบบ
+11. ห้ามใช้คำฟันธงเกินข้อมูล เช่น ดีแน่นอน, ชนะ, ใช้แล้วสำเร็จ, ไม่มีปัญหา
+12. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุ source id ที่ใช้ 1-3 ตัวจาก Source trace`;
   const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${answerGuard}\n${canonBlock}\nผังเวลา (QiMen Chart):\n${fmtQimenCard(qimen)}\n\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
   return {
     prompt: loadPromptMd("prompts/qimen-sifu.md", QIMEN_TPL_FALLBACK).replace("{{BODY}}", body),
