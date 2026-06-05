@@ -100,6 +100,13 @@
 
   .school-info{padding:14px 16px;background:var(--bg-2);border-radius:8px;font-size:12px;line-height:1.55;color:var(--fg-soft);}
   .school-info b{color:var(--gold);}
+  .system-toggle{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;background:var(--bg-2);border-radius:10px;padding:4px;}
+  .system-toggle button{min-width:0;background:transparent;border:none;color:var(--fg-soft);padding:9px 10px;border-radius:8px;font-family:var(--thai);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s;white-space:nowrap;}
+  .system-toggle button.on{background:var(--gold-soft);color:var(--gold);box-shadow:0 0 0 1px var(--gold);}
+  .system-toggle button .tc{font-family:var(--tc);font-size:17px;font-weight:700;line-height:1;}
+  .system-toggle button .th{line-height:1;}
+  .system-info{padding:10px 12px;background:var(--bg-2);border-radius:8px;font-size:12px;line-height:1.55;color:var(--fg-soft);}
+  .system-info b{color:var(--gold);}
 
   /* time picker */
   .time-grid{display:grid;grid-template-columns:auto auto auto auto auto;gap:8px;align-items:center;}
@@ -339,6 +346,7 @@
     .stats b{font-size:24px;}
     .config-row{grid-template-columns:1fr;gap:12px;}
     .school-toggle button{padding:10px 6px;font-size:11px;}
+    .system-toggle button{padding:8px 6px;font-size:11px;}
     .palace{padding:8px;}
     .palace .stem-row .top{font-size:18px;}
     .palace .stem-row .bot{font-size:13px;}
@@ -372,6 +380,9 @@
     .school-toggle button{padding:8px 4px;font-size:11px;}
     .school-toggle button .tc{font-size:16px;}
     .school-toggle button .en{font-size:7px;}
+    .system-toggle{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}
+    .system-toggle button{padding:8px 5px;font-size:11px;}
+    .system-toggle button .tc{font-size:16px;}
     /* pill bar wrap */
     .chart-meta{flex-wrap:wrap;gap:6px;}
     .chart-meta .pill{font-size:10px;padding:4px 8px;}
@@ -444,6 +455,8 @@
     /* school 4 ปุ่ม → 2x2, ลดความสูงบนมือถือ */
     .school-toggle{grid-template-columns:1fr 1fr;}
     .school-toggle button{min-width:0;padding:7px 3px;}
+    .system-toggle{grid-template-columns:1fr 1fr;}
+    .system-toggle button{min-width:0;padding:7px 3px;}
     /* q10x palace · ขั้นต่ำ · ไม่ยุบ */
     .palace-grid{gap:4px;}
     .palace-wrap{padding:12px !important;}
@@ -574,6 +587,20 @@
       </div>
       <div class="school-info" id="school-info">
         <b>置閏 · ZhiRun</b> — สำนักดั้งเดิม ใช้ <b data-i18n="auto.q.009">節氣ตรง</b> เป็นจุดเปลี่ยน 局 · เหมาะวิเคราะห์ <b data-i18n="auto.q.010">เหตุการณ์ใหญ่</b> · ใช้ในตำรา 煙波釣叟賦
+      </div>
+    </div>
+
+    <!-- row 2: chart system selector -->
+    <div class="config-row">
+      <div class="cfg-label"><span class="tc">盤</span> ระดับผัง · CHART</div>
+      <div class="system-toggle" id="system-toggle" aria-label="เลือกระดับผังฉีเหมิน">
+        <button class="on" data-system="hour"><span class="th">ยาม</span><span class="tc">時家</span></button>
+        <button data-system="day"><span class="th">วัน</span><span class="tc">日家</span></button>
+        <button data-system="month"><span class="th">เดือน</span><span class="tc">月家</span></button>
+        <button data-system="year"><span class="th">ปี</span><span class="tc">年家</span></button>
+      </div>
+      <div class="system-info" id="system-info">
+        <b>ผังยาม 時家</b> — อ่านเหตุการณ์เฉพาะหน้าและทิศใช้งานตอนนี้ · สำนักมีผลหลักกับผังยาม
       </div>
     </div>
 
@@ -941,6 +968,52 @@ window.applyI18N = applyI18N;
   function getCurrentSchool(){
     return window._qimenSchool || 'chaibu';
   }
+  const QIMEN_SYSTEM_INFO = {
+    hour: {
+      label_th: 'ผังยาม',
+      label_zh: '時家',
+      info_th: '<b>ผังยาม 時家</b> — อ่านเหตุการณ์เฉพาะหน้าและทิศใช้งานตอนนี้ · สำนักมีผลหลักกับผังยาม',
+    },
+    day: {
+      label_th: 'ผังวัน',
+      label_zh: '日家',
+      info_th: '<b>ผังวัน 日家</b> — อ่านแรงของวันและภาพรวมกิจกรรมวันนั้น · ใช้วัน/เวลาเป็นจุดอ้างอิง',
+    },
+    month: {
+      label_th: 'ผังเดือน',
+      label_zh: '月家',
+      info_th: '<b>ผังเดือน 月家</b> — อ่านแนวโน้มระดับเดือนและบริบทใหญ่กว่าเรื่องเฉพาะหน้า',
+    },
+    year: {
+      label_th: 'ผังปี',
+      label_zh: '年家',
+      info_th: '<b>ผังปี 年家</b> — อ่านภาพใหญ่ระดับปี ไม่ใช่ฤกษ์ยามเฉพาะชั่วโมง',
+    },
+  };
+  function normalizeQimenSystemType(value){
+    const s = String(value || 'hour').toLowerCase();
+    return QIMEN_SYSTEM_INFO[s] ? s : 'hour';
+  }
+  function getCurrentSystemType(){
+    return normalizeQimenSystemType(window._qimenSystemType || 'hour');
+  }
+  function qimenSystemMeta(value){
+    const key = normalizeQimenSystemType(value);
+    return QIMEN_SYSTEM_INFO[key] || QIMEN_SYSTEM_INFO.hour;
+  }
+  function setSystemInfo(value){
+    const key = normalizeQimenSystemType(value);
+    const meta = qimenSystemMeta(key);
+    window._qimenSystemType = key;
+    const info = document.getElementById('system-info');
+    if (info) info.innerHTML = meta.info_th;
+    const wrap = document.getElementById('system-toggle');
+    if (wrap) {
+      wrap.querySelectorAll('button[data-system]').forEach(btn => {
+        btn.classList.toggle('on', normalizeQimenSystemType(btn.dataset.system) === key);
+      });
+    }
+  }
   function getCurrentLang(){
     /* priority: html.lang (source ที่ hk-user-menu set ตรง) >
      *           hk_locale (storage) > data-lang (cache ของเรา)
@@ -1244,8 +1317,9 @@ window.applyI18N = applyI18N;
   }
   function renderQimenContext(chart){
     const pillars = chart?.pillars || {};
+    const systemMeta = qimenSystemMeta(chart?.system_type || getCurrentSystemType());
     const source = document.getElementById('qm-context-source');
-    if (source) source.textContent = `${chart?.algorithm_method || 'qimen-api'} · ${chart?.chart_variant || 'chart'} · ${chart?.version || 'v?'}`;
+    if (source) source.textContent = `${systemMeta.label_th} ${systemMeta.label_zh} · ${chart?.algorithm_method || 'qimen-api'} · ${chart?.chart_variant || chart?.chart_type || 'chart'} · ${chart?.version || chart?.dmy_engine_version || 'v?'}`;
     const pillarHost = document.getElementById('qm-pillar-strip');
     if (pillarHost) {
       const items = [
@@ -1681,6 +1755,8 @@ window.applyI18N = applyI18N;
   function renderHeader(chart, palaces){
     if (!chart) return;
     palaces = Array.isArray(palaces) ? palaces : [];
+    const systemType = normalizeQimenSystemType(chart.system_type || getCurrentSystemType());
+    const systemMeta = qimenSystemMeta(systemType);
     const pole = (chart.dun_type === 'yin' || chart.dun_type === 'YIN') ? '陰' : '陽';
     const num  = chart.ju_number || '?';
     const juZh = `${pole}${num}局`;
@@ -1709,9 +1785,11 @@ window.applyI18N = applyI18N;
     _set('qm-pill-dun',  chart.dun_gan_zh || '—');
     _set('qm-pill-fu',   qimenTermLabel(leadStarTh, leadStarZh, fuPalaceId));
     _set('qm-pill-shi',  qimenTermLabel(leadDoorTh, leadDoorZh, shiPalaceId));
-    _set('qm-pill-xun',  (chart.xun_hour_zh || '—') + '旬');
-    const voids = chart.void_hour_zh;
-    _set('qm-pill-void', Array.isArray(voids) ? voids.join('') : (voids || '—'));
+    const xunLabel = chart.xun_hour_zh || chart.xun_leader || chart.xun_zh || '—';
+    _set('qm-pill-xun',  xunLabel === '—' ? '—' : (String(xunLabel).includes('旬') ? xunLabel : xunLabel + '旬'));
+    const voids = chart.void_hour_zh || chart.void_day_zh;
+    const voidPalaces = Array.isArray(chart.kong_wang_palaces) && chart.kong_wang_palaces.length ? `宮 ${chart.kong_wang_palaces.join('·')}` : '';
+    _set('qm-pill-void', Array.isArray(voids) ? voids.join('') : (voids || voidPalaces || '—'));
     /* update header datetime ภาษาไทย */
     const h = document.getElementById('qm-datetime-th');
     if (h && window._qimenInput){
@@ -1720,7 +1798,7 @@ window.applyI18N = applyI18N;
       const dayNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
       const monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
       const yyBE = d.getFullYear() + 543;
-      h.textContent = `วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${yyBE} (${d.getFullYear()}) ${inp.time}`;
+      h.textContent = `${systemMeta.label_th} ${systemMeta.label_zh} · วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${yyBE} (${d.getFullYear()}) ${inp.time}`;
     }
     renderQimenContext(chart);
   }
@@ -1778,14 +1856,16 @@ window.applyI18N = applyI18N;
     hSel.dataset.qmIntended = timeStr;
   }
 
-  async function loadQimen(date, time, lng, lat, school){
+  async function loadQimen(date, time, lng, lat, school, systemType){
     /* Step 2 · single completion + sequence guard · ใช้ ?? กัน 0 หาย */
     const sch = school ?? getCurrentSchool();
+    const sys = normalizeQimenSystemType(systemType ?? getCurrentSystemType());
     const useLng = (lng ?? DEFAULT_QIMEN_LOCATION.lng);
     const useLat = (lat ?? DEFAULT_QIMEN_LOCATION.lat);
     const mySeq = ++window._qimenSeq;
-    const url = `/api/qimen?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&lng=${useLng}&lat=${useLat}&school=${sch}`;
-    window._qimenInput = { date, time, lng: useLng, lat: useLat, school: sch };
+    setSystemInfo(sys);
+    const url = `/api/qimen?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&lng=${encodeURIComponent(useLng)}&lat=${encodeURIComponent(useLat)}&school=${encodeURIComponent(sch)}&system_type=${encodeURIComponent(sys)}`;
+    window._qimenInput = { date, time, lng: useLng, lat: useLat, school: sch, system_type: sys };
     try {
       const r = await fetch(url);
       const j = await r.json();
@@ -1952,6 +2032,22 @@ window.applyI18N = applyI18N;
     });
   })();
 
+  /* chart system toggle · 時家/日家/月家/年家 · engine already supports system_type */
+  (function bindSystemToggle(){
+    const wrap = document.getElementById('system-toggle');
+    if (!wrap) return;
+    setSystemInfo(window._qimenSystemType || 'hour');
+    wrap.querySelectorAll('button[data-system]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sys = normalizeQimenSystemType(btn.dataset.system);
+        if (sys === getCurrentSystemType()) return;
+        setSystemInfo(sys);
+        const dt = readPickerDateTime() || defaultDateTime();
+        loadQimen(dt.date, dt.time, undefined, undefined, getCurrentSchool(), sys);
+      });
+    });
+  })();
+
   /* Step 6 (22 พ.ค.) · quick-times buttons handler
    * "ตอนนี้" = picker = now + load · "วันนี้" = วันนี้ + เก็บชั่วโมงปัจจุบัน
    * "+ปฏิทิน" = ไป /calendar */
@@ -2005,7 +2101,9 @@ window.applyI18N = applyI18N;
   /* initial load · current time · ใช้ chaibu (recommended) */
   const dt = defaultDateTime();
   window._qimenSchool = 'chaibu';
-  loadQimen(dt.date, dt.time, undefined, undefined, 'chaibu');
+  window._qimenSystemType = 'hour';
+  setSystemInfo('hour');
+  loadQimen(dt.date, dt.time, undefined, undefined, 'chaibu', 'hour');
 
   /* ───── Step 3 · Yongshen overlay · ดึงดวงผู้ใช้ ───── */
   const EL_MAP = { WOOD:'wood', FIRE:'fire', EARTH:'earth', METAL:'metal', WATER:'water' };
@@ -2495,7 +2593,7 @@ window.applyI18N = applyI18N;
       try {
         const inp = window._qimenInput || {};
         if (inp.date && inp.time) {
-          const intentUrl = `/api/qimen?date=${encodeURIComponent(inp.date)}&time=${encodeURIComponent(inp.time)}&lng=${encodeURIComponent(inp.lng ?? DEFAULT_QIMEN_LOCATION.lng)}&lat=${encodeURIComponent(inp.lat ?? DEFAULT_QIMEN_LOCATION.lat)}&school=${encodeURIComponent(inp.school || getCurrentSchool())}&question=${encodeURIComponent(message)}`;
+          const intentUrl = `/api/qimen?date=${encodeURIComponent(inp.date)}&time=${encodeURIComponent(inp.time)}&lng=${encodeURIComponent(inp.lng ?? DEFAULT_QIMEN_LOCATION.lng)}&lat=${encodeURIComponent(inp.lat ?? DEFAULT_QIMEN_LOCATION.lat)}&school=${encodeURIComponent(inp.school || getCurrentSchool())}&system_type=${encodeURIComponent(inp.system_type || getCurrentSystemType())}&question=${encodeURIComponent(message)}`;
           const intentResp = await fetch(intentUrl, { cache:'no-store' });
           const intentJson = await intentResp.json().catch(() => null);
           if (intentResp.ok && (intentJson?.ok || intentJson?.data)) qimenPayload = intentJson.data || intentJson;
