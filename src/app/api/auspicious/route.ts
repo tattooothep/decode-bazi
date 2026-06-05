@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
     const enriched = candidates
       .map(c => applyMonthDayShaRuntime(c, resolvedActivityType, targetDirection))
       .map(c => enrichCandidate(c, activeModuleKeys, resolvedActivityType))
-      .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys))
+      .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys, targetDirection))
       .filter(c => !options.minScore || (c.scoring?.finalScore ?? 0) >= options.minScore)
       .sort((a, b) => (b.scoring?.finalScore ?? 0) - (a.scoring?.finalScore ?? 0))
       .slice(0, options.limit ?? 50);
@@ -483,10 +483,385 @@ function enrichCandidate(c: CandidateSlot, activeModules: ModuleKey[], activity:
   return c;
 }
 
+type QimenPurpose = ActivityProfile["qimenPurpose"];
+
+type QimenActivityPreference = {
+  goodDoors: string[];
+  avoidDoors: string[];
+  goodDeities?: string[];
+  avoidDeities?: string[];
+  goodStars?: string[];
+  avoidStars?: string[];
+  goodFlags?: string[];
+  maxPositiveDelta: number;
+  maxNegativeDelta: number;
+  avoidDoorCap: number;
+};
+
+const QIMEN_TERM_ZH: Record<string, string> = {
+  KAI_MEN: "開門",
+  XIU_MEN: "休門",
+  SHENG_MEN: "生門",
+  JING_VIEW_MEN: "景門",
+  DU_MEN: "杜門",
+  SHANG_MEN: "傷門",
+  JING_FEAR_MEN: "驚門",
+  SI_MEN: "死門",
+  ZHI_FU: "值符",
+  TENG_SHE: "螣蛇",
+  TAI_YIN: "太陰",
+  LIU_HE: "六合",
+  BAI_HU: "白虎",
+  XUAN_WU: "玄武",
+  JIU_DI: "九地",
+  JIU_TIAN: "九天",
+  ZHU_QUE: "朱雀",
+  TIAN_PENG: "天蓬",
+  TIAN_REN: "天任",
+  TIAN_CHONG: "天沖",
+  TIAN_FU: "天輔",
+  TIAN_YING: "天英",
+  TIAN_RUI: "天芮",
+  TIAN_ZHU: "天柱",
+  TIAN_XIN: "天心",
+  TIAN_QIN: "天禽",
+};
+
+const QIMEN_TERM_CODE_BY_ZH = Object.fromEntries(
+  Object.entries(QIMEN_TERM_ZH).map(([code, zh]) => [zh, code]),
+) as Record<string, string>;
+QIMEN_TERM_CODE_BY_ZH["直符"] = "ZHI_FU";
+
+const QIMEN_TERM_TH: Record<string, string> = {
+  KAI_MEN: "ประตูเปิด",
+  XIU_MEN: "ประตูพัก",
+  SHENG_MEN: "ประตูเกิด",
+  JING_VIEW_MEN: "ประตูภาพลักษณ์",
+  DU_MEN: "ประตูปิด",
+  SHANG_MEN: "ประตูบาดเจ็บ",
+  JING_FEAR_MEN: "ประตูตื่นตกใจ",
+  SI_MEN: "ประตูตาย",
+  ZHI_FU: "เทพจื๋อฟู",
+  TENG_SHE: "เทพเถิงเสอ",
+  TAI_YIN: "เทพไท่อิน",
+  LIU_HE: "เทพลิ่วเหอ",
+  BAI_HU: "เทพไป๋หู่",
+  XUAN_WU: "เทพเสวียนอู่",
+  JIU_DI: "เทพจิ่วตี้",
+  JIU_TIAN: "เทพจิ่วเทียน",
+  ZHU_QUE: "เทพจูเชวี่ย",
+  TIAN_PENG: "ดาวเทียนเผิง",
+  TIAN_REN: "ดาวเทียนเริ่น",
+  TIAN_CHONG: "ดาวเทียนชง",
+  TIAN_FU: "ดาวเทียนฝู่",
+  TIAN_YING: "ดาวเทียนอิง",
+  TIAN_RUI: "ดาวเทียนรุ่ย",
+  TIAN_ZHU: "ดาวเทียนจู้",
+  TIAN_XIN: "ดาวเทียนซิน",
+  TIAN_QIN: "ดาวเทียนฉิน",
+};
+
+const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> = {
+  wealth: {
+    goodDoors: ["SHENG_MEN", "KAI_MEN"],
+    avoidDoors: ["SI_MEN", "SHANG_MEN", "JING_FEAR_MEN"],
+    goodDeities: ["ZHI_FU", "LIU_HE", "JIU_TIAN"],
+    avoidDeities: ["XUAN_WU", "BAI_HU"],
+    goodStars: ["TIAN_REN", "TIAN_FU", "TIAN_XIN"],
+    maxPositiveDelta: 6,
+    maxNegativeDelta: -8,
+    avoidDoorCap: 49,
+  },
+  work: {
+    goodDoors: ["KAI_MEN", "SHENG_MEN", "JING_VIEW_MEN"],
+    avoidDoors: ["SI_MEN", "JING_FEAR_MEN", "SHANG_MEN"],
+    goodDeities: ["ZHI_FU", "JIU_TIAN", "LIU_HE"],
+    avoidDeities: ["BAI_HU", "TENG_SHE"],
+    goodStars: ["TIAN_FU", "TIAN_XIN"],
+    maxPositiveDelta: 5,
+    maxNegativeDelta: -7,
+    avoidDoorCap: 52,
+  },
+  business: {
+    goodDoors: ["SHENG_MEN", "KAI_MEN"],
+    avoidDoors: ["SI_MEN", "DU_MEN", "JING_FEAR_MEN", "SHANG_MEN"],
+    goodDeities: ["JIU_TIAN", "JIU_DI", "LIU_HE", "ZHI_FU"],
+    avoidDeities: ["BAI_HU", "TENG_SHE", "XUAN_WU"],
+    goodStars: ["TIAN_REN", "TIAN_FU", "TIAN_XIN"],
+    maxPositiveDelta: 6,
+    maxNegativeDelta: -8,
+    avoidDoorCap: 49,
+  },
+  negotiation: {
+    goodDoors: ["XIU_MEN", "KAI_MEN"],
+    avoidDoors: ["JING_FEAR_MEN", "SHANG_MEN", "SI_MEN"],
+    goodDeities: ["LIU_HE", "TAI_YIN", "ZHI_FU"],
+    avoidDeities: ["BAI_HU", "TENG_SHE", "XUAN_WU"],
+    goodStars: ["TIAN_FU", "TIAN_XIN"],
+    maxPositiveDelta: 6,
+    maxNegativeDelta: -8,
+    avoidDoorCap: 49,
+  },
+  travel: {
+    goodDoors: ["KAI_MEN", "XIU_MEN", "SHENG_MEN"],
+    avoidDoors: ["SI_MEN", "DU_MEN", "JING_FEAR_MEN", "SHANG_MEN"],
+    goodDeities: ["JIU_TIAN", "LIU_HE", "ZHI_FU"],
+    avoidDeities: ["BAI_HU", "TENG_SHE"],
+    goodStars: ["TIAN_CHONG", "TIAN_FU"],
+    goodFlags: ["is_traveling_horse", "traveling_horse", "horse", "驛馬"],
+    maxPositiveDelta: 6,
+    maxNegativeDelta: -8,
+    avoidDoorCap: 48,
+  },
+  love: {
+    goodDoors: ["XIU_MEN", "SHENG_MEN", "KAI_MEN"],
+    avoidDoors: ["SI_MEN", "SHANG_MEN", "JING_FEAR_MEN"],
+    goodDeities: ["LIU_HE", "TAI_YIN", "ZHI_FU"],
+    avoidDeities: ["BAI_HU", "TENG_SHE"],
+    goodStars: ["TIAN_FU"],
+    maxPositiveDelta: 5,
+    maxNegativeDelta: -7,
+    avoidDoorCap: 52,
+  },
+  marriage: {
+    goodDoors: ["XIU_MEN", "SHENG_MEN", "KAI_MEN"],
+    avoidDoors: ["SI_MEN", "SHANG_MEN", "JING_FEAR_MEN"],
+    goodDeities: ["LIU_HE", "TAI_YIN", "ZHI_FU"],
+    avoidDeities: ["BAI_HU", "TENG_SHE"],
+    goodStars: ["TIAN_FU", "TIAN_REN"],
+    maxPositiveDelta: 5,
+    maxNegativeDelta: -8,
+    avoidDoorCap: 49,
+  },
+  health: {
+    goodDoors: ["XIU_MEN", "SHENG_MEN"],
+    avoidDoors: ["SI_MEN", "SHANG_MEN", "JING_FEAR_MEN"],
+    goodDeities: ["JIU_DI", "TAI_YIN", "ZHI_FU"],
+    avoidDeities: ["BAI_HU", "TENG_SHE"],
+    goodStars: ["TIAN_XIN"],
+    avoidStars: ["TIAN_RUI"],
+    maxPositiveDelta: 4,
+    maxNegativeDelta: -9,
+    avoidDoorCap: 39,
+  },
+  exam: {
+    goodDoors: ["JING_VIEW_MEN", "KAI_MEN", "XIU_MEN"],
+    avoidDoors: ["SI_MEN", "JING_FEAR_MEN", "DU_MEN"],
+    goodDeities: ["ZHI_FU", "TAI_YIN", "JIU_TIAN"],
+    avoidDeities: ["BAI_HU", "TENG_SHE"],
+    goodStars: ["TIAN_FU", "TIAN_XIN"],
+    maxPositiveDelta: 5,
+    maxNegativeDelta: -7,
+    avoidDoorCap: 52,
+  },
+  construction: {
+    goodDoors: ["SHENG_MEN", "KAI_MEN"],
+    avoidDoors: ["SI_MEN", "SHANG_MEN", "JING_FEAR_MEN"],
+    goodDeities: ["JIU_DI", "ZHI_FU"],
+    avoidDeities: ["BAI_HU", "TENG_SHE"],
+    goodStars: ["TIAN_REN", "TIAN_XIN"],
+    maxPositiveDelta: 5,
+    maxNegativeDelta: -8,
+    avoidDoorCap: 49,
+  },
+};
+
+const QIMEN_DIRECTION_ALIASES: Record<Dir8, string[]> = {
+  N: ["N", "北", "north"],
+  NE: ["NE", "東北", "东北", "northeast"],
+  E: ["E", "東", "东", "east"],
+  SE: ["SE", "東南", "东南", "southeast"],
+  S: ["S", "南", "south"],
+  SW: ["SW", "西南", "southwest"],
+  W: ["W", "西", "west"],
+  NW: ["NW", "西北", "northwest"],
+};
+const QIMEN_TARGET_MISMATCH = Symbol("qimen-target-direction-mismatch");
+
+function qimenNormalizeTerm(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!raw) return null;
+  if (QIMEN_TERM_ZH[raw]) return raw;
+  if (QIMEN_TERM_CODE_BY_ZH[raw]) return QIMEN_TERM_CODE_BY_ZH[raw];
+  const compact = raw.toUpperCase().replace(/[\s-]+/g, "_");
+  if (QIMEN_TERM_ZH[compact]) return compact;
+  return null;
+}
+
+function qimenLabel(code: string): string {
+  const th = QIMEN_TERM_TH[code] || code;
+  const zh = QIMEN_TERM_ZH[code];
+  return zh ? `${th} ${zh}` : th;
+}
+
+function qimenReadPath(obj: any, path: string): unknown {
+  return path.split(".").reduce((acc: any, key) => {
+    if (acc == null || typeof acc !== "object") return undefined;
+    return acc[key];
+  }, obj);
+}
+
+function qimenFirstTerm(...values: unknown[]): string | null {
+  for (const value of values) {
+    const code = qimenNormalizeTerm(value);
+    if (code) return code;
+  }
+  return null;
+}
+
+function qimenFindTargetPalace(raw: any, targetDirection: Dir8 | null): any {
+  const palaces = Array.isArray(raw?.palaces)
+    ? raw.palaces
+    : Array.isArray(raw?.chart?.palaces)
+      ? raw.chart.palaces
+      : [];
+  if (targetDirection && palaces.length) {
+    const aliases = new Set(QIMEN_DIRECTION_ALIASES[targetDirection].map((x) => x.toLowerCase()));
+    const byDirection = palaces.find((p: any) => {
+      const fields = [p?.direction, p?.dir, p?.direction_code, p?.direction_zh, p?.direction_label];
+      return fields.some((v) => typeof v === "string" && aliases.has(v.trim().toLowerCase()));
+    });
+    if (byDirection) return byDirection;
+    return QIMEN_TARGET_MISMATCH;
+  }
+  return raw?.best_palace || raw?.bestPalace || raw?.selected_palace || raw?.target_palace || raw?.palace || null;
+}
+
+function qimenHasFlag(qm: any, raw: any, palace: any, names: string[] = []): boolean {
+  const tags = Array.isArray(qm?.tags) ? qm.tags.map((t: unknown) => String(t).toLowerCase()) : [];
+  return names.some((name) => {
+    const low = name.toLowerCase();
+    if (tags.includes(low)) return true;
+    return Boolean(raw?.[name] || palace?.[name] || raw?.flags?.[name] || palace?.flags?.[name]);
+  });
+}
+
+function applyQimenActivityPreference(input: {
+  profile: ActivityProfile;
+  qm: ModuleResult;
+  targetDirection: Dir8 | null;
+  addUp: (code: string, thai: string, delta: number, source: ModuleKey) => boolean;
+  addDown: (code: string, thai: string, delta: number, source: ModuleKey) => boolean;
+  cap: (value: number, code: string, thai: string, source: ModuleKey) => void;
+  shiftScore: (delta: number) => void;
+}) {
+  const pref = QIMEN_ACTIVITY_PREFERENCES[input.profile.qimenPurpose];
+  if (!pref || !input.qm || input.qm.status === "missing" || input.qm.status === "error") return;
+
+  const raw = input.qm.raw || {};
+  if (input.qm.pass === false || raw.bad_door === true) return;
+  const palace = qimenFindTargetPalace(raw, input.targetDirection);
+  if (palace === QIMEN_TARGET_MISMATCH) return;
+  const door = qimenFirstTerm(
+    palace?.door_code, palace?.door_zh, palace?.door,
+    raw.door_code, raw.door_zh, raw.door,
+    qimenReadPath(raw, "best_palace.door_code"),
+    qimenReadPath(raw, "best_palace.door_zh"),
+    qimenReadPath(raw, "bestPalace.door_code"),
+    qimenReadPath(raw, "bestPalace.door_zh"),
+  );
+  const deity = qimenFirstTerm(
+    palace?.deity_code, palace?.deity_zh, palace?.deity,
+    raw.deity_code, raw.deity_zh, raw.deity,
+    qimenReadPath(raw, "best_palace.deity_code"),
+    qimenReadPath(raw, "best_palace.deity_zh"),
+    qimenReadPath(raw, "bestPalace.deity_code"),
+    qimenReadPath(raw, "bestPalace.deity_zh"),
+  );
+  const star = qimenFirstTerm(
+    palace?.star_code, palace?.star_zh, palace?.star,
+    raw.star_code, raw.star_zh, raw.star,
+    qimenReadPath(raw, "best_palace.star_code"),
+    qimenReadPath(raw, "best_palace.star_zh"),
+    qimenReadPath(raw, "bestPalace.star_code"),
+    qimenReadPath(raw, "bestPalace.star_zh"),
+  );
+
+  let delta = 0;
+  let avoidDoorCap: number | null = null;
+  if (door && pref.goodDoors.includes(door)) {
+    delta += 3;
+    input.addUp(
+      "PROFILE_QIMEN_GOOD_DOOR",
+      `${input.profile.labelTh}: ประตูฉีเหมินหนุนกิจกรรมนี้ · ${qimenLabel(door)}`,
+      3,
+      "qi_men",
+    );
+  }
+  if (door && pref.avoidDoors.includes(door)) {
+    delta -= 5;
+    input.addDown(
+      "PROFILE_QIMEN_AVOID_DOOR",
+      `${input.profile.labelTh}: ประตูฉีเหมินไม่เหมาะกับกิจกรรมนี้ · ${qimenLabel(door)}`,
+      -5,
+      "qi_men",
+    );
+    avoidDoorCap = input.profile.safety === "medical_safe" ? Math.min(pref.avoidDoorCap, 39) : pref.avoidDoorCap;
+  }
+  if (deity && pref.goodDeities?.includes(deity)) {
+    delta += 1;
+    input.addUp(
+      "PROFILE_QIMEN_GOOD_DEITY",
+      `${input.profile.labelTh}: เทพฉีเหมินช่วยบริบทกิจกรรม · ${qimenLabel(deity)}`,
+      1,
+      "qi_men",
+    );
+  }
+  if (deity && pref.avoidDeities?.includes(deity)) {
+    delta -= 2;
+    input.addDown(
+      "PROFILE_QIMEN_AVOID_DEITY",
+      `${input.profile.labelTh}: เทพฉีเหมินทำให้ต้องระวัง · ${qimenLabel(deity)}`,
+      -2,
+      "qi_men",
+    );
+  }
+  if (star && pref.goodStars?.includes(star)) {
+    delta += 1;
+    input.addUp(
+      "PROFILE_QIMEN_GOOD_STAR",
+      `${input.profile.labelTh}: ดาวฉีเหมินเข้ากับงานนี้ · ${qimenLabel(star)}`,
+      1,
+      "qi_men",
+    );
+  }
+  if (star && pref.avoidStars?.includes(star)) {
+    delta -= 2;
+    input.addDown(
+      "PROFILE_QIMEN_AVOID_STAR",
+      `${input.profile.labelTh}: ดาวฉีเหมินเป็นจุดต้องระวัง · ${qimenLabel(star)}`,
+      -2,
+      "qi_men",
+    );
+  }
+  if (pref.goodFlags?.length && qimenHasFlag(input.qm, raw, palace, pref.goodFlags)) {
+    delta += 1;
+    input.addUp(
+      "PROFILE_QIMEN_GOOD_FLAG",
+      `${input.profile.labelTh}: มีสัญญาณเคลื่อนไหวที่เข้ากับงานนี้ · ม้าเดินทาง 驛馬`,
+      1,
+      "qi_men",
+    );
+  }
+
+  const bounded = Math.max(pref.maxNegativeDelta, Math.min(pref.maxPositiveDelta, delta));
+  if (bounded !== 0) input.shiftScore(bounded);
+  if (avoidDoorCap != null) {
+    input.cap(
+      avoidDoorCap,
+      "PROFILE_QIMEN_AVOID_DOOR_CAP",
+      `${input.profile.labelTh}: ประตูฉีเหมินเป็นกลุ่มควรเลี่ยง · ไม่ดันเป็นฤกษ์แรง`,
+      "qi_men",
+    );
+  }
+}
+
 function applyActivityProfileRules(
   c: CandidateSlot,
   profile: ActivityProfile | null,
   activeModules: ModuleKey[],
+  targetDirection: Dir8 | null = null,
 ): CandidateSlot {
   if (!profile || profile.profileMode !== "modern" || !c.scoring) return c;
 
@@ -495,24 +870,30 @@ function applyActivityProfileRules(
   const scoring = c.scoring as any;
   const addWarning = (code: string, thai: string, delta: number, source: ModuleKey) => {
     scoring.warnings = scoring.warnings || [];
-    if (scoring.warnings.some((r: any) => r.code === code)) return;
+    if (scoring.warnings.some((r: any) => r.code === code)) return false;
     scoring.warnings.push({ code, thai, delta, source, severity: "warning" });
+    return true;
   };
   const addDown = (code: string, thai: string, delta: number, source: ModuleKey) => {
     scoring.reasonsDown = scoring.reasonsDown || [];
-    if (scoring.reasonsDown.some((r: any) => r.code === code)) return;
+    if (scoring.reasonsDown.some((r: any) => r.code === code)) return false;
     scoring.reasonsDown.unshift({ code, thai, delta, source, severity: "warning" });
+    return true;
   };
   const addUp = (code: string, thai: string, delta: number, source: ModuleKey) => {
     scoring.reasonsUp = scoring.reasonsUp || [];
-    if (scoring.reasonsUp.some((r: any) => r.code === code)) return;
+    if (scoring.reasonsUp.some((r: any) => r.code === code)) return false;
     scoring.reasonsUp.unshift({ code, thai, delta, source, severity: "info" });
+    return true;
   };
   const cap = (value: number, code: string, thai: string, source: ModuleKey) => {
     if (scoring.finalScore > value) {
       addDown(code, thai, value - scoring.finalScore, source);
       scoring.finalScore = value;
     }
+  };
+  const shiftScore = (delta: number) => {
+    scoring.finalScore += delta;
   };
 
   const qm = modules?.qi_men;
@@ -521,6 +902,9 @@ function applyActivityProfileRules(
   const bz = modules?.ba_zi;
   const ys = modules?.yong_shen;
 
+  if (active.has("qi_men") && qm && qm.status !== "missing" && qm.status !== "error") {
+    applyQimenActivityPreference({ profile, qm, targetDirection, addUp, addDown, cap, shiftScore });
+  }
   if (active.has("qi_men") && (qm?.pass === false || qm?.raw?.bad_door === true)) {
     const limit = profile.safety === "medical_safe" ? 39 : 54;
     cap(limit, "PROFILE_QIMEN_CAP", `${profile.labelTh}: ฉีเหมินไม่รับภารกิจนี้ · จำกัดคะแนนยาม`, "qi_men");
