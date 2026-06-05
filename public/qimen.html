@@ -187,6 +187,9 @@
   .palace.q10x .home-mk{color:var(--gold);font-size:10px;}
   .palace.q10x .qi-mk{font-family:var(--tc);font-size:9px;color:#2ea043;background:rgba(46,160,67,.18);padding:0 3px;border-radius:3px;margin-left:1px;vertical-align:super;}
   .palace.q10x .fu-mk,.palace.q10x .shi-mk{font-family:var(--tc);font-size:10px;background:var(--gold);color:var(--bg);padding:1px 4px;border-radius:3px;font-weight:700;}
+  .palace.q10x .p0-mk{font-family:var(--thai);font-size:9px;line-height:1;padding:2px 5px;border-radius:999px;border:1px solid var(--tile-bd);background:var(--tile);color:var(--fg-soft);max-width:46px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .palace.q10x .p0-mk.p0-good{border-color:rgba(46,160,67,.45);background:rgba(46,160,67,.12);color:#2ea043;}
+  .palace.q10x .p0-mk.p0-bad{border-color:rgba(217,102,80,.55);background:rgba(217,102,80,.12);color:#d96650;}
   .palace.q10x.q-good{border-left:3px solid #2ea043;}
   .palace.q10x.q-bad{border-left:3px solid #d96650;}
   .school-toggle button:disabled{opacity:.5;cursor:not-allowed;}
@@ -438,6 +441,7 @@
     .palace.q10x .p-deity .th,
     .palace.q10x .p-star .th,
     .palace.q10x .p-door .th{display:block;font-size:6px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .palace.q10x .p0-mk{font-size:7px;padding:1px 3px;max-width:28px;}
     .palace.q10x .p-deity .cn{font-size:13px;}
     .palace.q10x .p-star .cn{font-size:15px;}
     .palace.q10x .p-door .cn{font-size:13px;}
@@ -1011,6 +1015,111 @@ window.applyI18N = applyI18N;
     if (!want.size) return false;
     return palaceBranches(p).some(b => want.has(b));
   }
+  function qmTraceArray(raw, inheritedCode){
+    if (raw == null || raw === false) return [];
+    if (Array.isArray(raw)) return raw.flatMap(x => qmTraceArray(x, inheritedCode));
+    if (typeof raw === 'string') {
+      const s = raw.trim();
+      if (!s) return [];
+      if (s[0] === '[' || s[0] === '{') {
+        try { return qmTraceArray(JSON.parse(s), inheritedCode); } catch {}
+      }
+      return [{ code: inheritedCode || s, label_th: s }];
+    }
+    if (typeof raw !== 'object') return [{ code: inheritedCode || String(raw), label_th: String(raw) }];
+    const traceKeys = ['code','flag','detector','rule','rule_id','name_th','name_zh','label_th','label_zh','badge','badge_th','priority','palace_id','scope_ref'];
+    if (traceKeys.some(k => Object.prototype.hasOwnProperty.call(raw, k))) {
+      return [{ ...raw, code: raw.code || raw.flag || raw.detector || raw.rule || raw.rule_id || inheritedCode || '' }];
+    }
+    return Object.entries(raw).flatMap(([key, value]) => {
+      if (value == null || value === false) return [];
+      if (value === true) return [{ code: key, label_th: key }];
+      return qmTraceArray(value, key).map(item => ({ ...item, code: item.code || key }));
+    });
+  }
+  function qmTracePalaceId(item){
+    const raw = item?.palace_id ?? item?.palaceId ?? item?.scope_ref ?? item?.scopeRef
+      ?? item?.target_palace_id ?? item?.targetPalaceId ?? item?.gong_id ?? item?.palace;
+    const n = Number(raw);
+    if (Number.isFinite(n) && n >= 1 && n <= 9) return n;
+    const text = String(raw || item?.scope || '');
+    const m = text.match(/\b([1-9])\b/);
+    return m ? Number(m[1]) : null;
+  }
+  function qmTraceTone(item){
+    const s = String(item?.tone || item?.severity || item?.quality || item?.level || item?.kind || item?.effect || '').toLowerCase();
+    if (s.includes('good') || s.includes('auspicious') || s.includes('benefit') || s.includes('吉')) return 'good';
+    if (s.includes('bad') || s.includes('risk') || s.includes('avoid') || s.includes('danger') || s.includes('caution') || s.includes('warning') || s.includes('hard') || s.includes('凶') || s.includes('penalty')) return 'bad';
+    return 'neutral';
+  }
+  function qmTraceLabel(item){
+    const code = item?.code || item?.flag || item?.detector || item?.rule_id || '';
+    const zh = item?.name_zh || item?.label_zh || item?.title_zh || item?.zh || item?.term_zh || '';
+    const th = item?.name_th || item?.label_th || item?.title_th || item?.badge_th || item?.text_th || item?.note_th || item?.description_th || item?.title || '';
+    const short = item?.label || item?.badge_th || item?.badge || item?.short_th || item?.short || th || zh || code || 'P0';
+    return {
+      code: String(code || short || 'P0'),
+      th: String(th || short || code || 'สัญญาณ P0'),
+      zh: String(zh || ''),
+      short: String(short || 'P0'),
+    };
+  }
+  function qmSourceLabel(item){
+    const raw = item?.source || item?.source_ref || item?.source_id || item?.source_refs || item?._source_key || '';
+    if (!raw) return '';
+    if (Array.isArray(raw)) return raw.join(' · ');
+    if (typeof raw === 'object') return raw.source_id || raw.id || raw.title_th || raw.file_path || '';
+    return String(raw);
+  }
+  function qimenP0SignalsForPalace(p, last){
+    const pid = Number(p?.palace_id);
+    const out = [];
+    const add = (raw, sourceKey, forcePalace) => {
+      qmTraceArray(raw).forEach(item => {
+        const tracePid = qmTracePalaceId(item);
+        if (!forcePalace && tracePid !== pid) return;
+        out.push({ ...item, _source_key: sourceKey });
+      });
+    };
+    add(p?.qimen_trace, 'palace.qimen_trace', true);
+    add(p?.classical_flags, 'palace.classical_flags', true);
+    add(p?.p0_badges, 'palace.p0_badges', true);
+    add(p?.source_trace, 'palace.source_trace', true);
+    if (!out.length) add(p?.p0_flags, 'palace.p0_flags', true);
+    const seen = new Set();
+    return out.filter(item => {
+      const label = qmTraceLabel(item);
+      const key = `${label.code}|${label.th}|${label.zh}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+  function renderP0GridBadges(signals){
+    if (!signals.length) return '';
+    const shown = signals.slice(0, 2).map(item => {
+      const label = qmTraceLabel(item);
+      const tone = qmTraceTone(item);
+      const title = [label.th, label.zh, item._source_key].filter(Boolean).join(' · ');
+      return `<span class="p0-mk p0-${tone}" title="${qmEsc(title)}">${qmEsc(label.short)}</span>`;
+    }).join('');
+    const more = signals.length > 2 ? `<span class="p0-mk" title="มีสัญญาณเพิ่มอีก ${signals.length - 2} รายการ">+${signals.length - 2}</span>` : '';
+    return shown + more;
+  }
+  function buildP0SourceTraceHtml(p, last){
+    const signals = qimenP0SignalsForPalace(p, last);
+    if (!signals.length) return '';
+    const rows = signals.slice(0, 8).map(item => {
+      const label = qmTraceLabel(item);
+      const tone = qmTraceTone(item);
+      const toneTh = tone === 'good' ? 'แรงเสริม' : tone === 'bad' ? 'สัญญาณระวัง' : 'ตัวชี้วัด';
+      const note = item.note_th || item.advice_th || item.reason_th || item.description_th || item.note || item.reason || '';
+      const src = item.source_label_th || qmSourceLabel(item) || '';
+      return `<li><b>${qmEsc(label.th)} ${label.zh ? `<span class="tc">${qmEsc(label.zh)}</span>` : ''}</b> · ${qmEsc(toneTh)}${note ? ` · ${qmEsc(note)}` : ''}${src ? ` · แหล่ง ${qmEsc(src)}` : ''}</li>`;
+    }).join('');
+    const more = signals.length > 8 ? `<li>ยังมี source trace เพิ่มอีก ${signals.length - 8} รายการ · เปิดดูในโหมดผู้เชี่ยวชาญเมื่อพร้อม</li>` : '';
+    return `<div class="qm-detail-extra"><h5>สัญญาณ P0/source จากตำรา · P0/來源</h5><ul>${rows}${more}<li>หมายเหตุ: UI แสดงตาม detector ที่ API ส่งมา ไม่เดาเอง และต้องอ่านร่วมกับประตู ดาว เทพ และก้านในวังนี้</li></ul></div>`;
+  }
   function internalExternalLabel(dir){
     if (!dir || dir === 'C') return { zh:'中', th:'กลาง', cls:'mid' };
     return INTERNAL_DIRS.has(dir)
@@ -1163,6 +1272,7 @@ window.applyI18N = applyI18N;
       const isZhiFu = ch.zhi_fu_palace_id === p.palace_id;
       const isZhiShi = ch.zhi_shi_palace_id === p.palace_id;
       const chartMk = (isZhiFu ? '<span class="fu-mk" title="直符">符</span>' : '') + (isZhiShi ? '<span class="shi-mk" title="值使">使</span>' : '');
+      const p0Mk = renderP0GridBadges(qimenP0SignalsForPalace(p, window._qimenLast));
 
       /* 📜 中宮 (palace 5) · 寄宮 ตามตำราคลาสสิก 煙波釣叟賦
          · ไม่มี 八門 (door) + ไม่มี 八神 (deity) — 八 = 8 ทิศ ไม่นับกลาง
@@ -1174,7 +1284,7 @@ window.applyI18N = applyI18N;
 
       return `<div class="palace q10x q-${starQ}${isCenterPalace ? ' palace-center' : ''}" data-pos="${p.palace_id}">
         <div class="p-corner-tl">
-          ${voidMk}${nobleMk}${clashMk}${ioMk}${fmMk}${home}${chartMk}
+          ${voidMk}${nobleMk}${clashMk}${ioMk}${fmMk}${home}${chartMk}${p0Mk}
         </div>
         <div class="p-corner-tr">
           ${horse}<div class="stem heaven">${sH}${threeQiH}</div>
@@ -1194,7 +1304,7 @@ window.applyI18N = applyI18N;
     }).join('');
   }
 
-  function renderFormations(stored, compound){
+  function renderFormations(stored, compound, sourceFormations){
     /* หา host element · ถ้ามี / สร้างใหม่ใต้ palace-wrap */
     let host = document.getElementById('qm-formations');
     if (!host){
@@ -1205,7 +1315,7 @@ window.applyI18N = applyI18N;
       host.style.cssText = 'margin-top:18px;padding:16px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:12px;display:flex;flex-direction:column;gap:8px;';
       pw.appendChild(host);
     }
-    const items = [...(stored||[]), ...(compound||[])];
+    const items = [...(stored||[]), ...(compound||[]), ...(sourceFormations||[])];
     if (!items.length){ host.innerHTML = '<div style="font-family:var(--thai);font-size:12px;color:var(--fg-faint);">ยังไม่พบรูปแบบพิเศษ · 無格局</div>'; return; }
     host.innerHTML = '<div style="font-family:var(--thai);font-size:12px;letter-spacing:.03em;color:var(--gold);margin-bottom:4px">รูปแบบพิเศษ · 格局</div>' +
       items.map(f => {
@@ -1231,7 +1341,8 @@ window.applyI18N = applyI18N;
   function formationItemsForPalace(last, palaceId){
     const stored = last?.stored_formations || [];
     const compound = last?.compound_formations || [];
-    return [...stored, ...compound].filter(f => f.scope === 'palace' && f.scope_ref === palaceId);
+    const sourceFormations = last?.source_formations || [];
+    return [...stored, ...compound, ...sourceFormations].filter(f => f.scope === 'palace' && f.scope_ref === palaceId);
   }
   function buildPalaceExtraHtml(p, last){
     const chart = last?.chart || {};
@@ -1370,7 +1481,7 @@ window.applyI18N = applyI18N;
       starCn ? `ดาว ${starName || ''} ${starCn}${starDesc ? ' · ' + starDesc : ''}` : '',
       deityCn ? `เทพ ${deityName || ''} ${deityCn}${deityAdv ? ' · ' + deityAdv : ''}` : '',
     ].filter(Boolean).join('\n');
-    const extraHtml = buildPalaceExtraHtml(p, last);
+    const extraHtml = buildPalaceExtraHtml(p, last) + buildP0SourceTraceHtml(p, last);
 
     host.innerHTML = `
       <div class="detail-head">
@@ -1550,7 +1661,7 @@ window.applyI18N = applyI18N;
       window._qimenLast = d;
       renderHeader(d.chart || {}, d.palaces || []);
       renderPalaces(d.palaces || []);
-      renderFormations(d.stored_formations || [], d.compound_formations || []);
+      renderFormations(d.stored_formations || [], d.compound_formations || [], d.source_formations || []);
       /* Step 3 · render detail panel หลัง palaces พร้อม · default = 直符 palace */
       try { renderCurrentDetail(window._qimenCurrentPalaceId); }
       catch(eDt){ console.warn('[qimen] detail render failed', eDt); }
