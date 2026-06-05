@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>hourkey · 玄空飛星 · Flying Star Feng Shui</title>
+<title>hourkey · 方位 · หาทิศบ้าน</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Serif+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=optional" rel="stylesheet"/>
@@ -82,6 +82,8 @@ nav .breadcrumb .cur{color:var(--gold);}
 
 main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .fs-workflow{display:flex;flex-direction:column;gap:24px;}
+.fs-workflow:not(.is-locked) .fs-preview-step{display:none;}
+.fs-workflow.is-locked .fs-lock-card{border-color:rgba(127,168,105,.55);background:linear-gradient(135deg,rgba(127,168,105,.16),rgba(13,15,18,.16));}
 .fs-step{background:linear-gradient(180deg,var(--bg-2),var(--bg-3));border:1px solid var(--gold-line);border-radius:22px;overflow:hidden;}
 .fs-step-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap;background:rgba(200,164,77,.045);}
 .fs-step-kicker{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;}
@@ -91,12 +93,12 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .fs-step-badge{font-family:var(--mono);font-size:11px;color:var(--bg);background:var(--gold);border-radius:999px;padding:7px 11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;}
 .fs-step-body{padding:18px;}
 .fs-step-body.no-pad{padding:0;}
-.fs-measure-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start;}
+.fs-measure-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start;}
 .fs-measure-grid.map-only{grid-template-columns:1fr;}
 .fs-compass-drawer{display:block;}
 .fs-compass-drawer summary{cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg-3);margin-bottom:12px;}
 .fs-compass-drawer .compass-card{max-width:none;}
-.fs-house-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start;}
+.fs-house-layout{display:block;}
 .fs-timing-layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:18px;align-items:start;}
 .fs-timing-stack{display:flex;flex-direction:column;gap:18px;}
 .fs-action-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;}
@@ -107,9 +109,23 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .fs-luopan-cta-title{font-family:var(--serif);font-size:22px;font-weight:500;color:var(--fg);line-height:1.15;}
 .fs-luopan-cta-title .tc{font-family:var(--tc);color:var(--gold);}
 .fs-luopan-cta-meta{font-family:var(--thai);font-size:12px;color:var(--fg-soft);line-height:1.55;margin-top:4px;}
-.fs-luopan-cta a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 18px;border-radius:10px;background:var(--gold);color:var(--bg);text-decoration:none;font-family:var(--mono);font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;}
-.fs-luopan-cta a:hover{background:var(--gold-bright);}
-.fs-luopan-cta a.disabled{opacity:.55;background:var(--bg-3);color:var(--fg-faint);border:1px solid var(--line);}
+.fs-luopan-cta a,.fs-luopan-cta button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 18px;border-radius:10px;background:var(--gold);color:var(--bg);text-decoration:none;font-family:var(--mono);font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;border:0;cursor:pointer;}
+.fs-luopan-cta a:hover,.fs-luopan-cta button:hover{background:var(--gold-bright);}
+.fs-luopan-cta a.disabled,.fs-luopan-cta button.disabled{opacity:.55;background:var(--bg-3);color:var(--fg-faint);border:1px solid var(--line);cursor:default;}
+.fs-lock-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px;}
+.fs-lock-pill{padding:9px 10px;border-radius:10px;background:rgba(13,15,18,.26);border:1px solid var(--line);}
+.fs-lock-pill b{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:3px;}
+.fs-lock-pill span{font-family:var(--thai);font-size:13px;color:var(--fg);}
+.fs-measure-note{margin-top:10px;font-size:12px;line-height:1.6;color:var(--fg-soft);}
+.fs-measure-note b{color:var(--gold-bright);}
+body.fs-direction-gate .school-row{display:none;}
+body.fs-direction-gate #compassLuckRing,
+body.fs-direction-gate #qimenDoorRing,
+body.fs-direction-gate .compass-luck-legend,
+body.fs-direction-gate .map-layer-controls{display:none;}
+body.fs-direction-gate .direction-breakdown .dir-badge{background:var(--gold)!important;color:var(--bg);text-shadow:none;}
+body.fs-direction-gate .direction-breakdown .db-v{text-align:left;}
+@media(max-width:720px){.fs-lock-summary{grid-template-columns:1fr 1fr;}}
 @media(max-width:1080px){.fs-measure-grid,.fs-house-layout,.fs-timing-layout{grid-template-columns:1fr;}}
 .grid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
 @media(max-width:1080px){.grid{grid-template-columns:1fr;}}
@@ -513,7 +529,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   .layer-btn,.school-btn,.fs-action-btn,.map-btn,.map-layer-btn,.plan-tool-btn{min-width:0;justify-content:center;text-align:center;white-space:normal;overflow-wrap:anywhere;line-height:1.25;}
   .layer-btn,.school-btn,.fs-action-btn{flex:1 1 calc(50% - 6px);}
   .fs-luopan-cta{align-items:flex-start;}
-  .fs-luopan-cta a{width:100%;white-space:normal;letter-spacing:.08em;}
+  .fs-luopan-cta a,.fs-luopan-cta button{width:100%;white-space:normal;letter-spacing:.08em;}
   .map-head{align-items:stretch;}
   .map-head h4{width:100%;line-height:1.5;}
   .map-controls .map-btn{flex:1 1 calc(50% - 4px);}
@@ -595,20 +611,11 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 </header>
 
 
-<nav>
-  <a href="/" class="logo"><span class="seal">時</span> hourkey</a>
-  <div class="breadcrumb">
-    <a href="/">Home</a><span class="sep">/</span>
-    <span class="cur">玄空飛星 Flying Star</span>
-  </div>
-  <!-- 16 พ.ค. 2026: theme-toggle ลบ · ใช้ avatar menu (hk-user-menu) ตำแหน่งเดียว -->
-</nav>
-
 <section class="hero">
-  <div class="eyebrow">陽宅 · HOUSE FENG SHUI WORKFLOW · PERIOD 9</div>
-  <h1>ตั้งดวงบ้าน <span  class="tc" data-i18n="auto.f.001">วัดทิศ → ผังบ้าน → แปลน → จังหวะเวลา</span></h1>
+  <div class="eyebrow">方位 · HOUSE DIRECTION GATE · FIRST STEP</div>
+  <h1>หาทิศบ้าน <span  class="tc" data-i18n="auto.f.001">วัดทิศ → ยืนยัน → พรีวิว</span></h1>
   <p class="sub">
-    เริ่มจากวัด Facing บน Google Map ให้แม่น · ใส่ปีสร้างเพื่อขึ้นผังดาวบ้านถาวร · วางแปลนจริง · แล้วค่อยดูจังหวะปี/เดือน/วัน/ยาม
+    หน้านี้มีไว้สำหรับคนที่ยังไม่รู้ว่าหน้าบ้านหันกี่องศา ใช้แผนที่ เข็มทิศมือถือ หรือกรอกค่าที่วัดเอง แล้วล็อกทิศบ้านก่อนอ่านภาพรวมเบื้องต้น
   </p>
 </section>
 
@@ -647,37 +654,36 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="meta">宅運 <b id="hdPeriod">9</b> · 年 <b id="hdYear">1</b> · 月 <b id="hdMonth">5</b> · 日 <b id="hdDay">5</b></div>
     </div>
     <div class="house-config" id="houseConfig">
-      <div class="house-config-title">House Facing and Construction Period · ตั้งค่าบ้าน</div>
+      <div class="house-config-title">ยืนยันทิศบ้าน · Facing and Period</div>
       <div class="house-config-grid">
         <div class="house-field">
-          <label for="houseName">House name</label>
+          <label for="houseName">ชื่อบ้าน</label>
           <input id="houseName" type="text" value="บ้านของฉัน" maxlength="80"/>
         </div>
         <div class="house-field">
-          <label for="houseFacingDeg">Facing degrees</label>
-          <input id="houseFacingDeg" type="number" min="0" max="359.9" step="0.1" value="180"/>
+          <label for="houseFacingDeg">องศาหน้าบ้าน</label>
+          <input id="houseFacingDeg" type="number" min="0" max="359.9" step="0.1" placeholder="0-359.9"/>
         </div>
         <div class="house-field">
-          <label for="houseFacingMountain">Facing mountain</label>
+          <label for="houseFacingMountain">24 ซาน</label>
           <select id="houseFacingMountain"></select>
         </div>
         <div class="house-field">
-          <label for="houseConstructionYear">Construction year</label>
+          <label for="houseConstructionYear">ปีสร้าง/รีโนเวทใหญ่</label>
           <input id="houseConstructionYear" type="number" min="1864" max="2100" value="2026"/>
         </div>
         <div class="house-field">
-          <label for="housePeriod">Construction period</label>
+          <label for="housePeriod">ยุคบ้าน</label>
           <select id="housePeriod"></select>
         </div>
       </div>
       <div class="house-help">
-        ใช้สร้างผัง <b>山 ดาวภูเขา</b> · <b>水 ดาวแม่น้ำ</b> · <b>基 ดาวฐาน</b> ตรงกลาง 9 ช่อง · ค่าเริ่มต้น S2 180° / Period 9
+        หน้านี้ใช้ล็อก <b>องศาหน้าบ้าน</b> และ <b>ยุคบ้าน</b> ก่อนเท่านั้น ถ้ายังไม่ได้วัดจริงอย่าปล่อยให้ค่าตัวอย่างกลายเป็นคำตัดสิน
         <div class="fs-action-row">
-          <button class="fs-action-btn" id="btnCalcHouseChart">คำนวณผัง</button>
-          <button class="fs-action-btn" id="btnOpenLuopanFromHouse">วิเคราะห์เต็มในหล่อแก</button>
+          <button class="fs-action-btn" id="btnCalcHouseChart">ยืนยันทิศบ้าน</button>
           <button class="fs-action-btn" id="btnSaveHouse">บันทึกบ้าน</button>
           <button class="fs-action-btn" id="btnLoadHouse">โหลดบ้าน</button>
-          <span class="fs-save-status" id="houseSaveStatus">บันทึกในเครื่องนี้อัตโนมัติ</span>
+          <span class="fs-save-status" id="houseSaveStatus">ยังไม่ได้ยืนยันทิศบ้าน</span>
         </div>
       </div>
     </div>
@@ -728,13 +734,13 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           <select id="pfRoom" class="full">
             <option value="">— ห้องประจำ (optional) —</option>
             <option value="N">N · เหนือ</option>
-            <option value="NE">NE · ตอน.เฉียงเหนือ</option>
+            <option value="NE">NE · ทิศตะวันออกเฉียงเหนือ</option>
             <option value="E">E · ตะวันออก</option>
-            <option value="SE">SE · ตอน.เฉียงใต้</option>
+            <option value="SE">SE · ทิศตะวันออกเฉียงใต้</option>
             <option value="S">S · ใต้</option>
-            <option value="SW">SW · ตต.เฉียงใต้</option>
+            <option value="SW">SW · ทิศตะวันตกเฉียงใต้</option>
             <option value="W">W · ตะวันตก</option>
-            <option value="NW">NW · ตต.เฉียงเหนือ</option>
+            <option value="NW">NW · ทิศตะวันตกเฉียงเหนือ</option>
             <option value="C">C · ศูนย์กลาง</option>
           </select>
           <button  class="add-btn" id="btnAddPerson" data-i18n="auto.f.007">+ เพิ่ม</button>
@@ -748,15 +754,15 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
 <div class="geo-sec">
   <div class="geo-head">
-    <div class="label">羅盤 · GOOGLE MAP · 9 STARS</div>
-    <h2>ค้นหา <span class="tc">坐向</span> ทิศบ้าน · กำหนดทิศมงคล</h2>
-    <p>หา Facing จากแผนที่ดาวเทียม — ลากเส้น A→B ทาบผนังหน้าบ้าน แล้วระบบคำนวณทิศหันหน้าและส่งไปล็อกในหล่อแกเต็มได้ทันที</p>
+    <div class="label">方位 · GOOGLE MAP · COMPASS</div>
+    <h2>ค้นหา <span class="tc">坐向</span> ทิศหน้าบ้าน</h2>
+    <p>หา Facing จากแผนที่ดาวเทียมเป็นหลัก — ลากเส้น A→B ทาบผนังหน้าบ้าน แล้วกดยืนยันเมื่อมั่นใจว่าองศานี้คือทิศที่บ้านหันออกจริง</p>
   </div>
 
   <div class="geo-grid">
     <!-- Live Compass -->
     <div class="compass-card">
-      <h4 style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;">指南針 Live Compass</h4>
+      <h4 style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;">指南針 เข็มทิศช่วยวัด</h4>
       <div class="compass-svg-wrap">
         <svg class="compass-svg" viewBox="0 0 400 400">
           <circle cx="200" cy="200" r="195" fill="none" stroke="var(--gold-line)" stroke-width="1"/>
@@ -780,12 +786,8 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           </g>
         </svg>
       </div>
-      <div class="compass-luck-legend" aria-label="สีแถบมงคลบนเข็มทิศ">
-        <span><i style="background:#5fa86b"></i>ดี · ใช้ได้</span>
-        <span><i style="background:#c8a44d"></i>กลางดี</span>
-        <span><i style="background:#c8843f"></i>ต้องคุม</span>
-        <span><i style="background:#c95c4a"></i>เลี่ยง</span>
-        <span style="grid-column:1/-1;color:var(--fg-faint)">วงนอก = ดาวปี/ไท่ซุ่ย · จุดจีนด้านใน = ประตูฉีเหมินของเวลานั้น</span>
+      <div class="compass-luck-legend" aria-label="คำอธิบายเข็มทิศ">
+        <span style="grid-column:1/-1;color:var(--fg-faint)">เข็มทิศนี้ใช้ช่วยวัดองศาหน้าบ้านเท่านั้น ไม่ใช่คำตัดสินฮวงจุ้ย</span>
       </div>
       <div style="text-align:center;">
         <span class="compass-deg" id="compassDeg">—</span><span class="compass-deg-unit">°</span>
@@ -797,8 +799,8 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <button class="btn-compass secondary" id="btnFlipFacing" disabled>↔ สลับ Facing / Sitting</button>
       </div>
       <div class="direction-breakdown" id="directionBreakdown">
-        <h5>Direction Breakdown</h5>
-        <div style="color:var(--fg-faint)">กดแถบสีบนเข็มทิศ หรือวัดทิศบ้าน เพื่อดูเหตุผลของทิศนี้</div>
+        <h5>ข้อมูลทิศที่วัดได้</h5>
+        <div style="color:var(--fg-faint)">เริ่มจากแผนที่หรือเข็มทิศ แล้วกดยืนยันเมื่อมั่นใจว่าเป็นทิศหน้าบ้านจริง</div>
       </div>
       <div class="compass-help">
         <b>Tip:</b> หันหลังพิงประตูหน้าบ้าน · ถือมือถือขนานพื้น · ค่าที่ได้คือทิศที่บ้านหันออก<br/>
@@ -820,7 +822,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
           <button class="map-btn" id="btnMapZoomOut">－ ย่อ</button>
           <button class="map-btn" id="btnMapRoofZoom">🔍 หลังคา</button>
           <button class="map-btn" id="btnMapExpand">⛶ เต็มจอ</button>
-          <button class="map-btn" id="btnLockHouseFromMap">鎖 ล็อกทิศบ้าน</button>
+        <button class="map-btn" id="btnLockHouseFromMap">鎖 ยืนยันทิศบ้าน</button>
           <button  class="map-btn" id="btnClear" data-i18n="auto.f.017">↻ ล้าง</button>
         </div>
       </div>
@@ -846,8 +848,8 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <div class="mrb-cell"><b>Heading</b><span id="mrHeading">— °</span></div>
         <div class="mrb-cell"><b>Direction</b><span id="mrDirection">—</span></div>
         <div class="mrb-cell"><b>24 Mountain</b><span id="mr24Mtn" class="han">—</span></div>
-        <div class="mrb-cell"><b>64 Hex</b><span id="mrHex64" class="han">—</span></div>
-        <div class="mrb-cell"><b data-i18n="auto.f.018">vs ดวง</b><span id="mrVerdict">—</span></div>
+        <div class="mrb-cell"><b>หลังบ้าน</b><span id="mrHex64" class="han">—</span></div>
+        <div class="mrb-cell"><b data-i18n="auto.f.018">สถานะ</b><span id="mrVerdict">ยังไม่ยืนยัน</span></div>
       </div>
       <div class="map-instr">
         <b data-i18n="auto.f.019">🏠 ลากผนัง (แนะนำ):</b> <b data-i18n="auto.f.020">กด-ลากเส้น</b> ทาบขอบผนังหน้าบ้าน A→B · ถ้ายังไม่ขนาน ใช้ Fine Wall Fit หมุน B ทีละ 0.1° โดย A อยู่นิ่งจนเส้นทองขนานขอบผนัง · ลูกศรเขียวจุดกลาง = ทิศหันหน้า (ตั้งฉาก CW 90°) · เส้นเทา = ทิศหลัง<br/>
@@ -959,18 +961,20 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-//  WORKFLOW LAYOUT · map-first overview, then full analysis in Luopan
+//  WORKFLOW LAYOUT · direction gate first, preview only after lock
 // ═══════════════════════════════════════════════════════════════
 (function arrangeFengshuiWorkflow(){
   const main = document.querySelector('main');
   if(!main || main.dataset.fsArranged === '1') return;
   const topbar = document.querySelector('.topbar');
-  const schoolRow = document.querySelector('.school-row');
   const mapCard = document.querySelector('.map-card');
+  const compassCard = document.querySelector('.compass-card');
   const palaceGrid = document.querySelector('.palace-grid-wrap');
   const side = document.querySelector('.side');
   const planCard = document.getElementById('planCard');
-  if(!mapCard || !palaceGrid || !side || !planCard) return;
+  const houseConfig = document.getElementById('houseConfig');
+  if(!mapCard || !compassCard || !palaceGrid || !side || !planCard || !houseConfig) return;
+  document.body.classList.add('fs-direction-gate');
   planCard.remove();
 
   function step(no, zh, title, desc, badge){
@@ -993,33 +997,41 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   const flow = document.createElement('div');
   flow.className = 'fs-workflow';
 
-  const s1 = step(1, '坐向', 'หาทิศบ้าน · <span class="tc">Facing</span>', 'ใช้ Google Map ลากผนัง A→B แล้วปรับ +/− 0.1° ให้เส้นทองขนานขอบบ้าน จากนั้นกดล็อกทิศบ้านเพื่อส่งองศาไปทุกการ์ด', 'INPUT');
+  const s1 = step(1, '坐向', 'หาทิศบ้าน · <span class="tc">Facing</span>', 'วัดจากแผนที่เป็นหลัก ใช้เข็มทิศมือถือเป็นตัวช่วย หรือกรอกองศาที่วัดเอง แล้วกดยืนยันว่าทิศนี้คือหน้าบ้านจริง', 'INPUT');
   const measure = document.createElement('div');
-  measure.className = 'fs-measure-grid map-only';
+  measure.className = 'fs-measure-grid';
   measure.appendChild(mapCard);
+  measure.appendChild(compassCard);
   s1.body.appendChild(measure);
+  s1.body.appendChild(houseConfig);
   const cta = document.createElement('div');
-  cta.className = 'fs-luopan-cta';
+  cta.className = 'fs-luopan-cta fs-lock-card';
   cta.innerHTML = `
     <div>
-      <div class="fs-luopan-cta-title">ไปวิเคราะห์เต็มใน <span class="tc">羅盤</span> หล่อแก</div>
-      <div class="fs-luopan-cta-meta" id="luopanCtaMeta">ลากผนังหรือกดล็อกทิศบ้านก่อน แล้วระบบจะส่งองศา Facing ไปล็อกในหน้าหล่อแกอัตโนมัติ</div>
+      <div class="fs-luopan-cta-title">สถานะทิศบ้าน <span class="tc">坐向</span></div>
+      <div class="fs-luopan-cta-meta" id="luopanCtaMeta">ยังไม่ได้ยืนยันทิศบ้าน · ลากผนังบนแผนที่ ใช้เข็มทิศ หรือกรอกองศาเองก่อน</div>
+      <div class="fs-lock-summary" id="directionLockSummary">
+        <div class="fs-lock-pill"><b>Facing</b><span>—</span></div>
+        <div class="fs-lock-pill"><b>Sitting</b><span>—</span></div>
+        <div class="fs-lock-pill"><b>24 ซาน</b><span>—</span></div>
+        <div class="fs-lock-pill"><b>แหล่งที่มา</b><span>—</span></div>
+      </div>
+      <div class="fs-measure-note"><b>หลักสำคัญ:</b> ถ้ายังไม่ยืนยัน ระบบจะแสดงแค่ค่าที่วัดได้ ไม่เปิดผัง 9 ช่องเป็นคำแนะนำ</div>
     </div>
-    <a href="/luopan" id="btnOpenLuopanFull" class="disabled">วิเคราะห์เต็มในหล่อแก →</a>
+    <button type="button" id="btnOpenLuopanFull" class="disabled">รอยืนยันทิศ</button>
   `;
   s1.body.appendChild(cta);
 
-  const s2 = step(2, '宅盤', 'ผังบ้านหลังนี้ · <span class="tc">Flying Star</span>', 'ตั้งชื่อบ้าน ปีสร้าง/ปีรีโนเวทใหญ่ และ Period เพื่อคำนวณดาวภูเขา 山 ดาวแม่น้ำ 水 และดาวฐาน 基 ของบ้านหลังนี้', 'HOUSE');
+  const s2 = step(2, '九宮', 'พรีวิว 9 ช่องหลังล็อกทิศ · <span class="tc">Flying Star</span>', 'ใช้ดูภาพรวมเบื้องต้นของบ้านหลังนี้หลังยืนยันองศาแล้ว ยังไม่ใช่คำตัดสินวางประตู น้ำ เตียง หรือเตา', 'PREVIEW');
+  s2.wrap.classList.add('fs-preview-step');
   if(topbar) s2.body.appendChild(topbar);
-  if(schoolRow) s2.body.appendChild(schoolRow);
   const houseLayout = document.createElement('div');
   houseLayout.className = 'fs-house-layout';
   houseLayout.appendChild(palaceGrid);
-  const peopleCard = document.getElementById('peopleCard');
-  if(peopleCard) houseLayout.appendChild(peopleCard);
   s2.body.appendChild(houseLayout);
 
-  const s4 = step(3, '流年流月', 'จังหวะปัจจุบัน · <span class="tc">Timing</span>', 'ชั้นนี้คือความมงคลชั่วคราวของปี เดือน วัน ยาม รวมถึงไท่ซุ่ย 3 ชะ 5 เหลือง และรายละเอียดรายวัง ไม่ใช่โครงบ้านถาวร', 'LIVE');
+  const s4 = step(3, '流年流月', 'คำเตือนเวลาแบบย่อ · <span class="tc">Timing</span>', 'ชั้นนี้เป็นคำเตือนเบื้องต้นของปี เดือน วัน ยาม เพื่อให้รู้ว่าควรระวังทิศไหนก่อนอ่านละเอียด', 'LIVE');
+  s4.wrap.classList.add('fs-preview-step');
   const timingLayout = document.createElement('div');
   timingLayout.className = 'fs-timing-layout';
   const timingStack = document.createElement('div');
@@ -1034,6 +1046,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   s4.body.appendChild(timingLayout);
 
   [s1.wrap, s2.wrap, s4.wrap].forEach(x => flow.appendChild(x));
+  flow.classList.add('is-unlocked');
   main.dataset.fsArranged = '1';
   main.replaceChildren(flow);
 })();
@@ -1615,6 +1628,14 @@ let facingMode = 'facing';
 let lastFacingBearing = null;
 let lastSittingBearing = null;
 let measuredFacingReady = false;
+let houseDirectionLocked = false;
+let houseDirectionSource = '';
+const DIR_NAMES = [
+  {d:0,en:'N',th:'ทิศเหนือ'},{d:45,en:'NE',th:'ทิศตะวันออกเฉียงเหนือ'},
+  {d:90,en:'E',th:'ทิศตะวันออก'},{d:135,en:'SE',th:'ทิศตะวันออกเฉียงใต้'},
+  {d:180,en:'S',th:'ทิศใต้'},{d:225,en:'SW',th:'ทิศตะวันตกเฉียงใต้'},
+  {d:270,en:'W',th:'ทิศตะวันตก'},{d:315,en:'NW',th:'ทิศตะวันตกเฉียงเหนือ'}
+];
 
 function getCurrentTimeframe(){
   const yearVal = parseInt(document.getElementById('setYear').value);
@@ -1784,8 +1805,10 @@ function renderGrid(){
   });
 
   renderWarnings(taiSuiDir, threeKillDir, fiveYellowDir);
-  renderCompassLuckRing(gridYear, taiSuiDir, threeKillDir);
-  loadQimenDirectionOverlay();
+  if(!document.body.classList.contains('fs-direction-gate')){
+    renderCompassLuckRing(gridYear, taiSuiDir, threeKillDir);
+    loadQimenDirectionOverlay();
+  }
   renderPalaceDetail(activeDir, gridYear, gridMonth, gridDay, gridPeriod, gridMountain, gridWater, house);
   
   // store for map verdict
@@ -1929,7 +1952,7 @@ function initHouseInputs(){
   const saved = loadSavedHouseInputs(false);
   hasSavedPeriod = !!saved?.hasPeriod;
   if(!hasSavedPeriod) document.getElementById('housePeriod').value = getPeriodStar(Number(document.getElementById('houseConstructionYear').value || 2026));
-  syncHouseMountainFromDegree(false);
+  if(String(document.getElementById('houseFacingDeg')?.value ?? '').trim() !== '') syncHouseMountainFromDegree(false);
 }
 function readSavedHouseInputs(){
   try{ return JSON.parse(localStorage.getItem('hk-fs-house') || '{}') || {}; }
@@ -1963,9 +1986,10 @@ function loadSavedHouseInputs(showStatus=true){
 }
 function saveHouseInputs(){
   try{
+    const rawFacing = String(document.getElementById('houseFacingDeg')?.value ?? '').trim();
     localStorage.setItem('hk-fs-house', JSON.stringify({
       name: String(document.getElementById('houseName')?.value || '').trim() || 'บ้านของฉัน',
-      facingDeg: normalizeDeg(document.getElementById('houseFacingDeg').value),
+      facingDeg: rawFacing === '' ? null : normalizeDeg(rawFacing),
       constructionYear: Number(document.getElementById('houseConstructionYear').value),
       period: Number(document.getElementById('housePeriod').value)
     }));
@@ -1974,7 +1998,9 @@ function saveHouseInputs(){
   }catch(e){}
 }
 function syncHouseMountainFromDegree(save=true){
-  const deg = normalizeDeg(document.getElementById('houseFacingDeg').value);
+  const raw = String(document.getElementById('houseFacingDeg')?.value ?? '').trim();
+  if(raw === '') return;
+  const deg = normalizeDeg(raw);
   document.getElementById('houseFacingDeg').value = String(Math.round(deg * 10) / 10).replace(/\.0$/,'');
   const idx = get24MountainIndex(deg);
   const sel = document.getElementById('houseFacingMountain');
@@ -1999,6 +2025,42 @@ function setHouseFacingFromDegree(deg, scrollToGrid=false){
   if(typeof drawFloorPlan === 'function') drawFloorPlan();
   updateLuopanCta(normalized);
   if(scrollToGrid) document.querySelector('.palace-grid-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function getDirectionSourceLabel(source){
+  if(source === 'map') return 'แผนที่';
+  if(source === 'compass') return 'เข็มทิศมือถือ';
+  if(source === 'manual') return 'กรอกเอง';
+  if(source === 'saved') return 'ข้อมูลที่บันทึก';
+  return 'ยังไม่ระบุ';
+}
+function setFengshuiPreviewVisible(locked){
+  const flow = document.querySelector('.fs-workflow');
+  if(!flow) return;
+  flow.classList.toggle('is-locked', !!locked);
+  flow.classList.toggle('is-unlocked', !locked);
+}
+function renderDirectionLockSummary(deg){
+  const summary = document.getElementById('directionLockSummary');
+  if(!summary) return;
+  if(!Number.isFinite(Number(deg))){
+    summary.innerHTML = `
+      <div class="fs-lock-pill"><b>Facing</b><span>—</span></div>
+      <div class="fs-lock-pill"><b>Sitting</b><span>—</span></div>
+      <div class="fs-lock-pill"><b>24 ซาน</b><span>—</span></div>
+      <div class="fs-lock-pill"><b>แหล่งที่มา</b><span>—</span></div>
+    `;
+    return;
+  }
+  const facing = Math.round(normalizeDeg(deg) * 10) / 10;
+  const sitting = Math.round(normalizeDeg(facing + 180) * 10) / 10;
+  const fm = get24Mountain(facing);
+  const sm = get24Mountain(sitting);
+  summary.innerHTML = `
+    <div class="fs-lock-pill"><b>Facing</b><span>${facing}° · ${fsEsc(getDirectionName(facing))}</span></div>
+    <div class="fs-lock-pill"><b>Sitting</b><span>${sitting}° · ${fsEsc(getDirectionName(sitting))}</span></div>
+    <div class="fs-lock-pill"><b>24 ซาน</b><span>${fsEsc(fm.code || '')} ${fsEsc(fm.h)} · หลัง ${fsEsc(sm.code || '')} ${fsEsc(sm.h)}</span></div>
+    <div class="fs-lock-pill"><b>แหล่งที่มา</b><span>${fsEsc(getDirectionSourceLabel(houseDirectionSource))}</span></div>
+  `;
 }
 function getLuopanCtaDegree(){
   const headingText = String(document.getElementById('mrHeading')?.textContent || '');
@@ -2029,38 +2091,51 @@ function updateLuopanCta(deg){
   const meta = document.getElementById('luopanCtaMeta');
   if(!btn || !meta) return;
   const n = Number(deg);
-  if(!Number.isFinite(n)){
-    btn.href = '/luopan';
+  renderDirectionLockSummary(Number.isFinite(n) ? n : null);
+  setFengshuiPreviewVisible(houseDirectionLocked);
+  if(!houseDirectionLocked || !Number.isFinite(n)){
     btn.classList.add('disabled');
-    meta.textContent = 'ลากผนังหรือกดล็อกทิศบ้านก่อน แล้วระบบจะส่งองศา Facing ไปล็อกในหน้าหล่อแกอัตโนมัติ';
+    btn.textContent = 'รอยืนยันทิศ';
+    meta.textContent = Number.isFinite(n)
+      ? 'มีองศาที่วัดได้แล้ว · กดยืนยันทิศบ้านก่อนเปิดพรีวิว 9 ช่อง'
+      : 'ยังไม่ได้ยืนยันทิศบ้าน · ลากผนังบนแผนที่ ใช้เข็มทิศ หรือกรอกองศาเองก่อน';
     return;
   }
   const facing = Math.round(normalizeDeg(n) * 10) / 10;
-  const rawYear = String(document.getElementById('houseConstructionYear')?.value ?? '').trim();
-  const parsedYear = Number(rawYear);
-  const year = rawYear !== '' && Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
   const m = get24Mountain(facing);
-  const qs = new URLSearchParams({
-    facing: String(facing),
-    year: String(Number.isFinite(year) ? year : new Date().getFullYear()),
-    source: 'fengshui'
-  });
-  btn.href = `/luopan?${qs.toString()}`;
   btn.classList.remove('disabled');
-  meta.textContent = `พร้อมส่ง Facing ${facing}° · ${m.code || ''} ${m.h} ${m.pinyin} ไปล็อกในหน้าหล่อแกอัตโนมัติ`;
+  btn.textContent = 'ดูพรีวิว 9 ช่อง';
+  meta.textContent = `ยืนยันทิศบ้านแล้ว · Facing ${facing}° · ${m.code || ''} ${m.h} ${m.pinyin} · ที่มา: ${getDirectionSourceLabel(houseDirectionSource)}`;
 }
 function openLuopanFullFromCta(ev){
   ev.preventDefault();
   const deg = getLuopanCtaDegree();
   const meta = document.getElementById('luopanCtaMeta');
-  if(deg == null){
-    if(meta) meta.textContent = 'ยังไม่มีองศา Facing · ลากผนังบนแผนที่หรือกรอก Facing degrees ก่อน';
+  if(deg == null || !houseDirectionLocked){
+    if(meta) meta.textContent = 'ต้องกดยืนยันทิศบ้านก่อน ระบบจึงเปิดพรีวิว 9 ช่อง';
     return;
   }
-  setHouseFacingFromDegree(deg, false);
   updateLuopanCta(deg);
-  const href = document.getElementById('btnOpenLuopanFull')?.href || `/luopan?facing=${Math.round(deg * 10) / 10}&source=fengshui`;
-  window.location.href = href;
+  document.querySelector('.palace-grid-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function lockHouseDirection(deg, source='manual', scrollToGrid=true){
+  const n = Number(deg);
+  const st = document.getElementById('houseSaveStatus');
+  if(!Number.isFinite(n)){
+    if(st) st.textContent = 'ยังไม่มีองศาที่ใช้ยืนยัน';
+    updateLuopanCta(null);
+    return false;
+  }
+  houseDirectionLocked = true;
+  houseDirectionSource = source;
+  setHouseFacingFromDegree(n, false);
+  saveHouseInputs();
+  updateLuopanCta(normalizeDeg(n));
+  if(st) st.textContent = `ยืนยันทิศบ้านแล้ว · ${getDirectionSourceLabel(source)}`;
+  const verdict = document.getElementById('mrVerdict');
+  if(verdict) verdict.textContent = `ยืนยันแล้ว · ${getDirectionSourceLabel(source)}`;
+  if(scrollToGrid) document.querySelector('.palace-grid-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  return true;
 }
 function lockMeasuredFacingToHouse(){
   if(currentBearing == null || !Number.isFinite(Number(currentBearing))){
@@ -2068,21 +2143,28 @@ function lockMeasuredFacingToHouse(){
     if(st) st.textContent = 'ต้องวัดทิศบนแผนที่ก่อน';
     return;
   }
-  setHouseFacingFromDegree(currentBearing, true);
+  lockHouseDirection(currentBearing, 'map', true);
   const st = document.getElementById('houseSaveStatus');
-  if(st) st.textContent = 'ล็อกทิศจากแผนที่แล้ว';
+  if(st) st.textContent = 'ยืนยันทิศจากแผนที่แล้ว';
   updateLuopanCta(currentBearing);
 }
 function calculateHouseChart(){
+  const raw = String(document.getElementById('houseFacingDeg')?.value ?? '').trim();
+  const deg = Number(raw);
+  const st = document.getElementById('houseSaveStatus');
+  if(raw === '' || !Number.isFinite(deg)){
+    if(st) st.textContent = 'กรอกองศาหน้าบ้าน หรือวัดจากแผนที่/เข็มทิศก่อน';
+    updateLuopanCta(null);
+    return;
+  }
+  lockHouseDirection(deg, 'manual', false);
   syncHouseMountainFromDegree(false);
-  saveHouseInputs();
   activeDir = getDirCode8(document.getElementById('houseFacingDeg')?.value || 0);
   renderGrid();
   if(typeof drawFloorPlan === 'function') {
     planState.selectedDir = activeDir;
     drawFloorPlan();
   }
-  const st = document.getElementById('houseSaveStatus');
   if(st) st.textContent = `คำนวณผังแล้ว · Facing ${document.getElementById('houseFacingDeg').value}° · ${document.getElementById('houseFacingMountain').selectedOptions[0]?.textContent || ''}`;
 }
 initHouseInputs();
@@ -2095,7 +2177,8 @@ document.getElementById('btnCalcHouseChart').addEventListener('click', calculate
 document.getElementById('btnSaveHouse').addEventListener('click', ()=>{ saveHouseInputs(); calculateHouseChart(); });
 document.getElementById('btnLoadHouse').addEventListener('click', ()=>{
   const loaded = loadSavedHouseInputs(true);
-  if(loaded.hasAny) calculateHouseChart();
+  const raw = String(document.getElementById('houseFacingDeg')?.value ?? '').trim();
+  if(loaded.hasAny && raw !== '' && Number.isFinite(Number(raw))) lockHouseDirection(Number(raw), 'saved', true);
 });
 document.getElementById('btnLockHouseFromMap').addEventListener('click', lockMeasuredFacingToHouse);
 document.getElementById('btnNow').addEventListener('click', ()=>{ initDateInputs(); renderGrid(); });
@@ -2106,9 +2189,15 @@ document.getElementById('setDate').addEventListener('change', ()=>{
   renderGrid();
 });
 document.getElementById('setTime').addEventListener('change', renderGrid);
-document.getElementById('houseFacingDeg').addEventListener('input', ()=>{ syncHouseMountainFromDegree(false); updateLuopanCta(getLuopanCtaDegree()); });
-document.getElementById('houseFacingDeg').addEventListener('change', ()=>{ syncHouseMountainFromDegree(); renderGrid(); updateLuopanCta(getLuopanCtaDegree()); });
-document.getElementById('houseFacingMountain').addEventListener('change', ()=>{ syncHouseDegreeFromMountain(); renderGrid(); updateLuopanCta(Number(document.getElementById('houseFacingDeg').value)); });
+function markHouseDirectionNeedsConfirm(){
+  houseDirectionLocked = false;
+  houseDirectionSource = '';
+  const verdict = document.getElementById('mrVerdict');
+  if(verdict) verdict.textContent = 'ยังไม่ยืนยัน';
+}
+document.getElementById('houseFacingDeg').addEventListener('input', ()=>{ markHouseDirectionNeedsConfirm(); syncHouseMountainFromDegree(false); updateLuopanCta(getLuopanCtaDegree()); });
+document.getElementById('houseFacingDeg').addEventListener('change', ()=>{ markHouseDirectionNeedsConfirm(); syncHouseMountainFromDegree(); renderGrid(); updateLuopanCta(getLuopanCtaDegree()); });
+document.getElementById('houseFacingMountain').addEventListener('change', ()=>{ markHouseDirectionNeedsConfirm(); syncHouseDegreeFromMountain(); renderGrid(); updateLuopanCta(Number(document.getElementById('houseFacingDeg').value)); });
 document.getElementById('houseConstructionYear').addEventListener('change', ()=>{ syncHousePeriodFromYear(); renderGrid(); updateLuopanCta(getLuopanCtaDegree()); });
 document.getElementById('housePeriod').addEventListener('change', ()=>{ saveHouseInputs(); renderGrid(); });
 
@@ -2330,7 +2419,9 @@ function savePeople(){
 
 function renderPeopleList(){
   const list = document.getElementById('peopleList');
-  document.getElementById('peopleCount').textContent = people.length;
+  const count = document.getElementById('peopleCount');
+  if(!list || !count) return;
+  count.textContent = people.length;
   if(people.length === 0){
     list.innerHTML = '<div class="person-empty">ยังไม่มีคนในผัง · เพิ่มด้านล่าง</div>';
     return;
@@ -2379,7 +2470,7 @@ function cyclePersonRoom(idx){
   renderGrid();
 }
 
-document.getElementById('peopleList').addEventListener('click', (ev)=>{
+document.getElementById('peopleList')?.addEventListener('click', (ev)=>{
   const btn = ev.target.closest('button[data-action][data-idx]');
   if(!btn) return;
   const idx = Number(btn.dataset.idx);
@@ -2387,7 +2478,7 @@ document.getElementById('peopleList').addEventListener('click', (ev)=>{
   if(btn.dataset.action === 'cycle') cyclePersonRoom(idx);
 });
 
-document.getElementById('btnAddPerson').addEventListener('click', ()=>{
+document.getElementById('btnAddPerson')?.addEventListener('click', ()=>{
   const name = document.getElementById('pfName').value.trim();
   const year = parseInt(document.getElementById('pfYear').value);
   const gender = document.getElementById('pfGender').value;
@@ -2746,7 +2837,7 @@ document.getElementById('btnLockFacing')?.addEventListener('click', ()=>{
   setFlipFacingEnabled(true);
   setCompassArrow(lastHeading);
   applyFacing(lastHeading, true);
-  if(typeof setHouseFacingFromDegree === 'function') setHouseFacingFromDegree(lastHeading, true);
+  if(typeof lockHouseDirection === 'function') lockHouseDirection(lastHeading, 'compass', true);
 });
 document.getElementById('btnFlipFacing')?.addEventListener('click', ()=>{
   setFacingMode(facingMode === 'facing' ? 'sitting' : 'facing');
@@ -2756,12 +2847,6 @@ document.getElementById('btnFlipFacing')?.addEventListener('click', ()=>{
 // ═══════════════════════════════════════════════════════════════
 //  DIRECTION + 24 MOUNTAINS
 // ═══════════════════════════════════════════════════════════════
-const DIR_NAMES = [
-  {d:0,en:'N',th:'เหนือ'},{d:45,en:'NE',th:'ตอน.เฉียงเหนือ'},
-  {d:90,en:'E',th:'ตะวันออก'},{d:135,en:'SE',th:'ตอน.เฉียงใต้'},
-  {d:180,en:'S',th:'ใต้'},{d:225,en:'SW',th:'ตต.เฉียงใต้'},
-  {d:270,en:'W',th:'ตะวันตก'},{d:315,en:'NW',th:'ตต.เฉียงเหนือ'}
-];
 function getDirCode(deg){
   let n = ((deg % 360) + 360) % 360;
   let best = DIR_NAMES[0], minDiff = 360;
@@ -2783,34 +2868,30 @@ function resetDirectionBreakdown(){
   const host = document.getElementById('directionBreakdown');
   if(!host) return;
   host.innerHTML = `
-    <h5>Direction Breakdown</h5>
-    <div style="color:var(--fg-faint)">กดแถบสีบนเข็มทิศ หรือวัดทิศบ้าน เพื่อดูเหตุผลของทิศนี้</div>
+    <h5>ข้อมูลทิศที่วัดได้</h5>
+    <div style="color:var(--fg-faint)">เริ่มจากแผนที่หรือเข็มทิศ แล้วกดยืนยันเมื่อมั่นใจว่าเป็นทิศหน้าบ้านจริง</div>
   `;
 }
 function updateDirectionBreakdown(dir8, deg){
   const host = document.getElementById('directionBreakdown');
   if(!host) return;
-  const yStar = window._currentYearGrid?.[dir8];
-  const grade = compassGrade(dir8, window._currentYearGrid || {}, window._currentTaiSui, window._currentThreeKill);
-  const q = qimenPalaceForDir(dir8);
-  const qg = qimenDoorGrade(q);
   const m = get24Mountain(deg);
-  const warnings = [];
-  if(window._currentTaiSui === dir8) warnings.push('ไท่ซุ่ย 太歲');
-  if(window._currentThreeKill === dir8) warnings.push('สามชะ 三煞');
-  if(yStar === 5) warnings.push('5 เหลือง 五黃');
+  const sittingDeg = normalizeDeg(deg + 180);
+  const sm = get24Mountain(sittingDeg);
+  const sourceText = houseDirectionLocked ? `ยืนยันแล้ว · ${getDirectionSourceLabel(houseDirectionSource)}` : 'ยังไม่ยืนยัน · ตรวจแนวผนัง/หน้าบ้านก่อน';
   host.innerHTML = `
-    <div class="dir-hero ${fsEsc(grade.level)}">
+    <div class="dir-hero mid">
       <div class="dir-badge">${fsEsc(dir8)}</div>
       <div>
-        <div class="dir-main">${fsEsc(getDirectionName(deg))} · ${fsEsc(grade.band || '')}</div>
-        <div class="dir-sub">${Math.round(deg)}° · 山 ${fsEsc(m.h)} ${fsEsc(m.pinyin)} · ${fsEsc(grade.label)}</div>
+        <div class="dir-main">${fsEsc(getDirectionName(deg))}</div>
+        <div class="dir-sub">${Math.round(deg * 10) / 10}° · ${fsEsc(m.code || '')} ${fsEsc(m.h)} ${fsEsc(m.pinyin)}</div>
       </div>
     </div>
-    <h5>${fsEsc(dir8)} · ${fsEsc(getDirectionName(deg))} · ${fsEsc(m.h)} ${fsEsc(m.pinyin)}</h5>
-    <div class="db-row"><span class="db-k">飛星 ดาวปี</span><span class="db-v"><b>${fsEsc(yStar || '—')}</b> ${yStar ? fsEsc(STAR_INFO[yStar].color) : ''} · ${fsEsc(grade.label)} · ${grade.score}/100</span></div>
-    <div class="db-row"><span class="db-k">警示 ห้าม</span><span class="db-v">${warnings.length ? fsEsc(warnings.join(' · ')) : 'ไม่มี hard warning หลัก'}</span></div>
-    <div class="db-row"><span class="db-k">奇門 Qi Men</span><span class="db-v">${q ? `<b>${fsEsc(q.door_zh)}</b> ${fsEsc(q.door_name_th || '')} · ${fsEsc(q.star_name_th || q.star_zh || '')} · ${fsEsc(q.deity_name_th || q.deity_zh || '')} · ${fsEsc(qg.label)}` : 'กำลังโหลดประตูฉีเหมิน...'}</span></div>
+    <h5>อ่านค่านี้ก่อนใช้เป็นทิศบ้าน</h5>
+    <div class="db-row"><span class="db-k">Facing</span><span class="db-v">${Math.round(deg * 10) / 10}° · ${fsEsc(getDirectionName(deg))}</span></div>
+    <div class="db-row"><span class="db-k">24 ซาน</span><span class="db-v">${fsEsc(m.code || '')} ${fsEsc(m.h)} ${fsEsc(m.pinyin)}</span></div>
+    <div class="db-row"><span class="db-k">Sitting</span><span class="db-v">${Math.round(sittingDeg * 10) / 10}° · ${fsEsc(getDirectionName(sittingDeg))} · ${fsEsc(sm.code || '')} ${fsEsc(sm.h)}</span></div>
+    <div class="db-row"><span class="db-k">สถานะ</span><span class="db-v">${fsEsc(sourceText)}</span></div>
   `;
 }
 
@@ -2823,20 +2904,13 @@ function applyFacing(deg, measured=false){
   document.getElementById('mrDirection').textContent = getDirectionName(deg);
   const m = get24Mountain(deg);
   document.getElementById('mr24Mtn').textContent = `${m.code || ''} ${m.h} ${m.pinyin}`;
-  const hex = getXkdgHexByDeg(deg);
+  const sittingDeg = normalizeDeg(deg + 180);
+  const sm = get24Mountain(sittingDeg);
   const hexEl = document.getElementById('mrHex64');
-  if(hexEl) hexEl.textContent = `${hex.symbol} #${hex.num} ${hex.name || ''}`;
+  if(hexEl) hexEl.textContent = `${Math.round(sittingDeg * 10) / 10}° · ${sm.code || ''} ${sm.h}`;
   
-  // Verdict vs current year flying star
   const dir8 = getDirCode(deg).en;
-  let verdict = '—';
-  if(window._currentYearGrid){
-    const yStar = window._currentYearGrid[dir8];
-    const grade = compassGrade(dir8, window._currentYearGrid, window._currentTaiSui, window._currentThreeKill);
-    const icon = grade.level === 'danger' ? '⛔' : grade.level === 'warn' ? '⚠️' : grade.level === 'good' ? '✓' : '·';
-    verdict = `${icon} ${yStar}${STAR_INFO[yStar].color} · ${grade.label}`;
-  }
-  document.getElementById('mrVerdict').textContent = verdict;
+  document.getElementById('mrVerdict').textContent = houseDirectionLocked ? `ยืนยันแล้ว · ${getDirectionSourceLabel(houseDirectionSource)}` : 'ยังไม่ยืนยัน';
   updateDirectionBreakdown(dir8, deg);
   if(measuredFacingReady) updateLuopanCta(deg);
 }
@@ -2906,7 +2980,7 @@ let houseCompassLines = [];
 let houseCompassLabels = [];
 let houseCompassCircle = null;
 let houseStarOverlays = [];
-const mapLayers = new Set(['m24','year','hour','affliction']);
+const mapLayers = new Set(document.body.classList.contains('fs-direction-gate') ? ['m24'] : ['m24','year','hour','affliction']);
 
 window.initMap = function(){
   // Default center: Bangkok
@@ -4685,7 +4759,7 @@ Object.assign(window.HK_I18N, {
   'auto.f.015': { th:'① จุดยืน', en:'① Standing point', zh:'① 立點' },
   'auto.f.016': { th:'② ทิศหันหน้า', en:'② Facing direction', zh:'② 朝向' },
   'auto.f.017': { th:'↻ ล้าง', en:'↻ Clear', zh:'↻ 清除' },
-  'auto.f.018': { th:'vs ดวง', en:'vs chart', zh:'對命' },
+  'auto.f.018': { th:'สถานะ', en:'Status', zh:'狀態' },
   'auto.f.019': { th:'🏠 ลากผนัง (แนะนำ):', en:'🏠 Drag wall (recommended):', zh:'🏠 拖牆 (建議):' },
   'auto.f.020': { th:'กด-ลากเส้น', en:'Press-drag line', zh:'按住拖線' },
   'auto.f.021': { th:'① จุดยืน → ② ทิศหันหน้า:', en:'① Standing point → ② Facing direction:', zh:'① 立點 → ② 朝向:' },
