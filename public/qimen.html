@@ -116,6 +116,23 @@
   .chart-meta .pill{padding:6px 12px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:99px;}
   .chart-meta .pill b{color:var(--gold);font-family:var(--tc);font-size:14px;letter-spacing:0;margin-right:4px;}
   .chart-meta .pill.special{border-color:var(--gold);background:var(--gold-soft);}
+  .qm-context{margin-top:14px;padding:14px 16px;background:color-mix(in srgb,var(--bg-2) 88%,transparent);border:1px solid var(--gold-line);border-radius:12px;}
+  .qm-context-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px;}
+  .qm-context-title{font-family:var(--thai);font-size:13px;font-weight:700;color:var(--fg);}
+  .qm-context-title .tc{font-family:var(--tc);color:var(--gold);font-size:15px;margin-left:4px;}
+  .qm-context-source{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-faint);}
+  .qm-pillar-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px;}
+  .qm-pillar{padding:8px 10px;background:var(--bg);border:1px solid var(--tile-bd);border-radius:8px;min-width:0;}
+  .qm-pillar .k{font-family:var(--thai);font-size:11px;color:var(--fg-soft);}
+  .qm-pillar .v{font-family:var(--tc);font-size:19px;font-weight:700;color:var(--gold);line-height:1.1;}
+  .qm-pillar .s{font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:var(--fg-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .qm-context-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+  .qm-context-chip{display:flex;flex-direction:column;gap:2px;padding:8px 10px;background:var(--bg);border:1px solid var(--tile-bd);border-radius:8px;min-width:0;}
+  .qm-context-chip.warn{border-color:rgba(217,102,80,.45);background:rgba(217,102,80,.08);}
+  .qm-context-chip.good{border-color:rgba(46,160,67,.45);background:rgba(46,160,67,.08);}
+  .qm-context-chip .k{font-family:var(--thai);font-size:11px;color:var(--fg-soft);}
+  .qm-context-chip .v{font-family:var(--tc);font-size:15px;color:var(--fg);font-weight:700;line-height:1.25;}
+  .qm-context-chip .note{font-family:var(--thai);font-size:10px;color:var(--fg-faint);line-height:1.35;}
 
   /* layout: 9-palace + side */
   .qmdj-layout{display:grid;grid-template-columns:1fr 380px;gap:18px;}
@@ -164,6 +181,9 @@
   .palace.q10x .fm-tag.fm-bad{background:rgba(228,93,77,.15);color:#d96650;}
   .palace.q10x .fm-tag.fm-neutral{background:var(--tile);color:var(--fg-soft);}
   .palace.q10x .void-mk{font-family:var(--tc);font-size:11px;color:#d96650;padding:0 4px;border:1px solid #d96650;border-radius:3px;}
+  .palace.q10x .noble-mk{font-family:var(--tc);font-size:11px;color:#2ea043;padding:0 4px;border:1px solid #2ea043;border-radius:3px;background:rgba(46,160,67,.08);}
+  .palace.q10x .clash-mk{font-family:var(--tc);font-size:11px;color:#d96650;padding:0 4px;border:1px solid rgba(217,102,80,.75);border-radius:3px;background:rgba(217,102,80,.08);}
+  .palace.q10x .io-mk{font-family:var(--tc);font-size:10px;color:var(--fg-faint);padding:0 4px;border:1px solid var(--tile-bd);border-radius:3px;}
   .palace.q10x .home-mk{color:var(--gold);font-size:10px;}
   .palace.q10x .qi-mk{font-family:var(--tc);font-size:9px;color:#2ea043;background:rgba(46,160,67,.18);padding:0 3px;border-radius:3px;margin-left:1px;vertical-align:super;}
   .palace.q10x .fu-mk,.palace.q10x .shi-mk{font-family:var(--tc);font-size:10px;background:var(--gold);color:var(--bg);padding:1px 4px;border-radius:3px;font-weight:700;}
@@ -240,6 +260,12 @@
   .verdict-card.mid h5{color:var(--neutral);}
   .verdict-card p{font-size:13px;line-height:1.55;color:var(--fg-soft);}
   .verdict-card p b{color:var(--fg);}
+  .qm-detail-extra{margin-top:14px;padding:12px;background:var(--bg-2);border:1px solid var(--tile-bd);border-radius:10px;}
+  .qm-detail-extra h5{font-family:var(--thai);font-size:12px;color:var(--gold);margin-bottom:8px;}
+  .qm-detail-extra ul{display:flex;flex-direction:column;gap:8px;list-style:none;margin:0;padding:0;}
+  .qm-detail-extra li{font-size:12px;line-height:1.45;color:var(--fg-soft);}
+  .qm-detail-extra b{color:var(--fg);}
+  .qm-detail-extra .tc{font-family:var(--tc);color:var(--gold);}
 
   /* forecast */
   .ask-types{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px;}
@@ -336,6 +362,10 @@
     /* pill bar wrap */
     .chart-meta{flex-wrap:wrap;gap:6px;}
     .chart-meta .pill{font-size:10px;padding:4px 8px;}
+    .qm-context{padding:12px;}
+    .qm-context-head{flex-direction:column;align-items:flex-start;gap:4px;}
+    .qm-pillar-strip{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .qm-context-grid{grid-template-columns:1fr;}
     .qmdj-layout{
       grid-template-columns:minmax(0,1fr) !important;
       width:100%;
@@ -394,6 +424,8 @@
   @media (max-width:480px){
     .stage{padding:18px 14px 50px;}
     .config-bar{padding:14px;}
+    .qm-pillar-strip{grid-template-columns:1fr 1fr;}
+    .qm-pillar .v{font-size:17px;}
     /* time picker · 2 col + smaller */
     .time-grid select{font-size:10px;padding:6px;}
     /* school 4 ปุ่ม → 2x2, ลดความสูงบนมือถือ */
@@ -405,7 +437,7 @@
     .palace.q10x{min-height:0;padding:4px;gap:2px;}
     .palace.q10x .p-deity .th,
     .palace.q10x .p-star .th,
-    .palace.q10x .p-door .th{display:none;}  /* ซ่อน label ไทย เหลือเฉพาะจีน */
+    .palace.q10x .p-door .th{display:block;font-size:6px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .palace.q10x .p-deity .cn{font-size:13px;}
     .palace.q10x .p-star .cn{font-size:15px;}
     .palace.q10x .p-door .cn{font-size:13px;}
@@ -573,6 +605,23 @@
         <span class="pill"><b data-i18n="q.pill.void">ว่าง · 空亡</b><span id="qm-pill-void">—</span></span>
       </div>
       <button  class="ctrl-btn" id="qm-recalc-btn" style="background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;" data-i18n="auto.q.014">↻ คำนวณใหม่</button>
+    </div>
+    <div class="qm-context" id="qm-chart-context">
+      <div class="qm-context-head">
+        <div class="qm-context-title">ข้อมูลทั้งกระดาน <span class="tc">全盤</span></div>
+        <div class="qm-context-source" id="qm-context-source">qimen-api · รอข้อมูล</div>
+      </div>
+      <div class="qm-pillar-strip" id="qm-pillar-strip">
+        <div class="qm-pillar"><div class="k">ปี 年</div><div class="v">—</div><div class="s">รอข้อมูล</div></div>
+        <div class="qm-pillar"><div class="k">เดือน 月</div><div class="v">—</div><div class="s">รอข้อมูล</div></div>
+        <div class="qm-pillar"><div class="k">วัน 日</div><div class="v">—</div><div class="s">รอข้อมูล</div></div>
+        <div class="qm-pillar"><div class="k">ยาม 時</div><div class="v">—</div><div class="s">รอข้อมูล</div></div>
+      </div>
+      <div class="qm-context-grid" id="qm-context-grid">
+        <div class="qm-context-chip"><div class="k">ช่องว่าง 空亡</div><div class="v">—</div><div class="note">แยกวัน/ยามหลังคำนวณ</div></div>
+        <div class="qm-context-chip"><div class="k">ม้าเดินทาง 驛馬</div><div class="v">—</div><div class="note">แรงเคลื่อนไหว</div></div>
+        <div class="qm-context-chip"><div class="k">คนช่วย 貴人</div><div class="v">—</div><div class="note">ผู้สนับสนุน</div></div>
+      </div>
     </div>
   </div>
 
@@ -857,6 +906,9 @@ window.applyI18N = applyI18N;
   /* dictionaries: code → ภาษา */
   const TRIGRAM_TH = { XUN:'巽 SE · ไม้-ลม', LI:'離 S · ไฟ', KUN:'坤 SW · ดิน', ZHEN:'震 E · ไม้-ฟ้าผ่า', CENTER:'中 · ดินกลาง', DUI:'兌 W · ทอง-ปาก', GEN:'艮 NE · ดิน-ภูเขา', KAN:'坎 N · น้ำ', QIAN:'乾 NW · ทอง-ฟ้า' };
   const DIR_TH = { SE:'ตอ.ฉ', S:'ใต้', SW:'ตต.ฉ', E:'ตอ.', C:'กลาง', W:'ตต.', NE:'ตอ.น', N:'เหนือ', NW:'ตต.น' };
+  const DIR_FULL_TH = { SE:'ตะวันออกเฉียงใต้', S:'ทิศใต้', SW:'ตะวันตกเฉียงใต้', E:'ทิศตะวันออก', C:'กลาง', W:'ทิศตะวันตก', NE:'ตะวันออกเฉียงเหนือ', N:'ทิศเหนือ', NW:'ตะวันตกเฉียงเหนือ' };
+  const INTERNAL_DIRS = new Set(['N','NE','E','SE']);
+  const BRANCHES_ZH = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
   const STEM_CN = { JIA:'甲',YI:'乙',BING:'丙',DING:'丁',WU:'戊',JI:'己',GENG:'庚',XIN:'辛',REN:'壬',GUI:'癸' };
   const STAR_CN = { TIAN_PENG:'天蓬',TIAN_REN:'天任',TIAN_CHONG:'天沖',TIAN_FU:'天輔',TIAN_YING:'天英',TIAN_QIN:'天禽',TIAN_ZHU:'天柱',TIAN_XIN:'天心',TIAN_RUI:'天芮' };
   const DOOR_CN = { KAI_MEN:{zh:'開門',q:'good'}, XIU_MEN:{zh:'休門',q:'good'}, SHENG_MEN:{zh:'生門',q:'good'}, JING_VIEW_MEN:{zh:'景門',q:'mid'}, JING_FEAR_MEN:{zh:'驚門',q:'bad'}, DU_MEN:{zh:'杜門',q:'mid'}, SHANG_MEN:{zh:'傷門',q:'bad'}, SI_MEN:{zh:'死門',q:'bad'} };
@@ -936,6 +988,108 @@ window.applyI18N = applyI18N;
     const core = [left, zh].filter(Boolean).join(' ');
     return core + (palaceId ? ` · วัง ${palaceId}` : '');
   }
+  function qmZhList(v, sep='·'){
+    if (Array.isArray(v)) return v.filter(Boolean).join(sep);
+    if (v == null) return '';
+    return String(v);
+  }
+  function qmBranchValues(source){
+    const out = new Set();
+    const add = v => {
+      if (Array.isArray(v)) return v.forEach(add);
+      const s = String(v == null ? '' : v);
+      BRANCHES_ZH.forEach(b => { if (s.includes(b)) out.add(b); });
+    };
+    add(source);
+    return [...out];
+  }
+  function palaceBranches(p){
+    return qmBranchValues([p?.branches_zh, p?.branch_codes, p?.earth_stems_all, p?.heaven_stems_all]);
+  }
+  function palaceHasAnyBranch(p, branches){
+    const want = new Set((branches || []).filter(Boolean));
+    if (!want.size) return false;
+    return palaceBranches(p).some(b => want.has(b));
+  }
+  function internalExternalLabel(dir){
+    if (!dir || dir === 'C') return { zh:'中', th:'กลาง', cls:'mid' };
+    return INTERNAL_DIRS.has(dir)
+      ? { zh:'內', th:'วังใน', cls:'internal' }
+      : { zh:'外', th:'วังนอก', cls:'external' };
+  }
+  function renderQimenContext(chart){
+    const pillars = chart?.pillars || {};
+    const source = document.getElementById('qm-context-source');
+    if (source) source.textContent = `${chart?.algorithm_method || 'qimen-api'} · ${chart?.chart_variant || 'chart'} · ${chart?.version || 'v?'}`;
+    const pillarHost = document.getElementById('qm-pillar-strip');
+    if (pillarHost) {
+      const items = [
+        ['ปี 年', pillars.year],
+        ['เดือน 月', pillars.month],
+        ['วัน 日', pillars.day],
+        ['ยาม 時', pillars.hour],
+      ];
+      pillarHost.innerHTML = items.map(([label, p]) => `
+        <div class="qm-pillar">
+          <div class="k">${qmEsc(label)}</div>
+          <div class="v">${qmEsc(p?.zh || '—')}</div>
+          <div class="s">旬 ${qmEsc(p?.xun_zh || '—')} · 空 ${qmEsc(qmZhList(p?.void_zh) || '—')}</div>
+        </div>
+      `).join('');
+    }
+    const grid = document.getElementById('qm-context-grid');
+    if (!grid) return;
+    const voidDay = qmZhList(chart?.voids?.day || chart?.void_day_zh);
+    const voidHour = qmZhList(chart?.voids?.hour || chart?.void_hour_zh);
+    const horseDay = chart?.sky_horse?.day?.branch || chart?.traveling_horse_zh || '';
+    const horseHour = chart?.sky_horse?.hour?.branch || '';
+    const nobleDay = qmZhList(chart?.nobleman?.day?.branches);
+    const nobleHour = qmZhList(chart?.nobleman?.hour?.branches);
+    const clashDay = chart?.clash?.day?.branch || '';
+    const clashHour = chart?.clash?.hour?.branch || '';
+    const xiu = chart?.twenty_eight || {};
+    grid.innerHTML = [
+      `<div class="qm-context-chip warn"><div class="k">ช่องว่าง 空亡</div><div class="v">วัน ${qmEsc(voidDay || '—')} · ยาม ${qmEsc(voidHour || '—')}</div><div class="note">พลังยังไม่เต็ม เรื่องอาจช้า/ว่าง ต้องอ่านร่วมกับวัง</div></div>`,
+      `<div class="qm-context-chip good"><div class="k">ม้าเดินทาง 驛馬</div><div class="v">วัน ${qmEsc(horseDay || '—')} · ยาม ${qmEsc(horseHour || '—')}</div><div class="note">แรงเคลื่อนไหว เดินทาง ติดต่อ หรือเรื่องที่ต้องให้ขยับ</div></div>`,
+      `<div class="qm-context-chip good"><div class="k">คนช่วย 貴人</div><div class="v">วัน ${qmEsc(nobleDay || '—')} · ยาม ${qmEsc(nobleHour || '—')}</div><div class="note">ผู้ใหญ่ ผู้สนับสนุน ช่องทางช่วยเหลือ</div></div>`,
+      `<div class="qm-context-chip warn"><div class="k">วัน/ยามปะทะ 日時冲</div><div class="v">วัน ${qmEsc(clashDay || '—')} · ยาม ${qmEsc(clashHour || '—')}</div><div class="note">เป็นกิ่งที่ถูกปะทะ ไม่ใช่ดวงเจ้าของงานโดยตรง</div></div>`,
+      `<div class="qm-context-chip"><div class="k">28 ดาวฤกษ์ 二十八宿</div><div class="v">${qmEsc(xiu.number || '—')} · ${qmEsc(xiu.zh || '—')}宿</div><div class="note">${qmEsc(xiu.group_zh || 'ชั้นเวลา')} ${xiu.palace_zh ? '· '+qmEsc(xiu.palace_zh) : ''}</div></div>`,
+      `<div class="qm-context-chip"><div class="k">วังใน/วังนอก 內外</div><div class="v">內 N·NE·E·SE / 外 S·SW·W·NW</div><div class="note">เรื่องใกล้ตัว/ในองค์กร เทียบกับเรื่องภายนอก/ตลาด/เดินทาง</div></div>`,
+    ].join('');
+  }
+  function showQimenLoadError(message){
+    const msg = message || 'โหลดผังฉีเหมินไม่สำเร็จ';
+    window._qimenLast = null;
+    window._qimenCurrentPalaceId = null;
+    ['qm-head-ju','qm-stat-ju','qm-stat-dun','qm-stat-yuan','qm-pill-ju','qm-pill-dun','qm-pill-fu','qm-pill-shi','qm-pill-xun','qm-pill-void'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+    ['qm-stat-ju-th','qm-stat-dun-th','qm-stat-yuan-th'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = 'ข้อมูลไม่อัปเดต';
+    });
+    const source = document.getElementById('qm-context-source');
+    if (source) source.textContent = 'qimen-api · ข้อมูลไม่อัปเดต';
+    const pillarHost = document.getElementById('qm-pillar-strip');
+    if (pillarHost) {
+      pillarHost.innerHTML = ['ปี 年','เดือน 月','วัน 日','ยาม 時'].map(label => `
+        <div class="qm-pillar">
+          <div class="k">${qmEsc(label)}</div>
+          <div class="v">—</div>
+          <div class="s">資料未更新</div>
+        </div>
+      `).join('');
+    }
+    const contextGrid = document.getElementById('qm-context-grid');
+    if (contextGrid) {
+      contextGrid.innerHTML = `<div class="qm-context-chip warn" style="grid-column:1/-1"><div class="k">โหลดไม่สำเร็จ 資料未更新</div><div class="v">—</div><div class="note">${qmEsc(msg)} · กดคำนวณใหม่อีกครั้ง</div></div>`;
+    }
+    const grid = document.getElementById('palace-grid');
+    if (grid) grid.innerHTML = `<div class="palace-loading" style="grid-column:1/-1;text-align:center;padding:80px 20px;font-family:var(--thai);font-size:13px;color:var(--bad);">${qmEsc(msg)} · 請重試</div>`;
+    const detail = document.getElementById('qm-detail-body');
+    if (detail) detail.innerHTML = `<div style="padding:40px 18px;text-align:center;font-family:var(--thai);font-size:13px;line-height:1.6;color:var(--fg-soft);">${qmEsc(msg)}<br><span class="tc" style="color:var(--gold)">資料未更新</span></div>`;
+  }
 
   /* grid positions: row,col → DOM order in template */
   function gridIdx(row, col){ return (row-1)*3 + (col-1); }
@@ -966,6 +1120,10 @@ window.applyI18N = applyI18N;
     const stored = (window._qimenLast?.stored_formations||[]);
     const compound = (window._qimenLast?.compound_formations||[]);
     const palaceFormations = (pid) => [...stored, ...compound].filter(f => f.scope==='palace' && f.scope_ref===pid);
+    const ch = window._qimenLast?.chart || {};
+    const horseBranches = [ch.sky_horse?.day?.branch, ch.sky_horse?.hour?.branch, ch.traveling_horse_zh].filter(Boolean);
+    const nobleBranches = [...(ch.nobleman?.day?.branches || []), ...(ch.nobleman?.hour?.branches || [])];
+    const clashBranches = [ch.clash?.day?.branch, ch.clash?.hour?.branch].filter(Boolean);
 
     grid.innerHTML = sorted.map(p => {
       const sH   = p.heaven_stem_zh || '·';
@@ -985,19 +1143,23 @@ window.applyI18N = applyI18N;
       /* mini desc · 1 word */
       const doorDesc  = lang==='zh' ? '' : lang==='en' ? '' : ''; /* keep blank for now */
       /* markers */
-      const horse    = p.is_traveling_horse ? '🐎' : '';
+      const horse    = (p.is_traveling_horse || palaceHasAnyBranch(p, horseBranches)) ? '🐎' : '';
       const voidMk   = p.is_void_any ? '<span class="void-mk">空</span>' : '';
+      const nobleMk  = palaceHasAnyBranch(p, nobleBranches) ? '<span class="noble-mk" title="คนช่วย 貴人">貴</span>' : '';
+      const clashMk  = palaceHasAnyBranch(p, clashBranches) ? '<span class="clash-mk" title="ปะทะ 冲">冲</span>' : '';
+      const io = internalExternalLabel(p.direction);
+      const ioMk = p.direction && p.direction !== 'C' ? `<span class="io-mk" title="${qmEsc(io.th)}">${qmEsc(io.zh)}</span>` : '';
       const home     = p.is_origin_palace ? '<span class="home-mk">●</span>' : '';
       const threeQiH = p.heaven_is_three_qi ? '<span class="qi-mk">奇</span>' : '';
       const threeQiE = p.earth_is_three_qi  ? '<span class="qi-mk">奇</span>' : '';
       /* formations inline */
       const fms = palaceFormations(p.palace_id).slice(0,2);
-      const fmHtml = fms.map(f => {
-        const q = (f.quality||'neutral');
-        return `<span class="fm-tag fm-${q}">${f.name_zh || f.formation_code}</span>`;
-      }).join('');
+      const fmTitle = fms.map(f => f.name_th || f.name_zh || f.formation_code).filter(Boolean).join(' · ');
+      const fmQ = normalizeQimenQuality(fms[0]?.quality || fms[0]?.base_quality);
+      const fmMk = fms.length
+        ? `<span class="fm-tag fm-${fmQ}" title="${qmEsc(fmTitle)}">格</span>`
+        : '';
       /* zhi_fu/zhi_shi markers (chart-level) */
-      const ch = window._qimenLast?.chart || {};
       const isZhiFu = ch.zhi_fu_palace_id === p.palace_id;
       const isZhiShi = ch.zhi_shi_palace_id === p.palace_id;
       const chartMk = (isZhiFu ? '<span class="fu-mk" title="直符">符</span>' : '') + (isZhiShi ? '<span class="shi-mk" title="值使">使</span>' : '');
@@ -1012,7 +1174,7 @@ window.applyI18N = applyI18N;
 
       return `<div class="palace q10x q-${starQ}${isCenterPalace ? ' palace-center' : ''}" data-pos="${p.palace_id}">
         <div class="p-corner-tl">
-          ${voidMk}${home}${chartMk}
+          ${voidMk}${nobleMk}${clashMk}${ioMk}${fmMk}${home}${chartMk}
         </div>
         <div class="p-corner-tr">
           ${horse}<div class="stem heaven">${sH}${threeQiH}</div>
@@ -1028,7 +1190,6 @@ window.applyI18N = applyI18N;
         </div>
         <div class="p-num">${p.palace_id}</div>
         <div class="p-trig">${trigZh} ${dir}</div>
-        ${fmHtml ? `<div class="p-fms">${fmHtml}</div>`:''}
       </div>`;
     }).join('');
   }
@@ -1066,6 +1227,56 @@ window.applyI18N = applyI18N;
           ${note ? `<div style="font-family:var(--thai);font-size:11px;color:var(--fg-soft);line-height:1.5">${note}</div>`:''}
         </div>`;
       }).join('');
+  }
+  function formationItemsForPalace(last, palaceId){
+    const stored = last?.stored_formations || [];
+    const compound = last?.compound_formations || [];
+    return [...stored, ...compound].filter(f => f.scope === 'palace' && f.scope_ref === palaceId);
+  }
+  function buildPalaceExtraHtml(p, last){
+    const chart = last?.chart || {};
+    const rows = [];
+    const io = internalExternalLabel(p.direction);
+    if (p.direction && p.direction !== 'C') {
+      rows.push(`<li><b>${qmEsc(io.th)} <span class="tc">${qmEsc(io.zh)}</span></b> · ใช้แยกเรื่องใกล้ตัว/ในองค์กร กับเรื่องภายนอก/ตลาด/เดินทาง</li>`);
+    }
+    const voidParts = [];
+    if (p.is_void_day) voidParts.push(`วัน ${qmZhList(chart.voids?.day || chart.void_day_zh)}`);
+    if (p.is_void_hour) voidParts.push(`ยาม ${qmZhList(chart.voids?.hour || chart.void_hour_zh)}`);
+    if (p.is_void_month) voidParts.push(`เดือน ${qmZhList(chart.voids?.month || chart.void_month_zh)}`);
+    if (p.is_void_year) voidParts.push(`ปี ${qmZhList(chart.voids?.year || chart.void_year_zh)}`);
+    if (voidParts.length) {
+      rows.push(`<li><b>ช่องว่าง <span class="tc">空亡</span></b> · ${qmEsc(voidParts.join(' · '))} · พลังยังไม่เต็ม เรื่องอาจช้า ว่าง หรือผลไม่ชัด</li>`);
+    }
+    const horseHits = [];
+    if (palaceHasAnyBranch(p, [chart.sky_horse?.day?.branch])) horseHits.push(`วัน ${chart.sky_horse.day.branch}`);
+    if (palaceHasAnyBranch(p, [chart.sky_horse?.hour?.branch, chart.traveling_horse_zh])) horseHits.push(`ยาม ${chart.sky_horse?.hour?.branch || chart.traveling_horse_zh}`);
+    if (p.is_traveling_horse && !horseHits.length) horseHits.push(chart.traveling_horse_zh || '馬');
+    if (horseHits.length) {
+      rows.push(`<li><b>ม้าเดินทาง <span class="tc">驛馬</span></b> · ${qmEsc(horseHits.join(' · '))} · เหมาะเรื่องเคลื่อนไหว เดินทาง ติดต่อ หรือเร่งให้เรื่องเดิน</li>`);
+    }
+    const nobleHits = [];
+    if (palaceHasAnyBranch(p, chart.nobleman?.day?.branches || [])) nobleHits.push(`วัน ${qmZhList(chart.nobleman.day.branches)}`);
+    if (palaceHasAnyBranch(p, chart.nobleman?.hour?.branches || [])) nobleHits.push(`ยาม ${qmZhList(chart.nobleman.hour.branches)}`);
+    if (nobleHits.length) {
+      rows.push(`<li><b>คนช่วย <span class="tc">貴人</span></b> · ${qmEsc(nobleHits.join(' · '))} · เหมาะพบผู้ใหญ่ ขอคำแนะนำ ขอแรงสนับสนุน</li>`);
+    }
+    const clashHits = [];
+    if (palaceHasAnyBranch(p, [chart.clash?.day?.branch])) clashHits.push(`วันปะทะ ${chart.clash.day.branch}`);
+    if (palaceHasAnyBranch(p, [chart.clash?.hour?.branch])) clashHits.push(`ยามปะทะ ${chart.clash.hour.branch}`);
+    if (clashHits.length) {
+      rows.push(`<li><b>ปะทะ <span class="tc">冲</span></b> · ${qmEsc(clashHits.join(' · '))} · ใช้เป็นสัญญาณระวัง ไม่ใช่คำตัดสินดวงเจ้าของงาน</li>`);
+    }
+    const fms = formationItemsForPalace(last, p.palace_id);
+    fms.slice(0,4).forEach(f => {
+      const nameTh = f.name_th || 'รูปเกมพิเศษ';
+      const nameZh = f.name_zh || f.formation_code || '';
+      const q = String(f.quality || f.base_quality || '').toLowerCase();
+      const tone = q.includes('good') || q.includes('auspicious') ? 'ใช้เป็นแรงเสริม' : q.includes('bad') || q.includes('inauspicious') ? 'ต้องระวังเป็นพิเศษ' : 'อ่านร่วมกับประตู ดาว เทพ';
+      rows.push(`<li><b>${qmEsc(nameTh)} ${nameZh ? `<span class="tc">${qmEsc(nameZh)}</span>` : ''}</b> · ${qmEsc(tone)}</li>`);
+    });
+    if (!rows.length) return '';
+    return `<div class="qm-detail-extra"><h5>สถานะเสริมของวังนี้ · 標記</h5><ul>${rows.join('')}</ul></div>`;
   }
 
   /* ───────────────────────────────────────────────────────────────
@@ -1131,10 +1342,10 @@ window.applyI18N = applyI18N;
       star:  {th:'ดาว · 九星',en:'Star · 九星', zh:'九星'},
       deity: {th:'เทพ · 八神',en:'Deity · 八神',zh:'八神'},
       dir:   {th:'ทิศ/วัง · 方位', en:'Direction · 方位',  zh:'方位'},
-      score: {th:'คะแนนจริง · 分',en:'Score · 分',zh:'評分'},
+      score: {th:'คะแนนจาก engine · 分',en:'Engine score · 分',zh:'引擎評分'},
       use:   {th:'ใช้ทำอะไร · 用法',en:'Use · 用法',zh:'用法'},
     };
-    const SCORE_LABEL = (lang==='th') ? 'คะแนน' : (lang==='en' ? 'Score' : '評分');
+    const SCORE_LABEL = (lang==='th') ? 'คะแนนจาก engine' : (lang==='en' ? 'Engine score' : '引擎評分');
 
     /* markers */
     const isZhiFu = last.chart && last.chart.zhi_fu_palace_id === p.palace_id;
@@ -1159,6 +1370,7 @@ window.applyI18N = applyI18N;
       starCn ? `ดาว ${starName || ''} ${starCn}${starDesc ? ' · ' + starDesc : ''}` : '',
       deityCn ? `เทพ ${deityName || ''} ${deityCn}${deityAdv ? ' · ' + deityAdv : ''}` : '',
     ].filter(Boolean).join('\n');
+    const extraHtml = buildPalaceExtraHtml(p, last);
 
     host.innerHTML = `
       <div class="detail-head">
@@ -1193,6 +1405,7 @@ window.applyI18N = applyI18N;
       </div>
       ${scoreLine}
       ${doorRole ? `<div class="detail-row"><span class="k">${qmEsc(K_LABEL.use[lang]||K_LABEL.use.th)}</span><span class="v">${qmEsc(doorRole)}</span></div>` : ''}
+      ${extraHtml}
     `;
   }
   window.renderCurrentDetail = renderCurrentDetail;
@@ -1207,6 +1420,7 @@ window.applyI18N = applyI18N;
     catch(e1){ /* setSchoolInfo อาจยังไม่ define ตอน early call */ }
     const last = window._qimenLast;
     if (!last || !Array.isArray(last.palaces) || !last.palaces.length) return;
+    try { renderQimenContext(last.chart || {}); } catch(e0){ console.warn('[qimen lang] context', e0); }
     try { renderPalaces(last.palaces); } catch(e2){ console.warn('[qimen lang] renderPalaces', e2); }
     try { renderCurrentDetail(window._qimenCurrentPalaceId); } catch(e3){ console.warn('[qimen lang] detail', e3); }
     /* renderPalaces เซ็ต grid.innerHTML ใหม่ · badge overlay หาย · restore */
@@ -1262,8 +1476,7 @@ window.applyI18N = applyI18N;
       const yyBE = d.getFullYear() + 543;
       h.textContent = `วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${yyBE} (${d.getFullYear()}) ${inp.time}`;
     }
-    /* render 4-pillar table at center 5 if available */
-    renderCenterPillarTable(chart);
+    renderQimenContext(chart);
   }
   function renderCenterPillarTable(chart){
     if (!chart) return;
@@ -1332,7 +1545,7 @@ window.applyI18N = applyI18N;
       const j = await r.json();
       /* drop stale response · กัน race ตอน user เปลี่ยนเวลาเร็วๆ */
       if (mySeq !== window._qimenSeq) return;
-      if (!j.ok && !j.data) { console.warn('[qimen] api error', j); return; }
+      if (!j.ok && !j.data) { console.warn('[qimen] api error', j); showQimenLoadError('โหลดผังฉีเหมินไม่สำเร็จ'); return; }
       const d = j.data || j;
       window._qimenLast = d;
       renderHeader(d.chart || {}, d.palaces || []);
@@ -1344,7 +1557,7 @@ window.applyI18N = applyI18N;
       /* Step 2 · เรียก overlay หลัง render ครบ (แทน setTimeout 1200ms เดิม) */
       try { if (typeof refreshOverlay === 'function') await refreshOverlay(); }
       catch(eOv){ console.warn('[qimen] overlay failed', eOv); }
-    } catch(e){ console.warn('[qimen] fetch failed', e); }
+    } catch(e){ console.warn('[qimen] fetch failed', e); showQimenLoadError('เชื่อมต่อ qimen-api ไม่สำเร็จ'); }
   }
   window.loadQimen = loadQimen;
 
