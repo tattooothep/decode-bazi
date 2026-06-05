@@ -2757,6 +2757,7 @@ window.applyI18N = applyI18N;
           message, history: window._qmSifuHist.slice(-6), lang:'th', topic,
           payload: {
             qimen: qimenPayload,
+            selected_palace_id: window._qimenCurrentPalaceId || null,
             user_yongshen_v2: window._qimenUserYs || null,
             qimen_request_intent: { message, topic },
           }
