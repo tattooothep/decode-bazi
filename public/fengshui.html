@@ -839,7 +839,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <div class="fine-title"><b>Fine Wall Fit</b><span id="wallFineStatus">ลากเส้น A→B ก่อน</span></div>
         <div class="wall-angle-controls">
           <button class="wall-angle-btn" id="btnWallAngleMinus" disabled>-0.1°</button>
-          <output class="wall-angle-readout" id="wallFineAngleOut">A นิ่ง · หมุน B ทีละ 0.1°</output>
+          <output class="wall-angle-readout" id="wallFineAngleOut">ลากจากจุดเริ่มไปปลายผนัง</output>
           <button class="wall-angle-btn" id="btnWallAnglePlus" disabled>+0.1°</button>
         </div>
       </div>
@@ -852,7 +852,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <div class="mrb-cell"><b data-i18n="auto.f.018">สถานะ</b><span id="mrVerdict">ยังไม่ยืนยัน</span></div>
       </div>
       <div class="map-instr">
-        <b data-i18n="auto.f.019">🏠 ลากผนัง (แนะนำ):</b> <b data-i18n="auto.f.020">กด-ลากเส้น</b> ทาบขอบผนังหน้าบ้าน A→B · ถ้ายังไม่ขนาน ใช้ Fine Wall Fit หมุน B ทีละ 0.1° โดย A อยู่นิ่งจนเส้นทองขนานขอบผนัง · ลูกศรเขียวจุดกลาง = ทิศหันหน้า (ตั้งฉาก CW 90°) · เส้นเทา = ทิศหลัง<br/>
+        <b data-i18n="auto.f.019">🏠 ลากผนัง (แนะนำ):</b> <b data-i18n="auto.f.020">กด-ลากเส้น</b> ทาบขอบผนังหน้าบ้าน A→B · หลังสร้างเส้นแล้ว จับหยด A/B ค้างแล้วลากเพื่อย้าย ยืด หด หรือหมุนเส้น · ใช้ Fine Wall Fit ปรับปลาย B ทีละ 0.1° จนเส้นทองขนานผนัง · ลูกศรเขียวจุดกลาง = ทิศหันหน้า · เส้นเทา = ทิศหลัง<br/>
         <b>◎ คลุมบ้าน:</b> แตะมุมหลังคาทีละจุด · จุดที่ 4 ขึ้นไประบบหาจุดกลางบ้านและวางวง 24 ขุนเขาให้ · กด ✓ ปิดรูปบ้านเมื่อครบมุม<br/>
         <b data-i18n="auto.f.021">① จุดยืน → ② ทิศหันหน้า:</b> 2-marker mode (จุดยืน → จุดหน้าบ้าน)
       </div>
@@ -3066,15 +3066,82 @@ let wallStartPos = null;
 let wallTempLine = null;
 let wallStartClient = null;
 const WALL_FINE_DEG = 0.1;
+const WALL_PIN_HIT_PX = 54;
 
 function updateWallFineUi(){
   const status = document.getElementById('wallFineStatus');
   const out = document.getElementById('wallFineAngleOut');
   const ready = !!(wallA && wallB);
-  if(status) status.textContent = ready ? 'A นิ่ง · ปรับ B ±0.1°' : 'ลากเส้น A→B ก่อน';
-  if(out) out.textContent = ready ? 'ปรับให้เส้นทองขนานผนัง' : 'A นิ่ง · หมุน B ทีละ 0.1°';
+  if(status) status.textContent = ready ? 'จับหยด A/B เพื่อย้ายเส้น' : 'ลากเส้น A→B ก่อน';
+  if(out) out.textContent = ready ? 'เส้นทองออกจากปลายหยดน้ำ · ปรับ B ±0.1°' : 'ลากจากจุดเริ่มไปปลายผนัง';
   document.querySelectorAll('.wall-angle-btn').forEach(btn => {
     btn.disabled = !ready;
+  });
+}
+
+function getMapOverlayProjection(){
+  if(!map) return null;
+  if(!window._overlayProj){
+    window._overlayProj = new google.maps.OverlayView();
+    window._overlayProj.draw = function(){};
+    window._overlayProj.setMap(map);
+  }
+  return window._overlayProj.getProjection();
+}
+
+function isNearWallPinClient(clientX, clientY){
+  if(!wallA && !wallB) return false;
+  const mapDiv = document.getElementById('gmap');
+  const rect = mapDiv.getBoundingClientRect();
+  const proj = getMapOverlayProjection();
+  if(!proj) return false;
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  return [wallA, wallB].some(marker => {
+    if(!marker) return false;
+    const p = proj.fromLatLngToContainerPixel(marker.getPosition());
+    if(!p) return false;
+    return Math.hypot(x - p.x, y - p.y) <= WALL_PIN_HIT_PX;
+  });
+}
+
+function createWallPinIcon(fillColor){
+  const color = fillColor || '#c8a44d';
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="58" viewBox="0 0 48 58">
+      <path d="M24 56C20.5 49.7 8 40.8 8 24.5C8 13.7 15.2 6 24 6s16 7.7 16 18.5C40 40.8 27.5 49.7 24 56Z" fill="${color}" stroke="#fff7df" stroke-width="2.4"/>
+      <circle cx="24" cy="24" r="11.5" fill="rgba(13,15,18,.26)" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+      <circle cx="24" cy="56" r="3" fill="#fff7df"/>
+    </svg>
+  `.trim();
+  return {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    scaledSize: new google.maps.Size(48, 58),
+    anchor: new google.maps.Point(24, 56),
+    labelOrigin: new google.maps.Point(24, 24)
+  };
+}
+
+function setWallMarkerDragActive(active){
+  if(!map) return;
+  map.setOptions({
+    draggable: !active,
+    gestureHandling: active ? 'none' : 'auto',
+    draggableCursor: 'default',
+    draggingCursor: 'default'
+  });
+  document.body.classList.toggle('fs-map-dragging', !!active);
+}
+
+function attachWallMarkerDrag(marker){
+  if(!marker) return;
+  marker.setDraggable(true);
+  marker.addListener('dragstart', () => setWallMarkerDragActive(true));
+  marker.addListener('drag', drawWallFromMarkers);
+  marker.addListener('dragend', () => {
+    drawWallFromMarkers();
+    setWallMarkerDragActive(false);
+    updateWallFineUi();
   });
 }
 
@@ -3105,6 +3172,7 @@ function wallMouseDown(e){
   if(currentMode !== 'wall') return;
   if(e.button !== 0) return; // left click only
   if(e.target && e.target.closest && e.target.closest('.gm-style-mtc,.gm-control-active,.gm-fullscreen-control,.gm-bundled-control,.gmnoprint')) return;
+  if(isNearWallPinClient(e.clientX, e.clientY)) return;
   
   // Convert pixel to LatLng
   const latLng = pixelToLatLng(e.clientX, e.clientY);
@@ -3118,6 +3186,7 @@ function wallTouchStart(e){
   if(e.touches.length !== 1) return;
   if(e.target && e.target.closest && e.target.closest('.gm-style-mtc,.gm-control-active,.gm-fullscreen-control,.gm-bundled-control,.gmnoprint')) return;
   const touch = e.touches[0];
+  if(isNearWallPinClient(touch.clientX, touch.clientY)) return;
   const latLng = pixelToLatLng(touch.clientX, touch.clientY);
   if(!latLng) return;
   e.preventDefault();
@@ -3130,16 +3199,7 @@ function pixelToLatLng(clientX, clientY){
   const rect = mapDiv.getBoundingClientRect();
   const x = clientX - rect.left;
   const y = clientY - rect.top;
-  const projection = map.getProjection();
-  if(!projection) return null;
-  
-  // use overlay projection for pixel→latlng
-  if(!window._overlayProj){
-    window._overlayProj = new google.maps.OverlayView();
-    window._overlayProj.draw = function(){};
-    window._overlayProj.setMap(map);
-  }
-  const proj = window._overlayProj.getProjection();
+  const proj = getMapOverlayProjection();
   if(!proj) return null;
   return proj.fromContainerPixelToLatLng(new google.maps.Point(x, y));
 }
@@ -3191,9 +3251,10 @@ function updateWallTempLine(currentPos){
     path: [wallStartPos, currentPos],
     geodesic: true,
     strokeColor: '#c8a44d',
-    strokeOpacity: 0.7,
-    strokeWeight: 1.5,
+    strokeOpacity: 0.82,
+    strokeWeight: 3,
     map: map,
+    clickable: false,
     icons: [{
       icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 3, strokeColor:'#c8a44d', fillColor:'#c8a44d' },
       offset: '100%'
@@ -3255,43 +3316,33 @@ function finishWallDrag(endLatLng){
   wallA = new google.maps.Marker({
     position: wallStartPos,
     map: map,
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: 5,
-      fillColor: '#c8a44d',
-      fillOpacity: 1,
-      strokeColor: '#fff',
-      strokeWeight: 2
-    },
-    label: { text:'A', color:'#fff', fontSize:'9px', fontWeight:'bold' },
-    title: 'ผนัง A',
-    zIndex: 999
+    icon: createWallPinIcon('#c8a44d'),
+    label: { text:'A', color:'#fff', fontSize:'16px', fontWeight:'900' },
+    title: 'A จุดเริ่มผนัง · จับค้างแล้วลากเพื่อย้าย',
+    zIndex: 999,
+    optimized: false,
+    clickable: true,
+    cursor: 'grab',
+    crossOnDrag: false
   });
   
   // Place permanent B marker
   wallB = new google.maps.Marker({
     position: endLatLng,
     map: map,
-    icon: {
-      path: google.maps.SymbolPath.CIRCLE,
-      scale: 5,
-      fillColor: '#c8a44d',
-      fillOpacity: 1,
-      strokeColor: '#fff',
-      strokeWeight: 2
-    },
-    label: { text:'B', color:'#fff', fontSize:'9px', fontWeight:'bold' },
-    title: 'ผนัง B',
-    zIndex: 999
+    icon: createWallPinIcon('#e6c068'),
+    label: { text:'B', color:'#111', fontSize:'16px', fontWeight:'900' },
+    title: 'B ปลายผนัง · จับค้างแล้วลากเพื่อยืด/หด/หมุนเส้น',
+    zIndex: 1000,
+    optimized: false,
+    clickable: true,
+    cursor: 'grab',
+    crossOnDrag: false
   });
   
   // make both markers draggable for fine-tuning
-  wallA.setDraggable(true);
-  wallB.setDraggable(true);
-  wallA.addListener('drag', drawWallFromMarkers);
-  wallA.addListener('dragend', drawWallFromMarkers);
-  wallB.addListener('drag', drawWallFromMarkers);
-  wallB.addListener('dragend', drawWallFromMarkers);
+  attachWallMarkerDrag(wallA);
+  attachWallMarkerDrag(wallB);
   
   wallStartClient = null;
   drawWallFromMarkers();
@@ -3309,9 +3360,10 @@ function drawWallFromMarkers(){
     path: [a, b],
     geodesic: true,
     strokeColor: '#c8a44d',
-    strokeOpacity: 0.7,
-    strokeWeight: 1.5,
+    strokeOpacity: 0.88,
+    strokeWeight: 3,
     map: map,
+    clickable: false,
     icons: [{
       icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 3, strokeColor:'#c8a44d', fillColor:'#c8a44d' },
       offset: '100%'
@@ -3365,6 +3417,12 @@ function drawWallFromMarkers(){
   lastSittingBearing = sittingBearing;
   setFacingMode('facing');
   setFlipFacingEnabled(true);
+  const shouldReconfirmMapDirection = houseDirectionLocked && houseDirectionSource === 'map';
+  if(shouldReconfirmMapDirection){
+    markHouseDirectionNeedsConfirm();
+    const st = document.getElementById('houseSaveStatus');
+    if(st) st.textContent = 'เส้นผนังถูกปรับแล้ว · กดยืนยันทิศบ้านอีกครั้ง';
+  }
   applyFacing(facingBearing, true);
   
   // update compass arrow
