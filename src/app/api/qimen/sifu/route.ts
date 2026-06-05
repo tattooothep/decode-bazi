@@ -486,6 +486,26 @@ function formatTraceItem(item: any): string {
   return `${label}${sev ? ` (${sev})` : ""}${refs ? ` source=${refs}` : ""}`;
 }
 
+function formatSourceFormation(f: any): string {
+  if (!f) return "";
+  if (typeof f !== "object") return `  - ${packetText(f)}`;
+  const label = shortThZh(
+    f.name_th || f.label_th || f.title_th,
+    f.name_zh || f.label_zh || f.formation_code || f.code,
+    "รูปแบบจากแหล่งอ้างอิง",
+  );
+  const quality = [f.quality || f.effective_quality || f.base_quality, f.confidence].filter(Boolean).join("/");
+  const scope = f.scope ? `(${packetText(f.scope)}${f.scope_ref ? ` ${packetText(f.scope_ref)}` : ""})` : "";
+  const summary = packetText(f.summary_th || f.note_th || f.detail_th || f.reason || f.note || "อ่านเป็นสัญญาณประกอบ");
+  const refs = sourceRefText(f.source_refs || f.source_trace || f.refs || f.source, 1);
+  const negated = asPacketArray(f.negated_by).slice(0, 3).map((x: any) => {
+    if (!x) return "";
+    if (typeof x === "object") return packetText(x.code || x.label_th || x.label_zh || x.name_th || x.name_zh);
+    return packetText(x);
+  }).filter(Boolean).join(",");
+  return `  - ${label}${quality ? ` [${packetText(quality)}]` : ""}${scope ? ` ${scope}` : ""}: ${summary}${negated ? ` · หักแรง=${negated}` : ""}${refs ? ` · source=${refs}` : ""}`;
+}
+
 function formatPalaceSourceFlags(p: any): string {
   const flags = [
     ...asPacketArray(p?.qimen_trace),
@@ -555,6 +575,7 @@ function fmtQimenCard(q: any): string {
   const palaces = q.palaces || [];
   const stored = q.stored_formations || [];
   const compound = q.compound_formations || [];
+  const sourceFormations = asPacketArray(q.source_formations);
   const selector = q.yongshen_selector || chart.yongshen_selector || null;
   const stemCoverage = q.stem_response_coverage || chart.stem_response_coverage || null;
   const beginnerCoverage = q.beginner_reading_coverage || chart.beginner_reading_coverage || null;
@@ -594,6 +615,10 @@ function fmtQimenCard(q: any): string {
   const cpLines = compound.map((f: any) =>
     `  - ${f.name_zh || f.formation_code} [${f.quality || "?"}] (${f.scope}${f.scope_ref ? " " + f.scope_ref : ""}): ${f.note || ""}`
   ).join("\n");
+  const sourceLines = sourceFormations.slice(0, 6).map(formatSourceFormation).filter(Boolean).join("\n");
+  const sourceMore = sourceFormations.length > 6
+    ? `\n  - … (+${sourceFormations.length - 6} more source formations omitted)`
+    : "";
   const selectorLines = selector ? [
     `用神 selector: ${selector.intent?.label_th || "ไม่ระบุ"} ${selector.intent?.label_zh || ""} · intent=${selector.intent?.code || "unknown"} · confidence=${selector.intent?.confidence || "?"}`,
     `หลักอ่าน: ${(selector.primary_symbols || []).slice(0, 6).map((s: any) => `${s.label_th || s.kind} ${s.label_zh || s.code || ""}`).join(" · ") || "ไม่ระบุ"}`,
@@ -616,6 +641,8 @@ Stored Formations:
 ${stLines || "  (none)"}
 Compound Formations:
 ${cpLines || "  (none)"}
+Source Formations:
+${sourceLines || "  (none)"}${sourceMore}
 ${selectorLines}`;
 }
 
