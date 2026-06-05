@@ -2026,6 +2026,15 @@ function setHouseFacingFromDegree(deg, scrollToGrid=false){
   updateLuopanCta(normalized);
   if(scrollToGrid) document.querySelector('.palace-grid-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
 }
+function setHouseFacingDraftFromDegree(deg, source='map'){
+  const normalized = normalizeDeg(deg);
+  const input = document.getElementById('houseFacingDeg');
+  if(input) input.value = String(Math.round(normalized * 10) / 10).replace(/\.0$/,'');
+  syncHouseMountainFromDegree(false);
+  updateLuopanCta(normalized);
+  const st = document.getElementById('houseSaveStatus');
+  if(st && !houseDirectionLocked) st.textContent = `วัดจาก${getDirectionSourceLabel(source)}แล้ว · กดยืนยันทิศบ้านเพื่อใช้ค่านี้`;
+}
 function getDirectionSourceLabel(source){
   if(source === 'map') return 'แผนที่';
   if(source === 'compass') return 'เข็มทิศมือถือ';
@@ -2836,7 +2845,7 @@ document.getElementById('btnLockFacing')?.addEventListener('click', ()=>{
   setFacingMode('facing');
   setFlipFacingEnabled(true);
   setCompassArrow(lastHeading);
-  applyFacing(lastHeading, true);
+  applyFacing(lastHeading, true, 'compass');
   if(typeof lockHouseDirection === 'function') lockHouseDirection(lastHeading, 'compass', true);
 });
 document.getElementById('btnFlipFacing')?.addEventListener('click', ()=>{
@@ -2897,9 +2906,15 @@ function updateDirectionBreakdown(dir8, deg){
 
 function get24Mountain(deg){ return get24MountainByDeg(deg); }
 
-function applyFacing(deg, measured=false){
+function applyFacing(deg, measured=false, source='preview'){
   if(measured) measuredFacingReady = true;
   currentBearing = ((deg % 360) + 360) % 360;
+  if(measured && source === 'map'){
+    const inputDeg = Number(document.getElementById('houseFacingDeg')?.value);
+    const differsFromConfirmed = !Number.isFinite(inputDeg) || Math.abs(normalizeSignedDeg(currentBearing - inputDeg)) > 0.05;
+    if(houseDirectionLocked && differsFromConfirmed) markHouseDirectionNeedsConfirm();
+    if(!houseDirectionLocked) setHouseFacingDraftFromDegree(currentBearing, source);
+  }
   document.getElementById('mrHeading').textContent = `${(Math.round(deg*10)/10)} °`;
   document.getElementById('mrDirection').textContent = getDirectionName(deg);
   const m = get24Mountain(deg);
@@ -2923,7 +2938,7 @@ function setCompassArrow(deg){
 function selectCompassDirection(deg, dir){
   activeDir = dir || getDirCode(deg).en;
   setCompassArrow(deg);
-  applyFacing(deg, true);
+  applyFacing(deg, true, 'compass');
   document.querySelectorAll('.pcell').forEach(p => p.classList.toggle('active', p.dataset.dir === activeDir));
   if(window._currentYearGrid && window._currentMonthGrid && window._currentDayGrid && window._currentPeriodGrid){
     renderPalaceDetail(
@@ -2952,7 +2967,7 @@ function applyStoredFacingMode(){
   const deg = facingMode === 'sitting' ? lastSittingBearing : lastFacingBearing;
   if(deg == null) return;
   setCompassArrow(deg);
-  applyFacing(deg, true);
+  applyFacing(deg, true, 'preview');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3271,7 +3286,7 @@ function updateWallTempLine(currentPos){
   
   // update HUD live
   setCompassArrow(facingBearing);
-  applyFacing(facingBearing, true);
+  applyFacing(facingBearing, true, 'map');
 }
 
 function wallMouseUp(e){
@@ -3423,7 +3438,7 @@ function drawWallFromMarkers(){
     const st = document.getElementById('houseSaveStatus');
     if(st) st.textContent = 'เส้นผนังถูกปรับแล้ว · กดยืนยันทิศบ้านอีกครั้ง';
   }
-  applyFacing(facingBearing, true);
+  applyFacing(facingBearing, true, 'map');
   
   // update compass arrow
   setCompassArrow(facingBearing);
@@ -3880,7 +3895,7 @@ function updateLine(){
   lastSittingBearing = (bearing + 180) % 360;
   setFacingMode('facing');
   setFlipFacingEnabled(true);
-  applyFacing(bearing, true);
+  applyFacing(bearing, true, 'map');
   // update facing arrow on compass too
   setCompassArrow(bearing);
 }
