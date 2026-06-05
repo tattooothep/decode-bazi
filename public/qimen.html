@@ -1074,8 +1074,8 @@ window.applyI18N = applyI18N;
   function normalizeQimenQuality(q){
     const s = String(q || '').toLowerCase();
     if (!s) return 'mid';
-    if (s.includes('great') || s.includes('auspicious') || s === 'good') return 'good';
     if (s.includes('bad') || s.includes('inauspicious') || s.includes('danger') || s.includes('avoid')) return 'bad';
+    if (s.includes('great') || s.includes('auspicious') || s === 'good') return 'good';
     return 'mid';
   }
   function qimenVerdictClass(p){
@@ -1169,17 +1169,18 @@ window.applyI18N = applyI18N;
   }
   function buildQuickReadHtml(p, last, reading, verdictClass){
     const label = qimenBeginnerVerdictLabel(reading, verdictClass);
-    const score = qimenHasEngineScore(p) ? `${p.display_score ?? p.score}${p.display_level ? ' · '+p.display_level : ''}` : 'ยังไม่มีคะแนน';
+    const scoreLevel = qimenScoreLevelText(p);
+    const score = qimenHasEngineScore(p) ? `${p.display_score ?? p.score}${scoreLevel ? ' · '+scoreLevel : ''}` : 'ยังไม่มีคะแนน';
     const door = qmNamedTerm('ประตู', p?.door_name_th, p?.door_zh);
     const star = qmNamedTerm('ดาว', p?.star_name_th, p?.star_zh);
     const deity = qmNamedTerm('เทพ', p?.deity_name_th, p?.deity_zh);
     const stem = p?.stem_response?.is_source_governed
       ? `${p.stem_response.title_th || 'ปฏิกิริยาก้าน'} ${p.stem_response.title_zh || p.stem_response.notation_zh || ''} · ${p.stem_response.beginner_th || p.stem_response.status_th || ''}`
-      : `${p?.heaven_stem_zh || '·'}加${p?.earth_stem_zh || '·'} · ยังไม่มีคำตัดสินจากตำราในระบบ`;
+      : `ก้านฟ้า ${p?.heaven_stem_zh || '·'} บวกก้านดิน ${p?.earth_stem_zh || '·'} · ${p?.heaven_stem_zh || '·'}加${p?.earth_stem_zh || '·'} · ยังไม่มีคำตัดสินจากตำราในระบบ`;
     const flags = qimenBeginnerFlags(p, last);
     const flagChips = flags.length
       ? `<div class="qm-flag-chips">${flags.map(f => `<span class="qm-flag-chip ${qmEsc(f.tone)}" title="${qmEsc(f.why)}">${qmEsc(f.th)} <span class="tc">${qmEsc(f.zh)}</span></span>`).join('')}</div>`
-      : '<div class="qm-flag-chips"><span class="qm-flag-chip">ยังไม่พบ flag หนัก</span></div>';
+      : '<div class="qm-flag-chips"><span class="qm-flag-chip">ยังไม่พบสัญญาณหนัก</span></div>';
     const mainWhy = [
       door ? `ประตู: ${door}` : '',
       star ? `ดาว: ${star}` : '',
@@ -1200,6 +1201,26 @@ window.applyI18N = applyI18N;
   function qimenHasEngineScore(p){
     const rawScore = p?.display_score ?? p?.score;
     return rawScore !== null && rawScore !== undefined && rawScore !== '' && Number.isFinite(Number(rawScore));
+  }
+  function qimenScoreLevelLabel(raw){
+    const text = String(raw || '').trim();
+    if (!text) return '';
+    if (/[ก-๙]/.test(text)) return text;
+    const key = text.toLowerCase().replace(/\s+/g, '_');
+    if (/(bad|avoid|inauspicious|danger|low|negative)/.test(key)) return 'เลี่ยง';
+    if (/(warn|caution|risk|reduced|blocked)/.test(key)) return 'ระวัง';
+    if (/(ok|usable|mid|middle|neutral|medium|context)/.test(key)) return 'ใช้ได้';
+    if (/(great|very|excellent|top|best)/.test(key) || key.includes('great_auspicious')) return 'ดีมาก';
+    if (/(good|auspicious|suitable|high|positive)/.test(key)) return 'ดี';
+    return '';
+  }
+  function qimenScoreLevelText(p){
+    const seen = new Set();
+    return [p?.display_level, p?.tier_code].map(qimenScoreLevelLabel).filter(Boolean).filter(label => {
+      if (seen.has(label)) return false;
+      seen.add(label);
+      return true;
+    }).join(' · ');
   }
   function qimenTermLabel(th, zh, palaceId){
     const left = th && th !== zh ? th : '';
@@ -1269,32 +1290,56 @@ window.applyI18N = applyI18N;
   }
   function qmTraceTone(item){
     const s = String(item?.tone || item?.severity || item?.quality || item?.level || item?.kind || item?.effect || '').toLowerCase();
+    if (s.includes('bad') || s.includes('risk') || s.includes('avoid') || s.includes('danger') || s.includes('caution') || s.includes('warning') || s.includes('hard') || s.includes('inauspicious') || s.includes('凶') || s.includes('penalty')) return 'bad';
     if (s.includes('good') || s.includes('auspicious') || s.includes('benefit') || s.includes('吉')) return 'good';
-    if (s.includes('bad') || s.includes('risk') || s.includes('avoid') || s.includes('danger') || s.includes('caution') || s.includes('warning') || s.includes('hard') || s.includes('凶') || s.includes('penalty')) return 'bad';
     return 'neutral';
   }
   function qmTraceLabel(item){
     const code = item?.code || item?.flag || item?.detector || item?.rule_id || '';
     const zh = item?.name_zh || item?.label_zh || item?.title_zh || item?.zh || item?.term_zh || '';
-    const th = item?.name_th || item?.label_th || item?.title_th || item?.badge_th || item?.text_th || item?.note_th || item?.description_th || item?.title || '';
+    const th = item?.name_th || item?.label_th || item?.title_th || item?.badge_th || item?.text_th || item?.note_th || item?.description_th || '';
     const short = item?.label || item?.badge_th || item?.badge || item?.short_th || item?.short || th || zh || code || 'P0';
     return {
       code: String(code || short || 'P0'),
-      th: String(th || short || code || 'สัญญาณ P0'),
+      th: String(th || (zh ? 'สัญญาณคลาสสิก' : 'สัญญาณเสริม')),
       zh: String(zh || ''),
       short: String(short || 'P0'),
     };
   }
   function qmSourceLabel(item){
-    const raw = item?.source || item?.source_ref || item?.source_id || item?.source_refs || item?._source_key || '';
-    if (!raw) return '';
-    const compact = (v) => {
-      const s = String(v || '').replace(/\\/g, '/');
-      return s.includes('/') ? (s.split('/').pop() || s) : s;
-    };
-    if (Array.isArray(raw)) return raw.map(compact).filter(Boolean).join(' · ');
-    if (typeof raw === 'object') return compact(raw.source_id || raw.id || raw.title_th || raw.title || raw.name || '');
-    return compact(raw);
+    const th = item?.source_label_th || item?.source_title_th || item?.title_th || item?.name_th || '';
+    const zh = item?.source_label_zh || item?.source_title_zh || item?.title_zh || item?.name_zh || '';
+    if (th && zh) return `${th} ${zh}`;
+    if (th) return th;
+    if (zh) return `แหล่งอ้างอิง ${zh}`;
+    return '';
+  }
+  function qimenStemSourceLabel(source){
+    const th = source?.source_label_th || source?.source_title_th || source?.title_th || source?.name_th || '';
+    const zh = source?.source_label_zh || source?.source_title_zh || source?.title_zh || source?.name_zh || '';
+    if (th && zh) return `${th} ${zh}`;
+    if (th) return th;
+    if (zh) return `ตำราก้านฟ้า ${zh}`;
+    return 'ตำราก้านฟ้า';
+  }
+  function qimenThaiWarning(text){
+    const s = String(text || '').trim();
+    if (!s) return 'มีสัญญาณเตือนจากระบบ ต้องตรวจเพิ่ม';
+    if (/[ก-๙]/.test(s)) return s;
+    const lower = s.toLowerCase();
+    if (lower.includes('clash') || lower.includes('chong') || lower.includes('冲')) return 'มีสัญญาณปะทะ ต้องตรวจเพิ่ม';
+    if (lower.includes('void') || lower.includes('empty') || lower.includes('kong') || lower.includes('空')) return 'มีสัญญาณว่าง ต้องตรวจเพิ่ม';
+    if (lower.includes('bad') || lower.includes('avoid') || lower.includes('risk') || lower.includes('warning')) return 'มีสัญญาณระวัง ต้องตรวจเพิ่ม';
+    return 'มีสัญญาณเตือนจากระบบ ต้องตรวจเพิ่ม';
+  }
+  function qmTraceSourceLabel(item){
+    const key = String(item?._source_key || '');
+    if (key === 'palace.qimen_trace') return 'สัญญาณจากวัง';
+    if (key === 'palace.classical_flags') return 'ตัวตรวจคลาสสิก';
+    if (key === 'palace.p0_badges') return 'ป้ายย่อระบบ';
+    if (key === 'palace.source_trace') return 'แหล่งอ้างอิงระบบ';
+    if (key === 'palace.p0_flags') return 'สัญญาณเสริมระบบ';
+    return '';
   }
   function qimenYongshenSelector(last){
     return last?.yongshen_selector || last?.chart?.yongshen_selector || null;
@@ -1328,7 +1373,7 @@ window.applyI18N = applyI18N;
     const shown = signals.slice(0, 2).map(item => {
       const label = qmTraceLabel(item);
       const tone = qmTraceTone(item);
-      const title = [label.th, label.zh, item._source_key].filter(Boolean).join(' · ');
+      const title = [label.th, label.zh, qmTraceSourceLabel(item)].filter(Boolean).join(' · ');
       return `<span class="p0-mk p0-${tone}" title="${qmEsc(title)}">${qmEsc(label.short)}</span>`;
     }).join('');
     const more = signals.length > 2 ? `<span class="p0-mk" title="มีสัญญาณเพิ่มอีก ${signals.length - 2} รายการ">+${signals.length - 2}</span>` : '';
@@ -1341,8 +1386,8 @@ window.applyI18N = applyI18N;
       const label = qmTraceLabel(item);
       const tone = qmTraceTone(item);
       const toneTh = tone === 'good' ? 'แรงเสริม' : tone === 'bad' ? 'สัญญาณระวัง' : 'ตัวชี้วัด';
-      const note = item.note_th || item.advice_th || item.reason_th || item.description_th || item.note || item.reason || '';
-      const src = item.source_label_th || qmSourceLabel(item) || '';
+      const note = item.note_th || item.advice_th || item.reason_th || item.description_th || '';
+      const src = item.source_label_th || qmTraceSourceLabel(item) || qmSourceLabel(item) || '';
       return `<li><b>${qmEsc(label.th)} ${label.zh ? `<span class="tc">${qmEsc(label.zh)}</span>` : ''}</b> · ${qmEsc(toneTh)}${note ? ` · ${qmEsc(note)}` : ''}${src ? ` · แหล่ง ${qmEsc(src)}` : ''}</li>`;
     }).join('');
     const more = signals.length > 8 ? `<li>ยังมีหลักฐานเพิ่มอีก ${signals.length - 8} รายการ · เปิดดูเฉพาะตอนอ่านแบบผู้เชี่ยวชาญ</li>` : '';
@@ -1354,9 +1399,9 @@ window.applyI18N = applyI18N;
     const target = (selector.target_palaces || []).find(x => Number(x.palace_id) === Number(p?.palace_id));
     if (!target && !p?.is_yongshen_target) return '';
     const reasons = (target?.reasons || p?.yongshen_hits || []).slice(0, 5).map(r =>
-      `<li><b>${qmEsc(r.label_th || r.kind || 'ตัวแทนเรื่อง')} ${r.label_zh ? `<span class="tc">${qmEsc(r.label_zh)}</span>` : ''}</b> · น้ำหนักอ่านวัง ${qmEsc(r.weight ?? '')}</li>`
+      `<li><b>${qmEsc(r.label_th || r.name_th || r.title_th || 'ตัวแทนเรื่อง')} ${r.label_zh ? `<span class="tc">${qmEsc(r.label_zh)}</span>` : ''}</b> · น้ำหนักอ่านวัง ${qmEsc(r.weight ?? '')}</li>`
     ).join('');
-    const warn = (target?.warning_flags || []).slice(0, 3).map(x => `<li><b>คำเตือน</b> · ${qmEsc(x)}</li>`).join('');
+    const warn = (target?.warning_flags || []).slice(0, 3).map(x => `<li><b>คำเตือน</b> · ${qmEsc(qimenThaiWarning(x))}</li>`).join('');
     const weight = target?.selector_score ?? p?.yongshen_selector_score ?? 0;
     const cls = (target?.warning_flags || []).length ? 'warn' : 'good';
     return `<div class="qm-detail-extra ${cls}"><h5>วังนี้ตรงตัวแทนเรื่อง · 用神</h5><ul><li><b>${qmEsc(selector.intent?.label_th || 'ภาพรวม')} ${selector.intent?.label_zh ? `<span class="tc">${qmEsc(selector.intent.label_zh)}</span>` : ''}</b> · ${qmEsc(target?.status_th || 'อ่านประกอบ')}${weight ? ` · น้ำหนักอ่านวัง ${qmEsc(weight)}` : ''}</li>${reasons}${warn}<li>หมายเหตุ: 用神 คือวังที่ควรอ่านตามคำถาม ไม่ใช่คะแนนฤกษ์สุดท้าย</li></ul></div>`;
@@ -1368,7 +1413,7 @@ window.applyI18N = applyI18N;
     const title = r.title_th || r.status_th || 'ยังไม่ตัดสิน';
     const zh = r.title_zh || r.notation_zh || '';
     const srcRows = (r.source_trace || []).slice(0, 3).map(s =>
-      `<li>แหล่ง ${qmEsc(s.source_id || s.title_zh || 'source')} · บรรทัด ${qmEsc(s.line_range || '-')}</li>`
+      `<li>แหล่ง ${qmEsc(qimenStemSourceLabel(s))} · บรรทัด ${qmEsc(s.line_range || '-')}</li>`
     ).join('');
     const src = srcRows
       ? `<details class="qm-pro-details"><summary>แหล่งที่มาของก้าน · 十干克應來源</summary><div class="qm-pro-body"><ul>${srcRows}</ul></div></details>`
@@ -1376,7 +1421,7 @@ window.applyI18N = applyI18N;
     const dict = (!r.is_source_governed && r.dictionary?.name_th)
       ? `<li>ชื่อเดิมในพจนานุกรม: ${qmEsc(r.dictionary.name_th)} ${r.dictionary.name_zh ? `<span class="tc">${qmEsc(r.dictionary.name_zh)}</span>` : ''} · ยังไม่ใช้ฟันธง</li>`
       : '';
-    return `<div class="qm-detail-extra ${cls}"><h5>ปฏิกิริยาก้านฟ้า · 十干克應</h5><ul><li><b>${qmEsc(title)} ${zh ? `<span class="tc">${qmEsc(zh)}</span>` : ''}</b> · ${qmEsc(r.notation_zh || '')}</li><li>${qmEsc(r.beginner_th || r.status_th || '')}</li><li>${qmEsc(r.detail_th || '')}</li>${dict}<li>หมายเหตุ: ${qmEsc(r.caveat_th || 'อ่านร่วมกับประตู ดาว เทพ และ flags อื่น ห้ามใช้เดี่ยวเป็นคะแนนฤกษ์')}</li></ul>${src}</div>`;
+    return `<div class="qm-detail-extra ${cls}"><h5>ปฏิกิริยาก้านฟ้า · 十干克應</h5><ul><li><b>${qmEsc(title)} ${zh ? `<span class="tc">${qmEsc(zh)}</span>` : ''}</b> · ${qmEsc(r.notation_zh || '')}</li><li>${qmEsc(r.beginner_th || r.status_th || '')}</li><li>${qmEsc(r.detail_th || '')}</li>${dict}<li>หมายเหตุ: ${qmEsc(r.caveat_th || 'อ่านร่วมกับประตู ดาว เทพ และสัญญาณเสริมอื่น ห้ามใช้เดี่ยวเป็นคะแนนฤกษ์')}</li></ul>${src}</div>`;
   }
   function buildPalaceReadingGuideHtml(p, last, verdictClass){
     const selector = qimenYongshenSelector(last);
@@ -1384,8 +1429,9 @@ window.applyI18N = applyI18N;
     const reading = qimenBeginnerReading(p);
     const readingCls = qimenBeginnerVerdictClass(reading, verdictClass);
     const readingLabel = qimenBeginnerVerdictLabel(reading, verdictClass);
+    const scoreLevel = qimenScoreLevelText(p);
     const scoreText = qimenHasEngineScore(p)
-      ? `คะแนนรวมของวังนี้คือ ${qmEsc(p.display_score ?? p.score)}${p.display_level ? ' · '+qmEsc(p.display_level) : ''} เป็นตัวช่วยจัดลำดับ ไม่ใช่คำตัดสินเดี่ยว`
+      ? `คะแนนรวมของวังนี้คือ ${qmEsc(p.display_score ?? p.score)}${scoreLevel ? ' · '+qmEsc(scoreLevel) : ''} เป็นตัวช่วยจัดลำดับ ไม่ใช่คำตัดสินเดี่ยว`
       : 'ยังไม่มีคะแนนรวมจากระบบ ให้ถือว่าอ่านแบบระวัง ห้ามสรุปดีร้ายจากดาวหรือประตูตัวเดียว';
     const door = [p?.door_name_th, p?.door_zh].filter(Boolean).join(' ');
     const star = [p?.star_name_th, p?.star_zh].filter(Boolean).join(' ');
@@ -1399,7 +1445,7 @@ window.applyI18N = applyI18N;
       return `<li><b>${qmEsc(label || 'ข้อมูลประกอบ')}</b> · ${qmEsc(tone)}</li>`;
     }).join('') || '<li><b>ยังไม่มีเหตุผลจากระบบ</b> · ให้ดูประตู ดาว เทพ และก้านในวังนี้ต่อ</li>';
     const nextRows = (reading.check_next || []).slice(0, 2).map(x => `<li><b>ต้องเช็กต่อ:</b> ${qmEsc(x)}</li>`).join('')
-      || '<li><b>ต้องเช็กต่อ:</b> ดูประตู ดาว เทพ ก้าน และ flags ต่อ</li>';
+      || '<li><b>ต้องเช็กต่อ:</b> ดูประตู ดาว เทพ ก้าน และสัญญาณเสริมต่อ</li>';
     const scorePolicy = reading.no_score_mutation ? ' · ไม่แก้คะแนนจริง' : '';
     return `<div class="qm-detail-extra ${readingCls}"><h5>อ่านวังนี้แบบง่าย · 入門</h5><ul>
       <li><b>สถานะอ่านเร็ว:</b> ${qmEsc(readingLabel.th)} <span class="tc">${qmEsc(readingLabel.zh)}</span> · ${qmEsc(reading.summary_th)}</li>
@@ -1685,7 +1731,7 @@ window.applyI18N = applyI18N;
       const nameTh = f.name_th || 'รูปเกมพิเศษ';
       const nameZh = f.name_zh || f.formation_code || '';
       const q = String(f.quality || f.base_quality || '').toLowerCase();
-      const tone = q.includes('good') || q.includes('auspicious') ? 'ใช้เป็นแรงเสริม' : q.includes('bad') || q.includes('inauspicious') ? 'ต้องระวังเป็นพิเศษ' : 'อ่านร่วมกับประตู ดาว เทพ';
+      const tone = q.includes('bad') || q.includes('inauspicious') ? 'ต้องระวังเป็นพิเศษ' : q.includes('good') || q.includes('auspicious') ? 'ใช้เป็นแรงเสริม' : 'อ่านร่วมกับประตู ดาว เทพ';
       rows.push(`<li><b>${qmEsc(nameTh)} ${nameZh ? `<span class="tc">${qmEsc(nameZh)}</span>` : ''}</b> · ${qmEsc(tone)}</li>`);
     });
     if (!rows.length) return '';
@@ -1710,7 +1756,7 @@ window.applyI18N = applyI18N;
             || (last.chart && last.chart.zhi_fu_palace_id) || 1;
     let p = last.palaces.find(x => Number(x.palace_id) === Number(pid));
     if (!p) {
-      host.innerHTML = `<div class="qm-detail-extra bad"><h5>ไม่พบข้อมูลวังนี้ · 資料不足</h5><ul><li>ระบบหา palace_id ${qmEsc(pid)} ไม่เจอในผังล่าสุด จึงไม่แสดงผลแทนด้วยวังอื่นเพื่อกันอ่านผิด</li><li>กดคำนวณใหม่ หรือแตะช่องในผังอีกครั้ง</li></ul></div>`;
+      host.innerHTML = `<div class="qm-detail-extra bad"><h5>ไม่พบข้อมูลวังนี้ · 資料不足</h5><ul><li>ระบบหาวังที่เลือกหมายเลข ${qmEsc(pid)} ไม่เจอในผังล่าสุด จึงไม่แสดงผลแทนด้วยวังอื่นเพื่อกันอ่านผิด</li><li>กดคำนวณใหม่ หรือแตะช่องในผังอีกครั้ง</li></ul></div>`;
       return;
     }
     window._qimenCurrentPalaceId = p.palace_id;
@@ -1779,8 +1825,9 @@ window.applyI18N = applyI18N;
     const verdictText = `${verdictLabel.th} · ${verdictLabel.zh}`;
 
     /* score line · จาก API */
-    const lvlPart  = p.display_level ? ' · '+qmEsc(p.display_level) : '';
-    const tierPart = (p.tier_code && p.tier_code !== p.display_level) ? ' · '+qmEsc(p.tier_code) : '';
+    const levelText = qimenScoreLevelText(p);
+    const lvlPart  = levelText ? ' · '+qmEsc(levelText) : '';
+    const tierPart = '';
     const scoreLine = qimenHasEngineScore(p)
       ? `<div class="detail-row"><span class="k">${qmEsc(SCORE_LABEL)}</span><span class="v"><b>${qmEsc(p.display_score!=null?p.display_score:p.score)}</b>${lvlPart}${tierPart}</span></div>`
       : '';

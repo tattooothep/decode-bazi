@@ -59,11 +59,24 @@ assertHas("ตัวตรวจที่ระบบส่งมา", "human so
 assertHas("คะแนนระบบ · 分", "Thai-first score label");
 assertHas("System score · 分", "English score label");
 assertHas("系統評分", "Chinese score label");
+assertHas("ยังไม่พบสัญญาณหนัก", "Thai signal fallback");
+assertHas("สัญญาณเสริมต่อ", "Thai signal follow-up copy");
+assertHas("ระบบหาวังที่เลือกหมายเลข", "Thai palace missing copy");
+assertHas("ก้านฟ้า ${p?.heaven_stem_zh", "Thai-first stem fallback");
+assertHas("qimenScoreLevelText(p)", "localized score level formatter");
+assertHas("ตัวตรวจคลาสสิก", "Thai source key label");
+assertHas("สัญญาณเสริมระบบ", "Thai p0 flag source label");
+assertHas("const src = item.source_label_th || qmTraceSourceLabel(item) || qmSourceLabel(item)", "Thai source key label wins and raw source ids stay hidden");
+assertHas("function qimenStemSourceLabel", "stem source label helper exists");
+assertHas("return 'ตำราก้านฟ้า'", "stem source fallback is Thai learner copy");
+assertHas("function qimenThaiWarning", "raw warning flags are converted to Thai learner copy");
+assertHas("bad|avoid|inauspicious", "negative score levels checked first");
+assertHas("q.includes('bad') || q.includes('inauspicious')", "negative formation quality checked first");
+assertHas("s.includes('bad') || s.includes('inauspicious')", "negative quality normalization checked first");
+assertHas("s.includes('hard') || s.includes('inauspicious')", "negative trace tone checked before auspicious");
 assertHas("overflow-wrap:anywhere", "mobile wrapping guard");
 assertHas("slice(0, 3)", "bounded reasons/source rows");
 assertHas("slice(0, 2)", "bounded check-next rows");
-assertHas("replace(/\\\\/g, '/')", "source path sanitizer");
-assertHas("s.split('/').pop()", "source basename sanitizer");
 
 assertNotHas("คะแนนจาก engine", "old Thai engine score copy");
 assertNotHas("ยังไม่มีคะแนนรวมจาก engine", "old no-score copy");
@@ -72,6 +85,18 @@ assertNotHas("รอข้อมูล beginner_reading จาก engine", "old 
 assertNotHas("ยังไม่มีเหตุผลจาก engine", "old engine reason fallback");
 assertNotHas("engine ยังไม่รองรับ", "old disabled-school title");
 assertNotHas("API ส่งมา", "old source-trace note");
+assertNotHas("ยังไม่พบ flag หนัก", "raw flag fallback copy");
+assertNotHas("flags ต่อ", "raw flags follow-up copy");
+assertNotHas("flags อื่น", "raw flags caveat copy");
+assertNotHas("ระบบหา palace_id", "raw palace id missing copy");
+assertNotHas("qmEsc(p.display_level)", "raw display level output");
+assertNotHas("title = [label.th, label.zh, item._source_key]", "raw source key tooltip");
+assertNotHas("source_refs || item?._source_key", "raw source key fallback");
+assertNotHas("|| 'source'", "raw source fallback");
+assertNotHas("s.source_id || s.title_zh", "raw stem source id fallback");
+assertNotHas("item?.source || item?.source_ref || item?.source_id", "raw source id fallback");
+assertNotHas("item.note || item.reason", "raw P0 note/reason fallback");
+assertNotHas("r.label_th || r.kind", "raw yongshen kind fallback");
 
 for (const text of ["สถานะอ่านเร็ว", "ต้องเช็กต่อ", "คะแนนระบบ", "อ่านวังนี้แบบง่าย", "beginner_reading"]) {
   assert(!renderPalaces.includes(text), `renderPalaces should not include long detail text: ${text}`);
