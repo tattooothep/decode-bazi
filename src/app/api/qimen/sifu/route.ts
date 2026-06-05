@@ -220,9 +220,45 @@ function wantAny(text: string, words: string[]): boolean {
   return words.some(w => text.includes(w));
 }
 
+const QIMEN_SYSTEM_LABELS: Record<string, { label: string; scope: string; caveat: string }> = {
+  hour: {
+    label: "ผังยาม 時家",
+    scope: "ดูชั่วโมง/ชั่วยามและจังหวะลงมือเฉพาะหน้า",
+    caveat: "ใช้กับคำถามช่วงเวลานี้และการเลือกยาม ไม่ใช่ภาพรวมทั้งวัน/เดือน/ปี",
+  },
+  day: {
+    label: "ผังวัน 日家",
+    scope: "ดูภาพรวมของวันและทิศที่เด่นในวันนั้น",
+    caveat: "ไม่ใช่ผังยามเฉพาะชั่วโมง ถ้าจะลงมือจริงยังควรดูผังยาม 時家 ประกอบ",
+  },
+  month: {
+    label: "ผังเดือน 月家",
+    scope: "ดูแนวโน้มระดับเดือน/ช่วงงานใหญ่",
+    caveat: "ใช้เป็นภาพรวมรายเดือน ไม่ควรฟันธงจังหวะลงมือรายชั่วโมงจากผังนี้อย่างเดียว",
+  },
+  year: {
+    label: "ผังปี 年家",
+    scope: "ดูแนวโน้มระดับปี/ทิศทางใหญ่",
+    caveat: "ใช้เป็นภาพรวมรายปี ไม่ใช่คำตัดสินยามลงมือเฉพาะหน้า",
+  },
+};
+
+function normalizeQimenSystemType(value: any): string {
+  const raw = String(value || "").toLowerCase();
+  return raw === "day" || raw === "month" || raw === "year" ? raw : "hour";
+}
+
+function qimenSystemTypeFromPayload(payload: any): string {
+  const chart = payload?.qimen?.chart || payload?.chart || {};
+  return normalizeQimenSystemType(
+    chart.system_type || chart.chart_type || payload?.qimen?.system_type || payload?.system_type || payload?.chart_type,
+  );
+}
+
 function selectQimenSourceIds(opts: { message: string; topic?: string; payload: any }): Set<string> {
   const text = `${opts.message || ""} ${opts.topic || ""} ${opts.payload?.activity || ""}`.toLowerCase();
   const ids = new Set<string>(["core-method", "workflow-scoring", "source-caveats", "rv1-living-rules"]);
+  const systemType = qimenSystemTypeFromPayload(opts.payload);
 
   if (opts.payload?.qimen) ids.add("casting-chaibu");
   if (opts.payload?.user_yongshen_v2) ids.add("bazi-overlay-guard");
@@ -241,7 +277,7 @@ function selectQimenSourceIds(opts: { message: string; topic?: string; payload: 
     ids.add("four-harms");
     ids.add("rv1-context-rules");
   }
-  if (wantAny(text, ["ปี", "เดือน", "วัน", "日家", "月家", "年家", "year", "month", "day"])) {
+  if (systemType !== "hour" || wantAny(text, ["ปี", "เดือน", "วัน", "日家", "月家", "年家", "year", "month", "day"])) {
     ids.add("ymd-method");
     ids.add("ymd-caveats");
   }
@@ -495,6 +531,24 @@ const TOPIC_FOCUS: Record<string, string> = {
   search_advice: "วิเคราะห์ผลค้นหา · แนะนำ top 3 ที่ดีสุดสำหรับผู้ใช้คนนี้ · เหตุผลตำรา · เลี่ยงอันไหน",
 };
 
+function pillarValue(pillar: any, fallback: any): string {
+  if (pillar && typeof pillar === "object") {
+    const zh = pillar.gan_zhi || pillar.zh || pillar.pillar_zh || `${pillar.stem_zh || pillar.stem || ""}${pillar.branch_zh || pillar.branch || ""}`;
+    const th = pillar.label_th || pillar.name_th || pillar.th;
+    return packetText(`${zh || fallback || "-"}${th ? ` · ${th}` : ""}`);
+  }
+  return packetText(pillar || fallback || "-");
+}
+
+function formatQimenPillars(chart: any): string {
+  const pillars = chart?.pillars || {};
+  const year = pillarValue(pillars.year, chart.year_pillar_zh || chart.yearPillarZh);
+  const month = pillarValue(pillars.month, chart.month_pillar_zh || chart.monthPillarZh);
+  const day = pillarValue(pillars.day, chart.day_pillar_zh || chart.dayPillarZh);
+  const hour = pillarValue(pillars.hour, chart.hour_pillar_zh || chart.hourPillarZh || chart.pillar_zh);
+  return `ปี 年=${year} · เดือน 月=${month} · วัน 日=${day} · ยาม 時=${hour}`;
+}
+
 function fmtQimenCard(q: any): string {
   if (!q) return "(ไม่มีผัง)";
   const chart = q.chart || {};
@@ -505,6 +559,13 @@ function fmtQimenCard(q: any): string {
   const stemCoverage = q.stem_response_coverage || chart.stem_response_coverage || null;
   const beginnerCoverage = q.beginner_reading_coverage || chart.beginner_reading_coverage || null;
   const fushi = chart.ctext_fushi || null;
+  const systemType = normalizeQimenSystemType(chart.system_type || chart.chart_type || q.system_type || q.chart_type);
+  const systemInfo = QIMEN_SYSTEM_LABELS[systemType] || QIMEN_SYSTEM_LABELS.hour;
+  const systemScope = packetText(chart.calculation_scope_th || systemInfo.scope);
+  const systemCaveat = packetText(chart.source_note_th || systemInfo.caveat);
+  const dmyLine = systemType === "hour"
+    ? `ขอบเขตผัง: ${systemScope}`
+    : `ขอบเขตผัง: ${systemScope} · caveat: ${systemCaveat}${chart.dmy_engine_version ? ` · dmy_engine=${packetText(chart.dmy_engine_version)}` : ""}`;
 
   const poleRaw = String(chart.dun_type || chart.ju_pole || "").toLowerCase();
   const pole = poleRaw === "yin" ? "陰" : "陽";
@@ -541,8 +602,11 @@ function fmtQimenCard(q: any): string {
   ].join("\n") : "用神 selector: ไม่ได้ส่งมากับ engine packet";
 
   return `Engine packet คือ source of truth ถ้า field ขาดให้ตอบว่า "ข้อมูลไม่พอ" ห้ามสร้างค่าเอง
+ระบบผัง: ${systemInfo.label} · system_type=${systemType}
+${dmyLine}
+四柱 สี่เสาเวลา: ${formatQimenPillars(chart)}
 Yuan-Ju: ${pole}${ju}局
-時柱: ${chart.pillar_zh || "-"} · 旬首: ${chart.xun_hour_zh || fushi?.xun_leader_zh || "-"} · 遁干: ${chart.dun_gan_zh || "-"} · 八神派別: ${chart.deity_variant || "-"} · chart_source=${chart.source || chart.engine_source || "payload.qimen"}
+แกนผัง engine: ${chart.pillar_zh || "-"} · 旬首: ${chart.xun_hour_zh || fushi?.xun_leader_zh || "-"} · 遁干: ${chart.dun_gan_zh || "-"} · 八神派別: ${chart.deity_variant || "-"} · chart_source=${chart.source || chart.engine_source || "payload.qimen"}
 ${fushiLine}
 十干克應 coverage: ${stemCoverage ? `${stemCoverage.status_th || "เปิดเฉพาะ source-governed"} · full81=${stemCoverage.full_81_complete ? "yes" : "no"}` : "ไม่มีใน packet"}
 นโยบายอ่านเร็ว 入門: ${beginnerCoverage ? `${beginnerCoverage.version || "unknown"} · ไม่แก้คะแนนจริง=${beginnerCoverage.no_score_mutation === true ? "yes" : "unknown"} · จำนวนป้าย=${JSON.stringify(beginnerCoverage.counts || {})}` : "ไม่มีใน packet"}
@@ -576,7 +640,18 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
   const ys = payload?.user_yongshen_v2;
   const searchResults = payload?.search_results;
   const activity = payload?.activity;
-  const focus = topic && TOPIC_FOCUS[topic] ? `\nหัวข้อ: ${TOPIC_FOCUS[topic]}` : "";
+  const systemType = qimenSystemTypeFromPayload(payload);
+  const systemInfo = QIMEN_SYSTEM_LABELS[systemType] || QIMEN_SYSTEM_LABELS.hour;
+  const systemFocus = qimen
+    ? `\nระบบผังที่ผู้ใช้เลือก: ${systemInfo.label} · ${systemInfo.scope}${systemType !== "hour" ? ` · ${systemInfo.caveat}` : ""}`
+    : "";
+  const topicFocusText = topic && TOPIC_FOCUS[topic]
+    ? (systemType !== "hour" && topic === "action"
+      ? TOPIC_FOCUS[topic].replace("ชั่วยามนี้", "ช่วงนี้ตามระบบผังที่เลือก")
+      : TOPIC_FOCUS[topic])
+    : "";
+  const topicFocus = topicFocusText ? `\nหัวข้อ: ${topicFocusText}` : "";
+  const focus = `${systemFocus}${topicFocus}`;
   const histText = history.length
     ? "\n\nประวัติคำถาม:\n" + history.map(h => `[${h.role}] ${clip(String(h.content || ""), MAX_HIST_ITEM_CHARS)}`).join("\n")
     : "";
@@ -593,13 +668,14 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
 3. ตอบไทยนำจีนรอง เช่น ประตูเปิด 開門, ดาวเทียนฝู่ 天輔, เทพลิ่วเหอ 六合, ทิศตะวันออกเฉียงเหนือ 東北
 4. คะแนน/ระดับเป็น heuristic ของ Hourkey ให้พูดว่า "คะแนนระบบ" หรือ "น้ำหนักระบบ" ไม่ใช่เลขจากตำราโบราณ
 5. ถ้าพูดเรื่องต่างสำนัก เช่น 年/月/日家, 八神, 寄宮, 五不遇時 ให้ใส่ caveat ว่าสายตำราอาจต่างกัน
-6. ถ้าใช้ BaZi ให้แยกเป็น "ตัวกรองส่วนบุคคล" ไม่ปนเป็นคำตัดสินฉีเหมินหลัก
-7. สถานะอ่านเร็ว 入門 จาก beginner_reading เป็นป้ายช่วยอ่านของ engine ไม่ใช่คะแนนฤกษ์และห้ามแก้คะแนน
-8. ถ้า beginner_reading.is_actionable=false หรือ has_engine_score=false ห้ามแนะนำให้ใช้ทิศนั้นเป็นตัวหลัก ให้พูดว่า "อ่านเป็นบริบท/ต้องเช็กต่อ"
-9. ถ้า no_score_mutation ไม่ใช่ yes ให้เตือนว่า packet ไม่ยืนยันนโยบายคะแนน ห้ามฟันธง
-10. เมื่อตอบว่าทิศไหนดี/เสีย ต้องอ้างวังจริง: ทิศ + ประตู + ดาว + เทพ + ก้าน + flags/source flags + เหตุผลจากระบบ
-11. ห้ามใช้คำฟันธงเกินข้อมูล เช่น ดีแน่นอน, ชนะ, ใช้แล้วสำเร็จ, ไม่มีปัญหา
-12. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุ source id ที่ใช้ 1-3 ตัวจาก Source trace`;
+6. ถ้า payload เป็นผังวัน 日家 / ผังเดือน 月家 / ผังปี 年家 ต้องบอกว่าเป็นภาพรวมระดับวัน/เดือน/ปี ไม่ใช่ผังยาม 時家 เฉพาะชั่วโมง และห้ามใช้คำว่า "ชั่วยามนี้" กับผังเหล่านี้
+7. ถ้าใช้ BaZi ให้แยกเป็น "ตัวกรองส่วนบุคคล" ไม่ปนเป็นคำตัดสินฉีเหมินหลัก
+8. สถานะอ่านเร็ว 入門 จาก beginner_reading เป็นป้ายช่วยอ่านของ engine ไม่ใช่คะแนนฤกษ์และห้ามแก้คะแนน
+9. ถ้า beginner_reading.is_actionable=false หรือ has_engine_score=false ห้ามแนะนำให้ใช้ทิศนั้นเป็นตัวหลัก ให้พูดว่า "อ่านเป็นบริบท/ต้องเช็กต่อ"
+10. ถ้า no_score_mutation ไม่ใช่ yes ให้เตือนว่า packet ไม่ยืนยันนโยบายคะแนน ห้ามฟันธง
+11. เมื่อตอบว่าทิศไหนดี/เสีย ต้องอ้างวังจริง: ทิศ + ประตู + ดาว + เทพ + ก้าน + flags/source flags + เหตุผลจากระบบ
+12. ห้ามใช้คำฟันธงเกินข้อมูล เช่น ดีแน่นอน, ชนะ, ใช้แล้วสำเร็จ, ไม่มีปัญหา
+13. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุ source id ที่ใช้ 1-3 ตัวจาก Source trace`;
   const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${answerGuard}\n${canonBlock}\nผังเวลา (QiMen Chart):\n${fmtQimenCard(qimen)}\n\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
   return {
     prompt: loadPromptMd("prompts/qimen-sifu.md", QIMEN_TPL_FALLBACK).replace("{{BODY}}", body),
@@ -674,8 +750,12 @@ export async function POST(req: Request) {
         topic,
         activity: payload?.activity || null,
         qimen_summary: payload?.qimen?.chart ? {
+          system_type: payload.qimen.chart.system_type || payload.qimen.chart.chart_type || null,
+          calculation_scope_th: payload.qimen.chart.calculation_scope_th || null,
+          dmy_engine_version: payload.qimen.chart.dmy_engine_version || null,
           pillar_zh: payload.qimen.chart.pillar_zh,
           ju_pole: payload.qimen.chart.ju_pole,
+          dun_type: payload.qimen.chart.dun_type,
           ju_number: payload.qimen.chart.ju_number,
         } : null,
         search_count: Array.isArray(payload?.search_results) ? payload.search_results.length : 0,
