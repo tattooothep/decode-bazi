@@ -5,7 +5,7 @@ import FormulasAdmin from "./editor";
 
 export default async function AdminFormulasPage() {
   const s = await getSession();
-  if (!s) redirect("/login?next=/admin/formulas");
+  if (!s) redirect("/signup?tab=login&next=/admin/formulas");
   const allow = (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
   const email = (s.email || "").toLowerCase();
   let isAdmin = allow.includes(email);

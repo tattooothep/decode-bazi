@@ -17,7 +17,7 @@ type ProfileRow = {
 
 export default async function DashboardPage() {
   const s = await getSession();
-  if (!s) redirect("/login");
+  if (!s) redirect("/signup?tab=login&next=/dashboard");
 
   const profiles = await q<ProfileRow>(
     `SELECT id, name, nickname, birth_datetime, birth_location_name,

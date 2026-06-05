@@ -2,11 +2,14 @@
 import { cookies } from "next/headers";
 import { isReady, buildState, buildAuthUrl } from "@/lib/oauth-google";
 
-export async function GET() {
+const COOKIE_DOMAIN = process.env.NODE_ENV === "production" ? ".hourkey.io" : undefined;
+
+export async function GET(req: Request) {
   if (!isReady()) {
     return new Response("Google OAuth not configured", { status: 503 });
   }
-  const state = await buildState();
+  const requestUrl = new URL(req.url);
+  const state = await buildState(requestUrl.searchParams.get("next"));
   const c = await cookies();
   c.set("oauth_state_google", state, {
     httpOnly: true,
@@ -14,7 +17,8 @@ export async function GET() {
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: 600,
+    ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
   });
-  const url = buildAuthUrl(state);
-  return new Response(null, { status: 302, headers: { Location: url } });
+  const authUrl = buildAuthUrl(state);
+  return new Response(null, { status: 302, headers: { Location: authUrl } });
 }

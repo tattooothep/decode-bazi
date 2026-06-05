@@ -489,8 +489,35 @@
     .sinsae-intro-actions{justify-content:stretch;}
     .sinsae-intro-actions button,.sinsae-intro-actions a{width:100%;text-align:center;}
   }
+  @media (max-width:640px){
+    .stage,
+    .stage > *,
+    .chat-section,
+    .chat-toolbar,
+    .chat-toolbar > *,
+    .messages,
+    .msg,
+    .msg-bubble,
+    .chat-input,
+    .profile-pick,
+    .sifu-model-pick,
+    .hkg-pick,
+    .hkg-members{min-width:0;max-width:100%;}
+    .chat-toolbar{display:grid;grid-template-columns:1fr;align-items:stretch;}
+    .chat-title{margin-right:0;width:100%;line-height:1.2;}
+    .sifu-model-pick{display:flex;align-items:center;gap:7px;width:100%;}
+    .profile-pick,
+    .hkg-pick{align-items:center;gap:7px;width:100%;}
+    .sifu-model-pick select,
+    .profile-pick select,
+    .hkg-pick select{min-width:0;width:100%;}
+    .msg-bubble{overflow-wrap:anywhere;word-break:normal;}
+    .msg-actions{flex-wrap:wrap;}
+    .chat-input textarea{min-width:0;}
+    .send-btn{display:inline-flex;align-items:center;justify-content:center;line-height:1.1;white-space:nowrap;}
+  }
 </style>
-<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b">
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
@@ -668,6 +695,7 @@
     var forced = params.get('intro') === '1';
     var next = params.get('next') || '/today';
     if (!next || next.charAt(0) !== '/' || next.charAt(1) === '/') next = '/today';
+    if (!forced) return;
     var done = false;
     try { done = localStorage.getItem('hk_sinsae_intro_version') === VERSION; } catch(_) {}
     if (done) {
@@ -1832,6 +1860,6 @@ window.applyI18N = applyI18N;
 </script>
 
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=16" defer></script>
+<script src="/js/hk-user-menu.js?v=18" defer></script>
 </body>
 </html>

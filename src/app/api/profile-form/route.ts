@@ -7,7 +7,7 @@ function redirect303(url: string): Response {
 
 export async function POST(req: Request) {
   const s = await getSession();
-  if (!s) return redirect303("/login?err=" + encodeURIComponent("กรุณาเข้าสู่ระบบก่อน"));
+  if (!s) return redirect303("/signup?tab=login&err=" + encodeURIComponent("กรุณาเข้าสู่ระบบก่อน"));
 
   const form = await req.formData();
   const name = String(form.get("name") || "").trim();

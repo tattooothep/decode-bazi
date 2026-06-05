@@ -24,6 +24,8 @@ const SETS: Record<string, string> = {
   basha_huangquan_interpreted: "02b_ba_sha_huang_quan_interpreted.json",
   tigua:       "03_tigua.json",
   sanyuan_long: "04_sanyuan_long.json",
+  water_method: "water-method-v1.json",
+  month_day_sha: "month-day-sha-v1.json",
 };
 const DIR = path.join(process.cwd(), "data", "luopan-private");
 const cache = new Map<string, string>();

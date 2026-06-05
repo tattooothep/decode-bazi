@@ -5,7 +5,7 @@ import ParaphraseEditor from "./editor";
 
 export default async function AdminParaphrasePage() {
   const s = await getSession();
-  if (!s) redirect("/login?next=/admin/paraphrase");
+  if (!s) redirect("/signup?tab=login&next=/admin/paraphrase");
 
   const adminAllow = (process.env.ADMIN_EMAILS || "")
     .split(",")

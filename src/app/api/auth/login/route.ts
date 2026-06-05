@@ -45,7 +45,7 @@ export async function POST(req: Request) {
   return NextResponse.json({
     ok: true,
     has_profile,
-    intro_url: "/master?intro=1&next=%2Ftoday",
+    intro_url: "/today",
     user: { id: user.id, email: user.email },
   });
 }

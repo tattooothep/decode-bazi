@@ -311,6 +311,7 @@ export type FunnelStats = {
 
 export type SearchRequest = {
   activityType: ActivityType;
+  activityProfileKey?: string;
   dateFrom: string;            // YYYY-MM-DD
   dateTo: string;
   peopleIds: string[];         // ลูกค้า + ครอบครัว
@@ -340,6 +341,8 @@ export type ModuleInput = {
   slot: Omit<CandidateSlot, "modules" | "scoring" | "display">;
   person?: PersonProfile;
   activityType: ActivityType;
+  /** ทิศเป้าหมายของกิจกรรม ใช้กับ日煞/ฉีเหมิน/งานเดินทาง */
+  targetDirection?: "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW" | null;
 };
 
 export interface LuckModule {

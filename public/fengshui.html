@@ -497,6 +497,52 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   .pcell-top{font-size:8px;}
   .geo-sec{padding:18px;}
 }
+@media(max-width:560px){
+  .hero{padding:30px 14px 18px;}
+  .hero .eyebrow{gap:8px;letter-spacing:.22em;line-height:1.7;max-width:100%;white-space:normal;}
+  .hero .eyebrow::before,.hero .eyebrow::after{width:18px;}
+  .hero h1{font-size:34px;line-height:1.12;letter-spacing:0;text-wrap:balance;margin-bottom:14px;}
+  .hero .sub{font-size:13px;line-height:1.75;}
+  .fs-step{border-radius:16px;}
+  .fs-step-head{padding:16px 18px;}
+  .fs-step-head h2{font-size:26px;line-height:1.16;letter-spacing:0;}
+  .fs-step-body{padding:14px;}
+  .timeline-set,.layer-toggles,.school-row,.fs-action-row,.map-controls,.plan-controls,.plan-workbench{width:100%;}
+  .timeline-set input{flex:1 1 130px;min-width:0;}
+  .timeline-set input[type="number"],.timeline-set input[type="date"],.timeline-set input[type="time"]{width:auto;}
+  .layer-btn,.school-btn,.fs-action-btn,.map-btn,.map-layer-btn,.plan-tool-btn{min-width:0;justify-content:center;text-align:center;white-space:normal;overflow-wrap:anywhere;line-height:1.25;}
+  .layer-btn,.school-btn,.fs-action-btn{flex:1 1 calc(50% - 6px);}
+  .fs-luopan-cta{align-items:flex-start;}
+  .fs-luopan-cta a{width:100%;white-space:normal;letter-spacing:.08em;}
+  .map-head{align-items:stretch;}
+  .map-head h4{width:100%;line-height:1.5;}
+  .map-controls .map-btn{flex:1 1 calc(50% - 4px);}
+  .map-layer-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:9px 12px;}
+  .map-fine-controls{padding:10px 12px;}
+  .map-fine-controls .fine-title{align-items:flex-start;flex-direction:column;gap:4px;}
+  .map-fine-controls .fine-title span{text-align:left;}
+  .wall-angle-controls{grid-template-columns:72px minmax(0,1fr) 72px;gap:6px;}
+  .wall-angle-readout{white-space:normal;line-height:1.3;overflow-wrap:anywhere;}
+  .compass-luck-legend span,.plan-luck-item,.plan-star-key{min-width:0;overflow-wrap:anywhere;}
+  .plan-luck-item{align-items:flex-start;}
+  .plan-luck-item b,.plan-luck-item span{white-space:normal;overflow:visible;text-overflow:clip;}
+  .plan-star-key{flex:1 1 calc(50% - 8px);}
+  .api-card .row{flex-direction:column;}
+}
+@media(max-width:420px){
+  .hero h1{font-size:31px;}
+  .map-layer-controls{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .map-result-bar,.compass-luck-legend{grid-template-columns:1fr;}
+  .pgrid{gap:5px;}
+  .pcell{padding:7px 4px;}
+  .pcell-luck{display:none;}
+  .stars-quad{gap:4px;}
+  .star-box{min-width:0;width:100%;padding:3px 4px;}
+  .star-box b{font-size:18px;}
+  .star-box.star-base{min-width:0;}
+  .star-box.star-base b{font-size:23px;}
+  .pi-usage{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
@@ -527,6 +573,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   .hk-topbar .hk-lang-switch button{min-width:24px;height:22px;font-size:8px;padding:0 5px;}
 }
 </style>
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b" media="(max-width: 820px)"/>
 <header class="hk-topbar">
   <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
   <nav class="hk-nav" id="hk-topnav">
@@ -4697,7 +4744,7 @@ window.applyI18N = applyI18N;
 </script>
 
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=15" defer></script>
+<script src="/js/hk-user-menu.js?v=18" defer></script>
 <script src="/js/hk-luopan-nav.js?v=2" defer></script>
 </body>
 </html>

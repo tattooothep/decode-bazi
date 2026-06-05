@@ -707,6 +707,62 @@
     .grid12{grid-template-columns:repeat(3, 1fr);}
   }
 
+  @media (max-width:640px){
+    html,body{overflow-x:clip;}
+    .wrap > *,
+    .hero,
+    .verdict,
+    .pillar-today,
+    .sec,
+    .sec-h,
+    .hours,
+    .actions-grid,
+    .row2,
+    .people,
+    .colorcard,
+    .extras,
+    .extra-card,
+    .de-shell,
+    .de-layout,
+    .de-detail,
+    .de-map-panel,
+    .de-selected{min-width:0;max-width:100%;}
+    .datestrip{display:block;margin-bottom:18px;}
+    .datestrip .r{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-radius:16px;}
+    .datestrip .r button{min-width:0;padding:9px 6px;font-size:9px;letter-spacing:.06em;line-height:1.2;white-space:normal;}
+    .verdict .score{align-items:flex-start;}
+    .verdict .score .d{padding-top:10px;}
+    .verdict h2{max-width:none;padding-right:86px;overflow-wrap:anywhere;word-break:normal;}
+    .daily-practical .pr-row{grid-template-columns:1fr;gap:3px;}
+    .daily-practical .pr-row b{padding-top:0;}
+    .hours-now{align-items:flex-start;gap:10px;}
+    .hours-now .info{min-width:0;}
+    .hours-now .verdict-mini{max-width:100%;white-space:normal;text-align:center;line-height:1.25;}
+    .h-cell{min-width:0;}
+    .h-cell .rg,
+    .h-cell .q{letter-spacing:.04em;}
+    .act-card,
+    .ppl-chip,
+    .el-r,
+    .dir-line,
+    .de-row,
+    .de-selected-item,
+    .de-factor,
+    .ts-grp li{overflow-wrap:anywhere;word-break:normal;}
+    .ppl-chip{max-width:100%;}
+    .ppl-chip .nm,
+    .ppl-chip .why{min-width:0;}
+    .swatches{grid-template-columns:repeat(auto-fill,minmax(58px,1fr));}
+    .sw{min-width:0;padding:7px;font-size:8px;letter-spacing:.04em;}
+    .de-school button{text-align:center;}
+    .de-map-cell,
+    .de-map-center{min-height:88px;}
+    .de-cell-lines{gap:3px;}
+    .de-mini-tag{font-size:8px;padding:2px 4px;}
+    .compass{width:min(228px,100%);height:auto;aspect-ratio:1/1;}
+    .extras summary{padding:16px 14px;gap:12px;line-height:1.35;letter-spacing:.12em;}
+  }
+
 </style>
 <script>
   document.addEventListener('DOMContentLoaded', ()=>{
@@ -723,7 +779,7 @@
     });
   });
 </script>
-<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b">
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
 <script src="/js/hk-hex-deep.js?v=1" defer></script>
 </head>
@@ -3451,7 +3507,7 @@ window.applyI18N = applyI18N;
 })();
 </script>
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=16" defer></script>
+<script src="/js/hk-user-menu.js?v=18" defer></script>
 <script src="/js/hk-method-link.js?v=20260518a" defer></script>
 </body>
 </html>

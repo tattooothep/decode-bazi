@@ -22,6 +22,7 @@ import type {
   EarthlyBranch,
   Reason
 } from "../types";
+import { evaluateMonthDaySha } from "../../luopan/month-day-sha";
 
 // =====================================================================
 // Branch relationships
@@ -84,6 +85,7 @@ export const zeRiModule: LuckModule = {
     const reasonsUp: Reason[] = [];
     const reasonsDown: Reason[] = [];
     const reasonsWarning: Reason[] = [];
+    const caps: NonNullable<ModuleResult["caps"]> = [];
     let pass = true;
 
     // ---------------------------------------------------------------
@@ -188,6 +190,23 @@ export const zeRiModule: LuckModule = {
     }
 
     // ---------------------------------------------------------------
+    // CHECK 7: 月煞/日煞 (month/day sha) · ไทยนำ จีนรอง
+    // ---------------------------------------------------------------
+    const monthDaySha = evaluateMonthDaySha({
+      monthBranch,
+      dayBranch,
+      activityType: input.activityType,
+      targetDirection: input.targetDirection || null
+    });
+    rawScore += monthDaySha.delta;
+    if (!monthDaySha.pass) pass = false;
+    tags.push(...monthDaySha.tags);
+    reasonsUp.push(...monthDaySha.reasons.up);
+    reasonsDown.push(...monthDaySha.reasons.down);
+    reasonsWarning.push(...monthDaySha.reasons.warning);
+    caps.push(...(monthDaySha.caps || []));
+
+    // ---------------------------------------------------------------
     // Activity-specific checks
     // ---------------------------------------------------------------
     if (input.activityType === "立約") {
@@ -236,11 +255,13 @@ export const zeRiModule: LuckModule = {
         down: reasonsDown,
         warning: reasonsWarning
       },
+      caps,
       confidence: 0.95,
       raw: {
         dayBranch,
         hourBranch,
         monthBranch,
+        monthDaySha: monthDaySha.raw,
         checks: {
           clashTaisui: CLASH[dayBranch] === yearBranch,
           dayHourClash: CLASH[dayBranch] === hourBranch,

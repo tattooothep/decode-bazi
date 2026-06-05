@@ -7,7 +7,7 @@ export const metadata = { title: "แก้ System Prompt ซินแส · Adm
 
 export default async function AdminSifuPromptsPage() {
   const s = await getSession();
-  if (!s) redirect("/login?next=/admin/sifu-prompts");
+  if (!s) redirect("/signup?tab=login&next=/admin/sifu-prompts");
   const allow = (process.env.ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
   const email = (s.email || "").toLowerCase();
   let isAdmin = allow.includes(email);

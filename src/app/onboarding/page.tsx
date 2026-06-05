@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth";
 
 export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ err?: string }> }) {
   const s = await getSession();
-  if (!s?.orgId) redirect("/login");
+  if (!s?.orgId) redirect("/signup?tab=login&next=/onboarding");
   return <OnboardingForm searchParamsPromise={searchParams} />;
 }
 

@@ -11,19 +11,19 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const email = String(form.get("email") || "").trim().toLowerCase();
   const password = String(form.get("password") || "");
-  if (!email || !password) return redirect303("/login?err=" + encodeURIComponent("กรอก email + password"));
+  if (!email || !password) return redirect303("/signup?tab=login&err=" + encodeURIComponent("กรอก email + password"));
   /* 1 มิ.ย. · กัน brute-force · 5 ครั้ง/นาที ต่อ (IP + อีเมล) */
   const rl = rateLimit(`loginform:${clientIp(req)}:${email}`, 5, 60_000);
-  if (!rl.ok) return redirect303("/login?err=" + encodeURIComponent("ลองบ่อยเกินไป · รอสักครู่"));
+  if (!rl.ok) return redirect303("/signup?tab=login&err=" + encodeURIComponent("ลองบ่อยเกินไป · รอสักครู่"));
   const user = await q1<{
     id: string; email: string; password_hash: string; current_org_id: string;
   }>("SELECT id, email, password_hash, current_org_id FROM users WHERE email=$1", [email]);
-  if (!user || !user.password_hash) return redirect303("/login?err=" + encodeURIComponent("อีเมลหรือรหัสผ่านไม่ถูกต้อง"));
+  if (!user || !user.password_hash) return redirect303("/signup?tab=login&err=" + encodeURIComponent("อีเมลหรือรหัสผ่านไม่ถูกต้อง"));
   const ok = await verifyPassword(password, user.password_hash);
-  if (!ok) return redirect303("/login?err=" + encodeURIComponent("อีเมลหรือรหัสผ่านไม่ถูกต้อง"));
+  if (!ok) return redirect303("/signup?tab=login&err=" + encodeURIComponent("อีเมลหรือรหัสผ่านไม่ถูกต้อง"));
   const token = await signSession({ userId: user.id, email: user.email, orgId: user.current_org_id });
   await setAuthCookie(token);
   await q1("UPDATE users SET last_active_at=now() WHERE id=$1", [user.id]);
   const hasProfile = await userHasProfile(user.id);
-  return redirect303(hasProfile ? "/master?intro=1&next=" + encodeURIComponent("/today") : "/input");
+  return redirect303(hasProfile ? "/today" : "/input");
 }

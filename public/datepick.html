@@ -65,6 +65,18 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .act-btn:hover{border-color:var(--gold-line);color:var(--fg);}
 .act-btn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);}
 .act-btn.active .han{color:var(--gold-bright);}
+.activity-profile-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:0 0 10px;background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:5px;}
+.activity-profile-tabs button{border:none;background:transparent;color:var(--fg-soft);font-family:var(--th);font-size:12px;padding:8px 6px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;min-height:36px;}
+.activity-profile-tabs button .han{font-family:var(--tc);font-size:14px;color:var(--gold);}
+.activity-profile-tabs button.active{background:var(--gold-soft);color:var(--gold);}
+.mission-list{display:grid;grid-template-columns:1fr;gap:7px;margin-bottom:14px;}
+.mission-btn{background:var(--bg-3);border:1px solid var(--line);border-radius:9px;padding:10px 12px;text-align:left;cursor:pointer;color:var(--fg);transition:.2s;}
+.mission-btn:hover{border-color:var(--gold-line);}
+.mission-btn.active{background:var(--gold-soft);border-color:var(--gold);}
+.mission-btn .nm{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;line-height:1.35;}
+.mission-btn .nm .han{font-family:var(--tc);font-size:16px;color:var(--gold);min-width:38px;}
+.mission-btn .desc{font-size:11px;color:var(--fg-soft);margin:4px 0 0;line-height:1.45;}
+.profile-note{font-size:11px;color:var(--fg-faint);line-height:1.55;margin:-4px 0 12px;}
 
 /* Filter checkboxes — Layered list */
 .filter-list{display:flex;flex-direction:column;gap:8px;}
@@ -199,7 +211,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
   .funnel-row .name{width:auto;font-size:12px;}
 }
 </style>
-<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b">
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
@@ -344,6 +356,34 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
   .dp-sifu-btn{font-size:10px;padding:9px 14px;letter-spacing:.12em;}
   .dp-sifu-log{max-height:280px;font-size:12px;}
 }
+@media (max-width:640px){
+  .activity-profile-tabs{grid-template-columns:repeat(2,1fr);}
+  div:has(> #act-query){flex-wrap:wrap!important;}
+  #act-query{min-width:0!important;flex:1 1 180px!important;}
+  #act-classify-btn{flex:0 0 auto;white-space:normal;}
+  #peopleCount{display:block;min-width:0;overflow-wrap:anywhere;}
+  #peopleCount + span{flex-wrap:wrap;justify-content:flex-start!important;}
+  .person-mini{grid-template-columns:minmax(0,1fr) auto;}
+  .person-mini .nm,.person-mini .stats{min-width:0;overflow-wrap:anywhere;}
+  .result-head{align-items:flex-start;flex-wrap:wrap;}
+  .result-head .rdate{min-width:0;flex:1 1 220px;overflow-wrap:anywhere;}
+  .result-head .rscore{min-width:76px!important;}
+  .result-verdict span,.science-item .txt,.hex-day-meaning,.layer-card .desc{overflow-wrap:anywhere;}
+  .funnel{overflow-x:auto;padding:16px;}
+  .funnel-row{min-width:0;gap:8px;}
+  .funnel-row .count{min-width:58px;}
+  .dp-msg .body{min-width:0;overflow-wrap:anywhere;}
+  #hex-popup > div{max-width:calc(100vw - 24px)!important;padding:18px!important;}
+}
+@media (max-width:420px){
+  .result-head{flex-direction:column;}
+  .result-head .rank{align-self:flex-start;}
+  .result-head .rscore{width:100%;min-width:0!important;text-align:left;}
+  .person-mini{grid-template-columns:1fr;}
+  .person-mini .pick{justify-self:start;}
+  #act-query{flex:1 1 100%!important;}
+  #act-classify-btn{width:100%;}
+}
 </style>
 <header class="hk-topbar">
   <a href="/" class="hk-logo"><span class="seal">時</span>hourkey</a>
@@ -383,8 +423,6 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
       <div class="card">
         <h3><span class="num">01</span> กิจกรรม <span class="han">事</span></h3>
         <div  class="desc" data-i18n="auto.d.003">เลือกประเภทกิจกรรมที่จะวางฤกษ์ — แต่ละกิจกรรมมีกฎ 宜/忌 ของปฏิทินจีนไม่เหมือนกัน</div>
-        <div class="activity-grid">
-        </div>
         <!-- 17 พ.ค. · Smart Activity Picker · เจ้านาย idea · Hybrid Keyword + AI -->
         <div style="margin-bottom:14px;padding:14px;background:linear-gradient(135deg,rgba(200,164,77,.06),transparent);border:1px solid var(--gold-line);border-radius:10px;">
           <label style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;display:block;">🤖 อธิบายกิจกรรมเอง · ระบบช่วยจับหมวด</label>
@@ -395,17 +433,10 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
           <div id="act-result" style="margin-top:8px;font-size:12px;color:var(--fg-soft);display:none;"></div>
           <div style="margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.05em;">⚡ จับจากคำสำคัญก่อน · ถ้าไม่เจอค่อยให้ระบบช่วยวิเคราะห์</div>
         </div>
-        <div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:6px;">หรือเลือกจากปุ่ม ↓</div>
-        <div class="activity-grid">
-          <button class="act-btn" data-act="break-ground">⛏️ ตอกเสาเข็ม <span class="han">動土</span></button>
-          <button class="act-btn active" data-act="sign-contract">📝 เซ็นสัญญา <span class="han">立約</span></button>
-          <button class="act-btn" data-act="move-in">🏠 ย้ายเข้าบ้าน <span class="han">入宅</span></button>
-          <button class="act-btn" data-act="open-shop">🛍️ เปิดกิจการ <span class="han">開市</span></button>
-          <button class="act-btn" data-act="travel">✈️ เดินทางไกล <span class="han">出行</span></button>
-          <button class="act-btn" data-act="negotiate">🤝 เจรจาสำคัญ <span class="han">會見</span></button>
-          <button class="act-btn" data-act="invest">💰 ลงทุน/ซื้อ <span class="han">財貨</span></button>
-          <button class="act-btn" data-act="wedding">💒 พิธีมงคล <span class="han">嫁娶</span></button>
-        </div>
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:6px;">เลือกภารกิจหลักหรือภารกิจย่อย</div>
+        <div class="activity-profile-tabs" id="activityProfileTabs"></div>
+        <div class="mission-list" id="activityProfileList"></div>
+        <div class="profile-note" id="activityProfileNote">เลือกจากแท็บหลักเพื่อใช้กฎ 8 กิจกรรมเดิม หรือเลือกหมวดย่อยเพื่อให้ engine ใช้กฎเฉพาะงานนั้น</div>
       </div>
 
       <!-- 2. Date Range -->
@@ -679,6 +710,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 // ═══════════════════════════════════════════════════════════════
 const state = {
   activity: 'sign-contract',
+  activityProfileKey: null,
+  activityProfileCategory: 'core',
   dateStart: null,
   dateEnd: null,
   people: [],
@@ -711,6 +744,61 @@ const ACTIVITY_RULES = {
   'invest':        { name:'ลงทุน/ซื้อ',   han:'財貨', yi:[5,7,8,9,11],   ji:[2,4,12] },
   'wedding':       { name:'พิธีมงคล',     han:'嫁娶', yi:[3,5,7,9,11],   ji:[2,4,12] }
 };
+
+const ACTIVITY_CORE = [
+  { ui:'break-ground', name:'ตอกเสาเข็ม', han:'動土', desc:'งานก่อสร้าง · ขุดดิน · เปิดหน้างาน' },
+  { ui:'sign-contract', name:'เซ็นสัญญา', han:'立約', desc:'เอกสารผูกพัน · ข้อตกลง · ซื้อขาย' },
+  { ui:'move-in', name:'ย้ายเข้าบ้าน', han:'入宅', desc:'เข้าบ้านใหม่ · ย้ายที่อยู่' },
+  { ui:'open-shop', name:'เปิดกิจการ', han:'開市', desc:'เปิดร้าน · เปิดบริษัท · เริ่มค้าขาย' },
+  { ui:'travel', name:'เดินทางไกล', han:'出行', desc:'บิน · เดินทางต่างจังหวัด/ต่างประเทศ' },
+  { ui:'negotiate', name:'เจรจาสำคัญ', han:'會見', desc:'พบคน · คุยเงื่อนไข · ต่อรอง' },
+  { ui:'invest', name:'ลงทุน/ซื้อ', han:'財貨', desc:'ซื้อทรัพย์สิน · วางเงิน · เปิดยอด' },
+  { ui:'wedding', name:'พิธีมงคล', han:'嫁娶', desc:'แต่งงาน · หมั้น · งานมงคลครอบครัว' },
+];
+
+const ACTIVITY_PROFILE_GROUPS = [
+  { key:'core', label:'หลัก', han:'主' },
+  { key:'doc', label:'เอกสาร', han:'文' },
+  { key:'talk', label:'เจรจา', han:'談' },
+  { key:'trade', label:'ธุรกรรม', han:'交' },
+  { key:'biz', label:'องค์กร', han:'經' },
+  { key:'home', label:'บ้าน', han:'宅' },
+  { key:'life', label:'ชีวิต', han:'禮' },
+];
+const ACTIVITY_PROFILES = [
+  { key:'sign_contract', cat:'doc', ui:'sign-contract', base:'立約', name:'เซ็นสัญญา', han:'立約', desc:'เอกสารผูกพัน · ซื้อขาย · ขอกู้' },
+  { key:'close_deal', cat:'doc', ui:'sign-contract', base:'立約', name:'ปิดดีล/ปิดการขาย', han:'立券交易', desc:'จบการเจรจา · ตกลงราคา' },
+  { key:'permit_license', cat:'doc', ui:'sign-contract', base:'立約', name:'ขอใบอนุญาต', han:'上書', desc:'ยื่นเอกสารราชการ · ขอ license' },
+  { key:'loan_credit', cat:'doc', ui:'invest', base:'求財', name:'ขอกู้/ขอเครดิต', han:'求財', desc:'ยื่นกู้ · ขอวงเงินธนาคาร' },
+  { key:'launch_ritual', cat:'doc', ui:'open-shop', base:'開市', name:'พิธีเปิด/ฤกษ์เปิดตัว', han:'開光', desc:'พิธีเปิด · launch สินค้า/งานใหม่' },
+  { key:'negotiation', cat:'talk', ui:'negotiate', base:'立約', name:'เจรจา/ต่อรอง', han:'議事', desc:'คุยเงื่อนไข · ต่อรองราคา' },
+  { key:'meet_senior', cat:'talk', ui:'negotiate', base:'立約', name:'พบผู้ใหญ่/ที่ปรึกษา', han:'見貴', desc:'พบ senior · mentor · ผู้มีอำนาจช่วยเปิดทาง' },
+  { key:'ask_favor', cat:'talk', ui:'negotiate', base:'立約', name:'ขอความช่วยเหลือ', han:'求人', desc:'ขอ favor · ขอ intro · ขอแรงสนับสนุน' },
+  { key:'partner_meeting', cat:'talk', ui:'negotiate', base:'立約', name:'พบพันธมิตร', han:'結交', desc:'พบ partner ใหม่ · คุยความร่วมมือ' },
+  { key:'pitch_present', cat:'talk', ui:'open-shop', base:'開市', name:'Pitch / นำเสนอ', han:'上陳', desc:'นำเสนอต่อ board · นักลงทุน · ลูกค้าหลัก' },
+  { key:'interview', cat:'talk', ui:'negotiate', base:'立約', name:'สมัครงาน/สัมภาษณ์', han:'面試', desc:'สมัครงาน · สัมภาษณ์ · คุย offer' },
+  { key:'collect_money', cat:'trade', ui:'invest', base:'求財', name:'รับเงิน/เก็บเงิน', han:'納財', desc:'รับชำระ · เก็บกระแสเงินสด' },
+  { key:'debt_followup', cat:'trade', ui:'invest', base:'求財', name:'ทวงหนี้/ตามเงิน', han:'索債', desc:'ตามลูกหนี้ · เร่งจ่าย · ลดข้อพิพาท' },
+  { key:'pay_transfer', cat:'trade', ui:'invest', base:'求財', name:'จ่ายเงิน/โอน', han:'出財', desc:'จ่าย supplier · โอนเงินก้อน · ปิดยอด' },
+  { key:'invest_buy', cat:'trade', ui:'invest', base:'求財', name:'ลงทุน/ซื้อ', han:'入貨', desc:'ซื้อทรัพย์สิน · วางเงินก้อน · ตรวจตัวเลข' },
+  { key:'ship_goods', cat:'trade', ui:'travel', base:'出行', name:'ออกของ/ส่งของ', han:'出貨', desc:'ส่งสินค้า · เปิด shipment · กระจายของ' },
+  { key:'client_sales', cat:'trade', ui:'invest', base:'求財', name:'พบลูกค้า/ขายของ', han:'求財', desc:'พบลูกค้า · เสนอราคา · เปิดยอดขาย' },
+  { key:'open_business', cat:'biz', ui:'open-shop', base:'開市', name:'เปิดร้าน/ตั้งกิจการ', han:'開市', desc:'จดทะเบียน · เปิดสาขาใหม่' },
+  { key:'open_project', cat:'biz', ui:'open-shop', base:'開市', name:'เปิดโปรเจกต์/เปิดตัว', han:'開業', desc:'เปิดเว็บ · เปิดเพจ · เปิด product · เริ่ม SaaS' },
+  { key:'hire_onboard', cat:'biz', ui:'sign-contract', base:'立約', name:'จ้าง/รับพนักงาน', han:'受聘', desc:'เซ็นสัญญาจ้าง · onboard คนใหม่' },
+  { key:'take_position', cat:'biz', ui:'open-shop', base:'開市', name:'รับตำแหน่ง/เริ่มงานวันแรก', han:'上任', desc:'รับตำแหน่ง · เริ่มงาน · ขึ้นบทบาทใหม่' },
+  { key:'office_move', cat:'biz', ui:'move-in', base:'搬家', name:'ย้ายออฟฟิศ', han:'移徙', desc:'ย้ายสำนักงาน · ขนของ · เปลี่ยนที่ทำงาน' },
+  { key:'board_meeting', cat:'biz', ui:'negotiate', base:'立約', name:'ประชุมใหญ่/Board', han:'會親友', desc:'AGM · board meeting · town hall' },
+  { key:'break_ground', cat:'home', ui:'break-ground', base:'動土', name:'ตอกเสาเข็ม/ขุดดิน', han:'動土', desc:'เริ่มก่อสร้าง · ขุดดิน · เปิดหน้างาน' },
+  { key:'move_home', cat:'home', ui:'move-in', base:'搬家', name:'ย้ายเข้าบ้าน', han:'入宅', desc:'เข้าบ้านใหม่ · ย้ายที่อยู่' },
+  { key:'renovate', cat:'home', ui:'break-ground', base:'動土', name:'รีโนเวท/ปรับปรุง', han:'修造', desc:'ซ่อมแซม · ตกแต่ง · ปรับพื้นที่' },
+  { key:'wedding', cat:'life', ui:'wedding', base:'婚姻', name:'พิธีมงคล/แต่งงาน', han:'嫁娶', desc:'แต่งงาน · หมั้น · งานมงคลครอบครัว' },
+  { key:'medical_visit', cat:'life', ui:'sign-contract', base:'祭祀', name:'พบแพทย์/รักษา', han:'求醫', desc:'นัดแพทย์ · ตรวจ · วางเวลาที่ร่างกายรับไหว' },
+  { key:'surgery', cat:'life', ui:'sign-contract', base:'祭祀', name:'ผ่าตัดแบบเลือกเวลาได้', han:'手術', desc:'ใช้เฉพาะ elective case · ไม่ใช้แทนคำแนะนำแพทย์' },
+  { key:'exam_study', cat:'life', ui:'sign-contract', base:'立約', name:'สอบ/สมัครเรียน', han:'考試', desc:'สอบ · สมัครเรียน · เริ่มคอร์ส' },
+  { key:'long_travel', cat:'life', ui:'travel', base:'出行', name:'เดินทางไกล', han:'出行', desc:'เดินทางไกล · บิน · ไปต่างจังหวัด/ต่างประเทศ' },
+];
+const ACTIVITY_PROFILE_BY_KEY = Object.fromEntries(ACTIVITY_PROFILES.map(p => [p.key, p]));
 
 // Solar branches (simplified mapping)
 const SHICHEN = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
@@ -774,6 +862,7 @@ function init(){
   state.dateEnd = in30Str;
 
   state.people = [];
+  renderActivityProfiles();
   renderPeople();
   bindPeopleControls();
   /* P_B (เจ้านาย 16 พ.ค.): พยายามดึงคนจาก network จริง · login user เห็นเครือข่ายเอง */
@@ -781,9 +870,7 @@ function init(){
 
   // Bind events
   document.querySelectorAll('.act-btn').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('.act-btn').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    state.activity = b.dataset.act;
+    setLegacyActivity(b.dataset.act);
   }));
 
   /* 17 พ.ค. · Smart Activity Picker (เจ้านาย idea · Hybrid Keyword + AI) */
@@ -811,18 +898,31 @@ function init(){
           <div style="color:var(--fg-soft);font-size:11px;line-height:1.5;">${d.reason||''}</div>
         </div>
       `;
-      // auto-select activity · ใช้ ui_act (mapped to 8 buttons)
+      // auto-select activity · ใช้ chooser เดียวกันทั้งภารกิจหลักและหมวดย่อย
       const uiKey = d.ui_act || d.activity;
-      const btnEl = document.querySelector(`.act-btn[data-act="${uiKey}"]`);
-      if (btnEl) {
-        document.querySelectorAll('.act-btn').forEach(x => x.classList.remove('active'));
-        btnEl.classList.add('active');
-        state.activity = uiKey;
-        btnEl.scrollIntoView({behavior:'smooth', block:'center'});
+      const profile = d.profile_key && ACTIVITY_PROFILE_BY_KEY[d.profile_key] ? ACTIVITY_PROFILE_BY_KEY[d.profile_key] : null;
+      let selectedLabel = '';
+      let selectedEl = null;
+      if (profile) {
+        selectActivityProfile(profile.key);
+        selectedLabel = profile.name;
+        selectedEl = document.querySelector(`.mission-btn[data-profile="${profile.key}"]`);
+      } else {
+        setLegacyActivity(uiKey);
+        const core = ACTIVITY_CORE.find(x => x.ui === uiKey);
+        selectedLabel = core ? core.name : uiKey;
+        selectedEl = document.querySelector(`.mission-btn[data-act="${uiKey}"]`);
+      }
+      if (selectedLabel) {
+        selectedEl?.scrollIntoView({behavior:'smooth', block:'center'});
         // ถ้า AI tag กิจกรรมที่ไม่มีปุ่มตรง (เช่น 求官·求醫) แสดง note
         if (uiKey !== d.activity) {
           resEl.querySelector('div').insertAdjacentHTML('beforeend',
-            `<div style="margin-top:6px;font-size:10px;color:var(--gold);font-family:var(--mono);">→ ใช้กฎ <b>${btnEl.textContent.trim()}</b> (ใกล้สุด)</div>`);
+            `<div style="margin-top:6px;font-size:10px;color:var(--gold);font-family:var(--mono);">→ ใช้กฎ <b>${escHtml(selectedLabel)}</b> (ใกล้สุด)</div>`);
+        }
+        if (profile) {
+          resEl.querySelector('div').insertAdjacentHTML('beforeend',
+            `<div style="margin-top:6px;font-size:10px;color:var(--gold);font-family:var(--mono);">→ profile <b>${escHtml(profile.name)}</b> · <span style="font-family:var(--tc);">${escHtml(profile.han)}</span></div>`);
         }
       }
     } catch(e) { resEl.innerHTML = `<span style="color:var(--bad);">⚠ ${e.message}</span>`; }
@@ -1048,6 +1148,82 @@ function bindPeopleControls(){
   document.getElementById('peopleClear')?.addEventListener('click', () => {
     state.people.forEach(p => p.enabled = false);
     renderPeople();
+  });
+}
+
+function currentActivityProfile(){
+  return state.activityProfileKey ? (ACTIVITY_PROFILE_BY_KEY[state.activityProfileKey] || null) : null;
+}
+
+function currentActivityMeta(){
+  const profile = currentActivityProfile();
+  if (profile) return { name: profile.name, han: profile.han, key: profile.key, base: profile.base };
+  const legacy = ACTIVITY_RULES[state.activity] || {};
+  return { name: legacy.name || 'กิจกรรมที่เลือก', han: legacy.han || '事', key: state.activity, base: legacy.han || '立約' };
+}
+
+function setLegacyActivity(uiKey){
+  state.activity = uiKey;
+  state.activityProfileKey = null;
+  state.activityProfileCategory = 'core';
+  document.querySelectorAll('.act-btn').forEach(x => x.classList.toggle('active', x.dataset.act === uiKey));
+  renderActivityProfiles();
+  const note = document.getElementById('activityProfileNote');
+  const core = ACTIVITY_CORE.find(x => x.ui === uiKey);
+  if (note) note.innerHTML = `ใช้กฎหลัก <b>${escHtml(core?.name || 'กิจกรรมที่เลือก')}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(core?.han || '事')}</span> · logic เดิม 8 กิจกรรม`;
+}
+
+function selectActivityProfile(key){
+  const profile = ACTIVITY_PROFILE_BY_KEY[key];
+  if (!profile) return;
+  state.activityProfileKey = profile.key;
+  state.activityProfileCategory = profile.cat;
+  state.activity = profile.ui;
+  document.querySelectorAll('.act-btn').forEach(x => x.classList.toggle('active', x.dataset.act === profile.ui));
+  renderActivityProfiles();
+  const note = document.getElementById('activityProfileNote');
+  if (note) note.innerHTML = `ใช้กฎเฉพาะ <b>${escHtml(profile.name)}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(profile.han)}</span> · ส่งเข้า engine ฐาน <span style="font-family:var(--tc);color:var(--gold);">${escHtml(profile.base)}</span>`;
+}
+
+function renderActivityProfiles(){
+  const tabs = document.getElementById('activityProfileTabs');
+  const list = document.getElementById('activityProfileList');
+  if (!tabs || !list) return;
+  tabs.innerHTML = ACTIVITY_PROFILE_GROUPS.map(g => `
+    <button type="button" class="${state.activityProfileCategory===g.key?'active':''}" data-cat="${g.key}">
+      <span class="han">${escHtml(g.han)}</span><span>${escHtml(g.label)}</span>
+    </button>`).join('');
+  if (state.activityProfileCategory === 'core') {
+    list.innerHTML = ACTIVITY_CORE.map(item => `
+      <button type="button" class="mission-btn ${!state.activityProfileKey&&state.activity===item.ui?'active':''}" data-act="${escHtml(item.ui)}">
+        <div class="nm"><span class="han">${escHtml(item.han)}</span><span>${escHtml(item.name)}</span></div>
+        <div class="desc">${escHtml(item.desc)}</div>
+      </button>`).join('');
+    tabs.querySelectorAll('button[data-cat]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.activityProfileCategory = btn.dataset.cat;
+        renderActivityProfiles();
+      });
+    });
+    list.querySelectorAll('button[data-act]').forEach(btn => {
+      btn.addEventListener('click', () => setLegacyActivity(btn.dataset.act));
+    });
+    return;
+  }
+  const items = ACTIVITY_PROFILES.filter(p => p.cat === state.activityProfileCategory);
+  list.innerHTML = items.map(p => `
+    <button type="button" class="mission-btn ${state.activityProfileKey===p.key?'active':''}" data-profile="${escHtml(p.key)}">
+      <div class="nm"><span class="han">${escHtml(p.han)}</span><span>${escHtml(p.name)}</span></div>
+      <div class="desc">${escHtml(p.desc)}</div>
+    </button>`).join('');
+  tabs.querySelectorAll('button[data-cat]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.activityProfileCategory = btn.dataset.cat;
+      renderActivityProfiles();
+    });
+  });
+  list.querySelectorAll('button[data-profile]').forEach(btn => {
+    btn.addEventListener('click', () => selectActivityProfile(btn.dataset.profile));
   });
 }
 
@@ -1535,6 +1711,8 @@ async function performSearch(){
   try {
     if (window.__hkProfileReady) await window.__hkProfileReady;
     const activity = ACTIVITY_MAP[state.activity] || 'work_start';
+    const activityMeta = currentActivityMeta();
+    const activityProfileKey = state.activityProfileKey || null;
     const dateFrom = state.dateStart;
     const dateEnd  = state.dateEnd;
     /* P5+P6 16 พ.ค. (อากง 8 ศาสตร์): people branches + user yongshen */
@@ -1600,6 +1778,7 @@ async function performSearch(){
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           activityType: ajActivity, dateFrom, dateTo: dateEnd,
+          ...(activityProfileKey ? { activityProfileKey } : {}),
           peopleIds: (state.people||[]).filter(p=>p.enabled&&p.personId).map(p=>p.personId),
           activeModules, options:{ limit: 12, scanLimit: 360, hardModules },
         })
@@ -1613,7 +1792,8 @@ async function performSearch(){
       /* adapt aj response → datepick format · ไทยนำ จีนรอง */
       const cands = aj.candidates || [];
       const fp = aj.funnelStats || { perModule:{} };
-      const layerReport = buildLayerReport(fp, activeModules, hardModules, cands.length);
+      const reportHardModules = Array.isArray(aj.meta?.hardModules) ? aj.meta.hardModules : hardModules;
+      const layerReport = buildLayerReport(fp, activeModules, reportHardModules, cands.length);
       data = {
         ok: true,
         total_scanned: fp.baseTotal || fp.total || cands.length,
@@ -1648,9 +1828,10 @@ async function performSearch(){
             hex_name: h64.hex_name || null,
             changing_line: h64.changing_line || null,
             element: STEM_ELEMENT[c.pillars?.hour?.stem] || null,
-            activity_key: state.activity,
-            activity_name: ACTIVITY_RULES[state.activity]?.name || 'กิจกรรมที่เลือก',
-            activity_han: ACTIVITY_RULES[state.activity]?.han || ajActivity,
+            activity_key: activityProfileKey || state.activity,
+            activity_name: activityMeta.name || 'กิจกรรมที่เลือก',
+            activity_han: activityMeta.han || ajActivity,
+            activity_profile: activityProfileKey,
             moduleScores: c.scoring?.moduleScores || {},
             tongshu_tags: zr.tags || [],
             tongshu_reasons: [
@@ -1668,7 +1849,7 @@ async function performSearch(){
           };
         }),
         stats: { tongshu_cut:0, bazi_cut:0, taisui_cut:0, jianchu_cut:0, xiu28_cut:0, shen12_cut:0, fly9_cut:0, heluo_cut:0, yongshen_cut:0 },
-        _aj_engine: true, _aj_meta: aj.meta,
+        _aj_engine: true, _aj_meta: aj.meta, _activity_profile: activityProfileKey,
       };
     } else {
       const r = await fetch('/api/qimen/search', {
@@ -1721,12 +1902,13 @@ async function performSearch(){
     renderRealResults(data.top);
     btn.disabled = false;
     btn.textContent = _dptx('dp.search.btn','⚡ ค้นหาฤกษ์');
-    const actHan = ACTIVITY_RULES[state.activity]?.han || '事';
+    const resultActivityMeta = currentActivityMeta();
+    const actHan = resultActivityMeta.han || '事';
     const poolNote = data.candidate_pool && data.candidate_pool !== data.total_scanned
       ? ` · หลังตัดดวงคน/ชั้นห้าม เหลือ ${data.candidate_pool} ยาม`
       : '';
     document.getElementById('resultsMeta').innerHTML =
-      `กิจกรรม <b>${ACTIVITY_RULES[state.activity]?.name || 'กิจกรรม'}</b> <span style="font-family:var(--tc);color:var(--gold);">${actHan}</span> · พบ <b>${data.top.length}</b> ฤกษ์ จาก ${data.total_scanned} ยาม${poolNote}`;
+      `กิจกรรม <b>${escHtml(resultActivityMeta.name || 'กิจกรรม')}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(actHan)}</span> · พบ <b>${data.top.length}</b> ฤกษ์ จาก ${data.total_scanned} ยาม${poolNote}`;
     /* show AI Sifu button */
     const sifuBtn = document.getElementById('dp-sifu-btn');
     if (sifuBtn) sifuBtn.style.display = 'inline-flex';
@@ -1966,7 +2148,8 @@ async function dpAskSifu(){
     }
   } catch(_){}
   const activity = window._dpLastActivity || 'work_start';
-  const activityTh = (ACTIVITY_RULES[state.activity]?.han || '事') + ' (' + activity + ')';
+  const activityMeta = currentActivityMeta();
+  const activityTh = (activityMeta.han || '事') + ' (' + (activityMeta.name || activity) + ')';
   dpAppendMsg('user', 'วิเคราะห์ผลค้นหาฤกษ์ ' + activityTh + ' · top 5 + แนะนำที่ดีสุดสำหรับผมตามดวง · เลี่ยงอันไหน');
   const loadingNode = dpAppendMsg('sifu', 'ซินแสกำลังคิด...', true);
   try {
@@ -2051,7 +2234,7 @@ function mockSearch(){
       shichenTime: SHICHEN_TIME[sh],
       score: heluo.score + Math.floor(Math.random()*5) - 2,
       tags,
-      tongshu: { yi: ACTIVITY_RULES[state.activity].han, ji: '無', verdict:'ok' },
+      tongshu: { yi: currentActivityMeta().han, ji: '無', verdict:'ok' },
       bazi: state.people.filter(p=>p.enabled).map(p => ({
         name: p.name,
         clash: Math.random()<0.15 ? '沖' : null,
@@ -2349,7 +2532,7 @@ window.applyI18N = applyI18N;
 </script>
 
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=16" defer></script>
+<script src="/js/hk-user-menu.js?v=18" defer></script>
 <script src="/js/hk-luopan-nav.js?v=2" defer></script>
 <script src="/js/hk-hex-deep.js?v=1" defer></script>
 </body>

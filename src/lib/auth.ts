@@ -13,6 +13,7 @@ function getSecret(): Uint8Array {
 }
 const COOKIE = "decode_auth";
 const TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
+const COOKIE_DOMAIN = process.env.NODE_ENV === "production" ? ".hourkey.io" : undefined;
 
 export type Session = {
   userId: string;
@@ -49,12 +50,20 @@ export async function setAuthCookie(token: string) {
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: TTL_SECONDS,
+    ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
   });
 }
 
 export async function clearAuthCookie() {
   const c = await cookies();
-  c.delete(COOKIE);
+  c.set(COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+    ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
+  });
 }
 
 export async function getSession(): Promise<Session | null> {

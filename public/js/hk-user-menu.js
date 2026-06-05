@@ -89,22 +89,7 @@
 
   var SINSAE_INTRO_VERSION = 'sinsae_intro_20260517';
   function maybeOpenSinsaeGate(){
-    try {
-      var path = window.location.pathname.replace(/\/$/,'') || '/';
-      var excluded = {
-        '/': true,
-        '/master': true,
-        '/signup': true,
-        '/login': true,
-        '/input': true,
-        '/onboarding': true
-      };
-      if (excluded[path]) return;
-      if (localStorage.getItem('hk_sinsae_intro_version') === SINSAE_INTRO_VERSION) return;
-      var next = window.location.pathname + window.location.search + window.location.hash;
-      if (!next || next.charAt(0) !== '/' || next.charAt(1) === '/') next = '/today';
-      window.location.href = '/master?intro=1&next=' + encodeURIComponent(next);
-    } catch(_) {}
+    return;
   }
 
   /* ── i18n ── */
@@ -128,12 +113,12 @@
 
   /* ── CSS ── */
   var CSS = `
-  .hk-um-wrap{position:fixed;top:20px;right:20px;z-index:9999;font-family:'JetBrains Mono','SF Mono',monospace;}
-  .hk-um-wrap.inline{position:relative;top:auto;right:auto;display:inline-flex;z-index:9999;}
+	  .hk-um-wrap{position:fixed;top:20px;right:20px;z-index:9999;font-family:'JetBrains Mono','SF Mono',monospace;}
+	  .hk-um-wrap.inline{position:relative;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:0 0 40px;z-index:9999;}
   .hk-um-trigger{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#c8a44d,#8a6d2a);border:1px solid rgba(200,164,77,.5);color:#0d0f12;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .2s,box-shadow .2s;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;}
   .hk-um-trigger:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(200,164,77,.4);}
   .hk-um-trigger img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
-  .hk-um-panel{position:absolute;top:48px;right:0;width:260px;max-height:80vh;overflow-y:auto;background:rgba(15,17,21,.96);border:1px solid rgba(200,164,77,.25);border-radius:14px;backdrop-filter:blur(20px);box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px) scale(.98);pointer-events:none;transition:.2s cubic-bezier(.2,.8,.2,1);z-index:9999;}
+	  .hk-um-panel{position:absolute;top:48px;right:0;width:260px;max-width:calc(100vw - 24px);max-height:80vh;overflow-y:auto;background:rgba(15,17,21,.96);border:1px solid rgba(200,164,77,.25);border-radius:14px;backdrop-filter:blur(20px);box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px) scale(.98);pointer-events:none;transition:.2s cubic-bezier(.2,.8,.2,1);z-index:9999;}
   .hk-um-panel.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
   [data-theme="light"] .hk-um-panel{background:rgba(255,250,238,.97);border-color:rgba(138,109,42,.3);}
   .hk-um-head{padding:18px 18px 14px;border-bottom:1px solid rgba(200,164,77,.15);}
@@ -158,12 +143,13 @@
   [data-theme="light"] .hk-um-segs button.on{background:#8a6d2a;color:#f5efe2;}
   .hk-um-item.danger{color:#e74c3c;}
   .hk-um-item.danger:hover{background:rgba(231,76,60,.08);color:#e74c3c;}
-  /* mobile + tablet portrait: drop-down เด้งใต้ avatar · ขนาดพอดีจอเล็ก */
-  @media (max-width: 768px){
-    .hk-um-panel{width:240px;max-height:75vh;right:0;border-radius:12px;}
-    .hk-um-wrap{top:16px;right:16px;}
-    .hk-um-trigger{width:36px;height:36px;font-size:12px;}
-  }
+	  /* mobile + tablet portrait: drop-down เด้งใต้ avatar · ขนาดพอดีจอเล็ก */
+	  @media (max-width: 768px){
+	    .hk-um-panel{width:240px;max-height:75vh;right:0;border-radius:12px;}
+	    .hk-um-wrap:not(.inline){top:16px;right:16px;}
+	    .hk-um-wrap.inline{top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;width:36px;height:36px;flex-basis:36px;}
+	    .hk-um-trigger{width:36px;height:36px;font-size:12px;}
+	  }
   `;
 
   /* ── inject CSS ── */
@@ -227,7 +213,10 @@
   }
 
   function getMountTarget() {
-    return document.querySelector('#hk-user-menu-mount') || document.querySelector('.top-r');
+    return document.querySelector('#hk-user-menu-mount') ||
+      document.querySelector('.top-r') ||
+      document.querySelector('.hk-top-r') ||
+      document.querySelector('.topbar .nav-actions');
   }
 
   function removeExistingMenu() {
@@ -350,7 +339,7 @@
         if (window.__hkClearMeCache) window.__hkClearMeCache();
         await fetch('/api/auth/logout', { method: 'POST' });
       } catch(_) {}
-      window.location.href = '/';
+      window.location.href = '/signup?tab=login';
     });
     var settingsBtn = wrap.querySelector('#hk-um-settings');
     if (settingsBtn) {
@@ -381,7 +370,6 @@
       .then(function(j){
         if (j && j.user && j.user.id) {
           console.log('[HK] user menu · avatar_url =', j.user.avatar_url, '· name =', j.user.name);
-          maybeOpenSinsaeGate();
           buildMenu(j.user);
         }
         // ถ้าไม่ login → ไม่แสดงเมนู (หน้า private พวกนี้ ปกติ middleware เด้งไป login อยู่แล้ว)

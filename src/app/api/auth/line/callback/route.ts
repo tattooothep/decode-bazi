@@ -10,8 +10,21 @@ import {
 import { getSession, signSession, setAuthCookie } from "@/lib/auth";
 import { userHasProfile } from "@/lib/profile-status";
 
+const COOKIE_DOMAIN = process.env.NODE_ENV === "production" ? ".hourkey.io" : undefined;
+
 function redirect(url: string): Response {
   return new Response(null, { status: 302, headers: { Location: url } });
+}
+
+function clearOAuthStateCookie(c: Awaited<ReturnType<typeof cookies>>) {
+  c.set("oauth_state_line", "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+    ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
+  });
 }
 
 export async function GET(req: Request) {
@@ -34,11 +47,11 @@ export async function GET(req: Request) {
   if (!stateCookie || stateCookie !== state) {
     return redirect(`/signup?tab=login&err=${encodeURIComponent("session OAuth ไม่ตรง · ลองใหม่")}`);
   }
-  const valid = await verifyState(state);
-  if (!valid) {
+  const stateData = await verifyState(state);
+  if (!stateData) {
     return redirect(`/signup?tab=login&err=${encodeURIComponent("token หมดอายุ · ลองใหม่")}`);
   }
-  c.delete("oauth_state_line");
+  clearOAuthStateCookie(c);
 
   let profile;
   try {
@@ -67,5 +80,6 @@ export async function GET(req: Request) {
   await setAuthCookie(token);
 
   const hasProfile = await userHasProfile(user.id);
-  return redirect(hasProfile ? "/master?intro=1&next=%2Ftoday" : "/input");
+  const next = stateData.next || "/today";
+  return redirect(hasProfile ? next : `/input?next=${encodeURIComponent(next)}`);
 }

@@ -21,6 +21,12 @@ const SCOPES = [
   "openid",
 ];
 
+function safeNext(path: unknown): string | null {
+  return typeof path === "string" && path.startsWith("/") && !path.startsWith("//")
+    ? path
+    : null;
+}
+
 export function isReady(): boolean {
   return !!CLIENT_ID && !!CLIENT_SECRET;
 }
@@ -29,21 +35,24 @@ function makeClient() {
   return new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
 }
 
-export async function buildState(): Promise<string> {
+export async function buildState(next?: string | null): Promise<string> {
   const nonce = crypto.randomBytes(16).toString("hex");
-  return new SignJWT({ nonce })
+  const payload: { nonce: string; next?: string } = { nonce };
+  const safe = safeNext(next);
+  if (safe) payload.next = safe;
+  return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("10m")
     .sign(STATE_SECRET);
 }
 
-export async function verifyState(state: string): Promise<boolean> {
+export async function verifyState(state: string): Promise<{ next: string | null } | null> {
   try {
-    await jwtVerify(state, STATE_SECRET);
-    return true;
+    const { payload } = await jwtVerify(state, STATE_SECRET);
+    return { next: safeNext(payload.next) };
   } catch {
-    return false;
+    return null;
   }
 }
 

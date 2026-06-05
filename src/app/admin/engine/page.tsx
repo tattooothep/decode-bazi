@@ -5,7 +5,7 @@ import EngineEditor from "./editor";
 
 export default async function AdminEnginePage() {
   const s = await getSession();
-  if (!s) redirect("/login?next=/admin/engine");
+  if (!s) redirect("/signup?tab=login&next=/admin/engine");
 
   const allow = (process.env.ADMIN_EMAILS || "")
     .split(",")

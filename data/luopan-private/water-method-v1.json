@@ -1,0 +1,52 @@
+{
+  "module": "water_method_v1",
+  "title": "水法 engine scaffold · ไทยนำ จีนรอง",
+  "label_th": "กฎน้ำจริง",
+  "label_zh": "水法",
+  "status": "partial",
+  "confidence": 0.72,
+  "sources": [
+    {
+      "name_th": "กฎหวงเฉวียน 24 ซาน",
+      "name_zh": "二十四山黃泉水",
+      "kind": "classical_table",
+      "confidence": 0.82
+    },
+    {
+      "name_th": "สามเหอสุ่ยฝ่า สี่ปากน้ำ",
+      "name_zh": "三合水法四大水口",
+      "kind": "classical_table",
+      "confidence": 0.68
+    }
+  ],
+  "source_policy": "ใช้เป็น engine guard ก่อนเปิดคำตัดสินดีเต็มรูปแบบ: 黃泉 hard warning พร้อมใช้, 救貧黃泉/三合水法 ต้องรอข้อมูลน้ำจริงครบ",
+  "required_inputs": {
+    "house": ["facingDeg", "facingMountain24", "sittingMountain24", "period"],
+    "water_feature": ["bearingDeg", "isRealWater", "flowRole", "mouthDeg"],
+    "optional": ["sourceDeg", "flowDirection", "crossesFacingLine", "passesMingtang", "confidence"]
+  },
+  "huang_quan": {
+    "basis_th": "ใช้向山ของบ้านเทียบตำแหน่งน้ำ/ประตูน้ำ/ท่อ",
+    "basis_zh": "以向山定黃泉方",
+    "rules": [
+      { "facing": ["庚", "丁"], "forbidden": "坤", "thai": "向庚/丁 ห้ามน้ำที่坤" },
+      { "facing": ["乙", "丙"], "forbidden": "巽", "thai": "向乙/丙 ห้ามน้ำที่巽" },
+      { "facing": ["甲", "癸"], "forbidden": "艮", "thai": "向甲/癸 ห้ามน้ำที่艮" },
+      { "facing": ["辛", "壬"], "forbidden": "乾", "thai": "向辛/壬 ห้ามน้ำที่乾" }
+    ],
+    "hard_warning_applies_to": ["incoming_water", "outgoing_water", "water_mouth", "drain", "door_gate", "water"]
+  },
+  "four_water_mouths": {
+    "辰": { "ju": "水局", "sanhe": "申子辰", "thai": "水局 · กลุ่มน้ำ" },
+    "戌": { "ju": "火局", "sanhe": "寅午戌", "thai": "火局 · กลุ่มไฟ" },
+    "丑": { "ju": "金局", "sanhe": "巳酉丑", "thai": "金局 · กลุ่มทอง" },
+    "未": { "ju": "木局", "sanhe": "亥卯未", "thai": "木局 · กลุ่มไม้" }
+  },
+  "guardrails_th": [
+    "ไม่มี house lock ไม่ใช้水法",
+    "ไม่มีน้ำจริง ไม่ตัดสินน้ำ",
+    "ไม่รู้來水/去水/水口 ห้ามให้ผลดี",
+    "黃泉ชนจริงให้เป็น hard warning ก่อน",
+    "救貧黃泉 ต้องรอ flow table และซินแสตรวจก่อนเปิดเป็นผลดี"
+  ]
+}

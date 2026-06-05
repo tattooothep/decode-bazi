@@ -691,11 +691,24 @@
     .swa-card h3{font-size:16px;}
     .swa-card li{font-size:13px;line-height:1.6;}
 
-    /* §02 pillar-table mobile · scroll horizontally · table อยู่แล้วใน wrap */
-    .pillar-table{min-width:560px;}
-    .pillar-table tbody th{width:80px;font-size:8px;}
-    .pillar-table th, .pillar-table td{padding:6px 4px;}
-    .pt-glyph{font-size:22px;}
+    /* §02 pillar-table mobile · fit all 4 pillars in viewport, no asymmetric side-scroll */
+    .pillar-table-wrap{overflow-x:visible;}
+    .pillar-table{width:100%;min-width:0;table-layout:fixed;}
+    .pillar-table thead th .en-sub,
+    .pillar-table tbody th .en-sub{display:none;}
+    .pillar-table tbody th{width:54px;font-size:8px;letter-spacing:.04em;padding:6px 3px;text-align:left;white-space:normal;overflow-wrap:anywhere;}
+    .pillar-table thead th .th-lead,
+    .pillar-table tbody th .th-lead{font-size:9px;line-height:1.2;letter-spacing:0;}
+    .pillar-table th,
+    .pillar-table td{padding:6px 2px;min-width:0;overflow-wrap:anywhere;}
+    .pillar-table thead th .tc,
+    .pillar-table tbody th .tc{display:block;margin:2px 0 0;font-size:11px;}
+    .pt-glyph{font-size:19px;}
+    .pt-stack-line,
+    .pt-phases{font-size:9px;line-height:1.25;}
+    .pt-phases .lab{display:none;}
+    .dhhs-toggle{gap:2px;padding:2px;}
+    .dhhs-detail{font-size:9px;padding:5px 0 0;}
 
     /* §6 interactions */
     .inter-grid{grid-template-columns:1fr;gap:14px;}
@@ -715,6 +728,44 @@
     .cta-bottom h3{font-size:20px;}
     .cta-row{flex-direction:column;gap:10px;width:100%;}
     .cta-row a{width:100%;text-align:center;}
+  }
+  @media (max-width: 767px){
+    .stage > *,
+    .hero-grid,
+    .hero-l,
+    .dm-card,
+    .sec,
+    .sec-head,
+    .sec-head .l,
+    .gods-grid,
+    .gods-list,
+    .god-row,
+    .el-list,
+    .el-row,
+    .inter-card,
+    .hk-luck-card,
+    .hk-luck-detail,
+    .hk-personal-card,
+    .ys-v2,
+    .footer-cta{min-width:0;max-width:100%;}
+    .sec-head h2{overflow-wrap:anywhere;word-break:normal;}
+    .fn-badge{margin:6px 0 0;display:inline-flex;max-width:100%;white-space:normal;line-height:1.25;}
+    .hk-method-link{display:flex !important;width:max-content;max-width:100%;margin:8px 0 0 !important;white-space:normal;line-height:1.35;}
+    .el-row{grid-template-columns:32px minmax(68px,.8fr) minmax(70px,1fr) 38px;align-items:center;}
+    .el-tag{display:none;}
+    .god-row > div:nth-child(2){min-width:0;}
+    .god-row b,
+    .god-row span,
+    .inter-card p,
+    .hk-luck-note,
+    .ys-v2 .ys-row .v{overflow-wrap:anywhere;word-break:normal;}
+    .ys-v2 .ys-row{display:grid;grid-template-columns:1fr;gap:6px;}
+    .ys-v2 .ys-row .k{min-width:0;padding-top:0;}
+    .hk-luck-detail .ld-row{display:grid;grid-template-columns:1fr;gap:2px;}
+    .hk-luck-detail .ld-k{min-width:0;}
+    .footer-cta{padding:22px 16px;display:grid;gap:16px;align-items:stretch;}
+    .btn-row{display:grid;grid-template-columns:1fr;gap:10px;}
+    .btn-row .btn{width:100%;justify-content:center;text-align:center;white-space:normal;line-height:1.35;padding:12px 16px;}
   }
   /* 📜 Yongshen v2 · wrapper-7 · 15 พ.ค. 2026 · ใช้กับ /chart */
   .ys-v2{display:flex;flex-direction:column;gap:12px;background:var(--bg-2,#f7f3ed);border:1px solid var(--line,#e0d6c0);border-radius:14px;padding:18px 20px;}
@@ -764,7 +815,7 @@
     });
   });
 </script>
-<link rel="stylesheet" href="/css/mobile-safe.css?v=20260517e">
+<link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b">
 <script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
 <body>
@@ -2224,7 +2275,7 @@ window.addEventListener('resize', function(){
 })();
 </script>
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=16" defer></script>
+<script src="/js/hk-user-menu.js?v=18" defer></script>
 
 <!-- HK WIRE · live update sections 1-7 from /api/chart ──────────── -->
 <script>

@@ -4,7 +4,7 @@ import { getMobileSession, mobileBearerToken } from "@/lib/mobile-auth";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const ACTIVITY_TYPES = new Set(["立約", "開市", "出行", "求財", "婚姻", "搬家"]);
+const ACTIVITY_TYPES = new Set(["立約", "開市", "出行", "求財", "婚姻", "搬家", "動土", "祭祀"]);
 const ACTIVE_MODULES = [
   "ze_ri",
   "twelve_officers",
@@ -35,6 +35,11 @@ function cleanLimit(value: unknown): number {
   return Math.max(1, Math.min(20, Math.floor(num)));
 }
 
+function cleanActivityProfileKey(value: unknown): string | null {
+  const text = typeof value === "string" ? value.trim() : "";
+  return /^[a-z0-9_:-]{2,48}$/.test(text) ? text : null;
+}
+
 function cookieHeaderForAuspicious(req: Request): string {
   const bearer = mobileBearerToken(req);
   if (bearer) return `decode_auth=${bearer}`;
@@ -52,6 +57,7 @@ export async function POST(req: Request) {
   const dateFrom = cleanDate((body as { dateFrom?: unknown }).dateFrom);
   const dateTo = cleanDate((body as { dateTo?: unknown }).dateTo);
   const profileId = cleanProfileId((body as { profileId?: unknown }).profileId);
+  const activityProfileKey = cleanActivityProfileKey((body as { activityProfileKey?: unknown }).activityProfileKey);
   const limit = cleanLimit((body as { limit?: unknown }).limit);
 
   if (!ACTIVITY_TYPES.has(activityType)) {
@@ -65,6 +71,7 @@ export async function POST(req: Request) {
   const cookie = cookieHeaderForAuspicious(req);
   const payload = {
     activityType,
+    ...(activityProfileKey ? { activityProfileKey } : {}),
     activeModules: ACTIVE_MODULES,
     dateFrom,
     dateTo,

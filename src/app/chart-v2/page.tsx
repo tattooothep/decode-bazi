@@ -20,7 +20,10 @@ export default async function ChartV2Page({ searchParams }: { searchParams: Prom
   const session = await getSession();
 
   // Guard 1: ต้อง login
-  if (!session?.orgId) redirect("/login");
+  if (!session?.orgId) {
+    const next = profileId ? `/chart-v2?profile=${encodeURIComponent(profileId)}` : "/chart-v2";
+    redirect(`/signup?tab=login&next=${encodeURIComponent(next)}`);
+  }
 
   // Guard 2: ไม่มี ?profile → หา active profile แรก
   if (!profileId) {

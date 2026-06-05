@@ -22,7 +22,11 @@ import { q, q1 } from "@/lib/db";
 import { ALL_MODULES, UNIVERSAL_MODULES, PERSONAL_MODULES } from "@/lib/luck-engine/types";
 import type { ModuleKey, ActivityType, CandidateSlot, ModuleResult, FunnelStats, SearchResponse, PersonProfile } from "@/lib/luck-engine/types";
 import { combineScores, scoreToTier, tierToAction, TIER_LABELS } from "@/lib/luck-engine/combineScores";
+import { getActivityProfile, mergeProfileHardModules, resolveActivityType } from "@/lib/luck-engine/activity-profiles";
+import type { ActivityProfile } from "@/lib/luck-engine/activity-profiles";
 import { getSession } from "@/lib/auth";
+import { evaluateMonthDaySha } from "@/lib/luopan/month-day-sha";
+import type { Dir8 } from "@/lib/luopan/mountains";
 
 const ZODIAC_CLASH_MAP: Record<string, string> = {
   "子":"午","丑":"未","寅":"申","卯":"酉","辰":"戌","巳":"亥",
@@ -54,11 +58,18 @@ function checkRateLimit(ip: string): { ok: boolean; remaining: number; resetSec:
 const _ausCache = new Map<string, { data: any; expires: number }>();
 const AUS_TTL = 60_000;
 function cacheKey(body: any): string {
+  const options = body.options || {};
   return JSON.stringify({
-    a: body.activityType, df: body.dateFrom, dt: body.dateTo,
+    a: body.activityType, ap: body.activityProfileKey || "", df: body.dateFrom, dt: body.dateTo,
     p: body.peopleIds || [], m: (body.activeModules || []).slice().sort(),
-    o: body.options || {},
+    o: options,
+    td: options.targetDirection || options.target_direction || body.targetDirection || body.target_direction || "",
   });
+}
+
+function normalizeTargetDirection(v: unknown): Dir8 | null {
+  const raw = String(v || "").trim().toUpperCase();
+  return (["N", "NE", "E", "SE", "S", "SW", "W", "NW"].includes(raw) ? raw : null) as Dir8 | null;
 }
 
 export async function POST(req: NextRequest) {
@@ -80,6 +91,16 @@ export async function POST(req: NextRequest) {
     if (!activityType || !dateFrom || !dateTo || !Array.isArray(activeModules)) {
       return NextResponse.json({ error: "Missing required: activityType, dateFrom, dateTo, activeModules[]" }, { status: 400 });
     }
+    const profileKeyInput = typeof body.activityProfileKey === "string" ? body.activityProfileKey.trim() : "";
+    const activityProfile = getActivityProfile(profileKeyInput);
+    if (profileKeyInput && !activityProfile) {
+      return NextResponse.json({ error: "Unknown activityProfileKey" }, { status: 400 });
+    }
+    const resolvedActivityType = resolveActivityType(activityType, activityProfile);
+    if (!resolvedActivityType) {
+      return NextResponse.json({ error: "Unknown activityType" }, { status: 400 });
+    }
+    const targetDirection = normalizeTargetDirection(options.targetDirection ?? options.target_direction ?? body.targetDirection ?? body.target_direction);
 
     /* 1 มิ.ย. ปิด IDOR: ถ้าผูกดวงส่วนตัว (peopleIds) ต้อง login + กรองเหลือเฉพาะดวงใน org ตัวเอง (กันดึง/อ่าน cache ดวงคนอื่น) · ค้นฤกษ์ universal (ไม่มี peopleIds) ยังเปิด guest */
     let ownedPeopleIds: string[] = peopleIds;
@@ -106,11 +127,19 @@ export async function POST(req: NextRequest) {
 
     // STEP 2: ดึง candidates จาก aj_ephemeris_cache
     // options.hardModules ใช้สำหรับ layer ที่ต้องตัดจริงเท่านั้น; activeModules ใช้จัดคะแนนทั้งหมด
-    const universalActive = activeModules.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
-    const hardModules = Array.isArray(options.hardModules)
-      ? options.hardModules.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m))
+    const activeModuleKeys = activeModules.filter((m: ModuleKey) => ALL_MODULES.includes(m));
+    const universalActive = activeModuleKeys.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
+    const requestedHardModules = Array.isArray(options.hardModules)
+      ? options.hardModules.filter((m: ModuleKey) => ALL_MODULES.includes(m))
       : universalActive;
-    const applyPersonHard = Array.isArray(options.hardModules) && options.hardModules.includes("ba_zi");
+    const mergedHardModules = mergeProfileHardModules({
+      requestedHardModules,
+      activeModules: activeModuleKeys,
+      profile: activityProfile,
+      hasPeople: ownedPeopleIds.length > 0,
+    });
+    const hardModules = mergedHardModules.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
+    const applyPersonHard = mergedHardModules.includes("ba_zi");
     const baseTotal = await countEphemerisBase(dateFrom, dateTo);
     const personalAvoidZodiacs = applyPersonHard ? avoidZodiacs : [];
     const candidates = await queryEphemerisCandidates(dateFrom, dateTo, personalAvoidZodiacs, hardModules, options.scanLimit ?? 360);
@@ -123,7 +152,7 @@ export async function POST(req: NextRequest) {
     (funnelStats as any).personHard = applyPersonHard;
 
     // STEP 4: Late hydration · personal modules (top 50)
-    const personalActive = activeModules.filter((m: ModuleKey) => PERSONAL_MODULES.includes(m));
+    const personalActive = activeModuleKeys.filter((m: ModuleKey) => PERSONAL_MODULES.includes(m));
     let cacheHits = 0, cacheMisses = 0;
     if (customer && personalActive.length > 0) {
       const top = candidates.slice(0, 50);
@@ -145,7 +174,9 @@ export async function POST(req: NextRequest) {
 
     // STEP 5: Enrich · sort
     const enriched = candidates
-      .map(c => enrichCandidate(c, activeModules, activityType as ActivityType))
+      .map(c => applyMonthDayShaRuntime(c, resolvedActivityType, targetDirection))
+      .map(c => enrichCandidate(c, activeModuleKeys, resolvedActivityType))
+      .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys))
       .filter(c => !options.minScore || (c.scoring?.finalScore ?? 0) >= options.minScore)
       .sort((a, b) => (b.scoring?.finalScore ?? 0) - (a.scoring?.finalScore ?? 0))
       .slice(0, options.limit ?? 50);
@@ -156,14 +187,27 @@ export async function POST(req: NextRequest) {
       await q(
         `INSERT INTO aj_search_audit (person_id, activity_type, date_from, date_to, people_ids, active_modules, funnel_stats, results_count, duration_ms)
          VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9)`,
-        [customer?.personId || null, activityType, dateFrom, dateTo, peopleIds, activeModules, JSON.stringify(funnelStats), enriched.length, durationMs]
+        [customer?.personId || null, activityProfile ? `${resolvedActivityType}:${activityProfile.key}` : resolvedActivityType, dateFrom, dateTo, ownedPeopleIds, activeModuleKeys, JSON.stringify(funnelStats), enriched.length, durationMs]
       );
     } catch { /* audit table อาจจะยังไม่มี · ignore */ }
 
     const response: SearchResponse = {
       candidates: enriched,
       funnelStats,
-      meta: { durationMs, cacheHits, cacheMisses, cache: 'miss' } as any,
+      meta: {
+        durationMs, cacheHits, cacheMisses, cache: 'miss',
+        activityType: resolvedActivityType,
+        activityProfile: activityProfile ? {
+          key: activityProfile.key,
+          labelTh: activityProfile.labelTh,
+          labelZh: activityProfile.labelZh,
+          category: activityProfile.category,
+          qimenPurpose: activityProfile.qimenPurpose,
+          safety: activityProfile.safety,
+          profileMode: activityProfile.profileMode,
+        } : null,
+        hardModules: mergedHardModules,
+      } as any,
     };
     // Save cache + evict ถ้าเกิน 1000 entries
     _ausCache.set(ck, { data: response, expires: Date.now() + AUS_TTL });
@@ -176,6 +220,70 @@ export async function POST(req: NextRequest) {
     console.error("[/api/auspicious]", err);
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }
+}
+
+function applyMonthDayShaRuntime(c: CandidateSlot, activity: ActivityType, targetDirection: Dir8 | null): CandidateSlot {
+  const zeRi = (c.modules as any)?.ze_ri as ModuleResult | undefined;
+  if (!zeRi || !c.pillars?.month?.branch || !c.pillars?.day?.branch) return c;
+
+  const patch = evaluateMonthDaySha({
+    monthBranch: c.pillars.month.branch as any,
+    dayBranch: c.pillars.day.branch as any,
+    activityType: activity,
+    targetDirection,
+  });
+  if (!patch.tags.length && !patch.reasons.warning.length) return c;
+
+  const existingTags = new Set(zeRi.tags || []);
+  const existingCodes = new Set([
+    ...(zeRi.reasons?.up || []),
+    ...(zeRi.reasons?.down || []),
+    ...(zeRi.reasons?.warning || []),
+  ].map((r) => r.code));
+  const next: ModuleResult = {
+    ...zeRi,
+    tags: [...(zeRi.tags || [])],
+    reasons: {
+      up: [...(zeRi.reasons?.up || [])],
+      down: [...(zeRi.reasons?.down || [])],
+      warning: [...(zeRi.reasons?.warning || [])],
+      neutral: zeRi.reasons?.neutral ? [...zeRi.reasons.neutral] : undefined,
+    },
+    caps: [...(zeRi.caps || [])],
+    raw: { ...(zeRi.raw || {}) },
+    score: { ...(zeRi.score || { raw: 50, normalized: 50, weight: 1 }) },
+  };
+
+  let delta = 0;
+  let addedFail = false;
+  for (const tag of patch.tags) {
+    if (!existingTags.has(tag)) {
+      next.tags.push(tag);
+      existingTags.add(tag);
+    }
+  }
+  const addReasons = (bucket: "up" | "down" | "warning") => {
+    for (const reason of patch.reasons[bucket] || []) {
+      if (existingCodes.has(reason.code)) continue;
+      next.reasons[bucket].push(reason);
+      existingCodes.add(reason.code);
+      delta += reason.delta || 0;
+      if (reason.severity === "critical" && (reason.delta || 0) < 0) addedFail = true;
+    }
+  };
+  addReasons("up");
+  addReasons("down");
+  addReasons("warning");
+  for (const cap of patch.caps || []) {
+    if (next.caps?.some((x) => x.reason === cap.reason && x.value === cap.value)) continue;
+    next.caps?.push(cap);
+    addedFail = true;
+  }
+  next.score.raw = (Number(next.score.raw) || Number(next.score.normalized) || 50) + delta;
+  next.score.normalized = Math.max(0, Math.min(100, next.score.raw));
+  if (addedFail) next.pass = false;
+  next.raw.monthDaySha = { ...patch.raw, targetDirection, appliedRuntime: true };
+  return { ...c, modules: { ...(c.modules as any), ze_ri: next } };
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────
@@ -372,6 +480,79 @@ function enrichCandidate(c: CandidateSlot, activeModules: ModuleKey[], activity:
     summary: (scoring as any).summary || "",
     guardrails: [],
   };
+  return c;
+}
+
+function applyActivityProfileRules(
+  c: CandidateSlot,
+  profile: ActivityProfile | null,
+  activeModules: ModuleKey[],
+): CandidateSlot {
+  if (!profile || profile.profileMode !== "modern" || !c.scoring) return c;
+
+  const active = new Set(activeModules);
+  const modules = c.modules as any;
+  const scoring = c.scoring as any;
+  const addWarning = (code: string, thai: string, delta: number, source: ModuleKey) => {
+    scoring.warnings = scoring.warnings || [];
+    if (scoring.warnings.some((r: any) => r.code === code)) return;
+    scoring.warnings.push({ code, thai, delta, source, severity: "warning" });
+  };
+  const addDown = (code: string, thai: string, delta: number, source: ModuleKey) => {
+    scoring.reasonsDown = scoring.reasonsDown || [];
+    if (scoring.reasonsDown.some((r: any) => r.code === code)) return;
+    scoring.reasonsDown.unshift({ code, thai, delta, source, severity: "warning" });
+  };
+  const addUp = (code: string, thai: string, delta: number, source: ModuleKey) => {
+    scoring.reasonsUp = scoring.reasonsUp || [];
+    if (scoring.reasonsUp.some((r: any) => r.code === code)) return;
+    scoring.reasonsUp.unshift({ code, thai, delta, source, severity: "info" });
+  };
+  const cap = (value: number, code: string, thai: string, source: ModuleKey) => {
+    if (scoring.finalScore > value) {
+      addDown(code, thai, value - scoring.finalScore, source);
+      scoring.finalScore = value;
+    }
+  };
+
+  const qm = modules?.qi_men;
+  const zr = modules?.ze_ri;
+  const ts = modules?.tai_sui;
+  const bz = modules?.ba_zi;
+  const ys = modules?.yong_shen;
+
+  if (active.has("qi_men") && (qm?.pass === false || qm?.raw?.bad_door === true)) {
+    const limit = profile.safety === "medical_safe" ? 39 : 54;
+    cap(limit, "PROFILE_QIMEN_CAP", `${profile.labelTh}: ฉีเหมินไม่รับภารกิจนี้ · จำกัดคะแนนยาม`, "qi_men");
+  }
+  if (active.has("tai_sui") && ts?.pass === false) {
+    cap(profile.safety === "medical_safe" ? 42 : 55, "PROFILE_TAISUI_CAP", `${profile.labelTh}: ชั้นไท้ส่วยไม่ผ่าน · ไม่ดันเป็นฤกษ์แรง`, "tai_sui");
+  }
+  if (active.has("ze_ri") && zr?.pass === false) {
+    cap(profile.safety === "medical_safe" ? 42 : 58, "PROFILE_TONGSHU_CAP", `${profile.labelTh}: ปฏิทินจีนไม่รับกิจกรรมนี้ · ใช้ด้วยความระวัง`, "ze_ri");
+  }
+  if (active.has("ba_zi") && bz?.pass === false) {
+    cap(profile.safety === "medical_safe" ? 39 : 49, "PROFILE_BAZI_CAP", `${profile.labelTh}: ดวงคนที่เกี่ยวข้องมีแรงปะทะ · ลดระดับฤกษ์`, "ba_zi");
+  }
+
+  if (profile.safety === "finance_safe") {
+    addWarning("FINANCE_SAFE_NOTE", "เรื่องเงินใช้เป็นจังหวะประกอบเท่านั้น · ตรวจตัวเลขและเงื่อนไขจริงก่อนตัดสินใจ", -3, "ze_ri");
+    if (active.has("yong_shen") && ys?.pass === false) {
+      cap(62, "PROFILE_FINANCE_YONGSHEN_CAP", `${profile.labelTh}: ธาตุช่วยไม่หนุนเรื่องเงินชัด · ไม่ควรเร่งผูกมัด`, "yong_shen");
+    }
+  }
+
+  if (profile.safety === "medical_safe") {
+    addWarning("MEDICAL_SAFE_NOTE", "สุขภาพ/ผ่าตัดใช้กับการวางเวลา elective เท่านั้น · ไม่แทนคำแนะนำแพทย์", -5, "ze_ri");
+  }
+
+  if (profile.key === "exam_study" || profile.key === "interview") {
+    addUp("PROFILE_EXAM_CONTEXT", `${profile.labelTh}: ใช้กฎเอกสาร+การนำเสนอ และให้ฉีเหมินเป็นตัวคัดยาม`, 3, "qi_men");
+  }
+
+  scoring.finalScore = Math.max(0, Math.min(100, Math.round(scoring.finalScore)));
+  scoring.tier = scoreToTier(scoring.finalScore);
+  scoring.action = tierToAction(scoring.tier, scoring.warnings?.length || 0);
   return c;
 }
 

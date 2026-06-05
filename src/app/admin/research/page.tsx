@@ -9,7 +9,7 @@ export default async function AdminResearchPage() {
   try {
     admin = await requireAdmin();
   } catch {
-    redirect("/login?next=/admin/research");
+    redirect("/signup?tab=login&next=/admin/research");
   }
   return <ResearchAdmin email={admin.email || ""} />;
 }
