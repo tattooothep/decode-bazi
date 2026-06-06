@@ -42,6 +42,9 @@ function assertBlockNotHas(block: string, needle: string, label: string) {
 }
 
 const stemFormatter = functionBlock("formatStemResponse");
+const timeContextFormatter = functionBlock("formatQimenTimeContext");
+const xiuFormatter = functionBlock("qimenXiuLabel");
+const timeBranchFormatter = functionBlock("qimenTimeBranch");
 
 assertHas("function formatBeginnerReading", "beginner formatter");
 assertHas("beginner_reading", "engine beginner_reading payload");
@@ -64,6 +67,31 @@ assertHas("ประตู + ดาว + เทพ + ก้าน + flags/source
 assertHas("Engine packet คือ source of truth", "engine packet source-of-truth header");
 assertHas("อ่านจาก \"ผังเวลา (QiMen Chart)\" ก่อนเสมอ", "answer guard says chart first");
 assertHas("source packet มีไว้แปลความหมาย ไม่ใช่สร้างค่าผังใหม่", "source packet caveat");
+assertHas("function formatQimenTimeContext", "time context formatter");
+assertHas("BRANCH_TH_ZH", "Thai-first branch label map");
+assertHas("STEM_TH_ZH", "Thai-first stem label map");
+assertHas("XIU_TH_ZH", "Thai-first 28 mansions label map");
+assertHas("บริบทเวลา 時間標記: ${formatQimenTimeContext(chart)}", "time context line in chart packet");
+assertHas("ช่องว่าง 空亡", "Thai-first void label");
+assertHas("ม้าเดินทาง 驛馬", "Thai-first sky horse label");
+assertHas("คนช่วย 貴人", "Thai-first nobleman label");
+assertHas("วัน/ยามปะทะ 日時冲", "Thai-first clash label");
+assertHas("28 ดาวฤกษ์ 二十八宿", "Thai-first 28 mansions label");
+assertHas("ใช้เป็นบริบทเวลา จาก engine packet เท่านั้น", "time context is packet-only context");
+assertHas("ให้ใช้เฉพาะบรรทัด \"บริบทเวลา 時間標記\" จาก engine packet ห้ามคำนวณเพิ่มเอง", "answer guard blocks time-context recalculation");
+assertHas("Source ID: ${s.id}", "source packet uses source id only");
+assertHas("trace.push(s.id)", "source trace exposes source id only");
+assertBlockHas(timeContextFormatter, "chart?.voids || {}", "time context reads chart voids");
+assertBlockHas(timeContextFormatter, "chart?.sky_horse || chart?.skyHorse || {}", "time context reads chart sky_horse");
+assertBlockHas(timeContextFormatter, "chart?.nobleman || {}", "time context reads chart nobleman");
+assertBlockHas(timeContextFormatter, "chart?.clash || {}", "time context reads chart clash");
+assertBlockHas(timeContextFormatter, "chart?.void_day_zh || chart?.voidDayZh", "time context supports legacy void day field");
+assertBlockHas(timeContextFormatter, "chart?.traveling_horse_day_zh || chart?.traveling_horse_zh", "time context supports legacy sky horse field");
+assertBlockHas(xiuFormatter, "chart?.twenty_eight || chart?.twentyEight || {}", "28 mansions read from chart packet");
+assertBlockHas(xiuFormatter, "XIU_GROUP_TH_ZH", "28 mansions group Thai-first formatter");
+assertBlockHas(xiuFormatter, "ZH_DIR_TH_ZH", "28 mansions direction Thai-first formatter");
+assertBlockHas(timeBranchFormatter, "const direct = qimenBranchList(value, \"\")", "time branch tries direct value first");
+assertBlockHas(timeBranchFormatter, "return direct || qimenBranchList(fallback, \"ข้อมูลไม่พอ\")", "time branch falls back when direct is empty");
 assertHas("ถ้า stem_response.verdict_allowed=false", "answer guard checks stem_response non-verdict");
 assertHas("ห้ามใช้ 十干克應 เป็นคำตัดสิน", "answer guard blocks context-only stem verdict");
 assertHas("ให้บอกว่าอ่านประกอบเท่านั้น", "answer guard tells Sifu to label context-only stem");
@@ -108,9 +136,14 @@ assertHas("compact.split(\"/\").pop()", "source path basename sanitizer");
 assertHas("slice(0, 3)", "bounded source/reason output");
 assertHas("ผังเวลา (QiMen Chart):", "chart block label");
 assertHas("แหล่งความรู้ฉีเหมิน", "source packet label");
+const fourPillarsLine = route.indexOf("四柱 สี่เสาเวลา: ${formatQimenPillars(chart)}");
+const timeContextLine = route.indexOf("บริบทเวลา 時間標記: ${formatQimenTimeContext(chart)}");
+assert(fourPillarsLine >= 0 && timeContextLine > fourPillarsLine, "time context follows four pillars before source");
 assertHas("ผังเวลา (QiMen Chart):\\n${qimenText}\\n${canonBlock}", "prompt body places chart before source packet");
 
 assertNotHas("file_path", "internal path leak in formatter");
+assertNotHas("Source: ${s.file}:${s.start}-${s.end}", "source packet filename/line trace");
+assertNotHas("trace.push(`${s.id}=${s.file}:${s.start}-${s.end}`)", "source trace filename/line leak");
 assertNotHas("source=${", "raw source equals formatter");
 assertNotHas("confidence=${", "raw confidence equals formatter");
 assertNotHas("chart_source=", "raw chart source key");

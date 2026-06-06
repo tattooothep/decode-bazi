@@ -297,10 +297,10 @@ function loadQimenKnowledge(opts: { message: string; topic?: string; payload: an
   let used = 0;
 
   for (const s of selected) {
-    const part = `### [${s.id}] ${s.title}\nSource: ${s.file}:${s.start}-${s.end}\n${s.text}`;
+    const part = `### [${s.id}] ${s.title}\nSource ID: ${s.id}\n${s.text}`;
     if (used && used + part.length > MAX_SOURCE_PACKET_CHARS) continue;
     parts.push(part);
-    trace.push(`${s.id}=${s.file}:${s.start}-${s.end}`);
+    trace.push(s.id);
     used += part.length;
   }
 
@@ -361,6 +361,44 @@ const DEITY_TH: Record<string, string> = {
   TENG_SHE: "เทพเถิงเสอ", XUAN_WU: "เทพเสวียนอู่", BAI_HU: "เทพไป๋หู่",
   "值符": "เทพจื๋อฟู", "太陰": "เทพไท่อิน", "六合": "เทพลิ่วเหอ", "九天": "เทพจิ่วเทียน", "九地": "เทพจิ่วตี้",
   "螣蛇": "เทพเถิงเสอ", "玄武": "เทพเสวียนอู่", "白虎": "เทพไป๋หู่",
+};
+const BRANCH_TH_ZH: Record<string, string> = {
+  "子": "หนู 子", "丑": "วัว 丑", "寅": "เสือ 寅", "卯": "กระต่าย 卯",
+  "辰": "มังกร 辰", "巳": "งู 巳", "午": "ม้า 午", "未": "แพะ 未",
+  "申": "ลิง 申", "酉": "ไก่ 酉", "戌": "สุนัข 戌", "亥": "หมู 亥",
+};
+const BRANCH_CODE_ZH: Record<string, string> = {
+  ZI: "子", CHOU: "丑", CHEN: "辰", SI: "巳", WU: "午", WEI: "未",
+  SHEN: "申", YOU: "酉", XU: "戌", HAI: "亥", YIN: "寅", MAO: "卯",
+};
+const STEM_TH_ZH: Record<string, string> = {
+  "甲": "ไม้หยาง 甲", "乙": "ไม้หยิน 乙", "丙": "ไฟหยาง 丙", "丁": "ไฟหยิน 丁",
+  "戊": "ดินหยาง 戊", "己": "ดินหยิน 己", "庚": "ทองหยาง 庚", "辛": "ทองหยิน 辛",
+  "壬": "น้ำหยาง 壬", "癸": "น้ำหยิน 癸",
+};
+const XIU_TH_ZH: Record<string, string> = {
+  "角": "ดาวเขา 角宿", "亢": "ดาวคอ 亢宿", "氐": "ดาวฐาน 氐宿", "房": "ดาวห้อง 房宿",
+  "心": "ดาวหัวใจ 心宿", "尾": "ดาวหาง 尾宿", "箕": "ดาวกระด้ง 箕宿", "斗": "ดาวกระบวย 斗宿",
+  "牛": "ดาววัว 牛宿", "女": "ดาวหญิง 女宿", "虛": "ดาวว่าง 虛宿", "虚": "ดาวว่าง 虛宿",
+  "危": "ดาวเสี่ยง 危宿", "室": "ดาวห้องใหญ่ 室宿", "壁": "ดาวกำแพง 壁宿", "奎": "ดาวขา 奎宿",
+  "婁": "ดาวมัด 婁宿", "胃": "ดาวกระเพาะ 胃宿", "昴": "ดาวกลุ่มไก่ 昴宿", "畢": "ดาวตาข่าย 畢宿",
+  "觜": "ดาวปาก 觜宿", "參": "ดาวสาม 參宿", "参": "ดาวสาม 參宿", "井": "ดาวบ่อน้ำ 井宿",
+  "鬼": "ดาวผี 鬼宿", "柳": "ดาวหลิว 柳宿", "星": "ดาวดารา 星宿", "張": "ดาวขยาย 張宿",
+  "张": "ดาวขยาย 張宿", "翼": "ดาวปีก 翼宿", "軫": "ดาวรถ 軫宿", "轸": "ดาวรถ 軫宿",
+};
+const XIU_GROUP_TH_ZH: Record<string, string> = {
+  "東方青龍": "กลุ่มมังกรเขียวตะวันออก 東方青龍",
+  "东方青龙": "กลุ่มมังกรเขียวตะวันออก 東方青龍",
+  "北方玄武": "กลุ่มเต่าดำเหนือ 北方玄武",
+  "西方白虎": "กลุ่มเสือขาวตะวันตก 西方白虎",
+  "南方朱雀": "กลุ่มหงส์แดงใต้ 南方朱雀",
+};
+const ZH_DIR_TH_ZH: Record<string, string> = {
+  "北": "ทิศเหนือ 北", "東北": "ทิศตะวันออกเฉียงเหนือ 東北", "东北": "ทิศตะวันออกเฉียงเหนือ 東北",
+  "東": "ทิศตะวันออก 東", "东": "ทิศตะวันออก 東",
+  "東南": "ทิศตะวันออกเฉียงใต้ 東南", "东南": "ทิศตะวันออกเฉียงใต้ 東南",
+  "南": "ทิศใต้ 南", "西南": "ทิศตะวันตกเฉียงใต้ 西南",
+  "西": "ทิศตะวันตก 西", "西北": "ทิศตะวันตกเฉียงเหนือ 西北", "中": "กลาง 中",
 };
 
 function labelThZh(th: unknown, zh: unknown, code: unknown, dict: Record<string, string>): string {
@@ -614,10 +652,10 @@ const TOPIC_FOCUS: Record<string, string> = {
 function pillarValue(pillar: any, fallback: any): string {
   if (pillar && typeof pillar === "object") {
     const zh = pillar.gan_zhi || pillar.zh || pillar.pillar_zh || `${pillar.stem_zh || pillar.stem || ""}${pillar.branch_zh || pillar.branch || ""}`;
-    const th = pillar.label_th || pillar.name_th || pillar.th;
-    return packetText(`${zh || fallback || "-"}${th ? ` · ${th}` : ""}`);
+    const th = pillar.label_th || pillar.name_th || pillar.th || qimenPillarThaiFirst(zh, "");
+    return packetText(`${th || zh || fallback || "-"}${zh && th && !String(th).includes(String(zh)) ? ` (${zh})` : ""}`);
   }
-  return packetText(pillar || fallback || "-");
+  return qimenPillarThaiFirst(pillar || fallback, "-");
 }
 
 function formatQimenPillars(chart: any): string {
@@ -627,6 +665,92 @@ function formatQimenPillars(chart: any): string {
   const day = pillarValue(pillars.day, chart.day_pillar_zh || chart.dayPillarZh);
   const hour = pillarValue(pillars.hour, chart.hour_pillar_zh || chart.hourPillarZh || chart.pillar_zh);
   return `ปี 年=${year} · เดือน 月=${month} · วัน 日=${day} · ยาม 時=${hour}`;
+}
+
+function qimenBranchTokens(value: any): string[] {
+  const found = new Set<string>();
+  const visit = (raw: any) => {
+    if (raw == null || raw === false) return;
+    if (Array.isArray(raw)) {
+      raw.forEach(visit);
+      return;
+    }
+    if (typeof raw === "object") {
+      visit(raw.branch_zh ?? raw.branch ?? raw.zh ?? raw.code);
+      visit(raw.branches_zh ?? raw.branches ?? raw.branch_codes ?? raw.void_zh);
+      return;
+    }
+    const text = packetText(raw);
+    const upper = text.toUpperCase();
+    if (BRANCH_CODE_ZH[upper]) found.add(BRANCH_CODE_ZH[upper]);
+    for (const ch of text.match(/[子丑寅卯辰巳午未申酉戌亥]/g) || []) found.add(ch);
+  };
+  visit(value);
+  return Array.from(found);
+}
+
+function qimenBranchList(value: any, fallback = "ข้อมูลไม่พอ"): string {
+  const branches = qimenBranchTokens(value);
+  if (!branches.length) return fallback;
+  return branches.map((b) => BRANCH_TH_ZH[b] || b).join(" · ");
+}
+
+function qimenStemLabel(value: any, fallback = ""): string {
+  const text = packetText(value);
+  const stem = text.match(/[甲乙丙丁戊己庚辛壬癸]/)?.[0] || "";
+  return stem ? STEM_TH_ZH[stem] || stem : fallback;
+}
+
+function qimenPillarThaiFirst(value: any, fallback = "ข้อมูลไม่พอ"): string {
+  const text = packetText(value);
+  const stem = qimenStemLabel(text);
+  const branches = qimenBranchTokens(text).slice(0, 1);
+  const branch = branches[0] ? BRANCH_TH_ZH[branches[0]] || branches[0] : "";
+  const base = [stem, branch].filter(Boolean).join(" + ");
+  if (!base) return packetText(text || fallback);
+  return text ? `${base} (${text})` : base;
+}
+
+function qimenTimeBranch(value: any, fallback: any = null): string {
+  const direct = qimenBranchList(value, "");
+  return direct || qimenBranchList(fallback, "ข้อมูลไม่พอ");
+}
+
+function qimenXiuLabel(chart: any): string {
+  const xiu = chart?.twenty_eight || chart?.twentyEight || {};
+  if (!xiu || typeof xiu !== "object") return "ข้อมูลไม่พอ";
+  const rawZh = packetText(xiu.zh || xiu.name_zh || xiu.xiu_zh || "");
+  const key = rawZh.replace(/宿/g, "");
+  const name = key ? (XIU_TH_ZH[key] || `ดาวฤกษ์ ${key}${key.endsWith("宿") ? "" : "宿"}`) : "ข้อมูลไม่พอ";
+  const number = xiu.number || xiu.no || xiu.index ? `ลำดับ ${packetText(xiu.number || xiu.no || xiu.index)}` : "";
+  const groupRaw = packetText(xiu.group_zh || xiu.group || "");
+  const group = groupRaw ? (XIU_GROUP_TH_ZH[groupRaw] || groupRaw) : "";
+  const palaceRaw = packetText(xiu.palace_zh || xiu.direction_zh || xiu.direction || "");
+  const palace = palaceRaw ? (ZH_DIR_TH_ZH[palaceRaw] || palaceRaw) : "";
+  return [number, name, group, palace].filter(Boolean).join(" · ") || "ข้อมูลไม่พอ";
+}
+
+function formatQimenTimeContext(chart: any): string {
+  const voids = chart?.voids || {};
+  const skyHorse = chart?.sky_horse || chart?.skyHorse || {};
+  const nobleman = chart?.nobleman || {};
+  const clash = chart?.clash || {};
+  const dayVoid = qimenTimeBranch(voids.day, chart?.void_day_zh || chart?.voidDayZh);
+  const hourVoid = qimenTimeBranch(voids.hour, chart?.void_hour_zh || chart?.voidHourZh);
+  const dayHorse = qimenTimeBranch(skyHorse.day?.branch ?? skyHorse.day, chart?.traveling_horse_day_zh || chart?.traveling_horse_zh);
+  const hourHorse = qimenTimeBranch(skyHorse.hour?.branch ?? skyHorse.hour, chart?.traveling_horse_hour_zh);
+  const dayNoble = qimenTimeBranch(nobleman.day?.branches ?? nobleman.day, chart?.nobleman_day_zh);
+  const hourNoble = qimenTimeBranch(nobleman.hour?.branches ?? nobleman.hour, chart?.nobleman_hour_zh);
+  const dayClash = qimenTimeBranch(clash.day?.branch ?? clash.day, chart?.day_clash_zh);
+  const hourClash = qimenTimeBranch(clash.hour?.branch ?? clash.hour, chart?.hour_clash_zh);
+  return [
+    `ช่องว่าง 空亡: วัน=${dayVoid} / ยาม=${hourVoid}`,
+    `ม้าเดินทาง 驛馬: วัน=${dayHorse} / ยาม=${hourHorse}`,
+    `คนช่วย 貴人: วัน=${dayNoble} / ยาม=${hourNoble}`,
+    `วัน/ยามปะทะ 日時冲: วัน=${dayClash} / ยาม=${hourClash}`,
+    `28 ดาวฤกษ์ 二十八宿: ${qimenXiuLabel(chart)}`,
+    "หมายเหตุ: ใช้เป็นบริบทเวลา จาก engine packet เท่านั้น ไม่ใช่คะแนนดีร้ายเดี่ยว",
+  ].join(" · ");
 }
 
 function selectedPalaceIdFromPayload(payload: any): number | null {
@@ -706,6 +830,7 @@ function fmtQimenCard(q: any, selectedPalaceId?: number | null): string {
 ระบบผัง: ${systemInfo.label} · รหัสระบบ ${systemType}
 ${dmyLine}
 四柱 สี่เสาเวลา: ${formatQimenPillars(chart)}
+บริบทเวลา 時間標記: ${formatQimenTimeContext(chart)}
 Yuan-Ju: ${pole}${ju}局
 แกนผัง engine: ${chart.pillar_zh || "-"} · 旬首 ${chart.xun_hour_zh || fushi?.xun_leader_zh || "-"} · 遁干 ${chart.dun_gan_zh || "-"} · 八神派別 ${chart.deity_variant || "-"} · แหล่งผัง ${chart.source || chart.engine_source || "engine packet"}
 ${fushiLine}
@@ -781,8 +906,9 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
 11. เมื่อตอบว่าทิศไหนดี/เสีย ต้องอ้างวังจริง: ทิศ + ประตู + ดาว + เทพ + ก้าน + flags/source flags + เหตุผลจากระบบ
 12. ถ้า stem_response.verdict_allowed=false หรือ quality=context_only ให้บอกว่าอ่านประกอบเท่านั้น และห้ามใช้ 十干克應 เป็นคำตัดสินดีร้ายหรือบอกว่าไม่มีข้อมูล
 13. ถ้า payload มี "วังที่ผู้ใช้เลือก" และผู้ใช้ถามว่า "วังนี้/ทิศนี้" ให้ตอบจากวังที่ผู้ใช้เลือกก่อน ห้ามสลับไปวังอื่นโดยไม่บอกเหตุผล
-14. ห้ามใช้คำฟันธงเกินข้อมูล เช่น ดีแน่นอน, ชนะ, ใช้แล้วสำเร็จ, ไม่มีปัญหา
-15. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุ source id ที่ใช้ 1-3 ตัวจาก Source trace`;
+14. ถ้าพูดถึง ช่องว่าง 空亡, ม้าเดินทาง 驛馬, คนช่วย 貴人, วัน/ยามปะทะ 日時冲, 28 ดาวฤกษ์ 二十八宿 ให้ใช้เฉพาะบรรทัด "บริบทเวลา 時間標記" จาก engine packet ห้ามคำนวณเพิ่มเอง
+15. ห้ามใช้คำฟันธงเกินข้อมูล เช่น ดีแน่นอน, ชนะ, ใช้แล้วสำเร็จ, ไม่มีปัญหา
+16. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุ source id ที่ใช้ 1-3 ตัวจาก Source trace`;
   const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${answerGuard}\nผังเวลา (QiMen Chart):\n${qimenText}\n${canonBlock}\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
   return {
     prompt: loadPromptMd("prompts/qimen-sifu.md", QIMEN_TPL_FALLBACK).replace("{{BODY}}", body),
