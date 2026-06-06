@@ -973,6 +973,11 @@ window.applyI18N = applyI18N;
   const DIR_FULL_TH = { SE:'ทิศตะวันออกเฉียงใต้', S:'ทิศใต้', SW:'ทิศตะวันตกเฉียงใต้', E:'ทิศตะวันออก', C:'กลาง', W:'ทิศตะวันตก', NE:'ทิศตะวันออกเฉียงเหนือ', N:'ทิศเหนือ', NW:'ทิศตะวันตกเฉียงเหนือ' };
   const INTERNAL_DIRS = new Set(['N','NE','E','SE']);
   const BRANCHES_ZH = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const BRANCH_TH = { 子:'หนู', 丑:'วัว', 寅:'เสือ', 卯:'กระต่าย', 辰:'มังกร', 巳:'งู', 午:'ม้า', 未:'แพะ', 申:'ลิง', 酉:'ไก่', 戌:'หมา', 亥:'หมู' };
+  const STEM_TH = { 甲:'ไม้หยาง', 乙:'ไม้หยิน', 丙:'ไฟหยาง', 丁:'ไฟหยิน', 戊:'ดินหยาง', 己:'ดินหยิน', 庚:'ทองหยาง', 辛:'ทองหยิน', 壬:'น้ำหยาง', 癸:'น้ำหยิน' };
+  const XIU_TH = { 角:'เขามังกร', 亢:'คอมังกร', 氐:'ราก', 房:'ห้อง', 心:'หัวใจ', 尾:'หาง', 箕:'กระด้ง', 斗:'กระบวย', 牛:'วัว', 女:'หญิง', 虛:'ว่าง', 危:'ค้ำยัน', 室:'ห้อง', 壁:'ผนัง', 奎:'ขา', 婁:'เชือก', 胃:'กระเพาะ', 昴:'กลุ่มดาวไก่', 畢:'ตาข่าย', 觜:'ปาก', 參:'สามดาว', 井:'บ่อน้ำ', 鬼:'ผี', 柳:'หลิว', 星:'ดาว', 張:'กาง', 翼:'ปีก', 軫:'เพลา' };
+  const XIU_GROUP_TH = { 東方青龍:'กลุ่มตะวันออก มังกรเขียว', 南方朱雀:'กลุ่มใต้ หงส์แดง', 西方白虎:'กลุ่มตะวันตก เสือขาว', 北方玄武:'กลุ่มเหนือ เต่าดำ' };
+  const ZH_DIR_TH = { 北:'ทิศเหนือ', 南:'ทิศใต้', 東:'ทิศตะวันออก', 西:'ทิศตะวันตก', 東北:'ทิศตะวันออกเฉียงเหนือ', 東南:'ทิศตะวันออกเฉียงใต้', 西南:'ทิศตะวันตกเฉียงใต้', 西北:'ทิศตะวันตกเฉียงเหนือ', 中:'กลาง' };
   const STEM_CN = { JIA:'甲',YI:'乙',BING:'丙',DING:'丁',WU:'戊',JI:'己',GENG:'庚',XIN:'辛',REN:'壬',GUI:'癸' };
   const STAR_CN = { TIAN_PENG:'天蓬',TIAN_REN:'天任',TIAN_CHONG:'天沖',TIAN_FU:'天輔',TIAN_YING:'天英',TIAN_QIN:'天禽',TIAN_ZHU:'天柱',TIAN_XIN:'天心',TIAN_RUI:'天芮' };
   const DOOR_CN = { KAI_MEN:{zh:'開門',q:'good'}, XIU_MEN:{zh:'休門',q:'good'}, SHENG_MEN:{zh:'生門',q:'good'}, JING_VIEW_MEN:{zh:'景門',q:'mid'}, JING_FEAR_MEN:{zh:'驚門',q:'bad'}, DU_MEN:{zh:'杜門',q:'mid'}, SHANG_MEN:{zh:'傷門',q:'bad'}, SI_MEN:{zh:'死門',q:'bad'} };
@@ -1268,6 +1273,57 @@ window.applyI18N = applyI18N;
     if (v == null) return '';
     return String(v);
   }
+  function qmBranchTokens(value){
+    const out = [];
+    const seen = new Set();
+    const add = v => {
+      if (Array.isArray(v)) return v.forEach(add);
+      const s = String(v == null ? '' : v);
+      for (const ch of s) {
+        if (!BRANCH_TH[ch] || seen.has(ch)) continue;
+        seen.add(ch);
+        out.push(ch);
+      }
+    };
+    add(value);
+    return out;
+  }
+  function qmBranchLabel(value){
+    const tokens = qmBranchTokens(value);
+    if (tokens.length === 1) return `${BRANCH_TH[tokens[0]]} ${tokens[0]}`;
+    if (tokens.length > 1) return qmBranchList(tokens);
+    return String(value == null ? '' : value);
+  }
+  function qmBranchList(value, sep=' · '){
+    return qmBranchTokens(value).map(b => `${BRANCH_TH[b]} ${b}`).join(sep);
+  }
+  function qmStemLabel(value){
+    const stem = String(value == null ? '' : value).trim().charAt(0);
+    return STEM_TH[stem] ? `${STEM_TH[stem]} ${stem}` : String(value == null ? '' : value);
+  }
+  function qmPillarDisplay(p){
+    const zh = p?.zh || '';
+    const stem = p?.stem || zh.charAt(0);
+    const branch = p?.branch || zh.charAt(1);
+    return {
+      zh: zh || '—',
+      parts: [stem ? `ก้าน ${qmStemLabel(stem)}` : '', branch ? `กิ่ง ${qmBranchLabel(branch)}` : ''].filter(Boolean).join(' · ') || 'ก้าน/กิ่งไม่ครบ',
+      xun: p?.xun_zh || '—',
+      voids: qmBranchList(p?.void_zh) || '—',
+    };
+  }
+  function qmXiuDisplay(xiu){
+    const raw = String(xiu?.zh || '').replace(/宿$/,'');
+    const zh = raw ? `${raw}宿` : '—';
+    const th = raw && XIU_TH[raw] ? `ดาว${XIU_TH[raw]}` : 'ดาวฤกษ์';
+    const groupZh = String(xiu?.group_zh || '');
+    const palaceZh = String(xiu?.palace_zh || '');
+    return {
+      name: raw ? `${th} ${zh}` : zh,
+      group: groupZh ? `${XIU_GROUP_TH[groupZh] || 'กลุ่มดาว'} ${groupZh}` : 'ชั้นเวลา',
+      palace: palaceZh ? `${ZH_DIR_TH[palaceZh] || 'ทิศ'} ${palaceZh}` : '',
+    };
+  }
   function qmBranchValues(source){
     const out = new Set();
     const add = v => {
@@ -1553,25 +1609,30 @@ window.applyI18N = applyI18N;
         ['วัน 日', pillars.day],
         ['ยาม 時', pillars.hour],
       ];
-      pillarHost.innerHTML = items.map(([label, p]) => `
+      pillarHost.innerHTML = items.map(([label, p]) => {
+        const pillar = qmPillarDisplay(p);
+        return `
         <div class="qm-pillar">
           <div class="k">${qmEsc(label)}</div>
-          <div class="v">${qmEsc(p?.zh || '—')}</div>
-          <div class="s">旬 ${qmEsc(p?.xun_zh || '—')} · 空 ${qmEsc(qmZhList(p?.void_zh) || '—')}</div>
+          <div class="v">${qmEsc(pillar.zh)}</div>
+          <div class="s">${qmEsc(pillar.parts)}</div>
+          <div class="s">旬 ${qmEsc(pillar.xun)} · 空 ${qmEsc(pillar.voids)}</div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
     const grid = document.getElementById('qm-context-grid');
     if (!grid) return;
-    const voidDay = qmZhList(chart?.voids?.day || chart?.void_day_zh);
-    const voidHour = qmZhList(chart?.voids?.hour || chart?.void_hour_zh);
-    const horseDay = chart?.sky_horse?.day?.branch || chart?.traveling_horse_zh || '';
-    const horseHour = chart?.sky_horse?.hour?.branch || '';
-    const nobleDay = qmZhList(chart?.nobleman?.day?.branches);
-    const nobleHour = qmZhList(chart?.nobleman?.hour?.branches);
-    const clashDay = chart?.clash?.day?.branch || '';
-    const clashHour = chart?.clash?.hour?.branch || '';
+    const voidDay = qmBranchList(chart?.voids?.day || chart?.void_day_zh);
+    const voidHour = qmBranchList(chart?.voids?.hour || chart?.void_hour_zh);
+    const horseDay = qmBranchLabel(chart?.sky_horse?.day?.branch || chart?.traveling_horse_zh || '');
+    const horseHour = qmBranchLabel(chart?.sky_horse?.hour?.branch || '');
+    const nobleDay = qmBranchList(chart?.nobleman?.day?.branches);
+    const nobleHour = qmBranchList(chart?.nobleman?.hour?.branches);
+    const clashDay = qmBranchLabel(chart?.clash?.day?.branch || '');
+    const clashHour = qmBranchLabel(chart?.clash?.hour?.branch || '');
     const xiu = chart?.twenty_eight || {};
+    const xiuLabel = qmXiuDisplay(xiu);
     const selector = chart?.yongshen_selector || qimenYongshenSelector(window._qimenLast);
     const ysTop = (selector?.target_palaces || []).slice(0, 3)
       .map(x => `${x.direction_label_th || x.direction || 'ทิศ?'} ${x.direction_label_zh || ''} วัง${x.palace_id}`)
@@ -1581,7 +1642,7 @@ window.applyI18N = applyI18N;
       `<div class="qm-context-chip good"><div class="k">ม้าเดินทาง 驛馬</div><div class="v">วัน ${qmEsc(horseDay || '—')} · ยาม ${qmEsc(horseHour || '—')}</div><div class="note">แรงเคลื่อนไหว เดินทาง ติดต่อ หรือเรื่องที่ต้องให้ขยับ</div></div>`,
       `<div class="qm-context-chip good"><div class="k">คนช่วย 貴人</div><div class="v">วัน ${qmEsc(nobleDay || '—')} · ยาม ${qmEsc(nobleHour || '—')}</div><div class="note">ผู้ใหญ่ ผู้สนับสนุน ช่องทางช่วยเหลือ</div></div>`,
       `<div class="qm-context-chip warn"><div class="k">วัน/ยามปะทะ 日時冲</div><div class="v">วัน ${qmEsc(clashDay || '—')} · ยาม ${qmEsc(clashHour || '—')}</div><div class="note">เป็นกิ่งที่ถูกปะทะ ไม่ใช่ดวงเจ้าของงานโดยตรง</div></div>`,
-      `<div class="qm-context-chip"><div class="k">28 ดาวฤกษ์ 二十八宿</div><div class="v">${qmEsc(xiu.number || '—')} · ${qmEsc(xiu.zh || '—')}宿</div><div class="note">${qmEsc(xiu.group_zh || 'ชั้นเวลา')} ${xiu.palace_zh ? '· '+qmEsc(xiu.palace_zh) : ''}</div></div>`,
+      `<div class="qm-context-chip"><div class="k">28 ดาวฤกษ์ 二十八宿</div><div class="v">${qmEsc(xiu.number || '—')} · ${qmEsc(xiuLabel.name)}</div><div class="note">${qmEsc(xiuLabel.group)} ${xiuLabel.palace ? '· '+qmEsc(xiuLabel.palace) : ''}</div></div>`,
       `<div class="qm-context-chip good"><div class="k">ตัวแทนเรื่อง 用神</div><div class="v">${qmEsc(selector?.intent?.label_th || 'ภาพรวม')} ${selector?.intent?.label_zh ? '· '+qmEsc(selector.intent.label_zh) : ''}</div><div class="note">${qmEsc(ysTop || 'ใช้日干/值符เป็นภาพรวม')} · ไม่ใช่คะแนนฤกษ์</div></div>`,
       `<div class="qm-context-chip"><div class="k">วังใน/วังนอก 內外</div><div class="v">內 N·NE·E·SE / 外 S·SW·W·NW</div><div class="note">เรื่องใกล้ตัว/ในองค์กร เทียบกับเรื่องภายนอก/ตลาด/เดินทาง</div></div>`,
     ].join('');
@@ -1784,29 +1845,29 @@ window.applyI18N = applyI18N;
       rows.push(`<li><b>${qmEsc(io.th)} <span class="tc">${qmEsc(io.zh)}</span></b> · ใช้แยกเรื่องใกล้ตัว/ในองค์กร กับเรื่องภายนอก/ตลาด/เดินทาง</li>`);
     }
     const voidParts = [];
-    if (p.is_void_day) voidParts.push(`วัน ${qmZhList(chart.voids?.day || chart.void_day_zh)}`);
-    if (p.is_void_hour) voidParts.push(`ยาม ${qmZhList(chart.voids?.hour || chart.void_hour_zh)}`);
-    if (p.is_void_month) voidParts.push(`เดือน ${qmZhList(chart.voids?.month || chart.void_month_zh)}`);
-    if (p.is_void_year) voidParts.push(`ปี ${qmZhList(chart.voids?.year || chart.void_year_zh)}`);
+    if (p.is_void_day) voidParts.push(`วัน ${qmBranchList(chart.voids?.day || chart.void_day_zh) || '—'}`);
+    if (p.is_void_hour) voidParts.push(`ยาม ${qmBranchList(chart.voids?.hour || chart.void_hour_zh) || '—'}`);
+    if (p.is_void_month) voidParts.push(`เดือน ${qmBranchList(chart.voids?.month || chart.void_month_zh) || '—'}`);
+    if (p.is_void_year) voidParts.push(`ปี ${qmBranchList(chart.voids?.year || chart.void_year_zh) || '—'}`);
     if (voidParts.length) {
       rows.push(`<li><b>ช่องว่าง <span class="tc">空亡</span></b> · ${qmEsc(voidParts.join(' · '))} · พลังยังไม่เต็ม เรื่องอาจช้า ว่าง หรือผลไม่ชัด</li>`);
     }
     const horseHits = [];
-    if (palaceHasAnyBranch(p, [chart.sky_horse?.day?.branch])) horseHits.push(`วัน ${chart.sky_horse.day.branch}`);
-    if (palaceHasAnyBranch(p, [chart.sky_horse?.hour?.branch, chart.traveling_horse_zh])) horseHits.push(`ยาม ${chart.sky_horse?.hour?.branch || chart.traveling_horse_zh}`);
-    if (p.is_traveling_horse && !horseHits.length) horseHits.push(chart.traveling_horse_zh || '馬');
+    if (palaceHasAnyBranch(p, [chart.sky_horse?.day?.branch])) horseHits.push(`วัน ${qmBranchLabel(chart.sky_horse?.day?.branch)}`);
+    if (palaceHasAnyBranch(p, [chart.sky_horse?.hour?.branch, chart.traveling_horse_zh])) horseHits.push(`ยาม ${qmBranchLabel(chart.sky_horse?.hour?.branch || chart.traveling_horse_zh)}`);
+    if (p.is_traveling_horse && !horseHits.length) horseHits.push(qmBranchLabel(chart.traveling_horse_zh) || '馬');
     if (horseHits.length) {
       rows.push(`<li><b>ม้าเดินทาง <span class="tc">驛馬</span></b> · ${qmEsc(horseHits.join(' · '))} · ใช้เป็นแรงเสริมถ้าเรื่องที่ถามเกี่ยวกับการเคลื่อนไหว เดินทาง ติดต่อ หรือเร่งให้เรื่องเดิน</li>`);
     }
     const nobleHits = [];
-    if (palaceHasAnyBranch(p, chart.nobleman?.day?.branches || [])) nobleHits.push(`วัน ${qmZhList(chart.nobleman.day.branches)}`);
-    if (palaceHasAnyBranch(p, chart.nobleman?.hour?.branches || [])) nobleHits.push(`ยาม ${qmZhList(chart.nobleman.hour.branches)}`);
+    if (palaceHasAnyBranch(p, chart.nobleman?.day?.branches || [])) nobleHits.push(`วัน ${qmBranchList(chart.nobleman?.day?.branches)}`);
+    if (palaceHasAnyBranch(p, chart.nobleman?.hour?.branches || [])) nobleHits.push(`ยาม ${qmBranchList(chart.nobleman?.hour?.branches)}`);
     if (nobleHits.length) {
       rows.push(`<li><b>คนช่วย <span class="tc">貴人</span></b> · ${qmEsc(nobleHits.join(' · '))} · ใช้เป็นแรงเสริมถ้าเรื่องที่ถามเกี่ยวกับผู้ใหญ่ คำแนะนำ หรือแรงสนับสนุน</li>`);
     }
     const clashHits = [];
-    if (palaceHasAnyBranch(p, [chart.clash?.day?.branch])) clashHits.push(`วันปะทะ ${chart.clash.day.branch}`);
-    if (palaceHasAnyBranch(p, [chart.clash?.hour?.branch])) clashHits.push(`ยามปะทะ ${chart.clash.hour.branch}`);
+    if (palaceHasAnyBranch(p, [chart.clash?.day?.branch])) clashHits.push(`วันปะทะ ${qmBranchLabel(chart.clash?.day?.branch)}`);
+    if (palaceHasAnyBranch(p, [chart.clash?.hour?.branch])) clashHits.push(`ยามปะทะ ${qmBranchLabel(chart.clash?.hour?.branch)}`);
     if (clashHits.length) {
       rows.push(`<li><b>ปะทะ <span class="tc">冲</span></b> · ${qmEsc(clashHits.join(' · '))} · ใช้เป็นสัญญาณระวัง ไม่ใช่คำตัดสินดวงเจ้าของงาน</li>`);
     }

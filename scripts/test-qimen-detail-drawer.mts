@@ -49,6 +49,8 @@ const stemContext = functionBlock("qimenStemIsContextOnly");
 const stemDetail = functionBlock("buildStemResponseHtml");
 const p0Detail = functionBlock("buildP0SourceTraceHtml");
 const detail = functionBlock("renderCurrentDetail");
+const context = functionBlock("renderQimenContext");
+const palaceExtra = functionBlock("buildPalaceExtraHtml");
 
 const order = [
   "สถานะอ่านเร็ว",
@@ -76,6 +78,29 @@ assertHas("ยังไม่พบสัญญาณหนัก", "Thai signal
 assertHas("สัญญาณเสริมต่อ", "Thai signal follow-up copy");
 assertHas("ระบบหาวังที่เลือกหมายเลข", "Thai palace missing copy");
 assertHas("ก้านฟ้า ${p?.heaven_stem_zh", "Thai-first stem fallback");
+assertHas("const BRANCH_TH", "Thai earthly-branch display dictionary");
+assertHas("const STEM_TH", "Thai heavenly-stem display dictionary");
+assertHas("const XIU_TH", "Thai 28 mansions display dictionary");
+assertHas("function qmBranchLabel", "Thai-first branch label helper");
+assertHas("function qmBranchList", "Thai-first branch list helper");
+assertHas("function qmStemLabel", "Thai-first stem label helper");
+assertHas("function qmPillarDisplay", "Thai-first four-pillar display helper");
+assertHas("function qmXiuDisplay", "Thai-first 28 mansions display helper");
+assertHas("เสือ", "Thai branch learner label");
+assertHas("ไฟหยาง", "Thai stem learner label");
+assertHas("XIU_TH[raw] ? `ดาว${XIU_TH[raw]}`", "Thai mansion learner label formatter");
+assertBlockHas(context, "qmPillarDisplay(p)", "four-pillar strip uses Thai-first display helper");
+assertBlockHas(context, "qmBranchList(chart?.voids?.day", "context void day uses Thai-first branch list");
+assertBlockHas(context, "qmBranchLabel(chart?.sky_horse?.day?.branch", "context sky horse uses Thai-first branch label");
+assertBlockHas(context, "qmBranchList(chart?.nobleman?.day?.branches", "context nobleman uses Thai-first branch list");
+assertBlockHas(context, "qmBranchLabel(chart?.clash?.day?.branch", "context clash uses Thai-first branch label");
+assertBlockHas(context, "qmXiuDisplay(xiu)", "context 28 mansions uses Thai-first mansion helper");
+assertBlockHas(palaceExtra, "qmBranchList(chart.voids?.day", "detail void uses Thai-first branch list");
+assertBlockHas(palaceExtra, "qmBranchLabel(chart.sky_horse?.day?.branch", "detail sky horse uses Thai-first branch label");
+assertBlockHas(palaceExtra, "qmBranchList(chart.nobleman?.day?.branches", "detail nobleman uses Thai-first branch list");
+assertBlockHas(palaceExtra, "qmBranchLabel(chart.clash?.day?.branch", "detail clash uses Thai-first branch label");
+assertBlockNotHas(renderPalaces, "qmBranchLabel(", "palace grid must not use long Thai branch labels");
+assertBlockNotHas(renderPalaces, "qmPillarDisplay(", "palace grid must not render four-pillar text");
 assertHas("function qimenStemIsContextOnly", "stem context-only helper exists");
 assertBlockHas(stemContext, "engine_readiness?.stem_response_policy === 'context_only'", "stem helper respects engine readiness policy");
 assertHas("function qimenStemContextOnlyText", "stem context-only Thai fallback helper exists");
