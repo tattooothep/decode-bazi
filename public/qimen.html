@@ -1536,13 +1536,28 @@ window.applyI18N = applyI18N;
       if (!title && !parts.length) return '';
       return `<li><b>${qmEsc(kindTh)} <span class="tc">${qmEsc(kindZh)}</span>${title ? ` · ${title}` : ''}</b>${parts.length ? ` · ${qmEsc(parts.join(' · '))}` : ''}</li>`;
     };
+    const stemResponse = p?.stem_response || null;
+    const stemPair = stemResponse?.notation_zh
+      || (p?.heaven_stem_zh && p?.earth_stem_zh ? `${p.heaven_stem_zh}加${p.earth_stem_zh}` : [p?.heaven_stem_zh, p?.earth_stem_zh].filter(Boolean).join(' / '));
+    const stemTitleZh = [stemResponse?.title_zh, stemPair].filter(Boolean).filter((x, i, arr) => arr.indexOf(x) === i).join(' · ');
+    const stemContextOnly = !!stemResponse && (stemResponse.is_source_governed === false || qimenStemIsContextOnly(stemResponse));
+    const stemPrimary = stemResponse
+      ? stemContextOnly
+        ? `อ่านประกอบเท่านั้น ไม่ใช่คำตัดสินดีร้าย${stemResponse.beginner_th ? ' · '+stemResponse.beginner_th : ''}`
+        : (stemResponse.beginner_th || stemResponse.status_th || '')
+      : (p?.stem_combo_description_th || '');
     const rows = [
+      makeRow('ก้านฟ้า/ก้านดิน', '天盤干/地盤干', stemResponse?.title_th || p?.stem_combo_name_th, stemTitleZh, stemPrimary, stemResponse?.detail_th, stemResponse?.caveat_th),
       makeRow('ประตู', '八門', p?.door_name_th, p?.door_zh, p?.door_situation_role_th, p?.door_action_advice_th, p?.door_description_th),
       makeRow('ดาว', '九星', p?.star_name_th, p?.star_zh, p?.star_description_th, '', ''),
       makeRow('เทพ', '八神', p?.deity_name_th, p?.deity_zh, p?.deity_advice_th, '', ''),
     ].filter(Boolean);
     if (!rows.length) return '';
     const fullRows = [
+      stemResponse?.beginner_th ? `<li><b>ก้านแบบสั้น <span class="tc">干應</span></b> · ${qmEsc(stemResponse.beginner_th)}</li>` : '',
+      stemResponse?.detail_th ? `<li><b>ก้านเต็ม <span class="tc">十干克應</span></b> · ${qmEsc(stemResponse.detail_th)}</li>` : '',
+      stemResponse?.caveat_th ? `<li><b>ข้อควรระวังก้าน <span class="tc">干戒</span></b> · ${qmEsc(stemResponse.caveat_th)}</li>` : '',
+      (!stemResponse && p?.stem_combo_description_th) ? `<li><b>ก้านประกอบ <span class="tc">干應</span></b> · ${qmEsc(p.stem_combo_description_th)}</li>` : '',
       p?.door_situation_role_th ? `<li><b>บทบาทประตู <span class="tc">門用</span></b> · ${qmEsc(p.door_situation_role_th)}</li>` : '',
       p?.door_action_advice_th ? `<li><b>วิธีใช้ประตู <span class="tc">門法</span></b> · ${qmEsc(p.door_action_advice_th)}</li>` : '',
       p?.door_description_th ? `<li><b>ประตูเต็ม <span class="tc">八門</span></b> · ${qmEsc(p.door_description_th)}</li>` : '',
@@ -1551,9 +1566,9 @@ window.applyI18N = applyI18N;
       p?.deity_description_th ? `<li><b>เทพเต็ม <span class="tc">八神</span></b> · ${qmEsc(p.deity_description_th)}</li>` : '',
     ].filter(Boolean).join('');
     const full = fullRows
-      ? `<details class="qm-pro-details"><summary>คำอธิบายเต็มของสามชั้น · 全文</summary><div class="qm-pro-body"><ul>${fullRows}</ul></div></details>`
+      ? `<details class="qm-pro-details"><summary>คำอธิบายเต็มของสี่ชั้น · 全文</summary><div class="qm-pro-body"><ul>${fullRows}</ul></div></details>`
       : '';
-    return `<div class="qm-detail-extra"><h5>อ่านสามชั้นหลัก · 門星神</h5><ul>${rows.join('')}<li>หมายเหตุ: ประตูบอกทางของเรื่อง ดาวบอกแรงของงาน เทพบอกคน/กลยุทธ์ ต้องอ่านร่วมกัน ห้ามใช้ตัวเดียวฟันธง</li></ul>${full}</div>`;
+    return `<div class="qm-detail-extra"><h5>อ่านสี่ชั้นหลัก · 干門星神</h5><ul>${rows.join('')}<li>หมายเหตุ: ก้านบอกปฏิกิริยาของเรื่อง ประตูบอกทางของเรื่อง ดาวบอกแรงของงาน เทพบอกคน/กลยุทธ์ ต้องอ่านร่วมกัน ห้ามใช้ตัวเดียวฟันธง</li></ul>${full}</div>`;
   }
   function buildStemResponseHtml(p){
     const r = p?.stem_response;
