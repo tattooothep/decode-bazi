@@ -1289,10 +1289,19 @@ window.applyI18N = applyI18N;
     return m ? Number(m[1]) : null;
   }
   function qmTraceTone(item){
+    if (qimenTraceIsContextOnly(item)) return 'neutral';
     const s = String(item?.tone || item?.severity || item?.quality || item?.level || item?.kind || item?.effect || '').toLowerCase();
     if (s.includes('bad') || s.includes('risk') || s.includes('avoid') || s.includes('danger') || s.includes('caution') || s.includes('warning') || s.includes('hard') || s.includes('inauspicious') || s.includes('凶') || s.includes('penalty')) return 'bad';
     if (s.includes('good') || s.includes('auspicious') || s.includes('benefit') || s.includes('吉')) return 'good';
     return 'neutral';
+  }
+  function qimenTraceIsContextOnly(item){
+    const s = String(item?.tone || item?.severity || item?.quality || item?.effective_quality || '').toLowerCase();
+    return item?.verdict_allowed === false || s === 'context' || s === 'context_only';
+  }
+  function qimenFormationIsContextOnly(item){
+    const s = String(item?.quality || item?.base_quality || item?.effective_quality || '').toLowerCase();
+    return item?.verdict_allowed === false || s === 'context' || s === 'contextual' || s === 'context_only';
   }
   function qmTraceLabel(item){
     const code = item?.code || item?.flag || item?.detector || item?.rule_id || '';
@@ -1344,13 +1353,15 @@ window.applyI18N = applyI18N;
   function qimenYongshenSelector(last){
     return last?.yongshen_selector || last?.chart?.yongshen_selector || null;
   }
-  function qimenP0SignalsForPalace(p, last){
+  function qimenP0SignalsForPalace(p, last, opts){
+    const includeContext = !!opts?.includeContext;
     const pid = Number(p?.palace_id);
     const out = [];
     const add = (raw, sourceKey, forcePalace) => {
       qmTraceArray(raw).forEach(item => {
         const tracePid = qmTracePalaceId(item);
         if (!forcePalace && tracePid !== pid) return;
+        if (!includeContext && qimenTraceIsContextOnly(item)) return;
         out.push({ ...item, _source_key: sourceKey });
       });
     };
@@ -1358,7 +1369,7 @@ window.applyI18N = applyI18N;
     add(p?.classical_flags, 'palace.classical_flags', true);
     add(p?.p0_badges, 'palace.p0_badges', true);
     add(p?.source_trace, 'palace.source_trace', false);
-    if (!out.length) add(p?.p0_flags, 'palace.p0_flags', true);
+    if (!out.length && (includeContext || p?.p0_flags_verdict_allowed !== false)) add(p?.p0_flags, 'palace.p0_flags', true);
     const seen = new Set();
     return out.filter(item => {
       const label = qmTraceLabel(item);
@@ -1380,7 +1391,7 @@ window.applyI18N = applyI18N;
     return shown + more;
   }
   function buildP0SourceTraceHtml(p, last){
-    const signals = qimenP0SignalsForPalace(p, last);
+    const signals = qimenP0SignalsForPalace(p, last, { includeContext: true });
     if (!signals.length) return '';
     const rows = signals.slice(0, 8).map(item => {
       const label = qmTraceLabel(item);
@@ -1572,7 +1583,7 @@ window.applyI18N = applyI18N;
     /* หา formations per palace · จาก _qimenLast */
     const stored = (window._qimenLast?.stored_formations||[]);
     const compound = (window._qimenLast?.compound_formations||[]);
-    const palaceFormations = (pid) => [...stored, ...compound].filter(f => f.scope==='palace' && f.scope_ref===pid);
+    const palaceFormations = (pid) => [...stored, ...compound].filter(f => f.scope==='palace' && f.scope_ref===pid && !qimenFormationIsContextOnly(f));
     const ch = window._qimenLast?.chart || {};
     const horseBranches = [ch.sky_horse?.day?.branch, ch.sky_horse?.hour?.branch, ch.traveling_horse_zh].filter(Boolean);
     const nobleBranches = [...(ch.nobleman?.day?.branches || []), ...(ch.nobleman?.hour?.branches || [])];
@@ -1667,19 +1678,23 @@ window.applyI18N = applyI18N;
     if (!items.length){ host.innerHTML = '<div style="font-family:var(--thai);font-size:12px;color:var(--fg-faint);">ยังไม่พบรูปแบบพิเศษ · 無格局</div>'; return; }
     host.innerHTML = '<div style="font-family:var(--thai);font-size:12px;letter-spacing:.03em;color:var(--gold);margin-bottom:4px">รูปแบบพิเศษ · 格局</div>' +
       items.map(f => {
+        const isContext = qimenFormationIsContextOnly(f);
         const q = f.quality || 'neutral';
-        const color = q==='good' ? '#2ea043' : q==='bad' ? '#d96650' : 'var(--gold)';
+        const color = isContext ? 'var(--fg-faint)' : q==='good' ? '#2ea043' : q==='bad' ? '#d96650' : 'var(--gold)';
         const nameTh = f.name_th || f.formation_code || '—';
         const nameZh = f.name_zh || '';
         const rawNote = f.note || f.reason || '';
         const note = String(rawNote).includes('Weak signal only')
           ? 'เป็นสัญญาณอ่อนเท่านั้น · ต้องอ่านร่วมกับประตู ดาว เทพ และก้านในวังจริง'
-          : rawNote;
+          : isContext
+            ? `${rawNote || 'ใช้ดูเป็นข้อมูลประกอบเท่านั้น'} · อ่านประกอบเท่านั้น`
+            : rawNote;
         const scope = f.scope ? `(${f.scope}${f.scope_ref ? ' ' + f.scope_ref : ''})` : '';
         return `<div style="display:flex;flex-direction:column;gap:3px;padding:8px 10px;background:var(--bg);border-left:3px solid ${color};border-radius:6px">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-family:var(--thai);font-size:13px;color:var(--fg);font-weight:600">
             <span>${nameTh}</span>
             ${nameZh ? `<span class="tc" style="font-family:var(--tc);color:${color}">${nameZh}</span>` : ''}
+            ${isContext ? '<span style="font-family:var(--thai);font-size:10px;color:var(--fg-faint);font-weight:500">อ่านประกอบเท่านั้น</span>' : ''}
             <span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--fg-faint);text-transform:uppercase;margin-left:auto">${scope}</span>
           </div>
           ${note ? `<div style="font-family:var(--thai);font-size:11px;color:var(--fg-soft);line-height:1.5">${note}</div>`:''}
@@ -1731,8 +1746,11 @@ window.applyI18N = applyI18N;
       const nameTh = f.name_th || 'รูปเกมพิเศษ';
       const nameZh = f.name_zh || f.formation_code || '';
       const q = String(f.quality || f.base_quality || '').toLowerCase();
-      const tone = q.includes('bad') || q.includes('inauspicious') ? 'ต้องระวังเป็นพิเศษ' : q.includes('good') || q.includes('auspicious') ? 'ใช้เป็นแรงเสริม' : 'อ่านร่วมกับประตู ดาว เทพ';
-      rows.push(`<li><b>${qmEsc(nameTh)} ${nameZh ? `<span class="tc">${qmEsc(nameZh)}</span>` : ''}</b> · ${qmEsc(tone)}</li>`);
+      const tone = qimenFormationIsContextOnly(f)
+        ? 'อ่านประกอบเท่านั้น'
+        : q.includes('bad') || q.includes('inauspicious') ? 'ต้องระวังเป็นพิเศษ' : q.includes('good') || q.includes('auspicious') ? 'ใช้เป็นแรงเสริม' : 'อ่านร่วมกับประตู ดาว เทพ';
+      const note = f.note_th || f.note || '';
+      rows.push(`<li><b>${qmEsc(nameTh)} ${nameZh ? `<span class="tc">${qmEsc(nameZh)}</span>` : ''}</b> · ${qmEsc(tone)}${note && qimenFormationIsContextOnly(f) ? ` · ${qmEsc(note)}` : ''}</li>`);
     });
     if (!rows.length) return '';
     return `<div class="qm-detail-extra"><h5>สถานะเสริมของวังนี้ · 標記</h5><ul>${rows.join('')}</ul></div>`;

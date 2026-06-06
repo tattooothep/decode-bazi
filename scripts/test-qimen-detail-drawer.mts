@@ -97,6 +97,17 @@ assertNotHas("s.source_id || s.title_zh", "raw stem source id fallback");
 assertNotHas("item?.source || item?.source_ref || item?.source_id", "raw source id fallback");
 assertNotHas("item.note || item.reason", "raw P0 note/reason fallback");
 assertNotHas("r.label_th || r.kind", "raw yongshen kind fallback");
+assertHas("function qimenTraceIsContextOnly", "context-only trace helper");
+assertHas("item?.verdict_allowed === false", "frontend respects verdict_allowed=false");
+assertHas("!includeContext && qimenTraceIsContextOnly(item)", "quick/grid skip context-only trace");
+assertHas("p?.p0_flags_verdict_allowed !== false", "quick/grid do not fall back to disabled p0_flags");
+assertHas("qimenP0SignalsForPalace(p, last, { includeContext: true })", "pro detail can still show context-only trace");
+assertHas("function qimenFormationIsContextOnly", "context-only formation helper");
+assertHas("!qimenFormationIsContextOnly(f)", "grid skips context-only formations");
+assertHas("const isContext = qimenFormationIsContextOnly(f)", "formation list detects context-only rows");
+assertHas("const color = isContext ? 'var(--fg-faint)'", "formation list neutralizes context-only color");
+assertHas("rawNote || 'ใช้ดูเป็นข้อมูลประกอบเท่านั้น'", "formation list has context-only fallback note");
+assertHas("อ่านประกอบเท่านั้น", "detail labels context-only formations as context");
 
 for (const text of ["สถานะอ่านเร็ว", "ต้องเช็กต่อ", "คะแนนระบบ", "อ่านวังนี้แบบง่าย", "beginner_reading"]) {
   assert(!renderPalaces.includes(text), `renderPalaces should not include long detail text: ${text}`);
