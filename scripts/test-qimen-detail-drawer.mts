@@ -51,12 +51,17 @@ const p0Detail = functionBlock("buildP0SourceTraceHtml");
 const detail = functionBlock("renderCurrentDetail");
 const context = functionBlock("renderQimenContext");
 const palaceExtra = functionBlock("buildPalaceExtraHtml");
+const termGuide = functionBlock("buildPalaceTermGuideHtml");
 const chartContextDetail = functionBlock("buildChartContextDetailHtml");
 const chartContextDetailBody = chartContextDetail.split("/* ─")[0];
 const branchTokens = functionBlock("qmBranchTokens");
 const branchDisplay = functionBlock("qmBranchDisplay");
 const branchValues = functionBlock("qmBranchValues");
 const palaceHasBranch = functionBlock("palaceHasAnyBranch");
+const verdictStart = detail.indexOf('<div class="verdict-card');
+assert(verdictStart >= 0, "missing verdict card block");
+const verdictEnd = detail.indexOf('<div class="detail-row">', verdictStart);
+const verdictCard = detail.slice(verdictStart, verdictEnd >= 0 ? verdictEnd : detail.length);
 
 const order = [
   "สถานะอ่านเร็ว",
@@ -93,6 +98,14 @@ assertHas("function qmBranchDisplay", "Thai-first branch fallback display helper
 assertHas("function qmStemLabel", "Thai-first stem label helper");
 assertHas("function qmPillarDisplay", "Thai-first four-pillar display helper");
 assertHas("function qmXiuDisplay", "Thai-first 28 mansions display helper");
+assertHas("function qmBriefThaiText", "Thai brief text helper exists");
+assertHas("function buildPalaceTermGuideHtml", "main layer term guide helper exists");
+assertHas("อ่านสามชั้นหลัก · 門星神", "main layer guide title is Thai-first");
+assertHas("คำอธิบายเต็มของสามชั้น · 全文", "main layer full text is tucked into details");
+assertHas("บทบาทประตู <span class=\"tc\">門用</span>", "main layer full text keeps door role");
+assertHas("วิธีใช้ประตู <span class=\"tc\">門法</span>", "main layer full text keeps door action advice");
+assertHas("คำแนะนำเทพ <span class=\"tc\">神用</span>", "main layer full text keeps deity advice");
+assertHas("ประตูบอกทางของเรื่อง ดาวบอกแรงของงาน เทพบอกคน/กลยุทธ์", "main layer caveat explains roles plainly");
 assertHas("function buildChartContextDetailHtml", "chart context detail helper exists");
 assertHas("บริบทเวลาของผังนี้ · 全盤時間", "chart context detail title is Thai-first");
 assertHas("วัน/ยามปะทะ 日時沖", "context clash label uses traditional Chinese");
@@ -120,6 +133,18 @@ assertBlockHas(palaceExtra, "qmBranchDisplay(chart.sky_horse?.day?.branch, chart
 assertBlockHas(palaceExtra, "qmBranchDisplay(chart.nobleman?.day?.branches, chart.nobleman_day_zh)", "detail nobleman uses fallback branch display");
 assertBlockHas(palaceExtra, "palaceHasAnyBranch(p, [chart.nobleman?.day?.branches, chart.nobleman_day_zh])", "detail nobleman match does not let empty direct arrays suppress fallback");
 assertBlockHas(palaceExtra, "qmBranchDisplay(chart.clash?.day?.branch, chart.day_clash_zh)", "detail clash uses fallback branch display");
+assertBlockHas(termGuide, "p?.door_situation_role_th", "term guide reads door situation role Thai");
+assertBlockHas(termGuide, "p?.door_action_advice_th", "term guide reads door action advice Thai");
+assertBlockHas(termGuide, "p?.door_description_th", "term guide reads door description Thai as fallback/full text");
+assertBlockHas(termGuide, "p?.star_description_th", "term guide reads star description Thai");
+assertBlockHas(termGuide, "p?.deity_advice_th", "term guide reads deity advice Thai");
+assertBlockHas(termGuide, "p?.deity_description_th", "term guide keeps deity full text in details");
+assertBlockHas(termGuide, "nameTh ? qmEsc(nameTh) : ''", "term guide escapes Thai term names");
+assertBlockHas(termGuide, "qmBriefThaiText(x, 118)", "term guide bounds long prose");
+assertBlockHas(termGuide, "qmEsc(", "term guide escapes payload text");
+assertBlockNotHas(termGuide, "door_code", "term guide must not use door code as prose fallback");
+assertBlockNotHas(termGuide, "star_code", "term guide must not use star code as prose fallback");
+assertBlockNotHas(termGuide, "deity_code", "term guide must not use deity code as prose fallback");
 assertBlockHas(chartContextDetail, "const chart = last?.chart || {}", "chart context detail reads chart from last packet");
 assertBlockHas(chartContextDetail, "qmPillarDisplay(p)", "chart context detail renders four pillars with Thai-first helper");
 assertBlockHas(chartContextDetail, "qmBranchDisplay(chart.voids?.day, chart.void_day_zh, chart.voidDayZh)", "chart context detail void day uses fallback branch display");
@@ -129,13 +154,23 @@ assertBlockHas(chartContextDetail, "qmBranchDisplay(chart.clash?.day?.branch, ch
 assertBlockHas(chartContextDetail, "chart.twenty_eight || chart.twentyEight || chart.xiu", "chart context detail supports 28 mansion aliases");
 assertBlockHas(chartContextDetail, "qmXiuDisplay(xiu)", "chart context detail renders 28 mansions with Thai-first helper");
 assertBlockHas(chartContextDetail, "ไม่ใช่คำตัดสินเฉพาะวังนี้", "chart context detail caveat keeps chart context separate from palace verdict");
+assertBlockHas(detail, "quickHtml + buildPalaceTermGuideHtml(p) + buildPalaceReadingGuideHtml", "detail shows main layer guide immediately after quick read");
 assertBlockHas(detail, "buildChartContextDetailHtml(last) + buildPalaceExtraHtml(p, last)", "detail shows chart context before palace-specific markers");
+assertBlockNotHas(detail, "const engineWhy =", "detail no longer builds long engineWhy for verdict card");
+assertBlockHas(detail, "const doorRole  = p.door_situation_role_th || ''", "detail use row only reads intended Thai door role");
+assertBlockNotHas(detail, "pick('door_zh',   'door_situation_role')", "detail use row must not fall back to door zh for prose");
+assertBlockNotHas(verdictCard, "engineWhy", "verdict card must not render multiline door/star/deity explanations");
+assertBlockNotHas(verdictCard, "doorDesc", "verdict card must not render door description");
+assertBlockNotHas(verdictCard, "starDesc", "verdict card must not render star description");
+assertBlockNotHas(verdictCard, "deityAdv", "verdict card must not render deity advice");
+assertBlockNotHas(verdictCard, "white-space:pre-line", "verdict card must not render multiline engine prose");
 assertHas("qmBranchDisplay(chart.voids?.hour, chart.void_hour_zh, chart.voidHourZh, chart.voids?.day, chart.void_day_zh, chart.voidDayZh)", "top void pill uses direct packet fields before fallback branch display");
 assertBlockNotHas(renderPalaces, "qmBranchLabel(", "palace grid must not use long Thai branch labels");
 assertBlockNotHas(renderPalaces, "qmBranchDisplay(", "palace grid must not use long fallback branch labels");
 assertBlockNotHas(renderPalaces, "qmPillarDisplay(", "palace grid must not render four-pillar text");
 assertBlockNotHas(renderPalaces, "buildChartContextDetailHtml(", "palace grid must not render chart context detail");
 assertBlockNotHas(renderPalaces, "buildPalaceExtraHtml(", "palace grid must not render palace extra detail");
+assertBlockNotHas(renderPalaces, "buildPalaceTermGuideHtml(", "palace grid must not render main layer term guide");
 assertBlockNotHas(renderPalaces, "buildQuickReadHtml(", "palace grid must not render quick read detail");
 assertBlockNotHas(renderPalaces, "buildPalaceReadingGuideHtml(", "palace grid must not render reading guide detail");
 assertBlockNotHas(renderPalaces, "buildP0SourceTraceHtml(", "palace grid must not render source trace detail");
@@ -143,6 +178,12 @@ assertBlockNotHas(renderPalaces, "buildStemResponseHtml(", "palace grid must not
 assertBlockNotHas(renderPalaces, "door_description", "palace grid must not render long door descriptions");
 assertBlockNotHas(renderPalaces, "star_description", "palace grid must not render long star descriptions");
 assertBlockNotHas(renderPalaces, "deity_advice", "palace grid must not render long deity advice");
+assertBlockNotHas(renderPalaces, "door_action_advice", "palace grid must not render long door action advice");
+assertBlockNotHas(renderPalaces, "door_situation_role", "palace grid must not render long door role");
+assertBlockNotHas(renderPalaces, "stem_combo_description", "palace grid must not render long stem combo description");
+assertBlockNotHas(renderPalaces, "door_description_th", "palace grid must not render Thai door descriptions");
+assertBlockNotHas(renderPalaces, "star_description_th", "palace grid must not render Thai star descriptions");
+assertBlockNotHas(renderPalaces, "deity_advice_th", "palace grid must not render Thai deity advice");
 assertHas("function qimenStemIsContextOnly", "stem context-only helper exists");
 assertBlockHas(stemContext, "engine_readiness?.stem_response_policy === 'context_only'", "stem helper respects engine readiness policy");
 assertHas("function qimenStemContextOnlyText", "stem context-only Thai fallback helper exists");
@@ -241,10 +282,12 @@ for (const text of ["สถานะอ่านเร็ว", "ต้องเ�
 assert(!sourceLabel.includes("file_path"), "qmSourceLabel must not expose file_path");
 for (const mutation of ["p.score =", "p.display_score =", "p.beginner_reading =", "last.palaces =", "last.chart ="]) {
   assert(!guide.includes(mutation), `detail guide must not mutate payload: ${mutation}`);
+  assert(!termGuide.includes(mutation), `term guide must not mutate payload: ${mutation}`);
   assert(!chartContextDetailBody.includes(mutation), `chart context detail must not mutate payload: ${mutation}`);
   assert(!palaceExtra.includes(mutation), `palace extra detail must not mutate payload: ${mutation}`);
 }
-for (const forbidden of ["fetch(", "/api/qimen", "window._qimenLast ="]) {
+for (const forbidden of ["fetch(", "/api/qimen", "/api/chart", "XMLHttpRequest", "sendBeacon", "window._qimenLast ="]) {
+  assert(!termGuide.includes(forbidden), `term guide must stay display-only: ${forbidden}`);
   assert(!chartContextDetailBody.includes(forbidden), `chart context detail must stay display-only: ${forbidden}`);
   assert(!palaceExtra.includes(forbidden), `palace extra detail must stay display-only: ${forbidden}`);
 }
