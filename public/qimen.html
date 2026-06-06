@@ -1278,6 +1278,9 @@ window.applyI18N = applyI18N;
     const seen = new Set();
     const add = v => {
       if (Array.isArray(v)) return v.forEach(add);
+      if (v && typeof v === 'object') {
+        return [v.branch_zh, v.branch, v.branches_zh, v.branches, v.branch_codes, v.void_zh].forEach(add);
+      }
       const s = String(v == null ? '' : v);
       for (const ch of s) {
         if (!BRANCH_TH[ch] || seen.has(ch)) continue;
@@ -1296,6 +1299,13 @@ window.applyI18N = applyI18N;
   }
   function qmBranchList(value, sep=' · '){
     return qmBranchTokens(value).map(b => `${BRANCH_TH[b]} ${b}`).join(sep);
+  }
+  function qmBranchDisplay(){
+    for (const value of arguments) {
+      const label = qmBranchList(value);
+      if (label) return label;
+    }
+    return '';
   }
   function qmStemLabel(value){
     const stem = String(value == null ? '' : value).trim().charAt(0);
@@ -1325,20 +1335,13 @@ window.applyI18N = applyI18N;
     };
   }
   function qmBranchValues(source){
-    const out = new Set();
-    const add = v => {
-      if (Array.isArray(v)) return v.forEach(add);
-      const s = String(v == null ? '' : v);
-      BRANCHES_ZH.forEach(b => { if (s.includes(b)) out.add(b); });
-    };
-    add(source);
-    return [...out];
+    return qmBranchTokens(source);
   }
   function palaceBranches(p){
     return qmBranchValues([p?.branches_zh, p?.branch_codes, p?.earth_stems_all, p?.heaven_stems_all]);
   }
   function palaceHasAnyBranch(p, branches){
-    const want = new Set((branches || []).filter(Boolean));
+    const want = new Set(qmBranchValues(branches));
     if (!want.size) return false;
     return palaceBranches(p).some(b => want.has(b));
   }
@@ -1623,14 +1626,14 @@ window.applyI18N = applyI18N;
     }
     const grid = document.getElementById('qm-context-grid');
     if (!grid) return;
-    const voidDay = qmBranchList(chart?.voids?.day || chart?.void_day_zh);
-    const voidHour = qmBranchList(chart?.voids?.hour || chart?.void_hour_zh);
-    const horseDay = qmBranchLabel(chart?.sky_horse?.day?.branch || chart?.traveling_horse_zh || '');
-    const horseHour = qmBranchLabel(chart?.sky_horse?.hour?.branch || '');
-    const nobleDay = qmBranchList(chart?.nobleman?.day?.branches);
-    const nobleHour = qmBranchList(chart?.nobleman?.hour?.branches);
-    const clashDay = qmBranchLabel(chart?.clash?.day?.branch || '');
-    const clashHour = qmBranchLabel(chart?.clash?.hour?.branch || '');
+    const voidDay = qmBranchDisplay(chart?.voids?.day, chart?.void_day_zh, chart?.voidDayZh);
+    const voidHour = qmBranchDisplay(chart?.voids?.hour, chart?.void_hour_zh, chart?.voidHourZh);
+    const horseDay = qmBranchDisplay(chart?.sky_horse?.day?.branch, chart?.skyHorse?.day?.branch, chart?.traveling_horse_day_zh, chart?.traveling_horse_zh);
+    const horseHour = qmBranchDisplay(chart?.sky_horse?.hour?.branch, chart?.skyHorse?.hour?.branch, chart?.traveling_horse_hour_zh);
+    const nobleDay = qmBranchDisplay(chart?.nobleman?.day?.branches, chart?.nobleman_day_zh);
+    const nobleHour = qmBranchDisplay(chart?.nobleman?.hour?.branches, chart?.nobleman_hour_zh);
+    const clashDay = qmBranchDisplay(chart?.clash?.day?.branch, chart?.day_clash_zh);
+    const clashHour = qmBranchDisplay(chart?.clash?.hour?.branch, chart?.hour_clash_zh);
     const xiu = chart?.twenty_eight || {};
     const xiuLabel = qmXiuDisplay(xiu);
     const selector = chart?.yongshen_selector || qimenYongshenSelector(window._qimenLast);
@@ -1845,29 +1848,29 @@ window.applyI18N = applyI18N;
       rows.push(`<li><b>${qmEsc(io.th)} <span class="tc">${qmEsc(io.zh)}</span></b> · ใช้แยกเรื่องใกล้ตัว/ในองค์กร กับเรื่องภายนอก/ตลาด/เดินทาง</li>`);
     }
     const voidParts = [];
-    if (p.is_void_day) voidParts.push(`วัน ${qmBranchList(chart.voids?.day || chart.void_day_zh) || '—'}`);
-    if (p.is_void_hour) voidParts.push(`ยาม ${qmBranchList(chart.voids?.hour || chart.void_hour_zh) || '—'}`);
-    if (p.is_void_month) voidParts.push(`เดือน ${qmBranchList(chart.voids?.month || chart.void_month_zh) || '—'}`);
-    if (p.is_void_year) voidParts.push(`ปี ${qmBranchList(chart.voids?.year || chart.void_year_zh) || '—'}`);
+    if (p.is_void_day) voidParts.push(`วัน ${qmBranchDisplay(chart.voids?.day, chart.void_day_zh, chart.voidDayZh) || '—'}`);
+    if (p.is_void_hour) voidParts.push(`ยาม ${qmBranchDisplay(chart.voids?.hour, chart.void_hour_zh, chart.voidHourZh) || '—'}`);
+    if (p.is_void_month) voidParts.push(`เดือน ${qmBranchDisplay(chart.voids?.month, chart.void_month_zh, chart.voidMonthZh) || '—'}`);
+    if (p.is_void_year) voidParts.push(`ปี ${qmBranchDisplay(chart.voids?.year, chart.void_year_zh, chart.voidYearZh) || '—'}`);
     if (voidParts.length) {
       rows.push(`<li><b>ช่องว่าง <span class="tc">空亡</span></b> · ${qmEsc(voidParts.join(' · '))} · พลังยังไม่เต็ม เรื่องอาจช้า ว่าง หรือผลไม่ชัด</li>`);
     }
     const horseHits = [];
-    if (palaceHasAnyBranch(p, [chart.sky_horse?.day?.branch])) horseHits.push(`วัน ${qmBranchLabel(chart.sky_horse?.day?.branch)}`);
-    if (palaceHasAnyBranch(p, [chart.sky_horse?.hour?.branch, chart.traveling_horse_zh])) horseHits.push(`ยาม ${qmBranchLabel(chart.sky_horse?.hour?.branch || chart.traveling_horse_zh)}`);
-    if (p.is_traveling_horse && !horseHits.length) horseHits.push(qmBranchLabel(chart.traveling_horse_zh) || '馬');
+    if (palaceHasAnyBranch(p, [chart.sky_horse?.day?.branch, chart.skyHorse?.day?.branch, chart.traveling_horse_day_zh])) horseHits.push(`วัน ${qmBranchDisplay(chart.sky_horse?.day?.branch, chart.skyHorse?.day?.branch, chart.traveling_horse_day_zh) || '—'}`);
+    if (palaceHasAnyBranch(p, [chart.sky_horse?.hour?.branch, chart.skyHorse?.hour?.branch, chart.traveling_horse_hour_zh, chart.traveling_horse_zh])) horseHits.push(`ยาม ${qmBranchDisplay(chart.sky_horse?.hour?.branch, chart.skyHorse?.hour?.branch, chart.traveling_horse_hour_zh, chart.traveling_horse_zh) || '—'}`);
+    if (p.is_traveling_horse && !horseHits.length) horseHits.push(qmBranchDisplay(chart.traveling_horse_zh) || '—');
     if (horseHits.length) {
       rows.push(`<li><b>ม้าเดินทาง <span class="tc">驛馬</span></b> · ${qmEsc(horseHits.join(' · '))} · ใช้เป็นแรงเสริมถ้าเรื่องที่ถามเกี่ยวกับการเคลื่อนไหว เดินทาง ติดต่อ หรือเร่งให้เรื่องเดิน</li>`);
     }
     const nobleHits = [];
-    if (palaceHasAnyBranch(p, chart.nobleman?.day?.branches || [])) nobleHits.push(`วัน ${qmBranchList(chart.nobleman?.day?.branches)}`);
-    if (palaceHasAnyBranch(p, chart.nobleman?.hour?.branches || [])) nobleHits.push(`ยาม ${qmBranchList(chart.nobleman?.hour?.branches)}`);
+    if (palaceHasAnyBranch(p, [chart.nobleman?.day?.branches, chart.nobleman_day_zh])) nobleHits.push(`วัน ${qmBranchDisplay(chart.nobleman?.day?.branches, chart.nobleman_day_zh) || '—'}`);
+    if (palaceHasAnyBranch(p, [chart.nobleman?.hour?.branches, chart.nobleman_hour_zh])) nobleHits.push(`ยาม ${qmBranchDisplay(chart.nobleman?.hour?.branches, chart.nobleman_hour_zh) || '—'}`);
     if (nobleHits.length) {
       rows.push(`<li><b>คนช่วย <span class="tc">貴人</span></b> · ${qmEsc(nobleHits.join(' · '))} · ใช้เป็นแรงเสริมถ้าเรื่องที่ถามเกี่ยวกับผู้ใหญ่ คำแนะนำ หรือแรงสนับสนุน</li>`);
     }
     const clashHits = [];
-    if (palaceHasAnyBranch(p, [chart.clash?.day?.branch])) clashHits.push(`วันปะทะ ${qmBranchLabel(chart.clash?.day?.branch)}`);
-    if (palaceHasAnyBranch(p, [chart.clash?.hour?.branch])) clashHits.push(`ยามปะทะ ${qmBranchLabel(chart.clash?.hour?.branch)}`);
+    if (palaceHasAnyBranch(p, [chart.clash?.day?.branch, chart.day_clash_zh])) clashHits.push(`วันปะทะ ${qmBranchDisplay(chart.clash?.day?.branch, chart.day_clash_zh) || '—'}`);
+    if (palaceHasAnyBranch(p, [chart.clash?.hour?.branch, chart.hour_clash_zh])) clashHits.push(`ยามปะทะ ${qmBranchDisplay(chart.clash?.hour?.branch, chart.hour_clash_zh) || '—'}`);
     if (clashHits.length) {
       rows.push(`<li><b>ปะทะ <span class="tc">冲</span></b> · ${qmEsc(clashHits.join(' · '))} · ใช้เป็นสัญญาณระวัง ไม่ใช่คำตัดสินดวงเจ้าของงาน</li>`);
     }
@@ -2088,9 +2091,9 @@ window.applyI18N = applyI18N;
     _set('qm-pill-shi',  qimenTermLabel(leadDoorTh, leadDoorZh, shiPalaceId));
     const xunLabel = chart.xun_hour_zh || chart.xun_leader || chart.xun_zh || '—';
     _set('qm-pill-xun',  xunLabel === '—' ? '—' : (String(xunLabel).includes('旬') ? xunLabel : xunLabel + '旬'));
-    const voids = chart.void_hour_zh || chart.void_day_zh;
+    const voids = qmBranchDisplay(chart.voids?.hour, chart.void_hour_zh, chart.voidHourZh, chart.voids?.day, chart.void_day_zh, chart.voidDayZh);
     const voidPalaces = Array.isArray(chart.kong_wang_palaces) && chart.kong_wang_palaces.length ? `宮 ${chart.kong_wang_palaces.join('·')}` : '';
-    _set('qm-pill-void', Array.isArray(voids) ? voids.join('') : (voids || voidPalaces || '—'));
+    _set('qm-pill-void', voids || voidPalaces || '—');
     /* update header datetime ภาษาไทย */
     const h = document.getElementById('qm-datetime-th');
     if (h && window._qimenInput){
