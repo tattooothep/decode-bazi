@@ -16,6 +16,14 @@ function assertNotHas(text: string, label: string) {
   assert(!html.includes(text), `unexpected ${label}: ${text}`);
 }
 
+function assertBlockHas(block: string, text: string, label: string) {
+  assert(block.includes(text), `missing ${label}: ${text}`);
+}
+
+function assertBlockNotHas(block: string, text: string, label: string) {
+  assert(!block.includes(text), `unexpected ${label}: ${text}`);
+}
+
 function functionBlock(name: string): string {
   const start = html.indexOf(`function ${name}`);
   assert(start >= 0, `missing function ${name}`);
@@ -36,6 +44,10 @@ const guide = functionBlock("buildPalaceReadingGuideHtml");
 const guideHtml = guide.slice(guide.indexOf("อ่านวังนี้แบบง่าย"));
 const renderPalaces = functionBlock("renderPalaces");
 const sourceLabel = functionBlock("qmSourceLabel");
+const quickRead = functionBlock("buildQuickReadHtml");
+const stemDetail = functionBlock("buildStemResponseHtml");
+const p0Detail = functionBlock("buildP0SourceTraceHtml");
+const detail = functionBlock("renderCurrentDetail");
 
 const order = [
   "สถานะอ่านเร็ว",
@@ -63,6 +75,14 @@ assertHas("ยังไม่พบสัญญาณหนัก", "Thai signal
 assertHas("สัญญาณเสริมต่อ", "Thai signal follow-up copy");
 assertHas("ระบบหาวังที่เลือกหมายเลข", "Thai palace missing copy");
 assertHas("ก้านฟ้า ${p?.heaven_stem_zh", "Thai-first stem fallback");
+assertHas("function qimenStemIsContextOnly", "stem context-only helper exists");
+assertBlockHas(quickRead, "const stemResponse = p?.stem_response || null", "quick read keeps real stem_response object");
+assertBlockNotHas(quickRead, "p?.stem_response?.is_source_governed", "quick read must not hide existing non-source-governed stem_response");
+assertBlockHas(quickRead, "qimenStemIsContextOnly(stemResponse)", "quick read uses context-only stem branch");
+assertBlockHas(quickRead, "stemResponse.title_th || stemResponse.status_th", "quick read renders stem title/status Thai-first");
+assertBlockHas(quickRead, "stemResponse.beginner_th || stemResponse.status_th", "quick read renders beginner/status Thai-first");
+assertBlockHas(quickRead, "stemResponse.caveat_th", "quick read renders stem caveat when stem_response exists");
+assertBlockHas(stemDetail, "r.caveat_th ||", "stem detail keeps caveat Thai-first");
 assertHas("qimenScoreLevelText(p)", "localized score level formatter");
 assertHas("ตัวตรวจคลาสสิก", "Thai source key label");
 assertHas("สัญญาณเสริมระบบ", "Thai p0 flag source label");
@@ -108,6 +128,20 @@ assertHas("const isContext = qimenFormationIsContextOnly(f)", "formation list de
 assertHas("const color = isContext ? 'var(--fg-faint)'", "formation list neutralizes context-only color");
 assertHas("rawNote || 'ใช้ดูเป็นข้อมูลประกอบเท่านั้น'", "formation list has context-only fallback note");
 assertHas("อ่านประกอบเท่านั้น", "detail labels context-only formations as context");
+assertBlockHas(p0Detail, "const isContext = qimenTraceIsContextOnly(item)", "P0 detail detects context-only trace");
+assertBlockHas(p0Detail, "const toneTh = isContext ? 'อ่านประกอบเท่านั้น'", "P0 detail labels context-only trace clearly");
+assertHas("ประตูนำ · 值使", "user-visible zhi-shi uses 值使");
+assertNotHas("ประตูนำ(使=直使)", "old visible zhi-shi legend");
+assertNotHas("Lead Door (直使)", "old English visible zhi-shi legend");
+assertNotHas("使 = 直使", "old Chinese visible zhi-shi legend");
+assertNotHas("直使", "old incorrect zhi-shi glyph");
+assertNotHas("直符", "old incorrect zhi-fu glyph");
+assertBlockHas(detail, "ประตูนำ <span class=\"tc\" style=\"color:inherit\">值使</span>", "detail zhi-shi marker is Thai-first");
+assertBlockHas(detail, "ดาวนำ <span class=\"tc\" style=\"color:inherit\">值符</span>", "detail zhi-fu marker is Thai-first");
+assertBlockHas(detail, "รายละเอียดวัง · 詳", "detail heading is Thai-first");
+assertBlockHas(detail, "ฟ้า <span class=\"tc\">", "heaven stem row is Thai-first");
+assertBlockHas(detail, "ดิน <span class=\"tc\">", "earth stem row is Thai-first");
+assertNotHas("ยังไม่มีคำตัดสินจากตำราในระบบ", "old stem fallback hides context-only API copy");
 
 for (const text of ["สถานะอ่านเร็ว", "ต้องเช็กต่อ", "คะแนนระบบ", "อ่านวังนี้แบบง่าย", "beginner_reading"]) {
   assert(!renderPalaces.includes(text), `renderPalaces should not include long detail text: ${text}`);

@@ -706,7 +706,7 @@
       <div class="palace-legend">
         <span><i style="background:var(--good);"></i><span data-i18n="q.legend.good">ประตูมงคล 3 (三吉門) 開·休·生</span></span>
         <span><i style="background:var(--bad);"></i><span data-i18n="q.legend.bad">ประตูร้าย 5 (五凶門) 死·驚·杜·傷·景</span></span>
-        <span><i style="background:var(--gold);"></i><span data-i18n="q.legend.shi">ประตูนำ(使=直使) · เงา(影)=ตรงข้าม</span></span>
+        <span><i style="background:var(--gold);"></i><span data-i18n="q.legend.shi">ประตูนำ(使=值使) · เงา(影)=ตรงข้าม</span></span>
       </div>
     </div>
 
@@ -874,7 +874,7 @@ window.HK_I18N = {
   /* palace legend */
   'q.legend.good': { th:'ประตูมงคล 3 (三吉門) 開·休·生', en:'3 Good Doors (三吉門) 開·休·生', zh:'三吉門 開·休·生' },
   'q.legend.bad':  { th:'ประตูร้าย 5 (五凶門) 死·驚·杜·傷·景', en:'5 Bad Doors (五凶門) 死·驚·杜·傷·景', zh:'五凶門 死·驚·杜·傷·景' },
-  'q.legend.shi':  { th:'ประตูนำ(使=直使) · เงา(影)=ตรงข้าม', en:'使 = Lead Door (直使) · 影 = opposite', zh:'使 = 直使 · 影 = 對宮' },
+  'q.legend.shi':  { th:'ประตูนำ(使=值使) · เงา(影)=ตรงข้าม', en:'使 = Lead Door (值使) · 影 = opposite', zh:'使 = 值使 · 影 = 對宮' },
   /* side tab */
   'q.tab.detail':  { th:'รายละเอียดช่อง · 詳', en:'PALACE DETAIL · 詳', zh:'宮位詳情 · 詳' },
   /* search panel · 30 พ.ค. */
@@ -1135,6 +1135,10 @@ window.applyI18N = applyI18N;
     if (cls === 'bad') return { th:'เลี่ยง', zh:'避用' };
     return { th:'ระวัง', zh:'慎用' };
   }
+  function qimenStemIsContextOnly(r){
+    const s = String(r?.quality || r?.effective_quality || '').toLowerCase();
+    return r?.verdict_allowed === false || s === 'context_only' || s === 'context';
+  }
   function qimenFlagMeaning(item){
     const label = qmTraceLabel(item || {});
     const text = `${label.code} ${label.th} ${label.zh} ${item?.badge || ''}`.toUpperCase();
@@ -1174,9 +1178,15 @@ window.applyI18N = applyI18N;
     const door = qmNamedTerm('ประตู', p?.door_name_th, p?.door_zh);
     const star = qmNamedTerm('ดาว', p?.star_name_th, p?.star_zh);
     const deity = qmNamedTerm('เทพ', p?.deity_name_th, p?.deity_zh);
-    const stem = p?.stem_response?.is_source_governed
-      ? `${p.stem_response.title_th || 'ปฏิกิริยาก้าน'} ${p.stem_response.title_zh || p.stem_response.notation_zh || ''} · ${p.stem_response.beginner_th || p.stem_response.status_th || ''}`
-      : `ก้านฟ้า ${p?.heaven_stem_zh || '·'} บวกก้านดิน ${p?.earth_stem_zh || '·'} · ${p?.heaven_stem_zh || '·'}加${p?.earth_stem_zh || '·'} · ยังไม่มีคำตัดสินจากตำราในระบบ`;
+    const stemResponse = p?.stem_response || null;
+    const stemContextOnly = qimenStemIsContextOnly(stemResponse);
+    const stemContextMain = stemResponse?.beginner_th || stemResponse?.status_th || '';
+    const stemContextCaveat = stemResponse?.caveat_th && stemResponse.caveat_th !== stemContextMain ? ` · ${stemResponse.caveat_th}` : '';
+    const stem = stemResponse?.is_source_governed
+      ? `${stemResponse.title_th || 'ปฏิกิริยาก้าน'} ${stemResponse.title_zh || stemResponse.notation_zh || ''} · ${stemResponse.beginner_th || stemResponse.status_th || ''}`
+      : stemContextOnly
+        ? `${stemResponse.title_th || stemResponse.status_th || 'ก้านฟ้าอ่านประกอบ'} ${stemResponse.title_zh || stemResponse.notation_zh || ''} · ${stemResponse.status_th || 'อ่านประกอบเท่านั้น'}${stemContextMain ? ' · '+stemContextMain : ''}${stemContextCaveat}`
+        : `ก้านฟ้า ${p?.heaven_stem_zh || '·'} บวกก้านดิน ${p?.earth_stem_zh || '·'} · ${p?.heaven_stem_zh || '·'}加${p?.earth_stem_zh || '·'} · ยังไม่มีข้อมูลก้านจากระบบ`;
     const flags = qimenBeginnerFlags(p, last);
     const flagChips = flags.length
       ? `<div class="qm-flag-chips">${flags.map(f => `<span class="qm-flag-chip ${qmEsc(f.tone)}" title="${qmEsc(f.why)}">${qmEsc(f.th)} <span class="tc">${qmEsc(f.zh)}</span></span>`).join('')}</div>`
@@ -1396,7 +1406,8 @@ window.applyI18N = applyI18N;
     const rows = signals.slice(0, 8).map(item => {
       const label = qmTraceLabel(item);
       const tone = qmTraceTone(item);
-      const toneTh = tone === 'good' ? 'แรงเสริม' : tone === 'bad' ? 'สัญญาณระวัง' : 'ตัวชี้วัด';
+      const isContext = qimenTraceIsContextOnly(item);
+      const toneTh = isContext ? 'อ่านประกอบเท่านั้น' : tone === 'good' ? 'แรงเสริม' : tone === 'bad' ? 'สัญญาณระวัง' : 'ตัวชี้วัด';
       const note = item.note_th || item.advice_th || item.reason_th || item.description_th || '';
       const src = item.source_label_th || qmTraceSourceLabel(item) || qmSourceLabel(item) || '';
       return `<li><b>${qmEsc(label.th)} ${label.zh ? `<span class="tc">${qmEsc(label.zh)}</span>` : ''}</b> · ${qmEsc(toneTh)}${note ? ` · ${qmEsc(note)}` : ''}${src ? ` · แหล่ง ${qmEsc(src)}` : ''}</li>`;
@@ -1626,7 +1637,7 @@ window.applyI18N = applyI18N;
       /* zhi_fu/zhi_shi markers (chart-level) */
       const isZhiFu = ch.zhi_fu_palace_id === p.palace_id;
       const isZhiShi = ch.zhi_shi_palace_id === p.palace_id;
-      const chartMk = (isZhiFu ? '<span class="fu-mk" title="直符">符</span>' : '') + (isZhiShi ? '<span class="shi-mk" title="值使">使</span>' : '');
+      const chartMk = (isZhiFu ? '<span class="fu-mk" title="ดาวนำ · 值符">符</span>' : '') + (isZhiShi ? '<span class="shi-mk" title="ประตูนำ · 值使">使</span>' : '');
       const p0Mk = renderP0GridBadges(qimenP0SignalsForPalace(p, window._qimenLast));
       const ysSelector = qimenYongshenSelector(window._qimenLast);
       const ysTargetIds = new Set((ysSelector?.target_palaces || []).map(x => Number(x.palace_id)));
@@ -1759,7 +1770,7 @@ window.applyI18N = applyI18N;
   /* ───────────────────────────────────────────────────────────────
    * Step 3 (22 พ.ค.) · renderCurrentDetail(palaceId)
    * เนื้อหา panel-detail มาจาก /api/qimen palace · 3 ภาษา TH/EN/ZH
-   * default palace = chart.zhi_fu_palace_id (ตำแหน่งของ 直符)
+   * default palace = chart.zhi_fu_palace_id (ตำแหน่งของ 值符)
    * ─────────────────────────────────────────────────────────────── */
   function renderCurrentDetail(palaceId){
     const host = document.getElementById('qm-detail-body');
@@ -1769,7 +1780,7 @@ window.applyI18N = applyI18N;
       return; /* loadQimen ยังไม่กลับ · ใช้ skeleton เดิม */
     }
     const lang = getCurrentLang();
-    /* default · ถ้าไม่ระบุ palaceId ให้ใช้ตำแหน่ง 直符 */
+    /* default · ถ้าไม่ระบุ palaceId ให้ใช้ตำแหน่ง 值符 */
     let pid = palaceId || window._qimenCurrentPalaceId
             || (last.chart && last.chart.zhi_fu_palace_id) || 1;
     let p = last.palaces.find(x => Number(x.palace_id) === Number(pid));
@@ -1832,8 +1843,8 @@ window.applyI18N = applyI18N;
     const isZhiFu = last.chart && last.chart.zhi_fu_palace_id === p.palace_id;
     const isZhiShi= last.chart && last.chart.zhi_shi_palace_id === p.palace_id;
     const marks = [];
-    if (isZhiFu)  marks.push('<span style="font-family:var(--tc);background:var(--gold);color:var(--bg);padding:1px 6px;border-radius:4px;font-size:11px">直符</span>');
-    if (isZhiShi) marks.push('<span style="font-family:var(--tc);background:var(--gold);color:var(--bg);padding:1px 6px;border-radius:4px;font-size:11px">直使</span>');
+    if (isZhiFu)  marks.push('<span style="font-family:var(--thai);background:var(--gold);color:var(--bg);padding:1px 6px;border-radius:4px;font-size:11px">ดาวนำ <span class="tc" style="color:inherit">值符</span></span>');
+    if (isZhiShi) marks.push('<span style="font-family:var(--thai);background:var(--gold);color:var(--bg);padding:1px 6px;border-radius:4px;font-size:11px">ประตูนำ <span class="tc" style="color:inherit">值使</span></span>');
     if (p.is_traveling_horse) marks.push('<span style="font-size:14px" title="馬星">🐎</span>');
     if (p.is_void_any) marks.push('<span style="font-family:var(--tc);font-size:11px;color:#d96650;padding:0 4px;border:1px solid #d96650;border-radius:3px">空</span>');
 
@@ -2047,7 +2058,7 @@ window.applyI18N = applyI18N;
       renderHeader(d.chart || {}, d.palaces || []);
       renderPalaces(d.palaces || []);
       renderFormations(d.stored_formations || [], d.compound_formations || [], d.source_formations || []);
-      /* Step 3 · render detail panel หลัง palaces พร้อม · default = 直符 palace */
+      /* Step 3 · render detail panel หลัง palaces พร้อม · default = 值符 palace */
       try { renderCurrentDetail(window._qimenCurrentPalaceId); }
       catch(eDt){
         console.warn('[qimen] detail render failed', eDt);
