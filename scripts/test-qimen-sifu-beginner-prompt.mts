@@ -20,6 +20,29 @@ function assert(condition: boolean, label: string) {
   if (!condition) throw new Error(label);
 }
 
+function functionBlock(name: string) {
+  const start = route.indexOf(`function ${name}`);
+  if (start < 0) throw new Error(`missing function block: ${name}`);
+  const brace = route.indexOf("{", start);
+  let depth = 0;
+  for (let i = brace; i < route.length; i++) {
+    if (route[i] === "{") depth++;
+    if (route[i] === "}") depth--;
+    if (depth === 0) return route.slice(start, i + 1);
+  }
+  throw new Error(`unterminated function block: ${name}`);
+}
+
+function assertBlockHas(block: string, needle: string, label: string) {
+  if (!block.includes(needle)) throw new Error(`missing ${label}: ${needle}`);
+}
+
+function assertBlockNotHas(block: string, needle: string, label: string) {
+  if (block.includes(needle)) throw new Error(`unexpected ${label}: ${needle}`);
+}
+
+const stemFormatter = functionBlock("formatStemResponse");
+
 assertHas("function formatBeginnerReading", "beginner formatter");
 assertHas("beginner_reading", "engine beginner_reading payload");
 assertHas("สถานะอ่านเร็ว 入門", "Thai-first beginner status");
@@ -41,6 +64,9 @@ assertHas("ประตู + ดาว + เทพ + ก้าน + flags/source
 assertHas("Engine packet คือ source of truth", "engine packet source-of-truth header");
 assertHas("อ่านจาก \"ผังเวลา (QiMen Chart)\" ก่อนเสมอ", "answer guard says chart first");
 assertHas("source packet มีไว้แปลความหมาย ไม่ใช่สร้างค่าผังใหม่", "source packet caveat");
+assertHas("ถ้า stem_response.verdict_allowed=false", "answer guard checks stem_response non-verdict");
+assertHas("ห้ามใช้ 十干克應 เป็นคำตัดสิน", "answer guard blocks context-only stem verdict");
+assertHas("ให้บอกว่าอ่านประกอบเท่านั้น", "answer guard tells Sifu to label context-only stem");
 assertHas("function selectedPalaceIdFromPayload", "selected palace payload helper");
 assertHas("วังที่ผู้ใช้เลือก · Selected Palace", "selected palace block");
 assertHas("ให้เริ่มจากวังที่ผู้ใช้เลือกนี้ก่อน", "selected palace answer contract");
@@ -51,6 +77,24 @@ assertHas("labelThZh(p.deity_name_th", "deity evidence included");
 assertHas("ก้านฟ้า ${p.heaven_stem_zh", "heaven stem evidence included");
 assertHas("ก้านดิน ${p.earth_stem_zh", "earth stem evidence included");
 assertHas("formatStemResponse(p.stem_response)", "stem response evidence included");
+assertHas("function qimenStemResponseIsContextOnly", "stem_response context-only helper");
+assertHas("verdict_allowed === false", "stem context-only detects verdict_allowed=false");
+assertHas("quality || stemResponse?.effective_quality", "stem context-only detects quality/effective_quality");
+assertHas("context_only", "stem context-only quality value");
+assertHas("function formatEngineReadiness", "engine readiness formatter");
+assertHas("stem_response_policy", "stem policy transmitted");
+assertHas("stemResponse.engine_readiness", "stem readiness transmitted");
+assertHas("stemResponse.caveat_th", "stem caveat transmitted");
+assertHas("verdict_allowed=false", "prompt carries verdict false");
+assertBlockHas(stemFormatter, "qimenStemResponseIsContextOnly(stemResponse)", "formatStemResponse uses context-only branch");
+assertBlockHas(stemFormatter, "stemResponse.title_th || stemResponse.status_th", "context-only stem uses Thai title/status");
+assertBlockHas(stemFormatter, "stemResponse.beginner_th || stemResponse.status_th", "context-only stem uses Thai beginner/status");
+assertBlockHas(stemFormatter, "stemResponse.caveat_th", "context-only stem includes Thai caveat");
+assertBlockHas(stemFormatter, "อ่านประกอบเท่านั้น", "context-only stem says read as context only");
+assertBlockHas(stemFormatter, "ไม่ใช่คำตัดสิน", "context-only stem says not a verdict");
+assertBlockHas(stemFormatter, "stemResponse.is_source_governed", "hour source-governed route preserved");
+assertBlockHas(stemFormatter, "sourceRefText(stemResponse.source_trace || stemResponse.source_refs", "hour source-governed refs preserved");
+assertBlockNotHas(stemFormatter, "ยังไม่มี source-governed verdict", "stem formatter must not hide real context-only stem_response");
 assertHas("formatPalaceSourceFlags(p)", "source flags evidence included");
 assertHas("qimenToneThai", "Thai tone mapper");
 assertHas("qimenConfidenceThai", "Thai confidence mapper");

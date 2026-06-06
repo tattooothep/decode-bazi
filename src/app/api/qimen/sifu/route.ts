@@ -551,8 +551,40 @@ function formatPalaceSourceFlags(p: any): string {
   return rows.length ? ` · สัญญาณแหล่งอ้างอิง: ${rows.join(" | ")}` : "";
 }
 
+function qimenStemResponseIsContextOnly(stemResponse: any): boolean {
+  const quality = String(stemResponse?.quality || stemResponse?.effective_quality || "").toLowerCase();
+  return stemResponse?.verdict_allowed === false
+    || quality === "context_only"
+    || quality === "context"
+    || stemResponse?.engine_readiness?.stem_response_policy === "context_only";
+}
+
+function formatEngineReadiness(readiness: any): string {
+  if (!readiness || typeof readiness !== "object") return "";
+  return [
+    readiness.level ? `สถานะ engine=${packetText(readiness.level)}` : "",
+    readiness.formula_confidence ? `สูตร=${packetText(readiness.formula_confidence)}` : "",
+    readiness.stem_layer ? `ชั้นก้าน=${packetText(readiness.stem_layer)}` : "",
+    readiness.stem_response_policy ? `นโยบายก้าน=${packetText(readiness.stem_response_policy)}` : "",
+    readiness.verdict_allowed === false ? "verdict_allowed=false" : "",
+    readiness.caveat_th ? `ข้อควรระวัง=${packetText(readiness.caveat_th)}` : "",
+  ].filter(Boolean).join(" · ");
+}
+
 function formatStemResponse(stemResponse: any): string {
   if (!stemResponse) return "";
+  if (qimenStemResponseIsContextOnly(stemResponse)) {
+    const title = shortThZh(
+      stemResponse.title_th || stemResponse.status_th || "ก้านฟ้าอ่านประกอบ",
+      stemResponse.title_zh || stemResponse.notation_zh,
+      "ก้านฟ้าอ่านประกอบ 十干克應",
+    );
+    const beginner = packetText(stemResponse.beginner_th || stemResponse.status_th || "อ่านประกอบเท่านั้น");
+    const caveat = packetText(stemResponse.caveat_th || "อ่านประกอบเท่านั้น ไม่ใช่คำตัดสินดีร้ายจากตำรา");
+    const readiness = formatEngineReadiness(stemResponse.engine_readiness);
+    const quality = packetText(stemResponse.quality || stemResponse.effective_quality || "context_only");
+    return ` · 干應 ${title} (${beginner} · ${caveat} · quality=${quality} · verdict_allowed=false${readiness ? ` · ${readiness}` : ""})`;
+  }
   if (stemResponse.is_source_governed) {
     const title = shortThZh(stemResponse.title_th || "ปฏิกิริยาก้าน", stemResponse.title_zh || stemResponse.notation_zh, "ปฏิกิริยาก้าน 十干克應");
     const beginner = packetText(stemResponse.beginner_th || stemResponse.caveat_th || "อ่านประกอบ");
@@ -561,7 +593,7 @@ function formatStemResponse(stemResponse: any): string {
   }
   return stemResponse.status_th
     ? ` · 干應 ${packetText(stemResponse.status_th)} · ยังไม่ตัดสินจากตำราในระบบ`
-    : " · 干應 ยังไม่มี source-governed verdict";
+    : " · 干應 ยังไม่มีข้อมูลก้านที่ยืนยันได้";
 }
 
 const LANG_INSTR: Record<string, string> = {
@@ -747,9 +779,10 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
 9. ถ้า beginner_reading.is_actionable=false หรือ has_engine_score=false ห้ามแนะนำให้ใช้ทิศนั้นเป็นตัวหลัก ให้พูดว่า "อ่านเป็นบริบท/ต้องเช็กต่อ"
 10. ถ้า no_score_mutation ไม่ใช่ yes ให้เตือนว่า packet ไม่ยืนยันนโยบายคะแนน ห้ามฟันธง
 11. เมื่อตอบว่าทิศไหนดี/เสีย ต้องอ้างวังจริง: ทิศ + ประตู + ดาว + เทพ + ก้าน + flags/source flags + เหตุผลจากระบบ
-12. ถ้า payload มี "วังที่ผู้ใช้เลือก" และผู้ใช้ถามว่า "วังนี้/ทิศนี้" ให้ตอบจากวังที่ผู้ใช้เลือกก่อน ห้ามสลับไปวังอื่นโดยไม่บอกเหตุผล
-13. ห้ามใช้คำฟันธงเกินข้อมูล เช่น ดีแน่นอน, ชนะ, ใช้แล้วสำเร็จ, ไม่มีปัญหา
-14. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุ source id ที่ใช้ 1-3 ตัวจาก Source trace`;
+12. ถ้า stem_response.verdict_allowed=false หรือ quality=context_only ให้บอกว่าอ่านประกอบเท่านั้น และห้ามใช้ 十干克應 เป็นคำตัดสินดีร้ายหรือบอกว่าไม่มีข้อมูล
+13. ถ้า payload มี "วังที่ผู้ใช้เลือก" และผู้ใช้ถามว่า "วังนี้/ทิศนี้" ให้ตอบจากวังที่ผู้ใช้เลือกก่อน ห้ามสลับไปวังอื่นโดยไม่บอกเหตุผล
+14. ห้ามใช้คำฟันธงเกินข้อมูล เช่น ดีแน่นอน, ชนะ, ใช้แล้วสำเร็จ, ไม่มีปัญหา
+15. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุ source id ที่ใช้ 1-3 ตัวจาก Source trace`;
   const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${answerGuard}\nผังเวลา (QiMen Chart):\n${qimenText}\n${canonBlock}\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
   return {
     prompt: loadPromptMd("prompts/qimen-sifu.md", QIMEN_TPL_FALLBACK).replace("{{BODY}}", body),
