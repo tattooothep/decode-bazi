@@ -1439,7 +1439,7 @@ window.applyI18N = applyI18N;
     if (!s) return 'มีสัญญาณเตือนจากระบบ ต้องตรวจเพิ่ม';
     if (/[ก-๙]/.test(s)) return s;
     const lower = s.toLowerCase();
-    if (lower.includes('clash') || lower.includes('chong') || lower.includes('冲')) return 'มีสัญญาณปะทะ ต้องตรวจเพิ่ม';
+    if (lower.includes('clash') || lower.includes('chong') || lower.includes('冲') || lower.includes('沖')) return 'มีสัญญาณปะทะ ต้องตรวจเพิ่ม';
     if (lower.includes('void') || lower.includes('empty') || lower.includes('kong') || lower.includes('空')) return 'มีสัญญาณว่าง ต้องตรวจเพิ่ม';
     if (lower.includes('bad') || lower.includes('avoid') || lower.includes('risk') || lower.includes('warning')) return 'มีสัญญาณระวัง ต้องตรวจเพิ่ม';
     return 'มีสัญญาณเตือนจากระบบ ต้องตรวจเพิ่ม';
@@ -1644,7 +1644,7 @@ window.applyI18N = applyI18N;
       `<div class="qm-context-chip warn"><div class="k">ช่องว่าง 空亡</div><div class="v">วัน ${qmEsc(voidDay || '—')} · ยาม ${qmEsc(voidHour || '—')}</div><div class="note">พลังยังไม่เต็ม เรื่องอาจช้า/ว่าง ต้องอ่านร่วมกับวัง</div></div>`,
       `<div class="qm-context-chip good"><div class="k">ม้าเดินทาง 驛馬</div><div class="v">วัน ${qmEsc(horseDay || '—')} · ยาม ${qmEsc(horseHour || '—')}</div><div class="note">แรงเคลื่อนไหว เดินทาง ติดต่อ หรือเรื่องที่ต้องให้ขยับ</div></div>`,
       `<div class="qm-context-chip good"><div class="k">คนช่วย 貴人</div><div class="v">วัน ${qmEsc(nobleDay || '—')} · ยาม ${qmEsc(nobleHour || '—')}</div><div class="note">ผู้ใหญ่ ผู้สนับสนุน ช่องทางช่วยเหลือ</div></div>`,
-      `<div class="qm-context-chip warn"><div class="k">วัน/ยามปะทะ 日時冲</div><div class="v">วัน ${qmEsc(clashDay || '—')} · ยาม ${qmEsc(clashHour || '—')}</div><div class="note">เป็นกิ่งที่ถูกปะทะ ไม่ใช่ดวงเจ้าของงานโดยตรง</div></div>`,
+      `<div class="qm-context-chip warn"><div class="k">วัน/ยามปะทะ 日時沖</div><div class="v">วัน ${qmEsc(clashDay || '—')} · ยาม ${qmEsc(clashHour || '—')}</div><div class="note">เป็นกิ่งที่ถูกปะทะ ไม่ใช่ดวงเจ้าของงานโดยตรง</div></div>`,
       `<div class="qm-context-chip"><div class="k">28 ดาวฤกษ์ 二十八宿</div><div class="v">${qmEsc(xiu.number || '—')} · ${qmEsc(xiuLabel.name)}</div><div class="note">${qmEsc(xiuLabel.group)} ${xiuLabel.palace ? '· '+qmEsc(xiuLabel.palace) : ''}</div></div>`,
       `<div class="qm-context-chip good"><div class="k">ตัวแทนเรื่อง 用神</div><div class="v">${qmEsc(selector?.intent?.label_th || 'ภาพรวม')} ${selector?.intent?.label_zh ? '· '+qmEsc(selector.intent.label_zh) : ''}</div><div class="note">${qmEsc(ysTop || 'ใช้日干/值符เป็นภาพรวม')} · ไม่ใช่คะแนนฤกษ์</div></div>`,
       `<div class="qm-context-chip"><div class="k">วังใน/วังนอก 內外</div><div class="v">內 N·NE·E·SE / 外 S·SW·W·NW</div><div class="note">เรื่องใกล้ตัว/ในองค์กร เทียบกับเรื่องภายนอก/ตลาด/เดินทาง</div></div>`,
@@ -1739,7 +1739,7 @@ window.applyI18N = applyI18N;
       const horse    = (p.is_traveling_horse || palaceHasAnyBranch(p, horseBranches)) ? '<span title="ม้าเดินทาง · 驛馬">🐎</span>' : '';
       const voidMk   = p.is_void_any ? '<span class="void-mk" title="ช่องว่าง · 空亡">空</span>' : '';
       const nobleMk  = palaceHasAnyBranch(p, nobleBranches) ? '<span class="noble-mk" title="คนช่วย 貴人">貴</span>' : '';
-      const clashMk  = palaceHasAnyBranch(p, clashBranches) ? '<span class="clash-mk" title="ปะทะ 冲">冲</span>' : '';
+      const clashMk  = palaceHasAnyBranch(p, clashBranches) ? '<span class="clash-mk" title="ปะทะ 沖">沖</span>' : '';
       const io = internalExternalLabel(p.direction);
       const ioMk = p.direction && p.direction !== 'C' ? `<span class="io-mk" title="${qmEsc(io.th)}">${qmEsc(io.zh)}</span>` : '';
       const home     = p.is_origin_palace ? '<span class="home-mk">●</span>' : '';
@@ -1872,7 +1872,7 @@ window.applyI18N = applyI18N;
     if (palaceHasAnyBranch(p, [chart.clash?.day?.branch, chart.day_clash_zh])) clashHits.push(`วันปะทะ ${qmBranchDisplay(chart.clash?.day?.branch, chart.day_clash_zh) || '—'}`);
     if (palaceHasAnyBranch(p, [chart.clash?.hour?.branch, chart.hour_clash_zh])) clashHits.push(`ยามปะทะ ${qmBranchDisplay(chart.clash?.hour?.branch, chart.hour_clash_zh) || '—'}`);
     if (clashHits.length) {
-      rows.push(`<li><b>ปะทะ <span class="tc">冲</span></b> · ${qmEsc(clashHits.join(' · '))} · ใช้เป็นสัญญาณระวัง ไม่ใช่คำตัดสินดวงเจ้าของงาน</li>`);
+      rows.push(`<li><b>ปะทะ <span class="tc">沖</span></b> · ${qmEsc(clashHits.join(' · '))} · ใช้เป็นสัญญาณระวัง ไม่ใช่คำตัดสินดวงเจ้าของงาน</li>`);
     }
     const fms = formationItemsForPalace(last, p.palace_id);
     fms.slice(0,4).forEach(f => {
@@ -1888,6 +1888,40 @@ window.applyI18N = applyI18N;
     });
     if (!rows.length) return '';
     return `<div class="qm-detail-extra"><h5>สถานะเสริมของวังนี้ · 標記</h5><ul>${rows.join('')}</ul></div>`;
+  }
+  function buildChartContextDetailHtml(last){
+    const chart = last?.chart || {};
+    if (!chart || !Object.keys(chart).length) return '';
+    const pillars = chart.pillars || {};
+    const pillarRows = [
+      ['ปี', '年', pillars.year],
+      ['เดือน', '月', pillars.month],
+      ['วัน', '日', pillars.day],
+      ['ยาม', '時', pillars.hour],
+    ].filter(([, , p]) => p).map(([th, zh, p]) => {
+      const pillar = qmPillarDisplay(p);
+      return `<li><b>${qmEsc(th)} <span class="tc">${qmEsc(zh)}</span></b> · <span class="tc">${qmEsc(pillar.zh)}</span> · ${qmEsc(pillar.parts)} · 旬 <span class="tc">${qmEsc(pillar.xun)}</span> · 空 ${qmEsc(pillar.voids)}</li>`;
+    });
+    const voidDay = qmBranchDisplay(chart.voids?.day, chart.void_day_zh, chart.voidDayZh);
+    const voidHour = qmBranchDisplay(chart.voids?.hour, chart.void_hour_zh, chart.voidHourZh);
+    const horseDay = qmBranchDisplay(chart.sky_horse?.day?.branch, chart.skyHorse?.day?.branch, chart.traveling_horse_day_zh, chart.traveling_horse_zh);
+    const horseHour = qmBranchDisplay(chart.sky_horse?.hour?.branch, chart.skyHorse?.hour?.branch, chart.traveling_horse_hour_zh);
+    const nobleDay = qmBranchDisplay(chart.nobleman?.day?.branches, chart.nobleman_day_zh);
+    const nobleHour = qmBranchDisplay(chart.nobleman?.hour?.branches, chart.nobleman_hour_zh);
+    const clashDay = qmBranchDisplay(chart.clash?.day?.branch, chart.day_clash_zh);
+    const clashHour = qmBranchDisplay(chart.clash?.hour?.branch, chart.hour_clash_zh);
+    const xiu = chart.twenty_eight || chart.twentyEight || chart.xiu || {};
+    const xiuLabel = qmXiuDisplay(xiu);
+    const rows = [
+      ...pillarRows,
+      `<li><b>ช่องว่าง <span class="tc">空亡</span></b> · วัน ${qmEsc(voidDay || '—')} · ยาม ${qmEsc(voidHour || '—')} · พลังยังไม่เต็ม ต้องอ่านร่วมกับวังที่เลือก</li>`,
+      `<li><b>ม้าเดินทาง <span class="tc">驛馬</span></b> · วัน ${qmEsc(horseDay || '—')} · ยาม ${qmEsc(horseHour || '—')} · เสริมเรื่องเดินทาง ติดต่อ เคลื่อนไหว หรือเร่งงานให้ขยับ</li>`,
+      `<li><b>คนช่วย <span class="tc">貴人</span></b> · วัน ${qmEsc(nobleDay || '—')} · ยาม ${qmEsc(nobleHour || '—')} · เสริมเรื่องผู้ใหญ่ ที่ปรึกษา ช่องทางช่วยเหลือ</li>`,
+      `<li><b>วัน/ยามปะทะ <span class="tc">日時沖</span></b> · วัน ${qmEsc(clashDay || '—')} · ยาม ${qmEsc(clashHour || '—')} · เป็นกิ่งที่ถูกปะทะ ไม่ใช่ดวงเจ้าของงานโดยตรง</li>`,
+      `<li><b>28 ดาวฤกษ์ <span class="tc">二十八宿</span></b> · ${qmEsc(xiu.number || '—')} · ${qmEsc(xiuLabel.name)} · ${qmEsc(xiuLabel.group)}${xiuLabel.palace ? ' · '+qmEsc(xiuLabel.palace) : ''}</li>`,
+      `<li>หมายเหตุ: กล่องนี้เป็นบริบทเวลาของทั้งผัง ไม่ใช่คำตัดสินเฉพาะวังนี้ และไม่ใช่คะแนนฤกษ์</li>`,
+    ];
+    return `<div class="qm-detail-extra ok"><h5>บริบทเวลาของผังนี้ · 全盤時間</h5><ul>${rows.join('')}</ul></div>`;
   }
 
   /* ───────────────────────────────────────────────────────────────
@@ -1992,7 +2026,7 @@ window.applyI18N = applyI18N;
       ? 'คะแนนนี้เป็นคะแนนรวมของวังในผังนี้ ต้องอ่านร่วมกับตัวแทนเรื่อง 用神 และสถานะเสริม'
       : 'ยังไม่มีคะแนนรวมจากระบบ จึงไม่ฟันธงดีร้ายจากประตู ดาว หรือเทพเพียงอย่างเดียว';
     const quickHtml = buildQuickReadHtml(p, last, beginnerReading, verdictClass);
-    const extraHtml = quickHtml + buildPalaceReadingGuideHtml(p, last, verdictClass) + buildYongshenHtml(p, last) + buildStemResponseHtml(p) + buildPalaceExtraHtml(p, last) + buildP0SourceTraceHtml(p, last);
+    const extraHtml = quickHtml + buildPalaceReadingGuideHtml(p, last, verdictClass) + buildYongshenHtml(p, last) + buildStemResponseHtml(p) + buildChartContextDetailHtml(last) + buildPalaceExtraHtml(p, last) + buildP0SourceTraceHtml(p, last);
 
     host.innerHTML = `
       <div class="detail-head">

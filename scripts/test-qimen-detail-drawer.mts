@@ -51,6 +51,8 @@ const p0Detail = functionBlock("buildP0SourceTraceHtml");
 const detail = functionBlock("renderCurrentDetail");
 const context = functionBlock("renderQimenContext");
 const palaceExtra = functionBlock("buildPalaceExtraHtml");
+const chartContextDetail = functionBlock("buildChartContextDetailHtml");
+const chartContextDetailBody = chartContextDetail.split("/* ─")[0];
 const branchTokens = functionBlock("qmBranchTokens");
 const branchDisplay = functionBlock("qmBranchDisplay");
 const branchValues = functionBlock("qmBranchValues");
@@ -91,6 +93,11 @@ assertHas("function qmBranchDisplay", "Thai-first branch fallback display helper
 assertHas("function qmStemLabel", "Thai-first stem label helper");
 assertHas("function qmPillarDisplay", "Thai-first four-pillar display helper");
 assertHas("function qmXiuDisplay", "Thai-first 28 mansions display helper");
+assertHas("function buildChartContextDetailHtml", "chart context detail helper exists");
+assertHas("บริบทเวลาของผังนี้ · 全盤時間", "chart context detail title is Thai-first");
+assertHas("วัน/ยามปะทะ 日時沖", "context clash label uses traditional Chinese");
+assertHas("ปะทะ <span class=\"tc\">沖</span>", "detail clash label uses traditional Chinese");
+assertHas("title=\"ปะทะ 沖\"", "grid clash tooltip uses traditional Chinese");
 assertHas("เสือ", "Thai branch learner label");
 assertHas("ไฟหยาง", "Thai stem learner label");
 assertHas("XIU_TH[raw] ? `ดาว${XIU_TH[raw]}`", "Thai mansion learner label formatter");
@@ -113,10 +120,29 @@ assertBlockHas(palaceExtra, "qmBranchDisplay(chart.sky_horse?.day?.branch, chart
 assertBlockHas(palaceExtra, "qmBranchDisplay(chart.nobleman?.day?.branches, chart.nobleman_day_zh)", "detail nobleman uses fallback branch display");
 assertBlockHas(palaceExtra, "palaceHasAnyBranch(p, [chart.nobleman?.day?.branches, chart.nobleman_day_zh])", "detail nobleman match does not let empty direct arrays suppress fallback");
 assertBlockHas(palaceExtra, "qmBranchDisplay(chart.clash?.day?.branch, chart.day_clash_zh)", "detail clash uses fallback branch display");
+assertBlockHas(chartContextDetail, "const chart = last?.chart || {}", "chart context detail reads chart from last packet");
+assertBlockHas(chartContextDetail, "qmPillarDisplay(p)", "chart context detail renders four pillars with Thai-first helper");
+assertBlockHas(chartContextDetail, "qmBranchDisplay(chart.voids?.day, chart.void_day_zh, chart.voidDayZh)", "chart context detail void day uses fallback branch display");
+assertBlockHas(chartContextDetail, "qmBranchDisplay(chart.sky_horse?.day?.branch, chart.skyHorse?.day?.branch, chart.traveling_horse_day_zh, chart.traveling_horse_zh)", "chart context detail sky horse uses fallback branch display");
+assertBlockHas(chartContextDetail, "qmBranchDisplay(chart.nobleman?.day?.branches, chart.nobleman_day_zh)", "chart context detail nobleman uses fallback branch display");
+assertBlockHas(chartContextDetail, "qmBranchDisplay(chart.clash?.day?.branch, chart.day_clash_zh)", "chart context detail clash uses fallback branch display");
+assertBlockHas(chartContextDetail, "chart.twenty_eight || chart.twentyEight || chart.xiu", "chart context detail supports 28 mansion aliases");
+assertBlockHas(chartContextDetail, "qmXiuDisplay(xiu)", "chart context detail renders 28 mansions with Thai-first helper");
+assertBlockHas(chartContextDetail, "ไม่ใช่คำตัดสินเฉพาะวังนี้", "chart context detail caveat keeps chart context separate from palace verdict");
+assertBlockHas(detail, "buildChartContextDetailHtml(last) + buildPalaceExtraHtml(p, last)", "detail shows chart context before palace-specific markers");
 assertHas("qmBranchDisplay(chart.voids?.hour, chart.void_hour_zh, chart.voidHourZh, chart.voids?.day, chart.void_day_zh, chart.voidDayZh)", "top void pill uses direct packet fields before fallback branch display");
 assertBlockNotHas(renderPalaces, "qmBranchLabel(", "palace grid must not use long Thai branch labels");
 assertBlockNotHas(renderPalaces, "qmBranchDisplay(", "palace grid must not use long fallback branch labels");
 assertBlockNotHas(renderPalaces, "qmPillarDisplay(", "palace grid must not render four-pillar text");
+assertBlockNotHas(renderPalaces, "buildChartContextDetailHtml(", "palace grid must not render chart context detail");
+assertBlockNotHas(renderPalaces, "buildPalaceExtraHtml(", "palace grid must not render palace extra detail");
+assertBlockNotHas(renderPalaces, "buildQuickReadHtml(", "palace grid must not render quick read detail");
+assertBlockNotHas(renderPalaces, "buildPalaceReadingGuideHtml(", "palace grid must not render reading guide detail");
+assertBlockNotHas(renderPalaces, "buildP0SourceTraceHtml(", "palace grid must not render source trace detail");
+assertBlockNotHas(renderPalaces, "buildStemResponseHtml(", "palace grid must not render stem response detail");
+assertBlockNotHas(renderPalaces, "door_description", "palace grid must not render long door descriptions");
+assertBlockNotHas(renderPalaces, "star_description", "palace grid must not render long star descriptions");
+assertBlockNotHas(renderPalaces, "deity_advice", "palace grid must not render long deity advice");
 assertHas("function qimenStemIsContextOnly", "stem context-only helper exists");
 assertBlockHas(stemContext, "engine_readiness?.stem_response_policy === 'context_only'", "stem helper respects engine readiness policy");
 assertHas("function qimenStemContextOnlyText", "stem context-only Thai fallback helper exists");
@@ -199,6 +225,8 @@ assertNotHas("Lead Door (直使)", "old English visible zhi-shi legend");
 assertNotHas("使 = 直使", "old Chinese visible zhi-shi legend");
 assertNotHas("直使", "old incorrect zhi-shi glyph");
 assertNotHas("直符", "old incorrect zhi-fu glyph");
+assertNotHas("วัน/ยามปะทะ 日時冲", "old simplified clash label");
+assertNotHas("title=\"ปะทะ 冲\"", "old simplified clash tooltip");
 assertBlockHas(detail, "ประตูนำ <span class=\"tc\" style=\"color:inherit\">值使</span>", "detail zhi-shi marker is Thai-first");
 assertBlockHas(detail, "ดาวนำ <span class=\"tc\" style=\"color:inherit\">值符</span>", "detail zhi-fu marker is Thai-first");
 assertBlockHas(detail, "รายละเอียดวัง · 詳", "detail heading is Thai-first");
@@ -213,6 +241,12 @@ for (const text of ["สถานะอ่านเร็ว", "ต้องเ�
 assert(!sourceLabel.includes("file_path"), "qmSourceLabel must not expose file_path");
 for (const mutation of ["p.score =", "p.display_score =", "p.beginner_reading =", "last.palaces =", "last.chart ="]) {
   assert(!guide.includes(mutation), `detail guide must not mutate payload: ${mutation}`);
+  assert(!chartContextDetailBody.includes(mutation), `chart context detail must not mutate payload: ${mutation}`);
+  assert(!palaceExtra.includes(mutation), `palace extra detail must not mutate payload: ${mutation}`);
+}
+for (const forbidden of ["fetch(", "/api/qimen", "window._qimenLast ="]) {
+  assert(!chartContextDetailBody.includes(forbidden), `chart context detail must stay display-only: ${forbidden}`);
+  assert(!palaceExtra.includes(forbidden), `palace extra detail must stay display-only: ${forbidden}`);
 }
 
 console.log(`PASS qimen detail drawer smoke · inline scripts parsed ${scripts.length}`);
