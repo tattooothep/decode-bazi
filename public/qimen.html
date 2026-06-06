@@ -665,7 +665,8 @@
         <span class="pill"><b id="qm-pill-dun">—</b>ก้านหลบ · 遁干</span>
         <span class="pill special"><b data-i18n="q.pill.fu">ดาวนำ · 值符</b><span id="qm-pill-fu">—</span></span>
         <span class="pill special"><b data-i18n="q.pill.shi">ประตูนำ · 值使</b><span id="qm-pill-shi">—</span></span>
-        <span class="pill"><b data-i18n="q.pill.xun">ช่วง · 旬</b><span id="qm-pill-xun">—</span></span>
+        <span class="pill"><b data-i18n="q.pill.xun">หัวก้าน · 旬首</b><span id="qm-pill-xun">—</span></span>
+        <span class="pill"><b data-i18n="q.pill.clash">ปะทะ · 日時沖</b><span id="qm-pill-clash">—</span></span>
         <span class="pill"><b data-i18n="q.pill.void">ว่าง · 空亡</b><span id="qm-pill-void">—</span></span>
       </div>
       <button  class="ctrl-btn" id="qm-recalc-btn" style="background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;" data-i18n="auto.q.014">↻ คำนวณใหม่</button>
@@ -869,7 +870,8 @@ window.HK_I18N = {
   /* chart-meta pills */
   'q.pill.fu':     { th:'ดาวนำ · 值符', en:'Lead Star · 值符', zh:'值符' },
   'q.pill.shi':    { th:'ประตูนำ · 值使', en:'Lead Door · 值使', zh:'值使' },
-  'q.pill.xun':    { th:'ช่วง · 旬', en:'Xun · 旬', zh:'旬' },
+  'q.pill.xun':    { th:'หัวก้าน · 旬首', en:'Lead Stem · 旬首', zh:'旬首' },
+  'q.pill.clash':  { th:'ปะทะ · 日時沖', en:'Clash · 日時沖', zh:'日時沖' },
   'q.pill.void':   { th:'ว่าง · 空亡', en:'Void · 空亡', zh:'空亡' },
   /* palace legend */
   'q.legend.good': { th:'ประตูมงคล 3 (三吉門) 開·休·生', en:'3 Good Doors (三吉門) 開·休·生', zh:'三吉門 開·休·生' },
@@ -1703,7 +1705,7 @@ window.applyI18N = applyI18N;
     const msg = message || 'โหลดผังฉีเหมินไม่สำเร็จ';
     window._qimenLast = null;
     window._qimenCurrentPalaceId = null;
-    ['qm-head-ju','qm-stat-ju','qm-stat-dun','qm-stat-yuan','qm-pill-ju','qm-pill-dun','qm-pill-fu','qm-pill-shi','qm-pill-xun','qm-pill-void'].forEach(id => {
+    ['qm-head-ju','qm-stat-ju','qm-stat-dun','qm-stat-yuan','qm-pill-ju','qm-pill-dun','qm-pill-fu','qm-pill-shi','qm-pill-xun','qm-pill-clash','qm-pill-void'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.textContent = '—';
     });
@@ -2033,7 +2035,7 @@ window.applyI18N = applyI18N;
       door:  {th:'ประตู · 八門',en:'Door · 八門', zh:'八門'},
       star:  {th:'ดาว · 九星',en:'Star · 九星', zh:'九星'},
       deity: {th:'เทพ · 八神',en:'Deity · 八神',zh:'八神'},
-      dir:   {th:'ทิศ/วัง · 方位', en:'Direction · 方位',  zh:'方位'},
+      dir:   {th:'ทิศ/กว้า · 方位/八卦', en:'Direction/Gua · 方位/八卦',  zh:'方位/八卦'},
       score: {th:'คะแนนระบบ · 分',en:'System score · 分',zh:'系統評分'},
       use:   {th:'ใช้ทำอะไร · 用法',en:'Use · 用法',zh:'用法'},
     };
@@ -2096,7 +2098,7 @@ window.applyI18N = applyI18N;
       </div>
       <div class="detail-row">
         <span class="k">${qmEsc(K_LABEL.dir[lang]||K_LABEL.dir.th)}</span>
-        <span class="v">${qmEsc(dirTh)}${trigZh ? ` <span class="tc">${qmEsc(trigZh)}</span>` : ''}${p.trigram_name_th?` · ${qmEsc(p.trigram_name_th)}`:''}</span>
+        <span class="v">${qmEsc(dirTh)}${trigZh ? ` · กว้า ${p.trigram_name_th ? qmEsc(p.trigram_name_th)+' ' : ''}<span class="tc">${qmEsc(trigZh)}</span>` : ''}</span>
       </div>
       ${scoreLine}
       ${doorRole ? `<div class="detail-row"><span class="k">${qmEsc(K_LABEL.use[lang]||K_LABEL.use.th)}</span><span class="v">${qmEsc(doorRole)}</span></div>` : ''}
@@ -2160,8 +2162,12 @@ window.applyI18N = applyI18N;
     _set('qm-pill-dun',  chart.dun_gan_zh || '—');
     _set('qm-pill-fu',   qimenTermLabel(leadStarTh, leadStarZh, fuPalaceId));
     _set('qm-pill-shi',  qimenTermLabel(leadDoorTh, leadDoorZh, shiPalaceId));
-    const xunLabel = chart.xun_hour_zh || chart.xun_leader || chart.xun_zh || '—';
-    _set('qm-pill-xun',  xunLabel === '—' ? '—' : (String(xunLabel).includes('旬') ? xunLabel : xunLabel + '旬'));
+    const xunLeader = fushi.xun_leader_zh || '';
+    const xunLabel = xunLeader || chart.xun_hour_zh || chart.xun_leader || chart.xun_zh || '—';
+    _set('qm-pill-xun',  xunLabel === '—' ? '—' : (xunLeader ? xunLeader : (String(xunLabel).includes('旬') ? xunLabel : xunLabel + '旬')));
+    const clashDay = qmBranchDisplay(chart.clash?.day?.branch, chart.day_clash_zh);
+    const clashHour = qmBranchDisplay(chart.clash?.hour?.branch, chart.hour_clash_zh);
+    _set('qm-pill-clash', (clashDay || clashHour) ? `วัน ${clashDay || '—'} · ยาม ${clashHour || '—'}` : '—');
     const voids = qmBranchDisplay(chart.voids?.hour, chart.void_hour_zh, chart.voidHourZh, chart.voids?.day, chart.void_day_zh, chart.voidDayZh);
     const voidPalaces = Array.isArray(chart.kong_wang_palaces) && chart.kong_wang_palaces.length ? `宮 ${chart.kong_wang_palaces.join('·')}` : '';
     _set('qm-pill-void', voids || voidPalaces || '—');
