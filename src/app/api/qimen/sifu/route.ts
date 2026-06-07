@@ -223,6 +223,16 @@ const QMDJ_SNIPPETS: QimenSnippetSpec[] = [
     tags: ["guardian", "zhifu", "spirit", "direction"],
     repo: true,
   },
+  {
+    id: "yingqi-timing",
+    title: "應期法 จับเวลาว่าเรื่องจะเกิด/ออกผลเมื่อไร",
+    file: "auth-th/yingqi-timing-th.md",
+    start: 1,
+    end: 200,
+    maxChars: 3000,
+    tags: ["yingqi", "timing", "when", "action"],
+    repo: true,
+  },
 ];
 
 let _qimenIndex: { snippets: QimenSnippet[]; sig: string; version: string } | null = null;
@@ -341,6 +351,9 @@ function selectQimenSourceIds(opts: { message: string; topic?: string; payload: 
   if (opts.payload?.qimen || wantAny(text, ["值符", "直符", "天乙", "ผู้นำ", "ผู้ใหญ่", "นาย", "เจ้านาย", "ที่พึ่ง", "คุ้มกัน", "อารักษ์", "บารมี", "วังหลัก", "guardian"])) {
     ids.add("zhifu-guardian");
   }
+  if (wantAny(text, ["應期", "应期", "เมื่อไร", "เมื่อไหร่", "กี่วัน", "กี่เดือน", "นานไหม", "ช้าเร็ว", "เร็ว", "ช้า", "จับเวลา", "timing", "when", "驛馬", "驿马", "马星", "ได้เมื่อ", "สำเร็จเมื่อ", "จังหวะ"])) {
+    ids.add("yingqi-timing");
+  }
   if (wantAny(text, ["格", "formation", "รูปแบบ", "青龍", "飛鳥", "五不遇", "空亡", "驛馬", "入墓", "擊刑", "門迫", "ช่องว่าง", "ม้า", "ปะทะ", "สุสาน"])) {
     ids.add("formations-good");
     ids.add("formations-risk");
@@ -380,6 +393,9 @@ function qimenSourceReasonTh(s: QimenSnippetSpec, opts: { message: string; topic
   }
   if (s.tags.includes("guardian")) {
     return "เลือกเพราะต้องหาวังหลัก/ที่พึ่ง/ผู้คุ้มกันของเรื่อง ตามตำแหน่งดาวผู้นำ 值符 และเตือนถ้า值符ตกช่องว่าง 空亡";
+  }
+  if (s.tags.includes("yingqi") || s.tags.includes("timing")) {
+    return "เลือกเพราะคำถามต้องประเมินช่วงเวลาเรื่องเกิด/ออกผล 應期 จาก空亡冲填·馬星·冲墓·旺相·กิ่งวัง ไม่ใช่ฟันธงวันเป๊ะ";
   }
   if (s.tags.includes("intent") || s.tags.includes("direction")) {
     return "เลือกเพราะต้องผูกคำถามเข้ากับ 用神/ทิศ/วังที่ควรอ่านก่อน";

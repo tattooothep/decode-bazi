@@ -107,6 +107,18 @@ if (zhifuOk) {
   ck("原文 天乙之神 ตรงคัมภีร์", z.includes("天乙之神所在宫，大将宜居击对冲，"));
 }
 
+console.log("[#3e 應期法 จับเวลา (repo · auth-th)]");
+ck("ขึ้น snippet yingqi-timing", has('id: "yingqi-timing"') && has("auth-th/yingqi-timing-th.md"));
+const yingqi = join(authDir, "yingqi-timing-th.md");
+const yingqiOk = existsSync(yingqi) && statSync(yingqi).size > 800;
+ck("ไฟล์ yingqi-timing-th.md มีจริง", yingqiOk, yingqi);
+if (yingqiOk) {
+  const y = readFileSync(yingqi, "utf8");
+  ck("ไทยนำ: 空亡冲填 + 馬星 + 入墓 timing", y.includes("空亡") && y.includes("冲") && y.includes("馬星") && y.includes("入墓"));
+  ck("原文 統宗 ตรงคัมภีร์ (奇门以克应为微妙 verbatim ตัวย่อ)", y.includes("奇门以克应为微妙。触机即发，物来顺应。"));
+  ck("原文 烟波 太冲天马 ตรงคัมภีร์", y.includes("太冲天马最为贵，猝然有难宜逃避，"));
+}
+
 console.log("[#4 source files exist]");
 const qmdjDir = process.env.QIMEN_DOCS_DIR || "/var/www/hourkey/docs/Qimendunjia คัมภีร์";
 const requiredFiles = [
