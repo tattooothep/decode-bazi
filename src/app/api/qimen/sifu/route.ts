@@ -233,6 +233,16 @@ const QMDJ_SNIPPETS: QimenSnippetSpec[] = [
     tags: ["yingqi", "timing", "when", "action"],
     repo: true,
   },
+  {
+    id: "geju-formations",
+    title: "格局 吉格/凶格 รูปแบบดี/ร้ายในผัง (龍返首·鳥跌穴·伏吟·六儀擊刑…)",
+    file: "auth-th/geju-formations-th.md",
+    start: 1,
+    end: 200,
+    maxChars: 3800,
+    tags: ["formation", "geju", "action", "risk"],
+    repo: true,
+  },
 ];
 
 let _qimenIndex: { snippets: QimenSnippet[]; sig: string; version: string } | null = null;
@@ -359,6 +369,9 @@ function selectQimenSourceIds(opts: { message: string; topic?: string; payload: 
     ids.add("formations-risk");
     ids.add("four-harms");
     ids.add("rv1-context-rules");
+  }
+  if (opts.payload?.qimen || wantAny(text, ["格", "formation", "รูปแบบ", "返首", "跌穴", "伏吟", "反吟", "三奇", "三遁", "ดี", "ร้าย", "มงคล", "ลายเซ็น"])) {
+    ids.add("geju-formations");
   }
   if (systemType !== "hour" || wantAny(text, ["ปี", "เดือน", "วัน", "日家", "月家", "年家", "year", "month", "day"])) {
     ids.add("ymd-method");

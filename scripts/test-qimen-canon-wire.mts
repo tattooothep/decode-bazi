@@ -119,6 +119,19 @@ if (yingqiOk) {
   ck("原文 烟波 太冲天马 ตรงคัมภีร์", y.includes("太冲天马最为贵，猝然有难宜逃避，"));
 }
 
+console.log("[#3f 格局 吉凶格 (repo · auth-th)]");
+ck("ขึ้น snippet geju-formations", has('id: "geju-formations"') && has("auth-th/geju-formations-th.md"));
+const geju = join(authDir, "geju-formations-th.md");
+const gejuOk = existsSync(geju) && statSync(geju).size > 800;
+ck("ไฟล์ geju-formations-th.md มีจริง", gejuOk, geju);
+if (gejuOk) {
+  const g = readFileSync(geju, "utf8");
+  ck("ไทยนำ: แยก吉格/凶格 (返首·伏吟)", g.includes("吉格") && g.includes("凶格") && g.includes("龍返首") && g.includes("伏吟"));
+  ck("原文 吉神 ตรงคัมภีร์ (鸟跌穴龙返首 verbatim ตัวย่อ)", g.includes("丙加甲兮鸟跌穴，甲加丙兮龙返首，只此二者是吉神，为事如意十八九，"));
+  ck("原文 凶格 六儀擊刑 ตรงคัมภีร์", g.includes("六仪击刑何太凶，甲子直符愁向东，"));
+  ck("原文 三遁 ตรงคัมภีร์", g.includes("生门六丙合六丁，此为天遁自分明，开门六乙合六己，地遁如斯而已矣，"));
+}
+
 console.log("[#4 source files exist]");
 const qmdjDir = process.env.QIMEN_DOCS_DIR || "/var/www/hourkey/docs/Qimendunjia คัมภีร์";
 const requiredFiles = [
