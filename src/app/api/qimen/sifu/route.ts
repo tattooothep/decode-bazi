@@ -243,6 +243,16 @@ const QMDJ_SNIPPETS: QimenSnippetSpec[] = [
     tags: ["formation", "geju", "action", "risk"],
     repo: true,
   },
+  {
+    id: "liushisi-gua",
+    title: "六十四卦·奇門演卦法 แปลงผังเป็นกว้า แล้วอ่าน 384 เหยา",
+    file: "auth-th/liushisi-gua-th.md",
+    start: 1,
+    end: 200,
+    maxChars: 3600,
+    tags: ["gua", "yijing", "yingqi", "intent"],
+    repo: true,
+  },
 ];
 
 let _qimenIndex: { snippets: QimenSnippet[]; sig: string; version: string } | null = null;
@@ -373,6 +383,9 @@ function selectQimenSourceIds(opts: { message: string; topic?: string; payload: 
   if (opts.payload?.qimen || wantAny(text, ["格", "formation", "รูปแบบ", "返首", "跌穴", "伏吟", "反吟", "三奇", "三遁", "ดี", "ร้าย", "มงคล", "ลายเซ็น"])) {
     ids.add("geju-formations");
   }
+  if (wantAny(text, ["卦", "六十四卦", "64卦", "演卦", "อี้จิง", "เอ๋อจิง", "เหยา", "爻", "周易", "察来意", "เจตนา", "ของหาย", "คนหนี", "คนเดินทาง", "yijing", "hexagram"])) {
+    ids.add("liushisi-gua");
+  }
   if (systemType !== "hour" || wantAny(text, ["ปี", "เดือน", "วัน", "日家", "月家", "年家", "year", "month", "day"])) {
     ids.add("ymd-method");
     ids.add("ymd-caveats");
@@ -406,6 +419,9 @@ function qimenSourceReasonTh(s: QimenSnippetSpec, opts: { message: string; topic
   }
   if (s.tags.includes("guardian")) {
     return "เลือกเพราะต้องหาวังหลัก/ที่พึ่ง/ผู้คุ้มกันของเรื่อง ตามตำแหน่งดาวผู้นำ 值符 และเตือนถ้า值符ตกช่องว่าง 空亡";
+  }
+  if (s.tags.includes("gua") || s.tags.includes("yijing")) {
+    return "เลือกเพราะต้องอ่านเสริมแบบอี้จิง: แปลงผังเป็นกว้า 64 (奇門演卦) แล้วดูคำเหยา 384 爻 ประกอบผังจริง";
   }
   if (s.tags.includes("yingqi") || s.tags.includes("timing")) {
     return "เลือกเพราะคำถามต้องประเมินช่วงเวลาเรื่องเกิด/ออกผล 應期 จาก空亡冲填·馬星·冲墓·旺相·กิ่งวัง ไม่ใช่ฟันธงวันเป๊ะ";

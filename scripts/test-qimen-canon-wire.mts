@@ -132,6 +132,21 @@ if (gejuOk) {
   ck("原文 三遁 ตรงคัมภีร์", g.includes("生门六丙合六丁，此为天遁自分明，开门六乙合六己，地遁如斯而已矣，"));
 }
 
+console.log("[#3g 六十四卦 演卦法 (repo · auth-th)]");
+ck("ขึ้น snippet liushisi-gua", has('id: "liushisi-gua"') && has("auth-th/liushisi-gua-th.md"));
+const gua = join(authDir, "liushisi-gua-th.md");
+const guaOk = existsSync(gua) && statSync(gua).size > 800;
+ck("ไฟล์ liushisi-gua-th.md มีจริง", guaOk, gua);
+if (guaOk) {
+  const g2 = readFileSync(gua, "utf8");
+  ck("ไทยนำ: 2 วิธี演卦 + เชื่อม 384 เหยา", g2.includes("值符值使") && g2.includes("門方") && g2.includes("384") && g2.includes("yao384.json"));
+  ck("原文 演卦 ตรงคัมภีร์ (值符与值使合而成卦 verbatim ตัวย่อ)", g2.includes("奇门演卦，其法不一。有以值符与值使合而成卦者，有以八门共八方合而成卦者。"));
+  ck("原文 值符值使演卦例 ตรงคัมภีร์ (火地晋卦)", g2.includes("地下值符在坤二宫，天上值使在离九宫，即演成火地晋卦也。"));
+}
+// ยืนยันข้อมูลเหยา 384 周易 มีจริงในเรโป
+const yao = join(new URL("../data/luopan-private/yao384.json", import.meta.url).pathname);
+ck("ข้อมูล 384 爻 (yao384.json) มีจริงในเรโป", existsSync(yao) && statSync(yao).size > 1000, yao);
+
 console.log("[#4 source files exist]");
 const qmdjDir = process.env.QIMEN_DOCS_DIR || "/var/www/hourkey/docs/Qimendunjia คัมภีร์";
 const requiredFiles = [
