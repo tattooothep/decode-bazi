@@ -82,6 +82,19 @@ if (zhukeOk) {
   ck("原文 主客雌雄 ตรงคัมภีร์ (ตัวย่อ)", t.includes("主客雌雄：世为客，应为主。"));
 }
 
+console.log("[#3c 旺相休囚死 กำลังดาว (repo · auth-th)]");
+ck("ขึ้น snippet star-vigor", has('id: "star-vigor"') && has("auth-th/wangxiang-vigor-th.md"));
+const vigor = join(authDir, "wangxiang-vigor-th.md");
+const vigorOk = existsSync(vigor) && statSync(vigor).size > 800;
+ck("ไฟล์ wangxiang-vigor-th.md มีจริง", vigorOk, vigor);
+if (vigorOk) {
+  const v = readFileSync(vigor, "utf8");
+  ck("ไทยนำ: อธิบายดาวแรง/อ่อน", v.includes("แรง") && v.includes("อ่อน") && v.includes("旺") && v.includes("廢"));
+  ck("ใช้สูตรดาว 烟波 ไม่ใช้บรรทัด 402 (มีหมายเหตุ flag)", v.includes("煙波釣叟歌") || v.includes("烟波"));
+  ck("原文 旺相休囚 ตรงคัมภีร์ (与我同行即为相 verbatim ตัวย่อ)", v.includes("与我同行即为相，我生之月诚为旺，"));
+  ck("原文 廢休囚 ตรงคัมภีร์", v.includes("废于父母休于财，囚于鬼兮真不妄，"));
+}
+
 console.log("[#4 source files exist]");
 const qmdjDir = process.env.QIMEN_DOCS_DIR || "/var/www/hourkey/docs/Qimendunjia คัมภีร์";
 const requiredFiles = [

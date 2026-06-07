@@ -203,6 +203,16 @@ const QMDJ_SNIPPETS: QimenSnippetSpec[] = [
     tags: ["host-guest", "shengke", "direction", "action", "decision"],
     repo: true,
   },
+  {
+    id: "star-vigor",
+    title: "旺相休囚死 กำลังของดาว/ประตูตามฤดู (九星旺衰)",
+    file: "auth-th/wangxiang-vigor-th.md",
+    start: 1,
+    end: 200,
+    maxChars: 3000,
+    tags: ["vigor", "star", "direction", "formation", "score"],
+    repo: true,
+  },
 ];
 
 let _qimenIndex: { snippets: QimenSnippet[]; sig: string; version: string } | null = null;
@@ -315,6 +325,9 @@ function selectQimenSourceIds(opts: { message: string; topic?: string; payload: 
   if (opts.payload?.qimen || wantAny(text, ["รุก", "รับ", "ลงมือก่อน", "รอ", "ฝ่ายไหน", "ได้เปรียบ", "主客", "เจ้าบ้าน", "แขก", "เริ่มก่อน", "บุก", "ตั้งรับ", "เจรจา", "แข่ง", "คดี", "ดีล", "ตัดสินใจ"])) {
     ids.add("host-guest-shengke");
   }
+  if (opts.payload?.qimen || wantAny(text, ["旺", "相", "休", "囚", "廢", "แรง", "อ่อน", "กำลัง", "ฤดู", "vigor", "ดาวแรง", "ดาวอ่อน", "旺相"])) {
+    ids.add("star-vigor");
+  }
   if (wantAny(text, ["格", "formation", "รูปแบบ", "青龍", "飛鳥", "五不遇", "空亡", "驛馬", "入墓", "擊刑", "門迫", "ช่องว่าง", "ม้า", "ปะทะ", "สุสาน"])) {
     ids.add("formations-good");
     ids.add("formations-risk");
@@ -348,6 +361,9 @@ function qimenSourceReasonTh(s: QimenSnippetSpec, opts: { message: string; topic
   }
   if (s.tags.includes("host-guest")) {
     return "เลือกเพราะต้องบอกว่าควรเป็นฝ่ายลงมือก่อน(รุก)หรือฝ่ายรอ(รับ) ตามหลัก 主客法 และธาตุ生剋 ของวัง/ดาว/ประตู";
+  }
+  if (s.tags.includes("vigor")) {
+    return "เลือกเพราะต้องชั่งกำลังดาว/ประตูตามฤดู 旺相休囚死 ปรับน้ำหนักว่าดาวนั้นแรงหรืออ่อน ไม่ใช่คำตัดสินดีร้ายเดี่ยว";
   }
   if (s.tags.includes("intent") || s.tags.includes("direction")) {
     return "เลือกเพราะต้องผูกคำถามเข้ากับ 用神/ทิศ/วังที่ควรอ่านก่อน";
