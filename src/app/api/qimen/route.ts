@@ -28,6 +28,139 @@ function resolveSchool(school?: string | null): string | null {
   return SCHOOL_TO_PROFILE[s] ? s : null;
 }
 
+type QimenSystemType = "hour" | "day" | "month" | "year";
+
+const QIMEN_SYSTEM_SCOPE: Record<QimenSystemType, {
+  calculation_scope_th: string;
+  source_note_th: string;
+  caveat_th: string;
+}> = {
+  hour: {
+    calculation_scope_th: "ผังฉีเหมินยาม 時家奇門",
+    source_note_th: "ผังนี้มาจากระบบคำนวณฉีเหมินตามสำนัก เวลา และพิกัดที่ส่งมา ใช้กับคำถามเฉพาะหน้าและการเลือกยาม",
+    caveat_th: "ใช้กับคำถามช่วงเวลานี้และการเลือกยาม ไม่ใช่ภาพรวมทั้งวัน/เดือน/ปี",
+  },
+  day: {
+    calculation_scope_th: "ผังฉีเหมินวัน 日家奇門",
+    source_note_th: "ผังนี้ใช้ดูแรงของวันและภาพรวมกิจกรรมวันนั้น ไม่ใช่ผังยามเฉพาะชั่วโมง",
+    caveat_th: "ไม่ใช่ผังยามเฉพาะชั่วโมง ถ้าจะลงมือจริงยังควรดูผังยาม 時家 ประกอบ",
+  },
+  month: {
+    calculation_scope_th: "ผังฉีเหมินเดือน 月家奇門",
+    source_note_th: "ผังนี้ใช้ดูแนวโน้มระดับเดือนและบริบทงานใหญ่ ไม่ใช่คำตัดสินจังหวะลงมือรายชั่วโมง",
+    caveat_th: "ใช้เป็นภาพรวมรายเดือน ไม่ควรฟันธงจังหวะลงมือรายชั่วโมงจากผังนี้อย่างเดียว",
+  },
+  year: {
+    calculation_scope_th: "ผังฉีเหมินปี 年家奇門",
+    source_note_th: "ผังนี้ใช้ดูภาพใหญ่ระดับปีและทิศทางระยะยาว ไม่ใช่ฤกษ์ยามเฉพาะชั่วโมง",
+    caveat_th: "ใช้เป็นภาพรวมรายปี ไม่ใช่คำตัดสินยามลงมือเฉพาะหน้า",
+  },
+};
+
+function normalizeQimenSystemType(value: unknown): QimenSystemType {
+  const raw = String(value || "").toLowerCase();
+  return raw === "day" || raw === "month" || raw === "year" ? raw : "hour";
+}
+
+function isObjectRecord(value: unknown): value is Record<string, any> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function decorateQimenChartScope(chart: unknown, requestedSystemType: unknown): unknown {
+  if (!isObjectRecord(chart)) return chart;
+  const engineSystemType = normalizeQimenSystemType(chart.system_type || chart.chart_type);
+  const requestedRaw = requestedSystemType ? normalizeQimenSystemType(requestedSystemType) : engineSystemType;
+  const requestedScope = QIMEN_SYSTEM_SCOPE[requestedRaw];
+  const fulfilled = requestedRaw === engineSystemType;
+  const scope = QIMEN_SYSTEM_SCOPE[engineSystemType];
+  const existingPolicy = isObjectRecord(chart.temporal_context_policy) ? chart.temporal_context_policy : {};
+  const existingCapabilities = isObjectRecord(chart.api_capabilities) ? chart.api_capabilities : {};
+  const existingContextFlags = isObjectRecord(existingCapabilities.qimen_context_flags)
+    ? existingCapabilities.qimen_context_flags
+    : {};
+  const existingSystemScope = isObjectRecord(existingCapabilities.qimen_system_scope)
+    ? existingCapabilities.qimen_system_scope
+    : {};
+
+  const temporalContextPolicy = {
+    ...existingPolicy,
+    context_only: existingPolicy.context_only ?? true,
+    verdict_allowed: existingPolicy.verdict_allowed ?? false,
+    no_score_mutation: existingPolicy.no_score_mutation ?? true,
+    score_effect: existingPolicy.score_effect ?? "none",
+    caveat_th: existingPolicy.caveat_th || scope.caveat_th,
+  };
+
+  const qimenContextFlags = {
+    ...existingContextFlags,
+    version: existingContextFlags.version || "qimen-context-flags-v1",
+    context_only: existingContextFlags.context_only ?? true,
+    verdict_allowed: existingContextFlags.verdict_allowed ?? false,
+    no_score_mutation: existingContextFlags.no_score_mutation ?? true,
+    score_effect: existingContextFlags.score_effect ?? "none",
+  };
+
+  return {
+    ...chart,
+    system_type: engineSystemType,
+    chart_type: chart.chart_type || engineSystemType,
+    calculation_scope_th: chart.calculation_scope_th || scope.calculation_scope_th,
+    source_note_th: chart.source_note_th || scope.source_note_th,
+    requested_system_type: requestedRaw,
+    requested_calculation_scope_th: requestedScope.calculation_scope_th,
+    qimen_system_scope_request: {
+      version: "qimen-system-scope-request-v1",
+      requested_system_type: requestedRaw,
+      engine_system_type: engineSystemType,
+      fulfilled,
+      calculation_scope_th: scope.calculation_scope_th,
+      requested_calculation_scope_th: requestedScope.calculation_scope_th,
+      status_th: fulfilled
+        ? "คำขอตรงกับผังที่ engine คำนวณจริง"
+        : `ยังไม่ได้คำนวณ ${requestedScope.calculation_scope_th} ในคำตอบนี้ จึงแสดง ${scope.calculation_scope_th} ที่ engine ส่งมาจริง`,
+      caveat_th: fulfilled
+        ? scope.caveat_th
+        : "ห้ามอ่านผังนี้เป็นผังวัน/เดือน/ปี ถ้า engine ยังส่ง system_type เป็น hour",
+    },
+    temporal_context_policy: temporalContextPolicy,
+    api_capabilities: {
+      ...existingCapabilities,
+      qimen_context_flags: qimenContextFlags,
+      qimen_system_scope: {
+        ...existingSystemScope,
+        version: existingSystemScope.version || "qimen-system-scope-v1",
+        system_type: engineSystemType,
+        requested_system_type: requestedRaw,
+        fulfilled,
+        calculation_scope_th: chart.calculation_scope_th || scope.calculation_scope_th,
+        source_note_th: chart.source_note_th || scope.source_note_th,
+        verdict_allowed: temporalContextPolicy.verdict_allowed,
+        no_score_mutation: temporalContextPolicy.no_score_mutation,
+        score_effect: temporalContextPolicy.score_effect,
+      },
+    },
+  };
+}
+
+function decorateQimenResponseScope(data: Record<string, any>, requestedSystemType: unknown): Record<string, any> {
+  if (isObjectRecord(data.data) && isObjectRecord(data.data.chart)) {
+    return {
+      ...data,
+      data: {
+        ...data.data,
+        chart: decorateQimenChartScope(data.data.chart, requestedSystemType),
+      },
+    };
+  }
+  if (isObjectRecord(data.chart)) {
+    return {
+      ...data,
+      chart: decorateQimenChartScope(data.chart, requestedSystemType),
+    };
+  }
+  return data;
+}
+
 async function callQimen(date: string, time: string, lng: number, lat: number, school: string, context: Record<string, unknown> = {}) {
   const target = `${QIMEN_BASE}/api/qimen/calculate`;
   const datetime = `${date}T${time}:00`;
@@ -56,7 +189,7 @@ async function callQimen(date: string, time: string, lng: number, lat: number, s
   const json = await r.json();
   json._profile_id = profile_id;
   json._school = school;
-  return json;
+  return decorateQimenResponseScope(json, context.system_type);
 }
 
 function nowDateTime() {

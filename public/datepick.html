@@ -1391,7 +1391,7 @@ function reasonDelta(raw){
 
 function scienceKeyFromReason(raw){
   const s = String(raw || '');
-  if (/奇門|奇门/.test(s)) return 'qi_men';
+  if (/奇門|奇门|ฉีเหมิน|Qi Men|qi_men|PROFILE_QIMEN|QM_BAD_DOOR_CAP/i.test(s)) return 'qi_men';
   if (/12建除|建除/.test(s)) return 'twelve_officers';
   if (/28宿|二十八宿/.test(s)) return 'twenty_eight';
   if (/12神煞|神煞/.test(s)) return 'twelve_spirits';
@@ -1484,7 +1484,7 @@ function tongshuSignalsForSlot(t){
 
 function enrichScienceSectionsForSlot(sections, t){
   const moduleScores = t.moduleScores || {};
-  if (moduleScores.qi_men != null) {
+  if (hasQimenScienceSignal(t)) {
     const parts = [
       qimenPartReading('door', t.door),
       qimenPartReading('star', t.star),
@@ -1514,6 +1514,15 @@ function enrichScienceSectionsForSlot(sections, t){
   }
   const order = ['qi_men','ze_ri','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
   return sections.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+}
+
+function hasQimenScienceSignal(t){
+  const hasLayer = [t?.door, t?.star, t?.deity].some(v => {
+    const s = String(v || '').trim();
+    return !!s && s !== '·' && s !== '-';
+  });
+  if (hasLayer) return true;
+  return (t?.matches || []).some(x => scienceKeyFromReason(x) === 'qi_men');
 }
 
 function buildScienceSections(matches, moduleScores){

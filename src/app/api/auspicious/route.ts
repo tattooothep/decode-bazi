@@ -129,17 +129,18 @@ export async function POST(req: NextRequest) {
     // options.hardModules ใช้สำหรับ layer ที่ต้องตัดจริงเท่านั้น; activeModules ใช้จัดคะแนนทั้งหมด
     const activeModuleKeys = activeModules.filter((m: ModuleKey) => ALL_MODULES.includes(m));
     const universalActive = activeModuleKeys.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
-    const requestedHardModules = Array.isArray(options.hardModules)
+    const requestedHardModulesRaw = Array.isArray(options.hardModules)
       ? options.hardModules.filter((m: ModuleKey) => ALL_MODULES.includes(m))
       : universalActive;
+    const requestedHardModules = qimenHardFilterModulesForDatepick(requestedHardModulesRaw);
     const mergedHardModules = mergeProfileHardModules({
       requestedHardModules,
       activeModules: activeModuleKeys,
       profile: activityProfile,
       hasPeople: ownedPeopleIds.length > 0,
     });
-    const hardModules = mergedHardModules.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
-    const applyPersonHard = mergedHardModules.includes("ba_zi");
+    const hardModules = qimenHardFilterModulesForDatepick(mergedHardModules).filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
+    const applyPersonHard = hardModules.includes("ba_zi");
     const baseTotal = await countEphemerisBase(dateFrom, dateTo);
     const personalAvoidZodiacs = applyPersonHard ? avoidZodiacs : [];
     const candidates = await queryEphemerisCandidates(dateFrom, dateTo, personalAvoidZodiacs, hardModules, options.scanLimit ?? 360);
@@ -173,10 +174,13 @@ export async function POST(req: NextRequest) {
     }
 
     // STEP 5: Enrich · sort
+    const baseScoreModules = qimenBaseScoreModulesForActivity(activeModuleKeys);
     const enriched = candidates
       .map(c => applyMonthDayShaRuntime(c, resolvedActivityType, targetDirection))
-      .map(c => enrichCandidate(c, activeModuleKeys, resolvedActivityType))
+      .map(c => enrichCandidate(c, baseScoreModules, resolvedActivityType))
       .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys, targetDirection))
+      .map(c => applyQimenGenericGuard(c, activityProfile, activeModuleKeys))
+      .map(refreshCandidateDisplay)
       .filter(c => !options.minScore || (c.scoring?.finalScore ?? 0) >= options.minScore)
       .sort((a, b) => (b.scoring?.finalScore ?? 0) - (a.scoring?.finalScore ?? 0))
       .slice(0, options.limit ?? 50);
@@ -206,7 +210,9 @@ export async function POST(req: NextRequest) {
           safety: activityProfile.safety,
           profileMode: activityProfile.profileMode,
         } : null,
-        hardModules: mergedHardModules,
+        qimenScoringPolicy: buildQimenDatepickPolicy(activityProfile, activeModuleKeys, targetDirection),
+        hardModules,
+        mergedHardModules,
       } as any,
     };
     // Save cache + evict ถ้าเกิน 1000 entries
@@ -460,25 +466,28 @@ async function getPersonalCache(personId: string, ephemerisId: string): Promise<
 
 function enrichCandidate(c: CandidateSlot, activeModules: ModuleKey[], activity: ActivityType): CandidateSlot {
   const scoring = combineScores(c.modules as any, activeModules, activity);
-  const qm = (c.modules as any)?.qi_men;
-  if (activeModules.includes("qi_men") && (qm?.pass === false || qm?.raw?.bad_door === true)) {
-    scoring.finalScore = Math.min(scoring.finalScore, 49);
-    scoring.tier = scoreToTier(scoring.finalScore);
-    scoring.action = tierToAction(scoring.tier, scoring.warnings.length);
-    scoring.reasonsDown.unshift({
-      code: "QM_BAD_DOOR_CAP",
-      thai: "ประตูฉีเหมินไม่เหมาะ · จำกัดคะแนนสูงสุด",
-      delta: -30,
-      source: "qi_men",
-      severity: "warning",
-    } as any);
-  }
   c.scoring = scoring;
   const tierMeta = TIER_LABELS[scoring.tier];
   c.display = {
     badges: [{ label: tierMeta?.thai || scoring.tier, color: tierMeta?.color || "#999", emoji: tierMeta?.emoji || "" } as any],
     summary: (scoring as any).summary || "",
     guardrails: [],
+  };
+  return c;
+}
+
+function refreshCandidateDisplay(c: CandidateSlot): CandidateSlot {
+  if (!c.scoring) return c;
+  const scoring = c.scoring;
+  const tierMeta = TIER_LABELS[scoring.tier];
+  const summary = `${tierMeta?.emoji || ""} ${tierMeta?.thai || scoring.tier} · คะแนน ${scoring.finalScore}`.trim();
+  c.display = {
+    badges: [{ label: tierMeta?.thai || scoring.tier, color: tierMeta?.color || "#999", emoji: tierMeta?.emoji || "" } as any],
+    summary,
+    guardrails: [
+      ...(scoring.warnings?.length ? [`มีคำเตือน ${scoring.warnings.length} ข้อ · ตรวจสอบก่อนใช้`] : []),
+      ...(scoring.caps?.length ? [`Score ถูกจำกัด: ${scoring.caps.map((cap: any) => cap.reason).join(", ")}`] : []),
+    ],
   };
   return c;
 }
@@ -493,6 +502,7 @@ type QimenActivityPreference = {
   goodStars?: string[];
   avoidStars?: string[];
   goodFlags?: string[];
+  goodFormations?: string[];
   maxPositiveDelta: number;
   maxNegativeDelta: number;
   avoidDoorCap: number;
@@ -525,12 +535,29 @@ const QIMEN_TERM_ZH: Record<string, string> = {
   TIAN_ZHU: "天柱",
   TIAN_XIN: "天心",
   TIAN_QIN: "天禽",
+  YI_MA: "驛馬",
+  MEN_PO: "門迫",
+  RU_MU: "入墓",
+  JI_XING: "擊刑",
+  FU_YIN: "伏吟",
+  FAN_YIN: "反吟",
+  WU_BU_YU_TIME: "五不遇時",
+  QING_LONG_FAN_SHOU: "青龍返首",
+  FEI_NIAO_DIE_XUE: "飛鳥跌穴",
+  SAN_ZHA_ZHEN: "真詐",
+  SAN_ZHA_XIU: "休詐",
+  SAN_ZHA_CHONG: "重詐",
+  TIAN_DUN: "天遁",
+  DI_DUN: "地遁",
+  REN_DUN: "人遁",
 };
 
 const QIMEN_TERM_CODE_BY_ZH = Object.fromEntries(
   Object.entries(QIMEN_TERM_ZH).map(([code, zh]) => [zh, code]),
 ) as Record<string, string>;
 QIMEN_TERM_CODE_BY_ZH["直符"] = "ZHI_FU";
+QIMEN_TERM_CODE_BY_ZH["六儀擊刑"] = "JI_XING";
+QIMEN_TERM_CODE_BY_ZH["六仪击刑"] = "JI_XING";
 
 const QIMEN_TERM_TH: Record<string, string> = {
   KAI_MEN: "ประตูเปิด",
@@ -559,6 +586,21 @@ const QIMEN_TERM_TH: Record<string, string> = {
   TIAN_ZHU: "ดาวเทียนจู้",
   TIAN_XIN: "ดาวเทียนซิน",
   TIAN_QIN: "ดาวเทียนฉิน",
+  YI_MA: "ม้าเดินทาง",
+  MEN_PO: "ประตูข่มวัง",
+  RU_MU: "เข้าคลัง",
+  JI_XING: "ก้านถูกลงโทษ",
+  FU_YIN: "พลังนิ่งซ้ำ",
+  FAN_YIN: "พลังพลิกกลับ",
+  WU_BU_YU_TIME: "ยามไม่พบกัน",
+  QING_LONG_FAN_SHOU: "มังกรเขียวหันกลับ",
+  FEI_NIAO_DIE_XUE: "นกบินตกถ้ำ",
+  SAN_ZHA_ZHEN: "ซานจ่าจริง",
+  SAN_ZHA_XIU: "ซานจ่าพัก",
+  SAN_ZHA_CHONG: "ซานจ่าหนัก",
+  TIAN_DUN: "เทียนตุ้น",
+  DI_DUN: "ตี้ตุ้น",
+  REN_DUN: "เหรินตุ้น",
 };
 
 const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> = {
@@ -568,6 +610,7 @@ const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> 
     goodDeities: ["ZHI_FU", "LIU_HE", "JIU_TIAN"],
     avoidDeities: ["XUAN_WU", "BAI_HU"],
     goodStars: ["TIAN_REN", "TIAN_FU", "TIAN_XIN"],
+    goodFormations: ["QING_LONG_FAN_SHOU", "FEI_NIAO_DIE_XUE", "SAN_ZHA_ZHEN", "SAN_ZHA_XIU", "TIAN_DUN", "REN_DUN"],
     maxPositiveDelta: 6,
     maxNegativeDelta: -8,
     avoidDoorCap: 49,
@@ -578,6 +621,7 @@ const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> 
     goodDeities: ["ZHI_FU", "JIU_TIAN", "LIU_HE"],
     avoidDeities: ["BAI_HU", "TENG_SHE"],
     goodStars: ["TIAN_FU", "TIAN_XIN"],
+    goodFormations: ["QING_LONG_FAN_SHOU", "FEI_NIAO_DIE_XUE", "TIAN_DUN", "REN_DUN"],
     maxPositiveDelta: 5,
     maxNegativeDelta: -7,
     avoidDoorCap: 52,
@@ -588,6 +632,7 @@ const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> 
     goodDeities: ["JIU_TIAN", "JIU_DI", "LIU_HE", "ZHI_FU"],
     avoidDeities: ["BAI_HU", "TENG_SHE", "XUAN_WU"],
     goodStars: ["TIAN_REN", "TIAN_FU", "TIAN_XIN"],
+    goodFormations: ["QING_LONG_FAN_SHOU", "FEI_NIAO_DIE_XUE", "SAN_ZHA_ZHEN", "SAN_ZHA_XIU", "SAN_ZHA_CHONG", "TIAN_DUN", "DI_DUN", "REN_DUN"],
     maxPositiveDelta: 6,
     maxNegativeDelta: -8,
     avoidDoorCap: 49,
@@ -598,6 +643,7 @@ const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> 
     goodDeities: ["LIU_HE", "TAI_YIN", "ZHI_FU"],
     avoidDeities: ["BAI_HU", "TENG_SHE", "XUAN_WU"],
     goodStars: ["TIAN_FU", "TIAN_XIN"],
+    goodFormations: ["SAN_ZHA_ZHEN", "SAN_ZHA_XIU", "SAN_ZHA_CHONG", "QING_LONG_FAN_SHOU", "FEI_NIAO_DIE_XUE", "REN_DUN"],
     maxPositiveDelta: 6,
     maxNegativeDelta: -8,
     avoidDoorCap: 49,
@@ -609,6 +655,7 @@ const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> 
     avoidDeities: ["BAI_HU", "TENG_SHE"],
     goodStars: ["TIAN_CHONG", "TIAN_FU"],
     goodFlags: ["is_traveling_horse", "traveling_horse", "horse", "驛馬"],
+    goodFormations: ["QING_LONG_FAN_SHOU", "FEI_NIAO_DIE_XUE", "TIAN_DUN", "REN_DUN"],
     maxPositiveDelta: 6,
     maxNegativeDelta: -8,
     avoidDoorCap: 48,
@@ -619,6 +666,7 @@ const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> 
     goodDeities: ["LIU_HE", "TAI_YIN", "ZHI_FU"],
     avoidDeities: ["BAI_HU", "TENG_SHE"],
     goodStars: ["TIAN_FU"],
+    goodFormations: ["SAN_ZHA_XIU", "REN_DUN"],
     maxPositiveDelta: 5,
     maxNegativeDelta: -7,
     avoidDoorCap: 52,
@@ -629,6 +677,7 @@ const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> 
     goodDeities: ["LIU_HE", "TAI_YIN", "ZHI_FU"],
     avoidDeities: ["BAI_HU", "TENG_SHE"],
     goodStars: ["TIAN_FU", "TIAN_REN"],
+    goodFormations: ["SAN_ZHA_XIU", "REN_DUN"],
     maxPositiveDelta: 5,
     maxNegativeDelta: -8,
     avoidDoorCap: 49,
@@ -650,6 +699,7 @@ const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> 
     goodDeities: ["ZHI_FU", "TAI_YIN", "JIU_TIAN"],
     avoidDeities: ["BAI_HU", "TENG_SHE"],
     goodStars: ["TIAN_FU", "TIAN_XIN"],
+    goodFormations: ["QING_LONG_FAN_SHOU", "FEI_NIAO_DIE_XUE", "TIAN_DUN"],
     maxPositiveDelta: 5,
     maxNegativeDelta: -7,
     avoidDoorCap: 52,
@@ -660,6 +710,7 @@ const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> 
     goodDeities: ["JIU_DI", "ZHI_FU"],
     avoidDeities: ["BAI_HU", "TENG_SHE"],
     goodStars: ["TIAN_REN", "TIAN_XIN"],
+    goodFormations: ["DI_DUN"],
     maxPositiveDelta: 5,
     maxNegativeDelta: -8,
     avoidDoorCap: 49,
@@ -677,6 +728,62 @@ const QIMEN_DIRECTION_ALIASES: Record<Dir8, string[]> = {
   NW: ["NW", "西北", "northwest"],
 };
 const QIMEN_TARGET_MISMATCH = Symbol("qimen-target-direction-mismatch");
+const QIMEN_ACTIVITY_AVOID_FLAGS = [
+  "MEN_PO", "門迫", "RU_MU", "入墓", "JI_XING", "LIU_YI_JI_XING", "六儀擊刑",
+  "FU_YIN", "伏吟", "FAN_YIN", "反吟", "WU_BU_YU_TIME", "五不遇時",
+];
+
+function qimenBaseScoreModulesForActivity(activeModules: ModuleKey[]): ModuleKey[] {
+  return activeModules.filter((m) => m !== "qi_men");
+}
+
+function qimenHardFilterModulesForDatepick(modules: ModuleKey[]): ModuleKey[] {
+  return modules.filter((m) => m !== "qi_men");
+}
+
+function buildQimenDatepickPolicy(
+  profile: ActivityProfile | null,
+  activeModules: ModuleKey[],
+  targetDirection: Dir8 | null,
+) {
+  const qimenActive = activeModules.includes("qi_men");
+  const pref = profile ? QIMEN_ACTIVITY_PREFERENCES[profile.qimenPurpose] : null;
+  return {
+    version: "datepick-qimen-policy-20260606",
+    enabled: qimenActive,
+    mode: profile ? "activity_profile" : "guard_only",
+    baseScoreExcludesQiMen: true,
+    noGenericAveraging: true,
+    chartScopeTh: "ใช้เฉพาะผังยาม 時家 ที่ระบบอนุญาตให้ตัดสินได้; ผังวัน/เดือน/ปีใช้เป็นบริบท ไม่เอามาคิดคะแนนฤกษ์ยาม",
+    useTh: qimenActive
+      ? (profile
+        ? `${profile.labelTh}: ฉีเหมินใช้เลือกวัง/ประตู/ดาว/เทพ/ก้านและสัญญาณที่ตรงกิจกรรม ไม่ใช่คะแนนกลาง`
+        : "ไม่มีภารกิจย่อยเฉพาะ: ฉีเหมินใช้เป็นตัวจำกัดเมื่อผังไม่รับ ไม่ใช่คะแนนบวกกลาง")
+      : "ไม่ได้เปิดโมดูลฉีเหมินในคำขอนี้",
+    caveatTh: "คะแนนหลักตัดจากศาสตร์อื่นก่อน แล้วฉีเหมินค่อยปรับแบบมีเหตุผลเฉพาะกิจกรรมและมีเพดานกันฟันธงเกินข้อมูล",
+    evidenceTh: "ใช้เฉพาะประตู ดาว เทพ ก้าน และสัญญาณจากผังจริงที่อนุญาตให้ให้คะแนน; ป้ายแสดงผลหรือข้อมูลอ่านประกอบไม่เอามาคิดคะแนน",
+    targetDirection: targetDirection || null,
+    activityProfile: profile ? {
+      key: profile.key,
+      labelTh: profile.labelTh,
+      labelZh: profile.labelZh,
+      qimenPurpose: profile.qimenPurpose,
+      safety: profile.safety,
+    } : null,
+    preference: pref ? {
+      goodDoors: pref.goodDoors.map(qimenLabel),
+      avoidDoors: pref.avoidDoors.map(qimenLabel),
+      goodDeities: (pref.goodDeities || []).map(qimenLabel),
+      avoidDeities: (pref.avoidDeities || []).map(qimenLabel),
+      goodStars: (pref.goodStars || []).map(qimenLabel),
+      avoidStars: (pref.avoidStars || []).map(qimenLabel),
+      goodFormations: (pref.goodFormations || []).map(qimenLabel),
+      maxPositiveDelta: pref.maxPositiveDelta,
+      maxNegativeDelta: pref.maxNegativeDelta,
+      avoidDoorCap: profile?.safety === "medical_safe" ? Math.min(pref.avoidDoorCap, 39) : pref.avoidDoorCap,
+    } : null,
+  };
+}
 
 function qimenNormalizeTerm(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -733,8 +840,129 @@ function qimenHasFlag(qm: any, raw: any, palace: any, names: string[] = []): boo
   return names.some((name) => {
     const low = name.toLowerCase();
     if (tags.includes(low)) return true;
-    return Boolean(raw?.[name] || palace?.[name] || raw?.flags?.[name] || palace?.flags?.[name]);
+    if (Boolean(raw?.[name] || palace?.[name] || raw?.flags?.[name] || palace?.flags?.[name])) return true;
+    const code = qimenNormalizeEvidenceCode(name);
+    return code ? qimenEvidenceCodes(raw, palace).has(code) : false;
   });
+}
+
+function qimenScoreEvidenceAllowed(item: any): boolean {
+  if (!item || typeof item !== "object") return true;
+  const quality = String(item.quality || item.effective_quality || item.base_quality || "").toLowerCase();
+  const evidence = item.evidence || {};
+  const readiness = item.engine_readiness || {};
+  return item.verdict_allowed !== false
+    && readiness.verdict_allowed !== false
+    && item.context_only !== true
+    && item.is_context_only !== true
+    && item.no_score !== true
+    && item.diagnostic !== true
+    && evidence.no_score !== true
+    && evidence.diagnostic !== true
+    && quality !== "context_only";
+}
+
+function qimenModuleScoreAllowed(qm: any): boolean {
+  if (!qm || qm.status === "missing" || qm.status === "error") return false;
+  const raw = qm.raw || {};
+  const data = raw.data || {};
+  const chart = raw.chart || data.chart || {};
+  const calculation = raw.calculation || data.calculation || {};
+  const quality = String(raw.quality || raw.effective_quality || raw.base_quality || chart.quality || "").toLowerCase();
+  const systemType = String(
+    chart.system_type || chart.chart_type || raw.system_type || raw.chart_type || calculation.system_type || "",
+  ).toLowerCase();
+  if (systemType === "day" || systemType === "month" || systemType === "year") return false;
+  const readiness = chart.engine_readiness || raw.engine_readiness || {};
+  const temporal = chart.temporal_context_policy || raw.temporal_context_policy || {};
+  return raw.verdict_allowed !== false
+    && chart.verdict_allowed !== false
+    && calculation.verdict_allowed !== false
+    && raw.context_only !== true
+    && chart.context_only !== true
+    && raw.is_context_only !== true
+    && chart.is_context_only !== true
+    && quality !== "context_only"
+    && raw.no_score !== true
+    && raw.diagnostic !== true
+    && readiness.verdict_allowed !== false
+    && temporal.verdict_allowed !== false;
+}
+
+function qimenNormalizeEvidenceCode(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
+  if (!raw) return null;
+  const direct = qimenNormalizeTerm(raw);
+  if (direct) return direct;
+  const compact = raw.toUpperCase().replace(/[\s-]+/g, "_");
+  if (compact.includes("MEN_PO") || compact.includes("DOOR_OPPRESSED")) return "MEN_PO";
+  if (compact.includes("RU_MU") || compact.includes("TOMB")) return "RU_MU";
+  if (compact.includes("LIU_YI_JI_XING") || compact.includes("JI_XING") || compact.includes("PUNISH") || compact.includes("六儀擊刑") || compact.includes("六仪击刑") || compact.includes("擊刑") || compact.includes("击刑")) return "JI_XING";
+  if (compact.includes("FU_YIN")) return "FU_YIN";
+  if (compact.includes("FAN_YIN")) return "FAN_YIN";
+  if (compact.includes("WU_BU_YU") || compact.includes("FIVE_NO_MEET") || compact.includes("FIVE_NOT_MEET")) return "WU_BU_YU_TIME";
+  if (compact.includes("QING_LONG")) return "QING_LONG_FAN_SHOU";
+  if (compact.includes("FEI_NIAO")) return "FEI_NIAO_DIE_XUE";
+  if (compact.includes("SAN_ZHA_ZHEN")) return "SAN_ZHA_ZHEN";
+  if (compact.includes("SAN_ZHA_XIU")) return "SAN_ZHA_XIU";
+  if (compact.includes("SAN_ZHA_CHONG")) return "SAN_ZHA_CHONG";
+  if (compact.includes("TIAN_DUN")) return "TIAN_DUN";
+  if (compact.includes("DI_DUN")) return "DI_DUN";
+  if (compact.includes("REN_DUN")) return "REN_DUN";
+  return null;
+}
+
+function qimenEvidenceItems(raw: any, palace: any): any[] {
+  const out: any[] = [];
+  const add = (value: any) => {
+    if (!value) return;
+    if (Array.isArray(value)) {
+      value.forEach(add);
+      return;
+    }
+    if (typeof value === "object") {
+      if (qimenScoreEvidenceAllowed(value)) out.push(value);
+      return;
+    }
+    out.push({ code: String(value) });
+  };
+  add(raw?.stored_formations);
+  add(raw?.source_formations);
+  add(raw?.compound_formations);
+  add(raw?.formations);
+  add(raw?.chart?.stored_formations);
+  add(raw?.chart?.source_formations);
+  add(raw?.chart?.compound_formations);
+  add(palace?.formations);
+  add(palace?.classical_flags);
+  add(palace?.qimen_trace);
+  add(palace?.p0_badges);
+  add(palace?.source_trace);
+  return out;
+}
+
+function qimenEvidenceCodes(raw: any, palace: any): Set<string> {
+  const codes = new Set<string>();
+  for (const item of qimenEvidenceItems(raw, palace)) {
+    for (const value of [
+      item.code, item.formation_code, item.rule_id, item.detector, item.flag,
+      item.name_zh, item.label_zh, item.badge, item.badge_zh, item.title_zh,
+    ]) {
+      const code = qimenNormalizeEvidenceCode(value);
+      if (code) codes.add(code);
+    }
+  }
+  return codes;
+}
+
+function qimenFirstEvidenceCode(raw: any, palace: any, names: string[] = []): string | null {
+  const codes = qimenEvidenceCodes(raw, palace);
+  for (const name of names) {
+    const code = qimenNormalizeEvidenceCode(name);
+    if (code && codes.has(code)) return code;
+  }
+  return null;
 }
 
 function applyQimenActivityPreference(input: {
@@ -748,6 +976,7 @@ function applyQimenActivityPreference(input: {
 }) {
   const pref = QIMEN_ACTIVITY_PREFERENCES[input.profile.qimenPurpose];
   if (!pref || !input.qm || input.qm.status === "missing" || input.qm.status === "error") return;
+  if (!qimenModuleScoreAllowed(input.qm)) return;
 
   const raw = input.qm.raw || {};
   if (input.qm.pass === false || raw.bad_door === true) return;
@@ -835,11 +1064,33 @@ function applyQimenActivityPreference(input: {
       "qi_men",
     );
   }
+  const avoidFlag = qimenFirstEvidenceCode(raw, palace, QIMEN_ACTIVITY_AVOID_FLAGS);
+  if (avoidFlag) {
+    delta -= 3;
+    input.addDown(
+      "PROFILE_QIMEN_AVOID_FLAG",
+      `${input.profile.labelTh}: สัญญาณฉีเหมินต้องระวัง · ${qimenLabel(avoidFlag)}`,
+      -3,
+      "qi_men",
+    );
+    const flagCap = input.profile.safety === "medical_safe" ? 39 : pref.avoidDoorCap;
+    avoidDoorCap = Math.min(avoidDoorCap ?? flagCap, flagCap);
+  }
   if (pref.goodFlags?.length && qimenHasFlag(input.qm, raw, palace, pref.goodFlags)) {
     delta += 1;
     input.addUp(
       "PROFILE_QIMEN_GOOD_FLAG",
       `${input.profile.labelTh}: มีสัญญาณเคลื่อนไหวที่เข้ากับงานนี้ · ม้าเดินทาง 驛馬`,
+      1,
+      "qi_men",
+    );
+  }
+  const goodFormation = qimenFirstEvidenceCode(raw, palace, pref.goodFormations || []);
+  if (goodFormation) {
+    delta += 1;
+    input.addUp(
+      "PROFILE_QIMEN_GOOD_FORMATION",
+      `${input.profile.labelTh}: รูปแบบฉีเหมินเข้ากับกิจกรรม · ${qimenLabel(goodFormation)}`,
       1,
       "qi_men",
     );
@@ -863,7 +1114,7 @@ function applyActivityProfileRules(
   activeModules: ModuleKey[],
   targetDirection: Dir8 | null = null,
 ): CandidateSlot {
-  if (!profile || profile.profileMode !== "modern" || !c.scoring) return c;
+  if (!profile || !c.scoring) return c;
 
   const active = new Set(activeModules);
   const modules = c.modules as any;
@@ -902,12 +1153,14 @@ function applyActivityProfileRules(
   const bz = modules?.ba_zi;
   const ys = modules?.yong_shen;
 
-  if (active.has("qi_men") && qm && qm.status !== "missing" && qm.status !== "error") {
+  if (active.has("qi_men") && qimenModuleScoreAllowed(qm)) {
     applyQimenActivityPreference({ profile, qm, targetDirection, addUp, addDown, cap, shiftScore });
   }
-  if (active.has("qi_men") && (qm?.pass === false || qm?.raw?.bad_door === true)) {
+  if (active.has("qi_men") && qimenModuleScoreAllowed(qm) && (qm?.pass === false || qm?.raw?.bad_door === true)) {
     const limit = profile.safety === "medical_safe" ? 39 : 54;
-    cap(limit, "PROFILE_QIMEN_CAP", `${profile.labelTh}: ฉีเหมินไม่รับภารกิจนี้ · จำกัดคะแนนยาม`, "qi_men");
+    const reason = `${profile.labelTh}: ฉีเหมินไม่รับภารกิจนี้ · ใช้เป็นตัวจำกัด ไม่ใช่คะแนนบวกกลาง`;
+    addDown("PROFILE_QIMEN_CAP", reason, scoring.finalScore > limit ? limit - scoring.finalScore : 0, "qi_men");
+    cap(limit, "PROFILE_QIMEN_CAP", reason, "qi_men");
   }
   if (active.has("tai_sui") && ts?.pass === false) {
     cap(profile.safety === "medical_safe" ? 42 : 55, "PROFILE_TAISUI_CAP", `${profile.labelTh}: ชั้นไท้ส่วยไม่ผ่าน · ไม่ดันเป็นฤกษ์แรง`, "tai_sui");
@@ -930,13 +1183,48 @@ function applyActivityProfileRules(
     addWarning("MEDICAL_SAFE_NOTE", "สุขภาพ/ผ่าตัดใช้กับการวางเวลา elective เท่านั้น · ไม่แทนคำแนะนำแพทย์", -5, "ze_ri");
   }
 
-  if (profile.key === "exam_study" || profile.key === "interview") {
+  if (
+    (profile.key === "exam_study" || profile.key === "interview")
+    && active.has("qi_men")
+    && qimenModuleScoreAllowed(qm)
+    && qm?.pass !== false
+    && qm?.raw?.bad_door !== true
+  ) {
     addUp("PROFILE_EXAM_CONTEXT", `${profile.labelTh}: ใช้กฎเอกสาร+การนำเสนอ และให้ฉีเหมินเป็นตัวคัดยาม`, 3, "qi_men");
   }
 
   scoring.finalScore = Math.max(0, Math.min(100, Math.round(scoring.finalScore)));
   scoring.tier = scoreToTier(scoring.finalScore);
   scoring.action = tierToAction(scoring.tier, scoring.warnings?.length || 0);
+  return c;
+}
+
+function applyQimenGenericGuard(
+  c: CandidateSlot,
+  profile: ActivityProfile | null,
+  activeModules: ModuleKey[],
+): CandidateSlot {
+  if (profile || !c.scoring || !activeModules.includes("qi_men")) return c;
+  const qm = (c.modules as any)?.qi_men;
+  if (!qimenModuleScoreAllowed(qm)) return c;
+  if (!(qm?.pass === false || qm?.raw?.bad_door === true)) return c;
+  const scoring = c.scoring as any;
+  const limit = 49;
+  scoring.reasonsDown = scoring.reasonsDown || [];
+  if (!scoring.reasonsDown.some((r: any) => r.code === "QM_BAD_DOOR_CAP")) {
+    scoring.reasonsDown.unshift({
+      code: "QM_BAD_DOOR_CAP",
+      thai: "ประตูฉีเหมินไม่เหมาะ · ใช้เป็นตัวจำกัด ไม่ใช่คะแนนบวกกลาง",
+      delta: scoring.finalScore > limit ? limit - scoring.finalScore : 0,
+      source: "qi_men",
+      severity: "warning",
+    } as any);
+  }
+  if (scoring.finalScore > limit) {
+    scoring.finalScore = limit;
+    scoring.tier = scoreToTier(scoring.finalScore);
+    scoring.action = tierToAction(scoring.tier, scoring.warnings?.length || 0);
+  }
   return c;
 }
 
