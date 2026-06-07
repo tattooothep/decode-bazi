@@ -95,6 +95,18 @@ if (vigorOk) {
   ck("原文 廢休囚 ตรงคัมภีร์", v.includes("废于父母休于财，囚于鬼兮真不妄，"));
 }
 
+console.log("[#3d 守護·值符 ดาวผู้นำ (repo · auth-th)]");
+ck("ขึ้น snippet zhifu-guardian", has('id: "zhifu-guardian"') && has("auth-th/zhifu-guardian-th.md"));
+const zhifu = join(authDir, "zhifu-guardian-th.md");
+const zhifuOk = existsSync(zhifu) && statSync(zhifu).size > 800;
+ck("ไฟล์ zhifu-guardian-th.md มีจริง", zhifuOk, zhifu);
+if (zhifuOk) {
+  const z = readFileSync(zhifu, "utf8");
+  ck("ไทยนำ: อธิบายดาวผู้นำ/ที่พึ่ง + เตือน空亡", z.includes("ผู้นำ") && (z.includes("ที่พึ่ง") || z.includes("คุ้มกัน")) && z.includes("空亡"));
+  ck("原文 值符 ตรงคัมภีร์ (九宫逢甲为值符 verbatim ตัวย่อ)", z.includes("九宫逢甲为值符，八门值使自分明，"));
+  ck("原文 天乙之神 ตรงคัมภีร์", z.includes("天乙之神所在宫，大将宜居击对冲，"));
+}
+
 console.log("[#4 source files exist]");
 const qmdjDir = process.env.QIMEN_DOCS_DIR || "/var/www/hourkey/docs/Qimendunjia คัมภีร์";
 const requiredFiles = [

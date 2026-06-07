@@ -213,6 +213,16 @@ const QMDJ_SNIPPETS: QimenSnippetSpec[] = [
     tags: ["vigor", "star", "direction", "formation", "score"],
     repo: true,
   },
+  {
+    id: "zhifu-guardian",
+    title: "守護·值符 ดาวผู้นำ/องค์อารักษ์ประจำผัง (天乙之神)",
+    file: "auth-th/zhifu-guardian-th.md",
+    start: 1,
+    end: 200,
+    maxChars: 3000,
+    tags: ["guardian", "zhifu", "spirit", "direction"],
+    repo: true,
+  },
 ];
 
 let _qimenIndex: { snippets: QimenSnippet[]; sig: string; version: string } | null = null;
@@ -328,6 +338,9 @@ function selectQimenSourceIds(opts: { message: string; topic?: string; payload: 
   if (opts.payload?.qimen || wantAny(text, ["旺", "相", "休", "囚", "廢", "แรง", "อ่อน", "กำลัง", "ฤดู", "vigor", "ดาวแรง", "ดาวอ่อน", "旺相"])) {
     ids.add("star-vigor");
   }
+  if (opts.payload?.qimen || wantAny(text, ["值符", "直符", "天乙", "ผู้นำ", "ผู้ใหญ่", "นาย", "เจ้านาย", "ที่พึ่ง", "คุ้มกัน", "อารักษ์", "บารมี", "วังหลัก", "guardian"])) {
+    ids.add("zhifu-guardian");
+  }
   if (wantAny(text, ["格", "formation", "รูปแบบ", "青龍", "飛鳥", "五不遇", "空亡", "驛馬", "入墓", "擊刑", "門迫", "ช่องว่าง", "ม้า", "ปะทะ", "สุสาน"])) {
     ids.add("formations-good");
     ids.add("formations-risk");
@@ -364,6 +377,9 @@ function qimenSourceReasonTh(s: QimenSnippetSpec, opts: { message: string; topic
   }
   if (s.tags.includes("vigor")) {
     return "เลือกเพราะต้องชั่งกำลังดาว/ประตูตามฤดู 旺相休囚死 ปรับน้ำหนักว่าดาวนั้นแรงหรืออ่อน ไม่ใช่คำตัดสินดีร้ายเดี่ยว";
+  }
+  if (s.tags.includes("guardian")) {
+    return "เลือกเพราะต้องหาวังหลัก/ที่พึ่ง/ผู้คุ้มกันของเรื่อง ตามตำแหน่งดาวผู้นำ 值符 และเตือนถ้า值符ตกช่องว่าง 空亡";
   }
   if (s.tags.includes("intent") || s.tags.includes("direction")) {
     return "เลือกเพราะต้องผูกคำถามเข้ากับ 用神/ทิศ/วังที่ควรอ่านก่อน";
