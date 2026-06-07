@@ -14,7 +14,7 @@ import { join } from "path";
 import { createHash } from "crypto";
 import { StringDecoder } from "string_decoder";
 import { q1, q } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { getSession, type Session } from "@/lib/auth";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
@@ -24,6 +24,8 @@ import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
 import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
+import { buildSifuShadowModePlan } from "@/lib/sifu-shadow-mode";
+import { logSifuSourceAuditSafe } from "@/lib/sifu-source-audit-log";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type SifuModel = "claude-max-cli" | "codex-cli";
@@ -43,11 +45,17 @@ const TIMEOUT_MS = 600_000; // 600s · ยัดตำราคลาสสิ�
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 7_000);
 const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function cleanSifuThreadId(v: unknown): string | null {
   if (typeof v !== "string") return null;
   const s = v.trim().replace(/[^\w:.-]+/g, "_").slice(0, 80);
   return s || null;
+}
+function cleanProfileId(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim();
+  return UUID_RE.test(s) ? s : null;
 }
 const SIFU_CONTEXT_CACHE_MS = Number(process.env.SIFU_CONTEXT_CACHE_MS || 5 * 60_000);
 const SIFU_CONTEXT_CACHE_MAX = Number(process.env.SIFU_CONTEXT_CACHE_MAX || 80);
@@ -299,6 +307,312 @@ function contextHash(ctx: string): string {
   return createHash("sha1").update(ctx).digest("hex").slice(0, 16);
 }
 
+function hashText(text: string): string {
+  return createHash("sha256").update(text).digest("hex");
+}
+
+function firstContextLine(ctx: string, prefix: string): string | null {
+  return ctx.split("\n").find((line) => line.startsWith(prefix)) || null;
+}
+
+function packetContextExcerpt(ctx: string): string[] {
+  const lines = ctx
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => !/^===\s*20\s*คัมภีร์/i.test(line));
+  return lines.slice(0, 120).map((line) => line.slice(0, 500));
+}
+
+function extractPillarsFromLock(line: string | null): {
+  year: string | null;
+  month: string | null;
+  day: string | null;
+  hour: string | null;
+  raw: string | null;
+} {
+  if (!line) return { year: null, month: null, day: null, hour: null, raw: null };
+  const m = line.match(/年(\S+)\s+月(\S+)\s+日(\S+)\s+時(\S+)/);
+  return {
+    year: m?.[1] || null,
+    month: m?.[2] || null,
+    day: m?.[3] || null,
+    hour: m?.[4] || null,
+    raw: line,
+  };
+}
+
+function classifyPredictionPhase(message: string, history: Msg[]): string {
+  const text = [message, ...history.slice(-4).map((m) => m.content)].join("\n").toLowerCase();
+  if (/(เฉลย|จริงๆ|จริง ๆ|เกิดขึ้นจริง|รถล้ม|แขนหัก|ยาย.*เสีย|ตั้งครรภ์|ใส่ตัวอ่อน|icsi|feedback|actual)/i.test(text)) {
+    return "post_feedback";
+  }
+  if (history.length && /(ขยายความ|อธิบาย|หมายถึง|แปลว่า|ทำไม|เพราะอะไร|แล้วถ้า|ถ้างั้น|ต่อจาก|ข้อไหน|จุดไหน|แก้ยังไง|clarif)/i.test(message)) {
+    return "clarification";
+  }
+  if (/(ปีไหน|เดือนไหน|ช่วงไหน|อดีต|อนาคต|ทำนาย|ดูปี|ดูเดือน|อุบัติเหตุ|งาน|เงิน|สุขภาพ|คู่|ความรัก|ลูก|ตั้งครรภ์|icsi)/i.test(message)) {
+    return "before_prediction";
+  }
+  return "general";
+}
+
+function extractPredictionDateWindow(message: string): Record<string, unknown> | null {
+  const years = Array.from(new Set((message.match(/(?:25[0-9]{2}|20[0-9]{2}|19[0-9]{2})/g) || []).map((x) => Number(x))));
+  const months = Array.from(new Set((message.match(/(?:มกราคม|กุมภาพันธ์|มีนาคม|เมษายน|พฤษภาคม|มิถุนายน|กรกฎาคม|สิงหาคม|กันยายน|ตุลาคม|พฤศจิกายน|ธันวาคม|ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)/gi) || []).map((x) => x.trim())));
+  if (years.length || months.length) return { years, months, raw: message.slice(0, 240) };
+  if (/(ปีหน้า|next year)/i.test(message)) return { relative: "next_year", raw: message.slice(0, 240) };
+  if (/(ปีนี้|this year)/i.test(message)) return { relative: "this_year", raw: message.slice(0, 240) };
+  if (/(เดือนไหน|ช่วงไหน|เมื่อไหร่|ตอนไหน|date window|window)/i.test(message)) return { relative: "unspecified_requested", raw: message.slice(0, 240) };
+  return null;
+}
+
+function predictionEventType(message: string): string {
+  if (/(อุบัติเหตุ|รถ|ล้ม|ผ่าตัด|เจ็บ|ป่วย)/i.test(message)) return "accident_health";
+  if (/(งาน|การงาน|เปลี่ยนงาน|อาชีพ)/i.test(message)) return "career";
+  if (/(เงิน|รวย|ทรัพย์|รายได้|ลงทุน|เทรด)/i.test(message)) return "wealth";
+  if (/(คู่|แฟน|สามี|ภรรยา|ความรัก|แต่ง)/i.test(message)) return "relationship";
+  if (/(ลูก|ตั้งครรภ์|ท้อง|icsi|ตัวอ่อน)/i.test(message)) return "fertility_family";
+  if (/(ยาย|ตา|ย่า|ปู่|พ่อ|แม่|เสีย|สูญเสีย|ครอบครัว)/i.test(message)) return "family";
+  if (/(ปี|เดือน|ช่วง|อดีต|อนาคต)/i.test(message)) return "timing";
+  return "general";
+}
+
+function predictionEvidenceRuleIds(eventType: string, packetHash: string | null): string[] {
+  const ids = ["profile_packet_bound", "fact_lock", "pillar_lock", `intent_${eventType}`];
+  if (packetHash) ids.push("packet_hash_present");
+  return ids;
+}
+
+function predictionIntentConfidence(message: string, eventType: string, dateWindow: Record<string, unknown> | null): number {
+  let score = eventType === "general" ? 0.45 : 0.62;
+  if (dateWindow) score += 0.1;
+  if (/(ปีไหน|เดือนไหน|ช่วงไหน|ทำนาย|ดูปี|ดูเดือน)/i.test(message)) score += 0.08;
+  if (/(เฉลย|เกิดขึ้นจริง|feedback|actual)/i.test(message)) score -= 0.2;
+  return Math.max(0.1, Math.min(0.9, Number(score.toFixed(2))));
+}
+
+function sifuKnowledgeHashes(model: SifuModel): Record<string, string | boolean | null> {
+  return {
+    ajek: loadAjekRules().version,
+    interaction: loadInteractionMaster().version,
+    engine: loadEngineKnowledge().version,
+    extra: loadSifuExtraKnowledge().version,
+    qtbj: model === "codex-cli" ? SIFU_CODEX_QTBJ_RETRIEVAL_VERSION : null,
+    compact_knowledge: model === "codex-cli",
+  };
+}
+
+function buildSifuAuditEvidence(input: {
+  profileId: string | null;
+  threadId: string | null;
+  threadProfileId: string | null;
+  ctx: string;
+  message: string;
+  prompt?: string | null;
+  promptVersion: string;
+  model: SifuModel;
+  historyProfileIds: string[];
+  historyDroppedCount: number;
+  predictionPhase: string;
+  identityCheckResult: string;
+}) {
+  const factLock = firstContextLine(input.ctx, "FACT LOCK:");
+  const pillarLock = firstContextLine(input.ctx, "PILLAR LOCK");
+  const identityContext = firstContextLine(input.ctx, "IDENTITY CONTEXT:");
+  const nameLine = firstContextLine(input.ctx, "ชื่อ:");
+  const birthLine = firstContextLine(input.ctx, "เกิด:");
+  const boundaryLine = firstContextLine(input.ctx, "ขอบวัน/Day boundary");
+  const yongshenLine = firstContextLine(input.ctx, "用神:");
+  const gejuLine = firstContextLine(input.ctx, "格局:");
+  const packetExcerpt = packetContextExcerpt(input.ctx);
+  const pillars = extractPillarsFromLock(pillarLock);
+  const expectedDm = extractExpectedDM(input.ctx);
+  const packetEvidenceText = [
+    identityContext,
+    nameLine,
+    birthLine,
+    boundaryLine,
+    factLock,
+    pillarLock,
+    yongshenLine,
+    gejuLine,
+    packetExcerpt.join("\n"),
+  ].filter(Boolean).join("\n");
+  const packetHash = packetEvidenceText ? hashText(packetEvidenceText) : null;
+  const ctxHash = contextHash(input.ctx);
+  const promptHash = input.prompt ? hashText(input.prompt) : null;
+  const hasProfile = !!input.profileId;
+  const hasLocks = !!factLock && !!pillarLock && !!expectedDm;
+  const eventType = predictionEventType(input.message);
+  const dateWindow = extractPredictionDateWindow(input.message);
+  const predictionRows = input.predictionPhase === "before_prediction"
+    ? [{
+        event_type: eventType,
+        date_window: dateWindow,
+        confidence: predictionIntentConfidence(input.message, eventType, dateWindow),
+        evidence_rule_ids: predictionEvidenceRuleIds(eventType, packetHash),
+        packet_hash: packetHash,
+        profile_id: input.profileId,
+        source: "question_intent",
+      }]
+    : [];
+
+  return {
+    profileSnapshot: {
+      profile_id: input.profileId,
+      identity_context: identityContext,
+      name_line: nameLine,
+      birth_line: birthLine,
+      day_boundary_line: boundaryLine,
+    },
+    pillarsSnapshot: {
+      day_master: expectedDm,
+      year: pillars.year,
+      month: pillars.month,
+      day: pillars.day,
+      hour: pillars.hour,
+      yongshen_line: yongshenLine,
+      geju_line: gejuLine,
+      raw: pillars.raw,
+    },
+    packetHash,
+    packetSnapshotSafe: {
+      identity_context: identityContext,
+      fact_lock: factLock,
+      pillar_lock: pillarLock,
+      yongshen_line: yongshenLine,
+      geju_line: gejuLine,
+      packet_context_excerpt: packetExcerpt,
+      context_hash: ctxHash,
+    },
+    contextHash: ctxHash,
+    promptHash,
+    promptVersion: input.promptVersion,
+    knowledgeHashes: sifuKnowledgeHashes(input.model),
+    factLock,
+    pillarLock,
+    threadId: input.threadId,
+    threadProfileId: input.threadProfileId,
+    historyProfileIds: input.historyProfileIds,
+    identityCheckResult: input.identityCheckResult,
+    predictionPhase: input.predictionPhase,
+    predictionRows,
+    historyDroppedCount: input.historyDroppedCount,
+    profileBindingStatus: hasProfile && hasLocks ? "bound" : hasProfile ? "profile_without_locks" : "missing_profile",
+    auditQuality: hasProfile && hasLocks && packetHash ? "packet_evidence" : "insufficient",
+  };
+}
+
+type SifuSourceShadowAuditInput = {
+  session: Session | null;
+  req: Request;
+  route: "api/sifu";
+  mode?: string;
+  topic?: string;
+  lang: string;
+  model: SifuModel;
+  cached: boolean;
+  profileId: string | null;
+  ctx: string;
+  message: string;
+  history: Msg[];
+  prompt: string | null;
+};
+
+function shadowAuditMode(mode?: string): "single" | "intro" {
+  return mode === "intro" ? "intro" : "single";
+}
+
+function buildSifuShadowAuditHashes(ctx: string, prompt: string | null): {
+  promptHash: string | null;
+  contextHash: string;
+  packetHash: string | null;
+} {
+  const factLock = firstContextLine(ctx, "FACT LOCK:");
+  const pillarLock = firstContextLine(ctx, "PILLAR LOCK");
+  const packetEvidenceText = [
+    firstContextLine(ctx, "IDENTITY CONTEXT:"),
+    firstContextLine(ctx, "ชื่อ:"),
+    firstContextLine(ctx, "เกิด:"),
+    firstContextLine(ctx, "ขอบวัน/Day boundary"),
+    factLock,
+    pillarLock,
+    firstContextLine(ctx, "用神:"),
+    firstContextLine(ctx, "格局:"),
+    packetContextExcerpt(ctx).join("\n"),
+  ].filter(Boolean).join("\n");
+  return {
+    promptHash: prompt ? hashText(prompt) : null,
+    contextHash: contextHash(ctx),
+    packetHash: packetEvidenceText ? hashText(packetEvidenceText) : null,
+  };
+}
+
+/* SIFU_SOURCE_SHADOW_AUDIT_START
+ * Phase 6B/8 · sidecar source audit only. Strict opt-in + canary scoped; default off.
+ * Never mutate prompt/cache/response/SSE and never call a model from here. */
+function sifuShadowAuditEnvSet(name: string): Set<string> {
+  return new Set(String(process.env[name] || "").split(/[\s,]+/).map((x) => x.trim()).filter(Boolean));
+}
+
+function isSifuSourceShadowAuditCanaryAllowed(input: SifuSourceShadowAuditInput): boolean {
+  if (process.env.SIFU_SOURCE_SHADOW_AUDIT_ALLOW_ALL === "1") return true;
+  const profileIds = sifuShadowAuditEnvSet("SIFU_SOURCE_SHADOW_AUDIT_PROFILE_IDS");
+  const userIds = sifuShadowAuditEnvSet("SIFU_SOURCE_SHADOW_AUDIT_USER_IDS");
+  const profileId = String(input.profileId || "").trim();
+  const userId = String(input.session?.userId || "").trim();
+  return (!!profileId && profileIds.has(profileId)) || (!!userId && userIds.has(userId));
+}
+
+function scheduleSifuSourceShadowAudit(input: SifuSourceShadowAuditInput): void {
+  if (process.env.SIFU_SOURCE_SHADOW_AUDIT !== "1") return;
+  if (input.mode === "intro") return;
+  if (!isSifuSourceShadowAuditCanaryAllowed(input)) return;
+
+  const timer = setTimeout(() => {
+    try {
+      const hashes = buildSifuShadowAuditHashes(input.ctx, input.prompt);
+      const plan = buildSifuShadowModePlan({
+        model: input.model,
+        route: input.route,
+        mode: shadowAuditMode(input.mode),
+        topic: input.topic || null,
+        lang: input.lang,
+        question: input.message,
+        history: input.history.map((h) => `${h.role}: ${h.content}`),
+        packetText: input.ctx,
+        profileId: input.profileId,
+        promptHash: hashes.promptHash,
+        contextHash: hashes.contextHash,
+        packetHash: hashes.packetHash,
+        cached: input.cached,
+      });
+      logSifuSourceAuditSafe({ session: input.session, req: input.req, record: plan.candidate.sourceAudit });
+    } catch (e) {
+      console.warn("[sifu-source-shadow-audit] skipped:", e instanceof Error ? e.message : e);
+    }
+  }, 0);
+  (timer as unknown as { unref?: () => void }).unref?.();
+}
+/* SIFU_SOURCE_SHADOW_AUDIT_END */
+
+function hasPacketEvidence(ctx: string): boolean {
+  return !!firstContextLine(ctx, "FACT LOCK:") && !!firstContextLine(ctx, "PILLAR LOCK") && !!extractExpectedDM(ctx);
+}
+
+const PACKET_CLAIM_RE = /(packet\s*ระบุ|แพ็กเก็ต\s*ระบุ|แพคเก็ต\s*ระบุ|ตรงดวง|ล็อกดวงนี้)/gi;
+
+function packetEvidenceGuardText(ctx: string): string {
+  return hasPacketEvidence(ctx)
+    ? "\nPACKET EVIDENCE: PRESENT · อ้าง packet/ดวงได้เฉพาะจาก FACT LOCK, PILLAR LOCK และ structured packet ใน context นี้เท่านั้น\n"
+    : "\nPACKET EVIDENCE: MISSING · ห้ามใช้คำว่า \"packet ระบุ\", \"ตรงดวง\", \"ล็อกดวงนี้\" หรืออ้างว่าอ่าน packet/ดวงเฉพาะบุคคล\n";
+}
+
+function sanitizePacketEvidenceClaims(reply: string, ctx: string): string {
+  if (hasPacketEvidence(ctx)) return reply;
+  return reply.replace(PACKET_CLAIM_RE, "ข้อมูลที่มี");
+}
+
 type SifuContextCacheStatus = "hit" | "miss" | "skip";
 type SifuContextResult = { ctx: string; cache: SifuContextCacheStatus; fingerprint?: string };
 type SifuTimingBase = {
@@ -507,6 +821,10 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
 }
 
 async function getBaziContextFingerprint(profileId: string, orgId: string, userId?: string | null): Promise<string | null> {
+  const safeProfileId = UUID_RE.test(String(profileId || "")) ? profileId : null;
+  const safeOrgId = UUID_RE.test(String(orgId || "")) ? orgId : null;
+  const safeUserId = UUID_RE.test(String(userId || "")) ? userId : "00000000-0000-4000-8000-000000000000";
+  if (!safeProfileId || !safeOrgId) return null;
   try {
     const row = await q1<{ fingerprint: string }>(
       `SELECT concat_ws('|',
@@ -520,7 +838,7 @@ async function getBaziContextFingerprint(profileId: string, orgId: string, userI
               COALESCE(p.gender, ''),
               COALESCE(p.birth_time_known::text, ''),
               COALESCE(p.day_boundary, ''),
-              COALESCE(o.id, ''),
+              COALESCE(o.id::text, ''),
               COALESCE(EXTRACT(EPOCH FROM o.updated_at)::text, ''),
               COALESCE(o.name, ''),
               COALESCE(o.nickname, '')
@@ -535,8 +853,8 @@ async function getBaziContextFingerprint(profileId: string, orgId: string, userI
          ORDER BY created_at DESC
          LIMIT 1
        ) o ON true
-       WHERE p.id=$1 AND p.org_id=$2 AND p.is_archived=false`,
-      [profileId, orgId, userId || ""]
+       WHERE p.id=$1 AND p.org_id=$2 AND COALESCE(p.is_archived, false)=false`,
+      [safeProfileId, safeOrgId, safeUserId]
     );
     return row?.fingerprint || null;
   } catch (e) {
@@ -769,7 +1087,7 @@ function buildPrompt(opts: {
     .replace("{{LANG}}", () => qaLang[langKey] || qaLang.TH || "")
     .replace("{{RULES}}", () => rulesBlock)
     .replace("{{INTERACTION}}", () => interactionBlock + engineBlock + extraBlock + qtbjCompactBlock)
-    .replace("{{CTX}}", () => opts.ctx)
+    .replace("{{CTX}}", () => packetEvidenceGuardText(opts.ctx) + opts.ctx)
     .replace("{{FOCUS_HIST}}", () => focus + histText)
     .replace("{{MESSAGE}}", () => opts.message);
 }
@@ -1126,8 +1444,9 @@ export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
     const message: string = (body.message || "").trim();
-    const history: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
-    const profileId: string | undefined = body.profileId;
+    const rawHistory: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
+    const profileId = cleanProfileId(body.profileId);
+    const threadProfileId = cleanProfileId(body.threadProfileId || body.historyProfileId);
     const topic: string | undefined = body.topic;
     const lang: string = ["th", "en", "zh"].includes(body.lang) ? body.lang : "th";
     const mode: string | undefined = body.mode === "intro" ? "intro" : undefined;
@@ -1147,6 +1466,21 @@ export async function POST(req: Request) {
     if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
     const orgId = session?.orgId ?? null;
 
+    if (mode !== "intro" && !profileId) {
+      return NextResponse.json({ error: "profile_required" }, { status: 400 });
+    }
+    if (body.profileId && !profileId) {
+      return NextResponse.json({ error: "invalid_profileId" }, { status: 400 });
+    }
+    const historyProfileIds = Array.isArray(body.historyProfileIds)
+      ? body.historyProfileIds.map(cleanProfileId).filter((x: string | null): x is string => !!x)
+      : threadProfileId ? [threadProfileId] : [];
+    const historyProfileMatch = rawHistory.length === 0
+      || (!!threadProfileId && !!profileId && threadProfileId === profileId);
+    const history = historyProfileMatch ? rawHistory : [];
+    const historyDroppedCount = historyProfileMatch ? 0 : rawHistory.length;
+    const predictionPhase = classifyPredictionPhase(message, history);
+
     const ajekVersion = buildSifuRuleVersion(sifuModel);
     const dayKey = await getDayPillarKey();
     const ctxT0 = Date.now();
@@ -1154,19 +1488,55 @@ export async function POST(req: Request) {
     let ctx: string;
     if (mode === "intro") {
       ctx = profileId ? await buildIntroBaziContext(profileId, orgId) : "(intro mode แต่ไม่มี profileId)";
-    } else if (profileId) {
-      const ctxResult = await buildBaziContextCached(profileId, orgId, session?.userId);
+    } else {
+      const ctxResult = await buildBaziContextCached(profileId as string, orgId, session?.userId);
       ctx = ctxResult.ctx;
       contextCache = ctxResult.cache;
-    } else {
-      ctx = "(ไม่มี profileId · ตอบทั่วไป)";
     }
     const ctxMs = Date.now() - ctxT0;
+    const expectedDMFromCtx = mode !== "intro" ? extractExpectedDM(ctx) : null;
+    const factLockFromCtx = mode !== "intro" ? firstContextLine(ctx, "FACT LOCK:") : null;
+    const pillarLockFromCtx = mode !== "intro" ? firstContextLine(ctx, "PILLAR LOCK") : null;
+    if (mode !== "intro" && (ctx.startsWith("(ไม่") || !expectedDMFromCtx || !factLockFromCtx || !pillarLockFromCtx)) {
+      return NextResponse.json({ error: "profile_context_unlocked" }, { status: ctx.startsWith("(ไม่") ? 404 : 500 });
+    }
     /* 💾 Cache หลัง build context เท่านั้น: profile/dayBoundary/packet เปลี่ยน = ctx hash เปลี่ยน = ไม่คืนคำตอบดวงเก่า */
-    const key = cacheKey({ profileId, contextHash: contextHash(ctx), orgId, topic, mode, model: sifuModel, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
+    const key = cacheKey({ profileId: profileId || undefined, contextHash: contextHash(ctx), orgId, topic, mode, model: sifuModel, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
     const useCache = mode !== "intro";
     const cached = useCache ? await getCachedReply(key) : null;
     if (cached) {
+      const auditPromptT0 = Date.now();
+      const auditPrompt = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: sifuModel === "codex-cli" });
+      const auditPromptMs = Date.now() - auditPromptT0;
+      const audit = buildSifuAuditEvidence({
+        profileId,
+        threadId,
+        threadProfileId,
+        ctx,
+        message,
+        prompt: auditPrompt,
+        promptVersion: ajekVersion,
+        model: sifuModel,
+        historyProfileIds,
+        historyDroppedCount,
+        predictionPhase,
+        identityCheckResult: "cached",
+      });
+      scheduleSifuSourceShadowAudit({
+        session,
+        req,
+        route: "api/sifu",
+        mode,
+        topic,
+        lang,
+        model: sifuModel,
+        cached: true,
+        profileId,
+        ctx,
+        message,
+        history,
+        prompt: auditPrompt,
+      });
       logResearchAiMessageSafe({
         session,
         req,
@@ -1178,23 +1548,37 @@ export async function POST(req: Request) {
         question: message,
         answer: cached.reply,
         history,
-        requestPayload: { topic, mode, model: sifuModel, thread_id: threadId },
-        responseMeta: { cache_key: key.slice(0, 8), context_cache: contextCache, thread_id: threadId },
+        requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
+        responseMeta: { cache_key: key.slice(0, 8), context_cache: contextCache, thread_id: threadId, audit_quality: audit.auditQuality, packet_hash: audit.packetHash, prompt_hash: audit.promptHash },
         model: cached.model,
         durationMs: Date.now() - reqT0,
         cached: true,
+        ...audit,
       });
       sifuTimingLog("reply-cache-hit", {
-        route: "POST", mode, stream: false, profileId, contextCache, ctxMs,
-        promptMs: 0, promptChars: 0, totalMs: Date.now() - reqT0, cached: true,
+        route: "POST", mode, stream: false, profileId: profileId || undefined, contextCache, ctxMs,
+        promptMs: auditPromptMs, promptChars: auditPrompt.length, totalMs: Date.now() - reqT0, cached: true,
       });
-      return NextResponse.json({ ...cached, cached: true, key: key.slice(0, 8) });
+      return NextResponse.json({ ...cached, reply: sanitizePacketEvidenceClaims(cached.reply, ctx), cached: true, key: key.slice(0, 8) });
     }
     /* ⚠️ ส่ง history จริงเข้า prompt (ไม่ใช่ history:[] แบบ GET) · คำตอบต้องจำบทสนทนา */
     const promptT0 = Date.now();
     const prompt = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: sifuModel === "codex-cli" });
     const promptMs = Date.now() - promptT0;
-
+    const auditFor = (identityCheckResult: string) => buildSifuAuditEvidence({
+      profileId,
+      threadId,
+      threadProfileId,
+      ctx,
+      message,
+      prompt,
+      promptVersion: ajekVersion,
+      model: sifuModel,
+      historyProfileIds,
+      historyDroppedCount,
+      predictionPhase,
+      identityCheckResult,
+    });
     /* 🌊 SSE streaming เมื่อ Accept: text/event-stream หรือ body.stream === true
      * (intro mode คง JSON เดิม · master ใช้ Q&A ปกติ mode=undefined) · ยก pattern จาก /api/network/sifu + GET handler */
     const wantsStream =
@@ -1279,13 +1663,14 @@ export async function POST(req: Request) {
               idChecked = true;
               const chk = validateIdentity(idBuf.slice(0, nl) + "\n", expectedDM);
               if (!chk.ok) { rejectId(chk.reason); return; }
-              const rest = idBuf.slice(nl + 1); // strip บรรทัด ID · ปล่อยเฉพาะเนื้อ
+              const rest = sanitizePacketEvidenceClaims(idBuf.slice(nl + 1), ctx); // strip บรรทัด ID · ปล่อยเฉพาะเนื้อ
               if (rest) { full += rest; sendFirstOnce(); send("chunk", { text: rest }); }
               return;
             }
-            full += text;
+            const visibleText = sanitizePacketEvidenceClaims(text, ctx);
+            full += visibleText;
             sendFirstOnce();
-            send("chunk", { text });
+            send("chunk", { text: visibleText });
           }, (text) => {
             cliErr += "\n" + text;
           });
@@ -1309,6 +1694,21 @@ export async function POST(req: Request) {
             if (code === 0 && full.trim()) {
               const payload = { reply: full.trim(), model: sifuModel }; // full = strip ID แล้ว (idBuf ไม่เข้า full)
               if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+              scheduleSifuSourceShadowAudit({
+                session,
+                req,
+                route: "api/sifu",
+                mode,
+                topic,
+                lang,
+                model: sifuModel,
+                cached: false,
+                profileId,
+                ctx,
+                message,
+                history,
+                prompt,
+              });
               logResearchAiMessageSafe({
                 session,
                 req,
@@ -1320,21 +1720,22 @@ export async function POST(req: Request) {
                 question: message,
                 answer: payload.reply,
                 history,
-                requestPayload: { topic, mode, model: sifuModel, thread_id: threadId },
+                requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
                 responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId },
                 model: payload.model,
                 durationMs: Date.now() - reqT0,
                 cached: false,
+                ...auditFor(expectedDM ? "pass" : "not_required"),
               });
               send("done", { ms, model: payload.model, cached: false, chars: full.length });
               sifuTimingLog("stream-done", {
-                route: "POST", mode, stream: true, profileId, contextCache, ctxMs,
+                route: "POST", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
                 promptMs, promptChars: prompt.length, firstMs, totalMs: Date.now() - reqT0, cached: false,
               });
             } else {
               send("error", { error: `${sifuModel} exit ${code} · ${cliErrorMessage(sifuModel, cliErr)}`, ms });
               sifuTimingLog("stream-error", {
-                route: "POST", mode, stream: true, profileId, contextCache, ctxMs,
+                route: "POST", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
                 promptMs, promptChars: prompt.length, firstMs, totalMs: Date.now() - reqT0, cached: false,
                 code,
               });
@@ -1371,10 +1772,25 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "identity_mismatch" }, { status: 502 });
       }
     }
-    const cleanReply = stripIdLine(reply);
+    const cleanReply = sanitizePacketEvidenceClaims(stripIdLine(reply), ctx);
     const ms = Date.now() - t0;
     const payload = { reply: cleanReply, model: sifuModel };
     if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {}); // cache เฉพาะที่ผ่าน id-check แล้ว (ถึงบรรทัดนี้=ผ่าน)
+    scheduleSifuSourceShadowAudit({
+      session,
+      req,
+      route: "api/sifu",
+      mode,
+      topic,
+      lang,
+      model: sifuModel,
+      cached: false,
+      profileId,
+      ctx,
+      message,
+      history,
+      prompt,
+    });
     logResearchAiMessageSafe({
       session,
       req,
@@ -1386,14 +1802,15 @@ export async function POST(req: Request) {
       question: message,
       answer: payload.reply,
       history,
-      requestPayload: { topic, mode, model: sifuModel, thread_id: threadId },
+      requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
       responseMeta: { stream: false, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId },
       model: payload.model,
       durationMs: Date.now() - reqT0,
       cached: false,
+      ...auditFor("pass"),
     });
     sifuTimingLog("json-done", {
-      route: "POST", mode, stream: false, profileId, contextCache, ctxMs,
+      route: "POST", mode, stream: false, profileId: profileId || undefined, contextCache, ctxMs,
       promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,
     });
     return NextResponse.json({ ...payload, cached: false, ms, key: key.slice(0, 8) });
@@ -1412,11 +1829,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "use ?stream=1" }, { status: 400 });
   }
   const message = (url.searchParams.get("message") || "").trim();
-  const profileId = url.searchParams.get("profileId") || undefined;
+  const rawProfileId = url.searchParams.get("profileId");
+  const profileId = cleanProfileId(rawProfileId);
   const topic = url.searchParams.get("topic") || undefined;
   const lang = (["th","en","zh"].includes(url.searchParams.get("lang") || "") ? url.searchParams.get("lang") : "th") as string;
   const mode = url.searchParams.get("mode") === "intro" ? "intro" : undefined;
   const sifuModel = resolveSifuModel(url.searchParams.get("model"));
+  const threadId = cleanSifuThreadId(url.searchParams.get("threadId"));
+  const threadProfileId = cleanProfileId(url.searchParams.get("threadProfileId") || url.searchParams.get("historyProfileId"));
+  const historyProfileIds = (url.searchParams.get("historyProfileIds") || "")
+    .split(",")
+    .map((x) => cleanProfileId(x))
+    .filter((x: string | null): x is string => !!x);
 
   if (!message) {
     return NextResponse.json({ error: "no message" }, { status: 400 });
@@ -1430,6 +1854,12 @@ export async function GET(req: Request) {
   /* 1 มิ.ย. · AI ดูดวงต้องสมัคร/login ก่อน (เจ้านายสั่ง · ตัด guest intro) */
   if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
   const orgId = session?.orgId ?? null;
+  if (mode !== "intro" && !profileId) {
+    return NextResponse.json({ error: "profile_required" }, { status: 400 });
+  }
+  if (rawProfileId && !profileId) {
+    return NextResponse.json({ error: "invalid_profileId" }, { status: 400 });
+  }
 
   const ajekVersion = buildSifuRuleVersion(sifuModel);
   const dayKey = await getDayPillarKey();
@@ -1458,9 +1888,13 @@ export async function GET(req: Request) {
     console.warn("[sifu sse] ctx err:", (e as Error).message);
   }
   const ctxMs = Date.now() - ctxT0;
-  const key = cacheKey({ profileId, contextHash: contextHash(ctx), orgId, topic, mode, model: sifuModel, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
+  if (mode !== "intro" && (ctx.startsWith("(ไม่") || !extractExpectedDM(ctx) || !firstContextLine(ctx, "FACT LOCK:") || !firstContextLine(ctx, "PILLAR LOCK"))) {
+    return NextResponse.json({ error: "profile_context_unlocked" }, { status: ctx.startsWith("(ไม่") ? 404 : 500 });
+  }
+  const key = cacheKey({ profileId: profileId || undefined, contextHash: contextHash(ctx), orgId, topic, mode, model: sifuModel, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
   const useCache = mode !== "intro";
   const cached = useCache ? await getCachedReply(key) : null;
+  const predictionPhase = classifyPredictionPhase(message, []);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -1484,12 +1918,63 @@ export async function GET(req: Request) {
 
       // 1. Cache hit → ส่งทั้งก้อนทันที
       if (cached) {
-        send("meta", { cached: true, key: key.slice(0, 8), timing: { ctxMs, promptMs: 0, promptChars: 0, contextCache } });
-        send("chunk", { text: cached.reply });
+        const safeReply = sanitizePacketEvidenceClaims(cached.reply, ctx);
+        const auditPromptT0 = Date.now();
+        const auditPrompt = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: sifuModel === "codex-cli" });
+        const auditPromptMs = Date.now() - auditPromptT0;
+        const audit = buildSifuAuditEvidence({
+          profileId,
+          threadId,
+          threadProfileId,
+          ctx,
+          message,
+          prompt: auditPrompt,
+          promptVersion: ajekVersion,
+          model: sifuModel,
+          historyProfileIds,
+          historyDroppedCount: 0,
+          predictionPhase,
+          identityCheckResult: "cached",
+        });
+        scheduleSifuSourceShadowAudit({
+          session,
+          req,
+          route: "api/sifu",
+          mode,
+          topic,
+          lang,
+          model: sifuModel,
+          cached: true,
+          profileId,
+          ctx,
+          message,
+          history: [],
+          prompt: auditPrompt,
+        });
+        logResearchAiMessageSafe({
+          session,
+          req,
+          feature: "sifu_master",
+          mode: mode || null,
+          topic,
+          lang,
+          profileId: profileId || null,
+          question: message,
+          answer: safeReply,
+          history: [],
+          requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, prediction_phase: predictionPhase },
+          responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, thread_id: threadId, audit_quality: audit.auditQuality, packet_hash: audit.packetHash, prompt_hash: audit.promptHash },
+          model: cached.model,
+          durationMs: Date.now() - reqT0,
+          cached: true,
+          ...audit,
+        });
+        send("meta", { cached: true, key: key.slice(0, 8), timing: { ctxMs, promptMs: auditPromptMs, promptChars: auditPrompt.length, contextCache } });
+        send("chunk", { text: safeReply });
         send("done", { ms: 0, model: cached.model, cached: true });
         sifuTimingLog("stream-cache-hit", {
-          route: "GET", mode, stream: true, profileId, contextCache, ctxMs,
-          promptMs: 0, promptChars: 0, totalMs: Date.now() - reqT0, cached: true,
+          route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
+          promptMs: auditPromptMs, promptChars: auditPrompt.length, totalMs: Date.now() - reqT0, cached: true,
         });
         safeClose();
         return;
@@ -1511,7 +1996,7 @@ export async function GET(req: Request) {
         stopHeartbeat = startSifuHeartbeat(send, (pingCount) => firstChunkSent ? "streaming" : rotatingWaitingPhase(pingCount));
         if (warmup) {
           send("first", { ms: 0, synthetic: true, provider: "engine" });
-          send("chunk", { text: warmup });
+            send("chunk", { text: sanitizePacketEvidenceClaims(warmup, ctx) });
         }
         try {
           const result = await streamOpenRouter(prompt, (text) => {
@@ -1519,12 +2004,12 @@ export async function GET(req: Request) {
               send("first", { ms: Date.now() - t0, provider: "openrouter" });
               firstChunkSent = true;
             }
-            send("chunk", { text });
+            send("chunk", { text: sanitizePacketEvidenceClaims(text, ctx) });
           });
           if (result.full) {
             send("done", { ms: Date.now() - t0, model: result.model, provider: "openrouter", cached: false, chars: result.full.length });
             sifuTimingLog("intro-done", {
-              route: "GET", mode, stream: true, profileId, contextCache, ctxMs,
+              route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
               promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,
             });
           } else {
@@ -1561,7 +2046,7 @@ export async function GET(req: Request) {
 
       if (warmup) {
         send("first", { ms: 0, synthetic: true });
-        send("chunk", { text: warmup });
+        send("chunk", { text: sanitizePacketEvidenceClaims(warmup, ctx) });
         firstChunkSent = true;
       }
 
@@ -1589,12 +2074,13 @@ export async function GET(req: Request) {
           idChecked = true;
           const chk = validateIdentity(idBuf.slice(0, nl) + "\n", expectedDM);
           if (!chk.ok) { rejectIdG(chk.reason); return; }
-          const rest = idBuf.slice(nl + 1);
+          const rest = sanitizePacketEvidenceClaims(idBuf.slice(nl + 1), ctx);
           if (rest) { full += rest; send("chunk", { text: rest }); if (!firstChunkSent) { firstMs = Date.now() - t0; send("first", { ms: firstMs }); firstChunkSent = true; } }
           return;
         }
-        send("chunk", { text });
-        full += text;
+        const visibleText = sanitizePacketEvidenceClaims(text, ctx);
+        send("chunk", { text: visibleText });
+        full += visibleText;
         if (!firstChunkSent) {
           firstMs = Date.now() - t0;
           send("first", { ms: firstMs });
@@ -1618,15 +2104,61 @@ export async function GET(req: Request) {
         if (code === 0 && full.trim()) {
           const payload = { reply: full.trim(), model: sifuModel };
           if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+          scheduleSifuSourceShadowAudit({
+            session,
+            req,
+            route: "api/sifu",
+            mode,
+            topic,
+            lang,
+            model: sifuModel,
+            cached: false,
+            profileId,
+            ctx,
+            message,
+            history: [],
+            prompt,
+          });
+          logResearchAiMessageSafe({
+            session,
+            req,
+            feature: "sifu_master",
+            mode: mode || null,
+            topic,
+            lang,
+            profileId: profileId || null,
+            question: message,
+            answer: payload.reply,
+            history: [],
+            requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, prediction_phase: predictionPhase },
+            responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId },
+            model: payload.model,
+            durationMs: Date.now() - reqT0,
+            cached: false,
+            ...buildSifuAuditEvidence({
+              profileId,
+              threadId,
+              threadProfileId,
+              ctx,
+              message,
+              prompt,
+              promptVersion: ajekVersion,
+              model: sifuModel,
+              historyProfileIds,
+              historyDroppedCount: 0,
+              predictionPhase,
+              identityCheckResult: expectedDM ? "pass" : "not_required",
+            }),
+          });
           send("done", { ms, model: payload.model, cached: false, chars: full.length });
           sifuTimingLog("stream-done", {
-            route: "GET", mode, stream: true, profileId, contextCache, ctxMs,
+            route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
             promptMs, promptChars: prompt.length, firstMs, totalMs: Date.now() - reqT0, cached: false,
           });
         } else {
           send("error", { error: `${sifuModel} exit ${code} · ${cliErrorMessage(sifuModel, cliErr)}` });
           sifuTimingLog("stream-error", {
-            route: "GET", mode, stream: true, profileId, contextCache, ctxMs,
+            route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
             promptMs, promptChars: prompt.length, firstMs, totalMs: Date.now() - reqT0, cached: false,
             code,
           });

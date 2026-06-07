@@ -7,7 +7,7 @@ type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string
 const MAX_TEXT = 24_000;
 const MAX_HISTORY_ITEMS = 12;
 const MAX_JSON_CHARS = 32_000;
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function clipText(v: unknown, max = MAX_TEXT): string | null {
   if (v == null) return null;
@@ -58,6 +58,12 @@ function cleanUuid(v: unknown): string | null {
   return UUID_RE.test(s) ? s : null;
 }
 
+function cleanThreadId(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim().replace(/[^\w:.-]+/g, "_").slice(0, 100);
+  return s || null;
+}
+
 function conversationKey(parts: Array<string | null | undefined>): string {
   const raw = parts.map((p) => p || "-").join("|");
   return createHash("sha1").update(raw).digest("hex").slice(0, 24);
@@ -93,6 +99,25 @@ export async function logResearchAiMessage(input: {
   balanceAfter?: number | null;
   durationMs?: number | null;
   cached?: boolean;
+  profileSnapshot?: unknown;
+  pillarsSnapshot?: unknown;
+  packetHash?: string | null;
+  packetSnapshotSafe?: unknown;
+  contextHash?: string | null;
+  promptHash?: string | null;
+  promptVersion?: string | null;
+  knowledgeHashes?: unknown;
+  factLock?: string | null;
+  pillarLock?: string | null;
+  threadId?: string | null;
+  threadProfileId?: string | null;
+  historyProfileIds?: unknown;
+  identityCheckResult?: string | null;
+  predictionPhase?: string | null;
+  predictionRows?: unknown;
+  historyDroppedCount?: number | null;
+  profileBindingStatus?: string | null;
+  auditQuality?: string | null;
 }): Promise<string | null> {
   const question = clipText(input.question, 4_000);
   if (!question) return null;
@@ -100,8 +125,22 @@ export async function logResearchAiMessage(input: {
   const userId = input.session?.userId || null;
   const orgId = input.session?.orgId || null;
   const profileId = cleanUuid(input.profileId);
+  const threadProfileId = cleanUuid(input.threadProfileId);
+  const requestPayloadObj = typeof input.requestPayload === "object" && input.requestPayload
+    ? input.requestPayload as Record<string, unknown>
+    : {};
+  const threadId = cleanThreadId(input.threadId)
+    || cleanThreadId(requestPayloadObj.thread_id)
+    || cleanThreadId(requestPayloadObj.local_thread_id);
   const responseMeta = {
     ...(typeof input.responseMeta === "object" && input.responseMeta ? input.responseMeta as Record<string, unknown> : {}),
+    audit_quality: input.auditQuality || undefined,
+    profile_binding_status: input.profileBindingStatus || undefined,
+    prediction_phase: input.predictionPhase || undefined,
+    identity_check_result: input.identityCheckResult || undefined,
+    packet_hash: input.packetHash || undefined,
+    context_hash: input.contextHash || undefined,
+    prompt_hash: input.promptHash || undefined,
     ip_address: meta.ip,
     user_agent: meta.ua,
     referrer: meta.referrer,
@@ -110,10 +149,18 @@ export async function logResearchAiMessage(input: {
     `INSERT INTO research_ai_messages
        (org_id, user_id, profile_id, feature, mode, topic, lang, conversation_key,
         question, answer, history, request_payload, response_meta, model, status, error,
-        spent, balance_after, duration_ms, cached)
+        spent, balance_after, duration_ms, cached,
+        profile_snapshot, pillars_snapshot, packet_hash, packet_snapshot_safe,
+        context_hash, prompt_hash, prompt_version, knowledge_hashes, fact_lock, pillar_lock,
+        thread_id, thread_profile_id, history_profile_ids, identity_check_result, prediction_phase,
+        prediction_rows, history_dropped_count, profile_binding_status, audit_quality)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,
         $9,$10,$11::jsonb,$12::jsonb,$13::jsonb,$14,$15,$16,
-        $17,$18,$19,$20)
+        $17,$18,$19,$20,
+        $21::jsonb,$22::jsonb,$23,$24::jsonb,
+        $25,$26,$27,$28::jsonb,$29,$30,
+        $31,$32,$33::jsonb,$34,$35,
+        $36::jsonb,$37,$38,$39)
      RETURNING id`,
     [
       orgId,
@@ -136,6 +183,25 @@ export async function logResearchAiMessage(input: {
       Number.isFinite(input.balanceAfter as number) ? input.balanceAfter : null,
       Number.isFinite(input.durationMs as number) ? input.durationMs : null,
       !!input.cached,
+      JSON.stringify(safeJson(input.profileSnapshot)),
+      JSON.stringify(safeJson(input.pillarsSnapshot)),
+      clipText(input.packetHash, 128),
+      JSON.stringify(safeJson(input.packetSnapshotSafe)),
+      clipText(input.contextHash, 128),
+      clipText(input.promptHash, 128),
+      clipText(input.promptVersion, 500),
+      JSON.stringify(safeJson(input.knowledgeHashes)),
+      clipText(input.factLock, 1_000),
+      clipText(input.pillarLock, 1_000),
+      threadId,
+      threadProfileId,
+      JSON.stringify(safeJson(input.historyProfileIds)),
+      clipText(input.identityCheckResult, 80),
+      clipText(input.predictionPhase, 80),
+      JSON.stringify(safeJson(input.predictionRows)),
+      Number.isFinite(input.historyDroppedCount as number) ? input.historyDroppedCount : null,
+      clipText(input.profileBindingStatus, 80),
+      clipText(input.auditQuality, 80),
     ]
   );
   if (userId) {

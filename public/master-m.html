@@ -574,16 +574,8 @@
     }, 1800);
   }
 
-  send.addEventListener('click', ()=>{
-    const v = input.value.trim();
-    if(!v) return;
-    addMsg('user', v);
-    input.value='';
-    masterReply();
-  });
-  input.addEventListener('keydown', e=>{
-    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send.click(); }
-  });
+  // Legacy mock chat is disabled. The live Sifu handler below owns send/key events
+  // so mobile cannot bypass the profileId/profileSig guard.
 
   // mobile keyboard fix — scroll messages ให้เห็นล่าสุดเสมอ
   input.addEventListener('focus', ()=>{
@@ -650,16 +642,69 @@
   const msgBox = document.getElementById('messages');
   if (!sendBtn || !inputEl || !msgBox) return;
   const history = [];
-  const THREAD_ID_KEY = 'hk_sifu_mobile_thread_id';
-
-  function threadId(){
+  const THREAD_STATE_KEY = 'hk_sifu_mobile_thread_state';
+  const PROFILE_SIG_KEY = 'hk_sifu_mobile_profile_sig';
+  let boundProfileId = '';
+  let boundProfileSig = '';
+  function activeProfileId(){
+    try { return String(localStorage.getItem('hk_profile_id') || ''); } catch(_) { return ''; }
+  }
+  function safeKeyPart(v){
+    return String(v || '').replace(/[^\w:-]+/g, '_').slice(0, 96);
+  }
+  function buildProfileSig(profile){
+    if (!profile || !profile.id) return '';
+    return [
+      profile.id,
+      profile.day_master || 'nodm',
+      profile.day_boundary || 'nodb',
+      profile.birth_datetime || 'nobt',
+      profile.birth_lng || 'nolng',
+      profile.gender || 'nogender',
+      profile.birth_time_known === false ? 'time_unknown' : 'time_known'
+    ].map(safeKeyPart).join('_');
+  }
+  function sigStoreKey(pid){ return PROFILE_SIG_KEY + '_' + safeKeyPart(pid); }
+  async function ensureProfileSig(pid){
     try {
-      let id = localStorage.getItem(THREAD_ID_KEY);
-      if (!id) {
-        id = 'm' + Date.now() + Math.floor(Math.random() * 9000 + 1000);
-        localStorage.setItem(THREAD_ID_KEY, id);
+      const r = await fetch('/api/mobile/v1/profiles', { credentials:'include', cache:'no-store' });
+      if (!r.ok) return '';
+      const j = await r.json();
+      const rows = Array.isArray(j.profiles) ? j.profiles : [];
+      const profile = rows.find(function(x){ return x && String(x.id || '') === String(pid); });
+      const sig = buildProfileSig(profile);
+      if (sig) {
+        try { localStorage.setItem(sigStoreKey(pid), sig); } catch(_) {}
+        return sig;
       }
-      return id;
+    } catch(_) {}
+    return '';
+  }
+  function resetForBinding(pid, sig){
+    if (boundProfileId === pid && boundProfileSig === sig) return;
+    boundProfileId = pid;
+    boundProfileSig = sig;
+    history.length = 0;
+    msgBox.innerHTML = '';
+  }
+  function threadKey(sig){
+    return THREAD_STATE_KEY + '_' + safeKeyPart(sig);
+  }
+
+  function threadId(pid, sig){
+    try {
+      const key = threadKey(sig);
+      let state = null;
+      try { state = JSON.parse(localStorage.getItem(key) || 'null'); } catch(_) {}
+      if (!state || state.profileId !== pid || state.profileSig !== sig || !state.id) {
+        state = {
+          id: 'm' + Date.now() + Math.floor(Math.random() * 9000 + 1000),
+          profileId: pid,
+          profileSig: sig
+        };
+        localStorage.setItem(key, JSON.stringify(state));
+      }
+      return state.id;
     } catch(_) {
       return 'm' + Date.now();
     }
@@ -678,9 +723,13 @@
 
   async function loadServerHistory(){
     try {
-      const pid = localStorage.getItem('hk_profile_id') || '';
+      const pid = activeProfileId();
+      if (!pid) return;
+      const sig = await ensureProfileSig(pid);
+      if (!sig) return;
+      resetForBinding(pid, sig);
       const qs = new URLSearchParams({ limit:'40' });
-      if (pid) qs.set('profileId', pid);
+      qs.set('profileId', pid);
       const r = await fetch('/api/sifu/history?' + qs.toString(), { credentials:'include', cache:'no-store' });
       if (!r.ok) return;
       const j = await r.json();
@@ -690,6 +739,7 @@
       history.length = 0;
       rows.forEach(function(x){
         if (!x || !x.question || !x.answer) return;
+        if (String(x.profile_id || '') !== pid) return;
         addMsg('user', x.question);
         addMsg('sifu', x.answer);
         history.push({ role:'user', content:String(x.question) });
@@ -702,6 +752,19 @@
   async function send(){
     const text = inputEl.value.trim();
     if (!text) return;
+    const pid = activeProfileId();
+    if (!pid) {
+      addMsg('sifu', '⚠️ กรุณาเลือกดวงก่อน ซินแสจะไม่ตอบคำถามดวงเฉพาะคนหากยังไม่มี profileId');
+      inputEl.focus();
+      return;
+    }
+    const sig = await ensureProfileSig(pid);
+    if (!sig) {
+      addMsg('sifu', '⚠️ โหลดข้อมูลดวงไม่สำเร็จ กรุณาเปิดหน้าดวงหรือเข้าสู่ระบบใหม่ก่อนถามซินแส');
+      inputEl.focus();
+      return;
+    }
+    resetForBinding(pid, sig);
     inputEl.value = '';
     sendBtn.disabled = true;
     addMsg('user', text);
@@ -712,8 +775,11 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text, history: history,
-          profileId: localStorage.getItem('hk_profile_id') || undefined,
-          threadId: threadId(),
+          profileId: pid,
+          threadId: threadId(pid, sig),
+          threadProfileId: pid,
+          threadProfileSig: sig,
+          historyProfileIds: [pid],
         }),
       });
       const d = await r.json();

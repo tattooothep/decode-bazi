@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 function cleanProfileId(value: unknown): string | null {
   const text = typeof value === "string" ? value.trim().replace(/^hk_/, "") : "";
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i.test(text)
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text)
     ? text
     : null;
 }
@@ -37,7 +37,10 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const params = new URLSearchParams();
   const profileId = cleanProfileId(url.searchParams.get("profileId"));
-  if (profileId) params.set("profileId", profileId);
+  if (!profileId) {
+    return NextResponse.json({ ok: false, error: "profile_required" }, { status: 400 });
+  }
+  params.set("profileId", profileId);
   params.set("limit", String(cleanLimit(url.searchParams.get("limit"))));
 
   const origin = url.origin;

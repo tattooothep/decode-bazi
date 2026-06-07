@@ -924,15 +924,25 @@
       });
     }
     var sifuProfileSigById = {}; /* profileId → signature ปัจจุบันของดวง (กัน history น้ำหยาง/ทองหยินปนหลังแก้วันเกิด/dayBoundary) */
+    var sifuProfileSigLoaded = false;
     function safeKeyPart(v){ return String(v || '').replace(/[^\w:-]+/g, '_').slice(0, 96); }
     function profileStoreSig(id){
       var p = sifuProfileSigById[String(id || '')] || null;
-      if (!p) return safeKeyPart(id || 'anon');
-      return [id || 'anon', p.day_master || 'nodm', p.day_boundary || p.dayBoundary || 'nodb', p.birth_datetime || 'nobt'].map(safeKeyPart).join('_');
+      if (!p) return '';
+      return [
+        id || 'anon',
+        p.day_master || 'nodm',
+        p.day_boundary || p.dayBoundary || 'nodb',
+        p.birth_datetime || 'nobt',
+        p.birth_lng || 'nolng',
+        p.gender || 'nogender',
+        p.birth_time_known === false ? 'time_unknown' : 'time_known'
+      ].map(safeKeyPart).join('_');
     }
-    function storeKey(){ return 'hk_sifu_chat_' + profileStoreSig(selectedProfileId || 'anon'); } /* legacy · migrate ของเก่า */
-    let history = [];
-    /* ═══ ประวัติแชทแบบ thread (รวม · ไม่แยกดวง · sidebar Claude-style · 2 มิ.ย. เจ้านายสั่ง) ═══ */
+	    function storeKey(){ return 'hk_sifu_chat_' + profileStoreSig(selectedProfileId || 'anon'); } /* legacy · migrate ของเก่า */
+	    let history = [];
+	    var activeGroupHistoryKey = '';
+	    /* ═══ ประวัติแชทแบบ thread (รวม · ไม่แยกดวง · sidebar Claude-style · 2 มิ.ย. เจ้านายสั่ง) ═══ */
     var THREADS_KEY = 'hk_sifu_threads';
     var currentThreadId = '';
     var renamingThreadId = '';
@@ -940,35 +950,70 @@
     function loadThreads(){ try{ var o=JSON.parse(localStorage.getItem(THREADS_KEY)||'null'); if(o&&Array.isArray(o.threads)) return o; }catch(_){} return {activeId:'',threads:[]}; }
     function saveThreads(o){ try{ localStorage.setItem(THREADS_KEY, JSON.stringify(o)); }catch(_){} }
     function genTid(){ return 't'+Date.now()+Math.floor(Math.random()*9000+1000); }
-    function activeThreadId(){ if(!currentThreadId) currentThreadId=genTid(); return currentThreadId; }
+    function activeProfileId(){ try { return String(selectedProfileId || window.hkActiveProfileId || localStorage.getItem('hk_profile_id') || ''); } catch(_){ return String(selectedProfileId || ''); } }
+    function activeProfileSig(){ var pid=activeProfileId(); return pid ? profileStoreSig(pid) : ''; }
+    function stampThreadProfile(t, pid){
+      pid = String(pid || activeProfileId() || '');
+      if (!t || !pid) return t;
+      var sig = profileStoreSig(pid);
+      if (!sig) return t;
+      t.profileId = pid;
+      t.profileSig = sig;
+      return t;
+    }
+    function threadMatchesProfile(t, pid){
+      pid = String(pid || activeProfileId() || '');
+      if (!t || !pid) return false;
+      return String(t.profileId || '') === pid && String(t.profileSig || '') === profileStoreSig(pid);
+    }
+    function profileThreads(o, pid){
+      pid = String(pid || activeProfileId() || '');
+      return (o.threads || []).filter(function(t){ return threadMatchesProfile(t, pid); });
+    }
+    function ensureThreadForProfile(){
+      var pid = activeProfileId();
+      if (!pid || !profileStoreSig(pid)) return '';
+      var o = loadThreads();
+      var t = o.threads.find(function(x){ return x.id === currentThreadId && threadMatchesProfile(x, pid); });
+      if (!t) t = profileThreads(o, pid)[0];
+      if (!t) { t = stampThreadProfile({id:genTid(),title:'',ts:Date.now(),msgs:[]}, pid); o.threads.unshift(t); }
+      currentThreadId = t.id;
+      o.activeId = currentThreadId;
+      saveThreads(o);
+      return currentThreadId;
+    }
+    function activeThreadId(){ return ensureThreadForProfile() || genTid(); }
     function tLoc(){ try{return localStorage.getItem('hk_locale')||'th';}catch(_){return 'th';} }
     function escHtml(v){ return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
     function relTime(ts){ var now=new Date(), d=new Date(ts), L=tLoc(); var dd=Math.floor((now-d)/86400000); if(now.toDateString()===d.toDateString()) return L==='th'?'วันนี้':L==='zh'?'今天':'Today'; if(dd<=1) return L==='th'?'เมื่อวาน':L==='zh'?'昨天':'Yesterday'; return L==='th'?(dd+' วันก่อน'):L==='zh'?(dd+'天前'):(dd+'d'); }
-    function persist(){ try{
-      if(!history.length) return;   /* กัน thread ว่างตอนสลับดวง/กด New ซ้ำ (3 agent · agent2) */
+	    function persist(){ try{
+	      if(activeGroupHistoryKey) return; /* group history เก็บแยกตาม binding ห้ามเขียนลง single-profile thread */
+	      if(!history.length) return;   /* กัน thread ว่างตอนสลับดวง/กด New ซ้ำ (3 agent · agent2) */
+	      var pid=activeProfileId(); if(!pid || !profileStoreSig(pid)) return;
       var o=loadThreads();
-      var t=o.threads.find(function(x){return x.id===currentThreadId;});
-      if(!t){ if(!currentThreadId) currentThreadId=genTid(); t={id:currentThreadId,title:'',ts:Date.now(),msgs:[]}; o.threads.unshift(t); }
+      var t=o.threads.find(function(x){return x.id===currentThreadId && threadMatchesProfile(x,pid);});
+      if(!t){ if(!currentThreadId) currentThreadId=genTid(); t=stampThreadProfile({id:currentThreadId,title:'',ts:Date.now(),msgs:[]},pid); o.threads.unshift(t); }
+      stampThreadProfile(t,pid);
       t.msgs=history.slice(-40);
       if(!t.title){ var u=history.find(function(m){return m.role==='user';}); if(u) t.title=String(u.content).replace(/\s+/g,' ').trim().slice(0,42); }
       t.ts=Date.now(); o.activeId=currentThreadId; o.threads.sort(function(a,b){return b.ts-a.ts;});
       saveThreads(o); renderSidebar();
     }catch(_){} }
-    function renderThreadMsgs(t){ history=(t&&t.msgs?t.msgs.slice(-40):[]); msgBox.innerHTML=''; if(!history.length){ addWelcomeMsg(); return; } history.forEach(function(m){ var dv=addMsg(m.role==='user'?'user':'sifu',m.content); if(m.role!=='user') renderMd(dv,m.content); }); }
-    function openThread(id){ if(window._sifuStreaming) return; renamingThreadId=''; persist(); currentThreadId=id; var o=loadThreads(); o.activeId=id; saveThreads(o); renderThreadMsgs(o.threads.find(function(x){return x.id===id;})); renderSidebar(); document.body.classList.remove('hk-side-open'); window.scrollTo(0,0); }
-    function newThread(){ if(window._sifuStreaming) return; persist(); var o=loadThreads(); var t={id:genTid(),title:'',ts:Date.now(),msgs:[]}; o.threads.unshift(t); currentThreadId=t.id; o.activeId=t.id; saveThreads(o); history=[]; msgBox.innerHTML=''; addWelcomeMsg(); renderSidebar(); document.body.classList.remove('hk-side-open'); }
-    function deleteThread(id){ if(window._sifuStreaming) return; var o=loadThreads(); o.threads=o.threads.filter(function(x){return x.id!==id;}); var wasA=(currentThreadId===id); if(wasA){ currentThreadId=o.threads[0]?o.threads[0].id:genTid(); o.activeId=currentThreadId; } saveThreads(o); if(wasA){ renderThreadMsgs(o.threads.find(function(x){return x.id===currentThreadId;})); } renderSidebar(); }
-    function togglePin(id){ if(window._sifuStreaming) return; var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id;}); if(t){ t.pinned=!t.pinned; saveThreads(o); renderSidebar(); } }
+	    function renderThreadMsgs(t){ activeGroupHistoryKey=''; history=(t&&t.msgs?t.msgs.slice(-40):[]); msgBox.innerHTML=''; if(!history.length){ addWelcomeMsg(); return; } history.forEach(function(m){ var dv=addMsg(m.role==='user'?'user':'sifu',m.content); if(m.role!=='user') renderMd(dv,m.content); }); }
+    function openThread(id){ if(window._sifuStreaming) return; renamingThreadId=''; persist(); var pid=activeProfileId(); var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id && threadMatchesProfile(x,pid);}); if(!t) return; currentThreadId=id; o.activeId=id; saveThreads(o); renderThreadMsgs(t); renderSidebar(); document.body.classList.remove('hk-side-open'); window.scrollTo(0,0); }
+	    function newThread(){ if(window._sifuStreaming) return; persist(); activeGroupHistoryKey=''; var pid=activeProfileId(); if(!pid || !profileStoreSig(pid)){ addMsg('sifu','⚠️ กรุณาเลือกดวงก่อนเริ่มแชทใหม่'); return; } var o=loadThreads(); var t=stampThreadProfile({id:genTid(),title:'',ts:Date.now(),msgs:[]},pid); o.threads.unshift(t); currentThreadId=t.id; o.activeId=t.id; saveThreads(o); history=[]; msgBox.innerHTML=''; addWelcomeMsg(); renderSidebar(); document.body.classList.remove('hk-side-open'); }
+    function deleteThread(id){ if(window._sifuStreaming) return; var pid=activeProfileId(); var o=loadThreads(); o.threads=o.threads.filter(function(x){return !(x.id===id && threadMatchesProfile(x,pid));}); var wasA=(currentThreadId===id); if(wasA){ var next=profileThreads(o,pid)[0]; currentThreadId=next?next.id:''; o.activeId=currentThreadId; } saveThreads(o); if(wasA){ renderThreadMsgs(o.threads.find(function(x){return x.id===currentThreadId && threadMatchesProfile(x,pid);})); } renderSidebar(); }
+    function togglePin(id){ if(window._sifuStreaming) return; var pid=activeProfileId(); var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id && threadMatchesProfile(x,pid);}); if(t){ t.pinned=!t.pinned; saveThreads(o); renderSidebar(); } }
     function renameThread(id){
       if(window._sifuStreaming) return;
-      var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id;});
+      var pid=activeProfileId(); var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id && threadMatchesProfile(x,pid);});
       if(!t) return;
       renamingThreadId=id;
       renderSidebar();
       setTimeout(function(){ var inp=document.querySelector('.ci-rename-input[data-tid="'+id+'"]'); if(inp){ inp.focus(); inp.select(); } },0);
     }
     function finishRenameThread(id, save){
-      var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id;});
+      var pid=activeProfileId(); var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id && threadMatchesProfile(x,pid);});
       if(!t){ renamingThreadId=''; renderSidebar(); return; }
       if(save){
         var inp=document.querySelector('.ci-rename-input[data-tid="'+id+'"]');
@@ -981,7 +1026,7 @@
     function closeCtxMenu(){ var m=document.getElementById('hk-ctx-menu'); if(m) m.remove(); document.removeEventListener('click',closeCtxMenu,true); }
     function openCtxMenu(anchor, id){
       closeCtxMenu();
-      var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id;}); if(!t) return;
+      var pid=activeProfileId(); var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id && threadMatchesProfile(x,pid);}); if(!t) return;
       var L=tLoc();
       var pinTxt=t.pinned?(L==='th'?'เลิกติดดาว':L==='zh'?'取消星标':'Unpin'):(L==='th'?'ติดดาว':L==='zh'?'加星标':'Star');
       var renTxt=L==='th'?'เปลี่ยนชื่อ':L==='zh'?'重命名':'Rename';
@@ -998,8 +1043,8 @@
     function renderSidebar(){
       var box=document.getElementById('hk-side-list'); if(!box) return;
       var o=loadThreads();
-      if(!o.threads.length){ box.innerHTML='<div class="hk-side-empty" data-i18n="mst.side.empty">ยังไม่มีบทสนทนา</div>'; return; }
-      var arr=o.threads.slice().sort(function(a,b){ var pa=a.pinned?1:0,pb=b.pinned?1:0; if(pa!==pb) return pb-pa; return b.ts-a.ts; });
+      var arr=profileThreads(o, activeProfileId()).slice().sort(function(a,b){ var pa=a.pinned?1:0,pb=b.pinned?1:0; if(pa!==pb) return pb-pa; return b.ts-a.ts; });
+      if(!arr.length){ box.innerHTML='<div class="hk-side-empty" data-i18n="mst.side.empty">ยังไม่มีบทสนทนา</div>'; return; }
       var L=tLoc(), ph=L==='th'?'ตั้งชื่อแชท':L==='zh'?'输入对话名称':'Chat name';
       var h='';
       arr.forEach(function(t){
@@ -1019,7 +1064,7 @@
     function addWelcomeMsg(){ var d=addMsg('sifu',''); renderMd(d,'สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ'); }
 
     /* account history sync · DB เป็นชั้นกลางให้ desktop/mobile เห็น Q&A เดียวกัน */
-    var SERVER_HISTORY_IMPORTED_KEY = 'hk_sifu_history_import_v1';
+    var SERVER_HISTORY_IMPORTED_KEY = 'hk_sifu_history_import_v2';
     var serverHistorySyncing = false;
     function payloadObj(v){ return (v && typeof v === 'object') ? v : {}; }
     function serverThreadId(row){
@@ -1033,11 +1078,13 @@
       return u ? String(u.content).replace(/\s+/g,' ').trim().slice(0,42) : 'ประวัติจากบัญชี';
     }
     function serverRowsToThreads(rows){
+      var pid = activeProfileId();
       var groups = {};
       (rows || []).slice().reverse().forEach(function(r){
         if (!r || !r.question || !r.answer) return;
+        if (!pid || String(r.profile_id || '') !== pid) return;
         var tid = serverThreadId(r);
-        if (!groups[tid]) groups[tid] = { id:tid, title:'', ts:0, msgs:[] };
+        if (!groups[tid]) groups[tid] = stampThreadProfile({ id:tid, title:'', ts:0, msgs:[] }, pid);
         var g = groups[tid];
         g.msgs.push({ role:'user', content:String(r.question || '') });
         g.msgs.push({ role:'assistant', content:String(r.answer || '') });
@@ -1065,26 +1112,31 @@
       return out.slice(-40);
     }
     function mergeServerThreads(rows){
+      var pid = activeProfileId();
+      if (!pid) return;
       var serverThreads = serverRowsToThreads(rows);
       if (!serverThreads.length) return;
       var o = loadThreads();
       serverThreads.forEach(function(st){
-        var t = o.threads.find(function(x){ return String(x.id) === String(st.id); });
+        stampThreadProfile(st, pid);
+        var t = o.threads.find(function(x){ return String(x.id) === String(st.id) && threadMatchesProfile(x, pid); });
         if (!t) {
           o.threads.push(st);
         } else {
+          stampThreadProfile(t, pid);
           t.msgs = mergeThreadMsgs(t.msgs, st.msgs);
           t.title = t.title || st.title;
           t.ts = Math.max(t.ts || 0, st.ts || 0);
         }
       });
       o.threads.sort(function(a,b){ var pa=a.pinned?1:0,pb=b.pinned?1:0; if(pa!==pb) return pb-pa; return (b.ts||0)-(a.ts||0); });
-      if (!o.activeId && o.threads[0]) o.activeId = o.threads[0].id;
+      var activeForProfile = profileThreads(o, pid)[0];
+      if (!o.activeId && activeForProfile) o.activeId = activeForProfile.id;
       saveThreads(o);
-      var active = o.threads.find(function(x){ return x.id === currentThreadId; });
+      var active = o.threads.find(function(x){ return x.id === currentThreadId && threadMatchesProfile(x, pid); });
       if (!history.length || !active) {
-        currentThreadId = o.activeId || (o.threads[0] && o.threads[0].id) || currentThreadId;
-        renderThreadMsgs(o.threads.find(function(x){ return x.id === currentThreadId; }));
+        currentThreadId = activeForProfile ? activeForProfile.id : currentThreadId;
+        renderThreadMsgs(o.threads.find(function(x){ return x.id === currentThreadId && threadMatchesProfile(x, pid); }));
       }
       renderSidebar();
     }
@@ -1092,21 +1144,27 @@
       if (serverHistorySyncing) return;
       serverHistorySyncing = true;
       try {
+        var pid = activeProfileId();
+        if (!pid) return;
+        if (!profileStoreSig(pid)) return;
         var o = loadThreads();
         var imported = false;
-        try { imported = localStorage.getItem(SERVER_HISTORY_IMPORTED_KEY) === '1'; } catch(_){}
-        if (!imported && o.threads && o.threads.length) {
+        var importKey = SERVER_HISTORY_IMPORTED_KEY + '_' + pid;
+        try { imported = localStorage.getItem(importKey) === '1'; } catch(_){}
+        var localThreads = profileThreads(o, pid);
+        if (!imported && localThreads.length) {
           var im = await fetch('/api/sifu/history', {
             method:'POST',
             headers:{ 'Content-Type':'application/json' },
             credentials:'same-origin',
-            body: JSON.stringify({ lang:tLoc(), threads:o.threads.slice(0,30) })
+            body: JSON.stringify({ lang:tLoc(), profileId:pid, threads:localThreads.slice(0,30) })
           }).catch(function(){ return null; });
           if (im && im.ok) {
-            try { localStorage.setItem(SERVER_HISTORY_IMPORTED_KEY, '1'); } catch(_){}
+            try { localStorage.setItem(importKey, '1'); } catch(_){}
           }
         }
-        var r = await fetch('/api/sifu/history?limit=120', { credentials:'same-origin', cache:'no-store' });
+        var qs = new URLSearchParams({ limit:'120', profileId:pid });
+        var r = await fetch('/api/sifu/history?' + qs.toString(), { credentials:'same-origin', cache:'no-store' });
         if (!r.ok) return;
         var j = await r.json().catch(function(){ return null; });
         if (j && Array.isArray(j.history)) mergeServerThreads(j.history);
@@ -1172,27 +1230,23 @@
       el.appendChild(bar);
     }
 
-    /* โหลดประวัติแชทเก่าของดวงที่เลือก → render เป็นฟอง */
-    function loadHistory(){
-      history = []; msgBox.innerHTML = '';
+	    /* โหลดประวัติแชทเก่าของดวงที่เลือก → render เป็นฟอง */
+	    function loadHistory(){
+	      activeGroupHistoryKey = '';
+	      history = []; msgBox.innerHTML = '';
+	      var pid = activeProfileId();
+      if (!pid) { addWelcomeMsg(); renderSidebar(); return; }
+      if (!profileStoreSig(pid)) { addWelcomeMsg(); renderSidebar(); return; }
       var o = loadThreads();
-      /* migrate ของเก่า hk_sifu_chat_* (แยกดวง) → รวมเป็น threads (ครั้งเดียว · ไม่ให้ประวัติหาย) */
-      if (!o.threads.length){
-        try { for (var i=0;i<localStorage.length;i++){ var k=localStorage.key(i);
-          if (k && k.indexOf('hk_sifu_chat_')===0){ var arr=JSON.parse(localStorage.getItem(k)||'[]');
-            if (Array.isArray(arr) && arr.length){ var u=arr.find(function(m){return m.role==='user';});
-              o.threads.push({ id:genTid(), title:u?String(u.content).replace(/\s+/g,' ').trim().slice(0,42):'แชทเก่า', ts:Date.now()-o.threads.length*60000, msgs:arr.slice(-40) }); } } }
-          if (o.threads.length){ o.threads.sort(function(a,b){return b.ts-a.ts;}); o.activeId=o.threads[0].id; saveThreads(o); }
-        } catch(_){}
-      }
-      currentThreadId = o.activeId || (o.threads[0] && o.threads[0].id) || '';
-      var t = o.threads.find(function(x){return x.id===currentThreadId;});
+      var arr = profileThreads(o, pid);
+      var active = o.threads.find(function(x){ return x.id===o.activeId && threadMatchesProfile(x,pid); });
+      currentThreadId = (active && active.id) || (arr[0] && arr[0].id) || '';
+      var t = o.threads.find(function(x){return x.id===currentThreadId && threadMatchesProfile(x,pid);});
       if (t && t.msgs && t.msgs.length){ history=t.msgs.slice(-40); history.forEach(function(m){ var dv=addMsg(m.role==='user'?'user':'sifu',m.content); if(m.role!=='user') renderMd(dv,m.content); }); }
       else { addWelcomeMsg(); }
       renderSidebar();
     }
     loadHistory();
-    syncServerHistory();
 
     /* ═══ wire sidebar (Claude-style · 2 มิ.ย.) ═══ */
     document.body.classList.add('hk-has-side');
@@ -1225,9 +1279,14 @@
       if (!newId || (!opts.force && String(newId) === selectedProfileId)) return;
       if (!opts.skipPersist) persist();    /* เก็บแชทดวงเดิมก่อนสลับ · skip ตอนเพิ่งได้ signature ใหม่ กัน copy history ดวงเก่าไป key ใหม่ */
       selectedProfileId = String(newId);
-      msgBox.innerHTML = '';              /* เคลียร์ฟองแชทดวงเดิม */
-      loadHistory();                      /* โหลดแชทดวงใหม่ (แยกตามดวง · ไม่ปน) */
-    }
+      try { localStorage.setItem('hk_profile_id', selectedProfileId); window.hkActiveProfileId = selectedProfileId; } catch(_){}
+	      currentThreadId = '';
+	      history = [];
+	      msgBox.innerHTML = '';              /* เคลียร์ฟองแชทดวงเดิม */
+	      loadHistory();                      /* โหลดแชทดวงใหม่ (แยกตามดวง · ไม่ปน) */
+	      if (typeof hkgActiveGroup === 'function' && hkgActiveGroup() && typeof hkgRenderActiveHistory === 'function') hkgRenderActiveHistory();
+	      syncServerHistory();
+	    }
     /* 🧑‍🤝‍🧑 group mode · เก็บ list โปรไฟล์ + self id ไว้ให้บล็อกกลุ่มใช้ (parallel · ไม่แตะ flow เดี่ยว) */
     var hkgProfiles = [];      /* profiles ทั้งหมดจาก /api/profile */
     var hkgSelfId = '';        /* id ดวงตัวเอง (self/active) · รวมในกลุ่มเสมอ */
@@ -1301,9 +1360,13 @@
           sifuProfileSigById[String(p.id)] = {
             day_master: p.day_master || '',
             day_boundary: p.day_boundary || p.dayBoundary || '',
-            birth_datetime: p.birth_datetime || ''
+            birth_datetime: p.birth_datetime || '',
+            birth_lng: p.birth_lng || '',
+            gender: p.gender || '',
+            birth_time_known: p.birth_time_known
           };
         });
+        sifuProfileSigLoaded = true;
         var selfPg = j.profiles.find(function(p){ return p.is_self; });
         hkgSelfId = String((j.active_profile && j.active_profile.id) || (selfPg && selfPg.id) || j.profiles[0].id || '');
         if (window.hkgInitGroup) window.hkgInitGroup();
@@ -1335,7 +1398,7 @@
           hkpUpdatePairUI();
           switchProfile(sel.value);
         });
-        if (sel2) sel2.addEventListener('change', hkpUpdatePairUI);
+	        if (sel2) sel2.addEventListener('change', function(){ hkpUpdatePairUI(); hkgRenderActiveHistory(); });
         var swp = document.getElementById('hk-lang-switch');
         if (swp) swp.querySelectorAll('button').forEach(function(b){
           b.addEventListener('click', function(){ setTimeout(function(){ hkpFillSecondSelect(ordered, sel.value); hkpUpdatePairUI(); }, 0); });
@@ -1345,7 +1408,7 @@
         else switchProfile(preferId, { force:true, skipPersist:true }); /* profile signature เพิ่งโหลด: reload history จาก key ใหม่ ไม่เอาคำตอบดวงเก่าปน */
         hkpUpdatePairUI();
       })
-      .catch(function(){});
+      .catch(function(){ sifuProfileSigLoaded = false; });
 
     /* อ่าน SSE ทีละ token · ยก pattern readTeamSifuStream จาก /yongsennetwork */
     function sifuPhaseText(phase){
@@ -1458,20 +1521,91 @@
       });
       if (hkgSelfId && ids.indexOf(hkgSelfId) < 0) ids.unshift(hkgSelfId); /* ตัวเองนำเสมอ */
       return ids.slice(0, 10); /* cap 10 (backend cap ซ้ำ) */
-    }
-    /* state ปัจจุบัน · null = โหมดเดี่ยว */
-    function hkgActiveGroup(){
-      var pair = hkpActivePair();
-      if (pair) return pair;
-      if (!hkgGroupSel) return null;
-      var g = hkgGroupSel.value;
-      if (!g || g === '-') return null;
-      var ids = hkgMemberIds(g);
-      var loc = curLocale();
-      return { group:g, ids:ids, label:(HKG_LABELS[g] && (HKG_LABELS[g][loc]||HKG_LABELS[g].th)) || g };
-    }
-    /* ดึงชื่อย่อของ id (ใช้ชื่อจริงนำเสมอ) */
-    function hkgNameOf(pid){
+	    }
+	    /* state ปัจจุบัน · null = โหมดเดี่ยว */
+	    function hkgActiveGroup(){
+	      var pair = hkpActivePair();
+	      if (pair) return pair;
+	      if (!hkgGroupSel) return null;
+	      var g = hkgGroupSel.value;
+	      if (!g || g === '-') return null;
+	      var ids = hkgMemberIds(g);
+	      var loc = curLocale();
+	      return { group:g, ids:ids, label:(HKG_LABELS[g] && (HKG_LABELS[g][loc]||HKG_LABELS[g].th)) || g };
+	    }
+	    var HKG_HISTORY_KEY = 'hk_sifu_group_history_v1';
+	    function hkgHashString(raw){
+	      var h = 2166136261;
+	      raw = String(raw || '');
+	      for (var i = 0; i < raw.length; i++) {
+	        h ^= raw.charCodeAt(i);
+	        h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+	      }
+	      return ('00000000' + (h >>> 0).toString(16)).slice(-8);
+	    }
+	    function hkgBinding(g){
+	      var ids = (g && Array.isArray(g.ids)) ? g.ids.map(String) : [];
+	      var sig = ['sifu_group_v1', (g && g.group) || 'group'].concat(ids.map(function(id){
+	        return safeKeyPart(id) + '@' + safeKeyPart(profileStoreSig(id) || 'nosig');
+	      })).join('|');
+	      return {
+	        key: 'hkg:' + hkgHashString(sig),
+	        sig: sig,
+	        ids: ids,
+	        group: (g && g.group) || 'group',
+	        label: (g && g.label) || 'กลุ่ม'
+	      };
+	    }
+	    function hkgLoadStore(){
+	      try {
+	        var o = JSON.parse(localStorage.getItem(HKG_HISTORY_KEY) || 'null');
+	        if (o && typeof o === 'object') return o;
+	      } catch(_) {}
+	      return {};
+	    }
+	    function hkgSaveStore(o){
+	      try { localStorage.setItem(HKG_HISTORY_KEY, JSON.stringify(o || {})); } catch(_) {}
+	    }
+	    function hkgLoadBoundHistory(binding){
+	      var o = hkgLoadStore();
+	      var t = binding && o[binding.key];
+	      if (!t || t.sig !== binding.sig || !Array.isArray(t.msgs)) return [];
+	      return t.msgs.slice(-40);
+	    }
+	    function hkgSaveBoundHistory(binding, msgs){
+	      if (!binding || !binding.key) return;
+	      var o = hkgLoadStore();
+	      o[binding.key] = {
+	        sig: binding.sig,
+	        ids: binding.ids,
+	        group: binding.group,
+	        label: binding.label,
+	        ts: Date.now(),
+	        msgs: (msgs || []).slice(-40)
+	      };
+	      var keys = Object.keys(o).sort(function(a,b){ return (o[b].ts || 0) - (o[a].ts || 0); });
+	      keys.slice(50).forEach(function(k){ delete o[k]; });
+	      hkgSaveStore(o);
+	    }
+	    function hkgRenderMsgs(msgs){
+	      history = (msgs || []).slice(-40);
+	      msgBox.innerHTML = '';
+	      if (!history.length) { addWelcomeMsg(); return; }
+	      history.forEach(function(m){
+	        var dv = addMsg(m.role === 'user' ? 'user' : 'sifu', m.content);
+	        if (m.role !== 'user') renderMd(dv, m.content);
+	      });
+	    }
+	    function hkgRenderActiveHistory(){
+	      if (window._sifuStreaming) return;
+	      var g = hkgActiveGroup();
+	      if (!g) { activeGroupHistoryKey = ''; loadHistory(); return; }
+	      var binding = hkgBinding(g);
+	      activeGroupHistoryKey = binding.key;
+	      hkgRenderMsgs(hkgLoadBoundHistory(binding));
+	    }
+	    /* ดึงชื่อย่อของ id (ใช้ชื่อจริงนำเสมอ) */
+	    function hkgNameOf(pid){
       var p = hkgProfiles.find(function(x){ return String(x.id) === String(pid); });
       if (!p) return '—';
       return p.name || p.nickname || '—';
@@ -1535,12 +1669,13 @@
     if (hkgGroupSel){
       hkgGroupSel.addEventListener('change', function(){
         if (hkgGroupSel.value && hkgGroupSel.value !== '-'){
-          var sel2 = document.getElementById('sifu-profile-2');
-          if (sel2) sel2.value = '';
-          hkpUpdatePairUI();
-        }
-        hkgUpdateCount();
-      });
+	          var sel2 = document.getElementById('sifu-profile-2');
+	          if (sel2) sel2.value = '';
+	          hkpUpdatePairUI();
+	        }
+	        hkgUpdateCount();
+	        hkgRenderActiveHistory();
+	      });
       /* รีเฟรช label/count/chips เมื่อสลับภาษา */
       var sw = document.getElementById('hk-lang-switch');
       if (sw) sw.querySelectorAll('button').forEach(function(b){ b.addEventListener('click', function(){ setTimeout(hkgUpdateCount, 0); }); });
@@ -1549,16 +1684,24 @@
     /* core: ยิง /api/sifu/group แบบ stream + reuse readSifuStream เดิม · ใช้ทั้งปุ่มและช่องถาม
        text = ข้อความผู้ใช้ (หรือข้อความเริ่มต้นจากปุ่ม) · echoUser = แสดงฟอง user ก่อนไหม */
     async function hkgRun(text, echoUser){
-      var hkgG = hkgActiveGroup();
-      if (!hkgG) return false;            /* โหมดเดี่ยว · ให้ caller จัดการต่อ */
-      var locG = curLocale();
-      if (!hkgG.ids.length){
-        var emG = (window.HK_I18N && window.HK_I18N['hkg.empty']);
-        addMsg('sifu', emG ? (emG[locG] || emG.th) : 'ยังไม่มีคนในกลุ่มนี้ · ไปเพิ่มที่หน้าดวง (換)');
-        return true;
-      }
-      if (echoUser) addMsg('user', text);
-      sendBtn.disabled = true; window._sifuStreaming = true;
+	      var hkgG = hkgActiveGroup();
+	      if (!hkgG) return false;            /* โหมดเดี่ยว · ให้ caller จัดการต่อ */
+	      var locG = curLocale();
+	      if (!hkgG.ids.length){
+	        var emG = (window.HK_I18N && window.HK_I18N['hkg.empty']);
+	        addMsg('sifu', emG ? (emG[locG] || emG.th) : 'ยังไม่มีคนในกลุ่มนี้ · ไปเพิ่มที่หน้าดวง (換)');
+	        return true;
+	      }
+	      var bindingG = hkgBinding(hkgG);
+	      var groupHistory = hkgLoadBoundHistory(bindingG);
+	      if (activeGroupHistoryKey !== bindingG.key) {
+	        activeGroupHistoryKey = bindingG.key;
+	        hkgRenderMsgs(groupHistory);
+	      } else {
+	        history = groupHistory.slice(-40);
+	      }
+	      if (echoUser) addMsg('user', text);
+	      sendBtn.disabled = true; window._sifuStreaming = true;
       if (hkgGoBtn) hkgGoBtn.disabled = true;
       var phG = addMsg('sifu', 'ซินแสกำลังคิด ...');
       try {
@@ -1568,19 +1711,22 @@
           return true;
         }
         var rG = await fetch('/api/sifu/group?model=' + encodeURIComponent(modelG), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
-          body: JSON.stringify({
-            profileIds: hkgG.ids,
-            groupLabel: hkgG.label,
-            message: text,
-            history: history.slice(-8),
-            threadId: activeThreadId(),
-            lang: locG,
-            model: modelG,
-            stream: true
-          })
-        });
+	          method: 'POST',
+	          headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+	          body: JSON.stringify({
+	            profileIds: hkgG.ids,
+	            groupLabel: hkgG.label,
+	            message: text,
+	            history: groupHistory.slice(-8),
+	            threadId: bindingG.key,
+	            groupBindingHash: bindingG.key,
+	            historyGroupBindingHash: groupHistory.length ? bindingG.key : '',
+	            historyProfileIds: groupHistory.length ? hkgG.ids : [],
+	            lang: locG,
+	            model: modelG,
+	            stream: true
+	          })
+	        });
         var ctG = rG.headers.get('content-type') || '';
         if (rG.ok && ctG.includes('text/event-stream')){
           var replyG = '';
@@ -1597,27 +1743,35 @@
               replyG += chunk;
               phG.textContent = replyG;
               window.scrollTo(0, document.documentElement.scrollHeight);
-            }
-          });
-          if (replyG.trim()){
-            renderMd(phG, replyG);
-            history.push({ role:'user', content:text });
-            history.push({ role:'assistant', content:replyG.trim() });
-            persist();
-          } else {
-            phG.textContent = '⚠ ขัดข้อง · ไม่มีข้อความตอบกลับ';
-          }
-        } else {
+	            }
+	          });
+	          if (replyG.trim()){
+	            renderMd(phG, replyG);
+	            groupHistory = groupHistory.concat([
+	              { role:'user', content:text },
+	              { role:'assistant', content:replyG.trim() }
+	            ]).slice(-40);
+	            history = groupHistory.slice(-40);
+	            activeGroupHistoryKey = bindingG.key;
+	            hkgSaveBoundHistory(bindingG, history);
+	          } else {
+	            phG.textContent = '⚠ ขัดข้อง · ไม่มีข้อความตอบกลับ';
+	          }
+	        } else {
           var dG = await rG.json().catch(function(){ return {}; });
-          if (rG.ok && dG.reply) renderMd(phG, dG.reply);
-          else if (dG.error === 'codex_context_limit_group_size') phG.textContent = '⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง · ถ้าจะอ่าน ' + (dG.count || 'หลาย') + ' คนให้เลือก Claude CLI หรือเลือกทีละคู่';
-          else phG.textContent = '⚠ ขัดข้อง: ' + (dG.error || rG.status);
-          if (rG.ok && dG.reply){
-            history.push({ role:'user', content:text });
-            history.push({ role:'assistant', content:dG.reply });
-            persist();
-          }
-        }
+	          if (rG.ok && dG.reply) renderMd(phG, dG.reply);
+	          else if (dG.error === 'codex_context_limit_group_size') phG.textContent = '⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง · ถ้าจะอ่าน ' + (dG.count || 'หลาย') + ' คนให้เลือก Claude CLI หรือเลือกทีละคู่';
+	          else phG.textContent = '⚠ ขัดข้อง: ' + (dG.error || rG.status);
+	          if (rG.ok && dG.reply){
+	            groupHistory = groupHistory.concat([
+	              { role:'user', content:text },
+	              { role:'assistant', content:dG.reply }
+	            ]).slice(-40);
+	            history = groupHistory.slice(-40);
+	            activeGroupHistoryKey = bindingG.key;
+	            hkgSaveBoundHistory(bindingG, history);
+	          }
+	        }
       } catch(e){
         var emG = e && e.message ? String(e.message) : '';
         phG.textContent = emG.indexOf('codex_cli_auth_required') !== -1
@@ -1648,26 +1802,33 @@
     async function send(){
       const text = inputEl.value.trim();
       if (!text) return;
-      inputEl.value = '';
-      sendBtn.disabled = true; window._sifuStreaming = true;
-      addMsg('user', text);
-
-      /* 🧑‍🤝‍🧑 GROUP MODE branch · เลือกกลุ่ม ≠ "-" → delegate ไป hkgRun (ยิง /api/sifu/group · reuse readSifuStream)
-         กลุ่ม "-" → hkgRun คืน false → ตกลงไป path เดี่ยวด้านล่างเหมือนเดิมเป๊ะ
-         echoUser=false เพราะ send() addMsg('user') ไปแล้วด้านบน */
-      if (typeof hkgRun === 'function' && (typeof hkgActiveGroup === 'function') && hkgActiveGroup()){
-        await hkgRun(text, false);
-        return; /* จบ group mode · ไม่ตกไป path เดี่ยว */
-      }
-
       /* 🩺 ใช้ดวงที่เลือกใน dropdown · ลำดับ: ดวงที่เลือก > global(สด) > จำในเครื่อง */
       let pid = '';
       try { pid = String(selectedProfileId || window.hkActiveProfileId || localStorage.getItem('hk_profile_id') || ''); } catch(_){}
       if (!pid) {
-        console.warn('[sifu] Q&A ไม่มี profileId — คำตอบจะเป็นภาพรวม (ยังไม่พบดวง)');
-        if (!window.__sifuNoProfileWarned) { addMsg('sifu','⚠️ ยังไม่พบดวงที่เลือก — คำตอบจะเป็นภาพรวม กรุณาเปิดดวงก่อน เพื่อให้ซินแสอ่านตรงดวงคุณ'); window.__sifuNoProfileWarned = true; }
+        console.warn('[sifu] block Q&A ไม่มี profileId');
+        addMsg('sifu','⚠️ กรุณาเลือกดวงก่อน ซินแสจะไม่ตอบคำถามดวงเฉพาะคนหากยังไม่มี profileId');
+        inputEl.focus();
+        return;
       }
-      if (location.search.indexOf('debug') >= 0) console.log('[sifu] Q&A payload · hasProfileId =', !!pid);
+      var pidSig = profileStoreSig(pid);
+      if (!pidSig) {
+        console.warn('[sifu] block Q&A ไม่มี profileSig', { profileId: pid, loaded: sifuProfileSigLoaded });
+	        addMsg('sifu','⚠️ โหลดข้อมูลดวงไม่สำเร็จ กรุณารีเฟรชหรือเลือกดวงใหม่ก่อนถามซินแส');
+	        inputEl.focus();
+	        return;
+	      }
+	      inputEl.value = '';
+	      /* 🧑‍🤝‍🧑 GROUP MODE branch · เลือกกลุ่ม ≠ "-" → delegate ไป hkgRun (ยิง /api/sifu/group · reuse readSifuStream)
+	         กลุ่ม "-" → ตกลงไป path เดี่ยวด้านล่างเหมือนเดิมเป๊ะ */
+	      if (typeof hkgRun === 'function' && (typeof hkgActiveGroup === 'function') && hkgActiveGroup()){
+	        await hkgRun(text, true);
+	        return; /* จบ group mode · ไม่ตกไป path เดี่ยว */
+	      }
+	      sendBtn.disabled = true; window._sifuStreaming = true;
+	      addMsg('user', text);
+
+	      if (location.search.indexOf('debug') >= 0) console.log('[sifu] Q&A payload · hasProfileId =', !!pid);
       const placeholder = addMsg('sifu', 'ซินแสกำลังคิด ...');
       try {
         const r = await fetch('/api/sifu', {
@@ -1678,6 +1839,9 @@
             history: history.slice(-8),   /* จำบทสนทนา · backend ตัด 6 อีกชั้น */
             profileId: pid || undefined,
             threadId: activeThreadId(),
+            threadProfileId: pid,
+            threadProfileSig: pidSig,
+            historyProfileIds: [pid],
             model: selectedSifuModel(),
           }),
         });

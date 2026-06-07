@@ -3,7 +3,7 @@ import { getSession } from "@/lib/auth";
 import { q, q1 } from "@/lib/db";
 import { buildResearchConversationKey } from "@/lib/research-log";
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MAX_TEXT = 24_000;
 const MAX_IMPORT_THREADS = 30;
 const MAX_IMPORT_PAIRS = 120;
@@ -73,16 +73,19 @@ export async function GET(req: Request) {
   const limitRaw = Number(url.searchParams.get("limit") || 80);
   const limit = Math.max(1, Math.min(200, Number.isFinite(limitRaw) ? Math.floor(limitRaw) : 80));
   const profileId = cleanUuid(url.searchParams.get("profileId") || url.searchParams.get("profile_id"));
+  if (!profileId) {
+    return NextResponse.json({ error: "profile_required" }, { status: 400 });
+  }
 
   const rows = await q(
     `SELECT id, feature, profile_id, mode, topic, lang, question, answer,
             request_payload, response_meta, model, cached, created_at
        FROM research_ai_messages
       WHERE user_id=$1
-        AND feature IN ('sifu_master', 'sifu_group')
+        AND feature='sifu_master'
         AND status='ok'
         AND answer IS NOT NULL
-        AND ($2::uuid IS NULL OR profile_id=$2::uuid OR feature='sifu_group')
+        AND profile_id=$2::uuid
       ORDER BY created_at DESC
       LIMIT $3::int`,
     [session.userId, profileId, limit]
@@ -101,6 +104,9 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const lang = cleanLang(body.lang);
   const profileId = cleanUuid(body.profileId);
+  if (!profileId) {
+    return NextResponse.json({ error: "profile_required" }, { status: 400 });
+  }
   const threads = Array.isArray(body.threads) ? body.threads.slice(0, MAX_IMPORT_THREADS) : [];
 
   let imported = 0;
@@ -122,7 +128,7 @@ export async function POST(req: Request) {
            FROM research_ai_messages
           WHERE user_id=$1
             AND feature='sifu_master'
-            AND ($2::uuid IS NULL OR profile_id=$2::uuid)
+            AND profile_id=$2::uuid
             AND question=$3
             AND answer=$4
           LIMIT 1`,
@@ -136,9 +142,11 @@ export async function POST(req: Request) {
       await q1<{ id: string }>(
         `INSERT INTO research_ai_messages
            (org_id, user_id, profile_id, feature, mode, topic, lang, conversation_key,
-            question, answer, history, request_payload, response_meta, model, status, cached, created_at)
+            question, answer, history, request_payload, response_meta, model, status, cached,
+            thread_id, thread_profile_id, profile_binding_status, audit_quality, prediction_phase, created_at)
          VALUES ($1,$2,$3,'sifu_master',NULL,NULL,$4,$5,
-            $6,$7,$8::jsonb,$9::jsonb,$10::jsonb,NULL,'ok',false,$11)
+            $6,$7,$8::jsonb,$9::jsonb,$10::jsonb,NULL,'ok',false,
+            $11,$3,'imported_profile_bound','legacy_import','general',$12)
          RETURNING id`,
         [
           session.orgId || null,
@@ -149,8 +157,9 @@ export async function POST(req: Request) {
           pair.question,
           pair.answer,
           JSON.stringify(pair.history),
-          JSON.stringify({ imported_from: "local_master", local_thread_id: threadId, title }),
-          JSON.stringify({ imported: true, local_thread_id: threadId }),
+          JSON.stringify({ imported_from: "local_master", local_thread_id: threadId, title, profileId, thread_profile_id: profileId }),
+          JSON.stringify({ imported: true, local_thread_id: threadId, profileId, thread_profile_id: profileId, audit_quality: "legacy_import" }),
+          threadId,
           createdAt,
         ]
       );

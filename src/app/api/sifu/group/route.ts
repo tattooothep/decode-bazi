@@ -266,6 +266,80 @@ type ProfileRow = {
   day_boundary: string | null;
 };
 
+function hashText(v: string): string {
+  return createHash("sha256").update(v).digest("hex");
+}
+
+function cleanAuditToken(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const s = v.trim().replace(/[^\w:|.-]+/g, "_").slice(0, 500);
+  return s || null;
+}
+
+function cleanStringArray(v: unknown, max = MAX_GROUP): string[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .map((x) => (typeof x === "string" ? x.trim() : ""))
+    .filter(Boolean)
+    .slice(0, max);
+}
+
+function sameStringArray(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((x, i) => x === b[i]);
+}
+
+function profileAuditSnapshot(rows: ProfileRow[]) {
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name || null,
+    nickname: r.nickname || null,
+    relationship_type: r.relationship_type || null,
+    is_self: !!r.is_self,
+    birth_datetime: r.birth_datetime || null,
+    birth_lng: r.birth_lng == null ? null : Number(r.birth_lng),
+    gender: r.gender || null,
+    birth_time_known: r.birth_time_known,
+    day_boundary: r.day_boundary || null,
+  }));
+}
+
+function pillarsAuditSnapshot(people: PersonSyn[]) {
+  return people.map((p) => ({
+    name: p.name,
+    role: p.role,
+    is_self: p.isSelf,
+    mode: p.mode,
+    dm_element: p.dmEl,
+    yong_elements: p.yongEls,
+    pillars: p.pillars,
+    month_borderline: p.monthBorderline,
+    year_borderline: p.yearBorderline,
+    month_alt: p.monthAlt,
+    year_alt: p.yearAlt,
+  }));
+}
+
+function loadedKnowledgeVersions(compactKnowledge: boolean) {
+  if (compactKnowledge) {
+    return {
+      mode: "codex-compact",
+      ajek: "codex-compact",
+      interaction: "codex-compact",
+      engine: "codex-compact",
+      extra: "codex-compact",
+      qtbj_compact: true,
+    };
+  }
+  return {
+    mode: "full",
+    ajek: _ajekCache?.version || "not_loaded",
+    interaction: _interactionCache?.version || "not_loaded",
+    engine: _engineKnowledgeCache?.version || "not_loaded",
+    extra: _sifuExtraCache?.version || "not_loaded",
+    qtbj_compact: false,
+  };
+}
+
 /**
  * ประกอบ context ต่อคน · replicate buildBaziContext ใน /api/sifu/route.ts เป๊ะ
  * (รับ row ที่ผ่าน org guard มาแล้ว เพื่อไม่ query ซ้ำ)
@@ -664,11 +738,14 @@ export async function POST(req: Request) {
     const url = new URL(req.url);
     const body = await req.json().catch(() => ({}));
     const message: string = (body.message || "").trim();
-    const history: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
+    const rawHistory: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
     const groupLabel: string = (body.groupLabel || "กลุ่ม").toString().trim().slice(0, 60) || "กลุ่ม";
     const lang: string = ["th", "en", "zh"].includes(body.lang) ? body.lang : "th";
     const sifuModel = resolveSifuModel(body.model || url.searchParams.get("model"));
     const threadId = cleanSifuThreadId(body.threadId);
+    const clientGroupBindingHash = cleanAuditToken(body.groupBindingHash);
+    const clientHistoryGroupBindingHash = cleanAuditToken(body.historyGroupBindingHash);
+    const clientHistoryProfileIds = cleanStringArray(body.historyProfileIds);
 
     if (!message) return NextResponse.json({ error: "no message" }, { status: 400 });
     if (message.length > 2000) return NextResponse.json({ error: "message too long" }, { status: 400 });
@@ -708,6 +785,15 @@ export async function POST(req: Request) {
     /* เรียงตามลำดับ profileIds ที่ส่งมา (DB ANY ไม่การันตี order) */
     const byId = new Map(rows.map(r => [r.id, r]));
     const ordered = profileIds.map(id => byId.get(id)).filter((r): r is ProfileRow => !!r);
+    const orderedProfileIds = ordered.map((r) => r.id);
+    const historyBindingOk = rawHistory.length === 0 || (
+      !!clientGroupBindingHash
+      && clientHistoryGroupBindingHash === clientGroupBindingHash
+      && sameStringArray(clientHistoryProfileIds, orderedProfileIds)
+    );
+    const history = historyBindingOk ? rawHistory : [];
+    const historyDroppedCount = historyBindingOk ? 0 : rawHistory.length;
+    const profileBindingStatus = historyBindingOk ? "group_history_bound" : "group_history_dropped";
     const owner = await q<Pick<ProfileRow, "id" | "name" | "nickname" | "relationship_type" | "is_self">>(
       `SELECT id, name, nickname, relationship_type,
               (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self
@@ -744,6 +830,38 @@ export async function POST(req: Request) {
 
     const compactKnowledge = sifuModel === "codex-cli";
     const prompt = buildGroupPrompt({ ctx: groupCtx, message, history, lang, compactKnowledge });
+    const profileSnapshot = profileAuditSnapshot(ordered);
+    const pillarsSnapshot = pillarsAuditSnapshot(people);
+    const synastryHash = syn ? hashText(syn) : null;
+    const contextHash = hashText(groupCtx);
+    const promptHash = hashText(prompt);
+    const packetHash = hashText(JSON.stringify({ profileSnapshot, pillarsSnapshot, synastryHash }));
+    const serverGroupAuditHash = hashText(JSON.stringify({
+      profile_ids: orderedProfileIds,
+      profiles: profileSnapshot,
+      pillars: pillarsSnapshot,
+      synastry_hash: synastryHash,
+    }));
+    const knowledgeHashes = loadedKnowledgeVersions(compactKnowledge);
+    const auditPayload = {
+      groupLabel,
+      profileIds: orderedProfileIds,
+      count: ordered.length,
+      model: sifuModel,
+      thread_id: threadId,
+      group_binding_hash: clientGroupBindingHash,
+      history_group_binding_hash: clientHistoryGroupBindingHash,
+      history_profile_ids: clientHistoryProfileIds,
+      history_dropped_count: historyDroppedCount,
+      profile_binding_status: profileBindingStatus,
+      server_group_audit_hash: serverGroupAuditHash,
+      packet_hash: packetHash,
+      context_hash: contextHash,
+      prompt_hash: promptHash,
+      synastry_hash: synastryHash,
+      synastry_present: !!syn,
+      compact_knowledge: compactKnowledge,
+    };
     if (compactKnowledge) {
       console.log(`[sifu/group prompt] model=${sifuModel} compact=1 count=${ordered.length} chars=${prompt.length}`);
     }
@@ -846,11 +964,22 @@ export async function POST(req: Request) {
                 question: message,
                 answer: full.trim(),
                 history,
-                requestPayload: { groupLabel, profileIds: ordered.map((r) => r.id), count: ordered.length, model: sifuModel, thread_id: threadId },
-                responseMeta: { stream: true, chars: full.length, thread_id: threadId },
+                requestPayload: auditPayload,
+                responseMeta: { stream: true, chars: full.length, ...auditPayload },
                 model: sifuModel,
                 durationMs: Date.now() - reqT0,
                 cached: false,
+                profileSnapshot,
+                pillarsSnapshot,
+                packetHash,
+                contextHash,
+                promptHash,
+                knowledgeHashes,
+                threadId,
+                historyProfileIds: history.length ? orderedProfileIds : [],
+                historyDroppedCount,
+                profileBindingStatus,
+                auditQuality: "group_packet_hash_v1",
               });
               send("done", { ms, model: sifuModel, cached: false, chars: full.length });
             } else {
@@ -886,11 +1015,22 @@ export async function POST(req: Request) {
       question: message,
       answer: reply,
       history,
-      requestPayload: { groupLabel, profileIds: ordered.map((r) => r.id), count: ordered.length, model: sifuModel, thread_id: threadId },
-      responseMeta: { stream: false, chars: reply.length, thread_id: threadId },
+      requestPayload: auditPayload,
+      responseMeta: { stream: false, chars: reply.length, ...auditPayload },
       model: sifuModel,
       durationMs: Date.now() - reqT0,
       cached: false,
+      profileSnapshot,
+      pillarsSnapshot,
+      packetHash,
+      contextHash,
+      promptHash,
+      knowledgeHashes,
+      threadId,
+      historyProfileIds: history.length ? orderedProfileIds : [],
+      historyDroppedCount,
+      profileBindingStatus,
+      auditQuality: "group_packet_hash_v1",
     });
     return NextResponse.json({ reply, model: sifuModel });
   } catch (e: unknown) {

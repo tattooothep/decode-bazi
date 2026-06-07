@@ -1,0 +1,141 @@
+{
+  "version": "sifu-source-router-golden-v1",
+  "generatedAt": "2026-06-06T00:00:00.000Z",
+  "cases": [
+    {
+      "id": "mother_child_wrong_premise_closed_list",
+      "description": "False cross-chart premise appears only in user question; packet-approved interactions stay clean.",
+      "model": "claude-max-cli",
+      "mode": "group",
+      "topic": "relationship",
+      "budgetChars": 190000,
+      "question": "สองคนนี้เป็นแม่ลูกกันจริงไหม ถ้าคำถามอ้างว่าแม่ลูกมี 辰戌冲, 寅戌半合, 子子自刑 และปี 2026 ต้องอ่าน格局/相神/旺衰/通關อย่างไร",
+      "history": ["ผู้ใช้ถามว่าทำไม AI อ่านแม่ลูกผิดและยึดปฏิกิริยาที่ packet ไม่ได้ส่ง"],
+      "packetText": "PILLAR LOCK: personA 年丙子 月丁亥 日己巳 時未知\nPILLAR LOCK: personB 年丙子 月壬辰 日壬寅 時未知\nSYNASRY CLOSED LIST: 子 overlap only",
+      "packetFeatures": {
+        "dayStem": "壬",
+        "monthBranch": "辰",
+        "geju": "雜氣傷官格",
+        "strength": "slightly_strong",
+        "yongshen": ["火"],
+        "jishen": ["水"]
+      },
+      "interactions": [],
+      "synastryInteractions": ["closed-list: 子 overlap only"],
+      "timingWindow": ["2026"],
+      "expectedSelectedSourceIds": [
+        "bazi-hehun-classical",
+        "bazi-zixi-mangpai",
+        "bazi-hechong-resolution",
+        "bazi-interaction-master",
+        "pillar-interactions",
+        "bazi-xiangshen-judgment",
+        "bazi-geju-master",
+        "bazi-conghua-master",
+        "dts-zhentian-clean",
+        "classical-ziping-event-timing"
+      ],
+      "forbiddenPacketTerms": ["辰戌冲", "寅戌半合", "子子自刑"]
+    },
+    {
+      "id": "borderline_lixia_na",
+      "description": "Li Xia boundary must route both possible QTBJ month branches for 壬 day master.",
+      "model": "claude-max-cli",
+      "mode": "single",
+      "topic": "yongshen",
+      "budgetChars": 140000,
+      "question": "ลูกชาย 1996-05-05 คาบ立夏 ตกเดือน壬辰หรือ癸巳 ต้องอ่าน窮通寶鑑และ格局แบบมีเงื่อนไข",
+      "history": [],
+      "packetText": "PILLAR LOCK: 年丙子 月壬辰 日壬寅 時未知\nMONTH BORDERLINE: before=壬辰 after=癸巳",
+      "packetFeatures": {
+        "dayStem": "壬",
+        "monthBranch": "辰",
+        "monthBranchCandidates": ["辰", "巳"],
+        "geju": "雜氣傷官格",
+        "strength": "slightly_strong",
+        "yongshen": ["火"],
+        "jishen": ["水"]
+      },
+      "interactions": [],
+      "synastryInteractions": [],
+      "timingWindow": [],
+      "expectedQtbjPairs": ["壬辰", "壬巳"],
+      "expectedSelectedChunkIds": [
+        "sifu-qtbj-compact-router-source",
+        "qtbj-tiaohou-lookup",
+        "qtbj-tiaohou-clean#壬辰,壬巳"
+      ]
+    },
+    {
+      "id": "feedback_2023_2566",
+      "description": "Actual feedback year 2023/2566 with health/accident timing must select full Claude timing and health support.",
+      "model": "claude-max-cli",
+      "mode": "single",
+      "topic": "health",
+      "budgetChars": 180000,
+      "question": "เทียบเหตุการณ์จริงปี 2023/2566 เรื่องรถล้ม สุขภาพ และอุบัติเหตุ ต้องดู 大運/流年/卯酉冲 กับ病藥อย่างไร",
+      "history": ["ผู้ใช้เฉลยเหตุการณ์จริงปี 2023/2566 แล้วถามว่าทำไม AI พลาด"],
+      "packetText": "PILLAR LOCK: 年辛巳 月庚辰 日丁丑 時己巳\nFEEDBACK YEAR: 2023 癸卯 / 2566",
+      "packetFeatures": {
+        "dayStem": "丁",
+        "monthBranch": "辰",
+        "geju": "傷官生財",
+        "strength": "balanced",
+        "yongshen": ["木", "火"],
+        "jishen": ["水"]
+      },
+      "interactions": ["卯酉冲"],
+      "synastryInteractions": [],
+      "timingWindow": ["2023", "2566"],
+      "expectedSelectedSourceIds": [
+        "classical-ziping-event-timing",
+        "classical-bazi-five-life-domains",
+        "bazi-conghua-master",
+        "dts-zhentian-clean",
+        "sftk-clean",
+        "bazi-hechong-resolution"
+      ]
+    },
+    {
+      "id": "codex_compact_budget",
+      "description": "Codex compact routing must stay under 45k without loading full classics.",
+      "model": "codex-cli",
+      "mode": "single",
+      "topic": "interaction",
+      "budgetChars": 45000,
+      "question": "壬水เดือน子 มี子午冲 เทียบ窮通寶鑑แบบ compact และห้ามสร้างปฏิกิริยาใหม่",
+      "history": [],
+      "packetText": "PILLAR LOCK: 年甲子 月丙子 日壬午 時未知\nPACKET INTERACTION: 子午冲",
+      "packetFeatures": {
+        "dayStem": "壬",
+        "monthBranch": "子",
+        "strength": "strong",
+        "yongshen": ["火"],
+        "jishen": ["水"]
+      },
+      "interactions": ["子午冲"],
+      "synastryInteractions": [],
+      "timingWindow": [],
+      "expectedQtbjPairs": ["壬子"],
+      "expectedSelectedSourceIds": [
+        "bazi-hechong-resolution"
+      ],
+      "expectedSelectedChunkIds": [
+        "compact-baseline-7layers",
+        "sifu-qtbj-compact-router-source",
+        "qtbj-tiaohou-lookup",
+        "qtbj-tiaohou-clean#壬子"
+      ],
+      "forbiddenSelectedSourceIds": [
+        "bazi-interaction-master",
+        "pillar-interactions",
+        "bazi-hehun-classical",
+        "classical-ziping-event-timing",
+        "bazi-conghua-master",
+        "dts-zhentian-clean",
+        "sftk-clean",
+        "bazi-shishen-classical"
+      ]
+    }
+  ]
+}

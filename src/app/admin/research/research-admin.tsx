@@ -74,7 +74,27 @@ type QnaRow = {
   question: string;
   answer: string | null;
   history: unknown;
+  request_payload: unknown;
   response_meta: unknown;
+  profile_snapshot: unknown;
+  pillars_snapshot: unknown;
+  packet_hash: string | null;
+  packet_snapshot_safe: unknown;
+  context_hash: string | null;
+  prompt_hash: string | null;
+  prompt_version: string | null;
+  knowledge_hashes: unknown;
+  fact_lock: string | null;
+  pillar_lock: string | null;
+  thread_id: string | null;
+  thread_profile_id: string | null;
+  history_profile_ids: unknown;
+  identity_check_result: string | null;
+  prediction_phase: string | null;
+  prediction_rows: unknown;
+  history_dropped_count: number | null;
+  profile_binding_status: string | null;
+  audit_quality: string | null;
   model: string | null;
   status: string;
   created_at: string;
@@ -354,6 +374,12 @@ function payloadText(v: unknown): string {
   } catch {
     return String(v);
   }
+}
+
+function auditBadgeClass(ok: boolean): string {
+  return ok
+    ? "rounded-sm border border-[color:var(--research-ok)]/45 bg-[color:var(--research-ok)]/10 px-2 py-1 text-[color:var(--research-ok)]"
+    : "rounded-sm border border-[color:var(--research-warn)]/45 bg-[color:var(--research-warn)]/10 px-2 py-1 text-[color:var(--research-warn)]";
 }
 
 function profileMeta(p: ProfileRow): string {
@@ -999,10 +1025,55 @@ export default function ResearchAdmin({ email }: { email: string }) {
                             {x.topic && <span>topic: {x.topic}</span>}
                             <span>{dt(x.created_at)}</span>
                           </div>
+                          <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
+                            <span className={auditBadgeClass(Boolean(x.profile_id && x.profile_binding_status === "bound"))}>
+                              {x.profile_id && x.profile_binding_status === "bound" ? "BOUND" : "UNBOUND"}
+                            </span>
+                            <span className={auditBadgeClass(Boolean(x.packet_hash && x.audit_quality === "packet_evidence"))}>
+                              {x.packet_hash && x.audit_quality === "packet_evidence" ? "PACKET_SEEN" : "NO_PACKET_EVIDENCE"}
+                            </span>
+                            {x.identity_check_result && (
+                              <span className={auditBadgeClass(x.identity_check_result === "pass" || x.identity_check_result === "cached")}>
+                                identity: {x.identity_check_result}
+                              </span>
+                            )}
+                            {x.prediction_phase && <span className="rounded-sm border border-[color:var(--research-line)] px-2 py-1">phase: {x.prediction_phase}</span>}
+                            {typeof x.history_dropped_count === "number" && x.history_dropped_count > 0 && (
+                              <span className={auditBadgeClass(false)}>history dropped: {x.history_dropped_count}</span>
+                            )}
+                          </div>
                           <div className="text-sm font-medium leading-6">ถาม: {short(x.question, 700)}</div>
                           <div className="mt-3 whitespace-pre-wrap border-l border-[color:var(--research-accent)]/50 pl-3 text-sm leading-6 text-[color:var(--research-muted)]">
                             {short(x.answer, 2_400)}
                           </div>
+                          <details className="mt-3 text-xs text-[color:var(--research-muted)]">
+                              <summary className="cursor-pointer">audit evidence</summary>
+                              <div className="mt-2 grid gap-2 rounded-sm border border-[color:var(--research-line)] p-2 md:grid-cols-2">
+                                <div>packet: {x.packet_hash || "-"}</div>
+                                <div>context: {x.context_hash || "-"}</div>
+                                <div>prompt: {x.prompt_hash || "-"}</div>
+                                <div>thread: {x.thread_id || "-"}</div>
+                                <div>thread profile: {x.thread_profile_id || "-"}</div>
+                                <div>prompt version: {x.prompt_version || "-"}</div>
+                                <div>binding: {x.profile_binding_status || "-"}</div>
+                                <div>audit: {x.audit_quality || "-"}</div>
+                              </div>
+                              <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-sm border border-[color:var(--research-line)] p-2">{payloadText({
+                                profile_snapshot: x.profile_snapshot,
+                                pillars_snapshot: x.pillars_snapshot,
+                                packet_snapshot_safe: x.packet_snapshot_safe,
+                                fact_lock: x.fact_lock,
+                                pillar_lock: x.pillar_lock,
+                                knowledge_hashes: x.knowledge_hashes,
+                                prediction_rows: x.prediction_rows,
+                                request_payload: x.request_payload,
+                                response_meta: x.response_meta,
+                                history_profile_ids: x.history_profile_ids,
+                                prompt_version: x.prompt_version,
+                                profile_binding_status: x.profile_binding_status,
+                                audit_quality: x.audit_quality,
+                              })}</pre>
+                          </details>
                           {Array.isArray(x.history) && x.history.length > 0 && (
                             <details className="mt-3 text-xs text-[color:var(--research-muted)]">
                               <summary className="cursor-pointer">ประวัติคำถามก่อนหน้า {x.history.length} รายการ</summary>
