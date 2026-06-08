@@ -22,7 +22,10 @@ const QMDJ_DIR = process.env.QIMEN_DOCS_DIR || "/var/www/hourkey/docs/Qimendunji
 /* 7 มิ.ย. · ไฟล์ความรู้ไทยนำ (สรุปจากคัมภีร์ + 原文 อ้างอิง) อยู่ใน repo เพื่อ version control
  * ตามกฎ git discipline · spec ที่ repo:true อ่านจากโฟลเดอร์นี้แทน QMDJ_DIR */
 const QMDJ_REPO_DIR = join(process.cwd(), "data/library/qmdj");
-const MAX_SOURCE_PACKET_CHARS = 12_000;
+/* 8 มิ.ย. · ขยายจาก 12k → 26k ให้แกนคัมภีร์ไทยนำ (auth-th 6 ไฟล์/7 แกน) เข้า prompt ครบ
+ * (เดิม snippet เก่าเติมจนเต็ม 12k แล้วแกนใหม่ที่ต่อท้าย array โดน drop หมด · ดู priority sort ใน loadQimenKnowledge)
+ * 26k เผื่อ worst-case ถามครบทุกแกนพร้อมกัน (core+6แกน~23k+caveats) ไม่ให้ guardrail/แกนตัวท้ายโดน drop */
+const MAX_SOURCE_PACKET_CHARS = 26_000;
 
 type QimenSnippetSpec = {
   id: string;
@@ -463,7 +466,20 @@ function loadQimenKnowledge(opts: { message: string; topic?: string; payload: an
   const idx = loadQimenSourceIndex();
   const ids = selectQimenSourceIds(opts);
   const systemType = qimenSystemTypeFromPayload(opts.payload);
-  const selected = idx.snippets.filter(s => ids.has(s.id));
+  /* 8 มิ.ย. · จัดลำดับความสำคัญก่อนเติม packet (กัน auth-th 7 แกนโดน drop เพราะ cap)
+   * 0=core-method (กรอบอ่านผัง) · 1=auth-th 7 แกนคัมภีร์ไทยนำ (repo) · 2=source-caveats (กันโอเวอร์เคลม)
+   * 3=ที่เหลือ · sort เสถียร คงลำดับเดิมภายในชั้นเดียวกัน */
+  const snippetPriority = (s: QimenSnippet): number => {
+    if (s.id === "core-method") return 0;
+    if (s.repo) return 1;
+    if (s.id === "source-caveats") return 2;
+    return 3;
+  };
+  const selected = idx.snippets
+    .filter(s => ids.has(s.id))
+    .map((s, i) => ({ s, i }))
+    .sort((a, b) => snippetPriority(a.s) - snippetPriority(b.s) || a.i - b.i)
+    .map(x => x.s);
   const parts: string[] = [];
   const trace: string[] = [];
   const traceItems: QimenSourceTraceItem[] = [];
