@@ -2337,6 +2337,12 @@
   const ELEM_ZH = { wood:'木', fire:'火', earth:'土', metal:'金', water:'水' };
   const STEM_TH_NAME = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
   const ELEM_TH_NAME = { wood:'ไม้', fire:'ไฟ', earth:'ดิน', metal:'ทอง', water:'น้ำ' };
+  /* 8 มิ.ย. fix: stemTermHtml อยู่ scope global (บล็อกนี้) แต่ elemFromStem เดิมนิยามเฉพาะใน IIFE ท้ายไฟล์
+   * → global มองไม่เห็น = "elemFromStem is not defined" ตอนเพิ่มคน/render meta · ประกาศ global ให้ scope นี้ */
+  function elemFromStem(stem){
+    const map = {'甲':'wood','乙':'wood','丙':'fire','丁':'fire','戊':'earth','己':'earth','庚':'metal','辛':'metal','壬':'water','癸':'water'};
+    return map[stem] || 'earth';
+  }
   function stemTermHtml(stem){
     const elem = elemFromStem(stem);
     return `<span class="hk-term elem-${elem}">${escHtml(STEM_TH_NAME[stem] || stem)} <span class="zh">${escHtml(STEM_ZH_TH[stem] || stem)}</span></span>`;
