@@ -157,7 +157,7 @@ export async function POST(req: Request) {
             let distribution: any = undefined;
             try {
               const { buildElementDistribution } = await import("@/lib/element-distribution-functional");
-              distribution = buildElementDistribution(natal as any);
+              distribution = buildElementDistribution(natal as any, process.env.ELEMENT_DIST_MODE === "systemB" ? "systemB" : "legacy");
               (ext as any).element_distribution = distribution;
             } catch (e) {
               console.warn("[chart] 3p element_distribution failed", e);
@@ -404,7 +404,7 @@ export async function POST(req: Request) {
           let distribution: any = undefined;
           try {
             const { buildElementDistribution } = await import("@/lib/element-distribution-functional");
-            distribution = buildElementDistribution(natal as any);
+            distribution = buildElementDistribution(natal as any, process.env.ELEMENT_DIST_MODE === "systemB" ? "systemB" : "legacy");
             (ext as any).element_distribution = distribution;
           } catch (e) {
             console.warn("[chart] element_distribution failed", e);

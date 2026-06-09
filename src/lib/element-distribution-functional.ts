@@ -99,6 +99,16 @@ const ROOT_CLS: Record<RootClass, number> = {
 };
 const CLASH_LIGHT_PENALTY = 0.90;
 
+/* ── System B mode (HK_SYSTEMB_DIST_V1) · additive · default off ──
+ * สูตร旺衰打分(software 旺衰派) มีหลักคัมภีร์: 本>中>餘 + 月令×2 + 透干มีราก/ลอย(虚浮)
+ * อ่านตรงตำรา子平真詮 扶抑 3/3 · ดู SYSTEM-B-ELEMENT-SPEC.md
+ *   ก้านบน透干: มีราก5/ลอย2.5(penalty0.5) · 藏干: 1ตัว[8]/2ตัว[5,3]/3ตัว[5,2,1] · 月令×2 · ไม่ตัด DM
+ *   ⚠ %ธาตุเท่านั้น(diagnostic) · ห้าม feed用神 (%≠用神 · 用神=wrapper-7格局) */
+const SYSB_STEM_ROOTED = 5;
+const SYSB_STEM_FLOAT = 2.5;
+const SYSB_HIDDEN: Record<number, number[]> = { 1: [8], 2: [5, 3], 3: [5, 2, 1] };
+export type ElementDistMode = "legacy" | "systemB";
+
 const ELS: Element[] = ["wood", "fire", "earth", "metal", "water"];
 const ELEMENT_PRODUCES: Record<Element, Element> = {
   wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood",
@@ -225,7 +235,7 @@ export interface ElementDistributionResult {
   pillar_mode: PillarMode;
   confidence: ConfidenceLevel;
   missing_positions: Pos[];
-  engine_version: "phase-17g-v6";
+  engine_version: "phase-17g-v6" | "system-b-v1";
 
   /* per-element breakdown */
   hs: Record<Element, number>;
@@ -271,7 +281,7 @@ function levelFrom(supportRaw: number): ElementDistributionResult["strength_leve
  *   - feed wrapper-7 internal yongshen decision (use total_score เดิม)
  *   - ตัดสิน 從格 / 化格 / 假從 (use rule-based Phase 18)
  */
-export function buildElementDistribution(natal: Natal): ElementDistributionResult {
+export function buildElementDistribution(natal: Natal, mode: ElementDistMode = "legacy"): ElementDistributionResult {
   /* validate + classify pillar mode */
   const active = activePositions(natal);
   const missing_positions = POSITIONS.filter(p => !active.includes(p));
@@ -285,7 +295,13 @@ export function buildElementDistribution(natal: Natal): ElementDistributionResul
     const stem = (natal as any)[pos].stem as string;
     const element = STEM_ELEMENT[stem];
     const classify = classifyStem(natal, stem);
-    const score = STEM_BASE * STEM_POS[pos] * ROOT_CLS[classify.cls];
+    let score: number;
+    if (mode === "systemB") {
+      const m2 = pos === "month" ? 2 : 1;
+      score = (classify.cls === "floating" ? SYSB_STEM_FLOAT : SYSB_STEM_ROOTED) * m2;
+    } else {
+      score = STEM_BASE * STEM_POS[pos] * ROOT_CLS[classify.cls];
+    }
     hs[element] += score;
     hs_trace.push({ pos, stem, element, classify, score: round3(score) });
   }
@@ -297,24 +313,39 @@ export function buildElementDistribution(natal: Natal): ElementDistributionResul
     const branch = (natal as any)[pos].branch as string;
     const hidden = HIDDEN[branch] || {};
     const stability = branchStability(natal, pos);
+    /* System B: weight ตามจำนวนก้านซ่อน (1[8]/2[5,3]/3[5,2,1]) ตามลำดับ main→middle→residual · 月令×2 · ไม่มี clash */
+    const sysbQi = (["main", "middle", "residual"] as Qi[]).filter(q => hidden[q]);
+    const sysbW = SYSB_HIDDEN[sysbQi.length] || [];
+    let sysbIdx = 0;
     for (const qi of ["main", "middle", "residual"] as Qi[]) {
       const hidden_stem = hidden[qi];
       if (!hidden_stem) continue;
       const element = STEM_ELEMENT[hidden_stem];
       if (!element) continue;
-      const base_weight = QI_WEIGHT[qi];
-      const position_factor = pos === "month"
-        ? VHS_POS_MONTH_QI[qi]
-        : VHS_POS_NON_MONTH[pos as Exclude<Pos, "month">];
-      const score = base_weight * position_factor * stability.factor;
+      let base_weight: number;
+      let position_factor: number;
+      let stability_factor: number;
+      if (mode === "systemB") {
+        base_weight = sysbW[sysbIdx] ?? 0;
+        position_factor = pos === "month" ? 2 : 1;
+        stability_factor = 1;
+      } else {
+        base_weight = QI_WEIGHT[qi];
+        position_factor = pos === "month"
+          ? VHS_POS_MONTH_QI[qi]
+          : VHS_POS_NON_MONTH[pos as Exclude<Pos, "month">];
+        stability_factor = stability.factor;
+      }
+      const score = base_weight * position_factor * stability_factor;
       vhs[element] += score;
       vhs_trace.push({
         pos, branch, qi, hidden_stem, element,
         base_weight, position_factor,
-        stability_factor: stability.factor,
+        stability_factor,
         stability_tags: stability.tags.slice(),
         score: round3(score),
       });
+      sysbIdx++;
     }
   }
 
@@ -352,7 +383,7 @@ export function buildElementDistribution(natal: Natal): ElementDistributionResul
     pillar_mode,
     confidence,
     missing_positions,
-    engine_version: "phase-17g-v6",
+    engine_version: mode === "systemB" ? "system-b-v1" : "phase-17g-v6",
     hs: roundObj(hs),
     vhs: roundObj(vhs),
     dist: roundObj(dist),
