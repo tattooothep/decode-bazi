@@ -1,0 +1,134 @@
+[
+  {
+    "stem": "甲",
+    "month": 1,
+    "branch": "寅",
+    "yong_primary": ["metal"],
+    "yong_secondary": ["fire", "water"],
+    "condition": "正月甲木 初春尚有餘寒。調候以庚金為用（陽刃架殺），需才（土）相資；丙癸調候向陽。無庚必凶。",
+    "canon_zh": "總之正二月甲木，有庚戊者上命。如有丁透，大富大貴之命也。",
+    "source_line": 40,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 2,
+    "branch": "卯",
+    "yong_primary": ["metal"],
+    "yong_secondary": ["fire"],
+    "condition": "二月甲木 庚金得所，名陽刃駕殺，可云小貴，須財（才）資之；若見癸水困了才殺則凶。",
+    "canon_zh": "二月甲木，庚金得所，名陽刃駕殺，可云小貴，異途顯達，或主武職，但要財資之。",
+    "source_line": 41,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 3,
+    "branch": "辰",
+    "yong_primary": ["metal"],
+    "yong_secondary": ["water"],
+    "condition": "三月甲木 木氣相竭。先取庚金，次用壬水。庚壬兩透，一榜堪圖。",
+    "canon_zh": "三月甲木，木氣相竭。先取庚金，次用壬水。庚壬兩透，一榜堪圖。",
+    "source_line": 42,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 4,
+    "branch": "巳",
+    "yong_primary": ["water"],
+    "yong_secondary": ["fire"],
+    "condition": "四月甲木退氣，丙火司權。先癸後丁。夏木需水調候，先癸水後丁火。",
+    "canon_zh": "四月甲木退氣，丙火司權，先癸後丁。",
+    "source_line": 50,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 5,
+    "branch": "午",
+    "yong_primary": ["water"],
+    "yong_secondary": ["fire"],
+    "condition": "五月甲木 木性虛焦。先癸後丁，庚金次之。五月癸庚兩透為上上之格。",
+    "canon_zh": "五六月甲木，木性虛焦，一理共推。五月先癸後丁庚金次之。",
+    "source_line": 54,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 6,
+    "branch": "未",
+    "yong_primary": ["fire"],
+    "yong_secondary": ["metal"],
+    "condition": "六月甲木 三伏生寒，丁火退氣。先丁後庚，無癸亦可。六月庚丁兩透為上上之格。",
+    "canon_zh": "六月三伏生寒，丁火退氣。先丁後庚，無癸亦可。",
+    "source_line": 54,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 7,
+    "branch": "申",
+    "yong_primary": ["fire"],
+    "yong_secondary": ["metal"],
+    "condition": "七月甲木 丁火為尊，庚金次之，庚金不可少。丁火熔金必賴甲木引助方成洪爐。",
+    "canon_zh": "七月甲木，丁火為尊，庚金次之，庚金不可少。",
+    "source_line": 72,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 8,
+    "branch": "酉",
+    "yong_primary": ["fire"],
+    "yong_secondary": ["metal"],
+    "condition": "八月甲木 木囚金旺。丁火為先，次用丙火，庚金再次。",
+    "canon_zh": "八月甲木，木囚金旺。丁火為先，次用丙火，庚金再次。",
+    "source_line": 73,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 9,
+    "branch": "戌",
+    "yong_primary": ["fire"],
+    "yong_secondary": ["water"],
+    "condition": "九月甲木 木星凋零，獨愛丁火，壬癸滋扶。端用丁癸，見戊透必貴。四季甲木總不外乎庚金。",
+    "canon_zh": "九月甲木，木星凋零，獨愛丁火，壬癸滋扶，丁壬癸透，戊己亦透，此命配得中和，可許一榜。",
+    "source_line": 80,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 10,
+    "branch": "亥",
+    "yong_primary": ["metal"],
+    "yong_secondary": ["fire"],
+    "condition": "十月甲木 庚丁為要，丙火次之。忌壬水泛身，須戊土制之。",
+    "canon_zh": "十月甲木，庚丁為要，丙火次之。忌壬水泛身，須戊土制之。",
+    "source_line": 91,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 11,
+    "branch": "子",
+    "yong_primary": ["fire"],
+    "yong_secondary": ["metal"],
+    "condition": "十一月甲木 木性生寒。丁先庚後，丙火佐之。癸水司權為火金之病。",
+    "canon_zh": "十一月甲木，木性生寒，丁先庚後，丙火佐之。",
+    "source_line": 95,
+    "status": "found"
+  },
+  {
+    "stem": "甲",
+    "month": 12,
+    "branch": "丑",
+    "yong_primary": ["metal"],
+    "yong_secondary": ["fire"],
+    "condition": "十二月甲木 天寒氣凍，木性極寒。先用庚劈甲，方引丁火，故丁次之。乏庚略可，乏丁無用。",
+    "canon_zh": "十二月甲木，天寒氣凍，木性極寒，無生發之象，先用庚劈甲，方引丁火始得木火有通明之象，故丁次之。",
+    "source_line": 99,
+    "status": "found"
+  }
+]

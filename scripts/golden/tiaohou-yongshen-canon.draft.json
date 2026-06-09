@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "purpose": "調候用神 golden table จาก 窮通寶鑑 (qtbj-tiaohou-clean.md) verbatim — ground truth สำหรับแก้ engine用神 (root cause ดวง印旺ได้用神ผิด)",
+    "source": "data/library/sifu-extra/qtbj-tiaohou-clean.md",
+    "extractedBy": "5-agent S1 · 9 มิ.ย. 2026 · Zone0 verbatim ห้ามแต่ง",
+    "status": "DRAFT · ค้าง: 甲乙木 JSON เต็ม · 戊己土 JSON เต็ม · 辛金 เดือน5-12 (agent ให้แค่ table/บางส่วน ต้องเก็บตก)",
+    "element_en": "wood/fire/earth/metal/water",
+    "WARNING": "調候用神 = 1 ปัจจัย ไม่ใช่用神สุดท้าย — ดวง從格/扶抑พิเศษ override調候 (S2 ต้อง handle)"
+  },
+  "ding_fire_complete": [
+    {"stem":"丁","month":1,"branch":"寅","yong_primary":["metal"],"yong_secondary":["wood"],"condition":"母旺非庚不能劈甲","canon_zh":"正月丁火，甲木當權，乃為母旺，非庚不能劈甲，何以引丁，姑用庚金","status":"found","note":"= malika3 · 用庚(ทอง) ไม่ใช่用印(ไม้) · engine ผิดตรงนี้"},
+    {"stem":"丁","month":2,"branch":"卯","yong_primary":["metal"],"yong_secondary":["wood"],"condition":"濕乙傷丁，先庚後甲","canon_zh":"二月丁火，濕乙傷丁，先庚後甲...庚甲兩透，科甲定然","status":"found"},
+    {"stem":"丁","month":3,"branch":"辰","yong_primary":["wood"],"yong_secondary":["metal"],"condition":"戊土司令，先甲引丁制土，次庚","canon_zh":"三月丁火，戊土司令，洩弱丁氣，先用甲木引丁制土，次看庚金","status":"found"},
+    {"stem":"丁","month":4,"branch":"巳","yong_primary":["wood"],"yong_secondary":["metal"],"condition":"乘旺，取甲引丁，必庚劈甲","canon_zh":"四月丁火乘旺，雖取甲引丁，必用庚劈甲...甲多又取庚為先","status":"found"},
+    {"stem":"丁","month":5,"branch":"午","yong_primary":["water"],"yong_secondary":["metal"],"condition":"建祿，遇壬不貪丁合","canon_zh":"五月丁火，時歸建祿，不宜亂用甲木，遇年透隔位之壬","status":"found"},
+    {"stem":"丁","month":6,"branch":"未","yong_primary":["wood"],"yong_secondary":["metal"],"condition":"三伏生寒，專取甲木，壬次之","canon_zh":"六月丁火，陰柔退氣...丁弱極矣，專取甲木，壬水次之","status":"found"},
+    {"stem":"丁","month":7,"branch":"申","yong_primary":["wood"],"yong_secondary":["metal"],"condition":"退氣柔弱，端用甲木，庚劈甲","canon_zh":"七月丁火，退氣柔弱，端用甲木...仍取庚劈甲，為引火之物","status":"found"},
+    {"stem":"丁","month":8,"branch":"酉","yong_primary":["wood"],"yong_secondary":["fire","metal"],"condition":"木囚金旺，丁先丙次庚再","canon_zh":"八月丁火，木囚金旺，丁火為先，次用丙火，庚金再次","status":"found"},
+    {"stem":"丁","month":9,"branch":"戌","yong_primary":["wood"],"yong_secondary":["metal"],"condition":"木凋零，端用甲木","canon_zh":"九月丁火，木星凋零，獨愛丁火，壬癸滋扶","status":"found"},
+    {"stem":"丁","month":10,"branch":"亥","yong_primary":["metal"],"yong_secondary":["wood"],"condition":"微寒，端用庚甲","canon_zh":"十月丁火，三冬丁火微寒，端用庚甲...無庚無甲，何能引丁","status":"found"},
+    {"stem":"丁","month":11,"branch":"子","yong_primary":["wood"],"yong_secondary":["metal"],"condition":"三冬甲為尊庚佐(水多癸旺則從殺)","canon_zh":"十一月丁火...三冬丁火，甲木為尊，庚金佐之","status":"found"},
+    {"stem":"丁","month":12,"branch":"丑","yong_primary":["metal"],"yong_secondary":["wood"],"condition":"天寒，先庚劈甲","canon_zh":"十二月丁火，天寒氣凍...先用庚劈甲，方引丁火...故丁次之","status":"found"}
+  ],
+  "_pending_full_json": "丙12·壬12·癸12·庚12 = agent ให้ JSON ครบ (อยู่ใน transcript S1) · 甲乙24+戊己24+辛5-12 = ต้องเก็บตกใน S1b"
+}

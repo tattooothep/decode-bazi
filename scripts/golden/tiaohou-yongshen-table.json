@@ -1,0 +1,1697 @@
+{
+ "_meta": {
+  "purpose": "調候用神 10干×12月 golden จาก窮通寶鑑 verbatim",
+  "source": "qtbj-tiaohou-clean.md",
+  "date": "2026-06-09",
+  "element_en": "wood/fire/earth/metal/water",
+  "note": "調候=1ปัจจัย ไม่ใช่用神สุดท้าย · 從格/扶抑 override"
+ },
+ "table": [
+  {
+   "stem": "甲",
+   "month": 1,
+   "branch": "寅",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "fire",
+    "water"
+   ],
+   "condition": "正月甲木 初春尚有餘寒。調候以庚金為用（陽刃架殺），需才（土）相資；丙癸調候向陽。無庚必凶。",
+   "canon_zh": "總之正二月甲木，有庚戊者上命。如有丁透，大富大貴之命也。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 2,
+   "branch": "卯",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "二月甲木 庚金得所，名陽刃駕殺，可云小貴，須財（才）資之；若見癸水困了才殺則凶。",
+   "canon_zh": "二月甲木，庚金得所，名陽刃駕殺，可云小貴，異途顯達，或主武職，但要財資之。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 3,
+   "branch": "辰",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "三月甲木 木氣相竭。先取庚金，次用壬水。庚壬兩透，一榜堪圖。",
+   "canon_zh": "三月甲木，木氣相竭。先取庚金，次用壬水。庚壬兩透，一榜堪圖。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 4,
+   "branch": "巳",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "四月甲木退氣，丙火司權。先癸後丁。夏木需水調候，先癸水後丁火。",
+   "canon_zh": "四月甲木退氣，丙火司權，先癸後丁。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 5,
+   "branch": "午",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "五月甲木 木性虛焦。先癸後丁，庚金次之。五月癸庚兩透為上上之格。",
+   "canon_zh": "五六月甲木，木性虛焦，一理共推。五月先癸後丁庚金次之。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 6,
+   "branch": "未",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "六月甲木 三伏生寒，丁火退氣。先丁後庚，無癸亦可。六月庚丁兩透為上上之格。",
+   "canon_zh": "六月三伏生寒，丁火退氣。先丁後庚，無癸亦可。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 7,
+   "branch": "申",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "七月甲木 丁火為尊，庚金次之，庚金不可少。丁火熔金必賴甲木引助方成洪爐。",
+   "canon_zh": "七月甲木，丁火為尊，庚金次之，庚金不可少。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 8,
+   "branch": "酉",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "八月甲木 木囚金旺。丁火為先，次用丙火，庚金再次。",
+   "canon_zh": "八月甲木，木囚金旺。丁火為先，次用丙火，庚金再次。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 9,
+   "branch": "戌",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "九月甲木 木星凋零，獨愛丁火，壬癸滋扶。端用丁癸，見戊透必貴。四季甲木總不外乎庚金。",
+   "canon_zh": "九月甲木，木星凋零，獨愛丁火，壬癸滋扶，丁壬癸透，戊己亦透，此命配得中和，可許一榜。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 10,
+   "branch": "亥",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "十月甲木 庚丁為要，丙火次之。忌壬水泛身，須戊土制之。",
+   "canon_zh": "十月甲木，庚丁為要，丙火次之。忌壬水泛身，須戊土制之。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 11,
+   "branch": "子",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "十一月甲木 木性生寒。丁先庚後，丙火佐之。癸水司權為火金之病。",
+   "canon_zh": "十一月甲木，木性生寒，丁先庚後，丙火佐之。",
+   "status": "found"
+  },
+  {
+   "stem": "甲",
+   "month": 12,
+   "branch": "丑",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "十二月甲木 天寒氣凍，木性極寒。先用庚劈甲，方引丁火，故丁次之。乏庚略可，乏丁無用。",
+   "canon_zh": "十二月甲木，天寒氣凍，木性極寒，無生發之象，先用庚劈甲，方引丁火始得木火有通明之象，故丁次之。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 1,
+   "branch": "寅",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "เดือนต้นใบไม้ผลิ ยังมีหนาวเหลือ มิใช่ 丙(ไฟ) ไม่อบอุ่น ใช้ 丙ไฟ ก่อน 癸น้ำ ตามหลัง",
+   "canon_zh": "正月乙木，必須用丙，因天氣尤有餘寒，非丙不暖，雖有癸水，恐凝寒氣，故以丙火為先，癸水次之。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 2,
+   "branch": "卯",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "หยางค่อยขึ้น ไม้ไม่หนาวแล้ว 丙(ไฟ)เป็นเจ้า 癸(น้ำ)เป็นขุนนาง 丙癸ทะลุทั้งคู่ ไม่มี庚ทอง มั่งมีสูงศักดิ์",
+   "canon_zh": "二月乙木，陽氣漸升，木不寒矣，以丙為君，癸為臣，丙癸兩透，不透庚金，大富大貴。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 3,
+   "branch": "辰",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "หยางยิ่งร้อนแรง ใช้ 癸(น้ำ)ก่อน 丙(ไฟ)ตามหลัง",
+   "canon_zh": "三月乙木，陽氣愈熾，先癸後丙。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 4,
+   "branch": "巳",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "เดือน 4 乙ไม้มี 丙(ไฟ)อยู่เอง ยึด 癸(น้ำ)เป็นใหญ่ 丙(ไฟ)ใช้พอประมาณ ใช้ 庚辛(ทอง)ช่วย 癸",
+   "canon_zh": "四月乙木，自有丙火，端取癸水為尊。四月乙木專用癸水，丙火酌用，雖以庚辛佐癸，須辛透為清。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 5,
+   "branch": "午",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "丁ไฟคุมอำนาจ ข้าวกล้าแห้งแล้ง ครึ่งเดือนต้นเป็นหยาง ยังใช้ 癸(น้ำ) ครึ่งหลังเป็นหยิน สามฟู่เกิดหนาว 丙癸ใช้ร่วม ถ้าเสาทอง-น้ำมาก ใช้ 丙(ไฟ)ก่อน ที่เหลือใช้ 癸(น้ำ)ก่อน",
+   "canon_zh": "五月乙木，丁火司權，禾稼俱旱。上半月屬陽，仍用癸水。下半月屬陰，三伏生寒，丙癸齊用。柱多金水，丙火為先，餘皆用癸水為先。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 6,
+   "branch": "未",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "ไม้ยังเย็น ถ้าเสาทอง-น้ำมาก 丙(ไฟ)เป็นใหญ่ ถ้าสาขาเป็นกองน้ำ 乙ไม่ถูกทำลาย 癸(น้ำ)ทะลุก้าน มั่งมีสูงศักดิ์ยิ่ง ไม่มี癸เป็นคนสามัญ",
+   "canon_zh": "六月乙木，木性且寒，柱多金水，丙火為尊。支成水局，乙得無傷。癸水透干，大富大貴。無癸定作常人，運不行北，困苦一生。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 7,
+   "branch": "申",
+   "yong_primary": [
+    "earth"
+   ],
+   "yong_secondary": [
+    "fire",
+    "water"
+   ],
+   "condition": "庚ทองคุมฤดู เดือน 7 ชอบใช้ 己(ดิน)เป็น用神 หรือไม่เห็น丙癸ก็ตาม 己ดินขาดไม่ได้ ใช้ไฟเป็นเมีย ดินเป็นลูก",
+   "canon_zh": "七月乙木，庚金乘令，庚雖輸情於乙妹，怎奈干乙難合支金。柱見庚多，乙難受載。或丙透干，又加巳出埋金，此格可云科甲。有己透、加丙，亦是上命。七月喜己土為用，或不見丙癸。己土必不可少，此則以火為妻，土為子。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 8,
+   "branch": "酉",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "หลัง白露ดอกหอมหมื่นลี้ยังไม่บาน ใช้ 癸(น้ำ)หล่อเลี้ยง หลัง秋分ดอกบานแล้ว ชอบหันหาแสง จึงควรใช้ 丙(ไฟ) 癸(น้ำ)ตามหลัง 丙癸ทะลุทั้งคู่ ขุนนางชั้นสูง",
+   "canon_zh": "八月乙木，芝蘭禾稼均退。以丹桂為乙木。在白露之後，桂蕊未開，端用癸水以滋桂萼。若秋分後，桂花已開，卻喜向陽，又宜用丙，癸水次之，丙癸兩透，科甲名臣。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 9,
+   "branch": "戌",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "รากแห้งใบร่วง ต้องอาศัย 癸(น้ำ)หล่อเลี้ยง ถ้าเห็น癸น้ำ และพบ 辛(ทอง)เป็นต้นทางน้ำ แน่นอนสอบได้ มี癸ไม่มี辛เป็นคนสามัญ มี辛ไม่มี癸ยากจน",
+   "canon_zh": "九月乙木，根枯葉落，必賴癸水滋養。如見甲申時，名為藤蘿系甲，可秋可冬。若見癸水，又遇辛金發水之源，定主科甲。或有癸無辛，常人。有辛無癸，貧賤。或四柱壬多，水難生乙，亦是尋常之輩。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 10,
+   "branch": "亥",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "earth"
+   ],
+   "condition": "ไม้ไม่รับชี่ 壬น้ำคุมฤดู ใช้ 丙(ไฟ)เป็น用神 戊(ดิน)รองลงมา 丙戊ทะลุทั้งคู่ ขุนนางแน่นอน",
+   "canon_zh": "十月乙木，木不受氣，而壬水司令，取丙為用，戊土次之。丙戊兩透，科甲定然。有丙無戊，雖不科甲，亦入儒林。支多丙火，運入火鄉，亦主顯達。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 11,
+   "branch": "子",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [],
+   "condition": "ดอกไม้หนาวเย็นแข็ง หยางหนึ่งกลับมา ชอบใช้ 丙(ไฟ)ละลายน้ำแข็ง ดอกไม้ได้หันหาแสง ไม่ควรใช้ 癸เพราะแช่แข็งดอกไม้ จึงใช้ 丙(ไฟ)เป็นหลัก",
+   "canon_zh": "十一月乙木，花木寒凍，一陽來複，喜用丙火解凍，則花木有向陽之意，不宜用癸以凍花木，故端用丙火。",
+   "status": "found"
+  },
+  {
+   "stem": "乙",
+   "month": 12,
+   "branch": "丑",
+   "yong_primary": [],
+   "yong_secondary": [],
+   "condition": "ไม่มีในคัมภีร์ — 三冬乙木 ครอบเฉพาะ 十月(亥) และ 十一月(子) เท่านั้น ไม่มีบท 十二月(丑月) สำหรับ乙木",
+   "canon_zh": "",
+   "status": "not_in_canon"
+  },
+  {
+   "stem": "丙",
+   "month": 1,
+   "branch": "寅",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "正月丙火 三陽開泰，火氣漸炎。取壬為尊，庚金佐之。壬庚兩透，科甲定然。",
+   "canon_zh": "正月丙火，三陽開泰，火氣漸炎，取壬為尊，庚金佐之，壬庚兩透，科甲定然，即壬透庚藏，亦有異途顯達。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 2,
+   "branch": "卯",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "earth"
+   ],
+   "condition": "二月丙火 陽氣舒升。端用壬水，壬透天干，加庚辛己亦透，壬水有根，定主科甲。無壬則己土姑用。",
+   "canon_zh": "二月丙火，陽氣舒升，端用壬水，壬透天干，不見丁化，加以庚辛已亦透，壬水有根，定主科甲。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 3,
+   "branch": "辰",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "三月丙火 氣漸炎升。用壬水，或成土局，取甲木為輔，壬不可離。壬甲兩透，科甲定宜。",
+   "canon_zh": "三月丙火，氣漸炎升，用壬水，或成土局，取甲木為輔，壬不可離，壬申兩透，科甲定宜，惟忌庚出制甲，則秀才而已。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 4,
+   "branch": "巳",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "四月丙火 建祿於巳，火勢炎炎。宜專用壬水，解炎威之力，成既濟之功。無壬得庚發水源，方為有根之水。",
+   "canon_zh": "四月丙火，建祿於巳，火勢炎炎，宜專用壬水，解炎威之力，成既濟之功。如無壬水，孤陽失輔，難透清光，得庚發水源，方為有根之水。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 5,
+   "branch": "午",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "五月丙火愈炎。得壬庚高透，方為上命。或一壬無庚，亦主頁監。怕戊己雜亂、丁壬化合則為平人。",
+   "canon_zh": "五月丙火愈炎，得壬庚高透，方為上命。或一壬無庚，亦主頁監，猶防戊己出乾，丁壬化合，則為平人。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 6,
+   "branch": "未",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "六月丙火退氣，三伏生寒。壬水為用，取庚輔佐。庚壬兩透，貼身相生，可云科甲名宦。",
+   "canon_zh": "六月丙火退氣，三代生寒，壬水為用，取庚輔佐。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 7,
+   "branch": "申",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [],
+   "condition": "七月丙火 太陽轉西，陽氣衰矣，日近西山。仍用壬水輔映光輝。",
+   "canon_zh": "七月丙火，太陽轉西，陽氣衰矣，日近西山，見土皆晦，惟日照湖海，暮夜光天，故仍用壬水輔映光輝。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 8,
+   "branch": "酉",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [],
+   "condition": "八月丙火 日近黃昏，丙之餘光存於湖海。仍用壬水輔映。四柱多丙，一壬高透為奇。無壬癸亦可用。",
+   "canon_zh": "八月丙火，日近黃昏，丙之餘光，存於湖海，仍用壬水輔映。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 9,
+   "branch": "戌",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "九月丙火 火氣愈退，所忌土晦光。必須先用甲木，次取壬水。",
+   "canon_zh": "九月丙火，火氣愈退，所忌土晦光，必須先用甲木，次取壬水。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 10,
+   "branch": "亥",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "earth",
+    "metal"
+   ],
+   "condition": "十月丙火 太陽失令。得見甲戊庚出乾，可云科甲。木旺宜庚，水旺宜戊，火旺用壬，隨宜酌用。",
+   "canon_zh": "總之十月丙火，木旺宜庚，水旺宜戊，火旺用壬，隨宜酌用可也。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 11,
+   "branch": "子",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "earth"
+   ],
+   "condition": "十一月丙火 冬至一陽生，弱中複強。壬水為最，戊土佐之。",
+   "canon_zh": "十一月丙火，冬至一陽生，弱中複強，壬水為最，戊土佐之。",
+   "status": "found"
+  },
+  {
+   "stem": "丙",
+   "month": 12,
+   "branch": "丑",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "十二月丙火 氣進二陽，每雪欺霜。喜壬為用，己土司令，土多又不可少甲。壬甲兩透，科甲堪宜。",
+   "canon_zh": "十二月丙火，氣進二陽，每雪欺霜，喜壬為用，己土司令，土多又不可少甲，壬甲兩透，科甲堪宜，甲藏則秀才而已，或無甲得一壬透，富中取貴。",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 1,
+   "branch": "寅",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "母旺非庚不能劈甲",
+   "canon_zh": "正月丁火，甲木當權，乃為母旺，非庚不能劈甲，何以引丁，姑用庚金",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 2,
+   "branch": "卯",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "濕乙傷丁，先庚後甲",
+   "canon_zh": "二月丁火，濕乙傷丁，先庚後甲...庚甲兩透，科甲定然",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 3,
+   "branch": "辰",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "戊土司令，先甲引丁制土，次庚",
+   "canon_zh": "三月丁火，戊土司令，洩弱丁氣，先用甲木引丁制土，次看庚金",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 4,
+   "branch": "巳",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "乘旺，取甲引丁，必庚劈甲",
+   "canon_zh": "四月丁火乘旺，雖取甲引丁，必用庚劈甲...甲多又取庚為先",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 5,
+   "branch": "午",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "建祿，遇壬不貪丁合",
+   "canon_zh": "五月丁火，時歸建祿，不宜亂用甲木，遇年透隔位之壬",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 6,
+   "branch": "未",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "三伏生寒，專取甲木，壬次之",
+   "canon_zh": "六月丁火，陰柔退氣...丁弱極矣，專取甲木，壬水次之",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 7,
+   "branch": "申",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "退氣柔弱，端用甲木，庚劈甲",
+   "canon_zh": "七月丁火，退氣柔弱，端用甲木...仍取庚劈甲，為引火之物",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 8,
+   "branch": "酉",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "fire",
+    "metal"
+   ],
+   "condition": "木囚金旺，丁先丙次庚再",
+   "canon_zh": "八月丁火，木囚金旺，丁火為先，次用丙火，庚金再次",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 9,
+   "branch": "戌",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "木凋零，端用甲木",
+   "canon_zh": "九月丁火，木星凋零，獨愛丁火，壬癸滋扶",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 10,
+   "branch": "亥",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "微寒，端用庚甲",
+   "canon_zh": "十月丁火，三冬丁火微寒，端用庚甲...無庚無甲，何能引丁",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 11,
+   "branch": "子",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "三冬甲為尊庚佐(水多癸旺則從殺)",
+   "canon_zh": "十一月丁火...三冬丁火，甲木為尊，庚金佐之",
+   "status": "found"
+  },
+  {
+   "stem": "丁",
+   "month": 12,
+   "branch": "丑",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "三冬統論(窮通寶鑑ไม่มี十二月丁火เดี่ยว) · 端用庚甲",
+   "canon_zh": "三冬丁火微寒，端用庚甲，甲乃庚之良友，凡用甲木，庚不可少",
+   "status": "found_sandong"
+  },
+  {
+   "stem": "戊",
+   "month": 1,
+   "branch": "寅",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "正二月戊土先丙後癸：先取丙火照暖除寒，次取癸水滋潤。無丙者富貴艱辛。",
+   "canon_zh": "正二月先丙後，癸又次之，三月先甲後丙，癸又次之，因戊土司權故也，有甲、丙、癸、三者齊透，必主一品當朝，或二透一藏，亦登金榜，二藏一透，也可異途。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 2,
+   "branch": "卯",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "正二月戊土先丙後癸：先丙火除寒，次癸水滋潤。無丙者富貴艱辛，有丙無甲癸者名曰春旱。癸透者貴，壬透者富。",
+   "canon_zh": "正二月即有甲癸，若無丙除寒，如萬物生而不長，故無丙者，富貴艱辛，或有丙無甲癸者，名日春旱，如萬物生而厄，無甲癸者，一生勤苦，勞而無功，或一丙火，有甲久癸，先泰後否，或支成火局，不見壬癸，僧道孤貧，癸透者貴，壬透者富。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 3,
+   "branch": "辰",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "fire",
+    "water"
+   ],
+   "condition": "三月戊土司令，先甲後丙，癸又次之。三月戊土不見丙甲癸者愚而且賤，毋癸透者科甲。用甲者水妻木子，用丙者木妻火子。",
+   "canon_zh": "三月戊土司令，不見丙甲癸者，愚而且賤，毋癸透者、科甲，兩癸透者、生員，甲癸俱藏者，只可云富，有癸異途。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 4,
+   "branch": "巳",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "fire",
+    "water"
+   ],
+   "condition": "四月戊土陽氣發升、寒氣內藏、外實內虛，先用甲疏劈，次取丙癸為佐。丙透甲出，廊廟之材；丙癸俱透，科甲之士。",
+   "canon_zh": "四月戊土，陽氣發升，寒氣內藏，外實內虛，不畏火炎，無陽氣相催，萬物不長，故先用甲疏劈，次取丙癸為佐。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 5,
+   "branch": "午",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "五月戊土仲夏火炎，先看壬水，次取甲木，丙火酌用，用癸力微。壬甲兩透名君臣慶會。用壬者金妻水子。",
+   "canon_zh": "五月戊土，仲夏火炎，先看壬水，次取甲木，丙火酌用，用癸力微。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 6,
+   "branch": "未",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire",
+    "wood"
+   ],
+   "condition": "六月戊土遇夏乾枯，先看癸水，次用丙火甲木。癸丙兩透科甲中人。用癸者金妻水子，用丙者木妻火子，用甲者水妻木子。",
+   "canon_zh": "六月戊土，遇夏乾枯，先看癸水，次用丙火甲木。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 7,
+   "branch": "申",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "water",
+    "wood"
+   ],
+   "condition": "七月戊土陽氣漸入、寒氣漸出，先丙後癸，甲木次之。丙癸甲透者富貴極品。",
+   "canon_zh": "七月戊土，陽氣漸入，寒氣漸出，先丙後癸，甲木次之。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 8,
+   "branch": "酉",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "八月戊土金洩身寒，賴丙照暖，喜水滋潤，先丙後癸，不必木疏。丙癸兩透科甲中人。秋土生金極弱，須丙火丁火出乾方妙。",
+   "canon_zh": "八月戊土，金洩身寒，賴丙照暖，喜水滋潤，先丙後癸，不必木疏。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 9,
+   "branch": "戌",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "九月戊土當權，不可專用丙，先看甲木，次取癸水，卻忌化合。見金先用癸水，後取丙火，配合支干方成有生之土。",
+   "canon_zh": "九月戊土當權，不可專用丙，先看甲木，次取癸水，郤忌化合，見金先用癸水，後取丙火，配合支干，方成有生之土，定發雲程。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 10,
+   "branch": "亥",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "十月戊土時值小陽、陽氣略出，先用甲木，次取丙火。非甲土不靈，非丙土不暖。甲丙兩出富貴中人。",
+   "canon_zh": "十月戊土，時值小陽，陽氣略出，先用甲木，次取丙火，非甲，土不靈，非丙，土不暖，安能發生萬物，甲丙兩出，富貴中人。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 11,
+   "branch": "子",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "十一二月嚴寒冰凍，丙火為尊，甲木為佐。丙甲兩透桃浪之人。有丙無甲者豪富，有甲無丙者清貧。年月透辛金者屬土金傷官，以金為妻水為子。",
+   "canon_zh": "十一二月嚴寒冰凍，丙火為尊，甲木為佐，丙甲兩透，桃浪之人，丙出甲藏，採芹食　，丙藏甲出，佐雜前程，有丙無甲者，豪富，有甲無丙者，清貧，丙甲全無，下流之造。",
+   "status": "found"
+  },
+  {
+   "stem": "戊",
+   "month": 12,
+   "branch": "丑",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "十一二月嚴寒冰凍，丙火為尊，甲木為佐。丙甲兩透桃浪之人。有丙無甲者豪富，有甲無丙者清貧。年月透辛金者屬土金傷官，以金為妻水為子。",
+   "canon_zh": "十一二月嚴寒冰凍，丙火為尊，甲木為佐，丙甲兩透，桃浪之人，丙出甲藏，採芹食　，丙藏甲出，佐雜前程，有丙無甲者，豪富，有甲無丙者，清貧，丙甲全無，下流之造。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 1,
+   "branch": "寅",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "earth"
+   ],
+   "condition": "正月己土 田園猶凍，餘寒未退，故丙為尊得丙照暖萬物自生；忌見壬水反為己病，須戊作堤以保園圃，壬多要見戊制。",
+   "canon_zh": "正月己土，田園猶凍，蓋因臘氣未除，餘寒未退，故丙為尊，得丙照暖，萬物自生，忌見壬水，反為己病，何也，壬乃江湖之水，湖水一發，則田園洗蕩，變為沙土，而根苗盡沒矣，須戊作堤，以保園圃，壬多要見戊制，有戊出乾者，定主玉堂金馬，若乏制戊，必屬平常。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 2,
+   "branch": "卯",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "二月己土 陽氣漸升，先取甲木疏之忌合，次取癸水潤之，甲癸出乾定主科甲，加以一丙出透勢壓百僚。",
+   "canon_zh": "二月己土，陽氣漸升，雖禾稼未成，萬物出土，田園未展，先取甲木疏之，忌合，次取癸水潤之，甲癸出乾，定主科甲，加以一丙出透，勢壓百僚，一見壬水，微末官職。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 3,
+   "branch": "辰",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "water",
+    "wood"
+   ],
+   "condition": "三月己土 正栽培禾稼之時，先丙後癸，土暖而潤隨用甲疏，三者俱透天干必官居黃閣，郤以庚金為病。",
+   "canon_zh": "三月己土，正栽培禾稼之時，先丙後癸，土暖而潤，隨用甲疏，三者俱透天干，必官居黃閣，或三者透一，科甲定然，但要得地，郤以庚金為病。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 4,
+   "branch": "巳",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "三夏己土 雜氣才官禾稼在田，最喜甘沛，取癸為要次用丙火，夏無太陽禾稼不長，故無癸曰旱田無丙曰孤陰。",
+   "canon_zh": "三夏己土，雜氣才官，禾稼在田，最喜甘沛，取癸為要，次用丙火，夏無太陽，禾稼不長，故無癸曰旱田，無丙曰孤陰。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 5,
+   "branch": "午",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "三夏己土 雜氣才官禾稼在田，最喜甘沛，取癸為要次用丙火，夏無太陽禾稼不長，故無癸曰旱田無丙曰孤陰。（穷通宝鉴以三夏統論四五六月己土）",
+   "canon_zh": "三夏己土，雜氣才官，禾稼在田，最喜甘沛，取癸為要，次用丙火，夏無太陽，禾稼不長，故無癸曰旱田，無丙曰孤陰。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 6,
+   "branch": "未",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "三夏己土 雜氣才官禾稼在田，最喜甘沛，取癸為要次用丙火，夏無太陽禾稼不長，故無癸曰旱田無丙曰孤陰。（穷通宝鉴以三夏統論四五六月己土）",
+   "canon_zh": "三夏己土，雜氣才官，禾稼在田，最喜甘沛，取癸為要，次用丙火，夏無太陽，禾稼不長，故無癸曰旱田，無丙曰孤陰。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 7,
+   "branch": "申",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire",
+    "metal"
+   ],
+   "condition": "三秋己土 萬物收藏之際外虛內實寒氣漸升，須丙火溫之癸水潤之，癸能洩金丙能制金補土精神，癸先丙後，取辛輔癸。",
+   "canon_zh": "三秋己土，萬物收藏之際，外虛內實，寒氣漸升，須丙火溫之，癸水潤之，不特此也，且癸能洩金，丙能制金，補土精神，則秋生之物咸茂矣，癸先丙後。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 8,
+   "branch": "酉",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire",
+    "metal"
+   ],
+   "condition": "三秋己土 須丙火溫之癸水潤之，癸先丙後取辛輔癸。八月支成金局無丙丁出救此人零丁孤苦，如得丙透丁藏生己元神此人名魁天下。",
+   "canon_zh": "總之三秋己土，先癸後丙，取辛輔癸，九月土盛，宜甲木疏之，餘皆酌用。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 9,
+   "branch": "戌",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire",
+    "wood"
+   ],
+   "condition": "三秋己土 先癸後丙取辛輔癸，九月土盛宜甲木疏之，餘皆酌用。",
+   "canon_zh": "總之三秋己土，先癸後丙，取辛輔癸，九月土盛，宜甲木疏之，餘皆酌用。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 10,
+   "branch": "亥",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "earth",
+    "wood"
+   ],
+   "condition": "三冬己土 濕泥寒凍非丙暖不生，取丙為尊甲木參酌，戊土癸水不用，惟初冬壬旺取戊制之，餘皆用丙丁但丁不能解凍除寒。",
+   "canon_zh": "三冬己土，濕泥寒凍，非丙暖不生，取丙為尊，甲木參酌，戊土癸水不用，惟初冬壬旺，取戊制之，餘皆用丙丁，但丁不能解凍除寒，不能大濟。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 11,
+   "branch": "子",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "三冬己土 濕泥寒凍非丙暖不生，取丙為尊甲木參酌，戊土癸水不用，餘皆用丙丁但丁不能解凍除寒。",
+   "canon_zh": "三冬己土，濕泥寒凍，非丙暖不生，取丙為尊，甲木參酌，戊土癸水不用，惟初冬壬旺，取戊制之，餘皆用丙丁，但丁不能解凍除寒，不能大濟。",
+   "status": "found"
+  },
+  {
+   "stem": "己",
+   "month": 12,
+   "branch": "丑",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "三冬己土 濕泥寒凍非丙暖不生，取丙為尊甲木參酌，戊土癸水不用，餘皆用丙丁但丁不能解凍除寒。",
+   "canon_zh": "三冬己土，濕泥寒凍，非丙暖不生，取丙為尊，甲木參酌，戊土癸水不用，惟初冬壬旺，取戊制之，餘皆用丙丁，但丁不能解凍除寒，不能大濟。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 1,
+   "branch": "寅",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "先用丙暖庚性 (金之寒氣未除)，又慮土厚埋金須甲疏洩；丙甲兩透為上，丁火次之",
+   "canon_zh": "正月庚金，木旺之際，有土皆死，不能生金，且金之寒氣未除，先用丙暖庚性，又慮土厚埋金，須甲疏洩，丙甲兩透，科甲顯榮，二者透一，亦有生監，丙藏甲透，異路功名。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 2,
+   "branch": "卯",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "二月庚金有暗強之勢如秋金，專用丁火，借甲引丁、借庚劈甲；無丁用丙",
+   "canon_zh": "二月庚金，柱中自然有乙，當令之乙，見庚必留情於乙，此金有暗強之勢，如秋金一理，故二月庚金，專用丁火，借甲引丁，借庚劈甲，無丁用丙者，富貴多出於勉強。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 3,
+   "branch": "辰",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "戊土司令、土旺金頑，故先甲後丁；頑金宜丁、旺土須甲，不用庚劈甲",
+   "canon_zh": "三月庚金，戊土司令，無生金之理，有埋金之憂，故先甲後丁，不用庚劈甲，三月之庚，土旺金頑，頑金宜丁，旺土須甲，乏甲不能立業，乏丁焉能成名，二者少一，富貴不真，庚金無火，非夭則貧，身弱才多，富貴不久。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 4,
+   "branch": "巳",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "earth",
+    "fire"
+   ],
+   "condition": "群金生夏喜用勾陳，先用壬水方得中和，次取戊土，丙火佐之；壬丙戊三者皆全",
+   "canon_zh": "四月庚金，長生於巳，巳內有戊，丙不熔金，故不畏火炎，丙亦可作用，但先壬水，方得中和，故曰群金生夏，喜用勾陳，次取戊土，丙火佐之，三者皆全，登科及第，即透一二，亦非白丁。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 5,
+   "branch": "午",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "丁火旺烈、庚金敗地，專用壬水，癸又次之",
+   "canon_zh": "五月庚金，丁火旺烈，庚金敗地，專用壬水，癸又次之。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 6,
+   "branch": "未",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "三伏生寒、頑鈍極矣，先用丁火，次取甲木",
+   "canon_zh": "六月庚金，三伏生寒，頑鈍極矣，先用丁火，次取甲木。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 7,
+   "branch": "申",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "剛銳極矣，專用丁火煆煉，次取木引丁",
+   "canon_zh": "七月庚金，剛銳極矣，專用丁火煆煉，次取木引丁，故曰，秋金銳銳最為奇，壬癸相逢總不宜，如逢木火來成局，試看福壽與天齊，如得丁甲兩透，定步青雲，若有丁無甲為俊秀，有甲無丁是平人，丁甲兩無無用物，只堪門下作閒人。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 8,
+   "branch": "酉",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood",
+    "fire"
+   ],
+   "condition": "剛銳支退，用丁甲，丙不可少；羊刃架殺",
+   "canon_zh": "八月庚金，剛銳支退，用丁甲，丙不可少，若丁甲透，又見一丙，功名顯赫，且見羊刃無刑衝，丙殺藏支，名為羊刃架殺，主出將入相，直介忠臣。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 9,
+   "branch": "戌",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "戊土司令最怕土厚埋金，宜先用甲疏、後用壬洗；忌己土濁壬",
+   "canon_zh": "九月庚金，戊土司令，最怕土厚埋金，宜先用甲疏，後用壬洗，則金自出矣，忌見己土濁壬。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 10,
+   "branch": "亥",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "水冷性寒，非丁莫造，非丙不暖 (水冷金寒愛丙丁)",
+   "canon_zh": "十月庚金，水冷性寒，非丁莫造，非丙不暖。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 11,
+   "branch": "子",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood",
+    "fire"
+   ],
+   "condition": "天氣嚴寒，仍取丁甲，次取丙火照暖",
+   "canon_zh": "十一月庚金，天氣嚴寒，仍取丁甲，次取丙火照暖，或丁甲兩透，丙在支中，必主科甲，即無丙火，亦有衣衿，有丁無甲，亦可富中取貴，有甲無丁，只作常人，或丙透丁藏，異途名望，丁藏有甲，武學可許。",
+   "status": "found"
+  },
+  {
+   "stem": "庚",
+   "month": 12,
+   "branch": "丑",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "fire",
+    "wood"
+   ],
+   "condition": "寒氣太重且多濕泥，先取丙火解凍，次取丁火煉金，甲亦不可少",
+   "canon_zh": "十二月庚金，寒氣太重，且多濕泥，愈寒愈凍，先取丙火解凍，次取丁火煉金，甲亦不可少。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 1,
+   "branch": "寅",
+   "yong_primary": [
+    "earth"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "忌甲木司權辛金失令，取己土為身之本，欲得辛金發現全賴壬水之功；先己後壬，己為君",
+   "canon_zh": "正月辛金，陽氣舒而寒未除，不知正月建寅，中有長生之丙，解去寒氣，忌甲木司權，辛金失令，取己土為身之本，欲得辛金發現，全賴壬水之功，己壬兩透，支見庚制甲，科甲定然，或己土透干，支中有甲，異路恩榮，或己土不全，號曰君臣失勢，富貴難全，或有丙火出乾，亦主武學，或見壬，無己庚者，貧賤之徒。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 2,
+   "branch": "卯",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "陽和之際，壬水為尊，見戊己為病，得甲制伏則辛金不致埋沒、壬水不致混濁",
+   "canon_zh": "二月辛金，陽和之際，壬水為尊，見戊己為病，得甲制伏，則辛金不致埋沒，壬水不致混濁，合此者必身入玉堂，故二月庚金，有壬甲透者貴顯，不則，鄉紳，或壬坐亥支，不見土出，可能入芥，家亦小康，得申中之壬者，異途名望，無壬者常人，其生克之理，與正月辛金皆同。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 3,
+   "branch": "辰",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "戊土司令、辛承正氣、母旺子相，先壬後甲",
+   "canon_zh": "三月辛金，戊土司令，辛承正氣，母旺子相，先壬後甲，壬甲兩透，富貴必然，壬透甲藏，廩貢不失，甲透壬藏，富貴可云，壬甲皆無，平常之格。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 4,
+   "branch": "巳",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "時道首夏，忌丙火之燥烈，喜壬水之洗淘；癸透壬藏",
+   "canon_zh": "四月辛金，時道首夏，忌丙火之燥烈，喜壬水之洗淘，支成金局，水透出乾，有木制戊，名一清澈底，科甲功名，癸透壬藏，富真貴假，若壬癸皆藏，戊己亦藏，略富，若壬癸俱無，反見火出，必主鰥獨。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 5,
+   "branch": "午",
+   "yong_primary": [
+    "earth"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "丁火司權、辛金失令陰柔之極，不宜煆煉，須己壬兼用 (己為泥沙、壬為湖海)；無壬癸亦可用；壬癸己三者皆用",
+   "canon_zh": "五月辛金，丁火司權，辛金失令，陰柔之極，不宜煆煉，須己壬兼用，何也，己為泥沙，壬為湖海，己無壬不濕，辛無己不生，故壬己並用，無壬，癸亦可用，但癸力小，或支成火局，即重見癸出，亦不濟，得壬透破火方可，必主生員，若無壬，癸見戊，雖有午宮己土，燥泥成灰，金必煆熔，反遭埋沒，必為僧道，有一二重比肩，不致孤獨。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 6,
+   "branch": "未",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "己土當權輔助太多恐掩金光，先用壬水，取庚佐之；總以一壬一己見庚無甲方妙",
+   "canon_zh": "六月辛金，己土當權，輔助太多，恐掩金光，先用壬水，取庚佐之，壬庚兩透，科甲功名，即不出乾，藏支得所，亦有榮華，但忌戊出，得甲制之，方吉，甲須隔位，恐貪己合，反掩金光，又寒壬水之流，下賤之格，又忌庚出制甲，或只有未中一己，見子壬水，又為濕泥，不可見甲，甲出，反作平人，總以一壬一己，見庚無甲，方妙，與五月用己壬同。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 7,
+   "branch": "申",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "wood",
+    "earth"
+   ],
+   "condition": "值庚司令不旺自旺，壬水為尊，甲戊酌用可也，癸水不可為用",
+   "canon_zh": "七月辛金，壬不在多，故書曰，水淺金多，號曰體全之象，壬水為尊，甲戊酌用可也，癸水不可為用。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 8,
+   "branch": "酉",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "當權得令旺之極矣，專用壬水淘洗；見戊己以土為病，見甲制土方妙",
+   "canon_zh": "八月辛金，當權得令，旺之極矣，專用壬水淘洗，故云金見水以流通，如見戊己，則生扶太過，故以土為病，見甲制土，方妙，無戊，不宜用甲。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 9,
+   "branch": "戌",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "戊土司令、母旺子相，須甲疏土、壬洩旺金，先壬後甲；火土為病，水木為藥",
+   "canon_zh": "九月辛金，成土司令，母旺子相，須甲疏土，壬洩旺金，先壬後甲，壬甲兩透，桃洞之仙，或壬透甲藏，又見者，平人，甲透，壬藏，戊在支內，異途之仕。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 10,
+   "branch": "亥",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "時值小陽寒氣將降，先用壬水、次取丙火 (名金白水清)；先壬後丙",
+   "canon_zh": "十月辛金，時值小陽，陽漸升，寒氣將降，先用壬水，次取丙火，壬丙兩透，金榜題名，何也，蓋辛金有壬水丙火，名金白水清，又在亥月故發。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 11,
+   "branch": "子",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "癸水司令為寒冬雨露，切忌癸出凍金而困丙火，壬丙兩透；冬月辛金須丙溫暖方妙",
+   "canon_zh": "十一月辛金，癸水司令，為寒冬雨露，切忌癸出凍金，而困丙火，壬丙兩透，不見戊癸，衣錦腰金，即壬藏丙透，一榜堪圖。",
+   "status": "found"
+  },
+  {
+   "stem": "辛",
+   "month": 12,
+   "branch": "丑",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "寒凍之極，先丙後壬 (丙不能解凍、無壬不能洗淘)；戊己次之",
+   "canon_zh": "十二月辛金，寒凍之極，先丙後壬，炳不能解凍，無壬不能洗淘，丙壬兩透，金馬玉堂之客，壬丙俱藏，游庠食　之人，有丙無壬，富真貴假，有壬乏丙，賤而且貧，或丙多，無壬，有癸，市中貿易之流。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 1,
+   "branch": "寅",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "fire",
+    "earth"
+   ],
+   "condition": "正月壬水 汪洋之象，水性柔弱。宜用庚金之源，庶不致汪洋無度。庚丙戊三者齊透，科甲功名。",
+   "canon_zh": "正月壬水，汪洋之象，能並百川之流，然水性柔弱，宜用庚金之源，庶不致汪洋無度，有庚丙戊三者齊透，科甲功名。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 2,
+   "branch": "卯",
+   "yong_primary": [
+    "earth"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "二月壬水 寒氣初除，有並流之象。不用丙暖，專取戊土辛金。先戊後辛，庚金次之。",
+   "canon_zh": "二月壬水，寒氣初除，有並流之象，不用丙暖，專取戊土辛金，二月壬水，先戊後辛，庚金次之。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 3,
+   "branch": "辰",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "三月壬水 戊土司權，有推山塞海之患。先用甲疏季土，次取庚金。",
+   "canon_zh": "三月壬水，戊土司權，死有推山塞海之患，先用甲疏季土，次取庚金。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 4,
+   "branch": "巳",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "四月壬水 丙火司權，水弱極矣。專取壬水比肩為助，次取辛金發源，且暗合丙火，庚金為佐。",
+   "canon_zh": "四月壬水，丙火司權，水弱極矣，專取壬水比肩為助，次取辛金發源，且暗合丙火，庚金為佐。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 5,
+   "branch": "午",
+   "yong_primary": [
+    "water"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "五月壬水 丁旺壬弱。取癸為用，取庚為佐。無庚不能發水，無癸不能傷丁。辛癸亦可參用。",
+   "canon_zh": "五月壬水，丁旺壬弱，取癸為用，取庚為佐，無庚不能發水，無癸不能傷丁，五月壬水，辛癸亦可參用，其理與四月皆同。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 6,
+   "branch": "未",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "water",
+    "wood"
+   ],
+   "condition": "六月壬水 己土當權，丁火退氣。先用辛金癸水，次用甲木劈土。先辛後甲，次取癸水。",
+   "canon_zh": "六月壬水，己土當權，丁火退氣，先用辛金癸水，次用甲木劈土，六月壬水，先辛後甲，次取癸水。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 7,
+   "branch": "申",
+   "yong_primary": [
+    "earth"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "七月壬水 庚金司令，源流自遠，轉弱為強。專用戊土，次取丁火佐戊制庚。栽用戊土，丁火為佐。",
+   "canon_zh": "七月壬水，庚金司令，壬得申之長生，源流自遠，轉弱為強，專用戊土，次取丁火佐戊制庚。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 8,
+   "branch": "酉",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "八月壬水 辛金司權，金白水清。忌戊土為病，專用甲木。甲木一透制戊，壬水澈底澄清。栽用甲木，庚金次之。",
+   "canon_zh": "八月壬水，辛金司權，正金白水清，忌戊土為病，專用甲木，甲木一透制戊，壬水澈底澄清，名高翰苑。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 9,
+   "branch": "戌",
+   "yong_primary": [
+    "wood"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "九月壬水進氣，其性將厚。若一派壬水，見一甲制戌中之戊，戊又出乾，斯用丙火。栽用甲木，次用丙火。",
+   "canon_zh": "九月壬水進氣，其性將厚，若一派壬水，見一甲，制戌中之戊，戊又出乾，斯用丙火，此格清貴極矣。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 10,
+   "branch": "亥",
+   "yong_primary": [
+    "earth"
+   ],
+   "yong_secondary": [
+    "fire",
+    "metal"
+   ],
+   "condition": "十月壬水司權，至旺之極。取戊為用。專用戊丙，次取庚金。丙戊兩透，名利雙全。",
+   "canon_zh": "或丙戊兩透，行火土運，名利雙全，或有丙無戊，可云衣祿，有戊無丙，難許推盈，十月壬水，專用戊丙，次取庚金。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 11,
+   "branch": "子",
+   "yong_primary": [
+    "earth"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "十一月壬水 陽刃幫身，較前更旺。先取戊土，次用丙火。丙戊兩透，富貴榮華。丙戊並用。",
+   "canon_zh": "十一月壬水，陽刃幫身，較前更旺，先取戊土，次用丙火，丙戊兩透，富貴榮華，有戊無丙，略可言富，有丙無戊，好謀無成。",
+   "status": "found"
+  },
+  {
+   "stem": "壬",
+   "month": 12,
+   "branch": "丑",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "十二月壬水 旺極複衰。上半月癸辛主事故旺，下半月己土主事故衰，皆專用丙火，甲木佐之。先取丙火，丁甲為佐。",
+   "canon_zh": "十二月壬水，旺極複衰，何也，上半月癸辛主事，故旺，專用丙火，下半月己土主事，故衰，亦用丙火，甲木佐之。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 1,
+   "branch": "寅",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "正月癸水 雨露之精，其性至柔。先用辛金，生癸水之源，次用丙火照暖。辛丙兩透，金榜有名。辛金為主，庚金次之，丙亦可少。",
+   "canon_zh": "正月癸水，值三陽之後，雨露之精，其性至柔，先用辛金，生癸水之源，次用丙火照暖，名陰陽和合，萬物發生，辛丙兩透，金榜有名。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 2,
+   "branch": "卯",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [],
+   "condition": "二月癸水 不剛不柔，乙木司令，洩弱元神。專用庚金為用，辛金次之。庚辛俱透，無丁出乾者，貴由科甲。",
+   "canon_zh": "二月葵水，不剛不柔，乙木司令，洩弱元神，專用庚金為用，辛金次之，庚辛俱透，無丁出乾者，貴由科甲，無庚辛者常人。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 3,
+   "branch": "辰",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "metal",
+    "wood"
+   ],
+   "condition": "三月癸水 要分清明穀雨。清明後火氣未熾，專用丙火。穀雨後雖用丙火，尚宜辛甲佐之。然丙亦不可少。",
+   "canon_zh": "三月癸水，要分清明穀雨，清明後，火氣未熾，專用丙火，為陰陽合諧，穀雨後，雖用丙火，尚宜辛甲佐之。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 4,
+   "branch": "巳",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [],
+   "condition": "四月癸水 喜辛金為用，無辛用庚。辛高透不見丁火，加以壬透，主科名榮貴。專用辛金方妙。",
+   "canon_zh": "四月癸水，喜辛金為用，無辛用庚，若辛高透，不見丁火，加以壬透，主科名榮貴，聲播四夷。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 5,
+   "branch": "午",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "五月癸水 至弱無根。必須庚辛為生身之本，但丁火司權，金難敵火，宜見比劫，方得辛金之用。庚辛壬參酌並用。",
+   "canon_zh": "五月癸水，至弱無根，必須庚辛為生身之本，但丁火司權，金難敵火，安能滋養癸水，宜見比劫，方得辛金之用，五月癸水，庚辛壬參酌並用可也。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 6,
+   "branch": "未",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "六月癸水 有上下月之分。上半月庚辛休囚，宜比劫助身；下半月庚辛有氣。專用庚辛。忌丁透。",
+   "canon_zh": "六月癸水，有上下月之分，下半月庚辛有氣，上半月庚辛休囚，凡六癸日，多不驗者，何也，俗士不知此理，因未中有乙巳同宮，破而不破，故癸水不能從殺，所以專用庚辛。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 7,
+   "branch": "申",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "七月癸水 母旺子相，弱中複強。但庚司令，剛銳極矣，必取丁火為用。丁透有甲，名有焰之火，必主科甲。",
+   "canon_zh": "七月癸水，正母旺子相之時，癸雖死申，殊不知申中有庚生之，名死處逢生，弱中複強，即運行西北，亦不死也，但庚司令，剛銳極矣，必取丁火為用，或丁透有甲，名有焰之火，必主科甲。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 8,
+   "branch": "酉",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "fire"
+   ],
+   "condition": "八月癸水 辛金虛靈，金白水清。故取辛金為用，丙火佐之，名水暖金溫。丙辛隔位同透，主科甲功名。",
+   "canon_zh": "八月癸水，辛金虛靈，非頑金可比，正金白水清，故取辛金為用，丙火佐之，名水暖金溫，如丙與辛隔位同透，主科甲功名。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 9,
+   "branch": "戌",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [
+    "wood"
+   ],
+   "condition": "九月癸水 失令無根，戊土司權，克制太過。專用辛金發水之源，要比肩滋甲制戊方妙。辛甲並用。",
+   "canon_zh": "九月癸水，失令無根，戊土司權，克制太過，專用辛金發水之源，要比肩滋甲制戊方妙。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 10,
+   "branch": "亥",
+   "yong_primary": [
+    "metal"
+   ],
+   "yong_secondary": [],
+   "condition": "十月癸水 旺中有弱，因亥搖木，洩散元神。宜用庚辛為妙。得庚辛兩透，不見丁傷者，功名有准。",
+   "canon_zh": "十月癸水，旺中有弱，何也，因亥搖木，洩散元神，宜用庚辛為妙，得庚辛兩透，不見丁傷者，功名有准。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 11,
+   "branch": "子",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "metal"
+   ],
+   "condition": "十一月癸水 值冰凍之時，金水無交歡之象。專用丙火解凍，庶不致成冰，又要辛金滋扶。無丙有辛，不妙。",
+   "canon_zh": "十一月癸水，值冰凍之時，金水無交歡之象，專用丙火解凍，庶不致成冰，又要辛金滋扶，無丙有辛，不妙。",
+   "status": "found"
+  },
+  {
+   "stem": "癸",
+   "month": 12,
+   "branch": "丑",
+   "yong_primary": [
+    "fire"
+   ],
+   "yong_secondary": [
+    "water"
+   ],
+   "condition": "十二月癸水 寒極成冰，萬物不能舒泰。宜丙火解凍，或丙透年時，加以壬透，支中多戊，名水輔陽光，主顯達名臣。",
+   "canon_zh": "十二月癸水，寒極成冰，萬物不能舒泰，宜丙火解凍，或丙透年時，加以壬透，支中多戊，名水輔陽光，主顯達名臣，無戊者，異途之職。",
+   "status": "found"
+  }
+ ]
+}

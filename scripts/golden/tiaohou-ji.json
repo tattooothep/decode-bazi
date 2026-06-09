@@ -1,0 +1,134 @@
+[
+  {
+    "stem": "己",
+    "month": 1,
+    "branch": "寅",
+    "yong_primary": ["fire"],
+    "yong_secondary": ["earth"],
+    "condition": "正月己土 田園猶凍，餘寒未退，故丙為尊得丙照暖萬物自生；忌見壬水反為己病，須戊作堤以保園圃，壬多要見戊制。",
+    "canon_zh": "正月己土，田園猶凍，蓋因臘氣未除，餘寒未退，故丙為尊，得丙照暖，萬物自生，忌見壬水，反為己病，何也，壬乃江湖之水，湖水一發，則田園洗蕩，變為沙土，而根苗盡沒矣，須戊作堤，以保園圃，壬多要見戊制，有戊出乾者，定主玉堂金馬，若乏制戊，必屬平常。",
+    "source_line": 590,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 2,
+    "branch": "卯",
+    "yong_primary": ["wood"],
+    "yong_secondary": ["water"],
+    "condition": "二月己土 陽氣漸升，先取甲木疏之忌合，次取癸水潤之，甲癸出乾定主科甲，加以一丙出透勢壓百僚。",
+    "canon_zh": "二月己土，陽氣漸升，雖禾稼未成，萬物出土，田園未展，先取甲木疏之，忌合，次取癸水潤之，甲癸出乾，定主科甲，加以一丙出透，勢壓百僚，一見壬水，微末官職。",
+    "source_line": 598,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 3,
+    "branch": "辰",
+    "yong_primary": ["fire"],
+    "yong_secondary": ["water", "wood"],
+    "condition": "三月己土 正栽培禾稼之時，先丙後癸，土暖而潤隨用甲疏，三者俱透天干必官居黃閣，郤以庚金為病。",
+    "canon_zh": "三月己土，正栽培禾稼之時，先丙後癸，土暖而潤，隨用甲疏，三者俱透天干，必官居黃閣，或三者透一，科甲定然，但要得地，郤以庚金為病。",
+    "source_line": 609,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 4,
+    "branch": "巳",
+    "yong_primary": ["water"],
+    "yong_secondary": ["fire"],
+    "condition": "三夏己土 雜氣才官禾稼在田，最喜甘沛，取癸為要次用丙火，夏無太陽禾稼不長，故無癸曰旱田無丙曰孤陰。",
+    "canon_zh": "三夏己土，雜氣才官，禾稼在田，最喜甘沛，取癸為要，次用丙火，夏無太陽，禾稼不長，故無癸曰旱田，無丙曰孤陰。",
+    "source_line": 620,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 5,
+    "branch": "午",
+    "yong_primary": ["water"],
+    "yong_secondary": ["fire"],
+    "condition": "三夏己土 雜氣才官禾稼在田，最喜甘沛，取癸為要次用丙火，夏無太陽禾稼不長，故無癸曰旱田無丙曰孤陰。（穷通宝鉴以三夏統論四五六月己土）",
+    "canon_zh": "三夏己土，雜氣才官，禾稼在田，最喜甘沛，取癸為要，次用丙火，夏無太陽，禾稼不長，故無癸曰旱田，無丙曰孤陰。",
+    "source_line": 620,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 6,
+    "branch": "未",
+    "yong_primary": ["water"],
+    "yong_secondary": ["fire"],
+    "condition": "三夏己土 雜氣才官禾稼在田，最喜甘沛，取癸為要次用丙火，夏無太陽禾稼不長，故無癸曰旱田無丙曰孤陰。（穷通宝鉴以三夏統論四五六月己土）",
+    "canon_zh": "三夏己土，雜氣才官，禾稼在田，最喜甘沛，取癸為要，次用丙火，夏無太陽，禾稼不長，故無癸曰旱田，無丙曰孤陰。",
+    "source_line": 620,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 7,
+    "branch": "申",
+    "yong_primary": ["water"],
+    "yong_secondary": ["fire", "metal"],
+    "condition": "三秋己土 萬物收藏之際外虛內實寒氣漸升，須丙火溫之癸水潤之，癸能洩金丙能制金補土精神，癸先丙後，取辛輔癸。",
+    "canon_zh": "三秋己土，萬物收藏之際，外虛內實，寒氣漸升，須丙火溫之，癸水潤之，不特此也，且癸能洩金，丙能制金，補土精神，則秋生之物咸茂矣，癸先丙後。",
+    "source_line": 636,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 8,
+    "branch": "酉",
+    "yong_primary": ["water"],
+    "yong_secondary": ["fire", "metal"],
+    "condition": "三秋己土 須丙火溫之癸水潤之，癸先丙後取辛輔癸。八月支成金局無丙丁出救此人零丁孤苦，如得丙透丁藏生己元神此人名魁天下。",
+    "canon_zh": "總之三秋己土，先癸後丙，取辛輔癸，九月土盛，宜甲木疏之，餘皆酌用。",
+    "source_line": 642,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 9,
+    "branch": "戌",
+    "yong_primary": ["water"],
+    "yong_secondary": ["fire", "wood"],
+    "condition": "三秋己土 先癸後丙取辛輔癸，九月土盛宜甲木疏之，餘皆酌用。",
+    "canon_zh": "總之三秋己土，先癸後丙，取辛輔癸，九月土盛，宜甲木疏之，餘皆酌用。",
+    "source_line": 642,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 10,
+    "branch": "亥",
+    "yong_primary": ["fire"],
+    "yong_secondary": ["earth", "wood"],
+    "condition": "三冬己土 濕泥寒凍非丙暖不生，取丙為尊甲木參酌，戊土癸水不用，惟初冬壬旺取戊制之，餘皆用丙丁但丁不能解凍除寒。",
+    "canon_zh": "三冬己土，濕泥寒凍，非丙暖不生，取丙為尊，甲木參酌，戊土癸水不用，惟初冬壬旺，取戊制之，餘皆用丙丁，但丁不能解凍除寒，不能大濟。",
+    "source_line": 651,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 11,
+    "branch": "子",
+    "yong_primary": ["fire"],
+    "yong_secondary": ["wood"],
+    "condition": "三冬己土 濕泥寒凍非丙暖不生，取丙為尊甲木參酌，戊土癸水不用，餘皆用丙丁但丁不能解凍除寒。",
+    "canon_zh": "三冬己土，濕泥寒凍，非丙暖不生，取丙為尊，甲木參酌，戊土癸水不用，惟初冬壬旺，取戊制之，餘皆用丙丁，但丁不能解凍除寒，不能大濟。",
+    "source_line": 651,
+    "status": "found"
+  },
+  {
+    "stem": "己",
+    "month": 12,
+    "branch": "丑",
+    "yong_primary": ["fire"],
+    "yong_secondary": ["wood"],
+    "condition": "三冬己土 濕泥寒凍非丙暖不生，取丙為尊甲木參酌，戊土癸水不用，餘皆用丙丁但丁不能解凍除寒。",
+    "canon_zh": "三冬己土，濕泥寒凍，非丙暖不生，取丙為尊，甲木參酌，戊土癸水不用，惟初冬壬旺，取戊制之，餘皆用丙丁，但丁不能解凍除寒，不能大濟。",
+    "source_line": 651,
+    "status": "found"
+  }
+]
