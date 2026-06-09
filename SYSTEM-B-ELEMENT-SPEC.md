@@ -128,3 +128,15 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 - **C golden ดวงเพิ่ม:** ✅ 印penalty ไม่เพี้ยนดวงปกติ(Aeaw/Malika/Mai ไม่ false-trigger) · golden 2/2+15/15+sifu 9/9+comprehensive 7/7
 ### ⚠️ ข้อโต้แย้งลายเซน A (ตัดสินแล้ว): true_follow only = ผิดสำหรับไนท์(false_follow→กลับ用印ไฟ·กลับขั้ว) · follow_candidate ปัจจุบัน=ถูก(假從財用財·大運庚辰ยืนยัน) · concern false-positive → ลายเซน C verify ดวงอื่น candidate=false=ต่ำ
 ### 🚧 ก่อน deploy ต้อง: golden從格 famous หลายดวง (confirm false-positive ต่ำจริง·ทั้ง true+false follow) + verify chart.html display สด + เปิด ENV systemB(สเตป1)
+
+## 🚀 DEPLOY RUNBOOK (session หน้า · context สด · 10 นาที)
+**live ปัจจุบัน: r266 บน port 3336 · nginx hourkey.io → 127.0.0.1:3336 · git HEAD 494ee1d พร้อม cut**
+1. clean: mv untracked test-*.cjs/mjs ออก · git status clean
+2. cut: rsync -a --exclude node_modules --exclude .next /root/decode-app/ /root/releases/decode-app-r268-systemb-yongshen/
+3. deps: cd release · cp -r r266 node_modules หรือ npm ci (กัน landmine resend/google-auth-library)
+4. build: npm run build ใน release dir (verify สำเร็จ ก่อน swap!)
+5. ENV systemB(%ธาตุ): ecosystem/pm2 env ELEMENT_DIST_MODE=systemB
+6. swap: pm2 start r268 (port 3337 verify ก่อน) → curl ตอบ → stop r266 + restart r268 บน 3336 (downtime สั้น) · หรือ nginx 3336→3337 reload
+7. verify live: ไนท์用神 ไฟ→น้ำ/ไม้ · %ทอง1→4 · sifu ตอบ用神ใหม่
+8. tag: git tag r268-deploy-20260609 + push
+**⚠️ ก่อน deploy ควร golden從格 famous เพิ่ม (ลายเซน A flag false-positive) · ENV systemB = %เปลี่ยน(strength level เปลี่ยน·แต่ daymaster ใช้ calc.strength แล้ว ไม่กระทบ)**
