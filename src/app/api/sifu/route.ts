@@ -22,6 +22,7 @@ import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } fr
 import { boundaryWarning3p, monthPillarBoundary } from "@/lib/bazi-boundary";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
+import { checkSifuEvidenceTrace } from "@/lib/sifu-evidence-trace";
 import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
 import { buildSifuShadowModePlan } from "@/lib/sifu-shadow-mode";
@@ -1693,6 +1694,12 @@ export async function POST(req: Request) {
             }
             if (code === 0 && full.trim()) {
               const payload = { reply: full.trim(), model: sifuModel }; // full = strip ID แล้ว (idBuf ไม่เข้า full)
+              /* HK_SIFU_EVIDENCE_TRACE_V1 — log-only (stream ส่งครบแล้ว · ไม่ retry/ไม่ตัด · try-catch กัน uncaught ใน ReadableStream) */
+              let evTrace: ReturnType<typeof checkSifuEvidenceTrace> | null = null;
+              try {
+                evTrace = checkSifuEvidenceTrace(payload.reply, message, !!expectedDM);
+                if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (stream) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
+              } catch { /* log-only · ห้ามให้กระทบ stream ที่ส่งครบแล้ว */ }
               if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
               scheduleSifuSourceShadowAudit({
                 session,
@@ -1721,7 +1728,7 @@ export async function POST(req: Request) {
                 answer: payload.reply,
                 history,
                 requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
-                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId },
+                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId, evidence_trace: evTrace },
                 model: payload.model,
                 durationMs: Date.now() - reqT0,
                 cached: false,
@@ -1772,6 +1779,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "identity_mismatch" }, { status: 502 });
       }
     }
+    /* HK_SIFU_EVIDENCE_TRACE_V1 — log-only · วัดว่าคำตอบดูดวงเดิน用神/ปฏิกิริยา/รากครบไหม (ไม่ retry/ไม่ block) */
+    let evTrace: ReturnType<typeof checkSifuEvidenceTrace> | null = null;
+    try {
+      evTrace = checkSifuEvidenceTrace(reply, message, !!expectedDM);
+      if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (json) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
+    } catch { /* log-only · ห้ามให้กระทบคำตอบ */ }
     const cleanReply = sanitizePacketEvidenceClaims(stripIdLine(reply), ctx);
     const ms = Date.now() - t0;
     const payload = { reply: cleanReply, model: sifuModel };
@@ -1803,7 +1816,7 @@ export async function POST(req: Request) {
       answer: payload.reply,
       history,
       requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
-      responseMeta: { stream: false, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId },
+      responseMeta: { stream: false, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId, evidence_trace: evTrace },
       model: payload.model,
       durationMs: Date.now() - reqT0,
       cached: false,
