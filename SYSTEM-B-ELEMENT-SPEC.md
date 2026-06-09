@@ -163,3 +163,13 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 - deploy: commit→push→cp wrapper-7→release r268→pm2 restart (เคลียร์ yongshen-cache 10นาทีด้วย) · live 200
 - 3 ลายเซน: A diff ถูก·B กังวล detail ว่าง(พิสูจน์รันจริงไม่เกิด)·C map consumer
 ### 🚧 งานต่อ (จาก ลายเซน C): **w7 NORMAL branch ใช้ TiaoHou regulator เป็น primary** → ดวงปกติบางดวงยังต่าง w6 (Mai: chart=ทอง vs today=ไฟ) · ทางแก้: (A)ทั้งระบบใช้ engine เดียว (B)sync NORMAL ให้ตรง扶抑 w6 — ต้องเคาะ + 3 ลายเซน session หน้า
+
+## ✅ w7 NORMAL 扶抑นำ DEPLOYED (10 มิ.ย. · commit 48c985c · HK_NORMAL_FUYI_FIRST_V1)
+- เดิม NORMAL: regulator(調候)เข้า primary ไม่มีเงื่อนไข → Mai today=ไฟ ขัด chart=ทอง
+- ใหม่: computeStrength(w6) → weak用印+比劫 · strong用食傷+財 · 調候เข้า primary เฉพาะ tier SS/SSS
+- Mai ทอง·ไฟ‖ทอง·ทอง·ไฟ ✓ · 47ดวง สอดคล้อง 21/25(84%) · golden+sifu 9/9 · 3 ลายเซน · deploy+restart
+### 📌 จดรอเคาะ (ไม่ใช่ bug · คำถามตำรา/engine ลึก)
+1. เอมใจ/โชกุน (51-52% balanced→polarity strong-side) → w7食傷 vs w6印比 — "balanced ควร treat ฝั่งไหน" รอซินแส/พ่อ
+2. คิม จิน/แฝดใหม่: w7 กับ w6 ต่างแบบไม่ผิดตำรา (身強 食傷 vs 財 — คนละ valid choice) — ระยะยาว = รวม engine เดียว (ทาง A ลายเซน C)
+3. bug เก่า /api/today: verdict null (pillars string vs object · มีมาก่อน diff นี้)
+4. คุณวอ假從金 vs 子平真詮用印น้ำ + ลูกพี่ดอน月劫top1 (flag จากแผน A)
