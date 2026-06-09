@@ -165,10 +165,10 @@ export async function POST(req: Request) {
             const { buildStrengthFunctional } = await import("@/lib/strength-functional");
             const fnStrength = buildStrengthFunctional(natal.day.stem, rootedness, distribution);
             (ext as any).voytek_strength = fnStrength;
+            /* HK_DAYMASTER_STRENGTH_UNIFY_V1 (สเตป 5) · ภาพรวมตัวตนใช้ calc.strength(wrapper-6·เดียวกับ用神) ไม่ใช่ fnStrength(element-dist) → 強/弱 ตรง用神 */
             daymasterProfile = getDaymasterProfile(natal.day.stem, {
-              level: fnStrength.level,
-              levelTh: fnStrength.level_th,
-              supportingPct: fnStrength.supporting_pct,
+              level: calc.strength.level,
+              percent: calc.strength.percent,
             });
             try {
               const { buildHealthFunctional } = await import("@/lib/health-functional");
@@ -413,10 +413,10 @@ export async function POST(req: Request) {
           const { buildStrengthFunctional } = await import("@/lib/strength-functional");
           const fnStrength = buildStrengthFunctional(natal.day.stem, rootedness, distribution);
           (ext as any).voytek_strength = fnStrength;
+          /* HK_DAYMASTER_STRENGTH_UNIFY_V1 (สเตป 5) · 4p · calc.strength(wrapper-6·เดียวกับ用神) */
           daymasterProfile = getDaymasterProfile(natal.day.stem, {
-            level: fnStrength.level,
-            levelTh: fnStrength.level_th,
-            supportingPct: fnStrength.supporting_pct,
+            level: calc.strength.level,
+            percent: calc.strength.percent,
           });
           /* Health Functional · Phase 17g */
           const { buildHealthFunctional } = await import("@/lib/health-functional");

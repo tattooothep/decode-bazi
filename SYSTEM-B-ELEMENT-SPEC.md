@@ -116,3 +116,8 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 **FIX:** เปลี่ยน input เป็น calc.strength.level/percent (wrapper-6·เดียวกับ用神) ทั้ง 2 จุด (168+416) + จุด 61(fallback)
 **verify ต้อง:** chart.html ภาพรวมตัวตน 3 ดวง strength ตรง用神 direction + ไม่กระทบ sifu + golden
 **ทำไมไม่ทำ session นี้:** display change กระทบทุกดวง · context หมด(compact) · ต้อง verify หน้าเว็บสด
+
+## ✅ สเตป 5 เสร็จ — daymaster ภาพรวมตัวตนสอดคล้อง用神
+- route 168+416: getDaymasterProfile fnStrength→calc.strength (HK_DAYMASTER_STRENGTH_UNIFY_V1·เดียวกับ用神+จุด61)
+- ไนท์弱(從財) · malika中和(食傷) · Mai弱(印) = ภาพรวมตัวตนตรง用神 · golden 2/2+15/15 · sifu 9/9 · tsc clean
+- **goal ครบ 6 สเตป (0-5) · ทุกสเตป sifu 9/9 · ไม่พังดวง · ยังไม่ deploy**
