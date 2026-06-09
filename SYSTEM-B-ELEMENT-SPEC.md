@@ -30,6 +30,21 @@
 
 **🔑 ไนท์:** 用ไฟ = ตรง子平真詮(扶抑·透印用印) แต่ขัดชีวิตจริง(從財·大運庚辰รวย=用ทอง) → **2 สำนักตำราขัดกัน** (子平真詮 透印不從 vs 滴天髓 印被水克→假從) · ต้องเลือกสำนัก
 
+## 🗺️ ROADMAP สเตปแก้ (เจ้านายเคาะ 9 มิ.ย. · /goal)
+```
+สเตป 0: verify System B หลายดวง + จูน floating penalty (กัน overfit · ยังไม่แตะ engine)
+สเตป 1: [%ธาตุ] wire System B (mode param·default legacy·ENV) — ไม่ลาม sifu · test golden เสา/เรือน + caller ไม่พัง
+สเตป 2: [wrapper-6:86 bug] strength double-count (1 บรรทัด·มีแม่แบบ·verified)
+สเตป 3: [正格扶抑] malika/Mai → System B+同党/异党
+สเตป 4: [假從財用神กลับขั้ว] ไนท์ → wrapper-7
+สเตป 5: [รวม 2 ที่用神] ภาพรวมตัวตน vs 用神v2 → แหล่งเดียว
+```
+**กฎทุกสเตป:** 3 ลายเซน(3 agent) · backup+golden(เสา2/2·เรือน15/15) · ไม่ deploy จนเจ้านายเคาะ
+**🔴 CHECK SIFU บังคับทุกสเตปที่กระทบ用神 (2-5) — เจ้านายสั่งเพิ่ม:**
+1. **เช็คว่าไม่กระทบ AI sifu โดยไม่ตั้งใจ** — สเตป 1(%ธาตุ)ต้องไม่ลาม sifu (sifu ใช้ wrapper-6/7 ไม่ใช่ element-dist) · ยืนยันด้วย grep + test:sifu 9/9
+2. **เช็คว่าข้อมูลใหม่(用神แก้แล้ว)ถูกส่งให้ AI sifu จริง** — dump packet (SIFU_DUMP_PROMPT=1) ดู usefulGods ใหม่เข้า prompt จริง + AI ตอบตาม用神ใหม่ (ไม่ใช่แก้ wrapper แล้ว packet ยังส่งค่าเก่า)
+**+ packet:** เปลี่ยนตาม wrapper อัตโนมัติ · แต่ต้อง (ก)verify ส่ง用神ใหม่จริง (ข)ถอด P4 HK_YONG_LOCK_V1 (route.ts·lock ค่าเก่าผิด) (ค)อัปเดต golden test-sifu-yongshen (P0 เดิม lock malika=ไม้ ผิด·ปนเปื้อน)
+
 ## แผน wire (session หน้า · ทุกขั้น 3 ลายเซน)
 1. **verify System B ดวงเพิ่ม** (หา庚มีราก vs ลอย · จูน floating penalty 0.5/0.3) — กัน overfit 3 ดวง
 2. **ตัดสินสำนัก用神** ไนท์: 扶抑(子平真詮)เดี่ยว หรือ +假從detector(滴天髓)
