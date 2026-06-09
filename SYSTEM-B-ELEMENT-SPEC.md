@@ -146,3 +146,12 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 - r266 = stopped (rollback: pm2 stop r268 + pm2 start decode-app-r266-qimen-7axes)
 - live: home 200 · chart 401 · 用神ใหม่(Mai ทอง·malika ดิน·ไนท์ น้ำ/ไม้) + %ธาตุ System B(ทอง systemB)
 - ⚠️ MONITOR: golden從格 famous ยังไม่ทำ(ลายเซน A flag false-positive) → เฝ้าดวง從格 user · เพี้ยน=rollback r266 พร้อม
+
+## ✅ แผน A: recompute profile DB เสร็จ (10 มิ.ย.)
+- A0: backup + พบ 47 ดวง stale (DB เก็บ用神เก่า → today/calendar ขัด chart ใหม่)
+- A1: scripts/recompute-profiles-yongshen.mjs (dry-run 2 รอบ · 3 ลายเซน · แก้ day_boundary NULL→23:00 ตาม PUT + เขียน day_master)
+- A2: --write 45 ดวง · error 0 · day_master ไม่เปลี่ยนสักดวง · backup /root/backups/profiles-recompute-20260610/profiles.BEFORE.sql
+- ผล: ไนท์ ไฟ→wood·water·water(假從財) · Mai ไฟ→metal(身弱用印) · malika ไม้→earth(印旺用食傷) — DB = calc สด = chart/sifu/today/calendar ตรงกันหมด
+### ⚠️ flag จากลายเซน 2 (จดไว้ · รอซินแส/พ่อ):
+- คุณวอ (乙 extremely_weak 正官格 · มี壬印): detector假從金 → 用metal · 子平真詮สายresourceจะ用water — โรงเรียนต่าง (เคสเดียวกับไนท์แต่ resource ไม่ถูกดับชัด)
+- ลูกพี่ดอน (甲 very_strong 月劫格): top1 ยัง wood(比劫) — 月劫格ตำราว่า"另取財官食為用" ควรไล่ metal/fire ขึ้น top1 · ดีขึ้นจากเดิมแต่ยังไม่สมบูรณ์
