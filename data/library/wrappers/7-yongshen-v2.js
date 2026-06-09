@@ -671,31 +671,23 @@ function synthesizeYongshen(natal) {
       primary.add(dmEl);
     }
   } else if (isFakeFollow) {
-    // 假從 — ห้ามใช้ follow override (research item 5)
+    /* HK_CONG_W7_V1 (10 มิ.ย. · สเตป 4 ส่วน wrapper-7) · 假從 → 順勢 ตาม滴天髓
+     * เดิม: TiaoHou+Resource เป็น primary → ไนท์(Aeaw) 用ไฟ · 忌น้ำ/ทอง = กลับขั้ว
+     *   ขัดทั้ง wrapper-6 HK_CONG_YONGSHEN_V1 และชีวิตจริง (大運庚辰 金生水 = รุ่ง → ทองต้องเป็นฝ่ายช่วย)
+     * ใหม่: 用 = dominant(勢ที่ครองผัง) · 喜 = 食傷(DM生 · 生財ตาม勢) + 通關 bridges(相神 เช่น wood ของ Aeaw)
+     *       忌 = 印(ขวาง從) + 比劫(夺財) — ตามหลัก「從財格 忌印比」 */
     const dominant = (geju.detail?.dominantElement) || 'wealth';
     engineType = `WEAK_DM_${dominant.toUpperCase()}_HEAVY`;
     useFollowOverride = false;
-    // ตอนนี้ผังยังต้องการ TiaoHou + Resource + ปกป้อง DM
-    if (regulator) primary.add(regulator);
-    const resEl = Object.entries(S.ELEMENT_PRODUCES).find(([_,v]) => v === dmEl)?.[0];
-    if (resEl) primary.add(resEl);
-    // xishen: DM element เอง (warm/parallel) + bridges
-    xishen.add(dmEl);
-    // 18 พ.ค. · Option α · push 通關 bridges → xishen ใน fake-follow ด้วย
-    // เหตุ: 假從財格 มี wood_bridges_water-fire (เช่น Aeaw) · ตำราถือ wood เป็น 相神/通關
-    // ก่อนนี้ branch นี้เก็บ bridges เฉพาะใน comment · ตอนนี้ทำให้จริงเหมือน NORMAL branch
+    if (ELEMENTS.includes(dominant)) primary.add(dominant);
+    const outEl = S.ELEMENT_PRODUCES[dmEl];
+    if (outEl) xishen.add(outEl);
     for (const b of tongguan.bridges) {
       if (b.bridge_element && ELEMENTS.includes(b.bridge_element)) xishen.add(b.bridge_element);
     }
-    // jishen: ธาตุที่ครองผังหนัก + ธาตุที่ produces dominant (เติมไฟให้ไฟไหม้)
-    jishen.add(dominant);
-    const generatorOfDominant = Object.entries(S.ELEMENT_PRODUCES).find(([_,v]) => v === dominant)?.[0];
-    if (generatorOfDominant) jishen.add(generatorOfDominant);
-    // BingYao medicine spillover
-    for (const m of bingyao.medicine) {
-      if (ELEMENTS.includes(m)) primary.add(m);
-      else if (m === 'warm_earth') xishen.add('earth');
-    }
+    const resEl = Object.entries(S.ELEMENT_PRODUCES).find(([_,v]) => v === dmEl)?.[0];
+    if (resEl) jishen.add(resEl);
+    jishen.add(dmEl);
   } else {
     // NORMAL · Fuyi + TiaoHou + BingYao + TongGuan
     engineType = `NORMAL_${(geju.structure||'').replace(/格$/,'').toUpperCase() || 'X'}`;
