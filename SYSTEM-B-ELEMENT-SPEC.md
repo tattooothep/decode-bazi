@@ -140,3 +140,9 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 7. verify live: ไนท์用神 ไฟ→น้ำ/ไม้ · %ทอง1→4 · sifu ตอบ用神ใหม่
 8. tag: git tag r268-deploy-20260609 + push
 **⚠️ ก่อน deploy ควร golden從格 famous เพิ่ม (ลายเซน A flag false-positive) · ENV systemB = %เปลี่ยน(strength level เปลี่ยน·แต่ daymaster ใช้ calc.strength แล้ว ไม่กระทบ)**
+
+## 🎉 DEPLOYED r268 LIVE (9 มิ.ย. ค่ำ)
+- decode-app-r268-systemb-yongshen · port 3336 · ENV ELEMENT_DIST_MODE=systemB · pm2 save + git push e8a39a4 + tag r268-deploy-20260609
+- r266 = stopped (rollback: pm2 stop r268 + pm2 start decode-app-r266-qimen-7axes)
+- live: home 200 · chart 401 · 用神ใหม่(Mai ทอง·malika ดิน·ไนท์ น้ำ/ไม้) + %ธาตุ System B(ทอง systemB)
+- ⚠️ MONITOR: golden從格 famous ยังไม่ทำ(ลายเซน A flag false-positive) → เฝ้าดวง從格 user · เพี้ยน=rollback r266 พร้อม
