@@ -121,3 +121,10 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 - route 168+416: getDaymasterProfile fnStrength→calc.strength (HK_DAYMASTER_STRENGTH_UNIFY_V1·เดียวกับ用神+จุด61)
 - ไนท์弱(從財) · malika中和(食傷) · Mai弱(印) = ภาพรวมตัวตนตรง用神 · golden 2/2+15/15 · sifu 9/9 · tsc clean
 - **goal ครบ 6 สเตป (0-5) · ทุกสเตป sifu 9/9 · ไม่พังดวง · ยังไม่ deploy**
+
+## 🔏 3 ลายเซน สเตป 2-5 (9 มิ.ย. · 3 agent verify)
+- **A wrapper-6:** สเตป2(friendlyfix)✅ สเตป3(印penalty strong-side)✅ · สเตป4 flag: เสนอ true_follow แทน follow_candidate
+- **B route สเตป5:** ✅ scope/field/sifu ไม่กระทบ/display ปลอดภัย/fnStrength ยังใช้(health)
+- **C golden ดวงเพิ่ม:** ✅ 印penalty ไม่เพี้ยนดวงปกติ(Aeaw/Malika/Mai ไม่ false-trigger) · golden 2/2+15/15+sifu 9/9+comprehensive 7/7
+### ⚠️ ข้อโต้แย้งลายเซน A (ตัดสินแล้ว): true_follow only = ผิดสำหรับไนท์(false_follow→กลับ用印ไฟ·กลับขั้ว) · follow_candidate ปัจจุบัน=ถูก(假從財用財·大運庚辰ยืนยัน) · concern false-positive → ลายเซน C verify ดวงอื่น candidate=false=ต่ำ
+### 🚧 ก่อน deploy ต้อง: golden從格 famous หลายดวง (confirm false-positive ต่ำจริง·ทั้ง true+false follow) + verify chart.html display สด + เปิด ENV systemB(สเตป1)
