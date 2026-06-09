@@ -805,6 +805,22 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
       monthBoundary: is3p ? monthPillarBoundary(date) : null, // 月柱ก้ำกึ่ง節氣 → ไหล conf ลง field เดือน (เฉพาะ 3 เสา)
     });
     validateChartPacket(packet);
+    /* HK_YONG_LOCK_V1 — pin 用神/喜/忌 (element) ระดับ context guard เหมือน FACT/PILLAR LOCK
+     * conditional ตาม 格局 confidence · เสริม Phase 2 (confidence note ใน packet) · ย้ำให้ AI ยึดก่อนเจอ user แย้ง
+     * ก้ำกึ่ง=ยังบอก 2 ทางได้ (ไม่ล็อกตาย) · กฎ 4.2 เปิดให้ปรับถ้าลูกค้าชี้หลักฐานผัง */
+    {
+      const _ugTh = (arr: string[]) => arr.length ? arr.map((e) => DM_LABEL_TH[e] || e).join("·") : "-";
+      const _ugConf = packet.structure.confidence;
+      lines.push(
+        `YONG_LOCK (ธาตุช่วยจาก engine · ยึดเป็นหลักเหมือน FACT LOCK · ห้ามสลับตามที่ลูกค้าแย้งถ้าไม่ชี้หลักฐานในผัง · ดูกฎ 4.2): ` +
+        `用神=${_ugTh(packet.usefulGods.yong)} · 喜=${_ugTh(packet.usefulGods.xi)} · 忌=${_ugTh(packet.usefulGods.ji)}` +
+        (_ugConf ? ` · ความมั่นใจโครง=${_ugConf}` : "")
+      );
+      /* moderate/low = ก้ำกึ่ง → แยกบรรทัดเตือนให้เด่น (high จะไม่มีบรรทัดนี้ = ฟันได้เต็มที่) */
+      if (_ugConf && _ugConf !== "high") {
+        lines.push(`⚠️ YONG_LOCK ก้ำกึ่ง (confidence=${_ugConf}): 用神อ่านได้ 2 ทาง — ต้องบอกลูกค้าว่าก้ำกึ่ง + อธิบายทั้งสองด้าน + ชี้ทางที่ engine ให้น้ำหนัก · ห้ามฟันธาตุช่วยข้างเดียว (ดูกฎ 4.2)`);
+      }
+    }
     lines.push(renderChartPrompt(packet, { subjectLabel: `${subjectName}·${row.id.slice(0, 8)}` }));
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
