@@ -2306,11 +2306,21 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
 
   /* ธาตุช่วย (engine-derived · เป็นฐานให้ซินแสตัดสิน) */
   const fmtEls = (arr: string[]) => arr.length ? arr.map((e) => elementTh(e)).join(" · ") : "-";
+  /* HK_YONGSHEN_CONFIDENCE_TAG_V1 — ดึง 格局 confidence มาติดบรรทัด用神 (เดิมอยู่ไกลที่ structureLine
+   * → AI ไม่เชื่อมโยง → ตัดสิน用神ข้างเดียว/พลิกตาม user) · ไม่แก้ค่า usefulGods · additive render เท่านั้น
+   * 用神ไม่มี confidence แยก → อิง 格局 confidence (用神ขึ้นกับ格局: โครงก้ำกึ่ง=用神ก้ำกึ่งตาม) */
+  const _yongConf = packet.structure.confidence;
+  const _yongConfNote = _yongConf
+    ? ` · [ความมั่นใจชุดธาตุช่วยนี้ (อิงความมั่นใจโครง格局) = ${_yongConf}${_yongConf !== "high"
+        ? " → ⚠️ก้ำกึ่ง: อ่านได้ 2 ทาง ต้องบอกลูกค้าว่าก้ำกึ่ง + อธิบายทั้งสองด้าน + ชี้ทางที่ engine ให้น้ำหนัก · ห้ามฟันธาตุช่วยข้างเดียวเด็ดขาด · ห้ามพลิกตามที่ลูกค้าแย้งถ้าลูกค้าไม่ชี้หลักฐานในผัง (ดูกฎ 4.2)"
+        : " → มั่นใจชัด ฟันธาตุช่วยได้ตามนี้"}]`
+    : "";
   lines.push(
     `ธาตุช่วยจากระบบ (engine-derived · ใช้เป็นฐานให้ซินแสตัดสิน): ` +
     `ธาตุช่วยหลัก=${fmtEls(packet.usefulGods.yong)} · ` +
     `ธาตุช่วยรอง=${fmtEls(packet.usefulGods.xi)} · ` +
-    `ธาตุระวัง=${fmtEls(packet.usefulGods.ji)}`
+    `ธาตุระวัง=${fmtEls(packet.usefulGods.ji)}` +
+    _yongConfNote
   );
   /* 有條件之喜/相神橋藥 — ธาตุที่มีบทบาทสะพาน มีเงื่อนไข (ไม่ใช่忌เดี่ยว) */
   if (packet.usefulGods.conditionalUse?.length) {
@@ -2348,6 +2358,17 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       `engineรวมภาพรวม=${fmtEls(yp.finalCombined.yong)} / 喜=${fmtEls(yp.finalCombined.xi)} / 忌=${fmtEls(yp.finalCombined.ji)} · ` +
       `${yp.finalCombined.noteTh} · ตำราอ้าง ${yp.structure.canonicalChinese}`
     );
+    /* HK_YONGSHEN_RECONCILE_V1 — ชั้น扶抑(泄/抑)กับ engineรวม(忌) อาจจัดธาตุเดียวกันคนละมุม
+     * (เช่น น้ำ = ทางระบายในชั้น扶抑 แต่ = 忌ใน engineรวม) → AI สับสน · ชี้ว่าใช้ engineรวมเป็นข้อสรุป
+     * additive render · ไม่แก้ค่า usefulGods/protocols */
+    const _fuyiEls = new Set(yp.fuyi.candidateElements || []);
+    const _conflictEls = (yp.finalCombined.ji || []).filter((e) => _fuyiEls.has(e));
+    if (_conflictEls.length) {
+      lines.push(
+        `⚠️ ปรับให้ตรงกัน (扶抑 vs engineรวม): ธาตุ ${fmtEls(_conflictEls)} — ชั้น扶抑มองเป็นทางระบาย/ควบ (泄/抑) แต่ engineรวมจัดเป็น "ระวัง(忌)" · ` +
+        `ให้ยึด "engineรวม (用神/喜/忌)" เป็นข้อสรุปสุดท้าย ชั้น扶抑เป็นเหตุผลประกอบ (隨勢 — ธาตุนี้ดีเฉพาะเมื่อมีตัวกลางส่งต่อ ไม่ใช่เติมตรงๆ) · ห้ามรายงานธาตุนี้เป็น "ตัวช่วย" ลอยๆ`
+      );
+    }
   }
 
   /* ธาตุรวม (level key เท่านั้น · ไม่มี %) */
