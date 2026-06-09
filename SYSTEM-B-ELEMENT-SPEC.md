@@ -77,3 +77,11 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 - → floating penalty ทำงานถูก · ทองมีราก>>ทองลอย
 - ค้าง: จูน penalty final (0.5 vs 0.3) ต้องดวงจริง famous เพิ่ม (research DB · ห้ามแต่ง) · logic พร้อมแล้ว
 - **สเตป 1-5 (engine wire) = ต้อง context สด** (กฎ: ห้ามรีบ wire engine ตอน context น้อย = ชีวิตคน)
+
+## ✅ สเตป 1 เสร็จ (9 มิ.ย. · commit d7e7420 · 3 ลายเซน ผ่าน)
+- element-distribution-functional: mode "legacy"|"systemB" (default legacy) · route ENV ELEMENT_DIST_MODE
+- 3 ลายเซน: logic ถูก+default legacy ✓ · sifu/packet ไม่ลาม(0) ✓ · golden 2/2+15/15+return shape+caller ✓
+- ⚠️ เปิด ENV=systemB → ไนท์ supportRaw 29%→37%(month×2) → strength level เปลี่ยน → ภาพรวมตัวตน/health /chart เปลี่ยน (default legacy = user ไม่เห็น)
+- /chart/overview ก็ใช้ distribution (โดน ENV ด้วย · ไม่ลาม sifu)
+- **ยังไม่ deploy · ENV ยังปิด (legacy)**
+### ค้าง สเตป 2-5 = sifu LOCKED (wrapper-6/7) · ต้อง 3ลายเซน+golden用神+CHECK SIFU ต่อสเตป · context สด
