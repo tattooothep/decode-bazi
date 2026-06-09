@@ -182,10 +182,15 @@ function bridgeYongshen(natal) {
     const wealthEl = S.ELEMENT_CONTROLS[dmEl];
     const officerEl = Object.keys(S.ELEMENT_CONTROLS).find(k => S.ELEMENT_CONTROLS[k] === dmEl);
     const outputEl = S.ELEMENT_PRODUCES[dmEl];
+    /* HK_STRONG_REDUCE_RESOURCE_V1 (สเตป 3) · 子平真詮「印多逢財·身強用財/食傷洩」
+     * 身強 = 印/比劫 มีพอแล้ว → ลด resource(印)+parallel(比劫) ไม่ให้แย่ง用神洩克 */
+    const resourceEl = Object.keys(S.ELEMENT_PRODUCES).find(k => S.ELEMENT_PRODUCES[k] === dmEl);
     for (const r of adjusted) {
       if (r.element === wealthEl)  { r.finalScore += 1.2; r.reason.push('boost wealth (strong)'); }
       if (r.element === officerEl) { r.finalScore += 1;   r.reason.push('boost officer (strong)'); }
       if (r.element === outputEl)  { r.finalScore += 2.5; r.reason.push('boost output·drain (strong)'); }
+      if (r.element === resourceEl) { r.finalScore -= 2.5; r.reason.push('印旺ลด (strong·印多用財)'); }
+      if (r.element === dmEl)       { r.finalScore -= 1;   r.reason.push('比劫ลด (strong)'); }
     }
   }
 

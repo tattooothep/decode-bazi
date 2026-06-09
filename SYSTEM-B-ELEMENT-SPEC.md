@@ -96,3 +96,8 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 - สเตป 3: 正格扶抑 (malika ยัง用ไม้·ควรทอง/ดิน) → System B 同党/异党 แทน bridgeYongshen
 - สเตป 4: 假從財用神กลับขั้ว (ไนท์用ไฟ·ควรทอง/น้ำ) → wrapper-7
 - สเตป 5: รวม 2 ที่用神 (ภาพรวมตัวตน vs v2)
+
+## ✅ สเตป 3 (commit ถัดไป) · 正格扶抑 — malika用神 ไม้→ดิน
+- wrapper-6 strong-side: เพิ่ม ลด resource(印)-2.5 + parallel(比劫)-1 (HK_STRONG_REDUCE_RESOURCE_V1·子平真詮印多用財)
+- malika 用神 wood→earth(食傷นำ)·印旺用食傷洩 ✓ · Mai/ไนท์(weak/從)ไม่กระทบ · golden 2/2+15/15 · sifu 9/9
+- ⚠️ verify แค่ 3 ดวง · ลด印กระทบ**ทุกดวง身強** → ต้อง golden身強เพิ่ม + 3 ลายเซน (session หน้า · กัน penalty พังดวง身強ที่ต้องการ印)
