@@ -101,3 +101,12 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 - wrapper-6 strong-side: เพิ่ม ลด resource(印)-2.5 + parallel(比劫)-1 (HK_STRONG_REDUCE_RESOURCE_V1·子平真詮印多用財)
 - malika 用神 wood→earth(食傷นำ)·印旺用食傷洩 ✓ · Mai/ไนท์(weak/從)ไม่กระทบ · golden 2/2+15/15 · sifu 9/9
 - ⚠️ verify แค่ 3 ดวง · ลด印กระทบ**ทุกดวง身強** → ต้อง golden身強เพิ่ม + 3 ลายเซน (session หน้า · กัน penalty พังดวง身強ที่ต้องการ印)
+
+## ✅ สเตป 4 (commit) · 從格用神 — ไนท์ ไฟ→น้ำ/ไม้(財勢)
+- bridgeYongshen เช็ค detectFollow → ถ้า follow_candidate → 用dominant(財)+食傷·忌印+比劫 (HK_CONG_YONGSHEN_V1)
+- ไนท์用神 fire(印กลับขั้ว)→wood·water·water(財勢·ไฟหาย) · malika/Mai follow=false ไม่กระทบ · golden+sifu 9/9
+- ⚠️ verify 3 ดวง · ต้อง golden從格(true_follow/專旺/化氣)เพิ่ม กัน false-positive พังดวงปกติ
+
+## 🔍 สเตป 5 investigate (ยังไม่แก้ · display reconcile · session สด)
+2 ที่用神ขัด: (1)ภาพรวมตัวตน daymaster-profile→strength level(element-dist) (2)用神v2 yongshen_v2→wrapper-7 synthesizeYongshen
+- คนละ engine → คนละทิศ · สเตป5 = รวมแหล่งเดียว (เช่น daymaster-profile อ้าง calc.yongshen แทน strength level) · ต้อง verify chart.html display + ไม่กระทบ sifu
