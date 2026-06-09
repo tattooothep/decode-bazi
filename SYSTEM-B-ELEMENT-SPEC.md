@@ -110,3 +110,9 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 ## 🔍 สเตป 5 investigate (ยังไม่แก้ · display reconcile · session สด)
 2 ที่用神ขัด: (1)ภาพรวมตัวตน daymaster-profile→strength level(element-dist) (2)用神v2 yongshen_v2→wrapper-7 synthesizeYongshen
 - คนละ engine → คนละทิศ · สเตป5 = รวมแหล่งเดียว (เช่น daymaster-profile อ้าง calc.yongshen แทน strength level) · ต้อง verify chart.html display + ไม่กระทบ sifu
+
+## 🎯 สเตป 5 ROOT CAUSE ชัด + FIX แม่นยำ (session หน้า implement 1-2 จุด)
+**จุดขัด:** route.ts บรรทัด 168+416 — getDaymasterProfile ใช้ `fnStrength.level/supporting_pct` (strength-functional/element-dist) · แต่用神(calc.yongshen wrapper-6 + yongshen_v2 wrapper-7) ใช้ `calc.strength` (wrapper computeStrength) → คนละ engine → ภาพรวมตัวตน(強/弱) ขัด用神
+**FIX:** เปลี่ยน input เป็น calc.strength.level/percent (wrapper-6·เดียวกับ用神) ทั้ง 2 จุด (168+416) + จุด 61(fallback)
+**verify ต้อง:** chart.html ภาพรวมตัวตน 3 ดวง strength ตรง用神 direction + ไม่กระทบ sifu + golden
+**ทำไมไม่ทำ session นี้:** display change กระทบทุกดวง · context หมด(compact) · ต้อง verify หน้าเว็บสด
