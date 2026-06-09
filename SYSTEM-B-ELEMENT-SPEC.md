@@ -70,3 +70,10 @@
 ⚠️ ไนท์ห้ามเอามาคำนวณ扶抑(System B) — เป็นดวงพิเศษ ต้องใช้ detector
 
 ดู memory: `project_bazi_strength_formula_canon.md`
+
+## ✅ สเตป 0 ผล (9 มิ.ย. · verify floating penalty)
+floating penalty แยกราก/ลอยได้จริง (logic verified):
+- 庚ลอย(ไนท์) ทอง 4%(pen0.5)/2%(pen0.3) · 庚มีราก(test酉/申) ทอง 32%/25% (ไม่โดน penalty)
+- → floating penalty ทำงานถูก · ทองมีราก>>ทองลอย
+- ค้าง: จูน penalty final (0.5 vs 0.3) ต้องดวงจริง famous เพิ่ม (research DB · ห้ามแต่ง) · logic พร้อมแล้ว
+- **สเตป 1-5 (engine wire) = ต้อง context สด** (กฎ: ห้ามรีบ wire engine ตอน context น้อย = ชีวิตคน)
