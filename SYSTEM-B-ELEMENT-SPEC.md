@@ -155,3 +155,11 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 ### ⚠️ flag จากลายเซน 2 (จดไว้ · รอซินแส/พ่อ):
 - คุณวอ (乙 extremely_weak 正官格 · มี壬印): detector假從金 → 用metal · 子平真詮สายresourceจะ用water — โรงเรียนต่าง (เคสเดียวกับไนท์แต่ resource ไม่ถูกดับชัด)
 - ลูกพี่ดอน (甲 very_strong 月劫格): top1 ยัง wood(比劫) — 月劫格ตำราว่า"另取財官食為用" ควรไล่ metal/fire ขึ้น top1 · ดีขึ้นจากเดิมแต่ยังไม่สมบูรณ์
+
+## ✅ wrapper-7 假從 fix DEPLOYED (10 มิ.ย. · commit 87a57bb · HK_CONG_W7_V1)
+- root cause ขัด today/calendar vs chart: today/calendar/กล่องดวงพิเศษ§04 ใช้ **wrapper-7 synthesizeYongshen** (ไม่ใช่ profile DB!) · branch isFakeFollow เดิมให้ TiaoHou+Resource → ไนท์用ไฟ忌น้ำ/ทอง (กลับขั้ว)
+- fix: 假從→順勢 (用=dominant勢 · 喜=食傷+通關bridges · 忌=印+比劫) · ตัด medicine spillover
+- verify ดวง假從ครบ: ไนท์/NBA用น้ำ喜ทอง·ไม้ · ป๊า假從兒用ไม้喜ไฟ · พี่นาง用ดิน忌น้ำ — ตรง w6+ตำรา
+- deploy: commit→push→cp wrapper-7→release r268→pm2 restart (เคลียร์ yongshen-cache 10นาทีด้วย) · live 200
+- 3 ลายเซน: A diff ถูก·B กังวล detail ว่าง(พิสูจน์รันจริงไม่เกิด)·C map consumer
+### 🚧 งานต่อ (จาก ลายเซน C): **w7 NORMAL branch ใช้ TiaoHou regulator เป็น primary** → ดวงปกติบางดวงยังต่าง w6 (Mai: chart=ทอง vs today=ไฟ) · ทางแก้: (A)ทั้งระบบใช้ engine เดียว (B)sync NORMAL ให้ตรง扶抑 w6 — ต้องเคาะ + 3 ลายเซน session หน้า
