@@ -85,3 +85,14 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 - /chart/overview ก็ใช้ distribution (โดน ENV ด้วย · ไม่ลาม sifu)
 - **ยังไม่ deploy · ENV ยังปิด (legacy)**
 ### ค้าง สเตป 2-5 = sifu LOCKED (wrapper-6/7) · ต้อง 3ลายเซน+golden用神+CHECK SIFU ต่อสเตป · context สด
+
+## ✅ สเตป 2 เสร็จ (9 มิ.ย. · commit f90a78d)
+- wrapper-6:86 friendlyElements double-count → fix [dmEl, find(producer)] (HK_FIX_FRIENDLY_V1)
+- Mai strength 57%→45% · 用神 ไฟ→ทอง(身弱用印·ตรงตำรา) · malika/ไนท์ ไม่พัง
+- golden เสา2/2+เรือน15/15 ✓ · **test:sifu 9/9 + sifu-router 26/26 ✓ (sifu ไม่พัง)**
+- CHECK SIFU: packet อ่าน calc.yongshen → Mai用神ทองใหม่ส่ง sifu อัตโนมัติ
+- working tree · ยังไม่ deploy
+### ค้าง สเตป 3-5 = 用神 engine redesign (wrapper-6/7 LOCKED) · ยากสุด · ต้อง golden用神+ซินแส+context สด
+- สเตป 3: 正格扶抑 (malika ยัง用ไม้·ควรทอง/ดิน) → System B 同党/异党 แทน bridgeYongshen
+- สเตป 4: 假從財用神กลับขั้ว (ไนท์用ไฟ·ควรทอง/น้ำ) → wrapper-7
+- สเตป 5: รวม 2 ที่用神 (ภาพรวมตัวตน vs v2)
