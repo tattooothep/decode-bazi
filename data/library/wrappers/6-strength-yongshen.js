@@ -83,7 +83,7 @@ function computeStrength(natal) {
     if (hs?.main) counts[S.STEM_ELEMENT[hs.main]] += 0.5;
   }
   const total = Object.values(counts).reduce((a,b) => a+b, 0);
-  const friendlyElements = [dmEl, S.ELEMENT_PRODUCES[Object.keys(S.ELEMENT_PRODUCES).find(k => S.ELEMENT_PRODUCES[k] === dmEl)]];
+  const friendlyElements = [dmEl, Object.keys(S.ELEMENT_PRODUCES).find(k => S.ELEMENT_PRODUCES[k] === dmEl)]; /* HK_FIX_FRIENDLY_V1: เอา ELEMENT_PRODUCES[] ชั้นนอกออก → ได้ผู้ผลิต(印)ตรงๆ ไม่ใช่ dmEl ซ้ำ (ตามแม่แบบบรรทัด 173) */
   const friendlyShare = friendlyElements.reduce((s, el) => s + (counts[el] || 0), 0);
   const friendlyPct = (friendlyShare / total) * 100;
 
