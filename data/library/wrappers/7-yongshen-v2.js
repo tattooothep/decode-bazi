@@ -692,8 +692,27 @@ function synthesizeYongshen(natal) {
     // NORMAL · Fuyi + TiaoHou + BingYao + TongGuan
     engineType = `NORMAL_${(geju.structure||'').replace(/格$/,'').toUpperCase() || 'X'}`;
     useFollowOverride = false;
-    // TiaoHou
-    if (regulator) primary.add(regulator);
+    /* HK_NORMAL_FUYI_FIRST_V1 (10 มิ.ย.) · เดิม regulator เข้า primary ไม่มีเงื่อนไข → 調候ชนะ扶抑ทุกดวง
+     * (Mai 壬身弱: today/calendar 用ไฟ ขัด chart 用ทอง) · research+คัมภีร์: 調候นำเฉพาะฤดูสุดขั้ว
+     * ใหม่: 扶抑นำ (computeStrength w6 · แหล่งเดียวกับ chart) · regulator เข้า primary เฉพาะ tier SS/SSS
+     * ไม่งั้นเป็น xishen */
+    try {
+      const _w6str = require('./6-strength-yongshen.js').computeStrength(natal);
+      if (_w6str && _w6str.polarity === 'weak-side') {
+        const _res = Object.entries(S.ELEMENT_PRODUCES).find(([_,v]) => v === dmEl)?.[0];
+        if (_res) primary.add(_res);      /* 印 พยุง */
+        xishen.add(dmEl);                 /* 比劫 ช่วย */
+      } else if (_w6str) {
+        primary.add(S.ELEMENT_PRODUCES[dmEl]);     /* 食傷 洩 */
+        xishen.add(S.ELEMENT_CONTROLS[dmEl]);      /* 財 */
+      }
+    } catch (_) { /* strength ล้ม → ตกไปใช้ TiaoHou/BingYao/Fuyi เดิม */ }
+    // TiaoHou · ฤดูสุดขั้ว (SS/SSS) เท่านั้นที่ขึ้น primary
+    if (regulator) {
+      const _thTier = tiaoHou?.tier;
+      if (_thTier === 'SSS' || _thTier === 'SS') primary.add(regulator);
+      else xishen.add(regulator);
+    }
     // BingYao medicine elements
     for (const m of bingyao.medicine) {
       if (ELEMENTS.includes(m)) primary.add(m);
