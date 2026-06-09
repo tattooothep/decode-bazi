@@ -166,8 +166,21 @@ function bridgeYongshen(natal) {
     }
   }
 
-  // Strength adjustment
-  if (strength.polarity === 'weak-side') {
+  // HK_CONG_YONGSHEN_V1 (สเตป 4) · 從格 → 用財勢 ไม่ใช่扶抑用印 (子平真詮從財/從勢格)
+  // ดวงพิเศษ(從): DM ตาม勢ที่เด่น → 用 ธาตุเด่น(財) + 食傷(生財) · 忌 印+比劫(ขวาง從)
+  const _follow = require('./follow-detector').detectFollow(natal);
+  const _dmEl0 = S.STEM_ELEMENT[dm];
+  if (_follow && _follow.follow_candidate && _follow.evidence?.dominant_force?.element) {
+    const followEl = _follow.evidence.dominant_force.element;        // ธาตุเด่น (財/勢)
+    const outputEl0 = S.ELEMENT_PRODUCES[_dmEl0];                    // 食傷 (DM生 · 生財)
+    const resourceEl0 = Object.keys(S.ELEMENT_PRODUCES).find(k => S.ELEMENT_PRODUCES[k] === _dmEl0); // 印
+    for (const r of adjusted) {
+      if (r.element === followEl)    { r.finalScore += 4; r.reason.push('從勢·用財/勢เด่น'); }
+      if (r.element === outputEl0)   { r.finalScore += 2; r.reason.push('從·食傷生財'); }
+      if (r.element === resourceEl0) { r.finalScore -= 4; r.reason.push('從·忌印(ขวาง從)'); }
+      if (r.element === _dmEl0)      { r.finalScore -= 3; r.reason.push('從·忌比劫(夺財)'); }
+    }
+  } else if (strength.polarity === 'weak-side') {
     // boost resource (produces DM) + parallel (same as DM)
     const dmEl = S.STEM_ELEMENT[dm];
     const resourceEl = Object.keys(S.ELEMENT_PRODUCES).find(k => S.ELEMENT_PRODUCES[k] === dmEl);
