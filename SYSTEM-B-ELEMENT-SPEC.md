@@ -173,3 +173,10 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 2. คิม จิน/แฝดใหม่: w7 กับ w6 ต่างแบบไม่ผิดตำรา (身強 食傷 vs 財 — คนละ valid choice) — ระยะยาว = รวม engine เดียว (ทาง A ลายเซน C)
 3. bug เก่า /api/today: verdict null (pillars string vs object · มีมาก่อน diff นี้)
 4. คุณวอ假從金 vs 子平真詮用印น้ำ + ลูกพี่ดอน月劫top1 (flag จากแผน A)
+
+## 🔥 บทเรียน 10 มิ.ย. — wrapper ถูก bundle เข้า .next · cp+restart ไม่พอ ต้อง REBUILD
+- เจ้านายจับได้: หน้าเว็บยังแสดง用ไฟเก่า ทั้งที่ cp wrapper-7+restart แล้ว (%ธาตุใหม่เพราะอยู่ใน build แรก)
+- root cause: Next bundle data/library/wrappers/*.js เข้า .next/server/chunks ตอน build → แก้ wrapper หลัง build = ไฟล์ source เปลี่ยนแต่ runtime ใช้ bundle เก่า
+- ผมพลาด: verify ด้วย node ตรงจาก source (ผ่าน) แต่ไม่ verify ตัวที่ serve จริง (.next) = ผิดทริคอาเจ็กฮ้ง 18
+- **กฎใหม่: แก้ wrapper/lib ใดๆ → ต้อง npm run build ใน release + restart + verify chunk (.next/server/chunks) ด้วย string literal (comment โดน minify ตัด · ใช้ "SSS"/"weak-side" ฯลฯ)**
+- rebuild 06:57 เสร็จ · chunk มี "SSS"+"weak-side" ✓ · live 200
