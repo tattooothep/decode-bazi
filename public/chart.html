@@ -2560,8 +2560,19 @@ window.addEventListener('resize', function(){
       setYsH('hk-ysv2-primary', (yv2.primary_yongshen||[]).map(el => pillHtml(el, 'primary')).join(''));
       setYsH('hk-ysv2-xishen',  (yv2.xishen||[]).map(el => pillHtml(el)).join(''));
       setYsH('hk-ysv2-jishen',  (yv2.jishen||[]).map(el => pillHtml(el, 'bad')).join(''));
+      /* HK_FOLLOW_REF_NOTE_V1 (10 มิ.ย.) · ดวง從/假從: 調候/病/藥 เป็นมุม "ดวงปกติ" — ถ้าโชว์เป็นยาหลักจะชน用神 (เช่น Aeaw 藥=ไฟ ข้างๆ 忌=ไฟ)
+       * → แสดงเป็นหมายเหตุอ้างอิง (จาง + ป้ายกำกับ) · ไม่ใช่คำแนะนำหลัก */
+      const isFollowChart = yv2.use_follow_override === true
+        || /^(WEAK_DM_|TRUE_FOLLOW|HUA_QI|CONG_|ZHUAN_WANG)/.test(String(yv2.engine_type || ''))
+        || /從/.test(String(yv2.structure_label || ''));
+      const followRefNote = '<div style="font-size:.72em;opacity:.62;margin-top:3px">↳ ' + ({
+        th: 'มุมอ้างอิงแบบดวงปกติ — ดวงนี้ตามกระแส(從) ให้ยึด 用神/喜神 ด้านบนเป็นหลัก',
+        en: 'Reference view (normal-chart lens) — this is a follow(從) chart; rely on the 用神/喜神 above',
+        zh: '常格參考視角 — 此命從勢(從格)，以上方用神/喜神為主'
+      }[_ysLang] || 'มุมอ้างอิงแบบดวงปกติ — ดวงนี้ตามกระแส(從) ให้ยึด 用神/喜神 ด้านบนเป็นหลัก') + '</div>';
+      const refPill = (html) => isFollowChart ? `<span style="opacity:.55">${html}</span>${followRefNote}` : html;
       const tiaoHtml = yv2.tiaohou_required
-        ? pillHtml(yv2.tiaohou_required, 'primary')
+        ? (isFollowChart ? refPill(pillHtml(yv2.tiaohou_required)) : pillHtml(yv2.tiaohou_required, 'primary'))
         : '<span class="ys-pill" style="opacity:.4">—</span>';
       setYsH('hk-ysv2-tiaohou', tiaoHtml);
       const dRow = document.getElementById('hk-ysv2-disease-row');
@@ -2569,11 +2580,11 @@ window.addEventListener('resize', function(){
       const bRow = document.getElementById('hk-ysv2-bridge-row');
       if (yv2.diseases && yv2.diseases.length) {
         if (dRow) dRow.style.display = '';
-        setYsH('hk-ysv2-diseases', yv2.diseases.map(dk => `<span class="ys-pill disease">${humanizeDisease(dk)}</span>`).join(''));
+        setYsH('hk-ysv2-diseases', refPill(yv2.diseases.map(dk => `<span class="ys-pill disease">${humanizeDisease(dk)}</span>`).join('')));
       } else if (dRow) dRow.style.display = 'none';
       if (yv2.medicine && yv2.medicine.length) {
         if (mRow) mRow.style.display = '';
-        setYsH('hk-ysv2-medicine', yv2.medicine.map(m => `<span class="ys-pill medicine">${humanizeMedicine(m)}</span>`).join(''));
+        setYsH('hk-ysv2-medicine', refPill(yv2.medicine.map(m => `<span class="ys-pill medicine">${humanizeMedicine(m)}</span>`).join('')));
       } else if (mRow) mRow.style.display = 'none';
       if (yv2.bridges && yv2.bridges.length) {
         if (bRow) bRow.style.display = '';

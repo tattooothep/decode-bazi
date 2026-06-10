@@ -9,6 +9,31 @@ import { getSession } from "@/lib/auth";
 import { NO_STORE_HEADERS, sanitizeChartPayload } from "@/lib/api-scrub";
 import { getDaymasterProfile } from "@/lib/daymaster-profile";
 
+/* HK_FOLLOW_NEEDS_OVERRIDE_V1 (10 มิ.ย.) · §00 "สิ่งที่ดวงต้องการ" เป็นข้อความ static 30 โปรไฟล์ (扶抑ดวงปกติ)
+ * ดวง從/假從 (เช่น Aeaw 假從財) จะขัด engine ตรงๆ (static สอน "เติมไฟ/ดินพยุงตัว" แต่ engine 忌ไฟ/ดิน)
+ * → override needs ด้วยข้อมูลจาก wrapper-7 จริง (engine-derived · ไม่ใช่คำทำนายแต่งเอง) */
+function overrideNeedsForFollow(profile: any, yv2: any): any {
+  if (!profile || !yv2) return profile;
+  const et = String(yv2.engine_type || "");
+  const isFollow = yv2.use_follow_override === true
+    || /^(WEAK_DM_|TRUE_FOLLOW|HUA_QI|CONG_|ZHUAN_WANG)/.test(et)
+    || /從/.test(String(yv2.structure_label || ""));
+  if (!isFollow) return profile;
+  const TH: Record<string, string> = { wood: "ไม้", fire: "ไฟ", earth: "ดิน", metal: "ทอง", water: "น้ำ" };
+  const j = (a: unknown) => (Array.isArray(a) ? a.map((e) => TH[String(e)] || "").filter(Boolean).join(" · ") : "");
+  const yong = j(yv2.primary_yongshen);
+  const xi = j(yv2.xishen);
+  const ji = j(yv2.jishen);
+  const needs =
+    `⚠️ ดวงนี้เป็นโครงสร้างพิเศษ "${yv2.structure_label || "ตามกระแส·從"}" — ตัวเราอ่อนมากจนตำราให้ "ไหลตามกระแสที่ครองดวง" แทนการฝืนพยุงตัวเอง` +
+    ` คำแนะนำแบบดวงปกติ (เติมธาตุพยุงตัว) จึงไม่ใช้กับดวงนี้` +
+    (yong ? ` · ธาตุที่หนุนดวง: ${yong}` : "") +
+    (xi ? ` เสริมด้วย ${xi}` : "") +
+    (ji ? ` · ธาตุที่ควรระวัง: ${ji} (ฝืนเติม = สวนกระแสดวง)` : "") +
+    ` — รายละเอียดดูหัวข้อ "ดวงพิเศษ" และ "ธาตุช่วย 用神 v2" ด้านล่าง`;
+  return { ...profile, needs, follow_override: true };
+}
+
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session?.userId) {
@@ -262,7 +287,7 @@ export async function POST(req: Request) {
           rootedness_explain: (ext as any).rootedness_explain,
           rootedness_explain_v2: (ext as any).rootedness_explain_v2,
           element_distribution: (ext as any).element_distribution,
-          daymaster_profile: daymasterProfile,
+          daymaster_profile: overrideNeedsForFollow(daymasterProfile, yongshenV2_3p),
         },
         yongshen_v2: yongshenV2_3p,
         heluo_astrology: null,        /* 3p · ต้องการ hour pillar · skip */
@@ -529,7 +554,7 @@ export async function POST(req: Request) {
         rootedness_explain_v2: (ext as any).rootedness_explain_v2,
         /* Phase 17g · distribution engine output · debug/observability */
         element_distribution: (ext as any).element_distribution,
-        daymaster_profile: daymasterProfile,
+        daymaster_profile: overrideNeedsForFollow(daymasterProfile, yongshenV2),
       },
       /* 📜 Yongshen v2 (wrapper-7) · structure + disease + medicine + bridges · 15 พ.ค. */
       yongshen_v2: yongshenV2,
