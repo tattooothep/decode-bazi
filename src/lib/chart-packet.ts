@@ -22,6 +22,7 @@ import { auditStrictGeJuFromMonth, type StrictGeJuAudit } from "./bazi-strict-ge
 import { resolveXch, type XchResolution } from "./bazi-xch-resolver";
 import { buildShenShaTransit, type ShenShaTransit } from "./bazi-shensha-transit";
 import { buildSixRelativesEvents, type RelativeEvent } from "./bazi-six-relatives-events";
+import { buildElementRoles, type ElementRole } from "./element-roles";
 import { createRequire } from "node:module";
 
 /* wrapper-8 化氣格 (CJS) · dynamic require + cache · sync-safe สำหรับ buildStructuredChartPacket
@@ -2329,6 +2330,30 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     );
     lines.push(`ธาตุสะพาน/相神 มีเงื่อนไข (有條件之喜 · ไม่ใช่忌เดี่ยว · 滴天髓 隨其所向論喜忌): ${items.join(" · ")}`);
   }
+  /* HK_ELEMENT_ROLES_PROMPT_V1 (10 มิ.ย.) · บทบาทธาตุในชีวิต (ภาษาเดียวกับหน้าเว็บ 06b)
+   * ให้ AI แยก 財星/เปิดทางเงิน/งาน/調候/พยุงตัว ออกจาก 用神/忌神 — กันตอบเหมารวม "ธาตุ X เป็นพิษ" ทั้งที่มีบทบาทเฉพาะ */
+  try {
+    const _erDmEl = STEM_ELEMENT[packet.meta?.dayMaster || ""] || null;
+    if (_erDmEl) {
+      const _erRoles = buildElementRoles({
+        dmElement: _erDmEl,
+        structureLabel: packet.structure.label,
+        engineType: packet.structure.special?.typeZh || null,
+        primaryYongshen: packet.usefulGods.yong,
+        xishen: packet.usefulGods.xi,
+        jishen: packet.usefulGods.ji,
+        tiaohouRequired: packet.yongShenProtocols?.tiaoHou?.regulator || null,
+        strengthLevel: null,
+      });
+      if (_erRoles.length) {
+        const _erIcon: Record<string, string> = { main: "✅", conditional: "⚠️มีเงื่อนไข", caution: "⛔ระวังถ้ามาก" };
+        lines.push(
+          `บทบาทธาตุในชีวิต (ใช้ภาษานี้กับลูกค้า · ธาตุหนึ่งมีหลายหน้าที่ ไม่ใช่แค่ดี/ร้าย): ` +
+          _erRoles.map((r: ElementRole) => `${r.label.th}=${r.elements.map((e: string) => elementTh(e)).join("+")}(${_erIcon[r.status] || r.status} · ${r.verdict.th})`).join(" · ")
+        );
+      }
+    }
+  } catch { /* additive */ }
   /* HK_DUAL_SCHOOL_V1 (10 มิ.ย.) · ดวง從/假從 = ก้ำกึ่ง 2 สำนัก (滴天髓順勢 vs 子平真詮扶抑·透印不從)
    * ตำราเองไม่ฟันธง (假從=ตามแบบไม่สนิท) → สั่งซินแสอ่าน 2 มุม + ใช้เหตุการณ์จริงใน大運เป็นตัวเฉลยสำนัก
    * (วิธีเดียวกับที่เฉลยดวง Aeaw: 大運庚辰=รุ่งจริง → ยืนยันสาย順勢) · additive render · ไม่แก้ usefulGods */

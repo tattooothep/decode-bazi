@@ -1611,6 +1611,11 @@
       <div class="ys-row" id="hk-ysv2-disease-row"><span class="k" data-i18n="c.ysv2.disease">病 · โรค</span><span class="v" id="hk-ysv2-diseases">—</span></div>
       <div class="ys-row" id="hk-ysv2-med-row"><span class="k" data-i18n="c.ysv2.medicine">藥 · ยา</span><span class="v" id="hk-ysv2-medicine">—</span></div>
       <div class="ys-row" id="hk-ysv2-bridge-row"><span class="k" data-i18n="c.ysv2.bridge">通關 · สะพาน</span><span class="v" id="hk-ysv2-bridges">—</span></div>
+      <!-- HK_ELEMENT_ROLES_V1 · บทบาทธาตุในชีวิต (แยก 財星/เปิดทางเงิน/งาน/調候/พยุงตัว ออกจาก用神/忌神) -->
+      <div id="hk-ysv2-roles" style="display:none;margin-top:10px;border-top:1px dashed var(--line,#444);padding-top:8px">
+        <div style="font-size:.82em;opacity:.75;margin-bottom:6px" data-i18n="c.ysv2.roles">🧭 บทบาทธาตุในชีวิตของดวงนี้ (แต่ละธาตุมีหน้าที่ต่างกัน · ไม่ใช่แค่ดี/ร้าย)</div>
+        <div id="hk-ysv2-roles-list"></div>
+      </div>
       <details class="ys-explain" id="hk-ysv2-explain-box" style="display:none">
         <summary data-i18n="c.ysv2.reasoning">📜 ที่มาของการประเมิน</summary>
         <ul id="hk-ysv2-explain"></ul>
@@ -1941,6 +1946,7 @@ window.HK_I18N = {
   'c.ysv2.disease':  { th:'病 · โรค', en:'Disease', zh:'病' },
   'c.ysv2.medicine': { th:'藥 · ยา', en:'Medicine', zh:'藥' },
   'c.ysv2.bridge':   { th:'通關 · สะพาน', en:'Bridge', zh:'通關' },
+  'c.ysv2.roles':    { th:'🧭 บทบาทธาตุในชีวิตของดวงนี้ (แต่ละธาตุมีหน้าที่ต่างกัน · ไม่ใช่แค่ดี/ร้าย)', en:'🧭 Element roles in this chart (each element has its own job — not just good/bad)', zh:'🧭 五行在此命之職能（各司其職 · 非僅吉凶）' },
   'c.ysv2.reasoning':{ th:'📜 ที่มาของการประเมิน', en:'📜 Reasoning trail', zh:'📜 推理過程' },
   /* §11 流年 100-year timeline · 15 พ.ค. */
   'c.lt.title':      { th:'流年 · {N} ปี (เกิด→ตาย) · เทียบวันเกิดหลัก + 64卦',
@@ -2590,6 +2596,22 @@ window.addEventListener('resize', function(){
         if (bRow) bRow.style.display = '';
         setYsH('hk-ysv2-bridges', yv2.bridges.map(b => `<span class="ys-pill bridge">${humanizeBridge(b)}</span>`).join(''));
       } else if (bRow) bRow.style.display = 'none';
+      /* HK_ELEMENT_ROLES_V1 · ตารางบทบาทธาตุในชีวิต (จาก element_roles · additive · ไม่มี = ซ่อน) */
+      const rolesBox = document.getElementById('hk-ysv2-roles');
+      const rolesList = document.getElementById('hk-ysv2-roles-list');
+      if (rolesBox && rolesList && Array.isArray(yv2.element_roles) && yv2.element_roles.length) {
+        const stIcon = { main: '✅', conditional: '⚠️', caution: '⛔' };
+        rolesList.innerHTML = yv2.element_roles.map(r => {
+          const els = (r.elements || []).map(el => pillHtml(el, r.status === 'main' ? 'primary' : r.status === 'caution' ? 'bad' : '')).join('');
+          const lb = (r.label && (r.label[_ysLang] || r.label.th)) || '';
+          const vd = (r.verdict && (r.verdict[_ysLang] || r.verdict.th)) || '';
+          return `<div style="display:flex;gap:8px;align-items:flex-start;margin:5px 0">` +
+            `<span style="min-width:148px;font-size:.8em;opacity:.85">${stIcon[r.status] || ''} ${lb}</span>` +
+            `<span style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">${els}` +
+            `<span style="font-size:.74em;opacity:.66;margin-left:4px">${vd}</span></span></div>`;
+        }).join('');
+        rolesBox.style.display = '';
+      } else if (rolesBox) rolesBox.style.display = 'none';
       const expBox = document.getElementById('hk-ysv2-explain-box');
       const expList = document.getElementById('hk-ysv2-explain');
       if (yv2.explain_log && yv2.explain_log.length && expBox && expList) {

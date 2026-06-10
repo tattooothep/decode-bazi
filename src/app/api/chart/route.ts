@@ -8,6 +8,32 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { NO_STORE_HEADERS, sanitizeChartPayload } from "@/lib/api-scrub";
 import { getDaymasterProfile } from "@/lib/daymaster-profile";
+import { buildElementRoles } from "@/lib/element-roles";
+
+/* HK_ELEMENT_ROLES_V1 (10 มิ.ย.) · เติม "บทบาทธาตุในชีวิต" เข้า yongshen_v2 (display semantics ทุกดวง)
+ * แยก 財星ให้ผล/เปิดทางเงิน/งาน/調候/พยุงตัว ออกจาก 用神/忌神 — แก้ "เว็บพูดสองภาษาในหน้าเดียว" */
+function attachElementRoles(yv2: any, dmStem: string, strengthLevel: string | null): any {
+  if (!yv2) return yv2;
+  const STEM_EL: Record<string, string> = {
+    甲: "wood", 乙: "wood", 丙: "fire", 丁: "fire", 戊: "earth",
+    己: "earth", 庚: "metal", 辛: "metal", 壬: "water", 癸: "water",
+  };
+  const dmEl = STEM_EL[dmStem];
+  if (!dmEl) return yv2;
+  try {
+    yv2.element_roles = buildElementRoles({
+      dmElement: dmEl as any,
+      structureLabel: yv2.structure_label,
+      engineType: yv2.engine_type,
+      primaryYongshen: yv2.primary_yongshen,
+      xishen: yv2.xishen,
+      jishen: yv2.jishen,
+      tiaohouRequired: yv2.tiaohou_required,
+      strengthLevel,
+    });
+  } catch { /* additive — พังก็ไม่ขวาง response */ }
+  return yv2;
+}
 
 /* HK_FOLLOW_NEEDS_OVERRIDE_V1 (10 มิ.ย.) · §00 "สิ่งที่ดวงต้องการ" เป็นข้อความ static 30 โปรไฟล์ (扶抑ดวงปกติ)
  * ดวง從/假從 (เช่น Aeaw 假從財) จะขัด engine ตรงๆ (static สอน "เติมไฟ/ดินพยุงตัว" แต่ engine 忌ไฟ/ดิน)
@@ -289,7 +315,7 @@ export async function POST(req: Request) {
           element_distribution: (ext as any).element_distribution,
           daymaster_profile: overrideNeedsForFollow(daymasterProfile, yongshenV2_3p),
         },
-        yongshen_v2: yongshenV2_3p,
+        yongshen_v2: attachElementRoles(yongshenV2_3p, natal.day.stem, calc.strength?.level || null),
         heluo_astrology: null,        /* 3p · ต้องการ hour pillar · skip */
         solar_terms_birth: null,       /* 3p · ต้องการ time precise · skip */
       };
@@ -557,7 +583,7 @@ export async function POST(req: Request) {
         daymaster_profile: overrideNeedsForFollow(daymasterProfile, yongshenV2),
       },
       /* 📜 Yongshen v2 (wrapper-7) · structure + disease + medicine + bridges · 15 พ.ค. */
-      yongshen_v2: yongshenV2,
+      yongshen_v2: attachElementRoles(yongshenV2, natal.day.stem, calc.strength?.level || null),
       /* 📜 17 พ.ค. · 河洛理數 Heluo Astrology (Pre/Post + Annual + Monthly) */
       heluo_astrology: (() => {
         try {
