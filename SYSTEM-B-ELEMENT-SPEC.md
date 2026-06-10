@@ -180,3 +180,9 @@ floating penalty แยกราก/ลอยได้จริง (logic verifi
 - ผมพลาด: verify ด้วย node ตรงจาก source (ผ่าน) แต่ไม่ verify ตัวที่ serve จริง (.next) = ผิดทริคอาเจ็กฮ้ง 18
 - **กฎใหม่: แก้ wrapper/lib ใดๆ → ต้อง npm run build ใน release + restart + verify chunk (.next/server/chunks) ด้วย string literal (comment โดน minify ตัด · ใช้ "SSS"/"weak-side" ฯลฯ)**
 - rebuild 06:57 เสร็จ · chunk มี "SSS"+"weak-side" ✓ · live 200
+
+## ✅ แก้จุดขัด display ดวง從 DEPLOYED (10 มิ.ย. · commit 028487a · rebuild+restart)
+- จุดขัดที่เจ้านายชี้ 3 จุด: §00 static สอนเติมไฟ/ดิน ขัด engine 忌ไฟ/ดิน · อาชีพ(พลิกตาม用神อัตโนมัติหลัง rebuild) · 06b 藥=ไฟ ชน 忌=ไฟ
+- HK_FOLLOW_NEEDS_OVERRIDE_V1 (route): §00 needs override เมื่อ從/假從 (engine-derived · ดวงปกติคงเดิม · pipeline 4/4)
+- HK_FOLLOW_REF_NOTE_V1 (chart.html): 調候/病/藥 จาง+ป้าย "มุมอ้างอิงดวงปกติ ยึด用神ด้านบน" (3 ภาษา)
+- verify: bundle มี "ธาตุที่หนุนดวง" ✓ · chart.html 2 จุด ✓ · live 200 (curl /chart 307→signup = page-guard ปกติ)
