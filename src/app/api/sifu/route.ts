@@ -720,7 +720,7 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
       `SELECT id, name, nickname, relationship_type,
               (relationship_type IS NULL OR btrim(relationship_type) = '') AS is_self,
               to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
-              birth_lng, gender, birth_time_known, day_boundary
+              birth_lng, gender, birth_time_known, day_boundary, yongshen_school
        FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
       [profileId, orgId]
     );
@@ -822,6 +822,14 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
       }
     }
     lines.push(renderChartPrompt(packet, { subjectLabel: `${subjectName}·${row.id.slice(0, 8)}` }));
+    /* HK_SCHOOL_CONFIRM_V1 · สำนักที่ user ยืนยันจากชีวิตจริง (profiles.yongshen_school) — ชนะคำถามเฉลย */
+    const _schConfirmed = (row as { yongshen_school?: string | null }).yongshen_school;
+    if (_schConfirmed === "shun_shi" || _schConfirmed === "fu_yi") {
+      const _schTxt = _schConfirmed === "fu_yi"
+        ? "②扶抑พยุงตัว (子平真詮) — ธาตุดี=印/比劫พยุงตัว · ระวัง=ธาตุกระแส"
+        : "①順勢ตามกระแส (滴天髓) — ตามชุดธาตุช่วยของ engine";
+      lines.push(`⚖️ สำนักอ่านดวงนี้ "ยืนยันแล้วจากชีวิตจริงของเจ้าของดวง": สาย${_schTxt} · อ่านธาตุช่วย/แนวทางตามสำนักนี้เป็นหลัก · ไม่ต้องถามคำถามเฉลยชีวิตซ้ำ · ถ้าผู้ใช้เล่าเหตุการณ์ใหม่ที่ขัดแย้งชัดเจน ค่อยชวนทบทวนสำนักอีกครั้ง`);
+    }
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
     }

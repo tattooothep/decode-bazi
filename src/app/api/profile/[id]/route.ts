@@ -41,7 +41,7 @@ export async function GET(_req: Request, ctx: Ctx) {
             birth_lat, birth_lng, birth_location_name,
             gender, relationship_type, network_group, network_group_label,
             day_master, day_master_strength, yongshen, bazi_pillars,
-            birth_time_known, day_boundary, is_archived, created_at
+            birth_time_known, day_boundary, yongshen_school, is_archived, created_at
      FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
     [id, s.orgId]
   );
@@ -114,6 +114,15 @@ export async function PUT(req: Request, ctx: Ctx) {
     const groupForRelation = requestedGroup || existing.network_group || "general";
     sets.push(`"relationship_type"=$${i++}`);
     params.push(normalizeNonSelfRelationship(relationshipType, groupForRelation));
+  }
+
+  /* HK_SCHOOL_CONFIRM_V1 (10 มิ.ย.) · ดวง從/假從 ก้ำกึ่ง 2 สำนัก — user ยืนยันสำนักจากชีวิตจริง
+   * shun_shi=順勢ตามกระแส(滴天髓) · fu_yi=扶抑พยุงตัว(子平真詮) · null=ล้าง(กลับไปถาม) */
+  const yongshenSchoolRaw = (body as Record<string, unknown>).yongshenSchool;
+  if (yongshenSchoolRaw !== undefined) {
+    const school = yongshenSchoolRaw === "shun_shi" || yongshenSchoolRaw === "fu_yi" ? yongshenSchoolRaw : null;
+    sets.push(`"yongshen_school"=$${i++}`);
+    params.push(school);
   }
 
   /* If birthDate/birthTime/birthLng/birthTimeKnown change → recompute BaZi via Layer 1 (calcBazi)

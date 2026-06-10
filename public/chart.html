@@ -1615,6 +1615,16 @@
       <div id="hk-ysv2-roles" style="display:none;margin-top:10px;border-top:1px dashed var(--line,#444);padding-top:8px">
         <div style="font-size:.82em;opacity:.75;margin-bottom:6px" data-i18n="c.ysv2.roles">🧭 บทบาทธาตุในชีวิตของดวงนี้ (แต่ละธาตุมีหน้าที่ต่างกัน · ไม่ใช่แค่ดี/ร้าย)</div>
         <div id="hk-ysv2-roles-list"></div>
+        <!-- HK_SCHOOL_CONFIRM_V1 · ดวง從: ให้เจ้าของยืนยันสำนักจากชีวิตจริง -->
+        <div id="hk-school-box" style="display:none;margin-top:10px;padding:8px;border:1px dashed var(--line,#555);border-radius:8px;font-size:.82em">
+          <div id="hk-school-q" style="margin-bottom:6px"></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="hk-school-btn" data-school="shun_shi" style="cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid var(--line,#5a8);background:transparent;color:inherit">🌊 ตามกระแสตรงกว่า (ช่วงนั้นรุ่ง)</button>
+            <button class="hk-school-btn" data-school="fu_yi" style="cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid var(--line,#a85);background:transparent;color:inherit">🔥 พยุงตัวตรงกว่า (ช่วงนั้นฝืด)</button>
+            <button class="hk-school-btn" data-school="" style="cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid var(--line,#777);background:transparent;color:inherit;opacity:.7">↺ ยังไม่แน่ใจ/ล้างคำตอบ</button>
+          </div>
+          <div id="hk-school-status" style="margin-top:6px;opacity:.7"></div>
+        </div>
       </div>
       <details class="ys-explain" id="hk-ysv2-explain-box" style="display:none">
         <summary data-i18n="c.ysv2.reasoning">📜 ที่มาของการประเมิน</summary>
@@ -2612,6 +2622,32 @@ window.addEventListener('resize', function(){
         }).join('');
         rolesBox.style.display = '';
       } else if (rolesBox) rolesBox.style.display = 'none';
+      /* HK_SCHOOL_CONFIRM_V1 · ดวง從 + เป็นดวงในบัญชี → ปุ่มยืนยันสำนักจากชีวิตจริง */
+      (function initSchoolBox(){
+        const box = document.getElementById('hk-school-box');
+        const pid = window.hkActiveProfileId || localStorage.getItem('hk_profile_id') || '';
+        if (!box || !isFollowChart || !pid) return;
+        const qEl = document.getElementById('hk-school-q');
+        const stEl = document.getElementById('hk-school-status');
+        const SCH_TH = { shun_shi: '🌊 สายตามกระแส (順勢) — ยืนยันแล้วจากชีวิตจริงของคุณ', fu_yi: '🔥 สายพยุงตัว (扶抑) — ยืนยันแล้วจากชีวิตจริงของคุณ' };
+        qEl.textContent = 'ดวงคุณเป็นดวงก้ำกึ่งที่ตำราอ่านได้ 2 ทาง — ช่วงวัยจรที่ผ่านมา (ดูตารางวัยจรด้านล่าง เช่น ช่วงธาตุที่ตรงข้ามสองสาย) ชีวิตคุณ "รุ่ง" หรือ "ฝืด"? คำตอบของคุณจะตั้งสำนักอ่านให้ซินแสทั้งระบบ';
+        fetch('/api/profile/' + pid).then(r => r.json()).then(d => {
+          const cur = d?.profile?.yongshen_school;
+          if (cur && SCH_TH[cur]) stEl.textContent = '✅ ' + SCH_TH[cur];
+          box.style.display = '';
+        }).catch(() => { box.style.display = ''; });
+        if (box.__schoolInit) return; box.__schoolInit = true; /* กัน listener ติดซ้ำ (render เรียกได้หลายครั้ง) */
+        box.querySelectorAll('.hk-school-btn').forEach(btn => btn.addEventListener('click', async () => {
+          const school = btn.getAttribute('data-school') || null;
+          stEl.textContent = '⏳ กำลังบันทึก...';
+          try {
+            const r = await fetch('/api/profile/' + pid, { method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ yongshenSchool: school }) });
+            if (!r.ok) throw new Error(String(r.status));
+            stEl.textContent = school && SCH_TH[school] ? '✅ ' + SCH_TH[school] + ' · ซินแสจะอ่านตามสำนักนี้' : 'ล้างคำตอบแล้ว — ซินแสจะชวนเทียบชีวิตจริงอีกครั้ง';
+          } catch (e) { stEl.textContent = '⚠️ บันทึกไม่สำเร็จ ลองใหม่ (' + e.message + ')'; }
+        }));
+      })();
       const expBox = document.getElementById('hk-ysv2-explain-box');
       const expList = document.getElementById('hk-ysv2-explain');
       if (yv2.explain_log && yv2.explain_log.length && expBox && expList) {
