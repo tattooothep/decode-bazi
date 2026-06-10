@@ -2329,6 +2329,42 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     );
     lines.push(`ธาตุสะพาน/相神 มีเงื่อนไข (有條件之喜 · ไม่ใช่忌เดี่ยว · 滴天髓 隨其所向論喜忌): ${items.join(" · ")}`);
   }
+  /* HK_DUAL_SCHOOL_V1 (10 มิ.ย.) · ดวง從/假從 = ก้ำกึ่ง 2 สำนัก (滴天髓順勢 vs 子平真詮扶抑·透印不從)
+   * ตำราเองไม่ฟันธง (假從=ตามแบบไม่สนิท) → สั่งซินแสอ่าน 2 มุม + ใช้เหตุการณ์จริงใน大運เป็นตัวเฉลยสำนัก
+   * (วิธีเดียวกับที่เฉลยดวง Aeaw: 大運庚辰=รุ่งจริง → ยืนยันสาย順勢) · additive render · ไม่แก้ usefulGods */
+  const _dsLabel = `${packet.structure.label || ""} ${packet.structure.special?.typeZh || ""}`;
+  const _dsDmEl = (STEM_ELEMENT[packet.meta?.dayMaster || ""] || null) as ElementEN | null;
+  if (/從/.test(_dsLabel) && _dsDmEl) {
+    const _dsYinEl = producerElementOf(_dsDmEl);
+    const _dsSchoolB = [_dsYinEl, _dsDmEl].filter(Boolean) as ElementEN[];   /* 扶抑: 印+比劫 */
+    /* 順勢: engine yong+xi + 食傷(DM生·生財ตาม勢 — 從格喜食傷財 ตำราชัด · เช่น Aeaw 庚=食傷 大運庚辰รุ่งจริง) */
+    const _dsOutEl = (["wood", "fire", "earth", "metal", "water"] as ElementEN[]).find((e) => producerElementOf(e) === _dsDmEl) || null;
+    const _dsSchoolA = Array.from(new Set([...packet.usefulGods.yong, ...packet.usefulGods.xi, ...(_dsOutEl ? [_dsOutEl] : [])]))
+      .filter((e) => !_dsSchoolB.includes(e as ElementEN)) as ElementEN[];
+    /* คำถามเฉลยชีวิต: วัยจรอดีต/ปัจจุบันที่ 2 สำนักให้ขั้วตรงข้ามชัด (ธาตุอยู่ฝั่งดีสำนักเดียว) · เอาอันล่าสุดที่ user ตอบได้
+     * robust: age อาจ NaN (caller บางทางไม่ส่ง start age) → fallback ทั้ง timeline + ละอายุในข้อความ */
+    const _dsTl = packet.luckTimeline || [];
+    const _dsCurStart = _dsTl.find((x) => x.isCurrent)?.ageStart ?? Infinity;
+    const _dsSplits = (l: { element: ElementEN }) =>
+      (_dsSchoolA.includes(l.element) && !_dsSchoolB.includes(l.element)) ||
+      (_dsSchoolB.includes(l.element) && !_dsSchoolA.includes(l.element));
+    const _dsPast = _dsTl.filter((l) => l.isCurrent || (Number.isFinite(l.ageEnd) && l.ageEnd <= _dsCurStart));
+    const _dsTest = [...(_dsPast.length ? _dsPast : _dsTl)].reverse().find(_dsSplits);
+    const _dsAgeTxt = _dsTest && Number.isFinite(_dsTest.ageStart) && Number.isFinite(_dsTest.ageEnd)
+      ? `ช่วงอายุ ${_dsTest.ageStart}-${_dsTest.ageEnd} ` : "";
+    const _dsTestTxt = _dsTest
+      ? ` · คำถามเฉลยชีวิต (ใช้ถามลูกค้าเพื่อยืนยันสำนัก · เลือกช่วงที่ผ่านมาแล้วเท่านั้น): "${_dsAgeTxt}(วัยจร ${_dsTest.stem}${_dsTest.branch} ธาตุ${elementTh(_dsTest.element)}) ชีวิตคุณรุ่งหรือฝืด?" → ${_dsSchoolA.includes(_dsTest.element) ? "รุ่ง=สาย①順勢(ยืนยันชุด engine) · ฝืด=สาย②扶抑" : "รุ่ง=สาย②扶抑 · ฝืด=สาย①順勢(ยืนยันชุด engine)"}`
+      : "";
+    lines.push(
+      `⚖️ ดวงก้ำกึ่ง 2 สำนัก (${packet.structure.label} · 假從=ตำราเองไม่ฟันธง 100%): ` +
+      `สำนัก①順勢ตามกระแส(滴天髓 · engine ให้น้ำหนักทางนี้): ธาตุดี=${fmtEls(_dsSchoolA)} / ระวัง=${fmtEls(_dsSchoolB)} (從格忌印比·ฝืนพยุง=สวนกระแส) · ` +
+      `สำนัก②扶抑พยุงตัว(子平真詮 透印不從): ธาตุดี=${fmtEls(_dsSchoolB)} / ระวัง=${fmtEls(_dsSchoolA.filter((e) => !_dsSchoolB.includes(e)))} · ` +
+      `กฎซินแสสำหรับดวงนี้: (ก)เมื่อพูดเรื่องธาตุช่วย/แนวทางชีวิต ให้บอกลูกค้าตรงๆ ว่าดวงนี้ตำราอ่านได้ 2 ทาง พร้อมสรุปทั้งสองมุมสั้นๆ ` +
+      `(ข)ชวนลูกค้าเทียบเหตุการณ์จริงด้วยคำถามเฉลยชีวิต ` +
+      `(ค)ถ้าลูกค้ายืนยันเหตุการณ์ชัดแล้ว → อ่านตามสำนักที่ชีวิตจริงยืนยัน และระบุว่า "ยืนยันจากชีวิตจริงของคุณแล้ว" ` +
+      `(ง)ยังไม่มีคำตอบ → ใช้สำนัก①(engine)เป็นหลัก พ่วงหมายเหตุสำนัก② · ห้ามฟันธงสำนักเดียวโดยไม่บอกอีกมุม${_dsTestTxt}`
+    );
+  }
   /* HK_YONGSHEN_PROTOCOL_SPLIT_V1 — แยกชื่อ用神ตามตำรา ไม่เปลี่ยน logic เดิม */
   if (packet.yongShenProtocols?.tag === "HK_YONGSHEN_PROTOCOL_SPLIT_V1") {
     const yp = packet.yongShenProtocols;
