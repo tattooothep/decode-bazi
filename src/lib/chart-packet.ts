@@ -17,6 +17,7 @@ import type { buildChartExtensions } from "./chart-extensions";
 import { buildConceptionPalace, buildLifePalace, buildBodyPalace, buildSiLing, buildMinorLuck } from "./chart-table";
 import { getDaymasterProfile } from "./daymaster-profile";
 import { buildHehuaVerdicts, type HehuaVerdict } from "./bazi-hehua-resolver";
+import { buildTransitHehua, buildCrossLayerCombos, type TransitHehuaHit, type CrossLayerComboHit } from "./bazi-transit-crosslayer";
 import { buildMukuStates, buildMukuTransitStates, type MukuState, type MukuTransitInput, type MukuTransitState } from "./bazi-muku-state";
 import { auditStrictGeJuFromMonth, type StrictGeJuAudit } from "./bazi-strict-geju-audit";
 import { resolveXch, type XchResolution } from "./bazi-xch-resolver";
@@ -464,6 +465,9 @@ export type ChartPacket = {
   /** 天干五合 verdict v1 · หลักฐานกลไกเสริมสำหรับ AI Sifu
    * ใช้บอกว่า 合 นี้แปร/ไม่แปร/มีตัวแย่ง/ตัวคั่นอย่างไร · ไม่ใช่กรอบจำกัดสไตล์คำตอบ */
   hehuaVerdicts?: HehuaVerdict[];
+  /* HK_CROSSLAYER_V1 (12 มิ.ย.) · ฮะก้านจร五合 + กิ่งจรเติมโครง刑/合/會/庫 ข้ามชั้น (เคส Swit · ปลดจุดบอดกฎ 3.6) */
+  transitHehua?: TransitHehuaHit[];
+  crossLayerCombos?: CrossLayerComboHit[];
   /** 墓庫 state v1 · หลักฐานกลไกเสริมสำหรับ AI Sifu
    * ใช้บอกว่าคลัง 辰戌丑未 ปิด/เปิดแล้วหนุน/ต้าน/ปนอย่างไร · ไม่ใช่ full resolver และไม่ใช่กรอบจำกัดสไตล์คำตอบ */
   mukuStates?: MukuState[];
@@ -2045,6 +2049,24 @@ export function buildStructuredChartPacket(
     annualPillar: { stem: cyp?.stem || "-", branch: cyp?.branch || "-" },
     interactions: { status: interactionStatus, raw },
     hehuaVerdicts: buildHehuaVerdicts(calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>),
+    /* HK_CROSSLAYER_V1 · ใช้เฉพาะเสา active (3p ไม่มีเสายาม → ไม่เอายามเข้าคำนวณ กันเดายาม) */
+    transitHehua: buildTransitHehua({
+      natalStems: activePillarKeys
+        .map((k) => ({ ref: PILLAR_EN_TH[k] || k, stem: calc.pillars[k]?.stem || "", isDayMaster: k === "day" }))
+        .filter((x) => !!x.stem && x.stem !== "-"),
+      monthBranch: calc.pillars.month?.branch || null,
+      transits: [
+        ...(currentLuck ? [{ label: `วัยจร${currentLuck.stem}${currentLuck.branch}`, stem: currentLuck.stem }] : []),
+        ...((transitDrilldown?.currentDecade?.years || []).map((y) => ({ label: `ปีจร${y.year}(${y.pillar.stem}${y.pillar.branch})`, stem: y.pillar.stem }))),
+      ],
+    }),
+    crossLayerCombos: buildCrossLayerCombos({
+      natalBranches: activePillarKeys
+        .map((k) => ({ ref: PILLAR_EN_TH[k] || k, branch: calc.pillars[k]?.branch || "" }))
+        .filter((x) => !!x.branch && x.branch !== "-"),
+      luck: currentLuck ? { label: `วัยจร${currentLuck.stem}${currentLuck.branch}`, branch: currentLuck.branch } : null,
+      years: (transitDrilldown?.currentDecade?.years || []).map((y) => ({ year: y.year, branch: y.pillar.branch })),
+    }),
     mukuStates,
     xchResolution: resolveXch({
       pillars: calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
@@ -2381,7 +2403,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       ? ` · คำถามเฉลยชีวิต (ใช้ถามลูกค้าเพื่อยืนยันสำนัก · เลือกช่วงที่ผ่านมาแล้วเท่านั้น): "${_dsAgeTxt}(วัยจร ${_dsTest.stem}${_dsTest.branch} ธาตุ${elementTh(_dsTest.element)}) ชีวิตคุณรุ่งหรือฝืด?" → ${_dsSchoolA.includes(_dsTest.element) ? "รุ่ง=สาย①順勢(ยืนยันชุด engine) · ฝืด=สาย②扶抑" : "รุ่ง=สาย②扶抑 · ฝืด=สาย①順勢(ยืนยันชุด engine)"}`
       : "";
     lines.push(
-      `⚖️ ดวงก้ำกึ่ง 2 สำนัก (${packet.structure.label} · 假從=ตำราเองไม่ฟันธง 100%): ` +
+      `⚖️ ดวงก้ำกึ่ง 2 สำนัก (${packet.structure.label} · 假從=ตำราเองไม่ฟันธงเต็มร้อย): ` +
       `สำนัก①順勢ตามกระแส(滴天髓 · engine ให้น้ำหนักทางนี้): ธาตุดี=${fmtEls(_dsSchoolA)} / ระวัง=${fmtEls(_dsSchoolB)} (從格忌印比·ฝืนพยุง=สวนกระแส) · ` +
       `สำนัก②扶抑พยุงตัว(子平真詮 透印不從): ธาตุดี=${fmtEls(_dsSchoolB)} / ระวัง=${fmtEls(_dsSchoolA.filter((e) => !_dsSchoolB.includes(e)))} · ` +
       `กฎซินแสสำหรับดวงนี้: (ก)เมื่อพูดเรื่องธาตุช่วย/แนวทางชีวิต ให้บอกลูกค้าตรงๆ ว่าดวงนี้ตำราอ่านได้ 2 ทาง พร้อมสรุปทั้งสองมุมสั้นๆ ` +
@@ -2435,6 +2457,31 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* ธาตุรวม (level key เท่านั้น · ไม่มี %) */
   const c = packet.elementProfile.counts;
   lines.push(`ธาตุรวม: ไม้ ${c.wood} · ไฟ ${c.fire} · ดิน ${c.earth} · ทอง ${c.metal} · น้ำ ${c.water} · กำลังตัวตนระดับ ${packet.elementProfile.voytekLevel} (ห้ามพูดตัวเลขเปอร์เซ็นต์)`);
+  /* HK_CLIMATE_FLAG_V1 (B3 · เคส Swit 12 มิ.ย.) — ชูเหตุผลอากาศดวง: climate จาก engine (wrapper-5 เดิม) + ฤดูเดือนเกิด + น้ำหนักธาตุปรับ
+   * กันซินแสอ่านธาตุ調候เป็นแค่สิบเทพ (เช่น ไฟ=เงินเฉยๆ) ทั้งที่เป็นตัวปลุกทั้งดวง · ร้อยของที่มีอยู่ ไม่คำนวณศาสตร์ใหม่ */
+  {
+    const SEASON_TH: Record<string, string> = {
+      寅: "ต้นใบไม้ผลิ(孟春)", 卯: "กลางใบไม้ผลิ(仲春)", 辰: "ปลายใบไม้ผลิ(季春)",
+      巳: "ต้นร้อน(孟夏)", 午: "กลางร้อน(仲夏)", 未: "ปลายร้อน(季夏)",
+      申: "ต้นใบไม้ร่วง(孟秋)", 酉: "กลางใบไม้ร่วง(仲秋)", 戌: "ปลายใบไม้ร่วง(季秋)",
+      亥: "ต้นหนาว(孟冬)", 子: "กลางหนาว(仲冬)", 丑: "ปลายหนาว(季冬)",
+    };
+    const CL_TH: Record<string, string> = { cold: "เย็นจัด(寒)", damp: "ชื้นหนัก(濕)", scorched: "ร้อนจัด(燥熱)", dry: "แห้งจัด(燥)" };
+    const _clKey = packet.yongShenProtocols?.tiaoHou?.climate || "";
+    const _clReg = packet.yongShenProtocols?.tiaoHou?.regulator || null;
+    const _clMb = packet.pillars.find((p) => p.key === "month")?.branch || "";
+    if (CL_TH[_clKey] && _clReg) {
+      const _regCnt = (c as Record<string, number>)[_clReg] ?? 0;
+      const _total = (c.wood || 0) + (c.fire || 0) + (c.earth || 0) + (c.metal || 0) + (c.water || 0);
+      const _weak = _total > 0 && _regCnt < _total / 5;
+      lines.push(
+        `⚠️ อากาศดวง (調候 · สำคัญระดับโครง): เกิด${SEASON_TH[_clMb] || `เดือน${_clMb}`} · engine ระบุดวง${CL_TH[_clKey]} → ธาตุปรับ=${fmtEls([_clReg])} น้ำหนักในผัง ${_regCnt} จากธาตุรวมทั้งหมด ${_total}` +
+        (_weak
+          ? ` — ธาตุปรับต่ำกว่าค่าเฉลี่ย 5 ธาตุ: มิติ調候คือแกนของดวงนี้ ให้อ่าน${fmtEls([_clReg])}เป็น "ตัวปลุกให้ทั้งดวงมีชีวิต/ขยับ" ก่อนค่อยอ่านเป็นสิบเทพประจำธาตุ (เช่น ดวงเย็นจัด ไฟไม่ใช่แค่เงิน แต่คือความอบอุ่นที่ทำให้ทองน้ำในดวงทำงาน)`
+          : ` — ธาตุปรับมีกำลังพอใช้ อ่าน調候ประกอบตามปกติ`),
+      );
+    }
+  }
 
   /* ช่องว่างของดวง */
   lines.push(`ช่องว่างของดวง: 日旬空(ฐานวัน)=${packet.kongWang.dayVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"} · 年旬空(ฐานปี)=${packet.kongWang.yearVoids.map((b) => BRANCH_TH_NAME[b] || b).join("/") || "-"} · 空亡เป็นข้อมูลรอง ต้องอ่านคู่กับ用神/冲合/填實`);
@@ -2682,6 +2729,27 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       return `${v.pair}(${pairTxt}) → ${v.verdictZh}/${v.finalVerdict} · ${v.thaiSummary} · ${confidenceTh}${rules}`;
     });
     lines.push(`ข้อมูลเสริมก้านฟ้า五合 (hehuaVerdicts · หลักฐานเสริม): ${items.join(" · ")} · ใช้ประกอบการอ่านร่วมกับ用神/忌神 วัยจร ปีจร และคำถามจริง · ไม่ลดอิสระการอ่านของซินแส`);
+  }
+  /* HK_CROSSLAYER_V1 — ฮะก้านจร + กิ่งจรเติมโครงข้ามชั้น (precompute · เคส Swit 12 มิ.ย.)
+   * ปล่อยทั้งกรณี "พบ" และ "ตรวจแล้วไม่พบ" — ให้ AI ยืนยันได้ทั้งสองทาง ไม่ต้องเดินมือ/ไม่ต้องเดา */
+  /* ขอบเขตตรวจตามจริง: 3p ไม่มี drilldown ปีจร → ห้ามอ้างว่า "ตรวจปีจร 10 ปีแล้ว" (Codex blocking finding · 12 มิ.ย.) */
+  const _xlHasYears = !!packet.transitDrilldown?.currentDecade?.years?.length;
+  const _xlScopeTxt = _xlHasYears ? "วัยจรปัจจุบัน+ปีจร 10 ปีรอบวัยจรนี้" : "วัยจรปัจจุบัน (ปีจรรายปียังไม่ถูกตรวจ — ดวงนี้ไม่มี drilldown ปีจร ห้ามอ้างว่าตรวจปีจรแล้ว)";
+  if (packet.transitHehua !== undefined) {
+    if (packet.transitHehua.length) {
+      const items = packet.transitHehua.map((h) => `${h.pair}(${h.transitLabel}↔${h.natalRefs.join(",")}) → ${h.verdict} · ${h.noteTh}`);
+      lines.push(`ฮะก้านจร五合 ข้ามชั้น (transitHehua · precompute · ใช้ตามกฎ 3.7ก · ขอบเขตที่ตรวจ: ${_xlScopeTxt}): ${items.join(" ◆ ")}`);
+    } else {
+      lines.push(`ฮะก้านจร五合 ข้ามชั้น (transitHehua): ตรวจก้าน${_xlScopeTxt}กับก้านเกิดทุกเสาแล้ว — ไม่พบคู่五合`);
+    }
+  }
+  if (packet.crossLayerCombos !== undefined) {
+    if (packet.crossLayerCombos.length) {
+      const items = packet.crossLayerCombos.map((h) => h.noteTh);
+      lines.push(`ปฏิกิริยาข้ามชั้น วัยจร+ปีจร+ดวงเกิด (crossLayerCombos · precompute · packet ปล่อย type แล้ว = อ้างได้เต็ม ไม่ติดกฎ 3.6 · ขอบเขตที่ตรวจ: ${_xlScopeTxt}): ${items.join(" ◆ ")} · น้ำหนัก: โครงที่พึ่งกิ่งจร = มีผลเฉพาะช่วงเวลานั้น อ่านร่วม用神/忌神 ตำแหน่งเรือน และคำถามจริง`);
+    } else {
+      lines.push(`ปฏิกิริยาข้ามชั้น วัยจร+ปีจร+ดวงเกิด (crossLayerCombos): ตรวจ${_xlScopeTxt}แล้ว — ไม่พบโครง 刑/三合/三會/四庫 ที่กิ่งจรมาเติมครบชุด`);
+    }
   }
   if (packet.mukuStates?.length) {
     const items = packet.mukuStates.map((v) => {
