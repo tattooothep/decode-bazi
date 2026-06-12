@@ -468,6 +468,13 @@ export type ChartPacket = {
   /* HK_CROSSLAYER_V1 (12 มิ.ย.) · ฮะก้านจร五合 + กิ่งจรเติมโครง刑/合/會/庫 ข้ามชั้น (เคส Swit · ปลดจุดบอดกฎ 3.6) */
   transitHehua?: TransitHehuaHit[];
   crossLayerCombos?: CrossLayerComboHit[];
+  /* HK_PACKET_FILL_V1 (12 มิ.ย.) · เติมของที่หน้าดวงคำนวณแล้วแต่ packet ไม่เคยส่ง (เจ้านายสั่ง: ตารางปีจรทั้งชีวิต+เรือนคู่+14 ดาว) */
+  lifeAnnualPillars?: Array<{ year: number; age: number; stem: string; branch: string }>;
+  spousePalace?: {
+    dayBranch: string; partnerElementTh: string; hiddenStems: string[];
+    partnerTraitsTh: string; relationshipFlags: string[];
+  } | null;
+  personalStars?: Array<{ starZh: string; pillarTh: string; labelTh: string; descTh: string }>;
   /** 墓庫 state v1 · หลักฐานกลไกเสริมสำหรับ AI Sifu
    * ใช้บอกว่าคลัง 辰戌丑未 ปิด/เปิดแล้วหนุน/ต้าน/ปนอย่างไร · ไม่ใช่ full resolver และไม่ใช่กรอบจำกัดสไตล์คำตอบ */
   mukuStates?: MukuState[];
@@ -2067,6 +2074,25 @@ export function buildStructuredChartPacket(
       luck: currentLuck ? { label: `วัยจร${currentLuck.stem}${currentLuck.branch}`, branch: currentLuck.branch } : null,
       years: (transitDrilldown?.currentDecade?.years || []).map((y) => ({ year: y.year, branch: y.pillar.branch })),
     }),
+    /* HK_PACKET_FILL_V1 · จาก engine ที่คำนวณอยู่แล้ว (liu_nian_timeline/spouse_palace/personal_stars) · ไม่คำนวณใหม่ */
+    lifeAnnualPillars: (ext.liu_nian_timeline || [])
+      .filter((e) => e.age >= 0 && e.age <= 90)
+      .map((e) => ({ year: e.year, age: e.age, stem: e.pillar.stem, branch: e.pillar.branch })),
+    spousePalace: ext.spouse_palace ? {
+      dayBranch: ext.spouse_palace.day_branch,
+      partnerElementTh: ext.spouse_palace.partner_element_th,
+      hiddenStems: ext.spouse_palace.hidden_stems || [],
+      partnerTraitsTh: ext.spouse_palace.partner_traits_th || "",
+      relationshipFlags: ext.spouse_palace.relationship_flags || [],
+    } : null,
+    personalStars: (ext.personal_stars || [])
+      .map((s) => ({
+        starZh: s.star_zh,
+        pillarTh: s.pillar_th,
+        labelTh: s.label_th || "",
+        descTh: (s.desc_th || "").slice(0, 90),
+      }))
+      .filter((s) => s.labelTh || s.descTh),
     mukuStates,
     xchResolution: resolveXch({
       pillars: calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
@@ -2718,6 +2744,27 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     lines.push(`交運 จังหวะสลับวัยจร大運 (ปีที่เปลี่ยนวัยจร · ช่วงรอยต่อ交脫 ดวงไม่นิ่ง ต้องปรับตัว · ใช้จับจังหวะเปลี่ยนเกม): ${transitions.join(" · ")}${nextTxt}`);
   }
   lines.push(`ปีจรปัจจุบัน: ${STEM_TH[packet.annualPillar.stem] || packet.annualPillar.stem}/${BRANCH_TH_NAME[packet.annualPillar.branch] || packet.annualPillar.branch}`);
+  /* HK_PACKET_FILL_V1 · ตารางปีจรทั้งชีวิต — ปลดงานค้าง priority1 "AI ประกอบเสาปีนอกรอบเอง"
+   * เฉพาะโหมดเดี่ยว (includeTransitDrilldown) · group ตัดเพื่อคุมขนาดต่อคน */
+  if (includeTransitDrilldown && packet.lifeAnnualPillars?.length) {
+    const txt = packet.lifeAnnualPillars.map((y) => `${y.year}${y.stem}${y.branch}`).join(" ");
+    lines.push(`ตารางปีจรทั้งชีวิต (ก้าน-กิ่งจากระบบคำนวณ · ถามถึงปีใดนอกรอบเจาะลึก ให้คัดเสาปีจากตารางนี้ตัวต่อตัว ห้ามประกอบ/ทดเสาปีเอง · อ่านคู่กับ "วัยจรทั้งชีวิต" ว่าปีนั้นอยู่วัยจรไหนตามกฎ 3.5): ${txt}`);
+  }
+  /* HK_PACKET_FILL_V1 · เรือนคู่ 夫妻宮 จาก engine (เดิมหน้าดวงมีแต่ packet ไม่ส่ง) */
+  if (packet.spousePalace) {
+    const sp = packet.spousePalace;
+    lines.push(
+      `เรือนคู่ 夫妻宮 (日支 · จากระบบคำนวณ): กิ่งวัน=${BRANCH_TH_NAME[sp.dayBranch] || sp.dayBranch}(${sp.dayBranch}) · ธาตุดาวคู่=${sp.partnerElementTh || "-"} · ก้านซ่อนเรือนคู่=${sp.hiddenStems.join("/") || "-"}` +
+      `${sp.partnerTraitsTh ? ` · แนวโน้มลักษณะคู่=${sp.partnerTraitsTh}` : ""}` +
+      `${sp.relationshipFlags.length ? ` · ธงปฏิกิริยาแตะเรือนคู่: ${sp.relationshipFlags.join(" · ")}` : ""}` +
+      ` · ใช้ร่วมกับปฏิกิริยาที่แตะเสาวัน + 用神เรื่องคู่ · ไม่ใช่คำฟันธงสำเร็จ`,
+    );
+  }
+  /* HK_PACKET_FILL_V1 · ดาวประจำตัว 14 ชุด (Hourkey personal stars · เดิมหน้าดวงมีแต่ packet ไม่ส่ง) */
+  if (packet.personalStars?.length) {
+    const items = packet.personalStars.map((s) => `${s.starZh}@${s.pillarTh}${s.labelTh ? `=${s.labelTh}` : ""}${s.descTh ? `—${s.descTh}` : ""}`);
+    lines.push(`ดาวประจำตัว (Hourkey personal stars · เสริมจาก神煞รายเสา ไม่ซ้ำชุด): ${items.join(" ◆ ")}`);
+  }
 
   /* ปฏิกิริยาในดวง */
   lines.push(renderInteractionGroup("ปฏิกิริยาในดวง", packet.interactions.raw, packet.interactions.status));

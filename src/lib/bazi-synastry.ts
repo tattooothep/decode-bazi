@@ -123,8 +123,18 @@ const TRIO_LABEL: Record<"三合" | "三會", Record<string, string>> = {
   "三會": { th: "วงธาตุครบ·สามฮุ่ยทิศ(三會)", en: "Directional trinity(三會)", zh: "三會" },
 };
 const BANHE_LABEL: Record<string, string> = { th: "ครึ่งวงธาตุ(半合)", en: "Half-combine(半合)", zh: "半合" };
-/* A · ลำดับน้ำหนักแสดงผล (任鐵樵: 三合/三會 แรงสุด > 六合/六冲 > 天干五合緣 > 半合 > 害·破อ่อน) · เรียง hit ก่อน join ให้ AI อ่านน้ำหนักถูก */
-const SYN_W: Record<string, number> = { "三合": 10, "三會": 11, "六合": 20, "六沖": 21, "天干五合": 30, "半合": 40, "六害": 50, "六破": 51 };
+/* เฟส 3 (12 มิ.ย. · เจ้านายเคาะ) · 暗合 ฮะลับ — ชุดอนุรักษ์ 3 คู่ (寅丑·午亥·卯申 · ก้านซ่อนจับ五合กันหลายคู่: 寅丑=甲己+丙辛+戊癸 · 午亥=丁壬+己甲 · 卯申=乙庚)
+ * raw ผูกพันเงียบ(緣ลับ) · ไม่ฟัน化 · น้ำหนักเบากว่า害破 · ชุดขยาย (子戌/巳酉ฯ) ตำราไม่ลงรอย = ไม่ใส่
+ * 拱 โอบกิ่งว่าง — คู่ขอบของ三合ที่ขาดตัวกลาง (申辰拱子·寅戌拱午·亥未拱卯·巳丑拱酉) · เงื่อนไข虛拱แท้: ตัวกลางต้องไม่อยู่ในผังทั้งสองคน
+ * ตำราถกเถียง(拱虛) → น้ำหนักเบาสุด + ป้ายบอกชัด */
+const SYN_ANHE: Array<[string, string]> = [["寅", "丑"], ["午", "亥"], ["卯", "申"]];
+const ANHE_LABEL: Record<string, string> = { th: "ฮะลับ(暗合)·ผูกพันเงียบ", en: "Hidden-combine(暗合)·quiet bond", zh: "暗合·暗緣" };
+const SYN_GONG: Array<{ pair: [string, string]; mid: string; el: string }> = [
+  { pair: ["申", "辰"], mid: "子", el: "water" }, { pair: ["寅", "戌"], mid: "午", el: "fire" },
+  { pair: ["亥", "未"], mid: "卯", el: "wood" }, { pair: ["巳", "丑"], mid: "酉", el: "metal" },
+];
+/* A · ลำดับน้ำหนักแสดงผล (任鐵樵: 三合/三會 แรงสุด > 六合/六冲 > 天干五合緣 > 半合 > 害·破อ่อน > 暗合 > 拱เบาสุด) · เรียง hit ก่อน join ให้ AI อ่านน้ำหนักถูก */
+const SYN_W: Record<string, number> = { "三合": 10, "三會": 11, "六合": 20, "六沖": 21, "天干五合": 30, "半合": 40, "六害": 50, "六破": 51, "暗合": 55, "拱": 60 };
 /* generic "เสาก้ำกึ่ง" (ใช้ทั้ง month節氣 + year立春) · ไม่ผูกชื่อเสา (label เสาอยู่ใน hit string แล้ว) */
 const BORDER_TAG: Record<string, string> = {
   th: " ⚠️[ขึ้นกับเวลาเกิด·เสาก้ำกึ่ง]", en: " ⚠️[depends on birth time·borderline pillar]", zh: " ⚠️[視出生時辰·柱臨界]",
@@ -214,6 +224,28 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
                   hits.push({ w: SYN_W["半合"], s: `${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${BANHE_LABEL[L]}·${elName[ban]}${tagFor(ka, kb, va, vb)}` });
                 }
               }
+              /* เฟส 3 · 暗合 ฮะลับ (raw緣 · เบากว่า害破 · ไม่ฟัน化) */
+              if (SYN_ANHE.some(([x, y]) => (x === ba && y === bb) || (x === bb && y === ba))) {
+                const key = `a:${[ba, bb].sort().join("")}`;
+                if (!seen.has(key)) {
+                  seen.add(key);
+                  hits.push({ w: SYN_W["暗合"], s: `${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${ANHE_LABEL[L]}${tagFor(ka, kb, va, vb)}` });
+                }
+              }
+              /* เฟส 3 · 拱 โอบกิ่งว่าง (虛拱แท้: ตัวกลางห้ามอยู่ในผังทั้งสองคน) · ตำราถกเถียง → เบาสุด+ป้ายชัด */
+              const gong = SYN_GONG.find((gx) => (gx.pair[0] === ba && gx.pair[1] === bb) || (gx.pair[0] === bb && gx.pair[1] === ba));
+              if (gong && !aBr.includes(gong.mid) && !bBr.includes(gong.mid)) {
+                const key = `g:${[ba, bb].sort().join("")}`;
+                if (!seen.has(key)) {
+                  seen.add(key);
+                  const gTxt = L === "en"
+                    ? `Embrace(拱) virtual ${gong.mid} — debated in classics · weakest weight`
+                    : L === "zh"
+                    ? `拱虛${gong.mid} — 典籍有爭議·權重最輕`
+                    : `โอบกิ่งว่าง(拱) ${bN(gong.mid)}(${gong.mid})·虛拱 — ตำราถกเถียง·น้ำหนักเบาสุด`;
+                  hits.push({ w: SYN_W["拱"], s: `${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${gTxt}${tagFor(ka, kb, va, vb)}` });
+                }
+              }
               const sa = va.pillar.stem, sb = vb.pillar.stem;
               const combo = STEM_FIVE_HE[sa];
               if (combo && combo.partner === sb) {
@@ -262,10 +294,10 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
   const names = valid.map((p) => p.name || "?").join(", ");
   const shown = lines.length;
   const title = L === "en"
-    ? `━━━ Cross-person reactions (synastry) — CLOSED LIST. Compared ALL ${totalPairs} pair(s) among ${M} people [${names}], using each one's 日月年時 pillars (時 only if birth time known · stems+branches: 六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合). Below are ONLY the ${shown} pair(s) with a prominent reaction. Any pair NOT listed = checked and has NO prominent cross-person reaction (a conclusion, NOT "unchecked"). DO NOT create or infer 合/冲/破/害/三合/三會/半合/天干五合 for any person/pair not in this list. (Each single person's in-chart interactions → read in full per the interaction classic; CROSS-PERSON → only this list.) WEIGHT (任鐵樵): 三合/三會 strong > 六合/六冲 > 害·破 weak (削之可也/不經). 天干五合 cross-person = affinity/bond (緣), good-or-bad depends on each one's 用神 — NOT a 化氣格; do NOT declare 化木/化X (keep stems' original elements; 化 is judged only per each person's own 月令). 合 not always good / 冲 not always bad — weigh against each one's 用神/role, state direction/outcome plainly; only forbidden: 'commanding' break-up/no-contact. ━━━`
+    ? `━━━ Cross-person reactions (synastry) — CLOSED LIST. Compared ALL ${totalPairs} pair(s) among ${M} people [${names}], using each one's 日月年時 pillars (時 only if birth time known · stems+branches: 六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合 + 暗合/拱虛). Below are ONLY the ${shown} pair(s) with a prominent reaction. Any pair NOT listed = checked and has NO prominent cross-person reaction (a conclusion, NOT "unchecked"). DO NOT create or infer 合/冲/破/害/三合/三會/半合/天干五合 for any person/pair not in this list. (Each single person's in-chart interactions → read in full per the interaction classic; CROSS-PERSON → only this list.) WEIGHT (任鐵樵): 三合/三會 strong > 六合/六冲 > 害·破 weak (削之可也/不經) > 暗合/拱 lightest (拱 is debated in classics — mention only as light nuance). 天干五合 cross-person = affinity/bond (緣), good-or-bad depends on each one's 用神 — NOT a 化氣格; do NOT declare 化木/化X (keep stems' original elements; 化 is judged only per each person's own 月令). 合 not always good / 冲 not always bad — weigh against each one's 用神/role, state direction/outcome plainly; only forbidden: 'commanding' break-up/no-contact. ━━━`
     : L === "zh"
-    ? `━━━ 跨人互動 (synastry) — 封閉清單。已比對 ${M} 人 [${names}] 全部 ${totalPairs} 組配對（各取 日月年時柱·干支〔時僅限知時辰者〕：六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合）。下列僅為有顯著互動的 ${shown} 組；未列出之配對＝已比對且無顯著跨人互動（此為結論，非「未檢查」）。禁止為清單外之任何人／配對推衍 合/冲/破/害/三合/三會/半合/天干五合。（各人命盤內部互動→依互動經典完整判讀；跨人→僅限本清單。）輕重(任鐵樵)：三合/三會強 > 六合/六冲 > 害·破弱(削之可也/不經)。天干五合跨人＝緣/相吸，吉凶視各自用神 — 非化氣格；勿斷化木/化X（保留干之本氣；化須依各自月令判）。合不必吉 / 冲不必凶 — 結合各自用神/角色，可直斷方向/結果；僅禁命令式分手/勿往來。━━━`
-    : `━━━ ปฏิกิริยาข้ามคน (synastry) — ลิสต์ปิด (เช็คครบแล้ว) · เทียบครบทุกคู่ ${totalPairs} คู่ จาก ${M} คน [${names}] โดยใช้เสา 日月年時 (時เฉพาะคนรู้เวลาเกิด · ก้าน+กิ่ง: 六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合) · ด้านล่างขึ้นเฉพาะ ${shown} คู่ที่มีปฏิกิริยาเด่น · คู่ที่ไม่อยู่ในลิสต์ = เช็คแล้วไม่มีปฏิกิริยาข้ามคนเด่น (เป็นข้อสรุป ไม่ใช่ "ยังไม่เช็ค") · ห้ามสร้าง/สันนิษฐาน 合/冲/破/害/三合/三會/半合/天干五合 ให้คน/คู่ที่ไม่อยู่ในลิสต์นี้ · (ปฏิกิริยาภายในดวงเดี่ยว → อ่านเต็มตามคัมภีร์ · ข้ามคน → เฉพาะลิสต์นี้) · ลำดับน้ำหนัก(任鐵樵): 三合/三會 แรง > 六合/六冲 > 害·破 อ่อน(削之可也/不經) · 天干五合ข้ามคน = ดึงดูด/ผูกพัน(緣) ดี-ร้ายขึ้นกับ用神แต่ละคน — ไม่ใช่化氣格 · ห้ามประกาศ化木/化X (คงธาตุก้านเดิม · การ化ต้องดู月令ของแต่ละคนเอง) · 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ — ดูที่用神/บทบาท ฟันธงทิศ/ผลได้ · ห้ามเฉพาะ 'สั่งการ' เลิก/คบ ━━━`;
+    ? `━━━ 跨人互動 (synastry) — 封閉清單。已比對 ${M} 人 [${names}] 全部 ${totalPairs} 組配對（各取 日月年時柱·干支〔時僅限知時辰者〕：六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合 + 暗合/拱虛）。下列僅為有顯著互動的 ${shown} 組；未列出之配對＝已比對且無顯著跨人互動（此為結論，非「未檢查」）。禁止為清單外之任何人／配對推衍 合/冲/破/害/三合/三會/半合/天干五合。（各人命盤內部互動→依互動經典完整判讀；跨人→僅限本清單。）輕重(任鐵樵)：三合/三會強 > 六合/六冲 > 害·破弱(削之可也/不經) > 暗合/拱最輕（拱有爭議·僅作輕微補充）。天干五合跨人＝緣/相吸，吉凶視各自用神 — 非化氣格；勿斷化木/化X（保留干之本氣；化須依各自月令判）。合不必吉 / 冲不必凶 — 結合各自用神/角色，可直斷方向/結果；僅禁命令式分手/勿往來。━━━`
+    : `━━━ ปฏิกิริยาข้ามคน (synastry) — ลิสต์ปิด (เช็คครบแล้ว) · เทียบครบทุกคู่ ${totalPairs} คู่ จาก ${M} คน [${names}] โดยใช้เสา 日月年時 (時เฉพาะคนรู้เวลาเกิด · ก้าน+กิ่ง: 六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合 + 暗合/拱虛) · ด้านล่างขึ้นเฉพาะ ${shown} คู่ที่มีปฏิกิริยาเด่น · คู่ที่ไม่อยู่ในลิสต์ = เช็คแล้วไม่มีปฏิกิริยาข้ามคนเด่น (เป็นข้อสรุป ไม่ใช่ "ยังไม่เช็ค") · ห้ามสร้าง/สันนิษฐาน 合/冲/破/害/三合/三會/半合/天干五合 ให้คน/คู่ที่ไม่อยู่ในลิสต์นี้ · (ปฏิกิริยาภายในดวงเดี่ยว → อ่านเต็มตามคัมภีร์ · ข้ามคน → เฉพาะลิสต์นี้) · ลำดับน้ำหนัก(任鐵樵): 三合/三會 แรง > 六合/六冲 > 害·破 อ่อน(削之可也/不經) > 暗合/拱 เบาสุด (拱ตำราถกเถียง ใช้เป็นสีสันเสริมเท่านั้น) · 天干五合ข้ามคน = ดึงดูด/ผูกพัน(緣) ดี-ร้ายขึ้นกับ用神แต่ละคน — ไม่ใช่化氣格 · ห้ามประกาศ化木/化X (คงธาตุก้านเดิม · การ化ต้องดู月令ของแต่ละคนเอง) · 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ — ดูที่用神/บทบาท ฟันธงทิศ/ผลได้ · ห้ามเฉพาะ 'สั่งการ' เลิก/คบ ━━━`;
   /* 31 พ.ค. what-if · มีคนก้ำกึ่ง節氣 → ลิสต์ "คำนวณทั้ง 2 ฝั่ง" ให้แล้ว (เสาหลัก engine + เสา alt ติดธง [ถ้าเกิดอีกฝั่ง])
    * → AI อ่าน hit ทั้ง 2 ฝั่งได้ตรงๆ (ไม่ต้องเดาเอง) · hit ติดธง alt = มีเฉพาะถ้าเกิดอีกฝั่งของ節氣 · ส่วนเสาวัน(日)แน่นอน */
   const anyBorderline = valid.some((p) => !!p.monthBorderline || !!p.yearBorderline);
