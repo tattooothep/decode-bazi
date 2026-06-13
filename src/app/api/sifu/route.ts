@@ -22,7 +22,7 @@ import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } fr
 import { boundaryWarning3p, monthPillarBoundary } from "@/lib/bazi-boundary";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
-import { extractTraceFacts, parseTraceLine, stripTraceLine, validateTrace } from "@/lib/sifu-trace-lock";
+import { extractTraceFacts, parseTraceLine, stripTraceLine, validateTrace, parseClaimedSources } from "@/lib/sifu-trace-lock";
 import { checkSifuEvidenceTrace } from "@/lib/sifu-evidence-trace";
 import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
@@ -519,6 +519,8 @@ type SifuSourceShadowAuditInput = {
   message: string;
   history: Msg[];
   prompt: string | null;
+  /* ⟦SRC⟧ self-report (13 มิ.ย.): เล่มที่ AI อ้างว่าใช้ + ส่วนที่ตอบจากความรู้เทรน · parse จากบรรทัด TRACE */
+  claimedSrc?: { books: string[]; trained: string | null } | null;
 };
 
 function shadowAuditMode(mode?: string): "single" | "intro" {
@@ -589,6 +591,15 @@ function scheduleSifuSourceShadowAudit(input: SifuSourceShadowAuditInput): void 
         packetHash: hashes.packetHash,
         cached: input.cached,
       });
+      if (input.claimedSrc) {
+        /* self-report จากบรรทัด TRACE (⟦SRC⟧): เล่มที่ AI อ้างว่าใช้ + ส่วนที่ตอบจากความรู้เทรน · proofLevel=claim_only ตามชนิดเดิม */
+        plan.candidate.sourceAudit.modelClaimedUsed = {
+          present: true,
+          proofLevel: "claim_only",
+          sourceIds: input.claimedSrc.books,
+          raw: input.claimedSrc.trained ? `เทรน=${input.claimedSrc.trained}` : undefined,
+        };
+      }
       logSifuSourceAuditSafe({ session: input.session, req: input.req, record: plan.candidate.sourceAudit });
     } catch (e) {
       console.warn("[sifu-source-shadow-audit] skipped:", e instanceof Error ? e.message : e);
@@ -1752,6 +1763,7 @@ export async function POST(req: Request) {
                 model: sifuModel,
                 cached: false,
                 profileId,
+                claimedSrc: parseClaimedSources(idBuf),
                 ctx,
                 message,
                 history,
@@ -1847,6 +1859,7 @@ export async function POST(req: Request) {
       model: sifuModel,
       cached: false,
       profileId,
+      claimedSrc: parseClaimedSources(reply),
       ctx,
       message,
       history,
@@ -2191,6 +2204,7 @@ export async function GET(req: Request) {
             model: sifuModel,
             cached: false,
             profileId,
+            claimedSrc: parseClaimedSources(idBuf),
             ctx,
             message,
             history: [],

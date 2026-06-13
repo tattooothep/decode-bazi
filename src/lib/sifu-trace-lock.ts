@@ -55,7 +55,8 @@ export function extractTraceFacts(ctx: string): TraceFacts | null {
 
 /** หา + แกะบรรทัด TRACE จากช่วงหัวคำตอบ (อยู่บรรทัดไหนในช่วงต้นก็ได้ · ⟦⟧ ไม่โผล่ในเนื้อปกติ) */
 export function parseTraceLine(text: string): { cong: string; geju: string; yong: string } | null {
-  const m = text.match(/⟦TRACE⟧\s*從\s*=\s*([^·⟧\n]+)·\s*格局\s*=\s*([^·⟧\n]+)·\s*用神\s*=\s*([^⟧\n]+)⟧/);
+  /* ต้องเห็น ⟧ ปิดบรรทัดเสมอ (กัน stream ปล่อยก่อนบรรทัดมาครบ) · 用神 หยุดที่ · รองรับช่อง optional ·ตำรา=…·เทรน=…⟧ */
+  const m = text.match(/⟦TRACE⟧\s*從\s*=\s*([^·⟧\n]+)·\s*格局\s*=\s*([^·⟧\n]+)·\s*用神\s*=\s*([^·⟧\n]+?)(?:·[^⟧\n]*)?⟧/);
   if (!m) return null;
   return { cong: m[1].trim(), geju: m[2].trim(), yong: m[3].trim() };
 }
@@ -63,6 +64,19 @@ export function parseTraceLine(text: string): { cong: string; geju: string; yong
 /** ลบบรรทัด TRACE ก่อนส่งให้ user (อยู่ตำแหน่งไหนก็ลบ · ลบครั้งเดียว) */
 export function stripTraceLine(text: string): string {
   return text.replace(/(^|\n)[ \t]*⟦TRACE⟧[^⟧\n]*⟧[ \t]*\r?\n?/, "$1");
+}
+
+/* ⟦SRC⟧ ฝังท้ายบรรทัด TRACE (13 มิ.ย. · เจ้านายขอ): AI รายงานเองว่าใช้ตำราเล่มไหน + ส่วนไหนจากความรู้เทรน
+ * optional · ไม่ gate (self-report ตรวจเครื่องไม่ได้ → เก็บลง audit อย่างเดียว ไม่ตัดคำตอบ) */
+export type ClaimedSources = { books: string[]; trained: string | null };
+
+export function parseClaimedSources(text: string): ClaimedSources | null {
+  const m = text.match(/·\s*ตำรา\s*=\s*([^·⟧\n]*)(?:·\s*เทรน\s*=\s*([^⟧\n]*))?⟧/);
+  if (!m) return null;
+  const books = m[1].split("|").map((s) => s.trim()).filter((s) => s && s !== "-");
+  const trainedRaw = (m[2] || "").trim();
+  const trained = trainedRaw && !/^(ไม่มี|-|none)$/i.test(trainedRaw) ? trainedRaw : null;
+  return { books, trained };
 }
 
 export type TraceCheck = {
