@@ -2890,7 +2890,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   if (packet.profile) {
     if (packet.profile.daymaster) lines.push(`ตัวตนหลัก: ${packet.profile.daymaster}`);
     if (packet.profile.daymasterDeep) lines.push(`📿 ตัวตนเชิงลึก: ${packet.profile.daymasterDeep}`);
-    if (packet.profile.fiveStructure) lines.push(`🏗 โครง 5 ธาตุ: ${packet.profile.fiveStructure}`);
+    if (packet.profile.fiveStructure) lines.push(`🏗 โครง 5 ธาตุ: ${packet.profile.fiveStructure} — ⚠️ ภาพบุคลิกเชิงเปรียบเทียบเท่านั้น ไม่ใช่โครงดวง格局 ห้ามนำไปตั้งเป็น從格/專旺/格局ตัดสินชะตา (โครงจริงดูบรรทัด "โครงดวง:" เท่านั้น)`);
     if (packet.profile.careerIndustries?.length) lines.push(`💼 อาชีพที่เสริมดวง: ${packet.profile.careerIndustries.join(" · ")}`);
     if (packet.profile.health) lines.push(`🩺 สุขภาพ: ${packet.profile.health}`);
   }

@@ -22,6 +22,7 @@ import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } fr
 import { boundaryWarning3p, monthPillarBoundary } from "@/lib/bazi-boundary";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
+import { extractTraceFacts, parseTraceLine, stripTraceLine, validateTrace } from "@/lib/sifu-trace-lock";
 import { checkSifuEvidenceTrace } from "@/lib/sifu-evidence-trace";
 import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
@@ -1623,6 +1624,8 @@ export async function POST(req: Request) {
           const t0 = Date.now();
           /* identity-lock: buffer บรรทัดแรก (⟦ID⟧日干=X⟧) เทียบ 日干 · ผิด/ไม่มี=ตัด stream (ไม่ retry · master ให้ถามใหม่) */
           const expectedDM = extractExpectedDM(ctx);
+          /* trace-lock (13 มิ.ย. เคส潤下格): ดวงเดี่ยวบังคับบรรทัด ⟦TRACE⟧從·格局·用神⟧ เทียบกับบรรทัดโครงดวงจริง · intro ไม่มีกฎ TRACE → ข้าม */
+          const traceFacts = mode !== "intro" ? extractTraceFacts(ctx) : null;
           let idBuf = "", idChecked = false, idRejected = false;
           const safeClose = () => {
             if (closed) return;
@@ -1685,10 +1688,24 @@ export async function POST(req: Request) {
                 if (idBuf.length > 120) rejectId("no_id_line"); // AI ไม่ขึ้น ID line ในบรรทัดแรก
                 return; // ยังไม่ครบบรรทัด · ห้ามปล่อย chunk (buffer ต่อ · ไม่ block)
               }
+              /* trace-lock: ต้องเห็นบรรทัด ⟦TRACE⟧ ภายใน 3 บรรทัด/500 ตัวอักษรแรก ไม่งั้นตัด (เหมือน ID) */
+              if (traceFacts && !parseTraceLine(idBuf)) {
+                const nlCount = (idBuf.match(/\n/g) || []).length;
+                if (nlCount >= 3 || idBuf.length > 500) { rejectId("no_trace_line"); return; }
+                return; // buffer ต่อจนเจอ TRACE
+              }
               idChecked = true;
               const chk = validateIdentity(idBuf.slice(0, nl) + "\n", expectedDM);
               if (!chk.ok) { rejectId(chk.reason); return; }
-              const rest = sanitizePacketEvidenceClaims(idBuf.slice(nl + 1), ctx); // strip บรรทัด ID · ปล่อยเฉพาะเนื้อ
+              if (traceFacts) {
+                const tchk = validateTrace(idBuf, traceFacts);
+                if (!tchk.ok) {
+                  console.warn(`[sifu] trace ${tchk.reason} (got geju=${tchk.parsed?.geju || "-"} yong=${tchk.parsed?.yong || "-"} allow=${traceFacts.gejuTokens.join("/")})`);
+                  rejectId(`trace_${tchk.reason}`);
+                  return;
+                }
+              }
+              const rest = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(idBuf)), ctx); // strip ID+TRACE · ปล่อยเฉพาะเนื้อ
               if (rest) { full += rest; sendFirstOnce(); send("chunk", { text: rest }); }
               return;
             }
@@ -1792,15 +1809,22 @@ export async function POST(req: Request) {
     const t0 = Date.now();
     /* identity-lock: เทียบ 日干 ที่ AI echo กับ engine · ไม่ตรง=retry 1 ครั้ง → error (กันอ่านผิดคนละดวง) */
     const expectedDM = extractExpectedDM(ctx);
+    const traceFacts = mode !== "intro" ? extractTraceFacts(ctx) : null; // trace-lock (13 มิ.ย. เคส潤下格) · ดวงเดี่ยว Q&A เท่านั้น (intro ไม่มีกฎ TRACE)
     let reply = await runSifuCli(prompt, sifuModel);
     let idCheck = validateIdentity(reply, expectedDM);
-    if (!idCheck.ok) {
-      console.warn(`[sifu] identity ${idCheck.reason} (expect=${expectedDM} got=${idCheck.parsedDM}) · retry`);
+    let trCheck = validateTrace(reply, traceFacts);
+    if (!idCheck.ok || !trCheck.ok) {
+      console.warn(`[sifu] gate fail id=${idCheck.reason} trace=${trCheck.reason} (expect=${expectedDM} got=${idCheck.parsedDM} traceGeju=${trCheck.parsed?.geju || "-"}) · retry`);
       reply = await runSifuCli(prompt, sifuModel);
       idCheck = validateIdentity(reply, expectedDM);
+      trCheck = validateTrace(reply, traceFacts);
       if (!idCheck.ok) {
         console.error(`[sifu] identity FAIL after retry (expect=${expectedDM} got=${idCheck.parsedDM})`);
         return NextResponse.json({ error: "identity_mismatch" }, { status: 502 });
+      }
+      if (!trCheck.ok) {
+        console.error(`[sifu] trace FAIL after retry (${trCheck.reason} got=${trCheck.parsed?.geju || "-"}/${trCheck.parsed?.yong || "-"} allow=${traceFacts?.gejuTokens.join("/") || "-"})`);
+        return NextResponse.json({ error: "trace_mismatch" }, { status: 502 });
       }
     }
     /* HK_SIFU_EVIDENCE_TRACE_V1 — log-only · วัดว่าคำตอบดูดวงเดิน用神/ปฏิกิริยา/รากครบไหม (ไม่ retry/ไม่ block) */
@@ -1809,7 +1833,7 @@ export async function POST(req: Request) {
       evTrace = checkSifuEvidenceTrace(reply, message, !!expectedDM);
       if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (json) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
     } catch { /* log-only · ห้ามให้กระทบคำตอบ */ }
-    const cleanReply = sanitizePacketEvidenceClaims(stripIdLine(reply), ctx);
+    const cleanReply = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(reply)), ctx);
     const ms = Date.now() - t0;
     const payload = { reply: cleanReply, model: sifuModel };
     if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {}); // cache เฉพาะที่ผ่าน id-check แล้ว (ถึงบรรทัดนี้=ผ่าน)
@@ -2073,6 +2097,8 @@ export async function GET(req: Request) {
       let firstDeltaSeen = false;
       /* identity-lock (GET Q&A) · warmup/intro = engine สรุป → skip */
       const expectedDM = warmup ? null : extractExpectedDM(ctx);
+      /* trace-lock (13 มิ.ย. เคส潤下格) · ดวงเดี่ยวเท่านั้น (กลุ่ม/เทียบ=หลายโครงดวง → ข้ามอัตโนมัติ) */
+      const traceFacts = warmup ? null : extractTraceFacts(ctx);
       let idBuf = "", idChecked = false, idRejected = false;
       stopHeartbeat = startSifuHeartbeat(send, (pingCount) => {
         if (!firstDeltaSeen) return rotatingWaitingPhase(pingCount);
@@ -2108,10 +2134,24 @@ export async function GET(req: Request) {
           idBuf += text;
           const nl = idBuf.indexOf("\n");
           if (nl === -1) { if (idBuf.length > 120) rejectIdG("no_id_line"); return; }
+          /* trace-lock: ต้องเห็น ⟦TRACE⟧ ใน 3 บรรทัด/500 ตัวอักษรแรก */
+          if (traceFacts && !parseTraceLine(idBuf)) {
+            const nlCount = (idBuf.match(/\n/g) || []).length;
+            if (nlCount >= 3 || idBuf.length > 500) { rejectIdG("no_trace_line"); return; }
+            return; // buffer ต่อจนเจอ TRACE
+          }
           idChecked = true;
           const chk = validateIdentity(idBuf.slice(0, nl) + "\n", expectedDM);
           if (!chk.ok) { rejectIdG(chk.reason); return; }
-          const rest = sanitizePacketEvidenceClaims(idBuf.slice(nl + 1), ctx);
+          if (traceFacts) {
+            const tchk = validateTrace(idBuf, traceFacts);
+            if (!tchk.ok) {
+              console.warn(`[sifu] trace ${tchk.reason} (got geju=${tchk.parsed?.geju || "-"} yong=${tchk.parsed?.yong || "-"} allow=${traceFacts.gejuTokens.join("/")})`);
+              rejectIdG(`trace_${tchk.reason}`);
+              return;
+            }
+          }
+          const rest = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(idBuf)), ctx);
           if (rest) { full += rest; send("chunk", { text: rest }); if (!firstChunkSent) { firstMs = Date.now() - t0; send("first", { ms: firstMs }); firstChunkSent = true; } }
           return;
         }
