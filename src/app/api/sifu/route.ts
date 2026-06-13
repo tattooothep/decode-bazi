@@ -830,6 +830,24 @@ function sanitizePacketEvidenceClaims(reply: string, ctx: string): string {
   return reply.replace(PACKET_CLAIM_RE, "ข้อมูลที่มี");
 }
 
+function stripSifuInternalMarkersForStream(text: string): string {
+  return stripTraceLine(stripIdLine(text))
+    .replace(/(^|\n)[ \t]*⟦ID⟧[^\n]*(?:\n|$)/g, "$1")
+    .replace(/(^|\n)[ \t]*⟦TRACE⟧[^\n]*(?:\n|$)/g, "$1")
+    .replace(/⟦(?:ID|TRACE)⟧[^⟧\n]*(?:⟧)?/g, "");
+}
+
+function sanitizeSifuStreamVisible(text: string, ctx: string): string {
+  return sanitizePacketEvidenceClaims(stripSifuInternalMarkersForStream(text), ctx);
+}
+
+function buildSifuStreamGuardMeta(identity: string, trace: string) {
+  const cleanIdentity = identity === "pass" || identity === "not_required";
+  const cleanTrace = trace === "pass" || trace === "not_required";
+  const cacheable = cleanIdentity && cleanTrace;
+  return { identity, trace, degraded: !cacheable, cacheable };
+}
+
 type SifuContextCacheStatus = "hit" | "miss" | "skip";
 type SifuContextResult = { ctx: string; cache: SifuContextCacheStatus; fingerprint?: string };
 type SifuTimingBase = {
@@ -1518,6 +1536,7 @@ function spawnSifuStreaming(prompt: string, model: SifuModel) {
 /* Parser · แยก JSON line-by-line · ดึง text content จาก stream-json */
 function makeJsonlParser(onText: (text: string) => void) {
   let buf = "";
+  let emittedAny = false;
   const decoder = new StringDecoder("utf8");
   return (chunk: Buffer) => {
     buf += decoder.write(chunk);
@@ -1531,9 +1550,20 @@ function makeJsonlParser(onText: (text: string) => void) {
         // partial: { type:'stream_event', event:{type:'content_block_delta', delta:{type:'text_delta', text:'...'}} }
         // final:   { type:'assistant', message:{ content:[{type:'text', text:'...'}] } }
         if (obj.type === "stream_event" && obj.event?.type === "content_block_delta" && obj.event.delta?.type === "text_delta") {
+          emittedAny = true;
           onText(obj.event.delta.text);
         } else if (obj.type === "assistant" && Array.isArray(obj.message?.content)) {
-          // จะมาทีหลัง · skip เพราะ partial ส่งครบแล้ว
+          // compact/fast answers may arrive as final-only without partial deltas.
+          // Use it only when no partial text was emitted, otherwise it duplicates the whole answer.
+          if (!emittedAny) {
+            const finalText = obj.message.content
+              .map((part: { type?: string; text?: string }) => part?.type === "text" ? part.text || "" : "")
+              .join("");
+            if (finalText) {
+              emittedAny = true;
+              onText(finalText);
+            }
+          }
         }
       } catch (_) {
         // not JSON · skip
@@ -1583,6 +1613,7 @@ const SIFU_WAITING_PHASES = [
   "waiting_interactions",
   "waiting_reasoning",
 ];
+const SIFU_STREAM_GUARD_TIMEOUT_MS = 4500;
 
 function rotatingWaitingPhase(count: number): string {
   return SIFU_WAITING_PHASES[Math.max(0, count - 1) % SIFU_WAITING_PHASES.length];
@@ -1852,9 +1883,18 @@ export async function POST(req: Request) {
           /* trace-lock (13 มิ.ย. เคส潤下格): ดวงเดี่ยวบังคับบรรทัด ⟦TRACE⟧從·格局·用神⟧ เทียบกับบรรทัดโครงดวงจริง · intro ไม่มีกฎ TRACE → ข้าม */
           const traceFacts = mode !== "intro" ? extractTraceFacts(ctx) : null;
           let idBuf = "", idChecked = false, idRejected = false;
+          let streamIdentityResult = expectedDM ? "stream_pending" : "not_required";
+          let streamTraceResult = traceFacts ? "stream_pending" : "not_required";
+          let guardTimer: ReturnType<typeof setTimeout> | null = null;
+          const clearGuardTimer = () => {
+            if (!guardTimer) return;
+            clearTimeout(guardTimer);
+            guardTimer = null;
+          };
           const safeClose = () => {
             if (closed) return;
             closed = true;
+            clearGuardTimer();
             stopHeartbeat?.();
             try { controller.close(); } catch {}
           };
@@ -1870,7 +1910,7 @@ export async function POST(req: Request) {
           send("meta", { cached: false, key: key.slice(0, 8), model: sifuModel, startedAt: t0, timing: { ctxMs, promptMs, promptChars: prompt.length, contextCache } });
           stopHeartbeat = startSifuHeartbeat(send, (pingCount) => {
             if (!firstDeltaSeen) return rotatingWaitingPhase(pingCount);
-            if (expectedDM && !idChecked) return "identity_lock";
+            if (expectedDM && !idChecked) return "stream_guard";
             if (!firstChunkSent) return "waiting_visible_chunk";
             return "streaming";
           });
@@ -1901,8 +1941,40 @@ export async function POST(req: Request) {
             sendFirstOnce();
             send("chunk", { text });
           };
+          const releaseStreamGuard = (reason: string): string | null => {
+            if (idChecked || idRejected) return null;
+            clearGuardTimer();
+            const nl = idBuf.indexOf("\n");
+            const idCheck = validateIdentity(nl === -1 ? idBuf : idBuf.slice(0, nl) + "\n", expectedDM);
+            if (idCheck.reason === "dm_mismatch") {
+              console.error(`[sifu] stream identity dm_mismatch (expect=${expectedDM} got=${idCheck.parsedDM})`);
+              rejectId("dm_mismatch");
+              return null;
+            }
+            const traceCheck = validateTrace(idBuf, traceFacts);
+            streamIdentityResult = expectedDM ? (idCheck.ok ? "pass" : `stream_soft_${idCheck.reason}`) : "not_required";
+            streamTraceResult = traceFacts ? (traceCheck.ok ? "pass" : `stream_soft_${traceCheck.reason}`) : "not_required";
+            if (streamIdentityResult !== "pass" || (traceFacts && streamTraceResult !== "pass")) {
+              console.warn(`[sifu] stream guard soft-release reason=${reason} profile=${profileId || "-"} identity=${streamIdentityResult} trace=${streamTraceResult}`);
+            }
+            idChecked = true;
+            return sanitizeSifuStreamVisible(idBuf, ctx);
+          };
+          const scheduleStreamGuardTimeout = () => {
+            if (guardTimer || idChecked || idRejected) return;
+            guardTimer = setTimeout(() => {
+              guardTimer = null;
+              const startsInternal = /^\s*⟦(?:ID|TRACE)⟧/.test(idBuf);
+              const hasLineBreak = idBuf.includes("\n");
+              if (startsInternal && !hasLineBreak && !sanitizeSifuStreamVisible(idBuf, ctx).trim()) return;
+              const rest = releaseStreamGuard("timeout");
+              if (rest !== null) emitVisible(rest);
+            }, SIFU_STREAM_GUARD_TIMEOUT_MS);
+            (guardTimer as unknown as { unref?: () => void }).unref?.();
+          };
           const rejectId = (reason: string) => {
             idRejected = true;
+            clearGuardTimer();
             clearTimeout(killTimer);
             try { child.kill("SIGKILL"); } catch {}
             send("error", { error: "identity_mismatch", reason });
@@ -1914,33 +1986,23 @@ export async function POST(req: Request) {
             if (idRejected) return;
             if (expectedDM && !idChecked) {
               idBuf += text;
+              scheduleStreamGuardTimeout();
               const nl = idBuf.indexOf("\n");
-              if (nl === -1) {
-                if (idBuf.length > 120) rejectId("no_id_line"); // AI ไม่ขึ้น ID line ในบรรทัดแรก
-                return; // ยังไม่ครบบรรทัด · ห้ามปล่อย chunk (buffer ต่อ · ไม่ block)
+              if (nl !== -1) {
+                const chk = validateIdentity(idBuf.slice(0, nl) + "\n", expectedDM);
+                if (chk.reason === "dm_mismatch") { rejectId(chk.reason); return; }
               }
-              /* trace-lock: ต้องเห็นบรรทัด ⟦TRACE⟧ ภายใน 3 บรรทัด/500 ตัวอักษรแรก ไม่งั้นตัด (เหมือน ID) */
-              if (traceFacts && !parseTraceLine(idBuf)) {
-                const nlCount = (idBuf.match(/\n/g) || []).length;
-                if (nlCount >= 3 || idBuf.length > 500) { rejectId("no_trace_line"); return; }
-                return; // buffer ต่อจนเจอ TRACE
+              const hasTrace = !traceFacts || !!parseTraceLine(idBuf);
+              const visibleHead = sanitizeSifuStreamVisible(idBuf, ctx);
+              const nlCount = (idBuf.match(/\n/g) || []).length;
+              if (hasTrace || visibleHead.trim() || nlCount >= 3 || idBuf.length > 500) {
+                const rest = releaseStreamGuard(hasTrace ? "trace_seen" : "visible_or_limit");
+                if (rest !== null) emitVisible(rest);
               }
-              idChecked = true;
-              const chk = validateIdentity(idBuf.slice(0, nl) + "\n", expectedDM);
-              if (!chk.ok) { rejectId(chk.reason); return; }
-              if (traceFacts) {
-                const tchk = validateTrace(idBuf, traceFacts);
-                if (!tchk.ok) {
-                  console.warn(`[sifu] trace ${tchk.reason} (got geju=${tchk.parsed?.geju || "-"} yong=${tchk.parsed?.yong || "-"} allow=${traceFacts.gejuTokens.join("/")})`);
-                  rejectId(`trace_${tchk.reason}`);
-                  return;
-                }
-              }
-              const rest = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(idBuf)), ctx); // strip ID+TRACE · buffer จน gate ผ่าน
-              emitVisible(rest);
               return;
             }
-            const visibleText = sanitizePacketEvidenceClaims(text, ctx);
+            let visibleText = sanitizeSifuStreamVisible(text, ctx);
+            visibleText = stripTraceLine(stripIdLine(visibleText));
             emitVisible(visibleText);
           }, (text) => {
             cliErr += "\n" + text;
@@ -1957,9 +2019,14 @@ export async function POST(req: Request) {
             clearTimeout(killTimer);
             if (idRejected) { safeClose(); return; } // ตัดไปแล้วจาก identity-lock
             const ms = Date.now() - t0;
-            if (expectedDM && !idChecked) { // AI ตอบจบแต่ไม่เคยขึ้น ID line (ตอบสั้น/ไม่มี newline) → ตัด
-              console.error(`[sifu] identity no_id_line on close (expect=${expectedDM})`);
-              send("error", { error: "identity_mismatch", reason: "no_id_line" });
+            if (expectedDM && !idChecked && idBuf) {
+              const rest = releaseStreamGuard("close");
+              if (rest !== null) emitVisible(rest);
+            }
+            if (idRejected) { safeClose(); return; }
+            if (expectedDM && !idChecked) { // AI ตอบจบโดยไม่มี text ให้ปล่อย
+              console.error(`[sifu] stream guard empty on close (expect=${expectedDM})`);
+              send("error", { error: "identity_mismatch", reason: "no_visible_text" });
               safeClose(); return;
             }
             if (code === 0 && full.trim()) {
@@ -1969,7 +2036,8 @@ export async function POST(req: Request) {
               if (!finalCritical.ok) {
                 console.warn(`[sifu] critical-evidence incomplete (stream audit-only) profile=${profileId || "-"} missing=${finalCritical.missing.map((m) => m.code).join(",")}`);
               }
-              const answerSupportedBy = buildSifuAnswerSupportAudit(finalReply, finalCritical);
+              const streamGuard = buildSifuStreamGuardMeta(streamIdentityResult, streamTraceResult);
+              const answerSupportedBy = { ...buildSifuAnswerSupportAudit(finalReply, finalCritical), streamGuard };
               const payload = { reply: finalReply, model: sifuModel };
               /* HK_SIFU_EVIDENCE_TRACE_V1 — log-only (stream ส่งครบแล้ว · ไม่ retry/ไม่ตัด · try-catch กัน uncaught ใน ReadableStream) */
               let evTrace: ReturnType<typeof checkSifuEvidenceTrace> | null = null;
@@ -1977,7 +2045,7 @@ export async function POST(req: Request) {
                 evTrace = checkSifuEvidenceTrace(payload.reply, message, !!expectedDM);
                 if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (stream) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
               } catch { /* log-only · ห้ามให้กระทบ stream ที่ส่งครบแล้ว */ }
-              if (useCache && finalCritical.ok) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+              if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
               scheduleSifuSourceShadowAudit({
                 session,
                 req,
@@ -2008,11 +2076,11 @@ export async function POST(req: Request) {
                 answer: payload.reply,
                 history,
                 requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
-                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId, evidence_trace: evTrace, critical_evidence: finalCritical },
+                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId, evidence_trace: evTrace, critical_evidence: finalCritical, stream_guard: streamGuard },
                 model: payload.model,
                 durationMs: Date.now() - reqT0,
                 cached: false,
-                ...auditFor(expectedDM ? "pass" : "not_required"),
+                ...auditFor(streamIdentityResult),
               });
               if (!firstChunkSent) {
                 sendFirstOnce();
@@ -2368,9 +2436,17 @@ export async function GET(req: Request) {
       /* trace-lock (13 มิ.ย. เคส潤下格) · ดวงเดี่ยวเท่านั้น (กลุ่ม/เทียบ=หลายโครงดวง → ข้ามอัตโนมัติ) */
       const traceFacts = warmup ? null : extractTraceFacts(ctx);
       let idBuf = "", idChecked = false, idRejected = false;
+      let streamIdentityResult = expectedDM ? "stream_pending" : "not_required";
+      let streamTraceResult = traceFacts ? "stream_pending" : "not_required";
+      let guardTimer: ReturnType<typeof setTimeout> | null = null;
+      const clearGuardTimer = () => {
+        if (!guardTimer) return;
+        clearTimeout(guardTimer);
+        guardTimer = null;
+      };
       stopHeartbeat = startSifuHeartbeat(send, (pingCount) => {
         if (!firstDeltaSeen) return rotatingWaitingPhase(pingCount);
-        if (expectedDM && !idChecked) return "identity_lock";
+        if (expectedDM && !idChecked) return "stream_guard";
         if (!firstChunkSent) return "waiting_visible_chunk";
         return "streaming";
       });
@@ -2389,6 +2465,7 @@ export async function GET(req: Request) {
 
       const rejectIdG = (reason: string) => {
         idRejected = true;
+        clearGuardTimer();
         clearTimeout(killTimer);
         try { c.kill("SIGKILL"); } catch {}
         send("error", { error: "identity_mismatch", reason });
@@ -2407,36 +2484,60 @@ export async function GET(req: Request) {
         sendFirstOnceG();
         send("chunk", { text });
       };
+      const releaseStreamGuardG = (reason: string): string | null => {
+        if (idChecked || idRejected) return null;
+        clearGuardTimer();
+        const nl = idBuf.indexOf("\n");
+        const idCheck = validateIdentity(nl === -1 ? idBuf : idBuf.slice(0, nl) + "\n", expectedDM);
+        if (idCheck.reason === "dm_mismatch") {
+          console.error(`[sifu] GET stream identity dm_mismatch (expect=${expectedDM} got=${idCheck.parsedDM})`);
+          rejectIdG("dm_mismatch");
+          return null;
+        }
+        const traceCheck = validateTrace(idBuf, traceFacts);
+        streamIdentityResult = expectedDM ? (idCheck.ok ? "pass" : `stream_soft_${idCheck.reason}`) : "not_required";
+        streamTraceResult = traceFacts ? (traceCheck.ok ? "pass" : `stream_soft_${traceCheck.reason}`) : "not_required";
+        if (streamIdentityResult !== "pass" || (traceFacts && streamTraceResult !== "pass")) {
+          console.warn(`[sifu] GET stream guard soft-release reason=${reason} profile=${profileId || "-"} identity=${streamIdentityResult} trace=${streamTraceResult}`);
+        }
+        idChecked = true;
+        return sanitizeSifuStreamVisible(idBuf, ctx);
+      };
+      const scheduleStreamGuardTimeoutG = () => {
+        if (guardTimer || idChecked || idRejected) return;
+        guardTimer = setTimeout(() => {
+          guardTimer = null;
+          const startsInternal = /^\s*⟦(?:ID|TRACE)⟧/.test(idBuf);
+          const hasLineBreak = idBuf.includes("\n");
+          if (startsInternal && !hasLineBreak && !sanitizeSifuStreamVisible(idBuf, ctx).trim()) return;
+          const rest = releaseStreamGuardG("timeout");
+          if (rest !== null) emitVisibleG(rest);
+        }, SIFU_STREAM_GUARD_TIMEOUT_MS);
+        (guardTimer as unknown as { unref?: () => void }).unref?.();
+      };
       let cliErr = "";
       const parser = makeSifuCliParser(sifuModel, (text: string) => {
         firstDeltaSeen = true;
         if (idRejected) return;
         if (expectedDM && !idChecked) {
           idBuf += text;
+          scheduleStreamGuardTimeoutG();
           const nl = idBuf.indexOf("\n");
-          if (nl === -1) { if (idBuf.length > 120) rejectIdG("no_id_line"); return; }
-          /* trace-lock: ต้องเห็น ⟦TRACE⟧ ใน 3 บรรทัด/500 ตัวอักษรแรก */
-          if (traceFacts && !parseTraceLine(idBuf)) {
-            const nlCount = (idBuf.match(/\n/g) || []).length;
-            if (nlCount >= 3 || idBuf.length > 500) { rejectIdG("no_trace_line"); return; }
-            return; // buffer ต่อจนเจอ TRACE
+          if (nl !== -1) {
+            const chk = validateIdentity(idBuf.slice(0, nl) + "\n", expectedDM);
+            if (chk.reason === "dm_mismatch") { rejectIdG(chk.reason); return; }
           }
-          idChecked = true;
-          const chk = validateIdentity(idBuf.slice(0, nl) + "\n", expectedDM);
-          if (!chk.ok) { rejectIdG(chk.reason); return; }
-          if (traceFacts) {
-            const tchk = validateTrace(idBuf, traceFacts);
-            if (!tchk.ok) {
-              console.warn(`[sifu] trace ${tchk.reason} (got geju=${tchk.parsed?.geju || "-"} yong=${tchk.parsed?.yong || "-"} allow=${traceFacts.gejuTokens.join("/")})`);
-              rejectIdG(`trace_${tchk.reason}`);
-              return;
-            }
+          const hasTrace = !traceFacts || !!parseTraceLine(idBuf);
+          const visibleHead = sanitizeSifuStreamVisible(idBuf, ctx);
+          const nlCount = (idBuf.match(/\n/g) || []).length;
+          if (hasTrace || visibleHead.trim() || nlCount >= 3 || idBuf.length > 500) {
+            const rest = releaseStreamGuardG(hasTrace ? "trace_seen" : "visible_or_limit");
+            if (rest !== null) emitVisibleG(rest);
           }
-          const rest = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(idBuf)), ctx);
-          emitVisibleG(rest);
           return;
         }
-        const visibleText = sanitizePacketEvidenceClaims(text, ctx);
+        let visibleText = sanitizeSifuStreamVisible(text, ctx);
+        visibleText = stripTraceLine(stripIdLine(visibleText));
         emitVisibleG(visibleText);
       }, (text: string) => {
         cliErr += "\n" + text;
@@ -2450,9 +2551,15 @@ export async function GET(req: Request) {
       c.on("close", async (code) => {
         releaseSlotOnceG();
         clearTimeout(killTimer);
+        clearGuardTimer();
         if (idRejected) { safeClose(); return; }
         const ms = Date.now() - t0;
-        if (expectedDM && !idChecked) { send("error", { error: "identity_mismatch", reason: "no_id_line" }); safeClose(); return; }
+        if (expectedDM && !idChecked && idBuf) {
+          const rest = releaseStreamGuardG("close");
+          if (rest !== null) emitVisibleG(rest);
+        }
+        if (idRejected) { safeClose(); return; }
+        if (expectedDM && !idChecked) { send("error", { error: "identity_mismatch", reason: "no_visible_text" }); safeClose(); return; }
         if (code === 0 && full.trim()) {
           let finalReply = full.trim();
           const finalRawForAudit = idBuf;
@@ -2460,9 +2567,10 @@ export async function GET(req: Request) {
           if (!finalCritical.ok) {
             console.warn(`[sifu] critical-evidence incomplete (GET stream audit-only) profile=${profileId || "-"} missing=${finalCritical.missing.map((m) => m.code).join(",")}`);
           }
-          const answerSupportedBy = buildSifuAnswerSupportAudit(finalReply, finalCritical);
+          const streamGuard = buildSifuStreamGuardMeta(streamIdentityResult, streamTraceResult);
+          const answerSupportedBy = { ...buildSifuAnswerSupportAudit(finalReply, finalCritical), streamGuard };
           const payload = { reply: finalReply, model: sifuModel };
-          if (useCache && finalCritical.ok) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+          if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
           scheduleSifuSourceShadowAudit({
             session,
             req,
@@ -2493,7 +2601,7 @@ export async function GET(req: Request) {
             answer: payload.reply,
             history: [],
             requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, prediction_phase: predictionPhase },
-            responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId, critical_evidence: finalCritical },
+            responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId, critical_evidence: finalCritical, stream_guard: streamGuard },
             model: payload.model,
             durationMs: Date.now() - reqT0,
             cached: false,
@@ -2509,7 +2617,7 @@ export async function GET(req: Request) {
               historyProfileIds,
               historyDroppedCount: 0,
               predictionPhase,
-              identityCheckResult: expectedDM ? "pass" : "not_required",
+              identityCheckResult: streamIdentityResult,
             }),
           });
           if (!firstChunkSent) {

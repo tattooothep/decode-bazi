@@ -1,12 +1,12 @@
 /**
  * Sifu fast-stream regression.
- * Goal: SSE Q&A must gate ID/TRACE before visible text, then stream immediately.
- * Critical evidence stays source-audited, but must not trigger full-answer retry in stream path.
+ * Goal: SSE Q&A must not block first visible text on TRACE/critical evidence.
+ * ID can remain a short hard guard; TRACE/critical are audit-only in stream path.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { stripIdLine, validateIdentity } from "../src/lib/identity-lock";
-import { parseTraceLine, stripTraceLine, validateTrace, type TraceFacts } from "../src/lib/sifu-trace-lock";
+import { stripTraceLine } from "../src/lib/sifu-trace-lock";
 
 const route = readFileSync(join(process.cwd(), "src/app/api/sifu/route.ts"), "utf8");
 
@@ -19,10 +19,12 @@ function ck(label: string, cond: boolean, detail = "") {
 const parserBlocks = [...route.matchAll(/const parser = makeSifuCliParser[\s\S]*?\.stdout\.on\("data", parser\);/g)].map((m) => m[0]);
 ck("has POST and GET parser blocks", parserBlocks.length >= 2, `blocks=${parserBlocks.length}`);
 for (const [idx, block] of parserBlocks.entries()) {
-  ck(`parser block ${idx + 1} still waits for ID line`, block.includes("validateIdentity"));
-  ck(`parser block ${idx + 1} still waits for TRACE when required`, block.includes("parseTraceLine") && block.includes("validateTrace"));
-  ck(`parser block ${idx + 1} emits visible rest after gate`, /emitVisibleG?\(rest\)/.test(block));
+  ck(`parser block ${idx + 1} still validates ID before visible text`, block.includes("validateIdentity"));
+  ck(`parser block ${idx + 1} does not hard-wait for TRACE`, !block.includes("no_trace_line"));
+  ck(`parser block ${idx + 1} does not reject TRACE mismatch`, !block.includes("trace_${tchk.reason}") && !block.includes("validateTrace(idBuf"));
+  ck(`parser block ${idx + 1} emits visible rest after ID gate`, /emitVisibleG?\(rest\)/.test(block));
   ck(`parser block ${idx + 1} emits subsequent visible chunks`, /emitVisibleG?\(visibleText\)/.test(block));
+  ck(`parser block ${idx + 1} strips internal markers from subsequent chunks`, /stripTraceLine\(stripIdLine\(visibleText\)\)/.test(block) || /stripIdLine\(stripTraceLine\(visibleText\)\)/.test(block));
 }
 
 ck("POST emitVisible sends first event before chunk", /const emitVisible = \(text: string\) => \{[\s\S]*?sendFirstOnce\(\);[\s\S]*?send\("chunk", \{ text \}\);[\s\S]*?\};/.test(route));
@@ -33,6 +35,9 @@ ck("GET stream critical is audit-only", route.includes("critical-evidence incomp
 ck("POST stream does not run full retry", !route.includes("critical-evidence retry (stream)") && !route.includes("[sifu] stream gate retry threw"));
 ck("GET stream does not run full retry", !route.includes("critical-evidence retry (GET stream)") && !route.includes("[sifu] GET stream gate retry threw"));
 ck("stream skips cache when critical evidence is missing", (route.match(/useCache && finalCritical\.ok/g) || []).length >= 2);
+ck("stream guard meta marks soft ID/TRACE as degraded", /const cacheable = cleanIdentity && cleanTrace;[\s\S]*return \{ identity, trace, degraded: !cacheable, cacheable \};/.test(route));
+ck("stream skips cache when guard is degraded", (route.match(/useCache && finalCritical\.ok && streamGuard\.cacheable/g) || []).length >= 2);
+ck("stream audit records guard degradation", (route.match(/stream_guard: streamGuard/g) || []).length >= 2);
 
 const finalPayloadChunks = route.match(/if \(!firstChunkSent\) \{[\s\S]{0,160}?send\("chunk", \{ text: payload\.reply \}\);[\s\S]{0,80}?\}/g) || [];
 ck("final payload chunk is fallback-only", finalPayloadChunks.length >= 2, `blocks=${finalPayloadChunks.length}`);
@@ -51,11 +56,6 @@ ck("compact final protocol makes ID the first byte", route.includes("ถ้า�
 ck("all sifu prompt builds use compact decision helper", !route.includes("compactKnowledge: sifuModel === \"codex-cli\"") && (route.match(/compactKnowledge: shouldUseCompactKnowledge\(sifuModel\)/g) || []).length >= 4);
 
 type SimEvent = { event: string; data?: unknown };
-const simFacts: TraceFacts = {
-  congExpected: false,
-  gejuTokens: ["雜氣正官格"],
-  yongWords: ["ไฟ", "火"],
-};
 
 function simulateStreamGate(deltas: string[], opts: { criticalOk?: boolean } = {}) {
   let idBuf = "";
@@ -91,20 +91,13 @@ function simulateStreamGate(deltas: string[], opts: { criticalOk?: boolean } = {
         if (idBuf.length > 120) reject("no_id_line");
         continue;
       }
-      if (!parseTraceLine(idBuf)) {
-        const nlCount = (idBuf.match(/\n/g) || []).length;
-        if (nlCount >= 3 || idBuf.length > 500) reject("no_trace_line");
-        continue;
-      }
       idChecked = true;
       const idCheck = validateIdentity(idBuf.slice(0, nl) + "\n", "壬");
       if (!idCheck.ok) { reject(idCheck.reason); continue; }
-      const traceCheck = validateTrace(idBuf, simFacts);
-      if (!traceCheck.ok) { reject(`trace_${traceCheck.reason}`); continue; }
       emitVisible(stripTraceLine(stripIdLine(idBuf)));
       continue;
     }
-    emitVisible(text);
+    emitVisible(stripTraceLine(stripIdLine(text)));
   }
 
   if (!idRejected) {
@@ -122,20 +115,27 @@ function simulateStreamGate(deltas: string[], opts: { criticalOk?: boolean } = {
 const partialEvents = simulateStreamGate(["⟦ID⟧日干=壬⟧\n"]);
 ck("behavior: ID alone emits no visible chunk", !partialEvents.some((e) => e.event === "chunk"));
 
-const validEvents = simulateStreamGate([
-  "⟦ID⟧日干=壬⟧\n",
-  "⟦TRACE⟧從=ไม่มี·格局=雜氣正官格·用神=ไฟ⟧\nคำตอบแรก",
-], { criticalOk: false });
-ck("behavior: valid TRACE emits first before chunk", validEvents[0]?.event === "first" && validEvents[1]?.event === "chunk", JSON.stringify(validEvents));
-ck("behavior: critical missing still reaches done", validEvents.some((e) => e.event === "critical_check") && validEvents.at(-1)?.event === "done");
-ck("behavior: streamed answer is not duplicated at close", validEvents.filter((e) => e.event === "chunk").length === 1, JSON.stringify(validEvents));
-
-const badTraceEvents = simulateStreamGate([
-  "⟦ID⟧日干=壬⟧\n",
-  "⟦TRACE⟧從=ไม่มี·格局=潤下格·用神=ไฟ⟧\nห้ามออก",
+const wrongIdEvents = simulateStreamGate([
+  "⟦ID⟧日干=癸⟧\n",
+  "คำตอบห้ามออก",
 ]);
-ck("behavior: bad TRACE emits error", badTraceEvents.some((e) => e.event === "error"));
-ck("behavior: bad TRACE emits no chunk", !badTraceEvents.some((e) => e.event === "chunk"), JSON.stringify(badTraceEvents));
+ck("behavior: wrong ID still hard fails", wrongIdEvents.some((e) => e.event === "error"));
+ck("behavior: wrong ID emits no visible chunk", !wrongIdEvents.some((e) => e.event === "chunk"), JSON.stringify(wrongIdEvents));
+
+const missingTraceEvents = simulateStreamGate([
+  "⟦ID⟧日干=壬⟧\n",
+  "คำตอบแรก",
+], { criticalOk: false });
+ck("behavior: missing TRACE still emits first visible chunk", missingTraceEvents[0]?.event === "first" && missingTraceEvents[1]?.event === "chunk", JSON.stringify(missingTraceEvents));
+ck("behavior: critical missing still reaches done", missingTraceEvents.some((e) => e.event === "critical_check") && missingTraceEvents.at(-1)?.event === "done");
+ck("behavior: streamed answer is not duplicated at close", missingTraceEvents.filter((e) => e.event === "chunk").length === 1, JSON.stringify(missingTraceEvents));
+
+const lateTraceEvents = simulateStreamGate([
+  "⟦ID⟧日干=壬⟧\n",
+  "⟦TRACE⟧從=ไม่มี·格局=潤下格·用神=ไฟ⟧\nคำตอบหลัง trace",
+]);
+ck("behavior: TRACE mismatch is audit-only in stream", !lateTraceEvents.some((e) => e.event === "error"), JSON.stringify(lateTraceEvents));
+ck("behavior: internal TRACE marker is stripped when present", !JSON.stringify(lateTraceEvents).includes("⟦TRACE⟧"), JSON.stringify(lateTraceEvents));
 
 console.log(`\n[sifu-fast-stream] ${pass}/${pass + fail} ${fail ? "FAILED" : "passed"}`);
 process.exit(fail ? 1 : 0);
