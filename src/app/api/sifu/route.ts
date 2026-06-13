@@ -86,9 +86,10 @@ function buildSifuGateRetryPrompt(input: {
   if (input.idReason !== "ok" || input.traceReason !== "ok" || !input.critical.ok) {
     lines.push(`- สาเหตุที่ไม่ผ่าน: identity=${input.idReason} trace=${input.traceReason} critical=${input.critical.missing.map((m) => m.code).join(",") || "ok"}`);
   }
-  if (input.critical.missing.length) {
-    lines.push("- ในเนื้อคำตอบต้องเอ่ยหลักฐานที่ขาดต่อไปนี้อย่างน้อยด้วย marker จีนหรือคำไทยในวงเล็บ:");
-    for (const item of input.critical.missing) {
+  const criticalRequired = input.critical.required.length ? input.critical.required : input.critical.missing;
+  if (!input.critical.ok && criticalRequired.length) {
+    lines.push("- ในเนื้อคำตอบต้องเอ่ยหลักฐานบังคับทั้งหมดของคำถามนี้อย่างน้อยด้วย marker จีนหรือคำไทยในวงเล็บ (ไม่ใช่แก้เฉพาะตัวที่ขาดรอบก่อน เพราะ retry ห้ามทำของที่เคยถูกหลุดหาย):");
+    for (const item of criticalRequired) {
       lines.push(`  * ${item.label} (ยอมรับคำใดคำหนึ่ง: ${item.anyOf.join(" / ")})`);
     }
     lines.push("- ถ้ามีทั้ง合และ冲/害ในปีเดียวกัน ต้องอธิบายแบบแก้ขัด เช่น 合絆/貪合忘沖 ก่อนสรุปผลชีวิต ห้ามอ่านเป็น冲อย่างเดียว");
