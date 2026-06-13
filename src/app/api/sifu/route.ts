@@ -22,9 +22,9 @@ import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } fr
 import { boundaryWarning3p, monthPillarBoundary } from "@/lib/bazi-boundary";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
-import { extractTraceFacts, parseTraceLine, stripTraceLine, validateTrace, parseClaimedSources } from "@/lib/sifu-trace-lock";
+import { extractTraceFacts, parseTraceLine, stripTraceLine, validateTrace, parseClaimedSources, type TraceFacts } from "@/lib/sifu-trace-lock";
 import { checkSifuEvidenceTrace } from "@/lib/sifu-evidence-trace";
-import { checkSifuCriticalEvidence } from "@/lib/sifu-critical-evidence-gate";
+import { checkSifuCriticalEvidence, type CriticalEvidenceCheck } from "@/lib/sifu-critical-evidence-gate";
 import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
 import { buildSifuShadowModePlan } from "@/lib/sifu-shadow-mode";
@@ -59,6 +59,42 @@ function cleanProfileId(v: unknown): string | null {
   if (typeof v !== "string") return null;
   const s = v.trim();
   return UUID_RE.test(s) ? s : null;
+}
+
+function buildSifuGateRetryPrompt(input: {
+  prompt: string;
+  expectedDM: string | null;
+  traceFacts: TraceFacts | null;
+  idReason: string;
+  traceReason: string;
+  critical: CriticalEvidenceCheck;
+}): string {
+  const lines = [
+    "=== SYSTEM RETRY GATE (ไม่ผ่านตัวตรวจหลังบ้าน) ===",
+    "คำตอบก่อนหน้าไม่ผ่าน ให้สร้างคำตอบใหม่ทั้งหมด ห้ามอ้างว่าก่อนหน้าตอบแล้ว",
+  ];
+  if (input.expectedDM) {
+    lines.push(`- บรรทัดแรกต้องเป็น exact: ⟦ID⟧日干=${input.expectedDM}⟧`);
+  }
+  if (input.traceFacts?.gejuTokens.length) {
+    const cong = input.traceFacts.congExpected === true ? "มี" : input.traceFacts.congExpected === false ? "ไม่มี" : "ก้ำกึ่ง";
+    const geju = input.traceFacts.gejuTokens[0];
+    const yong = input.traceFacts.yongWords.find((w) => /[ก-๙]/.test(w)) || input.traceFacts.yongWords[0] || "-";
+    lines.push(`- บรรทัดที่สองต้องขึ้นต้น exact: ⟦TRACE⟧從=${cong}·格局=${geju}·用神=${yong}`);
+    lines.push("- ห้ามใช้ป้ายรอง/raw engine มาเป็น格局ใน TRACE หรือในเนื้อ ถ้าโครงดวงระบุ strict月令หลัก ให้ใช้ strict月令หลักเท่านั้น");
+  }
+  if (input.idReason !== "ok" || input.traceReason !== "ok" || !input.critical.ok) {
+    lines.push(`- สาเหตุที่ไม่ผ่าน: identity=${input.idReason} trace=${input.traceReason} critical=${input.critical.missing.map((m) => m.code).join(",") || "ok"}`);
+  }
+  if (input.critical.missing.length) {
+    lines.push("- ในเนื้อคำตอบต้องเอ่ยหลักฐานที่ขาดต่อไปนี้อย่างน้อยด้วย marker จีนหรือคำไทยในวงเล็บ:");
+    for (const item of input.critical.missing) {
+      lines.push(`  * ${item.label} (ยอมรับคำใดคำหนึ่ง: ${item.anyOf.join(" / ")})`);
+    }
+    lines.push("- ถ้ามีทั้ง合และ冲/害ในปีเดียวกัน ต้องอธิบายแบบแก้ขัด เช่น 合絆/貪合忘沖 ก่อนสรุปผลชีวิต ห้ามอ่านเป็น冲อย่างเดียว");
+  }
+  lines.push("=== END RETRY GATE ===");
+  return `${input.prompt}\n\n${lines.join("\n")}\n`;
 }
 const SIFU_CONTEXT_CACHE_MS = Number(process.env.SIFU_CONTEXT_CACHE_MS || 5 * 60_000);
 const SIFU_CONTEXT_CACHE_MAX = Number(process.env.SIFU_CONTEXT_CACHE_MAX || 80);
@@ -1833,7 +1869,14 @@ export async function POST(req: Request) {
     let criticalCheck = checkSifuCriticalEvidence(stripTraceLine(stripIdLine(reply)), message, ctx, { hasPacket: !!expectedDM });
     if (!idCheck.ok || !trCheck.ok || !criticalCheck.ok) {
       console.warn(`[sifu] gate fail id=${idCheck.reason} trace=${trCheck.reason} critical=${criticalCheck.missing.map((m) => m.code).join(",") || "ok"} (expect=${expectedDM} got=${idCheck.parsedDM} traceGeju=${trCheck.parsed?.geju || "-"}) · retry`);
-      reply = await runSifuCli(prompt, sifuModel);
+      reply = await runSifuCli(buildSifuGateRetryPrompt({
+        prompt,
+        expectedDM,
+        traceFacts,
+        idReason: idCheck.reason,
+        traceReason: trCheck.reason,
+        critical: criticalCheck,
+      }), sifuModel);
       idCheck = validateIdentity(reply, expectedDM);
       trCheck = validateTrace(reply, traceFacts);
       criticalCheck = checkSifuCriticalEvidence(stripTraceLine(stripIdLine(reply)), message, ctx, { hasPacket: !!expectedDM });
