@@ -24,6 +24,7 @@ import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
 import { extractTraceFacts, parseTraceLine, stripTraceLine, validateTrace, parseClaimedSources } from "@/lib/sifu-trace-lock";
 import { checkSifuEvidenceTrace } from "@/lib/sifu-evidence-trace";
+import { checkSifuCriticalEvidence } from "@/lib/sifu-critical-evidence-gate";
 import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
 import { buildSifuShadowModePlan } from "@/lib/sifu-shadow-mode";
@@ -1752,6 +1753,10 @@ export async function POST(req: Request) {
                 evTrace = checkSifuEvidenceTrace(payload.reply, message, !!expectedDM);
                 if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (stream) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
               } catch { /* log-only · ห้ามให้กระทบ stream ที่ส่งครบแล้ว */ }
+              try {
+                const critical = checkSifuCriticalEvidence(payload.reply, message, ctx, { hasPacket: !!expectedDM });
+                if (!critical.ok) console.warn(`[sifu] critical-evidence incomplete (stream) profile=${profileId || "-"} missing=${critical.missing.map((m) => m.code).join(",")}`);
+              } catch { /* log-only · stream ส่งครบแล้ว retry ไม่ปลอดภัย */ }
               if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
               scheduleSifuSourceShadowAudit({
                 session,
@@ -1825,11 +1830,13 @@ export async function POST(req: Request) {
     let reply = await runSifuCli(prompt, sifuModel);
     let idCheck = validateIdentity(reply, expectedDM);
     let trCheck = validateTrace(reply, traceFacts);
-    if (!idCheck.ok || !trCheck.ok) {
-      console.warn(`[sifu] gate fail id=${idCheck.reason} trace=${trCheck.reason} (expect=${expectedDM} got=${idCheck.parsedDM} traceGeju=${trCheck.parsed?.geju || "-"}) · retry`);
+    let criticalCheck = checkSifuCriticalEvidence(stripTraceLine(stripIdLine(reply)), message, ctx, { hasPacket: !!expectedDM });
+    if (!idCheck.ok || !trCheck.ok || !criticalCheck.ok) {
+      console.warn(`[sifu] gate fail id=${idCheck.reason} trace=${trCheck.reason} critical=${criticalCheck.missing.map((m) => m.code).join(",") || "ok"} (expect=${expectedDM} got=${idCheck.parsedDM} traceGeju=${trCheck.parsed?.geju || "-"}) · retry`);
       reply = await runSifuCli(prompt, sifuModel);
       idCheck = validateIdentity(reply, expectedDM);
       trCheck = validateTrace(reply, traceFacts);
+      criticalCheck = checkSifuCriticalEvidence(stripTraceLine(stripIdLine(reply)), message, ctx, { hasPacket: !!expectedDM });
       if (!idCheck.ok) {
         console.error(`[sifu] identity FAIL after retry (expect=${expectedDM} got=${idCheck.parsedDM})`);
         return NextResponse.json({ error: "identity_mismatch" }, { status: 502 });
@@ -1837,6 +1844,10 @@ export async function POST(req: Request) {
       if (!trCheck.ok) {
         console.error(`[sifu] trace FAIL after retry (${trCheck.reason} got=${trCheck.parsed?.geju || "-"}/${trCheck.parsed?.yong || "-"} allow=${traceFacts?.gejuTokens.join("/") || "-"})`);
         return NextResponse.json({ error: "trace_mismatch" }, { status: 502 });
+      }
+      if (!criticalCheck.ok) {
+        console.error(`[sifu] critical evidence FAIL after retry (${criticalCheck.missing.map((m) => m.code).join(",")})`);
+        return NextResponse.json({ error: "critical_evidence_mismatch", missing: criticalCheck.missing.map((m) => m.code) }, { status: 502 });
       }
     }
     /* HK_SIFU_EVIDENCE_TRACE_V1 — log-only · วัดว่าคำตอบดูดวงเดิน用神/ปฏิกิริยา/รากครบไหม (ไม่ retry/ไม่ block) */

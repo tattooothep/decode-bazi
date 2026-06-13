@@ -32,15 +32,24 @@ export function extractTraceFacts(ctx: string): TraceFacts | null {
   const structLines = ctx.match(/^โครงดวง: .+$/gm) || [];
   if (structLines.length !== 1) return null; // 0=ไม่มีดวง · >1=กลุ่ม/เทียบดวง → ข้าม
   const structLine = structLines[0];
+  /* ถ้า packet ยก strict月令 เป็น "หลัก" แล้ว ให้ TRACE รับเฉพาะโครงหลักนั้น
+   * (raw engine เป็นป้ายรองเพื่อชันสูตร ห้ามผ่านกลับมาเป็น格局ในคำตอบ) */
+  const strictPrimary = structLine.match(/strict月令หลัก=([一-鿿]{1,10}格)/)?.[1] || null;
   /* แหล่งชื่อโครงที่ถูกต้อง: โครงดวง + strict audit + 化氣 verdict + 從格ตรวจทาน + ดวงพิเศษ */
   const specialLines = ctx.match(/^ดวงพิเศษ: .+$/gm) || [];
-  const sourceText = [
-    structLine,
-    ...(ctx.match(/^格局 strict audit.+$/gm) || []),
-    ...(ctx.match(/^化氣格 verdict.+$/gm) || []),
-    ...(ctx.match(/^從格ตรวจทาน.+$/gm) || []),
-    ...specialLines,
-  ].join(" · ");
+  const sourceText = strictPrimary
+    ? [
+        strictPrimary,
+        ...(ctx.match(/^化氣格 verdict.+$/gm) || []),
+        ...specialLines,
+      ].join(" · ")
+    : [
+        structLine,
+        ...(ctx.match(/^格局 strict audit.+$/gm) || []),
+        ...(ctx.match(/^化氣格 verdict.+$/gm) || []),
+        ...(ctx.match(/^從格ตรวจทาน.+$/gm) || []),
+        ...specialLines,
+      ].join(" · ");
   const gejuTokens = Array.from(new Set(sourceText.match(/[一-鿿]{1,10}格/g) || []));
   if (!gejuTokens.length) return null; // โครงไม่มีชื่อ格 (เคสพิเศษ) → ข้าม
   const ym = ctx.match(/ธาตุช่วยหลัก=([ก-๙]+)/);
