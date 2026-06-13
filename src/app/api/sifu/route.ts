@@ -417,7 +417,7 @@ function loadSifuCompactAuthorityKnowledge(): { text: string; version: string } 
 
 function buildSifuRuleVersion(model: SifuModel): string {
   if (shouldUseCompactKnowledge(model)) {
-    return loadSifuCompactAuthorityKnowledge().version + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION + "-idlock1-dayboundary1-compactclassics1";
+    return loadSifuCompactAuthorityKnowledge().version + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION + "-idlock1-dayboundary1-compactclassics2";
   }
   const baseVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
   return model === "codex-cli" ? baseVersion + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION : baseVersion;
@@ -565,6 +565,30 @@ function sifuKnowledgeHashes(model: SifuModel): Record<string, string | boolean 
     qtbj: model === "codex-cli" ? SIFU_CODEX_QTBJ_RETRIEVAL_VERSION : null,
     compact_knowledge: model === "codex-cli",
   };
+}
+
+function compactOutputProtocol(ctx: string): string {
+  const dm = extractExpectedDM(ctx);
+  const facts = extractTraceFacts(ctx);
+  const lines = [
+    "",
+    "=== FINAL OUTPUT PROTOCOL (compact fast stream · บังคับเป็นอักขระแรกของคำตอบ) ===",
+    "ห้ามขึ้นต้นด้วยคำทักทาย ห้าม markdown ห้ามเว้นวรรค ห้าม BOM ห้ามอธิบายก่อนรหัส",
+  ];
+  if (dm) lines.push(`บรรทัดแรก exact: ⟦ID⟧日干=${dm}⟧`);
+  else lines.push("บรรทัดแรก exact: ⟦ID⟧日干=<คัดจาก FACT LOCK Day Master>⟧");
+  if (facts?.gejuTokens.length) {
+    const cong = facts.congExpected === true ? "มี" : "ไม่มี";
+    const geju = facts.gejuTokens[0];
+    const yong = facts.yongWords.find((w) => /[ก-๙]/.test(w)) || facts.yongWords[0] || "<คัดจากธาตุช่วย/strict調候>";
+    lines.push(`บรรทัดสอง exact-template: ⟦TRACE⟧從=${cong}·格局=${geju}·用神=${yong}·ตำรา=<ชื่อเล่มที่ใช้จริงคั่นด้วย |>·เทรน=ไม่มี⟧`);
+  } else {
+    lines.push("ถ้าไม่มีบรรทัดโครงดวง ให้ข้าม TRACE ได้ แต่ยังต้องมี ID line ก่อนเสมอ");
+  }
+  lines.push("หลังจากสองบรรทัดนี้เท่านั้น จึงตอบเนื้อภาษาไทยตามคำถาม");
+  lines.push("ถ้าอักขระแรกของคำตอบไม่ใช่ ⟦ ระบบจะตัดคำตอบทิ้งทันที");
+  lines.push("=== END FINAL OUTPUT PROTOCOL ===");
+  return lines.join("\n");
 }
 
 function buildSifuAuditEvidence(input: {
@@ -1300,13 +1324,14 @@ function buildPrompt(opts: {
     ? "\n\n=== 📜 窮通寶鑑 · 調候用神 compact source ===\n" + qtbjCompact.text + "\n=== จบ 窮通寶鑑 compact source ===\n"
     : "";
   const qaLang = loadPromptSections("prompts/sifu-lang.md");
-  return loadPromptMd("prompts/sifu-qa.md")
+  const prompt = loadPromptMd("prompts/sifu-qa.md")
     .replace("{{LANG}}", () => qaLang[langKey] || qaLang.TH || "")
     .replace("{{RULES}}", () => rulesBlock)
     .replace("{{INTERACTION}}", () => interactionBlock + engineBlock + extraBlock + qtbjCompactBlock)
     .replace("{{CTX}}", () => packetEvidenceGuardText(opts.ctx) + opts.ctx)
     .replace("{{FOCUS_HIST}}", () => focus + histText)
     .replace("{{MESSAGE}}", () => opts.message);
+  return compact ? prompt + compactOutputProtocol(opts.ctx) : prompt;
 }
 
 /* 🔍 ดักจับ prompt จริงที่ส่งเข้า AI · พิสูจน์ตำรา+engine ถูกยัดจริง · ทำงานเฉพาะ env SIFU_DUMP_PROMPT=1 · default off ไม่กระทบ prod */

@@ -43,9 +43,11 @@ ck("GET cache can bypass stale critical answer", route.includes("GET cache bypas
 
 ck("Claude compact knowledge is feature-flagged", route.includes("SIFU_CLAUDE_COMPACT_KNOWLEDGE") && route.includes("process.env.SIFU_CLAUDE_COMPACT_KNOWLEDGE === \"1\""));
 ck("compact mode covers Claude when flag is on", /return model === "codex-cli" \|\| SIFU_CLAUDE_COMPACT_KNOWLEDGE;/.test(route));
-ck("compact rule version avoids full source version", /if \(shouldUseCompactKnowledge\(model\)\) \{[\s\S]*?loadSifuCompactAuthorityKnowledge\(\)\.version[\s\S]*?compactclassics1[\s\S]*?\}/.test(route));
+ck("compact rule version avoids full source version", /if \(shouldUseCompactKnowledge\(model\)\) \{[\s\S]*?loadSifuCompactAuthorityKnowledge\(\)\.version[\s\S]*?compactclassics2[\s\S]*?\}/.test(route));
 ck("compact prompt carries source-of-truth baseline", route.includes("SIFU COMPACT SOURCE-OF-TRUTH BASELINE") && route.includes("RUNTIME EXACT SOURCE EXCERPTS"));
 ck("compact prompt includes hard error source excerpts", ["子平真詮 · 論雜氣/四庫", "天干五合 丙辛/丁壬", "三合局 巳酉丑", "貪合忘冲 / 合解冲"].every((s) => route.includes(s)));
+ck("compact prompt appends final output protocol", route.includes("FINAL OUTPUT PROTOCOL (compact fast stream") && /return compact \? prompt \+ compactOutputProtocol\(opts\.ctx\) : prompt;/.test(route));
+ck("compact final protocol makes ID the first byte", route.includes("ถ้าอักขระแรกของคำตอบไม่ใช่ ⟦ ระบบจะตัดคำตอบทิ้งทันที"));
 ck("all sifu prompt builds use compact decision helper", !route.includes("compactKnowledge: sifuModel === \"codex-cli\"") && (route.match(/compactKnowledge: shouldUseCompactKnowledge\(sifuModel\)/g) || []).length >= 4);
 
 type SimEvent = { event: string; data?: unknown };
