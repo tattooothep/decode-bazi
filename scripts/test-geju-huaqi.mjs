@@ -10,8 +10,8 @@
 import { renderChartPrompt } from "../src/lib/chart-packet.ts";
 
 let pass = 0, fail = 0;
-const HEHUA = "化氣格 = เบื้องต้นเท่านั้น";     // 合而不化 flag (ตัวตนมีราก)
-const JIAHUA = "化氣格 = แปรแบบไม่มั่นคง"; // 假化 flag (รากบางมาก)
+const HEHUA = "化氣格 หลักฐาน 3 ทาง";     // 合而不化 flag (ตัวตนมีราก)
+const JIAHUA = "化氣格 หลักฐาน假化"; // 假化 flag (รากบางมาก)
 
 function makePacket({ label = "ปกติ", special = null, rootedness = null } = {}) {
   return {
@@ -26,7 +26,7 @@ function makePacket({ label = "ปกติ", special = null, rootedness = null 
     currentLuck: null, luckTimeline: [], annualPillar: { stem: "甲", branch: "辰" },
     interactions: { status: "none_detected", raw: [] }, luckInteractions: [], annualInteractions: [],
     profile: {}, kongWang: { dayVoids: [], yearVoids: [] }, timeline: [],
-    aiResponsePolicy: { sourceOfTruth: "chartPacket", noPercent: true, noPillarGuess: true, selectEvidence: { min: 3, max: 5 }, showFullChecklist: false },
+    aiResponsePolicy: { sourceOfTruth: "classics_first_packet_evidence", noPercent: true, noPillarGuess: true, selectEvidence: { min: 3, max: 5 }, showFullChecklist: false },
   };
 }
 function root(dmLabel) {

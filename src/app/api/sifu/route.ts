@@ -29,6 +29,7 @@ import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } fr
 import { logResearchAiMessageSafe } from "@/lib/research-log";
 import { buildSifuShadowModePlan } from "@/lib/sifu-shadow-mode";
 import { logSifuSourceAuditSafe } from "@/lib/sifu-source-audit-log";
+import type { SifuAnswerSupportedByAudit } from "@/lib/sifu-source-audit";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type SifuModel = "claude-max-cli" | "codex-cli";
@@ -97,6 +98,30 @@ function buildSifuGateRetryPrompt(input: {
   lines.push("=== END RETRY GATE ===");
   return `${input.prompt}\n\n${lines.join("\n")}\n`;
 }
+
+function buildSifuAnswerSupportAudit(reply: string, critical: CriticalEvidenceCheck): SifuAnswerSupportedByAudit {
+  const normalized = (reply || "").replace(/\s+/g, "");
+  const sources: SifuAnswerSupportedByAudit["sources"] = [];
+  const add = (sourceId: string, confidence: number, reason: string, markers: RegExp[]) => {
+    const spans = markers
+      .map((re) => normalized.match(re)?.[0])
+      .filter((x): x is string => Boolean(x))
+      .slice(0, 4);
+    if (!spans.length || sources.some((s) => s.sourceId === sourceId)) return;
+    sources.push({ sourceId, confidence, answerSpans: spans, reason });
+  };
+  add("qtbj-tiaohou-clean", 0.86, "answer mentions strict 調候/月令 markers", [/壬日丑月|壬水丑月|十二月壬水|專用丙火|丙火|調候用神|寒局用火/]);
+  add("zpzq-zhenquan-clean", 0.82, "answer mentions classical 格局/月令 markers", [/雜氣正官格|雜氣正官|官印相生|正官佩印|月令|透干|藏干/]);
+  add("bazi-geju-master", 0.78, "answer uses compiled 格局 rule markers", [/雜氣正官格|雜氣正官|官印相生|正官佩印|相神/]);
+  add("bazi-hechong-resolution", 0.82, "answer mentions 合沖/墓庫 resolver markers", [/丙辛合|丁壬合|貪合忘沖|合絆|合而不化|本身之合|四庫|辰戌丑未|墓庫|丑未冲|未戌破|子未害/]);
+  add("bazi-interaction-master", 0.78, "answer mentions interaction/combo markers", [/巳酉丑|三合金|午丑害|丑未冲|未戌破|子未害/]);
+  add("bazi-shishen-classical", 0.72, "answer mentions ten-god marker", [/乙傷官|傷官/]);
+  const proofLevel: SifuAnswerSupportedByAudit["proofLevel"] =
+    sources.length >= 3 && critical.ok ? "medium" :
+    sources.length > 0 ? "weak" :
+    "none";
+  return { method: sources.length ? "lexical" : "not_run", proofLevel, sources };
+}
 const SIFU_CONTEXT_CACHE_MS = Number(process.env.SIFU_CONTEXT_CACHE_MS || 5 * 60_000);
 const SIFU_CONTEXT_CACHE_MAX = Number(process.env.SIFU_CONTEXT_CACHE_MAX || 80);
 const SIFU_TIMING_LOG = process.env.SIFU_TIMING_LOG !== "0";
@@ -142,9 +167,9 @@ const INTRO_OPENROUTER_MODEL = process.env.SIFU_INTRO_MODEL || "anthropic/claude
 const CHILD_USER = "jarvis";
 const CODEX_CLI_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
 const CODEX_COMPACT_KNOWLEDGE = [
-  "Codex compact mode: ใช้ข้อมูลดวง/packet/interactions ที่ส่งมาเป็น source of truth สูงสุด",
-  "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน 用神/忌神 หรือวัยจรที่ packet ไม่ได้ให้",
-  "ถ้ามี block 窮通寶鑑 ให้ใช้เฉพาะชั้น 調候/月令 เพื่ออธิบายความร้อน-เย็น-แห้ง-ชื้น ห้าม override 用神/喜忌/格局 ที่ packet ล็อคมา",
+  "Codex compact mode: FACT/PILLAR LOCK เป็นข้อเท็จจริง; คัมภีร์คลาสสิกเป็น source of truth ใน scope ของมัน; packet/interactions เป็นหลักฐานคำนวณพร้อม provenance",
+  "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน หรือวัยจรที่ packet ไม่ได้ให้; ถ้า packet field ขัด strict classic/canonical ให้ลดเป็น raw/secondary",
+  "ถ้ามี block 窮通寶鑑 ให้ใช้ชั้น 調候/月令 ชนะตัวเลขธาตุดิบและ病藥 fallback; ถ้ามี子平真詮 strict月令 ให้ใช้เป็น格局หลัก",
   "ไทยนำ จีนรอง อธิบายผลจริงตรงคำถาม และรักษา ID line ตามกฎ prompt หลัก",
 ].join("\n");
 const STEM_ELEMENT_MAP: Record<string, string> = {
@@ -276,8 +301,8 @@ const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "bazi-conghua-master.md", label: "從格/化格 · ดวงตาม/แปรธาตุ + 真假 boundary + 合化 (滴天髓+三命通會)" },
   { file: "zpzq-zhenquan-clean.md", label: "📜 子平真詮評註 ตัวบทจริง verbatim (ctext · GROUND TRUTH เหนือ reconstruction · บท合化→48 + 74命例เฉลยจริง) · ใช้ quote/เทียบ案例 · ห้ามคัดจีนดิบ แปลไทยตามกฎ9" },
   { file: "dts-zhentian-clean.md", label: "📜 滴天髓闡微 ตัวบทจริง verbatim (ctext · 任鐵樵注 · GROUND TRUTH เหนือ reconstruction · 62 บท) · สาย旺衰氣勢: ยึดตอนอ่าน旺衰/化氣-從格/調候(寒暖燥濕)/通關/性情/疾病/女命/何知章 · 格局/相神ยึด子平真詮 · ห้ามคัดจีนดิบ แปลไทยตามกฎ9" },
-  { file: QTBJ_TIAOHOU_FILE, label: "📜 窮通寶鑑 · 調候用神/月令 ตัวบทจริง canonical (admin library id 13 · 10干×12เดือน · ใช้เติมชั้นร้อนเย็นแห้งชื้น ห้าม override packet)" },
-  { file: QTBJ_TIAOHOU_THAI_NOTES_FILE, label: "📘 窮通寶鑑 · Thai teaching notes จาก memo id 13 (ชั้นอธิบาย 調候/月令 เป็นไทย · ใช้เสริม canonical ห้าม override packet)" },
+  { file: QTBJ_TIAOHOU_FILE, label: "📜 窮通寶鑑 · 調候用神/月令 ตัวบทจริง canonical (admin library id 13 · 10干×12เดือน · source of truth ชั้นร้อนเย็นแห้งชื้น; raw packet เป็น evidence)" },
+  { file: QTBJ_TIAOHOU_THAI_NOTES_FILE, label: "📘 窮通寶鑑 · Thai teaching notes จาก memo id 13 (ชั้นอธิบาย 調候/月令 เป็นไทย · ใช้เสริม canonical; ห้ามชนะตัวบทจริง)" },
   { file: "smtg-clean.md", label: "📜 三命通會 (萬民英 · 明 1578 · 神煞+納音+論女命 verbatim)" },
   { file: "yhzp-clean.md", label: "📜 淵海子平 (徐升 · 宋 1271 · 子平 ต้นน้ำ · 五干通變圖+喜忌篇 verbatim)" },
   { file: "sftk-clean.md", label: "📜 神峰通考 (張楠 · 明 · 命理正宗 · 病藥論+動靜說+蓋頭說+男女合婚說 verbatim · ต้นทาง BY-08)" },
@@ -464,6 +489,8 @@ function buildSifuAuditEvidence(input: {
   const boundaryLine = firstContextLine(input.ctx, "ขอบวัน/Day boundary");
   const yongshenLine = firstContextLine(input.ctx, "用神:");
   const gejuLine = firstContextLine(input.ctx, "格局:");
+  const canonicalGejuLine = firstContextLine(input.ctx, "โครงดวง:");
+  const yongLayerLine = firstContextLine(input.ctx, "用神分層");
   const packetExcerpt = packetContextExcerpt(input.ctx);
   const pillars = extractPillarsFromLock(pillarLock);
   const expectedDm = extractExpectedDM(input.ctx);
@@ -476,6 +503,8 @@ function buildSifuAuditEvidence(input: {
     pillarLock,
     yongshenLine,
     gejuLine,
+    canonicalGejuLine,
+    yongLayerLine,
     packetExcerpt.join("\n"),
   ].filter(Boolean).join("\n");
   const packetHash = packetEvidenceText ? hashText(packetEvidenceText) : null;
@@ -557,6 +586,8 @@ type SifuSourceShadowAuditInput = {
   message: string;
   history: Msg[];
   prompt: string | null;
+  answer?: string | null;
+  answerSupportedBy?: SifuAnswerSupportedByAudit | null;
   /* ⟦SRC⟧ self-report (13 มิ.ย.): เล่มที่ AI อ้างว่าใช้ + ส่วนที่ตอบจากความรู้เทรน · parse จากบรรทัด TRACE */
   claimedSrc?: { books: string[]; trained: string | null } | null;
 };
@@ -581,6 +612,8 @@ function buildSifuShadowAuditHashes(ctx: string, prompt: string | null): {
     pillarLock,
     firstContextLine(ctx, "用神:"),
     firstContextLine(ctx, "格局:"),
+    firstContextLine(ctx, "โครงดวง:"),
+    firstContextLine(ctx, "用神分層"),
     packetContextExcerpt(ctx).join("\n"),
   ].filter(Boolean).join("\n");
   return {
@@ -636,6 +669,15 @@ function scheduleSifuSourceShadowAudit(input: SifuSourceShadowAuditInput): void 
           proofLevel: "claim_only",
           sourceIds: input.claimedSrc.books,
           raw: input.claimedSrc.trained ? `เทรน=${input.claimedSrc.trained}` : undefined,
+        };
+      }
+      if (input.answer) {
+        plan.candidate.sourceAudit.status = "posthoc";
+        plan.candidate.sourceAudit.answerHash = hashText(input.answer);
+        plan.candidate.sourceAudit.answerSupportedBy = input.answerSupportedBy || {
+          method: "not_run",
+          proofLevel: "none",
+          sources: [],
         };
       }
       logSifuSourceAuditSafe({ session: input.session, req: input.req, record: plan.candidate.sourceAudit });
@@ -839,12 +881,9 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
       `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement} · ${g.DM_FACT_LOCK}`,
       `PILLAR LOCK (ก้าน/กิ่งทุกเสา · เวลาอ้างเสาใดให้คัดจากบรรทัดนี้ตรงๆ ห้ามประกอบ/เดาเอง): 年${calc.pillarsZh.year} 月${calc.pillarsZh.month} 日${calc.pillarsZh.day} 時${is3p ? "—" : calc.pillarsZh.hour}`,
       g.DM_THAI_LOCK.replace("{{DM_ELEMENT}}", () => dmElementTh).replace("{{DM_POLARITY}}", () => dmPolarityTh),
-      `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
-      `用神: ${calc.yongshen.slice(0, 3).map(y => `${y.stem}(${y.element})`).join(" · ")}`,
-      `格局: ${calc.geJu.structure || "ปกติ"}`,
+      `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · กำลัง${calc.strength.level}`,
       `納音: 年${ny.year?.zh||"-"} · 月${ny.month?.zh||"-"} · 日${ny.day?.zh||"-"} · 時${ny.hour?.zh||"-"}`,
     ];
-    // TODO Step1.1: dedupe 用神/格局 ที่ซ้ำกับ renderChartPrompt
     const rootedness = await computeRootedness(calc.pillars);
     const [slY, slMo, slD] = date.split("-").map(Number);
     const [slH, slMi] = time.split(":").map(Number);
@@ -855,15 +894,18 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
       monthBoundary: is3p ? monthPillarBoundary(date) : null, // 月柱ก้ำกึ่ง節氣 → ไหล conf ลง field เดือน (เฉพาะ 3 เสา)
     });
     validateChartPacket(packet);
-    /* HK_YONG_LOCK_V1 — pin 用神/喜/忌 (element) ระดับ context guard เหมือน FACT/PILLAR LOCK
-     * conditional ตาม 格局 confidence · เสริม Phase 2 (confidence note ใน packet) · ย้ำให้ AI ยึดก่อนเจอ user แย้ง
-     * ก้ำกึ่ง=ยังบอก 2 ทางได้ (ไม่ล็อกตาย) · กฎ 4.2 เปิดให้ปรับถ้าลูกค้าชี้หลักฐานผัง */
+    /* HK_YONG_LOCK_V2 — classics-first: FACT/PILLAR เป็นข้อเท็จจริง; QTBJ/strict classic ชนะ engine รวมใน scope 調候 */
     {
       const _ugTh = (arr: string[]) => arr.length ? arr.map((e) => DM_LABEL_TH[e] || e).join("·") : "-";
       const _ugConf = packet.structure.confidence;
+      const _strict = packet.yongShenProtocols?.tiaoHou?.strict;
+      const _strictTxt = _strict
+        ? ` · strict調候=${_strict.dmStem}日${_strict.monthBranch}月 主=${_ugTh(_strict.primaryElements)} 次=${_ugTh(_strict.secondaryElements)} 再=${_ugTh(_strict.tertiaryElements)}`
+        : "";
       lines.push(
-        `YONG_LOCK (ธาตุช่วยจาก engine · ยึดเป็นหลักเหมือน FACT LOCK · ห้ามสลับตามที่ลูกค้าแย้งถ้าไม่ชี้หลักฐานในผัง · ดูกฎ 4.2): ` +
-        `用神=${_ugTh(packet.usefulGods.yong)} · 喜=${_ugTh(packet.usefulGods.xi)} · 忌=${_ugTh(packet.usefulGods.ji)}` +
+        `YONG_LOCK (classics-first · FACT/PILLAR ล็อกข้อเท็จจริง, คัมภีร์ strict ชนะใน scope ของมัน, engineรวมเป็นหลักฐานรอง): ` +
+        `engineรวม 用神=${_ugTh(packet.usefulGods.yong)} · 喜=${_ugTh(packet.usefulGods.xi)} · 忌=${_ugTh(packet.usefulGods.ji)}` +
+        _strictTxt +
         (_ugConf ? ` · ความมั่นใจโครง=${_ugConf}` : "")
       );
       /* moderate/low = ก้ำกึ่ง → แยกบรรทัดเตือนให้เด่น (high จะไม่มีบรรทัดนี้ = ฟันได้เต็มที่) */
@@ -1042,7 +1084,7 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
         dmThaiLock,
         `3 เสาแบบอ่านไทย: ปี=${STEM_TH[calc.pillars.year.stem]}/${BRANCH_TH_NAME[calc.pillars.year.branch]} · เดือน=${STEM_TH[calc.pillars.month.stem]}/${BRANCH_TH_NAME[calc.pillars.month.branch]} · วัน=${STEM_TH[calc.pillars.day.stem]}/${BRANCH_TH_NAME[calc.pillars.day.branch]} · ยาม=ไม่ทราบเวลาเกิด`,
         `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · กำลัง${calc.strength.level}`,
-        `โครงดวง: ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วย ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
+        `โครงดวงเบื้องต้นจาก engine (อ่านประกอบเท่านั้น; ถ้ามี strict月令/คัมภีร์ ให้ชนะบรรทัดนี้): ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วยเบื้องต้น ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
         g.LIMIT_3P_INTRO,
         boundaryWarning3p(input.date), // "" ถ้าไม่ก้ำกึ่ง → filter ทิ้ง
       ].filter(Boolean).join("\n");
@@ -1073,9 +1115,8 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
       g.DM_THAI_LOCK.replace("{{DM_ELEMENT}}", () => dmElementTh).replace("{{DM_POLARITY}}", () => dmPolarityTh),
       `สี่เสาแบบอ่านไทย: ปี=${STEM_TH[calc.pillars.year.stem]}/${BRANCH_TH_NAME[calc.pillars.year.branch]} · เดือน=${STEM_TH[calc.pillars.month.stem]}/${BRANCH_TH_NAME[calc.pillars.month.branch]} · วัน=${STEM_TH[calc.pillars.day.stem]}/${BRANCH_TH_NAME[calc.pillars.day.branch]} · ยาม=${STEM_TH[calc.pillars.hour.stem]}/${BRANCH_TH_NAME[calc.pillars.hour.branch]}`,
       `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · กำลัง${calc.strength.level}`,
-      `โครงดวง: ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วย ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
+      `โครงดวงเบื้องต้นจาก engine (อ่านประกอบเท่านั้น; ค่าหลักดูบรรทัด "โครงดวง:" จาก packet canonical ด้านล่าง): ${calc.geJu.structure || "ปกติ"} · อากาศฤดู ${calc.climate || "-"} · ธาตุช่วยเบื้องต้น ${calc.yongshen.slice(0, 3).map((y) => `${DM_LABEL_TH[y.element] || y.element}`).join(" · ")}`,
     ];
-    // TODO Step1.1: dedupe 用神/格局 ที่ซ้ำกับ renderChartPrompt
     const rootedness = await computeRootedness(calc.pillars);
     const [slY, slMo, slD] = String(input.date).split("-").map(Number);
     const [slH, slMi] = String(input.time || "12:00").split(":").map(Number);
@@ -1580,6 +1621,12 @@ export async function POST(req: Request) {
     const useCache = mode !== "intro";
     const cached = useCache ? await getCachedReply(key) : null;
     if (cached) {
+      const safeCachedReply = sanitizePacketEvidenceClaims(cached.reply, ctx);
+      const cachedCritical = checkSifuCriticalEvidence(safeCachedReply, message, ctx, { hasPacket: !!extractExpectedDM(ctx) });
+      if (!cachedCritical.ok) {
+        console.warn(`[sifu] cache bypass: critical evidence stale (${cachedCritical.missing.map((m) => m.code).join(",")})`);
+      } else {
+      const answerSupportedBy = buildSifuAnswerSupportAudit(safeCachedReply, cachedCritical);
       const auditPromptT0 = Date.now();
       const auditPrompt = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: sifuModel === "codex-cli" });
       const auditPromptMs = Date.now() - auditPromptT0;
@@ -1611,6 +1658,8 @@ export async function POST(req: Request) {
         message,
         history,
         prompt: auditPrompt,
+        answer: safeCachedReply,
+        answerSupportedBy,
       });
       logResearchAiMessageSafe({
         session,
@@ -1621,7 +1670,7 @@ export async function POST(req: Request) {
         lang,
         profileId: profileId || null,
         question: message,
-        answer: cached.reply,
+        answer: safeCachedReply,
         history,
         requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
         responseMeta: { cache_key: key.slice(0, 8), context_cache: contextCache, thread_id: threadId, audit_quality: audit.auditQuality, packet_hash: audit.packetHash, prompt_hash: audit.promptHash },
@@ -1634,7 +1683,8 @@ export async function POST(req: Request) {
         route: "POST", mode, stream: false, profileId: profileId || undefined, contextCache, ctxMs,
         promptMs: auditPromptMs, promptChars: auditPrompt.length, totalMs: Date.now() - reqT0, cached: true,
       });
-      return NextResponse.json({ ...cached, reply: sanitizePacketEvidenceClaims(cached.reply, ctx), cached: true, key: key.slice(0, 8) });
+      return NextResponse.json({ ...cached, reply: safeCachedReply, cached: true, key: key.slice(0, 8) });
+      }
     }
     /* ⚠️ ส่ง history จริงเข้า prompt (ไม่ใช่ history:[] แบบ GET) · คำตอบต้องจำบทสนทนา */
     const promptT0 = Date.now();
@@ -1754,14 +1804,12 @@ export async function POST(req: Request) {
                   return;
                 }
               }
-              const rest = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(idBuf)), ctx); // strip ID+TRACE · ปล่อยเฉพาะเนื้อ
-              if (rest) { full += rest; sendFirstOnce(); send("chunk", { text: rest }); }
+              const rest = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(idBuf)), ctx); // strip ID+TRACE · buffer จน gate ผ่าน
+              if (rest) full += rest;
               return;
             }
             const visibleText = sanitizePacketEvidenceClaims(text, ctx);
             full += visibleText;
-            sendFirstOnce();
-            send("chunk", { text: visibleText });
           }, (text) => {
             cliErr += "\n" + text;
           });
@@ -1771,7 +1819,7 @@ export async function POST(req: Request) {
             cliErr += text;
             console.warn("[sifu sse stderr]", text.slice(0, 200));
           });
-          child.on("close", (code) => {
+          child.on("close", async (code) => {
             releaseSlotOnce();
             activeChild = null;
             clearTimeout(killTimer);
@@ -1783,17 +1831,47 @@ export async function POST(req: Request) {
               safeClose(); return;
             }
             if (code === 0 && full.trim()) {
-              const payload = { reply: full.trim(), model: sifuModel }; // full = strip ID แล้ว (idBuf ไม่เข้า full)
+              let finalReply = full.trim(); // full = strip ID/TRACE แล้ว (idBuf ไม่เข้า full)
+              let finalRawForAudit = idBuf;
+              let finalCritical = checkSifuCriticalEvidence(finalReply, message, ctx, { hasPacket: !!expectedDM });
+              if (!finalCritical.ok) {
+                console.warn(`[sifu] critical-evidence retry (stream) profile=${profileId || "-"} missing=${finalCritical.missing.map((m) => m.code).join(",")}`);
+                let retryRaw: string;
+                try {
+                  retryRaw = await runSifuCli(buildSifuGateRetryPrompt({
+                    prompt,
+                    expectedDM,
+                    traceFacts,
+                    idReason: "ok",
+                    traceReason: "ok",
+                    critical: finalCritical,
+                  }), sifuModel);
+                } catch (e) {
+                  console.error("[sifu] stream gate retry threw", e instanceof Error ? e.message : e);
+                  send("error", { error: "critical_evidence_retry_failed" });
+                  safeClose(); return;
+                }
+                const retryId = validateIdentity(retryRaw, expectedDM);
+                const retryTrace = validateTrace(retryRaw, traceFacts);
+                const retryClean = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(retryRaw)), ctx).trim();
+                const retryCritical = checkSifuCriticalEvidence(retryClean, message, ctx, { hasPacket: !!expectedDM });
+                if (!retryId.ok || !retryTrace.ok || !retryCritical.ok) {
+                  console.error(`[sifu] stream gate FAIL after retry id=${retryId.reason} trace=${retryTrace.reason} critical=${retryCritical.missing.map((m) => m.code).join(",") || "ok"}`);
+                  send("error", { error: "critical_evidence_mismatch", missing: retryCritical.missing.map((m) => m.code) });
+                  safeClose(); return;
+                }
+                finalReply = retryClean;
+                finalRawForAudit = retryRaw;
+                finalCritical = retryCritical;
+              }
+              const answerSupportedBy = buildSifuAnswerSupportAudit(finalReply, finalCritical);
+              const payload = { reply: finalReply, model: sifuModel };
               /* HK_SIFU_EVIDENCE_TRACE_V1 — log-only (stream ส่งครบแล้ว · ไม่ retry/ไม่ตัด · try-catch กัน uncaught ใน ReadableStream) */
               let evTrace: ReturnType<typeof checkSifuEvidenceTrace> | null = null;
               try {
                 evTrace = checkSifuEvidenceTrace(payload.reply, message, !!expectedDM);
                 if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (stream) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
               } catch { /* log-only · ห้ามให้กระทบ stream ที่ส่งครบแล้ว */ }
-              try {
-                const critical = checkSifuCriticalEvidence(payload.reply, message, ctx, { hasPacket: !!expectedDM });
-                if (!critical.ok) console.warn(`[sifu] critical-evidence incomplete (stream) profile=${profileId || "-"} missing=${critical.missing.map((m) => m.code).join(",")}`);
-              } catch { /* log-only · stream ส่งครบแล้ว retry ไม่ปลอดภัย */ }
               if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
               scheduleSifuSourceShadowAudit({
                 session,
@@ -1805,11 +1883,13 @@ export async function POST(req: Request) {
                 model: sifuModel,
                 cached: false,
                 profileId,
-                claimedSrc: parseClaimedSources(idBuf),
+                claimedSrc: parseClaimedSources(finalRawForAudit),
                 ctx,
                 message,
                 history,
                 prompt,
+                answer: payload.reply,
+                answerSupportedBy,
               });
               logResearchAiMessageSafe({
                 session,
@@ -1829,7 +1909,9 @@ export async function POST(req: Request) {
                 cached: false,
                 ...auditFor(expectedDM ? "pass" : "not_required"),
               });
-              send("done", { ms, model: payload.model, cached: false, chars: full.length });
+              sendFirstOnce();
+              send("chunk", { text: payload.reply });
+              send("done", { ms, model: payload.model, cached: false, chars: payload.reply.length });
               sifuTimingLog("stream-done", {
                 route: "POST", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
                 promptMs, promptChars: prompt.length, firstMs, totalMs: Date.now() - reqT0, cached: false,
@@ -1901,6 +1983,7 @@ export async function POST(req: Request) {
       if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (json) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
     } catch { /* log-only · ห้ามให้กระทบคำตอบ */ }
     const cleanReply = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(reply)), ctx);
+    const answerSupportedBy = buildSifuAnswerSupportAudit(cleanReply, criticalCheck);
     const ms = Date.now() - t0;
     const payload = { reply: cleanReply, model: sifuModel };
     if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {}); // cache เฉพาะที่ผ่าน id-check แล้ว (ถึงบรรทัดนี้=ผ่าน)
@@ -1919,6 +2002,8 @@ export async function POST(req: Request) {
       message,
       history,
       prompt,
+      answer: cleanReply,
+      answerSupportedBy,
     });
     logResearchAiMessageSafe({
       session,
@@ -2048,6 +2133,11 @@ export async function GET(req: Request) {
       // 1. Cache hit → ส่งทั้งก้อนทันที
       if (cached) {
         const safeReply = sanitizePacketEvidenceClaims(cached.reply, ctx);
+        const cachedCritical = checkSifuCriticalEvidence(safeReply, message, ctx, { hasPacket: !!extractExpectedDM(ctx) });
+        if (!cachedCritical.ok) {
+          console.warn(`[sifu] GET cache bypass: critical evidence stale (${cachedCritical.missing.map((m) => m.code).join(",")})`);
+        } else {
+        const answerSupportedBy = buildSifuAnswerSupportAudit(safeReply, cachedCritical);
         const auditPromptT0 = Date.now();
         const auditPrompt = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: sifuModel === "codex-cli" });
         const auditPromptMs = Date.now() - auditPromptT0;
@@ -2079,6 +2169,8 @@ export async function GET(req: Request) {
           message,
           history: [],
           prompt: auditPrompt,
+          answer: safeReply,
+          answerSupportedBy,
         });
         logResearchAiMessageSafe({
           session,
@@ -2107,6 +2199,7 @@ export async function GET(req: Request) {
         });
         safeClose();
         return;
+        }
       }
 
       // 2. Cache miss → spawn Claude + pipe stdout chunk-by-chunk
@@ -2220,17 +2313,11 @@ export async function GET(req: Request) {
             }
           }
           const rest = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(idBuf)), ctx);
-          if (rest) { full += rest; send("chunk", { text: rest }); if (!firstChunkSent) { firstMs = Date.now() - t0; send("first", { ms: firstMs }); firstChunkSent = true; } }
+          if (rest) full += rest;
           return;
         }
         const visibleText = sanitizePacketEvidenceClaims(text, ctx);
-        send("chunk", { text: visibleText });
         full += visibleText;
-        if (!firstChunkSent) {
-          firstMs = Date.now() - t0;
-          send("first", { ms: firstMs });
-          firstChunkSent = true;
-        }
       }, (text: string) => {
         cliErr += "\n" + text;
       });
@@ -2240,14 +2327,48 @@ export async function GET(req: Request) {
         cliErr += text;
         console.warn("[sifu sse stderr]", text.slice(0, 200));
       });
-      c.on("close", (code) => {
+      c.on("close", async (code) => {
         releaseSlotOnceG();
         clearTimeout(killTimer);
         if (idRejected) { safeClose(); return; }
         const ms = Date.now() - t0;
         if (expectedDM && !idChecked) { send("error", { error: "identity_mismatch", reason: "no_id_line" }); safeClose(); return; }
         if (code === 0 && full.trim()) {
-          const payload = { reply: full.trim(), model: sifuModel };
+          let finalReply = full.trim();
+          let finalRawForAudit = idBuf;
+          let finalCritical = checkSifuCriticalEvidence(finalReply, message, ctx, { hasPacket: !!expectedDM });
+          if (!finalCritical.ok) {
+            console.warn(`[sifu] critical-evidence retry (GET stream) profile=${profileId || "-"} missing=${finalCritical.missing.map((m) => m.code).join(",")}`);
+            let retryRaw: string;
+            try {
+              retryRaw = await runSifuCli(buildSifuGateRetryPrompt({
+                prompt,
+                expectedDM,
+                traceFacts,
+                idReason: "ok",
+                traceReason: "ok",
+                critical: finalCritical,
+              }), sifuModel);
+            } catch (e) {
+              console.error("[sifu] GET stream gate retry threw", e instanceof Error ? e.message : e);
+              send("error", { error: "critical_evidence_retry_failed" });
+              safeClose(); return;
+            }
+            const retryId = validateIdentity(retryRaw, expectedDM);
+            const retryTrace = validateTrace(retryRaw, traceFacts);
+            const retryClean = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(retryRaw)), ctx).trim();
+            const retryCritical = checkSifuCriticalEvidence(retryClean, message, ctx, { hasPacket: !!expectedDM });
+            if (!retryId.ok || !retryTrace.ok || !retryCritical.ok) {
+              console.error(`[sifu] GET stream gate FAIL after retry id=${retryId.reason} trace=${retryTrace.reason} critical=${retryCritical.missing.map((m) => m.code).join(",") || "ok"}`);
+              send("error", { error: "critical_evidence_mismatch", missing: retryCritical.missing.map((m) => m.code) });
+              safeClose(); return;
+            }
+            finalReply = retryClean;
+            finalRawForAudit = retryRaw;
+            finalCritical = retryCritical;
+          }
+          const answerSupportedBy = buildSifuAnswerSupportAudit(finalReply, finalCritical);
+          const payload = { reply: finalReply, model: sifuModel };
           if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
           scheduleSifuSourceShadowAudit({
             session,
@@ -2259,11 +2380,13 @@ export async function GET(req: Request) {
             model: sifuModel,
             cached: false,
             profileId,
-            claimedSrc: parseClaimedSources(idBuf),
+            claimedSrc: parseClaimedSources(finalRawForAudit),
             ctx,
             message,
             history: [],
             prompt,
+            answer: payload.reply,
+            answerSupportedBy,
           });
           logResearchAiMessageSafe({
             session,
@@ -2277,7 +2400,7 @@ export async function GET(req: Request) {
             answer: payload.reply,
             history: [],
             requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, prediction_phase: predictionPhase },
-            responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId },
+            responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId },
             model: payload.model,
             durationMs: Date.now() - reqT0,
             cached: false,
@@ -2296,7 +2419,13 @@ export async function GET(req: Request) {
               identityCheckResult: expectedDM ? "pass" : "not_required",
             }),
           });
-          send("done", { ms, model: payload.model, cached: false, chars: full.length });
+          if (!firstChunkSent) {
+            firstMs = Date.now() - t0;
+            send("first", { ms: firstMs });
+            firstChunkSent = true;
+          }
+          send("chunk", { text: payload.reply });
+          send("done", { ms, model: payload.model, cached: false, chars: payload.reply.length });
           sifuTimingLog("stream-done", {
             route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
             promptMs, promptChars: prompt.length, firstMs, totalMs: Date.now() - reqT0, cached: false,

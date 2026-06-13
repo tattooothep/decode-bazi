@@ -1,11 +1,11 @@
 /**
- * 📦 Structured Chart Packet (Step 1 Lite) · source of truth สำหรับ AI ซินแส
+ * 📦 Structured Chart Packet (Step 1 Lite) · deterministic evidence layer สำหรับ AI ซินแส
  *
  * ════════════════════ HARD RULE (ห้ามฝ่าฝืน) ════════════════════
- * 1. ChartPacket (object นี้) = source of truth · ภาษาไทยทุกบรรทัดเป็น "presentation layer" เท่านั้น
- *    → renderChartPrompt() ต้อง render จาก field ใน packet เท่านั้น · ห้ามเขียนไทยมือเปล่า/Thai-only
- * 2. ไฟล์นี้เป็น read-only consumer ของ ext (chart-extensions) + calc (bazi-calc)
- *    → ห้ามคำนวณดวงเอง · ห้ามตัดสินดวงใหม่ · ห้ามแตะ wrapper-7 หรือ engine Layer 0-2
+ * 1. คัมภีร์/ตัวบทคลาสสิกเป็น source of truth ในขอบเขตของมัน; ChartPacket เป็นหลักฐานคำนวณที่ต้องมี provenance
+ *    → renderChartPrompt() ต้อง render จาก field ใน packet เท่านั้น · field ที่ขัดกับ strict classic audit ต้องถูกลดเป็น raw/secondary
+ * 2. ไฟล์นี้เป็น read-only consumer ของ ext (chart-extensions) + calc (bazi-calc) + classic audits
+ *    → ห้ามแตะ wrapper-7 หรือ engine Layer 0-2 · อนุญาตให้ promote ผล strict audit เป็น canonical evidence ได้
  * 3. ห้ามใส่ strengthScore (ตัวเลข %) ลงใน packet หรือ render
  * 4. ห้ามทำ full resolver · resolverStatus ใช้แค่ flag transformed ที่ engine มีอยู่แล้ว
  * 5. ห้ามให้ AI / packet นี้ "คำนวณเสา" · packet แค่ map ค่าจาก engine ออกมาเป็น structure
@@ -172,6 +172,9 @@ export type ChartPacket = {
   }>;
   structure: {
     label: string;
+    rawEngineLabel?: string | null;
+    canonicalRuleKey?: string | null;
+    canonicalSource?: "engine" | "strict_classic_audit" | "false_follow_audit";
     special: { typeZh: string; friendly: string[] } | null;
     /** ระดับความมั่นใจของโครงดวง (label จาก wrapper ge-ju · ไม่ใช่ % ตัวเลข) */
     confidence?: string | null;
@@ -357,7 +360,7 @@ export type ChartPacket = {
     };
     bingYao: {
       protocol: "病藥";
-      status: "ok" | "not_applicable" | "needs_review" | null;
+      status: "ok" | "not_applicable" | "needs_review" | "lower_priority_conflicts_with_strict_tiaohou" | null;
       primaryId: string | null;
       medicineElements: ElementEN[];
       noteTh: string;
@@ -401,7 +404,7 @@ export type ChartPacket = {
     ageStart: number; ageEnd: number; yearStart: number; yearEnd: number; isCurrent: boolean;
   }>;
   /** ปีจร/เดือนจรในวัยจรปัจจุบัน · engine precomputed จาก chart-extensions
-   * ส่งให้ AI ใช้เป็น source of truth เวลา user ถามย้อนหลัง/รายเดือน · ห้าม AI คำนวณเสาเอง */
+   * ส่งให้ AI ใช้เป็น deterministic evidence เวลา user ถามย้อนหลัง/รายเดือน · ห้าม AI คำนวณเสาเอง */
   transitDrilldown: {
     source: "engine_luck_decade_drilldown";
     monthPillarMethod: "jieqi_major_terms_with_mid_month_fallback";
@@ -517,7 +520,7 @@ export type ChartPacket = {
   };
   timeline: string[];
   aiResponsePolicy: {
-    sourceOfTruth: "chartPacket";
+    sourceOfTruth: "classics_first_packet_evidence";
     noPercent: true;
     noPillarGuess: true;
     selectEvidence: { min: number; max: number };
@@ -1132,10 +1135,10 @@ function godsForElementsBY(dmElement: ElementEN, els: ElementEN[]): string[] {
 function isFalseFollowCandidateLabel(label: string): boolean {
   return /^假從/.test((label || "").trim());
 }
-function isFalseFollowAuditConflict(a: ChartPacket["strictGeJuAudit"] | undefined): a is NonNullable<ChartPacket["strictGeJuAudit"]> {
+function isFalseFollowAuditConflict(a: ChartPacket["strictGeJuAudit"] | undefined): boolean {
   return !!a && isFalseFollowCandidateLabel(a.currentLabel) && !a.matchesCurrent && !!a.strictLabel;
 }
-function isStrictGeJuPrimaryAudit(a: ChartPacket["strictGeJuAudit"] | undefined): a is NonNullable<ChartPacket["strictGeJuAudit"]> {
+function isStrictGeJuPrimaryAudit(a: ChartPacket["strictGeJuAudit"] | undefined): boolean {
   if (!a || !a.strictLabel || a.matchesCurrent) return false;
   if (isFalseFollowCandidateLabel(a.currentLabel)) return false;
   if (a.confidence !== "high") return false;
@@ -1143,6 +1146,37 @@ function isStrictGeJuPrimaryAudit(a: ChartPacket["strictGeJuAudit"] | undefined)
 }
 function rawGeJuSecondaryLabel(label: string): string {
   return (label || "ปกติ").replace(/格/g, "");
+}
+function displayStrictGeJuLabel(a: NonNullable<ChartPacket["strictGeJuAudit"]>): string {
+  const label = a.strictLabel || "ปกติ";
+  if (a.selectedSource === "storage_visible" && !label.startsWith("雜氣")) {
+    return `雜氣${label}`;
+  }
+  return label;
+}
+function canonicalGeJuFromAudit(
+  rawLabel: string,
+  a: NonNullable<ChartPacket["strictGeJuAudit"]> | undefined,
+): { label: string; ruleKey: string | null; source: NonNullable<ChartPacket["structure"]["canonicalSource"]> } {
+  if (a && isFalseFollowAuditConflict(a)) {
+    return {
+      label: displayStrictGeJuLabel(a),
+      ruleKey: a.strictLabel || null,
+      source: "false_follow_audit",
+    };
+  }
+  if (a && isStrictGeJuPrimaryAudit(a)) {
+    return {
+      label: displayStrictGeJuLabel(a),
+      ruleKey: a.strictLabel || null,
+      source: "strict_classic_audit",
+    };
+  }
+  return {
+    label: rawLabel || "ปกติ",
+    ruleKey: geToRuleKey(rawLabel || ""),
+    source: "engine",
+  };
 }
 function isConfirmedSpecialStructureForProtocol(label: string): boolean {
   const l = (label || "").trim();
@@ -1305,6 +1339,7 @@ type StrictTiaoHouRule = {
   rationaleZh: string;
 };
 const STRICT_TIAOHOU_TABLE: Record<string, StrictTiaoHouRule> = {
+  "壬|丑": { primary: ["丙"], secondary: ["甲"], tertiary: ["丁"], rationaleZh: "十二月壬水，寒水成冰，專用丙火，甲木佐之，丁火酌用" },
   "壬|戌": { primary: ["甲"], secondary: ["丙"], tertiary: [], rationaleZh: "以甲制戌中戊土，丙火為佐" },
   "戊|未": { primary: ["癸"], secondary: ["丙"], tertiary: ["甲"], rationaleZh: "調候為急，癸不可缺，丙火配用，土重不能無甲" },
 };
@@ -1362,6 +1397,16 @@ function buildYongShenProtocols(
     }
   }
   const byPrimary = bingYao?.primary || null;
+  const strictUsefulElements = uniqElsBY([
+    ...(strictTiaoHou?.primaryElements || []),
+    ...(strictTiaoHou?.secondaryElements || []),
+    ...(strictTiaoHou?.tertiaryElements || []),
+  ]);
+  const byConflictsStrictTiaoHou = !!byPrimary &&
+    strictUsefulElements.length > 0 &&
+    byPrimary.medicineElements.length > 0 &&
+    !byPrimary.medicineElements.some((e) => strictUsefulElements.includes(e));
+  const byDisplayPrimary = byConflictsStrictTiaoHou ? null : byPrimary;
   return {
     tag: "HK_YONGSHEN_PROTOCOL_SPLIT_V1",
     ctextPrinciple: "子平真詮: 用神先看月令/格局；調候、扶抑、病藥、相神ต้องแยกชั้น ไม่เรียกปนกัน",
@@ -1405,10 +1450,12 @@ function buildYongShenProtocols(
     },
     bingYao: {
       protocol: "病藥",
-      status: bingYao?.status || null,
-      primaryId: byPrimary?.id || null,
-      medicineElements: byPrimary?.medicineElements || [],
-      noteTh: byPrimary
+      status: byConflictsStrictTiaoHou ? "lower_priority_conflicts_with_strict_tiaohou" : (bingYao?.status || null),
+      primaryId: byDisplayPrimary?.id || null,
+      medicineElements: byDisplayPrimary?.medicineElements || [],
+      noteTh: byConflictsStrictTiaoHou
+        ? `病藥候選 ${byPrimary.id} ให้藥=${byPrimary.medicineElements.map(elementTh).join("·") || "-"} แต่ขัด strict調候 (${strictUsefulElements.map(elementTh).join("·")}) → ลดเป็นรอง ห้ามเรียกเป็นตัวยาหลัก`
+        : byPrimary
         ? "病藥คือจุดเสียกับตัวยาเชิงโครงสร้าง แยกจากชื่อ格และ調候"
         : bingYao?.status === "not_applicable"
           ? "ดวงพิเศษไม่ใช้病藥แบบ扶抑ตรงๆ"
@@ -1443,7 +1490,7 @@ function buildStrictGeJuAuditPacket(
     sourceRuleIds: audit.sourceRuleIds,
     thaiSummary: audit.thaiSummary,
     canonicalChinese: audit.canonicalChinese,
-    noteTh: "audit-only: ใช้แยกชื่อ格ตาม月令 strict ออกจากพลังที่ engine อ่านใช้งานจริง ไม่ใช่การเปลี่ยนผลดวง",
+    noteTh: "classic canonical: strict月令จาก子平真詮ใช้เป็นโครงหลักเมื่อชนกับ raw engine; raw engine เหลือเป็นป้ายรอง/provenance",
   };
 }
 
@@ -2044,6 +2091,12 @@ export function buildStructuredChartPacket(
     });
   });
   const crossLayerComboHits = [...currentCrossLayerCombos, ...futureCrossLayerCombos];
+  const rawStructureLabel = calc.geJu?.structure || "ปกติ";
+  const strictGeJuAudit = buildStrictGeJuAuditPacket(
+    calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
+    rawStructureLabel,
+  );
+  const canonicalGeJu = canonicalGeJuFromAudit(rawStructureLabel, strictGeJuAudit);
 
   const packet: ChartPacket = {
     packetVersion: "hourkey-chart-packet-lite-v1.1",
@@ -2061,16 +2114,16 @@ export function buildStructuredChartPacket(
     },
     pillars,
     structure: {
-      label: calc.geJu?.structure || "ปกติ",
+      label: canonicalGeJu.label,
+      rawEngineLabel: rawStructureLabel,
+      canonicalRuleKey: canonicalGeJu.ruleKey,
+      canonicalSource: canonicalGeJu.source,
       special: ext.special_chart?.applicable
         ? { typeZh: ext.special_chart.type_zh, friendly: ext.special_chart.friendly_elements || [] }
         : null,
-      confidence: calc.geJu?.confidence ?? null,
+      confidence: canonicalGeJu.source === "engine" ? (calc.geJu?.confidence ?? null) : strictGeJuAudit.confidence,
     },
-    strictGeJuAudit: buildStrictGeJuAuditPacket(
-      calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
-      calc.geJu?.structure || "ปกติ",
-    ),
+    strictGeJuAudit,
     /* HK_HUAQI_VERDICT_V1 · wrapper-8 化氣格 verdict (真化/假化/合而不化)
      * additive-only · ไม่ override structure.label · ไม่กระทบ wrapper-7 (อ่านแค่ findTransformation) */
     huaQi: (() => {
@@ -2145,7 +2198,7 @@ export function buildStructuredChartPacket(
     })() : null,
     xiangShen: buildXiangShen(
       calc.pillars as Record<string, { stem: string; branch: string } | null>,
-      dm, calc.geJu?.structure || "",
+      dm, canonicalGeJu.ruleKey || canonicalGeJu.label,
     ),
     usefulGods: {
       yong,
@@ -2214,7 +2267,7 @@ export function buildStructuredChartPacket(
     },
     timeline,
     aiResponsePolicy: {
-      sourceOfTruth: "chartPacket",
+      sourceOfTruth: "classics_first_packet_evidence",
       noPercent: true,
       noPillarGuess: true,
       selectEvidence: { min: 3, max: 5 },
@@ -2227,8 +2280,11 @@ export function buildStructuredChartPacket(
     cyp ? { stem: cyp.stem, branch: cyp.branch } : null,
     rootedness?.dmLabel, calc.mode === "3p",
   );
+  const bingYaoStructureLabel = isFalseFollowCandidateLabel(packet.structure.rawEngineLabel || "")
+    ? `${packet.structure.rawEngineLabel} ${packet.structure.label}`
+    : `${packet.structure.label} ${packet.structure.special?.typeZh || ""}`;
   packet.bingYao = buildBingYao(
-    `${packet.structure.label} ${packet.structure.special?.typeZh || ""}`,
+    bingYaoStructureLabel,
     dmElement,
     packet.rootedness ?? null,
     packet.usefulGods,
@@ -2335,9 +2391,9 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   const falseFollowAudit = isFalseFollowAuditConflict(packet.strictGeJuAudit) ? packet.strictGeJuAudit : null;
   const strictPrimaryAudit = !falseFollowAudit && isStrictGeJuPrimaryAudit(packet.strictGeJuAudit) ? packet.strictGeJuAudit : null;
   let structureLine = falseFollowAudit
-    ? `โครงดวง: candidate หลัก=${falseFollowAudit.strictLabel} (strict月令 · มั่นใจ=สูง) · raw engine候選=${packet.structure.label} (candidate รอง · ยังไม่ถึงเกณฑ์從แท้ · ดู gate ใน 從格ตรวจทาน)`
+    ? `โครงดวง: candidate หลัก=${displayStrictGeJuLabel(falseFollowAudit)} (strict月令 · มั่นใจ=สูง) · raw engine候選=${falseFollowAudit.currentLabel} (candidate รอง · ยังไม่ถึงเกณฑ์從แท้ · ดู gate ใน 從格ตรวจทาน)`
     : strictPrimaryAudit
-      ? `โครงดวง: strict月令หลัก=${strictPrimaryAudit.strictLabel} (เลือก${strictPrimaryAudit.selectedStem || "-"}${strictPrimaryAudit.tenGod ? `/${strictPrimaryAudit.tenGod}` : ""} จาก月令藏干透干 · มั่นใจ=สูง) · raw engineป้ายรอง=${rawGeJuSecondaryLabel(packet.structure.label)} (ห้ามใช้เป็น格局หลักในคำตอบ)`
+      ? `โครงดวง: strict月令หลัก=${displayStrictGeJuLabel(strictPrimaryAudit)} (เลือก${strictPrimaryAudit.selectedStem || "-"}${strictPrimaryAudit.tenGod ? `/${strictPrimaryAudit.tenGod}` : ""} จาก月令藏干透干 · มั่นใจ=สูง) · raw engineป้ายรอง=${rawGeJuSecondaryLabel(strictPrimaryAudit.currentLabel)} (ห้ามใช้เป็น格局หลักในคำตอบ)`
     : `โครงดวง: ${packet.structure.label}`;
   if (packet.structure.special) {
     if (falseFollowAudit && isFalseFollowCandidateLabel(packet.structure.special.typeZh || packet.structure.label)) {
@@ -2431,19 +2487,19 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     const verdict = a.matchesCurrent ? "ตรงกับ engine label" : strictPrimaryAudit ? "strict月令ชนะ engine label (ใช้เป็นโครงหลัก)" : "ต่างจาก engine label";
     const stemTxt = a.selectedStem ? `${a.selectedStem}${a.tenGod ? `/${a.tenGod}` : ""}` : "-";
     const auditHead = falseFollowAudit
-      ? `raw engine候選=${a.currentLabel} · strict月令(candidate หลัก)=${a.strictLabel || "-"}`
+      ? `raw engine候選=${a.currentLabel} · strict月令(candidate หลัก)=${displayStrictGeJuLabel(a)}`
       : strictPrimaryAudit
-        ? `strict月令หลัก=${a.strictLabel || "-"} · raw engineป้ายรอง=${rawGeJuSecondaryLabel(a.currentLabel)}`
+        ? `strict月令หลัก=${displayStrictGeJuLabel(a)} · raw engineป้ายรอง=${rawGeJuSecondaryLabel(a.currentLabel)}`
       : `engine=${a.currentLabel} · strict月令=${a.strictLabel || "-"}`;
     lines.push(
-      `格局 strict audit (audit-only): ` +
+      `格局 strict/canonical audit: ` +
       `${auditHead} · 選用=${stemTxt} · ` +
       `${verdict} · ${a.noteTh} · ตำราอ้าง ${a.canonicalChinese}`
     );
     if (falseFollowAudit) {
       lines.push(
         `從格ตรวจทาน (หลักฐานเทียบสองทาง · ไม่จำกัดลีลาซินแส): ` +
-        `candidate หลัก=strict月令=${a.strictLabel || "-"} (มั่นใจ=สูง · 子平真詮 月令取用) · ` +
+      `candidate หลัก=strict月令=${a.strictLabel || "-"} (มั่นใจ=สูง · 子平真詮 月令取用) · ` +
         `candidate รอง=raw engine=${a.currentLabel} (มั่นใจ=ต่ำ · 候選/ป้ายเตือน) · ` +
         `gate ของ從แท้: ตัวตนไร้ราก + ไม่มี印/比劫เข้ามาช่วย · ` +
         `flip reason: ถ้าธาตุช่วยรวมกลับไปทาง印/比劫 → 扶抑+病藥ตามปกติ · ` +
@@ -2452,7 +2508,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     }
   }
 
-  /* ธาตุช่วย (engine-derived · เป็นฐานให้ซินแสตัดสิน) */
+  /* ธาตุช่วย (engine-derived · หลักฐานรอง/provenance; strict 調候/格局 ใน scope ของมันต้องชนะ) */
   const fmtEls = (arr: string[]) => arr.length ? arr.map((e) => elementTh(e)).join(" · ") : "-";
   /* HK_YONGSHEN_CONFIDENCE_TAG_V1 — ดึง 格局 confidence มาติดบรรทัด用神 (เดิมอยู่ไกลที่ structureLine
    * → AI ไม่เชื่อมโยง → ตัดสิน用神ข้างเดียว/พลิกตาม user) · ไม่แก้ค่า usefulGods · additive render เท่านั้น
@@ -2460,11 +2516,11 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   const _yongConf = packet.structure.confidence;
   const _yongConfNote = _yongConf
     ? ` · [ความมั่นใจชุดธาตุช่วยนี้ (อิงความมั่นใจโครง格局) = ${_yongConf}${_yongConf !== "high"
-        ? " → ⚠️ก้ำกึ่ง: อ่านได้ 2 ทาง ต้องบอกลูกค้าว่าก้ำกึ่ง + อธิบายทั้งสองด้าน + ชี้ทางที่ engine ให้น้ำหนัก · ห้ามฟันธาตุช่วยข้างเดียวเด็ดขาด · ห้ามพลิกตามที่ลูกค้าแย้งถ้าลูกค้าไม่ชี้หลักฐานในผัง (ดูกฎ 4.2)"
-        : " → มั่นใจชัด ฟันธาตุช่วยได้ตามนี้"}]`
+	    ? " → ⚠️ก้ำกึ่ง: อ่านได้ 2 ทาง ต้องบอกลูกค้าว่าก้ำกึ่ง + อธิบายทั้งสองด้าน + ชี้ทางที่ strict/canonical ให้น้ำหนัก · ห้ามฟันธาตุช่วยข้างเดียวเด็ดขาด · ห้ามพลิกตามที่ลูกค้าแย้งถ้าลูกค้าไม่ชี้หลักฐานในผัง/คัมภีร์ (ดูกฎ 4.2)"
+	    : " → มั่นใจชัด ฟันธาตุช่วยได้ตามนี้"}]`
     : "";
   lines.push(
-    `ธาตุช่วยจากระบบ (engine-derived · ใช้เป็นฐานให้ซินแสตัดสิน): ` +
+    `ธาตุช่วยจากระบบ (engine-derived · หลักฐานรอง/provenance; ถ้าขัด strict調候/strict月令 ให้ใช้คัมภีร์ชนะ): ` +
     `ธาตุช่วยหลัก=${fmtEls(packet.usefulGods.yong)} · ` +
     `ธาตุช่วยรอง=${fmtEls(packet.usefulGods.xi)} · ` +
     `ธาตุระวัง=${fmtEls(packet.usefulGods.ji)}` +
@@ -2525,16 +2581,16 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     const _dsAgeTxt = _dsTest && Number.isFinite(_dsTest.ageStart) && Number.isFinite(_dsTest.ageEnd)
       ? `ช่วงอายุ ${_dsTest.ageStart}-${_dsTest.ageEnd} ` : "";
     const _dsTestTxt = _dsTest
-      ? ` · คำถามเฉลยชีวิต (ใช้ถามลูกค้าเพื่อยืนยันสำนัก · เลือกช่วงที่ผ่านมาแล้วเท่านั้น): "${_dsAgeTxt}(วัยจร ${_dsTest.stem}${_dsTest.branch} ธาตุ${elementTh(_dsTest.element)}) ชีวิตคุณรุ่งหรือฝืด?" → ${_dsSchoolA.includes(_dsTest.element) ? "รุ่ง=สาย①順勢(ยืนยันชุด engine) · ฝืด=สาย②扶抑" : "รุ่ง=สาย②扶抑 · ฝืด=สาย①順勢(ยืนยันชุด engine)"}`
+	      ? ` · คำถามเฉลยชีวิต (ใช้ถามลูกค้าเพื่อยืนยันสำนัก · เลือกช่วงที่ผ่านมาแล้วเท่านั้น): "${_dsAgeTxt}(วัยจร ${_dsTest.stem}${_dsTest.branch} ธาตุ${elementTh(_dsTest.element)}) ชีวิตคุณรุ่งหรือฝืด?" → ${_dsSchoolA.includes(_dsTest.element) ? "รุ่ง=สาย①順勢(ยืนยันจากชีวิตจริง) · ฝืด=สาย②扶抑" : "รุ่ง=สาย②扶抑 · ฝืด=สาย①順勢(ยืนยันจากชีวิตจริง)"}`
       : "";
     lines.push(
       `⚖️ ดวงก้ำกึ่ง 2 สำนัก (${packet.structure.label} · 假從=ตำราเองไม่ฟันธงเต็มร้อย): ` +
-      `สำนัก①順勢ตามกระแส(滴天髓 · engine ให้น้ำหนักทางนี้): ธาตุดี=${fmtEls(_dsSchoolA)} / ระวัง=${fmtEls(_dsSchoolB)} (從格忌印比·ฝืนพยุง=สวนกระแส) · ` +
+	      `สำนัก①順勢ตามกระแส(滴天髓 · candidate จากหลักฐานผัง): ธาตุดี=${fmtEls(_dsSchoolA)} / ระวัง=${fmtEls(_dsSchoolB)} (從格忌印比·ฝืนพยุง=สวนกระแส) · ` +
       `สำนัก②扶抑พยุงตัว(子平真詮 透印不從): ธาตุดี=${fmtEls(_dsSchoolB)} / ระวัง=${fmtEls(_dsSchoolA.filter((e) => !_dsSchoolB.includes(e)))} · ` +
       `กฎซินแสสำหรับดวงนี้: (ก)เมื่อพูดเรื่องธาตุช่วย/แนวทางชีวิต ให้บอกลูกค้าตรงๆ ว่าดวงนี้ตำราอ่านได้ 2 ทาง พร้อมสรุปทั้งสองมุมสั้นๆ ` +
       `(ข)ชวนลูกค้าเทียบเหตุการณ์จริงด้วยคำถามเฉลยชีวิต ` +
       `(ค)ถ้าลูกค้ายืนยันเหตุการณ์ชัดแล้ว → อ่านตามสำนักที่ชีวิตจริงยืนยัน และระบุว่า "ยืนยันจากชีวิตจริงของคุณแล้ว" ` +
-      `(ง)ยังไม่มีคำตอบ → ใช้สำนัก①(engine)เป็นหลัก พ่วงหมายเหตุสำนัก② · ห้ามฟันธงสำนักเดียวโดยไม่บอกอีกมุม (ยกเว้นมีบรรทัด "สำนักยืนยันแล้วจากชีวิตจริง" — ให้อ่านตามสำนักนั้นได้เลย)${_dsTestTxt}`
+	      `(ง)ยังไม่มีคำตอบ → ห้ามประกาศสำนักเดียวเป็นข้อเท็จจริง ให้บอกว่า "candidate ตามผังเอนทางสำนัก① แต่ยังต้องเทียบเหตุการณ์จริง" และพ่วงสำนัก②เสมอ (ยกเว้นมีบรรทัด "สำนักยืนยันแล้วจากชีวิตจริง" — ให้อ่านตามสำนักนั้นได้เลย)${_dsTestTxt}`
     );
   }
   /* HK_YONGSHEN_PROTOCOL_SPLIT_V1 — แยกชื่อ用神ตามตำรา ไม่เปลี่ยน logic เดิม */
@@ -2557,9 +2613,9 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       ? `${yp.xiangShen.geZh}/${yp.xiangShen.verdict || "-"}${yp.xiangShen.subLabel ? `/${yp.xiangShen.subLabel}` : ""}`
       : "-";
     const geJuForPrompt = falseFollowAudit
-      ? `${falseFollowAudit.strictLabel} (strict月令; raw候選=${yp.structure.geJuLabel})`
+      ? `${displayStrictGeJuLabel(falseFollowAudit)} (strict月令; raw候選=${falseFollowAudit.currentLabel})`
       : strictPrimaryAudit
-        ? `${strictPrimaryAudit.strictLabel} (strict月令หลัก; rawป้ายรอง=${rawGeJuSecondaryLabel(yp.structure.geJuLabel)})`
+        ? `${displayStrictGeJuLabel(strictPrimaryAudit)} (strict月令หลัก; rawป้ายรอง=${rawGeJuSecondaryLabel(strictPrimaryAudit.currentLabel)})`
       : yp.structure.geJuLabel;
     lines.push(
       `用神分層 (หลักฐาน 5 ชั้นตามตำรา · ไม่จำกัดสไตล์คำตอบ): ` +
@@ -2568,15 +2624,15 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       `engineรวมภาพรวม=${fmtEls(yp.finalCombined.yong)} / 喜=${fmtEls(yp.finalCombined.xi)} / 忌=${fmtEls(yp.finalCombined.ji)} · ` +
       `${yp.finalCombined.noteTh} · ตำราอ้าง ${yp.structure.canonicalChinese}`
     );
-    /* HK_YONGSHEN_RECONCILE_V1 — ชั้น扶抑(泄/抑)กับ engineรวม(忌) อาจจัดธาตุเดียวกันคนละมุม
-     * (เช่น น้ำ = ทางระบายในชั้น扶抑 แต่ = 忌ใน engineรวม) → AI สับสน · ชี้ว่าใช้ engineรวมเป็นข้อสรุป
+    /* HK_YONGSHEN_RECONCILE_V2 — ชั้น扶抑(泄/抑)กับ engineรวม(忌) อาจจัดธาตุเดียวกันคนละมุม
+     * (เช่น น้ำ = ทางระบายในชั้น扶抑 แต่ = 忌ใน engineรวม) → AI สับสน · ชี้ว่า engineรวมเป็น evidence/provenance ไม่ใช่ตัวชนะคัมภีร์ strict
      * additive render · ไม่แก้ค่า usefulGods/protocols */
     const _fuyiEls = new Set(yp.fuyi.candidateElements || []);
     const _conflictEls = (yp.finalCombined.ji || []).filter((e) => _fuyiEls.has(e));
     if (_conflictEls.length) {
       lines.push(
         `⚠️ ปรับให้ตรงกัน (扶抑 vs engineรวม): ธาตุ ${fmtEls(_conflictEls)} — ชั้น扶抑มองเป็นทางระบาย/ควบ (泄/抑) แต่ engineรวมจัดเป็น "ระวัง(忌)" · ` +
-        `ให้ยึด "engineรวม (用神/喜/忌)" เป็นข้อสรุปสุดท้าย ชั้น扶抑เป็นเหตุผลประกอบ (隨勢 — ธาตุนี้ดีเฉพาะเมื่อมีตัวกลางส่งต่อ ไม่ใช่เติมตรงๆ) · ห้ามรายงานธาตุนี้เป็น "ตัวช่วย" ลอยๆ`
+        `ให้รายงานเป็นชั้นแยก: strict調候/strict月令 ชนะใน scope ของคัมภีร์, engineรวมเป็นหลักฐานภาพรวม/provenance, ชั้น扶抑เป็นเหตุผลประกอบ (隨勢 — ธาตุนี้ดีเฉพาะเมื่อมีตัวกลางส่งต่อ ไม่ใช่เติมตรงๆ) · ห้ามรายงานธาตุนี้เป็น "ตัวช่วย" ลอยๆ`
       );
     }
   }
@@ -3066,7 +3122,7 @@ export function validateChartPacket(packet: ChartPacket): { ok: boolean; degrade
     warnings.push(`interactions.status ไม่ถูกต้อง: ${packet.interactions?.status}`);
   }
   const pol = packet.aiResponsePolicy;
-  if (!pol || pol.sourceOfTruth !== "chartPacket" || pol.noPercent !== true ||
+  if (!pol || pol.sourceOfTruth !== "classics_first_packet_evidence" || pol.noPercent !== true ||
       pol.noPillarGuess !== true || !pol.selectEvidence ||
       typeof pol.selectEvidence.min !== "number" || typeof pol.selectEvidence.max !== "number" ||
       pol.showFullChecklist !== false) {

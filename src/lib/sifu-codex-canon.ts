@@ -1,18 +1,19 @@
-export const SIFU_CODEX_BASE_CANON_VERSION = "codex-base-canon-v2";
+export const SIFU_CODEX_BASE_CANON_VERSION = "codex-base-canon-v3-classics-first";
 
 export const SIFU_CODEX_BASE_CANON = `
 # Codex base canon pack · BaZi compact classics
 
-Use this block only in Codex compact mode. It is a compressed teaching layer, not a replacement for the chart packet, engine output, or exact retrieved classics. If packet data and this block conflict, the packet wins. If a precise quoted source is needed and the retrieved block does not contain it, say the source is not in the supplied excerpt instead of inventing.
+Use this block only in Codex compact mode. It is a compressed teaching layer, not a replacement for FACT/PILLAR locks, the chart packet evidence, or exact retrieved classics. If raw packet data and exact retrieved classics conflict inside the classic's scope, the exact classic/canonical packet field wins and the raw packet field becomes secondary provenance. If a precise quoted source is needed and the retrieved block does not contain it, say the source is not in the supplied excerpt instead of inventing.
 
 ## Source Hierarchy
 
-1. FACT LOCK, PILLAR LOCK, structured chart packet, interactions, luck/year pillars.
-2. Exact retrieved classic snippets, especially 窮通寶鑑 pair/month snippets.
-3. This compact canon pack.
-4. General reasoning from five-element principles.
+1. FACT LOCK and PILLAR LOCK for immutable chart facts.
+2. Exact retrieved classic snippets and canonical packet fields in their scope, especially 子平真詮 for 格局/雜氣 and 窮通寶鑑 for 調候/月令.
+3. Structured chart packet, interactions, luck/year pillars as deterministic evidence/provenance.
+4. This compact canon pack.
+5. General reasoning from five-element principles.
 
-Never change Day Master, month branch, pillar order, hidden stems, interactions, 格局, 用神, 喜忌, start age, luck pillar, or year pillar if the packet has locked them.
+Never change Day Master, month branch, pillar order, hidden stems, interactions, start age, luck pillar, or year pillar if the packet has locked them. For 格局/用神/喜忌, use the packet's strict/canonical fields and exact retrieved classics before raw engine labels or element counts.
 
 ## Working Method
 

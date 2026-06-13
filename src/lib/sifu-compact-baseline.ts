@@ -74,7 +74,7 @@ export const SIFU_COMPACT_BASELINE_LAYERS: SifuCompactBaselineLayer[] = [
     sourceIds: [],
     scope: "Chart facts, identity, pillars, missing data, packet interactions, and closed-list synastry.",
     decisionOrder: ["identity", "FACT LOCK", "PILLAR LOCK", "packet interactions", "conditional warnings"],
-    conflictDefault: "Packet facts override every classical source and every user-supplied theoretical premise.",
+    conflictDefault: "FACT/PILLAR facts are immutable; packet interactions are deterministic evidence, but exact retrieved classics can override raw packet/engine interpretation inside their scoped doctrine.",
     doNotUseAs: ["a classic source", "permission to correct packet facts from memory", "proof that any book was used"],
   },
   {
@@ -134,8 +134,8 @@ export const SIFU_COMPACT_BASELINE_LAYERS: SifuCompactBaselineLayer[] = [
     sourceIds: ["qtbj-tiaohou-clean", "qtbj-tiaohou-lookup", "qtbj-tiaohou-thai-notes", "sifu-qtbj-compact-router-source"],
     scope: "Climate correction only: heat/cold/dry/wet and primary/secondary 調候 method.",
     decisionOrder: ["DM/month", "canonical block", "primary/secondary climate", "compare packet", "life translation"],
-    conflictDefault: "QTBJ wins only inside climate scope; it cannot override FACT LOCK, 格局, or packet 用神/忌神.",
-    doNotUseAs: ["full QTBJ load every request", "training-memory month answer", "structural 用神 override"],
+    conflictDefault: "QTBJ wins inside climate scope; it cannot override FACT/PILLAR facts, but it can override raw packet/engine climate medicine when the canonical DM-month block is explicit.",
+    doNotUseAs: ["full QTBJ load every request", "training-memory month answer", "structural 格局 replacement"],
   },
   {
     layerId: "shishen-roles",
@@ -266,4 +266,3 @@ export function summarizeSifuCompactBaseline(baseline: SifuCompactBaseline) {
     })),
   };
 }
-

@@ -64,6 +64,16 @@ export function extractCriticalEvidence(ctx: string, years: number[]): CriticalE
       label: `${y} 午丑害`,
       anyOf: ["午丑", "丑午", "六害", "ทำร้าย", "害"],
     });
+    addIf(ctx, required, new RegExp(`ปีจร${y}[^\\n◆]*六破/(未戌|戌未)|ปีจร${y}[^\\n◆]*(未戌破|戌未破)`).test(ctx), {
+      code: `${y}:未戌破`,
+      label: `${y} 未戌破`,
+      anyOf: ["未戌", "戌未", "六破", "破"],
+    });
+    addIf(ctx, required, new RegExp(`ปีจร${y}[^\\n◆]*六害/(子未|未子)|ปีจร${y}[^\\n◆]*(子未害|未子害)`).test(ctx), {
+      code: `${y}:子未害`,
+      label: `${y} 子未害`,
+      anyOf: ["子未", "未子", "六害", "害"],
+    });
   }
   return required;
 }
@@ -82,6 +92,13 @@ export function extractCriticalLuckEvidence(ctx: string, markers: string[]): Cri
       code: "luck:乙巳:巳酉丑",
       label: "วัย乙巳 巳酉丑三合金",
       anyOf: ["乙巳", "巳酉丑", "สามฮะทอง", "三合金"],
+    });
+  }
+  if (markers.includes("乙巳") && /วัยจรถัดไป乙巳/.test(ctx)) {
+    required.push({
+      code: "luck:乙巳:乙傷官",
+      label: "วัย乙巳 乙傷官",
+      anyOf: ["乙傷官", "傷官", "伤官", "ชางกวน"],
     });
   }
   return required;

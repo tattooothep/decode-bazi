@@ -14,7 +14,7 @@
  *     (ก้ำกึ่ง 2 ทาง ใส่ทางไหนก็ผ่าน — ที่ไม่ผ่านคือของนอกบรรทัดโครงดวง เช่น 潤下格 จากบรรทัดบุคลิก)
  *   - 從: เทียบเฉพาะเคสชัด — ผังประกาศดวงพิเศษชัด=ต้อง "มี" · ผังไม่มีร่องรอย從/專旺/化氣เลย=ต้อง "ไม่มี"
  *     · เคสก้ำกึ่ง (candidate/候選) = ข้ามการเทียบช่องนี้
- *   - 用神: ต้องมีคำธาตุช่วยหลักจาก engine (ไทยหรือจีน)
+ *   - 用神: ถ้ามี strict調候 จากคัมภีร์ ให้ใช้ค่านั้นก่อน; ไม่มีกลับไปใช้ธาตุช่วยหลักจาก engine (ไทยหรือจีน)
  */
 
 export type TraceFacts = {
@@ -52,8 +52,9 @@ export function extractTraceFacts(ctx: string): TraceFacts | null {
       ].join(" · ");
   const gejuTokens = Array.from(new Set(sourceText.match(/[一-鿿]{1,10}格/g) || []));
   if (!gejuTokens.length) return null; // โครงไม่มีชื่อ格 (เคสพิเศษ) → ข้าม
+  const strictYm = ctx.match(/strict調候=[^\n]*主=([ก-๙]+)/);
   const ym = ctx.match(/ธาตุช่วยหลัก=([ก-๙]+)/);
-  const yongTh = ym ? ym[1] : null;
+  const yongTh = strictYm ? strictYm[1] : ym ? ym[1] : null;
   const yongWords = yongTh ? [yongTh, EL_TH_TO_ZH[yongTh] || ""].filter(Boolean) : [];
   /* 從 expected: ก้ำกึ่ง (มีคำ candidate/候選/ก้ำกึ่ง) → null · ประกาศดวงพิเศษ/โครงเป็นตระกูลพิเศษชัด → true · ไม่มีร่องรอยเลย → false */
   const ambiguous = /candidate|候選|ก้ำกึ่ง|2 สำนัก/.test(sourceText);

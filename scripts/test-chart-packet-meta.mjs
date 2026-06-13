@@ -171,7 +171,7 @@ const packet = {
   profile: {},
   kongWang: { dayVoids: [], yearVoids: [] },
   timeline: [],
-  aiResponsePolicy: { sourceOfTruth: "chartPacket", noPercent: true, noPillarGuess: true, selectEvidence: { min: 3, max: 5 }, showFullChecklist: false },
+  aiResponsePolicy: { sourceOfTruth: "classics_first_packet_evidence", noPercent: true, noPillarGuess: true, selectEvidence: { min: 3, max: 5 }, showFullChecklist: false },
 };
 
 const out = renderChartPrompt(packet);
@@ -179,7 +179,7 @@ const checks = [
   ["dayBoundary render", out.includes("ขอบวัน/Day boundary ที่ใช้คำนวณ: 00:00")],
   ["explicit source render", out.includes("ผู้ใช้/endpoint ส่งมาโดยตรง")],
   ["time confidence render", out.includes("ไวต่อขอบวัน/เที่ยงคืน")],
-  ["strictGeJuAudit render", out.includes("格局 strict audit (audit-only)")],
+  ["strictGeJuAudit render", out.includes("格局 strict/canonical audit")],
   ["yongShenProtocols render", out.includes("用神分層 (หลักฐาน 5 ชั้น") && out.includes("ไม่จำกัดสไตล์คำตอบ")],
   ["chengBaiNow render", out.includes("行運成敗") && out.includes("ZP-1a-08")],
   ["conflict summary render", out.includes("สรุปปฏิกิริยาซ้อน") && out.includes("反吟+六沖")],

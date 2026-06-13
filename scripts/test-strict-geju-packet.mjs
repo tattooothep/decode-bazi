@@ -1,4 +1,4 @@
-/* Regression: HK_STRICT_GEJU_AUDIT_V1 reaches packet/prompt without replacing engine structure.
+/* Regression: HK_STRICT_GEJU_AUDIT_V1 reaches packet/prompt and promotes canonical classic structure.
    รัน: node --experimental-strip-types --loader ./scripts/ts-loader.mjs scripts/test-strict-geju-packet.mjs */
 import { buildChartExtensions } from "../src/lib/chart-extensions.ts";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "../src/lib/chart-packet.ts";
@@ -53,10 +53,10 @@ const a = packet.strictGeJuAudit;
 const validation = validateChartPacket(packet);
 
 ok("packet has strict geju audit tag", a?.tag === "HK_STRICT_GEJU_AUDIT_V1");
-ok("strict audit does not replace structure.label", packet.structure.label === "雜氣正印格");
+ok("strict audit promotes canonical structure.label", packet.structure.label === "食神格");
 ok("strict audit catches strict label separately", a?.strictLabel === "食神格" && a?.matchesCurrent === false);
 ok("strict audit preserves source rule", a?.sourceRuleIds.includes("ZPZQ-GE-003") && a?.canonicalChinese === "不透不會，則僅以土論");
-ok("prompt renders audit-only line", prompt.includes("格局 strict audit (audit-only)"));
+ok("prompt renders canonical audit line", prompt.includes("格局 strict/canonical audit"));
 ok("prompt does not leak raw percent", !/[0-9.]+%/.test(prompt));
 ok("validateChartPacket stays clean", validation.ok === true);
 

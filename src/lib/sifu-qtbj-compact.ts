@@ -7,7 +7,7 @@ const SIFU_EXTRA_DIR = join(process.cwd(), "data/library/sifu-extra");
 const QTBJ_TIAOHOU_FILE = "qtbj-tiaohou-clean.md";
 const QTBJ_TIAOHOU_LOOKUP_FILE = "qtbj-tiaohou-lookup.md";
 
-export const SIFU_CODEX_QTBJ_RETRIEVAL_VERSION = "codex-qtbj-retrieval-v5-canon2";
+export const SIFU_CODEX_QTBJ_RETRIEVAL_VERSION = "codex-qtbj-retrieval-v6-classics-first";
 
 const STEMS = "甲乙丙丁戊己庚辛壬癸";
 const BRANCHES = "子丑寅卯辰巳午未申酉戌亥";
@@ -262,7 +262,7 @@ export function loadQtbjTiaohouCompactKnowledge(query: string, opts: QtbjCompact
       "# 窮通寶鑑 · Codex targeted retrieval",
       `Version: ${SIFU_CODEX_QTBJ_RETRIEVAL_VERSION}/${src.version}`,
       `Matched pairs: ${describePairs(pairs)}`,
-      "Contract: ใช้เฉพาะชั้น 調候/月令 เพื่ออธิบายร้อน-เย็น-แห้ง-ชื้น; chart packet/engine เป็น source of truth สูงสุด; ถ้า block นี้ไม่มีคู่ที่ถาม ห้ามเดาตำราเพิ่มเอง",
+      "Contract: ใช้ชั้น 調候/月令 เป็น source of truth ในเรื่องร้อน-เย็น-แห้ง-ชื้น; FACT/PILLAR LOCK เป็นข้อเท็จจริง; chart packet/engine เป็นหลักฐานรอง/provenance; ถ้า block นี้ไม่มีคู่ที่ถาม ห้ามเดาตำราเพิ่มเอง",
       "Priority: Canonical snippets and Canonical priority notes win over Thai lookup notes. Thai lookup is only an index/teaching memo and may contain conditional reaction examples; do not turn conditional examples into default 主用/次用.",
       priorityGuards.length ? "## Canonical priority notes" : "",
       ...priorityGuards,

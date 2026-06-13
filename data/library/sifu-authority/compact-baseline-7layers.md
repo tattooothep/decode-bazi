@@ -4,17 +4,17 @@ Version: sifu-compact-baseline-v1
 Scope: baseline ที่ควรอยู่กับทุกคำถามเมื่อระบบเปลี่ยนจาก full 23 sources ไปเป็น router/retrieval
 Status: sidecar artifact เท่านั้น จนกว่าจะผ่าน shadow/golden/canary
 
-Baseline นี้ไม่ใช่คัมภีร์เล่มใหม่ และไม่ใช่การลดคุณภาพตำรา 23 แหล่งเดิม แต่เป็นสารบัญวิธีเดินดวงแบบบังคับที่บีบให้ AI อ่านตามชั้น โดยทุกชั้นต้องอ้างกลับไปยัง chart packet, source manifest, source hash, prompt segment hash, และ retrieved source ที่ถูกส่งจริง
+Baseline นี้ไม่ใช่คัมภีร์เล่มใหม่ และไม่ใช่การลดคุณภาพตำรา 23 แหล่งเดิม แต่เป็นสารบัญวิธีเดินดวงแบบบังคับที่บีบให้ AI อ่านตามชั้น โดยทุกชั้นต้องอ้างกลับไปยัง FACT/PILLAR LOCK, canonical packet evidence, source manifest, source hash, prompt segment hash, และ retrieved source ที่ถูกส่งจริง
 
 ## Global Source Priority
 
-1. chartPacket / FACT LOCK / PILLAR LOCK / identity lock / profile binding = ความจริงสูงสุด
-2. Interaction, luck, year, month, synastry, and packet-derived features that the engine explicitly sends
-3. Exact retrieved classics and authority chunks sent in this request
+1. FACT LOCK / PILLAR LOCK / identity lock / profile binding = ข้อเท็จจริงสูงสุด ห้ามเปลี่ยนก้านกิ่ง/บุคคล
+2. Exact retrieved classics and canonical packet fields in their scope (子平真詮=格局/相神/雜氣, 窮通寶鑑=調候/月令, 滴天髓/神峰通考=旺衰/病藥/通關, 合冲 authority=interaction resolution)
+3. Interaction, luck, year, month, synastry, and packet-derived features that the engine explicitly sends = deterministic evidence/provenance
 4. This compact baseline
 5. General five-element reasoning
 
-Conflict default: if packet facts and compact baseline disagree, packet wins. If exact retrieved classic and this baseline disagree, exact retrieved classic wins inside its scope. If two classics disagree, decide by scope: 子平真詮 for 格局/相神, 滴天髓 for 氣勢/旺衰/從化/通關, 窮通寶鑑 for 調候/月令, 淵海子平/十神 files for role language, 合冲 authority for interaction resolution.
+Conflict default: immutable FACT/PILLAR facts win for chart data; exact retrieved classic/canonical packet field wins inside its scope over raw engine labels, element counts, and this compact baseline. If two classics disagree, decide by scope: 子平真詮 for 格局/相神, 滴天髓 for 氣勢/旺衰/從化/通關, 窮通寶鑑 for 調候/月令, 淵海子平/十神 files for role language, 合冲 authority for interaction resolution.
 
 Do not use this baseline as: proof that the model read a book, permission to invent missing pillars, permission to invent cross-chart reactions, or a replacement for source audit.
 
@@ -35,10 +35,10 @@ Decision order:
 - Identity and chart binding first.
 - Pillars before theory.
 - Packet interactions before classical interaction templates.
-- Packet-derived 用神/忌神/格局/strength before narrative.
+- Canonical 用神/忌神/格局/strength before narrative; raw engine fields are provenance when strict classic/canonical fields disagree.
 - Missing hour or borderline month must remain conditional in every paragraph that depends on it.
 
-Conflict default: packet wins over every book. If a user prompt asserts pillars, relations, day master, or events that conflict with packet, state the mismatch before answering.
+Conflict default: FACT/PILLAR facts win over user claims; strict/canonical classic fields win over raw packet labels in their scope. If a user prompt asserts pillars, relations, day master, or events that conflict with locked facts, state the mismatch before answering.
 
 Do not use as:
 
@@ -241,10 +241,10 @@ Decision order:
 1. Read 日干 and 月令 from PILLAR LOCK.
 2. Retrieve canonical pair block.
 3. Note primary and secondary climate elements.
-4. Compare with packet 用神/忌神 and structure layer without overriding them.
+4. Compare with packet 用神/忌神 and structure layer; QTBJ wins inside climate/month-command scope when the canonical block is explicit.
 5. Translate climate into lived effect: warmth/coldness, urgency, dryness, pressure, support, timing, or medicine.
 
-Conflict default: QTBJ wins for climate only. It cannot override FACT LOCK, PILLAR LOCK, locked 格局, or packet 用神/忌神. If climate medicine differs from structural medicine, explain that they are different layers.
+Conflict default: QTBJ wins for climate only. It cannot override FACT LOCK or PILLAR LOCK, but it can override raw packet/engine climate medicine in its own scope. If climate medicine differs from structural medicine, explain that they are different layers.
 
 Do not use as:
 
@@ -395,7 +395,7 @@ Climate family:
 
 - Sources: qtbj-tiaohou-clean, qtbj-tiaohou-lookup, qtbj-tiaohou-thai-notes
 - Use for: 日干 x 月令 climate selection
-- Do not use for: overriding packet 用神/忌神 or loading every month block
+- Do not use for: replacing structural 格局 or loading every month block; within climate scope, QTBJ can override raw packet/engine climate medicine
 
 Role/life family:
 

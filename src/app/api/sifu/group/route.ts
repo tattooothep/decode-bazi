@@ -58,9 +58,9 @@ const CODEX_GROUP_BASE_CANON_MAX_CHARS = Number(process.env.SIFU_CODEX_GROUP_BAS
 const CODEX_GROUP_QTBJ_MAX_CHARS = Number(process.env.SIFU_CODEX_GROUP_QTBJ_MAX_CHARS || 18_000);
 const CODEX_GROUP_QTBJ_MAX_PAIRS = Number(process.env.SIFU_CODEX_GROUP_QTBJ_MAX_PAIRS || 2);
 const CODEX_COMPACT_KNOWLEDGE = [
-  "Codex compact mode: ใช้ข้อมูลดวง/packet/interactions ที่ส่งมาเป็น source of truth สูงสุด",
-  "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน 用神/忌神 หรือวัยจรที่ packet ไม่ได้ให้",
-  "ถ้ามี block 窮通寶鑑 ให้ใช้เฉพาะชั้น 調候/月令 เพื่ออธิบายความร้อน-เย็น-แห้ง-ชื้น ห้าม override 用神/喜忌/格局 ที่ packet ล็อคมา",
+  "Codex compact mode: FACT/PILLAR LOCK เป็นข้อเท็จจริง; คัมภีร์คลาสสิกเป็น source of truth ใน scope ของมัน; packet/interactions เป็นหลักฐานคำนวณพร้อม provenance",
+  "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน หรือวัยจรที่ packet ไม่ได้ให้; ถ้า packet field ขัด strict classic/canonical ให้ลดเป็น raw/secondary",
+  "ถ้ามี block 窮通寶鑑 ให้ใช้ชั้น 調候/月令 ชนะตัวเลขธาตุดิบและ病藥 fallback; ถ้ามี子平真詮 strict月令 ให้ใช้เป็น格局หลัก",
   "ไทยนำ จีนรอง อธิบายผลจริงตรงคำถาม และรักษา ID line ตามกฎ prompt หลัก",
 ].join("\n");
 
@@ -226,8 +226,8 @@ const SIFU_EXTRA_FILES: { file: string; label: string }[] = [
   { file: "bazi-conghua-master.md", label: "從格/化格 · ดวงตาม/แปรธาตุ + 真假 boundary + 合化 (滴天髓+三命通會)" },
   { file: "zpzq-zhenquan-clean.md", label: "📜 子平真詮評註 ตัวบทจริง verbatim (ctext · GROUND TRUTH เหนือ reconstruction · บท合化→48 + 74命例เฉลยจริง) · ใช้ quote/เทียบ案例 · ห้ามคัดจีนดิบ แปลไทยตามกฎ9" },
   { file: "dts-zhentian-clean.md", label: "📜 滴天髓闡微 ตัวบทจริง verbatim (ctext · 任鐵樵注 · GROUND TRUTH เหนือ reconstruction · 62 บท) · สาย旺衰氣勢: ยึดตอนอ่าน旺衰/化氣-從格/調候(寒暖燥濕)/通關/性情/疾病/女命/何知章 · 格局/相神ยึด子平真詮 · ห้ามคัดจีนดิบ แปลไทยตามกฎ9" },
-  { file: QTBJ_TIAOHOU_FILE, label: "📜 窮通寶鑑 · 調候用神/月令 ตัวบทจริง canonical (admin library id 13 · 10干×12เดือน · ใช้เติมชั้นร้อนเย็นแห้งชื้น ห้าม override packet)" },
-  { file: QTBJ_TIAOHOU_THAI_NOTES_FILE, label: "📘 窮通寶鑑 · Thai teaching notes จาก memo id 13 (ชั้นอธิบาย 調候/月令 เป็นไทย · ใช้เสริม canonical ห้าม override packet)" },
+  { file: QTBJ_TIAOHOU_FILE, label: "📜 窮通寶鑑 · 調候用神/月令 ตัวบทจริง canonical (admin library id 13 · 10干×12เดือน · source of truth ชั้นร้อนเย็นแห้งชื้น; raw packet เป็น evidence)" },
+  { file: QTBJ_TIAOHOU_THAI_NOTES_FILE, label: "📘 窮通寶鑑 · Thai teaching notes จาก memo id 13 (ชั้นอธิบาย 調候/月令 เป็นไทย · ใช้เสริม canonical; ห้ามชนะตัวบทจริง)" },
   { file: "smtg-clean.md", label: "📜 三命通會 (萬民英 · 明 1578 · 神煞+納音+論女命 verbatim)" },
   { file: "yhzp-clean.md", label: "📜 淵海子平 (徐升 · 宋 1271 · 子平 ต้นน้ำ · 五干通變圖+喜忌篇 verbatim)" },
   { file: "sftk-clean.md", label: "📜 神峰通考 (張楠 · 明 · 命理正宗 · 病藥論+動靜說+蓋頭說+男女合婚說 verbatim · ต้นทาง BY-08)" },
@@ -410,9 +410,7 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
       `FACT LOCK: Day Master = ${dm} · polarity = ${dmPolarity} · element = ${dmElement} · ${g.DM_FACT_LOCK}`,
       `PILLAR LOCK (ก้าน/กิ่งทุกเสา · เวลาอ้างเสาใดให้คัดจากบรรทัดนี้ตรงๆ ห้ามประกอบ/เดาเอง): 年${calc.pillarsZh.year} 月${calc.pillarsZh.month} 日${calc.pillarsZh.day} 時${is3p ? "—" : calc.pillarsZh.hour}`,
       g.DM_THAI_LOCK.replace("{{DM_ELEMENT}}", () => dmElementTh).replace("{{DM_POLARITY}}", () => dmPolarityTh),
-      `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · แรง ${calc.strength.percent}% · ${calc.strength.level}`,
-      `用神: ${calc.yongshen.slice(0, 3).map(y => `${y.stem}(${y.element})`).join(" · ")}`,
-      `格局: ${calc.geJu.structure || "ปกติ"}`,
+      `วันเจ้า: ${STEM_TH[dm] || dm} · ธาตุ${dmElementTh}แบบ${dmPolarityTh} · กำลัง${calc.strength.level}`,
       `納音: 年${ny.year?.zh || "-"} · 月${ny.month?.zh || "-"} · 日${ny.day?.zh || "-"} · 時${ny.hour?.zh || "-"}`,
     ];
     const [slY, slMo, slD] = date.split("-").map(Number);

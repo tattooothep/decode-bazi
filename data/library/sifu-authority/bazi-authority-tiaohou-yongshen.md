@@ -30,12 +30,12 @@ Status: authority index only; source files remain intact and authoritative
 4. Extract primary climate method: 先用, 專用, 為尊, 先取.
 5. Extract secondary support: 次取, 佐之, 參用.
 6. Extract blockers: 忌, 病, 困, 破.
-7. Compare with packet 用神/忌神 and structure layer without overriding them.
+7. Compare with packet 用神/忌神 and structure layer; QTBJ wins inside climate/month-command scope, while packet values remain structural/provenance evidence outside that scope.
 8. Translate climate into warmth/coldness, dryness/wetness, pressure, relief, timing, or practical medicine.
 
 ## Conflict Default
 
-QTBJ wins only inside climate/month-command scope. It cannot override FACT LOCK, PILLAR LOCK, locked 格局, or packet 用神/忌神. If climate medicine differs from structural medicine, explain both layers.
+QTBJ wins inside climate/month-command scope. It cannot override FACT LOCK or PILLAR LOCK, but it can override raw packet/engine climate medicine when the selected canonical block is explicit. If climate medicine differs from structural medicine, explain both layers and do not collapse them into one 用神.
 
 ## Do Not Use As
 
@@ -47,4 +47,3 @@ QTBJ wins only inside climate/month-command scope. It cannot override FACT LOCK,
 ## Router Notes
 
 Select this book whenever packet has 日干/月令, the question asks 用神/調候/month/heat/cold/dry/wet, or the model needs DM x month QTBJ support. For Codex, select compact baseline plus targeted qtbj source chunks only.
-

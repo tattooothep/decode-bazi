@@ -70,9 +70,9 @@ const prompt = renderChartPrompt(packet);
 
 ok("pillars lock Swit fixture", `${calc.pillarsZh.year} ${calc.pillarsZh.month} ${calc.pillarsZh.day} ${calc.pillarsZh.hour}` === "丙子 辛丑 壬戌 己酉",
   `${calc.pillarsZh.year} ${calc.pillarsZh.month} ${calc.pillarsZh.day} ${calc.pillarsZh.hour}`);
-ok("strict geju promoted to 正官格", /โครงดวง: strict月令หลัก=正官格/.test(prompt), prompt.match(/^โครงดวง:.+$/m)?.[0] || "");
+ok("strict geju promoted to 雜氣正官格", /โครงดวง: strict月令หลัก=雜氣正官格/.test(prompt), prompt.match(/^โครงดวง:.+$/m)?.[0] || "");
 ok("raw 雜氣劫財 is secondary and stripped of 格 in primary line", /raw engineป้ายรอง=雜氣劫財 \(ห้ามใช้เป็น格局หลัก/.test(prompt), prompt.match(/^โครงดวง:.+$/m)?.[0] || "");
-ok("TRACE accepts 正官格 after promotion", validateTrace("⟦TRACE⟧從=ไม่มี·格局=正官格·用神=ไฟ⟧", extractTraceFacts(prompt)).ok);
+ok("TRACE accepts 雜氣正官格 after promotion", validateTrace("⟦TRACE⟧從=ไม่มี·格局=雜氣正官格·用神=ไฟ⟧", extractTraceFacts(prompt)).ok);
 ok("TRACE rejects old 雜氣劫財格 after promotion", validateTrace("⟦TRACE⟧從=ไม่มี·格局=雜氣劫財格·用神=ไฟ⟧", extractTraceFacts(prompt)).reason === "geju_mismatch");
 ok("2026 includes 丙辛合", /丙辛\(ปีจร2026/.test(prompt));
 ok("2027 includes 丁壬合", /丁壬\(ปีจร2027/.test(prompt));
