@@ -1769,6 +1769,12 @@ export async function POST(req: Request) {
               send("first", { ms: firstMs, model: sifuModel });
             }
           };
+          const emitVisible = (text: string) => {
+            if (!text) return;
+            full += text;
+            sendFirstOnce();
+            send("chunk", { text });
+          };
           const rejectId = (reason: string) => {
             idRejected = true;
             clearTimeout(killTimer);
@@ -1805,11 +1811,11 @@ export async function POST(req: Request) {
                 }
               }
               const rest = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(idBuf)), ctx); // strip ID+TRACE · buffer จน gate ผ่าน
-              if (rest) full += rest;
+              emitVisible(rest);
               return;
             }
             const visibleText = sanitizePacketEvidenceClaims(text, ctx);
-            full += visibleText;
+            emitVisible(visibleText);
           }, (text) => {
             cliErr += "\n" + text;
           });
@@ -1832,37 +1838,10 @@ export async function POST(req: Request) {
             }
             if (code === 0 && full.trim()) {
               let finalReply = full.trim(); // full = strip ID/TRACE แล้ว (idBuf ไม่เข้า full)
-              let finalRawForAudit = idBuf;
-              let finalCritical = checkSifuCriticalEvidence(finalReply, message, ctx, { hasPacket: !!expectedDM });
+              const finalRawForAudit = idBuf;
+              const finalCritical = checkSifuCriticalEvidence(finalReply, message, ctx, { hasPacket: !!expectedDM });
               if (!finalCritical.ok) {
-                console.warn(`[sifu] critical-evidence retry (stream) profile=${profileId || "-"} missing=${finalCritical.missing.map((m) => m.code).join(",")}`);
-                let retryRaw: string;
-                try {
-                  retryRaw = await runSifuCli(buildSifuGateRetryPrompt({
-                    prompt,
-                    expectedDM,
-                    traceFacts,
-                    idReason: "ok",
-                    traceReason: "ok",
-                    critical: finalCritical,
-                  }), sifuModel);
-                } catch (e) {
-                  console.error("[sifu] stream gate retry threw", e instanceof Error ? e.message : e);
-                  send("error", { error: "critical_evidence_retry_failed" });
-                  safeClose(); return;
-                }
-                const retryId = validateIdentity(retryRaw, expectedDM);
-                const retryTrace = validateTrace(retryRaw, traceFacts);
-                const retryClean = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(retryRaw)), ctx).trim();
-                const retryCritical = checkSifuCriticalEvidence(retryClean, message, ctx, { hasPacket: !!expectedDM });
-                if (!retryId.ok || !retryTrace.ok || !retryCritical.ok) {
-                  console.error(`[sifu] stream gate FAIL after retry id=${retryId.reason} trace=${retryTrace.reason} critical=${retryCritical.missing.map((m) => m.code).join(",") || "ok"}`);
-                  send("error", { error: "critical_evidence_mismatch", missing: retryCritical.missing.map((m) => m.code) });
-                  safeClose(); return;
-                }
-                finalReply = retryClean;
-                finalRawForAudit = retryRaw;
-                finalCritical = retryCritical;
+                console.warn(`[sifu] critical-evidence incomplete (stream audit-only) profile=${profileId || "-"} missing=${finalCritical.missing.map((m) => m.code).join(",")}`);
               }
               const answerSupportedBy = buildSifuAnswerSupportAudit(finalReply, finalCritical);
               const payload = { reply: finalReply, model: sifuModel };
@@ -1872,7 +1851,7 @@ export async function POST(req: Request) {
                 evTrace = checkSifuEvidenceTrace(payload.reply, message, !!expectedDM);
                 if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (stream) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
               } catch { /* log-only · ห้ามให้กระทบ stream ที่ส่งครบแล้ว */ }
-              if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+              if (useCache && finalCritical.ok) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
               scheduleSifuSourceShadowAudit({
                 session,
                 req,
@@ -1903,14 +1882,16 @@ export async function POST(req: Request) {
                 answer: payload.reply,
                 history,
                 requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
-                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId, evidence_trace: evTrace },
+                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId, evidence_trace: evTrace, critical_evidence: finalCritical },
                 model: payload.model,
                 durationMs: Date.now() - reqT0,
                 cached: false,
                 ...auditFor(expectedDM ? "pass" : "not_required"),
               });
-              sendFirstOnce();
-              send("chunk", { text: payload.reply });
+              if (!firstChunkSent) {
+                sendFirstOnce();
+                send("chunk", { text: payload.reply });
+              }
               send("done", { ms, model: payload.model, cached: false, chars: payload.reply.length });
               sifuTimingLog("stream-done", {
                 route: "POST", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
@@ -2287,6 +2268,19 @@ export async function GET(req: Request) {
         send("error", { error: "identity_mismatch", reason });
         safeClose();
       };
+      const sendFirstOnceG = () => {
+        if (!firstChunkSent) {
+          firstMs = Date.now() - t0;
+          firstChunkSent = true;
+          send("first", { ms: firstMs, model: sifuModel });
+        }
+      };
+      const emitVisibleG = (text: string) => {
+        if (!text) return;
+        full += text;
+        sendFirstOnceG();
+        send("chunk", { text });
+      };
       let cliErr = "";
       const parser = makeSifuCliParser(sifuModel, (text: string) => {
         firstDeltaSeen = true;
@@ -2313,11 +2307,11 @@ export async function GET(req: Request) {
             }
           }
           const rest = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(idBuf)), ctx);
-          if (rest) full += rest;
+          emitVisibleG(rest);
           return;
         }
         const visibleText = sanitizePacketEvidenceClaims(text, ctx);
-        full += visibleText;
+        emitVisibleG(visibleText);
       }, (text: string) => {
         cliErr += "\n" + text;
       });
@@ -2335,41 +2329,14 @@ export async function GET(req: Request) {
         if (expectedDM && !idChecked) { send("error", { error: "identity_mismatch", reason: "no_id_line" }); safeClose(); return; }
         if (code === 0 && full.trim()) {
           let finalReply = full.trim();
-          let finalRawForAudit = idBuf;
-          let finalCritical = checkSifuCriticalEvidence(finalReply, message, ctx, { hasPacket: !!expectedDM });
+          const finalRawForAudit = idBuf;
+          const finalCritical = checkSifuCriticalEvidence(finalReply, message, ctx, { hasPacket: !!expectedDM });
           if (!finalCritical.ok) {
-            console.warn(`[sifu] critical-evidence retry (GET stream) profile=${profileId || "-"} missing=${finalCritical.missing.map((m) => m.code).join(",")}`);
-            let retryRaw: string;
-            try {
-              retryRaw = await runSifuCli(buildSifuGateRetryPrompt({
-                prompt,
-                expectedDM,
-                traceFacts,
-                idReason: "ok",
-                traceReason: "ok",
-                critical: finalCritical,
-              }), sifuModel);
-            } catch (e) {
-              console.error("[sifu] GET stream gate retry threw", e instanceof Error ? e.message : e);
-              send("error", { error: "critical_evidence_retry_failed" });
-              safeClose(); return;
-            }
-            const retryId = validateIdentity(retryRaw, expectedDM);
-            const retryTrace = validateTrace(retryRaw, traceFacts);
-            const retryClean = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(retryRaw)), ctx).trim();
-            const retryCritical = checkSifuCriticalEvidence(retryClean, message, ctx, { hasPacket: !!expectedDM });
-            if (!retryId.ok || !retryTrace.ok || !retryCritical.ok) {
-              console.error(`[sifu] GET stream gate FAIL after retry id=${retryId.reason} trace=${retryTrace.reason} critical=${retryCritical.missing.map((m) => m.code).join(",") || "ok"}`);
-              send("error", { error: "critical_evidence_mismatch", missing: retryCritical.missing.map((m) => m.code) });
-              safeClose(); return;
-            }
-            finalReply = retryClean;
-            finalRawForAudit = retryRaw;
-            finalCritical = retryCritical;
+            console.warn(`[sifu] critical-evidence incomplete (GET stream audit-only) profile=${profileId || "-"} missing=${finalCritical.missing.map((m) => m.code).join(",")}`);
           }
           const answerSupportedBy = buildSifuAnswerSupportAudit(finalReply, finalCritical);
           const payload = { reply: finalReply, model: sifuModel };
-          if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+          if (useCache && finalCritical.ok) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
           scheduleSifuSourceShadowAudit({
             session,
             req,
@@ -2400,7 +2367,7 @@ export async function GET(req: Request) {
             answer: payload.reply,
             history: [],
             requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, prediction_phase: predictionPhase },
-            responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId },
+            responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId, critical_evidence: finalCritical },
             model: payload.model,
             durationMs: Date.now() - reqT0,
             cached: false,
@@ -2420,11 +2387,9 @@ export async function GET(req: Request) {
             }),
           });
           if (!firstChunkSent) {
-            firstMs = Date.now() - t0;
-            send("first", { ms: firstMs });
-            firstChunkSent = true;
+            sendFirstOnceG();
+            send("chunk", { text: payload.reply });
           }
-          send("chunk", { text: payload.reply });
           send("done", { ms, model: payload.model, cached: false, chars: payload.reply.length });
           sifuTimingLog("stream-done", {
             route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,

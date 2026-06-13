@@ -1,9 +1,12 @@
 /**
- * Sifu stream hard-gate regression.
- * Goal: SSE Q&A must not emit AI chunks before identity/TRACE/critical evidence gate.
+ * Sifu fast-stream regression.
+ * Goal: SSE Q&A must gate ID/TRACE before visible text, then stream immediately.
+ * Critical evidence stays source-audited, but must not trigger full-answer retry in stream path.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { stripIdLine, validateIdentity } from "../src/lib/identity-lock";
+import { parseTraceLine, stripTraceLine, validateTrace, type TraceFacts } from "../src/lib/sifu-trace-lock";
 
 const route = readFileSync(join(process.cwd(), "src/app/api/sifu/route.ts"), "utf8");
 
@@ -16,23 +19,114 @@ function ck(label: string, cond: boolean, detail = "") {
 const parserBlocks = [...route.matchAll(/const parser = makeSifuCliParser[\s\S]*?\.stdout\.on\("data", parser\);/g)].map((m) => m[0]);
 ck("has POST and GET parser blocks", parserBlocks.length >= 2, `blocks=${parserBlocks.length}`);
 for (const [idx, block] of parserBlocks.entries()) {
-  ck(`parser block ${idx + 1} buffers without sending chunk`, !/send\("chunk"/.test(block));
-  ck(`parser block ${idx + 1} still accumulates full answer`, /full \+=/.test(block));
+  ck(`parser block ${idx + 1} still waits for ID line`, block.includes("validateIdentity"));
+  ck(`parser block ${idx + 1} still waits for TRACE when required`, block.includes("parseTraceLine") && block.includes("validateTrace"));
+  ck(`parser block ${idx + 1} emits visible rest after gate`, /emitVisibleG?\(rest\)/.test(block));
+  ck(`parser block ${idx + 1} emits subsequent visible chunks`, /emitVisibleG?\(visibleText\)/.test(block));
 }
 
-const closeBlocks = [...route.matchAll(/\.on\("close", async \(code\) => \{[\s\S]*?safeClose\(\);\n\s*\}\);/g)].map((m) => m[0]);
-ck("has async stream close blocks", closeBlocks.length >= 2, `blocks=${closeBlocks.length}`);
-for (const [idx, block] of closeBlocks.entries()) {
-  ck(`close block ${idx + 1} checks critical before emit`, block.indexOf("checkSifuCriticalEvidence") >= 0 && block.indexOf("checkSifuCriticalEvidence") < block.indexOf('send("chunk"'));
-  ck(`close block ${idx + 1} retries with gate prompt`, block.includes("buildSifuGateRetryPrompt"));
-  ck(`close block ${idx + 1} catches retry failure`, block.includes("critical_evidence_retry_failed"));
-  ck(`close block ${idx + 1} emits only final payload reply`, /send\("chunk", \{ text: payload\.reply \}\)/.test(block));
-  ck(`close block ${idx + 1} does not cache before critical variable`, block.indexOf("setCachedReply") > block.indexOf("finalCritical"));
-}
+ck("POST emitVisible sends first event before chunk", /const emitVisible = \(text: string\) => \{[\s\S]*?sendFirstOnce\(\);[\s\S]*?send\("chunk", \{ text \}\);[\s\S]*?\};/.test(route));
+ck("GET emitVisible sends first event before chunk", /const emitVisibleG = \(text: string\) => \{[\s\S]*?sendFirstOnceG\(\);[\s\S]*?send\("chunk", \{ text \}\);[\s\S]*?\};/.test(route));
+
+ck("POST stream critical is audit-only", route.includes("critical-evidence incomplete (stream audit-only)"));
+ck("GET stream critical is audit-only", route.includes("critical-evidence incomplete (GET stream audit-only)"));
+ck("POST stream does not run full retry", !route.includes("critical-evidence retry (stream)") && !route.includes("[sifu] stream gate retry threw"));
+ck("GET stream does not run full retry", !route.includes("critical-evidence retry (GET stream)") && !route.includes("[sifu] GET stream gate retry threw"));
+ck("stream skips cache when critical evidence is missing", (route.match(/useCache && finalCritical\.ok/g) || []).length >= 2);
+
+const finalPayloadChunks = route.match(/if \(!firstChunkSent\) \{[\s\S]{0,160}?send\("chunk", \{ text: payload\.reply \}\);[\s\S]{0,80}?\}/g) || [];
+ck("final payload chunk is fallback-only", finalPayloadChunks.length >= 2, `blocks=${finalPayloadChunks.length}`);
+ck("no unconditional final payload chunk remains", !/\n\s*send\("chunk", \{ text: payload\.reply \}\);\n\s*send\("done"/.test(route));
 
 ck("POST cache can bypass stale critical answer", route.includes("cache bypass: critical evidence stale"));
 ck("GET cache can bypass stale critical answer", route.includes("GET cache bypass: critical evidence stale"));
-ck("old warn-only stream critical message removed", !route.includes("critical-evidence incomplete (stream)"));
 
-console.log(`\n[sifu-stream-hard-gate] ${pass}/${pass + fail} ${fail ? "FAILED" : "passed"}`);
+type SimEvent = { event: string; data?: unknown };
+const simFacts: TraceFacts = {
+  congExpected: false,
+  gejuTokens: ["雜氣正官格"],
+  yongWords: ["ไฟ", "火"],
+};
+
+function simulateStreamGate(deltas: string[], opts: { criticalOk?: boolean } = {}) {
+  let idBuf = "";
+  let idChecked = false;
+  let idRejected = false;
+  let full = "";
+  let firstChunkSent = false;
+  const events: SimEvent[] = [];
+  const send = (event: string, data?: unknown) => events.push({ event, data });
+  const sendFirstOnce = () => {
+    if (!firstChunkSent) {
+      firstChunkSent = true;
+      send("first");
+    }
+  };
+  const emitVisible = (text: string) => {
+    if (!text) return;
+    full += text;
+    sendFirstOnce();
+    send("chunk", { text });
+  };
+  const reject = (reason: string) => {
+    idRejected = true;
+    send("error", { error: "identity_mismatch", reason });
+  };
+
+  for (const text of deltas) {
+    if (idRejected) continue;
+    if (!idChecked) {
+      idBuf += text;
+      const nl = idBuf.indexOf("\n");
+      if (nl === -1) {
+        if (idBuf.length > 120) reject("no_id_line");
+        continue;
+      }
+      if (!parseTraceLine(idBuf)) {
+        const nlCount = (idBuf.match(/\n/g) || []).length;
+        if (nlCount >= 3 || idBuf.length > 500) reject("no_trace_line");
+        continue;
+      }
+      idChecked = true;
+      const idCheck = validateIdentity(idBuf.slice(0, nl) + "\n", "壬");
+      if (!idCheck.ok) { reject(idCheck.reason); continue; }
+      const traceCheck = validateTrace(idBuf, simFacts);
+      if (!traceCheck.ok) { reject(`trace_${traceCheck.reason}`); continue; }
+      emitVisible(stripTraceLine(stripIdLine(idBuf)));
+      continue;
+    }
+    emitVisible(text);
+  }
+
+  if (!idRejected) {
+    if (!idChecked) {
+      send("error", { error: "identity_mismatch", reason: "no_id_line" });
+    } else if (full.trim()) {
+      send("critical_check", { ok: opts.criticalOk !== false });
+      if (!firstChunkSent) emitVisible(full.trim());
+      send("done");
+    }
+  }
+  return events;
+}
+
+const partialEvents = simulateStreamGate(["⟦ID⟧日干=壬⟧\n"]);
+ck("behavior: ID alone emits no visible chunk", !partialEvents.some((e) => e.event === "chunk"));
+
+const validEvents = simulateStreamGate([
+  "⟦ID⟧日干=壬⟧\n",
+  "⟦TRACE⟧從=ไม่มี·格局=雜氣正官格·用神=ไฟ⟧\nคำตอบแรก",
+], { criticalOk: false });
+ck("behavior: valid TRACE emits first before chunk", validEvents[0]?.event === "first" && validEvents[1]?.event === "chunk", JSON.stringify(validEvents));
+ck("behavior: critical missing still reaches done", validEvents.some((e) => e.event === "critical_check") && validEvents.at(-1)?.event === "done");
+ck("behavior: streamed answer is not duplicated at close", validEvents.filter((e) => e.event === "chunk").length === 1, JSON.stringify(validEvents));
+
+const badTraceEvents = simulateStreamGate([
+  "⟦ID⟧日干=壬⟧\n",
+  "⟦TRACE⟧從=ไม่มี·格局=潤下格·用神=ไฟ⟧\nห้ามออก",
+]);
+ck("behavior: bad TRACE emits error", badTraceEvents.some((e) => e.event === "error"));
+ck("behavior: bad TRACE emits no chunk", !badTraceEvents.some((e) => e.event === "chunk"), JSON.stringify(badTraceEvents));
+
+console.log(`\n[sifu-fast-stream] ${pass}/${pass + fail} ${fail ? "FAILED" : "passed"}`);
 process.exit(fail ? 1 : 0);
