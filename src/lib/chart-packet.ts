@@ -126,7 +126,7 @@ export type ChartPacketBuildOptions = {
 
 /** field ที่ค่าพึ่งเสาเดือน(月支) → เมื่อเสาเดือนก้ำกึ่ง ทุกตัวนี้ inherit เพดานมั่นใจ "กลาง" (flat cap · ไม่ใช่ graph)
  *  constant เดียวคุม · เพิ่ม field derive จาก月ใหม่ ต้องมาเติมที่นี่ กันหลุดเพดานเงียบ */
-const MONTH_DERIVED_FIELDS = ["格局", "司令", "空亡(เสาเดือน)", "半合/三合(子辰)", "大運ลำดับ", "synastry(เสาเดือน)", "ธาตุรวม(tally)", "ราก5ธาตุ", "透干", "用神/喜忌+ธาตุช่วย", "病藥(BY)"];
+const MONTH_DERIVED_FIELDS = ["格局", "司令", "空亡(เสาเดือน)", "半合/三合(子辰)", "大運ลำดับ", "synastry(เสาเดือน)", "ธาตุรวม(tally)", "ราก5ธาตุ", "透干/透出ก้านฟ้า/通根", "用神/喜忌+ธาตุช่วย", "病藥(BY)"];
 
 export type ChartPacket = {
   /* ── version/level lock ── */
@@ -2393,7 +2393,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   let structureLine = falseFollowAudit
     ? `โครงดวง: candidate หลัก=${displayStrictGeJuLabel(falseFollowAudit)} (strict月令 · มั่นใจ=สูง) · raw engine候選=${falseFollowAudit.currentLabel} (candidate รอง · ยังไม่ถึงเกณฑ์從แท้ · ดู gate ใน 從格ตรวจทาน)`
     : strictPrimaryAudit
-      ? `โครงดวง: strict月令หลัก=${displayStrictGeJuLabel(strictPrimaryAudit)} (เลือก${strictPrimaryAudit.selectedStem || "-"}${strictPrimaryAudit.tenGod ? `/${strictPrimaryAudit.tenGod}` : ""} จาก月令藏干透干 · มั่นใจ=สูง) · raw engineป้ายรอง=${rawGeJuSecondaryLabel(strictPrimaryAudit.currentLabel)} (ห้ามใช้เป็น格局หลักในคำตอบ)`
+      ? `โครงดวง: strict月令หลัก=${displayStrictGeJuLabel(strictPrimaryAudit)} (เลือก${strictPrimaryAudit.selectedStem || "-"}${strictPrimaryAudit.tenGod ? `/${strictPrimaryAudit.tenGod}` : ""} เพราะ月令藏干มีตัวเดียวกันโผล่บนก้านฟ้าจริง/透出 · มั่นใจ=สูง) · raw engineป้ายรอง=${rawGeJuSecondaryLabel(strictPrimaryAudit.currentLabel)} (ห้ามใช้เป็น格局หลักในคำตอบ)`
     : `โครงดวง: ${packet.structure.label}`;
   if (packet.structure.special) {
     if (falseFollowAudit && isFalseFollowCandidateLabel(packet.structure.special.typeZh || packet.structure.label)) {
@@ -2423,7 +2423,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     const delta = (added.length || lost.length)
       ? `ธาตุที่เปลี่ยน: ฝั่ง${_ma.after}${added.length ? " เพิ่ม " + added.join("·") : ""}${lost.length ? " · หาย " + lost.join("·") : ""}`
       : "ก้านซ่อนให้ธาตุชุดเดียวกัน";
-    structureLine += `\n⚠️ 藏干เสาเดือน 2 ฝั่ง (ธาตุรวม/ราก/透干/用神/病藥 ขึ้นกับฝั่งนี้ทั้งหมด · ห้ามฟันธงจำนวนธาตุ/ราก/用神 ข้างเดียว · ดู MONTH_DERIVED_FIELDS): ฝั่ง${_ma.before}=藏干 ${hsDesc(bBr)} · ฝั่ง${_ma.after}=藏干 ${hsDesc(aBr)} · ${delta} → ประเมิน 2 ทาง จนกว่าจะยืนยันเวลาเกิด`;
+    structureLine += `\n⚠️ 藏干เสาเดือน 2 ฝั่ง (ธาตุรวม/ราก/透出ก้านฟ้า/用神/病藥 ขึ้นกับฝั่งนี้ทั้งหมด · ห้ามฟันธงจำนวนธาตุ/ราก/用神 ข้างเดียว · ดู MONTH_DERIVED_FIELDS): ฝั่ง${_ma.before}=藏干 ${hsDesc(bBr)} · ฝั่ง${_ma.after}=藏干 ${hsDesc(aBr)} · ${delta} → ประเมิน 2 ทาง จนกว่าจะยืนยันเวลาเกิด`;
   }
   /* 🔒 化氣格 guard (27 พ.ค. · option A · 5-agent · ระดับ1+2) — engine (wrapper-3 findTransformation) declare 化X格
      จากแค่ 2/6 เงื่อนไข (五合คู่ + เดือนตรงฤดู) ไม่เช็คราก DM → over-declare 化 (用神พลิก180° อ่านผิดทั้งใบ)
@@ -2779,22 +2779,47 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     lines.push(`ราก 5 ธาตุ: ${allTxt}`);
   }
 
-  /* 透干 (ก้านซ่อนในกิ่ง โผล่ขึ้นเป็นก้านบนฟ้า · ธาตุมีพลังเปิดเผยแสดงผลชัด · ดี/ร้ายขึ้นกับ用神หรือ忌神 · derived จาก packet ไม่คำนวณเสาใหม่) */
+  /* 透出/透干 vs 通根 แยก semantic เด็ดขาด:
+   * - 透出ก้านฟ้า = คัดจาก 4 heavenly stems ใน PILLAR LOCK เท่านั้น (นับได้ไม่เกินจำนวนเสา)
+   * - 通根/ราก = 藏干 ในกิ่งที่รองรับก้านนั้น ไม่ใช่จำนวน透เพิ่ม
+   */
   {
-    const heavenStems = packet.pillars.map((p) => p.stem);
-    const revealed: string[] = [];
-    const seen = new Set<string>();
-    packet.pillars.forEach((p) => {
-      p.hiddenStems.forEach((h) => {
-        if (heavenStems.includes(h.stem) && !seen.has(h.stem + p.branch)) {
-          seen.add(h.stem + p.branch);
-          const elTh = h.element === "unknown" ? "-" : elementTh(h.element);
-          revealed.push(`${h.stem}(ธาตุ${elTh} · ซ่อนในกิ่ง${BRANCH_TH_NAME[p.branch] || p.branch} ${PILLAR_EN_TH[p.key]} · ${h.tenGod})`);
+    const visiblePillars = packet.pillars.filter((p) => p.stem);
+    const visibleStemSet = new Set(visiblePillars.map((p) => p.stem));
+    const pillarGan = (p: ChartPacket["pillars"][number]) => `${PILLAR_ZH[p.key] || PILLAR_EN_TH[p.key]}干`;
+    const visibleTxt = visiblePillars
+      .map((p) => `${p.stem}(${pillarGan(p)}·${p.tenGod || "-"})`)
+      .join(" · ");
+    const gejuCandidateStems = visiblePillars.filter((p) => p.key !== "day").map((p) => p.stem).join("");
+    lines.push(`透出ก้านฟ้า (透干; คัดจาก PILLAR LOCK 4 ก้านบนเท่านั้น · ห้ามนับ藏干/รากเป็น透เพิ่ม · 日干เป็นตัวตนหลัก ไม่ใช้เป็น候選取格): 透出=${visiblePillars.map((p) => p.stem).join("")} · ${visibleTxt} [รวม透=${visiblePillars.length}; 取格候選年/月/時=${gejuCandidateStems || "-"}]`);
+
+    const qiSlot = ["本氣", "中氣", "餘氣"];
+    const rootsByStem = new Map<string, { tenGod: string | null; visibleAt: string[]; roots: Array<{ branch: string; qi: string; rank: number; pillarOrder: number }> }>();
+    visiblePillars.forEach((p) => {
+      rootsByStem.set(p.stem, { tenGod: p.tenGod || null, visibleAt: [`${pillarGan(p)}${p.stem}`], roots: [] });
+    });
+    packet.pillars.forEach((p, pillarOrder) => {
+      p.hiddenStems.forEach((h, idx) => {
+        if (!visibleStemSet.has(h.stem)) return;
+        const group = rootsByStem.get(h.stem);
+        if (!group) return;
+        if (!group.roots.some((r) => r.branch === p.branch)) {
+          group.tenGod = group.tenGod || h.tenGod || null;
+          group.roots.push({ branch: p.branch, qi: qiSlot[idx] || `藏干${idx + 1}`, rank: idx, pillarOrder });
         }
       });
     });
-    if (revealed.length) {
-      lines.push(`透干 (ก้านซ่อนโผล่ขึ้นก้านบนฟ้า · ธาตุมีพลังเปิดเผย แสดงผลชัด · ดีหรือร้ายขึ้นกับว่าเป็น用神หรือ忌神): ${revealed.join(" · ")}`);
+    const rootSupport = Array.from(rootsByStem.entries())
+      .filter(([, v]) => v.roots.length)
+      .map(([stem, v]) => {
+        const roots = v.roots
+          .sort((a, b) => a.rank - b.rank || a.pillarOrder - b.pillarOrder)
+          .map((r) => `${r.branch}(${BRANCH_TH_NAME[r.branch] || r.branch}·${r.qi})`)
+          .join("+");
+        return `${stem}(${v.tenGod || "-"}) รากที่${roots} → 透ที่${v.visibleAt.join("/")}`;
+      });
+    if (rootSupport.length) {
+      lines.push(`通根/รากของก้านที่透 (藏干 support · ไม่ใช่จำนวน透เพิ่ม): ${rootSupport.join(" · ")}`);
     }
   }
 
