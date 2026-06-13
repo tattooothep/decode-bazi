@@ -1,8 +1,8 @@
 /**
  * Sifu compact baseline 7-layer guard.
  *
- * Read-only test. It validates the Phase 3A compact baseline artifact and
- * builder without importing or changing /api/sifu runtime routes.
+ * Read-only test. It validates the compact baseline artifact and builder.
+ * Runtime use is allowed only behind the explicit Claude compact feature flag.
  *
  * Run:
  *   node --experimental-strip-types --import ./scripts/_ts-resolver.mjs scripts/test-sifu-compact-baseline.mts
@@ -85,7 +85,15 @@ ck("manifest source counts remain current", manifest.knownSourceCount === 26 && 
 const appRuntimeImports = listSourceFiles(join(ROOT, "src/app"))
   .filter((path) => /sifu-compact-baseline|SIFU_COMPACT_BASELINE|compact-baseline-7layers/.test(readFileSync(path, "utf8")))
   .map((path) => path.slice(ROOT.length + 1));
-ck("compact baseline is not imported by runtime app routes", appRuntimeImports.length === 0, appRuntimeImports.join(", "));
+const sifuRoute = readFileSync(join(ROOT, "src/app/api/sifu/route.ts"), "utf8");
+ck(
+  "compact baseline runtime import is limited to feature-gated /api/sifu",
+  appRuntimeImports.length === 1
+    && appRuntimeImports[0] === "src/app/api/sifu/route.ts"
+    && /SIFU_CLAUDE_COMPACT_KNOWLEDGE/.test(sifuRoute)
+    && /shouldUseCompactKnowledge\(model\)/.test(sifuRoute),
+  appRuntimeImports.join(", ")
+);
 
 console.log(`\n[sifu-compact-baseline] ${pass}/${pass + fail} passed`);
 process.exit(fail === 0 ? 0 : 1);
