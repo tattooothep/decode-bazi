@@ -1002,7 +1002,7 @@
     }catch(_){} }
 	    function renderThreadMsgs(t){ activeGroupHistoryKey=''; history=(t&&t.msgs?t.msgs.slice(-40):[]); msgBox.innerHTML=''; if(!history.length){ addWelcomeMsg(); return; } history.forEach(function(m){ var dv=addMsg(m.role==='user'?'user':'sifu',m.content); if(m.role!=='user') renderMd(dv,m.content); }); }
     function openThread(id){ if(window._sifuStreaming) return; renamingThreadId=''; persist(); var pid=activeProfileId(); var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id && threadMatchesProfile(x,pid);}); if(!t) return; currentThreadId=id; o.activeId=id; saveThreads(o); renderThreadMsgs(t); renderSidebar(); document.body.classList.remove('hk-side-open'); window.scrollTo(0,0); }
-	    function newThread(){ if(window._sifuStreaming) return; persist(); activeGroupHistoryKey=''; var pid=activeProfileId(); if(!pid || !profileStoreSig(pid)){ addMsg('sifu','⚠️ กรุณาเลือกดวงก่อนเริ่มแชทใหม่'); return; } var o=loadThreads(); var t=stampThreadProfile({id:genTid(),title:'',ts:Date.now(),msgs:[]},pid); o.threads.unshift(t); currentThreadId=t.id; o.activeId=t.id; saveThreads(o); history=[]; msgBox.innerHTML=''; addWelcomeMsg(); renderSidebar(); document.body.classList.remove('hk-side-open'); }
+	    function newThread(){ if(window._sifuStreaming) return; persist(); activeGroupHistoryKey=''; var pid=activeProfileId(); if(!pid || !profileStoreSig(pid)){ addMsg('sifu','⚠️ กรุณาเลือกดวงก่อนเริ่มแชทใหม่'); return; } var o=loadThreads(); var t=stampThreadProfile({id:genTid(),title:'',ts:Date.now(),msgs:[]},pid); o.threads.unshift(t); currentThreadId=t.id; o.activeId=t.id; saveThreads(o); history=[]; msgBox.innerHTML=''; var s2nc=document.getElementById('sifu-profile-2'); if(s2nc){ s2nc.value=''; hkpFillSecondSelect._lastFirst=null; if(typeof hkpUpdatePairUI==='function') hkpUpdatePairUI(); } addWelcomeMsg(); renderSidebar(); document.body.classList.remove('hk-side-open'); }
     function deleteThread(id){ if(window._sifuStreaming) return; var pid=activeProfileId(); var o=loadThreads(); o.threads=o.threads.filter(function(x){return !(x.id===id && threadMatchesProfile(x,pid));}); var wasA=(currentThreadId===id); if(wasA){ var next=profileThreads(o,pid)[0]; currentThreadId=next?next.id:''; o.activeId=currentThreadId; } saveThreads(o); if(wasA){ renderThreadMsgs(o.threads.find(function(x){return x.id===currentThreadId && threadMatchesProfile(x,pid);})); } renderSidebar(); }
     function togglePin(id){ if(window._sifuStreaming) return; var pid=activeProfileId(); var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id && threadMatchesProfile(x,pid);}); if(t){ t.pinned=!t.pinned; saveThreads(o); renderSidebar(); } }
     function renameThread(id){
@@ -1318,7 +1318,11 @@
     function hkpFillSecondSelect(ordered, firstId){
       var sel2 = document.getElementById('sifu-profile-2');
       if (!sel2) return;
-      var prev = String(sel2.value || '');
+      var fid = String(firstId || selectedProfileId || '');
+      /* คงดวงที่ 2 ไว้เฉพาะตอนดวงหลัก "เดิม" (เช่น สลับภาษา re-fill) · ถ้าดวงหลักเปลี่ยน/เริ่มหน้าใหม่ = ล้างเป็น "ไม่เพิ่ม" กันดวง 2 ค้างข้าม context จนเข้าโหมดเทียบเงียบ ๆ */
+      var keepPrev = (hkpFillSecondSelect._lastFirst === fid);
+      hkpFillSecondSelect._lastFirst = fid;
+      var prev = keepPrev ? String(sel2.value || '') : '';
       var loc = curLocale();
       sel2.innerHTML = '';
       var none = document.createElement('option');
@@ -1400,6 +1404,15 @@
           switchProfile(sel.value);
         });
 	        if (sel2) sel2.addEventListener('change', function(){ hkpUpdatePairUI(); hkgRenderActiveHistory(); });
+        /* bfcache: กดย้อนกลับมา (chart→master) browser restore ค่า DOM เดิม → ล้างดวงที่ 2 กันค้างเงียบ ๆ */
+        window.addEventListener('pageshow', function(ev){
+          if (ev && ev.persisted){
+            var s2 = document.getElementById('sifu-profile-2');
+            if (s2){ s2.value = ''; hkpFillSecondSelect._lastFirst = null; if (typeof hkpUpdatePairUI === 'function') hkpUpdatePairUI(); }
+            /* sync history/activeGroupHistoryKey ให้ตรง state เดี่ยว (กัน history คู่เดิมค้างใน heap หลัง bfcache) */
+            if (typeof hkgRenderActiveHistory === 'function') hkgRenderActiveHistory();
+          }
+        });
         var swp = document.getElementById('hk-lang-switch');
         if (swp) swp.querySelectorAll('button').forEach(function(b){
           b.addEventListener('click', function(){ setTimeout(function(){ hkpFillSecondSelect(ordered, sel.value); hkpUpdatePairUI(); }, 0); });
