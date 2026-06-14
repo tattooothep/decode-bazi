@@ -680,6 +680,7 @@
     <div class="chat-input" id="hk-chat-input-bar">
       <input type="file" id="hk-attach-input" accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xlsx,.md" multiple style="display:none;">
       <button type="button" class="hk-attach-btn" id="hk-attach-btn" title="แนบรูป/ไฟล์ (หรือลากมาวาง)" aria-label="แนบไฟล์">📎</button>
+      <button type="button" class="hk-attach-btn hk-genimg-btn" id="hk-genimg-btn" title="สร้างรูปด้วย AI (grok/gpt)" aria-label="สร้างรูป">🎨</button>
       <textarea id="chat-input" placeholder="ถามซินแส... เช่น 'พรุ่งนี้ควรประชุมตอนไหน', 'ใครเป็นคนของฉันสัปดาห์นี้'"></textarea>
       <button class="send-btn" id="send">送 →</button>
     </div>
@@ -2000,6 +2001,38 @@
     }
 
     sendBtn.addEventListener('click', send);
+    /* 🎨 สร้างรูปด้วย AI (grok/gpt image_gen ผ่าน cli skill) · /api/ai/imagegen · ใช้ข้อความในช่องเป็น prompt + model จาก dropdown */
+    var genImgBtn = document.getElementById('hk-genimg-btn');
+    if (genImgBtn) genImgBtn.addEventListener('click', async function(){
+      var prompt = (inputEl.value || '').trim();
+      if (!prompt) { inputEl.focus(); return; }
+      if (window._sifuStreaming) return;
+      var modelSel = document.getElementById('sifu-model');
+      var model = (modelSel && modelSel.value) || 'grok-cli';
+      addMsg('user', '🎨 ' + prompt);
+      inputEl.value = '';
+      var ph = addMsg('sifu', '⏳ กำลังสร้างรูป... (อาจใช้เวลา 30-60 วินาที)');
+      window._sifuStreaming = true; sendBtn.disabled = true; genImgBtn.disabled = true;
+      try {
+        var r = await fetch('/api/ai/imagegen', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify({ prompt: prompt, model: model }) });
+        var j = await r.json().catch(function(){ return null; });
+        if (r.ok && j && j.ok && j.image_base64) {
+          ph.textContent = '';
+          var img = document.createElement('img');
+          img.src = 'data:' + (j.mime || 'image/png') + ';base64,' + j.image_base64;
+          img.alt = prompt; img.loading = 'lazy';
+          img.style.cssText = 'max-width:100%;border-radius:12px;border:1px solid var(--gold-line);display:block;';
+          ph.appendChild(img);
+          var cap = document.createElement('div');
+          cap.style.cssText = 'font-size:12px;color:var(--fg-soft);margin-top:6px;';
+          cap.textContent = '🎨 ' + (j.engine === 'codex' ? 'GPT' : 'Grok') + ' · ' + prompt;
+          ph.appendChild(cap);
+        } else {
+          ph.textContent = '⚠ สร้างรูปไม่สำเร็จ: ' + ((j && (j.error || j.detail)) || ('HTTP ' + r.status));
+        }
+      } catch (e) { ph.textContent = '⚠ ผิดพลาด: ' + String((e && e.message) || e); }
+      finally { window._sifuStreaming = false; sendBtn.disabled = false; genImgBtn.disabled = false; window.scrollTo(0, document.documentElement.scrollHeight); }
+    });
     inputEl.addEventListener('keydown', function(e){
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
