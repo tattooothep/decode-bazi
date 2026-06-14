@@ -8,10 +8,10 @@
  * Backup ก่อนแก้ไฟล์นี้ · ห้ามแตะ engine LOCKED
  */
 import { NextResponse } from "next/server";
-import { spawn } from "child_process";
-import { readFileSync, statSync, writeFileSync } from "fs";
+import { spawn, execFileSync } from "child_process";
+import { readFileSync, statSync, writeFileSync, rmSync, chownSync, chmodSync } from "fs";
 import { join } from "path";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { StringDecoder } from "string_decoder";
 import { q1, q } from "@/lib/db";
 import { getSession, type Session } from "@/lib/auth";
@@ -33,7 +33,7 @@ import { logSifuSourceAuditSafe } from "@/lib/sifu-source-audit-log";
 import type { SifuAnswerSupportedByAudit } from "@/lib/sifu-source-audit";
 
 type Msg = { role: "user" | "assistant"; content: string };
-type SifuModel = "claude-max-cli" | "codex-cli";
+type SifuModel = "claude-max-cli" | "codex-cli" | "grok-cli";
 type IntroBirthInput = {
   name?: string;
   date: string;
@@ -168,6 +168,11 @@ async function computeRootedness(pillars: { year: { stem: string; branch: string
 const INTRO_OPENROUTER_MODEL = process.env.SIFU_INTRO_MODEL || "anthropic/claude-opus-4.7";
 const CHILD_USER = "jarvis";
 const CODEX_CLI_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
+// Grok CLI (xAI) · login เป็น jarvis ที่ /home/jarvis/.grok · binary อยู่ใต้ /root (ต้อง full path)
+// prompt ยาว → ส่งผ่าน --prompt-file (stdin "-" grok ตีความเป็นชื่อไฟล์) · cwd jarvis home เลี่ยง watch error
+const GROK_BIN = process.env.SIFU_GROK_BIN || "/root/.grok/bin/grok";
+const GROK_CLI_MODEL = (process.env.SIFU_GROK_MODEL || "").trim();
+const GROK_CWD = process.env.SIFU_GROK_CWD || "/home/jarvis";
 const CODEX_COMPACT_KNOWLEDGE = [
   "Codex compact mode: FACT/PILLAR LOCK เป็นข้อเท็จจริง; คัมภีร์คลาสสิกเป็น source of truth ใน scope ของมัน; packet/interactions เป็นหลักฐานคำนวณพร้อม provenance",
   "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน หรือวัยจรที่ packet ไม่ได้ให้; ถ้า packet field ขัด strict classic/canonical ให้ลดเป็น raw/secondary",
@@ -175,7 +180,7 @@ const CODEX_COMPACT_KNOWLEDGE = [
   "ไทยนำ จีนรอง อธิบายผลจริงตรงคำถาม และรักษา ID line ตามกฎ prompt หลัก",
 ].join("\n");
 function shouldUseCompactKnowledge(model: SifuModel): boolean {
-  return model === "codex-cli" || SIFU_CLAUDE_COMPACT_KNOWLEDGE;
+  return model === "codex-cli" || model === "grok-cli" || SIFU_CLAUDE_COMPACT_KNOWLEDGE;
 }
 const STEM_ELEMENT_MAP: Record<string, string> = {
   甲: "wood", 乙: "wood", 丙: "fire", 丁: "fire", 戊: "earth", 己: "earth",
@@ -426,6 +431,7 @@ function buildSifuRuleVersion(model: SifuModel): string {
 const CACHE_TTL_HOURS = 24;
 function resolveSifuModel(raw: unknown): SifuModel {
   const s = String(raw || "").trim().toLowerCase();
+  if (s === "grok" || s === "grok-cli") return "grok-cli";
   return s === "codex" || s === "codex-cli" ? "codex-cli" : "claude-max-cli";
 }
 function cacheKey(opts: {
@@ -448,7 +454,7 @@ function cacheKey(opts: {
     opts.contextHash || "noctx",
     opts.topic || "free",
     opts.mode || "default",
-    ...(opts.model === "codex-cli" ? ["codex-cli"] : []),
+    ...(opts.model === "codex-cli" || opts.model === "grok-cli" ? [opts.model] : []),
     opts.lang,
     opts.dayPillar || "nopil",
     opts.message,
@@ -1403,9 +1409,45 @@ function codexErrorMessage(err: string): string {
   return err.slice(0, 300) || "codex cli failed";
 }
 
+function grokErrorMessage(err: string): string {
+  if (/401|Unauthorized|not logged in|authentication|sign in|login/i.test(err)) {
+    return "grok_cli_auth_required · Grok CLI ยังไม่ได้ login สำหรับ user jarvis";
+  }
+  return err.slice(0, 300) || "grok cli failed";
+}
+
 function cliErrorMessage(model: SifuModel, err: string): string {
   if (model === "codex-cli") return codexErrorMessage(err);
+  if (model === "grok-cli") return grokErrorMessage(err);
   return err.slice(0, 300) || "claude cli failed";
+}
+
+// jarvis uid/gid · lookup ครั้งเดียว cache (chown temp prompt ให้ jarvis เป็นเจ้าของ → 0600 ได้ ไม่ต้อง world-readable)
+let _jarvisIds: { uid: number; gid: number } | null | undefined;
+function jarvisIds(): { uid: number; gid: number } | null {
+  if (_jarvisIds !== undefined) return _jarvisIds;
+  try {
+    const uid = parseInt(execFileSync("id", ["-u", CHILD_USER]).toString().trim(), 10);
+    const gid = parseInt(execFileSync("id", ["-g", CHILD_USER]).toString().trim(), 10);
+    _jarvisIds = (Number.isFinite(uid) && Number.isFinite(gid)) ? { uid, gid } : null;
+  } catch { _jarvisIds = null; }
+  return _jarvisIds;
+}
+// เขียน prompt (มี PII ดวง user) ลงไฟล์ชั่วคราวให้ jarvis อ่าน (grok ส่ง prompt ทาง --prompt-file) · ลบทันทีหลังใช้
+// chown → jarvis owner + 0600 (เฉพาะ jarvis/root อ่าน) · chown fail → fallback 0644 (jarvis ยังอ่านได้ · กัน umask 077)
+function writeGrokPromptFile(prompt: string): string {
+  const path = `/tmp/grok_sifu_${randomUUID()}.txt`;
+  writeFileSync(path, prompt, { mode: 0o600 });
+  const ids = jarvisIds();
+  let chowned = false;
+  if (ids) { try { chownSync(path, ids.uid, ids.gid); chowned = true; } catch {} }
+  try { chmodSync(path, chowned ? 0o600 : 0o644); } catch {}
+  return path;
+}
+function grokCliArgs(promptFile: string, format: "plain" | "streaming-json"): string[] {
+  const args = ["--prompt-file", promptFile, "--output-format", format];
+  if (GROK_CLI_MODEL) args.push("-m", GROK_CLI_MODEL);
+  return args;
 }
 
 async function runClaudeCli(prompt: string): Promise<string> {
@@ -1497,8 +1539,48 @@ async function runCodexCli(prompt: string): Promise<string> {
   }
 }
 
+async function runGrokCli(prompt: string): Promise<string> {
+  dumpPromptIfDebug(prompt, "grok");
+  const _slotOk = await acquireSifuSlot();
+  if (!_slotOk) throw new Error("sifu_busy · ระบบกำลังประมวลผลคำถามจำนวนมาก");
+  let promptFile = "";
+  try {
+  promptFile = writeGrokPromptFile(prompt);
+  const pf = promptFile;
+  return await new Promise<string>((resolve, reject) => {
+    const spawnArgs = ["-u", CHILD_USER, "-H", GROK_BIN, ...grokCliArgs(pf, "plain")];
+    const c = spawn("sudo", spawnArgs, { cwd: GROK_CWD, env: process.env });
+    let out = "";
+    let err = "";
+    let settled = false;
+    const timer = setTimeout(() => {
+      try { c.kill("SIGKILL"); } catch {}
+      if (!settled) { settled = true; reject(new Error("timeout")); }
+    }, TIMEOUT_MS);
+    c.stdout.on("data", chunk => { out += chunk.toString(); });
+    c.stderr.on("data", chunk => { err += chunk.toString(); });
+    c.on("error", e => {
+      clearTimeout(timer);
+      if (!settled) { settled = true; reject(new Error(`grok spawn error · ${grokErrorMessage(String(e?.message || e))}`)); }
+    });
+    c.on("close", code => {
+      clearTimeout(timer);
+      if (settled) return;
+      settled = true;
+      if (code === 0 && out.trim()) resolve(out.trim());
+      else reject(new Error(`grok exit ${code} · ${grokErrorMessage(err)}`));
+    });
+  });
+  } finally {
+    if (promptFile) { try { rmSync(promptFile, { force: true }); } catch {} }
+    releaseSifuSlot();
+  }
+}
+
 async function runSifuCli(prompt: string, model: SifuModel): Promise<string> {
-  return model === "codex-cli" ? runCodexCli(prompt) : runClaudeCli(prompt);
+  if (model === "codex-cli") return runCodexCli(prompt);
+  if (model === "grok-cli") return runGrokCli(prompt);
+  return runClaudeCli(prompt);
 }
 
 /* 🌊 Streaming version · pipe stdout เป็น chunks · ใช้ใน SSE
@@ -1529,8 +1611,22 @@ function spawnCodexStreaming(prompt: string) {
   return c;
 }
 
+function spawnGrokStreaming(prompt: string) {
+  dumpPromptIfDebug(prompt, "grok-stream");
+  const promptFile = writeGrokPromptFile(prompt);
+  const spawnArgs = ["-u", CHILD_USER, "-H", GROK_BIN, ...grokCliArgs(promptFile, "streaming-json")];
+  const c = spawn("sudo", spawnArgs, { cwd: GROK_CWD, env: process.env });
+  // self-cleanup ไฟล์ prompt ชั่วคราว (caller ไม่รู้จัก promptFile)
+  const cleanup = () => { try { rmSync(promptFile, { force: true }); } catch {} };
+  c.on("close", cleanup);
+  c.on("error", cleanup);
+  return c;
+}
+
 function spawnSifuStreaming(prompt: string, model: SifuModel) {
-  return model === "codex-cli" ? spawnCodexStreaming(prompt) : spawnClaudeStreaming(prompt);
+  if (model === "codex-cli") return spawnCodexStreaming(prompt);
+  if (model === "grok-cli") return spawnGrokStreaming(prompt);
+  return spawnClaudeStreaming(prompt);
 }
 
 /* Parser · แยก JSON line-by-line · ดึง text content จาก stream-json */
@@ -1598,12 +1694,40 @@ function makeCodexJsonlParser(onText: (text: string) => void, onError: (text: st
   };
 }
 
+// grok streaming-json: {"type":"text","data":"..."}=คำตอบ · "thought"=reasoning(ข้าม) · "end"=จบ · "error"=ผิดพลาด
+function makeGrokJsonlParser(onText: (text: string) => void, onError: (text: string) => void) {
+  let buf = "";
+  const decoder = new StringDecoder("utf8");
+  return (chunk: Buffer) => {
+    buf += decoder.write(chunk);
+    let nl;
+    while ((nl = buf.indexOf("\n")) !== -1) {
+      const line = buf.slice(0, nl).trim();
+      buf = buf.slice(nl + 1);
+      if (!line) continue;
+      try {
+        const obj = JSON.parse(line);
+        if (obj.type === "text" && typeof obj.data === "string") {
+          onText(obj.data);
+        } else if (obj.type === "error" && obj.data) {
+          onError(typeof obj.data === "string" ? obj.data : JSON.stringify(obj.data));
+        }
+        // type "thought" (reasoning) + "end" → ข้าม
+      } catch {
+        // not JSON · skip
+      }
+    }
+  };
+}
+
 function makeSifuCliParser(
   model: SifuModel,
   onText: (text: string) => void,
   onError: (text: string) => void
 ) {
-  return model === "codex-cli" ? makeCodexJsonlParser(onText, onError) : makeJsonlParser(onText);
+  if (model === "codex-cli") return makeCodexJsonlParser(onText, onError);
+  if (model === "grok-cli") return makeGrokJsonlParser(onText, onError);
+  return makeJsonlParser(onText);
 }
 
 const SIFU_WAITING_PHASES = [
@@ -1919,7 +2043,14 @@ export async function POST(req: Request) {
           if (!_slotOk) { send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
           let _slotReleased = false;
           const releaseSlotOnce = () => { if (!_slotReleased) { _slotReleased = true; releaseSifuSlot(); } };
-          const child = spawnSifuStreaming(prompt, sifuModel);
+          let child: ReturnType<typeof spawnSifuStreaming>;
+          try { child = spawnSifuStreaming(prompt, sifuModel); }
+          catch (e) {
+            releaseSlotOnce();
+            send("error", { error: cliErrorMessage(sifuModel, String((e as Error)?.message || e)) });
+            safeClose();
+            return;
+          }
           activeChild = child;
           child.on("error", releaseSlotOnce);
           const killTimer = setTimeout(() => {
@@ -2425,7 +2556,14 @@ export async function GET(req: Request) {
       if (!_slotOkG) { send("error", { error: "ระบบกำลังประมวลผลคำถามจำนวนมาก · กรุณาลองใหม่ใน 1-2 นาที" }); safeClose(); return; }
       let _slotReleasedG = false;
       const releaseSlotOnceG = () => { if (!_slotReleasedG) { _slotReleasedG = true; releaseSifuSlot(); } };
-      const c = spawnSifuStreaming(prompt, sifuModel);
+      let c: ReturnType<typeof spawnSifuStreaming>;
+      try { c = spawnSifuStreaming(prompt, sifuModel); }
+      catch (e) {
+        releaseSlotOnceG();
+        send("error", { error: cliErrorMessage(sifuModel, String((e as Error)?.message || e)) });
+        safeClose();
+        return;
+      }
       c.on("error", releaseSlotOnceG);
       let full = "";
       let firstChunkSent = false;

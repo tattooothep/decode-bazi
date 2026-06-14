@@ -606,6 +606,7 @@
         <select id="sifu-model" aria-label="เลือกโมเดลซินแส">
           <option value="claude-max-cli">Claude CLI</option>
           <option value="codex-cli">Codex CLI</option>
+          <option value="grok-cli">Grok CLI</option>
         </select>
       </div>
       <div class="profile-pick" id="sifu-profile-wrap">
@@ -912,12 +913,12 @@
     try { selectedProfileId = String(urlPid || window.hkActiveProfileId || ''); } catch(_){}
     function selectedSifuModel(){
       var v = modelSel && modelSel.value;
-      return v === 'codex-cli' ? 'codex-cli' : 'claude-max-cli';
+      return (v === 'codex-cli' || v === 'grok-cli') ? v : 'claude-max-cli';
     }
     if (modelSel) {
       try {
         var savedModel = localStorage.getItem('hk_sifu_model');
-        if (savedModel === 'codex-cli' || savedModel === 'claude-max-cli') modelSel.value = savedModel;
+        if (savedModel === 'codex-cli' || savedModel === 'claude-max-cli' || savedModel === 'grok-cli') modelSel.value = savedModel;
       } catch(_) {}
       modelSel.addEventListener('change', function(){
         try { localStorage.setItem('hk_sifu_model', selectedSifuModel()); } catch(_) {}
@@ -1706,6 +1707,10 @@
       var phG = addMsg('sifu', 'ซินแสกำลังคิด ...');
       try {
         var modelG = selectedSifuModel();
+        if (modelG === 'grok-cli') {
+          phG.textContent = '⚠ Grok CLI ยังไม่รองรับโหมดดูดวงหลายคน · กรุณาเลือก Claude CLI หรือ Codex CLI สำหรับโหมดกลุ่ม';
+          return true;
+        }
         if (modelG === 'codex-cli' && hkgG.ids.length > 2) {
           phG.textContent = '⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง เพราะ packet ดวงหลายคนยาวเกิน context · เลือกดวงที่สองเอง หรือใช้ Claude CLI สำหรับกลุ่มใหญ่';
           return true;
