@@ -681,6 +681,7 @@
       <input type="file" id="hk-attach-input" accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xlsx,.md" multiple style="display:none;">
       <button type="button" class="hk-attach-btn" id="hk-attach-btn" title="แนบรูป/ไฟล์ (หรือลากมาวาง)" aria-label="แนบไฟล์">📎</button>
       <button type="button" class="hk-attach-btn hk-genimg-btn" id="hk-genimg-btn" title="สร้างรูปด้วย AI (grok/gpt)" aria-label="สร้างรูป">🎨</button>
+      <button type="button" class="hk-attach-btn hk-genvid-btn" id="hk-genvid-btn" title="สร้างวิดีโอด้วย AI (BytePlus)" aria-label="สร้างวิดีโอ">🎬</button>
       <textarea id="chat-input" placeholder="ถามซินแส... เช่น 'พรุ่งนี้ควรประชุมตอนไหน', 'ใครเป็นคนของฉันสัปดาห์นี้'"></textarea>
       <button class="send-btn" id="send">送 →</button>
     </div>
@@ -2032,6 +2033,36 @@
         }
       } catch (e) { ph.textContent = '⚠ ผิดพลาด: ' + String((e && e.message) || e); }
       finally { window._sifuStreaming = false; sendBtn.disabled = false; genImgBtn.disabled = false; window.scrollTo(0, document.documentElement.scrollHeight); }
+    });
+    /* 🎬 สร้างวิดีโอด้วย AI (BytePlus Seedance · gpt/grok ไม่มี video tool) · /api/ai/video */
+    var genVidBtn = document.getElementById('hk-genvid-btn');
+    if (genVidBtn) genVidBtn.addEventListener('click', async function(){
+      var prompt = (inputEl.value || '').trim();
+      if (!prompt) { inputEl.focus(); return; }
+      if (window._sifuStreaming) return;
+      addMsg('user', '🎬 ' + prompt);
+      inputEl.value = '';
+      var ph = addMsg('sifu', '⏳ กำลังสร้างวิดีโอ... (อาจใช้เวลา 1-5 นาที)');
+      window._sifuStreaming = true; sendBtn.disabled = true; genVidBtn.disabled = true;
+      try {
+        var r = await fetch('/api/ai/video', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify({ prompt: prompt }) });
+        var j = await r.json().catch(function(){ return null; });
+        if (r.ok && j && j.ok && j.video_base64) {
+          ph.textContent = '';
+          var vid = document.createElement('video');
+          vid.src = 'data:' + (j.mime || 'video/mp4') + ';base64,' + j.video_base64;
+          vid.controls = true; vid.playsInline = true;
+          vid.style.cssText = 'max-width:100%;border-radius:12px;border:1px solid var(--gold-line);display:block;';
+          ph.appendChild(vid);
+          var cap = document.createElement('div');
+          cap.style.cssText = 'font-size:12px;color:var(--fg-soft);margin-top:6px;';
+          cap.textContent = '🎬 BytePlus · ' + prompt;
+          ph.appendChild(cap);
+        } else {
+          ph.textContent = '⚠ สร้างวิดีโอไม่สำเร็จ: ' + ((j && (j.error || j.detail)) || ('HTTP ' + r.status));
+        }
+      } catch (e) { ph.textContent = '⚠ ผิดพลาด: ' + String((e && e.message) || e); }
+      finally { window._sifuStreaming = false; sendBtn.disabled = false; genVidBtn.disabled = false; window.scrollTo(0, document.documentElement.scrollHeight); }
     });
     inputEl.addEventListener('keydown', function(e){
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
