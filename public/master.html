@@ -1707,8 +1707,8 @@
       var phG = addMsg('sifu', 'ซินแสกำลังคิด ...');
       try {
         var modelG = selectedSifuModel();
-        if (modelG === 'grok-cli') {
-          phG.textContent = '⚠ Grok CLI ยังไม่รองรับโหมดดูดวงหลายคน · กรุณาเลือก Claude CLI หรือ Codex CLI สำหรับโหมดกลุ่ม';
+        if (modelG === 'grok-cli' && hkgG.ids.length > 2) {
+          phG.textContent = '⚠ Grok CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง เพราะ packet ดวงหลายคนยาวเกิน · เลือกดวงที่สองเอง หรือใช้ Claude CLI สำหรับกลุ่มใหญ่';
           return true;
         }
         if (modelG === 'codex-cli' && hkgG.ids.length > 2) {

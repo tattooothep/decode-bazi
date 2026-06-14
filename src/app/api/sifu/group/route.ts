@@ -21,10 +21,10 @@
  *    (มีบทเรียนว่าทำ stream พัง)
  */
 import { NextResponse } from "next/server";
-import { spawn } from "child_process";
-import { readFileSync, statSync } from "fs";
+import { spawn, execFileSync } from "child_process";
+import { readFileSync, statSync, writeFileSync, rmSync, chownSync, chmodSync } from "fs";
 import { join } from "path";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { StringDecoder } from "string_decoder";
 import { q } from "@/lib/db";
 import { getSession } from "@/lib/auth";
@@ -42,7 +42,7 @@ import { logResearchAiMessageSafe } from "@/lib/research-log";
 export const runtime = "nodejs"; // child_process spawn (เหมือน /api/sifu)
 
 type Msg = { role: "user" | "assistant"; content: string };
-type SifuModel = "claude-max-cli" | "codex-cli";
+type SifuModel = "claude-max-cli" | "codex-cli" | "grok-cli";
 
 const TIMEOUT_MS = 600_000; // เท่ากับ /api/sifu · ตำราคลาสสิก + หลายคน = prompt ยาว
 const CHILD_USER = "jarvis";
@@ -54,6 +54,12 @@ const CODEX_GROUP_MAX = Number.isFinite(CODEX_GROUP_MAX_RAW)
 const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 7_000);
 const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
 const CODEX_CLI_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
+// Grok CLI (xAI) · เพิ่มเฉพาะ grok · ไม่กระทบ claude/codex · login jarvis (/home/jarvis/.grok) · prompt ผ่าน --prompt-file
+const GROK_BIN = process.env.SIFU_GROK_BIN || "/root/.grok/bin/grok";
+const GROK_CLI_MODEL = (process.env.SIFU_GROK_MODEL || "").trim();
+const GROK_CWD = process.env.SIFU_GROK_CWD || "/home/jarvis";
+const GROK_GROUP_MAX_RAW = Number(process.env.SIFU_GROK_GROUP_MAX || 2); // เทียบคู่ 2 ดวง (packet ยาว = compact)
+const GROK_GROUP_MAX = Number.isFinite(GROK_GROUP_MAX_RAW) ? Math.max(1, Math.min(MAX_GROUP, GROK_GROUP_MAX_RAW)) : 2;
 const CODEX_GROUP_BASE_CANON_MAX_CHARS = Number(process.env.SIFU_CODEX_GROUP_BASE_CANON_MAX_CHARS || 18_000);
 const CODEX_GROUP_QTBJ_MAX_CHARS = Number(process.env.SIFU_CODEX_GROUP_QTBJ_MAX_CHARS || 18_000);
 const CODEX_GROUP_QTBJ_MAX_PAIRS = Number(process.env.SIFU_CODEX_GROUP_QTBJ_MAX_PAIRS || 2);
@@ -66,6 +72,7 @@ const CODEX_COMPACT_KNOWLEDGE = [
 
 function resolveSifuModel(raw: unknown): SifuModel {
   const s = String(raw || "").trim().toLowerCase();
+  if (s === "grok" || s === "grok-cli") return "grok-cli";
   return s === "codex" || s === "codex-cli" ? "codex-cli" : "claude-max-cli";
 }
 
@@ -568,7 +575,49 @@ function codexErrorMessage(err: string): string {
   return err.slice(0, 300) || "codex cli failed";
 }
 
+// ── Grok helper (เพิ่มเฉพาะ grok · ไม่กระทบ claude/codex) ──
+function grokErrorMessage(err: string): string {
+  if (/401|Unauthorized|not logged in|authentication|sign in|login/i.test(err)) {
+    return "grok_cli_auth_required · Grok CLI ยังไม่ได้ login สำหรับ user jarvis";
+  }
+  return err.slice(0, 300) || "grok cli failed";
+}
+let _jarvisIds: { uid: number; gid: number } | null | undefined;
+function jarvisIds(): { uid: number; gid: number } | null {
+  if (_jarvisIds !== undefined) return _jarvisIds;
+  try {
+    const uid = parseInt(execFileSync("id", ["-u", CHILD_USER]).toString().trim(), 10);
+    const gid = parseInt(execFileSync("id", ["-g", CHILD_USER]).toString().trim(), 10);
+    _jarvisIds = (Number.isFinite(uid) && Number.isFinite(gid)) ? { uid, gid } : null;
+  } catch { _jarvisIds = null; }
+  return _jarvisIds;
+}
+// temp prompt (PII ดวง user) → 0600 owned jarvis · ลบทันทีหลังใช้ · chown fail → 0644 (กัน umask 077)
+function writeGrokPromptFile(prompt: string): string {
+  const path = `/tmp/grok_sifu_${randomUUID()}.txt`;
+  writeFileSync(path, prompt, { mode: 0o600 });
+  const ids = jarvisIds();
+  let chowned = false;
+  if (ids) { try { chownSync(path, ids.uid, ids.gid); chowned = true; } catch {} }
+  try { chmodSync(path, chowned ? 0o600 : 0o644); } catch {}
+  return path;
+}
+function grokCliArgs(promptFile: string, format: "plain" | "streaming-json"): string[] {
+  const args = ["--prompt-file", promptFile, "--output-format", format];
+  if (GROK_CLI_MODEL) args.push("-m", GROK_CLI_MODEL);
+  return args;
+}
+// debug dump เฉพาะ grok (env SIFU_DUMP_PROMPT=1) · ไม่แตะ claude/codex
+function grokDumpIfDebug(prompt: string, tag: string) {
+  if (process.env.SIFU_DUMP_PROMPT !== "1") return;
+  try {
+    const hash = createHash("sha256").update(prompt).digest("hex").slice(0, 8);
+    writeFileSync(`/tmp/sifu_prompt_${tag}_${hash}.txt`, prompt);
+  } catch {}
+}
+
 function cliErrorMessage(model: SifuModel, err: string): string {
+  if (model === "grok-cli") return grokErrorMessage(err);
   return model === "codex-cli" ? codexErrorMessage(err) : (err.slice(0, 300) || "claude cli failed");
 }
 
@@ -612,7 +661,28 @@ async function runCodexCli(prompt: string): Promise<string> {
   });
 }
 
+async function runGrokCli(prompt: string): Promise<string> {
+  grokDumpIfDebug(prompt, "grok-group");
+  let promptFile = "";
+  try {
+    promptFile = writeGrokPromptFile(prompt);
+    const pf = promptFile;
+    return await new Promise<string>((resolve, reject) => {
+      const c = spawn("sudo", ["-u", CHILD_USER, "-H", GROK_BIN, ...grokCliArgs(pf, "plain")], { cwd: GROK_CWD, env: process.env });
+      let out = ""; let err = ""; let settled = false;
+      const timer = setTimeout(() => { try { c.kill("SIGKILL"); } catch {} if (!settled) { settled = true; reject(new Error("timeout")); } }, TIMEOUT_MS);
+      c.stdout.on("data", chunk => { out += chunk.toString(); });
+      c.stderr.on("data", chunk => { err += chunk.toString(); });
+      c.on("error", e => { clearTimeout(timer); if (!settled) { settled = true; reject(new Error(`grok spawn error · ${grokErrorMessage(String(e?.message || e))}`)); } });
+      c.on("close", code => { clearTimeout(timer); if (settled) return; settled = true; if (code === 0 && out.trim()) resolve(out.trim()); else reject(new Error(`grok exit ${code} · ${grokErrorMessage(err)}`)); });
+    });
+  } finally {
+    if (promptFile) { try { rmSync(promptFile, { force: true }); } catch {} }
+  }
+}
+
 async function runSifuCli(prompt: string, model: SifuModel): Promise<string> {
+  if (model === "grok-cli") return runGrokCli(prompt);
   return model === "codex-cli" ? runCodexCli(prompt) : runClaudeCli(prompt);
 }
 
@@ -626,7 +696,18 @@ function spawnCodexStreaming(prompt: string) {
   return c;
 }
 
+function spawnGrokStreaming(prompt: string) {
+  grokDumpIfDebug(prompt, "grok-group-stream");
+  const promptFile = writeGrokPromptFile(prompt);
+  const c = spawn("sudo", ["-u", CHILD_USER, "-H", GROK_BIN, ...grokCliArgs(promptFile, "streaming-json")], { cwd: GROK_CWD, env: process.env });
+  const cleanup = () => { try { rmSync(promptFile, { force: true }); } catch {} };
+  c.on("close", cleanup);
+  c.on("error", cleanup);
+  return c;
+}
+
 function spawnSifuStreaming(prompt: string, model: SifuModel) {
+  if (model === "grok-cli") return spawnGrokStreaming(prompt);
   return model === "codex-cli" ? spawnCodexStreaming(prompt) : spawnClaudeStreaming(prompt);
 }
 
@@ -680,11 +761,32 @@ function makeCodexJsonlParser(onText: (text: string) => void, onError: (text: st
   };
 }
 
+// grok streaming-json: type=text=คำตอบ · thought=ข้าม · end=จบ · error=ผิดพลาด
+function makeGrokJsonlParser(onText: (text: string) => void, onError: (text: string) => void) {
+  let buf = "";
+  const decoder = new StringDecoder("utf8");
+  return (chunk: Buffer) => {
+    buf += decoder.write(chunk);
+    let nl;
+    while ((nl = buf.indexOf("\n")) !== -1) {
+      const line = buf.slice(0, nl).trim();
+      buf = buf.slice(nl + 1);
+      if (!line) continue;
+      try {
+        const obj = JSON.parse(line);
+        if (obj.type === "text" && typeof obj.data === "string") onText(obj.data);
+        else if (obj.type === "error" && obj.data) onError(typeof obj.data === "string" ? obj.data : JSON.stringify(obj.data));
+      } catch { /* skip */ }
+    }
+  };
+}
+
 function makeSifuCliParser(
   model: SifuModel,
   onText: (text: string) => void,
   onError: (text: string) => void
 ) {
+  if (model === "grok-cli") return makeGrokJsonlParser(onText, onError);
   return model === "codex-cli" ? makeCodexJsonlParser(onText, onError) : makeJsonlParser(onText);
 }
 
@@ -766,6 +868,10 @@ export async function POST(req: Request) {
       console.log(`[sifu/group guard] model=codex-cli count=${profileIds.length} max=${CODEX_GROUP_MAX}`);
       return NextResponse.json({ error: "codex_context_limit_group_size", max: CODEX_GROUP_MAX, count: profileIds.length }, { status: 400 });
     }
+    if (sifuModel === "grok-cli" && profileIds.length > GROK_GROUP_MAX) {
+      console.log(`[sifu/group guard] model=grok-cli count=${profileIds.length} max=${GROK_GROUP_MAX}`);
+      return NextResponse.json({ error: "grok_context_limit_group_size", max: GROK_GROUP_MAX, count: profileIds.length }, { status: 400 });
+    }
     console.log(`[sifu/group model] model=${sifuModel} stream=${body.stream === true ? "1" : "0"} count=${profileIds.length}`);
 
     /* 🔐 org guard · ดึงทุก profile ใน org เดียวกันเท่านั้น (กัน IDOR · สำคัญสุด) */
@@ -827,7 +933,8 @@ export async function POST(req: Request) {
     if (syn) groupCtx += "\n\n" + syn;
 
     const compactKnowledge = sifuModel === "codex-cli";
-    const prompt = buildGroupPrompt({ ctx: groupCtx, message, history, lang, compactKnowledge });
+    const groupCompact = compactKnowledge || sifuModel === "grok-cli"; // grok ใช้ย่อเหมือน codex · ไม่แตะค่า codex/claude
+    const prompt = buildGroupPrompt({ ctx: groupCtx, message, history, lang, compactKnowledge: groupCompact });
     const profileSnapshot = profileAuditSnapshot(ordered);
     const pillarsSnapshot = pillarsAuditSnapshot(people);
     const synastryHash = syn ? hashText(syn) : null;
@@ -840,7 +947,7 @@ export async function POST(req: Request) {
       pillars: pillarsSnapshot,
       synastry_hash: synastryHash,
     }));
-    const knowledgeHashes = loadedKnowledgeVersions(compactKnowledge);
+    const knowledgeHashes = loadedKnowledgeVersions(groupCompact);
     const auditPayload = {
       groupLabel,
       profileIds: orderedProfileIds,
@@ -858,9 +965,9 @@ export async function POST(req: Request) {
       prompt_hash: promptHash,
       synastry_hash: synastryHash,
       synastry_present: !!syn,
-      compact_knowledge: compactKnowledge,
+      compact_knowledge: groupCompact,
     };
-    if (compactKnowledge) {
+    if (groupCompact) {
       console.log(`[sifu/group prompt] model=${sifuModel} compact=1 count=${ordered.length} chars=${prompt.length}`);
     }
 
