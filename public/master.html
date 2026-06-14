@@ -314,6 +314,25 @@
   .chat-input textarea{flex:1;background:var(--bg-2);color:var(--fg);border:1px solid var(--gold-line);border-radius:12px;padding:14px 16px;font-family:var(--thai);font-size:14px;line-height:1.5;resize:none;min-height:52px;max-height:120px;}
   .chat-input textarea::placeholder{color:var(--fg);opacity:.45;}
   .chat-input textarea:focus{outline:none;border-color:var(--gold);}
+  /* แนบไฟล์ / ลากวาง */
+  .hk-attach-btn{flex:0 0 auto;background:var(--bg-2);color:var(--gold);border:1px solid var(--gold-line);border-radius:12px;width:48px;min-height:52px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+  .hk-attach-btn:hover{background:var(--gold-soft);border-color:var(--gold);}
+  .hk-attach-preview{display:flex;flex-wrap:wrap;gap:8px;max-width:760px;width:100%;margin:0 auto 8px;}
+  .hk-attach-item{position:relative;width:66px;height:66px;border-radius:10px;overflow:hidden;border:1px solid var(--gold-line);background:var(--bg-2);display:flex;align-items:center;justify-content:center;}
+  .hk-attach-item img{width:100%;height:100%;object-fit:cover;}
+  .hk-attach-item .hk-attach-name{padding:4px;word-break:break-all;font-size:9px;color:var(--fg-soft);text-align:center;line-height:1.25;}
+  .hk-attach-item .hk-attach-x{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
+  .hk-drop-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);align-items:center;justify-content:center;}
+  .hk-drop-overlay.on{display:flex;}
+  .hk-drop-box{border:2px dashed var(--gold);border-radius:18px;padding:38px 56px;background:var(--bg);text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;color:var(--gold);font-family:var(--thai);font-size:18px;}
+  .hk-drop-box .hk-drop-ico{font-size:40px;}
+  .hk-drop-box small{color:var(--fg-soft);font-size:13px;}
+  @media (max-width:560px){
+    .hk-attach-item{width:54px;height:54px;}
+    .hk-attach-btn{width:44px;}
+    .hk-drop-box{padding:22px 30px;font-size:16px;}
+    .hk-drop-box .hk-drop-ico{font-size:32px;}
+  }
   .send-btn{background:var(--gold);color:var(--bg);border:none;padding:14px 20px;border-radius:12px;cursor:pointer;font-family:var(--tc);font-size:18px;font-weight:700;transition:.2s;}
   .send-btn:hover{background:var(--gold-deep);}
 
@@ -657,10 +676,14 @@
 
 
     <!-- input -->
-    <div class="chat-input">
+    <div class="hk-attach-preview" id="hk-attach-preview" style="display:none;"></div>
+    <div class="chat-input" id="hk-chat-input-bar">
+      <input type="file" id="hk-attach-input" accept="image/*,.pdf,.txt,.csv,.doc,.docx,.xlsx,.md" multiple style="display:none;">
+      <button type="button" class="hk-attach-btn" id="hk-attach-btn" title="แนบรูป/ไฟล์ (หรือลากมาวาง)" aria-label="แนบไฟล์">📎</button>
       <textarea id="chat-input" placeholder="ถามซินแส... เช่น 'พรุ่งนี้ควรประชุมตอนไหน', 'ใครเป็นคนของฉันสัปดาห์นี้'"></textarea>
       <button class="send-btn" id="send">送 →</button>
     </div>
+    <div class="hk-drop-overlay" id="hk-drop-overlay"><div class="hk-drop-box"><span class="hk-drop-ico">📎</span><span data-i18n="mst.drop.title">วางไฟล์ที่นี่เพื่อแนบ</span><small data-i18n="mst.drop.sub">รูปภาพ · เอกสาร</small></div></div>
   </div>
 
 </div>
@@ -688,6 +711,66 @@
 
   // chat input ref (ใช้โดยปุ่ม preset chips) · แชทจริงอยู่ใน wireSifu()
   const input = document.getElementById('chat-input');
+
+  /* ── แนบไฟล์ / ลากวาง / วางรูป (paste) ── เก็บไฟล์ใน window._hkAttach (ส่ง backend ตอน send) */
+  (function wireAttach(){
+    var btn=document.getElementById('hk-attach-btn');
+    var fileInput=document.getElementById('hk-attach-input');
+    var preview=document.getElementById('hk-attach-preview');
+    var overlay=document.getElementById('hk-drop-overlay');
+    if(!btn||!fileInput||!preview) return;
+    window._hkAttach = window._hkAttach || [];
+    var MAX_FILES=6, MAX_SIZE=20*1024*1024;
+    function esc(s){ return String(s||'').replace(/[<>&"]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c];}); }
+    function renderPreview(){
+      if(!window._hkAttach.length){ preview.style.display='none'; preview.innerHTML=''; return; }
+      preview.style.display='flex'; preview.innerHTML='';
+      window._hkAttach.forEach(function(a){
+        var item=document.createElement('div'); item.className='hk-attach-item';
+        if(a.file.type.indexOf('image/')===0 && a.url){
+          var img=document.createElement('img'); img.src=a.url; img.alt=a.file.name; item.appendChild(img);
+        } else {
+          item.innerHTML='<span class="hk-attach-name">'+esc(a.file.name)+'</span>';
+        }
+        var x=document.createElement('button'); x.className='hk-attach-x'; x.type='button'; x.textContent='×'; x.title='ลบ';
+        x.addEventListener('click',function(){ removeAttach(a.id); });
+        item.appendChild(x); preview.appendChild(item);
+      });
+    }
+    var OK_MIME=['application/pdf','text/plain','text/csv','text/markdown','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','application/vnd.ms-excel'];
+    /* allowlist เดียว ครอบทุก source (picker/drag-drop/paste) · accept ของ input กัน picker ไม่ได้กัน drop/paste */
+    function isAllowed(f){
+      if(f.type && f.type.indexOf('image/')===0) return true;
+      if(f.type && OK_MIME.indexOf(f.type)>=0) return true;
+      return /\.(png|jpe?g|gif|webp|bmp|svg|pdf|txt|csv|docx?|xlsx?|md)$/i.test(f.name||'');
+    }
+    function addFiles(files){
+      Array.prototype.forEach.call(files,function(f){
+        if(!f || window._hkAttach.length>=MAX_FILES) return;
+        if(!isAllowed(f)){ try{alert('ไฟล์ชนิดนี้ไม่รองรับ: '+(f.name||''));}catch(_){}; return; }
+        if(f.size>MAX_SIZE){ try{alert('ไฟล์ '+f.name+' ใหญ่เกิน 20MB');}catch(_){}; return; }
+        var id='att_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+        var url=(f.type.indexOf('image/')===0)?URL.createObjectURL(f):'';
+        window._hkAttach.push({file:f,url:url,id:id});
+      });
+      renderPreview();
+    }
+    function removeAttach(id){
+      var i=window._hkAttach.map(function(a){return a.id;}).indexOf(id);
+      if(i>=0){ if(window._hkAttach[i].url) URL.revokeObjectURL(window._hkAttach[i].url); window._hkAttach.splice(i,1); }
+      renderPreview();
+    }
+    window._hkClearAttach=function(){ (window._hkAttach||[]).forEach(function(a){ if(a.url) URL.revokeObjectURL(a.url); }); window._hkAttach=[]; renderPreview(); };
+    btn.addEventListener('click',function(){ fileInput.click(); });
+    fileInput.addEventListener('change',function(){ addFiles(fileInput.files); fileInput.value=''; });
+    document.addEventListener('paste',function(e){ if(e.clipboardData&&e.clipboardData.files&&e.clipboardData.files.length){ addFiles(e.clipboardData.files); } });
+    var dragDepth=0;
+    function hasFiles(e){ try{ return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types||[],'Files')>=0; }catch(_){ return false; } }
+    window.addEventListener('dragenter',function(e){ if(hasFiles(e)){ e.preventDefault(); dragDepth++; if(overlay) overlay.classList.add('on'); } });
+    window.addEventListener('dragover',function(e){ if(hasFiles(e)){ e.preventDefault(); } });
+    window.addEventListener('dragleave',function(e){ if(hasFiles(e)){ dragDepth--; if(dragDepth<=0){ dragDepth=0; if(overlay) overlay.classList.remove('on'); } } });
+    window.addEventListener('drop',function(e){ if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length){ e.preventDefault(); dragDepth=0; if(overlay) overlay.classList.remove('on'); addFiles(e.dataTransfer.files); } });
+  })();
 
   /* ── First-visit Sinsae gate ── */
   (function sinsaeIntro(){
@@ -2011,7 +2094,9 @@ window.HK_I18N = {
   'mst.act.copy':   { th:'คัดลอก', en:'Copy', zh:'複製' },
   'mst.act.copied': { th:'คัดลอกแล้ว', en:'Copied', zh:'已複製' },
   'mst.side.new':   { th:'แชทใหม่', en:'New chat', zh:'新對話' },
-  'mst.side.empty': { th:'ยังไม่มีบทสนทนา', en:'No conversations yet', zh:'尚無對話' }
+  'mst.side.empty': { th:'ยังไม่มีบทสนทนา', en:'No conversations yet', zh:'尚無對話' },
+  'mst.drop.title': { th:'วางไฟล์ที่นี่เพื่อแนบ', en:'Drop files here to attach', zh:'拖放文件以附加' },
+  'mst.drop.sub':   { th:'รูปภาพ · เอกสาร', en:'Images · Documents', zh:'圖片 · 文檔' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
