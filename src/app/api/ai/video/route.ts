@@ -47,6 +47,7 @@ async function genVideoByteplus(prompt: string, opts: { image_b64?: string; dura
     const vr = await fetch(videoUrl);
     if (!vr.ok) return { ok: false, error: `download ${vr.status}` };
     const video = Buffer.from(await vr.arrayBuffer());
+    if (video.length > 100 * 1024 * 1024) return { ok: false, error: "video_too_large" }; // cap กัน memory บวม
     return { ok: true, video, duration_ms: (opts.duration || 6) * 1000 };
   } catch (e) { return { ok: false, error: String((e as Error)?.message || e).slice(0, 180) }; }
 }

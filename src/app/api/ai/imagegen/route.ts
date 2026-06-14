@@ -24,8 +24,9 @@ function spawnP(cmd: string, args: string[]): Promise<SpawnResult> {
     let out = "", err = "", done = false;
     const fin = (r: SpawnResult) => { if (!done) { done = true; resolve(r); } };
     const t = setTimeout(() => { try { c.kill("SIGKILL"); } catch {} fin({ code: -1, out, err: "timeout" }); }, TIMEOUT_MS);
-    c.stdout.on("data", (d) => { out += d.toString(); });
-    c.stderr.on("data", (d) => { err += d.toString(); });
+    const MAX_BUF = 256 * 1024; // cap buffer กัน grok/codex spam output จน memory บวม
+    c.stdout.on("data", (d) => { if (out.length < MAX_BUF) out += d.toString(); });
+    c.stderr.on("data", (d) => { if (err.length < MAX_BUF) err += d.toString(); });
     c.on("error", (e) => { clearTimeout(t); fin({ code: -1, out, err: String(e?.message || e) }); });
     c.on("close", (code) => { clearTimeout(t); fin({ code: code ?? -1, out, err }); });
   });
@@ -64,11 +65,17 @@ export async function POST(req: Request) {
   let r: SpawnResult, imgPath: string | null;
   if (engine === "codex") {
     r = await spawnP("codex", ["exec", "--skip-git-repo-check", "--sandbox", "workspace-write", "-C", CWD, `Generate an image based on this request and save it as a PNG file: ${prompt}`]);
-    imgPath = newestImageSince(CODEX_IMG, startMs);
+    // กัน race (2 request พร้อมกัน): หา session/thread ของ request ตัวเอง → หารูปใน dir นั้น · fallback หาทั้ง dir
+    const tid = (r.out.match(/"thread_id"\s*:\s*"([0-9a-f-]{8,})"/i) || r.out.match(/generated_images\/([0-9a-f-]{8,})\b/i) || [])[1];
+    imgPath = (tid ? newestImageSince(join(CODEX_IMG, tid), startMs) : null) || newestImageSince(CODEX_IMG, startMs);
   } else {
     r = await spawnP(GROK_BIN, ["-p", `สร้างรูปภาพตามคำขอนี้แล้วบันทึกเป็นไฟล์: ${prompt}`, "--output-format", "plain"]);
-    imgPath = newestImageSince(GROK_SESS, startMs);
+    // grok บอก path จริงใน text "Saved to: `path`" → ใช้ของ request ตัวเอง (กัน race) · fallback mtime
+    const gp = (r.out.match(/Saved to:\s*`?(\/[^\s`]+\.(?:jpe?g|png|webp))/i) || [])[1];
+    imgPath = (gp && gp.startsWith("/home/jarvis/.grok") ? gp : null) || newestImageSince(GROK_SESS, startMs);
   }
+  // path traversal guard: ไฟล์ต้องอยู่ใต้ dir ที่อนุญาตเท่านั้น
+  if (imgPath && !(imgPath.startsWith(GROK_SESS) || imgPath.startsWith(CODEX_IMG))) imgPath = null;
 
   if (!imgPath) {
     return NextResponse.json({ error: "no_image", engine, detail: String(r.err || r.out).slice(0, 400) }, { status: 502 });
