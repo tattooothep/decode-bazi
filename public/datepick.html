@@ -262,6 +262,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .dg-good{color:#6cb859;border-color:rgba(108,184,89,.5);background:rgba(108,184,89,.12);}
 .dg-neutral{color:var(--fg-soft);border-color:var(--line);background:rgba(127,127,127,.10);}
 .dg-bad{color:#c5564e;border-color:rgba(197,86,78,.5);background:rgba(197,86,78,.10);}
+.dg-zh{font-family:var(--tc);font-size:.82em;color:var(--fg-faint);opacity:.75;}
 .result-head .rscore{text-align:right;}
 .result-head .rscore .num{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--gold);line-height:1;}
 .result-head .rscore .lbl{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;}
@@ -1975,20 +1976,27 @@ function renderRealResults(items){
       const agesTxt = (rc.ages || []).slice(0, 6).join(', ');
       rcLine = `<div class="r-line"><span class="k">${kLabel}</span><span class="v">⚠ ${escHtml(zod)} ${escHtml(rc.zodiac_zh)} · ${aLabel} ${escHtml(agesTxt)}</span></div>`;
     }
-    /* 董公擇日 · ฤกษ์ตงกง (display-only · ไม่เข้าคะแนน) */
+    /* 董公擇日 · ฤกษ์ตงกง (display-only · ไม่เข้าคะแนน · ไทยนำ จีนรอง) */
     let dgChip = '', dgLine = '';
     if (t.donggong) {
-      const dg = t.donggong; const lang = getCurrentLang();
+      const dg = t.donggong; const L = getCurrentLang();
       const ic = dg.level === 'top' ? '🏆' : dg.level === 'good' ? '🟢' : dg.level === 'bad' ? '🔴' : '⚪';
-      const lbl = lang === 'en' ? dg.en : lang === 'zh' ? dg.zh : dg.th;
-      dgChip = `<span class="dg-chip dg-${escHtml(dg.level)}" title="董公擇日 · ฤกษ์ตงกง">${ic} 董公 ${escHtml(lbl)}</span>`;
+      let inner;
+      if (L === 'zh') inner = `董公 ${escHtml(dg.zh)}`;
+      else if (L === 'en') inner = `Dong Gong · ${escHtml(dg.en)}`;
+      else inner = `ตงกง <span class="dg-zh">董公</span> ${escHtml(dg.verdictTh)} · ${escHtml(dg.jianchuTh)} <span class="dg-zh">${escHtml(dg.jianchu)}</span>`;
+      dgChip = `<span class="dg-chip dg-${escHtml(dg.level)}" title="董公擇日 · ฤกษ์ตงกง">${ic} ${inner}</span>`;
+      /* ไทยนำ + จีนตัวเล็กตามหลัง (TH) · จีนล้วน (ZH/EN) */
+      const fmt = (pairs, zhArr) => (L === 'zh' || L === 'en')
+        ? escHtml((zhArr || []).join('、'))
+        : (pairs || []).map(p => escHtml(p.th) + (p.th !== p.zh ? ` <span class="dg-zh">${escHtml(p.zh)}</span>` : '')).join('、');
       const parts = [];
-      if ((dg.yi || []).length) parts.push((lang === 'en' ? 'Good: ' : lang === 'zh' ? '宜：' : 'ทำได้ ') + escHtml(dg.yi.join('、')));
-      if ((dg.ji || []).length) parts.push((lang === 'en' ? 'Avoid: ' : lang === 'zh' ? '忌：' : 'ห้าม ') + escHtml(dg.ji.join('、')));
-      if ((dg.shensha || []).length) parts.push((lang === 'en' ? 'Stars: ' : '神煞 ') + escHtml(dg.shensha.join('、')));
+      if ((dg.yiPairs || []).length) parts.push((L === 'en' ? 'Good: ' : L === 'zh' ? '宜：' : 'ทำได้ ') + fmt(dg.yiPairs, dg.yi));
+      if ((dg.jiPairs || []).length) parts.push((L === 'en' ? 'Avoid: ' : L === 'zh' ? '忌：' : 'ห้าม ') + fmt(dg.jiPairs, dg.ji));
+      if ((dg.shenshaPairs || []).length) parts.push((L === 'en' ? 'Stars: ' : L === 'zh' ? '神煞：' : 'ดาว ') + fmt(dg.shenshaPairs, dg.shensha));
       if (dg.note) parts.push(escHtml(dg.note));
       if (parts.length) {
-        const kLabelDg = lang === 'en' ? 'Dong Gong · 董公' : lang === 'zh' ? '董公擇日' : 'ฤกษ์ตงกง · 董公';
+        const kLabelDg = L === 'en' ? 'Dong Gong · 董公' : L === 'zh' ? '董公擇日' : 'ฤกษ์ตงกง · 董公';
         dgLine = `<div class="r-line"><span class="k">${kLabelDg}</span><span class="v">${parts.join(' · ')}</span></div>`;
       }
     }
