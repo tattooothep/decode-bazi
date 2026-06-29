@@ -115,7 +115,8 @@ function readHandoff(){
   if(u.get('dt')){ if(!h||h.dtUTC!==u.get('dt')) h={dtUTC:u.get('dt'),lat:u.get('lat'),lng:u.get('lng'),activity:{name:u.get('act')||''}}; }
   return h;
 }
-function fmtDate(iso){try{return new Date(iso).toLocaleString(LANG==='th'?'th-TH':LANG==='zh'?'zh-CN':'en-US',{dateStyle:'medium',timeStyle:'short'});}catch(e){return iso;}}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtDate(iso){try{const d=new Date(iso);if(isNaN(d.getTime()))return '';return d.toLocaleString(LANG==='th'?'th-TH':LANG==='zh'?'zh-CN':'en-US',{dateStyle:'medium',timeStyle:'short'});}catch(e){return '';}}
 
 async function loadChart(){
   HANDOFF=readHandoff();
@@ -123,7 +124,7 @@ async function loadChart(){
   if(HANDOFF.lat)document.getElementById('lat').value=HANDOFF.lat;
   if(HANDOFF.lng)document.getElementById('lng').value=HANDOFF.lng;
   const act=(HANDOFF.activity&&HANDOFF.activity.name)||HANDOFF.act||'';
-  document.getElementById('hdrBody').innerHTML=`<b>🗓 ${fmtDate(HANDOFF.dtUTC)}</b>`+(act?` · <span class="chip">${act}</span>`:'')+(HANDOFF.display?`<div class="muted">${HANDOFF.display}</div>`:'');
+  document.getElementById('hdrBody').innerHTML=`<b>🗓 ${esc(fmtDate(HANDOFF.dtUTC))}</b>`+(act?` · <span class="chip">${esc(act)}</span>`:'')+(HANDOFF.display?`<div class="muted">${esc(HANDOFF.display)}</div>`:'');
   await recompute();
 }
 async function recompute(){
@@ -148,12 +149,13 @@ function render(r){
   document.getElementById('ascLine').innerHTML=`命宮 (${L==='en'?'Ascendant':L==='zh'?'命宮':'ลัคนา'}): <b>${L==='zh'?a.signZh:a.signTh}</b> · 命主/用神: <b>${r.yongshen.th} ${r.yongshen.zh}</b> ${r.yongshen.status}`;
   document.querySelector('#starTbl tbody').innerHTML=r.stars.map(s=>{
     const cls=s.statusRank>=4?'miao':s.statusRank<=2?'xian':'';
-    return `<tr><td>${s.zh} <span class="muted">${L==='zh'?'':s.th}</span></td><td>${L==='zh'?s.signZh:s.signTh}</td><td>${s.deg}°</td><td class="${cls}">${s.status}${s.retro?' ↺':''}</td></tr>`;
+    return `<tr><td>${s.zh} <span class="muted">${L==='th'?s.th:''}</span></td><td>${L==='th'?s.signTh:s.signZh}</td><td>${s.deg}°</td><td class="${cls}">${s.status}${s.retro?' ↺':''}</td></tr>`;
   }).join('');
-  document.getElementById('ayanNote').textContent=`ราศีอิงดาวฤกษ์ (ayanamsa ${r.ayanamsa}° · V1 · ปรับสำนักจีนได้) · 紫氣 รอ lock สำนัก`;
+  document.getElementById('ayanNote').textContent=`ราศีอิงดาวฤกษ์ (ayanamsa ${r.ayanamsa}° · V1 · ปรับสำนักจีนได้) · 紫氣 รอ lock สำนัก · ⚠️ ดาวที่คาบขอบราศี(ใกล้ 0°/29°) อาจคลาด — ใช้ประกอบ ไม่ฟันธง`;
   // rule
   document.getElementById('ruleCard').style.display='';
-  const en=r.en_stars.map(x=>x.th).join('、')||'—',nan=r.nan_stars.map(x=>x.th).join('、')||'—';
+  const star3=(x)=>L==='th'?x.th:x.zh;
+  const en=r.en_stars.map(star3).join('、')||'—',nan=r.nan_stars.map(star3).join('、')||'—';
   const geju=r.geju.length?r.geju.map(g=>`<span class="chip" style="border-color:${g.good?'var(--green)':'var(--red)'}">${g.zh} ${g.good?'✓':'✗'}</span>`).join(''):'<span class="muted">—</span>';
   document.getElementById('ruleBody').innerHTML=
     `<div>恩星 (${L==='en'?'support':L==='zh'?'扶':'หนุน用神'}): ${en}</div>`+

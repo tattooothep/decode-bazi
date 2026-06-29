@@ -47,8 +47,8 @@ export function miaoWang(star: string, sign: number): { code: string; th: string
   const dom = DOMICILE[star]; const ex = EXALT[star];
   if (dom?.includes(sign)) return { code: "廟", th: "บ้านเดิม (แรงสุด)", rank: 5 };
   if (ex === sign) return { code: "旺", th: "อุจ (รุ่งเรือง)", rank: 4 };
-  if (dom?.map(opp).includes(sign)) return { code: "落", th: "นิจ (อ่อนแรง)", rank: 2 };
-  if (ex !== undefined && opp(ex) === sign) return { code: "陷", th: "ตก (อับแสง)", rank: 1 };
+  if (dom?.map(opp).includes(sign)) return { code: "落", th: "ตกภพ (อ่อนแรง)", rank: 2 };
+  if (ex !== undefined && opp(ex) === sign) return { code: "陷", th: "นิจ (อับแสงสุด)", rank: 1 };
   return { code: "平", th: "ปานกลาง", rank: 3 };
 }
 
