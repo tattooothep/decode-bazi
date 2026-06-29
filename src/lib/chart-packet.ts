@@ -24,6 +24,8 @@ import { resolveXch, type XchResolution } from "./bazi-xch-resolver";
 import { buildShenShaTransit, type ShenShaTransit } from "./bazi-shensha-transit";
 import { buildSixRelativesEvents, type RelativeEvent } from "./bazi-six-relatives-events";
 import { buildElementRoles, type ElementRole } from "./element-roles";
+import { buildElementDistribution, type ElementDistributionResult } from "./element-distribution-functional";
+import type { QiyunLock } from "./bazi-qiyun";
 import { createRequire } from "node:module";
 
 /* wrapper-8 化氣格 (CJS) · dynamic require + cache · sync-safe สำหรับ buildStructuredChartPacket
@@ -122,6 +124,7 @@ export type ChartPacketBuildOptions = {
   /** 月柱ก้ำกึ่ง節氣 (route คำนวณจาก bazi-boundary.monthPillarBoundary ส่งเข้า · เฉพาะ 3 เสา)
    *  packet ไม่ import bazi-boundary เอง (กันคู่พึ่งพา) · inline type พอ */
   monthBoundary?: { boundary: boolean; termName?: string; before?: string; after?: string; jieqiIctApprox?: string } | null;
+  qiyunLock?: QiyunLock | null;
 };
 
 /** field ที่ค่าพึ่งเสาเดือน(月支) → เมื่อเสาเดือนก้ำกึ่ง ทุกตัวนี้ inherit เพดานมั่นใจ "กลาง" (flat cap · ไม่ใช่ graph)
@@ -230,6 +233,8 @@ export type ChartPacket = {
   trueSolarTime?: { appliedTimeStr: string; totalShiftMin: number; dayShift: number } | null;
   /** 起運 อายุเริ่มวัยจร 大運 (จาก ext.luck_pillars[0].age_start · computeStartAge) */
   startLuckAge?: number | null;
+  /** HK_QIYUN_LOCK_V1 · 起運/大運 authority lock. AI must read this, never recompute. */
+  qiyunLock?: QiyunLock | null;
   /** 通根 รากธาตุ (wrapper-7 dmRootProfile + rootednessAll · route เรียกแล้ว map มาให้ · ฐานตัดสิน 從格/用神) */
   rootedness?: {
     dmElement: ElementEN;
@@ -390,6 +395,19 @@ export type ChartPacket = {
     counts: { wood: number; fire: number; earth: number; metal: number; water: number };
     /** level key เท่านั้น · ห้ามใส่ % ตัวเลขโชว์ */
     voytekLevel: string;
+    /** HK_SYSTEMB_PACKET_V1 · canonical source สำหรับการ์ด 06 ธาตุ/กำลังตัวตนเท่านั้น */
+    systemB?: {
+      engineVersion: "system-b-v1";
+      role: "card06_element_distribution_canonical";
+      confidence: ElementDistributionResult["confidence"];
+      missingPositions: string[];
+      elementOrder: ElementEN[];
+      dominantElements: ElementEN[];
+      scarceElements: ElementEN[];
+      pctDisplay: Record<ElementEN, number>;
+      strengthLevel: ElementDistributionResult["strength_level"];
+      strengthLevelTh: string;
+    } | null;
   };
   currentLuck: {
     stem: string;
@@ -482,6 +500,45 @@ export type ChartPacket = {
   }>;
   /* HK_PACKET_FILL_V1 (12 มิ.ย.) · เติมของที่หน้าดวงคำนวณแล้วแต่ packet ไม่เคยส่ง (เจ้านายสั่ง: ตารางปีจรทั้งชีวิต+เรือนคู่+14 ดาว) */
   lifeAnnualPillars?: Array<{ year: number; age: number; stem: string; branch: string }>;
+  /** HK_LIUNIAN_YEAR_DRILLDOWN_V1 · ปีจรรายปีแบบ compact จาก engine liu_nian_timeline
+   * ใช้แทนการให้ AI ประกอบ/เดาปีจรเอง · รายเดือนเต็มยังอยู่ใน transitDrilldown.currentDecade เท่านั้น */
+  yearlyLiuNianDrilldown?: {
+    tag: "HK_LIUNIAN_YEAR_DRILLDOWN_V1";
+    source: "engine_liu_nian_timeline";
+    scope: "age_0_90_compact";
+    confidence: "full_4p" | "limited_3p";
+    limitations: string[];
+    years: Array<{
+      year: number;
+      age: number;
+      pillar: { stem: string; branch: string };
+      baziYearStart: { name: string; date: string } | null;
+      baziYearEnd: { name: string; date: string } | null;
+      calendarNote: string;
+      tenGod: string | null;
+      stemElement: ElementEN | "unknown";
+      branchElement: ElementEN | "unknown";
+      stemUsefulRole: "yong" | "xi" | "ji" | "neutral";
+      branchUsefulRole: "yong" | "xi" | "ji" | "neutral";
+      hiddenStems: Array<{ stem: string; element: ElementEN | "unknown"; tenGod: string | null; usefulRole: "yong" | "xi" | "ji" | "neutral" }>;
+      luck: {
+        stem: string; branch: string; element: ElementEN;
+        ageStart: number; ageEnd: number; yearStart: number; yearEnd: number; isCurrent: boolean;
+      } | null;
+      vsDayBranch: string[];
+      vsLuckBranch: string[];
+      natalBranchHits: Array<{
+        natalPillar: PillarKey;
+        natalBranch: string;
+        type: InteractionTypeZh;
+        pair: string;
+        noteTh: string;
+      }>;
+      stemComboNotes: string[];
+      crossLayerNotes: string[];
+      flag: "auspicious" | "cautious" | "neutral";
+    }>;
+  };
   spousePalace?: {
     dayBranch: string; partnerElementTh: string; hiddenStems: string[];
     partnerTraitsTh: string; relationshipFlags: string[];
@@ -609,6 +666,46 @@ function tenGodLabelTh(stem: string, dayMaster: string): string {
 }
 function elementTh(e: string): string {
   return ELEMENT_TH[e] || e;
+}
+
+const SYSTEMB_STRENGTH_TH: Record<ElementDistributionResult["strength_level"], string> = {
+  extreme_weak: "อ่อนสุดขั้ว",
+  weak: "อ่อน",
+  balanced_weak: "สมดุล-อ่อน",
+  balanced: "สมดุล",
+  balanced_strong: "สมดุล-แกร่ง",
+  strong: "แกร่ง",
+  extreme_strong: "แกร่งสุดขั้ว",
+};
+
+function buildSystemBCard06Profile(calc: Calc): NonNullable<ChartPacket["elementProfile"]["systemB"]> | null {
+  try {
+    const dist = buildElementDistribution(calc.pillars as any, "systemB");
+    const elementOrder = (["wood", "fire", "earth", "metal", "water"] as ElementEN[])
+      .sort((a, b) => (dist.pctRaw[b] || 0) - (dist.pctRaw[a] || 0));
+    const max = dist.pctRaw[elementOrder[0]] || 0;
+    const min = dist.pctRaw[elementOrder[elementOrder.length - 1]] || 0;
+    return {
+      engineVersion: "system-b-v1",
+      role: "card06_element_distribution_canonical",
+      confidence: dist.confidence,
+      missingPositions: dist.missing_positions,
+      elementOrder,
+      dominantElements: elementOrder.filter((e) => Math.abs((dist.pctRaw[e] || 0) - max) < 0.0001),
+      scarceElements: elementOrder.filter((e) => Math.abs((dist.pctRaw[e] || 0) - min) < 0.0001),
+      pctDisplay: {
+        wood: dist.pctDisplay.wood || 0,
+        fire: dist.pctDisplay.fire || 0,
+        earth: dist.pctDisplay.earth || 0,
+        metal: dist.pctDisplay.metal || 0,
+        water: dist.pctDisplay.water || 0,
+      },
+      strengthLevel: dist.strength_level,
+      strengthLevelTh: SYSTEMB_STRENGTH_TH[dist.strength_level],
+    };
+  } catch {
+    return null;
+  }
 }
 
 /* topic mapping เบา ๆ (ตายตัวต่อ pillar) · ห้ามตีความเกินนี้ */
@@ -780,6 +877,7 @@ function normalizeBuildOptions(opts: ChartPacketBuildOptions = {}): Required<Cha
     dayBoundary: opts.dayBoundary === "00:00" ? "00:00" : "23:00",
     dayBoundarySource: opts.dayBoundarySource || (opts.dayBoundary ? "explicit" : "default"),
     monthBoundary: opts.monthBoundary ?? null,
+    qiyunLock: opts.qiyunLock ?? null,
   };
 }
 
@@ -1270,7 +1368,7 @@ export function buildBingYao(
        * 子平真詮論印 印多用財 + 食傷泄秀生財 (ZPZQ บรรทัด 190) */
       const bridgeEl = producerElementOf(wealthEl);   // ธาตุที่ผลิต財 = 食傷 = สะพาน生財
       const by08p = candidateBY("BY-08P", "印多用財: อิน/ไฟหนาในดวงร้อนแห้ง → 主藥=財/น้ำ · 橋藥=食傷/ทอง", uniqElsBY([sealEl, controllerElementOf(dmElement)]), uniqElsBY([wealthEl]), dmElement,
-        `เดือน${ctx.monthBranch || "-"}ร้อนแห้ง + 印(${ELEMENT_TH[sealEl || "unknown"]}) count=${sealEl ? elementProfile.counts[sealEl] : "-"} และ透干=${countVisibleElementBY(ctx.pillars, sealEl)} → 子平論印 印多逢財 + 調候 ${ctx.dmStem || "-"}日${ctx.monthBranch || "-"}月 ${wealthEl ? ELEMENT_TH[wealthEl] : "-"}不可缺 · ${bridgeEl ? ELEMENT_TH[bridgeEl] : "-"}เป็น橋藥(生財/泄秀·相神)`,
+        `เดือน${ctx.monthBranch || "-"}ร้อนแห้ง + 印(${ELEMENT_TH[sealEl || "unknown"]}) ผ่านเกณฑ์ภายในของ病藥 และ透干ผ่านเกณฑ์ → 子平論印 印多逢財 + 調候 ${ctx.dmStem || "-"}日${ctx.monthBranch || "-"}月 ${wealthEl ? ELEMENT_TH[wealthEl] : "-"}不可缺 · ${bridgeEl ? ELEMENT_TH[bridgeEl] : "-"}เป็น橋藥(生財/泄秀·相神)`,
         "pattern: 印多用財 (印重+ดวงร้อนแห้ง) · 主藥=財 · 橋藥=食傷(生財/泄土·相神·忌傷官見官) · อ้าง 子平真詮論印 + 窮通寶鑑調候", ["ZPZQ-BY-08P", "ZPZQ-PRINT-001", "QTBJ-TIAOHOU-戊未"]);
       if (bridgeEl) by08p.bridgeMedicine = [bridgeEl];
       add(by08p);
@@ -1301,7 +1399,7 @@ export function buildBingYao(
     .sort((a, b) => (counts[b] - counts[a]) || (rootRankBY(rootedness.all[b]) - rootRankBY(rootedness.all[a])))[0];
   if (strongest && counts[strongest] >= 3 && !usefulGods.yong.includes(strongest)) {
     add(candidateBY("BY-01", "旺神太過: ธาตุหนึ่งแรงเกิน", [strongest], [ELEMENT_PRODUCES[strongest]], dmElement,
-      `${ELEMENT_TH[strongest]}ราก=${rootedness.all[strongest]} และปรากฏ ${counts[strongest]} จุด → ใช้泄 ระบายแรง`,
+      `${ELEMENT_TH[strongest]}ราก=${rootedness.all[strongest]} และมีสัญญาณมากพอเข้าเกณฑ์ภายในของ病藥 → ใช้泄 ระบายแรง`,
       "ถ้าเป็น專旺/從旺 ต้อง not_applicable ไม่ใช่ใช้泄", ["DTS-BY-01"]));
   }
   if (yong && rootRankBY(rootedness.all[yong]) >= 1 && rootRankBY(rootedness.all[yong]) <= 2 && !rootedness.isExtremelyWeak) {
@@ -1746,7 +1844,8 @@ export function buildStructuredChartPacket(
     raw.length === 0 ? "none_detected" : (anyTransformed ? "resolved_partial" : "raw_only");
 
   /* ─── currentLuck ─── */
-  const lp = ext.luck_pillars[ext.current_luck_idx];
+  const currentLuckIdx = Number.isInteger(ext.current_luck_idx) ? ext.current_luck_idx : -1;
+  const lp = currentLuckIdx >= 0 ? ext.luck_pillars[currentLuckIdx] : undefined;
   const currentLuck: ChartPacket["currentLuck"] = lp
     ? { stem: lp.stem, branch: lp.branch, element: lp.element, ageStart: lp.age_start, ageEnd: lp.age_end }
     : null;
@@ -1755,14 +1854,14 @@ export function buildStructuredChartPacket(
    *   birthYear: liu_nian_timeline[0] (year-age · engine ใส่ year จริง) · fallback ปีปัจจุบัน-ageNow ─── */
   const lnFirst = (ext.liu_nian_timeline || [])[0];
   const birthYear = lnFirst ? lnFirst.year - lnFirst.age : (new Date().getFullYear() - ageNow);
-  const luckTimeline: ChartPacket["luckTimeline"] = (ext.luck_pillars || []).map((p) => {
+  const luckTimeline: ChartPacket["luckTimeline"] = (ext.luck_pillars || []).map((p, idx) => {
     const aStart = Math.round(p.age_start);
     const aEnd = Math.round(p.age_end);
     return {
       stem: p.stem, branch: p.branch, element: p.element,
       ageStart: aStart, ageEnd: aEnd,
       yearStart: birthYear + aStart, yearEnd: birthYear + aEnd,
-      isCurrent: ageNow >= aStart && ageNow <= aEnd,
+      isCurrent: currentLuckIdx >= 0 ? idx === currentLuckIdx : ageNow >= aStart && ageNow < aEnd,
     };
   });
 
@@ -1965,6 +2064,7 @@ export function buildStructuredChartPacket(
     profile.health = `อวัยวะตัวตน ${ext.health_mapping.dm_organs_th}${weak ? ` · อ่อน: ${weak}` : ""}${caution ? ` · ระวัง: ${caution}` : ""}`;
   }
   profile.daymaster = `${STEM_TH[dm] || dm} · ธาตุ${elementTh(dmElement)}แบบ${POLARITY_TH[dmPolarity]}`;
+  const card06SystemB = buildSystemBCard06Profile(calc);
 
   /* ─── timeline 10-year buckets (เหมือน buildChartPacket เดิม) ─── */
   const timeline = (ext.liu_nian_timeline || [])
@@ -2091,6 +2191,78 @@ export function buildStructuredChartPacket(
     });
   });
   const crossLayerComboHits = [...currentCrossLayerCombos, ...futureCrossLayerCombos];
+  const liuNianRelLabel = (rel: { type: InteractionTypeZh; suffix?: string }) =>
+    rel.suffix ? `${rel.type}·${rel.suffix}` : rel.type;
+  const yearlyLiuNianDrilldown: ChartPacket["yearlyLiuNianDrilldown"] = {
+    tag: "HK_LIUNIAN_YEAR_DRILLDOWN_V1",
+    source: "engine_liu_nian_timeline",
+    scope: "age_0_90_compact",
+    confidence: calc.mode === "3p" ? "limited_3p" : "full_4p",
+    limitations: calc.mode === "3p"
+      ? [
+          "3p ไม่มีเสายามและ起運จริง จึงเป็นปีจร compact เทียบเฉพาะเสาที่รู้ ห้ามเรียกว่าตรวจครบทุกเสา",
+          "รายเดือนเต็มมีเฉพาะเมื่อ transitDrilldown.currentDecade ถูกแนบ",
+        ]
+      : [
+          "รายปี compact ครอบอายุ 0-90 จาก engine liu_nian_timeline",
+          "รายเดือนเต็มมีเฉพาะ transitDrilldown.currentDecade ไม่ใช่ทุกปีทั้งชีวิต",
+        ],
+    years: (ext.liu_nian_timeline || [])
+      .filter((e) => e.age >= 0 && e.age <= 90)
+      .map((e) => {
+        const stemElement = asElement(e.element);
+        const branchElement = asElement(e.branch_element);
+        const luck = luckTimeline.find((t) =>
+          (e.year >= t.yearStart && e.year <= t.yearEnd) ||
+          (e.age >= t.ageStart && e.age <= t.ageEnd)
+        ) || null;
+        const vsLuckBranch = luck?.branch
+          ? branchRelationTypes(e.pillar.branch, luck.branch).map(liuNianRelLabel)
+          : [];
+        const natalBranchHits = PILLAR_KEYS.flatMap((k) => {
+          const n = calc.pillars[k];
+          if (!n?.branch) return [];
+          return branchRelationTypes(e.pillar.branch, n.branch).map((rel) => {
+            const pair = `${e.pillar.branch}${n.branch}`;
+            const relTxt = rel.suffix ? `${rel.type}${ELEMENT_TH[rel.suffix] || rel.suffix}` : rel.type;
+            return {
+              natalPillar: k,
+              natalBranch: n.branch,
+              type: rel.type,
+              pair,
+              noteTh: `ปีจร${e.year}${e.pillar.stem}${e.pillar.branch} ↔ ${PILLAR_EN_TH[k]}${n.branch} = ${relTxt}/${pair}`,
+            };
+          });
+        });
+        return {
+          year: e.year,
+          age: e.age,
+          pillar: e.pillar,
+          baziYearStart: e.bazi_year_start ?? null,
+          baziYearEnd: e.bazi_year_end ?? null,
+          calendarNote: e.calendar_note || "",
+          tenGod: e.ten_god,
+          stemElement,
+          branchElement,
+          stemUsefulRole: usefulRole(stemElement),
+          branchUsefulRole: usefulRole(branchElement),
+          hiddenStems: hiddenTransit(e.hidden_stems),
+          luck,
+          vsDayBranch: e.vs_day_branch || [],
+          vsLuckBranch,
+          natalBranchHits,
+          stemComboNotes: transitHehuaHits
+            .filter((h) => h.transitLabel.includes(`ปีจร${e.year}`))
+            .map((h) => `${h.pair}/${h.verdict}: ${h.noteTh}`)
+            .slice(0, 4),
+          crossLayerNotes: crossLayerComboHits
+            .filter((h) => h.years.includes(e.year))
+            .map((h) => h.noteTh)
+            .slice(0, 4),
+          flag: e.flag,
+        };
+      }),
+  };
   const rawStructureLabel = calc.geJu?.structure || "ปกติ";
   const strictGeJuAudit = buildStrictGeJuAuditPacket(
     calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
@@ -2166,7 +2338,10 @@ export function buildStructuredChartPacket(
           maxConfidence: "medium" as const,
         }
       : null,
-    startLuckAge: calc.mode === "3p" ? null : (ext.luck_pillars?.[0]?.age_start ?? null), // 3p: computeStartAge ปลอม → ตัด 起運 (กันมโนยาม)
+    startLuckAge: packetOpts.qiyunLock?.mode === "unavailable"
+      ? null
+      : (packetOpts.qiyunLock?.representativeStartAge ?? (ext.luck_pillars?.[0]?.age_start ?? null)),
+    qiyunLock: packetOpts.qiyunLock,
     rootedness: rootedness ?? null,
     fivePalaces: (() => {
       const tai = buildConceptionPalace(calc.pillars);
@@ -2210,6 +2385,7 @@ export function buildStructuredChartPacket(
     elementProfile: {
       counts: ext.element_counts,
       voytekLevel: ext.voytek_strength?.level || calc.strength?.level || "-",
+      systemB: card06SystemB,
     },
     currentLuck,
     luckTimeline,
@@ -2225,6 +2401,7 @@ export function buildStructuredChartPacket(
     lifeAnnualPillars: (ext.liu_nian_timeline || [])
       .filter((e) => e.age >= 0 && e.age <= 90)
       .map((e) => ({ year: e.year, age: e.age, stem: e.pillar.stem, branch: e.pillar.branch })),
+    yearlyLiuNianDrilldown,
     spousePalace: ext.spouse_palace ? {
       dayBranch: ext.spouse_palace.day_branch,
       partnerElementTh: ext.spouse_palace.partner_element_th,
@@ -2353,8 +2530,12 @@ function normalizeLpType(t: string): InteractionTypeZh {
  * renderChartPrompt · ChartPacket → ข้อความไทย (presentation เท่านั้น)
  *   ทุกบรรทัด render จาก field ใน packet · คงโทน "key: value" แบบเดิม
  * ════════════════════════════════════════════════════════════════ */
-export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDrilldown?: boolean; subjectLabel?: string } = {}): string {
+export function renderChartPrompt(
+  packet: ChartPacket,
+  opts: { includeTransitDrilldown?: boolean; includeTransitMonthlyDrilldown?: boolean; subjectLabel?: string } = {},
+): string {
   const includeTransitDrilldown = opts.includeTransitDrilldown !== false;
+  const includeTransitMonthlyDrilldown = includeTransitDrilldown && opts.includeTransitMonthlyDrilldown !== false;
   const subjectPrefix = opts.subjectLabel ? `[${opts.subjectLabel}] ` : "";
   const lines: string[] = [];
 
@@ -2386,14 +2567,42 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
 
   /* ลำดับการอ่าน */
   if (packet.meta.readingOrder) lines.push(packet.meta.readingOrder);
+  lines.push(
+    `${subjectPrefix}HK_BAZI_TIMING_LOCK_V1 (global timing gate · ใช้กับทุกดวงทุกคำถาม): ` +
+    `ก่อนตอบเรื่องปี/เดือน/ช่วงเวลาใด ต้องล็อก Target period ก่อนเสมอ → ปี ค.ศ./พ.ศ. + ขอบ 立春 → 大運 ของปี/ช่วงนั้นจาก lookup → 流年 จาก lookup → 流月 เฉพาะเมื่อมีเดือนจรจริงใน packet; ` +
+    `CURRENT 大運/ปีจร ใช้ได้เฉพาะช่วงปัจจุบัน ห้ามเอาไปยัดอดีตหรืออนาคต; ` +
+    `ถ้าปีที่ถามคร่อม交運 ต้องแยกก่อน/หลัง交運 หรือระบุว่าต้องใช้วันที่จริง; ` +
+    `ถ้าไม่มีข้อมูลเดือนจรเต็ม ห้ามจัดอันดับเดือนหนัก/เดือนดีแบบฟันธง`
+  );
+  lines.push(
+    `${subjectPrefix}HK_BAZI_READ_ORDER_LOCK_V1 (ลำดับอ่านบังคับก่อนสรุป): ` +
+    `0) Target period/timezone/立春/節氣 → 1) PILLAR LOCK/3p/เสาก้ำกึ่ง → 2) 從格/專旺 → 3) 格局/月令 → 4) 用神分層(調候/格局/扶抑/病藥) → ` +
+    `5) 旺衰/ราก/透干(ห้ามนับ藏干เป็น透) → 6) 合化 verdict → 7) 空亡/墓庫 → 8) ปฏิกิริยาในดวง/ข้ามคนจากลิสต์ปิด → ` +
+    `9) 大運 ของปีที่ถาม → 10) 流年 ตาม 立春 → 11) 流月 เฉพาะ block ที่มีจริง → 12) ยำลมรวม → 13) สรุปชีวิต; ` +
+    `ผิดลำดับนี้ให้ลดความมั่นใจหรือหยุดตอบ claim นั้น`
+  );
+  lines.push(
+    `${subjectPrefix}HK_SIFU_PREFLIGHT_V1 (silent pre-flight ก่อนตอบ): ` +
+    `1) ใช้ PILLAR LOCK/透出ก้านฟ้า เป็น fact lock ห้ามนับ藏干เป็น透干 · ` +
+    `2) ถ้าถามปีใดให้ดู HK_YEAR_PILLAR_CALENDAR_LOCK_V1 ก่อน แล้วดู HK_QUERY_YEAR_LUCK_LOCK_V1 ว่าปีนั้นอยู่大運ใด · ` +
+    `3) ถ้ามี HK_LIUNIAN_YEAR_DRILLDOWN_V1 ให้ใช้ row ปีนั้นก่อน ห้ามทดเสา/วัยจรเอง · ` +
+    `4) ถ้าถามข้ามคนให้ใช้เฉพาะ HK_SYNASTRY_RESOLVED_V1/ลิสต์ปิด ห้ามสร้าง冲/合เอง · ` +
+    `5) ถ้ามี HK_TWO_SCENARIOS_V1 ต้องอ่านสองฝั่งจนกว่าจะล็อกเวลาเกิด · ` +
+    `6) ถ้ามี HK_SANHE_CANDIDATE_LOCK_V1 ให้แยก candidate/activated ให้ชัด และห้ามเรียกว่าตรวจครบถ้า marker บอก candidate`
+  );
 
   /* โครงดวง + ดวงพิเศษ */
   const falseFollowAudit = isFalseFollowAuditConflict(packet.strictGeJuAudit) ? packet.strictGeJuAudit : null;
   const strictPrimaryAudit = !falseFollowAudit && isStrictGeJuPrimaryAudit(packet.strictGeJuAudit) ? packet.strictGeJuAudit : null;
+  const strictStemReason = strictPrimaryAudit
+    ? /_visible$/.test(strictPrimaryAudit.selectedSource || "")
+      ? `เลือก${strictPrimaryAudit.selectedStem || "-"}${strictPrimaryAudit.tenGod ? `/${strictPrimaryAudit.tenGod}` : ""} เพราะ月令藏干ตัวเดียวกัน透出บนก้านฟ้าจริง`
+      : `เลือก${strictPrimaryAudit.selectedStem || "-"}${strictPrimaryAudit.tenGod ? `/${strictPrimaryAudit.tenGod}` : ""} จาก月令藏干/本氣 fallback (${strictPrimaryAudit.selectedSource}; ไม่ใช่透干ก้านฟ้า ถ้า PILLAR LOCK ไม่มี${strictPrimaryAudit.selectedStem || "ก้านนั้น"})`
+    : "";
   let structureLine = falseFollowAudit
     ? `โครงดวง: candidate หลัก=${displayStrictGeJuLabel(falseFollowAudit)} (strict月令 · มั่นใจ=สูง) · raw engine候選=${falseFollowAudit.currentLabel} (candidate รอง · ยังไม่ถึงเกณฑ์從แท้ · ดู gate ใน 從格ตรวจทาน)`
     : strictPrimaryAudit
-      ? `โครงดวง: strict月令หลัก=${displayStrictGeJuLabel(strictPrimaryAudit)} (เลือก${strictPrimaryAudit.selectedStem || "-"}${strictPrimaryAudit.tenGod ? `/${strictPrimaryAudit.tenGod}` : ""} เพราะ月令藏干มีตัวเดียวกันโผล่บนก้านฟ้าจริง/透出 · มั่นใจ=สูง) · raw engineป้ายรอง=${rawGeJuSecondaryLabel(strictPrimaryAudit.currentLabel)} (ห้ามใช้เป็น格局หลักในคำตอบ)`
+      ? `โครงดวง: strict月令หลัก=${displayStrictGeJuLabel(strictPrimaryAudit)} (${strictStemReason} · มั่นใจ=${strictPrimaryAudit.confidence === "high" ? "สูง" : strictPrimaryAudit.confidence === "medium" ? "กลาง" : "ต้องทบทวน"}) · raw engineป้ายรอง=${rawGeJuSecondaryLabel(strictPrimaryAudit.currentLabel)} (ห้ามใช้เป็น格局หลักในคำตอบ)`
     : `โครงดวง: ${packet.structure.label}`;
   if (packet.structure.special) {
     if (falseFollowAudit && isFalseFollowCandidateLabel(packet.structure.special.typeZh || packet.structure.label)) {
@@ -2458,7 +2667,25 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   if (_ma) {
     lines.push(`⚠️ 月柱ก้ำกึ่ง(${_ma.termName}${_ma.jieqiIctApprox ? " ~" + _ma.jieqiIctApprox + " เวลาไทย" : ""}): เสาเดือนอยู่ระหว่าง "${_ma.before}"(เกิดก่อน節氣) / "${_ma.after}"(เกิดหลัง節氣) · engine ใช้ "${_ma.used}" เพราะไม่รู้เวลาเกิด`);
     lines.push(`→ ผลที่พึ่งเสาเดือน (${_ma.dependentFields.join(" / ")}) มั่นใจไม่เกิน "กลาง" · ต้องอ่าน 2 ทางหรือบอก "ขึ้นกับเวลาเกิด" ห้ามฟันธงข้างเดียว · ผลที่พึ่ง 日干/日支/十神/大運(ทิศ順逆) ฟันธงต่อได้ตามน้ำหนักดวง`);
+    lines.push(
+      `HK_TWO_SCENARIOS_V1: เสาเดือนก้ำกึ่งต้องอ่านเป็น TWO_SCENARIOS จนกว่าจะล็อกเวลาเกิดจริง · ` +
+      `scenario_before=${_ma.before}(ก่อน${_ma.termName}) · scenario_after=${_ma.after}(หลัง${_ma.termName}) · engine_used=${_ma.used} · ` +
+      `กฎเด็ดขาด: ทุกย่อหน้าที่พูด 藏干/格局/月令/用神/ราก/ปฏิกิริยาเสาเดือน/synastryที่พึ่งเดือน ต้องเขียน "ถ้าเดือน=${_ma.before}" และ "ถ้าเดือน=${_ma.after}" แยกกัน ห้ามเล่า timeline เหมือนล็อกแล้ว`
+    );
+    lines.push(
+      `${subjectPrefix}HK_MONTH_PILLAR_SCENARIO_LOCK_V1 (節氣 month boundary lock): ` +
+      `term=${_ma.termName}${_ma.jieqiIctApprox ? `@${_ma.jieqiIctApprox} ICT` : ""} · before=${_ma.before} · after=${_ma.after} · engine_used=${_ma.used} · ` +
+      `merge_forbidden=true · affected=${_ma.dependentFields.join(",")} · ` +
+      `กฎเด็ดขาด: ห้ามเอาหลักฐานจาก before/after มาผสมเป็นข้อสรุปเดียว; claim เช่น 辰戌冲/巳亥冲/巳寅害/藏干/格局/用神 ที่พึ่ง月柱 ต้องติดป้าย scenario ทุกครั้ง`
+    );
+  } else {
+    lines.push(`HK_TWO_SCENARIOS_V1: เสาเดือนใน packet นี้ไม่ติดธงก้ำกึ่ง · ไม่ต้องสร้าง scenario คู่เอง; ถ้าไม่มีธงนี้ในข้อมูลอื่น ห้ามเดาเสาเดือนอีกฝั่ง`);
+    lines.push(`${subjectPrefix}HK_MONTH_PILLAR_SCENARIO_LOCK_V1: inactive · month_pillar_not_boundary_sensitive=true · ห้ามสร้าง scenario เสาเดือนเองถ้า packet ไม่ติดธง`);
   }
+  lines.push(
+    `HK_SYNASTRY_RESOLVED_V1: prompt ดวงเดี่ยวนี้ไม่มีปฏิกิริยาข้ามคน resolved list · ถ้าผู้ใช้ถามแม่/ลูก/คู่/ทีมแต่ไม่มี block synastry จาก group/compare ให้ห้ามสร้าง 寅戌冲/辰戌冲/合/破/害 ข้ามคนเอง; ` +
+    `อ่านได้เฉพาะปฏิกิริยาในดวงเดี่ยวและปีจรของเจ้าของดวงนี้เท่านั้น`
+  );
   /* HK_HUAQI_VERDICT_V1 (29 พ.ค. · wrapper-8 promote) — verdict block
    * 真化/假化/合而不化 จาก analyzeHuaQi (8/8 golden) · แสดงเฉพาะเมื่อมีคู่ 五合 ติด DM
    * additive · ไม่ override structure.label เดิม · ไม่กระทบ wrapper-7 */
@@ -2494,7 +2721,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     lines.push(
       `格局 strict/canonical audit: ` +
       `${auditHead} · 選用=${stemTxt} · ` +
-      `${verdict} · ${a.noteTh} · ตำราอ้าง ${a.canonicalChinese}`
+      `${verdict} · source=${a.selectedSource || "-"} · ${/_visible$/.test(a.selectedSource || "") ? "เลือกจาก藏干ที่透出จริง" : "เลือกจาก月令藏干/司令 ไม่ใช่透干ถ้าไม่อยู่ใน PILLAR LOCK"} · ${a.noteTh} · ตำราอ้าง ${a.canonicalChinese}`
     );
     if (falseFollowAudit) {
       lines.push(
@@ -2637,9 +2864,21 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     }
   }
 
-  /* ธาตุรวม (level key เท่านั้น · ไม่มี %) */
-  const c = packet.elementProfile.counts;
-  lines.push(`ธาตุรวม: ไม้ ${c.wood} · ไฟ ${c.fire} · ดิน ${c.earth} · ทอง ${c.metal} · น้ำ ${c.water} · กำลังตัวตนระดับ ${packet.elementProfile.voytekLevel} (ห้ามพูดตัวเลขเปอร์เซ็นต์)`);
+  /* HK_SYSTEMB_PACKET_V1 · ธาตุรวมการ์ด 06 ใช้ SystemB เป็น canonical สำหรับ Sifu
+   * ไม่ render ตัวเลข % ตามกฎ no-percent; ห้าม fallback ไป legacy/voytek */
+  const epSystemB = packet.elementProfile.systemB;
+  if (epSystemB) {
+    lines.push(
+      `ธาตุรวมการ์ด 06 (canonical SystemB ${epSystemB.engineVersion} · ใช้บรรทัดนี้เป็นหลักเฉพาะเรื่อง %ธาตุ/กำลังตัวตน): ` +
+      `ลำดับเด่น=${epSystemB.elementOrder.map((e) => elementTh(e)).join(" > ")} · ` +
+      `เด่นสุด=${fmtEls(epSystemB.dominantElements)} · ต่ำสุด/ขาด=${fmtEls(epSystemB.scarceElements)} · ` +
+      `กำลังตัวตนระดับ ${epSystemB.strengthLevelTh} · confidence=${epSystemB.confidence}` +
+      (epSystemB.missingPositions.length ? ` · ขาดเสา=${epSystemB.missingPositions.join("/")}` : "") +
+      ` (ห้ามพูดตัวเลขเปอร์เซ็นต์; ห้ามใช้บรรทัดนี้แทน用神/喜忌; ถ้าพูดน้ำหนักธาตุ/เปอร์เซ็นต์/คำว่า "ส่วน" ให้ใช้เฉพาะ SystemB Card 06 เท่านั้น ห้ามแปลงเลข internal tally/counts เป็นน้ำหนักธาตุ)`
+    );
+  } else {
+    lines.push(`${subjectPrefix}ธาตุรวมการ์ด 06: SystemB unavailable · ห้ามใช้ legacy/voytek/element_counts ตอบเรื่อง %ธาตุ/กำลังตัวตน`);
+  }
   /* HK_CLIMATE_FLAG_V1 (B3 · เคส Swit 12 มิ.ย.) — ชูเหตุผลอากาศดวง: climate จาก engine (wrapper-5 เดิม) + ฤดูเดือนเกิด + น้ำหนักธาตุปรับ
    * กันซินแสอ่านธาตุ調候เป็นแค่สิบเทพ (เช่น ไฟ=เงินเฉยๆ) ทั้งที่เป็นตัวปลุกทั้งดวง · ร้อยของที่มีอยู่ ไม่คำนวณศาสตร์ใหม่ */
   {
@@ -2654,15 +2893,21 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
     const _clReg = packet.yongShenProtocols?.tiaoHou?.regulator || null;
     const _clMb = packet.pillars.find((p) => p.key === "month")?.branch || "";
     if (CL_TH[_clKey] && _clReg) {
-      const _regCnt = (c as Record<string, number>)[_clReg] ?? 0;
-      const _total = (c.wood || 0) + (c.fire || 0) + (c.earth || 0) + (c.metal || 0) + (c.water || 0);
-      const _weak = _total > 0 && _regCnt < _total / 5;
-      lines.push(
-        `⚠️ อากาศดวง (調候 · สำคัญระดับโครง): เกิด${SEASON_TH[_clMb] || `เดือน${_clMb}`} · engine ระบุดวง${CL_TH[_clKey]} → ธาตุปรับ=${fmtEls([_clReg])} น้ำหนักในผัง ${_regCnt} จากธาตุรวมทั้งหมด ${_total}` +
-        (_weak
-          ? ` — ธาตุปรับต่ำกว่าค่าเฉลี่ย 5 ธาตุ: มิติ調候คือแกนของดวงนี้ ให้อ่าน${fmtEls([_clReg])}เป็น "ตัวปลุกให้ทั้งดวงมีชีวิต/ขยับ" ก่อนค่อยอ่านเป็นสิบเทพประจำธาตุ (เช่น ดวงเย็นจัด ไฟไม่ใช่แค่เงิน แต่คือความอบอุ่นที่ทำให้ทองน้ำในดวงทำงาน)`
-          : ` — ธาตุปรับมีกำลังพอใช้ อ่าน調候ประกอบตามปกติ`),
-      );
+      const climatePct = packet.elementProfile.systemB?.engineVersion === "system-b-v1"
+        ? packet.elementProfile.systemB.pctDisplay
+        : null;
+      if (climatePct) {
+        const _regPct = (climatePct as Record<string, number>)[_clReg] ?? 0;
+        const _weak = _regPct < 20;
+        lines.push(
+          `⚠️ อากาศดวง (調候 · สำคัญระดับโครง): เกิด${SEASON_TH[_clMb] || `เดือน${_clMb}`} · engine ระบุดวง${CL_TH[_clKey]} → ธาตุปรับ=${fmtEls([_clReg])} น้ำหนัก SystemB ${Math.round(_regPct)}% (ค่าเฉลี่ย 5 ธาตุ = 20%)` +
+          (_weak
+            ? ` — ธาตุปรับต่ำกว่าค่าเฉลี่ย 5 ธาตุ: มิติ調候คือแกนของดวงนี้ ให้อ่าน${fmtEls([_clReg])}เป็น "ตัวปลุกให้ทั้งดวงมีชีวิต/ขยับ" ก่อนค่อยอ่านเป็นสิบเทพประจำธาตุ (เช่น ดวงเย็นจัด ไฟไม่ใช่แค่เงิน แต่คือความอบอุ่นที่ทำให้ทองน้ำในดวงทำงาน)`
+            : ` — ธาตุปรับมีกำลังพอใช้ อ่าน調候ประกอบตามปกติ`),
+        );
+      } else {
+        lines.push(`⚠️ อากาศดวง (調候): เกิด${SEASON_TH[_clMb] || `เดือน${_clMb}`} · engine ระบุดวง${CL_TH[_clKey]} → ธาตุปรับ=${fmtEls([_clReg])} · SystemB unavailable จึงไม่รายงานน้ำหนักธาตุ`);
+      }
     }
   }
 
@@ -2693,8 +2938,27 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       (t.totalShiftMin ? ` · เลื่อน ${t.totalShiftMin} นาทีจากเวลานาฬิกา` : "") +
       (t.dayShift ? ` · ข้ามวัน ${t.dayShift > 0 ? "+1" : "-1"}` : ""));
   }
+  if (packet.qiyunLock) {
+    const ql = packet.qiyunLock;
+    const rangeTxt = ql.startAgeRange ? `${ql.startAgeRange.min}-${ql.startAgeRange.max}` : "-";
+    const candidateTxt = ql.targetYearDayun.candidates.length
+      ? ql.targetYearDayun.candidates.map((c) => `${c.scenarioId}:${c.stem}${c.branch}`).join(",")
+      : "-";
+    const scenarioTxt = ql.scenarios.length
+      ? ql.scenarios.map((s) =>
+          `${s.id}[${s.localTimeStart}-${s.localTimeEnd}] 年${s.yearPillar}/月${s.monthPillar}/運${s.direction === "forward" ? "順" : "逆"}/起運${s.startAgeRange.min}-${s.startAgeRange.max}/rep=${s.representativeStartAge}`
+        ).join(" ◆ ")
+      : "-";
+    lines.push(
+      `${subjectPrefix}HK_QIYUN_LOCK_V1 (起運/大運 authority lock · source=${ql.authority}): ` +
+      `mode=${ql.mode} · birthTimeKnown=${ql.birthTimeKnown} · direction=${ql.direction} · startAgeRange=${rangeTxt} · representative=${ql.representativeStartAge ?? "-"}${ql.representativeReason ? `(${ql.representativeReason})` : ""} · ` +
+      `targetYear=${ql.targetYearDayun.year}/status=${ql.targetYearDayun.status}/candidates=${candidateTxt} · ` +
+      `AI_POLICY=${ql.aiPolicy} · กฎเด็ดขาด: ห้าม AI คำนวณ起運/大運เอง; ต้องอ่านจาก lock นี้ก่อน luckTimeline/currentLuck; ถ้า mode=3p_scenario หรือ target status=ambiguous ต้องแยก scenario ห้ามฟันธงวัยจรเดียว · scenarios=${scenarioTxt}`
+    );
+  }
   if (packet.startLuckAge != null) {
-    lines.push(`起運 (เริ่มเดินวัยจร 大運): อายุ ${packet.startLuckAge} ปี`);
+    const label = packet.qiyunLock?.birthTimeKnown === false ? "ค่าตัวแทนสำหรับเรียง engine 3p ไม่ใช่เวลาเกิดจริง" : "exact";
+    lines.push(`起運 (เริ่มเดินวัยจร 大運): อายุ ${packet.startLuckAge} ปี · ${label}`);
   }
   /* 胎元 เรือนปฏิสนธิ (27 พ.ค. · 月干進一月支進三 · engine คำนวณ · ทุนแต่เกิด/รากฐาน · ตีความด้วยสิบเทพเทียบ日干) */
   if (packet.fivePalaces?.taiYuan) {
@@ -2832,6 +3096,7 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* วัยจรทั้งชีวิต + ปีครอบ · ให้ AI อ่านปีไหนใช้วัยจรของปีนั้น (กันเดาปฏิกิริยาข้ามวัยจร) */
   if (packet.luckTimeline.length) {
     const curIdx = packet.luckTimeline.findIndex((t) => t.isCurrent);
+    const currentLuckRows = packet.luckTimeline.filter((t) => t.isCurrent);
     const cur = curIdx >= 0 ? packet.luckTimeline[curIdx] : null;
     const prev = curIdx > 0 ? packet.luckTimeline[curIdx - 1] : null;
     if (cur) {
@@ -2862,15 +3127,65 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       }
     }
     lines.push(
+      `${subjectPrefix}HK_CURRENT_LUCK_RESOLVED_V1 (single-current DaYun lock · source=engine_current_luck_idx): ` +
+      `current_count=${currentLuckRows.length} · ` +
+      `${cur ? `CURRENT=${cur.stem}${cur.branch}/อายุ${cur.ageStart}-${cur.ageEnd}/ค.ศ.${cur.yearStart}-${cur.yearEnd}/พ.ศ.${cur.yearStart + 543}-${cur.yearEnd + 543}` : "CURRENT=-"} · ` +
+      `กฎเด็ดขาด: ถ้าตารางวัยจรดิบมีช่วงรอยต่อหรือติด CURRENT สองช่วง ให้ยึดบรรทัดนี้เป็นตัวจริงช่วงปัจจุบัน; ` +
+      `ช่วงก่อนหน้า/ถัดไปใช้เป็นบริบท交脫เท่านั้น ห้ามเอามาปนเป็นวัยจรจริงของปีที่ถาม`
+    );
+    lines.push(
       `${subjectPrefix}วัยจรทั้งชีวิต (อ่านปีไหนใช้วัยจรของปีนั้น · อย่าดึงวัยจรผิดช่วงมาปน): ` +
       packet.luckTimeline
         .map((t) => `${STEM_TH[t.stem] || t.stem}/${BRANCH_TH_NAME[t.branch] || t.branch}(อายุ${t.ageStart}-${t.ageEnd}·ปี${t.yearStart}-${t.yearEnd}·ธาตุ${elementTh(t.element)})${t.isCurrent ? "◀ปัจจุบัน" : ""}`)
         .join(" · ")
     );
+    lines.push(
+      `${subjectPrefix}HK_LUCK_PILLAR_LOCK_V1 (大運 lock · source=engine_luck_pillars): ` +
+      `กฎเด็ดขาด: ก่อนพูดวัยจรของปีใด ต้องคัดจากตารางนี้เท่านั้น ห้ามคำนวณ順逆/ก้านใหม่เอง; ` +
+      `ถ้าผู้ใช้พูด "ถ้าเข้า XX運" แต่ปีจริงยังไม่ถึง ให้แยกเป็นสมมติฐาน ไม่ใช่ timeline จริง; ` +
+      packet.luckTimeline
+        .map((t, idx) => `#${idx + 1}:${t.stem}${t.branch}/อายุ${t.ageStart}-${t.ageEnd}/ค.ศ.${t.yearStart}-${t.yearEnd}/พ.ศ.${t.yearStart + 543}-${t.yearEnd + 543}${t.isCurrent ? "/CURRENT" : ""}`)
+        .join(" ◆ ")
+    );
+    if (packet.luckTimeline.length >= 2) {
+      const transitionRows = packet.luckTimeline.slice(1).map((t, idx) => {
+        const prev = packet.luckTimeline[idx];
+        const exact = packet.transitDrilldown?.currentDecade?.luckPillar?.stem === t.stem &&
+          packet.transitDrilldown?.currentDecade?.luckPillar?.branch === t.branch
+          ? packet.transitDrilldown.currentDecade.startDate || null
+          : null;
+        return `${prev.stem}${prev.branch}->${t.stem}${t.branch}: age=${t.ageStart} · year≈${t.yearStart}/${t.yearStart + 543}` +
+          `${exact ? ` · start_date=${exact}` : ""}`;
+      });
+      lines.push(
+        `${subjectPrefix}HK_JIAOYUN_BOUNDARY_LOCK_V1 (交運 boundary lock): ` +
+        `interval_policy=half_open · ${packet.meta.mode === "3p" ? "confidence=limited_3p_no_birth_time · 起運จริงไม่ทราบ ต้องให้ ±1-2 ปีที่รอยต่อ" : "confidence=engine_luck_pillars"} · ` +
+        `กฎเด็ดขาด: ถ้าปีที่ถามอยู่ใกล้รอยต่อหรือมี date จริงใน block ให้แยกก่อน/หลัง交運 ห้ามเลือกวัยจรเดียวแบบไม่อธิบาย; ` +
+        transitionRows.join(" ◆ ")
+      );
+    }
   }
   /* ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed)
    * ให้ AI ใช้ block นี้ตอบคำถามย้อนหลัง/รายเดือนในรอบ 10 ปีปัจจุบัน โดยไม่ต้องคำนวณเสาเอง */
-  if (includeTransitDrilldown && packet.transitDrilldown?.currentDecade) {
+  if (!includeTransitDrilldown) {
+    lines.push(
+      `${subjectPrefix}HK_LIUNIAN_YEAR_DRILLDOWN_V1: ไม่ได้แนบชุดปีจร/เดือนจรใน prompt นี้ (includeTransitDrilldown=false) — ห้ามอ้างว่าตรวจปีจรครบ/เดือนจรครบจาก packet นี้`
+    );
+  }
+  {
+    const d = packet.transitDrilldown?.currentDecade;
+    const hasMonthly = includeTransitMonthlyDrilldown && !!d?.years?.length && d.years.every((y) => y.months?.length === 12);
+    lines.push(
+      `${subjectPrefix}HK_MONTHLY_DRILLDOWN_SCOPE_V1: ` +
+      (hasMonthly
+        ? `available=true · scope_years=${d!.yearStart}-${d!.yearEnd} · method=${packet.transitDrilldown?.monthPillarMethod || "unknown"} · evidence=engine_months_12_per_year · ` +
+          `outside_scope_policy=do_not_infer_without_label`
+        : `available=false · reason=${includeTransitDrilldown ? "includeTransitMonthlyDrilldown=false_or_no_current_decade_months" : "includeTransitDrilldown=false"} · ` +
+          `outside_scope_policy=ห้ามจัดอันดับรายเดือน/ห้ามบอกตรวจเดือนครบ ถ้าไม่มี block เดือนจรจริง`) +
+      ` · กฎเด็ดขาด: ถ้าจะจัดอันดับเดือนหนัก/เปิดโอกาส ต้องมีเดือนจรจริงใน scope นี้ หรือเขียนชัดว่าเป็น inference ไม่ใช่ packet drilldown`
+    );
+  }
+  if (includeTransitMonthlyDrilldown && packet.transitDrilldown?.currentDecade) {
     const d = packet.transitDrilldown.currentDecade;
     const flagTh: Record<string, string> = { auspicious: "ผสาน", cautious: "ต้องคุม", neutral: "กลาง" };
     const roleTh: Record<string, string> = { yong: "用", xi: "喜", ji: "忌", neutral: "กลาง" };
@@ -2904,11 +3219,11 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
       `; เดือนจร=${y.months.map(monthTxt).join(" | ")}`
     );
     lines.push(
-      `${subjectPrefix}ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed · เสาปี/เดือนคำนวณมาแล้ว ไม่ต้องคำนวณเสาเอง · ใช้เป็นหลักฐานให้ซินแสอ่านย้อนหลัง/ล่วงหน้าได้เต็มที่): ` +
+      `${subjectPrefix}ปีจร/เดือนจรในวัยจรปัจจุบัน (engine precomputed · เสาปี/เดือนคำนวณมาแล้ว ไม่ต้องคำนวณเสาเอง · ใช้เป็นหลักฐานเฉพาะช่วงปีที่แสดงใน block นี้): ` +
       `大運 ${d.luckPillar.stem}${d.luckPillar.branch} อายุ ${d.ageStartDetail || d.ageStart}-${d.ageEndDetail || d.ageEnd}` +
       `${d.startDate && d.endDate ? ` · วันที่จริง ${d.startDate} ถึงก่อน ${d.endDate}` : ""}` +
       `${d.directionTh ? ` · เดิน運 ${d.directionTh}` : ""} · ปีที่คร่อมจริง ${d.yearStart}-${d.yearEnd} · ` +
-      `เดือนจรใช้節氣หลักจริง (立春/惊蛰/清明...) จาก engine; รายการ fallbackกลางเดือนใช้เมื่อไม่มีจุด節氣ละเอียด · ถ้าถามวันใกล้เวลาเปลี่ยน節氣ให้บอกว่าจังหวะอยู่แถวรอยต่อ\n` +
+      `เดือนจรใช้節氣หลักจริง (立春/惊蛰/清明...) จาก engine; ใช้ได้เฉพาะปี/เดือนที่แสดงใน block นี้ (${d.yearStart}-${d.yearEnd}) · ปี/เดือนนอก block ห้ามอ้างว่าตรวจเดือนจรครบ · ถ้าถามวันใกล้เวลาเปลี่ยน節氣ให้บอกว่าจังหวะอยู่แถวรอยต่อ\n` +
       years.join("\n")
     );
   }
@@ -2929,8 +3244,143 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* HK_PACKET_FILL_V1 · ตารางปีจรทั้งชีวิต — ปลดงานค้าง priority1 "AI ประกอบเสาปีนอกรอบเอง"
    * เฉพาะโหมดเดี่ยว (includeTransitDrilldown) · group ตัดเพื่อคุมขนาดต่อคน */
   if (includeTransitDrilldown && packet.lifeAnnualPillars?.length) {
-    const txt = packet.lifeAnnualPillars.map((y) => `${y.year}${y.stem}${y.branch}`).join(" ");
-    lines.push(`ตารางปีจรทั้งชีวิต (ก้าน-กิ่งจากระบบคำนวณ · ถามถึงปีใดนอกรอบเจาะลึก ให้คัดเสาปีจากตารางนี้ตัวต่อตัว ห้ามประกอบ/ทดเสาปีเอง · อ่านคู่กับ "วัยจรทั้งชีวิต" ว่าปีนั้นอยู่วัยจรไหนตามกฎ 3.5): ${txt}`);
+    const txt = packet.lifeAnnualPillars.map((y) => `${y.year}/${y.year + 543}=${y.stem}${y.branch}`).join(" ");
+    lines.push(
+      `${subjectPrefix}HK_YEAR_PILLAR_CALENDAR_LOCK_V1 (流年 calendar lock · source=engine_liu_nian_timeline): ` +
+      `กฎเด็ดขาด: ปี ค.ศ./พ.ศ. ในคำตอบต้องคัดจาก lookup นี้หรือ HK_LIUNIAN_YEAR_DRILLDOWN_V1 เท่านั้น ห้ามบวก/ลบปีเอง; ` +
+      `ถ้าถามปีที่ไม่มีใน lookup ให้บอกว่าข้อมูลไม่พอ ไม่เดา; ${txt}`
+    );
+  }
+  if (includeTransitDrilldown && packet.yearlyLiuNianDrilldown?.years.length) {
+    const yd = packet.yearlyLiuNianDrilldown;
+    const flagTh: Record<string, string> = { auspicious: "ผสาน", cautious: "ต้องคุม", neutral: "กลาง" };
+    const roleTh: Record<string, string> = { yong: "用", xi: "喜", ji: "忌", neutral: "กลาง" };
+    const tgTh = (g: string | null) => g ? (TEN_GOD_TH[g] || g) : "-";
+    const tags = (xs: string[]) => xs.length ? xs.join("+") : "-";
+    const hitTxt = (y: NonNullable<ChartPacket["yearlyLiuNianDrilldown"]>["years"][number]) =>
+      y.natalBranchHits.length
+        ? y.natalBranchHits.slice(0, 4).map((h) => `${PILLAR_EN_TH[h.natalPillar]}${h.natalBranch}:${h.type}${h.pair}`).join(",")
+        : "-";
+    const hiddenTxt = (y: NonNullable<ChartPacket["yearlyLiuNianDrilldown"]>["years"][number]) =>
+      y.hiddenStems.length ? y.hiddenStems.map((h) => `${h.stem}${tgTh(h.tenGod)}=${roleTh[h.usefulRole]}`).join(",") : "-";
+    const rowTxt = (y: NonNullable<ChartPacket["yearlyLiuNianDrilldown"]>["years"][number]) =>
+      `${y.year}(อายุ${y.age})${y.pillar.stem}${y.pillar.branch}/${tgTh(y.tenGod)}/${flagTh[y.flag] || y.flag}` +
+      `/大運${y.luck ? `${y.luck.stem}${y.luck.branch}[${y.luck.yearStart}-${y.luck.yearEnd}]${y.luck.isCurrent ? "◀" : ""}` : "-"}` +
+      `/ฟ้า${elementTh(y.stemElement)}=${roleTh[y.stemUsefulRole]}` +
+      `/ดิน${elementTh(y.branchElement)}=${roleTh[y.branchUsefulRole]}` +
+      `/藏:${hiddenTxt(y)}` +
+      `/日:${tags(y.vsDayBranch)}` +
+      `/運:${tags(y.vsLuckBranch)}` +
+      `/原局:${hitTxt(y)}` +
+      `${y.stemComboNotes.length ? `/天干合:${y.stemComboNotes.slice(0, 2).join(" | ")}` : ""}` +
+      `${y.crossLayerNotes.length ? `/跨層:${y.crossLayerNotes.slice(0, 2).join(" | ")}` : ""}`;
+    lines.push(
+      `${subjectPrefix}${yd.tag} (ปีจรรายปี compact · source=${yd.source} · scope=${yd.scope} · confidence=${yd.confidence}): ` +
+      `กฎเด็ดขาด: ถ้าผู้ใช้ถามปีที่อยู่ในรายการนี้ ให้ใช้ row ปีนั้นก่อน ห้ามคำนวณ/ทดเสาปีเอง; ` +
+      `ถ้าจะพูดรายเดือน ให้ใช้เฉพาะ block transitDrilldown.currentDecade ที่มีเดือนจริง; ข้อจำกัด=${yd.limitations.join(" | ")}`
+    );
+    const lichunRows = yd.years
+      .map((y, idx) => {
+        const prev = idx > 0 ? yd.years[idx - 1] : null;
+        if (!y.baziYearStart?.date) return null;
+        return `${y.year}/${y.year + 543}: ก่อน立春=${prev ? `${prev.pillar.stem}${prev.pillar.branch}` : "-"} หลัง立春=${y.pillar.stem}${y.pillar.branch} start=${y.baziYearStart.name}:${y.baziYearStart.date}${y.baziYearEnd?.date ? ` end=${y.baziYearEnd.date}` : ""}`;
+      })
+      .filter(Boolean) as string[];
+    if (lichunRows.length) {
+      lines.push(
+        `${subjectPrefix}HK_LICHUN_YEAR_BOUNDARY_LOCK_V1 (流年 starts at 立春, not Jan 1): ` +
+        `กฎเด็ดขาด: เดือนมกราคม/ช่วงก่อน立春ของปี ค.ศ./พ.ศ. ใด ยังใช้ปีจรแถว "ก่อน立春"; หลัง立春ค่อยใช้แถว "หลัง立春"; ห้ามเรียก ม.ค. เป็นปีจรใหม่โดยไม่ระบุหลัง立春`
+      );
+      const lChunkSize = 18;
+      for (let i = 0; i < lichunRows.length; i += lChunkSize) {
+        const chunk = lichunRows.slice(i, i + lChunkSize);
+        const part = `${Math.floor(i / lChunkSize) + 1}/${Math.ceil(lichunRows.length / lChunkSize)}`;
+        lines.push(`${subjectPrefix}HK_LICHUN_YEAR_BOUNDARY_LOCK_V1[${part}]: ${chunk.join(" ◆ ")}`);
+      }
+    }
+    const yearDayunRows = yd.years
+      .filter((y) => y.luck)
+      .map((y) =>
+        `${y.year}/${y.year + 543}: year_pillar=${y.pillar.stem}${y.pillar.branch}` +
+        `/bazi_year=${y.baziYearStart?.date || "?"}..${y.baziYearEnd?.date || "?"}` +
+        `/dayun=${y.luck!.stem}${y.luck!.branch}` +
+        `[${y.luck!.yearStart}-${y.luck!.yearEnd}/${y.luck!.yearStart + 543}-${y.luck!.yearEnd + 543}]` +
+        `/ambiguity=${yd.confidence === "limited_3p" ? "limited_3p_approx_jiaoyun" : "none"}`
+      );
+    if (yearDayunRows.length) {
+      lines.push(
+        `${subjectPrefix}HK_YEAR_DAYUN_MAP_V2 (date-aware year→大運 scope · source=HK_LIUNIAN_YEAR_DRILLDOWN_V1): ` +
+        `กฎเด็ดขาด: ก่อนพูดวัยจรของปีใด ต้องใช้ row ปีนั้น; ถ้า ambiguity=limited_3p_approx_jiaoyun หรือปีอยู่รอยต่อ ให้ติดป้ายประมาณ/สองช่วง ห้ามใช้ CURRENT แทน`
+      );
+      const yd2ChunkSize = 18;
+      for (let i = 0; i < yearDayunRows.length; i += yd2ChunkSize) {
+        const chunk = yearDayunRows.slice(i, i + yd2ChunkSize);
+        const part = `${Math.floor(i / yd2ChunkSize) + 1}/${Math.ceil(yearDayunRows.length / yd2ChunkSize)}`;
+        lines.push(`${subjectPrefix}HK_YEAR_DAYUN_MAP_V2[${part}]: ${chunk.join(" ◆ ")}`);
+      }
+    }
+    const chunkSize = 12;
+    for (let i = 0; i < yd.years.length; i += chunkSize) {
+      const chunk = yd.years.slice(i, i + chunkSize);
+      const part = `${Math.floor(i / chunkSize) + 1}/${Math.ceil(yd.years.length / chunkSize)}`;
+      lines.push(`${subjectPrefix}${yd.tag}[${part}]: ${chunk.map(rowTxt).join(" ◆ ")}`);
+    }
+    const queryYearLuckRows = yd.years
+      .filter((y) => y.luck)
+      .map((y) => `${y.year}/${y.year + 543}->${y.luck!.stem}${y.luck!.branch}[ค.ศ.${y.luck!.yearStart}-${y.luck!.yearEnd}/พ.ศ.${y.luck!.yearStart + 543}-${y.luck!.yearEnd + 543}]`);
+    if (queryYearLuckRows.length) {
+      const mapChunkSize = 24;
+      lines.push(
+        `${subjectPrefix}HK_QUERY_YEAR_LUCK_LOCK_V1 (ปี→大運 map · source=HK_LIUNIAN_YEAR_DRILLDOWN_V1+engine_luck_pillars): ` +
+        `กฎเด็ดขาด: ถ้าผู้ใช้ถามปีใด ให้คัด大運จาก map นี้ก่อนสรุป ห้ามใช้ CURRENT หรือคำนวณ順逆เองแทนปีนั้น`
+      );
+      for (let i = 0; i < queryYearLuckRows.length; i += mapChunkSize) {
+        const chunk = queryYearLuckRows.slice(i, i + mapChunkSize);
+        const part = `${Math.floor(i / mapChunkSize) + 1}/${Math.ceil(queryYearLuckRows.length / mapChunkSize)}`;
+        lines.push(`${subjectPrefix}HK_QUERY_YEAR_LUCK_LOCK_V1[${part}]: ${chunk.join(" ◆ ")}`);
+      }
+    }
+    const natalBranchSources = packet.pillars.map((p) => ({
+      branch: p.branch,
+      source: `原局${PILLAR_EN_TH[p.key] || p.key}${p.branch}`,
+    }));
+    const sanHeCandidateRows: Array<{ year: number; text: string }> = [];
+    for (const y of yd.years) {
+      for (const [set, el] of Object.entries(SAN_HE_ELEMENT)) {
+        const branches = [...set];
+        if (!branches.includes(y.pillar.branch)) continue;
+        const sources = branches.map((b) => {
+          if (b === y.pillar.branch) return { branch: b, source: `流年${y.year}/${y.year + 543}${y.pillar.stem}${y.pillar.branch}`, layer: "year" };
+          const natal = natalBranchSources.find((n) => n.branch === b);
+          if (natal) return { branch: b, source: natal.source, layer: "natal" };
+          if (y.luck?.branch === b) return { branch: b, source: `大運${y.luck.stem}${y.luck.branch}[${y.luck.yearStart}-${y.luck.yearEnd}]`, layer: "luck" };
+          return null;
+        });
+        if (sources.every(Boolean)) {
+          const layerSet = new Set(sources.map((s) => s!.layer));
+          if (!layerSet.has("year")) continue;
+          sanHeCandidateRows.push({
+            year: y.year,
+            text: `${y.year}/${y.year + 543}${y.pillar.stem}${y.pillar.branch}: ${set}三合${elementTh(el)} candidate · ` +
+            sources.map((s) => `${s!.branch}=${s!.source}`).join(" + ") +
+            ` · source=HK_LIUNIAN_YEAR_DRILLDOWN_V1+PILLAR LOCK${layerSet.has("luck") ? "+HK_QUERY_YEAR_LUCK_LOCK_V1" : ""}`,
+          });
+        }
+      }
+    }
+    const currentYear = new Date().getFullYear();
+    const uniqueSanHeCandidates = Array.from(
+      new Map(
+        sanHeCandidateRows
+          .sort((a, b) => Math.abs(a.year - currentYear) - Math.abs(b.year - currentYear) || a.year - b.year)
+          .map((row) => [row.text, row]),
+      ).values(),
+    );
+    lines.push(
+      `${subjectPrefix}HK_SANHE_CANDIDATE_LOCK_V1 (流年เติม三合 candidate · source=yearlyLiuNianDrilldown+natal/luck branches): ` +
+      `กฎเด็ดขาด: candidate นี้คือหลักฐานว่าปีจรเติมกิ่งครบชุดจาก packet; ต้องอ่านร่วม用神/忌神และเรือน ห้ามสลับเป็น三合ชุดอื่น เช่น 巳午寅; ` +
+      (uniqueSanHeCandidates.length ? uniqueSanHeCandidates.slice(0, 40).map((row) => row.text).join(" ◆ ") : "ไม่พบ candidate 三合 ที่ปีจรเติมครบจากกิ่งเกิด/วัยจรในชุดนี้")
+    );
   }
   /* HK_PACKET_FILL_V1 · เรือนคู่ 夫妻宮 จาก engine (เดิมหน้าดวงมีแต่ packet ไม่ส่ง) */
   if (packet.spousePalace) {
@@ -2962,11 +3412,14 @@ export function renderChartPrompt(packet: ChartPacket, opts: { includeTransitDri
   /* HK_CROSSLAYER_V1 — ฮะก้านจร + กิ่งจรเติมโครงข้ามชั้น (precompute · เคส Swit 12 มิ.ย.)
    * ปล่อยทั้งกรณี "พบ" และ "ตรวจแล้วไม่พบ" — ให้ AI ยืนยันได้ทั้งสองทาง ไม่ต้องเดินมือ/ไม่ต้องเดา */
   /* ขอบเขตตรวจตามจริง: 3p ไม่มี drilldown ปีจร → ห้ามอ้างว่า "ตรวจปีจร 10 ปีแล้ว" (Codex blocking finding · 12 มิ.ย.) */
-  const _xlHasYears = !!packet.transitDrilldown?.currentDecade?.years?.length;
+  const _xlHasYears = includeTransitDrilldown && !!packet.transitDrilldown?.currentDecade?.years?.length;
+  const _xlHasYearlyCompact = includeTransitDrilldown && !!packet.yearlyLiuNianDrilldown?.years?.length;
   const _xlHasFutureLuck = !!packet.transitHehua?.some((h) => h.transitLabel.includes("วัยจรถัดไป")) ||
     !!packet.crossLayerCombos?.some((h) => h.noteTh.includes("วัยจรถัดไป"));
   const _xlScopeTxt = _xlHasYears
     ? `วัยจรปัจจุบัน+ปีจร 10 ปีรอบวัยจรนี้${_xlHasFutureLuck ? "+วัยจรถัดไป 2 ช่วง" : ""}`
+    : _xlHasYearlyCompact
+    ? `ปีจรรายปี compact จาก HK_LIUNIAN_YEAR_DRILLDOWN_V1 (ไม่มีเดือนจรเต็ม; ถ้าเป็น 3p ไม่ถือว่าครบทุกเสา)`
     : `วัยจรปัจจุบัน${_xlHasFutureLuck ? "+วัยจรถัดไป 2 ช่วง" : ""} (ปีจรรายปียังไม่ถูกตรวจ — ดวงนี้ไม่มี drilldown ปีจร ห้ามอ้างว่าตรวจปีจรแล้ว)`;
   if (packet.transitHehua !== undefined) {
     if (packet.transitHehua.length) {

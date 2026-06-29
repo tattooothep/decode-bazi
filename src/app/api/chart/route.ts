@@ -60,6 +60,22 @@ function overrideNeedsForFollow(profile: any, yv2: any): any {
   return { ...profile, needs, follow_override: true };
 }
 
+async function attachSystemBElementWeights(ext: any, natal: any) {
+  const { buildElementDistribution } = await import("@/lib/element-distribution-functional");
+  const distribution = buildElementDistribution(natal as any, "systemB");
+  if (distribution.engine_version !== "system-b-v1") {
+    throw new Error(`unsafe element distribution engine: ${distribution.engine_version}`);
+  }
+  ext.element_distribution = distribution;
+
+  /* Backward-compatible key, but no Voytek/legacy fallback: this payload is
+   * derived from SystemB distribution only. */
+  const { buildStrengthFunctional } = await import("@/lib/strength-functional");
+  ext.voytek_strength = buildStrengthFunctional(natal.day.stem, {}, distribution);
+  ext.functional_strength = ext.voytek_strength;
+  return distribution;
+}
+
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session?.userId) {
@@ -196,6 +212,7 @@ export async function POST(req: Request) {
         calc.yongshen[0]?.element || null,
         adjustedYongshenEls
       );
+      const systemBDistribution = await attachSystemBElementWeights(ext, natal);
 
       try {
         // @ts-ignore — runtime CJS
@@ -205,17 +222,11 @@ export async function POST(req: Request) {
           const sFull = synth(natal);
           const rootedness = sFull?._details?.rootedness;
           if (rootedness) {
-            let distribution: any = undefined;
-            try {
-              const { buildElementDistribution } = await import("@/lib/element-distribution-functional");
-              distribution = buildElementDistribution(natal as any, process.env.ELEMENT_DIST_MODE === "systemB" ? "systemB" : "legacy");
-              (ext as any).element_distribution = distribution;
-            } catch (e) {
-              console.warn("[chart] 3p element_distribution failed", e);
-            }
+            const distribution = systemBDistribution;
             const { buildStrengthFunctional } = await import("@/lib/strength-functional");
             const fnStrength = buildStrengthFunctional(natal.day.stem, rootedness, distribution);
             (ext as any).voytek_strength = fnStrength;
+            (ext as any).functional_strength = fnStrength;
             /* HK_DAYMASTER_STRENGTH_UNIFY_V1 (สเตป 5) · ภาพรวมตัวตนใช้ calc.strength(wrapper-6·เดียวกับ用神) ไม่ใช่ fnStrength(element-dist) → 強/弱 ตรง用神 */
             daymasterProfile = getDaymasterProfile(natal.day.stem, {
               level: calc.strength.level,
@@ -302,6 +313,7 @@ export async function POST(req: Request) {
           fan_yin_fu_yin: ext.fan_yin_fu_yin,
           current_year_pillar: ext.current_year_pillar,
           voytek_strength: ext.voytek_strength,
+          functional_strength: (ext as any).functional_strength,
           lp_natal_interactions: ext.lp_natal_interactions,
           tian_di_he: ext.tian_di_he,
           liu_nian_timeline: ext.liu_nian_timeline,
@@ -332,6 +344,7 @@ export async function POST(req: Request) {
       calc.yongshen[0]?.element || null,
       adjustedYongshenEls
     );
+    const systemBDistribution = await attachSystemBElementWeights(ext, natal);
 
     /* G4 · QiMen destiny mini-card (async · cache + timeout + fail-open null) */
     const { buildQimenDestiny } = await import("@/lib/qimen-destiny");
@@ -452,18 +465,12 @@ export async function POST(req: Request) {
         const rootedness = sFull?._details?.rootedness;
         if (rootedness) {
           /* Phase 17g · compute distribution_score (Plan C v6 strict · Codex APPROVED) */
-          let distribution: any = undefined;
-          try {
-            const { buildElementDistribution } = await import("@/lib/element-distribution-functional");
-            distribution = buildElementDistribution(natal as any, process.env.ELEMENT_DIST_MODE === "systemB" ? "systemB" : "legacy");
-            (ext as any).element_distribution = distribution;
-          } catch (e) {
-            console.warn("[chart] element_distribution failed", e);
-          }
+          const distribution = systemBDistribution;
           /* DM strength Functional · Phase 17g · ใช้ distribution ถ้ามี */
           const { buildStrengthFunctional } = await import("@/lib/strength-functional");
           const fnStrength = buildStrengthFunctional(natal.day.stem, rootedness, distribution);
           (ext as any).voytek_strength = fnStrength;
+          (ext as any).functional_strength = fnStrength;
           /* HK_DAYMASTER_STRENGTH_UNIFY_V1 (สเตป 5) · 4p · calc.strength(wrapper-6·เดียวกับ用神) */
           daymasterProfile = getDaymasterProfile(natal.day.stem, {
             level: calc.strength.level,
@@ -564,6 +571,7 @@ export async function POST(req: Request) {
         fan_yin_fu_yin: ext.fan_yin_fu_yin,
         current_year_pillar: ext.current_year_pillar,
         voytek_strength: ext.voytek_strength,
+        functional_strength: (ext as any).functional_strength,
         /* Engine 1 · LP × natal + 天地合 + 流年 timeline */
         lp_natal_interactions: ext.lp_natal_interactions,
         tian_di_he: ext.tian_di_he,

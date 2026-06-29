@@ -13,8 +13,8 @@ function cleanProfileId(value: unknown): string | null {
 
 function cleanLimit(value: unknown): number {
   const num = Number(value);
-  if (!Number.isFinite(num)) return 20;
-  return Math.max(1, Math.min(80, Math.floor(num)));
+  if (!Number.isFinite(num)) return 120;
+  return Math.max(1, Math.min(200, Math.floor(num)));
 }
 
 function cookieHeaderForHistory(req: Request): string {

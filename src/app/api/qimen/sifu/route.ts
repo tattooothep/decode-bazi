@@ -1388,6 +1388,25 @@ function fmtUserYs(ys: any): string {
 TiaoHou: ${ys.tiaohou_required || "-"} · 病: ${(ys.diseases || []).join(",") || "-"} · 藥: ${(ys.medicine || []).join(",") || "-"}`;
 }
 
+function fmtUserElementDistribution(ed: any): string {
+  if (!ed || ed.engine_version !== "system-b-v1") {
+    return "\nธาตุรวมการ์ด 06: SystemB unavailable · ห้ามใช้ legacy/voytek/element_counts ตอบเรื่องน้ำหนักธาตุ";
+  }
+  const pct = ed.pctDisplay || {};
+  const n = (key: string) => typeof pct[key] === "number" ? Math.round(pct[key]) : null;
+  const rows = [
+    ["ไม้", "wood"],
+    ["ไฟ", "fire"],
+    ["ดิน", "earth"],
+    ["ทอง", "metal"],
+    ["น้ำ", "water"],
+  ].map(([th, key]) => {
+    const v = n(key);
+    return `${th}=${v == null ? "—" : `${v}%`}`;
+  }).join(" · ");
+  return `\nธาตุรวมการ์ด 06 (canonical SystemB system-b-v1 · ใช้เฉพาะน้ำหนักธาตุ/กำลังตัวตน ห้ามแทน用神/喜忌): ${rows} · confidence=${ed.confidence || "-"}${Array.isArray(ed.missing_positions) && ed.missing_positions.length ? ` · ขาดเสา=${ed.missing_positions.join("/")}` : ""}`;
+}
+
 function fmtSearchResults(searchResults: any[], activity?: string): string {
   if (!searchResults || !searchResults.length) return "";
   const lines = searchResults.slice(0, 8).map((t: any, i: number) =>
@@ -1400,6 +1419,7 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
   const { payload, message, history, lang, topic } = opts;
   const qimen = qimenPayloadFromRequestPayload(payload);
   const ys = payload?.user_yongshen_v2;
+  const userElementDistribution = payload?.user_element_distribution;
   const searchResults = payload?.search_results;
   const activity = payload?.activity;
   const systemType = qimenSystemTypeFromPayload(payload);
@@ -1448,7 +1468,7 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
 18. ห้ามใช้คำฟันธงเกินข้อมูล เช่น ดีแน่นอน, ชนะ, ใช้แล้วสำเร็จ, ไม่มีปัญหา
 19. ถ้าผังวัน/เดือน/ปีถูกส่งมาแบบอ่านประกอบเท่านั้น ให้ตอบว่าเป็นภาพรวม/บริบท ต้องเช็กผังยาม 時家 ก่อนลงมือ ห้ามสรุปว่าเหมาะหรือใช้ได้จากคะแนนช่วยจัดลำดับ
 20. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุรหัสแหล่งอ้างอิงที่ใช้ 1-3 ตัวจากรายการแหล่งอ้างอิง`;
-  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${answerGuard}\nผังเวลา (QiMen Chart):\n${qimenText}\n${canonBlock}\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
+  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${answerGuard}\nผังเวลา (QiMen Chart):\n${qimenText}\n${canonBlock}\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${fmtUserElementDistribution(userElementDistribution)}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
   return {
     prompt: loadPromptMd("prompts/qimen-sifu.md", QIMEN_TPL_FALLBACK).replace("{{BODY}}", body),
     knowledgeVersion: know.version,

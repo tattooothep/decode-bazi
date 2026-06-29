@@ -8,23 +8,28 @@
  * Backup ก่อนแก้ไฟล์นี้ · ห้ามแตะ engine LOCKED
  */
 import { NextResponse } from "next/server";
+import { loadEnvConfig } from "@next/env";
 import { spawn, execFileSync } from "child_process";
 import { readFileSync, statSync, writeFileSync, rmSync, chownSync, chmodSync } from "fs";
 import { join } from "path";
-import { createHash, randomUUID } from "crypto";
+import { createHash, randomUUID, timingSafeEqual } from "crypto";
 import { StringDecoder } from "string_decoder";
 import { q1, q } from "@/lib/db";
 import { getSession, type Session } from "@/lib/auth";
+import { hasCredit, chargeForAnswer } from "@/lib/credit";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
 import { boundaryWarning3p, monthPillarBoundary } from "@/lib/bazi-boundary";
+import { computeQiyunLock } from "@/lib/bazi-qiyun";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { validateIdentity, stripIdLine, extractExpectedDM } from "@/lib/identity-lock";
 import { extractTraceFacts, parseTraceLine, stripTraceLine, validateTrace, parseClaimedSources, type TraceFacts } from "@/lib/sifu-trace-lock";
 import { checkSifuEvidenceTrace } from "@/lib/sifu-evidence-trace";
 import { checkSifuCriticalEvidence, type CriticalEvidenceCheck } from "@/lib/sifu-critical-evidence-gate";
+import { checkSifuFactClaimGate, type SifuFactClaimCheck } from "@/lib/sifu-fact-claim-gate";
+import { ensureServerEnv } from "@/lib/server-env";
 import { SIFU_CODEX_QTBJ_RETRIEVAL_VERSION, loadQtbjTiaohouCompactKnowledge } from "@/lib/sifu-qtbj-compact";
 import { buildSifuCompactBaseline } from "@/lib/sifu-compact-baseline";
 import { logResearchAiMessageSafe } from "@/lib/research-log";
@@ -32,8 +37,12 @@ import { buildSifuShadowModePlan } from "@/lib/sifu-shadow-mode";
 import { logSifuSourceAuditSafe } from "@/lib/sifu-source-audit-log";
 import type { SifuAnswerSupportedByAudit } from "@/lib/sifu-source-audit";
 
+loadEnvConfig(process.cwd(), false, console, true);
+ensureServerEnv(["GEMINI_API_KEY", "GOOGLE_API_KEY"]);
+
 type Msg = { role: "user" | "assistant"; content: string };
-type SifuModel = "claude-max-cli" | "codex-cli" | "grok-cli";
+type SifuModel = "claude-max-cli" | "codex-cli" | "grok-cli" | "gemini-api";
+type SifuPayload = { reply: string; model: SifuModel; provider_model?: string | null };
 type IntroBirthInput = {
   name?: string;
   date: string;
@@ -51,7 +60,22 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const SIFU_HEARTBEAT_MS = Number(process.env.SIFU_SSE_HEARTBEAT_MS || 7_000);
 const SIFU_FIRST_PING_MS = Number(process.env.SIFU_SSE_FIRST_PING_MS || 3_000);
 const SIFU_CLAUDE_COMPACT_KNOWLEDGE = process.env.SIFU_CLAUDE_COMPACT_KNOWLEDGE === "1";
+const SIFU_MIN_VISIBLE_REPLY_CHARS = Math.max(0, Number(process.env.SIFU_MIN_VISIBLE_REPLY_CHARS || 60));
+const SIFU_FUSION_MIN_VISIBLE_REPLY_CHARS = Math.max(SIFU_MIN_VISIBLE_REPLY_CHARS, Number(process.env.SIFU_FUSION_MIN_VISIBLE_REPLY_CHARS || 900));
+const SIFU_DIRECT_MESSAGE_MAX_CHARS = 2_000;
+const SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS = boundedIntEnv("SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS", 80_000, 4_000, 120_000);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function boundedIntEnv(name: string, fallback: number, min: number, max: number): number {
+  const n = Number(process.env[name]);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, Math.floor(n)));
+}
+
+function geminiApiKey(): string {
+  ensureServerEnv(["GEMINI_API_KEY", "GOOGLE_API_KEY"]);
+  return String(process.env["GEMINI_API_KEY"] || process.env["GOOGLE_API_KEY"] || "").trim();
+}
 
 function cleanSifuThreadId(v: unknown): string | null {
   if (typeof v !== "string") return null;
@@ -71,31 +95,52 @@ function buildSifuGateRetryPrompt(input: {
   idReason: string;
   traceReason: string;
   critical: CriticalEvidenceCheck;
+  factClaim?: SifuFactClaimCheck;
+  emptyVisible: boolean;
+  tooShortVisible: boolean;
+  minVisibleReplyChars?: number;
+  criticalHardGate?: boolean;
 }): string {
   const lines = [
     "=== SYSTEM RETRY GATE (ไม่ผ่านตัวตรวจหลังบ้าน) ===",
     "คำตอบก่อนหน้าไม่ผ่าน ให้สร้างคำตอบใหม่ทั้งหมด ห้ามอ้างว่าก่อนหน้าตอบแล้ว",
   ];
-  if (input.expectedDM) {
+  const hardGate = input.criticalHardGate !== false;
+  if (hardGate && input.expectedDM) {
     lines.push(`- บรรทัดแรกต้องเป็น exact: ⟦ID⟧日干=${input.expectedDM}⟧`);
   }
-  if (input.traceFacts?.gejuTokens.length) {
+  if (hardGate && input.traceFacts?.gejuTokens.length) {
     const cong = input.traceFacts.congExpected === true ? "มี" : input.traceFacts.congExpected === false ? "ไม่มี" : "ก้ำกึ่ง";
     const geju = input.traceFacts.gejuTokens[0];
     const yong = input.traceFacts.yongWords.find((w) => /[ก-๙]/.test(w)) || input.traceFacts.yongWords[0] || "-";
     lines.push(`- บรรทัดที่สองต้องขึ้นต้น exact: ⟦TRACE⟧從=${cong}·格局=${geju}·用神=${yong}`);
     lines.push("- ห้ามใช้ป้ายรอง/raw engine มาเป็น格局ใน TRACE หรือในเนื้อ ถ้าโครงดวงระบุ strict月令หลัก ให้ใช้ strict月令หลักเท่านั้น");
+  } else if (!hardGate) {
+    lines.push("- รอบนี้เป็น Fusion raw-data mode: ไม่ต้องใส่ ID/TRACE/marker เพื่อผ่านระบบ ให้ตอบเนื้อหาจริงจากคัมภีร์ + ผัง + packet evidence");
   }
   if (input.idReason !== "ok" || input.traceReason !== "ok" || !input.critical.ok) {
     lines.push(`- สาเหตุที่ไม่ผ่าน: identity=${input.idReason} trace=${input.traceReason} critical=${input.critical.missing.map((m) => m.code).join(",") || "ok"}`);
   }
+  if (input.factClaim && !input.factClaim.ok) {
+    lines.push(`- สาเหตุ fact-claim ไม่ผ่าน: ${input.factClaim.violations.map((v) => v.code).join(",")}`);
+    lines.push("- ห้ามสร้างปฏิกิริยาที่ packet ไม่ได้ authorize: โดยเฉพาะห้ามพูด 寅戌冲/ขาลจอชง ถ้าลิสต์ให้เป็น 拱/虛拱; เมื่อ午มาเติมให้อ่าน 寅午戌火局");
+    lines.push("- ห้ามพูด 戊透干/戊โผล่ก้านฟ้า ถ้า PILLAR LOCK/透出ก้านฟ้าไม่มี戊; ถ้า戊อยู่ใน藏干ให้พูดว่า戊ซ่อนในกิ่ง ไม่ใช่透干");
+  }
+  if (input.emptyVisible) {
+    lines.push("- คำตอบก่อนหน้ามีแต่บรรทัดระบบ/TRACE จนไม่มีเนื้อหาที่ลูกค้าเห็น ต้องตอบเนื้อหาจริงหลังบรรทัดล็อกอย่างน้อย 3 ประโยค ห้ามตอบสั้นแค่รับทราบ/ครับ");
+  }
+  if (input.tooShortVisible) {
+    lines.push(`- เนื้อหาที่ลูกค้าเห็นสั้นเกินไปหลังซ่อนบรรทัดระบบ ต้องตอบเนื้อหาจริงให้ยาวอย่างน้อย ${input.minVisibleReplyChars || SIFU_MIN_VISIBLE_REPLY_CHARS} อักขระ`);
+  }
   const criticalRequired = input.critical.required.length ? input.critical.required : input.critical.missing;
-  if (!input.critical.ok && criticalRequired.length) {
+  if (input.criticalHardGate !== false && !input.critical.ok && criticalRequired.length) {
     lines.push("- ในเนื้อคำตอบต้องเอ่ยหลักฐานบังคับทั้งหมดของคำถามนี้อย่างน้อยด้วย marker จีนหรือคำไทยในวงเล็บ (ไม่ใช่แก้เฉพาะตัวที่ขาดรอบก่อน เพราะ retry ห้ามทำของที่เคยถูกหลุดหาย):");
     for (const item of criticalRequired) {
       lines.push(`  * ${item.label} (ยอมรับคำใดคำหนึ่ง: ${item.anyOf.join(" / ")})`);
     }
     lines.push("- ถ้ามีทั้ง合และ冲/害ในปีเดียวกัน ต้องอธิบายแบบแก้ขัด เช่น 合絆/貪合忘沖 ก่อนสรุปผลชีวิต ห้ามอ่านเป็น冲อย่างเดียว");
+  } else if (!input.critical.ok && criticalRequired.length) {
+    lines.push("- critical packet evidence ใช้เป็น audit เท่านั้นในรอบนี้: ห้ามยัด marker เพื่อผ่าน checklist; ใช้ packet เป็นข้อมูลดิบกันอ่านผิดดวง และให้คัมภีร์/canonical เป็น source of truth ของการวินิจฉัย");
   }
   lines.push("=== END RETRY GATE ===");
   return `${input.prompt}\n\n${lines.join("\n")}\n`;
@@ -128,20 +173,6 @@ const SIFU_CONTEXT_CACHE_MS = Number(process.env.SIFU_CONTEXT_CACHE_MS || 5 * 60
 const SIFU_CONTEXT_CACHE_MAX = Number(process.env.SIFU_CONTEXT_CACHE_MAX || 80);
 const SIFU_TIMING_LOG = process.env.SIFU_TIMING_LOG !== "0";
 
-/* startAge (起運) จาก tyme4ts ChildLimit · เหมือน /api/chart · เดิม sifu ใส่ 10 ตายตัว → วัยจรเลื่อน ~8 ปี (bug 25 พ.ค.) */
-async function computeStartAge(date: string, time: string, gender: "M" | "F", lng: number): Promise<number> {
-  try {
-    const tyme = await import("tyme4ts");
-    const { getSolarTimeAtTST } = await import("@/lib/bazi-calc");
-    const { st } = await getSolarTimeAtTST({ date, time, longitude: lng, gmtOffsetHours: 7, birthTimeKnown: true });
-    const g = gender === "F" ? tyme.Gender.WOMAN : tyme.Gender.MAN;
-    const cl = tyme.ChildLimit.fromSolarTime(st, g);
-    return Math.round((cl.getYearCount() + cl.getMonthCount() / 12 + cl.getDayCount() / 365.25) * 100) / 100;
-  } catch (e) {
-    console.error("[sifu] ChildLimit failed, default 10:", (e as Error).message);
-    return 10;
-  }
-}
 /* 通根 (root strength) จาก wrapper-7 · sifu เดิมใช้แค่ wrapper-6 (หยาบ) · ดึง 5 เกรด + ราก/contest เข้า packet
    (ฐานตัดสิน 從格/用神 · เรียกที่ route ไม่แตะ bazi-calc/extensions LOCKED · ส่ง arg เข้า packet) */
 async function computeRootedness(pillars: { year: { stem: string; branch: string }; month: { stem: string; branch: string }; day: { stem: string; branch: string }; hour: { stem: string; branch: string } | null }): Promise<ReturnType<typeof buildStructuredChartPacket>["rootedness"]> {
@@ -173,6 +204,14 @@ const CODEX_CLI_MODEL = (process.env.SIFU_CODEX_MODEL || "").trim();
 const GROK_BIN = process.env.SIFU_GROK_BIN || "/root/.grok/bin/grok";
 const GROK_CLI_MODEL = (process.env.SIFU_GROK_MODEL || "").trim();
 const GROK_CWD = process.env.SIFU_GROK_CWD || "/home/jarvis";
+const GROK_MAX_ATTEMPTS = Math.max(1, Math.min(3, Number(process.env.SIFU_GROK_MAX_ATTEMPTS || 2)));
+const GROK_VISIBLE_GUARD_VERSION = "grok-visible-guard1";
+const GEMINI_API_MODEL = (process.env.SIFU_GEMINI_MODEL || "gemini-3.1-pro-preview").trim();
+const GEMINI_MAX_OUTPUT_TOKENS = Math.max(512, Number(process.env.SIFU_GEMINI_MAX_OUTPUT_TOKENS || 8192));
+const GEMINI_THINKING_BUDGET_RAW = process.env.SIFU_GEMINI_THINKING_BUDGET;
+const GEMINI_THINKING_BUDGET = GEMINI_THINKING_BUDGET_RAW == null || GEMINI_THINKING_BUDGET_RAW === ""
+  ? (GEMINI_API_MODEL.includes("-pro") ? null : 0)
+  : Number(GEMINI_THINKING_BUDGET_RAW);
 const CODEX_COMPACT_KNOWLEDGE = [
   "Codex compact mode: FACT/PILLAR LOCK เป็นข้อเท็จจริง; คัมภีร์คลาสสิกเป็น source of truth ใน scope ของมัน; packet/interactions เป็นหลักฐานคำนวณพร้อม provenance",
   "ห้ามแต่งปฏิกิริยา ก้าน/กิ่ง ธาตุซ่อน หรือวัยจรที่ packet ไม่ได้ให้; ถ้า packet field ขัด strict classic/canonical ให้ลดเป็น raw/secondary",
@@ -422,9 +461,11 @@ function loadSifuCompactAuthorityKnowledge(): { text: string; version: string } 
 
 function buildSifuRuleVersion(model: SifuModel): string {
   if (shouldUseCompactKnowledge(model)) {
-    return loadSifuCompactAuthorityKnowledge().version + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION + "-idlock1-dayboundary1-compactclassics2";
+    const grokGuard = model === "grok-cli" ? `-${GROK_VISIBLE_GUARD_VERSION}` : "";
+    return loadSifuCompactAuthorityKnowledge().version + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION + "-idlock1-dayboundary1-compactclassics2" + grokGuard;
   }
   const baseVersion = loadAjekRules().version + "-" + loadInteractionMaster().version + "-" + loadEngineKnowledge().version + "-" + loadSifuExtraKnowledge().version + "-idlock1-dayboundary1";
+  if (model === "gemini-api") return baseVersion + `-gemini:${GEMINI_API_MODEL}`;
   return model === "codex-cli" ? baseVersion + "-" + SIFU_CODEX_QTBJ_RETRIEVAL_VERSION : baseVersion;
 }
 /* 💾 DB result cache · TTL 24h */
@@ -432,7 +473,33 @@ const CACHE_TTL_HOURS = 24;
 function resolveSifuModel(raw: unknown): SifuModel {
   const s = String(raw || "").trim().toLowerCase();
   if (s === "grok" || s === "grok-cli") return "grok-cli";
+  if (s === "gemini" || s === "gemini-api") return "gemini-api";
   return s === "codex" || s === "codex-cli" ? "codex-cli" : "claude-max-cli";
+}
+
+function providerModelName(model: SifuModel): string | null {
+  if (model === "gemini-api") return GEMINI_API_MODEL;
+  if (model === "codex-cli") return CODEX_CLI_MODEL || null;
+  if (model === "grok-cli") return GROK_CLI_MODEL || null;
+  return null;
+}
+
+function expectedFusionInternalToken(): string | null {
+  const secret = process.env.SIFU_FUSION_INTERNAL_SECRET || process.env.AUTH_SECRET;
+  if (!secret || secret.length < 16) return null;
+  return createHash("sha256").update(`hourkey:sifu-fusion:${secret}`).digest("hex");
+}
+
+function isTrustedFusionInternalCall(req: Request): boolean {
+  if (req.headers.get("x-sifu-fusion") !== "1") return false;
+  const expected = expectedFusionInternalToken();
+  const actual = req.headers.get("x-sifu-fusion-token") || "";
+  if (!expected || !actual || actual.length !== expected.length) return false;
+  try {
+    return timingSafeEqual(Buffer.from(actual), Buffer.from(expected));
+  } catch {
+    return false;
+  }
 }
 function cacheKey(opts: {
   profileId?: string;
@@ -447,14 +514,16 @@ function cacheKey(opts: {
   ruleVersion: string;
 }): string {
   const parts = [
-    "v8-pillarlock", // 31 พ.ค. · PILLAR LOCK เต็มผัง + กฎคัดกิ่งตรงๆ · bump = invalidate คำตอบเก่า (เดิม v7-multiprofile)
+    "v9-factclaim", // 15 มิ.ย. · invalidate cache เก่าที่อาจมี invented 寅戌冲 / false 戊透干
+    "v10-timinglock", // 16 มิ.ย. · invalidate cache เก่าที่ไม่มี HK_BAZI_TIMING_LOCK/READ_ORDER และ timing validator
+    "v11-qiyunlock", // 16 มิ.ย. · invalidate cache เก่าที่ 3p เหมา startAge=10 และไม่มี HK_QIYUN_LOCK
     opts.ruleVersion,
     opts.orgId || "noorg",
     opts.profileId || "anon",
     opts.contextHash || "noctx",
     opts.topic || "free",
     opts.mode || "default",
-    ...(opts.model === "codex-cli" || opts.model === "grok-cli" ? [opts.model] : []),
+    ...(opts.model && opts.model !== "claude-max-cli" ? [opts.model] : []),
     opts.lang,
     opts.dayPillar || "nopil",
     opts.message,
@@ -480,7 +549,38 @@ function packetContextExcerpt(ctx: string): string[] {
     .map((line) => line.trim())
     .filter(Boolean)
     .filter((line) => !/^===\s*20\s*คัมภีร์/i.test(line));
-  return lines.slice(0, 120).map((line) => line.slice(0, 500));
+  const head = lines.slice(0, 120);
+  const proofMarkers = lines
+    .filter((line) =>
+      line.includes("HK_LIUNIAN_YEAR_DRILLDOWN_V1") ||
+      line.includes("HK_LUCK_PILLAR_LOCK_V1") ||
+      line.includes("HK_QUERY_YEAR_LUCK_LOCK_V1") ||
+      line.includes("HK_YEAR_DAYUN_MAP_V2") ||
+      line.includes("HK_YEAR_PILLAR_CALENDAR_LOCK_V1") ||
+      line.includes("HK_LICHUN_YEAR_BOUNDARY_LOCK_V1") ||
+      line.includes("HK_JIAOYUN_BOUNDARY_LOCK_V1") ||
+      line.includes("HK_QIYUN_LOCK_V1") ||
+      line.includes("HK_SIFU_PREFLIGHT_V1") ||
+      line.includes("HK_BAZI_TIMING_LOCK_V1") ||
+      line.includes("HK_BAZI_READ_ORDER_LOCK_V1") ||
+      line.includes("HK_CURRENT_LUCK_RESOLVED_V1") ||
+      line.includes("HK_SANHE_CANDIDATE_LOCK_V1") ||
+      line.includes("HK_TWO_SCENARIOS_V1") ||
+      line.includes("HK_MONTH_PILLAR_SCENARIO_LOCK_V1") ||
+      line.includes("HK_MONTHLY_DRILLDOWN_SCOPE_V1") ||
+      line.includes("HK_SYNASTRY_RESOLVED_V1") ||
+      line.includes("ปีจร/เดือนจรในวัยจรปัจจุบัน") ||
+      line.includes("ตารางปีจรทั้งชีวิต")
+    )
+    .slice(0, 80);
+  const merged: string[] = [];
+  const seen = new Set<string>();
+  for (const line of [...head, ...proofMarkers]) {
+    if (seen.has(line)) continue;
+    seen.add(line);
+    merged.push(line);
+  }
+  return merged.map((line) => line.slice(0, 1600));
 }
 
 function extractPillarsFromLock(line: string | null): {
@@ -561,6 +661,7 @@ function sifuKnowledgeHashes(model: SifuModel): Record<string, string | boolean 
       qtbj: SIFU_CODEX_QTBJ_RETRIEVAL_VERSION,
       compact_knowledge: true,
       claude_compact_knowledge: model === "claude-max-cli" && SIFU_CLAUDE_COMPACT_KNOWLEDGE,
+      grok_visible_guard: model === "grok-cli" ? GROK_VISIBLE_GUARD_VERSION : null,
     };
   }
   return {
@@ -570,6 +671,7 @@ function sifuKnowledgeHashes(model: SifuModel): Record<string, string | boolean 
     extra: loadSifuExtraKnowledge().version,
     qtbj: model === "codex-cli" ? SIFU_CODEX_QTBJ_RETRIEVAL_VERSION : null,
     compact_knowledge: model === "codex-cli",
+    gemini_model: model === "gemini-api" ? GEMINI_API_MODEL : null,
   };
 }
 
@@ -595,6 +697,42 @@ function compactOutputProtocol(ctx: string): string {
   lines.push("ถ้าอักขระแรกของคำตอบไม่ใช่ ⟦ ระบบจะตัดคำตอบทิ้งทันที");
   lines.push("=== END FINAL OUTPUT PROTOCOL ===");
   return lines.join("\n");
+}
+
+function expectedTraceHeaderLine(facts: TraceFacts | null): string | null {
+  if (!facts?.gejuTokens.length) return null;
+  const cong = facts.congExpected === true ? "มี" : facts.congExpected === false ? "ไม่มี" : "ก้ำกึ่ง";
+  const geju = facts.gejuTokens[0];
+  const yong = facts.yongWords.find((w) => /[ก-๙]/.test(w)) || facts.yongWords[0] || "-";
+  return `⟦TRACE⟧從=${cong}·格局=${geju}·用神=${yong}·ตำรา=packet·เทรน=ไม่มี⟧`;
+}
+
+function normalizeSifuMachineHeader(reply: string, expectedDM: string | null, traceFacts: TraceFacts | null): string {
+  const lines: string[] = [];
+  if (expectedDM) lines.push(`⟦ID⟧日干=${expectedDM}⟧`);
+  const traceLine = expectedTraceHeaderLine(traceFacts);
+  if (traceLine) lines.push(traceLine);
+  if (!lines.length) return reply;
+  const body = stripTraceLine(stripIdLine(reply)).trimStart();
+  return body ? `${lines.join("\n")}\n${body}` : lines.join("\n");
+}
+
+function shouldRepairGrokMachineHeader(input: {
+  model: SifuModel;
+  hardGate: boolean;
+  expectedDM: string | null;
+  idCheck: ReturnType<typeof validateIdentity>;
+  trCheck: ReturnType<typeof validateTrace>;
+  criticalCheck: CriticalEvidenceCheck;
+  visibleReply: string;
+}): boolean {
+  return input.model === "grok-cli" &&
+    input.hardGate &&
+    !!input.expectedDM &&
+    !input.idCheck.ok &&
+    input.trCheck.ok &&
+    input.criticalCheck.ok &&
+    !!input.visibleReply;
 }
 
 function buildSifuAuditEvidence(input: {
@@ -831,6 +969,18 @@ function packetEvidenceGuardText(ctx: string): string {
     : "\nPACKET EVIDENCE: MISSING · ห้ามใช้คำว่า \"packet ระบุ\", \"ตรงดวง\", \"ล็อกดวงนี้\" หรืออ้างว่าอ่าน packet/ดวงเฉพาะบุคคล\n";
 }
 
+function fusionRawPacketPolicyText(): string {
+  return [
+    "",
+    "=== FUSION RAW PACKET POLICY ===",
+    "packet/context เป็นข้อมูลดิบและหลักฐานคำนวณเพื่อกันอ่านผิดดวง ไม่ใช่ checklist บังคับ conclusion หรือบังคับให้เอ่ย marker ในคำตอบ",
+    "FACT LOCK/PILLAR LOCK ใช้ล็อกตัวตนและเสาจริงของเคส; คัมภีร์/canonical เป็น source of truth สำหรับการวินิจฉัยใน scope ของมัน",
+    "ถ้า packet/raw engine label ขัดกับคัมภีร์ strict/canonical ให้ลด packet/raw label เป็นหลักฐานรอง และอธิบายตามคัมภีร์กับผังจริง",
+    "ไม่ต้องใส่คำ/marker เพื่อผ่านระบบตรวจหลังบ้าน ให้ตอบตามเหตุผลจริงจากคัมภีร์ + ผัง + packet evidence",
+    "=== END FUSION RAW PACKET POLICY ===",
+  ].join("\n");
+}
+
 function sanitizePacketEvidenceClaims(reply: string, ctx: string): string {
   if (hasPacketEvidence(ctx)) return reply;
   return reply.replace(PACKET_CLAIM_RE, "ข้อมูลที่มี");
@@ -845,6 +995,36 @@ function stripSifuInternalMarkersForStream(text: string): string {
 
 function sanitizeSifuStreamVisible(text: string, ctx: string): string {
   return sanitizePacketEvidenceClaims(stripSifuInternalMarkersForStream(text), ctx);
+}
+
+function isExplicitSifuAuditQuestion(message: string): boolean {
+  return /(audit|debug|หลังบ้าน|prompt|packet|engine|trace|id\/trace|id trace|13\s*ชั้น|สิบสามชั้น|ขั้นตอน|วิธีอ่าน|ตรวจระบบ|validator|wrapper|cli|stdout)/i.test(message);
+}
+
+function sanitizeGrokUserVisibleText(text: string, message: string): string {
+  if (!text || isExplicitSifuAuditQuestion(message)) return text;
+  return text
+    .split(/\r?\n/)
+    .filter((line) => {
+      const s = line.trim();
+      if (!s) return true;
+      if (/^(กำลัง|กำลังอ่าน|กำลังเปิด|กำลังตรวจ|reading|opening|checking)\b/i.test(s) && /(ไฟล์|file|prompt|packet|context|ข้อมูลดวง)/i.test(s)) return false;
+      if (/(\bprompt\b|พรอมต์|พร้อมต์|คำสั่งระบบ)/i.test(s)) return false;
+      if (/(stdout|backend|validator|wrapper|cache|retry|FACT LOCK|PILLAR LOCK|ID\/TRACE|⟦ID⟧|⟦TRACE⟧)/i.test(s)) return false;
+      if (/\bCLI\b/i.test(s)) return false;
+      return true;
+    })
+    .join("\n")
+    .replace(/prompt packet/gi, "ข้อมูลดวงที่ระบบส่งมา")
+    .replace(/packet evidence/gi, "หลักฐานจากผังดวง")
+    .replace(/\bpacket\b/gi, "ข้อมูลดวง")
+    .replace(/raw engine/gi, "ระบบคำนวณผัง")
+    .replace(/\bengine\b/gi, "ระบบคำนวณผัง");
+}
+
+function sanitizeModelVisibleReply(text: string, ctx: string, model: SifuModel, message: string): string {
+  const safe = sanitizePacketEvidenceClaims(stripSifuInternalMarkersForStream(text), ctx);
+  return model === "grok-cli" ? sanitizeGrokUserVisibleText(safe, message) : safe;
 }
 
 function buildSifuStreamGuardMeta(identity: string, trace: string) {
@@ -903,9 +1083,9 @@ function knownBirthTime(raw: unknown): boolean {
   if (String(raw).toLowerCase() === "false" || String(raw) === "0") return false;
   return true;
 }
-async function getCachedReply(key: string): Promise<{ reply: string; model: string } | null> {
+async function getCachedReply(key: string): Promise<SifuPayload | null> {
   try {
-    const row = await q1<{ payload: { reply: string; model: string } }>(
+    const row = await q1<{ payload: SifuPayload }>(
       `SELECT payload FROM aj_sifu_cache WHERE cache_key=$1 AND expires_at>NOW()`,
       [key]
     );
@@ -918,7 +1098,7 @@ async function getCachedReply(key: string): Promise<{ reply: string; model: stri
     return null;
   }
 }
-async function setCachedReply(key: string, payload: { reply: string; model: string }, ms: number, ruleVersion: string) {
+async function setCachedReply(key: string, payload: SifuPayload, ms: number, ruleVersion: string) {
   try {
     await q(
       `INSERT INTO aj_sifu_cache (cache_key, payload, model, ms, rule_version, expires_at)
@@ -997,9 +1177,8 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
       : await calcBazi({ date, longitude: lng, gmtOffsetHours: 7, gender, birthTimeKnown: false });
     const g = loadPromptKV("prompts/sifu-ctx-guards.md"); // คำสั่ง/ล็อก แก้ผ่าน admin
     const is3p = calc.mode === "3p";
-    /* 27 พ.ค. · 3 เสาไหลเข้า packet เต็ม (ได้ปฏิกิริยา/ดาว/通根/透干/空亡 ของ 年月日 ลึกเท่า 4 เสา)
-     * กันเดายาม: ไม่เรียก computeStartAge (time ปลอม → 起運ปลอม) ใช้ 10 · packet ตัด 起運/เสายาม/命宮/身宮/小運 เองตาม mode 3p */
-    const startAge = is3p ? 10 : await computeStartAge(date, time, gender, lng);
+    const qiyunLock = await computeQiyunLock({ date, time, gender, lng, birthTimeKnown, dayBoundary });
+    const startAge = qiyunLock.representativeStartAge ?? 0;
     const ext = buildChartExtensions(
       calc.pillars,
       new Date(),
@@ -1040,6 +1219,7 @@ async function buildBaziContext(profileId: string, orgId: string | null, userId?
       dayBoundary,
       dayBoundarySource,
       monthBoundary: is3p ? monthPillarBoundary(date) : null, // 月柱ก้ำกึ่ง節氣 → ไหล conf ลง field เดือน (เฉพาะ 3 เสา)
+      qiyunLock,
     });
     validateChartPacket(packet);
     /* HK_YONG_LOCK_V2 — classics-first: FACT/PILLAR เป็นข้อเท็จจริง; QTBJ/strict classic ชนะ engine รวมใน scope 調候 */
@@ -1133,7 +1313,7 @@ async function buildBaziContextCached(profileId: string, orgId: string | null, u
   const fp = await getBaziContextFingerprint(profileId, orgId, userId);
   if (!fp) return { ctx: await buildBaziContext(profileId, orgId, userId), cache: "skip" };
 
-  const key = createHash("sha1").update(`bazi-ctx-v1|${orgId}|${profileId}|${userId || ""}|${fp}`).digest("hex");
+  const key = createHash("sha1").update(`bazi-ctx-v3-liunian-locks-synastry|${orgId}|${profileId}|${userId || ""}|${fp}`).digest("hex");
   const now = Date.now();
   const hit = sifuContextCache.get(key);
   if (hit && now - hit.ts < SIFU_CONTEXT_CACHE_MS) {
@@ -1237,7 +1417,15 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
         boundaryWarning3p(input.date), // "" ถ้าไม่ก้ำกึ่ง → filter ทิ้ง
       ].filter(Boolean).join("\n");
     }
-    const startAge = await computeStartAge(input.date, input.time, input.gender, input.lng);
+    const qiyunLock = await computeQiyunLock({
+      date: input.date,
+      time: input.time,
+      gender: input.gender,
+      lng: input.lng,
+      birthTimeKnown,
+      dayBoundary,
+    });
+    const startAge = qiyunLock.representativeStartAge ?? 0;
     const ext = buildChartExtensions(
       calc.pillars,
       new Date(),
@@ -1272,6 +1460,7 @@ async function buildIntroBaziContextFromBirth(input: IntroBirthInput): Promise<s
     const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, input.gender, siLingDays, {
       dayBoundary,
       dayBoundarySource: input.dayBoundarySource || "default",
+      qiyunLock,
     });
     validateChartPacket(packet);
     lines.push(renderChartPrompt(packet, { subjectLabel: input.name ? `${input.name}` : undefined }));
@@ -1416,10 +1605,31 @@ function grokErrorMessage(err: string): string {
   return err.slice(0, 300) || "grok cli failed";
 }
 
+function claudeErrorMessage(err: string): string {
+  if (/session limit|usage limit|rate limit|quota|429/i.test(err)) {
+    return `claude_cli_quota_exhausted · ${err.slice(0, 240) || "Claude CLI quota/session limit"}`;
+  }
+  if (/401|Unauthorized|not logged in|authentication|sign in|login/i.test(err)) {
+    return "claude_cli_auth_required · Claude CLI ยังไม่ได้ login สำหรับ user jarvis";
+  }
+  return err.slice(0, 300) || "claude cli failed";
+}
+
+function geminiErrorMessage(err: string): string {
+  if (/API key not valid|API_KEY_INVALID|PERMISSION_DENIED|403|401/i.test(err)) {
+    return "gemini_api_key_invalid · Gemini API key ใช้งานไม่ได้หรือสิทธิ์ไม่พอ";
+  }
+  if (/quota|RESOURCE_EXHAUSTED|429/i.test(err)) {
+    return "gemini_api_quota_exhausted · Gemini API quota เต็มหรือถูก rate limit";
+  }
+  return err.slice(0, 300) || "gemini api failed";
+}
+
 function cliErrorMessage(model: SifuModel, err: string): string {
   if (model === "codex-cli") return codexErrorMessage(err);
   if (model === "grok-cli") return grokErrorMessage(err);
-  return err.slice(0, 300) || "claude cli failed";
+  if (model === "gemini-api") return geminiErrorMessage(err);
+  return claudeErrorMessage(err);
 }
 
 // jarvis uid/gid · lookup ครั้งเดียว cache (chown temp prompt ให้ jarvis เป็นเจ้าของ → 0600 ได้ ไม่ต้อง world-readable)
@@ -1444,17 +1654,121 @@ function writeGrokPromptFile(prompt: string): string {
   try { chmodSync(path, chowned ? 0o600 : 0o644); } catch {}
   return path;
 }
-function grokCliArgs(promptFile: string, format: "plain" | "streaming-json"): string[] {
-  const args = ["--prompt-file", promptFile, "--output-format", format];
+function grokCliArgs(promptFile: string, format: "plain" | "streaming-json", adapter = false): string[] {
+  const args = [
+    "--prompt-file", promptFile,
+  ];
+  if (adapter) {
+    args.push(
+      "--verbatim",
+      "--disable-web-search",
+      "--no-memory",
+      "--no-subagents",
+      "--max-turns", "1",
+    );
+  }
+  args.push("--output-format", format);
   if (GROK_CLI_MODEL) args.push("-m", GROK_CLI_MODEL);
   return args;
 }
 
-async function runClaudeCli(prompt: string): Promise<string> {
+function grokVisibleDisciplineGuard(): string {
+  return [
+    "=== GROK USER-VISIBLE DISCIPLINE ===",
+    "Default mode is Sifu user answer, not audit/debug.",
+    "Use the 13-layer classics process internally, but do not show the checklist, scoring table, or step-by-step method unless the user's current question explicitly asks for audit/debug/method.",
+    "Do not claim you are reading/opening files, running tools, using web search, using memory, inspecting a prompt packet, invoking an engine, or seeing backend/CLI internals.",
+    "If the original prompt requires ID/TRACE machine headers, output those exact headers first for validation only; never explain, quote, or discuss ID/TRACE in the body.",
+    "After any required machine headers, write only the user-facing answer: verdict first, then 3-5 chart/classics evidence points, then practical meaning.",
+    "Use user-safe source language: ผังดวง, หลักคัมภีร์, หลักฐานจากเสา/วัยจร/ปีจร. Avoid backend words such as packet, engine, prompt, wrapper, CLI, stdout, cache, retry, FACT LOCK, PILLAR LOCK, or validator in the visible body.",
+    "Do not ask for missing birth time, true solar time, or full source text unless the answer materially depends on that ambiguity; if so, state the specific affected judgment.",
+    "Keep the classics hierarchy intact: locked chart facts first; strict classics/canonical rules win inside their scope; packet/runtime interactions are evidence and provenance, not a replacement for the classics.",
+    "=== END GROK USER-VISIBLE DISCIPLINE ===",
+  ].join("\n");
+}
+
+function buildGrokCliPrompt(prompt: string, attempt: number): string {
+  const retry = attempt > 1
+    ? [
+        "",
+        "RETRY_NOTE:",
+        "The previous Grok CLI attempt did not produce a valid plain-text final answer.",
+        "Return only the final answer now. Do not call any tool or inspect any file.",
+      ].join("\n")
+    : "";
+  return [
+    "=== GROK CLI TEXT-ONLY ADAPTER ===",
+    "You are invoked non-interactively by /api/sifu.",
+    "Do not call tools, read files, run shell commands, use web search, use memory, or start subagents.",
+    "Use only the complete Sifu context below, including its classics hierarchy and structured evidence rules, as the source of truth.",
+    "Return only final answer text through the CLI output. Preserve any required ID/TRACE output protocol from the prompt as the first lines.",
+    grokVisibleDisciplineGuard(),
+    retry,
+    "=== ORIGINAL SIFU CONTEXT START ===",
+    prompt,
+    "=== ORIGINAL SIFU CONTEXT END ===",
+  ].filter(Boolean).join("\n");
+}
+
+async function runGrokCliAttempt(prompt: string, attempt: number, timeoutMs = TIMEOUT_MS, signal?: AbortSignal, adapter = false): Promise<string> {
+  let promptFile = "";
+  try {
+    promptFile = writeGrokPromptFile(buildGrokCliPrompt(prompt, attempt));
+    const pf = promptFile;
+    return await new Promise<string>((resolve, reject) => {
+      const spawnArgs = ["-u", CHILD_USER, "-H", GROK_BIN, ...grokCliArgs(pf, "plain", adapter)];
+      const c = spawn("sudo", spawnArgs, { cwd: GROK_CWD, env: process.env });
+      let out = "";
+      let err = "";
+      let settled = false;
+      const cleanup = () => {
+        clearTimeout(timer);
+        signal?.removeEventListener("abort", onAbort);
+      };
+      const fail = (error: Error) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(error);
+      };
+      const onAbort = () => {
+        try { c.kill("SIGKILL"); } catch {}
+        fail(new Error("aborted"));
+      };
+      const timer = setTimeout(() => {
+        try { c.kill("SIGKILL"); } catch {}
+        fail(new Error("timeout"));
+      }, timeoutMs);
+      if (signal?.aborted) onAbort();
+      else signal?.addEventListener("abort", onAbort, { once: true });
+      c.stdout.on("data", chunk => { out += chunk.toString(); });
+      c.stderr.on("data", chunk => { err += chunk.toString(); });
+      c.on("error", e => {
+        fail(new Error(`grok spawn error · ${grokErrorMessage(String(e?.message || e))}`));
+      });
+      c.on("close", code => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (code === 0 && out.trim()) resolve(out.trim());
+        else {
+          const detail = [err, out ? `stdout=${out.slice(0, 300)}` : ""].filter(Boolean).join("\n");
+          reject(new Error(`grok exit ${code} · ${grokErrorMessage(detail)}`));
+        }
+      });
+    });
+  } finally {
+    if (promptFile) { try { rmSync(promptFile, { force: true }); } catch {} }
+  }
+}
+
+async function runClaudeCli(prompt: string, signal?: AbortSignal): Promise<string> {
   dumpPromptIfDebug(prompt, "cli");
+  if (signal?.aborted) throw new Error("aborted");
   const _slotOk = await acquireSifuSlot();
   if (!_slotOk) throw new Error("sifu_busy · ระบบกำลังประมวลผลคำถามจำนวนมาก");
   try {
+  if (signal?.aborted) throw new Error("aborted");
   return await new Promise<string>((resolve, reject) => {
     const claudeArgs = [
       "-p",
@@ -1469,16 +1783,38 @@ async function runClaudeCli(prompt: string): Promise<string> {
     });
     let out = "";
     let err = "";
+    let settled = false;
+    const cleanup = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", onAbort);
+    };
+    const fail = (error: Error) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error);
+    };
+    const onAbort = () => {
+      try { c.kill("SIGKILL"); } catch {}
+      fail(new Error("aborted"));
+    };
     const timer = setTimeout(() => {
       try { c.kill("SIGKILL"); } catch {}
-      reject(new Error("timeout"));
+      fail(new Error("timeout"));
     }, TIMEOUT_MS);
+    if (signal?.aborted) onAbort();
+    else signal?.addEventListener("abort", onAbort, { once: true });
     c.stdout.on("data", chunk => { out += chunk.toString(); });
     c.stderr.on("data", chunk => { err += chunk.toString(); });
     c.on("close", code => {
-      clearTimeout(timer);
+      if (settled) return;
+      settled = true;
+      cleanup();
       if (code === 0) resolve(out.trim());
-      else reject(new Error(`claude exit ${code} · ${err.slice(0, 300)}`));
+      else {
+        const detail = [err, out ? `stdout=${out.slice(0, 300)}` : ""].filter(Boolean).join("\n");
+        reject(new Error(`claude exit ${code} · ${claudeErrorMessage(detail)}`));
+      }
     });
     c.stdin.write(prompt);
     c.stdin.end();
@@ -1488,11 +1824,13 @@ async function runClaudeCli(prompt: string): Promise<string> {
   }
 }
 
-async function runCodexCli(prompt: string): Promise<string> {
+async function runCodexCli(prompt: string, signal?: AbortSignal): Promise<string> {
   dumpPromptIfDebug(prompt, "codex");
+  if (signal?.aborted) throw new Error("aborted");
   const _slotOk = await acquireSifuSlot();
   if (!_slotOk) throw new Error("sifu_busy · ระบบกำลังประมวลผลคำถามจำนวนมาก");
   try {
+  if (signal?.aborted) throw new Error("aborted");
   return await new Promise<string>((resolve, reject) => {
     const spawnArgs = ["-u", CHILD_USER, "-H", "codex", ...codexCliArgs()];
     const c = spawn("sudo", spawnArgs, {
@@ -1502,31 +1840,60 @@ async function runCodexCli(prompt: string): Promise<string> {
     let rawOut = "";
     let finalText = "";
     let err = "";
+    let lineBuf = "";
+    let settled = false;
+    const decoder = new StringDecoder("utf8");
+    const parseLine = (line: string) => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      try {
+        const obj = JSON.parse(trimmed);
+        if (obj.type === "item.completed" && obj.item?.type === "agent_message" && typeof obj.item.text === "string") {
+          finalText = obj.item.text;
+        } else if (obj.type === "turn.failed" && obj.error?.message) {
+          err += "\n" + obj.error.message;
+        } else if (obj.type === "error" && obj.message) {
+          err += "\n" + obj.message;
+        }
+      } catch {}
+    };
+    const cleanup = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", onAbort);
+    };
+    const fail = (error: Error) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error);
+    };
+    const onAbort = () => {
+      try { c.kill("SIGKILL"); } catch {}
+      fail(new Error("aborted"));
+    };
     const timer = setTimeout(() => {
       try { c.kill("SIGKILL"); } catch {}
-      reject(new Error("timeout"));
+      fail(new Error("timeout"));
     }, TIMEOUT_MS);
+    if (signal?.aborted) onAbort();
+    else signal?.addEventListener("abort", onAbort, { once: true });
     c.stdout.on("data", chunk => {
-      const text = chunk.toString();
+      const text = decoder.write(chunk);
       rawOut += text;
-      for (const line of text.split("\n")) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        try {
-          const obj = JSON.parse(trimmed);
-          if (obj.type === "item.completed" && obj.item?.type === "agent_message" && typeof obj.item.text === "string") {
-            finalText = obj.item.text;
-          } else if (obj.type === "turn.failed" && obj.error?.message) {
-            err += "\n" + obj.error.message;
-          } else if (obj.type === "error" && obj.message) {
-            err += "\n" + obj.message;
-          }
-        } catch {}
+      lineBuf += text;
+      let nl;
+      while ((nl = lineBuf.indexOf("\n")) !== -1) {
+        parseLine(lineBuf.slice(0, nl));
+        lineBuf = lineBuf.slice(nl + 1);
       }
     });
     c.stderr.on("data", chunk => { err += chunk.toString(); });
     c.on("close", code => {
-      clearTimeout(timer);
+      if (settled) return;
+      settled = true;
+      cleanup();
+      const tail = (lineBuf + decoder.end()).trim();
+      if (tail) parseLine(tail);
       const out = finalText || rawOut;
       if (code === 0 && out.trim()) resolve(out.trim());
       else reject(new Error(`codex exit ${code} · ${codexErrorMessage(err)}`));
@@ -1539,48 +1906,126 @@ async function runCodexCli(prompt: string): Promise<string> {
   }
 }
 
-async function runGrokCli(prompt: string): Promise<string> {
-  dumpPromptIfDebug(prompt, "grok");
+async function runGrokCli(prompt: string, signal?: AbortSignal, adapter = false): Promise<string> {
+  dumpPromptIfDebug(buildGrokCliPrompt(prompt, 1), "grok");
+  if (signal?.aborted) throw new Error("aborted");
   const _slotOk = await acquireSifuSlot();
   if (!_slotOk) throw new Error("sifu_busy · ระบบกำลังประมวลผลคำถามจำนวนมาก");
-  let promptFile = "";
   try {
-  promptFile = writeGrokPromptFile(prompt);
-  const pf = promptFile;
-  return await new Promise<string>((resolve, reject) => {
-    const spawnArgs = ["-u", CHILD_USER, "-H", GROK_BIN, ...grokCliArgs(pf, "plain")];
-    const c = spawn("sudo", spawnArgs, { cwd: GROK_CWD, env: process.env });
-    let out = "";
-    let err = "";
-    let settled = false;
-    const timer = setTimeout(() => {
-      try { c.kill("SIGKILL"); } catch {}
-      if (!settled) { settled = true; reject(new Error("timeout")); }
-    }, TIMEOUT_MS);
-    c.stdout.on("data", chunk => { out += chunk.toString(); });
-    c.stderr.on("data", chunk => { err += chunk.toString(); });
-    c.on("error", e => {
-      clearTimeout(timer);
-      if (!settled) { settled = true; reject(new Error(`grok spawn error · ${grokErrorMessage(String(e?.message || e))}`)); }
-    });
-    c.on("close", code => {
-      clearTimeout(timer);
-      if (settled) return;
-      settled = true;
-      if (code === 0 && out.trim()) resolve(out.trim());
-      else reject(new Error(`grok exit ${code} · ${grokErrorMessage(err)}`));
-    });
-  });
+    if (signal?.aborted) throw new Error("aborted");
+    let lastErr: Error | null = null;
+    const deadline = Date.now() + TIMEOUT_MS;
+    const maxAttempts = adapter ? GROK_MAX_ATTEMPTS : 1;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const remainingMs = deadline - Date.now();
+      if (remainingMs <= 1_000) break;
+      try {
+        return await runGrokCliAttempt(prompt, attempt, remainingMs, signal, adapter);
+      } catch (e) {
+        lastErr = e as Error;
+        if (signal?.aborted || lastErr.message === "aborted") throw lastErr;
+        if (attempt < maxAttempts && deadline - Date.now() > 1_000) {
+          console.warn(`[sifu] grok attempt ${attempt}/${maxAttempts} failed: ${grokErrorMessage(lastErr.message)} · retry`);
+        }
+      }
+    }
+    throw lastErr || new Error("grok cli failed");
   } finally {
-    if (promptFile) { try { rmSync(promptFile, { force: true }); } catch {} }
     releaseSifuSlot();
   }
 }
 
-async function runSifuCli(prompt: string, model: SifuModel): Promise<string> {
-  if (model === "codex-cli") return runCodexCli(prompt);
-  if (model === "grok-cli") return runGrokCli(prompt);
-  return runClaudeCli(prompt);
+type GeminiPart = { text?: unknown };
+type GeminiResponse = {
+  candidates?: Array<{ content?: { parts?: GeminiPart[] }; finishReason?: string }>;
+  promptFeedback?: { blockReason?: string };
+  error?: { message?: string; status?: string };
+};
+
+function buildGeminiApiPrompt(prompt: string): string {
+  return `${prompt}
+
+=== GEMINI API RAW-DATA ADAPTER ===
+Use the complete prompt packet above as raw chart data and calculation evidence.
+Do not invent stems, branches, interactions, luck cycles, or profile facts that are not in the packet.
+Classical/canonical sources in the prompt are the interpretive source of truth inside their scope.
+The packet prevents wrong-chart hallucination; it is not a checklist that forces your conclusion or wording.
+Do not add internal ID/TRACE lines, JSON, code fences, or marker words just to satisfy a checker.
+Answer naturally in the requested language with the best judgment you can make from classics + chart facts + packet evidence.
+=== END GEMINI API RAW-DATA ADAPTER ===`;
+}
+
+async function runGeminiApi(prompt: string, signal?: AbortSignal): Promise<string> {
+  const modelPrompt = buildGeminiApiPrompt(prompt);
+  dumpPromptIfDebug(modelPrompt, "gemini-api");
+  const key = geminiApiKey();
+  if (!key) {
+    throw new Error("gemini_api_key_missing · set GEMINI_API_KEY or GOOGLE_API_KEY");
+  }
+  if (signal?.aborted) throw new Error("aborted");
+  const _slotOk = await acquireSifuSlot();
+  if (!_slotOk) throw new Error("sifu_busy · ระบบกำลังประมวลผลคำถามจำนวนมาก");
+  const ac = new AbortController();
+  const onAbort = () => ac.abort();
+  if (signal?.aborted) ac.abort();
+  else signal?.addEventListener("abort", onAbort, { once: true });
+  const timer = setTimeout(() => ac.abort(), TIMEOUT_MS);
+  try {
+    const modelPath = GEMINI_API_MODEL.startsWith("models/") ? GEMINI_API_MODEL : `models/${GEMINI_API_MODEL}`;
+    const url = new URL(`https://generativelanguage.googleapis.com/v1beta/${modelPath}:generateContent`);
+    url.searchParams.set("key", key);
+    const generationConfig: Record<string, unknown> = {
+      temperature: 0.35,
+      maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+    };
+    if (typeof GEMINI_THINKING_BUDGET === "number" && Number.isFinite(GEMINI_THINKING_BUDGET)) {
+      generationConfig.thinkingConfig = { thinkingBudget: GEMINI_THINKING_BUDGET };
+    }
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: modelPrompt }] }],
+        generationConfig,
+      }),
+      signal: ac.signal,
+      cache: "no-store",
+    });
+    const raw = await r.text();
+    let data: GeminiResponse = {};
+    try { data = raw ? JSON.parse(raw) as GeminiResponse : {}; } catch {}
+    if (!r.ok) {
+      throw new Error(`gemini ${r.status} · ${data.error?.message || raw.slice(0, 300)}`);
+    }
+    const finishReason = data.candidates?.[0]?.finishReason || "";
+    const out = (data.candidates?.[0]?.content?.parts || [])
+      .map((part) => typeof part.text === "string" ? part.text : "")
+      .join("")
+      .trim();
+    if (!out) {
+      const reason = data.promptFeedback?.blockReason || finishReason || "no_text";
+      throw new Error(`gemini empty · ${reason}`);
+    }
+    if (finishReason === "MAX_TOKENS") {
+      throw new Error(`gemini_truncated · ${finishReason}`);
+    }
+    return out;
+  } catch (e) {
+    const err = e as Error;
+    if (err.name === "AbortError") throw new Error(signal?.aborted ? "aborted" : "gemini timeout");
+    throw new Error(geminiErrorMessage(err.message || String(e)));
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener("abort", onAbort);
+    releaseSifuSlot();
+  }
+}
+
+async function runSifuCli(prompt: string, model: SifuModel, signal?: AbortSignal, opts?: { fusionInternal?: boolean }): Promise<string> {
+  if (model === "codex-cli") return runCodexCli(prompt, signal);
+  if (model === "grok-cli") return runGrokCli(prompt, signal, opts?.fusionInternal === true);
+  if (model === "gemini-api") return runGeminiApi(prompt, signal);
+  return runClaudeCli(prompt, signal);
 }
 
 /* 🌊 Streaming version · pipe stdout เป็น chunks · ใช้ใน SSE
@@ -1612,8 +2057,9 @@ function spawnCodexStreaming(prompt: string) {
 }
 
 function spawnGrokStreaming(prompt: string) {
-  dumpPromptIfDebug(prompt, "grok-stream");
-  const promptFile = writeGrokPromptFile(prompt);
+  const grokPrompt = buildGrokCliPrompt(prompt, 1);
+  dumpPromptIfDebug(grokPrompt, "grok-stream");
+  const promptFile = writeGrokPromptFile(grokPrompt);
   const spawnArgs = ["-u", CHILD_USER, "-H", GROK_BIN, ...grokCliArgs(promptFile, "streaming-json")];
   const c = spawn("sudo", spawnArgs, { cwd: GROK_CWD, env: process.env });
   // self-cleanup ไฟล์ prompt ชั่วคราว (caller ไม่รู้จัก promptFile)
@@ -1626,6 +2072,7 @@ function spawnGrokStreaming(prompt: string) {
 function spawnSifuStreaming(prompt: string, model: SifuModel) {
   if (model === "codex-cli") return spawnCodexStreaming(prompt);
   if (model === "grok-cli") return spawnGrokStreaming(prompt);
+  if (model === "gemini-api") throw new Error("gemini_stream_not_supported");
   return spawnClaudeStreaming(prompt);
 }
 
@@ -1767,7 +2214,7 @@ function startSifuHeartbeat(
   };
 }
 
-async function streamOpenRouter(prompt: string, onText: (text: string) => void): Promise<{ full: string; model: string }> {
+async function streamOpenRouter(prompt: string, onText: (text: string) => boolean | void): Promise<{ full: string; model: string }> {
   dumpPromptIfDebug(prompt, "openrouter");
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY not set");
@@ -1823,8 +2270,13 @@ async function streamOpenRouter(prompt: string, onText: (text: string) => void):
                 ? delta.map((x) => x?.text || "").join("")
                 : "";
             if (text) {
+              const keepGoing = onText(text);
+              if (keepGoing === false) {
+                try { await reader.cancel(); } catch {}
+                try { ac.abort(); } catch {}
+                return { full: full.trim(), model: INTRO_OPENROUTER_MODEL };
+              }
               full += text;
-              onText(text);
             }
           } catch {}
         }
@@ -1839,21 +2291,29 @@ async function streamOpenRouter(prompt: string, onText: (text: string) => void):
 export async function POST(req: Request) {
   const reqT0 = Date.now();
   try {
-    const body = await req.json().catch(() => ({}));
-    const message: string = (body.message || "").trim();
+    const parsedBody = await req.json().catch(() => ({}));
+    const body = parsedBody && typeof parsedBody === "object" && !Array.isArray(parsedBody)
+      ? parsedBody as Record<string, unknown>
+      : {};
+    const message = String(body.message || "").trim();
     const rawHistory: Msg[] = Array.isArray(body.history) ? body.history.slice(-6) : [];
     const profileId = cleanProfileId(body.profileId);
     const threadProfileId = cleanProfileId(body.threadProfileId || body.historyProfileId);
-    const topic: string | undefined = body.topic;
-    const lang: string = ["th", "en", "zh"].includes(body.lang) ? body.lang : "th";
-    const mode: string | undefined = body.mode === "intro" ? "intro" : undefined;
+    const topic = typeof body.topic === "string" ? body.topic : undefined;
+    const lang = ["th", "en", "zh"].includes(String(body.lang)) ? String(body.lang) : "th";
+    const mode = body.mode === "intro" ? "intro" : undefined;
     const sifuModel = resolveSifuModel(body.model);
+    const isFusionInternalCall = isTrustedFusionInternalCall(req);
+    const fusionPacketAuditOnly = isFusionInternalCall && body.fusionPacketMode === "raw-data";
     const threadId = cleanSifuThreadId(body.threadId);
+    const fusionRunId = isFusionInternalCall ? cleanSifuThreadId(body.fusionRunId || body.fusion_run_id) : null;
+    const noCache = body.noCache === true || body.no_cache === true;
 
     if (!message) {
       return NextResponse.json({ error: "no message" }, { status: 400 });
     }
-    if (message.length > 2000) {
+    const maxMessageChars = isFusionInternalCall ? SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS : SIFU_DIRECT_MESSAGE_MAX_CHARS;
+    if (message.length > maxMessageChars) {
       return NextResponse.json({ error: "message too long" }, { status: 400 });
     }
 
@@ -1861,7 +2321,15 @@ export async function POST(req: Request) {
     const session = await getSession();
     /* 1 มิ.ย. · AI ดูดวงต้องสมัคร/login ก่อน (เจ้านายสั่ง · ตัด guest intro) */
     if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    if (sifuModel === "gemini-api" && !isFusionInternalCall) {
+      return NextResponse.json({ error: "model_not_available_on_master" }, { status: 400 });
+    }
     const orgId = session?.orgId ?? null;
+
+    // เครดิต "ยาม": บล็อกถ้าหมด (ก่อนสร้างคำตอบ) · ข้าม fusion-internal (call ระบบ)
+    if (!isFusionInternalCall && orgId && !(await hasCredit(orgId))) {
+      return NextResponse.json({ error: "no_credit", credit_yam: 0 }, { status: 402 });
+    }
 
     if (mode !== "intro" && !profileId) {
       return NextResponse.json({ error: "profile_required" }, { status: 400 });
@@ -1899,13 +2367,18 @@ export async function POST(req: Request) {
     }
     /* 💾 Cache หลัง build context เท่านั้น: profile/dayBoundary/packet เปลี่ยน = ctx hash เปลี่ยน = ไม่คืนคำตอบดวงเก่า */
     const key = cacheKey({ profileId: profileId || undefined, contextHash: contextHash(ctx), orgId, topic, mode, model: sifuModel, lang, message, dayPillar: dayKey, ruleVersion: ajekVersion });
-    const useCache = mode !== "intro";
+    const useCache = mode !== "intro" && !noCache;
     const cached = useCache ? await getCachedReply(key) : null;
     if (cached) {
-      const safeCachedReply = sanitizePacketEvidenceClaims(cached.reply, ctx);
+      const safeCachedReply = sanitizeModelVisibleReply(cached.reply, ctx, cached.model || sifuModel, message);
       const cachedCritical = checkSifuCriticalEvidence(safeCachedReply, message, ctx, { hasPacket: !!extractExpectedDM(ctx) });
-      if (!cachedCritical.ok) {
+      const cachedFactClaim = checkSifuFactClaimGate(safeCachedReply, ctx);
+      if (!safeCachedReply.trim()) {
+        console.warn("[sifu] cache bypass: empty visible reply");
+      } else if (!cachedCritical.ok) {
         console.warn(`[sifu] cache bypass: critical evidence stale (${cachedCritical.missing.map((m) => m.code).join(",")})`);
+      } else if (!cachedFactClaim.ok) {
+        console.warn(`[sifu] cache bypass: fact claim stale (${cachedFactClaim.violations.map((v) => v.code).join(",")})`);
       } else {
       const answerSupportedBy = buildSifuAnswerSupportAudit(safeCachedReply, cachedCritical);
       const auditPromptT0 = Date.now();
@@ -1953,8 +2426,8 @@ export async function POST(req: Request) {
         question: message,
         answer: safeCachedReply,
         history,
-        requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
-        responseMeta: { cache_key: key.slice(0, 8), context_cache: contextCache, thread_id: threadId, audit_quality: audit.auditQuality, packet_hash: audit.packetHash, prompt_hash: audit.promptHash },
+        requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, fusion_run_id: fusionRunId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
+        responseMeta: { cache_key: key.slice(0, 8), context_cache: contextCache, thread_id: threadId, fusion_run_id: fusionRunId, audit_quality: audit.auditQuality, packet_hash: audit.packetHash, prompt_hash: audit.promptHash },
         model: cached.model,
         durationMs: Date.now() - reqT0,
         cached: true,
@@ -1969,7 +2442,8 @@ export async function POST(req: Request) {
     }
     /* ⚠️ ส่ง history จริงเข้า prompt (ไม่ใช่ history:[] แบบ GET) · คำตอบต้องจำบทสนทนา */
     const promptT0 = Date.now();
-    const prompt = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel) });
+    let prompt = buildPrompt({ ctx, message, history, topic, lang, mode, compactKnowledge: shouldUseCompactKnowledge(sifuModel) });
+    if (fusionPacketAuditOnly) prompt += fusionRawPacketPolicyText();
     const promptMs = Date.now() - promptT0;
     const auditFor = (identityCheckResult: string) => buildSifuAuditEvidence({
       profileId,
@@ -1997,6 +2471,7 @@ export async function POST(req: Request) {
         async start(controller) {
           let closed = false;
           let full = "";
+          let grokVisibleBuf = "";
           let firstChunkSent = false;
           let firstMs: number | null = null;
           let firstDeltaSeen = false;
@@ -2067,10 +2542,63 @@ export async function POST(req: Request) {
             }
           };
           const emitVisible = (text: string) => {
-            if (!text) return;
-            full += text;
+            if (sifuModel === "grok-cli") {
+              grokVisibleBuf += text;
+              const lastNl = Math.max(grokVisibleBuf.lastIndexOf("\n"), grokVisibleBuf.lastIndexOf("\r"));
+              if (lastNl === -1) return;
+              const ready = grokVisibleBuf.slice(0, lastNl + 1);
+              grokVisibleBuf = grokVisibleBuf.slice(lastNl + 1);
+              const visible = sanitizeGrokUserVisibleText(ready, message);
+              if (!visible) return;
+              const candidate = full + visible;
+              const liveFactClaim = checkSifuFactClaimGate(candidate, ctx);
+              if (!liveFactClaim.ok) {
+                console.error(`[sifu] stream fact claim FAIL (${liveFactClaim.violations.map((v) => v.code).join(",")})`);
+                clearTimeout(killTimer);
+                try { child.kill("SIGKILL"); } catch {}
+                send("error", { error: "fact_claim_mismatch", violations: liveFactClaim.violations });
+                safeClose();
+                return;
+              }
+              full = candidate;
+              sendFirstOnce();
+              send("chunk", { text: visible });
+              return;
+            }
+            const visible = text;
+            if (!visible) return;
+            const candidate = full + visible;
+            const liveFactClaim = checkSifuFactClaimGate(candidate, ctx);
+            if (!liveFactClaim.ok) {
+              console.error(`[sifu] stream fact claim FAIL (${liveFactClaim.violations.map((v) => v.code).join(",")})`);
+              clearTimeout(killTimer);
+              try { child.kill("SIGKILL"); } catch {}
+              send("error", { error: "fact_claim_mismatch", violations: liveFactClaim.violations });
+              safeClose();
+              return;
+            }
+            full = candidate;
             sendFirstOnce();
-            send("chunk", { text });
+            send("chunk", { text: visible });
+          };
+          const flushVisible = () => {
+            if (sifuModel !== "grok-cli" || !grokVisibleBuf) return;
+            const visible = sanitizeGrokUserVisibleText(grokVisibleBuf, message);
+            grokVisibleBuf = "";
+            if (!visible) return;
+            const candidate = full + visible;
+            const liveFactClaim = checkSifuFactClaimGate(candidate, ctx);
+            if (!liveFactClaim.ok) {
+              console.error(`[sifu] stream fact claim FAIL on flush (${liveFactClaim.violations.map((v) => v.code).join(",")})`);
+              clearTimeout(killTimer);
+              try { child.kill("SIGKILL"); } catch {}
+              send("error", { error: "fact_claim_mismatch", violations: liveFactClaim.violations });
+              safeClose();
+              return;
+            }
+            full = candidate;
+            sendFirstOnce();
+            send("chunk", { text: visible });
           };
           const releaseStreamGuard = (reason: string): string | null => {
             if (idChecked || idRejected) return null;
@@ -2154,6 +2682,7 @@ export async function POST(req: Request) {
               const rest = releaseStreamGuard("close");
               if (rest !== null) emitVisible(rest);
             }
+            flushVisible();
             if (idRejected) { safeClose(); return; }
             if (expectedDM && !idChecked) { // AI ตอบจบโดยไม่มี text ให้ปล่อย
               console.error(`[sifu] stream guard empty on close (expect=${expectedDM})`);
@@ -2164,12 +2693,19 @@ export async function POST(req: Request) {
               let finalReply = full.trim(); // full = strip ID/TRACE แล้ว (idBuf ไม่เข้า full)
               const finalRawForAudit = idBuf;
               const finalCritical = checkSifuCriticalEvidence(finalReply, message, ctx, { hasPacket: !!expectedDM });
+              const finalFactClaim = checkSifuFactClaimGate(finalReply, ctx);
+              if (!finalFactClaim.ok) {
+                console.error(`[sifu] stream fact claim FAIL on close (${finalFactClaim.violations.map((v) => v.code).join(",")})`);
+                send("error", { error: "fact_claim_mismatch", violations: finalFactClaim.violations });
+                safeClose();
+                return;
+              }
               if (!finalCritical.ok) {
                 console.warn(`[sifu] critical-evidence incomplete (stream audit-only) profile=${profileId || "-"} missing=${finalCritical.missing.map((m) => m.code).join(",")}`);
               }
               const streamGuard = buildSifuStreamGuardMeta(streamIdentityResult, streamTraceResult);
               const answerSupportedBy = { ...buildSifuAnswerSupportAudit(finalReply, finalCritical), streamGuard };
-              const payload = { reply: finalReply, model: sifuModel };
+          const payload: SifuPayload = { reply: finalReply, model: sifuModel, provider_model: providerModelName(sifuModel) };
               /* HK_SIFU_EVIDENCE_TRACE_V1 — log-only (stream ส่งครบแล้ว · ไม่ retry/ไม่ตัด · try-catch กัน uncaught ใน ReadableStream) */
               let evTrace: ReturnType<typeof checkSifuEvidenceTrace> | null = null;
               try {
@@ -2177,6 +2713,7 @@ export async function POST(req: Request) {
                 if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (stream) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
               } catch { /* log-only · ห้ามให้กระทบ stream ที่ส่งครบแล้ว */ }
               if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+              if (!isFusionInternalCall && orgId) chargeForAnswer(orgId, payload.reply.length, "sifu").catch(() => {}); // หักเครดิต (stream · fire-and-forget)
               scheduleSifuSourceShadowAudit({
                 session,
                 req,
@@ -2206,8 +2743,8 @@ export async function POST(req: Request) {
                 question: message,
                 answer: payload.reply,
                 history,
-                requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
-                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId, evidence_trace: evTrace, critical_evidence: finalCritical, stream_guard: streamGuard },
+                requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, fusion_run_id: fusionRunId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
+                responseMeta: { stream: true, cache_key: key.slice(0, 8), context_cache: contextCache, chars: full.length, thread_id: threadId, fusion_run_id: fusionRunId, evidence_trace: evTrace, critical_evidence: finalCritical, stream_guard: streamGuard },
                 model: payload.model,
                 durationMs: Date.now() - reqT0,
                 cached: false,
@@ -2234,7 +2771,8 @@ export async function POST(req: Request) {
           });
         },
         cancel() {
-          try { activeChild?.kill("SIGKILL"); } catch {}
+          /* Mobile: พับจอ/สลับแอปตัด SSE · อย่า kill CLI — ให้รันจบแล้วบันทึก DB · client กลับมา syncServerHistory */
+          console.warn("[sifu] stream client disconnected · CLI continues in background");
           activeChild = null;
         },
       });
@@ -2252,12 +2790,30 @@ export async function POST(req: Request) {
     /* identity-lock: เทียบ 日干 ที่ AI echo กับ engine · ไม่ตรง=retry 1 ครั้ง → error (กันอ่านผิดคนละดวง) */
     const expectedDM = extractExpectedDM(ctx);
     const traceFacts = mode !== "intro" ? extractTraceFacts(ctx) : null; // trace-lock (13 มิ.ย. เคส潤下格) · ดวงเดี่ยว Q&A เท่านั้น (intro ไม่มีกฎ TRACE)
-    let reply = await runSifuCli(prompt, sifuModel);
+    const hardGate = !fusionPacketAuditOnly;
+    const minVisibleReplyChars = fusionPacketAuditOnly ? SIFU_FUSION_MIN_VISIBLE_REPLY_CHARS : SIFU_MIN_VISIBLE_REPLY_CHARS;
+    let reply = await runSifuCli(prompt, sifuModel, req.signal, { fusionInternal: isFusionInternalCall });
+    if (isFusionInternalCall && hardGate && sifuModel === "grok-cli") reply = normalizeSifuMachineHeader(reply, expectedDM, traceFacts);
     let idCheck = validateIdentity(reply, expectedDM);
     let trCheck = validateTrace(reply, traceFacts);
     let criticalCheck = checkSifuCriticalEvidence(stripTraceLine(stripIdLine(reply)), message, ctx, { hasPacket: !!expectedDM });
-    if (!idCheck.ok || !trCheck.ok || !criticalCheck.ok) {
-      console.warn(`[sifu] gate fail id=${idCheck.reason} trace=${trCheck.reason} critical=${criticalCheck.missing.map((m) => m.code).join(",") || "ok"} (expect=${expectedDM} got=${idCheck.parsedDM} traceGeju=${trCheck.parsed?.geju || "-"}) · retry`);
+    let visibleReply = sanitizeModelVisibleReply(reply, ctx, sifuModel, message).trim();
+    let tooShortVisible = !!visibleReply && visibleReply.length < minVisibleReplyChars;
+    let factClaimCheck = checkSifuFactClaimGate(visibleReply, ctx);
+    if (shouldRepairGrokMachineHeader({ model: sifuModel, hardGate, expectedDM, idCheck, trCheck, criticalCheck, visibleReply })) {
+      reply = normalizeSifuMachineHeader(reply, expectedDM, traceFacts);
+      idCheck = validateIdentity(reply, expectedDM);
+      trCheck = validateTrace(reply, traceFacts);
+      criticalCheck = checkSifuCriticalEvidence(stripTraceLine(stripIdLine(reply)), message, ctx, { hasPacket: !!expectedDM });
+      visibleReply = sanitizeModelVisibleReply(reply, ctx, sifuModel, message).trim();
+      tooShortVisible = !!visibleReply && visibleReply.length < minVisibleReplyChars;
+      factClaimCheck = checkSifuFactClaimGate(visibleReply, ctx);
+    }
+    const needsRetry = hardGate
+      ? !idCheck.ok || !trCheck.ok || !criticalCheck.ok || !factClaimCheck.ok
+      : !visibleReply || tooShortVisible || !factClaimCheck.ok;
+    if (needsRetry) {
+      console.warn(`[sifu] gate fail id=${idCheck.reason} trace=${trCheck.reason} critical=${criticalCheck.missing.map((m) => m.code).join(",") || "ok"} fact=${factClaimCheck.violations.map((v) => v.code).join(",") || "ok"} empty=${!visibleReply} short=${tooShortVisible ? visibleReply.length : 0} (expect=${expectedDM} got=${idCheck.parsedDM} traceGeju=${trCheck.parsed?.geju || "-"}) · retry`);
       reply = await runSifuCli(buildSifuGateRetryPrompt({
         prompt,
         expectedDM,
@@ -2265,10 +2821,30 @@ export async function POST(req: Request) {
         idReason: idCheck.reason,
         traceReason: trCheck.reason,
         critical: criticalCheck,
-      }), sifuModel);
+        factClaim: factClaimCheck,
+        emptyVisible: !visibleReply,
+        tooShortVisible,
+        minVisibleReplyChars,
+        criticalHardGate: hardGate,
+      }), sifuModel, req.signal, { fusionInternal: isFusionInternalCall });
+      if (isFusionInternalCall && hardGate && sifuModel === "grok-cli") reply = normalizeSifuMachineHeader(reply, expectedDM, traceFacts);
       idCheck = validateIdentity(reply, expectedDM);
       trCheck = validateTrace(reply, traceFacts);
       criticalCheck = checkSifuCriticalEvidence(stripTraceLine(stripIdLine(reply)), message, ctx, { hasPacket: !!expectedDM });
+      visibleReply = sanitizeModelVisibleReply(reply, ctx, sifuModel, message).trim();
+      tooShortVisible = !!visibleReply && visibleReply.length < minVisibleReplyChars;
+      factClaimCheck = checkSifuFactClaimGate(visibleReply, ctx);
+      if (shouldRepairGrokMachineHeader({ model: sifuModel, hardGate, expectedDM, idCheck, trCheck, criticalCheck, visibleReply })) {
+        reply = normalizeSifuMachineHeader(reply, expectedDM, traceFacts);
+        idCheck = validateIdentity(reply, expectedDM);
+        trCheck = validateTrace(reply, traceFacts);
+        criticalCheck = checkSifuCriticalEvidence(stripTraceLine(stripIdLine(reply)), message, ctx, { hasPacket: !!expectedDM });
+        visibleReply = sanitizeModelVisibleReply(reply, ctx, sifuModel, message).trim();
+        tooShortVisible = !!visibleReply && visibleReply.length < minVisibleReplyChars;
+        factClaimCheck = checkSifuFactClaimGate(visibleReply, ctx);
+      }
+    }
+    if (hardGate) {
       if (!idCheck.ok) {
         console.error(`[sifu] identity FAIL after retry (expect=${expectedDM} got=${idCheck.parsedDM})`);
         return NextResponse.json({ error: "identity_mismatch" }, { status: 502 });
@@ -2281,6 +2857,30 @@ export async function POST(req: Request) {
         console.error(`[sifu] critical evidence FAIL after retry (${criticalCheck.missing.map((m) => m.code).join(",")})`);
         return NextResponse.json({ error: "critical_evidence_mismatch", missing: criticalCheck.missing.map((m) => m.code) }, { status: 502 });
       }
+      if (!factClaimCheck.ok) {
+        console.error(`[sifu] fact claim FAIL after retry (${factClaimCheck.violations.map((v) => v.code).join(",")})`);
+        return NextResponse.json({ error: "fact_claim_mismatch", violations: factClaimCheck.violations }, { status: 502 });
+      }
+      if (!visibleReply) {
+        console.error("[sifu] empty visible reply after retry");
+        return NextResponse.json({ error: "empty_reply_after_sanitize" }, { status: 502 });
+      }
+    } else {
+      if (!visibleReply) {
+        console.error("[sifu] empty visible reply after fusion audit-only retry");
+        return NextResponse.json({ error: "empty_reply_after_sanitize" }, { status: 502 });
+      }
+      if (tooShortVisible) {
+        console.error(`[sifu] short visible reply after fusion retry (${visibleReply.length}/${minVisibleReplyChars})`);
+        return NextResponse.json({ error: "short_reply_after_retry" }, { status: 502 });
+      }
+      if (!factClaimCheck.ok) {
+        console.error(`[sifu] fact claim FAIL after fusion retry (${factClaimCheck.violations.map((v) => v.code).join(",")})`);
+        return NextResponse.json({ error: "fact_claim_mismatch", violations: factClaimCheck.violations }, { status: 502 });
+      }
+      if (!idCheck.ok || !trCheck.ok || !criticalCheck.ok || tooShortVisible) {
+        console.warn(`[sifu] fusion packet audit-only id=${idCheck.reason} trace=${trCheck.reason} critical=${criticalCheck.missing.map((m) => m.code).join(",") || "ok"} fact=${factClaimCheck.violations.map((v) => v.code).join(",") || "ok"} short=${tooShortVisible ? visibleReply.length : 0}`);
+      }
     }
     /* HK_SIFU_EVIDENCE_TRACE_V1 — log-only · วัดว่าคำตอบดูดวงเดิน用神/ปฏิกิริยา/รากครบไหม (ไม่ retry/ไม่ block) */
     let evTrace: ReturnType<typeof checkSifuEvidenceTrace> | null = null;
@@ -2288,11 +2888,11 @@ export async function POST(req: Request) {
       evTrace = checkSifuEvidenceTrace(reply, message, !!expectedDM);
       if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (json) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
     } catch { /* log-only · ห้ามให้กระทบคำตอบ */ }
-    const cleanReply = sanitizePacketEvidenceClaims(stripTraceLine(stripIdLine(reply)), ctx);
+    const cleanReply = visibleReply;
     const answerSupportedBy = buildSifuAnswerSupportAudit(cleanReply, criticalCheck);
     const ms = Date.now() - t0;
-    const payload = { reply: cleanReply, model: sifuModel };
-    if (useCache) setCachedReply(key, payload, ms, ajekVersion).catch(() => {}); // cache เฉพาะที่ผ่าน id-check แล้ว (ถึงบรรทัดนี้=ผ่าน)
+    const payload: SifuPayload = { reply: cleanReply, model: sifuModel, provider_model: providerModelName(sifuModel) };
+    if (useCache && hardGate) setCachedReply(key, payload, ms, ajekVersion).catch(() => {}); // cache เฉพาะที่ผ่าน hard gate แล้ว
     scheduleSifuSourceShadowAudit({
       session,
       req,
@@ -2322,18 +2922,23 @@ export async function POST(req: Request) {
       question: message,
       answer: payload.reply,
       history,
-      requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
-      responseMeta: { stream: false, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId, evidence_trace: evTrace },
+      requestPayload: { topic, mode, model: sifuModel, profileId, thread_id: threadId, thread_profile_id: threadProfileId, fusion_run_id: fusionRunId, history_dropped_count: historyDroppedCount, prediction_phase: predictionPhase },
+      responseMeta: { stream: false, cache_key: key.slice(0, 8), context_cache: contextCache, chars: payload.reply.length, thread_id: threadId, fusion_run_id: fusionRunId, evidence_trace: evTrace, critical_evidence: criticalCheck, fusion_packet_audit_only: fusionPacketAuditOnly },
       model: payload.model,
       durationMs: Date.now() - reqT0,
       cached: false,
-      ...auditFor("pass"),
+      ...auditFor(hardGate ? "pass" : idCheck.ok ? "fusion_audit_pass" : `fusion_audit_${idCheck.reason}`),
     });
     sifuTimingLog("json-done", {
       route: "POST", mode, stream: false, profileId: profileId || undefined, contextCache, ctxMs,
       promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,
     });
-    return NextResponse.json({ ...payload, cached: false, ms, key: key.slice(0, 8) });
+    // หักเครดิตตามจำนวนตัวอักษรคำตอบ (เฉพาะคำตอบสด · cache ไม่หักซ้ำ · fusion-internal ไม่หัก)
+    let creditLeft: number | undefined;
+    if (!isFusionInternalCall && orgId) {
+      try { creditLeft = (await chargeForAnswer(orgId, payload.reply.length, "sifu")).balance; } catch { /* best-effort */ }
+    }
+    return NextResponse.json({ ...payload, cached: false, ms, key: key.slice(0, 8), credit_yam: creditLeft });
   } catch (e: unknown) {
     const err = e as Error;
     console.error("[sifu] error:", err);
@@ -2365,7 +2970,7 @@ export async function GET(req: Request) {
   if (!message) {
     return NextResponse.json({ error: "no message" }, { status: 400 });
   }
-  if (message.length > 2000) {
+  if (message.length > SIFU_DIRECT_MESSAGE_MAX_CHARS) {
     return NextResponse.json({ error: "message too long" }, { status: 400 });
   }
 
@@ -2373,6 +2978,9 @@ export async function GET(req: Request) {
   const session = await getSession();
   /* 1 มิ.ย. · AI ดูดวงต้องสมัคร/login ก่อน (เจ้านายสั่ง · ตัด guest intro) */
   if (!session) return new Response(JSON.stringify({ error: "not logged in" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  if (sifuModel === "gemini-api" && !isTrustedFusionInternalCall(req)) {
+    return NextResponse.json({ error: "model_not_available_on_master" }, { status: 400 });
+  }
   const orgId = session?.orgId ?? null;
   if (mode !== "intro" && !profileId) {
     return NextResponse.json({ error: "profile_required" }, { status: 400 });
@@ -2437,11 +3045,16 @@ export async function GET(req: Request) {
       };
 
       // 1. Cache hit → ส่งทั้งก้อนทันที
-      if (cached) {
-        const safeReply = sanitizePacketEvidenceClaims(cached.reply, ctx);
+  if (cached) {
+    const safeReply = sanitizeModelVisibleReply(cached.reply, ctx, cached.model || sifuModel, message);
         const cachedCritical = checkSifuCriticalEvidence(safeReply, message, ctx, { hasPacket: !!extractExpectedDM(ctx) });
-        if (!cachedCritical.ok) {
+        const cachedFactClaim = checkSifuFactClaimGate(safeReply, ctx);
+        if (!safeReply.trim()) {
+          console.warn("[sifu] GET cache bypass: empty visible reply");
+        } else if (!cachedCritical.ok) {
           console.warn(`[sifu] GET cache bypass: critical evidence stale (${cachedCritical.missing.map((m) => m.code).join(",")})`);
+        } else if (!cachedFactClaim.ok) {
+          console.warn(`[sifu] GET cache bypass: fact claim stale (${cachedFactClaim.violations.map((v) => v.code).join(",")})`);
         } else {
         const answerSupportedBy = buildSifuAnswerSupportAudit(safeReply, cachedCritical);
         const auditPromptT0 = Date.now();
@@ -2520,22 +3133,51 @@ export async function GET(req: Request) {
 
       const t0 = Date.now();
       if (mode === "intro") {
-        let firstChunkSent = !!warmup;
+        let firstChunkSent = false;
+        let introFull = "";
+        let introRejected = false;
+        const emitIntroChunk = (text: string, provider: string, synthetic = false): boolean => {
+          const visible = sanitizePacketEvidenceClaims(text, ctx);
+          if (!visible) return true;
+          const candidate = introFull + visible;
+          const introFactClaim = checkSifuFactClaimGate(candidate, ctx);
+          if (!introFactClaim.ok) {
+            introRejected = true;
+            console.error(`[sifu] intro stream fact claim FAIL (${introFactClaim.violations.map((v) => v.code).join(",")})`);
+            send("error", { error: "fact_claim_mismatch", violations: introFactClaim.violations });
+            return false;
+          }
+          introFull = candidate;
+          if (!firstChunkSent) {
+            send("first", { ms: synthetic ? 0 : Date.now() - t0, synthetic: synthetic || undefined, provider });
+            firstChunkSent = true;
+          }
+          send("chunk", { text: visible });
+          return true;
+        };
         stopHeartbeat = startSifuHeartbeat(send, (pingCount) => firstChunkSent ? "streaming" : rotatingWaitingPhase(pingCount));
         if (warmup) {
-          send("first", { ms: 0, synthetic: true, provider: "engine" });
-            send("chunk", { text: sanitizePacketEvidenceClaims(warmup, ctx) });
+          if (!emitIntroChunk(warmup, "engine", true)) {
+            safeClose();
+            return;
+          }
         }
         try {
           const result = await streamOpenRouter(prompt, (text) => {
-            if (!firstChunkSent) {
-              send("first", { ms: Date.now() - t0, provider: "openrouter" });
-              firstChunkSent = true;
-            }
-            send("chunk", { text: sanitizePacketEvidenceClaims(text, ctx) });
+            return emitIntroChunk(text, "openrouter");
           });
-          if (result.full) {
-            send("done", { ms: Date.now() - t0, model: result.model, provider: "openrouter", cached: false, chars: result.full.length });
+          if (introRejected) {
+            safeClose();
+            return;
+          }
+          if (result.full || introFull) {
+            const finalIntroFactClaim = checkSifuFactClaimGate(introFull || result.full, ctx);
+            if (!finalIntroFactClaim.ok) {
+              send("error", { error: "fact_claim_mismatch", violations: finalIntroFactClaim.violations });
+              safeClose();
+              return;
+            }
+            send("done", { ms: Date.now() - t0, model: result.model, provider: "openrouter", cached: false, chars: (introFull || result.full).length });
             sifuTimingLog("intro-done", {
               route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
               promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,
@@ -2566,6 +3208,7 @@ export async function GET(req: Request) {
       }
       c.on("error", releaseSlotOnceG);
       let full = "";
+      let grokVisibleBuf = "";
       let firstChunkSent = false;
       let firstMs: number | null = null;
       let firstDeltaSeen = false;
@@ -2617,10 +3260,63 @@ export async function GET(req: Request) {
         }
       };
       const emitVisibleG = (text: string) => {
-        if (!text) return;
-        full += text;
+        if (sifuModel === "grok-cli") {
+          grokVisibleBuf += text;
+          const lastNl = Math.max(grokVisibleBuf.lastIndexOf("\n"), grokVisibleBuf.lastIndexOf("\r"));
+          if (lastNl === -1) return;
+          const ready = grokVisibleBuf.slice(0, lastNl + 1);
+          grokVisibleBuf = grokVisibleBuf.slice(lastNl + 1);
+          const visible = sanitizeGrokUserVisibleText(ready, message);
+          if (!visible) return;
+          const candidate = full + visible;
+          const liveFactClaim = checkSifuFactClaimGate(candidate, ctx);
+          if (!liveFactClaim.ok) {
+            console.error(`[sifu] GET stream fact claim FAIL (${liveFactClaim.violations.map((v) => v.code).join(",")})`);
+            clearTimeout(killTimer);
+            try { c.kill("SIGKILL"); } catch {}
+            send("error", { error: "fact_claim_mismatch", violations: liveFactClaim.violations });
+            safeClose();
+            return;
+          }
+          full = candidate;
+          sendFirstOnceG();
+          send("chunk", { text: visible });
+          return;
+        }
+        const visible = text;
+        if (!visible) return;
+        const candidate = full + visible;
+        const liveFactClaim = checkSifuFactClaimGate(candidate, ctx);
+        if (!liveFactClaim.ok) {
+          console.error(`[sifu] GET stream fact claim FAIL (${liveFactClaim.violations.map((v) => v.code).join(",")})`);
+          clearTimeout(killTimer);
+          try { c.kill("SIGKILL"); } catch {}
+          send("error", { error: "fact_claim_mismatch", violations: liveFactClaim.violations });
+          safeClose();
+          return;
+        }
+        full = candidate;
         sendFirstOnceG();
-        send("chunk", { text });
+        send("chunk", { text: visible });
+      };
+      const flushVisibleG = () => {
+        if (sifuModel !== "grok-cli" || !grokVisibleBuf) return;
+        const visible = sanitizeGrokUserVisibleText(grokVisibleBuf, message);
+        grokVisibleBuf = "";
+        if (!visible) return;
+        const candidate = full + visible;
+        const liveFactClaim = checkSifuFactClaimGate(candidate, ctx);
+        if (!liveFactClaim.ok) {
+          console.error(`[sifu] GET stream fact claim FAIL on flush (${liveFactClaim.violations.map((v) => v.code).join(",")})`);
+          clearTimeout(killTimer);
+          try { c.kill("SIGKILL"); } catch {}
+          send("error", { error: "fact_claim_mismatch", violations: liveFactClaim.violations });
+          safeClose();
+          return;
+        }
+        full = candidate;
+        sendFirstOnceG();
+        send("chunk", { text: visible });
       };
       const releaseStreamGuardG = (reason: string): string | null => {
         if (idChecked || idRejected) return null;
@@ -2696,19 +3392,28 @@ export async function GET(req: Request) {
           const rest = releaseStreamGuardG("close");
           if (rest !== null) emitVisibleG(rest);
         }
+        flushVisibleG();
         if (idRejected) { safeClose(); return; }
         if (expectedDM && !idChecked) { send("error", { error: "identity_mismatch", reason: "no_visible_text" }); safeClose(); return; }
         if (code === 0 && full.trim()) {
           let finalReply = full.trim();
           const finalRawForAudit = idBuf;
           const finalCritical = checkSifuCriticalEvidence(finalReply, message, ctx, { hasPacket: !!expectedDM });
+          const finalFactClaim = checkSifuFactClaimGate(finalReply, ctx);
+          if (!finalFactClaim.ok) {
+            console.error(`[sifu] GET stream fact claim FAIL on close (${finalFactClaim.violations.map((v) => v.code).join(",")})`);
+            send("error", { error: "fact_claim_mismatch", violations: finalFactClaim.violations });
+            safeClose();
+            return;
+          }
           if (!finalCritical.ok) {
             console.warn(`[sifu] critical-evidence incomplete (GET stream audit-only) profile=${profileId || "-"} missing=${finalCritical.missing.map((m) => m.code).join(",")}`);
           }
           const streamGuard = buildSifuStreamGuardMeta(streamIdentityResult, streamTraceResult);
           const answerSupportedBy = { ...buildSifuAnswerSupportAudit(finalReply, finalCritical), streamGuard };
-          const payload = { reply: finalReply, model: sifuModel };
+          const payload: SifuPayload = { reply: finalReply, model: sifuModel, provider_model: providerModelName(sifuModel) };
           if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+          if (!isFusionInternalCall && orgId) chargeForAnswer(orgId, payload.reply.length, "sifu").catch(() => {}); // หักเครดิต (stream · fire-and-forget)
           scheduleSifuSourceShadowAudit({
             session,
             req,

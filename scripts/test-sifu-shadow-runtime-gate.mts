@@ -73,13 +73,14 @@ ck("hook does not directly read corpus files", !/(readFileSync|loadAjekRules|loa
 const hookCalls = count(/scheduleSifuSourceShadowAudit\s*\(\s*{/g, ROUTE);
 ck("route has expected shadow hook call sites", hookCalls >= 4, `calls=${hookCalls}`);
 ck("route does not compute shadow audit evidence before env gate", !/auditFor\("shadow"\)/.test(ROUTE) && !/identityCheckResult:\s*"shadow"/.test(ROUTE));
-const postMissPrompt = ROUTE.indexOf("const prompt = buildPrompt({ ctx, message, history");
+const postMissPrompt = ROUTE.search(/\b(?:const|let)\s+prompt\s*=\s*buildPrompt\(\{\s*ctx,\s*message,\s*history/);
 const postStreamBranch = ROUTE.indexOf("const wantsStream", postMissPrompt);
 ck("POST miss path does not schedule before stream/json success", !hasScheduleBetween(postMissPrompt, postStreamBranch));
 const postStreamSuccess = ROUTE.indexOf("if (code === 0 && full.trim())", postStreamBranch);
 ck("POST stream miss does not schedule before success close", !hasScheduleBetween(postStreamBranch, postStreamSuccess));
 const postJsonIdentity = ROUTE.indexOf("/* identity-lock: เทียบ 日干 ที่ AI echo", postStreamSuccess);
-const postJsonSuccess = ROUTE.indexOf("const cleanReply = sanitizePacketEvidenceClaims", postJsonIdentity);
+const postJsonSuccessRel = ROUTE.slice(Math.max(0, postJsonIdentity)).search(/const cleanReply = (?:sanitizePacketEvidenceClaims\(|visibleReply)/);
+const postJsonSuccess = postJsonSuccessRel >= 0 && postJsonIdentity >= 0 ? postJsonIdentity + postJsonSuccessRel : -1;
 ck("POST JSON miss does not schedule before identity success", !hasScheduleBetween(postJsonIdentity, postJsonSuccess));
 const getMissPrompt = ROUTE.indexOf("const promptBase = buildPrompt({ ctx, message, history: []");
 const getMissSuccess = ROUTE.indexOf("if (code === 0 && full.trim())", getMissPrompt);

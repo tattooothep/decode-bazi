@@ -7,14 +7,14 @@
  *      getSession · q1/q)
  *    - buildBaziContext ใน /api/sifu/route.ts ไม่ได้ export → จึง replicate logic ต่อคน
  *      เป็น helper local (buildPersonContext) ให้เป๊ะกับต้นฉบับ (gender charAt(0)==="f" ·
- *      time.slice(0,5) · 3p mode · computeStartAge · packet · render)
+ *      time.slice(0,5) · 3p mode · computeQiyunLock · packet · render)
  *
  * รับ body: { profileIds: string[], groupLabel?: string, message: string,
  *             history?: [{role,content}], lang?: 'th'|'en'|'zh', stream?: boolean }
  * คืน: SSE (event meta/first/chunk/done/error) เมื่อ Accept: text/event-stream หรือ stream===true
  *      มิฉะนั้น JSON { reply, model }
  *
- * 💰 POC group mode · ฟรีตามเจ้านายสั่ง 26 พ.ค. · cap 10 + org guard + login กัน abuse แทน cost
+ * 💰 POC group/pair mode · cap 2 + org guard + login กัน abuse แทน cost
  *    (ไม่เรียก spendHours)
  *
  * 🌊 SSE pattern ยกจาก POST /api/sifu เป๊ะ · ห้ามใส่ AbortController / idle-timeout / reader.cancel
@@ -33,6 +33,7 @@ import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
 import { buildStructuredChartPacket, renderChartPrompt, validateChartPacket } from "@/lib/chart-packet";
 import { boundaryWarning3p, monthPillarBoundary, yearPillarBoundary } from "@/lib/bazi-boundary";
+import { computeQiyunLock } from "@/lib/bazi-qiyun";
 import { buildSynastry, altPillar, type PersonSyn } from "@/lib/bazi-synastry";
 import { computeSiLingDays } from "@/lib/chart-table";
 import { stripIdLine } from "@/lib/identity-lock";
@@ -46,7 +47,7 @@ type SifuModel = "claude-max-cli" | "codex-cli" | "grok-cli";
 
 const TIMEOUT_MS = 600_000; // เท่ากับ /api/sifu · ตำราคลาสสิก + หลายคน = prompt ยาว
 const CHILD_USER = "jarvis";
-const MAX_GROUP = 10; // cap กัน abuse/token
+const MAX_GROUP = 2; // pair mode only: send only the selected two charts, never the whole group
 const CODEX_GROUP_MAX_RAW = Number(process.env.SIFU_CODEX_GROUP_MAX || 3);
 const CODEX_GROUP_MAX = Number.isFinite(CODEX_GROUP_MAX_RAW)
   ? Math.max(1, Math.min(MAX_GROUP, CODEX_GROUP_MAX_RAW))
@@ -131,21 +132,6 @@ async function computeRootedness(pillars: { year: { stem: string; branch: string
   } catch (e) {
     console.warn("[sifu/group] rootedness (wrapper-7) failed:", (e as Error).message);
     return null;
-  }
-}
-
-/* startAge (起運) · copy จาก /api/sifu route.ts ~37 */
-async function computeStartAge(date: string, time: string, gender: "M" | "F", lng: number): Promise<number> {
-  try {
-    const tyme = await import("tyme4ts");
-    const { getSolarTimeAtTST } = await import("@/lib/bazi-calc");
-    const { st } = await getSolarTimeAtTST({ date, time, longitude: lng, gmtOffsetHours: 7, birthTimeKnown: true });
-    const g = gender === "F" ? tyme.Gender.WOMAN : tyme.Gender.MAN;
-    const cl = tyme.ChildLimit.fromSolarTime(st, g);
-    return Math.round((cl.getYearCount() + cl.getMonthCount() / 12 + cl.getDayCount() / 365.25) * 100) / 100;
-  } catch (e) {
-    console.error("[sifu/group] ChildLimit failed, default 10:", (e as Error).message);
-    return 10;
   }
 }
 
@@ -386,8 +372,8 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     /* 31 พ.ค. what-if · เสาอีกฝั่ง(alt) ของคนก้ำกึ่ง → buildSynastry คำนวณ hit ทั้ง 2 ฝั่ง (ฉันทามติ 6+พ่อ) */
     const monthAlt = mb.boundary ? altPillar(synPillars.month, mb.before, mb.after) : undefined;
     const yearAlt = yb.boundary ? altPillar(synPillars.year, yb.before, yb.after) : undefined;
-    /* 27 พ.ค. · 3 เสาไหลเข้า packet เต็ม (ลึกเท่า 4 เสา · ปฏิกิริยา/ดาว/通根 ของ年月日) · กันเดายาม: ไม่เรียก computeStartAge (time ปลอม → 起運ปลอม) · packet ตัด起運/เสายาม/命宮/小運 เอง */
-    const startAge = is3p ? 10 : await computeStartAge(date, time, gender, lng);
+    const qiyunLock = await computeQiyunLock({ date, time, gender, lng, birthTimeKnown, dayBoundary });
+    const startAge = qiyunLock.representativeStartAge ?? 0;
     const ext = buildChartExtensions(
       calc.pillars,
       new Date(),
@@ -427,13 +413,16 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
     const packet = buildStructuredChartPacket(calc, ext, dm, ageNow, g, rootedness, gender, siLingDays, {
       dayBoundary,
       dayBoundarySource,
-      monthBoundary: is3p ? monthPillarBoundary(date) : null, // 月柱ก้ำกึ่ง節氣 → ไหล conf ลง field เดือน (กลุ่ม/synastry · เฉพาะ 3 เสา)
+      monthBoundary: is3p ? mb : null, // 月柱ก้ำกึ่ง節氣 → ไหล conf ลง field เดือน (กลุ่ม/synastry · เฉพาะ 3 เสา)
+      qiyunLock,
     });
     validateChartPacket(packet);
-    // Group mode can include 10 people. Keep the single-chart prompt fully detailed,
-    // but omit the 10-year x 12-month drilldown per person here so the group prompt
-    // stays within Claude CLI context and behaves like the stable pre-liuyue group flow.
-    lines.push(renderChartPrompt(packet, { includeTransitDrilldown: false, subjectLabel: `${displayName}·${row.id.slice(0, 8)}` }));
+    // Pair mode must send the same full chart packet to every supported model,
+    // including Grok. Do not strip yearly/monthly transit blocks here.
+    lines.push(renderChartPrompt(packet, {
+      includeTransitDrilldown: true,
+      subjectLabel: `${displayName}·${row.id.slice(0, 8)}`,
+    }));
     if (ext.special_chart.applicable) {
       lines.push(`ดวงพิเศษ: ${ext.special_chart.type_zh} · friendly=${ext.special_chart.friendly_elements.join("·")}`);
     }
@@ -454,6 +443,8 @@ async function buildPersonContext(row: ProfileRow): Promise<PersonSyn> {
       yearBorderline,
       monthAlt,
       yearAlt,
+      annualPillar: packet.annualPillar,
+      currentLuck: packet.currentLuck ? { stem: packet.currentLuck.stem, branch: packet.currentLuck.branch } : undefined,
       text: lines.join("\n"),
     };
   } catch (e) {
@@ -607,13 +598,65 @@ function grokCliArgs(promptFile: string, format: "plain" | "streaming-json"): st
   if (GROK_CLI_MODEL) args.push("-m", GROK_CLI_MODEL);
   return args;
 }
-// debug dump เฉพาะ grok (env SIFU_DUMP_PROMPT=1) · ไม่แตะ claude/codex
-function grokDumpIfDebug(prompt: string, tag: string) {
+// debug dump opt-in (env SIFU_DUMP_PROMPT=1) · ใช้เฉพาะ smoke proof ว่า prompt ที่ส่งให้ model มี packet ครบ
+function dumpGroupPromptIfDebug(prompt: string, tag: string) {
   if (process.env.SIFU_DUMP_PROMPT !== "1") return;
   try {
     const hash = createHash("sha256").update(prompt).digest("hex").slice(0, 8);
-    writeFileSync(`/tmp/sifu_prompt_${tag}_${hash}.txt`, prompt);
+    writeFileSync(`/tmp/sifu_group_prompt_${tag}_${hash}.txt`, prompt);
   } catch {}
+}
+
+const GROUP_PROMPT_PROOF_MARKERS = [
+  "HK_SIFU_PREFLIGHT_V1",
+  "HK_CURRENT_LUCK_RESOLVED_V1",
+  "HK_QIYUN_LOCK_V1",
+  "HK_LUCK_PILLAR_LOCK_V1",
+  "HK_YEAR_PILLAR_CALENDAR_LOCK_V1",
+  "HK_YEAR_DAYUN_MAP_V2",
+  "HK_LICHUN_YEAR_BOUNDARY_LOCK_V1",
+  "HK_JIAOYUN_BOUNDARY_LOCK_V1",
+  "HK_LIUNIAN_YEAR_DRILLDOWN_V1",
+  "HK_QUERY_YEAR_LUCK_LOCK_V1",
+  "HK_BAZI_TIMING_LOCK_V1",
+  "HK_BAZI_READ_ORDER_LOCK_V1",
+  "HK_MONTH_PILLAR_SCENARIO_LOCK_V1",
+  "HK_MONTHLY_DRILLDOWN_SCOPE_V1",
+  "HK_SANHE_CANDIDATE_LOCK_V1",
+  "HK_TWO_SCENARIOS_V1",
+  "HK_SYNASTRY_RESOLVED_V1",
+  "HK_SYNASTRY_ACTIVATED",
+];
+
+const GROUP_PROMPT_PROOF_CONTENT = [
+  "2028/2571",
+  "申子辰",
+  "寅午戌三合ไฟ",
+  "ห้ามอ่านเป็น 寅戌冲",
+  "เดือนจร=",
+  "เดือนจรใช้節氣หลักจริง",
+  "ก่อนพูดวัยจรของปีใด",
+  "CURRENT 大運",
+  "ก่อน立春",
+];
+
+function extractGroupPromptProof(prompt: string) {
+  const lines = prompt.split("\n");
+  const interesting = lines
+    .map(line => line.trim())
+    .filter(line =>
+      GROUP_PROMPT_PROOF_MARKERS.some(marker => line.includes(marker)) ||
+      GROUP_PROMPT_PROOF_CONTENT.some(content => line.includes(content)),
+    )
+    .slice(0, 80)
+    .map(line => line.slice(0, 1200));
+  return {
+    chars: prompt.length,
+    profile_sections: (prompt.match(/━━━ คนที่ /g) || []).length,
+    markers: Object.fromEntries(GROUP_PROMPT_PROOF_MARKERS.map(marker => [marker, prompt.includes(marker)])),
+    content: Object.fromEntries(GROUP_PROMPT_PROOF_CONTENT.map(content => [content, prompt.includes(content)])),
+    lines: interesting,
+  };
 }
 
 function cliErrorMessage(model: SifuModel, err: string): string {
@@ -662,7 +705,6 @@ async function runCodexCli(prompt: string): Promise<string> {
 }
 
 async function runGrokCli(prompt: string): Promise<string> {
-  grokDumpIfDebug(prompt, "grok-group");
   let promptFile = "";
   try {
     promptFile = writeGrokPromptFile(prompt);
@@ -682,6 +724,7 @@ async function runGrokCli(prompt: string): Promise<string> {
 }
 
 async function runSifuCli(prompt: string, model: SifuModel): Promise<string> {
+  dumpGroupPromptIfDebug(prompt, model);
   if (model === "grok-cli") return runGrokCli(prompt);
   return model === "codex-cli" ? runCodexCli(prompt) : runClaudeCli(prompt);
 }
@@ -697,7 +740,6 @@ function spawnCodexStreaming(prompt: string) {
 }
 
 function spawnGrokStreaming(prompt: string) {
-  grokDumpIfDebug(prompt, "grok-group-stream");
   const promptFile = writeGrokPromptFile(prompt);
   const c = spawn("sudo", ["-u", CHILD_USER, "-H", GROK_BIN, ...grokCliArgs(promptFile, "streaming-json")], { cwd: GROK_CWD, env: process.env });
   const cleanup = () => { try { rmSync(promptFile, { force: true }); } catch {} };
@@ -707,6 +749,7 @@ function spawnGrokStreaming(prompt: string) {
 }
 
 function spawnSifuStreaming(prompt: string, model: SifuModel) {
+  dumpGroupPromptIfDebug(prompt, `${model}-stream`);
   if (model === "grok-cli") return spawnGrokStreaming(prompt);
   return model === "codex-cli" ? spawnCodexStreaming(prompt) : spawnClaudeStreaming(prompt);
 }
@@ -857,13 +900,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "not logged in" }, { status: 401 });
     }
 
-    /* validate profileIds · array · 1-10 · unique · เกิน 10 ตัดเหลือ 10 ตัวแรก */
+    /* validate profileIds · pair-only · ห้ามส่งทั้งกลุ่มหลายดวงเข้ารอบเดียว */
     let profileIds: string[] = Array.isArray(body.profileIds)
       ? body.profileIds.filter((x: unknown) => typeof x === "string" && x.trim().length > 0)
       : [];
     profileIds = [...new Set(profileIds)]; // unique
     if (profileIds.length === 0) return NextResponse.json({ error: "profileIds ว่าง" }, { status: 400 });
-    if (profileIds.length > MAX_GROUP) profileIds = profileIds.slice(0, MAX_GROUP); // cap 10
+    if (profileIds.length > MAX_GROUP) {
+      return NextResponse.json({
+        error: "pair_context_requires_two_profiles",
+        max: MAX_GROUP,
+        count: profileIds.length,
+        message: "โหมดดวงคู่รับเฉพาะ 2 ดวงที่เลือกเท่านั้น ไม่ส่งผังทั้งกลุ่ม",
+      }, { status: 400 });
+    }
     if (sifuModel === "codex-cli" && profileIds.length > CODEX_GROUP_MAX) {
       console.log(`[sifu/group guard] model=codex-cli count=${profileIds.length} max=${CODEX_GROUP_MAX}`);
       return NextResponse.json({ error: "codex_context_limit_group_size", max: CODEX_GROUP_MAX, count: profileIds.length }, { status: 400 });
@@ -941,6 +991,7 @@ export async function POST(req: Request) {
     const contextHash = hashText(groupCtx);
     const promptHash = hashText(prompt);
     const packetHash = hashText(JSON.stringify({ profileSnapshot, pillarsSnapshot, synastryHash }));
+    const promptProof = extractGroupPromptProof(prompt);
     const serverGroupAuditHash = hashText(JSON.stringify({
       profile_ids: orderedProfileIds,
       profiles: profileSnapshot,
@@ -966,6 +1017,7 @@ export async function POST(req: Request) {
       synastry_hash: synastryHash,
       synastry_present: !!syn,
       compact_knowledge: groupCompact,
+      prompt_proof: promptProof,
     };
     if (groupCompact) {
       console.log(`[sifu/group prompt] model=${sifuModel} compact=1 count=${ordered.length} chars=${prompt.length}`);

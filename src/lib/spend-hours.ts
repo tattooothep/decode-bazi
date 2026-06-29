@@ -10,6 +10,10 @@ export type SpendResult =
   | { ok: true; balance_after: number; spent: number }
   | { ok: false; error: string; status: number; required?: number; balance?: number };
 
+export type RefundResult =
+  | { ok: true; balance_after: number; refunded: number }
+  | { ok: false; error: string; status: number };
+
 export async function spendHours(amount: number, feature: string): Promise<SpendResult> {
   const s = await getSession();
   if (!s) return { ok: false, error: "not logged in", status: 401 };
@@ -27,4 +31,20 @@ export async function spendHours(amount: number, feature: string): Promise<Spend
     [s.userId, -amt, `spend_${feature}`, row.hour_balance, feature]
   );
   return { ok: true, balance_after: row.hour_balance, spent: amt };
+}
+
+export async function refundHours(amount: number, feature: string): Promise<RefundResult> {
+  const s = await getSession();
+  if (!s) return { ok: false, error: "not logged in", status: 401 };
+  const amt = Math.max(1, Math.floor(amount));
+  const row = await q1<{ hour_balance: number }>(
+    `UPDATE users SET hour_balance = hour_balance + $2 WHERE id=$1 RETURNING hour_balance`,
+    [s.userId, amt]
+  );
+  if (!row) return { ok: false, error: "refund_user_not_found", status: 404 };
+  await q(
+    `INSERT INTO hour_transactions(user_id, delta, reason, balance_after, ref_feature) VALUES ($1, $2, $3, $4, $5)`,
+    [s.userId, amt, `refund_${feature}`, row.hour_balance, feature]
+  );
+  return { ok: true, balance_after: row.hour_balance, refunded: amt };
 }

@@ -14,6 +14,68 @@ import { computeIntentStatus, pickTopWorst } from "@/lib/tongshu-intents";
 import { universalDayScore, universalGoals } from "@/lib/tongshu-universal";
 import { computeDailyPersonalVerdict } from "@/lib/daily-personal-verdict";
 
+type CalendarCacheEntry = { exp: number; payload: unknown };
+const CALENDAR_CACHE_TTL_MS = 10 * 60 * 1000;
+const CALENDAR_CACHE_MAX = 96;
+const CALENDAR_CACHE_VERSION = "calendar-v1";
+const calendarCacheGlobal = globalThis as typeof globalThis & {
+  __hkCalendarMonthCache?: Map<string, CalendarCacheEntry>;
+};
+const CALENDAR_MONTH_CACHE = calendarCacheGlobal.__hkCalendarMonthCache ?? new Map<string, CalendarCacheEntry>();
+calendarCacheGlobal.__hkCalendarMonthCache = CALENDAR_MONTH_CACHE;
+
+function calendarCacheKey(input: {
+  year: number;
+  month: number;
+  dmArg: string;
+  birthDate: string;
+  birthTime: string;
+  birthTimeKnown: boolean;
+  birthLng: number;
+  gender: "M" | "F";
+  dayBoundary: "23:00" | "00:00";
+}): string {
+  return [
+    CALENDAR_CACHE_VERSION,
+    input.year,
+    input.month,
+    input.dmArg || "",
+    input.birthDate || "",
+    input.birthTime || "",
+    input.birthTimeKnown ? "4p" : "3p",
+    Number.isFinite(input.birthLng) ? String(input.birthLng) : "100.5018",
+    input.gender,
+    input.dayBoundary,
+  ].join("|");
+}
+
+function calendarJson(payload: unknown, cacheStatus: "hit" | "miss") {
+  return NextResponse.json(payload, {
+    headers: {
+      "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+      "X-HK-Calendar-Cache": cacheStatus,
+    },
+  });
+}
+
+function getCalendarCache(key: string): unknown | null {
+  const cached = CALENDAR_MONTH_CACHE.get(key);
+  if (!cached) return null;
+  if (cached.exp <= Date.now()) {
+    CALENDAR_MONTH_CACHE.delete(key);
+    return null;
+  }
+  return cached.payload;
+}
+
+function setCalendarCache(key: string, payload: unknown): void {
+  if (CALENDAR_MONTH_CACHE.size >= CALENDAR_CACHE_MAX) {
+    const firstKey = CALENDAR_MONTH_CACHE.keys().next().value;
+    if (firstKey) CALENDAR_MONTH_CACHE.delete(firstKey);
+  }
+  CALENDAR_MONTH_CACHE.set(key, { exp: Date.now() + CALENDAR_CACHE_TTL_MS, payload });
+}
+
 /* 19 พ.ค. spec #2 · 六沖 dict สำหรับ branchClash check ใน intent system */
 const SIX_CLASHES_CAL: Record<string, string> = {
   子:'午', 午:'子', 丑:'未', 未:'丑', 寅:'申', 申:'寅',
@@ -231,12 +293,16 @@ export async function GET(req: Request) {
   const birthDate = url.searchParams.get("birthDate") || "";
   const birthTime = url.searchParams.get("birthTime") || "12:00";
   const birthTimeKnown = url.searchParams.get("birthTimeKnown") !== "false";
-  const birthLng = parseFloat(url.searchParams.get("birthLng") || "100.5018");
+  const birthLngRaw = parseFloat(url.searchParams.get("birthLng") || "100.5018");
+  const birthLng = Number.isFinite(birthLngRaw) ? birthLngRaw : 100.5018;
   const gender = ((url.searchParams.get("gender") || "M").toLowerCase().startsWith("f") ? "F" : "M") as "M" | "F";
   const dayBoundary = url.searchParams.get("dayBoundary") === "00:00" ? "00:00" : "23:00";
   if (!year || !month || month < 1 || month > 12) {
     return NextResponse.json({ error: "year + month (1-12) required" }, { status: 400 });
   }
+  const cacheKey = calendarCacheKey({ year, month, dmArg, birthDate, birthTime, birthTimeKnown, birthLng, gender, dayBoundary });
+  const cached = getCalendarCache(cacheKey);
+  if (cached) return calendarJson(cached, "hit");
 
   try {
     const tyme = await import("tyme4ts");
@@ -526,7 +592,7 @@ export async function GET(req: Request) {
       }
     } catch (_) {}
 
-    return NextResponse.json({
+    const payload = {
       year, month,
       dm: userDM,
       friendly_elements: friendly,
@@ -544,7 +610,9 @@ export async function GET(req: Request) {
       jieqi_list: jieqiList,
       total_days: totalDays,
       days,
-    });
+    };
+    setCalendarCache(cacheKey, payload);
+    return calendarJson(payload, "miss");
   } catch (e: unknown) {
     const err = e as Error;
     return NextResponse.json({ error: err.message }, { status: 500 });

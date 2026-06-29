@@ -27,8 +27,28 @@ for (const [idx, block] of parserBlocks.entries()) {
   ck(`parser block ${idx + 1} strips internal markers from subsequent chunks`, /stripTraceLine\(stripIdLine\(visibleText\)\)/.test(block) || /stripIdLine\(stripTraceLine\(visibleText\)\)/.test(block));
 }
 
-ck("POST emitVisible sends first event before chunk", /const emitVisible = \(text: string\) => \{[\s\S]*?sendFirstOnce\(\);[\s\S]*?send\("chunk", \{ text \}\);[\s\S]*?\};/.test(route));
-ck("GET emitVisible sends first event before chunk", /const emitVisibleG = \(text: string\) => \{[\s\S]*?sendFirstOnceG\(\);[\s\S]*?send\("chunk", \{ text \}\);[\s\S]*?\};/.test(route));
+function functionBody(name: string): string {
+  const start = route.indexOf(`const ${name} = (text: string) => {`);
+  if (start < 0) return "";
+  const brace = route.indexOf("{", start);
+  let depth = 0;
+  for (let i = brace; i < route.length; i++) {
+    const ch = route[i];
+    if (ch === "{") depth += 1;
+    else if (ch === "}") {
+      depth -= 1;
+      if (depth === 0) return route.slice(start, i + 1);
+    }
+  }
+  return route.slice(start, start + 2000);
+}
+function sendsFirstBeforeChunk(body: string, firstFn: string): boolean {
+  const firstIdx = body.indexOf(`${firstFn}();`);
+  const chunkIdx = body.indexOf('send("chunk"');
+  return firstIdx >= 0 && chunkIdx > firstIdx;
+}
+ck("POST emitVisible sends first event before chunk", sendsFirstBeforeChunk(functionBody("emitVisible"), "sendFirstOnce"));
+ck("GET emitVisible sends first event before chunk", sendsFirstBeforeChunk(functionBody("emitVisibleG"), "sendFirstOnceG"));
 
 ck("POST stream critical is audit-only", route.includes("critical-evidence incomplete (stream audit-only)"));
 ck("GET stream critical is audit-only", route.includes("critical-evidence incomplete (GET stream audit-only)"));
@@ -47,7 +67,7 @@ ck("POST cache can bypass stale critical answer", route.includes("cache bypass: 
 ck("GET cache can bypass stale critical answer", route.includes("GET cache bypass: critical evidence stale"));
 
 ck("Claude compact knowledge is feature-flagged", route.includes("SIFU_CLAUDE_COMPACT_KNOWLEDGE") && route.includes("process.env.SIFU_CLAUDE_COMPACT_KNOWLEDGE === \"1\""));
-ck("compact mode covers Claude when flag is on", /return model === "codex-cli" \|\| SIFU_CLAUDE_COMPACT_KNOWLEDGE;/.test(route));
+ck("compact mode covers Claude when flag is on", /return model === "codex-cli" \|\| model === "grok-cli" \|\| SIFU_CLAUDE_COMPACT_KNOWLEDGE;/.test(route));
 ck("compact rule version avoids full source version", /if \(shouldUseCompactKnowledge\(model\)\) \{[\s\S]*?loadSifuCompactAuthorityKnowledge\(\)\.version[\s\S]*?compactclassics2[\s\S]*?\}/.test(route));
 ck("compact prompt carries source-of-truth baseline", route.includes("SIFU COMPACT SOURCE-OF-TRUTH BASELINE") && route.includes("RUNTIME EXACT SOURCE EXCERPTS"));
 ck("compact prompt includes hard error source excerpts", ["子平真詮 · 論雜氣/四庫", "天干五合 丙辛/丁壬", "三合局 巳酉丑", "貪合忘冲 / 合解冲"].every((s) => route.includes(s)));

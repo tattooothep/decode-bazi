@@ -1,0 +1,1030 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ซินแส Fusion · hourkey</title>
+  <style>
+    :root{
+      --bg:#0e1014;
+      --panel:#151922;
+      --panel-2:#10131a;
+      --line:rgba(210,176,94,.24);
+      --line-strong:rgba(210,176,94,.48);
+      --text:#f4efe5;
+      --muted:rgba(244,239,229,.68);
+      --faint:rgba(244,239,229,.42);
+      --gold:#d2b05e;
+      --gold-2:#8f7433;
+      --ok:#77c48a;
+      --warn:#d8a84c;
+      --bad:#e36f5f;
+      --blue:#74a8d8;
+      --thai:"Noto Sans Thai","Th Sarabun New",system-ui,sans-serif;
+      --mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+      --serif:"Cormorant Garamond","Noto Serif Thai",serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:var(--thai);min-height:100vh}
+    button,select,textarea{font:inherit}
+    a{color:inherit;text-decoration:none}
+    .topbar{position:sticky;top:0;z-index:10;background:rgba(14,16,20,.92);border-bottom:1px solid var(--line);backdrop-filter:blur(14px)}
+    .topbar-inner{max-width:1180px;margin:0 auto;padding:14px 18px;display:flex;align-items:center;gap:18px}
+    .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:22px;color:var(--gold);white-space:nowrap}
+    .seal{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--line-strong);border-radius:50%;font-family:serif;font-weight:700;color:var(--bg);background:var(--gold)}
+    .nav{display:flex;gap:12px;align-items:center;margin-left:auto;color:var(--muted);font-size:13px}
+    .nav a{padding:8px 10px;border:1px solid transparent;border-radius:8px}
+    .nav a:hover{border-color:var(--line);color:var(--gold)}
+    #hk-user-menu-mount{display:flex;align-items:center}
+    main{max-width:1180px;margin:0 auto;padding:28px 18px 44px}
+    .header{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:20px;align-items:end;margin-bottom:22px}
+    h1{margin:0;font-family:var(--serif);font-size:42px;font-weight:500;line-height:1.08;letter-spacing:0}
+    .sub{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.6;max-width:720px}
+    .badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .badge{display:inline-flex;align-items:center;min-height:30px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-family:var(--mono);font-size:11px;background:rgba(255,255,255,.02)}
+    .badge.ok{border-color:rgba(119,196,138,.45);color:var(--ok)}
+    .badge.warn{border-color:rgba(216,168,76,.45);color:var(--warn)}
+    .layout{display:grid;grid-template-columns:390px minmax(0,1fr);gap:18px}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+    .panel-title{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:0;text-transform:uppercase}
+    .panel-body{padding:16px}
+    label{display:block;margin:0 0 8px;color:var(--muted);font-size:12px;font-family:var(--mono)}
+    .field{margin-bottom:14px}
+    select,textarea{width:100%;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:11px 12px;outline:none}
+    select:focus,textarea:focus{border-color:var(--gold)}
+    textarea{min-height:150px;resize:vertical;line-height:1.55}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btnbar{display:flex;gap:10px;align-items:center}
+    .btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;border:1px solid var(--line-strong);border-radius:8px;padding:0 15px;background:var(--gold);color:#121212;font-weight:700;cursor:pointer}
+    .btn.secondary{background:transparent;color:var(--muted);border-color:var(--line)}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
+    .status{min-height:34px;margin-top:12px;color:var(--muted);font-size:13px;line-height:1.5}
+    .status.err{color:var(--bad)}
+    .status.ok{color:var(--ok)}
+    .progress-card{margin-top:12px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.02);padding:11px}
+    .progress-card.hidden{display:none}
+    .progress-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}
+    .progress-title{font-family:var(--mono);font-size:11px;color:var(--gold);text-transform:uppercase}
+    .progress-percent{font-family:var(--mono);font-size:12px;color:var(--text)}
+    .progress-track{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+    .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--blue));transition:width .35s}
+    .progress-message{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.45}
+    .progress-models{display:grid;gap:6px;margin-top:10px}
+    .progress-model{display:grid;grid-template-columns:132px 76px minmax(0,1fr);gap:8px;align-items:start;font-size:12px}
+    .pill.run{color:var(--blue);border-color:rgba(116,168,216,.45)}
+    .pill.queue{color:var(--faint)}
+    .pill.skip{color:var(--warn);border-color:rgba(216,168,76,.45)}
+    .chat{display:flex;flex-direction:column;gap:12px;min-height:500px}
+    .msg{display:grid;grid-template-columns:68px minmax(0,1fr);gap:12px}
+    .role{font-family:var(--mono);font-size:11px;color:var(--faint);padding-top:10px;text-transform:uppercase}
+    .bubble{border:1px solid var(--line);border-radius:8px;padding:13px 14px;background:var(--panel-2);white-space:pre-wrap;line-height:1.65;overflow-wrap:anywhere}
+    .msg.user .bubble{background:rgba(210,176,94,.08);border-color:rgba(210,176,94,.34)}
+    .meta-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+    .metric{border:1px solid var(--line);border-radius:8px;padding:10px;background:rgba(255,255,255,.02)}
+    .metric .k{font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase}
+    .metric .v{margin-top:5px;font-family:var(--mono);font-size:12px;color:var(--text);overflow-wrap:anywhere}
+    .models{display:grid;gap:8px;margin-top:12px}
+    .model-row{display:grid;grid-template-columns:132px 74px minmax(0,1fr);gap:10px;align-items:start;border:1px solid var(--line);border-radius:8px;padding:10px;background:rgba(255,255,255,.02)}
+    .model-name{font-family:var(--mono);font-size:12px;color:var(--blue)}
+    .answer-tools{white-space:normal;display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+    .answer-tools-label{font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase}
+    .answer-open{min-height:28px;border:1px solid var(--line);border-radius:8px;background:rgba(116,168,216,.08);color:var(--blue);padding:4px 9px;font-family:var(--mono);font-size:11px;cursor:pointer}
+    .answer-open:hover{border-color:rgba(116,168,216,.55);background:rgba(116,168,216,.14)}
+    .answer-modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.66);display:flex;align-items:center;justify-content:center;padding:18px}
+    .answer-modal.hidden{display:none}
+    .answer-dialog{width:min(920px,100%);max-height:88vh;background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;display:grid;grid-template-rows:auto minmax(0,1fr);box-shadow:0 24px 70px rgba(0,0,0,.45)}
+    .answer-head{display:flex;justify-content:space-between;gap:14px;align-items:start;padding:14px 16px;border-bottom:1px solid var(--line)}
+    .answer-title{font-family:var(--mono);font-size:13px;color:var(--gold)}
+    .answer-sub{margin-top:5px;font-size:12px;color:var(--muted);line-height:1.45}
+    .answer-close{border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--muted);min-height:32px;padding:4px 10px;cursor:pointer}
+    .answer-body{margin:0;padding:16px;overflow:auto;white-space:pre-wrap;line-height:1.65;color:var(--text);font-family:var(--thai);font-size:14px;background:var(--panel-2)}
+    .pill{display:inline-flex;align-items:center;justify-content:center;min-height:24px;border-radius:8px;padding:3px 8px;font-family:var(--mono);font-size:10px;border:1px solid var(--line);color:var(--muted)}
+    .pill.ok{color:var(--ok);border-color:rgba(119,196,138,.45)}
+    .pill.err{color:var(--bad);border-color:rgba(227,111,95,.45)}
+    .model-note{font-size:12px;color:var(--muted);line-height:1.45;overflow-wrap:anywhere}
+    .history-panel{margin-top:18px}
+    .history-filters{display:grid;grid-template-columns:minmax(180px,1.4fr) repeat(5,minmax(105px,1fr)) auto;gap:9px;align-items:end;margin-bottom:14px}
+    .history-filters input,.history-filters select{width:100%;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px 11px;outline:none}
+    .history-grid{display:grid;grid-template-columns:370px minmax(0,1fr);gap:14px}
+    .history-list{display:grid;gap:8px;align-content:start;max-height:680px;overflow:auto;padding-right:4px}
+    .history-item{border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.02);padding:10px;display:grid;gap:7px;cursor:pointer}
+    .history-item.active{border-color:var(--gold);background:rgba(210,176,94,.08)}
+    .history-top{display:flex;justify-content:space-between;gap:8px;align-items:start}
+    .history-title{font-size:13px;line-height:1.45;color:var(--text);overflow-wrap:anywhere}
+    .history-flags{display:flex;gap:5px;align-items:center;white-space:nowrap}
+    .history-meta{font-family:var(--mono);font-size:10px;color:var(--faint);line-height:1.45}
+    .history-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .mini-btn{min-height:28px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--muted);padding:3px 8px;font-family:var(--mono);font-size:10px;cursor:pointer}
+    .mini-btn:hover{border-color:var(--line-strong);color:var(--gold)}
+    .mini-btn.active{border-color:rgba(210,176,94,.65);color:var(--gold);background:rgba(210,176,94,.08)}
+    .history-detail{min-height:420px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);padding:14px;overflow:hidden}
+    .history-empty{color:var(--muted);font-size:13px;line-height:1.6}
+    .detail-head{display:flex;justify-content:space-between;gap:12px;align-items:start;margin-bottom:12px}
+    .detail-title{font-size:15px;line-height:1.5;font-weight:700}
+    .detail-sub{font-family:var(--mono);font-size:11px;color:var(--faint);line-height:1.5;margin-top:4px}
+    .detail-tools{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+    .detail-block{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+    .detail-label{font-family:var(--mono);font-size:10px;color:var(--gold);text-transform:uppercase;margin-bottom:7px}
+    .detail-text{white-space:pre-wrap;line-height:1.65;font-size:14px;color:var(--text);overflow-wrap:anywhere}
+    .note-box{width:100%;min-height:88px;margin-top:8px;background:#0d1016;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px;resize:vertical}
+    .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .compare-card{border:1px solid var(--line);border-radius:8px;padding:11px;background:rgba(255,255,255,.02);min-width:0}
+    .compare-card .detail-text{max-height:420px;overflow:auto}
+    .history-check{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--faint)}
+    .snapshot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+    .snapshot-grid .metric{margin:0}
+    @media (max-width:900px){
+      .header,.layout{grid-template-columns:1fr}
+      .badges{justify-content:flex-start}
+      .meta-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .history-filters,.history-grid,.compare-grid,.snapshot-grid{grid-template-columns:1fr}
+      .history-list{max-height:none}
+    }
+    @media (max-width:560px){
+      .topbar-inner{padding:12px;gap:10px}
+      .nav a:not(.keep){display:none}
+      main{padding:20px 12px 34px}
+      h1{font-size:32px}
+      .row,.meta-grid,.model-row{grid-template-columns:1fr}
+      .answer-head{display:grid}
+      .msg{grid-template-columns:1fr;gap:5px}
+      .role{padding-top:0}
+      .btnbar{flex-direction:column;align-items:stretch}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/"><span class="seal">時</span><span>hourkey</span></a>
+      <nav class="nav">
+        <a href="/master">ซินแส</a>
+        <a href="/chart">ดวงของฉัน</a>
+        <a class="keep" href="/master-fusion">Fusion</a>
+      </nav>
+      <div id="hk-user-menu-mount"></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="header">
+      <div>
+        <h1>ซินแส Fusion</h1>
+        <p class="sub">Master Lab · 問師 · 3-Panel Fusion + Claude Judge</p>
+      </div>
+      <div class="badges">
+        <span class="badge" id="tier-badge">TIER · -</span>
+        <span class="badge" id="balance-badge">時 · -</span>
+        <span class="badge warn" id="gate-badge">3-PANEL LAB</span>
+      </div>
+    </section>
+
+    <section class="layout">
+      <aside class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Ask Packet</div>
+          <span class="pill">/api/sifu/fusion</span>
+        </div>
+        <div class="panel-body">
+          <div class="field">
+            <label for="profile">Profile</label>
+            <select id="profile"></select>
+          </div>
+          <div class="field">
+            <label for="fusion-mode">Mode</label>
+            <select id="fusion-mode">
+              <option value="resilient">Resilient</option>
+            </select>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="topic">Topic</label>
+              <select id="topic">
+                <option value="overview">overview</option>
+                <option value="career">career</option>
+                <option value="wealth">wealth</option>
+                <option value="love">love</option>
+                <option value="health">health</option>
+                <option value="study">study</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="lang">Lang</label>
+              <select id="lang">
+                <option value="th">TH</option>
+                <option value="en">EN</option>
+                <option value="zh">ZH</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="question">Question</label>
+            <textarea id="question" maxlength="2000" placeholder="ถามดวงจาก profile ที่เลือก"></textarea>
+          </div>
+          <div class="btnbar">
+            <button class="btn" id="send" disabled>Run Fusion · 25 時</button>
+            <button class="btn secondary" id="clear" type="button">Clear</button>
+          </div>
+          <div class="status" id="status"></div>
+          <div class="progress-card hidden" id="fusion-progress"></div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Fusion Answer</div>
+          <span class="pill" id="run-state">idle</span>
+        </div>
+        <div class="panel-body">
+          <div class="chat" id="chat"></div>
+          <div id="fusion-meta"></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel history-panel">
+      <div class="panel-head">
+        <div class="panel-title">Premium Fusion History</div>
+        <button class="mini-btn" id="history-refresh" type="button">Refresh</button>
+      </div>
+      <div class="panel-body">
+        <div class="history-filters">
+          <div>
+            <label for="history-q">Search</label>
+            <input id="history-q" type="search" maxlength="160" placeholder="ค้นจากคำถาม/คำตอบ">
+          </div>
+          <div>
+            <label for="history-topic">Topic</label>
+            <select id="history-topic">
+              <option value="">all</option>
+              <option value="overview">overview</option>
+              <option value="career">career</option>
+              <option value="wealth">wealth</option>
+              <option value="love">love</option>
+              <option value="health">health</option>
+              <option value="study">study</option>
+            </select>
+          </div>
+          <div>
+            <label for="history-mode">Mode</label>
+            <select id="history-mode">
+              <option value="">all</option>
+              <option value="resilient">resilient</option>
+              <option value="strict">strict</option>
+            </select>
+          </div>
+          <div>
+            <label for="history-status">Status</label>
+            <select id="history-status">
+              <option value="">all</option>
+              <option value="done">done</option>
+              <option value="degraded">degraded</option>
+              <option value="fail">fail</option>
+            </select>
+          </div>
+          <div>
+            <label for="history-from">From</label>
+            <input id="history-from" type="date">
+          </div>
+          <div>
+            <label for="history-to">To</label>
+            <input id="history-to" type="date">
+          </div>
+          <button class="mini-btn" id="history-search" type="button">Search</button>
+        </div>
+        <div class="history-grid">
+          <div class="history-list" id="history-list"></div>
+          <div class="history-detail" id="history-detail">
+            <div class="history-empty">เลือกประวัติ Fusion เพื่อดูคำตอบ final, คำตอบราย AI, receipt, packet version และ note ส่วนตัว</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="answer-modal hidden" id="answer-modal" role="dialog" aria-modal="true" aria-labelledby="answer-title">
+    <div class="answer-dialog">
+      <div class="answer-head">
+        <div>
+          <div class="answer-title" id="answer-title">AI answer</div>
+          <div class="answer-sub" id="answer-sub"></div>
+        </div>
+        <button class="answer-close" id="answer-close" type="button">Close</button>
+      </div>
+      <pre class="answer-body" id="answer-body"></pre>
+    </div>
+  </div>
+
+  <script src="/js/hk-user-menu.js?v=14"></script>
+  <script>
+  (function(){
+    var $ = function(id){ return document.getElementById(id); };
+    var state = { account:null, profiles:[], history:[], historyProfileId:'', busy:false, ready:false, progressTimer:null, activeRunId:'', answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', compareIds:[] };
+    var els = {
+      profile:$('profile'), fusionMode:$('fusion-mode'), topic:$('topic'), lang:$('lang'), question:$('question'), send:$('send'),
+      clear:$('clear'), status:$('status'), progress:$('fusion-progress'), chat:$('chat'), meta:$('fusion-meta'), runState:$('run-state'),
+      tier:$('tier-badge'), balance:$('balance-badge'), gate:$('gate-badge'),
+      answerModal:$('answer-modal'), answerTitle:$('answer-title'), answerSub:$('answer-sub'), answerBody:$('answer-body'), answerClose:$('answer-close'),
+      historyList:$('history-list'), historyDetail:$('history-detail'), historyRefresh:$('history-refresh'), historySearch:$('history-search'),
+      historyQ:$('history-q'), historyTopic:$('history-topic'), historyMode:$('history-mode'), historyStatus:$('history-status'), historyFrom:$('history-from'), historyTo:$('history-to')
+    };
+    function esc(s){
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+      });
+    }
+    function setStatus(text, kind){
+      els.status.textContent = text || '';
+      els.status.className = 'status' + (kind ? ' ' + kind : '');
+    }
+    function setRunState(text, kind){
+      els.runState.textContent = text;
+      els.runState.className = 'pill' + (kind ? ' ' + kind : '');
+    }
+    function answerName(item){
+      var model = String(item && item.model || '-');
+      var base = model === 'codex-cli' ? 'Codex'
+        : model === 'grok-cli' ? 'Grok'
+          : model === 'gemini-api' ? 'Gemini'
+            : model === 'claude-max-cli' ? 'Claude'
+              : model;
+      return item && item.role === 'judge' ? base + ' judge' : base;
+    }
+    function answerMeta(item){
+      return [
+        item && item.role ? item.role : '',
+        item && item.ms ? fmtMs(item.ms) : '',
+        item && item.chars ? (item.chars + ' chars') : '',
+        item && item.attempts ? (item.attempts + ' tries') : '',
+        item && item.provider_model ? item.provider_model : ''
+      ].filter(Boolean).join(' · ');
+    }
+    function fusionAnswers(fusion){
+      return (Array.isArray(fusion && fusion.answers) ? fusion.answers : [])
+        .filter(function(item){ return item && item.ok && item.reply; });
+    }
+    function registerAnswer(item){
+      var id = 'ai-answer-' + (++state.answerSeq);
+      state.answers[id] = item;
+      return id;
+    }
+    function renderAnswerTools(fusion){
+      var answers = fusionAnswers(fusion);
+      if (!answers.length) return '';
+      var buttons = answers.map(function(item){
+        var id = registerAnswer(item);
+        return '<button class="answer-open" type="button" data-answer-id="' + esc(id) + '">' + esc(answerName(item)) + '</button>';
+      }).join('');
+      return '<div class="answer-tools"><span class="answer-tools-label">AI answers</span>' + buttons + '</div>';
+    }
+    function openAnswer(id){
+      var item = state.answers[id];
+      if (!item || !els.answerModal) return;
+      els.answerTitle.textContent = answerName(item);
+      els.answerSub.textContent = answerMeta(item);
+      els.answerBody.textContent = item.reply || '';
+      els.answerModal.className = 'answer-modal';
+    }
+    function closeAnswer(){
+      if (!els.answerModal) return;
+      els.answerModal.className = 'answer-modal hidden';
+      els.answerBody.textContent = '';
+    }
+    function addMsg(role, text, fusion){
+      var div = document.createElement('div');
+      div.className = 'msg ' + role;
+      div.innerHTML = '<div class="role">' + (role === 'user' ? 'USER' : 'FUSION') + '</div><div class="bubble">' + esc(text) + renderAnswerTools(fusion) + '</div>';
+      els.chat.appendChild(div);
+      els.chat.scrollTop = els.chat.scrollHeight;
+    }
+    function renderMeta(fusion){
+      if (!fusion) { els.meta.innerHTML = ''; return; }
+      var panel = Array.isArray(fusion.panel) ? fusion.panel : [];
+      var rows = panel.map(function(r){
+        var state = panelResultState(r);
+        return '<div class="model-row">' +
+          '<div class="model-name">' + esc(r.model || '-') + '</div>' +
+          '<div><span class="pill ' + progressClass(state) + '">' + progressLabel(state) + '</span></div>' +
+          '<div class="model-note">' + esc(r.ok ? ((r.ms || 0) + 'ms · ' + (r.chars || 0) + ' chars' + (r.attempts ? (' · ' + r.attempts + ' tries') : '') + (r.cached ? ' · cache' : '')) : ((r.error || 'error') + (r.attempts ? (' · ' + r.attempts + ' tries') : ''))) + '</div>' +
+        '</div>';
+      }).join('');
+      var judge = fusion.judge || {};
+      var spentText = (fusion.net_spent != null ? fusion.net_spent : (fusion.spent || 0)) + ' 時';
+      if (fusion.refunded) spentText += ' · refunded ' + fusion.refunded + ' 時';
+      var aiCount = (fusion.ai_answered_count != null && fusion.ai_requested_count != null)
+        ? (fusion.ai_answered_count + '/' + fusion.ai_requested_count)
+        : '-';
+      var judgeTrail = Array.isArray(fusion.judge_attempted_models) && fusion.judge_attempted_models.length
+        ? fusion.judge_attempted_models.join(' → ')
+        : (judge.model || fusion.judge_model || '-');
+      els.meta.innerHTML =
+        '<div class="meta-grid">' +
+          '<div class="metric"><div class="k">mode</div><div class="v">' + esc(fusion.reason || '-') + '</div></div>' +
+          '<div class="metric"><div class="k">AI answered</div><div class="v">' + esc(aiCount) + '</div></div>' +
+          '<div class="metric"><div class="k">judge</div><div class="v">' + esc(judge.model || fusion.judge_model || '-') + (fusion.judge_backup_used ? ' · backup' : '') + '</div></div>' +
+          '<div class="metric"><div class="k">judge trail</div><div class="v">' + esc(judgeTrail) + '</div></div>' +
+          '<div class="metric"><div class="k">spent</div><div class="v">' + esc(spentText) + '</div></div>' +
+          '<div class="metric"><div class="k">total</div><div class="v">' + esc(fusion.ms || 0) + 'ms</div></div>' +
+        '</div>' +
+        '<div class="models">' +
+          rows +
+          '<div class="model-row"><div class="model-name">judge</div><div><span class="pill ' + (judge.ok ? 'ok' : 'err') + '">' + (judge.ok ? 'ok' : 'fail') + '</span></div><div class="model-note">' + esc(judge.ok ? ((judge.ms || 0) + 'ms · fusion synthesized' + (judge.attempts ? (' · ' + judge.attempts + ' tries') : '')) : ((judge.error || 'fallback') + (judge.attempts ? (' · ' + judge.attempts + ' tries') : ''))) + '</div></div>' +
+        '</div>' +
+        renderAnswerTools(fusion);
+    }
+    function newRunId(){
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      return 'fusion-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    }
+    function fmtMs(ms){
+      ms = Number(ms || 0);
+      if (!ms) return '';
+      if (ms < 1000) return ms + 'ms';
+      return Math.round(ms / 1000) + 's';
+    }
+    function panelResultState(r){
+      if (r && r.ok) return 'ok';
+      var err = r && r.error;
+      if (err === 'skipped_after_quorum' || err === 'skipped_after_resilient_timeout' || err === 'preferred_wait_timeout' || err === 'fusion_deadline_exceeded') return 'skipped';
+      return 'fail';
+    }
+    function progressClass(state){
+      if (state === 'ok') return 'ok';
+      if (state === 'fail') return 'err';
+      if (state === 'skipped') return 'skip';
+      if (state === 'running') return 'run';
+      return 'queue';
+    }
+    function progressLabel(state){
+      if (state === 'ok') return 'ok';
+      if (state === 'fail') return 'fail';
+      if (state === 'skipped') return 'skipped';
+      if (state === 'running') return 'running';
+      return 'queued';
+    }
+    function progressNote(item){
+      if (!item) return '';
+      if (item.state === 'ok') {
+        return [fmtMs(item.ms), item.chars ? (item.chars + ' chars') : '', item.attempts ? (item.attempts + ' tries') : ''].filter(Boolean).join(' · ');
+      }
+      if (item.state === 'running') return 'กำลังรอคำตอบ';
+      if (item.state === 'queued') return 'รอเริ่ม';
+      return [item.error || 'error', item.attempts ? (item.attempts + ' tries') : '', fmtMs(item.ms)].filter(Boolean).join(' · ');
+    }
+    function displayPercent(status){
+      var p = Number(status && status.percent || 0);
+      var now = Date.now();
+      var phaseStarted = Number(status && status.phaseStartedAt || status && status.startedAt || now);
+      var elapsed = Math.max(0, now - phaseStarted);
+      if (status && status.phase === 'panel') {
+        p = Math.max(p, Math.min(76, Math.round(8 + (elapsed / 600000) * 68)));
+      } else if (status && status.phase === 'judge') {
+        p = Math.max(p, Math.min(96, Math.round(80 + (elapsed / 600000) * 16)));
+      }
+      if (status && status.phase === 'done') p = 100;
+      return Math.max(0, Math.min(100, Math.round(p)));
+    }
+    function renderProgress(status){
+      if (!els.progress) return;
+      if (!status) {
+        els.progress.className = 'progress-card hidden';
+        els.progress.innerHTML = '';
+        return;
+      }
+      var panel = Object.values(status.panel || {});
+      var judge = Object.values(status.judge || {});
+      var rows = panel.concat(judge).map(function(item){
+        return '<div class="progress-model">' +
+          '<div class="model-name">' + esc(item.model || '-') + '</div>' +
+          '<div><span class="pill ' + progressClass(item.state) + '">' + progressLabel(item.state) + '</span></div>' +
+          '<div class="model-note">' + esc(progressNote(item)) + '</div>' +
+        '</div>';
+      }).join('');
+      var pct = displayPercent(status);
+      els.progress.className = 'progress-card';
+      els.progress.innerHTML =
+        '<div class="progress-head">' +
+          '<div class="progress-title">' + esc(status.phase || 'running') + '</div>' +
+          '<div class="progress-percent">' + pct + '%</div>' +
+        '</div>' +
+        '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="progress-message">' + esc(status.message || 'กำลังรัน Fusion') + '</div>' +
+        '<div class="progress-models">' + rows + '</div>';
+      setStatus((status.message || 'กำลังรัน Fusion') + ' · ' + pct + '%');
+    }
+    function renderProgressFromFusion(fusion){
+      if (!fusion) return;
+      var panel = {};
+      (Array.isArray(fusion.panel) ? fusion.panel : []).forEach(function(r){
+        panel[r.model || '-'] = {
+          model:r.model || '-',
+          role:'panel',
+          state:panelResultState(r),
+          ok:r.ok, error:r.error, ms:r.ms, chars:r.chars, attempts:r.attempts
+        };
+      });
+      var judge = {};
+      if (fusion.judge) {
+        var j = fusion.judge;
+        judge[j.model || 'judge'] = {
+          model:j.model || fusion.judge_model || 'judge',
+          role:'judge',
+          state:j.ok ? 'ok' : 'fail',
+          ok:j.ok, error:j.error, ms:j.ms, chars:j.chars, attempts:j.attempts
+        };
+      }
+      renderProgress({
+        phase:'done',
+        percent:100,
+        message:'Fusion complete · AI answered ' + (fusion.ai_answered_count != null ? fusion.ai_answered_count : '-') + '/' + (fusion.ai_requested_count != null ? fusion.ai_requested_count : '-'),
+        startedAt:Date.now(),
+        phaseStartedAt:Date.now(),
+        panel:panel,
+        judge:judge
+      });
+    }
+    function stopProgressPolling(){
+      if (state.progressTimer) clearInterval(state.progressTimer);
+      state.progressTimer = null;
+    }
+    async function pollProgress(runId){
+      if (!runId || runId !== state.activeRunId) return;
+      try {
+        var r = await fetch('/api/sifu/fusion?runId=' + encodeURIComponent(runId), { credentials:'same-origin', cache:'no-store' });
+        if (!r.ok) return;
+        var j = await r.json().catch(function(){ return {}; });
+        if (j && j.status) renderProgress(j.status);
+      } catch(_) {}
+    }
+    function startProgressPolling(runId){
+      stopProgressPolling();
+      state.activeRunId = runId;
+      renderProgress({
+        phase:'queued',
+        percent:2,
+        message:'เตรียมเรียก AI panel',
+        startedAt:Date.now(),
+        phaseStartedAt:Date.now(),
+        panel:{
+          'codex-cli':{model:'codex-cli',role:'panel',state:'queued'},
+          'grok-cli':{model:'grok-cli',role:'panel',state:'queued'},
+          'gemini-api':{model:'gemini-api',role:'panel',state:'queued'}
+        },
+        judge:{}
+      });
+      pollProgress(runId);
+      state.progressTimer = setInterval(function(){ pollProgress(runId); }, 2000);
+    }
+    function selectedProfileId(){
+      return els.profile && els.profile.value ? els.profile.value : '';
+    }
+    function resetConversationForProfile(profileId){
+      state.history = [];
+      state.historyProfileId = profileId || '';
+      state.answers = {};
+      state.answerSeq = 0;
+      els.chat.innerHTML = '';
+      els.meta.innerHTML = '';
+      closeAnswer();
+    }
+    function metaObj(v){ return v && typeof v === 'object' ? v : {}; }
+    function historyUserState(row){
+      var stateObj = metaObj(row && row.user_state);
+      if (!Object.keys(stateObj).length) stateObj = metaObj(metaObj(row && row.response_meta).user_state);
+      return {
+        favorite: stateObj.favorite === true,
+        pinned: stateObj.pinned === true,
+        note: typeof stateObj.note === 'string' ? stateObj.note : '',
+        updated_at: typeof stateObj.updated_at === 'string' ? stateObj.updated_at : ''
+      };
+    }
+    function historyStatus(row){
+      return String(row && row.fusion_status || (row && row.status === 'error' ? 'fail' : metaObj(row && row.response_meta).degraded ? 'degraded' : 'done'));
+    }
+    function historyStatusPill(row){
+      var st = historyStatus(row);
+      return '<span class="pill ' + (st === 'done' ? 'ok' : st === 'fail' ? 'err' : 'skip') + '">' + esc(st) + '</span>';
+    }
+    function rowDate(row){
+      var d = new Date(row && row.created_at || '');
+      if (isNaN(d.getTime())) return '-';
+      return d.toLocaleString('th-TH', { dateStyle:'medium', timeStyle:'short' });
+    }
+    function shortText(s, max){
+      s = String(s || '').replace(/\s+/g, ' ').trim();
+      return s.length > max ? s.slice(0, max - 1).trimEnd() + '…' : s;
+    }
+    function findHistory(id){
+      return state.fusionHistory.find(function(row){ return String(row.id) === String(id); }) || null;
+    }
+    function fusionFromHistory(row){
+      return metaObj(row && row.response_meta);
+    }
+    function runReceipt(row){
+      var fusion = fusionFromHistory(row);
+      var judge = metaObj(fusion.judge);
+      var failed = Array.isArray(fusion.ai_failed_models) ? fusion.ai_failed_models : [];
+      var answered = fusion.ai_answered_count != null && fusion.ai_requested_count != null
+        ? fusion.ai_answered_count + '/' + fusion.ai_requested_count
+        : '-';
+      return [
+        'status ' + historyStatus(row),
+        'AI ' + answered,
+        failed.length ? ('fail ' + failed.join(',')) : 'fail -',
+        'judge ' + (judge.model || fusion.judge_model || '-'),
+        'time ' + fmtMs(fusion.ms || row.duration_ms || 0),
+        'spent ' + (fusion.net_spent != null ? fusion.net_spent : row.spent || 0) + ' 時'
+      ].join(' · ');
+    }
+    function renderHistoryList(){
+      if (!els.historyList) return;
+      if (!state.fusionHistory.length) {
+        els.historyList.innerHTML = '<div class="history-empty">ยังไม่มีประวัติ Fusion ของ profile นี้</div>';
+        return;
+      }
+      els.historyList.innerHTML = state.fusionHistory.map(function(row){
+        var us = historyUserState(row);
+        var active = String(row.id) === String(state.activeHistoryId) ? ' active' : '';
+        var checked = state.compareIds.indexOf(String(row.id)) !== -1 ? ' checked' : '';
+        return '<div class="history-item' + active + '" data-history-id="' + esc(row.id) + '">' +
+          '<div class="history-top">' +
+            '<div class="history-title">' + esc(shortText(row.question, 110)) + '</div>' +
+            '<div class="history-flags">' + (us.pinned ? '<span class="pill">pin</span>' : '') + (us.favorite ? '<span class="pill">fav</span>' : '') + historyStatusPill(row) + '</div>' +
+          '</div>' +
+          '<div class="history-meta">' + esc(rowDate(row) + ' · ' + (row.topic || '-') + ' · ' + (row.mode || '-') + ' · ' + runReceipt(row)) + '</div>' +
+          '<div class="history-actions">' +
+            '<button class="mini-btn ' + (us.pinned ? 'active' : '') + '" type="button" data-hact="pin" data-id="' + esc(row.id) + '">' + (us.pinned ? 'Unpin' : 'Pin') + '</button>' +
+            '<button class="mini-btn ' + (us.favorite ? 'active' : '') + '" type="button" data-hact="favorite" data-id="' + esc(row.id) + '">' + (us.favorite ? 'Unfav' : 'Fav') + '</button>' +
+            '<label class="history-check"><input type="checkbox" data-hact="compare" data-id="' + esc(row.id) + '"' + checked + '> compare</label>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+    function snapshotBlock(row){
+      var fusion = fusionFromHistory(row);
+      var profile = metaObj(row.profile_snapshot || fusion.profile_snapshot);
+      var pillars = metaObj(row.pillars_snapshot || fusion.pillars_snapshot);
+      var packetVersion = fusion.packet_version || (row.packet_hash ? ('packet:' + String(row.packet_hash).slice(0,16)) : '-');
+      var packetHash = row.packet_hash || fusion.packet_hash || '-';
+      var profileLabel = profile.nickname || profile.name || profile.name_line || profile.identity_context || '-';
+      var dm = pillars.day_master || profile.day_master || '-';
+      return '<div class="snapshot-grid">' +
+        '<div class="metric"><div class="k">packet version</div><div class="v">' + esc(packetVersion) + '</div></div>' +
+        '<div class="metric"><div class="k">packet hash</div><div class="v">' + esc(String(packetHash).slice(0,32)) + '</div></div>' +
+        '<div class="metric"><div class="k">profile snapshot</div><div class="v">' + esc(profileLabel) + ' · 日主 ' + esc(dm) + '</div></div>' +
+      '</div>';
+    }
+    function renderCompare(){
+      if (state.compareIds.length !== 2) return '';
+      var a = findHistory(state.compareIds[0]);
+      var b = findHistory(state.compareIds[1]);
+      if (!a || !b) return '';
+      return '<div class="detail-block">' +
+        '<div class="detail-label">Compare 2 Answers</div>' +
+        '<div class="compare-grid">' +
+          [a,b].map(function(row){
+            return '<div class="compare-card">' +
+              '<div class="detail-sub">' + esc(rowDate(row) + ' · ' + runReceipt(row)) + '</div>' +
+              '<div class="detail-title">' + esc(shortText(row.question, 120)) + '</div>' +
+              '<div class="detail-text">' + esc(row.answer || '') + '</div>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+      '</div>';
+    }
+    function renderHistoryDetail(id){
+      var row = findHistory(id);
+      state.activeHistoryId = row ? String(row.id) : '';
+      renderHistoryList();
+      if (!row) {
+        els.historyDetail.innerHTML = '<div class="history-empty">เลือกประวัติ Fusion เพื่อดูรายละเอียด</div>' + renderCompare();
+        return;
+      }
+      var us = historyUserState(row);
+      var fusion = fusionFromHistory(row);
+      els.historyDetail.innerHTML =
+        '<div class="detail-head">' +
+          '<div><div class="detail-title">' + esc(row.question || '') + '</div><div class="detail-sub">' + esc(rowDate(row) + ' · ' + runReceipt(row)) + '</div></div>' +
+          '<div class="detail-tools">' +
+            '<button class="mini-btn" type="button" data-hact="continue" data-id="' + esc(row.id) + '">ถามต่อจากรอบนี้</button>' +
+            '<button class="mini-btn" type="button" data-hact="rerun" data-id="' + esc(row.id) + '">รันใหม่</button>' +
+            '<button class="mini-btn" type="button" data-hact="export-md" data-id="' + esc(row.id) + '">Markdown</button>' +
+            '<button class="mini-btn" type="button" data-hact="print-pdf" data-id="' + esc(row.id) + '">PDF</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-text">' + esc(row.answer || '') + renderAnswerTools(fusion) + '</div></div>' +
+        '<div class="detail-block"><div class="detail-label">Run Receipt</div><div class="detail-text">' + esc(runReceipt(row)) + '</div></div>' +
+        '<div class="detail-block"><div class="detail-label">Packet / Profile Snapshot</div>' + snapshotBlock(row) + '</div>' +
+        '<div class="detail-block"><div class="detail-label">Private Note</div><textarea class="note-box" id="history-note" maxlength="4000">' + esc(us.note) + '</textarea><div class="history-actions"><button class="mini-btn" type="button" data-hact="save-note" data-id="' + esc(row.id) + '">Save note</button></div></div>' +
+        renderCompare();
+    }
+    async function loadFusionHistory(){
+      if (!els.historyList) return;
+      var profileId = selectedProfileId();
+      if (!profileId) return;
+      els.historyList.innerHTML = '<div class="history-empty">กำลังโหลดประวัติ...</div>';
+      var qs = new URLSearchParams({ profileId:profileId, limit:'80' });
+      if (els.historyQ.value.trim()) qs.set('q', els.historyQ.value.trim());
+      if (els.historyTopic.value) qs.set('topic', els.historyTopic.value);
+      if (els.historyMode.value) qs.set('mode', els.historyMode.value);
+      if (els.historyStatus.value) qs.set('status', els.historyStatus.value);
+      if (els.historyFrom.value) qs.set('dateFrom', els.historyFrom.value);
+      if (els.historyTo.value) qs.set('dateTo', els.historyTo.value);
+      try {
+        var r = await fetch('/api/sifu/fusion/history?' + qs.toString(), { credentials:'same-origin', cache:'no-store' });
+        var j = await r.json().catch(function(){ return {}; });
+        if (!r.ok) throw new Error(j.error || ('history ' + r.status));
+        state.fusionHistory = Array.isArray(j.history) ? j.history : [];
+        state.compareIds = state.compareIds.filter(function(id){ return !!findHistory(id); }).slice(0,2);
+        if (state.activeHistoryId && !findHistory(state.activeHistoryId)) state.activeHistoryId = '';
+        renderHistoryList();
+        renderHistoryDetail(state.activeHistoryId || (state.fusionHistory[0] && state.fusionHistory[0].id) || '');
+      } catch(e) {
+        els.historyList.innerHTML = '<div class="history-empty">โหลดประวัติไม่สำเร็จ: ' + esc(e.message || e) + '</div>';
+      }
+    }
+    async function patchHistory(id, patch){
+      var r = await fetch('/api/sifu/fusion/history', {
+        method:'PATCH',
+        headers:{ 'Content-Type':'application/json' },
+        credentials:'same-origin',
+        cache:'no-store',
+        body: JSON.stringify(Object.assign({ id:id, profileId:selectedProfileId() }, patch))
+      });
+      var j = await r.json().catch(function(){ return {}; });
+      if (!r.ok) throw new Error(j.error || ('history patch ' + r.status));
+      var row = findHistory(id);
+      if (row && j.item && j.item.response_meta) {
+        row.response_meta = j.item.response_meta;
+        row.user_state = j.item.user_state;
+      }
+      renderHistoryList();
+      renderHistoryDetail(id);
+    }
+    function continueFromHistory(row){
+      resetConversationForProfile(row.profile_id || selectedProfileId());
+      addMsg('user', row.question || '');
+      addMsg('sifu', row.answer || '', fusionFromHistory(row));
+      state.history.push({ role:'user', content:row.question || '' }, { role:'assistant', content:row.answer || '' });
+      state.history = state.history.slice(-12);
+      renderMeta(fusionFromHistory(row));
+      setStatus('ตั้ง context จากประวัติรอบนี้แล้ว พิมพ์คำถามต่อได้');
+      window.scrollTo({ top:0, behavior:'smooth' });
+    }
+    function rerunHistory(row){
+      resetConversationForProfile(selectedProfileId());
+      els.question.value = row.question || '';
+      setStatus('กำลังรันใหม่ด้วย packet ปัจจุบันของ profile ที่เลือก');
+      window.scrollTo({ top:0, behavior:'smooth' });
+      setTimeout(function(){ send(); }, 0);
+    }
+    function markdownForHistory(row){
+      var fusion = fusionFromHistory(row);
+      var answers = fusionAnswers(fusion);
+      var md = '# Fusion History\\n\\n';
+      md += '- Date: ' + rowDate(row) + '\\n';
+      md += '- Profile: ' + (row.profile_id || '-') + '\\n';
+      md += '- Receipt: ' + runReceipt(row) + '\\n';
+      md += '- Packet: ' + (fusion.packet_version || row.packet_hash || '-') + '\\n\\n';
+      md += '## Question\\n\\n' + (row.question || '') + '\\n\\n';
+      md += '## Final Answer\\n\\n' + (row.answer || '') + '\\n\\n';
+      if (answers.length) {
+        md += '## AI Answers\\n\\n';
+        answers.forEach(function(item){ md += '### ' + answerName(item) + '\\n\\n' + (item.reply || '') + '\\n\\n'; });
+      }
+      var note = historyUserState(row).note;
+      if (note) md += '## Private Note\\n\\n' + note + '\\n';
+      return md;
+    }
+    function exportMarkdown(row){
+      var blob = new Blob([markdownForHistory(row)], { type:'text/markdown;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'fusion-history-' + String(row.id || Date.now()).slice(0,8) + '.md';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    }
+    function printPdf(row){
+      var w = window.open('', '_blank');
+      if (!w) { setStatus('เปิดหน้าพิมพ์ PDF ไม่สำเร็จ', 'err'); return; }
+      w.document.write('<!doctype html><title>Fusion History</title><style>body{font-family:system-ui,sans-serif;line-height:1.65;padding:28px;max-width:900px;margin:auto}pre{white-space:pre-wrap}</style><h1>Fusion History</h1><pre>' + esc(markdownForHistory(row)) + '</pre>');
+      w.document.close();
+      w.focus();
+      setTimeout(function(){ w.print(); }, 250);
+    }
+    async function loadAccount(){
+      try {
+        var r = await fetch('/api/account/me', { credentials:'same-origin', cache:'no-store' });
+        var j = await r.json().catch(function(){ return {}; });
+        if (!r.ok) throw new Error(j.error || ('account ' + r.status));
+        state.account = j;
+        var tier = String(j.tier || 'free').toUpperCase();
+        els.tier.textContent = 'TIER · ' + tier;
+        els.tier.className = 'badge ' + (tier === 'MASTER' ? 'ok' : 'warn');
+        els.balance.textContent = '時 · ' + (j.hour_balance == null ? 0 : j.hour_balance);
+        return true;
+      } catch(e) {
+        els.tier.textContent = 'TIER · LOGIN';
+        els.tier.className = 'badge warn';
+        setStatus('กรุณาเข้าสู่ระบบก่อนใช้ Fusion', 'err');
+        els.send.disabled = true;
+        return false;
+      }
+    }
+    async function loadProfiles(){
+      var r = await fetch('/api/profile', { credentials:'same-origin', cache:'no-store' });
+      var j = await r.json().catch(function(){ return {}; });
+      if (!r.ok) throw new Error(j.error || ('profile ' + r.status));
+      state.profiles = Array.isArray(j.profiles) ? j.profiles : [];
+      els.profile.innerHTML = '';
+      if (!state.profiles.length) {
+        var opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'ไม่มี profile';
+        els.profile.appendChild(opt);
+        return;
+      }
+      var saved = '';
+      try { saved = localStorage.getItem('hk_profile_id') || ''; } catch(_){}
+      var active = (j.active_profile && j.active_profile.id) || saved || state.profiles[0].id;
+      state.profiles.forEach(function(p){
+        var opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = (p.nickname || p.name || 'profile') + ' · 日主 ' + (p.day_master || '-');
+        els.profile.appendChild(opt);
+      });
+      if (active) els.profile.value = String(active);
+      resetConversationForProfile(els.profile.value);
+    }
+    async function send(){
+      if (state.busy) return;
+      if (!state.ready) { setStatus('กำลังโหลดบัญชีและ profile', 'err'); return; }
+      var message = els.question.value.trim();
+      var profileId = selectedProfileId();
+      if (!profileId) { setStatus('กรุณาเลือก profile', 'err'); return; }
+      if (!message) { setStatus('กรุณาใส่คำถาม', 'err'); return; }
+      if (state.historyProfileId !== profileId) resetConversationForProfile(profileId);
+      state.busy = true;
+      els.send.disabled = true;
+      setRunState('running');
+      setStatus('กำลังเรียก Codex, Grok, Gemini API เป็น panel · Claude เป็น judge · ค่ารัน 25 時');
+      var runId = newRunId();
+      startProgressPolling(runId);
+      addMsg('user', message);
+      renderMeta(null);
+      try {
+        var body = {
+          message: message,
+          profileId: profileId,
+          topic: els.topic.value,
+          lang: els.lang.value,
+          history: state.history.slice(-6),
+          threadId: 'master-fusion',
+          threadProfileId: profileId,
+          runId: runId,
+          fusionMode: 'resilient',
+          noCache: true
+        };
+        var r = await fetch('/api/sifu/fusion', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          credentials:'same-origin',
+          cache:'no-store',
+          body: JSON.stringify(body)
+        });
+        var j = await r.json().catch(function(){ return {}; });
+        if (!r.ok) throw Object.assign(new Error(j.error || ('fusion ' + r.status)), { data:j, status:r.status });
+        var fusion = j.fusion || {};
+        var aiLine = (fusion.ai_answered_count != null && fusion.ai_requested_count != null)
+          ? ('Fusion รอบนี้: AI ตอบจริง ' + fusion.ai_answered_count + '/' + fusion.ai_requested_count + ' ตัว' + (fusion.judge_backup_used ? ' · ใช้ judge สำรอง' : '') + (fusion.used_panel_fallback ? ' · ใช้ panel fallback' : '') + '\n\n')
+          : '';
+        addMsg('sifu', aiLine + (j.reply || ''), fusion);
+        state.history.push({ role:'user', content:message }, { role:'assistant', content:j.reply || '' });
+        state.history = state.history.slice(-12);
+        renderMeta(fusion);
+        renderProgressFromFusion(fusion);
+        setRunState(fusion && fusion.degraded ? 'degraded' : 'done', fusion && fusion.degraded ? 'err' : 'ok');
+        setStatus('Fusion complete · AI answered ' + (fusion.ai_answered_count != null ? fusion.ai_answered_count : '-') + '/' + (fusion.ai_requested_count != null ? fusion.ai_requested_count : '-'), 'ok');
+        if (fusion && fusion.balance_after != null) els.balance.textContent = '時 · ' + fusion.balance_after;
+        els.question.value = '';
+        try { localStorage.setItem('hk_profile_id', profileId); } catch(_){}
+        await loadFusionHistory();
+      } catch(e) {
+        var d = e.data || {};
+        var msg = d.reason || d.error || e.message || 'fusion failed';
+        addMsg('sifu', 'ไม่สามารถรัน Fusion ได้: ' + msg, d.fusion);
+        renderMeta(d.fusion);
+        if (d.fusion) renderProgressFromFusion(d.fusion);
+        if (d.fusion && d.fusion.balance_after != null) els.balance.textContent = '時 · ' + d.fusion.balance_after;
+        setRunState('failed', 'err');
+        setStatus(msg, 'err');
+        if (d.fusion && d.fusion.history_id) await loadFusionHistory();
+      } finally {
+        stopProgressPolling();
+        state.busy = false;
+        els.send.disabled = false;
+      }
+    }
+    els.send.addEventListener('click', send);
+    document.addEventListener('click', function(e){
+      var btn = e.target && e.target.closest ? e.target.closest('[data-answer-id]') : null;
+      if (btn) {
+        openAnswer(btn.getAttribute('data-answer-id'));
+        return;
+      }
+      var hact = e.target && e.target.closest ? e.target.closest('[data-hact]') : null;
+      if (hact) {
+        e.stopPropagation();
+        var id = hact.getAttribute('data-id');
+        var row = findHistory(id);
+        var act = hact.getAttribute('data-hact');
+        if (!row && act !== 'compare') return;
+        if (act === 'compare') {
+          var checked = !!hact.checked;
+          state.compareIds = state.compareIds.filter(function(x){ return x !== id; });
+          if (checked) {
+            state.compareIds.push(id);
+            if (state.compareIds.length > 2) state.compareIds.shift();
+          }
+          renderHistoryDetail(state.activeHistoryId || id);
+          return;
+        }
+        if (act === 'pin' || act === 'favorite') {
+          var us = historyUserState(row);
+          var patch = act === 'pin' ? { pinned:!us.pinned } : { favorite:!us.favorite };
+          patchHistory(id, patch).catch(function(err){ setStatus(err.message || err, 'err'); });
+          return;
+        }
+        if (act === 'save-note') {
+          var noteEl = $('history-note');
+          patchHistory(id, { note: noteEl ? noteEl.value : '' }).then(function(){ setStatus('บันทึก note แล้ว', 'ok'); }).catch(function(err){ setStatus(err.message || err, 'err'); });
+          return;
+        }
+        if (act === 'continue') { continueFromHistory(row); return; }
+        if (act === 'rerun') { rerunHistory(row); return; }
+        if (act === 'export-md') { exportMarkdown(row); return; }
+        if (act === 'print-pdf') { printPdf(row); return; }
+      }
+      var histItem = e.target && e.target.closest ? e.target.closest('.history-item[data-history-id]') : null;
+      if (histItem) {
+        renderHistoryDetail(histItem.getAttribute('data-history-id'));
+        return;
+      }
+      if (e.target === els.answerModal) closeAnswer();
+    });
+    els.answerClose.addEventListener('click', closeAnswer);
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape') closeAnswer();
+    });
+    els.clear.addEventListener('click', function(){
+      resetConversationForProfile(selectedProfileId());
+      stopProgressPolling();
+      renderProgress(null);
+      setStatus('');
+      setRunState('idle');
+    });
+    els.profile.addEventListener('change', function(){
+      resetConversationForProfile(selectedProfileId());
+      state.activeHistoryId = '';
+      state.compareIds = [];
+      try { localStorage.setItem('hk_profile_id', selectedProfileId()); } catch(_){}
+      setStatus('เปลี่ยน profile แล้ว เริ่มบทสนทนาใหม่');
+      loadFusionHistory();
+    });
+    els.question.addEventListener('keydown', function(e){
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') send();
+    });
+    els.historyRefresh.addEventListener('click', function(){ loadFusionHistory(); });
+    els.historySearch.addEventListener('click', function(){ state.activeHistoryId=''; loadFusionHistory(); });
+    [els.historyTopic, els.historyMode, els.historyStatus, els.historyFrom, els.historyTo].forEach(function(el){
+      el.addEventListener('change', function(){ state.activeHistoryId=''; loadFusionHistory(); });
+    });
+    els.historyQ.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') { state.activeHistoryId=''; loadFusionHistory(); }
+    });
+    els.lang.value = (function(){ try { return localStorage.getItem('hk_locale') || 'th'; } catch(_) { return 'th'; } })();
+    (async function init(){
+      var accountOk = await loadAccount();
+      if (!accountOk) return;
+      try {
+        await loadProfiles();
+        await loadFusionHistory();
+        state.ready = true;
+        els.send.disabled = false;
+        setStatus('พร้อมถามดวง Fusion · 25 時 ต่อครั้ง');
+      } catch(e) {
+        var msg = /401|not logged/i.test(String(e && e.message || ''))
+          ? 'กรุณาเข้าสู่ระบบก่อนใช้ Fusion'
+          : (e.message || 'โหลดข้อมูลไม่สำเร็จ');
+        setStatus(msg, 'err');
+        els.send.disabled = true;
+      }
+    })();
+  })();
+  </script>
+</body>
+</html>

@@ -2144,6 +2144,7 @@ async function dpAskSifu(){
   if (log) log.innerHTML = '';
   /* ดึง yongshen_v2 ของ user (lazy) */
   let userYs = null;
+  let userElementDistribution = null;
   try {
     if (window.__hkProfileReady) await window.__hkProfileReady;
     const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
@@ -2151,9 +2152,19 @@ async function dpAskSifu(){
 	      const cr = await fetch('/api/chart', {
 	        method:'POST', headers:{'Content-Type':'application/json'},
 	        body: JSON.stringify({ date:birth.date, time:birth.time||'12:00', longitude:birth.longitude||100.5018, gender:birth.gender||'M', birthTimeKnown: birth.birthTimeKnown !== false })
-	      });
+      });
       const cj = await cr.json();
       userYs = cj.yongshen_v2 || null;
+      const ed = cj.analysis?.element_distribution || null;
+      if (ed && ed.engine_version === 'system-b-v1') {
+        userElementDistribution = {
+          engine_version: ed.engine_version,
+          confidence: ed.confidence,
+          missing_positions: ed.missing_positions || [],
+          pctDisplay: ed.pctDisplay || {},
+          strength_level: ed.strength_level || null,
+        };
+      }
     }
   } catch(_){}
   const activity = window._dpLastActivity || 'work_start';
@@ -2172,6 +2183,7 @@ async function dpAskSifu(){
           search_results: data.top,
           activity: activity,
           user_yongshen_v2: userYs,
+          user_element_distribution: userElementDistribution,
         }
       })
     });

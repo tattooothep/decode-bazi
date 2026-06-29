@@ -721,6 +721,18 @@
     return div;
   }
 
+  function historyPayloadObj(v){ return (v && typeof v === 'object') ? v : {}; }
+  function historyRowBelongsToProfile(row, pid){
+    if (!row || !pid) return false;
+    if (String(row.profile_id || '') === String(pid)) return true;
+    var rp = historyPayloadObj(row.request_payload);
+    var ids = []
+      .concat(Array.isArray(rp.profileIds) ? rp.profileIds : [])
+      .concat(Array.isArray(rp.profile_ids) ? rp.profile_ids : [])
+      .concat(Array.isArray(rp.historyProfileIds) ? rp.historyProfileIds : []);
+    return ids.map(String).indexOf(String(pid)) >= 0;
+  }
+
   async function loadServerHistory(){
     try {
       const pid = activeProfileId();
@@ -728,7 +740,7 @@
       const sig = await ensureProfileSig(pid);
       if (!sig) return;
       resetForBinding(pid, sig);
-      const qs = new URLSearchParams({ limit:'40' });
+      const qs = new URLSearchParams({ limit:'120' });
       qs.set('profileId', pid);
       const r = await fetch('/api/sifu/history?' + qs.toString(), { credentials:'include', cache:'no-store' });
       if (!r.ok) return;
@@ -739,7 +751,7 @@
       history.length = 0;
       rows.forEach(function(x){
         if (!x || !x.question || !x.answer) return;
-        if (String(x.profile_id || '') !== pid) return;
+        if (!historyRowBelongsToProfile(x, pid)) return;
         addMsg('user', x.question);
         addMsg('sifu', x.answer);
         history.push({ role:'user', content:String(x.question) });

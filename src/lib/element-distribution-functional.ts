@@ -99,7 +99,7 @@ const ROOT_CLS: Record<RootClass, number> = {
 };
 const CLASH_LIGHT_PENALTY = 0.90;
 
-/* ── System B mode (HK_SYSTEMB_DIST_V1) · additive · default off ──
+/* ── System B mode (HK_SYSTEMB_DIST_V1) · canonical for chart card 06 ──
  * สูตร旺衰打分(software 旺衰派) มีหลักคัมภีร์: 本>中>餘 + 月令×2 + 透干มีราก/ลอย(虚浮)
  * อ่านตรงตำรา子平真詮 扶抑 3/3 · ดู SYSTEM-B-ELEMENT-SPEC.md
  *   ก้านบน透干: มีราก5/ลอย2.5(penalty0.5) · 藏干: 1ตัว[8]/2ตัว[5,3]/3ตัว[5,2,1] · 月令×2 · ไม่ตัด DM
@@ -108,6 +108,10 @@ const SYSB_STEM_ROOTED = 5;
 const SYSB_STEM_FLOAT = 2.5;
 const SYSB_HIDDEN: Record<number, number[]> = { 1: [8], 2: [5, 3], 3: [5, 2, 1] };
 export type ElementDistMode = "legacy" | "systemB";
+
+export function resolveElementDistMode(_value?: string): ElementDistMode {
+  return "systemB";
+}
 
 const ELS: Element[] = ["wood", "fire", "earth", "metal", "water"];
 const ELEMENT_PRODUCES: Record<Element, Element> = {
@@ -281,7 +285,7 @@ function levelFrom(supportRaw: number): ElementDistributionResult["strength_leve
  *   - feed wrapper-7 internal yongshen decision (use total_score เดิม)
  *   - ตัดสิน 從格 / 化格 / 假從 (use rule-based Phase 18)
  */
-export function buildElementDistribution(natal: Natal, mode: ElementDistMode = "legacy"): ElementDistributionResult {
+export function buildElementDistribution(natal: Natal, mode: ElementDistMode = "systemB"): ElementDistributionResult {
   /* validate + classify pillar mode */
   const active = activePositions(natal);
   const missing_positions = POSITIONS.filter(p => !active.includes(p));

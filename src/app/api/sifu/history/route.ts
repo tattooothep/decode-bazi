@@ -78,14 +78,56 @@ export async function GET(req: Request) {
   }
 
   const rows = await q(
-    `SELECT id, feature, profile_id, mode, topic, lang, question, answer,
+    `WITH unified_history AS (
+       SELECT id, feature, profile_id, mode, topic, lang, question, answer,
+              request_payload, response_meta, model, cached, created_at
+         FROM research_ai_messages
+        WHERE user_id=$1
+          AND feature IN ('sifu_master','sifu_group','sifu_fusion')
+          AND status='ok'
+          AND answer IS NOT NULL
+          AND (
+            (
+              feature='sifu_master'
+              AND profile_id=$2::uuid
+              AND COALESCE(request_payload->>'fusion_run_id','')=''
+            )
+            OR (
+              feature='sifu_fusion'
+              AND profile_id=$2::uuid
+            )
+            OR (
+              feature='sifu_group'
+              AND (
+                profile_id=$2::uuid
+                OR jsonb_exists(COALESCE(history_profile_ids, '[]'::jsonb), $2::text)
+                OR jsonb_exists(COALESCE(request_payload->'profileIds', '[]'::jsonb), $2::text)
+                OR jsonb_exists(COALESCE(request_payload->'profile_ids', '[]'::jsonb), $2::text)
+              )
+            )
+          )
+       UNION ALL
+       SELECT id, 'chart_sifu' AS feature, profile_id, NULL::text AS mode, NULL::text AS topic,
+              lang, question, answer,
+              jsonb_build_object(
+                'source', 'chart_sifu_history',
+                'profileId', profile_id,
+                'pillars_hash', pillars_hash,
+                'daymaster_profile_key', daymaster_profile_key
+              ) AS request_payload,
+              jsonb_build_object(
+                'source', 'chart_sifu_history',
+                'daymaster_profile_key', daymaster_profile_key
+              ) AS response_meta,
+              NULL::text AS model, false AS cached, created_at
+         FROM chart_sifu_history
+        WHERE user_id=$1
+          AND is_archived=false
+          AND profile_id=$2::uuid
+     )
+     SELECT id, feature, profile_id, mode, topic, lang, question, answer,
             request_payload, response_meta, model, cached, created_at
-       FROM research_ai_messages
-      WHERE user_id=$1
-        AND feature='sifu_master'
-        AND status='ok'
-        AND answer IS NOT NULL
-        AND profile_id=$2::uuid
+       FROM unified_history
       ORDER BY created_at DESC
       LIMIT $3::int`,
     [session.userId, profileId, limit]

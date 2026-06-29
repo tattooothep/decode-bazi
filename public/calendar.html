@@ -467,9 +467,32 @@
   function getSelfDM(){
     try {
       const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
-      /* ถ้ามี pillars เก็บไว้ใน profile cache · ไม่มีอยู่ใน hk_birth ตรงๆ · ต้องเรียก /api/chart */
+      /* ถ้ามี pillars เก็บไว้ใน profile cache ใช้ได้ทันที; ถ้าไม่มีให้ /api/calendar resolve จาก birth params */
     } catch(_){}
     return null;
+  }
+  function calendarHasBirthParams(){
+    try {
+      const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
+      return !!(b && b.date);
+    } catch(_) {
+      return false;
+    }
+  }
+  function applySelfDay(day, requireBranch){
+    if (!day || !day.stem) return null;
+    if (requireBranch && !day.branch) return null;
+    if (day.branch) SELF_BRANCH = day.branch || '';
+    return day.stem;
+  }
+  function selfDayFromProfile(p){
+    if (!p) return null;
+    const raw = p.bazi_pillars || {};
+    const bp = raw.pillars || raw;
+    return applySelfDay({
+      stem: p.day_master || bp.day?.stem || '',
+      branch: bp.day?.branch || ''
+    }, false);
   }
   async function resolveSelfDM(){
     /* viewAs เฉพาะตอนมี ?as= ตรงกัน → hk_birth → /api/profile · เก็บทั้ง stem + branch */
@@ -487,21 +510,17 @@
       }
     } catch(_){}
     try {
-      if (window.__hkProfileReady) await window.__hkProfileReady;
-    } catch(_){}
-    try {
       const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
       if (birth && birth.date) {
-	        const r = await fetch('/api/chart', { method:'POST', headers:{'Content-Type':'application/json'},
-	          body: JSON.stringify({ date: birth.date, time: birth.time||'12:00', longitude: birth.longitude || birth.lng || 100.5018, birthTimeKnown: birth.birthTimeKnown !== false })});
-        if (r.ok) {
-          const d = await r.json();
-          if (d.pillars?.day?.stem) {
-            SELF_BRANCH = d.pillars.day.branch || '';
-            return d.pillars.day.stem;
-          }
-        }
+        const day = birth.pillars?.day || birth.bazi_pillars?.day || null;
+        const cached = applySelfDay(day, true);
+        if (cached) return cached;
       }
+    } catch(_){}
+    try {
+      const readyProfile = window.__hkProfileReady ? await window.__hkProfileReady : null;
+      const readyDm = selfDayFromProfile(readyProfile);
+      if (readyDm) return readyDm;
     } catch(_){}
     try {
       const pr = await fetch('/api/profile', { credentials:'include' });
@@ -514,11 +533,8 @@
           || (activeMeId && live.find(p=>p.id===activeMeId))
           || live.find(p=>!!p.is_self)
           || live[0];
-        if (me && me.day_master) {
-          /* ดึง branch จาก bazi_pillars ถ้ามี */
-          try { SELF_BRANCH = (me.bazi_pillars?.day?.branch) || ''; } catch(_){}
-          return me.day_master;
-        }
+        const dm = selfDayFromProfile(me);
+        if (dm) return dm;
       }
     } catch(_){}
     return '己'; /* fallback demo */
@@ -736,12 +752,11 @@
   // ─── RENDER CALENDAR ───
   function renderCal(){
     const grid = document.getElementById('cal-grid');
-    grid.innerHTML='';
 
     const days = MONTH_DATA.days || [];
     window._calDays = days; /* 19 พ.ค. spec #2 · expose สำหรับ intent dropdown counter */
     if (!days.length){
-      grid.insertAdjacentHTML('beforeend', `<div style="grid-column:1/8;padding:40px;text-align:center;color:var(--fg-soft)">กำลังโหลดปฏิทิน…</div>`);
+      grid.innerHTML = `<div style="grid-column:1/8;padding:40px;text-align:center;color:var(--fg-soft)">กำลังโหลดปฏิทิน…</div>`;
       return;
     }
     /* 19 พ.ค. spec #2 · update intent dropdown label · ทุกครั้งที่ re-render */
@@ -759,9 +774,10 @@
     const prevYear = MONTH_DATA.month===1 ? MONTH_DATA.year-1 : MONTH_DATA.year;
     const prevMonth = MONTH_DATA.month===1 ? 12 : MONTH_DATA.month-1;
     const prevTotal = new Date(prevYear, prevMonth, 0).getDate();
+    const html = [];
     for(let i=0;i<firstDay;i++){
       const day = prevTotal - (firstDay-1-i);
-      grid.insertAdjacentHTML('beforeend', `<div class="day-cell other-month"><div class="d-head"><div class="d-num">${day}</div></div></div>`);
+      html.push(`<div class="day-cell other-month"><div class="d-head"><div class="d-num">${day}</div></div></div>`);
     }
 
     /* 19 พ.ค. spec #2 · intent filter · highlight days · ไม่ส่งผลต่อคะแนน */
@@ -817,7 +833,7 @@
       const lunShort = (d.lunar||'').match(/[初廿三十一二三四五六七八九十]+$/);
       const lunDisplay = lunShort ? lunShort[0] : (d.lunar||'').slice(-3);
 
-      grid.insertAdjacentHTML('beforeend', `
+      html.push(`
         <div class="day-cell ${isToday?'is-today':''} ${isSelected?'selected':''} ${intentClass}" data-day="${d.day}"
              style="--score-color:${colorVar};--score-pct:${fillPct}%;">
           <div class="d-head">
@@ -845,8 +861,9 @@
     const totalCells = rows * 7;
     let nextDay = 1;
     for(let i=filled;i<totalCells;i++){
-      grid.insertAdjacentHTML('beforeend', `<div class="day-cell other-month"><div class="d-head"><div class="d-num">${nextDay++}</div></div></div>`);
+      html.push(`<div class="day-cell other-month"><div class="d-head"><div class="d-num">${nextDay++}</div></div></div>`);
     }
+    grid.innerHTML = html.join('');
 
     /* update stats counter */
     updateStats(days);
@@ -1684,19 +1701,20 @@
   function render(){ updateMonthHeader(); renderCal(); renderSide(); }
 
   /* ─── โหลด /api/calendar · ส่ง birth ถ้ามี เพื่อใช้ wrapper-6 (ตำราใหม่) ─── */
-  async function loadMonth(year, month){
+  async function loadMonth(year, month, opts){
     try {
       let bUrl = '';
       try {
         const b = JSON.parse(localStorage.getItem('hk_birth')||'null');
         if (b && b.date) {
-	          bUrl = `&birthDate=${encodeURIComponent(b.date)}&birthTime=${encodeURIComponent(b.time||'12:00')}&birthLng=${encodeURIComponent(b.lng||100.5018)}&birthTimeKnown=${b.birthTimeKnown !== false ? 'true' : 'false'}&gender=${encodeURIComponent(b.gender||'M')}&dayBoundary=${encodeURIComponent(b.dayBoundary||'23:00')}`;
+	          bUrl = `&birthDate=${encodeURIComponent(b.date)}&birthTime=${encodeURIComponent(b.time||'12:00')}&birthLng=${encodeURIComponent(b.lng||b.longitude||100.5018)}&birthTimeKnown=${b.birthTimeKnown !== false ? 'true' : 'false'}&gender=${encodeURIComponent(b.gender||'M')}&dayBoundary=${encodeURIComponent(b.dayBoundary||'23:00')}`;
         }
       } catch(_){}
       const r = await fetch(`/api/calendar?year=${year}&month=${month}&dm=${encodeURIComponent(SELF_DM)}${bUrl}`);
       if (!r.ok) throw new Error('http '+r.status);
       const d = await r.json();
       MONTH_DATA = d;
+      if (d && d.dm) SELF_DM = d.dm;
       /* select today ถ้าอยู่ในเดือนปัจจุบัน · ไม่งั้นเลือกวันแรก */
       const tn = new Date();
       if (tn.getFullYear()===year && tn.getMonth()+1===month) {
@@ -1705,6 +1723,7 @@
         state.selected = 1;
       }
       render();
+      if (opts && opts.detailsReady) await opts.detailsReady;
       /* fetch details ของวัน selected · refresh side */
       const dSel = (MONTH_DATA.days||[]).find(x=>x.day===state.selected);
       if (dSel) {
@@ -1748,7 +1767,10 @@
     const cell = e.target.closest('.day-cell[data-day]');
     if(!cell) return;
     state.selected = parseInt(cell.dataset.day);
-    render(); /* render ก่อน · แสดงข้อมูลที่มี · fallback hours/dirs */
+    const prev = document.querySelector('#cal-grid .day-cell.selected');
+    if (prev && prev !== cell) prev.classList.remove('selected');
+    cell.classList.add('selected');
+    renderSide(); /* render เฉพาะ side panel · ไม่ rebuild grid ทั้งเดือน */
     const dInfo = (MONTH_DATA.days||[]).find(x=>x.day===state.selected);
     if (dInfo) {
       await fetchDayDetails(dInfo.date);
@@ -1776,8 +1798,13 @@
 
   // initial · resolve DM แล้วโหลดเดือนปัจจุบัน
   (async function init(){
-    SELF_DM = await resolveSelfDM();
-    await loadMonth(CUR_YEAR, CUR_MONTH);
+    if (calendarHasBirthParams()) {
+      const detailsReady = resolveSelfDM().catch(()=>{});
+      await loadMonth(CUR_YEAR, CUR_MONTH, { detailsReady });
+    } else {
+      SELF_DM = await resolveSelfDM();
+      await loadMonth(CUR_YEAR, CUR_MONTH);
+    }
   })();
 </script>
 

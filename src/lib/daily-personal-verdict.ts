@@ -1,7 +1,8 @@
-import { calcBazi, getSolarTimeAtTST, type BaziPillarsAny } from "./bazi-calc";
+import { calcBazi, type BaziPillarsAny } from "./bazi-calc";
 import { buildChartExtensions } from "./chart-extensions";
 import { buildStructuredChartPacket } from "./chart-packet";
 import { computeSiLingDays } from "./chart-table";
+import { computeQiyunLock, type QiyunLock } from "./bazi-qiyun";
 import { computeUserDayScore } from "./scoring/pair-base";
 
 type ElementEN = "wood" | "fire" | "earth" | "metal" | "water";
@@ -100,11 +101,13 @@ const globalForDailyVerdict = globalThis as typeof globalThis & {
 const NATAL_CACHE = globalForDailyVerdict.__dailyPersonalNatalCache ?? new Map<string, { exp: number; value: NatalContext | null }>();
 if (process.env.NODE_ENV !== "production") globalForDailyVerdict.__dailyPersonalNatalCache = NATAL_CACHE;
 const NATAL_CACHE_TTL_MS = 10 * 60 * 1000;
+const QIYUN_POLICY_VERSION = "qiyunlock-v1";
 
 type NatalContext = {
   calc: Awaited<ReturnType<typeof calcBazi>>;
   birthDateObj: Date;
   startAge: number;
+  qiyunLock: QiyunLock;
   rootedness: ReturnType<typeof buildStructuredChartPacket>["rootedness"] | null;
 };
 
@@ -154,19 +157,6 @@ function targetDateObj(date: string): Date {
   return new Date(`${date}T12:00:00+07:00`);
 }
 
-async function computeStartAge(date: string, time: string, gender: "M" | "F", lng: number, birthTimeKnown: boolean, dayBoundary: "23:00" | "00:00"): Promise<number> {
-  if (!birthTimeKnown) return 10;
-  try {
-    const tyme = await import("tyme4ts");
-    const { st } = await getSolarTimeAtTST({ date, time, longitude: lng, gmtOffsetHours: 7, birthTimeKnown: true, dayBoundary });
-    const g = gender === "F" ? tyme.Gender.WOMAN : tyme.Gender.MAN;
-    const cl = tyme.ChildLimit.fromSolarTime(st, g);
-    return Math.round((cl.getYearCount() + cl.getMonthCount() / 12 + cl.getDayCount() / 365.25) * 100) / 100;
-  } catch {
-    return 10;
-  }
-}
-
 async function computeRootedness(pillars: BaziPillarsAny): Promise<ReturnType<typeof buildStructuredChartPacket>["rootedness"] | null> {
   try {
     const w7 = await import("../../data/library/wrappers/7-yongshen-v2.js") as unknown as {
@@ -196,7 +186,7 @@ async function getNatalContext(input: DailyPersonalVerdictInput): Promise<NatalC
   const birthLng = numberOrDefault(input.birthLng, 100.5018);
   const gender = parseGender(input.gender);
   const dayBoundary = normalizeDayBoundary(input.dayBoundary);
-  const cacheKey = `${birthDate}|${birthTime}|${birthLng}|${birthTimeKnown ? "4p" : "3p"}|${gender}|${dayBoundary}`;
+  const cacheKey = `${QIYUN_POLICY_VERSION}|${birthDate}|${birthTime}|${birthLng}|${birthTimeKnown ? "4p" : "3p"}|${gender}|${dayBoundary}`;
   const cached = NATAL_CACHE.get(cacheKey);
   const now = Date.now();
   if (cached && cached.exp > now) return cached.value;
@@ -205,9 +195,10 @@ async function getNatalContext(input: DailyPersonalVerdictInput): Promise<NatalC
       ? await calcBazi({ date: birthDate, time: birthTime, longitude: birthLng, gmtOffsetHours: 7, gender, dayBoundary, birthTimeKnown: true })
       : await calcBazi({ date: birthDate, longitude: birthLng, gmtOffsetHours: 7, gender, birthTimeKnown: false });
     const birthDateObj = new Date(`${birthDate}T${birthTime}:00+07:00`);
-    const startAge = await computeStartAge(birthDate, birthTime, gender, birthLng, birthTimeKnown, dayBoundary);
+    const qiyunLock = await computeQiyunLock({ date: birthDate, time: birthTime, gender, lng: birthLng, birthTimeKnown, dayBoundary, targetYear: targetDateObj(input.date || new Date().toISOString().slice(0, 10)).getFullYear() });
+    const startAge = qiyunLock.representativeStartAge ?? 0;
     const rootedness = await computeRootedness(calc.pillars);
-    const value = { calc, birthDateObj, startAge, rootedness };
+    const value = { calc, birthDateObj, startAge, qiyunLock, rootedness };
     NATAL_CACHE.set(cacheKey, { exp: now + NATAL_CACHE_TTL_MS, value });
     return value;
   } catch {
@@ -387,7 +378,7 @@ export async function computeDailyPersonalVerdict(input: DailyPersonalVerdictInp
       natal.rootedness || null,
       gender,
       computeSiLingDays(slY, slMo, slD, slH || 12, slMi || 0),
-      { dayBoundary: normalizeDayBoundary(input.dayBoundary), dayBoundarySource: input.dayBoundary ? "explicit" : "default" },
+      { dayBoundary: normalizeDayBoundary(input.dayBoundary), dayBoundarySource: input.dayBoundary ? "explicit" : "default", qiyunLock: natal.qiyunLock },
     );
 
     const useful = {

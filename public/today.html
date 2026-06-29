@@ -1564,18 +1564,19 @@
         } catch(e){ console.warn('basic bazi load fail',e); }
       }
       function render(d){
-        const a=d.analysis||{}, p=d.pillars||{}, tg=a.ten_gods_map||{}, qp=a.qi_phases||{}, ec=a.element_counts||{}, ji=a.jishen||{elements:[],wealth_role:'neutral'}, ug=a.useful_god||{}, it=a.interactions||[], cb=a.combinations||{san_he:[],san_hui:[]}, pn=a.punishments||[], to=a.today_overlay||null;
+        const a=d.analysis||{}, p=d.pillars||{}, tg=a.ten_gods_map||{}, qp=a.qi_phases||{}, ji=a.jishen||{elements:[],wealth_role:'neutral'}, ug=a.useful_god||{}, it=a.interactions||[], cb=a.combinations||{san_he:[],san_hui:[]}, pn=a.punishments||[], to=a.today_overlay||null;
+        const ed = (a.element_distribution && a.element_distribution.engine_version === 'system-b-v1') ? a.element_distribution : null;
         ['y','m','d','h'].forEach((k,i)=>{
           const key=['year','month','day','hour'][i], pp=p[key]||{stem:'—',branch:'—'}, tgInfo=tg[key]||{};
           document.getElementById(`bb-${k}p-stem`).textContent=pp.stem+pp.branch;
           if(k!=='d') document.getElementById(`bb-${k}p-god`).textContent=tgInfo.ten_god||'—';
           const ph=qp[key]; document.getElementById(`bb-${k}p-phase`).textContent=ph?`${ph} · ${PHASE_TH[ph]||ph}`:'—';
         });
-        const total=Object.values(ec).reduce((s,v)=>s+v,0)||1;
         ['wood','fire','earth','metal','water'].forEach(e=>{
-          const v=ec[e]||0, pct=Math.round(v/total*100);
+          const raw = ed?.pctDisplay && typeof ed.pctDisplay[e] === 'number' ? ed.pctDisplay[e] : null;
+          const pct = raw == null ? 0 : Math.round(raw);
           document.getElementById(`bb-el-${e}`).style.width=pct+'%';
-          document.getElementById(`bb-el-${e}-n`).textContent=v;
+          document.getElementById(`bb-el-${e}-n`).textContent=raw == null ? '—' : pct+'%';
         });
         const ysEl=document.getElementById('bb-yongshen'); ysEl.innerHTML='';
         if(ug.ranks&&ug.ranks.length){ ug.ranks.slice(0,3).forEach(r=>{ const el=document.createElement('span'); el.className='bb-pill good'; el.textContent=`${r.stem} · ธาตุ${ELEMENT_TH[r.element]||r.element} · ${r.tenGod||''}`; ysEl.appendChild(el); }); }
@@ -1648,7 +1649,7 @@
           window.__renderBbToday(document.documentElement.getAttribute('data-lang')||'th');
         }
         const dbg=document.getElementById('bb-debug');
-        dbg.textContent=JSON.stringify({pillars:p,element_counts:ec,ten_gods_map:tg,qi_phases:qp,jishen:ji,interactions:it,combinations:cb,punishments:pn,today_overlay:to},null,2);
+        dbg.textContent=JSON.stringify({pillars:p,element_distribution:ed,ten_gods_map:tg,qi_phases:qp,jishen:ji,interactions:it,combinations:cb,punishments:pn,today_overlay:to},null,2);
         const params=new URLSearchParams(location.search);
         if(params.get('debug')==='1') dbg.style.display='block';
         document.getElementById('bb-debug-toggle').addEventListener('click',function(){ dbg.style.display=dbg.style.display==='none'?'block':'none'; });

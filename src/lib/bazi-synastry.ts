@@ -29,6 +29,10 @@ export type PersonSyn = {
    * buildSynastry คำนวณ hit ฝั่ง alt ด้วย ติดธง [ถ้าเกิดอีกฝั่ง] (ไม่ใช่แค่เตือน · ฉันทามติ 6+พ่อ) */
   monthAlt?: { stem: string; branch: string };
   yearAlt?: { stem: string; branch: string };
+  /* Current timing locks from each person's packet. Used only to resolve
+   * cross-person 拱/虛拱 when current annual/luck branch fills the missing middle. */
+  annualPillar?: { stem: string; branch: string };
+  currentLuck?: { stem: string; branch: string };
 };
 
 /* split ชื่อเสาจีน "壬辰" → {stem,branch} · ใช้กับ before/after จาก bazi-boundary (monthPillarBoundary/yearPillarBoundary) */
@@ -153,6 +157,29 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
   const pL = (k: string) => PILLAR_LABEL_SYN[L][k] || k;
   /* ชื่อกิ่ง: ไทยใช้ราศี (ชวด/ฉลู) · จีน/อังกฤษใช้กิ่งจีน (子/丑) ไม่ปนราศีไทย */
   const bN = (b: string) => (L === "th" ? (BRANCH_TH_NAME[b] || b) : b);
+  const gongActivationText = (gong: { pair: [string, string]; mid: string; el: string }, A: PersonSyn, B: PersonSyn) => {
+    const activators = [
+      A.annualPillar?.branch === gong.mid && A.annualPillar ? `${A.name || "A"}ปีจร${A.annualPillar.stem}${A.annualPillar.branch}` : "",
+      B.annualPillar?.branch === gong.mid && B.annualPillar ? `${B.name || "B"}ปีจร${B.annualPillar.stem}${B.annualPillar.branch}` : "",
+      A.currentLuck?.branch === gong.mid && A.currentLuck ? `${A.name || "A"}大運${A.currentLuck.stem}${A.currentLuck.branch}` : "",
+      B.currentLuck?.branch === gong.mid && B.currentLuck ? `${B.name || "B"}大運${B.currentLuck.stem}${B.currentLuck.branch}` : "",
+    ].filter(Boolean);
+    const uniqueActivators = Array.from(new Set(activators));
+    const set = `${gong.pair[0]}${gong.mid}${gong.pair[1]}`;
+    if (L === "en") {
+      return uniqueActivators.length
+        ? ` · HK_SYNASTRY_ACTIVATED: ${set} ${gong.el} 三合 is filled now by ${uniqueActivators.join("+")}; forbidden reading=${gong.pair.join("")}冲`
+        : ` · HK_SYNASTRY_RESOLVED: if annual/luck ${gong.mid} fills this 拱, read ${set} ${gong.el} 三合; forbidden reading=${gong.pair.join("")}冲`;
+    }
+    if (L === "zh") {
+      return uniqueActivators.length
+        ? ` · HK_SYNASTRY_ACTIVATED：${set}${EL_ZH[gong.el] || gong.el}三合已由${uniqueActivators.join("+")}補足；禁讀=${gong.pair.join("")}冲`
+        : ` · HK_SYNASTRY_RESOLVED：若流年/大運${gong.mid}補足此拱，讀${set}${EL_ZH[gong.el] || gong.el}三合；禁讀=${gong.pair.join("")}冲`;
+    }
+    return uniqueActivators.length
+      ? ` · HK_SYNASTRY_ACTIVATED: ${set}三合${elName[gong.el]} เติมครบแล้วโดย ${uniqueActivators.join("+")} · ห้ามอ่านเป็น ${gong.pair.join("")}冲`
+      : ` · HK_SYNASTRY_RESOLVED: ถ้าปีจร/วัยจร${gong.mid}เติมกิ่งกลาง ให้อ่าน ${set}三合${elName[gong.el]} · ห้ามอ่านเป็น ${gong.pair.join("")}冲`;
+  };
   const lines: string[] = [];
   for (let i = 0; i < valid.length; i++) {
     for (let j = i + 1; j < valid.length; j++) {
@@ -243,7 +270,7 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
                     : L === "zh"
                     ? `拱虛${gong.mid} — 典籍有爭議·權重最輕`
                     : `โอบกิ่งว่าง(拱) ${bN(gong.mid)}(${gong.mid})·虛拱 — ตำราถกเถียง·น้ำหนักเบาสุด`;
-                  hits.push({ w: SYN_W["拱"], s: `${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${gTxt}${tagFor(ka, kb, va, vb)}` });
+                  hits.push({ w: SYN_W["拱"], s: `${pL(ka)}${bN(ba)}×${pL(kb)}${bN(bb)} ${gTxt}${gongActivationText(gong, A, B)}${tagFor(ka, kb, va, vb)}` });
                 }
               }
               const sa = va.pillar.stem, sb = vb.pillar.stem;
@@ -294,10 +321,15 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
   const names = valid.map((p) => p.name || "?").join(", ");
   const shown = lines.length;
   const title = L === "en"
-    ? `━━━ Cross-person reactions (synastry) — CLOSED LIST. Compared ALL ${totalPairs} pair(s) among ${M} people [${names}], using each one's 日月年時 pillars (時 only if birth time known · stems+branches: 六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合 + 暗合/拱虛). Below are ONLY the ${shown} pair(s) with a prominent reaction. Any pair NOT listed = checked and has NO prominent cross-person reaction (a conclusion, NOT "unchecked"). DO NOT create or infer 合/冲/破/害/三合/三會/半合/天干五合 for any person/pair not in this list. (Each single person's in-chart interactions → read in full per the interaction classic; CROSS-PERSON → only this list.) WEIGHT (任鐵樵): 三合/三會 strong > 六合/六冲 > 害·破 weak (削之可也/不經) > 暗合/拱 lightest (拱 is debated in classics — mention only as light nuance). 天干五合 cross-person = affinity/bond (緣), good-or-bad depends on each one's 用神 — NOT a 化氣格; do NOT declare 化木/化X (keep stems' original elements; 化 is judged only per each person's own 月令). 合 not always good / 冲 not always bad — weigh against each one's 用神/role, state direction/outcome plainly; only forbidden: 'commanding' break-up/no-contact. ━━━`
+    ? `━━━ Cross-person reactions (synastry) — CLOSED LIST. Compared ALL ${totalPairs} pair(s) among ${M} people [${names}], using each one's 日月年時 pillars (時 only if birth time known · stems+branches: 六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合 + 暗合/拱虛). Below are ONLY the ${shown} pair(s) with a prominent reaction. Any pair NOT listed = checked and has NO prominent cross-person reaction (a conclusion, NOT "unchecked"). DO NOT create or infer 合/冲/破/害/三合/三會/半合/天干五合 for any person/pair not in this list. (Each single person's in-chart interactions → read in full per the interaction classic; CROSS-PERSON → only this list.) WEIGHT (任鐵樵): 三合/三會 strong > 六合/六冲 > 害·破 weak (削之可也/不經) > 暗合/standalone 拱 lightest; if a luck/year branch fills the missing middle of 拱, promote to completed 三合/三會 before weaker clash/harm/break. 天干五合 cross-person = affinity/bond (緣), good-or-bad depends on each one's 用神 — NOT a 化氣格; do NOT declare 化木/化X (keep stems' original elements; 化 is judged only per each person's own 月令). 合 not always good / 冲 not always bad — weigh against each one's 用神/role, state direction/outcome plainly; only forbidden: 'commanding' break-up/no-contact. ━━━`
     : L === "zh"
-    ? `━━━ 跨人互動 (synastry) — 封閉清單。已比對 ${M} 人 [${names}] 全部 ${totalPairs} 組配對（各取 日月年時柱·干支〔時僅限知時辰者〕：六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合 + 暗合/拱虛）。下列僅為有顯著互動的 ${shown} 組；未列出之配對＝已比對且無顯著跨人互動（此為結論，非「未檢查」）。禁止為清單外之任何人／配對推衍 合/冲/破/害/三合/三會/半合/天干五合。（各人命盤內部互動→依互動經典完整判讀；跨人→僅限本清單。）輕重(任鐵樵)：三合/三會強 > 六合/六冲 > 害·破弱(削之可也/不經) > 暗合/拱最輕（拱有爭議·僅作輕微補充）。天干五合跨人＝緣/相吸，吉凶視各自用神 — 非化氣格；勿斷化木/化X（保留干之本氣；化須依各自月令判）。合不必吉 / 冲不必凶 — 結合各自用神/角色，可直斷方向/結果；僅禁命令式分手/勿往來。━━━`
-    : `━━━ ปฏิกิริยาข้ามคน (synastry) — ลิสต์ปิด (เช็คครบแล้ว) · เทียบครบทุกคู่ ${totalPairs} คู่ จาก ${M} คน [${names}] โดยใช้เสา 日月年時 (時เฉพาะคนรู้เวลาเกิด · ก้าน+กิ่ง: 六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合 + 暗合/拱虛) · ด้านล่างขึ้นเฉพาะ ${shown} คู่ที่มีปฏิกิริยาเด่น · คู่ที่ไม่อยู่ในลิสต์ = เช็คแล้วไม่มีปฏิกิริยาข้ามคนเด่น (เป็นข้อสรุป ไม่ใช่ "ยังไม่เช็ค") · ห้ามสร้าง/สันนิษฐาน 合/冲/破/害/三合/三會/半合/天干五合 ให้คน/คู่ที่ไม่อยู่ในลิสต์นี้ · (ปฏิกิริยาภายในดวงเดี่ยว → อ่านเต็มตามคัมภีร์ · ข้ามคน → เฉพาะลิสต์นี้) · ลำดับน้ำหนัก(任鐵樵): 三合/三會 แรง > 六合/六冲 > 害·破 อ่อน(削之可也/不經) > 暗合/拱 เบาสุด (拱ตำราถกเถียง ใช้เป็นสีสันเสริมเท่านั้น) · 天干五合ข้ามคน = ดึงดูด/ผูกพัน(緣) ดี-ร้ายขึ้นกับ用神แต่ละคน — ไม่ใช่化氣格 · ห้ามประกาศ化木/化X (คงธาตุก้านเดิม · การ化ต้องดู月令ของแต่ละคนเอง) · 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ — ดูที่用神/บทบาท ฟันธงทิศ/ผลได้ · ห้ามเฉพาะ 'สั่งการ' เลิก/คบ ━━━`;
+    ? `━━━ 跨人互動 (synastry) — 封閉清單。已比對 ${M} 人 [${names}] 全部 ${totalPairs} 組配對（各取 日月年時柱·干支〔時僅限知時辰者〕：六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合 + 暗合/拱虛）。下列僅為有顯著互動的 ${shown} 組；未列出之配對＝已比對且無顯著跨人互動（此為結論，非「未檢查」）。禁止為清單外之任何人／配對推衍 合/冲/破/害/三合/三會/半合/天干五合。（各人命盤內部互動→依互動經典完整判讀；跨人→僅限本清單。）輕重(任鐵樵)：三合/三會強 > 六合/六冲 > 害·破弱(削之可也/不經) > 暗合/單獨拱最輕；若大運/流年補足拱之中神，先升格論成局(三合/三會)，再論較弱冲害破。天干五合跨人＝緣/相吸，吉凶視各自用神 — 非化氣格；勿斷化木/化X（保留干之本氣；化須依各自月令判）。合不必吉 / 冲不必凶 — 結合各自用神/角色，可直斷方向/結果；僅禁命令式分手/勿往來。━━━`
+    : `━━━ ปฏิกิริยาข้ามคน (synastry) — ลิสต์ปิด (เช็คครบแล้ว) · เทียบครบทุกคู่ ${totalPairs} คู่ จาก ${M} คน [${names}] โดยใช้เสา 日月年時 (時เฉพาะคนรู้เวลาเกิด · ก้าน+กิ่ง: 六合/六冲/六害/六破 + 三合/三會/半合 + 天干五合 + 暗合/拱虛) · ด้านล่างขึ้นเฉพาะ ${shown} คู่ที่มีปฏิกิริยาเด่น · คู่ที่ไม่อยู่ในลิสต์ = เช็คแล้วไม่มีปฏิกิริยาข้ามคนเด่น (เป็นข้อสรุป ไม่ใช่ "ยังไม่เช็ค") · ห้ามสร้าง/สันนิษฐาน 合/冲/破/害/三合/三會/半合/天干五合 ให้คน/คู่ที่ไม่อยู่ในลิสต์นี้ · (ปฏิกิริยาภายในดวงเดี่ยว → อ่านเต็มตามคัมภีร์ · ข้ามคน → เฉพาะลิสต์นี้) · ลำดับน้ำหนัก(任鐵樵): 三合/三會 แรง > 六合/六冲 > 害·破 อ่อน(削之可也/不經) > 暗合/拱 เดี่ยวเบาสุด; ถ้าวัยจร/ปีจรเติมกิ่งกลางของ拱 ให้ยกเป็นวงครบ三合/三會ก่อน แล้วค่อยอ่าน冲/害/破ที่อ่อนกว่า · 天干五合ข้ามคน = ดึงดูด/ผูกพัน(緣) ดี-ร้ายขึ้นกับ用神แต่ละคน — ไม่ใช่化氣格 · ห้ามประกาศ化木/化X (คงธาตุก้านเดิม · การ化ต้องดู月令ของแต่ละคนเอง) · 合ไม่ดีเสมอ / 冲ไม่ร้ายเสมอ — ดูที่用神/บทบาท ฟันธงทิศ/ผลได้ · ห้ามเฉพาะ 'สั่งการ' เลิก/คบ ━━━`;
+  const resolvedProtocol = L === "en"
+    ? "\nHK_SYNASTRY_RESOLVED_V1: Resolve each listed synastry line by type+pillar before verdict. Never call a clash unless that exact pair/axis says 冲. Day-axis 拱/虛拱 is not a Day clash. If a luck/year branch fills the missing middle branch of 拱/半合, read the completed 三合/三會 first, then weaker clash/harm/break. Keep axes separate: Day clash ≠ Month clash ≠ Year clash."
+    : L === "zh"
+    ? "\nHK_SYNASTRY_RESOLVED_V1：判斷前須逐條解析 type+柱位。未列明「冲」者不得斷為冲；日柱拱/虛拱不可改寫成日柱相冲。若大運/流年補足拱/半合之中神，先論成局(三合/三會)，再論較弱的冲害破。柱位必須分開：日冲≠月冲≠年冲。"
+    : "\nHK_SYNASTRY_RESOLVED_V1: ก่อนสรุปข้ามคนต้องไล่ synastry ทีละบรรทัดตาม type+เสา · ห้ามอ้าง 六冲 ถ้าคู่/แกนนั้นไม่มีคำว่า 冲 ในลิสต์ · 拱/虛拱 บนเสาวันไม่ใช่ชงเสาวัน · ถ้าวัยจร/ปีจรเติมกิ่งกลางของ 拱/半合 ให้ตีเป็นวงครบ 三合/三會 ก่อน แล้วค่อยอ่าน冲/害/破ที่อ่อนกว่า · แยกเสาเด็ดขาด: ชงวัน ≠ ชงเดือน ≠ ชงปี";
   /* 31 พ.ค. what-if · มีคนก้ำกึ่ง節氣 → ลิสต์ "คำนวณทั้ง 2 ฝั่ง" ให้แล้ว (เสาหลัก engine + เสา alt ติดธง [ถ้าเกิดอีกฝั่ง])
    * → AI อ่าน hit ทั้ง 2 ฝั่งได้ตรงๆ (ไม่ต้องเดาเอง) · hit ติดธง alt = มีเฉพาะถ้าเกิดอีกฝั่งของ節氣 · ส่วนเสาวัน(日)แน่นอน */
   const anyBorderline = valid.some((p) => !!p.monthBorderline || !!p.yearBorderline);
@@ -317,7 +349,7 @@ export function buildSynastry(people: PersonSyn[], lang: string): string {
     const none = L === "en" ? "  (no pair has a prominent cross-person reaction — all pairs checked)"
       : L === "zh" ? "  （所有配對已比對，無顯著跨人互動）"
       : "  (เช็คทุกคู่แล้ว · ไม่มีคู่ใดมีปฏิกิริยาข้ามคนเด่น)";
-    return title + blNote + cmpNote + "\n" + none;
+    return title + resolvedProtocol + blNote + cmpNote + "\n" + none;
   }
-  return title + blNote + cmpNote + "\n" + lines.join("\n");
+  return title + resolvedProtocol + blNote + cmpNote + "\n" + lines.join("\n");
 }

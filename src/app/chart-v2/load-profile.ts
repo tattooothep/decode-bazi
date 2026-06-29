@@ -3,6 +3,7 @@
  * shape ตรงกับ ./data.ts เดิม (drop-in replacement)
  */
 import { q1 } from "@/lib/db";
+import { buildElementDistribution } from "@/lib/element-distribution-functional";
 import type { ElementCode } from "./data";
 
 type Pillar = { stem: string; branch: string };
@@ -111,53 +112,18 @@ export async function loadProfileChart(profileId: string, orgId: string) {
     };
   }).filter((p): p is NonNullable<typeof p> => !!p);
 
-  // Element distribution from natal
-  // F-VOYTEK-CSS (reverse-engineered from Voytek HTML pixel widths · Aeaw 9/10 god ตรงเป๊ะ)
-  // - skip day stem (DM)
-  // - branch visible disabled (Voytek doesn't use; main qi double-counts via hidden)
-  // - stem weight 6 · hidden weight by hidden-count: 1=[10] 2=[7,3] 3=[6,2,2] (Voytek CSS-decoded)
-  // - position weight: hour 0.9 · day 1.0 · month 1.6 · year 0.8
-  // ENV: USE_DEEPTUNE_FORMULA=false → revert to F1 legacy
-  const USE_DEEPTUNE = process.env.USE_DEEPTUNE_FORMULA !== 'false';
+  // Element distribution for visible chart weights: canonical SystemB only.
+  // Do not use this to replace Yongshen/Ji decisions below.
   const POS_W: Record<string, number> = { hour: 0.9, day: 1.0, month: 1.6, year: 0.8 };
   const VOYTEK_HIDDEN: Record<number, number[]> = { 1: [10], 2: [7, 3], 3: [6, 2, 2] };
-
-  const dist: Record<ElementCode, number> = { Wood:0, Fire:0, Earth:0, Metal:0, Water:0 };
-  if (USE_DEEPTUNE) {
-    for (const pos of ACTIVE_POSITIONS) {
-      const p = pillars[pos];
-      if (!p) continue;
-      const pw = POS_W[pos];
-      if (pos !== "day") {
-        dist[STEM_ELEMENT[p.stem]] += 6 * pw;
-      }
-      // branch visible: DISABLED
-      const hh = HIDDEN[p.branch] || [];
-      const wTab = VOYTEK_HIDDEN[hh.length] || [];
-      for (let i = 0; i < hh.length; i++) {
-        const w = wTab[i] || 0;
-        if (w > 0) dist[STEM_ELEMENT[hh[i]]] += w * pw;
-      }
-    }
-  } else {
-    // F1 legacy fallback
-    for (const pos of ACTIVE_POSITIONS) {
-      const p = pillars[pos];
-      if (!p) continue;
-      dist[STEM_ELEMENT[p.stem]] += 12;
-      dist[BRANCH_ELEMENT[p.branch]] += 12;
-      for (const h of HIDDEN[p.branch] || []) {
-        dist[STEM_ELEMENT[h]] += 4;
-      }
-    }
-  }
-  const total = Object.values(dist).reduce((a,b) => a+b, 0) || 1;
+  const USE_TENGODS_WEIGHTED = true;
+  const sysBDist = buildElementDistribution(pillars as any, "systemB");
   const ELEMENTS_DIST: Record<ElementCode, number> = {
-    Wood:  Math.round((dist.Wood / total) * 100),
-    Fire:  Math.round((dist.Fire / total) * 100),
-    Earth: Math.round((dist.Earth / total) * 100),
-    Metal: Math.round((dist.Metal / total) * 100),
-    Water: Math.round((dist.Water / total) * 100),
+    Wood: Math.round(sysBDist.pctDisplay.wood || 0),
+    Fire: Math.round(sysBDist.pctDisplay.fire || 0),
+    Earth: Math.round(sysBDist.pctDisplay.earth || 0),
+    Metal: Math.round(sysBDist.pctDisplay.metal || 0),
+    Water: Math.round(sysBDist.pctDisplay.water || 0),
   };
 
   // Yongshen + Ji
@@ -316,8 +282,8 @@ export async function loadProfileChart(profileId: string, orgId: string) {
     if (PRODUCES[tEl] === dmEl) return samePol ? '偏印' : '正印';
     return null;
   }
-  // F-VOYTEK-CSS for 10 Gods (same toggle USE_DEEPTUNE_FORMULA)
-  if (USE_DEEPTUNE) {
+  // Keep existing weighted 10-gods display scale; SystemB only replaces five-element weights.
+  if (USE_TENGODS_WEIGHTED) {
     for (const pos of ACTIVE_POSITIONS) {
       const p = pillars[pos];
       if (!p) continue;

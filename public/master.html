@@ -1153,6 +1153,16 @@
     var SERVER_HISTORY_IMPORTED_KEY = 'hk_sifu_history_import_v2';
     var serverHistorySyncing = false;
     function payloadObj(v){ return (v && typeof v === 'object') ? v : {}; }
+    function rowBelongsToProfile(row, pid){
+      if (!row || !pid) return false;
+      if (String(row.profile_id || '') === String(pid)) return true;
+      var rp = payloadObj(row.request_payload);
+      var ids = []
+        .concat(Array.isArray(rp.profileIds) ? rp.profileIds : [])
+        .concat(Array.isArray(rp.profile_ids) ? rp.profile_ids : [])
+        .concat(Array.isArray(rp.historyProfileIds) ? rp.historyProfileIds : []);
+      return ids.map(String).indexOf(String(pid)) >= 0;
+    }
     function serverThreadId(row){
       var rp = payloadObj(row.request_payload), rm = payloadObj(row.response_meta);
       var id = rp.thread_id || rp.local_thread_id || rm.thread_id || rm.local_thread_id;
@@ -1168,7 +1178,7 @@
       var groups = {};
       (rows || []).slice().reverse().forEach(function(r){
         if (!r || !r.question || !r.answer) return;
-        if (!pid || String(r.profile_id || '') !== pid) return;
+        if (!rowBelongsToProfile(r, pid)) return;
         var tid = serverThreadId(r);
         if (!groups[tid]) groups[tid] = stampThreadProfile({ id:tid, title:'', ts:0, msgs:[] }, pid);
         var g = groups[tid];
@@ -1259,6 +1269,60 @@
         serverHistorySyncing = false;
       }
     }
+    function threadPendingAnswer(msgs){
+      if (!msgs || !msgs.length) return false;
+      return msgs[msgs.length - 1].role === 'user';
+    }
+    var resumePollTimer = null;
+    var resumePollN = 0;
+    var resumePollMax = 20;
+    function stopResumePoll(){ if (resumePollTimer) { clearTimeout(resumePollTimer); resumePollTimer = null; } resumePollN = 0; }
+    function startResumePoll(){
+      stopResumePoll();
+      resumePollTick();
+    }
+    function resumePollTick(){
+      if (resumePollN >= resumePollMax) return;
+      resumePollN += 1;
+      resumePollTimer = setTimeout(function(){
+        syncServerHistory().then(function(){
+          var pid = activeProfileId();
+          var o = loadThreads();
+          var t = o.threads.find(function(x){ return x.id === currentThreadId && threadMatchesProfile(x, pid); });
+          if (!t) return;
+          if (!threadPendingAnswer(t.msgs)) { renderThreadMsgs(t); stopResumePoll(); return; }
+          resumePollTick();
+        }).catch(resumePollTick);
+      }, 6000);
+    }
+    /* Mobile: พับจอ/ล็อกเครื่องแล้วกลับมา → ดึงคำตอบจาก DB (ซินแสรันต่อบนเซิร์ฟเวอร์) */
+    function refreshChatAfterResume(wasStreaming){
+      var pid = activeProfileId();
+      if (!pid) return;
+      loadHistory();
+      var o = loadThreads();
+      var t = o.threads.find(function(x){ return x.id === currentThreadId && threadMatchesProfile(x, pid); });
+      if (!t) {
+        var arr = profileThreads(o, pid);
+        if (arr[0]) { t = arr[0]; currentThreadId = t.id; }
+      }
+      if (t) {
+        renderThreadMsgs(t);
+        if (wasStreaming && threadPendingAnswer(t.msgs)) {
+          addMsg('sifu', '⏳ ซินแสยังทำงานอยู่บนเซิร์ฟเวอร์ · เปิดแอปกลับมาดูคำตอบ...');
+          startResumePoll();
+        } else {
+          stopResumePoll();
+        }
+      }
+      sendBtn.disabled = false;
+      window._sifuStreaming = false;
+    }
+    document.addEventListener('visibilitychange', function(){
+      if (document.visibilityState === 'hidden') { try { persist(); } catch(_){} return; }
+      var wasStreaming = !!window._sifuStreaming;
+      syncServerHistory().then(function(){ refreshChatAfterResume(wasStreaming); }).catch(function(){ refreshChatAfterResume(wasStreaming); });
+    });
 
     function addMsg(role, text){
       const div = document.createElement('div');
@@ -1496,6 +1560,8 @@
             if (s2){ s2.value = ''; hkpFillSecondSelect._lastFirst = null; if (typeof hkpUpdatePairUI === 'function') hkpUpdatePairUI(); }
             /* sync history/activeGroupHistoryKey ให้ตรง state เดี่ยว (กัน history คู่เดิมค้างใน heap หลัง bfcache) */
             if (typeof hkgRenderActiveHistory === 'function') hkgRenderActiveHistory();
+            var wasStreaming = !!window._sifuStreaming;
+            syncServerHistory().then(function(){ refreshChatAfterResume(wasStreaming); }).catch(function(){ refreshChatAfterResume(wasStreaming); });
           }
         });
         var swp = document.getElementById('hk-lang-switch');
@@ -1559,7 +1625,7 @@
 
     /* ════════ 🧑‍🤝‍🧑 GROUP MODE (parallel · kill-switch) ════════
        กลุ่ม "-" → คืน null → send() ทำงานเหมือนเดิมเป๊ะ (path /api/sifu เดี่ยว)
-       เลือกกลุ่ม → คืน { group, label, ids[] } (รวมดวงตัวเองเสมอ · cap 10)
+       เลือกกลุ่ม → คืน { group, label, ids[] } (รวมดวงตัวเองเสมอ · server รับเฉพาะดวงคู่ 2 คน)
        ลบทั้งบล็อกนี้ + HTML #hkg-wrap + CSS .hkg-* = หน้ากลับเป็นเดิม */
     var hkgGroupSel = document.getElementById('hkg-group');
     var hkgCountEl  = document.getElementById('hkg-count');
@@ -1611,7 +1677,7 @@
 	      var inf = inferNetworkGroup(p.relationship_type, p.name, p.nickname);
 	      return inf ? inf.group : null;
     }
-    /* คำนวณ ids ของกลุ่มที่เลือก · รวมดวงตัวเองเสมอ · cap 10 */
+    /* คำนวณ ids ของกลุ่มที่เลือก · รวมดวงตัวเองเสมอ · ใช้แสดงรายชื่อ; ตอนยิงจริง server รับเฉพาะดวงคู่ 2 คน */
     function hkgMemberIds(group){
       var ids = [];
       hkgProfiles.forEach(function(p){
@@ -1619,7 +1685,7 @@
         if (hkgGroupOf(p) === group && ids.indexOf(pid) < 0) ids.push(pid);
       });
       if (hkgSelfId && ids.indexOf(hkgSelfId) < 0) ids.unshift(hkgSelfId); /* ตัวเองนำเสมอ */
-      return ids.slice(0, 10); /* cap 10 (backend cap ซ้ำ) */
+      return ids.slice(0, 10); /* UI preview; hkgRun/server จะไม่ส่งทั้งกลุ่มเกิน 2 */
 	    }
 	    /* state ปัจจุบัน · null = โหมดเดี่ยว */
 	    function hkgActiveGroup(){
@@ -1799,18 +1865,20 @@
 	      } else {
 	        history = groupHistory.slice(-40);
 	      }
-	      if (echoUser) addMsg('user', text);
+	      var priorGroupHistory = groupHistory.slice(-8);
+	      if (echoUser) {
+	        addMsg('user', text);
+	        groupHistory = groupHistory.concat([{ role:'user', content:text }]).slice(-40);
+	        history = groupHistory.slice(-40);
+	        hkgSaveBoundHistory(bindingG, history);
+	      }
 	      sendBtn.disabled = true; window._sifuStreaming = true;
       if (hkgGoBtn) hkgGoBtn.disabled = true;
       var phG = addMsg('sifu', 'ซินแสกำลังคิด ...');
       try {
         var modelG = selectedSifuModel();
-        if (modelG === 'grok-cli' && hkgG.ids.length > 2) {
-          phG.textContent = '⚠ Grok CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง เพราะ packet ดวงหลายคนยาวเกิน · เลือกดวงที่สองเอง หรือใช้ Claude CLI สำหรับกลุ่มใหญ่';
-          return true;
-        }
-        if (modelG === 'codex-cli' && hkgG.ids.length > 2) {
-          phG.textContent = '⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง เพราะ packet ดวงหลายคนยาวเกิน context · เลือกดวงที่สองเอง หรือใช้ Claude CLI สำหรับกลุ่มใหญ่';
+        if (hkgG.ids.length > 2) {
+          phG.textContent = '⚠ โหมดดวงคู่รับเฉพาะ 2 ดวงที่เลือกเท่านั้น · เลือกดวงที่สองในช่องด้านบน ไม่ส่งผังทั้งกลุ่ม';
           return true;
         }
         var rG = await fetch('/api/sifu/group?model=' + encodeURIComponent(modelG), {
@@ -1820,7 +1888,7 @@
 	            profileIds: hkgG.ids,
 	            groupLabel: hkgG.label,
 	            message: text,
-	            history: groupHistory.slice(-8),
+	            history: priorGroupHistory,
 	            threadId: bindingG.key,
 	            groupBindingHash: bindingG.key,
 	            historyGroupBindingHash: groupHistory.length ? bindingG.key : '',
@@ -1851,28 +1919,29 @@
 	          if (replyG.trim()){
 	            renderMd(phG, replyG);
 	            groupHistory = groupHistory.concat([
-	              { role:'user', content:text },
 	              { role:'assistant', content:replyG.trim() }
 	            ]).slice(-40);
 	            history = groupHistory.slice(-40);
 	            activeGroupHistoryKey = bindingG.key;
 	            hkgSaveBoundHistory(bindingG, history);
+	            stopResumePoll();
 	          } else {
 	            phG.textContent = '⚠ ขัดข้อง · ไม่มีข้อความตอบกลับ';
 	          }
 	        } else {
           var dG = await rG.json().catch(function(){ return {}; });
 	          if (rG.ok && dG.reply) renderMd(phG, dG.reply);
-	          else if (dG.error === 'codex_context_limit_group_size') phG.textContent = '⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง · ถ้าจะอ่าน ' + (dG.count || 'หลาย') + ' คนให้เลือก Claude CLI หรือเลือกทีละคู่';
+	          else if (dG.error === 'pair_context_requires_two_profiles') phG.textContent = '⚠ โหมดดวงคู่รับเฉพาะ 2 ดวงที่เลือกเท่านั้น · เลือกดวงที่สองในช่องด้านบน';
+	          else if (dG.error === 'codex_context_limit_group_size') phG.textContent = '⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง · เลือกทีละคู่';
 	          else phG.textContent = '⚠ ขัดข้อง: ' + (dG.error || rG.status);
 	          if (rG.ok && dG.reply){
 	            groupHistory = groupHistory.concat([
-	              { role:'user', content:text },
 	              { role:'assistant', content:dG.reply }
 	            ]).slice(-40);
 	            history = groupHistory.slice(-40);
 	            activeGroupHistoryKey = bindingG.key;
 	            hkgSaveBoundHistory(bindingG, history);
+	            stopResumePoll();
 	          }
 	        }
       } catch(e){
@@ -1930,6 +1999,9 @@
 	      }
 	      sendBtn.disabled = true; window._sifuStreaming = true;
 	      addMsg('user', text);
+	      var priorHistory = history.slice(-8);
+	      history.push({ role: 'user', content: text });
+	      persist(); /* บันทึกคำถามทันที · พับจอระหว่างรอไม่หาย */
 
 	      if (location.search.indexOf('debug') >= 0) console.log('[sifu] Q&A payload · hasProfileId =', !!pid);
       const placeholder = addMsg('sifu', 'ซินแสกำลังคิด ...');
@@ -1939,7 +2011,7 @@
           headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
           body: JSON.stringify({
             message: text,
-            history: history.slice(-8),   /* จำบทสนทนา · backend ตัด 6 อีกชั้น */
+            history: priorHistory,   /* จำบทสนทนาก่อนคำถามนี้ · backend ตัด 6 อีกชั้น */
             profileId: pid || undefined,
             threadId: activeThreadId(),
             threadProfileId: pid,
@@ -1966,9 +2038,9 @@
           });
           if (reply.trim()) {
             renderMd(placeholder, reply);
-            history.push({ role: 'user', content: text });
             history.push({ role: 'assistant', content: reply.trim() });
             persist();
+            stopResumePoll();
           } else {
             placeholder.textContent = '⚠ ขัดข้อง · ไม่มีข้อความตอบกลับ';
           }
@@ -1977,9 +2049,9 @@
           const d = await r.json().catch(function(){ return {}; });
           if (r.ok && d.reply) {
             renderMd(placeholder, d.reply);
-            history.push({ role: 'user', content: text });
             history.push({ role: 'assistant', content: d.reply });
             persist();
+            stopResumePoll();
           } else if (d.error === 'identity_mismatch') {
             placeholder.textContent = 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ';
           } else if (String(d.error || '').indexOf('codex_cli_auth_required') !== -1) {
@@ -1994,7 +2066,7 @@
           ? 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ'
           : em.indexOf('codex_cli_auth_required') !== -1
             ? '⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis'
-            : '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+            : '⏳ ซินแสยังทำงานอยู่บนเซิร์ฟเวอร์ · พับจอได้ · เปิดแอปกลับมาดูคำตอบ (รอ ~1-2 นาที)';
       } finally {
         sendBtn.disabled = false; window._sifuStreaming = false;
         inputEl.focus();

@@ -2329,7 +2329,7 @@ window.addEventListener('resize', function(){
     if(!d || !d.pillars){ console.warn('[HK] no pillars in response'); return; }
     if(!b){ console.warn('[HK] renderAll missing snapshot'); return; }
     const p=d.pillars, a=d.analysis||{};
-    const tg=a.ten_gods_map||{}, qp=a.qi_phases||{}, ec=a.element_counts||{}, ji=a.jishen||{elements:[],wealth_role:'neutral'}, ug=a.useful_god||{}, lp=a.luck_pillars||[], curIdx=a.current_luck_idx||0;
+    const tg=a.ten_gods_map||{}, qp=a.qi_phases||{}, ji=a.jishen||{elements:[],wealth_role:'neutral'}, ug=a.useful_god||{}, lp=a.luck_pillars||[], curIdx=a.current_luck_idx||0;
     const luckDrill = a.luck_decade_drilldown || [];
 
     // §01 Hero · DM card + name + meta
@@ -2350,10 +2350,6 @@ window.addEventListener('resize', function(){
       const timeLabel = b.birthTimeKnown === false ? 'ไม่ทราบเวลา' : (b.time || '12:00');
       heroMeta.innerHTML=`<span>📅 ${b.date}</span><span>🕐 ${timeLabel}</span><span>📍 ${b.place||'Bangkok'}</span>`;
     }
-    // คำนวณ totalEl + topEl ล่วงหน้า (ใช้ใน Hero + Section 02)
-    const totalEl=Object.values(ec).reduce((s,v)=>s+v,0)||1;
-    let topEl='earth', topVal=0;
-    Object.entries(ec).forEach(([k,v])=>{ if(v>topVal){topEl=k;topVal=v;} });
     // hero-tags: ป้ายธาตุ + structure (DM + jishen wealth + element top)
     const heroTags=document.querySelector('.hero-tags');
     if(heroTags){
@@ -2478,25 +2474,17 @@ window.addEventListener('resize', function(){
       ledeP.innerHTML=`คุณเป็น <b>${dmShort}</b> ในฤดู${season} · เกิดวัน${dowTh} <b>${b.date}</b> ${timePhrase} ที่ ${b.place||'กรุงเทพฯ'}${tstLine}`;
     }
 
-    // §02 Elements bar (5 ธาตุ) · 19 พ.ค. · ใช้ Functional (voytek_strength.bars) · ตำราอากง
-    // ถ้า voytek_strength.source = "functional-wrapper7" → ใช้ functional pct
-    // fallback · raw count (legacy)
+    // §02 Elements bar (5 ธาตุ) · canonical SystemB only. No raw/Voytek fallback.
     const elBars=document.querySelectorAll('.el-bar i');
     const elPcts=document.querySelectorAll('.el-pct');
     const elOrder=['wood','fire','earth','metal','water'];
-    const _vs = a.voytek_strength || {};
-    const _functional = (_vs.source === 'functional-wrapper7' && Array.isArray(_vs.bars))
-      ? Object.fromEntries(_vs.bars.map(b => [b.element, b.pct]))
-      : null;
+    const _ed = a.element_distribution || {};
+    const _systemB = (_ed.engine_version === 'system-b-v1' && _ed.pctDisplay) ? _ed.pctDisplay : null;
     elOrder.forEach((e,i)=>{
-      let pct;
-      if (_functional && typeof _functional[e] === 'number') {
-        pct = _functional[e]; /* functional · จาก rootedness wrapper-7 */
-      } else {
-        const v=ec[e]||0; pct=Math.round(v/totalEl*100); /* raw fallback */
-      }
+      const raw = _systemB && typeof _systemB[e] === 'number' ? _systemB[e] : null;
+      const pct = raw == null ? 0 : Math.round(raw);
       if(elBars[i]) elBars[i].style.width=pct+'%';
-      if(elPcts[i]) elPcts[i].textContent=pct+'%';
+      if(elPcts[i]) elPcts[i].textContent=raw == null ? '—' : pct+'%';
     });
     /* §06 用神 / 忌神 list · ใช้ analysis.useful_god + analysis.jishen */
     const EL_TH_GLOBAL={wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
@@ -3248,9 +3236,9 @@ window.addEventListener('resize', function(){
     });
     const godRows=document.querySelectorAll('.gods-list .god-row');
     const tg10Order=['正官','正財','七殺','食神','比肩'];
-    /* 19 พ.ค. · ใช้ Functional (voytek_strength.bars) · map ten god → role pct
+    /* 19 พ.ค. · ใช้ Functional/SystemB bars · map ten god → role pct
      * 正官·七殺 = power · 正財 = wealth · 食神 = output · 比肩 = parallel
-     * fallback · raw tgCounts (legacy) */
+     * fail closed when functional bars are missing */
     const _vsR = a.voytek_strength || {};
     const _fnRoles = (_vsR.source === 'functional-wrapper7' && Array.isArray(_vsR.bars))
       ? Object.fromEntries(_vsR.bars.map(b => [b.role, b.pct]))
@@ -3264,12 +3252,12 @@ window.addEventListener('resize', function(){
         /* functional · ใช้ pct/10 เป็น "count" สำหรับ radar normalization */
         cnt = (_fnRoles[TG_TO_ROLE[gname]] || 0) / 10;
       } else {
-        cnt = tgCounts[gname]||0; /* raw fallback */
+        cnt = 0;
       }
       tg10Counts.push(cnt);
       const pct=Math.min(95, Math.round(cnt*22+10));
-      const lvl=cnt>=2?'สูง':cnt>=1?'กลาง':'ต่ำ';
-      const lvlCls=cnt>=2?'high':cnt>=1?'mid':'low';
+      const lvl=!_fnRoles?'—':cnt>=2?'สูง':cnt>=1?'กลาง':'ต่ำ';
+      const lvlCls=!_fnRoles?'low':cnt>=2?'high':cnt>=1?'mid':'low';
       if(row){
         const barEl=row.querySelector('.god-bar i');
         const lvlEl=row.querySelector('.god-lvl');
