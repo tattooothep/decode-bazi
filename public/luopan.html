@@ -288,12 +288,23 @@
       </select>
       <button class="btn" id="btnAddProfile" title="เพิ่มคน">+ เพิ่มคน</button>
     </div>
+    <div class="row" id="addProfileRow" style="gap:6px;align-items:center;display:none;margin-top:6px">
+      <input id="newProfileName" type="text" maxlength="40" placeholder="ชื่อคนใหม่ · เช่น คุณเอ" autocomplete="off" style="flex:1;background:var(--bg);color:var(--fg);border:1px solid var(--gold-line,var(--line));border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:12px;"/>
+      <button class="btn" id="btnSaveProfile" title="บันทึก">✓</button>
+      <button class="btn" id="btnCancelProfile" title="ยกเลิก">✕</button>
+    </div>
     <div class="help-line" id="profileStatus">ยังไม่มีโปรไฟล์</div>
 
     <div class="help-line" data-i18n="ctrl.helpHouse">ใช้สร้างผัง 山 ดาวภูเขา · 水 ดาวแม่น้ำ · 基 ดาวฐาน 9 ช่องตรงกลาง · ค่าเริ่มต้น S2 180° / Period 9</div>
 
     <div class="btn-grp">
       <button class="btn" id="btnLock" data-i18n="btn.lock">🔒 ล็อกบ้าน · เริ่มสำรวจ</button>
+    </div>
+    <div class="row" id="houseListRow" style="gap:6px;align-items:center;margin-top:6px">
+      <select id="houseSelect" title="บ้านที่บันทึก" style="flex:1;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:12px;">
+        <option value="">— บ้านที่บันทึก —</option>
+      </select>
+      <button class="btn" id="btnDeleteHouse" title="ลบบ้านที่เลือก">🗑</button>
     </div>
     <div class="btn-grp" style="margin-top:6px">
       <button class="btn" id="btnSave" data-i18n="btn.save">บันทึก</button>
@@ -479,6 +490,11 @@
       </div>
       <div class="ai-advice-meta" id="aiAdviceMeta">ยังไม่มีคำแนะนำ</div>
       <div class="ai-advice-body" id="aiAdviceBody">กดปุ่ม “ซินแสแนะนำ” เพื่อสรุปทิศจากสถานะบ้าน/เข็ม/pin ปัจจุบัน</div>
+      <div class="ai-chat-log" id="aiChatLog" style="margin-top:10px;max-height:240px;overflow-y:auto"></div>
+      <div class="row" id="aiChatRow" style="gap:6px;align-items:center;margin-top:8px">
+        <input id="aiChatInput" type="text" maxlength="300" placeholder="ถามซินแสต่อ · เช่น วางเตียงตรงไหนดี?" autocomplete="off" style="flex:1;background:var(--bg);color:var(--fg);border:1px solid var(--gold-line,var(--line));border-radius:6px;padding:7px 9px;font-family:var(--thai);font-size:13px;"/>
+        <button class="btn" id="btnAiChat">ถาม</button>
+      </div>
     </div>
 
     
@@ -3790,7 +3806,7 @@ function applyLock(){
   const rawYear = Number($hYear.value);
   const d = Number.isFinite(rawFacing) ? ((rawFacing % 360) + 360) % 360 : 180;
   const y = Number.isFinite(rawYear) ? Math.max(1864, Math.min(2100, Math.round(rawYear))) : 2026;
-  $hFacing.value = String(d);
+  $hFacing.value = String(Math.round(d * 10) / 10);
   $hYear.value = String(y);
   const p = yearToPeriod(y);
   lockedFacing = d; lockedYear = y; lockedPeriod = p.n;
@@ -3841,6 +3857,48 @@ function saveProfiles(){ try{ localStorage.setItem(LS_PROFILES_KEY, JSON.stringi
 function loadProfiles(){ try{ const raw = localStorage.getItem(LS_PROFILES_KEY); profiles = raw ? (JSON.parse(raw)||[]) : []; }catch(e){ profiles=[]; } }
 function getSelectedProfileId(){ return localStorage.getItem(LS_SELECTED_PROFILE_KEY) || ''; }
 function setSelectedProfileId(id){ try{ localStorage.setItem(LS_SELECTED_PROFILE_KEY, id || ''); }catch(e){} }
+/* ── หลายบ้าน ── */
+const LS_HOUSES_KEY = 'luopan-houses-v1';
+let houses = [];
+function saveHouses(){ try{ localStorage.setItem(LS_HOUSES_KEY, JSON.stringify(houses)); }catch(e){} }
+function loadHouses(){
+  try{ const raw = localStorage.getItem(LS_HOUSES_KEY); houses = raw ? (JSON.parse(raw)||[]) : []; }catch(e){ houses=[]; }
+  /* ย้ายข้อมูลบ้านเดิม (single slot) มาเป็นบ้านแรก ครั้งเดียว */
+  if(!houses.length){
+    try{
+      const old = localStorage.getItem(LS_KEY);
+      if(old){ const d = JSON.parse(old); if(d && (d.facing!=null || d.name)){
+        houses = [{ id:`h_${d.ts||Date.now()}`, name:d.name||'บ้านของฉัน', facing:Number(d.facing)||180, year:Number(d.year)||2026, locked:!!d.locked, profileId:d.profileId||'', ts:d.ts||Date.now() }];
+        saveHouses();
+      }}
+    }catch(e){}
+  }
+}
+function renderHouseSelect(){
+  const sel = document.getElementById('houseSelect');
+  if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— บ้านที่บันทึก —</option>' + houses.map(h =>
+    `<option value="${h.id}">${String(h.name||'บ้าน').replace(/</g,'&lt;')} · ${Number(h.facing||0).toFixed(1)}° · ยุค ${yearToPeriod(Number(h.year)||2026).n}</option>`
+  ).join('');
+  if(houses.some(h=>h.id===cur)) sel.value = cur;
+}
+function applyHouseData(d){
+  if(!d) return;
+  if(houseLocked) applyUnlock(); /* ปลดก่อน เพื่อให้เขียนช่อง + ล็อกใหม่ได้ */
+  $hName.value = d.name || '';
+  $hFacing.value = String(Math.round((Number(d.facing) || 180) * 10) / 10);
+  $hYear.value = d.year || 2026;
+  if(d.profileId && (profiles||[]).some(p => p.id === d.profileId)){
+    setSelectedProfileId(d.profileId);
+    const psel = document.getElementById('profileSelect');
+    if(psel) psel.value = d.profileId;
+    renderProfileSelect();
+  }
+  updateHouseReadout();
+  if(d.locked) applyLock(); /* ล็อกกลับ → ผัง/เข็ม/ยุค อัปเดตจริง */
+  $houseStatus.textContent = `โหลด "${d.name||'บ้าน'}" แล้ว` + (d.locked ? ' · ล็อกอัตโนมัติ' : '');
+}
 function renderProfileSelect(){
   const sel = document.getElementById('profileSelect');
   const st = document.getElementById('profileStatus');
@@ -3864,19 +3922,57 @@ async function loadMasterProfiles(){
   }catch(e){}
 }
 document.getElementById('btnSave').addEventListener('click', () => {
-  const data = { name:$hName.value, facing:$hFacing.value, year:$hYear.value, ts:Date.now() };
-  try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); $houseStatus.textContent = `บันทึกแล้ว · ${new Date().toLocaleTimeString()}`; }
+  const name = ($hName.value || '').trim() || 'บ้านของฉัน';
+  const data = {
+    name,
+    facing: houseLocked ? Number(lockedFacing) : Number($hFacing.value),
+    year: houseLocked ? Number(lockedYear) : Number($hYear.value),
+    locked: houseLocked,
+    profileId: getSelectedProfileId() || '',
+    ts: Date.now()
+  };
+  try{
+    /* upsert ตามชื่อบ้าน → ชื่อซ้ำ = ทับบ้านเดิม · ชื่อใหม่ = เพิ่มบ้านใหม่ */
+    const idx = houses.findIndex(h => String(h.name||'') === name);
+    let id;
+    if(idx >= 0){ id = houses[idx].id; houses[idx] = { ...data, id }; }
+    else { id = `h_${Date.now()}`; houses.push({ ...data, id }); }
+    saveHouses();
+    localStorage.setItem(LS_KEY, JSON.stringify(data)); /* เก็บบ้านล่าสุดไว้ backward-compat */
+    renderHouseSelect();
+    const sel = document.getElementById('houseSelect'); if(sel) sel.value = id;
+    $houseStatus.textContent = `บันทึก "${name}" แล้ว · ${new Date().toLocaleTimeString()}` + (houseLocked ? ' · รวมสถานะล็อก' : '');
+  }
   catch(e){ $houseStatus.textContent = 'บันทึกไม่สำเร็จ: ' + e.message; }
 });
 document.getElementById('btnLoad').addEventListener('click', () => {
   try{
-    const raw = localStorage.getItem(LS_KEY);
-    if(!raw){ $houseStatus.textContent = 'ยังไม่มีข้อมูลบันทึก'; return; }
-    const d = JSON.parse(raw);
-    $hName.value = d.name || ''; $hFacing.value = d.facing || 180; $hYear.value = d.year || 2026;
-    updateHouseReadout();
-    $houseStatus.textContent = `โหลดแล้ว · บันทึกเมื่อ ${new Date(d.ts).toLocaleString()}`;
+    const sel = document.getElementById('houseSelect');
+    const id = sel?.value || '';
+    let d = id ? houses.find(h => h.id === id) : null;
+    if(!d){ /* ไม่ได้เลือกในรายการ → ใช้บ้านล่าสุด */
+      const raw = localStorage.getItem(LS_KEY);
+      d = raw ? JSON.parse(raw) : null;
+    }
+    if(!d){ $houseStatus.textContent = 'ยังไม่มีข้อมูลบันทึก'; return; }
+    applyHouseData(d);
   } catch(e){ $houseStatus.textContent = 'โหลดไม่สำเร็จ: ' + e.message; }
+});
+document.getElementById('houseSelect')?.addEventListener('change', (e) => {
+  const id = e.target.value || '';
+  if(!id) return;
+  const d = houses.find(h => h.id === id);
+  if(d) applyHouseData(d); /* เลือกบ้าน = โหลดทันที */
+});
+document.getElementById('btnDeleteHouse')?.addEventListener('click', () => {
+  const sel = document.getElementById('houseSelect');
+  const id = sel?.value || '';
+  if(!id){ $houseStatus.textContent = 'เลือกบ้านที่จะลบก่อน'; return; }
+  const h = houses.find(x => x.id === id);
+  houses = houses.filter(x => x.id !== id);
+  saveHouses();
+  renderHouseSelect();
+  $houseStatus.textContent = `ลบบ้าน "${h?.name || ''}" แล้ว`;
 });
 
 function currentHouseSnapshotKey(){
@@ -3912,7 +4008,7 @@ function computeLocalAdvice(){
   ].join('\n');
   return msg;
 }
-async function fetchEngineAdvice(){
+async function buildHousePacket(){
   const profileId = getSelectedProfileId() || null;
   const pinPayload = (pins || []).map((p) => ({ type: p.type || "pin", degree: pinRingDeg(p) }));
   const body = {
@@ -3944,7 +4040,19 @@ async function fetchEngineAdvice(){
   if (focus?.scoring) {
     lines.push(`องศาเข็มตอนนี้: ${focus.degree}° · score=${focus.scoring.final_score} · evidence=${(focus.scoring.evidence||[]).join(',')}`);
   }
-  const engineBrief = lines.join('\n');
+  // ── ศาสตร์ในบ้าน (เบื้องต้น) + ผู้อยู่ ──
+  if(houseLocked){
+    const fm = degToMountain(lockedFacing), sm = degToMountain(((Number(lockedFacing)+180)%360));
+    lines.push(`บ้าน: ${$hName.value||'(ไม่ตั้งชื่อ)'} · หันหน้า ${Number(lockedFacing).toFixed(1)}° ${fm.c}${fm.m} · นั่งหลัง ${sm.c}${sm.m} · ยุค ${lockedPeriod}`);
+  } else {
+    lines.push(`บ้าน: ${$hName.value||'(ไม่ตั้งชื่อ)'} · ยังไม่ได้ล็อกทิศ`);
+  }
+  const occ = (profiles.find(p => p.id === (getSelectedProfileId()||'')) || {}).name;
+  if(occ) lines.push(`ผู้อยู่: ${occ}`);
+  return lines.join('\n');
+}
+async function fetchEngineAdvice(){
+  const engineBrief = await buildHousePacket();
   // master pipeline: ใช้ /api/sifu ตอบภาษาคน โดยแนบ profileId + context จาก engine360
   const selected = getSelectedProfileId() || '';
   const hasRealProfile = selected && !String(selected).startsWith('p_');
@@ -3996,25 +4104,127 @@ document.getElementById('btnAiAdvice')?.addEventListener('click', () => {
     if(btn){ btn.disabled = false; btn.textContent = '✨ ซินแสแนะนำ'; }
   });
 });
+/* ── ถามซินแสต่อ (chat) · reuse /api/sifu + แนบ context ทิศล่าสุด ── */
+function planImageDataURL(maxW){
+  if(!planImg) return null;
+  try{
+    const scale = Math.min(1, maxW / Math.max(planImg.width || 1, planImg.height || 1));
+    const w = Math.max(1, Math.round((planImg.width || 1) * scale));
+    const h = Math.max(1, Math.round((planImg.height || 1) * scale));
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    cv.getContext('2d').drawImage(planImg, 0, 0, w, h);
+    return cv.toDataURL('image/jpeg', 0.82);
+  }catch(e){ return null; }
+}
+async function askLuopanSifu(question){
+  const selected = getSelectedProfileId() || '';
+  const hasRealProfile = selected && !String(selected).startsWith('p_');
+  let packet = '';
+  try{ packet = await buildHousePacket(); }
+  catch(_){ packet = (document.getElementById('aiAdviceBody')?.textContent || '').trim(); }
+  /* ── VLM: ถ้ามีแปลนบ้านอัพไว้ → ให้ Claude เห็นภาพ (endpoint แยก ไม่แตะ /api/sifu) ── */
+  const planUrl = planImageDataURL(1024);
+  if(planUrl){
+    try{
+      const vr = await fetch('/api/luopan/vision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, packet, image: planUrl }),
+      });
+      if(vr.ok){
+        const vj = await vr.json();
+        if(vj?.ok && (vj.reply||'').trim()) return '📐 (ดูจากแปลนบ้าน) ' + vj.reply.trim();
+      }
+    }catch(_){ /* vision ใช้ไม่ได้ → ตกไปใช้แชทข้อความปกติด้านล่าง */ }
+  }
+  if(!hasRealProfile) throw new Error('เลือกโปรไฟล์จากระบบ master ก่อน (หรืออัพแปลนบ้านเพื่อถามจากภาพ)');
+  const prompt = [
+    'ผู้ใช้ถามเรื่องการจัดบ้าน/ฮวงจุ้ยจากหล่อแก ตอบสั้น กระชับ เป็นภาษาไทย อ้างองศา/ทิศ/ผู้อยู่จากบริบทถ้ามี',
+    `คำถาม: ${question}`,
+    packet ? ('บริบทบ้าน/ทิศ/ผู้อยู่ (engine360 เบื้องต้น · ดวงละเอียดมาจาก profile):\n' + packet) : '',
+  ].filter(Boolean).join('\n');
+  const sr = await fetch('/api/sifu', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: prompt, profileId: selected, topic: 'overview', lang: 'th', history: [] }),
+  });
+  if(!sr.ok) throw new Error(`sifu ${sr.status}`);
+  const sj = await sr.json();
+  return (sj?.reply || '').trim() || '(ไม่มีคำตอบ)';
+}
+function appendChatMsg(role, text){
+  const log = document.getElementById('aiChatLog');
+  if(!log) return null;
+  const div = document.createElement('div');
+  div.className = 'ai-chat-msg ai-chat-' + role;
+  div.style.cssText = 'margin:6px 0;padding:8px 10px;border-radius:8px;font-size:13px;line-height:1.55;white-space:pre-wrap;font-family:var(--thai);' +
+    (role === 'user' ? 'background:var(--bg-3,rgba(127,127,127,.12));color:var(--fg);' : 'background:rgba(200,164,77,.10);color:var(--fg);border:1px solid var(--gold-line,var(--line));');
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+function sendAiChat(){
+  const input = document.getElementById('aiChatInput');
+  const q = (input?.value || '').trim();
+  if(!q) return;
+  const btn = document.getElementById('btnAiChat');
+  appendChatMsg('user', q);
+  if(input){ input.value = ''; input.disabled = true; }
+  if(btn) btn.disabled = true;
+  const thinking = appendChatMsg('ai', '⏳ กำลังคิด...');
+  askLuopanSifu(q)
+    .then(ans => { if(thinking) thinking.textContent = ans; })
+    .catch(e => { if(thinking) thinking.textContent = '❌ ' + (e?.message || 'ถามไม่สำเร็จ'); })
+    .finally(() => {
+      if(input){ input.disabled = false; input.focus(); }
+      if(btn) btn.disabled = false;
+      const log = document.getElementById('aiChatLog'); if(log) log.scrollTop = log.scrollHeight;
+    });
+}
+document.getElementById('btnAiChat')?.addEventListener('click', sendAiChat);
+document.getElementById('aiChatInput')?.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){ e.preventDefault(); sendAiChat(); }
+});
 document.getElementById('profileSelect')?.addEventListener('change', (e) => {
   const id = e.target.value || '';
   setSelectedProfileId(id);
   renderProfileSelect();
 });
-document.getElementById('btnAddProfile')?.addEventListener('click', () => {
-  const name = (window.prompt('ชื่อโปรไฟล์ใหม่ (เช่น คุณเอ)') || '').trim();
-  if(!name) return;
+const addProfileRow = document.getElementById('addProfileRow');
+const newProfileInput = document.getElementById('newProfileName');
+function openAddProfile(){
+  if(!addProfileRow || !newProfileInput) return;
+  addProfileRow.style.display = 'flex';
+  newProfileInput.value = '';
+  newProfileInput.focus();
+}
+function closeAddProfile(){
+  if(addProfileRow) addProfileRow.style.display = 'none';
+  if(newProfileInput) newProfileInput.value = '';
+}
+function commitAddProfile(){
+  const name = (newProfileInput?.value || '').trim();
+  if(!name){ newProfileInput?.focus(); return; }
   const id = `p_${Date.now()}`;
   profiles.push({ id, name, createdAt: Date.now() });
   saveProfiles();
   setSelectedProfileId(id);
   renderProfileSelect();
+  closeAddProfile();
+}
+document.getElementById('btnAddProfile')?.addEventListener('click', openAddProfile);
+document.getElementById('btnSaveProfile')?.addEventListener('click', commitAddProfile);
+document.getElementById('btnCancelProfile')?.addEventListener('click', closeAddProfile);
+newProfileInput?.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){ e.preventDefault(); commitAddProfile(); }
+  else if(e.key === 'Escape'){ e.preventDefault(); closeAddProfile(); }
 });
 
 /* auto-load ตอนเริ่ม */
 try{
   const raw = localStorage.getItem(LS_KEY);
-  if(raw){ const d = JSON.parse(raw); $hName.value = d.name || ''; $hFacing.value = d.facing || 180; $hYear.value = d.year || 2026; }
+  if(raw){ const d = JSON.parse(raw); $hName.value = d.name || ''; $hFacing.value = String(Math.round((Number(d.facing) || 180) * 10) / 10); $hYear.value = d.year || 2026; }
 } catch(e){}
 if(incomingHouseFromQuery){
   $hFacing.value = String(Math.round(incomingHouseFromQuery.facing * 10) / 10);
@@ -4024,6 +4234,8 @@ if(incomingHouseFromQuery){
 updateHouseReadout();
 loadProfiles();
 renderProfileSelect();
+loadHouses();
+renderHouseSelect();
 loadMasterProfiles();
 {
   const cached = loadAdviceCache();

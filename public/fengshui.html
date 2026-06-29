@@ -112,6 +112,11 @@ main{padding:30px 24px 60px;max-width:1400px;margin:0 auto;}
 .fs-luopan-cta a,.fs-luopan-cta button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 18px;border-radius:10px;background:var(--gold);color:var(--bg);text-decoration:none;font-family:var(--mono);font-size:11px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;border:0;cursor:pointer;}
 .fs-luopan-cta a:hover,.fs-luopan-cta button:hover{background:var(--gold-bright);}
 .fs-luopan-cta a.disabled,.fs-luopan-cta button.disabled{opacity:.55;background:var(--bg-3);color:var(--fg-faint);border:1px solid var(--line);cursor:default;}
+.fs-cta-actions{display:flex;flex-direction:column;gap:8px;align-items:stretch;}
+.fs-luopan-cta button.btn-luopan-page{background:transparent;color:var(--gold);border:1px solid var(--gold);}
+.fs-luopan-cta button.btn-luopan-page:hover{background:var(--gold);color:var(--bg);}
+.fs-luopan-cta button.btn-luopan-page.disabled{background:var(--bg-3);color:var(--fg-faint);border:1px solid var(--line);}
+.fs-luopan-cta button.btn-luopan-page .tc{font-family:var(--tc);font-weight:700;}
 .fs-lock-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px;}
 .fs-lock-pill{padding:9px 10px;border-radius:10px;background:rgba(13,15,18,.26);border:1px solid var(--line);}
 .fs-lock-pill b{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:3px;}
@@ -1018,7 +1023,10 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       </div>
       <div class="fs-measure-note"><b>หลักสำคัญ:</b> ถ้ายังไม่ยืนยัน ระบบจะแสดงแค่ค่าที่วัดได้ ไม่เปิดผัง 9 ช่องเป็นคำแนะนำ</div>
     </div>
-    <button type="button" id="btnOpenLuopanFull" class="disabled">รอยืนยันทิศ</button>
+    <div class="fs-cta-actions">
+      <button type="button" id="btnOpenLuopanFull" class="disabled">รอยืนยันทิศ</button>
+      <button type="button" id="btnOpenLuopanPage" class="disabled btn-luopan-page"><span class="tc">羅</span> เปิดหล่อแกเต็ม</button>
+    </div>
   `;
   s1.body.appendChild(cta);
 
@@ -2097,6 +2105,7 @@ function getLuopanCtaDegree(){
 }
 function updateLuopanCta(deg){
   const btn = document.getElementById('btnOpenLuopanFull');
+  const pageBtn = document.getElementById('btnOpenLuopanPage');
   const meta = document.getElementById('luopanCtaMeta');
   if(!btn || !meta) return;
   const n = Number(deg);
@@ -2105,6 +2114,7 @@ function updateLuopanCta(deg){
   if(!houseDirectionLocked || !Number.isFinite(n)){
     btn.classList.add('disabled');
     btn.textContent = 'รอยืนยันทิศ';
+    if(pageBtn) pageBtn.classList.add('disabled');
     meta.textContent = Number.isFinite(n)
       ? 'มีองศาที่วัดได้แล้ว · กดยืนยันทิศบ้านก่อนเปิดพรีวิว 9 ช่อง'
       : 'ยังไม่ได้ยืนยันทิศบ้าน · ลากผนังบนแผนที่ ใช้เข็มทิศ หรือกรอกองศาเองก่อน';
@@ -2114,6 +2124,7 @@ function updateLuopanCta(deg){
   const m = get24Mountain(facing);
   btn.classList.remove('disabled');
   btn.textContent = 'ดูพรีวิว 9 ช่อง';
+  if(pageBtn) pageBtn.classList.remove('disabled');
   meta.textContent = `ยืนยันทิศบ้านแล้ว · Facing ${facing}° · ${m.code || ''} ${m.h} ${m.pinyin} · ที่มา: ${getDirectionSourceLabel(houseDirectionSource)}`;
 }
 function openLuopanFullFromCta(ev){
@@ -2126,6 +2137,19 @@ function openLuopanFullFromCta(ev){
   }
   updateLuopanCta(deg);
   document.querySelector('.palace-grid-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function openLuopanPageFromCta(ev){
+  ev.preventDefault();
+  const deg = getLuopanCtaDegree();
+  const meta = document.getElementById('luopanCtaMeta');
+  if(deg == null || !houseDirectionLocked){
+    if(meta) meta.textContent = 'ต้องกดยืนยันทิศบ้านก่อน ระบบจึงเปิดหล่อแกเต็มได้';
+    return;
+  }
+  const facing = Math.round(normalizeDeg(deg) * 10) / 10;
+  const yrRaw = Number(document.getElementById('houseConstructionYear')?.value);
+  const yr = Number.isFinite(yrRaw) ? Math.max(1864, Math.min(2100, Math.round(yrRaw))) : null;
+  window.location.href = `/luopan?facing=${facing}&source=fengshui` + (yr ? `&year=${yr}` : '');
 }
 function lockHouseDirection(deg, source='manual', scrollToGrid=true){
   const n = Number(deg);
@@ -2181,6 +2205,7 @@ updateLuopanCta(getLuopanCtaDegree());
 
 document.getElementById('houseName').addEventListener('change', saveHouseInputs);
 document.getElementById('btnOpenLuopanFull')?.addEventListener('click', openLuopanFullFromCta);
+document.getElementById('btnOpenLuopanPage')?.addEventListener('click', openLuopanPageFromCta);
 document.getElementById('btnOpenLuopanFromHouse')?.addEventListener('click', openLuopanFullFromCta);
 document.getElementById('btnCalcHouseChart').addEventListener('click', calculateHouseChart);
 document.getElementById('btnSaveHouse').addEventListener('click', ()=>{ saveHouseInputs(); calculateHouseChart(); });
