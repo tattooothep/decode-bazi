@@ -485,8 +485,9 @@
       <div class="cursor-readout" id="cursorReadout">เข็มชี้ · S2 午 Wǔ · 180° · ธาตุไฟ</div>
     </div>
     <div class="ai-advice-wrap" id="aiAdviceWrap">
-      <div class="ai-advice-head">
+      <div class="ai-advice-head" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <button class="btn ai-advice-btn" id="btnAiAdvice">✨ ซินแสแนะนำ</button>
+        <span id="creditBadge" style="font-family:var(--mono,monospace);font-size:11px;color:var(--gold,#c8a44d);letter-spacing:.04em">ยามคงเหลือ: —</span>
       </div>
       <div class="ai-advice-meta" id="aiAdviceMeta">ยังไม่มีคำแนะนำ</div>
       <div class="ai-advice-body" id="aiAdviceBody">กดปุ่ม “ซินแสแนะนำ” เพื่อสรุปทิศจากสถานะบ้าน/เข็ม/pin ปัจจุบัน</div>
@@ -4123,19 +4124,24 @@ async function askLuopanSifu(question){
   try{ packet = await buildHousePacket(); }
   catch(_){ packet = (document.getElementById('aiAdviceBody')?.textContent || '').trim(); }
   /* ── VLM: ถ้ามีแปลนบ้านอัพไว้ → ให้ Claude เห็นภาพ (endpoint แยก ไม่แตะ /api/sifu) ── */
+  const creditTag = (n) => (typeof n === 'number') ? `\n\n— ยามคงเหลือ ${n}` : '';
   const planUrl = planImageDataURL(1024);
   if(planUrl){
+    let vr = null;
     try{
-      const vr = await fetch('/api/luopan/vision', {
+      vr = await fetch('/api/luopan/vision', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, packet, image: planUrl }),
       });
+    }catch(_){ vr = null; /* network error → ตกไปใช้แชทข้อความ */ }
+    if(vr){
+      if(vr.status === 402) throw new Error('NO_CREDIT');
       if(vr.ok){
         const vj = await vr.json();
-        if(vj?.ok && (vj.reply||'').trim()) return '📐 (ดูจากแปลนบ้าน) ' + vj.reply.trim();
+        if(vj?.ok && (vj.reply||'').trim()) { updateCreditBadge(vj.credit_yam); return '📐 (ดูจากแปลนบ้าน) ' + vj.reply.trim() + creditTag(vj.credit_yam); }
       }
-    }catch(_){ /* vision ใช้ไม่ได้ → ตกไปใช้แชทข้อความปกติด้านล่าง */ }
+    }
   }
   if(!hasRealProfile) throw new Error('เลือกโปรไฟล์จากระบบ master ก่อน (หรืออัพแปลนบ้านเพื่อถามจากภาพ)');
   const prompt = [
@@ -4148,9 +4154,16 @@ async function askLuopanSifu(question){
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message: prompt, profileId: selected, topic: 'overview', lang: 'th', history: [] }),
   });
+  if(sr.status === 402) throw new Error('NO_CREDIT');
   if(!sr.ok) throw new Error(`sifu ${sr.status}`);
   const sj = await sr.json();
-  return (sj?.reply || '').trim() || '(ไม่มีคำตอบ)';
+  updateCreditBadge(sj.credit_yam);
+  return ((sj?.reply || '').trim() || '(ไม่มีคำตอบ)') + creditTag(sj.credit_yam);
+}
+function updateCreditBadge(n){
+  if(typeof n !== 'number') return;
+  const el = document.getElementById('creditBadge');
+  if(el) el.textContent = `ยามคงเหลือ: ${n}`;
 }
 function appendChatMsg(role, text){
   const log = document.getElementById('aiChatLog');
@@ -4175,13 +4188,20 @@ function sendAiChat(){
   const thinking = appendChatMsg('ai', '⏳ กำลังคิด...');
   askLuopanSifu(q)
     .then(ans => { if(thinking) thinking.textContent = ans; })
-    .catch(e => { if(thinking) thinking.textContent = '❌ ' + (e?.message || 'ถามไม่สำเร็จ'); })
+    .catch(e => {
+      const msg = (e?.message === 'NO_CREDIT')
+        ? '⚠️ เครดิตยามหมดแล้ว — เติมยามก่อนถามต่อครับ'
+        : '❌ ' + (e?.message || 'ถามไม่สำเร็จ');
+      if(thinking) thinking.textContent = msg;
+      if(e?.message === 'NO_CREDIT') updateCreditBadge(0);
+    })
     .finally(() => {
       if(input){ input.disabled = false; input.focus(); }
       if(btn) btn.disabled = false;
       const log = document.getElementById('aiChatLog'); if(log) log.scrollTop = log.scrollHeight;
     });
 }
+fetch('/api/credit').then(r => r.ok ? r.json() : null).then(j => { if(j?.ok) updateCreditBadge(j.credit_yam); }).catch(()=>{});
 document.getElementById('btnAiChat')?.addEventListener('click', sendAiChat);
 document.getElementById('aiChatInput')?.addEventListener('keydown', (e) => {
   if(e.key === 'Enter'){ e.preventDefault(); sendAiChat(); }

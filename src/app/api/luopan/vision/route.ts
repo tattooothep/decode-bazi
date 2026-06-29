@@ -6,6 +6,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { hasCredit, chargeForAnswer } from "@/lib/credit";
 
 export const runtime = "nodejs";
 
@@ -39,6 +40,11 @@ export async function POST(req: NextRequest) {
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ ok: false, error: "vision_unavailable" }, { status: 503 });
+    }
+
+    // เครดิต: บล็อกถ้ายามหมด (ก่อนเรียก AI · กันจ่ายเงินฟรี)
+    if (!(await hasCredit(s.orgId))) {
+      return NextResponse.json({ ok: false, error: "no_credit", credit_yam: 0 }, { status: 402 });
     }
 
     const sysText = [
@@ -81,7 +87,9 @@ export async function POST(req: NextRequest) {
     if (!reply) {
       return NextResponse.json({ ok: false, error: "empty_reply" }, { status: 502 });
     }
-    return NextResponse.json({ ok: true, reply, model: VISION_MODEL });
+    // หักเครดิตตามจำนวนตัวอักษรคำตอบ
+    const charge = await chargeForAnswer(s.orgId, reply.length, "vision");
+    return NextResponse.json({ ok: true, reply, model: VISION_MODEL, cost_yam: charge.cost, credit_yam: charge.balance });
   } catch (e) {
     return NextResponse.json({ ok: false, error: (e as Error).message || "vision_failed" }, { status: 500 });
   }
