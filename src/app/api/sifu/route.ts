@@ -16,7 +16,6 @@ import { createHash, randomUUID, timingSafeEqual } from "crypto";
 import { StringDecoder } from "string_decoder";
 import { q1, q } from "@/lib/db";
 import { getSession, type Session } from "@/lib/auth";
-import { hasCredit, chargeForAnswer } from "@/lib/credit";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
@@ -2326,11 +2325,6 @@ export async function POST(req: Request) {
     }
     const orgId = session?.orgId ?? null;
 
-    // เครดิต "ยาม": บล็อกถ้าหมด (ก่อนสร้างคำตอบ) · ข้าม fusion-internal (call ระบบ)
-    if (!isFusionInternalCall && orgId && !(await hasCredit(orgId))) {
-      return NextResponse.json({ error: "no_credit", credit_yam: 0 }, { status: 402 });
-    }
-
     if (mode !== "intro" && !profileId) {
       return NextResponse.json({ error: "profile_required" }, { status: 400 });
     }
@@ -2713,7 +2707,6 @@ export async function POST(req: Request) {
                 if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (stream) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
               } catch { /* log-only · ห้ามให้กระทบ stream ที่ส่งครบแล้ว */ }
               if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
-              if (!isFusionInternalCall && orgId) chargeForAnswer(orgId, payload.reply.length, "sifu").catch(() => {}); // หักเครดิต (stream · fire-and-forget)
               scheduleSifuSourceShadowAudit({
                 session,
                 req,
@@ -2933,12 +2926,7 @@ export async function POST(req: Request) {
       route: "POST", mode, stream: false, profileId: profileId || undefined, contextCache, ctxMs,
       promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,
     });
-    // หักเครดิตตามจำนวนตัวอักษรคำตอบ (เฉพาะคำตอบสด · cache ไม่หักซ้ำ · fusion-internal ไม่หัก)
-    let creditLeft: number | undefined;
-    if (!isFusionInternalCall && orgId) {
-      try { creditLeft = (await chargeForAnswer(orgId, payload.reply.length, "sifu")).balance; } catch { /* best-effort */ }
-    }
-    return NextResponse.json({ ...payload, cached: false, ms, key: key.slice(0, 8), credit_yam: creditLeft });
+    return NextResponse.json({ ...payload, cached: false, ms, key: key.slice(0, 8) });
   } catch (e: unknown) {
     const err = e as Error;
     console.error("[sifu] error:", err);
@@ -3413,7 +3401,6 @@ export async function GET(req: Request) {
           const answerSupportedBy = { ...buildSifuAnswerSupportAudit(finalReply, finalCritical), streamGuard };
           const payload: SifuPayload = { reply: finalReply, model: sifuModel, provider_model: providerModelName(sifuModel) };
           if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
-          if (orgId) chargeForAnswer(orgId, payload.reply.length, "sifu").catch(() => {}); // หักเครดิต (GET stream · fire-and-forget)
           scheduleSifuSourceShadowAudit({
             session,
             req,

@@ -4201,7 +4201,7 @@ function sendAiChat(){
       const log = document.getElementById('aiChatLog'); if(log) log.scrollTop = log.scrollHeight;
     });
 }
-fetch('/api/credit').then(r => r.ok ? r.json() : null).then(j => { if(j?.ok) updateCreditBadge(j.credit_yam); }).catch(()=>{});
+fetch('/api/account/me', { credentials:'include' }).then(r => r.ok ? r.json() : null).then(j => { if(j && typeof j.hour_balance === 'number') updateCreditBadge(j.hour_balance); }).catch(()=>{});
 document.getElementById('btnAiChat')?.addEventListener('click', sendAiChat);
 document.getElementById('aiChatInput')?.addEventListener('keydown', (e) => {
   if(e.key === 'Enter'){ e.preventDefault(); sendAiChat(); }

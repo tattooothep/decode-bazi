@@ -82,7 +82,7 @@ export async function POST(req: Request) {
         email,
         name,
         tier: "free",
-        hour_balance: 0,
+        hour_balance: 500,
       },
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }

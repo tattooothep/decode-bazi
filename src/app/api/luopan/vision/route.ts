@@ -6,7 +6,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { hasCredit, chargeForAnswer } from "@/lib/credit";
+import { getHourBalance, spendHoursByChars } from "@/lib/spend-hours";
 
 export const runtime = "nodejs";
 
@@ -42,9 +42,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "vision_unavailable" }, { status: 503 });
     }
 
-    // เครดิต: บล็อกถ้ายามหมด (ก่อนเรียก AI · กันจ่ายเงินฟรี)
-    if (!(await hasCredit(s.orgId))) {
-      return NextResponse.json({ ok: false, error: "no_credit", credit_yam: 0 }, { status: 402 });
+    // เครดิต "ยาม": บล็อกถ้าหมด (ก่อนเรียก AI · กันจ่ายเงินฟรี) · ใช้ระบบเดียวกับ account (users.hour_balance)
+    if ((await getHourBalance()) <= 0) {
+      return NextResponse.json({ ok: false, error: "insufficient_hours", credit_yam: 0 }, { status: 402 });
     }
 
     const sysText = [
@@ -87,9 +87,9 @@ export async function POST(req: NextRequest) {
     if (!reply) {
       return NextResponse.json({ ok: false, error: "empty_reply" }, { status: 502 });
     }
-    // หักเครดิตตามจำนวนตัวอักษรคำตอบ
-    const charge = await chargeForAnswer(s.orgId, reply.length, "vision");
-    return NextResponse.json({ ok: true, reply, model: VISION_MODEL, cost_yam: charge.cost, credit_yam: charge.balance });
+    // หักยามตามจำนวนตัวอักษรคำตอบ (ระบบเดียวกับ account)
+    const sp = await spendHoursByChars(reply.length, "luopan_vision");
+    return NextResponse.json({ ok: true, reply, model: VISION_MODEL, cost_yam: sp.ok ? sp.spent : 0, credit_yam: sp.ok ? sp.balance_after : undefined });
   } catch (e) {
     return NextResponse.json({ ok: false, error: (e as Error).message || "vision_failed" }, { status: 500 });
   }

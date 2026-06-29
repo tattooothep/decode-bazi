@@ -33,6 +33,23 @@ export async function spendHours(amount: number, feature: string): Promise<Spend
   return { ok: true, balance_after: row.hour_balance, spent: amt };
 }
 
+/* ── เครดิตตามจำนวนตัวอักษรคำตอบ ── 29 มิ.ย. · ÷30 ตัวอักษร = 1 ยาม (ปรับผ่าน env CREDIT_CHARS_PER_YAM) */
+const CHARS_PER_YAM = Math.max(1, Number(process.env.CREDIT_CHARS_PER_YAM || 30));
+export function charsToHours(chars: number): number {
+  return Math.max(1, Math.ceil((Math.max(0, Math.floor(Number(chars) || 0))) / CHARS_PER_YAM));
+}
+/** หักยามตามจำนวนตัวอักษรคำตอบ AI */
+export async function spendHoursByChars(chars: number, feature: string): Promise<SpendResult> {
+  return spendHours(charsToHours(chars), feature);
+}
+/** ยอดยามคงเหลือของ user ที่ล็อกอิน (สำหรับ pre-check) · -1 = ไม่ล็อกอิน */
+export async function getHourBalance(): Promise<number> {
+  const s = await getSession();
+  if (!s) return -1;
+  const row = await q1<{ hour_balance: number }>(`SELECT hour_balance FROM users WHERE id=$1`, [s.userId]);
+  return row ? Number(row.hour_balance) : 0;
+}
+
 export async function refundHours(amount: number, feature: string): Promise<RefundResult> {
   const s = await getSession();
   if (!s) return { ok: false, error: "not logged in", status: 401 };
