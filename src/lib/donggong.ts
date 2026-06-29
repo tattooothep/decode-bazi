@@ -13,9 +13,11 @@ const MONTH_IDX: Record<string, number> = {
 
 export type DGLevel = "top" | "good" | "neutral" | "bad";
 export type DGPair = { th: string; zh: string };
+export type Lang3 = { th: string; en: string; zh: string };
 export type DongGong = {
   monthIdx: number;
   jianchu: string; jianchuTh: string;
+  jcMeaning: Lang3;            // ความหมายตำแหน่ง建除 (อธิบายให้ user เข้าใจ · 3 ภาษา)
   verdict: string; verdictTh: string;
   base: string; fromException: boolean; level: DGLevel;
   shensha: string[]; yi: string[]; ji: string[];
@@ -37,6 +39,22 @@ function levelOf(v: string): DGLevel {
 
 const JC_TH: Record<string, string> = { 建: "วันก่อตั้ง", 除: "วันกำจัดสิ่งเก่า", 滿: "วันเต็มเปี่ยม", 平: "วันราบเรียบ", 定: "วันมั่นคง", 執: "วันยึดกุม", 破: "วันทลาย", 危: "วันเสี่ยงภัย", 成: "วันสำเร็จ", 收: "วันเก็บเกี่ยว", 開: "วันเปิดรับ", 閉: "วันปิดกั้น" };
 const JC_EN: Record<string, string> = { 建: "Establish", 除: "Remove", 滿: "Full", 平: "Balance", 定: "Stable", 執: "Initiate", 破: "Destruction", 危: "Danger", 成: "Success", 收: "Harvest", 開: "Open", 閉: "Close" };
+
+/* ความหมายตำแหน่ง建除 — อธิบายให้ user ใหม่เข้าใจว่า "วันแบบนี้คืออะไร" (3 ภาษา) */
+const JC_MEANING: Record<string, Lang3> = {
+  建: { th: "วันเปิดรอบใหม่ พลังตั้งต้นแรงแต่ยังไม่นิ่ง — โบราณว่าเหมาะวางแผน-ตั้งเป้า แต่ยังไม่เหมาะลงมือเรื่องผูกพันใหญ่ (สร้างบ้าน/แต่งงาน) เพราะรากยังไม่มั่น", en: "First day of the cycle — energy is starting but unsettled. Good for planning, not yet for big commitments.", zh: "一月之首，氣始建，宜謀劃，不宜大動土木嫁娶。" },
+  除: { th: "วันปัดกวาดของเก่า — เหมาะเริ่มสิ่งใหม่ รักษาโรค เลิก/ทิ้งของเดิม แต่ระวังเรื่องที่ต้องความมั่นคง", en: "Clearing-out day — good for new starts, healing, ending old things.", zh: "除舊布新，宜療病出舊。" },
+  滿: { th: "วันพลังเต็มเปี่ยม — ดีเรื่องความอุดมเก็บเกี่ยว แต่ 'เต็มจนล้น' บางเรื่องเกินดี โบราณห้ามขุดดิน", en: "Peak-energy day — good for abundance/harvest, but avoid digging the earth.", zh: "氣盈滿，宜收成豐裕，忌動土。" },
+  平: { th: "วันพลังสมดุลราบเรียบ — เหมาะงานเรียบๆ ปรับพื้น ประนีประนอม แต่จืด ไม่เด่นเรื่องรุ่งโรจน์", en: "Even, balanced day — good for routine and mediation; plain.", zh: "氣平，宜平常事。" },
+  定: { th: "วันพลังตั้งมั่น — เหมาะเรื่องผูกพันถาวร แต่งงาน เซ็นสัญญา ตั้งฐาน แต่ไม่เหมาะเรื่องที่ต้องเปลี่ยน-เคลื่อน", en: "Settled day — good for lasting commitments (marriage, contracts), not for change.", zh: "氣定，宜嫁娶立約安基，忌變動。" },
+  執: { th: "วันยึดกุม-ลงมือกุมงาน — เหมาะงานเด็ดขาด เก็บรักษา แต่ระวังยึดติด-ขัดแย้ง", en: "Holding-firm day — good for decisive, securing tasks; beware conflict.", zh: "執持，宜收捕固守。" },
+  破: { th: "วันแตกหัก (วันชงหลัก) พลังปะทะแรง — เหมาะรื้อ ทุบ ผ่าตัด เลิกสิ่งเก่า แต่ห้ามเริ่มมงคลใหม่", en: "Clash day — good for demolition/ending, avoid all new beginnings.", zh: "日月相沖，宜破除拆卸，忌諸吉事。" },
+  危: { th: "วันเสี่ยงสูงเสียดฟ้า — โบราณให้ระวังที่สูง/การตัดสินใจใหญ่ บางตำราถือ 'เสี่ยงแล้วได้' เหมาะงานกล้าได้กล้าเสีย", en: "High-risk day — caution for big decisions; some bold ventures suit it.", zh: "危高，臨事而懼，宜安不宜險。" },
+  成: { th: "วันสำเร็จลงตัวเป็นผล — เหมาะปิดงาน ฉลอง เปิดกิจการ ให้ผลสำเร็จ เป็นวันมงคลดี", en: "Success day — good for completion, opening, celebration.", zh: "成就，宜成事開張慶典。" },
+  收: { th: "วันเก็บเกี่ยว-รวบรวม — เหมาะเก็บทรัพย์ รับเข้า ทวงคืน แต่ไม่เหมาะจ่ายออก-เริ่มใหม่", en: "Gathering day — good for collecting/receiving, not for starting.", zh: "收斂，宜收聚納財，忌散。" },
+  開: { th: "วันเปิดประตูเริ่มสิ่งใหม่ — เหมาะเปิดร้าน เข้าเรียน เดินทาง มงคลเริ่มต้น เป็นวันดี", en: "Opening day — good for openings, study, travel, fresh starts.", zh: "開通，宜開市入學出行。" },
+  閉: { th: "วันปิด-อุดกั้น — เหมาะปิดงาน อุดรู ฝังกลบ สิ้นสุด แต่ห้ามเปิด-เริ่ม-เดินทาง", en: "Closing day — good for sealing/burial/ending, avoid starting or travel.", zh: "閉塞，宜埋藏填閉，忌開動。" },
+};
 const V_TH: Record<string, string> = { "上吉": "ดีเยี่ยม", "全吉": "ดีล้วน", "大吉": "ดีมาก", "吉": "ดี", "次吉": "ดีพอใช้", "凶": "ร้าย", "大凶": "ร้ายมาก", "不利": "ไม่เป็นมงคล", "—": "ขึ้นกับวันเกิดเฉพาะตัว" };
 const V_EN: Record<string, string> = { "上吉": "Excellent", "全吉": "All-auspicious", "大吉": "Very good", "吉": "Good", "次吉": "Fairly good", "凶": "Inauspicious", "大凶": "Very bad", "不利": "Unfavorable", "—": "Depends on day" };
 
@@ -86,7 +104,9 @@ export function dongGong(monthBranch: string, dayBranch: string, dayGanzhi: stri
   const jcTh = JC_TH[d.pos] || d.pos;
   const verdictTh = V_TH[verdict] || verdict;
   return {
-    monthIdx, jianchu: d.pos, jianchuTh: jcTh, verdict, verdictTh, base, fromException: !!(e && e.verdict),
+    monthIdx, jianchu: d.pos, jianchuTh: jcTh,
+    jcMeaning: JC_MEANING[d.pos] || { th: "", en: "", zh: "" },
+    verdict, verdictTh, base, fromException: !!(e && e.verdict),
     level, shensha: d.shensha, yi: d.yi, ji: d.ji,
     shenshaPairs: d.shensha.map((z) => pair(z, SHEN_TH)),
     yiPairs: d.yi.map((z) => pair(z, ACT_TH)),

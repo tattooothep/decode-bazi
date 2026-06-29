@@ -263,6 +263,12 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .dg-neutral{color:var(--fg-soft);border-color:var(--line);background:rgba(127,127,127,.10);}
 .dg-bad{color:#c5564e;border-color:rgba(197,86,78,.5);background:rgba(197,86,78,.10);}
 .dg-zh{font-family:var(--tc);font-size:.82em;color:var(--fg-faint);opacity:.75;}
+.dg-info{appearance:none;background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0 2px;opacity:.8;}
+.dg-info:hover{opacity:1;}
+.dg-detail{display:none;margin:4px 0 8px;padding:10px 12px;background:rgba(200,164,77,.06);border:1px solid var(--gold-line);border-radius:9px;font-size:12px;line-height:1.6;color:var(--fg-soft);}
+.dg-detail.show{display:block;}
+.dg-detail .dg-dl{margin:2px 0;}
+.dg-detail .dg-src{font-size:11px;color:var(--fg-faint);font-style:italic;}
 .result-head .rscore{text-align:right;}
 .result-head .rscore .num{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--gold);line-height:1;}
 .result-head .rscore .lbl{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;}
@@ -1976,10 +1982,11 @@ function renderRealResults(items){
       const agesTxt = (rc.ages || []).slice(0, 6).join(', ');
       rcLine = `<div class="r-line"><span class="k">${kLabel}</span><span class="v">⚠ ${escHtml(zod)} ${escHtml(rc.zodiac_zh)} · ${aLabel} ${escHtml(agesTxt)}</span></div>`;
     }
-    /* 董公擇日 · ฤกษ์ตงกง (display-only · ไม่เข้าคะแนน · ไทยนำ จีนรอง) */
+    /* 董公擇日 · ฤกษ์ตงกง (display-only · ไม่เข้าคะแนน · ไทยนำ จีนรอง + ⓘ ซินแสอธิบาย) */
     let dgChip = '', dgLine = '';
     if (t.donggong) {
       const dg = t.donggong; const L = getCurrentLang();
+      const T = (th, en, zh) => L === 'en' ? en : L === 'zh' ? zh : th;
       const ic = dg.level === 'top' ? '🏆' : dg.level === 'good' ? '🟢' : dg.level === 'bad' ? '🔴' : '⚪';
       let inner;
       if (L === 'zh') inner = `董公 ${escHtml(dg.zh)}`;
@@ -1995,9 +2002,22 @@ function renderRealResults(items){
       if ((dg.jiPairs || []).length) parts.push((L === 'en' ? 'Avoid: ' : L === 'zh' ? '忌：' : 'ห้าม ') + fmt(dg.jiPairs, dg.ji));
       if ((dg.shenshaPairs || []).length) parts.push((L === 'en' ? 'Stars: ' : L === 'zh' ? '神煞：' : 'ดาว ') + fmt(dg.shenshaPairs, dg.shensha));
       if (dg.note) parts.push(escHtml((L === 'zh' || L === 'en') ? dg.note : (dg.noteTh || dg.note)));
+      /* คำอธิบายแบบ user เข้าใจ (กด ⓘ เปิด) */
+      const mean = L === 'en' ? dg.jcMeaning.en : L === 'zh' ? dg.jcMeaning.zh : dg.jcMeaning.th;
+      const head = L === 'en' ? `Today: ${escHtml(dg.en)}` : L === 'zh' ? `今日為「${escHtml(dg.jianchu)}日」` : `วันนี้เป็น “${escHtml(dg.jianchuTh)} ${escHtml(dg.jianchu)}”`;
+      const dl = [];
+      dl.push(`<b>${head}</b><br>${escHtml(mean)}`);
+      dl.push(`<b>${T('ภาพรวมตงกง','Dong Gong verdict','董公斷')}:</b> ${ic} ${escHtml(L === 'en' ? dg.en : L === 'zh' ? dg.zh : dg.verdictTh)}`);
+      if ((dg.yiPairs || []).length) dl.push(`<b>${T('เหมาะ','Good for','宜')}:</b> ${fmt(dg.yiPairs, dg.yi)}`);
+      if ((dg.jiPairs || []).length) dl.push(`<b>${T('ควรเลี่ยง','Avoid','忌')}:</b> ${fmt(dg.jiPairs, dg.ji)}`);
+      if ((dg.shenshaPairs || []).length) dl.push(`<b>${T('ดาวประจำวัน','Day stars','神煞')}:</b> ${fmt(dg.shenshaPairs, dg.shensha)}`);
+      if (dg.note) dl.push(`<b>${T('หมายเหตุ','Note','註')}:</b> ${escHtml((L === 'zh' || L === 'en') ? dg.note : (dg.noteTh || dg.note))}`);
+      dl.push(`<b>👤 ${T('สำคัญสุด','Most important','最重要')}:</b> ${T('ฤกษ์ที่ดีต้อง “ไม่ชนวันเกิดคุณ” — ดูช่องวันชงประกอบเสมอ','A good date must not clash with your birth — always check the “clash” line.','吉日須不沖本命，請同看「日沖」。')}`);
+      dl.push(`<span class="dg-src">※ ${T('จากตำราตงกง 董公選要覽 · เป็นความเชื่อโบราณ ใช้ประกอบการตัดสินใจ ไม่ใช่คำสั่ง','From the Dong Gong Almanac · traditional belief, for guidance only','出自《董公選要覽》· 傳統擇日，僅供參考')}</span>`);
+      const dgDetail = `<div class="dg-detail">${dl.map(x => `<div class="dg-dl">${x}</div>`).join('')}</div>`;
       if (parts.length) {
         const kLabelDg = L === 'en' ? 'Dong Gong · 董公' : L === 'zh' ? '董公擇日' : 'ฤกษ์ตงกง · 董公';
-        dgLine = `<div class="r-line"><span class="k">${kLabelDg}</span><span class="v">${parts.join(' · ')}</span></div>`;
+        dgLine = `<div class="r-line"><span class="k">${kLabelDg} <button type="button" class="dg-info" title="${T('คำอธิบาย','Explain','說明')}" onclick="this.closest('.r-line').nextElementSibling.classList.toggle('show')">ⓘ</button></span><span class="v">${parts.join(' · ')}</span></div>${dgDetail}`;
       }
     }
     const pctOfMax = Math.round((t.score / maxSc) * 100);

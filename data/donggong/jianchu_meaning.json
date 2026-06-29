@@ -1,0 +1,62 @@
+{
+  "建": {
+    "th": "วันเปิดรอบใหม่ พลังตั้งต้นแรงแต่ยังไม่นิ่ง — โบราณว่าเหมาะวางแผน-ตั้งเป้า แต่ยังไม่เหมาะลงมือเรื่องผูกพันใหญ่ (สร้างบ้าน/แต่งงาน) เพราะรากยังไม่มั่น",
+    "en": "First day of the cycle — energy is starting but unsettled. Good for planning, not yet for big commitments.",
+    "zh": "一月之首，氣始建，宜謀劃，不宜大動土木嫁娶。"
+  },
+  "除": {
+    "th": "วันปัดกวาดของเก่า — เหมาะเริ่มสิ่งใหม่ รักษาโรค เลิก/ทิ้งของเดิม แต่ระวังเรื่องที่ต้องความมั่นคง",
+    "en": "Clearing-out day — good for new starts, healing, ending old things.",
+    "zh": "除舊布新，宜療病出舊。"
+  },
+  "滿": {
+    "th": "วันพลังเต็มเปี่ยม — ดีเรื่องความอุดมเก็บเกี่ยว แต่ 'เต็มจนล้น' บางเรื่องเกินดี โบราณห้ามขุดดิน",
+    "en": "Peak-energy day — good for abundance/harvest, but avoid digging the earth.",
+    "zh": "氣盈滿，宜收成豐裕，忌動土。"
+  },
+  "平": {
+    "th": "วันพลังสมดุลราบเรียบ — เหมาะงานเรียบๆ ปรับพื้น ประนีประนอม แต่จืด ไม่เด่นเรื่องรุ่งโรจน์",
+    "en": "Even, balanced day — good for routine and mediation; plain.",
+    "zh": "氣平，宜平常事。"
+  },
+  "定": {
+    "th": "วันพลังตั้งมั่น — เหมาะเรื่องผูกพันถาวร แต่งงาน เซ็นสัญญา ตั้งฐาน แต่ไม่เหมาะเรื่องที่ต้องเปลี่ยน-เคลื่อน",
+    "en": "Settled day — good for lasting commitments (marriage, contracts), not for change.",
+    "zh": "氣定，宜嫁娶立約安基，忌變動。"
+  },
+  "執": {
+    "th": "วันยึดกุม-ลงมือกุมงาน — เหมาะงานเด็ดขาด เก็บรักษา แต่ระวังยึดติด-ขัดแย้ง",
+    "en": "Holding-firm day — good for decisive, securing tasks; beware conflict.",
+    "zh": "執持，宜收捕固守。"
+  },
+  "破": {
+    "th": "วันแตกหัก (วันชงหลัก) พลังปะทะแรง — เหมาะรื้อ ทุบ ผ่าตัด เลิกสิ่งเก่า แต่ห้ามเริ่มมงคลใหม่",
+    "en": "Clash day — good for demolition/ending, avoid all new beginnings.",
+    "zh": "日月相沖，宜破除拆卸，忌諸吉事。"
+  },
+  "危": {
+    "th": "วันเสี่ยงสูงเสียดฟ้า — โบราณให้ระวังที่สูง/การตัดสินใจใหญ่ บางตำราถือ 'เสี่ยงแล้วได้' เหมาะงานกล้าได้กล้าเสีย",
+    "en": "High-risk day — caution for big decisions; some bold ventures suit it.",
+    "zh": "危高，臨事而懼，宜安不宜險。"
+  },
+  "成": {
+    "th": "วันสำเร็จลงตัวเป็นผล — เหมาะปิดงาน ฉลอง เปิดกิจการ ให้ผลสำเร็จ เป็นวันมงคลดี",
+    "en": "Success day — good for completion, opening, celebration.",
+    "zh": "成就，宜成事開張慶典。"
+  },
+  "收": {
+    "th": "วันเก็บเกี่ยว-รวบรวม — เหมาะเก็บทรัพย์ รับเข้า ทวงคืน แต่ไม่เหมาะจ่ายออก-เริ่มใหม่",
+    "en": "Gathering day — good for collecting/receiving, not for starting.",
+    "zh": "收斂，宜收聚納財，忌散。"
+  },
+  "開": {
+    "th": "วันเปิดประตูเริ่มสิ่งใหม่ — เหมาะเปิดร้าน เข้าเรียน เดินทาง มงคลเริ่มต้น เป็นวันดี",
+    "en": "Opening day — good for openings, study, travel, fresh starts.",
+    "zh": "開通，宜開市入學出行。"
+  },
+  "閉": {
+    "th": "วันปิด-อุดกั้น — เหมาะปิดงาน อุดรู ฝังกลบ สิ้นสุด แต่ห้ามเปิด-เริ่ม-เดินทาง",
+    "en": "Closing day — good for sealing/burial/ending, avoid starting or travel.",
+    "zh": "閉塞，宜埋藏填閉，忌開動。"
+  }
+}
