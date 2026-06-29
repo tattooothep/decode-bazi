@@ -3413,7 +3413,7 @@ export async function GET(req: Request) {
           const answerSupportedBy = { ...buildSifuAnswerSupportAudit(finalReply, finalCritical), streamGuard };
           const payload: SifuPayload = { reply: finalReply, model: sifuModel, provider_model: providerModelName(sifuModel) };
           if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
-          if (!isFusionInternalCall && orgId) chargeForAnswer(orgId, payload.reply.length, "sifu").catch(() => {}); // หักเครดิต (stream · fire-and-forget)
+          if (orgId) chargeForAnswer(orgId, payload.reply.length, "sifu").catch(() => {}); // หักเครดิต (GET stream · fire-and-forget)
           scheduleSifuSourceShadowAudit({
             session,
             req,
