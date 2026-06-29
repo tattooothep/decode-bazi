@@ -203,6 +203,9 @@ export type CandidateSlot = {
   /** 黃道吉時 · ยามทอง ราย時辰 (อ่านประกอบ · ไม่เข้าคะแนนรวม) */
   huangdao?: import("@/lib/huangdao").HuangDao | null;
 
+  /** 沖煞 · วันนี้ชงราศี/อายุ (standalone · อ่านประกอบ) */
+  richong?: import("@/lib/richong").RiChong | null;
+
   /** Zodiac clash (filter เร็ว) */
   zodiacClash: EarthlyBranch[];
 

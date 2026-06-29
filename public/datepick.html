@@ -1837,6 +1837,7 @@ async function performSearch(){
             deity_label: qimenLabel('deity', qm.deity || '·'),
             heaven_stem: c.pillars?.hour?.stem || '·', earth_stem: c.pillars?.hour?.branch || '·',
             huangdao: c.huangdao || null,
+            richong: c.richong || null,
             ju_pole:'yang', ju_number: qm.ju_number || 1,
             hex_num: h64.hex_num || null,
             hex_name: h64.hex_name || null,
@@ -1958,6 +1959,15 @@ function renderRealResults(items){
                 : `${hd.path_th} · ${hd.deity_zh}${hd.path_zh}`;
       hdChip = `<span class="hd-chip ${hd.good ? 'hd-good' : 'hd-bad'}" title="黃道吉時 · ฤกษ์ยามทอง">${hd.good ? '🌟' : '⚫'} ${escHtml(txt)}</span>`;
     }
+    let rcLine = '';
+    if (t.richong) {
+      const rc = t.richong; const lang = getCurrentLang();
+      const zod = lang === 'en' ? rc.zodiac_en : lang === 'zh' ? rc.zodiac_zh : rc.zodiac_th;
+      const kLabel = lang === 'en' ? 'Day clash · 沖' : lang === 'zh' ? '日沖' : 'วันชง · 沖';
+      const aLabel = lang === 'en' ? 'avoid age' : lang === 'zh' ? '忌歲' : 'เลี่ยงอายุ';
+      const agesTxt = (rc.ages || []).slice(0, 6).join(', ');
+      rcLine = `<div class="r-line"><span class="k">${kLabel}</span><span class="v">⚠ ${escHtml(zod)} ${escHtml(rc.zodiac_zh)} · ${aLabel} ${escHtml(agesTxt)}</span></div>`;
+    }
     const pctOfMax = Math.round((t.score / maxSc) * 100);
     const rankPct = Math.round(((items.length - i) / items.length) * 100);
     const stemChip = elementChipFromStem(t.heaven_stem);
@@ -1996,6 +2006,7 @@ function renderRealResults(items){
         <div class="r-line"><span class="k">เทพ · 神</span><span class="v">${t.deity_label || qimenLabel('deity', t.deity)}</span></div>
         <div class="r-line"><span class="k">ฟ้า/ดิน · 天地</span><span class="v">${t.heaven_stem||'·'} / ${t.earth_stem||'·'} ${stemChip}</span></div>
         <div class="r-line"><span class="k">ผัง · 局</span><span class="v">${pole}${t.ju_number||'?'}局</span></div>
+        ${rcLine}
       </div>
       ${modulePills ? `<div class="module-score-row"><span class="mini-title">คะแนนตามศาสตร์</span>${modulePills}</div>` : ''}
       ${renderScienceSections(scienceSections)}
