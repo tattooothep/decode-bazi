@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>天星擇日 · ฤกษ์ดาวจริง (MOCKUP)</title>
+<style>
+  :root{--tc:'Noto Serif TC',serif;}
+  [data-theme="dark"]{--bg:#0e1014;--bg2:#161a20;--bg3:#1d222a;--fg:#e8e6e0;--fg-soft:#b9b6ad;--fg-faint:#7d8088;--gold:#c8a44d;--gold-soft:rgba(200,164,77,.12);--line:rgba(255,255,255,.1);--green:#6cb859;--red:#c5564e;}
+  [data-theme="light"]{--bg:#f5f2ea;--bg2:#fffefa;--bg3:#efe9db;--fg:#241f17;--fg-soft:#4b463c;--fg-faint:#8a8478;--gold:#9c7a22;--gold-soft:rgba(156,122,34,.1);--line:rgba(0,0,0,.12);--green:#3f8c2f;--red:#b03a31;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,'Segoe UI','Sarabun',sans-serif;line-height:1.6;}
+  .wrap{max-width:840px;margin:0 auto;padding:18px;}
+  .mock-banner{background:repeating-linear-gradient(45deg,var(--gold-soft),var(--gold-soft) 10px,transparent 10px,transparent 20px);border:1px dashed var(--gold);color:var(--gold);text-align:center;padding:6px;font-size:12px;border-radius:8px;margin-bottom:14px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:4px 0 14px;border-bottom:1px solid var(--line);margin-bottom:18px;}
+  .topbar .brand{font-family:var(--tc);font-size:18px;color:var(--gold);}
+  .tbtn{background:var(--bg3);border:1px solid var(--line);color:var(--fg-soft);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:13px;}
+  .hero{text-align:center;padding:8px 0 18px;}
+  .hero h1{font-family:var(--tc);font-size:30px;margin:0;color:var(--gold);}
+  .hero .tc{font-size:.7em;opacity:.8;}
+  .hero .sub{color:var(--fg-soft);font-size:14px;margin-top:4px;}
+  .hero .badge{display:inline-block;margin-top:8px;font-size:11px;border:1px solid var(--gold);color:var(--gold);border-radius:99px;padding:3px 10px;}
+  .card{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;}
+  .sec-title{font-family:var(--tc);font-size:16px;color:var(--gold);margin:0 0 10px;display:flex;align-items:center;gap:6px;}
+  .sec-title .en{font-size:11px;color:var(--fg-faint);font-family:sans-serif;}
+  .ฤ-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px;}
+  .chip{background:var(--bg3);border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:12px;color:var(--fg-soft);}
+  .loc{margin-top:10px;font-size:13px;color:var(--fg-soft);}
+  .loc input{background:var(--bg3);border:1px solid var(--line);color:var(--fg);border-radius:7px;padding:4px 8px;width:90px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:center;padding:5px 4px;border-bottom:1px solid var(--line);}
+  th{color:var(--fg-faint);font-weight:500;font-size:11px;text-transform:uppercase;}
+  .miao{color:var(--green);} .xian{color:var(--red);}
+  .verdict{display:flex;gap:12px;align-items:center;background:var(--gold-soft);border:1px solid var(--gold);border-radius:12px;padding:14px 16px;}
+  .verdict .big{font-size:26px;}
+  .verdict .lbl{font-family:var(--tc);font-size:20px;color:var(--green);}
+  .reasons{font-size:13px;color:var(--fg-soft);margin-top:8px;padding-left:18px;}
+  .reasons li{margin:2px 0;}
+  .pending{border:1px dashed var(--gold);color:var(--gold);border-radius:10px;padding:10px;font-size:13px;text-align:center;}
+  .aibtn{display:block;width:100%;background:linear-gradient(135deg,var(--gold),#a07d28);color:#1a1208;border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;}
+  .disc{font-size:11px;color:var(--fg-faint);font-style:italic;border-top:1px solid var(--line);padding-top:12px;margin-top:6px;}
+  .tc{font-family:var(--tc);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mock-banner">⚠️ MOCKUP — ตัวอย่างหน้าตาเท่านั้น · ข้อมูลดาวเป็นตัวอย่างสมมติ · ยังไม่ใช่ engine จริง (รอ Swiss Ephemeris + rule ตำรา)</div>
+
+  <div class="topbar">
+    <div class="brand">hourkey · 擇日</div>
+    <div>
+      <button class="tbtn" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'">☀/🌙 ธีม</button>
+      <button class="tbtn">🌐 TH</button>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>天星擇日 · ฤกษ์ดาวจริง <span class="tc">七政四餘</span></h1>
+    <div class="sub">ชั้นสูงสุดของวิชาเลือกฤกษ์ — ตรวจตำแหน่งดาวจริงบนฟ้าขณะลงมือ</div>
+    <span class="badge">🔬 ดาราศาสตร์จริง (Swiss Ephemeris) · เสริมฤกษ์จาก黃曆 · ไม่เข้าคะแนนศาสตร์อื่น</span>
+  </div>
+
+  <!-- A. Header ฤกษ์ที่เลือก -->
+  <div class="card">
+    <div class="sec-title">A · ฤกษ์ที่เลือกมา <span class="en">from datepick</span></div>
+    <div class="ฤ-head">
+      <span>🗓 <b>9 ก.ค. 2569 · 05:00 น.</b></span>
+      <span class="chip">時 丁卯 (卯時)</span>
+      <span class="chip">กิจกรรม: ขึ้นบ้านใหม่ <span class="tc">入宅</span></span>
+      <span class="chip">ฉีเหมิน 陽2局 · วัง1 · 生門</span>
+      <span class="chip">คะแนนปฏิทินเดิม 72/100</span>
+    </div>
+    <div class="loc">📍 สถานที่จัดงาน: ละติจูด <input value="13.7563"> ลองจิจูด <input value="100.5018"> (เริ่มต้น: กรุงเทพ) <button class="tbtn">↻ คำนวณดาว</button></div>
+  </div>
+
+  <!-- Verdict -->
+  <div class="card">
+    <div class="verdict">
+      <span class="big">🟢</span>
+      <div>
+        <div class="lbl">ดาวจริงหนุนเต็ม</div>
+        <div style="font-size:13px;color:var(--fg-soft)">ดวงจันทร์+ดาวศุภเคราะห์เข้าประคองเรือนสำคัญ ไม่มีดาวร้ายปะทะ</div>
+      </div>
+    </div>
+    <ul class="reasons">
+      <li>用神 (ดาวแกนฤกษ์) ได้กำลัง <span class="miao tc">廟旺</span></li>
+      <li>ดาวมงคล <span class="tc">木·金·月</span> ถึงตำแหน่ง 命宮/到向</li>
+      <li>ไม่มี <span class="tc">忌格</span> และไม่ชนวันเกิดเจ้าของงาน</li>
+    </ul>
+  </div>
+
+  <!-- B. ผังดาวจริง -->
+  <div class="card">
+    <div class="sec-title">B · ผังดาวจริงขณะฤกษ์ <span class="en">deterministic · Swiss Ephemeris</span></div>
+    <table>
+      <tr><th>ดาว</th><th>ราศี</th><th>宿</th><th>องศา</th><th>กำลัง</th></tr>
+      <tr><td>☉ อาทิตย์ <span class="tc">日</span></td><td>กรกฎ</td><td>井</td><td>17°</td><td class="miao">旺</td></tr>
+      <tr><td>☽ จันทร์ <span class="tc">月</span></td><td>เมษ</td><td>婁</td><td>03°</td><td class="miao">廟</td></tr>
+      <tr><td>♃ พฤหัส <span class="tc">木</span></td><td>กันย์</td><td>軫</td><td>12°</td><td class="miao">得</td></tr>
+      <tr><td>♀ ศุกร์ <span class="tc">金</span></td><td>ตุล</td><td>角</td><td>08°</td><td class="miao">廟</td></tr>
+      <tr><td>♂ อังคาร <span class="tc">火</span></td><td>กุมภ์</td><td>危</td><td>21°</td><td class="xian">陷</td></tr>
+      <tr><td>☿ พุธ <span class="tc">水</span></td><td>กรกฎ</td><td>鬼</td><td>02°</td><td>平</td></tr>
+      <tr><td>♄ เสาร์ <span class="tc">土</span></td><td>มีน</td><td>壁</td><td>19°</td><td class="xian">落</td></tr>
+      <tr><td colspan=5 style="color:var(--fg-faint);font-size:11px">四餘: 羅睺·計都·月孛 (คำนวณจริง) · 紫氣 (จุดเชิงสำนัก — ระบุที่มา)</td></tr>
+    </table>
+    <div style="font-size:12px;color:var(--fg-soft);margin-top:8px">命宮 ลัคนาฤกษ์: <b>ราศีเมษ</b> · 命主 = ดาวอังคาร · มีดวงจันทร์ส่องเข้า命宮</div>
+  </div>
+
+  <!-- C. วิเคราะห์ลึก (rule) -->
+  <div class="card">
+    <div class="sec-title">C · วิเคราะห์เชิงลึก <span class="en">rule · ตำรา 果老星宗</span></div>
+    <div class="pending">⏳ ชั้นตัดสิน (廟旺·恩用仇難·格局) กำลังตรวจสอบโดยซินแส — เปิดใช้หลังสกัดตำราเสร็จ + ผ่าน 5 ลายเซน<br><span style="font-size:11px">(MOCKUP โชว์โครง — ไม่ฟันธงก่อนข้อมูลพร้อม ตามกฎห้ามมั่ว)</span></div>
+  </div>
+
+  <!-- D. AI -->
+  <div class="card">
+    <button class="aibtn">🤖 ให้ซินแสสังเคราะห์ละเอียด (หักยาม ตามความยาวคำตอบ)</button>
+  </div>
+
+  <div class="disc">การอ่านนี้ใช้ตำแหน่งดาวจริง (七政四餘) เสริมการเลือกฤกษ์จาก黃曆 — เป็นแนวทางตามตำราโบราณ มีหลายสำนักและการตีความต่างกันได้ ไม่ใช่คำพยากรณ์ตายตัว และไม่ใช้แทนคำแนะนำทางการแพทย์/การเงิน/กฎหมาย · ตำแหน่งดาว = Swiss Ephemeris · คำตัดสินอิงสาย 蔣大鴻 動盤</div>
+</div>
+</body>
+</html>
