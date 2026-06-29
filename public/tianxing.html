@@ -63,6 +63,7 @@
   <div class="card" id="hdr">
     <div class="sec">A · <span data-t="s_hdr">ฤกษ์ที่เลือก</span> <span class="en">from datepick</span></div>
     <div id="hdrBody" class="muted" data-t="loading">กำลังโหลด…</div>
+    <div class="loc">🕐 <span data-t="manual">กรอกวัน-เวลาเอง (เวลาไทย)</span>: <input type="date" id="mDate"> <input type="time" id="mTime"> <button class="tbtn" id="mGo" data-t="analyze">🔭 วิเคราะห์</button></div>
     <div class="loc">📍 <span data-t="loc">สถานที่จัดงาน</span>: lat <input id="lat" value="13.7563"> lng <input id="lng" value="100.5018"> <button class="tbtn" id="recalc" data-t="recalc">↻ คำนวณดาว</button></div>
   </div>
 
@@ -93,9 +94,9 @@
 
 <script>
 const I18N={
-  th:{title:"ฤกษ์ดาวจริง",sub:"ชั้นสูงสุดของวิชาเลือกฤกษ์ — ตรวจตำแหน่งดาวจริงบนฟ้าขณะลงมือ",badge:"ดาราศาสตร์จริง · เสริมฤกษ์จาก黃曆 · ไม่เข้าคะแนนหน้าวางฤกษ์",beta:"เวอร์ชันเริ่มต้น (V1) · ตำแหน่งดาว = ของจริงแม่นยำ · ชั้นตัดสินเป็น baseline · ซินแสกำลังเสริมตำรา果老星宗",s_hdr:"ฤกษ์ที่เลือก",loc:"สถานที่จัดงาน",recalc:"↻ คำนวณดาว",s_chart:"ผังดาวจริงขณะฤกษ์",h_star:"ดาว",h_sign:"ราศี",h_status:"กำลัง",s_rule:"วิเคราะห์เชิงลึก",ai:"🤖 ให้ซินแสสังเคราะห์ละเอียด (หักยาม)",loading:"เปิดหน้านี้จากปุ่มในหน้าวางฤกษ์ (datepick) เพื่อส่งฤกษ์เข้ามา · หรือกรอกเวลาเอง",disc:"การอ่านนี้ใช้ตำแหน่งดาวจริง เสริม黃曆 · ความเชื่อโบราณ หลายสำนักตีความต่างได้ · ไม่ใช่คำพยากรณ์ตายตัว · ไม่แทนคำแนะนำแพทย์/การเงิน/กฎหมาย"},
-  en:{title:"Real-Star Date Selection",sub:"The highest tier — checking the real sky at the chosen moment",badge:"Real astronomy · complements the almanac · not in datepick score",beta:"V1 · star positions are real & precise · judgment layer is baseline · master rules being added",s_hdr:"Chosen time",loc:"Event location",recalc:"↻ Recompute",s_chart:"Real sky chart",h_star:"Star",h_sign:"Sign",h_status:"Dignity",s_rule:"Deep analysis",ai:"🤖 Master deep synthesis (costs yam)",loading:"Open this from the datepick result to pass a chosen time, or enter manually.",disc:"Uses real star positions to complement the almanac · traditional belief, schools differ · not a guarantee · not medical/financial/legal advice."},
-  zh:{title:"真星擇日",sub:"擇日最高層 — 查擇定時刻的真實天象",badge:"真實天文 · 輔助黃曆 · 不計入擇日分數",beta:"V1 · 星曜位置真實精確 · 判斷層為基準 · 果老星宗細則補充中",s_hdr:"所擇時刻",loc:"用事地點",recalc:"↻ 重算",s_chart:"真天象盤",h_star:"星",h_sign:"宮",h_status:"廟旺",s_rule:"深入分析",ai:"🤖 命師深入綜合（扣時）",loading:"請由擇日結果頁進入以傳入時刻，或自行輸入。",disc:"以真實星象輔助黃曆 · 傳統擇日，各派不同 · 非保證 · 不替代醫療/財務/法律建議。"}
+  th:{title:"ฤกษ์ดาวจริง",sub:"ชั้นสูงสุดของวิชาเลือกฤกษ์ — ตรวจตำแหน่งดาวจริงบนฟ้าขณะลงมือ",badge:"ดาราศาสตร์จริง · เสริมฤกษ์จาก黃曆 · ไม่เข้าคะแนนหน้าวางฤกษ์",beta:"เวอร์ชันเริ่มต้น (V1) · ตำแหน่งดาว = ของจริงแม่นยำ · ชั้นตัดสินเป็น baseline · ซินแสกำลังเสริมตำรา果老星宗",s_hdr:"ฤกษ์ที่เลือก",loc:"สถานที่จัดงาน",recalc:"↻ คำนวณดาว",manual:"กรอกวัน-เวลาเอง (เวลาไทย)",analyze:"🔭 วิเคราะห์",s_chart:"ผังดาวจริงขณะฤกษ์",h_star:"ดาว",h_sign:"ราศี",h_status:"กำลัง",s_rule:"วิเคราะห์เชิงลึก",ai:"🤖 ให้ซินแสสังเคราะห์ละเอียด (หักยาม)",loading:"เปิดหน้านี้จากปุ่มในหน้าวางฤกษ์ (datepick) เพื่อส่งฤกษ์เข้ามา · หรือกรอกเวลาเอง",disc:"การอ่านนี้ใช้ตำแหน่งดาวจริง เสริม黃曆 · ความเชื่อโบราณ หลายสำนักตีความต่างได้ · ไม่ใช่คำพยากรณ์ตายตัว · ไม่แทนคำแนะนำแพทย์/การเงิน/กฎหมาย"},
+  en:{title:"Real-Star Date Selection",sub:"The highest tier — checking the real sky at the chosen moment",badge:"Real astronomy · complements the almanac · not in datepick score",beta:"V1 · star positions are real & precise · judgment layer is baseline · master rules being added",s_hdr:"Chosen time",loc:"Event location",recalc:"↻ Recompute",manual:"Enter date-time (Thai time)",analyze:"🔭 Analyze",s_chart:"Real sky chart",h_star:"Star",h_sign:"Sign",h_status:"Dignity",s_rule:"Deep analysis",ai:"🤖 Master deep synthesis (costs yam)",loading:"Open this from the datepick result to pass a chosen time, or enter manually.",disc:"Uses real star positions to complement the almanac · traditional belief, schools differ · not a guarantee · not medical/financial/legal advice."},
+  zh:{title:"真星擇日",sub:"擇日最高層 — 查擇定時刻的真實天象",badge:"真實天文 · 輔助黃曆 · 不計入擇日分數",beta:"V1 · 星曜位置真實精確 · 判斷層為基準 · 果老星宗細則補充中",s_hdr:"所擇時刻",loc:"用事地點",recalc:"↻ 重算",manual:"自行輸入日期時間（泰國時間）",analyze:"🔭 分析",s_chart:"真天象盤",h_star:"星",h_sign:"宮",h_status:"廟旺",s_rule:"深入分析",ai:"🤖 命師深入綜合（扣時）",loading:"請由擇日結果頁進入以傳入時刻，或自行輸入。",disc:"以真實星象輔助黃曆 · 傳統擇日，各派不同 · 非保證 · 不替代醫療/財務/法律建議。"}
 };
 let LANG=localStorage.getItem('hk_lang')||'th';
 let HANDOFF=null;
@@ -118,13 +119,32 @@ function readHandoff(){
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fmtDate(iso){try{const d=new Date(iso);if(isNaN(d.getTime()))return '';return d.toLocaleString(LANG==='th'?'th-TH':LANG==='zh'?'zh-CN':'en-US',{dateStyle:'medium',timeStyle:'short'});}catch(e){return '';}}
 
+/* prefill ช่องกรอกเองด้วยเวลาไทยจาก instant (UTC iso) */
+function prefillManual(dtUTC){
+  try{ var d=dtUTC?new Date(dtUTC):new Date();
+    var th=new Date(d.getTime()+7*3600000); // เลื่อนเป็นเวลาไทยเพื่อโชว์ใน input
+    document.getElementById('mDate').value=th.toISOString().slice(0,10);
+    document.getElementById('mTime').value=th.toISOString().slice(11,16);
+  }catch(e){}
+}
 async function loadChart(){
   HANDOFF=readHandoff();
-  if(!HANDOFF){document.getElementById('hdrBody').textContent=I18N[LANG].loading;return;}
+  if(!HANDOFF){ prefillManual(null); document.getElementById('hdrBody').textContent=I18N[LANG].loading; return; }
   if(HANDOFF.lat)document.getElementById('lat').value=HANDOFF.lat;
   if(HANDOFF.lng)document.getElementById('lng').value=HANDOFF.lng;
+  prefillManual(HANDOFF.dtUTC);
   const act=(HANDOFF.activity&&HANDOFF.activity.name)||HANDOFF.act||'';
   document.getElementById('hdrBody').innerHTML=`<b>🗓 ${esc(fmtDate(HANDOFF.dtUTC))}</b>`+(act?` · <span class="chip">${esc(act)}</span>`:'')+(HANDOFF.display?`<div class="muted">${esc(HANDOFF.display)}</div>`:'');
+  await recompute();
+}
+/* กรอกวัน-เวลาเอง (เวลาไทย) → สร้าง instant UTC แล้ววิเคราะห์ */
+async function goManual(){
+  var dv=document.getElementById('mDate').value, tv=document.getElementById('mTime').value;
+  if(!dv||!tv){document.getElementById('hdrBody').textContent='กรอกวันและเวลาให้ครบ';return;}
+  var dtUTC;
+  try{ dtUTC=new Date(dv+'T'+tv+':00+07:00').toISOString(); }catch(e){ document.getElementById('hdrBody').textContent='รูปแบบเวลาไม่ถูกต้อง';return; }
+  HANDOFF={dtUTC:dtUTC, activity:{name:''}, display:''};
+  document.getElementById('hdrBody').innerHTML=`<b>🗓 ${esc(fmtDate(dtUTC))}</b> <span class="muted">(${esc(I18N[LANG].manual)})</span>`;
   await recompute();
 }
 async function recompute(){
@@ -164,6 +184,7 @@ function render(r){
     `<div class="pend" style="margin-top:8px">⏳ ${L==='en'?'Detailed 廟旺/格局 from 果老星宗 — under master review':L==='zh'?'果老星宗細則 — 命師審核中':'รายละเอียด 廟旺/格局 จากตำรา果老星宗 — ซินแสกำลังตรวจ (เปิดใช้หลัง 5 ลายเซน)'}</div>`;
 }
 document.getElementById('recalc').onclick=recompute;
+document.getElementById('mGo').onclick=goManual;
 document.getElementById('aiBtn').onclick=async function(){
   if(!HANDOFF)return;
   const btn=this,out=document.getElementById('aiout');btn.disabled=true;out.textContent='…';
