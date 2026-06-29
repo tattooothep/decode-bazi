@@ -2071,9 +2071,19 @@ function renderRealResults(items){
         <div class="line"><span class="label">ความหมายวัน:</span> กำลังดึงคำอ่านจากฐานข้อมูลตำรา...</div>
       </div>` : ''}
       ${t.hex_num ? `<div style="margin-top:8px;text-align:right;"><button onclick="showHexDeep(${t.hex_num},${t.changing_line||0})" style="background:rgba(200,164,77,.1);border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:10px;padding:5px 11px;border-radius:99px;cursor:pointer;letter-spacing:.05em;">📜 ดูตำรา 卦${t.hex_num} ${t.hex_name||''} เส้น${t.changing_line||'-'}</button></div>` : ''}
+      ${(()=>{ let u=''; try{u=new Date(t.date+'T'+t.time+':00+07:00').toISOString();}catch(e){} return u?`<div style="margin-top:6px;text-align:right;"><button onclick="goTianxing('${u}','${String(t.activity_name||'').replace(/['\\\\]/g,'')}')" style="background:linear-gradient(135deg,rgba(200,164,77,.18),rgba(160,125,40,.12));border:1px solid var(--gold-line);color:var(--gold);font-size:11px;padding:6px 13px;border-radius:99px;cursor:pointer;letter-spacing:.03em;">🌌 วิเคราะห์ลึก · ดาวจริง <span style="font-family:var(--tc)">七政四餘</span></button></div>`:''; })()}
     </div>`;
   }).join('');
   hydrateHexMeanings(c);
+}
+
+/* 🌌 29 มิ.ย.: ส่งฤกษ์ไปวิเคราะห์ลึกด้วยดาวจริง (天星擇日 七政四餘) · dt = UTC ดิบ (สร้างจากเวลาไทย+07:00) */
+function goTianxing(dtUTC, actName){
+  try{
+    var lat=13.7563, lng=100.5018; // สถานที่จัดงาน default กรุงเทพ (ผู้ใช้ปรับในหน้า /tianxing ได้)
+    sessionStorage.setItem('hk_tianxing_handoff', JSON.stringify({dtUTC:dtUTC, lat:lat, lng:lng, activity:{name:actName||''}, display:new Date(dtUTC).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}));
+  }catch(e){}
+  location.href='/tianxing?dt='+encodeURIComponent(dtUTC)+'&lat='+lat+'&lng='+lng+'&act='+encodeURIComponent(actName||'');
 }
 
 /* 📜 17 พ.ค.: popup ดูตำรา卦 + 爻辭 จากอากง v3 */

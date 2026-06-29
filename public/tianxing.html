@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>天星擇日 · ฤกษ์ดาวจริง 七政四餘 · hourkey</title>
+<meta name="description" content="วิเคราะห์ฤกษ์เชิงลึกด้วยตำแหน่งดาวจริงบนฟ้า 七政四餘 (天星擇日) — ชั้นสูงสุดของวิชาเลือกฤกษ์">
+<style>
+  :root{--tc:'Noto Serif TC',serif;}
+  [data-theme="dark"]{--bg:#0e1014;--bg2:#161a20;--bg3:#1d222a;--fg:#e8e6e0;--fg-soft:#b9b6ad;--fg-faint:#7d8088;--gold:#c8a44d;--gold-soft:rgba(200,164,77,.12);--gold-line:rgba(200,164,77,.4);--line:rgba(255,255,255,.1);--green:#6cb859;--red:#c5564e;}
+  [data-theme="light"]{--bg:#f5f2ea;--bg2:#fffefa;--bg3:#efe9db;--fg:#241f17;--fg-soft:#4b463c;--fg-faint:#8a8478;--gold:#9c7a22;--gold-soft:rgba(156,122,34,.1);--gold-line:rgba(156,122,34,.4);--line:rgba(0,0,0,.12);--green:#3f8c2f;--red:#b03a31;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,'Segoe UI','Sarabun',sans-serif;line-height:1.6;}
+  .wrap{max-width:860px;margin:0 auto;padding:16px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:6px 0 12px;border-bottom:1px solid var(--line);}
+  .brand{font-family:var(--tc);font-size:17px;color:var(--gold);}.brand a{color:inherit;text-decoration:none;}
+  .tbtn{background:var(--bg3);border:1px solid var(--line);color:var(--fg-soft);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:13px;}
+  .beta{background:repeating-linear-gradient(45deg,var(--gold-soft),var(--gold-soft) 10px,transparent 10px,transparent 20px);border:1px dashed var(--gold);color:var(--gold);text-align:center;padding:6px;font-size:12px;border-radius:8px;margin:12px 0;}
+  .hero{text-align:center;padding:6px 0 14px;}
+  .hero h1{font-family:var(--tc);font-size:27px;margin:0;color:var(--gold);}.hero .tc{font-size:.7em;opacity:.85;}
+  .hero .sub{color:var(--fg-soft);font-size:13.5px;margin-top:3px;}
+  .hero .badge{display:inline-block;margin-top:7px;font-size:11px;border:1px solid var(--gold-line);color:var(--gold);border-radius:99px;padding:3px 10px;}
+  .card{background:var(--bg2);border:1px solid var(--line);border-radius:13px;padding:15px 17px;margin-bottom:13px;}
+  .sec{font-family:var(--tc);font-size:15px;color:var(--gold);margin:0 0 9px;}
+  .sec .en{font-size:10.5px;color:var(--fg-faint);font-family:sans-serif;}
+  .chip{display:inline-block;background:var(--bg3);border:1px solid var(--line);border-radius:99px;padding:3px 9px;font-size:12px;color:var(--fg-soft);margin:2px;}
+  .loc{margin-top:10px;font-size:13px;color:var(--fg-soft);}
+  .loc input{background:var(--bg3);border:1px solid var(--line);color:var(--fg);border-radius:7px;padding:4px 7px;width:96px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:center;padding:5px 4px;border-bottom:1px solid var(--line);}
+  th{color:var(--fg-faint);font-weight:500;font-size:10.5px;}
+  .miao{color:var(--green);}.xian{color:var(--red);}
+  .verdict{display:flex;gap:12px;align-items:center;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:13px 15px;}
+  .verdict .big{font-size:25px;}.verdict .lbl{font-family:var(--tc);font-size:19px;}
+  .lv-top .lbl,.lv-good .lbl{color:var(--green);}.lv-bad .lbl{color:var(--red);}
+  .reasons{font-size:13px;color:var(--fg-soft);margin:8px 0 0;padding-left:18px;}.reasons li{margin:2px 0;}
+  .aibtn{display:block;width:100%;background:linear-gradient(135deg,var(--gold),#a07d28);color:#1a1208;border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;}
+  .aibtn:disabled{opacity:.5;cursor:default;}
+  #aiout{white-space:pre-wrap;font-size:14px;color:var(--fg);margin-top:10px;line-height:1.7;}
+  .disc{font-size:11px;color:var(--fg-faint);font-style:italic;border-top:1px solid var(--line);padding-top:11px;margin-top:4px;}
+  .tc{font-family:var(--tc);}.muted{color:var(--fg-faint);font-size:12px;}
+  .pend{border:1px dashed var(--gold-line);color:var(--gold);border-radius:9px;padding:9px;font-size:12.5px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><a href="/datepick">← hourkey · 擇日</a></div>
+    <div>
+      <button class="tbtn" id="langBtn">🌐 TH</button>
+      <button class="tbtn" id="themeBtn">☀/🌙</button>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>天星擇日 · <span data-t="title">ฤกษ์ดาวจริง</span> <span class="tc">七政四餘</span></h1>
+    <div class="sub" data-t="sub">ชั้นสูงสุดของวิชาเลือกฤกษ์ — ตรวจตำแหน่งดาวจริงบนฟ้าขณะลงมือ</div>
+    <span class="badge">🔬 <span data-t="badge">ดาราศาสตร์จริง (astronomy-engine) · เสริมฤกษ์จาก黃曆 · ไม่เข้าคะแนนหน้าวางฤกษ์</span></span>
+  </div>
+
+  <div class="beta">⚙️ <span data-t="beta">เวอร์ชันเริ่มต้น (V1) · ตำแหน่งดาว = ของจริงแม่นยำ · ชั้นตัดสิน 廟旺/恩用仇難 เป็น baseline · ซินแสกำลังเสริมตำรา 果老星宗 ละเอียด</span></div>
+
+  <div class="card" id="hdr">
+    <div class="sec">A · <span data-t="s_hdr">ฤกษ์ที่เลือก</span> <span class="en">from datepick</span></div>
+    <div id="hdrBody" class="muted" data-t="loading">กำลังโหลด…</div>
+    <div class="loc">📍 <span data-t="loc">สถานที่จัดงาน</span>: lat <input id="lat" value="13.7563"> lng <input id="lng" value="100.5018"> <button class="tbtn" id="recalc" data-t="recalc">↻ คำนวณดาว</button></div>
+  </div>
+
+  <div class="card" id="vcard" style="display:none">
+    <div class="verdict" id="verdict"><span class="big"></span><div><div class="lbl"></div></div></div>
+    <ul class="reasons" id="reasons"></ul>
+  </div>
+
+  <div class="card" id="chartCard" style="display:none">
+    <div class="sec">B · <span data-t="s_chart">ผังดาวจริงขณะฤกษ์</span> <span class="en">deterministic</span></div>
+    <div id="ascLine" class="muted" style="margin-bottom:8px"></div>
+    <table id="starTbl"><thead><tr><th data-t="h_star">ดาว</th><th data-t="h_sign">ราศี</th><th>°</th><th data-t="h_status">กำลัง</th></tr></thead><tbody></tbody></table>
+    <div class="muted" style="margin-top:7px" id="ayanNote"></div>
+  </div>
+
+  <div class="card" id="ruleCard" style="display:none">
+    <div class="sec">C · <span data-t="s_rule">วิเคราะห์เชิงลึก</span> <span class="en">恩用仇難 · 格局 · baseline</span></div>
+    <div id="ruleBody"></div>
+  </div>
+
+  <div class="card">
+    <button class="aibtn" id="aiBtn" data-t="ai">🤖 ให้ซินแสสังเคราะห์ละเอียด (หักยามตามความยาวคำตอบ)</button>
+    <div id="aiout"></div>
+  </div>
+
+  <div class="disc" data-t="disc">การอ่านนี้ใช้ตำแหน่งดาวจริง (七政四餘) เสริมการเลือกฤกษ์จาก黃曆 — เป็นแนวทางตามตำราโบราณ มีหลายสำนักและการตีความต่างกันได้ ไม่ใช่คำพยากรณ์ตายตัว และไม่ใช้แทนคำแนะนำทางการแพทย์/การเงิน/กฎหมาย</div>
+</div>
+
+<script>
+const I18N={
+  th:{title:"ฤกษ์ดาวจริง",sub:"ชั้นสูงสุดของวิชาเลือกฤกษ์ — ตรวจตำแหน่งดาวจริงบนฟ้าขณะลงมือ",badge:"ดาราศาสตร์จริง · เสริมฤกษ์จาก黃曆 · ไม่เข้าคะแนนหน้าวางฤกษ์",beta:"เวอร์ชันเริ่มต้น (V1) · ตำแหน่งดาว = ของจริงแม่นยำ · ชั้นตัดสินเป็น baseline · ซินแสกำลังเสริมตำรา果老星宗",s_hdr:"ฤกษ์ที่เลือก",loc:"สถานที่จัดงาน",recalc:"↻ คำนวณดาว",s_chart:"ผังดาวจริงขณะฤกษ์",h_star:"ดาว",h_sign:"ราศี",h_status:"กำลัง",s_rule:"วิเคราะห์เชิงลึก",ai:"🤖 ให้ซินแสสังเคราะห์ละเอียด (หักยาม)",loading:"เปิดหน้านี้จากปุ่มในหน้าวางฤกษ์ (datepick) เพื่อส่งฤกษ์เข้ามา · หรือกรอกเวลาเอง",disc:"การอ่านนี้ใช้ตำแหน่งดาวจริง เสริม黃曆 · ความเชื่อโบราณ หลายสำนักตีความต่างได้ · ไม่ใช่คำพยากรณ์ตายตัว · ไม่แทนคำแนะนำแพทย์/การเงิน/กฎหมาย"},
+  en:{title:"Real-Star Date Selection",sub:"The highest tier — checking the real sky at the chosen moment",badge:"Real astronomy · complements the almanac · not in datepick score",beta:"V1 · star positions are real & precise · judgment layer is baseline · master rules being added",s_hdr:"Chosen time",loc:"Event location",recalc:"↻ Recompute",s_chart:"Real sky chart",h_star:"Star",h_sign:"Sign",h_status:"Dignity",s_rule:"Deep analysis",ai:"🤖 Master deep synthesis (costs yam)",loading:"Open this from the datepick result to pass a chosen time, or enter manually.",disc:"Uses real star positions to complement the almanac · traditional belief, schools differ · not a guarantee · not medical/financial/legal advice."},
+  zh:{title:"真星擇日",sub:"擇日最高層 — 查擇定時刻的真實天象",badge:"真實天文 · 輔助黃曆 · 不計入擇日分數",beta:"V1 · 星曜位置真實精確 · 判斷層為基準 · 果老星宗細則補充中",s_hdr:"所擇時刻",loc:"用事地點",recalc:"↻ 重算",s_chart:"真天象盤",h_star:"星",h_sign:"宮",h_status:"廟旺",s_rule:"深入分析",ai:"🤖 命師深入綜合（扣時）",loading:"請由擇日結果頁進入以傳入時刻，或自行輸入。",disc:"以真實星象輔助黃曆 · 傳統擇日，各派不同 · 非保證 · 不替代醫療/財務/法律建議。"}
+};
+let LANG=localStorage.getItem('hk_lang')||'th';
+let HANDOFF=null;
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll('[data-t]').forEach(el=>{const k=el.getAttribute('data-t');if(I18N[LANG][k])el.textContent=I18N[LANG][k];});
+  document.getElementById('langBtn').textContent='🌐 '+LANG.toUpperCase();
+}
+document.getElementById('langBtn').onclick=()=>{LANG=LANG==='th'?'en':LANG==='en'?'zh':'th';localStorage.setItem('hk_lang',LANG);applyLang();if(HANDOFF)render(window._last);};
+document.getElementById('themeBtn').onclick=()=>{const d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark';localStorage.setItem('hk_theme',d.dataset.theme);};
+if(localStorage.getItem('hk_theme'))document.documentElement.dataset.theme=localStorage.getItem('hk_theme');
+
+function readHandoff(){
+  const u=new URLSearchParams(location.search);
+  let h=null;
+  try{const ss=JSON.parse(sessionStorage.getItem('hk_tianxing_handoff')||'null');if(ss&&ss.dtUTC)h=ss;}catch(e){}
+  if(u.get('dt')){ if(!h||h.dtUTC!==u.get('dt')) h={dtUTC:u.get('dt'),lat:u.get('lat'),lng:u.get('lng'),activity:{name:u.get('act')||''}}; }
+  return h;
+}
+function fmtDate(iso){try{return new Date(iso).toLocaleString(LANG==='th'?'th-TH':LANG==='zh'?'zh-CN':'en-US',{dateStyle:'medium',timeStyle:'short'});}catch(e){return iso;}}
+
+async function loadChart(){
+  HANDOFF=readHandoff();
+  if(!HANDOFF){document.getElementById('hdrBody').textContent=I18N[LANG].loading;return;}
+  if(HANDOFF.lat)document.getElementById('lat').value=HANDOFF.lat;
+  if(HANDOFF.lng)document.getElementById('lng').value=HANDOFF.lng;
+  const act=(HANDOFF.activity&&HANDOFF.activity.name)||HANDOFF.act||'';
+  document.getElementById('hdrBody').innerHTML=`<b>🗓 ${fmtDate(HANDOFF.dtUTC)}</b>`+(act?` · <span class="chip">${act}</span>`:'')+(HANDOFF.display?`<div class="muted">${HANDOFF.display}</div>`:'');
+  await recompute();
+}
+async function recompute(){
+  const lat=parseFloat(document.getElementById('lat').value),lng=parseFloat(document.getElementById('lng').value);
+  const res=await fetch('/api/tianxing/chart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dtUTC:HANDOFF.dtUTC,lat,lng})}).then(r=>r.json()).catch(()=>null);
+  if(!res||!res.ok){document.getElementById('hdrBody').innerHTML+='<div class="muted">คำนวณดาวไม่สำเร็จ</div>';return;}
+  window._last=res.reading;render(res.reading);
+}
+function render(r){
+  if(!r)return;
+  const L=LANG;
+  // verdict
+  const vc=document.getElementById('vcard');vc.style.display='';
+  const v=document.getElementById('verdict');v.className='verdict lv-'+r.level;
+  const ic=r.level==='top'?'🟢':r.level==='good'?'🟢':r.level==='bad'?'🔴':'⚪';
+  v.querySelector('.big').textContent=ic;
+  v.querySelector('.lbl').textContent=r.verdictTh[L]||r.verdictTh.th;
+  document.getElementById('reasons').innerHTML=r.reasons.map(x=>`<li>${x[L]||x.th}</li>`).join('');
+  // chart
+  document.getElementById('chartCard').style.display='';
+  const a=r.ascendant;
+  document.getElementById('ascLine').innerHTML=`命宮 (${L==='en'?'Ascendant':L==='zh'?'命宮':'ลัคนา'}): <b>${L==='zh'?a.signZh:a.signTh}</b> · 命主/用神: <b>${r.yongshen.th} ${r.yongshen.zh}</b> ${r.yongshen.status}`;
+  document.querySelector('#starTbl tbody').innerHTML=r.stars.map(s=>{
+    const cls=s.statusRank>=4?'miao':s.statusRank<=2?'xian':'';
+    return `<tr><td>${s.zh} <span class="muted">${L==='zh'?'':s.th}</span></td><td>${L==='zh'?s.signZh:s.signTh}</td><td>${s.deg}°</td><td class="${cls}">${s.status}${s.retro?' ↺':''}</td></tr>`;
+  }).join('');
+  document.getElementById('ayanNote').textContent=`ราศีอิงดาวฤกษ์ (ayanamsa ${r.ayanamsa}° · V1 · ปรับสำนักจีนได้) · 紫氣 รอ lock สำนัก`;
+  // rule
+  document.getElementById('ruleCard').style.display='';
+  const en=r.en_stars.map(x=>x.th).join('、')||'—',nan=r.nan_stars.map(x=>x.th).join('、')||'—';
+  const geju=r.geju.length?r.geju.map(g=>`<span class="chip" style="border-color:${g.good?'var(--green)':'var(--red)'}">${g.zh} ${g.good?'✓':'✗'}</span>`).join(''):'<span class="muted">—</span>';
+  document.getElementById('ruleBody').innerHTML=
+    `<div>恩星 (${L==='en'?'support':L==='zh'?'扶':'หนุน用神'}): ${en}</div>`+
+    `<div>難星 (${L==='en'?'conflict':L==='zh'?'剋':'ขัด用神'}): ${nan}</div>`+
+    `<div style="margin-top:6px">格局: ${geju}</div>`+
+    `<div class="pend" style="margin-top:8px">⏳ ${L==='en'?'Detailed 廟旺/格局 from 果老星宗 — under master review':L==='zh'?'果老星宗細則 — 命師審核中':'รายละเอียด 廟旺/格局 จากตำรา果老星宗 — ซินแสกำลังตรวจ (เปิดใช้หลัง 5 ลายเซน)'}</div>`;
+}
+document.getElementById('recalc').onclick=recompute;
+document.getElementById('aiBtn').onclick=async function(){
+  if(!HANDOFF)return;
+  const btn=this,out=document.getElementById('aiout');btn.disabled=true;out.textContent='…';
+  const lat=parseFloat(document.getElementById('lat').value),lng=parseFloat(document.getElementById('lng').value);
+  const act=(HANDOFF.activity&&HANDOFF.activity.name)||HANDOFF.act||'';
+  const res=await fetch('/api/tianxing/sifu',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dtUTC:HANDOFF.dtUTC,lat,lng,activity:act,lang:LANG})}).then(r=>r.json()).catch(()=>null);
+  if(!res){out.textContent='เชื่อมต่อไม่สำเร็จ';btn.disabled=false;return;}
+  if(res.error==='Login required'){out.innerHTML='<a href="/signup?tab=login&next=/tianxing">เข้าสู่ระบบก่อนใช้ซินแส</a>';btn.disabled=false;return;}
+  if(res.error==='insufficient_hours'){out.textContent='ยามไม่พอ — เติมยามเพื่อใช้ซินแส';btn.disabled=false;return;}
+  if(!res.ok){out.textContent='ผิดพลาด: '+(res.error||'');btn.disabled=false;return;}
+  out.textContent=res.reply;btn.disabled=false;
+};
+applyLang();loadChart();
+</script>
+</body>
+</html>

@@ -56,6 +56,9 @@ const nextConfig: NextConfig = {
       "/fengshui.html",
       "/datepick",
       "/datepick.html",
+      "/tianxing",
+      "/tianxing.html",
+      "/starhour",
       "/comparison",
       "/comparison.html",
       "/compare",
@@ -113,6 +116,8 @@ const nextConfig: NextConfig = {
       { source: "/heluo", destination: "/heluo.html" },
       { source: "/fengshui", destination: "/fengshui.html" },
       { source: "/datepick", destination: "/datepick.html" },
+      { source: "/tianxing", destination: "/tianxing.html" }, // 29 มิ.ย. · 天星擇日 ดาวจริง 七政四餘 (ศาสตร์ขั้นสูงสุด)
+      { source: "/starhour", destination: "/tianxing.html" },
       { source: "/comparison", destination: "/comparison.html" },
       { source: "/compare", destination: "/comparison.html" },
       { source: "/forecast", destination: "/forecast.html" },
