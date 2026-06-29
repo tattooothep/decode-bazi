@@ -35,7 +35,7 @@ function applyTST({ year, month, day, hour, minute, longitude, gmtOffsetHours = 
 async function main() {
   const c = new Client({
     host: '127.0.0.1', port: 5433, database: 'decode_db',
-    user: 'decode_user', password: '98a1021d6df0d117cff8d7aef3be275e',
+    user: 'decode_user', password: process.env.PGPASSWORD,
   });
   await c.connect();
 

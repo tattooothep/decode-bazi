@@ -6,7 +6,7 @@ from qimen_v2.solar_terms_full import SOLAR_TERMS_FULL
 import psycopg2
 from datetime import datetime, timedelta, timezone
 
-DB = dict(host='127.0.0.1', port=5433, dbname='decode_db', user='decode_user', password='98a1021d6df0d117cff8d7aef3be275e')
+DB = dict(host='127.0.0.1', port=5433, dbname='decode_db', user='decode_user', password=os.environ.get('PGPASSWORD'))
 
 # 24 terms in classical order (starting 立春 as month 1)
 TERM_ORDER = ['立春','雨水','驚蟄','春分','清明','穀雨','立夏','小滿','芒種','夏至','小暑','大暑','立秋','處暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至','小寒','大寒']

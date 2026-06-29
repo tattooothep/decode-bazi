@@ -3905,7 +3905,7 @@ function renderProfileSelect(){
   const sel = document.getElementById('profileSelect');
   const st = document.getElementById('profileStatus');
   if(!sel) return;
-  sel.innerHTML = '<option value="">ยังไม่ได้เลือก</option>' + profiles.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  sel.innerHTML = '<option value="">ยังไม่ได้เลือก</option>' + profiles.map(p => `<option value="${hkEsc(p.id)}">${hkEsc(p.name)}</option>`).join('');
   const selected = getSelectedProfileId();
   if(selected) sel.value = selected;
   const cur = profiles.find(p => p.id === sel.value);

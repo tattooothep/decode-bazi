@@ -16,6 +16,10 @@ const PACKAGES: Record<string, { hours: number; tier?: string; days?: number; pr
 };
 
 export async function POST(req: Request) {
+  // 29 มิ.ย. · security (audit): mock-purchase = dev/test เท่านั้น · กันเติมเครดิต/อัปเกรด tier ฟรีใน production (รอ Stripe จริง phase 2)
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_MOCK_PURCHASE !== "1") {
+    return NextResponse.json({ error: "mock_purchase_disabled", note: "real payment coming soon" }, { status: 403 });
+  }
   const s = await getSession();
   if (!s) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const body = await req.json().catch(() => ({}));

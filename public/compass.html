@@ -284,16 +284,18 @@ function renderHouses(houses){
     c.innerHTML = `<div class="empty"><div class="ic">🏠</div><p>${t.empty}</p></div>`;
     return;
   }
+  // 29 มิ.ย. · security (audit): escape ชื่อบ้าน (user input) กัน stored XSS · เป็นการแสดงผลล้วน ไม่แตะการคำนวณ
+  const escH = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   c.innerHTML = houses.map(h => `
     <div class="house-item ${h.is_primary?'primary':''}">
-      <div class="compass-icon">${h.facing_mountain||'?'}</div>
+      <div class="compass-icon">${escH(h.facing_mountain||'?')}</div>
       <div class="info">
-        <div class="name">${h.name}${h.is_primary?'<span class="star">⭐</span>':''}</div>
-        <div class="meta">📍 ${parseFloat(h.lat).toFixed(4)}, ${parseFloat(h.lng).toFixed(4)} · 坐向 ${parseFloat(h.face_angle).toFixed(1)}° ${h.facing_direction||''}</div>
+        <div class="name">${escH(h.name)}${h.is_primary?'<span class="star">⭐</span>':''}</div>
+        <div class="meta">📍 ${parseFloat(h.lat).toFixed(4)}, ${parseFloat(h.lng).toFixed(4)} · 坐向 ${parseFloat(h.face_angle).toFixed(1)}° ${escH(h.facing_direction||'')}</div>
       </div>
       <div class="actions">
         <button onclick="sendQR(${h.id})">📱 QR</button>
-        <button class="del" onclick="delHouse(${h.id},'${h.name.replace(/'/g,'')}')">✕</button>
+        <button class="del" onclick="delHouse(${h.id},'${String(h.name==null?'':h.name).replace(/[\\'"<>\r\n]/g,'')}')">✕</button>
       </div>
     </div>`).join('');
 }

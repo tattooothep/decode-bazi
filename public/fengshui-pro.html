@@ -301,9 +301,11 @@ function renderMode(d){
       grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-soft)">เพิ่มคนใน /compass</div>';
     } else {
       info.innerHTML = `<b>八宅</b> · ทิศมงคลของแต่ละคน (${bz.length} คน)`;
+      // 29 มิ.ย. · security (audit): escape ชื่อสมาชิก (user input) กัน stored XSS · แสดงผลล้วน ไม่แตะการคำนวณ
+      const escH = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       grid.innerHTML = bz.map(p => `
         <div class="palace good" style="grid-column:span 3;aspect-ratio:unset;padding:14px;">
-          <div style="font-family:var(--serif);font-size:16px;color:var(--gold);margin-bottom:6px;">${p.name} · KUA ${p.kua}</div>
+          <div style="font-family:var(--serif);font-size:16px;color:var(--gold);margin-bottom:6px;">${escH(p.name)} · KUA ${p.kua}</div>
           <div class="info" style="text-align:left;">
             ✓ <b>生氣</b> ${p.good.sheng_qi} · <b>天醫</b> ${p.good.tian_yi} · <b>延年</b> ${p.good.yan_nian} · <b>伏位</b> ${p.good.fu_wei}<br/>
             ✗ <b>絕命</b> ${p.bad.jue_ming} · <b>六煞</b> ${p.bad.liu_sha} · <b>五鬼</b> ${p.bad.wu_gui} · <b>禍害</b> ${p.bad.huo_hai}

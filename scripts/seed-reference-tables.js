@@ -13,7 +13,7 @@ const DB = {
   port: 5433,
   database: 'decode_db',
   user: 'decode_user',
-  password: '98a1021d6df0d117cff8d7aef3be275e',
+  password: process.env.PGPASSWORD,
 };
 
 const DATA = '/root/decode-app/data';
