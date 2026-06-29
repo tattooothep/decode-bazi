@@ -191,9 +191,10 @@ export async function POST(req: Request) {
     if (!message) return NextResponse.json({ error: "message required" }, { status: 400 });
 
     /* 📜 เครดิต: เช็คยามก่อน · หักตามจำนวนตัวอักษรคำตอบหลังได้คำตอบ (char-based ÷30) · 29 มิ.ย. */
-    const { getHourBalanceForUser, spendHoursByCharsForUser } = await import("@/lib/spend-hours");
-    if (session?.userId && (await getHourBalanceForUser(session.userId)) <= 0) {
-      return NextResponse.json({ error: "insufficient_hours" }, { status: 402 });
+    const { reserveHourForUser, drainHoursByCharsForUser } = await import("@/lib/spend-hours");
+    if (session?.userId) {
+      const rsv = await reserveHourForUser(session.userId, `sifu_network_${mode}`);
+      if (!rsv.ok) return NextResponse.json({ error: "insufficient_hours" }, { status: 402 });
     }
 
     const prompt = mode === "team"
@@ -253,7 +254,7 @@ export async function POST(req: Request) {
             clearTimeout(timer);
             const ms = Date.now() - t0;
             if (code === 0 && full.trim()) {
-              if (session?.userId) spendHoursByCharsForUser(session.userId, full.length, `sifu_network_${mode}`).catch(() => {}); // หักยามตามตัวอักษร (stream)
+              if (session?.userId) drainHoursByCharsForUser(session.userId, full.length, `sifu_network_${mode}`).catch(() => {}); // หักยามตามตัวอักษร (stream · drain)
               logResearchAiMessageSafe({
                 session,
                 req,
@@ -292,9 +293,9 @@ export async function POST(req: Request) {
     }
 
     const reply = await runClaudeCli(prompt);
-    const sp = await spendHoursByCharsForUser(session?.userId || "", reply.length, `sifu_network_${mode}`);
-    const spent = sp.ok ? sp.spent : 0;
-    const balanceAfter = sp.ok ? sp.balance_after : 0;
+    const sp = await drainHoursByCharsForUser(session?.userId || "", reply.length, `sifu_network_${mode}`);
+    const spent = sp.spent;
+    const balanceAfter = sp.balance_after;
     logResearchAiMessageSafe({
       session,
       req,

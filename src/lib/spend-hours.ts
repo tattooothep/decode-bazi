@@ -77,6 +77,55 @@ export async function getHourBalanceForUser(userId: string): Promise<number> {
   return row ? Number(row.hour_balance) : 0;
 }
 
+/* ──────────────────────────────────────────────────────────────
+ * RESERVE + DRAIN · ปิดช่องรั่ว (review #1: free-at-0 · free-forever · race)
+ * - reserveHour*: หัก 1 ยาม atomic ก่อนเรียก AI = บล็อกยอด 0 + จองกัน race
+ * - drainHoursByChars*: หักหลังได้คำตอบ แบบ GREATEST(0,...) = ดูดเท่าที่มี ถึง 0
+ *   (post-charge · คำตอบส่งแล้ว · ไม่ปล่อยฟรีถาวร) · log delta จริง atomic ด้วย CTE
+ * ────────────────────────────────────────────────────────────── */
+
+/** จอง 1 ยาม atomic ก่อนเรียก AI (block ถ้ายอด ≤ 0) · userId variant */
+export async function reserveHourForUser(userId: string, feature: string): Promise<SpendResult> {
+  return spendHoursForUser(userId, 1, `${feature}_pre`);
+}
+/** จอง 1 ยาม (getSession) */
+export async function reserveHour(feature: string): Promise<SpendResult> {
+  const s = await getSession();
+  if (!s) return { ok: false, error: "not logged in", status: 401 };
+  return spendHoursForUser(s.userId, 1, `${feature}_pre`);
+}
+
+/** หักยามตามตัวอักษรแบบ drain (ดูดเท่าที่มี ถึง 0) · atomic · log delta จริง */
+export async function drainHoursByCharsForUser(userId: string, chars: number, feature: string): Promise<{ spent: number; balance_after: number }> {
+  if (!userId) return { spent: 0, balance_after: 0 };
+  const want = charsToHours(chars);
+  if (want <= 0) return { spent: 0, balance_after: await getHourBalanceForUser(userId) };
+  const row = await q1<{ new_bal: number; old_bal: number }>(
+    `WITH cur AS (SELECT hour_balance AS old_bal FROM users WHERE id = $1 FOR UPDATE)
+     UPDATE users SET hour_balance = GREATEST(0, hour_balance - $2)
+     FROM cur WHERE users.id = $1
+     RETURNING users.hour_balance AS new_bal, cur.old_bal`,
+    [userId, want]
+  );
+  if (!row) return { spent: 0, balance_after: 0 };
+  const spent = Math.max(0, Number(row.old_bal) - Number(row.new_bal));
+  if (spent > 0) {
+    try {
+      await q(
+        `INSERT INTO hour_transactions(user_id, delta, reason, balance_after, ref_feature) VALUES ($1, $2, $3, $4, $5)`,
+        [userId, -spent, `spend_${feature}`, Number(row.new_bal), feature]
+      );
+    } catch { /* log best-effort */ }
+  }
+  return { spent, balance_after: Number(row.new_bal) };
+}
+/** drain (getSession) */
+export async function drainHoursByChars(chars: number, feature: string): Promise<{ spent: number; balance_after: number }> {
+  const s = await getSession();
+  if (!s) return { spent: 0, balance_after: 0 };
+  return drainHoursByCharsForUser(s.userId, chars, feature);
+}
+
 export async function refundHours(amount: number, feature: string): Promise<RefundResult> {
   const s = await getSession();
   if (!s) return { ok: false, error: "not logged in", status: 401 };

@@ -3802,6 +3802,7 @@ let lockedFacing = 180, lockedYear = 2026, lockedPeriod = 9;
 function setHouseLockUiState(locked){
   document.body.dataset.houseLocked = locked ? '1' : '0';
 }
+function hkEsc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function applyLock(){
   const rawFacing = Number($hFacing.value);
   const rawYear = Number($hYear.value);
@@ -3818,7 +3819,7 @@ function applyLock(){
   [$hName,$hFacing,$hYear].forEach(el => el.disabled = true);
   document.getElementById('btnLock').textContent = '🔒 ' + ($hName.value || 'บ้าน') + ' · ล็อกแล้ว';
   document.getElementById('lockStatus').className = 'lock-status locked';
-  document.getElementById('lockStatus').innerHTML = `<span>🔒 <b>${$hName.value || 'บ้าน'}</b> · ${degToMountain(d).c} ${degToMountain(d).m} · ${d}° · ยุค ${p.n}</span><span style="margin-left:auto;color:var(--fg-soft)">หมุนเข็มทอง CURSOR เพื่อสำรวจ →</span>`;
+  document.getElementById('lockStatus').innerHTML = `<span>🔒 <b>${hkEsc($hName.value || 'บ้าน')}</b> · ${degToMountain(d).c} ${degToMountain(d).m} · ${d}° · ยุค ${p.n}</span><span style="margin-left:auto;color:var(--fg-soft)">หมุนเข็มทอง CURSOR เพื่อสำรวจ →</span>`;
   document.getElementById('tPeriod').textContent = p.n;
   $houseStatus.textContent = `ล็อกแล้ว · ${degToMountain(d).c} · period ${p.n}`;
   updateCastleGate(); /* คำนวณก่อน · เพื่อให้ updateInspector ใน setCursor เห็น castleGateResult */

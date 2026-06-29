@@ -1516,8 +1516,9 @@ export async function POST(req: Request) {
     }
 
     /* 📜 เครดิต: เช็คยามก่อนเรียก Claude · หักตามจำนวนตัวอักษรคำตอบหลังได้คำตอบ (char-based ÷30) · 29 มิ.ย. */
-    const { getHourBalance, spendHoursByChars } = await import("@/lib/spend-hours");
-    if ((await getHourBalance()) <= 0) {
+    const { reserveHour, drainHoursByChars } = await import("@/lib/spend-hours");
+    const rsv = await reserveHour("sifu_qimen");
+    if (!rsv.ok) {
       return NextResponse.json({ ok: false, error: "insufficient_hours" }, { status: 402 });
     }
 
@@ -1530,9 +1531,9 @@ export async function POST(req: Request) {
       _inflight--;
     }
     /* หักยามตามจำนวนตัวอักษรคำตอบ */
-    const spend = await spendHoursByChars(reply.length, "sifu_qimen");
-    const spent = spend.ok ? spend.spent : 0;
-    const balanceAfter = spend.ok ? spend.balance_after : 0;
+    const spend = await drainHoursByChars(reply.length, "sifu_qimen");
+    const spent = spend.spent;
+    const balanceAfter = spend.balance_after;
     logResearchAiMessageSafe({
       session,
       req,

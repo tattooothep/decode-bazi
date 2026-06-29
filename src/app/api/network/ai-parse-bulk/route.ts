@@ -114,8 +114,9 @@ export async function POST(req: Request) {
     if (text.length > 8000) return NextResponse.json({ error: "text too long (max 8000)" }, { status: 400 });
 
     /* เครดิต: เช็คยามก่อน · หักตามจำนวนตัวอักษรผลลัพธ์ AI (char-based ÷30) · 29 มิ.ย. */
-    const { getHourBalance, spendHoursByChars } = await import("@/lib/spend-hours");
-    if ((await getHourBalance()) <= 0) return NextResponse.json({ ok: false, error: "insufficient_hours" }, { status: 402 });
+    const { reserveHour, drainHoursByChars } = await import("@/lib/spend-hours");
+    const rsv = await reserveHour("network_ai_parse_bulk");
+    if (!rsv.ok) return NextResponse.json({ ok: false, error: "insufficient_hours" }, { status: 402 });
 
     const prompt = `${loadPromptMd("prompts/ai-parse-bulk.md", SYSTEM_PROMPT_FALLBACK)}
 
@@ -125,9 +126,9 @@ ${text}`;
     const raw = await runClaudeCli(prompt);
     const parsed = extractJson(raw);
     /* หักยามตามจำนวนตัวอักษรผลลัพธ์ AI */
-    const spend = await spendHoursByChars(raw.length, "network_ai_parse_bulk");
-    const spent = spend.ok ? spend.spent : 0;
-    const balanceAfter = spend.ok ? spend.balance_after : 0;
+    const spend = await drainHoursByChars(raw.length, "network_ai_parse_bulk");
+    const spent = spend.spent;
+    const balanceAfter = spend.balance_after;
 
     /* validate + normalize */
     const valid = parsed.filter(p => p && p.name && p.birthDate).map(p => ({
