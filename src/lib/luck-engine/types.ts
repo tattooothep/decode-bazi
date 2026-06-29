@@ -200,6 +200,9 @@ export type CandidateSlot = {
     hour: Pillar;
   };
 
+  /** 黃道吉時 · ยามทอง ราย時辰 (อ่านประกอบ · ไม่เข้าคะแนนรวม) */
+  huangdao?: import("@/lib/huangdao").HuangDao | null;
+
   /** Zodiac clash (filter เร็ว) */
   zodiacClash: EarthlyBranch[];
 

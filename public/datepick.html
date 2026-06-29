@@ -252,6 +252,10 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .result-head .rdate{flex:1;}
 .result-head .rdate .dt{font-family:var(--serif);font-size:15px;color:var(--fg);font-weight:600;}
 .result-head .rdate .sh{font-family:var(--mono);font-size:10px;color:var(--fg-soft);letter-spacing:.1em;margin-top:2px;}
+/* 黃道吉時 · ยามทอง chip (29 มิ.ย.) */
+.hd-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:10px;letter-spacing:.03em;padding:2px 7px;border-radius:99px;margin-left:4px;vertical-align:middle;border:1px solid;white-space:nowrap;}
+.hd-good{color:#6cb859;border-color:rgba(108,184,89,.5);background:rgba(108,184,89,.12);}
+.hd-bad{color:var(--fg-soft);border-color:var(--line);background:rgba(127,127,127,.10);}
 .result-head .rscore{text-align:right;}
 .result-head .rscore .num{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--gold);line-height:1;}
 .result-head .rscore .lbl{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;}
@@ -1832,6 +1836,7 @@ async function performSearch(){
             deity: qm.deity || '·',
             deity_label: qimenLabel('deity', qm.deity || '·'),
             heaven_stem: c.pillars?.hour?.stem || '·', earth_stem: c.pillars?.hour?.branch || '·',
+            huangdao: c.huangdao || null,
             ju_pole:'yang', ju_number: qm.ju_number || 1,
             hex_num: h64.hex_num || null,
             hex_name: h64.hex_name || null,
@@ -1945,6 +1950,14 @@ function renderRealResults(items){
     const scoreColor = t.score >= 70 ? 'ok' : t.score >= 50 ? 'mid' : 'warn';
     const rankBadge = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
     const shichenName = SHICHEN_NAME[t.earth_stem] || '';
+    let hdChip = '';
+    if (t.huangdao) {
+      const hd = t.huangdao; const lang = getCurrentLang();
+      const txt = lang === 'en' ? `${hd.good ? 'Golden hour' : 'Dark hour'} · ${hd.deity_en} ${hd.deity_zh}`
+                : lang === 'zh' ? `${hd.deity_zh}${hd.path_zh}`
+                : `${hd.path_th} · ${hd.deity_zh}${hd.path_zh}`;
+      hdChip = `<span class="hd-chip ${hd.good ? 'hd-good' : 'hd-bad'}" title="黃道吉時 · ฤกษ์ยามทอง">${hd.good ? '🌟' : '⚫'} ${escHtml(txt)}</span>`;
+    }
     const pctOfMax = Math.round((t.score / maxSc) * 100);
     const rankPct = Math.round(((items.length - i) / items.length) * 100);
     const stemChip = elementChipFromStem(t.heaven_stem);
@@ -1961,7 +1974,7 @@ function renderRealResults(items){
       <div class="result-head">
         <div class="rank">${rankBadge}</div>
         <div class="rdate">
-          <div class="dt">🗓 ${dateThai} · ${t.time} น. <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip}</div>
+          <div class="dt">🗓 ${dateThai} · ${t.time} น. <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip} ${hdChip}</div>
           <div class="ctx">
             <span>ทิศที่เด่น: ${directionText} · วัง ${t.palace_id}</span>
             <span>· ผังฉีเหมิน ${pole}${t.ju_number}局</span>
