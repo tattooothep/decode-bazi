@@ -256,6 +256,12 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .hd-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:10px;letter-spacing:.03em;padding:2px 7px;border-radius:99px;margin-left:4px;vertical-align:middle;border:1px solid;white-space:nowrap;}
 .hd-good{color:#6cb859;border-color:rgba(108,184,89,.5);background:rgba(108,184,89,.12);}
 .hd-bad{color:var(--fg-soft);border-color:var(--line);background:rgba(127,127,127,.10);}
+/* 董公擇日 · ฤกษ์ตงกง chip (29 มิ.ย. · display-only) */
+.dg-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:10px;letter-spacing:.03em;padding:2px 7px;border-radius:99px;margin-left:4px;vertical-align:middle;border:1px solid;white-space:nowrap;}
+.dg-top{color:#d4a23a;border-color:rgba(212,162,58,.55);background:rgba(212,162,58,.13);}
+.dg-good{color:#6cb859;border-color:rgba(108,184,89,.5);background:rgba(108,184,89,.12);}
+.dg-neutral{color:var(--fg-soft);border-color:var(--line);background:rgba(127,127,127,.10);}
+.dg-bad{color:#c5564e;border-color:rgba(197,86,78,.5);background:rgba(197,86,78,.10);}
 .result-head .rscore{text-align:right;}
 .result-head .rscore .num{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--gold);line-height:1;}
 .result-head .rscore .lbl{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;}
@@ -1838,6 +1844,7 @@ async function performSearch(){
             heaven_stem: c.pillars?.hour?.stem || '·', earth_stem: c.pillars?.hour?.branch || '·',
             huangdao: c.huangdao || null,
             richong: c.richong || null,
+            donggong: c.donggong || null,
             ju_pole:'yang', ju_number: qm.ju_number || 1,
             hex_num: h64.hex_num || null,
             hex_name: h64.hex_name || null,
@@ -1968,6 +1975,23 @@ function renderRealResults(items){
       const agesTxt = (rc.ages || []).slice(0, 6).join(', ');
       rcLine = `<div class="r-line"><span class="k">${kLabel}</span><span class="v">⚠ ${escHtml(zod)} ${escHtml(rc.zodiac_zh)} · ${aLabel} ${escHtml(agesTxt)}</span></div>`;
     }
+    /* 董公擇日 · ฤกษ์ตงกง (display-only · ไม่เข้าคะแนน) */
+    let dgChip = '', dgLine = '';
+    if (t.donggong) {
+      const dg = t.donggong; const lang = getCurrentLang();
+      const ic = dg.level === 'top' ? '🏆' : dg.level === 'good' ? '🟢' : dg.level === 'bad' ? '🔴' : '⚪';
+      const lbl = lang === 'en' ? dg.en : lang === 'zh' ? dg.zh : dg.th;
+      dgChip = `<span class="dg-chip dg-${escHtml(dg.level)}" title="董公擇日 · ฤกษ์ตงกง">${ic} 董公 ${escHtml(lbl)}</span>`;
+      const parts = [];
+      if ((dg.yi || []).length) parts.push((lang === 'en' ? 'Good: ' : lang === 'zh' ? '宜：' : 'ทำได้ ') + escHtml(dg.yi.join('、')));
+      if ((dg.ji || []).length) parts.push((lang === 'en' ? 'Avoid: ' : lang === 'zh' ? '忌：' : 'ห้าม ') + escHtml(dg.ji.join('、')));
+      if ((dg.shensha || []).length) parts.push((lang === 'en' ? 'Stars: ' : '神煞 ') + escHtml(dg.shensha.join('、')));
+      if (dg.note) parts.push(escHtml(dg.note));
+      if (parts.length) {
+        const kLabelDg = lang === 'en' ? 'Dong Gong · 董公' : lang === 'zh' ? '董公擇日' : 'ฤกษ์ตงกง · 董公';
+        dgLine = `<div class="r-line"><span class="k">${kLabelDg}</span><span class="v">${parts.join(' · ')}</span></div>`;
+      }
+    }
     const pctOfMax = Math.round((t.score / maxSc) * 100);
     const rankPct = Math.round(((items.length - i) / items.length) * 100);
     const stemChip = elementChipFromStem(t.heaven_stem);
@@ -1984,7 +2008,7 @@ function renderRealResults(items){
       <div class="result-head">
         <div class="rank">${rankBadge}</div>
         <div class="rdate">
-          <div class="dt">🗓 ${dateThai} · ${t.time} น. <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip} ${hdChip}</div>
+          <div class="dt">🗓 ${dateThai} · ${t.time} น. <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip} ${hdChip} ${dgChip}</div>
           <div class="ctx">
             <span>ทิศที่เด่น: ${directionText} · วัง ${t.palace_id}</span>
             <span>· ผังฉีเหมิน ${pole}${t.ju_number}局</span>
@@ -2007,6 +2031,7 @@ function renderRealResults(items){
         <div class="r-line"><span class="k">ฟ้า/ดิน · 天地</span><span class="v">${t.heaven_stem||'·'} / ${t.earth_stem||'·'} ${stemChip}</span></div>
         <div class="r-line"><span class="k">ผัง · 局</span><span class="v">${pole}${t.ju_number||'?'}局</span></div>
         ${rcLine}
+        ${dgLine}
       </div>
       ${modulePills ? `<div class="module-score-row"><span class="mini-title">คะแนนตามศาสตร์</span>${modulePills}</div>` : ''}
       ${renderScienceSections(scienceSections)}

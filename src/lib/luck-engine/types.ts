@@ -206,6 +206,9 @@ export type CandidateSlot = {
   /** 沖煞 · วันนี้ชงราศี/อายุ (standalone · อ่านประกอบ) */
   richong?: import("@/lib/richong").RiChong | null;
 
+  /** 董公擇日 · ฤกษ์ตงกง (display-only · ไม่เข้าคะแนนรวม · เติมของ) */
+  donggong?: import("@/lib/donggong").DongGong | null;
+
   /** Zodiac clash (filter เร็ว) */
   zodiacClash: EarthlyBranch[];
 

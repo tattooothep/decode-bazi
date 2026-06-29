@@ -24,6 +24,7 @@ import type { ModuleKey, ActivityType, CandidateSlot, ModuleResult, FunnelStats,
 import { combineScores, scoreToTier, tierToAction, TIER_LABELS } from "@/lib/luck-engine/combineScores";
 import { huangDaoHour } from "@/lib/huangdao";
 import { riChongDay } from "@/lib/richong";
+import { dongGong } from "@/lib/donggong";
 import { getActivityProfile, mergeProfileHardModules, resolveActivityType } from "@/lib/luck-engine/activity-profiles";
 import type { ActivityProfile } from "@/lib/luck-engine/activity-profiles";
 import { getSession } from "@/lib/auth";
@@ -405,6 +406,7 @@ function rowToCandidate(r: any): CandidateSlot {
     },
     huangdao: (dB && hB) ? huangDaoHour(dB, hB) : null,
     richong: dB ? riChongDay(dB, parseInt(String(r.date).slice(0, 4), 10) || 2026) : null,
+    donggong: (mB && dB) ? dongGong(mB, dB, (dS || "") + (dB || "")) : null,
     zodiacClash: (r.zodiac_clash || []) as any,
     people: [],
     modules: {
