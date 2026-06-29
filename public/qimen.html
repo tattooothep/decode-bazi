@@ -677,7 +677,7 @@
         <span class="pill special"><b data-i18n="q.pill.fu">ดาวนำ · 值符</b><span id="qm-pill-fu">—</span></span>
         <span class="pill special"><b data-i18n="q.pill.shi">ประตูนำ · 值使</b><span id="qm-pill-shi">—</span></span>
         <span class="pill"><b data-i18n="q.pill.xun">หัวก้าน · 旬首</b><span id="qm-pill-xun">—</span></span>
-        <span class="pill"><b data-i18n="q.pill.clash">ปะทะ · 日時沖</b><span id="qm-pill-clash">—</span></span>
+        <span class="pill"><b data-i18n="q.pill.clash">ถูกชง · 日時所沖</b><span id="qm-pill-clash">—</span></span>
         <span class="pill"><b data-i18n="q.pill.void">ว่าง · 空亡</b><span id="qm-pill-void">—</span></span>
       </div>
       <button  class="ctrl-btn" id="qm-recalc-btn" style="background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;" data-i18n="auto.q.014">↻ คำนวณใหม่</button>
@@ -889,7 +889,7 @@ window.HK_I18N = {
   'q.pill.fu':     { th:'ดาวนำ · 值符', en:'Lead Star · 值符', zh:'值符' },
   'q.pill.shi':    { th:'ประตูนำ · 值使', en:'Envoy / Lead Door · 值使', zh:'值使' },
   'q.pill.xun':    { th:'หัวก้าน · 旬首', en:'Lead Stem · 旬首', zh:'旬首' },
-  'q.pill.clash':  { th:'ปะทะ · 日時沖', en:'Clash · 日時沖', zh:'日時沖' },
+  'q.pill.clash':  { th:'ถูกชง · 日時所沖', en:'Clashed branch · 日時所沖', zh:'日時所沖' },
   'q.pill.void':   { th:'ว่าง · 空亡', en:'Void · 空亡', zh:'空亡' },
   /* palace legend */
   'q.legend.good': { th:'ประตูมงคล 3 (三吉門) 開·休·生', en:'3 Good Doors (三吉門) 開·休·生', zh:'三吉門 開·休·生' },
@@ -1387,7 +1387,7 @@ window.applyI18N = applyI18N;
     if (text.includes('KONG') || text.includes('空')) return { th:'ว่าง', zh:'空亡', tone:'warn', why:'ผลอาจไม่เต็มแรง เรื่องช้า ว่าง หรือยังไม่ชัด' };
     if (text.includes('YI_MA') || text.includes('SKY_HORSE') || text.includes('TRAVEL') || text.includes('驛') || text.includes('馬')) return { th:'ม้าเดินทาง', zh:'驛馬', tone:'good', why:'ช่วยเรื่องเดินทาง ติดต่อ เคลื่อนงาน หรือเร่งให้เรื่องขยับ' };
     if (text.includes('NOBLE') || text.includes('貴')) return { th:'คนช่วย', zh:'貴人', tone:'good', why:'มีแรงผู้ใหญ่ ผู้สนับสนุน หรือคนช่วยเปิดทาง' };
-    if (text.includes('RI_SHI_CHONG') || text.includes('DAY_HOUR_CLASH') || text.includes('CLASH') || text.includes('CHONG') || text.includes('沖') || text.includes('冲')) return { th:'วัน/ยามปะทะ', zh:'日時沖', tone:'warn', why:'เป็นกิ่งที่ถูกปะทะ ใช้เป็นสัญญาณระวัง ไม่ใช่คำตัดสินดวงเจ้าของงาน' };
+    if (text.includes('RI_SHI_CHONG') || text.includes('DAY_HOUR_CLASH') || text.includes('CLASH') || text.includes('CHONG') || text.includes('沖') || text.includes('冲')) return { th:'กิ่งที่ถูกชง', zh:'日時所沖', tone:'warn', why:'เป็นกิ่งที่ถูก日支/時支ไปชน (ไม่ใช่日支ชน時支กันเอง) ใช้เป็นสัญญาณระวัง ไม่ใช่คำตัดสินดวงเจ้าของงาน' };
     if (text.includes('MEN_PO') || text.includes('DOOR_OPP') || text.includes('門迫') || text.includes('迫')) return { th:'ประตูข่มวัง', zh:'門迫', tone:'warn', why:'ประตูใช้ยาก พลังถูกบีบ ต้องลดความมั่นใจ' };
     if (text.includes('RU_MU') || text.includes('TOMB') || text.includes('入墓') || text.includes('墓')) return { th:'เข้าคลัง', zh:'入墓', tone:'warn', why:'เรื่องถูกเก็บ ติดค้าง หรือออกผลช้า' };
     if (text.includes('JI_XING') || text.includes('PUNISH') || text.includes('擊刑') || text.includes('刑')) return { th:'ก้านถูกลงโทษ', zh:'擊刑', tone:'bad', why:'มีแรงกดดัน ผิดพลาดง่าย ต้องระวังเงื่อนไข' };
@@ -2489,7 +2489,7 @@ window.applyI18N = applyI18N;
       `<div class="qm-context-chip warn"><div class="k">ช่องว่าง 空亡</div><div class="v">วัน ${qmEsc(voidDay || '—')} · ยาม ${qmEsc(voidHour || '—')}</div><div class="note">พลังยังไม่เต็ม เรื่องอาจช้า/ว่าง ต้องอ่านร่วมกับวัง</div></div>`,
       `<div class="qm-context-chip good"><div class="k">ม้าเดินทาง 驛馬</div><div class="v">วัน ${qmEsc(horseDay || '—')} · ยาม ${qmEsc(horseHour || '—')}</div><div class="note">แรงเคลื่อนไหว เดินทาง ติดต่อ หรือเรื่องที่ต้องให้ขยับ</div></div>`,
       `<div class="qm-context-chip good"><div class="k">คนช่วย 貴人</div><div class="v">วัน ${qmEsc(nobleDay || '—')} · ยาม ${qmEsc(nobleHour || '—')}</div><div class="note">ผู้ใหญ่ ผู้สนับสนุน ช่องทางช่วยเหลือ</div></div>`,
-      `<div class="qm-context-chip warn"><div class="k">วัน/ยามปะทะ 日時沖</div><div class="v">วัน ${qmEsc(clashDay || '—')} · ยาม ${qmEsc(clashHour || '—')}</div><div class="note">เป็นกิ่งที่ถูกปะทะ ไม่ใช่ดวงเจ้าของงานโดยตรง</div></div>`,
+      `<div class="qm-context-chip warn"><div class="k">กิ่งที่วัน/ยามไปชง 日時所沖</div><div class="v">日支所沖 ${qmEsc(clashDay || '—')} · 時支所沖 ${qmEsc(clashHour || '—')}</div><div class="note">กิ่งที่ถูก日支/時支ไปชน (ไม่ใช่日支ชน時支กันเอง) · เป็นสัญญาณระวัง</div></div>`,
       `<div class="qm-context-chip"><div class="k">28 ดาวฤกษ์ 二十八宿</div><div class="v">${qmEsc(xiu.number || '—')} · ${qmEsc(xiuLabel.name)}</div><div class="note">${qmEsc(xiuLabel.group)} ${xiuLabel.palace ? '· '+qmEsc(xiuLabel.palace) : ''}</div></div>`,
       `<div class="qm-context-chip good"><div class="k">ตัวแทนเรื่อง 用神</div><div class="v">${qmEsc(selectorIntentTh)} ${selectorIntentZh ? '· '+qmEsc(selectorIntentZh) : ''}</div><div class="note">${qmEsc(ysTop || 'ใช้日干/值符เป็นภาพรวม')} · ไม่ใช่คะแนนฤกษ์</div></div>`,
       `<div class="qm-context-chip"><div class="k">วังใน/วังนอก 內外</div><div class="v">${qimenInternalExternalSummary()}</div><div class="note">เรื่องใกล้ตัว/ในองค์กร เทียบกับเรื่องภายนอก/ตลาด/เดินทาง</div></div>`,
@@ -2790,10 +2790,10 @@ window.applyI18N = applyI18N;
   }
   function qimenSelectedPalaceSignalEvidence(p, last){
     const specs = [
-      { code:'KONG_WANG', th:'ช่องว่าง', zh:'空亡', labels:{year:'ปี',month:'เดือน',day:'วัน',hour:'ยาม'}, note:'เรื่องอาจช้า ว่าง หรือผลไม่เต็มแรง' },
+      { code:'KONG_WANG', th:'ช่องว่าง', zh:'空亡', labels:{year:'年空',month:'月空',day:'日空(วัน)',hour:'時空(ยาม)'}, note:'空亡 มาจาก旬ของวัน/ยาม (日空/時空) · เรื่องอาจช้า ว่าง หรือผลไม่เต็มแรง' },
       { code:'YI_MA', th:'ม้าเดินทาง', zh:'驛馬', labels:{day:'ม้าวัน',hour:'ม้ายาม'}, note:'ดีเฉพาะเรื่องเคลื่อนไหว เดินทาง ติดต่อ หรือเร่งงาน' },
       { code:'GUI_REN', th:'คนช่วย', zh:'貴人', labels:{day:'คนช่วยวัน',hour:'คนช่วยยาม'}, note:'ใช้เป็นแรงเสริมเรื่องผู้ใหญ่ คำแนะนำ หรือช่องทางช่วย' },
-      { code:'RI_SHI_CHONG', th:'วัน/ยามปะทะ', zh:'日時沖', labels:{day:'วันปะทะ',hour:'ยามปะทะ'}, note:'เป็นสัญญาณระวัง ไม่ใช่คำตัดสินดวงเจ้าของงาน' },
+      { code:'RI_SHI_CHONG', th:'กิ่งที่วัน/ยามไปชง', zh:'日時所沖', labels:{day:'กิ่งที่วันชง 日支所沖',hour:'กิ่งที่ยามชง 時支所沖'}, note:'คือกิ่งที่ถูก日支/時支ไปชน (ไม่ใช่日支ชน時支กันเอง) · เป็นสัญญาณระวัง ไม่ใช่คำตัดสินดวงเจ้าของงาน' },
     ];
     const rows = specs.map(spec => {
       const flag = qimenUiFlagItem(p, spec.code);
@@ -2878,7 +2878,7 @@ window.applyI18N = applyI18N;
     const voidParts = [];
     const voidFlag = qimenUiFlagItem(p, 'KONG_WANG');
     const hasVoid = qimenUiFlag(p, 'KONG_WANG', () => p.is_void_any || p.is_void);
-    const voidEvidence = qimenUiFlagBranchEvidenceParts(voidFlag, {year:'ปี',month:'เดือน',day:'วัน',hour:'ยาม'});
+    const voidEvidence = qimenUiFlagBranchEvidenceParts(voidFlag, {year:'年空',month:'月空',day:'日空(วัน)',hour:'時空(ยาม)'});
     if (hasVoid && voidEvidence.length) voidParts.push(...voidEvidence);
     else if (!hasUiPacket) {
       if (hasVoid && p.is_void_day) voidParts.push(`วัน ${qmBranchDisplay(chart.voids?.day, chart.void_day_zh, chart.voidDayZh) || '—'}`);
@@ -3010,7 +3010,7 @@ window.applyI18N = applyI18N;
       qimenContextPairRow('ช่องว่าง', '空亡', voidDay, voidHour, 'พลังยังไม่เต็ม ต้องอ่านร่วมกับวังที่เลือก', 'ไม่มีค่าช่องว่าง 空亡 จากระบบ จึงไม่ใช้เป็นคำเตือน'),
       qimenContextPairRow('ม้าเดินทาง', '驛馬', horseDay, horseHour, 'เสริมเรื่องเดินทาง ติดต่อ เคลื่อนไหว หรือเร่งงานให้ขยับ', 'ไม่มีค่าม้าเดินทางจากระบบ จึงไม่ใช้เป็นแรงเสริม'),
       qimenContextPairRow('คนช่วย', '貴人', nobleDay, nobleHour, 'เสริมเรื่องผู้ใหญ่ ที่ปรึกษา ช่องทางช่วยเหลือ', 'ไม่มีค่าคนช่วยจากระบบ จึงไม่ใช้เป็นแรงเสริม'),
-      qimenContextPairRow('วัน/ยามปะทะ', '日時沖', clashDay, clashHour, 'เป็นกิ่งที่ถูกปะทะ ไม่ใช่ดวงเจ้าของงานโดยตรง', 'ไม่มีค่าปะทะจากระบบ จึงไม่ใช้เป็นคำเตือน'),
+      qimenContextPairRow('กิ่งที่วัน/ยามไปชง', '日時所沖', clashDay, clashHour, 'กิ่งที่ถูก日支/時支ไปชน (ไม่ใช่日支ชน時支กันเอง)', 'ไม่มีค่าปะทะจากระบบ จึงไม่ใช้เป็นคำเตือน'),
       `<li><b>28 ดาวฤกษ์ <span class="tc">二十八宿</span></b> · ${qmEsc(xiu.number || '—')} · ${qmEsc(xiuLabel.name)} · ${qmEsc(xiuLabel.group)}${xiuLabel.palace ? ' · '+qmEsc(xiuLabel.palace) : ''}</li>`,
       `<li>หมายเหตุ: กล่องนี้เป็นบริบทเวลาของทั้งผัง ไม่ใช่คำตัดสินเฉพาะวังนี้ และไม่ใช่คะแนนฤกษ์</li>`,
     ];
