@@ -1994,7 +1994,7 @@ function renderRealResults(items){
       if ((dg.yiPairs || []).length) parts.push((L === 'en' ? 'Good: ' : L === 'zh' ? '宜：' : 'ทำได้ ') + fmt(dg.yiPairs, dg.yi));
       if ((dg.jiPairs || []).length) parts.push((L === 'en' ? 'Avoid: ' : L === 'zh' ? '忌：' : 'ห้าม ') + fmt(dg.jiPairs, dg.ji));
       if ((dg.shenshaPairs || []).length) parts.push((L === 'en' ? 'Stars: ' : L === 'zh' ? '神煞：' : 'ดาว ') + fmt(dg.shenshaPairs, dg.shensha));
-      if (dg.note) parts.push(escHtml(dg.note));
+      if (dg.note) parts.push(escHtml((L === 'zh' || L === 'en') ? dg.note : (dg.noteTh || dg.note)));
       if (parts.length) {
         const kLabelDg = L === 'en' ? 'Dong Gong · 董公' : L === 'zh' ? '董公擇日' : 'ฤกษ์ตงกง · 董公';
         dgLine = `<div class="r-line"><span class="k">${kLabelDg}</span><span class="v">${parts.join(' · ')}</span></div>`;
