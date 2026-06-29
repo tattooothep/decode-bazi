@@ -1,213 +1,211 @@
 {
-  "_doc": "董公擇日 十二月建日神吉凶. tier-2: สกัดจาก tianyugong.com (正月 cross-check กับ wenxuecity ตรงกัน). ยังไม่ verify กับสแกน 書格 1894. แก้ 癣→癸 แล้ว. rating ใช้คำจีนเดิม: 大凶<凶<不利<次吉<吉<大吉<上吉<全吉; 吉凶混=ขึ้นกับ干支",
-  "_schema": "month → {month_zhi, jieqi, sansha, xinghaisha, days:[{pos, zhi, rating, yi[], ji[], shensha[], note}]}",
+  "_doc": "董公選要覽 十二月建日神吉凶 — REBUILD จาก NLC scan (tier-1, แทน tier-2 tianyugong เดิม). key: month → 12 ตำแหน่ง建除 (branch ไล่จาก月建+0..11). verdict=ผลรวมตำแหน่ง · exceptions=ราย干支 (gz=干支, v=verdict, note). 建除位คำนวณได้: (日支idx - 月建idx +12)%12",
+  "_source": "read.nlc.cn fid=15jh007747 (董公選要覽 全一冊, 上海文明書局 1929) น.13-44",
+  "_verdict_scale": "大凶 < 凶 < — (กลาง/ขึ้นกับ干支) < 次吉 < 吉 < 大吉 < 上吉",
+  "_note_alignment": "ต้นฉบับบางเดือน label建除เลื่อน แต่ data ผูกกับ干支日จริง → key ด้วย地支(ถูกเสมอ) 建除คำนวณใหม่. _missing=true คือต้นฉบับไม่ได้ถอดตำแหน่งนั้น (รอ OCR ภาพ)",
   "months": [
     {
-      "month": 1, "month_zhi": "寅", "jieqi": ["立春", "雨水"], "sansha": "亥子丑(北)",
-      "days": [
-        { "pos": "建", "zhi": "寅", "rating": "凶", "yi": [], "ji": ["起造", "婚姻", "納采"], "shensha": ["往亡"], "note": "" },
-        { "pos": "除", "zhi": "卯", "rating": "凶", "yi": [], "ji": ["起造", "婚姻"], "shensha": [], "note": "" },
-        { "pos": "滿", "zhi": "辰", "rating": "凶", "yi": [], "ji": ["百事皆忌", "起造", "入宅"], "shensha": ["天富", "天賊", "天羅"], "note": "" },
-        { "pos": "平", "zhi": "巳", "rating": "凶", "yi": [], "ji": ["出行", "嫁娶", "安葬"], "shensha": ["小紅沙", "朱雀", "勾絞"], "note": "招官司" },
-        { "pos": "定", "zhi": "午", "rating": "吉", "yi": ["修造", "安葬", "移徙", "開張", "出行", "婚姻"], "ji": [], "shensha": ["黃沙", "黃羅", "紫檀", "天皇"], "note": "吉星蓋照" },
-        { "pos": "執", "zhi": "未", "rating": "凶", "yi": [], "ji": ["起造", "入宅", "婚姻", "開張"], "shensha": ["天賊", "朱雀", "勾絞"], "note": "" },
-        { "pos": "破", "zhi": "申", "rating": "凶", "yi": [], "ji": ["起造", "婚姻", "諸事"], "shensha": ["朱雀", "勾絞"], "note": "" },
-        { "pos": "危", "zhi": "酉", "rating": "次吉", "yi": ["安葬", "還福願", "出行", "開張"], "ji": ["起造", "婚姻", "嫁娶"], "shensha": ["天德"], "note": "辛酉正四廢不宜" },
-        { "pos": "成", "zhi": "戌", "rating": "凶", "yi": [], "ji": ["起造", "婚姻", "入宅", "修造"], "shensha": ["天喜", "地網"], "note": "天喜卻是地網" },
-        { "pos": "收", "zhi": "亥", "rating": "凶", "yi": [], "ji": ["修造", "動土"], "shensha": ["勾絞"], "note": "" },
-        { "pos": "開", "zhi": "子", "rating": "次吉", "yi": ["安葬", "開張"], "ji": ["起造", "婚姻", "入宅"], "shensha": ["黃羅", "紫檀", "天皇"], "note": "戊子丙子庚子宜安葬; 甲子陰忌, 壬子不利" },
-        { "pos": "閉", "zhi": "丑", "rating": "凶", "yi": [], "ji": ["婚姻", "起造"], "shensha": [], "note": "" }
+      "month": 1, "month_branch": "寅", "jieqi": ["立春", "雨水"], "sansha_fang": "—",
+      "positions": [
+        { "pos": "建", "branch": "寅", "verdict": "凶", "yi": [], "ji": ["造", "娶"], "shensha": [], "exceptions": [] },
+        { "pos": "除", "branch": "卯", "verdict": "凶", "yi": [], "ji": ["嫁"], "shensha": [], "exceptions": [], "note": "招訟" },
+        { "pos": "滿", "branch": "辰", "verdict": "凶", "yi": [], "ji": [], "shensha": ["天羅"], "exceptions": [{ "gz": "甲辰", "v": "凶", "note": "煞" }, { "gz": "戊辰", "v": "凶", "note": "煞" }] },
+        { "pos": "平", "branch": "巳", "verdict": "凶", "yi": [], "ji": [], "shensha": ["小紅沙", "朱雀", "勾絞"], "exceptions": [] },
+        { "pos": "定", "branch": "午", "verdict": "吉", "yi": ["造", "葬"], "ji": [], "shensha": ["黃沙", "庫樓"], "exceptions": [] },
+        { "pos": "執", "branch": "未", "verdict": "凶", "yi": [], "ji": [], "shensha": ["朱雀", "勾絞"], "exceptions": [] },
+        { "pos": "破", "branch": "申", "verdict": "凶", "yi": [], "ji": [], "shensha": [], "exceptions": [] },
+        { "pos": "危", "branch": "酉", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "辛酉", "v": "凶", "note": "正四廢" }, { "gz": "丁酉", "v": "吉", "note": "天德·宜葬" }] },
+        { "pos": "成", "branch": "戌", "verdict": "凶", "yi": [], "ji": [], "shensha": ["天喜", "地網"], "exceptions": [] },
+        { "pos": "收", "branch": "亥", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "癸亥", "v": "上吉" }] },
+        { "pos": "開", "branch": "子", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "戊子", "v": "大吉" }, { "gz": "甲子", "v": "凶" }, { "gz": "壬子", "v": "凶" }] },
+        { "pos": "閉", "branch": "丑", "verdict": "—", "yi": ["葬"], "ji": ["嫁"], "shensha": [], "exceptions": [] }
       ]
     },
     {
-      "month": 2, "month_zhi": "卯", "jieqi": ["驚蟄", "春分"], "sansha": "申酉戌(西)",
-      "days": [
-        { "pos": "建", "zhi": "卯", "rating": "凶", "yi": [], "ji": ["用事"], "shensha": [], "note": "損家長少房" },
-        { "pos": "除", "zhi": "辰", "rating": "凶", "yi": [], "ji": ["移居入宅", "婚姻", "開張"], "shensha": [], "note": "" },
-        { "pos": "滿", "zhi": "巳", "rating": "吉", "yi": ["修造", "出行", "開張", "婚姻"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "平", "zhi": "午", "rating": "次吉", "yi": ["做生基"], "ji": ["婚姻", "修造"], "shensha": [], "note": "" },
-        { "pos": "定", "zhi": "未", "rating": "吉凶混", "yi": [], "ji": [], "shensha": [], "note": "癸未吉, 乙未凶" },
-        { "pos": "執", "zhi": "申", "rating": "吉", "yi": ["修造", "埋葬", "婚姻"], "ji": [], "shensha": [], "note": "庚申除外" },
-        { "pos": "破", "zhi": "酉", "rating": "凶", "yi": [], "ji": ["婚姻", "修造"], "shensha": [], "note": "" },
-        { "pos": "危", "zhi": "戌", "rating": "次吉", "yi": ["合板", "做生基"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "成", "zhi": "亥", "rating": "吉", "yi": ["婚姻", "開張", "安葬"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "收", "zhi": "子", "rating": "凶", "yi": [], "ji": ["婚姻", "起造"], "shensha": [], "note": "" },
-        { "pos": "開", "zhi": "丑", "rating": "凶", "yi": [], "ji": ["造作", "婚姻"], "shensha": [], "note": "" },
-        { "pos": "閉", "zhi": "寅", "rating": "次吉", "yi": ["合板", "作生基"], "ji": [], "shensha": [], "note": "" }
+      "month": 2, "month_branch": "卯", "jieqi": ["驚蟄", "春分"], "yue_de": "丁", "sansha_fang": "西",
+      "positions": [
+        { "pos": "建", "branch": "卯", "verdict": "凶", "yi": [], "ji": [], "shensha": ["天地轉煞"], "exceptions": [] },
+        { "pos": "除", "branch": "辰", "verdict": "凶", "yi": [], "ji": [], "shensha": [], "note": "招訟", "exceptions": [{ "gz": "甲辰", "v": "凶", "note": "煞" }, { "gz": "戊辰", "v": "凶", "note": "煞" }] },
+        { "pos": "滿", "branch": "巳", "verdict": "吉", "yi": [], "ji": ["動土"], "shensha": [], "exceptions": [] },
+        { "pos": "平", "branch": "午", "verdict": "—", "yi": ["生基"], "ji": [], "shensha": [], "exceptions": [] },
+        { "pos": "定", "branch": "未", "verdict": "凶", "yi": [], "ji": [], "shensha": [], "note": "陰宮", "exceptions": [{ "gz": "癸未", "v": "吉" }, { "gz": "乙未", "v": "凶" }] },
+        { "pos": "執", "branch": "申", "verdict": "大吉", "yi": [], "ji": [], "shensha": ["天月二德"], "exceptions": [{ "gz": "庚申", "v": "凶" }] },
+        { "pos": "破", "branch": "酉", "verdict": "凶", "yi": [], "ji": [], "shensha": ["小紅沙", "天賊"], "exceptions": [] },
+        { "pos": "危", "branch": "戌", "verdict": "—", "yi": ["生基"], "ji": [], "shensha": [], "exceptions": [{ "gz": "丙戌", "v": "凶", "note": "煞" }, { "gz": "壬戌", "v": "凶", "note": "煞" }] },
+        { "pos": "成", "branch": "亥", "verdict": "大吉", "yi": [], "ji": [], "shensha": ["天喜"], "exceptions": [{ "gz": "癸亥", "v": "上吉" }] },
+        { "pos": "收", "branch": "子", "verdict": "凶", "yi": [], "ji": [], "shensha": [], "note": "退財", "exceptions": [] },
+        { "pos": "開", "branch": "丑", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "癸丑", "v": "凶", "note": "煞" }] },
+        { "pos": "閉", "branch": "寅", "verdict": "—", "yi": ["生基"], "ji": ["造"], "shensha": ["黃沙"], "exceptions": [] }
       ]
     },
     {
-      "month": 3, "month_zhi": "辰", "jieqi": ["清明", "穀雨"], "sansha": "巳午未(南)",
-      "days": [
-        { "pos": "建", "zhi": "辰", "rating": "凶", "yi": [], "ji": ["修造", "安葬", "婚姻"], "shensha": [], "note": "" },
-        { "pos": "除", "zhi": "巳", "rating": "吉凶混", "yi": [], "ji": [], "shensha": [], "note": "丁巳己巳吉; 乙巳凶" },
-        { "pos": "滿", "zhi": "午", "rating": "次吉", "yi": [], "ji": [], "shensha": [], "note": "壬午次吉, 余午平常" },
-        { "pos": "平", "zhi": "未", "rating": "凶", "yi": [], "ji": ["用事"], "shensha": [], "note": "乙未尤凶" },
-        { "pos": "定", "zhi": "申", "rating": "吉凶混", "yi": [], "ji": [], "shensha": [], "note": "甲申丙申吉; 壬申大吉" },
-        { "pos": "執", "zhi": "酉", "rating": "吉凶混", "yi": [], "ji": [], "shensha": [], "note": "乙酉癸酉吉; 辛酉凶" },
-        { "pos": "破", "zhi": "戌", "rating": "凶", "yi": [], "ji": ["諸事不宜"], "shensha": [], "note": "" },
-        { "pos": "危", "zhi": "亥", "rating": "吉凶混", "yi": [], "ji": [], "shensha": [], "note": "己亥吉; 癸亥凶" },
-        { "pos": "成", "zhi": "子", "rating": "次吉", "yi": [], "ji": [], "shensha": [], "note": "壬子吉中有凶" },
-        { "pos": "收", "zhi": "丑", "rating": "凶", "yi": [], "ji": ["修造", "入宅", "婚姻"], "shensha": [], "note": "" },
-        { "pos": "開", "zhi": "寅", "rating": "吉", "yi": [], "ji": [], "shensha": [], "note": "戊寅壬寅吉" },
-        { "pos": "閉", "zhi": "卯", "rating": "凶", "yi": [], "ji": ["造作", "婚姻", "埋葬"], "shensha": [], "note": "" }
+      "month": 3, "month_branch": "辰", "jieqi": ["清明", "穀雨"], "yue_de": "壬", "sansha_fang": "南",
+      "positions": [
+        { "pos": "建", "branch": "辰", "verdict": "凶", "yi": [], "ji": [], "shensha": ["地網", "勾絞"], "exceptions": [{ "gz": "甲辰", "v": "凶", "note": "煞" }, { "gz": "戊辰", "v": "凶", "note": "煞" }] },
+        { "pos": "除", "branch": "巳", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "丁巳", "v": "大吉" }, { "gz": "乙巳", "v": "凶", "note": "十惡" }, { "gz": "辛巳", "v": "凶", "note": "火星" }] },
+        { "pos": "滿", "branch": "午", "verdict": "—", "yi": [], "ji": [], "shensha": ["天富"], "exceptions": [{ "gz": "戊午", "v": "吉", "note": "宜葬" }] },
+        { "pos": "平", "branch": "未", "verdict": "凶", "yi": [], "ji": [], "shensha": ["天罡", "勾絞"], "exceptions": [] },
+        { "pos": "定", "branch": "申", "verdict": "大吉", "yi": [], "ji": [], "shensha": ["天月二德"], "note": "十全大吉", "exceptions": [{ "gz": "戊申", "v": "凶", "note": "天罡" }, { "gz": "庚申", "v": "凶", "note": "正四廢" }] },
+        { "pos": "執", "branch": "酉", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "乙酉", "v": "吉" }, { "gz": "癸酉", "v": "大吉", "note": "宜葬" }, { "gz": "辛酉", "v": "凶", "note": "正四廢" }] },
+        { "pos": "破", "branch": "戌", "verdict": "凶", "yi": [], "ji": [], "shensha": [], "note": "沖破", "exceptions": [] },
+        { "pos": "危", "branch": "亥", "verdict": "大吉", "yi": ["上學"], "ji": [], "shensha": ["文昌"], "exceptions": [{ "gz": "癸亥", "v": "凶", "note": "婦人陰府" }] },
+        { "pos": "成", "branch": "子", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "壬子", "v": "吉", "note": "天月二德·一白" }] },
+        { "pos": "收", "branch": "丑", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙"], "note": "福力淺", "exceptions": [], "_missing": true },
+        { "pos": "開", "branch": "寅", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙"], "note": "福力淺", "exceptions": [], "_missing": true },
+        { "pos": "閉", "branch": "卯", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙"], "note": "福力淺", "exceptions": [], "_missing": true }
       ]
     },
     {
-      "month": 4, "month_zhi": "巳", "jieqi": ["立夏", "小滿"], "sansha": "寅卯辰(東)",
-      "days": [
-        { "pos": "建", "zhi": "巳", "rating": "凶", "yi": [], "ji": ["出行", "嫁娶", "安葬", "造作", "入宅", "開張"], "shensha": [], "note": "" },
-        { "pos": "除", "zhi": "午", "rating": "吉", "yi": ["修造", "婚姻", "開張", "出行", "入宅"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "滿", "zhi": "未", "rating": "次吉", "yi": ["定磉", "栓架", "埋葬"], "ji": ["婚姻", "起造"], "shensha": [], "note": "" },
-        { "pos": "平", "zhi": "申", "rating": "凶", "yi": [], "ji": ["起造", "出行", "安葬", "婚姻", "入宅"], "shensha": [], "note": "" },
-        { "pos": "定", "zhi": "酉", "rating": "次吉", "yi": [], "ji": ["動土", "安葬", "婚姻", "入宅", "修造"], "shensha": [], "note": "" },
-        { "pos": "執", "zhi": "戌", "rating": "凶", "yi": [], "ji": ["婚姻", "安葬", "入宅", "開張"], "shensha": [], "note": "" },
-        { "pos": "破", "zhi": "亥", "rating": "凶", "yi": [], "ji": ["諸事"], "shensha": [], "note": "招官司, 損錢財, 染疾病" },
-        { "pos": "危", "zhi": "子", "rating": "吉凶混", "yi": [], "ji": [], "shensha": [], "note": "丙子戊子大吉; 壬子大凶" },
-        { "pos": "成", "zhi": "丑", "rating": "凶", "yi": [], "ji": [], "shensha": [], "note": "招官司口舌, 小人陷害" },
-        { "pos": "收", "zhi": "寅", "rating": "凶", "yi": [], "ji": [], "shensha": [], "note": "不利" },
-        { "pos": "開", "zhi": "卯", "rating": "大吉", "yi": ["出行", "婚姻", "安葬", "造作", "開張", "入宅"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "閉", "zhi": "辰", "rating": "凶", "yi": [], "ji": ["婚姻", "修造", "開張", "入宅", "安葬"], "shensha": [], "note": "" }
+      "month": 4, "month_branch": "巳", "jieqi": ["立夏", "小滿"], "yue_de": "庚", "sansha_fang": "東",
+      "positions": [
+        { "pos": "建", "branch": "巳", "verdict": "凶", "yi": [], "ji": ["出行", "嫁", "葬"], "shensha": ["小紅沙"], "exceptions": [] },
+        { "pos": "除", "branch": "午", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙"], "exceptions": [{ "gz": "庚午", "v": "吉" }, { "gz": "甲午", "v": "吉" }, { "gz": "壬午", "v": "吉" }, { "gz": "丙午", "v": "凶" }, { "gz": "戊午", "v": "凶" }] },
+        { "pos": "滿", "branch": "未", "verdict": "—", "yi": [], "ji": [], "shensha": ["天富", "天賊"], "exceptions": [{ "gz": "辛未", "v": "吉", "note": "天月二德" }] },
+        { "pos": "平", "branch": "申", "verdict": "凶", "yi": [], "ji": [], "shensha": ["朱雀", "勾絞"], "exceptions": [] },
+        { "pos": "定", "branch": "酉", "verdict": "凶", "yi": [], "ji": [], "shensha": ["九土鬼"], "exceptions": [], "_check": "ต้นฉบับ '甲庚申煞' อาจพิมพ์เพี้ยน" },
+        { "pos": "執", "branch": "戌", "verdict": "凶", "yi": [], "ji": ["入宅"], "shensha": ["勾絞"], "exceptions": [{ "gz": "丙戌", "v": "凶", "note": "煞·斷不可入宅" }, { "gz": "壬戌", "v": "凶", "note": "煞·斷不可入宅" }] },
+        { "pos": "破", "branch": "亥", "verdict": "凶", "yi": [], "ji": [], "shensha": ["朱雀", "勾絞"], "exceptions": [{ "gz": "癸亥", "v": "凶", "note": "正四廢" }] },
+        { "pos": "危", "branch": "子", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "庚子", "v": "吉" }, { "gz": "丙子", "v": "吉" }, { "gz": "戊子", "v": "吉" }, { "gz": "甲子", "v": "凶", "note": "自死之金" }] },
+        { "pos": "成", "branch": "丑", "verdict": "凶", "yi": [], "ji": [], "shensha": ["天喜", "勾絞"], "exceptions": [] },
+        { "pos": "收", "branch": "寅", "verdict": "凶", "yi": [], "ji": [], "shensha": [], "exceptions": [] },
+        { "pos": "開", "branch": "卯", "verdict": "—", "yi": ["入宅"], "ji": [], "shensha": [], "exceptions": [{ "gz": "辛卯", "v": "吉" }, { "gz": "癸卯", "v": "吉" }, { "gz": "己卯", "v": "吉", "note": "入宅大吉" }] },
+        { "pos": "閉", "branch": "辰", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "戊辰", "v": "凶", "note": "煞" }, { "gz": "甲辰", "v": "凶", "note": "煞" }] }
       ]
     },
     {
-      "month": 5, "month_zhi": "午", "jieqi": ["芒種", "夏至"], "sansha": "亥子丑(北)",
-      "days": [
-        { "pos": "建", "zhi": "午", "rating": "凶", "yi": ["埋葬"], "ji": ["余事"], "shensha": [], "note": "埋葬次吉; 余事忌用" },
-        { "pos": "除", "zhi": "未", "rating": "次吉", "yi": [], "ji": ["開張", "入宅", "修造"], "shensha": [], "note": "乙未最凶" },
-        { "pos": "滿", "zhi": "申", "rating": "吉", "yi": ["安葬", "起造", "婚姻", "入宅", "開張"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "平", "zhi": "酉", "rating": "凶", "yi": [], "ji": ["百事不宜"], "shensha": [], "note": "招官司, 損長幼" },
-        { "pos": "定", "zhi": "戌", "rating": "大吉", "yi": ["起造", "興工", "動土", "入宅", "開張", "婚姻", "埋葬"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "執", "zhi": "亥", "rating": "次吉", "yi": ["修為"], "ji": [], "shensha": [], "note": "乙亥可修為; 癸亥大凶" },
-        { "pos": "破", "zhi": "子", "rating": "凶", "yi": [], "ji": ["娶親", "造作", "安葬", "入宅"], "shensha": [], "note": "" },
-        { "pos": "危", "zhi": "丑", "rating": "凶", "yi": [], "ji": ["娶親", "造作", "安葬", "入宅"], "shensha": [], "note": "丁丑癸丑不宜" },
-        { "pos": "成", "zhi": "寅", "rating": "大吉", "yi": ["興工", "動土", "定磉", "栓架", "入宅", "開張"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "收", "zhi": "卯", "rating": "大凶", "yi": [], "ji": ["損六畜"], "shensha": [], "note": "小人刑害, 官司口舌" },
-        { "pos": "開", "zhi": "辰", "rating": "大吉", "yi": ["興工", "動土", "入宅", "開張"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "閉", "zhi": "巳", "rating": "大吉", "yi": ["興工", "造作", "動土", "修造", "入宅", "婚姻", "開張"], "ji": [], "shensha": [], "note": "" }
+      "month": 5, "month_branch": "午", "jieqi": ["芒種", "夏至"], "yue_de": "丙", "sansha_fang": "北",
+      "positions": [
+        { "pos": "建", "branch": "午", "verdict": "凶", "yi": [], "ji": [], "shensha": [], "note": "轉煞", "exceptions": [{ "gz": "甲午", "v": "吉", "note": "天赦·宜葬" }] },
+        { "pos": "除", "branch": "未", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "乙未", "v": "凶" }] },
+        { "pos": "滿", "branch": "申", "verdict": "—", "yi": [], "ji": [], "shensha": ["天富", "天喜"], "exceptions": [{ "gz": "壬申", "v": "凶", "note": "五行無氣" }] },
+        { "pos": "平", "branch": "酉", "verdict": "大凶", "yi": [], "ji": [], "shensha": ["小紅沙", "朱雀", "勾絞"], "exceptions": [] },
+        { "pos": "定", "branch": "戌", "verdict": "—", "yi": [], "ji": [], "shensha": ["駕馬御星"], "exceptions": [{ "gz": "甲戌", "v": "大吉" }, { "gz": "戊戌", "v": "大吉" }, { "gz": "庚戌", "v": "大吉" }, { "gz": "丙戌", "v": "凶", "note": "煞" }, { "gz": "壬戌", "v": "凶", "note": "煞" }] },
+        { "pos": "執", "branch": "亥", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "乙亥", "v": "次吉" }, { "gz": "丁亥", "v": "次吉" }, { "gz": "己亥", "v": "次吉" }, { "gz": "癸亥", "v": "凶", "note": "六甲窮" }] },
+        { "pos": "破", "branch": "子", "verdict": "凶", "yi": [], "ji": [], "shensha": ["天賊"], "note": "正四廢", "exceptions": [] },
+        { "pos": "危", "branch": "丑", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "丁丑", "v": "凶" }, { "gz": "癸丑", "v": "凶" }] },
+        { "pos": "成", "branch": "寅", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙", "天喜"], "exceptions": [{ "gz": "丙寅", "v": "吉", "note": "天月二德" }, { "gz": "庚寅", "v": "大吉" }, { "gz": "戊寅", "v": "大吉" }, { "gz": "甲寅", "v": "大吉" }, { "gz": "壬寅", "v": "次吉" }] },
+        { "pos": "收", "branch": "卯", "verdict": "大凶", "yi": [], "ji": [], "shensha": ["朱雀", "勾絞"], "exceptions": [] },
+        { "pos": "開", "branch": "辰", "verdict": "吉", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "戊辰", "v": "凶", "note": "煞" }, { "gz": "甲辰", "v": "凶", "note": "煞" }] },
+        { "pos": "閉", "branch": "巳", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "乙巳", "v": "吉", "note": "黃羅紫檀·宜" }, { "gz": "辛巳", "v": "吉", "note": "黃羅紫檀·宜" }] }
       ]
     },
     {
-      "month": 6, "month_zhi": "未", "jieqi": ["小暑", "大暑"], "sansha": "申酉戌(西)",
-      "days": [
-        { "pos": "建", "zhi": "未", "rating": "凶", "yi": [], "ji": ["修造", "入宅", "婚姻", "開張"], "shensha": [], "note": "乙未大凶" },
-        { "pos": "除", "zhi": "申", "rating": "吉", "yi": ["笠柱", "起造", "安葬", "動土", "開山斬草", "出行", "開張"], "ji": [], "shensha": [], "note": "丙申五行無氣" },
-        { "pos": "滿", "zhi": "酉", "rating": "次吉", "yi": ["伐木", "栓架", "定磉", "起造"], "ji": ["入宅", "婚姻"], "shensha": ["天喜", "天富"], "note": "恐吉中有凶" },
-        { "pos": "平", "zhi": "戌", "rating": "凶", "yi": [], "ji": ["入宅", "婚姻"], "shensha": ["朱雀", "勾絞"], "note": "甲戌玄女偷修" },
-        { "pos": "定", "zhi": "亥", "rating": "大吉", "yi": ["出行", "入宅", "婚姻", "入學", "修造", "動土", "參官見貴"], "ji": [], "shensha": ["火星"], "note": "辛亥陰氣全勝忌; 己亥火星" },
-        { "pos": "執", "zhi": "子", "rating": "吉", "yi": ["起造", "興工", "動土", "造倉庫", "入宅", "移徙", "開張", "出行"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "破", "zhi": "丑", "rating": "凶", "yi": [], "ji": ["修造", "開張", "出行", "婚姻"], "shensha": [], "note": "無吉星" },
-        { "pos": "危", "zhi": "寅", "rating": "大吉", "yi": ["開山", "埋葬", "營謀百事"], "ji": ["遠行", "起造", "入宅", "婚姻"], "shensha": [], "note": "" },
-        { "pos": "成", "zhi": "卯", "rating": "大吉", "yi": ["造作", "入宅", "開張", "出行", "婚姻"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "收", "zhi": "辰", "rating": "次吉", "yi": ["偷修", "安葬營為"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "開", "zhi": "巳", "rating": "次吉", "yi": ["興工", "動土", "入宅", "開張"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "閉", "zhi": "午", "rating": "次吉", "yi": ["小用", "埋葬"], "ji": ["起造", "大事"], "shensha": [], "note": "" }
+      "month": 6, "month_branch": "未", "jieqi": ["小暑", "大暑"], "yue_de": "甲", "tian_de_he": "己", "sansha_fang": "西",
+      "positions": [
+        { "pos": "建", "branch": "未", "verdict": "大凶", "yi": [], "ji": [], "shensha": ["瘟疫"], "exceptions": [{ "gz": "乙未", "v": "大凶", "note": "煞" }] },
+        { "pos": "除", "branch": "申", "verdict": "—", "yi": ["伐木", "拴架"], "ji": [], "shensha": [], "exceptions": [{ "gz": "甲申", "v": "吉", "note": "天月二德" }, { "gz": "丙申", "v": "吉" }, { "gz": "庚申", "v": "凶", "note": "無氣" }] },
+        { "pos": "滿", "branch": "酉", "verdict": "吉", "yi": [], "ji": [], "shensha": ["天喜", "天富"], "exceptions": [] },
+        { "pos": "平", "branch": "戌", "verdict": "凶", "yi": [], "ji": [], "shensha": ["朱雀", "到州"], "exceptions": [{ "gz": "甲戌", "v": "吉" }] },
+        { "pos": "定", "branch": "亥", "verdict": "—", "yi": ["出行", "入宅"], "ji": [], "shensha": ["火星"], "exceptions": [{ "gz": "己亥", "v": "—", "note": "火星" }, { "gz": "乙亥", "v": "吉", "note": "文昌·宜出行入宅" }, { "gz": "辛亥", "v": "大吉" }] },
+        { "pos": "執", "branch": "子", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙"], "exceptions": [{ "gz": "丙子", "v": "吉" }, { "gz": "庚子", "v": "吉" }, { "gz": "甲子", "v": "凶", "note": "自死" }, { "gz": "壬子", "v": "凶", "note": "正四廢" }] },
+        { "pos": "破", "branch": "丑", "verdict": "凶", "yi": ["小作"], "ji": [], "shensha": ["小紅沙"], "note": "急用", "exceptions": [] },
+        { "pos": "危", "branch": "寅", "verdict": "大吉", "yi": [], "ji": ["遠行"], "shensha": ["天月二德"], "exceptions": [{ "gz": "甲寅", "v": "大吉" }] },
+        { "pos": "成", "branch": "卯", "verdict": "—", "yi": [], "ji": [], "shensha": ["天喜"], "exceptions": [{ "gz": "乙卯", "v": "吉", "note": "眾吉星" }, { "gz": "辛卯", "v": "吉", "note": "眾吉星" }] },
+        { "pos": "收", "branch": "辰", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "甲辰", "v": "吉", "note": "天德" }, { "gz": "丙辰", "v": "次吉" }, { "gz": "壬辰", "v": "次吉" }, { "gz": "庚辰", "v": "凶", "note": "騰蛇朱雀" }, { "gz": "戊辰", "v": "凶" }] },
+        { "pos": "開", "branch": "巳", "verdict": "—", "yi": [], "ji": [], "shensha": ["天賊", "福生"], "exceptions": [{ "gz": "乙巳", "v": "次吉" }, { "gz": "癸巳", "v": "次吉" }] },
+        { "pos": "閉", "branch": "午", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "甲午", "v": "—", "note": "天赦·轉煞" }, { "gz": "丙午", "v": "凶", "note": "受死" }] }
       ]
     },
     {
-      "month": 7, "month_zhi": "申", "jieqi": ["立秋", "處暑"], "sansha": "巳午未(南)",
-      "days": [
-        { "pos": "建", "zhi": "申", "rating": "凶", "yi": ["埋葬"], "ji": ["起造"], "shensha": ["天赦"], "note": "戊申天赦; 月建上凶" },
-        { "pos": "除", "zhi": "酉", "rating": "次吉", "yi": ["開山斬草", "安葬", "興工", "定磉", "栓架", "修造"], "ji": [], "shensha": ["往亡"], "note": "辛酉正四廢凶" },
-        { "pos": "滿", "zhi": "戌", "rating": "凶", "yi": [], "ji": ["起造", "修造", "入宅", "婚姻"], "shensha": ["天富", "天賊"], "note": "招官司, 家門衰敗" },
-        { "pos": "平", "zhi": "亥", "rating": "凶", "yi": [], "ji": ["起造", "諸事"], "shensha": [], "note": "" },
-        { "pos": "定", "zhi": "子", "rating": "大吉", "yi": ["修造", "安葬", "娶親", "開張", "出行", "入宅", "興工", "動土"], "ji": [], "shensha": [], "note": "丙子吉; 壬子木打寶瓶忌" },
-        { "pos": "執", "zhi": "丑", "rating": "凶", "yi": [], "ji": ["起造", "婚姻", "入宅"], "shensha": [], "note": "" },
-        { "pos": "破", "zhi": "寅", "rating": "凶", "yi": ["安葬"], "ji": ["起造", "諸事"], "shensha": [], "note": "" },
-        { "pos": "危", "zhi": "卯", "rating": "大吉", "yi": ["起造", "婚姻", "嫁娶", "興工", "動土", "定磉", "栓架", "開張", "出行", "入宅"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "成", "zhi": "辰", "rating": "次吉", "yi": ["埋葬"], "ji": ["大用"], "shensha": [], "note": "" },
-        { "pos": "收", "zhi": "巳", "rating": "凶", "yi": [], "ji": ["諸事"], "shensha": [], "note": "" },
-        { "pos": "開", "zhi": "午", "rating": "大吉", "yi": ["會親", "嫁娶", "修造", "埋葬", "開張", "出行", "入宅", "動土"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "閉", "zhi": "未", "rating": "凶", "yi": [], "ji": ["起造", "婚姻", "入宅", "開張"], "shensha": [], "note": "" }
+      "month": 7, "month_branch": "申", "jieqi": ["立秋", "處暑"], "yue_de": "壬", "tian_de_he": "戊", "sansha_fang": "南",
+      "positions": [
+        { "pos": "建", "branch": "申", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "戊申", "v": "吉", "note": "天赦" }, { "gz": "甲申", "v": "吉", "note": "比和·宜葬" }, { "gz": "壬申", "v": "吉", "note": "比和·宜葬" }, { "gz": "庚申", "v": "凶", "note": "煞" }, { "gz": "丙申", "v": "凶", "note": "無氣" }] },
+        { "pos": "除", "branch": "酉", "verdict": "—", "yi": ["開山斬草", "葬"], "ji": [], "shensha": [], "exceptions": [{ "gz": "乙酉", "v": "吉", "note": "宜開山斬草葬" }, { "gz": "己酉", "v": "凶", "note": "九土鬼" }, { "gz": "癸酉", "v": "凶", "note": "伏劍金黑煞" }] },
+        { "pos": "滿", "branch": "戌", "verdict": "—", "yi": [], "ji": [], "shensha": ["天富", "天賊"], "exceptions": [{ "gz": "丙戌", "v": "凶", "note": "朱雀勾絞白虎" }, { "gz": "壬戌", "v": "凶", "note": "朱雀勾絞白虎" }] },
+        { "pos": "平", "branch": "亥", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "辛亥", "v": "凶", "note": "騰蛇" }] },
+        { "pos": "定", "branch": "子", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "丙子", "v": "吉", "note": "水潔淨" }, { "gz": "甲子", "v": "凶", "note": "自死" }] },
+        { "pos": "執", "branch": "丑", "verdict": "凶", "yi": [], "ji": [], "shensha": ["朱雀", "勾絞", "騰蛇", "白虎"], "exceptions": [] },
+        { "pos": "破", "branch": "寅", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "甲寅", "v": "凶", "note": "正四廢" }, { "gz": "壬寅", "v": "吉", "note": "月德·宜葬" }] },
+        { "pos": "危", "branch": "卯", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "癸卯", "v": "吉", "note": "天德·眾吉" }, { "gz": "丁卯", "v": "吉", "note": "天德·眾吉" }, { "gz": "乙卯", "v": "凶", "note": "正四廢" }] },
+        { "pos": "成", "branch": "辰", "verdict": "—", "yi": [], "ji": [], "shensha": ["天喜"], "exceptions": [{ "gz": "壬辰", "v": "吉", "note": "月德" }, { "gz": "庚辰", "v": "吉" }, { "gz": "丙辰", "v": "吉" }, { "gz": "戊辰", "v": "凶", "note": "白虎入中宮" }, { "gz": "甲辰", "v": "凶", "note": "白虎入中宮" }] },
+        { "pos": "收", "branch": "巳", "verdict": "大凶", "yi": [], "ji": [], "shensha": ["小紅沙", "朱雀", "勾絞", "騰蛇"], "exceptions": [] },
+        { "pos": "開", "branch": "午", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙"], "exceptions": [{ "gz": "壬午", "v": "吉", "note": "月德" }, { "gz": "丙午", "v": "吉" }, { "gz": "戊午", "v": "吉" }, { "gz": "庚午", "v": "凶", "note": "犯天火" }] },
+        { "pos": "閉", "branch": "未", "verdict": "—", "yi": ["修"], "ji": [], "shensha": [], "exceptions": [{ "gz": "癸未", "v": "吉", "note": "火星·宜修" }, { "gz": "己未", "v": "吉", "note": "火星·宜修" }, { "gz": "乙未", "v": "凶", "note": "煞" }, { "gz": "丁未", "v": "凶", "note": "動神煞" }] }
       ]
     },
     {
-      "month": 8, "month_zhi": "酉", "jieqi": ["白露", "秋分"], "sansha": "寅卯辰(東)",
-      "days": [
-        { "pos": "建", "zhi": "酉", "rating": "大凶", "yi": [], "ji": ["起造", "開張", "嫁娶", "入宅", "出行", "安葬"], "shensha": [], "note": "" },
-        { "pos": "除", "zhi": "戌", "rating": "次吉", "yi": ["興工", "動土", "入宅", "開張", "婚姻"], "ji": [], "shensha": ["天月二德"], "note": "庚戌天月二德; 丙戌壬戌失財冷退" },
-        { "pos": "滿", "zhi": "亥", "rating": "吉", "yi": ["起造", "興工", "動土", "栓架", "入宅", "嫁娶", "開張", "出行"], "ji": [], "shensha": [], "note": "辛亥陰氣; 癸亥五行無氣忌" },
-        { "pos": "平", "zhi": "子", "rating": "次吉", "yi": ["起造", "嫁娶", "入宅", "出行", "動土"], "ji": [], "shensha": [], "note": "戊子吉; 壬子五行無氣忌" },
-        { "pos": "定", "zhi": "丑", "rating": "次吉", "yi": [], "ji": [], "shensha": [], "note": "己丑辛丑癸丑總體不利" },
-        { "pos": "執", "zhi": "寅", "rating": "吉", "yi": ["起造", "婚姻", "動土", "移居", "開張", "出行"], "ji": [], "shensha": [], "note": "庚寅吉; 甲寅正四廢忌" },
-        { "pos": "破", "zhi": "卯", "rating": "次吉", "yi": [], "ji": [], "shensha": ["月厭", "朱雀", "勾絞"], "note": "乙卯癸卯己卯次吉" },
-        { "pos": "危", "zhi": "辰", "rating": "吉", "yi": ["破土", "興工", "開張", "出行", "入宅", "婚姻"], "ji": [], "shensha": [], "note": "丙辰吉; 甲辰煞入中宮忌" },
-        { "pos": "成", "zhi": "巳", "rating": "吉", "yi": ["婚姻", "入宅", "動土", "興工", "開張", "出行", "起造"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "收", "zhi": "午", "rating": "次吉", "yi": [], "ji": [], "shensha": [], "note": "戊午庚午不利" },
-        { "pos": "開", "zhi": "未", "rating": "次吉", "yi": ["斬草", "開山", "掘樹", "安葬"], "ji": [], "shensha": [], "note": "乙未百事不利" },
-        { "pos": "閉", "zhi": "申", "rating": "上吉", "yi": ["出行", "修方", "動土", "興工", "定磉", "栓架", "婚姻", "入宅", "安葬", "開張"], "ji": [], "shensha": [], "note": "" }
+      "month": 8, "month_branch": "酉", "jieqi": ["白露", "秋分"], "yue_de": "庚", "tian_de_he": "亥", "sansha_fang": "東",
+      "positions": [
+        { "pos": "建", "branch": "酉", "verdict": "大凶", "yi": [], "ji": [], "shensha": ["小紅沙"], "note": "五行自敗", "exceptions": [] },
+        { "pos": "除", "branch": "戌", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "庚戌", "v": "吉", "note": "天月二德" }, { "gz": "戊戌", "v": "大吉", "note": "諸星" }, { "gz": "甲戌", "v": "大吉", "note": "諸星" }, { "gz": "丙戌", "v": "凶" }, { "gz": "壬戌", "v": "凶", "note": "煞" }] },
+        { "pos": "滿", "branch": "亥", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [], "_missing": true },
+        { "pos": "平", "branch": "子", "verdict": "—", "yi": [], "ji": [], "shensha": ["朱雀", "勾絞"], "exceptions": [{ "gz": "丙子", "v": "吉", "note": "水潔淨" }, { "gz": "甲子", "v": "凶", "note": "無氣" }] },
+        { "pos": "定", "branch": "丑", "verdict": "—", "yi": [], "ji": [], "shensha": [], "note": "按各書言上吉", "exceptions": [{ "gz": "辛丑", "v": "凶", "note": "白虎煞" }, { "gz": "癸丑", "v": "凶", "note": "白虎煞" }, { "gz": "丁丑", "v": "吉", "note": "宜婚" }, { "gz": "己丑", "v": "吉", "note": "宜婚" }, { "gz": "乙丑", "v": "凶", "note": "十惡猖鬼" }] },
+        { "pos": "執", "branch": "寅", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙"], "exceptions": [{ "gz": "庚寅", "v": "大吉", "note": "天月二德·眾吉" }, { "gz": "甲寅", "v": "凶", "note": "正四廢" }] },
+        { "pos": "破", "branch": "卯", "verdict": "凶", "yi": [], "ji": [], "shensha": ["天賊", "朱雀", "勾絞", "月厭"], "exceptions": [{ "gz": "癸卯", "v": "次吉" }, { "gz": "己卯", "v": "次吉" }] },
+        { "pos": "危", "branch": "辰", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "壬辰", "v": "吉", "note": "水潔淨" }, { "gz": "丙辰", "v": "吉" }, { "gz": "庚辰", "v": "凶", "note": "天地相疑" }, { "gz": "甲辰", "v": "凶", "note": "煞" }] },
+        { "pos": "成", "branch": "巳", "verdict": "—", "yi": [], "ji": [], "shensha": ["天喜"], "exceptions": [{ "gz": "乙巳", "v": "吉", "note": "祿馬聚" }, { "gz": "己巳", "v": "吉", "note": "祿馬聚" }, { "gz": "辛巳", "v": "吉", "note": "宜倉庫" }, { "gz": "癸巳", "v": "吉", "note": "宜倉庫" }] },
+        { "pos": "收", "branch": "午", "verdict": "—", "yi": [], "ji": [], "shensha": ["福生"], "exceptions": [{ "gz": "壬午", "v": "凶", "note": "火星" }, { "gz": "丙午", "v": "吉", "note": "宜動土葬" }] },
+        { "pos": "開", "branch": "未", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [], "_missing": true },
+        { "pos": "閉", "branch": "申", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [], "_missing": true }
       ]
     },
     {
-      "month": 9, "month_zhi": "戌", "jieqi": ["寒露", "霜降"], "sansha": "亥子丑(北)",
-      "days": [
-        { "pos": "建", "zhi": "戌", "rating": "吉", "yi": ["各類營為"], "ji": [], "shensha": ["天月二德"], "note": "丙戌天月二德; 其余戌日大凶" },
-        { "pos": "除", "zhi": "亥", "rating": "吉", "yi": ["起造", "開張", "嫁娶", "入宅", "出行", "動土"], "ji": [], "shensha": [], "note": "癸亥辛亥不可用" },
-        { "pos": "滿", "zhi": "子", "rating": "吉", "yi": ["嫁娶", "開張", "出行", "入宅", "興工", "動土", "安葬"], "ji": [], "shensha": [], "note": "丙子吉; 壬子大凶" },
-        { "pos": "平", "zhi": "丑", "rating": "凶", "yi": ["小小營為"], "ji": [], "shensha": [], "note": "丁丑癸丑煞入中宮" },
-        { "pos": "定", "zhi": "寅", "rating": "吉", "yi": ["起造", "婚姻", "出行", "入宅", "開張"], "ji": [], "shensha": [], "note": "甲寅正四廢" },
-        { "pos": "執", "zhi": "卯", "rating": "吉", "yi": ["嫁娶", "開張", "出行", "入宅", "動土", "修方", "起造"], "ji": [], "shensha": [], "note": "乙卯正四廢" },
-        { "pos": "破", "zhi": "辰", "rating": "次吉", "yi": ["修造"], "ji": ["嫁娶", "開張", "入宅", "移居"], "shensha": [], "note": "修造小吉" },
-        { "pos": "危", "zhi": "巳", "rating": "大吉", "yi": ["斬草", "安葬", "興工", "造作", "嫁娶", "開張", "納彩", "移居", "出行", "入宅"], "ji": [], "shensha": [], "note": "乙巳" },
-        { "pos": "成", "zhi": "午", "rating": "吉", "yi": ["起造", "嫁娶", "入宅", "出行", "商買", "開張", "動土", "安葬"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "收", "zhi": "未", "rating": "次吉", "yi": ["安葬", "定磉", "栓架"], "ji": ["起造", "婚姻", "出行", "入宅", "開張"], "shensha": [], "note": "" },
-        { "pos": "開", "zhi": "申", "rating": "次吉", "yi": ["安葬", "作生基"], "ji": ["起造", "婚姻", "入宅", "開張"], "shensha": [], "note": "" },
-        { "pos": "閉", "zhi": "酉", "rating": "凶", "yi": ["小用"], "ji": ["起造", "婚姻", "入宅", "開張"], "shensha": [], "note": "" }
+      "month": 9, "month_branch": "戌", "jieqi": ["寒露", "霜降"], "yue_de": "丙", "tian_de_he": "辛", "sansha_fang": "北",
+      "positions": [
+        { "pos": "建", "branch": "戌", "verdict": "凶", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "丙戌", "v": "吉", "note": "天月二德" }] },
+        { "pos": "除", "branch": "亥", "verdict": "—", "yi": [], "ji": [], "shensha": ["天成"], "exceptions": [{ "gz": "乙亥", "v": "大吉" }, { "gz": "丁亥", "v": "大吉" }, { "gz": "己亥", "v": "凶", "note": "火星" }, { "gz": "辛亥", "v": "凶", "note": "純陰" }, { "gz": "癸亥", "v": "凶", "note": "六甲窮" }] },
+        { "pos": "滿", "branch": "子", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙", "天富"], "exceptions": [{ "gz": "丙子", "v": "大吉", "note": "水潔淨·天月二德·諸吉" }, { "gz": "壬子", "v": "凶", "note": "木打寶瓶" }, { "gz": "甲子", "v": "吉" }] },
+        { "pos": "平", "branch": "丑", "verdict": "凶", "yi": [], "ji": [], "shensha": ["小紅沙", "福生", "朱雀"], "note": "被月建刑破", "exceptions": [] },
+        { "pos": "定", "branch": "寅", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "丙寅", "v": "吉", "note": "天月二德" }, { "gz": "庚寅", "v": "吉", "note": "黃羅紫檀" }, { "gz": "戊寅", "v": "吉", "note": "黃羅紫檀" }, { "gz": "壬寅", "v": "凶", "note": "犯月厭" }] },
+        { "pos": "執", "branch": "卯", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "辛卯", "v": "大吉", "note": "黃羅紫檀" }, { "gz": "己卯", "v": "大吉", "note": "黃羅紫檀" }, { "gz": "乙卯", "v": "凶", "note": "正四廢" }] },
+        { "pos": "破", "branch": "辰", "verdict": "—", "yi": ["小修"], "ji": [], "shensha": [], "exceptions": [{ "gz": "丙辰", "v": "—", "note": "天月二德·小修" }, { "gz": "戊辰", "v": "凶", "note": "煞" }, { "gz": "甲辰", "v": "凶", "note": "煞" }] },
+        { "pos": "危", "branch": "巳", "verdict": "—", "yi": ["斬草", "葬"], "ji": [], "shensha": [], "exceptions": [{ "gz": "乙巳", "v": "吉", "note": "宜斬草葬眾事" }, { "gz": "己巳", "v": "次吉" }] },
+        { "pos": "成", "branch": "午", "verdict": "大吉", "yi": [], "ji": [], "shensha": ["天喜"], "exceptions": [{ "gz": "丙午", "v": "大吉", "note": "天月二德·庫樓星" }] },
+        { "pos": "收", "branch": "未", "verdict": "—", "yi": ["葬"], "ji": [], "shensha": [], "exceptions": [{ "gz": "己未", "v": "吉", "note": "宜葬" }, { "gz": "辛未", "v": "吉", "note": "宜葬" }, { "gz": "癸未", "v": "吉", "note": "宜葬" }, { "gz": "乙未", "v": "凶", "note": "朱雀勾絞白虎" }, { "gz": "丁未", "v": "凶" }] },
+        { "pos": "開", "branch": "申", "verdict": "—", "yi": [], "ji": [], "shensha": ["天賊"], "exceptions": [{ "gz": "戊申", "v": "吉", "note": "天赦" }, { "gz": "甲申", "v": "吉", "note": "水潔淨·宜葬" }, { "gz": "庚申", "v": "凶", "note": "白虎入中宮·唯葬" }] },
+        { "pos": "閉", "branch": "酉", "verdict": "凶", "yi": [], "ji": [], "shensha": [], "note": "秋冬交界傷殺", "exceptions": [{ "gz": "乙酉", "v": "吉", "note": "宜葬" }] }
       ]
     },
     {
-      "month": 10, "month_zhi": "亥", "jieqi": ["立冬", "小雪"], "sansha": "申酉戌(西)",
-      "xinghaisha": "建亥 破巳 刑亥 害申; 劫煞申 災煞酉 月煞戌",
-      "days": [
-        { "pos": "建", "zhi": "亥", "rating": "凶", "yi": ["小作營為"], "ji": ["起造", "開張", "嫁娶", "入宅", "出行", "安葬"], "shensha": [], "note": "招官司, 損家長" },
-        { "pos": "除", "zhi": "子", "rating": "吉凶混", "yi": [], "ji": [], "shensha": ["天赦"], "note": "甲子天赦; 需謹慎轉煞之凶" },
-        { "pos": "滿", "zhi": "丑", "rating": "凶", "yi": [], "ji": ["起造", "嫁娶", "鼓樂喧嘩", "釘丁"], "shensha": [], "note": "清魂入墓" },
-        { "pos": "平", "zhi": "寅", "rating": "次吉", "yi": ["小小修為"], "ji": ["大作"], "shensha": [], "note": "甲寅外余寅日不利" },
-        { "pos": "定", "zhi": "卯", "rating": "吉", "yi": ["動土", "興工", "嫁娶", "入宅", "出行", "開張"], "ji": [], "shensha": [], "note": "" },
-        { "pos": "執", "zhi": "辰", "rating": "次吉", "yi": ["偷修", "開山斬草", "安葬"], "ji": ["起造", "嫁娶", "入宅"], "shensha": [], "note": "丙辰開山斬草安葬; 戊辰煞入中宮" },
-        { "pos": "破", "zhi": "巳", "rating": "凶", "yi": ["小作"], "ji": ["諸事"], "shensha": [], "note": "乙巳小作; 丁巳正四廢" },
-        { "pos": "危", "zhi": "午", "rating": "吉", "yi": ["嫁娶", "開張", "起造", "動土", "出行", "安葬"], "ji": [], "shensha": [], "note": "丙午正四廢" },
-        { "pos": "成", "zhi": "未", "rating": "吉", "yi": ["起造", "嫁娶", "出行"], "ji": [], "shensha": [], "note": "癸未吉; 乙未煞入中宮不利遠行" },
-        { "pos": "收", "zhi": "申", "rating": "次吉", "yi": ["安葬", "嫁娶", "出行"], "ji": [], "shensha": [], "note": "甲申吉; 庚申受死無氣煞入中宮" },
-        { "pos": "開", "zhi": "酉", "rating": "吉", "yi": ["娛親", "入宅", "起造", "開張", "安葬"], "ji": [], "shensha": [], "note": "乙酉吉; 己酉安葬可; 余酉次吉" },
-        { "pos": "閉", "zhi": "戌", "rating": "次吉", "yi": ["嫁娶", "開張", "出行", "入宅"], "ji": [], "shensha": [], "note": "甲戌吉; 丙戌戊戌百事凶敗" }
+      "month": 10, "month_branch": "亥", "jieqi": ["立冬", "小雪"], "yue_de": "甲", "tian_de_he": "庚", "sansha_fang": "西",
+      "positions": [
+        { "pos": "建", "branch": "亥", "verdict": "凶", "yi": [], "ji": ["造", "嫁", "入宅", "出行", "葬"], "shensha": [], "exceptions": [] },
+        { "pos": "除", "branch": "子", "verdict": "—", "yi": ["小作"], "ji": [], "shensha": [], "note": "秋冬交界轉煞", "exceptions": [] },
+        { "pos": "滿", "branch": "丑", "verdict": "—", "yi": ["請魂入墓"], "ji": [], "shensha": [], "exceptions": [{ "gz": "丁丑", "v": "凶", "note": "煞" }, { "gz": "癸丑", "v": "凶", "note": "煞" }] },
+        { "pos": "平", "branch": "寅", "verdict": "—", "yi": [], "ji": [], "shensha": ["天富", "天成", "月厭", "天賊"], "exceptions": [{ "gz": "甲寅", "v": "上吉" }, { "gz": "壬寅", "v": "次吉" }, { "gz": "庚寅", "v": "次吉" }] },
+        { "pos": "定", "branch": "卯", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "乙卯", "v": "吉", "note": "天德" }, { "gz": "辛卯", "v": "吉" }, { "gz": "己卯", "v": "吉" }] },
+        { "pos": "執", "branch": "辰", "verdict": "—", "yi": ["小修", "開山", "葬"], "ji": [], "shensha": [], "exceptions": [{ "gz": "甲辰", "v": "—", "note": "天月二德·小修" }, { "gz": "丙辰", "v": "吉", "note": "宜開山葬" }, { "gz": "戊辰", "v": "凶", "note": "煞" }] },
+        { "pos": "破", "branch": "巳", "verdict": "凶", "yi": [], "ji": [], "shensha": ["小紅沙", "朱雀", "勾絞"], "exceptions": [{ "gz": "乙巳", "v": "—", "note": "天德·小作" }] },
+        { "pos": "危", "branch": "午", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙"], "exceptions": [{ "gz": "甲午", "v": "吉", "note": "月德" }, { "gz": "丙午", "v": "大吉", "note": "庫樓諸吉" }], "_check": "ต้นฉบับมี '丙午正四廢' ขัดกับ '丙午大吉' — 冬季正四廢=丙午丁巳 (ดู blacklist_fixed) · ต้องดูสแกน" },
+        { "pos": "成", "branch": "未", "verdict": "—", "yi": [], "ji": [], "shensha": [], "note": "月建三合", "exceptions": [{ "gz": "乙未", "v": "凶", "note": "煞" }, { "gz": "癸未", "v": "吉", "note": "文昌貴顯" }, { "gz": "辛未", "v": "上吉", "note": "聯珠星" }] },
+        { "pos": "收", "branch": "申", "verdict": "凶", "yi": [], "ji": [], "shensha": ["朱雀", "到州"], "exceptions": [{ "gz": "甲申", "v": "吉", "note": "水潔淨·宜入宅" }, { "gz": "庚申", "v": "凶", "note": "白虎入中宮·唯葬" }] },
+        { "pos": "開", "branch": "酉", "verdict": "—", "yi": [], "ji": [], "shensha": ["天賊", "月厭"], "exceptions": [{ "gz": "乙酉", "v": "上吉", "note": "天德" }, { "gz": "己酉", "v": "—", "note": "九土鬼·宜葬" }] },
+        { "pos": "閉", "branch": "戌", "verdict": "—", "yi": ["嫁", "開市"], "ji": ["動土", "造", "葬"], "shensha": [], "exceptions": [{ "gz": "甲戌", "v": "吉", "note": "月德·宜嫁開市" }, { "gz": "丙戌", "v": "凶" }] }
       ]
     },
     {
-      "month": 11, "month_zhi": "子", "jieqi": ["大雪", "冬至"], "sansha": "巳午未(南)",
-      "xinghaisha": "建子 破午 刑卯 害未; 劫煞巳 災煞午 月煞未",
-      "_warning": "⚠️ tier-2 SUSPECT: tianyugong ขึ้น建日ที่ 丑 แต่ตามกฎ建除 子月建日ต้อง=子日 (干支ในแหล่งเลื่อน +1). 建除位↔吉凶/宜忌 น่าใช้ได้ แต่ field zhi รายวันของเดือนนี้ยังไม่ trust — ต้อง verify กับสแกน 書格 ก่อนใช้",
-      "days": [
-        { "pos": "建", "zhi": "丑", "rating": "次吉", "yi": ["開山斬草", "興工", "嫁娶", "開張", "出行"], "ji": [], "shensha": [], "note": "乙丑己丑次吉; 丁丑癸丑煞入中宮" },
-        { "pos": "除", "zhi": "寅", "rating": "吉", "yi": ["起造", "婚姻", "安葬", "開張"], "ji": [], "shensha": ["火星"], "note": "庚寅甲寅壬寅吉; 火星煞神照臨需慎" },
-        { "pos": "滿", "zhi": "卯", "rating": "次吉", "yi": ["造作", "興工"], "ji": ["動土"], "shensha": [], "note": "辛卯造作興工" },
-        { "pos": "平", "zhi": "辰", "rating": "次吉", "yi": ["埋葬", "娛親", "興工", "動土"], "ji": [], "shensha": [], "note": "壬辰; 戊辰煞入中宮五行無氣" },
-        { "pos": "定", "zhi": "巳", "rating": "次吉", "yi": ["開山斬草"], "ji": [], "shensha": ["天上大空亡"], "note": "癸巳; 丁巳正四廢天上大空亡" },
-        { "pos": "執", "zhi": "午", "rating": "吉", "yi": ["動土", "出行", "入宅", "娛親"], "ji": [], "shensha": [], "note": "庚午壬午; 丙午正四廢" },
-        { "pos": "破", "zhi": "未", "rating": "吉", "yi": ["動土", "興工", "出行", "開張"], "ji": [], "shensha": [], "note": "丁未癸未吉; 己未辛未乙未煞入中宮" },
-        { "pos": "危", "zhi": "申", "rating": "次吉", "yi": ["修造", "安葬", "起造"], "ji": ["大工開張", "婚姻"], "shensha": [], "note": "庚申甲申; 丙申壬申只宜埋葬" },
-        { "pos": "成", "zhi": "酉", "rating": "吉", "yi": ["娛親", "起造", "開張", "安葬"], "ji": [], "shensha": [], "note": "乙酉癸酉丁酉吉; 余酉次吉" },
-        { "pos": "收", "zhi": "戌", "rating": "次吉", "yi": ["定磉", "婚姻", "開張"], "ji": [], "shensha": [], "note": "庚戌甲戌; 丙戌壬戌戊戌煞入中宮" },
-        { "pos": "開", "zhi": "亥", "rating": "吉", "yi": ["定磉", "婚姻", "開張", "入宅"], "ji": [], "shensha": [], "note": "乙亥己亥丁亥吉; 辛亥陰氣太甚非陽間所用" },
-        { "pos": "閉", "zhi": "子", "rating": "凶", "yi": ["小修為"], "ji": [], "shensha": [], "note": "甲子戊子小修為; 庚子壬子丙子天地轉軸大凶" }
+      "month": 11, "month_branch": "子", "jieqi": ["大雪", "冬至"], "yue_de": "壬", "tian_de_he": "申", "sansha_fang": "南",
+      "positions": [
+        { "pos": "建", "branch": "子", "verdict": "凶", "yi": [], "ji": [], "shensha": [], "note": "月建沖破", "exceptions": [{ "gz": "甲子", "v": "凶", "note": "天赦但月建沖破" }, { "gz": "丙子", "v": "凶", "note": "地轉" }] },
+        { "pos": "除", "branch": "丑", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [], "_missing": true },
+        { "pos": "滿", "branch": "寅", "verdict": "—", "yi": [], "ji": ["動土"], "shensha": ["黃沙", "天富", "土瘟", "福生"], "exceptions": [{ "gz": "壬寅", "v": "上吉" }, { "gz": "戊寅", "v": "上吉" }, { "gz": "丙寅", "v": "次吉" }, { "gz": "庚寅", "v": "次吉" }, { "gz": "甲寅", "v": "大吉" }] },
+        { "pos": "平", "branch": "卯", "verdict": "—", "yi": [], "ji": [], "shensha": ["天賊", "朱雀", "勾絞"], "exceptions": [{ "gz": "辛卯", "v": "凶", "note": "火星" }, { "gz": "乙卯", "v": "次吉" }] },
+        { "pos": "定", "branch": "辰", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "壬辰", "v": "凶", "note": "天羅地網" }, { "gz": "甲辰", "v": "吉", "note": "天德·宜葬" }] },
+        { "pos": "執", "branch": "巳", "verdict": "—", "yi": ["葬"], "ji": [], "shensha": [], "note": "死氣犯官符飛宮百事不利", "exceptions": [{ "gz": "乙巳", "v": "吉", "note": "黃羅紫檀·宜葬" }, { "gz": "癸巳", "v": "吉", "note": "黃羅紫檀·宜葬" }, { "gz": "己巳", "v": "吉", "note": "黃羅紫檀·宜葬" }] },
+        { "pos": "破", "branch": "午", "verdict": "凶", "yi": ["小作"], "ji": [], "shensha": ["天賊"], "exceptions": [{ "gz": "壬午", "v": "—", "note": "火星·月德·小作" }, { "gz": "丙午", "v": "凶", "note": "正四廢" }] },
+        { "pos": "危", "branch": "未", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "丁未", "v": "大吉", "note": "大海水潔淨·眾事" }, { "gz": "辛未", "v": "凶" }, { "gz": "癸未", "v": "凶" }, { "gz": "乙未", "v": "凶", "note": "煞" }, { "gz": "己未", "v": "上吉", "note": "宜葬" }] },
+        { "pos": "成", "branch": "申", "verdict": "—", "yi": [], "ji": [], "shensha": ["天喜"], "exceptions": [{ "gz": "壬申", "v": "吉", "note": "天月二德" }, { "gz": "甲申", "v": "吉", "note": "庫樓諸吉" }, { "gz": "戊申", "v": "吉", "note": "庫樓諸吉" }, { "gz": "庚申", "v": "—", "note": "宜葬" }, { "gz": "丙申", "v": "凶", "note": "驚犯鬼神" }] },
+        { "pos": "收", "branch": "酉", "verdict": "凶", "yi": ["葬"], "ji": [], "shensha": ["小紅沙", "朱雀", "到州"], "note": "宜葬次", "exceptions": [] },
+        { "pos": "開", "branch": "戌", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [], "_missing": true },
+        { "pos": "閉", "branch": "亥", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [], "_missing": true }
       ]
     },
     {
-      "month": 12, "month_zhi": "丑", "jieqi": ["小寒", "大寒"], "sansha": "寅卯辰(東)",
-      "xinghaisha": "建丑 破未 厭亥 刑戌 害午; 劫煞寅 災煞卯 月煞辰",
-      "days": [
-        { "pos": "建", "zhi": "丑", "rating": "次吉", "yi": ["開山斬草", "興工", "嫁娶", "開張"], "ji": ["鼓樂喧嘩"], "shensha": ["往亡", "紅沙"], "note": "乙丑己丑次吉" },
-        { "pos": "除", "zhi": "寅", "rating": "吉", "yi": ["起造", "婚姻", "安葬", "入宅", "開張", "出行"], "ji": [], "shensha": ["天月二德"], "note": "" },
-        { "pos": "滿", "zhi": "卯", "rating": "次吉", "yi": ["小吉"], "ji": ["動土"], "shensha": ["天富", "土瘟"], "note": "" },
-        { "pos": "平", "zhi": "辰", "rating": "次吉", "yi": ["埋葬", "嫁娶"], "ji": ["大用"], "shensha": ["到州星"], "note": "" },
-        { "pos": "定", "zhi": "巳", "rating": "次吉", "yi": ["開山斬草"], "ji": ["娶親", "開張"], "shensha": ["天成"], "note": "" },
-        { "pos": "執", "zhi": "午", "rating": "吉", "yi": ["動土", "興工", "出行", "入宅", "娶親", "開張"], "ji": [], "shensha": ["天月二德"], "note": "" },
-        { "pos": "破", "zhi": "未", "rating": "大吉", "yi": ["動土", "興工", "出行", "入宅", "娶親", "開張"], "ji": [], "shensha": ["文昌星"], "note": "" },
-        { "pos": "危", "zhi": "申", "rating": "次吉", "yi": ["修造", "安葬"], "ji": ["大用"], "shensha": ["天月二德"], "note": "" },
-        { "pos": "成", "zhi": "酉", "rating": "全吉", "yi": ["娶親", "起造", "開張", "入宅", "安葬"], "ji": [], "shensha": ["天喜"], "note": "" },
-        { "pos": "收", "zhi": "戌", "rating": "次吉", "yi": [], "ji": ["煞入中宮"], "shensha": ["到州星", "天月二德"], "note": "" },
-        { "pos": "開", "zhi": "亥", "rating": "上吉", "yi": ["定磉", "栓架", "婚姻", "開張", "入宅"], "ji": [], "shensha": ["天賊"], "note": "" },
-        { "pos": "閉", "zhi": "子", "rating": "不利", "yi": [], "ji": ["興工", "動土", "大用"], "shensha": ["黃沙"], "note": "" }
+      "month": 12, "month_branch": "丑", "jieqi": ["小寒", "大寒"], "yue_de": "庚", "tian_de_he": "乙", "sansha_fang": "東",
+      "positions": [
+        { "pos": "建", "branch": "丑", "verdict": "—", "yi": ["開山斬草"], "ji": [], "shensha": ["紅沙"], "exceptions": [{ "gz": "乙丑", "v": "吉", "note": "宜開山斬草" }, { "gz": "己丑", "v": "吉", "note": "宜開山斬草" }, { "gz": "丁丑", "v": "凶" }, { "gz": "癸丑", "v": "凶", "note": "煞" }] },
+        { "pos": "除", "branch": "寅", "verdict": "—", "yi": [], "ji": [], "shensha": ["火星"], "note": "按協紀寅日天賊但火星不忌", "exceptions": [{ "gz": "庚寅", "v": "吉", "note": "火星·天月二德" }, { "gz": "甲寅", "v": "大吉", "note": "黃羅紫檀·登虎榜" }, { "gz": "丙寅", "v": "大吉", "note": "黃羅紫檀·登虎榜" }, { "gz": "壬寅", "v": "大吉", "note": "黃羅紫檀·登虎榜" }, { "gz": "戊寅", "v": "次吉", "note": "火星" }] },
+        { "pos": "滿", "branch": "卯", "verdict": "—", "yi": [], "ji": ["動土"], "shensha": ["天富", "土瘟"], "note": "六不成六不合", "exceptions": [{ "gz": "辛卯", "v": "吉" }] },
+        { "pos": "平", "branch": "辰", "verdict": "—", "yi": ["葬"], "ji": [], "shensha": [], "exceptions": [{ "gz": "庚辰", "v": "凶", "note": "朱雀到州" }, { "gz": "壬辰", "v": "吉", "note": "宜葬" }, { "gz": "戊辰", "v": "凶", "note": "草木凋零無氣" }] },
+        { "pos": "定", "branch": "巳", "verdict": "—", "yi": ["小修"], "ji": [], "shensha": ["天成"], "exceptions": [{ "gz": "乙巳", "v": "—", "note": "官符死氣·小修" }, { "gz": "癸巳", "v": "次吉", "note": "金水潔淨" }, { "gz": "丁巳", "v": "凶", "note": "正四廢·全年巳日凶" }] },
+        { "pos": "執", "branch": "午", "verdict": "—", "yi": [], "ji": [], "shensha": [], "exceptions": [{ "gz": "庚午", "v": "吉", "note": "天月二德·納音祿馬" }, { "gz": "丙午", "v": "凶", "note": "正四廢" }] },
+        { "pos": "破", "branch": "未", "verdict": "—", "yi": ["出行", "入宅"], "ji": [], "shensha": [], "exceptions": [{ "gz": "丁未", "v": "吉", "note": "水文章貴顯" }, { "gz": "癸未", "v": "吉", "note": "水文章貴顯" }, { "gz": "己未", "v": "凶" }, { "gz": "辛未", "v": "凶" }] },
+        { "pos": "危", "branch": "申", "verdict": "—", "yi": ["小修", "造", "葬"], "ji": ["開市", "入宅", "嫁"], "shensha": ["天月二德"], "exceptions": [{ "gz": "庚申", "v": "—", "note": "天月二德·小修·忌開市入宅嫁" }, { "gz": "甲申", "v": "吉", "note": "天月二德·宜造葬" }] },
+        { "pos": "成", "branch": "酉", "verdict": "大吉", "yi": ["葬"], "ji": [], "shensha": ["天喜"], "exceptions": [{ "gz": "己酉", "v": "吉", "note": "金旺" }, { "gz": "癸酉", "v": "吉", "note": "金旺" }, { "gz": "乙酉", "v": "吉", "note": "水潔淨·庫樓" }, { "gz": "辛酉", "v": "吉", "note": "金鑾" }, { "gz": "丁酉", "v": "吉", "note": "宜葬" }] },
+        { "pos": "收", "branch": "戌", "verdict": "凶", "yi": [], "ji": [], "shensha": ["朱雀", "到州"], "exceptions": [{ "gz": "庚戌", "v": "吉", "note": "天月二德" }, { "gz": "甲戌", "v": "大吉" }, { "gz": "壬戌", "v": "凶", "note": "煞" }, { "gz": "戊戌", "v": "凶" }] },
+        { "pos": "開", "branch": "亥", "verdict": "—", "yi": [], "ji": [], "shensha": ["天賊", "月厭"], "exceptions": [{ "gz": "乙亥", "v": "大吉", "note": "文章貴顯·眾吉" }, { "gz": "己亥", "v": "大吉", "note": "文章貴顯·眾吉" }, { "gz": "丁亥", "v": "次吉" }, { "gz": "癸亥", "v": "凶", "note": "六甲窮" }, { "gz": "辛亥", "v": "凶", "note": "陰府" }] },
+        { "pos": "閉", "branch": "子", "verdict": "—", "yi": [], "ji": [], "shensha": ["黃沙"], "exceptions": [{ "gz": "庚子", "v": "—", "note": "天月二德但天地轉煞" }, { "gz": "壬子", "v": "凶", "note": "天轉地軸" }, { "gz": "丙子", "v": "凶", "note": "天轉地軸" }] }
       ]
     }
   ]
