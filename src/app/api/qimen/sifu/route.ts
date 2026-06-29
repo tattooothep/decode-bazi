@@ -1515,10 +1515,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "ระบบกำลังประมวลผลคำถามอื่นอยู่ · กรุณาลองใหม่อีกครั้งใน 1-2 นาที" }, { status: 429 });
     }
 
-    /* 📜 spend 8 時 ก่อนเรียก Claude · 15 พ.ค. */
-    const { spendHours } = await import("@/lib/spend-hours");
-    const spend = await spendHours(8, "sifu_qimen");
-    if (!spend.ok) return NextResponse.json(spend, { status: spend.status });
+    /* 📜 เครดิต: เช็คยามก่อนเรียก Claude · หักตามจำนวนตัวอักษรคำตอบหลังได้คำตอบ (char-based ÷30) · 29 มิ.ย. */
+    const { getHourBalance, spendHoursByChars } = await import("@/lib/spend-hours");
+    if ((await getHourBalance()) <= 0) {
+      return NextResponse.json({ ok: false, error: "insufficient_hours" }, { status: 402 });
+    }
 
     const built = buildPrompt({ message, history, lang, topic, payload });
     _inflight++;
@@ -1528,6 +1529,10 @@ export async function POST(req: Request) {
     } finally {
       _inflight--;
     }
+    /* หักยามตามจำนวนตัวอักษรคำตอบ */
+    const spend = await spendHoursByChars(reply.length, "sifu_qimen");
+    const spent = spend.ok ? spend.spent : 0;
+    const balanceAfter = spend.ok ? spend.balance_after : 0;
     logResearchAiMessageSafe({
       session,
       req,
@@ -1560,15 +1565,15 @@ export async function POST(req: Request) {
         qimen_source_trace_items: built.sourceTraceItems,
       },
       model: "claude-max-cli",
-      spent: spend.spent,
-      balanceAfter: spend.balance_after,
+      spent,
+      balanceAfter,
       durationMs: Date.now() - reqT0,
     });
     return NextResponse.json({
       reply,
       model: "claude-max-cli",
-      balance_after: spend.balance_after,
-      spent: spend.spent,
+      balance_after: balanceAfter,
+      spent,
       qimen_source_version: built.knowledgeVersion,
       qimen_source_trace: built.sourceTrace,
       qimen_source_trace_items: built.sourceTraceItems,

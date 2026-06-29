@@ -190,11 +190,11 @@ export async function POST(req: Request) {
 
     if (!message) return NextResponse.json({ error: "message required" }, { status: 400 });
 
-    /* 📜 spend 5 時 (pair) / 15 時 (team) · 15 พ.ค. */
-    const { spendHours } = await import("@/lib/spend-hours");
-    const cost = mode === "team" ? 15 : 5;
-    const spend = await spendHours(cost, `sifu_network_${mode}`);
-    if (!spend.ok) return NextResponse.json(spend, { status: spend.status });
+    /* 📜 เครดิต: เช็คยามก่อน · หักตามจำนวนตัวอักษรคำตอบหลังได้คำตอบ (char-based ÷30) · 29 มิ.ย. */
+    const { getHourBalanceForUser, spendHoursByCharsForUser } = await import("@/lib/spend-hours");
+    if (session?.userId && (await getHourBalanceForUser(session.userId)) <= 0) {
+      return NextResponse.json({ error: "insufficient_hours" }, { status: 402 });
+    }
 
     const prompt = mode === "team"
       ? buildTeamPrompt({ message, history, lang, payload })
@@ -227,7 +227,7 @@ export async function POST(req: Request) {
             }
           };
 
-          send("meta", { mode, lang, startedAt: t0, spent: spend.spent, balance_after: spend.balance_after });
+          send("meta", { mode, lang, startedAt: t0 });
           const child = spawnClaudeStreaming(prompt);
           activeChild = child;
           const timer = setTimeout(() => {
@@ -253,6 +253,7 @@ export async function POST(req: Request) {
             clearTimeout(timer);
             const ms = Date.now() - t0;
             if (code === 0 && full.trim()) {
+              if (session?.userId) spendHoursByCharsForUser(session.userId, full.length, `sifu_network_${mode}`).catch(() => {}); // หักยามตามตัวอักษร (stream)
               logResearchAiMessageSafe({
                 session,
                 req,
@@ -267,8 +268,6 @@ export async function POST(req: Request) {
                 requestPayload: { mode, topic, payload },
                 responseMeta: { stream: true, chars: full.length },
                 model: "claude-max-cli",
-                spent: spend.spent,
-                balanceAfter: spend.balance_after,
                 durationMs: Date.now() - reqT0,
               });
               send("done", { ms, mode, model: "claude-max-cli", chars: full.length, cached: false });
@@ -293,6 +292,9 @@ export async function POST(req: Request) {
     }
 
     const reply = await runClaudeCli(prompt);
+    const sp = await spendHoursByCharsForUser(session?.userId || "", reply.length, `sifu_network_${mode}`);
+    const spent = sp.ok ? sp.spent : 0;
+    const balanceAfter = sp.ok ? sp.balance_after : 0;
     logResearchAiMessageSafe({
       session,
       req,
@@ -307,11 +309,11 @@ export async function POST(req: Request) {
       requestPayload: { mode, topic, payload },
       responseMeta: { stream: false, chars: reply.length },
       model: "claude-max-cli",
-      spent: spend.spent,
-      balanceAfter: spend.balance_after,
+      spent,
+      balanceAfter,
       durationMs: Date.now() - reqT0,
     });
-    return NextResponse.json({ reply, mode, model: "claude-max-cli", balance_after: spend.balance_after, spent: spend.spent });
+    return NextResponse.json({ reply, mode, model: "claude-max-cli", balance_after: balanceAfter, spent });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }

@@ -50,6 +50,33 @@ export async function getHourBalance(): Promise<number> {
   return row ? Number(row.hour_balance) : 0;
 }
 
+/* ── variant รับ userId ตรง · ปลอดภัยใน stream callback (ที่ getSession/cookies ใช้ไม่ได้) ── */
+export async function spendHoursForUser(userId: string, amount: number, feature: string): Promise<SpendResult> {
+  if (!userId) return { ok: false, error: "no_user", status: 401 };
+  const amt = Math.max(1, Math.floor(amount));
+  const row = await q1<{ hour_balance: number }>(
+    `UPDATE users SET hour_balance = hour_balance - $2 WHERE id=$1 AND hour_balance >= $2 RETURNING hour_balance`,
+    [userId, amt]
+  );
+  if (!row) {
+    const cur = await q1<{ hour_balance: number }>(`SELECT hour_balance FROM users WHERE id=$1`, [userId]);
+    return { ok: false, error: "insufficient_hours", status: 402, required: amt, balance: cur?.hour_balance ?? 0 };
+  }
+  await q(
+    `INSERT INTO hour_transactions(user_id, delta, reason, balance_after, ref_feature) VALUES ($1, $2, $3, $4, $5)`,
+    [userId, -amt, `spend_${feature}`, row.hour_balance, feature]
+  );
+  return { ok: true, balance_after: row.hour_balance, spent: amt };
+}
+export async function spendHoursByCharsForUser(userId: string, chars: number, feature: string): Promise<SpendResult> {
+  return spendHoursForUser(userId, charsToHours(chars), feature);
+}
+export async function getHourBalanceForUser(userId: string): Promise<number> {
+  if (!userId) return -1;
+  const row = await q1<{ hour_balance: number }>(`SELECT hour_balance FROM users WHERE id=$1`, [userId]);
+  return row ? Number(row.hour_balance) : 0;
+}
+
 export async function refundHours(amount: number, feature: string): Promise<RefundResult> {
   const s = await getSession();
   if (!s) return { ok: false, error: "not logged in", status: 401 };

@@ -16,6 +16,7 @@ import { createHash, randomUUID, timingSafeEqual } from "crypto";
 import { StringDecoder } from "string_decoder";
 import { q1, q } from "@/lib/db";
 import { getSession, type Session } from "@/lib/auth";
+import { getHourBalanceForUser, spendHoursByCharsForUser } from "@/lib/spend-hours";
 import { calcBazi } from "@/lib/bazi-calc";
 import { buildChartExtensions } from "@/lib/chart-extensions";
 import { loadPromptMd, loadPromptSections, loadPromptKV } from "@/lib/prompt-md";
@@ -2325,6 +2326,11 @@ export async function POST(req: Request) {
     }
     const orgId = session?.orgId ?? null;
 
+    // เครดิต "ยาม": บล็อกถ้าหมด (ก่อนสร้างคำตอบ) · ข้าม fusion-internal · หักจริงตามตัวอักษรหลังได้คำตอบ
+    if (!isFusionInternalCall && session?.userId && (await getHourBalanceForUser(session.userId)) <= 0) {
+      return NextResponse.json({ error: "insufficient_hours" }, { status: 402 });
+    }
+
     if (mode !== "intro" && !profileId) {
       return NextResponse.json({ error: "profile_required" }, { status: 400 });
     }
@@ -2707,6 +2713,7 @@ export async function POST(req: Request) {
                 if (!evTrace.ok) console.warn(`[sifu] evidence-trace incomplete (stream) profile=${profileId || "-"} missing=${evTrace.missing.join(",")}`);
               } catch { /* log-only · ห้ามให้กระทบ stream ที่ส่งครบแล้ว */ }
               if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+              if (!isFusionInternalCall && session?.userId) spendHoursByCharsForUser(session.userId, payload.reply.length, "sifu_master").catch(() => {}); // หักยามตามตัวอักษร (POST stream)
               scheduleSifuSourceShadowAudit({
                 session,
                 req,
@@ -2926,6 +2933,7 @@ export async function POST(req: Request) {
       route: "POST", mode, stream: false, profileId: profileId || undefined, contextCache, ctxMs,
       promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,
     });
+    if (!isFusionInternalCall && session?.userId) spendHoursByCharsForUser(session.userId, payload.reply.length, "sifu_master").catch(() => {}); // หักยามตามตัวอักษร (non-stream)
     return NextResponse.json({ ...payload, cached: false, ms, key: key.slice(0, 8) });
   } catch (e: unknown) {
     const err = e as Error;
@@ -3401,6 +3409,7 @@ export async function GET(req: Request) {
           const answerSupportedBy = { ...buildSifuAnswerSupportAudit(finalReply, finalCritical), streamGuard };
           const payload: SifuPayload = { reply: finalReply, model: sifuModel, provider_model: providerModelName(sifuModel) };
           if (useCache && finalCritical.ok && streamGuard.cacheable) setCachedReply(key, payload, ms, ajekVersion).catch(() => {});
+          if (session?.userId) spendHoursByCharsForUser(session.userId, payload.reply.length, "sifu_master").catch(() => {}); // หักยามตามตัวอักษร (GET stream)
           scheduleSifuSourceShadowAudit({
             session,
             req,
