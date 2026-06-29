@@ -1,0 +1,57 @@
+{
+  "_doc": "แผนที่แหล่งต้นฉบับ 董公擇日 (จาก dossier เจ้านาย 29 มิ.ย. 2026)",
+  "author": {
+    "name": "董德彰", "alt": ["董潛 (字德彰)", "號銀峯", "董半仙"],
+    "origin": "江西饒州德興縣 (มี銀峯山)",
+    "era": "明 (ต้นฉบับว่า '前明時人'; เว็บ玄學ว่า 'หยวนปลาย-หมิงต้น')",
+    "preface_by": "蔣雲 (號奇峰)", "preface_date": "嘉慶二十二年 (1817)"
+  },
+  "base_text_decision": "ใช้ tianyugong.com (สาย董公擇日法 จีนแผ่นดินใหญ่) เป็น base เดียวสำหรับ months.json · ground-truth สำหรับ verify = สแกน 書格 1894",
+  "sources": [
+    {
+      "tier": 1, "type": "scan_primary", "name": "董氏諏吉新書 (擇日要訣) 上下冊",
+      "edition": "清光緒20年 (1894) 重刊本", "url": "https://old.shuge.org/ebook/dong-shi-zou-ji-xin-shu/",
+      "note": "page scan แกะไม้จริง ~128MB · GROUND TRUTH · แต่ขาดวันสุดท้าย 癸亥日 ในส่วน 六十甲子",
+      "toc": ["序(蔣寄峰)", "九宮八卦飛星圖法", "十二月建日神吉凶", "六十甲子吉凶時辰表"]
+    },
+    {
+      "tier": 1, "type": "scan_primary_complete", "name": "董氏諏吉新書",
+      "edition": "清光緒6年 (1880) 刻本", "url": "https://www.ncpssd.org (國家哲學社會科學文獻中心)",
+      "note": "สมบูรณ์กว่า มี 癸亥日 · ต้อง login"
+    },
+    {
+      "tier": 1, "type": "canon_logic", "name": "欽定協紀辨方書",
+      "url_wikisource": "https://zh.wikisource.org/zh-hant/欽定協紀辨方書_(四庫全書本)",
+      "url_ctext": "https://ctext.org/wiki.pl?if=en&res=595276",
+      "note": "คัมภีร์擇日ทางการที่สุดสมัยชิง · 建除十二神 logic อยู่ใน 卷四 義例二 · ใช้เป็น schema reference (jianchu_logic.json)"
+    },
+    {
+      "tier": 2, "type": "typed_base", "name": "天玉宮 董公择日法", "url": "https://tianyugong.com/donggong/",
+      "note": "BASE ที่ใช้สกัด months.json · มีครบ 12 เดือน · มีหมายเหตุเทียบ協紀辨方ในตัว"
+    },
+    {
+      "tier": 2, "type": "typed_crosscheck", "name": "wenxuecity (玄極子/朱本峰 2017)",
+      "url": "https://www.wenxuecity.com/blog/201706/67063/12758.html",
+      "note": "ใช้ cross-check 正月 (ตรงกับ tianyugong) · มี 六十甲子時辰 รูปแบบ '子日 子午卯酉丑申是吉時'"
+    },
+    {
+      "tier": 2, "type": "typed_gejue", "name": "三清靈學院", "url": "https://sanqing.com.tw/en/董公選擇日要覽/",
+      "note": "金神七煞歌 verbatim · 六十甲子時辰เป็นรูปภาพ (ดึง text ไม่ได้)"
+    },
+    {
+      "tier": 1, "type": "commercial_proofed", "name": "董公擇日透析 (進源書局)",
+      "url": "https://www.books.com.tw/products/0010789675",
+      "note": "原文勘校ราย 12 เดือน + 六十日甲子吉凶時辰便覽 + 建除十二神宜忌解析 · ซื้อเพื่อ verify ระดับ publish"
+    },
+    {
+      "tier": 1, "type": "commercial_proofed", "name": "諏吉新書—董德彰擇日要訣 (擇日叢書25)",
+      "isbn": "9789573509486", "note": "ฉบับ校勘"
+    }
+  ],
+  "caveats": [
+    "董公มีหลายสาย: จีนแผ่นดินใหญ่(董氏諏吉新書/董公擇日要覽) vs ไต้หวัน(董公真人驅瘟鎮煞護宅真經) — 神煞ราย干支ต่างกันเล็กน้อย ต้องยึด base เดียว",
+    "ไม่มี詩訣ราย建除12วัน (เนื้อรายวัน=ร้อยแก้ว)",
+    "archive.org/國圖/Harvard-Yenching/CUHK ไม่มีสแกน董公 · แหล่งสแกนสาธารณะมีแค่ 書格",
+    "Scribd มี PDF แต่เป็น re-upload ไม่แนะนำ"
+  ]
+}
