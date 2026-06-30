@@ -126,6 +126,22 @@ export async function drainHoursByChars(chars: number, feature: string): Promise
   return drainHoursByCharsForUser(s.userId, chars, feature);
 }
 
+/** refund รับ userId ตรง (ปลอดภัยใน background worker · getSession/cookies ใช้ไม่ได้) */
+export async function refundHoursForUser(userId: string, amount: number, feature: string): Promise<RefundResult> {
+  if (!userId) return { ok: false, error: "no_user", status: 401 };
+  const amt = Math.max(1, Math.floor(amount));
+  const row = await q1<{ hour_balance: number }>(
+    `UPDATE users SET hour_balance = hour_balance + $2 WHERE id=$1 RETURNING hour_balance`,
+    [userId, amt]
+  );
+  if (!row) return { ok: false, error: "refund_user_not_found", status: 404 };
+  await q(
+    `INSERT INTO hour_transactions(user_id, delta, reason, balance_after, ref_feature) VALUES ($1, $2, $3, $4, $5)`,
+    [userId, amt, `refund_${feature}`, row.hour_balance, feature]
+  );
+  return { ok: true, balance_after: row.hour_balance, refunded: amt };
+}
+
 export async function refundHours(amount: number, feature: string): Promise<RefundResult> {
   const s = await getSession();
   if (!s) return { ok: false, error: "not logged in", status: 401 };
