@@ -58,7 +58,7 @@
     <span class="badge">🔬 <span data-t="badge">ดาราศาสตร์จริง (astronomy-engine) · เสริมฤกษ์จาก黃曆 · ไม่เข้าคะแนนหน้าวางฤกษ์</span></span>
   </div>
 
-  <div class="beta">⚙️ <span data-t="beta">เวอร์ชันเริ่มต้น (V1) · ตำแหน่งดาว = ของจริงแม่นยำ · ชั้นตัดสิน 廟旺/恩用仇難 เป็น baseline · ซินแสกำลังเสริมตำรา 果老星宗 ละเอียด</span></div>
+  <div class="beta">⚙️ <span data-t="beta">ตำแหน่งดาว = ของจริงแม่นยำ · 廟旺度數(宿+度)+恩用仇難 4ขา+格局 = ตำรา果老星宗 (เปิดใช้แล้ว) · 紫氣 = beta รอ lock สำนัก</span></div>
 
   <div class="card" id="hdr">
     <div class="sec">A · <span data-t="s_hdr">ฤกษ์ที่เลือก</span> <span class="en">from datepick</span></div>
@@ -75,12 +75,12 @@
   <div class="card" id="chartCard" style="display:none">
     <div class="sec">B · <span data-t="s_chart">ผังดาวจริงขณะฤกษ์</span> <span class="en">deterministic</span></div>
     <div id="ascLine" class="muted" style="margin-bottom:8px"></div>
-    <table id="starTbl"><thead><tr><th data-t="h_star">ดาว</th><th data-t="h_sign">ราศี</th><th>°</th><th data-t="h_status">กำลัง</th></tr></thead><tbody></tbody></table>
+    <table id="starTbl"><thead><tr><th data-t="h_star">ดาว</th><th data-t="h_sign">ราศี</th><th>°</th><th>宿</th><th data-t="h_status">กำลัง</th></tr></thead><tbody></tbody></table>
     <div class="muted" style="margin-top:7px" id="ayanNote"></div>
   </div>
 
   <div class="card" id="ruleCard" style="display:none">
-    <div class="sec">C · <span data-t="s_rule">วิเคราะห์เชิงลึก</span> <span class="en">恩用仇難 · 格局 · baseline</span></div>
+    <div class="sec">C · <span data-t="s_rule">วิเคราะห์เชิงลึก</span> <span class="en">廟旺度數 · 恩用仇難 · 格局 · 果老星宗</span></div>
     <div id="ruleBody"></div>
   </div>
 
@@ -94,9 +94,9 @@
 
 <script>
 const I18N={
-  th:{title:"ฤกษ์ดาวจริง",sub:"ชั้นสูงสุดของวิชาเลือกฤกษ์ — ตรวจตำแหน่งดาวจริงบนฟ้าขณะลงมือ",badge:"ดาราศาสตร์จริง · เสริมฤกษ์จาก黃曆 · ไม่เข้าคะแนนหน้าวางฤกษ์",beta:"เวอร์ชันเริ่มต้น (V1) · ตำแหน่งดาว = ของจริงแม่นยำ · ชั้นตัดสินเป็น baseline · ซินแสกำลังเสริมตำรา果老星宗",s_hdr:"ฤกษ์ที่เลือก",loc:"สถานที่จัดงาน",recalc:"↻ คำนวณดาว",manual:"กรอกวัน-เวลาเอง (เวลาไทย)",analyze:"🔭 วิเคราะห์",s_chart:"ผังดาวจริงขณะฤกษ์",h_star:"ดาว",h_sign:"ราศี",h_status:"กำลัง",s_rule:"วิเคราะห์เชิงลึก",ai:"🤖 ให้ซินแสสังเคราะห์ละเอียด (หักยาม)",loading:"เปิดหน้านี้จากปุ่มในหน้าวางฤกษ์ (datepick) เพื่อส่งฤกษ์เข้ามา · หรือกรอกเวลาเอง",disc:"การอ่านนี้ใช้ตำแหน่งดาวจริง เสริม黃曆 · ความเชื่อโบราณ หลายสำนักตีความต่างได้ · ไม่ใช่คำพยากรณ์ตายตัว · ไม่แทนคำแนะนำแพทย์/การเงิน/กฎหมาย"},
-  en:{title:"Real-Star Date Selection",sub:"The highest tier — checking the real sky at the chosen moment",badge:"Real astronomy · complements the almanac · not in datepick score",beta:"V1 · star positions are real & precise · judgment layer is baseline · master rules being added",s_hdr:"Chosen time",loc:"Event location",recalc:"↻ Recompute",manual:"Enter date-time (Thai time)",analyze:"🔭 Analyze",s_chart:"Real sky chart",h_star:"Star",h_sign:"Sign",h_status:"Dignity",s_rule:"Deep analysis",ai:"🤖 Master deep synthesis (costs yam)",loading:"Open this from the datepick result to pass a chosen time, or enter manually.",disc:"Uses real star positions to complement the almanac · traditional belief, schools differ · not a guarantee · not medical/financial/legal advice."},
-  zh:{title:"真星擇日",sub:"擇日最高層 — 查擇定時刻的真實天象",badge:"真實天文 · 輔助黃曆 · 不計入擇日分數",beta:"V1 · 星曜位置真實精確 · 判斷層為基準 · 果老星宗細則補充中",s_hdr:"所擇時刻",loc:"用事地點",recalc:"↻ 重算",manual:"自行輸入日期時間（泰國時間）",analyze:"🔭 分析",s_chart:"真天象盤",h_star:"星",h_sign:"宮",h_status:"廟旺",s_rule:"深入分析",ai:"🤖 命師深入綜合（扣時）",loading:"請由擇日結果頁進入以傳入時刻，或自行輸入。",disc:"以真實星象輔助黃曆 · 傳統擇日，各派不同 · 非保證 · 不替代醫療/財務/法律建議。"}
+  th:{title:"ฤกษ์ดาวจริง",sub:"ชั้นสูงสุดของวิชาเลือกฤกษ์ — ตรวจตำแหน่งดาวจริงบนฟ้าขณะลงมือ",badge:"ดาราศาสตร์จริง · เสริมฤกษ์จาก黃曆 · ไม่เข้าคะแนนหน้าวางฤกษ์",beta:"ตำแหน่งดาวของจริงแม่นยำ · 廟旺度數+恩用仇難4ขา+格局 = ตำรา果老星宗 (เปิดใช้แล้ว) · 紫氣 beta รอ lock สำนัก",s_hdr:"ฤกษ์ที่เลือก",loc:"สถานที่จัดงาน",recalc:"↻ คำนวณดาว",manual:"กรอกวัน-เวลาเอง (เวลาไทย)",analyze:"🔭 วิเคราะห์",s_chart:"ผังดาวจริงขณะฤกษ์",h_star:"ดาว",h_sign:"ราศี",h_status:"กำลัง",s_rule:"วิเคราะห์เชิงลึก",ai:"🤖 ให้ซินแสสังเคราะห์ละเอียด (หักยาม)",loading:"เปิดหน้านี้จากปุ่มในหน้าวางฤกษ์ (datepick) เพื่อส่งฤกษ์เข้ามา · หรือกรอกเวลาเอง",disc:"การอ่านนี้ใช้ตำแหน่งดาวจริง เสริม黃曆 · ความเชื่อโบราณ หลายสำนักตีความต่างได้ · ไม่ใช่คำพยากรณ์ตายตัว · ไม่แทนคำแนะนำแพทย์/การเงิน/กฎหมาย"},
+  en:{title:"Real-Star Date Selection",sub:"The highest tier — checking the real sky at the chosen moment",badge:"Real astronomy · complements the almanac · not in datepick score",beta:"Real precise star positions · dignity-by-degree + 4-fold benefactor/affliction + patterns = Guolao Xingzong (live) · 紫氣 beta",s_hdr:"Chosen time",loc:"Event location",recalc:"↻ Recompute",manual:"Enter date-time (Thai time)",analyze:"🔭 Analyze",s_chart:"Real sky chart",h_star:"Star",h_sign:"Sign",h_status:"Dignity",s_rule:"Deep analysis",ai:"🤖 Master deep synthesis (costs yam)",loading:"Open this from the datepick result to pass a chosen time, or enter manually.",disc:"Uses real star positions to complement the almanac · traditional belief, schools differ · not a guarantee · not medical/financial/legal advice."},
+  zh:{title:"真星擇日",sub:"擇日最高層 — 查擇定時刻的真實天象",badge:"真實天文 · 輔助黃曆 · 不計入擇日分數",beta:"星曜位置真實精確 · 廟旺度數+恩用仇難+格局 = 果老星宗 (已啟用) · 紫氣 beta 待定派",s_hdr:"所擇時刻",loc:"用事地點",recalc:"↻ 重算",manual:"自行輸入日期時間（泰國時間）",analyze:"🔭 分析",s_chart:"真天象盤",h_star:"星",h_sign:"宮",h_status:"廟旺",s_rule:"深入分析",ai:"🤖 命師深入綜合（扣時）",loading:"請由擇日結果頁進入以傳入時刻，或自行輸入。",disc:"以真實星象輔助黃曆 · 傳統擇日，各派不同 · 非保證 · 不替代醫療/財務/法律建議。"}
 };
 let LANG=localStorage.getItem('hk_lang')||'th';
 let HANDOFF=null;
@@ -169,19 +169,22 @@ function render(r){
   document.getElementById('ascLine').innerHTML=`命宮 (${L==='en'?'Ascendant':L==='zh'?'命宮':'ลัคนา'}): <b>${L==='zh'?a.signZh:a.signTh}</b> · 命主/用神: <b>${r.yongshen.th} ${r.yongshen.zh}</b> ${r.yongshen.status}`;
   document.querySelector('#starTbl tbody').innerHTML=r.stars.map(s=>{
     const cls=s.statusRank>=4?'miao':s.statusRank<=2?'xian':'';
-    return `<tr><td>${s.zh} <span class="muted">${L==='th'?s.th:''}</span></td><td>${L==='th'?s.signTh:s.signZh}</td><td>${s.deg}°</td><td class="${cls}">${s.status}${s.retro?' ↺':''}</td></tr>`;
+    return `<tr><td>${s.zh} <span class="muted">${L==='th'?s.th:''}</span></td><td>${L==='th'?s.signTh:s.signZh}</td><td>${s.deg}°</td><td class="muted">${s.shu||'—'}${s.shu?` ${s.shuDeg}°`:''}</td><td class="${cls}">${s.status}${s.retro?' ↺':''}</td></tr>`;
   }).join('');
   document.getElementById('ayanNote').textContent=`ราศีอิงดาวฤกษ์ (ayanamsa ${r.ayanamsa}° · V1 · ปรับสำนักจีนได้) · 紫氣 รอ lock สำนัก · ⚠️ ดาวที่คาบขอบราศี(ใกล้ 0°/29°) อาจคลาด — ใช้ประกอบ ไม่ฟันธง`;
   // rule
   document.getElementById('ruleCard').style.display='';
   const star3=(x)=>L==='th'?x.th:x.zh;
   const en=r.en_stars.map(star3).join('、')||'—',nan=r.nan_stars.map(star3).join('、')||'—';
+  const yong=(r.yong_stars||[]).map(star3).join('、')||'—',chou=(r.chou_stars||[]).map(star3).join('、')||'—';
   const geju=r.geju.length?r.geju.map(g=>`<span class="chip" style="border-color:${g.good?'var(--green)':'var(--red)'}">${g.zh} ${g.good?'✓':'✗'}</span>`).join(''):'<span class="muted">—</span>';
   document.getElementById('ruleBody').innerHTML=
-    `<div>恩星 (${L==='en'?'support':L==='zh'?'扶':'หนุน用神'}): ${en}</div>`+
-    `<div>難星 (${L==='en'?'conflict':L==='zh'?'剋':'ขัด用神'}): ${nan}</div>`+
+    `<div>恩星 (${L==='en'?'support 生用':L==='zh'?'生用神':'หนุน用神 (生)'}): ${en}</div>`+
+    `<div>用星 (${L==='en'?'output 用生':L==='zh'?'用神生':'用神ระบาย (剋難·ดี)'}): ${yong}</div>`+
+    `<div>仇星 (${L==='en'?'rival 用剋':L==='zh'?'用神剋':'用神剋 (剋恩·เสีย)'}): ${chou}</div>`+
+    `<div>難星 (${L==='en'?'affliction 剋用':L==='zh'?'剋用神':'ขัด用神 (剋·ร้ายสุด)'}): ${nan}</div>`+
     `<div style="margin-top:6px">格局: ${geju}</div>`+
-    `<div class="pend" style="margin-top:8px">⏳ ${L==='en'?'Detailed 廟旺/格局 from 果老星宗 — under master review':L==='zh'?'果老星宗細則 — 命師審核中':'รายละเอียด 廟旺/格局 จากตำรา果老星宗 — ซินแสกำลังตรวจ (เปิดใช้หลัง 5 ลายเซน)'}</div>`;
+    `<div class="muted" style="margin-top:8px;font-size:11px">廟旺度數 (宿+度) · 恩用仇難 4 ขา · 格局 = ตำรา果老星宗 (live) · 紫氣 = beta รอ lock สำนัก</div>`;
 }
 document.getElementById('recalc').onclick=recompute;
 document.getElementById('mGo').onclick=goManual;
