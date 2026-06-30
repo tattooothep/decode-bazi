@@ -320,7 +320,7 @@
   <script>
   (function(){
     var $ = function(id){ return document.getElementById(id); };
-    var state = { account:null, profiles:[], history:[], historyProfileId:'', busy:false, ready:false, progressTimer:null, activeRunId:'', answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', compareIds:[] };
+    var state = { account:null, fusionAccess:null, spendHours:25, profiles:[], history:[], historyProfileId:'', busy:false, ready:false, progressTimer:null, activeRunId:'', answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', compareIds:[] };
     var els = {
       profile:$('profile'), fusionMode:$('fusion-mode'), topic:$('topic'), lang:$('lang'), question:$('question'), send:$('send'),
       clear:$('clear'), status:$('status'), progress:$('fusion-progress'), chat:$('chat'), meta:$('fusion-meta'), runState:$('run-state'),
@@ -341,6 +341,46 @@
     function setRunState(text, kind){
       els.runState.textContent = text;
       els.runState.className = 'pill' + (kind ? ' ' + kind : '');
+    }
+    function fusionSpendHours(){
+      var spend = Number(state.spendHours);
+      return Number.isFinite(spend) ? spend : 25;
+    }
+    function canUseFusion(){
+      var access = state.fusionAccess;
+      var spend = fusionSpendHours();
+      if (!access || access.allowed !== true) return false;
+      return spend <= 0 || Number(access.hour_balance || 0) >= spend;
+    }
+    function fusionGateMessage(){
+      var access = state.fusionAccess;
+      var spend = fusionSpendHours();
+      if (!access) return 'กำลังตรวจสิทธิ์ Fusion';
+      if (access.allowed !== true) return 'ต้องใช้สิทธิ์ Master หรือ admin/owner เพื่อใช้ Fusion';
+      if (spend > 0 && Number(access.hour_balance || 0) < spend) return 'ยามไม่พอสำหรับ Fusion · ต้องมี ' + spend + ' 時';
+      return 'พร้อมถามดวง Fusion · ' + spend + ' 時 ต่อครั้ง';
+    }
+    function updateSendAvailability(){
+      els.send.disabled = state.busy || !state.ready || !canUseFusion();
+    }
+    function applyFusionGate(){
+      var access = state.fusionAccess;
+      var spend = fusionSpendHours();
+      els.send.textContent = 'Run Fusion · ' + spend + ' 時';
+      if (!access) {
+        els.gate.textContent = 'CHECKING';
+        els.gate.className = 'badge warn';
+      } else if (canUseFusion()) {
+        els.gate.textContent = '3-PANEL READY';
+        els.gate.className = 'badge ok';
+      } else if (access.allowed === true) {
+        els.gate.textContent = 'NEED ' + spend + ' 時';
+        els.gate.className = 'badge warn';
+      } else {
+        els.gate.textContent = 'MASTER REQUIRED';
+        els.gate.className = 'badge warn';
+      }
+      updateSendAvailability();
     }
     function answerName(item){
       var model = String(item && item.model || '-');
@@ -835,6 +875,25 @@
         return false;
       }
     }
+    async function loadFusionAccess(){
+      try {
+        var r = await fetch('/api/sifu/fusion?check=access', { credentials:'same-origin', cache:'no-store' });
+        var j = await r.json().catch(function(){ return {}; });
+        if (!r.ok) throw new Error(j.error || ('fusion access ' + r.status));
+        state.fusionAccess = j.access || null;
+        state.spendHours = Number(j.spend_hours == null ? 25 : j.spend_hours);
+        if (state.fusionAccess && state.fusionAccess.hour_balance != null) {
+          els.balance.textContent = '時 · ' + state.fusionAccess.hour_balance;
+        }
+        applyFusionGate();
+        return true;
+      } catch(e) {
+        state.fusionAccess = null;
+        applyFusionGate();
+        setStatus('ตรวจสิทธิ์ Fusion ไม่สำเร็จ: ' + (e.message || e), 'err');
+        return false;
+      }
+    }
     async function loadProfiles(){
       var r = await fetch('/api/profile', { credentials:'same-origin', cache:'no-store' });
       var j = await r.json().catch(function(){ return {}; });
@@ -867,6 +926,7 @@
       var profileId = selectedProfileId();
       if (!profileId) { setStatus('กรุณาเลือก profile', 'err'); return; }
       if (!message) { setStatus('กรุณาใส่คำถาม', 'err'); return; }
+      if (!canUseFusion()) { applyFusionGate(); setStatus(fusionGateMessage(), 'err'); return; }
       if (state.historyProfileId !== profileId) resetConversationForProfile(profileId);
       state.busy = true;
       els.send.disabled = true;
@@ -909,7 +969,10 @@
         renderProgressFromFusion(fusion);
         setRunState(fusion && fusion.degraded ? 'degraded' : 'done', fusion && fusion.degraded ? 'err' : 'ok');
         setStatus('Fusion complete · AI answered ' + (fusion.ai_answered_count != null ? fusion.ai_answered_count : '-') + '/' + (fusion.ai_requested_count != null ? fusion.ai_requested_count : '-'), 'ok');
-        if (fusion && fusion.balance_after != null) els.balance.textContent = '時 · ' + fusion.balance_after;
+        if (fusion && fusion.balance_after != null) {
+          els.balance.textContent = '時 · ' + fusion.balance_after;
+          if (state.fusionAccess) state.fusionAccess.hour_balance = Number(fusion.balance_after);
+        }
         els.question.value = '';
         try { localStorage.setItem('hk_profile_id', profileId); } catch(_){}
         await loadFusionHistory();
@@ -919,14 +982,19 @@
         addMsg('sifu', 'ไม่สามารถรัน Fusion ได้: ' + msg, d.fusion);
         renderMeta(d.fusion);
         if (d.fusion) renderProgressFromFusion(d.fusion);
-        if (d.fusion && d.fusion.balance_after != null) els.balance.textContent = '時 · ' + d.fusion.balance_after;
+        if (d.access) state.fusionAccess = d.access;
+        if (d.balance != null && state.fusionAccess) state.fusionAccess.hour_balance = Number(d.balance);
+        if (d.fusion && d.fusion.balance_after != null) {
+          els.balance.textContent = '時 · ' + d.fusion.balance_after;
+          if (state.fusionAccess) state.fusionAccess.hour_balance = Number(d.fusion.balance_after);
+        }
         setRunState('failed', 'err');
         setStatus(msg, 'err');
         if (d.fusion && d.fusion.history_id) await loadFusionHistory();
       } finally {
         stopProgressPolling();
         state.busy = false;
-        els.send.disabled = false;
+        applyFusionGate();
       }
     }
     els.send.addEventListener('click', send);
@@ -1010,12 +1078,13 @@
     (async function init(){
       var accountOk = await loadAccount();
       if (!accountOk) return;
+      await loadFusionAccess();
       try {
         await loadProfiles();
         await loadFusionHistory();
         state.ready = true;
-        els.send.disabled = false;
-        setStatus('พร้อมถามดวง Fusion · 25 時 ต่อครั้ง');
+        applyFusionGate();
+        setStatus(fusionGateMessage(), canUseFusion() ? 'ok' : 'err');
       } catch(e) {
         var msg = /401|not logged/i.test(String(e && e.message || ''))
           ? 'กรุณาเข้าสู่ระบบก่อนใช้ Fusion'

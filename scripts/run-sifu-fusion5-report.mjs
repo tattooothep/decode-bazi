@@ -12,7 +12,11 @@ const REPORT_DIR = "/root/decode-app/reports";
 const REPORT_PATH = `${REPORT_DIR}/sifu-fusion-5-profile-report-${RUN_ID}.md`;
 const RESULT_PATH = `/tmp/sifu-fusion-5-profile-result-${RUN_ID}.json`;
 const BASE_URL = process.env.FUSION_BASE_URL || "http://127.0.0.1:3349";
-const REQUIRED_MODELS = ["claude-max-cli", "codex-cli", "grok-cli", "gemini-api"];
+const REQUIRED_MODELS = Array.from(new Set((process.env.FUSION5_REQUIRED_MODELS || "codex-cli,grok-cli,gemini-api")
+  .split(",")
+  .map((x) => x.trim())
+  .filter(Boolean)));
+const REQUIRED_MODEL_SET = new Set(REQUIRED_MODELS);
 const CONTINUE_ON_FAIL = process.env.FUSION5_CONTINUE_ON_FAIL === "1";
 const HTTP_TIMEOUT_MS = Math.max(60_000, Number(process.env.FUSION5_HTTP_TIMEOUT_MS || 1_800_000));
 
@@ -120,7 +124,7 @@ async function pollAuditRows(threadId, profileId) {
     `, [threadId, profileId]);
     const panelRows = rows.filter((r) => !String(r.question || "").startsWith("FUSION_SYNTHESIS_REQUEST"));
     const judgeRows = rows.filter((r) => String(r.question || "").startsWith("FUSION_SYNTHESIS_REQUEST"));
-    if (panelRows.length >= 4 && judgeRows.length >= 1) return rows;
+    if (panelRows.length >= REQUIRED_MODELS.length && judgeRows.length >= 1) return rows;
     await sleep(500);
   }
   const { rows } = await pool.query(`
@@ -138,6 +142,9 @@ function proofForRows(rows) {
   const panelRows = rows.filter((r) => !String(r.question || "").startsWith("FUSION_SYNTHESIS_REQUEST"));
   const judgeRows = rows.filter((r) => String(r.question || "").startsWith("FUSION_SYNTHESIS_REQUEST"));
   const packetHashes = Array.from(new Set(rows.map((r) => r.packet_hash).filter(Boolean)));
+  const dbPanelModels = Array.from(new Set(panelRows.map((r) => String(r.model || "")).filter(Boolean)));
+  const missingPanelModels = REQUIRED_MODELS.filter((model) => !dbPanelModels.includes(model));
+  const unexpectedPanelModels = dbPanelModels.filter((model) => !REQUIRED_MODEL_SET.has(model));
   const byModel = Object.fromEntries(panelRows.map((r) => [r.model, r]));
   const panelProof = REQUIRED_MODELS.map((model) => {
     const r = byModel[model];
@@ -162,6 +169,10 @@ function proofForRows(rows) {
     judgeRows: judgeRows.length,
     packetHashes,
     samePacketHash: packetHashes.length === 1,
+    dbPanelModels,
+    missingPanelModels,
+    unexpectedPanelModels,
+    exactPanelModelSet: missingPanelModels.length === 0 && unexpectedPanelModels.length === 0,
     panelProof,
     judgeProof: judge ? {
       model: judge.model,
@@ -194,6 +205,7 @@ async function runLoop(subject, token, profile, index) {
       message: question,
       noCache: true,
       fusionMode: "strict",
+      models: REQUIRED_MODELS,
     }, { Cookie: `decode_auth=${token}` });
   } catch (e) {
     const auditRows = await pollAuditRows(threadId, profile.id);
@@ -235,6 +247,12 @@ async function runLoop(subject, token, profile, index) {
   const auditRows = await pollAuditRows(threadId, profile.id);
   const proof = proofForRows(auditRows);
   const panel = Array.isArray(data?.fusion?.panel) ? data.fusion.panel : [];
+  const responsePanelModels = Array.from(new Set(panel.map((p) => String(p.model || "")).filter(Boolean)));
+  const missingResponsePanelModels = REQUIRED_MODELS.filter((model) => !responsePanelModels.includes(model));
+  const unexpectedResponsePanelModels = responsePanelModels.filter((model) => !REQUIRED_MODEL_SET.has(model));
+  const exactResponsePanelModels = panel.length === REQUIRED_MODELS.length
+    && missingResponsePanelModels.length === 0
+    && unexpectedResponsePanelModels.length === 0;
   const proofAnswerByModel = Object.fromEntries(proof.panelProof.map((p) => [p.model, p.answerExcerpt || ""]));
   const result = {
     index,
@@ -282,8 +300,21 @@ async function runLoop(subject, token, profile, index) {
       } : null,
     },
     proof,
+    modelContract: {
+      requiredPanelModels: REQUIRED_MODELS,
+      responsePanelModels,
+      missingResponsePanelModels,
+      unexpectedResponsePanelModels,
+      exactResponsePanelModels,
+      dbPanelModels: proof.dbPanelModels,
+      missingDbPanelModels: proof.missingPanelModels,
+      unexpectedDbPanelModels: proof.unexpectedPanelModels,
+      exactDbPanelModels: proof.exactPanelModelSet,
+    },
     pass: response.ok
       && data?.fusion?.degraded === false
+      && exactResponsePanelModels
+      && proof.exactPanelModelSet
       && REQUIRED_MODELS.every((m) => panel.some((p) => p.model === m && p.ok && p.cached === false))
       && data?.fusion?.judge?.ok === true
       && data?.fusion?.judge?.cached === false
@@ -312,7 +343,8 @@ function buildReport(subject, results) {
   lines.push(`## Pass Criteria`);
   lines.push("");
   lines.push("- Fusion endpoint returns HTTP 200 with `degraded=false`.");
-  lines.push("- All 4 panel models return `ok=true` and `cached=false`.");
+  lines.push(`- All ${REQUIRED_MODELS.length} panel models return \`ok=true\` and \`cached=false\`.`);
+  lines.push("- Response panel models and DB audit panel models exactly match the required panel model set; no extra provider calls are allowed.");
   lines.push("- Judge returns `ok=true` and `cached=false`.");
   lines.push("- DB audit row exists for every panel and judge call under the loop `threadId`.");
   lines.push("- Every DB audit row has `prompt_hash`, `packet_hash`, `fact_lock`, `pillar_lock`, `audit_quality=packet_evidence`, `identity_check_result=pass`.");
@@ -339,6 +371,13 @@ function buildReport(subject, results) {
     lines.push(`- Profile ID: \`${r.profile.id}\``);
     lines.push(`- Day Master: \`${r.profile.dayMaster || "-"}\``);
     lines.push(`- Fusion status: HTTP \`${r.httpStatus}\`, pass=\`${r.pass}\`, reason=\`${r.fusion.reason || r.error || "-"}\`, degraded=\`${r.fusion.degraded}\``);
+    lines.push(`- Panel model contract: response=\`${r.modelContract?.exactResponsePanelModels ? "pass" : "fail"}\` (${(r.modelContract?.responsePanelModels || []).join(",") || "-"}), DB=\`${r.modelContract?.exactDbPanelModels ? "pass" : "fail"}\` (${(r.modelContract?.dbPanelModels || []).join(",") || "-"})`);
+    if (r.modelContract?.unexpectedResponsePanelModels?.length || r.modelContract?.unexpectedDbPanelModels?.length) {
+      lines.push(`- Unexpected panel models: response=\`${(r.modelContract.unexpectedResponsePanelModels || []).join(",") || "-"}\`, DB=\`${(r.modelContract.unexpectedDbPanelModels || []).join(",") || "-"}\``);
+    }
+    if (r.modelContract?.missingResponsePanelModels?.length || r.modelContract?.missingDbPanelModels?.length) {
+      lines.push(`- Missing panel models: response=\`${(r.modelContract.missingResponsePanelModels || []).join(",") || "-"}\`, DB=\`${(r.modelContract.missingDbPanelModels || []).join(",") || "-"}\``);
+    }
     lines.push(`- Packet hash count: \`${r.proof.packetHashes.length}\`, same packet hash across panel/judge: \`${r.proof.samePacketHash}\``);
     lines.push(`- Packet hash: \`${r.proof.packetHashes[0] || "-"}\``);
     lines.push("");

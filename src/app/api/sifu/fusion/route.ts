@@ -1366,6 +1366,20 @@ export async function GET(req: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "not logged in" }, { status: 401 });
   const url = new URL(req.url);
+  if (url.searchParams.get("check") === "access" || url.searchParams.get("access") === "1") {
+    const access = await getFusionAccess(session);
+    return NextResponse.json(
+      {
+        ok: true,
+        access,
+        min_tier: MIN_TIER,
+        spend_hours: SPEND_HOURS,
+        panel_models: PANEL_MODELS,
+        judge_model: JUDGE_MODEL,
+      },
+      { headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
+  }
   const runId = cleanRunId(url.searchParams.get("runId") || url.searchParams.get("run_id"));
   if (!runId) return NextResponse.json({ error: "run_id_required" }, { status: 400 });
   pruneFusionStatusStore();
