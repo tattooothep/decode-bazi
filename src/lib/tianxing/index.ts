@@ -5,12 +5,14 @@
  * ✅ display-only · ไม่แตะ datepick/auspicious · ตำแหน่งดาว=ของจริง ไม่ใช่ตารางโบราณ
  */
 import { computeAstro } from "./ephemeris";
-import { SIGNS, STARS, miaoWang, fourRelations, GEJU_RULES, JI_STARS, XIONG_STARS, ayanamsa, Lang3 } from "./tables";
+import { SIGNS, STARS, miaoWang, miaoWangDeg, fourRelations, GEJU_RULES, JI_STARS, XIONG_STARS, ayanamsa, Lang3 } from "./tables";
+import { shuAt } from "./xiu28";
 
 export type TXStar = {
   key: string; th: string; zh: string;
   lonTrop: number; lonSid: number; sign: number; signTh: string; signZh: string;
   deg: number; retro: boolean; status: string; statusTh: string; statusRank: number;
+  shu: string; shuDeg: number;  // 宿 + 度ใน宿 (距星 system · A2)
   kind: string;
 };
 export type TXResult = {
@@ -39,13 +41,16 @@ export function tianxingReading(dtUTC: Date, lat: number, lng: number): TXResult
   const stars: TXStar[] = astro.stars.map((s) => {
     const lonSid = sidOf(s.lonTrop);
     const sign = Math.floor(lonSid / 30);
-    const mw = miaoWang(s.key, sign);
+    // A2 · 宿+度 (距星 ecliptic-of-date) → refine 廟旺ด้วย度數; ไม่เข้า band → fallback ราศี
+    const sh = shuAt(s.lonTrop, dtUTC);
+    const mw = miaoWangDeg(s.key, sh.zh, sh.deg) || miaoWang(s.key, sign);
     const meta = STARS[s.key];
     return {
       key: s.key, th: meta?.th || s.key, zh: meta?.zh || s.key,
       lonTrop: +s.lonTrop.toFixed(2), lonSid: +lonSid.toFixed(2),
       sign, signTh: SIGNS[sign].th, signZh: SIGNS[sign].zh, deg: +(lonSid % 30).toFixed(1),
       retro: s.retro, status: mw.code, statusTh: mw.th, statusRank: mw.rank,
+      shu: sh.zh, shuDeg: sh.deg,
       kind: meta?.kind || "yu",
     };
   });

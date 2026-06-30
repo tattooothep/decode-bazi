@@ -68,6 +68,36 @@ export function miaoWang(star: string, sign: number): { code: string; th: string
   return { code: "平", th: "ปานกลาง", rank: 3 };
 }
 
+// =====================================================================
+// A2 · 廟旺度數 by 宿+度 (果老星宗 ⟨ดาว⟩總論 · extract_miaowang) — refine จากระดับราศี
+// band = [宿zh, degMin, degMax) · 升殿宿 = ดาวอยู่ใน宿ของตัวเอง (4宿) · ใช้ degree จาก shuAt
+// =====================================================================
+export const MIAOWANG_DEG: Record<string, {
+  zhengMiao?: [string, number, number]; zhengWang?: [string, number, number];
+  ciWang?: [string, number, number]; shengDian: string[]; le?: string[];
+}> = {
+  Sun:     { zhengMiao: ["奎", 8, 13], zhengWang: ["婁", 8, 13], ciWang: ["胃", 1, 7], shengDian: ["虛", "房", "星", "昴"] },
+  Moon:    { zhengMiao: ["婁", 8, 13], ciWang: ["胃", 7, 13], shengDian: ["危", "心", "張", "畢"] },
+  Mercury: { zhengMiao: ["翼", 8, 13], shengDian: ["箕", "參", "壁", "軫"], le: ["參"] },
+  Venus:   { zhengMiao: ["亢", 5, 9], zhengWang: ["室", 7, 13], shengDian: ["牛", "鬼", "亢", "婁"], le: ["胃"] },
+  Mars:    { zhengMiao: ["心", 2, 4], zhengWang: ["斗", 18, 26], shengDian: ["尾", "室", "觜", "翼"], le: ["奎"] },
+  Jupiter: { zhengMiao: ["鬼", 0, 3], zhengWang: ["井", 29, 31], shengDian: ["斗", "角", "奎", "井"], le: ["箕"] },
+  Saturn:  { zhengMiao: ["斗", 10, 21], zhengWang: ["亢", 4, 7], shengDian: ["氐", "女", "胃", "柳"], le: ["危"] },
+  Yuebo:   { zhengMiao: ["井", 19, 21], shengDian: [], le: ["虛", "危", "參"] }, // 月孛
+};
+
+/** refine 廟旺 ด้วย 宿+度 (果老總論) · ไม่เข้า band เป๊ะ → คืน null (ให้ fallback ราศี) */
+export function miaoWangDeg(star: string, shuZh: string, deg: number): { code: string; th: string; rank: number } | null {
+  const m = MIAOWANG_DEG[star]; if (!m) return null;
+  const inB = (b?: [string, number, number]) => !!b && b[0] === shuZh && deg >= b[1] && deg < b[2];
+  if (inB(m.zhengMiao)) return { code: "廟", th: "正廟 (บ้านเดิม·องศาเป๊ะ แรงสุด)", rank: 6 };
+  if (inB(m.zhengWang)) return { code: "旺", th: "正旺 (อุจ·องศาเป๊ะ)", rank: 5 };
+  if (inB(m.ciWang)) return { code: "旺", th: "次旺 (รุ่งเรืองรอง)", rank: 4 };
+  if (m.shengDian.includes(shuZh)) return { code: "升殿", th: "ขึ้นวัง (ได้ที่·宿ตัวเอง)", rank: 4 };
+  if (m.le?.includes(shuZh)) return { code: "樂", th: "สำราญ (สบาย·ดี)", rank: 4 };
+  return null;
+}
+
 /** 喜怕 (恩/難) ราย 7政 — จาก 果老星宗 (prep#1) · ระบุธาตุดาวที่ "หนุน(喜→恩)" / "ทำร้าย(怕→難)" */
 export const XIQA: Record<string, { en: string[]; nan: string[] }> = {
   Mercury: { en: ["metal"], nan: ["earth"] },        // 水喜金怕土
