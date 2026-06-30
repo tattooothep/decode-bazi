@@ -82,6 +82,68 @@ export const XIQA: Record<string, { en: string[]; nan: string[] }> = {
 export const JI_STARS = ["Jupiter", "Venus", "Moon"];   // 吉星 木金月
 export const XIONG_STARS = ["Mars", "Saturn", "Rahu", "Ketu"]; // 凶星 火土羅計
 
+// =====================================================================
+// A3 · 恩用仇難 4 ขา (รอบ用神/命度主) — 果老星宗 (extract_enyong_natal prep · 30 มิ.ย.)
+// ระบบเต็ม果老 = 4 ขา อิง用神(element): 恩=生用神(印) · 用=用神生(食傷·剋難จึงดี) · 仇=用神剋(財·剋恩จึงร้าย) · 難=剋用神(官殺·ร้ายสุด)
+// V1 เดิมมีแค่ 喜怕=恩難(2 ขา) · ที่มา GLXZ1卷一(L4978/L5073) + ctext恩用仇難 · ⚠️ 日月ใช้กฎพิเศษ(君/后·調候) ไม่ตาม生剋ล้วน → ใช้ XIQA special + flag
+// =====================================================================
+const GEN: Record<string, string> = { wood: "water", fire: "wood", earth: "fire", metal: "earth", water: "metal" };       // 生我者(恩)
+const PRODUCES: Record<string, string> = { wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood" };   // 我生者(用)
+const CONTROLS: Record<string, string> = { wood: "earth", fire: "metal", earth: "water", metal: "wood", water: "fire" };   // 我剋者(仇)
+const CONTROLLED: Record<string, string> = { wood: "metal", fire: "water", earth: "wood", metal: "fire", water: "earth" }; // 剋我者(難)
+
+export type FourRel = { en: string[]; yong: string[]; chou: string[]; nan: string[]; special: boolean };
+
+/** หา 恩/用/仇/難 (เป็นธาตุ) รอบ用神 ตาม element · 日月ใช้ XIQA พิเศษ (มีแค่ en/nan · flag special) */
+export function fourRelations(rulerKey: string): FourRel {
+  if (rulerKey === "Sun" || rulerKey === "Moon") {
+    const xq = XIQA[rulerKey];
+    return { en: xq?.en || [], yong: [], chou: [], nan: xq?.nan || [], special: true };
+  }
+  const E = STARS[rulerKey]?.element;
+  if (!E || !GEN[E]) return { en: [], yong: [], chou: [], nan: [], special: false };
+  return { en: [GEN[E]], yong: [PRODUCES[E]], chou: [CONTROLS[E]], nan: [CONTROLLED[E]], special: false };
+}
+
+// =====================================================================
+// A4 · 格局 sign-level (合格/忌格) — 張果星宗五 (extract_geju prep · ctext ch.349444)
+// เลือกเฉพาะ格ที่ตัดสินได้ด้วย "ราศีของดาว + 命宮" เท่านั้น (ไม่ต้องใช้ 宿/距度 ที่ยัง block)
+// verbatim จากตำรา · ห้ามแต่ง · ส่วน格ที่ต้อง宿/廟旺度/晝夜 (T2) รอ distance table
+// แผนที่宮地支→ราศี: 子=寶瓶10 丑=摩羯9 寅=人馬8 卯=天蠍7 辰=天秤6 巳=雙女5 午=獅子4 未=巨蟹3 申=雙子2 酉=金牛1 戌=白羊0 亥=雙魚11
+// =====================================================================
+export type GejuRule = {
+  id: string; th: string; zh: string; good: boolean;
+  /** ctx: signOf(starKey)→sign | ascSign | trine(a,b) 三合 | adjacent(a,b) ขนาบ */
+  test: (ctx: GejuCtx) => boolean;
+};
+export type GejuCtx = {
+  signOf: (key: string) => number | null;
+  ascSign: number;
+};
+const LEO = 4, CANCER = 3;
+// 五星居垣(合) = ดาวอยู่บ้านเดิม(廟) · 五星忌(入克宮) = ดาวในบ้านดาวที่剋กัน
+export const GEJU_RULES: GejuRule[] = [
+  // — 日月合格 (sign-level) —
+  { id: "sun_own", th: "อาทิตย์อยู่ราศีสิงห์ (日居日位)", zh: "日居午位", good: true, test: c => c.signOf("Sun") === LEO },
+  { id: "moon_own", th: "จันทร์อยู่ราศีกรกฎ (月居本垣)", zh: "月居未垣", good: true, test: c => c.signOf("Moon") === CANCER },
+  { id: "sun_moon_palace", th: "อาทิตย์สิงห์+จันทร์กรกฎ (日月居垣)", zh: "日月居垣", good: true, test: c => c.signOf("Sun") === LEO && c.signOf("Moon") === CANCER },
+  // — 日月忌格 —
+  { id: "sun_moon_seat", th: "อาทิตย์ไปนั่งภพจันทร์ (日居月位)", zh: "日居未宮", good: false, test: c => c.signOf("Sun") === CANCER },
+  { id: "moon_sun_seat", th: "จันทร์ไปนั่งภพอาทิตย์ (月到日宮)", zh: "月在午宮", good: false, test: c => c.signOf("Moon") === LEO },
+  // — 五星居垣 (合·ดาวในบ้านเดิม) —
+  { id: "jupiter_yuan", th: "พฤหัสครองบ้านเดิม (歲星居垣)", zh: "木在寅亥", good: true, test: c => [8, 11].includes(c.signOf("Jupiter") ?? -1) },
+  { id: "mars_yuan", th: "อังคารครองบ้านเดิม (熒惑居垣)", zh: "火在卯戌", good: true, test: c => [7, 0].includes(c.signOf("Mars") ?? -1) },
+  { id: "saturn_yuan", th: "เสาร์ครองบ้านเดิม (鎮星居垣)", zh: "土在子丑", good: true, test: c => [10, 9].includes(c.signOf("Saturn") ?? -1) },
+  { id: "venus_yuan", th: "ศุกร์ครองบ้านเดิม (太白居垣)", zh: "金在辰酉", good: true, test: c => [6, 1].includes(c.signOf("Venus") ?? -1) },
+  { id: "mercury_yuan", th: "พุธครองบ้านเดิม (辰星居垣)", zh: "水在巳申", good: true, test: c => [5, 2].includes(c.signOf("Mercury") ?? -1) },
+  // — 五星忌格 (入克宮·ดาวในบ้านดาวที่ปะทะธาตุ) —
+  { id: "jupiter_metal", th: "พฤหัสตกเรือนทอง (木入金鄉)", zh: "木在辰酉", good: false, test: c => [6, 1].includes(c.signOf("Jupiter") ?? -1) },
+  { id: "mars_water", th: "อังคารตกเรือนน้ำ (火居水地)", zh: "火在巳申", good: false, test: c => [5, 2].includes(c.signOf("Mars") ?? -1) },
+  { id: "saturn_wood", th: "เสาร์ตกเรือนไม้ (土在木宮)", zh: "土在寅亥", good: false, test: c => [8, 11].includes(c.signOf("Saturn") ?? -1) },
+  { id: "venus_fire", th: "ศุกร์ตกเรือนไฟ (金乘火位)", zh: "金在卯戌", good: false, test: c => [7, 0].includes(c.signOf("Venus") ?? -1) },
+  { id: "mercury_earth", th: "พุธตกเรือนดิน (水居土室)", zh: "水在子丑", good: false, test: c => [10, 9].includes(c.signOf("Mercury") ?? -1) },
+];
+
 /** Lahiri ayanamsa (องศา) สำหรับแปลง tropical→sidereal · ⚠️ V1 placeholder · สำนักจีนยืนยันภายหลัง (prep#3) */
 export function ayanamsa(date: Date): number {
   const yrs = (date.getTime() / 86400000 + 2440587.5 - 2451545.0) / 365.25;
