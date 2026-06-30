@@ -38,6 +38,7 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "iztro": "^2.5.8",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

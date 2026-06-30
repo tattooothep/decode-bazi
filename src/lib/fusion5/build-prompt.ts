@@ -12,6 +12,8 @@ import { renderWesternPrompt } from "../astro/western/render";
 import { vedicChart } from "../astro/vedic/engine";
 import { buildVedicPacket } from "../astro/vedic/packet";
 import { renderVedicPrompt } from "../astro/vedic/render";
+import { buildZiweiPacket } from "../astro/ziwei/packet";
+import { renderZiweiPrompt } from "../astro/ziwei/render";
 import { DISCIPLINES, type ScienceId } from "./disciplines";
 
 export type BirthData = { name: string; dtUTC: Date; lat: number; lng: number; hasTime: boolean; gender: "M" | "F" };
@@ -42,6 +44,7 @@ export function renderChartForScience(science: ScienceId, b: BirthData, refDate:
   if (science === "qizheng") return renderQizhengPrompt(buildQizhengPacket(b.dtUTC, b.lat, b.lng, b.hasTime));
   if (science === "western") return renderWesternPrompt(buildWesternPacket(westernChart(b.dtUTC, b.lat, b.lng, b.hasTime)));
   if (science === "vedic") return renderVedicPrompt(buildVedicPacket(vedicChart(b.dtUTC, b.lat, b.lng, b.hasTime, refDate)));
+  if (science === "ziwei") return renderZiweiPrompt(buildZiweiPacket(b.dtUTC, b.lat, b.lng, b.gender, b.hasTime));
   return "";
 }
 
