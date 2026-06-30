@@ -102,13 +102,15 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
         if (science === "bazi") {
           const targets = births.length > 1 ? profileIds : [profileIds[0]];
           const parts: string[] = [];
-          let anyOk = false;
+          let okCount = 0;
           for (let i = 0; i < targets.length; i++) {
             const note = births.length > 1 ? `\n(ดูคู่ระหว่าง ${births.map((b) => b.name).join(" และ ")} — วิเคราะห์ ${births[i].name})` : "";
             const r = await callSifu(cookie, { profileId: targets[i], message: question + note, lang }, bind.defaultModel);
-            if (r.ok && r.reply) { anyOk = true; parts.push(births.length > 1 ? `【${births[i].name}】\n${r.reply}` : r.reply); }
+            if (r.ok && r.reply) { okCount++; parts.push(births.length > 1 ? `【${births[i].name}】\n${r.reply}` : r.reply); }
           }
-          return anyOk ? { science, label, model: bind.defaultModel, ok: true, reply: parts.join("\n\n") } : { science, label, model: bind.defaultModel, ok: false, error: "bazi_failed" };
+          const failCount = targets.length - okCount;
+          if (okCount > 0 && failCount > 0) await refundHoursForUser(userId, bind.costYam * failCount, FEATURE).catch(() => {});
+          return okCount > 0 ? { science, label, model: bind.defaultModel, ok: true, reply: parts.join("\n\n") } : { science, label, model: bind.defaultModel, ok: false, error: "bazi_failed" };
         }
         const prompt = buildSciencePrompt(science, births, question, lang, refDate);
         const res = await callSifu(cookie, { message: question, externalPrompt: prompt, lang }, bind.defaultModel);
@@ -198,6 +200,8 @@ export async function POST(req: Request) {
     const skipped = sciences.filter((s) => DISCIPLINES[s].needsBirthTime && !allHaveTime);
     if (!runSciences.length) return NextResponse.json({ error: "all_sciences_need_birthtime", skipped }, { status: 400 });
 
+    const runningCnt = await q1<{ n: string }>(`SELECT count(*)::text AS n FROM fusion5_jobs WHERE user_id=$1 AND status='running' AND created_at > now() - interval '25 min'`, [userId]);
+    if (runningCnt && Number(runningCnt.n) >= 2) return NextResponse.json({ error: "too_many_running" }, { status: 429 });
     const yam = computeYam(runSciences, births.length);
     const spend = await spendHoursForUser(userId, yam, FEATURE);
     if (!spend.ok) return NextResponse.json({ error: "insufficient_hours", needed: yam }, { status: 402 });
@@ -234,11 +238,18 @@ export async function GET(req: Request) {
     [jobId, session.userId]
   );
   if (!row) return NextResponse.json({ error: "job_not_found" }, { status: 404 });
-  // กัน job ค้าง running เกิน 15 นาที (server restart กลางคัน) → ถือว่า error
-  const stale = row.status === "running" && Date.now() - new Date(row.created_at).getTime() > 15 * 60_000;
-  return NextResponse.json({
-    status: stale ? "error" : row.status,
-    result: row.result || null,
-    error: stale ? "timeout" : row.error || null,
-  });
+  // reconcile job ค้าง >25 นาที (restart/crash): mark error + คืนยาม (idempotent · GET แรกที่ชนะ UPDATE)
+  const stale = row.status === "running" && Date.now() - new Date(row.created_at).getTime() > 25 * 60_000;
+  if (stale) {
+    const upd = await q1<{ sciences: string[] | null; profile_ids: string[] | null }>(
+      `UPDATE fusion5_jobs SET status='error', error='timeout', updated_at=now() WHERE id=$1 AND user_id=$2 AND status='running' RETURNING sciences, profile_ids`,
+      [jobId, session.userId]
+    );
+    if (upd) {
+      const refYam = computeYam((upd.sciences || []) as ScienceId[], (upd.profile_ids || []).length || 1);
+      if (refYam > 0) await refundHoursForUser(session.userId, refYam, FEATURE).catch(() => {});
+    }
+    return NextResponse.json({ status: "error", result: null, error: "timeout" });
+  }
+  return NextResponse.json({ status: row.status, result: row.result || null, error: row.error || null });
 }
