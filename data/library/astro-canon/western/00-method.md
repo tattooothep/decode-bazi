@@ -13,7 +13,7 @@
 **ขั้น 2 · ตรีเอกานุภาพ Sun–Moon–Asc** — Sun(ตัวตน) · Moon(อารมณ์/จิตใต้สำนึก) · Asc(ภาพแสดงออก) ราศี+เรือน → แก่นบุคลิก
 **ขั้น 3 · ดาวตามราศี + Essential Dignity** — ดาวแต่ละดวงอยู่ราศีใด มี dignity ไหม (rulership=แข็งสุด/exaltation/triplicity/term/face · detriment/fall=อ่อน · peregrine) — well-dignified ออกฤทธิ์ดี (Lilly Ch.18 · นัยดาว Ch.7-13)
 **ขั้น 4 · ดาวตามเรือน 12** — ดาวตกเรือนใด → ด้านชีวิตนั้นเด่น/มีประเด็น (1ตัวตน 2ทรัพย์ 3พี่น้อง 4บ้าน 5บุตร/รัก 6งาน/สุขภาพ 7คู่ 8วิกฤต 9ต่างแดน/ปัญญา 10อาชีพ 11มิตร/หวัง 12ซ่อนเร้น) (Lilly Book1)
-**ขั้น 5 · Aspects** — มุมสำคัญ (☌合 · △trine ดี · ✶sextile ดี · □square ตึง · ☍opposition ปะทะ) → แรงเสริม/ขัด · applying แรงกว่า separating
+**ขั้น 5 · Aspects** — มุมสำคัญ (conjunction ทับซ้อน · trine สามเหลี่ยม=ดี · sextile หกสิบ=ดี · square ฉาก=ตึง · opposition เล็ง=ปะทะ) → แรงเสริม/ขัด · applying แรงกว่า separating
 **ขั้น 6 · รูปทรง+สมดุลธาตุ** — ธาตุ(fire/earth/air/water)+คุณภาพ(cardinal/fixed/mutable)เด่น/ขาด · stellium → โทนรวม
 **ขั้น 7 · ดาวเด่นสุด (dominant/dispositor)** — ดาว dignity สูง/ครองหลายดาว = ผู้กำหนดโทนดวง
 **ขั้น 8 · จังหวะเวลา (ถ้าถาม)** — [ถ้าผังมี transit] ดาวจรชนเรือน/ดาวกำเนิด → จังหวะ · ถ้าไม่มีในผัง บอกว่าต้องคำนวณ transit เพิ่ม

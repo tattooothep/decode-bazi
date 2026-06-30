@@ -12,7 +12,7 @@ export function renderQizhengPrompt(p: QizhengPacket, lang: "th" | "en" | "zh" =
   L.push(`命宮(ลัคนา): ${d.ascendant.signTh} · 命主(เจ้าชะตา · ดาวเจ้าเรือนลัคนา): ${d.ascendant.rulerTh} สถานะ${d.yongshen.status}`);
   L.push(`\nดาว 7政+4餘 (廟旺):`);
   for (const s of d.stars) L.push(`  ${s.zh} ${s.th} · ราศี${s.signTh} 宿${s.shu} · ${s.status}${s.retro ? " (พักร์)" : ""}`);
-  L.push(`\n恩星(หนุน命主): ${d.enStars.join("、") || "—"} · 難星(ขัด): ${d.nanStars.join("、") || "—"} · 仇星: ${d.chouStars.join("、") || "—"}`);
+  L.push(`\n恩星(หนุน命主): ${d.enStars.join("、") || "—"} · 用星(命主ระบายไป): ${d.yongStars.join("、") || "—"} · 仇星: ${d.chouStars.join("、") || "—"} · 難星(ขัด命主): ${d.nanStars.join("、") || "—"}`);
   if (d.geju.length) L.push(`格局: ${d.geju.map((g) => g.th + (g.good ? "(ดี)" : "(ระวัง)")).join(" · ")}`);
   if (d.houses12.length) {
     L.push(`\n【12 เรือนชีวิต — 先看其宮後看其主】`);
