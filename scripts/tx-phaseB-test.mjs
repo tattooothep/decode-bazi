@@ -18,6 +18,6 @@ const w=getNormalizedWeights("立約",["ze_ri","ba_zi","tai_sui"]);
 const sum=Object.values(w).reduce((a,b)=>a+b,0);
 ok(`normalize ไม่มี tian_xing รวม=1.0 (${sum.toFixed(3)})`, Math.abs(sum-1)<0.001);
 ok("tian_xing ∈ ALL_MODULES", ALL_MODULES.includes("tian_xing"));
-ok("tian_xing ∈ UNIVERSAL", UNIVERSAL_MODULES.includes("tian_xing"));
+ok("tian_xing ∉ UNIVERSAL (ไม่เข้า hard SQL · บั๊ก#1 fix)", !UNIVERSAL_MODULES.includes("tian_xing"));
 console.log(`\n${f===0?"✅ PASS":"❌ FAIL"} ${p}/${p+f}`);
 process.exit(f?1:0);

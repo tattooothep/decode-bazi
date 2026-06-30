@@ -136,9 +136,12 @@ export const ALL_MODULES: ModuleKey[] = [
   "ba_zi", "yong_shen", "hex64", "tian_xing"
 ];
 
+// หมายเหตุ: tian_xing ไม่อยู่ใน UNIVERSAL — เป็น scorer (compute on-the-fly) ไม่ใช่ hard-filter
+// (กันไม่ให้ไหลเข้า hardModules→SQL aj_ephemeris_cache ที่ไม่มีคอลัมน์ tian_xing · ฤกษ์หาย)
+// scoring ทำงานผ่าน ALL_MODULES → baseScoreModules → combineScores
 export const UNIVERSAL_MODULES: ModuleKey[] = [
   "ze_ri", "twelve_officers", "twenty_eight", "twelve_spirits",
-  "nine_stars", "tai_sui", "qi_men", "he_luo", "tian_xing"
+  "nine_stars", "tai_sui", "qi_men", "he_luo"
 ];
 
 export const PERSONAL_MODULES: ModuleKey[] = [
