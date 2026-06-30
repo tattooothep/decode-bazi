@@ -87,10 +87,17 @@
     .models{display:grid;gap:8px;margin-top:12px}
     .model-row{display:grid;grid-template-columns:132px 74px minmax(0,1fr);gap:10px;align-items:start;border:1px solid var(--line);border-radius:8px;padding:10px;background:rgba(255,255,255,.02)}
     .model-name{font-family:var(--mono);font-size:12px;color:var(--blue)}
+    .fusion-proof{white-space:normal;border:1px solid rgba(116,168,216,.28);border-radius:8px;background:rgba(116,168,216,.06);padding:10px 11px;margin:0 0 12px;display:grid;gap:6px}
+    .proof-line{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.45;color:var(--muted)}
+    .proof-tag{flex:0 0 auto;min-width:86px;font-family:var(--mono);font-size:10px;text-transform:uppercase;color:var(--blue)}
+    .proof-value{overflow-wrap:anywhere}
+    .proof-muted{color:var(--faint)}
     .answer-tools{white-space:normal;display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
     .answer-tools-label{font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase}
     .answer-open{min-height:28px;border:1px solid var(--line);border-radius:8px;background:rgba(116,168,216,.08);color:var(--blue);padding:4px 9px;font-family:var(--mono);font-size:11px;cursor:pointer}
     .answer-open:hover{border-color:rgba(116,168,216,.55);background:rgba(116,168,216,.14)}
+    .answer-open.final{border-color:rgba(210,176,94,.45);background:rgba(210,176,94,.08);color:var(--gold)}
+    .answer-open.panel{border-color:rgba(116,168,216,.36)}
     .answer-modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.66);display:flex;align-items:center;justify-content:center;padding:18px}
     .answer-modal.hidden{display:none}
     .answer-dialog{width:min(920px,100%);max-height:88vh;background:var(--panel);border:1px solid var(--line-strong);border-radius:8px;display:grid;grid-template-rows:auto minmax(0,1fr);box-shadow:0 24px 70px rgba(0,0,0,.45)}
@@ -382,14 +389,20 @@
       }
       updateSendAvailability();
     }
-    function answerName(item){
-      var model = String(item && item.model || '-');
-      var base = model === 'codex-cli' ? 'Codex'
+    function modelShortName(model){
+      model = String(model || '-');
+      return model === 'codex-cli' ? 'Codex'
         : model === 'grok-cli' ? 'Grok'
           : model === 'gemini-api' ? 'Gemini'
             : model === 'claude-max-cli' ? 'Claude'
-              : model;
+            : model;
+    }
+    function answerName(item){
+      var base = modelShortName(item && item.model);
       return item && item.role === 'judge' ? base + ' judge' : base;
+    }
+    function answerButtonLabel(item){
+      return (item && item.role === 'judge' ? 'Final: ' : 'Panel: ') + answerName(item);
     }
     function answerMeta(item){
       return [
@@ -414,9 +427,41 @@
       if (!answers.length) return '';
       var buttons = answers.map(function(item){
         var id = registerAnswer(item);
-        return '<button class="answer-open" type="button" data-answer-id="' + esc(id) + '">' + esc(answerName(item)) + '</button>';
+        var cls = item && item.role === 'judge' ? ' final' : ' panel';
+        return '<button class="answer-open' + cls + '" type="button" data-answer-id="' + esc(id) + '">' + esc(answerButtonLabel(item)) + '</button>';
       }).join('');
-      return '<div class="answer-tools"><span class="answer-tools-label">AI answers</span>' + buttons + '</div>';
+      return '<div class="answer-tools"><span class="answer-tools-label">Panel evidence / final</span>' + buttons + '</div>';
+    }
+    function renderFusionProof(fusion){
+      if (!fusion) return '';
+      var panel = Array.isArray(fusion.panel) ? fusion.panel : [];
+      var okPanels = panel.filter(function(r){ return r && r.ok; }).map(function(r){ return modelShortName(r.model); });
+      var failedPanels = panel.filter(function(r){ return r && !r.ok; }).map(function(r){
+        return modelShortName(r.model) + ' ' + progressLabel(panelResultState(r));
+      });
+      var judge = fusion.judge || {};
+      var judgeModel = judge.model || fusion.judge_model || '';
+      var hasJudge = !!judgeModel;
+      var judgeName = judgeModel ? answerName({ model:judgeModel, role:'judge' }) : 'judge';
+      var judgeAnswer = fusionAnswers(fusion).find(function(item){ return item && item.role === 'judge' && item.ok && item.reply; }) || null;
+      var hasJudgeAnswer = !!judgeAnswer;
+      var fallbackPanel = null;
+      if (fusion.used_panel_fallback) {
+        fallbackPanel = panel.find(function(r){ return r && r.ok && r.reply; }) || panel.find(function(r){ return r && r.ok; }) || null;
+      }
+      var finalSource = fusion.used_panel_fallback
+        ? ('Panel fallback: ' + modelShortName(fallbackPanel && fallbackPanel.model))
+        : hasJudgeAnswer ? answerName(judgeAnswer) : 'No final answer';
+      var finalExplain = hasJudgeAnswer || fusion.used_panel_fallback
+        ? ' คือคำตอบใหญ่ด้านล่าง'
+        : hasJudge ? ' ไม่สำเร็จ จึงไม่มีคำตอบ final จาก judge' : ' ยังไม่ถูกสร้าง เพราะ Fusion หยุดก่อน judge';
+      var receivedText = okPanels.length ? okPanels.join(', ') : '-';
+      var failedText = failedPanels.length ? failedPanels.join(', ') : 'none';
+      return '<div class="fusion-proof">' +
+        '<div class="proof-line"><span class="proof-tag">Final</span><span class="proof-value">' + esc(finalSource + finalExplain) + '</span></div>' +
+        '<div class="proof-line"><span class="proof-tag">Judge input</span><span class="proof-value">' + esc(hasJudge ? (judgeName + ' received panel outputs: ' + receivedText) : ('Judge not called · available panel outputs: ' + receivedText)) + '</span></div>' +
+        '<div class="proof-line proof-muted"><span class="proof-tag">Not used</span><span class="proof-value">' + esc(failedText) + '</span></div>' +
+      '</div>';
     }
     function openAnswer(id){
       var item = state.answers[id];
@@ -434,7 +479,7 @@
     function addMsg(role, text, fusion){
       var div = document.createElement('div');
       div.className = 'msg ' + role;
-      div.innerHTML = '<div class="role">' + (role === 'user' ? 'USER' : 'FUSION') + '</div><div class="bubble">' + esc(text) + renderAnswerTools(fusion) + '</div>';
+      div.innerHTML = '<div class="role">' + (role === 'user' ? 'USER' : 'FUSION') + '</div><div class="bubble">' + (role === 'user' ? '' : renderFusionProof(fusion)) + esc(text) + renderAnswerTools(fusion) + '</div>';
       els.chat.appendChild(div);
       els.chat.scrollTop = els.chat.scrollHeight;
     }
@@ -753,7 +798,7 @@
             '<button class="mini-btn" type="button" data-hact="print-pdf" data-id="' + esc(row.id) + '">PDF</button>' +
           '</div>' +
         '</div>' +
-        '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-text">' + esc(row.answer || '') + renderAnswerTools(fusion) + '</div></div>' +
+        '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-text">' + renderFusionProof(fusion) + esc(row.answer || '') + renderAnswerTools(fusion) + '</div></div>' +
         '<div class="detail-block"><div class="detail-label">Run Receipt</div><div class="detail-text">' + esc(runReceipt(row)) + '</div></div>' +
         '<div class="detail-block"><div class="detail-label">Packet / Profile Snapshot</div>' + snapshotBlock(row) + '</div>' +
         '<div class="detail-block"><div class="detail-label">Private Note</div><textarea class="note-box" id="history-note" maxlength="4000">' + esc(us.note) + '</textarea><div class="history-actions"><button class="mini-btn" type="button" data-hact="save-note" data-id="' + esc(row.id) + '">Save note</button></div></div>' +
