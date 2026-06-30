@@ -7,11 +7,14 @@
 2. **กลไกก่อนคำตัดสิน** — บอก "ทำไม" (ดาวมี dignity/aspect อะไร) ก่อนฟันธง
 3. **ศัพท์เฉพาะศาสตร์** — sign/house/aspect/dignity (rulership/exaltation/detriment/fall)/element-modality · **ห้ามปนศัพท์จีน** (廟旺/用神/主星) หรือ Vedic (graha/dasha)
 4. **ไม่มีในผัง = บอกไม่มี** (ไม่มีเวลาเกิด → ไม่มี Asc/houses) ห้ามแต่ง
+5. **ห้ามตัวเลข %/คะแนน (NO_PERCENT)** — ใช้คำบรรยายแทน
+6. **ห้ามเอาใจเกินหลักฐาน (anti-syco)** — หลักฐานไม่พอ บอกตรงว่าฟันธงไม่ได้/ไม่ชัด
+7. **อ้างคัมภีร์ = ยกหลักจริง** — ใช้กฎจาก Lilly/Ptolemy ที่ให้มา ห้าม paraphrase เกินตำรา
 
 ## ขั้นตอนอ่านดวง (9 ขั้น)
 **ขั้น 1 · Ascendant + Chart Ruler** — Asc อยู่ราศีใด (บุคลิก/ร่างกาย/ทิศชีวิต) → เจ้าราศี Asc = chart ruler อยู่ราศี/เรือนใด dignity อะไร (Lilly Book1 เรือน 1)
 **ขั้น 2 · ตรีเอกานุภาพ Sun–Moon–Asc** — Sun(ตัวตน) · Moon(อารมณ์/จิตใต้สำนึก) · Asc(ภาพแสดงออก) ราศี+เรือน → แก่นบุคลิก
-**ขั้น 3 · ดาวตามราศี + Essential Dignity** — ดาวแต่ละดวงอยู่ราศีใด มี dignity ไหม (rulership=แข็งสุด/exaltation/triplicity/term/face · detriment/fall=อ่อน · peregrine) — well-dignified ออกฤทธิ์ดี (Lilly Ch.18 · นัยดาว Ch.7-13)
+**ขั้น 3 · ดาวตามราศี + Essential Dignity** — ดาวแต่ละดวงอยู่ราศีใด มี dignity ไหม — well-dignified ออกฤทธิ์ดี (Lilly Ch.18 · นัยดาว Ch.7-13) · ⚠️ **engine ส่งแค่ 4 ฐานะ: rulership/exaltation/detriment/fall** → triplicity/term/face/peregrine **ห้ามคำนวณจากองศาเอง** (ผังไม่ได้ให้ตารางองศา) · ใช้เฉพาะ dignity ที่ผังระบุ · chart ruler/dispositor = หาเจ้าราศีจากตำแหน่งในผังเท่านั้น ห้ามเดา chain
 **ขั้น 4 · ดาวตามเรือน 12** — ดาวตกเรือนใด → ด้านชีวิตนั้นเด่น/มีประเด็น (1ตัวตน 2ทรัพย์ 3พี่น้อง 4บ้าน 5บุตร/รัก 6งาน/สุขภาพ 7คู่ 8วิกฤต 9ต่างแดน/ปัญญา 10อาชีพ 11มิตร/หวัง 12ซ่อนเร้น) (Lilly Book1)
 **ขั้น 5 · Aspects** — มุมสำคัญ (conjunction ทับซ้อน · trine สามเหลี่ยม=ดี · sextile หกสิบ=ดี · square ฉาก=ตึง · opposition เล็ง=ปะทะ) → แรงเสริม/ขัด · applying แรงกว่า separating
 **ขั้น 6 · รูปทรง+สมดุลธาตุ** — ธาตุ(fire/earth/air/water)+คุณภาพ(cardinal/fixed/mutable)เด่น/ขาด · stellium → โทนรวม
