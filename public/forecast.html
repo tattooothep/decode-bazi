@@ -988,7 +988,7 @@ const QM_DEITY_ZH = {ZHI_FU:'值符',TENG_SHE:'螣蛇',TAI_YIN:'太陰',LIU_HE:'
 const QM_STEM_ZH = {JIA:'甲',YI:'乙',BING:'丙',DING:'丁',WU:'戊',JI:'己',GENG:'庚',XIN:'辛',REN:'壬',GUI:'癸'};
 function renderQmdjDisplay(s){
   if (!s || !s.grid) return;
-  document.getElementById('qm-ju').textContent = '陽' + s.ju_number + '局';
+  document.getElementById('qm-ju').textContent = (s.dun_type==='yin'?'陰':'陽') + s.ju_number + '局';
   document.getElementById('qm-pillar').textContent = s.pillar || '—';
   document.getElementById('qm-xun').textContent = s.xun || '—';
   document.getElementById('qm-dungan').textContent = s.dun_gan || '—';

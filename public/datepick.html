@@ -1380,7 +1380,6 @@ function thZh(dict, zh){
 function localizeAuspiciousReason(text){
   return localizeQimenReason(text)
     .replace(/月德/g, 'ดาวคุณธรรมเดือน · 月德')
-    .replace(/天德/g, 'ดาวคุณธรรมฟ้า · 天德')
     .replace(/天恩/g, 'ดาวอุปถัมภ์ฟ้า · 天恩')
     .replace(/月恩/g, 'ดาวอุปถัมภ์เดือน · 月恩')
     .replace(/天喜/g, 'ดาวยินดีฟ้า · 天喜')
@@ -1434,7 +1433,7 @@ function scienceKeyFromReason(raw){
 }
 
 function displayReasonText(raw){
-  let s = localizeAuspiciousReason(cleanReasonText(raw))
+  let s = cleanReasonText(raw)
     .replace(/^ระวัง\s*/,'')
     .replace(/[🚪⭐✨📜✓⚠📊]\s*/g,'')
     .replace(/\s*\((奇門星|奇門|奇门|12建除|28宿|12神煞|飛星|飞星|河洛|八字|太歲|太岁|通書|通书|擇日|择日)\)/g,'')
@@ -1866,7 +1865,7 @@ async function performSearch(){
             huangdao: c.huangdao || null,
             richong: c.richong || null,
             donggong: c.donggong || null,
-            ju_pole:'yang', ju_number: qm.ju_number || 1,
+            ju_pole: (c.datetime && c.datetime.start) ? dunFromDate(new Date(c.datetime.start)) : 'yang', ju_number: qm.ju_number || 1,
             hex_num: h64.hex_num || null,
             hex_name: h64.hex_name || null,
             changing_line: h64.changing_line || null,
@@ -1974,7 +1973,9 @@ function renderRealResults(items){
   const SHICHEN_NAME = {子:'子時',丑:'丑時',寅:'寅時',卯:'卯時',辰:'辰時',巳:'巳時',午:'午時',未:'未時',申:'申時',酉:'酉時',戌:'戌時',亥:'亥時'};
   const DIRECTION_TH = {N:'เหนือ',NE:'ตะวันออกเฉียงเหนือ',E:'ตะวันออก',SE:'ตะวันออกเฉียงใต้',S:'ใต้',SW:'ตะวันตกเฉียงใต้',W:'ตะวันตก',NW:'ตะวันตกเฉียงเหนือ'};
   c.innerHTML = items.map((t,i) => {
-    const d = new Date(t.datetime);
+    // P1 fix: สร้างวันจาก t.date (string slice ที่ถูกแล้ว) — เลี่ยง Date object โดน timezone +7 ซ้ำ (วันเลื่อน+1 บน browser ไทย)
+    const _dp = (t.date||'').split('-').map(Number);
+    const d = _dp[0] ? new Date(_dp[0], _dp[1]-1, _dp[2]) : new Date(t.datetime);
     const dateThai = formatThaiDate(d);
     const scoreColor = t.score >= 70 ? 'ok' : t.score >= 50 ? 'mid' : 'warn';
     const rankBadge = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
@@ -2012,7 +2013,7 @@ function renderRealResults(items){
         ? escHtml((zhArr || []).join('、'))
         : (pairs || []).map(p => escHtml(p.th) + (p.th !== p.zh ? ` <span class="dg-zh">${escHtml(p.zh)}</span>` : '')).join('、');
       const parts = [];
-      if ((dg.yiPairs || []).length) parts.push((L === 'en' ? 'Good: ' : L === 'zh' ? '宜：' : 'ทำได้ ') + fmt(dg.yiPairs, dg.yi));
+      if ((dg.yiPairs || []).length) parts.push((L === 'en' ? 'Day suits (general): ' : L === 'zh' ? '本日宜（通用）：' : 'วันนี้เหมาะ(งานทั่วไป): ') + fmt(dg.yiPairs, dg.yi));
       if ((dg.jiPairs || []).length) parts.push((L === 'en' ? 'Avoid: ' : L === 'zh' ? '忌：' : 'ห้าม ') + fmt(dg.jiPairs, dg.ji));
       if ((dg.shenshaPairs || []).length) parts.push((L === 'en' ? 'Stars: ' : L === 'zh' ? '神煞：' : 'ดาว ') + fmt(dg.shenshaPairs, dg.shensha));
       if (dg.note) parts.push(escHtml((L === 'zh' || L === 'en') ? dg.note : (dg.noteTh || dg.note)));
@@ -2022,7 +2023,7 @@ function renderRealResults(items){
       const dl = [];
       dl.push(`<b>${head}</b><br>${escHtml(mean)}`);
       dl.push(`<b>${T('ภาพรวมตงกง','Dong Gong verdict','董公斷')}:</b> ${ic} ${escHtml(L === 'en' ? dg.en : L === 'zh' ? dg.zh : dg.verdictTh)}`);
-      if ((dg.yiPairs || []).length) dl.push(`<b>${T('เหมาะ','Good for','宜')}:</b> ${fmt(dg.yiPairs, dg.yi)}`);
+      if ((dg.yiPairs || []).length) dl.push(`<b>${T('วันนี้เหมาะ (งานทั่วไปของวัน)','Day generally suits','本日宜（通用）')}:</b> ${fmt(dg.yiPairs, dg.yi)} <span class="dg-src">(${T('บริบทรวมของวัน · ไม่ใช่หลักฐานเฉพาะกิจกรรมที่เลือก','daily context · not specific evidence for the chosen activity','全日通義·非所選事項之專證')})</span>`);
       if ((dg.jiPairs || []).length) dl.push(`<b>${T('ควรเลี่ยง','Avoid','忌')}:</b> ${fmt(dg.jiPairs, dg.ji)}`);
       if ((dg.shenshaPairs || []).length) dl.push(`<b>${T('ดาวประจำวัน','Day stars','神煞')}:</b> ${fmt(dg.shenshaPairs, dg.shensha)}`);
       if (dg.note) dl.push(`<b>${T('หมายเหตุ','Note','註')}:</b> ${escHtml((L === 'zh' || L === 'en') ? dg.note : (dg.noteTh || dg.note))}`);
@@ -2523,6 +2524,15 @@ function toggleResult(idx){
   });
 }
 
+/* P2: 陰陽遁 จากตำแหน่งอาทิตย์จริง (Meeus low-precision ~0.01°) — 陰遁: 夏至→冬至 (sun lon 90–270°) · 陽遁: 冬至→夏至 */
+function _sunLon(date){
+  const n = date.getTime()/86400000 + 2440587.5 - 2451545.0;
+  const L = (280.460 + 0.9856474*n) % 360;
+  const g = ((357.528 + 0.9856003*n) % 360) * Math.PI/180;
+  const lon = L + 1.915*Math.sin(g) + 0.020*Math.sin(2*g);
+  return ((lon % 360) + 360) % 360;
+}
+function dunFromDate(d){ const lon=_sunLon(d); return (lon>=90 && lon<270)?'yin':'yang'; }
 function formatThaiDate(d){
   /* 17 พ.ค.: ตามภาษาที่เลือก · TH=พ.ศ. · EN=English · ZH=中文 */
   const lang = (typeof getLang==='function'?getLang():(localStorage.getItem('hk_locale')||localStorage.getItem('lang')||'th'));

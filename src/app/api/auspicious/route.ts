@@ -1267,10 +1267,17 @@ function computePersonalModules(slot: CandidateSlot, customer: PersonProfile) {
   if (_CLASH[sP.day.branch] === cZ) { baziScore -= 25; bTags.push('clash_zodiac'); bDown.push({code:'CLASH_Z', thai:`⚠ ${sP.day.branch}沖${cZ}日`, delta:-25}); baziStatus='clash'; }
   if (_CLASH[sP.hour.branch] === cZ) { baziScore -= 15; bTags.push('clash_z_hour'); bDown.push({code:'CLASH_ZH', thai:`⚠ ${sP.hour.branch}沖${cZ}時`, delta:-15}); baziStatus='clash'; }
   if (sP.day.branch === cZ) { baziScore += 10; bTags.push('same_zodiac'); bUp.push({code:'SAME_Z', thai:`✨ ${cZ}日同`, delta:10}); baziStatus='same'; }
+  // 六合 (คู่สมพล) — ก่อนหน้านี้ขาดไป · ป๊า辰 + 酉日 = 辰酉六合 ควรได้แต้ม
+  const LIUHE: Record<string,string> = { 子:'丑', 丑:'子', 寅:'亥', 亥:'寅', 卯:'戌', 戌:'卯', 辰:'酉', 酉:'辰', 巳:'申', 申:'巳', 午:'未', 未:'午' };
   const SANHE = [['申','子','辰'],['寅','午','戌'],['巳','酉','丑'],['亥','卯','未']];
-  for (const grp of SANHE) {
-    if (grp.includes(cZ) && grp.includes(sP.day.branch) && cZ !== sP.day.branch) {
-      baziScore += 12; bTags.push('sanhe_z'); bUp.push({code:'SANHE_Z', thai:`🤝 三合${grp.join('')}`, delta:12}); baziStatus='sanhe'; break;
+  if (LIUHE[cZ] === sP.day.branch) {
+    baziScore += 12; bTags.push('liuhe_z'); bUp.push({code:'LIUHE_Z', thai:`🤝 六合 ${cZ}${sP.day.branch}`, delta:12}); baziStatus='liuhe';
+  } else {
+    // มีแค่ 2 กิ่งในวง三合 = "半三合/拱" (ครึ่งวง) ไม่ใช่ 三合เต็ม (ต้องครบ 3 กิ่ง)
+    for (const grp of SANHE) {
+      if (grp.includes(cZ) && grp.includes(sP.day.branch) && cZ !== sP.day.branch) {
+        baziScore += 8; bTags.push('banhe_z'); bUp.push({code:'BANHE_Z', thai:`🤝 半三合 (拱${grp.join('')})`, delta:8}); baziStatus='banhe'; break;
+      }
     }
   }
   // 16 พ.ค.: ใส่ info tag ทุกครั้ง · ให้เจ้านายเห็นแม้ neutral
