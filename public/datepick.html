@@ -520,6 +520,17 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
         </style>
         <div class="filter-list" id="filterList">
 
+          <!-- 天星 七政四餘 (เฟส B · opt-in · default ปิด · ติ๊กถึงให้คะแนน) -->
+          <label class="filter-item" data-filter="tianxing">
+            <div class="filter-item-head">
+              <input type="checkbox"/>
+              <div class="info">
+                <div class="ttl">ดาวจริง <span class="han">七政四餘</span> <span class="level note" data-i18n="dp.tx.level">ขั้นสูง · ให้คะแนน</span> <span class="level soft">beta</span><button class="help-icon" onclick="showHelp('tianxing');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.tx.sub">โหราศาสตร์ดาวจริง 七政四餘 (廟旺·恩用仇難·格局) · ศาสตร์ขั้นสูงสุด · ติ๊กเพื่อเปิดให้คะแนนเสริม · ไม่ติ๊ก = ไม่มีผลต่อคะแนน</div>
+              </div>
+            </div>
+          </label>
+
           <!-- Tong Shu -->
           <label class="filter-item active" data-filter="tongshu">
             <div class="filter-item-head">
@@ -1764,6 +1775,8 @@ async function performSearch(){
     const useTaisui  = document.querySelector('.filter-item[data-filter="taisui"] input[type="checkbox"]')?.checked !== false;
     const useYongshen = document.querySelector('.filter-item[data-filter="yongshen"] input[type="checkbox"]')?.checked !== false;
     const useHex     = document.querySelector('.filter-item[data-filter="hex"] input[type="checkbox"]')?.checked === true;
+    /* เฟส B · 天星 七政四餘 (opt-in · default ปิด → ใช้ === true · ไม่ติ๊ก = ไม่ส่ง = ไม่กระทบคะแนน) */
+    const useTianxing = document.querySelector('.filter-item[data-filter="tianxing"] input[type="checkbox"]')?.checked === true;
     /* 22 พ.ค. · /api/auspicious เป็น canonical engine ของหน้า datepick แล้ว
        ของเดิม /api/qimen/search เก็บไว้เป็น fallback สำหรับ debug/rollback เท่านั้น */
     const useAjEngine = true;
@@ -1795,6 +1808,7 @@ async function performSearch(){
       if (useBazi)    activeModules.push('ba_zi');
       if (useYongshen) activeModules.push('yong_shen');
       if (useHex)     activeModules.push('hex64');
+      if (useTianxing) activeModules.push('tian_xing');  /* เฟส B · ให้คะแนน (ไม่ใช่ hard filter) */
       const hardModules = [];
       if (useTongshu) hardModules.push('ze_ri');
       if (useTaisui) hardModules.push('tai_sui');
@@ -2180,6 +2194,10 @@ const HELP_DATA = {
     th:{what:'易經 64 รูปแบบ + 384 爻辭 · derive จาก day×hour×zodiac',how:['hex = (day×12+hour×7+zodiac)%64+1','吉卦 15 ตัว (乾·泰·大有...) → +30 ถึง +39','凶卦 9 ตัว (否·剝·坎...) → −10 ถึง −20','กดปุ่ม 📜 ดูตำราเต็ม'],src:'周易 + Zhu Xi + อากง v3 (384 爻辭)'},
     en:{what:'I-Ching 64 + 384 line statements · from day×hour×zodiac',how:['hex = (day×12+hour×7+zodiac)%64+1','15 good (乾泰大有) → +30 to +39','9 bad (否剝坎) → −10 to −20','Click 📜 for full text'],src:'Zhou Yi + Zhu Xi + Grandpa v3'},
     zh:{what:'易經64卦+384爻辭 · 由日×時×年生支',how:['卦=(日×12+時×7+年生)%64+1','15吉卦 → +30至+39','9凶卦 → −10至−20','點 📜 看全文'],src:'周易 · 周易本義 · 阿公v3'} },
+  tianxing: { han:'七政四餘', name:'ดาวจริง · ศาสตร์ขั้นสูงสุด',
+    th:{what:'โหราศาสตร์ดาวจริง (七政四餘) · ใช้ตำแหน่งดาวจริงบนฟ้า (อาทิตย์/จันทร์/พุธ/ศุกร์/อังคาร/พฤหัส/เสาร์ + ราหู/เกตุ/เยวี่ยปั๋ว/紫氣) ตัดสินด้วยกฎ廟旺·恩用仇難·格局',how:['ดาวจริง (astronomy-engine VSOP87) + ระบบ28宿距星 (ยืนยันกับ清史稿/御製曆象考成)','用神(命主)ได้กำลัง 廟/旺/升殿 → คะแนนขึ้น','เข้า合格(ดี)/ติด忌格(ร้าย) → ปรับคะแนน','ติ๊กถึงทำงาน · ไม่ติ๊ก=ไม่มีผล (opt-in)'],src:'果老星宗 + 張果星宗 + 清史稿曆志 · 紫氣=beta รอซินแสยืนยันสำนัก'},
+    en:{what:'Real-star astrology (七政四餘) · uses true planet positions (7 luminaries + 4 shadow points incl. 紫氣) judged by 廟旺/恩用仇難/格局',how:['Real stars (astronomy-engine) + 28-mansion 距星 system (validated vs Qing 清史稿/御製曆象考成)','Chart ruler strong (廟/旺/升殿) → score up','Favorable 合格 / adverse 忌格 → adjust','Opt-in: only runs when ticked'],src:'Guolao Xingzong + Qing Shi Gao · 紫氣 beta'},
+    zh:{what:'七政四餘真星占 · 用實際天體位置(七政+四餘含紫氣)以廟旺·恩用仇難·格局論斷',how:['真實星曆(astronomy-engine)+二十八宿距星(校驗清史稿/御製曆象考成)','用神(命主)得廟旺升殿 → 加分','合格吉/忌格凶 → 調整','勾選方運作 · 不勾選不影響'],src:'果老星宗 · 張果星宗 · 清史稿曆志 · 紫氣beta'} },
 };
 function getCurrentLang(){ return localStorage.getItem('hk_locale')||localStorage.getItem('lang')||'th'; }
 function showHelp(key){
@@ -2552,6 +2570,8 @@ Object.assign(window.HK_I18N, {
   'auto.d.007': { th:'ติ๊กคนที่ต้องเช็คดวง — ระบบจะตัดวันที่ชงกับวันเกิดหลักหรือกระทบหนัก', en:'Tick people to check — system filters Day Master clashes', zh:'勾選須查命的人 — 過濾沖剋日主' },
   'auto.d.008': { th:'ติ๊กเกณฑ์ที่ใช้ — ชั้นสีแดงคือตัดวัน/ยามทิ้ง · ชั้นสีน้ำเงินคือให้คะแนนเพิ่มหรือลด', en:'Tick criteria — strict to loose; all on = fewer days', zh:'勾選條件 — 嚴至寬·全勾則少' },
   'auto.d.009': { th:'ตัดวันห้าม', en:'Forbidden', zh:'忌' },
+  'dp.tx.level': { th:'ขั้นสูง · ให้คะแนน', en:'Advanced · scored', zh:'進階 · 計分' },
+  'dp.tx.sub': { th:'โหราศาสตร์ดาวจริง 七政四餘 (廟旺·恩用仇難·格局) · ศาสตร์ขั้นสูงสุด · ติ๊กเพื่อเปิดให้คะแนนเสริม · ไม่ติ๊ก = ไม่มีผลต่อคะแนน', en:'Real-star astrology 七政四餘 (dignity · benefactor/affliction · patterns) · highest science · tick to enable bonus scoring · off = no effect', zh:'七政四餘真星占 (廟旺·恩用仇難·格局) · 最高擇日術 · 勾選啟用加分 · 不勾選不影響' },
   'auto.d.010': { th:'ปฏิทินจีน · กรองวันที่ 忌 (ห้าม) สำหรับกิจกรรมนี้', en:'Chinese almanac · filter 忌 days for this activity', zh:'通書·過濾本活動忌日' },
   'auto.d.011': { th:'ตัดวันชง', en:'Forbidden', zh:'忌' },
   'auto.d.012': { th:'เช็คดวงคน — วันชง · 刑 · 害 · กระทบวันเกิดหลัก', en:'Check person\'s chart — 沖 · 刑 · 害 · Day Master clash', zh:'查命 — 沖·刑·害·剋日主' },

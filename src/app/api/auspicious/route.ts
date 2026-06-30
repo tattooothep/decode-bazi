@@ -22,6 +22,7 @@ import { q, q1 } from "@/lib/db";
 import { ALL_MODULES, UNIVERSAL_MODULES, PERSONAL_MODULES } from "@/lib/luck-engine/types";
 import type { ModuleKey, ActivityType, CandidateSlot, ModuleResult, FunnelStats, SearchResponse, PersonProfile } from "@/lib/luck-engine/types";
 import { combineScores, scoreToTier, tierToAction, TIER_LABELS } from "@/lib/luck-engine/combineScores";
+import { computeTianXing } from "@/lib/luck-engine/modules/tian-xing";
 import { huangDaoHour } from "@/lib/huangdao";
 import { riChongDay } from "@/lib/richong";
 import { dongGong } from "@/lib/donggong";
@@ -180,6 +181,7 @@ export async function POST(req: NextRequest) {
     const baseScoreModules = qimenBaseScoreModulesForActivity(activeModuleKeys);
     const enriched = candidates
       .map(c => applyMonthDayShaRuntime(c, resolvedActivityType, targetDirection))
+      .map(c => applyTianXing(c, activeModuleKeys))
       .map(c => enrichCandidate(c, baseScoreModules, resolvedActivityType))
       .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys, targetDirection))
       .map(c => applyQimenGenericGuard(c, activityProfile, activeModuleKeys))
@@ -229,6 +231,15 @@ export async function POST(req: NextRequest) {
     console.error("[/api/auspicious]", err);
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }
+}
+
+/** เฟส B · 天星 opt-in: คำนวณ+แนบ "เฉพาะเมื่อ user ติ๊ก" (tian_xing ∈ active) · ไม่ติ๊ก = คืน c เดิม ไม่แตะ (zero-effect) */
+function applyTianXing(c: CandidateSlot, activeModules: ModuleKey[]): CandidateSlot {
+  if (!activeModules.includes("tian_xing")) return c;
+  try {
+    const tx = computeTianXing(c);
+    return { ...c, modules: { ...(c.modules as any), tian_xing: tx } };
+  } catch { return c; }
 }
 
 function applyMonthDayShaRuntime(c: CandidateSlot, activity: ActivityType, targetDirection: Dir8 | null): CandidateSlot {

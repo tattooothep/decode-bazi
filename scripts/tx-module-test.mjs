@@ -1,0 +1,13 @@
+import { computeTianXing } from "../src/lib/luck-engine/modules/tian-xing.ts";
+let p=0,f=0; const ok=(n,c)=>{ c?p++:(f++,console.log("  ✗ "+n)); };
+const fakeCand={ calendar:{ gregorianDate:"2026-06-30", shichen:6 }, modules:{} };
+const r=computeTianXing(fakeCand);
+ok("module = tian_xing", r.module==="tian_xing");
+ok("status ready", r.status==="ready");
+ok("normalized 0-100", r.score.normalized>=0&&r.score.normalized<=100);
+ok("confidence 0.6 (beta)", r.confidence===0.6);
+ok("reasons เป็น array", Array.isArray(r.reasons.up)&&Array.isArray(r.reasons.down));
+ok("missing เมื่อไม่มีวันที่", computeTianXing({calendar:{},modules:{}}).status==="missing");
+console.log(`  ตัวอย่าง: level=${r.raw.level} ลัคนา=${r.raw.ascendant} คะแนน=${r.score.normalized}`);
+console.log(`\n${f===0?"✅ PASS":"❌ FAIL"} ${p}/${p+f}`);
+process.exit(f?1:0);

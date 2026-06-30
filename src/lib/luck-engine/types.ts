@@ -127,17 +127,18 @@ export type ModuleKey =
   | "he_luo"           // 河洛
   | "ba_zi"            // 八字 (personal)
   | "yong_shen"        // 用神 (personal)
-  | "hex64";           // 64 卦 (can be personal)
+  | "hex64"            // 64 卦 (can be personal)
+  | "tian_xing";       // 七政四餘 ดาวจริง (เฟส B · opt-in · default ปิด)
 
 export const ALL_MODULES: ModuleKey[] = [
   "ze_ri", "twelve_officers", "twenty_eight", "twelve_spirits",
   "nine_stars", "tai_sui", "qi_men", "he_luo",
-  "ba_zi", "yong_shen", "hex64"
+  "ba_zi", "yong_shen", "hex64", "tian_xing"
 ];
 
 export const UNIVERSAL_MODULES: ModuleKey[] = [
   "ze_ri", "twelve_officers", "twenty_eight", "twelve_spirits",
-  "nine_stars", "tai_sui", "qi_men", "he_luo"
+  "nine_stars", "tai_sui", "qi_men", "he_luo", "tian_xing"
 ];
 
 export const PERSONAL_MODULES: ModuleKey[] = [
