@@ -1,3 +1,6 @@
-knowledge/tianxing/sources/**/*.pdf
-knowledge/tianxing/sources/**/*.djvu
-knowledge/tianxing/sources/**/*.txt
+*.pdf
+*.djvu
+**/*.pdf
+**/*.djvu
+**/*.txt
+*.txt
