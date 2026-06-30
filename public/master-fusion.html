@@ -166,6 +166,55 @@
       .answer-open{width:100%;justify-content:flex-start;text-align:left;white-space:normal;line-height:1.35;padding:7px 9px}
       .btnbar{flex-direction:column;align-items:stretch}
     }
+    /* ===== Fusion5 · 5-science flow (เพิ่มใหม่ · ไม่แตะของเดิม) ===== */
+    .theme-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--gold);font-size:16px;cursor:pointer;margin-right:6px}
+    .theme-btn:hover{border-color:var(--line-strong)}
+    .segmented{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel-2)}
+    .seg-btn{appearance:none;border:0;background:transparent;color:var(--muted);padding:9px 16px;font-family:var(--mono);font-size:12px;cursor:pointer}
+    .seg-btn.active{background:var(--gold);color:#121212;font-weight:700}
+    .sci-list{display:grid;gap:8px}
+    .sci-item{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:start;border:1px solid var(--line);border-radius:8px;padding:10px 11px;background:rgba(255,255,255,.02);cursor:pointer}
+    .sci-item.checked{border-color:var(--line-strong);background:rgba(210,176,94,.08)}
+    .sci-item.disabled{opacity:.5;cursor:not-allowed}
+    .sci-item input{margin-top:2px;accent-color:var(--gold)}
+    .sci-main{min-width:0}
+    .sci-name{font-size:14px;color:var(--text);line-height:1.35}
+    .sci-sub{margin-top:3px;font-family:var(--mono);font-size:10px;color:var(--faint);display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+    .ai-badge{display:inline-flex;align-items:center;min-height:18px;padding:1px 6px;border:1px solid var(--line);border-radius:6px;color:var(--blue);font-family:var(--mono);font-size:10px}
+    .sci-note{font-family:var(--mono);font-size:10px;color:var(--warn);white-space:nowrap;text-align:right;align-self:center}
+    .sci-cost{font-family:var(--mono);font-size:11px;color:var(--gold);white-space:nowrap;text-align:right;align-self:center}
+    .yam-line{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 4px;padding:11px 12px;border:1px solid var(--line-strong);border-radius:8px;background:rgba(210,176,94,.06)}
+    .yam-label{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase}
+    .yam-value{font-family:var(--serif);font-size:22px;color:var(--gold);font-weight:600}
+    .yam-break{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:6px;line-height:1.5}
+    .result-tabs{display:flex;gap:7px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:13px}
+    .result-tab{appearance:none;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.02);color:var(--muted);padding:7px 12px;font-family:var(--mono);font-size:11px;cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+    .result-tab:hover{border-color:var(--line-strong)}
+    .result-tab.active{border-color:var(--gold);background:rgba(210,176,94,.1);color:var(--gold)}
+    .result-tab.judge.active{border-color:var(--gold);background:rgba(210,176,94,.16)}
+    .result-tab .tab-ai{color:var(--blue);font-size:10px}
+    .result-tab.fail{color:var(--bad);border-color:rgba(227,111,95,.4)}
+    .result-content{border:1px solid var(--line);border-radius:8px;background:var(--panel-2);padding:15px;white-space:pre-wrap;line-height:1.7;font-size:14px;color:var(--text);overflow-wrap:anywhere;min-height:160px}
+    .result-content .rc-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:-2px 0 11px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+    .result-content .rc-title{font-family:var(--mono);font-size:12px;color:var(--gold)}
+    .result-empty{color:var(--muted);font-size:13px;line-height:1.6;padding:8px 2px}
+    .skip-note{margin-top:11px;border:1px solid rgba(216,168,76,.4);border-radius:8px;background:rgba(216,168,76,.07);color:var(--warn);font-size:12px;line-height:1.5;padding:9px 11px}
+    .skip-note.hidden{display:none}
+    /* ===== Light theme (Executive gold · ◐ topbar) ===== */
+    [data-theme="light"]{
+      --bg:#f6f1e6;--panel:#fffdf8;--panel-2:#f1e9d8;
+      --line:rgba(159,121,46,.26);--line-strong:rgba(159,121,46,.5);
+      --text:#2b2417;--muted:rgba(43,36,23,.72);--faint:rgba(43,36,23,.46);
+      --gold:#a9842f;--gold-2:#c7a455;--blue:#3f6f9e;--ok:#3f8f57;--bad:#c0533f;--warn:#b07e1f;
+    }
+    [data-theme="light"] .topbar{background:rgba(246,241,230,.92)}
+    [data-theme="light"] .seal{color:#fffdf8}
+    [data-theme="light"] .btn{color:#fffdf8}
+    [data-theme="light"] .seg-btn.active{color:#fffdf8}
+    [data-theme="light"] .bubble,[data-theme="light"] .sci-item,[data-theme="light"] .metric,
+    [data-theme="light"] .result-tab,[data-theme="light"] .history-item,[data-theme="light"] .compare-card,
+    [data-theme="light"] .progress-card,[data-theme="light"] .model-row{background:rgba(159,121,46,.05)}
+    [data-theme="light"] .progress-track{background:rgba(43,36,23,.1)}
   </style>
 </head>
 <body>
@@ -173,10 +222,11 @@
     <div class="topbar-inner">
       <a class="brand" href="/"><span class="seal">時</span><span>hourkey</span></a>
       <nav class="nav">
-        <a href="/master">ซินแส</a>
-        <a href="/chart">ดวงของฉัน</a>
+        <a href="/master" data-i18n="nav.master">ซินแส</a>
+        <a href="/chart" data-i18n="nav.chart">ดวงของฉัน</a>
         <a class="keep" href="/master-fusion">Fusion</a>
       </nav>
+      <button class="theme-btn" id="theme-toggle" type="button" title="สลับธีม / Theme">◐</button>
       <div id="hk-user-menu-mount"></div>
     </div>
   </header>
@@ -184,61 +234,64 @@
   <main>
     <section class="header">
       <div>
-        <h1>ซินแส Fusion</h1>
-        <p class="sub">Master Lab · 問師 · 3-Panel Fusion + Claude Judge</p>
+        <h1 data-i18n="hero.title">ดูดวง 5 ศาสตร์</h1>
+        <p class="sub" data-i18n="hero.sub">หลอมรวม 5 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยวหรือดูคู่</p>
       </div>
       <div class="badges">
         <span class="badge" id="tier-badge">TIER · -</span>
         <span class="badge" id="balance-badge">時 · -</span>
-        <span class="badge warn" id="gate-badge">3-PANEL LAB</span>
+        <span class="badge warn" id="gate-badge">5-SCIENCE LAB</span>
       </div>
     </section>
 
     <section class="layout">
       <aside class="panel">
         <div class="panel-head">
-          <div class="panel-title">Ask Packet</div>
-          <span class="pill">/api/sifu/fusion</span>
+          <div class="panel-title" data-i18n="ask.title">ตั้งคำถาม</div>
+          <span class="pill">/api/sifu/fusion5</span>
         </div>
         <div class="panel-body">
           <div class="field">
-            <label for="profile">Profile</label>
+            <label data-i18n="ask.mode">โหมด</label>
+            <div class="segmented" id="mode-seg">
+              <button class="seg-btn active" type="button" data-mode="single" data-i18n="ask.single">เดี่ยว</button>
+              <button class="seg-btn" type="button" data-mode="pair" data-i18n="ask.pair">ดูคู่</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="profile" data-i18n="ask.profile">เลือกดวง</label>
             <select id="profile"></select>
           </div>
-          <div class="field">
-            <label for="fusion-mode">Mode</label>
-            <select id="fusion-mode">
-              <option value="resilient">Resilient</option>
-            </select>
+          <div class="field" id="profile2-field" style="display:none">
+            <label for="profile2" data-i18n="ask.profile2">ดวงที่ 2</label>
+            <select id="profile2"></select>
           </div>
-          <div class="row">
-            <div class="field">
-              <label for="topic">Topic</label>
-              <select id="topic">
-                <option value="overview">overview</option>
-                <option value="career">career</option>
-                <option value="wealth">wealth</option>
-                <option value="love">love</option>
-                <option value="health">health</option>
-                <option value="study">study</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="lang">Lang</label>
+          <div class="field">
+            <label data-i18n="ask.sciences">ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)</label>
+            <div class="sci-list" id="sci-list"></div>
+          </div>
+          <div class="field" style="display:flex;justify-content:flex-end">
+            <div style="min-width:90px">
+              <label for="lang" data-i18n="ask.lang">ภาษา</label>
               <select id="lang">
-                <option value="th">TH</option>
+                <option value="th">ไทย TH</option>
                 <option value="en">EN</option>
-                <option value="zh">ZH</option>
+                <option value="zh">中文 ZH</option>
               </select>
             </div>
           </div>
           <div class="field">
-            <label for="question">Question</label>
-            <textarea id="question" maxlength="2000" placeholder="ถามดวงจาก profile ที่เลือก"></textarea>
+            <label for="question" data-i18n="ask.question">คำถาม</label>
+            <textarea id="question" maxlength="2000" placeholder="ถามดวงที่เลือก" data-i18n-ph="ask.questionPh"></textarea>
           </div>
-          <div class="btnbar">
-            <button class="btn" id="send" disabled>Run Fusion · 25 時</button>
-            <button class="btn secondary" id="clear" type="button">Clear</button>
+          <div class="yam-line">
+            <span class="yam-label" data-i18n="ask.yamTotal">รวมยาม</span>
+            <span class="yam-value" id="yam-value">0 時</span>
+          </div>
+          <div class="yam-break" id="yam-break"></div>
+          <div class="btnbar" style="margin-top:14px">
+            <button class="btn" id="send" disabled>Run · 0 時</button>
+            <button class="btn secondary" id="clear" type="button" data-i18n="ask.clear">ล้าง</button>
           </div>
           <div class="status" id="status"></div>
           <div class="progress-card hidden" id="fusion-progress"></div>
@@ -247,10 +300,11 @@
 
       <section class="panel">
         <div class="panel-head">
-          <div class="panel-title">Fusion Answer</div>
+          <div class="panel-title" data-i18n="result.title">คำพยากรณ์</div>
           <span class="pill" id="run-state">idle</span>
         </div>
         <div class="panel-body">
+          <div id="fusion5-result"></div>
           <div class="chat" id="chat"></div>
           <div id="fusion-meta"></div>
         </div>
@@ -334,15 +388,51 @@
   <script>
   (function(){
     var $ = function(id){ return document.getElementById(id); };
-    var state = { account:null, fusionAccess:null, spendHours:25, profiles:[], history:[], historyProfileId:'', busy:false, ready:false, progressTimer:null, activeRunId:'', answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', compareIds:[] };
+    var state = { account:null, fusionAccess:null, spendHours:0, profiles:[], history:[], historyProfileId:'', busy:false, ready:false, progressTimer:null, activeRunId:'', answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', compareIds:[],
+      mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false }, locale:'th', theme:'dark', result:null, activeTab:'judge' };
     var els = {
-      profile:$('profile'), fusionMode:$('fusion-mode'), topic:$('topic'), lang:$('lang'), question:$('question'), send:$('send'),
+      profile:$('profile'), profile2:$('profile2'), profile2Field:$('profile2-field'), modeSeg:$('mode-seg'), sciList:$('sci-list'),
+      yamValue:$('yam-value'), yamBreak:$('yam-break'), result:$('fusion5-result'), themeToggle:$('theme-toggle'),
+      lang:$('lang'), question:$('question'), send:$('send'),
       clear:$('clear'), status:$('status'), progress:$('fusion-progress'), chat:$('chat'), meta:$('fusion-meta'), runState:$('run-state'),
       tier:$('tier-badge'), balance:$('balance-badge'), gate:$('gate-badge'),
       answerModal:$('answer-modal'), answerTitle:$('answer-title'), answerSub:$('answer-sub'), answerBody:$('answer-body'), answerClose:$('answer-close'),
       historyList:$('history-list'), historyDetail:$('history-detail'), historyRefresh:$('history-refresh'), historySearch:$('history-search'),
       historyQ:$('history-q'), historyTopic:$('history-topic'), historyMode:$('history-mode'), historyStatus:$('history-status'), historyFrom:$('history-from'), historyTo:$('history-to')
     };
+    // ===== registry 5 ศาสตร์ (mirror src/lib/fusion5/disciplines.ts · กันมั่ว: เปลี่ยนพร้อมกัน) =====
+    var DISCIPLINES = {
+      bazi:    { id:'bazi',    th:'ปาจื้อ 八字',          en:'BaZi 八字',          zh:'八字',     ai:'Claude', costYam:10, needsBirthTime:false, available:true },
+      qizheng: { id:'qizheng', th:'ดาวจริง 七政四餘',      en:'Real-Star 七政四餘', zh:'七政四餘', ai:'Grok',   costYam:15, needsBirthTime:true,  available:true },
+      ziwei:   { id:'ziwei',   th:'จื่อเวยโต่วซู 紫微斗數', en:'Zi Wei 紫微斗數',    zh:'紫微斗數', ai:'Gemini', costYam:12, needsBirthTime:true,  available:true },
+      western: { id:'western', th:'โหราตะวันตก',          en:'Western Astrology',  zh:'西洋占星', ai:'Claude', costYam:10, needsBirthTime:true,  available:false },
+      vedic:   { id:'vedic',   th:'โหราพระเวท (ฮินดู)',   en:'Vedic Astrology',    zh:'吠陀占星', ai:'Codex',  costYam:10, needsBirthTime:true,  available:false }
+    };
+    var SCI_ORDER = ['bazi','qizheng','ziwei','western','vedic'];
+    var JUDGE_YAM = 5;
+    function sciLabel(s){ var b = DISCIPLINES[s]; return b ? (b[state.locale] || b.th) : s; }
+    // ===== i18n =====
+    var I18N = {
+      th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','hero.title':'ดูดวง 5 ศาสตร์','hero.sub':'หลอมรวม 5 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยวหรือดูคู่',
+        'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','result.title':'คำพยากรณ์',
+        'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม' },
+      en:{ 'nav.master':'Master','nav.chart':'My Chart','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single or pair.',
+        'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','result.title':'Reading',
+        'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict' },
+      zh:{ 'nav.master':'命師','nav.chart':'我的命盤','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看或合盤。',
+        'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤','ask.profile':'命盤','ask.profile2':'第二命盤','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','result.title':'論斷',
+        'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷' }
+    };
+    function t(key){ var d = I18N[state.locale] || I18N.th; return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
+    function applyI18n(){
+      document.querySelectorAll('[data-i18n]').forEach(function(el){ el.textContent = t(el.getAttribute('data-i18n')); });
+      document.querySelectorAll('[data-i18n-ph]').forEach(function(el){ el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph'))); });
+      document.documentElement.lang = state.locale;
+    }
+    function applyTheme(){
+      document.documentElement.setAttribute('data-theme', state.theme);
+      if (els.themeToggle) els.themeToggle.textContent = state.theme === 'light' ? '☀' : '◐';
+    }
     function esc(s){
       return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
         return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
@@ -356,45 +446,95 @@
       els.runState.textContent = text;
       els.runState.className = 'pill' + (kind ? ' ' + kind : '');
     }
-    function fusionSpendHours(){
-      var spend = Number(state.spendHours);
-      return Number.isFinite(spend) ? spend : 25;
+    function profileById(id){ return state.profiles.find(function(p){ return String(p.id) === String(id); }) || null; }
+    function profileHasTime(p){ return !p || p.birth_time_known !== false; }
+    function selectedProfileIds(){
+      var ids = [];
+      var p1 = els.profile && els.profile.value ? els.profile.value : '';
+      if (p1) ids.push(p1);
+      if (state.mode === 'pair') { var p2 = els.profile2 && els.profile2.value ? els.profile2.value : ''; if (p2) ids.push(p2); }
+      return ids;
+    }
+    function profileCount(){ return selectedProfileIds().length || 1; }
+    function allSelectedHaveTime(){ return selectedProfileIds().every(function(id){ return profileHasTime(profileById(id)); }); }
+    function isSciSelectable(s){
+      var b = DISCIPLINES[s]; if (!b || !b.available) return false;
+      if (b.needsBirthTime && !allSelectedHaveTime()) return false;
+      return true;
+    }
+    function activeSciences(){ return SCI_ORDER.filter(function(s){ return state.sci[s] && isSciSelectable(s); }); }
+    function currentYam(){
+      var n = profileCount();
+      var list = activeSciences();
+      var panels = list.reduce(function(sum,s){ return sum + DISCIPLINES[s].costYam * n; }, 0);
+      return panels + (list.length >= 2 ? JUDGE_YAM : 0);
     }
     function canUseFusion(){
       var access = state.fusionAccess;
-      var spend = fusionSpendHours();
       if (!access || access.allowed !== true) return false;
+      if (!activeSciences().length) return false;
+      var spend = currentYam();
       return spend <= 0 || Number(access.hour_balance || 0) >= spend;
     }
     function fusionGateMessage(){
       var access = state.fusionAccess;
-      var spend = fusionSpendHours();
-      if (!access) return 'กำลังตรวจสิทธิ์ Fusion';
-      if (access.allowed !== true) return 'ต้องใช้สิทธิ์ Master หรือ admin/owner เพื่อใช้ Fusion';
-      if (spend > 0 && Number(access.hour_balance || 0) < spend) return 'ยามไม่พอสำหรับ Fusion · ต้องมี ' + spend + ' 時';
-      return 'พร้อมถามดวง Fusion · ' + spend + ' 時 ต่อครั้ง';
+      var spend = currentYam();
+      if (!access) return 'กำลังตรวจสิทธิ์';
+      if (access.allowed !== true) return 'ต้องใช้สิทธิ์ Master หรือ admin/owner';
+      if (!activeSciences().length) return t('noSci');
+      if (spend > 0 && Number(access.hour_balance || 0) < spend) return 'ยามไม่พอ · ต้องมี ' + spend + ' 時';
+      return 'พร้อมรัน · ' + spend + ' 時';
     }
     function updateSendAvailability(){
       els.send.disabled = state.busy || !state.ready || !canUseFusion();
     }
     function applyFusionGate(){
       var access = state.fusionAccess;
-      var spend = fusionSpendHours();
-      els.send.textContent = 'Run Fusion · ' + spend + ' 時';
-      if (!access) {
-        els.gate.textContent = 'CHECKING';
-        els.gate.className = 'badge warn';
-      } else if (canUseFusion()) {
-        els.gate.textContent = '3-PANEL READY';
-        els.gate.className = 'badge ok';
-      } else if (access.allowed === true) {
-        els.gate.textContent = 'NEED ' + spend + ' 時';
-        els.gate.className = 'badge warn';
-      } else {
-        els.gate.textContent = 'MASTER REQUIRED';
-        els.gate.className = 'badge warn';
-      }
+      var spend = currentYam();
+      els.send.textContent = t('run') + ' · ' + spend + ' 時';
+      if (!access) { els.gate.textContent = 'CHECKING'; els.gate.className = 'badge warn'; }
+      else if (canUseFusion()) { els.gate.textContent = '5-SCIENCE READY'; els.gate.className = 'badge ok'; }
+      else if (access.allowed === true) { els.gate.textContent = activeSciences().length ? ('NEED ' + spend + ' 時') : 'PICK SCIENCE'; els.gate.className = 'badge warn'; }
+      else { els.gate.textContent = 'MASTER REQUIRED'; els.gate.className = 'badge warn'; }
       updateSendAvailability();
+    }
+    function updateYam(){
+      var spend = currentYam();
+      if (els.yamValue) els.yamValue.textContent = spend + ' 時';
+      if (els.yamBreak) {
+        var n = profileCount();
+        var list = activeSciences();
+        var parts = list.map(function(s){ return sciLabel(s).split(' ')[0] + ' ' + (DISCIPLINES[s].costYam * n) + '時'; });
+        if (list.length >= 2) parts.push('Judge ' + JUDGE_YAM + '時');
+        if (n > 1) parts.unshift(n + (state.locale === 'th' ? ' ดวง' : ' charts'));
+        els.yamBreak.textContent = parts.join(' + ');
+      }
+      applyFusionGate();
+    }
+    function renderSciList(){
+      if (!els.sciList) return;
+      var noTime = !allSelectedHaveTime();
+      els.sciList.innerHTML = SCI_ORDER.map(function(s){
+        var b = DISCIPLINES[s];
+        var blockedTime = b.needsBirthTime && noTime;
+        var disabled = !b.available || blockedTime;
+        var checked = !!state.sci[s] && !disabled;
+        var note = !b.available ? t('soon') : (blockedTime ? t('needTime') : '');
+        return '<label class="sci-item' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '" data-sci="' + s + '">' +
+          '<input type="checkbox" data-sci-cb="' + s + '"' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '>' +
+          '<div class="sci-main"><div class="sci-name">' + esc(sciLabel(s)) + '</div>' +
+            '<div class="sci-sub"><span class="ai-badge">AI · ' + esc(b.ai) + '</span>' + (b.needsBirthTime ? '<span title="ต้องมีเวลาเกิด">⏰</span>' : '') + '</div></div>' +
+          (note ? '<div class="sci-note">' + esc(note) + '</div>' : '<div class="sci-cost">' + b.costYam + ' 時</div>') +
+        '</label>';
+      }).join('');
+    }
+    function setMode(mode){
+      state.mode = mode === 'pair' ? 'pair' : 'single';
+      if (els.modeSeg) Array.prototype.forEach.call(els.modeSeg.querySelectorAll('.seg-btn'), function(b){
+        b.classList.toggle('active', b.getAttribute('data-mode') === state.mode);
+      });
+      if (els.profile2Field) els.profile2Field.style.display = state.mode === 'pair' ? '' : 'none';
+      renderSciList(); updateYam();
     }
     function modelShortName(model){
       model = String(model || '-');
@@ -667,6 +807,61 @@
       });
       pollProgress(runId);
       state.progressTimer = setInterval(function(){ pollProgress(runId); }, 2000);
+    }
+    // ===== fusion5 result (tabs แยกศาสตร์ + judge) =====
+    function renderFusion5(data){
+      state.result = data;
+      if (!els.result) return;
+      var f = (data && data.fusion5) || {};
+      var panels = Array.isArray(f.panels) ? f.panels : [];
+      var hasJudge = !!(f.judge && f.judge.ok && data.reply);
+      var tabs = [];
+      if (hasJudge) tabs.push({ key:'judge', label:t('tab.judge'), ai:'Claude', ok:true, judge:true });
+      panels.forEach(function(p){ tabs.push({ key:p.science, label:sciLabel(p.science), ai:(DISCIPLINES[p.science]||{}).ai||p.model||'', ok:p.ok, judge:false }); });
+      if (!tabs.length) { els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>'; return; }
+      var keys = tabs.map(function(x){ return x.key; });
+      if (keys.indexOf(state.activeTab) === -1) state.activeTab = hasJudge ? 'judge' : keys[0];
+      var bar = tabs.map(function(x){
+        return '<button class="result-tab' + (x.judge ? ' judge' : '') + (x.key === state.activeTab ? ' active' : '') + (x.ok ? '' : ' fail') + '" type="button" data-tab="' + esc(x.key) + '">' +
+          esc(x.label) + (x.ai ? ' <span class="tab-ai">· ' + esc(x.ai) + '</span>' : '') + (x.ok ? '' : ' ✕') + '</button>';
+      }).join('');
+      var skip = Array.isArray(f.skipped) ? f.skipped : [];
+      var skipHtml = skip.length ? '<div class="skip-note">' + esc(t('skipPrefix') + ' ' + skip.map(sciLabel).join(', ')) + '</div>' : '';
+      els.result.innerHTML = '<div class="result-tabs">' + bar + '</div><div class="result-content" id="rc-body"></div>' + skipHtml;
+      renderTabBody(data);
+    }
+    function renderTabBody(data){
+      var body = document.getElementById('rc-body');
+      if (!body) return;
+      var f = (data && data.fusion5) || {};
+      var tab = state.activeTab;
+      if (tab === 'judge') {
+        var jReply = (f.judge && f.judge.ok) ? (data.reply || '') : '';
+        body.innerHTML = '<div class="rc-head"><span class="rc-title">' + esc(t('judgeTitle')) + '</span><span class="ai-badge">AI · Claude</span></div>' +
+          (jReply ? esc(jReply) : '<div class="result-empty">' + esc(t('noJudge')) + '</div>');
+        return;
+      }
+      var panels = Array.isArray(f.panels) ? f.panels : [];
+      var p = panels.find(function(x){ return x.science === tab; });
+      if (!p) { body.innerHTML = '<div class="result-empty">-</div>'; return; }
+      body.innerHTML = '<div class="rc-head"><span class="rc-title">' + esc(sciLabel(p.science)) + '</span><span class="ai-badge">AI · ' + esc((DISCIPLINES[p.science]||{}).ai || p.model || '') + '</span></div>' +
+        (p.ok && p.reply ? esc(p.reply) : '<div class="result-empty">' + esc((state.locale==='th'?'ศาสตร์นี้อ่านไม่สำเร็จ: ':'panel failed: ') + (p.error || 'error')) + '</div>');
+    }
+    function startSyntheticProgress(sciences){
+      stopProgressPolling();
+      var panel = {};
+      sciences.forEach(function(s){ panel[s] = { model: sciLabel(s) + ' · ' + DISCIPLINES[s].ai, role:'panel', state:'running' }; });
+      renderProgress({ phase:'panel', percent:10, message:t('running'), startedAt:Date.now(), phaseStartedAt:Date.now(), panel:panel, judge:{} });
+    }
+    function finishProgress(j){
+      var f = (j && j.fusion5) || {};
+      var panel = {};
+      (Array.isArray(f.panels) ? f.panels : []).forEach(function(p){
+        panel[p.science] = { model: sciLabel(p.science) + ' · ' + ((DISCIPLINES[p.science]||{}).ai||''), role:'panel', state: p.ok ? 'ok' : 'fail', ok:p.ok, error:p.error };
+      });
+      var judge = {};
+      if (f.judge) judge.judge = { model:'Claude judge', role:'judge', state: f.judge.ok ? 'ok' : 'fail', ok:f.judge.ok };
+      renderProgress({ phase:'done', percent:100, message:'เสร็จสิ้น', startedAt:Date.now(), phaseStartedAt:Date.now(), panel:panel, judge:judge });
     }
     function selectedProfileId(){
       return els.profile && els.profile.value ? els.profile.value : '';
@@ -946,106 +1141,91 @@
         return false;
       }
     }
+    function profileOptionLabel(p){
+      var base = (p.nickname || p.name || 'profile');
+      return base + ' · 日主 ' + (p.day_master || '-') + (p.birth_time_known === false ? ' · ⏰?' : '');
+    }
+    function fillProfileSelect(sel, selectedId, skipId){
+      if (!sel) return;
+      sel.innerHTML = '';
+      state.profiles.forEach(function(p){
+        if (skipId && String(p.id) === String(skipId)) return;
+        var opt = document.createElement('option');
+        opt.value = p.id; opt.textContent = profileOptionLabel(p);
+        sel.appendChild(opt);
+      });
+      if (selectedId && sel.querySelector('option[value="' + selectedId + '"]')) sel.value = String(selectedId);
+    }
     async function loadProfiles(){
       var r = await fetch('/api/profile', { credentials:'same-origin', cache:'no-store' });
       var j = await r.json().catch(function(){ return {}; });
       if (!r.ok) throw new Error(j.error || ('profile ' + r.status));
       state.profiles = Array.isArray(j.profiles) ? j.profiles : [];
-      els.profile.innerHTML = '';
       if (!state.profiles.length) {
-        var opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'ไม่มี profile';
-        els.profile.appendChild(opt);
+        els.profile.innerHTML = '<option value="">ไม่มี profile</option>';
+        if (els.profile2) els.profile2.innerHTML = '<option value="">-</option>';
+        renderSciList(); updateYam();
         return;
       }
       var saved = '';
       try { saved = localStorage.getItem('hk_profile_id') || ''; } catch(_){}
       var active = (j.active_profile && j.active_profile.id) || saved || state.profiles[0].id;
-      state.profiles.forEach(function(p){
-        var opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = (p.nickname || p.name || 'profile') + ' · 日主 ' + (p.day_master || '-');
-        els.profile.appendChild(opt);
-      });
-      if (active) els.profile.value = String(active);
+      fillProfileSelect(els.profile, active);
+      var second = state.profiles.find(function(p){ return String(p.id) !== String(els.profile.value); });
+      fillProfileSelect(els.profile2, second ? second.id : '', els.profile.value);
       resetConversationForProfile(els.profile.value);
+      renderSciList(); updateYam();
     }
     async function send(){
       if (state.busy) return;
       if (!state.ready) { setStatus('กำลังโหลดบัญชีและ profile', 'err'); return; }
       var message = els.question.value.trim();
-      var profileId = selectedProfileId();
-      if (!profileId) { setStatus('กรุณาเลือก profile', 'err'); return; }
-      if (!message) { setStatus('กรุณาใส่คำถาม', 'err'); return; }
+      var profileIds = selectedProfileIds();
+      var sciences = activeSciences();
+      if (!profileIds.length) { setStatus(t('ask.profile'), 'err'); return; }
+      if (state.mode === 'pair' && profileIds.length < 2) { setStatus(state.locale==='th'?'กรุณาเลือกดวงที่ 2':'select 2nd chart', 'err'); return; }
+      if (!sciences.length) { setStatus(t('noSci'), 'err'); return; }
+      if (!message) { setStatus(t('ask.question'), 'err'); return; }
       if (!canUseFusion()) { applyFusionGate(); setStatus(fusionGateMessage(), 'err'); return; }
-      if (state.historyProfileId !== profileId) resetConversationForProfile(profileId);
       state.busy = true;
       els.send.disabled = true;
       setRunState('running');
-      setStatus('กำลังเรียก Codex, Grok, Gemini API เป็น panel · Claude เป็น judge · ค่ารัน 25 時');
-      var runId = newRunId();
-      startProgressPolling(runId);
-      addMsg('user', message);
-      renderMeta(null);
+      setStatus(t('running'));
+      state.activeTab = sciences.length >= 2 ? 'judge' : sciences[0];
+      startSyntheticProgress(sciences);
+      if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('running')) + '</div>';
       try {
-        var body = {
-          message: message,
-          profileId: profileId,
-          topic: els.topic.value,
-          lang: els.lang.value,
-          history: state.history.slice(-6),
-          threadId: 'master-fusion',
-          threadProfileId: profileId,
-          runId: runId,
-          fusionMode: 'resilient',
-          noCache: true
-        };
-        var r = await fetch('/api/sifu/fusion', {
+        var r = await fetch('/api/sifu/fusion5', {
           method:'POST',
           headers:{ 'Content-Type':'application/json' },
           credentials:'same-origin',
           cache:'no-store',
-          body: JSON.stringify(body)
+          body: JSON.stringify({ profileIds:profileIds, sciences:sciences, question:message, lang:state.locale })
         });
         var j = await r.json().catch(function(){ return {}; });
-        if (!r.ok) throw Object.assign(new Error(j.error || ('fusion ' + r.status)), { data:j, status:r.status });
-        var fusion = j.fusion || {};
-        var aiLine = (fusion.ai_answered_count != null && fusion.ai_requested_count != null)
-          ? ('Fusion รอบนี้: AI ตอบจริง ' + fusion.ai_answered_count + '/' + fusion.ai_requested_count + ' ตัว' + (fusion.judge_backup_used ? ' · ใช้ judge สำรอง' : '') + (fusion.used_panel_fallback ? ' · ใช้ panel fallback' : '') + '\n\n')
-          : '';
-        addMsg('sifu', aiLine + (j.reply || ''), fusion);
-        state.history.push({ role:'user', content:message }, { role:'assistant', content:j.reply || '' });
-        state.history = state.history.slice(-12);
-        renderMeta(fusion);
-        renderProgressFromFusion(fusion);
-        setRunState(fusion && fusion.degraded ? 'degraded' : 'done', fusion && fusion.degraded ? 'err' : 'ok');
-        setStatus('Fusion complete · AI answered ' + (fusion.ai_answered_count != null ? fusion.ai_answered_count : '-') + '/' + (fusion.ai_requested_count != null ? fusion.ai_requested_count : '-'), 'ok');
-        if (fusion && fusion.balance_after != null) {
-          els.balance.textContent = '時 · ' + fusion.balance_after;
-          if (state.fusionAccess) state.fusionAccess.hour_balance = Number(fusion.balance_after);
-        }
-        els.question.value = '';
-        try { localStorage.setItem('hk_profile_id', profileId); } catch(_){}
-        await loadFusionHistory();
+        if (!r.ok) throw Object.assign(new Error(j.error || ('fusion5 ' + r.status)), { data:j, status:r.status });
+        finishProgress(j);
+        renderFusion5(j);
+        var f = j.fusion5 || {};
+        var okCount = Array.isArray(f.panels) ? f.panels.filter(function(p){ return p.ok; }).length : 0;
+        var total = Array.isArray(f.panels) ? f.panels.length : 0;
+        setRunState(okCount === total ? 'done' : 'degraded', okCount === total ? 'ok' : 'err');
+        var net = f.yam ? ((f.yam.charged || 0) - (f.yam.refunded || 0)) : null;
+        setStatus((state.locale==='th'?'สำเร็จ · ':'done · ') + okCount + '/' + total + (state.locale==='th'?' ศาสตร์':' sciences') + (net != null ? (' · ' + net + ' 時') : ''), 'ok');
+        try { localStorage.setItem('hk_profile_id', profileIds[0]); } catch(_){}
       } catch(e) {
         var d = e.data || {};
-        var msg = d.reason || d.error || e.message || 'fusion failed';
-        addMsg('sifu', 'ไม่สามารถรัน Fusion ได้: ' + msg, d.fusion);
-        renderMeta(d.fusion);
-        if (d.fusion) renderProgressFromFusion(d.fusion);
-        if (d.access) state.fusionAccess = d.access;
-        if (d.balance != null && state.fusionAccess) state.fusionAccess.hour_balance = Number(d.balance);
-        if (d.fusion && d.fusion.balance_after != null) {
-          els.balance.textContent = '時 · ' + d.fusion.balance_after;
-          if (state.fusionAccess) state.fusionAccess.hour_balance = Number(d.fusion.balance_after);
-        }
+        var raw = d.error || e.message || 'fusion5 failed';
+        var mapErr = { profile_required:'กรุณาเลือกดวง', no_science_selected:t('noSci'), no_question:t('ask.question'), profile_not_found:(state.locale==='th'?'ไม่พบดวง':'profile not found'), all_sciences_need_birthtime:(state.locale==='th'?'ศาสตร์ที่เลือกต้องมีเวลาเกิด':'selected sciences need birth time'), insufficient_hours:(state.locale==='th'?'ยามไม่พอ':'insufficient hours'), not_logged_in:(state.locale==='th'?'กรุณาเข้าสู่ระบบ':'please log in') };
+        var human = mapErr[raw] || raw;
+        if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc((state.locale==='th'?'รันไม่สำเร็จ: ':'failed: ') + human) + '</div>';
+        renderProgress(null);
         setRunState('failed', 'err');
-        setStatus(msg, 'err');
-        if (d.fusion && d.fusion.history_id) await loadFusionHistory();
+        setStatus(human, 'err');
       } finally {
         stopProgressPolling();
         state.busy = false;
+        await loadFusionAccess().catch(function(){});
         applyFusionGate();
       }
     }
@@ -1104,6 +1284,9 @@
       resetConversationForProfile(selectedProfileId());
       stopProgressPolling();
       renderProgress(null);
+      els.question.value = '';
+      state.result = null;
+      if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
       setStatus('');
       setRunState('idle');
     });
@@ -1112,8 +1295,36 @@
       state.activeHistoryId = '';
       state.compareIds = [];
       try { localStorage.setItem('hk_profile_id', selectedProfileId()); } catch(_){}
-      setStatus('เปลี่ยน profile แล้ว เริ่มบทสนทนาใหม่');
+      var cur2 = els.profile2 && els.profile2.value;
+      fillProfileSelect(els.profile2, (cur2 && cur2 !== selectedProfileId()) ? cur2 : '', selectedProfileId());
+      renderSciList(); updateYam();
+      setStatus(state.locale==='th'?'เปลี่ยนดวงแล้ว':'chart changed');
       loadFusionHistory();
+    });
+    if (els.profile2) els.profile2.addEventListener('change', function(){ renderSciList(); updateYam(); });
+    if (els.modeSeg) els.modeSeg.addEventListener('click', function(e){
+      var b = e.target && e.target.closest ? e.target.closest('.seg-btn') : null;
+      if (b) setMode(b.getAttribute('data-mode'));
+    });
+    if (els.sciList) els.sciList.addEventListener('change', function(e){
+      var cb = e.target && e.target.getAttribute ? e.target.getAttribute('data-sci-cb') : null;
+      if (!cb) return;
+      state.sci[cb] = !!e.target.checked;
+      var item = e.target.closest('.sci-item');
+      if (item) item.classList.toggle('checked', e.target.checked);
+      updateYam();
+    });
+    if (els.result) els.result.addEventListener('click', function(e){
+      var tabBtn = e.target && e.target.closest ? e.target.closest('[data-tab]') : null;
+      if (tabBtn && state.result) {
+        state.activeTab = tabBtn.getAttribute('data-tab');
+        renderFusion5(state.result);
+      }
+    });
+    if (els.themeToggle) els.themeToggle.addEventListener('click', function(){
+      state.theme = state.theme === 'light' ? 'dark' : 'light';
+      try { localStorage.setItem('hk_theme', state.theme); } catch(_){}
+      applyTheme();
     });
     els.question.addEventListener('keydown', function(e){
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') send();
@@ -1126,7 +1337,24 @@
     els.historyQ.addEventListener('keydown', function(e){
       if (e.key === 'Enter') { state.activeHistoryId=''; loadFusionHistory(); }
     });
-    els.lang.value = (function(){ try { return localStorage.getItem('hk_locale') || 'th'; } catch(_) { return 'th'; } })();
+    // ===== locale + theme init =====
+    state.locale = (function(){ try { var l = localStorage.getItem('hk_locale') || 'th'; return ['th','en','zh'].indexOf(l) !== -1 ? l : 'th'; } catch(_) { return 'th'; } })();
+    state.theme = (function(){ try { return localStorage.getItem('hk_theme') === 'light' ? 'light' : 'dark'; } catch(_) { return 'dark'; } })();
+    els.lang.value = state.locale;
+    applyTheme();
+    applyI18n();
+    renderSciList();
+    updateYam();
+    if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
+    els.lang.addEventListener('change', function(){
+      state.locale = ['th','en','zh'].indexOf(els.lang.value) !== -1 ? els.lang.value : 'th';
+      try { localStorage.setItem('hk_locale', state.locale); } catch(_){}
+      applyI18n();
+      renderSciList();
+      updateYam();
+      if (state.result) renderFusion5(state.result);
+      else if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
+    });
     (async function init(){
       var accountOk = await loadAccount();
       if (!accountOk) return;
