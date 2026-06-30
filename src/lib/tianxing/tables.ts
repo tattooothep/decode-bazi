@@ -42,12 +42,28 @@ const DOMICILE: Record<string, number[]> = {
 const EXALT: Record<string, number> = { Sun: 0, Moon: 1, Mercury: 5, Venus: 11, Mars: 9, Jupiter: 3, Saturn: 6 };
 const opp = (s: number) => (s + 6) % 12;
 
+/**
+ * 落/不得地 ตามตำรา果老星宗總論 (extract_miaowang prep · 30 มิ.ย.)
+ * — ตำราระบุ "不得地/落" เฉพาะบางดาว และ "ไม่ใช่ตรงข้าม 180° เสมอ"
+ * V1 เดิมใช้ opp(domicile) ล้วน → 金·木 วางผิด · override ด้วยค่าจาก總論:
+ *   金 不得地 = 寅(人馬/Sagittarius idx8)  · 木 不得地 = 子(寶瓶/Aquarius idx10)
+ *   (火 落=酉/Taurus idx1 = opp(Scorpio) บังเอิญตรง · ดาวอื่นคง opp ตามเดิม)
+ * ที่มา: 果老星宗 ⟨ดาว⟩總論 (ctext 張果星宗 ws904682) · cross-check DOMICILE 7/7, EXALT 6/7
+ */
+const LUO_OVERRIDE: Record<string, number[]> = {
+  Venus: [8],    // 金不得地=人馬(Sagittarius)
+  Jupiter: [10], // 木不得地=寶瓶(Aquarius)
+};
+
 /** สถานะกำลังดาว ณ ราศี → 廟/旺/落/陷/平 */
 export function miaoWang(star: string, sign: number): { code: string; th: string; rank: number } {
   const dom = DOMICILE[star]; const ex = EXALT[star];
   if (dom?.includes(sign)) return { code: "廟", th: "บ้านเดิม (แรงสุด)", rank: 5 };
   if (ex === sign) return { code: "旺", th: "อุจ (รุ่งเรือง)", rank: 4 };
-  if (dom?.map(opp).includes(sign)) return { code: "落", th: "ตกภพ (อ่อนแรง)", rank: 2 };
+  // 落: ใช้ค่าตำรา總論 ก่อน (金·木) แล้วค่อย fallback opp(domicile)
+  const luo = LUO_OVERRIDE[star];
+  if (luo?.includes(sign)) return { code: "落", th: "ตกภพ/ไม่ได้ที่ (อ่อนแรง)", rank: 2 };
+  if (!luo && dom?.map(opp).includes(sign)) return { code: "落", th: "ตกภพ (อ่อนแรง)", rank: 2 };
   if (ex !== undefined && opp(ex) === sign) return { code: "陷", th: "นิจ (อับแสงสุด)", rank: 1 };
   return { code: "平", th: "ปานกลาง", rank: 3 };
 }

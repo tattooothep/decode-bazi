@@ -1,0 +1,16 @@
+import { miaoWang } from "../src/lib/tianxing/tables.ts";
+let pass=0, fail=0;
+const t=(name,got,exp)=>{ if(got===exp){pass++;} else {fail++; console.log(`  ✗ ${name}: ได้ ${got} ควร ${exp}`);} };
+t("Sun@Leo=廟", miaoWang("Sun",4).code, "廟");
+t("Sun@Aqu(opp)=落", miaoWang("Sun",10).code, "落");
+t("Moon@Cancer=廟", miaoWang("Moon",3).code, "廟");
+t("Mars@Cap=旺", miaoWang("Mars",9).code, "旺");
+t("Saturn@Libra=旺", miaoWang("Saturn",6).code, "旺");
+t("Venus@Sag=落(FIX金)", miaoWang("Venus",8).code, "落");
+t("Jupiter@Aqu=落(FIX木)", miaoWang("Jupiter",10).code, "落");
+t("Venus@Libra=廟", miaoWang("Venus",6).code, "廟");
+t("Venus@Pisces=旺", miaoWang("Venus",11).code, "旺");
+t("Jupiter@Sag=廟", miaoWang("Jupiter",8).code, "廟");
+t("Jupiter@Cancer=旺", miaoWang("Jupiter",3).code, "旺");
+console.log(`\n${fail===0?"✅ PASS":"❌ FAIL"} ${pass}/${pass+fail}`);
+process.exit(fail?1:0);
