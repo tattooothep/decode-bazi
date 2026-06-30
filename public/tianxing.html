@@ -76,6 +76,7 @@
     <div class="sec">B · <span data-t="s_chart">ผังดาวจริงขณะฤกษ์</span> <span class="en">deterministic</span></div>
     <div id="ascLine" class="muted" style="margin-bottom:8px"></div>
     <table id="starTbl"><thead><tr><th data-t="h_star">ดาว</th><th data-t="h_sign">ราศี</th><th>°</th><th>宿</th><th data-t="h_status">กำลัง</th></tr></thead><tbody></tbody></table>
+    <div class="muted" style="font-size:11px;margin-top:7px">ธาตุดาว: <b style="color:#5cab4a">● ไม้</b> <b style="color:#df5b4f">● ไฟ</b> <b style="color:#c79a3e">● ดิน</b> <b style="color:#9aa7b6">● ทอง</b> <b style="color:#4a93d1">● น้ำ</b> · 宿 = กลุ่มดาวฤกษ์ · กำลัง: <span class="miao">เขียว=แรง</span> <span class="xian">แดง=อ่อน</span></div>
     <div class="muted" style="margin-top:7px" id="ayanNote"></div>
   </div>
 
@@ -117,6 +118,20 @@ function readHandoff(){
   return h;
 }
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+/* สีธาตุ 五行 (user ฝึกหัดดูออกง่าย) + ชื่อไทย */
+const ELEM={
+  Jupiter:{c:'#5cab4a',th:'ไม้',zh:'木'}, Ziqi:{c:'#5cab4a',th:'ไม้',zh:'木'},
+  Mars:{c:'#df5b4f',th:'ไฟ',zh:'火'}, Rahu:{c:'#df5b4f',th:'ไฟ',zh:'火'},
+  Saturn:{c:'#c79a3e',th:'ดิน',zh:'土'}, Ketu:{c:'#c79a3e',th:'ดิน',zh:'土'},
+  Venus:{c:'#9aa7b6',th:'ทอง',zh:'金'},
+  Mercury:{c:'#4a93d1',th:'น้ำ',zh:'水'}, Yuebo:{c:'#4a93d1',th:'น้ำ',zh:'水'},
+  Sun:{c:'#e0852f',th:'หยาง(ไฟ)',zh:'陽'}, Moon:{c:'#a7b6c9',th:'หยิน(น้ำ)',zh:'陰'}
+};
+const elOf=k=>ELEM[k]||{c:'var(--fg)',th:'',zh:''};
+/* ชื่อดาวไทยนำ + สีธาตุ (สำหรับลิสต์ 恩用仇難) */
+const starC=(x,L)=>`<b style="color:${elOf(x.key).c}">${L==='th'?x.th:x.zh}</b>`;
+/* กำลังดาวเป็นไทยสั้น (ฝึกหัดอ่าน) */
+const STATUS_TH={'廟':'แรงสุด','旺':'รุ่งเรือง','升殿':'ได้ที่','樂':'สบาย','平':'ปกติ','落':'อ่อนแรง','陷':'อับแสง'};
 function fmtDate(iso){try{const d=new Date(iso);if(isNaN(d.getTime()))return '';return d.toLocaleString(LANG==='th'?'th-TH':LANG==='zh'?'zh-CN':'en-US',{dateStyle:'medium',timeStyle:'short'});}catch(e){return '';}}
 
 /* prefill ช่องกรอกเองด้วยเวลาไทยจาก instant (UTC iso) */
@@ -169,15 +184,15 @@ function render(r){
   document.getElementById('ascLine').innerHTML=`命宮 (${L==='en'?'Ascendant':L==='zh'?'命宮':'ลัคนา'}): <b>${L==='zh'?a.signZh:a.signTh}</b> · 命主/用神: <b>${r.yongshen.th} ${r.yongshen.zh}</b> ${r.yongshen.status}`;
   document.querySelector('#starTbl tbody').innerHTML=r.stars.map(s=>{
     const cls=s.statusRank>=4?'miao':s.statusRank<=2?'xian':'';
-    return `<tr><td>${s.zh} <span class="muted">${L==='th'?s.th:''}</span></td><td>${L==='th'?s.signTh:s.signZh}</td><td>${s.deg}°</td><td class="muted">${s.shu||'—'}${s.shu?` ${s.shuDeg}°`:''}</td><td class="${cls}">${s.status}${s.retro?' ↺':''}</td></tr>`;
+    const e=elOf(s.key);
+    return `<tr><td style="text-align:left"><b style="color:${e.c}">${L==='th'?s.th:s.zh}</b> <span class="muted">${L==='th'?s.zh:s.th}${e.th?' · '+e.th:''}</span></td><td>${L==='th'?s.signTh:s.signZh}</td><td>${s.deg}°</td><td class="muted">${s.shu||'—'}${s.shu?` ${s.shuDeg}°`:''}</td><td class="${cls}">${L==='th'?(STATUS_TH[s.status]||s.status):s.status} <span class="muted">${s.status}</span>${s.retro?' ↺':''}</td></tr>`;
   }).join('');
   document.getElementById('ayanNote').textContent=`ราศีอิงดาวฤกษ์ (ayanamsa ${r.ayanamsa}° · V1 · ปรับสำนักจีนได้) · 紫氣 รอ lock สำนัก · ⚠️ ดาวที่คาบขอบราศี(ใกล้ 0°/29°) อาจคลาด — ใช้ประกอบ ไม่ฟันธง`;
   // rule
   document.getElementById('ruleCard').style.display='';
-  const star3=(x)=>L==='th'?x.th:x.zh;
-  const en=r.en_stars.map(star3).join('、')||'—',nan=r.nan_stars.map(star3).join('、')||'—';
-  const yong=(r.yong_stars||[]).map(star3).join('、')||'—',chou=(r.chou_stars||[]).map(star3).join('、')||'—';
-  const geju=r.geju.length?r.geju.map(g=>`<span class="chip" style="border-color:${g.good?'var(--green)':'var(--red)'}">${g.zh} ${g.good?'✓':'✗'}</span>`).join(''):'<span class="muted">—</span>';
+  const en=r.en_stars.map(x=>starC(x,L)).join('、')||'—',nan=r.nan_stars.map(x=>starC(x,L)).join('、')||'—';
+  const yong=(r.yong_stars||[]).map(x=>starC(x,L)).join('、')||'—',chou=(r.chou_stars||[]).map(x=>starC(x,L)).join('、')||'—';
+  const geju=r.geju.length?r.geju.map(g=>`<span class="chip" style="border-color:${g.good?'var(--green)':'var(--red)'};color:${g.good?'var(--green)':'var(--red)'}">${g.good?'✓':'✗'} ${L==='th'?g.th:g.zh}</span>`).join(''):'<span class="muted">—</span>';
   document.getElementById('ruleBody').innerHTML=
     `<div>恩星 (${L==='en'?'support 生用':L==='zh'?'生用神':'หนุน用神 (生)'}): ${en}</div>`+
     `<div>用星 (${L==='en'?'output 用生':L==='zh'?'用神生':'用神ระบาย (剋難·ดี)'}): ${yong}</div>`+
