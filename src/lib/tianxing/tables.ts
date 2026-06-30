@@ -33,6 +33,7 @@ export const STARS: Record<string, { th: string; zh: string; en: string; element
   Rahu: { th: "ราหู", zh: "羅睺", en: "Rahu", element: "fire", kind: "xiong" },
   Ketu: { th: "เกตุ", zh: "計都", en: "Ketu", element: "earth", kind: "xiong" },
   Yuebo: { th: "เยวี่ยปั๋ว", zh: "月孛", en: "Yuebo", element: "water", kind: "yu" },
+  Ziqi: { th: "จื่อชี่", zh: "紫氣", en: "Ziqi", element: "wood", kind: "yu" }, // 木餘 · A5 (beta)
 };
 
 /** 廟(บ้านเดิม) · 旺(ราศีอุจ) ของ 7政 (sign index) — classical domicile/exaltation */
@@ -84,6 +85,7 @@ export const MIAOWANG_DEG: Record<string, {
   Jupiter: { zhengMiao: ["鬼", 0, 3], zhengWang: ["井", 29, 31], shengDian: ["斗", "角", "奎", "井"], le: ["箕"] },
   Saturn:  { zhengMiao: ["斗", 10, 21], zhengWang: ["亢", 4, 7], shengDian: ["氐", "女", "胃", "柳"], le: ["危"] },
   Yuebo:   { zhengMiao: ["井", 19, 21], shengDian: [], le: ["虛", "危", "參"] }, // 月孛
+  Ziqi:    { zhengMiao: ["奎", 11, 15], zhengWang: ["室", 0, 17], shengDian: [], le: ["尾", "箕", "牛"] }, // 紫氣 (正廟奎11-15·旺室牛·樂尾箕)
 };
 
 /** refine 廟旺 ด้วย 宿+度 (果老總論) · ไม่เข้า band เป๊ะ → คืน null (ให้ fallback ราศี) */

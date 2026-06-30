@@ -67,6 +67,20 @@ export function xiuBoundaries(date: Date): number[] {
   return lons;
 }
 
+/**
+ * 紫氣 (Ziqi · 木餘) — A5 · ดาวสมมติ (虛星 ไม่มีตัวจริงบนฟ้า) คำนวณด้วยสูตร 步紫氣
+ * สาย 授時曆: epoch 1280-12-14 紫氣=女宿2(古)度 · เดินหน้า(順) ~12.86°/ปี (=13.05古度·รอบ~28ปี)
+ * anchor sidereal: ผูกกับ女距星(εAqr) → +2° + 12.86×(ปี−曆元) · จัดการ precession ผ่าน女距星ของวันนั้น
+ * ⚠️ BETA: verify 1752→心/尾ขอบ (±1宿 · ปฏิทิน萬年書ว่า尾) · รอซินแส/พ่อฟันธงสำนัก(28ปี vs 近地点) ก่อน lock
+ */
+const ZIQI_EPOCH_Y = 1280 + 348.5 / 365.25;   // 康熙ก่อนหน้า · 至元17 1280-12-14
+const ZIQI_RATE = 12.86;                        // °/ปี順 (13.05古度×360/365.25) · รอบ 27.99 ปี
+export function ziqiLon(date: Date): number {
+  const nu = xiuBoundaries(date)[9];            // 女距星 ecliptic-of-date (index 9 = 女)
+  const y = date.getUTCFullYear() + (date.getUTCMonth() * 30 + date.getUTCDate()) / 365.25;
+  return norm360(nu + 2 + ZIQI_RATE * (y - ZIQI_EPOCH_Y));
+}
+
 /** ดาวที่ ecliptic longitude lon (ของวันนั้น) อยู่宿ไหน + กี่度ใน宿 */
 export function shuAt(lon: number, date: Date): { idx: number; zh: string; th: string; deg: number; width: number } {
   const b = xiuBoundaries(date);

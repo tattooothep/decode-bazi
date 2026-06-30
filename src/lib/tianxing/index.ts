@@ -6,7 +6,7 @@
  */
 import { computeAstro } from "./ephemeris";
 import { SIGNS, STARS, miaoWang, miaoWangDeg, fourRelations, GEJU_RULES, JI_STARS, XIONG_STARS, ayanamsa, Lang3 } from "./tables";
-import { shuAt } from "./xiu28";
+import { shuAt, ziqiLon } from "./xiu28";
 
 export type TXStar = {
   key: string; th: string; zh: string;
@@ -54,6 +54,22 @@ export function tianxingReading(dtUTC: Date, lat: number, lng: number): TXResult
       kind: meta?.kind || "yu",
     };
   });
+
+  // A5 · 紫氣 (木餘 · ดาวสมมติ · 授時曆 beta) — เพิ่มเป็นดาวที่ 4 ของ四餘
+  {
+    const zLon = ziqiLon(dtUTC);
+    const zSid = sidOf(zLon); const zSign = Math.floor(zSid / 30);
+    const zsh = shuAt(zLon, dtUTC);
+    const zmw = miaoWangDeg("Ziqi", zsh.zh, zsh.deg) || { code: "平", th: "ปานกลาง", rank: 3 };
+    const zmeta = STARS["Ziqi"];
+    stars.push({
+      key: "Ziqi", th: zmeta.th, zh: zmeta.zh,
+      lonTrop: +zLon.toFixed(2), lonSid: +zSid.toFixed(2),
+      sign: zSign, signTh: SIGNS[zSign].th, signZh: SIGNS[zSign].zh, deg: +(zSid % 30).toFixed(1),
+      retro: false, status: zmw.code, statusTh: zmw.th, statusRank: zmw.rank,
+      shu: zsh.zh, shuDeg: zsh.deg, kind: "yu",
+    });
+  }
 
   // 命宮 + 命主(用神)
   const ascSid = sidOf(astro.ascendant);
