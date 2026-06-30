@@ -2326,6 +2326,22 @@ export async function POST(req: Request) {
     }
     const orgId = session?.orgId ?? null;
 
+    /* 🆕 fusion5 · externalPrompt path (additive · ห้ามแตะ flow ปาจื้อเดิม)
+       เมื่อ fusion5 ส่ง prompt สำเร็จรูปของศาสตร์อื่น (七政/Western/Vedic/紫微 = packet+คัมภีร์ render มาแล้ว)
+       → reuse runner ที่พิสูจน์แล้ว (spawn/quota/fallback) · ไม่ build context ปาจื้อ
+       guard: fusion-internal trusted เท่านั้น (header+token) · externalPrompt ว่าง = ข้าม (flow เดิมไม่กระทบ) */
+    const externalPrompt = isFusionInternalCall && typeof body.externalPrompt === "string" ? body.externalPrompt : "";
+    if (externalPrompt.trim()) {
+      try {
+        const xReply = await runSifuCli(externalPrompt, sifuModel, req.signal, { fusionInternal: true });
+        const xSafe = stripTraceLine(stripIdLine(xReply)).trim();
+        return NextResponse.json({ reply: xSafe, model: sifuModel, external: true });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return NextResponse.json({ error: `external_panel_failed · ${msg.slice(0, 280)}`, model: sifuModel }, { status: 502 });
+      }
+    }
+
     // เครดิต "ยาม": จอง 1 ยาม atomic ก่อนสร้างคำตอบ (บล็อกยอด 0 + กัน race) · ข้าม fusion-internal · หักจริงตามตัวอักษรหลังได้คำตอบ
     if (!isFusionInternalCall && session?.userId) {
       const rsv = await reserveHourForUser(session.userId, "sifu_master");
