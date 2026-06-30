@@ -40,7 +40,8 @@ const r4 = (n: number) => Math.round(n * 10000) / 10000;
 
 export function buildVedicPacket(chart: VedicChart): VedicPacket {
   const notAvailable: string[] = [];
-  if (!chart.hasTime) notAvailable.push("lagna", "bhavas", "grahaHouse");
+  // ไม่มีเวลาเกิด: ลัคนา/ภพ ทำไม่ได้ + จันทร์เคลื่อน ~13°/วัน → ฤกษ์จันทร์/ทศา (Vimshottari) ไม่แน่นอน (E1)
+  if (!chart.hasTime) notAvailable.push("lagna", "bhavas", "grahaHouse", "moonNakshatra(จันทร์ไม่แน่นอน)", "vimshottariDasha(พึ่งฤกษ์จันทร์)");
 
   const lagna = chart.lagna
     ? {

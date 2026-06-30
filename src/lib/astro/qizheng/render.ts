@@ -9,7 +9,7 @@ export function renderQizhengPrompt(p: QizhengPacket, lang: "th" | "en" | "zh" =
   const L: string[] = [];
   L.push(`【ผังดวง 七政四餘 (ดาวจริงบนฟ้า)】 — packetVersion=${p.packetVersion}`);
   if (!p.hasBirthTime) L.push(`⚠️ ดวงนี้ไม่ระบุเวลาเกิด → ไม่มีลัคนา/命宮/12宮 (อ่านได้เฉพาะดาว+廟旺+格局ระดับวัน)`);
-  L.push(`命宮(ลัคนา): ${d.ascendant.signTh} · 命主(เจ้าชะตา/用神): ${d.ascendant.rulerTh} สถานะ${d.yongshen.status}`);
+  L.push(`命宮(ลัคนา): ${d.ascendant.signTh} · 命主(เจ้าชะตา · ดาวเจ้าเรือนลัคนา): ${d.ascendant.rulerTh} สถานะ${d.yongshen.status}`);
   L.push(`\nดาว 7政+4餘 (廟旺):`);
   for (const s of d.stars) L.push(`  ${s.zh} ${s.th} · ราศี${s.signTh} 宿${s.shu} · ${s.status}${s.retro ? " (พักร์)" : ""}`);
   L.push(`\n恩星(หนุน命主): ${d.enStars.join("、") || "—"} · 難星(ขัด): ${d.nanStars.join("、") || "—"} · 仇星: ${d.chouStars.join("、") || "—"}`);

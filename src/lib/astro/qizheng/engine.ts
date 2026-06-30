@@ -50,8 +50,7 @@ export function qizhengHouses(r: TXResult): QizhengHouse[] {
     // ผลเรือน: เจ้าเรือนแข็ง(升殿/廟/旺 rank≥4)=ดี · 平=กลาง · 落陷(≤2)=อ่อน · ปรับด้วยดาวมงคล/ร้ายในเรือน
     let score = rank >= 4 ? 1 : rank <= 2 ? -1 : 0;
     if (ruler && ruler.sign === sign) score += 1;            // เจ้าเรือนอยู่บ้านตัวเอง (居本宮)
-    if (stars.some((s) => JI.has(r.stars.find((x) => x.th === s.th)?.key || ""))) score += 0.5;
-    for (const s of starsBySign(sign)) { if (JI.has(s.key)) score += 0.3; if (XIONG.has(s.key)) score -= 0.3; }
+    for (const s of starsBySign(sign)) { if (JI.has(s.key)) score += 0.3; if (XIONG.has(s.key)) score -= 0.3; }  // ดาวมงคล/ร้ายในเรือน (นับครั้งเดียว · E2)
     const level: QizhengHouse["level"] = score >= 1 ? "good" : score <= -0.6 ? "weak" : "neutral";
     const note =
       level === "good" ? `เจ้าเรือน${ruler?.th || ""}${rank >= 4 ? "แข็ง(" + (ruler?.status || "") + ")" : ""}${ruler && ruler.sign === sign ? "·อยู่บ้านตัวเอง" : ""} → ${h.domain}เด่น`

@@ -2332,13 +2332,18 @@ export async function POST(req: Request) {
        guard: fusion-internal trusted เท่านั้น (header+token) · externalPrompt ว่าง = ข้าม (flow เดิมไม่กระทบ) */
     const externalPrompt = isFusionInternalCall && typeof body.externalPrompt === "string" ? body.externalPrompt : "";
     if (externalPrompt.trim()) {
+      // L1: cap ความยาว (กัน DoS แม้เป็น trusted boundary) · สอดคล้อง fusion-internal max
+      if (externalPrompt.length > SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS) {
+        return NextResponse.json({ error: "external_prompt_too_long", model: sifuModel }, { status: 413 });
+      }
       try {
         const xReply = await runSifuCli(externalPrompt, sifuModel, req.signal, { fusionInternal: true });
         const xSafe = stripTraceLine(stripIdLine(xReply)).trim();
         return NextResponse.json({ reply: xSafe, model: sifuModel, external: true });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        return NextResponse.json({ error: `external_panel_failed · ${msg.slice(0, 280)}`, model: sifuModel }, { status: 502 });
+        // L2: log ฝั่ง server (มี detail) · คืน generic ให้ client (ไม่เผย internal path)
+        console.error("[sifu external_panel_failed]", sifuModel, e instanceof Error ? e.message : String(e));
+        return NextResponse.json({ error: "external_panel_failed", model: sifuModel }, { status: 502 });
       }
     }
 

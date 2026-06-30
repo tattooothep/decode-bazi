@@ -9,14 +9,15 @@ import { getSession, signSession, type Session } from "@/lib/auth";
 import { q1 } from "@/lib/db";
 import { spendHoursForUser, refundHours } from "@/lib/spend-hours";
 import { createHash } from "crypto";
-import { DISCIPLINES, computeYam, JUDGE_MODEL, type ScienceId } from "@/lib/fusion5/disciplines";
+import { DISCIPLINES, computeYam, JUDGE_MODEL, JUDGE_YAM, type ScienceId } from "@/lib/fusion5/disciplines";
 import { buildSciencePrompt, buildJudgePrompt, type BirthData } from "@/lib/fusion5/build-prompt";
 
 export const runtime = "nodejs";
 export const maxDuration = 800;
 
 const INTERNAL_BASE = process.env.SIFU_INTERNAL_BASE_URL || "http://127.0.0.1:3349";
-const CHILD_TIMEOUT_MS = Number(process.env.SIFU_FUSION_CHILD_TIMEOUT_MS || 650_000);
+// panel ขนาน(parallel) + judge(sequential หลัง) ต้อง < maxDuration 800s → ตั้ง 360s ต่อ call (360+360=720<800)
+const CHILD_TIMEOUT_MS = Number(process.env.SIFU_FUSION5_CHILD_TIMEOUT_MS || 360_000);
 const FEATURE = "sifu_fusion5";
 
 function internalToken(): string {
@@ -85,6 +86,7 @@ function cleanId(x: unknown): string | null {
 }
 
 export async function POST(req: Request) {
+  let chargedYam = 0;  // ยามที่หักไปแล้ว (สำหรับ outer-catch refund · B1)
   try {
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
     const session = await getSession();
@@ -122,50 +124,64 @@ export async function POST(req: Request) {
     const yam = computeYam(runSciences, births.length);
     const spend = await spendHoursForUser(userId, yam, FEATURE);
     if (!spend.ok) return NextResponse.json({ error: "insufficient_hours", needed: yam }, { status: 402 });
+    chargedYam = yam;  // หักแล้ว → outer catch รู้จะคืนเท่าไร
 
     const cookie = await authCookie(session);
     const refDate = new Date("2026-06-30T00:00:00Z");
 
-    // รัน panel แยกศาสตร์ (ขนาน)
+    // รัน panel แยกศาสตร์ (ขนาน) · ⚠️ ทุก path คืน {ok:false} ไม่ throw (กัน Promise.all reject → เงินไม่คืน · B1)
     const panels: PanelOut[] = await Promise.all(runSciences.map(async (science): Promise<PanelOut> => {
       const bind = DISCIPLINES[science];
       const label = bind.labelTh;
-      if (science === "bazi") {
-        // ปาจื้อ → /api/sifu เดิม (profileId) · couple V1: อ่านดวงแรก + ระบุบริบทคู่ในคำถาม
-        const coupleNote = births.length > 1 ? `\n(นี่คือการดูคู่ระหว่าง ${births.map((b) => b.name).join(" และ ")} — วิเคราะห์ ${births[0].name} เป็นหลัก)` : "";
-        const res = await callSifu(cookie, { profileId: profileIds[0], message: question + coupleNote, lang }, bind.defaultModel, req.signal);
+      try {
+        if (science === "bazi") {
+          // ปาจื้อ → /api/sifu เดิม (profileId) · couple: อ่านครบทั้ง 2 ดวง (justify ยาม×2 · B-couple)
+          const targets = births.length > 1 ? profileIds : [profileIds[0]];
+          const parts: string[] = [];
+          let anyOk = false;
+          for (let i = 0; i < targets.length; i++) {
+            const note = births.length > 1 ? `\n(ดูคู่ระหว่าง ${births.map((b) => b.name).join(" และ ")} — วิเคราะห์ ${births[i].name})` : "";
+            const r = await callSifu(cookie, { profileId: targets[i], message: question + note, lang }, bind.defaultModel, req.signal);
+            if (r.ok && r.reply) { anyOk = true; parts.push(births.length > 1 ? `【${births[i].name}】\n${r.reply}` : r.reply); }
+          }
+          return anyOk ? { science, label, model: bind.defaultModel, ok: true, reply: parts.join("\n\n") } : { science, label, model: bind.defaultModel, ok: false, error: "bazi_failed" };
+        }
+        const prompt = buildSciencePrompt(science, births, question, lang, refDate);
+        let res = await callSifu(cookie, { message: question, externalPrompt: prompt, lang }, bind.defaultModel, req.signal);
+        if (!res.ok && bind.fallbackModels[0]) {
+          const fb = await callSifu(cookie, { message: question, externalPrompt: prompt, lang }, bind.fallbackModels[0], req.signal);
+          if (fb.ok) return { science, label, model: bind.fallbackModels[0], ...fb };
+        }
         return { science, label, model: bind.defaultModel, ...res };
+      } catch (e) {
+        return { science, label, model: bind.defaultModel, ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "engine_error" };
       }
-      const prompt = buildSciencePrompt(science, births, question, lang, refDate);
-      const res = await callSifu(cookie, { message: question, externalPrompt: prompt, lang }, bind.defaultModel, req.signal);
-      // fallback model ถ้า fail
-      if (!res.ok && bind.fallbackModels[0]) {
-        const fb = await callSifu(cookie, { message: question, externalPrompt: prompt, lang }, bind.fallbackModels[0], req.signal);
-        if (fb.ok) return { science, label, model: bind.fallbackModels[0], ...fb };
-      }
-      return { science, label, model: bind.defaultModel, ...res };
     }));
 
     const okPanels = panels.filter((p) => p.ok && p.reply);
 
-    // refund ศาสตร์ที่ fail (partial)
-    const failedYam = panels.filter((p) => !p.ok).reduce((s, p) => s + DISCIPLINES[p.science].costYam * births.length, 0);
-    if (failedYam > 0) await refundHours(failedYam, FEATURE).catch(() => {});
-
-    // judge (ถ้ามี ≥2 panel สำเร็จ)
+    // judge (รันเมื่อมี ≥2 panel สำเร็จ) · ครอบ try กัน throw (B1)
     let judge: { ok: boolean; reply?: string; error?: string; model: string } = { ok: false, model: JUDGE_MODEL };
     if (okPanels.length >= 2) {
-      const jp = buildJudgePrompt(okPanels.map((p) => ({ science: p.science, reply: p.reply! })), births, question, lang);
-      const jr = await callSifu(cookie, { message: question, externalPrompt: jp, lang }, JUDGE_MODEL, req.signal);
-      judge = { ...jr, model: JUDGE_MODEL };
+      try {
+        const jp = buildJudgePrompt(okPanels.map((p) => ({ science: p.science, reply: p.reply! })), births, question, lang);
+        const jr = await callSifu(cookie, { message: question, externalPrompt: jp, lang }, JUDGE_MODEL, req.signal);
+        judge = { ...jr, model: JUDGE_MODEL };
+      } catch (e) { judge = { ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "judge_error", model: JUDGE_MODEL }; }
     }
+
+    // ── ยามคืน (refund) ครบทุกเคส ──
+    // panel ที่ fail คืนเต็มศาสตร์นั้น · judge fee (5) คืนเมื่อ judge ไม่ให้ผลใช้ได้ (ไม่รัน okPanels<2 หรือ judge fail)
+    const panelRefund = panels.filter((p) => !p.ok).reduce((s, p) => s + DISCIPLINES[p.science].costYam * births.length, 0);
+    const judgeCharged = runSciences.length >= 2 ? JUDGE_YAM : 0;          // computeYam คิด judge เมื่อ runSciences≥2
+    const judgeRefund = judgeCharged > 0 && !judge.ok ? JUDGE_YAM : 0;     // judge ไม่รัน/fail = คืน
+    const totalRefund = panelRefund + judgeRefund;
+    if (totalRefund > 0) await refundHours(totalRefund, FEATURE).catch(() => {});  // B3: guard >0 กัน clamp→1
 
     const reply = judge.ok && judge.reply ? judge.reply
       : okPanels.length === 1 ? okPanels[0].reply!
       : okPanels.length ? okPanels.map((p) => `【${p.label}】\n${p.reply}`).join("\n\n")
-      : "ขออภัย ยังไม่สามารถอ่านดวงได้ในขณะนี้";
-
-    if (!okPanels.length) await refundHours(yam - failedYam, FEATURE).catch(() => {});
+      : "ขออภัย ยังไม่สามารถอ่านดวงได้ในขณะนี้ ลองใหม่อีกครั้ง";
 
     return NextResponse.json({
       reply,
@@ -176,10 +192,12 @@ export async function POST(req: Request) {
         panels: panels.map((p) => ({ science: p.science, label: p.label, model: p.model, ok: p.ok, reply: p.reply || null, error: p.error || null })),
         judge: { ok: judge.ok, model: judge.model },
         skipped,
-        yam: { charged: yam, refunded: failedYam + (okPanels.length ? 0 : yam - failedYam) },
+        yam: { charged: yam, refunded: totalRefund },
       },
     });
-  } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+  } catch {
+    // throw ที่ไม่คาดคิดหลัง spend (panels/judge ครอบ try แล้ว · ปกติไม่ถึง) → คืนยามเต็ม กันเงินหาย (B1)
+    if (chargedYam > 0) await refundHours(chargedYam, FEATURE).catch(() => {});
+    return NextResponse.json({ error: "fusion5_error" }, { status: 500 });
   }
 }
