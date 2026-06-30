@@ -4,7 +4,7 @@
  * โครงสร้างเดียวกับ packet ศาสตร์อื่น: { discipline, packetVersion, data, notAvailable }
  * deterministic ล้วน — แค่จัดรูป ไม่คำนวณดาราศาสตร์เพิ่ม
  */
-import { SIGN_TH, type WesternChart, type Dignity, type Element, type Modality } from "./engine";
+import { SIGN_TH, type WesternChart, type Dignity, type Element, type Modality, type Gender, type Sect, type WesternPoint } from "./engine";
 
 export type WesternPacketPlanet = {
   name: string;
@@ -31,9 +31,12 @@ export type WesternPacket = {
   packetVersion: "western-v1";
   hasBirthTime: boolean;
   degradeLevel: "full" | "partial";
+  gender: Gender;
+  sect: Sect;
   data: {
     ascendant: WesternPacketAngle;
     mc: WesternPacketAngle;
+    partOfFortune: WesternPoint;
     planets: WesternPacketPlanet[];
     houses: { house: number; sign: number; signTh: string; cuspLon: number }[] | null;
     aspects: { a: string; b: string; type: string; angleTh: string; orb: number; applying: boolean }[];
@@ -55,18 +58,21 @@ function angle(lon: number | null): WesternPacketAngle {
 
 /** สร้าง envelope packet จากผัง */
 export function buildWesternPacket(chart: WesternChart): WesternPacket {
-  // สิ่งที่ใช้ไม่ได้เมื่อขาดเวลาเกิด (ลัคนา/กลางฟ้า/เรือน ต้องใช้การหมุนของโลก)
+  // สิ่งที่ใช้ไม่ได้เมื่อขาดเวลาเกิด (ลัคนา/กลางฟ้า/เรือน/จุดโชค/sect ต้องใช้การหมุนของโลก)
   const notAvailable: string[] = [];
-  if (!chart.hasBirthTime) notAvailable.push("ascendant", "mc", "houses");
+  if (!chart.hasBirthTime) notAvailable.push("ascendant", "mc", "houses", "partOfFortune", "sect");
 
   return {
     discipline: "western",
     packetVersion: "western-v1",
     hasBirthTime: chart.hasBirthTime,
     degradeLevel: chart.degradeLevel,
+    gender: chart.gender,
+    sect: chart.sect,
     data: {
       ascendant: angle(chart.ascendant),
       mc: angle(chart.mc),
+      partOfFortune: chart.partOfFortune,
       planets: chart.planets.map((p) => ({
         name: p.name,
         nameTh: p.nameTh,

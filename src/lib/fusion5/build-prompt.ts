@@ -44,7 +44,7 @@ export function loadCanon(science: ScienceId, maxChars = 75000): string {
 /** render ผังของศาสตร์ (เฉพาะ astro · bazi ไปทาง /api/sifu เดิม) */
 export function renderChartForScience(science: ScienceId, b: BirthData, refDate: Date): string {
   if (science === "qizheng") return renderQizhengPrompt(buildQizhengPacket(b.dtUTC, b.lat, b.lng, b.hasTime));
-  if (science === "western") return renderWesternPrompt(buildWesternPacket(westernChart(b.dtUTC, b.lat, b.lng, b.hasTime)));
+  if (science === "western") return renderWesternPrompt(buildWesternPacket(westernChart(b.dtUTC, b.lat, b.lng, b.hasTime, b.gender)));
   if (science === "vedic") return renderVedicPrompt(buildVedicPacket(vedicChart(b.dtUTC, b.lat, b.lng, b.hasTime, refDate)));
   if (science === "ziwei") return renderZiweiPrompt(buildZiweiPacket(b.dtUTC, b.lat, b.lng, b.gender, b.hasTime));
   return "";

@@ -47,9 +47,15 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
   const d = packet.data;
   const L: string[] = [];
 
+  const SECT_TH: Record<string, string> = {
+    day: "กลางวัน (day sect · อาทิตย์อยู่เหนือขอบฟ้า)",
+    night: "กลางคืน (night sect · อาทิตย์อยู่ใต้ขอบฟ้า)",
+  };
+
   L.push("===== ผังโหราศาสตร์ตะวันตก (Western · ระบบราศีเขตร้อน tropical) =====");
   L.push("ข้อมูลทั้งหมดด้านล่างคำนวณจากตำแหน่งดาราศาสตร์จริง (deterministic) — โปรดตีความตามหลักโหราศาสตร์ตะวันตก");
   L.push(`ระบบเรือน: whole-sign (เรือน = ราศี) · เวลาเกิด: ${packet.hasBirthTime ? "มีเวลาแม่น" : "ไม่มีเวลาเกิด (ผังบางส่วน)"}`);
+  L.push(`เพศเจ้าชะตา: ${packet.gender === "F" ? "หญิง (F)" : "ชาย (M)"} · sect ของดวง: ${packet.sect ? SECT_TH[packet.sect] : "ไม่มีข้อมูล (ขาดเวลาเกิด)"}`);
   if (!packet.hasBirthTime) {
     L.push("⚠️ ไม่มีเวลาเกิด → ไม่มีลัคนา/กลางฟ้า/เรือน · ตำแหน่งจันทร์อาจคลาดเคลื่อน (ติดธง) · ตีความเฉพาะตำแหน่งดาวในราศีและมุมสัมพันธ์");
   }
@@ -65,6 +71,21 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
     L.push(`กลางฟ้า (MC/Midheaven): ราศี${d.mc.signTh} ${fmtDeg(d.mc.signDeg)}`);
   } else {
     L.push("กลางฟ้า (MC): ไม่มีข้อมูล (ขาดเวลาเกิด)");
+  }
+  // จุดโชค (Part of Fortune) — ใช้ดูการเงิน/ลาภ/ความมั่งคั่ง (Lilly · Ptolemy)
+  if (d.partOfFortune) {
+    const pof = d.partOfFortune;
+    L.push(`จุดโชค (Part of Fortune · การเงิน/ลาภ/ความเป็นอยู่): ราศี${pof.signTh} ${fmtDeg(pof.signDeg)} · เรือนที่ ${pof.house}`);
+  } else {
+    L.push("จุดโชค (Part of Fortune): ไม่มีข้อมูล (ขาดเวลาเกิด/ลัคนา)");
+  }
+  L.push("");
+
+  // หมายเหตุตัวแทนคู่ครองตามเพศ (Ptolemy Tetrabiblos Book 4)
+  if (packet.gender === "F") {
+    L.push("หมายเหตุคู่ครอง: เจ้าชะตาเป็นหญิง (F) → ใช้ \"อาทิตย์\" เป็นตัวแทนคู่ครอง (สามี) · ดูราศี/เรือน/ฐานะ/มุมของอาทิตย์ประกอบเรือน 7 (Ptolemy Tetrabiblos Book 4)");
+  } else {
+    L.push("หมายเหตุคู่ครอง: เจ้าชะตาเป็นชาย (M) → ใช้ \"จันทร์\" เป็นตัวแทนคู่ครอง (ภรรยา) · ดูราศี/เรือน/ฐานะ/มุมของจันทร์ประกอบเรือน 7 (Ptolemy Tetrabiblos Book 4)");
   }
   L.push("");
 

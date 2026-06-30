@@ -105,17 +105,48 @@ export type WesternShape = {
   stellium: { sign: number; signTh: string; count: number; planets: string[] }[];
 };
 
+/** เพศ (Ptolemy Tetrabiblos Book 4 · ตัวแทนคู่ครอง: ชายใช้จันทร์ · หญิงใช้อาทิตย์) */
+export type Gender = "M" | "F";
+
+/** sect ของดวง (Lilly/Ptolemy · กลางวัน=อาทิตย์เหนือขอบฟ้า) · null เมื่อไม่มีเวลาเกิด */
+export type Sect = "day" | "night" | null;
+
+/** จุดคำนวณบนสุริยวิถี (เช่น Part of Fortune จุดโชค) · null เมื่อขาดลัคนา */
+export type WesternPoint = {
+  lon: number;       // ลองจิจูด tropical 0-360
+  sign: number;      // ราศี 0-11
+  signTh: string;    // ชื่อราศีไทย
+  signDeg: number;   // องศาในราศี 0-30
+  house: number;     // เรือน 1-12 (มีเสมอเพราะคำนวณเฉพาะเมื่อมีลัคนา)
+} | null;
+
 export type WesternChart = {
   hasBirthTime: boolean;
   degradeLevel: "full" | "partial";   // full = มีเวลาเกิด · partial = ไม่มีเวลา
   houseSystem: "whole";               // Placidus = roadmap (ต้องใช้ semi-arc)
+  gender: Gender;                     // เพศเจ้าชะตา (ใช้เลือกตัวแทนคู่ครอง)
+  sect: Sect;                         // กลางวัน/กลางคืน · null เมื่อไม่มีเวลา
   ascendant: number | null;           // ลัคนา (longitude) · null เมื่อไม่มีเวลา
   mc: number | null;                  // กลางฟ้า MC · null เมื่อไม่มีเวลา
+  partOfFortune: WesternPoint;        // จุดโชค (การเงิน/ลาภ) · null เมื่อไม่มีลัคนา
   houses: HouseCusp[] | null;         // 12 เรือน · null เมื่อไม่มีเวลา
   planets: WesternPlanet[];           // ดาว 10 + ราหู/เกตุ
   aspects: Aspect[];                  // มุมสัมพันธ์
   shape: WesternShape;
 };
+
+/** สร้าง WesternPoint จาก longitude + ลัคนา (norm360 + หาราศี/องศา/เรือน) */
+function makePoint(lon: number, ascLon: number): WesternPoint {
+  const L = norm360(lon);
+  const sign = Math.floor(L / 30);
+  return {
+    lon: +L.toFixed(4),
+    sign,
+    signTh: SIGN_TH[sign],
+    signDeg: +(L - sign * 30).toFixed(4),
+    house: houseOf(L, ascLon, "whole"),
+  };
+}
 
 /** ดาวที่นับเข้า balance ธาตุ/คุณภาพ + ตรวจ stellium (ดาวจริง 10 ดวง · ไม่รวมจุดราหู/เกตุ) */
 const CORE_10 = new Set(["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]);
@@ -126,8 +157,9 @@ const CORE_10 = new Set(["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "
  * @param lat    ละติจูด (องศา · เหนือ +)
  * @param lng    ลองจิจูด (องศา · ตะวันออก +)
  * @param hasTime มีเวลาเกิดแม่นหรือไม่ — false → ไม่คำนวณลัคนา/เรือน + ติดธงจันทร์
+ * @param gender เพศเจ้าชะตา "M"|"F" (default "M") — เลือกตัวแทนคู่ครอง (Ptolemy Book 4)
  */
-export function westernChart(dtUTC: Date, lat: number, lng: number, hasTime = true): WesternChart {
+export function westernChart(dtUTC: Date, lat: number, lng: number, hasTime = true, gender: Gender = "M"): WesternChart {
   // 1) ดาว 10 (modern:true → รวมยูเรนัส/เนปจูน/พลูโต) + ราหู/เกตุ (node:true)
   const bodies: BodyPos[] = computeBodies(dtUTC, { modern: true, node: true });
 
@@ -186,12 +218,32 @@ export function westernChart(dtUTC: Date, lat: number, lng: number, hasTime = tr
     }))
     .sort((a, b) => b.count - a.count || a.sign - b.sign);
 
+  // 6) sect (กลางวัน/กลางคืน) — อาทิตย์เหนือขอบฟ้า (เรือน 7-12) = day · เรือน 1-6 = night
+  //    Ptolemy/Lilly: ดวงกลางวันเลือก day = Asc + Moon - Sun · กลางคืน night = Asc + Sun - Moon
+  const sun = planets.find((p) => p.name === "Sun");
+  const moon = planets.find((p) => p.name === "Moon");
+  let sect: Sect = null;
+  if (sun && sun.house !== null) sect = sun.house >= 7 ? "day" : "night";
+
+  // 7) Part of Fortune (จุดโชค · การเงิน/ลาภ) — ต้องมีลัคนา + อาทิตย์ + จันทร์
+  //    สูตร day = Asc + Moon - Sun · night = Asc + Sun - Moon (Lilly Christian Astrology)
+  let partOfFortune: WesternPoint = null;
+  if (ascLon !== null && sun && moon) {
+    const lon = sect === "night"
+      ? ascLon + sun.lon - moon.lon
+      : ascLon + moon.lon - sun.lon; // day หรือ sect=null (มีลัคนาแต่ตีความเป็นกลางวันเป็น default)
+    partOfFortune = makePoint(lon, ascLon);
+  }
+
   return {
     hasBirthTime: hasTime,
     degradeLevel: hasTime ? "full" : "partial",
     houseSystem: "whole",
+    gender,
+    sect,
     ascendant: ascLon !== null ? +ascLon.toFixed(4) : null,
     mc: mcLon !== null ? +mcLon.toFixed(4) : null,
+    partOfFortune,
     houses: houseCusps,
     planets,
     aspects,
