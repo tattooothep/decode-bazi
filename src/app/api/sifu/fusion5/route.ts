@@ -138,7 +138,6 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
     const judgeCharged = runSciences.length >= 2 ? JUDGE_YAM : 0;
     const judgeRefund = judgeCharged > 0 && !judge.ok ? JUDGE_YAM : 0;
     const totalRefund = panelRefund + judgeRefund;
-    if (totalRefund > 0) await refundHoursForUser(userId, totalRefund, FEATURE).catch(() => {});
 
     const reply = judge.ok && judge.reply ? judge.reply
       : okPanels.length === 1 ? okPanels[0].reply!
@@ -156,9 +155,11 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
         yam: { charged: yam, refunded: totalRefund },
       },
     };
+    // UPDATE ก่อน → ค่อย refund partial (ถ้า UPDATE throw → catch คืนเต็มแทน · กัน over-refund ซ้ำ)
     await q(`UPDATE fusion5_jobs SET status='done', result=$2, updated_at=now() WHERE id=$1`, [jobId, JSON.stringify(result)]);
+    if (totalRefund > 0) await refundHoursForUser(p.userId, totalRefund, FEATURE).catch(() => {});
   } catch (e) {
-    // worker throw ที่ไม่คาดคิด → คืนยามเต็ม + mark error (กันเงินหาย + job ค้าง running)
+    // throw ก่อน UPDATE สำเร็จ (partial refund ยังไม่ทำ) → คืนยามเต็ม + mark error (กันเงินหาย/job ค้าง)
     await refundHoursForUser(p.userId, p.yam, FEATURE).catch(() => {});
     await q(`UPDATE fusion5_jobs SET status='error', error=$2, updated_at=now() WHERE id=$1`, [jobId, (e instanceof Error ? e.message : String(e)).slice(0, 200)]).catch(() => {});
   }
