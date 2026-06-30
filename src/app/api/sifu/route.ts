@@ -2326,6 +2326,27 @@ export async function POST(req: Request) {
     }
     const orgId = session?.orgId ?? null;
 
+    /* 🆕 fusion5 · externalPrompt path (additive · ห้ามแตะ flow ปาจื้อเดิม)
+       เมื่อ fusion5 ส่ง prompt สำเร็จรูปของศาสตร์อื่น (七政/Western/Vedic/紫微 = packet+คัมภีร์ render มาแล้ว)
+       → reuse runner ที่พิสูจน์แล้ว (spawn/quota/fallback) · ไม่ build context ปาจื้อ
+       guard: fusion-internal trusted เท่านั้น (header+token) · externalPrompt ว่าง = ข้าม (flow เดิมไม่กระทบ) */
+    const externalPrompt = isFusionInternalCall && typeof body.externalPrompt === "string" ? body.externalPrompt : "";
+    if (externalPrompt.trim()) {
+      // L1: cap ความยาว (กัน DoS แม้เป็น trusted boundary) · สอดคล้อง fusion-internal max
+      if (externalPrompt.length > SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS) {
+        return NextResponse.json({ error: "external_prompt_too_long", model: sifuModel }, { status: 413 });
+      }
+      try {
+        const xReply = await runSifuCli(externalPrompt, sifuModel, req.signal, { fusionInternal: true });
+        const xSafe = stripTraceLine(stripIdLine(xReply)).trim();
+        return NextResponse.json({ reply: xSafe, model: sifuModel, external: true });
+      } catch (e) {
+        // L2: log ฝั่ง server (มี detail) · คืน generic ให้ client (ไม่เผย internal path)
+        console.error("[sifu external_panel_failed]", sifuModel, e instanceof Error ? e.message : String(e));
+        return NextResponse.json({ error: "external_panel_failed", model: sifuModel }, { status: 502 });
+      }
+    }
+
     // เครดิต "ยาม": จอง 1 ยาม atomic ก่อนสร้างคำตอบ (บล็อกยอด 0 + กัน race) · ข้าม fusion-internal · หักจริงตามตัวอักษรหลังได้คำตอบ
     if (!isFusionInternalCall && session?.userId) {
       const rsv = await reserveHourForUser(session.userId, "sifu_master");
