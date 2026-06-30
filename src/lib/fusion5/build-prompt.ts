@@ -24,7 +24,7 @@ const canonCache = new Map<string, string>();
 /** โหลดคัมภีร์ศาสตร์ (data/library/astro-canon/<science>/*.md) · best-effort · cap ขนาด
  *  cap 56K = qizheng มี 4 ไฟล์ (恩用12宮+廟旺+格局+星情 ~50K) โหลดครบ · ศาสตร์อื่นไฟล์เดียว <30K ไม่กระทบ
  *  รวม canon+packet+question ยังต่ำกว่า SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS (80K) */
-export function loadCanon(science: ScienceId, maxChars = 56000): string {
+export function loadCanon(science: ScienceId, maxChars = 75000): string {
   if (canonCache.has(science)) return canonCache.get(science)!;
   let text = "";
   try {
