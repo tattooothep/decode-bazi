@@ -228,7 +228,7 @@ export async function GET(req: Request) {
   } catch (e: unknown) {
     console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
     if (e instanceof QimenApiError && e.status >= 400 && e.status < 500) {
-      return NextResponse.json({ error: e.message }, { status: e.status });
+      return NextResponse.json({ error: "bad_request" }, { status: e.status });
     }
     return NextResponse.json({ error: "service unavailable" }, { status: 503 });
   }
@@ -257,7 +257,7 @@ export async function POST(req: Request) {
   } catch (e: unknown) {
     console.error("[qimen] proxy error:", e);  // 1 มิ.ย. · log server (เก็บ URL) · ไม่คืน internal URL ให้ client
     if (e instanceof QimenApiError && e.status >= 400 && e.status < 500) {
-      return NextResponse.json({ error: e.message }, { status: e.status });
+      return NextResponse.json({ error: "bad_request" }, { status: e.status });
     }
     return NextResponse.json({ error: "service unavailable" }, { status: 503 });
   }

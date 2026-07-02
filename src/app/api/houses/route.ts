@@ -92,6 +92,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ house: row }, { status: 201 });
   } catch (err: any) {
     if (err.code === '23505') return NextResponse.json({ error: 'House name already exists' }, { status: 409 });
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error("[houses] error:", err);
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

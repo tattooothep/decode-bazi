@@ -133,7 +133,8 @@ export async function POST(req: Request) {
     }
   } catch (e: unknown) {
     const err = e as Error;
-    return NextResponse.json({ error: "bazi calc failed: " + err.message }, { status: 500 });
+    console.error("[profile/create] bazi calc failed:", err);
+    return NextResponse.json({ error: "bazi_calc_failed" }, { status: 500 });
   }
 
   const dayMaster = calc.dayMaster;

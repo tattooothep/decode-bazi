@@ -97,6 +97,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (e: unknown) {
-    return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 500 });
+    console.error("[akg/solar-terms]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

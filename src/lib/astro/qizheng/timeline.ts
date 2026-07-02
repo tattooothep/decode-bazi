@@ -148,6 +148,6 @@ export function buildQizhengTimeline(natal: TXResult, targetYear: number, lat: n
     liuNianStars,
     months,
     hits,
-    coverageNote: `ชั้นเวลา七政四餘ปี ${targetYear}: 流年ครบ ${liuNianStars.length} ดวง (พิกัดเกิดจริง) · 流月太陽過宮 ${months.length} ช่วง · วันชนจุดสำคัญ ${hits.length} จุด (木土羅計火 × 命度/身度/命主) · ยังไม่มี: 流日 · 十干化曜 · 小限 (รอตาราง/คัมภีร์ยืนยัน ห้ามเดา)`,
+    coverageNote: `ชั้นเวลา七政四餘ปี ${targetYear}: 流年ครบ ${liuNianStars.length} ดวง (พิกัดเกิดจริง) · 流月太陽過宮 ${months.length} ช่วง · วันชนจุดสำคัญ ${hits.length} จุด (木土羅計火 × 命度/身度/命主) · ยังไม่มี: 流日 · 小限 (รอตาราง/คัมภีร์ยืนยัน ห้ามเดา) · 十干化曜 ดูที่ field data.huaYao ของ packet`,
   };
 }

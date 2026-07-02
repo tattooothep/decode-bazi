@@ -92,6 +92,7 @@ export async function POST(req: NextRequest) {
     const sp = await drainHoursByChars(reply.length, "luopan_vision");
     return NextResponse.json({ ok: true, reply, model: VISION_MODEL, cost_yam: sp.spent, credit_yam: sp.balance_after });
   } catch (e) {
-    return NextResponse.json({ ok: false, error: (e as Error).message || "vision_failed" }, { status: 500 });
+    console.error("[luopan/vision]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ ok: false, error: "vision_failed" }, { status: 500 });
   }
 }

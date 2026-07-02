@@ -1193,6 +1193,6 @@ export async function POST(req: Request) {
   } catch (e: unknown) {
     const err = e as Error;
     console.error("[sifu/group] error:", err);
-    return NextResponse.json({ error: err.message || "internal" }, { status: 500 });
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

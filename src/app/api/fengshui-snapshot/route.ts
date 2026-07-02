@@ -387,6 +387,7 @@ export async function GET(req: NextRequest) {
       source: 'อาเจ๊กฮ้ง compass 3 · 沈氏玄空 ยุค 9 (xuankong-period9.json) + 八宅 + 24山',
     });
   } catch (e: unknown) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    console.error("[fengshui-snapshot]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const out = await computeDayActivitySignals({ date, time, longitude, gender, target_hour_branch });
     return NextResponse.json(out);
   } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "signal compute failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[daily-activity/signals]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ error: "signal compute failed" }, { status: 500 });
   }
 }

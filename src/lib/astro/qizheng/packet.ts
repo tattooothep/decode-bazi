@@ -3,6 +3,7 @@
  * envelope เดียวกับทุกศาสตร์ · AI อ่านเฉพาะ data นี้ ห้ามเดาตำแหน่งดาว
  */
 import { qizhengNatal, qizhengTimingLimit, qizhengTransit, type QizhengNatal, type QizhengTimingLimit } from "./engine";
+import { qizhengHuaYao, type QizhengHuaYao } from "./huayao";
 import { buildQizhengTimeline, type QizhengTimeline } from "./timeline";
 
 export type QizhengPacket = {
@@ -22,6 +23,7 @@ export type QizhengPacket = {
     transit: { year: number; jupiterHouseZh: string; saturnHouseZh: string; note: string }[];
     xingXian: QizhengTimingLimit | null;
     timingTimeline: QizhengTimeline | null;
+    huaYao: QizhengHuaYao | null;
     verdictTh: string; level: string;
   };
   notAvailable: string[];
@@ -41,10 +43,16 @@ export function buildQizhengPacket(dtUTC: Date, lat: number, lng: number, hasBir
       timingTimeline = buildQizhengTimeline(r, targetYear, lat, lng);
     } catch { timingTimeline = null; /* ล้ม = degrade ชัดเจนผ่าน notAvailable */ }
   }
+  // 十干化曜 (變曜) — ต้องการแค่ก้านปีเกิด · เรือนพื้นดวงมีเฉพาะเมื่อรู้เวลาเกิด
+  let huaYao: QizhengHuaYao | null = null;
+  try {
+    huaYao = qizhengHuaYao(n, dtUTC, Math.round(lng / 15));
+  } catch { huaYao = null; /* ล้ม = degrade ชัดเจนผ่าน notAvailable */ }
   const timingGaps = [
     ...(xingXian ? [] : ["行限", "限度主", "洞微百六限"]),
     ...(timingTimeline ? [] : ["流年全星", "流月"]),
-    "流日", "化曜", "小限",
+    ...(huaYao ? [] : ["化曜"]),
+    "流日", "小限",
   ];
   const notAvailable: string[] = hasBirthTime
     ? timingGaps
@@ -79,6 +87,7 @@ export function buildQizhengPacket(dtUTC: Date, lat: number, lng: number, hasBir
       transit: transit.map((t) => ({ year: t.year, jupiterHouseZh: t.jupiterHouseZh, saturnHouseZh: t.saturnHouseZh, note: t.note })),
       xingXian,
       timingTimeline,
+      huaYao,
       verdictTh: hasBirthTime ? r.verdictTh.th : "ไม่ทราบเวลาเกิด: อ่านได้เฉพาะตำแหน่งดาวจริง ราศี 宿 廟旺/พักร์ เท่านั้น; ปิด命宮/命度/度主/身主/12宮/恩用仇難/格局/行限",
       level: hasBirthTime ? r.level : "partial_no_birth_time",
     },

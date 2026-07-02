@@ -161,6 +161,7 @@ export async function GET(req: NextRequest) {
       source: '方違 Heian onmyoji · 暦法 + Tsuchimikado · อาเจ๊กฮ้ง',
     });
   } catch (e: unknown) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    console.error("[katakagae]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

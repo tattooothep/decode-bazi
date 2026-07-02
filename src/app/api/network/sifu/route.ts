@@ -316,6 +316,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ reply, mode, model: "claude-max-cli", balance_after: balanceAfter, spent });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error("[network/sifu]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

@@ -152,6 +152,7 @@ ${text}`;
       spent,
     });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error("[ai-parse-bulk]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

@@ -54,11 +54,10 @@ Strong limit lord in helpful relation can open a period. Weak or hostile limit l
 Use only when the engine supplies the exact limit segment. Treat it as a classical timing key, not a generic year label. If absent, do not cite 洞微百六限.
 
 ## Source gaps to state plainly
-Current packet supplies natal 命度/度主, 月為身-derived 身主, and v3 行限/限度主 when birth time + refDate are available. It may still lack:
+Current packet supplies natal 命度/度主, 月為身-derived 身主, v3 行限/限度主 when birth time + refDate are available, and 十干化曜 in `data.huaYao` (per 張果星宗 變曜; see canon file 25-shigan-huayao.md — use the field, never recompute). It may still lack:
 - day/night and lunar phase,
 - original 逐年行限度圖 / 命度圖 facsimile calibration (v3 uses deterministic 3-degree-row 出命限),
-- 化曜,
-- 流月 / 流日,
+- 流日,
 - source-tagged 格局.
 
 If `xingXian` is missing, say the reading is natal-pattern plus abbreviated 木/土 annual transit only and timing must be recomputed with the full Qizheng timing packet.

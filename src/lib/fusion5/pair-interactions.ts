@@ -8,6 +8,7 @@ import { qizhengNatal } from "../astro/qizheng/engine";
 import { SIGNS, STARS } from "../tianxing/tables";
 import { westernChart, SIGN_TH, type WesternChart } from "../astro/western/engine";
 import { vedicChart, type VedicChart, type VGraha } from "../astro/vedic/engine";
+import { ashtakoota, type AshtakootaResult } from "../astro/vedic/ashtakoota";
 import { GRAHA_TH, type GrahaKey, RASHI_TH } from "../astro/vedic/tables";
 import { ziweiChart, type ZiweiChart, type ZiweiPalace } from "../astro/ziwei/engine";
 import { BRANCHES, type PalaceName } from "../astro/ziwei/tables";
@@ -254,6 +255,39 @@ function vedicPair(a: PairBirthData, b: PairBirthData, refDate: Date) {
     scanOverlay("B", B, "A", A);
   }
 
+  // Ashtakoota (Guna Milan 36) — จากจันทร์ sidereal ของทั้งคู่ (deterministic · ตาราง saravali CC BY-SA 4.0)
+  // bride/groom ตามเพศจริง; ถ้าเพศเดียวกัน/ไม่ชัด ใช้ A=bride ตามลำดับที่ส่งมา (แจ้งใน roleRule)
+  let ashtakootaBlock: {
+    roleRule: string;
+    brideChart: "A" | "B";
+    groomChart: "A" | "B";
+    confidence: string;
+    result: AshtakootaResult;
+  } | null = null;
+  try {
+    const moonA = grahaByName(A, "Moon");
+    const moonB = grahaByName(B, "Moon");
+    if (moonA && moonB) {
+      const brideChart: "A" | "B" = b.gender === "F" && a.gender !== "F" ? "B" : "A";
+      const groomChart: "A" | "B" = brideChart === "A" ? "B" : "A";
+      const moonOf = (o: "A" | "B") => (o === "A" ? moonA : moonB);
+      const bm = moonOf(brideChart);
+      const gm = moonOf(groomChart);
+      ashtakootaBlock = {
+        roleRule: a.gender !== b.gender
+          ? "bride=ฝ่ายหญิง (F) · groom=ฝ่ายชาย ตามกติกา Guna Milan"
+          : "เพศเดียวกัน/ไม่ระบุคู่ชายหญิง → ใช้คนแรก(A)=bride คนที่สอง(B)=groom โดยสัญนิยม (คะแนน kuta ที่ไม่สมมาตรให้อ่านเป็นแนวโน้ม ไม่ใช่คำตัดสินบทบาท)",
+        brideChart,
+        groomChart,
+        confidence: bothHaveTime ? "confirmed_birth_time" : "conditional_no_birth_time_moon_may_shift",
+        result: ashtakoota(
+          { nakshatraIndex: bm.nakshatra.index, rashi: bm.rashi, rashiDeg: bm.rashiDeg },
+          { nakshatraIndex: gm.nakshatra.index, rashi: gm.rashi, rashiDeg: gm.rashiDeg },
+        ),
+      };
+    }
+  } catch { ashtakootaBlock = null; /* ล้ม = degrade ชัดเจนผ่าน notAvailable */ }
+
   const dashaCross = (owner: "A" | "B", chart: VedicChart, other: VedicChart) => {
     const current = [chart.vimshottari.currentMaha?.lord, chart.vimshottari.currentAntar?.lord].filter((x): x is GrahaKey => !!x);
     return current.map((lord) => {
@@ -276,14 +310,15 @@ function vedicPair(a: PairBirthData, b: PairBirthData, refDate: Date) {
     birthTimeMode: { A: birthTimeMode(a), B: birthTimeMode(b) },
     timeLimitedByUnknownBirthTime: bothHaveTime ? null : "No-time pair mode keeps rashi/graha drishti contacts and marks Moon-based compatibility conditional; Lagna, bhava overlays, Navamsa synastry and dasha cross-reference are closed.",
     rule: bothHaveTime
-      ? "closed-list Jyotish compatibility cues: Moon tara, rashi relations, Parashari graha drishti, bhava overlays, current dasha cross-reference"
-      : "closed-list no-time Jyotish cues: graha rashi/drishti contacts; Moon tara/rashi are conditional if birth time is unknown",
+      ? "closed-list Jyotish compatibility cues: Moon tara, Ashtakoota 36 (guna milan), rashi relations, Parashari graha drishti, bhava overlays, current dasha cross-reference"
+      : "closed-list no-time Jyotish cues: graha rashi/drishti contacts; Moon tara/rashi/Ashtakoota are conditional if birth time is unknown",
     data: {
       moonBasedCompatibility: {
         confidence: bothHaveTime ? "confirmed_birth_time" : "conditional_no_birth_time_moon_may_shift",
         taraBala: { A_to_B: taraFrom(A, B), B_to_A: taraFrom(B, A) },
         moonRashiRelation: { A_to_B: rashiRelation(grahaByName(A, "Moon")!.rashi, grahaByName(B, "Moon")!.rashi), B_to_A: rashiRelation(grahaByName(B, "Moon")!.rashi, grahaByName(A, "Moon")!.rashi) },
       },
+      ashtakoota: ashtakootaBlock,
       lagnaRashiRelation: A.lagna && B.lagna ? { A_to_B: rashiRelation(A.lagna.rashi, B.lagna.rashi), B_to_A: rashiRelation(B.lagna.rashi, A.lagna.rashi) } : null,
       parashariDrishti: drishti.slice(0, 80),
       degreeContacts: degreeContacts.sort((x, y) => x.orb - y.orb).slice(0, 40),
@@ -292,7 +327,7 @@ function vedicPair(a: PairBirthData, b: PairBirthData, refDate: Date) {
     },
     notAvailable: [
       ...(!bothHaveTime ? ["lagnaRelation", "bhavaOverlay", "navamsaSynastry", "vimshottariCrossReferenceRequiresConfirmedMoon"] : []),
-      "ashtakootaScore",
+      ...(ashtakootaBlock ? [] : ["ashtakootaScore"]),
       "navamsaSynastry",
     ],
   };

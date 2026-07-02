@@ -268,6 +268,7 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
 						    "61-loan-credit-debt-refinance-specificity.md": { title: "Zi Wei loan/credit/debt/refinance specificity pack · 命身/財帛/田宅/官祿/夫妻/兄弟父母/僕役/疾厄/四化 debt-service evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-loan-credit-debt-summary", licenseClass: "project_summary", mode: "summary" },
 						    "62-insurance-claim-policy-coverage-specificity.md": { title: "Zi Wei insurance/claim/policy/coverage specificity pack · 命身/財帛/田宅/官祿/夫妻/兄弟父母/僕役/疾厄/四化 insurance evidence weighting", sourceUrl: "local:private/restricted-sources/ziwei/public-domain+licensed-derived-insurance-claim-summary", licenseClass: "project_summary", mode: "summary" },
 				    "ziwei-quanshu-core.md": { title: "紫微斗數全書 core working summary", sourceUrl: "https://zh.wikisource.org/zh-hant/紫微斗數全書", licenseClass: "public_domain", mode: "verbatim" },
+    "07-quanshu-xingyuan-wenda.md": { title: "紫微斗數全書卷一 · 星垣論+諸星問答論+十二宮諸星得地合格訣/失陷破格訣 verbatim", sourceUrl: "https://zh.wikisource.org/wiki/紫微斗數全書/卷一", licenseClass: "public_domain", mode: "verbatim" },
   },
   qizheng: {
     "00-method.md": { title: "Qizheng method guard · 果老星宗 summary", sourceUrl: "local:qizheng-method", licenseClass: "project_summary", mode: "summary" },
@@ -276,6 +277,8 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "03-geju.md": { title: "Qizheng 格局", sourceUrl: "https://zh.wikisource.org/wiki/欽定古今圖書集成/博物彙編/藝術典/第572卷", licenseClass: "project_summary", mode: "summary" },
     "04-xingqing.md": { title: "Qizheng 星情喜忌", sourceUrl: "https://zh.wikisource.org/wiki/欽定古今圖書集成/博物彙編/藝術典/第577卷", licenseClass: "project_summary", mode: "summary" },
     "05-xingxian.md": { title: "Qizheng 行限/限度主 guard", sourceUrl: "https://zh.wikisource.org/wiki/欽定古今圖書集成/博物彙編/藝術典/第582卷", licenseClass: "project_summary", mode: "summary" },
+    "25-shigan-huayao.md": { title: "Qizheng 十干化曜 (變曜·天祿…天權·科名/科甲/文星) · 張果星宗二 verbatim", sourceUrl: "https://zh.wikisource.org/wiki/欽定古今圖書集成/博物彙編/藝術典/第568卷", licenseClass: "public_domain", mode: "verbatim" },
+    "26-xingqing-verbatim-clean.md": { title: "Qizheng 星情 總論+歌斷〈源髓歌〉 ครบ 11 曜 · 張果星宗十二/十四/十五 verbatim", sourceUrl: "https://zh.wikisource.org/wiki/欽定古今圖書集成/博物彙編/藝術典/第578卷 ; /第580卷 ; /第581卷", licenseClass: "public_domain", mode: "verbatim" },
     "06-public-domain-source-coverage.md": { title: "Qizheng public-domain OCR source coverage · 果老星宗 / 星學大成 primary+15 alternate / 星平會海 / 星命溯源 / 五星三命 / 星位宿度 / 唐開元占經 / 乙巳占 / 觀象玩占 / 乾象通鑑 / 靈臺秘苑 / 七政推步 / 天文大成 / 歷象考成 / 儀象考成 / 協紀辨方", sourceUrl: "local:private/restricted-sources/qizheng/public-domain", licenseClass: "project_summary", mode: "summary" },
     "07-sanfang-pair-weighting.md": { title: "Qizheng 三方對照 / 格局 / pair weighting pack", sourceUrl: "local:private/restricted-sources/qizheng/public-domain", licenseClass: "project_summary", mode: "summary" },
     "08-topic-evidence-gates.md": { title: "Qizheng topic evidence gates · 官祿/財帛/妻妾/疾厄/遷移/田宅 with timing and star-nature guards", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-summary", licenseClass: "project_summary", mode: "summary" },
@@ -352,6 +355,8 @@ const CANON_DEFAULT_FILES: Partial<Record<ScienceId, string[]>> = {
     "03-geju.md",
     "07-sanfang-pair-weighting.md",
     "04-xingqing.md",
+    "25-shigan-huayao.md",
+    "26-xingqing-verbatim-clean.md",
   ],
   vedic: [
     "00-method.md",
@@ -398,6 +403,7 @@ const CANON_DEFAULT_FILES: Partial<Record<ScienceId, string[]>> = {
     "04-feixing-cetian-topic-rules.md",
     "06-liuyue-liuri-sihua-rules.md",
     "ziwei-quanshu-core.md",
+    "07-quanshu-xingyuan-wenda.md",
   ],
 };
 
@@ -731,6 +737,13 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
 			    if (intent.money || intent.windfall || intent.creator || intent.marketing || intent.reputation || intent.retention || intent.pricing || intent.supportOps || intent.techProduct || intent.industryFit || intent.customerFit || intent.offerFit || intent.deliveryModel || intent.valueLadder || intent.scopeBoundary || intent.hiringDelegation || intent.teamCompensation || intent.partnerDueDiligence || intent.salesTeamQa || intent.career || intent.health || intent.travel || intent.home || intent.children || intent.study || intent.education || intent.people || intent.risk || intent.fortune || intent.talent || intent.decision || intent.remedy || intent.validation || intent.interaction || intent.business || intent.authority || intent.employment || intent.property || intent.specialty || intent.general) pushUnique(files, "04-xingqing.md");
     if (intent.pair) pushUnique(files, "07-sanfang-pair-weighting.md");
     if (intent.timing && !files.includes("05-xingxian.md")) pushUnique(files, "05-xingxian.md");
+    // canon verbatim 張果星宗 (additive · public domain): 十干化曜 (field data.huaYao มีทุกดวง) + 星情總論/歌斷 11 曜
+    // เรียก prioritizeAfterMethod ก่อน chain ตาม intent ด้านล่าง → ไฟล์ใหม่จะต่อท้าย topical packs ที่ถูก prioritize ทีหลัง (ไม่แซงของเดิม)
+    pushUnique(files, "25-shigan-huayao.md", "26-xingqing-verbatim-clean.md");
+    prioritizeAfterMethod(files, "25-shigan-huayao.md");
+    if (intent.interaction || intent.talent || intent.general || intent.fortune || intent.validation) {
+      prioritizeAfterMethod(files, "25-shigan-huayao.md", "26-xingqing-verbatim-clean.md");
+    }
 		    if (intent.pair) {
 		      prioritizeAfterMethod(files, "33-relationship-status-marriage-breakup-specificity.md", "11-pair-relationship-specificity.md", "07-sanfang-pair-weighting.md", "10-degree-limit-specificity.md", "23-star-interaction-specificity.md", "22-validation-past-event-specificity.md", "21-remedy-mitigation-specificity.md", "20-decision-action-guidance-specificity.md", "19-timing-forecast-specificity.md", "08-topic-evidence-gates.md", "01-enyong-12gong.md", "02-miaowang.md", "05-xingxian.md");
 			    } else if (intent.insuranceClaim) {
@@ -898,6 +911,9 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     if (intent.timing || intent.relationship || intent.pair || intent.health || intent.education || intent.specialty) pushUnique(files, "06-liuyue-liuri-sihua-rules.md");
 			    if (intent.timing || intent.general || intent.health || intent.career || intent.money || intent.windfall || intent.creator || intent.marketing || intent.reputation || intent.retention || intent.pricing || intent.supportOps || intent.techProduct || intent.industryFit || intent.customerFit || intent.offerFit || intent.deliveryModel || intent.valueLadder || intent.scopeBoundary || intent.hiringDelegation || intent.teamCompensation || intent.partnerDueDiligence || intent.salesTeamQa || intent.home || intent.travel || intent.children || intent.study || intent.education || intent.people || intent.risk || intent.fortune || intent.talent || intent.decision || intent.remedy || intent.validation || intent.interaction || intent.business || intent.authority || intent.employment || intent.property || intent.specialty) pushUnique(files, "08-quanshu-limit-special-rules.md");
 	    if (intent.general || (intent.relationship && !intent.retention && !intent.partnershipProgram && !intent.partnerDueDiligence && !intent.salesTeamQa && !intent.cashflowBudget) || intent.timing || intent.validation) pushUnique(files, "ziwei-quanshu-core.md");
+    // canon verbatim 紫微斗數全書卷一 (additive · public domain): 星垣論 + 諸星問答論 + 得地合格訣/失陷破格訣
+    if (intent.general || intent.relationship || intent.pair || intent.timing || intent.validation || intent.interaction || intent.talent || intent.fortune) pushUnique(files, "07-quanshu-xingyuan-wenda.md");
+    if (intent.interaction || intent.talent) prioritizeAfterMethod(files, "07-quanshu-xingyuan-wenda.md");
 			    if (intent.pair || ((intent.timing || (intent.relationship && !intent.retention)) && !intent.windfall && !intent.creator && !intent.marketing && !intent.supportOps && !intent.techProduct && !intent.industryFit && !intent.customerFit && !intent.offerFit && !intent.deliveryModel && !intent.valueLadder && !intent.scopeBoundary && !intent.salesScript && !intent.salesTeamQa && !intent.cashflowBudget && !intent.qualificationGate && !intent.caseStudyProof && !intent.customerSuccess && !intent.partnershipProgram && !intent.hiringDelegation && !intent.teamCompensation && !intent.partnerDueDiligence && !intent.business && !intent.authority && !intent.employment && !intent.property && !intent.health && !intent.children && !intent.education)) {
       prioritizeAfterMethod(
         files,
@@ -2177,6 +2193,10 @@ function structuredPacketJson(packet: unknown): string {
         houses12: hasTime ? d.houses12?.map((h: any) => [h.house, h.zh, h.domain, h.signTh, h.rulerTh, h.rulerStatus, h.rulerInHouse, h.starsInHouse, h.level]) : [],
         transit: hasTime ? d.transit : [],
         xingXian: hasTime ? d.xingXian : null,
+        huaYao: d.huaYao ? {
+          yearStem: d.huaYao.yearStem,
+          roles: d.huaYao.roles.map((r: any) => [r.roleFull, r.meaningZh, r.palaceZh, r.starZh, r.starTh, r.natalHouse, r.natalStatus, r.retro ? 1 : 0]),
+        } : null,
         verdictTh: d.verdictTh,
         level: d.level,
       },

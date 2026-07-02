@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
       source: "อาม่าอากง v3 (周易 + Zhu Xi · UNESCO 2016)",
     });
   } catch (e: unknown) {
-    return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 500 });
+    console.error("[akg/hex-deep]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

@@ -355,6 +355,6 @@ export async function POST(req: Request) {
   } catch (e: unknown) {
     const err = e as Error;
     console.error("[forecast] failed:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

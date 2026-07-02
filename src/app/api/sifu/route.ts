@@ -2966,7 +2966,7 @@ export async function POST(req: Request) {
   } catch (e: unknown) {
     const err = e as Error;
     console.error("[sifu] error:", err);
-    return NextResponse.json({ error: err.message || "internal" }, { status: 500 });
+    return NextResponse.json({ error: err.message === "aborted" || String(err.message || "").startsWith("sifu_busy") ? err.message : "internal_error" }, { status: 500 });
   }
 }
 

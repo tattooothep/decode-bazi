@@ -319,7 +319,8 @@ export async function GET(req: Request) {
     if (row) return NextResponse.json({ cached: true, content: row.content, generated_at: row.generated_at });
     return NextResponse.json({ cached: false });
   } catch (e: any) {
-    return NextResponse.json({ error: String(e?.message || e) }, { status: 500 });
+    console.error("[chart/overview]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }
 
@@ -413,7 +414,8 @@ export async function POST(req: Request) {
         }
         controller.enqueue(encoder.encode(`event: done\ndata: ${JSON.stringify({hash, length: full.length, history_id: historyId, history_saved: historySaved})}\n\n`));
       } catch (e: any) {
-        controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({error: String(e?.message || e)})}\n\n`));
+        console.error("[chart/overview] stream error:", e instanceof Error ? e.message : String(e));
+        controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({error: "internal_error"})}\n\n`));
       } finally {
         controller.close();
       }

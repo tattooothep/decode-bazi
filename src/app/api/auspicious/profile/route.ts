@@ -78,6 +78,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: unknown) {
     console.error("[/api/auspicious/profile]", e);
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

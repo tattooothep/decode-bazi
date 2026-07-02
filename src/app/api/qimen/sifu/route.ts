@@ -1651,6 +1651,7 @@ export async function POST(req: Request) {
       qimen_source_trace_items: built.sourceTraceItems,
     });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error("[qimen/sifu]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

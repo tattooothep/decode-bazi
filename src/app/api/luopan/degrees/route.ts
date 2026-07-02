@@ -227,6 +227,7 @@ export async function POST(req: NextRequest) {
       meta: { duration_ms: Date.now() - started, generated_at: new Date().toISOString() },
     });
   } catch (e: unknown) {
-    return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 500 });
+    console.error("[luopan/degrees]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ ok: false, error: "internal_error" }, { status: 500 });
   }
 }

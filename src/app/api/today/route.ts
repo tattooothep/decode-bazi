@@ -209,6 +209,7 @@ export async function GET(req: Request) {
     });
   } catch (e: unknown) {
     const err = e as Error;
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error("[today] error:", err);
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

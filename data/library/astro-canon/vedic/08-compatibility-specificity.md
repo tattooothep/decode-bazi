@@ -43,6 +43,8 @@ In pair mode, use only `PAIR_INTERACTION_PACKET vedic` for cross-chart claims. W
 6. **Bhava overlays**: use only when both birth times are known; especially 1/4/5/7/8/11/12.
 7. **Current dasha cross-reference**: if one person's dasha lord is prominent in the other chart, the relationship feels activated through that planet/topic.
 
+When the pair packet supplies `data.ashtakoota` (Guna Milan 36: varna/vashya/dina/yoni/grahaMaitri/gana/rasi/nadi + rajju), read the kuta scores from that field only — never recompute or re-map bride/groom yourself, and mention the attribution string supplied in the field when citing the score. Nadi=0 or rasi=0 are classical doshas: name them plainly and weigh against supporting layers instead of averaging them away.
+
 If the packet says `ashtakootaScore` or `navamsaSynastry` is not available, do not invent it. Read the pair from the supplied layers and name the missing layer only if the user asks why the verdict cannot be sharper.
 
 ## Verdict Categories

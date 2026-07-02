@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
     const reading = tianxingReading(dt, lat, lng);
     return NextResponse.json({ ok: true, reading });
   } catch (e) {
-    return NextResponse.json({ ok: false, error: (e as Error).message || "tianxing_failed" }, { status: 500 });
+    console.error("[tianxing/chart]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ ok: false, error: "tianxing_failed" }, { status: 500 });
   }
 }

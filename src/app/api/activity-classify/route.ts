@@ -245,6 +245,7 @@ export async function POST(req: NextRequest) {
       reason: 'ไม่จับคีย์เวิร์ด · AI ไม่ตอบ · ใช้ default · กรุณาเลือกจากปุ่ม',
     });
   } catch (e: unknown) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    console.error("[activity-classify]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ error: "internal_error" }, { status: 500 });
   }
 }

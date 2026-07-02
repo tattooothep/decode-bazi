@@ -66,6 +66,7 @@ export async function POST(req: NextRequest) {
     const sp = await drainHoursByChars(reply.length, "tianxing_sifu");
     return NextResponse.json({ ok: true, reply, model: MODEL, cost_yam: sp.spent, credit_yam: sp.balance_after });
   } catch (e) {
-    return NextResponse.json({ ok: false, error: (e as Error).message || "tianxing_sifu_failed" }, { status: 500 });
+    console.error("[tianxing/sifu]", e instanceof Error ? e.message : String(e));
+    return NextResponse.json({ ok: false, error: "tianxing_sifu_failed" }, { status: 500 });
   }
 }

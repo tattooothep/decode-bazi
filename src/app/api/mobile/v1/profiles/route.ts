@@ -148,7 +148,7 @@ export async function POST(req: Request) {
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "create profile failed";
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    console.error("[mobile/v1/profiles]", error instanceof Error ? error.message : String(error));
+    return NextResponse.json({ ok: false, error: "create profile failed" }, { status: 500 });
   }
 }
