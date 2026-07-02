@@ -10,6 +10,7 @@ import { renderQizhengPrompt } from "../astro/qizheng/render";
 import { westernChart } from "../astro/western/engine";
 import { buildWesternPacket } from "../astro/western/packet";
 import { buildWesternTimeline, type WesternTimeline } from "../astro/western/timeline";
+import { renderMultiYearBlock, renderPairTimingBlock, resolveFusionYearRange, type FusionBirthLike } from "./multi-year";
 import { renderWesternPrompt } from "../astro/western/render";
 import { vedicChart } from "../astro/vedic/engine";
 import { buildVedicPacket } from "../astro/vedic/packet";
@@ -2465,8 +2466,15 @@ export function buildSciencePrompt(
       }
       L.push(renderChartForScience(science, b, timingRef.refDate));
     });
+    // เฟส 6: ② ช่วงหลายปี → บล็อกสรุปย่อรายปี (ต่อดวง)
+    const yearRange = resolveFusionYearRange(question, refDate);
+    if (yearRange) {
+      births.forEach((b) => { L.push(renderMultiYearBlock(science, b as FusionBirthLike, yearRange.startYear, yearRange.endYear)); });
+    }
     if (births.length > 1) {
       L.push(renderPairInteractionPacket(science, births, timingRef.refDate));
+      // เฟส 6: ① ชั้นเวลาโหมดดูคู่ (ปฏิทินร่วมรายเดือนของปีเป้าหมาย)
+      L.push(renderPairTimingBlock(science, births as FusionBirthLike[], timingRef.targetYear));
       L.push(`\n=== ดูคู่ ===\nวิเคราะห์ทั้ง ${births.length} ดวง + ความเข้ากัน/ปฏิกิริยาระหว่างกัน ตามหลัก ${bind.labelTh} (ส่งคำตอบครบทุกดวง) · ใช้เฉพาะ PAIR_INTERACTION_PACKET เป็นรายการปฏิกิริยาข้ามดวง ห้ามสร้างคู่/มุม/ดาวข้ามดวงเพิ่มเอง · แยกแรงหนุนกับแรงเสียดทานให้ชัด อย่าให้จุดดีจุดเดียวกลบข้อเสียใหญ่ หรือข้อเสียจุดเดียวกลบแรงหนุนหลัก`);
     } else {
       L.push(`\n=== โหมดเดี่ยว ===\nมีผังเดียวโดยเจตนา · อย่านับ "ไม่มีดวงคู่/ไม่มีปฏิกิริยาข้ามสองผัง" เป็นข้อมูลขาดของการดูดวงเดี่ยว เว้นแต่คำถามผู้ใช้ถามเรื่องดูคู่/สมพงษ์โดยตรง`);
