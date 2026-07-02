@@ -55,10 +55,48 @@ export interface ZiweiChart {
   palaces: ZiweiPalace[];
   /* 四化 ของปีเกิด (ขึ้นกับ年干 อย่างเดียว · มีได้แม้ไม่รู้เวลา) */
   siHua: { star: string; type: SiHuaType; palaceName: PalaceName | null; branch: string | null }[];
+  /* 大限四化: ใช้宮干ของแต่ละ大限宮 · AI ห้ามคำนวณเอง */
+  daXianSiHua: {
+    palaceName: PalaceName;
+    branch: string;
+    stem: string;
+    ageStart: number;
+    ageEnd: number;
+    siHua: { star: string; type: SiHuaType; palaceName: PalaceName | null; branch: string | null }[];
+  }[];
   /* 三方四正 ของ命宮 */
   sanFangSiZheng: { palaceName: PalaceName; branch: string; relation: string }[] | null;
   /* 流年 (ถ้าส่ง refDate) */
-  liuNian: { year: number; mingBranch: string; mingPalaceName: PalaceName } | null;
+  liuNian: {
+    year: number;
+    ganzhi: string;
+    mingBranch: string;
+    mingPalaceName: PalaceName;
+    siHua: { star: string; type: SiHuaType; palaceName: PalaceName | null; branch: string | null }[];
+    annualStars: { star: string; palaceName: PalaceName; branch: string; source: string }[];
+  } | null;
+  /* 流月/流日 scaffold (ถ้าส่ง refDate) */
+  liuYue: {
+    year: number;
+    lunarMonth: number;
+    isLeapMonth: boolean;
+    effectiveMonth: number;
+    ganzhi: string;
+    mingBranch: string;
+    mingPalaceName: PalaceName;
+    siHua: { star: string; type: SiHuaType; palaceName: PalaceName | null; branch: string | null }[];
+    monthlyStars: { star: string; palaceName: PalaceName; branch: string; source: string }[];
+    monthPalaces: { lunarMonth: number; mingBranch: string; mingPalaceName: PalaceName }[];
+  } | null;
+  liuRi: {
+    dateISO: string;
+    lunarDay: number;
+    ganzhi: string;
+    mingBranch: string;
+    mingPalaceName: PalaceName;
+    siHua: { star: string; type: SiHuaType; palaceName: PalaceName | null; branch: string | null }[];
+    dailyStars: { star: string; palaceName: PalaceName; branch: string; source: string }[];
+  } | null;
   notAvailable: string[];
 }
 
@@ -75,6 +113,10 @@ function localCivil(dtUTC: Date, gmtOffsetHours: number) {
 /** hourBranchIndex (子=0); 23:00-00:59 = 子 */
 function hourBranchIndexOf(h: number): number {
   return Math.floor((h + 1) / 2) % 12;
+}
+
+function splitGanzhi(ganzhi: string): { stem: string; branch: string } {
+  return { stem: ganzhi.slice(0, 1), branch: ganzhi.slice(1, 2) };
 }
 
 export interface ZiweiOptions {
@@ -133,9 +175,12 @@ export function ziweiChart(
       siHua: yearSiHuaStars.map((star, i) => ({
         star, type: SI_HUA_TYPES[i], palaceName: null, branch: null,
       })),
+      daXianSiHua: [],
       sanFangSiZheng: null,
       liuNian: null,
-      notAvailable: ["命宮", "身宮", "五行局", "12宮安星", "大限", "三方四正", "流年"],
+      liuYue: null,
+      liuRi: null,
+      notAvailable: ["命宮", "身宮", "五行局", "12宮安星", "大限", "大限四化", "三方四正", "流年", "流年四化", "流年星", "流月", "流日"],
     };
   }
 
@@ -248,28 +293,59 @@ export function ziweiChart(
     });
   }
 
-  /* 四化 ขยายข้อมูลตำแหน่ง */
-  const siHua = yearSiHuaStars.map((star, i) => {
+  const starLocation = (star: string): { palaceName: PalaceName | null; branch: string | null } => {
     const g = groundOfStar.get(star as MajorStar);
-    let palaceName: PalaceName | null = null;
-    let branch: string | null = null;
     if (g !== undefined) {
       const pal = palaces.find((p) => p.ground === g);
-      palaceName = pal ? pal.name : null;
-      branch = groundToBranch(g);
-    } else {
-      // ดาว文昌/文曲/左輔/右弼 (輔星) อาจรับ四化
-      for (const [gg, names] of minorAtGround) {
-        if (names.includes(star)) {
-          const pal = palaces.find((p) => p.ground === gg);
-          palaceName = pal ? pal.name : null;
-          branch = groundToBranch(gg);
-          break;
-        }
+      return { palaceName: pal ? pal.name : null, branch: groundToBranch(g) };
+    }
+    // ดาว文昌/文曲/左輔/右弼 (輔星) อาจรับ四化
+    for (const [gg, names] of minorAtGround) {
+      if (names.includes(star)) {
+        const pal = palaces.find((p) => p.ground === gg);
+        return { palaceName: pal ? pal.name : null, branch: groundToBranch(gg) };
       }
     }
-    return { star, type: SI_HUA_TYPES[i], palaceName, branch };
+    return { palaceName: null, branch: null };
+  };
+
+  const siHuaForStem = (stem: string) => (SI_HUA[stem] || []).map((star, i) => {
+    const loc = starLocation(star);
+    return { star, type: SI_HUA_TYPES[i], palaceName: loc.palaceName, branch: loc.branch };
   });
+
+  /* 四化 ขยายข้อมูลตำแหน่ง */
+  const siHua = siHuaForStem(yearStem);
+  const daXianSiHua = palaces.map((p) => ({
+    palaceName: p.name,
+    branch: p.branch,
+    stem: p.stem,
+    ageStart: p.daXian.ageStart,
+    ageEnd: p.daXian.ageEnd,
+    siHua: siHuaForStem(p.stem),
+  }));
+
+  const palaceByGround = (g: number): ZiweiPalace => palaces.find((p) => p.ground === fix12(g))!;
+  const annualStar = (star: string, g: number, source: string) => {
+    const p = palaceByGround(g);
+    return { star, palaceName: p.name, branch: p.branch, source };
+  };
+  const flowStarsFor = (prefix: "流月" | "流日", stem: string, branch: string) => {
+    const luGround = LU_CUN_GROUND[stem];
+    const ky = KUI_YUE_GROUND[stem];
+    const branchIndex = BRANCHES.indexOf(branch as any);
+    const hongluan = fix12(groundOf("卯") - branchIndex);
+    return [
+      annualStar(`${prefix}祿存`, luGround, `${prefix}干`),
+      annualStar(`${prefix}擎羊`, luGround + 1, `${prefix}干`),
+      annualStar(`${prefix}陀羅`, luGround - 1, `${prefix}干`),
+      annualStar(`${prefix}天魁`, ky.kui, `${prefix}干`),
+      annualStar(`${prefix}天鉞`, ky.yue, `${prefix}干`),
+      annualStar(`${prefix}天馬`, TIAN_MA_GROUND[branch], `${prefix}支`),
+      annualStar(`${prefix}紅鸞`, hongluan, `${prefix}支`),
+      annualStar(`${prefix}天喜`, hongluan + 6, `${prefix}支`),
+    ];
+  };
 
   /* 三方四正 ของ命宮: 財帛(三合-4) 官祿(三合+4) 遷移(對宮+6) */
   const sfsz = [
@@ -284,13 +360,81 @@ export function ziweiChart(
 
   /* 流年 (option) */
   let liuNian: ZiweiChart["liuNian"] = null;
+  let liuYue: ZiweiChart["liuYue"] = null;
+  let liuRi: ZiweiChart["liuRi"] = null;
   if (opts.refDate) {
-    const refY = opts.refDate.getUTCFullYear();
-    // 太歲 branch ของปี: ((year - 4) mod 12) = branchIndex (甲子=4 ค.ศ.)
-    const taisuiBranchIndex = ((refY - 4) % 12 + 12) % 12;
+    const refLoc = localCivil(opts.refDate, gmtOffsetHours);
+    const refSt = SolarTime.fromYmdHms(refLoc.y, refLoc.m, refLoc.d, refLoc.h, refLoc.mi, 0);
+    const refLunarHour = refSt.getLunarHour();
+    const refLunarDay = refLunarHour.getLunarDay();
+    const refLunarMonth = refLunarDay.getLunarMonth();
+    const refYearGanzhi = splitGanzhi(refLunarHour.getYearSixtyCycle().getName());
+    const refStem = refYearGanzhi.stem;
+    const refBranch = refYearGanzhi.branch;
+    const taisuiBranchIndex = BRANCHES.indexOf(refBranch as any);
     const taisuiGround = groundOf(BRANCHES[taisuiBranchIndex]);
     const pal = palaces.find((p) => p.ground === taisuiGround)!;
-    liuNian = { year: refY, mingBranch: BRANCHES[taisuiBranchIndex], mingPalaceName: pal.name };
+    const luGround = LU_CUN_GROUND[refStem];
+    const ky = KUI_YUE_GROUND[refStem];
+    const hongluan = fix12(groundOf("卯") - taisuiBranchIndex);
+    liuNian = {
+      year: refLoc.y,
+      ganzhi: refStem + refBranch,
+      mingBranch: refBranch,
+      mingPalaceName: pal.name,
+      siHua: siHuaForStem(refStem),
+      annualStars: [
+        annualStar("流年祿存", luGround, "流年年干"),
+        annualStar("流年擎羊", luGround + 1, "流年年干"),
+        annualStar("流年陀羅", luGround - 1, "流年年干"),
+        annualStar("流年天魁", ky.kui, "流年年干"),
+        annualStar("流年天鉞", ky.yue, "流年年干"),
+        annualStar("流年天馬", TIAN_MA_GROUND[refBranch], "流年年支"),
+        annualStar("流年紅鸞", hongluan, "流年年支"),
+        annualStar("流年天喜", hongluan + 6, "流年年支"),
+      ],
+    };
+
+    const refRawMonth = refLunarMonth.getMonthWithLeap();
+    const refIsLeapMonth = refLunarMonth.isLeap();
+    const refMonth = Math.abs(refRawMonth);
+    const refDay = refLunarDay.getDay();
+    const refEffectiveMonth = refMonth + (refIsLeapMonth && refDay > 15 ? 1 : 0);
+    const monthlyGanzhi = refLunarDay.getMonthSixtyCycle().getName();
+    const dailyGanzhi = refLunarDay.getSixtyCycle().getName();
+    const monthlyGz = splitGanzhi(monthlyGanzhi);
+    const dailyGz = splitGanzhi(dailyGanzhi);
+    const monthlyGround = fix12(taisuiGround - effectiveMonth + hourBranchIndex + refEffectiveMonth);
+    const dailyGround = fix12(monthlyGround + refDay - 1);
+    const monthPalaces = Array.from({ length: 12 }, (_, i) => {
+      const m = i + 1;
+      const g = fix12(taisuiGround - effectiveMonth + hourBranchIndex + m);
+      const p = palaceByGround(g);
+      return { lunarMonth: m, mingBranch: p.branch, mingPalaceName: p.name };
+    });
+    const monthlyPalace = palaceByGround(monthlyGround);
+    const dailyPalace = palaceByGround(dailyGround);
+    liuYue = {
+      year: refLoc.y,
+      lunarMonth: refMonth,
+      isLeapMonth: refIsLeapMonth,
+      effectiveMonth: refEffectiveMonth,
+      ganzhi: monthlyGanzhi,
+      mingBranch: monthlyPalace.branch,
+      mingPalaceName: monthlyPalace.name,
+      siHua: siHuaForStem(monthlyGz.stem),
+      monthlyStars: flowStarsFor("流月", monthlyGz.stem, monthlyGz.branch),
+      monthPalaces,
+    };
+    liuRi = {
+      dateISO: opts.refDate.toISOString().slice(0, 10),
+      lunarDay: refDay,
+      ganzhi: dailyGanzhi,
+      mingBranch: dailyPalace.branch,
+      mingPalaceName: dailyPalace.name,
+      siHua: siHuaForStem(dailyGz.stem),
+      dailyStars: flowStarsFor("流日", dailyGz.stem, dailyGz.branch),
+    };
   }
 
   return {
@@ -308,9 +452,12 @@ export function ziweiChart(
     tianfuGround,
     palaces,
     siHua,
+    daXianSiHua,
     sanFangSiZheng: sfsz,
     liuNian,
-    notAvailable: [],
+    liuYue,
+    liuRi,
+    notAvailable: opts.refDate ? [] : ["流年", "流年四化", "流年星", "流月", "流日"],
   };
 }
 

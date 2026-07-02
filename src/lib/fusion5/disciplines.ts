@@ -12,7 +12,7 @@ export type ScienceBinding = {
   defaultModel: string;                // AI ที่จับคู่
   fallbackModels: string[];
   knowledgeId: string;                 // คัมภีร์เฉพาะศาสตร์ (lock)
-  needsBirthTime: boolean;             // true = ไม่มีเวลา → degrade/disable
+  needsBirthTime: boolean;             // true = ไม่มีเวลา → disable ทั้งศาสตร์; false = อาจอ่านแบบ degraded/no-time ได้
   costYam: number;                     // ยามต่อ 1 ดวง
   available: boolean;                  // false = engine ยังไม่พร้อม → "เร็วๆนี้"
   termGuard: string;                   // ศัพท์ที่ panel นี้ห้ามใช้ (กันปนศาสตร์)
@@ -29,7 +29,7 @@ export const DISCIPLINES: Record<ScienceId, ScienceBinding> = {
     id: "qizheng", labelTh: "ดาวจริง 七政四餘", labelZh: "七政四餘", labelEn: "Real-Star (Guolao)",
     engine: "qizheng-realstar", defaultModel: "grok-cli", fallbackModels: ["claude-max-cli", "gemini-api"],
     knowledgeId: "qizheng-guolao", needsBirthTime: true, costYam: 15, available: true,
-    termGuard: "ห้ามใช้ศัพท์ปาจื้อ(用神十神)หรือฝรั่ง · ใช้ 命主/廟旺/恩用仇難/格局",
+    termGuard: "ห้ามใช้ศัพท์ปาจื้อ(用神十神), ฝรั่ง, หรือ紫微四化(祿權科忌) · ใช้ 命主/命度/度主/身主/廟旺/恩用仇難/格局",
   },
   ziwei: {
     id: "ziwei", labelTh: "จื่อเวยโต่วซู 紫微斗數", labelZh: "紫微斗數", labelEn: "Zi Wei Dou Shu",
@@ -40,13 +40,13 @@ export const DISCIPLINES: Record<ScienceId, ScienceBinding> = {
   western: {
     id: "western", labelTh: "โหราตะวันตก", labelZh: "西洋占星", labelEn: "Western Astrology",
     engine: "western-tropical", defaultModel: "claude-max-cli", fallbackModels: ["codex-cli", "gemini-api"],
-    knowledgeId: "western-ptolemy", needsBirthTime: true, costYam: 10, available: true,
+    knowledgeId: "western-ptolemy", needsBirthTime: false, costYam: 10, available: true,
     termGuard: "ห้ามใช้ศัพท์จีน(廟旺/用神/主星) · ใช้ sign/house/aspect/dignity",
   },
   vedic: {
     id: "vedic", labelTh: "โหราพระเวท (ฮินดู)", labelZh: "吠陀占星", labelEn: "Vedic Astrology",
     engine: "vedic-sidereal", defaultModel: "codex-cli", fallbackModels: ["claude-max-cli", "gemini-api"],
-    knowledgeId: "vedic-parashara", needsBirthTime: true, costYam: 10, available: true,
+    knowledgeId: "vedic-parashara", needsBirthTime: false, costYam: 10, available: true,
     termGuard: "ห้ามใช้ศัพท์จีน · ใช้ graha/rashi/bhava/nakshatra/dasha",
   },
 };

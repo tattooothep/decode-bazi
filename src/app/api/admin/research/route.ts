@@ -289,7 +289,8 @@ export async function GET(req: Request) {
      )
      SELECT p.id, p.created_by_user_id, p.name, p.nickname, p.gender,
             p.relationship_type, p.network_group, p.network_group_label,
-            p.day_master, p.day_master_strength, p.birth_datetime,
+            p.day_master, p.day_master_strength,
+            to_char(p.birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
             p.birth_location_name, p.is_archived, p.created_at,
             su.email, su.user_name
        FROM profiles p

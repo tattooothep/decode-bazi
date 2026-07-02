@@ -34,13 +34,15 @@ export async function POST(req: NextRequest) {
     const rsv = await reserveHour("tianxing_sifu");
     if (!rsv.ok) return NextResponse.json({ ok: false, error: "insufficient_hours", credit_yam: 0 }, { status: 402 });
 
-    const starLines = r.stars.map((x) => `${x.zh}(${x.th}) ราศี${x.signTh} ${x.deg}° ${x.status}${x.retro ? " ถอย" : ""}`).join(" · ");
+    const starLines = r.stars.map((x) => `${x.zh}(${x.th}) ราศี${x.signTh} ${x.deg}° 宿${x.shu}${x.shuDeg}° ${x.status}${x.retro ? " ถอย" : ""}`).join(" · ");
     const facts = [
       `ฤกษ์ (UTC): ${r.dtUTC} · พิกัด ${lat},${lng}${activity ? ` · กิจกรรม: ${activity}` : ""}`,
-      `命宮(ลัคนา): ราศี${r.ascendant.signTh} · 命主/用神: ${r.yongshen.th}(${r.yongshen.zh}) สถานะ ${r.yongshen.status}`,
+      `命宮(ลัคนา): ราศี${r.ascendant.signTh} ${r.ascendant.deg}° 宿${r.ascendant.shu}${r.ascendant.shuDeg}° · 命主: ${r.yongshen.th}(${r.yongshen.zh}) สถานะ ${r.yongshen.status}`,
+      `命度/度主: 宿${r.mingDegree.shu}${r.mingDegree.shuDeg}° → ${r.mingDegree.lordTh}(${r.mingDegree.lordZh}) ${r.mingDegree.lordStatus} · 身主(月為身): 宿${r.shenDegree.shu}${r.shenDegree.shuDeg}° → ${r.shenDegree.lordTh}(${r.shenDegree.lordZh}) ${r.shenDegree.lordStatus}`,
       `ตำแหน่งดาวจริง: ${starLines}`,
       `恩星(หนุน用神): ${r.en_stars.map((x) => x.th).join(",") || "—"} · 難星(ขัด): ${r.nan_stars.map((x) => x.th).join(",") || "—"}`,
       `格局: ${r.geju.map((g) => g.zh).join(",") || "—"} · ผลรวมเบื้องต้น: ${r.verdictTh.th}`,
+      `ข้อจำกัด: packet นี้ไม่มี 行限/限度主/流月/流日/化曜 และ七政四餘ไม่มี四化(祿權科忌)แบบ紫微斗數`,
     ].join("\n");
 
     const sys = lang === "en"

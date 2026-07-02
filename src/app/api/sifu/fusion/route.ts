@@ -485,7 +485,8 @@ async function loadFusionProfileSnapshot(profileId: string, orgId: string | null
   if (!orgId) return null;
   return q1<Record<string, unknown>>(
     `SELECT id, name, nickname, day_master, gender, relationship_type,
-            birth_datetime::text AS birth_datetime, updated_at::text AS updated_at
+            to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
+            updated_at::text AS updated_at
        FROM profiles
       WHERE id=$1::uuid AND org_id=$2::uuid AND is_archived=false
       LIMIT 1`,

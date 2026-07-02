@@ -64,6 +64,13 @@ function cleanThreadId(v: unknown): string | null {
   return s || null;
 }
 
+function cleanPredictionPhase(v: unknown): string | null {
+  const s = typeof v === "string" ? v.trim() : "";
+  if (["before_prediction", "post_feedback", "clarification", "general"].includes(s)) return s;
+  if (s === "followup" || s === "follow_up") return "clarification";
+  return s ? "general" : null;
+}
+
 function conversationKey(parts: Array<string | null | undefined>): string {
   const raw = parts.map((p) => p || "-").join("|");
   return createHash("sha1").update(raw).digest("hex").slice(0, 24);
@@ -129,6 +136,7 @@ export async function logResearchAiMessage(input: {
   const requestPayloadObj = typeof input.requestPayload === "object" && input.requestPayload
     ? input.requestPayload as Record<string, unknown>
     : {};
+  const predictionPhase = cleanPredictionPhase(input.predictionPhase);
   const threadId = cleanThreadId(input.threadId)
     || cleanThreadId(requestPayloadObj.thread_id)
     || cleanThreadId(requestPayloadObj.local_thread_id);
@@ -136,7 +144,7 @@ export async function logResearchAiMessage(input: {
     ...(typeof input.responseMeta === "object" && input.responseMeta ? input.responseMeta as Record<string, unknown> : {}),
     audit_quality: input.auditQuality || undefined,
     profile_binding_status: input.profileBindingStatus || undefined,
-    prediction_phase: input.predictionPhase || undefined,
+    prediction_phase: predictionPhase || undefined,
     identity_check_result: input.identityCheckResult || undefined,
     packet_hash: input.packetHash || undefined,
     context_hash: input.contextHash || undefined,
@@ -197,7 +205,7 @@ export async function logResearchAiMessage(input: {
       threadProfileId,
       JSON.stringify(safeJson(input.historyProfileIds)),
       clipText(input.identityCheckResult, 80),
-      clipText(input.predictionPhase, 80),
+      clipText(predictionPhase, 80),
       JSON.stringify(safeJson(input.predictionRows)),
       Number.isFinite(input.historyDroppedCount as number) ? input.historyDroppedCount : null,
       clipText(input.profileBindingStatus, 80),

@@ -32,6 +32,10 @@ console.log("ลัคนา (Asc):", chart.ascendant !== null
 console.log("กลางฟ้า (MC):", chart.mc !== null
   ? `ราศี${SIGN_TH[Math.floor(chart.mc / 30)]} ${fmtDeg(chart.mc % 30)} (lon ${chart.mc})`
   : "—");
+console.log("เพศเจ้าชะตา:", chart.gender, "| sect:", chart.sect ?? "—");
+console.log("จุดโชค (Part of Fortune):", chart.partOfFortune
+  ? `ราศี${SIGN_TH[chart.partOfFortune.sign]} ${fmtDeg(chart.partOfFortune.signDeg)} เรือน ${chart.partOfFortune.house} (lon ${chart.partOfFortune.lon})`
+  : "—");
 console.log("");
 console.log("ดาว:");
 for (const p of chart.planets) {

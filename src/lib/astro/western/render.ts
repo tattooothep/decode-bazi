@@ -27,6 +27,25 @@ const ASPECT_TH: Record<string, string> = {
 
 const ELEMENT_TH: Record<string, string> = { fire: "ไฟ", earth: "ดิน", air: "ลม", water: "น้ำ" };
 const MODALITY_TH: Record<string, string> = { cardinal: "จร (cardinal)", fixed: "คงที่ (fixed)", mutable: "ผันแปร (mutable)" };
+const POLARITY_TH: Record<string, string> = { masculine: "พลังส่งออก/masculine", feminine: "พลังรับเข้า/feminine" };
+const HIDDEN_CONTACT_TH: Record<string, string> = {
+  antiscia: "antiscia จุดสะท้อนเงา",
+  contra_antiscia: "contra-antiscia จุดสะท้อนตรงข้าม",
+  parallel: "parallel declination (คล้ายทับซ้อน)",
+  contraparallel: "contra-parallel declination (คล้ายเล็ง)",
+};
+const FIXED_STAR_CONTACT_TH: Record<string, string> = {
+  conjunction: "ทับซ้อน",
+  opposition: "เล็ง",
+  parallel: "parallel declination",
+  contraparallel: "contra-parallel declination",
+};
+const PATTERN_TH: Record<string, string> = {
+  t_square: "T-Square",
+  grand_trine: "Grand Trine",
+  yod: "Yod",
+  kite: "Kite",
+};
 
 /** จัดองศาเป็นข้อความ เช่น 29°48' */
 function fmtDeg(signDeg: number): string {
@@ -56,8 +75,16 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
   L.push("ข้อมูลทั้งหมดด้านล่างคำนวณจากตำแหน่งดาราศาสตร์จริง (deterministic) — โปรดตีความตามหลักโหราศาสตร์ตะวันตก");
   L.push(`ระบบเรือน: whole-sign (เรือน = ราศี) · เวลาเกิด: ${packet.hasBirthTime ? "มีเวลาแม่น" : "ไม่มีเวลาเกิด (ผังบางส่วน)"}`);
   L.push(`เพศเจ้าชะตา: ${packet.gender === "F" ? "หญิง (F)" : "ชาย (M)"} · sect ของดวง: ${packet.sect ? SECT_TH[packet.sect] : "ไม่มีข้อมูล (ขาดเวลาเกิด)"}`);
+  L.push("ข้อห้าม: ห้ามคำนวณ term/face/triplicity, fixed stars, antiscia, declination หรือ transits เองจาก raw degree; ใช้เฉพาะ field ที่ packet ส่งมาเท่านั้น");
+  L.push("ตัวเลข weight/score ใน packet เป็นดัชนีภายในเพื่อจัดลำดับหลักฐานเท่านั้น ห้ามตอบผู้ใช้เป็นคะแนนหรือเปอร์เซ็นต์");
+  L.push(`TIMING_COVERAGE: transits=${packet.timingCoverage.transits} · returnCycles=${packet.timingCoverage.returnCycles} · exactTransitWindows=${packet.timingCoverage.exactTransitWindows} · solarReturn=${packet.timingCoverage.solarReturn} · secondaryProgressions=${packet.timingCoverage.secondaryProgressions} · annualProfection=${packet.timingCoverage.annualProfection} · rectification=${packet.timingCoverage.rectification}`);
+  L.push("TIMING_GUARD: ถ้าผู้ใช้ถามวัน/เดือน/ปีที่ไม่ได้อยู่ใน packet ให้ฟันธงจากข้อมูลที่มีเท่านั้น และต้องบอกชัดว่าชั้น exact transit window/solar return/profection ยังไม่ได้ส่งมา ห้ามแต่งวันแน่นอนเอง");
+  L.push("RECTIFICATION_GUARD: ถ้าไม่มีเวลาเกิด ห้ามเดาลัคนา/เรือน/จุดโชค/lots/sect เอง ต้องอ่านแบบ no-time หรือขอ workflow rectification แยก");
   if (!packet.hasBirthTime) {
     L.push("⚠️ ไม่มีเวลาเกิด → ไม่มีลัคนา/กลางฟ้า/เรือน · ตำแหน่งจันทร์อาจคลาดเคลื่อน (ติดธง) · ตีความเฉพาะตำแหน่งดาวในราศีและมุมสัมพันธ์");
+    L.push(`NO_TIME_METADATA: birthTimeMode=${packet.birthTimeMode} · anchorTime=${packet.anchorTime?.localTime || "none"} (${packet.anchorTime?.purpose || "real_birth_time"}) · moonUncertainty=${packet.moonUncertainty ? "true" : "false"}`);
+    L.push(`NO_TIME_ALLOWED: ${packet.allowedFieldsWhenNoTime.join(", ")}`);
+    L.push(`NO_TIME_FORBIDDEN: ${packet.forbiddenFieldsWhenNoTime.join(", ")} · ถ้า field เหล่านี้ไม่มี/ถูกห้าม ห้ามนำไปฟันธง`);
   }
   L.push("");
 
@@ -72,12 +99,28 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
   } else {
     L.push("กลางฟ้า (MC): ไม่มีข้อมูล (ขาดเวลาเกิด)");
   }
-  // จุดโชค (Part of Fortune) — ใช้ดูการเงิน/ลาภ/ความมั่งคั่ง (Lilly · Ptolemy)
+  // จุดโชค (Part of Fortune) — ใช้ดูการเงิน/ลาภ/ความมั่งคั่ง; formula label ใช้ตาม packet
   if (d.partOfFortune) {
     const pof = d.partOfFortune;
     L.push(`จุดโชค (Part of Fortune · การเงิน/ลาภ/ความเป็นอยู่): ราศี${pof.signTh} ${fmtDeg(pof.signDeg)} · เรือนที่ ${pof.house}`);
+    if (packet.partOfFortuneFormula === "sect_reversed") L.push("  สูตรจุดโชคใน packet: sect-reversed (day=Asc+Moon-Sun, night=Asc+Sun-Moon) · ใช้ตาม packet และอย่าสับสนว่าเป็นสูตร Ptolemy/Lilly แบบเดียวกันทั้งหมด");
   } else {
     L.push("จุดโชค (Part of Fortune): ไม่มีข้อมูล (ขาดเวลาเกิด/ลัคนา)");
+  }
+  L.push("— Lots เพิ่มเติม (ใช้เป็นหลักฐานรองตามหัวข้อ ห้ามให้กลบดาว/เรือนหลัก) —");
+  if (!d.lots.length) {
+    L.push("  ไม่มี lots เพิ่มเติมใน packet (มักเกิดจากขาดเวลาเกิด/ลัคนา) → ห้ามคำนวณเอง");
+  } else {
+    for (const lot of d.lots) {
+      L.push(`  • ${lot.nameTh} (${lot.key}): ราศี${lot.signTh} ${fmtDeg(lot.signDeg)} · เรือนที่ ${lot.house} · formula ${lot.formula} · source=${lot.source}`);
+    }
+  }
+  if (d.chartRuler) {
+    const cr = d.chartRuler;
+    const loc = cr.planet ? `อยู่ราศี${cr.planet.signTh} ${fmtDeg(cr.planet.signDeg)}${cr.planet.house ? ` · เรือนที่ ${cr.planet.house}` : ""}` : "ไม่พบดาวเจ้าใน packet";
+    L.push(`เจ้าดวง (Chart ruler): ลัคนาราศี${cr.signTh} → ${cr.rulerTh} (${cr.ruler}) · ${loc}`);
+  } else {
+    L.push("เจ้าดวง (Chart ruler): ไม่มีข้อมูล (ขาดลัคนา)");
   }
   L.push("");
 
@@ -95,10 +138,70 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
     const parts: string[] = [];
     parts.push(`${p.nameTh}: ราศี${p.signTh} ${fmtDeg(p.signDeg)}`);
     if (p.house !== null) parts.push(`เรือนที่ ${p.house}`);
+    parts.push(`declination ${p.declination >= 0 ? "+" : ""}${p.declination.toFixed(2)}°`);
     if (p.retro) parts.push("เดินถอย (พักร์/retrograde)");
     if (p.dignity) parts.push(DIGNITY_TH[p.dignity]);
+    const md = p.minorDignity;
+    const minor: string[] = [];
+    if (md.activeTriplicityLord) minor.push(`triplicity ruler=${pName(d, md.activeTriplicityLord)}`);
+    else minor.push(`triplicity day/night=${pName(d, md.triplicityDayLord)}/${pName(d, md.triplicityNightLord)}`);
+    minor.push(`term=${pName(d, md.termLord)}`);
+    minor.push(`face=${pName(d, md.faceLord)}`);
+    if (md.score > 0) minor.push("ฐานะย่อยหนุน");
+    else if (md.score < 0) minor.push("ฐานะย่อยกด");
+    else minor.push("ฐานะย่อยเป็นกลาง");
+    if (md.peregrine) minor.push("peregrine");
+    parts.push(`minor dignities: ${minor.join(" · ")}`);
+    parts.push(`antiscia ${fmtLon(p.antisciaLon)} · contra ${fmtLon(p.contraAntisciaLon)}`);
     if (p.uncertain) parts.push("⚠️ ตำแหน่งอาจคลาด (ขาดเวลาเกิด)");
     L.push("  • " + parts.join(" · "));
+  }
+  L.push("");
+
+  // ── antiscia / declination contacts ──
+  L.push("— จุดซ่อน/declination ที่ packet คำนวณให้ —");
+  if (!d.hiddenContacts.length) {
+    L.push("  (ไม่พบ antiscia/contra-antiscia หรือ parallel/contraparallel ใน orb 1°)");
+  } else {
+    for (const c of d.hiddenContacts.slice(0, 24)) {
+      L.push(`  • ${pName(d, c.a)} ↔ ${pName(d, c.b)} · ${HIDDEN_CONTACT_TH[c.type] || c.type} · orb ${c.orb}°`);
+    }
+  }
+  L.push("");
+
+  // ── fixed stars ──
+  L.push("— Fixed stars —");
+  if (!d.fixedStarHits.length) {
+    L.push("  engine ตรวจ fixed-star catalog แล้ว แต่ไม่พบ hit แน่นใน orb ที่กำหนด → ห้ามอ่านชื่อ fixed star เพิ่มเองจากองศา");
+  } else {
+    L.push("  ใช้เฉพาะ fixed-star hit ที่ระบุด้านล่าง ห้ามเพิ่มชื่อดาวฤกษ์เอง");
+    for (const h of d.fixedStarHits.slice(0, 24)) {
+      L.push(`  • ${h.starTh} (${h.star}) ${FIXED_STAR_CONTACT_TH[h.contact] || h.contact} ${targetName(d, h.target)} · orb ${h.orb}° · nature ${h.nature.join("+")}`);
+    }
+  }
+  L.push("");
+
+  // ── transits ──
+  L.push("— ดาวจรอ้างอิง (transits) —");
+  if (!d.transits) {
+    L.push("  ไม่มี transit packet → ถ้าถามปี/จังหวะเวลา ให้บอกว่าต้องคำนวณ transit เพิ่ม");
+  } else {
+    L.push(`  วันอ้างอิง: ${d.transits.refDate}`);
+    if (!d.transits.aspectsToNatal.length) {
+      L.push("  ไม่พบมุมดาวจรชนดาว/มุมกำเนิดใน orb ที่กำหนด");
+    } else {
+      for (const a of d.transits.aspectsToNatal.slice(0, 30)) {
+        L.push(`  • ดาวจร ${pName(d, a.transit)} ${ASPECT_TH[a.type] ?? a.type} ${targetName(d, a.natal)} (${a.natalKind}) · orb ${a.orb}°`);
+      }
+    }
+    if (d.timingSupport) {
+      const activeRetro = d.timingSupport.retrogrades.filter((x) => x.retro).map((x) => x.planetTh).join(", ") || "ไม่มีดาวหลักที่พักร์ใน refDate";
+      L.push(`  retrograde status: ${activeRetro}`);
+      for (const r of d.timingSupport.returnCycles) {
+        const asp = r.currentAspectToNatal ? ` · ตอนนี้ทำมุม ${ASPECT_TH[r.currentAspectToNatal.type] ?? r.currentAspectToNatal.type} orb ${r.currentAspectToNatal.orb}° กับตำแหน่งกำเนิด` : "";
+        L.push(`  • ${r.planetTh} return cycle: อายุ ณ refDate ${r.ageAtRefDate} · รอบประมาณ ${r.currentCycleNumber} · return ก่อนหน้าอายุ ~${r.previousApproxAge} / ถัดไป ~${r.nextApproxAge} · orb ถึง return ${r.orbToReturn}°${asp}`);
+      }
+    }
   }
   L.push("");
 
@@ -106,8 +209,29 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
   if (d.houses) {
     L.push("— เรือนทั้ง 12 (whole-sign · เรือน = ราศี) —");
     L.push("  " + d.houses.map((h) => `เรือน${h.house}=ราศี${h.signTh}`).join(" · "));
+    if (d.houseRulers) {
+      L.push("  เจ้าเรือน: " + d.houseRulers.map((h) => `เรือน${h.house}=${h.rulerTh}${h.rulerPlanet?.house ? `(อยู่เรือน${h.rulerPlanet.house})` : ""}`).join(" · "));
+    }
     L.push("");
   }
+
+  // ── Topic lord matrix: บังคับให้ AI ลงรายละเอียดตามหัวข้อ ไม่ตอบกว้างเหมือนดวงทั่วไป ──
+  L.push("— Topic lord matrix (หลักฐานตามหัวข้อชีวิต) —");
+  L.push("  ใช้ matrix นี้ก่อนสรุปเรื่องงาน/เงิน/รัก/สุขภาพ เพื่อให้คำตอบเฉพาะเจ้าชะตาและไม่พูดกว้างเกินผัง");
+  for (const row of d.topicLordMatrix) {
+    L.push(`  ${row.labelTh} [${row.availability}]:`);
+    if (!row.evidence.length) {
+      L.push("    - ไม่มีหลักฐานเฉพาะหัวข้อนี้ใน packet");
+      continue;
+    }
+    for (const ev of row.evidence) {
+      const name = ev.planetTh ? `${ev.planetTh}${ev.planet ? ` (${ev.planet})` : ""}` : ev.lotTh ? `${ev.lotTh}${ev.lot ? ` (${ev.lot})` : ""}` : ev.role;
+      const loc = ev.signTh ? `ราศี${ev.signTh}${typeof ev.signDeg === "number" ? ` ${fmtDeg(ev.signDeg)}` : ""}${ev.house ? ` · เรือน${ev.house}` : ""}` : ev.house ? `เรือน${ev.house}` : "ไม่มีตำแหน่งเรือน";
+      const dig = ev.dignity ? ` · ${DIGNITY_TH[ev.dignity] || ev.dignity}` : typeof ev.minorScore === "number" ? ` · minorScore=${ev.minorScore}` : "";
+      L.push(`    - ${ev.role}: ${name} · ${loc}${dig} · ${ev.reason}`);
+    }
+  }
+  L.push("");
 
   // ── มุมสัมพันธ์ ──
   L.push("— มุมสัมพันธ์ระหว่างดาว (aspects · orb = องศาคลาดจากมุมพอดี) —");
@@ -125,12 +249,41 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
   }
   L.push("");
 
+  // ── มุมย่อย + pattern ──
+  L.push("— มุมย่อยและรูปทรงมุม (minor aspects / aspect patterns) —");
+  if (!d.minorAspects.length) {
+    L.push("  มุมย่อย: ไม่พบใน orb ที่กำหนด");
+  } else {
+    for (const a of d.minorAspects.slice(0, 24)) {
+      const dir = a.applying ? "กำลังเข้าหา" : "กำลังแยกออก";
+      L.push(`  • ${pName(d, a.a)} ${a.angleTh} ${pName(d, a.b)} · orb ${a.orb}° · ${dir}`);
+    }
+  }
+  if (!d.aspectPatterns.length) {
+    L.push("  aspect pattern: ไม่พบ T-Square / Grand Trine / Yod / Kite ตามเกณฑ์ engine");
+  } else {
+    for (const p of d.aspectPatterns) {
+      const names = p.planets.map((n) => pName(d, n)).join(", ");
+      const marker = p.apex ? ` · apex=${pName(d, p.apex)}` : p.focus ? ` · focus=${pName(d, p.focus)}` : "";
+      L.push(`  • ${PATTERN_TH[p.type] || p.type}: ${names}${marker}`);
+    }
+  }
+  L.push("");
+
   // ── ภาพรวมธาตุ / คุณภาพราศี / กลุ่มดาว ──
   L.push("— ภาพรวมผัง (นับจากดาวจริง 10 ดวง) —");
   const e = d.shape.elements;
   L.push(`  สมดุลธาตุ: ไฟ ${e.fire} · ดิน ${e.earth} · ลม ${e.air} · น้ำ ${e.water}`);
   const m = d.shape.modalities;
   L.push(`  คุณภาพราศี: ${MODALITY_TH.cardinal} ${m.cardinal} · ${MODALITY_TH.fixed} ${m.fixed} · ${MODALITY_TH.mutable} ${m.mutable}`);
+  const pol = d.shape.polarities;
+  L.push(`  polarity: ${POLARITY_TH.masculine} ${pol.masculine} · ${POLARITY_TH.feminine} ${pol.feminine}`);
+  if (d.dominantPlanets.length) {
+    L.push("  ดาวเด่น (dominant candidates · เรียงตาม internal rank): " + d.dominantPlanets.map((p) => `${p.nameTh} (${p.reasons.slice(0, 3).join("; ")})`).join(" | "));
+  }
+  if (d.dispositors.length) {
+    L.push("  dispositors: " + d.dispositors.slice(0, 12).map((x) => `${x.planetTh}→${x.rulerTh}${x.rulerHouse ? `(เรือน${x.rulerHouse})` : ""}`).join(" · "));
+  }
   if (d.shape.stellium.length > 0) {
     for (const s of d.shape.stellium) {
       const names = s.planets.map((n) => pName(d, n)).join(", ");
@@ -140,6 +293,9 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
     L.push("  กลุ่มดาวกระจุก (stellium): ไม่มี");
   }
   L.push("");
+  L.push("— หัวข้อขั้นสูงที่ต้องมี packet เฉพาะเพิ่มเติม —");
+  L.push("  ยังไม่ควรฟันธงจากผัง natal/transit นี้อย่างเดียว: " + packet.unsupportedSpecialtyPackets.join(", "));
+  L.push("");
   L.push("===== จบข้อมูลผัง · โปรดตีความเป็นภาษาไทยตามหลักโหราศาสตร์ตะวันตก =====");
 
   return L.join("\n");
@@ -148,4 +304,17 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
 /** หาชื่อไทยของดาวจาก key (fallback = key) */
 function pName(d: WesternPacket["data"], key: string): string {
   return d.planets.find((p) => p.name === key)?.nameTh ?? key;
+}
+
+function targetName(d: WesternPacket["data"], key: string): string {
+  if (key === "Ascendant") return "ลัคนา";
+  if (key === "MC") return "กลางฟ้า";
+  if (key === "Part of Fortune") return "จุดโชค";
+  return pName(d, key);
+}
+
+function fmtLon(lon: number): string {
+  const L = ((lon % 360) + 360) % 360;
+  const sign = Math.floor(L / 30);
+  return `ราศี${["เมษ","พฤษภ","เมถุน","กรกฎ","สิงห์","กันย์","ตุล","พิจิก","ธนู","มังกร","กุมภ์","มีน"][sign]} ${fmtDeg(L - sign * 30)}`;
 }

@@ -20,7 +20,9 @@ export default async function DashboardPage() {
   if (!s) redirect("/signup?tab=login&next=/dashboard");
 
   const profiles = await q<ProfileRow>(
-    `SELECT id, name, nickname, birth_datetime, birth_location_name,
+    `SELECT id, name, nickname,
+            to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok', 'YYYY-MM-DD"T"HH24:MI:SS"+07:00"') AS birth_datetime,
+            birth_location_name,
             day_master, day_master_strength, yongshen, bazi_pillars
      FROM profiles
      WHERE org_id=$1 AND is_archived=false
@@ -101,7 +103,7 @@ function ProfileCard({ p }: { p: ProfileRow }) {
       </div>
       <div className="mt-1 text-[11.5px] text-muted-foreground">
         {new Date(p.birth_datetime).toLocaleDateString("th-TH", {
-          year: "numeric", month: "short", day: "numeric"
+          year: "numeric", month: "short", day: "numeric", timeZone: "Asia/Bangkok"
         })}
         {p.birth_location_name && ` · ${p.birth_location_name}`}
       </div>

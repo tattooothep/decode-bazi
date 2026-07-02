@@ -61,9 +61,12 @@ function checkRateLimit(ip: string): { ok: boolean; remaining: number; resetSec:
    Key = JSON.stringify(request body essentials) · ephemeris ไม่เปลี่ยนใน 60s · safe */
 const _ausCache = new Map<string, { data: any; expires: number }>();
 const AUS_TTL = 60_000;
+const DATEPICK_HARD_MODULES = new Set<ModuleKey>(["ze_ri", "tai_sui", "ba_zi", "qi_men"]);
+const DONGGONG_SCORING_POLICY = "v1_overlay";
 function cacheKey(body: any): string {
   const options = body.options || {};
   return JSON.stringify({
+    dg: DONGGONG_SCORING_POLICY,
     a: body.activityType, ap: body.activityProfileKey || "", df: body.dateFrom, dt: body.dateTo,
     p: body.peopleIds || [], m: (body.activeModules || []).slice().sort(),
     o: options,
@@ -132,22 +135,26 @@ export async function POST(req: NextRequest) {
     // STEP 2: ดึง candidates จาก aj_ephemeris_cache
     // options.hardModules ใช้สำหรับ layer ที่ต้องตัดจริงเท่านั้น; activeModules ใช้จัดคะแนนทั้งหมด
     const activeModuleKeys = activeModules.filter((m: ModuleKey) => ALL_MODULES.includes(m));
-    const universalActive = activeModuleKeys.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
     const requestedHardModulesRaw = Array.isArray(options.hardModules)
-      ? options.hardModules.filter((m: ModuleKey) => ALL_MODULES.includes(m))
-      : universalActive;
+      ? options.hardModules.filter((m: ModuleKey) =>
+        ALL_MODULES.includes(m)
+        && DATEPICK_HARD_MODULES.has(m)
+        && (m !== "ba_zi" || ownedPeopleIds.length > 0)
+      )
+      : [];
     const requestedHardModules = qimenHardFilterModulesForDatepick(requestedHardModulesRaw);
     const mergedHardModules = mergeProfileHardModules({
       requestedHardModules,
       activeModules: activeModuleKeys,
       profile: activityProfile,
       hasPeople: ownedPeopleIds.length > 0,
-    });
-    const hardModules = qimenHardFilterModulesForDatepick(mergedHardModules).filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
+    }).filter((m: ModuleKey) => DATEPICK_HARD_MODULES.has(m));
+    const hardModules = qimenHardFilterModulesForDatepick(mergedHardModules);
+    const sqlHardModules = hardModules.filter((m: ModuleKey) => UNIVERSAL_MODULES.includes(m));
     const applyPersonHard = hardModules.includes("ba_zi");
     const baseTotal = await countEphemerisBase(dateFrom, dateTo);
     const personalAvoidZodiacs = applyPersonHard ? avoidZodiacs : [];
-    const candidates = await queryEphemerisCandidates(dateFrom, dateTo, personalAvoidZodiacs, hardModules, options.scanLimit ?? 360);
+    const candidates = await queryEphemerisCandidates(dateFrom, dateTo, personalAvoidZodiacs, sqlHardModules, options.scanLimit ?? 360);
 
     // STEP 3: Funnel stats
     const funnelStats = await buildFunnelStats(dateFrom, dateTo, personalAvoidZodiacs);
@@ -185,6 +192,8 @@ export async function POST(req: NextRequest) {
       .map(c => enrichCandidate(c, baseScoreModules, resolvedActivityType))
       .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys, targetDirection))
       .map(c => applyQimenGenericGuard(c, activityProfile, activeModuleKeys))
+      .map(c => applyDongGongOverlay(c, activeModuleKeys, resolvedActivityType))
+      .map(c => hideDongGongWhenInactive(c, activeModuleKeys))
       .map(refreshCandidateDisplay)
       .filter(c => !options.minScore || (c.scoring?.finalScore ?? 0) >= options.minScore)
       .sort((a, b) => (b.scoring?.finalScore ?? 0) - (a.scoring?.finalScore ?? 0))
@@ -216,7 +225,9 @@ export async function POST(req: NextRequest) {
           profileMode: activityProfile.profileMode,
         } : null,
         qimenScoringPolicy: buildQimenDatepickPolicy(activityProfile, activeModuleKeys, targetDirection),
+        donggongScoringPolicy: DONGGONG_SCORING_POLICY,
         hardModules,
+        sqlHardModules,
         mergedHardModules,
       } as any,
     };
@@ -507,6 +518,95 @@ function refreshCandidateDisplay(c: CandidateSlot): CandidateSlot {
     ],
   };
   return c;
+}
+
+const DONGGONG_ACTIVITY_ALIASES: Record<ActivityType, string[]> = {
+  立約: ["立約", "交易", "商買"],
+  出行: ["出行", "遠行"],
+  動土: ["動土", "造", "起造", "修造", "修", "小修", "伐木", "拴架", "定磉", "上樑"],
+  搬家: ["入宅", "移居", "移徙"],
+  開市: ["開市", "開張", "商買", "大工開張"],
+  婚姻: ["嫁", "娶", "嫁娶", "婚姻", "納采", "納彩", "娶親", "會親"],
+  求財: ["開市", "商買", "立約", "造倉庫", "倉庫"],
+  祭祀: ["還福願"],
+};
+const DONGGONG_IRREVERSIBLE = new Set<ActivityType>(["婚姻", "動土", "搬家", "開市"]);
+const DONGGONG_VERDICT_DELTA: Record<string, number> = {
+  上吉: 2,
+  全吉: 2,
+  大吉: 2,
+  吉: 1,
+  次吉: 1,
+  凶: -1,
+  大凶: -2,
+  不利: -2,
+};
+
+function applyDongGongOverlay(c: CandidateSlot, activeModules: ModuleKey[], activity: ActivityType): CandidateSlot {
+  if (!activeModules.includes("ze_ri") || !c.scoring || !c.donggong || c.donggong.missing || c.donggong.verdict === "—") {
+    return c;
+  }
+  const scoring = c.scoring as any;
+  const dg = c.donggong;
+  const aliases = DONGGONG_ACTIVITY_ALIASES[activity] || [];
+  const yiMatches = (dg.yi || []).filter((x) => aliases.includes(x));
+  const jiMatches = (dg.ji || []).filter((x) => aliases.includes(x));
+  const addReason = (bucket: "reasonsUp" | "reasonsDown", code: string, thai: string, delta: number, severity: "info" | "warning") => {
+    scoring[bucket] = scoring[bucket] || [];
+    if (scoring[bucket].some((r: any) => r.code === code)) return;
+    scoring[bucket].unshift({ code, thai, delta, source: "ze_ri", severity });
+  };
+
+  const startScore = Number(scoring.finalScore) || 0;
+  const hasExistingGuardCap = (scoring.reasonsDown || []).some((r: any) => String(r.code || "").includes("CAP"));
+  let positiveCeiling = hasExistingGuardCap ? startScore : 100;
+  for (const cap of scoring.caps || []) {
+    const value = Number(cap?.value);
+    if ((cap?.type === "max" || cap?.type === "absolute") && Number.isFinite(value)) {
+      positiveCeiling = Math.min(positiveCeiling, value);
+    }
+  }
+
+  const genericDelta = DONGGONG_VERDICT_DELTA[dg.verdict] || 0;
+  let positiveDelta = 0;
+  let negativeDelta = 0;
+
+  if (genericDelta > 0) {
+    positiveDelta += genericDelta;
+    addReason("reasonsUp", "DONGGONG_VERDICT_UP", `ตงกงหนุนภาพรวม · ${dg.verdictTh} ${dg.jianchuTh}`, genericDelta, "info");
+  } else if (genericDelta < 0) {
+    negativeDelta += genericDelta;
+    addReason("reasonsDown", "DONGGONG_VERDICT_DOWN", `ตงกงลดแรงภาพรวม · ${dg.verdictTh} ${dg.jianchuTh}`, genericDelta, "warning");
+  }
+  if (yiMatches.length) {
+    positiveDelta += 4;
+    addReason("reasonsUp", "DONGGONG_YI_MATCH", `ตงกงระบุว่าเหมาะกับกิจกรรมนี้ · ${yiMatches.join("、")}`, 4, "info");
+  }
+  if (jiMatches.length) {
+    negativeDelta -= 6;
+    addReason("reasonsDown", "DONGGONG_JI_MATCH", `ตงกงระบุว่าควรเลี่ยงกิจกรรมนี้ · ${jiMatches.join("、")}`, -6, "warning");
+  }
+
+  positiveDelta = Math.min(6, positiveDelta);
+  let nextScore = startScore + negativeDelta;
+  if (positiveDelta > 0) nextScore = Math.min(nextScore + positiveDelta, positiveCeiling);
+  if (jiMatches.length) {
+    const jiCap = DONGGONG_IRREVERSIBLE.has(activity) ? 55 : 58;
+    if (nextScore > jiCap) {
+      addReason("reasonsDown", "DONGGONG_JI_CAP", `ตงกงมีข้อห้ามตรงกิจกรรมนี้ · ไม่ดันเป็นฤกษ์แรง`, jiCap - nextScore, "warning");
+      nextScore = jiCap;
+    }
+  }
+
+  scoring.finalScore = Math.max(0, Math.min(100, Math.round(nextScore)));
+  scoring.tier = scoreToTier(scoring.finalScore);
+  scoring.action = tierToAction(scoring.tier, scoring.warnings?.length || 0);
+  return c;
+}
+
+function hideDongGongWhenInactive(c: CandidateSlot, activeModules: ModuleKey[]): CandidateSlot {
+  if (activeModules.includes("ze_ri") || !c.donggong) return c;
+  return { ...c, donggong: null };
 }
 
 type QimenPurpose = ActivityProfile["qimenPurpose"];

@@ -271,10 +271,10 @@
 
 ## ๗. ภาคที่ยังขาด / ข้อควรระวัง (Gaps)
 
-- **อันตรทศาเต็มชุด:** สกัดมาเฉพาะ **มหาทศาอาทิตย์ (Ch.52)** เป็นแม่แบบ. อันตรทศาในมหาทศาจันทร์/อังคาร/ราหู/พฤหัส/เสาร์/พุธ/เกตุ/ศุกร์ (Ch.53–62) ยังไม่ได้ดึง — รูปแบบเหมือนกัน แต่ข้อความ verbatim ต่างกัน ควรดึงเพิ่มถ้าต้องฟันธงรายคู่.
+- **อันตรทศาเต็มชุด:** ไฟล์นี้ยังสกัด verbatim เฉพาะ **มหาทศาอาทิตย์ (Ch.52)** เป็นแม่แบบ. สำหรับ runtime มี operating summary เพิ่มแล้วใน `05-dasha-deepening-rules.md` เพื่อใช้หลักเทียบ Lagna + mahadasha lord + antardasha lord โดยไม่ quote raw text. ถ้าต้องการ verbatim รายคู่มหาทศา/อันตรทศาครบทุกคู่ ยังต้อง proofread Ch.53–62 เพิ่ม.
 - **OCR เสียบางจุด:** Ch.47 v.53–56 (เสาร์ดี), v.83–84 (ศุกร์ร้าย) และบางหมายเหตุ มี OCR ขาด — ทำเครื่องหมาย `[...]`; ควรสอบทานกับ PDF ต้นฉบับ IA ก่อนใช้ฟันธงจุดนั้น.
-- **Pratyantar / Sookshma / Prana Dasha (Ch.62–63):** มีในต้นฉบับแต่ยังไม่สกัด.
-- **Kalachakra & Chara/other Dasha effects (Ch.49–50, 64–65):** ระบบทศานอกเหนือ Vimshottari — ยังไม่ดึง.
+- **Pratyantar / Sookshma / Prana Dasha (Ch.62–63):** มี operating guard แล้วใน `05-dasha-deepening-rules.md`: ใช้เฉพาะเมื่อ packet ส่ง sub-periods มา ห้าม AI คำนวณเอง. Verbatim เต็มยังไม่สกัด.
+- **Kalachakra & Chara/other Dasha effects (Ch.49–50, 64–65):** มี guard แล้วใน `05-dasha-deepening-rules.md` ว่าห้ามนำมาใช้แทน Vimshottari ถ้า packet ไม่ส่งระบบนั้น. Verbatim/engine support เต็มยังไม่ดึง.
 - **Yogas อื่นใน Ch.36** (Vasumati, Chamara, Sankha, Bheri, Mridanga, Sreenatha ฯลฯ ~30+ โยคะ) สกัดมาเฉพาะตัวเด่น; รายละเอียดเงื่อนไขครบของแต่ละโยคะควรดึงเพิ่มจาก Ch.36.
 - **Nabhasa & Raja Yoga รายสูตร (Ch.35, 39–40):** ดึงเฉพาะนิยามหลัก; สูตรรายข้อ (slokas) ของ Ch.39–40 ยังไม่ครบ.
 - **เคราะห์ในราศี (planet-in-sign) แบบ BPHS:** BPHS ไม่มีบทเฉพาะ "ผลเคราะห์ในแต่ละราศี" แยกเหมือน Brihat Jataka — ใน `vedic-core.md` ใช้ Brihat Jataka ch.XVIII เป็นแหล่งหลัก (คงไว้ตามเดิม).

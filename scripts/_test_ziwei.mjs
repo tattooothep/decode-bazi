@@ -23,7 +23,7 @@ for (const c of cases) {
   console.log("==================================================");
   const chart = ziweiChart(c.dt, c.lat, c.lng, c.g, true, { gmtOffsetHours: 7, refDate: new Date(Date.UTC(2026, 0, 1)) });
   console.log(`命宮 ${chart.mingGong.ganzhi}(${chart.mingGong.branch}) · 身宮 ${chart.shenGong.branch} · ${chart.wuxingJu.name} · 紫微@ground${chart.ziweiGround}=${["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"][((chart.ziweiGround+2)%12)]}`);
-  const packet = buildZiweiPacket(c.dt, c.lat, c.lng, c.g, true, { gmtOffsetHours: 7 });
+  const packet = buildZiweiPacket(c.dt, c.lat, c.lng, c.g, true, { gmtOffsetHours: 7, refDate: new Date(Date.UTC(2026, 0, 1)) });
   console.log("\n--- render (th) ---");
   console.log(renderZiweiPrompt(packet, "th"));
 }

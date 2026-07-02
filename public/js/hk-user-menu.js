@@ -114,10 +114,11 @@
   /* ── CSS ── */
   var CSS = `
 	  .hk-um-wrap{position:fixed;top:20px;right:20px;z-index:9999;font-family:'JetBrains Mono','SF Mono',monospace;}
-	  .hk-um-wrap.inline{position:relative;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:0 0 40px;z-index:9999;}
-  .hk-um-trigger{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#c8a44d,#8a6d2a);border:1px solid rgba(200,164,77,.5);color:#0d0f12;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .2s,box-shadow .2s;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;}
+	  .hk-um-wrap.inline{position:relative;top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:0 0 40px;z-index:9999;line-height:0;}
+  .hk-um-trigger{position:relative;width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#c8a44d,#8a6d2a);border:1px solid rgba(200,164,77,.5);color:#0d0f12;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .2s,box-shadow .2s;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;padding:0;overflow:hidden;line-height:1;}
   .hk-um-trigger:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(200,164,77,.4);}
-  .hk-um-trigger img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+  .hk-um-trigger.has-avatar{background:transparent;color:transparent;border-color:rgba(200,164,77,.45);border-radius:50%;box-shadow:0 0 0 1px rgba(200,164,77,.22),0 4px 12px rgba(0,0,0,.3);}
+  .hk-um-trigger.has-avatar img{display:block;width:100%;height:100%;border-radius:inherit;object-fit:cover;}
 	  .hk-um-panel{position:absolute;top:48px;right:0;width:260px;max-width:calc(100vw - 24px);max-height:80vh;overflow-y:auto;background:rgba(15,17,21,.96);border:1px solid rgba(200,164,77,.25);border-radius:14px;backdrop-filter:blur(20px);box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;transform:translateY(-4px) scale(.98);pointer-events:none;transition:.2s cubic-bezier(.2,.8,.2,1);z-index:9999;}
   .hk-um-panel.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
   [data-theme="light"] .hk-um-panel{background:rgba(255,250,238,.97);border-color:rgba(138,109,42,.3);}
@@ -220,8 +221,9 @@
   }
 
   function removeExistingMenu() {
-    var existing = document.getElementById(ROOT_ID);
-    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    document.querySelectorAll('#' + ROOT_ID).forEach(function(existing){
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    });
   }
 
   /* ── build menu ── */
@@ -229,6 +231,7 @@
     var savedTheme = (localStorage.getItem('hk-theme') || 'dark');
     var savedLang  = (localStorage.getItem('hk_locale') || 'th');
     var displayName = user.name || (user.email || '').split('@')[0] || 'user';
+    var hasAvatar = !!user.avatar_url;
     var avatar = user.avatar_url
       ? '<img src="'+escapeHtml(user.avatar_url)+'" alt="" referrerpolicy="no-referrer"/>'
       : escapeHtml(initial(displayName));
@@ -238,7 +241,7 @@
     wrap.id = ROOT_ID;
     wrap.className = 'hk-um-wrap' + (inline ? ' inline' : '');
     wrap.innerHTML = `
-      <button class="hk-um-trigger" id="hk-um-trigger" aria-label="user menu">${avatar}</button>
+      <button class="hk-um-trigger${hasAvatar ? ' has-avatar' : ''}" id="hk-um-trigger" aria-label="user menu">${avatar}</button>
       <div class="hk-um-panel" id="hk-um-panel" role="menu">
         <div class="hk-um-head">
           <div class="hk-um-name">${escapeHtml(displayName)}</div>

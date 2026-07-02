@@ -21,7 +21,7 @@ export interface ZiweiPacketPalace {
 
 export interface ZiweiPacket {
   discipline: "ziwei";
-  packetVersion: "ziwei-v1";
+  packetVersion: "ziwei-v3";
   hasBirthTime: boolean;
   degradeLevel: "full" | "minimal";
   data: {
@@ -34,8 +34,44 @@ export interface ZiweiPacket {
     ziweiBranch: string | null;
     palaces: ZiweiPacketPalace[];
     siHua: { star: string; type: string; palaceName: string | null; branch: string | null }[];
+    daXianSiHua: {
+      palaceName: string;
+      branch: string;
+      stem: string;
+      ageStart: number;
+      ageEnd: number;
+      siHua: { star: string; type: string; palaceName: string | null; branch: string | null }[];
+    }[];
     sanFangSiZheng: { palaceName: string; branch: string; relation: string }[] | null;
-    liuNian: { year: number; mingBranch: string; mingPalaceName: string } | null;
+    liuNian: {
+      year: number;
+      ganzhi: string;
+      mingBranch: string;
+      mingPalaceName: string;
+      siHua: { star: string; type: string; palaceName: string | null; branch: string | null }[];
+      annualStars: { star: string; palaceName: string; branch: string; source: string }[];
+    } | null;
+    liuYue: {
+      year: number;
+      lunarMonth: number;
+      isLeapMonth: boolean;
+      effectiveMonth: number;
+      ganzhi: string;
+      mingBranch: string;
+      mingPalaceName: string;
+      siHua: { star: string; type: string; palaceName: string | null; branch: string | null }[];
+      monthlyStars: { star: string; palaceName: string; branch: string; source: string }[];
+      monthPalaces: { lunarMonth: number; mingBranch: string; mingPalaceName: string }[];
+    } | null;
+    liuRi: {
+      dateISO: string;
+      lunarDay: number;
+      ganzhi: string;
+      mingBranch: string;
+      mingPalaceName: string;
+      siHua: { star: string; type: string; palaceName: string | null; branch: string | null }[];
+      dailyStars: { star: string; palaceName: string; branch: string; source: string }[];
+    } | null;
   };
   notAvailable: string[];
 }
@@ -70,7 +106,7 @@ export function buildZiweiPacket(
 
   return {
     discipline: "ziwei",
-    packetVersion: "ziwei-v1",
+    packetVersion: "ziwei-v3",
     hasBirthTime: chart.hasTime,
     degradeLevel: chart.degradeLevel,
     data: {
@@ -87,8 +123,18 @@ export function buildZiweiPacket(
       siHua: chart.siHua.map((s) => ({
         star: s.star, type: s.type, palaceName: s.palaceName, branch: s.branch,
       })),
+      daXianSiHua: chart.daXianSiHua.map((dx) => ({
+        palaceName: dx.palaceName,
+        branch: dx.branch,
+        stem: dx.stem,
+        ageStart: dx.ageStart,
+        ageEnd: dx.ageEnd,
+        siHua: dx.siHua.map((s) => ({ star: s.star, type: s.type, palaceName: s.palaceName, branch: s.branch })),
+      })),
       sanFangSiZheng: chart.sanFangSiZheng,
       liuNian: chart.liuNian,
+      liuYue: chart.liuYue,
+      liuRi: chart.liuRi,
     },
     notAvailable: chart.notAvailable,
   };

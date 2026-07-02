@@ -5,7 +5,8 @@
  * ✅ display-only · ไม่แตะ datepick/auspicious · ตำแหน่งดาว=ของจริง ไม่ใช่ตารางโบราณ
  */
 import { computeAstro } from "./ephemeris";
-import { SIGNS, STARS, miaoWang, miaoWangDeg, fourRelations, GEJU_RULES, JI_STARS, XIONG_STARS, ayanamsa, Lang3 } from "./tables";
+import { SIGNS, STARS, miaoWang, miaoWangDeg, fourRelations, GEJU_RULES, JI_STARS, XIONG_STARS, ayanamsa } from "./tables";
+import type { Lang3 } from "./tables";
 import { shuAt, ziqiLon } from "./xiu28";
 
 export type TXStar = {
@@ -15,9 +16,17 @@ export type TXStar = {
   shu: string; shuDeg: number;  // 宿 + 度ใน宿 (距星 system · A2)
   kind: string;
 };
+export type TXDegreePoint = {
+  lonTrop: number; lonSid: number; sign: number; signTh: string; signZh: string;
+  deg: number; shu: string; shuTh: string; shuDeg: number; shuWidth: number;
+  lordKey: string; lordTh: string; lordZh: string; lordStatus: string; lordStatusTh: string; lordStatusRank: number;
+  relationToMing: string;
+};
 export type TXResult = {
   dtUTC: string; lat: number; lng: number; ayanamsa: number;
-  ascendant: { lonSid: number; sign: number; signTh: string; signZh: string; rulerKey: string; rulerTh: string; rulerZh: string };
+  ascendant: { lonTrop: number; lonSid: number; sign: number; signTh: string; signZh: string; deg: number; shu: string; shuTh: string; shuDeg: number; rulerKey: string; rulerTh: string; rulerZh: string };
+  mingDegree: TXDegreePoint; // 命度 + 度主
+  shenDegree: TXDegreePoint; // 月為身: 月躔宿度 + 身主
   stars: TXStar[];
   yongshen: { key: string; th: string; zh: string; status: string; statusTh: string };
   en_stars: { key: string; th: string; zh: string }[];   // 恩星 (生用神·หนุน)
@@ -32,6 +41,25 @@ export type TXResult = {
 };
 
 const ELEMENT_OF = (k: string) => STARS[k]?.element || "";
+const XIU_DEGREE_LORD: Record<string, string> = {
+  角: "Jupiter", 斗: "Jupiter", 奎: "Jupiter", 井: "Jupiter",
+  亢: "Venus", 牛: "Venus", 婁: "Venus", 鬼: "Venus",
+  氐: "Saturn", 女: "Saturn", 胃: "Saturn", 柳: "Saturn",
+  房: "Sun", 虛: "Sun", 昴: "Sun", 星: "Sun",
+  心: "Moon", 危: "Moon", 畢: "Moon", 張: "Moon",
+  尾: "Mars", 室: "Mars", 觜: "Mars", 翼: "Mars",
+  箕: "Mercury", 壁: "Mercury", 參: "Mercury", 軫: "Mercury",
+};
+
+function relationToMing(lordKey: string, mingKey: string, rel: ReturnType<typeof fourRelations>): string {
+  if (lordKey === mingKey) return "命主同星";
+  const el = ELEMENT_OF(lordKey);
+  if (rel.en.includes(el)) return "恩星";
+  if (rel.yong.includes(el)) return "用星";
+  if (rel.chou.includes(el)) return "仇星";
+  if (rel.nan.includes(el)) return "難星";
+  return "中性";
+}
 
 export function tianxingReading(dtUTC: Date, lat: number, lng: number): TXResult {
   const astro = computeAstro(dtUTC, lat, lng);
@@ -74,6 +102,7 @@ export function tianxingReading(dtUTC: Date, lat: number, lng: number): TXResult
   // 命宮 + 命主(用神)
   const ascSid = sidOf(astro.ascendant);
   const ascSign = Math.floor(ascSid / 30);
+  const ascShu = shuAt(astro.ascendant, dtUTC);
   const rulerKey = SIGNS[ascSign].ruler;
   const ruler = STARS[rulerKey];
   const yongStar = stars.find((s) => s.key === rulerKey);
@@ -89,6 +118,25 @@ export function tianxingReading(dtUTC: Date, lat: number, lng: number): TXResult
     if (rel.chou.includes(el)) chouStars.push(s);
     if (rel.nan.includes(el)) nanStars.push(s);
   }
+
+  const degreePoint = (lonTrop: number, sh = shuAt(lonTrop, dtUTC)): TXDegreePoint => {
+    const lonSid = sidOf(lonTrop);
+    const sign = Math.floor(lonSid / 30);
+    const lordKey = XIU_DEGREE_LORD[sh.zh] || "";
+    const lordMeta = STARS[lordKey] || { th: lordKey || "—", zh: lordKey || "—" };
+    const lordStar = stars.find((s) => s.key === lordKey);
+    return {
+      lonTrop: +lonTrop.toFixed(2), lonSid: +lonSid.toFixed(2),
+      sign, signTh: SIGNS[sign].th, signZh: SIGNS[sign].zh, deg: +(lonSid % 30).toFixed(2),
+      shu: sh.zh, shuTh: sh.th, shuDeg: sh.deg, shuWidth: sh.width,
+      lordKey, lordTh: lordMeta.th, lordZh: lordMeta.zh,
+      lordStatus: lordStar?.status || "—", lordStatusTh: lordStar?.statusTh || "—", lordStatusRank: lordStar?.statusRank || 0,
+      relationToMing: relationToMing(lordKey, rulerKey, rel),
+    };
+  };
+  const moonStar = stars.find((s) => s.key === "Moon");
+  const mingDegree = degreePoint(astro.ascendant, ascShu);
+  const shenDegree = moonStar ? degreePoint(moonStar.lonTrop) : degreePoint(astro.ascendant, ascShu);
 
   // A4 · 格局 — baseline (吉星/凶星守命 · 日月夾命) + sign-level合格/忌格 (張果星宗五)
   const geju: { th: string; zh: string; good: boolean }[] = [];
@@ -141,7 +189,14 @@ export function tianxingReading(dtUTC: Date, lat: number, lng: number): TXResult
 
   return {
     dtUTC: astro.dtUTC, lat, lng, ayanamsa: +ayan.toFixed(3),
-    ascendant: { lonSid: +ascSid.toFixed(2), sign: ascSign, signTh: SIGNS[ascSign].th, signZh: SIGNS[ascSign].zh, rulerKey, rulerTh: ruler.th, rulerZh: ruler.zh },
+    ascendant: {
+      lonTrop: +astro.ascendant.toFixed(2), lonSid: +ascSid.toFixed(2),
+      sign: ascSign, signTh: SIGNS[ascSign].th, signZh: SIGNS[ascSign].zh, deg: +(ascSid % 30).toFixed(2),
+      shu: ascShu.zh, shuTh: ascShu.th, shuDeg: ascShu.deg,
+      rulerKey, rulerTh: ruler.th, rulerZh: ruler.zh,
+    },
+    mingDegree,
+    shenDegree,
     stars,
     yongshen: { key: rulerKey, th: ruler.th, zh: ruler.zh, status: yongStar?.status || "—", statusTh: yongStar?.statusTh || "—" },
     en_stars: enStars.map((s) => ({ key: s.key, th: s.th, zh: s.zh })),

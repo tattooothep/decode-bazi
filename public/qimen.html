@@ -315,6 +315,14 @@
   .qm-pro-details .qm-pro-body{padding:0 14px 14px;}
   .qm-pro-details ul{display:flex;flex-direction:column;gap:8px;list-style:none;margin:0;padding:0;}
   .qm-pro-details li{font-size:12px;line-height:1.45;color:var(--fg-soft);overflow-wrap:anywhere;}
+  .qm-formation-minor{padding:0;background:rgba(180,144,82,.06);border:1px dashed var(--gold-line);border-radius:8px;}
+  .qm-formation-minor summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;list-style:none;padding:9px 10px;font-family:var(--thai);font-size:12px;color:var(--fg-soft);}
+  .qm-formation-minor summary::-webkit-details-marker{display:none;}
+  .qm-formation-minor summary span{font-size:10px;color:var(--fg-faint);}
+  .qm-formation-minor summary b{font-weight:700;color:var(--fg);}
+  .qm-formation-minor summary .tc{font-family:var(--tc);color:var(--gold);}
+  .qm-formation-minor summary em{margin-left:auto;font-style:normal;font-family:var(--mono);font-size:10px;color:var(--gold);border:1px solid var(--gold-line);border-radius:999px;padding:2px 7px;background:var(--gold-soft);}
+  .qm-formation-minor-body{padding:0 10px 10px;font-size:11px;line-height:1.55;color:var(--fg-soft);}
   .qm-detail-mode{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 12px;}
   .qm-detail-mode button{border:1px solid var(--tile-bd);background:var(--bg-2);color:var(--fg-soft);border-radius:8px;padding:8px 10px;font-family:var(--thai);font-size:12px;cursor:pointer;text-align:center;}
   .qm-detail-mode button.on{border-color:var(--gold);background:var(--gold-soft);color:var(--gold);font-weight:700;}
@@ -982,7 +990,7 @@ window.applyI18N = applyI18N;
 </script>
 
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=18" defer></script>
+<script src="/js/hk-user-menu.js?v=19" defer></script>
 
 <!-- 📜 QiMen Live Calculator · wire /api/qimen · 15 พ.ค. 2026 -->
 <script>
@@ -2651,6 +2659,76 @@ window.applyI18N = applyI18N;
     }).join('');
   }
 
+  function qimenFormationCode(f){
+    return String(f?.formation_code || f?.code || f?.rule_id || f?.detector || '').toUpperCase();
+  }
+  function qimenFormationIsStarAtHome(f){
+    const code = qimenFormationCode(f);
+    const text = `${code} ${f?.name_th || ''} ${f?.label_th || ''} ${f?.name_zh || ''} ${f?.label_zh || ''} ${f?.description_th || ''} ${f?.note || ''}`.toUpperCase();
+    return code === 'STAR_AT_HOME' || text.includes('星歸本宮') || text.includes('ดาวอยู่บ้าน');
+  }
+  function qimenFormationIsDiagnosticWeak(f){
+    const text = `${f?.description_th || ''} ${f?.note || ''} ${f?.quality || ''} ${f?.base_quality || ''} ${f?.effective_quality || ''}`.toLowerCase();
+    return qimenFormationIsStarAtHome(f)
+      || f?.evidence?.diagnostic === true
+      || f?.diagnostic === true
+      || text.includes('weak signal')
+      || text.includes('diagnostic');
+  }
+  function qimenFormationPalaceRef(f){
+    const raw = f?.scope_ref ?? f?.palace_id ?? f?.palace ?? f?.evidence?.palace;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 1 && n <= 9 ? n : null;
+  }
+  function qimenUniqueFormations(items){
+    const seen = new Set();
+    return items.filter(f => {
+      const code = qimenFormationCode(f) || `${f?.name_th || ''}|${f?.name_zh || ''}`;
+      const ref = f?.scope_ref ?? f?.palace_id ?? f?.palace ?? '';
+      const key = `${code}|${f?.scope || ''}|${ref}|${f?.name_th || ''}|${f?.name_zh || ''}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+  function qimenStarAtHomeSummary(items, hasFuYin){
+    const rows = items.filter(qimenFormationIsStarAtHome);
+    if (!rows.length) return '';
+    const palaces = Array.from(new Set(rows.map(qimenFormationPalaceRef).filter(Boolean))).sort((a,b)=>a-b);
+    const stars = Array.from(new Set(rows.map(f => f?.evidence?.star || '').filter(Boolean))).slice(0, 9);
+    const palaceText = palaces.length ? `วัง ${palaces.join(', ')}` : 'หลายวัง';
+    const fullText = hasFuYin
+      ? 'พบครบพอเป็นหลักฐานของ 伏吟 แล้ว จึงไม่แยกเป็นรายการใหญ่รายวัง'
+      : 'พบเป็นสัญญาณนิ่งซ้ำรายวัง แต่ยังอ่านเป็นหลักฐานรอง';
+    const starText = stars.length ? ` · ${stars.join(', ')}` : '';
+    return `<details class="qm-formation-minor">
+      <summary><span>สัญญาณย่อยที่รวมไว้</span><b>ดาวอยู่บ้าน <span class="tc">星歸本宮</span></b><em>${palaces.length || rows.length} วัง</em></summary>
+      <div class="qm-formation-minor-body">${qmEsc(palaceText)}${qmEsc(starText)} · ${qmEsc(fullText)} · ไม่มีผลเพิ่มคะแนนซ้ำ</div>
+    </details>`;
+  }
+  function qimenFormationRowHtml(f){
+    const isContext = qimenFormationIsContextOnly(f);
+    const q = f.quality || 'neutral';
+    const color = isContext ? 'var(--fg-faint)' : q==='good' ? '#2ea043' : q==='bad' ? '#d96650' : 'var(--gold)';
+    const label = qimenFormationLabel(f);
+    const nameTh = label.th;
+    const nameZh = label.zh;
+    const rawNote = qimenPublicThaiCopy(f.note_th || f.description_th || f.note, '');
+    const note = isContext
+      ? `${rawNote || 'ใช้ดูเป็นข้อมูลประกอบเท่านั้น'} · อ่านประกอบเท่านั้น`
+      : rawNote;
+    const scope = qimenFormationScopeLabel(f);
+    return `<div style="display:flex;flex-direction:column;gap:3px;padding:8px 10px;background:var(--bg);border-left:3px solid ${color};border-radius:6px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-family:var(--thai);font-size:13px;color:var(--fg);font-weight:600">
+        <span>${qmEsc(nameTh)}</span>
+        ${nameZh ? `<span class="tc" style="font-family:var(--tc);color:${color}">${qmEsc(nameZh)}</span>` : ''}
+        ${isContext ? '<span style="font-family:var(--thai);font-size:10px;color:var(--fg-faint);font-weight:500">อ่านประกอบเท่านั้น</span>' : ''}
+        <span style="font-family:var(--thai);font-size:10px;letter-spacing:0;color:var(--fg-faint);margin-left:auto">${qmEsc(scope)}</span>
+      </div>
+      ${note ? `<div style="font-family:var(--thai);font-size:11px;color:var(--fg-soft);line-height:1.5">${qmEsc(note)}</div>`:''}
+    </div>`;
+  }
+
   function renderFormations(stored, compound, sourceFormations){
     /* หา host element · ถ้ามี / สร้างใหม่ใต้ palace-wrap */
     let host = document.getElementById('qm-formations');
@@ -2662,31 +2740,14 @@ window.applyI18N = applyI18N;
       host.style.cssText = 'margin-top:18px;padding:16px;background:var(--bg-2);border:1px solid var(--gold-line);border-radius:12px;display:flex;flex-direction:column;gap:8px;';
       pw.appendChild(host);
     }
-    const items = [...(stored||[]), ...(compound||[]), ...(sourceFormations||[])];
-    if (!items.length){ host.innerHTML = '<div style="font-family:var(--thai);font-size:12px;color:var(--fg-faint);">ยังไม่พบรูปแบบพิเศษ · 無格局</div>'; return; }
+    const allItems = [...(stored||[]), ...(compound||[]), ...(sourceFormations||[])];
+    const hasFuYin = allItems.some(f => qimenFormationCode(f) === 'FU_YIN' || String(f?.name_zh || '').includes('伏吟'));
+    const primaryItems = qimenUniqueFormations(allItems.filter(f => !qimenFormationIsDiagnosticWeak(f) || (!qimenFormationIsStarAtHome(f) && qimenFormationCode(f) !== 'STAR_AT_HOME')));
+    const minorHtml = qimenStarAtHomeSummary(allItems, hasFuYin);
+    if (!primaryItems.length && !minorHtml){ host.innerHTML = '<div style="font-family:var(--thai);font-size:12px;color:var(--fg-faint);">ยังไม่พบรูปแบบพิเศษ · 無格局</div>'; return; }
     host.innerHTML = '<div style="font-family:var(--thai);font-size:12px;letter-spacing:.03em;color:var(--gold);margin-bottom:4px">รูปแบบพิเศษ · 格局</div>' +
-      items.map(f => {
-        const isContext = qimenFormationIsContextOnly(f);
-        const q = f.quality || 'neutral';
-        const color = isContext ? 'var(--fg-faint)' : q==='good' ? '#2ea043' : q==='bad' ? '#d96650' : 'var(--gold)';
-        const label = qimenFormationLabel(f);
-        const nameTh = label.th;
-        const nameZh = label.zh;
-        const rawNote = qimenPublicThaiCopy(f.note_th || f.description_th || f.note, '');
-        const note = isContext
-          ? `${rawNote || 'ใช้ดูเป็นข้อมูลประกอบเท่านั้น'} · อ่านประกอบเท่านั้น`
-          : rawNote;
-        const scope = qimenFormationScopeLabel(f);
-        return `<div style="display:flex;flex-direction:column;gap:3px;padding:8px 10px;background:var(--bg);border-left:3px solid ${color};border-radius:6px">
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-family:var(--thai);font-size:13px;color:var(--fg);font-weight:600">
-            <span>${qmEsc(nameTh)}</span>
-            ${nameZh ? `<span class="tc" style="font-family:var(--tc);color:${color}">${qmEsc(nameZh)}</span>` : ''}
-            ${isContext ? '<span style="font-family:var(--thai);font-size:10px;color:var(--fg-faint);font-weight:500">อ่านประกอบเท่านั้น</span>' : ''}
-            <span style="font-family:var(--thai);font-size:10px;letter-spacing:0;color:var(--fg-faint);margin-left:auto">${qmEsc(scope)}</span>
-          </div>
-          ${note ? `<div style="font-family:var(--thai);font-size:11px;color:var(--fg-soft);line-height:1.5">${qmEsc(note)}</div>`:''}
-        </div>`;
-      }).join('');
+      primaryItems.map(qimenFormationRowHtml).join('') +
+      minorHtml;
   }
   function formationItemsForPalace(last, palaceId){
     const stored = last?.stored_formations || [];

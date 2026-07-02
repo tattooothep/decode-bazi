@@ -134,6 +134,8 @@
     .detail-block{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
     .detail-label{font-family:var(--mono);font-size:10px;color:var(--gold);text-transform:uppercase;margin-bottom:7px}
     .detail-text{white-space:pre-wrap;line-height:1.65;font-size:14px;color:var(--text);overflow-wrap:anywhere}
+    .detail-collapsed{border:1px dashed var(--line);border-radius:8px;padding:12px;background:rgba(255,255,255,.02);color:var(--muted);font-size:13px;line-height:1.55}
+    .thread-note{margin-top:10px;border:1px solid rgba(116,168,216,.28);border-radius:8px;background:rgba(116,168,216,.06);color:var(--muted);font-size:12px;line-height:1.55;padding:9px 11px}
     .note-box{width:100%;min-height:88px;margin-top:8px;background:#0d1016;border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px;resize:vertical}
     .compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .compare-card{border:1px solid var(--line);border-radius:8px;padding:11px;background:rgba(255,255,255,.02);min-width:0}
@@ -248,16 +250,545 @@
       .meta-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .detail-tools{justify-content:flex-start}
     }
+    /* ===== Fusion visual refresh · scoped override, keep IDs/JS intact ===== */
+    :root{
+      --surface:rgba(255,255,255,.045);
+      --surface-strong:rgba(255,255,255,.075);
+      --surface-warm:rgba(210,176,94,.09);
+      --ink:#0b0d11;
+      --accent:#6fb6b0;
+      --accent-2:#b88a3d;
+      --shadow:0 18px 48px rgba(0,0,0,.34);
+      --shadow-soft:0 10px 28px rgba(0,0,0,.22);
+    }
+    html{background:var(--bg)}
+    body{
+      background:
+        linear-gradient(135deg,rgba(184,138,61,.14) 0%,rgba(14,16,20,0) 34%),
+        linear-gradient(225deg,rgba(111,182,176,.12) 0%,rgba(14,16,20,0) 31%),
+        repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px 70px),
+        var(--bg);
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(180deg,rgba(255,255,255,.035),transparent 32%,rgba(0,0,0,.22));
+      z-index:-1;
+    }
+    .topbar{
+      background:rgba(10,12,16,.78);
+      border-bottom-color:rgba(255,255,255,.08);
+      box-shadow:0 10px 30px rgba(0,0,0,.22);
+    }
+    .topbar-inner{max-width:1240px;padding:12px 22px}
+    .brand{font-size:21px;letter-spacing:0}
+    .seal{
+      width:36px;
+      height:36px;
+      border-color:rgba(255,255,255,.24);
+      background:linear-gradient(180deg,#e4c978,#b78a37);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 8px 20px rgba(210,176,94,.18);
+    }
+    .nav{
+      gap:6px;
+      padding:4px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:8px;
+      background:rgba(255,255,255,.032);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .nav a,.theme-btn{
+      transition:border-color .18s,background .18s,color .18s,transform .18s;
+    }
+    .nav a{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      border-radius:8px;
+      background:transparent;
+      min-height:34px;
+      padding:7px 10px;
+      color:rgba(244,239,229,.72);
+      white-space:nowrap;
+    }
+    .nav .glyph{
+      font-family:"Noto Serif TC","Noto Serif Thai",serif;
+      color:#d9bd6a;
+      font-size:15px;
+      line-height:1;
+      font-weight:700;
+    }
+    .nav .lbl{line-height:1}
+    .nav a.active,.nav a.keep{
+      background:linear-gradient(180deg,rgba(210,176,94,.18),rgba(210,176,94,.08));
+      border-color:rgba(210,176,94,.34);
+      color:#f8eed8;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.055);
+    }
+    .nav a.active .glyph,.nav a.keep .glyph{
+      color:#f0d47e;
+    }
+    .nav a:hover,.theme-btn:hover{
+      background:rgba(255,255,255,.055);
+      transform:translateY(-1px);
+    }
+    .theme-btn{
+      flex:0 0 auto;
+      background:rgba(255,255,255,.035);
+      border-color:rgba(255,255,255,.1);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    #hk-user-menu-mount{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 36px;
+      width:36px;
+      height:36px;
+      min-width:36px;
+      line-height:0;
+    }
+    .topbar #hk-user-menu-root.hk-um-wrap.inline{
+      width:36px;
+      height:36px;
+      flex-basis:36px;
+      z-index:30;
+      line-height:0;
+    }
+    .topbar .hk-um-trigger{
+      width:36px;
+      height:36px;
+      border-radius:8px;
+      background:linear-gradient(180deg,#e4c978,#b78a37);
+      border-color:rgba(255,255,255,.18);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 10px 24px rgba(210,176,94,.16);
+      letter-spacing:0;
+      padding:0;
+      overflow:hidden;
+    }
+    .topbar .hk-um-trigger.has-avatar{
+      border-radius:50%;
+      background:transparent;
+      box-shadow:0 0 0 1px rgba(210,176,94,.42),0 10px 24px rgba(0,0,0,.22);
+    }
+    .topbar .hk-um-trigger.has-avatar img{
+      display:block;
+      width:100%;
+      height:100%;
+      border-radius:50%;
+      object-fit:cover;
+    }
+    .topbar .hk-um-panel{
+      top:46px;
+      border-radius:8px;
+      background:rgba(13,16,22,.97);
+      border-color:rgba(255,255,255,.12);
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
+    }
+    .topbar .hk-um-head,.topbar .hk-um-sec{
+      border-color:rgba(255,255,255,.08);
+    }
+    .topbar .hk-um-item{
+      color:rgba(244,239,229,.8);
+    }
+    .topbar .hk-um-item:hover{
+      background:rgba(210,176,94,.09);
+      color:#e4c978;
+    }
+    main{max-width:1240px;padding-top:30px}
+    .header{
+      grid-template-columns:minmax(0,1fr) auto;
+      align-items:center;
+      gap:28px;
+      margin-bottom:24px;
+      padding:6px 2px 18px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    h1{
+      font-size:46px;
+      line-height:1;
+      color:#fff8eb;
+      text-shadow:0 8px 28px rgba(0,0,0,.28);
+    }
+    .sub{
+      margin-top:12px;
+      color:rgba(244,239,229,.74);
+      font-size:15px;
+      max-width:780px;
+    }
+    .badges{
+      justify-content:flex-end;
+      align-content:center;
+      max-width:390px;
+    }
+    .badge,.pill{
+      border-radius:8px;
+      background:rgba(255,255,255,.045);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .badge.ok,.pill.ok{background:rgba(119,196,138,.09)}
+    .badge.warn,.pill.skip{background:rgba(216,168,76,.09)}
+    .pill.err{background:rgba(227,111,95,.09)}
+    .layout{
+      grid-template-columns:minmax(330px,410px) minmax(0,1fr);
+      gap:20px;
+      align-items:start;
+    }
+    .panel{
+      position:relative;
+      overflow:hidden;
+      background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.035));
+      border-color:rgba(255,255,255,.11);
+      box-shadow:var(--shadow-soft);
+    }
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto;
+      height:1px;
+      background:linear-gradient(90deg,transparent,rgba(210,176,94,.65),rgba(111,182,176,.38),transparent);
+      pointer-events:none;
+    }
+    .ask-panel{
+      position:sticky;
+      top:78px;
+      align-self:start;
+    }
+    .result-panel{min-height:650px}
+    .panel-head{
+      padding:15px 16px;
+      background:rgba(255,255,255,.026);
+      border-bottom-color:rgba(255,255,255,.085);
+    }
+    .panel-title{
+      color:#e0c575;
+      font-size:11px;
+    }
+    .panel-body{padding:17px}
+    label{
+      margin-bottom:7px;
+      color:rgba(244,239,229,.62);
+    }
+    select,textarea,.history-filters input,.history-filters select,.note-box{
+      background:rgba(9,12,17,.72);
+      border-color:rgba(255,255,255,.1);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+      transition:border-color .18s,box-shadow .18s,background .18s;
+    }
+    select:hover,textarea:hover,.history-filters input:hover,.history-filters select:hover,.note-box:hover{
+      border-color:rgba(210,176,94,.38);
+    }
+    select:focus,textarea:focus,.history-filters input:focus,.history-filters select:focus,.note-box:focus{
+      border-color:rgba(111,182,176,.7);
+      box-shadow:0 0 0 3px rgba(111,182,176,.12),inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    textarea{min-height:168px}
+    .segmented{
+      width:100%;
+      background:rgba(9,12,17,.58);
+      border-color:rgba(255,255,255,.1);
+      padding:3px;
+      gap:3px;
+    }
+    .seg-btn{
+      flex:1;
+      border-radius:6px;
+      padding:10px 12px;
+      transition:background .18s,color .18s,box-shadow .18s;
+    }
+    .seg-btn.active{
+      background:linear-gradient(180deg,#e1c477,#b78a37);
+      color:var(--ink);
+      box-shadow:0 8px 20px rgba(210,176,94,.18);
+    }
+    .sci-list{gap:9px}
+    .sci-item{
+      position:relative;
+      overflow:hidden;
+      border-color:rgba(255,255,255,.1);
+      background:rgba(255,255,255,.035);
+      transition:border-color .18s,background .18s,transform .18s,box-shadow .18s;
+    }
+    .sci-item:hover{
+      transform:translateY(-1px);
+      border-color:rgba(111,182,176,.38);
+      background:rgba(255,255,255,.055);
+    }
+    .sci-item.checked{
+      border-color:rgba(210,176,94,.5);
+      background:linear-gradient(90deg,rgba(210,176,94,.16),rgba(255,255,255,.035));
+      box-shadow:inset 3px 0 0 rgba(210,176,94,.88);
+    }
+    .sci-item input{accent-color:var(--accent-2)}
+    .sci-name{font-weight:700}
+    .ai-badge{
+      border-color:rgba(111,182,176,.32);
+      background:rgba(111,182,176,.08);
+      color:#93d1cc;
+    }
+    .sci-cost{
+      color:#e6c874;
+      background:rgba(210,176,94,.08);
+      border:1px solid rgba(210,176,94,.22);
+      border-radius:8px;
+      padding:4px 7px;
+    }
+    .yam-line{
+      background:linear-gradient(135deg,rgba(210,176,94,.14),rgba(111,182,176,.08));
+      border-color:rgba(210,176,94,.34);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .yam-value{font-size:24px}
+    .btn{
+      min-height:44px;
+      border-color:rgba(255,255,255,.16);
+      background:linear-gradient(180deg,#e2c575,#b98c39);
+      color:var(--ink);
+      box-shadow:0 12px 28px rgba(210,176,94,.22);
+      transition:transform .18s,box-shadow .18s,filter .18s,background .18s;
+    }
+    .btn:hover:not(:disabled){
+      transform:translateY(-1px);
+      box-shadow:0 16px 34px rgba(210,176,94,.28);
+      filter:saturate(1.04);
+    }
+    .btn.secondary{
+      background:rgba(255,255,255,.035);
+      color:var(--muted);
+      box-shadow:none;
+    }
+    .btn.secondary:hover:not(:disabled){
+      background:rgba(255,255,255,.065);
+      color:var(--text);
+      box-shadow:none;
+    }
+    .status{
+      margin-top:14px;
+      padding-left:2px;
+    }
+    .progress-card,.fusion-proof,.thread-note,.skip-note{
+      background:rgba(255,255,255,.045);
+      border-color:rgba(255,255,255,.1);
+    }
+    .progress-fill{
+      background:linear-gradient(90deg,#b98c39,#6fb6b0);
+      box-shadow:0 0 18px rgba(111,182,176,.25);
+    }
+    .chat{min-height:0}
+    .bubble,.result-content,.history-detail{
+      background:rgba(9,12,17,.66);
+      border-color:rgba(255,255,255,.1);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+    }
+    .msg.user .bubble{
+      background:rgba(210,176,94,.1);
+      border-color:rgba(210,176,94,.28);
+    }
+    .result-tabs{
+      gap:8px;
+      border-bottom-color:rgba(255,255,255,.08);
+    }
+    .result-tab{
+      background:rgba(255,255,255,.04);
+      border-color:rgba(255,255,255,.1);
+      transition:border-color .18s,background .18s,color .18s,transform .18s;
+    }
+    .result-tab:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.065);
+    }
+    .result-tab.active{
+      border-color:rgba(210,176,94,.58);
+      background:rgba(210,176,94,.13);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .result-content{
+      min-height:360px;
+      padding:18px;
+    }
+    .result-empty{
+      display:grid;
+      place-items:center;
+      min-height:220px;
+      text-align:center;
+      color:rgba(244,239,229,.58);
+    }
+    .result-content .result-empty{min-height:160px}
+    .rc-head{
+      background:rgba(255,255,255,.026);
+      border-radius:8px;
+      padding:9px 10px;
+    }
+    .metric,.model-row,.compare-card,.history-item{
+      background:rgba(255,255,255,.04);
+      border-color:rgba(255,255,255,.1);
+    }
+    .metric{
+      padding:12px;
+      min-height:70px;
+    }
+    .metric .k{color:rgba(244,239,229,.48)}
+    .model-row{
+      transition:border-color .18s,background .18s;
+    }
+    .model-row:hover{
+      border-color:rgba(111,182,176,.26);
+      background:rgba(255,255,255,.055);
+    }
+    .history-panel{
+      margin-top:22px;
+    }
+    .history-filters{
+      padding:12px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:8px;
+      background:rgba(255,255,255,.025);
+    }
+    .history-list{
+      scrollbar-width:thin;
+      scrollbar-color:rgba(210,176,94,.45) transparent;
+    }
+    .history-item{
+      padding:12px;
+      transition:border-color .18s,background .18s,transform .18s;
+    }
+    .history-item:hover{
+      transform:translateY(-1px);
+      border-color:rgba(111,182,176,.32);
+    }
+    .history-item.active{
+      border-color:rgba(210,176,94,.62);
+      background:linear-gradient(90deg,rgba(210,176,94,.14),rgba(255,255,255,.035));
+      box-shadow:inset 3px 0 0 rgba(210,176,94,.85);
+    }
+    .history-title{font-weight:700}
+    .mini-btn,.answer-open,.answer-close{
+      border-color:rgba(255,255,255,.12);
+      background:rgba(255,255,255,.035);
+      transition:border-color .18s,background .18s,color .18s,transform .18s;
+    }
+    .mini-btn:hover,.answer-open:hover,.answer-close:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.065);
+    }
+    .detail-collapsed{
+      border-color:rgba(210,176,94,.24);
+      background:rgba(210,176,94,.055);
+    }
+    .answer-dialog{
+      border-color:rgba(255,255,255,.14);
+      box-shadow:0 28px 82px rgba(0,0,0,.58);
+    }
+    [data-theme="light"] body{
+      background:
+        linear-gradient(135deg,rgba(184,138,61,.16),rgba(246,241,230,0) 36%),
+        linear-gradient(225deg,rgba(73,134,130,.11),rgba(246,241,230,0) 31%),
+        repeating-linear-gradient(90deg,rgba(43,36,23,.032) 0 1px,transparent 1px 70px),
+        var(--bg);
+    }
+    [data-theme="light"] body::before{background:linear-gradient(180deg,rgba(255,255,255,.48),transparent 38%,rgba(159,121,46,.08))}
+    [data-theme="light"] .topbar{background:rgba(255,253,248,.82);border-bottom-color:rgba(159,121,46,.18)}
+    [data-theme="light"] .nav{
+      background:rgba(159,121,46,.045);
+      border-color:rgba(159,121,46,.16);
+    }
+    [data-theme="light"] .nav a{color:rgba(43,36,23,.72)}
+    [data-theme="light"] .nav a.active,[data-theme="light"] .nav a.keep{
+      color:#2b2417;
+      background:rgba(159,121,46,.12);
+      border-color:rgba(159,121,46,.24);
+    }
+    [data-theme="light"] .theme-btn{background:rgba(159,121,46,.055);border-color:rgba(159,121,46,.18)}
+    [data-theme="light"] .topbar .hk-um-panel{
+      background:rgba(255,253,248,.98);
+      border-color:rgba(159,121,46,.2);
+      box-shadow:0 20px 50px rgba(76,58,23,.18);
+    }
+    [data-theme="light"] .topbar .hk-um-item{color:rgba(43,36,23,.8)}
+    [data-theme="light"] .topbar .hk-um-item:hover{background:rgba(159,121,46,.08);color:#a9842f}
+    [data-theme="light"] h1{color:#2b2417;text-shadow:none}
+    [data-theme="light"] .sub{color:rgba(43,36,23,.72)}
+    [data-theme="light"] .panel{
+      background:linear-gradient(180deg,rgba(255,253,248,.94),rgba(255,253,248,.78));
+      border-color:rgba(159,121,46,.2);
+      box-shadow:0 16px 38px rgba(76,58,23,.12);
+    }
+    [data-theme="light"] select,[data-theme="light"] textarea,[data-theme="light"] .history-filters input,[data-theme="light"] .history-filters select,[data-theme="light"] .note-box,
+    [data-theme="light"] .bubble,[data-theme="light"] .result-content,[data-theme="light"] .history-detail{
+      background:rgba(255,255,255,.72);
+      border-color:rgba(159,121,46,.22);
+    }
+    [data-theme="light"] .sci-item,[data-theme="light"] .metric,[data-theme="light"] .model-row,[data-theme="light"] .history-item,[data-theme="light"] .compare-card,[data-theme="light"] .history-filters{
+      background:rgba(159,121,46,.045);
+      border-color:rgba(159,121,46,.18);
+    }
+    [data-theme="light"] .ai-badge{
+      background:rgba(63,111,158,.08);
+      color:#3f6f9e;
+      border-color:rgba(63,111,158,.24);
+    }
+    [data-theme="light"] .btn{color:#fffdf8}
+    [data-theme="light"] .seg-btn.active{color:#fffdf8}
+    [data-theme="light"] .result-empty{color:rgba(43,36,23,.58)}
+    @media (max-width:900px){
+      .header{grid-template-columns:1fr}
+      .badges{max-width:none;justify-content:flex-start}
+      .ask-panel{position:relative;top:auto}
+      .result-panel{min-height:0}
+    }
+    @media (max-width:700px){
+      .topbar-inner{padding:11px 12px}
+      .brand{font-size:18px}
+      .seal{width:32px;height:32px}
+      .topbar-inner{flex-wrap:wrap;gap:10px}
+      .nav{
+        order:3;
+        width:100%;
+        margin-left:0;
+        overflow-x:auto;
+        flex-wrap:nowrap;
+        padding:4px;
+        -webkit-overflow-scrolling:touch;
+        scrollbar-width:none;
+      }
+      .nav::-webkit-scrollbar{display:none}
+      .nav a{
+        display:inline-flex!important;
+        flex:0 0 auto;
+        min-height:34px;
+        padding:7px 10px;
+      }
+      .nav .lbl{font-size:12px}
+      .nav .glyph{font-size:14px}
+      main{padding-top:22px}
+      .header{padding-bottom:14px;margin-bottom:16px}
+      h1{font-size:31px}
+      .panel-body{padding:14px}
+      .result-content{min-height:260px;padding:14px}
+      .result-empty{min-height:160px}
+      .history-filters{padding:10px}
+      .btnbar{
+        background:linear-gradient(180deg,rgba(21,25,34,.92),rgba(21,25,34,.98));
+        backdrop-filter:blur(12px);
+      }
+      [data-theme="light"] .btnbar{
+        background:linear-gradient(180deg,rgba(255,253,248,.9),rgba(255,253,248,.98));
+      }
+    }
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="/"><span class="seal">時</span><span>hourkey</span></a>
-      <nav class="nav">
-        <a href="/master" data-i18n="nav.master">ซินแส</a>
-        <a href="/chart" data-i18n="nav.chart">ดวงของฉัน</a>
-        <a class="keep" href="/master-fusion">Fusion</a>
+      <nav class="nav" id="fusion-topnav" aria-label="Fusion navigation">
+        <a href="/chart"><span class="glyph">命</span><span class="lbl" data-i18n="nav.chart">ดวงของฉัน</span></a>
+        <a href="/today"><span class="glyph">日</span><span class="lbl" data-i18n="nav.today">หน้าวันนี้</span></a>
+        <a href="/datepick"><span class="glyph">擇</span><span class="lbl" data-i18n="nav.datepick">วางฤกษ์</span></a>
+        <a href="/master"><span class="glyph">師</span><span class="lbl" data-i18n="nav.master">ซินแส</span></a>
+        <a class="keep active" href="/master-fusion" aria-current="page"><span class="glyph">融</span><span class="lbl" data-i18n="nav.fusion">Fusion</span></a>
       </nav>
       <button class="theme-btn" id="theme-toggle" type="button" title="สลับธีม / Theme">◐</button>
       <div id="hk-user-menu-mount"></div>
@@ -278,7 +809,7 @@
     </section>
 
     <section class="layout">
-      <aside class="panel">
+      <aside class="panel ask-panel">
         <div class="panel-head">
           <div class="panel-title" data-i18n="ask.title">ตั้งคำถาม</div>
           <span class="pill">/api/sifu/fusion5</span>
@@ -331,7 +862,7 @@
         </div>
       </aside>
 
-      <section class="panel">
+      <section class="panel result-panel">
         <div class="panel-head">
           <div class="panel-title" data-i18n="result.title">คำพยากรณ์</div>
           <span class="pill" id="run-state">idle</span>
@@ -370,9 +901,10 @@
           <div>
             <label for="history-mode">Mode</label>
             <select id="history-mode">
-              <option value="">all</option>
-              <option value="resilient">resilient</option>
-              <option value="strict">strict</option>
+	              <option value="">all</option>
+	              <option value="fusion5">fusion5</option>
+	              <option value="resilient">resilient</option>
+	              <option value="strict">strict</option>
             </select>
           </div>
           <div>
@@ -417,11 +949,11 @@
     </div>
   </div>
 
-  <script src="/js/hk-user-menu.js?v=14"></script>
+  <script src="/js/hk-user-menu.js?v=19"></script>
   <script>
   (function(){
     var $ = function(id){ return document.getElementById(id); };
-    var state = { account:null, fusionAccess:null, spendHours:0, profiles:[], history:[], historyProfileId:'', busy:false, ready:false, progressTimer:null, activeRunId:'', activeJob:null, answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', compareIds:[],
+    var state = { account:null, fusionAccess:null, spendHours:0, profiles:[], history:[], historyProfileId:'', threadId:'', pendingQuestion:'', busy:false, ready:false, progressTimer:null, activeRunId:'', activeJob:null, answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', showHistoryAnswerId:'', compareIds:[],
       mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false }, locale:'th', theme:'dark', result:null, activeTab:'judge' };
     var els = {
       profile:$('profile'), profile2:$('profile2'), profile2Field:$('profile2-field'), modeSeg:$('mode-seg'), sciList:$('sci-list'),
@@ -438,21 +970,21 @@
       bazi:    { id:'bazi',    th:'ปาจื้อ 八字',          en:'BaZi 八字',          zh:'八字',     ai:'Claude', costYam:10, needsBirthTime:false, available:true },
       qizheng: { id:'qizheng', th:'ดาวจริง 七政四餘',      en:'Real-Star 七政四餘', zh:'七政四餘', ai:'Grok',   costYam:15, needsBirthTime:true,  available:true },
       ziwei:   { id:'ziwei',   th:'จื่อเวยโต่วซู 紫微斗數', en:'Zi Wei 紫微斗數',    zh:'紫微斗數', ai:'Gemini', costYam:12, needsBirthTime:true,  available:true },
-      western: { id:'western', th:'โหราตะวันตก',          en:'Western Astrology',  zh:'西洋占星', ai:'Claude', costYam:10, needsBirthTime:true,  available:true },
-      vedic:   { id:'vedic',   th:'โหราพระเวท (ฮินดู)',   en:'Vedic Astrology',    zh:'吠陀占星', ai:'Codex',  costYam:10, needsBirthTime:true,  available:true }
+      western: { id:'western', th:'โหราตะวันตก',          en:'Western Astrology',  zh:'西洋占星', ai:'Claude', costYam:10, needsBirthTime:false, available:true },
+      vedic:   { id:'vedic',   th:'โหราพระเวท (ฮินดู)',   en:'Vedic Astrology',    zh:'吠陀占星', ai:'Codex',  costYam:10, needsBirthTime:false, available:true }
     };
     var SCI_ORDER = ['bazi','qizheng','ziwei','western','vedic'];
     var JUDGE_YAM = 5;
     function sciLabel(s){ var b = DISCIPLINES[s]; return b ? (b[state.locale] || b.th) : s; }
     // ===== i18n =====
     var I18N = {
-      th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','hero.title':'ดูดวง 5 ศาสตร์','hero.sub':'หลอมรวม 5 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยวหรือดูคู่',
+      th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','nav.today':'หน้าวันนี้','nav.datepick':'วางฤกษ์','nav.fusion':'Fusion','hero.title':'ดูดวง 5 ศาสตร์','hero.sub':'หลอมรวม 5 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยวหรือดูคู่',
         'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','result.title':'คำพยากรณ์',
         'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม','needLogin':'กรุณาเข้าสู่ระบบก่อนใช้ Fusion','needYam':'ยามไม่พอ','readyRun':'พร้อมรัน','runningAsync':'⏳ กำลังอ่านดวงอยู่ (พับจอไว้ได้)','jobTimeout':'หมดเวลาอ่านดวง · ลองรันใหม่อีกครั้ง','jobError':'อ่านดวงไม่สำเร็จ' },
-      en:{ 'nav.master':'Master','nav.chart':'My Chart','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single or pair.',
+      en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single or pair.',
         'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','result.title':'Reading',
         'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed' },
-      zh:{ 'nav.master':'命師','nav.chart':'我的命盤','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看或合盤。',
+      zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看或合盤。',
         'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤','ask.profile':'命盤','ask.profile2':'第二命盤','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','result.title':'論斷',
         'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗' }
     };
@@ -487,6 +1019,65 @@
       if (p1) ids.push(p1);
       if (state.mode === 'pair') { var p2 = els.profile2 && els.profile2.value ? els.profile2.value : ''; if (p2) ids.push(p2); }
       return ids;
+    }
+    function conversationScope(ids){
+      ids = ids || selectedProfileIds();
+      return 'fusion5:' + state.mode + ':' + ids.join(':');
+    }
+    function conversationKey(ids){
+      return 'hk_fusion5_thread:' + conversationScope(ids).replace(/[^\w:.-]+/g, '_');
+    }
+    function cleanLocalHistory(list){
+      if (!Array.isArray(list)) return [];
+      return list.slice(-12).map(function(m){
+        var role = m && (m.role === 'user' ? 'user' : (m.role === 'assistant' || m.role === 'sifu') ? 'assistant' : '');
+        var content = m && typeof m.content === 'string' ? m.content.trim().slice(0, 4000) : '';
+        return role && content ? { role:role, content:content } : null;
+      }).filter(Boolean);
+    }
+    function saveConversation(){
+      var ids = selectedProfileIds();
+      if (!ids.length || !state.threadId) return;
+      try {
+        localStorage.setItem(conversationKey(ids), JSON.stringify({
+          scope: conversationScope(ids),
+          threadId: state.threadId,
+          history: cleanLocalHistory(state.history),
+          updatedAt: Date.now()
+        }));
+      } catch(_) {}
+    }
+    function loadConversationForSelection(){
+      var ids = selectedProfileIds();
+      state.historyProfileId = ids[0] || '';
+      state.history = [];
+      state.threadId = newRunId();
+      state.pendingQuestion = '';
+      if (!ids.length) return;
+      try {
+        var raw = localStorage.getItem(conversationKey(ids));
+        var j = raw ? JSON.parse(raw) : null;
+        if (j && j.scope === conversationScope(ids)) {
+          state.threadId = String(j.threadId || newRunId()).slice(0, 100);
+          state.history = cleanLocalHistory(j.history);
+        }
+      } catch(_) {}
+    }
+    function startNewConversation(){
+      state.history = [];
+      state.threadId = newRunId();
+      state.pendingQuestion = '';
+      saveConversation();
+    }
+    function payloadHistory(){
+      return cleanLocalHistory(state.history).slice(-8);
+    }
+    function renderThreadNote(){
+      if (!els.chat) return;
+      var turns = Math.floor(cleanLocalHistory(state.history).length / 2);
+      els.chat.innerHTML = turns
+        ? '<div class="thread-note">มีบริบทบทสนทนาเดิม ' + turns + ' รอบสำหรับถามต่อ · คำตอบเก่าจะไม่แสดงจนกดโชว์จากประวัติ</div>'
+        : '';
     }
     function profileCount(){ return selectedProfileIds().length || 1; }
     function allSelectedHaveTime(){ return selectedProfileIds().every(function(id){ return profileHasTime(profileById(id)); }); }
@@ -911,11 +1502,14 @@
     function resetConversationForProfile(profileId){
       state.history = [];
       state.historyProfileId = profileId || '';
+      state.threadId = newRunId();
+      state.pendingQuestion = '';
       state.answers = {};
       state.answerSeq = 0;
       els.chat.innerHTML = '';
       els.meta.innerHTML = '';
       closeAnswer();
+      saveConversation();
     }
     function metaObj(v){ return v && typeof v === 'object' ? v : {}; }
     function historyUserState(row){
@@ -1032,6 +1626,10 @@
       }
       var us = historyUserState(row);
       var fusion = fusionFromHistory(row);
+      var answerOpen = state.showHistoryAnswerId === String(row.id);
+      var answerBlock = answerOpen
+        ? '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-text">' + renderFusionProof(fusion) + esc(row.answer || '') + renderAnswerTools(fusion) + '</div></div>'
+        : '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-collapsed">คำตอบถูกซ่อนไว้ เพื่อไม่ให้คำตอบเก่ากินพื้นที่หรือปนกับคำถามต่อ <div class="history-actions" style="margin-top:10px"><button class="mini-btn" type="button" data-hact="show-answer" data-id="' + esc(row.id) + '">โชว์คำตอบ</button></div></div></div>';
       els.historyDetail.innerHTML =
         '<div class="detail-head">' +
           '<div><div class="detail-title">' + esc(row.question || '') + '</div><div class="detail-sub">' + esc(rowDate(row) + ' · ' + runReceipt(row)) + '</div></div>' +
@@ -1042,7 +1640,7 @@
             '<button class="mini-btn" type="button" data-hact="print-pdf" data-id="' + esc(row.id) + '">PDF</button>' +
           '</div>' +
         '</div>' +
-        '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-text">' + renderFusionProof(fusion) + esc(row.answer || '') + renderAnswerTools(fusion) + '</div></div>' +
+        answerBlock +
         '<div class="detail-block"><div class="detail-label">Run Receipt</div><div class="detail-text">' + esc(runReceipt(row)) + '</div></div>' +
         '<div class="detail-block"><div class="detail-label">Packet / Profile Snapshot</div>' + snapshotBlock(row) + '</div>' +
         '<div class="detail-block"><div class="detail-label">Private Note</div><textarea class="note-box" id="history-note" maxlength="4000">' + esc(us.note) + '</textarea><div class="history-actions"><button class="mini-btn" type="button" data-hact="save-note" data-id="' + esc(row.id) + '">Save note</button></div></div>' +
@@ -1093,12 +1691,13 @@
     }
     function continueFromHistory(row){
       resetConversationForProfile(row.profile_id || selectedProfileId());
-      addMsg('user', row.question || '');
-      addMsg('sifu', row.answer || '', fusionFromHistory(row));
+      state.threadId = String((metaObj(row.request_payload).thread_id || metaObj(row.response_meta).thread_id || row.id || newRunId())).slice(0, 100);
       state.history.push({ role:'user', content:row.question || '' }, { role:'assistant', content:row.answer || '' });
       state.history = state.history.slice(-12);
-      renderMeta(fusionFromHistory(row));
-      setStatus('ตั้ง context จากประวัติรอบนี้แล้ว พิมพ์คำถามต่อได้');
+      saveConversation();
+      renderThreadNote();
+      if (els.meta) els.meta.innerHTML = '';
+      setStatus('ตั้ง context จากประวัติรอบนี้แล้ว พิมพ์คำถามต่อได้ · คำตอบเก่าไม่แสดงจนกดโชว์');
       window.scrollTo({ top:0, behavior:'smooth' });
     }
     function rerunHistory(row){
@@ -1215,11 +1814,13 @@
       fillProfileSelect(els.profile, active);
       var second = state.profiles.find(function(p){ return String(p.id) !== String(els.profile.value); });
       fillProfileSelect(els.profile2, second ? second.id : '', els.profile.value);
-      resetConversationForProfile(els.profile.value);
+      loadConversationForSelection();
+      renderThreadNote();
       renderSciList(); updateYam();
     }
     // ===== async fusion5 job (ถามแล้วพับจอ/ปิดได้ กลับมาดูทีหลัง) =====
     var FUSION_JOB_KEY = 'hk_fusion5_job';
+    var FUSION_DRAFT_KEY = 'hk_fusion5_draft';
     var JOB_POLL_MS = 3000;
     var JOB_MAX_MS = 20 * 60 * 1000;
     var jobTimer = null;
@@ -1227,6 +1828,127 @@
     function loadJobMeta(){ try { var raw = localStorage.getItem(FUSION_JOB_KEY); return raw ? JSON.parse(raw) : null; } catch(_) { return null; } }
     function clearJob(){ try { localStorage.removeItem(FUSION_JOB_KEY); } catch(_){} state.activeJob = null; }
     function stopJobPolling(){ if (jobTimer) clearInterval(jobTimer); jobTimer = null; }
+    function saveDraft(){
+      try {
+        localStorage.setItem(FUSION_DRAFT_KEY, JSON.stringify({
+          question: els.question ? els.question.value : '',
+          profileIds: selectedProfileIds(),
+          mode: state.mode,
+          sci: state.sci,
+          locale: state.locale,
+          updatedAt: Date.now()
+        }));
+      } catch(_) {}
+    }
+    function clearDraft(){ try { localStorage.removeItem(FUSION_DRAFT_KEY); } catch(_){} }
+    function applyProfileSelection(ids){
+      ids = Array.isArray(ids) ? ids.filter(Boolean).map(String).slice(0, 2) : [];
+      if (!ids.length || !els.profile) return;
+      if (ids[0] && els.profile.querySelector('option[value="' + ids[0] + '"]')) els.profile.value = ids[0];
+      if (ids.length > 1) {
+        setMode('pair');
+        fillProfileSelect(els.profile2, ids[1], ids[0]);
+      } else {
+        setMode('single');
+        var second = state.profiles.find(function(p){ return String(p.id) !== String(els.profile.value); });
+        fillProfileSelect(els.profile2, second ? second.id : '', els.profile.value);
+      }
+      renderSciList();
+      updateYam();
+    }
+    function applyJobSelection(meta){
+      meta = meta || {};
+      if (Array.isArray(meta.profileIds) && meta.profileIds.length) applyProfileSelection(meta.profileIds);
+      if (Array.isArray(meta.sciences) && meta.sciences.length) {
+        SCI_ORDER.forEach(function(s){ state.sci[s] = meta.sciences.indexOf(s) !== -1; });
+        renderSciList();
+        updateYam();
+      }
+    }
+    function restoreDraft(){
+      var j = null;
+      try { var raw = localStorage.getItem(FUSION_DRAFT_KEY); j = raw ? JSON.parse(raw) : null; } catch(_) { j = null; }
+      if (!j || !j.updatedAt || Date.now() - Number(j.updatedAt) > 24 * 60 * 60 * 1000) return;
+      if (Array.isArray(j.profileIds) && j.profileIds.length) applyProfileSelection(j.profileIds);
+      if (j.sci && typeof j.sci === 'object') {
+        SCI_ORDER.forEach(function(s){ if (typeof j.sci[s] === 'boolean') state.sci[s] = j.sci[s]; });
+        renderSciList();
+        updateYam();
+      }
+      if (els.question && !els.question.value && typeof j.question === 'string') els.question.value = j.question;
+      loadConversationForSelection();
+      renderThreadNote();
+    }
+    function jobStartedAt(meta){
+      var n = Number(meta && meta.startedAt);
+      if (Number.isFinite(n) && n > 0) return n;
+      var parsed = Date.parse(String(meta && (meta.createdAt || meta.created_at) || ''));
+      return Number.isFinite(parsed) ? parsed : Date.now();
+    }
+    function serverJobToMeta(job, fallback){
+      fallback = fallback || {};
+      var ids = Array.isArray(job && job.profileIds) && job.profileIds.length ? job.profileIds : (Array.isArray(fallback.profileIds) ? fallback.profileIds : selectedProfileIds());
+      var sciences = Array.isArray(job && job.sciences) && job.sciences.length ? job.sciences : (Array.isArray(fallback.sciences) ? fallback.sciences : activeSciences());
+      return {
+        jobId: String((job && job.jobId) || fallback.jobId || ''),
+        profileId: ids[0] || fallback.profileId || selectedProfileId(),
+        profileIds: ids,
+        sciences: sciences,
+        question: String((job && job.question) || fallback.question || '').trim(),
+        lang: fallback.lang || state.locale,
+        history: Array.isArray(fallback.history) ? fallback.history : payloadHistory(),
+        threadId: fallback.threadId || state.threadId || String((job && job.jobId) || newRunId()).slice(0, 100),
+        startedAt: jobStartedAt(job || fallback),
+        recoveredAt: Date.now()
+      };
+    }
+    async function recoverJobFromServer(meta){
+      meta = meta || {};
+      var qs = new URLSearchParams({ latest:'1' });
+      var ids = Array.isArray(meta.profileIds) && meta.profileIds.length ? meta.profileIds : selectedProfileIds();
+      if (ids.length) qs.set('profileIds', ids.join(','));
+      if (meta.question) qs.set('question', String(meta.question).trim());
+      if (Array.isArray(meta.sciences) && meta.sciences.length) qs.set('sciences', meta.sciences.join(','));
+      try {
+        var r = await fetch('/api/sifu/fusion5?' + qs.toString(), { credentials:'same-origin', cache:'no-store' });
+        var j = await r.json().catch(function(){ return {}; });
+        if (!r.ok || !j.jobId) return null;
+        return j;
+      } catch(_) {
+        return null;
+      }
+    }
+    function resumeKnownJob(meta, firstStatus){
+      if (!meta || !meta.jobId) return false;
+      applyJobSelection(meta);
+      state.activeJob = meta;
+      state.busy = true;
+      if (meta.threadId) state.threadId = String(meta.threadId).slice(0, 100);
+      if (Array.isArray(meta.history)) state.history = cleanLocalHistory(meta.history);
+      state.pendingQuestion = String(meta.question || '');
+      if (els.send) els.send.disabled = true;
+      if (meta.question && els.question && !els.question.value) els.question.value = meta.question;
+      var sciences = (Array.isArray(meta.sciences) && meta.sciences.length) ? meta.sciences : activeSciences();
+      state.activeTab = sciences.length >= 2 ? 'judge' : (sciences[0] || 'judge');
+      startSyntheticProgress(sciences);
+      if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('runningAsync')) + '</div>';
+      setStatus(t('runningAsync'));
+      saveJob(meta);
+      if (firstStatus && firstStatus.status === 'done') {
+        clearJob();
+        renderJobDone(firstStatus.result || {}, meta);
+        endRun();
+        return true;
+      }
+      if (firstStatus && firstStatus.status === 'error') {
+        clearJob();
+        showRunError(fusionErrorText(firstStatus.error, 200, firstStatus));
+        endRun();
+        return true;
+      }
+      startJobPolling(meta);
+      return true;
+    }
     function endRun(){
       stopProgressPolling();
       stopJobPolling();
@@ -1240,7 +1962,18 @@
         var need = data.required != null ? data.required : (data.spend_hours != null ? data.spend_hours : currentYam());
         return yamShortMsg(need);
       }
-      var mapErr = { profile_required:t('ask.profile'), no_science_selected:t('noSci'), no_question:t('ask.question'), profile_not_found:(state.locale==='th'?'ไม่พบดวง':'profile not found'), all_sciences_need_birthtime:(state.locale==='th'?'ศาสตร์ที่เลือกต้องมีเวลาเกิด':'selected sciences need birth time'), insufficient_hours:t('needYam'), not_logged_in:t('needLogin'), job_not_found:t('jobError') };
+      var mapErr = {
+        profile_required:t('ask.profile'),
+        no_science_selected:t('noSci'),
+        no_question:t('ask.question'),
+        profile_not_found:(state.locale==='th'?'ไม่พบดวง':'profile not found'),
+        all_sciences_need_birthtime:(state.locale==='th'?'ศาสตร์ที่เลือกต้องมีเวลาเกิด':'selected sciences need birth time'),
+        insufficient_hours:t('needYam'),
+        not_logged_in:t('needLogin'),
+        job_not_found:t('jobError'),
+        server_restart_orphan:(state.locale==='th'?'server restart ระหว่างอ่านดวง · คืนยามแล้ว กรุณารันใหม่':'server restarted during reading · yam refunded, please run again'),
+        server_restart_orphan_refunded:(state.locale==='th'?'server restart ระหว่างอ่านดวง · คืนยามแล้ว กรุณารันใหม่':'server restarted during reading · yam refunded, please run again')
+      };
       return mapErr[raw] || raw || t('jobError');
     }
     function showRunError(human){
@@ -1249,7 +1982,21 @@
       setRunState('failed', 'err');
       setStatus(human, 'err');
     }
-    function renderJobDone(result){
+    function rememberCompletedTurn(result, meta){
+      meta = meta || state.activeJob || {};
+      var q = String((meta && meta.question) || state.pendingQuestion || '').trim();
+      var a = String(result && result.reply || '').trim();
+      if (!q || !a) return;
+      state.history.push({ role:'user', content:q }, { role:'assistant', content:a });
+      state.history = cleanLocalHistory(state.history).slice(-12);
+      state.pendingQuestion = '';
+      saveConversation();
+      renderThreadNote();
+      if (els.question) els.question.value = '';
+      clearDraft();
+    }
+    function renderJobDone(result, meta){
+      rememberCompletedTurn(result, meta);
       finishProgress(result);
       renderFusion5(result);
       var f = (result && result.fusion5) || {};
@@ -1275,7 +2022,8 @@
         return; // 5xx ชั่วคราว → poll ต่อ
       }
       if (j.status === 'done') {
-        clearJob(); renderJobDone(j.result || {}); endRun();
+        var doneMeta = Object.assign({}, state.activeJob || meta || {});
+        clearJob(); renderJobDone(j.result || {}, doneMeta); endRun();
       } else if (j.status === 'error') {
         clearJob(); showRunError(fusionErrorText(j.error, r.status, j)); endRun();
       }
@@ -1288,20 +2036,30 @@
       pollJob(meta);
       jobTimer = setInterval(function(){ pollJob(meta); }, JOB_POLL_MS);
     }
-    function resumeJobIfAny(){
+    async function resumeJobIfAny(){
+      if (state.activeJob && state.activeJob.jobId) {
+        pollJob(state.activeJob);
+        return true;
+      }
       var meta = loadJobMeta();
-      if (!meta || !meta.jobId) return false;
-      state.activeJob = meta;
-      state.busy = true;
-      els.send.disabled = true;
-      if (meta.question && els.question && !els.question.value) els.question.value = meta.question;
-      var sciences = (Array.isArray(meta.sciences) && meta.sciences.length) ? meta.sciences : activeSciences();
-      state.activeTab = sciences.length >= 2 ? 'judge' : (sciences[0] || 'judge');
-      startSyntheticProgress(sciences);
-      if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('runningAsync')) + '</div>';
-      setStatus(t('runningAsync'));
-      startJobPolling(meta);
-      return true;
+      if (meta && meta.jobId) return resumeKnownJob(meta);
+      if (meta && meta.question) {
+        applyJobSelection(meta);
+        if (els.question && !els.question.value) els.question.value = meta.question;
+        setStatus(state.locale === 'th' ? 'กำลังกู้คืนงานที่มือถือหลุด...' : 'Recovering interrupted reading...');
+        var recovered = await recoverJobFromServer(meta);
+        if (recovered && recovered.jobId) return resumeKnownJob(serverJobToMeta(recovered, meta), recovered);
+        clearJob();
+        state.busy = false;
+        applyFusionGate();
+        setStatus(state.locale === 'th'
+          ? 'มือถือหลุดก่อนยืนยันงานจาก server · คำถามยังอยู่ กดรันอีกครั้งได้'
+          : 'The request was interrupted before the server confirmed it. The question is still here; run again.', 'err');
+        return true;
+      }
+      var latest = await recoverJobFromServer({ profileIds:selectedProfileIds() });
+      if (latest && latest.jobId) return resumeKnownJob(serverJobToMeta(latest, {}), latest);
+      return false;
     }
     async function send(){
       if (state.busy) return;
@@ -1314,6 +2072,9 @@
       if (!sciences.length) { setStatus(t('noSci'), 'err'); return; }
       if (!message) { setStatus(t('ask.question'), 'err'); return; }
       if (!canUseFusion()) { applyFusionGate(); setStatus(fusionGateMessage(), 'err'); return; }
+      if (!state.threadId) state.threadId = newRunId();
+      var priorHistory = payloadHistory();
+      state.pendingQuestion = message;
       state.busy = true;
       els.send.disabled = true;
       setRunState('running');
@@ -1321,31 +2082,50 @@
       state.activeTab = sciences.length >= 2 ? 'judge' : sciences[0];
       startSyntheticProgress(sciences);
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('running')) + '</div>';
+      var pendingMeta = { jobId:'', clientRunId:newRunId(), profileId:profileIds[0], profileIds:profileIds, sciences:sciences, question:message, lang:state.locale, history:priorHistory, threadId:state.threadId, startedAt:Date.now(), posting:true };
+      saveDraft();
+      saveJob(pendingMeta);
       var r, j;
       try {
-        r = await fetch('/api/sifu/fusion5', {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          credentials:'same-origin',
-          cache:'no-store',
-          body: JSON.stringify({ profileIds:profileIds, sciences:sciences, question:message, lang:state.locale })
-        });
+	        r = await fetch('/api/sifu/fusion5', {
+	          method:'POST',
+	          headers:{ 'Content-Type':'application/json' },
+	          credentials:'same-origin',
+	          cache:'no-store',
+	          body: JSON.stringify({
+              profileIds:profileIds,
+              sciences:sciences,
+              question:message,
+              lang:state.locale,
+              history:priorHistory,
+              threadId:state.threadId,
+              threadProfileId:profileIds[0]
+            })
+	        });
         j = await r.json().catch(function(){ return {}; });
         if (!r.ok) throw Object.assign(new Error(j.error || ('fusion5 ' + r.status)), { data:j, status:r.status });
       } catch(e) {
+        var recovered = await recoverJobFromServer(pendingMeta);
+        if (recovered && recovered.jobId) {
+          resumeKnownJob(serverJobToMeta(recovered, pendingMeta), recovered);
+          return;
+        }
+        clearJob();
         showRunError(fusionErrorText((e.data && e.data.error) || e.message, e.status, e.data));
         endRun();
         return;
       }
       try { localStorage.setItem('hk_profile_id', profileIds[0]); } catch(_){}
       if (j && j.jobId) {
-        var meta = { jobId:j.jobId, profileId:profileIds[0], sciences:sciences, question:message, lang:state.locale, startedAt:Date.now() };
+        if (j.threadId) state.threadId = String(j.threadId).slice(0, 100);
+        var meta = Object.assign({}, pendingMeta, { jobId:j.jobId, threadId:state.threadId, posting:false });
         saveJob(meta);
         setStatus(t('runningAsync'));
         startJobPolling(meta);
         return; // คง busy จนกว่า poll จะ done/error · ปล่อยปิดหน้าได้
       }
       // legacy synchronous response (fallback ถ้า backend คืนผลทันที)
+      clearJob();
       renderJobDone(j);
       endRun();
     }
@@ -1384,6 +2164,7 @@
           patchHistory(id, { note: noteEl ? noteEl.value : '' }).then(function(){ setStatus('บันทึก note แล้ว', 'ok'); }).catch(function(err){ setStatus(err.message || err, 'err'); });
           return;
         }
+        if (act === 'show-answer') { state.showHistoryAnswerId = id; renderHistoryDetail(id); return; }
         if (act === 'continue') { continueFromHistory(row); return; }
         if (act === 'rerun') { rerunHistory(row); return; }
         if (act === 'export-md') { exportMarkdown(row); return; }
@@ -1391,7 +2172,9 @@
       }
       var histItem = e.target && e.target.closest ? e.target.closest('.history-item[data-history-id]') : null;
       if (histItem) {
-        renderHistoryDetail(histItem.getAttribute('data-history-id'));
+        var nextHistoryId = histItem.getAttribute('data-history-id');
+        if (nextHistoryId !== state.activeHistoryId) state.showHistoryAnswerId = '';
+        renderHistoryDetail(nextHistoryId);
         return;
       }
       if (e.target === els.answerModal) closeAnswer();
@@ -1403,28 +2186,36 @@
     els.clear.addEventListener('click', function(){
       resetConversationForProfile(selectedProfileId());
       stopProgressPolling();
+      stopJobPolling();
+      clearJob();
+      clearDraft();
+      state.busy = false;
       renderProgress(null);
       els.question.value = '';
       state.result = null;
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
       setStatus('');
       setRunState('idle');
+      applyFusionGate();
     });
     els.profile.addEventListener('change', function(){
-      resetConversationForProfile(selectedProfileId());
+      loadConversationForSelection();
+      renderThreadNote();
       state.activeHistoryId = '';
+      state.showHistoryAnswerId = '';
       state.compareIds = [];
       try { localStorage.setItem('hk_profile_id', selectedProfileId()); } catch(_){}
       var cur2 = els.profile2 && els.profile2.value;
       fillProfileSelect(els.profile2, (cur2 && cur2 !== selectedProfileId()) ? cur2 : '', selectedProfileId());
       renderSciList(); updateYam();
+      saveDraft();
       setStatus(state.locale==='th'?'เปลี่ยนดวงแล้ว':'chart changed');
       loadFusionHistory();
     });
-    if (els.profile2) els.profile2.addEventListener('change', function(){ renderSciList(); updateYam(); });
+    if (els.profile2) els.profile2.addEventListener('change', function(){ loadConversationForSelection(); renderThreadNote(); renderSciList(); updateYam(); saveDraft(); });
     if (els.modeSeg) els.modeSeg.addEventListener('click', function(e){
       var b = e.target && e.target.closest ? e.target.closest('.seg-btn') : null;
-      if (b) setMode(b.getAttribute('data-mode'));
+      if (b) { setMode(b.getAttribute('data-mode')); loadConversationForSelection(); renderThreadNote(); saveDraft(); }
     });
     if (els.sciList) els.sciList.addEventListener('change', function(e){
       var cb = e.target && e.target.getAttribute ? e.target.getAttribute('data-sci-cb') : null;
@@ -1433,6 +2224,7 @@
       var item = e.target.closest('.sci-item');
       if (item) item.classList.toggle('checked', e.target.checked);
       updateYam();
+      saveDraft();
     });
     if (els.result) els.result.addEventListener('click', function(e){
       var tabBtn = e.target && e.target.closest ? e.target.closest('[data-tab]') : null;
@@ -1449,13 +2241,14 @@
     els.question.addEventListener('keydown', function(e){
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') send();
     });
-    els.historyRefresh.addEventListener('click', function(){ loadFusionHistory(); });
-    els.historySearch.addEventListener('click', function(){ state.activeHistoryId=''; loadFusionHistory(); });
+    els.question.addEventListener('input', saveDraft);
+    els.historyRefresh.addEventListener('click', function(){ state.showHistoryAnswerId=''; loadFusionHistory(); });
+    if (els.historySearch) els.historySearch.addEventListener('click', function(){ state.activeHistoryId=''; state.showHistoryAnswerId=''; loadFusionHistory(); });
     [els.historyTopic, els.historyMode, els.historyStatus, els.historyFrom, els.historyTo].forEach(function(el){
-      el.addEventListener('change', function(){ state.activeHistoryId=''; loadFusionHistory(); });
+      el.addEventListener('change', function(){ state.activeHistoryId=''; state.showHistoryAnswerId=''; loadFusionHistory(); });
     });
     els.historyQ.addEventListener('keydown', function(e){
-      if (e.key === 'Enter') { state.activeHistoryId=''; loadFusionHistory(); }
+      if (e.key === 'Enter') { state.activeHistoryId=''; state.showHistoryAnswerId=''; loadFusionHistory(); }
     });
     // ===== locale + theme init =====
     state.locale = (function(){ try { var l = localStorage.getItem('hk_locale') || 'th'; return ['th','en','zh'].indexOf(l) !== -1 ? l : 'th'; } catch(_) { return 'th'; } })();
@@ -1472,8 +2265,27 @@
       applyI18n();
       renderSciList();
       updateYam();
+      saveDraft();
       if (state.result) renderFusion5(state.result);
       else if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
+    });
+    function syncFusionOnReturn(){
+      if (!state.ready) return;
+      saveDraft();
+      if (state.activeJob && state.activeJob.jobId) {
+        pollJob(state.activeJob);
+        loadFusionHistory().catch(function(){});
+        return;
+      }
+      resumeJobIfAny().then(function(resumed){
+        if (!resumed) loadFusionHistory().catch(function(){});
+      });
+    }
+    window.addEventListener('pagehide', saveDraft);
+    window.addEventListener('pageshow', syncFusionOnReturn);
+    document.addEventListener('visibilitychange', function(){
+      if (document.visibilityState === 'visible') syncFusionOnReturn();
+      else saveDraft();
     });
     (async function init(){
       var accountOk = await loadAccount();
@@ -1481,10 +2293,12 @@
       await loadFusionAccess();
       try {
         await loadProfiles();
-        await loadFusionHistory();
+        restoreDraft();
         state.ready = true;
         applyFusionGate();
-        if (!resumeJobIfAny()) setStatus(fusionGateMessage(), canUseFusion() ? 'ok' : 'err');
+        var resumed = await resumeJobIfAny();
+        await loadFusionHistory();
+        if (!resumed) setStatus(fusionGateMessage(), canUseFusion() ? 'ok' : 'err');
       } catch(e) {
         var msg = /401|not logged/i.test(String(e && e.message || ''))
           ? 'กรุณาเข้าสู่ระบบก่อนใช้ Fusion'

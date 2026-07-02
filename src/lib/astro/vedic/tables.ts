@@ -9,6 +9,8 @@ export type GrahaKey =
   | "Sun" | "Moon" | "Mars" | "Mercury" | "Jupiter" | "Venus" | "Saturn"
   | "Rahu" | "Ketu";
 
+export type GrahaRelation = "self" | "friend" | "neutral" | "enemy" | "not_applicable";
+
 /** ชื่อไทยของกราหะ */
 export const GRAHA_TH: Record<GrahaKey, string> = {
   Sun: "อาทิตย์",
@@ -52,6 +54,28 @@ export const RASHI_LORDS: GrahaKey[] = [
   "Saturn",  // 10 กุมภ์ Aquarius
   "Jupiter", // 11 มีน Pisces
 ];
+
+/** มูลตรีโกณ (moolatrikona) แบบช่วงองศาที่ใช้กันทั่วไปใน Parashari */
+export const MOOLATRIKONA: Partial<Record<GrahaKey, { sign: number; startDeg: number; endDeg: number }>> = {
+  Sun: { sign: 4, startDeg: 0, endDeg: 20 },
+  Moon: { sign: 1, startDeg: 4, endDeg: 30 },
+  Mars: { sign: 0, startDeg: 0, endDeg: 12 },
+  Mercury: { sign: 5, startDeg: 16, endDeg: 20 },
+  Jupiter: { sign: 8, startDeg: 0, endDeg: 10 },
+  Venus: { sign: 6, startDeg: 0, endDeg: 15 },
+  Saturn: { sign: 10, startDeg: 0, endDeg: 20 },
+};
+
+/** ความสัมพันธ์ธรรมชาติของกราหะต่อเจ้าราศี (Rahu/Ketu ไม่ล็อกเพราะต่างสำนัก) */
+export const NATURAL_RELATIONSHIPS: Partial<Record<GrahaKey, { friends: GrahaKey[]; neutrals: GrahaKey[]; enemies: GrahaKey[] }>> = {
+  Sun: { friends: ["Moon", "Mars", "Jupiter"], neutrals: ["Mercury"], enemies: ["Venus", "Saturn"] },
+  Moon: { friends: ["Sun", "Mercury"], neutrals: ["Mars", "Jupiter", "Venus", "Saturn"], enemies: [] },
+  Mars: { friends: ["Sun", "Moon", "Jupiter"], neutrals: ["Venus", "Saturn"], enemies: ["Mercury"] },
+  Mercury: { friends: ["Sun", "Venus"], neutrals: ["Mars", "Jupiter", "Saturn"], enemies: ["Moon"] },
+  Jupiter: { friends: ["Sun", "Moon", "Mars"], neutrals: ["Saturn"], enemies: ["Mercury", "Venus"] },
+  Venus: { friends: ["Mercury", "Saturn"], neutrals: ["Mars", "Jupiter"], enemies: ["Sun", "Moon"] },
+  Saturn: { friends: ["Mercury", "Venus"], neutrals: ["Jupiter"], enemies: ["Sun", "Moon", "Mars"] },
+};
 
 /** ===== exaltation / debilitation (อุจ/นิจ) ===== */
 /** ราศีและองศาที่เป็นมหาอุจ (deep exaltation) · ราศีนิจ = ตรงข้าม (+6) */

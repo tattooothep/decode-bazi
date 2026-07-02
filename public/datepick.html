@@ -56,6 +56,17 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .input,.select{width:100%;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--mono);font-size:13px;padding:10px 12px;border-radius:8px;outline:none;transition:.2s;}
 .input:focus,.select:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft);}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.date-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:4px 0 12px;}
+.date-quick button,.date-action-btn{background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg-soft);border-radius:8px;padding:8px 9px;font-size:12px;cursor:pointer;transition:.18s;text-align:center;}
+.date-quick button:hover,.date-action-btn:hover{border-color:var(--gold);color:var(--fg);}
+.date-quick button.active,.date-action-btn.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);font-weight:700;}
+.date-exact{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);}
+.date-exact-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;}
+.date-mode-hint{margin-top:8px;font-size:11px;color:var(--fg-faint);line-height:1.5;}
+@media(max-width:640px){
+  .date-quick{grid-template-columns:1fr;}
+  .date-exact-row{grid-template-columns:1fr;}
+}
 
 /* Activity grid */
 .activity-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
@@ -256,7 +267,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .hd-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:10px;letter-spacing:.03em;padding:2px 7px;border-radius:99px;margin-left:4px;vertical-align:middle;border:1px solid;white-space:nowrap;}
 .hd-good{color:#6cb859;border-color:rgba(108,184,89,.5);background:rgba(108,184,89,.12);}
 .hd-bad{color:var(--fg-soft);border-color:var(--line);background:rgba(127,127,127,.10);}
-/* 董公擇日 · ฤกษ์ตงกง chip (29 มิ.ย. · display-only) */
+/* 董公擇日 · ฤกษ์ตงกง chip (29 มิ.ย. · scoring overlay via 擇日) */
 .dg-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:10px;letter-spacing:.03em;padding:2px 7px;border-radius:99px;margin-left:4px;vertical-align:middle;border:1px solid;white-space:nowrap;}
 .dg-top{color:#d4a23a;border-color:rgba(212,162,58,.55);background:rgba(212,162,58,.13);}
 .dg-good{color:#6cb859;border-color:rgba(108,184,89,.5);background:rgba(108,184,89,.12);}
@@ -354,8 +365,11 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .dp-sifu-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(180,144,82,.4);}
 .dp-sifu-panel{display:none;margin-top:14px;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:18px 20px;}
 .dp-sifu-panel.on{display:block;}
-.dp-sifu-panel h3{font-family:var(--serif);font-size:16px;color:var(--fg);margin:0 0 12px;}
-.dp-sifu-log{display:flex;flex-direction:column;gap:8px;min-height:60px;max-height:360px;overflow-y:auto;padding:10px;background:var(--bg);border-radius:8px;border:1px dashed var(--line);font-family:var(--thai);}
+.dp-sifu-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px;}
+.dp-sifu-panel h3{font-family:var(--serif);font-size:16px;color:var(--fg);margin:0;}
+.dp-sifu-note{font-size:11px;color:var(--fg-soft);line-height:1.5;margin-top:4px;}
+.dp-sifu-mini{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--gold);border:1px solid var(--gold-line);background:rgba(200,164,77,.08);border-radius:99px;padding:4px 9px;white-space:nowrap;}
+.dp-sifu-log{display:flex;flex-direction:column;gap:8px;min-height:120px;max-height:420px;overflow-y:auto;padding:10px;background:var(--bg);border-radius:8px;border:1px dashed var(--line);font-family:var(--thai);}
 .dp-msg{display:flex;gap:8px;font-size:13px;line-height:1.55;}
 .dp-msg .role{flex-shrink:0;font-family:var(--mono);font-size:9px;letter-spacing:.15em;padding:3px 6px;border-radius:5px;text-transform:uppercase;}
 .dp-msg.user .role{background:rgba(180,144,82,.12);color:var(--gold);}
@@ -364,6 +378,14 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 @keyframes dppulse{0%,100%{opacity:.5}50%{opacity:1}}
 .dp-msg .body{flex:1;color:var(--fg);white-space:pre-wrap;}
 .dp-msg .body strong{color:var(--gold);font-weight:700;}
+.dp-sifu-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;}
+.dp-sifu-input{width:100%;min-height:48px;max-height:120px;resize:vertical;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-family:var(--thai);font-size:13px;line-height:1.45;outline:none;}
+.dp-sifu-input:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,164,77,.12);}
+.dp-sifu-send{border:1px solid var(--gold-line);border-radius:10px;background:linear-gradient(135deg,var(--gold),#8b6e2f);color:var(--bg);font-family:var(--mono);font-weight:800;font-size:11px;letter-spacing:.12em;padding:0 16px;cursor:pointer;}
+.dp-sifu-send:disabled,.dp-sifu-input:disabled{opacity:.55;cursor:not-allowed;}
+.dp-sifu-quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
+.dp-sifu-chip{border:1px solid var(--line);background:var(--bg-3);color:var(--fg-soft);border-radius:99px;padding:6px 10px;font-size:11px;cursor:pointer;}
+.dp-sifu-chip:hover{border-color:var(--gold-line);color:var(--gold);}
 /* Mobile responsive */
 @media (max-width:768px){
   .result-body{grid-template-columns:1fr;gap:4px;}
@@ -372,6 +394,9 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
   .result-verdict{flex-direction:column;gap:4px;}
   .dp-sifu-btn{font-size:10px;padding:9px 14px;letter-spacing:.12em;}
   .dp-sifu-log{max-height:280px;font-size:12px;}
+  .dp-sifu-head{flex-direction:column;}
+  .dp-sifu-form{grid-template-columns:1fr;}
+  .dp-sifu-send{min-height:42px;}
 }
 @media (max-width:640px){
   .activity-profile-tabs{grid-template-columns:repeat(2,1fr);}
@@ -459,7 +484,12 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
       <!-- 2. Date Range -->
       <div class="card">
         <h3><span class="num">02</span> ช่วงวัน <span class="han">期</span></h3>
-        <div  class="desc" data-i18n="auto.d.004">เลือกช่วงเวลาที่จะค้นหา — แนะนำ 30-60 วัน</div>
+        <div  class="desc" data-i18n="auto.d.004">เลือกช่วงเวลาที่จะค้นหา — กดเร็ววันนี้ / 7 วัน / 60 วัน หรือระบุวันเวลาเดียว</div>
+        <div class="date-quick" id="datePresetBar">
+          <button type="button" data-date-preset="today" data-i18n="dp.range.today">วันนี้</button>
+          <button type="button" data-date-preset="7" data-i18n="dp.range.next7">7 วันถัดไป</button>
+          <button type="button" data-date-preset="60" data-i18n="dp.range.days60">60 วัน</button>
+        </div>
         <div class="row2">
           <div class="field">
             <label data-i18n="auto.d.005">เริ่มต้น</label>
@@ -469,6 +499,16 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <label data-i18n="auto.d.006">สิ้นสุด</label>
             <input type="date" id="dateEnd" class="input"/>
           </div>
+        </div>
+        <div class="date-exact">
+          <div class="date-exact-row">
+            <div class="field" style="margin-bottom:0;">
+              <label data-i18n="dp.range.exact_label">ระบุวันเวลาเอง</label>
+              <input type="datetime-local" id="dateExact" class="input"/>
+            </div>
+            <button type="button" class="date-action-btn" id="dateExactSearch" data-i18n="dp.range.exact_btn">ค้นเวลานี้</button>
+          </div>
+          <div class="date-mode-hint" id="dateModeHint" data-i18n="dp.range.hint">โหมดช่วงวัน · ระบบจะจัดอันดับยามที่ดีที่สุดในช่วงที่เลือก</div>
         </div>
       </div>
 
@@ -503,8 +543,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 
       <!-- 4. Filters -->
       <div class="card">
-        <h3><span class="num">04</span> เกณฑ์กรอง <span class="han">篩</span></h3>
-        <div  class="desc" data-i18n="auto.d.008">ติ๊กเกณฑ์ที่ใช้ — กรองจากเข้มไปอ่อน · ติ๊กหมดวันจะเหลือน้อย</div>
+        <h3><span class="num">04</span> เกณฑ์ตรวจ / คะแนน <span class="han">篩</span></h3>
+        <div  class="desc" data-i18n="auto.d.008">ติ๊กเกณฑ์ที่ใช้ — สีแดงคือตัดจริง · สีน้ำเงินคือปรับคะแนนหรืออ่านประกอบ</div>
         <style>
         .help-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--gold-line);background:rgba(200,164,77,.08);color:var(--gold);font-family:var(--mono);font-size:10px;cursor:pointer;margin-left:6px;flex-shrink:0;transition:.2s;}
         .help-icon:hover{background:var(--gold);color:var(--bg);transform:scale(1.1);}
@@ -536,8 +576,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">ปฏิทินจีน <span class="han">通書</span> <span  class="level hard" data-i18n="auto.d.009">ตัดวันห้าม</span><button class="help-icon" onclick="showHelp('tongshu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div  class="sub" data-i18n="auto.d.010">ปฏิทินจีน · กรองวันที่ 忌 (ห้าม) สำหรับกิจกรรมนี้</div>
+                <div class="ttl">ปฏิทินจีน <span class="han">通書/擇日</span> <span  class="level hard" data-i18n="auto.d.009">ตัดวันห้าม 忌日</span><button class="help-icon" onclick="showHelp('tongshu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div  class="sub" data-i18n="auto.d.010">ตัดเฉพาะวันที่ตรงข้อห้าม 忌 ของกิจกรรม · ตงกง 董公 เป็นคะแนนเสริมในชั้นนี้</div>
               </div>
             </div>
           </label>
@@ -568,8 +608,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">ฉีเหมิน <span class="han">奇門</span> <span  class="level soft" data-i18n="auto.d.014">คัดยาม</span><button class="help-icon" onclick="showHelp('qimen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div  class="sub" data-i18n="auto.d.015">ดูประตู+ดาว+เทพ ของยาม — ตัดยามที่ตก 死/驚/傷</div>
+                <div class="ttl">ฉีเหมิน <span class="han">奇門</span> <span  class="level soft" data-i18n="auto.d.014">คัดยาม/จำกัดคะแนน</span><button class="help-icon" onclick="showHelp('qimen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div  class="sub" data-i18n="auto.d.015">ดูประตู+ดาว+เทพของยาม · ผังไม่รับกิจกรรมจะจำกัดคะแนน ไม่ใช่ตัวตัดหลัก</div>
               </div>
             </div>
             <div class="filter-sub">
@@ -582,7 +622,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
               </div>
               <div class="sub-row">
                 <input type="checkbox" id="qm-strict"/>
-                <label  for="qm-strict" data-i18n="auto.d.017">เข้มงวด · ตัดถ้าประตูร้าย</label>
+                <label  for="qm-strict" data-i18n="auto.d.017">เข้มงวด · ประตูร้ายจำกัดคะแนนแรงขึ้น</label>
               </div>
             </div>
           </label>
@@ -603,8 +643,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">สิบสองจังหวะวัน <span class="han">十二建除</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('jianchu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">ดูจังหวะวัน เช่น 開/成/除 ช่วยเพิ่มคะแนน · 破/閉/危 ลดคะแนน</div>
+                <div class="ttl">สิบสองจังหวะวัน <span class="han">十二建除</span> <span class="level score">ปรับคะแนน</span><button class="help-icon" onclick="showHelp('jianchu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">開/成/定 ช่วยหนุนคะแนน · 破/閉/危 ลดคะแนน ไม่ตัดเดี่ยว</div>
               </div>
             </div>
           </label>
@@ -614,8 +654,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">ยี่สิบแปดดาวฤกษ์ <span class="han">二十八宿</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('xiu28');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">ดาวฤกษ์ที่ดีช่วยดันคะแนน · ดาวฤกษ์ที่เสียจะลดคะแนนตามกิจกรรม</div>
+                <div class="ttl">ยี่สิบแปดดาวฤกษ์ <span class="han">二十八宿</span> <span class="level score">ปรับคะแนน</span><button class="help-icon" onclick="showHelp('xiu28');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">ดาวฤกษ์ของวันช่วยหนุนหรือลดคะแนนตามกิจกรรม · ไม่ตัดเดี่ยว</div>
               </div>
             </div>
           </label>
@@ -625,8 +665,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">สิบสองเทพประจำวัน <span class="han">十二神煞</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('shen12');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">เทพดี เช่น 青龍/明堂 ช่วยเพิ่มคะแนน · เทพเสีย เช่น 白虎/天刑 ลดคะแนน</div>
+                <div class="ttl">สิบสองเทพวัน <span class="han">黃黑道十二神</span> <span class="level score">ปรับคะแนน</span><button class="help-icon" onclick="showHelp('shen12');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">青龍/明堂/金匱/天德 หนุน · 白虎/天刑/朱雀/玄武 ลดคะแนน ไม่ตัดเดี่ยว</div>
               </div>
             </div>
           </label>
@@ -715,8 +755,24 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
         <button class="dp-sifu-btn" id="dp-sifu-btn" data-i18n="dp.sifu.btn">💬 ขอซินแสช่วยอ่านผล</button>
       </div>
       <div class="dp-sifu-panel" id="dp-sifu-panel">
-        <h3 data-i18n="auto.d.026">💬 ซินแสวางฤกษ์ · ระบบช่วยอ่านผล</h3>
+        <div class="dp-sifu-head">
+          <div>
+            <h3 data-i18n="auto.d.026">💬 ซินแสวางฤกษ์ · ระบบช่วยอ่านผล</h3>
+            <div class="dp-sifu-note" data-i18n="dp.sifu.note">คุยต่อได้แบบแชท · ระบบส่งผลฤกษ์ ฟิลเตอร์ คนที่เลือก และคะแนนทั้งหน้าล่าสุดให้ซินแสทุกครั้ง</div>
+          </div>
+          <div class="dp-sifu-mini" id="dp-sifu-context">NO SEARCH</div>
+        </div>
         <div class="dp-sifu-log" id="dp-sifu-log"></div>
+        <form class="dp-sifu-form" id="dp-sifu-form">
+          <textarea class="dp-sifu-input" id="dp-sifu-input" rows="2" placeholder="ถามต่อได้เลย เช่น ถ้าจะเซ็นเอกสารจริงควรเลือกอันดับไหน หรืออันดับ 1 กับ 2 ต่างกันยังไง"></textarea>
+          <button class="dp-sifu-send" id="dp-sifu-send" type="submit">ส่ง</button>
+        </form>
+        <div class="dp-sifu-quick">
+          <button type="button" class="dp-sifu-chip" data-sifu-q="สรุปให้หน่อยว่าอันดับไหนน่าใช้จริงที่สุด และเพราะอะไร">สรุปตัวเลือกดีที่สุด</button>
+          <button type="button" class="dp-sifu-chip" data-sifu-q="อันดับไหนควรเลี่ยง ถึงคะแนนดูดี เพราะติดข้อเสียอะไร">ตัวไหนควรเลี่ยง</button>
+          <button type="button" class="dp-sifu-chip" data-sifu-q="ถ้าจำเป็นต้องทำภายในวันนี้ ควรเลือกช่วงเวลาไหนจากผลนี้">ถ้าต้องใช้วันนี้</button>
+          <button type="button" class="dp-sifu-chip" data-sifu-q="ช่วยเทียบอันดับ 1 กับอันดับ 2 แบบฟันธงว่าเลือกอันไหน">เทียบอันดับ 1/2</button>
+        </div>
       </div>
 
       <!-- Results list -->
@@ -742,6 +798,9 @@ const state = {
   activityProfileCategory: 'core',
   dateStart: null,
   dateEnd: null,
+  dateMode: 'range',
+  datePreset: '60',
+  dateExact: null,
   people: [],
   peopleGroup: 'all',
   peopleQuery: '',
@@ -751,7 +810,10 @@ const state = {
   bzChong: true,
   bzXing: false,
   qmStrict: false,
-  hlMin: 70
+  hlMin: 70,
+  sifuHistory: [],
+  sifuBusy: false,
+  sifuAstroContext: null
 };
 
 // Default people (จาก userMemories)
@@ -870,24 +932,190 @@ const QM_GATES = [
   { name:'驚',  type:'bad',    desc:'ประตูตื่น · ตกใจ' }
 ];
 
+function ymdLocal(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function localDateTimeValue(d){
+  return ymdLocal(d)+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+function dateFromYmd(ymd){
+  const [y,m,d] = String(ymd || '').split('-').map(Number);
+  return y ? new Date(y, (m || 1) - 1, d || 1) : new Date();
+}
+function addDaysYmd(ymd, days){
+  const d = dateFromYmd(ymd);
+  d.setDate(d.getDate() + days);
+  return ymdLocal(d);
+}
+function rangeDaysInclusive(from, to){
+  if (!from || !to) return 1;
+  return Math.max(1, Math.round((dateFromYmd(to) - dateFromYmd(from)) / 86400000) + 1);
+}
+function shichenForLocalTime(hhmm){
+  const [h, m] = String(hhmm || '00:00').split(':').map(Number);
+  const minute = (Number(h) || 0) * 60 + (Number(m) || 0);
+  if (minute >= 23*60 || minute < 1*60) return { branch:'子', range:'23:00-01:00' };
+  const idx = Math.floor((minute - 60) / 120) + 1;
+  const branch = SHICHEN[Math.max(1, Math.min(11, idx))];
+  return { branch, range: SHICHEN_TIME[branch] || '' };
+}
+function slotDateForExact(date, time){
+  const [h, m] = String(time || '00:00').split(':').map(Number);
+  const minute = (Number(h) || 0) * 60 + (Number(m) || 0);
+  return minute < 60 ? addDaysYmd(date, -1) : date;
+}
+function updateDateModeUI(){
+  document.querySelectorAll('#datePresetBar [data-date-preset]').forEach((btn) => {
+    btn.classList.toggle('active', state.dateMode === 'range' && state.datePreset === btn.dataset.datePreset);
+  });
+  const exactBtn = document.getElementById('dateExactSearch');
+  if (exactBtn) exactBtn.classList.toggle('active', state.dateMode === 'exact');
+  const hint = document.getElementById('dateModeHint');
+  if (!hint) return;
+  if (state.dateMode === 'exact' && state.dateExact) {
+    const [date, time] = state.dateExact.split('T');
+    const sh = shichenForLocalTime(time);
+    const slotDate = slotDateForExact(date, time);
+    hint.textContent = `โหมดวันเวลาเดียว · ${date} ${time} อยู่ใน ${sh.branch}時 (${sh.range})${slotDate !== date ? ` · เริ่ม ${slotDate} 23:00` : ''}`;
+  } else {
+    const days = rangeDaysInclusive(state.dateStart, state.dateEnd);
+    hint.textContent = `โหมดช่วงวัน · ${state.dateStart} ถึง ${state.dateEnd} (${days} วัน / ${days * 12} ยาม)`;
+  }
+}
+function setDatePreset(preset, shouldSearch){
+  const todayStr = ymdLocal(new Date());
+  const endOffset = preset === 'today' ? 0 : preset === '7' ? 6 : preset === '60' ? 59 : 29;
+  state.dateMode = 'range';
+  state.datePreset = preset || 'custom';
+  state.dateStart = todayStr;
+  state.dateEnd = addDaysYmd(todayStr, endOffset);
+  const ds = document.getElementById('dateStart');
+  const de = document.getElementById('dateEnd');
+  if (ds) ds.value = state.dateStart;
+  if (de) de.value = state.dateEnd;
+  validateDateRange();
+  updateDateModeUI();
+  if (shouldSearch) performSearch();
+}
+function useExactDateTime(shouldSearch){
+  const el = document.getElementById('dateExact');
+  const value = el?.value || state.dateExact || localDateTimeValue(new Date());
+  if (el && !el.value) el.value = value;
+  state.dateExact = value;
+  state.dateMode = 'exact';
+  state.datePreset = 'exact';
+  state.dateStart = value.slice(0, 10);
+  state.dateEnd = value.slice(0, 10);
+  const ds = document.getElementById('dateStart');
+  const de = document.getElementById('dateEnd');
+  if (ds) ds.value = state.dateStart;
+  if (de) de.value = state.dateEnd;
+  updateDateModeUI();
+  if (shouldSearch) performSearch();
+}
+function currentSearchWindow(){
+  if (state.dateMode === 'exact') {
+    const exact = state.dateExact || document.getElementById('dateExact')?.value || localDateTimeValue(new Date());
+    const [date, time = '00:00'] = exact.split('T');
+    const sh = shichenForLocalTime(time);
+    const slotDate = slotDateForExact(date, time);
+    return {
+      mode:'exact',
+      dateFrom: slotDate,
+      dateTo: slotDate,
+      scanLimit: 12,
+      resultLimit: 12,
+      exactDateTime: exact,
+      exactDate: date,
+      exactSlotDate: slotDate,
+      exactTime: time,
+      exactBranch: sh.branch,
+      exactRange: sh.range,
+      label: `วันเวลาเดียว ${date} ${time} · ${sh.branch}時 ${sh.range}`,
+    };
+  }
+  const rawDays = rangeDaysInclusive(state.dateStart, state.dateEnd);
+  const cappedDays = Math.min(rawDays, 60);
+  const effectiveDateTo = rawDays > 60 ? addDaysYmd(state.dateStart, 59) : state.dateEnd;
+  return {
+    mode:'range',
+    dateFrom: state.dateStart,
+    dateTo: effectiveDateTo,
+    scanLimit: cappedDays * 12,
+    resultLimit: 12,
+    exactDateTime: null,
+    label: rawDays > 60
+      ? `${cappedDays} วันแรก ${state.dateStart} ถึง ${effectiveDateTo} · ${cappedDays * 12} ยาม`
+      : `${rawDays} วัน ${state.dateStart} ถึง ${state.dateEnd} · ${rawDays * 12} ยาม`,
+  };
+}
+function filterExactResults(data, win){
+  if (!data || win.mode !== 'exact') return data;
+  const branch = win.exactBranch;
+  const date = win.exactSlotDate || win.exactDate;
+  const top = (data.top || [])
+    .filter(t => t.date === date && t.earth_stem === branch)
+    .map(t => ({
+      ...t,
+      target_context: {
+        time: win.exactTime,
+        branch: win.exactBranch,
+        range: win.exactRange,
+        label: `เวลาที่ระบุ ${win.exactDate} ${win.exactTime} อยู่ใน ${win.exactBranch}時 (${win.exactRange})`,
+      },
+    }));
+  return { ...data, top, exactSearch: { date: win.exactDate, slotDate: date, time: win.exactTime, branch, range: win.exactRange } };
+}
+function validateDateRange(){
+  const ds = document.getElementById('dateStart');
+  const de = document.getElementById('dateEnd');
+  if (!ds?.value || !de?.value) return;
+  if (new Date(de.value) < new Date(ds.value)) {
+    de.value = ds.value;
+    state.dateEnd = ds.value;
+  }
+  const days = rangeDaysInclusive(ds.value, de.value);
+  let warnEl = document.getElementById('dateRangeWarn');
+  if (!warnEl) {
+    warnEl = document.createElement('div');
+    warnEl.id = 'dateRangeWarn';
+    warnEl.style.cssText = 'margin-top:8px;padding:8px 12px;background:rgba(226,107,93,.1);border:1px solid #e26b5d;border-radius:6px;font-family:var(--mono);font-size:10px;color:#e26b5d;display:none;';
+    ds.closest('.row2').parentNode.appendChild(warnEl);
+  }
+  if (days > 60) {
+    warnEl.textContent = '⚠ ช่วง ' + days + ' วัน เกิน 60 · ระบบจะค้น 60 วันแรกเพื่อคุมความเร็ว';
+    warnEl.style.display = 'block';
+  } else {
+    warnEl.style.display = 'none';
+  }
+  updateDateModeUI();
+}
+
 // ═══════════════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════════════
 function init(){
   // Default dates · P9 16 พ.ค. fix: ใช้ local date แทน toISOString (กัน UTC drift ตอนเช้า)
-  function ymdLocal(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   const today = new Date();
-  const in30 = new Date(); in30.setDate(today.getDate() + 29);
+  const in60 = new Date(); in60.setDate(today.getDate() + 59);
   const in90 = new Date(); in90.setDate(today.getDate() + 90);
   const todayStr = ymdLocal(today);
-  const in30Str = ymdLocal(in30);
+  const in60Str = ymdLocal(in60);
   const in90Str = ymdLocal(in90);
   const dsEl = document.getElementById('dateStart');
   const deEl = document.getElementById('dateEnd');
+  const exactEl = document.getElementById('dateExact');
   dsEl.value = todayStr; dsEl.min = todayStr; dsEl.max = in90Str;
-  deEl.value = in30Str; deEl.min = todayStr; deEl.max = in90Str;
+  deEl.value = in60Str; deEl.min = todayStr; deEl.max = in90Str;
+  if (exactEl) {
+    exactEl.value = localDateTimeValue(today);
+    exactEl.min = todayStr + 'T00:00';
+    exactEl.max = in90Str + 'T23:59';
+  }
   state.dateStart = todayStr;
-  state.dateEnd = in30Str;
+  state.dateEnd = in60Str;
+  state.dateMode = 'range';
+  state.datePreset = '60';
+  state.dateExact = exactEl?.value || localDateTimeValue(today);
+  updateDateModeUI();
 
   state.people = [];
   renderActivityProfiles();
@@ -959,33 +1187,26 @@ function init(){
   document.getElementById('act-classify-btn')?.addEventListener('click', classifyActivity);
   document.getElementById('act-query')?.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); classifyActivity(); } });
 
-  /* P9 16 พ.ค. fix: validate range · ถ้า end < start → reset end · ถ้า > 30 วัน warn */
-  function validateDateRange(){
-    const ds = document.getElementById('dateStart');
-    const de = document.getElementById('dateEnd');
-    if (!ds.value || !de.value) return;
-    if (new Date(de.value) < new Date(ds.value)) {
-      de.value = ds.value;
-      state.dateEnd = ds.value;
-    }
-    /* ถ้า end - start > 30 วัน · warn user (engine cap 30) */
-    const days = Math.round((new Date(de.value) - new Date(ds.value)) / 86400000) + 1;
-    let warnEl = document.getElementById('dateRangeWarn');
-    if (!warnEl) {
-      warnEl = document.createElement('div');
-      warnEl.id = 'dateRangeWarn';
-      warnEl.style.cssText = 'margin-top:8px;padding:8px 12px;background:rgba(226,107,93,.1);border:1px solid #e26b5d;border-radius:6px;font-family:var(--mono);font-size:10px;color:#e26b5d;display:none;';
-      ds.closest('.row2').parentNode.appendChild(warnEl);
-    }
-    if (days > 30) {
-      warnEl.textContent = '⚠ ช่วง ' + days + ' วัน เกิน 30 · ระบบจะค้นแค่ 30 วันแรก (' + ds.value + ' → +29)';
-      warnEl.style.display = 'block';
-    } else {
-      warnEl.style.display = 'none';
-    }
-  }
-  document.getElementById('dateStart').addEventListener('change', e => { state.dateStart = e.target.value; validateDateRange(); });
-  document.getElementById('dateEnd').addEventListener('change', e => { state.dateEnd = e.target.value; validateDateRange(); });
+  document.querySelectorAll('#datePresetBar [data-date-preset]').forEach(btn => {
+    btn.addEventListener('click', () => setDatePreset(btn.dataset.datePreset, true));
+  });
+  document.getElementById('dateExactSearch')?.addEventListener('click', () => useExactDateTime(true));
+  document.getElementById('dateExact')?.addEventListener('change', e => {
+    state.dateExact = e.target.value;
+    useExactDateTime(false);
+  });
+  document.getElementById('dateStart').addEventListener('change', e => {
+    state.dateMode = 'range';
+    state.datePreset = 'custom';
+    state.dateStart = e.target.value;
+    validateDateRange();
+  });
+  document.getElementById('dateEnd').addEventListener('change', e => {
+    state.dateMode = 'range';
+    state.datePreset = 'custom';
+    state.dateEnd = e.target.value;
+    validateDateRange();
+  });
 
   document.querySelectorAll('.filter-item').forEach(item => {
     const cb = item.querySelector('input[type="checkbox"]');
@@ -1273,19 +1494,20 @@ const ACTIVITY_MAP = {
 };
 
 const MODULE_LABELS = {
-  ze_ri: { th:'ปฏิทินจีน', zh:'通書', mode:'ตัดวันต้องห้าม', element:null, desc:'ดู 宜/忌 ว่าวันนี้ห้ามกิจกรรมนี้หรือไม่' },
+  ze_ri: { th:'ปฏิทินจีน', zh:'通書/擇日', mode:'ตัดวันต้องห้าม', element:null, desc:'ตัดเฉพาะวันที่ตรง 忌 ของกิจกรรม; ตงกงเป็นคะแนนเสริมในชั้นนี้' },
   tai_sui: { th:'ไท้ส่วย', zh:'太歲', mode:'ตัดชนหนัก', element:'earth', desc:'กันวัน/ยามที่ชนพลังปีแรงเกินไป' },
   ba_zi: { th:'ดวงคนที่เกี่ยวข้อง', zh:'八字', mode:'เฉพาะบุคคล', element:null, desc:'เทียบวันกับดวงของคนที่เลือก' },
-  qi_men: { th:'ฉีเหมิน', zh:'奇門', mode:'จัดคะแนนทิศและยาม', element:null, desc:'ดูประตู ดาว เทพ และทิศที่เหมาะกับกิจกรรม' },
+  qi_men: { th:'ฉีเหมิน', zh:'奇門', mode:'คัดยาม/จำกัดคะแนน', element:null, desc:'ดูประตู ดาว เทพ และทิศที่เหมาะกับกิจกรรม; ผังไม่รับจะจำกัดคะแนน' },
   yong_shen: { th:'ธาตุที่ดวงต้องการ', zh:'用神', mode:'เฉพาะบุคคล', element:null, desc:'เพิ่มคะแนนเมื่อวัน/ยามหนุนธาตุที่ดวงต้องการ' },
-  twelve_officers: { th:'สิบสองจังหวะวัน', zh:'十二建除', mode:'ปรับคะแนน', element:null, desc:'ดูจังหวะ 建除 ว่าวันนี้เปิด ปิด สำเร็จ หรือแตก' },
-  twenty_eight: { th:'ยี่สิบแปดดาวฤกษ์', zh:'二十八宿', mode:'ปรับคะแนน', element:null, desc:'ดาวฤกษ์จีนสำหรับงานมงคลและงานสำคัญ' },
-  twelve_spirits: { th:'สิบสองเทพประจำวัน', zh:'十二神煞', mode:'ปรับคะแนน', element:null, desc:'ดูเทพดี/เทพร้ายที่มากับวัน' },
+  twelve_officers: { th:'สิบสองจังหวะวัน', zh:'十二建除', mode:'คะแนนเสริม', element:null, desc:'ดูจังหวะ 建除 เป็นแรงหนุนหรือถ่วงคะแนน ไม่ใช่ตัวตัดหลัก' },
+  twenty_eight: { th:'ยี่สิบแปดดาวฤกษ์', zh:'二十八宿', mode:'คะแนนเสริม', element:null, desc:'ดาวฤกษ์จีนช่วยหนุนหรือลดคะแนนตามกิจกรรม ไม่ตัดเดี่ยว' },
+  twelve_spirits: { th:'สิบสองเทพวัน', zh:'黃黑道十二神', mode:'คะแนนเสริม', element:null, desc:'เทพดี/เทพร้ายประจำวันใช้ปรับคะแนน ไม่ใช่神煞กว้างของปาจื้อ' },
   nine_stars: { th:'เก้าดาวเหิน', zh:'九飛星', mode:'ปรับคะแนน', element:null, desc:'พลังดาวเหินของวัน/ยาม' },
   he_luo: { th:'เหอหลัว', zh:'河洛', mode:'บริบทเสริม', element:null, desc:'อ่าน pattern เชิงตัวเลขและจังหวะพลัง' },
   hex64: { th:'หกสิบสี่ข่วย', zh:'六十四卦', mode:'ตีความ', element:null, desc:'ใช้ตีความสถานการณ์ ไม่ใช่ตัวตัดหลัก' },
+  tian_xing: { th:'ดาวจริง', zh:'七政四餘', mode:'คะแนนเสริมขั้นสูง', element:null, desc:'โหราศาสตร์ดาวจริง opt-in; ติ๊กแล้วใช้ปรับคะแนน ไม่ติ๊กไม่มีผล' },
 };
-const MODULE_ORDER = ['ba_zi','ze_ri','tai_sui','qi_men','yong_shen','twelve_officers','twenty_eight','twelve_spirits','nine_stars','he_luo','hex64'];
+const MODULE_ORDER = ['ba_zi','ze_ri','tai_sui','qi_men','tian_xing','yong_shen','twelve_officers','twenty_eight','twelve_spirits','nine_stars','he_luo','hex64'];
 const STEM_ELEMENT = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
 const ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
 const ELEMENT_ZH = {wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
@@ -1393,7 +1615,7 @@ function localizeAuspiciousReason(text){
 
 function explainScore(score, rank, total){
   if (score >= 80) return `เหมาะมาก · เป็นตัวเลือกอันดับ ${rank}/${total} ใช้เป็นฤกษ์หลักได้`;
-  if (score >= 70) return `เหมาะ · ผ่านชั้นตัดหลักและมีแรงหนุนหลายจุด`;
+  if (score >= 70) return `เหมาะ · ผ่านเกณฑ์หลักที่เปิดไว้และมีแรงหนุนหลายจุด`;
   if (score >= 55) return `พอใช้ · มีตัวช่วย แต่ควรอ่านข้อควรระวังก่อนเลือก`;
   return `ควรระวัง · ผ่านเข้ารอบแต่แรงหนุนยังไม่เด่นพอ`;
 }
@@ -1404,7 +1626,7 @@ function cleanReasonText(text){
     .replace(/\b64卦\b/g, 'หกสิบสี่ข่วย')
     .replace(/\b12建除\b/g, 'สิบสองจังหวะวัน')
     .replace(/\b28宿\b/g, 'ยี่สิบแปดดาวฤกษ์')
-    .replace(/\b12神煞\b/g, 'สิบสองเทพประจำวัน')
+    .replace(/\b12神煞\b/g, 'สิบสองเทพวัน')
     .replace(/\bQi Men\b/g, 'ฉีเหมิน')
     .replace(/\bBa Zi\b/g, 'ดวงปาจื้อ')
     .replace(/\bTong Shu\b/g, 'ปฏิทินจีน')
@@ -1419,9 +1641,10 @@ function reasonDelta(raw){
 function scienceKeyFromReason(raw){
   const s = String(raw || '');
   if (/奇門|奇门|ฉีเหมิน|Qi Men|qi_men|PROFILE_QIMEN|QM_BAD_DOOR_CAP/i.test(s)) return 'qi_men';
+  if (/七政四餘|天星|tian_xing|TIAN_XING|TX_|廟旺|恩用仇難|忌格|合格/.test(s)) return 'tian_xing';
   if (/12建除|建除/.test(s)) return 'twelve_officers';
   if (/28宿|二十八宿/.test(s)) return 'twenty_eight';
-  if (/12神煞|神煞/.test(s)) return 'twelve_spirits';
+  if (/12神煞|十二神煞|黃黑道|神煞/.test(s)) return 'twelve_spirits';
   if (/飛星|飞星|[1-9]星/.test(s)) return 'nine_stars';
   if (/用神/.test(s)) return 'yong_shen';
   if (/河洛|二旺|一財|一财|旺/.test(s)) return 'he_luo';
@@ -1436,7 +1659,7 @@ function displayReasonText(raw){
   let s = cleanReasonText(raw)
     .replace(/^ระวัง\s*/,'')
     .replace(/[🚪⭐✨📜✓⚠📊]\s*/g,'')
-    .replace(/\s*\((奇門星|奇門|奇门|12建除|28宿|12神煞|飛星|飞星|河洛|八字|太歲|太岁|通書|通书|擇日|择日)\)/g,'')
+    .replace(/\s*\((奇門星|奇門|奇门|12建除|28宿|12神煞|七政四餘|天星|飛星|飞星|河洛|八字|太歲|太岁|通書|通书|擇日|择日)\)/g,'')
     .replace(/用神\s*日(ไม้|ไฟ|ดิน|ทอง|น้ำ)\s*ตรง/g,'ธาตุช่วยตรงก้านวัน: $1 · 用神')
     .replace(/用神\s*時(ไม้|ไฟ|ดิน|ทอง|น้ำ)\s*ตรง/g,'ธาตุช่วยตรงก้านยาม: $1 · 用神')
     .replace(/卦(\d+)\s*([^\s爻]+)?\s*爻(\d+)/g, (_, n, name, line) => `ข่วย ${n}${name ? ` · ${name}` : ''} · เส้น ${line}`)
@@ -1539,7 +1762,7 @@ function enrichScienceSectionsForSlot(sections, t){
       });
     }
   }
-  const order = ['qi_men','ze_ri','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
+  const order = ['qi_men','ze_ri','tian_xing','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
   return sections.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
 }
 
@@ -1553,7 +1776,7 @@ function hasQimenScienceSignal(t){
 }
 
 function buildScienceSections(matches, moduleScores){
-  const order = ['qi_men','ze_ri','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
+  const order = ['qi_men','ze_ri','tian_xing','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
   const map = new Map();
   const seen = new Set();
   (matches || []).forEach((raw) => {
@@ -1749,8 +1972,11 @@ async function performSearch(){
     const activity = ACTIVITY_MAP[state.activity] || 'work_start';
     const activityMeta = currentActivityMeta();
     const activityProfileKey = state.activityProfileKey || null;
-    const dateFrom = state.dateStart;
-    const dateEnd  = state.dateEnd;
+    if (state.dateMode === 'exact') useExactDateTime(false);
+    else validateDateRange();
+    const searchWindow = currentSearchWindow();
+    const dateFrom = searchWindow.dateFrom;
+    const dateEnd  = searchWindow.dateTo;
     /* P5+P6 16 พ.ค. (อากง 8 ศาสตร์): people branches + user yongshen */
     const peopleBranches = (state.people||[])
       .filter(p => p.enabled && p.branch)
@@ -1819,7 +2045,7 @@ async function performSearch(){
           activityType: ajActivity, dateFrom, dateTo: dateEnd,
           ...(activityProfileKey ? { activityProfileKey } : {}),
           peopleIds: (state.people||[]).filter(p=>p.enabled&&p.personId).map(p=>p.personId),
-          activeModules, options:{ limit: 12, scanLimit: 360, hardModules },
+          activeModules, options:{ limit: searchWindow.resultLimit, scanLimit: searchWindow.scanLimit, hardModules },
         })
       });
       const aj = await r.json();
@@ -1833,10 +2059,12 @@ async function performSearch(){
       const fp = aj.funnelStats || { perModule:{} };
       const reportHardModules = Array.isArray(aj.meta?.hardModules) ? aj.meta.hardModules : hardModules;
       const layerReport = buildLayerReport(fp, activeModules, reportHardModules, cands.length);
+      const showDonggong = activeModules.includes('ze_ri');
       data = {
         ok: true,
         total_scanned: fp.baseTotal || fp.total || cands.length,
         candidate_pool: fp.total || cands.length,
+        search_window: searchWindow,
         layers: layerReport,
         _aj_hex_lookup: cands.map(c => ({
           datetime: c.datetime.start,
@@ -1864,7 +2092,7 @@ async function performSearch(){
             heaven_stem: c.pillars?.hour?.stem || '·', earth_stem: c.pillars?.hour?.branch || '·',
             huangdao: c.huangdao || null,
             richong: c.richong || null,
-            donggong: c.donggong || null,
+            donggong: showDonggong ? (c.donggong || null) : null,
             ju_pole: (c.datetime && c.datetime.start) ? dunFromDate(new Date(c.datetime.start)) : 'yang', ju_number: qm.ju_number || 1,
             hex_num: h64.hex_num || null,
             hex_name: h64.hex_name || null,
@@ -1893,6 +2121,7 @@ async function performSearch(){
         stats: { tongshu_cut:0, bazi_cut:0, taisui_cut:0, jianchu_cut:0, xiu28_cut:0, shen12_cut:0, fly9_cut:0, heluo_cut:0, yongshen_cut:0 },
         _aj_engine: true, _aj_meta: aj.meta, _activity_profile: activityProfileKey,
       };
+      data = filterExactResults(data, searchWindow);
     } else {
       const r = await fetch('/api/qimen/search', {
         method:'POST', headers:{'Content-Type':'application/json'},
@@ -1915,24 +2144,30 @@ async function performSearch(){
     /* เก็บผลล่าสุดสำหรับ AI Sifu */
     window._dpLastSearch = data;
     window._dpLastActivity = activity;
-    if (data.layers) renderLayerFunnel(data.layers, data.total_scanned, data.top.length, data.candidate_pool);
+    window._dpLastPageContext = buildDatepickPageContext(data, searchWindow);
+    updateDpSifuContextBadge();
+    state.sifuHistory = [];
+    const sifuLog = document.getElementById('dp-sifu-log');
+    if (sifuLog) sifuLog.innerHTML = '';
+    if (data.layers) renderLayerFunnel(data.layers, data.total_scanned, data.top.length, data.candidate_pool, data.search_window?.label || searchWindow.label);
     else {
       const st = data.stats || {};
       let running = data.total_scanned;
       const cuts = [
-        ['ปฏิทินจีน', '通書', useTongshu ? (st.tongshu_cut||0) : null],
-        ['ดวงคนที่เกี่ยวข้อง', '八字', useBazi ? (st.bazi_cut||0) : null],
-        ['ไท้ส่วย', '太歲', useTaisui ? (st.taisui_cut||0) : null],
-        ['สิบสองจังหวะวัน', '建除', useJianchu ? (st.jianchu_cut||0) : null],
-        ['ยี่สิบแปดดาวฤกษ์', '宿', useXiu28 ? (st.xiu28_cut||0) : null],
-        ['สิบสองเทพประจำวัน', '神煞', useShen12 ? (st.shen12_cut||0) : null],
-        ['เก้าดาวเหิน', '飛星', useFly9 ? (st.fly9_cut||0) : null],
-        ['เหอหลัว', '河洛', useHeluo ? (st.heluo_cut||0) : null],
-        ['ธาตุที่ดวงต้องการ', '用神', userYongshen.length ? (st.yongshen_cut||0) : null],
+        ['ปฏิทินจีน', '通書', useTongshu ? (st.tongshu_cut||0) : null, 'hard'],
+        ['ดวงคนที่เกี่ยวข้อง', '八字', useBazi ? (st.bazi_cut||0) : null, 'hard'],
+        ['ไท้ส่วย', '太歲', useTaisui ? (st.taisui_cut||0) : null, 'hard'],
+        ['สิบสองจังหวะวัน', '建除', useJianchu ? (st.jianchu_cut||0) : null, 'score'],
+        ['ยี่สิบแปดดาวฤกษ์', '宿', useXiu28 ? (st.xiu28_cut||0) : null, 'score'],
+        ['สิบสองเทพวัน', '黃黑道', useShen12 ? (st.shen12_cut||0) : null, 'score'],
+        ['เก้าดาวเหิน', '飛星', useFly9 ? (st.fly9_cut||0) : null, 'score'],
+        ['เหอหลัว', '河洛', useHeluo ? (st.heluo_cut||0) : null, 'score'],
+        ['ธาตุที่ดวงต้องการ', '用神', userYongshen.length ? (st.yongshen_cut||0) : null, 'score'],
       ];
       const funnel = [{ name:'ทั้งหมด', han:'總', count: data.total_scanned, type:'gold' }];
-      for (const [name, han, cut] of cuts) {
+      for (const [name, han, cut, kind] of cuts) {
         if (cut === null) funnel.push({ name: name + ' (ไม่ได้ใช้)', han, count: running, type:'mid' });
+        else if (kind === 'score') funnel.push({ name: name + ' · ปรับคะแนน', han, count: running, type:'ok' });
         else {
           running -= cut;
           funnel.push({ name: name + ' · ตัด ' + cut, han, count: running, type: cut > 0 ? 'bad' : 'ok' });
@@ -1950,7 +2185,7 @@ async function performSearch(){
       ? ` · หลังตัดดวงคน/ชั้นห้าม เหลือ ${data.candidate_pool} ยาม`
       : '';
     document.getElementById('resultsMeta').innerHTML =
-      `กิจกรรม <b>${escHtml(resultActivityMeta.name || 'กิจกรรม')}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(actHan)}</span> · พบ <b>${data.top.length}</b> ฤกษ์ จาก ${data.total_scanned} ยาม${poolNote}`;
+      `กิจกรรม <b>${escHtml(resultActivityMeta.name || 'กิจกรรม')}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(actHan)}</span> · ${escHtml(data.search_window?.label || searchWindow.label)} · พบ <b>${data.top.length}</b> ฤกษ์ จาก ${data.total_scanned} ยาม${poolNote}`;
     /* show AI Sifu button */
     const sifuBtn = document.getElementById('dp-sifu-btn');
     if (sifuBtn) sifuBtn.style.display = 'inline-flex';
@@ -1997,7 +2232,7 @@ function renderRealResults(items){
       const agesTxt = (rc.ages || []).slice(0, 6).join(', ');
       rcLine = `<div class="r-line"><span class="k">${kLabel}</span><span class="v">⚠ ${escHtml(zod)} ${escHtml(rc.zodiac_zh)} · ${aLabel} ${escHtml(agesTxt)}</span></div>`;
     }
-    /* 董公擇日 · ฤกษ์ตงกง (display-only · ไม่เข้าคะแนน · ไทยนำ จีนรอง + ⓘ ซินแสอธิบาย) */
+    /* 董公擇日 · ฤกษ์ตงกง (scoring overlay เมื่อเปิด 擇日 · ไทยนำ จีนรอง + ⓘ ซินแสอธิบาย) */
     let dgChip = '', dgLine = '';
     if (t.donggong) {
       const dg = t.donggong; const L = getCurrentLang();
@@ -2013,8 +2248,8 @@ function renderRealResults(items){
         ? escHtml((zhArr || []).join('、'))
         : (pairs || []).map(p => escHtml(p.th) + (p.th !== p.zh ? ` <span class="dg-zh">${escHtml(p.zh)}</span>` : '')).join('、');
       const parts = [];
-      if ((dg.yiPairs || []).length) parts.push((L === 'en' ? 'Day suits (general): ' : L === 'zh' ? '本日宜（通用）：' : 'วันนี้เหมาะ(งานทั่วไป): ') + fmt(dg.yiPairs, dg.yi));
-      if ((dg.jiPairs || []).length) parts.push((L === 'en' ? 'Avoid: ' : L === 'zh' ? '忌：' : 'ห้าม ') + fmt(dg.jiPairs, dg.ji));
+      if ((dg.yiPairs || []).length) parts.push((L === 'en' ? 'General suits: ' : L === 'zh' ? '本日宜（通用）：' : 'บริบททั่วไปเหมาะ: ') + fmt(dg.yiPairs, dg.yi));
+      if ((dg.jiPairs || []).length) parts.push((L === 'en' ? 'General avoids: ' : L === 'zh' ? '通用忌：' : 'บริบททั่วไปควรเลี่ยง: ') + fmt(dg.jiPairs, dg.ji));
       if ((dg.shenshaPairs || []).length) parts.push((L === 'en' ? 'Stars: ' : L === 'zh' ? '神煞：' : 'ดาว ') + fmt(dg.shenshaPairs, dg.shensha));
       if (dg.note) parts.push(escHtml((L === 'zh' || L === 'en') ? dg.note : (dg.noteTh || dg.note)));
       /* คำอธิบายแบบ user เข้าใจ (กด ⓘ เปิด) */
@@ -2022,9 +2257,9 @@ function renderRealResults(items){
       const head = L === 'en' ? `Today: ${escHtml(dg.en)}` : L === 'zh' ? `今日為「${escHtml(dg.jianchu)}日」` : `วันนี้เป็น “${escHtml(dg.jianchuTh)} ${escHtml(dg.jianchu)}”`;
       const dl = [];
       dl.push(`<b>${head}</b><br>${escHtml(mean)}`);
-      dl.push(`<b>${T('ภาพรวมตงกง','Dong Gong verdict','董公斷')}:</b> ${ic} ${escHtml(L === 'en' ? dg.en : L === 'zh' ? dg.zh : dg.verdictTh)}`);
+      dl.push(`<b>${T('ภาพรวมตงกง','Dong Gong verdict','董公斷')}:</b> ${ic} ${escHtml(L === 'en' ? dg.en : L === 'zh' ? dg.zh : dg.verdictTh)} <span class="dg-src">(${T('คะแนนเสริมในชั้นปฏิทินจีนเมื่อเปิด 擇日','scoring overlay when Tong Shu is active','擇日啟用時作輔助加減分')})</span>`);
       if ((dg.yiPairs || []).length) dl.push(`<b>${T('วันนี้เหมาะ (งานทั่วไปของวัน)','Day generally suits','本日宜（通用）')}:</b> ${fmt(dg.yiPairs, dg.yi)} <span class="dg-src">(${T('บริบทรวมของวัน · ไม่ใช่หลักฐานเฉพาะกิจกรรมที่เลือก','daily context · not specific evidence for the chosen activity','全日通義·非所選事項之專證')})</span>`);
-      if ((dg.jiPairs || []).length) dl.push(`<b>${T('ควรเลี่ยง','Avoid','忌')}:</b> ${fmt(dg.jiPairs, dg.ji)}`);
+      if ((dg.jiPairs || []).length) dl.push(`<b>${T('บริบททั่วไปควรเลี่ยง','General avoids','通用忌')}:</b> ${fmt(dg.jiPairs, dg.ji)}`);
       if ((dg.shenshaPairs || []).length) dl.push(`<b>${T('ดาวประจำวัน','Day stars','神煞')}:</b> ${fmt(dg.shenshaPairs, dg.shensha)}`);
       if (dg.note) dl.push(`<b>${T('หมายเหตุ','Note','註')}:</b> ${escHtml((L === 'zh' || L === 'en') ? dg.note : (dg.noteTh || dg.note))}`);
       dl.push(`<b>👤 ${T('สำคัญสุด','Most important','最重要')}:</b> ${T('ฤกษ์ที่ดีต้อง “ไม่ชนวันเกิดคุณ” — ดูช่องวันชงประกอบเสมอ','A good date must not clash with your birth — always check the “clash” line.','吉日須不沖本命，請同看「日沖」。')}`);
@@ -2038,7 +2273,10 @@ function renderRealResults(items){
     const pctOfMax = Math.round((t.score / maxSc) * 100);
     const rankPct = Math.round(((items.length - i) / items.length) * 100);
     const stemChip = elementChipFromStem(t.heaven_stem);
-    const modulePills = Object.entries(t.moduleScores || {}).slice(0,6).map(([k,v]) => {
+    const modulePills = Object.entries(t.moduleScores || {}).sort(([a], [b]) => {
+      const ia = MODULE_ORDER.indexOf(a), ib = MODULE_ORDER.indexOf(b);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    }).slice(0,6).map(([k,v]) => {
       const m = MODULE_LABELS[k] || { th:k, zh:k };
       return `<span class="score-pill">${escHtml(m.th)} <span class="zh">${escHtml(m.zh)}</span> <b>${Math.round(v)}</b></span>`;
     }).join('');
@@ -2056,6 +2294,7 @@ function renderRealResults(items){
             <span>ทิศที่เด่น: ${directionText} · วัง ${t.palace_id}</span>
             <span>· ผังฉีเหมิน ${pole}${t.ju_number}局</span>
           </div>
+          ${t.target_context ? `<div class="ctx"><span>${escHtml(t.target_context.label)}</span></div>` : ''}
           <div class="ctx">
             <span class="tc">${t.heaven_stem}${t.earth_stem}</span><span style="color:var(--fg-soft);">時 · ${t.door_label || qimenLabel('door', t.door)}</span>
           </div>
@@ -2076,7 +2315,7 @@ function renderRealResults(items){
         ${rcLine}
         ${dgLine}
       </div>
-      ${modulePills ? `<div class="module-score-row"><span class="mini-title">คะแนนตามศาสตร์</span>${modulePills}</div>` : ''}
+      ${modulePills ? `<div class="module-score-row"><span class="mini-title">น้ำหนักคะแนนตามศาสตร์</span>${modulePills}</div>` : ''}
       ${renderScienceSections(scienceSections)}
       ${t.hex_num ? `<div class="hex-day-meaning" data-hex-meaning data-hex="${Number(t.hex_num)}" data-line="${Number(t.changing_line || 0)}">
         <div class="top">
@@ -2151,34 +2390,34 @@ window.showHexDeep = showHexDeep;
 
 /* 17 พ.ค.: HELP popup สำหรับ 11 ศาสตร์ · 3 ภาษา · อาม่าฉลาดมาก */
 const HELP_DATA = {
-  tongshu: { han:'通書', name:'ปฏิทินจีน',
-    th:{what:'ปฏิทินจีนคลาสสิก · บอกว่าวันนี้ทำอะไรดี (宜) ห้ามทำอะไร (忌)',how:['เช็คกิจกรรมที่เลือก vs ตาราง 宜/忌 ของวันนั้น','หากตรงกับ 忌 → ตัดทิ้ง','ใช้กับทุก slot ของวันเดียวกัน'],src:'通書 (4000 ปี) + 協紀辨方書 (1739)'},
-    en:{what:'Classical Chinese almanac · what to do (宜) vs avoid (忌)',how:['Match activity vs day\'s 宜/忌 table','If in 忌 → filter out','Applied to all slots'],src:'Tong Shu + Xie Ji Bian Fang (1739)'},
-    zh:{what:'中國通書 · 告知今日宜忌',how:['對照活動 vs 當日宜忌','若屬忌 → 過濾','應用於當日所有時辰'],src:'通書 + 協紀辨方書 (1739)'} },
+  tongshu: { han:'通書/擇日', name:'ปฏิทินจีน',
+    th:{what:'ปฏิทินจีนคลาสสิก · บอก 宜/忌 ของวัน และใช้ตงกง 董公 เป็นคะแนนเสริม',how:['เช็คกิจกรรมที่เลือก vs ตาราง 宜/忌 ของวันนั้น','หากตรงกับ 忌 ของกิจกรรม → ตัดทิ้ง','董公宜忌 เป็นบริบท/คะแนนเสริม ไม่ใช่ตัวตัดเดี่ยว'],src:'通書 (4000 ปี) + 協紀辨方書 (1739) + 董公選要覽'},
+    en:{what:'Classical Chinese almanac · activity 宜/忌 with Dong Gong as scoring overlay',how:['Match activity vs day 宜/忌','If the chosen activity is in 忌 → hard filter','Dong Gong 宜/忌 is context/scoring overlay, not a standalone hard filter'],src:'Tong Shu + Xie Ji Bian Fang (1739) + Dong Gong'},
+    zh:{what:'中國通書 · 宜忌硬性過濾，董公作輔助加減分',how:['對照所選事項 vs 當日宜忌','若所選事項屬忌 → 過濾','董公宜忌作通用日課與輔助加減分，非單獨硬篩'],src:'通書 + 協紀辨方書 (1739) + 董公選要覽'} },
   bazi: { han:'八字', name:'ดวงปาจื้อ · ปฏิกิริยาคน',
     th:{what:'เช็คดวง 4 เสาลูกค้า vs slot · ตรวจ 六沖/六合/三合/刑/害',how:['沖 ปะทะ: day/hour slot ปะทะปีนักษัตรลูกค้า → −25','三合: slot อยู่ใน 3 ตัวประสานกับ zodiac → +12','ตรงนักษัตร: slot day = ปีนักษัตร → +10'],src:'子平真詮 + 滴天髓 + ตำราอากง 95 ปี'},
     en:{what:'Customer 4 pillars vs slot · clash/harmony',how:['Clash: slot day/hour clashes zodiac → −25','Sanhe: slot in 3-harmony → +12','Same: slot day = zodiac → +10'],src:'Zi Ping + Di Tian Sui + Grandpa 95yr'},
     zh:{what:'命四柱 vs 時辰 · 六沖/六合/三合',how:['沖: 日/時沖年支 → −25','三合: 日支屬三合 → +12','同支: 日支同年支 → +10'],src:'子平真詮 · 滴天髓'} },
   qimen: { han:'奇門', name:'ฉีเหมินตุ้นเจี่ย',
-    th:{what:'แผนผัง 9 วัง · 8 ประตู + 9 ดาว + 8 เทพ ของยาม',how:['ประตู: 生/開/休 ดี · 死/驚/傷 ตัดทิ้ง','ดาว: 天輔/天心 ดี · 天蓬/天芮 ระวัง','三奇 (乙丙丁) → +12'],src:'奇門遁甲統宗大全 + qimen-api ที่ซินแสฮวง+โจ verify'},
-    en:{what:'9-palace · 8 doors + 9 stars + 8 deities',how:['Door: 生/開/休 good · 死/驚/傷 filtered','Star: 天輔/天心 good','三奇 → +12'],src:'Qi Men Tong Zong + Sifu verified'},
-    zh:{what:'九宮 · 八門+九星+八神',how:['門: 生/開/休吉','星: 天輔/天心吉','三奇 → +12'],src:'奇門遁甲統宗大全'} },
+    th:{what:'แผนผัง 9 วัง · 8 ประตู + 9 ดาว + 8 เทพ ของยาม',how:['ประตู: 生/開/休 ดี · 死/驚/傷 ทำให้คะแนนถูกจำกัด','ดาว: 天輔/天心 ดี · 天蓬/天芮 ระวัง','三奇 (乙丙丁) → +12'],src:'奇門遁甲統宗大全 + qimen-api ที่ซินแสฮวง+โจ verify'},
+    en:{what:'9-palace · 8 doors + 9 stars + 8 deities',how:['Door: 生/開/休 good · 死/驚/傷 cap the score','Star: 天輔/天心 good','三奇 → +12'],src:'Qi Men Tong Zong + Sifu verified'},
+    zh:{what:'九宮 · 八門+九星+八神',how:['門: 生/開/休吉 · 死/驚/傷限分','星: 天輔/天心吉','三奇 → +12'],src:'奇門遁甲統宗大全'} },
   taisui: { han:'太歲', name:'ไท้ส่วย',
     th:{what:'เทพปี · ปะทะปีนักษัตร = หายนะ',how:['ปี 2026=丙午 · clash=子','ถ้า slot day/hour = 子 → ปะทะ → ตัดทิ้ง','คนปีหนูเลี่ยง 午日 ในปี 2026'],src:'太歲神 · ตำรา 2000 ปี'},
     en:{what:'Year deity · clash = disaster',how:['2026=丙午 · clash=子','If slot=子 → conflicts → filter','Rat-born avoid 午-day in 2026'],src:'Tai Sui doctrine'},
     zh:{what:'太歲神 · 沖則大凶',how:['2026丙午 · 沖子','日/時為子 → 沖太歲','子年生忌2026午日'],src:'太歲神信仰'} },
   jianchu: { han:'12建除', name:'สิบสองจังหวะวัน',
-    th:{what:'12 ตัวแทนวัน หมุนตามเดือน · 成/開/收 ดี · 破/閉/危 เลี่ยง',how:['คำนวณจาก month vs day branch','滿/定/成 → +25 ถึง +35','破/閉/危 → −10 ถึง −25'],src:'通書 · 建除十二神'},
-    en:{what:'12 officer days · 成/開/收 best · 破/閉/危 avoid',how:['From month vs day branch','滿/定/成 → +25 to +35','破/閉/危 → −10 to −25'],src:'Tong Shu · 12 Officers'},
-    zh:{what:'十二建除 · 成/開/收吉 · 破/閉/危凶',how:['月支對日支推算','滿/定/成 +25至+35','破/閉/危 −10至−25'],src:'通書 十二建除'} },
+    th:{what:'12 ตัวแทนวัน หมุนตามเดือน · ใช้ปรับคะแนน ไม่ตัดเดี่ยว',how:['คำนวณจาก month vs day branch','滿/定/成 → +25 ถึง +35','破/閉/危 → −10 ถึง −25'],src:'通書 · 建除十二神'},
+    en:{what:'12 officer days · scoring overlay, not a standalone hard filter',how:['From month vs day branch','滿/定/成 → +25 to +35','破/閉/危 → −10 to −25'],src:'Tong Shu · 12 Officers'},
+    zh:{what:'十二建除 · 輔助加減分，非單獨硬篩',how:['月支對日支推算','滿/定/成 +25至+35','破/閉/危 −10至−25'],src:'通書 十二建除'} },
   xiu28: { han:'28宿', name:'ยี่สิบแปดดาวฤกษ์',
-    th:{what:'ดาว 28 ดวง หมุน 28 วัน · 7 ดี (房·箕·胃·昴·畢·觜·參)',how:['คำนวณจาก day index % 28','吉宿 (75-80) → +25 ถึง +30','凶宿 (25-35) → −15 ถึง −25'],src:'通書 · 二十八宿'},
-    en:{what:'28 lunar stars · 7 good (房箕胃昴畢觜參)',how:['day index % 28','Good (75-80) → +25 to +30','Bad (25-35) → −15 to −25'],src:'Tong Shu · 28 Xiu'},
-    zh:{what:'28宿 · 七吉七凶',how:['日序%28','吉宿+25至+30','凶宿−15至−25'],src:'通書 二十八宿'} },
-  shen12: { han:'12神煞', name:'สิบสองเทพประจำวัน',
-    th:{what:'เทพประจำวัน 12 องค์ · 青龍/明堂/金匱/天德 ดี · 白虎/天刑 ร้าย',how:['คำนวณจาก day_branch','吉神 (75-85) → +25 ถึง +35','凶神 (25-40) → −10 ถึง −25'],src:'通書 · 黃黑道神煞'},
-    en:{what:'12 day deities · 青龍/明堂/金匱/天德 good',how:['From day_branch','Good (75-85) → +25 to +35','Bad (25-40) → −10 to −25'],src:'Tong Shu · 12 Spirits'},
-    zh:{what:'十二神煞 · 青龍/明堂吉 · 白虎/天刑凶',how:['由日支推算','吉神+25至+35','凶神−10至−25'],src:'通書 黃黑道神煞'} },
+    th:{what:'ดาว 28 ดวง หมุน 28 วัน · ใช้ปรับคะแนนตามกิจกรรม ไม่ตัดเดี่ยว',how:['คำนวณจาก day index % 28','吉宿 (75-80) → +25 ถึง +30','凶宿 (25-35) → −15 ถึง −25'],src:'通書 · 二十八宿'},
+    en:{what:'28 lunar stars · activity scoring overlay, not a hard filter',how:['day index % 28','Good (75-80) → +25 to +30','Bad (25-35) → −15 to −25'],src:'Tong Shu · 28 Xiu'},
+    zh:{what:'28宿 · 依事項輔助加減分，非硬篩',how:['日序%28','吉宿+25至+30','凶宿−15至−25'],src:'通書 二十八宿'} },
+  shen12: { han:'黃黑道十二神', name:'สิบสองเทพวัน',
+    th:{what:'เทพประจำวัน 12 องค์ · 青龍/明堂/金匱/天德 ดี · 白虎/天刑/朱雀/玄武 ลดคะแนน',how:['คำนวณจาก day_branch','吉神 (75-85) → +25 ถึง +35','凶神 (25-40) → −10 ถึง −25','ใช้ปรับคะแนน ไม่ใช่ตัวตัดเดี่ยว'],src:'通書 · 黃黑道十二神'},
+    en:{what:'12 day deities · scoring overlay, not broad BaZi shensha',how:['From day_branch','Good (75-85) → +25 to +35','Bad (25-40) → −10 to −25','Scored only, not a standalone hard filter'],src:'Tong Shu · Huang/Hei Dao 12 Spirits'},
+    zh:{what:'黃黑道十二神 · 青龍/明堂吉 · 白虎/天刑凶',how:['由日支推算','吉神+25至+35','凶神−10至−25','輔助加減分，非單獨硬篩'],src:'通書 黃黑道十二神'} },
   fly9: { han:'9飛星', name:'เก้าดาวเหิน',
     th:{what:'ดาวเหิน 9 ดวง · ยุค 9 (2024-2043) · ดาว 1·6·8·9 ดี · 2·5·7 ร้าย',how:['ดาว 8 ทรัพย์ · 1 เสน่ห์ · 9 มงคล','ดาว 5 (黃) เคราะห์ · 2 (黑) โรค','คำนวณจาก day_branch % 9'],src:'玄空飛星派 · 沈氏玄空學'},
     en:{what:'9 flying stars · Period 9 · 1·6·8·9 good · 2·5·7 bad',how:['Star 8 wealth · 1 charm · 9 auspicious','Star 5 calamity · 2 illness','day_branch % 9'],src:'Xuan Kong Fei Xing'},
@@ -2225,7 +2464,7 @@ window.showHelp = showHelp;
 /* mockSearch · keep as fallback for offline · ไม่ใช้แล้ว */
 function _mockSearchUnused(){return mockSearch();}
 
-/* 📜 AI Sifu vis search results · 15 พ.ค. */
+/* 📜 AI Sifu chat for datepick results */
 function dpAppendMsg(role, text, loading){
   const log = document.getElementById('dp-sifu-log');
   if (!log) return null;
@@ -2238,32 +2477,151 @@ function dpAppendMsg(role, text, loading){
   log.scrollTop = log.scrollHeight;
   return d;
 }
-async function dpAskSifu(){
+
+function dpCompactSlot(t, i){
+  return {
+    rank: i + 1,
+    datetime: t.datetime || null,
+    date: t.date || null,
+    time: t.time || null,
+    score: t.score ?? null,
+    activity_name: t.activity_name || null,
+    activity_han: t.activity_han || null,
+    palace_id: t.palace_id || null,
+    direction: t.direction || null,
+    door: t.door || null,
+    door_label: t.door_label || null,
+    star: t.star || null,
+    star_label: t.star_label || null,
+    deity: t.deity || null,
+    deity_label: t.deity_label || null,
+    heaven_stem: t.heaven_stem || null,
+    earth_stem: t.earth_stem || null,
+    ju_pole: t.ju_pole || null,
+    ju_number: t.ju_number || null,
+    element: t.element || null,
+    moduleScores: t.moduleScores || {},
+    matches: (t.matches || []).slice(0, 12),
+    tongshu_tags: (t.tongshu_tags || []).slice(0, 12),
+    tongshu_reasons: (t.tongshu_reasons || []).slice(0, 12),
+    huangdao: t.huangdao || null,
+    richong: t.richong || null,
+    donggong: t.donggong ? {
+      level: t.donggong.level,
+      jianchu: t.donggong.jianchu,
+      jianchuTh: t.donggong.jianchuTh,
+      verdictTh: t.donggong.verdictTh,
+      yi: t.donggong.yi,
+      ji: t.donggong.ji,
+      shensha: t.donggong.shensha,
+      noteTh: t.donggong.noteTh || t.donggong.note || null,
+    } : null,
+    hex_num: t.hex_num || null,
+    hex_name: t.hex_name || null,
+    changing_line: t.changing_line || null,
+  };
+}
+
+function dpCurrentFilterState(){
+  const out = {};
+  document.querySelectorAll('.filter-item[data-filter]').forEach(el => {
+    const key = el.getAttribute('data-filter');
+    const cb = el.querySelector('input[type="checkbox"]');
+    if (key) out[key] = cb ? cb.checked !== false : true;
+  });
+  return out;
+}
+
+function dpSelectedPeopleSnapshot(){
+  return (state.people || []).filter(p => p.enabled).map(p => ({
+    name: p.name || p.label || '',
+    relation: p.relation || p.group || '',
+    gender: p.gender || null,
+    year: p.year || null,
+    dm: p.dm || p.dayMaster || null,
+    branch: p.branch || null,
+    kua: p.kua || null,
+    personId: p.personId || null,
+  })).slice(0, 24);
+}
+
+function buildDatepickPageContext(data, searchWindow){
+  const filters = dpCurrentFilterState();
+  const top = Array.isArray(data?.top) ? data.top : [];
+  const layers = Array.isArray(data?.layers) ? data.layers.map(x => ({
+    key: x.key || null,
+    th: x.th || x.name || null,
+    zh: x.zh || null,
+    mode: x.mode || null,
+    total: x.total ?? null,
+    passed: x.passed ?? null,
+    failed: x.failed ?? null,
+    hard: x.hard === true,
+    desc: x.desc || null,
+  })) : [];
+  const activityMeta = currentActivityMeta();
+  const selectedPeople = dpSelectedPeopleSnapshot();
+  return {
+    version: 'datepick-page-context-v1',
+    result_meta_text: document.getElementById('resultsMeta')?.innerText || '',
+    activity: window._dpLastActivity || state.activity,
+    activity_meta: {
+      key: state.activityProfileKey || state.activity,
+      name: activityMeta.name || '',
+      han: activityMeta.han || '',
+      category: state.activityProfileCategory || 'core',
+    },
+    date_state: {
+      mode: state.dateMode,
+      preset: state.datePreset,
+      start: state.dateStart,
+      end: state.dateEnd,
+      exact: state.dateExact,
+    },
+    search_window: data?.search_window || searchWindow || null,
+    filters,
+    qimen_school: state.qmCalc || 'chaibu',
+    selected_people: selectedPeople,
+    selected_people_count: selectedPeople.length,
+    funnel: {
+      total_scanned: data?.total_scanned ?? null,
+      candidate_pool: data?.candidate_pool ?? null,
+      result_count: top.length,
+    },
+    layers,
+    engine_meta: data?._aj_meta || null,
+    top_summary: top.map(dpCompactSlot),
+  };
+}
+
+function updateDpSifuContextBadge(){
+  const badge = document.getElementById('dp-sifu-context');
+  if (!badge) return;
   const data = window._dpLastSearch;
-  if (!data || !data.top || !data.top.length){
-    alert(_dptx('dp.search.alert','กรุณาค้นหาฤกษ์ก่อน'));
+  if (!data || !Array.isArray(data.top)) {
+    badge.textContent = 'NO SEARCH';
     return;
   }
-  const panel = document.getElementById('dp-sifu-panel');
-  if (panel) panel.classList.add('on');
-  const log = document.getElementById('dp-sifu-log');
-  if (log) log.innerHTML = '';
-  /* ดึง yongshen_v2 ของ user (lazy) */
-  let userYs = null;
-  let userElementDistribution = null;
+  const label = data.search_window?.label || window._dpLastPageContext?.search_window?.label || '';
+  badge.textContent = `${data.top.length} ฤกษ์ · ${label || 'latest search'}`;
+}
+
+async function dpLoadSifuAstroContext(){
+  if (state.sifuAstroContext) return state.sifuAstroContext;
+  const ctx = { user_yongshen_v2: null, user_element_distribution: null };
   try {
     if (window.__hkProfileReady) await window.__hkProfileReady;
     const birth = JSON.parse(localStorage.getItem('hk_birth')||'null');
-	    if (birth?.date && (birth.birthTimeKnown === false || birth?.time)){
-	      const cr = await fetch('/api/chart', {
-	        method:'POST', headers:{'Content-Type':'application/json'},
-	        body: JSON.stringify({ date:birth.date, time:birth.time||'12:00', longitude:birth.longitude||100.5018, gender:birth.gender||'M', birthTimeKnown: birth.birthTimeKnown !== false })
+    if (birth?.date && (birth.birthTimeKnown === false || birth?.time)){
+      const cr = await fetch('/api/chart', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ date:birth.date, time:birth.time||'12:00', longitude:birth.longitude||100.5018, gender:birth.gender||'M', birthTimeKnown: birth.birthTimeKnown !== false })
       });
       const cj = await cr.json();
-      userYs = cj.yongshen_v2 || null;
+      ctx.user_yongshen_v2 = cj.yongshen_v2 || null;
       const ed = cj.analysis?.element_distribution || null;
       if (ed && ed.engine_version === 'system-b-v1') {
-        userElementDistribution = {
+        ctx.user_element_distribution = {
           engine_version: ed.engine_version,
           confidence: ed.confidence,
           missing_positions: ed.missing_positions || [],
@@ -2273,41 +2631,117 @@ async function dpAskSifu(){
       }
     }
   } catch(_){}
-  const activity = window._dpLastActivity || 'work_start';
+  state.sifuAstroContext = ctx;
+  return ctx;
+}
+
+function dpSetSifuBusy(busy){
+  state.sifuBusy = !!busy;
+  const input = document.getElementById('dp-sifu-input');
+  const send = document.getElementById('dp-sifu-send');
+  if (input) input.disabled = !!busy;
+  if (send) send.disabled = !!busy;
+}
+
+function dpDefaultSifuQuestion(){
+  const data = window._dpLastSearch;
+  const n = data?.top?.length || 0;
   const activityMeta = currentActivityMeta();
-  const activityTh = (activityMeta.han || '事') + ' (' + (activityMeta.name || activity) + ')';
-  dpAppendMsg('user', 'วิเคราะห์ผลค้นหาฤกษ์ ' + activityTh + ' · top 5 + แนะนำที่ดีสุดสำหรับผมตามดวง · เลี่ยงอันไหน');
-  const loadingNode = dpAppendMsg('sifu', 'ซินแสกำลังคิด...', true);
+  const activityTh = (activityMeta.han || '事') + ' (' + (activityMeta.name || window._dpLastActivity || state.activity) + ')';
+  return `ช่วยอ่านผลฤกษ์ ${activityTh} ชุดนี้แบบคุยกับซินแสหน่อย ฟันธงว่าเลือกอันดับไหนดีที่สุดสำหรับผม ทำไม และอันไหนควรเลี่ยงจากทั้งหมด ${n} ตัวเลือก`;
+}
+
+function dpBuildSifuPayload(astroCtx){
+  const data = window._dpLastSearch;
+  const pageContext = buildDatepickPageContext(data, data?.search_window || null);
+  window._dpLastPageContext = pageContext;
+  return {
+    search_results: Array.isArray(data?.top) ? data.top.slice(0, 12) : [],
+    activity: window._dpLastActivity || state.activity,
+    datepick_context: pageContext,
+    user_yongshen_v2: astroCtx?.user_yongshen_v2 || null,
+    user_element_distribution: astroCtx?.user_element_distribution || null,
+  };
+}
+
+async function dpSendSifu(message){
+  const data = window._dpLastSearch;
+  if (!data || !data.top || !data.top.length){
+    alert(_dptx('dp.search.alert','กรุณาค้นหาฤกษ์ก่อน'));
+    return;
+  }
+  if (state.sifuBusy) return;
+  const input = document.getElementById('dp-sifu-input');
+  const text = String(message || input?.value || '').trim();
+  if (!text) return;
+  const panel = document.getElementById('dp-sifu-panel');
+  if (panel) panel.classList.add('on');
+  updateDpSifuContextBadge();
+  if (input) input.value = '';
+  const historyForRequest = (state.sifuHistory || []).slice(-8);
+  dpAppendMsg('user', text);
+  const loadingNode = dpAppendMsg('sifu', _dptx('dp.sifu.thinking','ซินแสกำลังคิด...'), true);
+  dpSetSifuBusy(true);
   try {
+    const astroCtx = await dpLoadSifuAstroContext();
     const r = await fetch('/api/qimen/sifu', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         topic: 'search_advice',
-        lang: 'th',
-        message: 'วิเคราะห์ผลค้นหาฤกษ์ทั้ง ' + data.top.length + ' ชุด · เลือก top 3 ที่ดีสุดสำหรับผม · ไม่เลือกอันไหน · เพราะอะไร',
-        payload: {
-          search_results: data.top,
-          activity: activity,
-          user_yongshen_v2: userYs,
-          user_element_distribution: userElementDistribution,
-        }
+        lang: getCurrentLang(),
+        message: text,
+        history: historyForRequest,
+        payload: dpBuildSifuPayload(astroCtx),
       })
     });
     const j = await r.json();
     if (loadingNode?.parentNode) loadingNode.parentNode.removeChild(loadingNode);
     if (j.reply){
       dpAppendMsg('sifu', j.reply);
+      state.sifuHistory = [
+        ...historyForRequest,
+        { role:'user', content:text },
+        { role:'assistant', content:j.reply },
+      ].slice(-10);
     } else {
       dpAppendMsg('sifu', 'ขัดข้อง: ' + (j.error||'unknown'));
     }
   } catch(e){
     if (loadingNode?.parentNode) loadingNode.parentNode.removeChild(loadingNode);
     dpAppendMsg('sifu', 'ขัดข้อง: ' + e.message);
+  } finally {
+    dpSetSifuBusy(false);
+    document.getElementById('dp-sifu-input')?.focus();
+  }
+}
+
+function dpOpenSifuChat(){
+  const data = window._dpLastSearch;
+  if (!data || !data.top || !data.top.length){
+    alert(_dptx('dp.search.alert','กรุณาค้นหาฤกษ์ก่อน'));
+    return;
+  }
+  const panel = document.getElementById('dp-sifu-panel');
+  if (panel) panel.classList.add('on');
+  updateDpSifuContextBadge();
+  const log = document.getElementById('dp-sifu-log');
+  if (log && !log.children.length && !(state.sifuHistory || []).length) {
+    dpSendSifu(dpDefaultSifuQuestion());
+  } else {
+    document.getElementById('dp-sifu-input')?.focus();
   }
 }
 document.addEventListener('DOMContentLoaded', () => {
   const sb = document.getElementById('dp-sifu-btn');
-  if (sb) sb.addEventListener('click', dpAskSifu);
+  if (sb) sb.addEventListener('click', dpOpenSifuChat);
+  const form = document.getElementById('dp-sifu-form');
+  if (form) form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    dpSendSifu();
+  });
+  document.querySelectorAll('[data-sifu-q]').forEach(btn => {
+    btn.addEventListener('click', () => dpSendSifu(btn.getAttribute('data-sifu-q') || ''));
+  });
 });
 
 function mockSearch(){
@@ -2380,7 +2814,7 @@ function mockSearch(){
 // ═══════════════════════════════════════════════════════════════
 //  RENDER FUNNEL
 // ═══════════════════════════════════════════════════════════════
-function renderLayerFunnel(layers, total, resultCount, candidatePool){
+function renderLayerFunnel(layers, total, resultCount, candidatePool, windowLabel){
   const f = document.getElementById('funnel');
   f.style.display = 'block';
   document.getElementById('funnelTotal').textContent = `${resultCount} ฤกษ์แนะนำ จาก ${total} ยาม`;
@@ -2396,12 +2830,12 @@ function renderLayerFunnel(layers, total, resultCount, candidatePool){
         <div class="count">${r.passed}<span style="font-size:10px;color:var(--fg-faint);">/${r.total}</span></div>
       </div>
       <div class="bar"><div class="fill" style="width:${r.pct}%"></div></div>
-      <p class="desc">${escHtml(r.desc)}${r.failed ? ` · ไม่ผ่าน ${r.failed} ยาม` : ''}</p>
+      <p class="desc">${escHtml(r.desc)}${r.hard && r.failed ? ` · ไม่ผ่าน ${r.failed} ยาม` : (!r.hard ? ' · ไม่มีการตัดเดี่ยว' : '')}</p>
     </div>`;
   document.getElementById('funnelRows').innerHTML = `
-    <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">ภาพรวม 30 วัน · 360 ยาม</div>
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">ภาพรวม ${escHtml(windowLabel || 'ช่วงที่เลือก')}</div>
     <div style="font-size:13px;color:var(--fg-soft);line-height:1.6;margin-bottom:12px;">
-      ระบบเริ่มจากทุกยามในช่วง 30 วัน แล้วใช้แต่ละศาสตร์ช่วยกรองและจัดอันดับ · ภาษาไทยเป็นคำอธิบายหลัก จีนเป็นชื่อศาสตร์อ้างอิง
+      ระบบเริ่มจากทุกยามในช่วงที่เลือก แล้วแยกชั้นตัดจริงออกจากชั้นปรับคะแนน/อ่านประกอบ · ภาษาไทยเป็นคำอธิบายหลัก จีนเป็นชื่อศาสตร์อ้างอิง
       ${candidatePool && candidatePool !== total ? `<br>หลังตัดดวงคน/ชั้นห้ามเบื้องต้น เหลือ ${candidatePool} ยามสำหรับจัดอันดับ` : ''}
     </div>
     ${hardLayers.length ? `<div style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--bad);text-transform:uppercase;margin:10px 0 8px;">ชั้นที่ตัดจริง</div><div class="layer-grid">${hardLayers.map(layerCard).join('')}</div>` : ''}
@@ -2574,22 +3008,28 @@ Object.assign(window.HK_I18N, {
   'auto.d.001': { th:'ฤกษ์', en:'Auspicious Timing', zh:'擇吉' },
   'auto.d.002': { th:'เลือกวันและยามที่เหมาะสำหรับกิจกรรมสำคัญ — กรองด้วยหลายศาสตร์ซ้อนกัน · จากชั้นตัดจริงไปถึงชั้นให้คะแนน', en:'Pick the best day & hour for key events — multi-layer filter, top-down', zh:'擇吉日吉時 — 多層濾網·由大至小' },
   'auto.d.003': { th:'เลือกประเภทกิจกรรมที่จะวางฤกษ์ — แต่ละกิจกรรมมีกฎ 宜/忌 ของปฏิทินจีนไม่เหมือนกัน', en:'Choose activity type — each has different Tong Shu 宜/忌 rules', zh:'選活動類型 — 各依通書宜忌' },
-  'auto.d.004': { th:'เลือกช่วงเวลาที่จะค้นหา — แนะนำ 30-60 วัน', en:'Choose date range — 30-60 days recommended', zh:'選日期區間 — 建議 30-60 天' },
+  'auto.d.004': { th:'เลือกช่วงเวลาที่จะค้นหา — กดเร็ววันนี้ / 7 วัน / 60 วัน หรือระบุวันเวลาเดียว', en:'Choose a search window — today / next 7 days / 60 days, or one exact date-time', zh:'選日期區間 — 今日 / 7天 / 60天，或指定單一日期時間' },
+  'dp.range.today': { th:'วันนี้', en:'Today', zh:'今日' },
+  'dp.range.next7': { th:'7 วันถัดไป', en:'Next 7 days', zh:'未來7天' },
+  'dp.range.days60': { th:'60 วัน', en:'60 days', zh:'60天' },
+  'dp.range.exact_label': { th:'ระบุวันเวลาเอง', en:'Exact date and time', zh:'指定日期時間' },
+  'dp.range.exact_btn': { th:'ค้นเวลานี้', en:'Search this time', zh:'查此時' },
+  'dp.range.hint': { th:'โหมดช่วงวัน · ระบบจะจัดอันดับยามที่ดีที่สุดในช่วงที่เลือก', en:'Range mode · ranks the best hours in the selected window', zh:'區間模式 · 排列所選期間最佳時辰' },
   'auto.d.005': { th:'เริ่มต้น', en:'Start', zh:'起始' },
   'auto.d.006': { th:'สิ้นสุด', en:'End', zh:'結束' },
   'auto.d.007': { th:'ติ๊กคนที่ต้องเช็คดวง — ระบบจะตัดวันที่ชงกับวันเกิดหลักหรือกระทบหนัก', en:'Tick people to check — system filters Day Master clashes', zh:'勾選須查命的人 — 過濾沖剋日主' },
-  'auto.d.008': { th:'ติ๊กเกณฑ์ที่ใช้ — ชั้นสีแดงคือตัดวัน/ยามทิ้ง · ชั้นสีน้ำเงินคือให้คะแนนเพิ่มหรือลด', en:'Tick criteria — strict to loose; all on = fewer days', zh:'勾選條件 — 嚴至寬·全勾則少' },
-  'auto.d.009': { th:'ตัดวันห้าม', en:'Forbidden', zh:'忌' },
+  'auto.d.008': { th:'ติ๊กเกณฑ์ที่ใช้ — สีแดงคือตัดจริง · สีน้ำเงินคือปรับคะแนนหรืออ่านประกอบ', en:'Choose criteria — red means hard cut; blue means scoring or explanation', zh:'勾選條件 — 紅色為硬性過濾，藍色為加減分或參考解讀' },
+  'auto.d.009': { th:'ตัดวันห้าม 忌日', en:'Hard cut', zh:'忌日' },
   'dp.tx.level': { th:'ขั้นสูง · ให้คะแนน', en:'Advanced · scored', zh:'進階 · 計分' },
   'dp.tx.sub': { th:'โหราศาสตร์ดาวจริง 七政四餘 (廟旺·恩用仇難·格局) · ศาสตร์ขั้นสูงสุด · ติ๊กเพื่อเปิดให้คะแนนเสริม · ไม่ติ๊ก = ไม่มีผลต่อคะแนน', en:'Real-star astrology 七政四餘 (dignity · benefactor/affliction · patterns) · highest science · tick to enable bonus scoring · off = no effect', zh:'七政四餘真星占 (廟旺·恩用仇難·格局) · 最高擇日術 · 勾選啟用加分 · 不勾選不影響' },
-  'auto.d.010': { th:'ปฏิทินจีน · กรองวันที่ 忌 (ห้าม) สำหรับกิจกรรมนี้', en:'Chinese almanac · filter 忌 days for this activity', zh:'通書·過濾本活動忌日' },
+  'auto.d.010': { th:'ตัดเฉพาะวันที่ตรงข้อห้าม 忌 ของกิจกรรม · ตงกง 董公 เป็นคะแนนเสริมในชั้นนี้', en:'Hard-cuts only activity 忌 days; Dong Gong is a scoring overlay in this layer', zh:'僅硬篩本事項忌日；董公在此層作輔助加減分' },
   'auto.d.011': { th:'ตัดวันชง', en:'Forbidden', zh:'忌' },
   'auto.d.012': { th:'เช็คดวงคน — วันชง · 刑 · 害 · กระทบวันเกิดหลัก', en:'Check person\'s chart — 沖 · 刑 · 害 · Day Master clash', zh:'查命 — 沖·刑·害·剋日主' },
   'auto.d.013': { th:'刑/害 (เตือนเฉย ๆ ไม่ตัดทิ้ง)', en:'刑/害 (warning only)', zh:'刑/害 (僅警告)' },
-  'auto.d.014': { th:'คัดยาม', en:'Avoid', zh:'避' },
-  'auto.d.015': { th:'ดูประตู+ดาว+เทพ ของยาม — ตัดยามที่ตก 死/驚/傷', en:'Check 門+星+神 of hour — drop 死/驚/傷', zh:'察時辰門星神 — 去死/驚/傷' },
+  'auto.d.014': { th:'คัดยาม/จำกัดคะแนน', en:'Guard / score cap', zh:'擇時·限分' },
+  'auto.d.015': { th:'ดูประตู+ดาว+เทพของยาม · ผังไม่รับกิจกรรมจะจำกัดคะแนน ไม่ใช่ตัวตัดหลัก', en:'Check 門+星+神; weak activity fit caps score rather than hard-cutting', zh:'察時辰門星神；不合事項時限分，非主硬篩' },
   'auto.d.016': { th:'ค่ายคำนวณ:', en:'Calc School:', zh:'算法派:' },
-  'auto.d.017': { th:'เข้มงวด · ตัดถ้าประตูร้าย', en:'Strict · drop if inauspicious door', zh:'嚴格·凶門即去' },
+  'auto.d.017': { th:'เข้มงวด · ประตูร้ายจำกัดคะแนนแรงขึ้น', en:'Strict · bad doors cap score harder', zh:'嚴格·凶門加重限分' },
   'auto.d.018': { th:'คะแนน', en:'Score', zh:'分數' },
   'auto.d.019': { th:'รูปแบบธาตุของยาม — ให้คะแนน 25-90 · ใช้กรองและจัดอันดับ', en:'Element pattern of hour — score 25-90 · used to filter & rank', zh:'時辰五行格局 — 25-90分·篩選排序' },
   'auto.d.020': { th:'คะแนนขั้นต่ำ:', en:'Minimum score:', zh:'最低分數:' },
@@ -2670,7 +3110,7 @@ window.applyI18N = applyI18N;
 </script>
 
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=18" defer></script>
+<script src="/js/hk-user-menu.js?v=19" defer></script>
 <script src="/js/hk-luopan-nav.js?v=2" defer></script>
 <script src="/js/hk-hex-deep.js?v=1" defer></script>
 </body>

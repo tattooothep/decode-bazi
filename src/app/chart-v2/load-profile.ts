@@ -12,6 +12,7 @@ type ProfileRow = {
   name: string;
   birth_datetime: string;
   birth_time_known?: boolean;
+  day_boundary?: "23:00" | "00:00" | null;
   birth_location_name?: string;
   birth_lat?: string;
   birth_lng?: string;
@@ -43,36 +44,73 @@ const STRENGTH_LABEL: Record<string, "Weak" | "Slightly Weak" | "Balanced" | "Sl
 const STEM_PINYIN: Record<string,string> = {甲:'Jiǎ',乙:'Yǐ',丙:'Bǐng',丁:'Dīng',戊:'Wù',己:'Jǐ',庚:'Gēng',辛:'Xīn',壬:'Rén',癸:'Guǐ'};
 const BRANCH_PINYIN: Record<string,string> = {子:'Zǐ',丑:'Chǒu',寅:'Yín',卯:'Mǎo',辰:'Chén',巳:'Sì',午:'Wǔ',未:'Wèi',申:'Shēn',酉:'Yǒu',戌:'Xū',亥:'Hài'};
 const STEM_TH: Record<string,string> = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+function parseBangkokBirth(value: string) {
+  const [datePart, rawTime = "12:00:00"] = String(value || "").split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hour = 12, minute = 0] = rawTime.split(":").map(Number);
+  if (!year || !month || !day) return null;
+  return {
+    year,
+    month,
+    day,
+    hour,
+    minute,
+    date: `${year}-${pad2(month)}-${pad2(day)}`,
+    time: `${pad2(hour)}:${pad2(minute)}`,
+  };
+}
 
 export async function loadProfileChart(profileId: string, orgId: string) {
   const row = await q1<ProfileRow>(
-    `SELECT id, name, birth_datetime, birth_time_known, birth_location_name, birth_lat, birth_lng,
+    `SELECT id, name,
+            to_char(birth_datetime AT TIME ZONE 'Asia/Bangkok','YYYY-MM-DD"T"HH24:MI:SS') AS birth_datetime,
+            birth_time_known, day_boundary, birth_location_name, birth_lat, birth_lng,
             day_master, day_master_strength, yongshen, bazi_pillars, gender
      FROM profiles WHERE id=$1 AND org_id=$2 AND is_archived=false`,
     [profileId, orgId]
   );
   if (!row) return null;
 
-  const pillars = row.bazi_pillars?.pillars;
-  if (!pillars?.year || !pillars?.month || !pillars?.day) return null;
+  const storedPillars = row.bazi_pillars?.pillars;
+  if (!storedPillars?.year || !storedPillars?.month || !storedPillars?.day) return null;
+  const pillars: { year: Pillar; month: Pillar; day: Pillar; hour?: Pillar | null } = {
+    year: { ...storedPillars.year },
+    month: { ...storedPillars.month },
+    day: { ...storedPillars.day },
+    hour: storedPillars.hour ? { ...storedPillars.hour } : null,
+  };
   const birthTimeKnown = row.birth_time_known !== false;
+  const dayBoundary = row.day_boundary === "00:00" ? "00:00" : "23:00";
+  const birthLocal = parseBangkokBirth(row.birth_datetime);
+  if (!birthLocal) return null;
 
   // ── TST + RECOMPUTE pillars (use shared helper · single source of truth) ──
   const { applyTST } = await import("@/lib/tyme-tst");
   const tymeEarly = await import("tyme4ts");
-  const earlyBd = new Date(row.birth_datetime);
-  const bdSrc = earlyBd;
-  const earlyYy = earlyBd.getFullYear();
-  const earlyMm = earlyBd.getMonth() + 1;
-  const earlyDd = earlyBd.getDate();
-  const earlyHh = earlyBd.getHours();
-  const earlyMn = earlyBd.getMinutes();
+  const earlyYy = birthLocal.year;
+  const earlyMm = birthLocal.month;
+  const earlyDd = birthLocal.day;
+  const earlyHh = birthLocal.hour;
+  const earlyMn = birthLocal.minute;
   const earlyLng = parseFloat(row.birth_lng || "100.5018");
-  const tstResult = applyTST({
-    year: earlyYy, month: earlyMm, day: earlyDd,
-    hour: earlyHh, minute: earlyMn,
-    longitude: earlyLng, gmtOffsetHours: 7,
-  });
+  const tstResult = birthTimeKnown
+    ? applyTST({
+        year: earlyYy, month: earlyMm, day: earlyDd,
+        hour: earlyHh, minute: earlyMn,
+        longitude: earlyLng, gmtOffsetHours: 7,
+      })
+    : {
+        appliedHour: 12,
+        appliedMinute: 0,
+        appliedDayShift: 0,
+        longitudeShiftMin: 0,
+        eotMin: 0,
+        totalShiftMin: 0,
+        appliedTimeStr: "12:00",
+        meta: { standardMeridian: 105, longitude: earlyLng, gmtOffsetHours: 7 },
+      };
   const earlyTstHh = tstResult.appliedHour;
   const earlyTstMn = tstResult.appliedMinute;
   // Keep these for backwards-compat downstream
@@ -80,10 +118,25 @@ export async function loadProfileChart(profileId: string, orgId: string) {
   const earlyEot = tstResult.eotMin;
   const earlyTzMer = tstResult.meta.standardMeridian;
   // recompute year/month/day at TST. In 3p mode, never fabricate an hour pillar.
-  const ecEarly = tymeEarly.SolarTime.fromYmdHms(earlyYy, earlyMm, earlyDd, earlyTstHh, earlyTstMn, 0).getLunarHour().getEightChar();
+  let solarYy = earlyYy;
+  let solarMm = earlyMm;
+  let solarDd = earlyDd;
+  if (birthTimeKnown && tstResult.appliedDayShift !== 0) {
+    const shifted = new Date(Date.UTC(earlyYy, earlyMm - 1, earlyDd + tstResult.appliedDayShift, 12, 0, 0));
+    solarYy = shifted.getUTCFullYear();
+    solarMm = shifted.getUTCMonth() + 1;
+    solarDd = shifted.getUTCDate();
+  }
+  const ecEarly = birthTimeKnown
+    ? tymeEarly.SolarTime.fromYmdHms(solarYy, solarMm, solarDd, earlyTstHh, earlyTstMn, 0).getLunarHour().getEightChar()
+    : tymeEarly.SolarTime.fromYmdHms(earlyYy, earlyMm, earlyDd, 12, 0, 0).getLunarHour().getEightChar();
+  let dayName = ecEarly.getDay().getName();
+  if (birthTimeKnown && dayBoundary === "00:00" && earlyTstHh === 23) {
+    dayName = tymeEarly.SolarTime.fromYmdHms(solarYy, solarMm, solarDd, 22, 59, 0).getLunarHour().getEightChar().getDay().getName();
+  }
   pillars.year  = { stem: ecEarly.getYear().getName()[0],  branch: ecEarly.getYear().getName()[1]  };
   pillars.month = { stem: ecEarly.getMonth().getName()[0], branch: ecEarly.getMonth().getName()[1] };
-  pillars.day   = { stem: ecEarly.getDay().getName()[0],   branch: ecEarly.getDay().getName()[1]   };
+  pillars.day   = { stem: dayName[0], branch: dayName[1] };
   pillars.hour  = birthTimeKnown
     ? { stem: ecEarly.getHour().getName()[0], branch: ecEarly.getHour().getName()[1] }
     : null;
@@ -155,14 +208,12 @@ export async function loadProfileChart(profileId: string, orgId: string) {
     polarity: "good" as const,
   }));
 
-  // Birth date format
-  const bd = bdSrc;
   const SUBJECT = {
     nameTh: row.name,
     nameEn: row.name,
     nameZh: row.name,
-    birthDate: bd.toISOString().slice(0, 10),
-    birthTime: birthTimeKnown ? bd.toTimeString().slice(0, 5) : "ไม่ทราบเวลา",
+    birthDate: birthLocal.date,
+    birthTime: birthTimeKnown ? birthLocal.time : "ไม่ทราบเวลา",
     birthCity: row.birth_location_name || "Bangkok",
   };
 
@@ -177,7 +228,9 @@ export async function loadProfileChart(profileId: string, orgId: string) {
     totalShift: Math.round(earlyShift * 10) / 10,
     appliedTime: `${String(earlyTstHh).padStart(2,'0')}:${String(earlyTstMn).padStart(2,'0')}`,
   };
-  const st = tyme.SolarTime.fromYmdHms(earlyYy, earlyMm, earlyDd, earlyTstHh, earlyTstMn, 0);
+  const st = birthTimeKnown
+    ? tyme.SolarTime.fromYmdHms(solarYy, solarMm, solarDd, earlyTstHh, earlyTstMn, 0)
+    : tyme.SolarTime.fromYmdHms(earlyYy, earlyMm, earlyDd, 12, 0, 0);
   const isMale = (row.gender || "M").toUpperCase() === "M";
   const cl = tyme.ChildLimit.fromSolarTime(st, isMale ? tyme.Gender.MAN : tyme.Gender.WOMAN);
   const startAge = cl.getYearCount();

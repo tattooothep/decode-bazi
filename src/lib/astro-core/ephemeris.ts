@@ -26,6 +26,26 @@ export function eclipticLon(body: BodyKey, date: Date): number {
   return norm360(A.Ecliptic(v).elon);
 }
 
+/** ลองจิจูด+ละติจูดสุริยวิถี (tropical · geocentric apparent) */
+export function eclipticCoords(body: BodyKey, date: Date): { lon: number; lat: number } {
+  if (body === "Sun") {
+    const s = A.SunPosition(date) as unknown as { elon: number; elat?: number };
+    return { lon: norm360(s.elon), lat: Number(s.elat || 0) };
+  }
+  const v = A.GeoVector(A.Body[body] as any, date, true);
+  const e = A.Ecliptic(v) as unknown as { elon: number; elat: number };
+  return { lon: norm360(e.elon), lat: +Number(e.elat || 0) };
+}
+
+/** declination จาก longitude/latitude สุริยวิถี + obliquity */
+export function declinationFromEcliptic(lon: number, lat: number, date: Date): number {
+  const lambda = norm360(lon) * D2R;
+  const beta = lat * D2R;
+  const eps = obliquity(date) * D2R;
+  const sinDec = Math.sin(beta) * Math.cos(eps) + Math.cos(beta) * Math.sin(eps) * Math.sin(lambda);
+  return Math.asin(Math.max(-1, Math.min(1, sinDec))) * R2D;
+}
+
 /** ความเร็ว ใช้แยก applying/separating + retro · °/วัน (เทียบ ±0.5 วัน) */
 export function eclipticSpeed(body: BodyKey, date: Date): number {
   const dt = 0.5 * 86400000;
@@ -85,17 +105,24 @@ export function midheaven(date: Date, lngDeg: number): number {
   return mc;
 }
 
-export type BodyPos = { key: BodyKey | "Rahu" | "Ketu" | "Yuebo"; lon: number; speed: number; retro: boolean };
+export type BodyPos = { key: BodyKey | "Rahu" | "Ketu" | "Yuebo"; lon: number; lat: number; declination: number; speed: number; retro: boolean };
 
 /** ดาวทั้งหมด (เลือกชุด) + นod/apogee */
 export function computeBodies(date: Date, opts: { modern?: boolean; node?: boolean; apogee?: boolean } = {}): BodyPos[] {
   const set: BodyKey[] = opts.modern ? [...CLASSICAL_7, ...MODERN_3] : [...CLASSICAL_7];
-  const out: BodyPos[] = set.map((b) => ({ key: b, lon: eclipticLon(b, date), speed: eclipticSpeed(b, date), retro: isRetro(b, date) }));
+  const out: BodyPos[] = set.map((b) => {
+    const c = eclipticCoords(b, date);
+    return { key: b, lon: c.lon, lat: c.lat, declination: declinationFromEcliptic(c.lon, c.lat, date), speed: eclipticSpeed(b, date), retro: isRetro(b, date) };
+  });
   if (opts.node !== false) {
     const node = meanNode(date);
-    out.push({ key: "Rahu", lon: node, speed: -0.0529, retro: true });
-    out.push({ key: "Ketu", lon: norm360(node + 180), speed: -0.0529, retro: true });
+    out.push({ key: "Rahu", lon: node, lat: 0, declination: declinationFromEcliptic(node, 0, date), speed: -0.0529, retro: true });
+    const ketu = norm360(node + 180);
+    out.push({ key: "Ketu", lon: ketu, lat: 0, declination: declinationFromEcliptic(ketu, 0, date), speed: -0.0529, retro: true });
   }
-  if (opts.apogee) out.push({ key: "Yuebo", lon: lunarApogee(date), speed: 0.111, retro: false });
+  if (opts.apogee) {
+    const yuebo = lunarApogee(date);
+    out.push({ key: "Yuebo", lon: yuebo, lat: 0, declination: declinationFromEcliptic(yuebo, 0, date), speed: 0.111, retro: false });
+  }
   return out;
 }

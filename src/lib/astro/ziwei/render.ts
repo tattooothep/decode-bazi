@@ -58,6 +58,13 @@ function renderTh(p: ZiweiPacket): string {
     const loc = s.palaceName ? ` → ตกที่ ${PALACE_TH[s.palaceName] || s.palaceName}` : "";
     L.push(`  · ${s.star} ${SIHUA_TH[s.type] || s.type}${loc}`);
   }
+  if (d.daXianSiHua?.length) {
+    L.push("");
+    L.push("【大限四化 ตาม宮干】");
+    for (const dx of d.daXianSiHua) {
+      L.push(`  · ${PALACE_TH[dx.palaceName] || dx.palaceName} ${dx.ageStart}-${dx.ageEnd} ปี [${dx.stem}${dx.branch}] → ${formatSiHuaList(dx.siHua)}`);
+    }
+  }
   if (d.sanFangSiZheng) {
     L.push("");
     L.push("【三方四正 ของ命宮】");
@@ -65,16 +72,45 @@ function renderTh(p: ZiweiPacket): string {
   }
   if (d.liuNian) {
     L.push("");
-    L.push(`【流年 ${d.liuNian.year}】流年命宮 = ${PALACE_TH[d.liuNian.mingPalaceName] || d.liuNian.mingPalaceName} (${d.liuNian.mingBranch})`);
+    L.push(`【流年 ${d.liuNian.year} · ${d.liuNian.ganzhi}】流年命宮 = ${PALACE_TH[d.liuNian.mingPalaceName] || d.liuNian.mingPalaceName} (${d.liuNian.mingBranch})`);
+    L.push(`  · 流年四化: ${formatSiHuaList(d.liuNian.siHua)}`);
+    if (d.liuNian.annualStars?.length) {
+      L.push(`  · 流年星: ${d.liuNian.annualStars.map((s) => `${s.star}→${PALACE_TH[s.palaceName] || s.palaceName}(${s.branch})`).join("、")}`);
+    }
   }
+  if (d.liuYue) {
+    L.push("");
+    L.push(`【流月 ${d.liuYue.year} · เดือนจันทรคติ ${d.liuYue.lunarMonth}${d.liuYue.isLeapMonth ? "閏" : ""} · ${d.liuYue.ganzhi}】流月命宮 = ${PALACE_TH[d.liuYue.mingPalaceName] || d.liuYue.mingPalaceName} (${d.liuYue.mingBranch})`);
+    L.push(`  · 流月四化: ${formatSiHuaList(d.liuYue.siHua)}`);
+    if (d.liuYue.monthlyStars?.length) {
+      L.push(`  · 流月星: ${d.liuYue.monthlyStars.map((s) => `${s.star}→${PALACE_TH[s.palaceName] || s.palaceName}(${s.branch})`).join("、")}`);
+    }
+    L.push(`  · 流月命宮 12 เดือน: ${d.liuYue.monthPalaces.map((m) => `${m.lunarMonth}:${PALACE_TH[m.mingPalaceName] || m.mingPalaceName}(${m.mingBranch})`).join(" · ")}`);
+  }
+  if (d.liuRi) {
+    L.push("");
+    L.push(`【流日 ${d.liuRi.dateISO} · วันจันทรคติ ${d.liuRi.lunarDay} · ${d.liuRi.ganzhi}】流日命宮 = ${PALACE_TH[d.liuRi.mingPalaceName] || d.liuRi.mingPalaceName} (${d.liuRi.mingBranch})`);
+    L.push(`  · 流日四化: ${formatSiHuaList(d.liuRi.siHua)}`);
+    if (d.liuRi.dailyStars?.length) {
+      L.push(`  · 流日星: ${d.liuRi.dailyStars.map((s) => `${s.star}→${PALACE_TH[s.palaceName] || s.palaceName}(${s.branch})`).join("、")}`);
+    }
+  }
+  if (p.notAvailable?.length) L.push(`ข้อมูลที่ยังไม่มีใน packet: ${p.notAvailable.join("、")}`);
   L.push("");
-  L.push("หมายเหตุ: บรรยายตามผัง安星นี้เท่านั้น · ใช้ศัพท์紫微斗數 (主星/四化/大限/廟旺) · ห้ามเดาดาวหรือตำแหน่งเพิ่ม");
+  L.push("หมายเหตุ: บรรยายตามผัง安星นี้เท่านั้น · ใช้ศัพท์紫微斗數 (主星/四化/大限/流年/流月/流日/廟旺) · ห้ามเดาดาวหรือตำแหน่งเพิ่ม");
   return L.join("\n");
 }
 
 function siHuaTag(pal: ZiweiPacket["data"]["palaces"][number], star: string): string {
   const s = pal.siHua.find((x) => x.star === star);
   return s ? `[${SIHUA_TH[s.type] || s.type}]` : "";
+}
+
+function formatSiHuaList(items: ZiweiPacket["data"]["siHua"]): string {
+  return (items || []).map((s) => {
+    const loc = s.palaceName ? `@${PALACE_TH[s.palaceName] || s.palaceName}` : "@ไม่พบตำแหน่งใน packet";
+    return `${s.star}${SIHUA_TH[s.type] || s.type}${loc}`;
+  }).join("、") || "—";
 }
 
 function renderZh(p: ZiweiPacket): string {
@@ -94,6 +130,23 @@ function renderZh(p: ZiweiPacket): string {
     L.push(`${pal.name}[${pal.ganzhi}]${pal.isShenGong ? "(身)" : ""} 大限${pal.daXian.ageStart}-${pal.daXian.ageEnd}: ${majors}${minors ? " | " + minors : ""}`);
   }
   L.push("四化：" + d.siHua.map((s) => `${s.star}化${s.type}`).join("、"));
+  if (d.daXianSiHua?.length) L.push("大限四化：" + d.daXianSiHua.map((dx) => `${dx.palaceName}${dx.ageStart}-${dx.ageEnd}[${dx.stem}${dx.branch}]:${dx.siHua.map((s) => `${s.star}化${s.type}`).join("、")}`).join("；"));
+  if (d.liuNian) {
+    L.push(`流年${d.liuNian.year}${d.liuNian.ganzhi}：命宮${d.liuNian.mingPalaceName}(${d.liuNian.mingBranch})`);
+    L.push("流年四化：" + d.liuNian.siHua.map((s) => `${s.star}化${s.type}`).join("、"));
+    L.push("流年星：" + d.liuNian.annualStars.map((s) => `${s.star}@${s.palaceName}`).join("、"));
+  }
+  if (d.liuYue) {
+    L.push(`流月${d.liuYue.year}年${d.liuYue.lunarMonth}月${d.liuYue.ganzhi}：命宮${d.liuYue.mingPalaceName}(${d.liuYue.mingBranch})`);
+    L.push("流月四化：" + d.liuYue.siHua.map((s) => `${s.star}化${s.type}`).join("、"));
+    L.push("流月星：" + d.liuYue.monthlyStars.map((s) => `${s.star}@${s.palaceName}`).join("、"));
+  }
+  if (d.liuRi) {
+    L.push(`流日${d.liuRi.dateISO}${d.liuRi.ganzhi}：命宮${d.liuRi.mingPalaceName}(${d.liuRi.mingBranch})`);
+    L.push("流日四化：" + d.liuRi.siHua.map((s) => `${s.star}化${s.type}`).join("、"));
+    L.push("流日星：" + d.liuRi.dailyStars.map((s) => `${s.star}@${s.palaceName}`).join("、"));
+  }
+  if (p.notAvailable?.length) L.push("未提供：" + p.notAvailable.join("、"));
   return L.join("\n");
 }
 
@@ -112,5 +165,24 @@ function renderEn(p: ZiweiPacket): string {
     const majors = pal.majorStars.map((s) => `${s.name}(${s.brightness})${siHuaTag(pal, s.name)}`).join(" ") || "—";
     L.push(`${pal.name}[${pal.ganzhi}]${pal.isShenGong ? "(Body)" : ""} decade ${pal.daXian.ageStart}-${pal.daXian.ageEnd}: ${majors}`);
   }
+  if (d.daXianSiHua?.length) {
+    L.push("Decade transformations: " + d.daXianSiHua.map((dx) => `${dx.palaceName} ${dx.ageStart}-${dx.ageEnd}[${dx.stem}${dx.branch}]: ${dx.siHua.map((s) => `${s.star}${s.type}`).join(", ")}`).join("; "));
+  }
+  if (d.liuNian) {
+    L.push(`Annual ${d.liuNian.year} ${d.liuNian.ganzhi}: annual Life Palace ${d.liuNian.mingPalaceName} (${d.liuNian.mingBranch})`);
+    L.push("Annual transformations: " + d.liuNian.siHua.map((s) => `${s.star}${s.type}`).join(", "));
+    L.push("Annual stars: " + d.liuNian.annualStars.map((s) => `${s.star}@${s.palaceName}`).join(", "));
+  }
+  if (d.liuYue) {
+    L.push(`Monthly ${d.liuYue.year} lunar month ${d.liuYue.lunarMonth} ${d.liuYue.ganzhi}: monthly Life Palace ${d.liuYue.mingPalaceName} (${d.liuYue.mingBranch})`);
+    L.push("Monthly transformations: " + d.liuYue.siHua.map((s) => `${s.star}${s.type}`).join(", "));
+    L.push("Monthly stars: " + d.liuYue.monthlyStars.map((s) => `${s.star}@${s.palaceName}`).join(", "));
+  }
+  if (d.liuRi) {
+    L.push(`Daily ${d.liuRi.dateISO} ${d.liuRi.ganzhi}: daily Life Palace ${d.liuRi.mingPalaceName} (${d.liuRi.mingBranch})`);
+    L.push("Daily transformations: " + d.liuRi.siHua.map((s) => `${s.star}${s.type}`).join(", "));
+    L.push("Daily stars: " + d.liuRi.dailyStars.map((s) => `${s.star}@${s.palaceName}`).join(", "));
+  }
+  if (p.notAvailable?.length) L.push("Not available in packet: " + p.notAvailable.join(", "));
   return L.join("\n");
 }

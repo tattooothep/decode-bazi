@@ -13,6 +13,7 @@
 | ctext chapter=953577 (張果星宗一-四) | ✅ เสริม | `...&chapter=953577` — นิยามกรอบ 合格/忌格 (入垣/升殿/廟旺/喜樂/貴格圖 = 合格 · 賤格圖 = 忌格) + 上/中/下格 + 五合(輔)/失格(沈) |
 | ctext chapter=293277 (張果星宗八-十一) | ✅ เสริม | `...&chapter=293277` — 論吉星守命/論殺星守命 (= ที่มาของ 2 格 ใน V1) + 觀星要訣 |
 | ctext book index | — | res=193353 มี 8 chapter: 953577·349444·530323·293277·841883·904682·689621·90399 |
+| guolaoxing.com 張果星宗卷六 mirror | ✅ summary-only support | `https://guolaoxing.com/archives/4914` — used to close the 八格賦 / 通元賦 gap as derived rule summary only. Do not quote or expose mirror text in user answers. |
 | guolaoxingzong__01..08.pdf (1593 HathiTrust) | ⚠️ ใช้ไม่ได้ | djvu.txt = OCR โรมัน metadata เท่านั้น (0 ตัว格) · OCR woodblock ตั้งฉาก คุณภาพต่ำ — **ctext ดีกว่าและครบกว่า จึงไม่ต้อง OCR PDF** |
 | GLXZ1_djvu.txt | ✅ TOC | ฉบับ reprint สมัยใหม่ — ยืนยันสารบัญ卷三 = 十一曜定格/十二宮定格/貴格/貧格/靈臺星格/賤格/疾格/補遺格局 |
 
@@ -280,11 +281,47 @@
 - **金箱歌:** 五行 personality + โรค (土星肥大·金水性巧·火羅膿血·金惡死·水淫蕩·計孛夭壽·木氣腳疾·土主咳嗽 / 男女數目一水二火三木四金五土/ 五臟所屬) — **T3** ใช้พรรณนา
 - **簾幕歌·論女命:** ดวงหญิง (羅計得地主重權 · 金水多傍貴娼妓 · 木羅旺夫貴子 · 孛咸池=淫 · 望前木氣望後火=產難) — **T3**
 
-> หมายเหตุ: 張果星宗六 (chapter ถัดไป) มี **八格賦** (貴/富/貧/賤/壽/夭/賢/愚/女命 9 格) + 通元賦 — ยังไม่สกัด รอบหน้าเติมได้จาก chapter=530323/841883
+> หมายเหตุ: 張果星宗六 มี **八格賦** (貴/富/貧/賤/壽/夭/賢/愚/女命 9 格) + 通元賦 — รอบนี้เติมเป็น operating summary แล้วในหมวด 14; ยังต้องรอ proofread/raw institutional text ก่อนทำ verbatim table เต็ม
 
 ---
 
-## 14. สรุปสำหรับ implement (จัดลำดับ)
+## 14. 張果星宗六 · 通元賦 / 八格賦 operating summary — summary-only support
+
+> Source support: guolaoxing.com 張果星宗卷六 mirror (`https://guolaoxing.com/archives/4914`) plus ctext chapter targets 530323/841883 as bibliographic anchors. This section is an operational summary, not a raw transcription. Use it to sharpen verdict weighting only when the packet supplies the required stars/palaces/timing fields.
+
+### 14.1 通元賦 weighting chain
+
+通元賦 adds a pre-check before naming a 格:
+
+1. Check **明晦 / 升沉 / 順逆 / 衰旺 / 掩蝕 / 沖制** before judging strength.
+2. Then check **朝拱 / 夾輔 / 分會 / 引從 / 截漏 / 守岐** before calling a pattern complete.
+3. A good 格 still loses force if the relevant planet is out of season, eclipsed/obscured, intercepted badly, harmed by a controlling star, or sitting on a palace/mansion boundary.
+4. Near support is stronger than distant support: 夾輔 around 身命 can outweigh remote 三方 friction; remote support can still help but should not erase close harm.
+5. For 行限/timing, do not declare a 格 fully “activated” unless the limit path, limit lord, or target-year trigger touches the same chain.
+
+### 14.2 八格賦 topic classes
+
+Use these as high-level verdict buckets after specific named patterns have been checked:
+
+| Bucket | Main evidence chain | Reading use |
+|---|---|---|
+| 貴格 | 七政入垣, 三台/三垣 style support, 日月夾命, 官福互垣, 金水輔日, strong 官福/命身 with clean引從 | status, authority, title, public role, promotion |
+| 富格 | 恩/母星 with 日月, 身 or 命 tied to 田財, 田財互垣, 財 and 令 mutually producing, 官福生田財 | wealth, assets, earning base, property accumulation |
+| 貧格 | 身命受傷, 田財失陷, 福祿背身命, 暗耗 in 田財, limit lord weak with 難殺 invasion | cash leakage, weak resource base, poverty/risk of loss |
+| 賤格 | 命主 in weak/malefic place, 身星休囚, good stars scattered, malefics noisy, 日月 dark/eclipsed, 金水 losing order | low status, unstable role, serving/being driven by others |
+| 壽格 | 田星/壽元 receives life, 身 in strong place without killer intrusion, 命 in 生旺, 日月 support 田宅/命身 | longevity/constitution support; never medical certainty |
+| 夭格 | 主宿失垣, 身 star tied to killer/death factors, 四正 empty with no rescue, 母/令/官福 all trapped, strong killer weak limit | severe life-force warning; use only as caution wording |
+| 賢格 | 金水 at 命 or supporting 命, 木/氣扶身, luminaries dignified, literary mansions/support without mixed malefics | wisdom, study, clean judgment, skill, counsel |
+| 愚格 | 土孛 mixed, 金水背馳, 日月沉沦, 命/母失位, slave/malefic stars attacking the ruler | confusion, poor judgment, stubbornness, misuse of skill |
+| 女命格 | 身/福 become central, 官星 can act as spouse indicator, avoid淫曜/凶星 disturbing 夫宮/命身 | female-chart relationship/body-fortune lens; apply only with packet fields |
+
+### 14.3 Output guard for 八格賦
+
+- Do not say “貴/富/貧/賤/壽/夭/賢/愚” from one clue. Require a chain: topic star + palace strength + dignity/season + support/friction + timing activation.
+- If the chart shows mixed chains, name the split plainly, e.g. “career-status chain strong, cash-retention chain weaker.”
+- For 壽/夭, use symbolic health-vitality caution only. Do not predict death, diagnosis, or fixed lifespan.
+
+## 15. สรุปสำหรับ implement (จัดลำดับ)
 
 | Tier | นิยาม | จำนวนโดยประมาณ | ทำเป็น rule ได้เลย? |
 |---|---|---|---|
@@ -294,6 +331,6 @@
 
 **ลำดับแนะนำ:** เริ่ม T1 หมวด 1-9 (日月合格/忌格 · 五星合格/忌格 · 十二宮定格) — เป็นแกน合格/忌格ที่ชัดสุด ทำ rule table ได้ทันทีเมื่อมีตำแหน่งดาว+เจ้าเรือน · ★ ตัวที่ V1 มีแล้ว = 日月夾命 (หมวด 1) · 凶星守命/刃雄守命宮 (หมวด 10.4 疾格)
 
-**ยังขาด (รอบหน้า):** 廟旺落陷table ทางการ · ตาราง升殿宿 (มีบางส่วนในหมวด 3) · 八格賦 จาก卷六 (chapter=530323/841883) · นิยาม殺星/難星/閒神/刑囚 แต่ละตัว (ต้องดึงจาก卷二 諸星起例)
+**ยังขาด (รอบหน้า):** 廟旺落陷table ทางการ · ตาราง升殿宿 (มีบางส่วนในหมวด 3) · นิยาม殺星/難星/閒神/刑囚 แต่ละตัว (ต้องดึงจาก卷二 諸星起例) · proofread raw text ของ卷六จาก institutional source/ctext API ที่ไม่ติด anti-automation
 
 **⚠️ ห้ามแต่ง:** ทุก格ในไฟล์นี้ verbatim จาก ctext chapter=349444 (張果星宗五) ยกเว้นกรอบ合格/忌格 หมวด 0 จาก chapter=953577 · 疾格「刃雄守命宮」= ที่มา凶星守命 V1

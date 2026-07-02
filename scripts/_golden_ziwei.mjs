@@ -23,6 +23,7 @@ const BR = { miao:"廟", wang:"旺", de:"得", li:"利", ping:"平", xian:"陷",
   "庙":"廟","旺":"旺","得":"得","利":"利","平":"平","陷":"陷","不":"不" };
 const norm = (s) => S2T[s] || s;
 const MUT = { "禄":"祿","权":"權","科":"科","忌":"忌" };
+const BRANCH_BY_GROUND = ["寅","卯","辰","巳","午","未","申","酉","戌","亥","子","丑"];
 
 /* timeIndex iztro 0..11 (子=0), 23:00-00:59→0 */
 const timeIndexOf = (h) => Math.floor((h + 1) / 2) % 12;
@@ -89,6 +90,14 @@ for (const c of cases) {
   for (const star of TRACK) {
     if (izMinorBranch[star]) check(`輔煞 ${star}`, myMinorBranch[star] || "MISSING", izMinorBranch[star]);
   }
+
+  const target = { y: 2026, mo: 1, d: 1, h: 12, mi: 0 };
+  const targetDate = `${target.y}-${target.mo}-${target.d}`;
+  const mineFlow = ziweiChart(dt, 13.7, 100.5, c.g, true, { gmtOffsetHours: 7, refDate: localToUTC(target.y, target.mo, target.d, target.h, target.mi) });
+  const izFlow = a.horoscope(targetDate, timeIndexOf(target.h));
+  check("流年命宮", mineFlow.liuNian.mingBranch, BRANCH_BY_GROUND[izFlow.yearly.index]);
+  check("流月命宮", mineFlow.liuYue.mingBranch, BRANCH_BY_GROUND[izFlow.monthly.index]);
+  check("流日命宮", mineFlow.liuRi.mingBranch, BRANCH_BY_GROUND[izFlow.daily.index]);
 
   if (fails.length) { console.log("\n  --- MISMATCH ---"); fails.forEach(f => console.log(f)); }
 }

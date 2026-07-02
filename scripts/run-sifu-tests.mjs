@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const resolver = join(here, "_ts-resolver.mjs");
 const tests = readdirSync(here)
-  .filter((f) => f.startsWith("test-sifu-") && f.endsWith(".mts"))
+  .filter((f) => (f.startsWith("test-sifu-") || f.startsWith("test-fusion5-")) && f.endsWith(".mts"))
   .sort();
 
 let failed = 0;

@@ -511,6 +511,7 @@ const TIMEOUT_MS = 180_000;
 const MAX_MSG_CHARS = 2_000;
 const MAX_HIST_ITEM_CHARS = 1_000;
 const MAX_SEARCH_CHARS = 4_000;
+const MAX_DATEPICK_CONTEXT_CHARS = 6_500;
 const clip = (s: string, n: number): string => (s.length > n ? s.slice(0, n) + "…" : s);
 
 /* 1 มิ.ย. · พ่อ flag #3 · in-flight limiter รอบ runClaudeCli (route นี้ spawn subprocess Claude หนัก)
@@ -1415,6 +1416,73 @@ function fmtSearchResults(searchResults: any[], activity?: string): string {
   return `\n\nผลค้นหาผัง (top ${searchResults.length}${activity ? ` · กิจกรรม=${activity}` : ''}):\n${lines}`;
 }
 
+function fmtDatepickContext(ctx: any): string {
+  if (!ctx || typeof ctx !== "object") return "";
+  const activity = ctx.activity_meta || {};
+  const dateState = ctx.date_state || {};
+  const win = ctx.search_window || {};
+  const funnel = ctx.funnel || {};
+  const filters = ctx.filters && typeof ctx.filters === "object"
+    ? Object.entries(ctx.filters).map(([k, v]) => `${k}=${v ? "on" : "off"}`).join(", ")
+    : "ไม่ระบุ";
+  const people = asPacketArray(ctx.selected_people).slice(0, 12).map((p: any, i: number) => {
+    const name = packetText(p?.name || `คนที่ ${i + 1}`);
+    const bits = [
+      p?.relation ? `สัมพันธ์=${packetText(p.relation)}` : "",
+      p?.gender ? `เพศ=${packetText(p.gender)}` : "",
+      p?.year ? `ปี=${packetText(p.year)}` : "",
+      p?.dm ? `日主=${packetText(p.dm)}` : "",
+      p?.branch ? `กิ่ง=${packetText(p.branch)}` : "",
+      p?.kua ? `kua=${packetText(p.kua)}` : "",
+    ].filter(Boolean).join(" · ");
+    return `${i + 1}. ${name}${bits ? ` (${bits})` : ""}`;
+  }).join("\n");
+  const layers = asPacketArray(ctx.layers).slice(0, 14).map((l: any) => {
+    const mode = l?.hard ? "ตัดจริง" : packetText(l?.mode || "ให้คะแนน/อ่านประกอบ");
+    const total = l?.total ?? "-";
+    const passed = l?.passed ?? "-";
+    const failed = l?.failed ?? "-";
+    return `- ${packetText(l?.th || l?.key || "ชั้นกรอง")} ${packetText(l?.zh || "")} · ${mode} · ผ่าน ${packetText(passed)}/${packetText(total)} · ตัด/ลด ${packetText(failed)} · ${packetText(l?.desc || "")}`;
+  }).join("\n");
+  const topRows = asPacketArray(ctx.top_summary).slice(0, 12).map((t: any) => {
+    const moduleScores = t?.moduleScores && typeof t.moduleScores === "object"
+      ? Object.entries(t.moduleScores).slice(0, 10).map(([k, v]) => `${k}:${packetText(v)}`).join(", ")
+      : "";
+    const donggong = t?.donggong
+      ? ` · ตงกง=${packetText(t.donggong.verdictTh || t.donggong.level)} ${packetText(t.donggong.jianchuTh || t.donggong.jianchu || "")}`
+      : "";
+    const huangdao = t?.huangdao ? ` · 黃道=${packetText(t.huangdao.path_th || t.huangdao.path_zh || "")} ${packetText(t.huangdao.deity_zh || "")}` : "";
+    const richong = t?.richong ? ` · วันชง=${packetText(t.richong.zodiac_th || t.richong.zodiac_zh || "")}` : "";
+    const hex = t?.hex_num ? ` · 卦${packetText(t.hex_num)} ${packetText(t.hex_name || "")} เส้น${packetText(t.changing_line || "-")}` : "";
+    const matches = asPacketArray(t?.matches).slice(0, 5).map((x: any) => packetText(x)).filter(Boolean).join(" | ");
+    return [
+      `${packetText(t?.rank || "?")}. ${packetText(t?.date || "")} ${packetText(t?.time || "")} · คะแนน ${packetText(t?.score ?? "-")}`,
+      `宮${packetText(t?.palace_id || "?")}${packetText(t?.direction || "")} · ${packetText(t?.door_label || t?.door || "-")} · ${packetText(t?.star_label || t?.star || "-")} · ${packetText(t?.deity_label || t?.deity || "-")} · ${packetText(t?.heaven_stem || "-")}/${packetText(t?.earth_stem || "-")} · ${t?.ju_pole === "yin" ? "陰" : "陽"}${packetText(t?.ju_number || "?")}局`,
+      moduleScores ? `คะแนนย่อย: ${moduleScores}` : "",
+      matches ? `เหตุผลระบบ: ${matches}` : "",
+      `${donggong}${huangdao}${richong}${hex}`.trim(),
+    ].filter(Boolean).join(" · ");
+  }).join("\n");
+  const meta = ctx.engine_meta && typeof ctx.engine_meta === "object"
+    ? [
+      ctx.engine_meta.activityType ? `activityType=${packetText(ctx.engine_meta.activityType)}` : "",
+      ctx.engine_meta.activityProfile?.key ? `profile=${packetText(ctx.engine_meta.activityProfile.key)}` : "",
+      Array.isArray(ctx.engine_meta.hardModules) ? `hard=${ctx.engine_meta.hardModules.join(",")}` : "",
+      ctx.engine_meta.qimenScoringPolicy?.version ? `qimenPolicy=${packetText(ctx.engine_meta.qimenScoringPolicy.version)}` : "",
+    ].filter(Boolean).join(" · ")
+    : "";
+  return `\n\nข้อมูลหน้าวางฤกษ์ล่าสุด (Datepick Page Snapshot · ใช้เป็น context หลักของแชท):
+- กิจกรรม: ${packetText(activity.name || ctx.activity || "-")} ${packetText(activity.han || "")} · key=${packetText(activity.key || "-")} · category=${packetText(activity.category || "-")}
+- ช่วงค้นหา: ${packetText(win.label || "")} · mode=${packetText(dateState.mode || "-")} · preset=${packetText(dateState.preset || "-")} · ${packetText(dateState.start || "-")} ถึง ${packetText(dateState.end || "-")} · exact=${packetText(dateState.exact || "-")}
+- เกณฑ์ที่เปิด: ${filters} · สำนักฉีเหมิน=${packetText(ctx.qimen_school || "-")}
+- คนที่เลือก (${packetText(ctx.selected_people_count ?? 0)}):\n${people || "ไม่มีคนที่เลือก/ไม่มีข้อมูลดวงบุคคล"}
+- Funnel: สแกน ${packetText(funnel.total_scanned ?? "-")} ยาม · pool ${packetText(funnel.candidate_pool ?? "-")} · แสดงผล ${packetText(funnel.result_count ?? "-")} ฤกษ์
+${layers ? `- ชั้นกรอง/ให้คะแนน:\n${layers}` : "- ชั้นกรอง/ให้คะแนน: ไม่มีข้อมูล layers"}
+${meta ? `- Engine meta: ${meta}` : ""}
+- ผลฤกษ์ที่หน้าแสดง:\n${topRows || "ไม่มีผลฤกษ์ใน snapshot"}
+กฎแชท: เมื่อผู้ใช้ถามต่อ ให้ยึด snapshot นี้และประวัติแชทเป็นหลัก ถ้าต้องค้นช่วงใหม่ให้บอกให้ผู้ใช้กดค้นหาใหม่ก่อน`;
+}
+
 function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topic?: string; payload: any }): BuiltPrompt {
   const { payload, message, history, lang, topic } = opts;
   const qimen = qimenPayloadFromRequestPayload(payload);
@@ -1438,6 +1506,7 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
     ? "\n\nประวัติคำถาม:\n" + history.map(h => `[${h.role}] ${clip(String(h.content || ""), MAX_HIST_ITEM_CHARS)}`).join("\n")
     : "";
   const searchText = clip(fmtSearchResults(searchResults, activity), MAX_SEARCH_CHARS);
+  const datepickText = clip(fmtDatepickContext(payload?.datepick_context), MAX_DATEPICK_CONTEXT_CHARS);
   const msgClipped = clip(message, MAX_MSG_CHARS);
   const know = loadQimenKnowledge({ message, topic, payload });
   const qimenText = fmtQimenCard(qimen, selectedPalaceIdFromPayload(payload));
@@ -1468,8 +1537,9 @@ function buildPrompt(opts: { message: string; history: Msg[]; lang: string; topi
 17. "ความพร้อมตัวตรวจสูตรลึก 格局/四害" คือรายการที่ระบบตรวจเป็น ไม่ใช่ผลที่เกิดจริงในผังนั้น ถ้าจะกล่าวว่าสูตรใดเกิด ต้องเห็นสูตรนั้นในป้ายสัญญาณ/รูปแบบที่ติดจริงในวัง
 18. ห้ามใช้คำฟันธงเกินข้อมูล เช่น ดีแน่นอน, ชนะ, ใช้แล้วสำเร็จ, ไม่มีปัญหา
 19. ถ้าผังวัน/เดือน/ปีถูกส่งมาแบบอ่านประกอบเท่านั้น ให้ตอบว่าเป็นภาพรวม/บริบท ต้องเช็กผังยาม 時家 ก่อนลงมือ ห้ามสรุปว่าเหมาะหรือใช้ได้จากคะแนนช่วยจัดลำดับ
-20. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุรหัสแหล่งอ้างอิงที่ใช้ 1-3 ตัวจากรายการแหล่งอ้างอิง`;
-  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${answerGuard}\nผังเวลา (QiMen Chart):\n${qimenText}\n${canonBlock}\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${fmtUserElementDistribution(userElementDistribution)}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
+20. ถ้ามี "ข้อมูลหน้าวางฤกษ์ล่าสุด" ให้ใช้เป็น snapshot หลักของแชท: activity, filters, คนที่เลือก, funnel, layers, top results และคะแนนย่อย ห้ามตอบเหมือนยังไม่เห็นผลค้นหา
+21. ท้ายคำตอบสั้นๆ ใส่ "อ้างอิง:" แล้วระบุรหัสแหล่งอ้างอิงที่ใช้ 1-3 ตัวจากรายการแหล่งอ้างอิง`;
+  const body = `\n${LANG_INSTR[lang] || LANG_INSTR.th}\n${answerGuard}\nผังเวลา (QiMen Chart):\n${qimenText}\n${canonBlock}\nดวงเกิดผู้ใช้ (BaZi v2):\n${fmtUserYs(ys)}${fmtUserElementDistribution(userElementDistribution)}${datepickText}${searchText}${focus}${histText}\n\nคำถาม: ${msgClipped}\n`;
   return {
     prompt: loadPromptMd("prompts/qimen-sifu.md", QIMEN_TPL_FALLBACK).replace("{{BODY}}", body),
     knowledgeVersion: know.version,
