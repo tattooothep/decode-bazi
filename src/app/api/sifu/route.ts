@@ -2339,6 +2339,12 @@ export async function POST(req: Request) {
       try {
         const xReply = await runSifuCli(externalPrompt, sifuModel, req.signal, { fusionInternal: true });
         const xSafe = stripTraceLine(stripIdLine(xReply)).trim();
+        // กันข้อความระบบของ CLI หลุดเป็นคำตอบ (เช่น "manual approval required to prevent path resolution")
+        // → นับเป็น panel ล้มเหลว · fusion5 จะ mark ok:false + คืนยามศาสตร์นั้นเองตาม flow เดิม
+        if (xSafe.length < 500 && /manual approval|approval required|permission (denied|required)|tool use (blocked|denied)|dangerously-skip-permissions/i.test(xSafe)) {
+          console.error("[sifu external_panel_cli_noise]", sifuModel, xSafe.slice(0, 160));
+          return NextResponse.json({ error: "external_panel_failed", model: sifuModel }, { status: 502 });
+        }
         return NextResponse.json({ reply: xSafe, model: sifuModel, external: true });
       } catch (e) {
         // L2: log ฝั่ง server (มี detail) · คืน generic ให้ client (ไม่เผย internal path)
