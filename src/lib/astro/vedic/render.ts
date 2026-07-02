@@ -189,6 +189,36 @@ export function renderVedicPrompt(packet: VedicPacket, lang: "th" | "en" = "th")
     }
   }
 
+  // --- TIMING_TIMELINE ปีเป้าหมาย (เฟส 2: ทศา 3 ชั้น + gochara segment + sade sati + varshaphala) ---
+  const tl = d.timingTimeline;
+  if (tl) {
+    L.push("");
+    L.push(`--- TIMING_TIMELINE ปี ${tl.targetYear} (วันที่ = เวลาไทย · คำนวณจริงทั้งปี ไม่ใช่ snapshot) ---`);
+    L.push(tl.coverageNote);
+    L.push("TIMING_GUARD: จังหวะรายเดือน/รายช่วงของปีเป้าหมายให้อ้างจากรายการด้านล่างเท่านั้น ห้ามประมาณวันเอง");
+    if (tl.dashaTimeline.length) {
+      L.push("[ทศา 3 ชั้นตลอดปี (maha→antar→pratyantar)]");
+      for (const r of tl.dashaTimeline) {
+        L.push(`  • ${r.fromISO} → ${r.toISO}: ${r.mahaTh}–${r.antarTh}–${r.pratyantarTh} (${r.maha}/${r.antar}/${r.pratyantar})`);
+      }
+    }
+    if (tl.transitSegments.length) {
+      L.push("[ดาวจรรายช่วงราศี + ashtakavarga bindu (BAV ของดาวนั้นในราศีที่เหยียบ / SAV ราศี)]");
+      for (const s of tl.transitSegments) {
+        L.push(`  • ${s.grahaTh}: ${s.fromISO} → ${s.toISO} ราศี${s.rashiTh} · เรือนจากจันทร์ ${s.houseFromMoon}${s.houseFromLagna ? ` · จากลัคนา ${s.houseFromLagna}` : ""} · bindu ${s.bavBindus ?? "-"}/8 · SAV ${s.sarvaBindus}${s.retroAtIngress ? " · เข้าแบบถอย" : ""}`);
+      }
+    }
+    L.push(`[Sade Sati] จันทร์กำเนิดราศี${tl.sadeSati.natalMoonRashiTh} · ปีนี้${tl.sadeSati.activeAnyTimeInYear ? "มีช่วง active:" : "ไม่ active"}`);
+    for (const p of tl.sadeSati.phases) {
+      L.push(`  • ${p.fromISO} → ${p.toISO}: ${p.phaseTh}`);
+    }
+    if (tl.varshaphala) {
+      const vp = tl.varshaphala;
+      L.push(`[Varshaphala ${tl.targetYear}] เริ่มปีสุริยคติ ${vp.dateISO}${vp.uncertainNoBirthTime ? " (ไม่ทราบเวลาเกิด → instant คลาด ±12 ชม. อ่านเป็นแนวโน้ม)" : ""}${vp.munthaRashiTh ? ` · Muntha ราศี${vp.munthaRashiTh}` : ""}`);
+      L.push("  ดาว ณ วันเริ่มปี: " + vp.grahas.map((g) => `${g.nameTh}@ราศี${g.rashiTh}${g.retro ? "R" : ""}`).join(" · "));
+    }
+  }
+
   if (packet.notAvailable.length) {
     L.push("");
     L.push(`ข้อมูลที่ยังไม่ได้คำนวณจริงใน packet นี้: ${packet.notAvailable.join(", ")}`);

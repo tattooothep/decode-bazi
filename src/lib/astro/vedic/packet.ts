@@ -5,6 +5,7 @@
  */
 import { RASHI_TH, GRAHA_TH, type GrahaKey } from "./tables";
 import type { VedicChart, MahaDasha, AntarDasha, VedicDignity } from "./engine";
+import type { VedicTimeline } from "./timeline";
 
 export type VedicPacket = {
   discipline: "vedic";
@@ -110,6 +111,7 @@ export type VedicPacket = {
       currentMaha: MahaDasha | null;
       currentAntar: AntarDasha | null;
     };
+    timingTimeline: VedicTimeline | null;
   };
   notAvailable: string[];
 };
@@ -158,10 +160,11 @@ const ALLOWED_FIELDS_NO_TIME = [
   "gocharaRashi",
 ];
 
-export function buildVedicPacket(chart: VedicChart): VedicPacket {
+export function buildVedicPacket(chart: VedicChart, timingTimeline: VedicTimeline | null = null): VedicPacket {
   const notAvailable: string[] = [];
   // ไม่มีเวลาเกิด: ลัคนา/ภพ ทำไม่ได้ + จันทร์เคลื่อน ~13°/วัน → ฤกษ์จันทร์/ทศา (Vimshottari) ไม่แน่นอน (E1)
   if (!chart.hasTime) notAvailable.push("lagna", "bhavas", "grahaHouse", "navamsaLagnaD9", "dashamsaLagnaD10", "moonNakshatra(จันทร์ไม่แน่นอน)", "vimshottariDasha(พึ่งฤกษ์จันทร์)");
+  if (!timingTimeline) notAvailable.push("timingTimeline(antardasha/gocharaIngress/sadeSati/varshaphala)");
 
   const lagna = chart.lagna
     ? {
@@ -356,6 +359,7 @@ export function buildVedicPacket(chart: VedicChart): VedicPacket {
         currentMaha: chart.vimshottari.currentMaha,
         currentAntar: chart.vimshottari.currentAntar,
       },
+      timingTimeline,
     },
     notAvailable,
   };

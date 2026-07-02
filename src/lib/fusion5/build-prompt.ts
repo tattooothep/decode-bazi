@@ -14,6 +14,7 @@ import { renderWesternPrompt } from "../astro/western/render";
 import { vedicChart } from "../astro/vedic/engine";
 import { buildVedicPacket } from "../astro/vedic/packet";
 import { renderVedicPrompt } from "../astro/vedic/render";
+import { buildVedicTimeline, type VedicTimeline } from "../astro/vedic/timeline";
 import { buildZiweiPacket } from "../astro/ziwei/packet";
 import { renderZiweiPrompt } from "../astro/ziwei/render";
 import { DISCIPLINES, type ScienceId } from "./disciplines";
@@ -2328,7 +2329,13 @@ export function renderChartForScience(science: ScienceId, b: BirthData, refDate:
     return `${renderWesternPrompt(packet)}\n\nSTRUCTURED_CHART_PACKET:\n${structuredPacketJson(packet)}`;
   }
   if (science === "vedic") {
-    const packet = buildVedicPacket(vedicChart(b.dtUTC, b.lat, b.lng, b.hasTime, refDate));
+    const chart = vedicChart(b.dtUTC, b.lat, b.lng, b.hasTime, refDate);
+    // เฟส 2 timeline: ทศา 3 ชั้น + gochara segment + sade sati + varshaphala ของปีเป้าหมาย
+    let vTimeline: VedicTimeline | null = null;
+    try {
+      vTimeline = buildVedicTimeline(chart, bangkokParts(refDate).year);
+    } catch { vTimeline = null; /* timeline ล้ม = degrade ชัดเจนผ่าน notAvailable */ }
+    const packet = buildVedicPacket(chart, vTimeline);
     return `${renderVedicPrompt(packet)}\n\nSTRUCTURED_CHART_PACKET:\n${structuredPacketJson(packet)}`;
   }
   if (science === "ziwei") {

@@ -193,7 +193,7 @@ export type VedicChart = {
 };
 
 /** ปี ค.ศ. แบบทศนิยม (UTC) — deterministic */
-function decimalYear(d: Date): number {
+export function decimalYear(d: Date): number {
   const y = d.getUTCFullYear();
   const start = Date.UTC(y, 0, 1);
   const end = Date.UTC(y + 1, 0, 1);
