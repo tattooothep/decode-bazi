@@ -197,6 +197,16 @@
     .result-tab .tab-ai{color:var(--blue);font-size:10px}
     .result-tab.fail{color:var(--bad);border-color:rgba(227,111,95,.4)}
     .result-content{border:1px solid var(--line);border-radius:8px;background:var(--panel-2);padding:15px;white-space:pre-wrap;line-height:1.7;font-size:14px;color:var(--text);overflow-wrap:anywhere;min-height:160px}
+    /* markdown render (mdSafe) — เข้าได้ 2 ธีมผ่านตัวแปรเดิม */
+    .md-p{margin:0 0 3px}.md-sp{height:10px}
+    .md-h{font-weight:700;margin:12px 0 6px;color:var(--gold)}.md-h1{font-size:16px}.md-h2{font-size:15px}.md-h3,.md-h4{font-size:14px}
+    .md-ul{margin:4px 0 8px 22px;padding:0}.md-ul li{margin:2px 0}
+    .md-tw{overflow-x:auto;margin:8px 0}
+    .md-t{border-collapse:collapse;width:100%;font-size:13px;white-space:normal}
+    .md-t th,.md-t td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+    .md-t th{background:var(--panel);color:var(--gold);font-weight:600}
+    .md-hr{border:0;border-top:1px solid var(--line);margin:10px 0}
+    .result-content code,.answer-body code{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:0 4px;font-size:12.5px}
     .result-content .rc-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:-2px 0 11px;padding-bottom:9px;border-bottom:1px solid var(--line)}
     .result-content .rc-title{font-family:var(--mono);font-size:12px;color:var(--gold)}
     .result-empty{color:var(--muted);font-size:13px;line-height:1.6;padding:8px 2px}
@@ -1003,6 +1013,43 @@
         return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
       });
     }
+    // แปลง markdown ชุดปลอดภัย (escape ก่อนแปลงเสมอ — บทเรียน XSS r166) · หัวข้อ/ตาราง/ตัวหนา/ลิสต์/เส้นคั่น
+    function mdSafe(md){
+      var lines = String(md == null ? '' : md).split(/\r?\n/);
+      var out = [], listBuf = [], i = 0;
+      function inline(s){
+        s = esc(s);
+        s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+        return s;
+      }
+      function flushList(){ if (listBuf.length){ out.push('<ul class="md-ul">' + listBuf.join('') + '</ul>'); listBuf = []; } }
+      while (i < lines.length){
+        var ln = lines[i];
+        // ตาราง markdown: แถวหัว | ... | ตามด้วยเส้น |---|
+        if (/^\s*\|.+\|\s*$/.test(ln) && i + 1 < lines.length && /^\s*\|[\s:|\-]+\|\s*$/.test(lines[i + 1])){
+          flushList();
+          var cells = function(row){ return row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function(c){ return inline(c.trim()); }); };
+          var head = cells(ln);
+          i += 2;
+          var rows = [];
+          while (i < lines.length && /^\s*\|.+\|\s*$/.test(lines[i])){ rows.push(cells(lines[i])); i++; }
+          out.push('<div class="md-tw"><table class="md-t"><thead><tr>' + head.map(function(h){ return '<th>' + h + '</th>'; }).join('') +
+            '</tr></thead><tbody>' + rows.map(function(r){ return '<tr>' + r.map(function(c){ return '<td>' + c + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>');
+          continue;
+        }
+        if (/^\s*#{1,4}\s+/.test(ln)){ flushList(); var lvl = ln.match(/^\s*(#{1,4})/)[1].length; out.push('<div class="md-h md-h' + lvl + '">' + inline(ln.replace(/^\s*#{1,4}\s+/, '')) + '</div>'); i++; continue; }
+        if (/^\s*[-*•]\s+/.test(ln)){ listBuf.push('<li>' + inline(ln.replace(/^\s*[-*•]\s+/, '')) + '</li>'); i++; continue; }
+        var num = ln.match(/^\s*(\d{1,2}[.)])\s+(.*)$/);
+        if (num){ flushList(); out.push('<div class="md-p"><strong>' + esc(num[1]) + '</strong> ' + inline(num[2]) + '</div>'); i++; continue; }
+        if (/^\s*(-{3,}|_{3,})\s*$/.test(ln)){ flushList(); out.push('<hr class="md-hr">'); i++; continue; }
+        flushList();
+        out.push(ln.trim() === '' ? '<div class="md-sp"></div>' : '<div class="md-p">' + inline(ln) + '</div>');
+        i++;
+      }
+      flushList();
+      return out.join('');
+    }
     function setStatus(text, kind){
       els.status.textContent = text || '';
       els.status.className = 'status' + (kind ? ' ' + kind : '');
@@ -1248,7 +1295,7 @@
       if (!item || !els.answerModal) return;
       els.answerTitle.textContent = answerName(item);
       els.answerSub.textContent = answerMeta(item);
-      els.answerBody.textContent = item.reply || '';
+      els.answerBody.innerHTML = mdSafe(item.reply || '');
       els.answerModal.className = 'answer-modal';
     }
     function closeAnswer(){
@@ -1471,14 +1518,14 @@
       if (tab === 'judge') {
         var jReply = (f.judge && f.judge.ok) ? (data.reply || '') : '';
         body.innerHTML = '<div class="rc-head"><span class="rc-title">' + esc(t('judgeTitle')) + '</span><span class="ai-badge">AI · Claude</span></div>' +
-          (jReply ? esc(jReply) : '<div class="result-empty">' + esc(t('noJudge')) + '</div>');
+          (jReply ? mdSafe(jReply) : '<div class="result-empty">' + esc(t('noJudge')) + '</div>');
         return;
       }
       var panels = Array.isArray(f.panels) ? f.panels : [];
       var p = panels.find(function(x){ return x.science === tab; });
       if (!p) { body.innerHTML = '<div class="result-empty">-</div>'; return; }
       body.innerHTML = '<div class="rc-head"><span class="rc-title">' + esc(sciLabel(p.science)) + '</span><span class="ai-badge">AI · ' + esc((DISCIPLINES[p.science]||{}).ai || p.model || '') + '</span></div>' +
-        (p.ok && p.reply ? esc(p.reply) : '<div class="result-empty">' + esc((state.locale==='th'?'ศาสตร์นี้อ่านไม่สำเร็จ: ':'panel failed: ') + (p.error || 'error')) + '</div>');
+        (p.ok && p.reply ? mdSafe(p.reply) : '<div class="result-empty">' + esc((state.locale==='th'?'ศาสตร์นี้อ่านไม่สำเร็จ: ':'panel failed: ') + (p.error || 'error')) + '</div>');
     }
     function startSyntheticProgress(sciences){
       stopProgressPolling();

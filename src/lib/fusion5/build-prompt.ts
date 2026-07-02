@@ -2419,10 +2419,18 @@ function subjectLockLine(births: BirthData[]): string {
   ].join("\n");
 }
 
+const MARKDOWN_FORMAT_CONTRACT = [
+  "รูปแบบการจัดหน้า (บังคับ · หน้าเว็บ render markdown):",
+  "- ใช้หัวข้อ ## คั่นแต่ละส่วน · เว้นบรรทัดว่างระหว่างย่อหน้า ห้ามเขียนติดกันเป็นพืด",
+  "- ถ้าเทียบหลายรายการ/หลายเดือน/หลายปี/หลายคน ตั้งแต่ 3 แถวขึ้นไป ต้องใช้ตาราง markdown (| หัว | ... | + บรรทัด |---| + แถวข้อมูล)",
+  "- หลักฐานหลายจุดใช้ bullet (- ) จุดละบรรทัด · เน้นคำสำคัญ/วันที่/ชื่อดาวด้วย **ตัวหนา**",
+].join("\n");
+
 function answerFormatLine(births: BirthData[], judge = false): string {
   const names = births.map((b) => b.name || "เจ้าชะตา").join(" / ");
   if (judge) {
     return [
+      MARKDOWN_FORMAT_CONTRACT,
       "รูปแบบตอบบังคับ:",
       `1) ฟันธงรวมเฉพาะ ${names} 1-2 ประโยค ห้ามขึ้นต้นด้วยภาพรวมทั่วไป`,
       "2) จุดที่ศาสตร์เห็นตรงกัน 3 ข้อ โดยแต่ละข้อระบุหลักฐานเฉพาะจากศาสตร์นั้น ๆ",
@@ -2432,6 +2440,7 @@ function answerFormatLine(births: BirthData[], judge = false): string {
     ].join("\n");
   }
   return [
+    MARKDOWN_FORMAT_CONTRACT,
     "รูปแบบตอบบังคับ:",
     `1) ฟันธงเฉพาะ ${names} 1-2 ประโยค ห้ามขึ้นต้นด้วยภาพรวมทั่วไป`,
     "2) หลักฐานเฉพาะจากผังอย่างน้อย 5 จุด (โหมดคู่ใช้ 6 จุด) และถ้า topic pack มี Answer Contract ให้ทำครบทุกบรรทัด แต่ละจุดต้องโยงกับคำถามโดยตรง",
