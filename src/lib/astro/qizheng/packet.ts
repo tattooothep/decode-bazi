@@ -3,6 +3,7 @@
  * envelope เดียวกับทุกศาสตร์ · AI อ่านเฉพาะ data นี้ ห้ามเดาตำแหน่งดาว
  */
 import { qizhengNatal, qizhengTimingLimit, qizhengTransit, type QizhengNatal, type QizhengTimingLimit } from "./engine";
+import { buildQizhengTimeline, type QizhengTimeline } from "./timeline";
 
 export type QizhengPacket = {
   discipline: "qizheng";
@@ -20,6 +21,7 @@ export type QizhengPacket = {
     houses12: { house: number; zh: string; th: string; domain: string; signTh: string; rulerTh: string; rulerStatus: string; rulerInHouse: number; starsInHouse: string[]; level: string; note: string }[];
     transit: { year: number; jupiterHouseZh: string; saturnHouseZh: string; note: string }[];
     xingXian: QizhengTimingLimit | null;
+    timingTimeline: QizhengTimeline | null;
     verdictTh: string; level: string;
   };
   notAvailable: string[];
@@ -29,9 +31,21 @@ export function buildQizhengPacket(dtUTC: Date, lat: number, lng: number, hasBir
   const n: QizhengNatal = qizhengNatal(dtUTC, lat, lng, hasBirthTime);
   const r = n.reading;
   const years = transitYears || Array.from({ length: 12 }, (_, i) => 2015 + i);
-  const transit = hasBirthTime ? qizhengTransit(r.ascendant.sign, years) : [];
+  const transit = hasBirthTime ? qizhengTransit(r.ascendant.sign, years, lat, lng) : [];
   const xingXian = refDate && hasBirthTime ? qizhengTimingLimit(n, refDate) : null;
-  const timingGaps = xingXian ? ["流月", "流日", "化曜"] : ["行限", "限度主", "洞微百六限", "流月", "流日", "化曜"];
+  // เฟส 4 timeline: 流年ครบดวง + 流月太陽過宮 + วันชนจุดสำคัญ (ปีเป้าหมาย = ปีท้องถิ่นของ refDate)
+  let timingTimeline: QizhengTimeline | null = null;
+  if (refDate && hasBirthTime && !isNaN(refDate.getTime())) {
+    const targetYear = new Date(refDate.getTime() + Math.round(lng / 15) * 3_600_000).getUTCFullYear();
+    try {
+      timingTimeline = buildQizhengTimeline(r, targetYear, lat, lng);
+    } catch { timingTimeline = null; /* ล้ม = degrade ชัดเจนผ่าน notAvailable */ }
+  }
+  const timingGaps = [
+    ...(xingXian ? [] : ["行限", "限度主", "洞微百六限"]),
+    ...(timingTimeline ? [] : ["流年全星", "流月"]),
+    "流日", "化曜", "小限",
+  ];
   const notAvailable: string[] = hasBirthTime
     ? timingGaps
     : ["命宮(ลัคนา)", "命度", "度主", "身宮", "身主", "12宮(เรือนชีวิต)", ...timingGaps];
@@ -64,6 +78,7 @@ export function buildQizhengPacket(dtUTC: Date, lat: number, lng: number, hasBir
       houses12: n.houses.map((h) => ({ house: h.house, zh: h.zh, th: h.th, domain: h.domain, signTh: h.signTh, rulerTh: h.rulerTh, rulerStatus: h.rulerStatus, rulerInHouse: h.rulerInHouse, starsInHouse: h.starsInHouse.map((s) => s.th), level: h.level, note: h.note })),
       transit: transit.map((t) => ({ year: t.year, jupiterHouseZh: t.jupiterHouseZh, saturnHouseZh: t.saturnHouseZh, note: t.note })),
       xingXian,
+      timingTimeline,
       verdictTh: hasBirthTime ? r.verdictTh.th : "ไม่ทราบเวลาเกิด: อ่านได้เฉพาะตำแหน่งดาวจริง ราศี 宿 廟旺/พักร์ เท่านั้น; ปิด命宮/命度/度主/身主/12宮/恩用仇難/格局/行限",
       level: hasBirthTime ? r.level : "partial_no_birth_time",
     },

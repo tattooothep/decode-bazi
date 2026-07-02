@@ -44,6 +44,28 @@ export function renderQizhengPrompt(p: QizhengPacket, lang: "th" | "en" | "zh" =
     L.push(`  限宮主: ${c.limitPalaceLord.th} สถานะ${c.limitPalaceLord.status} · อยู่เรือน${c.limitPalaceLord.natalHouse}ในพื้นดวง · tone=${c.tone} · ${c.note}`);
     L.push(`  洞微百六限: supplied=${x.dongweiHundredSix.supplied} · cycleYears=${x.dongweiHundredSix.cycleYears} · ${x.dongweiHundredSix.note}`);
   }
+  const tl = d.timingTimeline;
+  if (tl) {
+    L.push(`\n【TIMING_TIMELINE ปี ${tl.targetYear} — 流年ครบดวง + 流月太陽過宮 + วันชนจุดสำคัญ (เวลาไทย · คำนวณจริง)】`);
+    L.push(`  ${tl.coverageNote}`);
+    L.push("  TIMING_GUARD: จังหวะรายเดือน/วันของปีเป้าหมายให้อ้างจากรายการนี้เท่านั้น ห้ามประมาณเอง");
+    L.push("  [流年 ดาวจรครบดวง (กลางปี · เทียบเรือนเกิด + เทียบ命主)]");
+    for (const s of tl.liuNianStars) {
+      L.push(`  • ${s.zh} ${s.th}จร → เรือน${s.house} ${s.houseZh} (ราศี${s.signTh} ${s.deg}°) · ${s.status}${s.retro ? " พักร์" : ""} · เทียบ命主=${s.relationToMing}`);
+    }
+    L.push("  [流月 太陽過宮 — ขอบเดือนสุริยคติจริง + ดาวเร็วรายเดือน]");
+    for (const m of tl.months) {
+      L.push(`  • เดือน${m.month}: ${m.fromISO} → ${m.toISO} · 日→เรือน${m.sunHouse} ${m.sunHouseZh} (${m.sunSignTh}) · ${m.fastStars.map((f) => `${f.zh}→เรือน${f.house}${f.houseZh}`).join(" · ")}`);
+    }
+    if (tl.hits.length) {
+      L.push("  [วันแม่นดาวจรชนจุดสำคัญ (ทับ=同宮同度 · เล็ง=對照)]");
+      for (const h of tl.hits) {
+        L.push(`  • ${h.dateISO} (เดือน ${h.month}): ${h.starZh} ${h.starTh}จร ${h.aspect} ${h.target}${h.retro ? " ·พักร์" : ""} · ดาวนี้เทียบ命主=${h.relationToMing}`);
+      }
+    } else {
+      L.push("  [วันแม่น] ไม่มี木土羅計火ชน命度/身度/命主ในปีนี้");
+    }
+  }
   if (p.notAvailable.length) L.push(`\nข้อมูลที่ยังไม่ได้คำนวณจริงใน packet นี้: ${p.notAvailable.join("、")} · 七政四餘 ไม่มี 四化(祿權科忌) แบบ紫微斗數; ถ้าจะพูดเรื่องดาวแปลง ให้ใช้คำว่า 化曜 และต้องมี field จริงเท่านั้น`);
   L.push(`\nสรุป engine: ${d.verdictTh} (ระดับ ${d.level})`);
   L.push(`\n⟦คำสั่ง⟧ คุณคือซินแส 七政四餘 (โหราศาสตร์ดาวจริงสายจีน/果老星宗) · อ่านเฉพาะจากผังนี้ · ใช้ศัพท์ 命宮/命主/命度/度主/身主/廟旺/恩用仇難/格局/เรือน12/行限/限度主/洞微百六限 · ห้ามใช้ศัพท์ปาจื้อ(用神十神), ฝรั่ง, หรือ紫微 四化(祿權科忌) · field ไหนไม่มีให้บอกว่าไม่มี ห้ามเดา · ไทยนำ`);

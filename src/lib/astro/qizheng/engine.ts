@@ -286,11 +286,12 @@ export function qizhengTimingLimit(n: QizhengNatal, refDate: Date): QizhengTimin
   };
 }
 
-/** ดาวจร (流年) — 木/土 จร เทียบเรือนเกิด · บอกจังหวะปี (deterministic ตามปี) */
-export function qizhengTransit(natalAscSign: number, years: number[]): QizhengTransitRow[] {
+/** ดาวจร (流年) — 木/土 จร เทียบเรือนเกิด · บอกจังหวะปี (deterministic ตามปี)
+ *  lat/lng ใช้พิกัดเกิดจริงของเจ้าชะตา (เดิม hardcode กรุงเทพ = บั๊ก · default คงไว้เพื่อ backward compat) */
+export function qizhengTransit(natalAscSign: number, years: number[], lat = 13.75, lng = 100.5): QizhengTransitRow[] {
   return years.map((y) => {
     // ใช้ดาวจรกลางปี (15 มิ.ย.) ผ่าน tianxingReading (ดาวจริง)
-    const rr = tianxingReading(new Date(`${y}-06-15T05:00:00Z`), 13.75, 100.5);
+    const rr = tianxingReading(new Date(`${y}-06-15T05:00:00Z`), lat, lng);
     const J = rr.stars.find((s) => s.key === "Jupiter")!;
     const S = rr.stars.find((s) => s.key === "Saturn")!;
     const hJ = ((J.sign - natalAscSign + 12) % 12);
