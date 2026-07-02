@@ -5,6 +5,7 @@
  */
 
 import { ziweiChart, type Gender, type ZiweiChart, type ZiweiOptions } from "./engine";
+import { buildZiweiOverlay, type ZiweiOverlay } from "./overlay";
 import type { PalaceName } from "./tables";
 
 export interface ZiweiPacketPalace {
@@ -72,6 +73,8 @@ export interface ZiweiPacket {
       siHua: { star: string; type: string; palaceName: string | null; branch: string | null }[];
       dailyStars: { star: string; palaceName: string; branch: string; source: string }[];
     } | null;
+    /* เฟส 3 overlay: 大限ปัจจุบัน + 疊宮 + 自化 + 借星 + 流昌曲 */
+    overlay: ZiweiOverlay | null;
   };
   notAvailable: string[];
 }
@@ -88,6 +91,19 @@ export function buildZiweiPacket(
   opts: ZiweiOptions = {},
 ): ZiweiPacket {
   const chart = ziweiChart(dtUTC, lat, lng, gender, hasTime, opts);
+
+  // เฟส 3 overlay: 大限ปัจจุบัน + 疊宮 + 自化 + 借星 + 流昌曲 (ปีเป้าหมาย = ปีท้องถิ่นของ refDate เดียวกับ流年)
+  const gmtOffsetHours = opts.gmtOffsetHours ?? Math.round(lng / 15);
+  let overlay: ZiweiOverlay | null = null;
+  if (opts.refDate) {
+    const targetYear = new Date(opts.refDate.getTime() + gmtOffsetHours * 3_600_000).getUTCFullYear();
+    try {
+      overlay = buildZiweiOverlay(chart, dtUTC, gmtOffsetHours, targetYear);
+    } catch { overlay = null; /* overlay ล้ม = degrade ชัดเจนผ่าน notAvailable */ }
+  }
+  const notAvailable = overlay
+    ? chart.notAvailable
+    : [...chart.notAvailable, "overlay(大限ปัจจุบัน/疊宮/自化/借星/流昌曲)"];
 
   const palaces: ZiweiPacketPalace[] = chart.palaces.map((p) => ({
     name: p.name,
@@ -135,7 +151,8 @@ export function buildZiweiPacket(
       liuNian: chart.liuNian,
       liuYue: chart.liuYue,
       liuRi: chart.liuRi,
+      overlay,
     },
-    notAvailable: chart.notAvailable,
+    notAvailable,
   };
 }

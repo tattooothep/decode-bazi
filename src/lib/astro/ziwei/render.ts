@@ -95,6 +95,33 @@ function renderTh(p: ZiweiPacket): string {
       L.push(`  · 流日星: ${d.liuRi.dailyStars.map((s) => `${s.star}→${PALACE_TH[s.palaceName] || s.palaceName}(${s.branch})`).join("、")}`);
     }
   }
+  // ── เฟส 3 OVERLAY: 大限ปัจจุบัน + 疊宮 + 自化 + 借星 + 流昌曲 ──
+  const ov = d.overlay;
+  if (ov) {
+    L.push("");
+    L.push(`【OVERLAY ปี ${ov.targetYear}】${ov.coverageNote}`);
+    if (ov.currentDaXian) {
+      L.push(`  · 大限ปัจจุบัน (虛歲 ${ov.age.xuSui}): เดิน大限ที่宮${PALACE_TH[ov.currentDaXian.natalPalaceName] || ov.currentDaXian.natalPalaceName} ${ov.currentDaXian.ganzhi} (อายุ ${ov.currentDaXian.ageStart}-${ov.currentDaXian.ageEnd}) → ใช้大限四化ชุด宮นี้เป็นแกนทศวรรษ`);
+    } else {
+      L.push(`  · 大限ปัจจุบัน: ยังไม่เข้า大限แรก (虛歲 ${ov.age.xuSui} · 童限)`);
+    }
+    L.push("  · 疊宮 (natal×大限×流年 ต่อ地支เดียวกัน — ใช้ดูเรื่องไหนถูกกระตุ้นซ้ำหลายชั้น):");
+    for (const r of ov.dieGong) {
+      L.push(`    ${r.branch}: natal=${PALACE_TH[r.natalName] || r.natalName}${r.daXianName ? ` · 大限=${PALACE_TH[r.daXianName] || r.daXianName}` : ""}${r.liuNianName ? ` · 流年=${PALACE_TH[r.liuNianName] || r.liuNianName}` : ""}${r.majorStars.length ? ` · ดาว: ${r.majorStars.join("、")}` : " · (宮ว่าง)"}`);
+    }
+    if (ov.ziHua.length) {
+      L.push(`  · 自化: ${ov.ziHua.map((z) => `${PALACE_TH[z.palaceName] || z.palaceName}(${z.stem}${z.branch}) ${z.star}自化${z.type}`).join("、")}`);
+    } else {
+      L.push("  · 自化: ไม่มี宮ที่自化ในผังนี้");
+    }
+    if (ov.jieXing.length) {
+      L.push(`  · 借星安星 (宮ว่างยืม對宮): ${ov.jieXing.map((j) => `${PALACE_TH[j.palaceName] || j.palaceName}(${j.branch})←ยืม ${j.stars.join("、")} จาก${j.borrowedFromBranch}`).join(" · ")}`);
+    }
+    if (ov.liuChangQu.length) {
+      L.push(`  · 流昌流曲: ${ov.liuChangQu.map((s) => `${s.star}→${PALACE_TH[s.palaceName] || s.palaceName}(${s.branch})`).join("、")}`);
+    }
+  }
+
   if (p.notAvailable?.length) L.push(`ข้อมูลที่ยังไม่มีใน packet: ${p.notAvailable.join("、")}`);
   L.push("");
   L.push("หมายเหตุ: บรรยายตามผัง安星นี้เท่านั้น · ใช้ศัพท์紫微斗數 (主星/四化/大限/流年/流月/流日/廟旺) · ห้ามเดาดาวหรือตำแหน่งเพิ่ม");
