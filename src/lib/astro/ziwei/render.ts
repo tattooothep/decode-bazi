@@ -120,6 +120,10 @@ function renderTh(p: ZiweiPacket): string {
     if (ov.liuChangQu.length) {
       L.push(`  · 流昌流曲: ${ov.liuChangQu.map((s) => `${s.star}→${PALACE_TH[s.palaceName] || s.palaceName}(${s.branch})`).join("、")}`);
     }
+    L.push(`  · 命主: ${ov.mingZhu} · 身主: ${ov.shenZhu}`);
+    if (ov.zaYao.length) {
+      L.push(`  · 雜曜/神煞 (natal): ${ov.zaYao.map((z) => `${z.star}@${PALACE_TH[z.palaceName] || z.palaceName}(${z.branch})`).join("、")}`);
+    }
   }
 
   if (p.notAvailable?.length) L.push(`ข้อมูลที่ยังไม่มีใน packet: ${p.notAvailable.join("、")}`);
