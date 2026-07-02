@@ -50,7 +50,7 @@ const SIGN_POLARITY: Polarity[] = [
   "masculine", "feminine", "masculine", "feminine", "masculine", "feminine",
 ];
 
-const SIGN_RULER: ClassicalPlanet[] = [
+export const SIGN_RULER: ClassicalPlanet[] = [
   "Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury",
   "Venus", "Mars", "Jupiter", "Saturn", "Saturn", "Jupiter",
 ];

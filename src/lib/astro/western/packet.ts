@@ -27,6 +27,7 @@ import {
   type WesternDominantPlanet,
   type WesternLot,
 } from "./engine";
+import type { WesternTimeline } from "./timeline";
 
 export type WesternPacketPlanet = {
   name: string;
@@ -90,10 +91,12 @@ export type WesternTopicLordMatrixRow = {
 export type WesternTimingCoverage = {
   transits: "ref_date_aspects";
   returnCycles: "jupiter_saturn_coarse";
-  exactTransitWindows: "not_in_packet";
-  solarReturn: "not_in_packet";
-  secondaryProgressions: "not_in_packet";
-  annualProfection: "not_in_packet";
+  exactTransitWindows: "not_in_packet" | "in_packet_target_year";
+  solarReturn: "not_in_packet" | "in_packet_target_year";
+  secondaryProgressions: "not_in_packet" | "in_packet_target_year";
+  annualProfection: "not_in_packet" | "in_packet_target_year" | "disabled_no_birth_time";
+  eclipses: "not_in_packet" | "in_packet_target_year";
+  retrogradeStations: "not_in_packet" | "in_packet_target_year";
   rectification: "workflow_required_not_ai_guess";
 };
 
@@ -130,6 +133,7 @@ export type WesternPacket = {
     fixedStarHits: WesternFixedStarHit[];
     transits: WesternTransits;
     timingSupport: WesternTimingSupport;
+    timingTimeline: WesternTimeline | null;
     chartRuler: WesternChartRuler;
     houseRulers: WesternHouseRuler[] | null;
     topicLordMatrix: WesternTopicLordMatrixRow[];
@@ -358,22 +362,38 @@ function buildTopicLordMatrix(chart: WesternChart): WesternTopicLordMatrixRow[] 
   return rows.map((row) => ({ ...row, evidence: row.evidence.slice(0, 8) }));
 }
 
-const TIMING_COVERAGE: WesternTimingCoverage = {
-  transits: "ref_date_aspects",
-  returnCycles: "jupiter_saturn_coarse",
-  exactTransitWindows: "not_in_packet",
-  solarReturn: "not_in_packet",
-  secondaryProgressions: "not_in_packet",
-  annualProfection: "not_in_packet",
-  rectification: "workflow_required_not_ai_guess",
-};
+function timingCoverageFor(chart: WesternChart, timeline: WesternTimeline | null): WesternTimingCoverage {
+  const has = (x: unknown) => (timeline && x ? "in_packet_target_year" : "not_in_packet") as "in_packet_target_year" | "not_in_packet";
+  return {
+    transits: "ref_date_aspects",
+    returnCycles: "jupiter_saturn_coarse",
+    exactTransitWindows: timeline ? "in_packet_target_year" : "not_in_packet",
+    solarReturn: has(timeline?.solarReturn),
+    secondaryProgressions: has(timeline?.progressed),
+    annualProfection: timeline ? (timeline.profection ? "in_packet_target_year" : "disabled_no_birth_time") : "not_in_packet",
+    eclipses: timeline ? "in_packet_target_year" : "not_in_packet",
+    retrogradeStations: timeline ? "in_packet_target_year" : "not_in_packet",
+    rectification: "workflow_required_not_ai_guess",
+  };
+}
 
-/** สร้าง envelope packet จากผัง */
-export function buildWesternPacket(chart: WesternChart): WesternPacket {
+/** สร้าง envelope packet จากผัง (+ timingTimeline ปีเป้าหมาย ถ้าคำนวณมา) */
+export function buildWesternPacket(chart: WesternChart, timingTimeline: WesternTimeline | null = null): WesternPacket {
   // สิ่งที่ใช้ไม่ได้เมื่อขาดเวลาเกิด (ลัคนา/กลางฟ้า/เรือน/จุดโชค/sect ต้องใช้การหมุนของโลก)
   const notAvailable: string[] = [];
   if (!chart.hasBirthTime) notAvailable.push("ascendant", "mc", "houses", "partOfFortune", "lots", "sect");
   if (!chart.transits) notAvailable.push("transits");
+  if (!timingTimeline) notAvailable.push("timingTimeline");
+  // ชั้นที่ timeline เติมแล้ว → เอาออกจากรายการ unsupported (อย่าบอก AI ว่าไม่มีทั้งที่ส่งมา)
+  const coveredByTimeline = new Set(
+    timingTimeline
+      ? ["eclipseHits",
+         ...(timingTimeline.solarReturn ? ["solarReturnChart"] : []),
+         ...(timingTimeline.progressed ? ["secondaryProgressions"] : []),
+         ...(timingTimeline.profection ? ["annualProfection"] : [])]
+      : [],
+  );
+  const unsupportedSpecialtyPackets = UNSUPPORTED_SPECIALTY_PACKETS.filter((x) => !coveredByTimeline.has(x));
 
   return {
     discipline: "western",
@@ -392,8 +412,8 @@ export function buildWesternPacket(chart: WesternChart): WesternPacket {
     gender: chart.gender,
     sect: chart.sect,
     partOfFortuneFormula: chart.partOfFortuneFormula,
-    unsupportedSpecialtyPackets: UNSUPPORTED_SPECIALTY_PACKETS,
-    timingCoverage: TIMING_COVERAGE,
+    unsupportedSpecialtyPackets,
+    timingCoverage: timingCoverageFor(chart, timingTimeline),
     data: {
       ascendant: angle(chart.ascendant),
       mc: angle(chart.mc),
@@ -436,6 +456,7 @@ export function buildWesternPacket(chart: WesternChart): WesternPacket {
       fixedStarHits: chart.fixedStarHits,
       transits: chart.transits,
       timingSupport: chart.timingSupport,
+      timingTimeline,
       chartRuler: chart.chartRuler,
       houseRulers: chart.houseRulers,
       topicLordMatrix: buildTopicLordMatrix(chart),

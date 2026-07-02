@@ -77,8 +77,10 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
   L.push(`เพศเจ้าชะตา: ${packet.gender === "F" ? "หญิง (F)" : "ชาย (M)"} · sect ของดวง: ${packet.sect ? SECT_TH[packet.sect] : "ไม่มีข้อมูล (ขาดเวลาเกิด)"}`);
   L.push("ข้อห้าม: ห้ามคำนวณ term/face/triplicity, fixed stars, antiscia, declination หรือ transits เองจาก raw degree; ใช้เฉพาะ field ที่ packet ส่งมาเท่านั้น");
   L.push("ตัวเลข weight/score ใน packet เป็นดัชนีภายในเพื่อจัดลำดับหลักฐานเท่านั้น ห้ามตอบผู้ใช้เป็นคะแนนหรือเปอร์เซ็นต์");
-  L.push(`TIMING_COVERAGE: transits=${packet.timingCoverage.transits} · returnCycles=${packet.timingCoverage.returnCycles} · exactTransitWindows=${packet.timingCoverage.exactTransitWindows} · solarReturn=${packet.timingCoverage.solarReturn} · secondaryProgressions=${packet.timingCoverage.secondaryProgressions} · annualProfection=${packet.timingCoverage.annualProfection} · rectification=${packet.timingCoverage.rectification}`);
-  L.push("TIMING_GUARD: ถ้าผู้ใช้ถามวัน/เดือน/ปีที่ไม่ได้อยู่ใน packet ให้ฟันธงจากข้อมูลที่มีเท่านั้น และต้องบอกชัดว่าชั้น exact transit window/solar return/profection ยังไม่ได้ส่งมา ห้ามแต่งวันแน่นอนเอง");
+  L.push(`TIMING_COVERAGE: transits=${packet.timingCoverage.transits} · returnCycles=${packet.timingCoverage.returnCycles} · exactTransitWindows=${packet.timingCoverage.exactTransitWindows} · solarReturn=${packet.timingCoverage.solarReturn} · secondaryProgressions=${packet.timingCoverage.secondaryProgressions} · annualProfection=${packet.timingCoverage.annualProfection} · eclipses=${packet.timingCoverage.eclipses} · retrogradeStations=${packet.timingCoverage.retrogradeStations} · rectification=${packet.timingCoverage.rectification}`);
+  L.push(packet.data.timingTimeline
+    ? "TIMING_GUARD: จังหวะเวลาปีเป้าหมายให้อ้างจาก TIMING_TIMELINE (วันที่คำนวณจริง) เท่านั้น · ห้ามประมาณวัน/เดือนเองนอกเหนือจากรายการ · ถ้าถามปีอื่นที่ไม่ใช่ปีเป้าหมาย ให้บอกว่า timeline ของปีนั้นยังไม่ได้ส่งมา"
+    : "TIMING_GUARD: ถ้าผู้ใช้ถามวัน/เดือน/ปีที่ไม่ได้อยู่ใน packet ให้ฟันธงจากข้อมูลที่มีเท่านั้น และต้องบอกชัดว่าชั้น exact transit window/solar return/profection ยังไม่ได้ส่งมา ห้ามแต่งวันแน่นอนเอง");
   L.push("RECTIFICATION_GUARD: ถ้าไม่มีเวลาเกิด ห้ามเดาลัคนา/เรือน/จุดโชค/lots/sect เอง ต้องอ่านแบบ no-time หรือขอ workflow rectification แยก");
   if (!packet.hasBirthTime) {
     L.push("⚠️ ไม่มีเวลาเกิด → ไม่มีลัคนา/กลางฟ้า/เรือน · ตำแหน่งจันทร์อาจคลาดเคลื่อน (ติดธง) · ตีความเฉพาะตำแหน่งดาวในราศีและมุมสัมพันธ์");
@@ -204,6 +206,51 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
     }
   }
   L.push("");
+
+  // ── TIMING_TIMELINE: จังหวะเวลาปีเป้าหมาย (คำนวณจริงทั้งปี · เฟส 1) ──
+  const tl = d.timingTimeline;
+  if (tl) {
+    L.push(`— TIMING_TIMELINE ปี ${tl.targetYear} (วันที่ทั้งหมด = เวลาไทย · คำนวณ deterministic ทั้งปี ไม่ใช่ snapshot) —`);
+    L.push(`  ${tl.coverageNote}`);
+    if (tl.transitHits.length) {
+      L.push("  [วันมุม exact ดาวจร→จุดกำเนิด] (retro=ดาวถอยตอนชน · pass x/y = ครั้งที่ x จาก y ครั้งเพราะเดินหน้า-ถอย-เดินหน้า)");
+      for (const h of tl.transitHits) {
+        L.push(`  • ${h.dateISO} (เดือน ${h.month}): ${h.transitTh}จร ${h.aspectTh} ${h.natalTh}กำเนิด${h.retro ? " ·R" : ""}${h.passesTotal > 1 ? ` · pass ${h.pass}/${h.passesTotal}` : ""}`);
+      }
+      if (tl.transitHitsDropped > 0) L.push(`  (คัดออก ${tl.transitHitsDropped} จุดน้ำหนักรอง — ถ้าจำเป็นต้องละเอียดกว่านี้ให้บอกผู้ใช้ว่ามีจุดรองที่ไม่ได้แสดง)`);
+    } else {
+      L.push("  ไม่มีมุม exact ของดาวช้าต่อจุดหลักในปีนี้ (ปีเบาเชิง transit)");
+    }
+    if (tl.ingresses.length) {
+      L.push("  [ดาวช้าย้ายราศี (ฉากหลังปี)] " + tl.ingresses.map((x) => `${x.dateISO} ${x.bodyTh}→ราศี${x.toSignTh}${x.retro ? "(ถอย)" : ""}`).join(" · "));
+    }
+    if (tl.stations.length) {
+      L.push("  [วันดาวหยุดเปลี่ยนทิศ (station)] " + tl.stations.map((x) => `${x.dateISO} ${x.bodyTh}${x.type === "station_retrograde" ? "เริ่มถอย" : "กลับเดินหน้า"}@ราศี${x.signTh}`).join(" · "));
+    }
+    if (tl.eclipses.length) {
+      L.push("  [คราสปีนี้] " + tl.eclipses.map((x) => `${x.dateISO} ${x.kind === "solar" ? "สุริยคราส" : "จันทรคราส"}(${x.subtype})@ราศี${x.signTh}${x.hitNatal ? ` → ${x.hitNatal.aspect === "conjunction" ? "ทับ" : "เล็ง"}${x.hitNatal.nameTh}กำเนิด orb ${x.hitNatal.orb}°` : ""}`).join(" · "));
+    }
+    if (tl.solarReturn) {
+      const sr = tl.solarReturn;
+      L.push(`  [Solar Return ${tl.targetYear}] วันที่ ${sr.dateISO}${sr.uncertainNoBirthTime ? " (ไม่ทราบเวลาเกิด → instant คลาดได้ ±12 ชม. · จันทร์ SR ไม่แน่น)" : ""}`);
+      if (sr.ascendant) L.push(`    ลัคนา SR: ราศี${sr.ascendant.signTh} ${sr.ascendant.signDeg}° · MC SR: ${sr.mc ? `ราศี${sr.mc.signTh}` : "-"}`);
+      L.push("    ดาว SR: " + sr.planets.map((p) => `${p.nameTh}@ราศี${p.signTh}${p.retro ? "R" : ""}${p.natalHouse ? `(เรือนกำเนิด${p.natalHouse})` : ""}`).join(" · "));
+    }
+    if (tl.profection) {
+      L.push("  [Annual Profection]");
+      for (const s of tl.profection.segments) {
+        L.push(`    ${s.fromISO} → ${s.toISO} (อายุ ${s.age}): เรือน profection ที่ ${s.profectedHouse} ราศี${s.profectedSignTh} · Lord of Year = ${s.lordOfYearTh}${s.lordNatalSignTh ? ` (กำเนิดอยู่ราศี${s.lordNatalSignTh}${s.lordNatalHouse ? ` เรือน${s.lordNatalHouse}` : ""})` : ""}`);
+      }
+    }
+    if (tl.progressed) {
+      L.push(`  [Secondary Progressions ณ กลางปี ${tl.targetYear}] ${tl.progressed.moonNote}`);
+      L.push("    ตำแหน่ง progressed: " + tl.progressed.planets.map((p) => `${p.nameTh}@ราศี${p.signTh} ${p.signDeg}°`).join(" · "));
+      if (tl.progressed.aspectsToNatal.length) {
+        L.push("    มุม progressed→natal (orb ≤1°): " + tl.progressed.aspectsToNatal.map((a) => `${a.progressed} ${a.aspectTh} ${a.natal} (orb ${a.orb}°)`).join(" · "));
+      }
+    }
+    L.push("");
+  }
 
   // ── เรือนทั้ง 12 (whole-sign) ──
   if (d.houses) {

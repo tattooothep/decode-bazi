@@ -9,6 +9,7 @@ import { buildQizhengPacket } from "../astro/qizheng/packet";
 import { renderQizhengPrompt } from "../astro/qizheng/render";
 import { westernChart } from "../astro/western/engine";
 import { buildWesternPacket } from "../astro/western/packet";
+import { buildWesternTimeline, type WesternTimeline } from "../astro/western/timeline";
 import { renderWesternPrompt } from "../astro/western/render";
 import { vedicChart } from "../astro/vedic/engine";
 import { buildVedicPacket } from "../astro/vedic/packet";
@@ -2316,7 +2317,14 @@ export function renderChartForScience(science: ScienceId, b: BirthData, refDate:
     return `${renderQizhengPrompt(packet)}\n\nSTRUCTURED_CHART_PACKET:\n${structuredPacketJson(packet)}`;
   }
   if (science === "western") {
-    const packet = buildWesternPacket(westernChart(b.dtUTC, b.lat, b.lng, b.hasTime, b.gender, refDate));
+    const chart = westernChart(b.dtUTC, b.lat, b.lng, b.hasTime, b.gender, refDate);
+    // เฟส 1 timeline: ชั้นเวลา "ทั้งปีเป้าหมาย" (exact transit/SR/profection/progression/eclipse/station)
+    const targetYear = bangkokParts(refDate).year;
+    let timeline: WesternTimeline | null = null;
+    try {
+      timeline = buildWesternTimeline(chart, { dtUTC: b.dtUTC, lat: b.lat, lng: b.lng }, targetYear);
+    } catch { timeline = null; /* timeline ล้ม = ส่งผังหลักต่อ (degrade อย่างชัดเจนผ่าน TIMING_COVERAGE) */ }
+    const packet = buildWesternPacket(chart, timeline);
     return `${renderWesternPrompt(packet)}\n\nSTRUCTURED_CHART_PACKET:\n${structuredPacketJson(packet)}`;
   }
   if (science === "vedic") {
