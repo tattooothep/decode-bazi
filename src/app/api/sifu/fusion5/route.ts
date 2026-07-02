@@ -339,6 +339,12 @@ async function reconcileStaleJob(row: Fusion5JobRow, userId: string): Promise<Fu
   return { ...row, status: "error", result: null, error: reason };
 }
 
+/** deliver-once: งาน done ที่ถูกส่งให้ client แล้ว mark seen · กันคำตอบเก่าเด้งซ้ำทุกครั้งที่เปิดหน้า */
+async function markJobSeen(row: Fusion5JobRow, userId: string): Promise<void> {
+  if (row.status !== "done") return;
+  await q(`UPDATE fusion5_jobs SET seen_at=now() WHERE id=$1 AND user_id=$2 AND seen_at IS NULL`, [row.id, userId]).catch(() => {});
+}
+
 function jobJson(row: Fusion5JobRow) {
   return {
     jobId: row.id,
@@ -658,8 +664,9 @@ export async function GET(req: Request) {
     }
     if (question) where.push(`question=${push(question)}`);
     if (sciences.length) where.push(`sciences && ${push(sciences)}::text[]`);
-    // ไม่มีคำถามจาก pending client = ใช้กู้เฉพาะงานที่ยัง running กันดึงผลเก่าเด้งขึ้นมาทุกครั้งที่เปิดหน้า
-    if (!question) where.push(`status='running'`);
+    // ไม่มีคำถามจาก pending client = กู้งานที่ยัง running + งาน done ที่ยังไม่เคยแสดงผล (deliver-once ผ่าน seen_at)
+    // → มือถือพับจอจนงานเสร็จ + localStorage หาย ก็ยังได้คำตอบกลับ · แสดงแล้ว mark seen ไม่เด้งซ้ำ
+    if (!question) where.push(`(status='running' OR (status='done' AND seen_at IS NULL))`);
 
     const row = await q1<Fusion5JobRow>(
       `SELECT id, status, result, error, created_at::text AS created_at,
@@ -672,6 +679,7 @@ export async function GET(req: Request) {
     );
     if (!row) return NextResponse.json({ error: "job_not_found" }, { status: 404 });
     const safeRow = await reconcileStaleJob(row, session.userId);
+    await markJobSeen(safeRow, session.userId);
     return NextResponse.json(jobJson(safeRow), { headers: { "Cache-Control": "no-store, max-age=0" } });
   }
 
@@ -684,5 +692,6 @@ export async function GET(req: Request) {
   );
   if (!row) return NextResponse.json({ error: "job_not_found" }, { status: 404 });
   const safeRow = await reconcileStaleJob(row, session.userId);
+  await markJobSeen(safeRow, session.userId);
   return NextResponse.json(jobJson(safeRow), { headers: { "Cache-Control": "no-store, max-age=0" } });
 }
