@@ -42,6 +42,8 @@ export type FusionTimingReference = {
 const CANON_DIR = join(process.cwd(), "data/library/astro-canon");
 export const CANON_TEXT_MAX_CHARS = 56_000;
 export const CANON_TEXT_MIN_CHARS = 4_000;
+// r377 · ziwei แนบ 四化斷訣 (~1.9K) ทุก request (packet มี 生年四化 เสมอ) — ให้ headroom เพิ่มเพื่อไม่เบียดคัมภีร์เดิมใน 56K · prompt รวมยังคุมด้วย FUSION_PANEL_PROMPT_MAX_CHARS เดิม
+export const ZIWEI_SIHUA_CANON_EXTRA_CHARS = 2_000;
 // 118K รองรับ 4 ดวง (ผัง×4 + pair packet 6 คู่) · ต้อง < SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS (120000) ฝั่ง /api/sifu
 export const FUSION_PANEL_PROMPT_MAX_CHARS = 118_000;
 export const JUDGE_PANEL_REPLY_MAX_CHARS = 8_000;
@@ -78,6 +80,7 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "00a-public-domain-interactions.md": { title: "Western public-domain planetary interaction rule pack", sourceUrl: "https://archive.org/details/b30338724 ; https://archive.org/details/b30335735 ; https://archive.org/details/b30323149 ; https://archive.org/details/b30330270 ; https://www.gutenberg.org/ebooks/70850", licenseClass: "project_summary", mode: "summary" },
     "01-compact-addenda.md": { title: "Western compact addenda · Ptolemy/Lilly/Robson/Raphael summary", sourceUrl: "https://archive.org/details/ptolemystetrabi00procgoog ; https://archive.org/details/ca-william-lilly ; https://archive.org/details/in.ernet.dli.2015.128091", licenseClass: "project_summary", mode: "summary" },
     "02-lilly-houses.md": { title: "William Lilly · Christian Astrology house/dignity notes", sourceUrl: "https://archive.org/details/ca-william-lilly", licenseClass: "public_domain", mode: "verbatim" },
+    "10-lilly-b2-interactions.md": { title: "William Lilly · Christian Astrology 1647 — horary interaction doctrines verbatim (Book1 Ch.XIX Terms of Art: application/separation/prohibition/refranation/translation/reception/void-of-course/frustration/besieging + Book2 Considerations/Ch.XX significators/Ch.XXI perfection: conjunction·aspect·translation·collection)", sourceUrl: "https://archive.org/details/ca-william-lilly", licenseClass: "public_domain", mode: "verbatim" },
     "00b-licensed-modern-source-policy.md": { title: "Western licensed modern sources · internal-use policy", sourceUrl: "local:restricted-western-license", licenseClass: "licensed_internal", mode: "summary" },
     "00c-licensed-modern-extraction-framework.md": { title: "Western licensed modern extraction framework", sourceUrl: "local:restricted-western-extraction-framework", licenseClass: "licensed_internal", mode: "summary" },
     "00d-public-domain-expanded-judgment-rules.md": { title: "Western expanded judgment rules from downloaded public-domain sources · classical/medieval/Morin/Placidus/Alan-Leo-Progressed-Horoscope/Abu-Mashar/Haly/LOC-OCR/early-modern/georgian/glossary/medical-Culpeper/horary-Penseyre/mundane-comet-Lilly-Partridge/aphorism-collation/modern-bridge/planet-monograph/nativity/degree-table/periodical provenance", sourceUrl: "local:private/restricted-sources/western/public-domain", licenseClass: "project_summary", mode: "summary" },
@@ -145,6 +148,7 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "00-method.md": { title: "Jyotish method guard · Parashari summary", sourceUrl: "local:vedic-method", licenseClass: "project_summary", mode: "summary" },
     "01-classical-rules.md": { title: "Jyotish compact classical rules · Brihat Jataka / Phaladeepika / BPHS summary", sourceUrl: "https://archive.org/details/brihatjatakavar00iyergoog ; https://archive.org/details/in.ernet.dli.2015.92117", licenseClass: "project_summary", mode: "summary" },
     "02-bphs-dasha-yoga.md": { title: "BPHS dasha/yoga working summary", sourceUrl: "local:bphs-summary", licenseClass: "summary_only", mode: "summary" },
+    "10-bphs-yogas.md": { title: "BPHS — บทโยคะหลัก อ.34-42/75 · Sanskrit mūla verbatim (yogakāraka/nābhasa/rāja/dhana/dāridrya/pañca-mahāpuruṣa) + ตารางเงื่อนไขโยคะแปลตรงตัวอ้างเลขโศลก", sourceUrl: "https://github.com/Rupali59/Sanskrit-texts (Hora/BrihatParasharaHoraShastra @ c89e0461, 97-chapter recension)", licenseClass: "public_domain", mode: "verbatim" },
     "03-public-domain-source-coverage.md": { title: "Jyotish source coverage · BPHS / Brihat Jataka-Vijnananda-Bhattotpala-commentaries / Hora Ratnam / Daivajna Vallabha / Daivagya Kamadhenu / Hora Shastra / Yavana Jataka / Row Stri Jataka-Sarvartha-Chappanna / Samaya Shuddhi / Dasha-Gochara Phala / expanded Siddhanta-Aryabhatiya-JyotishaSiddhanta-Vedanga / Brihat Samhita / Saravali / Phaladeepika-PhalaDeepika / Jataka Parijata-Tattva-Alankara-Chandrika-Abharana-Bharanam-Paddhati / Lagna Chandrika / Manasagari / Hora Sara / Sambhu Hora / Bhava Kutuhala-Prakasha / Jyotisha-Jyotir-Nav Ratnamala / Uttara Kalamrita / Jaimini / Laghu Parashari / Sarvartha / Garga / Bhrigu / Muhurta-Darpana-Sindhu-Ganapati-Martanda-Kalaprakashika-Vivaha / Prasna-Chappanna-Manorama-Ratna-Skandhasthi-Shatpanchasika / Tajika-Varsha / Ashtakavarga-Nakshatra-Dasha / Graha Laghava", sourceUrl: "local:private/restricted-sources/vedic/public-domain+incoming", licenseClass: "project_summary", mode: "summary" },
     "04-topic-packs.md": { title: "Jyotish topic packs · marriage/stri-jataka/career/wealth/health/dasha-ashtottari-gochara/no-time-nakshatra/yavana-kamadhenu-hora/row-collation/prashna-chappanna-manorama-ratna-skandhasthi/tajika/ashtakavarga/muhurta-martanda-samaya-shuddhi/siddhanta-provenance/vivaha", sourceUrl: "local:private/restricted-sources/vedic/public-domain+incoming", licenseClass: "project_summary", mode: "summary" },
     "05-dasha-deepening-rules.md": { title: "Jyotish dasha deepening pack · Vimshottari/antardasha/pratyantar/ashtakavarga/gochara guards", sourceUrl: "local:private/restricted-sources/vedic/public-domain+incoming-dasha-derived-summary", licenseClass: "project_summary", mode: "summary" },
@@ -210,6 +214,7 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "02-daozang-ziwei-notes.md": { title: "續道藏《紫微斗數》三卷 · ctext working notes", sourceUrl: "https://ctext.org/wiki.pl?if=gb&res=979714 ; https://ctext.org/library.pl?if=gb&res=85160", licenseClass: "project_summary", mode: "summary" },
     "03-feixing-cetian-private-rules.md": { title: "Private 飛星策天紫微斗數全集 extracted rule pack", sourceUrl: "local:restricted-kyujanggak-GI40495_00", licenseClass: "summary_only", mode: "summary" },
     "04-feixing-cetian-topic-rules.md": { title: "Licensed 飛星策天 topical reading pack", sourceUrl: "local:restricted-kyujanggak-GI40495_00", licenseClass: "summary_only", mode: "summary" },
+    "10-feixing-quanji.md": { title: "紫微斗數全書 卷二 四化斷訣 (安祿權科忌變化訣 + 化祿/化權/化科/化忌 入命/入限斷訣) + 續道藏十八飛星 verbatim — prompt แนบเฉพาะส่วน A (四化) · ส่วน B (十八飛星) เป็นบริบทตำรา ไม่แนบ", sourceUrl: "https://zh.wikisource.org/wiki/紫微斗數全書 ; https://zh.wikisource.org/zh-hant/紫微斗數", licenseClass: "public_domain", mode: "verbatim" },
     "05-main-star-topic-matrix.md": { title: "Zi Wei 14 main stars topic matrix", sourceUrl: "local:licensed-derived-topic-matrix", licenseClass: "summary_only", mode: "summary" },
     "06-liuyue-liuri-sihua-rules.md": { title: "Zi Wei 流月/流日/四化飛星 operational pack", sourceUrl: "local:restricted-ziwei-derived-timing-pack", licenseClass: "summary_only", mode: "summary" },
     "07-modern-licensed-collation-rules.md": { title: "Zi Wei modern licensed collation pack · 南北山人/大德山人/顧祥弘/潘子漁/梁湘潤 OCR-derived rules", sourceUrl: "local:private/restricted-sources/ziwei/incoming", licenseClass: "summary_only", mode: "summary" },
@@ -407,6 +412,72 @@ const CANON_DEFAULT_FILES: Partial<Record<ScienceId, string[]>> = {
     "07-quanshu-xingyuan-wenda.md",
   ],
 };
+
+/** r377 · canon section splitter — คัมภีร์ verbatim ไฟล์ใหญ่ ส่งเฉพาะหัวข้อที่ตรงคำถาม
+ *  token ใน selected files: "ไฟล์.md#sectionA+sectionB" → loadCanonBundle ตัดเฉพาะช่วงที่กำหนด (ห้ามส่งทั้งไฟล์ใหญ่ทุก request)
+ *  SOURCE_MAP ยังยึดไฟล์เต็ม: sourceHashSha256 = hash ไฟล์เต็ม · totalChars = ขนาดไฟล์เต็ม · truncated = true เมื่อส่งบางส่วน */
+type CanonSectionRange = { from: RegExp; to?: RegExp };
+const CANON_FILE_SECTIONS: Partial<Record<ScienceId, Record<string, Record<string, CanonSectionRange[]>>>> = {
+  western: {
+    // Lilly 1647 (~53.6K chars) — ห้ามส่งทั้งไฟล์ · เลือกตามคำถาม (doctrines ~5.5K · significators ~3.1K · perfection ~8.3K)
+    "10-lilly-b2-interactions.md": {
+      // Book1 Ch.XIX นิยามหลักปฏิสัมพันธ์: prohibition/refranation/translation/reception/void-of-course/frustration + besieging
+      doctrines: [
+        { from: /^\[PROHIBITION\.\]/m, to: /^\[HAYZ\.\]/m },
+        { from: /^\[BESIEGING\.\]/m, to: /^\[DIRECTION IS\.\]/m },
+      ],
+      // Book1 Ch.XIX: application/separation (พื้นฐาน applying/separating)
+      application: [{ from: /^\[APPLICATION\.\]/m, to: /^\[PROHIBITION\.\]/m }],
+      // Book2: ข้อพิจารณาก่อนตัดสินคำถาม
+      considerations: [{ from: /^## ส่วนที่ 2/m, to: /^## ส่วนที่ 3/m }],
+      // Book2 Ch.XX: querent/quesited/significator
+      significators: [{ from: /^## ส่วนที่ 3/m, to: /^## ส่วนที่ 4/m }],
+      // Book2 Ch.XXI: 4 ทางสำเร็จ conjunction · aspect · translation of light · collection of light
+      perfection: [{ from: /^## ส่วนที่ 4/m }],
+    },
+  },
+  vedic: {
+    // BPHS (~30.2K chars mūla) — ตารางเงื่อนไข (~1.7K) + เฉพาะบทที่เกี่ยว (yogakāraka ~4.2K · rāja ~5.9K · dhana ~4.8K · mahāpuruṣa ~2.1K)
+    "10-bphs-yogas.md": {
+      "yoga-table": [{ from: /^## ภาคผนวก/m }],
+      yogakaraka: [{ from: /^## อ\. 34-40/m, to: /^अथ नाभसयोगाध्यायः/m }],
+      raja: [{ from: /^अथ राजयोगाध्यायः/m, to: /^## อ\. 41-42/m }],
+      dhana: [{ from: /^## อ\. 41-42/m, to: /^## อ\. 75/m }],
+      mahapurusha: [{ from: /^## อ\. 75/m, to: /^## ภาคผนวก/m }],
+    },
+  },
+  ziwei: {
+    // 四化斷訣: แนบเฉพาะส่วน A (全書卷二 ~1.9K) · ส่วน B (十八飛星 สายดาว 18 ดวง) = บริบทตำรา ไม่แนบเข้า prompt (ตาม 01-source-policy — คนละระบบกับผัง 14 主星)
+    "10-feixing-quanji.md": {
+      sihua: [{ from: /^## A1/m, to: /^## B1/m }],
+    },
+  },
+};
+
+function extractCanonSections(science: ScienceId, file: string, raw: string, sectionKeys: string[]): string {
+  const specs = CANON_FILE_SECTIONS[science]?.[file];
+  if (!specs) return raw;
+  const parts: string[] = [];
+  for (const key of sectionKeys) {
+    for (const range of specs[key] || []) {
+      const startMatch = range.from.exec(raw);
+      if (!startMatch) continue;
+      const start = startMatch.index;
+      let end = raw.length;
+      if (range.to) {
+        const rest = raw.slice(start + startMatch[0].length);
+        const endMatch = range.to.exec(rest);
+        if (endMatch) end = start + startMatch[0].length + endMatch.index;
+      }
+      const piece = raw.slice(start, end).trim();
+      if (piece) parts.push(piece);
+    }
+  }
+  if (!parts.length) return raw; // regex ไม่เจอ (ไฟล์ถูกแก้) = ส่งทั้งไฟล์ กัน section หายเงียบ
+  const h1 = raw.split("\n").find((ln) => ln.startsWith("# "));
+  const header = h1 ? `${h1} — คัดเฉพาะหัวข้อที่ตรงคำถาม (${sectionKeys.join("+")})` : "";
+  return [header, ...parts].filter(Boolean).join("\n\n");
+}
 
 type CanonIntent = {
   timing: boolean;
@@ -858,6 +929,10 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
   if (science === "ziwei") {
 	    if (intent.relationship && !intent.retention && !intent.partnershipProgram && !intent.partnerDueDiligence && !intent.salesTeamQa && !intent.cashflowBudget) pushUnique(files, "33-relationship-status-marriage-breakup-specificity.md", "11-pair-relationship-specificity.md", "20-decision-action-guidance-specificity.md", "21-remedy-mitigation-specificity.md", "19-timing-forecast-specificity.md", "06-liuyue-liuri-sihua-rules.md");
     if (intent.pair) pushUnique(files, "11-pair-relationship-specificity.md");
+    // r377 · 全書卷二 四化斷訣 (ส่วน A เท่านั้น ~1.9K) — packet ziwei มี 生年四化 เสมอ (มีเวลา/ไม่มีเวลา · 大限/流年 เพิ่มตามคำถาม) → แนบทุก request
+    // ส่วน B (十八飛星 สายดาว 18 ดวง) ไม่แนบเข้า prompt — บริบทตำราเท่านั้น (ตาม 01-source-policy · คนละระบบกับผัง 14 主星)
+    const ziweiSihuaToken = "10-feixing-quanji.md#sihua";
+    pushUnique(files, ziweiSihuaToken);
     if (intent.timing) pushUnique(files, "19-timing-forecast-specificity.md");
     if (intent.specialty) pushUnique(files, "24-specialty-scope-electional-guard.md", "19-timing-forecast-specificity.md", "20-decision-action-guidance-specificity.md", "06-liuyue-liuri-sihua-rules.md");
     if (intent.health) pushUnique(files, "29-health-surgery-recovery-specificity.md", "12-career-wealth-health-specificity.md", "16-risk-dispute-hidden-pressure-specificity.md", "21-remedy-mitigation-specificity.md", "19-timing-forecast-specificity.md", "06-liuyue-liuri-sihua-rules.md");
@@ -1667,11 +1742,21 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
         "07-modern-licensed-collation-rules.md",
       );
     }
+    // r377 · ดัน 四化斷訣 ไว้ถัดจาก 00-method เพื่อรอด shrink loop (斷訣 verbatim ต้องไม่ถูกตัด)
+    prioritizeAfterMethod(files, ziweiSihuaToken);
     return files;
   }
 
   if (science === "western") {
     pushUnique(files, "00b-licensed-modern-source-policy.md");
+    // r377 · Lilly 1647 horary interaction doctrines — เลือกส่งเฉพาะ section ตรงคำถาม (ห้ามส่งทั้ง 55KB ทุกครั้ง)
+    // horary = นิยาม+ผู้ถาม/สิ่งที่ถาม+ทางสำเร็จ · event (จะสำเร็จไหม/ผ่านคนกลาง/ถูกขัด) = นิยาม+ทางสำเร็จ · interaction = นิยามอย่างเดียว
+    let lillyToken = "";
+    if (intent.horary) lillyToken = "10-lilly-b2-interactions.md#doctrines+significators+perfection";
+    else if (intent.electional || intent.mundane) lillyToken = "10-lilly-b2-interactions.md#doctrines+perfection";
+    else if (intent.business || intent.authority || intent.employment) lillyToken = "10-lilly-b2-interactions.md#doctrines+perfection";
+    else if (intent.interaction) lillyToken = "10-lilly-b2-interactions.md#doctrines";
+    if (lillyToken) pushUnique(files, lillyToken);
 			    if (intent.relationship && !intent.retention && !intent.partnershipProgram && !intent.hiringDelegation && !intent.partnerDueDiligence && !intent.salesTeamQa && !intent.cashflowBudget) pushUnique(files, "28-relationship-status-marriage-breakup-specificity.md", "06-relationship-nativity-specificity.md", "15-decision-action-guidance-specificity.md", "16-remedy-mitigation-specificity.md", "14-timing-forecast-specificity.md", "04-specialty-router-evidence-gates.md", "05-dignity-lots-specificity.md", "00c-licensed-modern-extraction-framework.md", "02-lilly-houses.md", "03-synastry-timing-notime-weighting.md");
     if (intent.pair) pushUnique(files, "06-relationship-nativity-specificity.md", "04-specialty-router-evidence-gates.md", "05-dignity-lots-specificity.md", "00c-licensed-modern-extraction-framework.md", "02-lilly-houses.md", "03-synastry-timing-notime-weighting.md");
     if (intent.timing || intent.advancedTiming) pushUnique(files, "14-timing-forecast-specificity.md", "00e-public-domain-modern-bridge-rules.md", "00f-public-domain-no-time-predictive-medical-rules.md", "03-synastry-timing-notime-weighting.md", "04-specialty-router-evidence-gates.md", "05-dignity-lots-specificity.md");
@@ -1839,11 +1924,24 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     if (intent.pair) {
       prioritizeToFront(files, "28-relationship-status-marriage-breakup-specificity.md", "06-relationship-nativity-specificity.md", "18-planetary-interaction-specificity.md", "17-validation-past-event-specificity.md", "03-synastry-timing-notime-weighting.md", "04-specialty-router-evidence-gates.md", "05-dignity-lots-specificity.md", "00c-licensed-modern-extraction-framework.md");
     }
+    // r377 · ดัน Lilly section ให้รอด shrink loop (นิยาม translation/collection/prohibition/reception/VoC ต้องไม่ถูกตัด)
+    // horary = ดันหน้าสุด (นิยาม Lilly คือหลักฐานแกนของคำถาม horary แม้โดน shrink เหลือ 4K หรือโหมดคู่ที่ pair packs ถูกดันหน้า)
+    if (lillyToken && intent.horary) prioritizeToFront(files, lillyToken);
+    else if (lillyToken) prioritizeAfterMethod(files, lillyToken);
     return files;
   }
 
   if (science === "vedic") {
 		    if (intent.timing || intent.relationship || intent.windfall || intent.creator || intent.marketing || intent.reputation || intent.retention || intent.pricing || intent.supportOps || intent.techProduct || intent.industryFit || intent.customerFit || intent.offerFit || intent.deliveryModel || intent.valueLadder || intent.scopeBoundary || intent.salesTeamQa || intent.health || intent.children || intent.education || intent.general) pushUnique(files, "02-bphs-dasha-yoga.md");
+    // r377 · BPHS โยคะ mūla — คำถามความสำเร็จ/อำนาจ/เงิน → ตารางเงื่อนไขโยคะ + โศลกเฉพาะบทที่เกี่ยว (ห้ามส่งทั้ง 79KB)
+    // AI ตรวจโยคะจากตารางเทียบผัง engine (yogaCandidates + graha) — ไม่สร้าง yoga engine ใหม่
+    const bphsParts: string[] = [];
+    // guard !relationship: กัน "แต่งงาน" ไป trigger career (substring "งาน") แล้วลาก rāja มาเบียด compatibility packs ในคำถามความรักล้วน
+    if ((intent.career || intent.reputation || intent.business || intent.employment || (intent.fortune && !intent.windfall)) && !intent.relationship) bphsParts.push("raja");
+    if (intent.money || intent.windfall) bphsParts.push("dhana");
+    if (intent.talent) bphsParts.push("mahapurusha");
+    const bphsToken = bphsParts.length ? `10-bphs-yogas.md#yoga-table+yogakaraka+${bphsParts.join("+")}` : "";
+    if (bphsToken) pushUnique(files, bphsToken);
     if (intent.timing) pushUnique(files, "16-timing-forecast-specificity.md");
     if (intent.specialty) pushUnique(files, "21-specialty-scope-prashna-muhurta-guard.md", "06-evidence-gates-specialty-router.md", "07-functional-topic-specificity.md", "16-timing-forecast-specificity.md", "17-decision-action-guidance-specificity.md");
     if (intent.health) pushUnique(files, "26-health-surgery-recovery-specificity.md", "09-career-wealth-health-specificity.md", "13-risk-dispute-hidden-pressure-specificity.md", "18-remedy-mitigation-specificity.md", "16-timing-forecast-specificity.md");
@@ -2003,6 +2101,8 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     } else if (intent.general) {
       prioritizeAfterMethod(files, "06-evidence-gates-specialty-router.md", "07-functional-topic-specificity.md", "10-natal-life-direction-specificity.md", "05-dasha-deepening-rules.md", "04-topic-packs.md");
     }
+    // r377 · ดัน BPHS section ไว้ถัดจาก 00-method เพื่อรอด shrink loop (ตาราง+โศลกต้องไม่ถูกตัด)
+    if (bphsToken) prioritizeAfterMethod(files, bphsToken);
     return files;
   }
 
@@ -2123,12 +2223,19 @@ export function loadCanonBundle(science: ScienceId, maxChars = CANON_TEXT_MAX_CH
     const dir = join(CANON_DIR, science);
     if (existsSync(dir)) {
       const defaultFiles = selectedFiles?.length ? selectedFiles : CANON_DEFAULT_FILES[science];
-      const files = defaultFiles?.length
-        ? defaultFiles.filter((x) => x.endsWith(".md") && !x.includes(".NOTE.") && existsSync(join(dir, x)))
+      // token รองรับ "ไฟล์.md#sectionA+sectionB" (r377 section splitter) — base file ต้องมีจริง
+      const tokens = defaultFiles?.length
+        ? defaultFiles.filter((x) => {
+            const base = x.split("#")[0];
+            return base.endsWith(".md") && !base.includes(".NOTE.") && existsSync(join(dir, base));
+          })
         : readdirSync(dir).filter((x) => x.endsWith(".md") && !x.includes(".NOTE.")).sort();
-      for (const f of files) {
+      for (const token of tokens) {
         if (text.length >= maxChars) break;
-        const full = readFileSync(join(dir, f), "utf8");
+        const [f, sectionSpec] = token.split("#");
+        const raw = readFileSync(join(dir, f), "utf8");
+        const full = sectionSpec ? extractCanonSections(science, f, raw, sectionSpec.split("+")) : raw;
+        if (!full) continue;
         const remaining = Math.max(0, maxChars - text.length);
         const segment = full.slice(0, remaining);
         if (!segment) break;
@@ -2140,11 +2247,11 @@ export function loadCanonBundle(science: ScienceId, maxChars = CANON_TEXT_MAX_CH
           sourceId: `${science}:${f.replace(/\.md$/, "")}`,
           file: f,
           ...meta,
-          sourceHashSha256: sha256(full),
+          sourceHashSha256: sha256(raw),
           promptSegmentHashSha256: sha256(segment),
           includedChars: segment.length,
-          totalChars: full.length,
-          truncated: segment.length < full.length || text.length >= maxChars,
+          totalChars: raw.length,
+          truncated: segment.length < raw.length || text.length >= maxChars,
         });
         if (text.length === before) break;
       }
@@ -2513,7 +2620,7 @@ export function buildSciencePrompt(
     L.push(`\n${answerFormatLine(births)}`);
     return L.join("\n");
   };
-  let maxCanon = CANON_TEXT_MAX_CHARS;
+  let maxCanon = CANON_TEXT_MAX_CHARS + (science === "ziwei" ? ZIWEI_SIHUA_CANON_EXTRA_CHARS : 0);
   let bundle = loadCanonBundle(science, maxCanon, selectedCanonFiles);
   let prompt = assemble(bundle);
   while (prompt.length > FUSION_PANEL_PROMPT_MAX_CHARS && maxCanon > CANON_TEXT_MIN_CHARS) {
