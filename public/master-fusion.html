@@ -839,11 +839,15 @@
     [data-theme="light"] .result-empty{color:rgba(43,36,23,.58)}
     @media (max-width:900px){
       .header{grid-template-columns:1fr}
+      /* r384b fix: visual refresh ตั้ง .layout 2 คอลัมน์ไว้นอก media (ทับกฎมือถือเดิมด้านบน) — ต้อง re-assert 1 คอลัมน์ที่นี่
+         ไม่งั้นการ์ดคำพยากรณ์ตกไปอยู่คอลัมน์ขวากว้าง ~0px → เนื้อหาถูกบีบ/clip (บั๊กเปิดประวัติ+ผลสดบนมือถือ) */
+      .layout{grid-template-columns:1fr}
       .badges{max-width:none;justify-content:flex-start}
       .ask-panel{position:relative;top:auto}
       .result-panel{min-height:0}
     }
     @media (max-width:700px){
+      .layout{gap:14px} /* r384b: คืนระยะห่าง stack แนวตั้งของกฎมือถือเดิม (บรรทัดบนโดน gap:20 ของ refresh ทับ) */
       .topbar-inner{padding:11px 12px}
       .brand{font-size:18px}
       .seal{width:32px;height:32px}
@@ -2656,6 +2660,8 @@
       if (!isMobileFold()) {
         var panel = document.querySelector('.result-panel');
         if (panel && panel.scrollIntoView) panel.scrollIntoView({ behavior:'smooth', block:'start' }); // desktop → เลื่อนไปการ์ดคำตอบหลัก
+      } else {
+        window.scrollTo({ top:0, behavior:'auto' }); // r384b: มือถือ takeover ซ่อน topbar/history → หน้าเตี้ยลง scroll เดิมค้างกลางการ์ด · เริ่มอ่านจากหัวการ์ดเสมอ
       }
     }
     function closeHistoryView(){

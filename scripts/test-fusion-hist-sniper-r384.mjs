@@ -160,7 +160,7 @@ function makeHistSandbox() {
   const t = (k) => (I18N.th[k] != null ? I18N.th[k] : k);
   const state = { busy: false, resuming: false, result: null, resonance: null, historyView: null, preHistoryView: null, activeHistoryId: "x" };
   const els = { result: { innerHTML: "" }, meta: { innerHTML: "" } };
-  const calls = { status: [], answerMode: [], runState: [], resonance: [], fusion5: [], keep: 0, scroll: 0, readBar: 0, histList: 0 };
+  const calls = { status: [], answerMode: [], runState: [], resonance: [], fusion5: [], keep: 0, scroll: 0, readBar: 0, histList: 0, winScroll: [] };
   let mobile = false;
   const stubs = {
     t, state, els,
@@ -175,6 +175,7 @@ function makeHistSandbox() {
     setAnswerMode: (on) => calls.answerMode.push(on),
     isMobileFold: () => mobile,
     document: { querySelector: () => ({ scrollIntoView: () => calls.scroll++ }) },
+    window: { scrollTo: (o) => calls.winScroll.push(o) }, // r384b: มือถือเริ่มอ่านหัวการ์ด
     renderHistoryList: () => calls.histList++,
     renderFusion5: (d) => { calls.fusion5.push(d); state.result = d; },
     updateReadBar: () => calls.readBar++,
@@ -231,6 +232,37 @@ const ROW = { id: "h1", question: "ปีนี้ย้ายงานดีไ
   ok("เปลี่ยนดวง → ปิดโหมดดูประวัติ", /if \(state\.historyView\) closeHistoryView\(\);/.test(src));
   ok("desktop scroll guard ด้วย !isMobileFold()", /if \(!isMobileFold\(\)\) \{\s*\n\s*var panel = document\.querySelector\('\.result-panel'\)/.test(src));
   ok("CSS การ์ดประวัติ (hist-tag/hist-q/hist-actions) + วันเด่น (snp-day) มีครบ 2 ธีมผ่าน var()", src.includes(".hist-tag{") && src.includes(".hist-q{") && src.includes(".hist-actions{") && src.includes(".snp-day{") && src.includes('[data-theme="light"] .snp-day'));
+}
+
+// ===== 6b) r384b · มือถือโหมดอ่าน: การ์ดคำตอบไม่โดนบีบ (root cause: .layout 2 คอลัมน์ของ visual refresh อยู่นอก media ทับกฎมือถือ) =====
+function extractBlockAt(startIdx) {
+  let depth = 0;
+  for (let j = src.indexOf("{", startIdx); j < src.length; j++) {
+    if (src[j] === "{") depth++;
+    else if (src[j] === "}") { depth--; if (!depth) return src.slice(startIdx, j + 1); }
+  }
+  throw new Error("unbalanced css block");
+}
+{
+  const twoColIdx = src.indexOf("grid-template-columns:minmax(330px,410px)");
+  const m900Idx = src.lastIndexOf("@media (max-width:900px)");
+  const m900 = extractBlockAt(m900Idx);
+  ok("มือถือ ≤900: .layout กลับเป็น 1 คอลัมน์ 'หลัง' กฎ 2 คอลัมน์ของ refresh (cascade ชนะ → การ์ดคำตอบเต็มกว้าง)",
+    twoColIdx > -1 && m900Idx > twoColIdx && /\.layout\{[^}]*grid-template-columns:1fr/.test(m900));
+  const m768 = extractBlockAt(src.indexOf("@media (max-width:768px)"));
+  ok("answer-mode มือถือ: ไม่มี max-height บีบกล่องคำตอบ (สูงตามเนื้อหา)", !/max-height/.test(m768));
+  ok("answer-mode มือถือ: ไม่มี overflow:auto/scroll ซ้อนในกล่องคำตอบ (ใช้ scroll ของหน้า)", !/overflow(-y)?:\s*(auto|scroll)/.test(m768));
+  ok("กล่องคำตอบ (.result-content ใน answer-mode) ใช้ min-height เท่านั้น",
+    /body\.hk-answer-mode \.result-panel \.result-content\{[^}]*min-height:52vh/.test(src) && !/body\.hk-answer-mode[^{]*\.result-content\{[^}]*max-height/.test(src));
+  ok("มือถือเปิดประวัติ → เริ่มอ่านจากหัวการ์ด (window.scrollTo top:0 ใน branch มือถือ)",
+    /window\.scrollTo\(\{ top:0/.test(extract("openHistoryInMain")));
+}
+{
+  const h = makeHistSandbox();
+  h.setMobile(true);
+  h.fns.openHistoryInMain(ROW);
+  ok("มือถือ: เข้าโหมดอ่าน + ไม่ใช้ desktop scrollIntoView", h.calls.answerMode[0] === true && h.calls.scroll === 0);
+  ok("มือถือ: window.scrollTo top:0 (กัน scroll ค้างกลางการ์ดหลัง takeover ย่อหน้า)", h.calls.winScroll.length === 1 && h.calls.winScroll[0].top === 0);
 }
 
 // ===== 7) script ทั้งก้อน parse ผ่าน (node --check) =====
