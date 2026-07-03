@@ -237,12 +237,12 @@
   function lockStandaloneViewport() {
     if (!isStandalone()) return;
     try {
+      /* r384c HOTFIX: เวอร์ชันแรกใส่ overflow-x:hidden ที่ html+body → iOS standalone จอค้างเลื่อนไม่ได้
+       * เหลือแค่ตัดแรงเด้ง (contain = กัน pull-to-refresh/bounce แต่เลื่อนปกติ) · ห้ามแตะ overflow ทั้งสองแกน */
       var st = document.createElement('style');
       st.id = 'hk-pwa-viewport-lock';
-      st.textContent = '@media (display-mode: standalone){html,body{overscroll-behavior-y:none;overflow-x:hidden;}}' +
-        'html.hk-standalone,html.hk-standalone body{overscroll-behavior-y:none;overflow-x:hidden;}';
+      st.textContent = 'body{overscroll-behavior-y:contain;}';
       (document.head || document.documentElement).appendChild(st);
-      document.documentElement.classList.add('hk-standalone');
     } catch (_) {}
   }
 
