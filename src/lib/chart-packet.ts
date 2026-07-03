@@ -198,7 +198,7 @@ export type ChartPacket = {
     label: string;
     rawEngineLabel?: string | null;
     canonicalRuleKey?: string | null;
-    canonicalSource?: "engine" | "strict_classic_audit" | "false_follow_audit";
+    canonicalSource?: "engine" | "strict_classic_audit" | "false_follow_audit" | "follow_engine";
     special: { typeZh: string; friendly: string[] } | null;
     /** ระดับความมั่นใจของโครงดวง (label จาก wrapper ge-ju · ไม่ใช่ % ตัวเลข) */
     confidence?: string | null;
@@ -1258,12 +1258,19 @@ function godsForElementsBY(dmElement: ElementEN, els: ElementEN[]): string[] {
 function isFalseFollowCandidateLabel(label: string): boolean {
   return /^假從/.test((label || "").trim());
 }
+/* r379 (3 ก.ค. 2569 · เจ้านายเคาะ): ป้าย從格จาก engine (wrapper-3 follow branch · เกณฑ์เดียวกับ follow-detector)
+ * = 從兒格/從財格/從殺格 + prefix 假(เทียม)/真 · ครอบ 從勢 เผื่ออนาคต
+ * ⚠️ ไม่รวม 從革格 (=專旺 ธาตุทอง ไม่ใช่ follow) · ดวงที่เข้าเกณฑ์นี้ → ป้าย從格เป็นป้ายนำ (ยกเลิกการ promote strict月令ทับ)
+ * ดวงไม่เข้าเกณฑ์ → classics-first (a17b45e) เดินเส้นเดิมทุกอย่าง */
+function isFollowGeJuLabel(label: string): boolean {
+  return /^(假|真)?從(兒|財|殺|勢)格/.test((label || "").trim());
+}
 function isFalseFollowAuditConflict(a: ChartPacket["strictGeJuAudit"] | undefined): boolean {
   return !!a && isFalseFollowCandidateLabel(a.currentLabel) && !a.matchesCurrent && !!a.strictLabel;
 }
 function isStrictGeJuPrimaryAudit(a: ChartPacket["strictGeJuAudit"] | undefined): boolean {
   if (!a || !a.strictLabel || a.matchesCurrent) return false;
-  if (isFalseFollowCandidateLabel(a.currentLabel)) return false;
+  if (isFalseFollowCandidateLabel(a.currentLabel) || isFollowGeJuLabel(a.currentLabel)) return false; // r379: ดวง follow ห้าม strict ยึดป้ายนำ
   if (a.confidence !== "high") return false;
   return /^雜氣/.test(a.currentLabel || "") || a.selectedSource === "storage_visible";
 }
@@ -1281,6 +1288,16 @@ function canonicalGeJuFromAudit(
   rawLabel: string,
   a: NonNullable<ChartPacket["strictGeJuAudit"]> | undefined,
 ): { label: string; ruleKey: string | null; source: NonNullable<ChartPacket["structure"]["canonicalSource"]> } {
+  /* r379 boss decision: ดวงเข้าเกณฑ์從格 (แท้/假從) → ป้าย從格ของ engine เป็นป้ายนำ
+   * strict月令ไม่หาย — ยังอยู่ใน strictGeJuAudit และ render เป็น "มุมตำรา子平真詮" บรรทัดรอง
+   * ห้ามแตะ用神/喜/忌 (r268 ถูกต้องอยู่ · เปลี่ยนเฉพาะป้ายโครง) */
+  if (isFollowGeJuLabel(rawLabel)) {
+    return {
+      label: rawLabel || "ปกติ",
+      ruleKey: geToRuleKey(rawLabel || ""),
+      source: "follow_engine",
+    };
+  }
   if (a && isFalseFollowAuditConflict(a)) {
     return {
       label: displayStrictGeJuLabel(a),
@@ -1613,7 +1630,9 @@ function buildStrictGeJuAuditPacket(
     sourceRuleIds: audit.sourceRuleIds,
     thaiSummary: audit.thaiSummary,
     canonicalChinese: audit.canonicalChinese,
-    noteTh: "classic canonical: strict月令จาก子平真詮ใช้เป็นโครงหลักเมื่อชนกับ raw engine; raw engine เหลือเป็นป้ายรอง/provenance",
+    noteTh: isFollowGeJuLabel(currentLabel)
+      ? "r379: ดวงเข้าเกณฑ์從格 (follow) → ป้าย從格ของ engine เป็นป้ายนำ; strict月令จาก子平真詮คงไว้เป็นมุมตำรารอง (โปร่งใสสองสำนัก)"
+      : "classic canonical: strict月令จาก子平真詮ใช้เป็นโครงหลักเมื่อชนกับ raw engine; raw engine เหลือเป็นป้ายรอง/provenance",
   };
 }
 
@@ -2392,7 +2411,10 @@ export function buildStructuredChartPacket(
       special: ext.special_chart?.applicable
         ? { typeZh: ext.special_chart.type_zh, friendly: ext.special_chart.friendly_elements || [] }
         : null,
-      confidence: canonicalGeJu.source === "engine" ? (calc.geJu?.confidence ?? null) : strictGeJuAudit.confidence,
+      /* r379: follow_engine ใช้ confidence จาก engine (假從=moderate ตามธรรมชาติของ "เทียม" · 真從 domShare>55%=high) */
+      confidence: (canonicalGeJu.source === "engine" || canonicalGeJu.source === "follow_engine")
+        ? (calc.geJu?.confidence ?? null)
+        : strictGeJuAudit.confidence,
     },
     strictGeJuAudit,
     /* HK_HUAQI_VERDICT_V1 · wrapper-8 化氣格 verdict (真化/假化/合而不化)
@@ -2696,15 +2718,23 @@ export function renderChartPrompt(
     `6) ถ้ามี HK_SANHE_CANDIDATE_LOCK_V1 ให้แยก candidate/activated ให้ชัด และห้ามเรียกว่าตรวจครบถ้า marker บอก candidate`
   );
 
-  /* โครงดวง + ดวงพิเศษ */
-  const falseFollowAudit = isFalseFollowAuditConflict(packet.strictGeJuAudit) ? packet.strictGeJuAudit : null;
-  const strictPrimaryAudit = !falseFollowAudit && isStrictGeJuPrimaryAudit(packet.strictGeJuAudit) ? packet.strictGeJuAudit : null;
+  /* โครงดวง + ดวงพิเศษ
+   * r379: ดวงเข้าเกณฑ์ follow (canonicalSource=follow_engine) → ป้าย從格นำ · strict月令เป็นมุมตำรารอง (ข้อมูลไม่หาย)
+   * followPrimaryAudit มีค่าเฉพาะเมื่อ strict ต่างจากป้าย follow (ต้องโชว์มุมสอง) */
+  const followPrimaryAudit = packet.structure.canonicalSource === "follow_engine"
+    && packet.strictGeJuAudit && !packet.strictGeJuAudit.matchesCurrent && packet.strictGeJuAudit.strictLabel
+    ? packet.strictGeJuAudit : null;
+  const falseFollowAudit = !followPrimaryAudit && packet.structure.canonicalSource !== "follow_engine"
+    && isFalseFollowAuditConflict(packet.strictGeJuAudit) ? packet.strictGeJuAudit : null;
+  const strictPrimaryAudit = !followPrimaryAudit && !falseFollowAudit && isStrictGeJuPrimaryAudit(packet.strictGeJuAudit) ? packet.strictGeJuAudit : null;
   const strictStemReason = strictPrimaryAudit
     ? /_visible$/.test(strictPrimaryAudit.selectedSource || "")
       ? `เลือก${strictPrimaryAudit.selectedStem || "-"}${strictPrimaryAudit.tenGod ? `/${strictPrimaryAudit.tenGod}` : ""} เพราะ月令藏干ตัวเดียวกัน透出บนก้านฟ้าจริง`
       : `เลือก${strictPrimaryAudit.selectedStem || "-"}${strictPrimaryAudit.tenGod ? `/${strictPrimaryAudit.tenGod}` : ""} จาก月令藏干/本氣 fallback (${strictPrimaryAudit.selectedSource}; ไม่ใช่透干ก้านฟ้า ถ้า PILLAR LOCK ไม่มี${strictPrimaryAudit.selectedStem || "ก้านนั้น"})`
     : "";
-  let structureLine = falseFollowAudit
+  let structureLine = followPrimaryAudit
+    ? `โครงดวง: ${packet.structure.label} (從格ป้ายนำ · engine follow เข้าเกณฑ์${isFalseFollowCandidateLabel(packet.structure.label) ? " · 假從=ตามแบบไม่สนิท มั่นใจ=กลาง" : "從แท้"}) · มุมตำรา子平真詮(月令 strict): ${displayStrictGeJuLabel(followPrimaryAudit)} (บรรทัดรอง/มุมสองสำนัก · ดู 從格ตรวจทาน)`
+    : falseFollowAudit
     ? `โครงดวง: candidate หลัก=${displayStrictGeJuLabel(falseFollowAudit)} (strict月令 · มั่นใจ=สูง) · raw engine候選=${falseFollowAudit.currentLabel} (candidate รอง · ยังไม่ถึงเกณฑ์從แท้ · ดู gate ใน 從格ตรวจทาน)`
     : strictPrimaryAudit
       ? `โครงดวง: strict月令หลัก=${displayStrictGeJuLabel(strictPrimaryAudit)} (${strictStemReason} · มั่นใจ=${strictPrimaryAudit.confidence === "high" ? "สูง" : strictPrimaryAudit.confidence === "medium" ? "กลาง" : "ต้องทบทวน"}) · raw engineป้ายรอง=${rawGeJuSecondaryLabel(strictPrimaryAudit.currentLabel)} (ห้ามใช้เป็น格局หลักในคำตอบ)`
@@ -2816,9 +2846,15 @@ export function renderChartPrompt(
   /* HK_STRICT_GEJU_AUDIT_V1 — audit-only แยกชื่อ格 strict จาก practical engine label */
   if (packet.strictGeJuAudit?.tag === "HK_STRICT_GEJU_AUDIT_V1") {
     const a = packet.strictGeJuAudit;
-    const verdict = a.matchesCurrent ? "ตรงกับ engine label" : strictPrimaryAudit ? "strict月令ชนะ engine label (ใช้เป็นโครงหลัก)" : "ต่างจาก engine label";
+    const verdict = a.matchesCurrent
+      ? "ตรงกับ engine label"
+      : followPrimaryAudit
+        ? "ต่างจาก engine label (r379: ดวงเข้าเกณฑ์從格 → ป้าย從格นำ · strict月令เป็นมุมตำรารอง)"
+      : strictPrimaryAudit ? "strict月令ชนะ engine label (ใช้เป็นโครงหลัก)" : "ต่างจาก engine label";
     const stemTxt = a.selectedStem ? `${a.selectedStem}${a.tenGod ? `/${a.tenGod}` : ""}` : "-";
-    const auditHead = falseFollowAudit
+    const auditHead = followPrimaryAudit
+      ? `engine follow ป้ายนำ=${a.currentLabel} · strict月令(มุมตำรารอง)=${displayStrictGeJuLabel(a)}`
+      : falseFollowAudit
       ? `raw engine候選=${a.currentLabel} · strict月令(candidate หลัก)=${displayStrictGeJuLabel(a)}`
       : strictPrimaryAudit
         ? `strict月令หลัก=${displayStrictGeJuLabel(a)} · raw engineป้ายรอง=${rawGeJuSecondaryLabel(a.currentLabel)}`
@@ -2828,7 +2864,17 @@ export function renderChartPrompt(
       `${auditHead} · 選用=${stemTxt} · ` +
       `${verdict} · source=${a.selectedSource || "-"} · ${/_visible$/.test(a.selectedSource || "") ? "เลือกจาก藏干ที่透出จริง" : "เลือกจาก月令藏干/司令 ไม่ใช่透干ถ้าไม่อยู่ใน PILLAR LOCK"} · ${a.noteTh} · ตำราอ้าง ${a.canonicalChinese}`
     );
-    if (falseFollowAudit) {
+    if (followPrimaryAudit) {
+      /* r379: ดวงเข้าเกณฑ์ follow → บทบาทสลับ: ป้ายนำ=從格 engine · strict月令=มุมตำรารอง/候選สำนักสอง (ข้อมูลสองสำนักครบเหมือนเดิม) */
+      lines.push(
+        `從格ตรวจทาน (หลักฐานเทียบสองทาง · ไม่จำกัดลีลาซินแส): ` +
+        `ป้ายนำ=engine follow=${a.currentLabel} (เข้าเกณฑ์從格${isFalseFollowCandidateLabel(a.currentLabel) ? " · 假從=ตามแบบไม่สนิท มั่นใจ=กลาง" : "แท้"}) · ` +
+        `มุมตำรารอง=strict月令=${a.strictLabel || "-"} (子平真詮 月令取用 · 候選สำนักสอง) · ` +
+        `gate ของ從แท้: ตัวตนไร้ราก + ไม่มี印/比劫เข้ามาช่วย · ` +
+        `flip reason: ถ้าเหตุการณ์จริงใน大運ยืนยันฝั่งพยุงตัว(扶抑) → อ่านตามมุม月令 strict ได้ · ` +
+        `ตำราอ้าง: 任氏假從 "局中雖有劫印、亦自顧不暇"`
+      );
+    } else if (falseFollowAudit) {
       lines.push(
         `從格ตรวจทาน (หลักฐานเทียบสองทาง · ไม่จำกัดลีลาซินแส): ` +
       `candidate หลัก=strict月令=${a.strictLabel || "-"} (มั่นใจ=สูง · 子平真詮 月令取用) · ` +
@@ -2944,7 +2990,9 @@ export function renderChartPrompt(
     const xs = yp.xiangShen.geZh
       ? `${yp.xiangShen.geZh}/${yp.xiangShen.verdict || "-"}${yp.xiangShen.subLabel ? `/${yp.xiangShen.subLabel}` : ""}`
       : "-";
-    const geJuForPrompt = falseFollowAudit
+    const geJuForPrompt = followPrimaryAudit
+      ? `${followPrimaryAudit.currentLabel} (從格ป้ายนำ r379; มุมตำรา子平真詮=${displayStrictGeJuLabel(followPrimaryAudit)})`
+      : falseFollowAudit
       ? `${displayStrictGeJuLabel(falseFollowAudit)} (strict月令; raw候選=${falseFollowAudit.currentLabel})`
       : strictPrimaryAudit
         ? `${displayStrictGeJuLabel(strictPrimaryAudit)} (strict月令หลัก; rawป้ายรอง=${rawGeJuSecondaryLabel(strictPrimaryAudit.currentLabel)})`

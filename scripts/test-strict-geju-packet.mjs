@@ -97,9 +97,12 @@ const paaPacket = buildStructuredChartPacket(paaCalc, paaExt, "壬", 56, {}, paa
 });
 const paaPrompt = renderChartPrompt(paaPacket);
 ok("Paa strict audit catches 七殺格 under raw 假從兒格", paaPacket.strictGeJuAudit?.strictLabel === "七殺格" && paaPacket.strictGeJuAudit?.matchesCurrent === false);
-ok("false-follow guard reaches prompt", paaPrompt.includes("從格ตรวจทาน (หลักฐานเทียบสองทาง") && paaPrompt.includes("候選/ป้ายเตือน"));
-ok("false-follow prompt promotes strict label as primary", paaPrompt.includes("candidate หลัก=七殺格") && !paaPrompt.includes("โครงดวง: 假從兒格"));
-ok("false-follow raw label is candidate only", paaPrompt.includes("raw engine候選=假從兒格") && paaPrompt.includes("candidate รอง"));
+/* r379 (3 ก.ค. 2026 · เจ้านายเคาะ): ดวงเข้าเกณฑ์從格 (แท้/假從) → ป้าย從格ของ engine เป็นป้ายนำ
+ * strict月令 (七殺格) ไม่หาย — ลงเป็น "มุมตำรา子平真詮" บรรทัดรอง (โปร่งใสสองสำนัก) */
+ok("follow guard reaches prompt (r379)", paaPrompt.includes("從格ตรวจทาน (หลักฐานเทียบสองทาง") && paaPrompt.includes("候選สำนักสอง"));
+ok("r379: follow label leads structure line", paaPrompt.includes("โครงดวง: 假從兒格") && paaPacket.structure.label === "假從兒格" && paaPacket.structure.canonicalSource === "follow_engine");
+ok("r379: strict月令 kept as secondary classic view", paaPrompt.includes("มุมตำรา子平真詮(月令 strict): 七殺格") && paaPrompt.includes("มุมตำรารอง=strict月令=七殺格") && !paaPrompt.includes("candidate หลัก=七殺格"));
+ok("r379: follow confidence follows engine (假從=moderate)", paaPacket.structure.confidence === "moderate");
 ok("false-follow BY-11 does not call raw label the disease", !paaPrompt.includes("病=假從"));
 ok("false-follow does not close 病藥", paaPacket.bingYao?.status === "ok" && paaPacket.bingYao?.primary?.id === "BY-11");
 ok("false-follow uses 扶抑 instead of 從勢 gate", paaPacket.yongShenProtocols?.fuyi.mode === "扶");

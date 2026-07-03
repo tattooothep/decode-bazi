@@ -84,14 +84,18 @@ const baseline = {};
 console.log("\n===== BASELINE SNAPSHOT =====");
 console.log(JSON.stringify(baseline, null, 2));
 
-/* ── GOLDEN ASSERT · ล็อกค่า ณ 9 มิ.ย. 2026 (ก่อน Phase 1-4) ──
- * ถ้า Phase ใดทำให้ usefulGods/label/confidence ของดวงเดิม "เปลี่ยน" = regression = ห้าม
- * (Phase 2 จะ "เพิ่ม" field confidence ใหม่ได้ แต่ห้ามแก้ค่า yong/xi/ji/label/confidence เดิม) */
+/* ── GOLDEN ASSERT · baseline ใหม่ 3 ก.ค. 2026 (r379 · เจ้านายเคาะ) ──
+ * ที่มา 3 ชั้น:
+ *   1) yong/xi/ji = ค่าหลัง r268 (สเตป 3-4 เจ้านายเคาะแล้ว · ห้ามแตะ — เช่น aeaw yong=wood xi=water ตามสำนักตามกระแส)
+ *   2) label/confidence ดวงไม่-follow = classics-first ตาม a17b45e (13 มิ.ย. · strict月令 promote เมื่อเข้าเงื่อนไข — mai 雜氣→食神格/high)
+ *   3) r379 boss decision (3 ก.ค.): ดวงเข้าเกณฑ์從格 (แท้/假從) → ป้าย從格ของ engine เป็นป้ายนำ
+ *      → aeaw กลับเป็น 假從財格/moderate (strict 偏財格 ยังโชว์เป็น "มุมตำรา子平真詮" บรรทัดรอง ไม่หาย)
+ * ถ้าค่าใดเปลี่ยนจากนี้ = regression = ห้าม (ยกเว้นเจ้านายเคาะใหม่) */
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const GOLDEN = {
-  aeaw:   { pillars: "甲子/丙子/己亥/庚午", yong: ["fire"], xi: ["wood"], ji: ["earth", "metal", "water"], label: "假從財格", confidence: "moderate" },
-  mai:    { pillars: "丙寅/壬辰/丙戌/丙申", yong: ["fire"], xi: ["wood"], ji: ["earth", "metal", "water"], label: "雜氣正印格", confidence: "moderate" },
-  malika: { pillars: "庚午/戊寅/丁未/甲辰", yong: ["wood"], xi: ["earth"], ji: ["fire", "metal", "water"], label: "正印格", confidence: "moderate" },
+  aeaw:   { pillars: "甲子/丙子/己亥/庚午", yong: ["wood"], xi: ["water"], ji: ["fire", "earth", "metal"], label: "假從財格", confidence: "moderate" },
+  mai:    { pillars: "丙寅/壬辰/丙戌/丙申", yong: ["fire"], xi: ["wood"], ji: ["earth", "metal", "water"], label: "食神格", confidence: "high" },
+  malika: { pillars: "庚午/戊寅/丁未/甲辰", yong: ["earth"], xi: ["wood"], ji: ["fire", "metal", "water"], label: "正印格", confidence: "moderate" },
 };
 console.log("\n===== GOLDEN ASSERT =====");
 for (const k of Object.keys(GOLDEN)) {
