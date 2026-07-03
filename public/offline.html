@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hourkey — Offline</title>
+<style>
+  /* self-contained · ห้ามอ้างไฟล์ภายนอก (หน้านี้เสิร์ฟจาก SW cache ตอนออฟไลน์) */
+  :root{
+    --bg:#0f0e0c; --bg-2:#1a1712; --text:#e8e2d4; --muted:#9a917e;
+    --gold:#b49052; --line:rgba(180,144,82,.28);
+  }
+  html[data-theme="light"]{
+    --bg:#f6f1e6; --bg-2:#ede5d2; --text:#2a2418; --muted:#7a7160;
+    --gold:#8b6f3a; --line:rgba(139,111,58,.32);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Georgia','Times New Roman',serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:24px; text-align:center;
+    transition:background .3s,color .3s;
+  }
+  .card{
+    max-width:420px; width:100%;
+    background:var(--bg-2);
+    border:1px solid var(--line); border-radius:18px;
+    padding:44px 28px 36px;
+  }
+  .logo{width:72px;height:72px;margin:0 auto 20px;display:block;}
+  h1{font-size:1.35rem;font-weight:700;color:var(--gold);letter-spacing:.02em;margin-bottom:12px;}
+  p{font-size:.95rem;line-height:1.7;color:var(--muted);margin-bottom:26px;}
+  .retry{
+    display:inline-block; cursor:pointer;
+    background:var(--gold); color:var(--bg);
+    border:none; border-radius:999px;
+    font-family:inherit; font-size:.95rem; font-weight:700;
+    padding:12px 34px; letter-spacing:.03em;
+  }
+  .retry:active{transform:scale(.97);}
+  .brand{margin-top:26px;font-size:.75rem;color:var(--muted);opacity:.7;letter-spacing:.14em;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="100" height="100" rx="20" fill="#0f0e0c"/>
+      <text x="50" y="68" font-family="serif" font-size="56" font-weight="700" fill="#b49052" text-anchor="middle">鑰</text>
+    </svg>
+    <h1 id="ttl">ตอนนี้ออฟไลน์อยู่ 🌙</h1>
+    <p id="msg">การดูดวงต้องเชื่อมฟ้าเชื่อมเน็ต — กลับมาออนไลน์แล้วลองใหม่อีกครั้ง</p>
+    <button class="retry" id="btn" onclick="location.reload()">ลองใหม่</button>
+    <div class="brand">HOURKEY</div>
+  </div>
+<script>
+(function(){
+  try{
+    /* 2 ธีม: อ่าน hk-theme (default dark) */
+    var theme = localStorage.getItem('hk-theme') || 'dark';
+    if (theme === 'light') document.documentElement.setAttribute('data-theme','light');
+
+    /* 3 ภาษา: อ่าน hk_locale (default th) */
+    var i18n = {
+      th: { ttl:'ตอนนี้ออฟไลน์อยู่ 🌙', msg:'การดูดวงต้องเชื่อมฟ้าเชื่อมเน็ต — กลับมาออนไลน์แล้วลองใหม่อีกครั้ง', btn:'ลองใหม่' },
+      en: { ttl:'You are offline 🌙', msg:'Reading the stars needs a connection to the sky — get back online and try again', btn:'Try again' },
+      zh: { ttl:'目前處於離線狀態 🌙', msg:'觀星測命需連天連網 — 恢復網路後請再試一次', btn:'重試' }
+    };
+    var lang = (localStorage.getItem('hk_locale') || 'th').slice(0,2);
+    var t = i18n[lang] || i18n.th;
+    document.documentElement.lang = lang;
+    document.getElementById('ttl').textContent = t.ttl;
+    document.getElementById('msg').textContent = t.msg;
+    document.getElementById('btn').textContent = t.btn;
+  }catch(_){}
+})();
+</script>
+</body>
+</html>

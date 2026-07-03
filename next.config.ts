@@ -95,6 +95,11 @@ const nextConfig: NextConfig = {
       ...htmlSurfaces.map((source) => ({ source, headers: noStoreHeaders })),
       { source: "/css/mobile-safe.css", headers: noStoreHeaders },
       { source: "/js/hk-user-menu.js", headers: noStoreHeaders },
+      // PWA r376 · no-store: deploy ใหม่ = SW/flag ใหม่ถูกเห็นใน navigation ถัดไป (kill-switch สด)
+      { source: "/sw.js", headers: noStoreHeaders },
+      { source: "/pwa-flag.json", headers: noStoreHeaders },
+      { source: "/manifest.json", headers: noStoreHeaders },
+      { source: "/js/hk-pwa.js", headers: noStoreHeaders },
     ];
   },
   async rewrites() {

@@ -65,4 +65,15 @@
       return writeProfile(pickProfile(payload));
     })
     .catch(function () { return null; });
+
+  /* ── PWA bootstrap · r376 · โหลด hk-pwa.js (no-store ผ่าน next.config.ts — ไม่ต้อง bump ?v=) ──
+     พังเงียบ ห้ามลามหน้าเว็บ · hk-pwa.js มี guard ตัวเอง + เช็ค pwa-flag ก่อน register SW */
+  try {
+    if ('serviceWorker' in navigator && !window.__hkPwaLoaded) {
+      var hkPwaScript = document.createElement('script');
+      hkPwaScript.src = '/js/hk-pwa.js';
+      hkPwaScript.async = true;
+      (document.head || document.documentElement).appendChild(hkPwaScript);
+    }
+  } catch (_) {}
 })();
