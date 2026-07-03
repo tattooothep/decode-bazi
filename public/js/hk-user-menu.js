@@ -374,6 +374,15 @@
         if (j && j.user && j.user.id) {
           console.log('[HK] user menu · avatar_url =', j.user.avatar_url, '· name =', j.user.name);
           buildMenu(j.user);
+          /* r378 · Account Phase 1: บันทึกอุปกรณ์ best-effort ครั้งเดียวต่อ browser-session */
+          try {
+            if (!sessionStorage.getItem('hk_dev_ping')) {
+              sessionStorage.setItem('hk_dev_ping', '1');
+              var did = localStorage.getItem('hk_device_id');
+              if (!did) { did = 'dv_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10); localStorage.setItem('hk_device_id', did); }
+              fetch('/api/account/ping', { method:'POST', headers:{ 'Content-Type':'application/json' }, credentials:'same-origin', keepalive:true, body: JSON.stringify({ deviceId: did }) }).catch(function(){});
+            }
+          } catch(_) {}
         }
         // ถ้าไม่ login → ไม่แสดงเมนู (หน้า private พวกนี้ ปกติ middleware เด้งไป login อยู่แล้ว)
       })

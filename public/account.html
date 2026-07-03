@@ -177,6 +177,52 @@
     .tx-row .delta,.tx-row .bal{grid-column:1 / -1;text-align:left;}
   }
   </style>
+  <style id="acct-manage-css">
+  /* === Account Phase 1 (r378) · โปรไฟล์/ความปลอดภัย/อุปกรณ์/ข้อมูลของฉัน === */
+  .mg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+  .mg-card{border:1px solid var(--line);background:var(--panel);padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0;}
+  .mg-title{font-family:'Noto Serif Thai','Noto Serif TC',serif;font-size:18px;font-weight:650;display:flex;align-items:center;gap:9px;}
+  .mg-title .ico{width:26px;height:26px;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;color:var(--gold);font-size:13px;flex:0 0 auto;}
+  .mg-sub{font-size:12px;color:var(--fg-faint);line-height:1.6;margin-top:-8px;}
+  .mg-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .mg-field{display:grid;gap:5px;}
+  .mg-field label{font-size:11px;color:var(--fg-soft);letter-spacing:.06em;}
+  .mg-input{width:100%;min-height:38px;padding:0 12px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;font-size:13px;}
+  .mg-input:focus{outline:none;border-color:var(--gold);}
+  .mg-note{font-size:11px;color:var(--fg-faint);line-height:1.6;}
+  .mg-avatar-wrap{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+  .mg-avatar{width:92px;height:92px;border-radius:50%;border:1px solid var(--line);background:var(--gold-soft);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono','SF Mono',monospace;font-size:28px;font-weight:800;overflow:hidden;flex:0 0 auto;}
+  .mg-avatar img,.mg-avatar svg{width:100%;height:100%;object-fit:cover;display:block;}
+  .btn.small{min-height:32px;padding:0 11px;font-size:12px;}
+  .btn.danger{border-color:color-mix(in srgb,var(--red) 65%,transparent);color:var(--red);}
+  .btn.danger:hover{border-color:var(--red);}
+  .btn.danger.solid{background:var(--red);border-color:var(--red);color:#fff;font-weight:700;}
+  .spirit-pick{display:none;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}
+  .spirit-pick.on{display:grid;}
+  .spirit-btn{border:1px solid var(--line);background:var(--bg-2);padding:7px 4px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--fg-soft);}
+  .spirit-btn:hover{border-color:var(--gold);}
+  .spirit-btn svg{width:100%;height:auto;max-width:64px;}
+  .spirit-btn small{font-size:10px;letter-spacing:.04em;}
+  .dev-list{display:grid;border:1px solid var(--line-soft);}
+  .dev-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:11px 13px;border-bottom:1px solid var(--line-soft);font-size:12px;min-width:0;}
+  .dev-row:last-child{border-bottom:0;}
+  .dev-main{min-width:0;display:grid;gap:2px;}
+  .dev-name{font-weight:650;color:var(--fg);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .dev-meta{color:var(--fg-faint);font-family:'JetBrains Mono','SF Mono',monospace;font-size:10px;}
+  .dev-cur{border:1px solid var(--gold);color:var(--gold);font-size:9px;letter-spacing:.1em;padding:2px 6px;text-transform:uppercase;}
+  .dev-del{border:1px solid var(--line);background:none;color:var(--fg-faint);cursor:pointer;font-size:11px;padding:5px 9px;flex:0 0 auto;}
+  .dev-del:hover{border-color:var(--red);color:var(--red);}
+  .danger-zone{border:1px solid color-mix(in srgb,var(--red) 45%,transparent);background:color-mix(in srgb,var(--red) 6%,var(--panel));padding:13px 14px;display:grid;gap:10px;}
+  .danger-zone[hidden]{display:none;}
+  .crop-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.62);padding:18px;}
+  .crop-modal.on{display:flex;}
+  .crop-box{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);padding:20px;width:min(360px,100%);display:grid;gap:14px;}
+  .crop-canvas-wrap{position:relative;width:256px;height:256px;margin:0 auto;touch-action:none;cursor:grab;}
+  .crop-canvas-wrap canvas{width:256px;height:256px;display:block;}
+  .crop-ring{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 999px color-mix(in srgb,var(--panel) 78%,transparent);pointer-events:none;border:1px solid var(--gold);}
+  .crop-zoom{width:100%;accent-color:var(--gold);}
+  @media(max-width:920px){.mg-grid{grid-template-columns:1fr;}}
+  </style>
   <link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b">
   <script src="/js/hk-profile-sync.js?v=20260517b"></script>
 </head>
@@ -238,6 +284,122 @@
       </div>
     </div>
   </section>
+
+  <!-- === Account Phase 1 (r378) · จัดการบัญชี === -->
+  <section class="section" id="manage-section" style="margin-top:22px;">
+    <div class="section-head">
+      <div>
+        <div class="section-title" data-i18n="mg.title">จัดการบัญชี</div>
+        <div class="section-sub" data-i18n="mg.sub">รูปโปรไฟล์ · ชื่อที่แสดง · รหัสผ่าน · อุปกรณ์ · ข้อมูลส่วนตัว (PDPA)</div>
+      </div>
+    </div>
+    <div class="mg-grid">
+
+      <div class="mg-card" id="card-profile">
+        <div class="mg-title"><span class="ico">👤</span><span data-i18n="mg.profile">โปรไฟล์</span></div>
+        <div class="mg-avatar-wrap">
+          <div class="mg-avatar" id="mg-avatar">HK</div>
+          <div style="display:grid;gap:8px;min-width:0;">
+            <div class="mg-row">
+              <button class="btn small" type="button" id="btn-avatar-upload" data-i18n="mg.avatar.upload">อัปโหลดรูป</button>
+              <button class="btn small" type="button" id="btn-avatar-spirit" data-i18n="mg.avatar.spirit">ใช้สัตว์มงคล</button>
+              <button class="btn small" type="button" id="btn-avatar-remove" data-i18n="mg.avatar.remove">ลบรูป</button>
+            </div>
+            <div class="mg-note" data-i18n="mg.avatar.note">ไฟล์รูปไม่เกิน 2MB · ระบบย่อเป็น 256px อัตโนมัติ</div>
+            <input type="file" id="avatar-file" accept="image/*" hidden>
+          </div>
+        </div>
+        <div class="spirit-pick" id="spirit-pick"></div>
+        <div class="mg-field">
+          <label for="display-name" data-i18n="mg.name.label">ชื่อที่แสดง</label>
+          <div class="mg-row" style="flex-wrap:nowrap;">
+            <input class="mg-input" id="display-name" maxlength="80" autocomplete="nickname">
+            <button class="btn small" type="button" id="btn-save-name" data-i18n="mg.name.save">บันทึก</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mg-card" id="card-security">
+        <div class="mg-title"><span class="ico">🔒</span><span data-i18n="mg.security">ความปลอดภัย</span></div>
+        <div class="mg-sub" id="pw-mode-note" data-i18n="mg.pw.note.change">เปลี่ยนรหัสผ่านสำหรับเข้าสู่ระบบด้วยอีเมล</div>
+        <div class="mg-field" id="pw-current-field">
+          <label for="pw-current" data-i18n="mg.pw.current">รหัสผ่านปัจจุบัน</label>
+          <input class="mg-input" type="password" id="pw-current" autocomplete="current-password">
+        </div>
+        <div class="mg-field">
+          <label for="pw-new" data-i18n="mg.pw.new">รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)</label>
+          <input class="mg-input" type="password" id="pw-new" autocomplete="new-password">
+        </div>
+        <div class="mg-field">
+          <label for="pw-confirm" data-i18n="mg.pw.confirm">ยืนยันรหัสผ่านใหม่</label>
+          <input class="mg-input" type="password" id="pw-confirm" autocomplete="new-password">
+        </div>
+        <div class="mg-row">
+          <button class="btn small" type="button" id="btn-save-pw" data-i18n="mg.pw.save">เปลี่ยนรหัสผ่าน</button>
+          <span class="mg-note" id="pw-msg"></span>
+        </div>
+      </div>
+
+      <div class="mg-card" id="card-devices">
+        <div class="mg-title"><span class="ico">📱</span><span data-i18n="mg.devices">อุปกรณ์ที่ใช้งาน</span></div>
+        <div class="mg-sub" data-i18n="mg.devices.sub">รายการอุปกรณ์ที่เปิดใช้งานบัญชีนี้ (บันทึกเมื่อเปิดหน้าเว็บ) · การลบรายการไม่ตัดการเข้าสู่ระบบของเครื่องนั้น</div>
+        <div class="dev-list" id="dev-list"><div class="dev-row"><span class="mg-note" data-i18n="mg.devices.loading">กำลังโหลด...</span></div></div>
+        <div class="mg-note" data-i18n="mg.devices.next">ปุ่ม "ออกจากระบบทุกเครื่อง" จะเปิดใช้ในเฟสถัดไป</div>
+      </div>
+
+      <div class="mg-card" id="card-data">
+        <div class="mg-title"><span class="ico">🗂</span><span data-i18n="mg.data">ข้อมูลของฉัน</span></div>
+        <div class="mg-sub" data-i18n="mg.data.sub">ดาวน์โหลดสำเนาข้อมูล หรือลบบัญชีตามสิทธิ์ PDPA</div>
+        <div class="mg-row">
+          <button class="btn small" type="button" id="btn-export" data-i18n="mg.export">ดาวน์โหลดข้อมูล (JSON)</button>
+        </div>
+        <div class="mg-note" data-i18n="mg.export.note">รวมข้อมูลบัญชี ดวงทั้งหมด ประวัติถามซินแส และธุรกรรม 時</div>
+        <div class="mg-row" style="margin-top:auto;">
+          <button class="btn small danger" type="button" id="btn-delete-open" data-i18n="mg.del.open">ลบบัญชี...</button>
+        </div>
+        <div class="danger-zone" id="delete-step1" hidden>
+          <b style="color:var(--red);font-size:13px;" data-i18n="mg.del.warn.head">ยืนยันการลบบัญชี</b>
+          <div class="mg-note" data-i18n="mg.del.warn.body">บัญชี ดวงทั้งหมด และประวัติจะถูกปิดการใช้งานทันที · ระบบพักข้อมูลไว้ 30 วันก่อนลบถาวร (กู้คืนได้โดยติดต่อทีมงานภายใน 30 วัน)</div>
+          <div class="mg-row">
+            <button class="btn small danger" type="button" id="btn-delete-next" data-i18n="mg.del.next">เข้าใจแล้ว ดำเนินการต่อ</button>
+            <button class="btn small" type="button" id="btn-delete-cancel1" data-i18n="mg.del.cancel">ยกเลิก</button>
+          </div>
+        </div>
+        <div class="danger-zone" id="delete-step2" hidden>
+          <div class="mg-field">
+            <label for="del-confirm" data-i18n="mg.del.type">พิมพ์คำว่า "ลบบัญชี" หรือ "DELETE" เพื่อยืนยัน</label>
+            <input class="mg-input" id="del-confirm" autocomplete="off">
+          </div>
+          <div class="mg-field" id="del-pw-field">
+            <label for="del-password" data-i18n="mg.del.pw">รหัสผ่านของคุณ</label>
+            <input class="mg-input" type="password" id="del-password" autocomplete="current-password">
+          </div>
+          <div class="mg-row">
+            <button class="btn small danger solid" type="button" id="btn-delete-final" data-i18n="mg.del.final">ลบบัญชีถาวร (พัก 30 วัน)</button>
+            <button class="btn small" type="button" id="btn-delete-cancel2" data-i18n="mg.del.cancel">ยกเลิก</button>
+          </div>
+          <div class="mg-note" id="del-msg" style="color:var(--red);"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- crop modal · client-side canvas -->
+  <div class="crop-modal" id="crop-modal" role="dialog" aria-modal="true">
+    <div class="crop-box">
+      <div class="mg-title" style="font-size:16px;"><span class="ico">✂️</span><span data-i18n="mg.crop.title">จัดตำแหน่งรูป</span></div>
+      <div class="crop-canvas-wrap" id="crop-wrap">
+        <canvas id="crop-canvas" width="256" height="256"></canvas>
+        <div class="crop-ring"></div>
+      </div>
+      <input type="range" class="crop-zoom" id="crop-zoom" min="100" max="300" value="100">
+      <div class="mg-row" style="justify-content:flex-end;">
+        <button class="btn small" type="button" id="crop-cancel" data-i18n="mg.del.cancel">ยกเลิก</button>
+        <button class="btn small primary" type="button" id="crop-ok" style="background:var(--gold);border-color:var(--gold);color:var(--bg);font-weight:700;" data-i18n="mg.crop.ok">ใช้รูปนี้</button>
+      </div>
+    </div>
+  </div>
 
   <div class="notice">
     <b data-i18n="ac.notice.head">ก่อนเปิดชำระเงินจริง:</b>
@@ -618,7 +780,375 @@ try { applyLang(localStorage.getItem('hk_locale') || 'th'); } catch(_) { applyLa
   renderAll();
 })();
 </script>
+<script>
+/* === Account Phase 1 (r378 · 3 ก.ค. 2026) · โปรไฟล์/ความปลอดภัย/อุปกรณ์/PDPA === */
+(function(){
+Object.assign(window.HK_I18N, {
+  'mg.title': { th:'จัดการบัญชี', en:'Manage account', zh:'帳戶管理' },
+  'mg.sub': { th:'รูปโปรไฟล์ · ชื่อที่แสดง · รหัสผ่าน · อุปกรณ์ · ข้อมูลส่วนตัว (PDPA)', en:'Avatar · display name · password · devices · personal data (PDPA)', zh:'頭像 · 顯示名稱 · 密碼 · 裝置 · 個人資料（PDPA）' },
+  'mg.profile': { th:'โปรไฟล์', en:'Profile', zh:'個人資料' },
+  'mg.avatar.upload': { th:'อัปโหลดรูป', en:'Upload photo', zh:'上傳照片' },
+  'mg.avatar.spirit': { th:'ใช้สัตว์มงคล', en:'Use spirit beast', zh:'使用神獸' },
+  'mg.avatar.remove': { th:'ลบรูป', en:'Remove', zh:'移除' },
+  'mg.avatar.note': { th:'ไฟล์รูปไม่เกิน 2MB · ระบบย่อเป็น 256px อัตโนมัติ', en:'Max 2MB · auto-resized to 256px.', zh:'上限 2MB · 自動縮至 256px。' },
+  'mg.name.label': { th:'ชื่อที่แสดง', en:'Display name', zh:'顯示名稱' },
+  'mg.name.save': { th:'บันทึก', en:'Save', zh:'儲存' },
+  'mg.name.ok': { th:'บันทึกชื่อแล้ว', en:'Name saved.', zh:'名稱已儲存。' },
+  'mg.security': { th:'ความปลอดภัย', en:'Security', zh:'安全性' },
+  'mg.pw.note.change': { th:'เปลี่ยนรหัสผ่านสำหรับเข้าสู่ระบบด้วยอีเมล', en:'Change the password for email sign-in.', zh:'變更電子郵件登入密碼。' },
+  'mg.pw.note.set': { th:'บัญชีนี้เข้าสู่ระบบผ่าน Google · ตั้งรหัสผ่านเพื่อใช้เข้าสู่ระบบด้วยอีเมลได้ด้วย', en:'This account signs in with Google. Set a password to also sign in by email.', zh:'此帳戶以 Google 登入 · 可另設密碼以電子郵件登入。' },
+  'mg.pw.current': { th:'รหัสผ่านปัจจุบัน', en:'Current password', zh:'目前密碼' },
+  'mg.pw.new': { th:'รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)', en:'New password (min 8 characters)', zh:'新密碼（至少 8 字元）' },
+  'mg.pw.confirm': { th:'ยืนยันรหัสผ่านใหม่', en:'Confirm new password', zh:'確認新密碼' },
+  'mg.pw.save': { th:'เปลี่ยนรหัสผ่าน', en:'Change password', zh:'變更密碼' },
+  'mg.pw.set': { th:'ตั้งรหัสผ่าน', en:'Set password', zh:'設定密碼' },
+  'mg.pw.mismatch': { th:'รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน', en:'New passwords do not match.', zh:'兩次輸入的新密碼不一致。' },
+  'mg.pw.ok': { th:'บันทึกรหัสผ่านแล้ว', en:'Password saved.', zh:'密碼已更新。' },
+  'mg.devices': { th:'อุปกรณ์ที่ใช้งาน', en:'Devices', zh:'使用中的裝置' },
+  'mg.devices.sub': { th:'รายการอุปกรณ์ที่เปิดใช้งานบัญชีนี้ (บันทึกเมื่อเปิดหน้าเว็บ) · การลบรายการไม่ตัดการเข้าสู่ระบบของเครื่องนั้น', en:'Devices seen using this account (logged on page visits). Removing an entry does not sign that device out.', zh:'此帳戶使用過的裝置（開啟頁面時記錄）· 移除紀錄不會登出該裝置。' },
+  'mg.devices.loading': { th:'กำลังโหลด...', en:'Loading...', zh:'載入中...' },
+  'mg.devices.empty': { th:'ยังไม่มีบันทึกอุปกรณ์ · จะเริ่มบันทึกเมื่อเปิดใช้งานครั้งถัดไป', en:'No devices recorded yet. Logging starts on the next visit.', zh:'尚無裝置紀錄 · 下次使用時開始記錄。' },
+  'mg.devices.next': { th:'ปุ่ม "ออกจากระบบทุกเครื่อง" จะเปิดใช้ในเฟสถัดไป', en:'"Sign out everywhere" arrives in the next phase.', zh:'「登出所有裝置」將於下一階段開放。' },
+  'mg.devices.current': { th:'เครื่องนี้', en:'This device', zh:'本機' },
+  'mg.devices.remove': { th:'ลบ', en:'Remove', zh:'移除' },
+  'mg.data': { th:'ข้อมูลของฉัน', en:'My data', zh:'我的資料' },
+  'mg.data.sub': { th:'ดาวน์โหลดสำเนาข้อมูล หรือลบบัญชีตามสิทธิ์ PDPA', en:'Download a copy of your data or delete the account (PDPA).', zh:'下載資料副本或刪除帳戶（PDPA）。' },
+  'mg.export': { th:'ดาวน์โหลดข้อมูล (JSON)', en:'Download my data (JSON)', zh:'下載我的資料（JSON）' },
+  'mg.export.note': { th:'รวมข้อมูลบัญชี ดวงทั้งหมด ประวัติถามซินแส และธุรกรรม 時', en:'Includes account, all charts, Sifu history, and 時 transactions.', zh:'含帳戶、所有命盤、師傅問答紀錄與時交易。' },
+  'mg.del.open': { th:'ลบบัญชี...', en:'Delete account...', zh:'刪除帳戶...' },
+  'mg.del.warn.head': { th:'ยืนยันการลบบัญชี', en:'Confirm account deletion', zh:'確認刪除帳戶' },
+  'mg.del.warn.body': { th:'บัญชี ดวงทั้งหมด และประวัติจะถูกปิดการใช้งานทันที · ระบบพักข้อมูลไว้ 30 วันก่อนลบถาวร (กู้คืนได้โดยติดต่อทีมงานภายใน 30 วัน)', en:'Your account, charts, and history stop working immediately. Data is held 30 days before permanent deletion (contact support within 30 days to recover).', zh:'帳戶、命盤與紀錄將立即停用 · 資料保留 30 天後永久刪除（30 天內可聯絡客服復原）。' },
+  'mg.del.next': { th:'เข้าใจแล้ว ดำเนินการต่อ', en:'I understand, continue', zh:'我了解，繼續' },
+  'mg.del.cancel': { th:'ยกเลิก', en:'Cancel', zh:'取消' },
+  'mg.del.type': { th:'พิมพ์คำว่า "ลบบัญชี" หรือ "DELETE" เพื่อยืนยัน', en:'Type "DELETE" to confirm', zh:'輸入「DELETE」以確認' },
+  'mg.del.pw': { th:'รหัสผ่านของคุณ', en:'Your password', zh:'您的密碼' },
+  'mg.del.final': { th:'ลบบัญชีถาวร (พัก 30 วัน)', en:'Delete account (30-day hold)', zh:'刪除帳戶（保留 30 天）' },
+  'mg.del.done': { th:'ลบบัญชีแล้ว · ระบบพักข้อมูล 30 วัน', en:'Account deleted. Data held for 30 days.', zh:'帳戶已刪除 · 資料保留 30 天。' },
+  'mg.crop.title': { th:'จัดตำแหน่งรูป', en:'Adjust photo', zh:'調整照片' },
+  'mg.crop.ok': { th:'ใช้รูปนี้', en:'Use photo', zh:'使用照片' },
+  'mg.spirit.phoenix': { th:'ฟีนิกซ์', en:'Phoenix', zh:'鳳凰' },
+  'mg.spirit.dragon': { th:'มังกรเขียว', en:'Azure Dragon', zh:'青龍' },
+  'mg.spirit.qilin': { th:'กิเลน', en:'Qilin', zh:'麒麟' },
+  'mg.spirit.tiger': { th:'เสือขาว', en:'White Tiger', zh:'白虎' },
+  'mg.spirit.tortoise': { th:'เต่าดำ', en:'Black Tortoise', zh:'玄武' }
+});
+
+/* --- 🐲 สัตว์มงคล 5 ตัว · SVG reuse จาก public/today.html (17 พ.ค. redesign) --- */
+var SPIRIT_DEFS = '<defs><radialGradient id="auraGold" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffd866" stop-opacity=".55"/><stop offset="55%" stop-color="#ffd866" stop-opacity=".18"/><stop offset="100%" stop-color="#ffd866" stop-opacity="0"/></radialGradient></defs>';
+var SPIRIT_CSS = {
+  phoenix: '.ph-body{fill:#d4af37}.ph-wing{fill:#ff8c00}.ph-tail{stroke:#ff6b35;stroke-width:6;stroke-linecap:round;fill:none}.ph-tail2{stroke:#ffb000;stroke-width:4;stroke-linecap:round;fill:none}.ph-crest{stroke:#ff4500;stroke-width:3;fill:none;stroke-linecap:round}.ph-beak{fill:#a87e10}.ph-aura{fill:url(#auraGold)}',
+  dragon: 'g{color:#1e6b3d}.dr-body{stroke:#2e8b57;stroke-width:22;fill:none;stroke-linecap:round}.dr-scale{stroke:#1e6b3d;stroke-width:2;fill:none}.dr-head{fill:#2e8b57}.dr-horn{stroke:#1e6b3d;stroke-width:3;fill:#1e6b3d;stroke-linecap:round}.dr-whisker{stroke:#1e6b3d;stroke-width:2;fill:none}.dr-cloud{fill:#5fc9a8;opacity:.3}',
+  qilin: 'g{color:#ff4500}.bd-body{fill:#dc143c}.bd-wing{fill:#b22222}.bd-crest{stroke:#ff4500;stroke-width:2.5;fill:none;stroke-linecap:round}.bd-tail{stroke:#dc143c;stroke-width:5;stroke-linecap:round;fill:none}.bd-beak{fill:#daa520}.bd-leg{stroke:#daa520;stroke-width:3;stroke-linecap:round}',
+  tiger: '.tg-body{fill:#ececec}.tg-stripe{stroke:#222;stroke-width:3;fill:none;stroke-linecap:round}.tg-stripe-thin{stroke:#222;stroke-width:2;fill:none;stroke-linecap:round}.tg-eye{fill:#ff9500}.tg-nose{fill:#333}.tg-mouth{stroke:#000;stroke-width:2;fill:none}.tg-fang{stroke:#fff;stroke-width:1.8}.tg-wang{stroke:#000;stroke-width:2.2;fill:none}',
+  tortoise: 'g{color:#5a5a8a}.to-shell{fill:#2c2c54}.to-hex{stroke:#5a5a8a;stroke-width:1.5;fill:none}.to-ridge{stroke:#1a1a3e;stroke-width:3;fill:none}.to-head{fill:#5a4a3a}.to-eye{fill:#fff}.to-snake{stroke:#1a1a3e;stroke-width:6;fill:none;stroke-linecap:round}.to-snake-head{fill:#1a1a3e}.to-snake-eye{fill:#ff0000}.to-water{stroke:#1e3a8a;stroke-width:2;fill:none;opacity:.55}'
+};
+var SPIRIT_BODY = {
+  phoenix: '<g><circle class="ph-aura" cx="100" cy="130" r="115"/><circle class="ph-aura" cx="100" cy="130" r="85" opacity=".4"/><path class="ph-tail" d="M100,200 Q55,225 18,258 Q22,238 35,222"/><path class="ph-tail" d="M100,200 Q145,225 182,258 Q178,238 165,222"/><path class="ph-tail" d="M100,200 Q100,238 95,268 Q102,250 105,268"/><path class="ph-tail2" d="M100,200 Q72,235 42,252 Q50,232 60,222"/><path class="ph-tail2" d="M100,200 Q128,235 158,252 Q150,232 140,222"/><path class="ph-tail2" d="M100,200 Q88,236 76,256"/><path class="ph-tail2" d="M100,200 Q112,236 124,256"/><ellipse class="ph-body" cx="100" cy="158" rx="28" ry="48"/><path class="ph-crest" d="M88,148 Q100,158 112,148" stroke-width="1.5"/><path class="ph-crest" d="M86,160 Q100,170 114,160" stroke-width="1.5"/><path class="ph-crest" d="M84,172 Q100,182 116,172" stroke-width="1.5"/><path class="ph-wing" d="M72,138 Q10,72 22,168 Q38,148 50,158 Q60,140 73,160 Z"/><path class="ph-wing" d="M128,138 Q190,72 178,168 Q162,148 150,158 Q140,140 127,160 Z"/><path class="ph-tail2" d="M40,128 Q55,138 70,148" stroke-width="2.5"/><path class="ph-tail2" d="M30,148 Q50,156 70,160" stroke-width="2.5"/><path class="ph-tail2" d="M160,128 Q145,138 130,148" stroke-width="2.5"/><path class="ph-tail2" d="M170,148 Q150,156 130,160" stroke-width="2.5"/><path class="ph-body" d="M91,112 Q84,82 98,58 L114,52 L120,68 Q108,84 109,112 Z"/><path class="ph-crest" d="M104,52 Q116,32 130,18"/><path class="ph-crest" d="M108,55 Q122,38 138,28"/><path class="ph-crest" d="M112,60 Q128,48 142,42"/><path class="ph-beak" d="M116,64 L128,68 L116,72 Z"/><circle cx="109" cy="62" r="2.4" fill="#000"/><circle cx="110" cy="61" r="1" fill="#ffd866"/></g>',
+  dragon: '<g><path class="dr-cloud" d="M18,238 Q35,225 55,232 Q72,220 92,230 Q112,218 132,230 Q152,220 172,232 Q188,225 192,240 Q180,255 158,248 Q138,258 118,248 Q98,260 78,248 Q58,260 38,250 Q22,252 18,238 Z"/><path class="dr-cloud" d="M30,222 Q50,214 70,220 Q90,212 110,222 Q130,212 150,222 Q170,214 180,222 Q172,232 152,228 Q132,236 112,228 Q92,236 72,228 Q52,236 30,222 Z" opacity=".5"/><path class="dr-body" d="M22,210 Q55,170 90,190 Q125,210 158,178 Q188,150 165,118 Q140,90 158,62 Q172,40 138,28 Q118,24 108,42"/><path class="dr-scale" d="M40,202 L52,204 M60,188 L72,190 M82,184 L94,186 M108,194 L120,196 M138,184 L150,186 M158,160 L168,162 M154,140 L164,142 M148,110 L158,112" stroke-width="1.8"/><path class="dr-scale" d="M44,194 L48,198 L52,194 L48,190 Z M70,180 L74,184 L78,180 L74,176 Z M102,180 L106,184 L110,180 L106,176 Z M130,184 L134,188 L138,184 L134,180 Z M160,150 L164,154 L168,150 L164,146 Z" fill="rgba(46,139,87,.4)"/><path class="dr-horn" d="M50,178 L52,170 L54,178 Z" fill="currentColor"/><path class="dr-horn" d="M78,165 L80,158 L82,165 Z" fill="currentColor"/><path class="dr-horn" d="M108,168 L110,160 L112,168 Z" fill="currentColor"/><path class="dr-horn" d="M138,170 L140,162 L142,170 Z" fill="currentColor"/><path class="dr-horn" d="M165,135 L167,128 L169,135 Z" fill="currentColor"/><path class="dr-head" d="M22,210 L8,218 L12,226 L18,220 L14,232 L24,224 Z"/><path class="dr-body" d="M85,200 L78,212 L82,218 L88,212 Z" stroke-width="4"/><path class="dr-horn" d="M76,212 L72,220 M80,216 L78,224 M85,218 L86,226" stroke-width="2"/><circle cx="82" cy="222" r="6" fill="rgba(255,235,150,.9)" stroke="rgba(200,164,77,.8)" stroke-width="1.5"/><circle cx="80" cy="220" r="2" fill="#fff" opacity=".8"/><path class="dr-body" d="M148,200 L154,212 L150,218 L144,212 Z" stroke-width="4"/><path class="dr-horn" d="M156,212 L160,220 M152,216 L154,224 M148,218 L147,226" stroke-width="2"/><ellipse class="dr-head" cx="118" cy="42" rx="22" ry="17"/><path class="dr-head" d="M130,42 L142,40 L142,48 L130,48 Z"/><path class="dr-horn" d="M108,30 Q100,20 96,8 Q102,12 105,18 Q108,8 110,2" stroke-width="3" fill="none"/><path class="dr-horn" d="M125,30 Q132,18 138,4 Q134,16 130,20 Q138,12 142,6" stroke-width="3" fill="none"/><path class="dr-head" d="M104,38 L96,32 L100,42 Z"/><path class="dr-head" d="M130,32 L138,28 L132,40 Z"/><path class="dr-whisker" d="M100,52 Q88,62 80,80" stroke-width="3"/><path class="dr-whisker" d="M104,58 Q94,72 88,88" stroke-width="2.5"/><path class="dr-whisker" d="M108,62 Q102,78 98,92" stroke-width="2"/><path class="dr-whisker" d="M132,52 Q150,62 168,58 Q178,52 188,58" stroke-width="2"/><path class="dr-whisker" d="M134,56 Q152,68 170,68 Q182,64 192,72" stroke-width="2"/><ellipse cx="120" cy="38" rx="4" ry="3.5" fill="#ffeb88"/><ellipse cx="120" cy="38" rx="2" ry="3" fill="#000"/><circle cx="121" cy="37" r=".8" fill="#fff"/><path class="dr-horn" d="M114,32 Q120,28 128,32" stroke-width="2" fill="none"/><path class="dr-whisker" d="M138,48 L144,52 L138,52" stroke-width="1.5"/><path class="dr-horn" d="M140,48 L141,54 M143,48 L144,54" stroke-width="1.5"/><ellipse cx="140" cy="42" rx="1.2" ry=".8" fill="#000"/><path class="dr-whisker" d="M130,55 Q128,68 132,80" stroke-width="2"/><path class="dr-whisker" d="M135,56 Q138,70 136,82" stroke-width="1.5"/></g>',
+  qilin: '<g><ellipse class="bd-body" cx="100" cy="170" rx="45" ry="32"/><circle class="bd-crest" cx="80" cy="160" r="1.5" fill="currentColor"/><circle class="bd-crest" cx="92" cy="155" r="1.5" fill="currentColor"/><circle class="bd-crest" cx="108" cy="155" r="1.5" fill="currentColor"/><circle class="bd-crest" cx="120" cy="160" r="1.5" fill="currentColor"/><circle class="bd-crest" cx="86" cy="175" r="1.5" fill="currentColor"/><circle class="bd-crest" cx="100" cy="172" r="1.5" fill="currentColor"/><circle class="bd-crest" cx="114" cy="175" r="1.5" fill="currentColor"/><path class="bd-body" d="M75,148 Q70,118 82,98 L102,92 L108,108 Q98,124 95,150 Z"/><ellipse class="bd-body" cx="95" cy="92" rx="18" ry="14"/><path class="bd-crest" d="M95,80 L92,58 L97,55 L99,80" stroke-width="2" fill="currentColor"/><path class="bd-crest" d="M95,58 Q92,50 95,42 Q98,50 95,58" fill="currentColor"/><path class="bd-crest" d="M83,98 Q72,108 68,122" stroke-width="2.5"/><path class="bd-crest" d="M88,102 Q78,114 75,128" stroke-width="2"/><path class="bd-crest" d="M93,106 Q86,120 84,134" stroke-width="2"/><ellipse class="bd-body" cx="84" cy="84" rx="4" ry="6"/><ellipse cx="98" cy="89" rx="2.2" ry="1.8" fill="#000"/><circle cx="98.5" cy="88.5" r=".8" fill="#ffe28a"/><ellipse class="bd-beak" cx="108" cy="96" rx="4" ry="3"/><path class="bd-crest" d="M104,100 Q108,103 112,100" stroke-width="1"/><line class="bd-leg" x1="72" y1="195" x2="68" y2="218" stroke-width="3"/><line class="bd-leg" x1="85" y1="200" x2="82" y2="218" stroke-width="3"/><line class="bd-leg" x1="115" y1="200" x2="118" y2="218" stroke-width="3"/><line class="bd-leg" x1="128" y1="195" x2="132" y2="218" stroke-width="3"/><path class="bd-tail" d="M142,170 Q170,160 178,140 Q175,158 168,170 Q172,180 168,190"/><path class="bd-crest" d="M55,220 Q75,212 95,220 Q115,212 135,220 Q150,215 158,222" stroke-width="2" opacity=".4"/></g>',
+  tiger: '<g><ellipse class="tg-body" cx="100" cy="178" rx="62" ry="40"/><ellipse class="tg-body" cx="100" cy="190" rx="38" ry="18" opacity=".5"/><path class="tg-stripe" d="M50,162 Q55,178 60,190" stroke-width="3"/><path class="tg-stripe" d="M65,152 Q70,178 72,192" stroke-width="3"/><path class="tg-stripe" d="M82,146 Q85,178 87,194" stroke-width="3"/><path class="tg-stripe" d="M100,144 Q102,180 100,196" stroke-width="3"/><path class="tg-stripe" d="M118,146 Q115,178 113,194" stroke-width="3"/><path class="tg-stripe" d="M135,152 Q130,178 128,192" stroke-width="3"/><path class="tg-stripe" d="M150,162 Q145,178 140,190" stroke-width="3"/><ellipse class="tg-body" cx="100" cy="108" rx="38" ry="32"/><path class="tg-body" d="M68,118 Q58,124 60,134 Q72,128 78,124"/><path class="tg-body" d="M132,118 Q142,124 140,134 Q128,128 122,124"/><path class="tg-body" d="M76,84 L68,64 L92,80 Z"/><path class="tg-body" d="M124,84 L132,64 L108,80 Z"/><path class="tg-stripe" d="M78,80 L82,72 L86,80" stroke-width="2" fill="rgba(0,0,0,.3)"/><path class="tg-stripe" d="M122,80 L118,72 L114,80" stroke-width="2" fill="rgba(0,0,0,.3)"/><path class="tg-wang" d="M90,86 L90,102" stroke-width="3"/><path class="tg-wang" d="M100,82 L100,104" stroke-width="3.5"/><path class="tg-wang" d="M110,86 L110,102" stroke-width="3"/><path class="tg-wang" d="M88,94 L112,94" stroke-width="3"/><path class="tg-stripe-thin" d="M78,108 Q70,114 66,122" stroke-width="2"/><path class="tg-stripe-thin" d="M82,120 Q72,128 68,138" stroke-width="2"/><path class="tg-stripe-thin" d="M122,108 Q130,114 134,122" stroke-width="2"/><path class="tg-stripe-thin" d="M118,120 Q128,128 132,138" stroke-width="2"/><ellipse class="tg-eye" cx="90" cy="108" rx="4" ry="3" fill="#ffd866"/><ellipse class="tg-eye" cx="110" cy="108" rx="4" ry="3" fill="#ffd866"/><ellipse cx="90" cy="108" rx="1.5" ry="2.5" fill="#000"/><ellipse cx="110" cy="108" rx="1.5" ry="2.5" fill="#000"/><circle cx="91" cy="107" r=".5" fill="#fff"/><circle cx="111" cy="107" r=".5" fill="#fff"/><path class="tg-nose" d="M95,120 L105,120 L100,126 Z"/><path class="tg-mouth" d="M90,132 Q100,138 110,132" stroke-width="2.5"/><path class="tg-mouth" d="M100,128 L100,134" stroke-width="1.5"/><path class="tg-fang" d="M94,132 L93,140 L91,140 Z" fill="#fff" stroke="#fff"/><path class="tg-fang" d="M106,132 L107,140 L109,140 Z" fill="#fff" stroke="#fff"/><path class="tg-stripe-thin" d="M82,124 Q70,124 60,128"/><path class="tg-stripe-thin" d="M82,128 Q70,130 60,134"/><path class="tg-stripe-thin" d="M118,124 Q130,124 140,128"/><path class="tg-stripe-thin" d="M118,128 Q130,130 140,134"/><ellipse class="tg-body" cx="56" cy="212" rx="12" ry="8"/><ellipse class="tg-body" cx="80" cy="216" rx="10" ry="7"/><ellipse class="tg-body" cx="120" cy="216" rx="10" ry="7"/><ellipse class="tg-body" cx="144" cy="212" rx="12" ry="8"/><path class="tg-stripe" d="M50,218 L48,224 M56,220 L56,226 M62,218 L64,224" stroke-width="1.5"/><path class="tg-stripe" d="M138,218 L136,224 M144,220 L144,226 M150,218 L152,224" stroke-width="1.5"/><path class="tg-body" d="M158,175 Q188,168 192,192 Q188,212 168,200 L160,182 Z"/><path class="tg-stripe" d="M172,178 L168,188" stroke-width="2"/><path class="tg-stripe" d="M182,184 L178,196" stroke-width="2"/></g>',
+  tortoise: '<g><ellipse class="to-shell" cx="100" cy="176" rx="70" ry="46"/><ellipse class="to-shell" cx="100" cy="160" rx="50" ry="20" opacity=".3"/><ellipse cx="100" cy="176" rx="70" ry="46" fill="none" stroke="currentColor" stroke-width="2.5" opacity=".6"/><path class="to-hex" d="M65,158 L76,150 L92,156 L92,172 L76,178 L60,170 Z" stroke-width="1.5"/><path class="to-hex" d="M92,156 L108,150 L124,156 L124,172 L108,178 L92,172 Z" stroke-width="1.5"/><path class="to-hex" d="M124,156 L140,150 L156,158 L155,170 L140,178 L124,172 Z" stroke-width="1.5"/><path class="to-hex" d="M60,170 L76,178 L92,172 L92,188 L76,196 L60,188 Z" stroke-width="1.5"/><path class="to-hex" d="M92,172 L108,178 L124,172 L124,188 L108,196 L92,188 Z" stroke-width="1.5"/><path class="to-hex" d="M124,172 L140,178 L155,170 L156,186 L140,196 L124,188 Z" stroke-width="1.5"/><path class="to-hex" d="M100,164 L110,168 L110,180 L100,184 L90,180 L90,168 Z" stroke-width="2" opacity=".8"/><path class="to-ridge" d="M38,176 Q100,222 162,176" stroke-width="2.5"/><ellipse class="to-head" cx="100" cy="124" rx="18" ry="14"/><path class="to-ridge" d="M88,134 L94,138 M106,134 L112,138" stroke-width="1.5"/><ellipse class="to-eye" cx="94" cy="122" rx="2.5" ry="2.5"/><ellipse class="to-eye" cx="106" cy="122" rx="2.5" ry="2.5"/><circle cx="94" cy="122" r="1.2" fill="#000"/><circle cx="106" cy="122" r="1.2" fill="#000"/><circle cx="94.5" cy="121.5" r=".5" fill="#fff"/><circle cx="106.5" cy="121.5" r=".5" fill="#fff"/><path class="to-ridge" d="M96,130 L104,130" stroke-width="1.5"/><ellipse class="to-head" cx="48" cy="188" rx="10" ry="7"/><ellipse class="to-head" cx="152" cy="188" rx="10" ry="7"/><ellipse class="to-head" cx="64" cy="216" rx="8" ry="6"/><ellipse class="to-head" cx="136" cy="216" rx="8" ry="6"/><path class="to-snake" d="M20,168 Q35,135 70,148 Q100,170 130,148 Q165,135 180,168" stroke-width="6"/><path class="to-snake" d="M20,168 Q40,200 100,196 Q160,200 180,168" stroke-width="6" opacity=".5"/><ellipse class="to-snake-head" cx="180" cy="168" rx="9" ry="6"/><path class="to-snake" d="M188,168 L194,166 M188,170 L194,172" stroke-width="1.5"/><circle class="to-snake-eye" cx="183" cy="166" r="1.3"/><path class="to-snake" d="M40,155 L42,150 M55,148 L57,143 M75,148 L77,143 M125,148 L127,143 M145,148 L147,143 M165,150 L167,145" stroke-width="1"/><path class="to-water" d="M22,224 Q52,219 82,224 Q112,219 142,224 Q162,221 178,224" stroke-width="1.8"/><path class="to-water" d="M16,238 Q46,233 76,238 Q106,233 136,238 Q156,235 184,238" stroke-width="1.8" opacity=".7"/><path class="to-water" d="M28,252 Q58,247 88,252 Q118,247 148,252 Q168,249 172,252" stroke-width="1.5" opacity=".5"/></g>',
+};
+var SPIRIT_ORDER = ['phoenix','dragon','qilin','tiger','tortoise'];
+function spiritSvg(key){
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260">' + SPIRIT_DEFS +
+    '<style>' + SPIRIT_CSS[key] + '</style>' + SPIRIT_BODY[key] + '</svg>';
+}
+
+var mg = { profile:null, deviceId:null };
+function deviceId(){
+  if (mg.deviceId) return mg.deviceId;
+  try {
+    var d = localStorage.getItem('hk_device_id');
+    if (!d) { d = 'dv_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,10); localStorage.setItem('hk_device_id', d); }
+    mg.deviceId = d;
+  } catch(_) { mg.deviceId = 'dv_anon'; }
+  return mg.deviceId;
+}
+function $id(x){ return document.getElementById(x); }
+
+/* --- avatar preview --- */
+function renderMgAvatar(){
+  var el = $id('mg-avatar');
+  var p = mg.profile;
+  if (!p) { el.textContent = 'HK'; return; }
+  if (p.avatar_url) {
+    el.innerHTML = '<img src="' + esc(p.avatar_url) + '" alt="" referrerpolicy="no-referrer">';
+  } else {
+    el.textContent = String(p.displayName || p.email || 'HK').trim().slice(0,2).toUpperCase();
+  }
+}
+
+/* --- load profile --- */
+async function loadMgProfile(){
+  try {
+    var r = await fetch('/api/account/profile', { credentials:'include', cache:'no-store' });
+    if (!r.ok) return;
+    mg.profile = await r.json();
+    $id('display-name').value = mg.profile.displayName || '';
+    var setMode = !mg.profile.has_password;
+    $id('pw-current-field').style.display = setMode ? 'none' : '';
+    $id('pw-mode-note').textContent = tx(setMode ? 'mg.pw.note.set' : 'mg.pw.note.change');
+    $id('btn-save-pw').textContent = tx(setMode ? 'mg.pw.set' : 'mg.pw.save');
+    $id('del-pw-field').style.display = setMode ? 'none' : '';
+    renderMgAvatar();
+  } catch(_){}
+}
+
+/* --- name --- */
+$id('btn-save-name').addEventListener('click', async function(){
+  var name = $id('display-name').value.trim();
+  if (!name) return;
+  this.disabled = true;
+  try {
+    var r = await fetch('/api/account/profile', { method:'PATCH', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ displayName:name }) });
+    var d = await r.json().catch(function(){ return {}; });
+    if (!r.ok) { alertMsg(esc(d.error || r.statusText), 'error'); return; }
+    alertMsg(esc(tx('mg.name.ok')), 'success');
+    if (mg.profile) { mg.profile.displayName = d.displayName; }
+    document.getElementById('account-name').textContent = d.displayName;
+    try { sessionStorage.removeItem('hk_me_auth'); sessionStorage.removeItem('hk_me_account'); } catch(_){}
+  } catch(e){ alertMsg('Network: ' + esc(e.message), 'error'); }
+  finally { this.disabled = false; }
+});
+
+/* --- avatar: crop modal (client-side canvas) --- */
+var crop = { img:null, scale:1, min:1, ox:0, oy:0, drag:null };
+var cvs = $id('crop-canvas'), ctx = cvs.getContext('2d');
+function cropDraw(){
+  if (!crop.img) return;
+  ctx.clearRect(0,0,256,256);
+  ctx.fillStyle = (document.documentElement.getAttribute('data-theme')==='light') ? '#f5efe2' : '#151820';
+  ctx.fillRect(0,0,256,256);
+  var w = crop.img.width * crop.scale, h = crop.img.height * crop.scale;
+  ctx.drawImage(crop.img, 128 - w/2 + crop.ox, 128 - h/2 + crop.oy, w, h);
+}
+function cropClamp(){
+  var w = crop.img.width * crop.scale, h = crop.img.height * crop.scale;
+  var mx = Math.max(0, (w - 256) / 2), my = Math.max(0, (h - 256) / 2);
+  crop.ox = Math.min(mx, Math.max(-mx, crop.ox));
+  crop.oy = Math.min(my, Math.max(-my, crop.oy));
+}
+function openCrop(img){
+  crop.img = img;
+  crop.min = Math.max(256 / img.width, 256 / img.height);
+  crop.scale = crop.min; crop.ox = 0; crop.oy = 0;
+  $id('crop-zoom').value = 100;
+  $id('crop-modal').classList.add('on');
+  cropDraw();
+}
+$id('crop-zoom').addEventListener('input', function(){
+  if (!crop.img) return;
+  crop.scale = crop.min * (Number(this.value) / 100);
+  cropClamp(); cropDraw();
+});
+(function(){
+  var wrap = $id('crop-wrap');
+  wrap.addEventListener('pointerdown', function(e){ crop.drag = { x:e.clientX, y:e.clientY }; wrap.setPointerCapture(e.pointerId); });
+  wrap.addEventListener('pointermove', function(e){
+    if (!crop.drag || !crop.img) return;
+    crop.ox += e.clientX - crop.drag.x; crop.oy += e.clientY - crop.drag.y;
+    crop.drag = { x:e.clientX, y:e.clientY };
+    cropClamp(); cropDraw();
+  });
+  wrap.addEventListener('pointerup', function(){ crop.drag = null; });
+})();
+$id('crop-cancel').addEventListener('click', function(){ $id('crop-modal').classList.remove('on'); crop.img = null; });
+$id('crop-ok').addEventListener('click', function(){
+  if (!crop.img) return;
+  var btn = this; btn.disabled = true;
+  cvs.toBlob(function(blob){
+    uploadAvatar(blob, 'avatar.webp').finally(function(){
+      btn.disabled = false;
+      $id('crop-modal').classList.remove('on'); crop.img = null;
+    });
+  }, 'image/webp', 0.92);
+});
+$id('btn-avatar-upload').addEventListener('click', function(){ $id('avatar-file').click(); });
+$id('avatar-file').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  this.value = '';
+  if (!f) return;
+  if (f.size > 2 * 1024 * 1024) { alertMsg(esc(tx('mg.avatar.note')), 'error'); return; }
+  var url = URL.createObjectURL(f);
+  var img = new Image();
+  img.onload = function(){ URL.revokeObjectURL(url); openCrop(img); };
+  img.onerror = function(){ URL.revokeObjectURL(url); alertMsg('อ่านไฟล์รูปไม่ได้', 'error'); };
+  img.src = url;
+});
+async function uploadAvatar(blob, fname){
+  if (!blob) { alertMsg('สร้างรูปไม่สำเร็จ', 'error'); return; }
+  var fd = new FormData();
+  fd.append('file', new File([blob], fname, { type: blob.type || 'image/webp' }));
+  try {
+    var r = await fetch('/api/account/avatar', { method:'POST', credentials:'include', body: fd });
+    var d = await r.json().catch(function(){ return {}; });
+    if (!r.ok) { alertMsg(esc(d.error || r.statusText), 'error'); return; }
+    if (mg.profile) mg.profile.avatar_url = d.avatar_url;
+    renderMgAvatar();
+    var big = document.getElementById('account-avatar');
+    if (big) big.innerHTML = '<img src="' + esc(d.avatar_url) + '" alt="">';
+    try { sessionStorage.removeItem('hk_me_auth'); sessionStorage.removeItem('hk_me_account'); } catch(_){}
+    alertMsg('อัปเดตรูปโปรไฟล์แล้ว', 'success');
+  } catch(e){ alertMsg('Network: ' + esc(e.message), 'error'); }
+}
+$id('btn-avatar-remove').addEventListener('click', async function(){
+  try {
+    var r = await fetch('/api/account/avatar', { method:'DELETE', credentials:'include' });
+    if (r.ok) {
+      if (mg.profile) mg.profile.avatar_url = null;
+      renderMgAvatar();
+      try { sessionStorage.removeItem('hk_me_auth'); sessionStorage.removeItem('hk_me_account'); } catch(_){}
+      alertMsg('ลบรูปโปรไฟล์แล้ว', 'success');
+    }
+  } catch(_){}
+});
+
+/* --- spirit picker: วาด SVG ลง canvas 256 → upload เป็น webp --- */
+function renderSpiritPicker(){
+  var box = $id('spirit-pick');
+  box.innerHTML = SPIRIT_ORDER.map(function(k){
+    return '<button type="button" class="spirit-btn" data-spirit="' + k + '">' + spiritSvg(k) +
+      '<small>' + esc(tx('mg.spirit.' + k)) + '</small></button>';
+  }).join('');
+  box.querySelectorAll('.spirit-btn').forEach(function(b){
+    b.addEventListener('click', function(){ useSpirit(b.dataset.spirit); });
+  });
+}
+$id('btn-avatar-spirit').addEventListener('click', function(){
+  var box = $id('spirit-pick');
+  if (!box.childElementCount) renderSpiritPicker();
+  box.classList.toggle('on');
+});
+function useSpirit(key){
+  var svg = spiritSvg(key);
+  var url = URL.createObjectURL(new Blob([svg], { type:'image/svg+xml' }));
+  var img = new Image();
+  img.onload = function(){
+    URL.revokeObjectURL(url);
+    var c = document.createElement('canvas'); c.width = 256; c.height = 256;
+    var cx = c.getContext('2d');
+    cx.fillStyle = (document.documentElement.getAttribute('data-theme')==='light') ? '#f5efe2' : '#151820';
+    cx.fillRect(0,0,256,256);
+    cx.drawImage(img, 24, 4, 208, 260 * 208 / 200); /* viewBox 200x260 · จัดกลาง คงสัดส่วน */
+    c.toBlob(function(blob){ uploadAvatar(blob, 'spirit-' + key + '.webp'); }, 'image/webp', 0.92);
+  };
+  img.onerror = function(){ URL.revokeObjectURL(url); alertMsg('สร้างรูปสัตว์มงคลไม่สำเร็จ', 'error'); };
+  img.src = url;
+}
+
+/* --- password --- */
+$id('btn-save-pw').addEventListener('click', async function(){
+  var msg = $id('pw-msg'); msg.textContent = '';
+  var cur = $id('pw-current').value, nw = $id('pw-new').value, cf = $id('pw-confirm').value;
+  if (nw !== cf) { msg.textContent = tx('mg.pw.mismatch'); msg.style.color = 'var(--red)'; return; }
+  this.disabled = true;
+  try {
+    var r = await fetch('/api/account/password', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ current:cur, next:nw }) });
+    var d = await r.json().catch(function(){ return {}; });
+    if (!r.ok) { msg.textContent = d.error || r.statusText; msg.style.color = 'var(--red)'; return; }
+    msg.textContent = tx('mg.pw.ok'); msg.style.color = 'var(--green)';
+    $id('pw-current').value = ''; $id('pw-new').value = ''; $id('pw-confirm').value = '';
+    loadMgProfile();
+  } catch(e){ msg.textContent = 'Network: ' + e.message; msg.style.color = 'var(--red)'; }
+  finally { this.disabled = false; }
+});
+
+/* --- devices --- */
+function uaLabel(ua){
+  ua = String(ua || '');
+  var os = /iPhone|iPad/.test(ua) ? 'iOS' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac OS/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : '—';
+  var br = /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : /Firefox\//.test(ua) ? 'Firefox' : 'Browser';
+  return br + ' · ' + os;
+}
+async function loadDevices(){
+  var list = $id('dev-list');
+  try {
+    var r = await fetch('/api/account/devices?device=' + encodeURIComponent(deviceId()), { credentials:'include', cache:'no-store' });
+    if (!r.ok) throw new Error(String(r.status));
+    var d = await r.json();
+    if (!d.devices || !d.devices.length) {
+      list.innerHTML = '<div class="dev-row"><span class="mg-note">' + esc(tx('mg.devices.empty')) + '</span></div>';
+      return;
+    }
+    list.innerHTML = d.devices.map(function(v){
+      return '<div class="dev-row">' +
+        '<div class="dev-main"><div class="dev-name">' + esc(uaLabel(v.ua)) +
+          (v.current ? ' <span class="dev-cur">' + esc(tx('mg.devices.current')) + '</span>' : '') + '</div>' +
+        '<div class="dev-meta">' + esc(fmtDateTime(v.last_seen)) + (v.ip_hash ? ' · ip#' + esc(v.ip_hash.slice(0,8)) : '') + '</div></div>' +
+        '<button class="dev-del" data-id="' + esc(v.id) + '">' + esc(tx('mg.devices.remove')) + '</button></div>';
+    }).join('');
+    list.querySelectorAll('.dev-del').forEach(function(b){
+      b.addEventListener('click', async function(){
+        await fetch('/api/account/devices?id=' + encodeURIComponent(b.dataset.id), { method:'DELETE', credentials:'include' }).catch(function(){});
+        loadDevices();
+      });
+    });
+  } catch(_) {
+    list.innerHTML = '<div class="dev-row"><span class="mg-note">' + esc(tx('mg.devices.empty')) + '</span></div>';
+  }
+}
+async function pingDevice(){
+  try {
+    await fetch('/api/account/ping', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ deviceId: deviceId() }) });
+  } catch(_){}
+}
+
+/* --- export --- */
+$id('btn-export').addEventListener('click', async function(){
+  this.disabled = true;
+  try {
+    var r = await fetch('/api/account/export', { credentials:'include' });
+    if (!r.ok) { var d = await r.json().catch(function(){ return {}; }); alertMsg(esc(d.error || r.statusText), 'error'); return; }
+    var blob = await r.blob();
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'hourkey-export-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+  } catch(e){ alertMsg('Network: ' + esc(e.message), 'error'); }
+  finally { this.disabled = false; }
+});
+
+/* --- delete: 2 ชั้น + พิมพ์คำยืนยัน --- */
+$id('btn-delete-open').addEventListener('click', function(){ $id('delete-step1').hidden = false; $id('delete-step2').hidden = true; });
+$id('btn-delete-cancel1').addEventListener('click', function(){ $id('delete-step1').hidden = true; });
+$id('btn-delete-next').addEventListener('click', function(){ $id('delete-step1').hidden = true; $id('delete-step2').hidden = false; });
+$id('btn-delete-cancel2').addEventListener('click', function(){ $id('delete-step2').hidden = true; $id('del-msg').textContent = ''; });
+$id('btn-delete-final').addEventListener('click', async function(){
+  var msg = $id('del-msg'); msg.textContent = '';
+  this.disabled = true;
+  try {
+    var r = await fetch('/api/account/delete', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+      body: JSON.stringify({ confirm: $id('del-confirm').value.trim(), password: $id('del-password').value }) });
+    var d = await r.json().catch(function(){ return {}; });
+    if (!r.ok) { msg.textContent = d.error || r.statusText; return; }
+    try { localStorage.clear(); sessionStorage.clear(); } catch(_){}
+    alertMsg(esc(tx('mg.del.done')), 'success');
+    setTimeout(function(){ window.location.href = '/signup?tab=login'; }, 1600);
+  } catch(e){ msg.textContent = 'Network: ' + e.message; }
+  finally { this.disabled = false; }
+});
+
+/* --- lang change → รีเฟรช label ส่วน dynamic --- */
+document.querySelectorAll('#lang-switch button').forEach(function(b){
+  b.addEventListener('click', function(){
+    var box = $id('spirit-pick');
+    if (box.childElementCount) renderSpiritPicker();
+    loadDevices();
+    if (mg.profile) {
+      var setMode = !mg.profile.has_password;
+      $id('pw-mode-note').textContent = tx(setMode ? 'mg.pw.note.set' : 'mg.pw.note.change');
+      $id('btn-save-pw').textContent = tx(setMode ? 'mg.pw.set' : 'mg.pw.save');
+    }
+  });
+});
+
+loadMgProfile();
+pingDevice().then(loadDevices);
+})();
+</script>
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
-<script src="/js/hk-user-menu.js?v=19" defer></script>
+<script src="/js/hk-user-menu.js?v=20" defer></script>
 </body>
 </html>
