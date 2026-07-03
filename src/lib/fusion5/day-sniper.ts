@@ -34,7 +34,7 @@
  *    แต่ลำพังไม่ติดธง · 值 (กิ่งซ้ำแต่ก้านไม่ซ้ำ) = บริบท ไม่นับเข็ม
  */
 import { SolarTime } from "tyme4ts";
-import { eclipticLon } from "../astro-core/ephemeris";
+import { eclipticLon, norm360, type BodyKey } from "../astro-core/ephemeris";
 import { wrap180 } from "../astro-core/events";
 import { westernChart, SIGN_RULER, type Gender, type WesternChart } from "../astro/western/engine";
 import { buildWesternTimeline, type WesternTimeline } from "../astro/western/timeline";
@@ -108,6 +108,28 @@ export type SniperCHit = {
   detail: string;
 };
 
+/** r386 · เข็ม D — hit จุดกึ่งกลาง natal โดยดาวจร (Uranian precision layer · เรขาคณิตล้วน ไม่มีคำทำนาย) */
+export type SniperDHit = {
+  mid: string;          // คู่ natal เช่น "Sun/Mars" (key อังกฤษ · UI en/zh ใช้ตรง)
+  midTh: string;        // "อาทิตย์/อังคาร"
+  transiter: string;    // ดาวจรที่มากระตุ้น เช่น "Saturn"
+  transiterTh: string;
+  orbArcmin: number;    // orb จริงบน dial 90° (ลิปดา · เก็บไว้จัดพีค — ดาวช้าค้างหลายวัน)
+  applying: boolean;    // true = orb กำลังแคบลง (เทียบ +1 ชม. deterministic)
+};
+export type SniperDayD = { hits: SniperDHit[]; score: number };
+
+/** r386 · หน้าต่างซูม: กลุ่มวันติดธงที่ติดกัน + วันพีคในกลุ่ม */
+export type SniperWindow = {
+  fromISO: string;
+  toISO: string;
+  peakISO: string;                       // วันพีค = D score สูงสุดในหน้าต่าง (ไม่มี D hit → ความแรง A+B+C เดิม)
+  peakFlag: "red" | "yellow" | "green";
+  plusMinusDays: number;                 // ±ความเบลอของพีค: มี D hit = 1 · ไม่มี = ครึ่งกว้างหน้าต่าง (clamp 1..3)
+  reasonTh: string;                      // ข้อเท็จจริงเรขาคณิต/โครงสร้างเท่านั้น — ห้ามคำทำนายแต่งเอง
+  peakHit: Pick<SniperDHit, "mid" | "midTh" | "transiter" | "transiterTh" | "orbArcmin"> | null;
+};
+
 export type SniperDay = {
   dateISO: string;                       // วันไทย (Bangkok wall date)
   ganzhi: string;                        // 流日 เช่น 辛巳
@@ -117,6 +139,7 @@ export type SniperDay = {
   b: SniperBHit[];
   c: SniperCHit[];
   context: string[];                     // ธงบริบท (ไม่นับเข็ม): จันทร์ว่าง/คราส/ดาวหยุดนิ่ง
+  d?: SniperDayD;                        // r386 additive: เฉพาะวัน 🔴/🟡 ที่ผ่านชั้น A/B/C แล้ว (cascade — ห้ามสแกนทั้งช่วง)
 };
 
 export type DaySniperPerson = {
@@ -127,6 +150,7 @@ export type DaySniperPerson = {
   totals: { red: number; yellow: number; green: number };
   droppedCount: number;                  // วันติดธงที่ถูกคัดออกเพราะเกิน cap
   scannedDays: number;
+  windows?: SniperWindow[];              // r386 additive: หน้าต่างซูม + พีค (jsonb เก่าไม่มี field นี้ — consumer ต้อง guard)
 };
 
 export type DaySniperResult = {
@@ -402,6 +426,159 @@ function slowPolarity(transit: string, aspect: string): SniperCHit["polarity"] {
   return "neutral";
 }
 
+/* ==================== เข็ม D · r386 จุดกึ่งกลางแบบยูเรเนียน (precision layer) ====================
+ * doctrine: cascade หยาบ→ละเอียด — D ยิง "เฉพาะ" วันที่ผ่านชั้น A/B/C แล้ว (🔴/🟡) ห้ามสแกนทั้งช่วง
+ * (กันบาปสถิติ "จุดกึ่งกลางมี ~60 จุด หาอะไรก็เจอ" — D ใช้จัดพีค/ขัดเกลาภายในวันที่มีหลักฐานชั้นบนเท่านั้น
+ *  ไม่สร้างธงใหม่ ไม่เปลี่ยนธงเดิม) · เฟสนี้เรขาคณิตล้วน: บรรยายได้แค่ข้อเท็จจริงมุม/orb ห้ามใส่ความหมายแต่งเอง
+ *
+ * ── convention คณิตที่เลือก (dial 90° · ตามขนบ Uranian/Ebertin) ──────────────────
+ * จุดกึ่งกลางบนวงกลมมี 2 คำตอบห่าง 180°: mid = A + wrap180(B−A)/2 กับ mid+180
+ * เราตรวจ hit เฉพาะ hard-aspect family (0°/90°/180°/270°) → เทียบระยะบน dial 90°:
+ *   dist = fold((lon − mid) mod 90) เข้า [0,45]
+ * คณิตสะอาดเพราะ (mid+180) mod 90 = mid mod 90 → คำตอบทั้งสองยุบเป็นจุดเดียวบน dial
+ * และการชน 0/90/180/270 ทุกแบบ = ระยะเดียวกันบน dial (ไม่ต้องแจกแจงมุมทีละตัว)
+ */
+export const DAY_SNIPER_D_ORB_FAST_ARCMIN = 15; // ดาวเร็ว (อาทิตย์/พุธ/ศุกร์/อังคาร ~0.5-1.3°/วัน)
+export const DAY_SNIPER_D_ORB_SLOW_ARCMIN = 10; // ดาวช้า (พฤหัสถึงพลูโต — ค้างหลายวัน จึงบีบ orb + เก็บ orb จริงไว้จัดพีค)
+
+/** ดาวจรของเข็ม D: อาทิตย์→พลูโต "ยกเว้นจันทร์" — จันทร์เร็ว ~13°/วัน (ผ่านหน้าต่าง 15′ ใน ~2 นาที)
+ *  snapshot เที่ยงวันจึงเป็นการสุ่ม ไม่ใช่สัญญาณ · จันทร์จริงมีเข็ม B ตรวจ instant exact อยู่แล้ว */
+const D_TRANSITERS_FAST: BodyKey[] = ["Sun", "Mercury", "Venus", "Mars"];
+const D_TRANSITERS_SLOW: BodyKey[] = ["Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"];
+const D_SLOW_SET = new Set<string>(D_TRANSITERS_SLOW);
+const D_MAX_HITS_PER_DAY = 4;            // เก็บเฉพาะคมสุด (jsonb เบา · กัน list ยาวรก prompt)
+
+/** จุดกึ่งกลาง (A+B)/2 บนวงกลม — คืนคำตอบฝั่งส่วนโค้งสั้น (อีกคำตอบ = +180 · เท่ากันบน dial 90°) */
+export function midpointLon(a: number, b: number): number {
+  return norm360(a + wrap180(b - a) / 2);
+}
+/** ระยะเชิงมุมบน dial 90° (องศา 0..45) — ครอบ ☌/□/☍ ต่อทั้ง mid และ mid+180 ในนิพจน์เดียว */
+export function dial90Distance(lon: number, mid: number): number {
+  const d = (((lon - mid) % 90) + 90) % 90;
+  return Math.min(d, 90 - d);
+}
+
+export type SniperMidpoint = { pair: string; pairTh: string; mid: number };
+
+/** จุดร่วมสร้างคู่กึ่งกลาง: ดาวจริง 10 (+ลัคนา/MC เมื่อมีเวลาเกิด) — ลำดับคงที่ = deterministic */
+const D_NATAL_ORDER = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"];
+
+/** คู่จุดกึ่งกลาง natal ทั้งหมด (10 ดาว + Asc/MC ถ้ามีเวลา → สูงสุด 66 คู่) */
+export function natalMidpoints(chart: WesternChart): SniperMidpoint[] {
+  const pts: Array<{ name: string; lon: number }> = [];
+  for (const n of D_NATAL_ORDER) {
+    const lon = planetLon(chart, n);
+    if (lon !== null) pts.push({ name: n, lon });
+  }
+  if (chart.hasBirthTime && chart.ascendant !== null) pts.push({ name: "Ascendant", lon: chart.ascendant });
+  if (chart.hasBirthTime && chart.mc !== null) pts.push({ name: "MC", lon: chart.mc });
+  const out: SniperMidpoint[] = [];
+  for (let i = 0; i < pts.length; i++) {
+    for (let j = i + 1; j < pts.length; j++) {
+      out.push({
+        pair: `${pts[i].name}/${pts[j].name}`,
+        pairTh: `${NAME_TH[pts[i].name] || pts[i].name}/${NAME_TH[pts[j].name] || pts[j].name}`,
+        mid: +midpointLon(pts[i].lon, pts[j].lon).toFixed(4),
+      });
+    }
+  }
+  return out;
+}
+
+/** cache จุดกึ่งกลางต่อดวง (คีย์ = อัตลักษณ์เวลาเกิด · ไม่มี TTL — natal ไม่เปลี่ยน) */
+const MIDPOINT_CACHE = new Map<string, SniperMidpoint[]>();
+const MIDPOINT_CACHE_MAX = 64;
+function midpointsFor(b: DaySniperBirth, chart: WesternChart): SniperMidpoint[] {
+  const key = `${b.dtUTC instanceof Date ? b.dtUTC.toISOString() : String(b.dtUTC)}|${b.lat}|${b.lng}|${b.hasTime ? 1 : 0}`;
+  const hit = MIDPOINT_CACHE.get(key);
+  if (hit) return hit;
+  const mids = natalMidpoints(chart);
+  if (MIDPOINT_CACHE.size >= MIDPOINT_CACHE_MAX) {
+    const first = MIDPOINT_CACHE.keys().next().value;
+    if (first !== undefined) MIDPOINT_CACHE.delete(first);
+  }
+  MIDPOINT_CACHE.set(key, mids);
+  return mids;
+}
+
+/** เข็ม D ของ 1 วัน: ตำแหน่งดาวจรเที่ยงวันท้องถิ่น (12:00 ไทย) vs จุดกึ่งกลาง natal บน dial 90°
+ *  งานถูก bound เชิงโครงสร้าง (≤20 วัน × 9 ดาว × ≤66 คู่) — ไม่มี Date.now/clock ใน logic (deterministic) */
+export function computeNeedleD(dateISO: string, mids: SniperMidpoint[]): SniperDayD {
+  const noonUTC = new Date(Date.UTC(+dateISO.slice(0, 4), +dateISO.slice(5, 7) - 1, +dateISO.slice(8, 10), 12) - BKK_MS);
+  const hits: SniperDHit[] = [];
+  const scanSet: Array<[BodyKey[], number]> = [[D_TRANSITERS_FAST, DAY_SNIPER_D_ORB_FAST_ARCMIN], [D_TRANSITERS_SLOW, DAY_SNIPER_D_ORB_SLOW_ARCMIN]];
+  for (const [names, limit] of scanSet) {
+    for (const tName of names) {
+      const lon = eclipticLon(tName, noonUTC);
+      for (const m of mids) {
+        const orbArcmin = dial90Distance(lon, m.mid) * 60;
+        if (orbArcmin > limit) continue;
+        // applying = orb กำลังแคบลง (เทียบ +1 ชม. — คำนวณเฉพาะตอน hit · ถูกและ deterministic)
+        const lonNext = eclipticLon(tName, new Date(noonUTC.getTime() + 3_600_000));
+        hits.push({
+          mid: m.pair, midTh: m.pairTh,
+          transiter: tName, transiterTh: NAME_TH[tName] || tName,
+          orbArcmin: +orbArcmin.toFixed(1),
+          applying: dial90Distance(lonNext, m.mid) * 60 < orbArcmin,
+        });
+      }
+    }
+  }
+  // เรียง orb แคบสุดก่อน (tie → ชื่อคู่/ดาว เพื่อ deterministic) · เก็บคมสุด ≤4
+  hits.sort((x, y) => x.orbArcmin - y.orbArcmin || x.mid.localeCompare(y.mid) || x.transiter.localeCompare(y.transiter));
+  const kept = hits.slice(0, D_MAX_HITS_PER_DAY);
+  // คะแนนความคม (เรขาคณิตล้วน): Σ(orbLimit − orbจริง) — orb แคบให้มาก + หลาย hit บวกสะสม · ไม่มี weight ความหมาย
+  const score = +kept.reduce((s, h) => s + ((D_SLOW_SET.has(h.transiter) ? DAY_SNIPER_D_ORB_SLOW_ARCMIN : DAY_SNIPER_D_ORB_FAST_ARCMIN) - h.orbArcmin), 0).toFixed(1);
+  return { hits: kept, score };
+}
+
+/* ==================== หน้าต่างซูม ±3 / พีค · r386 ==================== */
+
+const dayDiffISO = (a: string, b: string) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / DAY_MS);
+/** แสดง orb: <1′ ใช้ทศนิยม 1 ตำแหน่ง (กัน "เป๊ะ 0′" ที่อ่านแล้วผิด) · ≥1′ ปัดจำนวนเต็ม */
+export const fmtOrbArcmin = (v: number) => (v < 1 ? v.toFixed(1) : String(Math.round(v)));
+const dFlagPrio = (f: SniperDay["flag"]) => (f === "red" ? 0 : f === "green" ? 1 : 2);
+const dStrongA = (d: SniperDay) => (d.a.some((r) => r.strength === "strong_warning") ? 1 : 0);
+
+/** จับกลุ่มวันติดธงที่ติดกัน (ช่องว่างระหว่างวันติดธง ≤1 วันปฏิทิน = ห่างกัน ≤2 วัน) → หน้าต่าง + พีค
+ *  หมายเหตุ: ทำงานบนวันที่ผ่าน cap 20 แล้ว — วันที่ถูก rank ตัดออกอาจสร้างช่องว่างเทียม (ยอมรับ · cap คุมงบ) */
+export function buildSniperWindows(days: SniperDay[]): SniperWindow[] {
+  const sorted = [...days].sort((x, y) => x.dateISO.localeCompare(y.dateISO));
+  const groups: SniperDay[][] = [];
+  for (const d of sorted) {
+    const g = groups[groups.length - 1];
+    if (g && dayDiffISO(g[g.length - 1].dateISO, d.dateISO) <= 2) g.push(d);
+    else groups.push([d]);
+  }
+  return groups.map((g): SniperWindow => {
+    const fromISO = g[0].dateISO, toISO = g[g.length - 1].dateISO;
+    // พีค: วันที่ D score สูงสุด (tie → orb แคบสุด → วันเช้ากว่า) · ไม่มี D hit เลย → ความแรง A+B+C เดิม
+    const withD = g.filter((d) => d.d && d.d.hits.length > 0);
+    let peak: SniperDay;
+    if (withD.length) {
+      peak = [...withD].sort((x, y) =>
+        y.d!.score - x.d!.score || x.d!.hits[0].orbArcmin - y.d!.hits[0].orbArcmin || x.dateISO.localeCompare(y.dateISO))[0];
+    } else {
+      peak = [...g].sort((x, y) =>
+        dFlagPrio(x.flag) - dFlagPrio(y.flag) || y.needles.length - x.needles.length || dStrongA(y) - dStrongA(x) || x.dateISO.localeCompare(y.dateISO))[0];
+    }
+    const topHit = peak.d && peak.d.hits.length ? peak.d.hits[0] : null;
+    // ±: D hit = ชี้ชัด ±1 · ไม่มี D = ครึ่งกว้างหน้าต่าง clamp 1..3 (ซูมหยาบ ±3 ตามชั้น A/B/C)
+    const half = Math.max(dayDiffISO(fromISO, peak.dateISO), dayDiffISO(peak.dateISO, toISO));
+    const plusMinusDays = topHit ? 1 : Math.min(3, Math.max(1, half));
+    // เหตุผล = ข้อเท็จจริงเรขาคณิต/โครงสร้างเท่านั้น (คัมภีร์ความหมายวิตเทอยังไม่เข้า — ห้ามแต่งคำทำนาย)
+    const reasonTh = topHit
+      ? `จุดกึ่งกลาง ${topHit.midTh} ถูก${topHit.transiterTh}จรกระตุ้น เป๊ะ ${fmtOrbArcmin(topHit.orbArcmin)}′`
+      : peak.flag === "red" ? "เข็มอิสระ ≥2 เรือนชี้ช่วงเดียวกัน"
+      : peak.flag === "green" ? "จังหวะหนุน (六合/三合半 + จันทร์มุมดี)"
+      : "สัญญาณแรงเดี่ยว";
+    return {
+      fromISO, toISO, peakISO: peak.dateISO, peakFlag: peak.flag, plusMinusDays, reasonTh,
+      peakHit: topHit ? { mid: topHit.mid, midTh: topHit.midTh, transiter: topHit.transiter, transiterTh: topHit.transiterTh, orbArcmin: topHit.orbArcmin } : null,
+    };
+  });
+}
+
 /* ==================== scanDays (ต่อคน) ==================== */
 
 function* eachDateISO(fromISO: string, toISO: string): Generator<string> {
@@ -526,12 +703,20 @@ export function scanDays(b: DaySniperBirth, question: string, fromISO: string, t
     }
   }
 
+  // ---- r386 · เข็ม D (cascade): ยิงเฉพาะวัน 🔴/🟡 ที่ผ่านชั้น A/B/C แล้ว (kept ≤20 = งบ bound เชิงโครงสร้าง)
+  //      วัน 🟢/ไม่ติดธง = ไม่มี d (ห้ามสแกนทั้งช่วง — กันบาปสถิติ) · D ไม่เปลี่ยนธง/เข็มเดิม (ขัดเกลาเท่านั้น)
+  try {
+    const mids = midpointsFor(b, chart);
+    for (const d of kept) if (d.flag !== "green") d.d = computeNeedleD(d.dateISO, mids);
+  } catch { /* ชั้นขัดเกลา — พังไม่ล้มงาน (ธง A/B/C ยังครบ) */ }
+  const windows = buildSniperWindows(kept);
+
   const totals = {
     red: flagged.filter((r) => r.day.flag === "red").length,
     yellow: flagged.filter((r) => r.day.flag === "yellow").length,
     green: flagged.filter((r) => r.day.flag === "green").length,
   };
-  return { name, skippedNote: null, targets, days: kept, totals, droppedCount, scannedDays: scanned };
+  return { name, skippedNote: null, targets, days: kept, totals, droppedCount, scannedDays: scanned, windows };
 }
 
 /* ==================== entry หลัก ==================== */
@@ -551,13 +736,13 @@ export function buildDaySniper(
     const b = births[i];
     const name = b.name || `คนที่${i + 1}`;
     if (i > 0 && Date.now() - t0 > timeBudgetMs) {
-      perPerson.push({ name, skippedNote: `ข้ามเพราะเกินงบเวลาคำนวณ day sniper (${timeBudgetMs / 1000}s) — มีผลเฉพาะดวง focus`, targets: null, days: [], totals: { red: 0, yellow: 0, green: 0 }, droppedCount: 0, scannedDays: 0 });
+      perPerson.push({ name, skippedNote: `ข้ามเพราะเกินงบเวลาคำนวณ day sniper (${timeBudgetMs / 1000}s) — มีผลเฉพาะดวง focus`, targets: null, days: [], totals: { red: 0, yellow: 0, green: 0 }, droppedCount: 0, scannedDays: 0, windows: [] });
       continue;
     }
     try {
       perPerson.push(scanDays(b, question, fromISO, toISO));
     } catch (e) {
-      perPerson.push({ name, skippedNote: `คำนวณไม่สำเร็จ: ${e instanceof Error ? e.message.slice(0, 80) : "error"}`, targets: null, days: [], totals: { red: 0, yellow: 0, green: 0 }, droppedCount: 0, scannedDays: 0 });
+      perPerson.push({ name, skippedNote: `คำนวณไม่สำเร็จ: ${e instanceof Error ? e.message.slice(0, 80) : "error"}`, targets: null, days: [], totals: { red: 0, yellow: 0, green: 0 }, droppedCount: 0, scannedDays: 0, windows: [] });
     }
   }
   return {
@@ -571,6 +756,7 @@ export function buildDaySniper(
       "เข็ม A(流日 60 วัน) กับ B(จันทร์จริง) เป็นนาฬิกาอิสระต่อกันจริง (เลขคณิต vs ดาราศาสตร์) — ตรงกัน = สัญญาณแข็ง",
       "應期ตามตำรา = หน้าต่างเวลา ไม่ใช่คำพิพากษาวันตายตัว (bazi-authority-yingqi-timing.md:20-39) — ใช้เป็นวันเฝ้าระวัง/วันได้เปรียบ",
       "เข็ม C ครอบเฉพาะจุด natal ที่ timeline ติดตาม (ดาวเร็ว 5 + ลัคนา/MC/จุดโชค) — natal ดาวช้าไม่อยู่ในชุด (ซื่อตรง ไม่เดา)",
+      "เข็ม D(r386) = จุดกึ่งกลาง natal บน dial 90° (Uranian) — ยิงเฉพาะวัน 🔴/🟡 ที่ผ่านชั้น A/B/C แล้ว · ใช้จัดพีค ไม่เปลี่ยนธง · เรขาคณิตล้วน ไม่มีคำทำนาย",
     ],
     computeMs: Date.now() - t0,
   };
@@ -612,7 +798,7 @@ export function renderDaySniperTh(ds: DaySniperResult): string {
   const head = [
     "=== DAY_SNIPER (คำนวณจริง ห้ามเลื่อนวันเอง) ===",
     `ช่วงสแกน ${ds.fromISO}→${ds.toISO} · หัวข้อ: ${ds.topicTh} · เข็มอิสระ 3 เรือน: A=流日60วัน · B=จันทร์จริง(exact) · C=ดาวช้าจริง(exact)`,
-    "กติกา: 🔴=เข็มอิสระ≥2ชี้วันเดียวกัน(ฝั่งเตือน) · 🟡=สัญญาณแรงเดี่ยว(沖/伏吟 หรือดาวช้า exact) · 🟢=六合/三合半+จันทร์มุมดีถึงศุภเคราะห์",
+    "กติกา: 🔴=เข็มอิสระ≥2ชี้วันเดียวกัน(ฝั่งเตือน) · 🟡=สัญญาณแรงเดี่ยว(沖/伏吟 หรือดาวช้า exact) · 🟢=六合/三合半+จันทร์มุมดีถึงศุภเคราะห์ · 🎯พีค=เข็ม D จุดกึ่งกลาง Uranian ขัดเกลาในวันติดธง (ไม่เปลี่ยนธง)",
   ];
   const body: { s: string; prio: 1 | 2 | 3 }[] = [];
   const push = (s: string, prio: 1 | 2 | 3 = 1) => body.push({ s, prio });
@@ -627,6 +813,9 @@ export function renderDaySniperTh(ds: DaySniperResult): string {
       const cTxt = d.c.slice(0, 2).map((h) => h.detail).join(" + ") || "—";
       push(`${d.dateISO} ${FLAG_EMOJI[d.flag]} [เข็ม ${d.needles.join("+")}] A:${aTxt} · B:${bTxt} · C:${cTxt}${d.context.length ? ` · บริบท:${d.context.join("/")}` : ""}`, prio);
     }
+    // r386 · เข็ม D: บรรทัดพีคต่อหน้าต่างเด่น (มี D hit ที่พีค หรือพีคแดง) — สูงสุด 3 หน้าต่าง
+    const wins = (p.windows || []).filter((w) => w.peakHit || w.peakFlag === "red").slice(0, 3);
+    for (const w of wins) push(`  🎯 พีค: ${w.peakISO} (±${w.plusMinusDays} วัน) — ${w.reasonTh}`, w.peakFlag === "red" ? 1 : 2);
     if (p.targets?.notes.length) for (const n of p.targets.notes) push(`  (หมายเหตุ: ${n})`, 3);
   }
   const tail = [

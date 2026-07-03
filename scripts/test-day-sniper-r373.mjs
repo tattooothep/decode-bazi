@@ -4,6 +4,9 @@ import {
   buildDaySniper, scanDays, resolveTargets, resolveSniperTopic, resolveDaySniperRange,
   dayGanzhiOf, relationsVsPillar, findMoonAspectHits, renderDaySniperTh,
   DAY_SNIPER_BLOCK_MAX_CHARS, DAY_SNIPER_MAX_FLAGGED,
+  // r386 · เข็ม D + หน้าต่างซูม
+  midpointLon, dial90Distance, natalMidpoints, computeNeedleD, buildSniperWindows, fmtOrbArcmin,
+  DAY_SNIPER_D_ORB_FAST_ARCMIN, DAY_SNIPER_D_ORB_SLOW_ARCMIN,
 } from "../src/lib/fusion5/day-sniper.ts";
 import { buildJudgePrompt, FUSION_PANEL_PROMPT_MAX_CHARS, resolveFusionTimingReference } from "../src/lib/fusion5/build-prompt.ts";
 import { westernChart } from "../src/lib/astro/western/engine.ts";
@@ -189,5 +192,115 @@ ok("cap ≤20 วันต่อคน", full.days.length <= DAY_SNIPER_MAX_FLAG
   ok("ไม่มี A: วันแดงต้องมาจาก B+C เท่านั้น", p.days.filter((d) => d.flag === "red").every((d) => !d.needles.includes("A")));
 }
 
-console.log(`\n=== DAY SNIPER r373: ${pass} passed · ${fail} failed ===`);
+// ═══════════════ r386 · เข็ม D (Uranian midpoints) + หน้าต่างซูม ═══════════════
+
+// ===== 10) คณิตจุดกึ่งกลาง + dial 90° (fixture มุมรู้คำตอบ) =====
+console.log("\n--- r386 · midpoint math ---");
+{
+  ok("mid(0°,90°) = 45°", midpointLon(0, 90) === 45);
+  ok("wrap: mid(350°,10°) = 0°", midpointLon(350, 10) === 0);
+  ok("สลับลำดับ: mid(10°,350°) = 0° (สมมาตร)", midpointLon(10, 350) === 0);
+  ok("mid(90°,270°) อยู่บนแกนเดียวกับ mid+180 บน dial", dial90Distance(midpointLon(90, 270), midpointLon(270, 90)) === 0);
+  // dial 90°: ☌/□/☍ ต่อทั้ง mid และ mid+180 ยุบเป็นระยะเดียว
+  ok("dial: ทับ mid = 0", dial90Distance(45, 45) === 0);
+  ok("dial: ฉาก (mid+90) = 0", dial90Distance(135, 45) === 0);
+  ok("dial: เล็ง (mid+180) = 0", dial90Distance(225, 45) === 0);
+  ok("dial: mid+270 = 0", dial90Distance(315, 45) === 0);
+  ok("dial: ห่าง 5° = 5", Math.abs(dial90Distance(50, 45) - 5) < 1e-9);
+  ok("dial: fold เกิน 45° (ห่าง 50°→40)", Math.abs(dial90Distance(95, 45) - 40) < 1e-9);
+  ok("dial: mid กับ mid+180 ให้ระยะเท่ากันทุก lon", [0, 33.3, 123, 300].every((x) => Math.abs(dial90Distance(x, 70) - dial90Distance(x, 250)) < 1e-9));
+  ok("fmtOrbArcmin: <1′ ทศนิยม · ≥1′ ปัดเต็ม", fmtOrbArcmin(0.2) === "0.2" && fmtOrbArcmin(4.4) === "4" && fmtOrbArcmin(9.6) === "10");
+}
+
+// ===== 11) natal midpoints + orb gate ของ computeNeedleD =====
+console.log("\n--- r386 · needle D orb gate ---");
+{
+  const chart = westernChart(AEAW.dtUTC, AEAW.lat, AEAW.lng, true, "M");
+  const mids = natalMidpoints(chart);
+  ok("มีเวลาเกิด: 12 จุด (10 ดาว+Asc/MC) → 66 คู่", mids.length === 66, String(mids.length));
+  const chartNoTime = westernChart(AEAW.dtUTC, AEAW.lat, AEAW.lng, false, "M");
+  ok("ไม่มีเวลาเกิด: 10 ดาว → 45 คู่ (ตัด Asc/MC)", natalMidpoints(chartNoTime).length === 45);
+  // fixture: วางจุดกึ่งกลางสังเคราะห์ห่างดาวจริง ณ เที่ยงไทย 2026-05-07 แล้วเช็ค orb gate
+  const noonUTC = new Date(Date.UTC(2026, 4, 7, 12) - 7 * 3600_000);
+  const sunLon = eclipticLon("Sun", noonUTC);
+  const n360 = (d) => ((d % 360) + 360) % 360;
+  const synth = (offArcmin) => [{ pair: "X/Y", pairTh: "เอ็กซ์/วาย", mid: n360(sunLon - offArcmin / 60) }];
+  const hit10 = computeNeedleD("2026-05-07", synth(10));
+  ok("อาทิตย์ (เร็ว) ห่าง 10′ ≤15′ → hit + orb จริงถูกบันทึก", hit10.hits.some((h) => h.transiter === "Sun" && Math.abs(h.orbArcmin - 10) < 1.2), JSON.stringify(hit10.hits));
+  const miss24 = computeNeedleD("2026-05-07", synth(24));
+  ok("อาทิตย์ห่าง 24′ >15′ → ไม่ hit (orb เกิน)", !miss24.hits.some((h) => h.transiter === "Sun"), JSON.stringify(miss24.hits));
+  const satLon = eclipticLon("Saturn", noonUTC);
+  const synthSat = (offArcmin) => [{ pair: "X/Y", pairTh: "เอ็กซ์/วาย", mid: n360(satLon - offArcmin / 60) }];
+  const satHit = computeNeedleD("2026-05-07", synthSat(8));
+  ok("เสาร์ (ช้า) ห่าง 8′ ≤10′ → hit", satHit.hits.some((h) => h.transiter === "Saturn" && Math.abs(h.orbArcmin - 8) < 0.5));
+  const satMiss = computeNeedleD("2026-05-07", synthSat(12));
+  ok("เสาร์ห่าง 12′ >10′ (orb ช้าแคบกว่าเร็ว) → ไม่ hit", !satMiss.hits.some((h) => h.transiter === "Saturn"));
+  ok("orb ดาวช้า < ดาวเร็ว ตาม spec (10<15)", DAY_SNIPER_D_ORB_SLOW_ARCMIN < DAY_SNIPER_D_ORB_FAST_ARCMIN);
+  ok("จันทร์ไม่อยู่ในดาวจรเข็ม D (snapshot เที่ยงวัน+15′ = สุ่ม · จันทร์มีเข็ม B แล้ว)", !hit10.hits.some((h) => h.transiter === "Moon") && !satHit.hits.some((h) => h.transiter === "Moon"));
+  ok("hits เรียง orb แคบสุดก่อน + score เป็นตัวเลข", hit10.hits.every((h, i, a) => i === 0 || a[i - 1].orbArcmin <= h.orbArcmin) && typeof hit10.score === "number");
+}
+
+// ===== 12) cascade: D ยิงเฉพาะวัน 🔴/🟡 ที่ผ่านชั้น A/B/C =====
+console.log("\n--- r386 · cascade + golden นิ่ง ---");
+{
+  const allDays = may.days.concat(nov.days);
+  ok("วัน 🔴/🟡 ทุกวันมี d (ผ่านชั้นบนแล้วจึงยิง D)", allDays.filter((d) => d.flag !== "green").every((d) => d.d && Array.isArray(d.d.hits)));
+  ok("วัน 🟢 ต้องไม่มี d (D ไม่แจกความหมายให้วันดี — สแกนเฉพาะฝั่งเตือน)", allDays.filter((d) => d.flag === "green").every((d) => d.d === undefined));
+  // golden นิ่ง: D เป็น additive — ธง/เข็ม/วัน ของ golden blind ด้านบน (section 1-2) ผ่านครบแล้ว = ไม่เปลี่ยน
+  ok("D ไม่เปลี่ยนธง: totals นับจากธง A/B/C เดิม (แดง พ.ค. ยังตรง golden ≥2 วันใน 5-17)", may.days.filter((d) => d.flag === "red" && d.dateISO >= "2026-05-05" && d.dateISO <= "2026-05-17").length >= 2);
+  ok("windows เป็น additive: ทุก peakISO ∈ วันติดธง", (may.windows || []).every((w) => may.days.some((d) => d.dateISO === w.peakISO)));
+  ok("ทุกหน้าต่าง from ≤ peak ≤ to + ±∈[1..3]", (may.windows || []).every((w) => w.fromISO <= w.peakISO && w.peakISO <= w.toISO && w.plusMinusDays >= 1 && w.plusMinusDays <= 3));
+  ok("หน้าต่างที่พีคมี D hit → ชี้ชัด ±1 วัน", (may.windows || []).filter((w) => w.peakHit).every((w) => w.plusMinusDays === 1));
+  ok("reasonTh เรขาคณิตล้วน (มี 'จุดกึ่งกลาง' + orb ′ เมื่อมี D)", (may.windows || []).filter((w) => w.peakHit).every((w) => w.reasonTh.includes("จุดกึ่งกลาง") && w.reasonTh.includes("′")));
+}
+
+// ===== 13) window clustering + peak (fixture สังเคราะห์รู้คำตอบ) =====
+{
+  const mkD = (orb, score) => ({ hits: [{ mid: "Sun/Mars", midTh: "อาทิตย์/อังคาร", transiter: "Saturn", transiterTh: "เสาร์", orbArcmin: orb, applying: true }], score });
+  const mkDay = (iso, flag, needles, d) => ({ dateISO: iso, ganzhi: "甲子", flag, needles, a: [], b: [], c: [], context: [], ...(d ? { d } : {}) });
+  const w1 = buildSniperWindows([
+    mkDay("2026-05-05", "red", ["A", "B"], mkD(4, 6)),
+    mkDay("2026-05-06", "yellow", ["A"], mkD(2, 8)),
+    mkDay("2026-05-09", "yellow", ["A"]),
+  ]);
+  ok("clustering: ติดกัน (gap ≤1 วัน) รวมกลุ่ม · ห่าง 3 วันแยก → 2 หน้าต่าง", w1.length === 2, JSON.stringify(w1.map((w) => [w.fromISO, w.toISO])));
+  ok("พีค = วัน D score สูงสุดในหน้าต่าง (06 ชนะ 05 เพราะ 8>6)", w1[0].peakISO === "2026-05-06" && w1[0].peakHit.orbArcmin === 2);
+  ok("พีคมี D → ±1 วัน + เหตุผลจุดกึ่งกลาง", w1[0].plusMinusDays === 1 && w1[0].reasonTh.includes("จุดกึ่งกลาง อาทิตย์/อังคาร") && w1[0].reasonTh.includes("2′"));
+  ok("หน้าต่างไม่มี D → พีคเป็นวันเดียวนั้น + เหตุผลโครงสร้าง (สัญญาณแรงเดี่ยว)", w1[1].peakISO === "2026-05-09" && w1[1].peakHit === null && w1[1].reasonTh === "สัญญาณแรงเดี่ยว");
+  // ไม่มี D เลย → fallback ความแรง A+B+C: แดง > เหลือง แม้เหลืองมาก่อน
+  const w2 = buildSniperWindows([
+    mkDay("2026-06-01", "yellow", ["A"]),
+    mkDay("2026-06-02", "red", ["A", "B", "C"]),
+    mkDay("2026-06-03", "yellow", ["C"]),
+  ]);
+  ok("fallback ไม่มี D: พีค = วันแดงเข็มเยอะสุด + ±จากครึ่งกว้าง clamp ≤3", w2.length === 1 && w2[0].peakISO === "2026-06-02" && w2[0].peakFlag === "red" && w2[0].plusMinusDays === 1);
+  const w3 = buildSniperWindows([
+    mkDay("2026-07-01", "yellow", ["A"]), mkDay("2026-07-02", "yellow", ["A"]), mkDay("2026-07-03", "yellow", ["A"]),
+    mkDay("2026-07-04", "yellow", ["A"]), mkDay("2026-07-05", "yellow", ["A"]), mkDay("2026-07-06", "yellow", ["A"]),
+    mkDay("2026-07-07", "red", ["A", "B"]), mkDay("2026-07-08", "yellow", ["A"]),
+  ]);
+  ok("หน้าต่างกว้าง 8 วันไม่มี D: ± clamp ที่ 3 (ซูมหยาบ ±3)", w3.length === 1 && w3[0].peakISO === "2026-07-07" && w3[0].plusMinusDays === 3, JSON.stringify(w3));
+  ok("gap 2 วันปฏิทิน (เว้น 1 วัน) ยังรวมหน้าต่างเดียว", buildSniperWindows([mkDay("2026-08-01", "red", ["A", "B"]), mkDay("2026-08-03", "yellow", ["A"])]).length === 1);
+}
+
+// ===== 14) render 🎯 พีค + งบเวลา D =====
+{
+  const block = renderDaySniperTh(dsA);
+  ok("render มีบรรทัด 🎯 พีค: พร้อม ± และยังใต้ cap", block.includes("🎯 พีค:") && block.includes("(±") && block.length <= DAY_SNIPER_BLOCK_MAX_CHARS);
+  ok("กติกา header กล่าวเข็ม D (ขัดเกลา ไม่เปลี่ยนธง)", block.includes("เข็ม D จุดกึ่งกลาง Uranian"));
+  // งบเวลา: D ทั้งชุด (≤20 วัน × 9 ดาว × 66 คู่) ต้อง ≤1.5s
+  const chart = westernChart(AEAW.dtUTC, AEAW.lat, AEAW.lng, true, "M");
+  const mids = natalMidpoints(chart);
+  const flaggedDays = may.days.filter((d) => d.flag !== "green").map((d) => d.dateISO);
+  const tD = Date.now();
+  for (const iso of flaggedDays) computeNeedleD(iso, mids);
+  const msD = Date.now() - tD;
+  ok(`งบเวลา D: ${flaggedDays.length} วัน ใช้ ${msD}ms ≤1500ms`, msD <= 1500);
+  // determinism ของ D+windows ถูกคุมแล้วโดย section 4 (strip เทียบ byte รวม d/windows ในผล)
+  const d1 = computeNeedleD("2026-05-07", mids);
+  const d2 = computeNeedleD("2026-05-07", mids);
+  ok("computeNeedleD deterministic ×2", JSON.stringify(d1) === JSON.stringify(d2));
+}
+
+console.log(`\n=== DAY SNIPER r373+r386: ${pass} passed · ${fail} failed ===`);
 process.exit(fail ? 1 : 0);
