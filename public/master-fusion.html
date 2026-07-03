@@ -265,6 +265,35 @@
     .read-bar-label{min-width:0;flex:1;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .read-bar-label b{color:var(--gold);font-weight:700}
     [data-theme="light"] .read-bar{background:rgba(255,253,248,.96)}
+    /* ===== r383 · pill ลอยมุมล่าง (หน้าถามมือถือระหว่างงานวิ่ง/เสร็จ · base ซ่อน — โชว์เฉพาะใน @media 768 answer-mode+ask-open) ===== */
+    .run-pill{display:none;position:fixed;right:14px;bottom:18px;z-index:60;align-items:center;gap:7px;min-height:44px;max-width:calc(100vw - 28px);padding:10px 16px;border:1px solid var(--line-strong);border-radius:999px;background:var(--gold);color:#121212;font-weight:700;font-size:13px;line-height:1.3;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .run-pill.hidden{display:none!important}
+    [data-theme="light"] .run-pill{color:#fffdf8}
+    /* ===== r383 · ดวงชั่วคราว (guest birth · ไม่บันทึกโปรไฟล์) — ลิงก์เล็ก + ฟอร์ม inline + chip เส้นประ ===== */
+    .guest-link{display:inline-block;margin-top:7px;padding:0;border:0;background:none;color:var(--blue);font-size:12px;cursor:pointer;text-align:left}
+    .guest-link:hover{text-decoration:underline}
+    .guest-form{margin-top:8px;border:1px dashed var(--line-strong);border-radius:8px;padding:12px;background:rgba(255,255,255,.02);display:grid;gap:10px}
+    .guest-form.hidden,.guest-chip.hidden,.gf-manual.hidden{display:none}
+    .guest-form input[type="text"],.guest-form input[type="date"],.guest-form input[type="time"],.guest-form input[type="number"]{width:100%;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px 11px;outline:none}
+    .guest-form input:focus{border-color:var(--line-strong)}
+    .guest-form input:disabled{opacity:.45}
+    .guest-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+    .guest-hint{font-size:11px;color:var(--faint);line-height:1.5}
+    .guest-radios{display:flex;gap:14px;min-height:40px;align-items:center}
+    .guest-radio{display:inline-flex;align-items:center;gap:6px;margin:0;color:var(--text);font-size:13px;font-family:var(--thai);cursor:pointer}
+    .guest-notime{display:flex;align-items:center;gap:7px;margin:7px 0 0;color:var(--muted);font-size:12px;font-family:var(--thai);cursor:pointer}
+    .guest-err{color:var(--bad);font-size:12px;line-height:1.5;min-height:0}
+    .guest-err:empty{display:none}
+    .guest-form .btnbar{position:static;margin:0;padding:0;border:0;background:transparent;display:flex;gap:9px}
+    .guest-form .btn{min-height:40px;flex:1}
+    .guest-form .btn.secondary{flex:0 0 auto}
+    .guest-chip{display:flex;align-items:center;gap:8px;margin-top:2px;border:1px dashed var(--line-strong);border-radius:8px;padding:9px 11px;background:rgba(210,176,94,.05)}
+    .guest-chip-ico{flex:0 0 auto}
+    .guest-chip-main{min-width:0;flex:1;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .guest-chip-main b{color:var(--text)}
+    .guest-tag{flex:0 0 auto;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+    [data-theme="light"] .guest-form{background:rgba(159,121,46,.045)}
+    [data-theme="light"] .guest-chip{background:rgba(159,121,46,.06)}
     /* ===== Light theme (Executive gold · ◐ topbar) ===== */
     [data-theme="light"]{
       --bg:#f6f1e6;--panel:#fffdf8;--panel-2:#f1e9d8;
@@ -878,6 +907,11 @@
       body.hk-answer-mode .run-wait .run-wait-ico{display:block;font-size:30px;animation:hkPulse 1.6s ease-in-out infinite}
       body.hk-answer-mode .run-wait .run-wait-mobile{display:block;color:var(--muted)}
       body.hk-answer-mode .run-wait .run-wait-desktop{display:none}
+      /* (f) r383 · หน้าอ่านเต็มจอจริง: ซ่อน history ทั้ง section (โผล่เฉพาะหน้าถาม) */
+      body.hk-answer-mode:not(.hk-ask-open) .history-panel{display:none}
+      /* (g) r383 · หน้าถามระหว่างงานวิ่ง: การ์ด progress ไม่โผล่เป็นแถวหลงตำแหน่งในฟอร์ม — ใช้ pill ลอยแทน (root cause: กฎ (d) ข้างบนไม่มี :not(.hk-ask-open) ทำให้แถวยุบโผล่ท้าย ask-panel) */
+      body.hk-answer-mode.hk-ask-open .ask-panel .panel-body > .progress-card{display:none!important}
+      body.hk-answer-mode.hk-ask-open .run-pill{display:inline-flex}
     }
   </style>
 </head>
@@ -902,6 +936,9 @@
     <button class="read-bar-btn" id="read-bar-btn" type="button" aria-label="switch view">←</button>
     <div class="read-bar-label" id="read-bar-label"></div>
   </div>
+
+  <!-- r383 · pill ลอยมุมล่าง: หน้าถามมือถือระหว่างงานวิ่ง "⏳ 16% · แตะกลับไปดูคำพยากรณ์" / เสร็จ "✅ แตะดู" (desktop ซ่อนตลอดด้วย CSS base) -->
+  <button class="run-pill hidden" id="run-pill" type="button"></button>
 
   <main>
     <section class="header">
@@ -933,18 +970,30 @@
           <div class="field">
             <label for="profile" data-i18n="ask.profile">เลือกดวง</label>
             <select id="profile"></select>
+            <button class="guest-link" type="button" data-guest-add="1" data-i18n="guest.link">หรือ + ดวงชั่วคราว (ไม่บันทึก)</button>
+            <div class="guest-chip hidden" data-guest-chip="1"></div>
+            <div class="guest-form hidden" data-guest-form="1"></div>
           </div>
           <div class="field" id="profile2-field" style="display:none">
             <label for="profile2" data-i18n="ask.profile2">ดวงที่ 2</label>
             <select id="profile2"></select>
+            <button class="guest-link" type="button" data-guest-add="2" data-i18n="guest.link">หรือ + ดวงชั่วคราว (ไม่บันทึก)</button>
+            <div class="guest-chip hidden" data-guest-chip="2"></div>
+            <div class="guest-form hidden" data-guest-form="2"></div>
           </div>
           <div class="field" id="profile3-field" style="display:none">
             <label for="profile3" data-i18n="ask.profile3">ดวงที่ 3 (ไม่บังคับ)</label>
             <select id="profile3"></select>
+            <button class="guest-link" type="button" data-guest-add="3" data-i18n="guest.link">หรือ + ดวงชั่วคราว (ไม่บันทึก)</button>
+            <div class="guest-chip hidden" data-guest-chip="3"></div>
+            <div class="guest-form hidden" data-guest-form="3"></div>
           </div>
           <div class="field" id="profile4-field" style="display:none">
             <label for="profile4" data-i18n="ask.profile4">ดวงที่ 4 (ไม่บังคับ)</label>
             <select id="profile4"></select>
+            <button class="guest-link" type="button" data-guest-add="4" data-i18n="guest.link">หรือ + ดวงชั่วคราว (ไม่บันทึก)</button>
+            <div class="guest-chip hidden" data-guest-chip="4"></div>
+            <div class="guest-form hidden" data-guest-form="4"></div>
           </div>
           <div class="field">
             <label data-i18n="ask.sciences">ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)</label>
@@ -999,51 +1048,7 @@
         <button class="mini-btn" id="history-refresh" type="button">Refresh</button>
       </div>
       <div class="panel-body">
-        <div class="history-filters">
-          <div>
-            <label for="history-q">Search</label>
-            <input id="history-q" type="search" maxlength="160" placeholder="ค้นจากคำถาม/คำตอบ">
-          </div>
-          <div>
-            <label for="history-topic">Topic</label>
-            <select id="history-topic">
-              <option value="">all</option>
-              <option value="overview">overview</option>
-              <option value="career">career</option>
-              <option value="wealth">wealth</option>
-              <option value="love">love</option>
-              <option value="health">health</option>
-              <option value="study">study</option>
-            </select>
-          </div>
-          <div>
-            <label for="history-mode">Mode</label>
-            <select id="history-mode">
-	              <option value="">all</option>
-	              <option value="fusion5">fusion5</option>
-	              <option value="resilient">resilient</option>
-	              <option value="strict">strict</option>
-            </select>
-          </div>
-          <div>
-            <label for="history-status">Status</label>
-            <select id="history-status">
-              <option value="">all</option>
-              <option value="done">done</option>
-              <option value="degraded">degraded</option>
-              <option value="fail">fail</option>
-            </select>
-          </div>
-          <div>
-            <label for="history-from">From</label>
-            <input id="history-from" type="date">
-          </div>
-          <div>
-            <label for="history-to">To</label>
-            <input id="history-to" type="date">
-          </div>
-          <button class="mini-btn" id="history-search" type="button">Search</button>
-        </div>
+        <!-- r383 · การ์ด Search/filters ถูกถอดออกทุกอุปกรณ์ (คำสั่งเจ้านาย) — เหลือหัว + Refresh + รายการ · JS ฝั่ง filter guard element หายแล้ว -->
         <div class="history-grid">
           <div class="history-list" id="history-list"></div>
           <div class="history-detail" id="history-detail">
@@ -1072,7 +1077,8 @@
   (function(){
     var $ = function(id){ return document.getElementById(id); };
     var state = { account:null, fusionAccess:null, spendHours:0, profiles:[], history:[], historyProfileId:'', threadId:'', pendingQuestion:'', busy:false, ready:false, resuming:false, pollAuthFails:0, progressTimer:null, activeRunId:'', activeJob:null, answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', showHistoryAnswerId:'', compareIds:[],
-      mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false }, locale:'th', theme:'dark', result:null, activeTab:'judge', resonance:null };
+      mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false }, locale:'th', theme:'dark', result:null, activeTab:'judge', resonance:null,
+      guests:{}, guestEdit:{} }; // r383: ดวงชั่วคราวรายช่อง 1-4 (ไม่บันทึกโปรไฟล์)
     var els = {
       profile:$('profile'), profile2:$('profile2'), profile2Field:$('profile2-field'), profile3:$('profile3'), profile3Field:$('profile3-field'), profile4:$('profile4'), profile4Field:$('profile4-field'), modeSeg:$('mode-seg'), sciList:$('sci-list'),
       yamValue:$('yam-value'), yamBreak:$('yam-break'), result:$('fusion5-result'), resonance:$('resonance-card'), sniper:$('sniper-card'), themeToggle:$('theme-toggle'),
@@ -1080,6 +1086,7 @@
       clear:$('clear'), status:$('status'), progress:$('fusion-progress'), chat:$('chat'), meta:$('fusion-meta'), runState:$('run-state'),
       tier:$('tier-badge'), balance:$('balance-badge'), gate:$('gate-badge'),
       answerModal:$('answer-modal'), answerTitle:$('answer-title'), answerSub:$('answer-sub'), answerBody:$('answer-body'), answerClose:$('answer-close'),
+      runPill:$('run-pill'),
       historyList:$('history-list'), historyDetail:$('history-detail'), historyRefresh:$('history-refresh'), historySearch:$('history-search'),
       historyQ:$('history-q'), historyTopic:$('history-topic'), historyMode:$('history-mode'), historyStatus:$('history-status'), historyFrom:$('history-from'), historyTo:$('history-to')
     };
@@ -1102,21 +1109,27 @@
         'res.title':'🔗 เสียงสะท้อนข้ามศาสตร์','res.r1':'ธีมปีตรงกัน','res.r2':'ดาวเดียวกันชนหลายศาสตร์','res.r3':'คราส/ราหูเกตุ','res.conflict':'มุมมองต่าง','res.detail':'ดูรายละเอียด + หลักฐาน','res.theme':'ธีม','res.sci':'ศาสตร์','res.evidence':'หลักฐาน (คำนวณจริง)','res.month':'เดือน','res.planet':'ดาว','res.good':'ฝั่งเห็นดี','res.bad':'ฝั่งเห็นแรงกด',
         'res.r4':'ดวงคู่','res.r5':'สะพานธาตุ','res.r6':'ปีชง','res.pair':'คู่','res.dim':'มิติ','res.res':'สะท้อน','res.need':'ธาตุที่ต้องการ','res.system':'ระบบ','res.rationale':'เหตุผล (คำนวณจริง)','res.dates':'วันที่','res.voice':'เสียงบอกปีหนัก','res.heavy':'หนัก','res.notHeavy':'ไม่หนัก','res.nodata':'ไม่มีข้อมูล','res.v.good':'ดี','res.v.mid':'กลาง','res.v.tense':'ตึง','res.e.support':'หนุน','res.e.cut':'ตัด','res.e.mid':'กลาง','res.dim.mind':'อารมณ์-จิตใจ','res.dim.comm':'การสื่อสาร','res.dim.attract':'เสน่หา','res.dim.stable':'เสถียรภาพระยะยาว','res.struct':'พ้องเชิงโครงสร้าง (วัดของชิ้นเดียวกัน — ไม่นับเป็นหลักฐานซ้ำ)',
         'prog.read':'อ่านดวง {d}/{t} ศาสตร์เสร็จ','prog.reading':'กำลังอ่านดวง {t} ศาสตร์','prog.judge':'กำลังหลอมคำฟันธง','answerWait':'ซินแสกำลังหลอมคำตอบ...',
-        'ds.title':'🎯 วันลั่นไก','ds.topic':'หัวข้อ','ds.range':'ช่วงสแกน','ds.detail':'ดูตารางหลักฐานรายวัน','ds.date':'วันที่','ds.flag':'ธง','ds.needles':'เข็มอิสระ','ds.evA':'A 流日 (60 วัน)','ds.evB':'B จันทร์จริง','ds.evC':'C ดาวช้า','ds.ctx':'บริบท','ds.none':'ไม่มีวันที่เข็ม ≥2 ในช่วงนี้','ds.legend':'🔴 เข็มอิสระ ≥2 ชี้วันเดียวกัน · 🟡 สัญญาณแรงเดี่ยว · 🟢 วันโอกาส (合+จันทร์มุมดี)','ds.days':'วัน','ds.dropped':'แสดงเฉพาะวันอันดับต้นตาม rank' },
+        'ds.title':'🎯 วันลั่นไก','ds.topic':'หัวข้อ','ds.range':'ช่วงสแกน','ds.detail':'ดูตารางหลักฐานรายวัน','ds.date':'วันที่','ds.flag':'ธง','ds.needles':'เข็มอิสระ','ds.evA':'A 流日 (60 วัน)','ds.evB':'B จันทร์จริง','ds.evC':'C ดาวช้า','ds.ctx':'บริบท','ds.none':'ไม่มีวันที่เข็ม ≥2 ในช่วงนี้','ds.legend':'🔴 เข็มอิสระ ≥2 ชี้วันเดียวกัน · 🟡 สัญญาณแรงเดี่ยว · 🟢 วันโอกาส (合+จันทร์มุมดี)','ds.days':'วัน','ds.dropped':'แสดงเฉพาะวันอันดับต้นตาม rank',
+        'guest.link':'หรือ + ดวงชั่วคราว (ไม่บันทึก)','guest.name':'ชื่อเล่น','guest.namePh':'ดวงชั่วคราว','guest.gender':'เพศ','guest.male':'ชาย (M)','guest.female':'หญิง (F)','guest.birthDate':'วันเกิด','guest.dateHint':'ค.ศ.','guest.birthTime':'เวลาเกิด','guest.noTime':'ไม่ทราบเวลาเกิด','guest.noTimeHint':'จะอ่านได้ 3 เสา · จื่อเวย/ดาวจริงจีนข้าม','guest.noTimeShort':'ไม่ทราบเวลา','guest.place':'สถานที่เกิด','guest.placePh':'พิมพ์ชื่อเมือง/สถานที่ (ค่าเริ่มต้น กรุงเทพ)','guest.manualLatLng':'กรอกพิกัด lat/lng เอง','guest.locFail':'โหลด Google Places ไม่สำเร็จ · กรอกพิกัดเองได้ (เว้นว่าง = กรุงเทพ)','guest.locHint':'เว้นว่าง = กรุงเทพ 13.7563, 100.5018','guest.use':'ใช้ดวงนี้','guest.cancel':'ยกเลิกกลับ dropdown','guest.chipTag':'ไม่บันทึก','guest.edit':'แก้','guest.needDate':'กรุณาเลือกวันเกิด','guest.badDate':'วันเกิดต้องอยู่ระหว่าง ค.ศ. 1900 – วันนี้','guest.needTime':'กรอกเวลาเกิด หรือติ๊ก "ไม่ทราบเวลาเกิด"','guest.needGender':'กรุณาเลือกเพศ','guest.badLatLng':'พิกัดไม่ถูกต้อง (lat -90..90 · lng -180..180)','guest.tooMany':'รวมดวงได้ไม่เกิน 4 (โปรไฟล์ + ดวงชั่วคราว)','guest.histLabel':'ดวงชั่วคราวในรอบนี้ (ไม่บันทึก)','guest.badData':'ข้อมูลดวงชั่วคราวไม่ถูกต้อง','guest.slotAt':'ดวงชั่วคราวช่องที่ {n}',
+        'pill.back':'แตะกลับไปดูคำพยากรณ์','pill.ready':'คำพยากรณ์พร้อมแล้ว · แตะดู' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
         'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading','read.back':'Back to reading',
         'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back',
         'res.title':'🔗 Cross-science resonance','res.r1':'Year-theme match','res.r2':'Same planet, multi-system','res.r3':'Eclipse / nodes','res.conflict':'Diverging view','res.detail':'Details + evidence','res.theme':'Theme','res.sci':'Sciences','res.evidence':'Evidence (computed)','res.month':'Month','res.planet':'Planet','res.good':'Sees support','res.bad':'Sees pressure',
         'res.r4':'Pair resonance','res.r5':'Element bridge','res.r6':'Clash year','res.pair':'Pair','res.dim':'Dimension','res.res':'Resonates','res.need':'Needed element','res.system':'System','res.rationale':'Rationale (computed)','res.dates':'Dates','res.voice':'systems call it heavy','res.heavy':'Heavy','res.notHeavy':'Not heavy','res.nodata':'No data','res.v.good':'Good','res.v.mid':'Neutral','res.v.tense':'Tense','res.e.support':'Supported','res.e.cut':'Cut','res.e.mid':'Neutral','res.dim.mind':'Emotional bond','res.dim.comm':'Communication','res.dim.attract':'Attraction','res.dim.stable':'Long-term stability','res.struct':'Structural overlap (same measurement — not counted as extra evidence)',
         'prog.read':'{d}/{t} sciences done','prog.reading':'Reading {t} sciences','prog.judge':'Fusing the verdict','answerWait':'The master is fusing your answer...',
-        'ds.title':'🎯 Trigger days','ds.topic':'Topic','ds.range':'Scan range','ds.detail':'Day-by-day evidence table','ds.date':'Date','ds.flag':'Flag','ds.needles':'Independent clocks','ds.evA':'A day-ganzhi (60-day)','ds.evB':'B real Moon','ds.evC':'C slow planets','ds.ctx':'Context','ds.none':'No multi-clock day in this range','ds.legend':'🔴 ≥2 independent clocks strike same day · 🟡 single strong signal · 🟢 opportunity day','ds.days':'days','ds.dropped':'top-ranked days only' },
+        'ds.title':'🎯 Trigger days','ds.topic':'Topic','ds.range':'Scan range','ds.detail':'Day-by-day evidence table','ds.date':'Date','ds.flag':'Flag','ds.needles':'Independent clocks','ds.evA':'A day-ganzhi (60-day)','ds.evB':'B real Moon','ds.evC':'C slow planets','ds.ctx':'Context','ds.none':'No multi-clock day in this range','ds.legend':'🔴 ≥2 independent clocks strike same day · 🟡 single strong signal · 🟢 opportunity day','ds.days':'days','ds.dropped':'top-ranked days only',
+        'guest.link':'or + temporary chart (not saved)','guest.name':'Nickname','guest.namePh':'Temp chart','guest.gender':'Gender','guest.male':'Male (M)','guest.female':'Female (F)','guest.birthDate':'Birth date','guest.dateHint':'CE','guest.birthTime':'Birth time','guest.noTime':'Birth time unknown','guest.noTimeHint':'3-pillar reading only · Zi Wei / Chinese real-star skipped','guest.noTimeShort':'time unknown','guest.place':'Birth place','guest.placePh':'Type a city/place (default Bangkok)','guest.manualLatLng':'Enter lat/lng manually','guest.locFail':'Google Places failed to load · enter coordinates manually (blank = Bangkok)','guest.locHint':'Blank = Bangkok 13.7563, 100.5018','guest.use':'Use this chart','guest.cancel':'Cancel, back to dropdown','guest.chipTag':'not saved','guest.edit':'Edit','guest.needDate':'Please pick a birth date','guest.badDate':'Birth date must be between 1900 and today','guest.needTime':'Fill birth time or tick "birth time unknown"','guest.needGender':'Please pick a gender','guest.badLatLng':'Invalid coordinates (lat -90..90 · lng -180..180)','guest.tooMany':'Max 4 charts total (profiles + temporary)','guest.histLabel':'Temporary charts in this run (not saved)','guest.badData':'Invalid temporary chart data','guest.slotAt':'temporary chart slot {n}',
+        'pill.back':'tap to view the reading','pill.ready':'Reading is ready · tap to view' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
         'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷','read.back':'返回論斷',
         'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看',
         'res.title':'🔗 跨術共振','res.r1':'流年宮位相符','res.r2':'同星多術同月','res.r3':'日月食/羅計','res.conflict':'觀點分歧','res.detail':'詳情＋證據','res.theme':'主題','res.sci':'術數','res.evidence':'證據（實算）','res.month':'月','res.planet':'星','res.good':'看吉','res.bad':'看壓',
         'res.r4':'合盤共振','res.r5':'五行橋','res.r6':'沖太歲','res.pair':'配對','res.dim':'維度','res.res':'共振','res.need':'所需五行','res.system':'系統','res.rationale':'理由（實算）','res.dates':'日期','res.voice':'系統判為重','res.heavy':'重','res.notHeavy':'不重','res.nodata':'無資料','res.v.good':'吉','res.v.mid':'中','res.v.tense':'緊','res.e.support':'受扶','res.e.cut':'受剋','res.e.mid':'中','res.dim.mind':'情感·心','res.dim.comm':'溝通','res.dim.attract':'情慾·吸引','res.dim.stable':'長期穩定','res.struct':'結構性重合（同一量測 · 不重複計證）',
         'prog.read':'已完成 {d}/{t} 術','prog.reading':'正在解讀 {t} 術','prog.judge':'正在綜合裁斷','answerWait':'命師正在融合答案...',
-        'ds.title':'🎯 觸發日','ds.topic':'主題','ds.range':'掃描區間','ds.detail':'逐日證據表','ds.date':'日期','ds.flag':'旗','ds.needles':'獨立時鐘','ds.evA':'A 流日（六十甲子）','ds.evB':'B 真月亮','ds.evC':'C 慢星','ds.ctx':'脈絡','ds.none':'區間內無雙鐘同指之日','ds.legend':'🔴 兩個以上獨立時鐘同日 · 🟡 單一強訊號 · 🟢 機會日','ds.days':'日','ds.dropped':'僅列排名前段日' }
+        'ds.title':'🎯 觸發日','ds.topic':'主題','ds.range':'掃描區間','ds.detail':'逐日證據表','ds.date':'日期','ds.flag':'旗','ds.needles':'獨立時鐘','ds.evA':'A 流日（六十甲子）','ds.evB':'B 真月亮','ds.evC':'C 慢星','ds.ctx':'脈絡','ds.none':'區間內無雙鐘同指之日','ds.legend':'🔴 兩個以上獨立時鐘同日 · 🟡 單一強訊號 · 🟢 機會日','ds.days':'日','ds.dropped':'僅列排名前段日',
+        'guest.link':'或 + 臨時命盤（不儲存）','guest.name':'暱稱','guest.namePh':'臨時命盤','guest.gender':'性別','guest.male':'男 (M)','guest.female':'女 (F)','guest.birthDate':'出生日期','guest.dateHint':'西元','guest.birthTime':'出生時間','guest.noTime':'不知出生時間','guest.noTimeHint':'僅三柱解讀 · 紫微／七政四餘略過','guest.noTimeShort':'時辰不詳','guest.place':'出生地','guest.placePh':'輸入城市／地點（預設曼谷）','guest.manualLatLng':'手動輸入經緯度','guest.locFail':'Google Places 載入失敗 · 可手動輸入座標（留空＝曼谷）','guest.locHint':'留空＝曼谷 13.7563, 100.5018','guest.use':'使用此盤','guest.cancel':'取消，返回下拉選單','guest.chipTag':'不儲存','guest.edit':'修改','guest.needDate':'請選擇出生日期','guest.badDate':'出生日期須在西元 1900 至今日之間','guest.needTime':'請填出生時間，或勾選「不知出生時間」','guest.needGender':'請選擇性別','guest.badLatLng':'座標無效（lat -90..90 · lng -180..180）','guest.tooMany':'最多共 4 盤（檔案＋臨時）','guest.histLabel':'本次臨時命盤（不儲存）','guest.badData':'臨時命盤資料無效','guest.slotAt':'臨時命盤第 {n} 格',
+        'pill.back':'點擊查看論斷','pill.ready':'論斷已完成 · 點擊查看' }
     };
     function t(key){ var d = I18N[state.locale] || I18N.th; return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
     function applyI18n(){
@@ -1180,13 +1193,51 @@
     }
     function profileById(id){ return state.profiles.find(function(p){ return String(p.id) === String(id); }) || null; }
     function profileHasTime(p){ return !p || p.birth_time_known !== false; }
+    // ===== r383 · ดวงชั่วคราว (guest birth) — ช่อง 1-4 เลือกได้ว่าเป็น profile (dropdown) หรือ guest (ฟอร์ม inline · ไม่บันทึก) =====
+    var GUEST_SLOTS = [1, 2, 3, 4];
+    var GUEST_DEFAULT_LOC = { lat:13.7563, lng:100.5018 }; // กรุงเทพ (ตรง DEFAULT ฝั่ง server)
+    function todayISOBkk(){ return new Date(Date.now() + 7 * 3600000).toISOString().slice(0, 10); }
+    function activeSlots(){ return state.mode === 'pair' ? GUEST_SLOTS : [1]; }
+    function slotGuest(n){ return (state.guests && state.guests[n]) || null; }
+    function selectedGuests(){ return activeSlots().map(slotGuest).filter(Boolean); }
+    function guestDisplayName(g){ return (g && g.name) ? String(g.name) : t('guest.namePh'); }
+    // validate ฝั่ง client (สเปกเดียวกับ parseGuestBirths ฝั่ง server) · คืน '' = ผ่าน
+    function guestClientError(g){
+      if (!g || !g.birthDate) return t('guest.needDate');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(g.birthDate) || g.birthDate < '1900-01-01' || g.birthDate > todayISOBkk()) return t('guest.badDate');
+      if (g.birthTime !== null && !/^([01]\d|2[0-3]):[0-5]\d$/.test(String(g.birthTime || ''))) return t('guest.needTime');
+      if (g.gender !== 'M' && g.gender !== 'F') return t('guest.needGender');
+      var lat = Number(g.lat), lng = Number(g.lng);
+      if (!isFinite(lat) || lat < -90 || lat > 90 || !isFinite(lng) || lng < -180 || lng > 180) return t('guest.badLatLng');
+      return '';
+    }
+    // payload ที่ส่งเข้า POST /api/sifu/fusion5 (shape ตรง GuestBirthStored · ชื่อ/สถานที่ว่าง = ไม่ส่ง ให้ server ตั้ง default)
+    function guestPayload(g){
+      var out = { birthDate:g.birthDate, birthTime:g.birthTime, gender:g.gender, lat:Number(g.lat), lng:Number(g.lng) };
+      if (g.name) out.name = String(g.name).slice(0, 40);
+      if (g.place) out.place = String(g.place).slice(0, 80);
+      return out;
+    }
+    function normGuest(g){
+      if (!g || typeof g !== 'object' || !g.birthDate) return null;
+      return {
+        name: String(g.name || '').replace(/\s+/g, ' ').trim().slice(0, 40),
+        birthDate: String(g.birthDate).slice(0, 10),
+        birthTime: (g.birthTime === null || g.birthTime === undefined || g.birthTime === '') ? null : String(g.birthTime).slice(0, 5),
+        gender: String(g.gender || '').toUpperCase().charAt(0) === 'F' ? 'F' : 'M',
+        lat: isFinite(Number(g.lat)) ? Number(g.lat) : GUEST_DEFAULT_LOC.lat,
+        lng: isFinite(Number(g.lng)) ? Number(g.lng) : GUEST_DEFAULT_LOC.lng,
+        place: String(g.place || '').replace(/\s+/g, ' ').trim().slice(0, 80)
+      };
+    }
     function selectedProfileIds(){
       var ids = [];
-      var p1 = els.profile && els.profile.value ? els.profile.value : '';
+      var p1 = (!slotGuest(1) && els.profile && els.profile.value) ? els.profile.value : ''; // ช่องที่เป็น guest = ข้าม dropdown ช่องนั้น
       if (p1) ids.push(p1);
       if (state.mode === 'pair') {
-        [els.profile2, els.profile3, els.profile4].forEach(function(sel){
-          var v = sel && sel.value ? sel.value : '';
+        [[2, els.profile2], [3, els.profile3], [4, els.profile4]].forEach(function(pair){
+          if (slotGuest(pair[0])) return;
+          var v = pair[1] && pair[1].value ? pair[1].value : '';
           if (v && ids.indexOf(v) === -1) ids.push(v); // ไม่ซ้ำ · ดวงที่ 3-4 ว่างได้ (— ไม่ใช้ —)
         });
       }
@@ -1194,7 +1245,8 @@
     }
     function conversationScope(ids){
       ids = ids || selectedProfileIds();
-      return 'fusion5:' + state.mode + ':' + ids.join(':');
+      var gsig = selectedGuests().map(function(g){ return 'g' + g.birthDate + 'T' + (g.birthTime || 'x') + g.gender; }).join(':');
+      return 'fusion5:' + state.mode + ':' + ids.join(':') + (gsig ? ':' + gsig : '');
     }
     function conversationKey(ids){
       return 'hk_fusion5_thread:' + conversationScope(ids).replace(/[^\w:.-]+/g, '_');
@@ -1209,7 +1261,7 @@
     }
     function saveConversation(){
       var ids = selectedProfileIds();
-      if (!ids.length || !state.threadId) return;
+      if ((!ids.length && !selectedGuests().length) || !state.threadId) return; // r383: guest ล้วนก็เก็บ thread ได้
       try {
         localStorage.setItem(conversationKey(ids), JSON.stringify({
           scope: conversationScope(ids),
@@ -1225,7 +1277,7 @@
       state.history = [];
       state.threadId = newRunId();
       state.pendingQuestion = '';
-      if (!ids.length) return;
+      if (!ids.length && !selectedGuests().length) return;
       try {
         var raw = localStorage.getItem(conversationKey(ids));
         var j = raw ? JSON.parse(raw) : null;
@@ -1251,8 +1303,11 @@
         ? '<div class="thread-note">มีบริบทบทสนทนาเดิม ' + turns + ' รอบสำหรับถามต่อ · คำตอบเก่าจะไม่แสดงจนกดโชว์จากประวัติ</div>'
         : '';
     }
-    function profileCount(){ return selectedProfileIds().length || 1; }
-    function allSelectedHaveTime(){ return selectedProfileIds().every(function(id){ return profileHasTime(profileById(id)); }); }
+    function profileCount(){ return (selectedProfileIds().length + selectedGuests().length) || 1; } // r383: ยาม/ตัวคูณนับ guest ด้วย
+    function allSelectedHaveTime(){
+      return selectedProfileIds().every(function(id){ return profileHasTime(profileById(id)); })
+        && selectedGuests().every(function(g){ return g.birthTime !== null; }); // r383: guest ไม่ทราบเวลา → จื่อเวย/ดาวจริงจีนถูกปิด
+    }
     function isSciSelectable(s){
       var b = DISCIPLINES[s]; if (!b || !b.available) return false;
       if (b.needsBirthTime && !allSelectedHaveTime()) return false;
@@ -1344,6 +1399,228 @@
       if (els.profile4Field) els.profile4Field.style.display = pairDisplay;
       renderSciList(); updateYam();
     }
+    // ===== r383 · guest UI: ลิงก์ → ฟอร์ม inline แทน dropdown → chip เส้นประ (แก้/ลบได้) =====
+    function slotSelect(n){ return n === 2 ? els.profile2 : n === 3 ? els.profile3 : n === 4 ? els.profile4 : els.profile; }
+    function guestSlotEls(n){
+      return {
+        select: slotSelect(n),
+        link: document.querySelector('[data-guest-add="' + n + '"]'),
+        chip: document.querySelector('[data-guest-chip="' + n + '"]'),
+        form: document.querySelector('[data-guest-form="' + n + '"]')
+      };
+    }
+    function guestChipHtml(n, g){
+      var timeLabel = g.birthTime === null ? t('guest.noTimeShort') : g.birthTime;
+      return '<span class="guest-chip-ico">🎴</span>' +
+        '<span class="guest-chip-main"><b>' + esc(guestDisplayName(g)) + '</b> · ' + esc(g.birthDate) + ' ' + esc(timeLabel) + ' · ' + esc(g.gender) + '</span>' +
+        '<span class="guest-tag">' + esc(t('guest.chipTag')) + '</span>' +
+        '<button type="button" class="mini-btn" data-guest-act="edit" data-guest-slot="' + n + '">' + esc(t('guest.edit')) + '</button>' +
+        '<button type="button" class="mini-btn" data-guest-act="remove" data-guest-slot="' + n + '" aria-label="remove">✕</button>';
+    }
+    function guestFormHtml(n, g){
+      g = g || {};
+      var noTime = ('birthTime' in g) && g.birthTime === null;
+      var latVal = (g.lat != null && isFinite(Number(g.lat))) ? String(g.lat) : '';
+      var lngVal = (g.lng != null && isFinite(Number(g.lng))) ? String(g.lng) : '';
+      return '<div class="guest-row">' +
+          '<div><label>' + esc(t('guest.name')) + '</label><input type="text" class="gf-name" maxlength="40" placeholder="' + esc(t('guest.namePh')) + '" value="' + esc(g.name || '') + '"></div>' +
+          '<div><label>' + esc(t('guest.gender')) + ' *</label><div class="guest-radios">' +
+            '<label class="guest-radio"><input type="radio" class="gf-gender" name="gf-gender-' + n + '" value="M"' + (g.gender === 'M' ? ' checked' : '') + '> ' + esc(t('guest.male')) + '</label>' +
+            '<label class="guest-radio"><input type="radio" class="gf-gender" name="gf-gender-' + n + '" value="F"' + (g.gender === 'F' ? ' checked' : '') + '> ' + esc(t('guest.female')) + '</label>' +
+          '</div></div>' +
+        '</div>' +
+        '<div class="guest-row">' +
+          '<div><label>' + esc(t('guest.birthDate')) + ' * <span class="guest-hint">(' + esc(t('guest.dateHint')) + ')</span></label>' +
+            '<input type="date" class="gf-date" min="1900-01-01" max="' + esc(todayISOBkk()) + '" value="' + esc(g.birthDate || '') + '"></div>' +
+          '<div><label>' + esc(t('guest.birthTime')) + '</label>' +
+            '<input type="time" class="gf-time" value="' + esc(g.birthTime || '') + '"' + (noTime ? ' disabled' : '') + '>' +
+            '<label class="guest-notime"><input type="checkbox" class="gf-notime"' + (noTime ? ' checked' : '') + '> ' + esc(t('guest.noTime')) + '</label>' +
+          '</div>' +
+        '</div>' +
+        '<div class="guest-hint gf-notime-hint"' + (noTime ? '' : ' style="display:none"') + '>' + esc(t('guest.noTimeHint')) + '</div>' +
+        '<div><label>' + esc(t('guest.place')) + '</label>' +
+          '<input type="text" class="gf-place" maxlength="80" placeholder="' + esc(t('guest.placePh')) + '" value="' + esc(g.place || '') + '" autocomplete="off">' +
+          '<button type="button" class="guest-link gf-manual-toggle">' + esc(t('guest.manualLatLng')) + '</button>' +
+          '<div class="guest-row gf-manual hidden">' +
+            '<div><label>lat</label><input type="number" class="gf-lat" step="0.0001" min="-90" max="90" value="' + esc(latVal) + '"></div>' +
+            '<div><label>lng</label><input type="number" class="gf-lng" step="0.0001" min="-180" max="180" value="' + esc(lngVal) + '"></div>' +
+          '</div>' +
+          '<div class="guest-hint gf-loc-hint">' + esc(t('guest.locHint')) + '</div>' +
+        '</div>' +
+        '<div class="guest-err gf-err"></div>' +
+        '<div class="btnbar">' +
+          '<button type="button" class="btn gf-use">' + esc(t('guest.use')) + '</button>' +
+          '<button type="button" class="btn secondary gf-cancel">' + esc(t('guest.cancel')) + '</button>' +
+        '</div>';
+    }
+    function renderGuestSlot(n){
+      var o = guestSlotEls(n);
+      if (!o.chip || !o.form) return;
+      var g = slotGuest(n);
+      var editing = !!state.guestEdit[n];
+      if (o.select) o.select.style.display = (g || editing) ? 'none' : '';
+      if (o.link) o.link.style.display = (g || editing) ? 'none' : '';
+      o.form.classList.toggle('hidden', !editing);
+      o.chip.classList.toggle('hidden', !g || editing);
+      if (g && !editing) o.chip.innerHTML = guestChipHtml(n, g);
+      if (!editing) o.form.innerHTML = '';
+    }
+    function renderGuestSlots(){ GUEST_SLOTS.forEach(renderGuestSlot); }
+    // เลือกดวงเปลี่ยน (guest เพิ่ม/ลบ/แก้) → เดินสายเดียวกับเปลี่ยน dropdown
+    function guestSelectionChanged(){
+      loadConversationForSelection();
+      renderThreadNote();
+      renderSciList();
+      updateYam();
+      saveDraft();
+      if (document.body.classList.contains('hk-answer-mode')) updateReadBar();
+    }
+    function openGuestForm(n, g){
+      state.guestEdit[n] = true;
+      var o = guestSlotEls(n);
+      if (!o.form) return;
+      o.form.innerHTML = guestFormHtml(n, g || slotGuest(n) || undefined);
+      renderGuestSlot(n);
+    }
+    function closeGuestForm(n){
+      state.guestEdit[n] = false;
+      renderGuestSlot(n);
+    }
+    function readGuestFormValues(n){
+      var o = guestSlotEls(n);
+      var f = o.form;
+      if (!f) return { ok:false, msg:t('guest.badData') };
+      var q = function(sel){ return f.querySelector(sel); };
+      var name = String(q('.gf-name') && q('.gf-name').value || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+      var date = String(q('.gf-date') && q('.gf-date').value || '').trim();
+      var noTime = !!(q('.gf-notime') && q('.gf-notime').checked);
+      var timeRaw = String(q('.gf-time') && q('.gf-time').value || '').trim().slice(0, 5);
+      if (!noTime && !timeRaw) return { ok:false, msg:t('guest.needTime') };
+      var genderEl = q('.gf-gender:checked');
+      var gender = genderEl ? String(genderEl.value) : '';
+      var latRaw = String(q('.gf-lat') && q('.gf-lat').value || '').trim();
+      var lngRaw = String(q('.gf-lng') && q('.gf-lng').value || '').trim();
+      var lat = latRaw === '' ? GUEST_DEFAULT_LOC.lat : Number(latRaw);
+      var lng = lngRaw === '' ? GUEST_DEFAULT_LOC.lng : Number(lngRaw);
+      var place = String(q('.gf-place') && q('.gf-place').value || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+      var guest = { name:name, birthDate:date, birthTime:noTime ? null : timeRaw, gender:gender, lat:lat, lng:lng, place:place };
+      var msg = guestClientError(guest);
+      if (msg) return { ok:false, msg:msg };
+      return { ok:true, guest:guest };
+    }
+    function commitGuestForm(n){
+      var res = readGuestFormValues(n);
+      var o = guestSlotEls(n);
+      if (!res.ok) {
+        var errEl = o.form && o.form.querySelector('.gf-err');
+        if (errEl) errEl.textContent = res.msg;
+        return false;
+      }
+      state.guests[n] = res.guest;
+      state.guestEdit[n] = false;
+      renderGuestSlot(n);
+      guestSelectionChanged();
+      return true;
+    }
+    function removeGuest(n){
+      delete state.guests[n];
+      state.guestEdit[n] = false;
+      renderGuestSlot(n);
+      guestSelectionChanged();
+    }
+    // Google Places lazy-load (pattern datepick r367 · ผ่าน /api/maps-script · fallback กรอก lat/lng เอง)
+    function ensureFusionPlaces(){
+      if (window.HK_ensurePlacesScript) return window.HK_ensurePlacesScript();
+      return new Promise(function(resolve, reject){
+        if (window.google && window.google.maps && window.google.maps.places) return resolve();
+        if (window.__hkPlacesLoading) { window.__hkPlacesLoading.then(resolve, reject); return; }
+        window.__hkPlacesLoading = new Promise(function(res, rej){
+          var done = false;
+          function fail(msg){
+            if (done) return; done = true; clearTimeout(to);
+            try { delete window.__hkInitFusionPlaces; } catch(_){}
+            try { delete window.__hkPlacesLoading; } catch(_){}
+            rej(new Error(msg));
+          }
+          var to = setTimeout(function(){ fail('places script timeout'); }, 8000);
+          window.__hkInitFusionPlaces = function(){
+            if (done) return; done = true; clearTimeout(to);
+            try { delete window.__hkInitFusionPlaces; } catch(_){}
+            res();
+          };
+          var s = document.createElement('script');
+          s.async = true;
+          s.src = '/api/maps-script?callback=__hkInitFusionPlaces';
+          s.onerror = function(){ fail('places script load error'); };
+          document.head.appendChild(s);
+        });
+        window.__hkPlacesLoading.then(resolve, reject);
+      });
+    }
+    function wireGuestPlaces(inp){
+      if (!inp || inp.__hkAcWired) return;
+      inp.__hkAcWired = true;
+      ensureFusionPlaces().then(function(){
+        var ac = new google.maps.places.Autocomplete(inp, { fields:['name', 'geometry', 'formatted_address'] });
+        ac.addListener('place_changed', function(){
+          var p = ac.getPlace();
+          if (!p.geometry || !p.geometry.location) return;
+          var form = inp.closest('[data-guest-form]');
+          if (!form) return;
+          inp.value = p.name || p.formatted_address || inp.value;
+          var la = form.querySelector('.gf-lat'), lg = form.querySelector('.gf-lng');
+          if (la) la.value = p.geometry.location.lat().toFixed(4);
+          if (lg) lg.value = p.geometry.location.lng().toFixed(4);
+        });
+      }).catch(function(){
+        var form = inp.closest('[data-guest-form]');
+        if (!form) return;
+        var manual = form.querySelector('.gf-manual');
+        if (manual) manual.classList.remove('hidden');
+        var hint = form.querySelector('.gf-loc-hint');
+        if (hint) hint.textContent = t('guest.locFail');
+      });
+    }
+    // r383 · wire guest UI (delegate — ฟอร์ม/chip สร้างแบบ dynamic): ลิงก์เพิ่ม · ใช้ดวงนี้ · ยกเลิก · แก้ · ลบ · พิกัดเอง
+    document.addEventListener('click', function(e){
+      var tgt = e.target;
+      if (!tgt || !tgt.closest) return;
+      var addBtn = tgt.closest('[data-guest-add]');
+      if (addBtn) { openGuestForm(Number(addBtn.getAttribute('data-guest-add'))); return; }
+      var actBtn = tgt.closest('[data-guest-act]');
+      if (actBtn) {
+        var slotN = Number(actBtn.getAttribute('data-guest-slot'));
+        if (actBtn.getAttribute('data-guest-act') === 'edit') openGuestForm(slotN);
+        else removeGuest(slotN);
+        return;
+      }
+      var gform = tgt.closest('[data-guest-form]');
+      if (gform) {
+        var fn = Number(gform.getAttribute('data-guest-form'));
+        if (tgt.closest('.gf-use')) { commitGuestForm(fn); return; }
+        if (tgt.closest('.gf-cancel')) { closeGuestForm(fn); return; }
+        if (tgt.closest('.gf-manual-toggle')) {
+          var man = gform.querySelector('.gf-manual');
+          if (man) man.classList.toggle('hidden');
+          return;
+        }
+      }
+    });
+    // checkbox "ไม่ทราบเวลาเกิด" → ปิดช่องเวลา + โชว์ hint 3 เสา (จื่อเวย/ดาวจริงจีนข้าม)
+    document.addEventListener('change', function(e){
+      var cb = e.target;
+      if (!cb || !cb.classList || !cb.classList.contains('gf-notime')) return;
+      var form = cb.closest ? cb.closest('[data-guest-form]') : null;
+      if (!form) return;
+      var timeEl = form.querySelector('.gf-time');
+      if (timeEl) { timeEl.disabled = !!cb.checked; if (cb.checked) timeEl.value = ''; }
+      var hint = form.querySelector('.gf-notime-hint');
+      if (hint) hint.style.display = cb.checked ? '' : 'none';
+    });
+    // Google Places โหลด lazy ครั้งแรกที่ focus ช่องสถานที่ (แบบ datepick · ไม่โหลดถ้าไม่ใช้ guest)
+    document.addEventListener('focusin', function(e){
+      if (e.target && e.target.classList && e.target.classList.contains('gf-place')) wireGuestPlaces(e.target);
+    });
     function modelShortName(model){
       model = String(model || '-');
       return model === 'codex-cli' ? 'Codex'
@@ -1572,6 +1849,23 @@
         '<span class="run-wait-desktop">' + esc(desktopText) + '</span>' +
       '</div>';
     }
+    // r383 · pill ลอยมุมล่าง (มือถือ+answer-mode+หน้าถามเท่านั้น — CSS base ซ่อน · desktop ไม่เห็นตลอด)
+    // งานวิ่ง: "⏳ x% · แตะกลับไปดูคำพยากรณ์" · เสร็จ: "✅ คำพยากรณ์พร้อมแล้ว · แตะดู" · idle/error: ซ่อน
+    function setRunPill(phase, pct){
+      if (!els.runPill) return;
+      state.runPillState = { phase: phase || '', pct: (pct != null ? Math.round(pct) : null) };
+      if (phase === 'running') {
+        els.runPill.textContent = '⏳ ' + (pct != null ? Math.round(pct) : 0) + '% · ' + t('pill.back');
+        els.runPill.classList.remove('hidden');
+      } else if (phase === 'done') {
+        els.runPill.textContent = '✅ ' + t('pill.ready');
+        els.runPill.classList.remove('hidden');
+      } else {
+        els.runPill.textContent = '';
+        els.runPill.classList.add('hidden');
+      }
+    }
+    function refreshRunPill(){ var rp = state.runPillState; if (rp) setRunPill(rp.phase, rp.pct); } // เปลี่ยนภาษา → ข้อความ pill ตาม
     function stopProgressTicker(){
       if (state.progressTick) clearInterval(state.progressTick);
       state.progressTick = null;
@@ -1592,6 +1886,7 @@
       if (pc) pc.textContent = pct + '%';
       var line = els.progress.querySelector('.prog-line-text');
       if (line) line.textContent = progressLineText(status, pct);
+      setRunPill('running', pct); // r383: pill % เดินตาม tick เดียวกับแถบ
       setStatus((status.message || 'กำลังรัน Fusion') + ' · ' + pct + '%');
     }
     function renderProgress(status){
@@ -1602,6 +1897,7 @@
         state.lastProgressStatus = null;
         els.progress.className = 'progress-card hidden';
         els.progress.innerHTML = '';
+        setRunPill(''); // r383: ไม่มีงาน (ล้าง/รันพลาด/ไม่มี job) → pill หาย
         return;
       }
       state.lastProgressStatus = status;
@@ -1626,6 +1922,7 @@
         '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
         '<div class="progress-message">' + esc(status.message || 'กำลังรัน Fusion') + '</div>' +
         '<div class="progress-models">' + rows + '</div>';
+      setRunPill(status.phase === 'done' ? 'done' : 'running', pct); // r383: เสร็จ → "✅ คำพยากรณ์พร้อมแล้ว · แตะดู"
       setStatus((status.message || 'กำลังรัน Fusion') + ' · ' + pct + '%');
       ensureProgressTicker(status);
     }
@@ -2071,6 +2368,12 @@
     function fusionFromHistory(row){
       return metaObj(row && row.response_meta);
     }
+    // r383: ป้ายดวงชั่วคราวของ run ในประวัติ (server เก็บ response_meta.guest_births) · '' = ไม่มี guest
+    function historyGuestLabel(row){
+      var gs = fusionFromHistory(row).guest_births;
+      if (!Array.isArray(gs) || !gs.length) return '';
+      return gs.map(function(g){ return '🎴' + ((g && g.name) ? String(g.name) : t('guest.namePh')); }).join(' + ') + ' (' + t('guest.chipTag') + ')';
+    }
     function runReceipt(row){
       var fusion = fusionFromHistory(row);
       var judge = metaObj(fusion.judge);
@@ -2102,7 +2405,7 @@
             '<div class="history-title">' + esc(shortText(row.question, 110)) + '</div>' +
             '<div class="history-flags">' + (us.pinned ? '<span class="pill">pin</span>' : '') + (us.favorite ? '<span class="pill">fav</span>' : '') + historyStatusPill(row) + '</div>' +
           '</div>' +
-          '<div class="history-meta">' + esc(rowDate(row) + ' · ' + (row.topic || '-') + ' · ' + (row.mode || '-') + ' · ' + runReceipt(row)) + '</div>' +
+          '<div class="history-meta">' + esc(rowDate(row) + ' · ' + (row.topic || '-') + ' · ' + (row.mode || '-') + (historyGuestLabel(row) ? ' · ' + historyGuestLabel(row) : '') + ' · ' + runReceipt(row)) + '</div>' +
           '<div class="history-actions">' +
             '<button class="mini-btn ' + (us.pinned ? 'active' : '') + '" type="button" data-hact="pin" data-id="' + esc(row.id) + '">' + (us.pinned ? 'Unpin' : 'Pin') + '</button>' +
             '<button class="mini-btn ' + (us.favorite ? 'active' : '') + '" type="button" data-hact="favorite" data-id="' + esc(row.id) + '">' + (us.favorite ? 'Unfav' : 'Fav') + '</button>' +
@@ -2159,7 +2462,7 @@
         : '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-collapsed">คำตอบถูกซ่อนไว้ เพื่อไม่ให้คำตอบเก่ากินพื้นที่หรือปนกับคำถามต่อ <div class="history-actions" style="margin-top:10px"><button class="mini-btn" type="button" data-hact="show-answer" data-id="' + esc(row.id) + '">โชว์คำตอบ</button></div></div></div>';
       els.historyDetail.innerHTML =
         '<div class="detail-head">' +
-          '<div><div class="detail-title">' + esc(row.question || '') + '</div><div class="detail-sub">' + esc(rowDate(row) + ' · ' + runReceipt(row)) + '</div></div>' +
+          '<div><div class="detail-title">' + esc(row.question || '') + '</div><div class="detail-sub">' + esc(rowDate(row) + (historyGuestLabel(row) ? ' · ' + historyGuestLabel(row) : '') + ' · ' + runReceipt(row)) + '</div></div>' +
           '<div class="detail-tools">' +
             '<button class="mini-btn" type="button" data-hact="continue" data-id="' + esc(row.id) + '">ถามต่อจากรอบนี้</button>' +
             '<button class="mini-btn" type="button" data-hact="rerun" data-id="' + esc(row.id) + '">รันใหม่</button>' +
@@ -2187,12 +2490,13 @@
       if (!profileId) return;
       els.historyList.innerHTML = '<div class="history-empty">กำลังโหลดประวัติ...</div>';
       var qs = new URLSearchParams({ profileId:profileId, limit:'80' });
-      if (els.historyQ.value.trim()) qs.set('q', els.historyQ.value.trim());
-      if (els.historyTopic.value) qs.set('topic', els.historyTopic.value);
-      if (els.historyMode.value) qs.set('mode', els.historyMode.value);
-      if (els.historyStatus.value) qs.set('status', els.historyStatus.value);
-      if (els.historyFrom.value) qs.set('dateFrom', els.historyFrom.value);
-      if (els.historyTo.value) qs.set('dateTo', els.historyTo.value);
+      // r383: การ์ด Search/filters ถูกถอดจาก DOM ทุกอุปกรณ์ — guard element null (โค้ด filter เดิมคงไว้ เผื่อคืนการ์ดภายหลัง)
+      if (els.historyQ && els.historyQ.value.trim()) qs.set('q', els.historyQ.value.trim());
+      if (els.historyTopic && els.historyTopic.value) qs.set('topic', els.historyTopic.value);
+      if (els.historyMode && els.historyMode.value) qs.set('mode', els.historyMode.value);
+      if (els.historyStatus && els.historyStatus.value) qs.set('status', els.historyStatus.value);
+      if (els.historyFrom && els.historyFrom.value) qs.set('dateFrom', els.historyFrom.value);
+      if (els.historyTo && els.historyTo.value) qs.set('dateTo', els.historyTo.value);
       try {
         var r = await fetch('/api/sifu/fusion/history?' + qs.toString(), { credentials:'same-origin', cache:'no-store' });
         var j = await r.json().catch(function(){ return {}; });
@@ -2379,6 +2683,7 @@
         localStorage.setItem(FUSION_DRAFT_KEY, JSON.stringify({
           question: els.question ? els.question.value : '',
           profileIds: selectedProfileIds(),
+          guests: state.guests, // r383: ดวงชั่วคราวรายช่อง {1..4} รวมใน draft (restore แล้ว chip กลับมา)
           mode: state.mode,
           sci: state.sci,
           locale: state.locale,
@@ -2406,7 +2711,11 @@
     }
     function snapNames(meta){
       var ids = (meta && Array.isArray(meta.profileIds)) ? meta.profileIds : [];
-      return ids.map(function(id){ var p = profileById(id); return p ? String(p.nickname || p.name || '') : ''; }).filter(Boolean).join(' + ');
+      var names = ids.map(function(id){ var p = profileById(id); return p ? String(p.nickname || p.name || '') : ''; }).filter(Boolean);
+      // r383: ต่อท้ายชื่อดวงชั่วคราว (ลำดับ server = profiles ก่อน แล้ว guests)
+      var gs = (meta && Array.isArray(meta.guests)) ? meta.guests : [];
+      gs.forEach(function(g){ if (g) names.push('🎴' + (g.name ? String(g.name) : t('guest.namePh'))); });
+      return names.join(' + ');
     }
     function applyProfileSelection(ids){
       ids = Array.isArray(ids) ? ids.filter(Boolean).map(String).slice(0, 4) : [];
@@ -2427,20 +2736,45 @@
       renderSciList();
       updateYam();
     }
+    // r383: resume งานที่มีดวงชั่วคราว → คืน chip ลงช่องถัดจาก profiles (ลำดับ server: profiles ก่อน แล้ว guests)
+    function applyGuestSelection(meta){
+      var list = (meta && Array.isArray(meta.guests)) ? meta.guests.map(normGuest).filter(Boolean) : [];
+      state.guests = {};
+      GUEST_SLOTS.forEach(function(n){ state.guestEdit[n] = false; });
+      if (list.length) {
+        var pids = (meta && Array.isArray(meta.profileIds)) ? meta.profileIds.filter(Boolean) : [];
+        if (pids.length + list.length > 1 && state.mode !== 'pair') setMode('pair');
+        var slot = pids.length + 1;
+        list.slice(0, Math.max(0, 4 - pids.length)).forEach(function(g){ state.guests[slot] = g; slot++; });
+      }
+      renderGuestSlots();
+    }
     function applyJobSelection(meta){
       meta = meta || {};
       if (Array.isArray(meta.profileIds) && meta.profileIds.length) applyProfileSelection(meta.profileIds);
+      applyGuestSelection(meta); // r383 (มาก่อน renderSciList/updateYam ข้างล่าง — ยาม/เวลาเกิดนับ guest)
       if (Array.isArray(meta.sciences) && meta.sciences.length) {
         SCI_ORDER.forEach(function(s){ state.sci[s] = meta.sciences.indexOf(s) !== -1; });
-        renderSciList();
-        updateYam();
       }
+      renderSciList();
+      updateYam();
     }
     function restoreDraft(){
       var j = null;
       try { var raw = localStorage.getItem(FUSION_DRAFT_KEY); j = raw ? JSON.parse(raw) : null; } catch(_) { j = null; }
       if (!j || !j.updatedAt || Date.now() - Number(j.updatedAt) > 24 * 60 * 60 * 1000) return;
       if (Array.isArray(j.profileIds) && j.profileIds.length) applyProfileSelection(j.profileIds);
+      // r383: กู้ดวงชั่วคราวรายช่องจาก draft (validate ก่อน — draft เพี้ยน = ข้ามช่องนั้น)
+      if (j.guests && typeof j.guests === 'object') {
+        GUEST_SLOTS.forEach(function(n){
+          var g = normGuest(j.guests[n]);
+          if (g && !guestClientError(g)) state.guests[n] = g;
+        });
+        if (j.mode === 'pair' && state.mode !== 'pair' && GUEST_SLOTS.some(function(n){ return n > 1 && slotGuest(n); })) setMode('pair'); // guest อยู่ช่อง 2-4 → ต้องกางโหมดคู่ให้เห็น chip
+        renderGuestSlots();
+        renderSciList();
+        updateYam();
+      }
       if (j.sci && typeof j.sci === 'object') {
         SCI_ORDER.forEach(function(s){ if (typeof j.sci[s] === 'boolean') state.sci[s] = j.sci[s]; });
         renderSciList();
@@ -2464,6 +2798,7 @@
         jobId: String((job && job.jobId) || fallback.jobId || ''),
         profileId: ids[0] || fallback.profileId || selectedProfileId(),
         profileIds: ids,
+        guests: (job && Array.isArray(job.guestBirths) && job.guestBirths.length) ? job.guestBirths : (Array.isArray(fallback.guests) ? fallback.guests : []), // r383: GET คืน guestBirths → read-bar/chip เห็นชื่อ
         sciences: sciences,
         question: String((job && job.question) || fallback.question || '').trim(),
         lang: fallback.lang || state.locale,
@@ -2556,6 +2891,19 @@
       if (raw === 'insufficient_hours' || status === 402) {
         var need = data.required != null ? data.required : (data.spend_hours != null ? data.spend_hours : currentYam());
         return yamShortMsg(need);
+      }
+      // r383: guest 400 จาก server (invalid_guest_birth* + guestIndex) → ข้อความไทยชี้ช่องที่ผิด
+      var guestErrMap = {
+        invalid_guest_births:t('guest.badData'), invalid_guest_birth:t('guest.badData'),
+        invalid_guest_birth_date:t('guest.badDate'), invalid_guest_birth_time:t('guest.needTime'),
+        invalid_guest_gender:t('guest.needGender'), invalid_guest_lat:t('guest.badLatLng'), invalid_guest_lng:t('guest.badLatLng'),
+        too_many_births:t('guest.tooMany')
+      };
+      if (guestErrMap[raw]) {
+        var gi = Number(data.guestIndex);
+        var gslots = activeSlots().filter(function(n){ return !!slotGuest(n); }); // guest ลำดับ i = ช่องที่ gslots[i]
+        var slotNo = (isFinite(gi) && gi >= 0 && gslots[gi]) ? gslots[gi] : 0;
+        return guestErrMap[raw] + (slotNo ? ' · ' + t('guest.slotAt').replace('{n}', slotNo) : '');
       }
       var mapErr = {
         profile_required:t('ask.profile'),
@@ -2700,9 +3048,12 @@
       if (!state.ready) { setStatus(state.locale==='th'?'กำลังโหลดบัญชีและ profile':'loading account & profile', 'err'); return; }
       var message = els.question.value.trim();
       var profileIds = selectedProfileIds();
+      var guests = selectedGuests(); // r383: ดวงชั่วคราวตามลำดับช่อง (server ต่อท้าย profiles ตามลำดับที่ส่ง · spec 2ae0f0e)
+      var totalCharts = profileIds.length + guests.length;
       var sciences = activeSciences();
-      if (!profileIds.length) { setStatus(t('ask.profile'), 'err'); return; }
-      if (state.mode === 'pair' && profileIds.length < 2) { setStatus(state.locale==='th'?'กรุณาเลือกดวงที่ 2':'select 2nd chart', 'err'); return; }
+      if (!totalCharts) { setStatus(t('ask.profile'), 'err'); return; }
+      if (totalCharts > 4) { setStatus(t('guest.tooMany'), 'err'); return; } // block ฝั่ง client ก่อนถึง server
+      if (state.mode === 'pair' && totalCharts < 2) { setStatus(state.locale==='th'?'กรุณาเลือกดวงที่ 2':'select 2nd chart', 'err'); return; }
       if (!sciences.length) { setStatus(t('noSci'), 'err'); return; }
       if (!message) { setStatus(t('ask.question'), 'err'); return; }
       if (!canUseFusion()) { applyFusionGate(); setStatus(fusionGateMessage(), 'err'); return; }
@@ -2718,7 +3069,7 @@
       startSyntheticProgress(sciences);
       if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('running')); // r376: จองพื้นที่คำตอบตั้งแต่รัน
       renderResonance(null); // ล้างการ์ดรอบก่อน · การ์ดใหม่มากับ POST response ทันที
-      var pendingMeta = { jobId:'', clientRunId:newRunId(), profileId:profileIds[0], profileIds:profileIds, sciences:sciences, question:message, lang:state.locale, history:priorHistory, threadId:state.threadId, startedAt:Date.now(), posting:true };
+      var pendingMeta = { jobId:'', clientRunId:newRunId(), profileId:profileIds[0] || '', profileIds:profileIds, guests:guests.map(guestPayload), sciences:sciences, question:message, lang:state.locale, history:priorHistory, threadId:state.threadId, startedAt:Date.now(), posting:true }; // r383: guests เข้า meta → snapshot/read-bar/resume เห็นชื่อ guest
       saveDraft();
       saveJob(pendingMeta);
       clearSnap(); // r381: งานใหม่ = snapshot ใหม่ ไม่ปนของเก่า
@@ -2734,12 +3085,13 @@
 	          cache:'no-store',
 	          body: JSON.stringify({
               profileIds:profileIds,
+              guestBirths:guests.length ? guests.map(guestPayload) : undefined, // r383: [{name?,birthDate,birthTime|null,gender,lat,lng,place?}] ตามลำดับช่อง (undefined = JSON ตัดทิ้ง · additive)
               sciences:sciences,
               question:message,
               lang:state.locale,
               history:priorHistory,
               threadId:state.threadId,
-              threadProfileId:profileIds[0]
+              threadProfileId:profileIds[0] || undefined
             })
 	        });
         j = await r.json().catch(function(){ return {}; });
@@ -2766,7 +3118,7 @@
         endRun();
         return;
       }
-      try { localStorage.setItem('hk_profile_id', profileIds[0]); } catch(_){}
+      if (profileIds[0]) { try { localStorage.setItem('hk_profile_id', profileIds[0]); } catch(_){} } // r383: guest ล้วน = ไม่มี profile id ให้จำ
       if (j && j.jobId) {
         if (j.threadId) state.threadId = String(j.threadId).slice(0, 100);
         var meta = Object.assign({}, pendingMeta, { jobId:j.jobId, threadId:state.threadId, posting:false });
@@ -2805,6 +3157,7 @@
         var p = profileById(id);
         return p ? String(p.nickname || p.name || '') : '';
       }).filter(Boolean);
+      if (typeof selectedGuests === 'function') selectedGuests().forEach(function(g){ names.push('🎴' + (g.name ? String(g.name) : t('guest.namePh'))); }); // r383: ชื่อ guest ต่อท้าย (typeof-guard: เทส extract ฟังก์ชันนี้เดี่ยวๆ)
       var nameLabel = names.length > 2 ? (names[0] + ' +' + (names.length - 1)) : names.join(' + '); // กลุ่ม 3-4 ดวง = "คนแรก +N"
       readBar.label.innerHTML = '<b>' + esc(nameLabel || '—') + '</b> · ' + esc(summaryQuestionText());
     }
@@ -2817,6 +3170,16 @@
       document.body.classList.toggle('hk-ask-open'); // สลับ หน้าอ่าน ↔ หน้าถาม · ซ่อนด้วย CSS เท่านั้น state สองฝั่งอยู่ครบ
       updateReadBar();
     });
+    // r383 · pill ลอยมุมล่าง: แตะ = กลับหน้าอ่าน (โผล่เฉพาะมือถือ answer-mode+หน้าถาม ด้วย CSS · desktop base ซ่อนตลอด)
+    if (els.runPill) els.runPill.addEventListener('click', function(){
+      document.body.classList.remove('hk-ask-open');
+      updateReadBar();
+    });
+    // r383 · มือถือซ่อน history ทั้งก้อนบนหน้าอ่าน → กดดูประวัติแล้วต้องคงอยู่หน้าถาม (ที่ history มองเห็น) · desktop = no-op
+    function keepHistoryOnAskPage(){
+      if (!isMobileFold()) return;
+      if (document.body.classList.contains('hk-answer-mode')) { document.body.classList.add('hk-ask-open'); updateReadBar(); }
+    }
     // r382 · การ์ด 🔗/🎯: พับอยู่ → แตะที่ไหนก็กาง · กางอยู่ → แตะหัว/แถบสรุป = พับกลับ (ทุกอุปกรณ์ · จำสถานะต่อ job)
     [[els.resonance, 'res'], [els.sniper, 'snp']].forEach(function(pair){
       var card = pair[0], cardKey = pair[1];
@@ -2870,7 +3233,7 @@
           patchHistory(id, { note: noteEl ? noteEl.value : '' }).then(function(){ setStatus('บันทึก note แล้ว', 'ok'); }).catch(function(err){ setStatus(err.message || err, 'err'); });
           return;
         }
-        if (act === 'show-answer') { state.showHistoryAnswerId = id; setAnswerMode(true); renderHistoryDetail(id); return; }
+        if (act === 'show-answer') { state.showHistoryAnswerId = id; setAnswerMode(true); keepHistoryOnAskPage(); renderHistoryDetail(id); return; } // r383: มือถือคงหน้าถาม (history อยู่ที่นั่น)
         if (act === 'continue') { continueFromHistory(row); return; }
         if (act === 'rerun') { rerunHistory(row); return; }
         if (act === 'export-md') { exportMarkdown(row); return; }
@@ -2881,6 +3244,7 @@
         var nextHistoryId = histItem.getAttribute('data-history-id');
         if (nextHistoryId !== state.activeHistoryId) state.showHistoryAnswerId = '';
         setAnswerMode(true); // r374: เปิดประวัติ = อยากอ่านคำตอบ → มือถือยุบการ์ดถาม
+        keepHistoryOnAskPage(); // r383: หน้าอ่านซ่อน history ทั้งก้อน → มือถือต้องคงหน้าถามให้เห็น detail
         renderHistoryDetail(nextHistoryId);
         return;
       }
@@ -2958,9 +3322,9 @@
     els.historyRefresh.addEventListener('click', function(){ state.showHistoryAnswerId=''; loadFusionHistory(); });
     if (els.historySearch) els.historySearch.addEventListener('click', function(){ state.activeHistoryId=''; state.showHistoryAnswerId=''; loadFusionHistory(); });
     [els.historyTopic, els.historyMode, els.historyStatus, els.historyFrom, els.historyTo].forEach(function(el){
-      el.addEventListener('change', function(){ state.activeHistoryId=''; state.showHistoryAnswerId=''; loadFusionHistory(); });
+      if (el) el.addEventListener('change', function(){ state.activeHistoryId=''; state.showHistoryAnswerId=''; loadFusionHistory(); }); // r383: การ์ด filter ถูกถอด → guard null
     });
-    els.historyQ.addEventListener('keydown', function(e){
+    if (els.historyQ) els.historyQ.addEventListener('keydown', function(e){
       if (e.key === 'Enter') { state.activeHistoryId=''; state.showHistoryAnswerId=''; loadFusionHistory(); }
     });
     // ===== locale + theme init =====
@@ -2987,6 +3351,8 @@
       else if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
       renderResonance(state.resonance); // r369: อัปเดตป้าย/ธีมตามภาษาใหม่ (r382: สถานะพับ/กางไม่ reset — อ่านจาก pref)
       updateReadBar(); // r382: ป้ายแถบสลับตามภาษาใหม่
+      refreshRunPill(); // r383: ข้อความ pill ตามภาษาใหม่
+      renderGuestSlots(); // r383: ป้ายบนฟอร์ม/chip guest ตามภาษาใหม่ (ฟอร์มที่เปิดค้างจะถูกวาดใหม่ตอน openGuestForm ครั้งหน้า)
     });
     function syncFusionOnReturn(){
       if (!state.ready) return;
