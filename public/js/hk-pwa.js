@@ -369,6 +369,12 @@
 
   var main = safe(function () {
     if (!('serviceWorker' in navigator)) return;
+    /* r380b: ลิงก์ลับ canary — ?pwa=1 เปิด opt-in / ?pwa=0 ปิด (สำหรับมือถือที่เปิด console ไม่ได้) */
+    try {
+      var q = new URLSearchParams(location.search).get('pwa');
+      if (q === '1') localStorage.setItem('hk_pwa_canary', '1');
+      else if (q === '0') { localStorage.removeItem('hk_pwa_canary'); localStorage.removeItem('hk_pwa_beta'); }
+    } catch (e) {}
     fetch('/pwa-flag.json', { cache: 'no-store', credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(safe(function (data) {
