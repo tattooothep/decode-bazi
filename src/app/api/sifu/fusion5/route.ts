@@ -16,6 +16,7 @@ import { buildResonance, renderResonanceBlockTh, RESONANCE_SCIENCES, type Fusion
 import { buildDaySniper, renderDaySniperTh, resolveDaySniperRange } from "@/lib/fusion5/day-sniper";
 import { buildSynastry, type PersonSyn } from "@/lib/bazi-synastry";
 import { logResearchAiMessage } from "@/lib/research-log";
+import { notifyFusionDone } from "@/lib/push-sender"; // r380: web push แจ้ง "คำพยากรณ์พร้อมแล้ว 🔮"
 
 export const runtime = "nodejs";
 export const maxDuration = 800;
@@ -578,6 +579,7 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
     if (historyId) (result.fusion5 as Record<string, unknown>).historyId = historyId;
     // UPDATE ก่อน → ค่อย refund partial (ถ้า UPDATE throw → catch คืนเต็มแทน · กัน over-refund ซ้ำ)
     await q(`UPDATE fusion5_jobs SET status='done', result=$2, updated_at=now() WHERE id=$1`, [jobId, JSON.stringify(result)]);
+    notifyFusionDone(p.userId); // r380: fire-and-forget · push-sender เคารพ prefs/quiet hours + ไม่ throw
     if (totalRefund > 0) await refundHoursForUser(p.userId, totalRefund, FEATURE).catch(() => {});
   } catch (e) {
     // throw ก่อน UPDATE สำเร็จ (partial refund ยังไม่ทำ) → คืนยามเต็ม + mark error (กันเงินหาย/job ค้าง)

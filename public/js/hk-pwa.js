@@ -376,8 +376,13 @@
         var allowed = flag === 'on' ||
           (flag === 'canary' && (lsGet('hk_pwa_canary') === '1' || lsGet('hk_pwa_beta') === '1'));
         if (!allowed) {
-          /* off/ไม่เข้าเงื่อนไข canary → เก็บกวาด SW เดิมถ้าเคย register ไว้ */
-          if (flag === 'off' || flag === 'canary' || !flag) unregisterAll();
+          /* off/ไม่เข้าเงื่อนไข canary → เก็บกวาด SW เดิมถ้าเคย register ไว้
+           * r380: ยกเว้นคนที่เปิดแจ้งเตือน push ไว้ (hk_push_on) — ต้องคง SW ไว้รับ push
+           * (kill-switch จริง flag='off' ยังเก็บกวาดเสมอ) */
+          var pushOn = lsGet('hk_push_on') === '1';
+          if (flag === 'off') { unregisterAll(); return; }
+          if (!pushOn && (flag === 'canary' || !flag)) unregisterAll();
+          else if (pushOn) registerSW(); /* คง SW เพื่อรับ push · ไม่ inject manifest/install UX */
           return;
         }
         injectHead();
@@ -388,4 +393,133 @@
   });
 
   main();
+
+  /* ═══════════ Web Push helper · Phase C (r380) · window.hkPush ═══════════
+   * ใช้จากหน้า account (การ์ด "การแจ้งเตือน") — ขอ permission เฉพาะตอน user กดเท่านั้น
+   * enable() → { ok, reason? }  reason: unsupported | ios_install | denied | vapid | subscribe | save */
+
+  function pushSupported() {
+    try {
+      return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
+    } catch (_) { return false; }
+  }
+
+  function pushNeedsInstall() {
+    /* iOS: web push ใช้ได้เฉพาะ PWA ที่ติดตั้งบนหน้าจอโฮม (iOS >= 16.4) */
+    return isIOS() && !isStandalone();
+  }
+
+  function urlB64ToUint8Array(base64String) {
+    var padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    var raw = atob(base64);
+    var arr = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return arr;
+  }
+
+  async function pushGetRegistration() {
+    var reg = await navigator.serviceWorker.getRegistration('/');
+    if (!reg) reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    await navigator.serviceWorker.ready;
+    return reg;
+  }
+
+  async function pushEnable() {
+    try {
+      if (!pushSupported()) return { ok: false, reason: 'unsupported' };
+      if (pushNeedsInstall()) return { ok: false, reason: 'ios_install' };
+      /* ขอ permission ตรงนี้เท่านั้น (ต้องมาจาก user gesture — ห้าม auto) */
+      var perm = await Notification.requestPermission();
+      if (perm !== 'granted') return { ok: false, reason: 'denied' };
+      var reg = await pushGetRegistration();
+      var keyRes = await fetch('/api/push/vapid-key', { credentials: 'include', cache: 'no-store' });
+      if (!keyRes.ok) return { ok: false, reason: 'vapid' };
+      var keyData = await keyRes.json();
+      var sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        try {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlB64ToUint8Array(keyData.key)
+          });
+        } catch (_) { return { ok: false, reason: 'subscribe' }; }
+      }
+      var save = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: sub.toJSON() })
+      });
+      if (!save.ok) return { ok: false, reason: 'save' };
+      lsSet('hk_push_on', '1');
+      return { ok: true };
+    } catch (_) { return { ok: false, reason: 'subscribe' }; }
+  }
+
+  async function pushDisable() {
+    try {
+      lsSet('hk_push_on', '0');
+      if (!pushSupported()) return { ok: true };
+      var reg = await navigator.serviceWorker.getRegistration('/');
+      var endpoint = '';
+      if (reg) {
+        var sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          endpoint = sub.endpoint || '';
+          try { await sub.unsubscribe(); } catch (_) {}
+        }
+      }
+      await fetch('/api/push/unsubscribe', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: endpoint })
+      }).catch(function () {});
+      return { ok: true };
+    } catch (_) { return { ok: true }; }
+  }
+
+  async function pushState() {
+    var st = {
+      supported: pushSupported(),
+      needsInstall: pushNeedsInstall(),
+      permission: (typeof Notification !== 'undefined' && Notification.permission) || 'default',
+      subscribed: false
+    };
+    try {
+      if (st.supported) {
+        var reg = await navigator.serviceWorker.getRegistration('/');
+        if (reg) st.subscribed = !!(await reg.pushManager.getSubscription());
+      }
+    } catch (_) {}
+    return st;
+  }
+
+  window.hkPush = {
+    supported: pushSupported,
+    needsInstall: pushNeedsInstall,
+    enable: pushEnable,
+    disable: pushDisable,
+    state: pushState
+  };
+
+  /* เคยเปิดแจ้งเตือนไว้ + permission ยัง granted → sync subscription เงียบๆ
+   * (กันเคส push service reset endpoint / pushsubscriptionchange ระหว่างปิดเครื่อง) */
+  setTimeout(safe(function () {
+    if (lsGet('hk_push_on') !== '1' || !pushSupported()) return;
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+    navigator.serviceWorker.getRegistration('/').then(function (reg) {
+      if (!reg) return;
+      reg.pushManager.getSubscription().then(function (sub) {
+        if (!sub) return;
+        fetch('/api/push/subscribe', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub.toJSON() })
+        }).catch(function () {});
+      }).catch(function () {});
+    }).catch(function () {});
+  }), 4000);
 })();

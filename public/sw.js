@@ -11,7 +11,7 @@
  *   6. อื่น ๆ                     → ไม่แตะ
  */
 
-const HK_SW_VERSION = 'r376';
+const HK_SW_VERSION = 'r380';
 const CACHE_NAME = 'hk-pwa-' + HK_SW_VERSION;
 
 const PRECACHE_URLS = [
@@ -146,3 +146,81 @@ async function cacheFirst(req) {
   } catch (_) {}
   return res;
 }
+
+/* ═══════════ Web Push · Phase C (r380) · additive ═══════════
+ * payload JSON จาก push-sender.ts: { title, body, url, tag }
+ * icon = 鑰 ทอง (icons เดิมของ PWA) · กด notification → เปิด/โฟกัส url */
+
+function parsePushData(event) {
+  var fallback = { title: 'hourkey', body: '', url: '/today', tag: 'hourkey' };
+  try {
+    if (!event.data) return fallback;
+    var d = event.data.json();
+    return {
+      title: (d && d.title) || fallback.title,
+      body: (d && d.body) || '',
+      url: (d && d.url) || fallback.url,
+      tag: (d && d.tag) || fallback.tag
+    };
+  } catch (_) {
+    try { return { title: 'hourkey', body: event.data.text() || '', url: '/today', tag: 'hourkey' }; }
+    catch (_2) { return fallback; }
+  }
+}
+
+self.addEventListener('push', function (event) {
+  var data = parsePushData(event);
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      tag: data.tag,
+      renotify: false,
+      data: { url: data.url }
+    }).catch(function () {})
+  );
+});
+
+self.addEventListener('notificationclick', function (event) {
+  try { event.notification.close(); } catch (_) {}
+  var url = (event.notification && event.notification.data && event.notification.data.url) || '/today';
+  event.waitUntil((async function () {
+    try {
+      var target = new URL(url, self.location.origin).href;
+      var wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      /* มี tab เปิดหน้าเดียวกันอยู่แล้ว → โฟกัส · ไม่งั้นโฟกัส tab ไหนก็ได้แล้ว navigate */
+      for (var i = 0; i < wins.length; i++) {
+        if (wins[i].url === target && 'focus' in wins[i]) return wins[i].focus();
+      }
+      if (wins.length && 'focus' in wins[0]) {
+        await wins[0].focus();
+        if ('navigate' in wins[0]) return wins[0].navigate(target).catch(function () {});
+        return;
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(target);
+    } catch (_) {}
+  })());
+});
+
+/* subscription หมดอายุ/ถูก reset โดย push service → แจ้งหน้าเว็บให้ subscribe ใหม่รอบถัดไป
+ * (hk-pwa.js re-subscribe อัตโนมัติเมื่อเปิดหน้า ถ้า user เคยเปิดแจ้งเตือนไว้) */
+self.addEventListener('pushsubscriptionchange', function (event) {
+  try {
+    event.waitUntil((async function () {
+      try {
+        var reg = self.registration;
+        var old = event.oldSubscription || (await reg.pushManager.getSubscription());
+        var appKey = old && old.options ? old.options.applicationServerKey : null;
+        if (!appKey) return;
+        var sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: appKey });
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub.toJSON() })
+        });
+      } catch (_) {}
+    })());
+  } catch (_) {}
+});

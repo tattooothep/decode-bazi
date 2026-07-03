@@ -222,6 +222,22 @@
   .crop-ring{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 999px color-mix(in srgb,var(--panel) 78%,transparent);pointer-events:none;border:1px solid var(--gold);}
   .crop-zoom{width:100%;accent-color:var(--gold);}
   @media(max-width:920px){.mg-grid{grid-template-columns:1fr;}}
+  /* === Web Push Phase C (r380) · การ์ดการแจ้งเตือน === */
+  .nt-switch{position:relative;display:inline-flex;flex:0 0 auto;width:42px;height:24px;cursor:pointer;}
+  .nt-switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
+  .nt-switch i{display:block;width:42px;height:24px;border:1px solid var(--line);background:var(--bg-2);transition:background .18s,border-color .18s;}
+  .nt-switch i::after{content:"";position:absolute;top:4px;left:4px;width:16px;height:16px;background:var(--fg-faint);transition:transform .18s,background .18s;}
+  .nt-switch input:checked + i{background:var(--gold-soft);border-color:var(--gold);}
+  .nt-switch input:checked + i::after{transform:translateX(18px);background:var(--gold);}
+  .nt-switch input:disabled + i{opacity:.45;cursor:not-allowed;}
+  .nt-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft);}
+  .nt-row:last-child{border-bottom:0;}
+  .nt-row-label{min-width:0;display:grid;gap:2px;}
+  .nt-row-label b{font-size:13px;font-weight:650;}
+  .nt-row-label span{font-size:11px;color:var(--fg-faint);line-height:1.5;}
+  .nt-quiet{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .nt-quiet select{min-height:34px;padding:0 8px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg);font:inherit;font-size:13px;}
+  .nt-sub-list[hidden]{display:none;}
   </style>
   <link rel="stylesheet" href="/css/mobile-safe.css?v=20260605b">
   <script src="/js/hk-profile-sync.js?v=20260517b"></script>
@@ -345,6 +361,65 @@
         <div class="mg-sub" data-i18n="mg.devices.sub">รายการอุปกรณ์ที่เปิดใช้งานบัญชีนี้ (บันทึกเมื่อเปิดหน้าเว็บ) · การลบรายการไม่ตัดการเข้าสู่ระบบของเครื่องนั้น</div>
         <div class="dev-list" id="dev-list"><div class="dev-row"><span class="mg-note" data-i18n="mg.devices.loading">กำลังโหลด...</span></div></div>
         <div class="mg-note" data-i18n="mg.devices.next">ปุ่ม "ออกจากระบบทุกเครื่อง" จะเปิดใช้ในเฟสถัดไป</div>
+      </div>
+
+      <!-- === Web Push Phase C (r380) · การแจ้งเตือน === -->
+      <div class="mg-card" id="card-notify">
+        <div class="mg-title"><span class="ico">🔔</span><span data-i18n="nt.title">การแจ้งเตือน</span></div>
+        <div class="mg-sub" data-i18n="nt.sub">รับแจ้งเตือนบนเครื่องนี้เมื่อมีคำพยากรณ์หรือฤกษ์สำคัญ · เปิด-ปิดได้ทุกเมื่อ</div>
+        <div class="nt-row">
+          <div class="nt-row-label">
+            <b data-i18n="nt.master">เปิดการแจ้งเตือนบนเครื่องนี้</b>
+            <span data-i18n="nt.master.sub">ระบบจะขออนุญาตจากเบราว์เซอร์เมื่อกดเปิดเท่านั้น</span>
+          </div>
+          <label class="nt-switch"><input type="checkbox" id="nt-master" disabled><i></i></label>
+        </div>
+        <div class="mg-note" id="nt-status" data-i18n="nt.loading">กำลังตรวจสอบเครื่องนี้...</div>
+        <div class="nt-sub-list" id="nt-types" hidden>
+          <div class="nt-row">
+            <div class="nt-row-label">
+              <b data-i18n="nt.fusion">คำพยากรณ์พร้อมแล้ว</b>
+              <span data-i18n="nt.fusion.sub">แจ้งเมื่อคำพยากรณ์ 5 ศาสตร์ที่สั่งไว้เสร็จ</span>
+            </div>
+            <label class="nt-switch"><input type="checkbox" id="nt-fusion-done" data-pref="fusion_done"><i></i></label>
+          </div>
+          <div class="nt-row">
+            <div class="nt-row-label">
+              <b data-i18n="nt.sniper">ฤกษ์เด็ดประจำวัน</b>
+              <span data-i18n="nt.sniper.sub">ช่วงเวลาดีที่สุดของวันสำหรับดวงคุณ (จะเริ่มส่งเฟสถัดไป)</span>
+            </div>
+            <label class="nt-switch"><input type="checkbox" id="nt-day-sniper" data-pref="day_sniper"><i></i></label>
+          </div>
+          <div class="nt-row">
+            <div class="nt-row-label">
+              <b data-i18n="nt.omens">ลางบอกเหตุรายวัน</b>
+              <span data-i18n="nt.omens.sub">ข้อควรระวังและโอกาสของวัน (จะเริ่มส่งเฟสถัดไป)</span>
+            </div>
+            <label class="nt-switch"><input type="checkbox" id="nt-daily-omens" data-pref="daily_omens"><i></i></label>
+          </div>
+          <div class="nt-row">
+            <div class="nt-row-label">
+              <b data-i18n="nt.promo">ข่าวสารและสิทธิพิเศษ</b>
+              <span data-i18n="nt.promo.sub">แพ็กเกจใหม่และของขวัญจาก hourkey</span>
+            </div>
+            <label class="nt-switch"><input type="checkbox" id="nt-promo" data-pref="promo"><i></i></label>
+          </div>
+          <div class="nt-row" style="border-bottom:0;">
+            <div class="nt-row-label">
+              <b data-i18n="nt.quiet">ช่วงเวลาห้ามรบกวน</b>
+              <span data-i18n="nt.quiet.sub">งดส่งแจ้งเตือนในช่วงนี้ (เวลาไทย)</span>
+            </div>
+            <div class="nt-quiet">
+              <select id="nt-quiet-start" aria-label="quiet start"></select>
+              <span style="color:var(--fg-faint);font-size:12px;">–</span>
+              <select id="nt-quiet-end" aria-label="quiet end"></select>
+            </div>
+          </div>
+          <div class="mg-row" style="margin-top:8px;">
+            <button class="btn small" type="button" id="nt-test" data-i18n="nt.test">ส่งแจ้งเตือนทดสอบ</button>
+            <span class="mg-note" id="nt-test-msg"></span>
+          </div>
+        </div>
       </div>
 
       <div class="mg-card" id="card-data">
@@ -1146,6 +1221,186 @@ document.querySelectorAll('#lang-switch button').forEach(function(b){
 
 loadMgProfile();
 pingDevice().then(loadDevices);
+})();
+</script>
+<script>
+/* === Web Push Phase C (r380 · 3 ก.ค. 2026) · การ์ดการแจ้งเตือน === */
+(function(){
+Object.assign(window.HK_I18N, {
+  'nt.title': { th:'การแจ้งเตือน', en:'Notifications', zh:'通知' },
+  'nt.sub': { th:'รับแจ้งเตือนบนเครื่องนี้เมื่อมีคำพยากรณ์หรือฤกษ์สำคัญ · เปิด-ปิดได้ทุกเมื่อ', en:'Get notified on this device when readings or key moments are ready. Toggle anytime.', zh:'在此裝置接收命理與吉時通知 · 可隨時開關。' },
+  'nt.master': { th:'เปิดการแจ้งเตือนบนเครื่องนี้', en:'Enable notifications on this device', zh:'在此裝置開啟通知' },
+  'nt.master.sub': { th:'ระบบจะขออนุญาตจากเบราว์เซอร์เมื่อกดเปิดเท่านั้น', en:'Your browser will ask for permission only when you turn this on.', zh:'僅在您開啟時，瀏覽器才會詢問授權。' },
+  'nt.loading': { th:'กำลังตรวจสอบเครื่องนี้...', en:'Checking this device...', zh:'正在檢查此裝置...' },
+  'nt.on': { th:'เปิดการแจ้งเตือนแล้วสำหรับเครื่องนี้', en:'Notifications are on for this device.', zh:'此裝置已開啟通知。' },
+  'nt.off': { th:'ยังไม่เปิดการแจ้งเตือนบนเครื่องนี้', en:'Notifications are off on this device.', zh:'此裝置尚未開啟通知。' },
+  'nt.unsupported': { th:'เบราว์เซอร์นี้ยังไม่รองรับการแจ้งเตือน · ลองใช้ Chrome, Edge หรือ Safari รุ่นใหม่', en:'This browser does not support notifications. Try a recent Chrome, Edge, or Safari.', zh:'此瀏覽器不支援通知 · 請使用新版 Chrome、Edge 或 Safari。' },
+  'nt.ios': { th:'บน iPhone/iPad ต้องติดตั้ง hourkey ลงหน้าจอโฮมก่อน (ปุ่มแชร์ → "เพิ่มลงไปยังหน้าจอโฮม") แล้วเปิดจากไอคอนเพื่อรับแจ้งเตือน', en:'On iPhone/iPad, first add hourkey to your Home Screen (Share → "Add to Home Screen"), then open it from the icon to receive notifications.', zh:'在 iPhone/iPad 上請先把 hourkey 加入主畫面（分享 → 「加入主畫面」），再從圖示開啟以接收通知。' },
+  'nt.denied': { th:'เบราว์เซอร์ปิดกั้นการแจ้งเตือนของ hourkey อยู่ · เปิดได้ในตั้งค่าเว็บไซต์ของเบราว์เซอร์ แล้วลองใหม่', en:'Notifications are blocked for hourkey in your browser. Allow them in site settings, then try again.', zh:'瀏覽器目前封鎖了 hourkey 的通知 · 請在網站設定中允許後再試。' },
+  'nt.error': { th:'เปิดการแจ้งเตือนไม่สำเร็จ · ลองใหม่อีกครั้ง', en:'Could not enable notifications. Please try again.', zh:'開啟通知失敗 · 請再試一次。' },
+  'nt.fusion': { th:'คำพยากรณ์พร้อมแล้ว', en:'Reading ready', zh:'命書完成' },
+  'nt.fusion.sub': { th:'แจ้งเมื่อคำพยากรณ์ 5 ศาสตร์ที่สั่งไว้เสร็จ', en:'Notify when your five-arts reading is done.', zh:'五術命書完成時通知。' },
+  'nt.sniper': { th:'ฤกษ์เด็ดประจำวัน', en:'Daily golden hour', zh:'每日吉時' },
+  'nt.sniper.sub': { th:'ช่วงเวลาดีที่สุดของวันสำหรับดวงคุณ (จะเริ่มส่งเฟสถัดไป)', en:'Your best hour of the day (starts next phase).', zh:'您當日最佳時辰（下一階段開始發送）。' },
+  'nt.omens': { th:'ลางบอกเหตุรายวัน', en:'Daily omens', zh:'每日提點' },
+  'nt.omens.sub': { th:'ข้อควรระวังและโอกาสของวัน (จะเริ่มส่งเฟสถัดไป)', en:'Cautions and openings for the day (starts next phase).', zh:'當日注意與機會（下一階段開始發送）。' },
+  'nt.promo': { th:'ข่าวสารและสิทธิพิเศษ', en:'News and offers', zh:'消息與優惠' },
+  'nt.promo.sub': { th:'แพ็กเกจใหม่และของขวัญจาก hourkey', en:'New packages and gifts from hourkey.', zh:'hourkey 的新方案與好禮。' },
+  'nt.quiet': { th:'ช่วงเวลาห้ามรบกวน', en:'Quiet hours', zh:'勿擾時段' },
+  'nt.quiet.sub': { th:'งดส่งแจ้งเตือนในช่วงนี้ (เวลาไทย)', en:'No notifications during this window (Thai time).', zh:'此時段內不發送通知（泰國時間）。' },
+  'nt.quiet.none': { th:'ไม่ใช้', en:'Off', zh:'不使用' },
+  'nt.test': { th:'ส่งแจ้งเตือนทดสอบ', en:'Send test notification', zh:'發送測試通知' },
+  'nt.test.ok': { th:'ส่งแล้ว · ดูที่มุมจอหรือแถบแจ้งเตือน', en:'Sent. Check your notification area.', zh:'已發送 · 請查看通知列。' },
+  'nt.test.none': { th:'เครื่องนี้ยังไม่ได้เปิดแจ้งเตือน · เปิดสวิตช์ด้านบนก่อน', en:'This device is not subscribed yet. Turn on the switch above first.', zh:'此裝置尚未訂閱 · 請先開啟上方開關。' },
+  'nt.test.err': { th:'ส่งไม่สำเร็จ · ลองใหม่อีกครั้ง', en:'Send failed. Please try again.', zh:'發送失敗 · 請再試一次。' },
+  'nt.saved': { th:'บันทึกการตั้งค่าแล้ว', en:'Preferences saved.', zh:'設定已儲存。' }
+});
+
+function $nt(x){ return document.getElementById(x); }
+var nt = { prefs:null, busy:false };
+
+/* ---- hkPush มาจาก /js/hk-pwa.js (โหลด async ผ่าน hk-profile-sync) → รอแบบ poll ---- */
+function waitHkPush(maxMs){
+  return new Promise(function(resolve){
+    var t0 = Date.now();
+    (function check(){
+      if (window.hkPush) return resolve(window.hkPush);
+      if (Date.now() - t0 > (maxMs || 8000)) return resolve(null);
+      setTimeout(check, 200);
+    })();
+  });
+}
+
+function fmtHour(h){ return (h < 10 ? '0' : '') + h + ':00'; }
+function fillQuietSelects(){
+  ['nt-quiet-start','nt-quiet-end'].forEach(function(id){
+    var sel = $nt(id);
+    var cur = sel.value;
+    sel.innerHTML = '<option value="">' + esc(tx('nt.quiet.none')) + '</option>' +
+      Array.from({length:24}, function(_, h){ return '<option value="' + h + '">' + fmtHour(h) + '</option>'; }).join('');
+    if (cur !== undefined) sel.value = cur;
+  });
+}
+
+function setStatus(key, isError){
+  var el = $nt('nt-status');
+  el.textContent = tx(key);
+  el.style.color = isError ? 'var(--red)' : '';
+  el.setAttribute('data-i18n', key);
+}
+
+function renderPrefs(){
+  if (!nt.prefs) return;
+  document.querySelectorAll('#nt-types input[data-pref]').forEach(function(inp){
+    inp.checked = !!nt.prefs[inp.dataset.pref];
+  });
+  $nt('nt-quiet-start').value = nt.prefs.quiet_start == null ? '' : String(nt.prefs.quiet_start);
+  $nt('nt-quiet-end').value = nt.prefs.quiet_end == null ? '' : String(nt.prefs.quiet_end);
+}
+
+async function loadPrefs(){
+  try {
+    var r = await fetch('/api/push/prefs', { credentials:'include', cache:'no-store' });
+    if (!r.ok) return;
+    nt.prefs = await r.json();
+    renderPrefs();
+  } catch(_){}
+}
+
+async function savePrefs(patch){
+  try {
+    var r = await fetch('/api/push/prefs', { method:'PATCH', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify(patch) });
+    var d = await r.json().catch(function(){ return {}; });
+    if (r.ok) { nt.prefs = Object.assign(nt.prefs || {}, d); renderPrefs(); alertMsg(esc(tx('nt.saved')), 'success'); }
+  } catch(_){}
+}
+
+async function refreshMasterState(){
+  var master = $nt('nt-master');
+  var push = await waitHkPush(8000);
+  if (!push || !push.supported()) { master.disabled = true; setStatus('nt.unsupported', true); $nt('nt-types').hidden = true; return; }
+  if (push.needsInstall()) { master.disabled = true; setStatus('nt.ios'); $nt('nt-types').hidden = true; return; }
+  var st = await push.state();
+  master.disabled = false;
+  master.checked = !!st.subscribed;
+  $nt('nt-types').hidden = !st.subscribed;
+  if (st.subscribed) setStatus('nt.on');
+  else if (st.permission === 'denied') setStatus('nt.denied', true);
+  else setStatus('nt.off');
+}
+
+/* ---- สวิตช์หลัก: ขอ permission เฉพาะตอนกดเปิด (ห้าม auto) ---- */
+$nt('nt-master').addEventListener('change', async function(){
+  if (nt.busy) return;
+  nt.busy = true;
+  var master = this;
+  master.disabled = true;
+  try {
+    if (master.checked) {
+      var res = await window.hkPush.enable();
+      if (!res.ok) {
+        master.checked = false;
+        if (res.reason === 'denied') setStatus('nt.denied', true);
+        else if (res.reason === 'ios_install') setStatus('nt.ios');
+        else if (res.reason === 'unsupported') setStatus('nt.unsupported', true);
+        else setStatus('nt.error', true);
+        return;
+      }
+      setStatus('nt.on');
+      $nt('nt-types').hidden = false;
+      loadPrefs();
+    } else {
+      await window.hkPush.disable();
+      setStatus('nt.off');
+      $nt('nt-types').hidden = true;
+    }
+  } finally {
+    master.disabled = false;
+    nt.busy = false;
+  }
+});
+
+/* ---- toggle รายประเภท + quiet hours ---- */
+document.querySelectorAll('#nt-types input[data-pref]').forEach(function(inp){
+  inp.addEventListener('change', function(){
+    var patch = {};
+    patch[inp.dataset.pref] = inp.checked;
+    savePrefs(patch);
+  });
+});
+['nt-quiet-start','nt-quiet-end'].forEach(function(id){
+  $nt(id).addEventListener('change', function(){
+    var s = $nt('nt-quiet-start').value, e = $nt('nt-quiet-end').value;
+    savePrefs({ quiet_start: s === '' ? null : Number(s), quiet_end: e === '' ? null : Number(e) });
+  });
+});
+
+/* ---- ปุ่มทดสอบ ---- */
+$nt('nt-test').addEventListener('click', async function(){
+  var btn = this, msg = $nt('nt-test-msg');
+  btn.disabled = true; msg.textContent = '';
+  try {
+    var r = await fetch('/api/push/test', { method:'POST', credentials:'include' });
+    if (r.status === 404) { msg.textContent = tx('nt.test.none'); msg.style.color = 'var(--red)'; return; }
+    if (!r.ok) { msg.textContent = tx('nt.test.err'); msg.style.color = 'var(--red)'; return; }
+    msg.textContent = tx('nt.test.ok'); msg.style.color = 'var(--green)';
+  } catch(_) { msg.textContent = tx('nt.test.err'); msg.style.color = 'var(--red)'; }
+  finally { btn.disabled = false; }
+});
+
+/* ---- เปลี่ยนภาษา → รีเฟรช label dynamic (dropdown ชั่วโมง + สถานะ) ---- */
+document.querySelectorAll('#lang-switch button').forEach(function(b){
+  b.addEventListener('click', function(){
+    fillQuietSelects();
+    renderPrefs();
+    var k = $nt('nt-status').getAttribute('data-i18n');
+    if (k) $nt('nt-status').textContent = tx(k);
+  });
+});
+
+fillQuietSelects();
+loadPrefs();
+refreshMasterState();
 })();
 </script>
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
