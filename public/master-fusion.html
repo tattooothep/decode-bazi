@@ -254,6 +254,11 @@
     .snp-day-date{font-weight:700;font-size:13px;white-space:nowrap;color:var(--text)}
     .snp-day-why{font-size:12px;color:var(--muted);line-height:1.5;flex:1;min-width:140px}
     [data-theme="light"] .snp-day{background:rgba(0,0,0,.02)}
+    /* r386 · เข็ม D: แถบหน้าต่างพีคบนสุดการ์ด 🎯 (ตัวขัดเกลา — ไม่มี windows = ไม่ render อะไรเลย) */
+    .snp-wins{margin:2px 0 8px;display:grid;gap:4px}
+    .snp-win{font-size:11.5px;line-height:1.55;color:var(--muted);border:1px solid rgba(210,176,94,.35);border-radius:8px;padding:5px 9px;background:rgba(210,176,94,.06)}
+    .snp-win b{color:var(--text)}
+    [data-theme="light"] .snp-win{background:rgba(159,121,46,.06)}
     /* r384 · เปิดประวัติ → คำตอบขึ้นการ์ดหลัก (ป้าย 📜 + คำถามเก่า + ปุ่มถามต่อ/กลับ) */
     .hist-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--gold);border:1px solid rgba(210,176,94,.4);border-radius:999px;padding:3px 10px;margin-bottom:9px;background:rgba(210,176,94,.07)}
     .hist-q{font-size:13.5px;line-height:1.6;color:var(--muted);margin-bottom:10px;overflow-wrap:anywhere}
@@ -956,7 +961,7 @@
       body.hk-answer-mode.hk-ask-open .ask-panel .panel-body > .progress-card{display:none!important}
       body.hk-answer-mode.hk-ask-open .run-pill{display:inline-flex}
       /* (h) r385 · ห้องแชทมือถือ: composer ติดล่างจอจริง (แก้ overflow:hidden ของ .panel ที่ทำให้ sticky ไม่เกาะ viewport) */
-      body.hk-answer-mode:not(.hk-ask-open) .result-panel{overflow:visible}
+      body.hk-answer-mode:not(.hk-ask-open) .result-panel{overflow:visible;min-width:0} /* r384d: overflow:visible ปลด min-width:auto ของ grid item → tabs/ตารางดันหน้ากว้างเกินจอ · min-width:0 คืนพฤติกรรมเดิม (ของกว้างเลื่อนในกรอบตัวเอง) */
       body.hk-answer-mode:not(.hk-ask-open) .composer{background:rgba(14,16,20,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);margin-left:-8px;margin-right:-8px;padding-left:8px;padding-right:8px}
       [data-theme="light"] body.hk-answer-mode:not(.hk-ask-open) .composer{background:rgba(255,253,248,.96)}
       body.hk-answer-mode .rb{max-width:94%;font-size:14.5px;line-height:1.75}
@@ -1168,6 +1173,7 @@
         'ds.nA':'สัญญาณวงปาจื้อรายวัน','ds.nB':'จันทร์จริงทำมุมแรง','ds.nC':'ดาวช้าทำมุมเป๊ะองศา','ds.nMix':'หลายสัญญาณชี้วันเดียวกัน','ds.nAShort':'ปาจื้อ','ds.nBShort':'จันทร์','ds.nCShort':'ดาวช้า',
         'ds.aFmt':'วัน{rule}{pillar}','ds.a.沖':'ชง','ds.a.伏吟':'ซ้อนทับ','ds.a.刑':'เบียด','ds.a.害':'บั่นทอน','ds.a.六合':'สมพงศ์','ds.a.三合半':'ธาตุหนุน','ds.a.值':'ตรงเสาเดิม','ds.p.year':'เสาปี','ds.p.month':'เสาเดือน','ds.p.day':'เสาวัน','ds.p.hour':'เสายาม',
         'ds.bWarn':'จันทร์จริงชน{target}','ds.bGood':'จันทร์จริงทำมุมดีกับ{target}',
+        'ds.peak':'พีค','ds.dPin':'ชี้ชัด ±1 วัน (จุดกึ่งกลางเป๊ะ {orb}′)','ds.dWhy':'จุดกึ่งกลาง {mid} ถูก{t}จรกระตุ้น เป๊ะ {orb}′','ds.winMulti':'หลายสัญญาณเกาะกลุ่มช่วงนี้',
         'ds.t.generic':'ภาพรวม','ds.t.health':'สุขภาพ','ds.t.partner':'คู่ครอง','ds.t.parents':'พ่อแม่','ds.t.children':'ลูก','ds.t.contract':'สัญญา/ตกลง','ds.t.travel':'เดินทาง','ds.t.money':'การเงิน','ds.t.career':'การงาน',
         'hist.fromTag':'📜 จากประวัติ · {d}','hist.askMore':'ถามต่อจากคำตอบนี้','hist.back':'กลับ / ถามใหม่','hist.busy':'รอคำพยากรณ์ปัจจุบันเสร็จก่อน แล้วค่อยเปิดประวัติ','hist.pick':'แตะรายการประวัติ → คำถาม+คำตอบเก่าจะเปิดบนการ์ดคำพยากรณ์หลัก',
         'guest.link':'หรือ + ดวงชั่วคราว (ไม่บันทึก)','guest.name':'ชื่อเล่น','guest.namePh':'ดวงชั่วคราว','guest.gender':'เพศ','guest.male':'ชาย (M)','guest.female':'หญิง (F)','guest.birthDate':'วันเกิด','guest.dateHint':'ค.ศ.','guest.birthTime':'เวลาเกิด','guest.noTime':'ไม่ทราบเวลาเกิด','guest.noTimeHint':'จะอ่านได้ 3 เสา · จื่อเวย/ดาวจริงจีนข้าม','guest.noTimeShort':'ไม่ทราบเวลา','guest.place':'สถานที่เกิด','guest.placePh':'พิมพ์ชื่อเมือง/สถานที่ (ค่าเริ่มต้น กรุงเทพ)','guest.manualLatLng':'กรอกพิกัด lat/lng เอง','guest.locFail':'โหลด Google Places ไม่สำเร็จ · กรอกพิกัดเองได้ (เว้นว่าง = กรุงเทพ)','guest.locHint':'เว้นว่าง = กรุงเทพ 13.7563, 100.5018','guest.use':'ใช้ดวงนี้','guest.cancel':'ยกเลิกกลับ dropdown','guest.chipTag':'ไม่บันทึก','guest.edit':'แก้','guest.needDate':'กรุณาเลือกวันเกิด','guest.badDate':'วันเกิดต้องอยู่ระหว่าง ค.ศ. 1900 – วันนี้','guest.needTime':'กรอกเวลาเกิด หรือติ๊ก "ไม่ทราบเวลาเกิด"','guest.needGender':'กรุณาเลือกเพศ','guest.badLatLng':'พิกัดไม่ถูกต้อง (lat -90..90 · lng -180..180)','guest.tooMany':'รวมดวงได้ไม่เกิน 4 (โปรไฟล์ + ดวงชั่วคราว)','guest.histLabel':'ดวงชั่วคราวในรอบนี้ (ไม่บันทึก)','guest.badData':'ข้อมูลดวงชั่วคราวไม่ถูกต้อง','guest.slotAt':'ดวงชั่วคราวช่องที่ {n}',
@@ -1183,6 +1189,7 @@
         'ds.nA':'daily BaZi cycle signal','ds.nB':'real-Moon hard aspect','ds.nC':'slow planet exact aspect','ds.nMix':'multiple signals on the same day','ds.nAShort':'BaZi','ds.nBShort':'Moon','ds.nCShort':'Slow',
         'ds.aFmt':'{rule} your {pillar}','ds.a.沖':'clash with','ds.a.伏吟':'doubling of','ds.a.刑':'friction with','ds.a.害':'harm to','ds.a.六合':'harmony with','ds.a.三合半':'elemental support to','ds.a.值':'repeat of','ds.p.year':'year pillar','ds.p.month':'month pillar','ds.p.day':'day pillar','ds.p.hour':'hour pillar',
         'ds.bWarn':'Moon hits natal {target}','ds.bGood':'Moon aspects natal {target} favorably',
+        'ds.peak':'Peak','ds.dPin':'pinpoint ±1 day (midpoint exact {orb}′)','ds.dWhy':'midpoint {mid} triggered by transiting {t}, exact {orb}′','ds.winMulti':'signals cluster in this window',
         'ds.t.generic':'overall','ds.t.health':'health','ds.t.partner':'partner','ds.t.parents':'parents','ds.t.children':'children','ds.t.contract':'contracts','ds.t.travel':'travel','ds.t.money':'money','ds.t.career':'career',
         'hist.fromTag':'📜 From history · {d}','hist.askMore':'Ask a follow-up','hist.back':'Back / new question','hist.busy':'Wait for the current reading to finish before opening history','hist.pick':'Tap a history item — the old question + answer open on the main reading card',
         'guest.link':'or + temporary chart (not saved)','guest.name':'Nickname','guest.namePh':'Temp chart','guest.gender':'Gender','guest.male':'Male (M)','guest.female':'Female (F)','guest.birthDate':'Birth date','guest.dateHint':'CE','guest.birthTime':'Birth time','guest.noTime':'Birth time unknown','guest.noTimeHint':'3-pillar reading only · Zi Wei / Chinese real-star skipped','guest.noTimeShort':'time unknown','guest.place':'Birth place','guest.placePh':'Type a city/place (default Bangkok)','guest.manualLatLng':'Enter lat/lng manually','guest.locFail':'Google Places failed to load · enter coordinates manually (blank = Bangkok)','guest.locHint':'Blank = Bangkok 13.7563, 100.5018','guest.use':'Use this chart','guest.cancel':'Cancel, back to dropdown','guest.chipTag':'not saved','guest.edit':'Edit','guest.needDate':'Please pick a birth date','guest.badDate':'Birth date must be between 1900 and today','guest.needTime':'Fill birth time or tick "birth time unknown"','guest.needGender':'Please pick a gender','guest.badLatLng':'Invalid coordinates (lat -90..90 · lng -180..180)','guest.tooMany':'Max 4 charts total (profiles + temporary)','guest.histLabel':'Temporary charts in this run (not saved)','guest.badData':'Invalid temporary chart data','guest.slotAt':'temporary chart slot {n}',
@@ -1198,6 +1205,7 @@
         'ds.nA':'流日訊號','ds.nB':'真月亮強角','ds.nC':'慢星精準角度','ds.nMix':'多訊號同指一日','ds.nAShort':'八字','ds.nBShort':'月','ds.nCShort':'慢星',
         'ds.aFmt':'流日{rule}{pillar}','ds.a.沖':'沖','ds.a.伏吟':'伏吟','ds.a.刑':'刑','ds.a.害':'害','ds.a.六合':'六合','ds.a.三合半':'半三合','ds.a.值':'值','ds.p.year':'年柱','ds.p.month':'月柱','ds.p.day':'日柱','ds.p.hour':'時柱',
         'ds.bWarn':'真月亮沖{target}','ds.bGood':'真月亮吉角{target}',
+        'ds.peak':'峰值','ds.dPin':'可鎖定±1天（中點精準{orb}′）','ds.dWhy':'中點 {mid} 受行運{t}觸發 精準{orb}′','ds.winMulti':'多訊號集中於此區間',
         'ds.t.generic':'整體','ds.t.health':'健康','ds.t.partner':'配偶','ds.t.parents':'父母','ds.t.children':'子女','ds.t.contract':'契約','ds.t.travel':'出行','ds.t.money':'財運','ds.t.career':'事業',
         'hist.fromTag':'📜 歷史紀錄 · {d}','hist.askMore':'接著這個答案再問','hist.back':'返回 / 重新提問','hist.busy':'請等目前批算完成後再開歷史','hist.pick':'點歷史項目 — 舊問題＋答案會開在主論斷卡',
         'guest.link':'或 + 臨時命盤（不儲存）','guest.name':'暱稱','guest.namePh':'臨時命盤','guest.gender':'性別','guest.male':'男 (M)','guest.female':'女 (F)','guest.birthDate':'出生日期','guest.dateHint':'西元','guest.birthTime':'出生時間','guest.noTime':'不知出生時間','guest.noTimeHint':'僅三柱解讀 · 紫微／七政四餘略過','guest.noTimeShort':'時辰不詳','guest.place':'出生地','guest.placePh':'輸入城市／地點（預設曼谷）','guest.manualLatLng':'手動輸入經緯度','guest.locFail':'Google Places 載入失敗 · 可手動輸入座標（留空＝曼谷）','guest.locHint':'留空＝曼谷 13.7563, 100.5018','guest.use':'使用此盤','guest.cancel':'取消，返回下拉選單','guest.chipTag':'不儲存','guest.edit':'修改','guest.needDate':'請選擇出生日期','guest.badDate':'出生日期須在西元 1900 至今日之間','guest.needTime':'請填出生時間，或勾選「不知出生時間」','guest.needGender':'請選擇性別','guest.badLatLng':'座標無效（lat -90..90 · lng -180..180）','guest.tooMany':'最多共 4 盤（檔案＋臨時）','guest.histLabel':'本次臨時命盤（不儲存）','guest.badData':'臨時命盤資料無效','guest.slotAt':'臨時命盤第 {n} 格',
@@ -2264,6 +2272,14 @@
         var parts = [aPhrase(day), bPhrase(day), cPhrase(day)].filter(Boolean);
         return parts.slice(0, 3).join(' + ') || t('ds.nMix');
       }
+      // r386 · เข็ม D (จุดกึ่งกลาง Uranian) — ตัวขัดเกลา ไม่ใช่ section ใหม่: ไม่มี d/windows = การ์ดเดิมเป๊ะ
+      function fmtOrb(v){ v = +v || 0; return v < 1 ? v.toFixed(1) : String(Math.round(v)); }
+      function dnm(x, thKey, enKey){ return loc === 'th' ? String(x[thKey] || x[enKey] || '') : String(x[enKey] || x[thKey] || ''); }
+      function dPin(day){
+        var hits = day && day.d && Array.isArray(day.d.hits) ? day.d.hits : [];
+        if (!hits.length) return '';
+        return ' · ' + t('ds.dPin').replace('{orb}', fmtOrb(hits[0].orbArcmin));
+      }
       function needleScore(day){ return Array.isArray(day.needles) ? day.needles.length : 0; }
       function pickTop(flag){
         return days.filter(function(d){ return d && d.flag === flag; }).slice()
@@ -2271,8 +2287,17 @@
           .slice(0, 3);
       }
       function dayItem(day){
-        return '<div class="snp-day"><span class="snp-day-date">' + (SNP_FLAG[day.flag] || '') + ' ' + esc(fmtDay(day.dateISO)) + '</span><span class="snp-day-why">' + esc(whyLine(day)) + '</span></div>';
+        return '<div class="snp-day"><span class="snp-day-date">' + (SNP_FLAG[day.flag] || '') + ' ' + esc(fmtDay(day.dateISO)) + '</span><span class="snp-day-why">' + esc(whyLine(day) + dPin(day)) + '</span></div>';
       }
+      // r386 · หน้าต่างพีคบนสุดของการ์ด — เฉพาะหน้าต่างเด่น (มี D-peak หรือพีคแดง) สูงสุด 2 บรรทัด · เหตุผล = ข้อเท็จจริงเรขาคณิตเท่านั้น
+      var wins = (Array.isArray(p.windows) ? p.windows : []).filter(function(w){ return w && (w.peakHit || w.peakFlag === 'red'); }).slice(0, 2);
+      function winReason(w){
+        if (w.peakHit) return t('ds.dWhy').replace('{mid}', dnm(w.peakHit, 'midTh', 'mid')).replace('{t}', dnm(w.peakHit, 'transiterTh', 'transiter')).replace('{orb}', fmtOrb(w.peakHit.orbArcmin));
+        return t('ds.winMulti');
+      }
+      var winHtml = wins.length ? '<div class="snp-wins">' + wins.map(function(w){
+        return '<div class="snp-win">🎯 ' + esc(t('ds.peak')) + ': <b>' + esc(fmtDay(w.peakISO)) + '</b> (±' + esc(String(w.plusMinusDays || 1)) + ' ' + esc(t('ds.days')) + ') · ' + esc(winReason(w)) + '</div>';
+      }).join('') + '</div>' : '';
       var explain = '<div class="snp-explain">' + esc(t('ds.explain')) + '</div>';
       if (!days.length) return '<div class="res-person">' + pname + explain + '<div class="res-skip">' + esc(t('ds.calm')) + '</div></div>';
       var reds = pickTop('red'), greens = pickTop('green');
@@ -2300,6 +2325,7 @@
           '<td>' + evTd(day.c, 'detail') + ((day.context || []).length ? '<br><small>' + esc(day.context.join(' · ')) + '</small>' : '') + '</td></tr>';
       });
       return '<div class="res-person">' + pname +
+        winHtml + // r386: หน้าต่างพีค (D) บนสุด — ว่าง = ไม่กระทบ layout เดิม
         explain +
         top +
         '<details class="res-details"><summary>' + esc(t('ds.all').replace('{n}', String(days.length))) + '</summary>' +
