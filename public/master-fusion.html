@@ -247,6 +247,24 @@
     .snp-tick span{position:absolute;bottom:1px;left:3px;font-family:var(--mono);font-size:9px;color:var(--faint);white-space:nowrap}
     .snp-legend{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
     .snp-flag{font-family:var(--mono);white-space:nowrap}
+    /* ===== r382 · หัวการ์ด 🔗/🎯 = ปุ่มพับ/กาง ทุกอุปกรณ์ (มือถือเริ่มพับ · desktop เริ่มกาง · จำสถานะต่อ job) ===== */
+    #resonance-card .res-head,#sniper-card .res-head{cursor:pointer;-webkit-user-select:none;user-select:none}
+    #resonance-card .res-title::after,#sniper-card .res-title::after{content:' ▾';color:var(--faint)}
+    #resonance-card.hk-fold .res-title::after,#sniper-card.hk-fold .res-title::after{content:' ▸'}
+    .res-foldsum{display:none}
+    .hk-fold .res-card{padding:9px 11px;margin-bottom:9px;cursor:pointer}
+    .hk-fold .res-head{margin-bottom:0}
+    .hk-fold .res-person{display:none}
+    .hk-fold .res-structnote{display:none}
+    .hk-fold .res-foldsum{display:block;margin-top:4px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    /* r382 · ประวัติ: บล็อก 🔗/🎯 เป็น <details> — มือถือเริ่มพับ · desktop เริ่มกาง */
+    .res-histfold>summary{cursor:pointer;-webkit-user-select:none;user-select:none}
+    /* ===== r382 · แถบบางสลับหน้าถาม ↔ หน้าอ่าน (โชว์เฉพาะมือถือ answer-mode · desktop display:none ตลอด) ===== */
+    .read-bar{display:none;position:sticky;top:0;z-index:40;align-items:center;gap:9px;min-height:40px;padding:5px 10px;background:rgba(14,16,20,.96);border-bottom:1px solid var(--line);cursor:pointer;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+    .read-bar-btn{flex:0 0 auto;min-width:36px;min-height:30px;border:1px solid var(--line-strong);border-radius:8px;background:rgba(210,176,94,.1);color:var(--gold);font-size:14px;line-height:1;cursor:pointer}
+    .read-bar-label{min-width:0;flex:1;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .read-bar-label b{color:var(--gold);font-weight:700}
+    [data-theme="light"] .read-bar{background:rgba(255,253,248,.96)}
     /* ===== Light theme (Executive gold · ◐ topbar) ===== */
     [data-theme="light"]{
       --bg:#f6f1e6;--panel:#fffdf8;--panel-2:#f1e9d8;
@@ -823,16 +841,18 @@
       }
     }
     /* ===== r374 · Mobile answer-mode (≤768 เท่านั้น · ชั้นครอบใหม่ · desktop ไม่เปลี่ยนแม้แต่ pixel · ทริคอาเจ็กฮ้ง #7) ===== */
-    .ask-summary{display:none}
     @media (max-width:768px){
-      /* (a) มีคำตอบ/กำลังรัน (body.hk-answer-mode) → การ์ดตั้งคำถามยุบเป็นแถบสรุปบาง ๆ · กดแถบ/ปุ่มแก้ = ขยายกลับ (hk-ask-open) */
-      body.hk-answer-mode:not(.hk-ask-open) .ask-summary{display:flex;align-items:center;gap:10px;padding:10px 13px;cursor:pointer;border-bottom:1px solid var(--line)}
-      .ask-summary-main{min-width:0;flex:1}
-      .ask-summary-name{font-size:13px;font-weight:700;color:var(--gold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .ask-summary-q{margin-top:2px;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .ask-summary-edit{flex:0 0 auto;min-height:34px;border:1px solid var(--line-strong);border-radius:8px;background:rgba(210,176,94,.1);color:var(--gold);padding:5px 12px;font-family:var(--mono);font-size:12px;cursor:pointer}
-      /* ซ่อนฟอร์มตอนยุบ · คง status + progress ให้เห็นความคืบหน้า (inline style ของ field ต้องใช้ !important) */
-      body.hk-answer-mode:not(.hk-ask-open) .ask-panel .panel-body{padding:0 13px 12px}
+      /* (a) r382 · full-screen takeover: มีคำตอบ/กำลังรัน = หน้าอ่านเต็มจอ (ซ่อน topbar+แบนเนอร์+ฟอร์มถาม เหลือ status/progress)
+         · hk-ask-open = สลับกลับหน้าถามเต็มจอ (ซ่อนฝั่งพยากรณ์) · สลับด้วยแถบ .read-bar · state สองฝั่งอยู่ครบเพราะซ่อนด้วย CSS เท่านั้น */
+      body.hk-answer-mode .read-bar{display:flex}
+      body.hk-answer-mode.hk-ask-open .read-bar{position:static} /* หน้าถามมี topbar sticky อยู่แล้ว · กัน sticky ซ้อนทับ */
+      body.hk-answer-mode:not(.hk-ask-open) .topbar,
+      body.hk-answer-mode:not(.hk-ask-open) main > .header{display:none}
+      body.hk-answer-mode.hk-ask-open .result-panel{display:none}
+      /* การ์ดถามในหน้าอ่าน: ตัด chrome ทั้งใบ (หัว/ขอบ/พื้น) เหลือ status + progress โผล่เนียนบนหน้าอ่าน */
+      body.hk-answer-mode:not(.hk-ask-open) .ask-panel{border:0;background:transparent;box-shadow:none;border-radius:0}
+      body.hk-answer-mode:not(.hk-ask-open) .ask-panel .panel-head{display:none}
+      body.hk-answer-mode:not(.hk-ask-open) .ask-panel .panel-body{padding:0 6px}
       body.hk-answer-mode:not(.hk-ask-open) .ask-panel .panel-body > *{display:none!important}
       body.hk-answer-mode:not(.hk-ask-open) .ask-panel .panel-body > .status,
       body.hk-answer-mode:not(.hk-ask-open) .ask-panel .panel-body > .progress-card{display:block!important}
@@ -844,15 +864,7 @@
       body.hk-answer-mode .result-panel .panel-body{padding:10px 8px}
       body.hk-answer-mode .result-panel .result-content{font-size:15px;line-height:1.8;padding:13px 11px;min-height:52vh}
       body.hk-answer-mode .result-panel .chat{min-height:0}
-      /* (c) การ์ด 🔗/🎯 เริ่มแบบพับ (hk-fold ใส่จาก JS เฉพาะจอเล็ก) → chips แถวเดียวเลื่อนข้างได้ · กดการ์ดเพื่อขยาย */
-      .hk-fold .res-card{padding:9px 11px;margin-bottom:9px;cursor:pointer}
-      .hk-fold .res-details,.hk-fold .snp-strip,.hk-fold .snp-legend,.hk-fold .res-skip{display:none}
-      .hk-fold .res-person{border-top:0;padding-top:4px;margin-top:0}
-      .hk-fold .res-head{margin-bottom:4px}
-      .hk-fold .res-title::after{content:' ▾';color:var(--faint)}
-      .hk-fold .res-chips{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
-      .hk-fold .res-chip{flex:0 0 auto;white-space:nowrap}
-      .hk-fold .res-structnote{display:none}
+      /* (c) r382 · กติกาพับการ์ด 🔗/🎯 ย้ายไป base (ใช้ทุกอุปกรณ์ · JS คุมค่าเริ่มต้น: มือถือพับ desktop กาง) */
       /* (d) r376 · การ์ด progress ยุบเป็นแถวเดียวตอนรัน (มือถือ+answer-mode) · แตะการ์ด = กางดูรายศาสตร์ (.prog-open) */
       body.hk-answer-mode .progress-card{padding:9px 11px;cursor:pointer}
       body.hk-answer-mode .progress-card .prog-line{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12.5px;color:var(--text);line-height:1.4}
@@ -885,6 +897,12 @@
     </div>
   </header>
 
+  <!-- r382 · มือถือ answer-mode: แถบบางสลับ หน้าถาม ↔ หน้าอ่านเต็มจอ (desktop display:none ตลอด) -->
+  <div class="read-bar" id="read-bar">
+    <button class="read-bar-btn" id="read-bar-btn" type="button" aria-label="switch view">←</button>
+    <div class="read-bar-label" id="read-bar-label"></div>
+  </div>
+
   <main>
     <section class="header">
       <div>
@@ -903,14 +921,6 @@
         <div class="panel-head">
           <div class="panel-title" data-i18n="ask.title">ตั้งคำถาม</div>
           <span class="pill">/api/sifu/fusion5</span>
-        </div>
-        <!-- r374 · แถบสรุปตอนยุบ (มือถือ ≤768 + answer-mode เท่านั้น · desktop display:none ตลอด) -->
-        <div class="ask-summary" id="ask-summary">
-          <div class="ask-summary-main">
-            <div class="ask-summary-name" id="ask-summary-name"></div>
-            <div class="ask-summary-q" id="ask-summary-q"></div>
-          </div>
-          <button class="ask-summary-edit" id="ask-summary-edit" type="button" data-i18n="ask.edit">แก้คำถาม</button>
         </div>
         <div class="panel-body">
           <div class="field">
@@ -1087,21 +1097,21 @@
     // ===== i18n =====
     var I18N = {
       th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','nav.today':'หน้าวันนี้','nav.datepick':'วางฤกษ์','nav.fusion':'Fusion','hero.title':'ดูดวง 5 ศาสตร์','hero.sub':'หลอมรวม 5 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยว ดูคู่ หรือกลุ่ม 3-4 ดวง',
-        'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่/กลุ่ม','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.profile3':'ดวงที่ 3 (ไม่บังคับ)','ask.profile4':'ดวงที่ 4 (ไม่บังคับ)','ask.notUsed':'— ไม่ใช้ —','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','ask.edit':'แก้คำถาม','result.title':'คำพยากรณ์',
+        'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่/กลุ่ม','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.profile3':'ดวงที่ 3 (ไม่บังคับ)','ask.profile4':'ดวงที่ 4 (ไม่บังคับ)','ask.notUsed':'— ไม่ใช้ —','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','ask.edit':'แก้คำถาม','result.title':'คำพยากรณ์','read.back':'กลับไปดูคำพยากรณ์',
         'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','skipGroup':'ปาจื้อยังไม่รองรับดูกลุ่ม 3-4 ดวง — ตัดออกและไม่คิดยาม (ใช้ได้เดี่ยว/คู่)','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม','needLogin':'กรุณาเข้าสู่ระบบก่อนใช้ Fusion','needYam':'ยามไม่พอ','readyRun':'พร้อมรัน','runningAsync':'⏳ กำลังอ่านดวงอยู่ (พับจอไว้ได้)','jobTimeout':'หมดเวลาอ่านดวง · ลองรันใหม่อีกครั้ง','jobError':'อ่านดวงไม่สำเร็จ','reconnecting':'📶 เน็ตสะดุด · กำลังต่อกลับไปหางานเดิมอัตโนมัติ ไม่ต้องถามใหม่...','resumeChecking':'กำลังตรวจงานค้าง...','sessionLost':'หลุดจากระบบ · งานยังวิ่งอยู่บน server เข้าสู่ระบบแล้วกลับมาดูได้',
         'res.title':'🔗 เสียงสะท้อนข้ามศาสตร์','res.r1':'ธีมปีตรงกัน','res.r2':'ดาวเดียวกันชนหลายศาสตร์','res.r3':'คราส/ราหูเกตุ','res.conflict':'มุมมองต่าง','res.detail':'ดูรายละเอียด + หลักฐาน','res.theme':'ธีม','res.sci':'ศาสตร์','res.evidence':'หลักฐาน (คำนวณจริง)','res.month':'เดือน','res.planet':'ดาว','res.good':'ฝั่งเห็นดี','res.bad':'ฝั่งเห็นแรงกด',
         'res.r4':'ดวงคู่','res.r5':'สะพานธาตุ','res.r6':'ปีชง','res.pair':'คู่','res.dim':'มิติ','res.res':'สะท้อน','res.need':'ธาตุที่ต้องการ','res.system':'ระบบ','res.rationale':'เหตุผล (คำนวณจริง)','res.dates':'วันที่','res.voice':'เสียงบอกปีหนัก','res.heavy':'หนัก','res.notHeavy':'ไม่หนัก','res.nodata':'ไม่มีข้อมูล','res.v.good':'ดี','res.v.mid':'กลาง','res.v.tense':'ตึง','res.e.support':'หนุน','res.e.cut':'ตัด','res.e.mid':'กลาง','res.dim.mind':'อารมณ์-จิตใจ','res.dim.comm':'การสื่อสาร','res.dim.attract':'เสน่หา','res.dim.stable':'เสถียรภาพระยะยาว','res.struct':'พ้องเชิงโครงสร้าง (วัดของชิ้นเดียวกัน — ไม่นับเป็นหลักฐานซ้ำ)',
         'prog.read':'อ่านดวง {d}/{t} ศาสตร์เสร็จ','prog.reading':'กำลังอ่านดวง {t} ศาสตร์','prog.judge':'กำลังหลอมคำฟันธง','answerWait':'ซินแสกำลังหลอมคำตอบ...',
         'ds.title':'🎯 วันลั่นไก','ds.topic':'หัวข้อ','ds.range':'ช่วงสแกน','ds.detail':'ดูตารางหลักฐานรายวัน','ds.date':'วันที่','ds.flag':'ธง','ds.needles':'เข็มอิสระ','ds.evA':'A 流日 (60 วัน)','ds.evB':'B จันทร์จริง','ds.evC':'C ดาวช้า','ds.ctx':'บริบท','ds.none':'ไม่มีวันที่เข็ม ≥2 ในช่วงนี้','ds.legend':'🔴 เข็มอิสระ ≥2 ชี้วันเดียวกัน · 🟡 สัญญาณแรงเดี่ยว · 🟢 วันโอกาส (合+จันทร์มุมดี)','ds.days':'วัน','ds.dropped':'แสดงเฉพาะวันอันดับต้นตาม rank' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
-        'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading',
+        'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading','read.back':'Back to reading',
         'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back',
         'res.title':'🔗 Cross-science resonance','res.r1':'Year-theme match','res.r2':'Same planet, multi-system','res.r3':'Eclipse / nodes','res.conflict':'Diverging view','res.detail':'Details + evidence','res.theme':'Theme','res.sci':'Sciences','res.evidence':'Evidence (computed)','res.month':'Month','res.planet':'Planet','res.good':'Sees support','res.bad':'Sees pressure',
         'res.r4':'Pair resonance','res.r5':'Element bridge','res.r6':'Clash year','res.pair':'Pair','res.dim':'Dimension','res.res':'Resonates','res.need':'Needed element','res.system':'System','res.rationale':'Rationale (computed)','res.dates':'Dates','res.voice':'systems call it heavy','res.heavy':'Heavy','res.notHeavy':'Not heavy','res.nodata':'No data','res.v.good':'Good','res.v.mid':'Neutral','res.v.tense':'Tense','res.e.support':'Supported','res.e.cut':'Cut','res.e.mid':'Neutral','res.dim.mind':'Emotional bond','res.dim.comm':'Communication','res.dim.attract':'Attraction','res.dim.stable':'Long-term stability','res.struct':'Structural overlap (same measurement — not counted as extra evidence)',
         'prog.read':'{d}/{t} sciences done','prog.reading':'Reading {t} sciences','prog.judge':'Fusing the verdict','answerWait':'The master is fusing your answer...',
         'ds.title':'🎯 Trigger days','ds.topic':'Topic','ds.range':'Scan range','ds.detail':'Day-by-day evidence table','ds.date':'Date','ds.flag':'Flag','ds.needles':'Independent clocks','ds.evA':'A day-ganzhi (60-day)','ds.evB':'B real Moon','ds.evC':'C slow planets','ds.ctx':'Context','ds.none':'No multi-clock day in this range','ds.legend':'🔴 ≥2 independent clocks strike same day · 🟡 single strong signal · 🟢 opportunity day','ds.days':'days','ds.dropped':'top-ranked days only' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
-        'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷',
+        'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷','read.back':'返回論斷',
         'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看',
         'res.title':'🔗 跨術共振','res.r1':'流年宮位相符','res.r2':'同星多術同月','res.r3':'日月食/羅計','res.conflict':'觀點分歧','res.detail':'詳情＋證據','res.theme':'主題','res.sci':'術數','res.evidence':'證據（實算）','res.month':'月','res.planet':'星','res.good':'看吉','res.bad':'看壓',
         'res.r4':'合盤共振','res.r5':'五行橋','res.r6':'沖太歲','res.pair':'配對','res.dim':'維度','res.res':'共振','res.need':'所需五行','res.system':'系統','res.rationale':'理由（實算）','res.dates':'日期','res.voice':'系統判為重','res.heavy':'重','res.notHeavy':'不重','res.nodata':'無資料','res.v.good':'吉','res.v.mid':'中','res.v.tense':'緊','res.e.support':'受扶','res.e.cut':'受剋','res.e.mid':'中','res.dim.mind':'情感·心','res.dim.comm':'溝通','res.dim.attract':'情慾·吸引','res.dim.stable':'長期穩定','res.struct':'結構性重合（同一量測 · 不重複計證）',
@@ -1859,14 +1869,82 @@
         '<div class="md-tw"><table class="md-t"><thead><tr><th>' + esc(t('ds.date')) + '</th><th>' + esc(t('ds.needles')) + '</th><th>' + esc(t('ds.evA')) + '</th><th>' + esc(t('ds.evB')) + '</th><th>' + esc(t('ds.evC')) + ' / ' + esc(t('ds.ctx')) + '</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' +
         '</details></div>';
     }
+    // ===== r382 · พับ/กางการ์ด 🔗/🎯 — มือถือเริ่มพับ (เหลือหัว+สรุป 1 บรรทัด) · toggle ที่หัวการ์ดได้ทุกอุปกรณ์
+    //        จำสถานะที่ user กดไว้ต่อ job (sessionStorage) → re-render ระหว่าง polling/เปลี่ยนภาษา ไม่ reset =====
+    var FOLD_PREF_KEY = 'hk_fusion5_fold';
+    var foldJobKey = '';
+    function loadFoldPref(){
+      try {
+        var raw = sessionStorage.getItem(FOLD_PREF_KEY);
+        var j = raw ? JSON.parse(raw) : null;
+        return (j && foldJobKey && j.jobKey === foldJobKey) ? j : null; // pref ของ job อื่น = ไม่ใช้
+      } catch(_) { return null; }
+    }
+    function saveFoldPref(cardKey, folded){
+      try {
+        var j = loadFoldPref() || { jobKey: foldJobKey };
+        j[cardKey] = folded ? 1 : 0;
+        sessionStorage.setItem(FOLD_PREF_KEY, JSON.stringify(j));
+      } catch(_) {}
+    }
+    function bindFoldJob(k){
+      k = String(k || '');
+      if (!k || k === foldJobKey) return;
+      try { // งานเดิมเพิ่งได้ jobId จริงจาก server → ย้าย pref ที่เก็บใต้ clientRunId ตามไปด้วย
+        var raw = sessionStorage.getItem(FOLD_PREF_KEY);
+        var j = raw ? JSON.parse(raw) : null;
+        if (j && foldJobKey && j.jobKey === foldJobKey) { j.jobKey = k; sessionStorage.setItem(FOLD_PREF_KEY, JSON.stringify(j)); }
+      } catch(_) {}
+      foldJobKey = k;
+    }
+    function resetFoldPref(jobKey){ try { sessionStorage.removeItem(FOLD_PREF_KEY); } catch(_) {} foldJobKey = String(jobKey || ''); }
+    function cardFoldState(cardKey){
+      var p = loadFoldPref();
+      if (p && p[cardKey] != null) return !!p[cardKey]; // user เคยกดเอง → เคารพทุก re-render (ทุกเส้นทาง)
+      return isMobileFold(); // ค่าเริ่มต้น: มือถือพับ · desktop กาง
+    }
+    function applyCardFold(el, cardKey){ if (el) el.classList.toggle('hk-fold', cardFoldState(cardKey)); }
+    // สรุปสั้น 1 บรรทัดตอนพับ — ให้รู้ว่ามีของโดยไม่กินจอ (ใช้ i18n key เดิม · ตัวเลขจาก engine data เท่านั้น)
+    function resonanceFoldSummary(res){
+      var persons = Array.isArray(res && res.perPerson) ? res.perPerson : [];
+      var isStruct = function(c){ return !!c && c.independence === 'structural'; };
+      var ind = function(list){ return (Array.isArray(list) ? list : []).filter(function(c){ return !isStruct(c); }).length; };
+      var n1 = 0, n2 = 0, n3 = 0, nCf = 0, nR5 = 0, r6v = 0, r6n = 0;
+      persons.forEach(function(p){
+        if (!p) return;
+        n1 += (p.r1 && Array.isArray(p.r1.resonant)) ? p.r1.resonant.length : 0;
+        n2 += ind(p.r2); n3 += ind(p.r3);
+        nCf += Array.isArray(p.conflicts) ? p.conflicts.length : 0;
+        if (p.r5 && p.r5.source === 'db_yongshen') nR5++;
+        if (p.r6 && Array.isArray(p.r6.votes)) { r6v += (p.r6.voiceCount || 0); r6n += p.r6.votes.length; }
+      });
+      var nPair = Array.isArray(res && res.r4Pairs) ? res.r4Pairs.length : 0;
+      var parts = [];
+      if (r6n) parts.push('⚠️ ' + t('res.r6') + ' ' + r6v + '/' + r6n);
+      if (n1) parts.push('R1×' + n1);
+      if (n2) parts.push('R2×' + n2);
+      if (n3) parts.push('R3×' + n3);
+      if (nPair) parts.push('💑×' + nPair);
+      if (nR5) parts.push('🌊×' + nR5);
+      if (nCf) parts.push('⚡×' + nCf);
+      return parts.join(' · ') || '—';
+    }
+    function sniperFoldSummary(ds){
+      var r = 0, y = 0, g = 0;
+      (Array.isArray(ds && ds.perPerson) ? ds.perPerson : []).forEach(function(p){
+        if (p && p.totals) { r += p.totals.red || 0; y += p.totals.yellow || 0; g += p.totals.green || 0; }
+      });
+      return '🔴' + r + ' 🟡' + y + ' 🟢' + g;
+    }
     function renderDaySniper(ds){
       if (!els.sniper) return;
       if (!ds || !sniperHasContent(ds)) { els.sniper.innerHTML = ''; els.sniper.classList.add('hidden'); els.sniper.classList.remove('hk-fold'); return; }
       var persons = Array.isArray(ds.perPerson) ? ds.perPerson : [];
       var multi = persons.length > 1;
       els.sniper.innerHTML = '<div class="res-card"><div class="res-head"><span class="res-title">' + esc(t('ds.title')) + ' · ' + esc(String(ds.topicTh || '')) + '</span><span class="res-year">' + esc(String(ds.fromISO || '') + ' → ' + String(ds.toISO || '')) + '</span></div>' +
+        '<div class="res-foldsum">' + esc(sniperFoldSummary(ds)) + '</div>' + // r382: สรุป 1 บรรทัดตอนพับ
         persons.map(function(p){ return p ? sniperPersonHtml(ds, p, multi) : ''; }).join('') + '</div>';
-      els.sniper.classList.toggle('hk-fold', isMobileFold()); // r374: มือถือเริ่มแบบพับ (chips แถวเดียว)
+      applyCardFold(els.sniper, 'snp'); // r382: มือถือเริ่มพับ ทุกเส้นทาง · จำสถานะที่ user กดต่อ job
       els.sniper.classList.remove('hidden');
     }
     function renderResonance(res){
@@ -1874,8 +1952,10 @@
       if (!els.resonance) return;
       renderDaySniper(res && res.daySniper ? res.daySniper : null); // r373: การ์ดวันลั่นไกเกาะมากับ resonance jsonb
       if (!res || !resonanceHasContent(res)) { els.resonance.innerHTML = ''; els.resonance.classList.add('hidden'); els.resonance.classList.remove('hk-fold'); return; }
-      els.resonance.innerHTML = '<div class="res-card"><div class="res-head"><span class="res-title">' + esc(t('res.title')) + '</span><span class="res-year">' + esc(String(res.targetYear || '')) + '</span></div>' + resonanceBodyHtml(res) + '</div>';
-      els.resonance.classList.toggle('hk-fold', isMobileFold()); // r374: มือถือเริ่มแบบพับ (chips แถวเดียว)
+      els.resonance.innerHTML = '<div class="res-card"><div class="res-head"><span class="res-title">' + esc(t('res.title')) + '</span><span class="res-year">' + esc(String(res.targetYear || '')) + '</span></div>' +
+        '<div class="res-foldsum">' + esc(resonanceFoldSummary(res)) + '</div>' + // r382: สรุป 1 บรรทัดตอนพับ
+        resonanceBodyHtml(res) + '</div>';
+      applyCardFold(els.resonance, 'res'); // r382: มือถือเริ่มพับ ทุกเส้นทาง · จำสถานะที่ user กดต่อ job
       els.resonance.classList.remove('hidden');
     }
     // ===== fusion5 result (tabs แยกศาสตร์ + judge) =====
@@ -2088,13 +2168,13 @@
           '</div>' +
         '</div>' +
         answerBlock +
-        // r369: resonance ที่บันทึกไว้ตอนรัน (จาก response_meta) — โชว์ซ้ำได้จากประวัติ
+        // r369: resonance ที่บันทึกไว้ตอนรัน (จาก response_meta) — โชว์ซ้ำได้จากประวัติ · r382: มือถือเริ่มพับ (details) · desktop เริ่มกาง
         (fusion.resonance && resonanceHasContent(fusion.resonance)
-          ? '<div class="detail-block"><div class="detail-label">' + esc(t('res.title')) + '</div>' + resonanceBodyHtml(fusion.resonance) + '</div>'
+          ? '<details class="detail-block res-histfold"' + (isMobileFold() ? '' : ' open') + '><summary class="detail-label">' + esc(t('res.title')) + ' · ' + esc(resonanceFoldSummary(fusion.resonance)) + '</summary>' + resonanceBodyHtml(fusion.resonance) + '</details>'
           : '') +
-        // r373: day sniper ที่บันทึกไว้ (เกาะใน resonance jsonb) — โชว์ซ้ำได้จากประวัติ
+        // r373: day sniper ที่บันทึกไว้ (เกาะใน resonance jsonb) — โชว์ซ้ำได้จากประวัติ · r382: มือถือเริ่มพับ (details) · desktop เริ่มกาง
         (fusion.resonance && sniperHasContent(fusion.resonance.daySniper)
-          ? '<div class="detail-block"><div class="detail-label">' + esc(t('ds.title')) + '</div>' + (Array.isArray(fusion.resonance.daySniper.perPerson) ? fusion.resonance.daySniper.perPerson.map(function(p){ return p ? sniperPersonHtml(fusion.resonance.daySniper, p, fusion.resonance.daySniper.perPerson.length > 1) : ''; }).join('') : '') + '</div>'
+          ? '<details class="detail-block res-histfold"' + (isMobileFold() ? '' : ' open') + '><summary class="detail-label">' + esc(t('ds.title')) + ' · ' + esc(sniperFoldSummary(fusion.resonance.daySniper)) + '</summary>' + (Array.isArray(fusion.resonance.daySniper.perPerson) ? fusion.resonance.daySniper.perPerson.map(function(p){ return p ? sniperPersonHtml(fusion.resonance.daySniper, p, fusion.resonance.daySniper.perPerson.length > 1) : ''; }).join('') : '') + '</details>'
           : '') +
         '<div class="detail-block"><div class="detail-label">Run Receipt</div><div class="detail-text">' + esc(runReceipt(row)) + '</div></div>' +
         '<div class="detail-block"><div class="detail-label">Packet / Profile Snapshot</div>' + snapshotBlock(row) + '</div>' +
@@ -2445,6 +2525,7 @@
         startSyntheticProgress(sciences, { pct: snap ? snap.pct : 0, startedAt: jobStartedAt(meta) });
         if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('runningAsync')); // r376: จองพื้นที่คำตอบตั้งแต่รัน
       }
+      bindFoldJob(meta.jobId); // r382: resume → พับ/กางตาม pref ของ job นี้ (ไม่มี pref = ค่าเริ่มต้นตามอุปกรณ์)
       renderResonance(firstStatus && firstStatus.resonance ? firstStatus.resonance : null); // r369: resume → การ์ดกลับมาด้วย
       setStatus(t('runningAsync'));
       saveJob(meta);
@@ -2523,7 +2604,7 @@
       setRunState(okCount === total ? 'done' : 'degraded', okCount === total ? 'ok' : 'err');
       var net = f.yam ? ((f.yam.charged || 0) - (f.yam.refunded || 0)) : null;
       setStatus((state.locale==='th'?'สำเร็จ · ':'done · ') + okCount + '/' + total + (state.locale==='th'?' ศาสตร์':' sciences') + (net != null ? (' · ' + net + ' 時') : ''), 'ok');
-      updateAskSummary(); // r374: กล่องคำถามถูกล้างหลังเสร็จ → แถบสรุปดึงคำถามจาก history แทน
+      updateReadBar(); // r382: กล่องคำถามถูกล้างหลังเสร็จ → แถบสลับดึงคำถามจาก history แทน
       loadFusionHistory().catch(function(){});
     }
     async function pollJob(meta){
@@ -2641,6 +2722,7 @@
       saveDraft();
       saveJob(pendingMeta);
       clearSnap(); // r381: งานใหม่ = snapshot ใหม่ ไม่ปนของเก่า
+      resetFoldPref(pendingMeta.clientRunId); // r382: งานใหม่ = การ์ด 🔗/🎯 กลับค่าเริ่มต้นตามอุปกรณ์
       saveSnap({ jobKey:pendingMeta.clientRunId, phase:'running', pct:8, question:message, names:snapNames(pendingMeta), startedAt:pendingMeta.startedAt });
       state.resumePaintedDone = false;
       var r, j;
@@ -2690,6 +2772,7 @@
         var meta = Object.assign({}, pendingMeta, { jobId:j.jobId, threadId:state.threadId, posting:false });
         saveJob(meta);
         saveSnap({ jobKey:j.jobId }); // r381: ผูก snapshot กับ jobId จริง
+        bindFoldJob(j.jobId); // r382: ย้ายสถานะพับ/กางไปเกาะ jobId จริง (reload แล้ว resume เจอ pref เดิม)
         setStatus(t('runningAsync'));
         if (j.resonance) renderResonance(j.resonance); // r369: โชว์เสียงสะท้อนข้ามศาสตร์ทันที ระหว่าง panel วิ่ง
         startJobPolling(meta);
@@ -2701,8 +2784,8 @@
       renderJobDone(j);
       endRun();
     }
-    // ===== r374 · mobile answer-mode (การ์ดถามยุบเป็นแถบสรุปเฉพาะจอเล็ก · desktop CSS ไม่ match = ไม่เปลี่ยน) =====
-    var askSummary = { name:$('ask-summary-name'), q:$('ask-summary-q'), bar:$('ask-summary') };
+    // ===== r374→r382 · mobile answer-mode = full-screen takeover (สองหน้าจอสลับกัน · desktop CSS ไม่ match = ไม่เปลี่ยน) =====
+    var readBar = { bar:$('read-bar'), btn:$('read-bar-btn'), label:$('read-bar-label') };
     function isMobileFold(){ try { return window.matchMedia('(max-width:768px)').matches; } catch(_) { return false; } }
     function summaryQuestionText(){
       var q = String(state.pendingQuestion || (els.question && els.question.value) || '').trim();
@@ -2712,26 +2795,38 @@
       }
       return q.replace(/\s+/g, ' ').slice(0, 160);
     }
-    function updateAskSummary(){
-      if (!askSummary.bar) return;
+    function updateReadBar(){
+      if (!readBar.bar) return;
+      var askOpen = document.body.classList.contains('hk-ask-open');
+      if (readBar.btn) readBar.btn.textContent = askOpen ? '→' : '←';
+      if (!readBar.label) return;
+      if (askOpen) { readBar.label.innerHTML = '<b>' + esc(t('read.back')) + '</b>'; return; } // หน้าถาม → ป้ายพากลับหน้าอ่าน
       var names = selectedProfileIds().map(function(id){
         var p = profileById(id);
         return p ? String(p.nickname || p.name || '') : '';
       }).filter(Boolean);
-      if (askSummary.name) askSummary.name.textContent = names.join(' + ') || '—';
-      if (askSummary.q) askSummary.q.textContent = summaryQuestionText();
+      var nameLabel = names.length > 2 ? (names[0] + ' +' + (names.length - 1)) : names.join(' + '); // กลุ่ม 3-4 ดวง = "คนแรก +N"
+      readBar.label.innerHTML = '<b>' + esc(nameLabel || '—') + '</b> · ' + esc(summaryQuestionText());
     }
     function setAnswerMode(on){
       document.body.classList.toggle('hk-answer-mode', !!on);
       document.body.classList.remove('hk-ask-open');
-      if (on) updateAskSummary();
+      if (on) updateReadBar();
     }
-    if (askSummary.bar) askSummary.bar.addEventListener('click', function(){
-      document.body.classList.add('hk-ask-open'); // กดแถบ/ปุ่มแก้ = ขยายการ์ดถามกลับเต็ม
+    if (readBar.bar) readBar.bar.addEventListener('click', function(){
+      document.body.classList.toggle('hk-ask-open'); // สลับ หน้าอ่าน ↔ หน้าถาม · ซ่อนด้วย CSS เท่านั้น state สองฝั่งอยู่ครบ
+      updateReadBar();
     });
-    [els.resonance, els.sniper].forEach(function(card){
-      if (card) card.addEventListener('click', function(){
-        if (card.classList.contains('hk-fold')) card.classList.remove('hk-fold'); // กดการ์ดพับ = ขยาย
+    // r382 · การ์ด 🔗/🎯: พับอยู่ → แตะที่ไหนก็กาง · กางอยู่ → แตะหัว/แถบสรุป = พับกลับ (ทุกอุปกรณ์ · จำสถานะต่อ job)
+    [[els.resonance, 'res'], [els.sniper, 'snp']].forEach(function(pair){
+      var card = pair[0], cardKey = pair[1];
+      if (!card) return;
+      card.addEventListener('click', function(e){
+        if (card.classList.contains('hk-fold')) { card.classList.remove('hk-fold'); saveFoldPref(cardKey, false); return; }
+        var head = e.target && e.target.closest ? e.target.closest('.res-head, .res-foldsum') : null;
+        if (!head || !card.contains(head)) return; // กางอยู่ · แตะเนื้อหา (chips/ตาราง/details) = ไม่พับ
+        card.classList.add('hk-fold');
+        saveFoldPref(cardKey, true);
       });
     });
     // r376 · มือถือ+answer-mode: แตะแถบ progress ที่ยุบ = สลับกางดูรายศาสตร์ (desktop ไม่ยุบ → no-op)
@@ -2890,7 +2985,8 @@
       saveDraft();
       if (state.result) renderFusion5(state.result);
       else if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
-      renderResonance(state.resonance); // r369: อัปเดตป้าย/ธีมตามภาษาใหม่
+      renderResonance(state.resonance); // r369: อัปเดตป้าย/ธีมตามภาษาใหม่ (r382: สถานะพับ/กางไม่ reset — อ่านจาก pref)
+      updateReadBar(); // r382: ป้ายแถบสลับตามภาษาใหม่
     });
     function syncFusionOnReturn(){
       if (!state.ready) return;
@@ -2922,10 +3018,12 @@
       if (Date.now() - jobStartedAt(meta) > JOB_MAX_MS) return false;
       var snap = loadSnap();
       if (!snapMatches(snap, meta)) snap = null;
-      if (askSummary.name) askSummary.name.textContent = (snap && snap.names) || '—'; // profiles ยังไม่โหลด → ใช้ชื่อที่เก็บใน snapshot ตอนรัน
-      if (askSummary.q) askSummary.q.textContent = String(meta.question || (snap && snap.question) || '').replace(/\s+/g, ' ').slice(0, 160);
-      document.body.classList.add('hk-answer-mode'); // desktop: กติกายุบอยู่ใน @media 768px → พฤติกรรมเดิม ไม่ยุบ
+      // r382: profiles ยังไม่โหลด → วาดป้ายแถบสลับจากชื่อ/คำถามใน snapshot ตอนรัน
+      if (readBar.btn) readBar.btn.textContent = '←';
+      if (readBar.label) readBar.label.innerHTML = '<b>' + esc((snap && snap.names) || '—') + '</b> · ' + esc(String(meta.question || (snap && snap.question) || '').replace(/\s+/g, ' ').slice(0, 160));
+      document.body.classList.add('hk-answer-mode'); // desktop: กติกา takeover อยู่ใน @media 768px → พฤติกรรมเดิม ไม่เปลี่ยน
       document.body.classList.remove('hk-ask-open');
+      bindFoldJob(meta.jobId || meta.clientRunId); // r382: การ์ด 🔗/🎯 พับ/กางตาม pref ของ job เดิม (sessionStorage)
       state.pendingQuestion = String(meta.question || '');
       if (snap && snap.phase === 'done' && snap.reply) {
         // งานเสร็จระหว่างเราไม่อยู่ + snapshot เก็บคำตอบทัน → เห็นคำตอบทันที · ของจริงจาก server จะ reconcile ผ่าน poll/resume อีกที

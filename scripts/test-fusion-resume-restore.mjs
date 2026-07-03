@@ -41,9 +41,9 @@ function makeSandbox() {
   const state = {};
   const body = { classList: mkClassList() };
   const documentStub = { body };
-  const askSummary = { name: { textContent: "" }, q: { textContent: "" }, bar: {} };
+  const readBar = { bar: {}, btn: { textContent: "" }, label: { innerHTML: "" } }; // r382: แถบสลับหน้าถาม↔หน้าอ่าน (แทน ask-summary เดิม)
   const els = { result: { innerHTML: "" }, question: { value: "" } };
-  const calls = { renderProgress: [], setRunState: [], setStatus: [], renderJobDone: [], showRunError: [], endRun: 0, clearedJob: 0 };
+  const calls = { renderProgress: [], setRunState: [], setStatus: [], renderJobDone: [], showRunError: [], endRun: 0, clearedJob: 0, bindFoldJob: [] };
   const t = (k) => k;
   const esc = (s) => String(s);
   const mdSafe = (s) => "<md>" + String(s) + "</md>";
@@ -67,6 +67,7 @@ function makeSandbox() {
     showRunError: (h) => calls.showRunError.push(h),
     endRun: () => { calls.endRun++; },
     fusionErrorText: (e) => String(e || "err"),
+    bindFoldJob: (k) => { calls.bindFoldJob.push(String(k || "")); }, // r382: paintResumeFromLocal ผูก pref พับการ์ดกับ job
   };
   const code = [
     extract("loadJobMeta"), extract("saveJob"), extract("clearJob"), extract("jobStartedAt"),
@@ -75,13 +76,13 @@ function makeSandbox() {
     extract("fusionPanelCounts"), extract("fusionMilestone"), extract("fusionCreep"), extract("computeFusionPercent"),
     extract("pollJob"),
   ].join("\n");
-  const params = ["localStorage", "state", "document", "askSummary", "els", "t", "esc", "mdSafe", "sciLabel", "DISCIPLINES", "SCI_ORDER",
+  const params = ["localStorage", "state", "document", "readBar", "els", "t", "esc", "mdSafe", "sciLabel", "DISCIPLINES", "SCI_ORDER",
     "JOB_MAX_MS", "FUSION_JOB_KEY", "FUSION_DRAFT_KEY", "SNAP_REPLY_MAX", "FUSION_SNAP_KEY", "fetch", ...Object.keys(stubs)];
   const factory = new Function(...params,
     code + "\nreturn { loadJobMeta, saveJob, clearJob, jobStartedAt, loadSnap, clearSnap, saveSnap, snapMatches, snapNames, resetProgressMeter, startSyntheticProgress, paintResumeFromLocal, computeFusionPercent, pollJob };");
-  const make = (fetchStub) => factory(localStorage, state, documentStub, askSummary, els, t, esc, mdSafe, sciLabel, DISCIPLINES, SCI_ORDER,
+  const make = (fetchStub) => factory(localStorage, state, documentStub, readBar, els, t, esc, mdSafe, sciLabel, DISCIPLINES, SCI_ORDER,
     JOB_MAX_MS, FUSION_JOB_KEY, FUSION_DRAFT_KEY, SNAP_REPLY_MAX, FUSION_SNAP_KEY, fetchStub, ...Object.values(stubs));
-  return { make, localStorage, state, body, askSummary, els, calls };
+  return { make, localStorage, state, body, readBar, els, calls };
 }
 
 const NOW = Date.now();
@@ -96,8 +97,9 @@ const NOW = Date.now();
   ok("reload มี jobId ค้าง → paint ทันที (return true)", painted === true);
   ok("hk-answer-mode ติดที่ body ทันที (ก่อน network ใดๆ)", sb.body.classList.contains("hk-answer-mode"));
   ok("hk-ask-open ถูกล้าง (การ์ดยุบจริง ไม่ค้างสถานะกาง)", !sb.body.classList.contains("hk-ask-open"));
-  ok("ask-summary มีคำถามจากงานค้าง", sb.askSummary.q.textContent === "ปีนี้ย้ายงานดีไหม", sb.askSummary.q.textContent);
-  ok("ask-summary มีชื่อดวงจาก snapshot (profiles ยังไม่โหลด)", sb.askSummary.name.textContent === "เอี๊ยว", sb.askSummary.name.textContent);
+  ok("read-bar มีคำถามจากงานค้าง (r382)", sb.readBar.label.innerHTML.includes("ปีนี้ย้ายงานดีไหม"), sb.readBar.label.innerHTML);
+  ok("read-bar มีชื่อดวงจาก snapshot (profiles ยังไม่โหลด)", sb.readBar.label.innerHTML.includes("เอี๊ยว") && sb.readBar.btn.textContent === "←", sb.readBar.label.innerHTML);
+  ok("paint จาก local ผูก pref พับการ์ด 🔗/🎯 กับ job เดิม (r382)", sb.calls.bindFoldJob.includes("job-1"), JSON.stringify(sb.calls.bindFoldJob));
   ok("โซนคำตอบ = placeholder รอคำตอบ (ไม่ใช่ฟอร์มเปล่า)", sb.els.result.innerHTML.startsWith("<wait>"));
   ok("สถานะ = running", sb.calls.setRunState.some((c) => c[0] === "running"));
   const st = sb.calls.renderProgress[sb.calls.renderProgress.length - 1];
@@ -127,7 +129,7 @@ const NOW = Date.now();
   fns.saveJob({ jobId: "job-3", question: "สุขภาพ", profileIds: ["1"], sciences: ["bazi"], startedAt: NOW - 5000 });
   fns.saveSnap({ jobKey: "job-OLD", phase: "done", pct: 100, names: "คนเก่า", reply: "ของเก่า" });
   ok("paint ได้จาก meta", fns.paintResumeFromLocal() === true);
-  ok("ไม่หยิบคำตอบ/ชื่อจาก snapshot งานเก่า", sb.els.result.innerHTML.startsWith("<wait>") && sb.askSummary.name.textContent === "—");
+  ok("ไม่หยิบคำตอบ/ชื่อจาก snapshot งานเก่า", sb.els.result.innerHTML.startsWith("<wait>") && sb.readBar.label.innerHTML.startsWith("<b>—</b>"), sb.readBar.label.innerHTML);
   const st = sb.calls.renderProgress[sb.calls.renderProgress.length - 1];
   ok("% เริ่ม 8 ตามปกติ (ไม่มี snapshot ที่เชื่อได้)", st && st.percent === 8);
 }
