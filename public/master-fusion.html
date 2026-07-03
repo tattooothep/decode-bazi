@@ -886,6 +886,32 @@
         background:linear-gradient(180deg,rgba(255,253,248,.9),rgba(255,253,248,.98));
       }
     }
+    /* ===== r385 · ห้องแชทต่อเนื่อง (chat room · ชั้นครอบใหม่ ไม่รื้อของเดิม · เข้าได้ 2 ธีมผ่าน CSS vars) ===== */
+    .room-head{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(210,176,94,.05)}
+    .room-head.hidden,.room-log.hidden,.composer.hidden{display:none}
+    .room-ico{flex:0 0 auto;font-size:18px}
+    .room-title{min-width:0;flex:1}
+    .room-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .room-topic{margin-top:2px;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .room-log{display:grid;gap:10px;margin-bottom:12px}
+    .rb{position:relative;max-width:88%;min-width:0;border:1px solid var(--line);border-radius:12px;padding:10px 12px;line-height:1.65;font-size:14px;overflow-wrap:anywhere}
+    .rb-user{justify-self:end;background:rgba(210,176,94,.12);border-color:rgba(210,176,94,.4);border-bottom-right-radius:4px;white-space:pre-wrap}
+    .rb-sifu{justify-self:start;background:var(--panel-2);border-bottom-left-radius:4px}
+    .rb-body{min-width:0}
+    .rb-body.rb-clamp{display:-webkit-box;-webkit-line-clamp:12;-webkit-box-orient:vertical;overflow:hidden}
+    .rb-more{display:inline-block;margin-top:6px;padding:0;border:0;background:none;color:var(--blue);font-family:var(--mono);font-size:11px;cursor:pointer}
+    .rb-more:hover{text-decoration:underline}
+    .rb-time{margin-top:5px;font-family:var(--mono);font-size:10px;color:var(--faint);text-align:right}
+    .rb-sifu .rb-time{text-align:left}
+    .rb .answer-tools{margin-top:9px;padding-top:8px}
+    .run-wait .run-wait-pct{font-family:var(--mono);font-size:12px;color:var(--muted)}
+    .composer{position:sticky;bottom:0;z-index:7;display:flex;gap:9px;align-items:flex-end;margin-top:14px;padding:10px 0 4px;background:var(--panel);border-top:1px solid var(--line)}
+    .composer textarea{flex:1;min-height:44px;max-height:110px;resize:none;line-height:1.5;padding:11px 12px}
+    .composer .btn{flex:0 0 auto;min-height:44px;white-space:nowrap}
+    [data-theme="light"] .room-head{background:rgba(159,121,46,.05)}
+    [data-theme="light"] .rb-user{background:rgba(159,121,46,.1);border-color:rgba(159,121,46,.4)}
+    [data-theme="light"] .rb-sifu{background:rgba(255,255,255,.72);border-color:rgba(159,121,46,.22)}
+    [data-theme="light"] .composer{background:var(--panel)}
     /* ===== r374 · Mobile answer-mode (≤768 เท่านั้น · ชั้นครอบใหม่ · desktop ไม่เปลี่ยนแม้แต่ pixel · ทริคอาเจ็กฮ้ง #7) ===== */
     @media (max-width:768px){
       /* (a) r382 · full-screen takeover: มีคำตอบ/กำลังรัน = หน้าอ่านเต็มจอ (ซ่อน topbar+แบนเนอร์+ฟอร์มถาม เหลือ status/progress)
@@ -929,6 +955,11 @@
       /* (g) r383 · หน้าถามระหว่างงานวิ่ง: การ์ด progress ไม่โผล่เป็นแถวหลงตำแหน่งในฟอร์ม — ใช้ pill ลอยแทน (root cause: กฎ (d) ข้างบนไม่มี :not(.hk-ask-open) ทำให้แถวยุบโผล่ท้าย ask-panel) */
       body.hk-answer-mode.hk-ask-open .ask-panel .panel-body > .progress-card{display:none!important}
       body.hk-answer-mode.hk-ask-open .run-pill{display:inline-flex}
+      /* (h) r385 · ห้องแชทมือถือ: composer ติดล่างจอจริง (แก้ overflow:hidden ของ .panel ที่ทำให้ sticky ไม่เกาะ viewport) */
+      body.hk-answer-mode:not(.hk-ask-open) .result-panel{overflow:visible}
+      body.hk-answer-mode:not(.hk-ask-open) .composer{background:rgba(14,16,20,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);margin-left:-8px;margin-right:-8px;padding-left:8px;padding-right:8px}
+      [data-theme="light"] body.hk-answer-mode:not(.hk-ask-open) .composer{background:rgba(255,253,248,.96)}
+      body.hk-answer-mode .rb{max-width:94%;font-size:14.5px;line-height:1.75}
     }
   </style>
 </head>
@@ -1050,11 +1081,18 @@
           <span class="pill" id="run-state">idle</span>
         </div>
         <div class="panel-body">
+          <!-- r385 · ห้องแชทต่อเนื่อง: หัวห้อง + ฟองเก่าเรียงลงมา · การ์ดคำตอบสด (fusion5-result) = ฟองล่าสุดของซินแส · 🔗🎯 พับใต้ฟอง -->
+          <div class="room-head hidden" id="room-head"></div>
+          <div class="room-log hidden" id="room-log"></div>
+          <div id="fusion5-result"></div>
           <div id="resonance-card" class="hidden"></div>
           <div id="sniper-card" class="hidden"></div>
-          <div id="fusion5-result"></div>
           <div class="chat" id="chat"></div>
           <div id="fusion-meta"></div>
+          <div class="composer hidden" id="composer">
+            <textarea id="composer-input" rows="1" maxlength="2000"></textarea>
+            <button class="btn" id="composer-send" type="button"></button>
+          </div>
         </div>
       </section>
     </section>
@@ -1133,7 +1171,8 @@
         'ds.t.generic':'ภาพรวม','ds.t.health':'สุขภาพ','ds.t.partner':'คู่ครอง','ds.t.parents':'พ่อแม่','ds.t.children':'ลูก','ds.t.contract':'สัญญา/ตกลง','ds.t.travel':'เดินทาง','ds.t.money':'การเงิน','ds.t.career':'การงาน',
         'hist.fromTag':'📜 จากประวัติ · {d}','hist.askMore':'ถามต่อจากคำตอบนี้','hist.back':'กลับ / ถามใหม่','hist.busy':'รอคำพยากรณ์ปัจจุบันเสร็จก่อน แล้วค่อยเปิดประวัติ','hist.pick':'แตะรายการประวัติ → คำถาม+คำตอบเก่าจะเปิดบนการ์ดคำพยากรณ์หลัก',
         'guest.link':'หรือ + ดวงชั่วคราว (ไม่บันทึก)','guest.name':'ชื่อเล่น','guest.namePh':'ดวงชั่วคราว','guest.gender':'เพศ','guest.male':'ชาย (M)','guest.female':'หญิง (F)','guest.birthDate':'วันเกิด','guest.dateHint':'ค.ศ.','guest.birthTime':'เวลาเกิด','guest.noTime':'ไม่ทราบเวลาเกิด','guest.noTimeHint':'จะอ่านได้ 3 เสา · จื่อเวย/ดาวจริงจีนข้าม','guest.noTimeShort':'ไม่ทราบเวลา','guest.place':'สถานที่เกิด','guest.placePh':'พิมพ์ชื่อเมือง/สถานที่ (ค่าเริ่มต้น กรุงเทพ)','guest.manualLatLng':'กรอกพิกัด lat/lng เอง','guest.locFail':'โหลด Google Places ไม่สำเร็จ · กรอกพิกัดเองได้ (เว้นว่าง = กรุงเทพ)','guest.locHint':'เว้นว่าง = กรุงเทพ 13.7563, 100.5018','guest.use':'ใช้ดวงนี้','guest.cancel':'ยกเลิกกลับ dropdown','guest.chipTag':'ไม่บันทึก','guest.edit':'แก้','guest.needDate':'กรุณาเลือกวันเกิด','guest.badDate':'วันเกิดต้องอยู่ระหว่าง ค.ศ. 1900 – วันนี้','guest.needTime':'กรอกเวลาเกิด หรือติ๊ก "ไม่ทราบเวลาเกิด"','guest.needGender':'กรุณาเลือกเพศ','guest.badLatLng':'พิกัดไม่ถูกต้อง (lat -90..90 · lng -180..180)','guest.tooMany':'รวมดวงได้ไม่เกิน 4 (โปรไฟล์ + ดวงชั่วคราว)','guest.histLabel':'ดวงชั่วคราวในรอบนี้ (ไม่บันทึก)','guest.badData':'ข้อมูลดวงชั่วคราวไม่ถูกต้อง','guest.slotAt':'ดวงชั่วคราวช่องที่ {n}',
-        'pill.back':'แตะกลับไปดูคำพยากรณ์','pill.ready':'คำพยากรณ์พร้อมแล้ว · แตะดู' },
+        'pill.back':'แตะกลับไปดูคำพยากรณ์','pill.ready':'คำพยากรณ์พร้อมแล้ว · แตะดู',
+        'chat.send':'ส่ง','chat.newRoom':'🆕 ห้องใหม่','chat.more':'อ่านเต็ม ▾','chat.less':'ย่อ ▴','chat.ph':'พิมพ์ถามต่อในห้องนี้...','chat.wait':'⏳ กำลังอ่านดวง...','chat.topup':'ยามไม่พอ · ไปเติมยาม','chat.newRoomHint':'เปลี่ยนดวง/ศาสตร์ หรือเริ่มเรื่องใหม่ = เปิดห้องใหม่' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
         'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading','read.back':'Back to reading',
         'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back',
@@ -1147,7 +1186,8 @@
         'ds.t.generic':'overall','ds.t.health':'health','ds.t.partner':'partner','ds.t.parents':'parents','ds.t.children':'children','ds.t.contract':'contracts','ds.t.travel':'travel','ds.t.money':'money','ds.t.career':'career',
         'hist.fromTag':'📜 From history · {d}','hist.askMore':'Ask a follow-up','hist.back':'Back / new question','hist.busy':'Wait for the current reading to finish before opening history','hist.pick':'Tap a history item — the old question + answer open on the main reading card',
         'guest.link':'or + temporary chart (not saved)','guest.name':'Nickname','guest.namePh':'Temp chart','guest.gender':'Gender','guest.male':'Male (M)','guest.female':'Female (F)','guest.birthDate':'Birth date','guest.dateHint':'CE','guest.birthTime':'Birth time','guest.noTime':'Birth time unknown','guest.noTimeHint':'3-pillar reading only · Zi Wei / Chinese real-star skipped','guest.noTimeShort':'time unknown','guest.place':'Birth place','guest.placePh':'Type a city/place (default Bangkok)','guest.manualLatLng':'Enter lat/lng manually','guest.locFail':'Google Places failed to load · enter coordinates manually (blank = Bangkok)','guest.locHint':'Blank = Bangkok 13.7563, 100.5018','guest.use':'Use this chart','guest.cancel':'Cancel, back to dropdown','guest.chipTag':'not saved','guest.edit':'Edit','guest.needDate':'Please pick a birth date','guest.badDate':'Birth date must be between 1900 and today','guest.needTime':'Fill birth time or tick "birth time unknown"','guest.needGender':'Please pick a gender','guest.badLatLng':'Invalid coordinates (lat -90..90 · lng -180..180)','guest.tooMany':'Max 4 charts total (profiles + temporary)','guest.histLabel':'Temporary charts in this run (not saved)','guest.badData':'Invalid temporary chart data','guest.slotAt':'temporary chart slot {n}',
-        'pill.back':'tap to view the reading','pill.ready':'Reading is ready · tap to view' },
+        'pill.back':'tap to view the reading','pill.ready':'Reading is ready · tap to view',
+        'chat.send':'Send','chat.newRoom':'🆕 New room','chat.more':'Read full ▾','chat.less':'Collapse ▴','chat.ph':'Type a follow-up in this room...','chat.wait':'⏳ Reading the charts...','chat.topup':'Not enough yam · Top up','chat.newRoomHint':'Change charts/sciences or start a new topic = open a new room' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
         'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷','read.back':'返回論斷',
         'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看',
@@ -1161,7 +1201,8 @@
         'ds.t.generic':'整體','ds.t.health':'健康','ds.t.partner':'配偶','ds.t.parents':'父母','ds.t.children':'子女','ds.t.contract':'契約','ds.t.travel':'出行','ds.t.money':'財運','ds.t.career':'事業',
         'hist.fromTag':'📜 歷史紀錄 · {d}','hist.askMore':'接著這個答案再問','hist.back':'返回 / 重新提問','hist.busy':'請等目前批算完成後再開歷史','hist.pick':'點歷史項目 — 舊問題＋答案會開在主論斷卡',
         'guest.link':'或 + 臨時命盤（不儲存）','guest.name':'暱稱','guest.namePh':'臨時命盤','guest.gender':'性別','guest.male':'男 (M)','guest.female':'女 (F)','guest.birthDate':'出生日期','guest.dateHint':'西元','guest.birthTime':'出生時間','guest.noTime':'不知出生時間','guest.noTimeHint':'僅三柱解讀 · 紫微／七政四餘略過','guest.noTimeShort':'時辰不詳','guest.place':'出生地','guest.placePh':'輸入城市／地點（預設曼谷）','guest.manualLatLng':'手動輸入經緯度','guest.locFail':'Google Places 載入失敗 · 可手動輸入座標（留空＝曼谷）','guest.locHint':'留空＝曼谷 13.7563, 100.5018','guest.use':'使用此盤','guest.cancel':'取消，返回下拉選單','guest.chipTag':'不儲存','guest.edit':'修改','guest.needDate':'請選擇出生日期','guest.badDate':'出生日期須在西元 1900 至今日之間','guest.needTime':'請填出生時間，或勾選「不知出生時間」','guest.needGender':'請選擇性別','guest.badLatLng':'座標無效（lat -90..90 · lng -180..180）','guest.tooMany':'最多共 4 盤（檔案＋臨時）','guest.histLabel':'本次臨時命盤（不儲存）','guest.badData':'臨時命盤資料無效','guest.slotAt':'臨時命盤第 {n} 格',
-        'pill.back':'點擊查看論斷','pill.ready':'論斷已完成 · 點擊查看' }
+        'pill.back':'點擊查看論斷','pill.ready':'論斷已完成 · 點擊查看',
+        'chat.send':'送出','chat.newRoom':'🆕 新房間','chat.more':'展開全文 ▾','chat.less':'收合 ▴','chat.ph':'在此房間繼續提問...','chat.wait':'⏳ 批算中...','chat.topup':'時數不足 · 前往加值','chat.newRoomHint':'更換命盤／術數或新話題＝開新房間' }
     };
     function t(key){ var d = I18N[state.locale] || I18N.th; return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
     function applyI18n(){
@@ -1288,7 +1329,11 @@
       return list.slice(-12).map(function(m){
         var role = m && (m.role === 'user' ? 'user' : (m.role === 'assistant' || m.role === 'sifu') ? 'assistant' : '');
         var content = m && typeof m.content === 'string' ? m.content.trim().slice(0, 4000) : '';
-        return role && content ? { role:role, content:content } : null;
+        if (!role || !content) return null;
+        var out = { role:role, content:content };
+        var at = m && Number(m.at); // r385: เวลาส่งใต้ฟองห้องแชท (server cleanHistory อ่านแค่ role/content — field เกินไม่กระทบ)
+        if (isFinite(at) && at > 0) out.at = at;
+        return out;
       }).filter(Boolean);
     }
     function saveConversation(){
@@ -1331,9 +1376,11 @@
     function renderThreadNote(){
       if (!els.chat) return;
       var turns = Math.floor(cleanLocalHistory(state.history).length / 2);
-      els.chat.innerHTML = turns
+      var roomOn = typeof roomActive === 'function' && roomActive(); // r385: ห้องแชทโชว์ฟองเก่าเองแล้ว → ไม่ต้องมี note ซ้ำ
+      els.chat.innerHTML = (turns && !roomOn)
         ? '<div class="thread-note">มีบริบทบทสนทนาเดิม ' + turns + ' รอบสำหรับถามต่อ · คำตอบเก่าจะไม่แสดงจนกดโชว์จากประวัติ</div>'
         : '';
+      if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: ทุกจุดที่บริบทเปลี่ยนอยู่แล้ว → ห้องตามทัน
     }
     function profileCount(){ return (selectedProfileIds().length + selectedGuests().length) || 1; } // r383: ยาม/ตัวคูณนับ guest ด้วย
     function allSelectedHaveTime(){
@@ -1380,6 +1427,7 @@
     }
     function updateSendAvailability(){
       els.send.disabled = state.busy || state.resuming || !state.ready || !canUseFusion();
+      if (typeof updateComposer === 'function') updateComposer(); // r385: ปุ่มส่งห้องแชท (ราคายาม/disabled/ปุ่มเติมยาม) ตามเกตเดียวกัน
     }
     function applyFusionGate(){
       var spend = currentYam();
@@ -1879,6 +1927,7 @@
         '<span class="run-wait-ico">⏳</span>' +
         '<span class="run-wait-mobile">' + esc(t('answerWait')) + '</span>' +
         '<span class="run-wait-desktop">' + esc(desktopText) + '</span>' +
+        '<span class="run-wait-pct"></span>' + // r385: % จริงเดินบนฟองรอ (updateProgressDom เติมทุก tick)
       '</div>';
     }
     // r383 · pill ลอยมุมล่าง (มือถือ+answer-mode+หน้าถามเท่านั้น — CSS base ซ่อน · desktop ไม่เห็นตลอด)
@@ -1918,6 +1967,8 @@
       if (pc) pc.textContent = pct + '%';
       var line = els.progress.querySelector('.prog-line-text');
       if (line) line.textContent = progressLineText(status, pct);
+      var waitPct = (els.result && els.result.querySelector) ? els.result.querySelector('.run-wait-pct') : null; // r385: % จริงบนฟองรอห้องแชท (guard: เทส stub els.result)
+      if (waitPct) waitPct.textContent = t('chat.wait') + ' ' + pct + '%';
       setRunPill('running', pct); // r383: pill % เดินตาม tick เดียวกับแถบ
       setStatus((status.message || 'กำลังรัน Fusion') + ' · ' + pct + '%');
     }
@@ -1956,6 +2007,8 @@
         '<div class="progress-models">' + rows + '</div>';
       setRunPill(status.phase === 'done' ? 'done' : 'running', pct); // r383: เสร็จ → "✅ คำพยากรณ์พร้อมแล้ว · แตะดู"
       setStatus((status.message || 'กำลังรัน Fusion') + ' · ' + pct + '%');
+      var waitPct0 = (els.result && els.result.querySelector) ? els.result.querySelector('.run-wait-pct') : null; // r385: เติม % ตั้งแต่ render แรก ไม่รอ tick
+      if (waitPct0 && status.phase !== 'done') waitPct0.textContent = t('chat.wait') + ' ' + pct + '%';
       ensureProgressTicker(status);
     }
     function renderProgressFromFusion(fusion){
@@ -2655,6 +2708,7 @@
       renderResonance(fusion.resonance || null); // การ์ด 🔗/🎯 ของรอบนั้น (จาก response_meta · ไม่มี = ซ่อน)
       if (els.result) els.result.innerHTML = historyMainHtml(row, fusion);
       if (els.meta) els.meta.innerHTML = '';
+      if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: ฟองรอบก่อนใน thread เดียวกันขึ้นเหนือการ์ด + composer พิมพ์ต่อได้เลย (typeof-guard: เทส sandbox)
       setRunState('history');
       setAnswerMode(true); // r374: เปิดประวัติ = อยากอ่านคำตอบ → มือถือเข้าโหมดอ่านเต็มจอทันที · desktop CSS ไม่ match = ไม่เปลี่ยน
       if (!isMobileFold()) {
@@ -2681,6 +2735,7 @@
         setRunState('idle');
         setAnswerMode(false); // กลับหน้าถามปกติ พร้อมถามใหม่
       }
+      if (typeof renderChatRoom === 'function') renderChatRoom(); // r385 (typeof-guard: เทส sandbox)
       updateReadBar();
     }
     function continueFromHistory(row){
@@ -2688,7 +2743,12 @@
       state.preHistoryView = null;
       resetConversationForProfile(row.profile_id || selectedProfileId());
       state.threadId = String((metaObj(row.request_payload).thread_id || metaObj(row.response_meta).thread_id || row.id || newRunId())).slice(0, 100);
-      state.history.push({ role:'user', content:row.question || '' }, { role:'assistant', content:row.answer || '' });
+      // r385: โหลดฟองทุกใบของ thread เดียวกัน (เท่าที่ list มี) ไม่ใช่แค่รอบเดียว — fallback รอบเดียวถ้าไม่มี helper/data
+      var threadRows = (typeof historyThreadRows === 'function') ? historyThreadRows(row) : [row];
+      threadRows.forEach(function(r){
+        var at = Date.parse(r.created_at || '') || undefined;
+        state.history.push({ role:'user', content:r.question || '', at:at }, { role:'assistant', content:r.answer || '', at:at });
+      });
       state.history = state.history.slice(-12);
       saveConversation();
       renderThreadNote();
@@ -2741,6 +2801,204 @@
       w.focus();
       setTimeout(function(){ w.print(); }, 250);
     }
+    // ===== r385 · ห้องแชทต่อเนื่อง (chat room) — UI ล้วน · ใช้กลไก context เดิม (history 6 รอบ + threadId) · backend ไม่แตะ =====
+    var roomEls = { head:$('room-head'), log:$('room-log'), composer:$('composer'), composerInput:$('composer-input'), composerSend:$('composer-send') };
+    // ห้องเปิดเมื่อ: ดูประวัติ / งานกำลังวิ่ง / มีคำตอบสด / มีบทสนทนาเดิมของชุดดวงนี้
+    function roomActive(){
+      if (state.historyView) return true;
+      if (state.pendingQuestion) return true; // งานวิ่ง/paint resume ก่อน busy ติด
+      if (state.result) return true;
+      return cleanLocalHistory(state.history).length > 0;
+    }
+    // เวลาส่งใต้ฟอง: วันนี้ = HH:MM · ข้ามวัน = เติมวันที่สั้น (deterministic ไม่พึ่ง Intl)
+    function fmtBubbleTime(at){
+      var n = Number(at);
+      if (!isFinite(n) || n <= 0) return '';
+      var d = new Date(n);
+      if (isNaN(d.getTime())) return '';
+      var hm = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+      var now = new Date();
+      if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()) return hm;
+      var mo = d.getMonth(), day = d.getDate();
+      if (state.locale === 'zh') return (mo + 1) + '月' + day + '日 ' + hm;
+      if (state.locale === 'en') return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mo] + ' ' + day + ' · ' + hm;
+      return day + ' ' + ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][mo] + ' · ' + hm;
+    }
+    // ฟองหนึ่งใบ: user ชิดขวา (ข้อความดิบ escape) · sifu ชิดซ้าย (mdSafe) · ยาว >12 บรรทัด = ตัด + "อ่านเต็ม ▾"
+    function bubbleHtml(m){
+      if (!m || !m.content) return '';
+      var user = m.role === 'user';
+      var body = user ? esc(m.content) : mdSafe(m.content);
+      var long = !user && (String(m.content).length > 900 || String(m.content).split('\n').length > 12);
+      var timeStr = fmtBubbleTime(m.at);
+      return '<div class="rb ' + (user ? 'rb-user' : 'rb-sifu') + '">' +
+        '<div class="rb-body' + (long ? ' rb-clamp' : '') + '">' + body + '</div>' +
+        (long ? '<button type="button" class="rb-more" data-rb-more="1">' + esc(t('chat.more')) + '</button>' : '') +
+        (!user && m.fusion ? renderAnswerTools(m.fusion) : '') +
+        (timeStr ? '<div class="rb-time">' + esc(timeStr) + '</div>' : '') +
+      '</div>';
+    }
+    // thread key ของแถวประวัติ (server เก็บ thread_id ทั้ง request_payload/response_meta · แถวเก่าไม่มี = ใช้ id ตัวเอง)
+    function historyThreadKey(row){
+      return String(metaObj(row && row.request_payload).thread_id || metaObj(row && row.response_meta).thread_id || (row && row.id) || '');
+    }
+    // ทุกแถวในห้องเดียวกัน (เท่าที่ list 80 แถวล่าสุดมี) เรียงเก่า → ใหม่
+    function historyThreadRows(row){
+      if (!row) return [];
+      var key = historyThreadKey(row);
+      var rows = key ? state.fusionHistory.filter(function(r){ return historyThreadKey(r) === key; }) : [];
+      if (!rows.length) rows = [row];
+      rows = rows.slice().sort(function(a, b){ return String(a.created_at || '').localeCompare(String(b.created_at || '')); });
+      return rows;
+    }
+    // ชื่อดวงหัวห้อง (ตรรกะเดียวกับ read-bar · แยกฟังก์ชันไม่แตะ updateReadBar เดิม)
+    function roomNames(){
+      var names = selectedProfileIds().map(function(id){
+        var p = profileById(id);
+        return p ? String(p.nickname || p.name || '') : '';
+      }).filter(Boolean);
+      selectedGuests().forEach(function(g){ names.push('🎴' + (g.name ? String(g.name) : t('guest.namePh'))); });
+      return names.join(' + ');
+    }
+    // ฟองในห้อง: โหมดประวัติ = แถวก่อนหน้าใน thread เดียวกัน (แถวที่เปิด = การ์ดใหญ่) · โหมดสด = state.history (ฟองล่าสุด = การ์ดคำตอบสด)
+    function roomTurns(){
+      var out = [];
+      if (state.historyView) {
+        var opened = findHistory(state.historyView.id);
+        var openedAt = String(opened && opened.created_at || '');
+        historyThreadRows(opened).forEach(function(r){
+          if (String(r.id) === String(state.historyView.id)) return;
+          if (openedAt && String(r.created_at || '') > openedAt) return; // แถวใหม่กว่าแถวที่เปิด → ไม่ยัดเหนือการ์ด (ลำดับเวลาจะเพี้ยน)
+          var at = Date.parse(r.created_at || '') || null;
+          out.push({ role:'user', content:String(r.question || ''), at:at });
+          out.push({ role:'assistant', content:String(r.answer || ''), at:at, fusion:fusionFromHistory(r) });
+        });
+        return out;
+      }
+      var turns = cleanLocalHistory(state.history);
+      var replyNow = (state.result && typeof state.result.reply === 'string') ? state.result.reply.trim().slice(0, 4000) : '';
+      turns.forEach(function(m, i){
+        if (replyNow && i === turns.length - 1 && m.role === 'assistant' && m.content === replyNow) return; // คำตอบล่าสุด = การ์ดสดด้านล่าง ไม่ทำฟองซ้ำ
+        out.push(m);
+      });
+      return out;
+    }
+    function roomHeadHtml(){
+      var names, topic;
+      if (state.historyView) { names = state.historyView.names || ''; topic = state.historyView.question || ''; }
+      else {
+        names = roomNames();
+        topic = '';
+        var turns = cleanLocalHistory(state.history);
+        for (var i = 0; i < turns.length; i++) { if (turns[i].role === 'user') { topic = turns[i].content; break; } }
+        if (!topic) topic = String(state.pendingQuestion || '');
+      }
+      return '<span class="room-ico">🎴</span>' +
+        '<div class="room-title"><div class="room-name">' + esc(names || '—') + '</div>' +
+        '<div class="room-topic">' + esc(shortText(topic, 90)) + '</div></div>' +
+        '<button class="mini-btn" type="button" data-room-new="1" title="' + esc(t('chat.newRoomHint')) + '">' + esc(t('chat.newRoom')) + '</button>';
+    }
+    // ปุ่มส่ง: โชว์ราคายามจริงของคำถามต่อ (หักเหมือนถามใหม่ทุกรอบ) · ยามไม่พอ = ปุ่มพาไปเติมที่ /account
+    function updateComposer(){
+      if (!roomEls.composerSend) return;
+      var spend = currentYam();
+      var short = isLoggedIn() && !!activeSciences().length && spend > 0 && hourBalance() < spend;
+      state.composerTopup = short;
+      roomEls.composerSend.textContent = short ? t('chat.topup') : (t('chat.send') + ' · ' + spend + ' 時');
+      roomEls.composerSend.disabled = !short && (state.busy || state.resuming || !state.ready || !canUseFusion());
+      if (roomEls.composerInput) roomEls.composerInput.placeholder = t('chat.ph');
+    }
+    function renderChatRoom(){
+      if (!roomEls.log || !roomEls.composer) return;
+      var on = roomActive();
+      if (roomEls.head) roomEls.head.classList.toggle('hidden', !on);
+      roomEls.log.classList.toggle('hidden', !on);
+      roomEls.composer.classList.toggle('hidden', !on);
+      if (!on) { roomEls.log.innerHTML = ''; if (roomEls.head) roomEls.head.innerHTML = ''; return; }
+      if (roomEls.head) roomEls.head.innerHTML = roomHeadHtml();
+      var html = roomTurns().map(bubbleHtml).join('');
+      // งานวิ่งอยู่/paint resume = ฟองคำถามล่าสุดชิดขวา (ฟองรอ ⏳ x% คือ placeholder ใน fusion5-result ด้านล่าง)
+      if (state.pendingQuestion) html += bubbleHtml({ role:'user', content:state.pendingQuestion, at:state.pendingAt });
+      roomEls.log.innerHTML = html;
+      // ห้องเปิดแต่ไม่มีการ์ดสด (เช่น reload ห้องที่จบแล้ว) → ไม่ต้องโชว์ "เลือกโหมด..." กลางห้อง
+      if (!state.busy && !state.result && !state.historyView && els.result && els.result.querySelector) {
+        var emptyEl = els.result.querySelector('.result-empty:not(.run-wait)');
+        if (emptyEl && els.result.children.length === 1) els.result.innerHTML = '';
+      }
+      updateComposer();
+    }
+    // 🆕 ห้องใหม่: ล้างบริบท/การ์ด กลับหน้าฟอร์มถามเดิม (ห้องผูกกับชุดดวง — เปลี่ยนดวง/ศาสตร์ก็เริ่มที่นี่)
+    function startNewRoom(){
+      if (state.busy || state.resuming) { setStatus(t('hist.busy'), 'err'); return; }
+      state.historyView = null;
+      state.preHistoryView = null;
+      state.activeHistoryId = '';
+      startNewConversation();
+      state.result = null;
+      state.answers = {};
+      state.answerSeq = 0;
+      renderResonance(null);
+      if (els.meta) els.meta.innerHTML = '';
+      if (els.question) els.question.value = '';
+      if (els.chat) els.chat.innerHTML = '';
+      if (roomEls.composerInput) roomEls.composerInput.value = '';
+      if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
+      renderProgress(null);
+      setRunState('idle');
+      setStatus('');
+      setAnswerMode(false); // มือถือ → กลับหน้าถามเต็มจอ · desktop ฟอร์มอยู่ซ้ายอยู่แล้ว
+      renderHistoryList();
+      renderChatRoom();
+      applyFusionGate();
+    }
+    // เปิดห้องจากประวัติแล้วพิมพ์ต่อ: ตั้ง threadId + ฟองทุกใบของ thread เป็นบริบทก่อนยิงงานใหม่ (กลไก 6 รอบเดิม)
+    function seedThreadFromHistoryView(){
+      var row = state.historyView ? findHistory(state.historyView.id) : null;
+      state.historyView = null;
+      state.preHistoryView = null;
+      if (!row) return;
+      resetConversationForProfile(row.profile_id || selectedProfileId());
+      state.threadId = (historyThreadKey(row) || newRunId()).slice(0, 100);
+      historyThreadRows(row).forEach(function(r){
+        var at = Date.parse(r.created_at || '') || undefined;
+        state.history.push({ role:'user', content:String(r.question || ''), at:at }, { role:'assistant', content:String(r.answer || ''), at:at });
+      });
+      state.history = cleanLocalHistory(state.history).slice(-12);
+      saveConversation();
+    }
+    function composerSend(){
+      if (state.composerTopup) { window.location.href = '/account'; return; } // ยามไม่พอ → หน้าเติมยาม
+      if (state.busy || state.resuming) return;
+      var msg = roomEls.composerInput ? String(roomEls.composerInput.value || '').trim() : '';
+      if (!msg) return;
+      if (state.historyView) seedThreadFromHistoryView(); // เปิดจากประวัติ → โหลดบริบทห้องเดิมก่อนส่ง
+      if (els.question) els.question.value = msg;
+      if (roomEls.composerInput) { roomEls.composerInput.value = ''; roomEls.composerInput.style.height = ''; }
+      send();
+    }
+    // wiring ห้องแชท (element ทั้งหมด static ใน DOM · listener ตรงตัว)
+    if (roomEls.composerSend) roomEls.composerSend.addEventListener('click', composerSend);
+    if (roomEls.composerInput) {
+      roomEls.composerInput.addEventListener('keydown', function(e){
+        if (e.key === 'Enter' && !e.shiftKey && !isMobileFold()) { e.preventDefault(); composerSend(); } // desktop: Enter ส่ง · Shift+Enter ขึ้นบรรทัด
+        else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); composerSend(); }
+      });
+      roomEls.composerInput.addEventListener('input', function(){
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 110) + 'px'; // 1-3 บรรทัด autogrow
+      });
+    }
+    if (roomEls.log) roomEls.log.addEventListener('click', function(e){
+      var btn = e.target && e.target.closest ? e.target.closest('[data-rb-more]') : null;
+      if (!btn) return;
+      var body = btn.parentElement ? btn.parentElement.querySelector('.rb-body') : null;
+      if (!body) return;
+      var clamped = body.classList.toggle('rb-clamp');
+      btn.textContent = clamped ? t('chat.more') : t('chat.less');
+    });
+    if (roomEls.head) roomEls.head.addEventListener('click', function(e){
+      if (e.target && e.target.closest && e.target.closest('[data-room-new]')) startNewRoom();
+    });
     async function loadAccount(){
       try {
         var r = await fetch('/api/account/me', { credentials:'same-origin', cache:'no-store' });
@@ -3006,6 +3264,7 @@
       if (meta.threadId) state.threadId = String(meta.threadId).slice(0, 100);
       if (Array.isArray(meta.history)) state.history = cleanLocalHistory(meta.history);
       state.pendingQuestion = String(meta.question || '');
+      state.pendingAt = jobStartedAt(meta); // r385: เวลาใต้ฟองคำถามที่กำลังวิ่ง
       if (els.send) els.send.disabled = true;
       if (meta.question && els.question && !els.question.value) els.question.value = meta.question;
       var sciences = (Array.isArray(meta.sciences) && meta.sciences.length) ? meta.sciences : activeSciences();
@@ -3018,6 +3277,7 @@
         if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('runningAsync')); // r376: จองพื้นที่คำตอบตั้งแต่รัน
       }
       bindFoldJob(meta.jobId); // r382: resume → พับ/กางตาม pref ของ job นี้ (ไม่มี pref = ค่าเริ่มต้นตามอุปกรณ์)
+      if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: reload กลางทาง → ฟองเดิม+ฟองรอกลับมาครบ (typeof-guard: เทส sandbox)
       renderResonance(firstStatus && firstStatus.resonance ? firstStatus.resonance : null); // r369: resume → การ์ดกลับมาด้วย
       setStatus(t('runningAsync'));
       saveJob(meta);
@@ -3079,18 +3339,21 @@
     }
     function showRunError(human){
       state.resumePaintedDone = false; // r381
+      state.pendingQuestion = ''; // r385: คำถามที่พลาดไม่ค้างเป็นฟองรอ (ตัวคำถามยังอยู่ในกล่องถามให้รันซ้ำ)
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc((state.locale==='th'?'รันไม่สำเร็จ: ':'failed: ') + human) + '</div>';
       renderProgress(null);
       setRunState('failed', 'err');
       setStatus(human, 'err');
       setAnswerMode(false); // r374: รันพลาด → ขยายการ์ดถามกลับให้แก้/รันใหม่ได้ทันที
+      if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: เก็บฟองรอ/ฟองคำถามที่ยังไม่สำเร็จออก (typeof-guard: เทส sandbox)
     }
     function rememberCompletedTurn(result, meta){
       meta = meta || state.activeJob || {};
       var q = String((meta && meta.question) || state.pendingQuestion || '').trim();
       var a = String(result && result.reply || '').trim();
       if (!q || !a) return;
-      state.history.push({ role:'user', content:q }, { role:'assistant', content:a });
+      var askedAt = Number(meta && meta.startedAt) || Number(state.pendingAt) || Date.now(); // r385: เวลาใต้ฟอง
+      state.history.push({ role:'user', content:q, at:askedAt }, { role:'assistant', content:a, at:Date.now() });
       state.history = cleanLocalHistory(state.history).slice(-12);
       state.pendingQuestion = '';
       saveConversation();
@@ -3109,6 +3372,7 @@
       setRunState(okCount === total ? 'done' : 'degraded', okCount === total ? 'ok' : 'err');
       var net = f.yam ? ((f.yam.charged || 0) - (f.yam.refunded || 0)) : null;
       setStatus((state.locale==='th'?'สำเร็จ · ':'done · ') + okCount + '/' + total + (state.locale==='th'?' ศาสตร์':' sciences') + (net != null ? (' · ' + net + ' 時') : ''), 'ok');
+      if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: state.result ตั้งแล้ว → ฟองล่าสุด = การ์ดสด ไม่ทำฟองซ้ำ (typeof-guard: เทส sandbox)
       updateReadBar(); // r382: กล่องคำถามถูกล้างหลังเสร็จ → แถบสลับดึงคำถามจาก history แทน
       loadFusionHistory().catch(function(){});
     }
@@ -3180,6 +3444,8 @@
           clearJob();
           clearSnap(); // r381
           state.busy = false;
+          state.pendingQuestion = ''; // r385: ฟองรอไม่ค้าง (คำถามยังอยู่ในกล่องถาม)
+          if (typeof renderChatRoom === 'function') renderChatRoom();
           renderProgress(null); // r381: ยกเลิกภาพที่ paint ไว้ตอนเปิดหน้า — server ยืนยันว่าไม่มีงานจริง
           setRunState('idle');
           if (els.result && !state.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
@@ -3217,6 +3483,7 @@
       if (!state.threadId) state.threadId = newRunId();
       var priorHistory = payloadHistory();
       state.pendingQuestion = message;
+      state.pendingAt = Date.now(); // r385: เวลาส่งใต้ฟองคำถาม
       state.busy = true;
       state.historyView = null; // r384: รันใหม่ = ออกจากโหมดดูประวัติ (การ์ดหลักเป็นของงานใหม่)
       state.preHistoryView = null;
@@ -3228,6 +3495,7 @@
       startSyntheticProgress(sciences);
       if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('running')); // r376: จองพื้นที่คำตอบตั้งแต่รัน
       renderResonance(null); // ล้างการ์ดรอบก่อน · การ์ดใหม่มากับ POST response ทันที
+      if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: ฟองคำถามชิดขวา + ฟองรอโผล่ทันที (typeof-guard: เทส extract ฟังก์ชันเดี่ยว)
       var pendingMeta = { jobId:'', clientRunId:newRunId(), profileId:profileIds[0] || '', profileIds:profileIds, guests:guests.map(guestPayload), sciences:sciences, question:message, lang:state.locale, history:priorHistory, threadId:state.threadId, startedAt:Date.now(), posting:true }; // r383: guests เข้า meta → snapshot/read-bar/resume เห็นชื่อ guest
       saveDraft();
       saveJob(pendingMeta);
@@ -3432,6 +3700,8 @@
       setStatus('');
       setRunState('idle');
       setAnswerMode(false); // r374: ล้าง → การ์ดถามกลับเต็ม
+      if (roomEls.composerInput) { roomEls.composerInput.value = ''; roomEls.composerInput.style.height = ''; } // r385
+      renderChatRoom(); // r385: ล้าง = ห้องปิด กลับหน้าฟอร์ม
       applyFusionGate();
     });
     els.profile.addEventListener('change', function(){
@@ -3514,6 +3784,7 @@
       updateReadBar(); // r382: ป้ายแถบสลับตามภาษาใหม่
       refreshRunPill(); // r383: ข้อความ pill ตามภาษาใหม่
       renderGuestSlots(); // r383: ป้ายบนฟอร์ม/chip guest ตามภาษาใหม่ (ฟอร์มที่เปิดค้างจะถูกวาดใหม่ตอน openGuestForm ครั้งหน้า)
+      renderChatRoom(); // r385: ฟอง/หัวห้อง/ปุ่มส่ง ตามภาษาใหม่
     });
     function syncFusionOnReturn(){
       if (!state.ready) return;
@@ -3552,6 +3823,10 @@
       document.body.classList.remove('hk-ask-open');
       bindFoldJob(meta.jobId || meta.clientRunId); // r382: การ์ด 🔗/🎯 พับ/กางตาม pref ของ job เดิม (sessionStorage)
       state.pendingQuestion = String(meta.question || '');
+      state.pendingAt = jobStartedAt(meta); // r385
+      // r385: paint ฟองห้องแชทจาก meta.history ทันที (typeof-guard ทั้งคู่: เทส resume extract ฟังก์ชันนี้เดี่ยว)
+      if (typeof cleanLocalHistory === 'function' && Array.isArray(meta.history)) state.history = cleanLocalHistory(meta.history);
+      if (typeof renderChatRoom === 'function') renderChatRoom();
       if (snap && snap.phase === 'done' && snap.reply) {
         // งานเสร็จระหว่างเราไม่อยู่ + snapshot เก็บคำตอบทัน → เห็นคำตอบทันที · ของจริงจาก server จะ reconcile ผ่าน poll/resume อีกที
         if (els.result) els.result.innerHTML = mdSafe(snap.reply);
