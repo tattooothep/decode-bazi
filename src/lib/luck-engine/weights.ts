@@ -40,6 +40,7 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     he_luo:          0.02,
     hex64:           0.02,
     tian_xing:       0.12,
+    dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
   },
 
   // ----------------------------------------------------------------
@@ -60,6 +61,7 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     he_luo:          0.01,
     hex64:           0.01,
     tian_xing:       0.12,
+    dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
   },
 
   // ----------------------------------------------------------------
@@ -79,6 +81,7 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     yong_shen:       0.03,
     hex64:           0.01,
     tian_xing:       0.12,
+    dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
   },
 
   // ----------------------------------------------------------------
@@ -98,6 +101,7 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     yong_shen:       0.01,
     hex64:           0.01,
     tian_xing:       0.12,
+    dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
   },
 
   // ----------------------------------------------------------------
@@ -117,6 +121,7 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     twelve_spirits:  0.03,
     hex64:           0.02,
     tian_xing:       0.12,
+    dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
   },
 
   // ----------------------------------------------------------------
@@ -136,6 +141,7 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     he_luo:          0.02,
     hex64:           0.01,
     tian_xing:       0.12,
+    dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
   },
 
   // ----------------------------------------------------------------
@@ -152,6 +158,7 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     twelve_officers: 0.05,
     hex64:           0.04,
     tian_xing:       0.12,
+    dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
     twenty_eight:    0.02,
     twelve_spirits:  0.01,
     he_luo:          0.01,
@@ -174,6 +181,7 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     yong_shen:       0.02,
     hex64:           0.02,
     tian_xing:       0.12,
+    dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
   },
 };
 

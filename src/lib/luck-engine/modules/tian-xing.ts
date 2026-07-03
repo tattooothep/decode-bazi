@@ -3,7 +3,8 @@
  * =====================================================================
  * ห่อ tianxingReading() (engine A1-A5) → ModuleResult เพื่อเข้า combineScores
  * ⚠️ opt-in: route จะคำนวณ+แนบ "เฉพาะเมื่อ user ติ๊ก" (อยู่ใน activeModules) → ไม่ติ๊ก = ไม่รัน ไม่กระทบคะแนน
- * lat/lng: datepick fix Bangkok (13.75/100.5) · เวลา = กลาง時辰 (ascendant ระดับ時辰 · beta)
+ * lat/lng: r367 รับพิกัดสถานที่จัดงานจริงจาก route (ascendant เปลี่ยนตามพิกัด) ·
+ *          ไม่ส่งมา = default Bangkok (13.75/100.5) เหมือนเดิม · เวลา = กลาง時辰 (beta)
  */
 import type { ModuleResult, Reason, CandidateSlot } from "../types";
 import { tianxingReading } from "@/lib/tianxing";
@@ -21,7 +22,7 @@ function candidateDtUTC(c: CandidateSlot): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
-export function computeTianXing(c: CandidateSlot): ModuleResult {
+export function computeTianXing(c: CandidateSlot, lat: number = BKK_LAT, lng: number = BKK_LNG): ModuleResult {
   const dt = candidateDtUTC(c);
   if (!dt) {
     return {
@@ -30,7 +31,7 @@ export function computeTianXing(c: CandidateSlot): ModuleResult {
       reasons: { up: [], down: [], warning: [] }, confidence: 0, raw: {},
     };
   }
-  const r = tianxingReading(dt, BKK_LAT, BKK_LNG);
+  const r = tianxingReading(dt, lat, lng);
   const normalized = LEVEL_NORM[r.level] ?? 55;
 
   const up: Reason[] = [], down: Reason[] = [];
@@ -53,6 +54,6 @@ export function computeTianXing(c: CandidateSlot): ModuleResult {
     pass: r.level !== "bad", tags: [`tx_${r.level}`],
     reasons: { up: up.slice(0, 6), down: down.slice(0, 6), warning: [] },
     confidence: 0.6, // beta (ก่อนซินแสยืนยัน紫氣/ayanamsa)
-    raw: { level: r.level, verdict: r.verdictTh?.th, ascendant: r.ascendant?.signTh, yongshen: r.yongshen, ziqi_beta: true },
+    raw: { level: r.level, verdict: r.verdictTh?.th, ascendant: r.ascendant?.signTh, ascendantDeg: r.ascendant?.lonSid, yongshen: r.yongshen, lat, lng, ziqi_beta: true },
   };
 }

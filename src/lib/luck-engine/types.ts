@@ -128,17 +128,21 @@ export type ModuleKey =
   | "ba_zi"            // 八字 (personal)
   | "yong_shen"        // 用神 (personal)
   | "hex64"            // 64 卦 (can be personal)
-  | "tian_xing";       // 七政四餘 ดาวจริง (เฟส B · opt-in · default ปิด)
+  | "tian_xing"        // 七政四餘 ดาวจริง (เฟส B · opt-in · default ปิด)
+  | "dong_gong";       // 董公擇日 ตงกง (r367 · opt-in · ตัดฤกษ์ผ่าน caps ใน combineScores)
 
 export const ALL_MODULES: ModuleKey[] = [
   "ze_ri", "twelve_officers", "twenty_eight", "twelve_spirits",
   "nine_stars", "tai_sui", "qi_men", "he_luo",
-  "ba_zi", "yong_shen", "hex64", "tian_xing"
+  "ba_zi", "yong_shen", "hex64", "tian_xing", "dong_gong"
 ];
 
 // หมายเหตุ: tian_xing ไม่อยู่ใน UNIVERSAL — เป็น scorer (compute on-the-fly) ไม่ใช่ hard-filter
 // (กันไม่ให้ไหลเข้า hardModules→SQL aj_ephemeris_cache ที่ไม่มีคอลัมน์ tian_xing · ฤกษ์หาย)
 // scoring ทำงานผ่าน ALL_MODULES → baseScoreModules → combineScores
+// r367: dong_gong ก็ไม่อยู่ใน UNIVERSAL ด้วยเหตุผลเดียวกัน — aj_ephemeris_cache ไม่มีคอลัมน์ dong_gong
+// (ถ้าใส่ UNIVERSAL → moduleFilters ใน SQL จะ query คอลัมน์ที่ไม่มี → error → ฤกษ์หายทั้งหน้า)
+// dong_gong ตัดฤกษ์ผ่าน caps (max 30/45) ใน combineScores ไม่ใช่ hard-filter SQL
 export const UNIVERSAL_MODULES: ModuleKey[] = [
   "ze_ri", "twelve_officers", "twenty_eight", "twelve_spirits",
   "nine_stars", "tai_sui", "qi_men", "he_luo"

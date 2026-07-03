@@ -23,6 +23,9 @@ import { ALL_MODULES, UNIVERSAL_MODULES, PERSONAL_MODULES } from "@/lib/luck-eng
 import type { ModuleKey, ActivityType, CandidateSlot, ModuleResult, FunnelStats, SearchResponse, PersonProfile } from "@/lib/luck-engine/types";
 import { combineScores, scoreToTier, tierToAction, TIER_LABELS } from "@/lib/luck-engine/combineScores";
 import { computeTianXing } from "@/lib/luck-engine/modules/tian-xing";
+import { computeDongGong, DONGGONG_ACTIVITY_ALIASES } from "@/lib/luck-engine/modules/dong-gong";
+import { normalizeEventLocation, buildTstBoundaryWarning } from "@/lib/luck-engine/event-location";
+import type { EventLocation } from "@/lib/luck-engine/event-location";
 import { huangDaoHour } from "@/lib/huangdao";
 import { riChongDay } from "@/lib/richong";
 import { dongGong } from "@/lib/donggong";
@@ -63,10 +66,17 @@ const _ausCache = new Map<string, { data: any; expires: number }>();
 const AUS_TTL = 60_000;
 const DATEPICK_HARD_MODULES = new Set<ModuleKey>(["ze_ri", "tai_sui", "ba_zi", "qi_men"]);
 const DONGGONG_SCORING_POLICY = "v1_overlay";
+const DONGGONG_MODULE_POLICY = "v2_module_r367";
 function cacheKey(body: any): string {
   const options = body.options || {};
+  // r367: dong_gong module state + พิกัดงาน (ปัด 2 ตำแหน่ง) เข้า key — additive fields only
+  const dgModule = Array.isArray(body.activeModules) && body.activeModules.includes("dong_gong");
+  const evLoc = normalizeEventLocation(options);
   return JSON.stringify({
-    dg: DONGGONG_SCORING_POLICY,
+    dg: dgModule ? DONGGONG_MODULE_POLICY : DONGGONG_SCORING_POLICY,
+    dgm: dgModule,
+    el: Math.round(evLoc.lat * 100) / 100,
+    eg: Math.round(evLoc.lng * 100) / 100,
     a: body.activityType, ap: body.activityProfileKey || "", df: body.dateFrom, dt: body.dateTo,
     p: body.peopleIds || [], m: (body.activeModules || []).slice().sort(),
     o: options,
@@ -108,6 +118,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unknown activityType" }, { status: 400 });
     }
     const targetDirection = normalizeTargetDirection(options.targetDirection ?? options.target_direction ?? body.targetDirection ?? body.target_direction);
+    /* r367: สถานที่จัดงาน · validate ฝั่ง server · invalid → fallback กรุงเทพ + note ใน meta (ไม่ 400) */
+    const eventLocation = normalizeEventLocation(options);
 
     /* 1 มิ.ย. ปิด IDOR: ถ้าผูกดวงส่วนตัว (peopleIds) ต้อง login + กรองเหลือเฉพาะดวงใน org ตัวเอง (กันดึง/อ่าน cache ดวงคนอื่น) · ค้นฤกษ์ universal (ไม่มี peopleIds) ยังเปิด guest */
     let ownedPeopleIds: string[] = peopleIds;
@@ -186,18 +198,28 @@ export async function POST(req: NextRequest) {
 
     // STEP 5: Enrich · sort
     const baseScoreModules = qimenBaseScoreModulesForActivity(activeModuleKeys);
+    /* r367: dong_gong module active → caps/reasons ไหลผ่าน combineScores (ทางเดียวกับ module อื่น)
+       + boost บวก (+8/+6) หลัง guard · และ "ข้าม" applyDongGongOverlay กันนับซ้ำ
+       module ปิด → เส้นทางเดิม (overlay) เหมือนเดิมทุกประการ */
+    const dongGongModuleActive = activeModuleKeys.includes("dong_gong");
     const enriched = candidates
       .map(c => applyMonthDayShaRuntime(c, resolvedActivityType, targetDirection))
-      .map(c => applyTianXing(c, activeModuleKeys))
+      .map(c => applyTianXing(c, activeModuleKeys, eventLocation))
+      .map(c => applyDongGongModule(c, dongGongModuleActive, resolvedActivityType))
       .map(c => enrichCandidate(c, baseScoreModules, resolvedActivityType))
       .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys, targetDirection))
       .map(c => applyQimenGenericGuard(c, activityProfile, activeModuleKeys))
-      .map(c => applyDongGongOverlay(c, activeModuleKeys, resolvedActivityType))
+      .map(c => dongGongModuleActive
+        ? applyDongGongBoost(c)
+        : applyDongGongOverlay(c, activeModuleKeys, resolvedActivityType))
       .map(c => hideDongGongWhenInactive(c, activeModuleKeys))
       .map(refreshCandidateDisplay)
       .filter(c => !options.minScore || (c.scoring?.finalScore ?? 0) >= options.minScore)
       .sort((a, b) => (b.scoring?.finalScore ?? 0) - (a.scoring?.finalScore ?? 0))
       .slice(0, options.limit ?? 50);
+
+    /* r367: ยามคาบเส้น ณ สถานที่งาน · เฉพาะ top results (perf) · แจ้งเตือนอย่างเดียว ห้ามแตะคะแนน */
+    attachTstBoundaryWarnings(enriched, eventLocation);
 
     // STEP 6: Audit log
     const durationMs = Date.now() - startTime;
@@ -225,7 +247,9 @@ export async function POST(req: NextRequest) {
           profileMode: activityProfile.profileMode,
         } : null,
         qimenScoringPolicy: buildQimenDatepickPolicy(activityProfile, activeModuleKeys, targetDirection),
-        donggongScoringPolicy: DONGGONG_SCORING_POLICY,
+        donggongScoringPolicy: dongGongModuleActive ? DONGGONG_MODULE_POLICY : DONGGONG_SCORING_POLICY,
+        /* r367: บอก client ว่าใช้พิกัดไหนจริง + note ถ้า fallback (invalid coords → BKK · ไม่ 400) */
+        eventLocation,
         hardModules,
         sqlHardModules,
         mergedHardModules,
@@ -244,13 +268,99 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/** เฟส B · 天星 opt-in: คำนวณ+แนบ "เฉพาะเมื่อ user ติ๊ก" (tian_xing ∈ active) · ไม่ติ๊ก = คืน c เดิม ไม่แตะ (zero-effect) */
-function applyTianXing(c: CandidateSlot, activeModules: ModuleKey[]): CandidateSlot {
+/** เฟส B · 天星 opt-in: คำนวณ+แนบ "เฉพาะเมื่อ user ติ๊ก" (tian_xing ∈ active) · ไม่ติ๊ก = คืน c เดิม ไม่แตะ (zero-effect)
+ *  r367: ส่งพิกัดสถานที่จัดงานจริงเข้า computeTianXing (ascendant เปลี่ยนตามพิกัด) */
+function applyTianXing(c: CandidateSlot, activeModules: ModuleKey[], loc: EventLocation): CandidateSlot {
   if (!activeModules.includes("tian_xing")) return c;
   try {
-    const tx = computeTianXing(c);
+    const tx = computeTianXing(c, loc.lat, loc.lng);
     return { ...c, modules: { ...(c.modules as any), tian_xing: tx } };
   } catch { return c; }
+}
+
+/** r367 · 董公 opt-in module: แนบ ModuleResult ก่อน combineScores (caps/reasons ไหลทาง combineScores)
+ *  module ปิด = ไม่แนบ = zero-effect (เส้นทาง overlay เดิมทำงานเหมือนเดิม) */
+function applyDongGongModule(c: CandidateSlot, active: boolean, activity: ActivityType): CandidateSlot {
+  if (!active) return c;
+  try {
+    const dgResult = computeDongGong(c, activity);
+    return { ...c, modules: { ...(c.modules as any), dong_gong: dgResult } };
+  } catch { return c; }
+}
+
+/** r367 · 董公 boost + re-enforce caps (ตำแหน่งเดียวกับ overlay เดิม = คำสุดท้ายของชั้นตงกง)
+ *  1) บวกคะแนนวันดี (+8 verdict / +6 yi-match): weight ของ dong_gong ใน weights matrix = 0
+ *     → weighted average ไม่ขยับเอง จึงบวก delta ตรงนี้ · เคารพ ceiling เดิม
+ *     (caps type max/absolute + guard-cap) แบบเดียวกับ overlay · ห้ามดันทะลุ cap
+ *  2) re-enforce caps ของ module (大凶≤30 · 凶/忌≤45): combineScores apply แล้วรอบแรก
+ *     แต่ profile/qimen rules ที่รันหลังจากนั้นอาจ shift ขึ้น → กดกลับตรงนี้ (กันนับซ้ำด้วย code dedupe)
+ *  ฝั่งลบไม่หัก delta ซ้ำ — 大凶/凶/忌 ตัดผ่าน caps เท่านั้น */
+function applyDongGongBoost(c: CandidateSlot): CandidateSlot {
+  const dgResult = (c.modules as any)?.dong_gong as ModuleResult | undefined;
+  if (!c.scoring || !dgResult || dgResult.status !== "ready") return c;
+  const scoring = c.scoring as any;
+  scoring.moduleScores = { ...(scoring.moduleScores || {}), dong_gong: dgResult.score.normalized };
+
+  const dgCaps = (dgResult.caps || []).filter((cap: any) => cap?.type === "max" && Number.isFinite(Number(cap?.value)));
+  const dgCapValue = dgCaps.length ? Math.min(...dgCaps.map((cap: any) => Number(cap.value))) : null;
+
+  const positiveDelta = (dgResult.reasons?.up || []).reduce((s, r) => s + Math.max(0, r.delta || 0), 0);
+  if (positiveDelta > 0 && dgCapValue == null) {
+    const startScore = Number(scoring.finalScore) || 0;
+    const hasExistingGuardCap = (scoring.reasonsDown || []).some((r: any) => String(r.code || "").includes("CAP"));
+    let positiveCeiling = hasExistingGuardCap ? startScore : 100;
+    for (const cap of scoring.caps || []) {
+      const value = Number(cap?.value);
+      if ((cap?.type === "max" || cap?.type === "absolute") && Number.isFinite(value)) {
+        positiveCeiling = Math.min(positiveCeiling, value);
+      }
+    }
+    const nextScore = Math.min(startScore + positiveDelta, positiveCeiling);
+    if (nextScore > startScore) scoring.finalScore = nextScore;
+  }
+
+  if (dgCapValue != null && Number(scoring.finalScore) > dgCapValue) {
+    // profile/qimen rules อาจดันคะแนนทะลุเพดานตงกงหลัง combineScores → กดกลับ
+    scoring.reasonsDown = scoring.reasonsDown || [];
+    const capRule: any = dgCaps.find((cap: any) => Number(cap.value) === dgCapValue) || dgCaps[0];
+    const capCode = String(capRule?.code || "DONGGONG_CAP");
+    if (!scoring.reasonsDown.some((r: any) => r.code === capCode)) {
+      scoring.reasonsDown.unshift({
+        code: capCode,
+        thai: String(capRule?.reason || `ตงกงจำกัดเพดานคะแนน ${dgCapValue}`),
+        delta: dgCapValue - Number(scoring.finalScore),
+        source: "dong_gong",
+        severity: "warning",
+      });
+    }
+    scoring.finalScore = dgCapValue;
+  }
+
+  scoring.finalScore = Math.max(0, Math.min(100, Math.round(Number(scoring.finalScore) || 0)));
+  scoring.tier = scoreToTier(scoring.finalScore);
+  scoring.action = tierToAction(scoring.tier, scoring.warnings?.length || 0);
+  return c;
+}
+
+/** r367 · ยามคาบเส้น ณ สถานที่งาน (top results เท่านั้น · mutate warnings อย่างเดียว · คะแนนคงเดิม) */
+function attachTstBoundaryWarnings(cands: CandidateSlot[], loc: EventLocation): void {
+  for (const c of cands) {
+    try {
+      if (!c.scoring) continue;
+      const warn = buildTstBoundaryWarning({
+        startUtc: c.datetime?.start || "",
+        endUtc: c.datetime?.end || null,
+        cacheShichen: c.calendar?.shichen ?? NaN,
+        loc,
+      });
+      if (!warn) continue;
+      const scoring = c.scoring as any;
+      scoring.warnings = scoring.warnings || [];
+      if (!scoring.warnings.some((r: any) => r.code === "TST_HOUR_BOUNDARY")) {
+        scoring.warnings.push(warn);
+      }
+    } catch { /* best-effort · ห้ามล้มทั้ง response */ }
+  }
 }
 
 function applyMonthDayShaRuntime(c: CandidateSlot, activity: ActivityType, targetDirection: Dir8 | null): CandidateSlot {
@@ -520,16 +630,7 @@ function refreshCandidateDisplay(c: CandidateSlot): CandidateSlot {
   return c;
 }
 
-const DONGGONG_ACTIVITY_ALIASES: Record<ActivityType, string[]> = {
-  立約: ["立約", "交易", "商買"],
-  出行: ["出行", "遠行"],
-  動土: ["動土", "造", "起造", "修造", "修", "小修", "伐木", "拴架", "定磉", "上樑"],
-  搬家: ["入宅", "移居", "移徙"],
-  開市: ["開市", "開張", "商買", "大工開張"],
-  婚姻: ["嫁", "娶", "嫁娶", "婚姻", "納采", "納彩", "娶親", "會親"],
-  求財: ["開市", "商買", "立約", "造倉庫", "倉庫"],
-  祭祀: ["還福願"],
-};
+/* r367: DONGGONG_ACTIVITY_ALIASES ย้ายไป @/lib/luck-engine/modules/dong-gong (ค่าเดิมทุกตัว · import ใช้ร่วมกับ module) */
 const DONGGONG_IRREVERSIBLE = new Set<ActivityType>(["婚姻", "動土", "搬家", "開市"]);
 const DONGGONG_VERDICT_DELTA: Record<string, number> = {
   上吉: 2,
@@ -605,7 +706,8 @@ function applyDongGongOverlay(c: CandidateSlot, activeModules: ModuleKey[], acti
 }
 
 function hideDongGongWhenInactive(c: CandidateSlot, activeModules: ModuleKey[]): CandidateSlot {
-  if (activeModules.includes("ze_ri") || !c.donggong) return c;
+  /* r367: dong_gong module active ก็ต้องเห็นข้อมูลตงกงเช่นกัน (additive) */
+  if (activeModules.includes("ze_ri") || activeModules.includes("dong_gong") || !c.donggong) return c;
   return { ...c, donggong: null };
 }
 
