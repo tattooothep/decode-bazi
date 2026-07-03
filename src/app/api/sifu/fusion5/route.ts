@@ -12,6 +12,7 @@ import { spendHoursForUser, refundHoursForUser } from "@/lib/spend-hours";
 import { createHash } from "crypto";
 import { DISCIPLINES, computeYam, JUDGE_MODEL, JUDGE_YAM, type ScienceId } from "@/lib/fusion5/disciplines";
 import { buildSciencePrompt, buildJudgePrompt, resolveFusionTimingReference, type BirthData } from "@/lib/fusion5/build-prompt";
+import { buildResonance, renderResonanceBlockTh, RESONANCE_SCIENCES, type FusionResonance } from "@/lib/fusion5/resonance";
 import { buildSynastry, type PersonSyn } from "@/lib/bazi-synastry";
 import { logResearchAiMessage } from "@/lib/research-log";
 
@@ -289,6 +290,7 @@ type WorkerParams = {
   threadId: string | null;
   threadProfileId: string | null;
   started: number;
+  resonance: FusionResonance | null;   // r369: RESONANCE_PACKET (deterministic · คำนวณตอน POST)
 };
 
 type Fusion5JobRow = {
@@ -301,6 +303,7 @@ type Fusion5JobRow = {
   sciences: string[] | null;
   profile_ids: string[] | null;
   pair_mode: boolean | null;
+  resonance?: unknown;                 // r369: jsonb (additive · null ได้)
 };
 
 function cleanQuestion(x: unknown): string | null {
@@ -357,6 +360,7 @@ function jobJson(row: Fusion5JobRow) {
     sciences: row.sciences || [],
     profileIds: row.profile_ids || [],
     pairMode: row.pair_mode === true,
+    resonance: row.resonance || null,
     createdAt: row.created_at,
   };
 }
@@ -411,6 +415,7 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
       sciences: p.runSciences,
       skipped: p.skipped,
       skipped_reasons: p.skippedReasons,
+      resonance: p.resonance || null,   // r369: เก็บลง history ให้หน้า history เรียกดูได้
       user_state: { favorite: false, pinned: false, note: "", updated_at: null },
     };
     return await logResearchAiMessage({
@@ -532,7 +537,7 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
     let judge: { ok: boolean; reply?: string; error?: string; model: string } = { ok: false, model: JUDGE_MODEL };
     if (okPanels.length >= 2) {
       try {
-        const jp = buildJudgePrompt(okPanels.map((x) => ({ science: x.science, reply: x.reply! })), births, question, lang);
+        const jp = buildJudgePrompt(okPanels.map((x) => ({ science: x.science, reply: x.reply! })), births, question, lang, p.resonance ? renderResonanceBlockTh(p.resonance) : undefined);
         const jr = await callSifu(cookie, { message: question, externalPrompt: jp, lang }, JUDGE_MODEL);
         judge = { ...jr, model: JUDGE_MODEL };
       } catch (e) { judge = { ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "judge_error", model: JUDGE_MODEL }; }
@@ -631,20 +636,34 @@ export async function POST(req: Request) {
     if (!spend.ok) return NextResponse.json({ error: "insufficient_hours", needed: yam }, { status: 402 });
     chargedYam = yam;
 
+    // r369: Cross-Science Resonance — engine deterministic หา "จุดหลายศาสตร์ตรงกัน" ก่อน AI (additive)
+    // คำนวณ sync ตอน POST (มีงบเวลาใน buildResonance: คนแรกเสมอ · คนถัดไปข้ามถ้าเกิน 8s) · พังทั้งก้อน = null (ไม่ล้ม job)
+    let resonance: FusionResonance | null = null;
+    const resonanceSciences = runSciences.filter((s) => (RESONANCE_SCIENCES as ScienceId[]).includes(s));
+    if (resonanceSciences.length >= 2) {
+      try {
+        const timingRef = resolveFusionTimingReference(question, new Date());
+        resonance = buildResonance(births, resonanceSciences, timingRef.targetYear, timingRef.refDate);
+      } catch (e) {
+        console.warn("[fusion5] resonance failed:", e instanceof Error ? e.message : e);
+        resonance = null;
+      }
+    }
+
     // สร้าง job (running) → คืน jobId ทันที → ประมวลผลเบื้องหลัง (user พับจอได้)
     const cookie = await authCookie(session);
     const job = await q1<{ id: string }>(
-      `INSERT INTO fusion5_jobs(user_id, org_id, status, question, sciences, profile_ids, pair_mode)
-       VALUES ($1,$2,'running',$3,$4,$5,$6) RETURNING id`,
-      [userId, orgId, question, runSciences, profileIds, births.length > 1]
+      `INSERT INTO fusion5_jobs(user_id, org_id, status, question, sciences, profile_ids, pair_mode, resonance)
+       VALUES ($1,$2,'running',$3,$4,$5,$6,$7) RETURNING id`,
+      [userId, orgId, question, runSciences, profileIds, births.length > 1, resonance ? JSON.stringify(resonance) : null]
     );
     if (!job) { await refundHoursForUser(userId, yam, FEATURE).catch(() => {}); return NextResponse.json({ error: "job_create_failed" }, { status: 500 }); }
     chargedYam = 0; // job รับช่วงดูแล refund แล้ว (outer catch ไม่ต้องคืนซ้ำ)
 
     // 🔄 detached — ไม่ await · งานวิ่งบน server แม้ client ปิด
-    void processFusion5(job.id, { session, userId, cookie, runSciences, births, profileIds, question, lang, yam, skipped, skippedReasons, history, threadId: threadId || job.id, threadProfileId, started: Date.now() });
+    void processFusion5(job.id, { session, userId, cookie, runSciences, births, profileIds, question, lang, yam, skipped, skippedReasons, history, threadId: threadId || job.id, threadProfileId, started: Date.now(), resonance });
 
-    return NextResponse.json({ jobId: job.id, status: "running", threadId: threadId || job.id, yam: { charged: yam }, skipped, skippedReasons, profileNames: births.map((b) => b.name), pairMode: births.length > 1 });
+    return NextResponse.json({ jobId: job.id, status: "running", threadId: threadId || job.id, yam: { charged: yam }, skipped, skippedReasons, profileNames: births.map((b) => b.name), pairMode: births.length > 1, resonance });
   } catch {
     if (chargedYam > 0 && userId) await refundHoursForUser(userId, chargedYam, FEATURE).catch(() => {});
     return NextResponse.json({ error: "fusion5_error" }, { status: 500 });
@@ -686,7 +705,7 @@ export async function GET(req: Request) {
 
     const row = await q1<Fusion5JobRow>(
       `SELECT id, status, result, error, created_at::text AS created_at,
-              question, sciences, profile_ids, pair_mode
+              question, sciences, profile_ids, pair_mode, resonance
          FROM fusion5_jobs
         WHERE ${where.join(" AND ")}
         ORDER BY created_at DESC
@@ -702,7 +721,7 @@ export async function GET(req: Request) {
   if (!jobId) return NextResponse.json({ error: "bad_jobId" }, { status: 400 });
   const row = await q1<Fusion5JobRow>(
     `SELECT id, status, result, error, created_at::text AS created_at,
-            question, sciences, profile_ids, pair_mode
+            question, sciences, profile_ids, pair_mode, resonance
        FROM fusion5_jobs WHERE id=$1 AND user_id=$2`,
     [jobId, session.userId]
   );

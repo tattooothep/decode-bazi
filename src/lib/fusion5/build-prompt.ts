@@ -2531,8 +2531,8 @@ export function buildSciencePrompt(
   return prompt.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
 }
 
-/** prompt judge หลอมรวมทุก panel */
-export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[], births: BirthData[], question: string, lang = "th"): string {
+/** prompt judge หลอมรวมทุก panel · resonanceBlock (r369 · optional/additive) = RESONANCE_PACKET จาก engine deterministic */
+export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[], births: BirthData[], question: string, lang = "th", resonanceBlock?: string): string {
   const L: string[] = [];
   L.push(`คุณคือ "ซินแสใหญ่" ผู้หลอมรวมคำพยากรณ์จากหลายศาสตร์เป็นคำตอบเดียว`);
   L.push(`มี ${panels.length} ศาสตร์อ่านดวง${births.length > 1 ? "คู่" : ""}เดียวกัน · หน้าที่: หา "จุดตรงกัน = ฟันธงหนัก" + "จุดต่าง = เงื่อนไข/ข้อระวัง" + สรุปคำแนะนำ`);
@@ -2549,7 +2549,18 @@ export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[]
       : p.reply;
     L.push(`\n=== ศาสตร์ ${DISCIPLINES[p.science].labelTh} ว่า ===\n${reply}`);
   });
+  if (resonanceBlock) {
+    L.push(`\n${resonanceBlock}`);
+    L.push("เปิดคำตอบด้วยหัวข้อ '## จุดที่หลายศาสตร์ยืนยันตรงกัน' จาก RESONANCE_PACKET (จัดเป็นตาราง markdown) แล้วค่อยวิเคราะห์ · แยกให้ชัดว่าข้อไหน 'ยืนยันหลายศาสตร์' ข้อไหน 'ศาสตร์เดียวเห็น' · ถ้ามีแถวมุมมองต่าง (⚡CONFLICT) ต้องรายงานตรงๆ ห้ามกลบ");
+  }
   L.push(`\n=== คำถาม ===\n${question}`);
   L.push(`\n${answerFormatLine(births, true)}`);
-  return L.join("\n").slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
+  let out = L.join("\n");
+  // cap check: panel replies ถูก truncate ที่ JUDGE_PANEL_REPLY_MAX_CHARS แล้ว · ถ้ายังเกินให้ย่อ resonance block เป็นลำดับสุดท้าย (กันตัดคำสั่งท้าย prompt)
+  if (out.length > FUSION_PANEL_PROMPT_MAX_CHARS && resonanceBlock) {
+    const over = out.length - FUSION_PANEL_PROMPT_MAX_CHARS;
+    const keep = Math.max(0, resonanceBlock.length - over - 40);
+    out = out.replace(resonanceBlock, `${resonanceBlock.slice(0, keep)}\n[RESONANCE_TRUNCATED_FOR_CAP]`);
+  }
+  return out.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
 }

@@ -649,7 +649,7 @@ export const TYPES: Record<string, ParaphraseType> = {
   qm_formations: {
     type: "qm_formations",
     table: "ref_qimen_formations_dict",
-    section: "§30 QiMen Formations · 格局 (11)",
+    section: "§30 QiMen Formations · 格局 (23)",
     pkColumn: "formation_code",
     listColumns: ["formation_code", "name_zh", "name_th", "scope", "base_quality"],
     fields: [

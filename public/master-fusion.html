@@ -212,6 +212,25 @@
     .result-empty{color:var(--muted);font-size:13px;line-height:1.6;padding:8px 2px}
     .skip-note{margin-top:11px;border:1px solid rgba(216,168,76,.4);border-radius:8px;background:rgba(216,168,76,.07);color:var(--warn);font-size:12px;line-height:1.5;padding:9px 11px}
     .skip-note.hidden{display:none}
+    /* ===== r369 · 🔗 Cross-Science Resonance card (ใช้ CSS vars เดิม · เข้าได้ 2 ธีม) ===== */
+    #resonance-card.hidden{display:none}
+    .res-card{border:1px solid var(--line-strong);border-radius:8px;background:rgba(210,176,94,.05);padding:12px 13px;margin-bottom:13px}
+    .res-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:9px}
+    .res-title{font-family:var(--mono);font-size:12px;color:var(--gold)}
+    .res-year{font-family:var(--mono);font-size:10px;color:var(--faint);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+    .res-person{border-top:1px dashed var(--line);padding-top:9px;margin-top:9px}
+    .res-person:first-of-type{border-top:0;padding-top:0;margin-top:0}
+    .res-pname{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px}
+    .res-chips{display:flex;gap:6px;flex-wrap:wrap}
+    .res-chip{display:inline-flex;align-items:center;min-height:22px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-family:var(--mono);font-size:10px;color:var(--faint)}
+    .res-chip.on{border-color:rgba(210,176,94,.55);color:var(--gold);background:rgba(210,176,94,.08)}
+    .res-chip.warn{border-color:rgba(216,168,76,.55);color:var(--warn);background:rgba(216,168,76,.07)}
+    .res-skip{font-size:12px;color:var(--muted);line-height:1.5}
+    .res-details{margin-top:9px}
+    .res-details summary{cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--blue)}
+    .res-sec{font-family:var(--mono);font-size:10px;color:var(--gold);text-transform:uppercase;margin:10px 0 4px}
+    .res-cf td{color:var(--warn)}
+    [data-theme="light"] .res-card{background:rgba(159,121,46,.05)}
     /* ===== Light theme (Executive gold · ◐ topbar) ===== */
     [data-theme="light"]{
       --bg:#f6f1e6;--panel:#fffdf8;--panel-2:#f1e9d8;
@@ -886,6 +905,7 @@
           <span class="pill" id="run-state">idle</span>
         </div>
         <div class="panel-body">
+          <div id="resonance-card" class="hidden"></div>
           <div id="fusion5-result"></div>
           <div class="chat" id="chat"></div>
           <div id="fusion-meta"></div>
@@ -972,10 +992,10 @@
   (function(){
     var $ = function(id){ return document.getElementById(id); };
     var state = { account:null, fusionAccess:null, spendHours:0, profiles:[], history:[], historyProfileId:'', threadId:'', pendingQuestion:'', busy:false, ready:false, resuming:false, pollAuthFails:0, progressTimer:null, activeRunId:'', activeJob:null, answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', showHistoryAnswerId:'', compareIds:[],
-      mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false }, locale:'th', theme:'dark', result:null, activeTab:'judge' };
+      mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false }, locale:'th', theme:'dark', result:null, activeTab:'judge', resonance:null };
     var els = {
       profile:$('profile'), profile2:$('profile2'), profile2Field:$('profile2-field'), profile3:$('profile3'), profile3Field:$('profile3-field'), profile4:$('profile4'), profile4Field:$('profile4-field'), modeSeg:$('mode-seg'), sciList:$('sci-list'),
-      yamValue:$('yam-value'), yamBreak:$('yam-break'), result:$('fusion5-result'), themeToggle:$('theme-toggle'),
+      yamValue:$('yam-value'), yamBreak:$('yam-break'), result:$('fusion5-result'), resonance:$('resonance-card'), themeToggle:$('theme-toggle'),
       lang:$('lang'), question:$('question'), send:$('send'),
       clear:$('clear'), status:$('status'), progress:$('fusion-progress'), chat:$('chat'), meta:$('fusion-meta'), runState:$('run-state'),
       tier:$('tier-badge'), balance:$('balance-badge'), gate:$('gate-badge'),
@@ -998,13 +1018,16 @@
     var I18N = {
       th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','nav.today':'หน้าวันนี้','nav.datepick':'วางฤกษ์','nav.fusion':'Fusion','hero.title':'ดูดวง 5 ศาสตร์','hero.sub':'หลอมรวม 5 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยว ดูคู่ หรือกลุ่ม 3-4 ดวง',
         'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่/กลุ่ม','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.profile3':'ดวงที่ 3 (ไม่บังคับ)','ask.profile4':'ดวงที่ 4 (ไม่บังคับ)','ask.notUsed':'— ไม่ใช้ —','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','result.title':'คำพยากรณ์',
-        'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','skipGroup':'ปาจื้อยังไม่รองรับดูกลุ่ม 3-4 ดวง — ตัดออกและไม่คิดยาม (ใช้ได้เดี่ยว/คู่)','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม','needLogin':'กรุณาเข้าสู่ระบบก่อนใช้ Fusion','needYam':'ยามไม่พอ','readyRun':'พร้อมรัน','runningAsync':'⏳ กำลังอ่านดวงอยู่ (พับจอไว้ได้)','jobTimeout':'หมดเวลาอ่านดวง · ลองรันใหม่อีกครั้ง','jobError':'อ่านดวงไม่สำเร็จ','reconnecting':'📶 เน็ตสะดุด · กำลังต่อกลับไปหางานเดิมอัตโนมัติ ไม่ต้องถามใหม่...','resumeChecking':'กำลังตรวจงานค้าง...','sessionLost':'หลุดจากระบบ · งานยังวิ่งอยู่บน server เข้าสู่ระบบแล้วกลับมาดูได้' },
+        'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','skipGroup':'ปาจื้อยังไม่รองรับดูกลุ่ม 3-4 ดวง — ตัดออกและไม่คิดยาม (ใช้ได้เดี่ยว/คู่)','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม','needLogin':'กรุณาเข้าสู่ระบบก่อนใช้ Fusion','needYam':'ยามไม่พอ','readyRun':'พร้อมรัน','runningAsync':'⏳ กำลังอ่านดวงอยู่ (พับจอไว้ได้)','jobTimeout':'หมดเวลาอ่านดวง · ลองรันใหม่อีกครั้ง','jobError':'อ่านดวงไม่สำเร็จ','reconnecting':'📶 เน็ตสะดุด · กำลังต่อกลับไปหางานเดิมอัตโนมัติ ไม่ต้องถามใหม่...','resumeChecking':'กำลังตรวจงานค้าง...','sessionLost':'หลุดจากระบบ · งานยังวิ่งอยู่บน server เข้าสู่ระบบแล้วกลับมาดูได้',
+        'res.title':'🔗 เสียงสะท้อนข้ามศาสตร์','res.r1':'ธีมปีตรงกัน','res.r2':'ดาวเดียวกันชนหลายศาสตร์','res.r3':'คราส/ราหูเกตุ','res.conflict':'มุมมองต่าง','res.detail':'ดูรายละเอียด + หลักฐาน','res.theme':'ธีม','res.sci':'ศาสตร์','res.evidence':'หลักฐาน (คำนวณจริง)','res.month':'เดือน','res.planet':'ดาว','res.good':'ฝั่งเห็นดี','res.bad':'ฝั่งเห็นแรงกด' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
         'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','result.title':'Reading',
-        'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back' },
+        'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back',
+        'res.title':'🔗 Cross-science resonance','res.r1':'Year-theme match','res.r2':'Same planet, multi-system','res.r3':'Eclipse / nodes','res.conflict':'Diverging view','res.detail':'Details + evidence','res.theme':'Theme','res.sci':'Sciences','res.evidence':'Evidence (computed)','res.month':'Month','res.planet':'Planet','res.good':'Sees support','res.bad':'Sees pressure' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
         'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','result.title':'論斷',
-        'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看' }
+        'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看',
+        'res.title':'🔗 跨術共振','res.r1':'流年宮位相符','res.r2':'同星多術同月','res.r3':'日月食/羅計','res.conflict':'觀點分歧','res.detail':'詳情＋證據','res.theme':'主題','res.sci':'術數','res.evidence':'證據（實算）','res.month':'月','res.planet':'星','res.good':'看吉','res.bad':'看壓' }
     };
     function t(key){ var d = I18N[state.locale] || I18N.th; return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
     function applyI18n(){
@@ -1504,6 +1527,71 @@
       pollProgress(runId);
       state.progressTimer = setInterval(function(){ pollProgress(runId); }, 2000);
     }
+    // ===== r369 · 🔗 เสียงสะท้อนข้ามศาสตร์ (RESONANCE_PACKET จาก engine deterministic · escape ทุก string กัน XSS) =====
+    function resThemeName(theme){ return theme ? String(theme[state.locale] || theme.th || '') : ''; }
+    function resonanceHasContent(res){
+      var persons = res && Array.isArray(res.perPerson) ? res.perPerson : [];
+      return persons.some(function(p){
+        return p && (p.skippedNote || (p.r1 && Array.isArray(p.r1.resonant) && p.r1.resonant.length) || (Array.isArray(p.r2) && p.r2.length) || (Array.isArray(p.r3) && p.r3.length) || (Array.isArray(p.conflicts) && p.conflicts.length));
+      });
+    }
+    function resonanceBodyHtml(res){
+      var persons = Array.isArray(res.perPerson) ? res.perPerson : [];
+      var multi = persons.length > 1;
+      return persons.map(function(p){
+        if (!p) return '';
+        var pname = multi ? '<div class="res-pname">' + esc(p.name || '') + '</div>' : '';
+        if (p.skippedNote) return '<div class="res-person">' + pname + '<div class="res-skip">' + esc(p.skippedNote) + '</div></div>';
+        var r1 = (p.r1 && Array.isArray(p.r1.resonant)) ? p.r1.resonant : [];
+        var r2 = Array.isArray(p.r2) ? p.r2 : [];
+        var r3 = Array.isArray(p.r3) ? p.r3 : [];
+        var cf = Array.isArray(p.conflicts) ? p.conflicts : [];
+        var chips = [
+          '<span class="res-chip' + (r1.length ? ' on' : '') + '">R1 ' + esc(t('res.r1')) + ' × ' + r1.length + '</span>',
+          '<span class="res-chip' + (r2.length ? ' on' : '') + '">R2 ' + esc(t('res.r2')) + ' × ' + r2.length + '</span>',
+          '<span class="res-chip' + (r3.length ? ' on' : '') + '">R3 ' + esc(t('res.r3')) + ' × ' + r3.length + '</span>'
+        ];
+        if (cf.length) chips.push('<span class="res-chip warn">⚡ ' + esc(t('res.conflict')) + ' × ' + cf.length + '</span>');
+        function tbl(headCols, rows){
+          return '<div class="md-tw"><table class="md-t"><thead><tr>' + headCols.map(function(h){ return '<th>' + esc(h) + '</th>'; }).join('') + '</tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
+        }
+        function evLines(evs){
+          return (Array.isArray(evs) ? evs : []).map(function(e){ return esc(sciLabel(e.science)) + ': ' + esc(e.evidence || ''); }).join('<br>');
+        }
+        var tables = [];
+        if (r1.length){
+          tables.push('<div class="res-sec">R1 · ' + esc(t('res.r1')) + '</div>' + tbl([t('res.theme'), t('res.sci'), t('res.evidence')], r1.map(function(r){
+            return '<tr><td>' + esc(resThemeName(r.theme)) + '</td><td>' + (Array.isArray(r.sciences) ? r.sciences : []).map(function(s){ return esc(sciLabel(s)); }).join(' + ') + '</td><td>' + evLines(r.evidences) + '</td></tr>';
+          })));
+        }
+        if (r2.length){
+          tables.push('<div class="res-sec">R2 · ' + esc(t('res.r2')) + '</div>' + tbl([t('res.month'), t('res.planet'), t('res.sci'), t('res.evidence')], r2.map(function(c){
+            return '<tr><td>' + esc(String(c.month)) + '</td><td>' + esc(c.planetTh || c.planet || '') + '</td><td>' + (Array.isArray(c.sciences) ? c.sciences : []).map(function(s){ return esc(sciLabel(s)); }).join(' + ') + '</td><td>' + evLines(c.evidences) + '</td></tr>';
+          })));
+        }
+        if (r3.length){
+          tables.push('<div class="res-sec">R3 · ' + esc(t('res.r3')) + '</div>' + tbl([t('res.month'), t('res.evidence')], r3.map(function(c){
+            return '<tr><td>' + esc(String(c.month)) + '</td><td>' + evLines(c.evidences) + '</td></tr>';
+          })));
+        }
+        if (cf.length){
+          tables.push('<div class="res-sec">⚡ ' + esc(t('res.conflict')) + '</div>' + tbl([t('res.month'), t('res.good'), t('res.bad')], cf.map(function(c){
+            return '<tr class="res-cf"><td>' + esc(String(c.month)) + '</td><td>' + esc(sciLabel(c.beneficScience)) + ': ' + esc((c.beneficEvidence || []).join(' · ')) + '</td><td>' + esc(sciLabel(c.maleficScience)) + ': ' + esc((c.maleficEvidence || []).join(' · ')) + '</td></tr>';
+          })));
+        }
+        return '<div class="res-person">' + pname +
+          '<div class="res-chips">' + chips.join('') + '</div>' +
+          (tables.length ? '<details class="res-details"><summary>' + esc(t('res.detail')) + '</summary>' + tables.join('') + '</details>' : '') +
+        '</div>';
+      }).join('');
+    }
+    function renderResonance(res){
+      state.resonance = res || null;
+      if (!els.resonance) return;
+      if (!res || !resonanceHasContent(res)) { els.resonance.innerHTML = ''; els.resonance.classList.add('hidden'); return; }
+      els.resonance.innerHTML = '<div class="res-card"><div class="res-head"><span class="res-title">' + esc(t('res.title')) + '</span><span class="res-year">' + esc(String(res.targetYear || '')) + '</span></div>' + resonanceBodyHtml(res) + '</div>';
+      els.resonance.classList.remove('hidden');
+    }
     // ===== fusion5 result (tabs แยกศาสตร์ + judge) =====
     function renderFusion5(data){
       state.result = data;
@@ -1708,6 +1796,10 @@
           '</div>' +
         '</div>' +
         answerBlock +
+        // r369: resonance ที่บันทึกไว้ตอนรัน (จาก response_meta) — โชว์ซ้ำได้จากประวัติ
+        (fusion.resonance && resonanceHasContent(fusion.resonance)
+          ? '<div class="detail-block"><div class="detail-label">' + esc(t('res.title')) + '</div>' + resonanceBodyHtml(fusion.resonance) + '</div>'
+          : '') +
         '<div class="detail-block"><div class="detail-label">Run Receipt</div><div class="detail-text">' + esc(runReceipt(row)) + '</div></div>' +
         '<div class="detail-block"><div class="detail-label">Packet / Profile Snapshot</div>' + snapshotBlock(row) + '</div>' +
         '<div class="detail-block"><div class="detail-label">Private Note</div><textarea class="note-box" id="history-note" maxlength="4000">' + esc(us.note) + '</textarea><div class="history-actions"><button class="mini-btn" type="button" data-hact="save-note" data-id="' + esc(row.id) + '">Save note</button></div></div>' +
@@ -2030,6 +2122,7 @@
       state.activeTab = sciences.length >= 2 ? 'judge' : (sciences[0] || 'judge');
       startSyntheticProgress(sciences);
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('runningAsync')) + '</div>';
+      renderResonance(firstStatus && firstStatus.resonance ? firstStatus.resonance : null); // r369: resume → การ์ดกลับมาด้วย
       setStatus(t('runningAsync'));
       saveJob(meta);
       if (firstStatus && firstStatus.status === 'done') {
@@ -2127,6 +2220,7 @@
         return; // 5xx/429 ชั่วคราว → poll ต่อ
       }
       state.pollAuthFails = 0;
+      if (j.resonance && !state.resonance) renderResonance(j.resonance); // r369: กู้การ์ด resonance จาก job (resume/พับจอ)
       if (j.status === 'done') {
         var doneMeta = Object.assign({}, state.activeJob || meta || {});
         clearJob(); renderJobDone(j.result || {}, doneMeta); endRun();
@@ -2201,6 +2295,7 @@
       state.activeTab = sciences.length >= 2 ? 'judge' : sciences[0];
       startSyntheticProgress(sciences);
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('running')) + '</div>';
+      renderResonance(null); // ล้างการ์ดรอบก่อน · การ์ดใหม่มากับ POST response ทันที
       var pendingMeta = { jobId:'', clientRunId:newRunId(), profileId:profileIds[0], profileIds:profileIds, sciences:sciences, question:message, lang:state.locale, history:priorHistory, threadId:state.threadId, startedAt:Date.now(), posting:true };
       saveDraft();
       saveJob(pendingMeta);
@@ -2251,11 +2346,13 @@
         var meta = Object.assign({}, pendingMeta, { jobId:j.jobId, threadId:state.threadId, posting:false });
         saveJob(meta);
         setStatus(t('runningAsync'));
+        if (j.resonance) renderResonance(j.resonance); // r369: โชว์เสียงสะท้อนข้ามศาสตร์ทันที ระหว่าง panel วิ่ง
         startJobPolling(meta);
         return; // คง busy จนกว่า poll จะ done/error · ปล่อยปิดหน้าได้
       }
       // legacy synchronous response (fallback ถ้า backend คืนผลทันที)
       clearJob();
+      if (j && j.resonance) renderResonance(j.resonance);
       renderJobDone(j);
       endRun();
     }
@@ -2323,6 +2420,7 @@
       renderProgress(null);
       els.question.value = '';
       state.result = null;
+      renderResonance(null);
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
       setStatus('');
       setRunState('idle');
@@ -2404,6 +2502,7 @@
       saveDraft();
       if (state.result) renderFusion5(state.result);
       else if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
+      renderResonance(state.resonance); // r369: อัปเดตป้าย/ธีมตามภาษาใหม่
     });
     function syncFusionOnReturn(){
       if (!state.ready) return;
