@@ -246,6 +246,19 @@
     .snp-tick{position:absolute;bottom:0;top:0;border-left:1px dashed var(--line);transform:translateX(-1px)}
     .snp-tick span{position:absolute;bottom:1px;left:3px;font-family:var(--mono);font-size:9px;color:var(--faint);white-space:nowrap}
     .snp-legend{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+    /* r384 · การ์ด 🎯 เล่าแบบมนุษย์: บรรทัดอธิบาย + วันเด่น top แดง/เขียว (ที่เหลือพับใน details) */
+    .snp-explain{font-size:11.5px;color:var(--muted);line-height:1.55;margin:2px 0 8px}
+    .snp-top{margin:8px 0;display:grid;gap:6px}
+    .snp-top-label{font-size:11px;color:var(--faint);letter-spacing:.4px}
+    .snp-day{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:rgba(255,255,255,.02)}
+    .snp-day-date{font-weight:700;font-size:13px;white-space:nowrap;color:var(--text)}
+    .snp-day-why{font-size:12px;color:var(--muted);line-height:1.5;flex:1;min-width:140px}
+    [data-theme="light"] .snp-day{background:rgba(0,0,0,.02)}
+    /* r384 · เปิดประวัติ → คำตอบขึ้นการ์ดหลัก (ป้าย 📜 + คำถามเก่า + ปุ่มถามต่อ/กลับ) */
+    .hist-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--gold);border:1px solid rgba(210,176,94,.4);border-radius:999px;padding:3px 10px;margin-bottom:9px;background:rgba(210,176,94,.07)}
+    .hist-q{font-size:13.5px;line-height:1.6;color:var(--muted);margin-bottom:10px;overflow-wrap:anywhere}
+    .hist-q b{color:var(--text)}
+    .hist-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
     .snp-flag{font-family:var(--mono);white-space:nowrap}
     /* ===== r382 · หัวการ์ด 🔗/🎯 = ปุ่มพับ/กาง ทุกอุปกรณ์ (มือถือเริ่มพับ · desktop เริ่มกาง · จำสถานะต่อ job) ===== */
     #resonance-card .res-head,#sniper-card .res-head{cursor:pointer;-webkit-user-select:none;user-select:none}
@@ -1052,7 +1065,7 @@
         <div class="history-grid">
           <div class="history-list" id="history-list"></div>
           <div class="history-detail" id="history-detail">
-            <div class="history-empty">เลือกประวัติ Fusion เพื่อดูคำตอบ final, คำตอบราย AI, receipt, packet version และ note ส่วนตัว</div>
+            <div class="history-empty">แตะรายการประวัติ → คำถาม+คำตอบเก่าจะเปิดบนการ์ดคำพยากรณ์หลัก · panel นี้โชว์ receipt, packet version และ note ส่วนตัว</div>
           </div>
         </div>
       </div>
@@ -1076,7 +1089,7 @@
   <script>
   (function(){
     var $ = function(id){ return document.getElementById(id); };
-    var state = { account:null, fusionAccess:null, spendHours:0, profiles:[], history:[], historyProfileId:'', threadId:'', pendingQuestion:'', busy:false, ready:false, resuming:false, pollAuthFails:0, progressTimer:null, activeRunId:'', activeJob:null, answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', showHistoryAnswerId:'', compareIds:[],
+    var state = { account:null, fusionAccess:null, spendHours:0, profiles:[], history:[], historyProfileId:'', threadId:'', pendingQuestion:'', busy:false, ready:false, resuming:false, pollAuthFails:0, progressTimer:null, activeRunId:'', activeJob:null, answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', historyView:null, preHistoryView:null, compareIds:[],
       mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false }, locale:'th', theme:'dark', result:null, activeTab:'judge', resonance:null,
       guests:{}, guestEdit:{} }; // r383: ดวงชั่วคราวรายช่อง 1-4 (ไม่บันทึกโปรไฟล์)
     var els = {
@@ -1109,7 +1122,12 @@
         'res.title':'🔗 เสียงสะท้อนข้ามศาสตร์','res.r1':'ธีมปีตรงกัน','res.r2':'ดาวเดียวกันชนหลายศาสตร์','res.r3':'คราส/ราหูเกตุ','res.conflict':'มุมมองต่าง','res.detail':'ดูรายละเอียด + หลักฐาน','res.theme':'ธีม','res.sci':'ศาสตร์','res.evidence':'หลักฐาน (คำนวณจริง)','res.month':'เดือน','res.planet':'ดาว','res.good':'ฝั่งเห็นดี','res.bad':'ฝั่งเห็นแรงกด',
         'res.r4':'ดวงคู่','res.r5':'สะพานธาตุ','res.r6':'ปีชง','res.pair':'คู่','res.dim':'มิติ','res.res':'สะท้อน','res.need':'ธาตุที่ต้องการ','res.system':'ระบบ','res.rationale':'เหตุผล (คำนวณจริง)','res.dates':'วันที่','res.voice':'เสียงบอกปีหนัก','res.heavy':'หนัก','res.notHeavy':'ไม่หนัก','res.nodata':'ไม่มีข้อมูล','res.v.good':'ดี','res.v.mid':'กลาง','res.v.tense':'ตึง','res.e.support':'หนุน','res.e.cut':'ตัด','res.e.mid':'กลาง','res.dim.mind':'อารมณ์-จิตใจ','res.dim.comm':'การสื่อสาร','res.dim.attract':'เสน่หา','res.dim.stable':'เสถียรภาพระยะยาว','res.struct':'พ้องเชิงโครงสร้าง (วัดของชิ้นเดียวกัน — ไม่นับเป็นหลักฐานซ้ำ)',
         'prog.read':'อ่านดวง {d}/{t} ศาสตร์เสร็จ','prog.reading':'กำลังอ่านดวง {t} ศาสตร์','prog.judge':'กำลังหลอมคำฟันธง','answerWait':'ซินแสกำลังหลอมคำตอบ...',
-        'ds.title':'🎯 วันลั่นไก','ds.topic':'หัวข้อ','ds.range':'ช่วงสแกน','ds.detail':'ดูตารางหลักฐานรายวัน','ds.date':'วันที่','ds.flag':'ธง','ds.needles':'เข็มอิสระ','ds.evA':'A 流日 (60 วัน)','ds.evB':'B จันทร์จริง','ds.evC':'C ดาวช้า','ds.ctx':'บริบท','ds.none':'ไม่มีวันที่เข็ม ≥2 ในช่วงนี้','ds.legend':'🔴 เข็มอิสระ ≥2 ชี้วันเดียวกัน · 🟡 สัญญาณแรงเดี่ยว · 🟢 วันโอกาส (合+จันทร์มุมดี)','ds.days':'วัน','ds.dropped':'แสดงเฉพาะวันอันดับต้นตาม rank',
+        'ds.title':'🎯 วันสำคัญช่วง 3 เดือนข้างหน้า','ds.titleOf':'🎯 วันสำคัญของ{name} ช่วง 3 เดือนข้างหน้า','ds.forTopic':'เรื่อง{topic}','ds.explain':'🔴 = หลายศาสตร์ชี้ตรงกัน เลี่ยงตัดสินใจใหญ่/นัดสำคัญ · 🟢 = จังหวะหนุน เหมาะลงมือ','ds.topRed':'🔴 วันที่ควรระวังที่สุด','ds.topGreen':'🟢 วันจังหวะหนุน เหมาะลงมือ','ds.all':'ดูทุกวันที่ติดธง ({n} วัน)','ds.calm':'ช่วงนี้ไม่มีวันที่หลายศาสตร์ชี้ตรงกันแรง ๆ = ตัดสินใจได้ตามเนื้อผ้า','ds.topic':'หัวข้อ','ds.range':'ช่วงสแกน','ds.detail':'ดูตารางหลักฐานรายวัน','ds.date':'วันที่','ds.flag':'ธง','ds.needles':'สัญญาณ','ds.evA':'วงปาจื้อรายวัน','ds.evB':'จันทร์จริง','ds.evC':'ดาวช้า','ds.ctx':'บริบท','ds.none':'ไม่มีวันที่เข็ม ≥2 ในช่วงนี้','ds.legend':'🔴 หลายศาสตร์ชี้วันเดียวกัน · 🟡 สัญญาณแรงเดี่ยว · 🟢 วันโอกาส (จังหวะหนุน+จันทร์มุมดี)','ds.days':'วัน','ds.dropped':'แสดงเฉพาะวันอันดับต้นตาม rank',
+        'ds.nA':'สัญญาณวงปาจื้อรายวัน','ds.nB':'จันทร์จริงทำมุมแรง','ds.nC':'ดาวช้าทำมุมเป๊ะองศา','ds.nMix':'หลายสัญญาณชี้วันเดียวกัน','ds.nAShort':'ปาจื้อ','ds.nBShort':'จันทร์','ds.nCShort':'ดาวช้า',
+        'ds.aFmt':'วัน{rule}{pillar}','ds.a.沖':'ชง','ds.a.伏吟':'ซ้อนทับ','ds.a.刑':'เบียด','ds.a.害':'บั่นทอน','ds.a.六合':'สมพงศ์','ds.a.三合半':'ธาตุหนุน','ds.a.值':'ตรงเสาเดิม','ds.p.year':'เสาปี','ds.p.month':'เสาเดือน','ds.p.day':'เสาวัน','ds.p.hour':'เสายาม',
+        'ds.bWarn':'จันทร์จริงชน{target}','ds.bGood':'จันทร์จริงทำมุมดีกับ{target}',
+        'ds.t.generic':'ภาพรวม','ds.t.health':'สุขภาพ','ds.t.partner':'คู่ครอง','ds.t.parents':'พ่อแม่','ds.t.children':'ลูก','ds.t.contract':'สัญญา/ตกลง','ds.t.travel':'เดินทาง','ds.t.money':'การเงิน','ds.t.career':'การงาน',
+        'hist.fromTag':'📜 จากประวัติ · {d}','hist.askMore':'ถามต่อจากคำตอบนี้','hist.back':'กลับ / ถามใหม่','hist.busy':'รอคำพยากรณ์ปัจจุบันเสร็จก่อน แล้วค่อยเปิดประวัติ','hist.pick':'แตะรายการประวัติ → คำถาม+คำตอบเก่าจะเปิดบนการ์ดคำพยากรณ์หลัก',
         'guest.link':'หรือ + ดวงชั่วคราว (ไม่บันทึก)','guest.name':'ชื่อเล่น','guest.namePh':'ดวงชั่วคราว','guest.gender':'เพศ','guest.male':'ชาย (M)','guest.female':'หญิง (F)','guest.birthDate':'วันเกิด','guest.dateHint':'ค.ศ.','guest.birthTime':'เวลาเกิด','guest.noTime':'ไม่ทราบเวลาเกิด','guest.noTimeHint':'จะอ่านได้ 3 เสา · จื่อเวย/ดาวจริงจีนข้าม','guest.noTimeShort':'ไม่ทราบเวลา','guest.place':'สถานที่เกิด','guest.placePh':'พิมพ์ชื่อเมือง/สถานที่ (ค่าเริ่มต้น กรุงเทพ)','guest.manualLatLng':'กรอกพิกัด lat/lng เอง','guest.locFail':'โหลด Google Places ไม่สำเร็จ · กรอกพิกัดเองได้ (เว้นว่าง = กรุงเทพ)','guest.locHint':'เว้นว่าง = กรุงเทพ 13.7563, 100.5018','guest.use':'ใช้ดวงนี้','guest.cancel':'ยกเลิกกลับ dropdown','guest.chipTag':'ไม่บันทึก','guest.edit':'แก้','guest.needDate':'กรุณาเลือกวันเกิด','guest.badDate':'วันเกิดต้องอยู่ระหว่าง ค.ศ. 1900 – วันนี้','guest.needTime':'กรอกเวลาเกิด หรือติ๊ก "ไม่ทราบเวลาเกิด"','guest.needGender':'กรุณาเลือกเพศ','guest.badLatLng':'พิกัดไม่ถูกต้อง (lat -90..90 · lng -180..180)','guest.tooMany':'รวมดวงได้ไม่เกิน 4 (โปรไฟล์ + ดวงชั่วคราว)','guest.histLabel':'ดวงชั่วคราวในรอบนี้ (ไม่บันทึก)','guest.badData':'ข้อมูลดวงชั่วคราวไม่ถูกต้อง','guest.slotAt':'ดวงชั่วคราวช่องที่ {n}',
         'pill.back':'แตะกลับไปดูคำพยากรณ์','pill.ready':'คำพยากรณ์พร้อมแล้ว · แตะดู' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
@@ -1118,7 +1136,12 @@
         'res.title':'🔗 Cross-science resonance','res.r1':'Year-theme match','res.r2':'Same planet, multi-system','res.r3':'Eclipse / nodes','res.conflict':'Diverging view','res.detail':'Details + evidence','res.theme':'Theme','res.sci':'Sciences','res.evidence':'Evidence (computed)','res.month':'Month','res.planet':'Planet','res.good':'Sees support','res.bad':'Sees pressure',
         'res.r4':'Pair resonance','res.r5':'Element bridge','res.r6':'Clash year','res.pair':'Pair','res.dim':'Dimension','res.res':'Resonates','res.need':'Needed element','res.system':'System','res.rationale':'Rationale (computed)','res.dates':'Dates','res.voice':'systems call it heavy','res.heavy':'Heavy','res.notHeavy':'Not heavy','res.nodata':'No data','res.v.good':'Good','res.v.mid':'Neutral','res.v.tense':'Tense','res.e.support':'Supported','res.e.cut':'Cut','res.e.mid':'Neutral','res.dim.mind':'Emotional bond','res.dim.comm':'Communication','res.dim.attract':'Attraction','res.dim.stable':'Long-term stability','res.struct':'Structural overlap (same measurement — not counted as extra evidence)',
         'prog.read':'{d}/{t} sciences done','prog.reading':'Reading {t} sciences','prog.judge':'Fusing the verdict','answerWait':'The master is fusing your answer...',
-        'ds.title':'🎯 Trigger days','ds.topic':'Topic','ds.range':'Scan range','ds.detail':'Day-by-day evidence table','ds.date':'Date','ds.flag':'Flag','ds.needles':'Independent clocks','ds.evA':'A day-ganzhi (60-day)','ds.evB':'B real Moon','ds.evC':'C slow planets','ds.ctx':'Context','ds.none':'No multi-clock day in this range','ds.legend':'🔴 ≥2 independent clocks strike same day · 🟡 single strong signal · 🟢 opportunity day','ds.days':'days','ds.dropped':'top-ranked days only',
+        'ds.title':'🎯 Key days · next 3 months','ds.titleOf':'🎯 Key days for {name} · next 3 months','ds.forTopic':'about {topic}','ds.explain':'🔴 = several systems agree — avoid big decisions / key appointments · 🟢 = supportive window, good time to act','ds.topRed':'🔴 Days to be most careful','ds.topGreen':'🟢 Supportive days — good to act','ds.all':'All flagged days ({n})','ds.calm':'No day where several systems strongly agree in this window — decide on the merits','ds.topic':'Topic','ds.range':'Scan range','ds.detail':'Day-by-day evidence table','ds.date':'Date','ds.flag':'Flag','ds.needles':'Signals','ds.evA':'daily BaZi cycle','ds.evB':'real Moon','ds.evC':'slow planets','ds.ctx':'Context','ds.none':'No multi-clock day in this range','ds.legend':'🔴 several systems strike same day · 🟡 single strong signal · 🟢 opportunity day','ds.days':'days','ds.dropped':'top-ranked days only',
+        'ds.nA':'daily BaZi cycle signal','ds.nB':'real-Moon hard aspect','ds.nC':'slow planet exact aspect','ds.nMix':'multiple signals on the same day','ds.nAShort':'BaZi','ds.nBShort':'Moon','ds.nCShort':'Slow',
+        'ds.aFmt':'{rule} your {pillar}','ds.a.沖':'clash with','ds.a.伏吟':'doubling of','ds.a.刑':'friction with','ds.a.害':'harm to','ds.a.六合':'harmony with','ds.a.三合半':'elemental support to','ds.a.值':'repeat of','ds.p.year':'year pillar','ds.p.month':'month pillar','ds.p.day':'day pillar','ds.p.hour':'hour pillar',
+        'ds.bWarn':'Moon hits natal {target}','ds.bGood':'Moon aspects natal {target} favorably',
+        'ds.t.generic':'overall','ds.t.health':'health','ds.t.partner':'partner','ds.t.parents':'parents','ds.t.children':'children','ds.t.contract':'contracts','ds.t.travel':'travel','ds.t.money':'money','ds.t.career':'career',
+        'hist.fromTag':'📜 From history · {d}','hist.askMore':'Ask a follow-up','hist.back':'Back / new question','hist.busy':'Wait for the current reading to finish before opening history','hist.pick':'Tap a history item — the old question + answer open on the main reading card',
         'guest.link':'or + temporary chart (not saved)','guest.name':'Nickname','guest.namePh':'Temp chart','guest.gender':'Gender','guest.male':'Male (M)','guest.female':'Female (F)','guest.birthDate':'Birth date','guest.dateHint':'CE','guest.birthTime':'Birth time','guest.noTime':'Birth time unknown','guest.noTimeHint':'3-pillar reading only · Zi Wei / Chinese real-star skipped','guest.noTimeShort':'time unknown','guest.place':'Birth place','guest.placePh':'Type a city/place (default Bangkok)','guest.manualLatLng':'Enter lat/lng manually','guest.locFail':'Google Places failed to load · enter coordinates manually (blank = Bangkok)','guest.locHint':'Blank = Bangkok 13.7563, 100.5018','guest.use':'Use this chart','guest.cancel':'Cancel, back to dropdown','guest.chipTag':'not saved','guest.edit':'Edit','guest.needDate':'Please pick a birth date','guest.badDate':'Birth date must be between 1900 and today','guest.needTime':'Fill birth time or tick "birth time unknown"','guest.needGender':'Please pick a gender','guest.badLatLng':'Invalid coordinates (lat -90..90 · lng -180..180)','guest.tooMany':'Max 4 charts total (profiles + temporary)','guest.histLabel':'Temporary charts in this run (not saved)','guest.badData':'Invalid temporary chart data','guest.slotAt':'temporary chart slot {n}',
         'pill.back':'tap to view the reading','pill.ready':'Reading is ready · tap to view' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
@@ -1127,7 +1150,12 @@
         'res.title':'🔗 跨術共振','res.r1':'流年宮位相符','res.r2':'同星多術同月','res.r3':'日月食/羅計','res.conflict':'觀點分歧','res.detail':'詳情＋證據','res.theme':'主題','res.sci':'術數','res.evidence':'證據（實算）','res.month':'月','res.planet':'星','res.good':'看吉','res.bad':'看壓',
         'res.r4':'合盤共振','res.r5':'五行橋','res.r6':'沖太歲','res.pair':'配對','res.dim':'維度','res.res':'共振','res.need':'所需五行','res.system':'系統','res.rationale':'理由（實算）','res.dates':'日期','res.voice':'系統判為重','res.heavy':'重','res.notHeavy':'不重','res.nodata':'無資料','res.v.good':'吉','res.v.mid':'中','res.v.tense':'緊','res.e.support':'受扶','res.e.cut':'受剋','res.e.mid':'中','res.dim.mind':'情感·心','res.dim.comm':'溝通','res.dim.attract':'情慾·吸引','res.dim.stable':'長期穩定','res.struct':'結構性重合（同一量測 · 不重複計證）',
         'prog.read':'已完成 {d}/{t} 術','prog.reading':'正在解讀 {t} 術','prog.judge':'正在綜合裁斷','answerWait':'命師正在融合答案...',
-        'ds.title':'🎯 觸發日','ds.topic':'主題','ds.range':'掃描區間','ds.detail':'逐日證據表','ds.date':'日期','ds.flag':'旗','ds.needles':'獨立時鐘','ds.evA':'A 流日（六十甲子）','ds.evB':'B 真月亮','ds.evC':'C 慢星','ds.ctx':'脈絡','ds.none':'區間內無雙鐘同指之日','ds.legend':'🔴 兩個以上獨立時鐘同日 · 🟡 單一強訊號 · 🟢 機會日','ds.days':'日','ds.dropped':'僅列排名前段日',
+        'ds.title':'🎯 未來三個月關鍵日','ds.titleOf':'🎯 {name} 未來三個月關鍵日','ds.forTopic':'關於{topic}','ds.explain':'🔴＝多術同指 避免重大決定/重要約定 · 🟢＝助力日 宜行動','ds.topRed':'🔴 最須留意之日','ds.topGreen':'🟢 助力日 宜行動','ds.all':'所有標記日（{n}日）','ds.calm':'此區間無多術同指的強日 — 可按實際情況決定','ds.topic':'主題','ds.range':'掃描區間','ds.detail':'逐日證據表','ds.date':'日期','ds.flag':'旗','ds.needles':'訊號','ds.evA':'流日（六十甲子）','ds.evB':'真月亮','ds.evC':'慢星','ds.ctx':'脈絡','ds.none':'區間內無雙鐘同指之日','ds.legend':'🔴 多術同指一日 · 🟡 單一強訊號 · 🟢 機會日','ds.days':'日','ds.dropped':'僅列排名前段日',
+        'ds.nA':'流日訊號','ds.nB':'真月亮強角','ds.nC':'慢星精準角度','ds.nMix':'多訊號同指一日','ds.nAShort':'八字','ds.nBShort':'月','ds.nCShort':'慢星',
+        'ds.aFmt':'流日{rule}{pillar}','ds.a.沖':'沖','ds.a.伏吟':'伏吟','ds.a.刑':'刑','ds.a.害':'害','ds.a.六合':'六合','ds.a.三合半':'半三合','ds.a.值':'值','ds.p.year':'年柱','ds.p.month':'月柱','ds.p.day':'日柱','ds.p.hour':'時柱',
+        'ds.bWarn':'真月亮沖{target}','ds.bGood':'真月亮吉角{target}',
+        'ds.t.generic':'整體','ds.t.health':'健康','ds.t.partner':'配偶','ds.t.parents':'父母','ds.t.children':'子女','ds.t.contract':'契約','ds.t.travel':'出行','ds.t.money':'財運','ds.t.career':'事業',
+        'hist.fromTag':'📜 歷史紀錄 · {d}','hist.askMore':'接著這個答案再問','hist.back':'返回 / 重新提問','hist.busy':'請等目前批算完成後再開歷史','hist.pick':'點歷史項目 — 舊問題＋答案會開在主論斷卡',
         'guest.link':'或 + 臨時命盤（不儲存）','guest.name':'暱稱','guest.namePh':'臨時命盤','guest.gender':'性別','guest.male':'男 (M)','guest.female':'女 (F)','guest.birthDate':'出生日期','guest.dateHint':'西元','guest.birthTime':'出生時間','guest.noTime':'不知出生時間','guest.noTimeHint':'僅三柱解讀 · 紫微／七政四餘略過','guest.noTimeShort':'時辰不詳','guest.place':'出生地','guest.placePh':'輸入城市／地點（預設曼谷）','guest.manualLatLng':'手動輸入經緯度','guest.locFail':'Google Places 載入失敗 · 可手動輸入座標（留空＝曼谷）','guest.locHint':'留空＝曼谷 13.7563, 100.5018','guest.use':'使用此盤','guest.cancel':'取消，返回下拉選單','guest.chipTag':'不儲存','guest.edit':'修改','guest.needDate':'請選擇出生日期','guest.badDate':'出生日期須在西元 1900 至今日之間','guest.needTime':'請填出生時間，或勾選「不知出生時間」','guest.needGender':'請選擇性別','guest.badLatLng':'座標無效（lat -90..90 · lng -180..180）','guest.tooMany':'最多共 4 盤（檔案＋臨時）','guest.histLabel':'本次臨時命盤（不儲存）','guest.badData':'臨時命盤資料無效','guest.slotAt':'臨時命盤第 {n} 格',
         'pill.back':'點擊查看論斷','pill.ready':'論斷已完成 · 點擊查看' }
     };
@@ -2113,7 +2141,8 @@
     // ===== r373 · 🎯 วันลั่นไก (DAY_SNIPER จาก engine deterministic · escape ทุก string กัน XSS) =====
     var SNP_FLAG = { red:'🔴', yellow:'🟡', green:'🟢' };
     function sniperHasContent(ds){
-      return !!(ds && Array.isArray(ds.perPerson) && ds.perPerson.some(function(p){ return p && (p.skippedNote || (Array.isArray(p.days) && p.days.length)); }));
+      // r384: สแกนแล้วเจอ 0 วัน ก็ยังโชว์การ์ด (ข้อความ "ตัดสินใจได้ตามเนื้อผ้า") — ซ่อนเฉพาะ data ว่าง/รูปเก่าไม่มี days
+      return !!(ds && Array.isArray(ds.perPerson) && ds.perPerson.some(function(p){ return p && (p.skippedNote || Array.isArray(p.days)); }));
     }
     function sniperStripHtml(ds, days){
       var t0 = Date.parse(ds.fromISO + 'T00:00:00Z'), t1 = Date.parse(ds.toISO + 'T00:00:00Z');
@@ -2137,32 +2166,89 @@
       return '<div class="snp-strip">' + ticks + dots + '</div>';
     }
     function sniperPersonHtml(ds, p, multi){
+      // r384: เล่าแบบมนุษย์ 3 ชั้น — อธิบายสั้น → วันเด่น (แดง top3 / เขียว top3 + เหตุผลภาษาคน) → พับทุกวันที่ติดธง
       var pname = multi ? '<div class="res-pname">' + esc(p.name || '') + '</div>' : '';
       if (p.skippedNote) return '<div class="res-person">' + pname + '<div class="res-skip">' + esc(p.skippedNote) + '</div></div>';
+      var days = Array.isArray(p.days) ? p.days : [];
+      var loc = state.locale;
+      // วันที่แบบมนุษย์ "อา. 31 พ.ค." (สร้างเอง — deterministic ไม่พึ่ง Intl ต่างเครื่อง)
+      function fmtDay(iso){
+        var y = +String(iso).slice(0, 4), mo = +String(iso).slice(5, 7), d = +String(iso).slice(8, 10);
+        var dt = new Date(Date.UTC(y, mo - 1, d));
+        if (!isFinite(dt.getTime())) return String(iso || '');
+        var dow = dt.getUTCDay();
+        if (loc === 'zh') return ['週日','週一','週二','週三','週四','週五','週六'][dow] + ' ' + mo + '月' + d + '日';
+        if (loc === 'en') return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dow] + ' ' + d + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mo - 1];
+        return ['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'][dow] + ' ' + d + ' ' + ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][mo - 1];
+      }
+      // แปลงหลักฐาน engine → เหตุผล 1 บรรทัดภาษาคน (ห้ามโชว์ตัวเข็ม A/B/C หรือศัพท์ engine ดิบ)
+      function aPhrase(day){
+        var list = (Array.isArray(day.a) ? day.a : []).filter(function(r){ return r && r.strength !== 'context'; });
+        if (!list.length) return (day.needles || []).indexOf('A') !== -1 ? t('ds.nA') : '';
+        var pick = list.filter(function(r){ return r.strength === 'strong_warning'; })[0] || list[0];
+        return t('ds.aFmt').replace('{rule}', t('ds.a.' + pick.rule)).replace('{pillar}', t('ds.p.' + pick.pillarKey));
+      }
+      var ASPECT_GLYPH = { conjunction:'☌', square:'□', opposition:'☍', trine:'△', sextile:'✶' };
+      function bPhrase(day){
+        var list = Array.isArray(day.b) ? day.b : [];
+        if (!list.length) return (day.needles || []).indexOf('B') !== -1 ? t('ds.nB') : '';
+        var h = list[0];
+        var target = loc === 'th' ? (h.targetTh || h.targetName || '') : (h.targetName || h.targetTh || '');
+        return t(h.polarity === 'benefic' ? 'ds.bGood' : 'ds.bWarn').replace('{target}', target);
+      }
+      function cPhrase(day){
+        var list = Array.isArray(day.c) ? day.c : [];
+        if (!list.length) return (day.needles || []).indexOf('C') !== -1 ? t('ds.nC') : '';
+        var h = list[0];
+        if (loc === 'th' && h.detail) return String(h.detail).replace(/\s*\(exact[^)]*\)\s*$/, '');
+        return String(h.transit || '') + (ASPECT_GLYPH[h.aspect] || '·') + String(h.natal || '');
+      }
+      function whyLine(day){
+        var parts = [aPhrase(day), bPhrase(day), cPhrase(day)].filter(Boolean);
+        return parts.slice(0, 3).join(' + ') || t('ds.nMix');
+      }
+      function needleScore(day){ return Array.isArray(day.needles) ? day.needles.length : 0; }
+      function pickTop(flag){
+        return days.filter(function(d){ return d && d.flag === flag; }).slice()
+          .sort(function(x, y){ return needleScore(y) - needleScore(x) || String(x.dateISO).localeCompare(String(y.dateISO)); })
+          .slice(0, 3);
+      }
+      function dayItem(day){
+        return '<div class="snp-day"><span class="snp-day-date">' + (SNP_FLAG[day.flag] || '') + ' ' + esc(fmtDay(day.dateISO)) + '</span><span class="snp-day-why">' + esc(whyLine(day)) + '</span></div>';
+      }
+      var explain = '<div class="snp-explain">' + esc(t('ds.explain')) + '</div>';
+      if (!days.length) return '<div class="res-person">' + pname + explain + '<div class="res-skip">' + esc(t('ds.calm')) + '</div></div>';
+      var reds = pickTop('red'), greens = pickTop('green');
+      var top = '';
+      if (reds.length) top += '<div class="snp-top"><div class="snp-top-label">' + esc(t('ds.topRed')) + '</div>' + reds.map(dayItem).join('') + '</div>';
+      if (greens.length) top += '<div class="snp-top"><div class="snp-top-label">' + esc(t('ds.topGreen')) + '</div>' + greens.map(dayItem).join('') + '</div>';
+      if (!top) top = '<div class="res-skip">' + esc(t('ds.calm')) + '</div>';
+      // ชั้น 3: ตารางหลักฐานเดิม (ย่อ) — default พับทุกอุปกรณ์ · สัญญาณโชว์ชื่อไทย ไม่ใช่ตัวอักษรเข็มดิบ
       var chips = [
         '<span class="res-chip' + (p.totals.red ? ' warn' : '') + '">🔴 × ' + (p.totals.red || 0) + '</span>',
         '<span class="res-chip">🟡 × ' + (p.totals.yellow || 0) + '</span>',
         '<span class="res-chip' + (p.totals.green ? ' on' : '') + '">🟢 × ' + (p.totals.green || 0) + '</span>',
         '<span class="res-chip">' + esc(String(p.scannedDays || 0)) + ' ' + esc(t('ds.days')) + '</span>'
       ];
-      var days = Array.isArray(p.days) ? p.days : [];
-      if (!days.length) return '<div class="res-person">' + pname + '<div class="res-chips">' + chips.join('') + '</div><div class="res-skip">' + esc(t('ds.none')) + '</div></div>';
+      var needleName = { A:t('ds.nAShort'), B:t('ds.nBShort'), C:t('ds.nCShort') };
       var evTd = function(list, key){
         return (Array.isArray(list) ? list : []).slice(0, 3).map(function(x){ return esc(x[key] || ''); }).join('<br>') || '—';
       };
       var rows = days.map(function(day){
         var aList = (Array.isArray(day.a) ? day.a : []).filter(function(r){ return r.strength !== 'context'; });
-        return '<tr' + (day.flag === 'red' ? ' class="res-cf"' : '') + '><td class="snp-flag">' + esc(day.dateISO) + '<br>' + SNP_FLAG[day.flag] + ' ' + esc(day.ganzhi) + '</td>' +
-          '<td>' + esc((day.needles || []).join('+')) + '</td>' +
+        return '<tr' + (day.flag === 'red' ? ' class="res-cf"' : '') + '><td class="snp-flag">' + esc(fmtDay(day.dateISO)) + '<br>' + SNP_FLAG[day.flag] + ' ' + esc(day.ganzhi) + '</td>' +
+          '<td>' + esc((day.needles || []).map(function(n){ return needleName[n] || ''; }).filter(Boolean).join('+')) + '</td>' +
           '<td>' + evTd(aList, 'detail') + '</td>' +
           '<td>' + evTd(day.b, 'detail') + '</td>' +
           '<td>' + evTd(day.c, 'detail') + ((day.context || []).length ? '<br><small>' + esc(day.context.join(' · ')) + '</small>' : '') + '</td></tr>';
       });
       return '<div class="res-person">' + pname +
+        explain +
+        top +
+        '<details class="res-details"><summary>' + esc(t('ds.all').replace('{n}', String(days.length))) + '</summary>' +
         '<div class="res-chips">' + chips.join('') + '</div>' +
         sniperStripHtml(ds, days) +
         '<div class="snp-legend">' + esc(t('ds.legend')) + (p.droppedCount ? ' · ' + esc(t('ds.dropped')) : '') + '</div>' +
-        '<details class="res-details"><summary>' + esc(t('ds.detail')) + '</summary>' +
         '<div class="md-tw"><table class="md-t"><thead><tr><th>' + esc(t('ds.date')) + '</th><th>' + esc(t('ds.needles')) + '</th><th>' + esc(t('ds.evA')) + '</th><th>' + esc(t('ds.evB')) + '</th><th>' + esc(t('ds.evC')) + ' / ' + esc(t('ds.ctx')) + '</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' +
         '</details></div>';
     }
@@ -2237,10 +2323,15 @@
       if (!els.sniper) return;
       if (!ds || !sniperHasContent(ds)) { els.sniper.innerHTML = ''; els.sniper.classList.add('hidden'); els.sniper.classList.remove('hk-fold'); return; }
       var persons = Array.isArray(ds.perPerson) ? ds.perPerson : [];
-      var multi = persons.length > 1;
-      els.sniper.innerHTML = '<div class="res-card"><div class="res-head"><span class="res-title">' + esc(t('ds.title')) + ' · ' + esc(String(ds.topicTh || '')) + '</span><span class="res-year">' + esc(String(ds.fromISO || '') + ' → ' + String(ds.toISO || '')) + '</span></div>' +
+      // r384: engine ยิงจากดวงเจ้าของบัญชีดวงเดียวเสมอ (งานเก่าใน jsonb อาจมีหลายคน → render คนแรกคนเดียว) · หัวการ์ดระบุชื่อ+หัวข้อชัด
+      var p0 = persons.filter(Boolean)[0] || null;
+      var pName = p0 ? String(p0.name || '') : '';
+      var titleText = pName ? t('ds.titleOf').replace('{name}', pName) : t('ds.title');
+      var topicText = ds.topicKey && t('ds.t.' + ds.topicKey) !== ('ds.t.' + ds.topicKey) ? t('ds.t.' + ds.topicKey) : String(ds.topicTh || '');
+      if (topicText) titleText += ' (' + t('ds.forTopic').replace('{topic}', topicText) + ')';
+      els.sniper.innerHTML = '<div class="res-card"><div class="res-head"><span class="res-title">' + esc(titleText) + '</span><span class="res-year">' + esc(String(ds.fromISO || '') + ' → ' + String(ds.toISO || '')) + '</span></div>' +
         '<div class="res-foldsum">' + esc(sniperFoldSummary(ds)) + '</div>' + // r382: สรุป 1 บรรทัดตอนพับ
-        persons.map(function(p){ return p ? sniperPersonHtml(ds, p, multi) : ''; }).join('') + '</div>';
+        (p0 ? sniperPersonHtml(ds, p0, false) : '') + '</div>';
       applyCardFold(els.sniper, 'snp'); // r382: มือถือเริ่มพับ ทุกเส้นทาง · จำสถานะที่ user กดต่อ job
       els.sniper.classList.remove('hidden');
     }
@@ -2451,15 +2542,13 @@
       state.activeHistoryId = row ? String(row.id) : '';
       renderHistoryList();
       if (!row) {
-        els.historyDetail.innerHTML = '<div class="history-empty">เลือกประวัติ Fusion เพื่อดูรายละเอียด</div>' + renderCompare();
+        els.historyDetail.innerHTML = '<div class="history-empty">' + esc(t('hist.pick')) + '</div>' + renderCompare();
         return;
       }
       var us = historyUserState(row);
       var fusion = fusionFromHistory(row);
-      var answerOpen = state.showHistoryAnswerId === String(row.id);
-      var answerBlock = answerOpen
-        ? '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-text">' + renderFusionProof(fusion) + esc(row.answer || '') + renderAnswerTools(fusion) + '</div></div>'
-        : '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-collapsed">คำตอบถูกซ่อนไว้ เพื่อไม่ให้คำตอบเก่ากินพื้นที่หรือปนกับคำถามต่อ <div class="history-actions" style="margin-top:10px"><button class="mini-btn" type="button" data-hact="show-answer" data-id="' + esc(row.id) + '">โชว์คำตอบ</button></div></div></div>';
+      // r384: เลิก expand คำตอบท้ายหน้า — คำตอบเก่าเปิดบนการ์ดคำพยากรณ์หลัก (openHistoryInMain) · panel นี้เหลือ meta/receipt/note
+      var answerBlock = '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-collapsed">' + esc(t('hist.pick')) + '</div></div>';
       els.historyDetail.innerHTML =
         '<div class="detail-head">' +
           '<div><div class="detail-title">' + esc(row.question || '') + '</div><div class="detail-sub">' + esc(rowDate(row) + (historyGuestLabel(row) ? ' · ' + historyGuestLabel(row) : '') + ' · ' + runReceipt(row)) + '</div></div>' +
@@ -2475,9 +2564,9 @@
         (fusion.resonance && resonanceHasContent(fusion.resonance)
           ? '<details class="detail-block res-histfold"' + (isMobileFold() ? '' : ' open') + '><summary class="detail-label">' + esc(t('res.title')) + ' · ' + esc(resonanceFoldSummary(fusion.resonance)) + '</summary>' + resonanceBodyHtml(fusion.resonance) + '</details>'
           : '') +
-        // r373: day sniper ที่บันทึกไว้ (เกาะใน resonance jsonb) — โชว์ซ้ำได้จากประวัติ · r382: มือถือเริ่มพับ (details) · desktop เริ่มกาง
+        // r373: day sniper ที่บันทึกไว้ (เกาะใน resonance jsonb) — โชว์ซ้ำได้จากประวัติ · r382: มือถือเริ่มพับ (details) · desktop เริ่มกาง · r384: render คนแรกคนเดียว (engine ใหม่ = ดวงเจ้าของบัญชีเสมอ)
         (fusion.resonance && sniperHasContent(fusion.resonance.daySniper)
-          ? '<details class="detail-block res-histfold"' + (isMobileFold() ? '' : ' open') + '><summary class="detail-label">' + esc(t('ds.title')) + ' · ' + esc(sniperFoldSummary(fusion.resonance.daySniper)) + '</summary>' + (Array.isArray(fusion.resonance.daySniper.perPerson) ? fusion.resonance.daySniper.perPerson.map(function(p){ return p ? sniperPersonHtml(fusion.resonance.daySniper, p, fusion.resonance.daySniper.perPerson.length > 1) : ''; }).join('') : '') + '</details>'
+          ? '<details class="detail-block res-histfold"' + (isMobileFold() ? '' : ' open') + '><summary class="detail-label">' + esc(t('ds.title')) + ' · ' + esc(sniperFoldSummary(fusion.resonance.daySniper)) + '</summary>' + (Array.isArray(fusion.resonance.daySniper.perPerson) ? fusion.resonance.daySniper.perPerson.filter(Boolean).slice(0, 1).map(function(p){ return sniperPersonHtml(fusion.resonance.daySniper, p, false); }).join('') : '') + '</details>'
           : '') +
         '<div class="detail-block"><div class="detail-label">Run Receipt</div><div class="detail-text">' + esc(runReceipt(row)) + '</div></div>' +
         '<div class="detail-block"><div class="detail-label">Packet / Profile Snapshot</div>' + snapshotBlock(row) + '</div>' +
@@ -2528,7 +2617,69 @@
       renderHistoryList();
       renderHistoryDetail(id);
     }
+    // ===== r384 · เปิดประวัติ → คำถาม+คำตอบเก่าขึ้นการ์ดหลัก (บล็อกเดียวกับตอนถามสด) =====
+    function historyChartNames(row, fusion){
+      var names = [];
+      var p = profileById(row.profile_id);
+      if (p) names.push(String(p.nickname || p.name || ''));
+      if (!names.length) {
+        var snapProf = metaObj(row.profile_snapshot || fusion.profile_snapshot);
+        if (snapProf.nickname || snapProf.name) names.push(String(snapProf.nickname || snapProf.name));
+      }
+      var gl = historyGuestLabel(row);
+      if (gl) names.push(gl);
+      return names.filter(Boolean).join(' + ');
+    }
+    function historyMainHtml(row, fusion){
+      return '<div class="hist-view">' +
+        '<div class="hist-tag">' + esc(t('hist.fromTag').replace('{d}', rowDate(row))) + '</div>' +
+        '<div class="hist-q"><b>' + esc(historyChartNames(row, fusion) || '—') + '</b> · ' + esc(shortText(row.question, 300)) + '</div>' +
+        '<div class="result-content">' + renderFusionProof(fusion) + mdSafe(row.answer || '') + renderAnswerTools(fusion) + '</div>' +
+        '<div class="hist-actions">' +
+          '<button class="btn" type="button" data-hact="continue" data-id="' + esc(row.id) + '">' + esc(t('hist.askMore')) + '</button>' +
+          '<button class="btn secondary" type="button" data-hact="hist-close" data-id="' + esc(row.id) + '">' + esc(t('hist.back')) + '</button>' +
+        '</div>' +
+      '</div>';
+    }
+    function openHistoryInMain(row){
+      if (!row) return;
+      // มี job วิ่งอยู่ = ห้ามทับจอคำพยากรณ์ที่กำลังรอ — บล็อกสุภาพ (มือถือคงหน้าถามให้เห็น toast+history)
+      if (state.busy || state.resuming) { keepHistoryOnAskPage(); setStatus(t('hist.busy'), 'err'); return; }
+      if (!state.preHistoryView) state.preHistoryView = { result: state.result, resonance: state.resonance }; // เก็บสภาพก่อนเปิด (เปิดรายการถัดไปไม่ทับ)
+      var fusion = fusionFromHistory(row);
+      state.historyView = { id: String(row.id), question: String(row.question || ''), names: historyChartNames(row, fusion), dateLabel: rowDate(row) };
+      renderResonance(fusion.resonance || null); // การ์ด 🔗/🎯 ของรอบนั้น (จาก response_meta · ไม่มี = ซ่อน)
+      if (els.result) els.result.innerHTML = historyMainHtml(row, fusion);
+      if (els.meta) els.meta.innerHTML = '';
+      setRunState('history');
+      setAnswerMode(true); // r374: เปิดประวัติ = อยากอ่านคำตอบ → มือถือเข้าโหมดอ่านเต็มจอทันที · desktop CSS ไม่ match = ไม่เปลี่ยน
+      if (!isMobileFold()) {
+        var panel = document.querySelector('.result-panel');
+        if (panel && panel.scrollIntoView) panel.scrollIntoView({ behavior:'smooth', block:'start' }); // desktop → เลื่อนไปการ์ดคำตอบหลัก
+      }
+    }
+    function closeHistoryView(){
+      var prev = state.preHistoryView;
+      state.historyView = null;
+      state.preHistoryView = null;
+      state.activeHistoryId = '';
+      renderHistoryList();
+      if (prev && prev.result) { // มีคำพยากรณ์สดของรอบล่าสุด → คืนกลับ
+        renderFusion5(prev.result);
+        renderResonance(prev.resonance || null);
+        setRunState('done', 'ok');
+        setAnswerMode(true);
+      } else {
+        renderResonance(null);
+        if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
+        setRunState('idle');
+        setAnswerMode(false); // กลับหน้าถามปกติ พร้อมถามใหม่
+      }
+      updateReadBar();
+    }
     function continueFromHistory(row){
+      state.historyView = null; // r384: ถามต่อ → ออกจากโหมดดูประวัติ (context ตั้งจากรอบนี้)
+      state.preHistoryView = null;
       resetConversationForProfile(row.profile_id || selectedProfileId());
       state.threadId = String((metaObj(row.request_payload).thread_id || metaObj(row.response_meta).thread_id || row.id || newRunId())).slice(0, 100);
       state.history.push({ role:'user', content:row.question || '' }, { role:'assistant', content:row.answer || '' });
@@ -2537,7 +2688,7 @@
       renderThreadNote();
       if (els.meta) els.meta.innerHTML = '';
       setAnswerMode(false); // r374: ถามต่อ → ต้องพิมพ์ → ขยายการ์ดถามกลับ
-      setStatus('ตั้ง context จากประวัติรอบนี้แล้ว พิมพ์คำถามต่อได้ · คำตอบเก่าไม่แสดงจนกดโชว์');
+      setStatus('ตั้ง context จากประวัติรอบนี้แล้ว พิมพ์คำถามต่อได้เลย'); // r384: คำตอบเก่าเปิดดูได้จากการ์ดหลัก/ประวัติ
       window.scrollTo({ top:0, behavior:'smooth' });
     }
     function rerunHistory(row){
@@ -3061,6 +3212,8 @@
       var priorHistory = payloadHistory();
       state.pendingQuestion = message;
       state.busy = true;
+      state.historyView = null; // r384: รันใหม่ = ออกจากโหมดดูประวัติ (การ์ดหลักเป็นของงานใหม่)
+      state.preHistoryView = null;
       els.send.disabled = true;
       setAnswerMode(true); // r374: มือถือ → ยุบการ์ดถามเป็นแถบสรุป
       setRunState('running');
@@ -3153,6 +3306,8 @@
       if (readBar.btn) readBar.btn.textContent = askOpen ? '→' : '←';
       if (!readBar.label) return;
       if (askOpen) { readBar.label.innerHTML = '<b>' + esc(t('read.back')) + '</b>'; return; } // หน้าถาม → ป้ายพากลับหน้าอ่าน
+      // r384: กำลังดูคำตอบจากประวัติ → แถบโชว์ชื่อดวง+คำถามเก่า (ไม่ใช่ฟอร์มปัจจุบัน)
+      if (state.historyView) { readBar.label.innerHTML = '<b>' + esc('📜 ' + (state.historyView.names || '—')) + '</b> · ' + esc(String(state.historyView.question || '').replace(/\s+/g, ' ').slice(0, 160)); return; }
       var names = selectedProfileIds().map(function(id){
         var p = profileById(id);
         return p ? String(p.nickname || p.name || '') : '';
@@ -3211,6 +3366,7 @@
         var id = hact.getAttribute('data-id');
         var row = findHistory(id);
         var act = hact.getAttribute('data-hact');
+        if (act === 'hist-close') { closeHistoryView(); return; } // r384: ปุ่มกลับ/ถามใหม่จากการ์ดหลัก
         if (!row && act !== 'compare') return;
         if (act === 'compare') {
           var checked = !!hact.checked;
@@ -3233,7 +3389,6 @@
           patchHistory(id, { note: noteEl ? noteEl.value : '' }).then(function(){ setStatus('บันทึก note แล้ว', 'ok'); }).catch(function(err){ setStatus(err.message || err, 'err'); });
           return;
         }
-        if (act === 'show-answer') { state.showHistoryAnswerId = id; setAnswerMode(true); keepHistoryOnAskPage(); renderHistoryDetail(id); return; } // r383: มือถือคงหน้าถาม (history อยู่ที่นั่น)
         if (act === 'continue') { continueFromHistory(row); return; }
         if (act === 'rerun') { rerunHistory(row); return; }
         if (act === 'export-md') { exportMarkdown(row); return; }
@@ -3242,10 +3397,8 @@
       var histItem = e.target && e.target.closest ? e.target.closest('.history-item[data-history-id]') : null;
       if (histItem) {
         var nextHistoryId = histItem.getAttribute('data-history-id');
-        if (nextHistoryId !== state.activeHistoryId) state.showHistoryAnswerId = '';
-        setAnswerMode(true); // r374: เปิดประวัติ = อยากอ่านคำตอบ → มือถือยุบการ์ดถาม
-        keepHistoryOnAskPage(); // r383: หน้าอ่านซ่อน history ทั้งก้อน → มือถือต้องคงหน้าถามให้เห็น detail
-        renderHistoryDetail(nextHistoryId);
+        renderHistoryDetail(nextHistoryId); // ไฮไลต์รายการ + meta panel (receipt/note)
+        openHistoryInMain(findHistory(nextHistoryId)); // r384: คำถาม+คำตอบเก่าขึ้นการ์ดหลัก · job วิ่งอยู่ = บล็อกสุภาพ
         return;
       }
       if (e.target === els.answerModal) closeAnswer();
@@ -3263,6 +3416,8 @@
       clearSnap(); // r381
       state.busy = false;
       state.resumePaintedDone = false;
+      state.historyView = null; // r384: ล้าง = ออกจากโหมดดูประวัติด้วย
+      state.preHistoryView = null;
       renderProgress(null);
       els.question.value = '';
       state.result = null;
@@ -3274,10 +3429,10 @@
       applyFusionGate();
     });
     els.profile.addEventListener('change', function(){
+      if (state.historyView) closeHistoryView(); // r384: เปลี่ยนดวง → ปิดโหมดดูประวัติเก่า (กันคำตอบข้ามดวงค้างจอ)
       loadConversationForSelection();
       renderThreadNote();
       state.activeHistoryId = '';
-      state.showHistoryAnswerId = '';
       state.compareIds = [];
       try { localStorage.setItem('hk_profile_id', selectedProfileId()); } catch(_){}
       var cur2 = els.profile2 && els.profile2.value;
@@ -3319,13 +3474,13 @@
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') send();
     });
     els.question.addEventListener('input', saveDraft);
-    els.historyRefresh.addEventListener('click', function(){ state.showHistoryAnswerId=''; loadFusionHistory(); });
-    if (els.historySearch) els.historySearch.addEventListener('click', function(){ state.activeHistoryId=''; state.showHistoryAnswerId=''; loadFusionHistory(); });
+    els.historyRefresh.addEventListener('click', function(){ loadFusionHistory(); });
+    if (els.historySearch) els.historySearch.addEventListener('click', function(){ state.activeHistoryId=''; loadFusionHistory(); });
     [els.historyTopic, els.historyMode, els.historyStatus, els.historyFrom, els.historyTo].forEach(function(el){
-      if (el) el.addEventListener('change', function(){ state.activeHistoryId=''; state.showHistoryAnswerId=''; loadFusionHistory(); }); // r383: การ์ด filter ถูกถอด → guard null
+      if (el) el.addEventListener('change', function(){ state.activeHistoryId=''; loadFusionHistory(); }); // r383: การ์ด filter ถูกถอด → guard null
     });
     if (els.historyQ) els.historyQ.addEventListener('keydown', function(e){
-      if (e.key === 'Enter') { state.activeHistoryId=''; state.showHistoryAnswerId=''; loadFusionHistory(); }
+      if (e.key === 'Enter') { state.activeHistoryId=''; loadFusionHistory(); }
     });
     // ===== locale + theme init =====
     state.locale = (function(){ try { var l = localStorage.getItem('hk_locale') || 'th'; return ['th','en','zh'].indexOf(l) !== -1 ? l : 'th'; } catch(_) { return 'th'; } })();

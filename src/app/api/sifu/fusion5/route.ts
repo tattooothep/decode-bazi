@@ -723,7 +723,9 @@ export async function POST(req: Request) {
     // คำนวณ sync ตอน POST (งบเวลาใน buildDaySniper: focus เสมอ · คนที่ 2 ข้ามถ้าเกิน 5s) · พัง = ไม่ล้ม job
     try {
       const range = resolveDaySniperRange(question, timingRefPost);
-      const daySniper = buildDaySniper(births, question, range.fromISO, range.toISO);
+      // r384: วันลั่นไกยึดดวงเจ้าของบัญชี (is_self) เท่านั้น — ถามคู่/กลุ่มแล้ววันของทุกดวงเทกองรวมจนอ่านไม่ออก · ไม่มี self ในคำถาม (ดูให้คนอื่น/guest ล้วน) → ใช้ดวงแรกของคำถาม
+      const sniperBirths = births.filter((b) => b.isSelf).slice(0, 1);
+      const daySniper = buildDaySniper(sniperBirths.length ? sniperBirths : births.slice(0, 1), question, range.fromISO, range.toISO);
       if (resonance) {
         resonance.daySniper = daySniper;
       } else {

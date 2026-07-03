@@ -231,6 +231,21 @@
     return false;
   }
 
+  /* r384: ตอนรันเป็นแอป (standalone) ล็อกจอไม่ให้เด้ง/ขยับ — ฉีด CSS เฉพาะโหมดแอป ไม่แตะไฟล์หน้า LOCKED
+   * - overscroll-behavior-y: none → ตัดแรงเด้งขอบบน-ล่าง (rubber band)
+   * - overflow-x hidden ที่ html/body → ตัดการขยับซ้าย-ขวาจาก element ที่ล้นจอไม่กี่ px */
+  function lockStandaloneViewport() {
+    if (!isStandalone()) return;
+    try {
+      var st = document.createElement('style');
+      st.id = 'hk-pwa-viewport-lock';
+      st.textContent = '@media (display-mode: standalone){html,body{overscroll-behavior-y:none;overflow-x:hidden;}}' +
+        'html.hk-standalone,html.hk-standalone body{overscroll-behavior-y:none;overflow-x:hidden;}';
+      (document.head || document.documentElement).appendChild(st);
+      document.documentElement.classList.add('hk-standalone');
+    } catch (_) {}
+  }
+
   function isMobile() {
     try {
       var ua = navigator.userAgent || '';
@@ -368,6 +383,7 @@
   /* ---------- main ---------- */
 
   var main = safe(function () {
+    lockStandaloneViewport(); /* r384: ล็อกจอโหมดแอป — ต้องรันก่อน SW check (เครื่องไม่มี SW ก็ยังล็อกจอ) */
     if (!('serviceWorker' in navigator)) return;
     /* r380b: ลิงก์ลับ canary — ?pwa=1 เปิด opt-in / ?pwa=0 ปิด (สำหรับมือถือที่เปิด console ไม่ได้) */
     try {
