@@ -11,7 +11,7 @@
  *   6. อื่น ๆ                     → ไม่แตะ
  */
 
-const HK_SW_VERSION = 'r380';
+const HK_SW_VERSION = 'r384d';
 const CACHE_NAME = 'hk-pwa-' + HK_SW_VERSION;
 
 const PRECACHE_URLS = [

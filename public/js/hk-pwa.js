@@ -237,12 +237,10 @@
   function lockStandaloneViewport() {
     if (!isStandalone()) return;
     try {
-      /* r384c HOTFIX: เวอร์ชันแรกใส่ overflow-x:hidden ที่ html+body → iOS standalone จอค้างเลื่อนไม่ได้
-       * เหลือแค่ตัดแรงเด้ง (contain = กัน pull-to-refresh/bounce แต่เลื่อนปกติ) · ห้ามแตะ overflow ทั้งสองแกน */
-      var st = document.createElement('style');
-      st.id = 'hk-pwa-viewport-lock';
-      st.textContent = 'body{overscroll-behavior-y:contain;}';
-      (document.head || document.documentElement).appendChild(st);
+      /* r384d: ถอด viewport lock ทั้งหมด (revert เต็ม) — iOS standalone จอค้างเลื่อนไม่ได้แม้เหลือแค่ contain
+       * ปัญหาจอขยับซ้ายขวา = แก้ที่ element ที่ล้นในหน้า fusion แทน (agent กำลังไล่หา) · ห้ามใส่ style ที่ html/body จากไฟล์นี้อีก */
+      var st = document.getElementById('hk-pwa-viewport-lock');
+      if (st && st.parentNode) st.parentNode.removeChild(st);
     } catch (_) {}
   }
 
