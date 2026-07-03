@@ -86,7 +86,7 @@ const rendered = renderQizhengPrompt(packet);
 ok("render มี TIMING_TIMELINE + 流月 + วันแม่น", rendered.includes("TIMING_TIMELINE ปี 2026") && rendered.includes("太陽過宮"));
 const prompt = buildSciencePrompt("qizheng", [{ name: "เทส", dtUTC: birth.dtUTC, lat: birth.lat, lng: birth.lng, hasTime: true, gender: "M" }], "สุขภาพปี 2026 เดือนไหนต้องระวัง", "th");
 ok("เต็มสาย prompt มี TIMING_TIMELINE", prompt.includes("TIMING_TIMELINE ปี 2026"));
-ok("prompt ไม่เกิน 78K", prompt.length <= 78000, `${prompt.length}`);
+ok("prompt ไม่เกิน 118K (cap fusion5 4 ดวง)", prompt.length <= 118000, `${prompt.length}`);
 console.log(`ขนาด prompt: ${prompt.length}`);
 
 // 6) no-time: timeline ปิด + ธงครบ

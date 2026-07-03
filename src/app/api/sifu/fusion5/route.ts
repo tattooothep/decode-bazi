@@ -1,5 +1,6 @@
 /**
- * /api/sifu/fusion5 · ดูดวง 5 ศาสตร์ · panel แยกศาสตร์ + judge หลอมรวม + ดูคู่ 2 ดวง
+ * /api/sifu/fusion5 · ดูดวง 5 ศาสตร์ · panel แยกศาสตร์ + judge หลอมรวม + ดูคู่/กลุ่ม 2-4 ดวง
+ * ⚠️ bazi รองรับสูงสุด 2 ดวง (synastry เป็นแบบคู่) → กลุ่ม 3-4 ดวงตัด bazi ออกพร้อมเหตุผลใน skippedReasons (ไม่คิดยาม)
  * แต่ละ panel = 1 ศาสตร์ · engine คำนวณ→packet→คัมภีร์→AI (ตาม registry · กันมั่ว)
  * bazi → /api/sifu เดิม (profileId) · qizheng/western/vedic → externalPrompt (ผัง render มาแล้ว)
  * ⚠️ ยังไม่แตะ /api/sifu/fusion เดิม (route แยก · /master-fusion ปัจจุบันไม่กระทบ)
@@ -283,6 +284,7 @@ type WorkerParams = {
   lang: string;
   yam: number;
   skipped: ScienceId[];
+  skippedReasons: Partial<Record<ScienceId, string>>;
   history: Msg[];
   threadId: string | null;
   threadProfileId: string | null;
@@ -316,7 +318,7 @@ function cleanScienceList(x: unknown): ScienceId[] {
 function cleanIdListFromSearch(url: URL): string[] {
   const raw = url.searchParams.getAll("profileIds").concat(url.searchParams.getAll("profile_ids"));
   const csv = raw.length ? raw.join(",") : String(url.searchParams.get("profileId") || url.searchParams.get("profile_id") || "");
-  return csv.split(",").map(cleanId).filter((x): x is string => !!x).slice(0, 2);
+  return csv.split(",").map(cleanId).filter((x): x is string => !!x).slice(0, 4);
 }
 
 async function reconcileStaleJob(row: Fusion5JobRow, userId: string): Promise<Fusion5JobRow> {
@@ -408,6 +410,7 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
       profileIds: p.profileIds,
       sciences: p.runSciences,
       skipped: p.skipped,
+      skipped_reasons: p.skippedReasons,
       user_state: { favorite: false, pinned: false, note: "", updated_at: null },
     };
     return await logResearchAiMessage({
@@ -554,6 +557,7 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
         panels: panels.map((x) => ({ science: x.science, label: x.label, model: x.model, ok: x.ok, reply: x.reply || null, error: x.error || null })),
         judge: { ok: judge.ok, model: judge.model },
         skipped,
+        skippedReasons: p.skippedReasons,
         yam: { charged: yam, refunded: totalRefund },
       },
     };
@@ -582,7 +586,7 @@ export async function POST(req: Request) {
     userId = session.userId;
 
     const profileIds = (Array.isArray(body.profileIds) ? body.profileIds : [body.profileId])
-      .map(cleanId).filter((x): x is string => !!x).slice(0, 2);
+      .map(cleanId).filter((x): x is string => !!x).slice(0, 4);
     const sciences = (Array.isArray(body.sciences) ? body.sciences : [])
       .map((s) => String(s) as ScienceId)
       .filter((s) => DISCIPLINES[s]?.available);
@@ -604,9 +608,21 @@ export async function POST(req: Request) {
     }
 
     const allHaveTime = births.every((b) => b.hasTime);
-    const runSciences = sciences.filter((s) => !DISCIPLINES[s].needsBirthTime || allHaveTime);
+    let runSciences = sciences.filter((s) => !DISCIPLINES[s].needsBirthTime || allHaveTime);
     const skipped = sciences.filter((s) => DISCIPLINES[s].needsBirthTime && !allHaveTime);
-    if (!runSciences.length) return NextResponse.json({ error: "all_sciences_need_birthtime", skipped }, { status: 400 });
+    const skippedReasons: Partial<Record<ScienceId, string>> = {};
+    for (const s of skipped) skippedReasons[s] = "no_birth_time";
+    // bazi group: PAIR_INTERACTION_PACKET bazi (buildSynastry) รองรับ 2 ดวงเท่านั้น · กลุ่ม 3-4 ดวง
+    // → ตัด bazi ออกตรงๆ (ไม่คิดยาม · additive · ไม่ hack /api/sifu ที่ LOCKED) แจ้งเหตุผลชัดใน skippedReasons
+    if (births.length > 2 && runSciences.includes("bazi")) {
+      runSciences = runSciences.filter((s) => s !== "bazi");
+      skipped.push("bazi");
+      skippedReasons.bazi = "bazi_group_not_supported";
+    }
+    if (!runSciences.length) {
+      const onlyGroupSkip = skipped.length > 0 && skipped.every((s) => skippedReasons[s] === "bazi_group_not_supported");
+      return NextResponse.json({ error: onlyGroupSkip ? "bazi_group_not_supported" : "all_sciences_need_birthtime", skipped, skippedReasons }, { status: 400 });
+    }
 
     const runningCnt = await q1<{ n: string }>(`SELECT count(*)::text AS n FROM fusion5_jobs WHERE user_id=$1 AND status='running' AND created_at > now() - interval '25 min'`, [userId]);
     if (runningCnt && Number(runningCnt.n) >= 2) return NextResponse.json({ error: "too_many_running" }, { status: 429 });
@@ -626,9 +642,9 @@ export async function POST(req: Request) {
     chargedYam = 0; // job รับช่วงดูแล refund แล้ว (outer catch ไม่ต้องคืนซ้ำ)
 
     // 🔄 detached — ไม่ await · งานวิ่งบน server แม้ client ปิด
-    void processFusion5(job.id, { session, userId, cookie, runSciences, births, profileIds, question, lang, yam, skipped, history, threadId: threadId || job.id, threadProfileId, started: Date.now() });
+    void processFusion5(job.id, { session, userId, cookie, runSciences, births, profileIds, question, lang, yam, skipped, skippedReasons, history, threadId: threadId || job.id, threadProfileId, started: Date.now() });
 
-    return NextResponse.json({ jobId: job.id, status: "running", threadId: threadId || job.id, yam: { charged: yam }, skipped, profileNames: births.map((b) => b.name), pairMode: births.length > 1 });
+    return NextResponse.json({ jobId: job.id, status: "running", threadId: threadId || job.id, yam: { charged: yam }, skipped, skippedReasons, profileNames: births.map((b) => b.name), pairMode: births.length > 1 });
   } catch {
     if (chargedYam > 0 && userId) await refundHoursForUser(userId, chargedYam, FEATURE).catch(() => {});
     return NextResponse.json({ error: "fusion5_error" }, { status: 500 });

@@ -120,10 +120,10 @@ ok("navamsaSynastry ยังแจ้งไม่มีตามจริง", 
 const block2 = renderPairInteractionPacket("vedic", [A, B], new Date("2026-07-01T00:00:00Z"));
 ok("pair packet deterministic", block2 === block);
 
-// ============ 7) เต็มสาย prompt คู่ vedic มี ashtakoota + ไม่เกิน 78K
+// ============ 7) เต็มสาย prompt คู่ vedic มี ashtakoota + ไม่เกิน 118K
 const prompt = buildSciencePrompt("vedic", [A, B], "คู่นี้เข้ากันไหม", "th");
 ok("prompt คู่มี ashtakoota", prompt.includes("ashtakoota"));
-ok("prompt ไม่เกิน 78K", prompt.length <= 78000, `${prompt.length}`);
+ok("prompt ไม่เกิน 118K (cap fusion5 4 ดวง)", prompt.length <= 118000, `${prompt.length}`);
 console.log(`ขนาด prompt คู่ vedic: ${prompt.length}`);
 
 console.log(`\nผล: ${pass} ผ่าน · ${fail} ไม่ผ่าน`);

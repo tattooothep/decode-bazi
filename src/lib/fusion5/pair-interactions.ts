@@ -497,12 +497,39 @@ function qizhengPair(a: PairBirthData, b: PairBirthData) {
   };
 }
 
+function pairPayload(science: ScienceId, a: PairBirthData, b: PairBirthData, refDate: Date): unknown {
+  if (science === "western") return westernPair(a, b, refDate);
+  if (science === "vedic") return vedicPair(a, b, refDate);
+  if (science === "ziwei") return ziweiPair(a, b, refDate);
+  if (science === "qizheng") return qizhengPair(a, b);
+  return null;
+}
+
 export function renderPairInteractionPacket(science: ScienceId, births: PairBirthData[], refDate: Date): string {
-  if (births.length !== 2) return "";
-  const [a, b] = births;
-  if (science === "western") return renderPacketBlock(science, westernPair(a, b, refDate));
-  if (science === "vedic") return renderPacketBlock(science, vedicPair(a, b, refDate));
-  if (science === "ziwei") return renderPacketBlock(science, ziweiPair(a, b, refDate));
-  if (science === "qizheng") return renderPacketBlock(science, qizhengPair(a, b));
-  return "";
+  // 2 ดวง = path เดิม (output คงเดิม byte-identical)
+  if (births.length === 2) {
+    const payload = pairPayload(science, births[0], births[1], refDate);
+    return payload ? renderPacketBlock(science, payload) : "";
+  }
+  if (births.length < 2 || births.length > 4) return "";
+  // กลุ่ม 3-4 ดวง: คำนวณทุกคู่ i<j (3 ดวง=3 คู่ · 4 ดวง=6 คู่) · reuse pair builder เดิมทีละคู่ ไม่แก้สูตร
+  const pairCount = (births.length * (births.length - 1)) / 2;
+  const blocks: string[] = [];
+  for (let i = 0; i < births.length; i++) {
+    for (let j = i + 1; j < births.length; j++) {
+      const payload = pairPayload(science, births[i], births[j], refDate);
+      if (!payload) continue;
+      blocks.push([
+        `--- คู่ ${chartLabel(births[i], i)}×${chartLabel(births[j], j)} (ในคู่นี้ A=${chartLabel(births[i], i)} · B=${chartLabel(births[j], j)}) ---`,
+        JSON.stringify(payload, null, 2),
+      ].join("\n"));
+    }
+  }
+  if (!blocks.length) return "";
+  return [
+    `\n=== PAIR_INTERACTION_PACKET ${science} · CLOSED_LIST · ${pairCount} คู่ (กลุ่ม ${births.length} ดวง) ===`,
+    "รายการข้ามดวงด้านล่างคำนวณจากระบบแล้วเท่านั้น · AI ห้ามสร้างปฏิกิริยาข้ามดวงเพิ่มนอกลิสต์นี้ · อ่านทีละคู่ตามหัว 'คู่ ชื่อ×ชื่อ' และห้ามสลับ A/B ข้ามคู่",
+    ...blocks,
+    "=== END_PAIR_INTERACTION_PACKET ===",
+  ].join("\n");
 }

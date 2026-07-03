@@ -840,6 +840,14 @@
             <label for="profile2" data-i18n="ask.profile2">ดวงที่ 2</label>
             <select id="profile2"></select>
           </div>
+          <div class="field" id="profile3-field" style="display:none">
+            <label for="profile3" data-i18n="ask.profile3">ดวงที่ 3 (ไม่บังคับ)</label>
+            <select id="profile3"></select>
+          </div>
+          <div class="field" id="profile4-field" style="display:none">
+            <label for="profile4" data-i18n="ask.profile4">ดวงที่ 4 (ไม่บังคับ)</label>
+            <select id="profile4"></select>
+          </div>
           <div class="field">
             <label data-i18n="ask.sciences">ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)</label>
             <div class="sci-list" id="sci-list"></div>
@@ -966,7 +974,7 @@
     var state = { account:null, fusionAccess:null, spendHours:0, profiles:[], history:[], historyProfileId:'', threadId:'', pendingQuestion:'', busy:false, ready:false, resuming:false, pollAuthFails:0, progressTimer:null, activeRunId:'', activeJob:null, answerSeq:0, answers:{}, fusionHistory:[], activeHistoryId:'', showHistoryAnswerId:'', compareIds:[],
       mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false }, locale:'th', theme:'dark', result:null, activeTab:'judge' };
     var els = {
-      profile:$('profile'), profile2:$('profile2'), profile2Field:$('profile2-field'), modeSeg:$('mode-seg'), sciList:$('sci-list'),
+      profile:$('profile'), profile2:$('profile2'), profile2Field:$('profile2-field'), profile3:$('profile3'), profile3Field:$('profile3-field'), profile4:$('profile4'), profile4Field:$('profile4-field'), modeSeg:$('mode-seg'), sciList:$('sci-list'),
       yamValue:$('yam-value'), yamBreak:$('yam-break'), result:$('fusion5-result'), themeToggle:$('theme-toggle'),
       lang:$('lang'), question:$('question'), send:$('send'),
       clear:$('clear'), status:$('status'), progress:$('fusion-progress'), chat:$('chat'), meta:$('fusion-meta'), runState:$('run-state'),
@@ -988,15 +996,15 @@
     function sciLabel(s){ var b = DISCIPLINES[s]; return b ? (b[state.locale] || b.th) : s; }
     // ===== i18n =====
     var I18N = {
-      th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','nav.today':'หน้าวันนี้','nav.datepick':'วางฤกษ์','nav.fusion':'Fusion','hero.title':'ดูดวง 5 ศาสตร์','hero.sub':'หลอมรวม 5 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยวหรือดูคู่',
-        'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','result.title':'คำพยากรณ์',
-        'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม','needLogin':'กรุณาเข้าสู่ระบบก่อนใช้ Fusion','needYam':'ยามไม่พอ','readyRun':'พร้อมรัน','runningAsync':'⏳ กำลังอ่านดวงอยู่ (พับจอไว้ได้)','jobTimeout':'หมดเวลาอ่านดวง · ลองรันใหม่อีกครั้ง','jobError':'อ่านดวงไม่สำเร็จ','reconnecting':'📶 เน็ตสะดุด · กำลังต่อกลับไปหางานเดิมอัตโนมัติ ไม่ต้องถามใหม่...','resumeChecking':'กำลังตรวจงานค้าง...','sessionLost':'หลุดจากระบบ · งานยังวิ่งอยู่บน server เข้าสู่ระบบแล้วกลับมาดูได้' },
-      en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single or pair.',
-        'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','result.title':'Reading',
-        'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back' },
-      zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看或合盤。',
-        'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤','ask.profile':'命盤','ask.profile2':'第二命盤','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','result.title':'論斷',
-        'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看' }
+      th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','nav.today':'หน้าวันนี้','nav.datepick':'วางฤกษ์','nav.fusion':'Fusion','hero.title':'ดูดวง 5 ศาสตร์','hero.sub':'หลอมรวม 5 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยว ดูคู่ หรือกลุ่ม 3-4 ดวง',
+        'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่/กลุ่ม','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.profile3':'ดวงที่ 3 (ไม่บังคับ)','ask.profile4':'ดวงที่ 4 (ไม่บังคับ)','ask.notUsed':'— ไม่ใช้ —','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','result.title':'คำพยากรณ์',
+        'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','skipGroup':'ปาจื้อยังไม่รองรับดูกลุ่ม 3-4 ดวง — ตัดออกและไม่คิดยาม (ใช้ได้เดี่ยว/คู่)','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม','needLogin':'กรุณาเข้าสู่ระบบก่อนใช้ Fusion','needYam':'ยามไม่พอ','readyRun':'พร้อมรัน','runningAsync':'⏳ กำลังอ่านดวงอยู่ (พับจอไว้ได้)','jobTimeout':'หมดเวลาอ่านดวง · ลองรันใหม่อีกครั้ง','jobError':'อ่านดวงไม่สำเร็จ','reconnecting':'📶 เน็ตสะดุด · กำลังต่อกลับไปหางานเดิมอัตโนมัติ ไม่ต้องถามใหม่...','resumeChecking':'กำลังตรวจงานค้าง...','sessionLost':'หลุดจากระบบ · งานยังวิ่งอยู่บน server เข้าสู่ระบบแล้วกลับมาดูได้' },
+      en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
+        'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','result.title':'Reading',
+        'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back' },
+      zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
+        'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','result.title':'論斷',
+        'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看' }
     };
     function t(key){ var d = I18N[state.locale] || I18N.th; return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
     function applyI18n(){
@@ -1064,8 +1072,13 @@
       var ids = [];
       var p1 = els.profile && els.profile.value ? els.profile.value : '';
       if (p1) ids.push(p1);
-      if (state.mode === 'pair') { var p2 = els.profile2 && els.profile2.value ? els.profile2.value : ''; if (p2) ids.push(p2); }
-      return ids;
+      if (state.mode === 'pair') {
+        [els.profile2, els.profile3, els.profile4].forEach(function(sel){
+          var v = sel && sel.value ? sel.value : '';
+          if (v && ids.indexOf(v) === -1) ids.push(v); // ไม่ซ้ำ · ดวงที่ 3-4 ว่างได้ (— ไม่ใช้ —)
+        });
+      }
+      return ids.slice(0, 4);
     }
     function conversationScope(ids){
       ids = ids || selectedProfileIds();
@@ -1213,7 +1226,10 @@
       if (els.modeSeg) Array.prototype.forEach.call(els.modeSeg.querySelectorAll('.seg-btn'), function(b){
         b.classList.toggle('active', b.getAttribute('data-mode') === state.mode);
       });
-      if (els.profile2Field) els.profile2Field.style.display = state.mode === 'pair' ? '' : 'none';
+      var pairDisplay = state.mode === 'pair' ? '' : 'none';
+      if (els.profile2Field) els.profile2Field.style.display = pairDisplay;
+      if (els.profile3Field) els.profile3Field.style.display = pairDisplay;
+      if (els.profile4Field) els.profile4Field.style.display = pairDisplay;
       renderSciList(); updateYam();
     }
     function modelShortName(model){
@@ -1506,7 +1522,11 @@
           esc(x.label) + (x.ai ? ' <span class="tab-ai">· ' + esc(x.ai) + '</span>' : '') + (x.ok ? '' : ' ✕') + '</button>';
       }).join('');
       var skip = Array.isArray(f.skipped) ? f.skipped : [];
-      var skipHtml = skip.length ? '<div class="skip-note">' + esc(t('skipPrefix') + ' ' + skip.map(sciLabel).join(', ')) + '</div>' : '';
+      var skipReasons = (f.skippedReasons && typeof f.skippedReasons === 'object') ? f.skippedReasons : {};
+      var groupSkip = skip.filter(function(s){ return skipReasons[s] === 'bazi_group_not_supported'; });
+      var timeSkip = skip.filter(function(s){ return skipReasons[s] !== 'bazi_group_not_supported'; });
+      var skipHtml = (timeSkip.length ? '<div class="skip-note">' + esc(t('skipPrefix') + ' ' + timeSkip.map(sciLabel).join(', ')) + '</div>' : '')
+        + (groupSkip.length ? '<div class="skip-note">' + esc(t('skipGroup')) + '</div>' : '');
       els.result.innerHTML = '<div class="result-tabs">' + bar + '</div><div class="result-content" id="rc-body"></div>' + skipHtml;
       renderTabBody(data);
     }
@@ -1833,9 +1853,14 @@
       var base = (p.nickname || p.name || 'profile');
       return base + ' · 日主 ' + (p.day_master || '-') + (p.birth_time_known === false ? ' · ⏰?' : '');
     }
-    function fillProfileSelect(sel, selectedId, skipId){
+    function fillProfileSelect(sel, selectedId, skipId, withEmptyOption){
       if (!sel) return;
       sel.innerHTML = '';
+      if (withEmptyOption) {
+        var none = document.createElement('option');
+        none.value = ''; none.textContent = t('ask.notUsed');
+        sel.appendChild(none);
+      }
       state.profiles.forEach(function(p){
         if (skipId && String(p.id) === String(skipId)) return;
         var opt = document.createElement('option');
@@ -1843,6 +1868,7 @@
         sel.appendChild(opt);
       });
       if (selectedId && sel.querySelector('option[value="' + selectedId + '"]')) sel.value = String(selectedId);
+      else if (withEmptyOption) sel.value = '';
     }
     async function loadProfiles(){
       var r = await fetch('/api/profile', { credentials:'same-origin', cache:'no-store' });
@@ -1852,6 +1878,8 @@
       if (!state.profiles.length) {
         els.profile.innerHTML = '<option value="">ไม่มี profile</option>';
         if (els.profile2) els.profile2.innerHTML = '<option value="">-</option>';
+        if (els.profile3) els.profile3.innerHTML = '<option value="">-</option>';
+        if (els.profile4) els.profile4.innerHTML = '<option value="">-</option>';
         renderSciList(); updateYam();
         return;
       }
@@ -1861,6 +1889,8 @@
       fillProfileSelect(els.profile, active);
       var second = state.profiles.find(function(p){ return String(p.id) !== String(els.profile.value); });
       fillProfileSelect(els.profile2, second ? second.id : '', els.profile.value);
+      fillProfileSelect(els.profile3, '', '', true);
+      fillProfileSelect(els.profile4, '', '', true);
       loadConversationForSelection();
       renderThreadNote();
       renderSciList(); updateYam();
@@ -1889,16 +1919,20 @@
     }
     function clearDraft(){ try { localStorage.removeItem(FUSION_DRAFT_KEY); } catch(_){} }
     function applyProfileSelection(ids){
-      ids = Array.isArray(ids) ? ids.filter(Boolean).map(String).slice(0, 2) : [];
+      ids = Array.isArray(ids) ? ids.filter(Boolean).map(String).slice(0, 4) : [];
       if (!ids.length || !els.profile) return;
       if (ids[0] && els.profile.querySelector('option[value="' + ids[0] + '"]')) els.profile.value = ids[0];
       if (ids.length > 1) {
         setMode('pair');
         fillProfileSelect(els.profile2, ids[1], ids[0]);
+        fillProfileSelect(els.profile3, ids[2] || '', '', true);
+        fillProfileSelect(els.profile4, ids[3] || '', '', true);
       } else {
         setMode('single');
         var second = state.profiles.find(function(p){ return String(p.id) !== String(els.profile.value); });
         fillProfileSelect(els.profile2, second ? second.id : '', els.profile.value);
+        fillProfileSelect(els.profile3, '', '', true);
+        fillProfileSelect(els.profile4, '', '', true);
       }
       renderSciList();
       updateYam();
@@ -2035,6 +2069,7 @@
         insufficient_hours:t('needYam'),
         not_logged_in:t('needLogin'),
         job_not_found:t('jobError'),
+        bazi_group_not_supported:t('skipGroup'),
         server_restart_orphan:(state.locale==='th'?'server restart ระหว่างอ่านดวง · คืนยามแล้ว กรุณารันใหม่':'server restarted during reading · yam refunded, please run again'),
         server_restart_orphan_refunded:(state.locale==='th'?'server restart ระหว่างอ่านดวง · คืนยามแล้ว กรุณารันใหม่':'server restarted during reading · yam refunded, please run again')
       };
@@ -2307,7 +2342,9 @@
       setStatus(state.locale==='th'?'เปลี่ยนดวงแล้ว':'chart changed');
       loadFusionHistory();
     });
-    if (els.profile2) els.profile2.addEventListener('change', function(){ loadConversationForSelection(); renderThreadNote(); renderSciList(); updateYam(); saveDraft(); });
+    [els.profile2, els.profile3, els.profile4].forEach(function(sel){
+      if (sel) sel.addEventListener('change', function(){ loadConversationForSelection(); renderThreadNote(); renderSciList(); updateYam(); saveDraft(); });
+    });
     if (els.modeSeg) els.modeSeg.addEventListener('click', function(e){
       var b = e.target && e.target.closest ? e.target.closest('.seg-btn') : null;
       if (b) { setMode(b.getAttribute('data-mode')); loadConversationForSelection(); renderThreadNote(); saveDraft(); }
@@ -2358,6 +2395,10 @@
       state.locale = ['th','en','zh'].indexOf(els.lang.value) !== -1 ? els.lang.value : 'th';
       try { localStorage.setItem('hk_locale', state.locale); } catch(_){}
       applyI18n();
+      [els.profile3, els.profile4].forEach(function(sel){
+        var o = sel && sel.options && sel.options[0];
+        if (o && o.value === '') o.textContent = t('ask.notUsed'); // อัปเดตป้าย "— ไม่ใช้ —" ตามภาษา
+      });
       renderSciList();
       updateYam();
       saveDraft();

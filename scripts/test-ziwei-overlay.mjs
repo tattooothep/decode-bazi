@@ -78,7 +78,7 @@ const rendered = renderZiweiPrompt(packet);
 ok("render มี OVERLAY + 疊宮 + 大限ปัจจุบัน", rendered.includes("【OVERLAY ปี 2026】") && rendered.includes("疊宮") && rendered.includes("大限ปัจจุบัน"));
 const prompt = buildSciencePrompt("ziwei", [{ name: "เทส", dtUTC: birth.dtUTC, lat: birth.lat, lng: birth.lng, hasTime: true, gender: "M" }], "การงานปี 2026 เป็นยังไง", "th");
 ok("เต็มสาย prompt มี OVERLAY", prompt.includes("【OVERLAY ปี 2026】"));
-ok("prompt ไม่เกิน 78K", prompt.length <= 78000, `${prompt.length}`);
+ok("prompt ไม่เกิน 118K (cap fusion5 4 ดวง)", prompt.length <= 118000, `${prompt.length}`);
 console.log(`ขนาด prompt: ${prompt.length}`);
 
 // 8) no-time → overlay null + ธง notAvailable

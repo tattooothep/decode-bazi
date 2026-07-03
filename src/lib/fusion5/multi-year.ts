@@ -91,12 +91,15 @@ export function renderMultiYearBlock(science: ScienceId, b: FusionBirthLike, sta
   return L.join("\n");
 }
 
-/** ① PAIR_TIMING: ปฏิทินร่วมของคู่ในปีเป้าหมาย — เดือนไหนใครหนัก เดือนไหนชนกันทั้งคู่ */
+/** ① PAIR_TIMING: ปฏิทินร่วมของคู่/กลุ่ม (2-4 ดวง) ในปีเป้าหมาย — เดือนไหนใครหนัก เดือนไหนชนกันหลายคน */
 export function renderPairTimingBlock(science: ScienceId, births: FusionBirthLike[], targetYear: number): string {
   if (births.length < 2) return "";
+  const group = births.length > 2;
   const L: string[] = [];
-  L.push(`=== PAIR_TIMING_PACKET ปี ${targetYear} (จังหวะเวลาของทั้งคู่ · คำนวณจริง · เวลาไทย) ===`);
-  L.push("ใช้ตอบ 'ช่วงไหนเหมาะ/ไม่เหมาะสำหรับทั้งคู่' · เดือนที่ทั้งสองมีแรงกด = ช่วงต้องเลี่ยงเรื่องใหญ่ร่วมกัน · ห้ามเดาเดือนนอกรายการ");
+  L.push(`=== PAIR_TIMING_PACKET ปี ${targetYear} (จังหวะเวลาของ${group ? `ทั้งกลุ่ม ${births.length} ดวง` : "ทั้งคู่"} · คำนวณจริง · เวลาไทย) ===`);
+  L.push(group
+    ? `ใช้ตอบ 'ช่วงไหนเหมาะ/ไม่เหมาะสำหรับทั้งกลุ่ม' · เดือนที่มีแรงกดพร้อมกัน ≥2 คน = ช่วงต้องเลี่ยงเรื่องใหญ่ร่วมกัน · ห้ามเดาเดือนนอกรายการ`
+    : "ใช้ตอบ 'ช่วงไหนเหมาะ/ไม่เหมาะสำหรับทั้งคู่' · เดือนที่ทั้งสองมีแรงกด = ช่วงต้องเลี่ยงเรื่องใหญ่ร่วมกัน · ห้ามเดาเดือนนอกรายการ");
   try {
     const monthEvents: Record<string, string[]>[] = births.map(() => ({}));
     births.forEach((b, i) => {
@@ -126,13 +129,19 @@ export function renderPairTimingBlock(science: ScienceId, births: FusionBirthLik
       }
     });
     const nameOf = (i: number) => births[i].name || `คนที่${i + 1}`;
+    // กลุ่ม >2 ดวง: จำกัด 2 เหตุการณ์/คน/เดือน คุมงบ prompt · 2 ดวงคง 3 เหตุการณ์เดิม (output เดิมไม่เปลี่ยน)
+    const perPersonCap = group ? 2 : 3;
     for (let m = 1; m <= 12; m++) {
-      const a = monthEvents[0][String(m)] || [], c = monthEvents[1][String(m)] || [];
-      if (!a.length && !c.length) continue;
-      const both = a.length && c.length ? " ★ชนกันทั้งคู่" : "";
-      L.push(`  เดือน ${m}${both}: ${a.length ? `${nameOf(0)}: ${a.slice(0, 3).join(", ")}` : ""}${a.length && c.length ? " · " : ""}${c.length ? `${nameOf(1)}: ${c.slice(0, 3).join(", ")}` : ""}`);
+      const lists = births.map((_, i) => monthEvents[i][String(m)] || []);
+      const activeCount = lists.filter((x) => x.length).length;
+      if (!activeCount) continue;
+      const clash = activeCount >= 2 ? (group ? ` ★ชนกัน ${activeCount} คน` : " ★ชนกันทั้งคู่") : "";
+      const parts = lists
+        .map((x, i) => (x.length ? `${nameOf(i)}: ${x.slice(0, perPersonCap).join(", ")}` : ""))
+        .filter(Boolean);
+      L.push(`  เดือน ${m}${clash}: ${parts.join(" · ")}`);
     }
-    if (L.length === 2) L.push("  (ปีนี้ไม่มีเหตุการณ์เด่นของทั้งคู่ในศาสตร์นี้ — อ่านจากพื้นดวงคู่เป็นหลัก)");
+    if (L.length === 2) L.push(`  (ปีนี้ไม่มีเหตุการณ์เด่นของ${group ? "ทั้งกลุ่ม" : "ทั้งคู่"}ในศาสตร์นี้ — อ่านจากพื้นดวง${group ? "ร่วม" : "คู่"}เป็นหลัก)`);
   } catch {
     L.push("  (คำนวณ pair timing ไม่สำเร็จ — ใช้ TIMING_TIMELINE รายคนแทน)");
   }

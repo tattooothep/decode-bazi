@@ -106,7 +106,7 @@ const rendered = renderVedicPrompt(packet);
 ok("render มี TIMING_TIMELINE + Sade Sati + Varshaphala", rendered.includes("TIMING_TIMELINE ปี 2026") && rendered.includes("[Sade Sati]") && rendered.includes("[Varshaphala 2026]"));
 const prompt = buildSciencePrompt("vedic", [{ name: "เทส", dtUTC: birth.dtUTC, lat: birth.lat, lng: birth.lng, hasTime: true, gender: "M" }], "การเงินปี 2026 เดือนไหนดีสุด", "th");
 ok("เต็มสาย prompt มี TIMING_TIMELINE", prompt.includes("TIMING_TIMELINE ปี 2026"));
-ok("prompt ไม่เกิน 78K", prompt.length <= 78000, `${prompt.length}`);
+ok("prompt ไม่เกิน 118K (cap fusion5 4 ดวง)", prompt.length <= 118000, `${prompt.length}`);
 console.log(`ขนาด prompt: ${prompt.length}`);
 
 // 9) no-time: ทศายังคำนวณ (reference-only) + varshaphala ติดธง

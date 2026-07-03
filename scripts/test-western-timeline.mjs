@@ -75,7 +75,7 @@ const t1 = Date.now();
 const prompt = buildSciencePrompt("western", [{ name: "ป๊า", dtUTC: birth.dtUTC, lat: birth.lat, lng: birth.lng, hasTime: true, gender: "M" }], "สุขภาพปี 2026 ต้องระวังเดือนไหนบ้าง", "th");
 console.log(`เวลา buildSciencePrompt: ${Date.now() - t1}ms · ขนาด prompt: ${prompt.length} chars`);
 ok("prompt มี TIMING_TIMELINE ปี 2026", prompt.includes("TIMING_TIMELINE ปี 2026"));
-ok("prompt ไม่เกิน 78K", prompt.length <= 78000, `${prompt.length}`);
+ok("prompt ไม่เกิน 118K (cap fusion5 4 ดวง)", prompt.length <= 118000, `${prompt.length}`);
 
 // 7) no-time: profection ปิด + SR ติดธง + ไม่มี Asc target
 const chartNT = westernChart(birth.dtUTC, birth.lat, birth.lng, false, "M", new Date("2026-07-01T00:00:00Z"));

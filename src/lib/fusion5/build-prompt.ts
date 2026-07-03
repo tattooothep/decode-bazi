@@ -42,7 +42,8 @@ export type FusionTimingReference = {
 const CANON_DIR = join(process.cwd(), "data/library/astro-canon");
 export const CANON_TEXT_MAX_CHARS = 56_000;
 export const CANON_TEXT_MIN_CHARS = 4_000;
-export const FUSION_PANEL_PROMPT_MAX_CHARS = 78_000;
+// 118K รองรับ 4 ดวง (ผัง×4 + pair packet 6 คู่) · ต้อง < SIFU_FUSION_INTERNAL_MESSAGE_MAX_CHARS (120000) ฝั่ง /api/sifu
+export const FUSION_PANEL_PROMPT_MAX_CHARS = 118_000;
 export const JUDGE_PANEL_REPLY_MAX_CHARS = 8_000;
 
 type CanonMode = "verbatim" | "summary";
@@ -2450,7 +2451,7 @@ function answerFormatLine(births: BirthData[], judge = false): string {
   ].join("\n");
 }
 
-/** prompt 1 panel ศาสตร์ (รองรับ 1-2 ดวง) */
+/** prompt 1 panel ศาสตร์ (รองรับ 1-4 ดวง · ≥2 ดวง = ดูคู่/กลุ่ม พร้อม pair packet ทุกคู่ i<j) */
 export function buildSciencePrompt(
   science: ScienceId,
   births: BirthData[],

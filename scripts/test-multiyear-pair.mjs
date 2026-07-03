@@ -36,13 +36,13 @@ ok("ดวงเดียวไม่มี pair block", renderPairTimingBlock("
 // 4) เต็มสาย: คำถามช่วงปี → prompt มี MULTI_YEAR · คู่ → มี PAIR_TIMING · ไม่เกิน cap
 const pRange = buildSciencePrompt("western", [A], "การเงินช่วง 2016-2026 ปีไหนดีสุด", "th");
 ok("prompt เดี่ยว+ช่วงปี มี MULTI_YEAR", pRange.includes("MULTI_YEAR_TIMELINE 2016-2026"));
-ok("prompt เดี่ยวไม่เกิน 78K", pRange.length <= 78000, `${pRange.length}`);
+ok("prompt เดี่ยวไม่เกิน 118K", pRange.length <= 118000, `${pRange.length}`);
 const pPair = buildSciencePrompt("vedic", [A, B], "ปี 2026 คู่นี้ควรแต่งงานเดือนไหน", "th");
 ok("prompt คู่ มี PAIR_TIMING", pPair.includes("PAIR_TIMING_PACKET ปี 2026"));
-ok("prompt คู่ไม่เกิน 78K", pPair.length <= 78000, `${pPair.length}`);
+ok("prompt คู่ไม่เกิน 118K", pPair.length <= 118000, `${pPair.length}`);
 const pBoth = buildSciencePrompt("qizheng", [A, B], "2022-2026 คู่นี้เป็นไง", "th");
 ok("prompt คู่+ช่วงปี มีทั้งสอง block", pBoth.includes("MULTI_YEAR_TIMELINE") && pBoth.includes("PAIR_TIMING_PACKET"));
-ok("prompt คู่+ช่วงปีไม่เกิน 78K", pBoth.length <= 78000, `${pBoth.length}`);
+ok("prompt คู่+ช่วงปีไม่เกิน 118K", pBoth.length <= 118000, `${pBoth.length}`);
 
 // 5) no-time ไม่พัง
 const NT = { ...A, hasTime: false };
