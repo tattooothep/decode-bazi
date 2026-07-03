@@ -31,6 +31,7 @@ import { qizhengNatal } from "../astro/qizheng/engine";
 import { buildQizhengTimeline, type QizhengTimeline } from "../astro/qizheng/timeline";
 import type { ScienceId } from "./disciplines";
 import type { FusionBirthLike } from "./multi-year";
+import type { DaySniperResult } from "./day-sniper"; // r373 · type-only (ไม่มี runtime cycle — day-sniper import ค่าจากไฟล์นี้ทางเดียว)
 
 /** r370: ดวงที่ส่งเข้าชั้น resonance — เพิ่ม field จาก DB (route loadBirth ส่งมาอยู่แล้ว · optional = ผู้เรียกเก่าไม่พัง) */
 export type ResonanceBirth = FusionBirthLike & { yongshen?: unknown; baziPillars?: unknown };
@@ -122,6 +123,7 @@ export type FusionResonance = {
   sciences: ResonanceScience[];
   perPerson: PersonResonance[];
   r4Pairs?: R4Pair[];              // r370 additive · มีเมื่อ births ≥2
+  daySniper?: DaySniperResult | null; // r373 additive · "วันลั่นไก" ระดับวัน (route เติมหลัง buildResonance · jsonb เดิมอ่านได้)
   summaryTh: string;
   notes: string[];
   computeMs: number;

@@ -231,6 +231,17 @@
     .res-sec{font-family:var(--mono);font-size:10px;color:var(--gold);text-transform:uppercase;margin:10px 0 4px}
     .res-cf td{color:var(--warn)}
     [data-theme="light"] .res-card{background:rgba(159,121,46,.05)}
+    /* ===== r373 · 🎯 Day Sniper card (วันลั่นไก · ใช้ CSS vars เดิม · เข้าได้ 2 ธีม) ===== */
+    #sniper-card.hidden{display:none}
+    .snp-strip{position:relative;height:38px;border:1px solid var(--line);border-radius:6px;background:rgba(210,176,94,.04);margin:8px 0 4px;overflow:hidden}
+    .snp-dot{position:absolute;top:7px;width:10px;height:10px;border-radius:50%;transform:translateX(-50%);cursor:default}
+    .snp-dot.red{background:#c0533f;box-shadow:0 0 5px rgba(192,83,63,.7)}
+    .snp-dot.yellow{background:#b07e1f}
+    .snp-dot.green{background:#3f8f57}
+    .snp-tick{position:absolute;bottom:0;top:0;border-left:1px dashed var(--line);transform:translateX(-1px)}
+    .snp-tick span{position:absolute;bottom:1px;left:3px;font-family:var(--mono);font-size:9px;color:var(--faint);white-space:nowrap}
+    .snp-legend{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+    .snp-flag{font-family:var(--mono);white-space:nowrap}
     /* ===== Light theme (Executive gold · ◐ topbar) ===== */
     [data-theme="light"]{
       --bg:#f6f1e6;--panel:#fffdf8;--panel-2:#f1e9d8;
@@ -906,6 +917,7 @@
         </div>
         <div class="panel-body">
           <div id="resonance-card" class="hidden"></div>
+          <div id="sniper-card" class="hidden"></div>
           <div id="fusion5-result"></div>
           <div class="chat" id="chat"></div>
           <div id="fusion-meta"></div>
@@ -995,7 +1007,7 @@
       mode:'single', sci:{ bazi:true, qizheng:true, ziwei:false, western:false, vedic:false }, locale:'th', theme:'dark', result:null, activeTab:'judge', resonance:null };
     var els = {
       profile:$('profile'), profile2:$('profile2'), profile2Field:$('profile2-field'), profile3:$('profile3'), profile3Field:$('profile3-field'), profile4:$('profile4'), profile4Field:$('profile4-field'), modeSeg:$('mode-seg'), sciList:$('sci-list'),
-      yamValue:$('yam-value'), yamBreak:$('yam-break'), result:$('fusion5-result'), resonance:$('resonance-card'), themeToggle:$('theme-toggle'),
+      yamValue:$('yam-value'), yamBreak:$('yam-break'), result:$('fusion5-result'), resonance:$('resonance-card'), sniper:$('sniper-card'), themeToggle:$('theme-toggle'),
       lang:$('lang'), question:$('question'), send:$('send'),
       clear:$('clear'), status:$('status'), progress:$('fusion-progress'), chat:$('chat'), meta:$('fusion-meta'), runState:$('run-state'),
       tier:$('tier-badge'), balance:$('balance-badge'), gate:$('gate-badge'),
@@ -1020,17 +1032,20 @@
         'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่/กลุ่ม','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.profile3':'ดวงที่ 3 (ไม่บังคับ)','ask.profile4':'ดวงที่ 4 (ไม่บังคับ)','ask.notUsed':'— ไม่ใช้ —','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','result.title':'คำพยากรณ์',
         'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','skipGroup':'ปาจื้อยังไม่รองรับดูกลุ่ม 3-4 ดวง — ตัดออกและไม่คิดยาม (ใช้ได้เดี่ยว/คู่)','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม','needLogin':'กรุณาเข้าสู่ระบบก่อนใช้ Fusion','needYam':'ยามไม่พอ','readyRun':'พร้อมรัน','runningAsync':'⏳ กำลังอ่านดวงอยู่ (พับจอไว้ได้)','jobTimeout':'หมดเวลาอ่านดวง · ลองรันใหม่อีกครั้ง','jobError':'อ่านดวงไม่สำเร็จ','reconnecting':'📶 เน็ตสะดุด · กำลังต่อกลับไปหางานเดิมอัตโนมัติ ไม่ต้องถามใหม่...','resumeChecking':'กำลังตรวจงานค้าง...','sessionLost':'หลุดจากระบบ · งานยังวิ่งอยู่บน server เข้าสู่ระบบแล้วกลับมาดูได้',
         'res.title':'🔗 เสียงสะท้อนข้ามศาสตร์','res.r1':'ธีมปีตรงกัน','res.r2':'ดาวเดียวกันชนหลายศาสตร์','res.r3':'คราส/ราหูเกตุ','res.conflict':'มุมมองต่าง','res.detail':'ดูรายละเอียด + หลักฐาน','res.theme':'ธีม','res.sci':'ศาสตร์','res.evidence':'หลักฐาน (คำนวณจริง)','res.month':'เดือน','res.planet':'ดาว','res.good':'ฝั่งเห็นดี','res.bad':'ฝั่งเห็นแรงกด',
-        'res.r4':'ดวงคู่','res.r5':'สะพานธาตุ','res.r6':'ปีชง','res.pair':'คู่','res.dim':'มิติ','res.res':'สะท้อน','res.need':'ธาตุที่ต้องการ','res.system':'ระบบ','res.rationale':'เหตุผล (คำนวณจริง)','res.dates':'วันที่','res.voice':'เสียงบอกปีหนัก','res.heavy':'หนัก','res.notHeavy':'ไม่หนัก','res.nodata':'ไม่มีข้อมูล','res.v.good':'ดี','res.v.mid':'กลาง','res.v.tense':'ตึง','res.e.support':'หนุน','res.e.cut':'ตัด','res.e.mid':'กลาง','res.dim.mind':'อารมณ์-จิตใจ','res.dim.comm':'การสื่อสาร','res.dim.attract':'เสน่หา','res.dim.stable':'เสถียรภาพระยะยาว' },
+        'res.r4':'ดวงคู่','res.r5':'สะพานธาตุ','res.r6':'ปีชง','res.pair':'คู่','res.dim':'มิติ','res.res':'สะท้อน','res.need':'ธาตุที่ต้องการ','res.system':'ระบบ','res.rationale':'เหตุผล (คำนวณจริง)','res.dates':'วันที่','res.voice':'เสียงบอกปีหนัก','res.heavy':'หนัก','res.notHeavy':'ไม่หนัก','res.nodata':'ไม่มีข้อมูล','res.v.good':'ดี','res.v.mid':'กลาง','res.v.tense':'ตึง','res.e.support':'หนุน','res.e.cut':'ตัด','res.e.mid':'กลาง','res.dim.mind':'อารมณ์-จิตใจ','res.dim.comm':'การสื่อสาร','res.dim.attract':'เสน่หา','res.dim.stable':'เสถียรภาพระยะยาว',
+        'ds.title':'🎯 วันลั่นไก','ds.topic':'หัวข้อ','ds.range':'ช่วงสแกน','ds.detail':'ดูตารางหลักฐานรายวัน','ds.date':'วันที่','ds.flag':'ธง','ds.needles':'เข็มอิสระ','ds.evA':'A 流日 (60 วัน)','ds.evB':'B จันทร์จริง','ds.evC':'C ดาวช้า','ds.ctx':'บริบท','ds.none':'ไม่มีวันที่เข็ม ≥2 ในช่วงนี้','ds.legend':'🔴 เข็มอิสระ ≥2 ชี้วันเดียวกัน · 🟡 สัญญาณแรงเดี่ยว · 🟢 วันโอกาส (合+จันทร์มุมดี)','ds.days':'วัน','ds.dropped':'แสดงเฉพาะวันอันดับต้นตาม rank' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
         'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','result.title':'Reading',
         'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back',
         'res.title':'🔗 Cross-science resonance','res.r1':'Year-theme match','res.r2':'Same planet, multi-system','res.r3':'Eclipse / nodes','res.conflict':'Diverging view','res.detail':'Details + evidence','res.theme':'Theme','res.sci':'Sciences','res.evidence':'Evidence (computed)','res.month':'Month','res.planet':'Planet','res.good':'Sees support','res.bad':'Sees pressure',
-        'res.r4':'Pair resonance','res.r5':'Element bridge','res.r6':'Clash year','res.pair':'Pair','res.dim':'Dimension','res.res':'Resonates','res.need':'Needed element','res.system':'System','res.rationale':'Rationale (computed)','res.dates':'Dates','res.voice':'systems call it heavy','res.heavy':'Heavy','res.notHeavy':'Not heavy','res.nodata':'No data','res.v.good':'Good','res.v.mid':'Neutral','res.v.tense':'Tense','res.e.support':'Supported','res.e.cut':'Cut','res.e.mid':'Neutral','res.dim.mind':'Emotional bond','res.dim.comm':'Communication','res.dim.attract':'Attraction','res.dim.stable':'Long-term stability' },
+        'res.r4':'Pair resonance','res.r5':'Element bridge','res.r6':'Clash year','res.pair':'Pair','res.dim':'Dimension','res.res':'Resonates','res.need':'Needed element','res.system':'System','res.rationale':'Rationale (computed)','res.dates':'Dates','res.voice':'systems call it heavy','res.heavy':'Heavy','res.notHeavy':'Not heavy','res.nodata':'No data','res.v.good':'Good','res.v.mid':'Neutral','res.v.tense':'Tense','res.e.support':'Supported','res.e.cut':'Cut','res.e.mid':'Neutral','res.dim.mind':'Emotional bond','res.dim.comm':'Communication','res.dim.attract':'Attraction','res.dim.stable':'Long-term stability',
+        'ds.title':'🎯 Trigger days','ds.topic':'Topic','ds.range':'Scan range','ds.detail':'Day-by-day evidence table','ds.date':'Date','ds.flag':'Flag','ds.needles':'Independent clocks','ds.evA':'A day-ganzhi (60-day)','ds.evB':'B real Moon','ds.evC':'C slow planets','ds.ctx':'Context','ds.none':'No multi-clock day in this range','ds.legend':'🔴 ≥2 independent clocks strike same day · 🟡 single strong signal · 🟢 opportunity day','ds.days':'days','ds.dropped':'top-ranked days only' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
         'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','result.title':'論斷',
         'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看',
         'res.title':'🔗 跨術共振','res.r1':'流年宮位相符','res.r2':'同星多術同月','res.r3':'日月食/羅計','res.conflict':'觀點分歧','res.detail':'詳情＋證據','res.theme':'主題','res.sci':'術數','res.evidence':'證據（實算）','res.month':'月','res.planet':'星','res.good':'看吉','res.bad':'看壓',
-        'res.r4':'合盤共振','res.r5':'五行橋','res.r6':'沖太歲','res.pair':'配對','res.dim':'維度','res.res':'共振','res.need':'所需五行','res.system':'系統','res.rationale':'理由（實算）','res.dates':'日期','res.voice':'系統判為重','res.heavy':'重','res.notHeavy':'不重','res.nodata':'無資料','res.v.good':'吉','res.v.mid':'中','res.v.tense':'緊','res.e.support':'受扶','res.e.cut':'受剋','res.e.mid':'中','res.dim.mind':'情感·心','res.dim.comm':'溝通','res.dim.attract':'情慾·吸引','res.dim.stable':'長期穩定' }
+        'res.r4':'合盤共振','res.r5':'五行橋','res.r6':'沖太歲','res.pair':'配對','res.dim':'維度','res.res':'共振','res.need':'所需五行','res.system':'系統','res.rationale':'理由（實算）','res.dates':'日期','res.voice':'系統判為重','res.heavy':'重','res.notHeavy':'不重','res.nodata':'無資料','res.v.good':'吉','res.v.mid':'中','res.v.tense':'緊','res.e.support':'受扶','res.e.cut':'受剋','res.e.mid':'中','res.dim.mind':'情感·心','res.dim.comm':'溝通','res.dim.attract':'情慾·吸引','res.dim.stable':'長期穩定',
+        'ds.title':'🎯 觸發日','ds.topic':'主題','ds.range':'掃描區間','ds.detail':'逐日證據表','ds.date':'日期','ds.flag':'旗','ds.needles':'獨立時鐘','ds.evA':'A 流日（六十甲子）','ds.evB':'B 真月亮','ds.evC':'C 慢星','ds.ctx':'脈絡','ds.none':'區間內無雙鐘同指之日','ds.legend':'🔴 兩個以上獨立時鐘同日 · 🟡 單一強訊號 · 🟢 機會日','ds.days':'日','ds.dropped':'僅列排名前段日' }
     };
     function t(key){ var d = I18N[state.locale] || I18N.th; return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
     function applyI18n(){
@@ -1642,9 +1657,75 @@
         '</div>';
       }).join('');
     }
+    // ===== r373 · 🎯 วันลั่นไก (DAY_SNIPER จาก engine deterministic · escape ทุก string กัน XSS) =====
+    var SNP_FLAG = { red:'🔴', yellow:'🟡', green:'🟢' };
+    function sniperHasContent(ds){
+      return !!(ds && Array.isArray(ds.perPerson) && ds.perPerson.some(function(p){ return p && (p.skippedNote || (Array.isArray(p.days) && p.days.length)); }));
+    }
+    function sniperStripHtml(ds, days){
+      var t0 = Date.parse(ds.fromISO + 'T00:00:00Z'), t1 = Date.parse(ds.toISO + 'T00:00:00Z');
+      var total = Math.max(1, (t1 - t0) / 86400000);
+      var ticks = '';
+      // เส้นแบ่งเดือน + ป้ายเดือน (เดินทีละเดือนจากวันที่ 1 ถัดจาก from)
+      var d = new Date(t0); d.setUTCDate(1);
+      for (;;){
+        d.setUTCMonth(d.getUTCMonth() + 1);
+        var ms = d.getTime();
+        if (ms >= t1) break;
+        var pct = ((ms - t0) / 86400000) / total * 100;
+        ticks += '<span class="snp-tick" style="left:' + pct.toFixed(2) + '%"><span>' + esc(String(d.getUTCMonth() + 1) + '/' + d.getUTCFullYear()) + '</span></span>';
+      }
+      var dots = (days || []).map(function(day){
+        var ms = Date.parse(day.dateISO + 'T00:00:00Z');
+        if (!isFinite(ms)) return '';
+        var pct = Math.min(100, Math.max(0, ((ms - t0) / 86400000) / total * 100));
+        return '<span class="snp-dot ' + esc(day.flag) + '" style="left:' + pct.toFixed(2) + '%" title="' + esc(day.dateISO + ' ' + (SNP_FLAG[day.flag] || '') + ' ' + day.ganzhi) + '"></span>';
+      }).join('');
+      return '<div class="snp-strip">' + ticks + dots + '</div>';
+    }
+    function sniperPersonHtml(ds, p, multi){
+      var pname = multi ? '<div class="res-pname">' + esc(p.name || '') + '</div>' : '';
+      if (p.skippedNote) return '<div class="res-person">' + pname + '<div class="res-skip">' + esc(p.skippedNote) + '</div></div>';
+      var chips = [
+        '<span class="res-chip' + (p.totals.red ? ' warn' : '') + '">🔴 × ' + (p.totals.red || 0) + '</span>',
+        '<span class="res-chip">🟡 × ' + (p.totals.yellow || 0) + '</span>',
+        '<span class="res-chip' + (p.totals.green ? ' on' : '') + '">🟢 × ' + (p.totals.green || 0) + '</span>',
+        '<span class="res-chip">' + esc(String(p.scannedDays || 0)) + ' ' + esc(t('ds.days')) + '</span>'
+      ];
+      var days = Array.isArray(p.days) ? p.days : [];
+      if (!days.length) return '<div class="res-person">' + pname + '<div class="res-chips">' + chips.join('') + '</div><div class="res-skip">' + esc(t('ds.none')) + '</div></div>';
+      var evTd = function(list, key){
+        return (Array.isArray(list) ? list : []).slice(0, 3).map(function(x){ return esc(x[key] || ''); }).join('<br>') || '—';
+      };
+      var rows = days.map(function(day){
+        var aList = (Array.isArray(day.a) ? day.a : []).filter(function(r){ return r.strength !== 'context'; });
+        return '<tr' + (day.flag === 'red' ? ' class="res-cf"' : '') + '><td class="snp-flag">' + esc(day.dateISO) + '<br>' + SNP_FLAG[day.flag] + ' ' + esc(day.ganzhi) + '</td>' +
+          '<td>' + esc((day.needles || []).join('+')) + '</td>' +
+          '<td>' + evTd(aList, 'detail') + '</td>' +
+          '<td>' + evTd(day.b, 'detail') + '</td>' +
+          '<td>' + evTd(day.c, 'detail') + ((day.context || []).length ? '<br><small>' + esc(day.context.join(' · ')) + '</small>' : '') + '</td></tr>';
+      });
+      return '<div class="res-person">' + pname +
+        '<div class="res-chips">' + chips.join('') + '</div>' +
+        sniperStripHtml(ds, days) +
+        '<div class="snp-legend">' + esc(t('ds.legend')) + (p.droppedCount ? ' · ' + esc(t('ds.dropped')) : '') + '</div>' +
+        '<details class="res-details"><summary>' + esc(t('ds.detail')) + '</summary>' +
+        '<div class="md-tw"><table class="md-t"><thead><tr><th>' + esc(t('ds.date')) + '</th><th>' + esc(t('ds.needles')) + '</th><th>' + esc(t('ds.evA')) + '</th><th>' + esc(t('ds.evB')) + '</th><th>' + esc(t('ds.evC')) + ' / ' + esc(t('ds.ctx')) + '</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' +
+        '</details></div>';
+    }
+    function renderDaySniper(ds){
+      if (!els.sniper) return;
+      if (!ds || !sniperHasContent(ds)) { els.sniper.innerHTML = ''; els.sniper.classList.add('hidden'); return; }
+      var persons = Array.isArray(ds.perPerson) ? ds.perPerson : [];
+      var multi = persons.length > 1;
+      els.sniper.innerHTML = '<div class="res-card"><div class="res-head"><span class="res-title">' + esc(t('ds.title')) + ' · ' + esc(String(ds.topicTh || '')) + '</span><span class="res-year">' + esc(String(ds.fromISO || '') + ' → ' + String(ds.toISO || '')) + '</span></div>' +
+        persons.map(function(p){ return p ? sniperPersonHtml(ds, p, multi) : ''; }).join('') + '</div>';
+      els.sniper.classList.remove('hidden');
+    }
     function renderResonance(res){
       state.resonance = res || null;
       if (!els.resonance) return;
+      renderDaySniper(res && res.daySniper ? res.daySniper : null); // r373: การ์ดวันลั่นไกเกาะมากับ resonance jsonb
       if (!res || !resonanceHasContent(res)) { els.resonance.innerHTML = ''; els.resonance.classList.add('hidden'); return; }
       els.resonance.innerHTML = '<div class="res-card"><div class="res-head"><span class="res-title">' + esc(t('res.title')) + '</span><span class="res-year">' + esc(String(res.targetYear || '')) + '</span></div>' + resonanceBodyHtml(res) + '</div>';
       els.resonance.classList.remove('hidden');
@@ -1856,6 +1937,10 @@
         // r369: resonance ที่บันทึกไว้ตอนรัน (จาก response_meta) — โชว์ซ้ำได้จากประวัติ
         (fusion.resonance && resonanceHasContent(fusion.resonance)
           ? '<div class="detail-block"><div class="detail-label">' + esc(t('res.title')) + '</div>' + resonanceBodyHtml(fusion.resonance) + '</div>'
+          : '') +
+        // r373: day sniper ที่บันทึกไว้ (เกาะใน resonance jsonb) — โชว์ซ้ำได้จากประวัติ
+        (fusion.resonance && sniperHasContent(fusion.resonance.daySniper)
+          ? '<div class="detail-block"><div class="detail-label">' + esc(t('ds.title')) + '</div>' + (Array.isArray(fusion.resonance.daySniper.perPerson) ? fusion.resonance.daySniper.perPerson.map(function(p){ return p ? sniperPersonHtml(fusion.resonance.daySniper, p, fusion.resonance.daySniper.perPerson.length > 1) : ''; }).join('') : '') + '</div>'
           : '') +
         '<div class="detail-block"><div class="detail-label">Run Receipt</div><div class="detail-text">' + esc(runReceipt(row)) + '</div></div>' +
         '<div class="detail-block"><div class="detail-label">Packet / Profile Snapshot</div>' + snapshotBlock(row) + '</div>' +

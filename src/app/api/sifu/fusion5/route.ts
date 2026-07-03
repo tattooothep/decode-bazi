@@ -13,6 +13,7 @@ import { createHash } from "crypto";
 import { DISCIPLINES, computeYam, JUDGE_MODEL, JUDGE_YAM, type ScienceId } from "@/lib/fusion5/disciplines";
 import { buildSciencePrompt, buildJudgePrompt, resolveFusionTimingReference, type BirthData } from "@/lib/fusion5/build-prompt";
 import { buildResonance, renderResonanceBlockTh, RESONANCE_SCIENCES, type FusionResonance } from "@/lib/fusion5/resonance";
+import { buildDaySniper, renderDaySniperTh, resolveDaySniperRange } from "@/lib/fusion5/day-sniper";
 import { buildSynastry, type PersonSyn } from "@/lib/bazi-synastry";
 import { logResearchAiMessage } from "@/lib/research-log";
 
@@ -537,7 +538,11 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
     let judge: { ok: boolean; reply?: string; error?: string; model: string } = { ok: false, model: JUDGE_MODEL };
     if (okPanels.length >= 2) {
       try {
-        const jp = buildJudgePrompt(okPanels.map((x) => ({ science: x.science, reply: x.reply! })), births, question, lang, p.resonance ? renderResonanceBlockTh(p.resonance) : undefined);
+        // r373: resonance block ส่งเฉพาะเมื่อมีเนื้อจริง (shell ที่ถือ daySniper อย่างเดียว = ไม่ส่ง RESONANCE_PACKET เปล่า)
+        const resBlock = p.resonance && (p.resonance.perPerson.length > 0 || (p.resonance.r4Pairs || []).length > 0)
+          ? renderResonanceBlockTh(p.resonance) : undefined;
+        const dsBlock = p.resonance?.daySniper ? renderDaySniperTh(p.resonance.daySniper) : undefined;
+        const jp = buildJudgePrompt(okPanels.map((x) => ({ science: x.science, reply: x.reply! })), births, question, lang, resBlock, dsBlock);
         const jr = await callSifu(cookie, { message: question, externalPrompt: jp, lang }, JUDGE_MODEL);
         judge = { ...jr, model: JUDGE_MODEL };
       } catch (e) { judge = { ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "judge_error", model: JUDGE_MODEL }; }
@@ -639,15 +644,33 @@ export async function POST(req: Request) {
     // r369: Cross-Science Resonance — engine deterministic หา "จุดหลายศาสตร์ตรงกัน" ก่อน AI (additive)
     // คำนวณ sync ตอน POST (มีงบเวลาใน buildResonance: คนแรกเสมอ · คนถัดไปข้ามถ้าเกิน 8s) · พังทั้งก้อน = null (ไม่ล้ม job)
     let resonance: FusionResonance | null = null;
+    const timingRefPost = resolveFusionTimingReference(question, new Date());
     const resonanceSciences = runSciences.filter((s) => (RESONANCE_SCIENCES as ScienceId[]).includes(s));
     if (resonanceSciences.length >= 2) {
       try {
-        const timingRef = resolveFusionTimingReference(question, new Date());
-        resonance = buildResonance(births, resonanceSciences, timingRef.targetYear, timingRef.refDate);
+        resonance = buildResonance(births, resonanceSciences, timingRefPost.targetYear, timingRefPost.refDate);
       } catch (e) {
         console.warn("[fusion5] resonance failed:", e instanceof Error ? e.message : e);
         resonance = null;
       }
+    }
+
+    // r373: Day Sniper — engine deterministic ชี้ "วันลั่นไก" ระดับวัน (เข็มอิสระ A/B/C) · additive
+    // คำนวณ sync ตอน POST (งบเวลาใน buildDaySniper: focus เสมอ · คนที่ 2 ข้ามถ้าเกิน 5s) · พัง = ไม่ล้ม job
+    try {
+      const range = resolveDaySniperRange(question, timingRefPost);
+      const daySniper = buildDaySniper(births, question, range.fromISO, range.toISO);
+      if (resonance) {
+        resonance.daySniper = daySniper;
+      } else {
+        // ไม่มี resonance (ศาสตร์ในชั้น <2) → เก็บ daySniper บน shell jsonb เดิม (additive · consumer เดิมเห็น perPerson ว่าง = ไม่ render resonance)
+        resonance = {
+          version: "resonance_v1", targetYear: timingRefPost.targetYear, sciences: [], perPerson: [], r4Pairs: [],
+          daySniper, summaryTh: "", notes: ["shell r373: เก็บ daySniper อย่างเดียว (resonance ไม่เข้าเงื่อนไขคำนวณ)"], computeMs: 0,
+        };
+      }
+    } catch (e) {
+      console.warn("[fusion5] day sniper failed:", e instanceof Error ? e.message : e);
     }
 
     // สร้าง job (running) → คืน jobId ทันที → ประมวลผลเบื้องหลัง (user พับจอได้)
