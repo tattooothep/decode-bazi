@@ -3,6 +3,9 @@
  * ⚠️ bazi รองรับสูงสุด 2 ดวง (synastry เป็นแบบคู่) → กลุ่ม 3-4 ดวงตัด bazi ออกพร้อมเหตุผลใน skippedReasons (ไม่คิดยาม)
  * แต่ละ panel = 1 ศาสตร์ · engine คำนวณ→packet→คัมภีร์→AI (ตาม registry · กันมั่ว)
  * bazi → /api/sifu เดิม (profileId) · qizheng/western/vedic → externalPrompt (ผัง render มาแล้ว)
+ * r381: "ดวงชั่วคราว" guestBirths[] — กรอกวันเกิดสด ผสม profileIds ได้ รวม ≤4 ดวง (ลำดับ: profiles ก่อน แล้ว guests)
+ *       เสาคำนวณ calcBazi (Layer 1) ใน lib/fusion5/guest-birth · bazi panel ของ guest = externalPrompt (ไม่แตะ /api/sifu LOCKED)
+ *       เก็บใน jobs.guest_births (jsonb additive) · ไม่เขียนตาราง profiles เด็ดขาด · yongshen=null → R5 ข้ามสุภาพ
  * ⚠️ ยังไม่แตะ /api/sifu/fusion เดิม (route แยก · /master-fusion ปัจจุบันไม่กระทบ)
  */
 import { NextResponse } from "next/server";
@@ -17,6 +20,9 @@ import { buildDaySniper, renderDaySniperTh, resolveDaySniperRange } from "@/lib/
 import { buildSynastry, type PersonSyn } from "@/lib/bazi-synastry";
 import { logResearchAiMessage } from "@/lib/research-log";
 import { notifyFusionDone } from "@/lib/push-sender"; // r380: web push แจ้ง "คำพยากรณ์พร้อมแล้ว 🔮"
+// r381: "ดวงชั่วคราว" (guest births) — กรอกวันเกิดสด ไม่บันทึกเป็นโปรไฟล์ · คำนวณด้วย calcBazi (Layer 1) ใน lib
+// bazi panel ของ guest ไปทาง externalPrompt (fusion-internal) เพราะ /api/sifu POST ไม่รับ birth ตรง (LOCKED · ไม่แตะ)
+import { parseGuestBirths, buildGuestFusionBirth, buildGuestBaziPanelPrompt, type GuestBirthStored, type GuestComputedBirth } from "@/lib/fusion5/guest-birth";
 
 export const runtime = "nodejs";
 export const maxDuration = 800;
@@ -89,7 +95,7 @@ type ProfileRow = {
 };
 type Msg = { role: "user" | "assistant"; content: string };
 type FusionBirthData = BirthData & {
-  profileId: string;
+  profileId: string | null;            // r381: null = ดวงชั่วคราว (guest · ไม่มี row ใน profiles)
   birthDate: string;
   birthTime: string;
   dayBoundary: string;
@@ -97,6 +103,8 @@ type FusionBirthData = BirthData & {
   isSelf: boolean;
   baziPillars: unknown;
   yongshen: unknown;
+  isGuest?: boolean;                   // r381: true = guest (bazi panel ไปทาง externalPrompt)
+  guestCalc?: GuestComputedBirth["guestCalc"]; // r381: ผล calcBazi in-memory (ห้าม serialize ลง job)
 };
 
 function renderFusionSpecificityNote(births: FusionBirthData[], focusIndex: number): string {
@@ -156,6 +164,7 @@ async function loadBirth(profileId: string, orgId: string | null): Promise<Fusio
     isSelf: !!row.is_self,
     baziPillars: row.bazi_pillars,
     yongshen: row.yongshen,
+    isGuest: false,
   };
 }
 
@@ -283,6 +292,7 @@ type WorkerParams = {
   runSciences: ScienceId[];
   births: FusionBirthData[];
   profileIds: string[];
+  guestBirths: GuestBirthStored[];     // r381: guest ที่ sanitize แล้ว (เก็บ jobs.guest_births + history)
   question: string;
   lang: string;
   yam: number;
@@ -306,6 +316,7 @@ type Fusion5JobRow = {
   profile_ids: string[] | null;
   pair_mode: boolean | null;
   resonance?: unknown;                 // r369: jsonb (additive · null ได้)
+  guest_births?: unknown;              // r381: jsonb (additive · null ได้) — ดวงชั่วคราว [{name,birthDate,birthTime,gender,lat,lng,place}]
 };
 
 function cleanQuestion(x: unknown): string | null {
@@ -332,15 +343,17 @@ async function reconcileStaleJob(row: Fusion5JobRow, userId: string): Promise<Fu
   const orphanedByRestart = row.status === "running" && Number.isFinite(createdMs) && createdMs < SERVER_STARTED_AT.getTime() - 1_000;
   if (!stale && !orphanedByRestart) return row;
   const reason = orphanedByRestart ? "server_restart_orphan" : "timeout";
-  const upd = await q1<{ sciences: string[] | null; profile_ids: string[] | null }>(
+  const upd = await q1<{ sciences: string[] | null; profile_ids: string[] | null; guest_births: unknown }>(
     `UPDATE fusion5_jobs
         SET status='error', error=$3, updated_at=now()
       WHERE id=$1 AND user_id=$2 AND status='running'
-      RETURNING sciences, profile_ids`,
+      RETURNING sciences, profile_ids, guest_births`,
     [row.id, userId, reason]
   );
   if (upd) {
-    const refYam = computeYam((upd.sciences || []) as ScienceId[], (upd.profile_ids || []).length || 1);
+    // r381: จำนวนดวง = profiles + guests (guest นับยามเท่าดวงปกติ · ต้อง refund เท่าที่หักจริง)
+    const guestCnt = Array.isArray(upd.guest_births) ? upd.guest_births.length : 0;
+    const refYam = computeYam((upd.sciences || []) as ScienceId[], ((upd.profile_ids || []).length + guestCnt) || 1);
     if (refYam > 0) await refundHoursForUser(userId, refYam, FEATURE).catch(() => {});
   }
   return { ...row, status: "error", result: null, error: reason };
@@ -363,6 +376,7 @@ function jobJson(row: Fusion5JobRow) {
     profileIds: row.profile_ids || [],
     pairMode: row.pair_mode === true,
     resonance: row.resonance || null,
+    guestBirths: Array.isArray(row.guest_births) ? row.guest_births : [], // r381: UI วาดชื่อ/resume ดวงชั่วคราวได้
     createdAt: row.created_at,
   };
 }
@@ -414,6 +428,7 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
       thread_profile_id: p.threadProfileId || p.profileIds[0],
       profileNames: p.births.map((b) => b.name),
       profileIds: p.profileIds,
+      guest_births: p.guestBirths.length ? p.guestBirths : null, // r381: history เห็นดวงชั่วคราว (ชื่อ+วันเวลา+พิกัด · ไม่มี PII เกิน)
       sciences: p.runSciences,
       skipped: p.skipped,
       skipped_reasons: p.skippedReasons,
@@ -433,6 +448,7 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
       requestPayload: {
         mode: "fusion5",
         profileIds: p.profileIds,
+        guestBirths: p.guestBirths.length ? p.guestBirths : undefined, // r381
         sciences: p.runSciences,
         thread_id: p.threadId,
         thread_profile_id: p.threadProfileId || p.profileIds[0],
@@ -445,8 +461,8 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
       spent: Math.max(0, p.yam - totalRefund),
       durationMs: Date.now() - p.started,
       cached: false,
-      profileSnapshot: p.births.map((b) => ({
-        id: b.profileId,
+      profileSnapshot: p.births.map((b, i) => ({
+        id: b.profileId || `guest:${i + 1}`, // r381: guest ไม่มี profileId (ไม่เขียนตาราง profiles เด็ดขาด)
         name: b.name,
         birthDate: b.birthDate,
         birthTime: b.birthTime,
@@ -455,8 +471,9 @@ async function logFusion5History(jobId: string, result: Record<string, unknown>,
         hasTime: b.hasTime,
         gender: b.gender,
         relationshipType: b.relationshipType,
+        isGuest: b.isGuest === true,
       })),
-      pillarsSnapshot: p.births.map((b) => ({ id: b.profileId, baziPillars: b.baziPillars })),
+      pillarsSnapshot: p.births.map((b, i) => ({ id: b.profileId || `guest:${i + 1}`, baziPillars: b.baziPillars })),
       threadId: p.threadId || jobId,
       threadProfileId: p.threadProfileId || p.profileIds[0],
       historyProfileIds: p.profileIds,
@@ -484,27 +501,52 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
       const label = bind.labelTh;
       try {
         if (science === "bazi") {
-          const targets = births.length > 1 ? profileIds : [profileIds[0]];
+          // r381: วนตาม births (คน) ไม่ใช่ profileIds — รองรับดวงชั่วคราวปนโปรไฟล์ · โหมดเดี่ยว = คนแรกคนเดียว (เดิม)
+          const targetBirths = births.length > 1 ? births : [births[0]];
           const parts: string[] = [];
           const pairPacket = births.length > 1 ? renderBaziPairInteractionPacket(births, lang) : "";
           const timingNote = `\n\nจังหวะเวลาที่ผู้ใช้ถาม: ${timingRef.label} · วันอ้างอิงจร ${timingRef.refDate.toISOString().slice(0, 10)} · ปีเป้าหมาย ${timingRef.targetYear} (ถ้าคำถามถามปี/วันที่นี้ ให้ใช้เป็นแกนปีจร ไม่ใช่ปีปัจจุบัน)`;
           let okCount = 0;
           let lastError = "bazi_failed";
           const usedModels = new Set<string>();
-          for (let i = 0; i < targets.length; i++) {
+          for (let i = 0; i < targetBirths.length; i++) {
+            const person = targetBirths[i];
             const note = births.length > 1
               ? `\n\n${BAZI_DECISIVE_READING_NOTE}\n\n${renderFusionSpecificityNote(births, i)}\n\n${pairPacket}\n\n(ดูคู่ระหว่าง ${births.map((b) => b.name).join(" และ ")} — วิเคราะห์ ${births[i].name}; ใช้เฉพาะ PAIR_INTERACTION_PACKET bazi เป็นรายการปฏิกิริยาข้ามคน ห้ามสร้างคู่เพิ่มเอง · แยกแรงหนุนกับแรงเสียดทานให้ชัด อย่าให้จุดดีจุดเดียวกลบข้อเสียใหญ่ หรือข้อเสียจุดเดียวกลบแรงหนุนหลัก)`
               : `\n\n${BAZI_DECISIVE_READING_NOTE}\n\n${renderFusionSpecificityNote(births, i)}\n\n(โหมดเดี่ยว: มีผังเดียวโดยเจตนา · อย่านับ "ไม่มีดวงคู่/ไม่มีปฏิกิริยาข้ามสองผัง" เป็นข้อมูลขาดของการดูดวงเดี่ยว เว้นแต่คำถามผู้ใช้ถามเรื่องดูคู่/สมพงษ์โดยตรง)`;
-            const payload = {
-              profileId: targets[i],
-              message: question + timingNote + note,
-              lang,
-              history: p.history,
-              threadId: p.threadId,
-              threadProfileId: targets[i],
-              historyProfileIds: profileIds,
-              fusionRunId: jobId,
-            };
+            let payload: Record<string, unknown>;
+            if (person.isGuest && person.guestCalc) {
+              // r381 guest: /api/sifu POST ไม่รับ birth ตรง (LOCKED · ไม่แตะ) → ส่ง externalPrompt เหมือน 4 ศาสตร์
+              // packet สร้างเองผ่าน calcBazi (Layer 1 · คำนวณแล้วตอน POST) + buildStructuredChartPacket + renderChartPrompt
+              const guestPrompt = await buildGuestBaziPanelPrompt({
+                focus: person as GuestComputedBirth,
+                allNames: births.map((b) => b.name || "ดวง"),
+                question,
+                lang,
+                timingLine: timingNote.trim(),
+                notes: [BAZI_DECISIVE_READING_NOTE, renderFusionSpecificityNote(births, i)],
+                pairPacket: births.length > 1 ? pairPacket : undefined,
+              });
+              payload = {
+                message: question,
+                externalPrompt: withHistoryPrompt(guestPrompt, p.history),
+                lang,
+                threadId: p.threadId,
+                historyProfileIds: profileIds,
+                fusionRunId: jobId,
+              };
+            } else {
+              payload = {
+                profileId: person.profileId,
+                message: question + timingNote + note,
+                lang,
+                history: p.history,
+                threadId: p.threadId,
+                threadProfileId: person.profileId,
+                historyProfileIds: profileIds,
+                fusionRunId: jobId,
+              };
+            }
             let r: Awaited<ReturnType<typeof callSifu>> | null = null;
             for (const model of [bind.defaultModel, ...bind.fallbackModels]) {
               r = await callSifu(cookie, payload, model);
@@ -514,9 +556,9 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
               }
               lastError = r.error || lastError;
             }
-            if (r?.ok && r.reply) { okCount++; parts.push(births.length > 1 ? `【${births[i].name}】\n${r.reply}` : r.reply); }
+            if (r?.ok && r.reply) { okCount++; parts.push(births.length > 1 ? `【${targetBirths[i].name}】\n${r.reply}` : r.reply); }
           }
-          const failCount = targets.length - okCount;
+          const failCount = targetBirths.length - okCount;
           if (okCount > 0 && failCount > 0) await refundHoursForUser(userId, bind.costYam * failCount, FEATURE).catch(() => {});
           const modelLabel = usedModels.size ? Array.from(usedModels).join("+") : bind.defaultModel;
           return okCount > 0 ? { science, label, model: modelLabel, ok: true, reply: parts.join("\n\n") } : { science, label, model: bind.defaultModel, ok: false, error: `bazi_failed:${lastError}`.slice(0, 120) };
@@ -608,7 +650,18 @@ export async function POST(req: Request) {
     const threadId = cleanThreadId(body.threadId || body.thread_id);
     const threadProfileId = cleanId(body.threadProfileId || body.historyProfileId) || profileIds[0] || null;
 
-    if (!profileIds.length) return NextResponse.json({ error: "profile_required" }, { status: 400 });
+    // r381: "ดวงชั่วคราว" (guest births · additive) — validate ก่อนหักยาม/สร้างงาน
+    // ลำดับดวงในงาน (document ให้ UI): profileIds ตามลำดับที่ส่งก่อน แล้วต่อด้วย guestBirths ตามลำดับที่ส่ง
+    const guestParsed = parseGuestBirths(body.guestBirths);
+    if (!guestParsed.ok) {
+      return NextResponse.json({ error: guestParsed.error, guestIndex: guestParsed.index }, { status: 400 });
+    }
+    const guestInputs = guestParsed.list;
+    if (profileIds.length + guestInputs.length > 4) {
+      return NextResponse.json({ error: "too_many_births", max: 4 }, { status: 400 });
+    }
+
+    if (!profileIds.length && !guestInputs.length) return NextResponse.json({ error: "profile_required" }, { status: 400 });
     if (!sciences.length) return NextResponse.json({ error: "no_science_selected" }, { status: 400 });
     if (!question) return NextResponse.json({ error: "no_question" }, { status: 400 });
 
@@ -617,6 +670,15 @@ export async function POST(req: Request) {
       const b = await loadBirth(pid, orgId);
       if (!b) return NextResponse.json({ error: "profile_not_found" }, { status: 404 });
       births.push(b);
+    }
+    // r381: guest ต่อท้าย profiles · เสาคำนวณด้วย calcBazi (Layer 1) · ไม่เขียนตาราง profiles เด็ดขาด
+    for (let gi = 0; gi < guestInputs.length; gi++) {
+      try {
+        births.push(await buildGuestFusionBirth(guestInputs[gi]));
+      } catch (e) {
+        console.warn("[fusion5] guest birth calc failed:", e instanceof Error ? e.message : e);
+        return NextResponse.json({ error: "invalid_guest_birth", guestIndex: gi }, { status: 400 });
+      }
     }
 
     const allHaveTime = births.every((b) => b.hasTime);
@@ -678,17 +740,18 @@ export async function POST(req: Request) {
     // สร้าง job (running) → คืน jobId ทันที → ประมวลผลเบื้องหลัง (user พับจอได้)
     const cookie = await authCookie(session);
     const job = await q1<{ id: string }>(
-      `INSERT INTO fusion5_jobs(user_id, org_id, status, question, sciences, profile_ids, pair_mode, resonance)
-       VALUES ($1,$2,'running',$3,$4,$5,$6,$7) RETURNING id`,
-      [userId, orgId, question, runSciences, profileIds, births.length > 1, resonance ? JSON.stringify(resonance) : null]
+      `INSERT INTO fusion5_jobs(user_id, org_id, status, question, sciences, profile_ids, pair_mode, resonance, guest_births)
+       VALUES ($1,$2,'running',$3,$4,$5,$6,$7,$8) RETURNING id`,
+      [userId, orgId, question, runSciences, profileIds, births.length > 1, resonance ? JSON.stringify(resonance) : null,
+       guestInputs.length ? JSON.stringify(guestInputs) : null] // r381: resume/GET คืน guest ให้ UI วาดชื่อได้ (ไม่มี PII เกิน)
     );
     if (!job) { await refundHoursForUser(userId, yam, FEATURE).catch(() => {}); return NextResponse.json({ error: "job_create_failed" }, { status: 500 }); }
     chargedYam = 0; // job รับช่วงดูแล refund แล้ว (outer catch ไม่ต้องคืนซ้ำ)
 
     // 🔄 detached — ไม่ await · งานวิ่งบน server แม้ client ปิด
-    void processFusion5(job.id, { session, userId, cookie, runSciences, births, profileIds, question, lang, yam, skipped, skippedReasons, history, threadId: threadId || job.id, threadProfileId, started: Date.now(), resonance });
+    void processFusion5(job.id, { session, userId, cookie, runSciences, births, profileIds, guestBirths: guestInputs, question, lang, yam, skipped, skippedReasons, history, threadId: threadId || job.id, threadProfileId, started: Date.now(), resonance });
 
-    return NextResponse.json({ jobId: job.id, status: "running", threadId: threadId || job.id, yam: { charged: yam }, skipped, skippedReasons, profileNames: births.map((b) => b.name), pairMode: births.length > 1, resonance });
+    return NextResponse.json({ jobId: job.id, status: "running", threadId: threadId || job.id, yam: { charged: yam }, skipped, skippedReasons, profileNames: births.map((b) => b.name), pairMode: births.length > 1, guestBirths: guestInputs, resonance });
   } catch {
     if (chargedYam > 0 && userId) await refundHoursForUser(userId, chargedYam, FEATURE).catch(() => {});
     return NextResponse.json({ error: "fusion5_error" }, { status: 500 });
@@ -730,7 +793,7 @@ export async function GET(req: Request) {
 
     const row = await q1<Fusion5JobRow>(
       `SELECT id, status, result, error, created_at::text AS created_at,
-              question, sciences, profile_ids, pair_mode, resonance
+              question, sciences, profile_ids, pair_mode, resonance, guest_births
          FROM fusion5_jobs
         WHERE ${where.join(" AND ")}
         ORDER BY created_at DESC
@@ -746,7 +809,7 @@ export async function GET(req: Request) {
   if (!jobId) return NextResponse.json({ error: "bad_jobId" }, { status: 400 });
   const row = await q1<Fusion5JobRow>(
     `SELECT id, status, result, error, created_at::text AS created_at,
-            question, sciences, profile_ids, pair_mode, resonance
+            question, sciences, profile_ids, pair_mode, resonance, guest_births
        FROM fusion5_jobs WHERE id=$1 AND user_id=$2`,
     [jobId, session.userId]
   );
