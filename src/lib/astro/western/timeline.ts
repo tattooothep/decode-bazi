@@ -30,6 +30,7 @@ const NAME_TH_TL: Record<string, string> = {
 };
 const ASPECT_TH: Record<number, { type: string; th: string }> = {
   0: { type: "conjunction", th: "ทับ (0°)" },
+  60: { type: "sextile", th: "หกสิบองศา (60°)" }, // r374: ใช้เฉพาะชั้น progressed (loop transit เดิมยังใช้ [0,90,120,180] เท่าเดิม)
   90: { type: "square", th: "ฉาก (90°)" },
   120: { type: "trine", th: "ตรีโกณ (120°)" },
   180: { type: "opposition", th: "เล็ง (180°)" },
@@ -75,6 +76,17 @@ export type WesternTimeline = {
     planets: { name: string; nameTh: string; sign: number; signTh: string; signDeg: number }[];
     aspectsToNatal: { progressed: string; natal: string; aspect: string; aspectTh: string; orb: number }[];
     moonNote: string;
+    /* r374 มุมชั้นลึก (additive) — ฐานตำรา: secondary progression "วันละหนึ่งปี" (day-for-a-year)
+     * หลักตาม Ptolemy (Tetrabiblos) สายทิศทางดาว · แบบแผนที่ใช้จริงสรุปมาตรฐานใน
+     * Alan Leo, "The Progressed Horoscope" (1905): orb ของ progressed aspect ≤1° (แน่นกว่าดวงกำเนิด)
+     * และ progressed Moon เคลื่อน ~1°/เดือน จึงใช้จับจังหวะ "ระดับเดือน" ภายในปีเป้าหมาย */
+    progressedAspects?: {
+      progressed: string; progressedTh: string;
+      natal: string; natalTh: string; natalKind: "planet" | "angle";
+      aspect: string; aspectTh: string; orb: number;
+    }[];
+    /** เดือน (เวลาไทย) ที่จันทร์ progressed ทำมุมพอดี (perfection) กับจุดกำเนิด — คำนวณจริงจากขอบเดือน 13 จุด */
+    moonPerfections?: { month: number; natal: string; natalTh: string; aspect: string; aspectTh: string }[];
   } | null;
   coverageNote: string;
 };
@@ -270,6 +282,76 @@ export function buildWesternTimeline(
       }
     }
     const progMoon = progBodies.find((b) => b.key === "Moon");
+
+    /* ── r374 มุมชั้นลึก: progressed→natal aspects (additive) ─────────────
+     * ฐานตำรา: secondary progression day-for-a-year · orb ≤1° ตามแบบแผนคลาสสิก
+     * (Alan Leo, The Progressed Horoscope 1905 — progressed aspect ใช้ orb แน่น 1°)
+     * ดาว progressed ที่มีความหมายเชิงพัฒนาการ = 5 ดวงเร็ว (Sun/Moon/Mercury/Venus/Mars)
+     * เทียบกับดาวกำเนิดทุกดวง + ลัคนา/กลางฟ้า (angles) ที่ตำแหน่งกลางปีเป้าหมาย */
+    const PROG_PERSONAL = new Set(["Sun", "Moon", "Mercury", "Venus", "Mars"]);
+    const progTargets: { name: string; lon: number; kind: "planet" | "angle" }[] = [
+      ...chart.planets.map((p) => ({ name: p.name, lon: p.lon, kind: "planet" as const })),
+      ...(chart.ascendant !== null ? [{ name: "Ascendant", lon: chart.ascendant, kind: "angle" as const }] : []),
+      ...(chart.mc !== null ? [{ name: "MC", lon: chart.mc, kind: "angle" as const }] : []),
+    ];
+    const PROG_ANGLES = [0, 60, 90, 120, 180]; // conj/sextile/square/trine/opposition ตามโจทย์คลาสสิก
+    const progressedAspects: NonNullable<NonNullable<WesternTimeline["progressed"]>["progressedAspects"]> = [];
+    for (const pb of progBodies) {
+      const key = String(pb.key);
+      if (!PROG_PERSONAL.has(key)) continue;
+      for (const tgt of progTargets) {
+        for (const angle of PROG_ANGLES) {
+          // progressed X ทับ natal X (0°) = ยังไม่เดินจากจุดเกิด — ไม่ใช่มุมพัฒนาการ ตัดออก (มุมอื่นเก็บ เช่น prog Sun sextile natal Sun ราวอายุ 60)
+          if (angle === 0 && tgt.kind === "planet" && tgt.name === key) continue;
+          const orb = Math.abs(Math.abs(wrap180(pb.lon - tgt.lon)) - angle);
+          if (orb <= 1) {
+            progressedAspects.push({
+              progressed: key, progressedTh: NAME_TH_TL[key] || key,
+              natal: tgt.name, natalTh: NAME_TH_TL[tgt.name] || tgt.name, natalKind: tgt.kind,
+              aspect: ASPECT_TH[angle].type, aspectTh: ASPECT_TH[angle].th, orb: r2(orb),
+            });
+          }
+        }
+      }
+    }
+    progressedAspects.sort((a, b) => a.orb - b.orb);
+
+    /* จันทร์ progressed รายเดือน: เคลื่อน ~1°/เดือน → หาเดือนที่ทำมุม "พอดี" (perfection)
+     * วิธี: คำนวณตำแหน่งจันทร์ progressed ที่ขอบเดือนไทย 13 จุด (ม.ค.…ม.ค.ปีถัดไป)
+     * แล้วหา sign change ของ offset ต่อ (จุดกำเนิด + มุม) — deterministic ไม่มีการเดา
+     * ข้ามเมื่อไม่ทราบเวลาเกิด (จันทร์คลาด ±6° ≈ ±6 เดือน · ระดับเดือนไร้ความหมาย) */
+    let moonPerfections: NonNullable<NonNullable<WesternTimeline["progressed"]>["moonPerfections"]> | undefined;
+    if (chart.hasBirthTime && progMoon) {
+      moonPerfections = [];
+      const moonLons: number[] = [];
+      for (let m = 0; m <= 12; m++) {
+        const tEdge = new Date(Date.UTC(targetYear, m, 1) - BKK_MS);
+        const ay = (tEdge.getTime() - birth.dtUTC.getTime()) / DAY_MS / 365.2425;
+        moonLons.push(eclipticLon("Moon", new Date(birth.dtUTC.getTime() + ay * DAY_MS)));
+      }
+      for (const tgt of progTargets) {
+        for (const angle of PROG_ANGLES) {
+          const signedOffsets = angle === 0 || angle === 180 ? [angle] : [angle, -angle];
+          for (const signed of signedOffsets) {
+            for (let m = 0; m < 12; m++) {
+              const h0 = wrap180(moonLons[m] - tgt.lon - signed);
+              const h1 = wrap180(moonLons[m + 1] - tgt.lon - signed);
+              // จันทร์ progressed ขยับ ~1.1°/เดือน → ใกล้จุด perfect |offset| เล็กเสมอ (กัน wrap ด้วยเพดาน 6°)
+              if (Math.abs(h0) < 6 && Math.abs(h1) < 6 && h0 * h1 <= 0 && (h0 !== 0 || h1 !== 0)) {
+                moonPerfections.push({
+                  month: m + 1,
+                  natal: tgt.name, natalTh: NAME_TH_TL[tgt.name] || tgt.name,
+                  aspect: ASPECT_TH[angle].type, aspectTh: ASPECT_TH[angle].th,
+                });
+                break; // slot นี้ perfect ได้ครั้งเดียวในปี (จันทร์ prog เดินหน้าทางเดียว)
+              }
+            }
+          }
+        }
+      }
+      moonPerfections.sort((a, b) => a.month - b.month);
+    }
+
     progressed = {
       basisDateISO: bkkDateISO(midYear),
       planets: progBodies.map((b) => {
@@ -280,6 +362,8 @@ export function buildWesternTimeline(
       moonNote: progMoon
         ? `จันทร์ progressed อยู่ราศี${SIGN_TH[Math.floor(progMoon.lon / 30)]} (เคลื่อน ~1°/เดือน)${chart.hasBirthTime ? "" : " · ไม่ทราบเวลาเกิด ตำแหน่งจันทร์ progressed คลาดได้ ±6°"}`
         : "",
+      progressedAspects: progressedAspects.slice(0, 14),
+      ...(moonPerfections !== undefined ? { moonPerfections: moonPerfections.slice(0, 12) } : {}),
     };
   }
 

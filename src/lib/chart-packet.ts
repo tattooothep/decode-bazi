@@ -117,6 +117,27 @@ export type InteractionConflictSummary = {
   note: string;
 };
 
+/** r374 มุมแฝง 拱/暗合 (additive · หลักฐานเสริม ไม่ใช่ปฏิกิริยาตรง)
+ * canon: data/library/bazi-interaction-master.md
+ *  - 拱 §6.4 (บรรทัด 253/256/259/262): คู่กำเนิด+คลังของ三合 "โอบ" ตัว旺กลางที่หายไป
+ *    (申辰→子 · 亥未→卯 · 寅戌→午 · 巳丑→酉) · กำลังอ่อนจนกว่า 流年/流月 เติมกิ่งกลาง = 填實
+ *  - 暗合 §6.9 (บรรทัด 309-315): คู่กิ่งที่ก้านซ่อนฮะกัน — ตำรากำหนดแค่ 3 คู่: 寅丑 · 卯申 · 午亥 */
+export type HiddenCombo = {
+  kind: "gong" | "anhe";
+  typeZh: "拱" | "暗合";
+  pair: [string, string];                        // กิ่งคู่ (เรียงตามลำดับเสาที่พบ)
+  pillars: [PillarKey, PillarKey];               // เสาที่กิ่งคู่นี้อยู่
+  /** 拱 เท่านั้น: กิ่ง旺กลางที่หายไป = จุดอ่อนไหวแฝง (流年/流月 เติม = 填實 trigger) */
+  missingBranch?: string;
+  /** 拱 เท่านั้น: ธาตุของชุด三合 ที่ถูกโอบ */
+  element?: ElementEN;
+  /** 拱 เท่านั้น: ปีจรปัจจุบันเติมกิ่งกลางพอดีหรือไม่ (填實 ณ ปีนี้) */
+  annualFillsNow?: boolean;
+  /** 暗合 เท่านั้น: คู่ก้านซ่อนที่ฮะกันตามตาราง §6.9 (เช่น "丁壬") */
+  hiddenStemPairs?: string[];
+  noteTh: string;
+};
+
 export type ChartPacketBuildOptions = {
   /** ขอบวันจริงที่ caller ใช้ตอน calcBazi · ถ้าไม่ส่ง = default 23:00 (ไม่เดาเอง) */
   dayBoundary?: DayBoundary;
@@ -489,6 +510,10 @@ export type ChartPacket = {
   /* HK_CROSSLAYER_V1 (12 มิ.ย.) · ฮะก้านจร五合 + กิ่งจรเติมโครง刑/合/會/庫 ข้ามชั้น (เคส Swit · ปลดจุดบอดกฎ 3.6) */
   transitHehua?: TransitHehuaHit[];
   crossLayerCombos?: CrossLayerComboHit[];
+  /** r374 มุมแฝง 拱/暗合 (additive · ไม่แตะ interactions/filter เดิม)
+   * canon: data/library/bazi-interaction-master.md §6.4 拱 (บรรทัด 253/256/259/262) + §6.9 暗合 (บรรทัด 309-315)
+   * เฉพาะคู่ที่ตำรากำหนดเท่านั้น — ห้าม AI เดาคู่เพิ่ม */
+  hiddenCombos?: HiddenCombo[];
   annualNatalBranchHits?: Array<{
     year: number;
     pillar: { stem: string; branch: string };
@@ -1632,6 +1657,80 @@ function reconcileBy08pBridgeMedicine(packet: ChartPacket): void {
   packet.usefulGods.conditionalUse = conditional;
 }
 
+/* ─────────────── r374 มุมแฝง 拱/暗合 (additive · pure function) ───────────────
+ * อิงตำราเท่านั้น — data/library/bazi-interaction-master.md:
+ *  拱 §6.4: แถว "birth_plus_storage_arches_peak" 4 แถว (บรรทัด 253 申辰 / 256 亥未 / 259 寅戌 / 262 巳丑)
+ *    "คู่กำเนิด+คลังอาจโอบ/拱 ตัวกลางที่หายไป แต่ไม่ควรนับเท่าครึ่ง合ที่มีตัว旺"
+ *    → เงื่อนไข: กิ่งคู่มีในดวง + กิ่ง旺กลาง "ไม่มี" ในดวง (ถ้ามี = 半合/三合 ซึ่ง engine เดิมส่งอยู่แล้ว)
+ *    → บันทึกเป็น "จุดอ่อนไหวแฝง" · เมื่อ 流年/流月 เติมกิ่งกลาง = 填實 กระตุ้นชุด (ฐานให้ day-sniper)
+ *  暗合 §6.9 (บรรทัด 309-315): ตำราในคลังกำหนดเพียง 3 คู่ พร้อมตรรกะก้านซ่อน:
+ *    寅丑 (甲己/丙辛/戊癸) · 卯申 (乙庚) · 午亥 (丁壬/己甲) — คู่อื่นนอกตารางนี้ไม่บันทึก (ไม่เดา) */
+const GONG_ARCH_TABLE: Array<{ pair: [string, string]; middle: string; element: ElementEN }> = [
+  { pair: ["申", "辰"], middle: "子", element: "water" }, // bazi-interaction-master.md:253
+  { pair: ["亥", "未"], middle: "卯", element: "wood" },  // bazi-interaction-master.md:256
+  { pair: ["寅", "戌"], middle: "午", element: "fire" },  // bazi-interaction-master.md:259
+  { pair: ["巳", "丑"], middle: "酉", element: "metal" }, // bazi-interaction-master.md:262
+];
+const ANHE_TABLE: Record<string, string[]> = {
+  // bazi-interaction-master.md §6.9 (บรรทัด 309-315) — key = กิ่งคู่เรียงตาม BRANCH_ORDER
+  "丑寅": ["甲己", "丙辛", "戊癸"],
+  "卯申": ["乙庚"],
+  "午亥": ["丁壬", "己甲"],
+};
+
+export function buildHiddenCombos(
+  pillars: Record<PillarKey, { stem: string; branch: string } | null>,
+  activeKeys: PillarKey[],
+  annualBranch: string | null = null,
+): HiddenCombo[] {
+  const out: HiddenCombo[] = [];
+  const at: Array<{ key: PillarKey; branch: string }> = [];
+  for (const k of activeKeys) {
+    const b = pillars[k]?.branch;
+    if (b && b !== "-") at.push({ key: k, branch: b });
+  }
+  const branchSet = new Set(at.map((x) => x.branch));
+
+  /* 拱: กิ่งคู่ (กำเนิด+คลัง) อยู่คนละเสา + กิ่ง旺กลางไม่มีในดวง */
+  for (const g of GONG_ARCH_TABLE) {
+    if (branchSet.has(g.middle)) continue;               // มีตัวกลาง = ครึ่ง合/เต็ม合 ไม่ใช่拱 (engine เดิมจัดการแล้ว)
+    const posA = at.find((x) => x.branch === g.pair[0]);
+    const posB = at.find((x) => x.branch === g.pair[1]);
+    if (!posA || !posB) continue;
+    const fills = annualBranch === g.middle;
+    out.push({
+      kind: "gong",
+      typeZh: "拱",
+      pair: g.pair,
+      pillars: [posA.key, posB.key],
+      missingBranch: g.middle,
+      element: g.element,
+      annualFillsNow: fills,
+      noteTh: `${PILLAR_EN_TH[posA.key]}:${g.pair[0]} + ${PILLAR_EN_TH[posB.key]}:${g.pair[1]} 拱(โอบ) ${g.middle} — ชุด三合${elementTh(g.element)}ขาดตัว旺กลาง → จุดอ่อนไหวแฝง: ${g.middle} · กำลังอ่อนกว่าครึ่ง合ที่มีตัว旺 · เมื่อ流年/流月เติม${g.middle} = 填實 กระตุ้นชุดนี้${fills ? ` · ⚠️ ปีจรปัจจุบันเติม${g.middle}พอดี (填實 ณ ปีนี้)` : ""}`,
+    });
+  }
+
+  /* 暗合: คู่กิ่งตามตาราง §6.9 เท่านั้น (ตรวจทุกคู่เสาไม่ซ้ำ) */
+  for (let i = 0; i < at.length; i++) {
+    for (let j = i + 1; j < at.length; j++) {
+      const key = sortedPairKey(at[i].branch, at[j].branch);
+      const stemPairs = ANHE_TABLE[key];
+      if (!stemPairs) continue;
+      // กันซ้ำ: คู่กิ่งชนิดเดียวกันบันทึกครั้งเดียว (กิ่งซ้ำหลายเสาไม่เพิ่มความหมายใหม่)
+      if (out.some((o) => o.kind === "anhe" && sortedPairKey(o.pair[0], o.pair[1]) === key)) continue;
+      out.push({
+        kind: "anhe",
+        typeZh: "暗合",
+        pair: [at[i].branch, at[j].branch],
+        pillars: [at[i].key, at[j].key],
+        hiddenStemPairs: stemPairs,
+        noteTh: `${PILLAR_EN_TH[at[i].key]}:${at[i].branch} ↔ ${PILLAR_EN_TH[at[j].key]}:${at[j].branch} 暗合 (มุมลับก้านซ่อนฮะ: ${stemPairs.join("/")}) — สายสัมพันธ์/ดีลแฝงไม่เปิดเผย น้ำหนักรองกว่า合ตรง`,
+      });
+    }
+  }
+  return out;
+}
+
 export function buildStructuredChartPacket(
   calc: Calc,
   ext: Ext,
@@ -2499,6 +2598,12 @@ export function buildStructuredChartPacket(
     );
   }
   reconcileBy08pBridgeMedicine(packet);
+  /* r374 มุมแฝง 拱/暗合 (additive · ไม่แตะ interactions/filter 伏吟/反吟 r103 · ใช้เฉพาะเสา active กัน 3p เดายาม) */
+  packet.hiddenCombos = buildHiddenCombos(
+    calc.pillars as Record<PillarKey, { stem: string; branch: string } | null>,
+    activePillarKeys,
+    cyp?.branch ?? null,
+  );
   return packet;
 }
 
@@ -3531,6 +3636,15 @@ export function renderChartPrompt(
       ` · ${s.note}`
     );
     lines.push(`สรุปปฏิกิริยาซ้อน (derived summary · ไม่ใช่ full resolver): ${items.join(" · ")}`);
+  }
+  /* r374 【拱/暗合 มุมแฝง】 additive · canon: bazi-interaction-master.md §6.4 (拱 บรรทัด 253/256/259/262) + §6.9 (暗合 บรรทัด 309-315) */
+  if (packet.hiddenCombos !== undefined) {
+    if (packet.hiddenCombos.length) {
+      const items = packet.hiddenCombos.map((h) => h.noteTh);
+      lines.push(`【拱/暗合 มุมแฝง】(hiddenCombos · ตาราง拱申辰/亥未/寅戌/巳丑 + 暗合寅丑/卯申/午亥 จากคัมภีร์ปฏิกิริยา): ${items.join(" ◆ ")} · ⚠️ ห้าม AI เดาคู่拱/暗合เพิ่มนอกรายการนี้ · เป็นชั้นแฝงน้ำหนักรองกว่าปฏิกิริยาตรง อ่านร่วม用神/忌神และจังหวะ填實เท่านั้น`);
+    } else {
+      lines.push(`【拱/暗合 มุมแฝง】: ตรวจกิ่งเสาเกิดตามตาราง拱(申辰/亥未/寅戌/巳丑)และ暗合(寅丑/卯申/午亥)แล้ว — ไม่พบ · ⚠️ ห้าม AI เดาคู่拱/暗合เพิ่มเอง`);
+    }
   }
 
   /* profile เชิงลึก */

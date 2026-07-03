@@ -248,6 +248,21 @@ export function renderWesternPrompt(packet: WesternPacket, lang: string = "th"):
       if (tl.progressed.aspectsToNatal.length) {
         L.push("    มุม progressed→natal (orb ≤1°): " + tl.progressed.aspectsToNatal.map((a) => `${a.progressed} ${a.aspectTh} ${a.natal} (orb ${a.orb}°)`).join(" · "));
       }
+      /* r374 มุมชั้นลึก: progressed aspects (secondary progression · orb ≤1° ตาม Alan Leo, The Progressed Horoscope 1905) */
+      const pg = tl.progressed;
+      if (pg.progressedAspects !== undefined || pg.moonPerfections !== undefined) {
+        L.push(`  [Progressed Aspects ปี ${tl.targetYear}] ชั้นพัฒนาการภายใน (secondary progression) · ความหมายเชิงกระบวนการชีวิต ไม่ใช่เหตุการณ์ฉับพลัน`);
+        if (pg.progressedAspects?.length) {
+          L.push("    มุม progressed 5 ดวงเร็ว→ดาว/มุมกำเนิด (orb ≤1° · ณ กลางปี): " + pg.progressedAspects.map((a) => `${a.progressedTh}P ${a.aspectTh} ${a.natalTh}กำเนิด (orb ${a.orb}°)`).join(" · "));
+        } else {
+          L.push("    ไม่มีมุม progressed แน่น (orb ≤1°) ต่อจุดกำเนิดปีนี้ — ห้ามอนุมานมุม progressed เพิ่มเอง");
+        }
+        if (pg.moonPerfections !== undefined) {
+          L.push(pg.moonPerfections.length
+            ? "    จันทร์ progressed ทำมุมพอดี (perfection · ระดับเดือน · เวลาไทย): " + pg.moonPerfections.map((x) => `เดือน ${x.month}: ${x.aspectTh} ${x.natalTh}กำเนิด`).join(" · ")
+            : "    จันทร์ progressed: ปีนี้ไม่มีเดือนที่ทำมุมพอดีกับจุดกำเนิด");
+        }
+      }
     }
     L.push("");
   }
