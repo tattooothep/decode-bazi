@@ -2467,10 +2467,10 @@ function renderRealResults(items){
 /* 🌌 29 มิ.ย.: ส่งฤกษ์ไปวิเคราะห์ลึกด้วยดาวจริง (天星擇日 七政四餘) · dt = UTC ดิบ (สร้างจากเวลาไทย+07:00) */
 function goTianxing(dtUTC, actName){
   try{
-    var lat=13.7563, lng=100.5018; // สถานที่จัดงาน default กรุงเทพ (ผู้ใช้ปรับในหน้า /tianxing ได้)
-    sessionStorage.setItem('hk_tianxing_handoff', JSON.stringify({dtUTC:dtUTC, lat:lat, lng:lng, activity:{name:actName||''}, display:new Date(dtUTC).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}));
+    var lat=13.7563, lng=100.5018, place='กรุงเทพมหานคร'; // สถานที่จัดงาน default กรุงเทพ (ผู้ใช้ปรับในหน้า /tianxing ได้)
+    sessionStorage.setItem('hk_tianxing_handoff', JSON.stringify({dtUTC:dtUTC, lat:lat, lng:lng, place:place, activity:{name:actName||''}, display:new Date(dtUTC).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}));
   }catch(e){}
-  location.href='/tianxing?dt='+encodeURIComponent(dtUTC)+'&lat='+lat+'&lng='+lng+'&act='+encodeURIComponent(actName||'');
+  location.href='/tianxing?dt='+encodeURIComponent(dtUTC)+'&lat='+lat+'&lng='+lng+'&act='+encodeURIComponent(actName||'')+'&place='+encodeURIComponent('กรุงเทพมหานคร');
 }
 
 /* 📜 17 พ.ค.: popup ดูตำรา卦 + 爻辭 จากอากง v3 */

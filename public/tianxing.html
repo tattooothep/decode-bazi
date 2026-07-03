@@ -1,221 +1,826 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+  <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
+  <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>天星擇日 · ฤกษ์ดาวจริง 七政四餘 · hourkey</title>
-<meta name="description" content="วิเคราะห์ฤกษ์เชิงลึกด้วยตำแหน่งดาวจริงบนฟ้า 七政四餘 (天星擇日) — ชั้นสูงสุดของวิชาเลือกฤกษ์">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5">
+<title>天星擇日 · ตรวจฤกษ์ด้วยดาวจริงบนฟ้า 七政四餘 · hourkey</title>
+<meta name="description" content="ชั้นสูงสุดของวิชาเลือกฤกษ์ — วงล้อจักรราศีแสดงตำแหน่งดาวจริง 11 ดวง (七政四餘) ณ วินาทีลงมือ คำนวณด้วยดาราศาสตร์จริง พร้อมคำตัดสิน 廟旺 · 恩用仇難 · 格局 ตามตำรา果老星宗"/>
+<link rel="canonical" href="https://www.hourkey.io/tianxing"/>
+<link rel="alternate" hreflang="th" href="https://www.hourkey.io/tianxing?lang=th"/>
+<link rel="alternate" hreflang="en" href="https://www.hourkey.io/tianxing?lang=en"/>
+<link rel="alternate" hreflang="zh" href="https://www.hourkey.io/tianxing?lang=zh"/>
+<meta property="og:title" content="天星擇日 · ตรวจฤกษ์ด้วยดาวจริงบนฟ้า 七政四餘"/>
+<meta property="og:description" content="วงล้อดาวจริง 11 ดวง ณ วินาทีลงมือ · ดาราศาสตร์จริง + ตำรา果老星宗"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.hourkey.io/tianxing"/>
+<meta property="og:site_name" content="hourkey"/>
+<meta name="twitter:card" content="summary"/>
+<script>try{var t=localStorage.getItem('hk_theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","name":"天星擇日 · ตรวจฤกษ์ด้วยดาวจริงบนฟ้า 七政四餘","url":"https://www.hourkey.io/tianxing","inLanguage":["th","en","zh"],"isPartOf":{"@type":"WebSite","name":"hourkey","url":"https://www.hourkey.io"}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Serif+Thai:wght@400;500;600;700&display=optional" rel="stylesheet"/>
 <style>
-  :root{--tc:'Noto Serif TC',serif;}
-  [data-theme="dark"]{--bg:#0e1014;--bg2:#161a20;--bg3:#1d222a;--fg:#e8e6e0;--fg-soft:#b9b6ad;--fg-faint:#7d8088;--gold:#c8a44d;--gold-soft:rgba(200,164,77,.12);--gold-line:rgba(200,164,77,.4);--line:rgba(255,255,255,.1);--green:#6cb859;--red:#c5564e;}
-  [data-theme="light"]{--bg:#f5f2ea;--bg2:#fffefa;--bg3:#efe9db;--fg:#241f17;--fg-soft:#4b463c;--fg-faint:#8a8478;--gold:#9c7a22;--gold-soft:rgba(156,122,34,.1);--gold-line:rgba(156,122,34,.4);--line:rgba(0,0,0,.12);--green:#3f8c2f;--red:#b03a31;}
-  *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,'Segoe UI','Sarabun',sans-serif;line-height:1.6;}
-  .wrap{max-width:860px;margin:0 auto;padding:16px;}
-  .topbar{display:flex;justify-content:space-between;align-items:center;padding:6px 0 12px;border-bottom:1px solid var(--line);}
-  .brand{font-family:var(--tc);font-size:17px;color:var(--gold);}.brand a{color:inherit;text-decoration:none;}
-  .tbtn{background:var(--bg3);border:1px solid var(--line);color:var(--fg-soft);border-radius:8px;padding:5px 9px;cursor:pointer;font-size:13px;}
-  .beta{background:repeating-linear-gradient(45deg,var(--gold-soft),var(--gold-soft) 10px,transparent 10px,transparent 20px);border:1px dashed var(--gold);color:var(--gold);text-align:center;padding:6px;font-size:12px;border-radius:8px;margin:12px 0;}
-  .hero{text-align:center;padding:6px 0 14px;}
-  .hero h1{font-family:var(--tc);font-size:27px;margin:0;color:var(--gold);}.hero .tc{font-size:.7em;opacity:.85;}
-  .hero .sub{color:var(--fg-soft);font-size:13.5px;margin-top:3px;}
-  .hero .badge{display:inline-block;margin-top:7px;font-size:11px;border:1px solid var(--gold-line);color:var(--gold);border-radius:99px;padding:3px 10px;}
-  .card{background:var(--bg2);border:1px solid var(--line);border-radius:13px;padding:15px 17px;margin-bottom:13px;}
-  .sec{font-family:var(--tc);font-size:15px;color:var(--gold);margin:0 0 9px;}
-  .sec .en{font-size:10.5px;color:var(--fg-faint);font-family:sans-serif;}
-  .chip{display:inline-block;background:var(--bg3);border:1px solid var(--line);border-radius:99px;padding:3px 9px;font-size:12px;color:var(--fg-soft);margin:2px;}
-  .loc{margin-top:10px;font-size:13px;color:var(--fg-soft);}
-  .loc input{background:var(--bg3);border:1px solid var(--line);color:var(--fg);border-radius:7px;padding:4px 7px;width:96px;}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  th,td{text-align:center;padding:5px 4px;border-bottom:1px solid var(--line);}
-  th{color:var(--fg-faint);font-weight:500;font-size:10.5px;}
-  .miao{color:var(--green);}.xian{color:var(--red);}
-  .verdict{display:flex;gap:12px;align-items:center;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:13px 15px;}
-  .verdict .big{font-size:25px;}.verdict .lbl{font-family:var(--tc);font-size:19px;}
-  .lv-top .lbl,.lv-good .lbl{color:var(--green);}.lv-bad .lbl{color:var(--red);}
-  .reasons{font-size:13px;color:var(--fg-soft);margin:8px 0 0;padding-left:18px;}.reasons li{margin:2px 0;}
-  .aibtn{display:block;width:100%;background:linear-gradient(135deg,var(--gold),#a07d28);color:#1a1208;border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;}
-  .aibtn:disabled{opacity:.5;cursor:default;}
-  #aiout{white-space:pre-wrap;font-size:14px;color:var(--fg);margin-top:10px;line-height:1.7;}
-  .disc{font-size:11px;color:var(--fg-faint);font-style:italic;border-top:1px solid var(--line);padding-top:11px;margin-top:4px;}
-  .tc{font-family:var(--tc);}.muted{color:var(--fg-faint);font-size:12px;}
-  .pend{border:1px dashed var(--gold-line);color:var(--gold);border-radius:9px;padding:9px;font-size:12.5px;text-align:center;}
+:root{
+  --serif:'Cormorant Garamond',serif;
+  --tc:'Noto Serif TC',serif;
+  --th:'Noto Serif Thai',serif;
+  --mono:'JetBrains Mono',monospace;
+  /* สีธาตุดาว (ใช้ทั้ง 2 ธีม · จุดดาวอยู่บนจานฟ้าสีเข้มเสมอ) */
+  --wood:#6fbe5b; --fire:#e0604f; --earth:#cf9d3f; --metal:#c9cfd8; --water:#5b9fd8;
+  --sun:#efa03c; --moon:#d8dce6;
+}
+[data-theme="dark"]{
+  --bg:#0b0d11; --bg-2:#12151b; --bg-3:#191d26; --bg-4:#20242f;
+  --fg:#f3edde; --fg-soft:#c3b99f; --fg-faint:#7c766a;
+  --gold:#c8a44d; --gold-bright:#e6c976; --gold-deep:#8a6d2a;
+  --gold-soft:rgba(200,164,77,.13); --gold-line:rgba(200,164,77,.32);
+  --line:rgba(200,164,77,.14);
+  --ok:#7fa869; --ok-soft:rgba(127,168,105,.16);
+  --bad:#c95c4a; --bad-soft:rgba(201,92,74,.16);
+  --neu:#9aa0ac; --neu-soft:rgba(154,160,172,.14);
+  --topbar-bg:rgba(11,13,17,.82);
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-2:#fffdf6; --bg-3:#efe8d6; --bg-4:#e7dfc9;
+  --fg:#221e15; --fg-soft:#5b5443; --fg-faint:#948b78;
+  --gold:#9c7a22; --gold-bright:#b8933a; --gold-deep:#7a5f1c;
+  --gold-soft:rgba(156,122,34,.11); --gold-line:rgba(156,122,34,.38);
+  --line:rgba(120,95,30,.18);
+  --ok:#4d8a3a; --ok-soft:rgba(77,138,58,.13);
+  --bad:#b03a2e; --bad-soft:rgba(176,58,46,.12);
+  --neu:#6f6a5d; --neu-soft:rgba(111,106,93,.12);
+  --topbar-bg:rgba(246,241,230,.88);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--fg);font-family:var(--th),var(--serif);line-height:1.65;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;}
+button,input,select{font-family:inherit;color:inherit;font-size:inherit;}
+a{color:var(--gold);}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px;}
+
+/* ── topbar ─────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 20px;background:var(--topbar-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--gold-line);}
+.back{display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:var(--fg);font-size:13px;}
+.back .seal{width:28px;height:28px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);flex-shrink:0;}
+.back:hover{color:var(--gold);}
+.top-r{display:flex;align-items:center;gap:9px;}
+.lang-seg{display:inline-flex;background:var(--bg-3);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+.lang-seg button{min-width:30px;height:24px;padding:0 8px;border:none;background:transparent;color:var(--fg-soft);font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.06em;border-radius:99px;cursor:pointer;transition:.2s;}
+.lang-seg button.on{background:var(--gold);color:var(--bg);}
+.tbtn{width:30px;height:30px;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg-soft);border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.tbtn:hover{color:var(--gold);border-color:var(--gold);}
+
+/* ── hero ───────────────────────────────── */
+.hero{text-align:center;padding:38px 20px 26px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--bg-2),var(--bg));}
+.hero .crest{font-family:var(--tc);font-size:15px;letter-spacing:.55em;color:var(--gold);text-indent:.55em;margin-bottom:10px;font-weight:600;}
+.hero h1{font-family:var(--tc);font-size:clamp(28px,6vw,40px);font-weight:700;letter-spacing:.06em;color:var(--fg);line-height:1.25;}
+.hero h1 .gd{color:var(--gold);}
+.hero .th-title{font-family:var(--th);font-size:clamp(15px,3.4vw,19px);font-weight:500;color:var(--fg-soft);margin-top:6px;}
+.hero .sub{font-size:13px;color:var(--fg-faint);max-width:560px;margin:10px auto 0;line-height:1.7;}
+.honesty-chip{display:inline-flex;align-items:center;gap:7px;margin-top:16px;background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--gold);border-radius:99px;padding:6px 14px;font-size:11.5px;cursor:pointer;transition:.2s;max-width:92vw;}
+.honesty-chip:hover{border-color:var(--gold);background:var(--bg-3);}
+.honesty-chip .ic{font-family:var(--serif);font-style:italic;font-weight:600;font-size:13px;flex-shrink:0;}
+
+/* ── layout ─────────────────────────────── */
+main{max-width:880px;margin:0 auto;padding:22px 16px 70px;}
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:16px;}
+.eyebrow{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
+.eyebrow .han{font-family:var(--tc);font-size:19px;font-weight:700;color:var(--gold);}
+.eyebrow .lbl{font-size:14px;font-weight:600;color:var(--fg);}
+.eyebrow .en{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-faint);margin-left:auto;text-align:right;}
+.muted{color:var(--fg-faint);font-size:12px;}
+.chip{display:inline-block;background:var(--bg-3);border:1px solid var(--line);border-radius:99px;padding:3px 11px;font-size:12px;color:var(--fg-soft);margin:2px 3px 2px 0;}
+.tc{font-family:var(--tc);}
+
+/* ── context (ฤกษ์+สถานที่) ─────────────── */
+.ctx-line{font-size:14.5px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.ctx-line .dt{font-weight:600;font-size:15.5px;}
+.ctx-place{margin-top:4px;font-size:12.5px;color:var(--fg-soft);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.ctx-edit{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);display:grid;gap:10px;}
+.fld{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12.5px;color:var(--fg-soft);}
+.fld label{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);min-width:74px;}
+.fld input{background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);border-radius:8px;padding:7px 10px;font-size:13px;outline:none;transition:.2s;}
+.fld input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft);}
+#placeInput{flex:1;min-width:200px;font-size:16px;}  /* ≥16px กัน iOS zoom */
+.gbtn{background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg-soft);border-radius:8px;padding:7px 13px;font-size:12.5px;cursor:pointer;transition:.2s;}
+.gbtn:hover{border-color:var(--gold);color:var(--gold);}
+details.coords{font-size:12px;color:var(--fg-faint);}
+details.coords summary{cursor:pointer;color:var(--fg-faint);font-size:11.5px;list-style:none;}
+details.coords summary::before{content:'▸ ';color:var(--gold);}
+details.coords[open] summary::before{content:'▾ ';}
+details.coords .fld{margin-top:8px;}
+details.coords input{width:110px;font-family:var(--mono);font-size:12px;}
+.pac-container{z-index:10001 !important;}
+.place-hint{font-size:11px;color:var(--fg-faint);}
+
+/* ── wheel ──────────────────────────────── */
+.wheel-card{padding-bottom:16px;}
+.wheel-wrap{position:relative;max-width:600px;margin:4px auto 0;}
+.wheel-wrap svg{display:block;width:100%;height:auto;}
+#wtip{position:absolute;display:none;background:#0d1017;border:1px solid var(--gold-line);border-radius:10px;padding:9px 12px;font-size:12px;line-height:1.55;color:#f3edde;pointer-events:none;z-index:20;max-width:230px;box-shadow:0 8px 26px rgba(0,0,0,.5);}
+#wtip .tt-name{font-weight:700;font-size:13px;}
+#wtip .tt-rel{display:inline-block;border-radius:99px;padding:0 8px;font-size:10.5px;margin-left:4px;border:1px solid;}
+.wheel-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-top:12px;font-size:11px;color:var(--fg-soft);}
+.wheel-legend .li{display:inline-flex;align-items:center;gap:5px;}
+.wheel-legend .swd{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;}
+.asc-line{text-align:center;font-size:13px;color:var(--fg-soft);margin-top:10px;}
+.ayan-note{font-size:10.5px;color:var(--fg-faint);text-align:center;margin-top:8px;line-height:1.6;}
+.star-dot{cursor:pointer;}
+.star-dot:focus{outline:none;}
+.star-dot:focus .dot-core{stroke:var(--gold-bright);stroke-width:2;}
+@keyframes txpulse{0%,100%{opacity:.85;}50%{opacity:.25;}}
+.glow-halo{animation:txpulse 2.8s ease-in-out infinite;}
+@media (prefers-reduced-motion:reduce){.glow-halo{animation:none;opacity:.6;}}
+
+/* ── verdict ────────────────────────────── */
+.verdict{display:flex;align-items:center;gap:16px;border-radius:14px;padding:16px 18px;border:1px solid;}
+.verdict .seal2{width:56px;height:56px;border:1.5px solid;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:26px;font-weight:900;flex-shrink:0;}
+.verdict .v-big{font-family:var(--th);font-size:clamp(19px,4.5vw,24px);font-weight:700;line-height:1.3;}
+.verdict .v-sub{font-size:12.5px;color:var(--fg-soft);margin-top:2px;}
+.lv-top{border-color:var(--gold-line);background:var(--gold-soft);}
+.lv-top .seal2,.lv-top .v-big{color:var(--gold-bright);border-color:var(--gold);}
+.lv-good{border-color:rgba(127,168,105,.4);background:var(--ok-soft);}
+.lv-good .seal2,.lv-good .v-big{color:var(--ok);border-color:var(--ok);}
+.lv-neutral{border-color:var(--line);background:var(--neu-soft);}
+.lv-neutral .seal2,.lv-neutral .v-big{color:var(--neu);border-color:var(--neu);}
+.lv-bad{border-color:rgba(201,92,74,.4);background:var(--bad-soft);}
+.lv-bad .seal2,.lv-bad .v-big{color:var(--bad);border-color:var(--bad);}
+.reasons{font-size:13px;color:var(--fg-soft);margin:12px 0 0;padding-left:20px;}
+.reasons li{margin:3px 0;}
+.geju-row{margin-top:12px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;}
+.geju-row .glbl{font-family:var(--tc);font-size:13px;color:var(--gold);margin-right:4px;}
+.gchip{display:inline-block;border-radius:99px;padding:3px 11px;font-size:12px;border:1px solid;}
+.gchip.g1{color:var(--ok);border-color:rgba(127,168,105,.5);background:var(--ok-soft);}
+.gchip.g0{color:var(--bad);border-color:rgba(201,92,74,.5);background:var(--bad-soft);}
+
+/* ── deep analysis ──────────────────────── */
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;}
+.rel-cell{background:var(--bg-3);border:1px solid var(--line);border-radius:11px;padding:10px 13px;}
+.rel-cell .rc-h{display:flex;align-items:baseline;gap:7px;margin-bottom:3px;}
+.rel-cell .rc-han{font-family:var(--tc);font-size:16px;font-weight:700;}
+.rel-cell .rc-th{font-size:11px;color:var(--fg-faint);}
+.rel-cell .rc-stars{font-size:13.5px;line-height:1.5;}
+.rel-en .rc-han{color:var(--ok);}
+.rel-yong .rc-han{color:var(--water);}
+.rel-chou .rc-han{color:#c98f3e;}
+.rel-nan .rc-han{color:var(--bad);}
+.deg-lords{margin-top:12px;font-size:12.5px;color:var(--fg-soft);line-height:1.8;border-top:1px dashed var(--line);padding-top:10px;}
+
+/* ── star table ─────────────────────────── */
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th,td{text-align:center;padding:7px 5px;border-bottom:1px solid var(--line);}
+th{font-family:var(--mono);color:var(--fg-faint);font-weight:500;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;}
+tr:last-child td{border-bottom:none;}
+td.st-name{text-align:left;}
+.miao{color:var(--ok);font-weight:600;}
+.xian{color:var(--bad);font-weight:600;}
+.tbl-note{font-size:10.5px;color:var(--fg-faint);margin-top:9px;line-height:1.7;}
+
+/* ── AI ─────────────────────────────────── */
+.aibtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-deep));color:#160f04;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--th);letter-spacing:.02em;transition:.2s;}
+.aibtn:hover:not(:disabled){filter:brightness(1.08);}
+.aibtn:disabled{opacity:.5;cursor:default;}
+.aibtn .han{font-family:var(--tc);font-size:16px;}
+.ai-note{text-align:center;font-size:11px;color:var(--fg-faint);margin-top:7px;}
+#aiout{white-space:pre-wrap;font-size:14px;color:var(--fg);margin-top:12px;line-height:1.75;}
+
+/* ── popup ──────────────────────────────── */
+.pop-back{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;}
+.pop-back.show{display:flex;}
+.pop{background:var(--bg-2);border:1px solid var(--gold);border-radius:16px;padding:24px 26px;max-width:520px;max-height:82vh;overflow-y:auto;}
+.pop h3{font-family:var(--tc);font-size:18px;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:9px;}
+.pop p{font-size:13.5px;color:var(--fg-soft);margin-bottom:10px;line-height:1.75;}
+.pop .ok-row{text-align:right;margin-top:6px;}
+.pop .verify-badge{display:inline-block;background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--gold);border-radius:8px;padding:6px 12px;font-size:11.5px;line-height:1.6;margin-bottom:10px;}
+
+.disc{font-size:11px;color:var(--fg-faint);font-style:italic;border-top:1px solid var(--line);padding-top:14px;margin-top:6px;line-height:1.7;}
+@media(max-width:560px){
+  .card{padding:16px;border-radius:13px;}
+  .hero{padding:28px 14px 22px;}
+  .verdict{gap:12px;}
+  .verdict .seal2{width:46px;height:46px;font-size:21px;}
+  .eyebrow .en{display:none;}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="brand"><a href="/datepick">← hourkey · 擇日</a></div>
-    <div>
-      <button class="tbtn" id="langBtn">🌐 TH</button>
-      <button class="tbtn" id="themeBtn">☀/🌙</button>
+
+<div class="topbar">
+  <a class="back" href="/datepick"><span class="seal">擇</span><span>← <span data-t="back">กลับหน้าวางฤกษ์</span></span></a>
+  <div class="top-r">
+    <div class="lang-seg" id="langSeg" role="group" aria-label="language">
+      <button data-lang="th">TH</button><button data-lang="en">EN</button><button data-lang="zh">中</button>
     </div>
+    <button class="tbtn" id="themeBtn" title="สลับธีม" aria-label="toggle theme">☾</button>
   </div>
+</div>
 
-  <div class="hero">
-    <h1>天星擇日 · <span data-t="title">ฤกษ์ดาวจริง</span> <span class="tc">七政四餘</span></h1>
-    <div class="sub" data-t="sub">ชั้นสูงสุดของวิชาเลือกฤกษ์ — ตรวจตำแหน่งดาวจริงบนฟ้าขณะลงมือ</div>
-    <span class="badge">🔬 <span data-t="badge">ดาราศาสตร์จริง (astronomy-engine) · เสริมฤกษ์จาก黃曆 · ไม่เข้าคะแนนหน้าวางฤกษ์</span></span>
-  </div>
+<header class="hero">
+  <div class="crest">七政四餘</div>
+  <h1><span class="gd">天星</span>擇日</h1>
+  <div class="th-title" data-t="title">ตรวจฤกษ์ด้วยดาวจริงบนฟ้า</div>
+  <p class="sub" data-t="sub">ชั้นสูงสุดของวิชาเลือกฤกษ์ — วงล้อจักรราศีแสดงตำแหน่งดาวจริง 11 ดวง ณ วินาทีที่เลือกลงมือ ผูกลัคนา แล้วตัดสินตามตำรา果老星宗</p>
+  <button class="honesty-chip" id="honestyBtn"><span class="ic">i</span><span data-t="honesty_chip">ตำแหน่งดาว = ดาราศาสตร์จริง · ชั้นตีความกำลังทยอย verify กับซินแส</span></button>
+</header>
 
-  <div class="beta">⚙️ <span data-t="beta">ตำแหน่งดาว = ของจริงแม่นยำ · 廟旺度數(宿+度)+恩用仇難 4ขา+格局 = ตำรา果老星宗 (เปิดใช้แล้ว) · 紫氣 = beta รอ lock สำนัก</span></div>
+<main>
 
-  <div class="card" id="hdr">
-    <div class="sec">A · <span data-t="s_hdr">ฤกษ์ที่เลือก</span> <span class="en">from datepick</span></div>
-    <div id="hdrBody" class="muted" data-t="loading">กำลังโหลด…</div>
-    <div class="loc">🕐 <span data-t="manual">กรอกวัน-เวลาเอง (เวลาไทย)</span>: <input type="date" id="mDate"> <input type="time" id="mTime"> <button class="tbtn" id="mGo" data-t="analyze">🔭 วิเคราะห์</button></div>
-    <div class="loc">📍 <span data-t="loc">สถานที่จัดงาน</span>: lat <input id="lat" value="13.7563"> lng <input id="lng" value="100.5018"> <button class="tbtn" id="recalc" data-t="recalc">↻ คำนวณดาว</button></div>
-  </div>
+  <!-- A · ฤกษ์ + สถานที่ -->
+  <section class="card" id="ctxCard">
+    <div class="eyebrow"><span class="han">刻</span><span class="lbl" data-t="s_time">ฤกษ์ที่ตรวจ</span><span class="en">Moment · from datepick</span></div>
+    <div class="ctx-line" id="hdrBody"><span class="muted" data-t="loading">เปิดหน้านี้จากปุ่มในหน้าวางฤกษ์เพื่อส่งฤกษ์เข้ามา · หรือกรอกวัน-เวลาด้านล่าง</span></div>
+    <div class="ctx-place" id="placeLine" style="display:none"></div>
+    <div class="ctx-edit">
+      <div class="fld">
+        <label data-t="manual">วัน-เวลา (ไทย)</label>
+        <input type="date" id="mDate"> <input type="time" id="mTime">
+        <button class="gbtn" id="mGo">🔭 <span data-t="analyze">วิเคราะห์</span></button>
+      </div>
+      <div class="fld">
+        <label data-t="loc">สถานที่งาน</label>
+        <input id="placeInput" type="text" autocomplete="off" data-tp="place_ph" placeholder="พิมพ์ชื่อสถานที่ / เมือง แล้วเลือกจากรายการ">
+      </div>
+      <div class="place-hint" id="placeHint" style="display:none"></div>
+      <details class="coords">
+        <summary data-t="coords">กรอกพิกัดเอง (ละติจูด/ลองจิจูด)</summary>
+        <div class="fld">
+          <label>lat / lng</label>
+          <input id="lat" value="13.7563" inputmode="decimal"> <input id="lng" value="100.5018" inputmode="decimal">
+          <button class="gbtn" id="recalc">↻ <span data-t="recalc">คำนวณดาวใหม่</span></button>
+        </div>
+      </details>
+    </div>
+  </section>
 
-  <div class="card" id="vcard" style="display:none">
-    <div class="verdict" id="verdict"><span class="big"></span><div><div class="lbl"></div></div></div>
+  <!-- B · วงล้อดาวจริง -->
+  <section class="card wheel-card">
+    <div class="eyebrow"><span class="han">天盤</span><span class="lbl" data-t="s_wheel">วงล้อดาวจริงขณะฤกษ์</span><span class="en">Real sky · deterministic</span></div>
+    <div class="wheel-wrap">
+      <svg id="wheelSvg" viewBox="0 0 640 640" role="img" aria-label="zodiac wheel with real star positions"></svg>
+      <div id="wtip"></div>
+    </div>
+    <div class="wheel-legend" id="wheelLegend"></div>
+    <div class="asc-line" id="ascLine"></div>
+    <div class="ayan-note" id="ayanNote"></div>
+  </section>
+
+  <!-- C · คำตัดสิน -->
+  <section class="card" id="vcard" style="display:none">
+    <div class="eyebrow"><span class="han">斷</span><span class="lbl" data-t="s_verdict">คำตัดสินดาวจริง</span><span class="en">Verdict · 果老星宗 baseline</span></div>
+    <div class="verdict" id="verdict">
+      <div class="seal2" id="vSeal"></div>
+      <div><div class="v-big" id="vBig"></div><div class="v-sub" id="vSub"></div></div>
+    </div>
     <ul class="reasons" id="reasons"></ul>
-  </div>
+    <div class="geju-row" id="gejuRow"></div>
+  </section>
 
-  <div class="card" id="chartCard" style="display:none">
-    <div class="sec">B · <span data-t="s_chart">ผังดาวจริงขณะฤกษ์</span> <span class="en">deterministic</span></div>
-    <div id="ascLine" class="muted" style="margin-bottom:8px"></div>
+  <!-- D · เจาะลึก 恩用仇難 -->
+  <section class="card" id="ruleCard" style="display:none">
+    <div class="eyebrow"><span class="han">恩用仇難</span><span class="lbl" data-t="s_rule">โครงข่ายรอบดาว用神</span><span class="en">Four relations · Guolao Xingzong</span></div>
+    <div class="rel-grid" id="relGrid"></div>
+    <div class="deg-lords" id="degLords"></div>
+  </section>
+
+  <!-- E · ตารางดาว -->
+  <section class="card" id="chartCard" style="display:none">
+    <div class="eyebrow"><span class="han">星</span><span class="lbl" data-t="s_chart">ตารางดาว 11 ดวง</span><span class="en">7 planets + 4 nodes</span></div>
     <table id="starTbl"><thead><tr><th data-t="h_star">ดาว</th><th data-t="h_sign">ราศี</th><th>°</th><th>宿</th><th data-t="h_status">กำลัง</th></tr></thead><tbody></tbody></table>
-    <div class="muted" style="font-size:11px;margin-top:7px">ธาตุดาว: <b style="color:#5cab4a">● ไม้</b> <b style="color:#df5b4f">● ไฟ</b> <b style="color:#c79a3e">● ดิน</b> <b style="color:#9aa7b6">● ทอง</b> <b style="color:#4a93d1">● น้ำ</b> · 宿 = กลุ่มดาวฤกษ์ · กำลัง: <span class="miao">เขียว=แรง</span> <span class="xian">แดง=อ่อน</span></div>
-    <div class="muted" style="margin-top:7px" id="ayanNote"></div>
-  </div>
+    <div class="tbl-note" id="tblNote"></div>
+  </section>
 
-  <div class="card" id="ruleCard" style="display:none">
-    <div class="sec">C · <span data-t="s_rule">วิเคราะห์เชิงลึก</span> <span class="en">廟旺度數 · 恩用仇難 · 格局 · 果老星宗</span></div>
-    <div id="ruleBody"></div>
-  </div>
-
-  <div class="card">
-    <button class="aibtn" id="aiBtn" data-t="ai">🤖 ให้ซินแสสังเคราะห์ละเอียด (หักยามตามความยาวคำตอบ)</button>
+  <!-- F · ซินแส -->
+  <section class="card">
+    <button class="aibtn" id="aiBtn"><span class="han">問星師</span><span data-t="ai">ถามซินแสดาวจริง — สังเคราะห์ผังนี้ละเอียด</span></button>
+    <div class="ai-note" data-t="ai_note">หักยามตามความยาวคำตอบ · ต้องเข้าสู่ระบบ</div>
     <div id="aiout"></div>
-  </div>
+  </section>
 
-  <div class="disc" data-t="disc">การอ่านนี้ใช้ตำแหน่งดาวจริง (七政四餘) เสริมการเลือกฤกษ์จาก黃曆 — เป็นแนวทางตามตำราโบราณ มีหลายสำนักและการตีความต่างกันได้ ไม่ใช่คำพยากรณ์ตายตัว และไม่ใช้แทนคำแนะนำทางการแพทย์/การเงิน/กฎหมาย</div>
+  <footer class="disc" data-t="disc">การอ่านนี้ใช้ตำแหน่งดาวจริงบนฟ้า (七政四餘) เสริมการเลือกฤกษ์จาก黃曆 — เป็นแนวทางตามตำราโบราณ มีหลายสำนักและการตีความต่างกันได้ ไม่ใช่คำพยากรณ์ตายตัว และไม่ใช้แทนคำแนะนำทางการแพทย์ การเงิน หรือกฎหมาย</footer>
+</main>
+
+<!-- popup ความตรงไปตรงมา -->
+<div class="pop-back" id="honestyPop" role="dialog" aria-modal="true">
+  <div class="pop">
+    <h3>🔭 <span data-t="hp_title">ระดับความแม่นของศาสตร์นี้</span></h3>
+    <div class="verify-badge" data-t="hp_badge">ตำแหน่งดาวทุกดวง = คำนวณดาราศาสตร์จริง ตรวจสอบย้อนกับหอดูดาวได้</div>
+    <p data-t="hp_p1">ชั้นที่ 1 — ตำแหน่งดาว: คำนวณจากวงโคจรจริงด้วย astronomy-engine แม่นยำทางดาราศาสตร์ ไม่ใช่ตารางสำเร็จรูปโบราณ</p>
+    <p data-t="hp_p2">ชั้นที่ 2 — การตีความ (廟旺 · 恩用仇難 · 格局): อิงตำรา果老星宗และตารางคลาสสิก ชั้นนี้กำลังทยอย verify กับซินแสทีละหมวด — จุดที่ยังไม่ lock สำนัก (เช่น 紫氣) จะระบุไว้ชัดเจนในหน้า</p>
+    <p data-t="hp_p3">ผลหน้านี้ใช้เสริมฤกษ์จาก黃曆ในหน้าวางฤกษ์ ไม่เข้าคะแนนหลัก และไม่ฟันธงแทนดุลยพินิจของท่าน</p>
+    <div class="ok-row"><button class="gbtn" id="honestyOk" data-t="hp_ok">เข้าใจแล้ว</button></div>
+  </div>
 </div>
 
 <script>
+/* ═══════════ i18n ═══════════ */
 const I18N={
-  th:{title:"ฤกษ์ดาวจริง",sub:"ชั้นสูงสุดของวิชาเลือกฤกษ์ — ตรวจตำแหน่งดาวจริงบนฟ้าขณะลงมือ",badge:"ดาราศาสตร์จริง · เสริมฤกษ์จาก黃曆 · ไม่เข้าคะแนนหน้าวางฤกษ์",beta:"ตำแหน่งดาวของจริงแม่นยำ · 廟旺度數+恩用仇難4ขา+格局 = ตำรา果老星宗 (เปิดใช้แล้ว) · 紫氣 beta รอ lock สำนัก",s_hdr:"ฤกษ์ที่เลือก",loc:"สถานที่จัดงาน",recalc:"↻ คำนวณดาว",manual:"กรอกวัน-เวลาเอง (เวลาไทย)",analyze:"🔭 วิเคราะห์",s_chart:"ผังดาวจริงขณะฤกษ์",h_star:"ดาว",h_sign:"ราศี",h_status:"กำลัง",s_rule:"วิเคราะห์เชิงลึก",ai:"🤖 ให้ซินแสสังเคราะห์ละเอียด (หักยาม)",loading:"เปิดหน้านี้จากปุ่มในหน้าวางฤกษ์ (datepick) เพื่อส่งฤกษ์เข้ามา · หรือกรอกเวลาเอง",disc:"การอ่านนี้ใช้ตำแหน่งดาวจริง เสริม黃曆 · ความเชื่อโบราณ หลายสำนักตีความต่างได้ · ไม่ใช่คำพยากรณ์ตายตัว · ไม่แทนคำแนะนำแพทย์/การเงิน/กฎหมาย"},
-  en:{title:"Real-Star Date Selection",sub:"The highest tier — checking the real sky at the chosen moment",badge:"Real astronomy · complements the almanac · not in datepick score",beta:"Real precise star positions · dignity-by-degree + 4-fold benefactor/affliction + patterns = Guolao Xingzong (live) · 紫氣 beta",s_hdr:"Chosen time",loc:"Event location",recalc:"↻ Recompute",manual:"Enter date-time (Thai time)",analyze:"🔭 Analyze",s_chart:"Real sky chart",h_star:"Star",h_sign:"Sign",h_status:"Dignity",s_rule:"Deep analysis",ai:"🤖 Master deep synthesis (costs yam)",loading:"Open this from the datepick result to pass a chosen time, or enter manually.",disc:"Uses real star positions to complement the almanac · traditional belief, schools differ · not a guarantee · not medical/financial/legal advice."},
-  zh:{title:"真星擇日",sub:"擇日最高層 — 查擇定時刻的真實天象",badge:"真實天文 · 輔助黃曆 · 不計入擇日分數",beta:"星曜位置真實精確 · 廟旺度數+恩用仇難+格局 = 果老星宗 (已啟用) · 紫氣 beta 待定派",s_hdr:"所擇時刻",loc:"用事地點",recalc:"↻ 重算",manual:"自行輸入日期時間（泰國時間）",analyze:"🔭 分析",s_chart:"真天象盤",h_star:"星",h_sign:"宮",h_status:"廟旺",s_rule:"深入分析",ai:"🤖 命師深入綜合（扣時）",loading:"請由擇日結果頁進入以傳入時刻，或自行輸入。",disc:"以真實星象輔助黃曆 · 傳統擇日，各派不同 · 非保證 · 不替代醫療/財務/法律建議。"}
+th:{
+  back:"กลับหน้าวางฤกษ์",title:"ตรวจฤกษ์ด้วยดาวจริงบนฟ้า",
+  sub:"ชั้นสูงสุดของวิชาเลือกฤกษ์ — วงล้อจักรราศีแสดงตำแหน่งดาวจริง 11 ดวง ณ วินาทีที่เลือกลงมือ ผูกลัคนา แล้วตัดสินตามตำรา果老星宗",
+  honesty_chip:"ตำแหน่งดาว = ดาราศาสตร์จริง · ชั้นตีความกำลังทยอย verify กับซินแส",
+  s_time:"ฤกษ์ที่ตรวจ",loading:"เปิดหน้านี้จากปุ่มในหน้าวางฤกษ์เพื่อส่งฤกษ์เข้ามา · หรือกรอกวัน-เวลาด้านล่าง",
+  manual:"วัน-เวลา (ไทย)",analyze:"วิเคราะห์",loc:"สถานที่งาน",place_ph:"พิมพ์ชื่อสถานที่ / เมือง แล้วเลือกจากรายการ",
+  coords:"กรอกพิกัดเอง (ละติจูด/ลองจิจูด)",recalc:"คำนวณดาวใหม่",
+  s_wheel:"วงล้อดาวจริงขณะฤกษ์",s_verdict:"คำตัดสินดาวจริง",s_rule:"โครงข่ายรอบดาว用神",s_chart:"ตารางดาว 11 ดวง",
+  h_star:"ดาว",h_sign:"ราศี",h_status:"กำลัง",
+  ai:"ถามซินแสดาวจริง — สังเคราะห์ผังนี้ละเอียด",ai_note:"หักยามตามความยาวคำตอบ · ต้องเข้าสู่ระบบ",
+  hp_title:"ระดับความแม่นของศาสตร์นี้",
+  hp_badge:"ตำแหน่งดาวทุกดวง = คำนวณดาราศาสตร์จริง ตรวจสอบย้อนกับหอดูดาวได้",
+  hp_p1:"ชั้นที่ 1 — ตำแหน่งดาว: คำนวณจากวงโคจรจริงด้วย astronomy-engine แม่นยำทางดาราศาสตร์ ไม่ใช่ตารางสำเร็จรูปโบราณ",
+  hp_p2:"ชั้นที่ 2 — การตีความ (廟旺 · 恩用仇難 · 格局): อิงตำรา果老星宗และตารางคลาสสิก ชั้นนี้กำลังทยอย verify กับซินแสทีละหมวด — จุดที่ยังไม่ lock สำนัก (เช่น 紫氣) จะระบุไว้ชัดเจนในหน้า",
+  hp_p3:"ผลหน้านี้ใช้เสริมฤกษ์จาก黃曆ในหน้าวางฤกษ์ ไม่เข้าคะแนนหลัก และไม่ฟันธงแทนดุลยพินิจของท่าน",
+  hp_ok:"เข้าใจแล้ว",
+  disc:"การอ่านนี้ใช้ตำแหน่งดาวจริงบนฟ้า (七政四餘) เสริมการเลือกฤกษ์จาก黃曆 — เป็นแนวทางตามตำราโบราณ มีหลายสำนักและการตีความต่างกันได้ ไม่ใช่คำพยากรณ์ตายตัว และไม่ใช้แทนคำแนะนำทางการแพทย์ การเงิน หรือกฎหมาย"
+},
+en:{
+  back:"Back to date selection",title:"Verify the moment with the real sky",
+  sub:"The highest tier of election astrology — a zodiac wheel plotting the 11 real stars (7 planets + 4 nodes) at your chosen moment, judged by the Guolao Xingzong canon",
+  honesty_chip:"Star positions = real astronomy · interpretation layer being verified with masters",
+  s_time:"Chosen moment",loading:"Open this page from the datepick result to pass a chosen time, or enter a date-time below.",
+  manual:"Date-time (Thai)",analyze:"Analyze",loc:"Event location",place_ph:"Type a place / city and pick from the list",
+  coords:"Enter coordinates manually (lat/lng)",recalc:"Recompute stars",
+  s_wheel:"Real sky wheel at the moment",s_verdict:"Real-star verdict",s_rule:"Network around the chart ruler",s_chart:"Table of 11 stars",
+  h_star:"Star",h_sign:"Sign",h_status:"Dignity",
+  ai:"Ask the star master — deep synthesis of this chart",ai_note:"Costs yam by answer length · login required",
+  hp_title:"How accurate is this discipline?",
+  hp_badge:"Every star position = real astronomical computation, verifiable against any observatory",
+  hp_p1:"Layer 1 — positions: computed from real orbits with astronomy-engine. Astronomically precise, not ancient lookup tables.",
+  hp_p2:"Layer 2 — interpretation (dignity, four relations, patterns): based on the Guolao Xingzong canon and classical tables. This layer is being verified with masters section by section — anything not yet locked to a school (e.g. 紫氣) is labeled on the page.",
+  hp_p3:"This page complements the almanac score in datepick. It does not enter the main score and never replaces your own judgment.",
+  hp_ok:"Got it",
+  disc:"This reading uses real star positions (七政四餘) to complement almanac-based selection — a traditional framework; schools differ in interpretation. Not a fixed prediction, and no substitute for medical, financial or legal advice."
+},
+zh:{
+  back:"返回擇日頁",title:"以真實天象驗證所擇時刻",
+  sub:"擇日最高層 — 黃道盤呈現所擇時刻十一曜（七政四餘）真實位置，安命宮，依果老星宗斷之",
+  honesty_chip:"星曜位置＝真實天文計算 · 論斷層正逐項與命師核證",
+  s_time:"所擇時刻",loading:"請由擇日結果頁進入以傳入時刻，或於下方自行輸入日期時間。",
+  manual:"日期時間（泰國）",analyze:"分析",loc:"用事地點",place_ph:"輸入地點／城市後從列表選擇",
+  coords:"自行輸入經緯度",recalc:"重算星位",
+  s_wheel:"該時刻真天象盤",s_verdict:"天星論斷",s_rule:"用神四關係網",s_chart:"十一曜表",
+  h_star:"星",h_sign:"宮",h_status:"廟旺",
+  ai:"問星師 — 深入綜合此盤",ai_note:"依答覆長度扣時 · 需登入",
+  hp_title:"此術之準確層級",
+  hp_badge:"諸曜位置＝真實天文計算，可與天文台核對",
+  hp_p1:"第一層 — 星位：以 astronomy-engine 依真實軌道計算，天文精確，非古表查閱。",
+  hp_p2:"第二層 — 論斷（廟旺 · 恩用仇難 · 格局）：依果老星宗與古典星表。此層正逐項與命師核證 — 未定派之處（如紫氣）頁內明示。",
+  hp_p3:"本頁輔助擇日頁之黃曆分數，不計入主分，亦不代替閣下判斷。",
+  hp_ok:"明白",
+  disc:"本讀以真實星象（七政四餘）輔助黃曆擇日 — 傳統之學，各派解讀有異，非定命之辭，不替代醫療、財務或法律建議。"
+}
 };
-let LANG=localStorage.getItem('hk_lang')||'th';
+
+/* ═══════════ ตารางอ้างอิงฝั่งแสดงผล ═══════════ */
+const SIGNS_L=[
+  {th:"เมษ",en:"Aries",zh:"白羊",g:"♈"},{th:"พฤษภ",en:"Taurus",zh:"金牛",g:"♉"},
+  {th:"เมถุน",en:"Gemini",zh:"雙子",g:"♊"},{th:"กรกฎ",en:"Cancer",zh:"巨蟹",g:"♋"},
+  {th:"สิงห์",en:"Leo",zh:"獅子",g:"♌"},{th:"กันย์",en:"Virgo",zh:"處女",g:"♍"},
+  {th:"ตุล",en:"Libra",zh:"天秤",g:"♎"},{th:"พิจิก",en:"Scorpio",zh:"天蠍",g:"♏"},
+  {th:"ธนู",en:"Sagittarius",zh:"人馬",g:"♐"},{th:"มังกร",en:"Capricorn",zh:"摩羯",g:"♑"},
+  {th:"กุมภ์",en:"Aquarius",zh:"寶瓶",g:"♒"},{th:"มีน",en:"Pisces",zh:"雙魚",g:"♓"}
+];
+/* สีธาตุ 五行 ต่อดาว (จุดบนจานฟ้า + ตาราง) */
+const ELEM={
+  Jupiter:{c:"var(--wood)",cd:"#6fbe5b",th:"ไม้",en:"Wood",zh:"木"}, Ziqi:{c:"var(--wood)",cd:"#6fbe5b",th:"ไม้",en:"Wood",zh:"木"},
+  Mars:{c:"var(--fire)",cd:"#e0604f",th:"ไฟ",en:"Fire",zh:"火"}, Rahu:{c:"var(--fire)",cd:"#e0604f",th:"ไฟ",en:"Fire",zh:"火"},
+  Saturn:{c:"var(--earth)",cd:"#cf9d3f",th:"ดิน",en:"Earth",zh:"土"}, Ketu:{c:"var(--earth)",cd:"#cf9d3f",th:"ดิน",en:"Earth",zh:"土"},
+  Venus:{c:"var(--metal)",cd:"#c9cfd8",th:"ทอง",en:"Metal",zh:"金"},
+  Mercury:{c:"var(--water)",cd:"#5b9fd8",th:"น้ำ",en:"Water",zh:"水"}, Yuebo:{c:"var(--water)",cd:"#5b9fd8",th:"น้ำ",en:"Water",zh:"水"},
+  Sun:{c:"var(--sun)",cd:"#efa03c",th:"หยาง(ไฟ)",en:"Yang",zh:"陽"}, Moon:{c:"var(--moon)",cd:"#d8dce6",th:"หยิน(น้ำ)",en:"Yin",zh:"陰"}
+};
+const elOf=k=>ELEM[k]||{c:"var(--fg)",cd:"#ccc",th:"",en:"",zh:""};
+const STAR_EN={Sun:"Sun",Moon:"Moon",Mercury:"Mercury",Venus:"Venus",Mars:"Mars",Jupiter:"Jupiter",Saturn:"Saturn",Rahu:"Rahu",Ketu:"Ketu",Yuebo:"Yuebo",Ziqi:"Ziqi"};
+/* อักษรเดี่ยวในจุดดาว */
+const STAR_CHAR={Rahu:"羅",Ketu:"計",Yuebo:"孛",Ziqi:"氣"};
+const charOf=s=>s.zh&&s.zh.length===1?s.zh:(STAR_CHAR[s.key]||s.zh.charAt(0));
+const STATUS_TH={"廟":"แรงสุด","旺":"รุ่งเรือง","升殿":"ได้ที่","樂":"สบาย","平":"ปกติ","落":"อ่อนแรง","陷":"อับแสง"};
+const STATUS_EN={"廟":"domicile","旺":"exalted","升殿":"enthroned","樂":"at ease","平":"neutral","落":"weakened","陷":"fallen"};
+const statusLabel=(st,L)=>L==="zh"?st:L==="en"?(STATUS_EN[st]||st):(STATUS_TH[st]||st);
+const LEVELS={
+  top:{th:"มงคล",en:"Auspicious",zh:"大吉",seal:"吉",cls:"lv-top"},
+  good:{th:"ดี",en:"Favorable",zh:"吉",seal:"吉",cls:"lv-good"},
+  neutral:{th:"กลาง / ผสม",en:"Mixed",zh:"平",seal:"平",cls:"lv-neutral"},
+  bad:{th:"ควรเลี่ยง",en:"Better avoid",zh:"不宜",seal:"忌",cls:"lv-bad"}
+};
+const REL_LABEL={
+  en:{han:"恩星",th:"หนุน用神 (生)",en:"Benefactor (feeds ruler)",zh:"生用神",color:"var(--ok)"},
+  yong:{han:"用星",th:"用神ระบาย (剋難·ดี)",en:"Output (tames affliction)",zh:"用神所生",color:"var(--water)"},
+  chou:{han:"仇星",th:"剋ตัวหนุน (เสีย)",en:"Rival (harms benefactor)",zh:"用神所剋",color:"#c98f3e"},
+  nan:{han:"難星",th:"ขัด用神 (ร้ายสุด)",en:"Affliction (strikes ruler)",zh:"剋用神",color:"var(--bad)"}
+};
+
+let LANG=(function(){try{const u=new URLSearchParams(location.search).get("lang");if(u&&["th","en","zh"].includes(u))return u;return localStorage.getItem("hk_lang")||"th";}catch(e){return "th";}})();
 let HANDOFF=null;
+let PLACE_NAME="";
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+function fmtDate(iso){try{const d=new Date(iso);if(isNaN(d.getTime()))return "";return d.toLocaleString(LANG==="th"?"th-TH":LANG==="zh"?"zh-CN":"en-US",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"});}catch(e){return "";}}
+
+/* ═══════════ ธีม + ภาษา ═══════════ */
 function applyLang(){
   document.documentElement.lang=LANG;
-  document.querySelectorAll('[data-t]').forEach(el=>{const k=el.getAttribute('data-t');if(I18N[LANG][k])el.textContent=I18N[LANG][k];});
-  document.getElementById('langBtn').textContent='🌐 '+LANG.toUpperCase();
+  document.querySelectorAll("[data-t]").forEach(el=>{const k=el.getAttribute("data-t");if(I18N[LANG][k])el.textContent=I18N[LANG][k];});
+  document.querySelectorAll("[data-tp]").forEach(el=>{const k=el.getAttribute("data-tp");if(I18N[LANG][k])el.setAttribute("placeholder",I18N[LANG][k]);});
+  document.querySelectorAll("#langSeg button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
+  renderHeader();
+  if(window._last){render(window._last);}else{drawWheel(null);}
 }
-document.getElementById('langBtn').onclick=()=>{LANG=LANG==='th'?'en':LANG==='en'?'zh':'th';localStorage.setItem('hk_lang',LANG);applyLang();if(HANDOFF)render(window._last);};
-document.getElementById('themeBtn').onclick=()=>{const d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark';localStorage.setItem('hk_theme',d.dataset.theme);};
-if(localStorage.getItem('hk_theme'))document.documentElement.dataset.theme=localStorage.getItem('hk_theme');
+document.getElementById("langSeg").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-lang]");if(!b)return;
+  LANG=b.dataset.lang;try{localStorage.setItem("hk_lang",LANG);}catch(err){}
+  applyLang();
+});
+document.getElementById("themeBtn").onclick=()=>{
+  const d=document.documentElement;
+  d.dataset.theme=d.dataset.theme==="dark"?"light":"dark";
+  try{localStorage.setItem("hk_theme",d.dataset.theme);}catch(e){}
+};
 
+/* ═══════════ HANDOFF (คงพฤติกรรมเดิม · URL เดิมเปิดได้) ═══════════ */
 function readHandoff(){
   const u=new URLSearchParams(location.search);
   let h=null;
-  try{const ss=JSON.parse(sessionStorage.getItem('hk_tianxing_handoff')||'null');if(ss&&ss.dtUTC)h=ss;}catch(e){}
-  if(u.get('dt')){ if(!h||h.dtUTC!==u.get('dt')) h={dtUTC:u.get('dt'),lat:u.get('lat'),lng:u.get('lng'),activity:{name:u.get('act')||''}}; }
+  try{const ss=JSON.parse(sessionStorage.getItem("hk_tianxing_handoff")||"null");if(ss&&ss.dtUTC)h=ss;}catch(e){}
+  if(u.get("dt")){ if(!h||h.dtUTC!==u.get("dt")) h={dtUTC:u.get("dt"),lat:u.get("lat"),lng:u.get("lng"),activity:{name:u.get("act")||""}}; }
+  if(h&&!h.place&&u.get("place"))h.place=u.get("place");
   return h;
 }
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-/* สีธาตุ 五行 (user ฝึกหัดดูออกง่าย) + ชื่อไทย */
-const ELEM={
-  Jupiter:{c:'#5cab4a',th:'ไม้',zh:'木'}, Ziqi:{c:'#5cab4a',th:'ไม้',zh:'木'},
-  Mars:{c:'#df5b4f',th:'ไฟ',zh:'火'}, Rahu:{c:'#df5b4f',th:'ไฟ',zh:'火'},
-  Saturn:{c:'#c79a3e',th:'ดิน',zh:'土'}, Ketu:{c:'#c79a3e',th:'ดิน',zh:'土'},
-  Venus:{c:'#9aa7b6',th:'ทอง',zh:'金'},
-  Mercury:{c:'#4a93d1',th:'น้ำ',zh:'水'}, Yuebo:{c:'#4a93d1',th:'น้ำ',zh:'水'},
-  Sun:{c:'#e0852f',th:'หยาง(ไฟ)',zh:'陽'}, Moon:{c:'#a7b6c9',th:'หยิน(น้ำ)',zh:'陰'}
-};
-const elOf=k=>ELEM[k]||{c:'var(--fg)',th:'',zh:''};
-/* ชื่อดาวไทยนำ + สีธาตุ (สำหรับลิสต์ 恩用仇難) */
-const starC=(x,L)=>`<b style="color:${elOf(x.key).c}">${L==='th'?x.th:x.zh}</b>`;
-/* กำลังดาวเป็นไทยสั้น (ฝึกหัดอ่าน) */
-const STATUS_TH={'廟':'แรงสุด','旺':'รุ่งเรือง','升殿':'ได้ที่','樂':'สบาย','平':'ปกติ','落':'อ่อนแรง','陷':'อับแสง'};
-function fmtDate(iso){try{const d=new Date(iso);if(isNaN(d.getTime()))return '';return d.toLocaleString(LANG==='th'?'th-TH':LANG==='zh'?'zh-CN':'en-US',{dateStyle:'medium',timeStyle:'short'});}catch(e){return '';}}
-
-/* prefill ช่องกรอกเองด้วยเวลาไทยจาก instant (UTC iso) */
+function renderHeader(){
+  const el=document.getElementById("hdrBody");
+  if(!HANDOFF){el.innerHTML='<span class="muted">'+esc(I18N[LANG].loading)+"</span>";document.getElementById("placeLine").style.display="none";return;}
+  const act=(HANDOFF.activity&&HANDOFF.activity.name)||HANDOFF.act||"";
+  el.innerHTML='<span class="dt">🗓 '+esc(fmtDate(HANDOFF.dtUTC))+"</span>"+(act?' <span class="chip">'+esc(act)+"</span>":"");
+  const pl=document.getElementById("placeLine");
+  if(PLACE_NAME){pl.style.display="";pl.innerHTML="📍 <b>"+esc(PLACE_NAME)+"</b> <span class=\"muted\">"+esc(document.getElementById("lat").value)+", "+esc(document.getElementById("lng").value)+"</span>";}
+  else{pl.style.display="none";}
+}
 function prefillManual(dtUTC){
-  try{ var d=dtUTC?new Date(dtUTC):new Date();
-    var th=new Date(d.getTime()+7*3600000); // เลื่อนเป็นเวลาไทยเพื่อโชว์ใน input
-    document.getElementById('mDate').value=th.toISOString().slice(0,10);
-    document.getElementById('mTime').value=th.toISOString().slice(11,16);
+  try{
+    var d=dtUTC?new Date(dtUTC):new Date();
+    var th=new Date(d.getTime()+7*3600000);
+    document.getElementById("mDate").value=th.toISOString().slice(0,10);
+    document.getElementById("mTime").value=th.toISOString().slice(11,16);
   }catch(e){}
 }
 async function loadChart(){
   HANDOFF=readHandoff();
-  if(!HANDOFF){ prefillManual(null); document.getElementById('hdrBody').textContent=I18N[LANG].loading; return; }
-  if(HANDOFF.lat)document.getElementById('lat').value=HANDOFF.lat;
-  if(HANDOFF.lng)document.getElementById('lng').value=HANDOFF.lng;
+  if(!HANDOFF){prefillManual(null);renderHeader();drawWheel(null);return;}
+  if(HANDOFF.lat)document.getElementById("lat").value=HANDOFF.lat;
+  if(HANDOFF.lng)document.getElementById("lng").value=HANDOFF.lng;
+  if(HANDOFF.place){PLACE_NAME=String(HANDOFF.place);document.getElementById("placeInput").value=PLACE_NAME;}
   prefillManual(HANDOFF.dtUTC);
-  const act=(HANDOFF.activity&&HANDOFF.activity.name)||HANDOFF.act||'';
-  document.getElementById('hdrBody').innerHTML=`<b>🗓 ${esc(fmtDate(HANDOFF.dtUTC))}</b>`+(act?` · <span class="chip">${esc(act)}</span>`:'')+(HANDOFF.display?`<div class="muted">${esc(HANDOFF.display)}</div>`:'');
+  renderHeader();
   await recompute();
 }
-/* กรอกวัน-เวลาเอง (เวลาไทย) → สร้าง instant UTC แล้ววิเคราะห์ */
 async function goManual(){
-  var dv=document.getElementById('mDate').value, tv=document.getElementById('mTime').value;
-  if(!dv||!tv){document.getElementById('hdrBody').textContent='กรอกวันและเวลาให้ครบ';return;}
+  var dv=document.getElementById("mDate").value, tv=document.getElementById("mTime").value;
+  if(!dv||!tv){document.getElementById("hdrBody").innerHTML='<span class="muted">'+(LANG==="th"?"กรอกวันและเวลาให้ครบ":LANG==="zh"?"請填齊日期與時間":"Please fill both date and time")+"</span>";return;}
   var dtUTC;
-  try{ dtUTC=new Date(dv+'T'+tv+':00+07:00').toISOString(); }catch(e){ document.getElementById('hdrBody').textContent='รูปแบบเวลาไม่ถูกต้อง';return; }
-  HANDOFF={dtUTC:dtUTC, activity:{name:''}, display:''};
-  document.getElementById('hdrBody').innerHTML=`<b>🗓 ${esc(fmtDate(dtUTC))}</b> <span class="muted">(${esc(I18N[LANG].manual)})</span>`;
+  try{dtUTC=new Date(dv+"T"+tv+":00+07:00").toISOString();}catch(e){document.getElementById("hdrBody").innerHTML='<span class="muted">'+(LANG==="th"?"รูปแบบเวลาไม่ถูกต้อง":"Invalid date-time")+"</span>";return;}
+  HANDOFF={dtUTC:dtUTC,activity:{name:""},display:"",place:PLACE_NAME};
+  renderHeader();
   await recompute();
 }
 async function recompute(){
-  const lat=parseFloat(document.getElementById('lat').value),lng=parseFloat(document.getElementById('lng').value);
-  const res=await fetch('/api/tianxing/chart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dtUTC:HANDOFF.dtUTC,lat,lng})}).then(r=>r.json()).catch(()=>null);
-  if(!res||!res.ok){document.getElementById('hdrBody').innerHTML+='<div class="muted">คำนวณดาวไม่สำเร็จ</div>';return;}
-  window._last=res.reading;render(res.reading);
+  if(!HANDOFF)return;
+  const lat=parseFloat(document.getElementById("lat").value),lng=parseFloat(document.getElementById("lng").value);
+  const res=await fetch("/api/tianxing/chart",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({dtUTC:HANDOFF.dtUTC,lat,lng})}).then(r=>r.json()).catch(()=>null);
+  if(!res||!res.ok){
+    document.getElementById("ascLine").innerHTML='<span class="muted">'+(LANG==="th"?"คำนวณดาวไม่สำเร็จ — ลองใหม่อีกครั้ง":LANG==="zh"?"星位計算失敗，請重試":"Star computation failed — please retry")+"</span>";
+    return;
+  }
+  window._last=res.reading;
+  render(res.reading);
 }
+
+/* ═══════════ วงล้อจักรราศี SVG ═══════════
+   พิกัด: ลองจิจูดสายดาวฤกษ์ (lonSid) 0°=ต้นเมษ · เมษเริ่มซ้าย (ตะวันออก/ลัคนา)
+   หมุนทวนเข็มตามแผนภูมิโหราศาสตร์มาตรฐาน
+   pt(lon,R) = [cx − R·cos(lon), cy + R·sin(lon)]                            */
+const W_CX=320,W_CY=320;
+function wpt(lon,R){const a=lon*Math.PI/180;return [W_CX-R*Math.cos(a),W_CY+R*Math.sin(a)];}
+function arcPath(lon1,lon2,rOut,rIn){
+  const [x1,y1]=wpt(lon1,rOut),[x2,y2]=wpt(lon2,rOut),[x3,y3]=wpt(lon2,rIn),[x4,y4]=wpt(lon1,rIn);
+  /* lon เพิ่ม = ทวนเข็มบนจอ = sweep 0 ในพิกัด SVG */
+  return "M"+x1.toFixed(2)+" "+y1.toFixed(2)+" A"+rOut+" "+rOut+" 0 0 0 "+x2.toFixed(2)+" "+y2.toFixed(2)+
+         " L"+x3.toFixed(2)+" "+y3.toFixed(2)+" A"+rIn+" "+rIn+" 0 0 1 "+x4.toFixed(2)+" "+y4.toFixed(2)+" Z";
+}
+function drawWheel(r){
+  const svg=document.getElementById("wheelSvg");
+  const L=LANG;
+  let s="";
+  /* defs: จานฟ้า + glow */
+  s+='<defs>'+
+     '<radialGradient id="skyG" cx="50%" cy="46%" r="62%">'+
+       '<stop offset="0%" stop-color="#141a2b"/><stop offset="72%" stop-color="#0b0f1c"/><stop offset="100%" stop-color="#070a12"/>'+
+     '</radialGradient>'+
+     '<radialGradient id="needleG" cx="50%" cy="50%" r="50%">'+
+       '<stop offset="0%" stop-color="#e6c976"/><stop offset="100%" stop-color="#8a6d2a"/>'+
+     '</radialGradient>'+
+     '<filter id="glowF" x="-80%" y="-80%" width="260%" height="260%">'+
+       '<feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>'+
+     '</filter>'+
+     '</defs>';
+  /* จานฟ้า (คงสีค่ำเสมอ — ฟ้าจริง) */
+  s+='<circle cx="320" cy="320" r="308" fill="url(#skyG)" stroke="rgba(200,164,77,.55)" stroke-width="1.6"/>';
+  s+='<circle cx="320" cy="320" r="252" fill="none" stroke="rgba(200,164,77,.4)" stroke-width="1"/>';
+  s+='<circle cx="320" cy="320" r="86" fill="rgba(10,13,22,.55)" stroke="rgba(200,164,77,.35)" stroke-width="1"/>';
+  /* แถบราศีสลับโทน */
+  for(let i=0;i<12;i++){
+    if(i%2===0)s+='<path d="'+arcPath(i*30,i*30+30,308,252)+'" fill="rgba(200,164,77,.055)"/>';
+  }
+  /* เส้นแบ่งราศี + ขีดองศา */
+  for(let i=0;i<12;i++){
+    const [x1,y1]=wpt(i*30,252),[x2,y2]=wpt(i*30,308);
+    s+='<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="rgba(200,164,77,.4)" stroke-width="1"/>';
+  }
+  for(let d=0;d<360;d+=10){
+    if(d%30===0)continue;
+    const [x1,y1]=wpt(d,252),[x2,y2]=wpt(d,258);
+    s+='<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="rgba(200,164,77,.25)" stroke-width="1"/>';
+  }
+  /* ป้ายราศี: สัญลักษณ์ + ชื่อ (แนวนอน อ่านง่าย) */
+  for(let i=0;i<12;i++){
+    const mid=i*30+15;
+    const [gx,gy]=wpt(mid,290),[nx,ny]=wpt(mid,268);
+    const nm=L==="zh"?SIGNS_L[i].zh:L==="en"?SIGNS_L[i].en:SIGNS_L[i].th;
+    s+='<text x="'+gx.toFixed(1)+'" y="'+(gy+5).toFixed(1)+'" text-anchor="middle" font-size="15" fill="#c8a44d" style="font-family:serif">'+SIGNS_L[i].g+'</text>';
+    s+='<text x="'+nx.toFixed(1)+'" y="'+(ny+4).toFixed(1)+'" text-anchor="middle" font-size="'+(L==="en"?9:10.5)+'" fill="rgba(243,237,222,.72)">'+esc(nm)+"</text>";
+  }
+  /* ดาวพื้นหลังประดับ (ตำแหน่งคงที่ · ตกแต่ง) */
+  const deco=[[402,133,1.1],[173,208,.8],[452,398,.9],[247,455,1.2],[366,486,.7],[476,247,.8],[196,342,.7],[300,180,.9],[420,300,.6],[240,260,.7]];
+  deco.forEach(d=>{s+='<circle cx="'+d[0]+'" cy="'+d[1]+'" r="'+d[2]+'" fill="rgba(243,237,222,.35)"/>';});
+
+  if(!r){
+    s+='<text x="320" y="314" text-anchor="middle" font-size="30" fill="rgba(200,164,77,.85)" style="font-family:\'Noto Serif TC\',serif" font-weight="700">天盤</text>';
+    s+='<text x="320" y="342" text-anchor="middle" font-size="12" fill="rgba(243,237,222,.55)">'+esc(L==="th"?"เลือกฤกษ์เพื่อดูฟ้าจริง":L==="zh"?"擇時刻以觀真天象":"Pick a moment to see the sky")+"</text>";
+    svg.innerHTML=s;
+    return;
+  }
+
+  const asc=r.ascendant;
+  const yKey=r.yongshen.key;
+  const relMap={};
+  (r.en_stars||[]).forEach(x=>relMap[x.key]="en");
+  (r.yong_stars||[]).forEach(x=>relMap[x.key]="yong");
+  (r.chou_stars||[]).forEach(x=>relMap[x.key]="chou");
+  (r.nan_stars||[]).forEach(x=>relMap[x.key]="nan");
+  window._relMap=relMap;
+
+  /* เข็มทองลัคนา */
+  {
+    const [tx,ty]=wpt(asc.lonSid,246),[bx,by]=wpt(asc.lonSid,92);
+    const [w1x,w1y]=wpt(asc.lonSid+2.6,120),[w2x,w2y]=wpt(asc.lonSid-2.6,120);
+    s+='<path d="M'+tx.toFixed(1)+' '+ty.toFixed(1)+' L'+w1x.toFixed(1)+' '+w1y.toFixed(1)+' L'+bx.toFixed(1)+' '+by.toFixed(1)+' L'+w2x.toFixed(1)+' '+w2y.toFixed(1)+' Z" fill="url(#needleG)" opacity=".92"/>';
+    const [dx,dy]=wpt(asc.lonSid,246);
+    s+='<circle cx="'+dx.toFixed(1)+'" cy="'+dy.toFixed(1)+'" r="4.5" fill="#e6c976"/>';
+    const [lx,ly]=wpt(asc.lonSid,228);
+    s+='<text x="'+lx.toFixed(1)+'" y="'+(ly+4).toFixed(1)+'" text-anchor="middle" font-size="11" fill="#e6c976" style="font-family:\'Noto Serif TC\',serif" font-weight="700">命</text>';
+  }
+
+  /* จุดดาว 11 ดวง · กันชนกัน: เรียงตามลองจิจูด ใกล้กัน <10° ขยับรัศมีลง */
+  const idx=r.stars.map((st,i)=>i).sort((a,b)=>r.stars[a].lonSid-r.stars[b].lonSid);
+  const RADII=[206,178,150];
+  const placed=[[],[],[]];
+  const pos={};
+  idx.forEach(i=>{
+    const lon=r.stars[i].lonSid;
+    let lvl=0;
+    for(let k=0;k<3;k++){
+      const clash=placed[k].some(p=>{let d=Math.abs(p-lon);if(d>180)d=360-d;return d<11;});
+      if(!clash){lvl=k;break;}
+      lvl=Math.min(k+1,2);
+    }
+    placed[lvl].push(lon);
+    pos[i]=RADII[lvl];
+  });
+  let dots="";
+  r.stars.forEach((st,i)=>{
+    const R=pos[i]||206;
+    const [x,y]=wpt(st.lonSid,R);
+    const e=elOf(st.key);
+    const isY=st.key===yKey;
+    const isNan=relMap[st.key]==="nan";
+    /* ขีดบอกองศาจริงบนขอบวงใน */
+    const [t1x,t1y]=wpt(st.lonSid,252),[t2x,t2y]=wpt(st.lonSid,244);
+    dots+='<line x1="'+t1x.toFixed(1)+'" y1="'+t1y.toFixed(1)+'" x2="'+t2x.toFixed(1)+'" y2="'+t2y.toFixed(1)+'" stroke="'+e.cd+'" stroke-width="1.6" opacity=".85"/>';
+    dots+='<g class="star-dot" data-i="'+i+'" tabindex="0" role="button" aria-label="'+esc(st.th+" "+st.zh)+'">';
+    if(isY)dots+='<circle class="glow-halo" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="19" fill="none" stroke="#e6c976" stroke-width="2.5" filter="url(#glowF)"/>';
+    if(isNan)dots+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="15.5" fill="none" stroke="rgba(201,92,74,.75)" stroke-width="1.6" stroke-dasharray="3 2.4"/>';
+    dots+='<circle class="dot-core" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="11.5" fill="#0d1119" stroke="'+e.cd+'" stroke-width="1.7"/>';
+    dots+='<text x="'+x.toFixed(1)+'" y="'+(y+4.4).toFixed(1)+'" text-anchor="middle" font-size="12.5" fill="'+e.cd+'" style="font-family:\'Noto Serif TC\',serif" font-weight="700" pointer-events="none">'+charOf(st)+"</text>";
+    if(st.retro)dots+='<text x="'+(x+11).toFixed(1)+'" y="'+(y-8).toFixed(1)+'" font-size="9" fill="rgba(243,237,222,.7)" pointer-events="none">↺</text>';
+    dots+="</g>";
+  });
+  s+=dots;
+
+  /* ใจกลาง: ลัคนา + 用神 */
+  const signName=L==="zh"?asc.signZh:L==="en"?SIGNS_L[asc.sign].en:asc.signTh;
+  s+='<text x="320" y="300" text-anchor="middle" font-size="12" fill="rgba(243,237,222,.6)">'+esc(L==="zh"?"命宮":L==="en"?"Ascendant":"ลัคนา")+"</text>";
+  s+='<text x="320" y="326" text-anchor="middle" font-size="20" fill="#e6c976" style="font-family:\'Noto Serif TC\',serif" font-weight="700">'+esc(signName)+" "+asc.deg.toFixed(1)+"°</text>";
+  s+='<text x="320" y="349" text-anchor="middle" font-size="11.5" fill="rgba(243,237,222,.72)">'+esc((L==="zh"?"用神 ":L==="en"?"Ruler ":"用神 ")+(L==="en"?STAR_EN[r.yongshen.key]||r.yongshen.th:L==="zh"?r.yongshen.zh:r.yongshen.th)+" · "+statusLabel(r.yongshen.status,L))+"</text>";
+  svg.innerHTML=s;
+  wireTooltips(r);
+}
+
+/* tooltip ดาว: hover/tap/focus */
+function wireTooltips(r){
+  const tip=document.getElementById("wtip");
+  const wrap=document.querySelector(".wheel-wrap");
+  const relMap=window._relMap||{};
+  function show(g,evt){
+    const i=+g.dataset.i;const st=r.stars[i];if(!st)return;
+    const L=LANG;const e=elOf(st.key);
+    const nm=L==="en"?(STAR_EN[st.key]||st.th):L==="zh"?st.zh:st.th;
+    const alt=L==="zh"?st.th:st.zh;
+    const signName=L==="zh"?st.signZh:L==="en"?SIGNS_L[st.sign].en:st.signTh;
+    const rel=relMap[st.key];
+    const relTag=rel?('<span class="tt-rel" style="color:'+REL_LABEL[rel].color+';border-color:'+REL_LABEL[rel].color+'">'+REL_LABEL[rel].han+"</span>"):"";
+    tip.innerHTML='<div class="tt-name" style="color:'+e.cd+'">'+esc(nm)+' <span style="opacity:.65;font-weight:400">'+esc(alt)+"</span>"+relTag+"</div>"+
+      esc(signName)+" "+st.deg+"° · 宿 "+esc(st.shu||"—")+(st.shu?" "+st.shuDeg+"°":"")+"<br>"+
+      esc(statusLabel(st.status,L))+' <span style="opacity:.6">'+esc(st.status)+"</span>"+(st.retro?" · ↺ "+(L==="th"?"พักร์":L==="zh"?"逆行":"retrograde"):"");
+    tip.style.display="block";
+    const wr=wrap.getBoundingClientRect();
+    let px,py;
+    if(evt&&evt.clientX){px=evt.clientX-wr.left;py=evt.clientY-wr.top;}
+    else{const gr=g.getBoundingClientRect();px=gr.left+gr.width/2-wr.left;py=gr.top-wr.top;}
+    const tw=tip.offsetWidth,thh=tip.offsetHeight;
+    let lx=px+14,ly=py-thh-8;
+    if(lx+tw>wr.width)lx=px-tw-14;
+    if(lx<0)lx=4;
+    if(ly<0)ly=py+16;
+    tip.style.left=lx+"px";tip.style.top=ly+"px";
+  }
+  function hide(){tip.style.display="none";}
+  document.querySelectorAll(".star-dot").forEach(g=>{
+    g.addEventListener("mouseenter",e=>show(g,e));
+    g.addEventListener("mousemove",e=>show(g,e));
+    g.addEventListener("mouseleave",hide);
+    g.addEventListener("focus",()=>show(g,null));
+    g.addEventListener("blur",hide);
+    g.addEventListener("click",e=>{e.stopPropagation();show(g,e);});
+  });
+  document.addEventListener("click",e=>{if(!e.target.closest(".star-dot"))hide();});
+}
+
+/* ═══════════ render ═══════════ */
 function render(r){
   if(!r)return;
   const L=LANG;
-  // verdict
-  const vc=document.getElementById('vcard');vc.style.display='';
-  const v=document.getElementById('verdict');v.className='verdict lv-'+r.level;
-  const ic=r.level==='top'?'🟢':r.level==='good'?'🟢':r.level==='bad'?'🔴':'⚪';
-  v.querySelector('.big').textContent=ic;
-  v.querySelector('.lbl').textContent=r.verdictTh[L]||r.verdictTh.th;
-  document.getElementById('reasons').innerHTML=r.reasons.map(x=>`<li>${x[L]||x.th}</li>`).join('');
-  // chart
-  document.getElementById('chartCard').style.display='';
+  renderHeader();
+  drawWheel(r);
+
+  /* legend */
+  const lg=document.getElementById("wheelLegend");
+  const legendEls=[["Jupiter","ไม้ 木","Wood 木","木"],["Mars","ไฟ 火","Fire 火","火"],["Saturn","ดิน 土","Earth 土","土"],["Venus","ทอง 金","Metal 金","金"],["Mercury","น้ำ 水","Water 水","水"],["Sun","อาทิตย์ 日","Sun 日","日"],["Moon","จันทร์ 月","Moon 月","月"]];
+  lg.innerHTML=legendEls.map(x=>'<span class="li"><span class="swd" style="background:'+elOf(x[0]).cd+'"></span>'+esc(L==="en"?x[2]:L==="zh"?x[3]:x[1])+"</span>").join("")+
+    '<span class="li"><span class="swd" style="background:transparent;border:2px solid #e6c976;box-shadow:0 0 6px #e6c976"></span>'+esc(L==="th"?"用神 เรืองแสง":L==="zh"?"用神發光":"glowing = ruler")+"</span>"+
+    '<span class="li"><span class="swd" style="background:transparent;border:1.5px dashed var(--bad)"></span>'+esc(L==="th"?"ดาวร้าย 難星":L==="zh"?"難星":"affliction star")+"</span>";
+
+  /* asc line + ayanamsa note */
   const a=r.ascendant;
-  document.getElementById('ascLine').innerHTML=`命宮 (${L==='en'?'Ascendant':L==='zh'?'命宮':'ลัคนา'}): <b>${L==='zh'?a.signZh:a.signTh}</b> · 命主/用神: <b>${r.yongshen.th} ${r.yongshen.zh}</b> ${r.yongshen.status}`;
-  document.querySelector('#starTbl tbody').innerHTML=r.stars.map(s=>{
-    const cls=s.statusRank>=4?'miao':s.statusRank<=2?'xian':'';
-    const e=elOf(s.key);
-    return `<tr><td style="text-align:left"><b style="color:${e.c}">${L==='th'?s.th:s.zh}</b> <span class="muted">${L==='th'?s.zh:s.th}${e.th?' · '+e.th:''}</span></td><td>${L==='th'?s.signTh:s.signZh}</td><td>${s.deg}°</td><td class="muted">${s.shu||'—'}${s.shu?` ${s.shuDeg}°`:''}</td><td class="${cls}">${L==='th'?(STATUS_TH[s.status]||s.status):s.status} <span class="muted">${s.status}</span>${s.retro?' ↺':''}</td></tr>`;
-  }).join('');
-  document.getElementById('ayanNote').textContent=`ราศีอิงดาวฤกษ์ (ayanamsa ${r.ayanamsa}° · V1 · ปรับสำนักจีนได้) · 紫氣 รอ lock สำนัก · ⚠️ ดาวที่คาบขอบราศี(ใกล้ 0°/29°) อาจคลาด — ใช้ประกอบ ไม่ฟันธง`;
-  // rule
-  document.getElementById('ruleCard').style.display='';
-  const en=r.en_stars.map(x=>starC(x,L)).join('、')||'—',nan=r.nan_stars.map(x=>starC(x,L)).join('、')||'—';
-  const yong=(r.yong_stars||[]).map(x=>starC(x,L)).join('、')||'—',chou=(r.chou_stars||[]).map(x=>starC(x,L)).join('、')||'—';
-  const geju=r.geju.length?r.geju.map(g=>`<span class="chip" style="border-color:${g.good?'var(--green)':'var(--red)'};color:${g.good?'var(--green)':'var(--red)'}">${g.good?'✓':'✗'} ${L==='th'?g.th:g.zh}</span>`).join(''):'<span class="muted">—</span>';
-  document.getElementById('ruleBody').innerHTML=
-    `<div>恩星 (${L==='en'?'support 生用':L==='zh'?'生用神':'หนุน用神 (生)'}): ${en}</div>`+
-    `<div>用星 (${L==='en'?'output 用生':L==='zh'?'用神生':'用神ระบาย (剋難·ดี)'}): ${yong}</div>`+
-    `<div>仇星 (${L==='en'?'rival 用剋':L==='zh'?'用神剋':'用神剋 (剋恩·เสีย)'}): ${chou}</div>`+
-    `<div>難星 (${L==='en'?'affliction 剋用':L==='zh'?'剋用神':'ขัด用神 (剋·ร้ายสุด)'}): ${nan}</div>`+
-    `<div style="margin-top:6px">格局: ${geju}</div>`+
-    `<div class="muted" style="margin-top:8px;font-size:11px">廟旺度數 (宿+度) · 恩用仇難 4 ขา · 格局 = ตำรา果老星宗 (live) · 紫氣 = beta รอ lock สำนัก</div>`;
+  const signName=L==="zh"?a.signZh:L==="en"?SIGNS_L[a.sign].en:a.signTh;
+  document.getElementById("ascLine").innerHTML=(L==="zh"?"命宮":L==="en"?"Ascendant":"ลัคนา (命宮)")+": <b class=\"tc\">"+esc(signName)+"</b> "+a.deg.toFixed(1)+"° · 宿 "+esc(a.shu)+" "+a.shuDeg.toFixed(1)+"° · "+(L==="th"?"用神":L==="zh"?"用神":"Chart ruler")+": <b>"+esc(L==="en"?STAR_EN[r.yongshen.key]||r.yongshen.th:L==="zh"?r.yongshen.zh:r.yongshen.th+" "+r.yongshen.zh)+"</b> "+esc(statusLabel(r.yongshen.status,L));
+  document.getElementById("ayanNote").textContent=
+    L==="en"?("Sidereal zodiac (ayanamsa "+r.ayanamsa+"° · V1) · 紫氣 school not yet locked · stars near a sign border (0°/29°) may shift — use as guidance, not a decree"):
+    L==="zh"?("恆星黃道（歲差 "+r.ayanamsa+"° · V1）· 紫氣待定派 · 近宮界（0°/29°）之星或有出入 — 供參，不定斷"):
+    ("ราศีอิงดาวฤกษ์ (ayanamsa "+r.ayanamsa+"° · V1 · ปรับสำนักจีนได้) · 紫氣 รอ lock สำนัก · ⚠️ ดาวคาบขอบราศี (ใกล้ 0°/29°) อาจคลาด — ใช้ประกอบ ไม่ฟันธง");
+
+  /* verdict */
+  const vc=document.getElementById("vcard");vc.style.display="";
+  const lv=LEVELS[r.level]||LEVELS.neutral;
+  const v=document.getElementById("verdict");v.className="verdict "+lv.cls;
+  document.getElementById("vSeal").textContent=lv.seal;
+  document.getElementById("vBig").textContent=lv[L]||lv.th;
+  document.getElementById("vSub").textContent=(r.verdictTh[L]||r.verdictTh.th)+" · "+(L==="th"?"用神 "+r.yongshen.th+" "+statusLabel(r.yongshen.status,L):L==="zh"?"用神"+r.yongshen.zh+statusLabel(r.yongshen.status,L):"Ruler "+(STAR_EN[r.yongshen.key]||"")+" "+statusLabel(r.yongshen.status,L));
+  document.getElementById("reasons").innerHTML=r.reasons.map(x=>"<li>"+esc(x[L]||x.th)+"</li>").join("");
+  const gj=document.getElementById("gejuRow");
+  if(r.geju&&r.geju.length){
+    gj.innerHTML='<span class="glbl">格局</span>'+r.geju.map(g=>'<span class="gchip '+(g.good?"g1":"g0")+'">'+(g.good?"✓ ":"✗ ")+esc(L==="th"?g.th:g.zh)+"</span>").join("");
+  }else{
+    gj.innerHTML='<span class="glbl">格局</span><span class="muted">—</span>';
+  }
+
+  /* deep · 恩用仇難 */
+  document.getElementById("ruleCard").style.display="";
+  const starLabel=x=>'<b style="color:'+elOf(x.key).cd+'">'+esc(L==="en"?STAR_EN[x.key]||x.th:L==="th"?x.th:x.zh)+"</b>";
+  const cells=[["en",r.en_stars],["yong",r.yong_stars||[]],["chou",r.chou_stars||[]],["nan",r.nan_stars]];
+  document.getElementById("relGrid").innerHTML=cells.map(c=>{
+    const meta=REL_LABEL[c[0]];
+    return '<div class="rel-cell rel-'+c[0]+'"><div class="rc-h"><span class="rc-han">'+meta.han+'</span><span class="rc-th">'+esc(meta[L]||meta.th)+'</span></div><div class="rc-stars">'+(c[1].length?c[1].map(starLabel).join(" · "):'<span class="muted">—</span>')+"</div></div>";
+  }).join("");
+  const md=r.mingDegree,sd=r.shenDegree;
+  const lordLine=(labelHan,labelTxt,d)=>{
+    if(!d||!d.lordKey)return "";
+    const lord=L==="en"?(STAR_EN[d.lordKey]||d.lordTh):L==="zh"?d.lordZh:d.lordTh;
+    return '<div><span class="tc" style="color:var(--gold)">'+labelHan+"</span> "+esc(labelTxt)+": 宿 "+esc(d.shu)+" → "+esc(lord)+" · "+esc(statusLabel(d.lordStatus,L))+(d.relationToMing&&d.relationToMing!=="中性"?' · <span class="tc">'+esc(d.relationToMing)+"</span>":"")+"</div>";
+  };
+  document.getElementById("degLords").innerHTML=
+    lordLine("命度主",L==="th"?"เจ้าองศาลัคนา":L==="zh"?"命度所主":"Lord of the ascendant degree",md)+
+    lordLine("身度主",L==="th"?"เจ้าองศากาย (จันทร์)":L==="zh"?"身度所主（月）":"Lord of the body degree (Moon)",sd);
+
+  /* ตารางดาว */
+  document.getElementById("chartCard").style.display="";
+  document.querySelector("#starTbl tbody").innerHTML=r.stars.map(st=>{
+    const cls=st.statusRank>=4?"miao":st.statusRank<=2?"xian":"";
+    const e=elOf(st.key);
+    const nm=L==="en"?(STAR_EN[st.key]||st.th):L==="th"?st.th:st.zh;
+    const alt=L==="zh"?st.th:st.zh;
+    const sgn=L==="zh"?st.signZh:L==="en"?SIGNS_L[st.sign].en:st.signTh;
+    return "<tr><td class=\"st-name\"><b style=\"color:"+e.cd+"\">"+esc(nm)+"</b> <span class=\"muted\">"+esc(alt)+(e.th?" · "+esc(L==="en"?e.en:L==="zh"?e.zh:e.th):"")+"</span></td><td>"+esc(sgn)+"</td><td>"+st.deg+"°</td><td class=\"muted\">"+esc(st.shu||"—")+(st.shu?" "+st.shuDeg+"°":"")+"</td><td class=\""+cls+"\">"+esc(statusLabel(st.status,L))+" <span class=\"muted\">"+esc(st.status)+"</span>"+(st.retro?" ↺":"")+"</td></tr>";
+  }).join("");
+  document.getElementById("tblNote").innerHTML=
+    L==="en"?"宿 = lunar mansion (28 xiu) · dignity: <span class=\"miao\">green = strong</span> · <span class=\"xian\">red = weak</span> · ↺ = retrograde":
+    L==="zh"?"宿＝二十八宿 · <span class=\"miao\">綠＝有力</span> · <span class=\"xian\">紅＝失力</span> · ↺＝逆行":
+    "宿 = กลุ่มดาวฤกษ์ 28 ตำแหน่ง · กำลังดาว: <span class=\"miao\">เขียว = แรง</span> · <span class=\"xian\">แดง = อ่อน</span> · ↺ = พักร์ (เดินถอย)";
 }
-document.getElementById('recalc').onclick=recompute;
-document.getElementById('mGo').onclick=goManual;
-document.getElementById('aiBtn').onclick=async function(){
-  if(!HANDOFF)return;
-  const btn=this,out=document.getElementById('aiout');btn.disabled=true;out.textContent='…';
-  const lat=parseFloat(document.getElementById('lat').value),lng=parseFloat(document.getElementById('lng').value);
-  const act=(HANDOFF.activity&&HANDOFF.activity.name)||HANDOFF.act||'';
-  const res=await fetch('/api/tianxing/sifu',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dtUTC:HANDOFF.dtUTC,lat,lng,activity:act,lang:LANG})}).then(r=>r.json()).catch(()=>null);
-  if(!res){out.textContent='เชื่อมต่อไม่สำเร็จ';btn.disabled=false;return;}
-  if(res.error==='Login required'){out.innerHTML='<a href="/signup?tab=login&next=/tianxing">เข้าสู่ระบบก่อนใช้ซินแส</a>';btn.disabled=false;return;}
-  if(res.error==='insufficient_hours'){out.textContent='ยามไม่พอ — เติมยามเพื่อใช้ซินแส';btn.disabled=false;return;}
-  if(!res.ok){out.textContent='ผิดพลาด: '+(res.error||'');btn.disabled=false;return;}
+
+/* ═══════════ Google Places (lazy · fallback พิกัด) ═══════════ */
+function ensurePlacesScript(){
+  return new Promise(function(resolve,reject){
+    if(window.google&&window.google.maps&&window.google.maps.places)return resolve();
+    if(window.__hkPlacesLoading){window.__hkPlacesLoading.then(resolve,reject);return;}
+    window.__hkPlacesLoading=new Promise(function(res,rej){
+      var done=false;
+      function fail(msg){
+        if(done)return;done=true;clearTimeout(to);
+        try{delete window.__hkTxInitPlaces;}catch(_){/*noop*/}
+        try{delete window.__hkPlacesLoading;}catch(_){/*noop*/}
+        rej(new Error(msg));
+      }
+      var to=setTimeout(function(){fail("places script timeout");},8000);
+      window.__hkTxInitPlaces=function(){
+        if(done)return;done=true;clearTimeout(to);
+        try{delete window.__hkTxInitPlaces;}catch(_){/*noop*/}
+        res();
+      };
+      var sc=document.createElement("script");
+      sc.async=true;
+      sc.src="/api/maps-script?callback=__hkTxInitPlaces";
+      sc.onerror=function(){fail("places script load error");};
+      document.head.appendChild(sc);
+    });
+    window.__hkPlacesLoading.then(resolve,reject);
+  });
+}
+(function wirePlaces(){
+  var inp=document.getElementById("placeInput");
+  var hint=document.getElementById("placeHint");
+  var wired=false;
+  inp.addEventListener("focus",async function once(){
+    if(wired)return;wired=true;
+    try{
+      await ensurePlacesScript();
+      var ac=new google.maps.places.Autocomplete(inp,{fields:["name","geometry","formatted_address"]});
+      ac.addListener("place_changed",function(){
+        var p=ac.getPlace();
+        if(!p.geometry||!p.geometry.location)return;
+        PLACE_NAME=p.name||p.formatted_address||inp.value;
+        inp.value=PLACE_NAME;
+        document.getElementById("lat").value=p.geometry.location.lat().toFixed(4);
+        document.getElementById("lng").value=p.geometry.location.lng().toFixed(4);
+        if(HANDOFF)HANDOFF.place=PLACE_NAME;
+        renderHeader();
+        if(HANDOFF)recompute();
+      });
+    }catch(e){
+      hint.style.display="";
+      hint.textContent=LANG==="th"?"โหลดตัวค้นหาสถานที่ไม่สำเร็จ — ใช้ช่องพิกัดด้านล่างแทนได้":LANG==="zh"?"地點搜尋載入失敗 — 可改用下方經緯度":"Place search unavailable — use the coordinate fields below";
+      document.querySelector("details.coords").open=true;
+    }
+  });
+})();
+
+/* ═══════════ ปุ่ม + popup + AI ═══════════ */
+document.getElementById("recalc").onclick=function(){PLACE_NAME=document.getElementById("placeInput").value.trim()||PLACE_NAME;if(HANDOFF){HANDOFF.place=PLACE_NAME;renderHeader();recompute();}};
+document.getElementById("mGo").onclick=goManual;
+(function(){
+  const pop=document.getElementById("honestyPop");
+  document.getElementById("honestyBtn").onclick=()=>pop.classList.add("show");
+  document.getElementById("honestyOk").onclick=()=>pop.classList.remove("show");
+  pop.addEventListener("click",e=>{if(e.target===pop)pop.classList.remove("show");});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")pop.classList.remove("show");});
+})();
+document.getElementById("aiBtn").onclick=async function(){
+  if(!HANDOFF){document.getElementById("aiout").textContent=LANG==="th"?"เลือกฤกษ์ก่อน จึงถามซินแสได้":LANG==="zh"?"請先擇時刻":"Pick a moment first";return;}
+  const btn=this,out=document.getElementById("aiout");btn.disabled=true;out.textContent="…";
+  const lat=parseFloat(document.getElementById("lat").value),lng=parseFloat(document.getElementById("lng").value);
+  const act=(HANDOFF.activity&&HANDOFF.activity.name)||HANDOFF.act||"";
+  const res=await fetch("/api/tianxing/sifu",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({dtUTC:HANDOFF.dtUTC,lat,lng,activity:act,lang:LANG})}).then(r=>r.json()).catch(()=>null);
+  if(!res){out.textContent=LANG==="th"?"เชื่อมต่อไม่สำเร็จ":"Connection failed";btn.disabled=false;return;}
+  if(res.error==="Login required"){out.innerHTML='<a href="/signup?tab=login&next=/tianxing">'+(LANG==="th"?"เข้าสู่ระบบก่อนใช้ซินแส":LANG==="zh"?"請先登入":"Log in to ask the master")+"</a>";btn.disabled=false;return;}
+  if(res.error==="insufficient_hours"){out.textContent=LANG==="th"?"ยามไม่พอ — เติมยามเพื่อใช้ซินแส":LANG==="zh"?"時數不足":"Not enough yam — top up to use the master";btn.disabled=false;return;}
+  if(!res.ok){out.textContent=(LANG==="th"?"ผิดพลาด: ":"Error: ")+(res.error||"");btn.disabled=false;return;}
   out.textContent=res.reply;btn.disabled=false;
 };
-applyLang();loadChart();
+
+applyLang();
+loadChart();
 </script>
 </body>
 </html>
