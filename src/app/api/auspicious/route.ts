@@ -24,6 +24,11 @@ import type { ModuleKey, ActivityType, CandidateSlot, ModuleResult, FunnelStats,
 import { combineScores, scoreToTier, tierToAction, TIER_LABELS } from "@/lib/luck-engine/combineScores";
 import { computeTianXing } from "@/lib/luck-engine/modules/tian-xing";
 import { computeDongGong, DONGGONG_ACTIVITY_ALIASES } from "@/lib/luck-engine/modules/dong-gong";
+import { computeMoonVoid } from "@/lib/luck-engine/modules/moon-void";
+import { computeRetroWindow } from "@/lib/luck-engine/modules/retro-window";
+import { computeEclipseZone } from "@/lib/luck-engine/modules/eclipse-zone";
+import { computeRahuKalam } from "@/lib/luck-engine/modules/rahu-kalam";
+import { computeMoonSign } from "@/lib/luck-engine/modules/moon-sign";
 import { normalizeEventLocation, buildTstBoundaryWarning } from "@/lib/luck-engine/event-location";
 import type { EventLocation } from "@/lib/luck-engine/event-location";
 import { huangDaoHour } from "@/lib/huangdao";
@@ -67,14 +72,24 @@ const AUS_TTL = 60_000;
 const DATEPICK_HARD_MODULES = new Set<ModuleKey>(["ze_ri", "tai_sui", "ba_zi", "qi_men"]);
 const DONGGONG_SCORING_POLICY = "v1_overlay";
 const DONGGONG_MODULE_POLICY = "v2_module_r367";
+/* r372 · หมวด ② ท้องฟ้าจริง (opt-in ทั้งชุด · ไม่อยู่ใน UNIVERSAL/DATEPICK_HARD_MODULES —
+   aj_ephemeris_cache ไม่มีคอลัมน์พวกนี้ · ตัดฤกษ์ผ่าน caps ใน combineScores เท่านั้น) */
+const SKY_MODULE_KEYS: ModuleKey[] = ["moon_void", "retro_window", "eclipse_zone", "rahu_kalam", "moon_sign"];
+const SKY_MODULE_SET = new Set<ModuleKey>(SKY_MODULE_KEYS);
+const SKY_MODULE_POLICY = "v1_sky_r372";
 function cacheKey(body: any): string {
   const options = body.options || {};
   // r367: dong_gong module state + พิกัดงาน (ปัด 2 ตำแหน่ง) เข้า key — additive fields only
   const dgModule = Array.isArray(body.activeModules) && body.activeModules.includes("dong_gong");
   const evLoc = normalizeEventLocation(options);
+  // r372: สถานะ 5 sky modules เข้า key (additive field · module ปิดทั้งหมด = "off")
+  const skyActive = Array.isArray(body.activeModules)
+    ? body.activeModules.filter((m: ModuleKey) => SKY_MODULE_SET.has(m)).slice().sort()
+    : [];
   return JSON.stringify({
     dg: dgModule ? DONGGONG_MODULE_POLICY : DONGGONG_SCORING_POLICY,
     dgm: dgModule,
+    sky: skyActive.length ? `${SKY_MODULE_POLICY}:${skyActive.join("+")}` : "off",
     el: Math.round(evLoc.lat * 100) / 100,
     eg: Math.round(evLoc.lng * 100) / 100,
     a: body.activityType, ap: body.activityProfileKey || "", df: body.dateFrom, dt: body.dateTo,
@@ -202,16 +217,22 @@ export async function POST(req: NextRequest) {
        + boost บวก (+8/+6) หลัง guard · และ "ข้าม" applyDongGongOverlay กันนับซ้ำ
        module ปิด → เส้นทางเดิม (overlay) เหมือนเดิมทุกประการ */
     const dongGongModuleActive = activeModuleKeys.includes("dong_gong");
+    /* r372: หมวด ② ท้องฟ้าจริง — แนบ ModuleResult ก่อน combineScores (จุดเดียวกับ dong_gong/tian_xing)
+       caps ไหลผ่าน combineScores · enforceSkyCaps กดเพดานกลับหลัง profile/qimen/donggong shift
+       module ปิดทุกตัว = ไม่แนบ = zero-effect (พฤติกรรมเดิมไม่เปลี่ยนแม้แต่ byte) */
+    const skyModulesActive = activeModuleKeys.filter((m: ModuleKey) => SKY_MODULE_SET.has(m));
     const enriched = candidates
       .map(c => applyMonthDayShaRuntime(c, resolvedActivityType, targetDirection))
       .map(c => applyTianXing(c, activeModuleKeys, eventLocation))
       .map(c => applyDongGongModule(c, dongGongModuleActive, resolvedActivityType))
+      .map(c => applySkyModules(c, skyModulesActive, resolvedActivityType, eventLocation))
       .map(c => enrichCandidate(c, baseScoreModules, resolvedActivityType))
       .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys, targetDirection))
       .map(c => applyQimenGenericGuard(c, activityProfile, activeModuleKeys))
       .map(c => dongGongModuleActive
         ? applyDongGongBoost(c)
         : applyDongGongOverlay(c, activeModuleKeys, resolvedActivityType))
+      .map(c => enforceSkyCaps(c, skyModulesActive))
       .map(c => hideDongGongWhenInactive(c, activeModuleKeys))
       .map(refreshCandidateDisplay)
       .filter(c => !options.minScore || (c.scoring?.finalScore ?? 0) >= options.minScore)
@@ -248,6 +269,9 @@ export async function POST(req: NextRequest) {
         } : null,
         qimenScoringPolicy: buildQimenDatepickPolicy(activityProfile, activeModuleKeys, targetDirection),
         donggongScoringPolicy: dongGongModuleActive ? DONGGONG_MODULE_POLICY : DONGGONG_SCORING_POLICY,
+        /* r372: additive · บอก client ว่า sky modules ตัวไหนทำงาน */
+        skyModules: skyModulesActive,
+        skyScoringPolicy: skyModulesActive.length ? SKY_MODULE_POLICY : "off",
         /* r367: บอก client ว่าใช้พิกัดไหนจริง + note ถ้า fallback (invalid coords → BKK · ไม่ 400) */
         eventLocation,
         hardModules,
@@ -286,6 +310,65 @@ function applyDongGongModule(c: CandidateSlot, active: boolean, activity: Activi
     const dgResult = computeDongGong(c, activity);
     return { ...c, modules: { ...(c.modules as any), dong_gong: dgResult } };
   } catch { return c; }
+}
+
+/** r372 · หมวด ② ท้องฟ้าจริง opt-in: แนบ ModuleResult ก่อน combineScores (ทางเดียวกับ dong_gong/tian_xing)
+ *  แนบ "เฉพาะตัวที่ user ติ๊ก" (skyActive = activeModules ∩ SKY_MODULE_KEYS) · ไม่ติ๊ก = ไม่แนบ = zero-effect
+ *  eventLocation → rahu_kalam (sunrise/sunset จริง ณ สถานที่งาน) + moon_void (บันทึก raw · VoC เป็น geocentric)
+ *  module เดียวพัง (throw) = ข้ามตัวนั้น ห้ามล้มทั้ง response */
+function applySkyModules(c: CandidateSlot, skyActive: ModuleKey[], activity: ActivityType, loc: EventLocation): CandidateSlot {
+  if (!skyActive.length) return c;
+  const out: CandidateSlot = { ...c, modules: { ...(c.modules as any) } };
+  const attach = (key: ModuleKey, fn: () => ModuleResult) => {
+    if (!skyActive.includes(key)) return;
+    try { (out.modules as any)[key] = fn(); } catch { /* best-effort */ }
+  };
+  attach("moon_void", () => computeMoonVoid(out, activity, loc));
+  attach("retro_window", () => computeRetroWindow(out, activity));
+  attach("eclipse_zone", () => computeEclipseZone(out, activity));
+  attach("rahu_kalam", () => computeRahuKalam(out, activity, loc));
+  attach("moon_sign", () => computeMoonSign(out, activity));
+  return out;
+}
+
+/** r372 · re-enforce เพดานของ sky modules (ตำแหน่งท้าย pipeline = คำสุดท้ายของชั้นท้องฟ้า
+ *  แบบเดียวกับ applyDongGongBoost ที่กด cap ตงกงกลับ)
+ *  combineScores apply caps รอบแรกแล้ว แต่ profile/qimen rules + dong_gong boost ที่รันทีหลัง
+ *  อาจ shift คะแนนทะลุเพดาน → กดกลับ (dedupe ด้วย cap code · ฝั่งลบไม่หัก delta ซ้ำ)
+ *  module ปิด = ไม่มี ModuleResult แนบ = คืน c เดิม (zero-effect) */
+function enforceSkyCaps(c: CandidateSlot, skyActive: ModuleKey[]): CandidateSlot {
+  if (!skyActive.length || !c.scoring) return c;
+  let minCap: number | null = null;
+  let capRule: any = null;
+  for (const key of skyActive) {
+    const mr = (c.modules as any)?.[key] as ModuleResult | undefined;
+    if (!mr || mr.status !== "ready") continue;
+    for (const cap of mr.caps || []) {
+      const v = Number((cap as any)?.value);
+      if ((cap as any)?.type === "max" && Number.isFinite(v) && (minCap == null || v < minCap)) {
+        minCap = v;
+        capRule = cap;
+      }
+    }
+  }
+  if (minCap == null) return c;
+  const scoring = c.scoring as any;
+  if (Number(scoring.finalScore) <= minCap) return c;
+  scoring.reasonsDown = scoring.reasonsDown || [];
+  const capCode = String(capRule?.code || "SKY_CAP");
+  if (!scoring.reasonsDown.some((r: any) => r.code === capCode)) {
+    scoring.reasonsDown.unshift({
+      code: capCode,
+      thai: String(capRule?.reason || `ชั้นท้องฟ้าจำกัดเพดานคะแนน ${minCap}`),
+      delta: minCap - Number(scoring.finalScore),
+      source: capRule?.source || "moon_void",
+      severity: "warning",
+    });
+  }
+  scoring.finalScore = Math.max(0, Math.min(100, Math.round(minCap)));
+  scoring.tier = scoreToTier(scoring.finalScore);
+  scoring.action = tierToAction(scoring.tier, scoring.warnings?.length || 0);
+  return c;
 }
 
 /** r367 · 董公 boost + re-enforce caps (ตำแหน่งเดียวกับ overlay เดิม = คำสุดท้ายของชั้นตงกง)

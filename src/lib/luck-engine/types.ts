@@ -129,12 +129,18 @@ export type ModuleKey =
   | "yong_shen"        // 用神 (personal)
   | "hex64"            // 64 卦 (can be personal)
   | "tian_xing"        // 七政四餘 ดาวจริง (เฟส B · opt-in · default ปิด)
-  | "dong_gong";       // 董公擇日 ตงกง (r367 · opt-in · ตัดฤกษ์ผ่าน caps ใน combineScores)
+  | "dong_gong"        // 董公擇日 ตงกง (r367 · opt-in · ตัดฤกษ์ผ่าน caps ใน combineScores)
+  | "moon_void"        // จันทร์ว่าง VoC (r372 · opt-in · ตัดผ่าน cap 45)
+  | "retro_window"     // ดาวถอย R→D (r372 · opt-in · ตัดผ่าน cap 40-50)
+  | "eclipse_zone"     // โซนอับคราส (r372 · opt-in · ตัดผ่าน cap 35/55)
+  | "rahu_kalam"       // ราหูกาล สายอินเดีย (r372 · opt-in · ตัดผ่าน cap 50)
+  | "moon_sign";       // จันทร์ประจำราศี (r372 · opt-in · soft scorer ±6 · ไม่มี cap)
 
 export const ALL_MODULES: ModuleKey[] = [
   "ze_ri", "twelve_officers", "twenty_eight", "twelve_spirits",
   "nine_stars", "tai_sui", "qi_men", "he_luo",
-  "ba_zi", "yong_shen", "hex64", "tian_xing", "dong_gong"
+  "ba_zi", "yong_shen", "hex64", "tian_xing", "dong_gong",
+  "moon_void", "retro_window", "eclipse_zone", "rahu_kalam", "moon_sign"
 ];
 
 // หมายเหตุ: tian_xing ไม่อยู่ใน UNIVERSAL — เป็น scorer (compute on-the-fly) ไม่ใช่ hard-filter
@@ -143,6 +149,11 @@ export const ALL_MODULES: ModuleKey[] = [
 // r367: dong_gong ก็ไม่อยู่ใน UNIVERSAL ด้วยเหตุผลเดียวกัน — aj_ephemeris_cache ไม่มีคอลัมน์ dong_gong
 // (ถ้าใส่ UNIVERSAL → moduleFilters ใน SQL จะ query คอลัมน์ที่ไม่มี → error → ฤกษ์หายทั้งหน้า)
 // dong_gong ตัดฤกษ์ผ่าน caps (max 30/45) ใน combineScores ไม่ใช่ hard-filter SQL
+// r372: หมวด ② ท้องฟ้าจริง 5 ตัว (moon_void/retro_window/eclipse_zone/rahu_kalam/moon_sign)
+// ก็ห้ามใส่ UNIVERSAL ด้วยเหตุผลเดียวกัน — aj_ephemeris_cache ไม่มีคอลัมน์พวกนี้
+// (ใส่ UNIVERSAL → moduleFilters SQL query คอลัมน์ที่ไม่มี → error → ฤกษ์หายทั้งหน้า)
+// 4 ตัวแรกตัดฤกษ์จริงผ่าน caps ใน combineScores (VoC 45 · retro 40-50 · eclipse 35/55 · rahu 50)
+// moon_sign เป็น soft scorer (±6 · weight 0.02) ไม่ตัด
 export const UNIVERSAL_MODULES: ModuleKey[] = [
   "ze_ri", "twelve_officers", "twenty_eight", "twelve_spirits",
   "nine_stars", "tai_sui", "qi_men", "he_luo"

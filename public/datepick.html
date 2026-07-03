@@ -119,6 +119,27 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .sub-pill{background:var(--bg-2);border:1px solid var(--gold-line);color:var(--fg-soft);font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:99px;cursor:pointer;letter-spacing:.05em;}
 .sub-pill.active{background:var(--gold);color:var(--bg);border-color:var(--gold);font-weight:700;}
 
+/* r372 · preset chips ชุดสำเร็จ + จัดหมวด toggle 4 กลุ่ม (ใช้ CSS vars เดิม → รองรับ 2 โหมดธีมอัตโนมัติ) */
+.preset-bar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;}
+.preset-bar .preset-label{flex-basis:100%;font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:2px;}
+.preset-chip{background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg-soft);font-family:var(--th),var(--serif);font-size:12px;padding:6px 12px;border-radius:99px;cursor:pointer;transition:.18s;}
+.preset-chip:hover{border-color:var(--gold);color:var(--fg);}
+.preset-chip.active{background:var(--gold-soft);border-color:var(--gold);color:var(--gold);font-weight:700;}
+.filter-group{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;}
+.filter-group summary{cursor:pointer;padding:11px 13px;list-style:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;user-select:none;}
+.filter-group summary::-webkit-details-marker{display:none;}
+.filter-group summary:hover .fg-title{color:var(--gold);}
+.filter-group .fg-icon{font-size:14px;line-height:1;}
+.filter-group .fg-title{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--fg);transition:.18s;}
+.filter-group .fg-title .han{font-family:var(--tc);font-size:13px;color:var(--gold);margin-left:4px;}
+.filter-group .fg-count{font-family:var(--mono);font-size:9px;color:var(--gold);background:var(--gold-soft);border-radius:99px;padding:2px 8px;margin-left:auto;}
+.filter-group .fg-caret{font-size:10px;color:var(--fg-faint);transition:.2s;}
+.filter-group[open] .fg-caret{transform:rotate(180deg);}
+.filter-group .fg-sub{flex-basis:100%;font-size:11px;color:var(--fg-faint);line-height:1.5;}
+.filter-group .fg-body{display:flex;flex-direction:column;gap:8px;padding:2px 10px 10px;}
+/* r372 · หัวข้อหมวดในส่วนเหตุผลของแต่ละฤกษ์ */
+.science-group-head{grid-column:1 / -1;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;border-bottom:1px dashed var(--gold-line);padding-bottom:4px;margin-top:2px;}
+
 /* Search button */
 .btn-search{width:100%;background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:var(--bg);border:none;font-family:var(--mono);font-size:13px;letter-spacing:.2em;padding:14px;border-radius:10px;cursor:pointer;font-weight:700;text-transform:uppercase;margin-top:6px;transition:.2s;}
 .btn-search:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--gold-soft);}
@@ -573,18 +594,27 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
         .hk-help-popup ul{margin:6px 0 6px 18px;font-size:12px;color:var(--fg-soft);line-height:1.7;}
         .hk-help-popup .src{margin-top:14px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.1em;text-align:center;}
         </style>
+        <!-- r372 · ปุ่มชุดสำเร็จ (preset chips) · กดแล้ว set toggle ทั้ง 4 กลุ่ม -->
+        <div class="preset-bar" id="dpPresetBar">
+          <div class="preset-label" data-i18n="dp.preset.title">ชุดสำเร็จ · เลือกแล้วปรับเกณฑ์ให้อัตโนมัติ</div>
+          <button type="button" class="preset-chip" data-preset="basic" data-i18n="dp.preset.basic">🗓 มูพื้นฐาน</button>
+          <button type="button" class="preset-chip" data-preset="full" data-i18n="dp.preset.full">✨ ครบเครื่อง</button>
+          <button type="button" class="preset-chip" data-preset="chinese" data-i18n="dp.preset.chinese">🀄 สายจีนแท้</button>
+          <button type="button" class="preset-chip" data-preset="realsky" data-i18n="dp.preset.realsky">🪐 สายดาวจริง</button>
+        </div>
+
         <div class="filter-list" id="filterList">
 
-          <!-- 天星 七政四餘 (เฟส B · opt-in · default ปิด · ติ๊กถึงให้คะแนน) -->
-          <label class="filter-item" data-filter="tianxing">
-            <div class="filter-item-head">
-              <input type="checkbox"/>
-              <div class="info">
-                <div class="ttl">ดาวจริง <span class="han">七政四餘</span> <span class="level note" data-i18n="dp.tx.level">ขั้นสูง · ให้คะแนน</span> <span class="level soft">beta</span><button class="help-icon" onclick="showHelp('tianxing');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub" data-i18n="dp.tx.sub">โหราศาสตร์ดาวจริง 七政四餘 (廟旺·恩用仇難·格局) · ศาสตร์ขั้นสูงสุด · ติ๊กเพื่อเปิดให้คะแนนเสริม · ไม่ติ๊ก = ไม่มีผลต่อคะแนน</div>
-              </div>
-            </div>
-          </label>
+          <!-- r372 · กลุ่ม ① พื้นฐานปฏิทินจีน -->
+          <details class="filter-group" data-group="basic" open>
+            <summary>
+              <span class="fg-icon">🗓</span>
+              <span class="fg-title" data-i18n="dp.grp.basic.t">① พื้นฐานปฏิทิน</span>
+              <span class="fg-count"></span>
+              <span class="fg-caret">▾</span>
+              <span class="fg-sub" data-i18n="dp.grp.basic.s">วันนี้โดยธรรมเนียมจีนดี/ร้ายแค่ไหน</span>
+            </summary>
+            <div class="fg-body">
 
           <!-- Tong Shu -->
           <label class="filter-item active" data-filter="tongshu">
@@ -604,62 +634,6 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
               <div class="info">
                 <div class="ttl">ตงกง <span class="han">董公</span> <span class="level hard" data-i18n="dp.dg.level">ตัดฤกษ์ · เพดานคะแนน</span><button class="help-icon" onclick="showHelp('donggong');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div class="sub" data-i18n="dp.dg.sub">ตำราตัดฤกษ์หลัก 董公選要覽 · วัน 大凶 เพดานคะแนน 30 · 凶/ข้อห้ามตรงกิจกรรม เพดาน 45 · วันดีบวกเสริม</div>
-              </div>
-            </div>
-          </label>
-
-          <!-- Ba Zi -->
-          <label class="filter-item active" data-filter="bazi">
-            <div class="filter-item-head">
-              <input type="checkbox" checked/>
-              <div class="info">
-                <div class="ttl">ดวงคนที่เกี่ยวข้อง <span class="han">八字</span> <span  class="level hard" data-i18n="auto.d.011">ตัดวันชง</span><button class="help-icon" onclick="showHelp('bazi');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div  class="sub" data-i18n="auto.d.012">เช็คดวงคน — วันชง · 刑 · 害 · กระทบวันเกิดหลัก</div>
-              </div>
-            </div>
-            <div class="filter-sub">
-              <div class="sub-row">
-                <input type="checkbox" id="bz-chong" checked/>
-                <label for="bz-chong">วันชง <span class="han">沖</span> (ตัดทิ้ง)</label>
-              </div>
-              <div class="sub-row">
-                <input type="checkbox" id="bz-xing"/>
-                <label  for="bz-xing" data-i18n="auto.d.013">刑/害 (เตือนเฉย ๆ ไม่ตัดทิ้ง)</label>
-              </div>
-            </div>
-          </label>
-
-          <!-- Qi Men -->
-          <label class="filter-item active" data-filter="qimen">
-            <div class="filter-item-head">
-              <input type="checkbox" checked/>
-              <div class="info">
-                <div class="ttl">ฉีเหมิน <span class="han">奇門</span> <span  class="level soft" data-i18n="auto.d.014">คัดยาม/จำกัดคะแนน</span><button class="help-icon" onclick="showHelp('qimen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div  class="sub" data-i18n="auto.d.015">ดูประตู+ดาว+เทพของยาม · ผังไม่รับกิจกรรมจะจำกัดคะแนน ไม่ใช่ตัวตัดหลัก</div>
-              </div>
-            </div>
-            <div class="filter-sub">
-              <div class="sub-row">
-                <span data-i18n="auto.d.016">ค่ายคำนวณ:</span>
-                <div class="sub-pills">
-                  <button class="sub-pill active" data-qm="chaibu">拆補 คำนวณแบบชดเชย</button>
-                  <button class="sub-pill" data-qm="zhirun">置閏 คำนวณแบบแทรกเดือน</button>
-                </div>
-              </div>
-              <div class="sub-row">
-                <input type="checkbox" id="qm-strict"/>
-                <label  for="qm-strict" data-i18n="auto.d.017">เข้มงวด · ประตูร้ายจำกัดคะแนนแรงขึ้น</label>
-              </div>
-            </div>
-          </label>
-
-          <!-- 太歲 流年沖 (อากง tier 1 · 16 พ.ค.) -->
-          <label class="filter-item active" data-filter="taisui">
-            <div class="filter-item-head">
-              <input type="checkbox" checked/>
-              <div class="info">
-                <div class="ttl">ไท้ส่วย <span class="han">太歲</span> <span class="level hard">ตัดชนปี</span><button class="help-icon" onclick="showHelp('taisui');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">流年沖日柱 · ตัดวันที่กิ่งวันชงกับกิ่งปี (ปี丙午 → เลี่ยงวัน子)</div>
               </div>
             </div>
           </label>
@@ -708,6 +682,132 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             </div>
           </label>
 
+          <!-- 太歲 流年沖 (อากง tier 1 · 16 พ.ค.) -->
+          <label class="filter-item active" data-filter="taisui">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl">ไท้ส่วย <span class="han">太歲</span> <span class="level hard">ตัดชนปี</span><button class="help-icon" onclick="showHelp('taisui');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub">流年沖日柱 · ตัดวันที่กิ่งวันชงกับกิ่งปี (ปี丙午 → เลี่ยงวัน子)</div>
+              </div>
+            </div>
+          </label>
+
+            </div>
+          </details>
+
+          <!-- r372 · กลุ่ม ② ท้องฟ้าจริง (ผูกสถานที่จัดงาน) -->
+          <details class="filter-group" data-group="sky" open>
+            <summary>
+              <span class="fg-icon">🪐</span>
+              <span class="fg-title" data-i18n="dp.grp.sky.t">② ท้องฟ้าจริง</span>
+              <span class="fg-count"></span>
+              <span class="fg-caret">▾</span>
+              <span class="fg-sub" data-i18n="dp.grp.sky.s">ฟ้าจริงวันนั้นเป็นใจไหม กี่โมงต้องเลี่ยง · คำนวณจากพิกัดสถานที่จัดงาน</span>
+            </summary>
+            <div class="fg-body">
+
+          <!-- 天星 七政四餘 (เฟส B · opt-in · r372 default เปิดตาม preset ครบเครื่อง) -->
+          <label class="filter-item active" data-filter="tianxing">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl">ดาวจริง <span class="han">七政四餘</span> <span class="level note" data-i18n="dp.tx.level">ขั้นสูง · ให้คะแนน</span> <span class="level soft">beta</span><button class="help-icon" onclick="showHelp('tianxing');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.tx.sub">โหราศาสตร์ดาวจริง 七政四餘 (廟旺·恩用仇難·格局) · ศาสตร์ขั้นสูงสุด · ติ๊กเพื่อเปิดให้คะแนนเสริม · ไม่ติ๊ก = ไม่มีผลต่อคะแนน</div>
+              </div>
+            </div>
+          </label>
+
+          <!-- r372 · จันทร์ว่าง VoC -->
+          <label class="filter-item active" data-filter="moonvoid">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl"><span data-i18n="dp.mv.ttl">จันทร์ว่าง</span> <span class="han">月空</span> <span class="level hard" data-i18n="dp.mv.level">เพดานคะแนน</span><button class="help-icon" onclick="showHelp('moonvoid');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.mv.sub">Void of Course · ช่วงจันทร์ไร้มุมก่อนย้ายราศี · เริ่มงานใหม่ช่วงนี้ตำราถือว่างานไม่ออกดอก · เพดานคะแนน 45</div>
+              </div>
+            </div>
+          </label>
+
+          <!-- r372 · จันทร์ประจำราศี -->
+          <label class="filter-item active" data-filter="moonsign">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl"><span data-i18n="dp.ms.ttl">จันทร์ประจำราศี</span> <span class="han">月座</span> <span class="level score" data-i18n="dp.ms.level">ปรับคะแนนเบา</span><button class="help-icon" onclick="showHelp('moonsign');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.ms.sub">ราศีที่จันทร์อยู่จริง ณ ยามนั้น · เข้ากับกิจกรรม +6 / ไม่เข้า −6 เบา ๆ · ไม่ตัดฤกษ์</div>
+              </div>
+            </div>
+          </label>
+
+          <!-- r372 · ดาวถอย R→D -->
+          <label class="filter-item active" data-filter="retro">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl"><span data-i18n="dp.rw.ttl">ดาวถอย</span> <span class="han">逆行</span> <span class="level hard" data-i18n="dp.rw.level">เพดานคะแนน</span><button class="help-icon" onclick="showHelp('retro');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.rw.sub">ดาวพุธ/ศุกร์/อังคารถอยจริงบนฟ้า · ตรงหมวดกิจกรรมโดนเพดาน 40-50 · ไม่ตรงเป็นข้อมูลประกอบ</div>
+              </div>
+            </div>
+          </label>
+
+          <!-- r372 · โซนอับคราส -->
+          <label class="filter-item active" data-filter="eclipse">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl"><span data-i18n="dp.ez.ttl">โซนอับคราส</span> <span class="han">食區</span> <span class="level hard" data-i18n="dp.ez.level">เพดานคะแนน</span><button class="help-icon" onclick="showHelp('eclipse');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.ez.sub">±3 วันรอบสุริยุปราคา/จันทรุปราคา · วันคราสพอดีเพดาน 35 · ในโซน+งานเปิดตัวใหญ่เพดาน 55</div>
+              </div>
+            </div>
+          </label>
+
+          <!-- r372 · ราหูกาล สายอินเดีย -->
+          <label class="filter-item active" data-filter="rahu">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl"><span data-i18n="dp.rk.ttl">ราหูกาล</span> <span class="han">羅睺</span> <span class="level hard" data-i18n="dp.rk.level">เพดานคะแนน</span><button class="help-icon" onclick="showHelp('rahu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.rk.sub">ช่วงอัปมงคลรายวันสายอินเดีย ~90 นาที · คำนวณจากพระอาทิตย์ขึ้นจริง ณ สถานที่จัดงาน · เพดานคะแนน 50</div>
+              </div>
+            </div>
+          </label>
+
+            </div>
+          </details>
+
+          <!-- r372 · กลุ่ม ③ เฉพาะดวงคุณ (ต้องเลือกโปรไฟล์/คนที่เกี่ยวข้อง) -->
+          <details class="filter-group" data-group="personal" open>
+            <summary>
+              <span class="fg-icon">👤</span>
+              <span class="fg-title" data-i18n="dp.grp.personal.t">③ เฉพาะดวงคุณ</span>
+              <span class="fg-count"></span>
+              <span class="fg-caret">▾</span>
+              <span class="fg-sub" data-i18n="dp.grp.personal.s">วันดีของคนทั่วไป อาจร้ายสำหรับคุณ · ต้องเลือกโปรไฟล์/คนที่เกี่ยวข้อง</span>
+            </summary>
+            <div class="fg-body">
+
+          <!-- Ba Zi -->
+          <label class="filter-item active" data-filter="bazi">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl">ดวงคนที่เกี่ยวข้อง <span class="han">八字</span> <span  class="level hard" data-i18n="auto.d.011">ตัดวันชง</span><button class="help-icon" onclick="showHelp('bazi');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div  class="sub" data-i18n="auto.d.012">เช็คดวงคน — วันชง · 刑 · 害 · กระทบวันเกิดหลัก</div>
+              </div>
+            </div>
+            <div class="filter-sub">
+              <div class="sub-row">
+                <input type="checkbox" id="bz-chong" checked/>
+                <label for="bz-chong">วันชง <span class="han">沖</span> (ตัดทิ้ง)</label>
+              </div>
+              <div class="sub-row">
+                <input type="checkbox" id="bz-xing"/>
+                <label  for="bz-xing" data-i18n="auto.d.013">刑/害 (เตือนเฉย ๆ ไม่ตัดทิ้ง)</label>
+              </div>
+            </div>
+          </label>
+
           <!-- 用神 filter -->
           <label class="filter-item active" data-filter="yongshen">
             <div class="filter-item-head">
@@ -719,10 +819,59 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             </div>
           </label>
 
-          <!-- He Luo · อากงให้ตำราแล้ว 16 พ.ค.! -->
-          <label class="filter-item active" data-filter="heluo">
+          <!-- 64 Hex · r372 default เปิดตาม preset ครบเครื่อง -->
+          <label class="filter-item active" data-filter="hex">
             <div class="filter-item-head">
               <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl">หกสิบสี่ข่วย <span class="han">六十四卦</span> <span  class="level note" data-i18n="auto.d.021">ตีความ</span><button class="help-icon" onclick="showHelp('hex');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div  class="sub" data-i18n="auto.d.022">เพิ่มคำอ่านข่วยของยาม — ใช้อธิบาย ไม่ได้ตัดวันทิ้ง</div>
+              </div>
+            </div>
+          </label>
+
+            </div>
+          </details>
+
+          <!-- r372 · กลุ่ม ④ ชั้นสูง · default ปิด -->
+          <details class="filter-group" data-group="advanced">
+            <summary>
+              <span class="fg-icon">🧭</span>
+              <span class="fg-title" data-i18n="dp.grp.adv.t">④ ชั้นสูง</span>
+              <span class="fg-count"></span>
+              <span class="fg-caret">▾</span>
+              <span class="fg-sub" data-i18n="dp.grp.adv.s">ฉีเหมิน + เหอหลัว · สำหรับสายลึก · ปิดไว้เป็นค่าเริ่มต้น</span>
+            </summary>
+            <div class="fg-body">
+
+          <!-- Qi Men -->
+          <label class="filter-item" data-filter="qimen">
+            <div class="filter-item-head">
+              <input type="checkbox"/>
+              <div class="info">
+                <div class="ttl">ฉีเหมิน <span class="han">奇門</span> <span  class="level soft" data-i18n="auto.d.014">คัดยาม/จำกัดคะแนน</span><button class="help-icon" onclick="showHelp('qimen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div  class="sub" data-i18n="auto.d.015">ดูประตู+ดาว+เทพของยาม · ผังไม่รับกิจกรรมจะจำกัดคะแนน ไม่ใช่ตัวตัดหลัก</div>
+              </div>
+            </div>
+            <div class="filter-sub">
+              <div class="sub-row">
+                <span data-i18n="auto.d.016">ค่ายคำนวณ:</span>
+                <div class="sub-pills">
+                  <button class="sub-pill active" data-qm="chaibu">拆補 คำนวณแบบชดเชย</button>
+                  <button class="sub-pill" data-qm="zhirun">置閏 คำนวณแบบแทรกเดือน</button>
+                </div>
+              </div>
+              <div class="sub-row">
+                <input type="checkbox" id="qm-strict"/>
+                <label  for="qm-strict" data-i18n="auto.d.017">เข้มงวด · ประตูร้ายจำกัดคะแนนแรงขึ้น</label>
+              </div>
+            </div>
+          </label>
+
+          <!-- He Luo · อากงให้ตำราแล้ว 16 พ.ค.! -->
+          <label class="filter-item" data-filter="heluo">
+            <div class="filter-item-head">
+              <input type="checkbox"/>
               <div class="info">
                 <div class="ttl">เหอหลัว <span class="han">河洛</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('heluo');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div class="sub">อ่านจังหวะตัวเลขและดาวเหิน 9 ดาว · ใช้เป็นคะแนนเสริม ไม่ใช่ตัวตัดหลัก</div>
@@ -736,16 +885,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             </div>
           </label>
 
-          <!-- 64 Hex -->
-          <label class="filter-item" data-filter="hex">
-            <div class="filter-item-head">
-              <input type="checkbox"/>
-              <div class="info">
-                <div class="ttl">หกสิบสี่ข่วย <span class="han">六十四卦</span> <span  class="level note" data-i18n="auto.d.021">ตีความ</span><button class="help-icon" onclick="showHelp('hex');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div  class="sub" data-i18n="auto.d.022">เพิ่มคำอ่านข่วยของยาม — ใช้อธิบาย ไม่ได้ตัดวันทิ้ง</div>
-              </div>
             </div>
-          </label>
+          </details>
 
         </div>
 
@@ -831,7 +972,8 @@ const state = {
   peopleGroup: 'all',
   peopleQuery: '',
   peopleVisible: 6,
-  filters: { tongshu:true, bazi:true, qimen:true, heluo:false, hex:false },
+  /* r372 · default = preset ครบเครื่อง (①+②+③) · กลุ่ม ④ ชั้นสูง (qimen/heluo) ปิด */
+  filters: { tongshu:true, bazi:true, qimen:false, heluo:false, hex:true },
   qmCalc: 'chaibu',
   bzChong: true,
   bzXing: false,
@@ -1116,6 +1258,87 @@ function validateDateRange(){
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  r372 · PRESET ชุดสำเร็จ + จำสถานะ toggle (localStorage ของหน้านี้)
+// ═══════════════════════════════════════════════════════════════
+const DP_FILTER_GROUPS = {
+  basic:    ['tongshu','donggong','jianchu','xiu28','shen12','fly9','taisui'],           /* ① พื้นฐานปฏิทิน */
+  sky:      ['tianxing','moonvoid','moonsign','retro','eclipse','rahu'],                  /* ② ท้องฟ้าจริง */
+  personal: ['bazi','yongshen','hex'],                                                    /* ③ เฉพาะดวงคุณ */
+  advanced: ['qimen','heluo'],                                                            /* ④ ชั้นสูง */
+};
+const DP_ALL_FILTER_KEYS = Object.values(DP_FILTER_GROUPS).reduce((a, b) => a.concat(b), []);
+const DP_PRESETS = {
+  basic:   ['basic'],                       /* มูพื้นฐาน = ① */
+  full:    ['basic','sky','personal'],      /* ครบเครื่อง (default) = ①+②+③ */
+  chinese: ['basic','advanced'],            /* สายจีนแท้ = ①+④ */
+  realsky: ['sky','personal'],              /* สายดาวจริง = ②+③ */
+};
+const DP_FILTER_STORE_KEY = 'hk_datepick_filters_r372';
+
+function dpFilterChecked(key){
+  return document.querySelector('.filter-item[data-filter="' + key + '"] input[type="checkbox"]')?.checked === true;
+}
+function dpSetFilterChecked(key, on){
+  const item = document.querySelector('.filter-item[data-filter="' + key + '"]');
+  if (!item) return;
+  const cb = item.querySelector('input[type="checkbox"]');
+  if (cb) cb.checked = !!on;
+  item.classList.toggle('active', !!on);
+  state.filters[key] = !!on;
+}
+function dpSaveFilterPrefs(){
+  try {
+    const f = {};
+    DP_ALL_FILTER_KEYS.forEach(k => { f[k] = dpFilterChecked(k); });
+    localStorage.setItem(DP_FILTER_STORE_KEY, JSON.stringify(f));
+  } catch(_){}
+}
+function dpRestoreFilterPrefs(){
+  try {
+    const f = JSON.parse(localStorage.getItem(DP_FILTER_STORE_KEY) || 'null');
+    if (!f || typeof f !== 'object') return;
+    DP_ALL_FILTER_KEYS.forEach(k => { if (typeof f[k] === 'boolean') dpSetFilterChecked(k, f[k]); });
+  } catch(_){}
+}
+function dpApplyFilterPreset(name){
+  const groups = DP_PRESETS[name];
+  if (!groups) return;
+  Object.entries(DP_FILTER_GROUPS).forEach(([g, keys]) => {
+    const on = groups.includes(g);
+    keys.forEach(k => dpSetFilterChecked(k, on));
+    /* กางกลุ่มที่ preset เปิด · กลุ่มที่ปิดหมดพับเก็บ */
+    const det = document.querySelector('.filter-group[data-group="' + g + '"]');
+    if (det) det.open = on;
+  });
+  dpSaveFilterPrefs();
+  dpSyncPresetUI();
+}
+function dpDetectPreset(){
+  for (const [name, groups] of Object.entries(DP_PRESETS)) {
+    let match = true;
+    for (const [g, keys] of Object.entries(DP_FILTER_GROUPS)) {
+      const on = groups.includes(g);
+      for (const k of keys) {
+        if (dpFilterChecked(k) !== on) { match = false; break; }
+      }
+      if (!match) break;
+    }
+    if (match) return name;
+  }
+  return null; /* custom = ไม่ highlight */
+}
+function dpSyncPresetUI(){
+  const current = dpDetectPreset();
+  document.querySelectorAll('#dpPresetBar [data-preset]').forEach(b => {
+    b.classList.toggle('active', b.dataset.preset === current);
+  });
+  Object.entries(DP_FILTER_GROUPS).forEach(([g, keys]) => {
+    const el = document.querySelector('.filter-group[data-group="' + g + '"] .fg-count');
+    if (el) el.textContent = keys.filter(dpFilterChecked).length + '/' + keys.length;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════════════
 function init(){
@@ -1234,18 +1457,30 @@ function init(){
     validateDateRange();
   });
 
+  /* r372 · จำสถานะ toggle ครั้งก่อน (restore ก่อน bind เพื่อให้ class active ตรง checkbox) */
+  dpRestoreFilterPrefs();
+
   document.querySelectorAll('.filter-item').forEach(item => {
     const cb = item.querySelector('input[type="checkbox"]');
     cb.addEventListener('change', () => {
       const f = item.dataset.filter;
       state.filters[f] = cb.checked;
       item.classList.toggle('active', cb.checked);
+      /* r372 · จำสถานะ + sync highlight preset (custom = ไม่ highlight) */
+      dpSaveFilterPrefs();
+      dpSyncPresetUI();
     });
     // prevent sub-clicks from toggling parent
     item.querySelectorAll('.filter-sub').forEach(sub => {
       sub.addEventListener('click', e => e.stopPropagation());
     });
   });
+
+  /* r372 · ปุ่มชุดสำเร็จ (preset chips) */
+  document.querySelectorAll('#dpPresetBar [data-preset]').forEach(b => {
+    b.addEventListener('click', () => dpApplyFilterPreset(b.dataset.preset));
+  });
+  dpSyncPresetUI();
 
   document.querySelectorAll('[data-qm]').forEach(p => p.addEventListener('click', () => {
     document.querySelectorAll('[data-qm]').forEach(x => x.classList.remove('active'));
@@ -1632,8 +1867,14 @@ const MODULE_LABELS = {
   hex64: { th:'หกสิบสี่ข่วย', zh:'六十四卦', mode:'ตีความ', element:null, desc:'ใช้ตีความสถานการณ์ ไม่ใช่ตัวตัดหลัก' },
   tian_xing: { th:'ดาวจริง', zh:'七政四餘', mode:'คะแนนเสริมขั้นสูง', element:null, desc:'โหราศาสตร์ดาวจริง opt-in; ติ๊กแล้วใช้ปรับคะแนน ไม่ติ๊กไม่มีผล' },
   dong_gong: { th:'ตงกง', zh:'董公', mode:'ตัดฤกษ์ · เพดานคะแนน', element:null, desc:'ตำราตัดฤกษ์ 董公選要覽; วัน 大凶 เพดาน 30 · 凶/ข้อห้ามตรงกิจกรรม เพดาน 45 · วันดีบวกเสริม' },
+  /* r372 · หมวด ② ท้องฟ้าจริง 5 ตัวใหม่ (ผูกพิกัดสถานที่จัดงาน) */
+  moon_void: { th:'จันทร์ว่าง', zh:'月空', mode:'เพดานคะแนน', element:null, desc:'ช่วงจันทร์ไร้มุมก่อนย้ายราศี (Void of Course); งานเริ่มใหม่คาบช่วงนี้โดนเพดานคะแนน 45' },
+  moon_sign: { th:'จันทร์ประจำราศี', zh:'月座', mode:'ปรับคะแนนเบา', element:null, desc:'ราศีที่จันทร์อยู่จริง ณ ยามนั้น; เข้ากับกิจกรรม +6 / ไม่เข้า −6 เบา ๆ ไม่ตัดฤกษ์' },
+  retro_window: { th:'ดาวถอย', zh:'逆行', mode:'เพดานคะแนน', element:null, desc:'ดาวพุธ/ศุกร์/อังคารถอยจริง (รอบ station R→D); ตรงหมวดกิจกรรมโดนเพดาน 40-50' },
+  eclipse_zone: { th:'โซนอับคราส', zh:'食區', mode:'เพดานคะแนน', element:null, desc:'±3 วันรอบสุริยุปราคา/จันทรุปราคา; วันคราสพอดีเพดาน 35 · ในโซน+งานเปิดตัวใหญ่เพดาน 55' },
+  rahu_kalam: { th:'ราหูกาล', zh:'羅睺', mode:'เพดานคะแนน', element:null, desc:'ช่วงอัปมงคลรายวันสายอินเดีย ~90 นาที คำนวณจากพระอาทิตย์ขึ้นจริง ณ สถานที่; คาบช่วงนี้เพดาน 50' },
 };
-const MODULE_ORDER = ['ba_zi','ze_ri','dong_gong','tai_sui','qi_men','tian_xing','yong_shen','twelve_officers','twenty_eight','twelve_spirits','nine_stars','he_luo','hex64'];
+const MODULE_ORDER = ['ba_zi','ze_ri','dong_gong','tai_sui','qi_men','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','yong_shen','twelve_officers','twenty_eight','twelve_spirits','nine_stars','he_luo','hex64'];
 const STEM_ELEMENT = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
 const ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
 const ELEMENT_ZH = {wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
@@ -1768,6 +2009,12 @@ function scienceKeyFromReason(raw){
   const s = String(raw || '');
   if (/奇門|奇门|ฉีเหมิน|Qi Men|qi_men|PROFILE_QIMEN|QM_BAD_DOOR_CAP/i.test(s)) return 'qi_men';
   if (/ตงกง|董公|DONGGONG/.test(s)) return 'dong_gong';
+  /* r372 · หมวด ② ท้องฟ้าจริง 5 ตัว (เช็คก่อน pattern กว้าง ba_zi/ze_ri) */
+  if (/จันทร์ว่าง|MOON_VOC/.test(s)) return 'moon_void';
+  if (/จันทร์อยู่ราศี|MOON_SIGN/.test(s)) return 'moon_sign';
+  if (/ดาว(?:พุธ|ศุกร์|อังคาร|พฤหัส|เสาร์)ถอย|R→D|RETRO_/.test(s)) return 'retro_window';
+  if (/คราส|ECLIPSE/.test(s)) return 'eclipse_zone';
+  if (/ราหูกาล|RAHU_KALAM/.test(s)) return 'rahu_kalam';
   if (/七政四餘|天星|tian_xing|TIAN_XING|TX_|廟旺|恩用仇難|忌格|合格/.test(s)) return 'tian_xing';
   if (/12建除|建除/.test(s)) return 'twelve_officers';
   if (/28宿|二十八宿/.test(s)) return 'twenty_eight';
@@ -1889,7 +2136,7 @@ function enrichScienceSectionsForSlot(sections, t){
       });
     }
   }
-  const order = ['qi_men','ze_ri','dong_gong','tian_xing','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
+  const order = ['qi_men','ze_ri','dong_gong','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
   return sections.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
 }
 
@@ -1903,7 +2150,7 @@ function hasQimenScienceSignal(t){
 }
 
 function buildScienceSections(matches, moduleScores){
-  const order = ['qi_men','ze_ri','dong_gong','tian_xing','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
+  const order = ['qi_men','ze_ri','dong_gong','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
   const map = new Map();
   const seen = new Set();
   (matches || []).forEach((raw) => {
@@ -1951,9 +2198,20 @@ function scienceTone(sec){
   return 'good';
 }
 
+/* r372 · จัดหมวดเหตุผล 4 กลุ่ม (map module → หมวด · เนื้อความ reason เดิมไม่แตะ แค่จัดกลุ่ม+หัวข้อ) */
+const SCIENCE_GROUP_DEFS = [
+  { key:'basic',    icon:'🗓', th:'① พื้นฐานปฏิทินจีน', en:'① Chinese calendar base', zh:'① 曆法基礎',
+    modules:['ze_ri','dong_gong','twelve_officers','twenty_eight','twelve_spirits','nine_stars','tai_sui'] },
+  { key:'sky',      icon:'🪐', th:'② ท้องฟ้าจริง ณ สถานที่งาน', en:'② Real sky at the venue', zh:'② 實際天象（依地點）',
+    modules:['tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam'] },
+  { key:'personal', icon:'👤', th:'③ เฉพาะดวงคุณ', en:'③ Your chart only', zh:'③ 個人命盤',
+    modules:['ba_zi','yong_shen','hex64'] },
+  { key:'advanced', icon:'🧭', th:'④ ชั้นสูง', en:'④ Advanced', zh:'④ 進階',
+    modules:['qi_men','he_luo'] },
+];
 function renderScienceSections(sections){
   if (!sections.length) return '';
-  return `<div class="science-board">${sections.map(sec => {
+  const cardHtml = (sec) => {
     const tone = scienceTone(sec);
     const status = tone === 'mixed' ? 'มีทั้งหนุน/หัก' : tone === 'warn' ? 'ต้องระวัง' : tone === 'neutral' ? 'กลาง' : 'เป็นแรงหนุน';
     const items = sec.items.slice(0, 5).map(it => {
@@ -1970,7 +2228,20 @@ function renderScienceSections(sections){
       </div>
       <div class="science-list">${items || '<div class="science-empty">ไม่มีรายละเอียดเด่นในชั้นนี้</div>'}</div>
     </section>`;
-  }).join('')}</div>`;
+  };
+  const lang = getCurrentLang();
+  const chunks = [];
+  const seen = new Set();
+  SCIENCE_GROUP_DEFS.forEach(g => {
+    const secs = sections.filter(s => g.modules.includes(s.key));
+    if (!secs.length) return;
+    const label = lang === 'en' ? g.en : lang === 'zh' ? g.zh : g.th;
+    chunks.push(`<div class="science-group-head">${g.icon} ${escHtml(label)}</div>`);
+    secs.forEach(sec => { seen.add(sec.key); chunks.push(cardHtml(sec)); });
+  });
+  /* module ที่ไม่อยู่ในหมวดไหน (กันหลุด · ไม่ควรเกิด) — ต่อท้ายแบบไม่มีหัวข้อ */
+  sections.filter(s => !seen.has(s.key)).forEach(sec => chunks.push(cardHtml(sec)));
+  return `<div class="science-board">${chunks.join('')}</div>`;
 }
 
 function summarizeScience(sections){
@@ -2131,6 +2402,12 @@ async function performSearch(){
     const useTianxing = document.querySelector('.filter-item[data-filter="tianxing"] input[type="checkbox"]')?.checked === true;
     /* r367 · ตงกง 董公 (default เปิด → !== false · ปิด = กลับ overlay เดิม) */
     const useDonggong = document.querySelector('.filter-item[data-filter="donggong"] input[type="checkbox"]')?.checked !== false;
+    /* r372 · หมวด ② ท้องฟ้าจริง 5 ตัว (=== true · ไม่มี element = ปิด = zero-effect ฝั่ง engine) */
+    const useMoonVoid = document.querySelector('.filter-item[data-filter="moonvoid"] input[type="checkbox"]')?.checked === true;
+    const useMoonSign = document.querySelector('.filter-item[data-filter="moonsign"] input[type="checkbox"]')?.checked === true;
+    const useRetro    = document.querySelector('.filter-item[data-filter="retro"] input[type="checkbox"]')?.checked === true;
+    const useEclipse  = document.querySelector('.filter-item[data-filter="eclipse"] input[type="checkbox"]')?.checked === true;
+    const useRahu     = document.querySelector('.filter-item[data-filter="rahu"] input[type="checkbox"]')?.checked === true;
     /* r367 · สถานที่จัดงาน · พิกัดจริงเข้า engine */
     const eventLoc = dpReadEventLocation();
     /* 22 พ.ค. · /api/auspicious เป็น canonical engine ของหน้า datepick แล้ว
@@ -2166,6 +2443,12 @@ async function performSearch(){
       if (useHex)     activeModules.push('hex64');
       if (useTianxing) activeModules.push('tian_xing');  /* เฟส B · ให้คะแนน (ไม่ใช่ hard filter) */
       if (useDonggong) activeModules.push('dong_gong');  /* r367 · ตัดฤกษ์ผ่าน caps (ไม่ใช่ hard filter SQL) */
+      /* r372 · หมวด ② ท้องฟ้าจริง · ตัดผ่าน caps ใน combineScores (ห้ามใส่ hardModules/SQL) */
+      if (useMoonVoid) activeModules.push('moon_void');
+      if (useMoonSign) activeModules.push('moon_sign');
+      if (useRetro)    activeModules.push('retro_window');
+      if (useEclipse)  activeModules.push('eclipse_zone');
+      if (useRahu)     activeModules.push('rahu_kalam');
       const hardModules = [];
       if (useTongshu) hardModules.push('ze_ri');
       if (useTaisui) hardModules.push('tai_sui');
@@ -2575,6 +2858,27 @@ const HELP_DATA = {
     th:{what:'โหราศาสตร์ดาวจริง (七政四餘) · ใช้ตำแหน่งดาวจริงบนฟ้า (อาทิตย์/จันทร์/พุธ/ศุกร์/อังคาร/พฤหัส/เสาร์ + ราหู/เกตุ/เยวี่ยปั๋ว/紫氣) ตัดสินด้วยกฎ廟旺·恩用仇難·格局',how:['ดาวจริง (astronomy-engine VSOP87) + ระบบ28宿距星 (ยืนยันกับ清史稿/御製曆象考成)','用神(命主)ได้กำลัง 廟/旺/升殿 → คะแนนขึ้น','เข้า合格(ดี)/ติด忌格(ร้าย) → ปรับคะแนน','ติ๊กถึงทำงาน · ไม่ติ๊ก=ไม่มีผล (opt-in)'],src:'果老星宗 + 張果星宗 + 清史稿曆志 · 紫氣=beta รอซินแสยืนยันสำนัก'},
     en:{what:'Real-star astrology (七政四餘) · uses true planet positions (7 luminaries + 4 shadow points incl. 紫氣) judged by 廟旺/恩用仇難/格局',how:['Real stars (astronomy-engine) + 28-mansion 距星 system (validated vs Qing 清史稿/御製曆象考成)','Chart ruler strong (廟/旺/升殿) → score up','Favorable 合格 / adverse 忌格 → adjust','Opt-in: only runs when ticked'],src:'Guolao Xingzong + Qing Shi Gao · 紫氣 beta'},
     zh:{what:'七政四餘真星占 · 用實際天體位置(七政+四餘含紫氣)以廟旺·恩用仇難·格局論斷',how:['真實星曆(astronomy-engine)+二十八宿距星(校驗清史稿/御製曆象考成)','用神(命主)得廟旺升殿 → 加分','合格吉/忌格凶 → 調整','勾選方運作 · 不勾選不影響'],src:'果老星宗 · 張果星宗 · 清史稿曆志 · 紫氣beta'} },
+  /* r372 · หมวด ② ท้องฟ้าจริง 5 ตัวใหม่ */
+  moonvoid: { han:'月空', name:'จันทร์ว่าง · Void of Course',
+    th:{what:'จันทร์ว่าง (Void of Course · VoC) คือช่วงที่ดวงจันทร์ทำมุมสำคัญกับดาวดวงอื่นครบแล้ว และลอยเปล่ารอเข้าราศีใหม่ · ตำรา electional คลาสสิกถือว่า “เริ่มงานช่วงนี้ = งานไม่ออกดอก” — เรื่องที่เริ่มมักจบไม่เป็นชิ้นเป็นอัน',how:['คำนวณจากตำแหน่งจันทร์จริงบนฟ้า (astronomy-engine) ณ ช่วงยามนั้น','ยามคาบช่วงจันทร์ว่าง + กิจกรรมประเภทเริ่มงานใหม่ → เพดานคะแนน 45','กิจกรรมที่ไม่ใช่งานเริ่มใหม่ → เตือนอย่างเดียว ไม่ตัดฤกษ์'],src:'William Lilly · Christian Astrology (1647) · ตำรา electional คลาสสิก + astronomy-engine'},
+    en:{what:'Void of Course (VoC) Moon: the Moon has completed its last major aspect and drifts empty until entering the next sign · classical electional texts hold that “nothing will come of the matter” begun during VoC',how:['Computed from the real Moon position (astronomy-engine) for that hour slot','Slot inside VoC + a new-venture activity → score capped at 45','Non-initiating activities → warning only, no cut'],src:'William Lilly · Christian Astrology (1647) · classical electional canon + astronomy-engine'},
+    zh:{what:'月空(Void of Course)：月亮完成最後主要相位、尚未入下一星座的空檔 · 古典擇時術認為此時起事「難有成果」',how:['以真實月亮位置(astronomy-engine)計算該時辰','時辰落在月空＋開創類事項 → 分數上限45','非開創事項 → 僅提醒不裁減'],src:'William Lilly《Christian Astrology》(1647) · 古典擇時術 + astronomy-engine'} },
+  moonsign: { han:'月座', name:'จันทร์ประจำราศี',
+    th:{what:'ราศีที่ดวงจันทร์อยู่จริง ณ ยามนั้น · ตำรา electional จับคู่ราศีจันทร์กับประเภทงาน เช่น จันทร์ราศีพฤษภ (มั่นคง) เหมาะสัญญาระยะยาว · จันทร์ราศีเมถุน เหมาะงานสื่อสาร/เจรจา',how:['ตำแหน่งจันทร์จริง (astronomy-engine) → ราศี ณ ยามนั้น','ราศีจันทร์เข้ากับกิจกรรม → +6 เบา ๆ','ไม่เข้ากับกิจกรรม → −6 เบา ๆ · เป็นตัวปรับละเอียด ไม่ตัดฤกษ์'],src:'ตำรา electional คลาสสิก (Moon sign election) + astronomy-engine'},
+    en:{what:'The zodiac sign the Moon actually occupies at that hour · electional astrology matches Moon signs to task types, e.g. Taurus Moon (stable) suits long contracts, Gemini Moon suits communication',how:['Real Moon position (astronomy-engine) → sign at that hour','Moon sign fits the activity → +6 (soft)','Does not fit → −6 (soft) · fine-tuning only, never cuts'],src:'Classical electional astrology (Moon sign election) + astronomy-engine'},
+    zh:{what:'該時辰月亮實際所在星座 · 擇時術以月座配事類：金牛月座（穩）宜長約 · 雙子月座宜溝通洽談',how:['真實月亮位置(astronomy-engine) → 該時辰星座','月座合事項 → 輕加6分','不合 → 輕減6分 · 僅微調不裁減'],src:'古典擇時術（月座擇時）+ astronomy-engine'} },
+  retro: { han:'逆行', name:'ดาวถอย · Retrograde',
+    th:{what:'ช่วงดาวเคราะห์ถอยหลังจริงบนฟ้า โดยเฉพาะรอบเปลี่ยนทิศ (station R→D) ที่ตำราถือว่าแรงสุด · พุธถอยกระทบเอกสาร/สื่อสาร/สัญญา · ศุกร์ถอยกระทบงานมงคล/ความสัมพันธ์ · อังคารถอยกระทบงานบุกลุย/ผ่าตัด',how:['หา window ถอยจากตำแหน่งดาวจริง (astronomy-engine)','พุธถอย × งานเอกสาร/เจรจา → เพดานคะแนน 45','ศุกร์ถอย × งานมงคล/ความสัมพันธ์ → เพดาน 40 · อังคารถอย × งานลุย → เพดาน 50','ดาวถอยที่ไม่ตรงหมวดกิจกรรม → แสดงเป็นข้อมูลประกอบ ไม่ตัด'],src:'ตำรา electional ตะวันตก (retrograde election) + astronomy-engine'},
+    en:{what:'Real retrograde windows, especially around the R→D station which classical texts treat as strongest · Mercury Rx hits documents/communication/contracts · Venus Rx hits weddings/relationships · Mars Rx hits assertive work/surgery',how:['Retro windows from real planet positions (astronomy-engine)','Mercury Rx × paperwork/negotiation → cap 45','Venus Rx × auspicious/relationship events → cap 40 · Mars Rx × assertive work → cap 50','Retro not matching the activity → shown as info only, no cut'],src:'Western electional canon (retrograde election) + astronomy-engine'},
+    zh:{what:'行星實際逆行期，尤以留轉順(R→D station)前後最烈 · 水逆礙文書溝通契約 · 金逆礙嫁娶人際 · 火逆礙攻勢/手術',how:['以真實星曆(astronomy-engine)求逆行區間','水逆×文書洽談 → 上限45','金逆×吉慶人際 → 上限40 · 火逆×攻勢事 → 上限50','逆行與事項無關 → 僅列參考不裁減'],src:'西方擇時術（逆行擇時）+ astronomy-engine'} },
+  eclipse: { han:'食區', name:'โซนอับคราส · Eclipse Zone',
+    th:{what:'โซน ±3 วันรอบสุริยุปราคา/จันทรุปราคา · โบราณทั้งสายตะวันตกและสายจีน (日食/月食) ถือว่าแสงถูกบัง ไม่เริ่มงานมงคลใหญ่ในช่วงนี้',how:['วันเกิดคราสพอดี → เพดานคะแนน 35','อยู่ในโซน ±3 วัน + งานเปิดตัว/งานมงคลใหญ่ → เพดาน 55','ใกล้คราสแต่กิจกรรมกระทบน้อย → เตือนอย่างเดียว ไม่ตัด'],src:'ตำรา electional + 協紀辨方書 (日食/月食忌) · เวลาคราสจริงจาก astronomy-engine'},
+    en:{what:'The ±3-day zone around solar/lunar eclipses · both Western electional and Chinese canon (日食/月食) treat the light as obscured — no major auspicious launches',how:['Exact eclipse day → score capped at 35','Inside ±3-day zone + major launch/auspicious event → cap 55','Near an eclipse but low-impact activity → warning only'],src:'Electional canon + Xie Ji Bian Fang Shu (eclipse taboos) · real eclipse times via astronomy-engine'},
+    zh:{what:'日食/月食前後±3天之蝕區 · 中西擇日皆視為光被掩，不宜大型吉事開創',how:['正逢蝕日 → 上限35','蝕區內＋大型開幕/吉慶 → 上限55','近蝕而事項影響小 → 僅提醒'],src:'擇時術 + 協紀辨方書（日月食忌）· astronomy-engine 真實蝕時'} },
+  rahu: { han:'羅睺', name:'ราหูกาล · Rahu Kalam',
+    th:{what:'ราหูกาล (Rahu Kalam) คือช่วงอัปมงคลรายวันของโหราศาสตร์อินเดีย (Muhurta) ยาวประมาณ 90 นาที · ตำแหน่งในวันต่างกันตามวันในสัปดาห์ · งดเริ่มงานมงคลทุกชนิดในช่วงนี้',how:['คำนวณจากเวลาพระอาทิตย์ขึ้น-ตกจริง ณ สถานที่จัดงาน (ไม่ใช่ตาราง 07:30 ตายตัว)','แบ่งกลางวันจริงออกเป็น 8 ส่วน · ส่วนของราหูขึ้นกับวันในสัปดาห์','ยามที่คาบช่วงราหูกาล → เพดานคะแนน 50'],src:'Muhurta ตำราโหราศาสตร์อินเดีย · พระอาทิตย์ขึ้นจริงจาก astronomy-engine'},
+    en:{what:'Rahu Kalam is the daily inauspicious window of Indian astrology (Muhurta), ~90 minutes, at a different position each weekday · all auspicious beginnings are avoided during it',how:['Computed from the real sunrise-sunset at the event venue (not a fixed 07:30 table)','The true daylight span is split into 8 parts; Rahu\'s part depends on the weekday','Slot overlapping Rahu Kalam → score capped at 50'],src:'Muhurta (Indian electional astrology) · real sunrise via astronomy-engine'},
+    zh:{what:'羅睺時段(Rahu Kalam)為印度擇時術每日凶時，約90分鐘，依星期日別位置不同 · 此段忌一切吉事開創',how:['以活動地點真實日出日落計算（非固定07:30表）','將實際白晝分為8段，羅睺段依星期而定','時辰疊入羅睺時段 → 上限50'],src:'印度擇時術 Muhurta · astronomy-engine 真實日出'} },
 };
 function getCurrentLang(){ return localStorage.getItem('hk_locale')||localStorage.getItem('lang')||'th'; }
 function showHelp(key){
@@ -3167,6 +3471,35 @@ Object.assign(window.HK_I18N, {
   'dp.loc.failed': { th:'โหลด Google Places ไม่สำเร็จ · กรอกพิกัดเองด้านล่างได้', en:'Google Places failed to load · you can enter coordinates below', zh:'Google Places 載入失敗 · 可於下方手動輸入座標' },
   'dp.tx.sub': { th:'โหราศาสตร์ดาวจริง 七政四餘 (廟旺·恩用仇難·格局) · ศาสตร์ขั้นสูงสุด · ติ๊กเพื่อเปิดให้คะแนนเสริม · ไม่ติ๊ก = ไม่มีผลต่อคะแนน', en:'Real-star astrology 七政四餘 (dignity · benefactor/affliction · patterns) · highest science · tick to enable bonus scoring · off = no effect', zh:'七政四餘真星占 (廟旺·恩用仇難·格局) · 最高擇日術 · 勾選啟用加分 · 不勾選不影響' },
   'auto.d.010': { th:'ตัดเฉพาะวันที่ตรงข้อห้าม 忌 ของกิจกรรม · ตงกง 董公 เป็นคะแนนเสริมในชั้นนี้', en:'Hard-cuts only activity 忌 days; Dong Gong is a scoring overlay in this layer', zh:'僅硬篩本事項忌日；董公在此層作輔助加減分' },
+  /* r372 · preset ชุดสำเร็จ + 4 กลุ่ม toggle + 5 module ท้องฟ้าจริง */
+  'dp.preset.title': { th:'ชุดสำเร็จ · เลือกแล้วปรับเกณฑ์ให้อัตโนมัติ', en:'Presets · one tap sets all criteria', zh:'快選組合 · 一鍵設定條件' },
+  'dp.preset.basic': { th:'🗓 มูพื้นฐาน', en:'🗓 Calendar basics', zh:'🗓 基礎擇日' },
+  'dp.preset.full': { th:'✨ ครบเครื่อง', en:'✨ Full stack', zh:'✨ 全配' },
+  'dp.preset.chinese': { th:'🀄 สายจีนแท้', en:'🀄 Pure Chinese', zh:'🀄 純中式' },
+  'dp.preset.realsky': { th:'🪐 สายดาวจริง', en:'🪐 Real-sky', zh:'🪐 真星派' },
+  'dp.grp.basic.t': { th:'① พื้นฐานปฏิทิน', en:'① Calendar base', zh:'① 曆法基礎' },
+  'dp.grp.basic.s': { th:'วันนี้โดยธรรมเนียมจีนดี/ร้ายแค่ไหน', en:'How good or bad the day is by Chinese tradition', zh:'依中國傳統本日吉凶如何' },
+  'dp.grp.sky.t': { th:'② ท้องฟ้าจริง', en:'② Real sky', zh:'② 實際天象' },
+  'dp.grp.sky.s': { th:'ฟ้าจริงวันนั้นเป็นใจไหม กี่โมงต้องเลี่ยง · คำนวณจากพิกัดสถานที่จัดงาน', en:'Is the actual sky on your side, and which hours to avoid · computed from the venue coordinates', zh:'當日實際天象是否助力、哪些時段須避 · 依活動地點座標計算' },
+  'dp.grp.personal.t': { th:'③ เฉพาะดวงคุณ', en:'③ Your chart only', zh:'③ 個人命盤' },
+  'dp.grp.personal.s': { th:'วันดีของคนทั่วไป อาจร้ายสำหรับคุณ · ต้องเลือกโปรไฟล์/คนที่เกี่ยวข้อง', en:'A good day for everyone may be bad for you · requires selecting a profile/people', zh:'眾人吉日未必利你 · 須選擇個人檔案/相關人' },
+  'dp.grp.adv.t': { th:'④ ชั้นสูง', en:'④ Advanced', zh:'④ 進階' },
+  'dp.grp.adv.s': { th:'ฉีเหมิน + เหอหลัว · สำหรับสายลึก · ปิดไว้เป็นค่าเริ่มต้น', en:'Qi Men + He Luo · for advanced users · off by default', zh:'奇門＋河洛 · 深研者用 · 預設關閉' },
+  'dp.mv.ttl': { th:'จันทร์ว่าง', en:'Void of Course Moon', zh:'月空' },
+  'dp.mv.level': { th:'เพดานคะแนน', en:'Score cap', zh:'限分' },
+  'dp.mv.sub': { th:'Void of Course · ช่วงจันทร์ไร้มุมก่อนย้ายราศี · เริ่มงานใหม่ช่วงนี้ตำราถือว่างานไม่ออกดอก · เพดานคะแนน 45', en:'Void of Course · Moon drifting aspect-less before changing sign · classical texts: ventures begun now bear no fruit · caps score at 45', zh:'月空 · 月亮換座前無相位空檔 · 古法謂此時起事難有成果 · 上限45' },
+  'dp.ms.ttl': { th:'จันทร์ประจำราศี', en:'Moon sign', zh:'月座' },
+  'dp.ms.level': { th:'ปรับคะแนนเบา', en:'Soft adjust', zh:'微調' },
+  'dp.ms.sub': { th:'ราศีที่จันทร์อยู่จริง ณ ยามนั้น · เข้ากับกิจกรรม +6 / ไม่เข้า −6 เบา ๆ · ไม่ตัดฤกษ์', en:'The Moon\'s real sign at that hour · fits activity +6 / misfit −6 (soft) · never cuts', zh:'該時辰月亮實際星座 · 合事項+6／不合−6（輕）· 不裁減' },
+  'dp.rw.ttl': { th:'ดาวถอย', en:'Retrograde', zh:'逆行' },
+  'dp.rw.level': { th:'เพดานคะแนน', en:'Score cap', zh:'限分' },
+  'dp.rw.sub': { th:'ดาวพุธ/ศุกร์/อังคารถอยจริงบนฟ้า · ตรงหมวดกิจกรรมโดนเพดาน 40-50 · ไม่ตรงเป็นข้อมูลประกอบ', en:'Real Mercury/Venus/Mars retrograde · matching activity type caps score 40-50 · otherwise informational', zh:'水／金／火星實際逆行 · 事項相符者上限40-50 · 不符僅供參考' },
+  'dp.ez.ttl': { th:'โซนอับคราส', en:'Eclipse zone', zh:'食區' },
+  'dp.ez.level': { th:'เพดานคะแนน', en:'Score cap', zh:'限分' },
+  'dp.ez.sub': { th:'±3 วันรอบสุริยุปราคา/จันทรุปราคา · วันคราสพอดีเพดาน 35 · ในโซน+งานเปิดตัวใหญ่เพดาน 55', en:'±3 days around solar/lunar eclipses · exact eclipse day caps at 35 · in-zone major launches cap at 55', zh:'日月食前後±3天 · 正逢蝕日上限35 · 區內大型開創上限55' },
+  'dp.rk.ttl': { th:'ราหูกาล', en:'Rahu Kalam', zh:'羅睺時段' },
+  'dp.rk.level': { th:'เพดานคะแนน', en:'Score cap', zh:'限分' },
+  'dp.rk.sub': { th:'ช่วงอัปมงคลรายวันสายอินเดีย ~90 นาที · คำนวณจากพระอาทิตย์ขึ้นจริง ณ สถานที่จัดงาน · เพดานคะแนน 50', en:'Daily inauspicious window of Indian astrology (~90 min) · computed from real sunrise at the venue · caps score at 50', zh:'印度擇時每日凶時約90分鐘 · 依活動地點真實日出計算 · 上限50' },
   'auto.d.011': { th:'ตัดวันชง', en:'Forbidden', zh:'忌' },
   'auto.d.012': { th:'เช็คดวงคน — วันชง · 刑 · 害 · กระทบวันเกิดหลัก', en:'Check person\'s chart — 沖 · 刑 · 害 · Day Master clash', zh:'查命 — 沖·刑·害·剋日主' },
   'auto.d.013': { th:'刑/害 (เตือนเฉย ๆ ไม่ตัดทิ้ง)', en:'刑/害 (warning only)', zh:'刑/害 (僅警告)' },

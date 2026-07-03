@@ -4,6 +4,10 @@ export async function resolve(spec, ctx, next) {
   if (spec === 'next/server') {
     return next('next/server.js', ctx);
   }
+  if (spec === 'next/headers') {
+    // r372: route ที่ import auth.ts (next/headers) ต้องรันในเทสได้ (additive · pattern เดียวกับ next/server)
+    return next('next/headers.js', ctx);
+  }
   // @/ alias → src/ (เลียน tsconfig paths · เฉพาะ test)
   if (spec.startsWith('@/')) {
     const rel = pathToFileURL(`${ROOT}/src/${spec.slice(2)}`).href;

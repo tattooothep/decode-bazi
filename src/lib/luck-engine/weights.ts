@@ -41,6 +41,11 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     hex64:           0.02,
     tian_xing:       0.12,
     dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
+    moon_void:       0,     // r372 · ทำงานผ่าน caps ล้วน (จันทร์ว่าง cap 45)
+    retro_window:    0,     // r372 · ทำงานผ่าน caps ล้วน (ดาวถอย cap 40-50)
+    eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
+    rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
+    moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
   },
 
   // ----------------------------------------------------------------
@@ -62,6 +67,11 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     hex64:           0.01,
     tian_xing:       0.12,
     dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
+    moon_void:       0,     // r372 · ทำงานผ่าน caps ล้วน (จันทร์ว่าง cap 45)
+    retro_window:    0,     // r372 · ทำงานผ่าน caps ล้วน (ดาวถอย cap 40-50)
+    eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
+    rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
+    moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
   },
 
   // ----------------------------------------------------------------
@@ -82,6 +92,11 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     hex64:           0.01,
     tian_xing:       0.12,
     dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
+    moon_void:       0,     // r372 · ทำงานผ่าน caps ล้วน (จันทร์ว่าง cap 45)
+    retro_window:    0,     // r372 · ทำงานผ่าน caps ล้วน (ดาวถอย cap 40-50)
+    eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
+    rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
+    moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
   },
 
   // ----------------------------------------------------------------
@@ -102,6 +117,11 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     hex64:           0.01,
     tian_xing:       0.12,
     dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
+    moon_void:       0,     // r372 · ทำงานผ่าน caps ล้วน (จันทร์ว่าง cap 45)
+    retro_window:    0,     // r372 · ทำงานผ่าน caps ล้วน (ดาวถอย cap 40-50)
+    eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
+    rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
+    moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
   },
 
   // ----------------------------------------------------------------
@@ -122,6 +142,11 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     hex64:           0.02,
     tian_xing:       0.12,
     dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
+    moon_void:       0,     // r372 · ทำงานผ่าน caps ล้วน (จันทร์ว่าง cap 45)
+    retro_window:    0,     // r372 · ทำงานผ่าน caps ล้วน (ดาวถอย cap 40-50)
+    eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
+    rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
+    moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
   },
 
   // ----------------------------------------------------------------
@@ -142,6 +167,11 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     hex64:           0.01,
     tian_xing:       0.12,
     dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
+    moon_void:       0,     // r372 · ทำงานผ่าน caps ล้วน (จันทร์ว่าง cap 45)
+    retro_window:    0,     // r372 · ทำงานผ่าน caps ล้วน (ดาวถอย cap 40-50)
+    eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
+    rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
+    moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
   },
 
   // ----------------------------------------------------------------
@@ -159,6 +189,11 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     hex64:           0.04,
     tian_xing:       0.12,
     dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
+    moon_void:       0,     // r372 · ทำงานผ่าน caps ล้วน (จันทร์ว่าง cap 45)
+    retro_window:    0,     // r372 · ทำงานผ่าน caps ล้วน (ดาวถอย cap 40-50)
+    eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
+    rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
+    moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
     twenty_eight:    0.02,
     twelve_spirits:  0.01,
     he_luo:          0.01,
@@ -182,6 +217,11 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     hex64:           0.02,
     tian_xing:       0.12,
     dong_gong:       0,     // r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
+    moon_void:       0,     // r372 · ทำงานผ่าน caps ล้วน (จันทร์ว่าง cap 45)
+    retro_window:    0,     // r372 · ทำงานผ่าน caps ล้วน (ดาวถอย cap 40-50)
+    eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
+    rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
+    moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
   },
 };
 
