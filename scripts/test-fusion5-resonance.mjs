@@ -306,5 +306,68 @@ const MAI = { name: "ใหม่", dtUTC: new Date("1986-04-08T17:04:00Z"), lat
   ok(`render 4 ดวง+6 คู่ ถูกตัดฉลาด ≤${RESONANCE_BLOCK_MAX_CHARS} (จริง ${blk4.length}) + หัวท้ายครบ`, blk4.length <= RESONANCE_BLOCK_MAX_CHARS && blk4.startsWith("=== RESONANCE_PACKET") && blk4.includes("END_RESONANCE_PACKET"));
 }
 
+/* ████████████ Resonance v3 · independence: structural vs independent (กัน overcount R2/R3) ████████████ */
+
+// ===== 15) v3 fixture สังเคราะห์ทั้งสองแบบ + ลำดับ independent มาก่อน =====
+{
+  const ev = (science, month, planet, dateISO) => ({ science, month, planet, dateISO, evidence: `${science} ${planet} ${dateISO}`, polarity: "neutral" });
+  const c = clusterByMonth([
+    ev("western", 3, "Sun", "2026-03-21"),  // เดือน節氣จีน ↔ ตำแหน่ง Sun ตะวันตก (สังเคราะห์ — วัดอาทิตย์ชิ้นเดียวกัน)
+    ev("qizheng", 3, "Sun", "2026-03-20"),
+    ev("western", 5, "Saturn", "2026-05-06"),
+    ev("qizheng", 5, "Saturn", "2026-05-12"),
+    ev("western", 8, "Uranus", "2026-08-01"),
+    ev("vedic", 8, "Uranus", "2026-08-09"),
+  ]);
+  ok("v3 R2 Sun-driven ทั้งคู่ → structural", c.length === 3 && c.some((x) => x.planet === "Sun" && x.month === 3 && x.independence === "structural"), JSON.stringify(c.map((x) => [x.planet, x.independence])));
+  ok("v3 R2 Saturn/Uranus → independent (ดาวที่ปฏิทินตัวนับมองไม่เห็น)", c.filter((x) => x.independence === "independent").map((x) => x.planet).sort().join(",") === "Saturn,Uranus");
+  ok("v3 ลำดับ: independent มาก่อน structural แม้เดือนหลัง", c[0].independence === "independent" && c[1].independence === "independent" && c[2].independence === "structural" && c[2].planet === "Sun");
+  const e3 = clusterEclipseByMonth([
+    { science: "western", month: 7, dateISO: "2026-07-01", evidence: "sun-derived A", driver: "sun" },
+    { science: "qizheng", month: 7, dateISO: "2026-07-01", evidence: "sun-derived B", driver: "sun" },
+    { science: "western", month: 2, dateISO: "2026-02-17", evidence: "คราสสุริยะแตะจันทร์", driver: "eclipse" },
+    { science: "qizheng", month: 2, dateISO: "2026-02-17", evidence: "羅睺沖命度", driver: "node" },
+  ]);
+  ok("v3 R3 คราส/ราหู → independent · driver sun ทั้งหมด → structural + อิสระมาก่อน", e3.length === 2 && e3[0].month === 2 && e3[0].independence === "independent" && e3[1].month === 7 && e3[1].independence === "structural", JSON.stringify(e3.map((x) => [x.month, x.independence])));
+  // driver ไม่ระบุ (caller เก่า/jsonb เก่า) → independent (พฤติกรรมเท่าเดิม ไม่ลดชั้นของจริง)
+  const e3legacy = clusterEclipseByMonth([
+    { science: "western", month: 4, dateISO: "2026-04-01", evidence: "a" },
+    { science: "qizheng", month: 4, dateISO: "2026-04-02", evidence: "b" },
+  ]);
+  ok("v3 R3 driver ไม่ระบุ (backward) → independent", e3legacy.length === 1 && e3legacy[0].independence === "independent");
+}
+
+// ===== 16) v3 golden เอี๊ยว 2026: ของจริงไม่ถูกลดชั้น + R6 ไม่แตะ (3 เสียงครบ) + deterministic =====
+{
+  const r = buildResonance([AEAW_DB], SCIS, YEAR, REF);
+  const p0 = r.perPerson[0];
+  ok("v3 golden: R2/R3 จริงทุก cluster = independent (collector ไม่มี event Sun-driven — นับไม่ตก)", p0.r2.every((c) => c.independence === "independent") && p0.r3.every((c) => c.independence === "independent"), JSON.stringify({ r2: p0.r2.map((c) => [c.planet, c.independence]), r3: p0.r3.map((c) => [c.month, c.independence]) }));
+  const r6 = p0.r6;
+  ok("v3 R6 ไม่แตะ: golden 丙午 ครบ 3 ระบบ + ≥2 เสียง + จีนมี沖", !!r6 && r6.targetGanzhi === "丙午" && r6.votes.length === 3 && r6.voiceCount >= 2 && r6.relations.includes("沖"), JSON.stringify({ v: r6?.voiceCount, rel: r6?.relations }));
+  const strip = (x) => { const y = JSON.parse(JSON.stringify(x)); delete y.computeMs; return JSON.stringify(y); };
+  ok("v3 deterministic: รัน 2 รอบผลเหมือนกันทุกตัวอักษร (รวม independence)", strip(r) === strip(buildResonance([AEAW_DB], SCIS, YEAR, REF)));
+}
+
+// ===== 17) v3 render: แยกกลุ่ม 🥇/ℹ️ + structural เป็นรายละเอียดรอง + cap เดิม =====
+{
+  const mk = (planet, month, independence) => ({
+    month, planet, planetTh: planet === "Sun" ? "อาทิตย์(日)" : "เสาร์(土)", independence,
+    sciences: ["western", "qizheng"],
+    evidences: [
+      { science: "western", dateISO: `2026-${String(month).padStart(2, "0")}-06`, evidence: `western ${planet} m${month}` },
+      { science: "qizheng", dateISO: `2026-${String(month).padStart(2, "0")}-12`, evidence: `qizheng ${planet} m${month}` },
+    ],
+  });
+  const synth = { ...res, perPerson: [{ ...res.perPerson[0], r2: [mk("Saturn", 5, "independent"), mk("Sun", 3, "structural")], r3: [] }] };
+  const blk = renderResonanceBlockTh(synth);
+  ok("v3 render: มีหัวกลุ่ม 🥇 ยืนยันอิสระ (นาฬิกาคนละเรือน)", blk.includes("R2 🥇 ยืนยันอิสระ (นาฬิกาคนละเรือน):"));
+  ok("v3 render: structural แยกกลุ่ม ℹ️ วัดของชิ้นเดียวกัน ไม่นับเป็นหลักฐานซ้ำ", blk.includes("R2 ℹ️ พ้องเชิงโครงสร้าง (วัดของชิ้นเดียวกัน — ไม่นับเป็นหลักฐานซ้ำ):") && blk.indexOf("🥇") < blk.indexOf("พ้องเชิงโครงสร้าง"));
+  ok(`v3 render ≤ cap เดิม ${RESONANCE_BLOCK_MAX_CHARS} (จริง ${blk.length})`, blk.length <= RESONANCE_BLOCK_MAX_CHARS && blk.includes("END_RESONANCE_PACKET"));
+  // r2 เก่าใน jsonb (ไม่มี field independence) → render เป็นอิสระตามเดิม ไม่พัง
+  const legacy = { ...res, perPerson: [{ ...res.perPerson[0], r2: [{ month: 5, planet: "Saturn", planetTh: "เสาร์(土)", sciences: ["western", "qizheng"], evidences: [{ science: "western", dateISO: "2026-05-06", evidence: "x" }] }], r3: [] }] };
+  const blkL = renderResonanceBlockTh(legacy);
+  ok("v3 render jsonb เก่า (ไม่มี independence) → นับเป็นอิสระ ไม่พัง", blkL.includes("R2 🥇 ยืนยันอิสระ") && !blkL.includes("พ้องเชิงโครงสร้าง"));
+}
+
 console.log(`\nผล: ${pass} ผ่าน · ${fail} ไม่ผ่าน`);
 process.exit(fail ? 1 : 0);

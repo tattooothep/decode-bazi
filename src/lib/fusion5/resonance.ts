@@ -18,6 +18,10 @@
  *      western ดาวช้าธาตุนั้น (map ดาว→ธาตุจีนโบราณ 木星/火星/土星/金星/水星) + qizheng 流年ดาวธาตุ用神 · ziwei ข้ามอย่างซื่อสัตย์ (engine ไม่มีตารางธาตุดาว化曜)
  *   R6 ปีชง 3 อารยธรรม — จีน (กิ่งปีเกิด vs กิ่งปีเป้าหมาย: 值太歲/沖/刑/害/破) · western (Saturn hard aspect → natal Sun/Moon/Asc)
  *      · vedic (SadeSati activeAnyTimeInYear) → นับเสียง 0-3
+ *
+ * "Resonance v3" — independence tagging บน R2/R3 (additive · กัน overcount · version คง "resonance_v1"):
+ *   การซ้อนบางคู่ "ต้องตรงกันโดยโครงสร้าง" เพราะสองฝั่งวัดของชิ้นเดียวกัน → ห้ามนับเป็นการยืนยันอิสระ
+ *   ดู mapping เต็มที่ block comment เหนือ classify helpers ด้านล่าง · independent มาก่อนเสมอ (ลำดับ array + render)
  */
 import { SolarTime } from "tyme4ts";
 import { ASPECTS } from "../astro-core/aspects";
@@ -82,10 +86,12 @@ const ZIWEI_PALACE_THEME: Record<string, ResonanceThemeKey> = {
 };
 
 /* ==================== ชนิดข้อมูล ==================== */
-export type ResonancePlanet = "Saturn" | "Jupiter" | "Mars" | "Node" | "Uranus" | "Neptune" | "Pluto";
+/** v3: เพิ่ม "Sun" ในชุดดาว — collector ปัจจุบันยังไม่ผลิต event อาทิตย์ (R2 จริงไม่เปลี่ยน) แต่ type รองรับ
+ *  entry Sun-driven (เดือน節氣จีน ↔ ตำแหน่ง Sun ตะวันตก ฯลฯ) เพื่อจัดชั้น structural ได้ตั้งแต่วันแรก */
+export type ResonancePlanet = "Saturn" | "Jupiter" | "Mars" | "Node" | "Uranus" | "Neptune" | "Pluto" | "Sun";
 const PLANET_TH: Record<ResonancePlanet, string> = {
   Saturn: "เสาร์(土)", Jupiter: "พฤหัส(木)", Mars: "อังคาร(火)", Node: "ราหู-เกตุ(羅計)",
-  Uranus: "ยูเรนัส", Neptune: "เนปจูน", Pluto: "พลูโต",
+  Uranus: "ยูเรนัส", Neptune: "เนปจูน", Pluto: "พลูโต", Sun: "อาทิตย์(日)",
 };
 /** ดาวจริงดวงเดียวกันคนละชื่อในแต่ละศาสตร์ → physical key เดียว */
 const QIZHENG_STAR_PLANET: Record<string, ResonancePlanet> = { "土": "Saturn", "木": "Jupiter", "火": "Mars", "羅睺": "Node", "計都": "Node" };
@@ -99,10 +105,40 @@ export type ResonanceMonthEvent = {
   polarity: "benefic" | "malefic" | "neutral";   // ใช้ชั้น CONFLICT
 };
 
+/* ==================== "Resonance v3" · structural vs independent (กัน overcount) ====================
+ * หลักคิด: การซ้อนนับเป็น "การยืนยันอิสระ" ได้ก็ต่อเมื่อสองฝั่งเป็นนาฬิกาคนละเรือนจริงๆ
+ * ถ้าสองฝั่ง derive จาก body เดียวกัน + phase เดียวกัน = วัดของชิ้นเดียวกันสองครั้ง → structural (ห้ามนับซ้ำ)
+ *
+ * mapping ต่อ entry (ศาสตร์ไหน + ดาวไหน → นาฬิกาอะไรขับ):
+ *   [R2] western  transit Saturn/Jupiter/Mars/Uranus/Neptune/Pluto → ดาวจริงบนฟ้าดวงนั้น (นาฬิกา: ตัวดาวเอง)
+ *   [R2] qizheng  土/木/火/羅睺/計都 hits                          → ดาวจริง (七政 คำนวณตำแหน่งจริง astronomy-engine)
+ *   [R2] vedic    Saturn/Jupiter ingress + SadeSati                → ดาวจริง (sidereal — ดวงเดียวกับ western แต่ target natal คนละชุด/คนละ phase)
+ *   [R2] planet="Sun" (สังเคราะห์/อนาคต): เดือน節氣จีน ↔ ตำแหน่ง Sun ตะวันตก · 沖เดือน ↔ Sun opposite natal Sun
+ *        · ปีกิ่งจีน ↔ Jupiter idealized (ปีนักษัตร = วัฏจักรพฤหัสอุดมคติ นับด้วยปฏิทิน ไม่ใช่ดาวจริง)
+ *        → ทั้งหมดขับด้วยนาฬิกาอาทิตย์/ตัวนับปฏิทินเรือนเดียวกัน phase เดียวกัน
+ *   [R3] western  eclipse แตะดวง · Rahu จร → แกนราหูเกตุ/คราสจริง (driver "eclipse"/"node")
+ *   [R3] qizheng  羅睺/計都 hits            → แกนราหูเกตุจริง (driver "node")
+ *
+ * เกณฑ์เทียบคู่ (ตัดสินระดับ cluster):
+ *   STRUCTURAL  — ทุก entry ในกลุ่มขับด้วยอาทิตย์/ตัวนับเดียวกัน (R2: planet="Sun" ทั้งคู่ · R3: driver="sun" ทั้งหมด)
+ *                 = เหตุการณ์ที่ต้องตรงกันโดยโครงสร้าง ไม่ใช่หลักฐานซ้ำ
+ *   INDEPENDENT — ทองคำ: ดาวที่ปฏิทินตัวนับมองไม่เห็น (Saturn/Uranus/Neptune/Pluto/Mars/Jupiter จริง/คราส/ราหูจริง/จันทร์จริง)
+ *                 ชี้เดือนเดียวกับอีกกรอบพอดี = นาฬิกาคนละเรือนตีพร้อมกัน
+ *                 (western×qizheng ดาวจริงดวงเดียวกัน = body เดียวกันแต่ phase คนละชุด natal → ยังนับอิสระตาม spec v3)
+ *
+ * คะแนน/ลำดับ: independent มาก่อนเสมอ (sort array + render แยกกลุ่ม 🥇/ℹ️) · jsonb additive:
+ *   jobs.resonance เดิมไม่มี field independence → consumer อ่านค่าที่หายเป็น independent (พฤติกรรมเท่าเดิม)
+ */
+export type ResonanceIndependence = "structural" | "independent";
+/** ดาวที่ "ตัวนับปฏิทิน" มองเห็น (ขับด้วยอาทิตย์/ตัวนับ) — คู่ที่เป็นดาวชุดนี้ทั้งหมด = structural */
+const SUN_DRIVEN_PLANETS: ReadonlySet<ResonancePlanet> = new Set(["Sun"]);
+const indepOrder = (x: { independence: ResonanceIndependence }) => (x.independence === "structural" ? 1 : 0);
+
 export type R1Entry = { science: ResonanceScience; house: number | null; themeKey: ResonanceThemeKey; evidence: string };
 export type R1Resonant = { themeKey: ResonanceThemeKey; theme: { th: string; en: string; zh: string }; sciences: ResonanceScience[]; evidences: { science: ResonanceScience; evidence: string }[] };
-export type R2Cluster = { month: number; planet: ResonancePlanet; planetTh: string; sciences: ResonanceScience[]; evidences: { science: ResonanceScience; dateISO: string | null; evidence: string }[] };
-export type R3Cluster = { month: number; sciences: ResonanceScience[]; evidences: { science: ResonanceScience; dateISO: string | null; evidence: string }[] };
+export type R2Cluster = { month: number; planet: ResonancePlanet; planetTh: string; independence: ResonanceIndependence; sciences: ResonanceScience[]; evidences: { science: ResonanceScience; dateISO: string | null; evidence: string }[] };
+export type R3EventDriver = "sun" | "node" | "eclipse";
+export type R3Cluster = { month: number; independence: ResonanceIndependence; sciences: ResonanceScience[]; evidences: { science: ResonanceScience; dateISO: string | null; evidence: string }[] };
 export type ConflictRow = { month: number; beneficScience: ResonanceScience; maleficScience: ResonanceScience; beneficEvidence: string[]; maleficEvidence: string[] };
 
 export type PersonResonance = {
@@ -150,6 +186,8 @@ export function clusterByMonth(events: ResonanceMonthEvent[]): R2Cluster[] {
       month: evs[0].month,
       planet: planet as ResonancePlanet,
       planetTh: PLANET_TH[planet as ResonancePlanet],
+      // v3: cluster ที่ทุก entry ขับด้วยอาทิตย์/ตัวนับ (planet="Sun") = พ้องเชิงโครงสร้าง (ดู mapping comment ด้านบน)
+      independence: SUN_DRIVEN_PLANETS.has(planet as ResonancePlanet) ? "structural" : "independent",
       sciences,
       evidences: evs
         .slice()
@@ -157,11 +195,14 @@ export function clusterByMonth(events: ResonanceMonthEvent[]): R2Cluster[] {
         .map((e) => ({ science: e.science, dateISO: e.dateISO, evidence: e.evidence })),
     });
   }
-  return out;
+  // v3: independent มาก่อนเสมอ (stable sort — ในกลุ่มเดียวกันคงลำดับเดือน-ดาวเดิม)
+  return out.sort((a, b) => indepOrder(a) - indepOrder(b));
 }
 
-/** R3: จับกลุ่มรายเดือน (ไม่แยกดาว) ที่ ≥2 ศาสตร์เห็นพร้อมกัน */
-export function clusterEclipseByMonth(events: { science: ResonanceScience; month: number; dateISO: string | null; evidence: string }[]): R3Cluster[] {
+/** R3: จับกลุ่มรายเดือน (ไม่แยกดาว) ที่ ≥2 ศาสตร์เห็นพร้อมกัน
+ *  v3: รับ driver ต่อ event (eclipse/node = ปฏิทินตัวนับมองไม่เห็น → อิสระ · "sun" ทั้งหมด = structural)
+ *  driver ไม่ระบุ = ถือเป็นดาวจริง (อิสระ) — backward compatible กับ caller เก่า */
+export function clusterEclipseByMonth(events: { science: ResonanceScience; month: number; dateISO: string | null; evidence: string; driver?: R3EventDriver }[]): R3Cluster[] {
   const byMonth = new Map<number, typeof events>();
   for (const e of events) {
     if (e.month < 1 || e.month > 12) continue;
@@ -173,6 +214,8 @@ export function clusterEclipseByMonth(events: { science: ResonanceScience; month
     if (sciences.length < 2) continue;
     out.push({
       month,
+      // v3: ทุก entry ขับด้วยอาทิตย์/ตัวนับ → structural · มีดาวจริง/คราส/ราหูปนอย่างน้อยหนึ่ง → independent
+      independence: evs.every((e) => e.driver === "sun") ? "structural" : "independent",
       sciences,
       evidences: evs
         .slice()
@@ -180,7 +223,8 @@ export function clusterEclipseByMonth(events: { science: ResonanceScience; month
         .map((e) => ({ science: e.science, dateISO: e.dateISO, evidence: e.evidence })),
     });
   }
-  return out;
+  // v3: independent มาก่อนเสมอ (stable sort — ในกลุ่มเดียวกันคงลำดับเดือนเดิม)
+  return out.sort((a, b) => indepOrder(a) - indepOrder(b));
 }
 
 /** CONFLICT v1: เดือนที่ศาสตร์ A มีแต่ benefic ส่วนศาสตร์ B มีแต่ malefic (เฉพาะศาสตร์ที่มี event polarity รายเดือน) */
@@ -713,7 +757,7 @@ function computePerson(b: ResonanceBirth, sciences: ResonanceScience[], targetYe
   const errors: string[] = [];
   const r1Entries: R1Entry[] = [];
   const monthEvents: ResonanceMonthEvent[] = [];
-  const r3Events: { science: ResonanceScience; month: number; dateISO: string | null; evidence: string }[] = [];
+  const r3Events: { science: ResonanceScience; month: number; dateISO: string | null; evidence: string; driver?: R3EventDriver }[] = [];
   const refDate = new Date(Date.UTC(targetYear, 6, 1)); // กลางปีเป้าหมาย (แนวเดียวกับ multi-year.ts)
   // r370: เก็บ timeline ที่คำนวณแล้วไว้ใช้ต่อใน R5/R6 (ไม่คำนวณซ้ำ — คุม perf)
   let westernTlKeep: WesternTimeline | null = null;
@@ -734,10 +778,10 @@ function computePerson(b: ResonanceBirth, sciences: ResonanceScience[], targetYe
       monthEvents.push(...westernEvents(tl));
       // R3: คราสแตะดวง + ราหูจร (Rahu อยู่นอกชุดดาว R2 — เป็นชั้นราหูเกตุโดยตรง)
       for (const e of tl.eclipses) {
-        if (e.hitNatal) r3Events.push({ science: "western", month: e.month, dateISO: e.dateISO, evidence: `คราส${e.kind === "solar" ? "สุริยะ" : "จันทร์"}แตะ${e.hitNatal.nameTh} (${e.dateISO})` });
+        if (e.hitNatal) r3Events.push({ science: "western", month: e.month, dateISO: e.dateISO, evidence: `คราส${e.kind === "solar" ? "สุริยะ" : "จันทร์"}แตะ${e.hitNatal.nameTh} (${e.dateISO})`, driver: "eclipse" });
       }
       for (const h of tl.transitHits) {
-        if (h.transit === "Rahu") r3Events.push({ science: "western", month: h.month, dateISO: h.dateISO, evidence: `ราหูจร${h.aspectTh.split(" ")[0]}${h.natalTh} (${h.dateISO})` });
+        if (h.transit === "Rahu") r3Events.push({ science: "western", month: h.month, dateISO: h.dateISO, evidence: `ราหูจร${h.aspectTh.split(" ")[0]}${h.natalTh} (${h.dateISO})`, driver: "node" });
       }
     } catch (e) { errors.push(`western:${e instanceof Error ? e.message.slice(0, 60) : "error"}`); }
   }
@@ -782,7 +826,7 @@ function computePerson(b: ResonanceBirth, sciences: ResonanceScience[], targetYe
         qizhengTlKeep = tl;
         monthEvents.push(...qizhengEvents(tl));
         for (const h of tl.hits) {
-          if (h.starZh === "羅睺" || h.starZh === "計都") r3Events.push({ science: "qizheng", month: h.month, dateISO: h.dateISO, evidence: `${h.starZh}${h.aspect.split("(")[0]}${h.target} (${h.dateISO})` });
+          if (h.starZh === "羅睺" || h.starZh === "計都") r3Events.push({ science: "qizheng", month: h.month, dateISO: h.dateISO, evidence: `${h.starZh}${h.aspect.split("(")[0]}${h.target} (${h.dateISO})`, driver: "node" });
         }
       }
     } catch (e) { errors.push(`qizheng:${e instanceof Error ? e.message.slice(0, 60) : "error"}`); }
@@ -870,12 +914,14 @@ export function buildResonance(
   }
 
   const nR1 = perPerson.reduce((s, p) => s + p.r1.resonant.length, 0);
-  const nR2 = perPerson.reduce((s, p) => s + p.r2.length, 0);
-  const nR3 = perPerson.reduce((s, p) => s + p.r3.length, 0);
+  // v3: คะแนน/จำนวนในสรุปนับเฉพาะ independent (structural = พ้องเชิงโครงสร้าง ไม่ใช่หลักฐานซ้ำ — แจ้งแยก)
+  const nR2 = perPerson.reduce((s, p) => s + p.r2.filter((c) => c.independence !== "structural").length, 0);
+  const nR3 = perPerson.reduce((s, p) => s + p.r3.filter((c) => c.independence !== "structural").length, 0);
+  const nStruct = perPerson.reduce((s, p) => s + p.r2.filter((c) => c.independence === "structural").length + p.r3.filter((c) => c.independence === "structural").length, 0);
   const nCf = perPerson.reduce((s, p) => s + p.conflicts.length, 0);
   const nR4 = r4Pairs.reduce((s, p) => s + p.dimensions.filter((d) => d.resonance).length, 0);
   const nR6 = perPerson.filter((p) => (p.r6?.voiceCount || 0) >= 2).length;
-  const summaryTh = `ปี ${targetYear}: ธีมปีตรงกัน ${nR1} จุด · ดาวเดียวกันชน ≥2 ศาสตร์ ${nR2} เดือน-ดาว · คราส/ราหูเกตุตรงเดือน ${nR3} เดือน · มุมมองต่าง ${nCf} รายการ (จาก ${resSciences.length} ศาสตร์: ${resSciences.map((s) => SCI_TH[s]).join("/")})${r4Pairs.length ? ` · ดวงคู่สะท้อน ${nR4} มิติ (${r4Pairs.length} คู่)` : ""}${nR6 ? ` · ปีชง ≥2 เสียง ${nR6} คน` : ""}`;
+  const summaryTh = `ปี ${targetYear}: ธีมปีตรงกัน ${nR1} จุด · ดาวเดียวกันชน ≥2 ศาสตร์ ${nR2} เดือน-ดาว · คราส/ราหูเกตุตรงเดือน ${nR3} เดือน${nStruct ? ` · พ้องเชิงโครงสร้าง ${nStruct} รายการ (ไม่นับเป็นหลักฐานซ้ำ)` : ""} · มุมมองต่าง ${nCf} รายการ (จาก ${resSciences.length} ศาสตร์: ${resSciences.map((s) => SCI_TH[s]).join("/")})${r4Pairs.length ? ` · ดวงคู่สะท้อน ${nR4} มิติ (${r4Pairs.length} คู่)` : ""}${nR6 ? ` · ปีชง ≥2 เสียง ${nR6} คน` : ""}`;
 
   return { version: "resonance_v1", targetYear, sciences: resSciences, perPerson, r4Pairs, summaryTh, notes, computeMs: Date.now() - t0 };
 }
@@ -907,21 +953,37 @@ export function renderResonanceBlockTh(res: FusionResonance): string {
       const solo = p.r1.entries.slice(0, 4).map((e) => `${SCI_TH[e.science]}=${RESONANCE_THEMES[e.themeKey].th}`).join(" · ");
       push(`  R1: ไม่มีธีมปีที่ ≥2 ศาสตร์ตรงกัน${solo ? ` (รายศาสตร์: ${solo})` : ""}`);
     }
-    if (p.r2.length) {
-      // เลือกหลักฐานสูงสุด 2 จุด/ศาสตร์ — กันศาสตร์ที่ event เยอะ (เช่น western) เบียดศาสตร์อื่นตกขอบ
-      const pickPerSci = (evs: { science: ResonanceScience; evidence: string }[]) => {
-        const cnt = new Map<ResonanceScience, number>();
-        return evs.filter((e) => {
-          const n = (cnt.get(e.science) || 0) + 1;
-          cnt.set(e.science, n);
-          return n <= 2;
-        });
-      };
-      for (const c of p.r2.slice(0, 6)) push(`  R2 เดือน ${c.month} ${c.planetTh} ชน ${c.sciences.length} ศาสตร์: ${pickPerSci(c.evidences).map((e) => `${SCI_TH[e.science]}=${e.evidence}`).join(" | ")}`);
-    } else push("  R2: ไม่มีเดือนที่ดาวดวงเดียวกันชน ≥2 ศาสตร์");
-    if (p.r3.length) {
-      for (const c of p.r3.slice(0, 4)) push(`  R3 คราส/ราหูเกตุ เดือน ${c.month}: ${c.evidences.slice(0, 4).map((e) => `${SCI_TH[e.science]}=${e.evidence}`).join(" | ")}`);
-    } else push("  R3: ไม่มีเดือนคราส/ราหูเกตุที่ ≥2 ศาสตร์ตรงกัน");
+    // v3: แยกสองกลุ่ม — 🥇 ยืนยันอิสระ (prio 1) มาก่อน · ℹ️ พ้องเชิงโครงสร้าง (prio 2 = โดนตัดก่อนเมื่อเกินงบ)
+    // field independence อาจหายใน jsonb เก่า → อ่านค่าที่หายเป็น independent (พฤติกรรมเท่าเดิม)
+    // เลือกหลักฐานสูงสุด 2 จุด/ศาสตร์ — กันศาสตร์ที่ event เยอะ (เช่น western) เบียดศาสตร์อื่นตกขอบ
+    const pickPerSci = (evs: { science: ResonanceScience; evidence: string }[]) => {
+      const cnt = new Map<ResonanceScience, number>();
+      return evs.filter((e) => {
+        const n = (cnt.get(e.science) || 0) + 1;
+        cnt.set(e.science, n);
+        return n <= 2;
+      });
+    };
+    const r2Ind = p.r2.filter((c) => c.independence !== "structural");
+    const r2Str = p.r2.filter((c) => c.independence === "structural");
+    if (r2Ind.length) {
+      push("  R2 🥇 ยืนยันอิสระ (นาฬิกาคนละเรือน):");
+      for (const c of r2Ind.slice(0, 6)) push(`  R2 เดือน ${c.month} ${c.planetTh} ชน ${c.sciences.length} ศาสตร์: ${pickPerSci(c.evidences).map((e) => `${SCI_TH[e.science]}=${e.evidence}`).join(" | ")}`);
+    } else push(`  R2: ไม่มีเดือนที่ดาวดวงเดียวกันชน ≥2 ศาสตร์${r2Str.length ? "แบบอิสระ" : ""}`);
+    if (r2Str.length) {
+      push("  R2 ℹ️ พ้องเชิงโครงสร้าง (วัดของชิ้นเดียวกัน — ไม่นับเป็นหลักฐานซ้ำ):", 2);
+      for (const c of r2Str.slice(0, 3)) push(`    · เดือน ${c.month} ${c.planetTh}: ${pickPerSci(c.evidences).map((e) => `${SCI_TH[e.science]}=${e.evidence}`).join(" | ")}`, 2);
+    }
+    const r3Ind = p.r3.filter((c) => c.independence !== "structural");
+    const r3Str = p.r3.filter((c) => c.independence === "structural");
+    if (r3Ind.length) {
+      push("  R3 🥇 ยืนยันอิสระ (นาฬิกาคนละเรือน):");
+      for (const c of r3Ind.slice(0, 4)) push(`  R3 คราส/ราหูเกตุ เดือน ${c.month}: ${c.evidences.slice(0, 4).map((e) => `${SCI_TH[e.science]}=${e.evidence}`).join(" | ")}`);
+    } else push(`  R3: ไม่มีเดือนคราส/ราหูเกตุที่ ≥2 ศาสตร์ตรงกัน${r3Str.length ? "แบบอิสระ" : ""}`);
+    if (r3Str.length) {
+      push("  R3 ℹ️ พ้องเชิงโครงสร้าง (วัดของชิ้นเดียวกัน — ไม่นับเป็นหลักฐานซ้ำ):", 2);
+      for (const c of r3Str.slice(0, 2)) push(`    · เดือน ${c.month}: ${c.evidences.slice(0, 3).map((e) => `${SCI_TH[e.science]}=${e.evidence}`).join(" | ")}`, 2);
+    }
     for (const cf of p.conflicts.slice(0, 3)) {
       push(`  ⚡มุมมองต่าง เดือน ${cf.month}: ${SCI_TH[cf.beneficScience]}เห็นดี(${cf.beneficEvidence.join(", ")}) แต่ ${SCI_TH[cf.maleficScience]}เห็นแรงกด(${cf.maleficEvidence.join(", ")})`);
     }

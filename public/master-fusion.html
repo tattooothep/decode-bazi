@@ -70,6 +70,9 @@
     .progress-track{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
     .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--blue));transition:width .35s}
     .progress-message{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.45}
+    .prog-line{display:none} /* แถวสรุป progress ยุบ — โชว์เฉพาะมือถือ+answer-mode (desktop ไม่เปลี่ยน) */
+    .run-wait .run-wait-ico,.run-wait .run-wait-mobile{display:none} /* placeholder รอคำตอบ — ตัวใหญ่เฉพาะมือถือ · desktop คงข้อความเดิม */
+    @keyframes hkPulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
     .progress-models{display:grid;gap:6px;margin-top:10px}
     .progress-model{display:grid;grid-template-columns:132px 76px minmax(0,1fr);gap:8px;align-items:start;font-size:12px}
     .pill.run{color:var(--blue);border-color:rgba(116,168,216,.45)}
@@ -226,6 +229,8 @@
     .res-chip.on{border-color:rgba(210,176,94,.55);color:var(--gold);background:rgba(210,176,94,.08)}
     .res-chip.warn{border-color:rgba(216,168,76,.55);color:var(--warn);background:rgba(216,168,76,.07)}
     .res-skip{font-size:12px;color:var(--muted);line-height:1.5}
+    .res-structnote{margin-top:5px;font-size:11px;color:var(--muted);opacity:.85;line-height:1.45} /* v3: พ้องเชิงโครงสร้าง = หมายเหตุ ไม่ใช่หลักฐานซ้ำ */
+    .md-t tr.res-struct td{opacity:.62}
     .res-details{margin-top:9px}
     .res-details summary{cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--blue)}
     .res-sec{font-family:var(--mono);font-size:10px;color:var(--gold);text-transform:uppercase;margin:10px 0 4px}
@@ -847,6 +852,20 @@
       .hk-fold .res-title::after{content:' ▾';color:var(--faint)}
       .hk-fold .res-chips{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
       .hk-fold .res-chip{flex:0 0 auto;white-space:nowrap}
+      .hk-fold .res-structnote{display:none}
+      /* (d) r376 · การ์ด progress ยุบเป็นแถวเดียวตอนรัน (มือถือ+answer-mode) · แตะการ์ด = กางดูรายศาสตร์ (.prog-open) */
+      body.hk-answer-mode .progress-card{padding:9px 11px;cursor:pointer}
+      body.hk-answer-mode .progress-card .prog-line{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12.5px;color:var(--text);line-height:1.4}
+      body.hk-answer-mode .progress-card .prog-line::after{content:'▾';margin-left:auto;color:var(--faint);font-size:11px}
+      body.hk-answer-mode .progress-card.prog-open .prog-line::after{content:'▴'}
+      body.hk-answer-mode .progress-card:not(.prog-open) .progress-head,
+      body.hk-answer-mode .progress-card:not(.prog-open) .progress-message,
+      body.hk-answer-mode .progress-card:not(.prog-open) .progress-models{display:none}
+      /* (e) r376 · โซนคำตอบจองพื้นที่ใหญ่ตั้งแต่ตอนรัน — ฝั่งพยากรณ์คือพระเอกตั้งแต่วินาทีแรก */
+      body.hk-answer-mode .result-panel .result-empty.run-wait{min-height:46vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-size:15px;text-align:center;padding:0 14px}
+      body.hk-answer-mode .run-wait .run-wait-ico{display:block;font-size:30px;animation:hkPulse 1.6s ease-in-out infinite}
+      body.hk-answer-mode .run-wait .run-wait-mobile{display:block;color:var(--muted)}
+      body.hk-answer-mode .run-wait .run-wait-desktop{display:none}
     }
   </style>
 </head>
@@ -1071,19 +1090,22 @@
         'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่/กลุ่ม','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.profile3':'ดวงที่ 3 (ไม่บังคับ)','ask.profile4':'ดวงที่ 4 (ไม่บังคับ)','ask.notUsed':'— ไม่ใช้ —','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','ask.edit':'แก้คำถาม','result.title':'คำพยากรณ์',
         'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','skipGroup':'ปาจื้อยังไม่รองรับดูกลุ่ม 3-4 ดวง — ตัดออกและไม่คิดยาม (ใช้ได้เดี่ยว/คู่)','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม','needLogin':'กรุณาเข้าสู่ระบบก่อนใช้ Fusion','needYam':'ยามไม่พอ','readyRun':'พร้อมรัน','runningAsync':'⏳ กำลังอ่านดวงอยู่ (พับจอไว้ได้)','jobTimeout':'หมดเวลาอ่านดวง · ลองรันใหม่อีกครั้ง','jobError':'อ่านดวงไม่สำเร็จ','reconnecting':'📶 เน็ตสะดุด · กำลังต่อกลับไปหางานเดิมอัตโนมัติ ไม่ต้องถามใหม่...','resumeChecking':'กำลังตรวจงานค้าง...','sessionLost':'หลุดจากระบบ · งานยังวิ่งอยู่บน server เข้าสู่ระบบแล้วกลับมาดูได้',
         'res.title':'🔗 เสียงสะท้อนข้ามศาสตร์','res.r1':'ธีมปีตรงกัน','res.r2':'ดาวเดียวกันชนหลายศาสตร์','res.r3':'คราส/ราหูเกตุ','res.conflict':'มุมมองต่าง','res.detail':'ดูรายละเอียด + หลักฐาน','res.theme':'ธีม','res.sci':'ศาสตร์','res.evidence':'หลักฐาน (คำนวณจริง)','res.month':'เดือน','res.planet':'ดาว','res.good':'ฝั่งเห็นดี','res.bad':'ฝั่งเห็นแรงกด',
-        'res.r4':'ดวงคู่','res.r5':'สะพานธาตุ','res.r6':'ปีชง','res.pair':'คู่','res.dim':'มิติ','res.res':'สะท้อน','res.need':'ธาตุที่ต้องการ','res.system':'ระบบ','res.rationale':'เหตุผล (คำนวณจริง)','res.dates':'วันที่','res.voice':'เสียงบอกปีหนัก','res.heavy':'หนัก','res.notHeavy':'ไม่หนัก','res.nodata':'ไม่มีข้อมูล','res.v.good':'ดี','res.v.mid':'กลาง','res.v.tense':'ตึง','res.e.support':'หนุน','res.e.cut':'ตัด','res.e.mid':'กลาง','res.dim.mind':'อารมณ์-จิตใจ','res.dim.comm':'การสื่อสาร','res.dim.attract':'เสน่หา','res.dim.stable':'เสถียรภาพระยะยาว',
+        'res.r4':'ดวงคู่','res.r5':'สะพานธาตุ','res.r6':'ปีชง','res.pair':'คู่','res.dim':'มิติ','res.res':'สะท้อน','res.need':'ธาตุที่ต้องการ','res.system':'ระบบ','res.rationale':'เหตุผล (คำนวณจริง)','res.dates':'วันที่','res.voice':'เสียงบอกปีหนัก','res.heavy':'หนัก','res.notHeavy':'ไม่หนัก','res.nodata':'ไม่มีข้อมูล','res.v.good':'ดี','res.v.mid':'กลาง','res.v.tense':'ตึง','res.e.support':'หนุน','res.e.cut':'ตัด','res.e.mid':'กลาง','res.dim.mind':'อารมณ์-จิตใจ','res.dim.comm':'การสื่อสาร','res.dim.attract':'เสน่หา','res.dim.stable':'เสถียรภาพระยะยาว','res.struct':'พ้องเชิงโครงสร้าง (วัดของชิ้นเดียวกัน — ไม่นับเป็นหลักฐานซ้ำ)',
+        'prog.read':'อ่านดวง {d}/{t} ศาสตร์เสร็จ','prog.reading':'กำลังอ่านดวง {t} ศาสตร์','prog.judge':'กำลังหลอมคำฟันธง','answerWait':'ซินแสกำลังหลอมคำตอบ...',
         'ds.title':'🎯 วันลั่นไก','ds.topic':'หัวข้อ','ds.range':'ช่วงสแกน','ds.detail':'ดูตารางหลักฐานรายวัน','ds.date':'วันที่','ds.flag':'ธง','ds.needles':'เข็มอิสระ','ds.evA':'A 流日 (60 วัน)','ds.evB':'B จันทร์จริง','ds.evC':'C ดาวช้า','ds.ctx':'บริบท','ds.none':'ไม่มีวันที่เข็ม ≥2 ในช่วงนี้','ds.legend':'🔴 เข็มอิสระ ≥2 ชี้วันเดียวกัน · 🟡 สัญญาณแรงเดี่ยว · 🟢 วันโอกาส (合+จันทร์มุมดี)','ds.days':'วัน','ds.dropped':'แสดงเฉพาะวันอันดับต้นตาม rank' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'5-Science Reading','hero.sub':'Fuse 5 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
         'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading',
         'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back',
         'res.title':'🔗 Cross-science resonance','res.r1':'Year-theme match','res.r2':'Same planet, multi-system','res.r3':'Eclipse / nodes','res.conflict':'Diverging view','res.detail':'Details + evidence','res.theme':'Theme','res.sci':'Sciences','res.evidence':'Evidence (computed)','res.month':'Month','res.planet':'Planet','res.good':'Sees support','res.bad':'Sees pressure',
-        'res.r4':'Pair resonance','res.r5':'Element bridge','res.r6':'Clash year','res.pair':'Pair','res.dim':'Dimension','res.res':'Resonates','res.need':'Needed element','res.system':'System','res.rationale':'Rationale (computed)','res.dates':'Dates','res.voice':'systems call it heavy','res.heavy':'Heavy','res.notHeavy':'Not heavy','res.nodata':'No data','res.v.good':'Good','res.v.mid':'Neutral','res.v.tense':'Tense','res.e.support':'Supported','res.e.cut':'Cut','res.e.mid':'Neutral','res.dim.mind':'Emotional bond','res.dim.comm':'Communication','res.dim.attract':'Attraction','res.dim.stable':'Long-term stability',
+        'res.r4':'Pair resonance','res.r5':'Element bridge','res.r6':'Clash year','res.pair':'Pair','res.dim':'Dimension','res.res':'Resonates','res.need':'Needed element','res.system':'System','res.rationale':'Rationale (computed)','res.dates':'Dates','res.voice':'systems call it heavy','res.heavy':'Heavy','res.notHeavy':'Not heavy','res.nodata':'No data','res.v.good':'Good','res.v.mid':'Neutral','res.v.tense':'Tense','res.e.support':'Supported','res.e.cut':'Cut','res.e.mid':'Neutral','res.dim.mind':'Emotional bond','res.dim.comm':'Communication','res.dim.attract':'Attraction','res.dim.stable':'Long-term stability','res.struct':'Structural overlap (same measurement — not counted as extra evidence)',
+        'prog.read':'{d}/{t} sciences done','prog.reading':'Reading {t} sciences','prog.judge':'Fusing the verdict','answerWait':'The master is fusing your answer...',
         'ds.title':'🎯 Trigger days','ds.topic':'Topic','ds.range':'Scan range','ds.detail':'Day-by-day evidence table','ds.date':'Date','ds.flag':'Flag','ds.needles':'Independent clocks','ds.evA':'A day-ganzhi (60-day)','ds.evB':'B real Moon','ds.evC':'C slow planets','ds.ctx':'Context','ds.none':'No multi-clock day in this range','ds.legend':'🔴 ≥2 independent clocks strike same day · 🟡 single strong signal · 🟢 opportunity day','ds.days':'days','ds.dropped':'top-ranked days only' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'五術合參','hero.sub':'融合五種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
         'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷',
         'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看',
         'res.title':'🔗 跨術共振','res.r1':'流年宮位相符','res.r2':'同星多術同月','res.r3':'日月食/羅計','res.conflict':'觀點分歧','res.detail':'詳情＋證據','res.theme':'主題','res.sci':'術數','res.evidence':'證據（實算）','res.month':'月','res.planet':'星','res.good':'看吉','res.bad':'看壓',
-        'res.r4':'合盤共振','res.r5':'五行橋','res.r6':'沖太歲','res.pair':'配對','res.dim':'維度','res.res':'共振','res.need':'所需五行','res.system':'系統','res.rationale':'理由（實算）','res.dates':'日期','res.voice':'系統判為重','res.heavy':'重','res.notHeavy':'不重','res.nodata':'無資料','res.v.good':'吉','res.v.mid':'中','res.v.tense':'緊','res.e.support':'受扶','res.e.cut':'受剋','res.e.mid':'中','res.dim.mind':'情感·心','res.dim.comm':'溝通','res.dim.attract':'情慾·吸引','res.dim.stable':'長期穩定',
+        'res.r4':'合盤共振','res.r5':'五行橋','res.r6':'沖太歲','res.pair':'配對','res.dim':'維度','res.res':'共振','res.need':'所需五行','res.system':'系統','res.rationale':'理由（實算）','res.dates':'日期','res.voice':'系統判為重','res.heavy':'重','res.notHeavy':'不重','res.nodata':'無資料','res.v.good':'吉','res.v.mid':'中','res.v.tense':'緊','res.e.support':'受扶','res.e.cut':'受剋','res.e.mid':'中','res.dim.mind':'情感·心','res.dim.comm':'溝通','res.dim.attract':'情慾·吸引','res.dim.stable':'長期穩定','res.struct':'結構性重合（同一量測 · 不重複計證）',
+        'prog.read':'已完成 {d}/{t} 術','prog.reading':'正在解讀 {t} 術','prog.judge':'正在綜合裁斷','answerWait':'命師正在融合答案...',
         'ds.title':'🎯 觸發日','ds.topic':'主題','ds.range':'掃描區間','ds.detail':'逐日證據表','ds.date':'日期','ds.flag':'旗','ds.needles':'獨立時鐘','ds.evA':'A 流日（六十甲子）','ds.evB':'B 真月亮','ds.evC':'C 慢星','ds.ctx':'脈絡','ds.none':'區間內無雙鐘同指之日','ds.legend':'🔴 兩個以上獨立時鐘同日 · 🟡 單一強訊號 · 🟢 機會日','ds.days':'日','ds.dropped':'僅列排名前段日' }
     };
     function t(key){ var d = I18N[state.locale] || I18N.th; return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
@@ -1480,26 +1502,99 @@
       if (item.state === 'queued') return 'รอเริ่ม';
       return [item.error || 'error', item.attempts ? (item.attempts + ' tries') : '', fmtMs(item.ms)].filter(Boolean).join(' · ');
     }
-    function displayPercent(status){
-      var p = Number(status && status.percent || 0);
-      var now = Date.now();
-      var phaseStarted = Number(status && status.phaseStartedAt || status && status.startedAt || now);
-      var elapsed = Math.max(0, now - phaseStarted);
-      if (status && status.phase === 'panel') {
-        p = Math.max(p, Math.min(76, Math.round(8 + (elapsed / 600000) * 68)));
-      } else if (status && status.phase === 'judge') {
-        p = Math.max(p, Math.min(96, Math.round(80 + (elapsed / 600000) * 16)));
-      }
-      if (status && status.phase === 'done') p = 100;
-      return Math.max(0, Math.min(100, Math.round(p)));
+    // ===== r376 · % จริงตามหลักไมล์ + เข็มคืบ time-based (แก้แถบค้าง 10%) =====
+    // สูตร (deterministic ต่อ (status, now, milestoneAt)):
+    //   สร้างงาน/queued = 8% · panel เสร็จแต่ละตัว +70/N% (N=จำนวนศาสตร์ · 5 ศาสตร์ = ตัวละ 14%)
+    //   judge เริ่ม = 80% · เสร็จ = 100%
+    //   ระหว่างหลักไมล์ เข็มคืบช้าๆ 0.1-0.3%/วินาที (easing: 60s แรก 0.3 → ถัดไป 0.2 → เกิน 180s 0.1)
+    //   เพดานคืบ = หลักไมล์ถัดไป -2 · synthetic (fusion5 job — server ไม่รายงานรายศาสตร์กลางทาง) เพดาน 78 (=judge 80 -2)
+    function fusionPanelCounts(status){
+      var panel = Object.values((status && status.panel) || {});
+      var done = panel.filter(function(x){ return x && (x.state === 'ok' || x.state === 'fail' || x.state === 'skipped'); }).length;
+      return { done: done, total: panel.length };
+    }
+    function fusionMilestone(status){
+      var phase = status && status.phase;
+      var c = fusionPanelCounts(status);
+      if (phase === 'done') return { base: 100, cap: 100, done: c.done, total: c.total };
+      if (phase === 'failed') return { base: Math.max(8, Number(status && status.percent) || 0), cap: 100, done: c.done, total: c.total };
+      if (phase === 'judge') return { base: 80, cap: 98, done: c.done, total: c.total };
+      var step = 70 / Math.max(1, c.total);
+      var base = 8 + c.done * step;
+      var cap = (status && status.synthetic) ? 78 : Math.min(78, base + step - 2);
+      return { base: base, cap: Math.max(base, cap), done: c.done, total: c.total };
+    }
+    function fusionCreep(elapsedMs){
+      var e = Math.max(0, Number(elapsedMs) || 0) / 1000;
+      return 0.3 * Math.min(e, 60) + 0.2 * Math.min(Math.max(e - 60, 0), 120) + 0.1 * Math.max(e - 180, 0);
+    }
+    function computeFusionPercent(status, nowMs, milestoneAtMs){
+      var m = fusionMilestone(status);
+      if (m.base >= 100) return 100;
+      var at = Number(milestoneAtMs != null ? milestoneAtMs : (status && (status.phaseStartedAt || status.startedAt)) || nowMs);
+      var p = Math.min(m.base + fusionCreep(nowMs - at), m.cap);
+      p = Math.max(p, Math.min(100, Number(status && status.percent) || 0)); // server เคยรายงานสูงกว่า → ไม่ถอยหลัง
+      return Math.max(2, Math.min(100, Math.round(p * 10) / 10));
+    }
+    // ต่อรอบ render/tick: จับเวลาใหม่ทุกครั้งที่หลักไมล์เปลี่ยน + กันเข็มถอยหลังในรันเดียวกัน (monotonic)
+    function progressPercentTick(status){
+      var key = String(status && status.phase) + ':' + fusionMilestone(status).base;
+      if (!state.progressMark || state.progressMark.key !== key) state.progressMark = { key: key, at: Date.now() };
+      var pct = computeFusionPercent(status, Date.now(), state.progressMark.at);
+      if (state.progressPct == null || pct > state.progressPct) state.progressPct = pct;
+      return Math.round(state.progressPct);
+    }
+    function resetProgressMeter(){ state.progressPct = null; state.progressMark = null; }
+    // ข้อความแถวยุบ (sync ตัวเลขเดียวกับแถบ %): "อ่านดวง 2/5 ศาสตร์เสร็จ · 36%"
+    function progressLineText(status, pct){
+      var phase = status && status.phase;
+      var c = fusionPanelCounts(status);
+      var txt = phase === 'judge' ? t('prog.judge')
+        : c.done > 0 ? t('prog.read').replace('{d}', c.done).replace('{t}', c.total)
+        : t('prog.reading').replace('{t}', c.total);
+      return txt + ' · ' + pct + '%';
+    }
+    // r376: โซนคำตอบจองพื้นที่ใหญ่ตั้งแต่ตอนรัน (มือถือ answer-mode = พระเอกตั้งแต่วินาทีแรก) · desktop เห็นข้อความเดิมเป๊ะ
+    function runWaitPlaceholderHtml(desktopText){
+      return '<div class="result-empty run-wait">' +
+        '<span class="run-wait-ico">⏳</span>' +
+        '<span class="run-wait-mobile">' + esc(t('answerWait')) + '</span>' +
+        '<span class="run-wait-desktop">' + esc(desktopText) + '</span>' +
+      '</div>';
+    }
+    function stopProgressTicker(){
+      if (state.progressTick) clearInterval(state.progressTick);
+      state.progressTick = null;
+    }
+    function ensureProgressTicker(status){
+      var running = status && (status.phase === 'queued' || status.phase === 'panel' || status.phase === 'judge');
+      if (!running) { stopProgressTicker(); return; }
+      if (!state.progressTick) state.progressTick = setInterval(updateProgressDom, 1000);
+    }
+    // tick รายวินาที: อัปเดตเฉพาะตัวเลข/แถบ/แถวยุบ (ไม่ re-render ทั้งการ์ด — สถานะกาง/ยุบไม่เด้ง)
+    function updateProgressDom(){
+      var status = state.lastProgressStatus;
+      if (!els.progress || !status) { stopProgressTicker(); return; }
+      var pct = progressPercentTick(status);
+      var fill = els.progress.querySelector('.progress-fill');
+      if (fill) fill.style.width = pct + '%';
+      var pc = els.progress.querySelector('.progress-percent');
+      if (pc) pc.textContent = pct + '%';
+      var line = els.progress.querySelector('.prog-line-text');
+      if (line) line.textContent = progressLineText(status, pct);
+      setStatus((status.message || 'กำลังรัน Fusion') + ' · ' + pct + '%');
     }
     function renderProgress(status){
       if (!els.progress) return;
       if (!status) {
+        stopProgressTicker();
+        resetProgressMeter();
+        state.lastProgressStatus = null;
         els.progress.className = 'progress-card hidden';
         els.progress.innerHTML = '';
         return;
       }
+      state.lastProgressStatus = status;
       var panel = Object.values(status.panel || {});
       var judge = Object.values(status.judge || {});
       var rows = panel.concat(judge).map(function(item){
@@ -1509,9 +1604,11 @@
           '<div class="model-note">' + esc(progressNote(item)) + '</div>' +
         '</div>';
       }).join('');
-      var pct = displayPercent(status);
-      els.progress.className = 'progress-card';
+      var pct = progressPercentTick(status);
+      var open = els.progress.classList.contains('prog-open'); // r376: มือถือกางดูรายศาสตร์อยู่ → คงไว้ข้าม re-render
+      els.progress.className = 'progress-card' + (open ? ' prog-open' : '');
       els.progress.innerHTML =
+        '<div class="prog-line"><span class="prog-line-text">' + esc(progressLineText(status, pct)) + '</span></div>' +
         '<div class="progress-head">' +
           '<div class="progress-title">' + esc(status.phase || 'running') + '</div>' +
           '<div class="progress-percent">' + pct + '%</div>' +
@@ -1520,6 +1617,7 @@
         '<div class="progress-message">' + esc(status.message || 'กำลังรัน Fusion') + '</div>' +
         '<div class="progress-models">' + rows + '</div>';
       setStatus((status.message || 'กำลังรัน Fusion') + ' · ' + pct + '%');
+      ensureProgressTicker(status);
     }
     function renderProgressFromFusion(fusion){
       if (!fusion) return;
@@ -1567,6 +1665,7 @@
     }
     function startProgressPolling(runId){
       stopProgressPolling();
+      resetProgressMeter(); // r376: รันใหม่ = เริ่มนับ % ใหม่
       state.activeRunId = runId;
       renderProgress({
         phase:'queued',
@@ -1609,10 +1708,16 @@
         var r2 = Array.isArray(p.r2) ? p.r2 : [];
         var r3 = Array.isArray(p.r3) ? p.r3 : [];
         var cf = Array.isArray(p.conflicts) ? p.conflicts : [];
+        // v3: chip นับเฉพาะ independent (structural = พ้องเชิงโครงสร้าง ไม่ใช่หลักฐานซ้ำ — พับเป็นหมายเหตุ)
+        // jsonb เก่าไม่มี field independence → นับเป็น independent (พฤติกรรมเท่าเดิม)
+        var isStruct = function(c){ return !!c && c.independence === 'structural'; };
+        var r2Ind = r2.filter(function(c){ return !isStruct(c); });
+        var r3Ind = r3.filter(function(c){ return !isStruct(c); });
+        var nStruct = (r2.length - r2Ind.length) + (r3.length - r3Ind.length);
         var chips = [
           '<span class="res-chip' + (r1.length ? ' on' : '') + '">R1 ' + esc(t('res.r1')) + ' × ' + r1.length + '</span>',
-          '<span class="res-chip' + (r2.length ? ' on' : '') + '">R2 ' + esc(t('res.r2')) + ' × ' + r2.length + '</span>',
-          '<span class="res-chip' + (r3.length ? ' on' : '') + '">R3 ' + esc(t('res.r3')) + ' × ' + r3.length + '</span>'
+          '<span class="res-chip' + (r2Ind.length ? ' on' : '') + '">R2 ' + esc(t('res.r2')) + ' × ' + r2Ind.length + '</span>',
+          '<span class="res-chip' + (r3Ind.length ? ' on' : '') + '">R3 ' + esc(t('res.r3')) + ' × ' + r3Ind.length + '</span>'
         ];
         if (cf.length) chips.push('<span class="res-chip warn">⚡ ' + esc(t('res.conflict')) + ' × ' + cf.length + '</span>');
         // r370: chips 🌊 สะพานธาตุ / ⚠️ ปีชง (ต่อคน)
@@ -1631,13 +1736,14 @@
           })));
         }
         if (r2.length){
+          // v3: แถว structural จางลง + ป้าย ℹ️ (engine ส่ง independent มาก่อนอยู่แล้ว)
           tables.push('<div class="res-sec">R2 · ' + esc(t('res.r2')) + '</div>' + tbl([t('res.month'), t('res.planet'), t('res.sci'), t('res.evidence')], r2.map(function(c){
-            return '<tr><td>' + esc(String(c.month)) + '</td><td>' + esc(c.planetTh || c.planet || '') + '</td><td>' + (Array.isArray(c.sciences) ? c.sciences : []).map(function(s){ return esc(sciLabel(s)); }).join(' + ') + '</td><td>' + evLines(c.evidences) + '</td></tr>';
+            return '<tr' + (isStruct(c) ? ' class="res-struct"' : '') + '><td>' + esc(String(c.month)) + (isStruct(c) ? ' ℹ️' : '') + '</td><td>' + esc(c.planetTh || c.planet || '') + '</td><td>' + (Array.isArray(c.sciences) ? c.sciences : []).map(function(s){ return esc(sciLabel(s)); }).join(' + ') + '</td><td>' + evLines(c.evidences) + '</td></tr>';
           })));
         }
         if (r3.length){
           tables.push('<div class="res-sec">R3 · ' + esc(t('res.r3')) + '</div>' + tbl([t('res.month'), t('res.evidence')], r3.map(function(c){
-            return '<tr><td>' + esc(String(c.month)) + '</td><td>' + evLines(c.evidences) + '</td></tr>';
+            return '<tr' + (isStruct(c) ? ' class="res-struct"' : '') + '><td>' + esc(String(c.month)) + (isStruct(c) ? ' ℹ️' : '') + '</td><td>' + evLines(c.evidences) + '</td></tr>';
           })));
         }
         if (cf.length){
@@ -1663,6 +1769,7 @@
         }
         return '<div class="res-person">' + pname +
           '<div class="res-chips">' + chips.join('') + '</div>' +
+          (nStruct ? '<div class="res-structnote">ℹ️ ' + esc(t('res.struct')) + ' × ' + nStruct + '</div>' : '') + // v3: แถว structural พับเป็นหมายเหตุ
           (tables.length ? '<details class="res-details"><summary>' + esc(t('res.detail')) + '</summary>' + tables.join('') + '</details>' : '') +
         '</div>';
       }).join('') + resonancePairsHtml(res);
@@ -1816,9 +1923,11 @@
     }
     function startSyntheticProgress(sciences){
       stopProgressPolling();
+      resetProgressMeter(); // r376: รันใหม่ = เริ่มนับ % ใหม่
       var panel = {};
       sciences.forEach(function(s){ panel[s] = { model: sciLabel(s) + ' · ' + DISCIPLINES[s].ai, role:'panel', state:'running' }; });
-      renderProgress({ phase:'panel', percent:10, message:t('running'), startedAt:Date.now(), phaseStartedAt:Date.now(), panel:panel, judge:{} });
+      // r376: synthetic=true — fusion5 job ไม่รายงานสถานะรายศาสตร์กลางทาง → % เดินด้วย time-creep เพดาน 78 (ไม่ค้าง 10%)
+      renderProgress({ phase:'panel', percent:8, synthetic:true, message:t('running'), startedAt:Date.now(), phaseStartedAt:Date.now(), panel:panel, judge:{} });
     }
     function finishProgress(j){
       var f = (j && j.fusion5) || {};
@@ -2306,7 +2415,7 @@
       state.activeTab = sciences.length >= 2 ? 'judge' : (sciences[0] || 'judge');
       setAnswerMode(true); // r374: resume งานพับจอ → answer-mode ด้วย
       startSyntheticProgress(sciences);
-      if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('runningAsync')) + '</div>';
+      if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('runningAsync')); // r376: จองพื้นที่คำตอบตั้งแต่รัน
       renderResonance(firstStatus && firstStatus.resonance ? firstStatus.resonance : null); // r369: resume → การ์ดกลับมาด้วย
       setStatus(t('runningAsync'));
       saveJob(meta);
@@ -2482,7 +2591,7 @@
       setStatus(t('running'));
       state.activeTab = sciences.length >= 2 ? 'judge' : sciences[0];
       startSyntheticProgress(sciences);
-      if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('running')) + '</div>';
+      if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('running')); // r376: จองพื้นที่คำตอบตั้งแต่รัน
       renderResonance(null); // ล้างการ์ดรอบก่อน · การ์ดใหม่มากับ POST response ทันที
       var pendingMeta = { jobId:'', clientRunId:newRunId(), profileId:profileIds[0], profileIds:profileIds, sciences:sciences, question:message, lang:state.locale, history:priorHistory, threadId:state.threadId, startedAt:Date.now(), posting:true };
       saveDraft();
@@ -2577,6 +2686,12 @@
         if (card.classList.contains('hk-fold')) card.classList.remove('hk-fold'); // กดการ์ดพับ = ขยาย
       });
     });
+    // r376 · มือถือ+answer-mode: แตะแถบ progress ที่ยุบ = สลับกางดูรายศาสตร์ (desktop ไม่ยุบ → no-op)
+    function toggleProgressFold(){
+      if (!isMobileFold() || !document.body.classList.contains('hk-answer-mode')) return;
+      if (els.progress) els.progress.classList.toggle('prog-open');
+    }
+    if (els.progress) els.progress.addEventListener('click', toggleProgressFold);
     els.send.addEventListener('click', send);
     document.addEventListener('click', function(e){
       var btn = e.target && e.target.closest ? e.target.closest('[data-answer-id]') : null;
