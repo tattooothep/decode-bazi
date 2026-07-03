@@ -1921,13 +1921,17 @@
       body.innerHTML = '<div class="rc-head"><span class="rc-title">' + esc(sciLabel(p.science)) + '</span><span class="ai-badge">AI · ' + esc((DISCIPLINES[p.science]||{}).ai || p.model || '') + '</span></div>' +
         (p.ok && p.reply ? mdSafe(p.reply) : '<div class="result-empty">' + esc((state.locale==='th'?'ศาสตร์นี้อ่านไม่สำเร็จ: ':'panel failed: ') + (p.error || 'error')) + '</div>');
     }
-    function startSyntheticProgress(sciences){
+    function startSyntheticProgress(sciences, seed){
       stopProgressPolling();
       resetProgressMeter(); // r376: รันใหม่ = เริ่มนับ % ใหม่
       var panel = {};
       sciences.forEach(function(s){ panel[s] = { model: sciLabel(s) + ' · ' + DISCIPLINES[s].ai, role:'panel', state:'running' }; });
+      // r381: resume หลัง reload → % ต่อจากค่าเดิม ไม่รีเซ็ต 8% (seed.pct = พื้นขั้นต่ำจาก snapshot · seed.startedAt = ให้ time-creep นับจากตอนเริ่มงานจริง)
+      var startedAt = Number(seed && seed.startedAt) || Date.now();
+      var basePct = Math.max(8, Number(seed && seed.pct) || 0);
+      if (seed) state.progressMark = { key:'panel:8', at:startedAt }; // progressPercentTick นับ creep ต่อจากเวลาเริ่มจริง (key ตรง fusionMilestone synthetic 0 เสร็จ)
       // r376: synthetic=true — fusion5 job ไม่รายงานสถานะรายศาสตร์กลางทาง → % เดินด้วย time-creep เพดาน 78 (ไม่ค้าง 10%)
-      renderProgress({ phase:'panel', percent:8, synthetic:true, message:t('running'), startedAt:Date.now(), phaseStartedAt:Date.now(), panel:panel, judge:{} });
+      renderProgress({ phase:'panel', percent:basePct, synthetic:true, message:t('running'), startedAt:startedAt, phaseStartedAt:startedAt, panel:panel, judge:{} });
     }
     function finishProgress(j){
       var f = (j && j.fusion5) || {};
@@ -2303,6 +2307,27 @@
       } catch(_) {}
     }
     function clearDraft(){ try { localStorage.removeItem(FUSION_DRAFT_KEY); } catch(_){} }
+    // ===== r381 · snapshot สถานะงานลงเครื่อง — มือถือ evict tab → reload แล้ว paint สภาพเดิมได้ทันที ไม่ต้องรอ network =====
+    var FUSION_SNAP_KEY = 'hk_fusion5_snap';
+    var SNAP_REPLY_MAX = 50000; // จำกัดคำตอบใน snapshot ≤50KB
+    function loadSnap(){ try { var raw = localStorage.getItem(FUSION_SNAP_KEY); return raw ? JSON.parse(raw) : null; } catch(_) { return null; } }
+    function clearSnap(){ try { localStorage.removeItem(FUSION_SNAP_KEY); } catch(_){} }
+    function saveSnap(patch){
+      try {
+        var next = Object.assign({}, loadSnap() || {}, patch || {}, { updatedAt: Date.now() });
+        if (typeof next.reply === 'string' && next.reply.length > SNAP_REPLY_MAX) next.reply = next.reply.slice(0, SNAP_REPLY_MAX);
+        localStorage.setItem(FUSION_SNAP_KEY, JSON.stringify(next));
+      } catch(_) {}
+    }
+    function snapMatches(snap, meta){
+      if (!snap || !meta) return false;
+      var k = String(snap.jobKey || '');
+      return !!k && (k === String(meta.jobId || '') || k === String(meta.clientRunId || ''));
+    }
+    function snapNames(meta){
+      var ids = (meta && Array.isArray(meta.profileIds)) ? meta.profileIds : [];
+      return ids.map(function(id){ var p = profileById(id); return p ? String(p.nickname || p.name || '') : ''; }).filter(Boolean).join(' + ');
+    }
     function applyProfileSelection(ids){
       ids = Array.isArray(ids) ? ids.filter(Boolean).map(String).slice(0, 4) : [];
       if (!ids.length || !els.profile) return;
@@ -2414,8 +2439,12 @@
       var sciences = (Array.isArray(meta.sciences) && meta.sciences.length) ? meta.sciences : activeSciences();
       state.activeTab = sciences.length >= 2 ? 'judge' : (sciences[0] || 'judge');
       setAnswerMode(true); // r374: resume งานพับจอ → answer-mode ด้วย
-      startSyntheticProgress(sciences);
-      if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('runningAsync')); // r376: จองพื้นที่คำตอบตั้งแต่รัน
+      var snap = loadSnap(); // r381: กู้ % จาก snapshot รอบ poll ล่าสุด → แถบต่อจากค่าเดิม
+      if (!snapMatches(snap, meta)) snap = null;
+      if (!state.resumePaintedDone) { // r381: ถ้า paint คำตอบจาก snapshot (job done) ไว้แล้ว อย่าทับด้วย placeholder/progress — รอ poll ยืนยัน
+        startSyntheticProgress(sciences, { pct: snap ? snap.pct : 0, startedAt: jobStartedAt(meta) });
+        if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('runningAsync')); // r376: จองพื้นที่คำตอบตั้งแต่รัน
+      }
       renderResonance(firstStatus && firstStatus.resonance ? firstStatus.resonance : null); // r369: resume → การ์ดกลับมาด้วย
       setStatus(t('runningAsync'));
       saveJob(meta);
@@ -2463,6 +2492,7 @@
       return mapErr[raw] || raw || t('jobError');
     }
     function showRunError(human){
+      state.resumePaintedDone = false; // r381
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc((state.locale==='th'?'รันไม่สำเร็จ: ':'failed: ') + human) + '</div>';
       renderProgress(null);
       setRunState('failed', 'err');
@@ -2483,6 +2513,7 @@
       clearDraft();
     }
     function renderJobDone(result, meta){
+      state.resumePaintedDone = false; // r381: ของจริงจาก server มาแล้ว → เลิกถือ paint จาก snapshot
       rememberCompletedTurn(result, meta);
       finishProgress(result);
       renderFusion5(result);
@@ -2516,6 +2547,14 @@
         return; // 5xx/429 ชั่วคราว → poll ต่อ
       }
       state.pollAuthFails = 0;
+      // r381 · snapshot สถานะล่าสุดทุกรอบ poll — reload กลางทาง (browser evict tab) paint ต่อจากตรงนี้ได้ทันที
+      if (j.status === 'done') saveSnap({ jobKey:String(meta.jobId), phase:'done', pct:100, question:meta.question || '', names:snapNames(meta), reply:String((j.result && j.result.reply) || '') });
+      else if (j.status === 'error') clearSnap();
+      else {
+        var snapPatch = { jobKey:String(meta.jobId), phase:'running', question:meta.question || '', names:snapNames(meta) };
+        if (state.progressPct != null) snapPatch.pct = Math.round(state.progressPct);
+        saveSnap(snapPatch);
+      }
       if (j.resonance && !state.resonance) renderResonance(j.resonance); // r369: กู้การ์ด resonance จาก job (resume/พับจอ)
       if (j.status === 'done') {
         var doneMeta = Object.assign({}, state.activeJob || meta || {});
@@ -2553,7 +2592,12 @@
           if (rec.reason === 'unreachable') { setStatus(t('reconnecting'), 'err'); scheduleRecoveryRetry(8000); return true; }
           if (rec.reason === 'unauthorized') { setStatus(t('sessionLost'), 'err'); scheduleRecoveryRetry(15000); return true; }
           clearJob();
+          clearSnap(); // r381
           state.busy = false;
+          renderProgress(null); // r381: ยกเลิกภาพที่ paint ไว้ตอนเปิดหน้า — server ยืนยันว่าไม่มีงานจริง
+          setRunState('idle');
+          if (els.result && !state.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
+          setAnswerMode(false); // r381: ขยายการ์ดถามกลับ ให้แก้/กดรันใหม่ได้ทันที
           applyFusionGate();
           setStatus(state.locale === 'th'
             ? 'มือถือหลุดก่อนยืนยันงานจาก server · คำถามยังอยู่ กดรันอีกครั้งได้'
@@ -2596,6 +2640,9 @@
       var pendingMeta = { jobId:'', clientRunId:newRunId(), profileId:profileIds[0], profileIds:profileIds, sciences:sciences, question:message, lang:state.locale, history:priorHistory, threadId:state.threadId, startedAt:Date.now(), posting:true };
       saveDraft();
       saveJob(pendingMeta);
+      clearSnap(); // r381: งานใหม่ = snapshot ใหม่ ไม่ปนของเก่า
+      saveSnap({ jobKey:pendingMeta.clientRunId, phase:'running', pct:8, question:message, names:snapNames(pendingMeta), startedAt:pendingMeta.startedAt });
+      state.resumePaintedDone = false;
       var r, j;
       try {
 	        r = await fetch('/api/sifu/fusion5', {
@@ -2642,6 +2689,7 @@
         if (j.threadId) state.threadId = String(j.threadId).slice(0, 100);
         var meta = Object.assign({}, pendingMeta, { jobId:j.jobId, threadId:state.threadId, posting:false });
         saveJob(meta);
+        saveSnap({ jobKey:j.jobId }); // r381: ผูก snapshot กับ jobId จริง
         setStatus(t('runningAsync'));
         if (j.resonance) renderResonance(j.resonance); // r369: โชว์เสียงสะท้อนข้ามศาสตร์ทันที ระหว่าง panel วิ่ง
         startJobPolling(meta);
@@ -2753,7 +2801,9 @@
       stopJobPolling();
       clearJob();
       clearDraft();
+      clearSnap(); // r381
       state.busy = false;
+      state.resumePaintedDone = false;
       renderProgress(null);
       els.question.value = '';
       state.result = null;
@@ -2846,6 +2896,7 @@
       if (!state.ready) return;
       saveDraft();
       if (state.activeJob && state.activeJob.jobId) {
+        document.body.classList.add('hk-answer-mode'); // r381: กลับมาแล้วงานยังวิ่ง → มือถือการ์ดถามต้องยุบเสมอ (ไม่ลบ hk-ask-open ที่ user กดเปิดเอง)
         // interval อาจถูกหยุดไปแล้ว (เช่น session สะดุด) → สตาร์ท polling ใหม่ ไม่ใช่ poll ครั้งเดียว
         if (jobTimer) pollJob(state.activeJob); else startJobPolling(state.activeJob);
         loadFusionHistory().catch(function(){});
@@ -2862,9 +2913,47 @@
       if (document.visibilityState === 'visible') syncFusionOnReturn();
       else saveDraft();
     });
-    (async function init(){
+    // ===== r381 · วาดสภาพเดิมทันทีตอนเปิดหน้า (synchronous · ไม่รอ network) =====
+    // มือถือ browser evict tab → reload: ถ้ามีงานค้างใน localStorage ให้ยุบการ์ดถาม + วาดแถบสรุป/% จาก snapshot ก่อน
+    // network recovery (resumeJobIfAny) จะตอบ — user กลับมาเห็นสภาพเดิมทันที ไม่ใช่ฟอร์มเปล่าแวบหนึ่ง
+    function paintResumeFromLocal(){
+      var meta = loadJobMeta();
+      if (!meta || (!meta.jobId && !meta.question)) return false;
+      if (Date.now() - jobStartedAt(meta) > JOB_MAX_MS) return false;
+      var snap = loadSnap();
+      if (!snapMatches(snap, meta)) snap = null;
+      if (askSummary.name) askSummary.name.textContent = (snap && snap.names) || '—'; // profiles ยังไม่โหลด → ใช้ชื่อที่เก็บใน snapshot ตอนรัน
+      if (askSummary.q) askSummary.q.textContent = String(meta.question || (snap && snap.question) || '').replace(/\s+/g, ' ').slice(0, 160);
+      document.body.classList.add('hk-answer-mode'); // desktop: กติกายุบอยู่ใน @media 768px → พฤติกรรมเดิม ไม่ยุบ
+      document.body.classList.remove('hk-ask-open');
+      state.pendingQuestion = String(meta.question || '');
+      if (snap && snap.phase === 'done' && snap.reply) {
+        // งานเสร็จระหว่างเราไม่อยู่ + snapshot เก็บคำตอบทัน → เห็นคำตอบทันที · ของจริงจาก server จะ reconcile ผ่าน poll/resume อีกที
+        if (els.result) els.result.innerHTML = mdSafe(snap.reply);
+        state.resumePaintedDone = true;
+        return true;
+      }
+      var sciences = (Array.isArray(meta.sciences) && meta.sciences.length) ? meta.sciences : SCI_ORDER.slice();
+      startSyntheticProgress(sciences, { pct: snap ? snap.pct : 0, startedAt: jobStartedAt(meta) }); // แถบ % ต่อจากค่าเดิม ไม่รีเซ็ต 8%
+      if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('runningAsync'));
+      setRunState('running');
+      setStatus(t('runningAsync'));
+      return true;
+    }
+    paintResumeFromLocal();
+    // r381 · boot ล้มทั้งที่มีงานค้าง (เน็ตมือถือยังไม่กลับหลังกางจอ) → ลอง boot ใหม่เอง ไม่ปล่อยจอค้าง
+    var bootAttempts = 0;
+    function scheduleBootRetry(){
+      var meta = loadJobMeta();
+      if (!meta || (!meta.jobId && !meta.question)) return;
+      if (Date.now() - jobStartedAt(meta) > JOB_MAX_MS) return;
+      if (bootAttempts >= 40) return; // เพดาน ~5 นาที · ไม่วนถาวร
+      bootAttempts++;
+      setTimeout(function(){ bootFusion().catch(function(){}); }, 8000);
+    }
+    async function bootFusion(){
       var accountOk = await loadAccount();
-      if (!accountOk) return;
+      if (!accountOk) { scheduleBootRetry(); return; }
       await loadFusionAccess();
       try {
         await loadProfiles();
@@ -2880,8 +2969,10 @@
           : (e.message || 'โหลดข้อมูลไม่สำเร็จ');
         setStatus(msg, 'err');
         els.send.disabled = true;
+        scheduleBootRetry();
       }
-    })();
+    }
+    bootFusion();
   })();
   </script>
 </body>
