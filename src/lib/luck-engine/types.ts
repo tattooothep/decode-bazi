@@ -134,13 +134,16 @@ export type ModuleKey =
   | "retro_window"     // ดาวถอย R→D (r372 · opt-in · ตัดผ่าน cap 40-50)
   | "eclipse_zone"     // โซนอับคราส (r372 · opt-in · ตัดผ่าน cap 35/55)
   | "rahu_kalam"       // ราหูกาล สายอินเดีย (r372 · opt-in · ตัดผ่าน cap 50)
-  | "moon_sign";       // จันทร์ประจำราศี (r372 · opt-in · soft scorer ±6 · ไม่มี cap)
+  | "moon_sign"        // จันทร์ประจำราศี (r372 · opt-in · soft scorer ±6 · ไม่มี cap)
+  | "panchanga"        // ปัญจางค์ 5 องค์ (r374 phase-3 · opt-in · cap 45-60 + soft +5)
+  | "tara_bala";       // ตาราพละ สายอินเดีย (r374 phase-3 · opt-in · personal · cap 50 / +4)
 
 export const ALL_MODULES: ModuleKey[] = [
   "ze_ri", "twelve_officers", "twenty_eight", "twelve_spirits",
   "nine_stars", "tai_sui", "qi_men", "he_luo",
   "ba_zi", "yong_shen", "hex64", "tian_xing", "dong_gong",
-  "moon_void", "retro_window", "eclipse_zone", "rahu_kalam", "moon_sign"
+  "moon_void", "retro_window", "eclipse_zone", "rahu_kalam", "moon_sign",
+  "panchanga", "tara_bala"
 ];
 
 // หมายเหตุ: tian_xing ไม่อยู่ใน UNIVERSAL — เป็น scorer (compute on-the-fly) ไม่ใช่ hard-filter
@@ -154,6 +157,9 @@ export const ALL_MODULES: ModuleKey[] = [
 // (ใส่ UNIVERSAL → moduleFilters SQL query คอลัมน์ที่ไม่มี → error → ฤกษ์หายทั้งหน้า)
 // 4 ตัวแรกตัดฤกษ์จริงผ่าน caps ใน combineScores (VoC 45 · retro 40-50 · eclipse 35/55 · rahu 50)
 // moon_sign เป็น soft scorer (±6 · weight 0.02) ไม่ตัด
+// r374 phase-3: panchanga + tara_bala ก็ห้ามใส่ UNIVERSAL/PERSONAL_MODULES ด้วยเหตุผลเดียวกัน —
+// aj_ephemeris_cache/aj_personal_cache ไม่มีคอลัมน์พวกนี้ (ใส่ → SQL error → ฤกษ์หายทั้งหน้า)
+// ทั้งคู่ตัดฤกษ์ผ่าน caps ใน combineScores + enforceSkyCaps เท่านั้น (panchanga 45-60 · tara_bala 50)
 export const UNIVERSAL_MODULES: ModuleKey[] = [
   "ze_ri", "twelve_officers", "twenty_eight", "twelve_spirits",
   "nine_stars", "tai_sui", "qi_men", "he_luo"

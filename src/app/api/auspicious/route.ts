@@ -29,6 +29,9 @@ import { computeRetroWindow } from "@/lib/luck-engine/modules/retro-window";
 import { computeEclipseZone } from "@/lib/luck-engine/modules/eclipse-zone";
 import { computeRahuKalam } from "@/lib/luck-engine/modules/rahu-kalam";
 import { computeMoonSign } from "@/lib/luck-engine/modules/moon-sign";
+import { computePanchanga } from "@/lib/luck-engine/modules/panchanga";
+import { computeTaraBala } from "@/lib/luck-engine/modules/tara-bala";
+import { computeAgreement } from "@/lib/luck-engine/agreement";
 import { normalizeEventLocation, buildTstBoundaryWarning } from "@/lib/luck-engine/event-location";
 import type { EventLocation } from "@/lib/luck-engine/event-location";
 import { huangDaoHour } from "@/lib/huangdao";
@@ -77,6 +80,12 @@ const DONGGONG_MODULE_POLICY = "v2_module_r367";
 const SKY_MODULE_KEYS: ModuleKey[] = ["moon_void", "retro_window", "eclipse_zone", "rahu_kalam", "moon_sign"];
 const SKY_MODULE_SET = new Set<ModuleKey>(SKY_MODULE_KEYS);
 const SKY_MODULE_POLICY = "v1_sky_r372";
+/* r374 phase-3 · ปัญจางค์ + ตาราพละ (opt-in ทั้งคู่ · ไม่อยู่ใน UNIVERSAL/HARD/PERSONAL_MODULES —
+   aj_ephemeris_cache/aj_personal_cache ไม่มีคอลัมน์พวกนี้ · ตัดฤกษ์ผ่าน caps เท่านั้น)
+   panchanga = universal (ไม่ต้องมีโปรไฟล์) · tara_bala = personal (ไม่มีโปรไฟล์ → missing · ข้ามเงียบ ๆ) */
+const PT_MODULE_KEYS: ModuleKey[] = ["panchanga", "tara_bala"];
+const PT_MODULE_SET = new Set<ModuleKey>(PT_MODULE_KEYS);
+const PT_MODULE_POLICY = "v1_panchanga_r374";
 function cacheKey(body: any): string {
   const options = body.options || {};
   // r367: dong_gong module state + พิกัดงาน (ปัด 2 ตำแหน่ง) เข้า key — additive fields only
@@ -86,10 +95,15 @@ function cacheKey(body: any): string {
   const skyActive = Array.isArray(body.activeModules)
     ? body.activeModules.filter((m: ModuleKey) => SKY_MODULE_SET.has(m)).slice().sort()
     : [];
+  // r374 phase-3: สถานะ panchanga/tara_bala เข้า key (additive field · ปิดทั้งคู่ = "off")
+  const ptActive = Array.isArray(body.activeModules)
+    ? body.activeModules.filter((m: ModuleKey) => PT_MODULE_SET.has(m)).slice().sort()
+    : [];
   return JSON.stringify({
     dg: dgModule ? DONGGONG_MODULE_POLICY : DONGGONG_SCORING_POLICY,
     dgm: dgModule,
     sky: skyActive.length ? `${SKY_MODULE_POLICY}:${skyActive.join("+")}` : "off",
+    pt: ptActive.length ? `${PT_MODULE_POLICY}:${ptActive.join("+")}` : "off",
     el: Math.round(evLoc.lat * 100) / 100,
     eg: Math.round(evLoc.lng * 100) / 100,
     a: body.activityType, ap: body.activityProfileKey || "", df: body.dateFrom, dt: body.dateTo,
@@ -221,11 +235,15 @@ export async function POST(req: NextRequest) {
        caps ไหลผ่าน combineScores · enforceSkyCaps กดเพดานกลับหลัง profile/qimen/donggong shift
        module ปิดทุกตัว = ไม่แนบ = zero-effect (พฤติกรรมเดิมไม่เปลี่ยนแม้แต่ byte) */
     const skyModulesActive = activeModuleKeys.filter((m: ModuleKey) => SKY_MODULE_SET.has(m));
+    /* r374 phase-3: ปัญจางค์+ตาราพละ — แนบจุดเดียวกับ sky · caps ไหลผ่าน combineScores + enforceSkyCaps
+       module ปิดทั้งคู่ = ไม่แนบ = zero-effect (candidates byte-identical เดิม · regression r372 ต้องผ่าน) */
+    const ptModulesActive = activeModuleKeys.filter((m: ModuleKey) => PT_MODULE_SET.has(m));
     const enriched = candidates
       .map(c => applyMonthDayShaRuntime(c, resolvedActivityType, targetDirection))
       .map(c => applyTianXing(c, activeModuleKeys, eventLocation))
       .map(c => applyDongGongModule(c, dongGongModuleActive, resolvedActivityType))
       .map(c => applySkyModules(c, skyModulesActive, resolvedActivityType, eventLocation))
+      .map(c => applyPanchangaModules(c, ptModulesActive, resolvedActivityType, customer))
       .map(c => enrichCandidate(c, baseScoreModules, resolvedActivityType))
       .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys, targetDirection))
       .map(c => applyQimenGenericGuard(c, activityProfile, activeModuleKeys))
@@ -233,7 +251,10 @@ export async function POST(req: NextRequest) {
         ? applyDongGongBoost(c)
         : applyDongGongOverlay(c, activeModuleKeys, resolvedActivityType))
       .map(c => enforceSkyCaps(c, skyModulesActive))
+      /* r374: re-enforce เพดานของ phase-3 อีกชั้น (กลไกเดียวกับ sky · ปิด = zero-effect) */
+      .map(c => enforceSkyCaps(c, ptModulesActive))
       .map(c => hideDongGongWhenInactive(c, activeModuleKeys))
+      .map(c => ptModulesActive.length ? attachAgreement(c) : c)
       .map(refreshCandidateDisplay)
       .filter(c => !options.minScore || (c.scoring?.finalScore ?? 0) >= options.minScore)
       .sort((a, b) => (b.scoring?.finalScore ?? 0) - (a.scoring?.finalScore ?? 0))
@@ -272,6 +293,8 @@ export async function POST(req: NextRequest) {
         /* r372: additive · บอก client ว่า sky modules ตัวไหนทำงาน */
         skyModules: skyModulesActive,
         skyScoringPolicy: skyModulesActive.length ? SKY_MODULE_POLICY : "off",
+        /* r374 phase-3: additive "เฉพาะเมื่อเปิด" — ปิด = meta identical เดิม (regression r372 เทียบ meta byte ต่อ baseline) */
+        ...(ptModulesActive.length ? { ptModules: ptModulesActive, ptScoringPolicy: PT_MODULE_POLICY } : {}),
         /* r367: บอก client ว่าใช้พิกัดไหนจริง + note ถ้า fallback (invalid coords → BKK · ไม่ 400) */
         eventLocation,
         hardModules,
@@ -329,6 +352,33 @@ function applySkyModules(c: CandidateSlot, skyActive: ModuleKey[], activity: Act
   attach("rahu_kalam", () => computeRahuKalam(out, activity, loc));
   attach("moon_sign", () => computeMoonSign(out, activity));
   return out;
+}
+
+/** r374 phase-3 · ปัญจางค์+ตาราพละ opt-in: แนบ ModuleResult ก่อน combineScores (จุดเดียวกับ sky r372)
+ *  panchanga = universal (geocentric · ไม่ต้องมีโปรไฟล์/พิกัด)
+ *  tara_bala = personal · ไม่มีโปรไฟล์หรือ parse วันเกิดไม่ได้ → computeTaraBala คืน "missing"
+ *              (combineScores ข้าม missing = zero-effect · skip gracefully)
+ *  module ปิดทั้งคู่ = ไม่แนบ = คืน c เดิม (พฤติกรรมเดิมไม่เปลี่ยนแม้แต่ byte)
+ *  ตัวเดียวพัง (throw) = ข้ามตัวนั้น ห้ามล้มทั้ง response */
+function applyPanchangaModules(c: CandidateSlot, ptActive: ModuleKey[], activity: ActivityType, customer: PersonProfile | null): CandidateSlot {
+  if (!ptActive.length) return c;
+  const out: CandidateSlot = { ...c, modules: { ...(c.modules as any) } };
+  if (ptActive.includes("panchanga")) {
+    try { (out.modules as any).panchanga = computePanchanga(out, activity); } catch { /* best-effort */ }
+  }
+  if (ptActive.includes("tara_bala")) {
+    try { (out.modules as any).tara_bala = computeTaraBala(out, activity, customer); } catch { /* best-effort */ }
+  }
+  return out;
+}
+
+/** r374 phase-3 · ป้ายเห็นพ้องข้ามศาสตร์ (deterministic · ไม่มี AI · นับจาก ModuleResult 4 สาย)
+ *  additive field `agreement` ต่อ candidate — route แนบ "เฉพาะเมื่อ module phase-3 เปิด"
+ *  (ปิด = candidates byte-identical เดิม · regression test-datepick-sky-r372 เทียบ byte ต้องผ่านต่อ) */
+function attachAgreement(c: CandidateSlot): CandidateSlot {
+  if (!c.scoring) return c;
+  try { (c as any).agreement = computeAgreement(c); } catch { /* best-effort · ห้ามล้มทั้ง response */ }
+  return c;
 }
 
 /** r372 · re-enforce เพดานของ sky modules (ตำแหน่งท้าย pipeline = คำสุดท้ายของชั้นท้องฟ้า

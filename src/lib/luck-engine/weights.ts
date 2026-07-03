@@ -46,6 +46,8 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
     rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
     moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
+    panchanga:       0.03,  // r374 · ปัญจางค์ 5 องค์ · ตัดหลักผ่าน caps (45-60) + soft +5 ผ่าน average เบา ๆ
+    tara_bala:       0.02,  // r374 · ตาราพละ (personal) · ตัดหลักผ่าน cap 50 + soft +4 เบา ๆ · ไม่มีโปรไฟล์ = missing = ไม่กระทบ
   },
 
   // ----------------------------------------------------------------
@@ -72,6 +74,8 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
     rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
     moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
+    panchanga:       0.03,  // r374 · ปัญจางค์ 5 องค์ · ตัดหลักผ่าน caps (45-60) + soft +5 ผ่าน average เบา ๆ
+    tara_bala:       0.02,  // r374 · ตาราพละ (personal) · ตัดหลักผ่าน cap 50 + soft +4 เบา ๆ · ไม่มีโปรไฟล์ = missing = ไม่กระทบ
   },
 
   // ----------------------------------------------------------------
@@ -97,6 +101,8 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
     rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
     moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
+    panchanga:       0.03,  // r374 · ปัญจางค์ 5 องค์ · ตัดหลักผ่าน caps (45-60) + soft +5 ผ่าน average เบา ๆ
+    tara_bala:       0.02,  // r374 · ตาราพละ (personal) · ตัดหลักผ่าน cap 50 + soft +4 เบา ๆ · ไม่มีโปรไฟล์ = missing = ไม่กระทบ
   },
 
   // ----------------------------------------------------------------
@@ -122,6 +128,8 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
     rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
     moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
+    panchanga:       0.03,  // r374 · ปัญจางค์ 5 องค์ · ตัดหลักผ่าน caps (45-60) + soft +5 ผ่าน average เบา ๆ
+    tara_bala:       0.02,  // r374 · ตาราพละ (personal) · ตัดหลักผ่าน cap 50 + soft +4 เบา ๆ · ไม่มีโปรไฟล์ = missing = ไม่กระทบ
   },
 
   // ----------------------------------------------------------------
@@ -147,6 +155,8 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
     rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
     moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
+    panchanga:       0.03,  // r374 · ปัญจางค์ 5 องค์ · ตัดหลักผ่าน caps (45-60) + soft +5 ผ่าน average เบา ๆ
+    tara_bala:       0.02,  // r374 · ตาราพละ (personal) · ตัดหลักผ่าน cap 50 + soft +4 เบา ๆ · ไม่มีโปรไฟล์ = missing = ไม่กระทบ
   },
 
   // ----------------------------------------------------------------
@@ -172,6 +182,8 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
     rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
     moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
+    panchanga:       0.03,  // r374 · ปัญจางค์ 5 องค์ · ตัดหลักผ่าน caps (45-60) + soft +5 ผ่าน average เบา ๆ
+    tara_bala:       0.02,  // r374 · ตาราพละ (personal) · ตัดหลักผ่าน cap 50 + soft +4 เบา ๆ · ไม่มีโปรไฟล์ = missing = ไม่กระทบ
   },
 
   // ----------------------------------------------------------------
@@ -194,6 +206,8 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
     rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
     moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
+    panchanga:       0.03,  // r374 · ปัญจางค์ 5 องค์ · ตัดหลักผ่าน caps (45-60) + soft +5 ผ่าน average เบา ๆ
+    tara_bala:       0.02,  // r374 · ตาราพละ (personal) · ตัดหลักผ่าน cap 50 + soft +4 เบา ๆ · ไม่มีโปรไฟล์ = missing = ไม่กระทบ
     twenty_eight:    0.02,
     twelve_spirits:  0.01,
     he_luo:          0.01,
@@ -222,6 +236,8 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     eclipse_zone:    0,     // r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
     rahu_kalam:      0,     // r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
     moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
+    panchanga:       0.03,  // r374 · ปัญจางค์ 5 องค์ · ตัดหลักผ่าน caps (45-60) + soft +5 ผ่าน average เบา ๆ
+    tara_bala:       0.02,  // r374 · ตาราพละ (personal) · ตัดหลักผ่าน cap 50 + soft +4 เบา ๆ · ไม่มีโปรไฟล์ = missing = ไม่กระทบ
   },
 };
 

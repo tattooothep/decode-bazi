@@ -301,6 +301,11 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .dg-detail.show{display:block;}
 .dg-detail .dg-dl{margin:2px 0;}
 .dg-detail .dg-src{font-size:11px;color:var(--fg-faint);font-style:italic;}
+/* r374 · ป้ายเห็นพ้องข้ามศาสตร์ (agreement badge · คำนวณฝั่ง server) */
+.ag-chip{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:10px;letter-spacing:.03em;padding:2px 7px;border-radius:99px;margin-left:4px;vertical-align:middle;border:1px solid;white-space:nowrap;}
+.ag-good{color:#6cb859;border-color:rgba(108,184,89,.5);background:rgba(108,184,89,.12);}
+.ag-mix{color:#d4a23a;border-color:rgba(212,162,58,.55);background:rgba(212,162,58,.13);}
+.ag-bad{color:#c5564e;border-color:rgba(197,86,78,.5);background:rgba(197,86,78,.10);}
 .result-head .rscore{text-align:right;}
 .result-head .rscore .num{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--gold);line-height:1;}
 .result-head .rscore .lbl{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--fg-faint);text-transform:uppercase;}
@@ -773,6 +778,17 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             </div>
           </label>
 
+          <!-- r374 phase-3 · ปัญจางค์ 5 องค์ (สายอินเดีย) -->
+          <label class="filter-item active" data-filter="panchanga">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl"><span data-i18n="dp.pc.ttl">ปัญจางค์ 5 องค์</span> <span class="han">五支曆</span> <span class="level hard" data-i18n="dp.pc.level">เพดานคะแนน</span><button class="help-icon" onclick="showHelp('panchanga');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.pc.sub">ติถี/วาระ/นักษัตร/โยคะ/กรณะ ของยามนั้นตามปฏิทินอินเดีย · ติถีริกตา+กรณะภัทรา เพดาน 55 · จันทร์ดับ 45 · โยคะร้าย 60 · โยคะดี +5</div>
+              </div>
+            </div>
+          </label>
+
             </div>
           </details>
 
@@ -826,6 +842,17 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
               <div class="info">
                 <div class="ttl">หกสิบสี่ข่วย <span class="han">六十四卦</span> <span  class="level note" data-i18n="auto.d.021">ตีความ</span><button class="help-icon" onclick="showHelp('hex');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div  class="sub" data-i18n="auto.d.022">เพิ่มคำอ่านข่วยของยาม — ใช้อธิบาย ไม่ได้ตัดวันทิ้ง</div>
+              </div>
+            </div>
+          </label>
+
+          <!-- r374 phase-3 · ตาราพละ (สายอินเดีย · ต้องเลือกโปรไฟล์) -->
+          <label class="filter-item active" data-filter="tarabala">
+            <div class="filter-item-head">
+              <input type="checkbox" checked/>
+              <div class="info">
+                <div class="ttl"><span data-i18n="dp.tb.ttl">ตาราพละ</span> <span class="han">宿曜</span> <span class="level hard" data-i18n="dp.tb.level">เฉพาะบุคคล · เพดานคะแนน</span><button class="help-icon" onclick="showHelp('tarabala');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.tb.sub">นับนักษัตรเกิดของคุณถึงนักษัตรของวัน (Tārābala 9 ชั้น) · ชั้นร้าย 3/5/7 เพดาน 50 · ชั้นดี +4 · ไม่เลือกโปรไฟล์ = ไม่ทำงาน</div>
               </div>
             </div>
           </label>
@@ -1262,8 +1289,8 @@ function validateDateRange(){
 // ═══════════════════════════════════════════════════════════════
 const DP_FILTER_GROUPS = {
   basic:    ['tongshu','donggong','jianchu','xiu28','shen12','fly9','taisui'],           /* ① พื้นฐานปฏิทิน */
-  sky:      ['tianxing','moonvoid','moonsign','retro','eclipse','rahu'],                  /* ② ท้องฟ้าจริง */
-  personal: ['bazi','yongshen','hex'],                                                    /* ③ เฉพาะดวงคุณ */
+  sky:      ['tianxing','moonvoid','moonsign','retro','eclipse','rahu','panchanga'],      /* ② ท้องฟ้าจริง (+panchanga r374) */
+  personal: ['bazi','yongshen','hex','tarabala'],                                         /* ③ เฉพาะดวงคุณ (+tarabala r374) */
   advanced: ['qimen','heluo'],                                                            /* ④ ชั้นสูง */
 };
 const DP_ALL_FILTER_KEYS = Object.values(DP_FILTER_GROUPS).reduce((a, b) => a.concat(b), []);
@@ -1873,8 +1900,11 @@ const MODULE_LABELS = {
   retro_window: { th:'ดาวถอย', zh:'逆行', mode:'เพดานคะแนน', element:null, desc:'ดาวพุธ/ศุกร์/อังคารถอยจริง (รอบ station R→D); ตรงหมวดกิจกรรมโดนเพดาน 40-50' },
   eclipse_zone: { th:'โซนอับคราส', zh:'食區', mode:'เพดานคะแนน', element:null, desc:'±3 วันรอบสุริยุปราคา/จันทรุปราคา; วันคราสพอดีเพดาน 35 · ในโซน+งานเปิดตัวใหญ่เพดาน 55' },
   rahu_kalam: { th:'ราหูกาล', zh:'羅睺', mode:'เพดานคะแนน', element:null, desc:'ช่วงอัปมงคลรายวันสายอินเดีย ~90 นาที คำนวณจากพระอาทิตย์ขึ้นจริง ณ สถานที่; คาบช่วงนี้เพดาน 50' },
+  /* r374 · phase-3 ปัญจางค์+ตาราพละ (สายอินเดีย) */
+  panchanga: { th:'ปัญจางค์ 5 องค์', zh:'五支曆', mode:'เพดานคะแนน+ปรับเบา', element:null, desc:'ติถี/วาระ/นักษัตร/โยคะ/กรณะ ตามปฏิทินอินเดีย; ติถีริกตา (เปิดกิจการ/แต่งงาน) + กรณะภัทรา เพดาน 55 · จันทร์ดับ 45 · โยคะร้าย 60 · โยคะดี +5' },
+  tara_bala: { th:'ตาราพละ', zh:'宿曜', mode:'เฉพาะบุคคล · เพดานคะแนน', element:null, desc:'นับนักษัตรเกิดของคุณถึงนักษัตรของวัน (Tārābala 9 ชั้น); ชั้นร้าย 3/5/7 เพดาน 50 · ชั้นดี +4 · ไม่มีโปรไฟล์ = ไม่ทำงาน' },
 };
-const MODULE_ORDER = ['ba_zi','ze_ri','dong_gong','tai_sui','qi_men','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','yong_shen','twelve_officers','twenty_eight','twelve_spirits','nine_stars','he_luo','hex64'];
+const MODULE_ORDER = ['ba_zi','ze_ri','dong_gong','tai_sui','qi_men','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','panchanga','yong_shen','tara_bala','twelve_officers','twenty_eight','twelve_spirits','nine_stars','he_luo','hex64'];
 const STEM_ELEMENT = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
 const ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
 const ELEMENT_ZH = {wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
@@ -2006,6 +2036,13 @@ function reasonDelta(raw){
 }
 
 function scienceKeyFromReason(raw){
+  /* r378 · reason แบบ object จาก /api/auspicious → จัดหมวดด้วย source ตรง (source = module key เป๊ะ ไม่ต้องเดา regex)
+     string เดิม (เช่น tongshu_tags/AI context) ยังใช้ regex fallback ด้านล่างตามเดิม */
+  if (raw && typeof raw === 'object') {
+    const src = String(raw.source || '');
+    if (MODULE_LABELS[src]) return src;
+    raw = `${raw.code || ''} ${raw.text || raw.thai || ''}`;
+  }
   const s = String(raw || '');
   if (/奇門|奇门|ฉีเหมิน|Qi Men|qi_men|PROFILE_QIMEN|QM_BAD_DOOR_CAP/i.test(s)) return 'qi_men';
   if (/ตงกง|董公|DONGGONG/.test(s)) return 'dong_gong';
@@ -2015,6 +2052,9 @@ function scienceKeyFromReason(raw){
   if (/ดาว(?:พุธ|ศุกร์|อังคาร|พฤหัส|เสาร์)ถอย|R→D|RETRO_/.test(s)) return 'retro_window';
   if (/คราส|ECLIPSE/.test(s)) return 'eclipse_zone';
   if (/ราหูกาล|RAHU_KALAM/.test(s)) return 'rahu_kalam';
+  /* r374 · phase-3 ปัญจางค์+ตาราพละ (เช็คก่อน pattern กว้าง) */
+  if (/ตาราพละ|ตาราชนมะ|TARA_BALA|นักษัตรเกิด/.test(s)) return 'tara_bala';
+  if (/ปัญจางค์|PANCHANGA|ติถี|โยคะ|กรณะ|อมาวสยา|ภัทรา/.test(s)) return 'panchanga';
   if (/七政四餘|天星|tian_xing|TIAN_XING|TX_|廟旺|恩用仇難|忌格|合格/.test(s)) return 'tian_xing';
   if (/12建除|建除/.test(s)) return 'twelve_officers';
   if (/28宿|二十八宿/.test(s)) return 'twenty_eight';
@@ -2046,6 +2086,15 @@ function displayReasonText(raw){
 
 function scoreOnlyScienceItem(key, score){
   const rounded = Math.round(Number(score || 0));
+  /* r378 · ชั้นท้องฟ้าจริง: ไม่มีเหตุผลแยก = ยามนี้ไม่คาบช่วงร้ายของชั้นนั้น (ฟ้าโปร่ง) ไม่ใช่ "ไม่มีข้อมูล" */
+  const SKY_CLEAR_TEXT = {
+    moon_void: 'ยามนี้ไม่คาบช่วงจันทร์ว่าง (Void of Course) · เริ่มงานได้ตามปกติ',
+    moon_sign: 'ราศีจันทร์ ณ ยามนี้ไม่มีผลหนุน/ถ่วงพิเศษกับกิจกรรมนี้',
+    retro_window: 'ยามนี้ไม่อยู่ในช่วงดาวถอยที่กระทบกิจกรรมนี้',
+    eclipse_zone: 'ยามนี้ไม่อยู่ในโซนอับคราส (±3 วันรอบคราส)',
+    rahu_kalam: 'ยามนี้ไม่คาบช่วงราหูกาลของวันนั้น ณ สถานที่งาน',
+  };
+  if (SKY_CLEAR_TEXT[key]) return { text:`ตรวจท้องฟ้าจริงแล้ว · ${SKY_CLEAR_TEXT[key]}`, delta:0, kind:'good', label:'โปร่ง' };
   if (key === 'ze_ri') {
     if (rounded >= 70) return { text:'ปฏิทินจีนให้ผ่านและมีแรงหนุนกับกิจกรรมนี้ · 通書', delta:0, kind:'good', label:'ผ่าน' };
     if (rounded < 50) return { text:'ปฏิทินจีนมีข้อห้ามหรือจังหวะไม่รับกิจกรรมนี้ ควรเลื่อนหรือใช้ศาสตร์อื่นยืนยัน · 通書', delta:0, kind:'warn', label:'ระวัง' };
@@ -2136,7 +2185,7 @@ function enrichScienceSectionsForSlot(sections, t){
       });
     }
   }
-  const order = ['qi_men','ze_ri','dong_gong','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
+  const order = ['qi_men','ze_ri','dong_gong','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','panchanga','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','tara_bala','he_luo','hex64','tai_sui','ba_zi'];
   return sections.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
 }
 
@@ -2150,15 +2199,18 @@ function hasQimenScienceSignal(t){
 }
 
 function buildScienceSections(matches, moduleScores){
-  const order = ['qi_men','ze_ri','dong_gong','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','he_luo','hex64','tai_sui','ba_zi'];
+  const order = ['qi_men','ze_ri','dong_gong','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','panchanga','twelve_officers','twenty_eight','twelve_spirits','nine_stars','yong_shen','tara_bala','he_luo','hex64','tai_sui','ba_zi'];
   const map = new Map();
   const seen = new Set();
   (matches || []).forEach((raw) => {
+    /* r378 · รับได้ทั้ง string (ของเดิม) และ object {text,source,code,delta,warn} — object จัดหมวดด้วย source แม่นกว่า */
+    const isObj = !!raw && typeof raw === 'object';
     const key = scienceKeyFromReason(raw);
     const meta = MODULE_LABELS[key] || { th:key, zh:key };
-    const delta = reasonDelta(raw);
-    const isWarn = delta < 0 || String(raw || '').includes('ระวัง') || String(raw || '').includes('⚠');
-    const text = displayReasonText(raw);
+    const rawText = isObj ? String(raw.text || raw.thai || '') : String(raw || '');
+    const delta = isObj ? Number(raw.delta || 0) : reasonDelta(raw);
+    const isWarn = (isObj && raw.warn === true) || delta < 0 || rawText.includes('ระวัง') || rawText.includes('⚠');
+    const text = displayReasonText(rawText);
     const sig = `${key}|${isWarn ? 'warn' : 'good'}|${text}`;
     if (seen.has(sig)) return;
     seen.add(sig);
@@ -2173,9 +2225,12 @@ function buildScienceSections(matches, moduleScores){
     if (kind === 'good') sec.good += 1;
     sec.items.push({ text, delta, kind });
   });
+  /* r378 · หมวด ② ท้องฟ้าจริง: เปิด module แล้วแต่ยามนี้ไม่มีเหตุผลเลย (ฟ้าโปร่ง/ไม่คาบช่วงร้าย)
+     เดิมการ์ดหายทั้งหมวด user คิดว่า "ไม่มีข้อมูล" → เติมการ์ดสถานะ "โปร่ง" จากคะแนน module แทน */
+  const skyGroupKeys = (SCIENCE_GROUP_DEFS.find(g => g.key === 'sky') || { modules: [] }).modules;
   order.forEach((key) => {
     if (map.has(key) || !moduleScores || moduleScores[key] == null) return;
-    if (key !== 'ze_ri') return;
+    if (key !== 'ze_ri' && !skyGroupKeys.includes(key)) return;
     const meta = MODULE_LABELS[key] || { th:key, zh:key };
     const score = Math.round(moduleScores[key]);
     const item = scoreOnlyScienceItem(key, score);
@@ -2203,9 +2258,9 @@ const SCIENCE_GROUP_DEFS = [
   { key:'basic',    icon:'🗓', th:'① พื้นฐานปฏิทินจีน', en:'① Chinese calendar base', zh:'① 曆法基礎',
     modules:['ze_ri','dong_gong','twelve_officers','twenty_eight','twelve_spirits','nine_stars','tai_sui'] },
   { key:'sky',      icon:'🪐', th:'② ท้องฟ้าจริง ณ สถานที่งาน', en:'② Real sky at the venue', zh:'② 實際天象（依地點）',
-    modules:['tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam'] },
+    modules:['tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','panchanga'] },
   { key:'personal', icon:'👤', th:'③ เฉพาะดวงคุณ', en:'③ Your chart only', zh:'③ 個人命盤',
-    modules:['ba_zi','yong_shen','hex64'] },
+    modules:['ba_zi','yong_shen','hex64','tara_bala'] },
   { key:'advanced', icon:'🧭', th:'④ ชั้นสูง', en:'④ Advanced', zh:'④ 進階',
     modules:['qi_men','he_luo'] },
 ];
@@ -2408,6 +2463,9 @@ async function performSearch(){
     const useRetro    = document.querySelector('.filter-item[data-filter="retro"] input[type="checkbox"]')?.checked === true;
     const useEclipse  = document.querySelector('.filter-item[data-filter="eclipse"] input[type="checkbox"]')?.checked === true;
     const useRahu     = document.querySelector('.filter-item[data-filter="rahu"] input[type="checkbox"]')?.checked === true;
+    /* r374 phase-3 · ปัญจางค์ (หมวด②) + ตาราพละ (หมวด③ · ต้องมีโปรไฟล์) — === true · ไม่ติ๊ก = zero-effect */
+    const usePanchanga = document.querySelector('.filter-item[data-filter="panchanga"] input[type="checkbox"]')?.checked === true;
+    const useTarabala  = document.querySelector('.filter-item[data-filter="tarabala"] input[type="checkbox"]')?.checked === true;
     /* r367 · สถานที่จัดงาน · พิกัดจริงเข้า engine */
     const eventLoc = dpReadEventLocation();
     /* 22 พ.ค. · /api/auspicious เป็น canonical engine ของหน้า datepick แล้ว
@@ -2449,6 +2507,9 @@ async function performSearch(){
       if (useRetro)    activeModules.push('retro_window');
       if (useEclipse)  activeModules.push('eclipse_zone');
       if (useRahu)     activeModules.push('rahu_kalam');
+      /* r374 phase-3 · ตัดผ่าน caps เท่านั้น (ห้ามใส่ hardModules/SQL) · tara_bala ไม่มีโปรไฟล์ = engine ข้ามเอง */
+      if (usePanchanga) activeModules.push('panchanga');
+      if (useTarabala)  activeModules.push('tara_bala');
       const hardModules = [];
       if (useTongshu) hardModules.push('ze_ri');
       if (useTaisui) hardModules.push('tai_sui');
@@ -2519,6 +2580,8 @@ async function performSearch(){
             activity_han: activityMeta.han || ajActivity,
             activity_profile: activityProfileKey,
             moduleScores: c.scoring?.moduleScores || {},
+            /* r374 · ป้ายเห็นพ้องข้ามศาสตร์ (server คำนวณ · deterministic · มีเมื่อเปิด module phase-3) */
+            agreement: c.agreement || null,
             tongshu_tags: zr.tags || [],
             tongshu_reasons: [
               ...(zr.reasons?.up || []),
@@ -2530,6 +2593,36 @@ async function performSearch(){
               ...(c.scoring?.reasonsDown||[]).map(r => localizeAuspiciousReason(`${r.delta} ${r.thai}`)),
               ...(c.scoring?.warnings||[]).map(r => localizeAuspiciousReason(`ระวัง ${r.thai}`))
             ],
+            /* r378 · เหตุผลแบบ object สำหรับกระดานศาสตร์ (จัดหมวดด้วย source ตรง ไม่เดา regex)
+               + ดึงชั้น ② ท้องฟ้าจริงจากผล module ตรง เพราะ scoring เก็บ top-8 และทิ้ง neutral
+               (เหตุผลท้องฟ้า delta 0 เคยโดนตัด/เตือนแบบ info ไม่เคยถึงการ์ด) · matches เดิมคงไว้ให้ AI ซินแส/สัญญาณ通書 */
+            science_reasons: (() => {
+              const sev = (r) => r && (r.severity === 'warning' || r.severity === 'critical');
+              const list = [
+                ...(c.scoring?.reasonsUp||[]).map(r => ({ text: localizeAuspiciousReason(`${r.delta>0?'+':''}${r.delta} ${r.thai}`), source: r.source||'', code: r.code||'', delta: Number(r.delta||0), warn: false })),
+                ...(c.scoring?.reasonsDown||[]).map(r => ({ text: localizeAuspiciousReason(`${r.delta} ${r.thai}`), source: r.source||'', code: r.code||'', delta: Number(r.delta||0), warn: sev(r) })),
+                ...(c.scoring?.warnings||[]).map(r => ({ text: localizeAuspiciousReason(`ระวัง ${r.thai}`), source: r.source||'', code: r.code||'', delta: Number(r.delta||0), warn: true })),
+              ];
+              const seenSig = new Set(list.map(x => `${x.source}|${x.code || x.text}`));
+              const skyKeys = (SCIENCE_GROUP_DEFS.find(g => g.key === 'sky') || { modules: [] }).modules;
+              for (const mk of skyKeys) {
+                const mr = c.modules?.[mk]?.reasons;
+                if (!mr) continue;
+                for (const [bucket, forceWarn] of [['up', false], ['down', null], ['warning', true], ['neutral', false]]) {
+                  for (const r of (mr[bucket] || [])) {
+                    if (!r || !r.thai) continue;
+                    const sig = `${r.source || mk}|${r.code || r.thai}`;
+                    if (seenSig.has(sig)) continue;
+                    seenSig.add(sig);
+                    const d = Number(r.delta || 0);
+                    const prefix = bucket === 'warning' ? 'ระวัง ' : bucket === 'neutral' ? '' : `${d > 0 ? '+' : ''}${d} `;
+                    list.push({ text: localizeAuspiciousReason(`${prefix}${r.thai}`), source: r.source || mk, code: r.code || '', delta: d,
+                      warn: forceWarn === true || (forceWarn === null && sev(r)) });
+                  }
+                }
+              }
+              return list;
+            })(),
             tongshu: { day_officer: c.modules?.twelve_officers?.raw?.officer || '·',
                        yi:[], ji:[] },
           };
@@ -2612,6 +2705,46 @@ async function performSearch(){
   }
 }
 
+/* r374 · ป้ายเห็นพ้องข้ามศาสตร์ (agreement badge) · server คำนวณแล้ว (deterministic · ไม่มี AI)
+   chip บนหัวการ์ด + บรรทัด detail ใน result-body · 3 ภาษา */
+const AG_GROUP_LABELS = {
+  basic:    { th:'① ปฏิทินจีน', en:'① Chinese calendar', zh:'① 曆法' },
+  sky:      { th:'② ฟ้าจริง', en:'② Real sky', zh:'② 天象' },
+  personal: { th:'③ ดวงคุณ', en:'③ Your chart', zh:'③ 命盤' },
+  advanced: { th:'④ ชั้นสูง', en:'④ Advanced', zh:'④ 進階' },
+};
+function agreementBadge(a){
+  if (!a || !a.groups) return { chip:'', line:'' };
+  const L = getCurrentLang();
+  let cls, txt;
+  if (a.positive > 0 && a.negative > 0) {
+    cls = 'ag-mix';
+    txt = L === 'en' ? `⚡ Mixed · ${a.positive} for / ${a.negative} against (${a.groups})`
+        : L === 'zh' ? `⚡ 分歧 · ${a.positive}挺／${a.negative}阻（共${a.groups}系）`
+        : `⚡ ขัดแย้ง · หนุน ${a.positive} / ค้าน ${a.negative} จาก ${a.groups} สาย`;
+  } else if (a.negative > 0) {
+    cls = 'ag-bad';
+    txt = L === 'en' ? `⚡ ${a.negative}/${a.groups} systems against`
+        : L === 'zh' ? `⚡ ${a.negative}/${a.groups} 系不利`
+        : `⚡ ค้าน ${a.negative}/${a.groups} สาย`;
+  } else {
+    cls = 'ag-good';
+    txt = L === 'en' ? `🔗 ${a.positive}/${a.groups} systems agree`
+        : L === 'zh' ? `🔗 ${a.positive}/${a.groups} 系相合`
+        : `🔗 เห็นพ้อง ${a.positive}/${a.groups} สาย`;
+  }
+  const chip = `<span class="ag-chip ${cls}" title="${L==='en'?'Cross-science agreement':L==='zh'?'跨學科相合度':'ความเห็นพ้องข้ามศาสตร์'}">${escHtml(txt)}</span>`;
+  const per = (a.perGroup || []).map(g => {
+    const name = (AG_GROUP_LABELS[g.key] || { th:g.key, en:g.key, zh:g.key })[L === 'en' ? 'en' : L === 'zh' ? 'zh' : 'th'];
+    const mark = g.up > g.down ? '✓' : g.down > g.up ? '✗' : '·';
+    const detail = L === 'en' ? `${g.up} for/${g.down} against` : L === 'zh' ? `${g.up}挺/${g.down}阻` : `หนุน ${g.up}/ค้าน ${g.down}`;
+    return `${mark} ${name} (${detail})`;
+  }).join(' · ');
+  const kLabel = L === 'en' ? 'Cross-science' : L === 'zh' ? '跨科相合' : 'เห็นพ้องข้ามศาสตร์';
+  const line = per ? `<div class="r-line"><span class="k">${kLabel}</span><span class="v">${escHtml(txt)} — ${escHtml(per)}</span></div>` : '';
+  return { chip, line };
+}
+
 function renderRealResults(items){
   const c = document.getElementById('resultsList');
   if (!items || !items.length){
@@ -2689,6 +2822,8 @@ function renderRealResults(items){
     const pctOfMax = Math.round((t.score / maxSc) * 100);
     const rankPct = Math.round(((items.length - i) / items.length) * 100);
     const stemChip = elementChipFromStem(t.heaven_stem);
+    /* r374 · ป้ายเห็นพ้องข้ามศาสตร์ (chip หัวการ์ด + บรรทัด detail) */
+    const ag = agreementBadge(t.agreement);
     const modulePills = Object.entries(t.moduleScores || {}).sort(([a], [b]) => {
       const ia = MODULE_ORDER.indexOf(a), ib = MODULE_ORDER.indexOf(b);
       return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
@@ -2696,7 +2831,8 @@ function renderRealResults(items){
       const m = MODULE_LABELS[k] || { th:k, zh:k };
       return `<span class="score-pill">${escHtml(m.th)} <span class="zh">${escHtml(m.zh)}</span> <b>${Math.round(v)}</b></span>`;
     }).join('');
-    const scienceSections = enrichScienceSectionsForSlot(buildScienceSections(t.matches || [], t.moduleScores || {}), t);
+    /* r378 · ใช้ reason object (source ตรง + ครบ warning/neutral ชั้นท้องฟ้า) · ผลค้นเก่า/เส้นทาง legacy fallback เป็น string เดิม */
+    const scienceSections = enrichScienceSectionsForSlot(buildScienceSections(t.science_reasons || t.matches || [], t.moduleScores || {}), t);
     const scienceSummary = summarizeScience(scienceSections);
     const verdict = `${explainScore(t.score, i + 1, items.length)}${scienceSummary ? ` · ${scienceSummary}` : ''}`;
     const directionText = DIRECTION_TH[t.direction] ? `${DIRECTION_TH[t.direction]} (${t.direction})` : (t.direction || '·');
@@ -2705,7 +2841,7 @@ function renderRealResults(items){
       <div class="result-head">
         <div class="rank">${rankBadge}</div>
         <div class="rdate">
-          <div class="dt">🗓 ${dateThai} · ${t.time} น. <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip} ${hdChip} ${dgChip}</div>
+          <div class="dt">🗓 ${dateThai} · ${t.time} น. <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip} ${hdChip} ${dgChip} ${ag.chip}</div>
           <div class="ctx">
             <span>ทิศที่เด่น: ${directionText} · วัง ${t.palace_id}</span>
             <span>· ผังฉีเหมิน ${pole}${t.ju_number}局</span>
@@ -2729,6 +2865,7 @@ function renderRealResults(items){
         <div class="r-line"><span class="k">ฟ้า/ดิน · 天地</span><span class="v">${t.heaven_stem||'·'} / ${t.earth_stem||'·'} ${stemChip}</span></div>
         <div class="r-line"><span class="k">ผัง · 局</span><span class="v">${pole}${t.ju_number||'?'}局</span></div>
         ${rcLine}
+        ${ag.line}
         ${dgLine}
       </div>
       ${modulePills ? `<div class="module-score-row"><span class="mini-title">น้ำหนักคะแนนตามศาสตร์</span>${modulePills}</div>` : ''}
@@ -2879,6 +3016,15 @@ const HELP_DATA = {
     th:{what:'ราหูกาล (Rahu Kalam) คือช่วงอัปมงคลรายวันของโหราศาสตร์อินเดีย (Muhurta) ยาวประมาณ 90 นาที · ตำแหน่งในวันต่างกันตามวันในสัปดาห์ · งดเริ่มงานมงคลทุกชนิดในช่วงนี้',how:['คำนวณจากเวลาพระอาทิตย์ขึ้น-ตกจริง ณ สถานที่จัดงาน (ไม่ใช่ตาราง 07:30 ตายตัว)','แบ่งกลางวันจริงออกเป็น 8 ส่วน · ส่วนของราหูขึ้นกับวันในสัปดาห์','ยามที่คาบช่วงราหูกาล → เพดานคะแนน 50'],src:'Muhurta ตำราโหราศาสตร์อินเดีย · พระอาทิตย์ขึ้นจริงจาก astronomy-engine'},
     en:{what:'Rahu Kalam is the daily inauspicious window of Indian astrology (Muhurta), ~90 minutes, at a different position each weekday · all auspicious beginnings are avoided during it',how:['Computed from the real sunrise-sunset at the event venue (not a fixed 07:30 table)','The true daylight span is split into 8 parts; Rahu\'s part depends on the weekday','Slot overlapping Rahu Kalam → score capped at 50'],src:'Muhurta (Indian electional astrology) · real sunrise via astronomy-engine'},
     zh:{what:'羅睺時段(Rahu Kalam)為印度擇時術每日凶時，約90分鐘，依星期日別位置不同 · 此段忌一切吉事開創',how:['以活動地點真實日出日落計算（非固定07:30表）','將實際白晝分為8段，羅睺段依星期而定','時辰疊入羅睺時段 → 上限50'],src:'印度擇時術 Muhurta · astronomy-engine 真實日出'} },
+  /* r374 · phase-3 ปัญจางค์ + ตาราพละ */
+  panchanga: { han:'五支曆', name:'ปัญจางค์ 5 องค์ · Pañcāṅga',
+    th:{what:'ปัญจางค์คือองค์ประกอบ 5 อย่างของวันตามปฏิทินอินเดีย (มุหูรตะ): ① ติถี = ดิถีจันทร์ (จันทร์−อาทิตย์ ทุก 12°) ② วาระ = วันสัปดาห์ ③ นักษัตร = ฤกษ์จันทร์ 27 ฤกษ์ (sidereal Lahiri) ④ โยคะ = ผลรวมอาทิตย์+จันทร์ 27 แบบ ⑤ กรณะ = ครึ่งติถี · แสดงชื่อไทย+สันสกฤตทับศัพท์ครบทุกองค์',how:['คำนวณจากตำแหน่งอาทิตย์/จันทร์จริง ณ กลางยาม (astronomy-engine + Lahiri ayanamsa)','ติถีริกตา (จตุรถี/นวมี/จตุรทศี) × เปิดกิจการ/แต่งงาน → เพดานคะแนน 55','กรณะวิษฏิ (ภัทรา) → เพดาน 55 ทุกกิจกรรม · อมาวสยา (จันทร์ดับ) → เพดาน 45 (ยกเว้นพิธีกรรม)','โยคะร้าย วยตีปาตะ/ไวธฤติ → เพดาน 60 · โยคะดี สิทธิ/สิทธะ/ศุภะ → +5 เบา ๆ'],src:'Muhūrta Cintāmaṇi (ตำรามุหูรตะมาตรฐาน) + ธรรมเนียมปัญจางคะอินเดียใต้ · astronomy-engine'},
+    en:{what:'The Panchanga is the five limbs of the Hindu day: ① tithi (lunar day, 12° Moon−Sun) ② vara (weekday) ③ nakshatra (27 lunar mansions, sidereal Lahiri) ④ yoga (Sun+Moon sum, 27) ⑤ karana (half-tithi) · shown with Thai + Sanskrit names',how:['Computed from real Sun/Moon positions at slot midpoint (astronomy-engine + Lahiri ayanamsa)','Rikta tithi (4th/9th/14th) × business opening/marriage → score capped at 55','Vishti (Bhadra) karana → cap 55 for all activities · Amavasya (new moon) → cap 45 (except rituals)','Malefic yogas Vyatipata/Vaidhriti → cap 60 · benefic Siddhi/Siddha/Shubha → +5 (soft)'],src:'Muhurta Chintamani (standard muhurta canon) + South-Indian panchanga practice · astronomy-engine'},
+    zh:{what:'五支曆(Pañcāṅga)為印度曆一日五要素：①提提(月日相距每12°)②瓦拉(星期)③納克沙特拉(27宿·恆星黃道Lahiri)④瑜伽(日月相加27種)⑤卡拉納(半提提)',how:['以時辰中點真實日月位置計算(astronomy-engine+Lahiri歲差)','里克塔日(第4/9/14提提)×開市/嫁娶 → 上限55','毘瑟底(Bhadrā)卡拉納 → 全事項上限55 · 朔日 → 上限45(祭祀除外)','凶瑜伽Vyatīpāta/Vaidhṛti → 上限60 · 吉瑜伽Siddhi/Siddha/Śubha → +5'],src:'《Muhūrta Cintāmaṇi》+ 南印五支曆傳統 · astronomy-engine'} },
+  tarabala: { han:'宿曜', name:'ตาราพละ · Tārābala (เฉพาะดวงคุณ)',
+    th:{what:'ตาราพละคือ "กำลังดาวฤกษ์ส่วนตัว" ของมุหูรตะอินเดีย: นับจากนักษัตรเกิดของคุณ (จันทร์ sidereal ณ เวลาเกิด) ไปถึงนักษัตรของวัน แล้วหารเก้า ได้ตารา 9 ชั้น: 1 ชนมะ · 2 สัมปัต(ดี) · 3 วิปัต(ร้าย) · 4 เกษมะ(ดี) · 5 ปรัตยัก(ร้าย) · 6 สาธนะ(ดี) · 7 ไนธนะ(ร้ายสุด) · 8 มิตระ(ดี) · 9 ปรมไมตระ(ดีสุด)',how:['ต้องเลือกโปรไฟล์/คนที่เกี่ยวข้อง (ใช้วันเวลาเกิดหานักษัตรกำเนิด) · ไม่เลือก = ไม่ทำงาน','นับรวมต้นทาง: count = (นักษัตรวัน − นักษัตรเกิด) mod 27 + 1 · ตารา = (count−1) mod 9 + 1','ชั้นร้าย 3 วิปัต / 5 ปรัตยัก / 7 ไนธนะ → เพดานคะแนน 50','ชั้นดี 2/4/6/8/9 → +4 เบา ๆ · 1 ชนมะ → เตือนอย่างเดียว ไม่ตัด'],src:'ตาราง Tārābala มาตรฐาน · Muhūrta Cintāmaṇi + ปฏิทินปัญจางคะอินเดียใต้'},
+    en:{what:'Tarabala is the personal "star strength" of Indian muhurta: count from your birth nakshatra (sidereal Moon at birth) to the day\'s nakshatra, mod 9 → nine taras: 1 Janma · 2 Sampat(good) · 3 Vipat(bad) · 4 Kshema(good) · 5 Pratyak(bad) · 6 Sadhana(good) · 7 Naidhana(worst) · 8 Mitra(good) · 9 Parama Maitra(best)',how:['Requires a selected profile (birth datetime → janma nakshatra) · none selected = inactive','Inclusive count: count = (day − janma) mod 27 + 1 · tara = (count−1) mod 9 + 1','Bad taras 3 Vipat / 5 Pratyak / 7 Naidhana → score capped at 50','Good taras 2/4/6/8/9 → +4 (soft) · 1 Janma → warning only, no cut'],src:'Standard Tarabala table · Muhurta Chintamani + South-Indian panchanga practice'},
+    zh:{what:'宿曜力(Tārābala)為印度擇時之個人宿力：由本命宿(出生時恆星月所在)數至當日宿，除九取餘得九階：1本命 · 2財(吉) · 3危(凶) · 4安(吉) · 5障(凶) · 6成(吉) · 7死(最凶) · 8友(吉) · 9極友(最吉)',how:['須選擇個人檔案(以出生時刻求本命宿) · 未選=不運作','含首數法：count=(日宿−本命宿) mod 27 +1 · 宿階=(count−1) mod 9 +1','凶階 3危/5障/7死 → 上限50','吉階 2/4/6/8/9 → +4(輕) · 1本命 → 僅提醒不裁減'],src:'標準Tārābala表 ·《Muhūrta Cintāmaṇi》+ 南印五支曆傳統'} },
 };
 function getCurrentLang(){ return localStorage.getItem('hk_locale')||localStorage.getItem('lang')||'th'; }
 function showHelp(key){
@@ -3500,6 +3646,13 @@ Object.assign(window.HK_I18N, {
   'dp.rk.ttl': { th:'ราหูกาล', en:'Rahu Kalam', zh:'羅睺時段' },
   'dp.rk.level': { th:'เพดานคะแนน', en:'Score cap', zh:'限分' },
   'dp.rk.sub': { th:'ช่วงอัปมงคลรายวันสายอินเดีย ~90 นาที · คำนวณจากพระอาทิตย์ขึ้นจริง ณ สถานที่จัดงาน · เพดานคะแนน 50', en:'Daily inauspicious window of Indian astrology (~90 min) · computed from real sunrise at the venue · caps score at 50', zh:'印度擇時每日凶時約90分鐘 · 依活動地點真實日出計算 · 上限50' },
+  /* r374 · phase-3 ปัญจางค์ + ตาราพละ */
+  'dp.pc.ttl': { th:'ปัญจางค์ 5 องค์', en:'Panchanga (5 limbs)', zh:'五支曆' },
+  'dp.pc.level': { th:'เพดานคะแนน', en:'Score cap', zh:'限分' },
+  'dp.pc.sub': { th:'ติถี/วาระ/นักษัตร/โยคะ/กรณะ ของยามนั้นตามปฏิทินอินเดีย · ติถีริกตา+กรณะภัทรา เพดาน 55 · จันทร์ดับ 45 · โยคะร้าย 60 · โยคะดี +5', en:'Tithi/vara/nakshatra/yoga/karana of the hour by the Hindu calendar · rikta tithi + Bhadra karana cap 55 · new moon 45 · malefic yoga 60 · benefic yoga +5', zh:'該時辰之提提/瓦拉/宿/瑜伽/卡拉納 · 里克塔日+毘瑟底上限55 · 朔日45 · 凶瑜伽60 · 吉瑜伽+5' },
+  'dp.tb.ttl': { th:'ตาราพละ', en:'Tarabala', zh:'宿曜力' },
+  'dp.tb.level': { th:'เฉพาะบุคคล · เพดานคะแนน', en:'Personal · score cap', zh:'個人 · 限分' },
+  'dp.tb.sub': { th:'นับนักษัตรเกิดของคุณถึงนักษัตรของวัน (Tārābala 9 ชั้น) · ชั้นร้าย 3/5/7 เพดาน 50 · ชั้นดี +4 · ไม่เลือกโปรไฟล์ = ไม่ทำงาน', en:'Counts from your birth nakshatra to the day\'s nakshatra (9-fold Tarabala) · bad taras 3/5/7 cap 50 · good taras +4 · no profile = inactive', zh:'由本命宿數至當日宿(九階宿曜力) · 凶階3/5/7上限50 · 吉階+4 · 未選檔案=不運作' },
   'auto.d.011': { th:'ตัดวันชง', en:'Forbidden', zh:'忌' },
   'auto.d.012': { th:'เช็คดวงคน — วันชง · 刑 · 害 · กระทบวันเกิดหลัก', en:'Check person\'s chart — 沖 · 刑 · 害 · Day Master clash', zh:'查命 — 沖·刑·害·剋日主' },
   'auto.d.013': { th:'刑/害 (เตือนเฉย ๆ ไม่ตัดทิ้ง)', en:'刑/害 (warning only)', zh:'刑/害 (僅警告)' },
