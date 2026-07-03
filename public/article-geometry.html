@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark" data-lang="th">
+<head>
+  <link rel="icon" href="/favicon.ico?v=2" sizes="any"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>
+  <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5">
+<title>เรขาคณิตร่วมของโหราศาสตร์ 3 อารยธรรม · จีน อินเดีย กรีก · hourkey</title>
+<meta name="description" content="ปีชงของไทย = opposition 180° ของกรีก — เมื่อคำนวณด้วยดาราศาสตร์จริง สามอารยธรรมวาดเรขาคณิตเดียวกันบนวงกลม 360°: 沖/三合/刑, Great Conjunction ตกก้านทอง 15/16, จีน-อินเดียตอกหมุดดาว Spica ห่างกัน 0.01°, ตำรา調候สอดคล้องเดคลิเนชันดวงอาทิตย์ r=−0.653"/>
+<link rel="canonical" href="https://www.hourkey.io/article/geometry"/>
+<link rel="alternate" hreflang="th" href="https://www.hourkey.io/article/geometry?lang=th"/>
+<link rel="alternate" hreflang="en" href="https://www.hourkey.io/article/geometry?lang=en"/>
+<link rel="alternate" hreflang="zh" href="https://www.hourkey.io/article/geometry?lang=zh"/>
+<link rel="alternate" hreflang="x-default" href="https://www.hourkey.io/article/geometry"/>
+<meta property="og:title" content="เรขาคณิตร่วมของโหราศาสตร์ 3 อารยธรรม · จีน อินเดีย กรีก"/>
+<meta property="og:description" content="ปีชง = opposition 180° — สามอารยธรรมที่ไม่เคยนัดกัน วาดรูปเดียวกันบนวงกลม 360° · ตรวจซ้ำด้วยดาราศาสตร์จริงโดย engine hourkey"/>
+<meta property="og:type" content="article"/>
+<meta property="og:url" content="https://www.hourkey.io/article/geometry"/>
+<meta property="og:site_name" content="hourkey"/>
+<meta property="article:published_time" content="2026-07-03"/>
+<meta property="article:author" content="hourkey"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="เรขาคณิตร่วมของโหราศาสตร์ 3 อารยธรรม"/>
+<meta name="twitter:description" content="ปีชง = opposition 180° · Great Conjunction ตกก้านทอง 15/16 · Spica ห่าง 0.01° · 調候↔เดคลิเนชัน r=−0.653"/>
+<script>try{var t=localStorage.getItem('hk_theme');if(t)document.documentElement.dataset.theme=t;var L=new URLSearchParams(location.search).get('lang')||localStorage.getItem('hk_lang');if(L&&['th','en','zh'].indexOf(L)>-1){document.documentElement.dataset.lang=L;document.documentElement.lang=L==='zh'?'zh-Hant':L;}}catch(e){}</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article",
+ "headline":"เรขาคณิตร่วมของโหราศาสตร์ 3 อารยธรรม — จีน อินเดีย กรีก",
+ "alternativeHeadline":"The Shared Geometry of Three Astrologies",
+ "description":"ปีชงของไทยคือ opposition 180° ของกรีก — สามอารยธรรมแบ่งวงกลม 360° แล้วพบเรขาคณิตชุดเดียวกัน ตรวจซ้ำด้วยการคำนวณดาราศาสตร์จริง: Great Conjunction 1800–2100, 超辰, หมุดดาว Spica, 調候 กับเดคลิเนชันดวงอาทิตย์",
+ "datePublished":"2026-07-03","dateModified":"2026-07-03",
+ "inLanguage":["th","en","zh"],
+ "author":{"@type":"Organization","name":"hourkey","url":"https://www.hourkey.io"},
+ "publisher":{"@type":"Organization","name":"hourkey","url":"https://www.hourkey.io"},
+ "mainEntityOfPage":{"@type":"WebPage","@id":"https://www.hourkey.io/article/geometry"},
+ "isPartOf":{"@type":"WebSite","name":"hourkey","url":"https://www.hourkey.io"}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700;900&family=Noto+Serif+Thai:wght@400;500;600;700&display=optional" rel="stylesheet"/>
+<style>
+:root{
+  --serif:'Cormorant Garamond',serif;
+  --tc:'Noto Serif TC',serif;
+  --th:'Noto Serif Thai',serif;
+  --mono:'JetBrains Mono',monospace;
+}
+[data-theme="dark"]{
+  --bg:#0b0d11; --bg-2:#12151b; --bg-3:#191d26; --bg-4:#20242f;
+  --fg:#f3edde; --fg-soft:#c3b99f; --fg-faint:#7c766a;
+  --gold:#c8a44d; --gold-bright:#e6c976; --gold-deep:#8a6d2a;
+  --gold-soft:rgba(200,164,77,.13); --gold-line:rgba(200,164,77,.32);
+  --line:rgba(200,164,77,.14);
+  --topbar-bg:rgba(11,13,17,.82);
+  /* chart palette · validated (dataviz six-checks · dark surface #12151b) */
+  --ch-gold:#ae8a3a; --ch-water:#4585ba; --ch-fire:#d95a49; --ch-neu:#8a8577;
+}
+[data-theme="light"]{
+  --bg:#f6f1e6; --bg-2:#fffdf6; --bg-3:#efe8d6; --bg-4:#e7dfc9;
+  --fg:#221e15; --fg-soft:#5b5443; --fg-faint:#948b78;
+  --gold:#9c7a22; --gold-bright:#b8933a; --gold-deep:#7a5f1c;
+  --gold-soft:rgba(156,122,34,.11); --gold-line:rgba(156,122,34,.38);
+  --line:rgba(120,95,30,.18);
+  --topbar-bg:rgba(246,241,230,.88);
+  /* chart palette · validated (light surface #fffdf6) */
+  --ch-gold:#9c7a22; --ch-water:#2f6fa8; --ch-fire:#b03a2e; --ch-neu:#6f6a5d;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:var(--bg);color:var(--fg);font-family:var(--th),var(--serif);line-height:1.75;transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;}
+button{font-family:inherit;color:inherit;font-size:inherit;}
+a{color:var(--gold);}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px;}
+
+/* i18n · block-level switch */
+[data-l]{display:none;}
+html[data-lang="th"] [data-l="th"]{display:revert;}
+html[data-lang="en"] [data-l="en"]{display:revert;}
+html[data-lang="zh"] [data-l="zh"]{display:revert;}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 20px;background:var(--topbar-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--gold-line);}
+.back{display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:var(--fg);font-size:13px;}
+.back .seal{width:28px;height:28px;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--tc);font-size:13px;color:var(--gold);flex-shrink:0;}
+.back:hover{color:var(--gold);}
+.top-r{display:flex;align-items:center;gap:9px;}
+.lang-seg{display:inline-flex;background:var(--bg-3);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
+.lang-seg button{min-width:30px;height:24px;padding:0 8px;border:none;background:transparent;color:var(--fg-soft);font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.06em;border-radius:99px;cursor:pointer;transition:.2s;}
+.lang-seg button.on{background:var(--gold);color:var(--bg);}
+.tbtn{width:30px;height:30px;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg-soft);border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.tbtn:hover{color:var(--gold);border-color:var(--gold);}
+
+/* hero */
+.hero{text-align:center;padding:44px 20px 30px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--bg-2),var(--bg));}
+.hero .crest{font-family:var(--tc);font-size:15px;letter-spacing:.55em;color:var(--gold);text-indent:.55em;margin-bottom:12px;font-weight:600;}
+.hero h1{font-size:clamp(24px,5.4vw,38px);font-weight:700;letter-spacing:.01em;color:var(--fg);line-height:1.35;max-width:760px;margin:0 auto;}
+.hero h1 .gd{color:var(--gold);}
+.hero .sub{font-size:14px;color:var(--fg-soft);max-width:620px;margin:14px auto 0;line-height:1.8;}
+.hero .meta{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-faint);margin-top:16px;}
+
+/* article layout */
+main{max-width:760px;margin:0 auto;padding:26px 18px 80px;}
+article p{margin:0 0 16px;font-size:15.5px;color:var(--fg);}
+article p b,article p strong{color:var(--gold-bright);font-weight:600;}
+article .lead{font-size:17px;line-height:1.85;}
+article .lead::first-letter{font-size:1.6em;color:var(--gold);font-weight:700;}
+h2{font-size:clamp(19px,4vw,24px);font-weight:700;color:var(--fg);margin:44px 0 6px;line-height:1.4;}
+h2 .han{font-family:var(--tc);color:var(--gold);margin-right:8px;}
+.h2sub{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--fg-faint);margin-bottom:16px;}
+h3{font-size:16.5px;font-weight:700;color:var(--gold-bright);margin:28px 0 10px;}
+.rule{border:none;border-top:1px solid var(--gold-line);width:56px;margin:8px 0 18px;}
+.tc{font-family:var(--tc);}
+.mono{font-family:var(--mono);}
+em{font-style:italic;color:var(--fg-soft);}
+
+/* tables */
+.tblwrap{overflow-x:auto;margin:18px 0;}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:480px;}
+th{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-align:left;padding:8px 12px;border-bottom:1px solid var(--gold-line);white-space:nowrap;}
+td{padding:8px 12px;border-bottom:1px solid var(--line);color:var(--fg);vertical-align:top;}
+td .tc{color:var(--gold-bright);}
+tr:last-child td{border-bottom:none;}
+.num{font-family:var(--mono);font-size:12.5px;white-space:nowrap;}
+
+/* figure */
+figure{margin:26px 0;background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:18px 16px 14px;}
+figure svg{width:100%;height:auto;display:block;}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--fg-faint);line-height:1.7;border-top:1px dashed var(--line);padding-top:10px;}
+figcaption b{color:var(--fg-soft);font-weight:600;}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 12px;font-size:12.5px;color:var(--fg-soft);align-items:center;}
+.leg .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+.leg .swr{border-radius:50%;}
+.leg .swo{background:transparent !important;border:2px solid var(--ch-fire);}
+
+/* callout + details */
+.note{background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:12px;padding:14px 18px;margin:20px 0;font-size:13.5px;color:var(--fg-soft);line-height:1.8;}
+.note .ic{font-family:var(--serif);font-style:italic;font-weight:600;color:var(--gold);margin-right:8px;}
+details.data{margin:14px 0 20px;border:1px dashed var(--gold-line);border-radius:12px;padding:12px 16px;font-size:13px;}
+details.data summary{cursor:pointer;color:var(--gold);font-size:13px;list-style:none;}
+details.data summary::before{content:'▸ ';}
+details.data[open] summary::before{content:'▾ ';}
+details.data .tblwrap{margin:12px 0 4px;}
+
+/* closing / CTA */
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 6px;}
+.cta a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;background:var(--bg-3);border:1px solid var(--gold-line);border-radius:99px;padding:9px 18px;font-size:13.5px;color:var(--fg);transition:.2s;}
+.cta a:hover{border-color:var(--gold);color:var(--gold);}
+.cta a .han{font-family:var(--tc);color:var(--gold);}
+footer{border-top:1px solid var(--line);margin-top:50px;padding-top:18px;font-size:12px;color:var(--fg-faint);line-height:1.8;}
+footer .mono{font-size:10.5px;letter-spacing:.06em;}
+
+@media (max-width:560px){
+  article p{font-size:15px;}
+  th,td{padding:7px 9px;}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="/"><span class="seal">幾</span><span>hourkey</span></a>
+  <div class="top-r">
+    <div class="lang-seg" id="langSeg" role="group" aria-label="language">
+      <button data-lang="th">TH</button><button data-lang="en">EN</button><button data-lang="zh">中</button>
+    </div>
+    <button class="tbtn" id="themeBtn" title="สลับธีม" aria-label="toggle theme">☾</button>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="crest">三文明 · 同一幾何</div>
+  <h1 data-l="th">เรขาคณิตร่วมของโหราศาสตร์ <span class="gd">3 อารยธรรม</span></h1>
+  <h1 data-l="en">The Shared Geometry of <span class="gd">Three Astrologies</span></h1>
+  <h1 data-l="zh">三大文明占星術的<span class="gd">共同幾何</span></h1>
+  <p class="sub" data-l="th">จีน · อินเดีย · กรีก — สามระบบที่ไม่เคยนัดประชุมกัน แต่เมื่อแบ่งวงกลม 360° ด้วยเลข 12 เหมือนกัน กลับวาดรูปชุดเดียวกันออกมาทุกครั้ง</p>
+  <p class="sub" data-l="en">China · India · Greece — three systems that never held a joint council, yet once each divided the 360° circle by twelve, the same figures emerged every time.</p>
+  <p class="sub" data-l="zh">中國 · 印度 · 希臘 — 三套從未開過聯席會議的體系，卻在把 360° 圓周十二等分之後，一次又一次畫出同樣的圖形。</p>
+  <div class="meta">hourkey · 2026-07-03 · TH / EN / 中</div>
+</header>
+
+<main>
+<article>
+
+<!-- ═══ §1 ปีชง = 180° ═══ -->
+<div data-l="th">
+  <p class="lead">คนไทยรู้จักคำว่า "ปีชง" ดีกว่าศัพท์โหราศาสตร์คำไหน ๆ — ปีที่ตำราบอกให้ระวัง ให้ไปแก้ชง ให้ทำบุญเสริมดวง แต่น้อยคนเคยถามว่า "ชง" แปลว่าอะไรกันแน่ในทางเรขาคณิต คำตอบสั้นจนน่าตกใจ: ชง (沖) คือกิ่งปีสองตัวที่ยืน<b>ตรงข้ามกันพอดี</b>บนวงจักร 12 นักษัตร — ห่างกัน 6 ช่อง จากทั้งหมด 12 ช่อง เท่ากับมุม <b>180° เป๊ะ</b></p>
+  <p>ทีนี้ลองเปิดตำราโหราศาสตร์กรีก-ตะวันตก จะพบว่ามุม 180° มีชื่อเรียกว่า <em>opposition</em> — มุมแห่งการเผชิญหน้า แรงดึงสองขั้ว ความตึงที่ต้องหาทางออก ความหมายเดียวกับ "ชง" แทบทุกตัวอักษร ทั้งที่สองตำราเกิดคนละซีกโลก และไม่มีหลักฐานว่าเคยลอกกันในชั้นนี้</p>
+  <p>และไม่ได้ตรงกันแค่มุมเดียว — เมื่อไล่ทีละมุมหลักของทั้งสองระบบ จะได้ตารางที่ทับกันเกือบสนิท:</p>
+</div>
+<div data-l="en">
+  <p class="lead">Thai people know the phrase <em>pee chong</em> — the "clashing year" — better than any other astrological term. It is the year the almanac tells you to be careful, to make merit, to ritually "fix the clash." Yet few ever ask what <em>chong</em> actually means geometrically. The answer is startlingly short: chong (沖) is two year-branches standing <b>exactly opposite</b> each other on the twelve-animal wheel — six steps out of twelve, precisely <b>180°</b>.</p>
+  <p>Now open a Greek-Western astrology text: the 180° angle is called the <em>opposition</em> — the aspect of confrontation, of two poles pulling against each other, of tension demanding resolution. Nearly word-for-word the meaning of <em>chong</em>, though the two doctrines grew up on opposite ends of the world with no evidence of borrowing at this layer.</p>
+  <p>Nor does the agreement stop at one angle. Walk through the principal angles of both systems and the tables overlap almost perfectly:</p>
+</div>
+<div data-l="zh">
+  <p class="lead">泰國人對「犯沖之年」的熟悉程度勝過任何占星術語——那是曆書叮囑要小心、要行善、要「化解」的一年。但很少有人問：「沖」在幾何上究竟是什麼？答案短得出奇：沖，就是十二支輪盤上<b>正好相對</b>的兩個年支——十二格中相隔六格，恰為 <b>180°</b>。</p>
+  <p>翻開希臘-西洋占星的教科書：180° 稱為 <em>opposition</em>（對沖相位）——對峙、兩極拉扯、必須尋求出口的張力。與「沖」的含義幾乎逐字相同，而兩套學說誕生於世界兩端，在這一層並無互相抄襲的證據。</p>
+  <p>而且吻合的不止一個角度——把兩個體系的主要相位逐一排開，得到的表幾乎完全重疊：</p>
+</div>
+
+<div class="tblwrap" data-l="th"><table>
+  <thead><tr><th>มุม</th><th>จีน</th><th>กรีก / ตะวันตก</th><th>โทนความหมายร่วม</th></tr></thead>
+  <tbody>
+    <tr><td class="num">0°</td><td><span class="tc">伏吟</span> ฝูอิน (ซ้ำเสา)</td><td>conjunction</td><td>พลังซ้อนทับ · ย้ำเรื่องเดิม</td></tr>
+    <tr><td class="num">90°</td><td><span class="tc">刑</span> สิง (ลงโทษ)</td><td>square</td><td>เสียดสี · แรงบีบที่ต้องจัดการ</td></tr>
+    <tr><td class="num">120°</td><td><span class="tc">三合</span> ซานเหอ</td><td>trine</td><td>ลื่นไหล · เกื้อหนุนกัน</td></tr>
+    <tr><td class="num">180°</td><td><span class="tc">沖</span> ชง</td><td>opposition</td><td>เผชิญหน้า · สองขั้วปะทะ</td></tr>
+    <tr><td class="num">กระจก</td><td><span class="tc">六合</span> ลิ่วเหอ (คู่สมพงศ์)</td><td>antiscia</td><td>จุดสะท้อนรอบแกนครีษมายัน–เหมายัน</td></tr>
+    <tr><td class="num">สามเส้า</td><td><span class="tc">三刑</span> ซานสิง</td><td>T-square</td><td>โทษสามทาง · วางบนวงกลมได้รูปเดียวกัน</td></tr>
+  </tbody>
+</table></div>
+<div class="tblwrap" data-l="en"><table>
+  <thead><tr><th>Angle</th><th>Chinese</th><th>Greek / Western</th><th>Shared meaning</th></tr></thead>
+  <tbody>
+    <tr><td class="num">0°</td><td><span class="tc">伏吟</span> fu yin (repeated pillar)</td><td>conjunction</td><td>Stacked force · the same theme repeated</td></tr>
+    <tr><td class="num">90°</td><td><span class="tc">刑</span> xing (punishment)</td><td>square</td><td>Friction · pressure that must be managed</td></tr>
+    <tr><td class="num">120°</td><td><span class="tc">三合</span> san he (trinity)</td><td>trine</td><td>Flow · mutual support</td></tr>
+    <tr><td class="num">180°</td><td><span class="tc">沖</span> chong (clash)</td><td>opposition</td><td>Confrontation · two poles colliding</td></tr>
+    <tr><td class="num">mirror</td><td><span class="tc">六合</span> liu he (six harmonies)</td><td>antiscia</td><td>Point-for-point reflection across the solstitial axis</td></tr>
+    <tr><td class="num">triple</td><td><span class="tc">三刑</span> san xing</td><td>T-square</td><td>Three-way penalty · the same figure on the circle</td></tr>
+  </tbody>
+</table></div>
+<div class="tblwrap" data-l="zh"><table>
+  <thead><tr><th>角度</th><th>中國</th><th>希臘 / 西洋</th><th>共同含義</th></tr></thead>
+  <tbody>
+    <tr><td class="num">0°</td><td><span class="tc">伏吟</span></td><td>conjunction 合相</td><td>力量疊加 · 舊事重演</td></tr>
+    <tr><td class="num">90°</td><td><span class="tc">刑</span></td><td>square 刑相位</td><td>摩擦 · 必須處理的壓力</td></tr>
+    <tr><td class="num">120°</td><td><span class="tc">三合</span></td><td>trine 拱相位</td><td>順暢 · 相互扶持</td></tr>
+    <tr><td class="num">180°</td><td><span class="tc">沖</span></td><td>opposition 沖相位</td><td>對峙 · 兩極相撞</td></tr>
+    <tr><td class="num">鏡像</td><td><span class="tc">六合</span></td><td>antiscia 映點</td><td>繞至點軸（冬夏至軸）的逐點鏡射</td></tr>
+    <tr><td class="num">三角</td><td><span class="tc">三刑</span></td><td>T-square T三角</td><td>三方之刑 · 畫在圓上是同一個圖形</td></tr>
+  </tbody>
+</table></div>
+
+<figure>
+  <div class="leg" aria-hidden="true">
+    <span><span class="sw" style="background:var(--ch-fire)"></span><span class="tc">沖</span> 180°</span>
+    <span><span class="sw" style="background:var(--ch-water)"></span><span class="tc">三合</span> 120°</span>
+    <span><span class="sw" style="background:var(--ch-gold)"></span><span class="tc">刑</span> 90°</span>
+  </div>
+  <svg viewBox="0 0 640 424" role="img" aria-label="Twelve-branch circle with clash 180, trine 120, punishment 90 overlays">
+    <circle cx="200" cy="212" r="150" fill="none" stroke="var(--gold-line)" stroke-width="1.5"/>
+    <circle cx="200" cy="212" r="150" fill="none" stroke="var(--line)" stroke-width="26" opacity=".35"/>
+    <!-- 三合 申子辰 · 120° trine -->
+    <path d="M70.1 287 L200 62 L329.9 287 Z" fill="var(--ch-water)" fill-opacity=".10" stroke="var(--ch-water)" stroke-width="2.5" stroke-linejoin="round"><title>三合 120° · trine (申子辰)</title></path>
+    <!-- 沖 子午 · 180° opposition -->
+    <line x1="200" y1="62" x2="200" y2="362" stroke="var(--ch-fire)" stroke-width="2.5"><title>沖 180° · opposition (子↔午)</title></line>
+    <!-- 刑 寅巳申 · 90° steps (T-square shape) -->
+    <path d="M329.9 137 L275 341.9 L70.1 287 Z" fill="none" stroke="var(--ch-gold)" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round"><title>三刑 (寅巳申) · 90° steps = T-square</title></path>
+    <!-- branch nodes -->
+    <g fill="var(--bg-2)" stroke="var(--gold)" stroke-width="1.4">
+      <circle cx="200" cy="62" r="15"/><circle cx="275" cy="82.1" r="15"/><circle cx="329.9" cy="137" r="15"/>
+      <circle cx="350" cy="212" r="15"/><circle cx="329.9" cy="287" r="15"/><circle cx="275" cy="341.9" r="15"/>
+      <circle cx="200" cy="362" r="15"/><circle cx="125" cy="341.9" r="15"/><circle cx="70.1" cy="287" r="15"/>
+      <circle cx="50" cy="212" r="15"/><circle cx="70.1" cy="137" r="15"/><circle cx="125" cy="82.1" r="15"/>
+    </g>
+    <g font-family="'Noto Serif TC',serif" font-size="14.5" fill="var(--fg)" text-anchor="middle" dominant-baseline="central">
+      <text x="200" y="62">子</text><text x="275" y="82.1">丑</text><text x="329.9" y="137">寅</text>
+      <text x="350" y="212">卯</text><text x="329.9" y="287">辰</text><text x="275" y="341.9">巳</text>
+      <text x="200" y="362">午</text><text x="125" y="341.9">未</text><text x="70.1" y="287">申</text>
+      <text x="50" y="212">酉</text><text x="70.1" y="137">戌</text><text x="125" y="82.1">亥</text>
+    </g>
+    <!-- angle labels -->
+    <g font-family="'JetBrains Mono',monospace" font-size="10.5">
+      <text x="208" y="200" fill="var(--ch-fire)">180°</text>
+      <text x="196" y="292" fill="var(--ch-water)" text-anchor="middle">120°</text>
+      <text x="243" y="316" fill="var(--ch-gold)" text-anchor="middle">90°</text>
+    </g>
+    <!-- side legend -->
+    <g font-size="12.5" fill="var(--fg-soft)">
+      <text x="432" y="150" font-family="'Noto Serif TC',serif" font-size="14" fill="var(--ch-fire)">沖 = opposition</text>
+      <text x="432" y="172" font-family="'JetBrains Mono',monospace" font-size="10" fill="var(--fg-faint)">子↔午 · 6/12 · 180°</text>
+      <text x="432" y="210" font-family="'Noto Serif TC',serif" font-size="14" fill="var(--ch-water)">三合 = trine</text>
+      <text x="432" y="232" font-family="'JetBrains Mono',monospace" font-size="10" fill="var(--fg-faint)">申子辰 · 4/12 · 120°</text>
+      <text x="432" y="270" font-family="'Noto Serif TC',serif" font-size="14" fill="var(--ch-gold)">刑 = square</text>
+      <text x="432" y="292" font-family="'JetBrains Mono',monospace" font-size="10" fill="var(--fg-faint)">寅巳申 · 3/12 · 90°</text>
+      <text x="432" y="330" font-family="'Noto Serif TC',serif" font-size="12" fill="var(--fg-faint)">六合 ↔ antiscia (鏡射)</text>
+    </g>
+  </svg>
+  <figcaption data-l="th"><b>ภาพที่ 1</b> — วงจักร 12 กิ่งวางบนวงกลม 360°: เส้นชง 子↔午 คือ 180° (opposition) · สามเหลี่ยม 申子辰 คือ 120° (trine) · โทษสามเส้า 寅巳申 ก้าวทีละ 90° ได้รูปเดียวกับ T-square ของตะวันตก</figcaption>
+  <figcaption data-l="en"><b>Figure 1</b> — The twelve branches on a 360° circle: the clash line 子↔午 is the 180° opposition · the 申子辰 triangle is the 120° trine · the triple punishment 寅巳申 steps by 90°, tracing the same figure as the Western T-square.</figcaption>
+  <figcaption data-l="zh"><b>圖一</b> — 十二支置於 360° 圓上：子午沖線即 180° 對沖 · 申子辰三角即 120° 拱 · 寅巳申三刑每步 90°，與西洋 T 三角同形。</figcaption>
+</figure>
+
+<div data-l="th">
+  <p>แถมพิเศษอีกสองรายการที่ลึกกว่ามุมธรรมดา: <b>六合</b> (คู่สมพงศ์ทั้งหก) ไม่ใช่มุมคงที่ แต่คือการจับคู่กิ่งที่<b>สะท้อนกันรอบแกนครีษมายัน–เหมายัน</b>แบบจุดต่อจุด — เทคนิคเดียวกับที่โหราศาสตร์กรีกเรียกว่า <em>antiscia</em> ("เงากระจกของราศี") และ <b>三刑</b> (โทษสามเส้า เช่น 寅–巳–申) เมื่อวางบนวงกลมจะก้าวทีละ 90° พอดี ได้รูปเดียวกับ <em>T-square</em> ที่ตำราตะวันตกถือเป็นโครงมุมกดดันสามทาง</p>
+  <p>สองระบบจะเรียกสิ่งนี้ว่าบังเอิญ หรือเรียกว่าความจำเป็นทางคณิตศาสตร์ของการหารวงกลมด้วย 12 ก็แล้วแต่มุมมอง — แต่ข้อเท็จจริงคือ<b>รูปทับกันจริง</b> และคำถามที่สนุกกว่าคือ: แล้วสองระบบต่างกันตรงไหน?</p>
+</div>
+<div data-l="en">
+  <p>Two deeper bonus entries: <b>六合</b> (the six harmonies) is not a fixed angle at all but a pairing of branches that <b>mirror each other across the solstitial axis</b>, point for point — precisely the technique Greek astrology calls <em>antiscia</em> ("shadow degrees"). And <b>三刑</b> (the triple punishment, e.g. 寅–巳–申), laid on the circle, steps by exactly 90° — the same figure the Western canon calls a <em>T-square</em>, its classic three-way pressure pattern.</p>
+  <p>Call it coincidence, or call it the mathematical inevitability of dividing a circle by twelve — either way, <b>the figures genuinely coincide</b>. The more interesting question becomes: where do the systems actually differ?</p>
+</div>
+<div data-l="zh">
+  <p>還有兩項更深的對應：<b>六合</b>並非固定角度，而是繞冬夏至軸<b>逐點鏡射</b>的地支配對——正是希臘占星所稱的 <em>antiscia</em>（映點）。而<b>三刑</b>（如寅–巳–申）置於圓上恰好每步 90°，與西洋經典的三方壓力結構 <em>T-square</em> 同形。</p>
+  <p>要稱之為巧合，或稱之為「圓周除以十二」的數學必然，見仁見智——但事實是<b>圖形確實重合</b>。更有趣的問題是：那麼兩套體系究竟差在哪裡？</p>
+</div>
+
+<!-- ═══ §2 นาฬิกาสองเรือน ═══ -->
+<h2><span class="han">兩鐘</span><span data-l="th">นาฬิกาสองเรือน — เกาะอาทิตย์ หรือเกาะดาวฤกษ์</span><span data-l="en">Two Clocks — Anchored to the Sun, or to the Stars</span><span data-l="zh">兩座時鐘——錨定太陽，或錨定恆星</span></h2>
+<div class="h2sub">solar · sidereal · tropical</div>
+<hr class="rule"/>
+
+<div data-l="th">
+  <p>ถ้าเรขาคณิตเหมือนกัน สิ่งที่ต่างคือ<b>จุดตั้งศูนย์ของวงกลม</b> — สามอารยธรรมตอกหมุดเลขศูนย์ไว้คนละที่</p>
+  <p><b>จีนเกาะดวงอาทิตย์</b> — ระบบ 節氣 (เจี๋ยชี่ · 24 ช่วงลมฟ้าอากาศ) ที่วิชาปาจื้อและการเลือกฤกษ์ใช้ตัดเดือน นิยามจากลองจิจูดของดวงอาทิตย์ตรง ๆ ทีละ 15° ผลคือปฏิทินโหราศาสตร์จีนไม่เคยเลื่อนหลุดจากฤดูกาลจริงเลยตลอดประวัติ ~3,000 ปีของมัน และความแม่นนี้ไม่ใช่เรื่องเล่า: กัวโส่วจิ้ง (郭守敬) วัดความยาวปีสุริยคติได้ <b>365.2425 วัน</b> ในปฏิทินโซ่วสือ (授時曆) ค.ศ. 1281 — เท่ากับค่าที่ปฏิทินเกรกอเรียนใช้ทุกวันนี้ <b>ก่อนยุโรปประกาศใช้ราว 300 ปี</b></p>
+  <p><b>อินเดียเกาะดาวฤกษ์</b> — จักรราศีแบบ sidereal ยึดกลุ่มดาวจริงเป็นหมุด เมื่อแกนโลกส่าย (precession) จุดศูนย์ของอินเดียกับของกรีกจึงค่อย ๆ แยกจากกันปีละนิด สะสมถึงวันนี้ต่างกัน <b>~24.2°</b> — ค่านี้มีชื่อเรียกว่า <em>ayanamsa</em> (engine hourkey คำนวณแบบ Lahiri ณ 3 ก.ค. 2026 = 24.22°) นี่คือเหตุผลที่ราศีของโหราศาสตร์อินเดีย "เลื่อน" จากราศีฝรั่งเกือบทั้งราศี</p>
+  <p><b>กรีกเกาะวสันตวิษุวัต</b> — จักรราศีแบบ tropical ตั้งศูนย์ที่จุดที่กลางวันเท่ากลางคืน (Aries 0°) ซึ่งเลื่อนตามแกนโลก จึง "ตามฤดูกาล" เหมือนจีน แค่ตั้งต้นคนละจุด</p>
+  <p>จุดพลิกที่คนมักไม่ทันคิด: <b>จีนกับกรีกแท้จริงอยู่ทีมเดียวกัน</b> (ยึดฤดู/ดวงอาทิตย์) ส่วนอินเดียยืนอยู่กับดาวจริง — สามเรือนนาฬิกาเดินคนละหลักการ แต่หน้าปัดทั้งสามแบ่ง 12 ช่องเท่ากันหมด</p>
+</div>
+<div data-l="en">
+  <p>If the geometry is shared, what differs is <b>where each civilization nailed the zero point</b> of the circle.</p>
+  <p><b>China anchors to the Sun.</b> The 節氣 (jieqi, 24 solar terms) that BaZi and date-selection use to cut months are defined directly from solar longitude, one term per 15°. As a result, the Chinese astrological calendar has never drifted from the real seasons in its roughly 3,000-year history. That precision is no legend: Guo Shoujing (郭守敬) measured the tropical year at <b>365.2425 days</b> for the Shoushi calendar (授時曆) in AD 1281 — the very value the Gregorian calendar uses today, <b>about 300 years before Europe adopted it</b>.</p>
+  <p><b>India anchors to the fixed stars.</b> The sidereal zodiac pins itself to the actual constellations. As Earth's axis precesses, India's zero point and Greece's drift apart a little each year, accumulating to <b>~24.2°</b> today — a value called the <em>ayanamsa</em> (hourkey's engine computes Lahiri ayanamsa = 24.22° on 3 Jul 2026). This is why Indian signs sit almost a full sign away from Western ones.</p>
+  <p><b>Greece anchors to the vernal equinox.</b> The tropical zodiac sets its zero where day equals night (Aries 0°), a point that moves with Earth's axis — so it, too, follows the seasons, like China, merely starting the count elsewhere.</p>
+  <p>The twist people rarely notice: <b>China and Greece are actually on the same team</b> (season/Sun-anchored), while India stands with the real stars. Three clocks running on different principles — all three dials divided into the same twelve.</p>
+</div>
+<div data-l="zh">
+  <p>幾何既然相同，差別就在於<b>各文明把圓周的零點釘在哪裡</b>。</p>
+  <p><b>中國錨定太陽。</b>八字與擇日用來切月的節氣，直接以太陽黃經每 15° 定一氣，因此中國的星命曆法在約三千年歷史中從未偏離真實季節。這份精度並非傳說：郭守敬在西元 1281 年的《授時曆》中測得回歸年 <b>365.2425 日</b>——與今日格里曆所用數值完全相同，<b>早於歐洲頒行約三百年</b>。</p>
+  <p><b>印度錨定恆星。</b>恆星黃道以真實星宿為釘。因地軸歲差，印度與希臘的零點逐年分離，至今累積 <b>約 24.2°</b>——此值稱為 <em>ayanamsa</em>（hourkey 引擎以 Lahiri 法計算，2026-07-03 為 24.22°）。這正是印度星座與西洋星座幾乎錯開一整宮的原因。</p>
+  <p><b>希臘錨定春分點。</b>回歸黃道把零點設在晝夜平分之處（白羊 0°），該點隨地軸移動——所以它同樣「跟著季節走」，與中國同理，只是起算點不同。</p>
+  <p>常被忽略的反轉：<b>中國與希臘其實是同一隊</b>（錨定季節／太陽），印度才是與真實恆星同行。三座時鐘各依其理運轉——三個錶盤卻同樣分成十二格。</p>
+</div>
+
+<!-- ═══ §3 สี่หลักฐาน ═══ -->
+<h2><span class="han">實測</span><span data-l="th">สี่ผลลัพธ์จากการคำนวณจริง</span><span data-l="en">Four Results from Real Computation</span><span data-l="zh">四項實算結果</span></h2>
+<div class="h2sub">computed by hourkey engine · astronomy-engine</div>
+<hr class="rule"/>
+
+<div data-l="th"><p>ทุกตัวเลขในส่วนนี้<b>คำนวณโดย engine ของ hourkey</b> ด้วยไลบรารีดาราศาสตร์สมัยใหม่ (astronomy-engine) — ไม่ใช่ตัวเลขจากตำนาน และตรวจซ้ำได้</p></div>
+<div data-l="en"><p>Every number in this section was <b>computed by hourkey's engine</b> using a modern astronomy library (astronomy-engine) — no figures taken on faith, all reproducible.</p></div>
+<div data-l="zh"><p>本節所有數字均由 <b>hourkey 引擎</b>以現代天文程式庫（astronomy-engine）實算——非傳說數字，皆可覆核。</p></div>
+
+<h3 data-l="th">① Great Conjunction ตกร่องทอง 15 ใน 16 ครั้ง</h3>
+<h3 data-l="en">① Great Conjunctions land in the metal groove — 15 of 16</h3>
+<h3 data-l="zh">① 木土大會合 16 次中 15 次落在金干</h3>
+
+<div data-l="th">
+  <p>ดาวพฤหัสกับดาวเสาร์มาบรรจบกันบนฟ้า (Great Conjunction) ทุก ~20 ปี — ปรากฏการณ์ที่โหราศาสตร์ตะวันตกใช้ตั้ง "ยุคธาตุ" (triplicity) มาแต่ยุคเปอร์เซีย engine ไล่คำนวณช่วง ค.ศ. 1800–2100 พบ <b>16 ครั้ง</b> (คาบเฉลี่ยที่วัดได้ 19.878 ปี) และเมื่อแปะปีก้านกิ่งจีนลงไป ผลออกมาน่าทึ่ง: <b>15 ใน 16 ครั้ง ตกปีก้านทอง 庚/辛</b> — ข้อยกเว้นเดียวคือปี 1802 (壬戌) ที่หลุดไปก้านน้ำ</p>
+  <p>กิ่งปีก็เข้าแถวเช่นกัน: นอกจาก 1802 แล้ว ทุกครั้งตกในชุด 三合 เพียงสองชุด — <b>巳酉丑 (ชุดธาตุทอง)</b> กับ <b>申子辰 (ชุดธาตุน้ำ)</b> ไม่กระจายสุ่มทั่ววง 12 อย่างที่ควรจะเป็นถ้าไม่มีโครงสร้าง</p>
+  <p>เหตุผลอยู่ในเลขคาบ: conjunction สามครั้ง ≈ <b>59.63 ปี</b> — เกือบเท่าวง 60 ปีของก้านกิ่งพอดี (drift เพียง 0.37 ปีต่อรอบ) วงกลม 60 ของจีนจึง "จับ" คาบพฤหัส–เสาร์ไว้ในตัวโดยปริยาย และสองระบบก็หมุนถอยไปด้วยกันช้า ๆ: ฝั่งฟ้า มุมก้าวเฉลี่ย 243.36° เกินสามเหลี่ยม trine สมบูรณ์ (240°) อยู่ 3.36° ต่อครั้ง ทำให้สามเหลี่ยมเลื่อนครบหนึ่งราศีทุก <b>~177 ปี</b> · ฝั่งปฏิทิน ก้านกิ่งถอยเฉลี่ย 0.308 ตำแหน่งต่อรอบสาม conjunction เท่ากับถอยหนึ่งตำแหน่งทุก <b>~194 ปี</b> — สามเหลี่ยมบนฟ้ากับสามเหลี่ยมในปฏิทิน หมุนถอยเคียงกันด้วยอัตราใกล้เคียงกัน</p>
+  <p>โบนัสร่วมสมัย: ตาราง 16 ครั้งแสดงชัดว่า 1802–2000 conjunction เกาะกลุ่มราศีดินแทบทั้งหมด แล้วตั้งแต่ <b>2020 เป็นต้นไปเป็นราศีลมล้วน</b> (2020, 2040, 2060, 2080, 2100) — ตรงกับที่ตำราตะวันตกเรียกปี 2020 ว่า "Great Mutation" จุดเปลี่ยนยุคธาตุดินสู่ธาตุลม</p>
+</div>
+<div data-l="en">
+  <p>Jupiter and Saturn meet in the sky — the Great Conjunction — roughly every 20 years, the event Western astrology has used to mark elemental "triplicity eras" since Persian times. The engine swept AD 1800–2100 and found <b>16 events</b> (measured mean interval 19.878 years). Stamp each with its Chinese year pillar and the result is striking: <b>15 of 16 fall in metal-stem years, 庚/辛</b> — the lone exception being 1802 (壬戌), a water stem.</p>
+  <p>The branches line up too: apart from 1802, every event lands in just two 三合 trine-sets — <b>巳酉丑 (the metal trinity)</b> and <b>申子辰 (the water trinity)</b> — not scattered across the twelve as chance would have it.</p>
+  <p>The reason is in the periods: three conjunctions ≈ <b>59.63 years</b>, almost exactly the 60-year stem-branch cycle (a drift of only 0.37 years per lap). China's circle of 60 thus "captures" the Jupiter–Saturn beat implicitly — and the two systems precess together: in the sky, the mean step of 243.36° overshoots a perfect trine (240°) by 3.36° per event, so the celestial triangle slides one full sign every <b>~177 years</b>; in the calendar, the ganzhi slips an average 0.308 positions per three-conjunction lap — one position every <b>~194 years</b>. Two triangles, one in the sky and one on paper, retreating side by side at nearly the same rate.</p>
+  <p>A contemporary bonus: the 16-event table shows 1802–2000 clustering almost entirely in earth signs, then <b>from 2020 onward, air signs only</b> (2020, 2040, 2060, 2080, 2100) — matching what Western texts call the 2020 "Great Mutation," the shift from the earth era to the air era.</p>
+</div>
+<div data-l="zh">
+  <p>木星與土星約每 20 年在天上會合一次——即「木土大會合」，西洋占星自波斯時代起便以此劃分「三方元素紀元」。引擎掃描西元 1800–2100 年，共得 <b>16 次</b>（實測平均週期 19.878 年）。為每次標上中國年柱干支，結果驚人：<b>16 次中有 15 次落在金干（庚／辛）之年</b>——唯一例外是 1802 年（壬戌，水干）。</p>
+  <p>年支同樣列隊：除 1802 年外，每次都落在僅僅兩組三合之內——<b>巳酉丑（金局）</b>與<b>申子辰（水局）</b>，而非隨機散佈十二支。</p>
+  <p>原因藏在週期裡：三次會合 ≈ <b>59.63 年</b>，幾乎恰等於六十甲子（每輪僅漂移 0.37 年）。中國的六十循環因此在無意間「鎖住」了木土節拍——且兩套系統一同緩慢退行：天上，平均步幅 243.36° 比完美拱（240°）多出 3.36°，故天上的三角每 <b>約 177 年</b>滑過一宮；曆上，干支每三會合平均退 0.308 位，即每 <b>約 194 年</b>退一位。天上一個三角、紙上一個三角，以相近的速率並肩退行。</p>
+  <p>當代彩蛋：16 次列表清楚顯示 1802–2000 幾乎全聚於土象星座，而 <b>2020 年起全為風象</b>（2020、2040、2060、2080、2100）——正合西洋所稱 2020 年「大變換」（Great Mutation），土象紀元轉入風象紀元。</p>
+</div>
+
+<figure>
+  <div class="leg" aria-hidden="true">
+    <span><span class="sw swr" style="background:var(--ch-gold)"></span><span class="tc">巳酉丑</span> <span data-l="th">ชุดทอง</span><span data-l="en">metal trinity</span><span data-l="zh">金局</span></span>
+    <span><span class="sw swr" style="background:var(--ch-water)"></span><span class="tc">申子辰</span> <span data-l="th">ชุดน้ำ</span><span data-l="en">water trinity</span><span data-l="zh">水局</span></span>
+    <span><span class="sw swr swo"></span>1802 <span class="tc">壬戌</span> <span data-l="th">ข้อยกเว้นเดียว</span><span data-l="en">sole exception</span><span data-l="zh">唯一例外</span></span>
+  </div>
+  <svg viewBox="0 0 920 176" role="img" aria-label="Great Conjunction timeline 1800 to 2100, 16 events">
+    <line x1="40" y1="92" x2="880" y2="92" stroke="var(--gold-line)" stroke-width="1.5"/>
+    <g stroke="var(--line)" stroke-width="1">
+      <line x1="40" y1="86" x2="40" y2="98"/><line x1="180" y1="88" x2="180" y2="96"/><line x1="320" y1="86" x2="320" y2="98"/>
+      <line x1="460" y1="88" x2="460" y2="96"/><line x1="600" y1="86" x2="600" y2="98"/><line x1="740" y1="88" x2="740" y2="96"/><line x1="880" y1="86" x2="880" y2="98"/>
+    </g>
+    <g font-family="'JetBrains Mono',monospace" font-size="10" fill="var(--fg-faint)" text-anchor="middle">
+      <text x="40" y="140">1800</text><text x="320" y="140">1900</text><text x="600" y="140">2000</text><text x="880" y="140">2100</text>
+    </g>
+    <!-- events: x = 40 + (yr-1800)*2.8 -->
+    <circle cx="45.6" cy="92" r="6.5" fill="none" stroke="var(--ch-fire)" stroke-width="2.5"><title>1802 壬戌 · Vir 155.1°</title></circle>
+    <circle cx="98.8" cy="92" r="6.5" fill="var(--ch-gold)" stroke="var(--bg-2)" stroke-width="2"><title>1821 辛巳 · Ari 24.7°</title></circle>
+    <circle cx="157.6" cy="92" r="6.5" fill="var(--ch-gold)" stroke="var(--bg-2)" stroke-width="2"><title>1842 辛丑 · Cap 278.9°</title></circle>
+    <circle cx="210.8" cy="92" r="6.5" fill="var(--ch-gold)" stroke="var(--bg-2)" stroke-width="2"><title>1861 辛酉 · Vir 168.4°</title></circle>
+    <circle cx="266.8" cy="92" r="6.5" fill="var(--ch-gold)" stroke="var(--bg-2)" stroke-width="2"><title>1881 辛巳 · Tau 31.6°</title></circle>
+    <circle cx="322.8" cy="92" r="6.5" fill="var(--ch-gold)" stroke="var(--bg-2)" stroke-width="2"><title>1901 辛丑 · Cap 284.0°</title></circle>
+    <circle cx="378.8" cy="92" r="6.5" fill="var(--ch-gold)" stroke="var(--bg-2)" stroke-width="2"><title>1921 辛酉 · Vir 176.6°</title></circle>
+    <circle cx="432" cy="92" r="6.5" fill="var(--ch-water)" stroke="var(--bg-2)" stroke-width="2"><title>1940 庚辰 · Tau 42.5°</title></circle>
+    <circle cx="490.8" cy="92" r="6.5" fill="var(--ch-gold)" stroke="var(--bg-2)" stroke-width="2"><title>1961 辛丑 · Cap 295.2°</title></circle>
+    <circle cx="546.8" cy="92" r="6.5" fill="var(--ch-gold)" stroke="var(--bg-2)" stroke-width="2"><title>1981 辛酉 · Lib 188.1°</title></circle>
+    <circle cx="600" cy="92" r="6.5" fill="var(--ch-water)" stroke="var(--bg-2)" stroke-width="2"><title>2000 庚辰 · Tau 52.7°</title></circle>
+    <circle cx="656" cy="92" r="6.5" fill="var(--ch-water)" stroke="var(--bg-2)" stroke-width="2"><title>2020 庚子 · Aqu 300.5°</title></circle>
+    <circle cx="712" cy="92" r="6.5" fill="var(--ch-water)" stroke="var(--bg-2)" stroke-width="2"><title>2040 庚申 · Lib 197.9°</title></circle>
+    <circle cx="768" cy="92" r="6.5" fill="var(--ch-water)" stroke="var(--bg-2)" stroke-width="2"><title>2060 庚辰 · Gem 60.8°</title></circle>
+    <circle cx="824" cy="92" r="6.5" fill="var(--ch-water)" stroke="var(--bg-2)" stroke-width="2"><title>2080 庚子 · Aqu 311.9°</title></circle>
+    <circle cx="880" cy="92" r="6.5" fill="var(--ch-water)" stroke="var(--bg-2)" stroke-width="2"><title>2100 庚申 · Lib 205.5°</title></circle>
+    <!-- year labels (alternate) -->
+    <g font-family="'JetBrains Mono',monospace" font-size="9.5" fill="var(--fg-soft)" text-anchor="middle">
+      <text x="45.6" y="66">1802</text><text x="98.8" y="46">1821</text><text x="157.6" y="66">1842</text><text x="210.8" y="46">1861</text>
+      <text x="266.8" y="66">1881</text><text x="322.8" y="46">1901</text><text x="378.8" y="66">1921</text><text x="432" y="46">1940</text>
+      <text x="490.8" y="66">1961</text><text x="546.8" y="46">1981</text><text x="600" y="66">2000</text><text x="656" y="46">2020</text>
+      <text x="712" y="66">2040</text><text x="768" y="46">2060</text><text x="824" y="66">2080</text><text x="880" y="46">2100</text>
+    </g>
+    <!-- ganzhi labels -->
+    <g font-family="'Noto Serif TC',serif" font-size="11" fill="var(--fg-faint)" text-anchor="middle">
+      <text x="45.6" y="118">壬戌</text><text x="98.8" y="118">辛巳</text><text x="157.6" y="118">辛丑</text><text x="210.8" y="118">辛酉</text>
+      <text x="266.8" y="118">辛巳</text><text x="322.8" y="118">辛丑</text><text x="378.8" y="118">辛酉</text><text x="432" y="118">庚辰</text>
+      <text x="490.8" y="118">辛丑</text><text x="546.8" y="118">辛酉</text><text x="600" y="118">庚辰</text><text x="656" y="118">庚子</text>
+      <text x="712" y="118">庚申</text><text x="768" y="118">庚辰</text><text x="824" y="118">庚子</text><text x="880" y="118">庚申</text>
+    </g>
+    <g font-family="'JetBrains Mono',monospace" font-size="9" fill="var(--fg-faint)" text-anchor="middle">
+      <text x="180" y="166">EARTH ERA · 土</text>
+      <text x="770" y="166">AIR ERA · 風</text>
+    </g>
+  </svg>
+  <figcaption data-l="th"><b>ภาพที่ 2</b> — Great Conjunction (พฤหัส–เสาร์) ทั้ง 16 ครั้ง ค.ศ. 1800–2100: 15 ครั้งเป็นปีก้านทอง 庚/辛 และกิ่งปีเกาะอยู่เพียงสองชุด三合 (จุดทอง = 巳酉丑 · จุดน้ำเงิน = 申子辰) — วงแหวนแดงคือ 1802 (壬戌) ข้อยกเว้นเดียวทั้งก้านและกิ่ง · คำนวณโดย engine hourkey</figcaption>
+  <figcaption data-l="en"><b>Figure 2</b> — All 16 Great Conjunctions, AD 1800–2100: 15 fall in metal-stem years (庚/辛) and the branches keep to just two trine-sets (gold = 巳酉丑, blue = 申子辰). The red ring is 1802 (壬戌), the sole exception in both stem and branch. Computed by the hourkey engine.</figcaption>
+  <figcaption data-l="zh"><b>圖二</b> — 西元 1800–2100 全部 16 次木土大會合：15 次落在金干（庚／辛）之年，年支僅分佈於兩組三合（金點＝巳酉丑 · 藍點＝申子辰）。紅圈為 1802 年（壬戌），干支皆為唯一例外。hourkey 引擎實算。</figcaption>
+</figure>
+
+<details class="data">
+  <summary><span data-l="th">ดูตารางดิบทั้ง 16 ครั้ง (วันที่ · ลองจิจูด · ราศี · ก้านกิ่ง)</span><span data-l="en">Show the raw table of all 16 events (date · longitude · sign · ganzhi)</span><span data-l="zh">展開 16 次原始資料表（日期 · 黃經 · 星座 · 干支）</span></summary>
+  <div class="tblwrap"><table>
+    <thead><tr><th>date</th><th>lon</th><th>sign</th><th>干支</th><th>Δt (yr)</th></tr></thead>
+    <tbody>
+      <tr><td class="num">1802-07-17</td><td class="num">155.1°</td><td>Vir ♍</td><td class="tc">壬戌</td><td class="num">—</td></tr>
+      <tr><td class="num">1821-06-19</td><td class="num">24.7°</td><td>Ari ♈</td><td class="tc">辛巳</td><td class="num">18.92</td></tr>
+      <tr><td class="num">1842-01-26</td><td class="num">278.9°</td><td>Cap ♑</td><td class="tc">辛丑</td><td class="num">20.60</td></tr>
+      <tr><td class="num">1861-10-21</td><td class="num">168.4°</td><td>Vir ♍</td><td class="tc">辛酉</td><td class="num">19.74</td></tr>
+      <tr><td class="num">1881-04-18</td><td class="num">31.6°</td><td>Tau ♉</td><td class="tc">辛巳</td><td class="num">19.49</td></tr>
+      <tr><td class="num">1901-11-28</td><td class="num">284.0°</td><td>Cap ♑</td><td class="tc">辛丑</td><td class="num">20.61</td></tr>
+      <tr><td class="num">1921-09-10</td><td class="num">176.6°</td><td>Vir ♍</td><td class="tc">辛酉</td><td class="num">19.78</td></tr>
+      <tr><td class="num">1940-10-20</td><td class="num">42.5°</td><td>Tau ♉</td><td class="tc">庚辰</td><td class="num">19.11</td></tr>
+      <tr><td class="num">1961-02-18</td><td class="num">295.2°</td><td>Cap ♑</td><td class="tc">辛丑</td><td class="num">20.33</td></tr>
+      <tr><td class="num">1981-03-04</td><td class="num">188.1°</td><td>Lib ♎</td><td class="tc">辛酉</td><td class="num">20.04</td></tr>
+      <tr><td class="num">2000-05-28</td><td class="num">52.7°</td><td>Tau ♉</td><td class="tc">庚辰</td><td class="num">19.23</td></tr>
+      <tr><td class="num">2020-12-21</td><td class="num">300.5°</td><td>Aqu ♒</td><td class="tc">庚子</td><td class="num">20.57</td></tr>
+      <tr><td class="num">2040-10-31</td><td class="num">197.9°</td><td>Lib ♎</td><td class="tc">庚申</td><td class="num">19.86</td></tr>
+      <tr><td class="num">2060-04-07</td><td class="num">60.8°</td><td>Gem ♊</td><td class="tc">庚辰</td><td class="num">19.43</td></tr>
+      <tr><td class="num">2080-03-15</td><td class="num">311.9°</td><td>Aqu ♒</td><td class="tc">庚子</td><td class="num">19.94</td></tr>
+      <tr><td class="num">2100-09-18</td><td class="num">205.5°</td><td>Lib ♎</td><td class="tc">庚申</td><td class="num">20.51</td></tr>
+    </tbody>
+  </table></div>
+  <div class="mono" style="font-size:10.5px;color:var(--fg-faint)" data-l="th">triple conjunction (1940–41 · 1980–81) นับรวมเป็น 1 เหตุการณ์ · mean interval = 19.878 ปี · mean 3-conj = 59.63 ปี</div>
+  <div class="mono" style="font-size:10.5px;color:var(--fg-faint)" data-l="en">triple conjunctions (1940–41 · 1980–81) counted as one event · mean interval = 19.878 yr · mean 3-conj = 59.63 yr</div>
+  <div class="mono" style="font-size:10.5px;color:var(--fg-faint)" data-l="zh">三重會合（1940–41 · 1980–81）計為一次 · 平均間隔 19.878 年 · 三次會合平均 59.63 年</div>
+</details>
+
+<h3 data-l="th">② 超辰 — นาฬิกาพฤหัสที่เดินเร็ว แล้ววนกลับมาตรงในศตวรรษที่ 20</h3>
+<h3 data-l="en">② 超辰 — Jupiter's fast clock, swinging back into sync in the 20th century</h3>
+<h3 data-l="zh">② 超辰——走快的木星鐘，在二十世紀繞回原點</h3>
+
+<div data-l="th">
+  <p>ระบบปีนักษัตร 12 ปีของจีน (ที่ไทยรับมาใช้) เกิดจากการนับว่า "ปีนี้ดาวพฤหัสอยู่สถานีไหนบนฟ้า" (歲星紀年) — ปัญหาคือพฤหัสโคจรรอบละ <b>11.862 ปี</b> ไม่ใช่ 12 ปีถ้วน จึงเดินเกินปีละ 0.350° และหลุดออกจากช่อง 30° ไปหนึ่งสถานีเต็มทุก <b>~85.8 ปี</b> นักดาราศาสตร์ราชวงศ์ฮั่นรู้เรื่องนี้ดี ถึงกับมีศัพท์เรียกว่า <b>超辰</b> ("กระโดดข้ามสถานี") ก่อนจะตัดสินใจครั้งประวัติศาสตร์ในปฏิทินไท่ชู (太初曆 · 104 ปีก่อนคริสตกาล): เลิกผูกปีนักษัตรกับดาวจริง ปล่อยให้วงปีเดินเป็นนามธรรมล้วน ๆ นับแต่นั้น</p>
+  <p>engine ตรวจย้อนช่วง 1900–2100 ด้วยสูตรจับคู่ของยุคฮั่น (歲在星紀 → 太歲在寅) พบสิ่งที่แทบเป็นบทกวี: สูตรสองพันปีก่อน<b>กลับมาตรงเป๊ะเป็นช่วงยาวในต้นศตวรรษที่ 20</b> — ตรงต่อเนื่อง 1900–1933 และ 1935–1944 เหตุผลคือจาก 104 BC ถึงช่วงนั้น เวลาผ่านไป ~2,049 ปี ≈ <b>เกือบ 2 รอบเต็มพอดี</b>ของคาบวนกลับ (超辰 ครบ 12 สถานีใช้ 85.8 × 12 ≈ 1,030 ปี) นาฬิกาที่ถูกปล่อยมือไว้สองพันกว่าปี เวียนกลับมาทับเข็มจริงในยุคปู่ย่าของเรา แล้วค่อย ๆ แยกออกอีกครั้ง (ช่วงปัจจุบัน 1978–2027 เหลื่อมอยู่ 1 สถานี)</p>
+</div>
+<div data-l="en">
+  <p>China's twelve-year animal cycle (which Thailand inherited) began as a record of "which station of the sky Jupiter occupies this year" (歲星紀年). The catch: Jupiter's sidereal period is <b>11.862 years</b>, not a clean 12 — it overshoots by 0.350° per year and escapes its 30° station entirely every <b>~85.8 years</b>. Han-dynasty astronomers knew this well; they even had a word for it, <b>超辰</b> ("leaping a station"), before making the historic call in the Taichu calendar (太初曆, 104 BC): unhook the year-count from the real planet and let the cycle run as pure abstraction ever after.</p>
+  <p>The engine replayed 1900–2100 against the original Han pairing rule (歲在星紀 → 太歲在寅) and found something close to poetry: the two-thousand-year-old formula <b>snaps back into exact agreement for a long stretch in the early 20th century</b> — continuously through 1900–1933 and again 1935–1944. The reason: from 104 BC to that window is ~2,049 years ≈ <b>almost exactly two full laps</b> of the realignment period (a complete 12-station drift takes 85.8 × 12 ≈ 1,030 years). A clock released two millennia ago swung back over the true hand in our great-grandparents' lifetime, then drifted apart again (the current 1978–2027 stretch sits one station off).</p>
+</div>
+<div data-l="zh">
+  <p>中國十二生肖紀年（泰國亦承襲）源自「今歲木星居於何次」的記錄（歲星紀年）。癥結在於：木星恆星週期為 <b>11.862 年</b>，並非整 12 年——每年多走 0.350°，約每 <b>85.8 年</b>便整整跳出一次（30°）。漢代天文家深知此事，甚至有專名<b>「超辰」</b>；隨後在《太初曆》（西元前 104 年）作出歷史性決定：紀年與真實行星脫鉤，自此干支紀年成為純粹抽象的循環。</p>
+  <p>引擎以漢代原始對應式（歲在星紀 → 太歲在寅）重演 1900–2100，得到近乎詩意的結果：兩千年前的公式<b>在二十世紀初長段完全吻合</b>——1900–1933 連續相合，1935–1944 再度相合。原因是：自前 104 年至該時段約 2,049 年 ≈ <b>幾乎恰好兩整圈</b>的回歸週期（超辰繞完 12 次需 85.8 × 12 ≈ 1,030 年）。一座被放手兩千餘年的時鐘，在我們曾祖輩的年代擺回真針之上，隨後再度分離（現行 1978–2027 段錯開一次）。</p>
+</div>
+
+<h3 data-l="th">③ จีนกับอินเดียตอกหมุดที่ดาวดวงเดียวกัน — ห่างกัน 0.01°</h3>
+<h3 data-l="en">③ China and India drove their pegs into the same star — 0.01° apart</h3>
+<h3 data-l="zh">③ 中印把樁釘在同一顆星上——僅差 0.01°</h3>
+
+<div data-l="th">
+  <p>จีนแบ่งท้องฟ้าเป็น <b>28 宿</b> (ซิ่ว · "คฤหาสน์จันทร์") เริ่มนับที่ 角宿 ซึ่งใช้ดาว <b>Spica</b> (รวงข้าว · αVirginis) เป็นดาวหมุด ส่วนอินเดียแบ่งเป็น <b>27 nakshatra</b> และเมื่อนิยามค่า ayanamsa มาตรฐาน (แบบ Lahiri ที่รัฐบาลอินเดียใช้) ก็เลือกตรึงให้ <b>Spica อยู่ที่ 180.00° พอดี</b></p>
+  <p>engine วัดตำแหน่ง sidereal ของ Spica วันนี้ได้ <b>179.99°</b> — สองอารยธรรมที่ไม่มีบันทึกว่าเคยประชุมร่วมกัน เลือก "ตะปูเรือนฟ้า" ดวงเดียวกัน และค่าที่ตรึงต่างกันเพียง <b>0.01°</b></p>
+  <p>ไม่ใช่แค่หมุดเดียว: เมื่อเทียบขอบเขตทั้งระบบ ขอบต้นของ 宿 แต่ละตัวห่างจากขอบ nakshatra หลักที่มันทับ <b>เฉลี่ยเพียง 0.67°</b> ทั้งที่สองระบบใช้เกณฑ์คนละแบบสิ้นเชิง — จีนให้ช่องกว้างไม่เท่ากันตามดาวจริง (กว้างสุด 井宿 30.43° แคบสุด 觜宿 แค่ 0.97°) ส่วนอินเดียหารเท่าเป๊ะช่องละ 13.33° จะเป็นมรดกร่วมสายเดียวกันหรือค้นพบเอกเทศ นักประวัติศาสตร์ยังถกกันไม่จบ — แต่ตัวเลขชี้ชัดว่าทั้งคู่เงยหน้ามองดาวชุดเดียวกัน แล้วตอกหมุดลงที่เดียวกัน</p>
+</div>
+<div data-l="en">
+  <p>China divided the sky into <b>28 xiu</b> (宿, "lunar mansions"), counting from 角宿, whose determinative star is <b>Spica</b> (αVirginis). India divided it into <b>27 nakshatras</b>, and when the standard ayanamsa was defined (the Lahiri value used by the Indian government), it was pinned so that <b>Spica sits at exactly 180.00°</b>.</p>
+  <p>The engine measures Spica's sidereal longitude today at <b>179.99°</b>. Two civilizations with no recorded joint council chose the same nail for the vault of heaven — and their pinned values differ by <b>0.01°</b>.</p>
+  <p>Nor is it one peg only: comparing the full boundary systems, each xiu's leading edge sits an <b>average of just 0.67°</b> from the edge of its principal nakshatra — despite entirely different rules. China lets mansion widths follow the actual stars (widest 井宿 at 30.43°, narrowest 觜宿 at a sliver of 0.97°), while India divides evenly at 13.33° each. Shared inheritance or independent discovery — historians still argue. But the numbers say plainly that both looked up at the same stars and drove their pegs into the same places.</p>
+</div>
+<div data-l="zh">
+  <p>中國把天穹分為 <b>二十八宿</b>，自角宿起算，其距星即<b>角宿一</b>（Spica，室女座 α）。印度分為 <b>27 宿（nakshatra）</b>，而在制定官方 ayanamsa（Lahiri 值）時，正是釘定 <b>Spica 恰在 180.00°</b>。</p>
+  <p>引擎實測今日 Spica 恆星黃經為 <b>179.99°</b>——兩個沒有任何聯席紀錄的文明，為天穹選了同一顆釘，而釘定值僅差 <b>0.01°</b>。</p>
+  <p>且不止一樁：比對整套界線，每宿起始邊與其主對應 nakshatra 邊界<b>平均僅差 0.67°</b>——儘管規則截然不同：中國依實星定寬（最寬井宿 30.43°，最窄觜宿僅 0.97°），印度則等分為每格 13.33°。是同源遺產還是獨立發現，史家仍在爭論——但數字明白顯示：兩者仰望的是同一批星，樁也釘在同一處。</p>
+</div>
+
+<h3 data-l="th">④ 調候 — เมื่อ "ยาปรับอุณหภูมิ" ของตำราปาจื้อ คือเดคลิเนชันดวงอาทิตย์</h3>
+<h3 data-l="en">④ 調候 — When the BaZi "climate remedy" turns out to be solar declination</h3>
+<h3 data-l="zh">④ 調候——八字的「調候用藥」，原來就是太陽赤緯</h3>
+
+<div data-l="th">
+  <p>ตำราปาจื้อสาย <b>調候</b> (เถียวโฮ่ว · "ปรับสมดุลหนาว–ร้อน") อย่าง 窮通寶鑑 สั่งยาให้ดวงตามเดือนเกิด: เกิดหน้าหนาวต้องได้ธาตุไฟ (丙/丁) เกิดกลางฤดูร้อนต้องได้น้ำ (癸) ฟังดูเป็นภาษากวี — จนกระทั่งลองแปลงเป็นฟิสิกส์</p>
+  <p>engine แปลงเดือน 節氣 ทั้ง 12 ของปี 2026 เป็นค่า<b>เดคลิเนชันดวงอาทิตย์เฉลี่ย</b> (มุมที่ดวงอาทิตย์เหนือ/ใต้เส้นศูนย์สูตรฟ้า — ตัวแปรเดียวกับที่กำหนดฤดูกาล) แล้ววัดสหสัมพันธ์กับระดับ "ความต้องการไฟ" ในตำรา (กรณีวันเกิดก้าน 甲): ได้ <b>r = −0.653</b> — เดือนยิ่งหนาว ตำรายิ่งสั่งไฟ และจุดสุดขั้วตรงกันเป๊ะ: เดือน 午 ที่เดคลิเนชันสูงสุด <b>+23.1°</b> ตำราสั่งน้ำ 癸 · เดือน 子 ที่ต่ำสุด <b>−23.1°</b> ตำราสั่งไฟ 丁</p>
+  <p>หลักฐานทางภูมิศาสตร์ซ้อนอีกชั้น: ถ้าตำรานี้ถูกเขียนในจีนภาคเหนือจริง สัญญาณฤดูกาลควร "อ่านออก" ชัดในภูมิอากาศแบบนั้น — ที่ละติจูดซีอาน ความยาวกลางวันแกว่งทั้งปีถึง <b>4.52 ชั่วโมง</b> ขณะที่กรุงเทพแกว่งเพียง <b>1.60 ชั่วโมง</b> — สัญญาณแรงกว่ากัน <b>2.8 เท่า</b> ตำรา調候จึงเกิดที่นั่น ไม่ใช่ที่นี่ ด้วยเหตุผลทางฟิสิกส์ล้วน ๆ</p>
+  <p>ความซื่อสัตย์ทางข้อมูลบังคับให้บอกด้วยว่า correlation ไม่ใช่ 1.0: มีเดือนที่ตำราสวนฟิสิกส์ เช่น 未 และ 申 (ปลายร้อน) ที่ยังสั่งไฟ — แต่ตำราเองก็ออกตัวไว้ว่า 三伏生寒 丁火退氣 ("กลางสามอุด ความเย็นเริ่มก่อตัว ไฟถอยกำลัง") และเดือน 卯/辰 ที่สั่งทอง 庚 เป็นเหตุผลเชิงโครงสร้างของดวง ไม่ใช่อุณหภูมิ — ตัวเลข r = −0.653 จึงอ่านว่า "แกนหลักของ調候สอดคล้องกับฟิสิกส์ฤดูกาลอย่างมีนัย" ไม่ใช่ "ทุกบรรทัดคือฟิสิกส์"</p>
+</div>
+<div data-l="en">
+  <p>The <b>調候</b> ("climate-balancing") school of BaZi, canonized in 窮通寶鑑, prescribes remedies by birth month: born in deep winter, you need fire (丙/丁); born in high summer, you need water (癸). It reads like poetry — until you translate it into physics.</p>
+  <p>The engine converted all twelve jieqi months of 2026 into <b>mean solar declination</b> (the Sun's angle above or below the celestial equator — the very variable that makes the seasons) and correlated it against the canon's "fire-need" level (for a 甲-stem day master): <b>r = −0.653</b>. The colder the month, the more insistently the canon prescribes fire. And the extremes align exactly: month 午, at maximum declination <b>+23.1°</b>, is prescribed water (癸); month 子, at minimum <b>−23.1°</b>, is prescribed fire (丁).</p>
+  <p>Geography adds another layer: if the canon truly was written in northern China, the seasonal signal should be legible there — at Xi'an's latitude, day length swings <b>4.52 hours</b> across the year, versus only <b>1.60 hours</b> in Bangkok: a signal <b>2.8 times stronger</b>. The 調候 doctrine arose there and not here for reasons of pure physics.</p>
+  <p>Data honesty requires the caveat: the correlation is not 1.0. Some months defy the physics — 未 and 申 (late summer) still call for fire — though the canon itself hedges: 三伏生寒 丁火退氣 ("in the dog days, cold begins to form; the fire retreats"). And months 卯/辰 prescribe metal (庚) for structural, not thermal, reasons. So r = −0.653 reads as "the spine of 調候 aligns meaningfully with seasonal physics" — not "every line is physics."</p>
+</div>
+<div data-l="zh">
+  <p>八字的<b>調候</b>一脈（以《窮通寶鑑》為經典）按出生月份開方：生於隆冬需火（丙／丁），生於盛夏需水（癸）。聽來如詩——直到把它翻譯成物理。</p>
+  <p>引擎把 2026 年十二個節氣月換算為<b>太陽平均赤緯</b>（太陽在天赤道上下的角度——正是造成四季的變數），再與典籍的「需火程度」（以甲木日主為例）求相關：<b>r = −0.653</b>——月份越冷，典籍越堅持用火。而且兩個極點完全對齊：赤緯最高（<b>+23.1°</b>）的午月，典籍開水（癸）；最低（<b>−23.1°</b>）的子月，典籍開火（丁）。</p>
+  <p>地理再加一層佐證：若此典確實成書於中國北方，季節訊號在當地應清晰可讀——西安緯度上，全年晝長擺幅達 <b>4.52 小時</b>，曼谷僅 <b>1.60 小時</b>——訊號強 <b>2.8 倍</b>。調候之學生於彼地而非此地，理由純屬物理。</p>
+  <p>數據誠實也要求說明：相關並非 1.0。有些月份與物理相逆——未、申（夏末）仍開火——但典籍自己也註明「三伏生寒，丁火退氣」；而卯、辰月開金（庚）屬命局結構之需，非溫度之需。故 r = −0.653 應讀作「調候的主幹與季節物理顯著相符」，而非「句句皆物理」。</p>
+</div>
+
+<figure>
+  <div class="leg" aria-hidden="true">
+    <span><span class="sw" style="background:var(--ch-fire)"></span><span data-l="th">ตำราสั่งไฟ 丙/丁</span><span data-l="en">canon prescribes fire 丙/丁</span><span data-l="zh">典籍開火 丙／丁</span></span>
+    <span><span class="sw" style="background:var(--ch-water)"></span><span data-l="th">ตำราสั่งน้ำ 癸</span><span data-l="en">canon prescribes water 癸</span><span data-l="zh">典籍開水 癸</span></span>
+    <span><span class="sw" style="background:var(--ch-neu)"></span><span data-l="th">สั่งทอง 庚 (โครงสร้าง)</span><span data-l="en">metal 庚 (structural)</span><span data-l="zh">開金 庚（結構）</span></span>
+  </div>
+  <svg viewBox="0 0 720 312" role="img" aria-label="Mean solar declination by jieqi month, bars colored by canonical remedy">
+    <!-- gridlines -->
+    <line x1="58" y1="47.4" x2="700" y2="47.4" stroke="var(--line)" stroke-dasharray="4 4"/>
+    <line x1="58" y1="140" x2="700" y2="140" stroke="var(--gold-line)" stroke-width="1.5"/>
+    <line x1="58" y1="232.6" x2="700" y2="232.6" stroke="var(--line)" stroke-dasharray="4 4"/>
+    <g font-family="'JetBrains Mono',monospace" font-size="9.5" fill="var(--fg-faint)" text-anchor="end">
+      <text x="52" y="51">+23.1°</text><text x="52" y="144">0°</text><text x="52" y="236">-23.1°</text>
+    </g>
+    <!-- bars: x slot 53px from 66; width 26; y=140-dec*4; rounded data end -->
+    <g stroke="var(--bg-2)" stroke-width="0">
+      <rect x="72"  y="140"   width="26" height="45.9"  rx="4" fill="var(--ch-fire)"><title>寅 · dec −11.5° · 丙</title></rect>
+      <rect x="125" y="140"   width="26" height="1.2"   fill="var(--ch-neu)"><title>卯 · dec −0.0° · 庚</title></rect>
+      <rect x="178" y="95"    width="26" height="45"    rx="4" fill="var(--ch-neu)"><title>辰 · dec +11.3° · 庚</title></rect>
+      <rect x="231" y="60.4"  width="26" height="79.6"  rx="4" fill="var(--ch-water)"><title>巳 · dec +19.9° · 癸</title></rect>
+      <rect x="284" y="47.4"  width="26" height="92.6"  rx="4" fill="var(--ch-water)"><title>午 · dec +23.1° · 癸</title></rect>
+      <rect x="337" y="60.2"  width="26" height="79.8"  rx="4" fill="var(--ch-fire)"><title>未 · dec +20.0° · 丁</title></rect>
+      <rect x="390" y="94.5"  width="26" height="45.5"  rx="4" fill="var(--ch-fire)"><title>申 · dec +11.4° · 丁</title></rect>
+      <rect x="443" y="139.4" width="26" height="0.6"   fill="var(--ch-fire)"><title>酉 · dec +0.1° · 丁</title></rect>
+      <rect x="496" y="140"   width="26" height="45.2"  rx="4" fill="var(--ch-fire)"><title>戌 · dec −11.3° · 丁</title></rect>
+      <rect x="549" y="140"   width="26" height="79.3"  rx="4" fill="var(--ch-fire)"><title>亥 · dec −19.8° · 庚+丁</title></rect>
+      <rect x="602" y="140"   width="26" height="92.6"  rx="4" fill="var(--ch-fire)"><title>子 · dec −23.1° · 丁</title></rect>
+      <rect x="655" y="140"   width="26" height="79.8"  rx="4" fill="var(--ch-fire)"><title>丑 · dec −20.0° · 庚→丁</title></rect>
+    </g>
+    <!-- month labels -->
+    <g font-family="'Noto Serif TC',serif" font-size="13" fill="var(--fg)" text-anchor="middle">
+      <text x="85" y="262">寅</text><text x="138" y="262">卯</text><text x="191" y="262">辰</text><text x="244" y="262">巳</text>
+      <text x="297" y="262">午</text><text x="350" y="262">未</text><text x="403" y="262">申</text><text x="456" y="262">酉</text>
+      <text x="509" y="262">戌</text><text x="562" y="262">亥</text><text x="615" y="262">子</text><text x="668" y="262">丑</text>
+    </g>
+    <!-- prescribed stem labels -->
+    <g font-family="'Noto Serif TC',serif" font-size="11" fill="var(--fg-faint)" text-anchor="middle">
+      <text x="85" y="282">丙</text><text x="138" y="282">庚</text><text x="191" y="282">庚</text><text x="244" y="282">癸</text>
+      <text x="297" y="282">癸</text><text x="350" y="282">丁</text><text x="403" y="282">丁</text><text x="456" y="282">丁</text>
+      <text x="509" y="282">丁</text><text x="562" y="282">丁</text><text x="615" y="282">丁</text><text x="668" y="282">丁</text>
+    </g>
+    <!-- extreme annotations -->
+    <g font-family="'JetBrains Mono',monospace" font-size="9.5">
+      <text x="297" y="38" fill="var(--ch-water)" text-anchor="middle">+23.1° → 癸</text>
+      <text x="615" y="248" fill="var(--ch-fire)" text-anchor="middle">-23.1° → 丁</text>
+    </g>
+    <text x="700" y="306" font-family="'JetBrains Mono',monospace" font-size="10" fill="var(--fg-faint)" text-anchor="end">r = -0.653</text>
+  </svg>
+  <figcaption data-l="th"><b>ภาพที่ 3</b> — เดคลิเนชันดวงอาทิตย์เฉลี่ยของ 12 เดือน節氣 (แกนตั้ง · แท่งขึ้น = ซีกร้อน แท่งลง = ซีกหนาว) ระบายสีตาม "ยา" ที่ตำรา 窮通寶鑑 สั่งให้วันเกิดก้าน 甲: เดือนหนาวเกือบทั้งหมดถูกสั่งไฟ (แดง) · จุดร้อนสุดถูกสั่งน้ำ (น้ำเงิน) · r = −0.653 · เดือน 未/申 คือข้อยกเว้นที่ตำราสวนฟิสิกส์โดยให้เหตุผลภายในเอง · คำนวณโดย engine hourkey</figcaption>
+  <figcaption data-l="en"><b>Figure 3</b> — Mean solar declination for the 12 jieqi months (bars up = hot half, down = cold half), colored by the remedy 窮通寶鑑 prescribes for a 甲 day master: nearly every cold month is prescribed fire (red), the hottest point is prescribed water (blue) · r = −0.653 · months 未/申 are the canon's own stated exceptions. Computed by the hourkey engine.</figcaption>
+  <figcaption data-l="zh"><b>圖三</b> — 十二節氣月的太陽平均赤緯（向上＝熱半年，向下＝冷半年），按《窮通寶鑑》為甲木日主所開之方著色：寒月幾乎皆開火（紅），最熱點開水（藍）· r = −0.653 · 未／申為典籍自陳的例外。hourkey 引擎實算。</figcaption>
+</figure>
+
+<!-- ═══ §4 ปิด ═══ -->
+<h2><span class="han">結語</span><span data-l="th">โหราศาสตร์คือดาราศาสตร์ที่ถูก compile</span><span data-l="en">Astrology Is Astronomy, Compiled</span><span data-l="zh">占星術是被編譯過的天文學</span></h2>
+<div class="h2sub">source · binary · runtime</div>
+<hr class="rule"/>
+
+<div data-l="th">
+  <p>สี่ข้อข้างบนไม่ได้พิสูจน์ว่าโหราศาสตร์ทำนายแม่น — และเราไม่อ้างแบบนั้น สิ่งที่ตัวเลขชี้คือข้อสรุปที่เจียมตัวกว่าแต่ลึกกว่า: <b>โหราศาสตร์โบราณคือดาราศาสตร์ที่ถูก "compile"</b> — บรรพชนเอาการเคลื่อนที่จริงของฟ้า (คาบพฤหัส–เสาร์ · เดคลิเนชันดวงอาทิตย์ · ดาว Spica · การส่ายของแกนโลก) มาบีบอัดเป็นตารางก้านกิ่ง เป็นกลอน เป็นสูตรท่องจำ — ให้คนที่ไม่มีกล้อง ไม่มีปฏิทินดาราศาสตร์ ใช้ความรู้ฟ้าได้ทุกวันด้วยการเปิดตาราง</p>
+  <p>และเหมือน binary ทุกตัวที่ถูก compile ไว้นานสองพันปี — มันมี drift สะสม: 超辰 คือดอกเบี้ยของการปัดเศษ 11.862 → 12 · ayanamsa 24.2° คือดอกเบี้ยของการตรึงศูนย์ไว้กับดาวขณะที่แกนโลกส่าย ตำราไม่ได้ "ผิด" — มันแค่ถูก compile ณ จุดเวลาหนึ่ง แล้วเวลาเดินต่อ</p>
+  <p>นี่คือเหตุผลที่ hourkey รันทั้งสองชั้นคู่กัน: ชั้น "source code" — ตำแหน่งดาวจริง ณ วินาทีจริง คำนวณด้วยดาราศาสตร์สมัยใหม่ (<a href="/tianxing">天星擇日 · ดูดาวจริง</a>) และชั้น "binary" — ระบบก้านกิ่ง 節氣 ที่ผ่านการเจียระไนมาสามพันปี (<a href="/datepick">วางฤกษ์</a> · <a href="/master-fusion">ดูดวง 5 ศาสตร์</a>) เมื่อสองชั้นเห็นตรงกัน ความมั่นใจก็ทวีคูณ — เมื่อเห็นต่างกัน นั่นแหละคือจุดที่น่าเรียนรู้ที่สุด</p>
+  <p>สามอารยธรรม · เรขาคณิตเดียว · และเป็นครั้งแรกในรอบพันปีที่ทั้ง source และ binary ถูกวางเทียบกันบนหน้าจอเดียว</p>
+</div>
+<div data-l="en">
+  <p>None of the four results above proves that astrology predicts accurately — and we make no such claim. What the numbers point to is a humbler yet deeper conclusion: <b>ancient astrology is astronomy, compiled.</b> Our ancestors took the real motions of the sky — the Jupiter–Saturn beat, solar declination, the star Spica, the precession of Earth's axis — and compressed them into stem-branch tables, verses, and mnemonic formulas, so that people with no telescope and no ephemeris could use the sky's knowledge every day by opening a table.</p>
+  <p>And like any binary compiled two thousand years ago, it carries accumulated drift: 超辰 is the interest charged on rounding 11.862 up to 12; the 24.2° ayanamsa is the interest on pinning zero to the stars while Earth's axis wanders. The canon isn't "wrong" — it was simply compiled at one moment in time, and time kept moving.</p>
+  <p>This is why hourkey runs both layers side by side: the "source code" — real planetary positions at the real second, computed with modern astronomy (<a href="/tianxing">天星擇日 · real-sky check</a>) — and the "binary" — the stem-branch and jieqi system refined over three millennia (<a href="/datepick">date selection</a> · <a href="/master-fusion">five-tradition reading</a>). Where the two layers agree, confidence compounds; where they diverge is exactly where the learning lives.</p>
+  <p>Three civilizations · one geometry · and for the first time in a thousand years, source and binary laid side by side on a single screen.</p>
+</div>
+<div data-l="zh">
+  <p>以上四項結果並不證明占星術預測準確——我們也不作此宣稱。數字指向的是一個更謙遜卻更深刻的結論：<b>古代占星術是被「編譯」過的天文學。</b>先人把天空的真實運動——木土節拍、太陽赤緯、角宿一、地軸歲差——壓縮成干支表、口訣與歌賦，讓沒有望遠鏡、沒有星曆表的人，翻開一張表就能日日取用天文知識。</p>
+  <p>而如同任何編譯於兩千年前的二進位檔，它帶著累積的漂移：超辰是把 11.862 湊成 12 的利息；24.2° 的 ayanamsa 是把零點釘在恆星上、而地軸自行漂移的利息。典籍並非「錯」——它只是編譯於某個時刻，而時間繼續前行。</p>
+  <p>這正是 hourkey 同時運行兩層的原因：「原始碼」層——以現代天文學實算真實星位（<a href="/tianxing">天星擇日</a>），與「二進位」層——三千年打磨而成的干支節氣系統（<a href="/datepick">擇日</a> · <a href="/master-fusion">五術合參</a>）。兩層相合，信心倍增；兩層相異之處，正是最值得深究之處。</p>
+  <p>三個文明 · 同一幾何 · 千年來第一次，原始碼與二進位並列於同一塊螢幕之上。</p>
+</div>
+
+<div class="cta">
+  <a href="/tianxing"><span class="han">星</span><span data-l="th">ดูดาวจริง 天星擇日</span><span data-l="en">Real-sky 天星擇日</span><span data-l="zh">天星擇日</span></a>
+  <a href="/datepick"><span class="han">擇</span><span data-l="th">วางฤกษ์ด้วยระบบก้านกิ่ง</span><span data-l="en">Stem-branch date selection</span><span data-l="zh">干支擇日</span></a>
+  <a href="/master-fusion"><span class="han">合</span><span data-l="th">ดูดวง 5 ศาสตร์เทียบกัน</span><span data-l="en">Five traditions, one chart</span><span data-l="zh">五術合參</span></a>
+</div>
+
+<footer>
+  <div data-l="th">หมายเหตุระเบียบวิธี: ตัวเลขทุกตัวในบทความนี้คำนวณโดย engine ของ hourkey ด้วยไลบรารีดาราศาสตร์ astronomy-engine (MIT) — Great Conjunction ค.ศ. 1800–2100 · การจับคู่พฤหัส–สถานี (超辰) ค.ศ. 1900–2100 · ตำแหน่ง Spica และขอบ 28宿/27 nakshatra (Lahiri ayanamsa ณ 3 ก.ค. 2026 = 24.22°) · เดคลิเนชันรายเดือน節氣ปี 2026 เทียบ 窮通寶鑑 (กรณีก้าน 甲) — ผลทั้งหมดตรวจซ้ำได้ · ภาษาที่ใช้ในบทความคือ "สอดคล้อง / ชี้ว่า" โดยเจตนา: ข้อมูลชุดนี้แสดงความพ้องเชิงเรขาคณิตและเชิงดาราศาสตร์ ไม่ใช่ข้อพิสูจน์เชิงพยากรณ์</div>
+  <div data-l="en">Methodology note: every figure in this article was computed by hourkey's engine using the astronomy-engine library (MIT) — Great Conjunctions AD 1800–2100 · Jupiter-station pairing (超辰) AD 1900–2100 · Spica's position and the 28-xiu/27-nakshatra boundaries (Lahiri ayanamsa on 3 Jul 2026 = 24.22°) · monthly jieqi declination for 2026 against 窮通寶鑑 (甲-stem case). All results are reproducible. The article deliberately says "aligns with / points to": this data demonstrates geometric and astronomical concordance, not predictive proof.</div>
+  <div data-l="zh">方法說明：本文所有數字均由 hourkey 引擎以 astronomy-engine（MIT）程式庫實算——木土大會合 1800–2100 · 木星—星次對應（超辰）1900–2100 · 角宿一位置與二十八宿／27 nakshatra 界線（Lahiri ayanamsa 2026-07-03 = 24.22°）· 2026 年節氣月赤緯對照《窮通寶鑑》（甲木案例）。所有結果皆可覆核。本文刻意使用「相符／指向」等措辭：這組數據展示的是幾何與天文上的一致性，而非預測能力的證明。</div>
+  <div class="mono" style="margin-top:10px">hourkey.io · 2026-07-03 · TH / EN / 中</div>
+</footer>
+
+</article>
+</main>
+
+<script>
+(function(){
+  var LANGS=["th","en","zh"];
+  var TITLES={
+    th:"เรขาคณิตร่วมของโหราศาสตร์ 3 อารยธรรม · จีน อินเดีย กรีก · hourkey",
+    en:"The Shared Geometry of Three Astrologies · China India Greece · hourkey",
+    zh:"三大文明占星術的共同幾何 · 中國 印度 希臘 · hourkey"
+  };
+  function getLang(){
+    try{
+      var u=new URLSearchParams(location.search).get("lang");
+      if(u&&LANGS.indexOf(u)>-1)return u;
+      var s=localStorage.getItem("hk_lang");
+      if(s&&LANGS.indexOf(s)>-1)return s;
+    }catch(e){}
+    return "th";
+  }
+  var LANG=getLang();
+  function applyLang(){
+    var d=document.documentElement;
+    d.dataset.lang=LANG;
+    d.lang=LANG==="zh"?"zh-Hant":LANG;
+    document.title=TITLES[LANG]||TITLES.th;
+    var btns=document.querySelectorAll("#langSeg button");
+    for(var i=0;i<btns.length;i++){btns[i].classList.toggle("on",btns[i].dataset.lang===LANG);}
+  }
+  document.getElementById("langSeg").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-lang]");if(!b)return;
+    LANG=b.dataset.lang;
+    try{localStorage.setItem("hk_lang",LANG);}catch(err){}
+    applyLang();
+  });
+  document.getElementById("themeBtn").onclick=function(){
+    var d=document.documentElement;
+    d.dataset.theme=d.dataset.theme==="dark"?"light":"dark";
+    try{localStorage.setItem("hk_theme",d.dataset.theme);}catch(e){}
+  };
+  applyLang();
+})();
+</script>
+</body>
+</html>

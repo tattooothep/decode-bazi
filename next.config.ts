@@ -87,6 +87,8 @@ const nextConfig: NextConfig = {
       "/yongshen-method",
       "/account",
       "/account.html",
+      "/article/geometry",
+      "/article-geometry.html",
     ];
 
     return [
@@ -135,6 +137,7 @@ const nextConfig: NextConfig = {
       { source: "/why-us", destination: "/accuracy.html" },
       { source: "/methodology", destination: "/methodology.html" },
       { source: "/yongshen-method", destination: "/methodology.html" },
+      { source: "/article/geometry", destination: "/article-geometry.html" }, // 3 ก.ค. · บทความ SEO เรขาคณิตร่วม 3 อารยธรรม
     ];
   },
 };
