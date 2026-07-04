@@ -12,9 +12,12 @@ import type {
   UranianAntiscion,
   UranianDeclPair,
   UranianFourPlanetPicture,
+  UranianTnpPicture,
+  UranianTnpSensitive,
   Gender,
   WITTE_TNP,
 } from "./engine";
+import type { TnpPosition, TNP_NOT_COMPUTABLE, TNP_POSITION_SOURCE } from "./tnp-kepler";
 import type { UranianAuslosung } from "./auslosung";
 
 export type UranianPacket = {
@@ -32,7 +35,9 @@ export type UranianPacket = {
   orbAntisciaDeg: number;                  // r390
   orbParallelDeg: number;                  // r390
   orbFourPlanetDeg: number;                // r390
-  tnpPositionSource: "witte_pd_ephemeris_not_wired_phase1";
+  tnpPositionSource: "witte_pd_ephemeris_not_wired_phase1"; // backward-compat literal (คงเดิม)
+  tnpPositionSourceKepler: typeof TNP_POSITION_SOURCE;      // r391 · ป้ายเฟส 2 (Kepler mean-element คำนวณแล้ว)
+  tnpPrecisionNote: string;                                 // r391 · ความแม่น mean-element (~±1–2° · ห้ามยึดองศาเป๊ะ)
   excludedTransneptunians: readonly string[];
   data: {
     points: UranianPoint[];
@@ -44,6 +49,12 @@ export type UranianPacket = {
     antiscia: UranianAntiscion[];         // r390 · จุดกระจก (Spiegelpunkte)
     declinationPairs: UranianDeclPair[];  // r390 · parallel/contra-parallel
     witteTransneptunians: typeof WITTE_TNP;
+    // ── r391 · ตำแหน่ง TNP จริง (additive · Cupido/Hades/Kronos · Zeus ขาด element) ──
+    tnpPoints: TnpPosition[];
+    tnpPlanetaryPictures: UranianTnpPicture[];
+    tnpSensitivePoints: UranianTnpSensitive[];
+    tnpNotComputable: typeof TNP_NOT_COMPUTABLE;
+    tnpElementsMissing: Array<{ name: string; missing: string[] }>;
   };
   nodeType: "mean";
   nodeMeanLon: number;                      // r390
@@ -63,7 +74,8 @@ const ALLOWED_FIELDS_NO_TIME = [
 export function buildUranianPacket(chart: UranianChart, auslosung: UranianAuslosung | null = null): UranianPacket {
   const notAvailable: string[] = [];
   if (!chart.hasBirthTime) notAvailable.push("meridian", "ascendant");
-  // เฟส 1: ทรานส์เนปจูน Witte ยังไม่คำนวณตำแหน่ง (แจ้งตรง ๆ ให้ AI ไม่แต่งองศา)
+  // r391: ตำแหน่ง TNP "ระดับดาวจริง/วินาที (swisseph)" ยังไม่มี — แต่ตอนนี้มี mean-element (Kepler)
+  //   ใน data.tnpPoints แล้ว (คงลิเทอรัลนี้ไว้เพื่อ backward-compat + สื่อว่าเป็น fictitious ~±1–2° ไม่ใช่ดาวจริง)
   notAvailable.push("witteTransneptunianPositions");
 
   return {
@@ -82,6 +94,8 @@ export function buildUranianPacket(chart: UranianChart, auslosung: UranianAuslos
     orbParallelDeg: chart.orbParallelDeg,
     orbFourPlanetDeg: chart.orbFourPlanetDeg,
     tnpPositionSource: chart.tnpPositionSource,
+    tnpPositionSourceKepler: chart.tnpPositionSourceKepler,
+    tnpPrecisionNote: chart.tnpPrecisionNote,
     excludedTransneptunians: chart.excludedTransneptunians,
     data: {
       points: chart.points,
@@ -93,6 +107,11 @@ export function buildUranianPacket(chart: UranianChart, auslosung: UranianAuslos
       antiscia: chart.antiscia,
       declinationPairs: chart.declinationPairs,
       witteTransneptunians: chart.witteTransneptunians,
+      tnpPoints: chart.tnpPoints,
+      tnpPlanetaryPictures: chart.tnpPlanetaryPictures,
+      tnpSensitivePoints: chart.tnpSensitivePoints,
+      tnpNotComputable: chart.tnpNotComputable,
+      tnpElementsMissing: chart.tnpElementsMissing,
     },
     nodeType: chart.nodeType,
     nodeMeanLon: chart.nodeMeanLon,

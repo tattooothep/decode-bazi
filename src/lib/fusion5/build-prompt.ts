@@ -25,6 +25,7 @@ import { buildZiweiPacket } from "../astro/ziwei/packet";
 import { renderZiweiPrompt } from "../astro/ziwei/render";
 import { DISCIPLINES, type ScienceId } from "./disciplines";
 import { renderPairInteractionPacket } from "./pair-interactions";
+import { loadPromptMd } from "../prompt-md"; // r391-book: โหลด directive "อ่านเต็มดวง" (natal-book · แก้ผ่าน admin ได้ · .default กันพัง)
 
 export type BirthData = {
   name: string;
@@ -2681,10 +2682,15 @@ export function buildSciencePrompt(
   lang = "th",
   refDate = new Date("2026-06-30T00:00:00Z"),
   timingRefOverride?: FusionTimingReference,
+  opts?: { bookMode?: boolean }, // r391-book: additive · true = สลับ "คำถามผู้ใช้" → directive "อ่านเต็มทุกมิติ" (Q&A เดิมไม่กระทบ · default false)
 ): string {
   const bind = DISCIPLINES[science];
+  const bookMode = opts?.bookMode === true;
+  // r391-book: bookMode → question ถูกแทนด้วย read-full directive (เจาะ 10 มิติ) · ใช้เลือก canon ให้ครอบทุกมิติ
+  const bookDirective = bookMode ? loadBookDirective(science, births[0]?.name || "เจ้าชะตา") : "";
+  const effectiveQuestion = bookMode ? bookDirective : question;
   const timingRef = timingRefOverride || resolveFusionTimingReference(question, refDate);
-  const selectedCanonFiles = selectCanonFilesForPrompt(science, question, births);
+  const selectedCanonFiles = selectCanonFilesForPrompt(science, effectiveQuestion, births);
   const assemble = (bundle: CanonBundle) => {
     const L: string[] = [];
     L.push(`คุณคือซินแสผู้เชี่ยวชาญ "${bind.labelTh}" (${bind.labelZh})`);
@@ -2733,8 +2739,14 @@ export function buildSciencePrompt(
     } else {
       L.push(`\n=== โหมดเดี่ยว ===\nมีผังเดียวโดยเจตนา · อย่านับ "ไม่มีดวงคู่/ไม่มีปฏิกิริยาข้ามสองผัง" เป็นข้อมูลขาดของการดูดวงเดี่ยว เว้นแต่คำถามผู้ใช้ถามเรื่องดูคู่/สมพงษ์โดยตรง`);
     }
-    L.push(`\n=== คำถามผู้ถาม ===\n${question}`);
-    L.push(`\n${answerFormatLine(births)}`);
+    if (bookMode) {
+      // r391-book: ไม่มีคำถาม → directive อ่านเต็มดวงทุกมิติ (โหลดจาก read-full-{science}.md) + format บท
+      L.push(`\n=== คำสั่งอ่านเต็มดวง · หนังสือดวงชะตา (Natal Book) ===\n${bookDirective}`);
+      L.push(`\n${MARKDOWN_FORMAT_CONTRACT}\n${BOOK_CHAPTER_FORMAT}`);
+    } else {
+      L.push(`\n=== คำถามผู้ถาม ===\n${question}`);
+      L.push(`\n${answerFormatLine(births)}`);
+    }
     return L.join("\n");
   };
   let maxCanon = CANON_TEXT_MAX_CHARS + (science === "ziwei" ? ZIWEI_SIHUA_CANON_EXTRA_CHARS : 0);
@@ -2796,6 +2808,84 @@ export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[]
     const over = out.length - FUSION_PANEL_PROMPT_MAX_CHARS;
     const keep = Math.max(0, daySniperBlock.length - over - 40);
     out = out.replace(daySniperBlock, `${daySniperBlock.slice(0, keep)}\n[DAY_SNIPER_TRUNCATED_FOR_CAP]`);
+  }
+  return out.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
+}
+
+/* ============================================================================
+ * r391-book · หนังสือดวงชะตา (Natal Book · 命書) — additive · reuse pipeline fusion5
+ *   bookMode ใน buildSciencePrompt (บน) + buildJudgeBookPrompt (ล่าง)
+ *   directive "อ่านเต็มดวง" โหลดจาก data/library/prompts/natal-book/*.md (แก้ผ่าน admin · .default กันพัง)
+ * ========================================================================== */
+
+// ป้ายบทของแต่ละศาสตร์ในเล่ม (ใช้ในสารบัญ + ภาคผนวก)
+export const BOOK_CHAPTER_ORDER: ScienceId[] = ["bazi", "ziwei", "qizheng", "western", "vedic", "uranian"];
+
+const BOOK_CHAPTER_FORMAT = [
+  "รูปแบบบท (บังคับ · นี่คือ 'บทหนึ่งในหนังสือดวงชะตา' ไม่ใช่คำตอบสั้น):",
+  "- เขียนครบทุกมิติตามหัวข้อ ## ในคำสั่งด้านบน · ห้ามข้ามมิติ · ห้ามยุบรวมเป็นย่อหน้าเดียว",
+  "- แต่ละมิติต้องมีหลักฐานจากผังจริงของดวงนี้ แล้วแปลเป็นผลชีวิตเฉพาะเจาะจง (ไม่ใช่ horoscope ทั่วไป)",
+  "- ปิดท้ายบทด้วย 'จุดเฉพาะที่ทำให้บทนี้เป็นของเจ้าชะตาคนนี้เท่านั้น' 3 ข้อ",
+  "- ห้ามพูดคำว่า packet/engine/prompt/CLI/คัมภีร์ ในเนื้อบท",
+].join("\n");
+
+/** โหลด directive "อ่านเต็มดวง" ของศาสตร์ (แทน {{NAME}}) · แก้ผ่าน /admin/sifu-prompts (prompts/natal-book/read-full-{science}.md) */
+export function loadBookDirective(science: ScienceId, name: string): string {
+  const raw = loadPromptMd(`prompts/natal-book/read-full-${science}.md`, "").trim();
+  const safeName = (name || "เจ้าชะตา").slice(0, 40);
+  const body = raw || `เขียน "บท${DISCIPLINES[science].labelTh}" ของหนังสือดวงชะตาให้ ${safeName} — อ่านเต็มทุกมิติ (ตัวตน/การงาน/การเงิน/ความรัก/สุขภาพ/ครอบครัว/สติปัญญา/จังหวะชีวิต/จุดแข็งจุดอ่อน/คำแนะนำ) จากผังจริงเท่านั้น`;
+  return body.replace(/\{\{NAME\}\}/g, () => safeName);
+}
+
+/** โหลด directive บทหลอมรวม+จังหวะเวลา (judge-book) · แทน {{NAME}} */
+export function loadBookJudgeDirective(name: string): string {
+  const raw = loadPromptMd("prompts/natal-book/judge-book.md", "").trim();
+  const safeName = (name || "เจ้าชะตา").slice(0, 40);
+  const body = raw || `คุณคือซินแสใหญ่ · เขียนบทหลอมรวม (ธีมชีวิต + จุดที่หลายศาสตร์ตรงกัน + ฟันธงภาพรวม + ยุทธศาสตร์ชีวิต) และบทจังหวะเวลา (ไทม์ไลน์ช่วงวัย + ปีสำคัญ + วันลั่นไก) ปิดท้ายหนังสือดวงชะตาของ ${safeName} จาก 6 บทด้านบน + RESONANCE/DAY_SNIPER/MULTI_YEAR เท่านั้น · NO_PERCENT · decisive`;
+  return body.replace(/\{\{NAME\}\}/g, () => safeName);
+}
+
+/**
+ * buildJudgeBookPrompt · สังเคราะห์ 6 บทเต็ม → บทหลอมรวม + บทจังหวะเวลา (ปิดเล่ม)
+ * โครงเหมือน buildJudgePrompt แต่ input = บทเต็ม (ไม่ใช่คำตอบ Q&A) + directive judge-book + MULTI_YEAR block
+ * cap ต่อบทที่ JUDGE_PANEL_REPLY_MAX_CHARS (กันเกิน FUSION_PANEL_PROMPT_MAX_CHARS) · shrink: resonance → daySniper → multiYear
+ */
+export function buildJudgeBookPrompt(
+  chapters: { science: ScienceId; reply: string }[],
+  births: BirthData[],
+  lang = "th",
+  resonanceBlock?: string,
+  daySniperBlock?: string,
+  multiYearBlock?: string,
+): string {
+  const name = births[0]?.name || "เจ้าชะตา";
+  const L: string[] = [];
+  L.push(`คุณคือ "ซินแสใหญ่" ผู้เขียนบทปิดเล่มของ "หนังสือดวงชะตา 6 ศาสตร์" ของ ${name}`);
+  L.push(`มี ${chapters.length} บทจากศาสตร์ต่างๆ อ่านดวงเดียวกัน · หน้าที่: หลอมรวมเป็น "บทสังเคราะห์" + "บทจังหวะเวลา"`);
+  L.push(`⚠️ ห้ามคำนวณดวงเอง · ใช้เฉพาะเนื้อจาก 6 บท + RESONANCE/DAY_SNIPER/MULTI_YEAR ด้านล่าง · ติดป้ายชื่อศาสตร์ทุกครั้งที่อ้าง · ตอบภาษา${LANG_NAME[lang] || "ไทย"}`);
+  L.push(`⚠️ ห้ามเอาหลักของศาสตร์หนึ่งไปตัดสิน/หักล้างอีกศาสตร์ (แต่ละศาสตร์มีกติกาของตัวเอง) · หน้าที่คือ "เทียบข้อสรุป" ว่าตรง/ต่างกันอย่างไร แล้วแปลเป็นชีวิตจริง`);
+  L.push(DECISIVE_READING_POLICY);
+  L.push(subjectLockLine(births));
+  L.push(SPECIFIC_READING_CONTRACT);
+  L.push(FUSION_JUDGE_SYNTHESIS_CONTRACT);
+  chapters.forEach((c) => {
+    const reply = c.reply.length > JUDGE_PANEL_REPLY_MAX_CHARS
+      ? `${c.reply.slice(0, JUDGE_PANEL_REPLY_MAX_CHARS)}\n[TRUNCATED_FOR_JUDGE:${c.reply.length}]`
+      : c.reply;
+    L.push(`\n=== บท ${DISCIPLINES[c.science].labelTh} ===\n${reply}`);
+  });
+  if (resonanceBlock) L.push(`\n${resonanceBlock}`);
+  if (daySniperBlock) L.push(`\n${daySniperBlock}`);
+  if (multiYearBlock) L.push(`\n=== MULTI_YEAR (ไทม์ไลน์หลายปี · engine คำนวณ) ===\n${multiYearBlock}`);
+  L.push(`\n=== คำสั่งเขียนบทปิดเล่ม (หนังสือดวงชะตา) ===\n${loadBookJudgeDirective(name)}`);
+  L.push(`\n${MARKDOWN_FORMAT_CONTRACT}`);
+  let out = L.join("\n");
+  // shrink ตามลำดับ กันตัดคำสั่งท้าย: resonance → daySniper → multiYear
+  for (const block of [resonanceBlock, daySniperBlock, multiYearBlock]) {
+    if (out.length <= FUSION_PANEL_PROMPT_MAX_CHARS || !block) continue;
+    const over = out.length - FUSION_PANEL_PROMPT_MAX_CHARS;
+    const keep = Math.max(0, block.length - over - 40);
+    out = out.replace(block, `${block.slice(0, keep)}\n[TRUNCATED_FOR_CAP]`);
   }
   return out.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
 }

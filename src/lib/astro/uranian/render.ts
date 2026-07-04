@@ -59,7 +59,7 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   L.push("3) พจนานุกรม «การอ่านเชิงวิธี» = สำนวนไทยของระบบเราเอง เรียบเรียงตามระบบ Hamburg School (วิธี Witte PD + ความหมายดาวสาธารณะ) → ⛔ ห้ามลอกถ้อยคำจาก Regelwerk / Ebertin (CSI/COSI) / Brummund / Niggemann / Aich (มีลิขสิทธิ์) และ ⛔ ห้ามแต่งคู่/ความหมายนอกพจนานุกรมนี้ขึ้นเอง · ถ้าผู้ใช้ถามที่มา จึงบอกว่าเป็น «การอ่านเชิงวิธีของระบบ ไม่ใช่ verbatim Witte»");
   L.push("4) อ่านความหมายของทุกคู่ดาวที่ engine ส่งมาได้ (ครึ่งผลรวม/ภาพดาว/จุดไว) — ไม่ต้องตอบ «เรขาคณิตอย่างเดียว» อีกต่อไป · ใช้พจนานุกรม + สมการ 3 ทิศ (A/B=C ⟺ A/C=B ⟺ B/C=A) รวมเป็นธีมเดียว · คู่ที่พจนานุกรมยังไม่มีจริง ๆ จึงอธิบายเชิงเรขาคณิต");
   L.push("5) ทรานส์เนปจูนที่ใช้ได้ = เฉพาะ Cupido/Hades/Kronos/Zeus (Witte เขียนเอง · PD) · ⛔ ห้ามใช้ Apollon/Admetos/Vulkanus/Poseidon และห้ามใช้การตีความ Pluto สำนัก Hamburg หลังสงคราม");
-  L.push("6) เฟสนี้ยังไม่ได้คำนวณตำแหน่ง Cupido/Hades/Kronos/Zeus → ห้ามระบุองศา/ราศี/จุดกึ่งกลางของมันเอง · อ้างได้เฉพาะความหมายตามคัมภีร์หมวด H เมื่อผู้ใช้ถามเรื่องที่ตรง (แต่งงาน/ครอบครัว=Cupido · โรค/ความตาย/ผู้หญิงโดดเดี่ยว=Hades · ผู้ปกครอง=Kronos · สงคราม=Zeus)");
+  L.push("6) r391: Cupido/Hades/Kronos คำนวณตำแหน่งแล้ว (Kepler จาก orbital elements Witte PD · โมเดลวงกลม mean-element) — อ่านราศี/ภาพดาวที่มีมันร่วมได้ · ⚠️ เป็นดาวสมมุติ (fictitious) ความแม่น ~±1–2° ราศีมักถูก แต่ห้ามยึดองศาเป๊ะ/ฟันธงระดับองศา · ⛔ Zeus ยังคำนวณไม่ได้ (ตาราง element หายจากคลัง Witte) → ห้ามระบุองศา/ราศีของ Zeus · ความหมายหมวด H: แต่งงาน/ครอบครัว=Cupido · โรค/ความตาย/ผู้หญิงโดดเดี่ยว=Hades · ผู้ปกครอง/อำนาจ=Kronos · พลังมีเป้า/สงคราม=Zeus");
   L.push("7) NO_PERCENT: ห้ามให้คะแนน/เปอร์เซ็นต์ · ตัวเลข orb คือระยะเชิงมุมจริง ใช้จัดลำดับความคม ไม่ใช่คะแนนทำนาย");
   L.push("8) สัญลักษณ์ดาว/องศาในต้นฉบับ Fraktur ของ Witte OCR เพี้ยนได้ → ถ้าจะยกตัวเลของศาจากตัวอย่าง (บท 12/30/31/44) ให้เตือนว่าเป็นค่าโดยประมาณต้องเทียบสแกน");
   L.push("9) ชั้นเสริม r390: (ก) จุดกระจก (Spiegelpunkte/Antiscia) = Witte «จุดไวหมวดแรกสุด/Anareta» (บท 16/36) — อ่านได้ว่าเป็นการสัมผัสของสองดาวข้ามแกนอายัน/วิษุวัต · สูตรสะท้อน+orb เป็น «วิธีสากล» (Ptolemy PD) ไม่ใช่ตัวเลข Witte verbatim (บ) parallel/contra-parallel = ลายเซ็นเดคลิเนชันของ Witte (บท 03/23/46) · orb เป็นวิธีสากล (ค) ภาพดาว 4 ดวง (Vierergestirn a+b=c+d) = บท 44/31 verbatim (ง) ปมจันทร์ให้ทั้ง mean+true ระบุชนิด ห้ามสลับ");
@@ -146,10 +146,31 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   L.push(`  • true/osculating (astronomy-engine): ${fmtLon(packet.nodeTrueLon)} — ต่างจาก mean ได้ถึง ~1.5° (จริงตามวงโคจรจันทร์ขณะนั้น)`);
   L.push("");
 
-  // ── ทรานส์เนปจูนของ Witte (เฟส 1 = ชื่อ+ความหมายเท่านั้น) ──
-  L.push("— ทรานส์เนปจูนของ Witte (PD · ยังไม่คำนวณตำแหน่งในเฟสนี้ · อ้างความหมายจากคัมภีร์หมวด H เท่านั้น) —");
-  for (const t of d.witteTransneptunians) {
-    L.push(`  • ${t.nameTh} (${t.nameDe}) — เจ้าราศี ${t.rulerSignDe} · แหล่งความหมาย: ${t.canonRef}`);
+  // ── ทรานส์เนปจูนของ Witte (r391 · ตำแหน่งจริง Kepler mean-element) ──
+  L.push("— ทรานส์เนปจูนของ Witte (PD · ตำแหน่งจริงจาก Kepler mean-element · fictitious ~±1–2° ราศีถูก องศาห้ามยึด) —");
+  L.push(`  ${packet.tnpPrecisionNote}`);
+  if (d.tnpPoints.length) {
+    for (const t of d.tnpPoints) {
+      L.push(`  • ${t.nameTh} (${t.nameDe}) — ${fmtLon(t.lon)} · dial90=${t.dial90.toFixed(2)}° · เจ้าราศี ${t.rulerSignDe} (แหล่ง: ${t.source})`);
+    }
+  }
+  // Zeus + ดวงที่คำนวณไม่ได้ (element ขาด · ห้ามเดาองศา · อ้างได้เฉพาะความหมายหมวด H)
+  for (const z of d.tnpNotComputable) {
+    L.push(`  • ${z.nameTh} (${z.nameDe}) — ⚠️ ยังคำนวณตำแหน่งไม่ได้ (${z.reason}) · เจ้าราศี ${z.rulerSignDe} · อ้างได้เฉพาะความหมายหมวด H · ห้ามระบุองศา/ราศี`);
+  }
+  // ภาพดาวที่มี TNP ร่วม (occupant/pair ≥1 ตัวเป็น TNP · ความหมายหมวด H)
+  if (d.tnpPlanetaryPictures.length) {
+    L.push("  ภาพดาว (Planetenbild) ที่มีทรานส์เนปจูนร่วม (อ่านความหมายหมวด H · ⚠️ องศา mean-element):");
+    for (const pic of personalFirst(d.tnpPlanetaryPictures).slice(0, 20)) {
+      L.push(`    · ${pic.occupantTh} บนครึ่งผลรวม ${pic.pairTh} (${pic.pair}) · orb ${pic.orbDeg.toFixed(2)}° · TNP: ${pic.involves.join("/")}${pic.touchesPersonal ? STAR : ""}`);
+    }
+  }
+  if (d.tnpSensitivePoints.length) {
+    L.push("  จุดไว (sensitiver Punkt) ที่มีทรานส์เนปจูนร่วม:");
+    for (const sp of personalFirst(d.tnpSensitivePoints).slice(0, 20)) {
+      const op = sp.kind === "sum" ? "+" : "−";
+      L.push(`    · ${sp.activatedByTh} ตกบนจุด${sp.kind === "sum" ? "ผลรวม" : "ผลต่าง"} (${sp.aTh} ${op} ${sp.bTh}) ที่ ${fmtLon(sp.pointLon)} · orb ${sp.orbDeg.toFixed(2)}° · TNP: ${sp.involves.join("/")}${sp.touchesPersonal ? STAR : ""}`);
+    }
   }
   L.push(`  ⛔ ตัดออกจากศาสตร์นี้ (ลิขสิทธิ์ Sieggrün หลังสงคราม): ${packet.excludedTransneptunians.join(" / ")}`);
   L.push("");
@@ -171,7 +192,20 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
         L.push(`      • ${e.dateISO} · ${e.moverTh} ${e.aspectTh} · orb ${e.orbArcmin.toFixed(1)}′`);
       }
     }
-    L.push("  ⛔ ทรานส์เนปจูน (Cupido/Hades/Zeus/Kronos) ยังไม่คำนวณตำแหน่ง → ห้ามใช้เป็นตัวกระตุ้น/directed (รอ ephemeris)");
+    // r391 · ชั้น TNP ในการกระตุ้น (mean-element · แยก precision · ห้ามฟันวันเป๊ะ)
+    if (au.tnpActivations?.length) {
+      L.push("  ▸ ทรานส์เนปจูน (Cupido/Hades/Kronos) เป็นจุดกำเนิดที่ถูกดาวจรจริงกระตุ้น (⚠️ mean-element ~±1–2° · บอกช่วง ไม่ฟันวันเป๊ะ):");
+      for (const e of au.tnpActivations.slice(0, 6)) {
+        L.push(`      • ${e.dateISO} · ${e.moverTh} ${e.aspectTh} ${e.natalTargetTh} · orb ${e.orbArcmin.toFixed(1)}′`);
+      }
+    }
+    if (au.tnpMoverContacts?.length) {
+      L.push("  ▸ ทรานส์เนปจูนเป็นตัวกระตุ้น (ช้า ~1°/ปี · สัมผัสยาวข้ามปี):");
+      for (const e of au.tnpMoverContacts.slice(0, 6)) {
+        L.push(`      • ${e.moverTh} ${e.aspectTh} ${e.natalTargetTh} · orb ${e.orbArcmin.toFixed(1)}′ (สัมผัสต่อเนื่องช่วงนี้)`);
+      }
+    }
+    L.push("  ⛔ Zeus ยังคำนวณตำแหน่งไม่ได้ (element หาย) → ห้ามใช้ Zeus เป็นตัวกระตุ้น/directed · ⛔ Apollon/Admetos/Vulkanus/Poseidon (Sieggrün) ตัดถาวร");
   }
 
   L.push("— ที่มาความหมายเชิงวิธี (ภายใน · integrity) —");

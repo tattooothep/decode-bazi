@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
       "/master.html",
       "/master-fusion",
       "/master-fusion.html",
+      "/book",
+      "/book.html",
       "/mygoal",
       "/mygoal.html",
       "/picker",
@@ -118,6 +120,7 @@ const nextConfig: NextConfig = {
       { source: "/calendar", destination: "/calendar.html" },
       { source: "/master", destination: "/master.html" },
       { source: "/master-fusion", destination: "/master-fusion.html" },
+      { source: "/book", destination: "/book.html" }, // r391-book · หนังสือดวงชะตา 6 ศาสตร์ (Natal Book · /book?id=)
       { source: "/mygoal", destination: "/mygoal.html" },
       { source: "/picker", destination: "/picker.html" },
       { source: "/heluo", destination: "/heluo.html" },

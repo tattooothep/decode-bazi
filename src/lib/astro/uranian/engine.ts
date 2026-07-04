@@ -19,6 +19,7 @@
 import { computeBodies, ascendant, midheaven, meanNode, declinationFromEcliptic, eclipticLon, norm360, type BodyPos } from "../../astro-core/ephemeris";
 import { wrap180 } from "../../astro-core/events";
 import { SearchMoonNode, NextMoonNode, NodeEventKind } from "astronomy-engine";
+import { witteTnpPositions, TNP_POSITION_SOURCE, TNP_PRECISION_NOTE, TNP_NOT_COMPUTABLE, type TnpPosition } from "./tnp-kepler"; // r391 · ตำแหน่ง TNP จริง (Kepler mean-element)
 
 /** ชื่อไทยของดาว/จุด (key จาก astro-core) — export ให้ชั้น Auslösung (auslosung.ts) reuse */
 export const NAME_TH: Record<string, string> = {
@@ -147,6 +148,31 @@ export type UranianSensitivePoint = {
   touchesPersonal?: boolean; // r390 · แตะจุดส่วนตัว (☉/MC/Asc) = เด่นกว่า (ถ่วงน้ำหนัก)
 };
 
+/** r391 · ภาพดาวที่มีทรานส์เนปจูน Witte ร่วม (occupant/pair ≥1 ตัวเป็น TNP · แยกจาก planetaryPictures เดิม · additive)
+ *  ความหมาย: TNP มีตำแหน่งแล้ว → อ่านภาพดาวหมวด H ได้ (Cupido=ครอบครัว/แต่งงาน · Hades=โรค/สูญเสีย ·
+ *  Zeus=พลังมีเป้า · Kronos=อำนาจ) — precision = mean-element fictitious (~±1–2° · ห้ามยึดองศาเป๊ะ) */
+export type UranianTnpPicture = {
+  pair: string; pairTh: string;
+  occupant: string; occupantTh: string;
+  formula: string;
+  orbDeg: number;
+  involves: string[];            // ชื่อ TNP ที่ร่วมในภาพดาวนี้
+  touchesPersonal: boolean;
+  precision: "mean_element_fictitious";
+};
+
+/** r391 · จุดไวที่มีทรานส์เนปจูน Witte ร่วม (ผลรวม/ผลต่าง ≥1 ตัวเป็น TNP หรือถูก TNP กระตุ้น · additive) */
+export type UranianTnpSensitive = {
+  kind: "sum" | "difference";
+  a: string; b: string; aTh: string; bTh: string;
+  pointLon: number; pointSignTh: string; pointSignDeg: number;
+  activatedBy: string; activatedByTh: string;
+  orbDeg: number;
+  involves: string[];
+  touchesPersonal: boolean;
+  precision: "mean_element_fictitious";
+};
+
 export type Gender = "M" | "F";
 
 export type UranianChart = {
@@ -164,8 +190,16 @@ export type UranianChart = {
   sensitivePoints: UranianSensitivePoint[];     // จุดไวที่ถูกกระตุ้น (คัดคมสุด)
   antiscia: UranianAntiscion[];         // r390 · จุดกระจก (Spiegelpunkte · บท 16/36)
   declinationPairs: UranianDeclPair[];  // r390 · parallel/contra-parallel (บท 03/23/46)
-  witteTransneptunians: typeof WITTE_TNP;       // ชื่อ+เจ้าราศี+แหล่งความหมาย (เฟส 1 ยังไม่คำนวณตำแหน่ง)
-  tnpPositionSource: "witte_pd_ephemeris_not_wired_phase1";
+  witteTransneptunians: typeof WITTE_TNP;       // ชื่อ+เจ้าราศี+แหล่งความหมาย (คงเดิม — ความหมายหมวด H)
+  tnpPositionSource: "witte_pd_ephemeris_not_wired_phase1"; // คงลิเทอรัลเดิม (backward-compat · dial/packet เก่าอ่าน)
+  // ── r391 · ตำแหน่ง TNP จริง (Kepler mean-element จาก orbital elements Witte PD) — additive ทั้งหมด ──
+  tnpPoints: TnpPosition[];                     // Cupido/Hades/Kronos (Zeus คำนวณไม่ได้ · element ขาด)
+  tnpPlanetaryPictures: UranianTnpPicture[];    // ภาพดาวที่มี TNP ร่วม (แยกจาก planetaryPictures เดิม)
+  tnpSensitivePoints: UranianTnpSensitive[];    // จุดไวที่มี TNP ร่วม (แยกจาก sensitivePoints เดิม)
+  tnpPositionSourceKepler: typeof TNP_POSITION_SOURCE; // ป้ายเฟส 2 (คำนวณแล้ว)
+  tnpPrecisionNote: string;                     // ระบุความแม่น mean-element (ห้ามอวดเกินจริง)
+  tnpNotComputable: typeof TNP_NOT_COMPUTABLE;  // Zeus — ระบุ element ที่ขาด (ห้ามเดา)
+  tnpElementsMissing: Array<{ name: string; missing: string[] }>; // element ที่คัมภีร์ไม่ให้ (โปร่งใส)
   excludedTransneptunians: readonly string[];   // Lefeldt/Sieggrün — ไม่เคยถูกคำนวณ
   orbPictureDeg: number;
   orbSensitiveDeg: number;
@@ -412,6 +446,72 @@ export function uranianChart(dtUTC: Date, lat: number, lng: number, hasTime = tr
   }
   fourPlanetPictures.sort((x, y) => x.orbDeg - y.orbDeg || x.pairA.localeCompare(y.pairA) || x.pairB.localeCompare(y.pairB));
 
+  // 9) r391 · ทรานส์เนปจูน Witte (Cupido/Hades/Kronos) — ตำแหน่งจริงจาก Kepler mean-element (ไม่พึ่งเวลาเกิด · แค่วันที่)
+  //    additive ล้วน: ไม่แตะ points[]/halbsummen/pictures/sensitive เดิม → regression 54/51/41/20 ไม่กระทบ
+  const tnp = witteTnpPositions(dtUTC);
+  const tnpPoints = tnp.computed;
+  // node รวม (ดาวจริง+TNP) เพื่อหาภาพดาว/จุดไวที่ "มี TNP ร่วม" อย่างน้อย 1 ตัว
+  type NodePt = { name: string; nameTh: string; lon: number; isTnp: boolean };
+  const realNodes: NodePt[] = points.map((p) => ({ name: p.name, nameTh: p.nameTh, lon: p.lon, isTnp: false }));
+  const tnpNodes: NodePt[] = tnpPoints.map((t) => ({ name: t.name, nameTh: t.nameTh, lon: t.lon, isTnp: true }));
+  const allNodes: NodePt[] = [...realNodes, ...tnpNodes];
+  const tnpInvolved = (...ns: NodePt[]) => ns.filter((n) => n.isTnp).map((n) => n.name);
+
+  // 9a) ภาพดาว (Planetenbild) ที่มี TNP ร่วม
+  const tnpPictures: UranianTnpPicture[] = [];
+  for (let i = 0; i < allNodes.length; i++) {
+    for (let j = i + 1; j < allNodes.length; j++) {
+      const a = allNodes[i], b = allNodes[j];
+      const mid = midpointLon(a.lon, b.lon);
+      for (const occ of allNodes) {
+        if (occ.name === a.name || occ.name === b.name) continue;
+        const involves = [...new Set(tnpInvolved(a, b, occ))];
+        if (!involves.length) continue;                  // เก็บเฉพาะที่มี TNP ร่วม (real-only อยู่ใน planetaryPictures เดิมแล้ว)
+        const orb = dial90Distance(occ.lon, mid);
+        if (orb <= ORB_PICTURE_DEG) {
+          tnpPictures.push({
+            pair: `${a.name}/${b.name}`, pairTh: `${a.nameTh}/${b.nameTh}`,
+            occupant: occ.name, occupantTh: occ.nameTh,
+            formula: `${a.name} + ${b.name} − ${occ.name} = แกนสมมาตร (มี TNP ร่วม)`,
+            orbDeg: +orb.toFixed(3), involves,
+            touchesPersonal: anyPersonal(a.name, b.name, occ.name),
+            precision: "mean_element_fictitious",
+          });
+        }
+      }
+    }
+  }
+  tnpPictures.sort((x, y) => x.orbDeg - y.orbDeg || x.pair.localeCompare(y.pair) || x.occupant.localeCompare(y.occupant));
+
+  // 9b) จุดไว (sensitiver Punkt) ที่มี TNP ร่วม (ผลรวม/ผลต่าง หรือถูก TNP กระตุ้น)
+  const tnpSensitive: UranianTnpSensitive[] = [];
+  for (let i = 0; i < allNodes.length; i++) {
+    for (let j = i + 1; j < allNodes.length; j++) {
+      const a = allNodes[i], b = allNodes[j];
+      const sum = norm360(a.lon + b.lon);
+      const diff = norm360(a.lon - b.lon);
+      for (const [kind, pt] of [["sum", sum], ["difference", diff]] as const) {
+        for (const q of allNodes) {
+          if (q.name === a.name || q.name === b.name) continue;
+          const involves = [...new Set(tnpInvolved(a, b, q))];
+          if (!involves.length) continue;
+          const orb = dial90Distance(q.lon, pt);
+          if (orb <= ORB_SENSITIVE_DEG) {
+            const ps = Math.floor(pt / 30);
+            tnpSensitive.push({
+              kind, a: a.name, b: b.name, aTh: a.nameTh, bTh: b.nameTh,
+              pointLon: +pt.toFixed(4), pointSignTh: SIGN_TH[ps], pointSignDeg: +(pt - ps * 30).toFixed(4),
+              activatedBy: q.name, activatedByTh: q.nameTh, orbDeg: +orb.toFixed(3),
+              involves, touchesPersonal: anyPersonal(a.name, b.name, q.name),
+              precision: "mean_element_fictitious",
+            });
+          }
+        }
+      }
+    }
+  }
+  tnpSensitive.sort((x, y) => x.orbDeg - y.orbDeg || x.a.localeCompare(y.a) || x.b.localeCompare(y.b) || x.activatedBy.localeCompare(y.activatedBy));
+
   return {
     hasBirthTime: hasTime,
     degradeLevel: hasTime ? "full" : "partial",
@@ -429,6 +529,14 @@ export function uranianChart(dtUTC: Date, lat: number, lng: number, hasTime = tr
     declinationPairs: declinationPairs.slice(0, MAX_DECL),
     witteTransneptunians: WITTE_TNP,
     tnpPositionSource: "witte_pd_ephemeris_not_wired_phase1",
+    // ── r391 · TNP ตำแหน่งจริง (additive) ──
+    tnpPoints,
+    tnpPlanetaryPictures: tnpPictures.slice(0, MAX_PICTURES),
+    tnpSensitivePoints: tnpSensitive.slice(0, MAX_SENSITIVE),
+    tnpPositionSourceKepler: TNP_POSITION_SOURCE,
+    tnpPrecisionNote: TNP_PRECISION_NOTE,
+    tnpNotComputable: TNP_NOT_COMPUTABLE,
+    tnpElementsMissing: tnp.elementsMissing,
     excludedTransneptunians: EXCLUDED_TNP,
     orbPictureDeg: ORB_PICTURE_DEG,
     orbSensitiveDeg: ORB_SENSITIVE_DEG,

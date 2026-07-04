@@ -21,6 +21,7 @@
 import { eclipticLon, norm360 } from "../../astro-core/ephemeris";
 import { wrap180 } from "../../astro-core/events";
 import { NAME_TH, SIGN_TH, type UranianChart, type UranianPoint } from "./engine";
+import { witteTnpPositions, TNP_PRECISION_NOTE } from "./tnp-kepler"; // r391 · TNP เป็น natal-target (โดนดาวจรกระตุ้น) + mover
 
 const DAY_MS = 86_400_000;
 const TROPICAL_YEAR_DAYS = 365.24219;      // ปีสุริยคติเฉลี่ย (แปลง arc→อายุ→ค.ศ. + อายุ↔ปฏิทิน)
@@ -94,7 +95,11 @@ export type UranianAuslosung = {
   orbFastDeg: number;
   orbSlowDeg: number;
   notes: string[];
-  notAvailable: string[];          // เฟส 1: ตำแหน่ง TNP Witte ยังไม่คำนวณ
+  notAvailable: string[];          // ตำแหน่ง TNP "ระดับดาวจริง/วินาที (swisseph)" ยังไม่มี (มี mean-element ใน tnpActivations)
+  // ── r391 · ชั้น TNP (แยกจาก events/groups เดิม · fictitious mean-element ~±1–2° · ห้ามฟันวันเป๊ะ) ──
+  tnpActivations: AuslosungEvent[];        // ดาวจร (จริง) แตะ "จุด TNP กำเนิด" (Cupido/Hades/Kronos)
+  tnpMoverContacts: AuslosungEvent[];      // TNP (ตัวกระตุ้น · ช้า ~1°/ปี) แตะจุดส่วนตัวกำเนิด — สัมผัสยาวข้ามปี
+  tnpPrecisionNote: string;
 };
 
 /* ══════════════ คณิตมุม ══════════════ */
@@ -422,6 +427,28 @@ export function computeUranianAuslosung(
       || b.events.length - a.events.length || a.targetKey.localeCompare(b.targetKey))
     .slice(0, AUSLOSUNG_MAX_GROUPS);
 
+  // ── r391 · ชั้น TNP (mean-element · แยกออกจาก events/groups เดิมเพื่อไม่ปน precision + ไม่กระทบ regression) ──
+  //   (ก) ดาวจร "จริง" แตะจุด TNP กำเนิด (Cupido/Hades/Kronos เป็น natal target)
+  const tnpNatal = witteTnpPositions(birthDtUTC).computed;
+  const tnpTargets: NatalTarget[] = tnpNatal.map((t) => ({ key: t.name, th: t.nameTh, lon: t.lon, kind: "point", formula: null, natalOrbArcmin: 0 }));
+  const tnpActivations = scanTransits(chart, fromMs, toMs, tnpTargets)
+    .sort((a, b) => a.dateISO.localeCompare(b.dateISO) || a.orbArcmin - b.orbArcmin)
+    .slice(0, AUSLOSUNG_MAX_EVENTS);
+  //   (ข) TNP เป็น "ตัวกระตุ้น" (ช้า ~1°/ปี) — ประเมิน ณ กึ่งกลางช่วง = สัมผัสยาวข้ามปี (ไม่ฟันวันเป๊ะ · mean-element)
+  const midMs = Math.round((fromMs + toMs) / 2);
+  const tnpMid = witteTnpPositions(new Date(noonUTCms(midMs)));
+  const tnpMoverContacts: AuslosungEvent[] = [];
+  for (const mv of tnpMid.computed) {
+    for (const f of factors) {
+      const { aspect, orbDeg } = nearestHardAspect(mv.lon, f.lon);
+      if (orbDeg <= ORB_SLOW_DEG) {
+        const t: NatalTarget = { key: f.key, th: f.th, lon: f.lon, kind: "point", formula: null, natalOrbArcmin: 0 };
+        tnpMoverContacts.push(mkEvent("transit", mv.name, t, aspect, orbDeg, false, msToISO(midMs), `${mv.nameTh}(TNP·ช้า)`));
+      }
+    }
+  }
+  tnpMoverContacts.sort((a, b) => a.orbArcmin - b.orbArcmin || a.mover.localeCompare(b.mover) || a.natalTarget.localeCompare(b.natalTarget));
+
   const methods: AuslosungMethod[] = ["transit", "solar_arc", "prog_sun", "prog_moon"];
   if (natalMC) methods.push("prog_mc");
 
@@ -442,8 +469,12 @@ export function computeUranianAuslosung(
       "ส่วนโค้งอาทิตย์/☉เคลื่อน = secondary (N วันหลังเกิด = N ปีอายุ) · Meridian เคลื่อนตามส่วนโค้งอาทิตย์",
     ],
     notAvailable: [
-      "witteTransneptunianPositions", // Cupido/Hades/Kronos/Zeus ยังไม่คำนวณตำแหน่ง (รอ SwissEph/Witte-Ephemeride เฟส 2)
+      "witteTransneptunianPositions", // r391: ตำแหน่งระดับดาวจริง/วินาที (swisseph) ยังไม่มี — แต่มี mean-element ใน tnpActivations/tnpMoverContacts แล้ว
       "transitMoon",                  // ตัดจงใจ (เหตุผลด้านบน)
     ],
+    // ── r391 · ชั้น TNP (Cupido/Hades/Kronos · Zeus คำนวณไม่ได้) ──
+    tnpActivations,
+    tnpMoverContacts: tnpMoverContacts.slice(0, AUSLOSUNG_MAX_EVENTS),
+    tnpPrecisionNote: TNP_PRECISION_NOTE,
   };
 }

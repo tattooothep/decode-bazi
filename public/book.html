@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คัมภีร์ชะตา · หนังสือดวงชะตา 6 ศาสตร์ · hourkey</title>
+<meta name="description" content="หนังสือดวงชะตา 6 ศาสตร์ — ปาจื้อ จื่อเวย ดาวจริง โหราตะวันตก โหราพระเวท ยูเรเนียน หลอมรวมเป็นเล่มเดียว">
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --bg:#f6f3ec; --panel:#fffdf8; --ink:#2a2621; --muted:#7a7367; --line:#e3dccd;
+    --accent:#8a6d3b; --accent2:#b8974f; --gold:#a8842c; --shadow:0 2px 18px rgba(60,45,20,.08);
+    --serif:"Sarabun","Noto Serif Thai",Georgia,serif; --sans:"Sarabun","Noto Sans Thai",system-ui,sans-serif;
+  }
+  html[data-theme="dark"]{
+    --bg:#17140f; --panel:#201c15; --ink:#ece5d6; --muted:#a99e88; --line:#332c20;
+    --accent:#cdae6e; --accent2:#e0c580; --gold:#d8b45a; --shadow:0 2px 22px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.7;font-size:16px}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:920px;margin:0 auto;padding:0 18px}
+  /* ===== top bar ===== */
+  .bar{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1px solid var(--line);
+       display:flex;align-items:center;gap:10px;padding:10px 18px;flex-wrap:wrap}
+  .bar .brand{font-family:var(--serif);font-weight:700;color:var(--accent);font-size:17px;margin-right:auto}
+  .btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;
+       padding:7px 12px;font:inherit;font-size:14px;cursor:pointer;transition:.15s}
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{border:0;background:var(--panel);color:var(--muted);padding:7px 10px;font:inherit;font-size:13px;cursor:pointer}
+  .seg button.on{background:var(--accent);color:#fff}
+  /* ===== cover ===== */
+  .cover{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+         margin:22px 0;padding:44px 30px;text-align:center;position:relative;overflow:hidden}
+  .cover:before{content:"";position:absolute;inset:10px;border:1px solid var(--accent2);border-radius:12px;opacity:.35;pointer-events:none}
+  .cover .kai{font-family:var(--serif);font-size:13px;letter-spacing:.4em;color:var(--gold);text-transform:uppercase}
+  .cover h1{font-family:var(--serif);font-size:clamp(28px,7vw,42px);margin:14px 0 4px;color:var(--ink)}
+  .cover .zh{font-size:20px;color:var(--accent);letter-spacing:.2em}
+  .cover .who{font-size:clamp(20px,5vw,26px);margin:24px 0 6px;font-weight:700}
+  .cover .meta{color:var(--muted);font-size:14px}
+  .cover .pillars{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:22px 0 6px}
+  .cover .pill{border:1px solid var(--line);border-radius:12px;padding:8px 12px;min-width:58px;background:var(--bg)}
+  .cover .pill .lab{font-size:11px;color:var(--muted)}
+  .cover .pill .gz{font-size:20px;font-weight:700;color:var(--accent)}
+  .cover .dom{display:inline-block;margin-top:12px;padding:5px 14px;border-radius:20px;background:var(--accent);color:#fff;font-size:13px}
+  .cover .issued{margin-top:18px;font-size:12px;color:var(--muted)}
+  /* ===== toc ===== */
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin:18px 0}
+  .toc h3{font-family:var(--serif);margin:0 0 10px;color:var(--accent)}
+  .toc ol{margin:0;padding-left:20px}
+  .toc li{margin:4px 0}
+  .toc a{color:var(--ink)}
+  /* ===== chapter ===== */
+  .chapter{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 26px 30px;margin:18px 0;box-shadow:var(--shadow)}
+  .chapter .cnum{font-family:var(--serif);color:var(--gold);font-size:13px;letter-spacing:.2em}
+  .chapter h2{font-family:var(--serif);font-size:clamp(22px,5vw,28px);margin:4px 0 16px;color:var(--ink);border-bottom:2px solid var(--accent2);padding-bottom:10px}
+  .preface{border-left:3px solid var(--accent2)}
+  /* markdown */
+  .md-h{font-family:var(--serif);font-weight:700;color:var(--accent);margin:18px 0 8px;line-height:1.4}
+  .md-h1{font-size:22px} .md-h2{font-size:19px} .md-h3{font-size:17px} .md-h4{font-size:16px}
+  .md-p{margin:9px 0}
+  .md-ul{margin:8px 0 8px 4px;padding-left:20px}
+  .md-ul li{margin:4px 0}
+  .md-sp{height:6px}
+  .md-hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+  .md-tw{overflow-x:auto;margin:12px 0}
+  .md-t{border-collapse:collapse;width:100%;font-size:14px;min-width:480px}
+  .md-t th,.md-t td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  .md-t th{background:var(--bg);color:var(--accent);font-weight:700}
+  code{background:var(--bg);padding:1px 5px;border-radius:5px;font-size:.92em}
+  /* ===== states ===== */
+  .state{text-align:center;padding:60px 20px;color:var(--muted)}
+  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .progress{max-width:320px;margin:14px auto 0}
+  .progress .track{height:8px;background:var(--line);border-radius:6px;overflow:hidden}
+  .progress .fill{height:100%;background:var(--accent);width:10%;transition:width .5s}
+  .badge{display:inline-block;font-size:12px;padding:2px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted);margin-left:6px}
+  .badge.degraded{color:#b06a1a;border-color:#e5c48a}
+  .notready{color:var(--muted);font-style:italic;padding:8px 0}
+  .foot{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 50px}
+  /* ===== print → PDF ===== */
+  @media print{
+    :root{--bg:#fff;--panel:#fff;--ink:#000;--muted:#555;--line:#ccc}
+    .bar,.printbtn,.foot .noprint{display:none!important}
+    body{font-size:12pt;background:#fff}
+    .wrap{max-width:none;padding:0}
+    .cover{box-shadow:none;page-break-after:always;border:2px solid var(--accent2)}
+    .chapter,.toc{box-shadow:none;page-break-before:always;border:0;padding:0 0 10px}
+    .chapter h2,.toc{padding-top:6px}
+    .md-tw{overflow:visible}
+    .md-t{min-width:0}
+    a{color:#000;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+  <div class="bar noprint">
+    <div class="brand">📜 <span data-i="brand">คัมภีร์ชะตา</span></div>
+    <div class="seg" id="langSeg">
+      <button data-lang="th" class="on">ไทย</button>
+      <button data-lang="en">EN</button>
+      <button data-lang="zh">中文</button>
+    </div>
+    <button class="btn" id="themeBtn" title="theme">🌙</button>
+    <button class="btn primary printbtn" id="printBtn" data-i="print">พิมพ์ / บันทึก PDF</button>
+  </div>
+
+  <div class="wrap" id="root">
+    <div class="state" id="loading">
+      <div class="spinner"></div>
+      <div data-i="loadingText">กำลังเปิดหนังสือ…</div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  var I18N = {
+    th:{ brand:"คัมภีร์ชะตา", print:"พิมพ์ / บันทึก PDF", loadingText:"กำลังเปิดหนังสือ…",
+      kai:"หนังสือดวงชะตา 6 ศาสตร์", issued:"ออกเล่มโดย hourkey · เล่มที่",
+      toc:"สารบัญ", preface:"บทนำ", prefaceBody:"หนังสือเล่มนี้อ่านดวงของคุณผ่าน 6 ศาสตร์โบราณ แต่ละศาสตร์มองคนละมุมด้วยศัพท์และคัมภีร์ของตัวเอง แล้วหลอมรวมเป็นภาพเดียว อ่านเป็นเข็มทิศ ไม่ใช่คำสั่งชีวิต",
+      synthesis:"บทหลอมรวม", timing:"บทจังหวะเวลา", appendix:"ภาคผนวก",
+      running:"กำลังเขียนหนังสือดวงชะตาของคุณ…", runningSub:"ใช้เวลาราว 4-8 นาที (6 ศาสตร์ + บทหลอมรวม) · เปิดหน้านี้ค้างไว้หรือกลับมาใหม่ได้",
+      notReady:"บทนี้ยังไม่พร้อม (ลองสร้างเล่มใหม่)", errTitle:"เปิดเล่มไม่ได้", degraded:"บางบทไม่พร้อม",
+      chapter:"บทที่", noId:"ไม่พบเลขเล่ม (id) — เปิดจาก \"ดวงของฉัน\"", disclaimer:"คำเตือน", method:"วิธีคำนวณ" },
+    en:{ brand:"Book of Destiny", print:"Print / Save PDF", loadingText:"Opening your book…",
+      kai:"Book of Destiny · 6 Sciences", issued:"Issued by hourkey · No.",
+      toc:"Contents", preface:"Preface", prefaceBody:"This book reads your chart through 6 ancient sciences, each with its own lens and canon, then fuses them into one picture. Read it as a compass, not a command.",
+      synthesis:"Synthesis", timing:"Life Timing", appendix:"Appendix",
+      running:"Writing your Book of Destiny…", runningSub:"Takes about 4-8 minutes (6 sciences + synthesis). Keep this open or come back later.",
+      notReady:"This chapter is not ready (try a new book)", errTitle:"Cannot open book", degraded:"Some chapters unavailable",
+      chapter:"Chapter", noId:"No book id — open from \"My Chart\"", disclaimer:"Disclaimer", method:"Method" },
+    zh:{ brand:"命書", print:"打印 / 存為 PDF", loadingText:"正在打開命書…",
+      kai:"命書 · 六術合參", issued:"hourkey 出品 · 第",
+      toc:"目錄", preface:"前言", prefaceBody:"本書以六種古術解讀您的命盤，各以自身術語與典籍立論，再融合為一。此書為指南針，非命令。",
+      synthesis:"融合章", timing:"時運章", appendix:"附錄",
+      running:"正在撰寫您的命書…", runningSub:"約需 4-8 分鐘（六術＋融合章）。可保持此頁或稍後再來。",
+      notReady:"此章尚未就緒（請重新生成）", errTitle:"無法打開", degraded:"部分章節缺失",
+      chapter:"第", noId:"缺少命書編號（id）— 請從「我的命盤」開啟", disclaimer:"聲明", method:"計算方法" }
+  };
+  var lang = (function(){ var s=localStorage.getItem("hk_book_lang"); return (s==="en"||s==="zh")?s:"th"; })();
+  var theme = (function(){ var s=localStorage.getItem("hk_book_theme"); return (s==="dark"||s==="light")?s:"light"; })();
+  function t(k){ return (I18N[lang]&&I18N[lang][k]) || I18N.th[k] || k; }
+  var root = document.getElementById("root");
+  var pollTimer = null;
+
+  function esc(s){
+    return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+      return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];
+    });
+  }
+  // markdown ปลอดภัย (escape ก่อนแปลง) · หัวข้อ/ตาราง/ตัวหนา/ลิสต์/เส้นคั่น
+  function mdSafe(md){
+    var lines = String(md==null?"":md).split(/\r?\n/), out=[], listBuf=[], i=0;
+    function inline(s){ s=esc(s); s=s.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>"); s=s.replace(/`([^`]+)`/g,"<code>$1</code>"); return s; }
+    function flushList(){ if(listBuf.length){ out.push('<ul class="md-ul">'+listBuf.join("")+"</ul>"); listBuf=[]; } }
+    while(i<lines.length){
+      var ln=lines[i];
+      if(/^\s*\|.+\|\s*$/.test(ln) && i+1<lines.length && /^\s*\|[\s:|\-]+\|\s*$/.test(lines[i+1])){
+        flushList();
+        var cells=function(row){ return row.trim().replace(/^\|/,"").replace(/\|$/,"").split("|").map(function(c){ return inline(c.trim()); }); };
+        var head=cells(ln); i+=2; var rows=[];
+        while(i<lines.length && /^\s*\|.+\|\s*$/.test(lines[i])){ rows.push(cells(lines[i])); i++; }
+        out.push('<div class="md-tw"><table class="md-t"><thead><tr>'+head.map(function(h){return "<th>"+h+"</th>";}).join("")+
+          "</tr></thead><tbody>"+rows.map(function(r){return "<tr>"+r.map(function(c){return "<td>"+c+"</td>";}).join("")+"</tr>";}).join("")+"</tbody></table></div>");
+        continue;
+      }
+      if(/^\s*#{1,4}\s+/.test(ln)){ flushList(); var lvl=ln.match(/^\s*(#{1,4})/)[1].length; out.push('<div class="md-h md-h'+lvl+'">'+inline(ln.replace(/^\s*#{1,4}\s+/,""))+"</div>"); i++; continue; }
+      if(/^\s*[-*•]\s+/.test(ln)){ listBuf.push("<li>"+inline(ln.replace(/^\s*[-*•]\s+/,""))+"</li>"); i++; continue; }
+      var num=ln.match(/^\s*(\d{1,2}[.)])\s+(.*)$/);
+      if(num){ flushList(); out.push('<div class="md-p"><strong>'+esc(num[1])+"</strong> "+inline(num[2])+"</div>"); i++; continue; }
+      if(/^\s*(-{3,}|_{3,})\s*$/.test(ln)){ flushList(); out.push('<hr class="md-hr">'); i++; continue; }
+      flushList();
+      out.push(ln.trim()===""?'<div class="md-sp"></div>':'<div class="md-p">'+inline(ln)+"</div>");
+      i++;
+    }
+    flushList();
+    return out.join("");
+  }
+
+  function applyTheme(){ document.documentElement.setAttribute("data-theme", theme); document.getElementById("themeBtn").textContent = theme==="dark"?"☀️":"🌙"; }
+  function applyStaticI18n(){ document.documentElement.setAttribute("lang", lang);
+    document.querySelectorAll("[data-i]").forEach(function(el){ el.textContent = t(el.getAttribute("data-i")); });
+    document.querySelectorAll("#langSeg button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-lang")===lang); });
+  }
+
+  function getId(){
+    var q = new URLSearchParams(location.search);
+    var id = q.get("id") || q.get("bookId") || "";
+    return /^[0-9a-f-]{8,40}$/i.test(id) ? id : "";
+  }
+
+  function pillarBox(lab, p){
+    if(!p) return "";
+    return '<div class="pill"><div class="lab">'+esc(lab)+'</div><div class="gz">'+esc((p.stem||"")+(p.branch||""))+"</div></div>";
+  }
+
+  function renderCover(cover, book){
+    if(!cover) cover={};
+    var pil = cover.pillars || {};
+    var pills = pillarBox("年", pil.year)+pillarBox("月", pil.month)+pillarBox("日", pil.day)+pillarBox("時", pil.hour);
+    var dom = cover.dominantElTh ? '<div class="dom">ธาตุเด่น '+esc(cover.dominantElTh)+"</div>" : "";
+    var no = (book.bookId||"").slice(0,8);
+    return '<section class="cover" id="cover">'+
+      '<div class="kai">'+esc(t("kai"))+"</div>"+
+      "<h1>"+esc(t("brand"))+'</h1><div class="zh">命書</div>'+
+      '<div class="who">'+esc(cover.name||"—")+"</div>"+
+      '<div class="meta">'+esc(cover.birthSolar||"")+(cover.place?(" · "+esc(cover.place)):"")+"</div>"+
+      (pills?'<div class="pillars">'+pills+"</div>":"")+
+      dom+
+      '<div class="issued">'+esc(t("issued"))+" "+esc(no)+"</div>"+
+    "</section>";
+  }
+
+  function renderTOC(chapters){
+    var items = [];
+    items.push('<li><a href="#preface">'+esc(t("preface"))+"</a></li>");
+    (chapters||[]).forEach(function(c,idx){
+      items.push('<li><a href="#ch-'+esc(c.science)+'">'+esc(t("chapter"))+" "+(idx+1)+" · "+esc(c.label)+(c.ok?"":' <span class="badge degraded">'+esc(t("notReady"))+"</span>")+"</a></li>");
+    });
+    items.push('<li><a href="#synthesis">'+esc(t("synthesis"))+"</a></li>");
+    items.push('<li><a href="#timing">'+esc(t("timing"))+"</a></li>");
+    items.push('<li><a href="#appendix">'+esc(t("appendix"))+"</a></li>");
+    return '<nav class="toc" id="toc"><h3>'+esc(t("toc"))+"</h3><ol>"+items.join("")+"</ol></nav>";
+  }
+
+  function renderChapter(c, idx){
+    var body = c.ok && c.markdown ? mdSafe(c.markdown) : '<div class="notready">'+esc(t("notReady"))+"</div>";
+    return '<article class="chapter" id="ch-'+esc(c.science)+'">'+
+      '<div class="cnum">'+esc(t("chapter"))+" "+(idx+1)+"</div>"+
+      "<h2>"+esc(c.label)+"</h2>"+body+"</article>";
+  }
+
+  function renderSection(id, title, markdown){
+    var body = markdown ? mdSafe(markdown) : '<div class="notready">'+esc(t("notReady"))+"</div>";
+    return '<article class="chapter" id="'+id+'"><h2>'+esc(title)+"</h2>"+body+"</article>";
+  }
+
+  function renderAppendix(res){
+    var ap = (res && res.appendix) || {};
+    var rows = [];
+    if(ap.method) rows.push("<p><strong>"+esc(t("method"))+":</strong> "+esc(ap.method)+"</p>");
+    if(ap.disclaimer) rows.push("<p><strong>"+esc(t("disclaimer"))+":</strong> "+esc(ap.disclaimer)+"</p>");
+    var sk = ap.skipped && ap.skipped.length ? "<p>"+esc(t("degraded"))+": "+esc(ap.skipped.join(", "))+"</p>" : "";
+    return '<article class="chapter" id="appendix"><h2>'+esc(t("appendix"))+"</h2>"+rows.join("")+sk+"</article>";
+  }
+
+  function renderBook(book){
+    var res = book.result || {};
+    var chapters = res.chapters || [];
+    var timingMd = (res.synthesis && res.synthesis.markdown) || "";
+    // synthesis markdown มี 2 บท (## บทหลอมรวม + ## บทจังหวะเวลา) รวมในก้อนเดียว → แสดงเป็นบทหลอมรวม
+    var html = "";
+    html += renderCover(res.cover||{}, book);
+    html += renderTOC(chapters);
+    html += renderSection("preface", t("preface")+" · "+t("kai"), t("prefaceBody"));
+    // ทำ preface เป็น left-border style
+    chapters.forEach(function(c,idx){ html += renderChapter(c, idx); });
+    html += renderSection("synthesis", t("synthesis")+" · "+t("timing"), timingMd);
+    html += renderAppendix(res);
+    var deg = (res.meta && res.meta.degradedChapters && res.meta.degradedChapters.length) ? '<span class="badge degraded">'+esc(t("degraded"))+"</span>" : "";
+    html += '<div class="foot">📜 '+esc(t("brand"))+" · hourkey "+deg+"</div>";
+    root.innerHTML = html;
+    var pre = document.getElementById("preface"); if(pre) pre.classList.add("preface");
+  }
+
+  function renderRunning(book){
+    var pct = 15;
+    if(book && book.result){ /* n/a while running */ }
+    root.innerHTML = '<div class="state">'+
+      '<div class="spinner"></div>'+
+      '<div style="font-size:18px;color:var(--ink)">'+esc(t("running"))+"</div>"+
+      '<div style="margin-top:8px">'+esc(t("runningSub"))+"</div>"+
+      '<div class="progress"><div class="track"><div class="fill" style="width:'+pct+'%"></div></div></div>'+
+    "</div>";
+  }
+
+  function renderError(msg){
+    root.innerHTML = '<div class="state"><div style="font-size:40px">📕</div>'+
+      '<div style="font-size:18px;color:var(--ink);margin-top:8px">'+esc(t("errTitle"))+"</div>"+
+      '<div style="margin-top:6px">'+esc(msg||"")+"</div></div>";
+  }
+
+  function load(){
+    var id = getId();
+    if(!id){ renderError(t("noId")); return; }
+    fetch("/api/book?id="+encodeURIComponent(id), { headers:{ "Accept":"application/json" }, credentials:"same-origin" })
+      .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+      .then(function(res){
+        var j = res.j || {};
+        if(!res.ok || j.error){
+          if(j.error==="not_logged_in"){ location.href = "/signup?next="+encodeURIComponent(location.pathname+location.search); return; }
+          renderError(j.error || "error"); return;
+        }
+        if(j.status==="running"){
+          renderRunning(j);
+          if(pollTimer) clearTimeout(pollTimer);
+          pollTimer = setTimeout(load, 6000);
+          return;
+        }
+        if(j.status==="error"){ renderError(j.error || t("errTitle")); return; }
+        // done | degraded → render จาก result (resume โหลดซ้ำ = ไม่เจนใหม่)
+        renderBook(j);
+      })
+      .catch(function(){ renderError("network"); });
+  }
+
+  // ===== events =====
+  document.getElementById("themeBtn").addEventListener("click", function(){
+    theme = theme==="dark"?"light":"dark"; localStorage.setItem("hk_book_theme", theme); applyTheme();
+  });
+  document.getElementById("langSeg").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-lang]"); if(!b) return;
+    lang = b.getAttribute("data-lang"); localStorage.setItem("hk_book_lang", lang);
+    applyStaticI18n();
+    // re-render เนื้อ (ป้าย UI เปลี่ยน · เนื้อ AI คงภาษาที่เจนไว้)
+    load();
+  });
+  document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
+
+  applyTheme();
+  applyStaticI18n();
+  load();
+})();
+</script>
+</body>
+</html>
