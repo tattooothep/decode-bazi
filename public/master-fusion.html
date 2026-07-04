@@ -109,6 +109,25 @@
     .answer-sub{margin-top:5px;font-size:12px;color:var(--muted);line-height:1.45}
     .answer-close{border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--muted);min-height:32px;padding:4px 10px;cursor:pointer}
     .answer-body{margin:0;padding:16px;overflow:auto;white-space:pre-wrap;line-height:1.65;color:var(--text);font-family:var(--thai);font-size:14px;background:var(--panel-2)}
+    /* r401 · หน้าต่างเลือกศาสตร์คัมภีร์ชะตา */
+    .book-modal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.66);display:flex;align-items:center;justify-content:center;padding:18px}
+    .book-modal.hidden{display:none}
+    .book-dialog{width:min(560px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+    .book-head{display:flex;justify-content:space-between;gap:14px;align-items:start;padding:16px 18px;border-bottom:1px solid var(--line)}
+    .book-mtitle{font-size:16px;font-weight:700;color:var(--gold)}
+    .book-msub{margin-top:5px;font-size:12px;color:var(--muted);line-height:1.45}
+    .book-body{padding:16px 18px;display:grid;gap:12px}
+    .book-existing{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;background:rgba(210,176,94,.06)}
+    .book-existing.hidden{display:none}
+    .book-existing a{color:var(--gold);font-weight:700}
+    .book-synth{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px 11px;cursor:pointer;font-size:14px;color:var(--text)}
+    .book-synth input{accent-color:var(--gold)}
+    .book-synth.disabled{opacity:.5;cursor:not-allowed}
+    .book-total{font-size:14px;color:var(--text)}
+    .book-total b{font-family:var(--mono);font-size:17px;color:var(--gold)}
+    .book-msg{font-size:12px;color:var(--warn);min-height:14px}
+    .book-msg.ok{color:var(--muted)}
+    .book-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 18px;border-top:1px solid var(--line)}
     .pill{display:inline-flex;align-items:center;justify-content:center;min-height:24px;border-radius:8px;padding:3px 8px;font-family:var(--mono);font-size:10px;border:1px solid var(--line);color:var(--muted)}
     .pill.ok{color:var(--ok);border-color:rgba(119,196,138,.45)}
     .pill.err{color:var(--bad);border-color:rgba(227,111,95,.45)}
@@ -1077,7 +1096,7 @@
           </div>
           <!-- r392 · คัมภีร์ชะตา (Book of Destiny) — เล่มเต็ม 6 ศาสตร์ · เฉพาะดวงเดี่ยว (self) -->
           <div class="btnbar" id="book-bar" style="margin-top:8px">
-            <button class="btn secondary" id="book-btn" type="button" title="หนังสือดวงชะตา 6 ศาสตร์ เล่มเต็ม" data-i18n="book.make">📜 สร้างคัมภีร์ชะตา · 114 時</button>
+            <button class="btn secondary" id="book-btn" type="button" title="หนังสือดวงชะตา · ติ๊กเลือกศาสตร์" data-i18n="book.make">📜 สร้างคัมภีร์ชะตา</button>
           </div>
           <div class="status" id="book-status" style="font-size:12px;opacity:.8"></div>
           <div class="status" id="status"></div>
@@ -1137,6 +1156,33 @@
     </div>
   </div>
 
+  <!-- r401 · หน้าต่างเลือกศาสตร์ก่อนสร้างคัมภีร์ชะตา (ติ๊กศาสตร์ + หลอมรวม + ยามรวมสด · ทุกบทมีภาพพื้นดวง) -->
+  <div class="book-modal hidden" id="book-modal" role="dialog" aria-modal="true" aria-labelledby="book-modal-title">
+    <div class="book-dialog">
+      <div class="book-head">
+        <div>
+          <div class="book-mtitle" id="book-modal-title" data-i18n="book.pickTitle">📜 สร้างคัมภีร์ชะตา</div>
+          <div class="book-msub" data-i18n="book.pickSub">ติ๊กเลือกศาสตร์ที่จะเขียน · แต่ละบทมีภาพพื้นดวง</div>
+        </div>
+        <button class="answer-close" id="book-modal-close" type="button" aria-label="close">✕</button>
+      </div>
+      <div class="book-body">
+        <div class="book-existing hidden" id="book-existing-row"></div>
+        <div class="sci-list" id="book-sci-list"></div>
+        <label class="book-synth" id="book-synth-row">
+          <input type="checkbox" id="book-synth-cb" checked>
+          <span data-i18n="book.synth">บทหลอมรวม (ต้องเลือก ≥2 ศาสตร์)</span>
+        </label>
+        <div class="book-total"><span data-i18n="book.total">รวมยาม</span> <b id="book-total-yam">0</b> <span>時</span></div>
+        <div class="book-msg" id="book-modal-msg"></div>
+      </div>
+      <div class="book-foot">
+        <button class="btn" id="book-cancel-btn" type="button" data-i18n="book.cancel">ยกเลิก</button>
+        <button class="btn primary" id="book-confirm-btn" type="button" data-i18n="book.confirm">สร้างคัมภีร์</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/hk-user-menu.js?v=19"></script>
   <script>
   (function(){
@@ -1170,7 +1216,7 @@
     // ===== i18n =====
     var I18N = {
       th:{ 'nav.master':'ซินแส','nav.chart':'ดวงของฉัน','nav.today':'หน้าวันนี้','nav.datepick':'วางฤกษ์','nav.fusion':'Fusion','hero.title':'ดูดวง 6 ศาสตร์','hero.sub':'หลอมรวม 6 ศาสตร์โหราศาสตร์ · ปาจื้อ · ดาวจริง · จื่อเวย · ตะวันตก · พระเวท · ยูเรเนียน — แต่ละศาสตร์อ่านแยก AI แล้ว Claude หลอมรวมเป็นคำฟันธง · ดูเดี่ยว ดูคู่ หรือกลุ่ม 3-4 ดวง',
-        'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่/กลุ่ม','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.profile3':'ดวงที่ 3 (ไม่บังคับ)','ask.profile4':'ดวงที่ 4 (ไม่บังคับ)','ask.notUsed':'— ไม่ใช้ —','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','ask.edit':'แก้คำถาม','result.title':'คำพยากรณ์','read.back':'กลับไปดูคำพยากรณ์','book.make':'📜 สร้างคัมภีร์ชะตา · 114 時',
+        'ask.title':'ตั้งคำถาม','ask.mode':'โหมด','ask.single':'เดี่ยว','ask.pair':'ดูคู่/กลุ่ม','ask.profile':'เลือกดวง','ask.profile2':'ดวงที่ 2','ask.profile3':'ดวงที่ 3 (ไม่บังคับ)','ask.profile4':'ดวงที่ 4 (ไม่บังคับ)','ask.notUsed':'— ไม่ใช้ —','ask.sciences':'ศาสตร์ที่ดู (ติ๊กได้หลายข้อ)','ask.lang':'ภาษา','ask.question':'คำถาม','ask.questionPh':'ถามดวงที่เลือก','ask.yamTotal':'รวมยาม','ask.clear':'ล้าง','ask.edit':'แก้คำถาม','result.title':'คำพยากรณ์','read.back':'กลับไปดูคำพยากรณ์','book.make':'📜 สร้างคัมภีร์ชะตา','book.pickTitle':'📜 สร้างคัมภีร์ชะตา','book.pickSub':'ติ๊กเลือกศาสตร์ที่จะเขียน · แต่ละบทมีภาพพื้นดวง','book.synth':'บทหลอมรวม (ต้องเลือก ≥2 ศาสตร์)','book.total':'รวมยาม','book.confirm':'สร้างคัมภีร์','book.cancel':'ยกเลิก','book.noSci':'เลือกอย่างน้อย 1 ศาสตร์','book.openExisting':'มีเล่มอยู่แล้ว — 📖 เปิดอ่าน (ไม่หักยาม)','book.chooseSelf':'เลือกดวงของคุณก่อน (คัมภีร์ = ดวงเดี่ยว)','book.singleOnly':'คัมภีร์รองรับดวงเดี่ยว — สลับเป็นโหมดเดี่ยวก่อน','book.creating':'⏳ กำลังสร้างคัมภีร์…',
         'soon':'เร็วๆนี้','needTime':'ต้องมีเวลาเกิด','tab.judge':'☆ รวม (Judge)','run':'รัน','noSci':'เลือกอย่างน้อย 1 ศาสตร์','resultEmpty':'เลือกโหมด ดวง และศาสตร์ แล้วกดรัน เพื่อดูคำพยากรณ์แยกศาสตร์ + คำหลอมรวม','running':'กำลังอ่านดวงแต่ละศาสตร์...','skipPrefix':'ข้ามเพราะดวงไม่มีเวลาเกิด:','skipGroup':'ปาจื้อยังไม่รองรับดูกลุ่ม 3-4 ดวง — ตัดออกและไม่คิดยาม (ใช้ได้เดี่ยว/คู่)','judgeTitle':'คำฟันธงหลอมรวม (Claude Judge)','noJudge':'ติ๊ก 2 ศาสตร์ขึ้นไปจึงจะมีคำหลอมรวม','needLogin':'กรุณาเข้าสู่ระบบก่อนใช้ Fusion','needYam':'ยามไม่พอ','readyRun':'พร้อมรัน','runningAsync':'⏳ กำลังอ่านดวงอยู่ (พับจอไว้ได้)','jobTimeout':'หมดเวลาอ่านดวง · ลองรันใหม่อีกครั้ง','jobError':'อ่านดวงไม่สำเร็จ','reconnecting':'📶 เน็ตสะดุด · กำลังต่อกลับไปหางานเดิมอัตโนมัติ ไม่ต้องถามใหม่...','resumeChecking':'กำลังตรวจงานค้าง...','sessionLost':'หลุดจากระบบ · งานยังวิ่งอยู่บน server เข้าสู่ระบบแล้วกลับมาดูได้',
         'res.title':'🔗 เสียงสะท้อนข้ามศาสตร์','res.r1':'ธีมปีตรงกัน','res.r2':'ดาวเดียวกันชนหลายศาสตร์','res.r3':'คราส/ราหูเกตุ','res.conflict':'มุมมองต่าง','res.detail':'ดูรายละเอียด + หลักฐาน','res.theme':'ธีม','res.sci':'ศาสตร์','res.evidence':'หลักฐาน (คำนวณจริง)','res.month':'เดือน','res.planet':'ดาว','res.good':'ฝั่งเห็นดี','res.bad':'ฝั่งเห็นแรงกด',
         'res.r4':'ดวงคู่','res.r5':'สะพานธาตุ','res.r6':'ปีชง','res.pair':'คู่','res.dim':'มิติ','res.res':'สะท้อน','res.need':'ธาตุที่ต้องการ','res.system':'ระบบ','res.rationale':'เหตุผล (คำนวณจริง)','res.dates':'วันที่','res.voice':'เสียงบอกปีหนัก','res.heavy':'หนัก','res.notHeavy':'ไม่หนัก','res.nodata':'ไม่มีข้อมูล','res.v.good':'ดี','res.v.mid':'กลาง','res.v.tense':'ตึง','res.e.support':'หนุน','res.e.cut':'ตัด','res.e.mid':'กลาง','res.dim.mind':'อารมณ์-จิตใจ','res.dim.comm':'การสื่อสาร','res.dim.attract':'เสน่หา','res.dim.stable':'เสถียรภาพระยะยาว','res.struct':'พ้องเชิงโครงสร้าง (วัดของชิ้นเดียวกัน — ไม่นับเป็นหลักฐานซ้ำ)',
@@ -1186,7 +1232,7 @@
         'pill.back':'แตะกลับไปดูคำพยากรณ์','pill.ready':'คำพยากรณ์พร้อมแล้ว · แตะดู',
         'chat.send':'ส่ง','chat.newRoom':'🆕 ห้องใหม่','chat.more':'อ่านเต็ม ▾','chat.less':'ย่อ ▴','chat.ph':'พิมพ์ถามต่อในห้องนี้...','chat.wait':'⏳ กำลังอ่านดวง...','chat.topup':'ยามไม่พอ · ไปเติมยาม','chat.newRoomHint':'เปลี่ยนดวง/ศาสตร์ หรือเริ่มเรื่องใหม่ = เปิดห้องใหม่' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'6-Science Reading','hero.sub':'Fuse 6 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic · Uranian — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
-        'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading','read.back':'Back to reading','book.make':'📜 Create Book of Destiny · 114',
+        'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading','read.back':'Back to reading','book.make':'📜 Create Book of Destiny','book.pickTitle':'📜 Create Book of Destiny','book.pickSub':'Pick the sciences to include · each chapter shows its natal chart','book.synth':'Synthesis chapter (needs 2+ sciences)','book.total':'Total','book.confirm':'Create book','book.cancel':'Cancel','book.noSci':'Pick at least 1 science','book.openExisting':'A book already exists — 📖 Open it (no charge)','book.chooseSelf':'Pick your chart first (book = single chart)','book.singleOnly':'Book supports a single chart — switch to Single mode first','book.creating':'⏳ Creating your book…',
         'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back',
         'res.title':'🔗 Cross-science resonance','res.r1':'Year-theme match','res.r2':'Same planet, multi-system','res.r3':'Eclipse / nodes','res.conflict':'Diverging view','res.detail':'Details + evidence','res.theme':'Theme','res.sci':'Sciences','res.evidence':'Evidence (computed)','res.month':'Month','res.planet':'Planet','res.good':'Sees support','res.bad':'Sees pressure',
         'res.r4':'Pair resonance','res.r5':'Element bridge','res.r6':'Clash year','res.pair':'Pair','res.dim':'Dimension','res.res':'Resonates','res.need':'Needed element','res.system':'System','res.rationale':'Rationale (computed)','res.dates':'Dates','res.voice':'systems call it heavy','res.heavy':'Heavy','res.notHeavy':'Not heavy','res.nodata':'No data','res.v.good':'Good','res.v.mid':'Neutral','res.v.tense':'Tense','res.e.support':'Supported','res.e.cut':'Cut','res.e.mid':'Neutral','res.dim.mind':'Emotional bond','res.dim.comm':'Communication','res.dim.attract':'Attraction','res.dim.stable':'Long-term stability','res.struct':'Structural overlap (same measurement — not counted as extra evidence)',
@@ -1202,7 +1248,7 @@
         'pill.back':'tap to view the reading','pill.ready':'Reading is ready · tap to view',
         'chat.send':'Send','chat.newRoom':'🆕 New room','chat.more':'Read full ▾','chat.less':'Collapse ▴','chat.ph':'Type a follow-up in this room...','chat.wait':'⏳ Reading the charts...','chat.topup':'Not enough yam · Top up','chat.newRoomHint':'Change charts/sciences or start a new topic = open a new room' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'六術合參','hero.sub':'融合六種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 · 天王星占星(漢堡學派) — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
-        'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷','read.back':'返回論斷','book.make':'📜 生成命書 · 114 時',
+        'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷','read.back':'返回論斷','book.make':'📜 生成命書','book.pickTitle':'📜 生成命書','book.pickSub':'勾選要收錄的術數 · 每章附命盤圖','book.synth':'融合章（需選 2 術以上）','book.total':'合計','book.confirm':'生成命書','book.cancel':'取消','book.noSci':'至少選 1 術','book.openExisting':'已有命書 — 📖 開啟閱讀（不扣時數）','book.chooseSelf':'請先選擇命盤（命書＝單盤）','book.singleOnly':'命書僅支援單盤 — 請先切換為單看','book.creating':'⏳ 正在生成命書…',
         'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看',
         'res.title':'🔗 跨術共振','res.r1':'流年宮位相符','res.r2':'同星多術同月','res.r3':'日月食/羅計','res.conflict':'觀點分歧','res.detail':'詳情＋證據','res.theme':'主題','res.sci':'術數','res.evidence':'證據（實算）','res.month':'月','res.planet':'星','res.good':'看吉','res.bad':'看壓',
         'res.r4':'合盤共振','res.r5':'五行橋','res.r6':'沖太歲','res.pair':'配對','res.dim':'維度','res.res':'共振','res.need':'所需五行','res.system':'系統','res.rationale':'理由（實算）','res.dates':'日期','res.voice':'系統判為重','res.heavy':'重','res.notHeavy':'不重','res.nodata':'無資料','res.v.good':'吉','res.v.mid':'中','res.v.tense':'緊','res.e.support':'受扶','res.e.cut':'受剋','res.e.mid':'中','res.dim.mind':'情感·心','res.dim.comm':'溝通','res.dim.attract':'情慾·吸引','res.dim.stable':'長期穩定','res.struct':'結構性重合（同一量測 · 不重複計證）',
@@ -2507,50 +2553,126 @@
     var bookExistingId = null; // bookId ล่าสุดของดวงที่เลือก (ถ้ามี = เปิดเลย ไม่สร้างใหม่)
     function bookLang(){ return (document.getElementById('lang') && document.getElementById('lang').value) || (state && state.locale) || 'th'; }
     function bookIsSingle(){ var a = document.querySelector('.seg-btn.active'); return !a || a.getAttribute('data-mode') === 'single'; }
-    // เช็คว่ามีเล่มของดวงนี้แล้วหรือยัง → ปรับป้ายปุ่ม (📖 เปิด / 📜 สร้าง)
+    // r401 · เก็บ bookId เล่มเดิม (ถ้ามี) ให้หน้าต่างเลือกโชว์ปุ่มเปิดเล่มเดิม (ไม่หักยาม)
     function refreshBookBtn(){
       var btn = document.getElementById('book-btn'); if (!btn) return;
+      btn.textContent = t('book.make');
       var pid = selectedProfileId();
       bookExistingId = null;
-      if (!pid || !bookIsSingle()){ btn.textContent = '📜 สร้างคัมภีร์ชะตา · 114 時'; return; }
+      if (!pid || !bookIsSingle()) return;
       var lang = bookLang();
       fetch('/api/book?profileId=' + encodeURIComponent(pid) + '&lang=' + encodeURIComponent(lang), { credentials:'same-origin', headers:{'Accept':'application/json'} })
         .then(function(r){ return r.ok ? r.json() : {}; })
         .then(function(j){
           if (selectedProfileId() !== pid) return; // เปลี่ยนดวงระหว่างรอ → ทิ้งผลเก่า
-          if (j && j.bookId && (j.status === 'done' || j.status === 'degraded')){ bookExistingId = j.bookId; btn.textContent = '📖 เปิดคัมภีร์ชะตา'; }
-          else if (j && j.bookId && j.status === 'running'){ bookExistingId = j.bookId; btn.textContent = '⏳ คัมภีร์กำลังเขียน — เปิดดู'; }
-          else { btn.textContent = '📜 สร้างคัมภีร์ชะตา · 114 時'; }
+          if (j && j.bookId && (j.status === 'done' || j.status === 'degraded' || j.status === 'running')){ bookExistingId = j.bookId; }
         })
         .catch(function(){});
     }
+    // r401 · หน้าต่างเลือกศาสตร์ + หลอมรวม + ยามรวมสด (คัมภีร์ชะตา · ทุกบทมีภาพพื้นดวง)
+    var BOOK_SCIENCE_YAM = 50, BOOK_SYNTHESIS_YAM = 50;
+    var bookSel = {};        // ศาสตร์ที่ติ๊กในหน้าต่าง
+    var bookSynth = true;    // ติ๊กบทหลอมรวม
+    function bookSelectableSciences(){
+      var hasTime = profileHasTime(profileById(selectedProfileId()));
+      return SCI_ORDER.filter(function(s){ var b = DISCIPLINES[s]; return b && b.available && (!b.needsBirthTime || hasTime); });
+    }
+    function bookSelectedList(){ return bookSelectableSciences().filter(function(s){ return bookSel[s]; }); }
+    function bookComputeYam(){
+      var n = bookSelectedList().length;
+      return n * BOOK_SCIENCE_YAM + (bookSynth && n >= 2 ? BOOK_SYNTHESIS_YAM : 0);
+    }
+    function renderBookSciList(){
+      var list = document.getElementById('book-sci-list'); if (!list) return;
+      var hasTime = profileHasTime(profileById(selectedProfileId()));
+      list.innerHTML = SCI_ORDER.map(function(s){
+        var b = DISCIPLINES[s];
+        var blockedTime = b.needsBirthTime && !hasTime;
+        var disabled = !b.available || blockedTime;
+        var checked = !!bookSel[s] && !disabled;
+        var note = !b.available ? t('soon') : (blockedTime ? t('needTime') : (BOOK_SCIENCE_YAM + ' 時'));
+        return '<label class="sci-item' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '" data-booksci="' + s + '">' +
+          '<input type="checkbox" data-booksci-cb="' + s + '"' + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + '>' +
+          '<div class="sci-main"><div class="sci-name">' + esc(sciLabel(s)) + '</div>' +
+            '<div class="sci-sub"><span class="ai-badge">AI · ' + esc(b.ai) + '</span>' + (b.needsBirthTime ? '<span title="⏰">⏰</span>' : '') + '</div></div>' +
+          ((!b.available || blockedTime) ? '<div class="sci-note">' + esc(note) + '</div>' : '<div class="sci-cost">' + esc(note) + '</div>') +
+        '</label>';
+      }).join('');
+    }
+    function updateBookModal(){
+      var n = bookSelectedList().length;
+      var synthRow = document.getElementById('book-synth-row');
+      var synthCb = document.getElementById('book-synth-cb');
+      var synthDisabled = n < 2;
+      if (synthRow) synthRow.classList.toggle('disabled', synthDisabled);
+      if (synthCb){ synthCb.disabled = synthDisabled; synthCb.checked = bookSynth && !synthDisabled; }
+      var total = document.getElementById('book-total-yam'); if (total) total.textContent = bookComputeYam();
+      var confirmBtn = document.getElementById('book-confirm-btn'); if (confirmBtn) confirmBtn.disabled = (n === 0);
+      var msg = document.getElementById('book-modal-msg'); if (msg){ msg.className = 'book-msg'; msg.textContent = (n === 0 ? t('book.noSci') : ''); }
+    }
+    function openBookModal(){
+      bookSel = {}; bookSelectableSciences().forEach(function(s){ bookSel[s] = true; }); // default ติ๊กทุกศาสตร์ที่เลือกได้
+      bookSynth = true;
+      var ex = document.getElementById('book-existing-row');
+      if (ex){
+        if (bookExistingId){ ex.classList.remove('hidden'); ex.innerHTML = '<a href="/book?id=' + encodeURIComponent(bookExistingId) + '">' + esc(t('book.openExisting')) + '</a>'; }
+        else { ex.classList.add('hidden'); ex.innerHTML = ''; }
+      }
+      renderBookSciList(); updateBookModal();
+      var m = document.getElementById('book-modal'); if (m) m.classList.remove('hidden');
+    }
+    function closeBookModal(){ var m = document.getElementById('book-modal'); if (m) m.classList.add('hidden'); }
+    function submitBook(){
+      var pid = selectedProfileId(); if (!pid) return;
+      var sciences = bookSelectedList(); if (!sciences.length) return;
+      var includeSynthesis = bookSynth && sciences.length >= 2;
+      var lang = bookLang();
+      var msg = document.getElementById('book-modal-msg');
+      var confirmBtn = document.getElementById('book-confirm-btn');
+      if (confirmBtn) confirmBtn.disabled = true;
+      if (msg){ msg.className = 'book-msg ok'; msg.textContent = t('book.creating'); }
+      fetch('/api/book', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
+        body: JSON.stringify({ profileId: pid, sciences: sciences, includeSynthesis: includeSynthesis, lang: lang, force: 1 }) })
+        .then(function(r){ return r.json().then(function(j){ return { status:r.status, j:j }; }); })
+        .then(function(res){
+          var j = res.j || {};
+          if (j.bookId){ location.href = '/book?id=' + encodeURIComponent(j.bookId); return; }
+          if (msg){ msg.className = 'book-msg';
+            if (j.error === 'insufficient_hours'){ msg.textContent = t('needYam') + ' · ' + (j.needed || j.required || bookComputeYam()) + ' 時'; }
+            else if (res.status === 401){ msg.textContent = t('needLogin'); }
+            else { msg.textContent = String(j.error || res.status); }
+          }
+          if (confirmBtn) confirmBtn.disabled = false;
+        })
+        .catch(function(){ if (msg){ msg.className = 'book-msg'; msg.textContent = t('jobError'); } if (confirmBtn) confirmBtn.disabled = false; });
+    }
     (function wireBookBtn(){
-      var btn = document.getElementById('book-btn');
-      if (!btn) return;
+      var btn = document.getElementById('book-btn'); if (!btn) return;
       var st = document.getElementById('book-status');
       function say(msg){ if (st) st.textContent = msg || ''; }
       btn.addEventListener('click', function(){
-        // มีเล่มแล้ว → เปิดเลย ไม่หักยาม
-        if (bookExistingId){ location.href = '/book?id=' + encodeURIComponent(bookExistingId); return; }
         var pid = selectedProfileId();
-        if (!pid){ say('เลือกดวงของคุณก่อน (คัมภีร์ชะตา = ดวงเดี่ยว)'); return; }
-        // คัมภีร์ = ดวงเดียวเท่านั้น · ถ้าอยู่โหมดดูคู่/กลุ่ม ให้เตือน
-        if (!bookIsSingle()){ say('คัมภีร์ชะตารองรับดวงเดี่ยว — สลับโหมดเป็น "เดี่ยว" ก่อน'); return; }
-        var lang = bookLang();
-        btn.disabled = true; say('⏳ กำลังสร้างคัมภีร์ชะตา… (6 ศาสตร์ ~4-8 นาที · พับจอ/ปิดได้ ระบบเขียนต่อหลังบ้าน)');
-        fetch('/api/book', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
-          body: JSON.stringify({ profileId: pid, lang: lang }) })
-          .then(function(r){ return r.json().then(function(j){ return { status:r.status, j:j }; }); })
-          .then(function(res){
-            var j = res.j || {};
-            if (j.bookId){ location.href = '/book?id=' + encodeURIComponent(j.bookId); return; }
-            if (j.error === 'insufficient_hours'){ say('ยามไม่พอ ต้องใช้ ' + (j.required||j.needed||114) + ' 時 (คงเหลือ ' + (j.balance!=null?j.balance:'-') + ')'); }
-            else if (res.status === 401){ say('กรุณาเข้าสู่ระบบก่อน'); }
-            else { say('สร้างไม่สำเร็จ: ' + (j.error || res.status)); }
-            btn.disabled = false;
-          })
-          .catch(function(e){ say('เชื่อมต่อไม่สำเร็จ · ลองใหม่'); btn.disabled = false; });
+        if (!pid){ say(t('book.chooseSelf')); return; }
+        if (!bookIsSingle()){ say(t('book.singleOnly')); return; } // คัมภีร์ = ดวงเดี่ยว
+        say(''); openBookModal();
       });
+      var list = document.getElementById('book-sci-list');
+      if (list) list.addEventListener('change', function(e){
+        var cb = e.target.closest && e.target.closest('[data-booksci-cb]'); if (!cb) return;
+        bookSel[cb.getAttribute('data-booksci-cb')] = cb.checked;
+        var lab = cb.closest('.sci-item'); if (lab) lab.classList.toggle('checked', cb.checked);
+        updateBookModal();
+      });
+      var synthCb = document.getElementById('book-synth-cb');
+      if (synthCb) synthCb.addEventListener('change', function(){ bookSynth = synthCb.checked; updateBookModal(); });
+      var closeBtn = document.getElementById('book-modal-close');
+      if (closeBtn) closeBtn.addEventListener('click', closeBookModal);
+      var cancelBtn = document.getElementById('book-cancel-btn');
+      if (cancelBtn) cancelBtn.addEventListener('click', closeBookModal);
+      var modal = document.getElementById('book-modal');
+      if (modal) modal.addEventListener('click', function(e){ if (e.target === modal) closeBookModal(); });
+      var confirmBtn = document.getElementById('book-confirm-btn');
+      if (confirmBtn) confirmBtn.addEventListener('click', submitBook);
       refreshBookBtn(); // เช็คตอนโหลดหน้า
     })();
     function resetConversationForProfile(profileId){

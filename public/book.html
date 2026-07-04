@@ -57,6 +57,9 @@
   .chapter .cnum{font-family:var(--serif);color:var(--gold);font-size:13px;letter-spacing:.2em}
   .chapter h2{font-family:var(--serif);font-size:clamp(22px,5vw,28px);margin:4px 0 16px;color:var(--ink);border-bottom:2px solid var(--accent2);padding-bottom:10px}
   .preface{border-left:3px solid var(--accent2)}
+  /* ภาพพื้นดวงหัวบท (r401) · inline SVG deterministic จาก template */
+  .chart-fig{margin:2px auto 20px;max-width:440px;text-align:center;break-inside:avoid;page-break-inside:avoid}
+  .chart-fig svg{max-width:100%;height:auto;display:block;margin:0 auto}
   /* markdown */
   .md-h{font-family:var(--serif);font-weight:700;color:var(--accent);margin:18px 0 8px;line-height:1.4}
   .md-h1{font-size:22px} .md-h2{font-size:19px} .md-h3{font-size:17px} .md-h4{font-size:16px}
@@ -92,6 +95,7 @@
     .chapter h2,.toc{padding-top:6px}
     .md-tw{overflow:visible}
     .md-t{min-width:0}
+    .chart-fig{max-width:340px}
     a{color:#000;text-decoration:none}
   }
 </style>
@@ -219,23 +223,28 @@
     "</section>";
   }
 
-  function renderTOC(chapters){
+  function renderTOC(chapters, synthOn){
     var items = [];
     items.push('<li><a href="#preface">'+esc(t("preface"))+"</a></li>");
     (chapters||[]).forEach(function(c,idx){
       items.push('<li><a href="#ch-'+esc(c.science)+'">'+esc(t("chapter"))+" "+(idx+1)+" · "+esc(c.label)+(c.ok?"":' <span class="badge degraded">'+esc(t("notReady"))+"</span>")+"</a></li>");
     });
-    items.push('<li><a href="#synthesis">'+esc(t("synthesis"))+"</a></li>");
-    items.push('<li><a href="#timing">'+esc(t("timing"))+"</a></li>");
+    if(synthOn){ items.push('<li><a href="#synthesis">'+esc(t("synthesis"))+"</a></li>"); }
     items.push('<li><a href="#appendix">'+esc(t("appendix"))+"</a></li>");
     return '<nav class="toc" id="toc"><h3>'+esc(t("toc"))+"</h3><ol>"+items.join("")+"</ol></nav>";
   }
 
+  // ภาพพื้นดวงหัวบท (r401) · c.chartSvg = inline SVG จาก server (deterministic · ไม่มี script) · ไม่มี=ข้าม
+  function chartFig(c){
+    var svg = c && c.chartSvg;
+    if(!svg || typeof svg!=="string" || svg.indexOf("<svg")!==0) return "";
+    return '<figure class="chart-fig" aria-label="'+esc(c.label)+'">'+svg+"</figure>";
+  }
   function renderChapter(c, idx){
     var body = c.ok && c.markdown ? mdSafe(c.markdown) : '<div class="notready">'+esc(t("notReady"))+"</div>";
     return '<article class="chapter" id="ch-'+esc(c.science)+'">'+
       '<div class="cnum">'+esc(t("chapter"))+" "+(idx+1)+"</div>"+
-      "<h2>"+esc(c.label)+"</h2>"+body+"</article>";
+      "<h2>"+esc(c.label)+"</h2>"+chartFig(c)+body+"</article>";
   }
 
   function renderSection(id, title, markdown){
@@ -257,13 +266,15 @@
     var chapters = res.chapters || [];
     var timingMd = (res.synthesis && res.synthesis.markdown) || "";
     // synthesis markdown มี 2 บท (## บทหลอมรวม + ## บทจังหวะเวลา) รวมในก้อนเดียว → แสดงเป็นบทหลอมรวม
+    // บทหลอมรวม: แสดงเมื่อผู้ใช้ติ๊ก (requested !== false) · เล่มเก่าไม่มี field = แสดงเหมือนเดิม
+    var synthOn = !(res.synthesis && res.synthesis.requested === false);
     var html = "";
     html += renderCover(res.cover||{}, book);
-    html += renderTOC(chapters);
+    html += renderTOC(chapters, synthOn);
     html += renderSection("preface", t("preface")+" · "+t("kai"), t("prefaceBody"));
     // ทำ preface เป็น left-border style
     chapters.forEach(function(c,idx){ html += renderChapter(c, idx); });
-    html += renderSection("synthesis", t("synthesis")+" · "+t("timing"), timingMd);
+    if(synthOn){ html += renderSection("synthesis", t("synthesis")+" · "+t("timing"), timingMd); }
     html += renderAppendix(res);
     var deg = (res.meta && res.meta.degradedChapters && res.meta.degradedChapters.length) ? '<span class="badge degraded">'+esc(t("degraded"))+"</span>" : "";
     html += '<div class="foot">📜 '+esc(t("brand"))+" · hourkey "+deg+"</div>";

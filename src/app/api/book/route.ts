@@ -22,6 +22,7 @@ import { renderMultiYearBlock, type FusionBirthLike } from "@/lib/fusion5/multi-
 import { buildResonance, renderResonanceBlockTh, RESONANCE_SCIENCES, type FusionResonance } from "@/lib/fusion5/resonance";
 import { buildDaySniper, renderDaySniperTh, resolveDaySniperRange } from "@/lib/fusion5/day-sniper";
 import { notifyFusionDone } from "@/lib/push-sender";
+import { buildScienceChartSvg } from "@/lib/book/chart-svg";
 
 export const runtime = "nodejs";
 export const maxDuration = 800;
@@ -31,12 +32,14 @@ const CHILD_TIMEOUT_MS = Number(process.env.SIFU_BOOK_CHILD_TIMEOUT_MS || 360_00
 const FEATURE = "natal_book";
 const SERVER_STARTED_AT = new Date();
 
-// ยาม/เล่ม (design §4): บทละ round(costYam×1.5) + judge-book 10 · รวม 6 ศาสตร์ ≈ 104 + 10 = 114
-const BOOK_JUDGE_YAM = 10;
-function bookPanelYam(s: ScienceId): number { return Math.round(DISCIPLINES[s].costYam * 1.5); }
-function computeBookYam(sciences: ScienceId[]): number {
+// ยาม/เล่ม (r401 · เจ้านายสั่ง): บทละ 50 ยาม (flat ทุกศาสตร์) + บทหลอมรวม 50 (เมื่อติ๊ก+เลือก ≥2 ศาสตร์)
+// รวม 6 ศาสตร์ + หลอมรวม = 50×6 + 50 = 350 · เลือก 2 ศาสตร์ไม่หลอมรวม = 100
+export const BOOK_SCIENCE_YAM = 50;
+export const BOOK_SYNTHESIS_YAM = 50;
+function bookPanelYam(_s: ScienceId): number { return BOOK_SCIENCE_YAM; }
+export function computeBookYam(sciences: ScienceId[], includeSynthesis: boolean): number {
   const valid = sciences.filter((s) => DISCIPLINES[s]?.available);
-  return valid.reduce((sum, s) => sum + bookPanelYam(s), 0) + (valid.length >= 2 ? BOOK_JUDGE_YAM : 0);
+  return valid.length * BOOK_SCIENCE_YAM + (includeSynthesis && valid.length >= 2 ? BOOK_SYNTHESIS_YAM : 0);
 }
 
 // มาตรฐานทุก user (format contract): บทต้องมีหัวข้อ "## 1." … "## 10." ครบ+เรียงลำดับ
@@ -190,6 +193,7 @@ type WorkerParams = {
   orgId: string | null;
   cookie: string;
   runSciences: ScienceId[];
+  includeSynthesis: boolean;
   birth: BookBirth;
   lang: string;
   yam: number;
@@ -306,7 +310,7 @@ async function processBook(bookId: string, p: WorkerParams): Promise<void> {
       ? renderResonanceBlockTh(p.resonance) : undefined;
     const dsBlock = p.resonance?.daySniper ? renderDaySniperTh(p.resonance.daySniper) : undefined;
     const multiYearBlock = buildBookMultiYear(runSciences, birth);
-    if (okChapters.length >= 2) {
+    if (p.includeSynthesis && okChapters.length >= 2) {
       try {
         const jp = buildJudgeBookPrompt(
           okChapters.map((c) => ({ science: c.science, reply: c.markdown! })),
@@ -317,10 +321,10 @@ async function processBook(bookId: string, p: WorkerParams): Promise<void> {
       } catch { judgeOk = false; }
     }
 
-    // refund partial: บทพัง (×1.5) + judge พัง (10 · เก็บค่าเมื่อ ≥2 ศาสตร์)
+    // refund partial: บทพัง (50/บท) + บทหลอมรวมพัง (50 · เก็บค่าเมื่อติ๊กหลอมรวม+เลือก ≥2 ศาสตร์)
     const panelRefund = chapters.filter((c) => !c.ok).reduce((s, c) => s + bookPanelYam(c.science), 0);
-    const judgeCharged = runSciences.length >= 2 ? BOOK_JUDGE_YAM : 0;
-    const judgeRefund = judgeCharged > 0 && !judgeOk ? BOOK_JUDGE_YAM : 0;
+    const judgeCharged = p.includeSynthesis && runSciences.length >= 2 ? BOOK_SYNTHESIS_YAM : 0;
+    const judgeRefund = judgeCharged > 0 && !judgeOk ? BOOK_SYNTHESIS_YAM : 0;
     const totalRefund = panelRefund + judgeRefund;
 
     // สังเคราะห์ผลเป็นโครงเล่ม (result jsonb · design §2.5)
@@ -328,14 +332,17 @@ async function processBook(bookId: string, p: WorkerParams): Promise<void> {
     const status: "done" | "degraded" | "error" = okChapters.length === 0
       ? "error"
       : (okChapters.length < runSciences.length || !judgeOk) ? "degraded" : "done";
+    // ภาพพื้นดวงต่อบท (r401) · deterministic · พัง= "" (บทยังออกได้)
+    const svgBirth = { dtUTC: birth.dtUTC, lat: birth.lat, lng: birth.lng, hasTime: birth.hasTime, gender: birth.gender };
+    const synthesisRequested = p.includeSynthesis && runSciences.length >= 2;
     const result = {
       version: "natal_book_v1",
       cover: buildCover(birth),
       chapters: BOOK_CHAPTER_ORDER.filter((s) => runSciences.includes(s)).map((s) => {
         const c = chapters.find((x) => x.science === s)!;
-        return { science: s, label: c.label, ok: c.ok, model: c.model, markdown: c.markdown || null, error: c.error || null, formatWarning: !!c.formatWarning };
+        return { science: s, label: c.label, ok: c.ok, model: c.model, markdown: c.markdown || null, error: c.error || null, formatWarning: !!c.formatWarning, chartSvg: buildScienceChartSvg(s, svgBirth) || null };
       }),
-      synthesis: { ok: judgeOk, model: JUDGE_MODEL, markdown: synthesisMd || null, resonanceUsed: !!resBlock },
+      synthesis: { ok: judgeOk, requested: synthesisRequested, model: JUDGE_MODEL, markdown: synthesisMd || null, resonanceUsed: !!resBlock },
       timing: { hasDaySniper: !!dsBlock, hasMultiYear: !!multiYearBlock },
       appendix: {
         sciences: runSciences,
@@ -399,8 +406,18 @@ export async function POST(req: Request) {
       if (existingRunning) return NextResponse.json({ bookId: existingRunning.id, status: "running", reused: true, profileName: birth.name });
     }
 
-    // ศาสตร์ที่รัน: default = ทุกศาสตร์ available · filter needsBirthTime ถ้าไม่มีเวลาเกิด
-    const requested = (Array.isArray(body.sciences) ? body.sciences.map((s) => String(s) as ScienceId).filter((s) => DISCIPLINES[s]?.available) : null);
+    // บทหลอมรวม: ติ๊กได้ (r401) · default true (เมื่อไม่ส่ง = พฤติกรรมเดิม) · ต้อง ≥2 ศาสตร์ถึงมีผล
+    const includeSynthesis = body.includeSynthesis === undefined
+      ? true
+      : (body.includeSynthesis === true || body.includeSynthesis === 1 || body.includeSynthesis === "1");
+
+    // ศาสตร์ที่รัน (r401 · ติ๊กเลือกได้): ส่ง sciences[] มา = validate ⊆ 6 available (ว่าง/ไม่ถูก = error)
+    //   ไม่ส่ง sciences เลย = default ทุกศาสตร์ available (backward compat)
+    let requested: ScienceId[] | null = null;
+    if (Array.isArray(body.sciences)) {
+      requested = body.sciences.map((s) => String(s) as ScienceId).filter((s) => DISCIPLINES[s]?.available);
+      if (!requested.length) return NextResponse.json({ error: "no_science_selected" }, { status: 400 });
+    }
     const baseSciences = (requested && requested.length ? requested : (Object.keys(DISCIPLINES) as ScienceId[]).filter((s) => DISCIPLINES[s].available));
     const runSciences = baseSciences.filter((s) => !DISCIPLINES[s].needsBirthTime || birth.hasTime);
     const skipped = baseSciences.filter((s) => DISCIPLINES[s].needsBirthTime && !birth.hasTime);
@@ -413,7 +430,7 @@ export async function POST(req: Request) {
       `SELECT count(*)::text AS n FROM natal_books WHERE user_id=$1 AND status='running' AND created_at > now() - interval '30 min'`, [userId]);
     if (runningCnt && Number(runningCnt.n) >= 2) return NextResponse.json({ error: "too_many_running" }, { status: 429 });
 
-    const yam = computeBookYam(runSciences);
+    const yam = computeBookYam(runSciences, includeSynthesis);
     const spend = await spendHoursForUser(userId, yam, FEATURE);
     if (!spend.ok) return NextResponse.json({ error: "insufficient_hours", needed: yam }, { status: 402 });
     chargedYam = yam;
@@ -447,9 +464,9 @@ export async function POST(req: Request) {
     if (!row) { await refundHoursForUser(userId, yam, FEATURE).catch(() => {}); return NextResponse.json({ error: "book_create_failed" }, { status: 500 }); }
     chargedYam = 0; // worker รับช่วง refund แล้ว
 
-    void processBook(row.id, { userId, orgId, cookie, runSciences, birth, lang, yam, skipped, skippedReasons, resonance, started: Date.now() });
+    void processBook(row.id, { userId, orgId, cookie, runSciences, includeSynthesis, birth, lang, yam, skipped, skippedReasons, resonance, started: Date.now() });
 
-    return NextResponse.json({ bookId: row.id, status: "running", yam: { charged: yam }, sciences: runSciences, skipped, skippedReasons, profileName: birth.name });
+    return NextResponse.json({ bookId: row.id, status: "running", yam: { charged: yam }, sciences: runSciences, includeSynthesis, skipped, skippedReasons, profileName: birth.name });
   } catch {
     if (chargedYam > 0 && userId) await refundHoursForUser(userId, chargedYam, FEATURE).catch(() => {});
     return NextResponse.json({ error: "book_error" }, { status: 500 });

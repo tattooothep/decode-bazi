@@ -179,14 +179,17 @@ let bookFullId = null;
   const res = await bookRoute.POST(post({ profileId: profileMai, lang: "th" }));
   const j = await res.json();
   ok(res.status === 200 && j.bookId && j.status === "running", "POST คืน bookId running");
-  ok(j.yam?.charged === 114, "yam ที่หัก = 114 (6 ศาสตร์ + judge)", "got " + JSON.stringify(j.yam));
+  ok(j.yam?.charged === 350, "yam ที่หัก = 350 (50×6 + หลอมรวม 50 · r401)", "got " + JSON.stringify(j.yam));
   bookFullId = j.bookId;
   const row = await pollBook(bookFullId);
   ok(row.status === "done", "เล่มเสร็จ status=done", "got " + row.status + " err=" + row.error);
   const r = row.result || {};
   ok(r.version === "natal_book_v1" && r.cover && r.cover.name === "ไหมมี่เทส", "มี cover+ชื่อ");
   ok(Array.isArray(r.chapters) && r.chapters.length === 6 && r.chapters.every((c) => c.ok), "6 บทครบ + ok");
-  ok(r.synthesis && r.synthesis.ok && r.synthesis.markdown, "บทหลอมรวม (judge) ok");
+  // r401 · ทุกบทมี field chartSvg (string หรือ null ถ้า engine พัง) + อย่างน้อยบางบทมีภาพจริง
+  ok(r.chapters.every((c) => typeof c.chartSvg === "string" || c.chartSvg === null), "ทุกบทมี field chartSvg (string|null)");
+  ok(r.chapters.some((c) => typeof c.chartSvg === "string" && c.chartSvg.indexOf("<svg") === 0), "อย่างน้อย 1 บทมีภาพพื้นดวง (inline <svg)", "chartSvg heads=" + JSON.stringify(r.chapters.map((c) => (c.chartSvg || "").slice(0, 4))));
+  ok(r.synthesis && r.synthesis.ok && r.synthesis.markdown && r.synthesis.requested === true, "บทหลอมรวม (judge) ok + requested");
   // bazi ไป profileId · อื่นไป externalPrompt(bookMode)
   const baziCall = sifuCalls.find((c) => c.payload.profileId && String(c.payload.message || "").includes("บทปาจื้อ"));
   const westCall = sifuCalls.find((c) => String(c.payload.externalPrompt || "").includes("โหราตะวันตก"));
@@ -196,7 +199,7 @@ let bookFullId = null;
   ok(Array.isArray(r.meta?.formatWarnings) && r.meta.formatWarnings.length === 0, "format contract: ไม่มี formatWarning (ครบ 10 มิติทุกบท)", "got " + JSON.stringify(r.meta?.formatWarnings));
   ok(r.chapters.every((c) => c.formatWarning === false), "ทุกบท formatWarning=false");
   const balAfter = await balance(A.userId);
-  ok(balBefore - balAfter === 114, "หักยามสุทธิ 114", `diff ${balBefore - balAfter}`);
+  ok(balBefore - balAfter === 350, "หักยามสุทธิ 350", `diff ${balBefore - balAfter}`);
 }
 
 /* ═══ [5b] กันสร้างซ้ำ: POST ซ้ำ profile+lang เดิม → reused คืน bookId เดิม ไม่หักยาม ═══ */
@@ -226,6 +229,46 @@ console.log("[5c] GET ?profileId → เล่มล่าสุด");
   const res2 = await bookRoute.GET(get("profileId=" + randomUUID().replace(/-/g, "").slice(0, 32)));
   const j2 = await res2.json();
   ok(res2.status === 200 && j2.bookId === null, "profile ไม่มีเล่ม → bookId=null");
+}
+
+/* ═══ [5e] route: ติ๊กเลือกศาสตร์ + includeSynthesis (r401) · หลัง [5c] เพื่อไม่กวน dedup/latest ═══ */
+console.log("[5e] POST เลือก 2/4/6 ศาสตร์ + สลับหลอมรวม + ว่าง=error (r401)");
+{
+  setCookie(tokenA);
+  globalThis.__failMatch = null;
+  // เลือก 2 ศาสตร์ · ไม่หลอมรวม → 50×2 = 100 · 2 บท · synthesis.requested=false
+  const res2 = await bookRoute.POST(post({ profileId: profileMai, lang: "th", force: 1, sciences: ["bazi", "western"], includeSynthesis: false }));
+  const j2 = await res2.json();
+  ok(j2.yam?.charged === 100, "2 ศาสตร์ ไม่หลอมรวม = 100 ยาม", "got " + JSON.stringify(j2.yam));
+  ok(Array.isArray(j2.sciences) && j2.sciences.length === 2 && j2.includeSynthesis === false, "รันเฉพาะ 2 ศาสตร์ที่เลือก + includeSynthesis=false");
+  const row2 = await pollBook(j2.bookId); // poll ให้ drain (กัน running ค้าง→429)
+  ok(row2.status === "done" || row2.status === "degraded", "เล่ม 2 ศาสตร์เสร็จ", "got " + row2.status);
+  ok(row2.result.chapters.length === 2, "มี 2 บทเท่านั้น");
+  ok(row2.result.synthesis.requested === false && !row2.result.synthesis.ok, "ไม่มีบทหลอมรวม (requested=false)");
+  ok(row2.result.chapters.some((c) => typeof c.chartSvg === "string" && c.chartSvg.indexOf("<svg") === 0), "บทที่เลือกมีภาพพื้นดวง");
+
+  // เลือก 4 ศาสตร์ + หลอมรวม → 50×4 + 50 = 250
+  const res4 = await bookRoute.POST(post({ profileId: profileMai, lang: "th", force: 1, sciences: ["bazi", "western", "ziwei", "vedic"], includeSynthesis: true }));
+  const j4 = await res4.json();
+  ok(j4.yam?.charged === 250, "4 ศาสตร์ + หลอมรวม = 250 ยาม", "got " + JSON.stringify(j4.yam));
+  await pollBook(j4.bookId);
+
+  // เลือก 6 ศาสตร์ + หลอมรวม → 350 (ครบ)
+  const res6 = await bookRoute.POST(post({ profileId: profileMai, lang: "th", force: 1, sciences: ["bazi", "western", "ziwei", "vedic", "qizheng", "uranian"], includeSynthesis: true }));
+  const j6 = await res6.json();
+  ok(j6.yam?.charged === 350, "6 ศาสตร์ + หลอมรวม = 350 ยาม", "got " + JSON.stringify(j6.yam));
+  await pollBook(j6.bookId);
+
+  // เลือกศาสตร์ที่ไม่มี/ว่าง → error
+  const resBad = await bookRoute.POST(post({ profileId: profileMai, lang: "th", force: 1, sciences: ["nonexistent"] }));
+  const jBad = await resBad.json();
+  ok(resBad.status === 400 && jBad.error === "no_science_selected", "sciences ไม่ถูกต้อง/ว่าง → error", "got " + JSON.stringify(jBad));
+
+  // 1 ศาสตร์ + ติ๊กหลอมรวม → ไม่คิดค่าหลอมรวม (≥2 guard)
+  const res1 = await bookRoute.POST(post({ profileId: profileMai, lang: "th", force: 1, sciences: ["bazi"], includeSynthesis: true }));
+  const j1 = await res1.json();
+  ok(j1.yam?.charged === 50, "1 ศาสตร์ (แม้ติ๊กหลอมรวม) = 50 ยาม (≥2 guard)", "got " + JSON.stringify(j1.yam));
+  await pollBook(j1.bookId);
 }
 
 /* ═══ [5d] format validation + retry: บทขาดหัวข้อ → retry → mark formatWarning (ยัง render ได้) ═══ */
@@ -261,10 +304,10 @@ console.log("[6] route refund partial (บท vedic พัง)");
   ok(row.status === "degraded", "status=degraded (บทพัง)", "got " + row.status);
   const deg = row.result?.meta?.degradedChapters || [];
   ok(deg.includes("vedic"), "degradedChapters มี vedic");
-  const expectRefund = Math.round(10 * 1.5); // vedic costYam 10 → 15
-  ok(row.yam_refunded === expectRefund, `refund = ${expectRefund} (bookPanelYam vedic)`, "got " + row.yam_refunded);
+  const expectRefund = 50; // r401 · บทพัง คืน 50/บท (flat)
+  ok(row.yam_refunded === expectRefund, `refund = ${expectRefund} (50/บท · r401)`, "got " + row.yam_refunded);
   const balAfter = await balance(A.userId);
-  ok(balBefore - balAfter === 114 - expectRefund, "หักสุทธิ = 114 - refund", `diff ${balBefore - balAfter}`);
+  ok(balBefore - balAfter === 350 - expectRefund, "หักสุทธิ = 350 - refund", `diff ${balBefore - balAfter}`);
   globalThis.__failMatch = null;
 }
 
@@ -295,6 +338,8 @@ console.log("[8] book.html script + i18n + print CSS");
   ok(/I18N\s*=\s*\{[\s\S]*th:[\s\S]*en:[\s\S]*zh:/.test(html), "i18n ครบ 3 ภาษา (th/en/zh)");
   ok(html.includes('data-theme="dark"'), "รองรับ 2 ธีม (dark)");
   ok(html.includes("function mdSafe") && html.includes("function esc"), "มี mdSafe/esc (render markdown ปลอดภัย)");
+  ok(html.includes("chart-fig") && html.includes("chartSvg") && html.includes("function chartFig"), "book.html render ภาพพื้นดวงหัวบท (chart-fig/chartFig/chartSvg)"); // r401
+  ok(html.includes("synthOn") && html.includes("requested"), "book.html ข้ามบทหลอมรวมเมื่อไม่ได้ติ๊ก (synthOn/requested)"); // r401
   ok(html.includes("บันทึกเป็น PDF") && html.includes("Save as PDF") && html.includes("存為 PDF"), "ปุ่ม PDF 3 ภาษา (📥 บันทึกเป็น PDF)");
   ok(html.includes("document.title = t(\"brand\") + \"-\" + bookName") || html.includes('document.title = t("brand") + "-" + bookName'), "ตั้งชื่อไฟล์ PDF = คัมภีร์ชะตา-{ชื่อ}");
   ok(html.includes("พับจอ") && html.includes("หนังสือของฉัน"), "running UX: พับจอ/ปิดได้ + กลับมาที่หนังสือของฉัน");
