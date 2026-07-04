@@ -97,6 +97,7 @@
     today:    { th:'หน้าวันนี้',     en:'Today',           zh:'今日' },
     chart:    { th:'ดวงของฉัน',      en:'My Chart',        zh:'我的命盤' },
     network:  { th:'เครือข่ายดวง',    en:'Network',         zh:'人脈網' },
+    books:    { th:'หนังสือของฉัน',   en:'My Books',        zh:'我的命書' },
     language: { th:'ภาษา',           en:'Language',        zh:'語言' },
     theme:    { th:'ธีม',            en:'Theme',           zh:'主題' },
     settings: { th:'ตั้งค่า',         en:'Settings',        zh:'設定' },
@@ -202,6 +203,7 @@
     var map = {
       '.hk-um-i-today': t('today'),
       '.hk-um-i-chart': t('chart'),
+      '.hk-um-i-books': t('books'),
       '.hk-um-i-network': t('network'),
       '.hk-um-i-lang': t('language'),
       '.hk-um-i-theme': t('theme'),
@@ -261,6 +263,7 @@
         <div class="hk-um-sec">
           <a class="hk-um-item" href="/today"><span class="hk-um-ico">📊</span><span class="hk-um-i-today">${t('today')}</span></a>
           <a class="hk-um-item" href="/chart"><span class="hk-um-ico">📜</span><span class="hk-um-i-chart">${t('chart')}</span></a>
+          <a class="hk-um-item" href="/book"><span class="hk-um-ico">📖</span><span class="hk-um-i-books">${t('books')}</span></a>
 	          <a class="hk-um-item" href="/network"><span class="hk-um-ico">👥</span><span class="hk-um-i-network">${t('network')}</span></a>
           <a class="hk-um-item" href="/account.html"><span class="hk-um-ico">💎</span><span>บัญชี · 時 · Top Up</span></a>
         </div>

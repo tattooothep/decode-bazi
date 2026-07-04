@@ -121,6 +121,7 @@
   var I18N = {
     th:{ brand:"คัมภีร์ชะตา", print:"พิมพ์ / บันทึก PDF", loadingText:"กำลังเปิดหนังสือ…",
       kai:"หนังสือดวงชะตา 6 ศาสตร์", issued:"ออกเล่มโดย hourkey · เล่มที่",
+      shelfTitle:"ชั้นหนังสือของฉัน", shelfEmpty:"ยังไม่มีคัมภีร์ชะตา — สร้างเล่มแรกจากหน้า Fusion (ปุ่ม 📜 สร้างคัมภีร์ชะตา)", shelfNew:"สร้างเล่มใหม่", shelfOpen:"เปิดอ่าน", sDone:"เสร็จ", sRunning:"กำลังเขียน…", sDegraded:"บางบทไม่พร้อม", sError:"ล้มเหลว",
       toc:"สารบัญ", preface:"บทนำ", prefaceBody:"หนังสือเล่มนี้อ่านดวงของคุณผ่าน 6 ศาสตร์โบราณ แต่ละศาสตร์มองคนละมุมด้วยศัพท์และคัมภีร์ของตัวเอง แล้วหลอมรวมเป็นภาพเดียว อ่านเป็นเข็มทิศ ไม่ใช่คำสั่งชีวิต",
       synthesis:"บทหลอมรวม", timing:"บทจังหวะเวลา", appendix:"ภาคผนวก",
       running:"กำลังเขียนหนังสือดวงชะตาของคุณ…", runningSub:"ใช้เวลาราว 4-8 นาที (6 ศาสตร์ + บทหลอมรวม) · เปิดหน้านี้ค้างไว้หรือกลับมาใหม่ได้",
@@ -128,6 +129,7 @@
       chapter:"บทที่", noId:"ไม่พบเลขเล่ม (id) — เปิดจาก \"ดวงของฉัน\"", disclaimer:"คำเตือน", method:"วิธีคำนวณ" },
     en:{ brand:"Book of Destiny", print:"Print / Save PDF", loadingText:"Opening your book…",
       kai:"Book of Destiny · 6 Sciences", issued:"Issued by hourkey · No.",
+      shelfTitle:"My Books", shelfEmpty:"No Book of Destiny yet — create your first from the Fusion page (📜 button)", shelfNew:"Create new", shelfOpen:"Open", sDone:"done", sRunning:"writing…", sDegraded:"partial", sError:"failed",
       toc:"Contents", preface:"Preface", prefaceBody:"This book reads your chart through 6 ancient sciences, each with its own lens and canon, then fuses them into one picture. Read it as a compass, not a command.",
       synthesis:"Synthesis", timing:"Life Timing", appendix:"Appendix",
       running:"Writing your Book of Destiny…", runningSub:"Takes about 4-8 minutes (6 sciences + synthesis). Keep this open or come back later.",
@@ -135,6 +137,7 @@
       chapter:"Chapter", noId:"No book id — open from \"My Chart\"", disclaimer:"Disclaimer", method:"Method" },
     zh:{ brand:"命書", print:"打印 / 存為 PDF", loadingText:"正在打開命書…",
       kai:"命書 · 六術合參", issued:"hourkey 出品 · 第",
+      shelfTitle:"我的命書", shelfEmpty:"尚無命書 — 從 Fusion 頁面建立第一本（📜 按鈕）", shelfNew:"建立新書", shelfOpen:"開啟", sDone:"完成", sRunning:"撰寫中…", sDegraded:"部分缺失", sError:"失敗",
       toc:"目錄", preface:"前言", prefaceBody:"本書以六種古術解讀您的命盤，各以自身術語與典籍立論，再融合為一。此書為指南針，非命令。",
       synthesis:"融合章", timing:"時運章", appendix:"附錄",
       running:"正在撰寫您的命書…", runningSub:"約需 4-8 分鐘（六術＋融合章）。可保持此頁或稍後再來。",
@@ -284,9 +287,48 @@
       '<div style="margin-top:6px">'+esc(msg||"")+"</div></div>";
   }
 
+  // ===== ชั้นหนังสือของฉัน (เมนู /book ไม่มี id) =====
+  function loadShelf(){
+    root.innerHTML = '<div class="state"><div class="spinner"></div><div>'+esc(t("shelfTitle"))+"…</div></div>";
+    fetch("/api/book?list=1", { headers:{ "Accept":"application/json" }, credentials:"same-origin" })
+      .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+      .then(function(res){
+        var j = res.j || {};
+        if(!res.ok || j.error){
+          if(j.error==="not_logged_in"){ location.href = "/signup?next="+encodeURIComponent(location.pathname); return; }
+          renderError(j.error || "error"); return;
+        }
+        renderShelf(j.books || []);
+      })
+      .catch(function(){ renderError("network"); });
+  }
+  function statusBadge(st){
+    var map = { done:["sDone",""], running:["sRunning",""], degraded:["sDegraded","degraded"], error:["sError","degraded"] };
+    var m = map[st] || ["sDone",""];
+    return '<span class="badge '+m[1]+'">'+esc(t(m[0]))+"</span>";
+  }
+  function fmtDate(iso){ try{ var d=new Date(iso); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }catch(_){ return ""; } }
+  function renderShelf(books){
+    var head = '<section class="cover" style="padding:30px 24px"><div class="kai">'+esc(t("kai"))+'</div><h1 style="font-size:clamp(24px,6vw,34px)">'+esc(t("shelfTitle"))+'</h1><div class="zh">命書</div>'+
+      '<div style="margin-top:16px"><a class="btn primary" href="/master-fusion" style="text-decoration:none">📜 '+esc(t("shelfNew"))+'</a></div></section>';
+    if(!books.length){ root.innerHTML = head + '<div class="state">'+esc(t("shelfEmpty"))+"</div>"; return; }
+    var cards = books.map(function(b){
+      var open = (b.status==="done"||b.status==="degraded");
+      var inner = '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'+
+        '<span style="font-size:22px">📖</span>'+
+        '<div style="flex:1;min-width:120px"><div style="font-weight:700">'+esc(t("brand"))+' · '+esc((b.bookId||"").slice(0,8))+'</div>'+
+        '<div style="font-size:13px;color:var(--muted)">'+esc(fmtDate(b.createdAt))+' · '+((b.sciences||[]).length)+' ศาสตร์ '+statusBadge(b.status)+'</div></div>'+
+        (open?'<span class="btn" style="pointer-events:none">'+esc(t("shelfOpen"))+' →</span>':"")+"</div>";
+      return open
+        ? '<a class="chapter" style="display:block;text-decoration:none;color:inherit;padding:16px 18px;margin:10px 0" href="/book?id='+encodeURIComponent(b.bookId)+'">'+inner+"</a>"
+        : '<div class="chapter" style="padding:16px 18px;margin:10px 0;opacity:.75">'+inner+"</div>";
+    }).join("");
+    root.innerHTML = head + '<div style="margin:6px 0 40px">'+cards+"</div>";
+  }
+
   function load(){
     var id = getId();
-    if(!id){ renderError(t("noId")); return; }
+    if(!id){ loadShelf(); return; }
     fetch("/api/book?id="+encodeURIComponent(id), { headers:{ "Accept":"application/json" }, credentials:"same-origin" })
       .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
       .then(function(res){
