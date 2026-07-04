@@ -43,6 +43,8 @@ export function resolveFusionYearRange(question: string, now = new Date()): { st
 
 /** สรุปย่อรายปีของศาสตร์ที่เลือก (ต่อ 1 ดวง) — คุมขนาด ~2-5 บรรทัด/ปี */
 export function renderMultiYearBlock(science: ScienceId, b: FusionBirthLike, startYear: number, endYear: number): string {
+  // ยูเรเนียน (เฟส 1) = แผงอ่าน natal เท่านั้น · ยังไม่ทำชั้นเวลารายปี (roadmap เฟส 2) → ไม่ส่งบล็อก multi-year เปล่า
+  if (science === "uranian") return "";
   const L: string[] = [];
   L.push(`=== MULTI_YEAR_TIMELINE ${startYear}-${endYear}${b.name ? ` · ${b.name}` : ""} (สรุปย่อรายปี · คำนวณจริงทุกปี · เวลาไทย) ===`);
   L.push("ใช้บล็อกนี้เทียบ 'ปีไหนหนัก/ปีไหนเบา' · รายละเอียดรายเดือนของปีเป้าหมายหลักอยู่ใน TIMING_TIMELINE ของผัง · ห้ามเดาปีนอกรายการ");
@@ -94,6 +96,7 @@ export function renderMultiYearBlock(science: ScienceId, b: FusionBirthLike, sta
 /** ① PAIR_TIMING: ปฏิทินร่วมของคู่/กลุ่ม (2-4 ดวง) ในปีเป้าหมาย — เดือนไหนใครหนัก เดือนไหนชนกันหลายคน */
 export function renderPairTimingBlock(science: ScienceId, births: FusionBirthLike[], targetYear: number): string {
   if (births.length < 2) return "";
+  if (science === "uranian") return ""; // เฟส 1 ยูเรเนียน = แผงอ่าน natal · ยังไม่ทำชั้นเวลาคู่/กลุ่ม (roadmap เฟส 2)
   const group = births.length > 2;
   const L: string[] = [];
   L.push(`=== PAIR_TIMING_PACKET ปี ${targetYear} (จังหวะเวลาของ${group ? `ทั้งกลุ่ม ${births.length} ดวง` : "ทั้งคู่"} · คำนวณจริง · เวลาไทย) ===`);

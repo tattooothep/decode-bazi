@@ -1,0 +1,472 @@
+| 5, Jahrgang Heft 6 . September 1923
+
+ASTROLOGISCHE
+BLÄTTER
+
+_ MONATSSCHRIFT
+FÜR FORSCHUNG UND PRAKTISCHE ARBEIT
+AUF ALLEN GEBIETEN DER WISSENSCHAFT-
+
+| GLICHEN ASTROLOGIE
+GEGRÜNDET VON KARL BRANDLER-PRACHT
+
+ORGAN DER BERLINER
+ASTROLOGISCHEN GESELLSCHAFT
+
+Chefschriftleiter: Karl Brandler-Pracht. Schriftleiter: M. BrihWinkel
+
+INHALT
+
+NU
+
+A, Witte: Berechnung der Deklination mit Hilfe zweier Tabellen 99
+August Zöppritz: Aus dem Briefwechsel Martin Zieglers mit
+
+August Zöppritz e e e 105
+August Zöppritz: Krankheits- und Wettereinflüsse für
+
+September und Oktober ... .. ee 108
+E. F. E. Feuerstein: Epoche&. . ... eee eo 108
+Albert Kniepf: Zum Häuserdisput . e eo 113
+Dr. J. F. Planas-Ketty: Ueber den Todd ......... 114
+O0. Pöllner: Die Herren der 12 Häuser des Geburtshoroskops
+
+und ihre Wirkung in den 12.Himmelsfeldern . ... ... 116
+Wilhelm Becker: Das Horoskop Dr. Stresemanns . . . . 119
+Max Valier: Das Weltall als Organismus .. ... - - + - 120
+In eigener Sache e 124
+
+Bücherschau Lees 125
+
+Linser - Verlag G. m, b. H., Berlin-Pankow
+
+
+BEZUGSBEDINGUNGEN
+
+Die ASTROLOGISCHEN BLÄTTER erscheinen
+monatlich im Umfange von 32 Seiten. Der Be-
+zugspreis, der bei den unstabilen Verhältnissen für
+einen längeren Zeitraum nicht festgelegt werden
+kann, wird für jedes Heft festgesetzt, dabei
+jedoch in möglichst niedrigen Grenzen gehalten.
+
+Preis des vorliegenden Heftes Mk. 0.30
+Grundpreis. Porto Mk. 30000.—
+
+Die Anschrift der Schriftleitung lautet:
+/ Schriftleitung der Astrologischen Blätter,
+Berlin - Pankow, Breite Straße 34
+Linser-VerlagG.m.b.H.
+
+MITARBEITER
+
+Karl Brandler-Pracht, Berlin A. Kniepf, Hamburg
+
+W. Becker, Berlin A. Witte, Hamburg
+
+Prof. Ketty, Berlin Rob. Loos, Hamburg
+
+Dr. Quade, Berlin A. M. Grimm, Bad Tölz
+Frank Glahn, Langenargen M. Dittrich, Markkleeberg
+Max Valier, München A. Scheidl, Smichow
+
+Otto Pöllner, München Hauptlehrer Chr. Oesterreicher,
+Dr. W. Mrsic, München Göppingen
+
+Aug. Zöppritz, Stuttgart . H. Feuerstein, Hannover
+
+Rud. Lewisch, Prag Friedrich Weith, Nürnberg
+
+Außerdem wurden den Blättern noch von
+mehreren anderen namhaften Seiten Beiträge
+zugesagt. Des ferneren’ ist die Schriftleitung
+dankbar für jede interessante Einsendung
+aus dem Leserkreise.
+
+Die ASTROLOGISCHEN BLÄTTER bringen in
+wechselnder Reihenfolge Forschungsergebnisse, ‘
+theoretische wie praktische Anregungen und
+Beispielshoroskope, sowie das Gebiet der Astro-
+logie berührende wissenschaftliche Arbeiten.
+Außerdem Mitteilungen der astrologischen Ge-
+sellschaften, Berichte über Kongresse usw. sowie
+
+- Besprechungen der neuesten Erscheinungen auf
+
+dem astrologischen Büchermarkt.
+
+Druck von Gießmann & Bartsch G. m. b. H., Berlin-Pankow.
+
+
+
+G
+
+M—
+MFHNNHIHIHHETH IHIH ITB HTHTT HIHIHI HSIRAH HBN TTE THT EHTH IHNEN EWE NENN
+
+Berechnung der Deklination mit Hilfe
+
+zweier Tabellen.
+Deklinationstabellen für Neptun und Cupido.
+Von A. Witte, Hamburg.
+
+Ehe die Deklinationen vom Neptun und Cupido gebracht wer-
+den, müssen noch die beiden nachfolgenden Tabellen, mit denen man
+leicht die Deklination, die Breite und die Länge eines Gestirns
+rechnen kann, erörtert werden.
+
+Diese Tabellen sind höchst notwendig für die Sekundär-Direk-
+tionen, und zwar in Länge und in Deklination, und es wird noch in
+manchen folgenden Beiträgen auf sie hingewiesen werden.
+
+Der Neptun hat eine Neigung gegen die Ekliptik von 1° 46,9’;
+sein aufsteigender Knoten liegt 10° 27 &0.
+
+Die Formel für die Berechnung der Breite ist folgende: Sin.
+(Unterschied Länge des Neptun mit einem Knoten) mal sin. Neigung
+(i) == sin. Breite (8).
+
+Gesucht Ort und Breite des Neptun für den 27. Januar 1859.
+Raphaels Ephemeris zeigt ihn mit 22° 57 X und — 3° 54 Dekl.
+
+(229 57 X — &2 10027 =) = 42° 30° = 9.82968 (log. sin.)
+i= 1°47 = 8.49304 (log. sin.)
+
+ß = 1912’ = 832272 (log. sin.)_
+Die nachfolgend aufgeführten Breiten zeigen:
+
+20 X — 1° 08‘ e = 4 +108’ =— 1°12'=ß
+
+20 MK — 1915 } Differenz T;
+
+Die Tabelle I zeigt bei 22° 57 X — 2° 48 Deklination.
+
+Die Tabelle II zeigt (Breite 1° 12° — 6) = — 1° 06°.
+
+Da beide Vorzeichen gleich, so ist — 3° 54* die Deklination.
+Raphaels Ephemeris gibt dieselbe Deklination, doch fehlt hier, wie in
+den älteren Jahrgängen die Breite des. Neptun, die somit also leicht
+mit diesen Tabellen festgestellt werden kann, wenn von der ge-
+gebenen Deklination — 3° 54 die Deklination des Ekliptikortes
+—2° 48 (Tab. I) subtrahiert und die Differenz —©6 (Tab. IN) addiert
+wird — 1° 12 == .
+
+Im Geburtsmoment, d. hb. beim ersten Atemzug des Geborenen
+bilden die Gestirne für diesen Menschen eine Kristallisation, die
+während des ganzen Lebens unverändert bleibt und die immer mit
+der scheinbar sich fortbewegenden Sonne, mit der Erde verbunden ist.
+
+Es zieht also auch die progressive Sonne- (die in den der Geburt
+folgenden Tagen des Geburtsjahres) diese Kristallisation mit sich
+fort und zwar mit denselben Radixbreiten parallel zur Ekliptik. Da-
+durch werden von diesen von der progressiven Sonne vorgeschobe-
+nen Planeten neue Deklinationslinien gebildet, die die Radixdeklina-
+tionen schneiden.
+
+Im vorliegenden Falle stand die Radixsonne 6° 58 %, sie lief
+dem Widderpunkte zu und mußte die Deklinationslinie des Neptun
+in ihrem Laufe treffen.
+
+— 90 —
+
+
+&
+
+Die Sonne hat keine Breite;. es zeigt demnach die Tabelle I bei
+3° 54' Deklination die Sonnenstände: ;
+
+20° 10 X und 9° 50 Y; die progressiven Stände der Sonne:
+19° 50 X und 9° 21 Y brachten den Tod der Mutter am 5. Aug. 1901
+und den Tod der Gattin am 11. April 1921. Für eine Berichtigung
+der Radixsonne und somit auch der Geburtszeit kämen die Stände
+7° 18 % und 7° 27 = in Betracht, da beide ein Plus zeigen; doch
+läuft der Saturn etwas der Sonne vorauf, sodaß auch dieser mitge-
+wirkt haben muß.
+
+Für den Saturn mit einer Radixbreite von + 0° 47 gestaltet sich
+nun die Berechnung wie folgt:
+
+Die Sonnenbögen sind 42° 52" und 62° 23°
+fi vorgeschoben 21° 55 m und 11° 26 '&
+
+(Tab. H) Deklinationen der Ekliptikorte + 3° 12° und — 4° 31°
+(Tab. II) (0° 47 — 0° 04’) und (0° 47 —0° 04’) + 0° 43° und +_0° 43
+Deklinationen des vorg. h + 3° 55 und — 3 48
+Deklination des W rad. ist 3° 54’
+Mit solchen ‘ Deklinationsschnittpunkten oder Parallelen läßt
+
+sich demnach die jedesmalige Breite feststellen.
+Planet Cupido rad. 17° 26 &, Deklination + 16° 01’ und Breite —
+
+19 04’ Cupido vorg. parallel %4 rad.: Hochzeit der Tochter am 24. Mai 1913.
+(rad. 17° 26 & + 54° 23’) = 11° 49 © = + 22° 56 (Ekliptikort).
+Breite (1° 04 — 0° 01° = — 19 03
+Dekl. des vorg. Cupido = + 21° 53°
+À rad. = + 21° 45
+
+‚. Diff. — 0° 08’
+Breite C. = — 1° 04'
+
+Bei Länge 17° 26 & soll ß sein — 17127
+
+Cupido vorg. parallel 8 rad.: Tod der Mutter am 5. August 1901.
+(rad. 17° 26 & + 42° 57) = 0° 18 ©& = + 23° 27’ (Ekliptikort).
+Breite C. = — 1° 04’
+
+Dekl. des vorg. C. = + 229 23
+
+Dekl. des $ rad. = — 22° 26’
+Diffz. + 0° 03°
+Breite C. = — 1° 04
+
+Bei Länge 17° 268 soll £ sein — 1° 0l’-
+
+C. v. IL $ rad. Tod Bismarcks am 30. Juli 1898
+C. vorg. 27° 17 Il = + 23° 25’ (Ekliptikort)
+— 1° 03” (Bismarck hatte C & 8 im VIII)
++ 22° 227
+Dekl. 8 rad. — 22° 26’
+Diffz. + 0° 04
+Breite C. — 1° 04°
+also Breite C. = 1° 00° bei 17° 26 &. (Soll).
+C. v. II A rad. Tod des Vaters am 15. Juni 1888.
+C. vorg. 17° 08 I = + 22 50 (Ekliptikort)
+— 1° 03
++ 21° 47
+
+
+. Dekl. 4 rad. + 219 45°
+| Diffz. = 0° 02’
+Breite C. — 1° 04
+
+also Breite C = 1° 06 bei 17° 26 Y (Soll).
+
+C. v. I A rad. ‘Kriegsbeginn am 1. August 1914.
+C. vorg. 13° 12 © = + 22 4g (Ekliptikorh)
+— 1
++ 21945
+Dekl. A4 rad. + 21° 45’
+- Diffz. = 09% 00’
+also Breite’ C. — 1° 04’ bei 17° 26 Y (Soll).
+
+“A v. IMC. Tod der Gattin am 11. April 1921.
+; A vorg. 14° 04 &8 = + 16° :37’ (Ekliptikort)
+Breite 4 — 0° 28" (— 0° 01’) = 09 27’
+Dekl. des vorg. 4 = + 16° 10°
+Dekl. des C. rad. = + 16° 01’
+Diff. + 0° 09
+Breite C. — 1° 04
+also Breite C. = 0°.55’ bei 17° 26 & (Soll).
+
+Y v. II C. Hochzeit der Tochter am 24. Mai 1913.
+W vorg. 17° 20 & = + 17° 01° (Ekliptikort)
+Breite V — 1° 12’ (— 0° 04) — 1° 08’
+Dekl.. des vorg. V + 15° 53”
+Dekl. C. rad. + 16° 01’
+— 0° 08’
+Breite C. — 1° 04
+also Breite C. = 1° 12’ bei 17° 26 & (Soll).
+
+Die aus den bekannten Ereignissen abgeleiteten Breiten ‘des
+Planeten 1 Cupido für diesen Radixstand Sind :
+
+1° 06° Mittel 1° 04’ als Probe für die
+
+— 1° 00° . Ort.17°.26 &
+— 1° 04: ; in der Tabelle gegebenen Breite.
+
+Zweite Heirat am 5. November 1922.
+
+A vorg. 15% 36 62, Dekl, + 15% 43
+
+C. lfd. 17° 54 bè, Breite + 0° 09’, Dekl. + 15° 37 (also Breite
++ 0° 15’). |
+
+Tod der Mutter am 5. August 1901.
+
+C. lfd. 17° 56 &, Breite —. 0° 23”, Dekl. + 21° 53 (also Breite
+— 0° 31’). Dekl. 4 ‘rad. + 21° 45 ;
+
+Mit einigen Horoskopen von Personen desselben Geburtsjahres
+ist es möglich, die Breite dieses Planeten nach obigen Beispielen ge-
+nau genug festzustellen.
+
+— 101 —
+
+
+__ Ich bitte also Forscher der Astrologie festgéstellte Breiten und
+Längen dem Verlage einzusenden, damit eine Gesamtprüfung er-
+folgen und eine genauere Tafel ausgearbeitet werden kann.
+
+Um eine gute Uebersicht von allen Deklinationen zu erhalten,
+verwende man quadriertes Schreibpapier 28'/, : 44*/, cm, nehme je
+2 Spalten nach oben für 1° Dekl. und. je 1 Spalte nach rechts für
+1 Jahr und lasse jedes Jahr mit dem 0. Januar beginnen. Es decken
+Sich also nicht die Jahresabschnitte mit den Sonnenbögen, da diese
+immer verschieden groß sind. Man rechne sich die vorgeschobenen
+Planetenstände für den 0, Januar der Jahre 20, 40, 60, 80. vor dem
+21., 41., 61., 81. Geburtstage und trage die Deklinationspunkte jedes
+Planeten gesondert auf.
+
+Verwendet man immer dasselbe Format und die Quadrate der
+Linien von gleicher Größe, so ist es praktisch, sich ein diesem For-
+mate angepaßtes Kurvenlineal aus Pappe anzufertigen, indem man
+sich den Ekliptikbogen (Tab. I) aufträgt und die senkrechten Linien
+als Gradabschnitte benutzt; dann diesen Bogen sich auf einen Papp-
+Streifen von 50 cm Länge und 7 cm Breite durchsticht und den Bogen
+ausschneidet.
+
+Mit Hilfe dieses Lineals lassen sich nun schnell alle gefundenen
+Punkte verbinden.
+
+Wenn die Rechenarbeit nicht genehm ist, kann mit Hilfe eines
+Zirkels und-mit einer von mir angefertigten „Tafel zur graphischen
+
+Breite-Unterschied der Deklinationen.
+
+Länge ” Breite | Länge
+| 10 | 29 | go | 40 | 50 | 69 | 70 | 80 | 9° | 109
+T0} 5 110 | 15‘ | 20° | 25° | 30° | 84° | 39° | 4& | 49! | 800
+5 ; E 43 | 48 | 25
+] 10 | 5 | 9 |1 |19|24 |29 | 388 | 88 42 |47| 20 |
+- 15 18 | 18 | 283 | 28 | 382 | 87 | 41 | 45 | 15 |m
+20 | 4 | 8 |12 | 17 | 22 | 27 | 31ı | 86 | 40 | 44 | 10
+25 16.| 21 | 25 | 29 | 84 | 87 | 41 | 5
+30 4 |.7 | 1: |15| 19 | 28 | 27 | 8ı ! 34 | 38 0
+wl 5 10 |14 | 17 | 20 | 24 | 98 | 8ı | 85 | 25
+10 | 8 | 6 | 9 |12 |15|18 | 21 |25| 28 | 382 | 20 | x
+m] 15 8 110 | 183 | 16 | 19 | 22 | 25 | 28 | 15
+201 3 | 5 | 7 | 9 | 11 | 18 | 16 | 19 | 22 | 24 | 10
+25 6 | 8}10 |11 /18[65/18|20| 5 [2
+20 383 | 4 | 5 6 8 9 | 10 | 12 | 14 | 16 0
+IL 5 |2'|83 | 415 6 7 8 9 | 10 | 11 | 25
+10 |.2'12 11 8141 5 6 | 6 6| 71| 71 20
+Xl 6 8 3 4 4 4| 5| 5| 5 x
+1 20 | 1ı 1.218 2 3 3 8| 83| 8| 10 |g
+25 ; 1 |+1 2 2 2| 2 2 5
+30.1 0101000000000
+
+— 102 —.
+
+
+
+Bestimmung der Deklinationen der vorgeschobenen Planeten“ sich
+
+leicht und schnell eine Uebersicht ü
+
+Lebens verschaffen.
+
+Man hat dann nur einen Quadranten vor sich liegen, da die Dekli-
+nation + sich an der unteren Linie, dem Aequator, wieder nach oben
+wendet, wenn die Deklination in — übergeht.
+
+Tabelle der Rektaszension
+
+ber die meisten Ereignisse seines
+
+und Deklination
+
+Länge für Y für m | für 7 + für N | für JL I für 65 Länge
+
+Tv THX m m | Z A8 SQ
+
+N — +1800.20(—] 418001 418009 > — +1800 | +1800 — -+1800 m Ö
+; <«— » | «— »—> | «— —> |
+
+m A a ô a &% 8 « @ 8 a xx C
+° ° o ° o ° o o ° ° 9
+1 055| 024|179 05| 28 52 | 11 50 [151 08| 58 52 | 20 22 |121 08] 29
+2 150| 0 481178 101 29 49 | 12 10 [150 11} 59 54 | 20 34 |120 06] . 28
+8 2 45| 1 121177 15| 30 47 | 12 31 |149 13| 60 57 | 20 46 |119 0838|. 27
+4 8 40| 1 361176 20} 31 45 | 12 51 1148 15| 62 00 [ 20 57 [118 00 26
+5 4 35| 1 59175 25| 32 43 13 12 1147 17} 63 03 | 21.08 |116 67] 25
+6 5 30| 2 2381174 30{ 33 41 | 18 32 [146 19] 64 07 | 21 19 [115 58] 24
+7 6 26! 2 4711783 8384] 34 89 | 13 51 [145 21| 65 10 | 21 29 114 50} 28
+8 7 91| 3 10/172 391 35 38 | 14 11 [144 22] 606 14 | 21 89 1118-46} 22
+9 8 16| 3 34{171 441 36 87 | 14 30 |143 28| 67.18 | 21 49 1112 42} 21
+10 9 111 3 58/170 49] 37 835 | 14 49 |142 25| 68 22 | 21 58 1111 38] 20
+11 110 07 | «4 21 169 631 38 34 | 15 08 1141 26] 69 26 | 22 od 110 341 19
+12 111 02 F 168 081 39 83 | 15 27 [140 27| 70 30 | 22 14 1109 30| 18
+13 111 58| 508/168 023{40 33 | 15 45 1139 27] 71 34 | 22 22 1108 26] 17
+14 112 58| 5 821167 07] 41 32 | 16 08 1188 28| 72 39 | 22 29 1107 21| 16
+15 113 49| 5 55/166 11] 42 32 | 16 81 1137 28 73 43 | 22 36 1106 171 15
+16 114 44| 6 18/165 16] 43 82 | 16 88 [186 28] 74 48 | 22 48 [105 12 14
+17 115 40| 6 411164 20} 44 82 | 16 55 1135 28] @5 52 | 22 49 1104 08| 13
+18 116 36} 7 04/1683 241-45 82 | 17 12 [184 28| 76 57 | 22 56 [108 03| 12
+19 117 32| 7 271162 28] 46 33 | 17 29 1138 271 78 02 | 28 00 1101 58] .11
+20 [18 28| 7 491161 321 47 33 | 17 45 1132 27] 79 07 | 23 04 [100 53| 10
+21 {1924| 8 121160 36} 48 34 | 18 01 |181 26| 80 12 | 23 09 ] 99 48 9
+99 120 20| 8 341159 40] 49 35 | 18 17 [130 25| 81 17 | 23 12 | 98 48 8
+28 121 17| 8 571158 43} 50 36 | 18 32 [129 24| 82 22 | 28 16 | 97 38 7
+24 122 131 9 191157 471 51 87 | 18 47 [128 23} 83 28 | 23 19 | 96 82 6
+25 123 10|.9 41|156 50| 52 39 | 19 01 [127 211 84 83 | 23 21 | 95 27 5
+96 124 06110 031155 54| 53 40 | 19 16 [126 20} 85 38 | 23 23 | 94 22 4
+27 125 08110 24|154 571 54 42 | 19 30 1125 18] 86 44 | 23 25 [ 93 16 3
+28 |26 00/10 46/154 001 55 44 | 19 43 1124 16] 87 49 | 23 26 | 92 11 2
+29 126 57{11 07/158 038] 56 47 | 19 57 [128 13] 88 55 | 28 27 | 91 05}. 1
+80 127 55! 11 291152 05{ 57 49 | 20 10 [122 11{ 90 00 | 28 27 | 90 00 0
+
+’
+
+— 108 —
+
+
+
+Planet Neptun Planet Cupido
+Länge Breite Deklination Länge Breite Deklination
+10N |— 0° 01‘ | + 17° 44“ 1082 0° 007 + 45 '
+15, |+4+0° 08'| 41160 29/ 15, |+0° 05/ 169 267
+20 , 0° 18‘ | 415° 06° 1207, 40° 11‘| +4 14° 59/
+25, 009 27 | +130 38‘ 125, |+0% 16‘ | +4 13% 28/
+Om |+0i 86 | +12 08° | 0m | +09 2| + 11° 507
+5, +0094‘ | 41009 22’ 5, |(+0°% 27’ | 410% 06‘
+10 , 00 53‘ | + 80 38' 10, (+0933 | + 8° 20°
+15 . 10 01/’| + 60 50' 15, (+0° 37‘| + 6% 30‘
+20 » 1908‘ | + 5° 00‘ 120, |-+0%°42'| - 4° 36‘
+5 +1915‘ | + 3° 08 125, |+0° 46‘ | + 2° 40/
+0a | +15 21° E 19° 15/ 02 1 + 0° 50 | + 0° 45
+5 19 27‘| — 00 39/ 5, |-+0°53'‘| — 1° 11‘
+10 , 19 32‘| — 20 34' 10„,.|+0° 56‘| — 3° 07'
+15, |+19 37'| — 40 24' 15, |-+0° 59‘| — 50 01/
+20, |+10 40'| — 6° 15‘ 20, |+1001'| — 69 52'
+25 |+1043'| — 8° 04 125, |+1°.03'| — 8° 42'
+Om: |+*19 45'| — 99 497 Om |+1% 04']| —10° 297
+5, 4104| — 11° 27° 5, +105‘ | — 129 10‘
+10, (+1047 | —130 07 110, |+4+1°05'| — 13% 47‘
+15, |+10 47‘| — 140 39/ 15, (+1205 | — 15% 19/
+20, |+1°45'| —160° 05 120, |+1% 04‘ — 16° 44’
+25, |+F1°43'‘| —17° 3‘ 125, |+1° 03‘) —18° 01/
+0M [+15 4l‘| — 18° 347 0M [+ 1° 0L‘| — 199 12“
+5, | +109 37‘| —19° 34' 5, |+0° 59‘| —20° 12’
+10, (+19 33‘| —20° 28/ 10, |+0° 56‘ | —21° 04‘
+15, (+1028 | —21° 10° 115, (409 53‘ | —21° 45’
+20, 41% 21‘| —22° 03 120, |+0°50‘| —22° 15/
+5, |+1° 16‘| —22° 068‘ 125, | +4009 46’ | A— 22° 35'
+05 | +1909] —22° 18 05 140° 2 9220 457
+5, |-+10 02“| —22° 19° 5 |-4+ 09°.37‘| —22° 44°
+10, +0054‘ | —229 .11° 10, |+0° 33‘| — 229 32'
+15, +004‘ | —21° 51/ 15, |-+.0° 27! | — 229 10’
+20, | +009 37‘ | —21°..22‘ 120, |+0° 22‘| —21° 38/
+25, |+ 0° 28'| —20° 4 125, |+0° 16‘ | —20° 53/
+0m | 409 1971 — 199 52° 0= | +0911’ | — 20° 007
+5 | 409 10‘ | — 189-51‘ 5, (40% 05/ | — 18° 56'
+10, (+0 01‘| —17° 44' 10, | 0900| —179 45'
+15, |—0008/ | — 169 29‘ 15, |—0° 05‘| —16° 26'
+20 „ 4— 00 18*| —150 06‘ 120, |—0° 11‘|. — 149 59'
+25, | —00 27'| — 139. 38/ 25, |—09 16‘| —13° 27‘
+0M | —065 36‘ | — 129 03/ 0M |— 0° 22°| Z 119 ‚507
+5 F— 0094| —10° 22‘ 15, |—0° 27'| —10° 06'
+10 |— 00 53‘/| — 89 38‘ 10, |—0è 33‘| — 8° 20°
+15, (—109 0! | — 69 50° 15, |—09 37 | 69% 29‘
+20, | —1° 08‘'| —59° 00° 120, |—0°42'| — 49-36‘
+25 ]—1915‘| — 3° 08’ | 257 —00 46'| — 2% 41'
+0N |— 162171 — 1957 07 |— 0° 50‘| — 0° 46‘
+5 |—1027*] + 09 .39“ 5P 1—09.53'| + 1° 11‘
+
+Gegenfberliegende Zeichen haben ‘entgegengesetzte Vorzeichen der
+Breite und der Deklination. -
+
+— 104 = s
+
+
+

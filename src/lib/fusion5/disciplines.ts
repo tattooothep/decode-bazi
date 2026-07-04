@@ -3,7 +3,7 @@
  * หัวใจกันมั่ว: route/UI อ่านจากนี่ที่เดียว · ห้าม inline เลือก endpoint/คัมภีร์เอง
  * AI mapping ตาม spec เจ้านาย: 八字→Claude · 紫微→Gemini · 七政→Grok · Western→Claude · Vedic→Codex
  */
-export type ScienceId = "bazi" | "ziwei" | "qizheng" | "western" | "vedic";
+export type ScienceId = "bazi" | "ziwei" | "qizheng" | "western" | "vedic" | "uranian";
 
 export type ScienceBinding = {
   id: ScienceId;
@@ -48,6 +48,13 @@ export const DISCIPLINES: Record<ScienceId, ScienceBinding> = {
     engine: "vedic-sidereal", defaultModel: "codex-cli", fallbackModels: ["claude-max-cli", "gemini-api"],
     knowledgeId: "vedic-parashara", needsBirthTime: false, costYam: 10, available: true,
     termGuard: "ห้ามใช้ศัพท์จีน · ใช้ graha/rashi/bhava/nakshatra/dasha",
+  },
+  // ศาสตร์ที่ 6 · ยูเรเนียน (Hamburger Schule · Alfred Witte) — งานต้องอ้าง verbatim เยอรมัน+ห้ามแต่ง → ใช้ Claude (แม่นสุด)
+  uranian: {
+    id: "uranian", labelTh: "โหราศาสตร์ยูเรเนียน", labelZh: "天王星占星(漢堡學派)", labelEn: "Uranian Astrology",
+    engine: "uranian-midpoint", defaultModel: "claude-max-cli", fallbackModels: ["gemini-api", "grok-cli"],
+    knowledgeId: "uranian-witte", needsBirthTime: false, costYam: 12, available: true,
+    termGuard: "ใช้ Halbsumme/Planetenbild/sensitive Punkte/Meridian/Sonnenbogen · ห้ามปนศัพท์จีน(用神/廟旺/主星) หรือ Vedic(graha/dasha)",
   },
 };
 

@@ -356,7 +356,8 @@ const THREAD_ROWS = [
     else if (src[j] === "}") { depth--; if (!depth) { mClose = j; break; } }
   }
   const mobileComposer = src.indexOf("body.hk-answer-mode:not(.hk-ask-open) .composer");
-  const mobileOverflow = src.indexOf("body.hk-answer-mode:not(.hk-ask-open) .result-panel{overflow:visible}");
+  // r384d เติม ;min-width:0 ต่อท้าย overflow:visible (fix overflow-x) → จับแบบไม่รวม } ปิด กันสตริงเพี้ยน
+  const mobileOverflow = src.indexOf("body.hk-answer-mode:not(.hk-ask-open) .result-panel{overflow:visible");
   ok("มือถือ: composer ติดล่าง (แก้ sticky ใต้ overflow:hidden) — กฎอยู่ใน @media 768 เท่านั้น", mobileComposer > mOpen && mobileComposer < mClose && mobileOverflow > mOpen && mobileOverflow < mClose);
 }
 

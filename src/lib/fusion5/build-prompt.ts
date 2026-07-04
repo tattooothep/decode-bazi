@@ -12,6 +12,10 @@ import { buildWesternPacket } from "../astro/western/packet";
 import { buildWesternTimeline, type WesternTimeline } from "../astro/western/timeline";
 import { renderMultiYearBlock, renderPairTimingBlock, resolveFusionYearRange, type FusionBirthLike } from "./multi-year";
 import { renderWesternPrompt } from "../astro/western/render";
+// ศาสตร์ที่ 6 · ยูเรเนียน (Uranian / Hamburger Schule · Witte) — additive
+import { uranianChart } from "../astro/uranian/engine";
+import { buildUranianPacket } from "../astro/uranian/packet";
+import { renderUranianPrompt } from "../astro/uranian/render";
 import { vedicChart } from "../astro/vedic/engine";
 import { buildVedicPacket } from "../astro/vedic/packet";
 import { renderVedicPrompt } from "../astro/vedic/render";
@@ -343,6 +347,12 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
 						    "61-loan-credit-debt-refinance-specificity.md": { title: "Qizheng loan/credit/debt/refinance specificity pack · 三主/財帛/田宅/官祿/妻妾/兄弟/奴僕/疾厄/行限 debt-service evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-loan-credit-debt-summary", licenseClass: "project_summary", mode: "summary" },
 						    "62-insurance-claim-policy-coverage-specificity.md": { title: "Qizheng insurance/claim/policy/coverage specificity pack · 三主/財帛/田宅/官祿/妻妾/兄弟/奴僕/疾厄/行限 insurance evidence weighting", sourceUrl: "local:private/restricted-sources/qizheng/public-domain-derived-insurance-claim-summary", licenseClass: "project_summary", mode: "summary" },
 				  },
+  // ศาสตร์ที่ 6 · ยูเรเนียน (Uranian / Hamburger Schule) — คัมภีร์ Witte verbatim (PD · life+70 → PD 1 ม.ค. 2012)
+  uranian: {
+    "00-source-policy.md": { title: "Uranian source policy (Witte PD scope · round 1)", sourceUrl: "local:uranian/source-policy", licenseClass: "project_summary", mode: "summary" },
+    "01-source-policy-conclusion.md": { title: "Uranian source-policy conclusion · what PD Witte canon can/cannot do (method+Halbsumme=OK · A–Z lookup dictionary=Regelwerk Rudolph ยังไม่ PD)", sourceUrl: "local:uranian/source-policy-conclusion", licenseClass: "project_summary", mode: "summary" },
+    "10-witte-canon-de.md": { title: "Alfred Witte canon verbatim (DE) · Planetenbild/Halbsumme/sensitive Punkte/Auslösung/Direktionen/vergleichende Astrologie/Häuser/Transneptun(Cupido/Hades/Kronos/Zeus)/Fallbeispiele — Astrologische Rundschau + Astrologische Blätter 1913–1925", sourceUrl: "https://astrax.de (Kulturgut Astrologie e.V.) · AR/AB Jg.1913–1925", licenseClass: "public_domain", mode: "verbatim" },
+  },
 };
 
 const CANON_DEFAULT_FILES: Partial<Record<ScienceId, string[]>> = {
@@ -411,6 +421,11 @@ const CANON_DEFAULT_FILES: Partial<Record<ScienceId, string[]>> = {
     "ziwei-quanshu-core.md",
     "07-quanshu-xingyuan-wenda.md",
   ],
+  // ศาสตร์ที่ 6 · ยูเรเนียน — อ่าน source-policy conclusion ก่อน แล้วคัมภีร์ Witte (default = วิธี+จุดไว+ทรานส์เนปจูน)
+  uranian: [
+    "01-source-policy-conclusion.md",
+    "10-witte-canon-de.md#method+tnp",
+  ],
 };
 
 /** r377 · canon section splitter — คัมภีร์ verbatim ไฟล์ใหญ่ ส่งเฉพาะหัวข้อที่ตรงคำถาม
@@ -450,6 +465,17 @@ const CANON_FILE_SECTIONS: Partial<Record<ScienceId, Record<string, Record<strin
     // 四化斷訣: แนบเฉพาะส่วน A (全書卷二 ~1.9K) · ส่วน B (十八飛星 สายดาว 18 ดวง) = บริบทตำรา ไม่แนบเข้า prompt (ตาม 01-source-policy — คนละระบบกับผัง 14 主星)
     "10-feixing-quanji.md": {
       sihua: [{ from: /^## A1/m, to: /^## B1/m }],
+    },
+  },
+  uranian: {
+    // Witte canon (~41K) — วิธี+จุดไว (A+B) เสมอ · ทรานส์เนปจูน (H) เสมอ · timing/synastry/houses/ตัวอย่าง ตามคำถาม
+    "10-witte-canon-de.md": {
+      method: [{ from: /^## หมวด A —/m, to: /^## หมวด C —/m }],          // A นิยาม Halbsumme/Planetenbild + B จุดไว
+      timing: [{ from: /^## หมวด C —/m, to: /^## หมวด F —/m }],          // C Auslösung + D วิธีจร + E Direktionen
+      synastry: [{ from: /^## หมวด F —/m, to: /^## หมวด G —/m }],        // F vergleichende Astrologie
+      houses: [{ from: /^## หมวด G —/m, to: /^## หมวด H —/m }],          // G Häuser 3 ระบบ
+      tnp: [{ from: /^## หมวด H —/m, to: /^## หมวด I —/m }],             // H Cupido/Hades/Kronos/Zeus (ความหมาย PD)
+      examples: [{ from: /^## หมวด I —/m, to: /^## ภาคผนวก/m }],         // I Fallbeispiele
     },
   },
 };
@@ -549,6 +575,8 @@ const CANON_ROUTER_BASE_FILES: Partial<Record<ScienceId, string[]>> = {
   ziwei: ["00-method.md", "09-evidence-gates-topic-router.md", "10-palace-sihua-specificity.md", "01-source-policy.md", "02-daozang-ziwei-notes.md", "03-feixing-cetian-private-rules.md", "05-main-star-topic-matrix.md", "07-modern-licensed-collation-rules.md", "08-quanshu-limit-special-rules.md"],
   western: ["00-method.md", "04-specialty-router-evidence-gates.md", "05-dignity-lots-specificity.md", "01-compact-addenda.md", "00a-public-domain-interactions.md", "00d-public-domain-expanded-judgment-rules.md"],
   vedic: ["00-method.md", "06-evidence-gates-specialty-router.md", "07-functional-topic-specificity.md", "01-classical-rules.md", "04-topic-packs.md", "05-dasha-deepening-rules.md"],
+  // ยูเรเนียน: อ่าน source-policy ก่อนเสมอ · witte token (วิธี+จุดไว+ทรานส์เนปจูน + section ตามคำถาม) ต่อในสาขา uranian ของ selectCanonFilesForPrompt
+  uranian: ["01-source-policy-conclusion.md"],
 };
 
 function canonIntentFromQuestion(question: string, births: BirthData[]): CanonIntent {
@@ -2106,6 +2134,21 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     return files;
   }
 
+  if (science === "uranian") {
+    // ศาสตร์ที่ 6 · Witte canon (section splitter): วิธี+จุดไว (method) + ทรานส์เนปจูน (tnp) แนบเสมอ ·
+    // timing/synastry/houses/ตัวอย่าง ต่อตามคำถาม → รวมเป็น token เดียว (ห้ามส่งทั้งไฟล์ทุกครั้ง)
+    const sections = ["method", "tnp"];
+    if (intent.timing || intent.advancedTiming || intent.validation) sections.push("timing");
+    if (intent.relationship || intent.pair) sections.push("synastry");
+    // Häuser (เรือน 3 ระบบ) ต้องมีเวลาเกิดถึงจะมี Meridian/Asc — แนบเมื่อดวงมีเวลา หรือคำถามงาน/สาธารณะ
+    if (births.some((b) => b.hasTime) && (intent.career || intent.authority || intent.employment || intent.property || intent.general)) sections.push("houses");
+    if (intent.general || intent.validation) sections.push("examples");
+    // dedupe คงลำดับ
+    const uniqSections = Array.from(new Set(sections));
+    pushUnique(files, `10-witte-canon-de.md#${uniqSections.join("+")}`);
+    return files;
+  }
+
   return undefined;
 }
 
@@ -2438,6 +2481,29 @@ function structuredPacketJson(packet: unknown): string {
     };
     return JSON.stringify(compact);
   }
+  if (packet && typeof packet === "object" && (packet as { discipline?: unknown }).discipline === "uranian") {
+    const p = packet as Record<string, any>;
+    const d = p.data as Record<string, any>;
+    // compact: จุด/ภาพดาว/จุดไว/ทรานส์เนปจูน — ตัด halbsummen ดิบทั้งชุด (ภาพดาวสรุปคู่ที่มีนัยแล้ว) กัน budget
+    const compact = {
+      discipline: p.discipline,
+      packetVersion: p.packetVersion,
+      hasBirthTime: p.hasBirthTime,
+      degradeLevel: p.degradeLevel,
+      orbPictureDeg: p.orbPictureDeg,
+      orbSensitiveDeg: p.orbSensitiveDeg,
+      tnpPositionSource: p.tnpPositionSource,
+      excludedTransneptunians: p.excludedTransneptunians,
+      notAvailable: p.notAvailable,
+      data: {
+        points: d.points?.map((x: any) => [x.name, x.signTh, x.signDeg, +x.dial90?.toFixed?.(2), x.uncertain ? 1 : 0]),
+        planetaryPictures: d.planetaryPictures?.map((x: any) => [x.pair, x.occupant, x.orbDeg]),
+        sensitivePoints: d.sensitivePoints?.map((x: any) => [x.kind, x.a, x.b, x.activatedBy, x.orbDeg]),
+        witteTransneptunians: d.witteTransneptunians?.map((x: any) => [x.name, x.rulerSignDe, x.canonRef]),
+      },
+    };
+    return JSON.stringify(compact);
+  }
   return JSON.stringify(packet);
 }
 
@@ -2470,6 +2536,13 @@ export function renderChartForScience(science: ScienceId, b: BirthData, refDate:
   if (science === "ziwei") {
     const packet = buildZiweiPacket(b.dtUTC, b.lat, b.lng, b.gender, b.hasTime, { refDate });
     return `${renderZiweiPrompt(packet)}\n\nSTRUCTURED_CHART_PACKET:\n${structuredPacketJson(packet)}`;
+  }
+  if (science === "uranian") {
+    // เฟส 1 = แผงอ่าน natal (Halbsumme/Planetenbild/sensitive Punkte) — ยังไม่ทำ timeline/direction (roadmap เฟส 2)
+    void refDate;
+    const chart = uranianChart(b.dtUTC, b.lat, b.lng, b.hasTime, b.gender);
+    const packet = buildUranianPacket(chart);
+    return `${renderUranianPrompt(packet)}\n\nSTRUCTURED_CHART_PACKET:\n${structuredPacketJson(packet)}`;
   }
   return "";
 }
@@ -2597,6 +2670,8 @@ export function buildSciencePrompt(
           L.push(`⚠️ ดวงนี้ไม่ทราบเวลาเกิด — Western ให้อ่านแบบ no-time: ใช้ดาวในราศี/ฐานะดาว/มุมดาว/ธาตุ/คุณภาพ และปิดลัคนา MC เรือน จุดโชค sect และ chart ruler`);
         } else if (science === "vedic") {
           L.push(`⚠️ ดวงนี้ไม่ทราบเวลาเกิด — Vedic ให้อ่านแบบ no-time: ใช้ graha ใน rashi, dignity, combustion, retrograde, drishti ระหว่าง graha เท่านั้น; ห้ามฟันหนักจาก Lagna/bhava และให้ถือ Moon nakshatra/Vimshottari เป็นไม่แน่นอนถ้า packet ติดธง`);
+        } else if (science === "uranian") {
+          L.push(`⚠️ ดวงนี้ไม่ทราบเวลาเกิด — Uranian ให้อ่านแบบ no-time: ใช้ครึ่งผลรวม (Halbsumme)/ภาพดาว (Planetenbild)/จุดไว (sensitive Punkte) ระหว่างดาว-ดาว เท่านั้น · ปิด Meridian/Aszendent และถือจันทร์เป็นไม่แน่นอนถ้า packet ติดธง`);
         } else {
           L.push(`⚠️ ดวงนี้ไม่ทราบเวลาเกิด — ส่วนที่ต้องลัคนา/เรือนอ่านไม่ได้ (อ่านเท่าที่มี)`);
         }

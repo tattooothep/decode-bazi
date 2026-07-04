@@ -328,7 +328,7 @@ function cleanScienceList(x: unknown): ScienceId[] {
   const raw = Array.isArray(x)
     ? x
     : String(x || "").split(",");
-  return raw.map((s) => String(s).trim() as ScienceId).filter((s) => !!DISCIPLINES[s]?.available).slice(0, 5);
+  return raw.map((s) => String(s).trim() as ScienceId).filter((s) => !!DISCIPLINES[s]?.available).slice(0, 6);
 }
 
 function cleanIdListFromSearch(url: URL): string[] {
