@@ -77,6 +77,9 @@ export type CanonBundle = {
   promptChars: number;
   truncated: boolean;
   sourceMap: CanonSourceMapRow[];
+  // r398 · ไฟล์คัมภีร์ที่ "ถูกเลือก (selected_by_question) แต่ตัดทั้งไฟล์เพราะเกินงบ" → ไม่โผล่ใน sourceMap
+  //   เก็บไว้เพื่อ (ก) log ไม่เงียบ (ข) แจ้ง AI ว่าตำราส่วนนี้ไม่ได้แนบ (ไม่ใช่ "ตำราไม่มีหลักข้อนี้")
+  droppedForBudget?: string[];
 };
 const canonCache = new Map<string, CanonBundle>();
 
@@ -2281,7 +2284,7 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     const eMulti = new Set<string>();                // exp-2 · ภาพดาวหลายดวง (ภาพรวม/บุคลิก)
     if (intent.relationship || intent.pair || intent.children) { eTopic.add("couple"); eHouse.add("h7").add("h5"); eTnp.add("cupido"); }
     if (intent.children) { eTopic.add("family"); }
-    if (intent.money || intent.windfall) { eTopic.add("money"); eHouse.add("h2").add("h8"); eTnp.add("kronos"); }
+    if (intent.money || intent.windfall) { eTopic.add("money"); eHouse.add("h2").add("h8"); } // exp-3 tnp-deep เฉพาะ แต่งงาน/อำนาจ/โรค (เงินล้วนไม่ดึง)
     if (intent.property) { eTopic.add("money"); eHouse.add("h4").add("h2"); }
     if (intent.career || intent.authority || intent.employment || intent.business) { eTopic.add("career"); eHouse.add("h10").add("h6"); eTnp.add("kronos"); }
     if (intent.health || intent.risk) { eTopic.add("health"); eHouse.add("h6").add("h8").add("h12"); eTnp.add("hades"); }
@@ -2296,9 +2299,9 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
       const secs = order.filter((s) => set.has(s));
       if (secs.length) pushUnique(files, `${file}#${secs.join("+")}`);
     };
-    pushSet("13-dict-expansion-3-tnp-deep.md", eTnp, ["core", "cupido", "hades", "kronos", "zeus"]);        // headline: Cupido/Kronos/Hades ตรงหัวข้อ
-    pushSet("13-dict-expansion-1-houses.md", eHouse, ["core", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "h9", "h10", "h11", "h12", "death"]); // เรือนตาม intent
-    pushSet("13-dict-expansion-4-topics.md", eTopic, ["core", "money", "couple", "career", "health", "study", "family", "points"]); // router หัวข้อ (เล็ก)
+    pushSet("13-dict-expansion-3-tnp-deep.md", eTnp, ["core", "cupido", "hades", "kronos", "zeus"]);        // headline: Cupido/Kronos/Hades ตรงหัวข้อ (นำ · Cupido ต้องติดเมื่อถามคู่)
+    pushSet("13-dict-expansion-4-topics.md", eTopic, ["core", "money", "couple", "career", "health", "study", "family", "points"]); // router หัวข้อ (เล็ก · แนบตามงบ)
+    pushSet("13-dict-expansion-1-houses.md", eHouse, ["core", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "h9", "h10", "h11", "h12", "death"]); // เรือนตาม intent (เรือน X ต้องติดเมื่อถามงาน)
     pushSet("13-dict-expansion-2-multibody.md", eMulti, ["core", "three", "four", "combine"]);              // ภาพดาวหลายดวง (ภาพรวม/บุคลิก)
     pushDict("13-dict-part2.md", dP2, ["mercury", "venus"]);    // ☿♀ ตาม intent (159-pair · งบที่เหลือ)
     pushDict("13-dict-part3.md", dP3, ["mars", "jupiter", "saturn"]); // ♂♃♄ (159-pair · งบที่เหลือ)
@@ -2469,6 +2472,20 @@ export function loadCanonBundle(science: ScienceId, maxChars = CANON_TEXT_MAX_CH
     }
   } catch { /* ไม่มีคัมภีร์ = ใช้ packet + guard ในตัว */ }
   text = text.slice(0, maxChars);
+  // r398 · หา "ไฟล์ที่ถูกเลือกแต่ตัดทั้งไฟล์เพราะงบ" = อยู่ใน selectedFiles แต่ไม่โผล่ใน sourceMap เลย
+  //   (loop break ก่อน push → เดิมหายเงียบ · AI ไม่รู้ว่าตำราถูกตัด → นึกว่าตำราไม่มีหลักข้อนั้น)
+  let droppedForBudget: string[] | undefined;
+  if (selectedFiles?.length) {
+    const includedBases = new Set(sourceMap.map((r) => r.file));
+    const dropped = selectedFiles
+      .map((x) => x.split("#")[0])
+      .filter((base, i, arr) => base.endsWith(".md") && !base.includes(".NOTE.") && arr.indexOf(base) === i && !includedBases.has(base));
+    if (dropped.length) {
+      droppedForBudget = dropped;
+      // log ไม่เงียบ (ตามกฎ "แก้ให้ระบบเดาน้อยลง" + audit r2L-8)
+      try { console.warn(`[canon-budget] ${science}: dropped ${dropped.length} selected file(s) for budget (maxChars=${maxChars}): ${dropped.join(", ")}`); } catch { /* noop */ }
+    }
+  }
   const bundle: CanonBundle = {
     science,
     text,
@@ -2476,6 +2493,7 @@ export function loadCanonBundle(science: ScienceId, maxChars = CANON_TEXT_MAX_CH
     promptChars: text.length,
     truncated: sourceMap.some((r) => r.truncated),
     sourceMap,
+    droppedForBudget,
   };
   canonCache.set(cacheKey, bundle);
   return bundle;
@@ -2515,6 +2533,20 @@ function structuredPacketJson(packet: unknown): string {
         huaYao: d.huaYao ? {
           yearStem: d.huaYao.yearStem,
           roles: d.huaYao.roles.map((r: any) => [r.roleFull, r.meaningZh, r.palaceZh, r.starZh, r.starTh, r.natalHouse, r.natalStatus, r.retro ? 1 : 0]),
+        } : null,
+        // r398 · ชั้นเวลา七政四餘 (流年全星/流月太陽過宮/วันดาวจรชนจุด) — เดิมตัดทั้งก้อน AI จึงตอบ流年/流月/วันไม่ได้
+        //   prose (render) มีอยู่แล้ว · เติม array ย่อ + legend ให้ JSON = prose (ปิดช่อง prose↔JSON ขัดกัน · slice คุม budget)
+        timingTimeline: d.timingTimeline ? {
+          targetYear: d.timingTimeline.targetYear,
+          legend: {
+            liuNianStars: "[zh,th,ราศี,องศา,เรือน(zh),สถานะ,retro01,ความสัมพันธ์命主(恩/用/仇/難/命主同/中性)]",
+            months: "[เดือน,fromISO,toISO,ราศีอาทิตย์,เรือนอาทิตย์(zh)]",
+            hits: "[dateISO,ดาว(zh/th),เป้า(命度/身度/命主),มุม,retro01,ความสัมพันธ์命主]",
+          },
+          liuNianStars: d.timingTimeline.liuNianStars?.slice(0, 20).map((s: any) => [s.zh, s.th, s.signTh, s.deg, s.houseZh, s.status, s.retro ? 1 : 0, s.relationToMing]),
+          months: d.timingTimeline.months?.slice(0, 13).map((m: any) => [m.month, m.fromISO, m.toISO, m.sunSignTh, m.sunHouseZh]),
+          hits: d.timingTimeline.hits?.slice(0, 20).map((h: any) => [h.dateISO, `${h.starZh}/${h.starTh}`, h.target, h.aspect, h.retro ? 1 : 0, h.relationToMing]),
+          coverageNote: d.timingTimeline.coverageNote,
         } : null,
         verdictTh: d.verdictTh,
         level: d.level,
@@ -2588,6 +2620,44 @@ function structuredPacketJson(packet: unknown): string {
         dispositors: d.dispositors?.map((x: any) => [x.planet, x.ruler, x.rulerHouse, x.rulerDignity]),
         dominantPlanets: d.dominantPlanets?.map((x: any) => [x.name, x.nameTh, x.score, x.reasons]),
         shape: d.shape,
+        // r398 · ชั้นเวลา "ทั้งปีเป้าหมาย" (transit exact/solar return/profection/progression/eclipse/station/ingress)
+        //   เดิมตัดทั้งก้อนทั้งที่ timingCoverage โฆษณาว่ามี + prose TIMING_GUARD สั่งยึด → AI ตอบวัน/เดือนไม่ได้ + แจ้ง "ส่งไม่ครบ"
+        //   เติม array ย่อ + legend ให้ JSON = prose (slice คุม budget · เลขล้วนแบบ uranian auslosung r392)
+        timingTimeline: d.timingTimeline ? {
+          targetYear: d.timingTimeline.targetYear,
+          legend: {
+            transitHits: "[dateISO,ดาวจร,มุม,จุดเป้าnatal,ครั้งที่,รวมครั้ง]",
+            ingresses: "[dateISO,ดาว,เข้าราศี,retro01]",
+            stations: "[dateISO,ดาว,ประเภท(station_retrograde/station_direct),ราศี]",
+            eclipses: "[dateISO,ชนิด(solar/lunar),ราศี,องศา,ชนnatal[ชื่อ,มุม,orb°]|null]",
+            solarReturnPlanets: "[ดาว,ราศี,องศา,เรือนกำเนิด|null]",
+            profectionSegments: "[อายุ,เรือนเลื่อน,ราศีเลื่อน,เจ้าปี(LordOfYear),ราศีเดิมเจ้าปี,เรือนเดิมเจ้าปี|null]",
+            progressedAspects: "[ดาวprogressed,ดาวnatal,มุม,orb°]",
+            moonPerfections: "[เดือน,จันทร์→natal,มุม]",
+          },
+          transitHits: d.timingTimeline.transitHits?.slice(0, 24).map((h: any) => [h.dateISO, h.transitTh, h.aspectTh, h.natalTh, h.pass, h.passesTotal]),
+          transitHitsDropped: d.timingTimeline.transitHitsDropped,
+          ingresses: d.timingTimeline.ingresses?.slice(0, 12).map((x: any) => [x.dateISO, x.bodyTh, x.toSignTh, x.retro ? 1 : 0]),
+          stations: d.timingTimeline.stations?.slice(0, 12).map((x: any) => [x.dateISO, x.bodyTh, x.type, x.signTh]),
+          eclipses: d.timingTimeline.eclipses?.slice(0, 8).map((x: any) => [x.dateISO, x.kind, x.signTh, x.signDeg, x.hitNatal ? [x.hitNatal.nameTh, x.hitNatal.aspect, x.hitNatal.orb] : null]),
+          solarReturn: d.timingTimeline.solarReturn ? {
+            dateISO: d.timingTimeline.solarReturn.dateISO,
+            uncertainNoBirthTime: d.timingTimeline.solarReturn.uncertainNoBirthTime ? 1 : 0,
+            ascendant: d.timingTimeline.solarReturn.ascendant ? [d.timingTimeline.solarReturn.ascendant.signTh, d.timingTimeline.solarReturn.ascendant.signDeg] : null,
+            mc: d.timingTimeline.solarReturn.mc ? [d.timingTimeline.solarReturn.mc.signTh, d.timingTimeline.solarReturn.mc.signDeg] : null,
+            planets: d.timingTimeline.solarReturn.planets?.slice(0, 12).map((x: any) => [x.nameTh, x.signTh, x.signDeg, x.natalHouse]),
+          } : null,
+          profection: d.timingTimeline.profection ? {
+            segments: d.timingTimeline.profection.segments?.slice(0, 6).map((x: any) => [x.age, x.profectedHouse, x.profectedSignTh, x.lordOfYearTh, x.lordNatalSignTh, x.lordNatalHouse]),
+          } : null,
+          progressed: d.timingTimeline.progressed ? {
+            basisDateISO: d.timingTimeline.progressed.basisDateISO,
+            moonNote: d.timingTimeline.progressed.moonNote,
+            progressedAspects: d.timingTimeline.progressed.progressedAspects?.slice(0, 16).map((x: any) => [x.progressedTh, x.natalTh, x.aspectTh, x.orb]),
+            moonPerfections: d.timingTimeline.progressed.moonPerfections?.slice(0, 12).map((x: any) => [x.month, x.natalTh, x.aspectTh]),
+          } : null,
+          coverageNote: d.timingTimeline.coverageNote,
+        } : null,
       },
     };
     return JSON.stringify(compact);
@@ -2645,6 +2715,29 @@ function structuredPacketJson(packet: unknown): string {
           grahas: d.gochara?.grahas?.map((g: any) => [g.name, g.rashi, g.deg, g.houseFromLagna, g.houseFromMoon, g.dignity, g.retro ? 1 : 0, g.combust ? 1 : 0]),
           hitsToNatal: d.gochara?.hitsToNatal?.map((x: any) => [x.transit, x.natal, x.relation, x.aspectHouse]),
         },
+        // r398 · ชั้นเวลาพระเวท (ทศา 3 ชั้น/transit segment+bindu/sade sati/varshaphala) — เดิมตัดทั้งก้อน
+        //   dashaTimeline = หัวใจพยากรณ์เวลาของพระเวท · prose มีอยู่แล้ว · เติม array ย่อ + legend ให้ JSON = prose (slice คุม budget)
+        timingTimeline: d.timingTimeline ? {
+          targetYear: d.timingTimeline.targetYear,
+          legend: {
+            dashaTimeline: "[มหาทศา,อันตรทศา,ปรัตยันตรทศา,fromISO,toISO] (ไทย)",
+            transitSegments: "[ดาว,ราศี,fromISO,toISO,เรือนจากจันทร์,เรือนจากลัคนา|null,bavBindus|null,sarvaBindus,retroAt01|null]",
+            sadeSatiPhases: "[เฟส,fromISO,toISO]",
+          },
+          dashaTimeline: d.timingTimeline.dashaTimeline?.slice(0, 40).map((r: any) => [r.mahaTh, r.antarTh, r.pratyantarTh, r.fromISO, r.toISO]),
+          transitSegments: d.timingTimeline.transitSegments?.slice(0, 24).map((s: any) => [s.grahaTh, s.rashiTh, s.fromISO, s.toISO, s.houseFromMoon, s.houseFromLagna, s.bavBindus, s.sarvaBindus, s.retroAtIngress === null ? null : (s.retroAtIngress ? 1 : 0)]),
+          sadeSati: d.timingTimeline.sadeSati ? {
+            active: d.timingTimeline.sadeSati.activeAnyTimeInYear ? 1 : 0,
+            phases: d.timingTimeline.sadeSati.phases?.map((p2: any) => [p2.phaseTh, p2.fromISO, p2.toISO]),
+          } : null,
+          varshaphala: d.timingTimeline.varshaphala ? {
+            dateISO: d.timingTimeline.varshaphala.dateISO,
+            uncertainNoBirthTime: d.timingTimeline.varshaphala.uncertainNoBirthTime ? 1 : 0,
+            munthaRashiTh: d.timingTimeline.varshaphala.munthaRashiTh,
+            grahas: d.timingTimeline.varshaphala.grahas?.map((g: any) => [g.nameTh, g.rashiTh, g.rashiDeg, g.retro ? 1 : 0]),
+          } : null,
+          coverageNote: d.timingTimeline.coverageNote,
+        } : null,
       },
     };
     return JSON.stringify(compact);
@@ -2858,8 +2951,10 @@ export function buildSciencePrompt(
     const L: string[] = [];
     L.push(`คุณคือซินแสผู้เชี่ยวชาญ "${bind.labelTh}" (${bind.labelZh})`);
     L.push(`อ่านดวงจาก "ผังที่ระบบคำนวณ" ด้านล่างเท่านั้น · ⚠️ ${bind.termGuard}`);
-    L.push(`ห้ามเดาตำแหน่งดาว/เรือน/ดวง · field ไหนไม่มีให้บอกว่าไม่มี · ตอบภาษา${LANG_NAME[lang] || "ไทย"}นำ`);
-    L.push("คำตอบต้องสอดคล้องกับคัมภีร์/กฎ/SOURCE_MAP ที่แนบมาและ field ใน STRUCTURED_CHART_PACKET เท่านั้น · ห้ามใช้ความรู้ทั่วไปนอก packet มาเติมคำฟันธง");
+    L.push(`ห้ามเดาตำแหน่งดาว/เรือน/ดวง · field ไหนไม่มีจริง (หายจากทั้งบล็อกผังข้อความและ STRUCTURED_CHART_PACKET) จึงบอกว่าไม่มี · ตอบภาษา${LANG_NAME[lang] || "ไทย"}นำ`);
+    // r398 · ผ่อนคำสั่ง: เดิมยก STRUCTURED_CHART_PACKET (JSON) เป็นแหล่งเดียว → ค่าที่ engine ส่งมาเป็น prose (=== ผังดวง/TIMING) แต่ไม่อยู่ JSON กลายเป็น "นอก packet" → AI แจ้ง "ส่งไม่ครบ" ทั้งที่มีค่า
+    //   แก้: ยึดสองแหล่งคู่กัน (prose + JSON) · ค่าปรากฏแหล่งใดแหล่งหนึ่ง = ระบบส่งมาแล้ว · คง guard เดิม (ห้ามเดา/ห้ามความรู้นอกผัง/NO_PERCENT)
+    L.push("คำตอบต้องยึดข้อมูลจากผังที่ระบบส่งมา 2 แหล่งคู่กัน: (1) บล็อกผังที่ render เป็นข้อความ (=== ผังดวง … === และ TIMING/TIMELINE/ชั้นเวลาต่าง ๆ) และ (2) STRUCTURED_CHART_PACKET (JSON) — ถ้าค่าปรากฏในแหล่งใดแหล่งหนึ่ง ถือว่าระบบส่งมาแล้ว ใช้ฟันธงได้ · ให้บอกว่า 'ไม่มีข้อมูล/ยังไม่ได้ส่งมา' เฉพาะเมื่อค่านั้นหายจากทั้งสองแหล่ง · ยังคงห้ามใช้ความรู้ทั่วไป/horoscope นอกผังมาเติม ห้ามเดา/แต่งตำแหน่ง-มุม-ดาว-วัน-ตัวเลขเอง และห้ามใส่ % ความแม่น");
     L.push(DECISIVE_READING_POLICY);
     L.push(subjectLockLine(births));
     L.push(SPECIFIC_READING_CONTRACT);
@@ -2870,6 +2965,13 @@ export function buildSciencePrompt(
         L.push(`SOURCE_ROUTER: selected_by_question=${selectedCanonFiles.join(",")}`);
       }
       L.push(`SOURCE_MAP: ${bundle.sourceMap.map((r) => `${r.sourceId}[${r.licenseClass}/${r.mode}/${r.includedChars}${r.truncated ? "/truncated" : ""}]`).join(" | ")}`);
+      // r398 · โปร่งใสเรื่องคัมภีร์ถูกตัดเพราะงบ (ไม่ตัดเงียบ) — บอก AI ให้แยก "ตำราไม่ได้แนบรอบนี้" ออกจาก "ตำราไม่มีหลักข้อนี้"
+      if (bundle.droppedForBudget?.length) {
+        L.push(`CANON_DROPPED_FOR_BUDGET: ${bundle.droppedForBudget.join(", ")} — ตำราเหล่านี้ถูกเลือกตามคำถามแต่ไม่ได้แนบเต็มรอบนี้เพราะพื้นที่จำกัด (ไม่ใช่ว่าตำราไม่มีเนื้อหา)`);
+      }
+      if (bundle.droppedForBudget?.length || bundle.truncated) {
+        L.push("หมายเหตุคัมภีร์: บางเล่ม/บางส่วน (ที่ติดป้าย /truncated หรืออยู่ใน CANON_DROPPED_FOR_BUDGET) ถูกย่อหรือไม่ได้แนบเพราะพื้นที่จำกัด — ถ้าต้องอ้างหลักที่ไม่เห็นในคัมภีร์ที่แนบ ให้บอกว่า 'ตำราส่วนนี้ไม่ได้แนบมารอบนี้' ห้ามสรุปว่า 'ไม่มีในตำรา'");
+      }
       L.push(bundle.text);
       L.push(`=== จบคัมภีร์ · hash=${bundle.textHashSha256.slice(0, 16)} · chars=${bundle.promptChars} ===`);
     }
