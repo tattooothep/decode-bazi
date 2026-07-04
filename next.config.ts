@@ -143,6 +143,8 @@ const nextConfig: NextConfig = {
       { source: "/methodology", destination: "/methodology.html" },
       { source: "/yongshen-method", destination: "/methodology.html" },
       { source: "/article/geometry", destination: "/article-geometry.html" }, // 3 ก.ค. · บทความ SEO เรขาคณิตร่วม 3 อารยธรรม
+      { source: "/uranian", destination: "/uranian.html" }, // 4 ก.ค. r390 · วงล้อ 90° ยูเรเนียน (ศาสตร์ที่ 6 · Halbsumme/Planetenbild interactive)
+      { source: "/dial", destination: "/uranian.html" },
     ];
   },
 };

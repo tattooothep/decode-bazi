@@ -29,6 +29,16 @@ function fmtLon(lon: number): string {
   const s = Math.floor(L / 30);
   return `ราศี${SIGN_TH[s]} ${fmtDeg(L - s * 30)}`;
 }
+function fmtDecl(dec: number): string {
+  const sign = dec >= 0 ? "+" : "−";
+  return `${sign}${Math.abs(dec).toFixed(2)}°`;
+}
+/** r390 · ป้ายถ่วงน้ำหนัก: แตะจุดส่วนตัว (☉/MC/Asc) = เด่นกว่า (Anareta บท 16/30) */
+const STAR = " ⭐เด่น(แตะ☉/MC/Asc)";
+/** เรียง „แตะจุดส่วนตัว" ขึ้นก่อน (คงลำดับ orb เดิมภายในกลุ่ม · stable) */
+function personalFirst<T extends { touchesPersonal?: boolean }>(arr: T[]): T[] {
+  return [...arr].sort((a, b) => (b.touchesPersonal ? 1 : 0) - (a.touchesPersonal ? 1 : 0));
+}
 
 /** สร้าง prompt สำหรับ AI (โหราศาสตร์ยูเรเนียน · Hamburger Schule) */
 export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string {
@@ -52,12 +62,14 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   L.push("6) เฟสนี้ยังไม่ได้คำนวณตำแหน่ง Cupido/Hades/Kronos/Zeus → ห้ามระบุองศา/ราศี/จุดกึ่งกลางของมันเอง · อ้างได้เฉพาะความหมายตามคัมภีร์หมวด H เมื่อผู้ใช้ถามเรื่องที่ตรง (แต่งงาน/ครอบครัว=Cupido · โรค/ความตาย/ผู้หญิงโดดเดี่ยว=Hades · ผู้ปกครอง=Kronos · สงคราม=Zeus)");
   L.push("7) NO_PERCENT: ห้ามให้คะแนน/เปอร์เซ็นต์ · ตัวเลข orb คือระยะเชิงมุมจริง ใช้จัดลำดับความคม ไม่ใช่คะแนนทำนาย");
   L.push("8) สัญลักษณ์ดาว/องศาในต้นฉบับ Fraktur ของ Witte OCR เพี้ยนได้ → ถ้าจะยกตัวเลของศาจากตัวอย่าง (บท 12/30/31/44) ให้เตือนว่าเป็นค่าโดยประมาณต้องเทียบสแกน");
+  L.push("9) ชั้นเสริม r390: (ก) จุดกระจก (Spiegelpunkte/Antiscia) = Witte «จุดไวหมวดแรกสุด/Anareta» (บท 16/36) — อ่านได้ว่าเป็นการสัมผัสของสองดาวข้ามแกนอายัน/วิษุวัต · สูตรสะท้อน+orb เป็น «วิธีสากล» (Ptolemy PD) ไม่ใช่ตัวเลข Witte verbatim (บ) parallel/contra-parallel = ลายเซ็นเดคลิเนชันของ Witte (บท 03/23/46) · orb เป็นวิธีสากล (ค) ภาพดาว 4 ดวง (Vierergestirn a+b=c+d) = บท 44/31 verbatim (ง) ปมจันทร์ให้ทั้ง mean+true ระบุชนิด ห้ามสลับ");
+  L.push("10) ถ่วงน้ำหนัก (Anareta บท 16/30): ภาพดาว/จุดไว/จุดกระจก/4 ดวง ที่ ⭐ แตะจุดส่วนตัว (☉/MC/Aszendent) = เด่นกว่า อ่าน/ฟันธงก่อน · ตัวที่ไม่แตะ = รอง");
   L.push("");
 
   // ── ตำแหน่งดาว/จุด บนหน้าปัด 90° ──
   L.push("— ตำแหน่งดาว/จุด (ราศี · องศา · ตำแหน่งบนหน้าปัด 90°) —");
   for (const p of d.points) {
-    const parts = [`${p.nameTh} (${p.nameDe}): ราศี${p.signTh} ${fmtDeg(p.signDeg)}`, `dial90=${p.dial90.toFixed(2)}°`];
+    const parts = [`${p.nameTh} (${p.nameDe}): ราศี${p.signTh} ${fmtDeg(p.signDeg)}`, `dial90=${p.dial90.toFixed(2)}°`, `decl ${fmtDecl(p.decl)}`];
     if (p.uncertain) parts.push("⚠️ ตำแหน่งอาจคลาด (ขาดเวลาเกิด)");
     L.push("  • " + parts.join(" · "));
   }
@@ -71,10 +83,22 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   if (!d.planetaryPictures.length) {
     L.push("  ไม่พบภาพดาวที่แน่นภายใน orb ที่กำหนด → ห้ามสร้างภาพดาวเพิ่มเองจากองศา");
   } else {
-    L.push("  รูปแบบ: occupant ตกบนแกนสมมาตร a|b คือ a + b − occupant · ยิ่ง orb แคบยิ่งคม");
-    for (const pic of d.planetaryPictures.slice(0, 40)) {
-      L.push(`  • ${pic.occupantTh} บนครึ่งผลรวม ${pic.pairTh} (${pic.pair}) · orb ${pic.orbDeg.toFixed(2)}°`);
+    L.push("  รูปแบบ: occupant ตกบนแกนสมมาตร a|b คือ a + b − occupant · ยิ่ง orb แคบยิ่งคม · ⭐ = แตะจุดส่วนตัว (เด่นกว่า อ่านก่อน)");
+    for (const pic of personalFirst(d.planetaryPictures).slice(0, 40)) {
+      L.push(`  • ${pic.occupantTh} บนครึ่งผลรวม ${pic.pairTh} (${pic.pair}) · orb ${pic.orbDeg.toFixed(2)}°${pic.touchesPersonal ? STAR : ""}`);
     }
+  }
+  L.push("");
+
+  // ── ภาพดาว 4 ดวง (Vierergestirn · a+b = c+d · บท 44/31) ──
+  L.push("— ภาพดาว 4 ดวง (Vierergestirn · a+b = c+d · ครึ่งผลรวมสองคู่ตกค่าเดียวกันบนหน้าปัด 90° · บท 44/31) —");
+  if (!d.fourPlanetPictures.length) {
+    L.push("  ไม่พบภาพดาว 4 ดวงที่แน่นภายใน orb → ห้ามจับคู่ 4 ดวงเองจากองศา");
+  } else {
+    for (const fp of personalFirst(d.fourPlanetPictures).slice(0, 24)) {
+      L.push(`  • ${fp.pairATh} = ${fp.pairBTh}  (${fp.pairA} = ${fp.pairB}) · orb ${fp.orbDeg.toFixed(2)}°${fp.touchesPersonal ? STAR : ""}`);
+    }
+    L.push("  (อ้าง บท 44: «vier Planeten, von denen je zwei gleiche Winkelunterschiede zeigen, formen ein Planetenbild» — Vierergestirn)");
   }
   L.push("");
 
@@ -83,11 +107,43 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   if (!d.sensitivePoints.length) {
     L.push("  ไม่พบจุดไวที่ถูกกระตุ้นแน่นภายใน orb → ห้ามคำนวณจุดไวเพิ่มเอง");
   } else {
-    for (const sp of d.sensitivePoints.slice(0, 40)) {
+    for (const sp of personalFirst(d.sensitivePoints).slice(0, 40)) {
       const op = sp.kind === "sum" ? "+" : "−";
-      L.push(`  • ${sp.activatedByTh} ตกบนจุด${sp.kind === "sum" ? "ผลรวม" : "ผลต่าง"} (${sp.aTh} ${op} ${sp.bTh}) ที่ ${fmtLon(sp.pointLon)} · orb ${sp.orbDeg.toFixed(2)}°`);
+      L.push(`  • ${sp.activatedByTh} ตกบนจุด${sp.kind === "sum" ? "ผลรวม" : "ผลต่าง"} (${sp.aTh} ${op} ${sp.bTh}) ที่ ${fmtLon(sp.pointLon)} · orb ${sp.orbDeg.toFixed(2)}°${sp.touchesPersonal ? STAR : ""}`);
     }
   }
+  L.push("");
+
+  // ── จุดกระจก (Antiscia / Spiegelpunkte · บท 16/36 + Ptolemy zone5) ──
+  L.push("— จุดกระจก (Spiegelpunkte / Antiscia · ดาวสะท้อนข้ามแกน · บท 16 «จุดไวหมวดแรกสุด/Anareta» + บท 36 · สูตร+orb = วิธีสากล Ptolemy PD) —");
+  if (!d.antiscia.length) {
+    L.push(`  ไม่พบจุดกระจกที่แน่นภายใน orb ${packet.orbAntisciaDeg}° → ห้ามสร้างจุดกระจกเองจากองศา`);
+  } else {
+    L.push("  antiscia = สะท้อนแกนอายัน (0°กรกฎ/มังกร · Spiegelpunkt zum Erdmeridian) · contra = สะท้อนแกนวิษุวัต (0°เมษ/ตุล · Kardinalpunkte)");
+    for (const an of personalFirst(d.antiscia).slice(0, 24)) {
+      const kindTh = an.kind === "antiscia" ? "จุดกระจก(อายัน)" : "จุดกระจกตรงข้าม(วิษุวัต)";
+      L.push(`  • ${an.bTh} ตกบน${kindTh}ของ ${an.aTh} ที่ ${fmtLon(an.pointLon)} · orb ${an.orbDeg.toFixed(2)}° · แกน: ${an.axisTh}${an.touchesPersonal ? STAR : ""}`);
+    }
+  }
+  L.push("");
+
+  // ── เดคลิเนชัน (Parallel ‖ / Contra-parallel · ลายเซ็น Witte บท 03/23/46) ──
+  L.push(`— เดคลิเนชัน (Parallel ‖ / Contra-parallel · ลายเซ็น Witte บท 03/23/46 · orb ${packet.orbParallelDeg}° = วิธีสากล) —`);
+  if (!d.declinationPairs.length) {
+    L.push("  ไม่พบคู่ parallel/contra-parallel ภายใน orb → ห้ามจับคู่เดคลิเนชันเองจากตัวเลข");
+  } else {
+    L.push("  parallel ‖ = เดคลิเนชันเท่ากันฝั่งเดียว (เสริมแรงเหมือน ☌) · contra-parallel = เท่ากันคนละฝั่ง (เหมือน ☍)");
+    for (const dp of personalFirst(d.declinationPairs).slice(0, 24)) {
+      const kindTh = dp.kind === "parallel" ? "‖ Parallel" : "× Contra-parallel";
+      L.push(`  • ${dp.aTh} (decl ${fmtDecl(dp.declA)}) ${kindTh} ${dp.bTh} (decl ${fmtDecl(dp.declB)}) · orb ${dp.orbDeg.toFixed(2)}°${dp.touchesPersonal ? STAR : ""}`);
+    }
+  }
+  L.push("");
+
+  // ── Mondknoten (mean + true · ระบุชนิด) ──
+  L.push("— ปมจันทร์ (Mondknoten) —");
+  L.push(`  • mean (Meeus · ใช้ในชั้นเวลา/Auslösung): ${fmtLon(packet.nodeMeanLon)}`);
+  L.push(`  • true/osculating (astronomy-engine): ${fmtLon(packet.nodeTrueLon)} — ต่างจาก mean ได้ถึง ~1.5° (จริงตามวงโคจรจันทร์ขณะนั้น)`);
   L.push("");
 
   // ── ทรานส์เนปจูนของ Witte (เฟส 1 = ชื่อ+ความหมายเท่านั้น) ──
