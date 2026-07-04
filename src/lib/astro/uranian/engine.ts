@@ -16,20 +16,22 @@
  *
  * ไม่มี Date.now()/Math.random() — รับ dtUTC เข้ามาเท่านั้น → ผลลัพธ์คงที่
  */
-import { computeBodies, ascendant, midheaven, norm360, type BodyPos } from "../../astro-core/ephemeris";
+import { computeBodies, ascendant, midheaven, meanNode, norm360, type BodyPos } from "../../astro-core/ephemeris";
 import { wrap180 } from "../../astro-core/events";
 
-/** ชื่อไทยของดาว/จุด (key จาก astro-core) */
-const NAME_TH: Record<string, string> = {
+/** ชื่อไทยของดาว/จุด (key จาก astro-core) — export ให้ชั้น Auslösung (auslosung.ts) reuse */
+export const NAME_TH: Record<string, string> = {
   Sun: "อาทิตย์", Moon: "จันทร์", Mercury: "พุธ", Venus: "ศุกร์", Mars: "อังคาร",
   Jupiter: "พฤหัสบดี", Saturn: "เสาร์", Uranus: "ยูเรนัส", Neptune: "เนปจูน", Pluto: "พลูโต",
   Meridian: "เมริเดียน (MC)", Ascendant: "ลัคนา (Asc)",
+  Node: "ราหู/จุดจันทร์เหนือ (Mondknoten)", AriesPoint: "จุดเมษ (Widderpunkt · 0°♈)",
 };
 /** ชื่อเยอรมัน (verbatim ตามคัมภีร์ Witte · ใช้จับคู่ประโยคความหมาย) */
 const NAME_DE: Record<string, string> = {
   Sun: "Sonne", Moon: "Mond", Mercury: "Merkur", Venus: "Venus", Mars: "Mars",
   Jupiter: "Jupiter", Saturn: "Saturn", Uranus: "Uranus", Neptune: "Neptun", Pluto: "Pluto",
   Meridian: "Meridian", Ascendant: "Aszendent",
+  Node: "Mondknoten", AriesPoint: "Widderpunkt",
 };
 
 /** ราศี 12 (index 0 = เมษ) — เพื่ออ้างตำแหน่งอ่านง่าย (สากล ไม่ใช่ศัพท์จีน/พระเวท) */
@@ -110,7 +112,9 @@ export type UranianChart = {
   hasBirthTime: boolean;
   degradeLevel: "full" | "partial";     // full = มีเวลาเกิด · partial = ไม่มีเวลา (ไม่มี Meridian/Asc)
   gender: Gender;
-  points: UranianPoint[];               // ดาวจริง 10 (+Meridian/Asc เมื่อมีเวลา)
+  points: UranianPoint[];               // ดาวจริง 10 (+Meridian/Asc เมื่อมีเวลา) — คงจำนวนเดิม (ภาพดาว/จุดไว คำนวณจากชุดนี้)
+  personalPoints: UranianPoint[];       // จุดส่วนตัว 6 (☉☽Asc MC Node AriesPoint) — เป้าไวหลักของชั้น Auslösung (auslosung.ts) · additive ไม่กระทบ pictures/sensitive
+  nodeType: "mean";                     // Mondknoten = mean node (Meeus · astro-core.meanNode) — ระบุชัด ไม่ใช่ true node
   halbsummen: UranianHalbsumme[];       // ครึ่งผลรวมทุกคู่
   planetaryPictures: UranianPlanetaryPicture[]; // ภาพดาวที่ "ยิงเข้า" orb (คัดคมสุด)
   sensitivePoints: UranianSensitivePoint[];     // จุดไวที่ถูกกระตุ้น (คัดคมสุด)
@@ -189,6 +193,18 @@ export function uranianChart(dtUTC: Date, lat: number, lng: number, hasTime = tr
     points.push(anglePoint("Ascendant", asc));
   }
 
+  // 2b) จุดส่วนตัว (personal points) สำหรับชั้นเวลา (Auslösung) — ☉☽Asc MC Node AriesPoint
+  //     additive ล้วน: ไม่ push เข้า points[] (คง 12/10 เดิม) → ภาพดาว/จุดไว/halbsummen ไม่เปลี่ยน
+  //     Node = mean Mondknoten (Meeus · astro-core.meanNode) · AriesPoint = 0°♈ (Witte „Widderpunkt" = ศูนย์อ้างอิงโลก)
+  const byName = (n: string) => points.find((p) => p.name === n);
+  const personalPoints: UranianPoint[] = [];
+  for (const n of ["Sun", "Moon", "Meridian", "Ascendant"]) {
+    const p = byName(n);
+    if (p) personalPoints.push(p);
+  }
+  personalPoints.push(anglePoint("Node", meanNode(dtUTC)));
+  personalPoints.push(anglePoint("AriesPoint", 0));
+
   // 3) ครึ่งผลรวม (Halbsumme) ทุกคู่ — แกนสมมาตร a|b
   const halbsummen: UranianHalbsumme[] = [];
   for (let i = 0; i < points.length; i++) {
@@ -253,6 +269,8 @@ export function uranianChart(dtUTC: Date, lat: number, lng: number, hasTime = tr
     degradeLevel: hasTime ? "full" : "partial",
     gender,
     points,
+    personalPoints,
+    nodeType: "mean",
     halbsummen,
     planetaryPictures: pictures.slice(0, MAX_PICTURES),
     sensitivePoints: sensitive.slice(0, MAX_SENSITIVE),

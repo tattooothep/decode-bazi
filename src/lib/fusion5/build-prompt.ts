@@ -16,6 +16,7 @@ import { renderWesternPrompt } from "../astro/western/render";
 import { uranianChart } from "../astro/uranian/engine";
 import { buildUranianPacket } from "../astro/uranian/packet";
 import { renderUranianPrompt } from "../astro/uranian/render";
+import { computeUranianAuslosung } from "../astro/uranian/auslosung"; // r389 ชั้นเวลา (จับวัน/เดือน)
 import { vedicChart } from "../astro/vedic/engine";
 import { buildVedicPacket } from "../astro/vedic/packet";
 import { renderVedicPrompt } from "../astro/vedic/render";
@@ -53,7 +54,7 @@ export const FUSION_PANEL_PROMPT_MAX_CHARS = 118_000;
 export const JUDGE_PANEL_REPLY_MAX_CHARS = 8_000;
 
 type CanonMode = "verbatim" | "summary";
-type CanonLicenseClass = "public_domain" | "project_summary" | "summary_only" | "licensed_internal" | "unknown";
+type CanonLicenseClass = "public_domain" | "project_summary" | "project_synthesis" | "summary_only" | "licensed_internal" | "unknown";
 export type CanonSourceMapRow = {
   science: ScienceId;
   sourceId: string;
@@ -352,6 +353,7 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "00-source-policy.md": { title: "Uranian source policy (Witte PD scope · round 1)", sourceUrl: "local:uranian/source-policy", licenseClass: "project_summary", mode: "summary" },
     "01-source-policy-conclusion.md": { title: "Uranian source-policy conclusion · what PD Witte canon can/cannot do (method+Halbsumme=OK · A–Z lookup dictionary=Regelwerk Rudolph ยังไม่ PD)", sourceUrl: "local:uranian/source-policy-conclusion", licenseClass: "project_summary", mode: "summary" },
     "10-witte-canon-de.md": { title: "Alfred Witte canon verbatim (DE) · Planetenbild/Halbsumme/sensitive Punkte/Auslösung/Direktionen/vergleichende Astrologie/Häuser/Transneptun(Cupido/Hades/Kronos/Zeus)/Fallbeispiele — Astrologische Rundschau + Astrologische Blätter 1913–1925", sourceUrl: "https://astrax.de (Kulturgut Astrologie e.V.) · AR/AB Jg.1913–1925", licenseClass: "public_domain", mode: "verbatim" },
+    "11-method-reading-uranian.md": { title: "Uranian method-reading layer (synthesized system layer · NOT Witte verbatim) · การอ่านเชิงวิธี — midpoint 45 pairs + personal-point pairs + 3-direction reading + Basic Five · สังเคราะห์จากวิธี Witte PD + ความหมายดาวสาธารณะ (ห้ามลอก Regelwerk/Ebertin/Niggemann)", sourceUrl: "local:uranian/method-reading-synthesis", licenseClass: "project_synthesis", mode: "summary" },
   },
 };
 
@@ -425,6 +427,7 @@ const CANON_DEFAULT_FILES: Partial<Record<ScienceId, string[]>> = {
   uranian: [
     "01-source-policy-conclusion.md",
     "10-witte-canon-de.md#method+tnp",
+    "11-method-reading-uranian.md",
   ],
 };
 
@@ -476,6 +479,20 @@ const CANON_FILE_SECTIONS: Partial<Record<ScienceId, Record<string, Record<strin
       houses: [{ from: /^## หมวด G —/m, to: /^## หมวด H —/m }],          // G Häuser 3 ระบบ
       tnp: [{ from: /^## หมวด H —/m, to: /^## หมวด I —/m }],             // H Cupido/Hades/Kronos/Zeus (ความหมาย PD)
       examples: [{ from: /^## หมวด I —/m, to: /^## ภาคผนวก/m }],         // I Fallbeispiele
+    },
+    // r388 · การอ่านเชิงวิธี ฉบับละเอียด (~44K) — core+ดาวส่วนตัวเสมอ · หมวดดาวตามคำถาม (กันเกิน 118K)
+    "11-method-reading-uranian.md": {
+      core: [{ from: /^## A0 —/m, to: /^## S1 —/m }],                    // หลักอ่าน+แก่น+guard+Basic Five+3ทิศ (มี Sieggrün guard line)
+      sun: [{ from: /^## S1 —/m, to: /^## S2 —/m }],
+      moon: [{ from: /^## S2 —/m, to: /^## S3 —/m }],
+      mercury: [{ from: /^## S3 —/m, to: /^## S4 —/m }],
+      venus: [{ from: /^## S4 —/m, to: /^## S5 —/m }],
+      mars: [{ from: /^## S5 —/m, to: /^## S6 —/m }],
+      jupiter: [{ from: /^## S6 —/m, to: /^## S7 —/m }],
+      saturn: [{ from: /^## S7 —/m, to: /^## S8 —/m }],
+      outer: [{ from: /^## S8 —/m, to: /^## P1 —/m }],
+      points: [{ from: /^## P1 —/m, to: /^## T1 —/m }],
+      tnp: [{ from: /^## T1 —/m }],
     },
   },
 };
@@ -2146,6 +2163,19 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     // dedupe คงลำดับ
     const uniqSections = Array.from(new Set(sections));
     pushUnique(files, `10-witte-canon-de.md#${uniqSections.join("+")}`);
+    // r388 · การอ่านเชิงวิธี ฉบับละเอียด (ระบบสังเคราะห์ · ไม่ใช่ Witte verbatim) — แนบท้ายเสมอ
+    //   Witte verbatim นำก่อน · เชิงวิธีเติมคู่ที่ Witte PD ไม่ครอบคลุม · วางท้ายสุด (shrink ตัดชั้นสังเคราะห์ก่อน คัมภีร์ Witte คงอยู่)
+    //   section splitter ส่งเฉพาะหมวดดาวที่เกี่ยวคำถาม (กันเกิน 118K): core+ดาวส่วนตัวเสมอ · หมวดหัวข้อตาม intent
+    const mSec = ["core", "sun", "moon", "points"];
+    if (intent.relationship || intent.pair || intent.children) mSec.push("venus", "tnp");
+    if (intent.career || intent.authority || intent.employment || intent.business) mSec.push("mars", "jupiter", "saturn", "tnp");
+    if (intent.money || intent.windfall || intent.property) mSec.push("venus", "jupiter", "saturn");
+    if (intent.study || intent.education) mSec.push("mercury");
+    if (intent.health || intent.risk) mSec.push("mars", "saturn", "outer", "tnp");
+    if (intent.timing || intent.advancedTiming || intent.validation) mSec.push("saturn", "outer");
+    if (intent.general) mSec.push("mercury", "venus", "mars", "jupiter", "saturn", "outer", "tnp");
+    const uniqM = Array.from(new Set(mSec));
+    pushUnique(files, `11-method-reading-uranian.md#${uniqM.join("+")}`);
     return files;
   }
 
@@ -2538,10 +2568,14 @@ export function renderChartForScience(science: ScienceId, b: BirthData, refDate:
     return `${renderZiweiPrompt(packet)}\n\nSTRUCTURED_CHART_PACKET:\n${structuredPacketJson(packet)}`;
   }
   if (science === "uranian") {
-    // เฟส 1 = แผงอ่าน natal (Halbsumme/Planetenbild/sensitive Punkte) — ยังไม่ทำ timeline/direction (roadmap เฟส 2)
-    void refDate;
+    // r389: natal (Halbsumme/Planetenbild/sensitive Punkte) + ชั้นเวลา Auslösung (ดาวจร/ส่วนโค้งอาทิตย์/ก้าวหน้า) ทั้งปีเป้าหมาย
     const chart = uranianChart(b.dtUTC, b.lat, b.lng, b.hasTime, b.gender);
-    const packet = buildUranianPacket(chart);
+    let auslosung = null;
+    try {
+      const y = bangkokParts(refDate).year;
+      auslosung = computeUranianAuslosung(chart, b.dtUTC, `${y}-01-01T00:00:00Z`, `${y}-12-31T23:59:59Z`);
+    } catch { auslosung = null; /* ชั้นเวลาล้ม = degrade ชัดผ่าน packet.auslosung=null */ }
+    const packet = buildUranianPacket(chart, auslosung);
     return `${renderUranianPrompt(packet)}\n\nSTRUCTURED_CHART_PACKET:\n${structuredPacketJson(packet)}`;
   }
   return "";
