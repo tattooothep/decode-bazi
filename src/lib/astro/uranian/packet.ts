@@ -32,6 +32,8 @@ export type UranianPacket = {
   allowedFieldsWhenNoTime: string[];
   orbPictureDeg: number;
   orbSensitiveDeg: number;
+  orbPictureSecondaryDeg: number;          // r399 · orb ชั้นรอง 45°/135° ภาพดาว
+  orbSensitiveSecondaryDeg: number;        // r399 · orb ชั้นรอง 45°/135° จุดไว
   orbAntisciaDeg: number;                  // r390
   orbParallelDeg: number;                  // r390
   orbFourPlanetDeg: number;                // r390
@@ -93,6 +95,8 @@ export function buildUranianPacket(chart: UranianChart, auslosung: UranianAuslos
     allowedFieldsWhenNoTime: chart.hasBirthTime ? [] : ALLOWED_FIELDS_NO_TIME,
     orbPictureDeg: chart.orbPictureDeg,
     orbSensitiveDeg: chart.orbSensitiveDeg,
+    orbPictureSecondaryDeg: chart.orbPictureSecondaryDeg,
+    orbSensitiveSecondaryDeg: chart.orbSensitiveSecondaryDeg,
     orbAntisciaDeg: chart.orbAntisciaDeg,
     orbParallelDeg: chart.orbParallelDeg,
     orbFourPlanetDeg: chart.orbFourPlanetDeg,

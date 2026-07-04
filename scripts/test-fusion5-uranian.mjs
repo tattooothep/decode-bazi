@@ -45,17 +45,22 @@ let chart;
 try { chart = uranianChart(aeawUTC, LAT, LNG, true, "M"); ok(true, "uranianChart (มีเวลา) ไม่ throw"); }
 catch (e) { ok(false, "uranianChart throw: " + e.message); }
 ok(chart.points.length === 12, "มีจุด 12 (ดาวจริง 10 + Meridian + Aszendent)");
-// ทุก planetary picture ต้อง orb ≤ orbPictureDeg และ occupant อยู่บนครึ่งผลรวมจริง
-let picOk = chart.planetaryPictures.every((p) => p.orbDeg <= chart.orbPictureDeg + 1e-9);
-ok(picOk, "ทุก planetary picture orb ≤ orbPictureDeg");
-// ตรวจภาพดาว: occupant ตกบนครึ่งผลรวม a|b จริงตาม orb (recompute)
+// ทุก planetary picture ต้อง orb ≤ orb ของชั้นตัวเอง (hard=orbPictureDeg · secondary=orbPictureSecondaryDeg) + มี tier
+let picOk = chart.planetaryPictures.every((p) =>
+  (p.tier === "hard" || p.tier === "secondary") &&
+  p.orbDeg <= (p.tier === "hard" ? chart.orbPictureDeg : chart.orbPictureSecondaryDeg) + 1e-9);
+ok(picOk, "ทุก planetary picture มี tier + orb ≤ orb ของชั้นตัวเอง (hard 1.5° / secondary 1.0°)");
+// ตรวจภาพดาว: hard → occupant ตรงแกน 0/90/180 (dial90≤orb) · secondary → occupant ที่ 45°/135° (|dial90−45|≤orb) (recompute)
 let pointByName = Object.fromEntries(chart.points.map((p) => [p.name, p]));
 let picRecheck = chart.planetaryPictures.every((p) => {
   const [a, b] = p.pair.split("/");
   const mid = midpointLon(pointByName[a].lon, pointByName[b].lon);
-  return dial90Distance(pointByName[p.occupant].lon, mid) <= chart.orbPictureDeg + 1e-6;
+  const dd = dial90Distance(pointByName[p.occupant].lon, mid);
+  return p.tier === "hard"
+    ? dd <= chart.orbPictureDeg + 1e-6
+    : Math.abs(dd - 45) <= chart.orbPictureSecondaryDeg + 1e-6;
 });
-ok(picRecheck, "ภาพดาวทุกอันตรวจซ้ำ: occupant อยู่บนครึ่งผลรวมจริงภายใน orb");
+ok(picRecheck, "ภาพดาวทุกอันตรวจซ้ำ: hard=แกน 0/90/180 · secondary=มุม 45°/135° (แยกชั้นถูกต้อง)");
 // deterministic: รันซ้ำได้ผลเท่ากัน
 const chart2 = uranianChart(aeawUTC, LAT, LNG, true, "M");
 ok(JSON.stringify(chart) === JSON.stringify(chart2), "uranianChart deterministic (รัน 2 ครั้งเท่ากัน)");

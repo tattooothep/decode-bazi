@@ -1878,6 +1878,12 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     }
     // r377 · ดัน 四化斷訣 ไว้ถัดจาก 00-method เพื่อรอด shrink loop (斷訣 verbatim ต้องไม่ถูกตัด)
     prioritizeAfterMethod(files, ziweiSihuaToken);
+    // r399 · ตำราแม่บท verbatim (紫微斗數全書 core + 星垣論/諸星問答論) = source of truth → ต้องรอด budget
+    //   audit r2L-8: เดิมจมท้าย list ถูกตัดเงียบเกือบทุกคำถาม (base router กินเพดานเกือบหมด)
+    //   ดันขึ้นหลัง 00-method — คงลำดับ anchor คมสั้น (四化斷訣/evidence-gate/palace) ไว้ก่อน แล้วต่อด้วยแม่บท
+    //   (ก่อน summary/topic ที่ยอมให้ shrink) · droppedForBudget (r398) ยังโปร่งใสถ้าเบียดจนล้น · ไม่ขึ้นเพดาน
+    pushUnique(files, "ziwei-quanshu-core.md", "07-quanshu-xingyuan-wenda.md");
+    prioritizeAfterMethod(files, ziweiSihuaToken, "09-evidence-gates-topic-router.md", "10-palace-sihua-specificity.md", "ziwei-quanshu-core.md", "07-quanshu-xingyuan-wenda.md");
     return files;
   }
 
@@ -2062,6 +2068,12 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     // horary = ดันหน้าสุด (นิยาม Lilly คือหลักฐานแกนของคำถาม horary แม้โดน shrink เหลือ 4K หรือโหมดคู่ที่ pair packs ถูกดันหน้า)
     if (lillyToken && intent.horary) prioritizeToFront(files, lillyToken);
     else if (lillyToken) prioritizeAfterMethod(files, lillyToken);
+    // r399 · ตำราแม่บท verbatim (Lilly · Christian Astrology houses + Ptolemy · Tetrabiblos) = source of truth → ต้องรอด budget
+    //   audit r2L-8: base router (54.8K/56K) กินเพดานเกือบหมด → แม่บทถูกตัดเงียบเกือบทุกคำถาม (ไม่ถูกเลือกด้วยซ้ำใน general/timing)
+    //   ดันขึ้นหลัง 00-method — คง evidence-gate/dignity anchor ไว้ก่อน แล้วต่อด้วยแม่บท · เพดานเดิม (56K < รวมแม่บท) →
+    //   แม่บทเล่มแรกเข้าเต็ม เล่มถัดไปติด /truncated (โปร่งใสผ่าน SOURCE_MAP) — ยังต้องคู่กับ section splitter (R4) เฟสหน้า
+    pushUnique(files, "02-lilly-houses.md", "tetrabiblos-core.md");
+    prioritizeAfterMethod(files, "04-specialty-router-evidence-gates.md", "05-dignity-lots-specificity.md", "02-lilly-houses.md", "tetrabiblos-core.md");
     return files;
   }
 
@@ -2235,6 +2247,11 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     } else if (intent.general) {
       prioritizeAfterMethod(files, "06-evidence-gates-specialty-router.md", "07-functional-topic-specificity.md", "10-natal-life-direction-specificity.md", "05-dasha-deepening-rules.md", "04-topic-packs.md");
     }
+    // r399 · ตำราแม่บท BPHS (โยคะ verbatim + core/dasha-yoga working summary) = ฐานสำคัญ → ต้องรอด budget
+    //   audit r2L-8: vedic-core + 02-bphs-dasha-yoga จมท้าย list ถูกตัดในหลายคำถาม · ดันขึ้นหลัง 00-method
+    //   คง evidence-gate/functional-topic anchor ไว้ก่อน แล้วต่อด้วยแม่บท (bphsToken section ตาม r377 ต่อท้ายอีกที)
+    pushUnique(files, "vedic-core.md", "02-bphs-dasha-yoga.md");
+    prioritizeAfterMethod(files, "06-evidence-gates-specialty-router.md", "07-functional-topic-specificity.md", "02-bphs-dasha-yoga.md", "vedic-core.md");
     // r377 · ดัน BPHS section ไว้ถัดจาก 00-method เพื่อรอด shrink loop (ตาราง+โศลกต้องไม่ถูกตัด)
     if (bphsToken) prioritizeAfterMethod(files, bphsToken);
     return files;
@@ -2846,6 +2863,27 @@ export function renderChartForScience(science: ScienceId, b: BirthData, refDate:
   return "";
 }
 
+const STRUCTURED_PACKET_MARKER = "\n\nSTRUCTURED_CHART_PACKET:\n";
+/** r399 · โหมดกลุ่ม (≥2 ดวง) prompt เกินเพดาน → บีบเฉพาะ "ส่วน prose" ต่อดวงให้พอดีงบ
+ *  แต่คง STRUCTURED_CHART_PACKET (JSON = core ของดวง) ไว้เต็มเสมอ · กัน tail-cut (head+tail)
+ *  ตัดกลาง prompt จนบางดวง packet หาย (r2L pre-existing) — เป้า: ทุกดวงมี packet ครบ core
+ *  proseBudget = งบสำหรับส่วนคำอธิบาย (prose) เท่านั้น · JSON ถูกต่อท้ายเต็มเสมอ */
+function compactChartBlock(block: string, proseBudget: number): string {
+  const idx = block.indexOf(STRUCTURED_PACKET_MARKER);
+  if (idx < 0) {
+    // ไม่มี packet (เช่น bazi คืน "") — ตัดตามงบตรง ๆ
+    return block.length <= proseBudget ? block : `${block.slice(0, Math.max(0, proseBudget))}\n[CHART_PROSE_TRUNCATED_FOR_GROUP_BUDGET]`;
+  }
+  if (idx <= proseBudget) return block; // prose พอดีงบ → ไม่ต้องตัด (byte-identical)
+  const jsonPart = block.slice(idx); // marker + JSON (คงเต็ม → packet ไม่หาย)
+  return `${block.slice(0, Math.max(0, proseBudget))}\n[CHART_PROSE_TRUNCATED_FOR_GROUP_BUDGET]${jsonPart}`;
+}
+/** r399 · โหมดกลุ่ม งบเกิน → ตัดหาง PAIR_INTERACTION_PACKET ตามงบ (คงหัว+คู่ต้น ๆ) */
+function truncatePairPacket(block: string, budget: number): string {
+  if (block.length <= budget) return block;
+  return `${block.slice(0, Math.max(0, budget))}\n[PAIR_PACKET_TRUNCATED_FOR_GROUP_BUDGET]`;
+}
+
 const LANG_NAME: Record<string, string> = { th: "ไทย", en: "อังกฤษ", zh: "จีน" };
 const DECISIVE_READING_POLICY = [
   "=== นโยบายคำตอบผู้ใช้จริง ===",
@@ -2947,7 +2985,20 @@ export function buildSciencePrompt(
   const effectiveQuestion = bookMode ? bookDirective : question;
   const timingRef = timingRefOverride || resolveFusionTimingReference(question, refDate);
   const selectedCanonFiles = selectCanonFilesForPrompt(science, effectiveQuestion, births);
-  const assemble = (bundle: CanonBundle) => {
+  // r399 · memo ผลเรนเดอร์ผัง/pair ต่อ call — assemble ถูกเรียกซ้ำใน shrink loop + compaction loop
+  //   เดิม re-render (รัน engine ใหม่) ทุกรอบ · memo = คำนวณครั้งเดียว (ผลเท่าเดิม · เร็วขึ้น)
+  const chartCache = new Map<number, string>();
+  const renderChartMemo = (b: BirthData, i: number): string => {
+    if (!chartCache.has(i)) chartCache.set(i, renderChartForScience(science, b, timingRef.refDate));
+    return chartCache.get(i)!;
+  };
+  let pairPacketMemo: string | null = null;
+  const renderPairMemo = (): string => {
+    if (pairPacketMemo === null) pairPacketMemo = renderPairInteractionPacket(science, births, timingRef.refDate);
+    return pairPacketMemo;
+  };
+  // compact (r399): งบ prose ต่อดวง + งบ pair packet · undefined = โหมดเดิม (byte-identical)
+  const assemble = (bundle: CanonBundle, compact?: { proseBudget: number; pairBudget: number }) => {
     const L: string[] = [];
     L.push(`คุณคือซินแสผู้เชี่ยวชาญ "${bind.labelTh}" (${bind.labelZh})`);
     L.push(`อ่านดวงจาก "ผังที่ระบบคำนวณ" ด้านล่างเท่านั้น · ⚠️ ${bind.termGuard}`);
@@ -2989,7 +3040,8 @@ export function buildSciencePrompt(
           L.push(`⚠️ ดวงนี้ไม่ทราบเวลาเกิด — ส่วนที่ต้องลัคนา/เรือนอ่านไม่ได้ (อ่านเท่าที่มี)`);
         }
       }
-      L.push(renderChartForScience(science, b, timingRef.refDate));
+      const rendered = renderChartMemo(b, i);
+      L.push(compact ? compactChartBlock(rendered, compact.proseBudget) : rendered);
     });
     // เฟส 6: ② ช่วงหลายปี → บล็อกสรุปย่อรายปี (ต่อดวง)
     const yearRange = resolveFusionYearRange(question, refDate);
@@ -2997,7 +3049,8 @@ export function buildSciencePrompt(
       births.forEach((b) => { L.push(renderMultiYearBlock(science, b as FusionBirthLike, yearRange.startYear, yearRange.endYear)); });
     }
     if (births.length > 1) {
-      L.push(renderPairInteractionPacket(science, births, timingRef.refDate));
+      const pairPk = renderPairMemo();
+      L.push(compact ? truncatePairPacket(pairPk, compact.pairBudget) : pairPk);
       // เฟส 6: ① ชั้นเวลาโหมดดูคู่ (ปฏิทินร่วมรายเดือนของปีเป้าหมาย)
       L.push(renderPairTimingBlock(science, births as FusionBirthLike[], timingRef.targetYear));
       L.push(`\n=== ดูคู่ ===\nวิเคราะห์ทั้ง ${births.length} ดวง + ความเข้ากัน/ปฏิกิริยาระหว่างกัน ตามหลัก ${bind.labelTh} (ส่งคำตอบครบทุกดวง) · ใช้เฉพาะ PAIR_INTERACTION_PACKET เป็นรายการปฏิกิริยาข้ามดวง ห้ามสร้างคู่/มุม/ดาวข้ามดวงเพิ่มเอง · แยกแรงหนุนกับแรงเสียดทานให้ชัด อย่าให้จุดดีจุดเดียวกลบข้อเสียใหญ่ หรือข้อเสียจุดเดียวกลบแรงหนุนหลัก`);
@@ -3023,6 +3076,27 @@ export function buildSciencePrompt(
     bundle = loadCanonBundle(science, maxCanon, selectedCanonFiles);
     prompt = assemble(bundle);
   }
+  // r399 · โหมดกลุ่ม (≥2 ดวง) canon ถึงพื้นแล้วยังเกินเพดาน → บีบ "prose ต่อดวง" + "pair packet"
+  //   คง STRUCTURED_CHART_PACKET (core) ทุกดวงเต็มเสมอ · แทน tail-cut (head+tail) ที่ตัดกลาง prompt
+  //   จนบางดวง packet หาย (r2L-10 ข้อ 4.2) · เป้า: ทุกดวงมี packet ครบ + ≤เพดาน + ไม่ตัด packet
+  if (births.length >= 2 && prompt.length > FUSION_PANEL_PROMPT_MAX_CHARS) {
+    let proseBudget = 30_000;
+    let pairBudget = 30_000;
+    const reassemble = () => { prompt = assemble(bundle, { proseBudget, pairBudget }); };
+    reassemble();
+    // 1) ลด prose ต่อดวงก่อน (ตัวหลักที่กินงบ) — packet ยังเต็ม
+    for (let guard = 0; guard < 60 && prompt.length > FUSION_PANEL_PROMPT_MAX_CHARS && proseBudget > 0; guard++) {
+      const over = prompt.length - FUSION_PANEL_PROMPT_MAX_CHARS;
+      proseBudget = Math.max(0, proseBudget - Math.ceil(over / births.length) - 500);
+      reassemble();
+    }
+    // 2) ยังเกิน → ลด pair packet (prose ถูกบีบสุดแล้ว เหลือ packet ล้วน)
+    for (let guard = 0; guard < 60 && prompt.length > FUSION_PANEL_PROMPT_MAX_CHARS && pairBudget > 0; guard++) {
+      const over = prompt.length - FUSION_PANEL_PROMPT_MAX_CHARS;
+      pairBudget = Math.max(0, pairBudget - over - 500);
+      reassemble();
+    }
+  }
   if (prompt.length > FUSION_PANEL_PROMPT_MAX_CHARS) {
     const marker = `\n[TRUNCATED_NONCRITICAL_PREFIX_FOR_PROMPT_CAP originalChars=${prompt.length}]\n`;
     const headBudget = 12_000;
@@ -3034,7 +3108,7 @@ export function buildSciencePrompt(
 
 /** prompt judge หลอมรวมทุก panel · resonanceBlock (r369 · optional/additive) = RESONANCE_PACKET จาก engine deterministic
  *  daySniperBlock (r373 · optional/additive) = DAY_SNIPER จาก engine deterministic (วางถัดจาก resonance · shrink priority เดียวกัน) */
-export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[], births: BirthData[], question: string, lang = "th", resonanceBlock?: string, daySniperBlock?: string): string {
+export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[], births: BirthData[], question: string, lang = "th", resonanceBlock?: string, daySniperBlock?: string, multiYearBlock?: string): string {
   const L: string[] = [];
   L.push(`คุณคือ "ซินแสใหญ่" ผู้หลอมรวมคำพยากรณ์จากหลายศาสตร์เป็นคำตอบเดียว`);
   L.push(`มี ${panels.length} ศาสตร์อ่านดวง${births.length > 1 ? "คู่" : ""}เดียวกัน · หน้าที่: หา "จุดตรงกัน = ฟันธงหนัก" + "จุดต่าง = เงื่อนไข/ข้อระวัง" + สรุปคำแนะนำ`);
@@ -3059,6 +3133,12 @@ export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[]
     L.push(`\n${daySniperBlock}`);
     L.push("ถ้ามี DAY_SNIPER ให้ระบุวันที่เป๊ะในคำตอบ พร้อมบอกว่าหลักฐานกี่เข็มอิสระ · ห้ามแต่งวันเพิ่ม");
   }
+  // r399 · Q&A judge เห็นไทม์ไลน์หลายปี (audit r2L-9 ข้อ1) — คำถามครอบช่วงปี ("2016-2026 ปีไหนหนัก")
+  //   เดิม multi-year โผล่แค่ใน panel รายศาสตร์แล้วถูกตัดที่ JUDGE_PANEL_REPLY_MAX_CHARS → judge ไม่เคยเห็นข้อมูลรายปีดิบ
+  if (multiYearBlock) {
+    L.push(`\n=== MULTI_YEAR (ไทม์ไลน์หลายปี · engine คำนวณ deterministic) ===\n${multiYearBlock}`);
+    L.push("ถ้าคำถามครอบหลายปี ให้ใช้ MULTI_YEAR เทียบ 'ปีไหนหนัก/ปีไหนเบา' ประกอบคำฟันธง · อ้างปีจากรายการนี้เท่านั้น ห้ามเดาปีนอกรายการ");
+  }
   L.push(`\n=== คำถาม ===\n${question}`);
   L.push(`\n${answerFormatLine(births, true)}`);
   let out = L.join("\n");
@@ -3073,6 +3153,12 @@ export function buildJudgePrompt(panels: { science: ScienceId; reply: string }[]
     const over = out.length - FUSION_PANEL_PROMPT_MAX_CHARS;
     const keep = Math.max(0, daySniperBlock.length - over - 40);
     out = out.replace(daySniperBlock, `${daySniperBlock.slice(0, keep)}\n[DAY_SNIPER_TRUNCATED_FOR_CAP]`);
+  }
+  // r399 · ลำดับ shrink เดียวกับ judge-book: resonance → daySniper → multiYear (ท้ายสุด · ปกป้องดีสุด)
+  if (out.length > FUSION_PANEL_PROMPT_MAX_CHARS && multiYearBlock) {
+    const over = out.length - FUSION_PANEL_PROMPT_MAX_CHARS;
+    const keep = Math.max(0, multiYearBlock.length - over - 40);
+    out = out.replace(multiYearBlock, `${multiYearBlock.slice(0, keep)}\n[MULTI_YEAR_TRUNCATED_FOR_CAP]`);
   }
   return out.slice(0, FUSION_PANEL_PROMPT_MAX_CHARS);
 }

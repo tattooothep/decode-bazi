@@ -92,14 +92,18 @@ export type UranianHalbsumme = {
   midDial90: number;  // จุดกึ่งกลางบนหน้าปัด 90°
 };
 
-/** ภาพดาว (Planetenbild): ดาว/จุด "occupant" ตกบนครึ่งผลรวมของ a|b (a + c − b) ภายใน orb */
+/** ภาพดาว (Planetenbild): ดาว/จุด "occupant" ตกบนครึ่งผลรวมของ a|b (a + c − b) ภายใน orb
+ *  tier: ระดับมุม (r399 · Witte บท 44 „alle durch 45° teilbaren Aspekte" · Grundregel #4 · ตัวอย่างไกเซอร์บท 30 ใช้ 135°)
+ *   - "hard"      = occupant ตรงแกน 0°/90°/180° (หน้าปัด 90° · ☌/□/☍ · หลัก)
+ *   - "secondary" = occupant ที่มุม 45°/135° (Halbquadrat/Eineinhalbquadrat · ชั้นรอง/แฝง · orb แคบกว่า) */
 export type UranianPlanetaryPicture = {
   pair: string;       // "a/c" (สองดาวที่สร้างครึ่งผลรวม)
   pairTh: string;
   occupant: string;   // ดาว/จุดที่ตกบนแกนสมมาตร
   occupantTh: string;
   formula: string;    // "a + c − occupant" หรือรูปแบบภาพดาว
-  orbDeg: number;     // ระยะบนหน้าปัด 90° (0..45)
+  orbDeg: number;     // ระยะจากมุมเป้า (hard = ระยะจาก 0 บนหน้าปัด 90° · secondary = ระยะจาก 45°) — ยิ่งน้อยยิ่งคม
+  tier: "hard" | "secondary"; // r399 · 0/90/180 = หลัก · 45/135 = รอง/แฝง
   applyingNote: "radix_static";
   touchesPersonal?: boolean; // r390 · แตะจุดส่วนตัว (☉/MC/Asc) = เด่นกว่า (ถ่วงน้ำหนัก · Anareta บท 16/30)
 };
@@ -151,7 +155,8 @@ export type UranianSensitivePoint = {
   pointSignDeg: number;
   activatedBy: string;      // ดาว/จุดที่ตกบนจุดไวภายใน orb
   activatedByTh: string;
-  orbDeg: number;
+  orbDeg: number;           // hard = ระยะจาก 0 บนหน้าปัด 90° · secondary = ระยะจาก 45° — ยิ่งน้อยยิ่งคม
+  tier: "hard" | "secondary"; // r399 · 0/90/180 = หลัก · 45/135 = รอง/แฝง (จับให้ตรงชั้นเวลา Auslösung [0,45,90,135,180])
   touchesPersonal?: boolean; // r390 · แตะจุดส่วนตัว (☉/MC/Asc) = เด่นกว่า (ถ่วงน้ำหนัก)
 };
 
@@ -210,6 +215,8 @@ export type UranianChart = {
   excludedTransneptunians: readonly string[];   // Lefeldt/Sieggrün — ไม่เคยถูกคำนวณ
   orbPictureDeg: number;
   orbSensitiveDeg: number;
+  orbPictureSecondaryDeg: number;       // r399 · orb ชั้นรอง 45°/135° ของภาพดาว (แคบกว่า hard)
+  orbSensitiveSecondaryDeg: number;     // r399 · orb ชั้นรอง 45°/135° ของจุดไว (แคบกว่า hard)
   orbAntisciaDeg: number;               // r390
   orbParallelDeg: number;               // r390
   orbFourPlanetDeg: number;             // r390
@@ -231,6 +238,12 @@ export function dial90Distance(lon: number, mid: number): number {
 
 const ORB_PICTURE_DEG = 1.5;   // ภาพดาว radix — Witte ให้ „Spielraum" แก่ดาวกลาง (บท 31)
 const ORB_SENSITIVE_DEG = 1.0; // จุดไวเข้ม
+// r399 · ชั้นรอง 45°/135° (Halbquadrat/Eineinhalbquadrat · 8th harmonic) — Witte บท 44 „alle durch 45° teilbaren Aspekte"
+//   + Grundregel #4 (0/45/90/135/180) + ตัวอย่างไกเซอร์ บท 30 (Merkur–Uranus 135° = „größter Feind" ในผังกำเนิด)
+//   ทำให้ผังกำเนิด (natal) จับมุมชุดเดียวกับชั้นเวลา (Auslösung nearestHardAspect [0,45,90,135,180])
+//   ⚠️ orb แคบกว่า hard (กันภาพดาวเฟ้อ · 45/135 = แฝง ไม่ใช่แกนหลัก) — ระบุชั้นชัดใน tier
+const ORB_PICTURE_SECONDARY_DEG = 1.0;   // < 1.5 (hard)
+const ORB_SENSITIVE_SECONDARY_DEG = 0.7; // < 1.0 (hard)
 const ORB_ANTISCIA_DEG = 1.0;  // r390 · จุดกระจก — Witte „scharfe Aspekte" (บท 16) แต่ไม่ระบุตัวเลข → orb = วิธีสากล
 const ORB_PARALLEL_DEG = 1.0;  // r390 · parallel/contra-parallel — orb = วิธีสากล (บท 03/23/46 = ลายเซ็น Witte · ค่า orb สากล)
 const ORB_FOURPLANET_DEG = 1.0;// r390 · ภาพดาว 4 ดวง บนหน้าปัด 90°
@@ -357,19 +370,26 @@ export function uranianChart(dtUTC: Date, lat: number, lng: number, hasTime = tr
   for (const hs of halbsummen) {
     for (const p of points) {
       if (p.name === hs.a || p.name === hs.b) continue;
-      const orb = dial90Distance(p.lon, hs.mid);
-      if (orb <= ORB_PICTURE_DEG) {
+      // ระยะบนหน้าปัด 90° (0..45): ~0 = occupant ตรงแกน 0/90/180 (hard) · ~45 = occupant ที่ 45°/135° (secondary)
+      const dd = dial90Distance(p.lon, hs.mid);
+      let tier: "hard" | "secondary" | null = null;
+      let orbDeg = 0;
+      if (dd <= ORB_PICTURE_DEG) { tier = "hard"; orbDeg = dd; }
+      else if (Math.abs(dd - 45) <= ORB_PICTURE_SECONDARY_DEG) { tier = "secondary"; orbDeg = Math.abs(dd - 45); }
+      if (tier) {
         pictures.push({
           pair: `${hs.a}/${hs.b}`, pairTh: `${hs.aTh}/${hs.bTh}`,
           occupant: p.name, occupantTh: p.nameTh,
           formula: `${hs.a} + ${hs.b} − ${p.name} = แกนสมมาตร (Halbsumme ${hs.a}|${hs.b})`,
-          orbDeg: +orb.toFixed(3), applyingNote: "radix_static",
+          orbDeg: +orbDeg.toFixed(3), tier, applyingNote: "radix_static",
           touchesPersonal: anyPersonal(hs.a, hs.b, p.name),
         });
       }
     }
   }
-  pictures.sort((x, y) => x.orbDeg - y.orbDeg || x.pair.localeCompare(y.pair) || x.occupant.localeCompare(y.occupant));
+  // hard นำก่อน secondary (แยกชั้นชัด · slice(MAX) ตัด secondary ก่อน — ไม่ทับ hard) · ในชั้นเดียวกันเรียง orb คมสุดก่อน
+  const tierRank = (t: "hard" | "secondary") => (t === "hard" ? 0 : 1);
+  pictures.sort((x, y) => tierRank(x.tier) - tierRank(y.tier) || x.orbDeg - y.orbDeg || x.pair.localeCompare(y.pair) || x.occupant.localeCompare(y.occupant));
 
   // 5) จุดไว (sensitive Punkte): ผลรวม a+b และผลต่าง a−b ถูกดาว/จุดอื่นกระตุ้น (Witte บท 16/31)
   //    „a + b − V = a + b" (ผลรวม = จุดไว Erdhoroskop) · „a + V − b = a − b" (ผลต่าง = จุดอนาคต)
@@ -382,13 +402,17 @@ export function uranianChart(dtUTC: Date, lat: number, lng: number, hasTime = tr
       for (const [kind, pt] of [["sum", sum], ["difference", diff]] as const) {
         for (const q of points) {
           if (q.name === a.name || q.name === b.name) continue;
-          const orb = dial90Distance(q.lon, pt);
-          if (orb <= ORB_SENSITIVE_DEG) {
+          const dd = dial90Distance(q.lon, pt);
+          let tier: "hard" | "secondary" | null = null;
+          let orbDeg = 0;
+          if (dd <= ORB_SENSITIVE_DEG) { tier = "hard"; orbDeg = dd; }
+          else if (Math.abs(dd - 45) <= ORB_SENSITIVE_SECONDARY_DEG) { tier = "secondary"; orbDeg = Math.abs(dd - 45); }
+          if (tier) {
             const ps = Math.floor(pt / 30);
             sensitive.push({
               kind, a: a.name, b: b.name, aTh: a.nameTh, bTh: b.nameTh,
               pointLon: +pt.toFixed(4), pointSignTh: SIGN_TH[ps], pointSignDeg: +(pt - ps * 30).toFixed(4),
-              activatedBy: q.name, activatedByTh: q.nameTh, orbDeg: +orb.toFixed(3),
+              activatedBy: q.name, activatedByTh: q.nameTh, orbDeg: +orbDeg.toFixed(3), tier,
               touchesPersonal: anyPersonal(a.name, b.name, q.name),
             });
           }
@@ -396,7 +420,8 @@ export function uranianChart(dtUTC: Date, lat: number, lng: number, hasTime = tr
       }
     }
   }
-  sensitive.sort((x, y) => x.orbDeg - y.orbDeg || x.a.localeCompare(y.a) || x.b.localeCompare(y.b) || x.activatedBy.localeCompare(y.activatedBy));
+  const sTierRank = (t: "hard" | "secondary") => (t === "hard" ? 0 : 1);
+  sensitive.sort((x, y) => sTierRank(x.tier) - sTierRank(y.tier) || x.orbDeg - y.orbDeg || x.a.localeCompare(y.a) || x.b.localeCompare(y.b) || x.activatedBy.localeCompare(y.activatedBy));
 
   // 6) จุดกระจก (Antiscia/Spiegelpunkte · บท 16/36 + Ptolemy zone5) — b ตกบนจุดสะท้อนของ a รอบ 2 แกน
   //    antiscia = สะท้อนแกนอายัน (Erdmeridian 0°♋/♑) · contra = สะท้อนแกนวิษุวัต (Kardinalpunkte 0°♈/♎)
@@ -557,6 +582,8 @@ export function uranianChart(dtUTC: Date, lat: number, lng: number, hasTime = tr
     excludedTransneptunians: EXCLUDED_TNP,
     orbPictureDeg: ORB_PICTURE_DEG,
     orbSensitiveDeg: ORB_SENSITIVE_DEG,
+    orbPictureSecondaryDeg: ORB_PICTURE_SECONDARY_DEG,
+    orbSensitiveSecondaryDeg: ORB_SENSITIVE_SECONDARY_DEG,
     orbAntisciaDeg: ORB_ANTISCIA_DEG,
     orbParallelDeg: ORB_PARALLEL_DEG,
     orbFourPlanetDeg: ORB_FOURPLANET_DEG,

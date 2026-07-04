@@ -35,6 +35,9 @@ function fmtDecl(dec: number): string {
 }
 /** r390 · ป้ายถ่วงน้ำหนัก: แตะจุดส่วนตัว (☉/MC/Asc) = เด่นกว่า (Anareta บท 16/30) */
 const STAR = " ⭐เด่น(แตะ☉/MC/Asc)";
+/** r399 · ป้ายระดับมุม: 0/90/180 = หลัก (ไม่ต้องติดป้าย · ค่าเริ่มต้น) · 45/135 = รอง/แฝง (ติดป้ายชัด กันสับสนกับแกนหลัก) */
+const TIER_SECONDARY = " · ⟨ชั้นรอง 45°/135° · Halbquadrat/Eineinhalbquadrat · แฝง (orb แคบกว่า · ไม่ใช่แกนหลัก)⟩";
+const tierTag = (t?: "hard" | "secondary") => (t === "secondary" ? TIER_SECONDARY : "");
 /** เรียง „แตะจุดส่วนตัว" ขึ้นก่อน (คงลำดับ orb เดิมภายในกลุ่ม · stable) */
 function personalFirst<T extends { touchesPersonal?: boolean }>(arr: T[]): T[] {
   return [...arr].sort((a, b) => (b.touchesPersonal ? 1 : 0) - (a.touchesPersonal ? 1 : 0));
@@ -50,6 +53,7 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   L.push("ตำแหน่งดาวจริง 10 ดวง = ราศีเขตร้อน (tropical) คำนวณจากดาราศาสตร์จริง (deterministic) เดียวกับผังตะวันตก");
   L.push(`เวลาเกิด: ${packet.hasBirthTime ? "มีเวลาแม่น (มี Meridian/Aszendent)" : "ไม่มีเวลาเกิด (ไม่มี Meridian/Aszendent · จันทร์อาจคลาด)"}`);
   L.push(`orb ภาพดาว (Planetenbild) = ${packet.orbPictureDeg}° บนหน้าปัด 90° · orb จุดไว (sensitiver Punkt) = ${packet.orbSensitiveDeg}°`);
+  L.push(`ชั้นรอง 45°/135° (Halbquadrat/Eineinhalbquadrat · Witte บท 44 „alle durch 45° teilbaren Aspekte" + Grundregel #4 + ตัวอย่างไกเซอร์ บท 30): orb ภาพดาว = ${packet.orbPictureSecondaryDeg}° · orb จุดไว = ${packet.orbSensitiveSecondaryDeg}° (แคบกว่าแกนหลัก · เป็นแรงแฝง อ่านรองจาก 0/90/180)`);
   L.push("");
 
   // ── กฎการอ่าน (เข้ม · ตาม 01-source-policy-conclusion) ──
@@ -64,6 +68,7 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   L.push("8) สัญลักษณ์ดาว/องศาในต้นฉบับ Fraktur ของ Witte OCR เพี้ยนได้ → ถ้าจะยกตัวเลของศาจากตัวอย่าง (บท 12/30/31/44) ให้เตือนว่าเป็นค่าโดยประมาณต้องเทียบสแกน");
   L.push("9) ชั้นเสริม r390: (ก) จุดกระจก (Spiegelpunkte/Antiscia) = Witte «จุดไวหมวดแรกสุด/Anareta» (บท 16/36) — อ่านได้ว่าเป็นการสัมผัสของสองดาวข้ามแกนอายัน/วิษุวัต · สูตรสะท้อน+orb เป็น «วิธีสากล» (Ptolemy PD) ไม่ใช่ตัวเลข Witte verbatim (บ) parallel/contra-parallel = ลายเซ็นเดคลิเนชันของ Witte (บท 03/23/46) · orb เป็นวิธีสากล (ค) ภาพดาว 4 ดวง (Vierergestirn a+b=c+d) = บท 44/31 verbatim (ง) ปมจันทร์ให้ทั้ง mean+true ระบุชนิด ห้ามสลับ");
   L.push("10) ถ่วงน้ำหนัก (Anareta บท 16/30): ภาพดาว/จุดไว/จุดกระจก/4 ดวง ที่ ⭐ แตะจุดส่วนตัว (☉/MC/Aszendent) = เด่นกว่า อ่าน/ฟันธงก่อน · ตัวที่ไม่แตะ = รอง");
+  L.push("11) r399 · ระดับมุมภาพดาว/จุดไว: 0°/90°/180° = แกนหลัก อ่านนำก่อนเสมอ · 45°/135° (⟨ชั้นรอง⟩ · Halbquadrat/Eineinhalbquadrat) = แรงแฝง/รอง อ่านเสริมทีหลัง ไม่ยกเป็นแกนหลักของคำตอบ (ตรงชุดมุมกับชั้นเวลา Auslösung 0/45/90/135/180 · Witte บท 44 «alle durch 45° teilbaren Aspekte» + ตัวอย่างไกเซอร์ บท 30 Merkur–Uranus 135° = «größter Feind»)");
   L.push("");
 
   // ── ตำแหน่งดาว/จุด บนหน้าปัด 90° ──
@@ -96,8 +101,9 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
     L.push("  ไม่พบภาพดาวที่แน่นภายใน orb ที่กำหนด → ห้ามสร้างภาพดาวเพิ่มเองจากองศา");
   } else {
     L.push("  รูปแบบ: occupant ตกบนแกนสมมาตร a|b คือ a + b − occupant · ยิ่ง orb แคบยิ่งคม · ⭐ = แตะจุดส่วนตัว (เด่นกว่า อ่านก่อน)");
+    L.push("  ระดับมุม: 0°/90°/180° = แกนหลัก (☌/□/☍) อ่านนำ · 45°/135° = ⟨ชั้นรอง/แฝง⟩ อ่านเสริม (r399 · orb แคบกว่า · Witte บท 44/30)");
     for (const pic of personalFirst(d.planetaryPictures).slice(0, 60)) { // r392 · ตรง MAX_PICTURES=60 (เดิม 40 ตัดยอด)
-      L.push(`  • ${pic.occupantTh} บนครึ่งผลรวม ${pic.pairTh} (${pic.pair}) · orb ${pic.orbDeg.toFixed(2)}°${pic.touchesPersonal ? STAR : ""}`);
+      L.push(`  • ${pic.occupantTh} บนครึ่งผลรวม ${pic.pairTh} (${pic.pair}) · orb ${pic.orbDeg.toFixed(2)}°${pic.touchesPersonal ? STAR : ""}${tierTag(pic.tier)}`);
     }
   }
   L.push("");
@@ -121,7 +127,7 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   } else {
     for (const sp of personalFirst(d.sensitivePoints).slice(0, 60)) { // r392 · ตรง MAX_SENSITIVE=60
       const op = sp.kind === "sum" ? "+" : "−";
-      L.push(`  • ${sp.activatedByTh} ตกบนจุด${sp.kind === "sum" ? "ผลรวม" : "ผลต่าง"} (${sp.aTh} ${op} ${sp.bTh}) ที่ ${fmtLon(sp.pointLon)} · orb ${sp.orbDeg.toFixed(2)}°${sp.touchesPersonal ? STAR : ""}`);
+      L.push(`  • ${sp.activatedByTh} ตกบนจุด${sp.kind === "sum" ? "ผลรวม" : "ผลต่าง"} (${sp.aTh} ${op} ${sp.bTh}) ที่ ${fmtLon(sp.pointLon)} · orb ${sp.orbDeg.toFixed(2)}°${sp.touchesPersonal ? STAR : ""}${tierTag(sp.tier)}`);
     }
   }
   L.push("");

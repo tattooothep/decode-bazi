@@ -15,6 +15,7 @@ import { spendHoursForUser, refundHoursForUser } from "@/lib/spend-hours";
 import { createHash } from "crypto";
 import { DISCIPLINES, computeYam, JUDGE_MODEL, JUDGE_YAM, type ScienceId } from "@/lib/fusion5/disciplines";
 import { buildSciencePrompt, buildJudgePrompt, resolveFusionTimingReference, type BirthData } from "@/lib/fusion5/build-prompt";
+import { renderMultiYearBlock, resolveFusionYearRange, type FusionBirthLike } from "@/lib/fusion5/multi-year";
 import { buildResonance, renderResonanceBlockTh, RESONANCE_SCIENCES, type FusionResonance } from "@/lib/fusion5/resonance";
 import { buildDaySniper, renderDaySniperTh, resolveDaySniperRange } from "@/lib/fusion5/day-sniper";
 import { buildSynastry, type PersonSyn } from "@/lib/bazi-synastry";
@@ -585,7 +586,24 @@ async function processFusion5(jobId: string, p: WorkerParams): Promise<void> {
         const resBlock = p.resonance && (p.resonance.perPerson.length > 0 || (p.resonance.r4Pairs || []).length > 0)
           ? renderResonanceBlockTh(p.resonance) : undefined;
         const dsBlock = p.resonance?.daySniper ? renderDaySniperTh(p.resonance.daySniper) : undefined;
-        const jp = buildJudgePrompt(okPanels.map((x) => ({ science: x.science, reply: x.reply! })), births, question, lang, resBlock, dsBlock);
+        // r399 · Q&A judge multi-year (audit r2L-9 ข้อ1): คำถามครอบช่วงปี → ป้อนไทม์ไลน์หลายปี deterministic ให้ judge เหมือน book
+        //   คำนวณจาก renderMultiYearBlock ต่อดวง×ศาสตร์ที่อ่านสำเร็จ (คุมงบ ~6K · shrink ท้ายสุดใน buildJudgePrompt)
+        //   หมายเหตุ: bazi ไม่มี branch ใน renderMultiYearBlock (大運/流年 อยู่ใน chart-extensions LOCKED · ข้ามตามกฎ) → คืนหัวเปล่า ไม่ push
+        let myBlock: string | undefined;
+        const yearRange = resolveFusionYearRange(question, timingRef.refDate);
+        if (yearRange) {
+          const parts: string[] = [];
+          const mySciences = okPanels.map((x) => x.science).filter((s) => s !== "bazi");
+          outer: for (const b of births) {
+            const like: FusionBirthLike = { name: b.name, dtUTC: b.dtUTC, lat: b.lat, lng: b.lng, hasTime: b.hasTime, gender: b.gender };
+            for (const s of mySciences) {
+              try { const blk = renderMultiYearBlock(s, like, yearRange.startYear, yearRange.endYear); if (blk && blk.trim()) parts.push(blk.trim()); } catch { /* ศาสตร์ไม่มี multi-year = ข้าม */ }
+              if (parts.join("\n").length > 5_500) break outer;
+            }
+          }
+          myBlock = parts.length ? parts.join("\n\n").slice(0, 6_000) : undefined;
+        }
+        const jp = buildJudgePrompt(okPanels.map((x) => ({ science: x.science, reply: x.reply! })), births, question, lang, resBlock, dsBlock, myBlock);
         const jr = await callSifu(cookie, { message: question, externalPrompt: jp, lang }, JUDGE_MODEL);
         judge = { ...jr, model: JUDGE_MODEL };
       } catch (e) { judge = { ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "judge_error", model: JUDGE_MODEL }; }
