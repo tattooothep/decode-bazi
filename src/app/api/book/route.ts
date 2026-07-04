@@ -39,6 +39,20 @@ function computeBookYam(sciences: ScienceId[]): number {
   return valid.reduce((sum, s) => sum + bookPanelYam(s), 0) + (valid.length >= 2 ? BOOK_JUDGE_YAM : 0);
 }
 
+// มาตรฐานทุก user (format contract): บทต้องมีหัวข้อ "## 1." … "## 10." ครบ+เรียงลำดับ
+const BOOK_FORMAT_RETRY_NOTE = "\n\n⚠️ สำคัญมาก (รอบแก้รูปแบบ): รอบก่อนหน้าเขียนหัวข้อไม่ครบ 10 มิติ · รอบนี้ต้องเขียนให้ครบทั้ง 10 หัวข้อ ขึ้นต้นแต่ละหัวข้อด้วย \"## 1.\" \"## 2.\" … \"## 10.\" เรียงตามลำดับ ห้ามข้าม ห้ามสลับ ห้ามยุบรวมเป็นย่อหน้าเดียว";
+/** true = มีหัวข้อ ## 1..## 10 ครบและเรียงตามลำดับในบท (format contract เดียวกันทุก user) */
+function validateChapterFormat(md: string): boolean {
+  const text = String(md || "");
+  let pos = -1;
+  for (let n = 1; n <= 10; n++) {
+    const m = text.slice(pos + 1).search(new RegExp(`#{2,4}\\s*${n}[.)]`));
+    if (m < 0) return false;
+    pos = pos + 1 + m;
+  }
+  return true;
+}
+
 const STEM_EL: Record<string, string> = {
   甲: "wood", 乙: "wood", 丙: "fire", 丁: "fire", 戊: "earth",
   己: "earth", 庚: "metal", 辛: "metal", 壬: "water", 癸: "water",
@@ -234,45 +248,54 @@ async function processBook(bookId: string, p: WorkerParams): Promise<void> {
     const name = birth.name;
 
     // 6 บทขนาน (Promise.all) · ทุก path คืน ok:false ไม่ throw
-    type ChapterOut = { science: ScienceId; label: string; model: string; ok: boolean; markdown?: string; error?: string };
-    const chapters: ChapterOut[] = await Promise.all(runSciences.map(async (science): Promise<ChapterOut> => {
+    // มาตรฐานทุก user: แต่ละบท retry (bazi 3 / อื่น 2) จนกว่า format ครบ 10 มิติ หรือหมดรอบ (กันบทพัง+บทขาดหัวข้อ)
+    type ChapterOut = { science: ScienceId; label: string; model: string; ok: boolean; markdown?: string; error?: string; formatWarning?: boolean };
+    const timingNote = `\n\n(จังหวะเวลาอ้างอิงจร: ${timingRef.label} · ปีเป้าหมาย ${timingRef.targetYear})`;
+    const genChapter = async (science: ScienceId): Promise<ChapterOut> => {
       const bind = DISCIPLINES[science];
       const label = bind.labelTh;
-      try {
-        if (science === "bazi") {
-          // bazi ผ่าน /api/sifu (LOCKED pipeline · profileId) · message = book directive อ่านเต็มดวง
-          const directive = loadBookDirective("bazi", name);
-          const timingNote = `\n\n(จังหวะเวลาอ้างอิงจร: ${timingRef.label} · ปีเป้าหมาย ${timingRef.targetYear})`;
-          const payload = {
-            profileId: birth.profileId,
-            message: directive + timingNote,
-            lang,
-            threadProfileId: birth.profileId,
-            historyProfileIds: [birth.profileId],
-            fusionRunId: bookId,
-          };
-          let r: Awaited<ReturnType<typeof callSifu>> | null = null;
-          for (const model of [bind.defaultModel, ...bind.fallbackModels]) {
-            r = await callSifu(cookie, payload, model);
-            if (r.ok && r.reply) return { science, label, model, ok: true, markdown: r.reply };
-          }
-          return { science, label, model: bind.defaultModel, ok: false, error: `bazi_failed:${r?.error || "empty"}`.slice(0, 120) };
-        }
-        // ศาสตร์อื่น: externalPrompt (bookMode → directive อ่านเต็มดวงถูกฉีดใน buildSciencePrompt)
-        const prompt = buildSciencePrompt(science, [birth], "", lang, timingRef.refDate, timingRef, { bookMode: true });
-        const payload = { message: name, externalPrompt: prompt, lang, profileId: birth.profileId, threadProfileId: birth.profileId, historyProfileIds: [birth.profileId], fusionRunId: bookId };
-        // วนทุกโมเดล (default → ทุก fallback) จนกว่าจะได้ · กัน 1 โมเดล abort/timeout/auth แล้วบททิ้งทั้งที่ยังมีตัวสำรอง
+      const maxAttempts = science === "bazi" ? 3 : 2; // bazi = engine หลัก retry 2 ครั้ง (Task 5) · อื่น retry 1 ครั้ง
+      let best: ChapterOut | null = null;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const emphasize = attempt > 1; // รอบ retry → กำชับ format 10 มิติ
         let res: Awaited<ReturnType<typeof callSifu>> | null = null;
         let usedModel = bind.defaultModel;
-        for (const model of [bind.defaultModel, ...bind.fallbackModels]) {
-          res = await callSifu(cookie, payload, model);
-          if (res.ok && res.reply) { usedModel = model; break; }
+        try {
+          if (science === "bazi") {
+            // bazi ผ่าน /api/sifu (LOCKED pipeline · profileId) · message = book directive อ่านเต็มดวง
+            const directive = loadBookDirective("bazi", name) + timingNote + (emphasize ? BOOK_FORMAT_RETRY_NOTE : "");
+            const payload = { profileId: birth.profileId, message: directive, lang, threadProfileId: birth.profileId, historyProfileIds: [birth.profileId], fusionRunId: bookId };
+            for (const model of [bind.defaultModel, ...bind.fallbackModels]) {
+              res = await callSifu(cookie, payload, model);
+              if (res.ok && res.reply) { usedModel = model; break; }
+            }
+          } else {
+            // ศาสตร์อื่น: externalPrompt (bookMode → directive อ่านเต็มดวงถูกฉีดใน buildSciencePrompt)
+            let prompt = buildSciencePrompt(science, [birth], "", lang, timingRef.refDate, timingRef, { bookMode: true });
+            if (emphasize) prompt += BOOK_FORMAT_RETRY_NOTE;
+            const payload = { message: name, externalPrompt: prompt, lang, profileId: birth.profileId, threadProfileId: birth.profileId, historyProfileIds: [birth.profileId], fusionRunId: bookId };
+            // วนทุกโมเดล (default → ทุก fallback) จนกว่าจะได้ · กัน 1 โมเดล abort/timeout/auth แล้วบททิ้งทั้งที่ยังมีตัวสำรอง
+            for (const model of [bind.defaultModel, ...bind.fallbackModels]) {
+              res = await callSifu(cookie, payload, model);
+              if (res.ok && res.reply) { usedModel = model; break; }
+            }
+          }
+        } catch (e) {
+          res = { ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "engine_error" };
         }
-        return { science, label, model: usedModel, ok: !!res?.ok, markdown: res?.reply, error: res?.error };
-      } catch (e) {
-        return { science, label, model: bind.defaultModel, ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "engine_error" };
+        if (res?.ok && res.reply) {
+          const fmtOk = validateChapterFormat(res.reply);
+          const cand: ChapterOut = { science, label, model: usedModel, ok: true, markdown: res.reply, formatWarning: !fmtOk };
+          if (fmtOk) return cand;   // ครบ 10 มิติ + เรียงลำดับ → จบทันที
+          best = cand;              // format ไม่ครบ → เก็บฉบับนี้ (ยัง render ได้) เผื่อ retry ไม่ดีขึ้น
+        } else if (!best) {
+          best = { science, label, model: usedModel, ok: false, error: (res?.error || "empty").slice(0, 120) };
+        }
       }
-    }));
+      if (best && best.ok && best.formatWarning) console.warn(`[book] chapter ${science} format_warning (ขาด/สลับหัวข้อ 10 มิติ) book=${bookId}`);
+      return best!;
+    };
+    const chapters: ChapterOut[] = await Promise.all(runSciences.map((s) => genChapter(s)));
 
     const okChapters = chapters.filter((c) => c.ok && c.markdown);
 
@@ -310,7 +333,7 @@ async function processBook(bookId: string, p: WorkerParams): Promise<void> {
       cover: buildCover(birth),
       chapters: BOOK_CHAPTER_ORDER.filter((s) => runSciences.includes(s)).map((s) => {
         const c = chapters.find((x) => x.science === s)!;
-        return { science: s, label: c.label, ok: c.ok, model: c.model, markdown: c.markdown || null, error: c.error || null };
+        return { science: s, label: c.label, ok: c.ok, model: c.model, markdown: c.markdown || null, error: c.error || null, formatWarning: !!c.formatWarning };
       }),
       synthesis: { ok: judgeOk, model: JUDGE_MODEL, markdown: synthesisMd || null, resonanceUsed: !!resBlock },
       timing: { hasDaySniper: !!dsBlock, hasMultiYear: !!multiYearBlock },
@@ -325,6 +348,7 @@ async function processBook(bookId: string, p: WorkerParams): Promise<void> {
         yam: { charged: yam, refunded: totalRefund, net: Math.max(0, yam - totalRefund) },
         ms: Date.now() - p.started,
         degradedChapters: degraded,
+        formatWarnings: chapters.filter((c) => c.ok && c.formatWarning).map((c) => c.science),
         profileNames: [name],
       },
     };
@@ -359,6 +383,21 @@ export async function POST(req: Request) {
 
     const birth = await loadBirth(profileId, orgId);
     if (!birth) return NextResponse.json({ error: "profile_not_found" }, { status: 404 });
+
+    // 🛡 กันสร้างซ้ำ (สำคัญสุด): 1 (user,profile,lang) = 1 เล่ม · default ห้ามซ้ำ · ?force=1 = regenerate
+    const force = body.force === 1 || body.force === "1" || body.force === true;
+    if (!force) {
+      // มีเล่มเสร็จแล้ว (done/degraded) → คืนเล่มเดิม ไม่หักยาม ไม่สร้างใหม่
+      const existingDone = await q1<{ id: string; status: string }>(
+        `SELECT id, status FROM natal_books WHERE user_id=$1 AND profile_id=$2 AND lang=$3 AND status IN ('done','degraded') ORDER BY created_at DESC LIMIT 1`,
+        [userId, profileId, lang]);
+      if (existingDone) return NextResponse.json({ bookId: existingDone.id, status: existingDone.status, reused: true, profileName: birth.name });
+      // มีเล่มกำลังเขียน → คืน bookId เดิม ไม่สร้างซ้อน (กันกดปุ่มรัว/พับจอเปิดใหม่)
+      const existingRunning = await q1<{ id: string }>(
+        `SELECT id FROM natal_books WHERE user_id=$1 AND profile_id=$2 AND lang=$3 AND status='running' AND created_at > now() - interval '30 min' ORDER BY created_at DESC LIMIT 1`,
+        [userId, profileId, lang]);
+      if (existingRunning) return NextResponse.json({ bookId: existingRunning.id, status: "running", reused: true, profileName: birth.name });
+    }
 
     // ศาสตร์ที่รัน: default = ทุกศาสตร์ available · filter needsBirthTime ถ้าไม่มีเวลาเกิด
     const requested = (Array.isArray(body.sciences) ? body.sciences.map((s) => String(s) as ScienceId).filter((s) => DISCIPLINES[s]?.available) : null);
@@ -456,6 +495,16 @@ export async function GET(req: Request) {
       `SELECT id, status, null::jsonb AS result, error, lang, sciences, profile_id, created_at::text AS created_at
          FROM natal_books WHERE user_id=$1 ORDER BY created_at DESC LIMIT 30`, [session.userId]);
     return NextResponse.json({ books: rows.map(bookJson) }, { headers: { "Cache-Control": "no-store, max-age=0" } });
+  }
+
+  // ?profileId=&lang= → คืน bookId ล่าสุดของ profile นั้น (frontend เช็คว่ามีเล่มแล้วหรือยัง · ไม่หักยาม)
+  const qProfileId = cleanId(url.searchParams.get("profileId") || url.searchParams.get("profile_id"));
+  if (qProfileId) {
+    const qpLang = ["th", "en", "zh"].includes(String(url.searchParams.get("lang"))) ? String(url.searchParams.get("lang")) : null;
+    const latest = await q1<{ id: string; status: string }>(
+      `SELECT id, status FROM natal_books WHERE user_id=$1 AND profile_id=$2 ${qpLang ? "AND lang=$3" : ""} ORDER BY created_at DESC LIMIT 1`,
+      qpLang ? [session.userId, qProfileId, qpLang] : [session.userId, qProfileId]);
+    return NextResponse.json({ bookId: latest?.id || null, status: latest?.status || null }, { headers: { "Cache-Control": "no-store, max-age=0" } });
   }
 
   if (!bookId) return NextResponse.json({ error: "bad_id" }, { status: 400 });

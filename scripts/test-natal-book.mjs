@@ -25,6 +25,7 @@ const ok = (c, l, d = "") => { c ? (pass++, console.log("  ✅ " + l)) : (fail++
 /* ── mock /api/sifu ภายใน · จับ payload · fail ตาม globalThis.__failMatch (substring ใน externalPrompt/message) ── */
 const sifuCalls = [];
 globalThis.__failMatch = null; // เช่น "โหราพระเวท" → panel นั้น error
+globalThis.__badFormat = false; // true → mock ตอบขาดหัวข้อ (ทดสอบ format validation/retry)
 const mock = createServer((req, res) => {
   const chunks = [];
   req.on("data", (c) => chunks.push(c));
@@ -40,7 +41,11 @@ const mock = createServer((req, res) => {
       return;
     }
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ reply: `【mock】ฟันธงทดสอบ ${payload.model || "?"} · ` + "ก".repeat(120), model: payload.model || "mock" }));
+    // ตอบครบ 10 หัวข้อ ## 1..## 10 (format contract) — ยกเว้น globalThis.__badFormat = ตอบขาดหัวข้อ (ทดสอบ retry/format_warning)
+    const body10 = globalThis.__badFormat
+      ? "## 1. หัวข้อ\nเนื้อหา " + "ก".repeat(80)
+      : Array.from({ length: 10 }, (_, i) => `## ${i + 1}. หัวข้อที่ ${i + 1}`).join("\nเนื้อหา " + "ก".repeat(20) + "\n");
+    res.end(JSON.stringify({ reply: `【mock】ฟันธงทดสอบ ${payload.model || "?"} · ` + body10, model: payload.model || "mock" }));
   });
 });
 await new Promise((r) => mock.listen(0, "127.0.0.1", r));
@@ -188,18 +193,69 @@ let bookFullId = null;
   ok(!!baziCall, "bazi ผ่าน /api/sifu profileId + directive");
   ok(!!westCall && westCall.payload.externalPrompt.includes("หนังสือดวงชะตา"), "western ผ่าน externalPrompt bookMode");
   ok(row.yam_refunded === 0, "ไม่มี refund (สำเร็จเต็ม)");
+  ok(Array.isArray(r.meta?.formatWarnings) && r.meta.formatWarnings.length === 0, "format contract: ไม่มี formatWarning (ครบ 10 มิติทุกบท)", "got " + JSON.stringify(r.meta?.formatWarnings));
+  ok(r.chapters.every((c) => c.formatWarning === false), "ทุกบท formatWarning=false");
   const balAfter = await balance(A.userId);
   ok(balBefore - balAfter === 114, "หักยามสุทธิ 114", `diff ${balBefore - balAfter}`);
 }
 
-/* ═══ [6] route: refund partial (vedic พัง) ═══ */
+/* ═══ [5b] กันสร้างซ้ำ: POST ซ้ำ profile+lang เดิม → reused คืน bookId เดิม ไม่หักยาม ═══ */
+console.log("[5b] กันสร้างซ้ำ (reused) — POST ซ้ำ profile เดิม");
+{
+  setCookie(tokenA);
+  globalThis.__failMatch = null;
+  const balBefore = await balance(A.userId);
+  const res = await bookRoute.POST(post({ profileId: profileMai, lang: "th" }));
+  const j = await res.json();
+  ok(res.status === 200 && j.reused === true, "POST ซ้ำ → reused:true", "got " + JSON.stringify(j));
+  ok(j.bookId === bookFullId && j.status === "done", "คืน bookId เดิม (done)", "got " + j.bookId);
+  const balAfter = await balance(A.userId);
+  ok(balBefore === balAfter, "ไม่หักยามซ้ำ (0 ยาม)", `diff ${balBefore - balAfter}`);
+  // ต่างภาษา (lang=en) = เล่มคนละเล่ม → ไม่ reused (แต่ mock ไม่รันจริงตรงนี้ · แค่เช็คว่าไม่ short-circuit ผิดภาษา)
+}
+
+/* ═══ [5c] GET ?profileId=&lang= → คืน bookId ล่าสุดของ profile ═══ */
+console.log("[5c] GET ?profileId → เล่มล่าสุด");
+{
+  setCookie(tokenA);
+  const res = await bookRoute.GET(get("profileId=" + profileMai + "&lang=th"));
+  const j = await res.json();
+  ok(res.status === 200 && j.bookId === bookFullId, "GET ?profileId คืน bookId ล่าสุด", "got " + JSON.stringify(j));
+  ok(j.status === "done", "GET ?profileId คืน status", "got " + j.status);
+  // profile ที่ไม่มีเล่ม → bookId=null
+  const res2 = await bookRoute.GET(get("profileId=" + randomUUID().replace(/-/g, "").slice(0, 32)));
+  const j2 = await res2.json();
+  ok(res2.status === 200 && j2.bookId === null, "profile ไม่มีเล่ม → bookId=null");
+}
+
+/* ═══ [5d] format validation + retry: บทขาดหัวข้อ → retry → mark formatWarning (ยัง render ได้) ═══ */
+console.log("[5d] format validation + retry (บทขาดหัวข้อ 10 มิติ)");
+{
+  setCookie(tokenA);
+  globalThis.__failMatch = null;
+  globalThis.__badFormat = true; // mock ตอบขาดหัวข้อทุกบท
+  sifuCalls.length = 0;
+  const res = await bookRoute.POST(post({ profileId: profileMai, lang: "th", force: 1 }));
+  const j = await res.json();
+  const row = await pollBook(j.bookId);
+  ok(row.status === "done", "บทขาดหัวข้อ = ยัง done (render ได้ ไม่หาย)", "got " + row.status);
+  const fw = row.result?.meta?.formatWarnings || [];
+  ok(fw.length === 6, "ทุกบทติด formatWarning (6 บท)", "got " + JSON.stringify(fw));
+  ok(row.result.chapters.every((c) => c.formatWarning === true && c.ok), "บทมี formatWarning=true แต่ ok=true (ไม่ทิ้งบท)");
+  // retry เกิดจริง: bazi 3 รอบ + อื่น 2 รอบ → sifu call มากกว่า 7 (1 call/บท กรณีไม่ retry)
+  const baziCalls = sifuCalls.filter((c) => c.payload.profileId && String(c.payload.message || "").includes("บทปาจื้อ")).length;
+  ok(baziCalls === 3, "bazi retry 3 รอบ (Task 5 reliability)", "got " + baziCalls);
+  globalThis.__badFormat = false;
+}
+
+/* ═══ [6] route: refund partial (vedic พัง) · force=1 (regenerate ข้าม dedup) ═══ */
 console.log("[6] route refund partial (บท vedic พัง)");
 {
   setCookie(tokenA);
   globalThis.__failMatch = "โหราพระเวท"; // ทำให้ panel vedic error
   sifuCalls.length = 0;
   const balBefore = await balance(A.userId);
-  const res = await bookRoute.POST(post({ profileId: profileMai, lang: "th" }));
+  const res = await bookRoute.POST(post({ profileId: profileMai, lang: "th", force: 1 }));
   const j = await res.json();
   const row = await pollBook(j.bookId);
   ok(row.status === "degraded", "status=degraded (บทพัง)", "got " + row.status);
@@ -239,6 +295,9 @@ console.log("[8] book.html script + i18n + print CSS");
   ok(/I18N\s*=\s*\{[\s\S]*th:[\s\S]*en:[\s\S]*zh:/.test(html), "i18n ครบ 3 ภาษา (th/en/zh)");
   ok(html.includes('data-theme="dark"'), "รองรับ 2 ธีม (dark)");
   ok(html.includes("function mdSafe") && html.includes("function esc"), "มี mdSafe/esc (render markdown ปลอดภัย)");
+  ok(html.includes("บันทึกเป็น PDF") && html.includes("Save as PDF") && html.includes("存為 PDF"), "ปุ่ม PDF 3 ภาษา (📥 บันทึกเป็น PDF)");
+  ok(html.includes("document.title = t(\"brand\") + \"-\" + bookName") || html.includes('document.title = t("brand") + "-" + bookName'), "ตั้งชื่อไฟล์ PDF = คัมภีร์ชะตา-{ชื่อ}");
+  ok(html.includes("พับจอ") && html.includes("หนังสือของฉัน"), "running UX: พับจอ/ปิดได้ + กลับมาที่หนังสือของฉัน");
   // node --check เฉพาะ inline script (ตัด HTML)
   const m = html.match(/<script>([\s\S]*?)<\/script>/);
   const tmp = "/tmp/claude-0/-root/14fcd76f-de20-4971-b9e7-a973b82e973e/scratchpad/book-inline.js";

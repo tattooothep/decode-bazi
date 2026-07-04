@@ -2503,34 +2503,55 @@
     function selectedProfileId(){
       return els.profile && els.profile.value ? els.profile.value : '';
     }
-    // r392 · คัมภีร์ชะตา (Book of Destiny) — สร้างเล่มเต็ม 6 ศาสตร์จากดวงเดี่ยวที่เลือก
+    // r392/r397 · คัมภีร์ชะตา (Book of Destiny) — ถ้ามีเล่มแล้ว = เปิด · ยังไม่มี = สร้าง (กันสร้างซ้ำ+ไม่หักยาม)
+    var bookExistingId = null; // bookId ล่าสุดของดวงที่เลือก (ถ้ามี = เปิดเลย ไม่สร้างใหม่)
+    function bookLang(){ return (document.getElementById('lang') && document.getElementById('lang').value) || (state && state.locale) || 'th'; }
+    function bookIsSingle(){ var a = document.querySelector('.seg-btn.active'); return !a || a.getAttribute('data-mode') === 'single'; }
+    // เช็คว่ามีเล่มของดวงนี้แล้วหรือยัง → ปรับป้ายปุ่ม (📖 เปิด / 📜 สร้าง)
+    function refreshBookBtn(){
+      var btn = document.getElementById('book-btn'); if (!btn) return;
+      var pid = selectedProfileId();
+      bookExistingId = null;
+      if (!pid || !bookIsSingle()){ btn.textContent = '📜 สร้างคัมภีร์ชะตา · 114 時'; return; }
+      var lang = bookLang();
+      fetch('/api/book?profileId=' + encodeURIComponent(pid) + '&lang=' + encodeURIComponent(lang), { credentials:'same-origin', headers:{'Accept':'application/json'} })
+        .then(function(r){ return r.ok ? r.json() : {}; })
+        .then(function(j){
+          if (selectedProfileId() !== pid) return; // เปลี่ยนดวงระหว่างรอ → ทิ้งผลเก่า
+          if (j && j.bookId && (j.status === 'done' || j.status === 'degraded')){ bookExistingId = j.bookId; btn.textContent = '📖 เปิดคัมภีร์ชะตา'; }
+          else if (j && j.bookId && j.status === 'running'){ bookExistingId = j.bookId; btn.textContent = '⏳ คัมภีร์กำลังเขียน — เปิดดู'; }
+          else { btn.textContent = '📜 สร้างคัมภีร์ชะตา · 114 時'; }
+        })
+        .catch(function(){});
+    }
     (function wireBookBtn(){
       var btn = document.getElementById('book-btn');
       if (!btn) return;
       var st = document.getElementById('book-status');
       function say(msg){ if (st) st.textContent = msg || ''; }
       btn.addEventListener('click', function(){
+        // มีเล่มแล้ว → เปิดเลย ไม่หักยาม
+        if (bookExistingId){ location.href = '/book?id=' + encodeURIComponent(bookExistingId); return; }
         var pid = selectedProfileId();
         if (!pid){ say('เลือกดวงของคุณก่อน (คัมภีร์ชะตา = ดวงเดี่ยว)'); return; }
         // คัมภีร์ = ดวงเดียวเท่านั้น · ถ้าอยู่โหมดดูคู่/กลุ่ม ให้เตือน
-        if (document.querySelector('.seg-btn.active') && document.querySelector('.seg-btn.active').getAttribute('data-mode') !== 'single'){
-          say('คัมภีร์ชะตารองรับดวงเดี่ยว — สลับโหมดเป็น "เดี่ยว" ก่อน'); return;
-        }
-        var lang = (document.getElementById('lang') && document.getElementById('lang').value) || (state && state.locale) || 'th';
-        btn.disabled = true; say('⏳ กำลังสร้างคัมภีร์ชะตา… (6 ศาสตร์ ~4-8 นาที)');
+        if (!bookIsSingle()){ say('คัมภีร์ชะตารองรับดวงเดี่ยว — สลับโหมดเป็น "เดี่ยว" ก่อน'); return; }
+        var lang = bookLang();
+        btn.disabled = true; say('⏳ กำลังสร้างคัมภีร์ชะตา… (6 ศาสตร์ ~4-8 นาที · พับจอ/ปิดได้ ระบบเขียนต่อหลังบ้าน)');
         fetch('/api/book', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin',
           body: JSON.stringify({ profileId: pid, lang: lang }) })
           .then(function(r){ return r.json().then(function(j){ return { status:r.status, j:j }; }); })
           .then(function(res){
             var j = res.j || {};
             if (j.bookId){ location.href = '/book?id=' + encodeURIComponent(j.bookId); return; }
-            if (j.error === 'insufficient_hours'){ say('ยามไม่พอ ต้องใช้ ' + (j.required||114) + ' 時 (คงเหลือ ' + (j.balance!=null?j.balance:'-') + ')'); }
+            if (j.error === 'insufficient_hours'){ say('ยามไม่พอ ต้องใช้ ' + (j.required||j.needed||114) + ' 時 (คงเหลือ ' + (j.balance!=null?j.balance:'-') + ')'); }
             else if (res.status === 401){ say('กรุณาเข้าสู่ระบบก่อน'); }
             else { say('สร้างไม่สำเร็จ: ' + (j.error || res.status)); }
             btn.disabled = false;
           })
           .catch(function(e){ say('เชื่อมต่อไม่สำเร็จ · ลองใหม่'); btn.disabled = false; });
       });
+      refreshBookBtn(); // เช็คตอนโหลดหน้า
     })();
     function resetConversationForProfile(profileId){
       state.history = [];
@@ -3778,13 +3799,14 @@
       saveDraft();
       setStatus(state.locale==='th'?'เปลี่ยนดวงแล้ว':'chart changed');
       loadFusionHistory();
+      if (typeof refreshBookBtn === 'function') refreshBookBtn();
     });
     [els.profile2, els.profile3, els.profile4].forEach(function(sel){
       if (sel) sel.addEventListener('change', function(){ loadConversationForSelection(); renderThreadNote(); renderSciList(); updateYam(); saveDraft(); });
     });
     if (els.modeSeg) els.modeSeg.addEventListener('click', function(e){
       var b = e.target && e.target.closest ? e.target.closest('.seg-btn') : null;
-      if (b) { setMode(b.getAttribute('data-mode')); loadConversationForSelection(); renderThreadNote(); saveDraft(); }
+      if (b) { setMode(b.getAttribute('data-mode')); loadConversationForSelection(); renderThreadNote(); saveDraft(); if (typeof refreshBookBtn === 'function') refreshBookBtn(); }
     });
     if (els.sciList) els.sciList.addEventListener('change', function(e){
       var cb = e.target && e.target.getAttribute ? e.target.getAttribute('data-sci-cb') : null;

@@ -119,29 +119,29 @@
 (function(){
   "use strict";
   var I18N = {
-    th:{ brand:"คัมภีร์ชะตา", print:"พิมพ์ / บันทึก PDF", loadingText:"กำลังเปิดหนังสือ…",
+    th:{ brand:"คัมภีร์ชะตา", print:"📥 บันทึกเป็น PDF", loadingText:"กำลังเปิดหนังสือ…",
       kai:"หนังสือดวงชะตา 6 ศาสตร์", issued:"ออกเล่มโดย hourkey · เล่มที่",
       shelfTitle:"ชั้นหนังสือของฉัน", shelfEmpty:"ยังไม่มีคัมภีร์ชะตา — สร้างเล่มแรกจากหน้า Fusion (ปุ่ม 📜 สร้างคัมภีร์ชะตา)", shelfNew:"สร้างเล่มใหม่", shelfOpen:"เปิดอ่าน", sDone:"เสร็จ", sRunning:"กำลังเขียน…", sDegraded:"บางบทไม่พร้อม", sError:"ล้มเหลว",
       toc:"สารบัญ", preface:"บทนำ", prefaceBody:"หนังสือเล่มนี้อ่านดวงของคุณผ่าน 6 ศาสตร์โบราณ แต่ละศาสตร์มองคนละมุมด้วยศัพท์และคัมภีร์ของตัวเอง แล้วหลอมรวมเป็นภาพเดียว อ่านเป็นเข็มทิศ ไม่ใช่คำสั่งชีวิต",
       synthesis:"บทหลอมรวม", timing:"บทจังหวะเวลา", appendix:"ภาคผนวก",
-      running:"กำลังเขียนหนังสือดวงชะตาของคุณ…", runningSub:"ใช้เวลาราว 4-8 นาที (6 ศาสตร์ + บทหลอมรวม) · เปิดหน้านี้ค้างไว้หรือกลับมาใหม่ได้",
-      notReady:"บทนี้ยังไม่พร้อม (ลองสร้างเล่มใหม่)", errTitle:"เปิดเล่มไม่ได้", degraded:"บางบทไม่พร้อม",
+      running:"⏳ ระบบกำลังเขียนคัมภีร์ชะตาของคุณ", runningSub:"พับจอ/ปิดได้เลย — ระบบเขียนต่อหลังบ้าน · กลับมาเปิดใหม่ได้ที่ “หนังสือของฉัน” (ใช้เวลาราว 4-8 นาที · 6 ศาสตร์ + บทหลอมรวม)",
+      notReady:"บทนี้ยังไม่พร้อม — ระบบจะเติมให้เมื่อพร้อม", errTitle:"เปิดเล่มไม่ได้", degraded:"บางบทไม่พร้อม",
       chapter:"บทที่", noId:"ไม่พบเลขเล่ม (id) — เปิดจาก \"ดวงของฉัน\"", disclaimer:"คำเตือน", method:"วิธีคำนวณ" },
-    en:{ brand:"Book of Destiny", print:"Print / Save PDF", loadingText:"Opening your book…",
+    en:{ brand:"Book of Destiny", print:"📥 Save as PDF", loadingText:"Opening your book…",
       kai:"Book of Destiny · 6 Sciences", issued:"Issued by hourkey · No.",
       shelfTitle:"My Books", shelfEmpty:"No Book of Destiny yet — create your first from the Fusion page (📜 button)", shelfNew:"Create new", shelfOpen:"Open", sDone:"done", sRunning:"writing…", sDegraded:"partial", sError:"failed",
       toc:"Contents", preface:"Preface", prefaceBody:"This book reads your chart through 6 ancient sciences, each with its own lens and canon, then fuses them into one picture. Read it as a compass, not a command.",
       synthesis:"Synthesis", timing:"Life Timing", appendix:"Appendix",
-      running:"Writing your Book of Destiny…", runningSub:"Takes about 4-8 minutes (6 sciences + synthesis). Keep this open or come back later.",
-      notReady:"This chapter is not ready (try a new book)", errTitle:"Cannot open book", degraded:"Some chapters unavailable",
+      running:"⏳ Writing your Book of Destiny", runningSub:"You can close or fold your screen — it keeps writing in the background. Reopen anytime from “My Books” (takes about 4-8 minutes · 6 sciences + synthesis).",
+      notReady:"This chapter is not ready yet — the system will fill it in", errTitle:"Cannot open book", degraded:"Some chapters unavailable",
       chapter:"Chapter", noId:"No book id — open from \"My Chart\"", disclaimer:"Disclaimer", method:"Method" },
-    zh:{ brand:"命書", print:"打印 / 存為 PDF", loadingText:"正在打開命書…",
+    zh:{ brand:"命書", print:"📥 存為 PDF", loadingText:"正在打開命書…",
       kai:"命書 · 六術合參", issued:"hourkey 出品 · 第",
       shelfTitle:"我的命書", shelfEmpty:"尚無命書 — 從 Fusion 頁面建立第一本（📜 按鈕）", shelfNew:"建立新書", shelfOpen:"開啟", sDone:"完成", sRunning:"撰寫中…", sDegraded:"部分缺失", sError:"失敗",
       toc:"目錄", preface:"前言", prefaceBody:"本書以六種古術解讀您的命盤，各以自身術語與典籍立論，再融合為一。此書為指南針，非命令。",
       synthesis:"融合章", timing:"時運章", appendix:"附錄",
-      running:"正在撰寫您的命書…", runningSub:"約需 4-8 分鐘（六術＋融合章）。可保持此頁或稍後再來。",
-      notReady:"此章尚未就緒（請重新生成）", errTitle:"無法打開", degraded:"部分章節缺失",
+      running:"⏳ 正在撰寫您的命書", runningSub:"可關閉或收起螢幕 — 系統會在後台繼續撰寫，稍後可從「我的命書」重新開啟（約需 4-8 分鐘 · 六術＋融合章）。",
+      notReady:"此章尚未就緒 — 系統將自動補齊", errTitle:"無法打開", degraded:"部分章節缺失",
       chapter:"第", noId:"缺少命書編號（id）— 請從「我的命盤」開啟", disclaimer:"聲明", method:"計算方法" }
   };
   var lang = (function(){ var s=localStorage.getItem("hk_book_lang"); return (s==="en"||s==="zh")?s:"th"; })();
@@ -149,6 +149,7 @@
   function t(k){ return (I18N[lang]&&I18N[lang][k]) || I18N.th[k] || k; }
   var root = document.getElementById("root");
   var pollTimer = null;
+  var bookName = ""; // ชื่อเจ้าชะตา (ตั้งชื่อไฟล์ PDF ให้สวย)
 
   function esc(s){
     return String(s==null?"":s).replace(/[&<>"']/g,function(c){
@@ -268,6 +269,7 @@
     html += '<div class="foot">📜 '+esc(t("brand"))+" · hourkey "+deg+"</div>";
     root.innerHTML = html;
     var pre = document.getElementById("preface"); if(pre) pre.classList.add("preface");
+    bookName = (res.cover && res.cover.name) || "";
   }
 
   function renderRunning(book){
@@ -361,7 +363,13 @@
     // re-render เนื้อ (ป้าย UI เปลี่ยน · เนื้อ AI คงภาษาที่เจนไว้)
     load();
   });
-  document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
+  document.getElementById("printBtn").addEventListener("click", function(){
+    // ตั้งชื่อไฟล์ PDF ให้สวย (browser ใช้ document.title เป็นชื่อไฟล์ตอน Save as PDF)
+    var prev = document.title;
+    if(bookName){ document.title = t("brand") + "-" + bookName; }
+    window.print();
+    setTimeout(function(){ document.title = prev; }, 800);
+  });
 
   applyTheme();
   applyStaticI18n();

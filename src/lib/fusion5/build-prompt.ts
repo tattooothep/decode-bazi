@@ -361,6 +361,11 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "13-dict-part3.md": { title: "Uranian midpoint dictionary 3/5 (sifu-reviewed 159-pair · method-reading · NOT Witte verbatim) · ♂ อังคาร + ♃ พฤหัส + ♄ เสาร์ (36 คู่)", sourceUrl: "local:uranian/dict-synthesis-sifu-reviewed", licenseClass: "project_synthesis", mode: "summary" },
     "13-dict-part4.md": { title: "Uranian midpoint dictionary 4/5 (sifu-reviewed 159-pair · method-reading · NOT Witte verbatim) · ♅ ยูเรนัส + ♆ เนปจูน + ♇ พลูโต (27 คู่)", sourceUrl: "local:uranian/dict-synthesis-sifu-reviewed", licenseClass: "project_synthesis", mode: "summary" },
     "13-dict-part5.md": { title: "Uranian midpoint dictionary 5/5 (sifu-reviewed 159-pair · method-reading · NOT Witte verbatim) · จุดส่วนตัว/TNP (Cupido/Hades/Kronos/Zeus) 28 คู่ + Basic Five + workflow", sourceUrl: "local:uranian/dict-synthesis-sifu-reviewed", licenseClass: "project_synthesis", mode: "summary" },
+    // r397 · ส่วนขยาย +20% (sifu-reviewed รอบ 2 · การอ่านเชิงวิธี ไม่ใช่ Witte verbatim) — houses/multibody/tnp-deep/topics · section splitter ส่งเฉพาะที่เกี่ยวคำถาม (กันเกิน 118K)
+    "13-dict-expansion-1-houses.md": { title: "Uranian dictionary expansion 1/4 · sifu-reviewed expansion (houses/multibody/tnp-deep/topics · method-reading NOT verbatim) — ความหมาย 12 เรือน (Häuser chaldäisch) + กฎการตายผูกแกนเรือน", sourceUrl: "local:uranian/dict-expansion-sifu-reviewed-r2", licenseClass: "project_synthesis", mode: "summary" },
+    "13-dict-expansion-2-multibody.md": { title: "Uranian dictionary expansion 2/4 · sifu-reviewed expansion (houses/multibody/tnp-deep/topics · method-reading NOT verbatim) — ภาพดาว 3–4 ดวง (สมการหลายตัว · worked readings)", sourceUrl: "local:uranian/dict-expansion-sifu-reviewed-r2", licenseClass: "project_synthesis", mode: "summary" },
+    "13-dict-expansion-3-tnp-deep.md": { title: "Uranian dictionary expansion 3/4 · sifu-reviewed expansion (houses/multibody/tnp-deep/topics · method-reading NOT verbatim) — TNP (Cupido/Hades/Kronos/Zeus) × ดาวหลัก/จุด เชิงลึก 42 คู่", sourceUrl: "local:uranian/dict-expansion-sifu-reviewed-r2", licenseClass: "project_synthesis", mode: "summary" },
+    "13-dict-expansion-4-topics.md": { title: "Uranian dictionary expansion 4/4 · sifu-reviewed expansion (houses/multibody/tnp-deep/topics · method-reading NOT verbatim) — เราเตอร์ตามหัวข้อชีวิต (Topic Router) + จุดส่วนตัว/สี่ทิศ (Kardinalpunkte)", sourceUrl: "local:uranian/dict-expansion-sifu-reviewed-r2", licenseClass: "project_synthesis", mode: "summary" },
   },
 };
 
@@ -438,6 +443,9 @@ const CANON_DEFAULT_FILES: Partial<Record<ScienceId, string[]>> = {
     "11-method-reading-uranian.md",
     "13-dict-part1.md#sun+moon",
     "13-dict-part5.md#personal+tnp+method",
+    // r397 · ส่วนขยาย +20% (sifu-reviewed รอบ 2) fallback — router+จุดสี่ทิศ + แก่นเรือน (path หลักเลือก section ตาม intent ใน selectCanonFilesForPrompt)
+    "13-dict-expansion-4-topics.md#core+points",
+    "13-dict-expansion-1-houses.md#core",
   ],
 };
 
@@ -527,6 +535,50 @@ const CANON_FILE_SECTIONS: Partial<Record<ScienceId, Record<string, Record<strin
       personal: [{ from: /^## หมวด 1 —/m, to: /^## หมวด 2 —/m }],        // คู่ครึ่งผลรวม จุดส่วนตัว/TNP กันเอง (28 คู่)
       tnp: [{ from: /^## หมวด 2 —/m, to: /^## หมวด 3 —/m }],             // 4 ดวง Witte (TNP) เชิงลึก
       method: [{ from: /^## หมวด 3 —/m }],                               // ภาพดาวรวม (สมการ) + Basic Five + workflow (แก่นวิธีอ่าน)
+    },
+    // r397 · ส่วนขยาย +20% (sifu-reviewed รอบ 2) — ส่งเฉพาะ section ที่เกี่ยวคำถาม (กันเกิน 118K)
+    // exp-1 · 12 เรือน: core(H0) + รายเรือน (h1..h12) + กฎการตาย(death) — เลือกตามหัวข้อ intent
+    "13-dict-expansion-1-houses.md": {
+      core: [{ from: /^## H0 —/m, to: /^## H1 —/m }],                    // หลักอ่านเรือน Hamburg (chaldäisch)
+      h1: [{ from: /^### .*เรือน I —/m, to: /^### .*เรือน II —/m }],       // I ตัวตน/ร่างกาย
+      h2: [{ from: /^### .*เรือน II —/m, to: /^### .*เรือน III —/m }],     // II ทรัพย์/รายได้
+      h3: [{ from: /^### .*เรือน III —/m, to: /^### .*เรือน IV —/m }],     // III สื่อสาร/เดินทางใกล้
+      h4: [{ from: /^### .*เรือน IV —/m, to: /^### .*เรือน V —/m }],       // IV บ้าน/ราก/ที่ดิน
+      h5: [{ from: /^### .*เรือน V —/m, to: /^### .*เรือน VI —/m }],       // V บุตร/ความรัก
+      h6: [{ from: /^### .*เรือน VI —/m, to: /^### .*เรือน VII —/m }],     // VI งานประจำ/สุขภาพ
+      h7: [{ from: /^### .*เรือน VII —/m, to: /^### .*เรือน VIII —/m }],   // VII คู่ครอง/หุ้นส่วน
+      h8: [{ from: /^### .*เรือน VIII —/m, to: /^### .*เรือน IX —/m }],    // VIII วิกฤต/ทรัพย์ร่วม/มรดก
+      h9: [{ from: /^### .*เรือน IX —/m, to: /^### .*เรือน X —/m }],       // IX ต่างแดน/ศึกษาสูง/กฎหมาย
+      h10: [{ from: /^### .*เรือน X —/m, to: /^### .*เรือน XI —/m }],      // X อาชีพ/ชื่อเสียง/สาธารณะ
+      h11: [{ from: /^### .*เรือน XI —/m, to: /^### .*เรือน XII —/m }],    // XI มิตร/หมู่คณะ/ผู้อุปถัมภ์
+      h12: [{ from: /^### .*เรือน XII —/m, to: /^## H2 —/m }],            // XII ซ่อนเร้น/ศัตรูลับ
+      death: [{ from: /^## H2 —/m, to: /^## H3 —/m }],                   // กฎการตายสี่ข้อผูกแกนเรือน
+    },
+    // exp-2 · ภาพดาว 3–4 ดวง: core(M0) + สามดวง(three) + สี่ดวง(four) + รวมธีม(combine) — ใช้เมื่อถามภาพรวม/บุคลิก
+    "13-dict-expansion-2-multibody.md": {
+      core: [{ from: /^## M0 —/m, to: /^## A —/m }],                     // วิธีอ่านภาพดาวหลายดวง
+      three: [{ from: /^## A —/m, to: /^## B —/m }],                     // ภาพดาว 3 ดวง (A/B=C) 16 สูตร
+      four: [{ from: /^## B —/m, to: /^## C —/m }],                      // ภาพดาว 4 ดวง (A+B=C+D) 9 สูตร
+      combine: [{ from: /^## C —/m, to: /^## นับชุด/m }],                 // รวมหลายภาพดาวชี้เรื่องเดียว
+    },
+    // exp-3 · TNP × ดาวหลัก เชิงลึก: core(รูปแบบ) + Cupido/Hades/Kronos/Zeus — ใช้เมื่อถามแต่งงาน/อำนาจ/โรค
+    "13-dict-expansion-3-tnp-deep.md": {
+      core: [{ from: /^## รูปแบบแต่ละคู่/m, to: /^# ส่วน A —/m }],          // นิยาม 6 ช่องต่อคู่
+      cupido: [{ from: /^# ส่วน A —/m, to: /^# ส่วน B —/m }],             // Cupido: แต่งงาน/ครอบครัว/หมู่คณะ/ศิลปะ
+      hades: [{ from: /^# ส่วน B —/m, to: /^# ส่วน C —/m }],              // Hades: ของเก่า/ซ่อนเร้น/โรค/วิจัย/การสลาย
+      kronos: [{ from: /^# ส่วน C —/m, to: /^# ส่วน D —/m }],             // Kronos: อำนาจ/ตำแหน่งสูง/ความเชี่ยวชาญ
+      zeus: [{ from: /^# ส่วน D —/m, to: /^## หมายเหตุ/m }],              // Zeus: ความหมายเท่านั้น
+    },
+    // exp-4 · เราเตอร์หัวข้อชีวิต + จุดสี่ทิศ: core(วิธีใช้) + money/couple/career/health/study/family + points — เลือกตาม intent
+    "13-dict-expansion-4-topics.md": {
+      core: [{ from: /^## วิธีใช้เราเตอร์/m, to: /^## T-เงิน/m }],          // วิธีใช้เราเตอร์
+      money: [{ from: /^## T-เงิน/m, to: /^## T-คู่/m }],                  // การเงิน/ทรัพย์สิน
+      couple: [{ from: /^## T-คู่/m, to: /^## T-งาน/m }],                  // คู่ครอง/ชีวิตคู่
+      career: [{ from: /^## T-งาน/m, to: /^## T-สุขภาพ/m }],              // อาชีพ/เป้าหมาย/ชื่อเสียง
+      health: [{ from: /^## T-สุขภาพ/m, to: /^## T-เรียน/m }],            // สุขภาพ/พลังกาย
+      study: [{ from: /^## T-เรียน/m, to: /^## T-ครอบครัว/m }],           // การศึกษา/สติปัญญา
+      family: [{ from: /^## T-ครอบครัว/m, to: /^# ส่วนที่ 2/m }],          // บ้าน/ครอบครัว/ราก
+      points: [{ from: /^# ส่วนที่ 2/m, to: /^## สรุปแผนที่/m }],           // จุดส่วนตัว/สี่ทิศ (Kardinalpunkte)
     },
   },
 };
@@ -2220,9 +2272,37 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     };
     pushDict("13-dict-part1.md", dSun, ["sun", "moon"]);        // ☉ (+☽) identity core
     pushUnique(files, "13-dict-part5.md#method");                // แก่นวิธี/Basic Five/workflow (เล็ก · ส่งเสมอ)
-    pushDict("13-dict-part2.md", dP2, ["mercury", "venus"]);    // ☿♀ ตาม intent
-    pushDict("13-dict-part3.md", dP3, ["mars", "jupiter", "saturn"]); // ♂♃♄
-    pushDict("13-dict-part4.md", dP4, ["uranus", "neptune", "pluto"]); // ♅♆♇
+    // r397 · ส่วนขยาย +20% (sifu-reviewed รอบ 2 · การอ่านเชิงวิธี ไม่ใช่ Witte verbatim) — วางหลัง identity/แก่นวิธี · ก่อนพจนานุกรม 159 คู่ตามดาว (dict2/3/4)
+    //   เหตุผลลำดับ: canon จำกัด ~56K → ต้องให้เนื้อ expansion ที่ตรงหัวข้อ (Cupido เมื่อถามคู่ · เรือน X เมื่อถามงาน) ติดในงบก่อน 159-pair ตามดาว (ซึ่งกินที่ 8-18K) · 159-pair ยังตามด้วยงบที่เหลือ
+    //   ส่งเฉพาะ section ที่เกี่ยวคำถาม: exp-3 tnp-deep (แต่งงาน/อำนาจ/โรค) + exp-1 houses (ตาม intent) นำ · exp-4 topic router (เล็ก·แม่นตรงหัวข้อ) · exp-2 multibody (ภาพรวม/บุคลิก) ท้าย
+    const eTopic = new Set<string>(["core"]);        // exp-4 · router หัวข้อ (core เล็ก · แนบเสมอเป็นตัวนำเข้าเราเตอร์)
+    const eHouse = new Set<string>();                // exp-1 · เรือน (ตาม intent)
+    const eTnp = new Set<string>();                  // exp-3 · TNP เชิงลึก (แต่งงาน/อำนาจ/โรค)
+    const eMulti = new Set<string>();                // exp-2 · ภาพดาวหลายดวง (ภาพรวม/บุคลิก)
+    if (intent.relationship || intent.pair || intent.children) { eTopic.add("couple"); eHouse.add("h7").add("h5"); eTnp.add("cupido"); }
+    if (intent.children) { eTopic.add("family"); }
+    if (intent.money || intent.windfall) { eTopic.add("money"); eHouse.add("h2").add("h8"); eTnp.add("kronos"); }
+    if (intent.property) { eTopic.add("money"); eHouse.add("h4").add("h2"); }
+    if (intent.career || intent.authority || intent.employment || intent.business) { eTopic.add("career"); eHouse.add("h10").add("h6"); eTnp.add("kronos"); }
+    if (intent.health || intent.risk) { eTopic.add("health"); eHouse.add("h6").add("h8").add("h12"); eTnp.add("hades"); }
+    if (intent.study || intent.education) { eTopic.add("study"); eHouse.add("h3").add("h9"); }
+    if (intent.travel) { eTopic.add("family"); eHouse.add("h9").add("h3"); }
+    if (intent.home) { eTopic.add("family"); eHouse.add("h4"); }
+    if (intent.talent || intent.fortune) { eTopic.add("points"); eHouse.add("h1"); eMulti.add("core").add("three"); }
+    if (intent.general) { eTopic.add("points"); eHouse.add("h1"); eMulti.add("core").add("three").add("four").add("combine"); }
+    if (eHouse.size) eHouse.add("core");             // แนบหลักอ่านเรือน (H0) เมื่อมีเรือนใด ๆ
+    if (eTnp.size) eTnp.add("core");                 // แนบนิยาม 6 ช่อง เมื่อมี TNP ใด ๆ
+    const pushSet = (file: string, set: Set<string>, order: string[]) => {
+      const secs = order.filter((s) => set.has(s));
+      if (secs.length) pushUnique(files, `${file}#${secs.join("+")}`);
+    };
+    pushSet("13-dict-expansion-3-tnp-deep.md", eTnp, ["core", "cupido", "hades", "kronos", "zeus"]);        // headline: Cupido/Kronos/Hades ตรงหัวข้อ
+    pushSet("13-dict-expansion-1-houses.md", eHouse, ["core", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "h9", "h10", "h11", "h12", "death"]); // เรือนตาม intent
+    pushSet("13-dict-expansion-4-topics.md", eTopic, ["core", "money", "couple", "career", "health", "study", "family", "points"]); // router หัวข้อ (เล็ก)
+    pushSet("13-dict-expansion-2-multibody.md", eMulti, ["core", "three", "four", "combine"]);              // ภาพดาวหลายดวง (ภาพรวม/บุคลิก)
+    pushDict("13-dict-part2.md", dP2, ["mercury", "venus"]);    // ☿♀ ตาม intent (159-pair · งบที่เหลือ)
+    pushDict("13-dict-part3.md", dP3, ["mars", "jupiter", "saturn"]); // ♂♃♄ (159-pair · งบที่เหลือ)
+    pushDict("13-dict-part4.md", dP4, ["uranus", "neptune", "pluto"]); // ♅♆♇ (159-pair · งบที่เหลือ)
     pushDict("13-dict-part5.md", dP5late, ["personal", "tnp"]); // คู่จุดส่วนตัว/TNP (ก้อนใหญ่ · ท้าย)
     // r392 · method-reading รายดาว (S1-S8) = ชั้นสำรอง วางท้ายสุด (shrink ตัดก่อน dict/Witte เพราะ dict sifu-reviewed คุมความหมายคู่แล้ว)
     const mStar: string[] = [];

@@ -20,3 +20,5 @@ CREATE TABLE IF NOT EXISTS natal_books (
 );
 CREATE INDEX IF NOT EXISTS idx_natal_books_user    ON natal_books(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_natal_books_profile ON natal_books(profile_id);
+-- r397 · กันสร้างซ้ำ + เช็คเล่มล่าสุด (user,profile,lang,status) · dedup POST + GET ?profileId
+CREATE INDEX IF NOT EXISTS idx_natal_books_dedup   ON natal_books(user_id, profile_id, lang, status);
