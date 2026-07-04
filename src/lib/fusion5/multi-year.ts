@@ -11,11 +11,50 @@ import { ziweiChart } from "../astro/ziwei/engine";
 import { buildZiweiOverlay } from "../astro/ziwei/overlay";
 import { qizhengNatal } from "../astro/qizheng/engine";
 import { buildQizhengTimeline } from "../astro/qizheng/timeline";
+import { uranianChart } from "../astro/uranian/engine";
+import { computeUranianAuslosung, type AuslosungEvent } from "../astro/uranian/auslosung";
 import type { ScienceId } from "./disciplines";
 
 export type FusionBirthLike = { name?: string; dtUTC: Date; lat: number; lng: number; hasTime: boolean; gender: Gender };
 
 const MAX_RANGE_YEARS = 12;
+
+/* ── ยูเรเนียน (Uranian) · ตัวช่วยชั้นเวลา Auslösung รายปี/รายเดือน (r396) ─────────────
+ * reuse engine เดิม (uranianChart + computeUranianAuslosung · LOCKED · import อ่านอย่างเดียว)
+ * เหตุการณ์ "เด่นระดับปี/เดือน" = ตัวกระตุ้นช้า (พฤหัส→พลูโต ดาวจร) หรือชั้น directed/progressed
+ * (ส่วนโค้งอาทิตย์/☉/☽/Meridian เคลื่อน) — ตัดดาวจรเร็ว (☉☿♀♂) ออกจากพาดหัว เพราะแตะซ้ำหลายรอบ/ปี
+ * ไม่มี random/Date.now → deterministic (engine รับ dtUTC + ช่วง ISO เท่านั้น) */
+const URANIAN_SLOW_TRANSITERS = new Set(["Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"]);
+/** เหตุการณ์เด่นระดับปี/เดือน: ชั้น directed/progressed ทุกตัว (ช้า) หรือดาวจรช้า */
+const isNotableAusEvent = (e: AuslosungEvent) => e.method !== "transit" || URANIAN_SLOW_TRANSITERS.has(e.mover);
+/** ตัดวงเล็บอธิบาย (เยอรมัน/องศา/แกน) ออกจากชื่อไทยในป้ายไทม์ไลน์ (คงงบ prompt) — เก็บ "(directed)" ไว้ */
+const ausShortTh = (s: string) => s.replace(/\s*\((?!directed\))[^)]*\)/g, "").trim();
+/** ป้ายสั้น 1 เหตุการณ์: "จุดไวกำเนิด ← ตัวกระตุ้น+มุม วันที่(orb′)" — คุมความยาว/บรรทัด */
+function ausEventLabel(e: AuslosungEvent): string {
+  const asp = e.aspectTh.split(" ")[0];                       // "ฉาก (90°)" → "ฉาก"
+  const mvTh = ausShortTh(e.moverTh);                          // directed/prog: moverTh บอกชนิด (คง "(directed)")
+  const mv = e.method === "transit" ? `${mvTh}จร` : mvTh;
+  return `${ausShortTh(e.natalTargetTh)} ← ${mv}${asp} ${e.dateISO}(${e.orbArcmin}′)`;
+}
+/** จุดไวสัมผัสจุดส่วนตัว (☉☽ MC Asc) = เด่นระดับชีวิต (Witte: ☉=Auslöser · MC=ร่างกาย/จิตใจ) */
+const ausTargetPersonal = (e: AuslosungEvent) => /Sun|Moon|Meridian|Ascendant/.test(e.natalTarget);
+/** คะแนนความสำคัญ "ระดับปี" — กันไม่ให้ headline เอียงไปกอง exact(0′)ต้นปีอย่างเดียว
+ *  ดาวจรช้า (♃♄⛢♆♇) + directed/ก้าวหน้าช้า (arc/☉/Meridian) = มาร์กปี · ☽เคลื่อน = เดือน (น้ำหนักปีต่ำ) */
+function ausYearScore(e: AuslosungEvent): number {
+  let s = 0;
+  if (e.method === "transit") s += URANIAN_SLOW_TRANSITERS.has(e.mover) ? 3 : 0;
+  else if (e.method === "prog_moon") s += 1;
+  else s += 2;                                                 // solar_arc / prog_sun / prog_mc
+  if (ausTargetPersonal(e)) s += 2;
+  return s;
+}
+/** คัดเหตุการณ์เด่นระดับปี n อัน: สำคัญก่อน (score) → คมก่อน (orb) → เรียงวัน · deterministic */
+function topNotableAusEvents(events: AuslosungEvent[], n: number): AuslosungEvent[] {
+  const notable = events.filter(isNotableAusEvent);
+  const pool = notable.length ? notable : events;             // ปีที่ไม่มีตัวช้าเลย → fallback คมสุดรวม
+  return [...pool].sort((a, b) => ausYearScore(b) - ausYearScore(a)
+    || a.orbArcmin - b.orbArcmin || a.dateISO.localeCompare(b.dateISO) || a.natalTarget.localeCompare(b.natalTarget)).slice(0, n);
+}
 
 /** จับ "ช่วงปี" จากคำถาม: 2016-2026 · 2016 ถึง 2026 · X ปีที่ผ่านมา/ข้างหน้า */
 export function resolveFusionYearRange(question: string, now = new Date()): { startYear: number; endYear: number; label: string } | null {
@@ -43,8 +82,6 @@ export function resolveFusionYearRange(question: string, now = new Date()): { st
 
 /** สรุปย่อรายปีของศาสตร์ที่เลือก (ต่อ 1 ดวง) — คุมขนาด ~2-5 บรรทัด/ปี */
 export function renderMultiYearBlock(science: ScienceId, b: FusionBirthLike, startYear: number, endYear: number): string {
-  // ยูเรเนียน (เฟส 1) = แผงอ่าน natal เท่านั้น · ยังไม่ทำชั้นเวลารายปี (roadmap เฟส 2) → ไม่ส่งบล็อก multi-year เปล่า
-  if (science === "uranian") return "";
   const L: string[] = [];
   L.push(`=== MULTI_YEAR_TIMELINE ${startYear}-${endYear}${b.name ? ` · ${b.name}` : ""} (สรุปย่อรายปี · คำนวณจริงทุกปี · เวลาไทย) ===`);
   L.push("ใช้บล็อกนี้เทียบ 'ปีไหนหนัก/ปีไหนเบา' · รายละเอียดรายเดือนของปีเป้าหมายหลักอยู่ใน TIMING_TIMELINE ของผัง · ห้ามเดาปีนอกรายการ");
@@ -65,7 +102,19 @@ export function renderMultiYearBlock(science: ScienceId, b: FusionBirthLike, sta
         const antars = [...new Set(tl.dashaTimeline.map((r) => `${r.mahaTh}–${r.antarTh}`))];
         const sat = tl.transitSegments.filter((s) => s.graha === "Saturn").map((s) => `เรือน${s.houseFromMoon}จากจันทร์`);
         const ss = tl.sadeSati.activeAnyTimeInYear ? " · SadeSati✔" : "";
-        L.push(`  ${y}: ทศา ${antars.join(", ")} · เสาร์จร ${[...new Set(sat)].join("→")}${ss}`);
+        // r396: เพิ่ม "วันเกาะ" ระดับวัน — วันเปลี่ยน "ทศาย่อย (antardasha)" จริง (ยุบ pratyantardasha ซ้ำ) + วันดาวช้าจรเปลี่ยนเรือน
+        //   dashaTimeline เป็นช่วงระดับ pratyantar → ยุบ run maha–antar ที่ต่อเนื่อง เก็บวันเริ่มแรกของแต่ละ antar (fromISO ≠ ต้นปี = เปลี่ยนจริงในปีนั้น)
+        const antarChg: string[] = [];
+        let lastMA = "";
+        for (const r of tl.dashaTimeline) {
+          const ma = `${r.mahaTh}–${r.antarTh}`;
+          if (ma !== lastMA) { if (!r.fromISO.endsWith("-01-01")) antarChg.push(`${ma}(${r.fromISO})`); lastMA = ma; }
+        }
+        const ingress = tl.transitSegments
+          .filter((s) => ["Saturn", "Jupiter", "Rahu"].includes(s.graha) && !s.fromISO.endsWith("-01-01"))
+          .sort((a, c) => a.fromISO.localeCompare(c.fromISO))
+          .map((s) => `${s.grahaTh}→เรือน${s.houseFromMoon}(${s.fromISO})`);
+        L.push(`  ${y}: ทศา ${antars.join(", ")}${antarChg.length ? ` · เปลี่ยนทศา ${antarChg.join(", ")}` : ""} · เสาร์จร ${[...new Set(sat)].join("→")}${ingress.length ? ` · ดาวช้าจรเปลี่ยนเรือน ${ingress.join(", ")}` : ""}${ss}`);
       }
     } else if (science === "ziwei") {
       for (let y = startYear; y <= endYear; y++) {
@@ -86,6 +135,16 @@ export function renderMultiYearBlock(science: ScienceId, b: FusionBirthLike, sta
           L.push(`  ${y}: 木→เรือน${jup?.house}${jup?.houseZh} · 土→เรือน${sat?.house}${sat?.houseZh}${badHits.length ? ` · ดาวร้ายชนจุดสำคัญ ${badHits.slice(0, 3).map((h) => `${h.dateISO} ${h.starZh}${h.aspect.slice(0, 3)}${h.target}`).join(" · ")}` : ""}`);
         }
       }
+    } else if (science === "uranian") {
+      // ยูเรเนียน (r396): วนปี → ชั้น Auslösung ทั้งปี → สรุปจุดไวคมสุด 1-3 อัน + วันที่ exact + ตัวกระตุ้น
+      //   engine เดิม (uranianChart + computeUranianAuslosung) · deterministic · NO_PERCENT (orb=ระยะเชิงมุม ไม่ใช่คะแนน)
+      const chart = uranianChart(b.dtUTC, b.lat, b.lng, b.hasTime, b.gender);
+      L.push(`  (ยูเรเนียน: orb เป็นลิปดา′ = ความคมเชิงมุม ไม่ใช่คะแนนทำนาย · จุดไว=ดาว/จุดกึ่งกลาง/จุดผลรวม-ผลต่างกำเนิด · ตัวกระตุ้น=ดาวจรช้า/ส่วนโค้งอาทิตย์/ก้าวหน้า ☉☽Meridian)`);
+      for (let y = startYear; y <= endYear; y++) {
+        const aus = computeUranianAuslosung(chart, b.dtUTC, `${y}-01-01`, `${y}-12-31`);
+        const top = topNotableAusEvents(aus.events, 3).sort((a, c) => a.dateISO.localeCompare(c.dateISO) || a.orbArcmin - c.orbArcmin);
+        L.push(`  ${y}: ${top.length ? top.map(ausEventLabel).join(" · ") : "ไม่มีจุดกระตุ้นคม (ดาวจรช้า/directed/progressed) เกาะจุดไวปีนี้"}`);
+      }
     }
   } catch {
     L.push("  (คำนวณ multi-year ไม่สำเร็จบางปี — ใช้ TIMING_TIMELINE ปีเป้าหมายหลักแทน)");
@@ -96,7 +155,6 @@ export function renderMultiYearBlock(science: ScienceId, b: FusionBirthLike, sta
 /** ① PAIR_TIMING: ปฏิทินร่วมของคู่/กลุ่ม (2-4 ดวง) ในปีเป้าหมาย — เดือนไหนใครหนัก เดือนไหนชนกันหลายคน */
 export function renderPairTimingBlock(science: ScienceId, births: FusionBirthLike[], targetYear: number): string {
   if (births.length < 2) return "";
-  if (science === "uranian") return ""; // เฟส 1 ยูเรเนียน = แผงอ่าน natal · ยังไม่ทำชั้นเวลาคู่/กลุ่ม (roadmap เฟส 2)
   const group = births.length > 2;
   const L: string[] = [];
   L.push(`=== PAIR_TIMING_PACKET ปี ${targetYear} (จังหวะเวลาของ${group ? `ทั้งกลุ่ม ${births.length} ดวง` : "ทั้งคู่"} · คำนวณจริง · เวลาไทย) ===`);
@@ -129,6 +187,14 @@ export function renderPairTimingBlock(science: ScienceId, births: FusionBirthLik
           const tl = buildQizhengTimeline(natal.reading, targetYear, b.lat, b.lng);
           for (const h of tl.hits) push(h.month, `${h.starZh}${h.aspect.slice(0, 3)}${h.target}(${h.dateISO})${["難星", "仇星"].includes(h.relationToMing) ? "⚠" : ""}`);
         }
+      } else if (science === "uranian") {
+        // ยูเรเนียน (r396): จัดเหตุการณ์ Auslösung เด่น (ดาวจรช้า/directed/progressed) ตามเดือน → หาเดือนที่ทั้งคู่/กลุ่มโดนพร้อมกัน
+        //   เรียงคมสุดก่อน push เพื่อให้ per-month cap เก็บจุดคมสุดของเดือนนั้น (engine เดิม · deterministic)
+        const chart = uranianChart(b.dtUTC, b.lat, b.lng, b.hasTime, b.gender);
+        const aus = computeUranianAuslosung(chart, b.dtUTC, `${targetYear}-01-01`, `${targetYear}-12-31`);
+        const notable = aus.events.filter(isNotableAusEvent)
+          .sort((x, y) => x.orbArcmin - y.orbArcmin || x.dateISO.localeCompare(y.dateISO) || x.natalTarget.localeCompare(y.natalTarget));
+        for (const e of notable) push(+e.dateISO.slice(5, 7), ausEventLabel(e));
       }
     });
     const nameOf = (i: number) => births[i].name || `คนที่${i + 1}`;
