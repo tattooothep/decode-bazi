@@ -22,14 +22,14 @@ const noonUTC = (iso) => new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 
 
 console.log("\n=== 1) engine: จุดส่วนตัว (Node/AriesPoint) เข้า chart · ของเดิมไม่กระทบ ===");
 ok(chart.points.length === 12, "points ยังคง 12 (ดาว10+Meridian+Asc) — ภาพดาว/จุดไวเดิมไม่กระทบ (regression compat)");
-ok(chart.personalPoints.length === 6, "personalPoints = 6 จุด (☉☽Asc MC Node AriesPoint)");
-ok(JSON.stringify(chart.personalPoints.map((p) => p.name)) === JSON.stringify(["Sun", "Moon", "Meridian", "Ascendant", "Node", "AriesPoint"]), "personalPoints ลำดับ/ชื่อถูก");
+ok(chart.personalPoints.length === 10, "personalPoints = 10 จุด (☉☽Asc MC Node AriesPoint + แกนสี่ทิศ Krebs/Waage/Steinbock + LocationPoint · r392)");
+ok(JSON.stringify(chart.personalPoints.map((p) => p.name)) === JSON.stringify(["Sun", "Moon", "Meridian", "Ascendant", "Node", "AriesPoint", "CancerPoint", "LibraPoint", "CapricornPoint", "LocationPoint"]), "personalPoints ลำดับ/ชื่อถูก (r392 · เพิ่มแกนสี่ทิศ+LocationPoint)");
 const aries = chart.personalPoints.find((p) => p.name === "AriesPoint");
 ok(near(aries.lon, 0) && near(aries.dial90, 0) && aries.sign === 0, "AriesPoint: lon 0° · dial90 0° · ราศีเมษ");
 const node = chart.personalPoints.find((p) => p.name === "Node");
 ok(near(node.lon, ((meanNode(aeawUTC) % 360) + 360) % 360, 1e-3), "Node lon = astro-core.meanNode (mean Mondknoten · ระบุชัด)");
 ok(chart.nodeType === "mean", "chart.nodeType = mean");
-ok(chartNoTime.personalPoints.length === 4 && !chartNoTime.personalPoints.some((p) => p.name === "Meridian" || p.name === "Ascendant"), "no-time: personalPoints 4 (ตัด Meridian/Asc)");
+ok(chartNoTime.personalPoints.length === 7 && !chartNoTime.personalPoints.some((p) => p.name === "Meridian" || p.name === "Ascendant" || p.name === "LocationPoint"), "no-time: personalPoints 7 (ตัด Meridian/Asc/LocationPoint · แกนสี่ทิศคงอยู่ ไม่ใช้เวลาเกิด · r392)");
 // golden midpoint เดิมยังถูก (พิสูจน์ engine.ts ไม่พัง)
 ok(near(midpointLon(0, 90), 45) && near(midpointLon(350, 10), 0) && near(dial90Distance(135, 45), 0), "golden midpoint/dial90 เดิมยังถูก");
 
@@ -101,7 +101,7 @@ const packetWith = buildUranianPacket(chart, aus);
 const packetNone = buildUranianPacket(chart);
 ok(packetWith.auslosung && packetWith.auslosung.version === "uranian-auslosung-v1", "packet(chart,aus).auslosung มีจริง");
 ok(packetNone.auslosung === null, "packet(chart).auslosung = null (additive · caller เดิมไม่พัง)");
-ok(packetWith.data.personalPoints.length === 6 && packetWith.nodeType === "mean", "packet.data.personalPoints=6 + nodeType=mean");
+ok(packetWith.data.personalPoints.length === 10 && packetWith.nodeType === "mean", "packet.data.personalPoints=10 + nodeType=mean (r392)");
 let renderOk = true;
 try { const p = renderUranianPrompt(packetWith); if (!/Halbsumme/.test(p)) renderOk = false; } catch { renderOk = false; }
 ok(renderOk, "renderUranianPrompt(packet+auslosung) ไม่ throw + ยังมี Halbsumme (render.ts เดิมเข้ากันได้)");

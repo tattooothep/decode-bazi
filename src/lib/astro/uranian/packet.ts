@@ -74,9 +74,12 @@ const ALLOWED_FIELDS_NO_TIME = [
 export function buildUranianPacket(chart: UranianChart, auslosung: UranianAuslosung | null = null): UranianPacket {
   const notAvailable: string[] = [];
   if (!chart.hasBirthTime) notAvailable.push("meridian", "ascendant");
-  // r391: ตำแหน่ง TNP "ระดับดาวจริง/วินาที (swisseph)" ยังไม่มี — แต่ตอนนี้มี mean-element (Kepler)
-  //   ใน data.tnpPoints แล้ว (คงลิเทอรัลนี้ไว้เพื่อ backward-compat + สื่อว่าเป็น fictitious ~±1–2° ไม่ใช่ดาวจริง)
-  notAvailable.push("witteTransneptunianPositions");
+  // r392: เลิกดัน "witteTransneptunianPositions" เหมาทั้งก้อน — Cupido/Hades/Kronos คำนวณตำแหน่งได้แล้ว (r391 · Kepler
+  //   mean-element ~±1–2° ใน data.tnpPoints) · เหลือเฉพาะดวงที่ยัง "คำนวณไม่ได้จริง" (Zeus · element หายจากคลัง Witte)
+  //   → ป้าย notAvailable ตรงกับ prose/JSON (กันอาการ "ผังส่งไม่ครบ" ที่เกิดจาก JSON ขัด prose)
+  for (const z of chart.tnpNotComputable) {
+    notAvailable.push(`${z.name.toLowerCase()}_position`); // เช่น "zeus_position" (precision อยู่ใน tnpPrecisionNote)
+  }
 
   return {
     discipline: "uranian",

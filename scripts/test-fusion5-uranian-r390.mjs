@@ -101,7 +101,7 @@ if (chart.planetaryPictures.some((p) => p.touchesPersonal) && chart.planetaryPic
 
 console.log("\n=== 6) regression + integrity (Sieggrün ไม่หลุด · โครงเดิมคง) ===");
 ok(chart.points.length === 12, "points ยังคง 12 (ดาว10+MC+Asc)");
-ok(chart.personalPoints.length === 6, "personalPoints ยังคง 6");
+ok(chart.personalPoints.length === 10, "personalPoints = 10 (r392 · +แกนสี่ทิศ Kardinalkreuz+LocationPoint)");
 ok(chartNoTime.points.length === 10 && chartNoTime.antiscia.every((a) => byName2ok(chartNoTime)), "no-time: points 10 + จุดกระจกยังคำนวณ (ดาว-ดาว)");
 function byName2ok(c) { return true; }
 const blob = JSON.stringify({ a: chart.antiscia, d: chart.declinationPairs, f: chart.fourPlanetPictures });
@@ -112,7 +112,7 @@ ok(JSON.stringify(c2.antiscia) === JSON.stringify(chart.antiscia)
   && JSON.stringify(c2.declinationPairs) === JSON.stringify(chart.declinationPairs)
   && JSON.stringify(c2.fourPlanetPictures) === JSON.stringify(chart.fourPlanetPictures)
   && c2.nodeTrueLon === chart.nodeTrueLon, "deterministic: รันซ้ำ antiscia/decl/4ดวง/trueNode เท่ากัน");
-ok(prompt.length < 20000, `render prompt กระชับ (${prompt.length} ตัวอักษร < 20K)`);
+ok(prompt.length < 30000, `render prompt กระชับ (${prompt.length} ตัวอักษร < 30K · r392 ขยาย slice ให้ตรง cap engine + แกนอ้างอิง · ยังต่ำกว่างบ 118K มาก)`);
 
 console.log(`\n=== FUSION5 URANIAN r390 QUICK-WIN: ${pass} passed · ${fail} failed ===`);
 process.exit(fail ? 1 : 0);

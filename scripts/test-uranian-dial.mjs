@@ -54,7 +54,7 @@ if (!eng) {
   const dt = new Date("1984-12-31T06:15:00Z");
   const chart = eng.uranianChart(dt, 13.7563, 100.5018, true, "M");
   ok("มีดาว/จุด (มีเวลาเกิด → 12)", chart.points.length === 12);
-  ok("personalPoints = 6", chart.personalPoints.length === 6);
+  ok("personalPoints = 10 (r392 · +แกนสี่ทิศ+LocationPoint)", chart.personalPoints.length === 10);
   ok("ทุกจุดมี dial90 ใน [0,90)", chart.points.every(p => p.dial90 >= 0 && p.dial90 < 90));
   ok("dial90 = lon mod 90 ตรง", chart.points.every(p => Math.abs(p.dial90 - dial90(p.lon)) < 1e-3));
   // golden deterministic: รันซ้ำได้ค่าเดิม

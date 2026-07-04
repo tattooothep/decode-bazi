@@ -71,7 +71,7 @@ let packet, prompt;
 try { packet = buildUranianPacket(chart); ok(true, "buildUranianPacket ไม่ throw"); }
 catch (e) { ok(false, "buildUranianPacket throw: " + e.message); }
 ok(packet.discipline === "uranian" && packet.packetVersion === "uranian-v1", "packet discipline/version ถูก");
-ok(packet.notAvailable.includes("witteTransneptunianPositions"), "packet แจ้ง TNP ยังไม่คำนวณตำแหน่ง");
+ok(packet.notAvailable.includes("zeus_position") && !packet.notAvailable.includes("witteTransneptunianPositions"), "packet แจ้งเฉพาะ zeus_position (Cupido/Hades/Kronos คำนวณแล้ว r391 · เลิกป้ายเหมาทั้งก้อน · r392)");
 try { prompt = renderUranianPrompt(packet); ok(true, "renderUranianPrompt ไม่ throw"); }
 catch (e) { ok(false, "renderUranianPrompt throw: " + e.message); }
 // no-time render ไม่ throw

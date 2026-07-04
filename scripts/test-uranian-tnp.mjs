@@ -92,7 +92,7 @@ ok(chart.tnpPlanetaryPictures.every((pic) => pic.involves.length >= 1 && pic.inv
 ok(chart.tnpSensitivePoints.every((sp) => sp.involves.length >= 1), "tnpSensitivePoints ทุกอันมี TNP ร่วม");
 const packet = buildUranianPacket(chart);
 ok(packet.data.tnpPoints.length === 3 && packet.tnpPositionSourceKepler === TNP_POSITION_SOURCE, "packet เผย tnpPoints + source เฟส 2");
-ok(packet.notAvailable.includes("witteTransneptunianPositions"), "packet.notAvailable ยังมี witteTransneptunianPositions (= ระดับ swisseph/วินาที · backward-compat)");
+ok(packet.notAvailable.includes("zeus_position") && !packet.notAvailable.includes("witteTransneptunianPositions"), "packet.notAvailable = zeus_position เท่านั้น (Cupido/Hades/Kronos คำนวณแล้ว · เลิกป้ายเหมาทั้งก้อน · r392)");
 const prompt = renderUranianPrompt(packet);
 ok(/คิวปิโด/.test(prompt) && /ฮาเดส/.test(prompt) && /โครนอส/.test(prompt), "render prompt โชว์ตำแหน่ง Cupido/Hades/Kronos (ไทย)");
 ok(/เซอุส/.test(prompt) && /ยังคำนวณตำแหน่งไม่ได้/.test(prompt), "render prompt: Zeus ยังคำนวณไม่ได้ (แจ้งตรง ๆ)");

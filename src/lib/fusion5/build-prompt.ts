@@ -355,6 +355,12 @@ const CANON_SOURCE_META: Partial<Record<ScienceId, Record<string, Partial<Pick<C
     "01-source-policy-conclusion.md": { title: "Uranian source-policy conclusion · what PD Witte canon can/cannot do (method+Halbsumme=OK · A–Z lookup dictionary=Regelwerk Rudolph ยังไม่ PD)", sourceUrl: "local:uranian/source-policy-conclusion", licenseClass: "project_summary", mode: "summary" },
     "10-witte-canon-de.md": { title: "Alfred Witte canon verbatim (DE) · Planetenbild/Halbsumme/sensitive Punkte/Auslösung/Direktionen/vergleichende Astrologie/Häuser/Transneptun(Cupido/Hades/Kronos/Zeus)/Fallbeispiele — Astrologische Rundschau + Astrologische Blätter 1913–1925", sourceUrl: "https://astrax.de (Kulturgut Astrologie e.V.) · AR/AB Jg.1913–1925", licenseClass: "public_domain", mode: "verbatim" },
     "11-method-reading-uranian.md": { title: "Uranian method-reading layer (synthesized system layer · NOT Witte verbatim) · การอ่านเชิงวิธี — midpoint 45 pairs + personal-point pairs + 3-direction reading + Basic Five · สังเคราะห์จากวิธี Witte PD + ความหมายดาวสาธารณะ (ห้ามลอก Regelwerk/Ebertin/Niggemann)", sourceUrl: "local:uranian/method-reading-synthesis", licenseClass: "project_synthesis", mode: "summary" },
+    // r392 · พจนานุกรมภาพดาว Uranian 159 คู่ (sifu-reviewed · ผ่านซินแส 8 คน) — การอ่านเชิงวิธี ไม่ใช่ Witte verbatim · แบ่ง 5 ส่วนตามดาวนำ (section splitter ส่งเฉพาะดาวที่เกี่ยวคำถาม กันเกิน 118K)
+    "13-dict-part1.md": { title: "Uranian midpoint dictionary 1/5 (sifu-reviewed 159-pair · method-reading · NOT Witte verbatim) · ☉ อาทิตย์ + ☽ จันทร์ (33 คู่)", sourceUrl: "local:uranian/dict-synthesis-sifu-reviewed", licenseClass: "project_synthesis", mode: "summary" },
+    "13-dict-part2.md": { title: "Uranian midpoint dictionary 2/5 (sifu-reviewed 159-pair · method-reading · NOT Witte verbatim) · ☿ พุธ + ♀ ศุกร์ (29 คู่)", sourceUrl: "local:uranian/dict-synthesis-sifu-reviewed", licenseClass: "project_synthesis", mode: "summary" },
+    "13-dict-part3.md": { title: "Uranian midpoint dictionary 3/5 (sifu-reviewed 159-pair · method-reading · NOT Witte verbatim) · ♂ อังคาร + ♃ พฤหัส + ♄ เสาร์ (36 คู่)", sourceUrl: "local:uranian/dict-synthesis-sifu-reviewed", licenseClass: "project_synthesis", mode: "summary" },
+    "13-dict-part4.md": { title: "Uranian midpoint dictionary 4/5 (sifu-reviewed 159-pair · method-reading · NOT Witte verbatim) · ♅ ยูเรนัส + ♆ เนปจูน + ♇ พลูโต (27 คู่)", sourceUrl: "local:uranian/dict-synthesis-sifu-reviewed", licenseClass: "project_synthesis", mode: "summary" },
+    "13-dict-part5.md": { title: "Uranian midpoint dictionary 5/5 (sifu-reviewed 159-pair · method-reading · NOT Witte verbatim) · จุดส่วนตัว/TNP (Cupido/Hades/Kronos/Zeus) 28 คู่ + Basic Five + workflow", sourceUrl: "local:uranian/dict-synthesis-sifu-reviewed", licenseClass: "project_synthesis", mode: "summary" },
   },
 };
 
@@ -425,10 +431,13 @@ const CANON_DEFAULT_FILES: Partial<Record<ScienceId, string[]>> = {
     "07-quanshu-xingyuan-wenda.md",
   ],
   // ศาสตร์ที่ 6 · ยูเรเนียน — อ่าน source-policy conclusion ก่อน แล้วคัมภีร์ Witte (default = วิธี+จุดไว+ทรานส์เนปจูน)
+  //   r392 · ต่อท้ายพจนานุกรม 159 คู่ (sifu-reviewed) แบบ sectioned: ☉☽ + จุดส่วนตัว/TNP/แก่นวิธี (fallback · path หลักเลือกตาม intent ใน getSelectedCanonFiles)
   uranian: [
     "01-source-policy-conclusion.md",
     "10-witte-canon-de.md#method+tnp",
     "11-method-reading-uranian.md",
+    "13-dict-part1.md#sun+moon",
+    "13-dict-part5.md#personal+tnp+method",
   ],
 };
 
@@ -494,6 +503,30 @@ const CANON_FILE_SECTIONS: Partial<Record<ScienceId, Record<string, Record<strin
       outer: [{ from: /^## S8 —/m, to: /^## P1 —/m }],
       points: [{ from: /^## P1 —/m, to: /^## T1 —/m }],
       tnp: [{ from: /^## T1 —/m }],
+    },
+    // r392 · พจนานุกรม 159 คู่ (sifu-reviewed) แบ่งตามดาวนำ — section splitter ส่งเฉพาะดาวที่เกี่ยวคำถาม (กันเกิน 118K)
+    "13-dict-part1.md": {
+      sun: [{ from: /^## S1 —/m, to: /^## S2 —/m }],                     // ภาพดาวนำโดย ☉
+      moon: [{ from: /^## S2 —/m, to: /^## นับคู่/m }],                   // ภาพดาวนำโดย ☽
+    },
+    "13-dict-part2.md": {
+      mercury: [{ from: /^## S1 —/m, to: /^## S2 —/m }],                 // ภาพดาวนำโดย ☿
+      venus: [{ from: /^## S2 —/m, to: /^## สรุป/m }],                    // ภาพดาวนำโดย ♀
+    },
+    "13-dict-part3.md": {
+      mars: [{ from: /^## M —/m, to: /^## J —/m }],                      // ภาพดาวนำโดย ♂
+      jupiter: [{ from: /^## J —/m, to: /^## S —/m }],                   // ภาพดาวนำโดย ♃
+      saturn: [{ from: /^## S —/m, to: /^## นับคู่/m }],                  // ภาพดาวนำโดย ♄
+    },
+    "13-dict-part4.md": {
+      uranus: [{ from: /^## U1 —/m, to: /^## U2 —/m }],                  // ภาพดาวนำโดย ♅
+      neptune: [{ from: /^## U2 —/m, to: /^## U3 —/m }],                 // ภาพดาวนำโดย ♆
+      pluto: [{ from: /^## U3 —/m, to: /^## นับคู่/m }],                  // ภาพดาวนำโดย ♇
+    },
+    "13-dict-part5.md": {
+      personal: [{ from: /^## หมวด 1 —/m, to: /^## หมวด 2 —/m }],        // คู่ครึ่งผลรวม จุดส่วนตัว/TNP กันเอง (28 คู่)
+      tnp: [{ from: /^## หมวด 2 —/m, to: /^## หมวด 3 —/m }],             // 4 ดวง Witte (TNP) เชิงลึก
+      method: [{ from: /^## หมวด 3 —/m }],                               // ภาพดาวรวม (สมการ) + Basic Five + workflow (แก่นวิธีอ่าน)
     },
   },
 };
@@ -2164,19 +2197,43 @@ function selectCanonFilesForPrompt(science: ScienceId, question: string, births:
     // dedupe คงลำดับ
     const uniqSections = Array.from(new Set(sections));
     pushUnique(files, `10-witte-canon-de.md#${uniqSections.join("+")}`);
-    // r388 · การอ่านเชิงวิธี ฉบับละเอียด (ระบบสังเคราะห์ · ไม่ใช่ Witte verbatim) — แนบท้ายเสมอ
-    //   Witte verbatim นำก่อน · เชิงวิธีเติมคู่ที่ Witte PD ไม่ครอบคลุม · วางท้ายสุด (shrink ตัดชั้นสังเคราะห์ก่อน คัมภีร์ Witte คงอยู่)
-    //   section splitter ส่งเฉพาะหมวดดาวที่เกี่ยวคำถาม (กันเกิน 118K): core+ดาวส่วนตัวเสมอ · หมวดหัวข้อตาม intent
-    const mSec = ["core", "sun", "moon", "points"];
-    if (intent.relationship || intent.pair || intent.children) mSec.push("venus", "tnp");
-    if (intent.career || intent.authority || intent.employment || intent.business) mSec.push("mars", "jupiter", "saturn", "tnp");
-    if (intent.money || intent.windfall || intent.property) mSec.push("venus", "jupiter", "saturn");
-    if (intent.study || intent.education) mSec.push("mercury");
-    if (intent.health || intent.risk) mSec.push("mars", "saturn", "outer", "tnp");
-    if (intent.timing || intent.advancedTiming || intent.validation) mSec.push("saturn", "outer");
-    if (intent.general) mSec.push("mercury", "venus", "mars", "jupiter", "saturn", "outer", "tnp");
-    const uniqM = Array.from(new Set(mSec));
-    pushUnique(files, `11-method-reading-uranian.md#${uniqM.join("+")}`);
+    // r388 · การอ่านเชิงวิธี ฉบับละเอียด (ระบบสังเคราะห์ · ไม่ใช่ Witte verbatim)
+    //   r392: แยกเป็น 2 ชั้น — (ก) แก่นวิธี/guard/Basic Five/3-ทิศ/จุดส่วนตัว/TNP (core+points+tnp) แนบก่อน dict เสมอ (เล็ก · มี Sieggrün guard)
+    //         (ข) ความหมายคู่รายดาว (S1-S8) = สำรอง วางหลัง dict (พจนานุกรม 159 คู่ sifu-reviewed คุมชั้นความหมายคู่แทนแล้ว → shrink ตัด S1-S8 ก่อน dict)
+    pushUnique(files, "11-method-reading-uranian.md#core+points+tnp");
+    // r392 · พจนานุกรมภาพดาว 159 คู่ (sifu-reviewed · ผ่านซินแส 8 คน · การอ่านเชิงวิธี ไม่ใช่ Witte verbatim)
+    //   ส่งเฉพาะดาวที่เกี่ยวคำถาม (กันเกิน 118K) · ลำดับ: ☉ identity + แก่นวิธี(Basic Five) ก่อน · ดาวตาม intent · คู่จุดส่วนตัว/TNP (ก้อนใหญ่) ท้ายสุด (shrink ตัดท้ายก่อน · Witte verbatim รอด)
+    const dSun = new Set<string>(["sun"]);
+    const dP2 = new Set<string>(); const dP3 = new Set<string>(); const dP4 = new Set<string>();
+    const dP5late = new Set<string>(); // คู่จุดส่วนตัว/TNP (ก้อนใหญ่ ~17K · วางท้าย)
+    if (intent.relationship || intent.pair || intent.children) { dSun.add("moon"); dP2.add("venus"); dP5late.add("personal").add("tnp"); }
+    if (intent.money || intent.windfall || intent.property) { dP2.add("venus"); dP3.add("jupiter").add("saturn"); }
+    if (intent.career || intent.authority || intent.employment || intent.business) { dP3.add("mars").add("jupiter").add("saturn"); dP5late.add("tnp"); }
+    if (intent.study || intent.education) { dP2.add("mercury"); }
+    if (intent.health || intent.risk) { dP3.add("mars").add("saturn"); dP4.add("uranus").add("neptune").add("pluto"); dP5late.add("tnp"); }
+    if (intent.timing || intent.advancedTiming || intent.validation) { dP3.add("saturn"); dP4.add("neptune").add("pluto"); }
+    if (intent.talent || intent.fortune) { dSun.add("moon"); dP5late.add("personal"); }
+    if (intent.general) { dSun.add("moon"); dP2.add("mercury").add("venus"); dP3.add("mars").add("jupiter").add("saturn"); dP5late.add("personal").add("tnp"); }
+    const pushDict = (file: string, set: Set<string>, order: string[]) => {
+      const secs = order.filter((s) => set.has(s));
+      if (secs.length) pushUnique(files, `${file}#${secs.join("+")}`);
+    };
+    pushDict("13-dict-part1.md", dSun, ["sun", "moon"]);        // ☉ (+☽) identity core
+    pushUnique(files, "13-dict-part5.md#method");                // แก่นวิธี/Basic Five/workflow (เล็ก · ส่งเสมอ)
+    pushDict("13-dict-part2.md", dP2, ["mercury", "venus"]);    // ☿♀ ตาม intent
+    pushDict("13-dict-part3.md", dP3, ["mars", "jupiter", "saturn"]); // ♂♃♄
+    pushDict("13-dict-part4.md", dP4, ["uranus", "neptune", "pluto"]); // ♅♆♇
+    pushDict("13-dict-part5.md", dP5late, ["personal", "tnp"]); // คู่จุดส่วนตัว/TNP (ก้อนใหญ่ · ท้าย)
+    // r392 · method-reading รายดาว (S1-S8) = ชั้นสำรอง วางท้ายสุด (shrink ตัดก่อน dict/Witte เพราะ dict sifu-reviewed คุมความหมายคู่แล้ว)
+    const mStar: string[] = [];
+    if (intent.relationship || intent.pair || intent.children) mStar.push("sun", "moon", "venus");
+    if (intent.career || intent.authority || intent.employment || intent.business) mStar.push("mars", "jupiter", "saturn");
+    if (intent.money || intent.windfall || intent.property) mStar.push("venus", "jupiter", "saturn");
+    if (intent.study || intent.education) mStar.push("mercury");
+    if (intent.health || intent.risk) mStar.push("mars", "saturn", "outer");
+    if (intent.timing || intent.advancedTiming || intent.validation) mStar.push("saturn", "outer");
+    if (intent.general) mStar.push("sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "outer");
+    if (mStar.length) pushUnique(files, `11-method-reading-uranian.md#${Array.from(new Set(mStar)).join("+")}`);
     return files;
   }
 
@@ -2516,6 +2573,9 @@ function structuredPacketJson(packet: unknown): string {
     const p = packet as Record<string, any>;
     const d = p.data as Record<string, any>;
     // compact: จุด/ภาพดาว/จุดไว/ทรานส์เนปจูน — ตัด halbsummen ดิบทั้งชุด (ภาพดาวสรุปคู่ที่มีนัยแล้ว) กัน budget
+    // r392: เติมสาขาที่เดิมหลุด (auslosung/tnpPoints/tnpPlanetaryPictures/tnpSensitivePoints/personalPoints) ให้ JSON
+    //   ตรงกับ prose (บรรทัด ~2699 สั่ง AI ยึด field ใน STRUCTURED_CHART_PACKET) · เลิกส่ง tnpPositionSource
+    //   "…not_wired_phase1" ที่ขัด prose → ใช้ tnpPositionSourceKepler + tnpPrecisionNote (คำนวณแล้ว r391)
     const compact = {
       discipline: p.discipline,
       packetVersion: p.packetVersion,
@@ -2528,17 +2588,40 @@ function structuredPacketJson(packet: unknown): string {
       orbFourPlanetDeg: p.orbFourPlanetDeg,
       nodeMeanLon: p.nodeMeanLon,
       nodeTrueLon: p.nodeTrueLon,
-      tnpPositionSource: p.tnpPositionSource,
+      tnpPositionSourceKepler: p.tnpPositionSourceKepler, // r392 · Cupido/Hades/Kronos คำนวณแล้ว (แทน not_wired เดิม)
+      tnpPrecisionNote: p.tnpPrecisionNote,               // r392 · mean-element ~±1–2° (ห้ามยึดองศาเป๊ะ)
       excludedTransneptunians: p.excludedTransneptunians,
       notAvailable: p.notAvailable,
+      // r392 · ชั้นเวลา (Auslösung · จับ "ตกวัน/เดือน") — เดิมตัดทั้งก้อน AI จึงตอบวันไม่ได้ (array ย่อ · เลขล้วน budget ต่ำ)
+      auslosung: p.auslosung ? {
+        targetFromISO: p.auslosung.targetFromISO, targetToISO: p.auslosung.targetToISO,
+        ageAtFrom: p.auslosung.ageAtFrom, ageAtTo: p.auslosung.ageAtTo,
+        solarArcDegAtFrom: p.auslosung.solarArcDegAtFrom, solarArcDegAtTo: p.auslosung.solarArcDegAtTo,
+        groups: p.auslosung.groups?.slice(0, 12).map((g: any) => ({
+          target: g.targetTh, formula: g.formula, sign: g.signTh, deg: g.signDeg,
+          events: g.events?.slice(0, 6).map((e: any) => [e.dateISO, e.moverTh, e.aspectTh, e.orbArcmin]),
+        })),
+        tnpActivations: p.auslosung.tnpActivations?.slice(0, 10).map((e: any) => [e.dateISO, e.moverTh, e.aspectTh, e.natalTargetTh, e.orbArcmin]),
+        tnpMoverContacts: p.auslosung.tnpMoverContacts?.slice(0, 10).map((e: any) => [e.moverTh, e.aspectTh, e.natalTargetTh, e.orbArcmin]),
+      } : null,
       data: {
         points: d.points?.map((x: any) => [x.name, x.signTh, x.signDeg, +x.dial90?.toFixed?.(2), +x.decl?.toFixed?.(2), x.uncertain ? 1 : 0]),
+        // r392 · จุดส่วนตัว/แกนอ้างอิง (โดยเฉพาะ AriesPoint 0°♈ + แกนสี่ทิศ + LocationPoint ที่เดิมไม่โผล่ที่ไหนเลย)
+        personalPoints: d.personalPoints?.map((x: any) => [x.name, x.signTh, +x.signDeg?.toFixed?.(2), +x.dial90?.toFixed?.(2)]),
+        // halbsummen ดิบตัดออกโดยตั้งใจ (budget) — ป้ายบอก AI ว่า engine คำนวณแล้ว ไม่ใช่ขาด
+        halbsummenOmitted: "budget_only__see_planetaryPictures_and_sensitivePoints",
         planetaryPictures: d.planetaryPictures?.map((x: any) => [x.pair, x.occupant, x.orbDeg, x.touchesPersonal ? 1 : 0]),
         fourPlanetPictures: d.fourPlanetPictures?.map((x: any) => [x.pairA, x.pairB, x.orbDeg, x.touchesPersonal ? 1 : 0]),
         sensitivePoints: d.sensitivePoints?.map((x: any) => [x.kind, x.a, x.b, x.activatedBy, x.orbDeg, x.touchesPersonal ? 1 : 0]),
         antiscia: d.antiscia?.map((x: any) => [x.kind, x.a, x.b, x.orbDeg, x.touchesPersonal ? 1 : 0]),
         declinationPairs: d.declinationPairs?.map((x: any) => [x.kind, x.a, x.b, x.orbDeg, x.touchesPersonal ? 1 : 0]),
         witteTransneptunians: d.witteTransneptunians?.map((x: any) => [x.name, x.rulerSignDe, x.canonRef]),
+        // ── r392 · สาขา TNP จริง (Cupido/Hades/Kronos · r391) — เดิมหลุดจาก JSON ทั้งที่ prose พูดถึง (TnpPosition ไม่มี signTh → ?? rulerSignDe) ──
+        tnpPoints: d.tnpPoints?.map((x: any) => [x.name, x.signTh ?? x.rulerSignDe, +x.lon?.toFixed?.(2), +x.dial90?.toFixed?.(2), x.source]),
+        tnpPlanetaryPictures: d.tnpPlanetaryPictures?.map((x: any) => [x.pair, x.occupant, x.orbDeg, (x.involves || []).join("/"), x.touchesPersonal ? 1 : 0]),
+        tnpSensitivePoints: d.tnpSensitivePoints?.map((x: any) => [x.kind, x.a, x.b, x.activatedBy, x.orbDeg, (x.involves || []).join("/"), x.touchesPersonal ? 1 : 0]),
+        tnpNotComputable: d.tnpNotComputable?.map((x: any) => [x.name, x.reason]),
+        tnpElementsMissing: d.tnpElementsMissing?.map((x: any) => [x.name, (x.missing || []).join(",")]),
       },
     };
     return JSON.stringify(compact);

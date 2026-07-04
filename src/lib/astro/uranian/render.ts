@@ -78,13 +78,25 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   }
   L.push("");
 
+  // ── r392 · แกนอ้างอิง/จุดส่วนตัว (Widderpunkt 0°♈ + แกนสี่ทิศ Kardinalkreuz + ลองจิจูดสถานที่ Asc−90°) ──
+  //    เดิม AriesPoint/แกนสี่ทิศไม่โผล่ที่ไหนเลย ทั้งที่เป็นศูนย์อ้างอิงโลก + เป้าหลักของชั้นเวลา (Auslösung)
+  const REF_POINTS = new Set(["Node", "AriesPoint", "CancerPoint", "LibraPoint", "CapricornPoint", "LocationPoint"]);
+  const refs = d.personalPoints.filter((p) => REF_POINTS.has(p.name));
+  if (refs.length) {
+    L.push("— แกนอ้างอิง/จุดส่วนตัว (Widderpunkt 0°♈ + แกนสี่ทิศ Kardinalkreuz 0°♋/♎/♑ + ลองจิจูดสถานที่ Asc−90° · เป้าหลักการกระตุ้น Auslösung · Witte บท 02/27/41/43) —");
+    for (const p of refs) {
+      L.push(`  • ${p.nameTh} (${p.nameDe}): ${fmtLon(p.lon)} · dial90=${p.dial90.toFixed(2)}°`);
+    }
+    L.push("");
+  }
+
   // ── ภาพดาว (Planetenbild) ที่ยิงเข้า orb ──
   L.push("— ภาพดาว (Planetenbild · ดาวตกบนครึ่งผลรวมของอีกสองดาว ภายใน orb) —");
   if (!d.planetaryPictures.length) {
     L.push("  ไม่พบภาพดาวที่แน่นภายใน orb ที่กำหนด → ห้ามสร้างภาพดาวเพิ่มเองจากองศา");
   } else {
     L.push("  รูปแบบ: occupant ตกบนแกนสมมาตร a|b คือ a + b − occupant · ยิ่ง orb แคบยิ่งคม · ⭐ = แตะจุดส่วนตัว (เด่นกว่า อ่านก่อน)");
-    for (const pic of personalFirst(d.planetaryPictures).slice(0, 40)) {
+    for (const pic of personalFirst(d.planetaryPictures).slice(0, 60)) { // r392 · ตรง MAX_PICTURES=60 (เดิม 40 ตัดยอด)
       L.push(`  • ${pic.occupantTh} บนครึ่งผลรวม ${pic.pairTh} (${pic.pair}) · orb ${pic.orbDeg.toFixed(2)}°${pic.touchesPersonal ? STAR : ""}`);
     }
   }
@@ -95,7 +107,7 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   if (!d.fourPlanetPictures.length) {
     L.push("  ไม่พบภาพดาว 4 ดวงที่แน่นภายใน orb → ห้ามจับคู่ 4 ดวงเองจากองศา");
   } else {
-    for (const fp of personalFirst(d.fourPlanetPictures).slice(0, 24)) {
+    for (const fp of personalFirst(d.fourPlanetPictures).slice(0, 40)) { // r392 · ตรง MAX_FOURPLANET=40
       L.push(`  • ${fp.pairATh} = ${fp.pairBTh}  (${fp.pairA} = ${fp.pairB}) · orb ${fp.orbDeg.toFixed(2)}°${fp.touchesPersonal ? STAR : ""}`);
     }
     L.push("  (อ้าง บท 44: «vier Planeten, von denen je zwei gleiche Winkelunterschiede zeigen, formen ein Planetenbild» — Vierergestirn)");
@@ -107,7 +119,7 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   if (!d.sensitivePoints.length) {
     L.push("  ไม่พบจุดไวที่ถูกกระตุ้นแน่นภายใน orb → ห้ามคำนวณจุดไวเพิ่มเอง");
   } else {
-    for (const sp of personalFirst(d.sensitivePoints).slice(0, 40)) {
+    for (const sp of personalFirst(d.sensitivePoints).slice(0, 60)) { // r392 · ตรง MAX_SENSITIVE=60
       const op = sp.kind === "sum" ? "+" : "−";
       L.push(`  • ${sp.activatedByTh} ตกบนจุด${sp.kind === "sum" ? "ผลรวม" : "ผลต่าง"} (${sp.aTh} ${op} ${sp.bTh}) ที่ ${fmtLon(sp.pointLon)} · orb ${sp.orbDeg.toFixed(2)}°${sp.touchesPersonal ? STAR : ""}`);
     }
@@ -120,7 +132,7 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
     L.push(`  ไม่พบจุดกระจกที่แน่นภายใน orb ${packet.orbAntisciaDeg}° → ห้ามสร้างจุดกระจกเองจากองศา`);
   } else {
     L.push("  antiscia = สะท้อนแกนอายัน (0°กรกฎ/มังกร · Spiegelpunkt zum Erdmeridian) · contra = สะท้อนแกนวิษุวัต (0°เมษ/ตุล · Kardinalpunkte)");
-    for (const an of personalFirst(d.antiscia).slice(0, 24)) {
+    for (const an of personalFirst(d.antiscia).slice(0, 40)) { // r392 · ตรง MAX_ANTISCIA=40
       const kindTh = an.kind === "antiscia" ? "จุดกระจก(อายัน)" : "จุดกระจกตรงข้าม(วิษุวัต)";
       L.push(`  • ${an.bTh} ตกบน${kindTh}ของ ${an.aTh} ที่ ${fmtLon(an.pointLon)} · orb ${an.orbDeg.toFixed(2)}° · แกน: ${an.axisTh}${an.touchesPersonal ? STAR : ""}`);
     }
@@ -133,7 +145,7 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
     L.push("  ไม่พบคู่ parallel/contra-parallel ภายใน orb → ห้ามจับคู่เดคลิเนชันเองจากตัวเลข");
   } else {
     L.push("  parallel ‖ = เดคลิเนชันเท่ากันฝั่งเดียว (เสริมแรงเหมือน ☌) · contra-parallel = เท่ากันคนละฝั่ง (เหมือน ☍)");
-    for (const dp of personalFirst(d.declinationPairs).slice(0, 24)) {
+    for (const dp of personalFirst(d.declinationPairs).slice(0, 40)) { // r392 · ตรง MAX_DECL=40
       const kindTh = dp.kind === "parallel" ? "‖ Parallel" : "× Contra-parallel";
       L.push(`  • ${dp.aTh} (decl ${fmtDecl(dp.declA)}) ${kindTh} ${dp.bTh} (decl ${fmtDecl(dp.declB)}) · orb ${dp.orbDeg.toFixed(2)}°${dp.touchesPersonal ? STAR : ""}`);
     }
@@ -161,13 +173,13 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
   // ภาพดาวที่มี TNP ร่วม (occupant/pair ≥1 ตัวเป็น TNP · ความหมายหมวด H)
   if (d.tnpPlanetaryPictures.length) {
     L.push("  ภาพดาว (Planetenbild) ที่มีทรานส์เนปจูนร่วม (อ่านความหมายหมวด H · ⚠️ องศา mean-element):");
-    for (const pic of personalFirst(d.tnpPlanetaryPictures).slice(0, 20)) {
+    for (const pic of personalFirst(d.tnpPlanetaryPictures).slice(0, 60)) { // r392 · ตรง MAX_PICTURES=60
       L.push(`    · ${pic.occupantTh} บนครึ่งผลรวม ${pic.pairTh} (${pic.pair}) · orb ${pic.orbDeg.toFixed(2)}° · TNP: ${pic.involves.join("/")}${pic.touchesPersonal ? STAR : ""}`);
     }
   }
   if (d.tnpSensitivePoints.length) {
     L.push("  จุดไว (sensitiver Punkt) ที่มีทรานส์เนปจูนร่วม:");
-    for (const sp of personalFirst(d.tnpSensitivePoints).slice(0, 20)) {
+    for (const sp of personalFirst(d.tnpSensitivePoints).slice(0, 60)) { // r392 · ตรง MAX_SENSITIVE=60
       const op = sp.kind === "sum" ? "+" : "−";
       L.push(`    · ${sp.activatedByTh} ตกบนจุด${sp.kind === "sum" ? "ผลรวม" : "ผลต่าง"} (${sp.aTh} ${op} ${sp.bTh}) ที่ ${fmtLon(sp.pointLon)} · orb ${sp.orbDeg.toFixed(2)}° · TNP: ${sp.involves.join("/")}${sp.touchesPersonal ? STAR : ""}`);
     }
@@ -185,23 +197,23 @@ export function renderUranianPrompt(packet: UranianPacket, lang = "th"): string 
     if (!au.groups.length) {
       L.push("  (ไม่พบการกระตุ้นแน่นในช่วงนี้ → บอกตรง ๆ ว่าช่วงนี้ไม่มีวันเด่น อย่าแต่งวัน)");
     }
-    for (const g of au.groups.slice(0, 8)) {
+    for (const g of au.groups.slice(0, 24)) { // r392 · ตรง AUSLOSUNG_MAX_GROUPS=24
       const natalSharp = g.natalOrbArcmin ? ` · คมในผังกำเนิด ${g.natalOrbArcmin.toFixed(1)}′` : "";
       L.push(`  ▸ จุดไว: ${g.targetTh}${g.formula ? ` (${g.formula})` : ""} ที่ ${g.signTh} ${g.signDeg.toFixed(2)}°${natalSharp}`);
-      for (const e of g.events.slice(0, 5)) {
+      for (const e of g.events.slice(0, 10)) { // r392 · ตรง AUSLOSUNG_MAX_PER_GROUP=10
         L.push(`      • ${e.dateISO} · ${e.moverTh} ${e.aspectTh} · orb ${e.orbArcmin.toFixed(1)}′`);
       }
     }
     // r391 · ชั้น TNP ในการกระตุ้น (mean-element · แยก precision · ห้ามฟันวันเป๊ะ)
     if (au.tnpActivations?.length) {
       L.push("  ▸ ทรานส์เนปจูน (Cupido/Hades/Kronos) เป็นจุดกำเนิดที่ถูกดาวจรจริงกระตุ้น (⚠️ mean-element ~±1–2° · บอกช่วง ไม่ฟันวันเป๊ะ):");
-      for (const e of au.tnpActivations.slice(0, 6)) {
+      for (const e of au.tnpActivations.slice(0, 20)) { // r392 · 6→20 (cap 80 · cross-year)
         L.push(`      • ${e.dateISO} · ${e.moverTh} ${e.aspectTh} ${e.natalTargetTh} · orb ${e.orbArcmin.toFixed(1)}′`);
       }
     }
     if (au.tnpMoverContacts?.length) {
       L.push("  ▸ ทรานส์เนปจูนเป็นตัวกระตุ้น (ช้า ~1°/ปี · สัมผัสยาวข้ามปี):");
-      for (const e of au.tnpMoverContacts.slice(0, 6)) {
+      for (const e of au.tnpMoverContacts.slice(0, 20)) { // r392 · 6→20 (cap 80 · cross-year)
         L.push(`      • ${e.moverTh} ${e.aspectTh} ${e.natalTargetTh} · orb ${e.orbArcmin.toFixed(1)}′ (สัมผัสต่อเนื่องช่วงนี้)`);
       }
     }

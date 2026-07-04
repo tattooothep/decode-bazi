@@ -27,6 +27,11 @@ export const NAME_TH: Record<string, string> = {
   Jupiter: "พฤหัสบดี", Saturn: "เสาร์", Uranus: "ยูเรนัส", Neptune: "เนปจูน", Pluto: "พลูโต",
   Meridian: "เมริเดียน (MC)", Ascendant: "ลัคนา (Asc)",
   Node: "ราหู/จุดจันทร์เหนือ (Mondknoten)", AriesPoint: "จุดเมษ (Widderpunkt · 0°♈)",
+  // r392 · แกนสี่ทิศครบชุด (Kardinalkreuz · Witte บท 02/27/41) + จุดสถานที่ (astr. Länge d. Ortes · Asc−90 · บท 43/32/36)
+  CancerPoint: "จุดกรกฎ (Krebspunkt · 0°♋ · แกน Erdmeridian บน)",
+  LibraPoint: "จุดตุล (Waagepunkt · 0°♎)",
+  CapricornPoint: "จุดมังกร (Steinbockpunkt · 0°♑ · แกน Erdmeridian ล่าง)",
+  LocationPoint: "ลองจิจูดสถานที่ (astr. Länge d. Ortes · Asc−90°)",
 };
 /** ชื่อเยอรมัน (verbatim ตามคัมภีร์ Witte · ใช้จับคู่ประโยคความหมาย) */
 const NAME_DE: Record<string, string> = {
@@ -34,6 +39,8 @@ const NAME_DE: Record<string, string> = {
   Jupiter: "Jupiter", Saturn: "Saturn", Uranus: "Uranus", Neptune: "Neptun", Pluto: "Pluto",
   Meridian: "Meridian", Ascendant: "Aszendent",
   Node: "Mondknoten", AriesPoint: "Widderpunkt",
+  CancerPoint: "Krebspunkt", LibraPoint: "Waagepunkt", CapricornPoint: "Steinbockpunkt",
+  LocationPoint: "astronomische Länge des Ortes",
 };
 
 /** ราศี 12 (index 0 = เมษ) — เพื่ออ้างตำแหน่งอ่านง่าย (สากล ไม่ใช่ศัพท์จีน/พระเวท) */
@@ -180,7 +187,7 @@ export type UranianChart = {
   degradeLevel: "full" | "partial";     // full = มีเวลาเกิด · partial = ไม่มีเวลา (ไม่มี Meridian/Asc)
   gender: Gender;
   points: UranianPoint[];               // ดาวจริง 10 (+Meridian/Asc เมื่อมีเวลา) — คงจำนวนเดิม (ภาพดาว/จุดไว คำนวณจากชุดนี้)
-  personalPoints: UranianPoint[];       // จุดส่วนตัว 6 (☉☽Asc MC Node AriesPoint) — เป้าไวหลักของชั้น Auslösung (auslosung.ts) · additive ไม่กระทบ pictures/sensitive
+  personalPoints: UranianPoint[];       // r392 · จุดส่วนตัว/แกนอ้างอิง (☉☽Asc MC Node AriesPoint + แกนสี่ทิศ Krebs/Waage/Steinbock + LocationPoint=Asc−90) — เป้าไวหลักของชั้น Auslösung (auslosung.ts) · additive ไม่กระทบ points[]/pictures/sensitive
   nodeType: "mean";                     // Mondknoten ในชั้นเวลา/personalPoints = mean node (คงเดิม r389 · ไม่กระทบ Auslösung)
   nodeMeanLon: number;                   // r390 · Mondknoten mean (Meeus)
   nodeTrueLon: number;                   // r390 · Mondknoten true/osculating (astronomy-engine SearchMoonNode) — เก็บทั้งคู่ ระบุชนิด
@@ -319,6 +326,16 @@ export function uranianChart(dtUTC: Date, lat: number, lng: number, hasTime = tr
   }
   personalPoints.push(anglePoint("Node", meanNode(dtUTC), dtUTC));
   personalPoints.push(anglePoint("AriesPoint", 0, dtUTC));
+  // r392 · แกนสี่ทิศครบชุด (Kardinalkreuz · Witte บท 02 „Widderpunkt/X.Haus/Ascendent gleichwertig" · บท 27 กฎตาย Kardinalpunkte
+  //   · บท 41 Krebs/Steinbockpunkt = แกน Erdmeridian ที่ antiscia สะท้อนรอบ) — ค่าคงที่ 90/180/270° ไม่ใช้เวลาเกิด
+  personalPoints.push(anglePoint("CancerPoint", 90, dtUTC));
+  personalPoints.push(anglePoint("LibraPoint", 180, dtUTC));
+  personalPoints.push(anglePoint("CapricornPoint", 270, dtUTC));
+  // จุดสถานที่ (astronomische Länge des Ortes = Asc − 90° · บท 43/32/36 · anchor มิติ „ความสัมพันธ์กับผู้อื่น") — ต้องมี Asc
+  if (hasTime) {
+    const ascP = byName("Ascendant");
+    if (ascP) personalPoints.push(anglePoint("LocationPoint", norm360(ascP.lon - 90), dtUTC));
+  }
 
   // 3) ครึ่งผลรวม (Halbsumme) ทุกคู่ — แกนสมมาตร a|b
   const halbsummen: UranianHalbsumme[] = [];
