@@ -12,6 +12,8 @@ import { ashtakoota, type AshtakootaResult } from "../astro/vedic/ashtakoota";
 import { GRAHA_TH, type GrahaKey, RASHI_TH } from "../astro/vedic/tables";
 import { ziweiChart, type ZiweiChart, type ZiweiPalace } from "../astro/ziwei/engine";
 import { BRANCHES, type PalaceName } from "../astro/ziwei/tables";
+import { uranianChart } from "../astro/uranian/engine";
+import { uranianSynastry } from "../astro/uranian/synastry";
 import type { ScienceId } from "./disciplines";
 
 type PairBirthData = { name: string; dtUTC: Date; lat: number; lng: number; hasTime: boolean; gender: "M" | "F" };
@@ -497,11 +499,19 @@ function qizhengPair(a: PairBirthData, b: PairBirthData) {
   };
 }
 
+// ยูเรเนียน synastry (r393) — radix-radix · ไม่พึ่ง refDate (timing แยก r2k-5) · reuse uranianChart เดิม
+function uranianPair(a: PairBirthData, b: PairBirthData) {
+  const A = uranianChart(a.dtUTC, a.lat, a.lng, a.hasTime, a.gender);
+  const B = uranianChart(b.dtUTC, b.lat, b.lng, b.hasTime, b.gender);
+  return uranianSynastry(A, B, chartLabel(a, 0), chartLabel(b, 1));
+}
+
 function pairPayload(science: ScienceId, a: PairBirthData, b: PairBirthData, refDate: Date): unknown {
   if (science === "western") return westernPair(a, b, refDate);
   if (science === "vedic") return vedicPair(a, b, refDate);
   if (science === "ziwei") return ziweiPair(a, b, refDate);
   if (science === "qizheng") return qizhengPair(a, b);
+  if (science === "uranian") return uranianPair(a, b);
   return null;
 }
 
