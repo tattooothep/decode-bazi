@@ -14,6 +14,8 @@ import { buildVedicTimeline } from "../src/lib/astro/vedic/timeline.ts";
 import { ziweiChart } from "../src/lib/astro/ziwei/engine.ts";
 import { qizhengNatal } from "../src/lib/astro/qizheng/engine.ts";
 import { buildQizhengTimeline } from "../src/lib/astro/qizheng/timeline.ts";
+import { uranianChart } from "../src/lib/astro/uranian/engine.ts";
+import { computeUranianAuslosung } from "../src/lib/astro/uranian/auslosung.ts";
 
 let pass = 0, fail = 0;
 const ok = (name, cond, detail = "") => { if (cond) { pass++; console.log(`✅ ${name}`); } else { fail++; console.log(`❌ ${name} ${detail}`); } };
@@ -367,6 +369,74 @@ const MAI = { name: "ใหม่", dtUTC: new Date("1986-04-08T17:04:00Z"), lat
   const legacy = { ...res, perPerson: [{ ...res.perPerson[0], r2: [{ month: 5, planet: "Saturn", planetTh: "เสาร์(土)", sciences: ["western", "qizheng"], evidences: [{ science: "western", dateISO: "2026-05-06", evidence: "x" }] }], r3: [] }] };
   const blkL = renderResonanceBlockTh(legacy);
   ok("v3 render jsonb เก่า (ไม่มี independence) → นับเป็นอิสระ ไม่พัง", blkL.includes("R2 🥇 ยืนยันอิสระ") && !blkL.includes("พ้องเชิงโครงสร้าง"));
+}
+
+/* ████████████ r400 · ยูเรเนียนเข้า R6 (เสียงอารยธรรมที่ 4 · directed/progressed) — Guard B: ไม่แตะ R2 ████████████ */
+
+// helper: กรอง R6 uranian hits จาก engine ตรง (เทียบกับ vote ที่ resonance ผลิต · ไม่ hardcode วัน)
+const R6U_METHODS = new Set(["solar_arc", "prog_sun", "prog_mc"]);
+const R6U_MOVERS = new Set(["Saturn", "Sun", "Meridian"]);
+const R6U_TARGETS = new Set(["Sun", "Meridian", "Ascendant"]);
+const R6U_ASPECTS = new Set([0, 90, 180]);
+const engineUranianR6Hits = (dt, lat, lng, year) => {
+  const uc = uranianChart(dt, lat, lng, true, "M");
+  const aus = computeUranianAuslosung(uc, dt, `${year}-01-01`, `${year}-12-31`);
+  return aus.events.filter((e) => R6U_METHODS.has(e.method) && R6U_MOVERS.has(e.mover) && e.natalTargetKind === "point" && R6U_TARGETS.has(e.natalTarget) && R6U_ASPECTS.has(e.aspect));
+};
+
+const SCIS_U = ["western", "vedic", "ziwei", "qizheng", "uranian"];
+
+// ===== 18) ยูเรเนียนเป็น vote ที่ 4 ใน R6 เมื่อผู้ใช้เลือกศาสตร์นี้ · golden เอี๊ยว 2026 =====
+{
+  const r = buildResonance([AEAW_DB], SCIS_U, YEAR, REF);
+  const p0 = r.perPerson[0];
+  const r6 = p0.r6;
+  ok("r400 RESONANCE_SCIENCES + res.sciences รวม uranian เมื่อเลือก", r.sciences.includes("uranian"), JSON.stringify(r.sciences));
+  const uv = r6?.votes.find((v) => v.system === "uranian");
+  ok("r400 R6 มี vote system=uranian + votes.length=4", !!uv && r6.votes.length === 4, JSON.stringify(r6?.votes.map((v) => v.system)));
+  ok("r400 R6 uranian heavy เป็น boolean (ไม่ null · คำนวณจริงเมื่อเลือก)", !!uv && typeof uv.heavy === "boolean", JSON.stringify(uv));
+  // เทียบ vote heavy กับ engine ตรง (คมสุด/orb — ไม่ hardcode)
+  const eHits = engineUranianR6Hits(AEAW.dtUTC, AEAW.lat, AEAW.lng, YEAR);
+  ok("r400 R6 uranian heavy = (engine มี hit directed/prog เสาร์/☉/Meridian → ☉/MC/Asc มุมแข็ง)", !!uv && uv.heavy === (eHits.length > 0), JSON.stringify({ vote: uv?.heavy, engineHits: eHits.length, sample: eHits.slice(0, 3).map((h) => `${h.method}:${h.mover}${h.aspect}${h.natalTarget}@${h.dateISO}`) }));
+  // golden 3 อารยธรรมเดิมไม่พัง
+  ok("r400 golden 3 อารยธรรมเดิมคงอยู่: 丙午 + จีน沖 + western heavy", r6?.targetGanzhi === "丙午" && r6.relations.includes("沖") && r6.votes.find((v) => v.system === "western")?.heavy === true, JSON.stringify({ gz: r6?.targetGanzhi, rel: r6?.relations }));
+}
+
+// ===== 19) Guard B: ยูเรเนียน "ไม่เข้า R2/R3/R1/R5/CONFLICT" (กัน overcount ดาวจร ephemeris เดียวกับ western) =====
+{
+  const r = buildResonance([AEAW_DB], SCIS_U, YEAR, REF);
+  const p0 = r.perPerson[0];
+  const anyUranianCluster = [...p0.r2, ...p0.r3].some((c) => c.sciences.includes("uranian"));
+  ok("r400 Guard B: ไม่มี cluster R2/R3 ใดมีศาสตร์ uranian", !anyUranianCluster, JSON.stringify({ r2: p0.r2.map((c) => c.sciences), r3: p0.r3.map((c) => c.sciences) }));
+  const anyUranianR1 = p0.r1.entries.some((e) => e.science === "uranian");
+  ok("r400 Guard B: ไม่มี R1 entry uranian · ไม่มี conflict/R5 evidence uranian", !anyUranianR1 && !p0.conflicts.some((c) => c.beneficScience === "uranian" || c.maleficScience === "uranian") && !(p0.r5?.evidence || []).some((e) => e.science === "uranian"));
+  // เทียบกับกรณีไม่เลือก uranian: R2/R3/R1 ต้องเหมือนเดิมเป๊ะ (additive · ไม่กระทบชั้นอื่น)
+  const rNo = buildResonance([AEAW_DB], SCIS, YEAR, REF).perPerson[0];
+  const stripR6 = (p) => JSON.stringify({ r1: p.r1, r2: p.r2, r3: p.r3, conflicts: p.conflicts, r5: p.r5 });
+  ok("r400 additive: เลือก/ไม่เลือก uranian → R1/R2/R3/CONFLICT/R5 เหมือนกันเป๊ะ", stripR6(p0) === stripR6(rNo));
+  ok("r400 ไม่เลือก uranian → R6 คง 3 votes (backward)", rNo.r6?.votes.length === 3 && !rNo.r6.votes.some((v) => v.system === "uranian"));
+}
+
+// ===== 20) render R6 มีบรรทัดยูเรเนียน + voiceCount/votes.length dynamic + deterministic + cap =====
+{
+  const r = buildResonance([AEAW_DB], SCIS_U, YEAR, REF);
+  const blk = renderResonanceBlockTh(r);
+  ok("r400 render R6 มีป้าย ยูเรเนียน(directed/ก้าวหน้า) + /4", blk.includes("ยูเรเนียน(directed/ก้าวหน้า)=") && /→ \d\/4 เสียงบอกปีหนัก/.test(blk), blk.split("\n").filter((l) => l.includes("R6 ปีชง"))[0]);
+  ok(`r400 render ≤ cap ${RESONANCE_BLOCK_MAX_CHARS} (จริง ${blk.length}) + หัวท้ายครบ`, blk.length <= RESONANCE_BLOCK_MAX_CHARS && blk.startsWith("=== RESONANCE_PACKET") && blk.includes("END_RESONANCE_PACKET"));
+  const strip = (x) => { const y = JSON.parse(JSON.stringify(x)); delete y.computeMs; return JSON.stringify(y); };
+  ok("r400 deterministic: uranian R6 รัน 2 รอบเท่ากันทุกตัวอักษร", strip(r) === strip(buildResonance([AEAW_DB], SCIS_U, YEAR, REF)));
+}
+
+// ===== 21) ตัวอย่างจริง: หาปีที่ยูเรเนียนร่วมเสียง R6 ของเอี๊ยว (directed/prog ปลุกจุดส่วนตัว) =====
+{
+  const firedYears = [];
+  for (let y = 2020; y <= 2035; y++) {
+    const r6 = buildResonance([AEAW_DB], SCIS_U, y, REF).perPerson[0].r6;
+    const uv = r6?.votes.find((v) => v.system === "uranian");
+    if (uv?.heavy) firedYears.push({ y, voiceCount: r6.voiceCount, ev: uv.dates.slice(0, 2) });
+  }
+  console.log(`ℹ️ เอี๊ยว · ปีที่ยูเรเนียนร่วมเสียง R6 (2020-2035): ${firedYears.length ? firedYears.map((f) => `${f.y}(${f.voiceCount}เสียง·${f.ev.join(",")})`).join(" · ") : "ไม่มีปีที่ปลุก (นาฬิกาทุติยภูมิเคลื่อนช้า)"}`);
+  ok("r400 ตัวอย่างจริง: มีอย่างน้อย 1 ปีใน 2020-2035 ที่ยูเรเนียนร่วมเสียง (พิสูจน์ voice ที่ 4 ทำงานจริง)", firedYears.length >= 1, `firedYears=${firedYears.map((f) => f.y).join(",")}`);
 }
 
 console.log(`\nผล: ${pass} ผ่าน · ${fail} ไม่ผ่าน`);
