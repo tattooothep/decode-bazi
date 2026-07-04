@@ -261,13 +261,14 @@ async function processBook(bookId: string, p: WorkerParams): Promise<void> {
         // ศาสตร์อื่น: externalPrompt (bookMode → directive อ่านเต็มดวงถูกฉีดใน buildSciencePrompt)
         const prompt = buildSciencePrompt(science, [birth], "", lang, timingRef.refDate, timingRef, { bookMode: true });
         const payload = { message: name, externalPrompt: prompt, lang, profileId: birth.profileId, threadProfileId: birth.profileId, historyProfileIds: [birth.profileId], fusionRunId: bookId };
-        let res = await callSifu(cookie, payload, bind.defaultModel);
+        // วนทุกโมเดล (default → ทุก fallback) จนกว่าจะได้ · กัน 1 โมเดล abort/timeout/auth แล้วบททิ้งทั้งที่ยังมีตัวสำรอง
+        let res: Awaited<ReturnType<typeof callSifu>> | null = null;
         let usedModel = bind.defaultModel;
-        if (!res.ok && bind.fallbackModels[0]) {
-          const fb = await callSifu(cookie, payload, bind.fallbackModels[0]);
-          if (fb.ok) { res = fb; usedModel = bind.fallbackModels[0]; }
+        for (const model of [bind.defaultModel, ...bind.fallbackModels]) {
+          res = await callSifu(cookie, payload, model);
+          if (res.ok && res.reply) { usedModel = model; break; }
         }
-        return { science, label, model: usedModel, ok: res.ok, markdown: res.reply, error: res.error };
+        return { science, label, model: usedModel, ok: !!res?.ok, markdown: res?.reply, error: res?.error };
       } catch (e) {
         return { science, label, model: bind.defaultModel, ok: false, error: e instanceof Error ? e.message.slice(0, 120) : "engine_error" };
       }
