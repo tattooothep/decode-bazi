@@ -84,10 +84,35 @@
   .badge.degraded{color:#b06a1a;border-color:#e5c48a}
   .notready{color:var(--muted);font-style:italic;padding:8px 0}
   .foot{text-align:center;color:var(--muted);font-size:12px;padding:30px 0 50px}
+  /* ===== modal สร้างเล่มใหม่ (r402 · ย้ายจาก fusion) ===== */
+  .cmodal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:18px}
+  .cmodal.hidden{display:none}
+  .cmodal-dialog{width:min(560px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+  .cmodal-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .cmodal-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--accent)}
+  .cmodal-sub{margin-top:5px;font-size:13px;color:var(--muted);line-height:1.5}
+  .cmodal-body{padding:16px 20px;display:grid;gap:12px}
+  .cmodal-flabel{font-size:13px;color:var(--muted)}
+  .cmodal-select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px}
+  .sci-list{display:grid;gap:8px}
+  .sci-item{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:14px;background:var(--bg)}
+  .sci-item.checked{border-color:var(--accent)}
+  .sci-item.disabled{opacity:.5;cursor:not-allowed}
+  .sci-item input{accent-color:var(--accent)}
+  .sci-item .sci-name{font-weight:600;color:var(--ink)}
+  .sci-item .sci-note{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+  .cmodal-synth{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:14px;color:var(--ink);background:var(--bg)}
+  .cmodal-synth input{accent-color:var(--accent)}
+  .cmodal-synth.disabled{opacity:.5;cursor:not-allowed}
+  .cmodal-total{font-size:14px;color:var(--ink)}
+  .cmodal-total b{font-family:var(--serif);font-size:18px;color:var(--gold)}
+  .cmodal-msg{font-size:13px;color:#b06a1a;min-height:16px}
+  .cmodal-msg.ok{color:var(--muted)}
+  .cmodal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
   /* ===== print → PDF ===== */
   @media print{
     :root{--bg:#fff;--panel:#fff;--ink:#000;--muted:#555;--line:#ccc}
-    .bar,.printbtn,.foot .noprint{display:none!important}
+    .bar,.printbtn,.foot .noprint,.cmodal{display:none!important}
     body{font-size:12pt;background:#fff}
     .wrap{max-width:none;padding:0}
     .cover{box-shadow:none;page-break-after:always;border:2px solid var(--accent2)}
@@ -119,13 +144,42 @@
     </div>
   </div>
 
+  <!-- r402 · หน้าต่างสร้างคัมภีร์เล่มใหม่ (ย้ายจาก fusion) · เลือกดวง + ติ๊กศาสตร์ + หลอมรวม + ยามรวมสด -->
+  <div class="cmodal hidden" id="cmodal" role="dialog" aria-modal="true" aria-labelledby="cmodal-title">
+    <div class="cmodal-dialog">
+      <div class="cmodal-head">
+        <div>
+          <div class="cmodal-title" id="cmodal-title" data-i="newTitle">สร้างคัมภีร์ชะตาเล่มใหม่</div>
+          <div class="cmodal-sub" data-i="newSub">เลือกดวง + ติ๊กศาสตร์ที่จะเขียน · แต่ละบทมีภาพพื้นดวง</div>
+        </div>
+        <button class="btn" id="cmodal-close" type="button" aria-label="close">✕</button>
+      </div>
+      <div class="cmodal-body">
+        <label class="cmodal-flabel" for="cmodal-profile" data-i="chart">เลือกดวง</label>
+        <select id="cmodal-profile" class="cmodal-select"></select>
+        <div class="sci-list" id="cmodal-sci"></div>
+        <label class="cmodal-synth" id="cmodal-synth-row">
+          <input type="checkbox" id="cmodal-synth" checked>
+          <span data-i="synth">บทหลอมรวม (ต้องเลือก ≥2 ศาสตร์)</span>
+        </label>
+        <div class="cmodal-total"><span data-i="total">รวมยาม</span> <b id="cmodal-yam">0</b> <span>時</span></div>
+        <div class="cmodal-msg" id="cmodal-msg"></div>
+      </div>
+      <div class="cmodal-foot">
+        <button class="btn" id="cmodal-cancel" type="button" data-i="cancel">ยกเลิก</button>
+        <button class="btn primary" id="cmodal-confirm" type="button" data-i="confirm">สร้างคัมภีร์</button>
+      </div>
+    </div>
+  </div>
+
 <script>
 (function(){
   "use strict";
   var I18N = {
     th:{ brand:"คัมภีร์ชะตา", print:"📥 บันทึกเป็น PDF", loadingText:"กำลังเปิดหนังสือ…",
       kai:"หนังสือดวงชะตา 6 ศาสตร์", issued:"ออกเล่มโดย hourkey · เล่มที่",
-      shelfTitle:"ชั้นหนังสือของฉัน", shelfEmpty:"ยังไม่มีคัมภีร์ชะตา — สร้างเล่มแรกจากหน้า Fusion (ปุ่ม 📜 สร้างคัมภีร์ชะตา)", shelfNew:"สร้างเล่มใหม่", shelfOpen:"เปิดอ่าน", sDone:"เสร็จ", sRunning:"กำลังเขียน…", sDegraded:"บางบทไม่พร้อม", sError:"ล้มเหลว",
+      shelfTitle:"ชั้นหนังสือของฉัน", shelfEmpty:"ยังไม่มีคัมภีร์ชะตา — แตะปุ่ม “สร้างเล่มใหม่” ด้านบน", shelfNew:"สร้างเล่มใหม่", shelfOpen:"เปิดอ่าน", sDone:"เสร็จ", sRunning:"กำลังเขียน…", sDegraded:"บางบทไม่พร้อม", sError:"ล้มเหลว",
+      newTitle:"สร้างคัมภีร์ชะตาเล่มใหม่", newSub:"เลือกดวง + ติ๊กศาสตร์ที่จะเขียน · แต่ละบทมีภาพพื้นดวง", chart:"เลือกดวง", synth:"บทหลอมรวม (ต้องเลือก ≥2 ศาสตร์)", total:"รวมยาม", confirm:"สร้างคัมภีร์", cancel:"ยกเลิก", noSci:"เลือกอย่างน้อย 1 ศาสตร์", creating:"⏳ กำลังสร้างคัมภีร์…", needTime:"ต้องมีเวลาเกิด", soon:"เร็วๆนี้", needYam:"ยามไม่พอ", needLogin:"กรุณาเข้าสู่ระบบก่อน", jobError:"สร้างไม่สำเร็จ · ลองใหม่", noProfile:"ยังไม่มีดวง — สร้างดวงก่อนที่หน้า “ดวงของฉัน”",
       toc:"สารบัญ", preface:"บทนำ", prefaceBody:"หนังสือเล่มนี้อ่านดวงของคุณผ่าน 6 ศาสตร์โบราณ แต่ละศาสตร์มองคนละมุมด้วยศัพท์และคัมภีร์ของตัวเอง แล้วหลอมรวมเป็นภาพเดียว อ่านเป็นเข็มทิศ ไม่ใช่คำสั่งชีวิต",
       synthesis:"บทหลอมรวม", timing:"บทจังหวะเวลา", appendix:"ภาคผนวก",
       running:"⏳ ระบบกำลังเขียนคัมภีร์ชะตาของคุณ", runningSub:"พับจอ/ปิดได้เลย — ระบบเขียนต่อหลังบ้าน · กลับมาเปิดใหม่ได้ที่ “หนังสือของฉัน” (ใช้เวลาราว 4-8 นาที · 6 ศาสตร์ + บทหลอมรวม)",
@@ -133,7 +187,8 @@
       chapter:"บทที่", noId:"ไม่พบเลขเล่ม (id) — เปิดจาก \"ดวงของฉัน\"", disclaimer:"คำเตือน", method:"วิธีคำนวณ" },
     en:{ brand:"Book of Destiny", print:"📥 Save as PDF", loadingText:"Opening your book…",
       kai:"Book of Destiny · 6 Sciences", issued:"Issued by hourkey · No.",
-      shelfTitle:"My Books", shelfEmpty:"No Book of Destiny yet — create your first from the Fusion page (📜 button)", shelfNew:"Create new", shelfOpen:"Open", sDone:"done", sRunning:"writing…", sDegraded:"partial", sError:"failed",
+      shelfTitle:"My Books", shelfEmpty:"No Book of Destiny yet — tap “Create new” above", shelfNew:"Create new", shelfOpen:"Open", sDone:"done", sRunning:"writing…", sDegraded:"partial", sError:"failed",
+      newTitle:"Create a new Book of Destiny", newSub:"Pick a chart + the sciences to include · each chapter shows its natal chart", chart:"Chart", synth:"Synthesis chapter (needs 2+ sciences)", total:"Total", confirm:"Create book", cancel:"Cancel", noSci:"Pick at least 1 science", creating:"⏳ Creating your book…", needTime:"Needs birth time", soon:"Soon", needYam:"Not enough hours", needLogin:"Please sign in first", jobError:"Failed · try again", noProfile:"No chart yet — create one on “My Chart” first",
       toc:"Contents", preface:"Preface", prefaceBody:"This book reads your chart through 6 ancient sciences, each with its own lens and canon, then fuses them into one picture. Read it as a compass, not a command.",
       synthesis:"Synthesis", timing:"Life Timing", appendix:"Appendix",
       running:"⏳ Writing your Book of Destiny", runningSub:"You can close or fold your screen — it keeps writing in the background. Reopen anytime from “My Books” (takes about 4-8 minutes · 6 sciences + synthesis).",
@@ -141,7 +196,8 @@
       chapter:"Chapter", noId:"No book id — open from \"My Chart\"", disclaimer:"Disclaimer", method:"Method" },
     zh:{ brand:"命書", print:"📥 存為 PDF", loadingText:"正在打開命書…",
       kai:"命書 · 六術合參", issued:"hourkey 出品 · 第",
-      shelfTitle:"我的命書", shelfEmpty:"尚無命書 — 從 Fusion 頁面建立第一本（📜 按鈕）", shelfNew:"建立新書", shelfOpen:"開啟", sDone:"完成", sRunning:"撰寫中…", sDegraded:"部分缺失", sError:"失敗",
+      shelfTitle:"我的命書", shelfEmpty:"尚無命書 — 請點上方「建立新書」", shelfNew:"建立新書", shelfOpen:"開啟", sDone:"完成", sRunning:"撰寫中…", sDegraded:"部分缺失", sError:"失敗",
+      newTitle:"建立新命書", newSub:"選擇命盤 + 勾選要收錄的術數 · 每章附命盤圖", chart:"命盤", synth:"融合章（需選 2 術以上）", total:"合計", confirm:"生成命書", cancel:"取消", noSci:"至少選 1 術", creating:"⏳ 正在生成命書…", needTime:"需要出生時間", soon:"即將推出", needYam:"時數不足", needLogin:"請先登入", jobError:"生成失敗 · 請重試", noProfile:"尚無命盤 — 請先於「我的命盤」建立",
       toc:"目錄", preface:"前言", prefaceBody:"本書以六種古術解讀您的命盤，各以自身術語與典籍立論，再融合為一。此書為指南針，非命令。",
       synthesis:"融合章", timing:"時運章", appendix:"附錄",
       running:"⏳ 正在撰寫您的命書", runningSub:"可關閉或收起螢幕 — 系統會在後台繼續撰寫，稍後可從「我的命書」重新開啟（約需 4-8 分鐘 · 六術＋融合章）。",
@@ -323,7 +379,7 @@
   function fmtDate(iso){ try{ var d=new Date(iso); return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2); }catch(_){ return ""; } }
   function renderShelf(books){
     var head = '<section class="cover" style="padding:30px 24px"><div class="kai">'+esc(t("kai"))+'</div><h1 style="font-size:clamp(24px,6vw,34px)">'+esc(t("shelfTitle"))+'</h1><div class="zh">命書</div>'+
-      '<div style="margin-top:16px"><a class="btn primary" href="/master-fusion" style="text-decoration:none">📜 '+esc(t("shelfNew"))+'</a></div></section>';
+      '<div style="margin-top:16px"><button class="btn primary" id="shelfNewBtn" type="button">📜 '+esc(t("shelfNew"))+'</button></div></section>';
     if(!books.length){ root.innerHTML = head + '<div class="state">'+esc(t("shelfEmpty"))+"</div>"; return; }
     var cards = books.map(function(b){
       var open = (b.status==="done"||b.status==="degraded");
@@ -362,6 +418,133 @@
       })
       .catch(function(){ renderError("network"); });
   }
+
+  // ===== สร้างคัมภีร์เล่มใหม่ (modal ในหน้าชั้นหนังสือ · r402 · ย้ายจาก fusion) =====
+  var DISCIPLINES = {
+    bazi:    { th:"ปาจื้อ 八字",          en:"BaZi 八字",          zh:"八字",     needsBirthTime:false, available:true },
+    qizheng: { th:"ดาวจริง 七政四餘",      en:"Real-Star 七政四餘", zh:"七政四餘", needsBirthTime:true,  available:true },
+    ziwei:   { th:"จื่อเวยโต่วซู 紫微斗數", en:"Zi Wei 紫微斗數",    zh:"紫微斗數", needsBirthTime:true,  available:true },
+    western: { th:"โหราตะวันตก",          en:"Western Astrology",  zh:"西洋占星", needsBirthTime:false, available:true },
+    vedic:   { th:"โหราพระเวท (ฮินดู)",   en:"Vedic Astrology",    zh:"吠陀占星", needsBirthTime:false, available:true },
+    uranian: { th:"โหราศาสตร์ยูเรเนียน",  en:"Uranian Astrology",  zh:"天王星占星(漢堡學派)", needsBirthTime:false, available:true }
+  };
+  var SCI_ORDER = ["bazi","qizheng","ziwei","western","vedic","uranian"];
+  var BOOK_SCI_YAM = 50, BOOK_SYNTH_YAM = 50;
+  var cProfiles = [], cProfileId = "", cSel = {}, cSynth = true, cSubmitting = false;
+  function sciLabel(s){ var b=DISCIPLINES[s]; return b?(b[lang]||b.th):s; }
+  function cProfileById(id){ return cProfiles.find(function(p){ return String(p.id)===String(id); })||null; }
+  function cProfileHasTime(p){ return !p || p.birth_time_known !== false; }
+  function cSelectable(){ var has=cProfileHasTime(cProfileById(cProfileId)); return SCI_ORDER.filter(function(s){ var b=DISCIPLINES[s]; return b&&b.available&&(!b.needsBirthTime||has); }); }
+  function cSelectedList(){ return cSelectable().filter(function(s){ return cSel[s]; }); }
+  function cComputeYam(){ var n=cSelectedList().length; return n*BOOK_SCI_YAM+(cSynth&&n>=2?BOOK_SYNTH_YAM:0); }
+  function cRenderSci(){
+    var list=document.getElementById("cmodal-sci"); if(!list) return;
+    var has=cProfileHasTime(cProfileById(cProfileId));
+    list.innerHTML = SCI_ORDER.map(function(s){
+      var b=DISCIPLINES[s];
+      var blockedTime=b.needsBirthTime&&!has;
+      var disabled=!b.available||blockedTime;
+      var checked=!!cSel[s]&&!disabled;
+      var note=!b.available?t("soon"):(blockedTime?t("needTime"):(BOOK_SCI_YAM+" 時"));
+      return '<label class="sci-item'+(checked?" checked":"")+(disabled?" disabled":"")+'" data-sci="'+s+'">'+
+        '<input type="checkbox" data-sci-cb="'+s+'"'+(checked?" checked":"")+(disabled?" disabled":"")+'>'+
+        '<span class="sci-name">'+esc(sciLabel(s))+'</span>'+
+        '<span class="sci-note">'+esc(note)+'</span></label>';
+    }).join("");
+  }
+  function cUpdate(){
+    var n=cSelectedList().length;
+    var row=document.getElementById("cmodal-synth-row");
+    var cb=document.getElementById("cmodal-synth");
+    var sd=n<2;
+    if(row) row.classList.toggle("disabled",sd);
+    if(cb){ cb.disabled=sd; cb.checked=cSynth&&!sd; }
+    var yam=document.getElementById("cmodal-yam"); if(yam) yam.textContent=cComputeYam();
+    var conf=document.getElementById("cmodal-confirm"); if(conf) conf.disabled=(n===0||cSubmitting);
+    var msg=document.getElementById("cmodal-msg"); if(msg&&!cSubmitting){ msg.className="cmodal-msg"; msg.textContent=(n===0?t("noSci"):""); }
+  }
+  function cFillProfiles(){
+    var sel=document.getElementById("cmodal-profile"); if(!sel) return;
+    sel.innerHTML = cProfiles.map(function(p){
+      var nm = p.is_self ? ("⭐ "+(p.name||p.nickname||"—")) : (p.nickname||p.name||"—");
+      return '<option value="'+esc(String(p.id))+'">'+esc(nm)+"</option>";
+    }).join("");
+    if(cProfileId && sel.querySelector('option[value="'+cProfileId+'"]')) sel.value=cProfileId;
+    else cProfileId = sel.value;
+  }
+  function openCreateModal(){
+    var m=document.getElementById("cmodal"); if(!m) return;
+    var msg=document.getElementById("cmodal-msg"); if(msg){ msg.className="cmodal-msg"; msg.textContent=""; }
+    cSubmitting=false;
+    cSel={}; cSelectable().forEach(function(s){ cSel[s]=true; }); cSynth=true;
+    m.classList.remove("hidden");
+    if(!cProfiles.length){
+      fetch("/api/profile",{ credentials:"same-origin", cache:"no-store", headers:{ "Accept":"application/json" } })
+        .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, st:r.status, j:j }; }); })
+        .then(function(res){
+          if(res.st===401){ location.href="/signup?next="+encodeURIComponent(location.pathname); return; }
+          var j=res.j||{};
+          cProfiles=Array.isArray(j.profiles)?j.profiles:[];
+          if(!cProfiles.length){ if(msg){ msg.className="cmodal-msg"; msg.textContent=t("noProfile"); } var c=document.getElementById("cmodal-confirm"); if(c) c.disabled=true; return; }
+          cProfileId=String((j.active_profile&&j.active_profile.id)||cProfiles[0].id);
+          cSel={}; cSelectable().forEach(function(s){ cSel[s]=true; });
+          cFillProfiles(); cRenderSci(); cUpdate();
+        })
+        .catch(function(){ if(msg){ msg.className="cmodal-msg"; msg.textContent=t("jobError"); } });
+    } else {
+      cFillProfiles(); cRenderSci(); cUpdate();
+    }
+  }
+  function closeCreateModal(){ var m=document.getElementById("cmodal"); if(m) m.classList.add("hidden"); }
+  function submitCreate(){
+    if(cSubmitting) return;
+    var sciences=cSelectedList(); if(!sciences.length||!cProfileId) return;
+    var includeSynth=cSynth&&sciences.length>=2;
+    var msg=document.getElementById("cmodal-msg");
+    var conf=document.getElementById("cmodal-confirm");
+    cSubmitting=true; if(conf) conf.disabled=true;
+    if(msg){ msg.className="cmodal-msg ok"; msg.textContent=t("creating"); }
+    fetch("/api/book",{ method:"POST", headers:{ "Content-Type":"application/json" }, credentials:"same-origin",
+      body: JSON.stringify({ profileId:cProfileId, sciences:sciences, includeSynthesis:includeSynth, lang:lang, force:1 }) })
+      .then(function(r){ return r.json().then(function(j){ return { status:r.status, j:j }; }); })
+      .then(function(res){
+        var j=res.j||{};
+        if(j.bookId){ location.href="/book?id="+encodeURIComponent(j.bookId); return; }
+        cSubmitting=false; if(conf) conf.disabled=false;
+        if(msg){ msg.className="cmodal-msg";
+          if(j.error==="insufficient_hours"){ msg.textContent=t("needYam")+" · "+(j.needed||j.required||cComputeYam())+" 時"; }
+          else if(res.status===401){ msg.textContent=t("needLogin"); }
+          else { msg.textContent=String(j.error||res.status); }
+        }
+      })
+      .catch(function(){ cSubmitting=false; if(conf) conf.disabled=false; if(msg){ msg.className="cmodal-msg"; msg.textContent=t("jobError"); } });
+  }
+  (function wireCreateModal(){
+    var sci=document.getElementById("cmodal-sci");
+    if(sci) sci.addEventListener("change",function(e){
+      var cb=e.target.closest&&e.target.closest("[data-sci-cb]"); if(!cb) return;
+      cSel[cb.getAttribute("data-sci-cb")]=cb.checked;
+      var lab=cb.closest(".sci-item"); if(lab) lab.classList.toggle("checked",cb.checked);
+      cUpdate();
+    });
+    var synth=document.getElementById("cmodal-synth");
+    if(synth) synth.addEventListener("change",function(){ cSynth=synth.checked; cUpdate(); });
+    var prof=document.getElementById("cmodal-profile");
+    if(prof) prof.addEventListener("change",function(){
+      cProfileId=prof.value;
+      cSel={}; cSelectable().forEach(function(s){ cSel[s]=true; });
+      cRenderSci(); cUpdate();
+    });
+    var close=document.getElementById("cmodal-close"); if(close) close.addEventListener("click",closeCreateModal);
+    var cancel=document.getElementById("cmodal-cancel"); if(cancel) cancel.addEventListener("click",closeCreateModal);
+    var conf=document.getElementById("cmodal-confirm"); if(conf) conf.addEventListener("click",submitCreate);
+    var modal=document.getElementById("cmodal"); if(modal) modal.addEventListener("click",function(e){ if(e.target===modal) closeCreateModal(); });
+  })();
+  // ปุ่ม "สร้างเล่มใหม่" ในชั้นหนังสือ (root re-render บ่อย → ใช้ delegation บน root)
+  root.addEventListener("click", function(e){
+    var b = e.target.closest && e.target.closest("#shelfNewBtn");
+    if(b){ e.preventDefault(); openCreateModal(); }
+  });
 
   // ===== events =====
   document.getElementById("themeBtn").addEventListener("click", function(){
