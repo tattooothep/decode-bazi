@@ -39,6 +39,10 @@ const FLAG_JSON = argv.includes('--json');
 const FLAG_SUMMARY = argv.includes('--summary');
 const pageArg = argv.find((a) => a.startsWith('--page='));
 const ONLY_PAGE = pageArg ? pageArg.slice('--page='.length) : null;
+// เฟส 0 (8 ภาษา): --langs=th,en,zh,vi,ja,ko,ru,es → ตรวจความครบของทุกภาษาที่ระบุ ไม่ใช่แค่ 3 ภาษาแรก
+const langsArg = argv.find((a) => a.startsWith('--langs='));
+const LANGS = langsArg ? langsArg.slice('--langs='.length).split(',').map((s) => s.trim()).filter(Boolean) : ['th', 'en', 'zh'];
+const EXTRA_LANGS = LANGS.filter((l) => !['th', 'en', 'zh'].includes(l));
 
 // ══════════════════════════════════════════════════════════════════════
 // ชั้นล่างสุด: char-scanner ที่ระวังสตริง/คอมเมนต์ (ใช้ร่วมกันหลายจุด)
@@ -254,6 +258,7 @@ function registerHkEntry(map, key, nestedEntries, idxForLine, lineOf) {
     th: nestedEntries.get('th'),
     en: nestedEntries.get('en'),
     zh: nestedEntries.get('zh'),
+    langs: nestedEntries, // map เต็มทุกภาษา — ใช้ตรวจภาษาเพิ่ม (vi/ja/ko/ru/es) ตาม --langs
     line: lineOf(idxForLine),
   });
 }
@@ -303,7 +308,7 @@ function collectInlineEntries(text) {
   if (outer.closeIdx === -1) return null;
   const excludedRanges = [[openIdx, outer.closeIdx + 1]];
   const perLang = {};
-  for (const lang of ['th', 'en', 'zh']) {
+  for (const lang of [...new Set(['th', 'en', 'zh', ...LANGS])]) {
     const entry = outer.entries.get(lang);
     if (entry && entry.raw.startsWith('{')) {
       perLang[lang] = parseObjectAt(text, entry.valueStart).entries;
@@ -483,9 +488,10 @@ function analyzeFile(filePath, fileName) {
 
   const excludedRanges = [...hk.excludedRanges, ...(inline ? inline.excludedRanges : [])];
 
-  // ── B: คีย์ขาดภาษา + นับจำนวนคีย์ต่อภาษา ──
+  // ── B: คีย์ขาดภาษา + นับจำนวนคีย์ต่อภาษา (รวมภาษาเพิ่มตาม --langs) ──
   const missingEn = [];
   const missingZh = [];
+  const missingExtra = Object.fromEntries(EXTRA_LANGS.map((l) => [l, []]));
   let thCount = 0, enCount = 0, zhCount = 0;
   const definedKeys = new Set();
 
@@ -495,6 +501,9 @@ function analyzeFile(filePath, fileName) {
       if (valuePresent(rec.th)) thCount++;
       if (valuePresent(rec.en)) enCount++; else missingEn.push({ key, line: rec.line });
       if (valuePresent(rec.zh)) zhCount++; else missingZh.push({ key, line: rec.line });
+      for (const lang of EXTRA_LANGS) {
+        if (!valuePresent(rec.langs && rec.langs.get(lang))) missingExtra[lang].push({ key, line: rec.line });
+      }
     }
   }
   if (mechanism === 'inline' || mechanism === 'HK_I18N+inline') {
@@ -508,6 +517,9 @@ function analyzeFile(filePath, fileName) {
       const line = lineOf(thVal.keyStartIdx);
       if (valuePresent(enVal)) enCount++; else missingEn.push({ key, line });
       if (valuePresent(zhVal)) zhCount++; else missingZh.push({ key, line });
+      for (const lang of EXTRA_LANGS) {
+        if (!valuePresent(inline.perLang[lang] && inline.perLang[lang].get(key))) missingExtra[lang].push({ key, line });
+      }
     }
     // นับ en/zh เผื่อมีคีย์ที่นิยามใน en/zh แต่ไม่มีใน th (ไม่ปกติ แต่กันตกหล่นในยอดรวม)
     for (const [key, v] of inline.perLang.en) if (!inline.perLang.th.has(key) && valuePresent(v)) enCount++;
@@ -541,14 +553,15 @@ function analyzeFile(filePath, fileName) {
   const strayJs = findD2Stray(text, scriptBlocks, excludedRanges, lineOf, lines);
 
   const totalKeys = definedKeys.size;
-  const problemCount = missingEn.length + missingZh.length + undefinedKeys.length + strayHtml.length + strayJs.length;
+  const missingExtraCount = Object.values(missingExtra).reduce((a, v) => a + v.length, 0);
+  const problemCount = missingEn.length + missingZh.length + missingExtraCount + undefinedKeys.length + strayHtml.length + strayJs.length;
 
   return {
     file: fileName,
     mechanism,
     totalKeys,
     thCount, enCount, zhCount,
-    missingEn, missingZh, undefinedKeys, strayHtml, strayJs,
+    missingEn, missingZh, missingExtra, undefinedKeys, strayHtml, strayJs,
     problemCount,
   };
 }
@@ -579,7 +592,9 @@ function printTable(results) {
   console.log('-'.repeat(header.length));
   const sum = (k) => results.reduce((a, r) => a + (typeof r[k] === 'number' ? r[k] : r[k].length), 0);
   console.log(
-    `รวม ${results.length} ไฟล์ · คีย์รวม ${sum('totalKeys')} · ขาด EN ${sum('missingEn')} · ขาด ZH ${sum('missingZh')} · อ้างไม่นิยาม ${sum('undefinedKeys')} · หลง HTML ${sum('strayHtml')} · หลง JS ${sum('strayJs')}`
+    `รวม ${results.length} ไฟล์ · คีย์รวม ${sum('totalKeys')} · ขาด EN ${sum('missingEn')} · ขาด ZH ${sum('missingZh')}` +
+    EXTRA_LANGS.map((l) => ` · ขาด ${l.toUpperCase()} ${results.reduce((a, r) => a + ((r.missingExtra || {})[l] || []).length, 0)}`).join('') +
+    ` · อ้างไม่นิยาม ${sum('undefinedKeys')} · หลง HTML ${sum('strayHtml')} · หลง JS ${sum('strayJs')}`
   );
 }
 
@@ -589,6 +604,7 @@ function printDetails(results, limit) {
     console.log(`\n=== ${r.file} (${r.mechanism}) — ปัญหา ${r.problemCount} รายการ ===`);
     const items = [];
     for (const m of r.missingEn) items.push(`[ขาด EN] L${m.line}  คีย์ "${m.key}"`);
+    for (const lang of EXTRA_LANGS) for (const m of (r.missingExtra || {})[lang] || []) items.push(`[ขาด ${lang.toUpperCase()}] L${m.line}  คีย์ "${m.key}"`);
     for (const m of r.missingZh) items.push(`[ขาด ZH] L${m.line}  คีย์ "${m.key}"`);
     for (const u of r.undefinedKeys) items.push(`[อ้างไม่นิยาม] L${u.line}  คีย์ "${u.key}"`);
     for (const h of r.strayHtml) items.push(`[หลง HTML] L${h.line}  "${h.snippet}"`);

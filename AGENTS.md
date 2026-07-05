@@ -668,3 +668,9 @@ SELECT COUNT(*) FROM people WHERE birth_date IS NULL;
 4. INSERT batch (ID range ไม่ชนของเดิม)
 5. ตรวจ category='famous' · CHECK constraint
 6. รายงาน 8 จุด · ระบุ source ทุก batch
+
+## 🌐 มาตรฐาน i18n เดียวทั้งเว็บ (เฟส 0 แผน 8 ภาษา · 5 ก.ค. 2569)
+- **แกนกลาง**: `/public/js/hk-i18n-core.js` (HK.i18n.t/term/apply/setLocale) — หน้าใหม่ทุกหน้าต้องใช้ตัวนี้ · หน้าเก่า (inline I18N / data-t / data-l) ทยอยย้ายตอนแตะหน้า อย่าสร้างสำเนียงใหม่เพิ่ม
+- **คลังศัพท์วิชา**: `/data/i18n/science-terms.json` — 沖/合/用神/... ต่อ 8 ภาษา · นโยบาย "คำท้องถิ่นนำ จีนกำกับเล็ก" · ห้ามแปลศัพท์วิชาซ้ำในหน้า ให้ดึงจากคลัง (HK.i18n.term)
+- **ภาษา**: localStorage `hk_locale` (เขียน `hk_lang` คู่) · vi/ja/ko/ru/es ต้องผ่านเจ้าของภาษาตรวจก่อนเข้า LIVE
+- **ด่านก่อน deploy**: `node scripts/i18n-scan.mjs --summary` ต้องไม่มีขาดภาษา/คีย์ผี · เพิ่มภาษาใหม่ = `--langs=th,en,zh,vi,...` ต้องขาด 0
