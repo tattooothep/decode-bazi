@@ -335,8 +335,30 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 .science-item.good .delta{color:#7dd37b;}
 .science-item.warn .delta{color:#e26b5d;}
 .science-item.note .delta{color:var(--fg-faint);}
+.science-item.offtopic{color:var(--fg-faint);opacity:.85;}
+.science-item.offtopic .delta{color:var(--fg-faint);background:rgba(150,150,150,.16);border-radius:99px;padding:1px 6px;text-align:center;}
 .science-item .txt b{color:var(--fg);font-weight:700;}
 .science-empty{font-size:12px;color:var(--fg-faint);line-height:1.5;}
+/* r418 · เล่าลำดับชั้น 3 ขั้นบนการ์ดฤกษ์แนะนำ */
+.layer-story{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;color:var(--fg-soft);margin-bottom:8px;}
+.layer-story .ls-sep{color:var(--fg-faint);}
+.layer-story .ls-step{padding:2px 8px;border-radius:99px;background:var(--bg-3);border:1px solid var(--line);}
+.layer-story .ls-step.ok{color:#7dd37b;border-color:rgba(125,211,123,.34);}
+.layer-story .ls-step.warn{color:#e26b5d;border-color:rgba(226,107,93,.34);}
+.layer-story .ls-step.na{color:var(--fg-faint);}
+/* r418 · โซนช่วงเวลาที่ตำราห้าม (cutSlots) */
+.cut-allcut-banner{margin:10px 0;padding:12px 14px;background:rgba(226,107,93,.1);border:1px solid rgba(226,107,93,.34);border-radius:10px;color:#e26b5d;font-size:13px;line-height:1.6;}
+.cut-slots-details{margin-top:14px;border:1px solid rgba(226,107,93,.28);border-radius:10px;background:rgba(226,107,93,.05);overflow:hidden;}
+.cut-slots-details summary{cursor:pointer;padding:11px 14px;font-size:13px;font-weight:700;color:#e26b5d;list-style:none;}
+.cut-slots-details summary::-webkit-details-marker{display:none;}
+.cut-slots-details[open] summary{border-bottom:1px solid rgba(226,107,93,.22);}
+.cut-slots-body{padding:10px 14px;display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;}
+.cut-slot-row{padding:8px 10px;background:var(--bg-3);border:1px solid rgba(226,107,93,.2);border-radius:8px;}
+.cut-slot-when{font-size:12px;font-weight:700;color:var(--fg);margin-bottom:4px;}
+.cut-slot-when .tc{font-family:var(--tc);color:#e26b5d;margin-left:4px;}
+.cut-reason{font-size:11px;color:var(--fg-soft);line-height:1.6;padding-left:2px;}
+.cut-reason::before{content:'⛔ ';}
+.cut-slot-more{font-size:11px;color:var(--fg-faint);text-align:center;padding-top:2px;}
 .hex-day-meaning{margin-top:8px;background:rgba(200,164,77,.06);border:1px solid var(--gold-line);border-radius:10px;padding:11px 13px;color:var(--fg-soft);font-size:12px;line-height:1.55;}
 .hex-day-meaning .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;}
 .hex-day-meaning .title{font-weight:700;color:var(--fg);font-size:13px;}
@@ -890,7 +912,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
               </div>
               <div class="sub-row">
                 <input type="checkbox" id="qm-strict"/>
-                <label  for="qm-strict" data-i18n="auto.d.017">เข้มงวด · ประตูร้ายจำกัดคะแนนแรงขึ้น</label>
+                <label  for="qm-strict" data-i18n="auto.d.017">ผ่อนเกณฑ์ประตูร้าย (ไม่ตัดทิ้ง แค่เตือน)</label>
               </div>
             </div>
           </label>
@@ -904,17 +926,19 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
                 <div class="sub" data-i18n="dp.sci.heluo.sub">อ่านจังหวะตัวเลขและดาวเหิน 9 ดาว · ใช้เป็นคะแนนเสริม ไม่ใช่ตัวตัดหลัก</div>
               </div>
             </div>
-            <div class="filter-sub">
-              <div class="sub-row">
-                <span data-i18n="auto.d.020">คะแนนขั้นต่ำ:</span>
-                <input type="number" id="hl-min" min="0" max="100" value="70" style="width:60px"/>
-              </div>
-            </div>
           </label>
 
             </div>
           </details>
 
+        </div>
+
+        <div class="min-score-zone" style="margin:12px 0 4px;padding:10px 12px;background:rgba(200,164,77,.06);border:1px solid var(--gold-line);border-radius:10px;">
+          <div class="sub-row" style="justify-content:space-between;">
+            <span data-i18n="dp.minscore.label">คะแนนรวมขั้นต่ำ</span>
+            <input type="number" id="min-score-total" min="0" max="100" value="0" style="width:60px"/>
+          </div>
+          <div style="font-size:10px;color:var(--fg-faint);margin-top:4px;line-height:1.5;" data-i18n="dp.minscore.hint">กรองเฉพาะฤกษ์ที่คะแนนรวมถึงเกณฑ์นี้ · 0 = ไม่กรอง (แสดงทุกฤกษ์ที่ผ่านการตัดของตำรา)</div>
         </div>
 
         <button  class="btn-search" id="btnSearch" data-i18n="auto.d.023">⚡ ค้นหาฤกษ์</button>
@@ -977,6 +1001,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
           <p data-i18n="dp.empty.hint">เลือกกิจกรรม + ช่วงวัน + เกณฑ์กรอง<br/>แล้วกด "⚡ ค้นหาฤกษ์" เพื่อเริ่ม</p>
         </div>
       </div>
+      <!-- r418 · โซนช่วงเวลาที่ตำราห้าม (veto/cutSlots) -->
+      <div id="cutSlotsZone"></div>
 
     </section>
   </div>
@@ -1004,8 +1030,6 @@ const state = {
   qmCalc: 'chaibu',
   bzChong: true,
   bzXing: false,
-  qmStrict: false,
-  hlMin: 70,
   sifuHistory: [],
   sifuBusy: false,
   sifuAstroContext: null
@@ -2300,9 +2324,12 @@ function buildScienceSections(matches, moduleScores){
     const meta = MODULE_LABELS[key] || { th:key, zh:key };
     const rawText = isObj ? String(raw.text || raw.thai || '') : String(raw || '');
     const delta = isObj ? Number(raw.delta || 0) : reasonDelta(raw);
+    const code = isObj ? String(raw.code || '') : '';
+    /* r418 · ตงกงข้ามกิจกรรม (ภาพรวมของวัน ไม่เจาะกิจกรรมนี้) — style แยกจากป้ายหนุน/เตือน */
+    const isOffTopic = code === 'DONGGONG_OFF_TOPIC';
     const isWarn = (isObj && raw.warn === true) || delta < 0 || rawText.includes('ระวัง') || rawText.includes('⚠');
     const text = displayReasonText(rawText);
-    const sig = `${key}|${isWarn ? 'warn' : 'good'}|${text}`;
+    const sig = `${key}|${isOffTopic ? 'offtopic' : isWarn ? 'warn' : 'good'}|${text}`;
     if (seen.has(sig)) return;
     seen.add(sig);
     if (!map.has(key)) map.set(key, {
@@ -2311,10 +2338,10 @@ function buildScienceSections(matches, moduleScores){
       items: [], good:0, warn:0,
     });
     const sec = map.get(key);
-    const kind = isWarn ? 'warn' : delta > 0 ? 'good' : 'note';
+    const kind = isOffTopic ? 'offtopic' : isWarn ? 'warn' : delta > 0 ? 'good' : 'note';
     if (kind === 'warn') sec.warn += 1;
     if (kind === 'good') sec.good += 1;
-    sec.items.push({ text, delta, kind });
+    sec.items.push({ text, delta, kind, code });
   });
   /* r378 · หมวด ② ท้องฟ้าจริง: เปิด module แล้วแต่ยามนี้ไม่มีเหตุผลเลย (ฟ้าโปร่ง/ไม่คาบช่วงร้าย)
      เดิมการ์ดหายทั้งหมวด user คิดว่า "ไม่มีข้อมูล" → เติมการ์ดสถานะ "โปร่ง" จากคะแนน module แทน */
@@ -2362,7 +2389,7 @@ function renderScienceSections(sections){
     const status = tone === 'mixed' ? _dptx('dp.tone.mixed','มีทั้งหนุน/หัก') : tone === 'warn' ? _dptx('dp.tone.warn','ต้องระวัง') : tone === 'neutral' ? _dptx('dp.tone.neutral','กลาง') : _dptx('dp.tone.good','เป็นแรงหนุน');
     const secName = escHtml((lang === 'en' && sec.en) ? sec.en : sec.th);
     const items = sec.items.slice(0, 5).map(it => {
-      const delta = it.label || (it.delta ? (it.delta > 0 ? `+${it.delta}` : `${it.delta}`) : (it.kind === 'warn' ? _dptx('dp.tone.warn_short','ระวัง') : _dptx('dp.tone.read','อ่าน')));
+      const delta = it.label || (it.kind === 'offtopic' ? _dptx('dp.tone.offtopic','ภาพรวมวัน') : it.delta ? (it.delta > 0 ? `+${it.delta}` : `${it.delta}`) : (it.kind === 'warn' ? _dptx('dp.tone.warn_short','ระวัง') : _dptx('dp.tone.read','อ่าน')));
       return `<div class="science-item ${it.kind}"><span class="delta">${escHtml(delta)}</span><span class="txt">${escHtml(it.text)}</span></div>`;
     }).join('');
     return `<section class="science-card ${tone}">
@@ -2402,6 +2429,32 @@ function summarizeScience(sections){
   return parts.join(' | ');
 }
 
+/* r418 · เล่าลำดับชั้นสั้น ๆ บนการ์ดฤกษ์แนะนำ: ปฏิทินใหญ่ → ตงกงกิจกรรมนี้ → ดวงคุณ
+   · '·' = ตำรา/ศาสตร์นั้นไม่ได้เปิดใช้ในการค้นครั้งนี้ (ไม่ใช่ "ไม่ผ่าน")
+   · ตงกง '◦' = ภาพรวมของวัน ไม่เจาะกิจกรรมนี้ (DONGGONG_OFF_TOPIC) · '⚠' = ดวงบุคคลมีคำเตือน (ba_zi/yong_shen) */
+function buildLayerStoryLine(t){
+  const reasons = t.science_reasons || t.matches || [];
+  const ms = t.moduleScores || {};
+  const step1 = ms.ze_ri != null ? '✓' : '·';
+  const dgActive = !!t.donggong || reasons.some(r => r && r.source === 'dong_gong');
+  const offTopic = reasons.some(r => r && r.code === 'DONGGONG_OFF_TOPIC');
+  const step2 = !dgActive ? '·' : (offTopic ? '◦' : '✓');
+  const personalActive = ms.ba_zi != null || ms.yong_shen != null;
+  const personalWarn = reasons.some(r => r && (r.source === 'ba_zi' || r.source === 'yong_shen') && r.warn === true);
+  const step3 = !personalActive ? '·' : (personalWarn ? '⚠' : '✓');
+  const clsFor = (v) => v === '⚠' ? 'warn' : v === '✓' ? 'ok' : 'na';
+  const labelBasic = _dptx('dp.story.basic','ปฏิทินใหญ่');
+  const labelDonggong = _dptx('dp.story.donggong','ตงกงกิจกรรมนี้');
+  const labelPersonal = _dptx('dp.story.personal','ดวงคุณ');
+  return `<div class="layer-story">
+    <span class="ls-step ${clsFor(step1)}">${labelBasic} ${step1}</span>
+    <span class="ls-sep">·</span>
+    <span class="ls-step ${clsFor(step2)}">${labelDonggong} ${step2}</span>
+    <span class="ls-sep">·</span>
+    <span class="ls-step ${clsFor(step3)}">${labelPersonal} ${step3}</span>
+  </div>`;
+}
+
 function elementChipFromStem(stem){
   const el = STEM_ELEMENT[stem] || '';
   if (!el) return '';
@@ -2409,6 +2462,46 @@ function elementChipFromStem(stem){
   const elLabel = lang === 'en' ? ELEMENT_EN[el] : lang === 'zh' ? ELEMENT_ZH[el] : ELEMENT_TH[el];
   const prefix = _dptx('dp.element.prefix','ธาตุ');
   return `<span class="el-chip el-${el}" title="${prefix}${elLabel}"><span class="th">${prefix}${elLabel}</span><b>${ELEMENT_ZH[el]}</b></span>`;
+}
+
+/* r418 · โซนช่วงเวลาที่ตำราห้าม (veto/cutSlots) — พับ default · แสดงเหตุผล veto ทุกตัว (reasonTh/En/Zh ตามภาษาปัจจุบัน) */
+function renderCutSlotsZone(cutSlots){
+  const zone = document.getElementById('cutSlotsZone');
+  if (!zone) return;
+  const list = cutSlots || [];
+  if (!list.length){ zone.innerHTML = ''; return; }
+  const L = getCurrentLang();
+  const SHICHEN_NAME = {子:'子時',丑:'丑時',寅:'寅時',卯:'卯時',辰:'辰時',巳:'巳時',午:'午時',未:'未時',申:'申時',酉:'酉時',戌:'戌時',亥:'亥時'};
+  const LIMIT = 30;
+  const shown = list.slice(0, LIMIT);
+  const extra = list.length - shown.length;
+  const yamLabel = _dptx('dp.unit.yam','ยาม');
+  const rows = shown.map(s => {
+    const _dp = (s.date || '').split('-').map(Number);
+    const d = _dp[0] ? new Date(_dp[0], _dp[1]-1, _dp[2]) : null;
+    const dateThai = d ? formatThaiDate(d) : (s.date || '');
+    const shichen = SHICHEN_NAME[s.earth_stem] || '';
+    const reasons = (s.vetoes || []).map(v => {
+      const txt = (L === 'en' ? v.reasonEn : L === 'zh' ? v.reasonZh : v.reasonTh) || v.reasonTh || '';
+      return `<div class="cut-reason">${escHtml(txt)}</div>`;
+    }).join('');
+    return `<div class="cut-slot-row">
+      <div class="cut-slot-when">🗓 ${escHtml(dateThai)} · ${escHtml(s.time || '')} ${yamLabel} <span class="tc">${shichen}</span></div>
+      ${reasons}
+    </div>`;
+  }).join('');
+  const morePrefix = _dptx('dp.cut.more_prefix','และอีก');
+  const moreSuffix = _dptx('dp.cut.more_suffix','รายการ');
+  const moreLine = extra > 0
+    ? `<div class="cut-slot-more">${morePrefix} ${extra} ${moreSuffix}</div>`
+    : '';
+  const cutTitle = _dptx('dp.cut.title','ช่วงเวลาที่ตำราห้าม');
+  zone.innerHTML = `
+    <details class="cut-slots-details">
+      <summary>⛔ ${cutTitle} (${list.length})</summary>
+      <div class="cut-slots-body">${rows}${moreLine}</div>
+    </details>
+  `;
 }
 
 function escHtml(v){
@@ -2524,6 +2617,7 @@ async function performSearch(){
   btn.textContent = _dptx('dp.search.searching_btn','⏳ กำลังค้นหา...');
   document.getElementById('resultsList').innerHTML = `<div class="loading"><div class="spinner"></div>${_dptx('dp.search.searching_full','กำลังคำนวณฤกษ์หลายศาสตร์พร้อมกัน...')}</div>`;
   document.getElementById('resultsMeta').textContent = _dptx('dp.search.searching','กำลังค้นหา...');
+  const cutSlotsZoneEl = document.getElementById('cutSlotsZone'); if (cutSlotsZoneEl) cutSlotsZoneEl.innerHTML = '';
 
   try {
     if (window.__hkProfileReady) await window.__hkProfileReady;
@@ -2573,6 +2667,10 @@ async function performSearch(){
     const useTarabala  = document.querySelector('.filter-item[data-filter="tarabala"] input[type="checkbox"]')?.checked === true;
     /* r367 · สถานที่จัดงาน · พิกัดจริงเข้า engine */
     const eventLoc = dpReadEventLocation();
+    /* r418 · engine เข้มงวดเป็น default แล้ว (ตัดประตูร้ายจริง) · ติ๊ก = ผ่อนกลับเป็นแค่เตือน ไม่ตัดทิ้ง */
+    const relaxDoors = document.getElementById('qm-strict')?.checked === true;
+    /* r418 · คะแนนรวมขั้นต่ำ (โซนเกณฑ์หลัก) · 0/ว่าง = ไม่กรอง */
+    const minScoreVal = Number(document.getElementById('min-score-total')?.value || 0);
     /* 22 พ.ค. · /api/auspicious เป็น canonical engine ของหน้า datepick แล้ว
        ของเดิม /api/qimen/search เก็บไว้เป็น fallback สำหรับ debug/rollback เท่านั้น */
     const useAjEngine = true;
@@ -2627,7 +2725,9 @@ async function performSearch(){
           ...(activityProfileKey ? { activityProfileKey } : {}),
           peopleIds: (state.people||[]).filter(p=>p.enabled&&p.personId).map(p=>p.personId),
           activeModules, options:{ limit: searchWindow.resultLimit, scanLimit: searchWindow.scanLimit, hardModules,
-            eventLat: eventLoc.lat, eventLng: eventLoc.lng, eventPlace: eventLoc.place },
+            eventLat: eventLoc.lat, eventLng: eventLoc.lng, eventPlace: eventLoc.place,
+            ...(relaxDoors ? { relaxDoors: true } : {}),
+            ...(minScoreVal > 0 ? { minScore: minScoreVal } : {}) },
         })
       });
       const aj = await r.json();
@@ -2734,6 +2834,17 @@ async function performSearch(){
           };
         }),
         stats: { tongshu_cut:0, bazi_cut:0, taisui_cut:0, jianchu_cut:0, xiu28_cut:0, shen12_cut:0, fly9_cut:0, heluo_cut:0, yongshen_cut:0 },
+        /* r418 · slot ที่ถูกตำราห้าม (veto) — ไม่เข้าอันดับแนะนำ แต่โชว์ในโซนพับแยกพร้อมเหตุผล */
+        cutSlots: (aj.cutSlots || []).map(c => {
+          const dLocal = new Date(c.datetime.start);
+          const localISO = new Date(dLocal.getTime() + 7*60*60*1000).toISOString();
+          return {
+            date: localISO.slice(0,10), time: localISO.slice(11,16),
+            earth_stem: c.pillars?.hour?.branch || '·',
+            vetoes: c.vetoes || [],
+          };
+        }),
+        allCut: !!aj.allCut,
         _aj_engine: true, _aj_meta: aj.meta, _activity_profile: activityProfileKey,
       };
       data = filterExactResults(data, searchWindow);
@@ -2792,7 +2903,8 @@ async function performSearch(){
       funnel.push({ name:'จัดอันดับด้วยฉีเหมิน', han:'奇門', count: data.top.length, type:'ok' });
       renderFunnel(funnel);
     }
-    renderRealResults(data.top);
+    renderRealResults(data.top, data.allCut);
+    renderCutSlotsZone(data.cutSlots);
     btn.disabled = false;
     btn.textContent = _dptx('dp.search.btn','⚡ ค้นหาฤกษ์');
     const resultActivityMeta = currentActivityMeta();
@@ -2849,14 +2961,22 @@ function agreementBadge(a){
     return `${mark} ${name} (${detail})`;
   }).join(' · ');
   const kLabel = L === 'en' ? 'Cross-science' : L === 'zh' ? '跨科相合' : 'เห็นพ้องข้ามศาสตร์';
-  const line = per ? `<div class="r-line"><span class="k">${kLabel}</span><span class="v">${escHtml(txt)} — ${escHtml(per)}</span></div>` : '';
+  const txtEsc = escHtml(txt), perEsc = escHtml(per);
+  const line = per ? `<div class="r-line"><span class="k">${kLabel}</span><span class="v">${txtEsc} — ${perEsc}</span></div>` : '';
   return { chip, line };
 }
 
-function renderRealResults(items){
+function renderRealResults(items, allCut){
   const c = document.getElementById('resultsList');
   if (!items || !items.length){
-    c.innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.search.notfound','ไม่พบฤกษ์ที่ผ่านเกณฑ์')}</h4><p>${_dptx('dp.search.hint','ลองขยายช่วงวัน · เปลี่ยนสำนัก · หรือเลือกกิจกรรมอื่น')}</p></div>`;
+    /* r418 · allCut:true = ทุกยามในช่วงถูกตำราห้าม (veto) หมด — ข้อความหลักต้องต่างจาก "ไม่พบผลทั่วไป" */
+    if (allCut) {
+      const allCutTitle = _dptx('dp.cut.allcut_title','ตำราห้ามทั้งหมดในช่วงนี้');
+      const allCutMsg = _dptx('dp.cut.allcut_msg','ช่วงที่เลือกถูกตำราห้ามทั้งหมดสำหรับกิจกรรมนี้ ลองขยายช่วงวัน');
+      c.innerHTML = `<div class="empty-state"><div class="ic">⛔</div><h4>${allCutTitle}</h4><p>${allCutMsg}</p></div>`;
+    } else {
+      c.innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.search.notfound','ไม่พบฤกษ์ที่ผ่านเกณฑ์')}</h4><p>${_dptx('dp.search.hint','ลองขยายช่วงวัน · เปลี่ยนสำนัก · หรือเลือกกิจกรรมอื่น')}</p></div>`;
+    }
     return;
   }
   // หาคะแนนสูงสุด + ต่ำสุด · สำหรับ percentile
@@ -2971,6 +3091,7 @@ function renderRealResults(items){
           <div class="score-pct">${T0('อันดับ','Rank','排名')} ${i+1}/${items.length}</div>
         </div>
       </div>
+      ${buildLayerStoryLine(t)}
       <div class="result-verdict"><b>${T0('คำอ่านรวม','Overall reading','綜合解讀')}</b><span>${escHtml(verdict)}</span></div>
       <div class="result-body">
         <div class="r-line"><span class="k">${T0('ประตู','Door','門')} · 門</span><span class="v">${t.door_label || qimenLabel('door', t.door)}</span></div>
@@ -3692,7 +3813,6 @@ function formatThaiDate(d){
   const m = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
   return `${dy} ${m[mo]} ${yr+543}`;
 }
-
 // init
 init();
 console.log('🐉 Date Picking · 擇吉 · loaded');
@@ -3783,7 +3903,7 @@ Object.assign(window.HK_I18N, {
   'auto.d.014': { th:'คัดยาม/จำกัดคะแนน', en:'Guard / score cap', zh:'擇時·限分' },
   'auto.d.015': { th:'ดูประตู+ดาว+เทพของยาม · ผังไม่รับกิจกรรมจะจำกัดคะแนน ไม่ใช่ตัวตัดหลัก', en:'Check 門+星+神; weak activity fit caps score rather than hard-cutting', zh:'察時辰門星神；不合事項時限分，非主硬篩' },
   'auto.d.016': { th:'ค่ายคำนวณ:', en:'Calc School:', zh:'算法派:' },
-  'auto.d.017': { th:'เข้มงวด · ประตูร้ายจำกัดคะแนนแรงขึ้น', en:'Strict · bad doors cap score harder', zh:'嚴格·凶門加重限分' },
+  'auto.d.017': { th:'ผ่อนเกณฑ์ประตูร้าย (ไม่ตัดทิ้ง แค่เตือน)', en:'Relax bad-door rule (warn only, no cut)', zh:'放寬凶門規則（僅警告不裁減）' },
   'auto.d.018': { th:'คะแนน', en:'Score', zh:'分數' },
   'auto.d.019': { th:'รูปแบบธาตุของยาม — ให้คะแนน 25-90 · ใช้กรองและจัดอันดับ', en:'Element pattern of hour — score 25-90 · used to filter & rank', zh:'時辰五行格局 — 25-90分·篩選排序' },
   'auto.d.020': { th:'คะแนนขั้นต่ำ:', en:'Minimum score:', zh:'最低分數:' },
@@ -3943,6 +4063,20 @@ Object.assign(window.HK_I18N, {
   'dp.tone.warn_short': { th:'ระวัง', en:'Caution', zh:'留意' },
   'dp.tone.read': { th:'อ่าน', en:'Read', zh:'參考' },
   'dp.sci.empty': { th:'ไม่มีรายละเอียดเด่นในชั้นนี้', en:'No notable details in this layer', zh:'此層無顯著細項' },
+  'dp.tone.offtopic': { th:'ภาพรวมวัน', en:'Day overview', zh:'本日概況' },
+  /* r418 · ช่องคะแนนรวมขั้นต่ำ (โซนเกณฑ์หลัก ใกล้ปุ่มค้นหา) */
+  'dp.minscore.label': { th:'คะแนนรวมขั้นต่ำ', en:'Minimum total score', zh:'最低總分' },
+  'dp.minscore.hint': { th:'กรองเฉพาะฤกษ์ที่คะแนนรวมถึงเกณฑ์นี้ · 0 = ไม่กรอง (แสดงทุกฤกษ์ที่ผ่านการตัดของตำรา)', en:'Only show timings whose total score reaches this threshold · 0 = no filter (shows every timing that survives the canon’s hard cuts)', zh:'僅顯示總分達此門檻之吉時 · 0 = 不篩選（顯示所有通過典籍硬性篩選之吉時）' },
+  /* r418 · โซน "ถูกตัดโดยตำรา" (cutSlots) */
+  'dp.cut.title': { th:'ช่วงเวลาที่ตำราห้าม', en:'Timings forbidden by the canon', zh:'典籍禁忌時段' },
+  'dp.cut.more_prefix': { th:'และอีก', en:'and', zh:'還有' },
+  'dp.cut.more_suffix': { th:'รายการ', en:'more', zh:'項' },
+  'dp.cut.allcut_title': { th:'ตำราห้ามทั้งหมดในช่วงนี้', en:'The canon forbids every timing in this range', zh:'此區間全數為典籍禁忌' },
+  'dp.cut.allcut_msg': { th:'ช่วงที่เลือกถูกตำราห้ามทั้งหมดสำหรับกิจกรรมนี้ ลองขยายช่วงวัน', en:'Every timing in the selected range is forbidden by the canon for this activity — try widening the date range.', zh:'所選區間內，本活動的所有時段皆為典籍禁忌 · 請嘗試擴大日期範圍' },
+  /* r418 · เล่าลำดับชั้น 3 ขั้นบนการ์ดฤกษ์แนะนำ */
+  'dp.story.basic': { th:'ปฏิทินใหญ่', en:'Chinese calendar', zh:'通書大局' },
+  'dp.story.donggong': { th:'ตงกงกิจกรรมนี้', en:'Dong Gong (this activity)', zh:'董公本活動' },
+  'dp.story.personal': { th:'ดวงคุณ', en:'Your chart', zh:'您的命盤' },
   'dp.sci.mainsupport': { th:'แรงหนุนหลัก', en:'Main support', zh:'主要助力' },
   'dp.sci.readfirst': { th:'จุดที่ต้องอ่านก่อนใช้', en:'Read before using', zh:'使用前須知' },
   'dp.err.search_title': { th:'ค้นหาขัดข้อง', en:'Search failed', zh:'搜尋發生錯誤' },
