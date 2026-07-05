@@ -15,6 +15,7 @@ import {
   tigerStemIndex, stemAtGround, nayinElement, jiaziIndex, WUXING_JU,
   brightnessAt, SI_HUA, SI_HUA_TYPES, type SiHuaType,
   LU_CUN_GROUND, TIAN_MA_GROUND, KUI_YUE_GROUND, HUO_LING_START,
+  HUA_GAI_BRANCH, XIAN_CHI_BRANCH, GU_GUA_GROUPS,
 } from "./tables";
 
 export type Gender = "M" | "F";
@@ -250,6 +251,17 @@ export function ziweiChart(
   const hongluan = fix12(groundOf("卯") - yearBranchIndex);
   placeMinor("紅鸞", hongluan);
   placeMinor("天喜", hongluan + 6);
+  // ── r403 · เพิ่ม 6 神煞 (additive · สูตรตรง iztro golden) ──
+  // 華蓋/咸池 (年支三合局)
+  placeMinor("華蓋", groundOf(HUA_GAI_BRANCH[yearBranchIndex % 4]));
+  placeMinor("咸池", groundOf(XIAN_CHI_BRANCH[yearBranchIndex % 4]));
+  // 孤辰/寡宿 (年支四孟組)
+  const guGua = GU_GUA_GROUPS[Math.floor(((yearBranchIndex + 1) % 12) / 3)];
+  placeMinor("孤辰", groundOf(guGua[0]));
+  placeMinor("寡宿", groundOf(guGua[1]));
+  // 天刑/天姚 (效月 · 酉/丑 起正月順)
+  placeMinor("天刑", groundOf("酉") + (effectiveMonth - 1));
+  placeMinor("天姚", groundOf("丑") + (effectiveMonth - 1));
 
   /* 四化: star → type, mark บนดาวที่อยู่ในผัง */
   const starSiHua: Map<string, SiHuaType> = new Map();

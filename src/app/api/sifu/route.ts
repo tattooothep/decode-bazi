@@ -1485,22 +1485,41 @@ function buildPrompt(opts: {
   const langKey = (opts.lang || "th").toUpperCase();
 
   if (opts.mode === "intro") {
-    const introInteraction = loadInteractionMaster();
-    const introInteractionBlock = introInteraction.text
-      ? "\n" + loadPromptMd("prompts/sifu-intro-interaction-header.md").trim().replace("{{INTERACTION}}", () => introInteraction.text) + "\n"
-      : "";
-    const introEngine = loadEngineKnowledge();
-    const introEngineBlock = introEngine.text
-      ? "\n" + loadPromptMd("prompts/sifu-engine-header.md").trim().replace("{{ENGINE}}", () => introEngine.text) + "\n"
-      : "";
-    const introExtra = loadSifuExtraKnowledge();
-    const introExtraBlock = introExtra.text
-      ? "\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => introExtra.text) + "\n"
-      : "";
+    /* 5 ก.ค. (r404) · intro ส่งคัมภีร์+packet ชุดเดียวกับ master Q&A · คงเอกลักษณ์ intro (persona/โครง sifu-intro.md · ไม่บังคับ ⟦ID⟧/⟦TRACE⟧ FACT LOCK)
+     * compact=true (grok/codex) → ใช้ compact knowledge เดียวกับ master Q&A (เล็กพอสำหรับ context grok · เลี่ยง prompt เต็ม ~860KB ที่ grok truncate จนหลุด agent-mode)
+     * compact=false (OpenRouter/Claude fallback) → คัมภีร์เต็ม: สูตรอาเจ๊กฮ้ง + คัมภีร์ปฏิกิริยา + engine + เจาะลึก */
+    const introCompact = opts.compactKnowledge === true;
     const introLang = loadPromptSections("prompts/sifu-intro-lang.md");
+    let introKnowledgeBlock: string;
+    if (introCompact) {
+      const introCompactAuthority = loadSifuCompactAuthorityKnowledge();
+      const introQtbjCompact = loadQtbjTiaohouCompactKnowledge(`${opts.message}\n${opts.ctx}`);
+      const introQtbjCompactBlock = introQtbjCompact.text
+        ? "\n\n=== 📜 窮通寶鑑 · 調候用神 compact source ===\n" + introQtbjCompact.text + "\n=== จบ 窮通寶鑑 compact source ===\n"
+        : "";
+      introKnowledgeBlock = "\n\n" + CODEX_COMPACT_KNOWLEDGE + "\n\n" + introCompactAuthority.text + "\n" + introQtbjCompactBlock;
+    } else {
+      const introAjek = loadAjekRules();
+      const introRulesBlock = introAjek.text
+        ? "\n" + loadPromptMd("prompts/sifu-rules-header.md").trim().replace("{{RULES}}", () => introAjek.text) + "\n"
+        : "";
+      const introInteraction = loadInteractionMaster();
+      const introInteractionBlock = introInteraction.text
+        ? "\n" + loadPromptMd("prompts/sifu-intro-interaction-header.md").trim().replace("{{INTERACTION}}", () => introInteraction.text) + "\n"
+        : "";
+      const introEngine = loadEngineKnowledge();
+      const introEngineBlock = introEngine.text
+        ? "\n" + loadPromptMd("prompts/sifu-engine-header.md").trim().replace("{{ENGINE}}", () => introEngine.text) + "\n"
+        : "";
+      const introExtra = loadSifuExtraKnowledge();
+      const introExtraBlock = introExtra.text
+        ? "\n" + loadPromptMd("prompts/sifu-extra-header.md").trim().replace("{{EXTRA}}", () => introExtra.text) + "\n"
+        : "";
+      introKnowledgeBlock = introRulesBlock + introInteractionBlock + introEngineBlock + introExtraBlock;
+    }
     return loadPromptMd("prompts/sifu-intro.md")
       .replace("{{LANG}}", () => introLang[langKey] || introLang.TH || "")
-      .replace("{{INTERACTION}}", () => introInteractionBlock + introEngineBlock + introExtraBlock)
+      .replace("{{INTERACTION}}", () => introKnowledgeBlock)
       .replace("{{CTX}}", () => opts.ctx)
       .replace("{{MESSAGE}}", () => opts.message);
   }
@@ -1654,7 +1673,7 @@ function writeGrokPromptFile(prompt: string): string {
   try { chmodSync(path, chowned ? 0o600 : 0o644); } catch {}
   return path;
 }
-function grokCliArgs(promptFile: string, format: "plain" | "streaming-json", adapter = false): string[] {
+function grokCliArgs(promptFile: string, format: "plain" | "streaming-json", adapter = false, lockTools = false): string[] {
   const args = [
     "--prompt-file", promptFile,
   ];
@@ -1666,6 +1685,11 @@ function grokCliArgs(promptFile: string, format: "plain" | "streaming-json", ada
       "--no-subagents",
       "--max-turns", "1",
     );
+  }
+  // lockTools: ปิดเครื่องมือ agent (Read/Write/Bash…) → กัน grok หลุดไปเรียก Read tool (agentic) แล้วจบเทิร์นโดยไม่ตอบ (r404 intro)
+  // ⚠️ ใช้ --disallowed-tools (ค่าไม่ว่าง) ห้ามใช้ --tools "" (empty arg หลุดผ่าน sudo/spawn ไปกิน flag ถัดไป → tool ไม่ถูกปิดจริง) · ห้าม --max-turns 1 (ตัดคำตอบสั้น)
+  if (lockTools) {
+    args.push("--disallowed-tools", "Read,Write,Edit,MultiEdit,Bash,Glob,Grep,WebSearch,WebFetch,NotebookEdit,Task,TodoWrite");
   }
   args.push("--output-format", format);
   if (GROK_CLI_MODEL) args.push("-m", GROK_CLI_MODEL);
@@ -2056,11 +2080,11 @@ function spawnCodexStreaming(prompt: string) {
   return c;
 }
 
-function spawnGrokStreaming(prompt: string) {
+function spawnGrokStreaming(prompt: string, lockTools = false) {
   const grokPrompt = buildGrokCliPrompt(prompt, 1);
   dumpPromptIfDebug(grokPrompt, "grok-stream");
   const promptFile = writeGrokPromptFile(grokPrompt);
-  const spawnArgs = ["-u", CHILD_USER, "-H", GROK_BIN, ...grokCliArgs(promptFile, "streaming-json")];
+  const spawnArgs = ["-u", CHILD_USER, "-H", GROK_BIN, ...grokCliArgs(promptFile, "streaming-json", false, lockTools)];
   const c = spawn("sudo", spawnArgs, { cwd: GROK_CWD, env: process.env });
   // self-cleanup ไฟล์ prompt ชั่วคราว (caller ไม่รู้จัก promptFile)
   const cleanup = () => { try { rmSync(promptFile, { force: true }); } catch {} };
@@ -3162,6 +3186,22 @@ export async function GET(req: Request) {
 
       const t0 = Date.now();
       if (mode === "intro") {
+        // grok = compact knowledge เดียวกับ master Q&A (เล็กพอสำหรับ context grok) · `prompt` เต็มเก็บไว้ให้ OpenRouter fallback
+        const introGrokBase = buildPrompt({ ctx, message, history: [], topic, lang, mode, compactKnowledge: true });
+        // grok เป็น agent CLI · intro ไม่มี ⟦ID⟧ บังคับ output → grok เข้าโหมด agent เกริ่น "กำลังดึง/offloaded อ่านไฟล์" แล้วจบเทิร์นโดยไม่ตอบ
+        // แก้: บังคับ ⟦ID⟧ บรรทัดแรก (กลไกเดียวกับ master Q&A ที่ทำงานได้ · adapter guard บังคับพิมพ์ machine header ก่อน) → grok หลุดจาก agent-mode มาเขียนเนื้อทันที
+        // ⟦ID⟧ ใช้เป็นสมอบังคับ output เท่านั้น (intro ผ่อน · ไม่มี identity-lock reject/⟦TRACE⟧ แบบ Q&A) · sanitizeGrokUserVisibleText ตัดบรรทัด ⟦ID⟧ ทิ้งก่อนถึงผู้ใช้เสมอ
+        const introGrokDirective = [
+          "",
+          "=== คำสั่งบังคับ · โหมดคำทำนายเปิดตัว (สำหรับ grok เท่านั้น) ===",
+          "บรรทัดแรกสุด: พิมพ์รหัสตรวจ `⟦ID⟧日干=X⟧` โดย X = ก้านวัน (日干) จาก \"FACT LOCK: Day Master =\" ในบริบท (คัดอักษรจีนตัวเดียวมาตรงๆ) · เป็นรหัสให้ระบบตรวจ ห้ามอธิบาย ห้ามใส่ markdown แล้วขึ้นบรรทัดใหม่",
+          "จากบรรทัดที่สองเป็นต้นไป เขียนเนื้อคำทำนายภาษาไทยล้วนทันที · ห้ามเกริ่นนำ ห้ามพูดว่ากำลังดึง/อ่าน/ประมวลผล/เปิด/offload ข้อมูล/บริบท/ไฟล์/ระบบ · ห้ามวางแผนหรือประกาศขั้นตอน · ไม่มีเครื่องมือให้เรียก ไม่มีอะไรต้องไปอ่านเพิ่ม ข้อมูลครบในบริบทแล้ว",
+          "ต่อจากย่อหน้าเปิดธาตุหลักที่ระบบส่งไปแล้ว เล่าต่อเนื่องเป็นเรื่องเดียว: ตัวตนพื้นฐาน → ช่วงวัย → 12 เดือนล่าสุด → ปิดท้ายชวนเข้า HourKey · 650-1000 คำ ห้ามอักษรจีนในเนื้อ (ยกเว้นบรรทัด ⟦ID⟧) ห้ามเปอร์เซ็นต์",
+          "=== จบคำสั่งบังคับ ===",
+        ].join("\n");
+        const introGrokPrompt = (warmup
+          ? `${introGrokBase}\n\n${loadPromptMd("prompts/sifu-intro-resume-note.md").trim()}`
+          : introGrokBase) + "\n" + introGrokDirective;
         let firstChunkSent = false;
         let introFull = "";
         let introRejected = false;
@@ -3191,6 +3231,88 @@ export async function GET(req: Request) {
             return;
           }
         }
+        // 🌊 5 ก.ค. (r404) · intro streaming = grok-cli (หลัก · subscription เร็ว ไม่พึ่งเครดิต OpenRouter → เลี่ยง 402)
+        //    ส่ง prompt ชุดเดียวกับ intro (คัมภีร์+packet) ผ่าน spawnGrokStreaming (wrap grok-visible-guard)
+        //    stream ทีละบรรทัดจริงผ่าน emitIntroChunk เดิม (fact guard + NO_PERCENT คงไว้) · OpenRouter = fallback สำรอง
+        let grokErrText = "";
+        // grok flaky ~30% (บางเทิร์นออกแต่ reasoning ไม่มี text / เศษสั้นๆ) · ล้ม=ไม่มี chunk visible (introFull ไม่โต) → retry ปลอดภัย ไม่ซ้อนคำตอบ
+        const GROK_INTRO_MAX_ATTEMPTS = 3;
+        const SIFU_INTRO_GROK_MIN_CHARS = 500; // ต่ำกว่านี้ = เศษ/ไม่ใช่คำทำนายจริง → retry (intro จริง ~2500-3800 ตัวอักษร)
+        for (let gAttempt = 1; gAttempt <= GROK_INTRO_MAX_ATTEMPTS; gAttempt++) {
+        const introLenBeforeGrok = introFull.length;
+        grokErrText = "";
+        await new Promise<void>((resolve) => {
+          acquireSifuSlot().then((slotOk) => {
+            if (!slotOk) { grokErrText = "slot_unavailable"; resolve(); return; }
+            let released = false;
+            const releaseOnce = () => { if (!released) { released = true; releaseSifuSlot(); } };
+            let gc: ReturnType<typeof spawnGrokStreaming>;
+            // tools เปิดไว้ (grok ตอบเต็มกว่า) · lockTools/--disallowed-tools ทำให้ grok parse_failure · จัดการ agentic ที่ล้มด้วย retry loop แทน
+            try { gc = spawnGrokStreaming(introGrokPrompt); }
+            catch (e) { releaseOnce(); grokErrText = String((e as Error)?.message || e); resolve(); return; }
+            let grokBuf = "";
+            let aborted = false;
+            let settled = false;
+            const finish = () => { if (settled) return; settled = true; resolve(); };
+            const killTimer = setTimeout(() => { try { gc.kill("SIGKILL"); } catch {} }, TIMEOUT_MS);
+            const emitReadyLines = (raw: string) => {
+              const visible = sanitizeGrokUserVisibleText(raw, message);
+              if (!visible) return;
+              if (!emitIntroChunk(visible, "grok")) {
+                aborted = true;
+                clearTimeout(killTimer);
+                try { gc.kill("SIGKILL"); } catch {}
+              }
+            };
+            const parser = makeGrokJsonlParser((text) => {
+              if (aborted || introRejected) return;
+              grokBuf += text;
+              const lastNl = Math.max(grokBuf.lastIndexOf("\n"), grokBuf.lastIndexOf("\r"));
+              if (lastNl === -1) return;
+              const ready = grokBuf.slice(0, lastNl + 1);
+              grokBuf = grokBuf.slice(lastNl + 1);
+              emitReadyLines(ready);
+            }, (text) => { grokErrText += "\n" + text; });
+            gc.stdout.on("data", parser);
+            gc.stderr.on("data", (chunk: Buffer) => { grokErrText += chunk.toString(); });
+            gc.on("error", (e) => {
+              clearTimeout(killTimer);
+              releaseOnce();
+              grokErrText += "\n" + String((e as Error)?.message || e);
+              finish();
+            });
+            gc.on("close", () => {
+              clearTimeout(killTimer);
+              releaseOnce();
+              if (!aborted && !introRejected && grokBuf.trim()) emitReadyLines(grokBuf);
+              grokBuf = "";
+              finish();
+            });
+          });
+        });
+        if (introRejected) { safeClose(); return; }
+        const grokAdded = introFull.length - introLenBeforeGrok;
+        // สำเร็จเมื่อ grok ให้เนื้อพอ (>=MIN) หรือ attempt สุดท้ายมีอะไรบ้าง (ดีกว่าตกไป openrouter ที่เครดิตหมด)
+        if (grokAdded >= SIFU_INTRO_GROK_MIN_CHARS || (grokAdded > 0 && gAttempt === GROK_INTRO_MAX_ATTEMPTS)) {
+          // grok สตรีมสำเร็จ → ปิดงาน (ไม่ fallback · กันคำตอบซ้อน)
+          const finalIntroFactClaim = checkSifuFactClaimGate(introFull, ctx);
+          if (!finalIntroFactClaim.ok) {
+            send("error", { error: "fact_claim_mismatch", violations: finalIntroFactClaim.violations });
+            safeClose();
+            return;
+          }
+          send("done", { ms: Date.now() - t0, model: providerModelName("grok-cli") || "grok-cli", provider: "grok", cached: false, chars: introFull.length });
+          sifuTimingLog("intro-done", {
+            route: "GET", mode, stream: true, provider: "grok", profileId: profileId || undefined, contextCache, ctxMs,
+            promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false, grokAttempt: gAttempt,
+          });
+          safeClose();
+          return;
+        }
+        console.warn(`[sifu intro] grok attempt ${gAttempt}/${GROK_INTRO_MAX_ATTEMPTS} thin(${grokAdded}c) → ${gAttempt < GROK_INTRO_MAX_ATTEMPTS ? "retry" : "fallback openrouter"}: ${grokErrText.slice(0, 150).replace(/\s+/g, " ")}`);
+        } // end grok retry loop
+        // grok ว่างทุกครั้ง → fallback OpenRouter (ถ้ายังมีเครดิต)
+        console.warn("[sifu intro] grok empty after retries → fallback openrouter:", grokErrText.slice(0, 200));
         try {
           const result = await streamOpenRouter(prompt, (text) => {
             return emitIntroChunk(text, "openrouter");
@@ -3208,15 +3330,15 @@ export async function GET(req: Request) {
             }
             send("done", { ms: Date.now() - t0, model: result.model, provider: "openrouter", cached: false, chars: (introFull || result.full).length });
             sifuTimingLog("intro-done", {
-              route: "GET", mode, stream: true, profileId: profileId || undefined, contextCache, ctxMs,
+              route: "GET", mode, stream: true, provider: "openrouter", profileId: profileId || undefined, contextCache, ctxMs,
               promptMs, promptChars: prompt.length, totalMs: Date.now() - reqT0, cached: false,
             });
           } else {
-            send("error", { error: "openrouter empty" });
+            send("error", { error: "intro empty (grok+openrouter)" });
           }
         } catch (e) {
-          console.warn("[sifu intro openrouter]", (e as Error).message);
-          send("error", { error: "openrouter failed" });
+          console.warn("[sifu intro openrouter fallback]", (e as Error).message);
+          send("error", { error: "intro failed (grok+openrouter)" });
         }
         safeClose();
         return;

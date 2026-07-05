@@ -6,6 +6,7 @@
  */
 
 import type { ZiweiPacket } from "./packet";
+import { ZIWEI_MINOR_STAR_TH } from "./tables";
 
 const SIHUA_TH: Record<string, string> = {
   祿: "化祿", 權: "化權", 科: "化科", 忌: "化忌",
@@ -51,6 +52,17 @@ function renderTh(p: ZiweiPacket): string {
     const minors = pal.minorStars.length ? " · 輔煞: " + pal.minorStars.map((s) => s.name).join(" ") : "";
     L.push(`${PALACE_TH[pal.name] || pal.name} [${pal.ganzhi}]${tag} · 大限 ${pal.daXian.ageStart}-${pal.daXian.ageEnd} ปี`);
     L.push(`    主星: ${majors}${minors}`);
+  }
+  // ── r403 · คำอธิบายย่อ ดาวเสริม/神煞 ที่ปรากฏในผัง (ช่วย AI ตีความ) ──
+  const seenMinor = new Set<string>();
+  for (const pal of d.palaces) for (const s of pal.minorStars) if (ZIWEI_MINOR_STAR_TH[s.name]) seenMinor.add(s.name);
+  if (seenMinor.size) {
+    L.push("");
+    L.push("【ดาวเสริม/神煞 · ความหมายย่อ】");
+    for (const star of seenMinor) {
+      const m = ZIWEI_MINOR_STAR_TH[star];
+      L.push(`  · ${star} (${m.th}): ${m.meaning}`);
+    }
   }
   L.push("");
   L.push("【四化 ปีเกิด】");

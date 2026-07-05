@@ -174,6 +174,36 @@ export const KUI_YUE_GROUND: Record<string, { kui: number; yue: number }> = {
   壬: { kui: groundOf("卯"), yue: groundOf("巳") },
   癸: { kui: groundOf("卯"), yue: groundOf("巳") },
 };
+/* ─────────────────────────────────────────────────────────────
+ * r403 · 10 ดาวเสริม/神煞 (additive · เทียบ iztro golden ตรงเป๊ะ 3 ดวง)
+ *   地空/地劫 : 時支 (亥起 · 空逆時劫順時) — engine วางอยู่แล้ว
+ *   紅鸞/天喜 : 年支 (卯逆年支 · 天喜=紅鸞對宮) — engine วางอยู่แล้ว
+ *   華蓋/咸池 : 年支三合局  (yearBranchIndex % 4)
+ *   孤辰/寡宿 : 年支四孟組  (Math.floor(((yb+1)%12)/3))
+ *   天刑/天姚 : 月 (效月 · 酉/丑 起正月順)
+ * — สูตร華蓋..天姚 = ชุดเดียวกับ overlay.zaYao ที่ผ่าน golden iztro 6 ดวงแล้ว
+ * ───────────────────────────────────────────────────────────── */
+/** 華蓋 ground: groundOf(HUA_GAI_BRANCH[yearBranchIndex % 4]) */
+export const HUA_GAI_BRANCH = ["辰", "丑", "戌", "未"] as const;
+/** 咸池 ground: groundOf(XIAN_CHI_BRANCH[yearBranchIndex % 4]) */
+export const XIAN_CHI_BRANCH = ["酉", "午", "卯", "子"] as const;
+/** 孤辰/寡宿 branch คู่: GU_GUA_GROUPS[Math.floor(((yearBranchIndex+1)%12)/3)] → [孤辰, 寡宿] */
+export const GU_GUA_GROUPS = [["寅", "戌"], ["巳", "丑"], ["申", "辰"], ["亥", "未"]] as const;
+
+/** ชื่อไทย + ความหมายย่อ ของดาวเสริม/神煞 (r403) */
+export const ZIWEI_MINOR_STAR_TH: Record<string, { th: string; meaning: string }> = {
+  地空: { th: "ตี้คง", meaning: "สูญเสีย/ล้มเหลว/จิตวิญญาณ-เพ้อฝัน" },
+  地劫: { th: "ตี้เจี๋ย", meaning: "สูญเสีย/ล้มเหลว/ถูกปล้นชิง" },
+  紅鸞: { th: "หงหลวน", meaning: "รัก/แต่งงาน/มงคลสมรส" },
+  天喜: { th: "เทียนสี่", meaning: "รัก/แต่งงาน/ข่าวดี-มีบุตร" },
+  天姚: { th: "เทียนเหยา", meaning: "เสน่ห์/เจ้าชู้/ความสัมพันธ์" },
+  天刑: { th: "เทียนสิง", meaning: "คดี/วินัย/ผ่าตัด/กฎหมาย" },
+  華蓋: { th: "หัวก้าย", meaning: "ศิลปะ/โดดเดี่ยว/ศาสนา-ปรัชญา" },
+  咸池: { th: "เสียนฉือ", meaning: "เสน่หา/ราคะ (桃花)" },
+  孤辰: { th: "กูเฉิน", meaning: "โดดเดี่ยว/เดียวดาย (ชาย)" },
+  寡宿: { th: "กว่าซู่", meaning: "โดดเดี่ยว/หม้าย (หญิง)" },
+};
+
 /** 火星·鈴星 起子時 ground ตาม年支 (แล้วบวก timeIndex) */
 export const HUO_LING_START: Record<string, { huo: number; ling: number }> = {
   寅: { huo: groundOf("丑"), ling: groundOf("卯") },

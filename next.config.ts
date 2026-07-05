@@ -134,10 +134,11 @@ const nextConfig: NextConfig = {
       { source: "/divine", destination: "/forecast.html" },
       { source: "/account", destination: "/account.html" },
       // 17 พ.ค. · อาเจ๊กฮ้ง 4 หน้าใหม่ + 3 หน้าผม
-      { source: "/compass", destination: "/compass.html" },
-      { source: "/compass-studio", destination: "/compass-studio.html" },
+      // 5 ก.ค. · retire 3 หน้าไม่ใช้แล้ว (compass/compass-studio/fengshui-pro) → ชี้ไป /fengshui (ไฟล์เดิมเก็บไว้ · กู้คืนได้)
+      { source: "/compass", destination: "/fengshui.html" },
+      { source: "/compass-studio", destination: "/fengshui.html" },
       { source: "/luopan", destination: "/luopan.html" }, // 30 พ.ค. · เลื่อนหล่อแก 14環+ดาวเหินจร (เดิมชี้ compass-studio เก่า)
-      { source: "/fengshui-pro", destination: "/fengshui-pro.html" },
+      { source: "/fengshui-pro", destination: "/fengshui.html" },
       { source: "/katakagae", destination: "/katakagae.html" },
       { source: "/auspicious", destination: "/auspicious.html" },
       { source: "/solar-terms", destination: "/solar-terms.html" },
