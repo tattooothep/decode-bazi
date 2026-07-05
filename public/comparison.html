@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hourkey · เปรียบเทียบ 2 ดวง · 比較</title>
+<title data-i18n="cmp.page.title">hourkey · เปรียบเทียบ 2 ดวง · 比較</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
@@ -271,6 +271,7 @@ window.HK_I18N = {
   'hk.nav.goal':{th:'เป้าหมาย',en:'Goals',zh:'志向'},
   'hk.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
   'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'},
+  'cmp.page.title':{th:'hourkey · เปรียบเทียบ 2 ดวง · 比較',en:'hourkey · Compare 2 Charts · 比較',zh:'hourkey · 比較雙命盤 · 比較'},
   'cmp.crumb.home':{th:'หน้าหลัก',en:'Home',zh:'首頁'},
   'cmp.crumb.cur':{th:'เปรียบเทียบ 2 ดวง · 比較',en:'Compare 2 Charts · 比較',zh:'比較雙命盤'},
   'cmp.h1':{th:'เปรียบเทียบ 2 ดวง',en:'Compare 2 Charts',zh:'比較雙命盤'},
@@ -294,7 +295,17 @@ window.HK_I18N = {
   'cmp.loading':{th:'กำลังคำนวณดวง 2 คน + ปฏิกิริยา...',en:'Computing 2 charts + reactions...',zh:'計算雙命盤與互動中...'},
   'cmp.bd.atob':{th:'A → B Breakdown',en:'A → B Breakdown',zh:'A → B 明細'},
   'cmp.bd.btoa':{th:'B → A Breakdown',en:'B → A Breakdown',zh:'B → A 明細'},
-  'cmp.bd.events':{th:'เหตุการณ์ปฏิกิริยา · Reaction Events',en:'Reaction Events',zh:'互動事件'}
+  'cmp.bd.events':{th:'เหตุการณ์ปฏิกิริยา · Reaction Events',en:'Reaction Events',zh:'互動事件'},
+  'cmp.row.base':{th:'ฐาน base',en:'Base',zh:'基礎'},
+  'cmp.row.nobleman':{th:'👑 อุปถัมภ์',en:'👑 Nobleman',zh:'👑 貴人'},
+  'cmp.row.group':{th:'📅 กลุ่มเสา',en:'📅 Pillar Group',zh:'📅 柱組'},
+  'cmp.row.bonus':{th:'合 บอนัส',en:'合 Bonus',zh:'合 加分'},
+  'cmp.row.penalty':{th:'沖 บทลงโทษ',en:'沖 Penalty',zh:'沖 扣分'},
+  'cmp.row.transit':{th:'⏱ Transit (วันนี้)',en:'⏱ Transit (Today)',zh:'⏱ 流年（今日）'},
+  'cmp.events.none':{th:'— ไม่มีปฏิกิริยาเด่น —',en:'— No notable reaction —',zh:'— 無明顯互動 —'},
+  'cmp.err.needdates':{th:'กรุณากรอกวันเกิดทั้ง 2 คน',en:'Please enter both birth dates',zh:'請輸入兩人的出生日期'},
+  'cmp.err.needcompare':{th:'กรุณากด "เปรียบเทียบ →" ก่อน',en:'Please click "Compare →" first',zh:'請先點擊「比較 →」'},
+  'cmp.err.prefix':{th:'ผิดพลาด',en:'Error',zh:'錯誤'}
 };
 function applyI18N(lang){
   Object.entries(window.HK_I18N).forEach(([k,t])=>{
@@ -392,7 +403,7 @@ document.getElementById('cmp-go').addEventListener('click', async function(){
   const p2bt = document.getElementById('p2-btime').value || '12:00';
   const p2g  = document.getElementById('p2-gender').value;
   const p2Known = !(document.getElementById('p2-no-btime') || {}).checked;
-  if (!p1bd || !p2bd){ alert('กรุณากรอกวันเกิดทั้ง 2 คน'); return; }
+  if (!p1bd || !p2bd){ alert(tx('cmp.err.needdates')); return; }
 
   const btn = this;
   btn.disabled = true;
@@ -440,12 +451,12 @@ document.getElementById('cmp-go').addEventListener('click', async function(){
       const cls=(n)=> n>0?'pos':n<0?'neg':'';
       const fmt=(n)=> n>0?'+'+n:String(n);
       return `
-        <div class="row"><span class="k">ฐาน base</span><span class="v">${b.base ?? 0}</span></div>
-        <div class="row"><span class="k">👑 อุปถัมภ์</span><span class="v ${cls(b.nobleman||0)}">+${b.nobleman ?? 0}</span></div>
-        <div class="row"><span class="k">📅 กลุ่มเสา</span><span class="v ${cls(b.group||0)}">+${b.group ?? 0}</span></div>
-        <div class="row"><span class="k">合 บอนัส</span><span class="v pos">+${(b.bonus||0).toFixed?b.bonus.toFixed(1):b.bonus}</span></div>
-        <div class="row"><span class="k">沖 บทลงโทษ</span><span class="v neg">−${(b.penalty||0).toFixed?b.penalty.toFixed(1):b.penalty}</span></div>
-        <div class="row"><span class="k">⏱ Transit (วันนี้)</span><span class="v ${cls(b.transit||0)}">${fmt(b.transit||0)}</span></div>`;
+        <div class="row"><span class="k">${tx('cmp.row.base')}</span><span class="v">${b.base ?? 0}</span></div>
+        <div class="row"><span class="k">${tx('cmp.row.nobleman')}</span><span class="v ${cls(b.nobleman||0)}">+${b.nobleman ?? 0}</span></div>
+        <div class="row"><span class="k">${tx('cmp.row.group')}</span><span class="v ${cls(b.group||0)}">+${b.group ?? 0}</span></div>
+        <div class="row"><span class="k">${tx('cmp.row.bonus')}</span><span class="v pos">+${(b.bonus||0).toFixed?b.bonus.toFixed(1):b.bonus}</span></div>
+        <div class="row"><span class="k">${tx('cmp.row.penalty')}</span><span class="v neg">−${(b.penalty||0).toFixed?b.penalty.toFixed(1):b.penalty}</span></div>
+        <div class="row"><span class="k">${tx('cmp.row.transit')}</span><span class="v ${cls(b.transit||0)}">${fmt(b.transit||0)}</span></div>`;
     };
     document.getElementById('r-bd-atob').innerHTML = rowsHTML(bd.atob||{});
     document.getElementById('r-bd-btoa').innerHTML = rowsHTML(bd.btoa||{});
@@ -462,14 +473,14 @@ document.getElementById('cmp-go').addEventListener('click', async function(){
       const cls = (e.type==='clash'||e.type==='stem_clash')?'clash' : e.type==='harm'?'harm' : 'he';
       return `<span class="ev ${cls}">${lbl}</span>`;
     }).join('') + tEv.map(e=>`<span class="ev transit">${e.type.replace('_','·')} ${e.tBranch||e.tStem||''}</span>`).join('');
-    document.getElementById('r-events').innerHTML = evHTML || '<span style="color:var(--fg-faint);font-size:11px;">— ไม่มีปฏิกิริยาเด่น —</span>';
+    document.getElementById('r-events').innerHTML = evHTML || '<span style="color:var(--fg-faint);font-size:11px;">' + tx('cmp.events.none') + '</span>';
 
     document.getElementById('cmp-result').classList.add('show');
     document.getElementById('cmp-result').scrollIntoView({behavior:'smooth',block:'start'});
     /* 19 พ.ค. Option α · เปิดปุ่ม AI เปรียบเทียบ · context พร้อมใน window.__cmp_ctx แล้ว */
     document.getElementById('cmp-ai').style.display = 'block';
   } catch(e) {
-    alert('ผิดพลาด: ' + (e.message||e));
+    alert(tx('cmp.err.prefix') + ': ' + (e.message||e));
   } finally {
     btn.disabled = false;
     document.getElementById('cmp-loading').style.display='none';
@@ -534,7 +545,7 @@ async function parseSseStream(reader, onEvent, signal) {
 
 document.getElementById('cmp-ai').addEventListener('click', async function(){
   const ctx = window.__cmp_ctx;
-  if (!ctx || !ctx.p1 || !ctx.p2) { alert('กรุณากด "เปรียบเทียบ →" ก่อน'); return; }
+  if (!ctx || !ctx.p1 || !ctx.p2) { alert(tx('cmp.err.needcompare')); return; }
   const btnAi = this;
   const panel = document.getElementById('cmp-ai-panel');
   const stat  = document.getElementById('cmp-ai-status');

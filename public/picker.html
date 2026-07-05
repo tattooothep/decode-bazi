@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hourkey · วางฤกษ์ · 擇吉</title>
+<title data-i18n="pkr.page.title">hourkey · วางฤกษ์ · 擇吉</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
@@ -267,20 +267,20 @@
       <button class="on" data-theme="dark">☾</button>
       <button data-theme="light">☀</button>
     </div>
-    <div class="avatar">น</div>
+    <div class="avatar" data-i18n="pkr.avatar.initial">น</div>
   </div>
 </header>
 
 <div class="stage">
-  <div class="crumb"><a href="/">หน้าหลัก</a> <span>/</span> <span>วางฤกษ์ · 擇吉 AUSPICIOUS PICKER</span></div>
+  <div class="crumb"><a href="/" data-i18n="pkr.crumb.home">หน้าหลัก</a> <span>/</span> <span data-i18n="pkr.crumb.cur">วางฤกษ์ · 擇吉 AUSPICIOUS PICKER</span></div>
 
   <div class="hero">
     <div class="label">擇吉 · CHOOSE YOUR HOUR</div>
-    <h1>เลือก<i>ฤกษ์</i> <span class="tc">擇日</span><br/>ก่อนจะ<i>ก้าว</i>สำคัญ</h1>
-    <p class="lede">บอก<b>ภารกิจ</b>และ<b>ช่วงเวลา</b>ที่ต้องการ — ระบบหา<b>ฤกษ์ที่ผ่านทั้ง 3 ระบบ</b>: 黃曆 ปฏิทินมงคล + 用神 ดวงคุณ + 奇門 ฉีเหมิน · จัดอันดับให้คุณเลือก · บันทึกแล้วโผล่เตือนใน "วันนี้"</p>
+    <h1 data-i18n="pkr.hero.h1">เลือก<i>ฤกษ์</i> <span class="tc">擇日</span><br/>ก่อนจะ<i>ก้าว</i>สำคัญ</h1>
+    <p class="lede" data-i18n="pkr.hero.lede">บอก<b>ภารกิจ</b>และ<b>ช่วงเวลา</b>ที่ต้องการ — ระบบหา<b>ฤกษ์ที่ผ่านทั้ง 3 ระบบ</b>: 黃曆 ปฏิทินมงคล + 用神 ดวงคุณ + 奇門 ฉีเหมิน · จัดอันดับให้คุณเลือก · บันทึกแล้วโผล่เตือนใน "วันนี้"</p>
     <div class="badges">
       <span><b>3</b> SYSTEMS · 三盤合參</span>
-      <span><b>20</b> ภารกิจ CEO</span>
+      <span><b>20</b> <span data-i18n="pkr.badge.mission">ภารกิจ CEO</span></span>
       <span><b>±2hr</b> precision</span>
       <span>Save → 我志 myGoals</span>
     </div>
@@ -293,14 +293,14 @@
 
       <!-- mission -->
       <div class="card">
-        <h3><span class="tc">事</span> ภารกิจ · MISSION <span class="num">1</span></h3>
+        <h3><span class="tc">事</span> <span data-i18n="pkr.card.mission.h3">ภารกิจ · MISSION</span> <span class="num">1</span></h3>
 
         <!-- category tabs -->
         <div class="cat-tabs" id="cat-tabs">
-          <button class="on" data-cat="doc"><span class="tc">文</span>เอกสาร</button>
-          <button data-cat="talk"><span class="tc">談</span>เจรจา</button>
-          <button data-cat="trade"><span class="tc">交</span>ธุรกรรม</button>
-          <button data-cat="biz"><span class="tc">經</span>องค์กร</button>
+          <button class="on" data-cat="doc"><span class="tc">文</span><span data-i18n="pkr.cat.doc">เอกสาร</span></button>
+          <button data-cat="talk"><span class="tc">談</span><span data-i18n="pkr.cat.talk">เจรจา</span></button>
+          <button data-cat="trade"><span class="tc">交</span><span data-i18n="pkr.cat.trade">ธุรกรรม</span></button>
+          <button data-cat="biz"><span class="tc">經</span><span data-i18n="pkr.cat.biz">องค์กร</span></button>
         </div>
 
         <!-- missions list (filtered by category) -->
@@ -309,48 +309,48 @@
         </div>
 
         <div class="mission-name">
-          <label>ชื่อภารกิจของคุณ · LABEL</label>
+          <label data-i18n="pkr.card.mission.label">ชื่อภารกิจของคุณ · LABEL</label>
           <input type="text" id="mission-label" value="เซ็นสัญญากับ Fara — Anhui Hongyu" placeholder="เช่น เซ็นสัญญากับ Fara"/>
         </div>
       </div>
 
       <!-- date range -->
       <div class="card">
-        <h3><span class="tc">期</span> ช่วงเวลา · WHEN <span class="num">2</span></h3>
+        <h3><span class="tc">期</span> <span data-i18n="pkr.card.when.h3">ช่วงเวลา · WHEN</span> <span class="num">2</span></h3>
         <div class="range-row">
           <div>
-            <label>เริ่ม · FROM</label>
+            <label data-i18n="pkr.range.from">เริ่ม · FROM</label>
             <input type="date" value="2026-05-07"/>
           </div>
           <div>
-            <label>ถึง · TO</label>
+            <label data-i18n="pkr.range.to">ถึง · TO</label>
             <input type="date" value="2026-05-21"/>
           </div>
         </div>
         <div class="quick-range" id="qr">
-          <button>3 วัน</button>
-          <button class="on">1-2 สัปดาห์</button>
-          <button>เดือน</button>
-          <button>ก่อน 31 พ.ค.</button>
+          <button data-i18n="pkr.qr.3d">3 วัน</button>
+          <button class="on" data-i18n="pkr.qr.2w">1-2 สัปดาห์</button>
+          <button data-i18n="pkr.qr.month">เดือน</button>
+          <button data-i18n="pkr.qr.before">ก่อน 31 พ.ค.</button>
         </div>
       </div>
 
       <!-- weights -->
       <div class="card">
-        <h3><span class="tc">權</span> น้ำหนัก · WEIGHTS <span class="num">3</span></h3>
+        <h3><span class="tc">權</span> <span data-i18n="pkr.card.weights.h3">น้ำหนัก · WEIGHTS</span> <span class="num">3</span></h3>
         <div class="weights">
           <div class="w-row">
-            <div class="lbl"><span class="tc">黃</span><span class="nm">ปฏิทินมงคล<small>TONGSHU</small></span></div>
+            <div class="lbl"><span class="tc">黃</span><span class="nm"><span data-i18n="pkr.w.tongshu">ปฏิทินมงคล</span><small>TONGSHU</small></span></div>
             <input type="range" min="0" max="100" value="35"/>
             <span class="val">35%</span>
           </div>
           <div class="w-row">
-            <div class="lbl"><span class="tc">用</span><span class="nm">ดวงคุณ<small>YONGSHEN</small></span></div>
+            <div class="lbl"><span class="tc">用</span><span class="nm"><span data-i18n="pkr.w.yongshen">ดวงคุณ</span><small>YONGSHEN</small></span></div>
             <input type="range" min="0" max="100" value="40"/>
             <span class="val">40%</span>
           </div>
           <div class="w-row">
-            <div class="lbl"><span class="tc">奇</span><span class="nm">ฉีเหมิน<small>QIMEN</small></span></div>
+            <div class="lbl"><span class="tc">奇</span><span class="nm"><span data-i18n="pkr.w.qimen">ฉีเหมิน</span><small>QIMEN</small></span></div>
             <input type="range" min="0" max="100" value="25"/>
             <span class="val">25%</span>
           </div>
@@ -359,7 +359,7 @@
 
       <!-- relations -->
       <div class="card">
-        <h3><span class="tc">關</span> รวมดวงคู่ค้า · OPPONENT <span class="num">4</span></h3>
+        <h3><span class="tc">關</span> <span data-i18n="pkr.card.opponent.h3">รวมดวงคู่ค้า · OPPONENT</span> <span class="num">4</span></h3>
         <div class="rel-list">
           <div class="rel-row">
             <div class="who">
@@ -375,19 +375,19 @@
             <div class="who">
               <div class="ava" style="background:rgba(123,168,200,.14);border-color:#7ba8c8;color:#7ba8c8;">壬</div>
               <div>
-                <div>พีท · Co-founder</div>
-                <span class="role">WORK · พันธมิตร</span>
+                <div data-i18n="pkr.rel.pete.name">พีท · Co-founder</div>
+                <span class="role" data-i18n="pkr.rel.pete.role">WORK · พันธมิตร</span>
               </div>
             </div>
             <label class="switch"><input type="checkbox"/><span class="slider"></span></label>
           </div>
-          <button class="rel-add">+ เพิ่มจากเครือข่าย</button>
+          <button class="rel-add" data-i18n="pkr.rel.add">+ เพิ่มจากเครือข่าย</button>
         </div>
       </div>
 
       <button class="search-btn">
         <span class="tc">擇</span>
-        ค้นหาฤกษ์มงคล
+        <span data-i18n="pkr.search.btn">ค้นหาฤกษ์มงคล</span>
       </button>
     </div>
 
@@ -397,12 +397,12 @@
       <div class="result-head">
         <div class="info">
           <div class="lbl">RESULT · 結果</div>
-          <h2><span class="tc">擇</span>พบ <b>14 ฤกษ์</b> ใน 14 วัน · <b>3 ฤกษ์มงคลสูงสุด</b></h2>
+          <h2><span class="tc">擇</span><span data-i18n="pkr.result.h2">พบ <b>14 ฤกษ์</b> ใน 14 วัน · <b>3 ฤกษ์มงคลสูงสุด</b></span></h2>
         </div>
         <div class="sort">
           <button class="on">SCORE</button>
-          <button>เร็วสุด</button>
-          <button>ทุก slot</button>
+          <button data-i18n="pkr.sort.soonest">เร็วสุด</button>
+          <button data-i18n="pkr.sort.allslots">ทุก slot</button>
         </div>
       </div>
 
@@ -411,7 +411,7 @@
         <div class="tc-head">
           <div class="tc-rank">1<span class="star">★</span></div>
           <div class="tc-when">
-            <div class="date"><span class="day">พุธ</span> · 13 พ.ค. 2569</div>
+            <div class="date"><span class="day" data-i18n="pkr.day1">พุธ</span> · <span data-i18n="pkr.date1">13 พ.ค. 2569</span></div>
             <div class="time">⏰ 14:00 — 15:30 · 未時</div>
             <div class="lunar">三月廿四 · 立夏 → 小滿</div>
           </div>
@@ -452,14 +452,14 @@
 
         <div class="tc-poem">
           <div class="verse">癸水通根 · 開門納財 · 三合相迎</div>
-          <div class="trans"><b>"น้ำเดินทางมาถึงต้นกำเนิด · ประตูเปิดรับทรัพย์ · สามพันธมิตรคล้องกัน"</b> — เหมาะ <b>เซ็นสัญญาเงินก้อนใหญ่</b> · มีคนหนุน · ทิศ SW เป็นทิศโชคลาภ</div>
+          <div class="trans" data-i18n="pkr.poem1.trans"><b>"น้ำเดินทางมาถึงต้นกำเนิด · ประตูเปิดรับทรัพย์ · สามพันธมิตรคล้องกัน"</b> — เหมาะ <b>เซ็นสัญญาเงินก้อนใหญ่</b> · มีคนหนุน · ทิศ SW เป็นทิศโชคลาภ</div>
         </div>
 
         <div class="tc-actions">
-          <button>📋 รายละเอียด</button>
+          <button data-i18n="pkr.act.detail">📋 รายละเอียด</button>
           <button>🗓 +Calendar</button>
-          <button>🔮 ฉีเหมิน</button>
-          <button class="primary">★ บันทึกฤกษ์นี้</button>
+          <button data-i18n="pkr.act.qimen">🔮 ฉีเหมิน</button>
+          <button class="primary" data-i18n="pkr.act.save1">★ บันทึกฤกษ์นี้</button>
         </div>
       </div>
 
@@ -468,7 +468,7 @@
         <div class="tc-head">
           <div class="tc-rank">2</div>
           <div class="tc-when">
-            <div class="date"><span class="day">ศุกร์</span> · 15 พ.ค. 2569</div>
+            <div class="date"><span class="day" data-i18n="pkr.day2">ศุกร์</span> · <span data-i18n="pkr.date2">15 พ.ค. 2569</span></div>
             <div class="time">⏰ 09:00 — 11:00 · 巳時</div>
             <div class="lunar">三月廿六</div>
           </div>
@@ -501,14 +501,14 @@
         <div class="tc-tags">
           <span class="tc-tag good"><span class="tc">門</span>生門</span>
           <span class="tc-tag good"><span class="tc">用</span>比劫</span>
-          <span class="tc-tag mid"><span class="tc">沖</span>未-丑 沖เล็ก</span>
+          <span class="tc-tag mid"><span class="tc">沖</span><span data-i18n="pkr.tag.clash1">未-丑 沖เล็ก</span></span>
         </div>
 
         <div class="tc-actions">
-          <button>📋 รายละเอียด</button>
+          <button data-i18n="pkr.act.detail">📋 รายละเอียด</button>
           <button>🗓 +Calendar</button>
-          <button>🔮 ฉีเหมิน</button>
-          <button class="primary">★ บันทึก</button>
+          <button data-i18n="pkr.act.qimen">🔮 ฉีเหมิน</button>
+          <button class="primary" data-i18n="pkr.act.save">★ บันทึก</button>
         </div>
       </div>
 
@@ -517,7 +517,7 @@
         <div class="tc-head">
           <div class="tc-rank">3</div>
           <div class="tc-when">
-            <div class="date"><span class="day">จันทร์</span> · 18 พ.ค. 2569</div>
+            <div class="date"><span class="day" data-i18n="pkr.day3">จันทร์</span> · <span data-i18n="pkr.date3">18 พ.ค. 2569</span></div>
             <div class="time">⏰ 13:00 — 15:00 · 未時</div>
             <div class="lunar">三月廿九</div>
           </div>
@@ -539,7 +539,7 @@
           </div>
           <div class="bd-cell good">
             <div class="src"><span class="tc">用</span>YONGSHEN</div>
-            <div class="v"><span class="n">+75</span><span class="l">戊土 ดิน-ดิน</span></div>
+            <div class="v"><span class="n">+75</span><span class="l" data-i18n="pkr.detail.wutu">戊土 ดิน-ดิน</span></div>
           </div>
           <div class="bd-cell mid">
             <div class="src"><span class="tc">奇</span>QIMEN</div>
@@ -554,15 +554,15 @@
         </div>
 
         <div class="tc-actions">
-          <button>📋 รายละเอียด</button>
+          <button data-i18n="pkr.act.detail">📋 รายละเอียด</button>
           <button>🗓 +Calendar</button>
-          <button>🔮 ฉีเหมิน</button>
-          <button class="primary">★ บันทึก</button>
+          <button data-i18n="pkr.act.qimen">🔮 ฉีเหมิน</button>
+          <button class="primary" data-i18n="pkr.act.save">★ บันทึก</button>
         </div>
       </div>
 
       <!-- divider -->
-      <div style="text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--fg-faint);text-transform:uppercase;padding:10px;">
+      <div style="text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--fg-faint);text-transform:uppercase;padding:10px;" data-i18n="pkr.divider.also">
         ─── ฤกษ์ระดับรอง · ALSO CONSIDER ───
       </div>
 
@@ -571,7 +571,7 @@
         <div class="tc-head">
           <div class="tc-rank">4</div>
           <div class="tc-when">
-            <div class="date"><span class="day">อังคาร</span> · 19 พ.ค. 2569</div>
+            <div class="date"><span class="day" data-i18n="pkr.day4">อังคาร</span> · <span data-i18n="pkr.date4">19 พ.ค. 2569</span></div>
             <div class="time">⏰ 09:00 — 11:00 · 巳時</div>
             <div class="lunar">四月初二</div>
           </div>
@@ -586,9 +586,9 @@
           </div>
         </div>
         <div class="tc-tags">
-          <span class="tc-tag mid"><span class="tc">日</span>己 = ตัวคุณ</span>
+          <span class="tc-tag mid"><span class="tc">日</span><span data-i18n="pkr.tag.self">己 = ตัวคุณ</span></span>
           <span class="tc-tag good"><span class="tc">門</span>景門</span>
-          <span class="tc-tag bad"><span class="tc">沖</span>己-亥 อ่อนนิด</span>
+          <span class="tc-tag bad"><span class="tc">沖</span><span data-i18n="pkr.tag.clash4">己-亥 อ่อนนิด</span></span>
         </div>
       </div>
 
@@ -597,35 +597,44 @@
 </div>
 
 <script>
+  // i18n helper · window.HK_I18N ยังไม่ถูกนิยามตอนบรรทัดนี้รัน (มากับ <script> ท้ายไฟล์)
+  // จึงต้องมี fallback เป็นข้อความไทยเดิมเสมอ กัน key โผล่ดิบตอน render รอบแรก
+  function _pkrtx(k, fallback){
+    var t = window.HK_I18N && window.HK_I18N[k];
+    if (!t) return fallback;
+    var L = document.documentElement.getAttribute('data-lang') || 'th';
+    return t[L] || t.th || fallback;
+  }
+
   // missions data
   const MISSIONS = {
     doc: [
-      {nm:'เซ็นสัญญา', tc:'簽約', desc:'เซ็นเอกสารผูกพัน · ขายซื้อ ขอกู้'},
-      {nm:'ปิดดีล/ปิดการขาย', tc:'立券交易', desc:'จบการเจรจา ตกลงราคา'},
-      {nm:'ขอใบอนุญาต', tc:'上書', desc:'ยื่นเอกสารราชการ · ขอ License'},
-      {nm:'ขอกู้/ขอเครดิต', tc:'求財', desc:'ยื่นกู้ · ขอวงเงินธนาคาร'},
-      {nm:'พิธีเปิด/ฤกษ์', tc:'開光', desc:'พิธีมงคล · launch ผลิตภัณฑ์'}
+      {nm:'เซ็นสัญญา', nmKey:'pkr.msn.doc1.nm', tc:'簽約', desc:'เซ็นเอกสารผูกพัน · ขายซื้อ ขอกู้', descKey:'pkr.msn.doc1.desc'},
+      {nm:'ปิดดีล/ปิดการขาย', nmKey:'pkr.msn.doc2.nm', tc:'立券交易', desc:'จบการเจรจา ตกลงราคา', descKey:'pkr.msn.doc2.desc'},
+      {nm:'ขอใบอนุญาต', nmKey:'pkr.msn.doc3.nm', tc:'上書', desc:'ยื่นเอกสารราชการ · ขอ License', descKey:'pkr.msn.doc3.desc'},
+      {nm:'ขอกู้/ขอเครดิต', nmKey:'pkr.msn.doc4.nm', tc:'求財', desc:'ยื่นกู้ · ขอวงเงินธนาคาร', descKey:'pkr.msn.doc4.desc'},
+      {nm:'พิธีเปิด/ฤกษ์', nmKey:'pkr.msn.doc5.nm', tc:'開光', desc:'พิธีมงคล · launch ผลิตภัณฑ์', descKey:'pkr.msn.doc5.desc'}
     ],
     talk: [
-      {nm:'เจรจา/ต่อรอง', tc:'議事', desc:'นั่งโต๊ะคุยเงื่อนไข · ต่อรอง'},
-      {nm:'พบที่ปรึกษา/ผู้ใหญ่', tc:'見貴', desc:'นั่งคุยกับ Senior · Mentor'},
-      {nm:'ขอความช่วยเหลือ', tc:'求人', desc:'ขอ favor · ขอ intro'},
-      {nm:'พบพันธมิตร', tc:'結交', desc:'ดื่มกาแฟพันธมิตรใหม่'},
-      {nm:'Pitch / นำเสนอ', tc:'上陳', desc:'Present ต่อ Board · นักลงทุน'}
+      {nm:'เจรจา/ต่อรอง', nmKey:'pkr.msn.talk1.nm', tc:'議事', desc:'นั่งโต๊ะคุยเงื่อนไข · ต่อรอง', descKey:'pkr.msn.talk1.desc'},
+      {nm:'พบที่ปรึกษา/ผู้ใหญ่', nmKey:'pkr.msn.talk2.nm', tc:'見貴', desc:'นั่งคุยกับ Senior · Mentor', descKey:'pkr.msn.talk2.desc'},
+      {nm:'ขอความช่วยเหลือ', nmKey:'pkr.msn.talk3.nm', tc:'求人', desc:'ขอ favor · ขอ intro', descKey:'pkr.msn.talk3.desc'},
+      {nm:'พบพันธมิตร', nmKey:'pkr.msn.talk4.nm', tc:'結交', desc:'ดื่มกาแฟพันธมิตรใหม่', descKey:'pkr.msn.talk4.desc'},
+      {nm:'Pitch / นำเสนอ', nmKey:'pkr.msn.talk5.nm', tc:'上陳', desc:'Present ต่อ Board · นักลงทุน', descKey:'pkr.msn.talk5.desc'}
     ],
     trade: [
-      {nm:'รับเงิน/เก็บเงิน', tc:'納財', desc:'รับชำระ · เก็บกระแสเงินสด'},
-      {nm:'ทวงหนี้/ตามเงิน', tc:'索債', desc:'ตามลูกหนี้ · เร่งจ่าย'},
-      {nm:'จ่ายเงิน/โอน', tc:'出財', desc:'จ่าย Supplier · โอนใหญ่'},
-      {nm:'ลงทุน/ซื้อหุ้น', tc:'入貨', desc:'ลงทุนเงินก้อน · ซื้อทรัพย์สิน'},
-      {nm:'ออกของ/ส่งของ', tc:'出行', desc:'ส่งสินค้า · เปิด shipment'}
+      {nm:'รับเงิน/เก็บเงิน', nmKey:'pkr.msn.trade1.nm', tc:'納財', desc:'รับชำระ · เก็บกระแสเงินสด', descKey:'pkr.msn.trade1.desc'},
+      {nm:'ทวงหนี้/ตามเงิน', nmKey:'pkr.msn.trade2.nm', tc:'索債', desc:'ตามลูกหนี้ · เร่งจ่าย', descKey:'pkr.msn.trade2.desc'},
+      {nm:'จ่ายเงิน/โอน', nmKey:'pkr.msn.trade3.nm', tc:'出財', desc:'จ่าย Supplier · โอนใหญ่', descKey:'pkr.msn.trade3.desc'},
+      {nm:'ลงทุน/ซื้อหุ้น', nmKey:'pkr.msn.trade4.nm', tc:'入貨', desc:'ลงทุนเงินก้อน · ซื้อทรัพย์สิน', descKey:'pkr.msn.trade4.desc'},
+      {nm:'ออกของ/ส่งของ', nmKey:'pkr.msn.trade5.nm', tc:'出行', desc:'ส่งสินค้า · เปิด shipment', descKey:'pkr.msn.trade5.desc'}
     ],
     biz: [
-      {nm:'เปิดร้าน/ตั้งกิจการ', tc:'開市', desc:'จดทะเบียน · เปิดสาขาใหม่'},
-      {nm:'จ้าง/รับพนักงาน', tc:'受聘', desc:'เซ็นสัญญาจ้าง · onboard'},
-      {nm:'ย้ายออฟฟิศ', tc:'移徙', desc:'ย้ายสำนักงาน · ขนของ'},
-      {nm:'รีโนเวท/ปรับปรุง', tc:'修飾', desc:'ปรับปรุงพื้นที่งาน · ตกแต่ง'},
-      {nm:'ประชุมใหญ่/Board', tc:'會親友', desc:'AGM · Board Meeting · town hall'}
+      {nm:'เปิดร้าน/ตั้งกิจการ', nmKey:'pkr.msn.biz1.nm', tc:'開市', desc:'จดทะเบียน · เปิดสาขาใหม่', descKey:'pkr.msn.biz1.desc'},
+      {nm:'จ้าง/รับพนักงาน', nmKey:'pkr.msn.biz2.nm', tc:'受聘', desc:'เซ็นสัญญาจ้าง · onboard', descKey:'pkr.msn.biz2.desc'},
+      {nm:'ย้ายออฟฟิศ', nmKey:'pkr.msn.biz3.nm', tc:'移徙', desc:'ย้ายสำนักงาน · ขนของ', descKey:'pkr.msn.biz3.desc'},
+      {nm:'รีโนเวท/ปรับปรุง', nmKey:'pkr.msn.biz4.nm', tc:'修飾', desc:'ปรับปรุงพื้นที่งาน · ตกแต่ง', descKey:'pkr.msn.biz4.desc'},
+      {nm:'ประชุมใหญ่/Board', nmKey:'pkr.msn.biz5.nm', tc:'會親友', desc:'AGM · Board Meeting · town hall', descKey:'pkr.msn.biz5.desc'}
     ]
   };
 
@@ -636,8 +645,8 @@
     const items = MISSIONS[state.cat] || [];
     list.innerHTML = items.map((m,i)=>`
       <div class="mission ${i===state.selected?'on':''}" data-idx="${i}">
-        <div class="nm"><span class="tc">${m.tc}</span>${m.nm}</div>
-        <div class="desc">${m.desc}</div>
+        <div class="nm"><span class="tc">${m.tc}</span>${_pkrtx(m.nmKey, m.nm)}</div>
+        <div class="desc">${_pkrtx(m.descKey, m.desc)}</div>
       </div>
     `).join('');
   }
@@ -725,7 +734,106 @@ window.HK_I18N = {
   'pkr.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
   'pkr.nav.goal':    { th:'เป้าหมาย', en:'Goals', zh:'志向' },
   'pkr.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
-  'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'}
+  'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'},
+  /* Sonnet · 5 ก.ค. 2026 · ล้างไทยหลง เฟส 2 */
+  'pkr.page.title': { th:'hourkey · วางฤกษ์ · 擇吉', en:'hourkey · Date Picker · 擇吉', zh:'hourkey · 擇吉 · 擇吉' },
+  'pkr.avatar.initial': { th:'น', en:'N', zh:'南' },
+  'pkr.crumb.home': { th:'หน้าหลัก', en:'Home', zh:'首頁' },
+  'pkr.crumb.cur':  { th:'วางฤกษ์ · 擇吉 AUSPICIOUS PICKER', en:'Date Picker · 擇吉 AUSPICIOUS PICKER', zh:'擇吉 · 擇吉 AUSPICIOUS PICKER' },
+  'pkr.hero.h1':    { th:'เลือก<i>ฤกษ์</i> <span class="tc">擇日</span><br/>ก่อนจะ<i>ก้าว</i>สำคัญ',
+                      en:'Choose the <i>Hour</i> <span class="tc">擇日</span><br/>before your <i>big</i> move',
+                      zh:'選<i>吉時</i> <span class="tc">擇日</span><br/>邁出<i>關鍵</i>一步前' },
+  'pkr.hero.lede':  { th:'บอก<b>ภารกิจ</b>และ<b>ช่วงเวลา</b>ที่ต้องการ — ระบบหา<b>ฤกษ์ที่ผ่านทั้ง 3 ระบบ</b>: 黃曆 ปฏิทินมงคล + 用神 ดวงคุณ + 奇門 ฉีเหมิน · จัดอันดับให้คุณเลือก · บันทึกแล้วโผล่เตือนใน "วันนี้"',
+                      en:'Tell us the <b>mission</b> and the <b>time window</b> — the system finds <b>the hour that passes all 3 systems</b>: 黃曆 Chinese Almanac + 用神 Your Chart + 奇門 Qi Men · ranks them for you · once saved, it surfaces as a reminder in "Today"',
+                      zh:'告訴我們<b>任務</b>與<b>期望時段</b> — 系統會找出<b>通過三大體系的吉時</b>：黃曆 通勝 + 用神 命盤 + 奇門遁甲 · 為您排序 · 儲存後會在「今日」提醒您' },
+  'pkr.badge.mission': { th:'ภารกิจ CEO', en:'CEO missions', zh:'CEO 任務' },
+  'pkr.card.mission.h3': { th:'ภารกิจ · MISSION', en:'Mission · MISSION', zh:'任務 · MISSION' },
+  'pkr.cat.doc':   { th:'เอกสาร', en:'Documents', zh:'文書' },
+  'pkr.cat.talk':  { th:'เจรจา', en:'Negotiation', zh:'談判' },
+  'pkr.cat.trade': { th:'ธุรกรรม', en:'Transaction', zh:'交易' },
+  'pkr.cat.biz':   { th:'องค์กร', en:'Business', zh:'商務' },
+  'pkr.card.mission.label': { th:'ชื่อภารกิจของคุณ · LABEL', en:'Your Mission Name · LABEL', zh:'您的任務名稱 · LABEL' },
+  'pkr.card.when.h3': { th:'ช่วงเวลา · WHEN', en:'Time Window · WHEN', zh:'時段 · WHEN' },
+  'pkr.range.from': { th:'เริ่ม · FROM', en:'START · FROM', zh:'開始 · FROM' },
+  'pkr.range.to':   { th:'ถึง · TO', en:'END · TO', zh:'結束 · TO' },
+  'pkr.qr.3d':     { th:'3 วัน', en:'3 days', zh:'3天' },
+  'pkr.qr.2w':     { th:'1-2 สัปดาห์', en:'1-2 weeks', zh:'1-2週' },
+  'pkr.qr.month':  { th:'เดือน', en:'1 month', zh:'1個月' },
+  'pkr.qr.before': { th:'ก่อน 31 พ.ค.', en:'Before 31 May', zh:'5月31日前' },
+  'pkr.card.weights.h3': { th:'น้ำหนัก · WEIGHTS', en:'Weights · WEIGHTS', zh:'權重 · WEIGHTS' },
+  'pkr.w.tongshu': { th:'ปฏิทินมงคล', en:'Chinese Almanac', zh:'通勝擇日' },
+  'pkr.w.yongshen':{ th:'ดวงคุณ', en:'Your Chart', zh:'命盤用神' },
+  'pkr.w.qimen':   { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門遁甲' },
+  'pkr.card.opponent.h3': { th:'รวมดวงคู่ค้า · OPPONENT', en:'Include Counterpart · OPPONENT', zh:'合參對方 · OPPONENT' },
+  'pkr.rel.pete.name': { th:'พีท · Co-founder', en:'Pete · Co-founder', zh:'Pete · 共同創辦人' },
+  'pkr.rel.pete.role': { th:'WORK · พันธมิตร', en:'WORK · Partner', zh:'WORK · 夥伴' },
+  'pkr.rel.add':   { th:'+ เพิ่มจากเครือข่าย', en:'+ Add from Network', zh:'+ 從人脈新增' },
+  'pkr.search.btn':{ th:'ค้นหาฤกษ์มงคล', en:'Find Auspicious Times', zh:'搜尋吉時' },
+  'pkr.result.h2': { th:'พบ <b>14 ฤกษ์</b> ใน 14 วัน · <b>3 ฤกษ์มงคลสูงสุด</b>',
+                     en:'Found <b>14 auspicious hours</b> in 14 days · <b>top 3 picks</b>',
+                     zh:'14天內找到 <b>14 個吉時</b> · <b>前 3 名最佳吉時</b>' },
+  'pkr.sort.soonest': { th:'เร็วสุด', en:'Soonest', zh:'最快' },
+  'pkr.sort.allslots':{ th:'ทุก slot', en:'All Slots', zh:'全部時段' },
+  'pkr.day1': { th:'พุธ', en:'Wed', zh:'週三' },
+  'pkr.date1':{ th:'13 พ.ค. 2569', en:'13 May 2026', zh:'2026年5月13日' },
+  'pkr.poem1.trans': { th:'<b>"น้ำเดินทางมาถึงต้นกำเนิด · ประตูเปิดรับทรัพย์ · สามพันธมิตรคล้องกัน"</b> — เหมาะ <b>เซ็นสัญญาเงินก้อนใหญ่</b> · มีคนหนุน · ทิศ SW เป็นทิศโชคลาภ',
+                       en:'<b>"Water returns to its source · the gate opens to wealth · three allies align"</b> — good for <b>signing a large contract</b> · you have backers · SW is your lucky direction',
+                       zh:'<b>「水歸本源．開門納財．三合相迎」</b> — 適合<b>簽署大額合約</b> · 有貴人相助 · 西南為財運方位' },
+  'pkr.act.detail': { th:'📋 รายละเอียด', en:'📋 Details', zh:'📋 詳情' },
+  'pkr.act.qimen':  { th:'🔮 ฉีเหมิน', en:'🔮 Qi Men', zh:'🔮 奇門' },
+  'pkr.act.save1':  { th:'★ บันทึกฤกษ์นี้', en:'★ Save This Time', zh:'★ 儲存此吉時' },
+  'pkr.act.save':   { th:'★ บันทึก', en:'★ Save', zh:'★ 儲存' },
+  'pkr.day2': { th:'ศุกร์', en:'Fri', zh:'週五' },
+  'pkr.date2':{ th:'15 พ.ค. 2569', en:'15 May 2026', zh:'2026年5月15日' },
+  'pkr.tag.clash1': { th:'未-丑 沖เล็ก', en:'未-丑 minor clash', zh:'未-丑 沖（輕微）' },
+  'pkr.day3': { th:'จันทร์', en:'Mon', zh:'週一' },
+  'pkr.date3':{ th:'18 พ.ค. 2569', en:'18 May 2026', zh:'2026年5月18日' },
+  'pkr.detail.wutu': { th:'戊土 ดิน-ดิน', en:'戊土 Earth-Earth', zh:'戊土 土剋土' },
+  'pkr.divider.also': { th:'─── ฤกษ์ระดับรอง · ALSO CONSIDER ───', en:'─── Also Consider ───', zh:'─── 次選吉時 · ALSO CONSIDER ───' },
+  'pkr.day4': { th:'อังคาร', en:'Tue', zh:'週二' },
+  'pkr.date4':{ th:'19 พ.ค. 2569', en:'19 May 2026', zh:'2026年5月19日' },
+  'pkr.tag.self':   { th:'己 = ตัวคุณ', en:'己 = You', zh:'己 = 你自己' },
+  'pkr.tag.clash4': { th:'己-亥 อ่อนนิด', en:'己-亥 mild clash', zh:'己-亥 輕微沖' },
+  'pkr.msn.doc1.nm':{ th:'เซ็นสัญญา', en:'Sign a Contract', zh:'簽約' },
+  'pkr.msn.doc1.desc':{ th:'เซ็นเอกสารผูกพัน · ขายซื้อ ขอกู้', en:'Sign a binding document · sale/purchase, loan', zh:'簽署具約束力文件 · 買賣、借貸' },
+  'pkr.msn.doc2.nm':{ th:'ปิดดีล/ปิดการขาย', en:'Close the Deal', zh:'成交/收單' },
+  'pkr.msn.doc2.desc':{ th:'จบการเจรจา ตกลงราคา', en:'Finish negotiation, agree on price', zh:'完成談判、談妥價格' },
+  'pkr.msn.doc3.nm':{ th:'ขอใบอนุญาต', en:'Apply for a License', zh:'申請執照' },
+  'pkr.msn.doc3.desc':{ th:'ยื่นเอกสารราชการ · ขอ License', en:'File government paperwork · request a license', zh:'遞交官方文件 · 申請執照' },
+  'pkr.msn.doc4.nm':{ th:'ขอกู้/ขอเครดิต', en:'Apply for a Loan/Credit', zh:'貸款/信貸' },
+  'pkr.msn.doc4.desc':{ th:'ยื่นกู้ · ขอวงเงินธนาคาร', en:'File a loan application · request a bank credit line', zh:'申請貸款 · 申請銀行額度' },
+  'pkr.msn.doc5.nm':{ th:'พิธีเปิด/ฤกษ์', en:'Opening Ceremony', zh:'開光/開業儀式' },
+  'pkr.msn.doc5.desc':{ th:'พิธีมงคล · launch ผลิตภัณฑ์', en:'Blessing ceremony · product launch', zh:'吉祥儀式 · 產品發布' },
+  'pkr.msn.talk1.nm':{ th:'เจรจา/ต่อรอง', en:'Negotiate/Bargain', zh:'談判/議價' },
+  'pkr.msn.talk1.desc':{ th:'นั่งโต๊ะคุยเงื่อนไข · ต่อรอง', en:'Sit down to discuss terms · bargaining', zh:'坐下來談條件 · 議價' },
+  'pkr.msn.talk2.nm':{ th:'พบที่ปรึกษา/ผู้ใหญ่', en:'Meet an Advisor/Elder', zh:'會見貴人/長輩' },
+  'pkr.msn.talk2.desc':{ th:'นั่งคุยกับ Senior · Mentor', en:'Sit down with a senior · mentor', zh:'與資深人士會面 · 導師' },
+  'pkr.msn.talk3.nm':{ th:'ขอความช่วยเหลือ', en:'Ask for Help', zh:'求助' },
+  'pkr.msn.talk3.desc':{ th:'ขอ favor · ขอ intro', en:'Request a favor · ask for an introduction', zh:'請求幫忙 · 請求介紹' },
+  'pkr.msn.talk4.nm':{ th:'พบพันธมิตร', en:'Meet a Partner', zh:'結交夥伴' },
+  'pkr.msn.talk4.desc':{ th:'ดื่มกาแฟพันธมิตรใหม่', en:'Coffee with a new partner', zh:'與新夥伴喝咖啡' },
+  'pkr.msn.talk5.nm':{ th:'Pitch / นำเสนอ', en:'Pitch / Present', zh:'提案/簡報' },
+  'pkr.msn.talk5.desc':{ th:'Present ต่อ Board · นักลงทุน', en:'Present to the board · investors', zh:'向董事會簡報 · 投資人' },
+  'pkr.msn.trade1.nm':{ th:'รับเงิน/เก็บเงิน', en:'Receive/Collect Payment', zh:'收款/催收' },
+  'pkr.msn.trade1.desc':{ th:'รับชำระ · เก็บกระแสเงินสด', en:'Accept payment · collect cash flow', zh:'收取款項 · 收現金流' },
+  'pkr.msn.trade2.nm':{ th:'ทวงหนี้/ตามเงิน', en:'Chase a Debt/Payment', zh:'討債/追款' },
+  'pkr.msn.trade2.desc':{ th:'ตามลูกหนี้ · เร่งจ่าย', en:'Follow up debtors · push for payment', zh:'跟進欠款人 · 催促付款' },
+  'pkr.msn.trade3.nm':{ th:'จ่ายเงิน/โอน', en:'Pay/Transfer Money', zh:'付款/匯款' },
+  'pkr.msn.trade3.desc':{ th:'จ่าย Supplier · โอนใหญ่', en:'Pay a supplier · large transfer', zh:'支付供應商 · 大額匯款' },
+  'pkr.msn.trade4.nm':{ th:'ลงทุน/ซื้อหุ้น', en:'Invest/Buy Shares', zh:'投資/買股' },
+  'pkr.msn.trade4.desc':{ th:'ลงทุนเงินก้อน · ซื้อทรัพย์สิน', en:'Invest a lump sum · purchase an asset', zh:'投入大筆資金 · 購買資產' },
+  'pkr.msn.trade5.nm':{ th:'ออกของ/ส่งของ', en:'Ship/Dispatch Goods', zh:'出貨/發貨' },
+  'pkr.msn.trade5.desc':{ th:'ส่งสินค้า · เปิด shipment', en:'Send products · open a shipment', zh:'寄送商品 · 開啟出貨' },
+  'pkr.msn.biz1.nm':{ th:'เปิดร้าน/ตั้งกิจการ', en:'Open a Shop/Start a Business', zh:'開業/創業' },
+  'pkr.msn.biz1.desc':{ th:'จดทะเบียน · เปิดสาขาใหม่', en:'Register a company · open a new branch', zh:'登記註冊 · 開設新分店' },
+  'pkr.msn.biz2.nm':{ th:'จ้าง/รับพนักงาน', en:'Hire Staff', zh:'聘僱/招聘' },
+  'pkr.msn.biz2.desc':{ th:'เซ็นสัญญาจ้าง · onboard', en:'Sign an employment contract · onboarding', zh:'簽署聘用合約 · 入職' },
+  'pkr.msn.biz3.nm':{ th:'ย้ายออฟฟิศ', en:'Move Office', zh:'搬遷辦公室' },
+  'pkr.msn.biz3.desc':{ th:'ย้ายสำนักงาน · ขนของ', en:'Relocate the office · moving day', zh:'搬遷辦公室 · 搬家' },
+  'pkr.msn.biz4.nm':{ th:'รีโนเวท/ปรับปรุง', en:'Renovate/Improve', zh:'裝修/改造' },
+  'pkr.msn.biz4.desc':{ th:'ปรับปรุงพื้นที่งาน · ตกแต่ง', en:'Renovate the workspace · redecorate', zh:'翻新工作空間 · 裝潢' },
+  'pkr.msn.biz5.nm':{ th:'ประชุมใหญ่/Board', en:'Big Meeting/Board', zh:'重要會議/董事會' },
+  'pkr.msn.biz5.desc':{ th:'AGM · Board Meeting · town hall', en:'AGM · board meeting · town hall', zh:'股東大會 · 董事會 · 全員大會' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
@@ -749,6 +857,8 @@ window.applyI18N = applyI18N;
     btns.forEach(function(b){ b.classList.toggle('on', b.dataset.lang === lang); });
     try{ localStorage.setItem('hk_locale', lang); }catch(e){}
     applyI18N(lang);
+    /* mission list เป็น innerHTML ที่ JS สร้างเอง ไม่ใช่ data-i18n node · ต้อง re-render เอง */
+    if (typeof window.renderMissions === 'function') window.renderMissions();
   }
   btns.forEach(function(b){ b.addEventListener('click', function(){ apply(b.dataset.lang); }); });
   try{ var s = localStorage.getItem('hk_locale'); if (s) apply(s); else apply('th'); }catch(e){ apply('th'); }
