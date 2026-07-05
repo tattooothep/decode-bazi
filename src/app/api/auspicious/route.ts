@@ -41,6 +41,8 @@ import { getActivityProfile, mergeProfileHardModules, resolveActivityType } from
 import { computeTongshuLiveForRow, buildTongshuModuleResults } from "@/lib/luck-engine/tongshu-live";
 import type { ActivityProfile } from "@/lib/luck-engine/activity-profiles";
 import { getSession } from "@/lib/auth";
+import { SolarDay } from "tyme4ts";
+import { KING_WEN } from "@/lib/heluo-astrology";
 import { evaluateMonthDaySha } from "@/lib/luopan/month-day-sha";
 import type { Dir8 } from "@/lib/luopan/mountains";
 
@@ -1662,9 +1664,11 @@ function computePersonalModules(slot: CandidateSlot, customer: PersonProfile) {
   }
   const yong_shen = _result('yong_shen', ysScore, yTags, yUp, yDown, 0.8, { customer_ys: cYS, slot_day_el: slotDayEl, slot_hour_el: slotHourEl });
 
-  // ── hex64 · derive from slot day + HOUR branch + customer zodiac · slot ต่างกัน hex ต่างกัน
-  const hexNum = ((BRANCHES_ORDER_PERSONAL.indexOf(sP.day.branch) * 12 + BRANCHES_ORDER_PERSONAL.indexOf(sP.hour.branch) * 7 + BRANCHES_ORDER_PERSONAL.indexOf(cZ)) % 64) + 1;
-  const yaoLine = ((BRANCHES_ORDER_PERSONAL.indexOf(sP.hour.branch) + BRANCHES_ORDER_PERSONAL.indexOf(sP.day.branch)) % 6) + 1;
+  // ── hex64 · 梅花易數 起卦ตามเวลา (以時間起卦 · r414) ────────────────
+  // เดิม (บั๊ก): hash เลขกิ่ง day*12+hour*7+zodiac — เลข卦ไม่มีที่มาเชิง易 แต่โชว์爻辭ของแท้
+  // ใหม่: 年支數+月+日 (จันทรคติ) → 上卦 · +時支數 → 下卦 · 動爻 = ผลรวม%6 (ตำรามาตรฐาน)
+  // หมายเหตุ: 起卦ด้วยเวลา → ทุกคนใน slot เดียวกันได้卦เดียวกัน (ถูกตาม梅花 · ไม่ใช้ปีนักษัตรลูกค้า)
+  const { hexNum, yaoLine, meihuaRaw } = _meihuaTimeHex(slot);
   const HEX_NAMES: Record<number, string> = { 1:'乾',2:'坤',3:'屯',4:'蒙',5:'需',6:'訟',7:'師',8:'比',9:'小畜',10:'履',11:'泰',12:'否',13:'同人',14:'大有',15:'謙',16:'豫',17:'隨',18:'蠱',19:'臨',20:'觀',21:'噬嗑',22:'賁',23:'剝',24:'復',25:'無妄',26:'大畜',27:'頤',28:'大過',29:'坎',30:'離',31:'咸',32:'恆',33:'遯',34:'大壯',35:'晉',36:'明夷',37:'家人',38:'睽',39:'蹇',40:'解',41:'損',42:'益',43:'夬',44:'姤',45:'萃',46:'升',47:'困',48:'井',49:'革',50:'鼎',51:'震',52:'艮',53:'漸',54:'歸妹',55:'豐',56:'旅',57:'巽',58:'兌',59:'渙',60:'節',61:'中孚',62:'小過',63:'既濟',64:'未濟' };
   const HEX_GOOD = new Set([1,11,14,19,24,25,34,41,42,46,53,55,57,58,61]);
   const HEX_BAD = new Set([12,23,29,36,39,44,47,49,56]);
@@ -1678,11 +1682,45 @@ function computePersonalModules(slot: CandidateSlot, customer: PersonProfile) {
             : hexScore >= 50 ? [{code:'HEX_NEUTRAL', thai:`📜 卦${hexNum} ${hexName} 爻${yaoLine}`, delta: 0}]
             : [];
   const hDown = hexScore < 50 ? [{code:'HEX_BAD', thai:`⚠ 卦${hexNum} ${hexName} 爻${yaoLine}`, delta: hexScore-50}] : [];
-  const hex64 = _result('hex64', hexScore, hTags, hUp, hDown, 0.7, { hex_num: hexNum, hex_name: hexName, changing_line: yaoLine, label: hexLabel });
+  const hex64 = _result('hex64', hexScore, hTags, hUp, hDown, 0.7, { hex_num: hexNum, hex_name: hexName, changing_line: yaoLine, label: hexLabel, meihua: meihuaRaw });
 
   return { ba_zi, yong_shen, hex64 };
 }
 const BRANCHES_ORDER_PERSONAL = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+
+// ── 梅花易數 起卦ตามเวลา (r414) ──────────────────────────────────
+// 先天八卦數 乾1兌2離3震4巽5坎6艮7坤8 → binary 3 บิต · encoding เดียวกับ TRIGRAM_BIN
+// ใน heluo-astrology.ts:30 (乾=111 兌=110 離=101 震=100 巽=011 坎=010 艮=001 坤=000)
+// เพื่อให้ key ตรงกับตาราง KING_WEN (upperBin+lowerBin → เลข King Wen 1-64)
+const _XIANTIAN_BIN: Record<number, string> = { 1:'111', 2:'110', 3:'101', 4:'100', 5:'011', 6:'010', 7:'001', 8:'000' };
+const _XIANTIAN_ZH: Record<number, string> = { 1:'乾', 2:'兌', 3:'離', 4:'震', 5:'巽', 6:'坎', 7:'艮', 8:'坤' };
+
+/** 梅花易數 以時間起卦 (ตำรามาตรฐาน 邵雍):
+ *  上卦 = (年支數+月+日) % 8 (0→8) · 下卦 = (年支數+月+日+時支數) % 8 (0→8) · 動爻 = ผลรวม % 6 (0→6)
+ *  ปี/เดือน/วัน = จันทรคติ (tyme4ts) · 年支數/時支數: 子=1..亥=12 · 閏月ใช้เลขเดือนเดิม */
+function _meihuaTimeHex(slot: CandidateSlot): { hexNum: number; yaoLine: number; meihuaRaw: any } {
+  try {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(slot.calendar?.gregorianDate || slot.datetime?.start || ''));
+    if (!m) throw new Error('no_date');
+    const ld = SolarDay.fromYmd(parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)).getLunarDay();
+    const yNum = ld.getLunarMonth().getLunarYear().getSixtyCycle().getEarthBranch().getIndex() + 1; // 年支數 子=1..亥=12
+    const mNum = Math.abs(ld.getLunarMonth().getMonth());                                            // เดือนจันทรคติ 1-12
+    const dNum = ld.getDay();                                                                        // วันจันทรคติ 1-30
+    const hIdx = BRANCHES_ORDER_PERSONAL.indexOf(slot.pillars.hour.branch);
+    const hNum = (hIdx >= 0 ? hIdx : 0) + 1;                                                         // 時支數 子=1..亥=12
+    const upXT = ((yNum + mNum + dNum) % 8) || 8;          // 上卦 (先天數)
+    const loXT = ((yNum + mNum + dNum + hNum) % 8) || 8;   // 下卦 (先天數)
+    const yao = ((yNum + mNum + dNum + hNum) % 6) || 6;    // 動爻 1-6
+    const hexNum = KING_WEN[_XIANTIAN_BIN[upXT] + _XIANTIAN_BIN[loXT]] ?? 1;
+    return {
+      hexNum, yaoLine: yao,
+      meihuaRaw: { method: 'meihua_time', lunar: { y: yNum, m: mNum, d: dNum, h: hNum }, upper: _XIANTIAN_ZH[upXT], lower: _XIANTIAN_ZH[loXT] },
+    };
+  } catch {
+    // ปกติเกิดไม่ได้ (gregorianDate มาจาก DB date column เสมอ) · กันพังไว้เฉยๆ
+    return { hexNum: 1, yaoLine: 1, meihuaRaw: { method: 'fallback' } };
+  }
+}
 
 async function savePersonalCache(customer: PersonProfile, slot: CandidateSlot, personal: any): Promise<void> {
   try {
