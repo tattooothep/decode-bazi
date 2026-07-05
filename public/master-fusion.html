@@ -1084,7 +1084,7 @@
       <section class="panel result-panel">
         <div class="panel-head">
           <div class="panel-title" data-i18n="result.title">คำพยากรณ์</div>
-          <span class="pill" id="run-state">idle</span>
+          <span class="pill" id="run-state" data-i18n="state.idle">พร้อมถาม</span>
         </div>
         <div class="panel-body">
           <!-- r385 · ห้องแชทต่อเนื่อง: หัวห้อง + ฟองเก่าเรียงลงมา · การ์ดคำตอบสด (fusion5-result) = ฟองล่าสุดของซินแส · 🔗🎯 พับใต้ฟอง -->
@@ -1105,15 +1105,15 @@
 
     <section class="panel history-panel">
       <div class="panel-head">
-        <div class="panel-title">Premium Fusion History</div>
-        <button class="mini-btn" id="history-refresh" type="button">Refresh</button>
+        <div class="panel-title" data-i18n="hist.title">ประวัติคำพยากรณ์</div>
+        <button class="mini-btn" id="history-refresh" type="button" data-i18n="hist.refresh">โหลดใหม่</button>
       </div>
       <div class="panel-body">
         <!-- r383 · การ์ด Search/filters ถูกถอดออกทุกอุปกรณ์ (คำสั่งเจ้านาย) — เหลือหัว + Refresh + รายการ · JS ฝั่ง filter guard element หายแล้ว -->
         <div class="history-grid">
           <div class="history-list" id="history-list"></div>
           <div class="history-detail" id="history-detail">
-            <div class="history-empty">แตะรายการประวัติ → คำถาม+คำตอบเก่าจะเปิดบนการ์ดคำพยากรณ์หลัก · panel นี้โชว์ receipt, packet version และ note ส่วนตัว</div>
+            <div class="history-empty" data-i18n="hist.pick">แตะรายการประวัติ → คำถาม+คำตอบเก่าจะเปิดบนการ์ดคำพยากรณ์หลัก</div>
           </div>
         </div>
       </div>
@@ -1124,10 +1124,10 @@
     <div class="answer-dialog">
       <div class="answer-head">
         <div>
-          <div class="answer-title" id="answer-title">AI answer</div>
+          <div class="answer-title" id="answer-title">คำตอบ AI</div>
           <div class="answer-sub" id="answer-sub"></div>
         </div>
-        <button class="answer-close" id="answer-close" type="button">Close</button>
+        <button class="answer-close" id="answer-close" type="button" data-i18n="modal.close">ปิด</button>
       </div>
       <pre class="answer-body" id="answer-body"></pre>
     </div>
@@ -1182,7 +1182,13 @@
         'hist.fromTag':'📜 จากประวัติ · {d}','hist.askMore':'ถามต่อจากคำตอบนี้','hist.back':'กลับ / ถามใหม่','hist.busy':'รอคำพยากรณ์ปัจจุบันเสร็จก่อน แล้วค่อยเปิดประวัติ','hist.pick':'แตะรายการประวัติ → คำถาม+คำตอบเก่าจะเปิดบนการ์ดคำพยากรณ์หลัก',
         'guest.link':'หรือ + ดวงชั่วคราว (ไม่บันทึก)','guest.name':'ชื่อเล่น','guest.namePh':'ดวงชั่วคราว','guest.gender':'เพศ','guest.male':'ชาย (M)','guest.female':'หญิง (F)','guest.birthDate':'วันเกิด','guest.dateHint':'ค.ศ.','guest.birthTime':'เวลาเกิด','guest.noTime':'ไม่ทราบเวลาเกิด','guest.noTimeHint':'จะอ่านได้ 3 เสา · จื่อเวย/ดาวจริงจีนข้าม','guest.noTimeShort':'ไม่ทราบเวลา','guest.place':'สถานที่เกิด','guest.placePh':'พิมพ์ชื่อเมือง/สถานที่ (ค่าเริ่มต้น กรุงเทพ)','guest.manualLatLng':'กรอกพิกัด lat/lng เอง','guest.locFail':'โหลด Google Places ไม่สำเร็จ · กรอกพิกัดเองได้ (เว้นว่าง = กรุงเทพ)','guest.locHint':'เว้นว่าง = กรุงเทพ 13.7563, 100.5018','guest.use':'ใช้ดวงนี้','guest.cancel':'ยกเลิกกลับ dropdown','guest.chipTag':'ไม่บันทึก','guest.edit':'แก้','guest.needDate':'กรุณาเลือกวันเกิด','guest.badDate':'วันเกิดต้องอยู่ระหว่าง ค.ศ. 1900 – วันนี้','guest.needTime':'กรอกเวลาเกิด หรือติ๊ก "ไม่ทราบเวลาเกิด"','guest.needGender':'กรุณาเลือกเพศ','guest.badLatLng':'พิกัดไม่ถูกต้อง (lat -90..90 · lng -180..180)','guest.tooMany':'รวมดวงได้ไม่เกิน 4 (โปรไฟล์ + ดวงชั่วคราว)','guest.histLabel':'ดวงชั่วคราวในรอบนี้ (ไม่บันทึก)','guest.badData':'ข้อมูลดวงชั่วคราวไม่ถูกต้อง','guest.slotAt':'ดวงชั่วคราวช่องที่ {n}',
         'pill.back':'แตะกลับไปดูคำพยากรณ์','pill.ready':'คำพยากรณ์พร้อมแล้ว · แตะดู',
-        'chat.send':'ส่ง','chat.newRoom':'🆕 ห้องใหม่','chat.more':'อ่านเต็ม ▾','chat.less':'ย่อ ▴','chat.ph':'พิมพ์ถามต่อในห้องนี้...','chat.wait':'⏳ กำลังอ่านดวง...','chat.topup':'ยามไม่พอ · ไปเติมยาม','chat.newRoomHint':'เปลี่ยนดวง/ศาสตร์ หรือเริ่มเรื่องใหม่ = เปิดห้องใหม่' },
+        'chat.send':'ส่ง','chat.newRoom':'🆕 ห้องใหม่','chat.more':'อ่านเต็ม ▾','chat.less':'ย่อ ▴','chat.ph':'พิมพ์ถามต่อในห้องนี้...','chat.wait':'⏳ กำลังอ่านดวง...','chat.topup':'ยามไม่พอ · ไปเติมยาม','chat.newRoomHint':'เปลี่ยนดวง/ศาสตร์ หรือเริ่มเรื่องใหม่ = เปิดห้องใหม่',
+        'state.idle':'พร้อมถาม','state.running':'กำลังอ่าน...','state.done':'เสร็จแล้ว','state.failed':'ไม่สำเร็จ','state.degraded':'สำเร็จบางส่วน','state.history':'ดูจากประวัติ',
+        'hist.title':'ประวัติคำพยากรณ์','hist.refresh':'โหลดใหม่','hist.empty':'ยังไม่มีประวัติของดวงนี้','hist.pin':'📌 ปัก','hist.unpin':'เลิกปัก','hist.fav':'⭐ ชอบ','hist.unfav':'เลิกชอบ','hist.compare':'เทียบ','hist.compareTitle':'เทียบ 2 คำตอบ','hist.tech':'🔧 ข้อมูลเชิงเทคนิค','hist.note':'บันทึกส่วนตัว','hist.saveNote':'บันทึก','hist.rerun':'รันใหม่','hist.exportMd':'ไฟล์ข้อความ','hist.exportPdf':'PDF',
+        'st.done':'เสร็จ','st.fail':'ไม่สำเร็จ','st.degraded':'บางส่วน',
+        'rcpt.ai':'อ่านสำเร็จ {d}/{t} ศาสตร์','rcpt.failN':'ไม่สำเร็จ {n} ศาสตร์','rcpt.time':'ใช้เวลา {t}','rcpt.spent':'ใช้ {n} 時','snap.ver':'รุ่นข้อมูลดวง','snap.hash':'รหัสตรวจสอบ','snap.profile':'ดวงที่ใช้','fmt.sec':'{s} วินาที','fmt.minsec':'{m} นาที {s} วินาที',
+        'proof.answers':'อ่านรายศาสตร์','proof.final':'ฟันธงรวม','proof.fallback':'⚠️ คำฟันธงรวมไม่สำเร็จ — ใช้คำตอบของ {m} แทน','proof.noFinal':'⚠️ รอบนี้ไม่มีคำฟันธงรวม (อ่านหยุดก่อนขั้นหลอมรวม)','proof.failed':'⚠️ อ่านไม่สำเร็จ: {list}','modal.close':'ปิด',
+        'prg.ok':'เสร็จ','prg.fail':'ไม่สำเร็จ','prg.skipped':'ข้าม','prg.running':'กำลังอ่าน','prg.queued':'รอคิว','prg.waitAnswer':'กำลังรอคำตอบ','prg.waitStart':'รอเริ่ม','prg.phase.panel':'อ่านรายศาสตร์','prg.phase.judge':'หลอมคำฟันธง','prg.phase.done':'เสร็จสิ้น','prg.phase.queued':'รอคิว' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'6-Science Reading','hero.sub':'Fuse 6 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic · Uranian — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
         'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading','read.back':'Back to reading','book.make':'📜 Create Book of Destiny','book.pickTitle':'📜 Create Book of Destiny','book.pickSub':'Pick the sciences to include · each chapter shows its natal chart','book.synth':'Synthesis chapter (needs 2+ sciences)','book.total':'Total','book.confirm':'Create book','book.cancel':'Cancel','book.noSci':'Pick at least 1 science','book.openExisting':'A book already exists — 📖 Open it (no charge)','book.chooseSelf':'Pick your chart first (book = single chart)','book.singleOnly':'Book supports a single chart — switch to Single mode first','book.creating':'⏳ Creating your book…',
         'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back',
@@ -1198,7 +1204,13 @@
         'hist.fromTag':'📜 From history · {d}','hist.askMore':'Ask a follow-up','hist.back':'Back / new question','hist.busy':'Wait for the current reading to finish before opening history','hist.pick':'Tap a history item — the old question + answer open on the main reading card',
         'guest.link':'or + temporary chart (not saved)','guest.name':'Nickname','guest.namePh':'Temp chart','guest.gender':'Gender','guest.male':'Male (M)','guest.female':'Female (F)','guest.birthDate':'Birth date','guest.dateHint':'CE','guest.birthTime':'Birth time','guest.noTime':'Birth time unknown','guest.noTimeHint':'3-pillar reading only · Zi Wei / Chinese real-star skipped','guest.noTimeShort':'time unknown','guest.place':'Birth place','guest.placePh':'Type a city/place (default Bangkok)','guest.manualLatLng':'Enter lat/lng manually','guest.locFail':'Google Places failed to load · enter coordinates manually (blank = Bangkok)','guest.locHint':'Blank = Bangkok 13.7563, 100.5018','guest.use':'Use this chart','guest.cancel':'Cancel, back to dropdown','guest.chipTag':'not saved','guest.edit':'Edit','guest.needDate':'Please pick a birth date','guest.badDate':'Birth date must be between 1900 and today','guest.needTime':'Fill birth time or tick "birth time unknown"','guest.needGender':'Please pick a gender','guest.badLatLng':'Invalid coordinates (lat -90..90 · lng -180..180)','guest.tooMany':'Max 4 charts total (profiles + temporary)','guest.histLabel':'Temporary charts in this run (not saved)','guest.badData':'Invalid temporary chart data','guest.slotAt':'temporary chart slot {n}',
         'pill.back':'tap to view the reading','pill.ready':'Reading is ready · tap to view',
-        'chat.send':'Send','chat.newRoom':'🆕 New room','chat.more':'Read full ▾','chat.less':'Collapse ▴','chat.ph':'Type a follow-up in this room...','chat.wait':'⏳ Reading the charts...','chat.topup':'Not enough yam · Top up','chat.newRoomHint':'Change charts/sciences or start a new topic = open a new room' },
+        'chat.send':'Send','chat.newRoom':'🆕 New room','chat.more':'Read full ▾','chat.less':'Collapse ▴','chat.ph':'Type a follow-up in this room...','chat.wait':'⏳ Reading the charts...','chat.topup':'Not enough yam · Top up','chat.newRoomHint':'Change charts/sciences or start a new topic = open a new room',
+        'state.idle':'ready','state.running':'reading...','state.done':'done','state.failed':'failed','state.degraded':'partial','state.history':'from history',
+        'hist.title':'Reading History','hist.refresh':'Refresh','hist.empty':'No history for this chart yet','hist.pin':'📌 Pin','hist.unpin':'Unpin','hist.fav':'⭐ Fav','hist.unfav':'Unfav','hist.compare':'compare','hist.compareTitle':'Compare 2 answers','hist.tech':'🔧 Technical details','hist.note':'Private note','hist.saveNote':'Save','hist.rerun':'Run again','hist.exportMd':'Markdown','hist.exportPdf':'PDF',
+        'st.done':'done','st.fail':'failed','st.degraded':'partial',
+        'rcpt.ai':'{d}/{t} sciences read','rcpt.failN':'{n} failed','rcpt.time':'took {t}','rcpt.spent':'{n} 時 spent','snap.ver':'chart data version','snap.hash':'checksum','snap.profile':'chart used','fmt.sec':'{s}s','fmt.minsec':'{m}m {s}s',
+        'proof.answers':'Per-science answers','proof.final':'Fusion verdict','proof.fallback':'⚠️ Fusion verdict failed — showing {m}’s answer instead','proof.noFinal':'⚠️ No fusion verdict this run (stopped before synthesis)','proof.failed':'⚠️ Failed to read: {list}','modal.close':'Close',
+        'prg.ok':'done','prg.fail':'failed','prg.skipped':'skipped','prg.running':'reading','prg.queued':'queued','prg.waitAnswer':'waiting for answer','prg.waitStart':'waiting to start','prg.phase.panel':'Reading each science','prg.phase.judge':'Fusing the verdict','prg.phase.done':'Done','prg.phase.queued':'Queued' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'六術合參','hero.sub':'融合六種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 · 天王星占星(漢堡學派) — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
         'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷','read.back':'返回論斷','book.make':'📜 生成命書','book.pickTitle':'📜 生成命書','book.pickSub':'勾選要收錄的術數 · 每章附命盤圖','book.synth':'融合章（需選 2 術以上）','book.total':'合計','book.confirm':'生成命書','book.cancel':'取消','book.noSci':'至少選 1 術','book.openExisting':'已有命書 — 📖 開啟閱讀（不扣時數）','book.chooseSelf':'請先選擇命盤（命書＝單盤）','book.singleOnly':'命書僅支援單盤 — 請先切換為單看','book.creating':'⏳ 正在生成命書…',
         'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看',
@@ -1214,7 +1226,13 @@
         'hist.fromTag':'📜 歷史紀錄 · {d}','hist.askMore':'接著這個答案再問','hist.back':'返回 / 重新提問','hist.busy':'請等目前批算完成後再開歷史','hist.pick':'點歷史項目 — 舊問題＋答案會開在主論斷卡',
         'guest.link':'或 + 臨時命盤（不儲存）','guest.name':'暱稱','guest.namePh':'臨時命盤','guest.gender':'性別','guest.male':'男 (M)','guest.female':'女 (F)','guest.birthDate':'出生日期','guest.dateHint':'西元','guest.birthTime':'出生時間','guest.noTime':'不知出生時間','guest.noTimeHint':'僅三柱解讀 · 紫微／七政四餘略過','guest.noTimeShort':'時辰不詳','guest.place':'出生地','guest.placePh':'輸入城市／地點（預設曼谷）','guest.manualLatLng':'手動輸入經緯度','guest.locFail':'Google Places 載入失敗 · 可手動輸入座標（留空＝曼谷）','guest.locHint':'留空＝曼谷 13.7563, 100.5018','guest.use':'使用此盤','guest.cancel':'取消，返回下拉選單','guest.chipTag':'不儲存','guest.edit':'修改','guest.needDate':'請選擇出生日期','guest.badDate':'出生日期須在西元 1900 至今日之間','guest.needTime':'請填出生時間，或勾選「不知出生時間」','guest.needGender':'請選擇性別','guest.badLatLng':'座標無效（lat -90..90 · lng -180..180）','guest.tooMany':'最多共 4 盤（檔案＋臨時）','guest.histLabel':'本次臨時命盤（不儲存）','guest.badData':'臨時命盤資料無效','guest.slotAt':'臨時命盤第 {n} 格',
         'pill.back':'點擊查看論斷','pill.ready':'論斷已完成 · 點擊查看',
-        'chat.send':'送出','chat.newRoom':'🆕 新房間','chat.more':'展開全文 ▾','chat.less':'收合 ▴','chat.ph':'在此房間繼續提問...','chat.wait':'⏳ 批算中...','chat.topup':'時數不足 · 前往加值','chat.newRoomHint':'更換命盤／術數或新話題＝開新房間' }
+        'chat.send':'送出','chat.newRoom':'🆕 新房間','chat.more':'展開全文 ▾','chat.less':'收合 ▴','chat.ph':'在此房間繼續提問...','chat.wait':'⏳ 批算中...','chat.topup':'時數不足 · 前往加值','chat.newRoomHint':'更換命盤／術數或新話題＝開新房間',
+        'state.idle':'就緒','state.running':'批算中...','state.done':'完成','state.failed':'失敗','state.degraded':'部分完成','state.history':'歷史檢視',
+        'hist.title':'論斷紀錄','hist.refresh':'重新整理','hist.empty':'此命盤尚無紀錄','hist.pin':'📌 置頂','hist.unpin':'取消置頂','hist.fav':'⭐ 收藏','hist.unfav':'取消收藏','hist.compare':'比對','hist.compareTitle':'比對兩答案','hist.tech':'🔧 技術資訊','hist.note':'私人筆記','hist.saveNote':'儲存','hist.rerun':'重新執行','hist.exportMd':'文字檔','hist.exportPdf':'PDF',
+        'st.done':'完成','st.fail':'失敗','st.degraded':'部分',
+        'rcpt.ai':'已讀 {d}/{t} 術','rcpt.failN':'{n} 術失敗','rcpt.time':'耗時 {t}','rcpt.spent':'耗 {n} 時','snap.ver':'命盤資料版本','snap.hash':'校驗碼','snap.profile':'所用命盤','fmt.sec':'{s}秒','fmt.minsec':'{m}分{s}秒',
+        'proof.answers':'各術答案','proof.final':'綜合裁斷','proof.fallback':'⚠️ 綜合裁斷失敗 — 改用 {m} 的答案','proof.noFinal':'⚠️ 本次無綜合裁斷（於融合前中止）','proof.failed':'⚠️ 解讀失敗：{list}','modal.close':'關閉',
+        'prg.ok':'完成','prg.fail':'失敗','prg.skipped':'略過','prg.running':'解讀中','prg.queued':'排隊中','prg.waitAnswer':'等待答案','prg.waitStart':'等待開始','prg.phase.panel':'逐術解讀','prg.phase.judge':'綜合裁斷中','prg.phase.done':'完成','prg.phase.queued':'排隊中' }
     };
     function t(key){ var d = I18N[state.locale] || I18N.th; return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
     function applyI18n(){
@@ -1726,15 +1744,13 @@
       return item && item.role === 'judge' ? base + ' judge' : base;
     }
     function answerButtonLabel(item){
-      return (item && item.role === 'judge' ? 'Final: ' : 'Panel: ') + answerName(item);
+      return item && item.role === 'judge' ? (t('proof.final') + ' · ' + modelShortName(item.model)) : modelShortName(item && item.model);
     }
     function answerMeta(item){
+      // ไม่โชว์ชื่อรุ่นภายใน (provider_model) / จำนวนตัวอักษร / จำนวน retry — ศัพท์ระบบทั้งหมด
       return [
-        item && item.role ? item.role : '',
-        item && item.ms ? fmtMs(item.ms) : '',
-        item && item.chars ? (item.chars + ' chars') : '',
-        item && item.attempts ? (item.attempts + ' tries') : '',
-        item && item.provider_model ? item.provider_model : ''
+        item && item.role === 'judge' ? t('proof.final') : '',
+        item && item.ms ? fmtDur(item.ms) : ''
       ].filter(Boolean).join(' · ');
     }
     function fusionAnswers(fusion){
@@ -1754,38 +1770,24 @@
         var cls = item && item.role === 'judge' ? ' final' : ' panel';
         return '<button class="answer-open' + cls + '" type="button" data-answer-id="' + esc(id) + '">' + esc(answerButtonLabel(item)) + '</button>';
       }).join('');
-      return '<div class="answer-tools"><span class="answer-tools-label">Panel evidence / final</span>' + buttons + '</div>';
+      return '<div class="answer-tools"><span class="answer-tools-label">' + esc(t('proof.answers')) + '</span>' + buttons + '</div>';
     }
     function renderFusionProof(fusion){
+      // ลดความรก: ทุกอย่างเรียบร้อย = ไม่มีบล็อก · โชว์เตือนภาษาคนเฉพาะตอนมีปัญหา (fallback/ไม่มีฟันธง/บางศาสตร์พัง)
       if (!fusion) return '';
       var panel = Array.isArray(fusion.panel) ? fusion.panel : [];
-      var okPanels = panel.filter(function(r){ return r && r.ok; }).map(function(r){ return modelShortName(r.model); });
-      var failedPanels = panel.filter(function(r){ return r && !r.ok; }).map(function(r){
-        return modelShortName(r.model) + ' ' + progressLabel(panelResultState(r));
-      });
-      var judge = fusion.judge || {};
-      var judgeModel = judge.model || fusion.judge_model || '';
-      var hasJudge = !!judgeModel;
-      var judgeName = judgeModel ? answerName({ model:judgeModel, role:'judge' }) : 'judge';
-      var judgeAnswer = fusionAnswers(fusion).find(function(item){ return item && item.role === 'judge' && item.ok && item.reply; }) || null;
-      var hasJudgeAnswer = !!judgeAnswer;
-      var fallbackPanel = null;
+      var failedPanels = panel.filter(function(r){ return r && !r.ok; }).map(function(r){ return modelShortName(r.model); });
+      var hasJudgeAnswer = !!fusionAnswers(fusion).find(function(item){ return item && item.role === 'judge' && item.ok && item.reply; });
+      var lines = [];
       if (fusion.used_panel_fallback) {
-        fallbackPanel = panel.find(function(r){ return r && r.ok && r.reply; }) || panel.find(function(r){ return r && r.ok; }) || null;
+        var fallbackPanel = panel.find(function(r){ return r && r.ok && r.reply; }) || panel.find(function(r){ return r && r.ok; }) || null;
+        lines.push(t('proof.fallback').replace('{m}', modelShortName(fallbackPanel && fallbackPanel.model)));
+      } else if (!hasJudgeAnswer && (fusion.judge || fusion.judge_model)) {
+        lines.push(t('proof.noFinal'));
       }
-      var finalSource = fusion.used_panel_fallback
-        ? ('Panel fallback: ' + modelShortName(fallbackPanel && fallbackPanel.model))
-        : hasJudgeAnswer ? answerName(judgeAnswer) : 'No final answer';
-      var finalExplain = hasJudgeAnswer || fusion.used_panel_fallback
-        ? ' คือคำตอบใหญ่ด้านล่าง'
-        : hasJudge ? ' ไม่สำเร็จ จึงไม่มีคำตอบ final จาก judge' : ' ยังไม่ถูกสร้าง เพราะ Fusion หยุดก่อน judge';
-      var receivedText = okPanels.length ? okPanels.join(', ') : '-';
-      var failedText = failedPanels.length ? failedPanels.join(', ') : 'none';
-      return '<div class="fusion-proof">' +
-        '<div class="proof-line"><span class="proof-tag">Final</span><span class="proof-value">' + esc(finalSource + finalExplain) + '</span></div>' +
-        '<div class="proof-line"><span class="proof-tag">Judge input</span><span class="proof-value">' + esc(hasJudge ? (judgeName + ' received panel outputs: ' + receivedText) : ('Judge not called · available panel outputs: ' + receivedText)) + '</span></div>' +
-        '<div class="proof-line proof-muted"><span class="proof-tag">Not used</span><span class="proof-value">' + esc(failedText) + '</span></div>' +
-      '</div>';
+      if (failedPanels.length) lines.push(t('proof.failed').replace('{list}', failedPanels.join(', ')));
+      if (!lines.length) return '';
+      return '<div class="fusion-proof">' + lines.map(function(l){ return '<div class="proof-line"><span class="proof-value">' + esc(l) + '</span></div>'; }).join('') + '</div>';
     }
     function openAnswer(id){
       var item = state.answers[id];
@@ -1866,20 +1868,19 @@
       return 'queue';
     }
     function progressLabel(state){
-      if (state === 'ok') return 'ok';
-      if (state === 'fail') return 'fail';
-      if (state === 'skipped') return 'skipped';
-      if (state === 'running') return 'running';
-      return 'queued';
+      if (state === 'ok') return t('prg.ok');
+      if (state === 'fail') return t('prg.fail');
+      if (state === 'skipped') return t('prg.skipped');
+      if (state === 'running') return t('prg.running');
+      return t('prg.queued');
     }
     function progressNote(item){
+      // ภาษาคนเท่านั้น — ไม่โชว์รหัส error/จำนวน retry/จำนวนตัวอักษร (ศัพท์ระบบ)
       if (!item) return '';
-      if (item.state === 'ok') {
-        return [fmtMs(item.ms), item.chars ? (item.chars + ' chars') : '', item.attempts ? (item.attempts + ' tries') : ''].filter(Boolean).join(' · ');
-      }
-      if (item.state === 'running') return 'กำลังรอคำตอบ';
-      if (item.state === 'queued') return 'รอเริ่ม';
-      return [item.error || 'error', item.attempts ? (item.attempts + ' tries') : '', fmtMs(item.ms)].filter(Boolean).join(' · ');
+      if (item.state === 'ok') return fmtDur(item.ms);
+      if (item.state === 'running') return t('prg.waitAnswer');
+      if (item.state === 'queued') return t('prg.waitStart');
+      return fmtDur(item.ms);
     }
     // ===== r376 · % จริงตามหลักไมล์ + เข็มคืบ time-based (แก้แถบค้าง 10%) =====
     // สูตร (deterministic ต่อ (status, now, milestoneAt)):
@@ -2006,16 +2007,18 @@
         '</div>';
       }).join('');
       var pct = progressPercentTick(status);
+      var phaseKey = 'prg.phase.' + (status.phase || 'queued');
+      var phaseTitle = t(phaseKey) !== phaseKey ? t(phaseKey) : t('prg.phase.queued'); // phase แปลก = โชว์ "รอคิว" แทนคำระบบดิบ
       var open = els.progress.classList.contains('prog-open'); // r376: มือถือกางดูรายศาสตร์อยู่ → คงไว้ข้าม re-render
       els.progress.className = 'progress-card' + (open ? ' prog-open' : '');
       els.progress.innerHTML =
         '<div class="prog-line"><span class="prog-line-text">' + esc(progressLineText(status, pct)) + '</span></div>' +
         '<div class="progress-head">' +
-          '<div class="progress-title">' + esc(status.phase || 'running') + '</div>' +
+          '<div class="progress-title">' + esc(phaseTitle) + '</div>' +
           '<div class="progress-percent">' + pct + '%</div>' +
         '</div>' +
         '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
-        '<div class="progress-message">' + esc(status.message || 'กำลังรัน Fusion') + '</div>' +
+        '<div class="progress-message">' + esc(status.message || t('running')) + '</div>' +
         '<div class="progress-models">' + rows + '</div>';
       setRunPill(status.phase === 'done' ? 'done' : 'running', pct); // r383: เสร็จ → "✅ คำพยากรณ์พร้อมแล้ว · แตะดู"
       setStatus((status.message || 'กำลังรัน Fusion') + ' · ' + pct + '%');
@@ -2371,7 +2374,7 @@
     function cardFoldState(cardKey){
       var p = loadFoldPref();
       if (p && p[cardKey] != null) return !!p[cardKey]; // user เคยกดเอง → เคารพทุก re-render (ทุกเส้นทาง)
-      return isMobileFold(); // ค่าเริ่มต้น: มือถือพับ · desktop กาง
+      return true; // ลดความรก: เนื้อการ์ดซ้ำกับคำฟันธง — เริ่มพับทุกอุปกรณ์ เหลือหัว+สรุป 1 บรรทัด กดกางเองได้
     }
     function applyCardFold(el, cardKey){ if (el) el.classList.toggle('hk-fold', cardFoldState(cardKey)); }
     // สรุปสั้น 1 บรรทัดตอนพับ — ให้รู้ว่ามีของโดยไม่กินจอ (ใช้ i18n key เดิม · ตัวเลขจาก engine data เท่านั้น)
@@ -2530,7 +2533,8 @@
     }
     function historyStatusPill(row){
       var st = historyStatus(row);
-      return '<span class="pill ' + (st === 'done' ? 'ok' : st === 'fail' ? 'err' : 'skip') + '">' + esc(st) + '</span>';
+      var label = st === 'done' ? t('st.done') : st === 'fail' ? t('st.fail') : t('st.degraded'); // ป้ายภาษาคน — ไม่โชว์ศัพท์ระบบ
+      return '<span class="pill ' + (st === 'done' ? 'ok' : st === 'fail' ? 'err' : 'skip') + '">' + esc(label) + '</span>';
     }
     function rowDate(row){
       var d = new Date(row && row.created_at || '');
@@ -2553,26 +2557,34 @@
       if (!Array.isArray(gs) || !gs.length) return '';
       return gs.map(function(g){ return '🎴' + ((g && g.name) ? String(g.name) : t('guest.namePh')); }).join(' + ') + ' (' + t('guest.chipTag') + ')';
     }
-    function runReceipt(row){
+    function spentOf(row){
       var fusion = fusionFromHistory(row);
-      var judge = metaObj(fusion.judge);
+      return fusion.net_spent != null ? fusion.net_spent : (row.spent || 0);
+    }
+    function fmtDur(ms){ // ระยะเวลาแบบภาษาคน (แทน "311s")
+      var s = Math.round(Number(ms || 0) / 1000);
+      if (!s) return '';
+      if (s < 60) return t('fmt.sec').replace('{s}', s);
+      return t('fmt.minsec').replace('{m}', Math.floor(s / 60)).replace('{s}', s % 60);
+    }
+    function runReceipt(row){
+      // ใบสรุปรอบแบบภาษาคน — ไม่โชว์ชื่อ model/ศัพท์ระบบ (กฎห้ามศัพท์ภายใน) · ไม่สำเร็จโชว์เป็นจำนวน ไม่โชว์ชื่อภายใน
+      var fusion = fusionFromHistory(row);
       var failed = Array.isArray(fusion.ai_failed_models) ? fusion.ai_failed_models : [];
-      var answered = fusion.ai_answered_count != null && fusion.ai_requested_count != null
-        ? fusion.ai_answered_count + '/' + fusion.ai_requested_count
-        : '-';
-      return [
-        'status ' + historyStatus(row),
-        'AI ' + answered,
-        failed.length ? ('fail ' + failed.join(',')) : 'fail -',
-        'judge ' + (judge.model || fusion.judge_model || '-'),
-        'time ' + fmtMs(fusion.ms || row.duration_ms || 0),
-        'spent ' + (fusion.net_spent != null ? fusion.net_spent : row.spent || 0) + ' 時'
-      ].join(' · ');
+      var st = historyStatus(row);
+      var parts = [st === 'done' ? t('st.done') : st === 'fail' ? t('st.fail') : t('st.degraded')];
+      if (fusion.ai_answered_count != null && fusion.ai_requested_count != null)
+        parts.push(t('rcpt.ai').replace('{d}', fusion.ai_answered_count).replace('{t}', fusion.ai_requested_count));
+      if (failed.length) parts.push(t('rcpt.failN').replace('{n}', failed.length));
+      var dur = fmtDur(fusion.ms || row.duration_ms || 0);
+      if (dur) parts.push(t('rcpt.time').replace('{t}', dur));
+      parts.push(t('rcpt.spent').replace('{n}', spentOf(row)));
+      return parts.join(' · ');
     }
     function renderHistoryList(){
       if (!els.historyList) return;
       if (!state.fusionHistory.length) {
-        els.historyList.innerHTML = '<div class="history-empty">ยังไม่มีประวัติ Fusion ของ profile นี้</div>';
+        els.historyList.innerHTML = '<div class="history-empty">' + esc(t('hist.empty')) + '</div>';
         return;
       }
       els.historyList.innerHTML = state.fusionHistory.map(function(row){
@@ -2582,13 +2594,14 @@
         return '<div class="history-item' + active + '" data-history-id="' + esc(row.id) + '">' +
           '<div class="history-top">' +
             '<div class="history-title">' + esc(shortText(row.question, 110)) + '</div>' +
-            '<div class="history-flags">' + (us.pinned ? '<span class="pill">pin</span>' : '') + (us.favorite ? '<span class="pill">fav</span>' : '') + historyStatusPill(row) + '</div>' +
+            '<div class="history-flags">' + (us.pinned ? '<span class="pill">📌</span>' : '') + (us.favorite ? '<span class="pill">⭐</span>' : '') + historyStatusPill(row) + '</div>' +
           '</div>' +
-          '<div class="history-meta">' + esc(rowDate(row) + ' · ' + (row.topic || '-') + ' · ' + (row.mode || '-') + (historyGuestLabel(row) ? ' · ' + historyGuestLabel(row) : '') + ' · ' + runReceipt(row)) + '</div>' +
+          // ลดความรก: บรรทัดข้อมูลเหลือ วันที่ · ดวงชั่วคราว · ยามที่ใช้ (ใบสรุปเต็มอยู่ในรายละเอียด → ข้อมูลเชิงเทคนิค)
+          '<div class="history-meta">' + esc(rowDate(row) + (historyGuestLabel(row) ? ' · ' + historyGuestLabel(row) : '') + ' · ' + t('rcpt.spent').replace('{n}', spentOf(row))) + '</div>' +
           '<div class="history-actions">' +
-            '<button class="mini-btn ' + (us.pinned ? 'active' : '') + '" type="button" data-hact="pin" data-id="' + esc(row.id) + '">' + (us.pinned ? 'Unpin' : 'Pin') + '</button>' +
-            '<button class="mini-btn ' + (us.favorite ? 'active' : '') + '" type="button" data-hact="favorite" data-id="' + esc(row.id) + '">' + (us.favorite ? 'Unfav' : 'Fav') + '</button>' +
-            '<label class="history-check"><input type="checkbox" data-hact="compare" data-id="' + esc(row.id) + '"' + checked + '> compare</label>' +
+            '<button class="mini-btn ' + (us.pinned ? 'active' : '') + '" type="button" data-hact="pin" data-id="' + esc(row.id) + '">' + esc(us.pinned ? t('hist.unpin') : t('hist.pin')) + '</button>' +
+            '<button class="mini-btn ' + (us.favorite ? 'active' : '') + '" type="button" data-hact="favorite" data-id="' + esc(row.id) + '">' + esc(us.favorite ? t('hist.unfav') : t('hist.fav')) + '</button>' +
+            '<label class="history-check"><input type="checkbox" data-hact="compare" data-id="' + esc(row.id) + '"' + checked + '> ' + esc(t('hist.compare')) + '</label>' +
           '</div>' +
         '</div>';
       }).join('');
@@ -2597,15 +2610,15 @@
       var fusion = fusionFromHistory(row);
       var profile = metaObj(row.profile_snapshot || fusion.profile_snapshot);
       var pillars = metaObj(row.pillars_snapshot || fusion.pillars_snapshot);
-      var packetVersion = fusion.packet_version || (row.packet_hash ? ('packet:' + String(row.packet_hash).slice(0,16)) : '-');
-      var packetHash = row.packet_hash || fusion.packet_hash || '-';
-      var profileLabel = profile.nickname || profile.name || profile.name_line || profile.identity_context || '-';
-      var dm = pillars.day_master || profile.day_master || '-';
-      return '<div class="snapshot-grid">' +
-        '<div class="metric"><div class="k">packet version</div><div class="v">' + esc(packetVersion) + '</div></div>' +
-        '<div class="metric"><div class="k">packet hash</div><div class="v">' + esc(String(packetHash).slice(0,32)) + '</div></div>' +
-        '<div class="metric"><div class="k">profile snapshot</div><div class="v">' + esc(profileLabel) + ' · 日主 ' + esc(dm) + '</div></div>' +
-      '</div>';
+      var packetVersion = fusion.packet_version || (row.packet_hash ? ('packet:' + String(row.packet_hash).slice(0,16)) : '');
+      var packetHash = row.packet_hash || fusion.packet_hash || '';
+      var profileLabel = profile.nickname || profile.name || profile.name_line || profile.identity_context || '';
+      var dm = pillars.day_master || profile.day_master || '';
+      var metrics = []; // ลดความรก: ช่องไหนไม่มีข้อมูล = ไม่โชว์ (เดิมขึ้น "-" เต็มการ์ด)
+      if (packetVersion) metrics.push('<div class="metric"><div class="k">' + esc(t('snap.ver')) + '</div><div class="v">' + esc(packetVersion) + '</div></div>');
+      if (packetHash) metrics.push('<div class="metric"><div class="k">' + esc(t('snap.hash')) + '</div><div class="v">' + esc(String(packetHash).slice(0,32)) + '</div></div>');
+      if (profileLabel || dm) metrics.push('<div class="metric"><div class="k">' + esc(t('snap.profile')) + '</div><div class="v">' + esc(profileLabel || '—') + (dm ? ' · 日主 ' + esc(dm) : '') + '</div></div>');
+      return metrics.length ? '<div class="snapshot-grid">' + metrics.join('') + '</div>' : '';
     }
     function renderCompare(){
       if (state.compareIds.length !== 2) return '';
@@ -2613,7 +2626,7 @@
       var b = findHistory(state.compareIds[1]);
       if (!a || !b) return '';
       return '<div class="detail-block">' +
-        '<div class="detail-label">Compare 2 Answers</div>' +
+        '<div class="detail-label">' + esc(t('hist.compareTitle')) + '</div>' +
         '<div class="compare-grid">' +
           [a,b].map(function(row){
             return '<div class="compare-card">' +
@@ -2634,31 +2647,23 @@
         return;
       }
       var us = historyUserState(row);
-      var fusion = fusionFromHistory(row);
-      // r384: เลิก expand คำตอบท้ายหน้า — คำตอบเก่าเปิดบนการ์ดคำพยากรณ์หลัก (openHistoryInMain) · panel นี้เหลือ meta/receipt/note
-      var answerBlock = '<div class="detail-block"><div class="detail-label">Final Answer</div><div class="detail-collapsed">' + esc(t('hist.pick')) + '</div></div>';
+      // r384: คำตอบเก่าเปิดบนการ์ดคำพยากรณ์หลัก (openHistoryInMain) · panel นี้เหลือหัว+ปุ่ม+เทคนิค+โน้ต
+      // ลดความรก: ตัดบล็อก Final Answer เปล่า + การ์ด 🔗/🎯 ที่ซ้ำกับการ์ดหลัก · receipt/snapshot ยุบเข้าพับเดียว
+      var snap = snapshotBlock(row);
       els.historyDetail.innerHTML =
         '<div class="detail-head">' +
-          '<div><div class="detail-title">' + esc(row.question || '') + '</div><div class="detail-sub">' + esc(rowDate(row) + (historyGuestLabel(row) ? ' · ' + historyGuestLabel(row) : '') + ' · ' + runReceipt(row)) + '</div></div>' +
+          '<div><div class="detail-title">' + esc(row.question || '') + '</div><div class="detail-sub">' + esc(rowDate(row) + (historyGuestLabel(row) ? ' · ' + historyGuestLabel(row) : '')) + '</div></div>' +
           '<div class="detail-tools">' +
-            '<button class="mini-btn" type="button" data-hact="continue" data-id="' + esc(row.id) + '">ถามต่อจากรอบนี้</button>' +
-            '<button class="mini-btn" type="button" data-hact="rerun" data-id="' + esc(row.id) + '">รันใหม่</button>' +
-            '<button class="mini-btn" type="button" data-hact="export-md" data-id="' + esc(row.id) + '">Markdown</button>' +
-            '<button class="mini-btn" type="button" data-hact="print-pdf" data-id="' + esc(row.id) + '">PDF</button>' +
+            '<button class="mini-btn" type="button" data-hact="continue" data-id="' + esc(row.id) + '">' + esc(t('hist.askMore')) + '</button>' +
+            '<button class="mini-btn" type="button" data-hact="rerun" data-id="' + esc(row.id) + '">' + esc(t('hist.rerun')) + '</button>' +
+            '<button class="mini-btn" type="button" data-hact="export-md" data-id="' + esc(row.id) + '">' + esc(t('hist.exportMd')) + '</button>' +
+            '<button class="mini-btn" type="button" data-hact="print-pdf" data-id="' + esc(row.id) + '">' + esc(t('hist.exportPdf')) + '</button>' +
           '</div>' +
         '</div>' +
-        answerBlock +
-        // r369: resonance ที่บันทึกไว้ตอนรัน (จาก response_meta) — โชว์ซ้ำได้จากประวัติ · r382: มือถือเริ่มพับ (details) · desktop เริ่มกาง
-        (fusion.resonance && resonanceHasContent(fusion.resonance)
-          ? '<details class="detail-block res-histfold"' + (isMobileFold() ? '' : ' open') + '><summary class="detail-label">' + esc(t('res.title')) + ' · ' + esc(resonanceFoldSummary(fusion.resonance)) + '</summary>' + resonanceBodyHtml(fusion.resonance) + '</details>'
-          : '') +
-        // r373: day sniper ที่บันทึกไว้ (เกาะใน resonance jsonb) — โชว์ซ้ำได้จากประวัติ · r382: มือถือเริ่มพับ (details) · desktop เริ่มกาง · r384: render คนแรกคนเดียว (engine ใหม่ = ดวงเจ้าของบัญชีเสมอ)
-        (fusion.resonance && sniperHasContent(fusion.resonance.daySniper)
-          ? '<details class="detail-block res-histfold"' + (isMobileFold() ? '' : ' open') + '><summary class="detail-label">' + esc(t('ds.title')) + ' · ' + esc(sniperFoldSummary(fusion.resonance.daySniper)) + '</summary>' + (Array.isArray(fusion.resonance.daySniper.perPerson) ? fusion.resonance.daySniper.perPerson.filter(Boolean).slice(0, 1).map(function(p){ return sniperPersonHtml(fusion.resonance.daySniper, p, false); }).join('') : '') + '</details>'
-          : '') +
-        '<div class="detail-block"><div class="detail-label">Run Receipt</div><div class="detail-text">' + esc(runReceipt(row)) + '</div></div>' +
-        '<div class="detail-block"><div class="detail-label">Packet / Profile Snapshot</div>' + snapshotBlock(row) + '</div>' +
-        '<div class="detail-block"><div class="detail-label">Private Note</div><textarea class="note-box" id="history-note" maxlength="4000">' + esc(us.note) + '</textarea><div class="history-actions"><button class="mini-btn" type="button" data-hact="save-note" data-id="' + esc(row.id) + '">Save note</button></div></div>' +
+        '<details class="detail-block res-histfold"><summary class="detail-label">' + esc(t('hist.tech')) + '</summary>' +
+          '<div class="detail-text">' + esc(runReceipt(row)) + '</div>' + snap +
+        '</details>' +
+        '<div class="detail-block"><div class="detail-label">' + esc(t('hist.note')) + '</div><textarea class="note-box" id="history-note" maxlength="4000">' + esc(us.note) + '</textarea><div class="history-actions"><button class="mini-btn" type="button" data-hact="save-note" data-id="' + esc(row.id) + '">' + esc(t('hist.saveNote')) + '</button></div></div>' +
         renderCompare();
     }
     async function loadFusionHistory(){
@@ -2740,7 +2745,7 @@
       if (els.result) els.result.innerHTML = historyMainHtml(row, fusion);
       if (els.meta) els.meta.innerHTML = '';
       if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: ฟองรอบก่อนใน thread เดียวกันขึ้นเหนือการ์ด + composer พิมพ์ต่อได้เลย (typeof-guard: เทส sandbox)
-      setRunState('history');
+      setRunState(t('state.history'));
       setAnswerMode(true); // r374: เปิดประวัติ = อยากอ่านคำตอบ → มือถือเข้าโหมดอ่านเต็มจอทันที · desktop CSS ไม่ match = ไม่เปลี่ยน
       if (!isMobileFold()) {
         var panel = document.querySelector('.result-panel');
@@ -2758,12 +2763,12 @@
       if (prev && prev.result) { // มีคำพยากรณ์สดของรอบล่าสุด → คืนกลับ
         renderFusion5(prev.result);
         renderResonance(prev.resonance || null);
-        setRunState('done', 'ok');
+        setRunState(t('state.done'), 'ok');
         setAnswerMode(true);
       } else {
         renderResonance(null);
         if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
-        setRunState('idle');
+        setRunState(t('state.idle'));
         setAnswerMode(false); // กลับหน้าถามปกติ พร้อมถามใหม่
       }
       if (typeof renderChatRoom === 'function') renderChatRoom(); // r385 (typeof-guard: เทส sandbox)
@@ -2798,19 +2803,18 @@
     function markdownForHistory(row){
       var fusion = fusionFromHistory(row);
       var answers = fusionAnswers(fusion);
-      var md = '# Fusion History\\n\\n';
-      md += '- Date: ' + rowDate(row) + '\\n';
-      md += '- Profile: ' + (row.profile_id || '-') + '\\n';
-      md += '- Receipt: ' + runReceipt(row) + '\\n';
-      md += '- Packet: ' + (fusion.packet_version || row.packet_hash || '-') + '\\n\\n';
-      md += '## Question\\n\\n' + (row.question || '') + '\\n\\n';
-      md += '## Final Answer\\n\\n' + (row.answer || '') + '\\n\\n';
+      // ไฟล์ส่งออกเป็นภาษาผู้ใช้ — ไม่ใส่รหัสภายใน (profile_id/packet)
+      var md = '# ' + t('hist.title') + '\\n\\n';
+      md += '- ' + rowDate(row) + '\\n';
+      md += '- ' + runReceipt(row) + '\\n\\n';
+      md += '## ' + t('ask.question') + '\\n\\n' + (row.question || '') + '\\n\\n';
+      md += '## ' + t('judgeTitle') + '\\n\\n' + (row.answer || '') + '\\n\\n';
       if (answers.length) {
-        md += '## AI Answers\\n\\n';
+        md += '## ' + t('proof.answers') + '\\n\\n';
         answers.forEach(function(item){ md += '### ' + answerName(item) + '\\n\\n' + (item.reply || '') + '\\n\\n'; });
       }
       var note = historyUserState(row).note;
-      if (note) md += '## Private Note\\n\\n' + note + '\\n';
+      if (note) md += '## ' + t('hist.note') + '\\n\\n' + note + '\\n';
       return md;
     }
     function exportMarkdown(row){
@@ -2975,7 +2979,7 @@
       if (roomEls.composerInput) roomEls.composerInput.value = '';
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
       renderProgress(null);
-      setRunState('idle');
+      setRunState(t('state.idle'));
       setStatus('');
       setAnswerMode(false); // มือถือ → กลับหน้าถามเต็มจอ · desktop ฟอร์มอยู่ซ้ายอยู่แล้ว
       renderHistoryList();
@@ -3373,7 +3377,7 @@
       state.pendingQuestion = ''; // r385: คำถามที่พลาดไม่ค้างเป็นฟองรอ (ตัวคำถามยังอยู่ในกล่องถามให้รันซ้ำ)
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc((state.locale==='th'?'รันไม่สำเร็จ: ':'failed: ') + human) + '</div>';
       renderProgress(null);
-      setRunState('failed', 'err');
+      setRunState(t('state.failed'), 'err');
       setStatus(human, 'err');
       setAnswerMode(false); // r374: รันพลาด → ขยายการ์ดถามกลับให้แก้/รันใหม่ได้ทันที
       if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: เก็บฟองรอ/ฟองคำถามที่ยังไม่สำเร็จออก (typeof-guard: เทส sandbox)
@@ -3400,7 +3404,7 @@
       var f = (result && result.fusion5) || {};
       var okCount = Array.isArray(f.panels) ? f.panels.filter(function(p){ return p.ok; }).length : 0;
       var total = Array.isArray(f.panels) ? f.panels.length : 0;
-      setRunState(okCount === total ? 'done' : 'degraded', okCount === total ? 'ok' : 'err');
+      setRunState(okCount === total ? t('state.done') : t('state.degraded'), okCount === total ? 'ok' : 'err');
       var net = f.yam ? ((f.yam.charged || 0) - (f.yam.refunded || 0)) : null;
       setStatus((state.locale==='th'?'สำเร็จ · ':'done · ') + okCount + '/' + total + (state.locale==='th'?' ศาสตร์':' sciences') + (net != null ? (' · ' + net + ' 時') : ''), 'ok');
       if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: state.result ตั้งแล้ว → ฟองล่าสุด = การ์ดสด ไม่ทำฟองซ้ำ (typeof-guard: เทส sandbox)
@@ -3448,7 +3452,7 @@
     function startJobPolling(meta){
       stopJobPolling();
       state.activeJob = meta;
-      setRunState('running');
+      setRunState(t('state.running'));
       pollJob(meta);
       jobTimer = setInterval(function(){ pollJob(meta); }, JOB_POLL_MS);
     }
@@ -3478,7 +3482,7 @@
           state.pendingQuestion = ''; // r385: ฟองรอไม่ค้าง (คำถามยังอยู่ในกล่องถาม)
           if (typeof renderChatRoom === 'function') renderChatRoom();
           renderProgress(null); // r381: ยกเลิกภาพที่ paint ไว้ตอนเปิดหน้า — server ยืนยันว่าไม่มีงานจริง
-          setRunState('idle');
+          setRunState(t('state.idle'));
           if (els.result && !state.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
           setAnswerMode(false); // r381: ขยายการ์ดถามกลับ ให้แก้/กดรันใหม่ได้ทันที
           applyFusionGate();
@@ -3520,7 +3524,7 @@
       state.preHistoryView = null;
       els.send.disabled = true;
       setAnswerMode(true); // r374: มือถือ → ยุบการ์ดถามเป็นแถบสรุป
-      setRunState('running');
+      setRunState(t('state.running'));
       setStatus(t('running'));
       state.activeTab = sciences.length >= 2 ? 'judge' : sciences[0];
       startSyntheticProgress(sciences);
@@ -3729,7 +3733,7 @@
       renderResonance(null);
       if (els.result) els.result.innerHTML = '<div class="result-empty">' + esc(t('resultEmpty')) + '</div>';
       setStatus('');
-      setRunState('idle');
+      setRunState(t('state.idle'));
       setAnswerMode(false); // r374: ล้าง → การ์ดถามกลับเต็ม
       if (roomEls.composerInput) { roomEls.composerInput.value = ''; roomEls.composerInput.style.height = ''; } // r385
       renderChatRoom(); // r385: ล้าง = ห้องปิด กลับหน้าฟอร์ม
@@ -3867,7 +3871,7 @@
       var sciences = (Array.isArray(meta.sciences) && meta.sciences.length) ? meta.sciences : SCI_ORDER.slice();
       startSyntheticProgress(sciences, { pct: snap ? snap.pct : 0, startedAt: jobStartedAt(meta) }); // แถบ % ต่อจากค่าเดิม ไม่รีเซ็ต 8%
       if (els.result) els.result.innerHTML = runWaitPlaceholderHtml(t('runningAsync'));
-      setRunState('running');
+      setRunState(t('state.running'));
       setStatus(t('runningAsync'));
       return true;
     }
