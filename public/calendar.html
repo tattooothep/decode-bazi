@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hourkey · ปฏิทินมงคล · 黃曆</title>
+<title data-i18n="cal.page.title">hourkey · ปฏิทินมงคล · 黃曆</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
@@ -391,7 +391,7 @@
     <div class="month-nav">
       <button id="prev-m">‹</button>
       <div>
-        <div class="month-title"><span class="tc" id="m-tc">三月</span><span id="m-th">พฤษภาคม 2569</span></div>
+        <div class="month-title"><span class="tc" id="m-tc">三月</span><span id="m-th">—</span></div>
         <div class="month-meta">月柱 <b id="m-pillar">—</b> · 節氣 <b id="m-jq">—</b> → <span id="m-jq-next">—</span></div>
       </div>
       <button id="next-m">›</button>
@@ -756,7 +756,8 @@
     const days = MONTH_DATA.days || [];
     window._calDays = days; /* 19 พ.ค. spec #2 · expose สำหรับ intent dropdown counter */
     if (!days.length){
-      grid.innerHTML = `<div style="grid-column:1/8;padding:40px;text-align:center;color:var(--fg-soft)">กำลังโหลดปฏิทิน…</div>`;
+      const _loadTxt = ({th:'กำลังโหลดปฏิทิน…',en:'Loading calendar…',zh:'載入日曆中…'})[_curLang()] || 'กำลังโหลดปฏิทิน…';
+      grid.innerHTML = `<div style="grid-column:1/8;padding:40px;text-align:center;color:var(--fg-soft)">${_loadTxt}</div>`;
       return;
     }
     /* 19 พ.ค. spec #2 · update intent dropdown label · ทุกครั้งที่ re-render */
@@ -806,7 +807,8 @@
       const intentClass = intentTier ? `intent-${intentTier}` : '';
       /* 19 พ.ค. spec #2 · top + worst icon ใน default mode */
       const topIcons = (d.topIntents || []).slice(0, 2).map(t => `<span class="d-intent-icon" title="${t.label}">${t.icon}</span>`).join('');
-      const worstIcons = (d.worstIntents || []).slice(0, 1).map(t => `<span class="d-intent-icon worst" title="ห้าม: ${t.label}">✕${t.icon}</span>`).join('');
+      const _avoidTxt = ({th:'ห้าม:',en:'Avoid:',zh:'忌:'})[_curLang()] || 'ห้าม:';
+      const worstIcons = (d.worstIntents || []).slice(0, 1).map(t => `<span class="d-intent-icon worst" title="${_avoidTxt} ${t.label}">✕${t.icon}</span>`).join('');
       const intentsHtml = (topIcons || worstIcons) && !intentSel ? `<div class="d-intents">${topIcons}${worstIcons}</div>` : '';
       const isToday = d.date === todayStr;
       const isSelected = d.day === state.selected;
@@ -898,7 +900,12 @@
     /* ใช้ label ที่มี transition ถ้ามี (เช่น 壬辰 → 癸巳 (→6)) */
     const pillarLbl = MONTH_DATA.month_pillar_label || MONTH_DATA.month_pillar || '—';
     if (mTC) mTC.textContent = MONTH_DATA.month_pillar || '—';
-    if (mTH) mTH.textContent = `${MONTH_TH[MONTH_DATA.month]||''} ${(MONTH_DATA.year||0)+543}`;
+    if (mTH) {
+      const _hdrLang = getLang();
+      mTH.textContent = (_hdrLang==='th') ? `${MONTH_TH[MONTH_DATA.month]||''} ${(MONTH_DATA.year||0)+543}`
+                       : (_hdrLang==='zh') ? `${MONTH_DATA.year||0}年${MONTH_DATA.month||''}月`
+                       : new Date(MONTH_DATA.year||1970, (MONTH_DATA.month||1)-1, 1).toLocaleDateString('en',{month:'long',year:'numeric'});
+    }
     if (mPil) mPil.textContent = pillarLbl;
     /* 節氣 · ถ้ามี transition ในเดือน แสดงครบ */
     const jqList = MONTH_DATA.jieqi_list || [];
@@ -1242,19 +1249,19 @@
           : Math.max(0, Math.min(100, Math.round(50 + ((d.stars_detail||{}).total || 0))));
         const delta = personalScore - universalScore;
         const VINFO_BASE = (s) => {
-          if (s >= 80) return { ico:'⭐', th:'ดีมาก',   han:'大吉', col:'var(--good)', bg:'var(--wood-bg)' };
-          if (s >= 65) return { ico:'✓',  th:'ดี',     han:'吉',   col:'var(--good)', bg:'var(--wood-bg)' };
-          if (s >= 45) return { ico:'⚖',  th:'ปานกลาง', han:'中和', col:'var(--gold)', bg:'rgba(200,164,77,.08)' };
-          if (s >= 30) return { ico:'⚠',  th:'ระวัง',   han:'凶',   col:'var(--bad)',  bg:'var(--fire-bg)' };
-          return            { ico:'⛔', th:'ห้าม',    han:'大凶', col:'var(--bad)',  bg:'var(--fire-bg)' };
+          if (s >= 80) return { ico:'⭐', th:'ดีมาก',   en:'Excellent', zh:'很好', han:'大吉', col:'var(--good)', bg:'var(--wood-bg)' };
+          if (s >= 65) return { ico:'✓',  th:'ดี',     en:'Good',      zh:'好',   han:'吉',   col:'var(--good)', bg:'var(--wood-bg)' };
+          if (s >= 45) return { ico:'⚖',  th:'ปานกลาง', en:'Neutral',   zh:'中等', han:'中和', col:'var(--gold)', bg:'rgba(200,164,77,.08)' };
+          if (s >= 30) return { ico:'⚠',  th:'ระวัง',   en:'Caution',   zh:'謹慎', han:'凶',   col:'var(--bad)',  bg:'var(--fire-bg)' };
+          return            { ico:'⛔', th:'ห้าม',    en:'Avoid',     zh:'避免', han:'大凶', col:'var(--bad)',  bg:'var(--fire-bg)' };
         };
         /* 1 มิ.ย. · label การ์ดวันสากล ใช้ level จาก backend (band เดียวกับ grid best≥84) ให้ป้ายตรงกัน · personal คงใช้ VINFO_BASE เดิม */
         const U_LEVEL_VINFO = {
-          best:   { ico:'⭐', th:'ดีมาก',   han:'大吉', col:'var(--good)', bg:'var(--wood-bg)' },
-          good:   { ico:'✓',  th:'ดี',     han:'吉',   col:'var(--good)', bg:'var(--wood-bg)' },
-          ok:     { ico:'⚖',  th:'ปานกลาง', han:'中和', col:'var(--gold)', bg:'rgba(200,164,77,.08)' },
-          caution:{ ico:'⚠',  th:'ระวัง',   han:'凶',   col:'var(--bad)',  bg:'var(--fire-bg)' },
-          avoid:  { ico:'⛔', th:'ห้าม',    han:'大凶', col:'var(--bad)',  bg:'var(--fire-bg)' },
+          best:   { ico:'⭐', th:'ดีมาก',   en:'Excellent', zh:'很好', han:'大吉', col:'var(--good)', bg:'var(--wood-bg)' },
+          good:   { ico:'✓',  th:'ดี',     en:'Good',      zh:'好',   han:'吉',   col:'var(--good)', bg:'var(--wood-bg)' },
+          ok:     { ico:'⚖',  th:'ปานกลาง', en:'Neutral',   zh:'中等', han:'中和', col:'var(--gold)', bg:'rgba(200,164,77,.08)' },
+          caution:{ ico:'⚠',  th:'ระวัง',   en:'Caution',   zh:'謹慎', han:'凶',   col:'var(--bad)',  bg:'var(--fire-bg)' },
+          avoid:  { ico:'⛔', th:'ห้าม',    en:'Avoid',     zh:'避免', han:'大凶', col:'var(--bad)',  bg:'var(--fire-bg)' },
         };
         const uV = (d.universal_verdict && U_LEVEL_VINFO[d.universal_verdict.level]) ? U_LEVEL_VINFO[d.universal_verdict.level] : VINFO_BASE(universalScore);
         const pV = VINFO_BASE(personalScore);
@@ -1282,52 +1289,149 @@
             </div>
             <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
               <span style="font-size:16px;">${info.ico}</span>
-              <span style="font-family:var(--thai);font-size:13px;color:${info.col};font-weight:700;">${info.th}</span>
+              <span style="font-family:var(--thai);font-size:13px;color:${info.col};font-weight:700;">${lg==='th'?info.th:lg==='zh'?info.zh:info.en}</span>
               <span style="font-family:var(--tc);font-size:10px;color:${info.col};opacity:.7;">${info.han}</span>
             </div>
             <div style="font-family:var(--thai);font-size:10px;color:var(--fg-soft);text-align:center;line-height:1.4;border-top:1px dashed ${info.col};padding-top:6px;opacity:.85;">${footer}</div>
           </div>`;
-        /* 18 พ.ค. · narrative ตาม ten god × goal · อากงอาม่าสั่งให้แทน "−14 จากสากล" */
+        /* 18 พ.ค. · narrative ตาม ten god × goal · อากงอาม่าสั่งให้แทน "−14 จากสากล" · 3 lang */
         const NARRATIVE_BY_GOAL = {
-          wealth: { 正財:'ทรัพย์ตรง · เซ็นเงินเดือน·ปิดดีล', 偏財:'ทรัพย์ลื่น · เก็งกำไร·ลงทุนสั้น', 食神:'งานสร้างสรรค์หาเงิน', 傷官:'พรสวรรค์ทำเงิน·ระวังคำพูด', 比肩:'เพื่อนช่วยหาเงิน·ระวังแบ่งทรัพย์', 劫財:'คู่แข่งแย่งทรัพย์', 正官:'เงินจากระบบ·เงินเดือนราชการ', 七殺:'ค่าตอบแทนชั่วคราว·งานกดดัน', 正印:'พึ่งครอบครัว·ทุนการศึกษา', 偏印:'เงินงานเฉพาะทาง' },
-          career: { 正官:'อำนาจ·เซ็นเอกสาร·นัดหัวหน้า', 七殺:'งานเฉียบขาด·ระวังขัดแย้ง', 正財:'งานประจำ·เงินเดือน', 偏財:'งานพิเศษ·freelance', 正印:'เรียน·อบรม·ที่ปรึกษา', 偏印:'งานวิจัย·เฉพาะทาง', 食神:'งานสร้างสรรค์·ออกแบบ', 傷官:'แสดงผลงาน·พรีเซนต์', 比肩:'งานทีม·ร่วมมือ', 劫財:'งานแข่งขัน' },
-          love:   { 正財:'คู่ครองมั่นคง·ใส่ใจคู่', 正官:'คู่ทางการ·ผูกพันลึก', 偏財:'ความรักลื่น·romance ใหม่', 七殺:'รักรุนแรง·ระวังขัดแย้ง', 食神:'โรแมนติก·กิจกรรมสร้างสุข', 傷官:'เสน่ห์เด่น·ระวังคำพูด', 比肩:'เพื่อนแย่งคู่·ระวังคนที่สาม', 劫財:'คู่แข่งในรัก', 正印:'ใส่ใจครอบครัว·พ่อแม่คู่', 偏印:'รักลึกซึ้ง·เฉพาะตัว' },
-          family: { 正印:'แม่/ครอบครัวอบอุ่น', 偏印:'ปัญญาเฉพาะ·ครู', 比肩:'พี่น้อง·เพื่อน', 食神:'สบาย·ลูก', 傷官:'สื่อสาร·ระวังคำพูด', 正官:'พ่อ·ระเบียบ', 七殺:'พ่อเข้ม·ระวัง', 正財:'คู่ครอง·ครอบครัวมั่นคง', 偏財:'พ่อ/พี่ชาย·เงินไหลออก', 劫財:'แย่งทรัพย์ในบ้าน' },
-          health: { 正印:'ฟื้นฟู·พักผ่อน·ครอบครัวดูแล', 偏印:'ระวังเครียด·สมาธิ·พัก', 比肩:'ออกกำลังกับเพื่อน', 食神:'กินดี·นอนเต็มอิ่ม', 傷官:'ระวังประสาท·พักเสียง', 正官:'ระวังเครียดงาน', 七殺:'ระวังอุบัติเหตุ·ไม่ฝืนแรง', 正財:'ตรวจสุขภาพประจำ', 偏財:'ระวังกิน·เครื่องดื่ม', 劫財:'ระวังเสียทรัพย์รักษา' },
-          travel: { 偏財:'ทริปสนุก·เก็งสถานที่ใหม่', 食神:'ทริปพักผ่อน·กินอร่อย', 傷官:'ออกสื่อ·สร้างคอนเทนต์·ระวังพูด', 比肩:'เที่ยวกับเพื่อน', 劫財:'เที่ยวเสี่ยง·ระวังเงิน', 正財:'เดินทางมั่นคง·ออกธุระ', 正官:'เดินทางทางการ·พบผู้ใหญ่', 七殺:'เดินทางกดดัน·ระวังความเสี่ยง', 正印:'เดินทางเรียน·สัมมนา', 偏印:'เดินทางวิจัย·เฉพาะทาง' },
+          wealth: {
+            正財:{th:'ทรัพย์ตรง · เซ็นเงินเดือน·ปิดดีล', en:'Steady wealth · payday, closing deals', zh:'正財·發薪·成交'},
+            偏財:{th:'ทรัพย์ลื่น · เก็งกำไร·ลงทุนสั้น', en:'Windfall wealth · speculation, short-term investing', zh:'偏財·投機·短線投資'},
+            食神:{th:'งานสร้างสรรค์หาเงิน', en:'Creative work earns money', zh:'創意生財'},
+            傷官:{th:'พรสวรรค์ทำเงิน·ระวังคำพูด', en:'Talent earns money · mind your words', zh:'才華生財·慎言'},
+            比肩:{th:'เพื่อนช่วยหาเงิน·ระวังแบ่งทรัพย์', en:'Friends help earn · watch for sharing losses', zh:'朋友助財·防分財'},
+            劫財:{th:'คู่แข่งแย่งทรัพย์', en:'Rivals compete for wealth', zh:'劫財·競爭奪利'},
+            正官:{th:'เงินจากระบบ·เงินเดือนราชการ', en:'System income · official salary', zh:'體制收入·公職薪'},
+            七殺:{th:'ค่าตอบแทนชั่วคราว·งานกดดัน', en:'Temporary pay · high-pressure work', zh:'臨時報酬·壓力工作'},
+            正印:{th:'พึ่งครอบครัว·ทุนการศึกษา', en:'Family support · scholarships', zh:'靠家庭·助學金'},
+            偏印:{th:'เงินงานเฉพาะทาง', en:'Income from specialized work', zh:'專業收入'},
+          },
+          career: {
+            正官:{th:'อำนาจ·เซ็นเอกสาร·นัดหัวหน้า', en:'Authority · signing docs, meeting boss', zh:'權威·簽文件·見上司'},
+            七殺:{th:'งานเฉียบขาด·ระวังขัดแย้ง', en:'Decisive work · watch for conflict', zh:'果斷做事·慎衝突'},
+            正財:{th:'งานประจำ·เงินเดือน', en:'Steady job · salary', zh:'正職·領薪'},
+            偏財:{th:'งานพิเศษ·freelance', en:'Side work · freelance', zh:'兼職·自由業'},
+            正印:{th:'เรียน·อบรม·ที่ปรึกษา', en:'Study · training, mentoring', zh:'進修·培訓·顧問'},
+            偏印:{th:'งานวิจัย·เฉพาะทาง', en:'Research · specialized work', zh:'研究·專業工作'},
+            食神:{th:'งานสร้างสรรค์·ออกแบบ', en:'Creative work · design', zh:'創意工作·設計'},
+            傷官:{th:'แสดงผลงาน·พรีเซนต์', en:'Showcasing work · presenting', zh:'展示成果·簡報'},
+            比肩:{th:'งานทีม·ร่วมมือ', en:'Teamwork · collaboration', zh:'團隊合作'},
+            劫財:{th:'งานแข่งขัน', en:'Competitive work', zh:'競爭性工作'},
+          },
+          love: {
+            正財:{th:'คู่ครองมั่นคง·ใส่ใจคู่', en:'Stable partner · attentive to them', zh:'穩定伴侶·用心經營'},
+            正官:{th:'คู่ทางการ·ผูกพันลึก', en:'Formal partner · deep commitment', zh:'正式關係·深度承諾'},
+            偏財:{th:'ความรักลื่น·romance ใหม่', en:'Fluid romance · new spark', zh:'戀愛順遂·新鮮浪漫'},
+            七殺:{th:'รักรุนแรง·ระวังขัดแย้ง', en:'Intense love · watch for conflict', zh:'感情強烈·慎衝突'},
+            食神:{th:'โรแมนติก·กิจกรรมสร้างสุข', en:'Romantic · fun activities together', zh:'浪漫·共享樂趣'},
+            傷官:{th:'เสน่ห์เด่น·ระวังคำพูด', en:'Charming · mind your words', zh:'魅力突出·慎言'},
+            比肩:{th:'เพื่อนแย่งคู่·ระวังคนที่สาม', en:'Friends compete · watch for a third party', zh:'朋友競爭·慎第三者'},
+            劫財:{th:'คู่แข่งในรัก', en:'Rivals in love', zh:'情敵·競爭者'},
+            正印:{th:'ใส่ใจครอบครัว·พ่อแม่คู่', en:"Family focus · partner's parents", zh:'關心家庭·對方父母'},
+            偏印:{th:'รักลึกซึ้ง·เฉพาะตัว', en:'Deep, private love', zh:'深情·私密'},
+          },
+          family: {
+            正印:{th:'แม่/ครอบครัวอบอุ่น', en:'Mother/family warmth', zh:'母親·家庭溫暖'},
+            偏印:{th:'ปัญญาเฉพาะ·ครู', en:'Special wisdom · teacher figure', zh:'專精智慧·師者'},
+            比肩:{th:'พี่น้อง·เพื่อน', en:'Siblings · friends', zh:'手足·朋友'},
+            食神:{th:'สบาย·ลูก', en:'Comfort · children', zh:'安逸·子女'},
+            傷官:{th:'สื่อสาร·ระวังคำพูด', en:'Communication · mind your words', zh:'溝通·慎言'},
+            正官:{th:'พ่อ·ระเบียบ', en:'Father · discipline', zh:'父親·規矩'},
+            七殺:{th:'พ่อเข้ม·ระวัง', en:'Strict father · be careful', zh:'父親嚴厲·謹慎'},
+            正財:{th:'คู่ครอง·ครอบครัวมั่นคง', en:'Partner · stable family', zh:'配偶·家庭穩定'},
+            偏財:{th:'พ่อ/พี่ชาย·เงินไหลออก', en:'Father/brother · money outflow', zh:'父親/兄長·財外流'},
+            劫財:{th:'แย่งทรัพย์ในบ้าน', en:'Competing for family wealth', zh:'家中爭財'},
+          },
+          health: {
+            正印:{th:'ฟื้นฟู·พักผ่อน·ครอบครัวดูแล', en:'Recovery · rest, family care', zh:'恢復·休息·家人照顧'},
+            偏印:{th:'ระวังเครียด·สมาธิ·พัก', en:'Watch stress · meditate, rest', zh:'慎壓力·靜心·休息'},
+            比肩:{th:'ออกกำลังกับเพื่อน', en:'Exercise with friends', zh:'和朋友運動'},
+            食神:{th:'กินดี·นอนเต็มอิ่ม', en:'Eat well · sleep enough', zh:'飲食佳·睡眠足'},
+            傷官:{th:'ระวังประสาท·พักเสียง', en:'Watch your nerves · rest your voice', zh:'慎神經·休聲'},
+            正官:{th:'ระวังเครียดงาน', en:'Watch work stress', zh:'慎工作壓力'},
+            七殺:{th:'ระวังอุบัติเหตุ·ไม่ฝืนแรง', en:"Watch for accidents · don't overexert", zh:'慎意外·勿逞強'},
+            正財:{th:'ตรวจสุขภาพประจำ', en:'Regular health checkups', zh:'定期健檢'},
+            偏財:{th:'ระวังกิน·เครื่องดื่ม', en:'Watch food and drink', zh:'慎飲食'},
+            劫財:{th:'ระวังเสียทรัพย์รักษา', en:'Watch for costly treatment', zh:'慎醫療破財'},
+          },
+          travel: {
+            偏財:{th:'ทริปสนุก·เก็งสถานที่ใหม่', en:'Fun trip · scout new places', zh:'趣味旅行·探索新地'},
+            食神:{th:'ทริปพักผ่อน·กินอร่อย', en:'Relaxing trip · good food', zh:'休閒旅行·美食'},
+            傷官:{th:'ออกสื่อ·สร้างคอนเทนต์·ระวังพูด', en:'Media exposure · content creation, mind your words', zh:'曝光媒體·創作內容·慎言'},
+            比肩:{th:'เที่ยวกับเพื่อน', en:'Travel with friends', zh:'和朋友出遊'},
+            劫財:{th:'เที่ยวเสี่ยง·ระวังเงิน', en:'Risky travel · watch your money', zh:'旅行有風險·慎財'},
+            正財:{th:'เดินทางมั่นคง·ออกธุระ', en:'Steady travel · errands', zh:'穩定出行·辦事'},
+            正官:{th:'เดินทางทางการ·พบผู้ใหญ่', en:'Official travel · meeting elders', zh:'公務出行·見長輩'},
+            七殺:{th:'เดินทางกดดัน·ระวังความเสี่ยง', en:'Pressured travel · watch for risk', zh:'出行壓力·慎風險'},
+            正印:{th:'เดินทางเรียน·สัมมนา', en:'Study travel · seminars', zh:'求學旅行·研習'},
+            偏印:{th:'เดินทางวิจัย·เฉพาะทาง', en:'Research travel · specialized', zh:'研究旅行·專業'},
+          },
         };
-        /* 18 พ.ค. · อาม่าอากง · แปลภาษาบ้าน ห้ามใช้ศัพท์จีน */
+        /* 18 พ.ค. · อาม่าอากง · แปลภาษาบ้าน ห้ามใช้ศัพท์จีน · 3 lang */
         const TEN_GOD_TH = {
-          '正官':'ผู้ใหญ่/อำนาจตรง', '七殺':'ผู้บังคับ·เฉียบขาด',
-          '正財':'ทรัพย์ตรง·เงินเดือน', '偏財':'ทรัพย์ลื่น·เก็งกำไร',
-          '食神':'ความคิดสร้างสรรค์', '傷官':'พรสวรรค์·ระวังคำพูด',
-          '正印':'เทพคุณธรรม·พ่อแม่·ที่ปรึกษา', '偏印':'ปัญญาเฉพาะ·งานวิจัย',
-          '比肩':'เพื่อน·พี่น้อง·ทีม', '劫財':'คู่แข่ง·ระวังเงิน',
+          '正官':{th:'ผู้ใหญ่/อำนาจตรง', en:'Authority figure', zh:'長輩·正統權威'},
+          '七殺':{th:'ผู้บังคับ·เฉียบขาด', en:'Strict enforcer', zh:'嚴厲管束'},
+          '正財':{th:'ทรัพย์ตรง·เงินเดือน', en:'Steady income', zh:'穩定收入'},
+          '偏財':{th:'ทรัพย์ลื่น·เก็งกำไร', en:'Windfall gains', zh:'意外財運'},
+          '食神':{th:'ความคิดสร้างสรรค์', en:'Creative ideas', zh:'創意巧思'},
+          '傷官':{th:'พรสวรรค์·ระวังคำพูด', en:'Talent, mind your words', zh:'才華洋溢·慎言'},
+          '正印':{th:'เทพคุณธรรม·พ่อแม่·ที่ปรึกษา', en:'Support & guidance', zh:'貴人扶持·長輩關懷'},
+          '偏印':{th:'ปัญญาเฉพาะ·งานวิจัย', en:'Specialized insight', zh:'專精智慧'},
+          '比肩':{th:'เพื่อน·พี่น้อง·ทีม', en:'Friends & peers', zh:'朋友·手足'},
+          '劫財':{th:'คู่แข่ง·ระวังเงิน', en:'Rivals, guard money', zh:'競爭者·慎財'},
         };
         const verdictTags = (d.verdict && Array.isArray(d.verdict.tags)) ? d.verdict.tags : [];
         const TAG_TX = {
-          '合':'ผสานก้าน','沖':'ปะทะก้าน','六合':'จับคู่ผสาน','六沖':'ปะทะกิ่ง',
-          '半合':'ผสานครึ่ง·ดึงดูดธาตุใหม่','三合':'ผสานเต็ม·ธาตุพันธมิตร','三會':'ฤดูเต็มกำลัง',
-          '害':'ทำร้ายเงียบ','破':'บั่นทอน','刑':'ลงโทษ',
-          '用神':'ตรงของช่วย ★','用神·รอง':'รองของช่วย','忌神':'ตรงของแสลง ⚠','忌神แรง':'ของแสลงแรง ⚠⚠',
-          '合化用神':'ผสานเป็นของช่วย ★','合化忌神':'ผสานเป็นของแสลง ⚠','沖去忌神 ⚠':'ลบของแสลง·พลิกเป็นบุญ',
-          '克':'ครอบงำกัน','被生':'ได้รับการเลี้ยงดู','我生':'เราเลี้ยงเขา','克我':'ถูกครอบงำ','我克':'ครอบงำเขา','比和':'ธาตุเดียวกัน·เพื่อน',
-          '生':'เลี้ยงดูกัน','生·เสียพลัง':'เลี้ยงเขาแล้วเสียพลัง',
-          '調候·火助':'ดวงหนาว·ได้ไฟอุ่น','用神·根':'มีรากของช่วย',
-          '沖·ผสม·พอชดเชย':'ปะทะแบบชดเชยกัน','沖去用神 ⚠⚠':'ปะทะลบของช่วย ⚠⚠',
-          '貪合忘剋':'ผสานชนะการครอบงำ','แรงขับ·ไม่นิ่ง':'พลังแรงแต่ไม่นิ่ง',
+          '合':{th:'ผสานก้าน', en:'Stem union', zh:'天干合'},
+          '沖':{th:'ปะทะก้าน', en:'Stem clash', zh:'天干沖'},
+          '六合':{th:'จับคู่ผสาน', en:'Six harmony', zh:'六合'},
+          '六沖':{th:'ปะทะกิ่ง', en:'Branch clash', zh:'六沖'},
+          '半合':{th:'ผสานครึ่ง·ดึงดูดธาตุใหม่', en:'Half union · new element pull', zh:'半合·引動新氣'},
+          '三合':{th:'ผสานเต็ม·ธาตุพันธมิตร', en:'Full union · allied element', zh:'三合·聯盟氣'},
+          '三會':{th:'ฤดูเต็มกำลัง', en:'Seasonal full power', zh:'三會·當季全力'},
+          '害':{th:'ทำร้ายเงียบ', en:'Silent harm', zh:'相害'},
+          '破':{th:'บั่นทอน', en:'Erosion', zh:'相破'},
+          '刑':{th:'ลงโทษ', en:'Punishment', zh:'相刑'},
+          '用神':{th:'ตรงของช่วย ★', en:'Favorable element ★', zh:'用神 ★'},
+          '用神·รอง':{th:'รองของช่วย', en:'Secondary favorable', zh:'喜神'},
+          '忌神':{th:'ตรงของแสลง ⚠', en:'Unfavorable element ⚠', zh:'忌神 ⚠'},
+          '忌神แรง':{th:'ของแสลงแรง ⚠⚠', en:'Strong unfavorable ⚠⚠', zh:'忌神強 ⚠⚠'},
+          '合化用神':{th:'ผสานเป็นของช่วย ★', en:'Union transforms to favorable ★', zh:'合化用神 ★'},
+          '合化忌神':{th:'ผสานเป็นของแสลง ⚠', en:'Union transforms to unfavorable ⚠', zh:'合化忌神 ⚠'},
+          '沖去忌神 ⚠':{th:'ลบของแสลง·พลิกเป็นบุญ', en:'Clash removes unfavorable · turns lucky', zh:'沖去忌神·轉禍為福'},
+          '克':{th:'ครอบงำกัน', en:'Overcoming', zh:'相剋'},
+          '被生':{th:'ได้รับการเลี้ยงดู', en:'Nourished', zh:'被生'},
+          '我生':{th:'เราเลี้ยงเขา', en:'I nourish it', zh:'我生'},
+          '克我':{th:'ถูกครอบงำ', en:'Overcome by', zh:'克我'},
+          '我克':{th:'ครอบงำเขา', en:'I overcome it', zh:'我克'},
+          '比和':{th:'ธาตุเดียวกัน·เพื่อน', en:'Same element · ally', zh:'比和·同氣'},
+          '生':{th:'เลี้ยงดูกัน', en:'Nourishing', zh:'相生'},
+          '生·เสียพลัง':{th:'เลี้ยงเขาแล้วเสียพลัง', en:'Nourishing drains strength', zh:'生而洩氣'},
+          '調候·火助':{th:'ดวงหนาว·ได้ไฟอุ่น', en:'Cold chart · fire warms', zh:'調候·得火暖局'},
+          '用神·根':{th:'มีรากของช่วย', en:'Rooted favorable element', zh:'用神有根'},
+          '沖·ผสม·พอชดเชย':{th:'ปะทะแบบชดเชยกัน', en:'Clash offsets, balances out', zh:'沖而互抵'},
+          '沖去用神 ⚠⚠':{th:'ปะทะลบของช่วย ⚠⚠', en:'Clash removes favorable ⚠⚠', zh:'沖去用神 ⚠⚠'},
+          '貪合忘剋':{th:'ผสานชนะการครอบงำ', en:'Union overrides overcoming', zh:'貪合忘剋'},
+          'แรงขับ·ไม่นิ่ง':{th:'พลังแรงแต่ไม่นิ่ง', en:'Strong drive · unstable', zh:'力強不穩'},
         };
+        const _tx3 = (dict, key) => { const e = dict[key]; if (!e) return null; return (lg==='th'?e.th:lg==='zh'?e.zh:e.en) || e.th; };
         function buildFooter() {
           const tg = d.ten_god;
-          const tgTh = tg ? (TEN_GOD_TH[tg] || tg) : '';
+          const tgTh = tg ? (_tx3(TEN_GOD_TH, tg) || tg) : '';
           if (state.goal === 'all') {
-            const reasons = verdictTags.slice(0,3).map(t => TAG_TX[t] || t).filter(Boolean).join(' · ');
-            const head = tg ? `${tgTh} มาเยือน` : '';
-            return [head, reasons].filter(Boolean).join(' · ') || 'ดวงต่างจากสากลตามเสาเกิด';
+            const reasons = verdictTags.slice(0,3).map(t => _tx3(TAG_TX, t) || t).filter(Boolean).join(' · ');
+            const arriveTxt = ({th:'มาเยือน',en:'arrives',zh:'來訪'})[lg] || 'มาเยือน';
+            const head = tg ? `${tgTh} ${arriveTxt}` : '';
+            const emptyTxt = ({th:'ดวงต่างจากสากลตามเสาเกิด',en:'Your chart differs from the universal reading, based on your birth pillars',zh:'因您的生辰八字，命盤與通用不同'})[lg] || 'ดวงต่างจากสากลตามเสาเกิด';
+            return [head, reasons].filter(Boolean).join(' · ') || emptyTxt;
           }
-          const narr = (NARRATIVE_BY_GOAL[state.goal] || {})[tg];
+          const narrEntry = (NARRATIVE_BY_GOAL[state.goal] || {})[tg];
+          const narr = narrEntry ? _tx3(NARRATIVE_BY_GOAL[state.goal], tg) : null;
+          const resultTxt = ({th:'ผลตามดวงคุณ',en:'Based on your personal chart',zh:'依您命盤而定'})[lg] || 'ผลตามดวงคุณ';
           if (narr) return `${tgTh} · ${narr}`;
-          return tg ? `${tgTh} · ผลตามดวงคุณ` : 'ผลตามดวงคุณ';
+          return tg ? `${tgTh} · ${resultTxt}` : resultTxt;
         }
         const footerTxt = buildFooter();
         return `<div class="sp-verdict" style="padding:0;border-left:none;background:transparent;margin-bottom:18px;">
@@ -1524,7 +1628,7 @@
   }
 
   function goalLabel(g){
-    return ({wealth:'การเงิน',career:'การงาน',love:'ความรัก',family:'ครอบครัว',health:'สุขภาพ',travel:'การเดินทาง'})[g] || '';
+    return (window._calGoalLabel ? window._calGoalLabel(g, _curLang()) : '') || '';
   }
 
   /* 19 พ.ค. spec #2 · ทิศไทย + ดาวไทย + 中文 รอง · 3 ภาษา */
@@ -1558,7 +1662,7 @@
     const T = (k) => (window.HK_I18N && window.HK_I18N[k] && (window.HK_I18N[k][lang] || window.HK_I18N[k].th)) || '';
     if (!det.directions || !det.directions.length) {
       /* fallback · ไม่มี directions data · empty state */
-      return `<div class="dirs-empty">${T('cal.dir.empty') || '— ยังไม่มีข้อมูลทิศมงคล —'}</div>`;
+      return `<div class="dirs-empty">${T('cal.dir.empty')}</div>`;
     }
 
     /* enrich แต่ละ direction · derive rank · star meta */
@@ -1732,7 +1836,8 @@
       }
     } catch(e){
       console.warn('loadMonth failed', e);
-      document.getElementById('cal-grid').innerHTML = '<div style="grid-column:1/8;padding:40px;text-align:center;color:var(--bad)">โหลดปฏิทินไม่สำเร็จ</div>';
+      const _errTxt = ({th:'โหลดปฏิทินไม่สำเร็จ',en:'Failed to load calendar',zh:'日曆載入失敗'})[_curLang()] || 'โหลดปฏิทินไม่สำเร็จ';
+      document.getElementById('cal-grid').innerHTML = `<div style="grid-column:1/8;padding:40px;text-align:center;color:var(--bad)">${_errTxt}</div>`;
     }
   }
 
@@ -1826,6 +1931,7 @@
 <script>
 /* hourkey · cal · 3-language i18n (TH/EN/ZH) */
 window.HK_I18N = {
+  'cal.page.title':  { th:'hourkey · ปฏิทินมงคล · 黃曆', en:'hourkey · Tongshu Calendar', zh:'hourkey · 通書' },
   'cal.nav.chart':   { th:'ดวง', en:'Chart', zh:'命盤' },
   'cal.nav.today':   { th:'วันนี้', en:'Today', zh:'今日' },
   'cal.nav.calendar':{ th:'ปฏิทิน', en:'Calendar', zh:'吉曆' },
