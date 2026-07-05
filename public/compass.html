@@ -124,16 +124,16 @@
 
   <header class="hero">
     <div class="crest">羅盤</div>
-    <h1 id="page-title">เข็มทิศ <b>มงคล</b> · Compass</h1>
-    <div class="sub" id="page-sub">羅盤 LUOPAN · บันทึกบ้าน · QR ไปมือถือ</div>
-    <div class="desc" id="page-desc">ใช้ desktop วัดทิศหน้าบ้าน → save → ส่ง QR ไป iPhone ใช้ AR วัดต่อ</div>
+    <h1 id="page-title" data-i18n="title" data-i18n-html="1">เข็มทิศ <b>มงคล</b> · Compass</h1>
+    <div class="sub" id="page-sub" data-i18n="sub">羅盤 LUOPAN · บันทึกบ้าน · QR ไปมือถือ</div>
+    <div class="desc" id="page-desc" data-i18n="desc">ใช้ desktop วัดทิศหน้าบ้าน → save → ส่ง QR ไป iPhone ใช้ AR วัดต่อ</div>
   </header>
 
   <main>
     <div class="card" id="auth-needed" style="display:none;text-align:center;">
-      <h3>🔒 <span id="lbl-need-login">ต้องเข้าสู่ระบบก่อน</span></h3>
-      <p style="color:var(--fg-soft);margin-bottom:14px;font-size:13px;" id="lbl-need-login-p">การบันทึกบ้านต้องมีบัญชี · เข้าสู่ระบบเพื่อเริ่ม</p>
-      <a href="/signup?tab=login" class="btn primary" id="lbl-login-btn" style="text-decoration:none;display:inline-block;">เข้าสู่ระบบ</a>
+      <h3>🔒 <span id="lbl-need-login" data-i18n="need_login">ต้องเข้าสู่ระบบก่อน</span></h3>
+      <p style="color:var(--fg-soft);margin-bottom:14px;font-size:13px;" id="lbl-need-login-p" data-i18n="need_login_p">การบันทึกบ้านต้องมีบัญชี · เข้าสู่ระบบเพื่อเริ่ม</p>
+      <a href="/signup?tab=login" class="btn primary" id="lbl-login-btn" data-i18n="login_btn" style="text-decoration:none;display:inline-block;">เข้าสู่ระบบ</a>
     </div>
 
     <div id="main-content">
@@ -141,17 +141,17 @@
       <div class="alert ok" id="alert-ok"></div>
 
       <div class="card">
-        <h3><span class="han">家</span> <span id="lbl-houses">บ้านของคุณ</span> <span class="tier-badge" id="tier-badge">FREE · 0/1</span></h3>
+        <h3><span class="han">家</span> <span id="lbl-houses" data-i18n="houses">บ้านของคุณ</span> <span class="tier-badge" id="tier-badge">FREE · 0/1</span></h3>
         <div id="houses-list" class="houses-list">
-          <div class="empty"><div class="ic">🏠</div><p id="lbl-empty">ยังไม่มีบ้านที่บันทึก · เพิ่มบ้านแรกด้านล่าง</p></div>
+          <div class="empty"><div class="ic">🏠</div><p id="lbl-empty" data-i18n="empty">ยังไม่มีบ้านที่บันทึก · เพิ่มบ้านแรกด้านล่าง</p></div>
         </div>
       </div>
 
       <div class="card">
-        <h3><span class="han">新</span> <span id="lbl-add">เพิ่มบ้านใหม่</span></h3>
+        <h3><span class="han">新</span> <span id="lbl-add" data-i18n="add">เพิ่มบ้านใหม่</span></h3>
         <div class="field">
-          <label id="lbl-name">ชื่อบ้าน</label>
-          <input id="h-name" class="input" placeholder="บ้านหลัก / ออฟฟิศ / บ้านพ่อแม่"/>
+          <label id="lbl-name" data-i18n="name">ชื่อบ้าน</label>
+          <input id="h-name" class="input" data-i18n-ph="name_ph" placeholder="บ้านหลัก / ออฟฟิศ / บ้านพ่อแม่"/>
         </div>
         <div class="row2">
           <div class="field">
@@ -165,75 +165,84 @@
         </div>
         <div class="row3">
           <div class="field">
-            <label id="lbl-face">ทิศหน้าบ้าน (0-360°)</label>
+            <label id="lbl-face" data-i18n="face">ทิศหน้าบ้าน (0-360°)</label>
             <input id="h-face" class="input" type="number" min="0" max="360" step="0.1" value="180"/>
           </div>
           <div class="field">
-            <label id="lbl-mountain">山 (24山)</label>
+            <label id="lbl-mountain" data-i18n="mountain">山 (24山)</label>
             <input id="h-mountain" class="input" type="text" maxlength="1" placeholder="auto"/>
           </div>
           <div class="field">
-            <label id="lbl-dir">ทิศ (8 ทิศ)</label>
+            <label id="lbl-dir" data-i18n="dir">ทิศ (8 ทิศ)</label>
             <select id="h-dir" class="input">
               <option value="">auto</option>
-              <option value="N">N · เหนือ</option>
-              <option value="NE">NE · อีสาน</option>
-              <option value="E">E · ตะวันออก</option>
-              <option value="SE">SE · อาคเนย์</option>
-              <option value="S">S · ใต้</option>
-              <option value="SW">SW · พายัพ</option>
-              <option value="W">W · ตะวันตก</option>
-              <option value="NW">NW · พายัพ</option>
+              <option value="N" data-i18n="dir_n">N · เหนือ</option>
+              <option value="NE" data-i18n="dir_ne">NE · อีสาน</option>
+              <option value="E" data-i18n="dir_e">E · ตะวันออก</option>
+              <option value="SE" data-i18n="dir_se">SE · อาคเนย์</option>
+              <option value="S" data-i18n="dir_s">S · ใต้</option>
+              <option value="SW" data-i18n="dir_sw">SW · พายัพ</option>
+              <option value="W" data-i18n="dir_w">W · ตะวันตก</option>
+              <option value="NW" data-i18n="dir_nw">NW · พายัพ</option>
             </select>
           </div>
         </div>
         <div class="field">
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;color:var(--fg-soft);">
             <input id="h-primary" type="checkbox"/>
-            <span id="lbl-primary">บ้านหลัก (primary)</span>
+            <span id="lbl-primary" data-i18n="primary">บ้านหลัก (primary)</span>
           </label>
         </div>
-        <button class="btn primary" id="btn-save"><span id="lbl-save">💾 บันทึก</span></button>
+        <button class="btn primary" id="btn-save"><span id="lbl-save" data-i18n="save">💾 บันทึก</span></button>
       </div>
     </div>
 
     <div class="cross-link">
-      <a href="/fengshui">🏠 ฮวงจุ้ย</a>
-      <a href="/flyingstars">⭐ ดาวเหิน</a>
+      <a href="/fengshui" data-i18n="link_fengshui">🏠 ฮวงจุ้ย</a>
+      <a href="/flyingstars" data-i18n="link_flyingstars">⭐ ดาวเหิน</a>
       <a href="/katakagae">🌸 方違</a>
-      <a href="/datepick">📅 วางฤกษ์</a>
+      <a href="/datepick" data-i18n="link_datepick">📅 วางฤกษ์</a>
     </div>
   </main>
 
   <div class="qr-modal" id="qr-modal">
     <div class="box">
-      <h4 id="lbl-qr">📱 QR ส่งไปมือถือ</h4>
-      <p style="color:var(--fg-soft);font-size:12px;" id="lbl-qr-p">เปิดกล้องมือถือสแกน QR เพื่อเปิดบ้านนี้บนมือถือ</p>
+      <h4 id="lbl-qr" data-i18n="qr">📱 QR ส่งไปมือถือ</h4>
+      <p style="color:var(--fg-soft);font-size:12px;" id="lbl-qr-p" data-i18n="qr_p">เปิดกล้องมือถือสแกน QR เพื่อเปิดบ้านนี้บนมือถือ</p>
       <div class="qr-img" id="qr-img">⏳</div>
       <div class="url" id="qr-url"></div>
-      <div class="expires" id="qr-expires">⏰ หมดอายุใน 5 นาที</div>
-      <button class="btn outline" style="margin-top:14px;" onclick="document.getElementById('qr-modal').classList.remove('show')">ปิด</button>
+      <div class="expires" id="qr-expires" data-i18n="qr_expires">⏰ หมดอายุใน 5 นาที</div>
+      <button class="btn outline" id="btn-qr-close" style="margin-top:14px;" data-i18n="close" onclick="document.getElementById('qr-modal').classList.remove('show')">ปิด</button>
     </div>
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 const I18N = {
-  th: { title:'เข็มทิศ <b>มงคล</b> · Compass', desc:'ใช้ desktop วัดทิศหน้าบ้าน → save → ส่ง QR ไป iPhone ใช้ AR วัดต่อ',
+  th: { title:'เข็มทิศ <b>มงคล</b> · Compass', sub:'羅盤 LUOPAN · บันทึกบ้าน · QR ไปมือถือ', desc:'ใช้ desktop วัดทิศหน้าบ้าน → save → ส่ง QR ไป iPhone ใช้ AR วัดต่อ',
         need_login:'ต้องเข้าสู่ระบบก่อน', need_login_p:'การบันทึกบ้านต้องมีบัญชี · เข้าสู่ระบบเพื่อเริ่ม', login_btn:'เข้าสู่ระบบ',
-        houses:'บ้านของคุณ', add:'เพิ่มบ้านใหม่', name:'ชื่อบ้าน', face:'ทิศหน้าบ้าน (0-360°)', mountain:'山 (24山)', dir:'ทิศ (8 ทิศ)',
+        houses:'บ้านของคุณ', add:'เพิ่มบ้านใหม่', name:'ชื่อบ้าน', name_ph:'บ้านหลัก / ออฟฟิศ / บ้านพ่อแม่', face:'ทิศหน้าบ้าน (0-360°)', mountain:'山 (24山)', dir:'ทิศ (8 ทิศ)',
+        dir_n:'N · เหนือ', dir_ne:'NE · อีสาน', dir_e:'E · ตะวันออก', dir_se:'SE · อาคเนย์', dir_s:'S · ใต้', dir_sw:'SW · พายัพ', dir_w:'W · ตะวันตก', dir_nw:'NW · พายัพ',
         primary:'บ้านหลัก (primary)', save:'💾 บันทึก', empty:'ยังไม่มีบ้านที่บันทึก · เพิ่มบ้านแรกด้านล่าง',
-        qr:'📱 QR ส่งไปมือถือ', qr_p:'เปิดกล้องมือถือสแกน QR เพื่อเปิดบ้านนี้บนมือถือ' },
-  en: { title:'Auspicious <b>Compass</b>', desc:'Measure house direction on desktop → save → QR to iPhone for AR view',
+        qr:'📱 QR ส่งไปมือถือ', qr_p:'เปิดกล้องมือถือสแกน QR เพื่อเปิดบ้านนี้บนมือถือ', qr_expires:'⏰ หมดอายุใน 5 นาที', close:'ปิด',
+        link_fengshui:'🏠 ฮวงจุ้ย', link_flyingstars:'⭐ ดาวเหิน', link_datepick:'📅 วางฤกษ์',
+        err_need_name:'ใส่ชื่อบ้านก่อน', ok_saved:'✓ บันทึกแล้ว', confirm_delete:'ลบบ้าน "{name}"?', ok_deleted:'✓ ลบแล้ว' },
+  en: { title:'Auspicious <b>Compass</b>', sub:'羅盤 LUOPAN · Save houses · QR to mobile', desc:'Measure house direction on desktop → save → QR to iPhone for AR view',
         need_login:'Sign in required', need_login_p:'Saving houses requires account', login_btn:'Sign in',
-        houses:'Your Houses', add:'Add New House', name:'House name', face:'Face Direction (0-360°)', mountain:'Mountain (24山)', dir:'Direction (8)',
+        houses:'Your Houses', add:'Add New House', name:'House name', name_ph:'Main house / Office / Parents\' house', face:'Face Direction (0-360°)', mountain:'Mountain (24山)', dir:'Direction (8)',
+        dir_n:'N · North', dir_ne:'NE · Northeast', dir_e:'E · East', dir_se:'SE · Southeast', dir_s:'S · South', dir_sw:'SW · Southwest', dir_w:'W · West', dir_nw:'NW · Northwest',
         primary:'Primary house', save:'💾 Save', empty:'No houses saved yet · add first below',
-        qr:'📱 QR to Mobile', qr_p:'Scan with mobile camera to open on phone' },
-  zh: { title:'<b>羅盤</b> · 風水', desc:'桌面測房向 → 保存 → QR傳至手機',
+        qr:'📱 QR to Mobile', qr_p:'Scan with mobile camera to open on phone', qr_expires:'⏰ Expires in 5 minutes', close:'Close',
+        link_fengshui:'🏠 Feng Shui', link_flyingstars:'⭐ Flying Stars', link_datepick:'📅 Auspicious Dates',
+        err_need_name:'Enter a house name first', ok_saved:'✓ Saved', confirm_delete:'Delete house "{name}"?', ok_deleted:'✓ Deleted' },
+  zh: { title:'<b>羅盤</b> · 風水', sub:'羅盤 LUOPAN · 保存房屋 · QR傳手機', desc:'桌面測房向 → 保存 → QR傳至手機',
         need_login:'需先登入', need_login_p:'保存房屋需要帳號', login_btn:'登入',
-        houses:'您的房屋', add:'新增房屋', name:'房屋名稱', face:'坐向 (0-360°)', mountain:'山 (24山)', dir:'方位 (8方)',
+        houses:'您的房屋', add:'新增房屋', name:'房屋名稱', name_ph:'主宅 / 辦公室 / 父母家', face:'坐向 (0-360°)', mountain:'山 (24山)', dir:'方位 (8方)',
+        dir_n:'N · 北', dir_ne:'NE · 東北', dir_e:'E · 東', dir_se:'SE · 東南', dir_s:'S · 南', dir_sw:'SW · 西南', dir_w:'W · 西', dir_nw:'NW · 西北',
         primary:'主要房屋', save:'💾 保存', empty:'尚無房屋 · 請新增',
-        qr:'📱 QR傳手機', qr_p:'手機掃碼可開啟此房屋' },
+        qr:'📱 QR傳手機', qr_p:'手機掃碼可開啟此房屋', qr_expires:'⏰ 5分鐘後過期', close:'關閉',
+        link_fengshui:'🏠 風水', link_flyingstars:'⭐ 飛星', link_datepick:'📅 擇日',
+        err_need_name:'請先輸入房屋名稱', ok_saved:'✓ 已保存', confirm_delete:'刪除房屋「{name}」？', ok_deleted:'✓ 已刪除' },
 };
 let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);localStorage.setItem('hk-theme',t);}
@@ -249,6 +258,14 @@ function applyLang(){
     if (id==='page-title') el.innerHTML=map[id]; else el.textContent=map[id];
   });
   document.getElementById('page-desc').textContent = t.desc;
+  // กลไกกลาง: element ใหม่ที่แปะ data-i18n (select option/cross-link/ฯลฯ) — ไม่ต้อง list id ทีละตัว
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k = el.dataset.i18n; if (t[k]==null) return;
+    if (el.dataset.i18nHtml) el.innerHTML = t[k]; else el.textContent = t[k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k = el.dataset.i18nPh; if (t[k]!=null) el.setAttribute('placeholder', t[k]);
+  });
   ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
 }
 
@@ -301,8 +318,9 @@ function renderHouses(houses){
 }
 
 async function saveHouse(){
+  const t = I18N[LANG]||I18N.th;
   const name = document.getElementById('h-name').value.trim();
-  if (!name) { showAlert('err','ใส่ชื่อบ้านก่อน'); return; }
+  if (!name) { showAlert('err', t.err_need_name); return; }
   const payload = {
     name,
     lat: parseFloat(document.getElementById('h-lat').value),
@@ -319,20 +337,21 @@ async function saveHouse(){
     const r = await fetch('/api/houses', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify(payload) });
     const d = await r.json();
     if (!r.ok) { showAlert('err', d.error+(d.message?' · '+d.message:'')); return; }
-    showAlert('ok','✓ บันทึกแล้ว');
+    showAlert('ok', t.ok_saved);
     document.getElementById('h-name').value='';
     loadHouses();
   } catch(e){ showAlert('err', e.message); }
-  finally { btn.disabled=false; btn.textContent='💾 บันทึก'; }
+  finally { btn.disabled=false; btn.textContent=t.save; }
 }
 
 async function delHouse(id, name){
-  if (!confirm('ลบบ้าน "'+name+'"?')) return;
+  const t = I18N[LANG]||I18N.th;
+  if (!confirm(t.confirm_delete.replace('{name}', name))) return;
   try {
     const r = await fetch('/api/houses/'+id, { method:'DELETE', credentials:'include' });
     const d = await r.json();
     if (!r.ok) { showAlert('err', d.error); return; }
-    showAlert('ok','✓ ลบแล้ว');
+    showAlert('ok', t.ok_deleted);
     loadHouses();
   } catch(e){ showAlert('err', e.message); }
 }

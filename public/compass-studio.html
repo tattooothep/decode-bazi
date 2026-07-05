@@ -123,49 +123,49 @@
 
   <header class="hero">
     <div class="crest">羅盤</div>
-    <h1 id="page-title"><b>Compass Studio</b> · วัดทิศ + 6 layer</h1>
-    <div class="sub" id="page-sub">GEO COMPASS · ปัก 2 จุดบนแผนที่ · 24 山 + 飛星 + 八宅</div>
+    <h1 id="page-title" data-i18n="title" data-i18n-html="1"><b>Compass Studio</b> · วัดทิศ + 6 layer</h1>
+    <div class="sub" id="page-sub" data-i18n="sub">GEO COMPASS · ปัก 2 จุดบนแผนที่ · 24 山 + 飛星 + 八宅</div>
   </header>
 
   <main>
     <div class="grid">
       <section>
         <div class="card">
-          <h3><span class="han">地</span> <span id="lbl-map">แผนที่</span></h3>
+          <h3><span class="han">地</span> <span id="lbl-map" data-i18n="map">แผนที่</span></h3>
           <div class="pin-mode">
-            <button class="pin-btn act" data-mode="start" id="lbl-start-pin">📍 ปักจุดเริ่ม (หลังบ้าน)</button>
-            <button class="pin-btn" data-mode="end" id="lbl-end-pin">🎯 ปักจุดหมาย (หน้าบ้าน)</button>
+            <button class="pin-btn act" data-mode="start" id="lbl-start-pin" data-i18n="start_pin">📍 ปักจุดเริ่ม (หลังบ้าน)</button>
+            <button class="pin-btn" data-mode="end" id="lbl-end-pin" data-i18n="end_pin">🎯 ปักจุดหมาย (หน้าบ้าน)</button>
             <button class="pin-btn" id="btn-reset" style="flex:0;">🗑</button>
           </div>
           <div id="map" class="loading"></div>
-          <div style="margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);text-align:center;letter-spacing:.1em;">คลิกบนแผนที่เพื่อปักหมุด · เริ่ม=หลังบ้าน · จบ=หน้าบ้าน</div>
+          <div style="margin-top:8px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);text-align:center;letter-spacing:.1em;" data-i18n="map_help">คลิกบนแผนที่เพื่อปักหมุด · เริ่ม=หลังบ้าน · จบ=หน้าบ้าน</div>
         </div>
 
         <div class="card">
-          <h3><span class="han">磁</span> <span id="lbl-live">Live Compass (ทดลอง)</span></h3>
+          <h3><span class="han">磁</span> <span id="lbl-live" data-i18n="live">Live Compass (ทดลอง)</span></h3>
           <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
-            <button class="hk-btn" id="btn-live" style="font-size:11px;">🧭 เปิด Live Compass (DeviceOrientation)</button>
-            <div id="live-display" style="font-family:var(--mono);font-size:12px;color:var(--fg-soft);">รอเปิด...</div>
+            <button class="hk-btn" id="btn-live" data-i18n="live_btn" style="font-size:11px;">🧭 เปิด Live Compass (DeviceOrientation)</button>
+            <div id="live-display" data-i18n="live_wait" style="font-family:var(--mono);font-size:12px;color:var(--fg-soft);">รอเปิด...</div>
           </div>
-          <div style="margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);">⚠ Live compass ต้องใช้บน iPhone/Android เปิด HTTPS · ขอ permission</div>
+          <div style="margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);" data-i18n="live_help">⚠ Live compass ต้องใช้บน iPhone/Android เปิด HTTPS · ขอ permission</div>
         </div>
       </section>
 
       <aside>
         <div class="card">
-          <h3><span class="han">向</span> <span id="lbl-result">ผลการวัด</span></h3>
+          <h3><span class="han">向</span> <span id="lbl-result" data-i18n="result">ผลการวัด</span></h3>
           <div class="compass-display">
             <div class="big" id="d-angle">— °</div>
-            <div class="meta" id="d-meta">ทิศ — · 山 —</div>
+            <div class="meta" id="d-meta" data-i18n="dir_default">ทิศ — · 山 —</div>
           </div>
 
           <div class="field">
-            <label id="lbl-person">เลือกดวง (KUA)</label>
-            <select id="person-sel" class="input"><option value="">-- ไม่ผูกดวง --</option></select>
+            <label id="lbl-person" data-i18n="person">เลือกดวง (KUA)</label>
+            <select id="person-sel" class="input"><option value="" data-i18n="person_none">-- ไม่ผูกดวง --</option></select>
           </div>
 
           <div class="field">
-            <label id="lbl-layers">เลเยอร์</label>
+            <label id="lbl-layers" data-i18n="layers">เลเยอร์</label>
             <div class="layer-toggles">
               <label class="layer-toggle act"><input type="checkbox" data-l="twenty_four" checked/>24 山</label>
               <label class="layer-toggle act"><input type="checkbox" data-l="flying_stars" checked/>飛星</label>
@@ -176,7 +176,7 @@
             </div>
           </div>
 
-          <button class="hk-btn act" id="btn-analyze" style="width:100%;padding:10px;font-size:12px;">📊 วิเคราะห์</button>
+          <button class="hk-btn act" id="btn-analyze" data-i18n="analyze" style="width:100%;padding:10px;font-size:12px;">📊 วิเคราะห์</button>
         </div>
 
         <div id="analysis-result"></div>
@@ -184,21 +184,45 @@
     </div>
 
     <div class="cross-link">
-      <a href="/compass">📋 จัดการบ้าน</a>
-      <a href="/fengshui-pro">🏠 ฮวงจุ้ย Pro</a>
+      <a href="/compass" data-i18n="link_manage">📋 จัดการบ้าน</a>
+      <a href="/fengshui-pro" data-i18n="link_fengshui_pro">🏠 ฮวงจุ้ย Pro</a>
       <a href="/katakagae">🌸 方違</a>
-      <a href="/datepick">📅 วางฤกษ์</a>
+      <a href="/datepick" data-i18n="link_datepick">📅 วางฤกษ์</a>
     </div>
   </main>
 
 <script>
 const I18N = {
-  th: { title:'<b>Compass Studio</b> · วัดทิศ + 6 layer', map:'แผนที่', start_pin:'📍 ปักจุดเริ่ม (หลังบ้าน)', end_pin:'🎯 ปักจุดหมาย (หน้าบ้าน)',
-        live:'Live Compass (ทดลอง)', result:'ผลการวัด', person:'เลือกดวง (KUA)', layers:'เลเยอร์', analyze:'📊 วิเคราะห์' },
-  en: { title:'<b>Compass Studio</b> · Measure + 6 layers', map:'Map', start_pin:'📍 Start pin (back)', end_pin:'🎯 End pin (face)',
-        live:'Live Compass (beta)', result:'Result', person:'Select chart (KUA)', layers:'Layers', analyze:'📊 Analyze' },
-  zh: { title:'<b>羅盤 Studio</b> · 量向 + 六層', map:'地圖', start_pin:'📍 起點 (後)', end_pin:'🎯 終點 (前)',
-        live:'即時羅盤 (測試)', result:'結果', person:'選命 (KUA)', layers:'圖層', analyze:'📊 分析' },
+  th: { title:'<b>Compass Studio</b> · วัดทิศ + 6 layer', sub:'GEO COMPASS · ปัก 2 จุดบนแผนที่ · 24 山 + 飛星 + 八宅',
+        map:'แผนที่', start_pin:'📍 ปักจุดเริ่ม (หลังบ้าน)', end_pin:'🎯 ปักจุดหมาย (หน้าบ้าน)', map_help:'คลิกบนแผนที่เพื่อปักหมุด · เริ่ม=หลังบ้าน · จบ=หน้าบ้าน',
+        live:'Live Compass (ทดลอง)', live_btn:'🧭 เปิด Live Compass (DeviceOrientation)', live_wait:'รอเปิด...', live_help:'⚠ Live compass ต้องใช้บน iPhone/Android เปิด HTTPS · ขอ permission',
+        result:'ผลการวัด', dir_default:'ทิศ — · 山 —', person:'เลือกดวง (KUA)', person_none:'-- ไม่ผูกดวง --', layers:'เลเยอร์', analyze:'📊 วิเคราะห์',
+        link_manage:'📋 จัดการบ้าน', link_fengshui_pro:'🏠 ฮวงจุ้ย Pro', link_datepick:'📅 วางฤกษ์',
+        pin_both:'ปักทั้ง 2 จุด', dir_result_tpl:'ทิศ <b>{dir}</b> · 山 <span class="tc" style="font-family:var(--tc);color:var(--gold);">{mtn}</span>',
+        marker_back:'หลังบ้าน', marker_front:'หน้าบ้าน', maps_error:'⚠ โหลด Google Maps ไม่สำเร็จ', perm_denied:'ไม่อนุญาต',
+        need_pins:'ปักหมุด 2 จุดบนแผนที่ก่อน', need_person:'เลือกดวงจาก dropdown',
+        tier_excellent:'🌟 ดีเยี่ยม', tier_good:'✓ ดี', tier_neutral:'○ กลาง', tier_bad:'⚠ ระวัง',
+        warnings_label:'⚠ คำเตือน', best3_label:'3 ทิศที่ดีที่สุด' },
+  en: { title:'<b>Compass Studio</b> · Measure + 6 layers', sub:'GEO COMPASS · Pin 2 points on map · 24 Mountains + Flying Stars + Ba Zhai',
+        map:'Map', start_pin:'📍 Start pin (back)', end_pin:'🎯 End pin (face)', map_help:'Click on the map to place pins · Start = back of house · End = front of house',
+        live:'Live Compass (beta)', live_btn:'🧭 Enable Live Compass (DeviceOrientation)', live_wait:'Waiting...', live_help:'⚠ Live compass requires iPhone/Android over HTTPS · will request permission',
+        result:'Result', dir_default:'Direction — · Mountain —', person:'Select chart (KUA)', person_none:'-- No chart linked --', layers:'Layers', analyze:'📊 Analyze',
+        link_manage:'📋 Manage Houses', link_fengshui_pro:'🏠 Feng Shui Pro', link_datepick:'📅 Auspicious Dates',
+        pin_both:'Place both pins', dir_result_tpl:'Direction <b>{dir}</b> · Mountain <span class="tc" style="font-family:var(--tc);color:var(--gold);">{mtn}</span>',
+        marker_back:'Back of house', marker_front:'Front of house', maps_error:'⚠ Failed to load Google Maps', perm_denied:'Permission denied',
+        need_pins:'Place 2 pins on the map first', need_person:'Select a chart from the dropdown',
+        tier_excellent:'🌟 Excellent', tier_good:'✓ Good', tier_neutral:'○ Neutral', tier_bad:'⚠ Caution',
+        warnings_label:'⚠ Warnings', best3_label:'Top 3 Best Directions' },
+  zh: { title:'<b>羅盤 Studio</b> · 量向 + 六層', sub:'GEO COMPASS · 地圖上釘2點 · 24山 + 飛星 + 八宅',
+        map:'地圖', start_pin:'📍 起點 (後)', end_pin:'🎯 終點 (前)', map_help:'在地圖上點擊釘點 · 起點=房屋後方 · 終點=房屋前方',
+        live:'即時羅盤 (測試)', live_btn:'🧭 開啟即時羅盤 (DeviceOrientation)', live_wait:'等待開啟...', live_help:'⚠ 即時羅盤需在iPhone/Android的HTTPS環境使用 · 需要授權',
+        result:'結果', dir_default:'方位 — · 山 —', person:'選命 (KUA)', person_none:'-- 未綁定命盤 --', layers:'圖層', analyze:'📊 分析',
+        link_manage:'📋 管理房屋', link_fengshui_pro:'🏠 風水 Pro', link_datepick:'📅 擇日',
+        pin_both:'請釘選2個點', dir_result_tpl:'方位 <b>{dir}</b> · 山 <span class="tc" style="font-family:var(--tc);color:var(--gold);">{mtn}</span>',
+        marker_back:'房屋後方', marker_front:'房屋前方', maps_error:'⚠ Google Maps 載入失敗', perm_denied:'未授權',
+        need_pins:'請先在地圖上釘選2個點', need_person:'請從下拉選單選擇命盤',
+        tier_excellent:'🌟 極佳', tier_good:'✓ 好', tier_neutral:'○ 中等', tier_bad:'⚠ 注意',
+        warnings_label:'⚠ 警示', best3_label:'最佳3方位' },
 };
 let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
 let startPin = null, endPin = null, pinMode = 'start', startMarker = null, endMarker = null, polyline = null, map = null;
@@ -217,7 +241,13 @@ function applyLang(){
   document.getElementById('lbl-person').textContent = t.person;
   document.getElementById('lbl-layers').textContent = t.layers;
   document.getElementById('btn-analyze').textContent = t.analyze;
+  // กลไกกลาง: element ใหม่ที่แปะ data-i18n (select option/cross-link/ฯลฯ) — ไม่ต้อง list id ทีละตัว
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k = el.dataset.i18n; if (t[k]==null) return;
+    if (el.dataset.i18nHtml) el.innerHTML = t[k]; else el.textContent = t[k];
+  });
   ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
+  if (typeof updateResult === 'function') updateResult(); // สลับภาษาแล้ว re-render ผลที่คำนวณไว้ให้ตรงภาษาใหม่
 }
 
 function computeBearing(p1, p2){
@@ -238,16 +268,17 @@ const MOUNTAINS=['壬','子','癸','丑','艮','寅','甲','卯','乙','辰','�
 function bearingToMountain(deg){return MOUNTAINS[Math.floor(((deg+7.5)%360)/15)];}
 
 function updateResult(){
+  const t = I18N[LANG]||I18N.th;
   if (!startPin || !endPin) {
     document.getElementById('d-angle').textContent = '— °';
-    document.getElementById('d-meta').textContent = 'ปักทั้ง 2 จุด';
+    document.getElementById('d-meta').textContent = t.pin_both;
     return;
   }
   const bearing = computeBearing(startPin, endPin);
   const dir = bearingToDir(bearing);
   const mtn = bearingToMountain(bearing);
   document.getElementById('d-angle').textContent = bearing.toFixed(1) + '°';
-  document.getElementById('d-meta').innerHTML = `ทิศ <b>${dir}</b> · 山 <span class="tc" style="font-family:var(--tc);color:var(--gold);">${mtn}</span>`;
+  document.getElementById('d-meta').innerHTML = t.dir_result_tpl.replace('{dir}', dir).replace('{mtn}', mtn);
   if (polyline) polyline.setMap(null);
   if (map) {
     polyline = new google.maps.Polyline({ path:[startPin, endPin], geodesic:true, strokeColor:'#c8a44d', strokeOpacity:1, strokeWeight:3, map });
@@ -262,15 +293,16 @@ function initMap(){
   });
   document.getElementById('map').classList.remove('loading');
   map.addListener('click', (e) => {
+    const t = I18N[LANG]||I18N.th;
     const pos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
     if (pinMode === 'start') {
       if (startMarker) startMarker.setMap(null);
       startPin = pos;
-      startMarker = new google.maps.Marker({ position: pos, map, label:'A', title:'หลังบ้าน' });
+      startMarker = new google.maps.Marker({ position: pos, map, label:'A', title:t.marker_back });
     } else {
       if (endMarker) endMarker.setMap(null);
       endPin = pos;
-      endMarker = new google.maps.Marker({ position: pos, map, label:'B', title:'หน้าบ้าน' });
+      endMarker = new google.maps.Marker({ position: pos, map, label:'B', title:t.marker_front });
     }
     updateResult();
   });
@@ -281,7 +313,7 @@ window.initMap = initMap;
   if (window.google?.maps) { initMap(); return; }
   const s = document.createElement('script');
   s.src = '/api/maps-script?callback=initMap'; s.async = true; s.defer = true;
-  s.onerror = () => { document.getElementById('map').classList.remove('loading'); document.getElementById('map').innerHTML = '<div style="padding:30px;text-align:center;color:var(--bad)">⚠ โหลด Google Maps ไม่สำเร็จ</div>'; };
+  s.onerror = () => { document.getElementById('map').classList.remove('loading'); const t = I18N[LANG]||I18N.th; document.getElementById('map').innerHTML = '<div style="padding:30px;text-align:center;color:var(--bad)">'+t.maps_error+'</div>'; };
   document.head.appendChild(s);
 })();
 
@@ -302,7 +334,7 @@ document.getElementById('btn-reset').onclick = () => {
 let liveActive = false;
 async function startLive(){
   if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-    try { const p = await DeviceOrientationEvent.requestPermission(); if (p !== 'granted') return alert('ไม่อนุญาต'); } catch(_){}
+    try { const p = await DeviceOrientationEvent.requestPermission(); if (p !== 'granted') return alert((I18N[LANG]||I18N.th).perm_denied); } catch(_){}
   }
   window.addEventListener('deviceorientationabsolute', onOrient, true);
   window.addEventListener('deviceorientation', onOrient, true);
@@ -340,9 +372,10 @@ async function loadProfiles(){
 
 // Analyze
 async function analyze(){
-  if (!startPin || !endPin) { alert('ปักหมุด 2 จุดบนแผนที่ก่อน'); return; }
+  const t = I18N[LANG]||I18N.th;
+  if (!startPin || !endPin) { alert(t.need_pins); return; }
   const personId = document.getElementById('person-sel').value;
-  if (!personId) { alert('เลือกดวงจาก dropdown'); return; }
+  if (!personId) { alert(t.need_person); return; }
   const layers = Array.from(document.querySelectorAll('.layer-toggle input:checked')).map(c => c.dataset.l);
   const bearing = computeBearing(startPin, endPin);
   try {
@@ -354,9 +387,10 @@ async function analyze(){
   } catch(e){ alert(e.message); }
 }
 function renderAnalysis(d){
+  const t = I18N[LANG]||I18N.th;
   const cur = d.recommendation.current_sit;
   const tier = cur.tier;
-  const tierLbl = tier==='excellent'?'🌟 ดีเยี่ยม':tier==='good'?'✓ ดี':tier==='neutral'?'○ กลาง':'⚠ ระวัง';
+  const tierLbl = tier==='excellent'?t.tier_excellent:tier==='good'?t.tier_good:tier==='neutral'?t.tier_neutral:t.tier_bad;
   let html = `
     <div class="score-card tier-${tier}">
       <div class="num">${cur.score}<small>/100</small></div>
@@ -365,9 +399,9 @@ function renderAnalysis(d){
       <div class="tier" style="color:${tier==='excellent'?'#ffd700':tier==='good'?'var(--good)':tier==='neutral'?'var(--neutral)':'var(--bad)'}">${tierLbl}</div>
     </div>`;
   if (d.recommendation.warnings?.length) {
-    html += `<div class="warnings-card"><div class="lbl">⚠ คำเตือน</div>${d.recommendation.warnings.map(w=>'• '+w).join('<br/>')}</div>`;
+    html += `<div class="warnings-card"><div class="lbl">${t.warnings_label}</div>${d.recommendation.warnings.map(w=>'• '+w).join('<br/>')}</div>`;
   }
-  html += `<div class="card"><h3><span class="han">優</span> 3 ทิศที่ดีที่สุด</h3>
+  html += `<div class="card"><h3><span class="han">優</span> ${t.best3_label}</h3>
     <div class="top3-list">${d.recommendation.best_sit.map((s,i) => `
       <div class="top3-item"><div class="rank">${i===0?'🥇':i===1?'🥈':'🥉'}</div>
         <div class="dir">${s.direction}</div>

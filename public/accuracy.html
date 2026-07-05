@@ -99,130 +99,193 @@
 
   <header class="hero">
     <div class="crest">真</div>
-    <h1 id="page-title">ความ <b>แม่นยำ</b> · ตรงตำราซินแสจริง</h1>
+    <h1 id="page-title" data-i18n="title" data-i18n-html="1">ความ <b>แม่นยำ</b> · ตรงตำราซินแสจริง</h1>
     <div class="sub" id="page-sub">ACCURACY · 真精準</div>
-    <div class="desc" id="page-desc">hourkey ใช้ ตำราคลาสสิก + astronomy modern · ดวงคุณ = ดวงที่ซินแสจีนจริงคำนวน</div>
+    <div class="desc" id="page-desc" data-i18n="desc">hourkey ใช้ ตำราคลาสสิก + astronomy modern · ดวงคุณ = ดวงที่ซินแสจีนจริงคำนวน</div>
   </header>
 
   <main>
     <div class="card">
-      <h2><span class="han">時</span> <span id="lbl-tst">1. True Solar Time · เวลาตามดวงอาทิตย์จริง</span></h2>
-      <p id="lbl-tst-p">เวลาเกิดบนนาฬิกา ≠ เวลาสุริยจริง · เพราะนาฬิกาใช้ Zone Time (UTC+7) แต่ดวงอาทิตย์เคลื่อนตามวงโคจร · ของเราใช้ <b>tyme4ts</b> + correction 3 ระดับ:</p>
+      <h2><span class="han">時</span> <span id="lbl-tst" data-i18n="tst_h">1. True Solar Time · เวลาตามดวงอาทิตย์จริง</span></h2>
+      <p id="lbl-tst-p" data-i18n="tst_p" data-i18n-html="1">เวลาเกิดบนนาฬิกา ≠ เวลาสุริยจริง · เพราะนาฬิกาใช้ Zone Time (UTC+7) แต่ดวงอาทิตย์เคลื่อนตามวงโคจร · ของเราใช้ <b>tyme4ts</b> + correction 3 ระดับ:</p>
       <div class="feature-grid">
         <div class="feature">
           <div class="h">經度</div>
           <div class="t" id="f-lng-t">Longitude Correction</div>
-          <div class="d" id="f-lng-d">กรุงเทพฯ (100.5°) vs UTC+7 reference (105°) · ห่าง 4.5° = <b>-18 นาที</b> · ทุก 15° = 60 นาที</div>
+          <div class="d" id="f-lng-d" data-i18n="f_lng_d" data-i18n-html="1">กรุงเทพฯ (100.5°) vs UTC+7 reference (105°) · ห่าง 4.5° = <b>-18 นาที</b> · ทุก 15° = 60 นาที</div>
         </div>
         <div class="feature">
           <div class="h">均時</div>
           <div class="t" id="f-eot-t">Equation of Time</div>
-          <div class="d" id="f-eot-d">วงโคจร elliptical + แกนเอียง 23.5° · เปลี่ยน ±14 นาที ตามฤดู · max ที่ ก.พ./พ.ย.</div>
+          <div class="d" id="f-eot-d" data-i18n="f_eot_d">วงโคจร elliptical + แกนเอียง 23.5° · เปลี่ยน ±14 นาที ตามฤดู · max ที่ ก.พ./พ.ย.</div>
         </div>
         <div class="feature">
           <div class="h">真太陽</div>
           <div class="t" id="f-tst-t">TST Applied</div>
-          <div class="d" id="f-tst-d">รวม Longitude + EOT → ได้ <b>เวลาสุริยจริง</b> · บางทีต่างนาฬิกา ±32 นาที · ส่งผลถึง pillar เกิด</div>
+          <div class="d" id="f-tst-d" data-i18n="f_tst_d" data-i18n-html="1">รวม Longitude + EOT → ได้ <b>เวลาสุริยจริง</b> · บางทีต่างนาฬิกา ±32 นาที · ส่งผลถึง pillar เกิด</div>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <h2><span class="han">節</span> <span id="lbl-jq">2. 24 節氣 · เดือน BaZi เริ่มที่ jieqi</span></h2>
-      <p id="lbl-jq-p"><b>ตำราจริง:</b> เดือน BaZi เริ่มที่ <b>節 (Major Solar Term)</b> · ไม่ใช่วันที่ 1 ของเดือน · ปีจีนเริ่มที่ <b>立春</b> ไม่ใช่ตรุษจีน</p>
-      <div class="quote" id="quote-jq">"ผู้เกิด 3 ก.พ. 2024 ก่อน 立春 (4 ก.พ.) = ปี癸卯 (กระต่าย) · ผู้เกิด 5 ก.พ. = ปี甲辰 (มังกร) · ห่างกัน 2 วัน · ปีต่าง!"</div>
-      <h3 id="lbl-12jie">📋 12 節 ที่กำหนดเดือน BaZi (ตำราคลาสสิก)</h3>
+      <h2><span class="han">節</span> <span id="lbl-jq" data-i18n="jq_h">2. 24 節氣 · เดือน BaZi เริ่มที่ jieqi</span></h2>
+      <p id="lbl-jq-p" data-i18n="jq_p" data-i18n-html="1"><b>ตำราจริง:</b> เดือน BaZi เริ่มที่ <b>節 (Major Solar Term)</b> · ไม่ใช่วันที่ 1 ของเดือน · ปีจีนเริ่มที่ <b>立春</b> ไม่ใช่ตรุษจีน</p>
+      <div class="quote" id="quote-jq" data-i18n="quote_jq">"ผู้เกิด 3 ก.พ. 2024 ก่อน 立春 (4 ก.พ.) = ปี癸卯 (กระต่าย) · ผู้เกิด 5 ก.พ. = ปี甲辰 (มังกร) · ห่างกัน 2 วัน · ปีต่าง!"</div>
+      <h3 id="lbl-12jie" data-i18n="jq_12_h">📋 12 節 ที่กำหนดเดือน BaZi (ตำราคลาสสิก)</h3>
       <div class="feature-grid">
-        <div class="feature"><div class="h">立春→寅</div><div class="d">เริ่มฤดูใบไม้ผลิ · ก.พ. · เสือ</div></div>
-        <div class="feature"><div class="h">驚蟄→卯</div><div class="d">แมลงตื่น · มี.ค. · กระต่าย</div></div>
-        <div class="feature"><div class="h">清明→辰</div><div class="d">ใส · เม.ย. · มังกร</div></div>
-        <div class="feature"><div class="h">立夏→巳</div><div class="d">เริ่มฤดูร้อน · พ.ค. · งู</div></div>
-        <div class="feature"><div class="h">芒種→午</div><div class="d">มิ.ย. · ม้า</div></div>
-        <div class="feature"><div class="h">小暑→未</div><div class="d">ก.ค. · แพะ</div></div>
-        <div class="feature"><div class="h">立秋→申</div><div class="d">ส.ค. · ลิง</div></div>
-        <div class="feature"><div class="h">白露→酉</div><div class="d">ก.ย. · ไก่</div></div>
-        <div class="feature"><div class="h">寒露→戌</div><div class="d">ต.ค. · หมา</div></div>
-        <div class="feature"><div class="h">立冬→亥</div><div class="d">พ.ย. · หมู</div></div>
-        <div class="feature"><div class="h">大雪→子</div><div class="d">ธ.ค. · หนู</div></div>
-        <div class="feature"><div class="h">小寒→丑</div><div class="d">ม.ค. · วัว</div></div>
+        <div class="feature"><div class="h">立春→寅</div><div class="d" data-i18n="jq1">เริ่มฤดูใบไม้ผลิ · ก.พ. · เสือ</div></div>
+        <div class="feature"><div class="h">驚蟄→卯</div><div class="d" data-i18n="jq2">แมลงตื่น · มี.ค. · กระต่าย</div></div>
+        <div class="feature"><div class="h">清明→辰</div><div class="d" data-i18n="jq3">ใส · เม.ย. · มังกร</div></div>
+        <div class="feature"><div class="h">立夏→巳</div><div class="d" data-i18n="jq4">เริ่มฤดูร้อน · พ.ค. · งู</div></div>
+        <div class="feature"><div class="h">芒種→午</div><div class="d" data-i18n="jq5">มิ.ย. · ม้า</div></div>
+        <div class="feature"><div class="h">小暑→未</div><div class="d" data-i18n="jq6">ก.ค. · แพะ</div></div>
+        <div class="feature"><div class="h">立秋→申</div><div class="d" data-i18n="jq7">ส.ค. · ลิง</div></div>
+        <div class="feature"><div class="h">白露→酉</div><div class="d" data-i18n="jq8">ก.ย. · ไก่</div></div>
+        <div class="feature"><div class="h">寒露→戌</div><div class="d" data-i18n="jq9">ต.ค. · หมา</div></div>
+        <div class="feature"><div class="h">立冬→亥</div><div class="d" data-i18n="jq10">พ.ย. · หมู</div></div>
+        <div class="feature"><div class="h">大雪→子</div><div class="d" data-i18n="jq11">ธ.ค. · หนู</div></div>
+        <div class="feature"><div class="h">小寒→丑</div><div class="d" data-i18n="jq12">ม.ค. · วัว</div></div>
       </div>
     </div>
 
     <div class="card">
-      <h2><span class="han">驗</span> <span id="lbl-golden">3. Golden Reference Test · เทียบกับ Voytek/Joey Yap</span></h2>
-      <p id="lbl-golden-p">ทดสอบทุกครั้งที่แก้ engine · ผ่าน 100%</p>
+      <h2><span class="han">驗</span> <span id="lbl-golden" data-i18n="golden_h">3. Golden Reference Test · เทียบกับ Voytek/Joey Yap</span></h2>
+      <p id="lbl-golden-p" data-i18n="golden_p">ทดสอบทุกครั้งที่แก้ engine · ผ่าน 100%</p>
       <div class="golden-test">
         <b>Test 1 · Reference A · private fixture</b><br/>
         Voytek: 庚午 · 己亥 · 丙子 · 甲子<br/>
-        hourkey: 庚午 · 己亥 · 丙子 · 甲子 <span class="pass">✓ ตรง 100%</span><br/><br/>
+        hourkey: 庚午 · 己亥 · 丙子 · 甲子 <span class="pass" data-i18n="pass_100">✓ ตรง 100%</span><br/><br/>
         <b>Test 2 · Mai · 1986-04-12 16:42 Bangkok</b><br/>
         Voytek: 丙申 · 丙戌 · 壬辰 · 丙寅<br/>
-        hourkey: 丙申 · 丙戌 · 壬辰 · 丙寅 <span class="pass">✓ ตรง 100%</span>
+        hourkey: 丙申 · 丙戌 · 壬辰 · 丙寅 <span class="pass" data-i18n="pass_100">✓ ตรง 100%</span>
       </div>
     </div>
 
     <div class="card">
-      <h2><span class="han">比</span> <span id="lbl-compare">4. เทียบกับ apps อื่น</span></h2>
+      <h2><span class="han">比</span> <span id="lbl-compare" data-i18n="compare_h">4. เทียบกับ apps อื่น</span></h2>
       <table class="comparison">
         <thead>
           <tr>
             <th>Feature</th>
             <th>hourkey</th>
-            <th>App ทั่วไป</th>
-            <th>ตำรา/ซินแส</th>
+            <th data-i18n="th_app_generic">App ทั่วไป</th>
+            <th data-i18n="th_textbook">ตำรา/ซินแส</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td>เดือน BaZi เริ่มที่ <b>節</b></td><td class="ok">✓</td><td class="bad">✗ (ใช้วันที่ 1)</td><td class="ok">✓</td></tr>
-          <tr><td>ปีจีน = <b>立春</b></td><td class="ok">✓</td><td class="bad">✗ (ตรุษจีน)</td><td class="ok">✓</td></tr>
+          <tr><td data-i18n="row_month_start" data-i18n-html="1">เดือน BaZi เริ่มที่ <b>節</b></td><td class="ok">✓</td><td class="bad" data-i18n="bad_day1">✗ (ใช้วันที่ 1)</td><td class="ok">✓</td></tr>
+          <tr><td data-i18n="row_year_eq" data-i18n-html="1">ปีจีน = <b>立春</b></td><td class="ok">✓</td><td class="bad" data-i18n="bad_lunarny">✗ (ตรุษจีน)</td><td class="ok">✓</td></tr>
           <tr><td>True Solar Time</td><td class="ok">✓</td><td class="bad">✗ (clock time)</td><td class="ok">✓</td></tr>
           <tr><td>Longitude correction</td><td class="ok">✓</td><td class="bad">✗</td><td class="ok">✓</td></tr>
           <tr><td>Equation of Time</td><td class="ok">✓</td><td class="bad">✗</td><td class="ok">✓</td></tr>
-          <tr><td>24 節氣 precision นาที</td><td class="ok">✓ (紫金山)</td><td>±ชั่วโมง</td><td class="ok">✓</td></tr>
-          <tr class="yellow-row"><td><b>ตรงตำราคลาสสิก</b></td><td class="ok"><b>100%</b></td><td>~70%</td><td class="ok">100%</td></tr>
+          <tr><td data-i18n="row_precision">24 節氣 precision นาที</td><td class="ok">✓ (紫金山)</td><td data-i18n="approx_hour">±ชั่วโมง</td><td class="ok">✓</td></tr>
+          <tr class="yellow-row"><td data-i18n="row_match_classic" data-i18n-html="1"><b>ตรงตำราคลาสสิก</b></td><td class="ok"><b>100%</b></td><td>~70%</td><td class="ok">100%</td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="card">
-      <h2><span class="han">源</span> <span id="lbl-source">5. แหล่งข้อมูล</span></h2>
+      <h2><span class="han">源</span> <span id="lbl-source" data-i18n="source_h">5. แหล่งข้อมูล</span></h2>
       <div class="feature-grid">
         <div class="feature">
           <div class="h">tyme4ts</div>
           <div class="t">Astronomy engine</div>
-          <div class="d">JS library คำนวน jieqi precision นาที · ตามสูตร 紫金山天文臺 (Purple Mountain Observatory)</div>
+          <div class="d" data-i18n="src1_d">JS library คำนวน jieqi precision นาที · ตามสูตร 紫金山天文臺 (Purple Mountain Observatory)</div>
         </div>
         <div class="feature">
           <div class="h">河圖洛書</div>
-          <div class="t">ตำรา 4000 ปี</div>
-          <div class="d">5 elements + 9 stars + 64 卦 · ฐานทฤษฎีทั้งหมด</div>
+          <div class="t" data-i18n="src2_t">ตำรา 4000 ปี</div>
+          <div class="d" data-i18n="src2_d">5 elements + 9 stars + 64 卦 · ฐานทฤษฎีทั้งหมด</div>
         </div>
         <div class="feature">
           <div class="h">UNESCO</div>
           <div class="t">24 節氣 (2016)</div>
-          <div class="d">ขึ้นทะเบียน UNESCO Intangible Cultural Heritage · ยอมรับสากล</div>
+          <div class="d" data-i18n="src3_d">ขึ้นทะเบียน UNESCO Intangible Cultural Heritage · ยอมรับสากล</div>
         </div>
         <div class="feature">
           <div class="h">阿公阿嬤</div>
-          <div class="t">ตำราอากงอาม่า v3</div>
-          <div class="d">384 爻辭 + 24 節氣 precise (2020-2035) + 64 卦 deep · ตรวจซินแสจริง</div>
+          <div class="t" data-i18n="src4_t">ตำราอากงอาม่า v3</div>
+          <div class="d" data-i18n="src4_d">384 爻辭 + 24 節氣 precise (2020-2035) + 64 卦 deep · ตรวจซินแสจริง</div>
         </div>
       </div>
     </div>
 
     <div class="cross-link">
-      <a href="/chart">📜 ดูดวงของคุณ</a>
+      <a href="/chart" data-i18n="link_chart">📜 ดูดวงของคุณ</a>
       <a href="/solar-terms">📅 24 節氣</a>
-      <a href="/datepick">🌸 วางฤกษ์</a>
-      <a href="/">🏠 หน้าหลัก</a>
+      <a href="/datepick" data-i18n="link_datepick">🌸 วางฤกษ์</a>
+      <a href="/" data-i18n="link_home">🏠 หน้าหลัก</a>
     </div>
   </main>
 
 <script>
 const I18N = {
-  th: { title:'ความ <b>แม่นยำ</b> · ตรงตำราซินแสจริง', desc:'hourkey ใช้ตำราคลาสสิก + astronomy modern · ดวงคุณ = ดวงที่ซินแสจีนจริงคำนวน' },
-  en: { title:'<b>Accuracy</b> · Matches Real Sifus', desc:'hourkey uses classical texts + modern astronomy · your chart = what real sifus calculate' },
-  zh: { title:'<b>真精準</b> · 對應命理師', desc:'hourkey 結合古法經典 + 現代天文 · 您的命盤 = 真命理師所算' },
+  th: { title:'ความ <b>แม่นยำ</b> · ตรงตำราซินแสจริง', desc:'hourkey ใช้ตำราคลาสสิก + astronomy modern · ดวงคุณ = ดวงที่ซินแสจีนจริงคำนวน',
+        tst_h:'1. True Solar Time · เวลาตามดวงอาทิตย์จริง',
+        tst_p:'เวลาเกิดบนนาฬิกา ≠ เวลาสุริยจริง · เพราะนาฬิกาใช้ Zone Time (UTC+7) แต่ดวงอาทิตย์เคลื่อนตามวงโคจร · ของเราใช้ <b>tyme4ts</b> + correction 3 ระดับ:',
+        f_lng_d:'กรุงเทพฯ (100.5°) vs UTC+7 reference (105°) · ห่าง 4.5° = <b>-18 นาที</b> · ทุก 15° = 60 นาที',
+        f_eot_d:'วงโคจร elliptical + แกนเอียง 23.5° · เปลี่ยน ±14 นาที ตามฤดู · max ที่ ก.พ./พ.ย.',
+        f_tst_d:'รวม Longitude + EOT → ได้ <b>เวลาสุริยจริง</b> · บางทีต่างนาฬิกา ±32 นาที · ส่งผลถึง pillar เกิด',
+        jq_h:'2. 24 節氣 · เดือน BaZi เริ่มที่ jieqi',
+        jq_p:'<b>ตำราจริง:</b> เดือน BaZi เริ่มที่ <b>節 (Major Solar Term)</b> · ไม่ใช่วันที่ 1 ของเดือน · ปีจีนเริ่มที่ <b>立春</b> ไม่ใช่ตรุษจีน',
+        quote_jq:'"ผู้เกิด 3 ก.พ. 2024 ก่อน 立春 (4 ก.พ.) = ปี癸卯 (กระต่าย) · ผู้เกิด 5 ก.พ. = ปี甲辰 (มังกร) · ห่างกัน 2 วัน · ปีต่าง!"',
+        jq_12_h:'📋 12 節 ที่กำหนดเดือน BaZi (ตำราคลาสสิก)',
+        jq1:'เริ่มฤดูใบไม้ผลิ · ก.พ. · เสือ', jq2:'แมลงตื่น · มี.ค. · กระต่าย', jq3:'ใส · เม.ย. · มังกร', jq4:'เริ่มฤดูร้อน · พ.ค. · งู',
+        jq5:'มิ.ย. · ม้า', jq6:'ก.ค. · แพะ', jq7:'ส.ค. · ลิง', jq8:'ก.ย. · ไก่', jq9:'ต.ค. · หมา', jq10:'พ.ย. · หมู', jq11:'ธ.ค. · หนู', jq12:'ม.ค. · วัว',
+        golden_h:'3. Golden Reference Test · เทียบกับ Voytek/Joey Yap', golden_p:'ทดสอบทุกครั้งที่แก้ engine · ผ่าน 100%', pass_100:'✓ ตรง 100%',
+        compare_h:'4. เทียบกับ apps อื่น', th_app_generic:'App ทั่วไป', th_textbook:'ตำรา/ซินแส',
+        row_month_start:'เดือน BaZi เริ่มที่ <b>節</b>', bad_day1:'✗ (ใช้วันที่ 1)', row_year_eq:'ปีจีน = <b>立春</b>', bad_lunarny:'✗ (ตรุษจีน)',
+        row_precision:'24 節氣 precision นาที', approx_hour:'±ชั่วโมง', row_match_classic:'<b>ตรงตำราคลาสสิก</b>',
+        source_h:'5. แหล่งข้อมูล',
+        src1_d:'JS library คำนวน jieqi precision นาที · ตามสูตร 紫金山天文臺 (Purple Mountain Observatory)',
+        src2_t:'ตำรา 4000 ปี', src2_d:'5 elements + 9 stars + 64 卦 · ฐานทฤษฎีทั้งหมด',
+        src3_d:'ขึ้นทะเบียน UNESCO Intangible Cultural Heritage · ยอมรับสากล',
+        src4_t:'ตำราอากงอาม่า v3', src4_d:'384 爻辭 + 24 節氣 precise (2020-2035) + 64 卦 deep · ตรวจซินแสจริง',
+        link_chart:'📜 ดูดวงของคุณ', link_datepick:'🌸 วางฤกษ์', link_home:'🏠 หน้าหลัก' },
+  en: { title:'<b>Accuracy</b> · Matches Real Sifus', desc:'hourkey uses classical texts + modern astronomy · your chart = what real sifus calculate',
+        tst_h:'1. True Solar Time · Real Sun-based Time',
+        tst_p:'Clock birth time ≠ true solar time · because clocks use Zone Time (UTC+7) while the sun moves along its orbit · we use <b>tyme4ts</b> + 3-level correction:',
+        f_lng_d:'Bangkok (100.5°) vs UTC+7 reference (105°) · 4.5° gap = <b>-18 minutes</b> · every 15° = 60 minutes',
+        f_eot_d:'Elliptical orbit + 23.5° axial tilt · varies ±14 minutes by season · max around Feb/Nov',
+        f_tst_d:'Combine Longitude + EOT → get <b>true solar time</b> · sometimes ±32 minutes from clock time · affects the birth pillar',
+        jq_h:'2. 24 Solar Terms · BaZi month starts at jieqi',
+        jq_p:'<b>Classical texts:</b> the BaZi month starts at the <b>節 (Major Solar Term)</b> · not the 1st of the calendar month · the Chinese year starts at <b>立春 (Start of Spring)</b>, not Lunar New Year',
+        quote_jq:'"Born Feb 3, 2024 before 立春 (Feb 4) = year 癸卯 (Rabbit) · born Feb 5 = year 甲辰 (Dragon) · just 2 days apart · different year!"',
+        jq_12_h:'📋 The 12 節 that define the BaZi month (classical texts)',
+        jq1:'Start of Spring · Feb · Tiger', jq2:'Insects Awaken · Mar · Rabbit', jq3:'Clear and Bright · Apr · Dragon', jq4:'Start of Summer · May · Snake',
+        jq5:'Jun · Horse', jq6:'Jul · Goat', jq7:'Aug · Monkey', jq8:'Sep · Rooster', jq9:'Oct · Dog', jq10:'Nov · Pig', jq11:'Dec · Rat', jq12:'Jan · Ox',
+        golden_h:'3. Golden Reference Test · Compared with Voytek/Joey Yap', golden_p:'Tested every time the engine changes · 100% pass', pass_100:'✓ 100% match',
+        compare_h:'4. Compared with other apps', th_app_generic:'Typical apps', th_textbook:'Classical texts / Sifu',
+        row_month_start:'BaZi month starts at <b>節</b>', bad_day1:'✗ (uses the 1st)', row_year_eq:'Chinese year = <b>立春</b>', bad_lunarny:'✗ (Lunar New Year)',
+        row_precision:'24 Solar Terms · minute precision', approx_hour:'±hour', row_match_classic:'<b>Matches classical texts</b>',
+        source_h:'5. Sources',
+        src1_d:'JS library computing jieqi to minute precision · based on 紫金山天文臺 (Purple Mountain Observatory) formulas',
+        src2_t:'4,000-year-old text', src2_d:'5 elements + 9 stars + 64 卦 · foundation of the whole theory',
+        src3_d:'Listed as UNESCO Intangible Cultural Heritage · internationally recognized',
+        src4_t:'"Grandparents\' Almanac" v3', src4_d:'384 爻辭 + precise 24 Solar Terms (2020-2035) + deep 64 卦 · verified against real sifus',
+        link_chart:'📜 View your chart', link_datepick:'🌸 Auspicious Dates', link_home:'🏠 Home' },
+  zh: { title:'<b>真精準</b> · 對應命理師', desc:'hourkey 結合古法經典 + 現代天文 · 您的命盤 = 真命理師所算',
+        tst_h:'1. True Solar Time · 真太陽時',
+        tst_p:'出生時鐘時間 ≠ 真太陽時 · 因為時鐘採用區時(UTC+7)而太陽依軌道運行 · 我們採用 <b>tyme4ts</b> + 三級修正:',
+        f_lng_d:'曼谷 (100.5°) vs UTC+7基準 (105°) · 差4.5° = <b>-18分鐘</b> · 每15° = 60分鐘',
+        f_eot_d:'橢圓軌道 + 23.5°地軸傾角 · 隨季節變化 ±14分鐘 · 2月/11月達最大值',
+        f_tst_d:'結合經度修正 + 均時差 → 得出<b>真太陽時</b> · 有時與時鐘相差±32分鐘 · 影響出生柱',
+        jq_h:'2. 24節氣 · 八字月柱起於節氣',
+        jq_p:'<b>古法正解:</b> 八字月柱起於<b>節(節氣)</b> · 並非月初1日 · 年柱起於<b>立春</b>而非農曆新年',
+        quote_jq:'"2024年2月3日出生於立春(2月4日)之前 = 癸卯年(兔) · 2月5日出生 = 甲辰年(龍) · 僅差2天 · 年柱不同!"',
+        jq_12_h:'📋 決定八字月柱的12節(古法經典)',
+        jq1:'立春 · 2月 · 虎', jq2:'驚蟄 · 3月 · 兔', jq3:'清明 · 4月 · 龍', jq4:'立夏 · 5月 · 蛇',
+        jq5:'6月 · 馬', jq6:'7月 · 羊', jq7:'8月 · 猴', jq8:'9月 · 雞', jq9:'10月 · 狗', jq10:'11月 · 豬', jq11:'12月 · 鼠', jq12:'1月 · 牛',
+        golden_h:'3. Golden Reference Test · 與Voytek/Joey Yap比對', golden_p:'每次修改引擎皆重新測試 · 100%通過', pass_100:'✓ 100%相符',
+        compare_h:'4. 與其他App比較', th_app_generic:'一般App', th_textbook:'古籍/命理師',
+        row_month_start:'八字月柱起於<b>節</b>', bad_day1:'✗ (採用月初1日)', row_year_eq:'年柱 = <b>立春</b>', bad_lunarny:'✗ (農曆新年)',
+        row_precision:'24節氣 · 精確到分鐘', approx_hour:'±小時', row_match_classic:'<b>符合古籍</b>',
+        source_h:'5. 資料來源',
+        src1_d:'JS函式庫精確到分鐘計算節氣 · 依據紫金山天文臺公式',
+        src2_t:'四千年古籍', src2_d:'五行 + 九星 + 64卦 · 全部理論的根基',
+        src3_d:'列入UNESCO非物質文化遺產 · 獲國際認可',
+        src4_t:'阿公阿嬤古籍 v3', src4_d:'384爻辭 + 精確24節氣(2020-2035) + 64卦深度解析 · 經真命理師驗證',
+        link_chart:'📜 查看您的命盤', link_datepick:'🌸 擇日', link_home:'🏠 首頁' },
 };
 let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);localStorage.setItem('hk-theme',t);}
@@ -232,6 +295,10 @@ function applyLang(){
   document.title = '真 ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
   document.getElementById('page-title').innerHTML = t.title;
   document.getElementById('page-desc').textContent = t.desc;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k = el.dataset.i18n; if (t[k]==null) return;
+    if (el.dataset.i18nHtml) el.innerHTML = t[k]; else el.textContent = t[k];
+  });
   ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
 }
 ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); applyLang(); });

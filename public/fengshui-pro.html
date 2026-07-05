@@ -115,31 +115,31 @@
 
   <header class="hero">
     <div class="crest">九宮</div>
-    <h1 id="page-title"><b>ฮวงจุ้ย</b> Pro · 9 พาลา</h1>
-    <div class="sub" id="page-sub">XUAN KONG · 沈氏玄空 · ทีม 100%</div>
+    <h1 id="page-title" data-i18n="title" data-i18n-html="1"><b>ฮวงจุ้ย</b> Pro · 9 พาลา</h1>
+    <div class="sub" id="page-sub" data-i18n="sub">XUAN KONG · 沈氏玄空 · ทีม 100%</div>
   </header>
 
   <main>
     <div class="ctrl-bar">
       <div class="field">
-        <label id="lbl-house">บ้าน</label>
-        <select id="house-sel"><option value="">-- ไม่ผูกบ้าน --</option></select>
+        <label id="lbl-house" data-i18n="house">บ้าน</label>
+        <select id="house-sel"><option value="" data-i18n="house_none">-- ไม่ผูกบ้าน --</option></select>
       </div>
       <div class="field">
-        <label id="lbl-dt">เวลา</label>
+        <label id="lbl-dt" data-i18n="dt">เวลา</label>
         <input id="dt" type="datetime-local"/>
       </div>
-      <button class="hk-btn" id="btn-now" style="font-size:10px;">⏰ ตอนนี้</button>
-      <button class="hk-btn act" id="btn-refresh">🔄 รีเฟรช</button>
+      <button class="hk-btn" id="btn-now" data-i18n="btn_now" style="font-size:10px;">⏰ ตอนนี้</button>
+      <button class="hk-btn act" id="btn-refresh" data-i18n="btn_refresh">🔄 รีเฟรช</button>
     </div>
 
     <div class="mode-tabs" id="mode-tabs">
-      <div class="mode-tab act" data-mode="flying_stars"><span class="tc">飛星</span><span class="lbl-flying">ดาวเหิน</span></div>
-      <div class="mode-tab" data-mode="twenty_four"><span class="tc">24山</span><span class="lbl-24">24 ทิศ</span></div>
-      <div class="mode-tab" data-mode="ai_xing"><span class="tc">挨星</span><span class="lbl-aixing">挨星 Yang Gong</span></div>
-      <div class="mode-tab" data-mode="qi_men"><span class="tc">奇門</span><span class="lbl-qm">奇門</span></div>
-      <div class="mode-tab" data-mode="ba_zhai"><span class="tc">八宅</span><span class="lbl-ba">八宅 ต่อคน</span></div>
-      <div class="mode-tab" data-mode="sixty_four"><span class="tc">64卦</span><span class="lbl-64">64卦</span></div>
+      <div class="mode-tab act" data-mode="flying_stars"><span class="tc">飛星</span><span class="lbl-flying" data-i18n="flying">ดาวเหิน</span></div>
+      <div class="mode-tab" data-mode="twenty_four"><span class="tc">24山</span><span class="lbl-24" data-i18n="m24">24 ทิศ</span></div>
+      <div class="mode-tab" data-mode="ai_xing"><span class="tc">挨星</span><span class="lbl-aixing" data-i18n="aixing">挨星 Yang Gong</span></div>
+      <div class="mode-tab" data-mode="qi_men"><span class="tc">奇門</span><span class="lbl-qm" data-i18n="qm">奇門</span></div>
+      <div class="mode-tab" data-mode="ba_zhai"><span class="tc">八宅</span><span class="lbl-ba" data-i18n="ba">八宅 ต่อคน</span></div>
+      <div class="mode-tab" data-mode="sixty_four"><span class="tc">64卦</span><span class="lbl-64" data-i18n="m64">64卦</span></div>
     </div>
 
     <div id="layer-info" class="layer-info"></div>
@@ -148,25 +148,65 @@
     <div id="warnings"></div>
 
     <div class="cross-link">
-      <a href="/compass">🧭 เข็มทิศ</a>
-      <a href="/fengshui">📚 ฮวงจุ้ย Classic</a>
-      <a href="/datepick">📅 วางฤกษ์</a>
+      <a href="/compass" data-i18n="link_compass">🧭 เข็มทิศ</a>
+      <a href="/fengshui" data-i18n="link_fengshui_classic">📚 ฮวงจุ้ย Classic</a>
+      <a href="/datepick" data-i18n="link_datepick">📅 วางฤกษ์</a>
       <a href="/katakagae">🌸 方違</a>
     </div>
   </main>
 
 <script>
 const I18N = {
-  th: { title:'<b>ฮวงจุ้ย</b> Pro · 9 พาลา', house:'บ้าน', dt:'เวลา', flying:'ดาวเหิน',
-        m24:'24 ทิศ', aixing:'挨星 Yang Gong', qm:'奇門', ba:'八宅 ต่อคน', m64:'64卦' },
-  en: { title:'<b>Feng Shui</b> Pro · 9 Palaces', house:'House', dt:'Time', flying:'Flying Stars',
-        m24:'24 Mountains', aixing:'Ai Xing', qm:'Qi Men', ba:'Ba Zhai · per person', m64:'64 Hex' },
-  zh: { title:'<b>風水 Pro</b> · 九宮', house:'房屋', dt:'時間', flying:'飛星',
-        m24:'24山', aixing:'挨星', qm:'奇門', ba:'八宅·因人', m64:'64卦' },
+  th: { title:'<b>ฮวงจุ้ย</b> Pro · 9 พาลา', sub:'XUAN KONG · 沈氏玄空 · ทีม 100%', house:'บ้าน', house_none:'-- ไม่ผูกบ้าน --', dt:'เวลา', flying:'ดาวเหิน',
+        m24:'24 ทิศ', aixing:'挨星 Yang Gong', qm:'奇門', ba:'八宅 ต่อคน', m64:'64卦',
+        btn_now:'⏰ ตอนนี้', btn_refresh:'🔄 รีเฟรช',
+        link_compass:'🧭 เข็มทิศ', link_fengshui_classic:'📚 ฮวงจุ้ย Classic', link_datepick:'📅 วางฤกษ์',
+        flying_info_tpl:'<b>飛星 ยุค {period}</b> (2024-2043) · <b>ดาวประจำปี {year} = {center}</b> อยู่กลาง · ดาวรอบทิศ',
+        m24_info_tpl:'<b>24 山</b> · ทิศหน้าบ้าน: <b>{facing}</b> · ทิศหลัง: <b>{sitting}</b> · มุม: {angle}°',
+        m24_facing_tag:'➡ หน้า', m24_sitting_tag:'⬅ หลัง',
+        need_house_angle:'⚠ ต้องเลือกบ้าน (ที่มี face_angle) ก่อน', select_house_above:'เลือกบ้านจาก dropdown ด้านบน',
+        aixing_info_tpl:'<b>挨星 Yang Gong</b> · ดาวภูเขา (山星): <b>{mtn}</b> · ดาวน้ำ (向星): <b>{water}</b> · ดาวยุค: <b>{period}</b><br/><small>{note}</small>',
+        qm_fallback_note:'จาก ephemeris cache',
+        need_house_family:'⚠ ต้องเลือกบ้าน + เพิ่มสมาชิกครอบครัว (พร้อม kua) ก่อน', add_people_at_compass:'เพิ่มคนใน /compass',
+        bazhai_info_tpl:'<b>八宅</b> · ทิศมงคลของแต่ละคน ({count} คน)',
+        need_house_only:'⚠ ต้องเลือกบ้านก่อน',
+        hex64_info_tpl:'<b>64 卦</b> · ทิศหน้าบ้าน = 卦 <b>{hex}</b> (จาก 64) · ดูตำราเต็มที่ /datepick',
+        warnings_count_tpl:'⚠ คำเตือน ({count})' },
+  en: { title:'<b>Feng Shui</b> Pro · 9 Palaces', sub:'XUAN KONG · Shen-style Xuan Kong · 100% in-house', house:'House', house_none:'-- No house linked --', dt:'Time', flying:'Flying Stars',
+        m24:'24 Mountains', aixing:'Ai Xing', qm:'Qi Men', ba:'Ba Zhai · per person', m64:'64 Hex',
+        btn_now:'⏰ Now', btn_refresh:'🔄 Refresh',
+        link_compass:'🧭 Compass', link_fengshui_classic:'📚 Feng Shui Classic', link_datepick:'📅 Auspicious Dates',
+        flying_info_tpl:'<b>Flying Stars · Period {period}</b> (2024-2043) · <b>Annual star {year} = {center}</b> at center · stars around the palaces',
+        m24_info_tpl:'<b>24 Mountains</b> · Facing: <b>{facing}</b> · Sitting: <b>{sitting}</b> · Angle: {angle}°',
+        m24_facing_tag:'➡ Facing', m24_sitting_tag:'⬅ Sitting',
+        need_house_angle:'⚠ Select a house (with face_angle) first', select_house_above:'Select a house from the dropdown above',
+        aixing_info_tpl:'<b>Ai Xing · Yang Gong</b> · Mountain star (山星): <b>{mtn}</b> · Water star (向星): <b>{water}</b> · Period star: <b>{period}</b><br/><small>{note}</small>',
+        qm_fallback_note:'from ephemeris cache',
+        need_house_family:'⚠ Select a house + add family members (with kua) first', add_people_at_compass:'Add people at /compass',
+        bazhai_info_tpl:'<b>Ba Zhai</b> · Auspicious directions per person ({count} people)',
+        need_house_only:'⚠ Select a house first',
+        hex64_info_tpl:'<b>64 Hexagrams</b> · Facing direction = Hex <b>{hex}</b> (of 64) · full reference at /datepick',
+        warnings_count_tpl:'⚠ Warnings ({count})' },
+  zh: { title:'<b>風水 Pro</b> · 九宮', sub:'XUAN KONG · 沈氏玄空 · 團隊自製100%', house:'房屋', house_none:'-- 未綁定房屋 --', dt:'時間', flying:'飛星',
+        m24:'24山', aixing:'挨星', qm:'奇門', ba:'八宅·因人', m64:'64卦',
+        btn_now:'⏰ 現在', btn_refresh:'🔄 重新整理',
+        link_compass:'🧭 羅盤', link_fengshui_classic:'📚 風水經典', link_datepick:'📅 擇日',
+        flying_info_tpl:'<b>飛星 {period}運</b> (2024-2043) · <b>年星 {year} = {center}</b> 入中 · 各宮飛星',
+        m24_info_tpl:'<b>24山</b> · 向: <b>{facing}</b> · 坐: <b>{sitting}</b> · 角度: {angle}°',
+        m24_facing_tag:'➡ 向', m24_sitting_tag:'⬅ 坐',
+        need_house_angle:'⚠ 請先選擇有face_angle的房屋', select_house_above:'請從上方下拉選單選擇房屋',
+        aixing_info_tpl:'<b>挨星 楊公</b> · 山星: <b>{mtn}</b> · 向星: <b>{water}</b> · 運星: <b>{period}</b><br/><small>{note}</small>',
+        qm_fallback_note:'來自星曆快取',
+        need_house_family:'⚠ 請先選擇房屋並新增家庭成員(含kua)', add_people_at_compass:'請至 /compass 新增成員',
+        bazhai_info_tpl:'<b>八宅</b> · 各人吉方位 ({count}人)',
+        need_house_only:'⚠ 請先選擇房屋',
+        hex64_info_tpl:'<b>64卦</b> · 房屋朝向 = 卦 <b>{hex}</b> (共64) · 完整資料見 /datepick',
+        warnings_count_tpl:'⚠ 警示 ({count})' },
 };
 let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
 let curMode = 'flying_stars';
 let curHouseId = null;
+let curSnapshot = null; // เก็บ snapshot ล่าสุดไว้ re-render ตอนสลับภาษา (ไม่แตะ engine/คำนวณ)
 
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);localStorage.setItem('hk-theme',t);}
 function applyLang(){
@@ -182,7 +222,13 @@ function applyLang(){
   document.querySelector('.lbl-qm').textContent = t.qm;
   document.querySelector('.lbl-ba').textContent = t.ba;
   document.querySelector('.lbl-64').textContent = t.m64;
+  // กลไกกลาง: element ใหม่ที่แปะ data-i18n (cross-link/option/ฯลฯ) — ไม่ต้อง list id ทีละตัว
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k = el.dataset.i18n; if (t[k]==null) return;
+    if (el.dataset.i18nHtml) el.innerHTML = t[k]; else el.textContent = t[k];
+  });
   ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
+  if (typeof renderMode === 'function' && curSnapshot) renderMode(curSnapshot); // สลับภาษาแล้ว re-render เนื้อหาที่คำนวณไว้
 }
 
 // init dt
@@ -220,11 +266,13 @@ async function loadSnapshot(){
     const r = await fetch('/api/fengshui-snapshot?'+params);
     const d = await r.json();
     if (d.error) { document.getElementById('palace-grid').innerHTML = '<div style="color:var(--bad);padding:20px;text-align:center;">⚠ '+d.error+'</div>'; return; }
+    curSnapshot = d;
     renderMode(d);
   } catch(e){ console.error(e); }
 }
 
 function renderMode(d){
+  const tr = I18N[LANG]||I18N.th;
   const m = curMode;
   const info = document.getElementById('layer-info');
   const grid = document.getElementById('palace-grid');
@@ -233,7 +281,7 @@ function renderMode(d){
 
   if (m === 'flying_stars') {
     const fs = d.layers.flying_stars;
-    info.innerHTML = `<b>飛星 ยุค ${fs.period}</b> (2024-2043) · <b>ดาวประจำปี ${d.datetime.year_pillar||''} = ${fs.annual_center}</b> อยู่กลาง · ดาวรอบทิศ`;
+    info.innerHTML = tr.flying_info_tpl.replace('{period}', fs.period).replace('{year}', d.datetime.year_pillar||'').replace('{center}', fs.annual_center);
     grid.innerHTML = '';
     grid.style.aspectRatio = '1/1';
     grid.style.maxWidth = '520px';
@@ -252,7 +300,7 @@ function renderMode(d){
     });
   } else if (m === 'twenty_four') {
     const t24 = d.layers.twenty_four;
-    info.innerHTML = `<b>24 山</b> · ทิศหน้าบ้าน: <b>${t24.facing||'-'}</b> · ทิศหลัง: <b>${t24.sitting||'-'}</b> · มุม: ${t24.face_angle||'-'}°`;
+    info.innerHTML = tr.m24_info_tpl.replace('{facing}', t24.facing||'-').replace('{sitting}', t24.sitting||'-').replace('{angle}', t24.face_angle||'-');
     grid.innerHTML = '';
     grid.style.aspectRatio = 'unset';
     grid.style.maxWidth = '700px';
@@ -262,7 +310,7 @@ function renderMode(d){
       const cls = isF ? 'good' : isS ? 'warning' : 'neutral';
       grid.innerHTML += `<div class="palace ${cls}" style="aspect-ratio:1/1.2;padding:8px;">
         <div class="star" style="font-size:24px">${m}</div>
-        <div class="info">${isF?'➡ หน้า':isS?'⬅ หลัง':''}</div>
+        <div class="info">${isF?tr.m24_facing_tag:isS?tr.m24_sitting_tag:''}</div>
       </div>`;
     });
   } else if (m === 'ai_xing') {
@@ -270,14 +318,14 @@ function renderMode(d){
     grid.innerHTML = '';
     grid.style.aspectRatio = 'unset';
     if (!ax) {
-      info.innerHTML = '⚠ ต้องเลือกบ้าน (ที่มี face_angle) ก่อน';
-      grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-soft)">เลือกบ้านจาก dropdown ด้านบน</div>';
+      info.innerHTML = tr.need_house_angle;
+      grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-soft)">'+tr.select_house_above+'</div>';
     } else {
-      info.innerHTML = `<b>挨星 Yang Gong</b> · ดาวภูเขา (山星): <b>${ax.mountain_star}</b> · ดาวน้ำ (向星): <b>${ax.water_star}</b> · ดาวยุค: <b>${ax.period_star}</b><br/><small>${ax.note}</small>`;
+      info.innerHTML = tr.aixing_info_tpl.replace('{mtn}', ax.mountain_star).replace('{water}', ax.water_star).replace('{period}', ax.period_star).replace('{note}', ax.note);
     }
   } else if (m === 'qi_men') {
     const qm = d.layers.qi_men;
-    info.innerHTML = `<b>奇門</b> · ${qm.note || 'จาก ephemeris cache'}`;
+    info.innerHTML = `<b>奇門</b> · ${qm.note || tr.qm_fallback_note}`;
     grid.innerHTML = '';
     grid.style.aspectRatio = '1/1';
     grid.style.gridTemplateColumns = 'repeat(3,1fr)';
@@ -297,10 +345,10 @@ function renderMode(d){
     grid.innerHTML = '';
     grid.style.aspectRatio = 'unset';
     if (!bz?.length) {
-      info.innerHTML = '⚠ ต้องเลือกบ้าน + เพิ่มสมาชิกครอบครัว (พร้อม kua) ก่อน';
-      grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-soft)">เพิ่มคนใน /compass</div>';
+      info.innerHTML = tr.need_house_family;
+      grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--fg-soft)">'+tr.add_people_at_compass+'</div>';
     } else {
-      info.innerHTML = `<b>八宅</b> · ทิศมงคลของแต่ละคน (${bz.length} คน)`;
+      info.innerHTML = tr.bazhai_info_tpl.replace('{count}', bz.length);
       // 29 มิ.ย. · security (audit): escape ชื่อสมาชิก (user input) กัน stored XSS · แสดงผลล้วน ไม่แตะการคำนวณ
       const escH = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       grid.innerHTML = bz.map(p => `
@@ -317,9 +365,9 @@ function renderMode(d){
     grid.innerHTML = '';
     grid.style.aspectRatio = 'unset';
     if (!h) {
-      info.innerHTML = '⚠ ต้องเลือกบ้านก่อน';
+      info.innerHTML = tr.need_house_only;
     } else {
-      info.innerHTML = `<b>64 卦</b> · ทิศหน้าบ้าน = 卦 <b>${h.facing_hex}</b> (จาก 64) · ดูตำราเต็มที่ /datepick`;
+      info.innerHTML = tr.hex64_info_tpl.replace('{hex}', h.facing_hex);
     }
   }
 
@@ -336,7 +384,7 @@ function renderMode(d){
 
   // warnings
   const w = d.warnings || [];
-  warns.innerHTML = w.length ? `<div class="warnings-box"><h3>⚠ คำเตือน (${w.length})</h3>${w.map(x=>`<div class="warn-item ${x.severity}">${x.text}</div>`).join('')}</div>` : '';
+  warns.innerHTML = w.length ? `<div class="warnings-box"><h3>${tr.warnings_count_tpl.replace('{count}', w.length)}</h3>${w.map(x=>`<div class="warn-item ${x.severity}">${x.text}</div>`).join('')}</div>` : '';
 }
 
 document.querySelectorAll('.mode-tab').forEach(t => t.onclick = () => {
