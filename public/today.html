@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hourkey · วันนี้ · today</title>
+<title data-i18n="t.page.title">hourkey · วันนี้ · today</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
@@ -1251,7 +1251,7 @@
           <path class="to-water" d="M28,252 Q58,247 88,252 Q118,247 148,252 Q168,249 172,252" stroke-width="1.5" opacity=".5"/>
         </g>
       </svg>
-      <div class="dm-spirit-label" id="t-verdict-spirit-label"><span class="tc">青龍</span>มังกรเขียว</div>
+      <div class="dm-spirit-label" id="t-verdict-spirit-label"><span class="tc">青龍</span><span data-i18n="t.h.spirit.good">มังกรเขียว</span></div>
 
       <div class="lab" data-i18n="t.h.lab">คะแนนวันนี้ · 日運</div>
       <!-- 17 พ.ค. · แยก 2 metric: Personal (ดวงคุณ) + Universal (Tongshu) · z-index:10 กันมังกรบัง -->
@@ -1265,8 +1265,8 @@
           <span id="t-tongshu-officer">—日</span>
         </div>
         <div style="margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.05em;">
-          <span style="color:var(--gold);">●</span> ดวงคุณ ·
-          <span style="color:#5ba0ff;">●</span> สากล
+          <span style="color:var(--gold);">●</span> <span data-i18n="t.h.legend.personal">ดวงคุณ ·</span>
+          <span style="color:#5ba0ff;">●</span> <span data-i18n="t.h.legend.universal">สากล</span>
         </div>
       </div>
       <h2 data-i18n="t.h.h2" id="t-verdict-h2">วันที่ <b data-i18n="auto.t.502">ทรัพย์ไหลมา</b><br/>เหมาะ <b data-i18n="auto.t.503">เจรจา · ปิดดีล · เริ่มเรื่องเงิน</b></h2>
@@ -1275,14 +1275,14 @@
           <div class="hk-g-seg avoid" data-i18n="t.h.lvl.avoid"><span data-i18n="auto.t.504">ห้าม</span></div>
           <div class="hk-g-seg caution" data-i18n="t.h.lvl.caution"><span data-i18n="auto.t.505">ระวัง</span></div>
           <div class="hk-g-seg ok" data-i18n="t.h.lvl.ok"><span data-i18n="auto.t.506">ปานกลาง</span></div>
-          <div class="hk-g-seg good" data-i18n="t.h.lvl.good"><span>ดี</span></div>
+          <div class="hk-g-seg good" data-i18n="t.h.lvl.good"><span data-i18n="t.h.lvl.good">ดี</span></div>
           <div class="hk-g-seg best" data-i18n="t.h.lvl.best"><span data-i18n="auto.t.507">ดีมาก</span></div>
           <div class="hk-g-needle" id="t-verdict-needle" style="left:65%"></div>
         </div>
-        <div class="hk-g-foot" id="t-verdict-foot" data-i18n="t.h.foot">วันนี้อยู่ช่วง <b>ดี</b> · ใกล้แตะ ดีมาก</div>
+        <div class="hk-g-foot" id="t-verdict-foot" data-i18n="t.h.foot">วันนี้อยู่ช่วง <b data-i18n="t.h.lvl.good.plain">ดี</b> · ใกล้แตะ ดีมาก</div>
         <!-- 18 พ.ค. · #2 · userSummary banner · ดวงคุณ 1 บรรทัด -->
         <div id="t-user-summary" style="display:none;margin-top:14px;padding:12px 14px;background:linear-gradient(135deg,rgba(200,164,77,.10),rgba(200,164,77,.04));border:1px solid rgba(200,164,77,.25);border-radius:10px;font-family:var(--thai);font-size:13px;line-height:1.7;color:var(--fg);position:relative;z-index:2;">
-          <div style="font-family:var(--thai);font-size:11px;letter-spacing:.02em;color:var(--gold);margin-bottom:5px;font-weight:700;">📿 ดวงคุณ</div>
+          <div style="font-family:var(--thai);font-size:11px;letter-spacing:.02em;color:var(--gold);margin-bottom:5px;font-weight:700;" data-i18n="t.h.us.title">📿 ดวงคุณ</div>
           <div id="t-us-line"></div>
         </div>
       </div>
@@ -1296,9 +1296,9 @@
       </div>
       <div class="gz-name" id="t-day-name"><span style="opacity:.5">— · —</span><br/><span  style="font-size:13px;color:var(--fg-soft);font-family:var(--mono);letter-spacing:.18em;opacity:.5" data-i18n="auto.t.508">กำลังคำนวณ…</span></div>
       <div class="daily-practical" id="t-pillar-practical" data-level="ok">
-        <div class="pr-row"><b>โฟกัส</b><span>รอคะแนนดวงวันนี้จาก packet ซินแส</span></div>
-        <div class="pr-row"><b>ควรทำ</b><span>เลือกงานตามคะแนนรวมของวัน</span></div>
-        <div class="pr-row"><b>ควรเลี่ยง</b><span>เลี่ยงเรื่องใหญ่ถ้าคะแนนวันต่ำ</span></div>
+        <div class="pr-row"><b data-i18n="t.pr.focus">โฟกัส</b><span data-i18n="t.pr.focus.wait">รอคะแนนดวงวันนี้จาก packet ซินแส</span></div>
+        <div class="pr-row"><b data-i18n="t.pr.do">ควรทำ</b><span data-i18n="t.pr.do.wait">เลือกงานตามคะแนนรวมของวัน</span></div>
+        <div class="pr-row"><b data-i18n="t.pr.avoid">ควรเลี่ยง</b><span data-i18n="t.pr.avoid.wait">เลี่ยงเรื่องใหญ่ถ้าคะแนนวันต่ำ</span></div>
       </div>
       <div class="relations" id="t-relations">
         <div class="rel good" data-rel="dm" id="t-rel-dm">
@@ -1332,10 +1332,10 @@
           <p data-i18n="t.de.sub">คะแนนพลังทิศคำนวณจากฉีเหมินและดาวจรจื่อไป๋เท่านั้น ไม่รวมดวงคน</p>
         </div>
         <div class="de-control">
-          <div class="de-updated" id="t-de-updated">คำนวณล่าสุด <b>—</b></div>
+          <div class="de-updated" id="t-de-updated"><span data-i18n="t.de.updated">คำนวณล่าสุด</span> <b>—</b></div>
           <div class="de-school" aria-label="เลือกวิธีผูกฤกษ์">
-            <button type="button" class="on" data-dir-school="chaibu"><b>拆補 Chaibu</b><span>สถานการณ์เฉพาะหน้า</span></button>
-            <button type="button" data-dir-school="zhirun"><b>置閏 Zhirun</b><span>เหตุการณ์ใหญ่ / รอบใหญ่</span></button>
+            <button type="button" class="on" data-dir-school="chaibu"><b>拆補 Chaibu</b><span data-i18n="t.de.school.chaibu">สถานการณ์เฉพาะหน้า</span></button>
+            <button type="button" data-dir-school="zhirun"><b>置閏 Zhirun</b><span data-i18n="t.de.school.zhirun">เหตุการณ์ใหญ่ / รอบใหญ่</span></button>
           </div>
         </div>
       </div>
@@ -1369,8 +1369,8 @@
         <div class="verdict-mini">—</div>
       </div>
       <div class="daily-practical compact" id="t-hours-guide" data-level="ok">
-        <div class="pr-row"><b>ใช้ยังไง</b><span>เลือกชั่วโมงดีตามคะแนนรวมของวัน</span></div>
-        <div class="pr-row"><b>กติกา</b><span>ถ้าวันระวัง ใช้ชั่วโมงดีเฉพาะงานเบาและงานที่แก้ได้</span></div>
+        <div class="pr-row"><b data-i18n="t.hg.how">ใช้ยังไง</b><span data-i18n="t.hg.how.v">เลือกชั่วโมงดีตามคะแนนรวมของวัน</span></div>
+        <div class="pr-row"><b data-i18n="t.hg.rule">กติกา</b><span data-i18n="t.hg.rule.v">ถ้าวันระวัง ใช้ชั่วโมงดีเฉพาะงานเบาและงานที่แก้ได้</span></div>
       </div>
 
       <div class="grid12" id="t-hours-grid">
@@ -1389,7 +1389,7 @@
       </div>
 
       <!-- 18 พ.ค. · #1 · กดที่กิ่งใดๆ ให้แสดงเหตุผลที่นี่ -->
-      <div id="t-hours-reason">💡 กดที่ช่วงเวลาใด ๆ ด้านบนเพื่อดูเหตุผล</div>
+      <div id="t-hours-reason" data-i18n="t.hg.reason.hint">💡 กดที่ช่วงเวลาใด ๆ ด้านบนเพื่อดูเหตุผล</div>
 
       <div class="legend">
         <span><i class="g"></i><span data-i18n="t.s3.lg.g">ดี · เจรจา · ปิดดีล</span></span>
@@ -1411,8 +1411,8 @@
     </div>
 
     <div class="daily-practical wide" id="t-actions-guard" data-level="ok">
-      <div class="pr-row"><b>โหมดวันนี้</b><span>รอคะแนนรวมของวันก่อนจัดคำแนะนำ</span></div>
-      <div class="pr-row"><b>กติกา</b><span>การ์ดนี้จะไม่ดันสัญญาณแรง ถ้าคะแนนวันเป็นระวัง/ห้าม</span></div>
+      <div class="pr-row"><b data-i18n="t.ag.mode">โหมดวันนี้</b><span data-i18n="t.ag.mode.wait">รอคะแนนรวมของวันก่อนจัดคำแนะนำ</span></div>
+      <div class="pr-row"><b data-i18n="t.ag.rule">กติกา</b><span data-i18n="t.ag.rule.v">การ์ดนี้จะไม่ดันสัญญาณแรง ถ้าคะแนนวันเป็นระวัง/ห้าม</span></div>
     </div>
     <div class="actions-grid" id="t-actions-grid">
       <article class="act-card wealth">
@@ -1466,7 +1466,7 @@
     <div class="sec-head">
       <div class="l">
         <span class="num">基礎</span>
-        <h2><span class="tc">基礎八字</span>ปาจื้อพื้นฐาน · Basic BaZi</h2>
+        <h2 data-i18n="t.bb.h2"><span class="tc">基礎八字</span>ปาจื้อพื้นฐาน · Basic BaZi</h2>
         <span  class="sub" data-i18n="auto.t.529">ข้อมูลซินแสตรวจสอบ · TH / EN / ZH</span>
       </div>
     </div>
@@ -1508,7 +1508,7 @@
         <h4 data-i18n="t.bb.today.h">今日 · Today vs Natal · วันนี้ปะทะ/รวมกับดวงคุณ</h4>
         <div class="bb-today">
           <div class="today-pill" id="bb-today-pill">—</div>
-          <div class="today-vs" id="bb-today-vs">กำลังโหลด ...</div>
+          <div class="today-vs" id="bb-today-vs" data-i18n="auto.t.539">กำลังโหลด ...</div>
         </div>
         <div  class="lab" data-i18n="auto.t.540">เทียบกับ 日支 ของคุณ</div>
         <!-- ซ่อน 1 มิ.ย.: ลิงก์ดูดวงเต็ม (เจ้านายสั่งเอาออก · ใช้ display:none กัน rollback ง่าย) -->
@@ -1699,15 +1699,15 @@
         <h4 data-i18n="t.ex.ts.h"><span class="tc">黃曆</span>Tongshu · ทำได้ / ห้ามทำ</h4>
         <div class="tongshu-list">
           <div class="ts-grp yi">
-            <div class="ty" id="t-ex-yi-title">宜 ทำได้</div>
+            <div class="ty" id="t-ex-yi-title" data-i18n="t.ex.yi.title">宜 ทำได้</div>
             <ul id="t-ex-yi">
-              <li style="opacity:.7">กำลังโหลดจากปฏิทินจริง…</li>
+              <li style="opacity:.7" data-i18n="t.ex.loading">กำลังโหลดจากปฏิทินจริง…</li>
             </ul>
           </div>
           <div class="ts-grp ji">
-            <div class="ty" id="t-ex-ji-title">忌 ห้ามทำ</div>
+            <div class="ty" id="t-ex-ji-title" data-i18n="t.ex.ji.title">忌 ห้ามทำ</div>
             <ul id="t-ex-ji">
-              <li style="opacity:.7">กำลังโหลดจากปฏิทินจริง…</li>
+              <li style="opacity:.7" data-i18n="t.ex.loading">กำลังโหลดจากปฏิทินจริง…</li>
             </ul>
           </div>
         </div>
@@ -1716,24 +1716,24 @@
       <div class="extra-card">
         <h4 data-i18n="t.ex.dir.h"><span class="tc">八方</span>8 ทิศมงคลวันนี้</h4>
         <div class="compass" id="t-compass">
-          <div class="dot good" style="left:50%;top:8%">ทิศเหนือ<span class="tc">北</span></div>
-          <div class="dot" style="left:84%;top:18%">ทิศตะวันออกเฉียงเหนือ<span class="tc">東北</span></div>
-          <div class="dot good" style="left:92%;top:50%">ทิศตะวันออก<span class="tc">東</span></div>
-          <div class="dot" style="left:84%;top:82%">ทิศตะวันออกเฉียงใต้<span class="tc">東南</span></div>
-          <div class="dot bad" style="left:50%;top:92%">ทิศใต้<span class="tc">南</span></div>
-          <div class="dot" style="left:16%;top:82%">ทิศตะวันตกเฉียงใต้<span class="tc">西南</span></div>
-          <div class="dot good" style="left:8%;top:50%">ทิศตะวันตก<span class="tc">西</span></div>
-          <div class="dot bad" style="left:16%;top:18%">ทิศตะวันตกเฉียงเหนือ<span class="tc">西北</span></div>
+          <div class="dot good" style="left:50%;top:8%" data-i18n="t.dir.n">ทิศเหนือ<span class="tc">北</span></div>
+          <div class="dot" style="left:84%;top:18%" data-i18n="t.dir.ne">ทิศตะวันออกเฉียงเหนือ<span class="tc">東北</span></div>
+          <div class="dot good" style="left:92%;top:50%" data-i18n="t.dir.e">ทิศตะวันออก<span class="tc">東</span></div>
+          <div class="dot" style="left:84%;top:82%" data-i18n="t.dir.se">ทิศตะวันออกเฉียงใต้<span class="tc">東南</span></div>
+          <div class="dot bad" style="left:50%;top:92%" data-i18n="t.dir.s">ทิศใต้<span class="tc">南</span></div>
+          <div class="dot" style="left:16%;top:82%" data-i18n="t.dir.sw">ทิศตะวันตกเฉียงใต้<span class="tc">西南</span></div>
+          <div class="dot good" style="left:8%;top:50%" data-i18n="t.dir.w">ทิศตะวันตก<span class="tc">西</span></div>
+          <div class="dot bad" style="left:16%;top:18%" data-i18n="t.dir.nw">ทิศตะวันตกเฉียงเหนือ<span class="tc">西北</span></div>
           <div class="center">辛巳</div>
         </div>
 	        <div id="t-dir-summary" style="display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--fg-soft);justify-content:center;">
-	          <span style="color:var(--fg-soft)">กำลังโหลดทิศจริง…</span>
+	          <span style="color:var(--fg-soft)" data-i18n="t.dir.loading">กำลังโหลดทิศจริง…</span>
 	        </div>
 	        <div class="dir-panels" id="t-dir-layers">
-	          <div class="dir-panel"><div class="dh"><span><span class="tc">奇日</span> Qimen day</span></div><div class="dir-line">กำลังโหลด…</div></div>
-	          <div class="dir-panel"><div class="dh"><span><span class="tc">奇時</span> Qimen hour</span></div><div class="dir-line">กำลังโหลด…</div></div>
-	          <div class="dir-panel"><div class="dh"><span><span class="tc">飛日</span> Flying day</span></div><div class="dir-line">กำลังโหลด…</div></div>
-	          <div class="dir-panel"><div class="dh"><span><span class="tc">飛時</span> Flying hour</span></div><div class="dir-line">กำลังโหลด…</div></div>
+	          <div class="dir-panel"><div class="dh"><span><span class="tc">奇日</span> Qimen day</span></div><div class="dir-line" data-i18n="t.dir.loading2">กำลังโหลด…</div></div>
+	          <div class="dir-panel"><div class="dh"><span><span class="tc">奇時</span> Qimen hour</span></div><div class="dir-line" data-i18n="t.dir.loading2">กำลังโหลด…</div></div>
+	          <div class="dir-panel"><div class="dh"><span><span class="tc">飛日</span> Flying day</span></div><div class="dir-line" data-i18n="t.dir.loading2">กำลังโหลด…</div></div>
+	          <div class="dir-panel"><div class="dh"><span><span class="tc">飛時</span> Flying hour</span></div><div class="dir-line" data-i18n="t.dir.loading2">กำลังโหลด…</div></div>
 	        </div>
 	      </div>
 	    </div>
@@ -1865,6 +1865,10 @@
 <script>
 /* hourkey · today · 3-language i18n (TH/EN/ZH) */
 window.HK_I18N = {
+  'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'},
+  'sc.sum': { th:'📜 วิธีคิดคะแนน · ตำราคลาสสิก ๕ ชั้น ๑๐ ปรับ', en:'📜 How Scoring Works · Classical Text · 5 Layers, 10 Rules', zh:'📜 計分原理 · 古籍五層十則' },
+  'sc.body': { th:'<p class="intro">ในการประเมินคู่ดวงสองคน · ตำราจีนคลาสสิก (子平真詮 · 滴天髓 · 三命通會) สอนให้ดู <b data-i18n="auto.t.552">5 มิติซ้อนกัน</b> พร้อมกฎละเอียดอีก <b data-i18n="auto.t.553">10 ข้อ</b> ที่ครูใหญ่ใช้ปรับให้แม่นจริง</p> <h4><span class="tc">一</span>ก้านสวรรค์ปะทะกัน · 天干</h4> <p>ดูที่ <b data-i18n="auto.t.554">ก้านวัน</b> ของทั้งสองคน · ว่า "เข้ากันได้" (<span class="tc">天合</span>) เช่น 甲己合化土 หรือ "ปะทะกัน" (<span class="tc">天剋</span>) เช่น 甲庚 · ก้านที่ผูกพันด้วย <b>合</b> บ่งบอกถึง <b data-i18n="auto.t.555">พันธมิตรลึก ๆ</b> ที่ไม่ต้องอธิบายมาก · ส่วน <b>天剋</b> คือ ศัตรูทางใจ คนที่ "ไม่ถูกใจกัน" ตั้งแต่แรกเจอ</p> <h4><span class="tc">二</span>กิ่งดินกระทบกัน · 地支</h4> <p>ดูกิ่งของทั้งสองเทียบกัน · ตำราจีนระบุ <b data-i18n="auto.t.556">6 รูปแบบหลัก</b>:</p> <ul> <li><b>六合</b> (子丑 · 寅亥 · 卯戌 · 辰酉 · 巳申 · 午未) — คู่ผูกพันเช่น สามีภรรยา · ทำงานด้วยกันได้นาน</li> <li><b>六沖</b> — ปะทะตรง ๆ · มีอะไรต้องสะสาง</li> <li><b>六害</b> — ทำร้ายแบบลึก ๆ ไม่สังเกตทันที</li> <li><b>六破</b> — บั่นทอน · ทำให้แผนพัง</li> <li><b>刑</b> (寅巳申 · 丑戌未 · 子卯 · 自刑) — ลงโทษ · มีบาดเจ็บทางใจ</li> </ul> <h4><span class="tc">三</span>สามประสาน · 三合 · และ สามสมาคม · 三會</h4> <p>ถ้ากิ่งของทั้งสองรวมกันเกิด <b>三會</b> (寅卯辰=ไม้ · 巳午未=ไฟ · 申酉戌=ทอง · 亥子丑=น้ำ) ถือเป็น <b data-i18n="auto.t.557">พลังฤดูธรรมชาติของ ๔ ทิศ</b> แรงกว่า 三合 · ส่วน <b>三合</b> (申子辰=น้ำ · 寅午戌=ไฟ · 巳酉丑=ทอง · 亥卯未=ไม้) คือ พลังหลอม ๔ ทิศเชื่อมต่อ · ถ้าครบ ๓ ตัว = พลังเต็ม · ครบ ๒ ตัว เรียก <b>半合 / 半三會</b> พลังครึ่ง</p> <h4><span class="tc">四</span>วัฏจักรห้าธาตุ · 五行生克</h4> <p data-i18n="auto.t.558">ก้านวันทั้งคู่เป็นธาตุอะไร · มีสัมพันธ์แบบใด:</p> <ul> <li><b>比</b> ธาตุเดียวกัน — เพื่อนพ้อง</li> <li><b>生</b> เราเลี้ยงเขา (ใช้พลัง)</li> <li><b>被生</b> เขาเลี้ยงเรา (รับพลัง · ดีกว่า)</li> <li><b>克</b> เราครอบงำเขา</li> <li><b>被克</b> ถูกครอบงำ (ต้องระวัง)</li> </ul> <h4><span class="tc">五</span>หัวใจตำรา · 用神 และ 忌神 <a class="hk-method-link" href="/methodology" target="_blank" rel="noopener" data-th="📿 วิธีคิด 13 ขั้น →" data-en="📿 Methodology (13 steps) →" data-zh="📿 方法論·十三步 →" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px;font-weight:normal;color:var(--gold,#c8a44d);text-decoration:none;border:1px solid rgba(200,164,77,.3);padding:3px 10px;border-radius:99px;background:rgba(200,164,77,.08);vertical-align:middle;">📿 วิธีคิด 13 ขั้น →</a></h4> <p>ดวงทุกดวงมี <b>用神</b> (ธาตุที่ "เกื้อกูล" — ต้องการ) และ <b>忌神</b> (ธาตุที่ "ทำร้าย" — เลี่ยง) · ถ้าคู่สนทนามีก้านวันตรงกับ <b data-i18n="auto.t.559">用神อันดับ ๑ ของเรา</b> · นั่นคือ <b data-i18n="auto.t.560">"คนที่ฟ้าส่งมา"</b> ผู้สำคัญในชีวิต · ส่วนคนที่วันเกิดหลักเป็น <b>忌神</b> ต้องระวัง · ไม่ใช่เขาเลว แต่ "ธาตุของเขา" ไม่ตรงกับสิ่งที่ดวงเราต้องการ</p> <div  class="rules-title" data-i18n="auto.t.561">📜 กฎละเอียด ๑๐ ข้อ ของครูตำรา</div> <ol> <li><b data-i18n="auto.t.562">三會 แรงกว่า 三合</b> · ลำดับชั้นพลังฤดูทั้ง ๔ ทิศ ใช้ก่อนเสมอ</li> <li><b data-i18n="auto.t.563">半三會 ก็มีพลัง</b> · แม้แค่ ๒ ใน ๓ ก็เกิดพลังครึ่ง</li> <li><b data-i18n="auto.t.564">合化ใช้ทาง</b> · ถ้า 合 หลอมแล้วกลายเป็น <b>用神</b> → คงพลังเต็ม</li> <li><b data-i18n="auto.t.565">合化เฉย</b> · ถ้า 合 หลอมแต่ธาตุไม่ใช่ใช้/ไม่ใช่ไม่ใช้ → ตัดครึ่ง</li> <li><b data-i18n="auto.t.566">合化ผิดทาง</b> · ถ้า 合 หลอมไปเป็น <b>忌神</b> → กลายเป็นโทษ ไม่ใช่บุญ</li> <li><b data-i18n="auto.t.567">沖ทำลายผิดทาง = บุญ</b> · ถ้า 沖 ไปทำลาย <b>忌神</b> · "ทุกข์เป็นทางพ้นทุกข์" · พลิกเป็นดี · แต่ระวังกระเทือนชั่วคราว</li> <li><b>貪合忘剋</b> · ถ้า <b>天合</b> เกิดอยู่ ห้ามนับ 克 ซ้ำ · เพราะ 合 ทำให้ 克 หยุดทำงาน</li> <li><b data-i18n="auto.t.568">忌神แรง ลงโทษหนัก</b> · ถ้า 忌神 อยู่กิ่งเดือน + วันเกิดหลักอ่อน → โทษทวีคูณ</li> <li><b data-i18n="auto.t.569">ย่งเสินยังไม่ชัด ต้องระวัง</b> · ถ้าดวงเรา strength ไม่แน่ใจ · ห้ามให้คะแนนเสริมเต็มก่อน · จำกัดไว้</li> <li><b data-i18n="auto.t.570">ดวงพิเศษใช้ตำราพิเศษ</b> · ถ้าดวง 從財格 / 從強格 / 從旺格 · ใช้ <b data-i18n="auto.t.571">"ย่งเสินเฉพาะดวง"</b> แทนย่งเสินทั่วไป</li> </ol> <div  class="rules-title" data-i18n="auto.t.572">🔬 ส่วนเพิ่มของระบบ · ตำราเชิงลึก</div> <ul> <li><b data-i18n="auto.t.573">เทียบครบ ๔ เสา</b> · ไม่ใช่แค่ <b data-i18n="auto.t.574">ก้านวัน</b> ของทั้งสอง · ระบบยังเทียบ <b data-i18n="auto.t.575">ก้านปี · ก้านเดือน · ก้านยาม</b> ของทั้งสองคนด้วย (น้ำหนักลดลงเพราะไม่ใช่หลัก) · เพื่อให้เห็นปฏิกิริยา <b data-i18n="auto.t.576">หลายชั้น</b> ที่ตำราคลาสสิกระบุไว้</li> <li><b data-i18n="auto.t.577">กิ่งข้ามเสา</b> · 六合 · 六沖 · 六害 · 六破 ระหว่าง <b data-i18n="auto.t.578">กิ่งปี-กิ่งปี · กิ่งเดือน-กิ่งเดือน · กิ่งยาม-กิ่งยาม</b> ของทั้งคู่ · เพื่อค้นหา <b data-i18n="auto.t.579">"จุดเชื่อม"</b> หรือ <b data-i18n="auto.t.580">"จุดสะดุด"</b> ที่ไม่เห็นในวันต่อวันอย่างเดียว</li> <li><b data-i18n="auto.t.581">คะแนนสองทิศ · A → B / B → A</b> · ตำราจีนชี้ว่าความสัมพันธ์ไม่จำเป็นต้องสมมาตร · บางครั้ง <b data-i18n="auto.t.582">เราหนุนเขา</b> แต่ <b data-i18n="auto.t.583">เขาดูดพลังเรา</b></li> <li><b data-i18n="auto.t.584">แนะนำตามเจตนา · ๗๐% ไม่ฟันธง</b> · ระบบให้ <b data-i18n="auto.t.585">คำแนะนำ ๓ มุม</b> (งาน · รัก · เพื่อน) พร้อม <b>ความมั่นใจ %</b> · ไม่บอกว่า "ดี/เลว" ตายตัว · <b data-i18n="auto.t.586">๗๐% ของผลขึ้นกับการตัดสินใจของคุณ</b></li> </ul>', en:'<p class="intro">When evaluating a pair of charts, the classical Chinese texts (子平真詮 · 滴天髓 · 三命通會) teach us to examine <b data-i18n="auto.t.552">5 dimensions layered</b> plus another <b data-i18n="auto.t.553">10 rules</b> the old masters used to fine-tune accuracy.</p> <h4><span class="tc">一</span>Heavenly Stems Clash · 天干</h4> <p>Look at the <b data-i18n="auto.t.554">Day stem</b> of both people — whether they "combine" (<span class="tc">天合</span>) e.g. 甲己合化土, or "clash" (<span class="tc">天剋</span>) e.g. 甲庚 · stems bound by <b>合</b> point to <b data-i18n="auto.t.555">deep allies</b> that need no explanation · while <b>天剋</b> marks a mental rival — someone who does not click from the very first meeting.</p> <h4><span class="tc">二</span>Earthly Branches Clash · 地支</h4> <p>Compare both people\'s branches · the classical texts define <b data-i18n="auto.t.556">6 main patterns</b>:</p> <ul> <li><b>六合</b> (子丑 · 寅亥 · 卯戌 · 辰酉 · 巳申 · 午未) — a bonded pair like husband and wife · able to work together long-term</li> <li><b>六沖</b> — direct clash · unresolved matters to settle</li> <li><b>六害</b> — deep, subtle harm not noticed right away</li> <li><b>六破</b> — erodes · breaks plans</li> <li><b>刑</b> (寅巳申 · 丑戌未 · 子卯 · 自刑) — punishment · emotional injury</li> </ul> <h4><span class="tc">三</span>Triple Harmony · 三合 · and Triple Union · 三會</h4> <p>If both people\'s branches combine into a <b>三會</b> (寅卯辰=Wood · 巳午未=Fire · 申酉戌=Metal · 亥子丑=Water), it counts as <b data-i18n="auto.t.557">Natural seasonal qi of the 4 directions</b> and is stronger than 三合 · while <b>三合</b> (申子辰=Water · 寅午戌=Fire · 巳酉丑=Metal · 亥卯未=Wood) is a fused, connecting force of the 4 directions · complete with all 3 branches = full power · with only 2 of 3 it is called <b>半合 / 半三會</b> — half power</p> <h4><span class="tc">四</span>Five-Element Cycle · 五行生克</h4> <p data-i18n="auto.t.558">Day-stem elements & relationship:</p> <ul> <li><b>比</b> same element — peers</li> <li><b>生</b> we nourish them (expends energy)</li> <li><b>被生</b> they nourish us (receive energy · better)</li> <li><b>克</b> we dominate them</li> <li><b>被克</b> dominated (be careful)</li> </ul> <h4><span class="tc">五</span>Heart of the Classics · 用神 and 忌神 <a class="hk-method-link" href="/methodology" target="_blank" rel="noopener" data-th="📿 วิธีคิด 13 ขั้น →" data-en="📿 Methodology (13 steps) →" data-zh="📿 方法論·十三步 →" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px;font-weight:normal;color:var(--gold,#c8a44d);text-decoration:none;border:1px solid rgba(200,164,77,.3);padding:3px 10px;border-radius:99px;background:rgba(200,164,77,.08);vertical-align:middle;">📿 Methodology (13 steps) →</a></h4> <p>Every chart has a <b>用神</b> (the element that "nurtures" — is needed) and a <b>忌神</b> (the element that "harms" — should be avoided) · if the other person\'s Day stem matches <b data-i18n="auto.t.559">our #1 用神</b> · that is <b data-i18n="auto.t.560">"Person sent by heaven"</b>, a key figure in life · while someone whose main Day stem is our <b>忌神</b> calls for caution — not that they are bad, but their element does not match what our chart needs.</p> <div  class="rules-title" data-i18n="auto.t.561">📜 10 detailed rules from classical masters</div> <ol> <li><b data-i18n="auto.t.562">三會 stronger than 三合</b> · the seasonal-qi hierarchy of the 4 directions always applies first</li> <li><b data-i18n="auto.t.563">半三會 also has power</b> · even just 2 of 3 branches generate half power</li> <li><b data-i18n="auto.t.564">合化 used correctly</b> · if a <b>合</b> combination transforms into the <b>用神</b> → keeps full power</li> <li><b data-i18n="auto.t.565">合化 idle</b> · if a <b>合</b> combination transforms but the element is neither useful nor harmful → halved</li> <li><b data-i18n="auto.t.566">合化 wrong direction</b> · if a <b>合</b> combination transforms into the <b>忌神</b> → becomes a penalty, not a blessing</li> <li><b data-i18n="auto.t.567">沖 breaking wrong direction = blessing</b> · if a <b>沖</b> clash destroys the <b>忌神</b> · "suffering becomes the path out of suffering" · flips to good · but watch for temporary shocks</li> <li><b>貪合忘剋</b> · when a <b>天合</b> is present, do not also count a 克 · since 合 suspends 克</li> <li><b data-i18n="auto.t.568">忌神 strong, heavy penalty</b> · if 忌神 sits in the Month Branch and the Day Master is weak → the penalty multiplies</li> <li><b data-i18n="auto.t.569">用神 unclear, must be cautious</b> · if the strength of our chart is uncertain · bonus scoring is capped, not given in full</li> <li><b data-i18n="auto.t.570">Special charts use special methods</b> · if the chart is 從財格 / 從強格 / 從旺格 · use <b data-i18n="auto.t.571">"Chart-specific 用神"</b> instead of the standard one</li> </ol> <div  class="rules-title" data-i18n="auto.t.572">🔬 System extensions · in-depth classical</div> <ul> <li><b data-i18n="auto.t.573">Full Four Pillars comparison</b> · not just the <b data-i18n="auto.t.574">Day stem</b> of both people · the system also compares <b data-i18n="auto.t.575">Year · Month · Hour stems</b> of both people (reduced weight since they are secondary) · to reveal the <b data-i18n="auto.t.576">multiple layers</b> of interaction the classical texts describe</li> <li><b data-i18n="auto.t.577">Cross-pillar branches</b> · 六合 · 六沖 · 六害 · 六破 between <b data-i18n="auto.t.578">Year-Year · Month-Month · Hour-Hour branches</b> of both people · to uncover <b data-i18n="auto.t.579">"Connection point"</b> or <b data-i18n="auto.t.580">"Friction point"</b> not visible from the Day Pillar alone</li> <li><b data-i18n="auto.t.581">Directional score · A → B / B → A</b> · classical texts note relationships need not be symmetric · sometimes <b data-i18n="auto.t.582">we support them</b> while <b data-i18n="auto.t.583">they drain our energy</b></li> <li><b data-i18n="auto.t.584">Guidance by intent · 70% non-deterministic</b> · the system gives <b data-i18n="auto.t.585">3-angle guidance</b> (work · love · friendship) with a <b>confidence %</b> · it never declares a fixed "good/bad" · <b data-i18n="auto.t.586">70% of the outcome depends on your decision</b></li> </ul>', zh:'<p class="intro">評估雙方命盤時，古籍（子平真詮 · 滴天髓 · 三命通會）教導要看 <b data-i18n="auto.t.552">5維度疊加</b>，並配合另外 <b data-i18n="auto.t.553">10條</b> 細則，讓老師傅能精準調整。</p> <h4><span class="tc">一</span>天干沖合</h4> <p>比較雙方<b data-i18n="auto.t.554">日干</b>，是否「相合」（<span class="tc">天合</span>）如 甲己合化土，或「相剋」（<span class="tc">天剋</span>）如 甲庚 · 因<b>合</b>而結的天干，代表無須解釋的<b data-i18n="auto.t.555">深層盟友</b> · 而<b>天剋</b>則是心理上的對頭——初次見面就話不投機的人</p> <h4><span class="tc">二</span>地支沖合</h4> <p>比較雙方地支 · 古籍列出<b data-i18n="auto.t.556">6種主要型態</b>：</p> <ul> <li><b>六合</b>（子丑 · 寅亥 · 卯戌 · 辰酉 · 巳申 · 午未）— 如夫妻般緊密的組合 · 能長久共事</li> <li><b>六沖</b> — 正面衝突 · 有待解決之事</li> <li><b>六害</b> — 深層傷害 · 不易察覺</li> <li><b>六破</b> — 消磨 · 令計劃破局</li> <li><b>刑</b>（寅巳申 · 丑戌未 · 子卯 · 自刑）— 懲罰 · 帶來心理創傷</li> </ul> <h4><span class="tc">三</span>三合與三會</h4> <p>若雙方地支合成<b>三會</b>（寅卯辰=木 · 巳午未=火 · 申酉戌=金 · 亥子丑=水），視為<b data-i18n="auto.t.557">四方自然季節之氣</b> · 力量強於三合 · 而<b>三合</b>（申子辰=水 · 寅午戌=火 · 巳酉丑=金 · 亥卯未=木）則是四方交融之力 · 三字全合＝全力 · 只合二字稱<b>半合 / 半三會</b> · 力量減半</p> <h4><span class="tc">四</span>五行生克</h4> <p data-i18n="auto.t.558">雙方日干屬何五行・有何關係：</p> <ul> <li><b>比</b> 同一五行 — 朋輩</li> <li><b>生</b> 我方生他方（耗損能量）</li> <li><b>被生</b> 他方生我方（吸收能量・較佳）</li> <li><b>克</b> 我方克他方</li> <li><b>被克</b> 遭克制（須謹慎）</li> </ul> <h4><span class="tc">五</span>用神與忌神精髓 <a class="hk-method-link" href="/methodology" target="_blank" rel="noopener" data-th="📿 วิธีคิด 13 ขั้น →" data-en="📿 Methodology (13 steps) →" data-zh="📿 方法論·十三步 →" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px;font-weight:normal;color:var(--gold,#c8a44d);text-decoration:none;border:1px solid rgba(200,164,77,.3);padding:3px 10px;border-radius:99px;background:rgba(200,164,77,.08);vertical-align:middle;">📿 方法論·十三步 →</a></h4> <p>每張命盤都有<b>用神</b>（「扶助」所需的五行）與<b>忌神</b>（「傷害」應避的五行）· 若對方日干正是<b data-i18n="auto.t.559">我方首選用神</b> · 即為<b data-i18n="auto.t.560">「天送之人」</b> · 生命中的重要人物 · 而對方主日干若為我方<b>忌神</b>則須留意——並非其人不好 · 只是其五行與我方命盤所需不合</p> <div  class="rules-title" data-i18n="auto.t.561">📜 古籍十條細則</div> <ol> <li><b data-i18n="auto.t.562">三會強於三合</b> · 四方季節之氣的層級 · 永遠優先套用</li> <li><b data-i18n="auto.t.563">半三會亦有力</b> · 即使只合三分之二 · 仍生半力</li> <li><b data-i18n="auto.t.564">合化得用</b> · 若合而化為<b>用神</b> → 保持全力</li> <li><b data-i18n="auto.t.565">合化無用</b> · 若合而化的五行非用非忌 → 力量減半</li> <li><b data-i18n="auto.t.566">合化反向</b> · 若合而化為<b>忌神</b> → 變成損害而非福蔭</li> <li><b data-i18n="auto.t.567">沖去忌神=吉</b> · 若<b>沖</b>去<b>忌神</b> ·「苦難即出苦之道」· 反轉為吉 · 但需留意短暫震盪</li> <li><b>貪合忘剋</b> · 若<b>天合</b>成立 · 不重複計算克 · 因合使克失效</li> <li><b data-i18n="auto.t.568">忌神強·重罰</b> · 若忌神落於月支且日主偏弱 → 懲罰加倍</li> <li><b data-i18n="auto.t.569">用神未明·須謹慎</b> · 若命盤強弱未定 · 加分項先設上限 · 不全給</li> <li><b data-i18n="auto.t.570">特殊格局用特殊法</b> · 若命盤為 從財格 / 從強格 / 從旺格 · 以<b data-i18n="auto.t.571">「專屬用神」</b>取代一般用神</li> </ol> <div  class="rules-title" data-i18n="auto.t.572">🔬 系統延伸·深層古籍</div> <ul> <li><b data-i18n="auto.t.573">四柱全對</b> · 不只雙方<b data-i18n="auto.t.574">日干</b> · 系統同時比對雙方<b data-i18n="auto.t.575">年干・月干・時干</b>（權重較低 · 因非主軸）· 呈現古籍所載的<b data-i18n="auto.t.576">多層</b>互動</li> <li><b data-i18n="auto.t.577">跨柱地支</b> · 六合 · 六沖 · 六害 · 六破 發生於雙方<b data-i18n="auto.t.578">年支-年支・月支-月支・時支-時支</b>之間 · 藉此找出<b data-i18n="auto.t.579">「接點」</b>或<b data-i18n="auto.t.580">「絆點」</b> · 單看日柱看不到的互動</li> <li><b data-i18n="auto.t.581">雙向計分・A→B / B→A</b> · 古籍指出關係未必對稱 · 有時<b data-i18n="auto.t.582">我扶他</b> · 卻<b data-i18n="auto.t.583">他洩我</b></li> <li><b data-i18n="auto.t.584">依意圖指引・70%不下定論</b> · 系統提供<b data-i18n="auto.t.585">三角度指引</b>（事業 · 感情 · 友情）並附信心百分比 · 不會武斷宣判「好/壞」 · <b data-i18n="auto.t.586">七成結果取決於你的抉擇</b></li> </ul>' },
+
   /* 🤖 L4 auto-translated · 15 พ.ค. 2026 */
   'auto.t.501': { th:'วันพุธ', en:'Wednesday', zh:'星期三' },
   'auto.t.502': { th:'ทรัพย์ไหลมา', en:'Wealth flows in', zh:'財來' },
@@ -1996,6 +2000,12 @@ window.HK_I18N = {
   't.h.spirit':    { th:'🐲 สัตว์มงคล', en:'🐲 SPIRIT BEAST', zh:'🐲 神獸' },
   't.h.tag':       { th:'★ ดวงเปิด', en:'★ OPEN', zh:'★ 開運' },
   't.h.h2':        { th:'วันที่ <b>ทรัพย์ไหลมา</b><br/>เหมาะ <b>เจรจา · ปิดดีล · เริ่มเรื่องเงิน</b>', en:'A day when <b>wealth flows in</b><br/>Good for <b>negotiating · closing deals · starting money matters</b>', zh:'<b>財來之日</b><br/>宜 <b>洽談 · 簽約 · 起財</b>' },
+  't.h.lvl.avoid':   { th:'<span>ห้าม</span>', en:'<span>Avoid</span>', zh:'<span>忌</span>' },
+  't.h.lvl.caution': { th:'<span>ระวัง</span>', en:'<span>Caution</span>', zh:'<span>謹慎</span>' },
+  't.h.lvl.ok':      { th:'<span>ปานกลาง</span>', en:'<span>Moderate</span>', zh:'<span>普通</span>' },
+  't.h.lvl.good':    { th:'<span>ดี</span>', en:'<span>Good</span>', zh:'<span>佳</span>' },
+  't.h.lvl.best':    { th:'<span>ดีมาก</span>', en:'<span>Excellent</span>', zh:'<span>極佳</span>' },
+  't.h.foot':        { th:'วันนี้อยู่ช่วง <b>ดี</b> · ใกล้แตะ ดีมาก', en:'Today is in the <b>Good</b> range · nearing Excellent', zh:'今日處於<b>佳</b>區間 · 接近極佳' },
   't.h.scaleL':    { th:'0 ปิด', en:'0 closed', zh:'0 閉' },
   't.h.scaleM':    { th:'50 เฝ้าดู', en:'50 watch', zh:'50 觀' },
   't.h.scaleR':    { th:'100 เปิดเต็ม', en:'100 open', zh:'100 全開' },
@@ -2008,6 +2018,9 @@ window.HK_I18N = {
   't.p.r2.ty':     { th:'เทียบชั่วยาม 子 · หนู/น้ำ', en:'vs Hour 子', zh:'對時柱 子' },
   't.p.r2.b':      { th:'แรงชน 沖', en:'沖 · Clash', zh:'沖 · 相沖' },
   't.p.r2.p':      { th:'เลี่ยงประชุมหลังเที่ยงคืน', en:'Avoid meetings after midnight', zh:'子時忌會議' },
+  't.p.more':      { th:'▾ ดูรายละเอียดเพิ่ม · ห้าม/ดี/เสีย', en:'▾ See more details · Avoid/Good/Bad', zh:'▾ 查看更多詳情 · 忌/宜/凶' },
+  't.p.yi':        { th:'วันนี้ดีต่อ', en:'Good for today', zh:'今日宜' },
+  't.p.ji':        { th:'วันนี้ห้าม', en:'Avoid today', zh:'今日忌' },
   /* §3 lucky hours */
   't.s3.nu':       { th:'03 · ชั่วยามที่เหมาะ · 吉時', en:'03 · LUCKY HOURS · 吉時', zh:'03 · 吉時 · LUCKY HOURS' },
   't.s3.h2':       { th:'<span class="tc">時辰</span>12 ชั่วยามวันนี้', en:'<span class="tc">時辰</span>12 hours today', zh:'<span class="tc">時辰</span>今日十二時辰' },
@@ -2086,7 +2099,47 @@ window.HK_I18N = {
   't.dl.q.p':      { th:'9 วัง · ดาว · ประตู · ก้านสวรรค์ — สำหรับการตัดสินใจสำคัญ', en:'9 palaces · stars · gates · stems — for major decisions', zh:'九宮 · 九星 · 八門 · 天干 — 重大決策' },
   't.dl.t.nu':     { th:'DEEP · ตำรา', en:'DEEP · classical', zh:'深度 · 古籍' },
   't.dl.t.h':      { th:'<span class="tc">黃曆</span>Tongshu ฉบับเต็ม', en:'<span class="tc">黃曆</span>Full Tongshu', zh:'<span class="tc">黃曆</span>通書全本' },
-  't.dl.t.p':      { th:'28 ดาว · 12 ดาวก่อสร้าง · 神煞 · 沖煞 ทั้งหมด', en:'28 stars · 12 builders · 神煞 · 沖煞 — all', zh:'二十八宿 · 十二建除 · 神煞 · 沖煞' }
+  't.dl.t.p':      { th:'28 ดาว · 12 ดาวก่อสร้าง · 神煞 · 沖煞 ทั้งหมด', en:'28 stars · 12 builders · 神煞 · 沖煞 — all', zh:'二十八宿 · 十二建除 · 神煞 · 沖煞' },
+
+  /* 5 ก.ค. · เก็บกวาดไทยหลง · today-i18n-stray audit */
+  't.page.title':        { th:'hourkey · วันนี้ · today', en:'hourkey · Today', zh:'hourkey · 今日' },
+  't.h.spirit.good':     { th:'มังกรเขียว', en:'AZURE DRAGON', zh:'東方陽木' },
+  't.h.legend.personal': { th:'ดวงคุณ ·', en:'Your chart ·', zh:'您的命盤 ·' },
+  't.h.legend.universal':{ th:'สากล', en:'Universal', zh:'通用' },
+  't.h.us.title':        { th:'📿 ดวงคุณ', en:'📿 Your Chart', zh:'📿 您的命盤' },
+  't.pr.focus':          { th:'โฟกัส', en:'Focus', zh:'重點' },
+  't.pr.focus.wait':     { th:'รอคะแนนดวงวันนี้จาก packet ซินแส', en:'Waiting for today’s score from the Sifu packet', zh:'等待師父封包計算今日分數' },
+  't.pr.do':             { th:'ควรทำ', en:'Do', zh:'宜' },
+  't.pr.do.wait':        { th:'เลือกงานตามคะแนนรวมของวัน', en:'Pick tasks based on today’s overall score', zh:'依今日總分挑選事務' },
+  't.pr.avoid':          { th:'ควรเลี่ยง', en:'Avoid', zh:'忌' },
+  't.pr.avoid.wait':     { th:'เลี่ยงเรื่องใหญ่ถ้าคะแนนวันต่ำ', en:'Avoid major matters if today’s score is low', zh:'若今日分數偏低，避免重大事務' },
+  't.de.updated':        { th:'คำนวณล่าสุด', en:'Last updated', zh:'最近計算' },
+  't.de.school.chaibu':  { th:'สถานการณ์เฉพาะหน้า', en:'Immediate situations', zh:'即時情況' },
+  't.de.school.zhirun':  { th:'เหตุการณ์ใหญ่ / รอบใหญ่', en:'Major events / long cycles', zh:'重大事件 / 長週期' },
+  't.hg.how':            { th:'ใช้ยังไง', en:'How to use', zh:'如何使用' },
+  't.hg.how.v':          { th:'เลือกชั่วโมงดีตามคะแนนรวมของวัน', en:'Pick a good hour based on today’s overall score', zh:'依今日總分挑選吉時' },
+  't.hg.rule':           { th:'กติกา', en:'Rule', zh:'規則' },
+  't.hg.rule.v':         { th:'ถ้าวันระวัง ใช้ชั่วโมงดีเฉพาะงานเบาและงานที่แก้ได้', en:'On a caution day, use good hours only for light, reversible tasks', zh:'若當日須謹慎，吉時僅宜輕事及可回頭之事' },
+  't.hg.reason.hint':    { th:'💡 กดที่ช่วงเวลาใด ๆ ด้านบนเพื่อดูเหตุผล', en:'💡 Tap any time slot above to see the reason', zh:'💡 點選上方任一時段查看原因' },
+  't.ag.mode':           { th:'โหมดวันนี้', en:'Today’s mode', zh:'今日模式' },
+  't.ag.mode.wait':      { th:'รอคะแนนรวมของวันก่อนจัดคำแนะนำ', en:'Waiting for today’s overall score before ranking advice', zh:'等待今日總分後再排序建議' },
+  't.ag.rule':           { th:'กติกา', en:'Rule', zh:'規則' },
+  't.ag.rule.v':         { th:'การ์ดนี้จะไม่ดันสัญญาณแรง ถ้าคะแนนวันเป็นระวัง/ห้าม', en:'This card will not push a strong signal if today is a caution/avoid day', zh:'若今日為謹慎/忌日，此卡不會推強信號' },
+  't.bb.h2':             { th:'ปาจื้อพื้นฐาน · Basic BaZi', en:'Basic BaZi Foundation', zh:'基礎八字' },
+  't.ex.yi.title':       { th:'宜 ทำได้', en:'宜 Do', zh:'宜' },
+  't.ex.ji.title':       { th:'忌 ห้ามทำ', en:'忌 Avoid', zh:'忌' },
+  't.ex.loading':        { th:'กำลังโหลดจากปฏิทินจริง…', en:'Loading from the live almanac…', zh:'正在從真實通書載入…' },
+  't.dir.n':  { th:'ทิศเหนือ<span class="tc">北</span>', en:'North<span class="tc">北</span>', zh:'<span class="tc">北</span>' },
+  't.dir.ne': { th:'ทิศตะวันออกเฉียงเหนือ<span class="tc">東北</span>', en:'Northeast<span class="tc">東北</span>', zh:'<span class="tc">東北</span>' },
+  't.dir.e':  { th:'ทิศตะวันออก<span class="tc">東</span>', en:'East<span class="tc">東</span>', zh:'<span class="tc">東</span>' },
+  't.dir.se': { th:'ทิศตะวันออกเฉียงใต้<span class="tc">東南</span>', en:'Southeast<span class="tc">東南</span>', zh:'<span class="tc">東南</span>' },
+  't.dir.s':  { th:'ทิศใต้<span class="tc">南</span>', en:'South<span class="tc">南</span>', zh:'<span class="tc">南</span>' },
+  't.dir.sw': { th:'ทิศตะวันตกเฉียงใต้<span class="tc">西南</span>', en:'Southwest<span class="tc">西南</span>', zh:'<span class="tc">西南</span>' },
+  't.dir.w':  { th:'ทิศตะวันตก<span class="tc">西</span>', en:'West<span class="tc">西</span>', zh:'<span class="tc">西</span>' },
+  't.dir.nw': { th:'ทิศตะวันตกเฉียงเหนือ<span class="tc">西北</span>', en:'Northwest<span class="tc">西北</span>', zh:'<span class="tc">西北</span>' },
+  't.dir.loading':       { th:'กำลังโหลดทิศจริง…', en:'Loading live directions…', zh:'正在載入實際方位…' },
+  't.dir.loading2':      { th:'กำลังโหลด…', en:'Loading…', zh:'載入中…' },
+  't.h.lvl.good.plain':  { th:'ดี', en:'Good', zh:'佳' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
@@ -2118,10 +2171,13 @@ function applyI18N(lang){
     var lk = (lang === 'en' || lang === 'zh') ? lang : 'th';
     spLab.innerHTML = '<span class="tc">'+nm[lk][0]+'</span>'+nm[lk][1];
   }
+	  if (window.__renderVerdictBlock) window.__renderVerdictBlock(lang);
 	  if (window.__renderTodayTongshuExtras) window.__renderTodayTongshuExtras(lang);
 	  if (window.__renderTodayRelYiJi) window.__renderTodayRelYiJi(lang);
 	  if (window.__renderTodayDirections) window.__renderTodayDirections(lang);
 	  if (window.__renderBbToday) window.__renderBbToday(lang);
+	  if (window.__renderColorCard) window.__renderColorCard(lang);
+	  if (window.__renderUserSummary) window.__renderUserSummary(lang);
 	}
 window.applyI18N = applyI18N;
 (function(){
@@ -2282,9 +2338,26 @@ window.applyI18N = applyI18N;
     /* compose legacy 'd' shape for downstream code */
     const STEM_EL = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
     const BR_EL = {子:'water',丑:'earth',寅:'wood',卯:'wood',辰:'earth',巳:'fire',午:'fire',未:'earth',申:'metal',酉:'metal',戌:'earth',亥:'water'};
-    const STEM_TH_NAME = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
-    const BR_TH_NAME = {子:'หนู/น้ำ',丑:'วัว/ดิน',寅:'เสือ/ไม้',卯:'กระต่าย/ไม้',辰:'มังกร/ดิน',巳:'งู/ไฟ',午:'ม้า/ไฟ',未:'แพะ/ดิน',申:'ลิง/ทอง',酉:'ไก่/ทอง',戌:'หมา/ดิน',亥:'หมู/น้ำ'};
-    const ELEM_TH_NAME = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+    /* 5 ก.ค. · เพิ่ม en/zh คู่ th เดิม (ชื่อแสดงผลเท่านั้น ไม่แตะ stem/branch/element ที่ engine คำนวณ) */
+    const STEM_NAME_TX = {
+      甲:{th:'ไม้หยาง',en:'Yang Wood',zh:'甲木'}, 乙:{th:'ไม้หยิน',en:'Yin Wood',zh:'乙木'},
+      丙:{th:'ไฟหยาง',en:'Yang Fire',zh:'丙火'}, 丁:{th:'ไฟหยิน',en:'Yin Fire',zh:'丁火'},
+      戊:{th:'ดินหยาง',en:'Yang Earth',zh:'戊土'}, 己:{th:'ดินหยิน',en:'Yin Earth',zh:'己土'},
+      庚:{th:'ทองหยาง',en:'Yang Metal',zh:'庚金'}, 辛:{th:'ทองหยิน',en:'Yin Metal',zh:'辛金'},
+      壬:{th:'น้ำหยาง',en:'Yang Water',zh:'壬水'}, 癸:{th:'น้ำหยิน',en:'Yin Water',zh:'癸水'},
+    };
+    const BR_NAME_TX = {
+      子:{th:'หนู/น้ำ',en:'Rat/Water',zh:'子水'}, 丑:{th:'วัว/ดิน',en:'Ox/Earth',zh:'丑土'},
+      寅:{th:'เสือ/ไม้',en:'Tiger/Wood',zh:'寅木'}, 卯:{th:'กระต่าย/ไม้',en:'Rabbit/Wood',zh:'卯木'},
+      辰:{th:'มังกร/ดิน',en:'Dragon/Earth',zh:'辰土'}, 巳:{th:'งู/ไฟ',en:'Snake/Fire',zh:'巳火'},
+      午:{th:'ม้า/ไฟ',en:'Horse/Fire',zh:'午火'}, 未:{th:'แพะ/ดิน',en:'Goat/Earth',zh:'未土'},
+      申:{th:'ลิง/ทอง',en:'Monkey/Metal',zh:'申金'}, 酉:{th:'ไก่/ทอง',en:'Rooster/Metal',zh:'酉金'},
+      戌:{th:'หมา/ดิน',en:'Dog/Earth',zh:'戌土'}, 亥:{th:'หมู/น้ำ',en:'Pig/Water',zh:'亥水'},
+    };
+    const ELEM_NAME_TX = {
+      wood:{th:'ไม้',en:'Wood',zh:'木'}, fire:{th:'ไฟ',en:'Fire',zh:'火'}, earth:{th:'ดิน',en:'Earth',zh:'土'},
+      metal:{th:'ทอง',en:'Metal',zh:'金'}, water:{th:'น้ำ',en:'Water',zh:'水'},
+    };
     const dayP = td.pillars.day || '甲子';
     const d = {
       dayPillar: { stem: dayP[0], branch: dayP[1], element: STEM_EL[dayP[0]]||'earth', branchElement: BR_EL[dayP[1]]||'earth' },
@@ -2295,32 +2368,44 @@ window.applyI18N = applyI18N;
     if (td.verdict) {
       d.personal = { score: td.verdict.score, label: td.verdict.label, breakdown: null, bonuses: [], warnings: [] };
     }
-    /* 18 พ.ค. · #2 · render userSummary banner · Codex flag #1 · ใช้ DOM nodes กัน XSS */
+    /* 18 พ.ค. · #2 · render userSummary banner · Codex flag #1 · ใช้ DOM nodes กัน XSS
+     * 5 ก.ค. · เพิ่ม 3 ภาษา · backend ส่งมาแค่ .th + .el (english slug) → ต่อ en/zh เองจาก ELEM_NAME_TX ในเครื่อง
+     * (ไม่แตะ /api/today หรือ yongshen-cache.ts เลย · ใช้ field .el ที่มีอยู่แล้ว) */
     if (td.userSummary) {
       window._userSummary = td.userSummary; /* 18 พ.ค. · cache เพื่อ wireColors ใช้ต่อ */
       const us = td.userSummary;
       const banner = document.getElementById('t-user-summary');
       const line   = document.getElementById('t-us-line');
-      if (banner && line) {
+      window.__renderUserSummary = function(lang){
+        if (!banner || !line) return;
+        const L = (lang === 'en' || lang === 'zh') ? lang : 'th';
+        const pk = (obj) => (obj && (obj[L] !== undefined ? obj[L] : obj.th)) ?? '';
+        const elName = (item) => (item && ELEM_NAME_TX[item.el]) ? pk(ELEM_NAME_TX[item.el]) : (item?.th || item?.el || '');
+        const YOU_ARE = { th:'คุณคือ ', en:'You are ', zh:'您是 ' };
+        const HELPS = { th:' · ✅ ของช่วย: ', en:' · ✅ Helps: ', zh:' · ✅ 喜用：' };
+        const AVOIDS = { th:' · ⛔ ของแสลง: ', en:' · ⛔ Avoid: ', zh:' · ⛔ 忌：' };
+        const BRIDGES = { th:' · 🌉 สะพาน: ', en:' · 🌉 Bridges: ', zh:' · 🌉 通關：' };
         line.textContent = '';
         const mkB = (text, color) => { const b=document.createElement('b'); b.textContent=String(text); if(color)b.style.color=color; return b; };
         const mkSpan = (text, opacity) => { const s=document.createElement('span'); s.textContent=String(text); if(opacity!=null){s.style.opacity=String(opacity);s.style.fontSize='11px';} return s; };
-        line.appendChild(document.createTextNode('คุณคือ '));
-        line.appendChild(mkB(us.dm_label_th||'', 'var(--gold)'));
+        const dmName = us.dm_element && ELEM_NAME_TX[us.dm_element] ? `${pk(ELEM_NAME_TX[us.dm_element])} ${us.dm_stem||''}` : (us.dm_label_th||'');
+        line.appendChild(document.createTextNode(pk(YOU_ARE)));
+        line.appendChild(mkB(dmName, 'var(--gold)'));
         if (us.structure) { line.appendChild(document.createTextNode(' ')); line.appendChild(mkSpan('('+us.structure+')', .6)); }
-        line.appendChild(document.createTextNode(' · ✅ ของช่วย: '));
-        (us.primary||[]).forEach((p,i)=>{ if(i)line.appendChild(document.createTextNode('·')); line.appendChild(mkB(p.th||p.el, 'var(--gold)')); });
+        line.appendChild(document.createTextNode(pk(HELPS)));
+        (us.primary||[]).forEach((p,i)=>{ if(i)line.appendChild(document.createTextNode('·')); line.appendChild(mkB(elName(p), 'var(--gold)')); });
         const extraXi = (us.xishen||[]).filter(x => !(us.primary||[]).some(p=>p.el===x.el));
-        if (extraXi.length){ line.appendChild(document.createTextNode(' + ')); extraXi.forEach((x,i)=>{ if(i)line.appendChild(document.createTextNode('·')); line.appendChild(mkB(x.th||x.el)); }); }
-        line.appendChild(document.createTextNode(' · ⛔ ของแสลง: '));
-        (us.jishen||[]).forEach((j,i)=>{ if(i)line.appendChild(document.createTextNode('·')); line.appendChild(mkB((j.th||j.el)+(j.is_dominant?'⚡':''), j.is_dominant?'#e26b5d':null)); });
+        if (extraXi.length){ line.appendChild(document.createTextNode(' + ')); extraXi.forEach((x,i)=>{ if(i)line.appendChild(document.createTextNode('·')); line.appendChild(mkB(elName(x))); }); }
+        line.appendChild(document.createTextNode(pk(AVOIDS)));
+        (us.jishen||[]).forEach((j,i)=>{ if(i)line.appendChild(document.createTextNode('·')); line.appendChild(mkB(elName(j)+(j.is_dominant?'⚡':''), j.is_dominant?'#e26b5d':null)); });
         const bridges = us.bridges_th || [];
         if (bridges.length) {
-          line.appendChild(document.createTextNode(' · 🌉 สะพาน: '));
-          bridges.forEach((b,i)=>{ if(i)line.appendChild(document.createTextNode('·')); line.appendChild(mkB(b.th||b.el)); });
+          line.appendChild(document.createTextNode(pk(BRIDGES)));
+          bridges.forEach((b,i)=>{ if(i)line.appendChild(document.createTextNode('·')); line.appendChild(mkB(elName(b))); });
         }
         banner.style.display = 'block';
-      }
+      };
+      window.__renderUserSummary(document.documentElement.getAttribute('data-lang') || 'th');
     }
     /* 3.1 render 黃曆 extras จาก API จริง · ไม่ใช้ placeholder hardcode */
     const TONGSHU_TERM_TX = {
@@ -2628,232 +2713,289 @@ window.applyI18N = applyI18N;
     /* แปลงคะแนน → 5 ระดับ */
     /* เกณฑ์: ≥80 ดีมาก · 65-79 ดี · 50-64 ปานกลาง · 35-49 ระวัง · <35 ห้าม */
     function levelOf(s){
-      if (s >= 80) return { key:'best',    th:'ดีมาก',   en:'EXCELLENT', segIdx:4 };
-      if (s >= 65) return { key:'good',    th:'ดี',      en:'OPEN',      segIdx:3 };
-      if (s >= 50) return { key:'ok',      th:'ปานกลาง', en:'MODERATE',  segIdx:2 };
-      if (s >= 35) return { key:'caution', th:'ระวัง',   en:'CAUTION',   segIdx:1 };
-      return         { key:'avoid',   th:'ห้าม',    en:'AVOID',     segIdx:0 };
+      if (s >= 80) return { key:'best',    th:'ดีมาก',   en:'EXCELLENT', zh:'極佳', segIdx:4 };
+      if (s >= 65) return { key:'good',    th:'ดี',      en:'OPEN',      zh:'佳',   segIdx:3 };
+      if (s >= 50) return { key:'ok',      th:'ปานกลาง', en:'MODERATE',  zh:'普通', segIdx:2 };
+      if (s >= 35) return { key:'caution', th:'ระวัง',   en:'CAUTION',   zh:'謹慎', segIdx:1 };
+      return         { key:'avoid',   th:'ห้าม',    en:'AVOID',     zh:'忌',   segIdx:0 };
     }
     const lv = levelOf(score);
     window._dailyVerdictLevel = lv.key;
     window._dailyVerdictScore = score;
 
-    function termPlain(term){
-      const tx = TONGSHU_TERM_TX[term];
-      return tx && tx.th ? `${term} ${tx.th}` : String(term || '');
-    }
-    function setPracticalBox(id, rows){
-      const box = document.getElementById(id);
-      if (!box) return;
-      box.setAttribute('data-level', lv.key);
-      box.innerHTML = rows.map(([k, v]) => `<div class="pr-row"><b>${escHtml(k)}</b><span>${escHtml(v)}</span></div>`).join('');
-    }
-    const yiTop = (d.tongshu.yi || []).slice(0, 3).map(termPlain).filter(Boolean).join(' · ');
-    const jiTop = (d.tongshu.ji || []).slice(0, 3).map(termPlain).filter(Boolean).join(' · ');
-    const dayAdvice = {
-      best: {
-        focus: 'วันเปิดสูง ใช้กับเรื่องที่ต้องการผลลัพธ์ชัดเจนและมีคนเกี่ยวข้อง',
-        do: 'เสนอราคา นัดคุยคนสำคัญ เปิดงานใหม่ หรือปิดดีลที่เตรียมไว้แล้ว',
-        avoid: 'อย่าใช้ความมั่นใจแทนข้อมูล ตรวจเงื่อนไขเงินและเอกสารก่อนกดตกลง',
-      },
-      good: {
-        focus: 'วันเดินหน้าได้ เหมาะกับงานที่ต้องสื่อสาร ตัดสินใจ และผลักเรื่องให้คืบ',
-        do: 'เลือกเรื่องสำคัญ 1-2 เรื่องแล้วทำให้จบ ใช้ชั่วโมงดีช่วยล็อกจังหวะ',
-        avoid: 'อย่ากระจายงานหลายทิศเกินไป และอย่าเปิดประเด็นที่ยังไม่มีข้อมูล',
-      },
-      ok: {
-        focus: 'วันกลาง ใช้กับงานประจำ งานแก้รายละเอียด และการเตรียมของสำหรับวันใหญ่',
-        do: 'เคลียร์คิว ตอบข้อความ จัดเอกสาร ทดลองแผน หรือคุยเบื้องต้นแบบไม่ผูกมัด',
-        avoid: 'เลี่ยงตัดสินใจเงินก้อน สัญญายาว หรือคำตอบที่ย้อนกลับมายาก',
-      },
-      caution: {
-        focus: 'วันระวัง ลดขนาดเดิมพัน ทำเรื่องที่คุมผลเสียได้ และเว้นช่องให้แก้ตัว',
-        do: 'ทบทวน ตรวจสัญญา แก้ปัญหาเก่า คุยแบบเก็บข้อมูลมากกว่าปิดดีล',
-        avoid: 'อย่าเริ่มงานใหญ่ อย่าใช้อารมณ์ตอบทันที และอย่าเซ็นเรื่องที่ยังไม่ชัด',
-      },
-      avoid: {
-        focus: 'วันปิดเกม ไม่เหมาะเสี่ยงใหญ่ ใช้พัก ฟื้นตัว เคลียร์ของเก่า และชะลอคำตอบ',
-        do: 'จัดบ้าน ปิดงานค้าง สำรองข้อมูล พักร่างกาย และเลื่อนเรื่องที่มีเดิมพันสูง',
-        avoid: 'เลี่ยงสัญญา เงินก้อน การปะทะ และการตัดสินใจจากแรงกดดัน',
-      },
-    }[lv.key];
-    setPracticalBox('t-pillar-practical', [
-      ['โฟกัส', `${lv.th} ${score}/100 · ${dayAdvice.focus}`],
-      ['ควรทำ', yiTop ? `${dayAdvice.do} · ฤกษ์ช่วย: ${yiTop}` : dayAdvice.do],
-      ['ควรเลี่ยง', jiTop ? `${dayAdvice.avoid} · ควรเลี่ยง: ${jiTop}` : dayAdvice.avoid],
-    ]);
-    setPracticalBox('t-hours-guide', [
-      ['ใช้ยังไง', (lv.key === 'caution' || lv.key === 'avoid') ? 'ช่องที่ดูดีคือช่วงผ่อนแรง ใช้กับงานเบา งานแก้ได้ หรือคุยเพื่อเก็บข้อมูล' : 'ช่องเขียวคือเวลาที่แรงต้านน้อยกว่า เหมาะนัดคุย ส่งงาน หรือปิดเรื่องที่เตรียมพร้อมแล้ว'],
-      ['กติกา', (lv.key === 'caution' || lv.key === 'avoid') ? 'คะแนนวันต่ำกว่าชั่วโมงดีเสมอ จึงไม่ใช้ชั่วโมงเขียวเป็นไฟเขียวสำหรับสัญญา/เงินก้อน' : 'ถ้างานมีเดิมพันสูง ให้เลือกทั้งคะแนนวันดีและชั่วโมงดีพร้อมกัน'],
-    ]);
-    setPracticalBox('t-actions-guard', [
-      ['โหมดวันนี้', (lv.key === 'caution' || lv.key === 'avoid') ? `${lv.th} ${score}/100 · การ์ด 04 จะแปลงเป็นงานเล็กที่เสี่ยงต่ำ และลดระดับคำแนะนำอัตโนมัติ` : `${lv.th} ${score}/100 · เลือกการ์ดที่ตรงเป้าหมาย แล้วทำในช่วงเวลาที่ดีที่สุด`],
-      ['กติกา', (lv.key === 'caution' || lv.key === 'avoid') ? 'ทำเฉพาะงานที่เสียหายน้อย ถ้าติดขัดให้หยุด ไม่ฝืนปิดดีล' : 'เริ่มจากงานที่เตรียมข้อมูลครบ อย่าใช้คะแนนดีแทนการตรวจรายละเอียด'],
-    ]);
+    /* 5 ก.ค. · ห่อ display ทั้งหมดของ §1 Day Verdict + §2 Pillar เป็น renderVerdictBlock(lang)
+     * ให้สลับภาษาได้จริงเมื่อกดปุ่ม TH/EN/ZH · ไม่แตะ levelOf()/threshold/lv.key logic เดิมเลย
+     * (Codex flag เดิม: ก่อนหน้านี้ทั้งบล็อกเขียนไทยตรงๆ ครั้งเดียวตอนโหลด ไม่รีเรนเดอร์ตอนสลับภาษา) */
+    function renderVerdictBlock(lang){
+      const L = (lang === 'en' || lang === 'zh') ? lang : 'th';
+      const pick3 = (obj) => (obj && (obj[L] !== undefined ? obj[L] : obj.th)) ?? '';
 
-    /* ป้ายระดับ · ดวงคุณ (Personal · DM analysis) */
-    const tagEl = document.getElementById('t-verdict-tag');
-    if (tagEl) {
-      tagEl.setAttribute('data-level', lv.key);
-      tagEl.style.color = ''; tagEl.style.background = ''; tagEl.style.borderColor = '';
-      tagEl.innerHTML = `<span class="hk-level-dot"></span><span class="hk-level-name">ดวงคุณ ${score}/100 · ${lv.th}</span>`;
-    }
-    /* 17 พ.ค. · Tongshu Day Officer chip · Universal (สากล · ทุกคน) */
-    const tongshuChip = document.getElementById('t-tongshu-chip');
-    const tongshuOfficer = document.getElementById('t-tongshu-officer');
-    if (tongshuChip && tongshuOfficer && d.tongshu?.officer) {
-      const OFFICER_TH = {建:'建·เริ่ม',除:'除·กำจัด',滿:'滿·เต็ม',平:'平·สมดุล',定:'定·มั่นคง',執:'執·ทำ',破:'破·แตก ⚠',危:'危·เสี่ยง ⚠',成:'成·สำเร็จ ⭐',收:'收·เก็บ',開:'開·เปิด ⭐',閉:'閉·ปิด ⚠'};
-      const off = d.tongshu.officer;
-      tongshuOfficer.innerHTML = `<b style="font-family:'Noto Serif TC',serif;">${off}</b>日 · ${(OFFICER_TH[off]||off).split('·')[1]||''}`;
-      tongshuChip.style.display = 'inline-flex';
-    }
-
-    /* 🐲🦚🦜🐯🐢 sync 5 สัตว์มงคล · เปลี่ยนตามคุณภาพวัน */
-    const spirit = document.getElementById('t-verdict-spirit');
-    if (spirit) spirit.setAttribute('data-level', lv.key);
-    const spiritLabel = document.getElementById('t-verdict-spirit-label');
-    if (spiritLabel) {
-      const curLang = document.documentElement.getAttribute('data-lang') || 'th';
-      const SPIRIT_NAMES = {
-        best:    { th:['鳳凰','ฟีนิกซ์ทอง'],     en:['Fenghuang','PHOENIX'],         zh:['鳳凰','南方至尊'] },
-        good:    { th:['青龍','มังกรเขียว'],       en:['Qinglong','AZURE DRAGON'],    zh:['青龍','東方陽木'] },
-        ok:      { th:['朱雀','นกหงส์แดง'],        en:['Zhuque','VERMILLION BIRD'],   zh:['朱雀','南方明火'] },
-        caution: { th:['白虎','เสือขาว'],          en:['Baihu','WHITE TIGER'],         zh:['白虎','西方銳金'] },
-        avoid:   { th:['玄武','เต่าดำ'],            en:['Xuanwu','BLACK TORTOISE'],    zh:['玄武','北方藏水'] },
-      };
-      const nm = SPIRIT_NAMES[lv.key] || SPIRIT_NAMES.good;
-      const langKey = (curLang === 'en' || curLang === 'zh') ? curLang : 'th';
-      spiritLabel.innerHTML = `<span class="tc">${nm[langKey][0]}</span>${nm[langKey][1]}`;
-    }
-
-    /* เข็มชี้บน gauge · score 0-100 → left 0-100% */
-    const needle = document.getElementById('t-verdict-needle');
-    if (needle) needle.style.left = Math.max(2, Math.min(98, score)) + '%';
-
-    /* ข้อความใต้ gauge · บอกว่าใกล้แตะระดับถัดไปแค่ไหน */
-    const foot = document.getElementById('t-verdict-foot');
-    if (foot) {
-      const cuts = [0, 35, 50, 65, 80, 100];
-      const i = lv.segIdx;
-      const lo = cuts[i], hi = cuts[i+1];
-      const inSeg = (score - lo) / Math.max(1, (hi - lo));
-      let tail = '';
-      const nextUp = ['ระวัง','ปานกลาง','ดี','ดีมาก','สูงสุด'][i];
-      const nextDn = ['ต่ำสุด','ห้าม','ระวัง','ปานกลาง','ดี'][i];
-      if (inSeg >= .75 && i < 4)      tail = ` · ใกล้แตะ <b>${nextUp}</b>`;
-      else if (inSeg <= .25 && i > 0) tail = ` · เพิ่งเลย <b>${nextDn}</b> มา`;
-      else                            tail = ` · ค่อนกลางช่วง`;
-      foot.innerHTML = `วันนี้อยู่ช่วง <b>${lv.th}</b>${tail}`;
-    }
-
-    /* h2 narrative · ดึงจาก top breakdown */
-    const h2 = document.getElementById('t-verdict-h2');
-    if (h2 && d.universal.breakdown) {
-      const officer = d.universal.breakdown.officer;
-      /* บรรทัด 1 · ดวงคุณ (tier ของวันนี้) */
-      const personalLine = lv.key === 'best'    ? `ดวงคุณ ${score}/100 · <b>วันเปิดสูง</b> · ใช้กับเรื่องสำคัญได้` :
-                           lv.key === 'good'    ? `ดวงคุณ ${score}/100 · <b>วันดี</b> · เดินหน้าแบบมีแผน` :
-                           lv.key === 'ok'      ? `ดวงคุณ ${score}/100 · <b>วันกลาง</b> · ทำงานประจำและเตรียมของ` :
-                           lv.key === 'caution' ? `ดวงคุณ ${score}/100 · <b>วันระวัง</b> · ลดเดิมพันและตรวจซ้ำ` :
-                                                   `ดวงคุณ ${score}/100 · <b>วันห้าม</b> · พักและเลี่ยงเรื่องใหญ่`;
-      /* บรรทัด 2 · ปฏิทินจีน · 12 ฤกษ์ + hint ภาษาคน */
-      const OFFICER_TH = {
-        '建':{th:'เริ่ม',hint:'เริ่มงานใหม่'},
-        '除':{th:'กำจัด',hint:'ขจัดปัญหา · ทำความสะอาด'},
-        '满':{th:'เต็ม',hint:'เก็บออม · เปิดร้าน'},
-        '平':{th:'สมดุล',hint:'กิจกรรมทั่วไป'},
-        '定':{th:'มั่นคง',hint:'ตั้งหลัก · ตัดสินใจ'},
-        '執':{th:'ทำ',hint:'ลงมือ · ออกแรง'},
-        '破':{th:'แตก',hint:'⚠ หลีกเลี่ยงเรื่องใหญ่'},
-        '危':{th:'เสี่ยง',hint:'⚠ ระวังตัว'},
-        '成':{th:'สำเร็จ',hint:'⭐ งานใหญ่ · เปิดกิจการ'},
-        '收':{th:'เก็บ',hint:'สะสม · จัดเก็บ'},
-        '開':{th:'เปิด',hint:'⭐ เริ่มสิ่งใหม่'},
-        '閉':{th:'ปิด',hint:'ปิดงาน · เก็บของ'},
-        '闭':{th:'ปิด',hint:'ปิดงาน · เก็บของ'}
-      };
-      const off = OFFICER_TH[officer.name] || {th:officer.name,hint:''};
-      const calendarLine = `ปฏิทินจีน · ฤกษ์<b>${off.th}</b> (${officer.name}) · เหมาะ${off.hint}`;
-      h2.innerHTML = `${personalLine}<br/>${calendarLine}`;
-    }
-
-    /* 5. render TODAY'S PILLAR */
-    setText('t-day-stem', d.dayPillar.stem);
-    setText('t-day-branch', d.dayPillar.branch);
-    /* update CSS class for element coloring */
-    const stemEl = document.getElementById('t-day-stem');
-    const brEl = document.getElementById('t-day-branch');
-    const elemMap = { Wood:'wood', Fire:'fire', Earth:'earth', Metal:'metal', Water:'water', wood:'wood', fire:'fire', earth:'earth', metal:'metal', water:'water' };
-    if (stemEl) {
-      stemEl.className = 'gz-cell ' + (elemMap[d.dayPillar.element]||'metal');
-    }
-    if (brEl) {
-      brEl.className = 'gz-cell ' + (elemMap[d.dayPillar.branchElement]||'fire');
-    }
-    /* day-name */
-    const dayName = document.getElementById('t-day-name');
-    if (dayName) {
-      const stemClass = elemMap[d.dayPillar.element] || 'earth';
-      const branchClass = elemMap[d.dayPillar.branchElement] || 'earth';
-      dayName.innerHTML =
-        `<span style="color:var(--${stemClass});font-weight:700">${STEM_TH_NAME[d.dayPillar.stem] || 'ก้าน'} <span class="tc">${d.dayPillar.stem}</span></span>` +
-        ` + <span style="color:var(--${branchClass});font-weight:700">${BR_TH_NAME[d.dayPillar.branch] || 'กิ่ง'} <span class="tc">${d.dayPillar.branch}</span></span><br/>` +
-        `<span style="font-size:13px;color:var(--fg-soft);font-family:var(--thai);letter-spacing:0">ธาตุก้าน ${ELEM_TH_NAME[d.dayPillar.element] || d.dayPillar.element} · ธาตุกิ่ง ${ELEM_TH_NAME[d.dayPillar.branchElement] || d.dayPillar.branchElement} · วัน${d.tongshu.officer} · ${d.tongshu.twelveStar}</span>`;
-    }
-
-    /* === 5.1 Wire ปฏิกิริยา VS DM / VS Hour จาก personal breakdown === */
-    function renderRel(elId, keyId, nameId, descId, keyTxt, nameTxt, descTxt, klass){
-      const el = document.getElementById(elId);
-      if (!el) return;
-      el.className = 'rel ' + (klass||'');
-      const ke = document.getElementById(keyId); if (ke) ke.textContent = keyTxt;
-      const ne = document.getElementById(nameId); if (ne) ne.textContent = nameTxt;
-      const de = document.getElementById(descId); if (de) de.textContent = descTxt;
-    }
-    if (d.personal && d.personal.breakdown) {
-      const bd = d.personal.breakdown;
-      /* stem relation · DM ↔ Day */
-      const stemMap = {
-        'stemHe':    { name:'天合 · ผูกพัน',   desc:'วันเกิดหลักผูกกับวันนี้ · ดีต่อความร่วมมือ', klass:'good' },
-        'stemClash': { name:'天剋 · ปะทะ',     desc:'วันเกิดหลักถูกปะทะ · เลี่ยงตัดสินใจใหญ่',    klass:'bad'  },
-        'same':      { name:'同 · เสริมแรง',    desc:'ธาตุเดียวกับวันเกิดหลัก · แรงดีลง',         klass:'good' },
-        'controls':  { name:'剋 · ครอบงำ',     desc:'วันเกิดหลักคุมสถานการณ์ได้ · กดดันได้ผล',    klass:'good' },
-        'controlled':{ name:'剋我 · ถูกครอบ',  desc:'วันเกิดหลักถูกกด · ต้องระวัง',               klass:'bad'  },
-        'produces':  { name:'生 · เสริมพลัง',   desc:'วันเกิดหลักได้รับการเลี้ยง · ทรัพย์เข้า',    klass:'good' },
-        'produced':  { name:'我生 · ผ่อนพลัง', desc:'วันเกิดหลักต้องจ่ายพลัง · ใช้แรงเยอะ',       klass:'ok'   }
-      };
-      const sm = stemMap[bd.stemDayRelation] || { name:'—', desc:'ปกติ', klass:'' };
-      renderRel('t-rel-dm', 't-rel-dm-key', 't-rel-dm-name', 't-rel-dm-desc',
-                'เทียบวันเกิดหลัก', sm.name, sm.desc, sm.klass);
-
-      /* branch relation · ใช้ relation ของ branch ที่หนักสุด (clash > harm > sanhe > he) */
-      const br = bd.branchToDay || {};
-      const order = ['clash','harm','sanhe','he','none'];
-      const labelTH = {
-        'clash':{ k:'เทียบดวง · ปะทะ', n:'沖 · ปะทะ',   d:'มีเสาในดวงปะทะวันนี้ · เลี่ยงตัดสินใจเร่งด่วน', c:'bad'  },
-        'harm': { k:'เทียบดวง · แทรก', n:'害 · แทรกแซง', d:'มีเสาในดวงแทรกแซงวันนี้ · ระวังเรื่องลับ',     c:'bad'  },
-        'sanhe':{ k:'เทียบดวง · สามผูก', n:'三合 · ผูกพัน', d:'มีเสาในดวงผูกพันแน่น · เสริมเรื่องคน',       c:'good' },
-        'he':   { k:'เทียบดวง · ผูก',   n:'六合 · ผูกพัน', d:'มีเสาในดวงผูกพันกับวัน · ดีต่อข้อตกลง',       c:'good' },
-        'none': { k:'เทียบดวง · ปกติ',  n:'—',            d:'ไม่มีปฏิกิริยาเด่นกับเสาในดวง',                c:''     }
-      };
-      let pick = 'none';
-      for (const o of order) {
-        if (Object.values(br).includes(o)) { pick = o; break; }
+      function termPlain(term){
+        const tx = TONGSHU_TERM_TX[term];
+        if (!tx) return String(term || '');
+        const t = tx[L] || tx.th || '';
+        return t ? `${term} ${t}` : String(term || '');
       }
-      const bm = labelTH[pick];
-      renderRel('t-rel-br', 't-rel-br-key', 't-rel-br-name', 't-rel-br-desc', bm.k, bm.n, bm.d, bm.c);
-    } else if (td.verdict) {
-      const ev = td.verdict.evidence || {};
-      const yong = (td.verdict.yongshen || ev.usefulGods?.yong || []).join(' · ') || '—';
-      const ji = (td.verdict.jishen || ev.usefulGods?.ji || []).slice(0,3).join(' · ') || '—';
-      const ap = ev.annualPillar ? `${ev.annualPillar.stem || ''}${ev.annualPillar.branch || ''}` : '—';
-      const cb = ev.chengBaiNow?.verdict || '—';
-      const klass = (lv.key === 'caution' || lv.key === 'avoid') ? 'bad' : (lv.key === 'ok' ? '' : 'good');
-      renderRel('t-rel-dm', 't-rel-dm-key', 't-rel-dm-name', 't-rel-dm-desc',
-                'หลักฐานซินแส · 用神/忌神', `${td.verdict.label || lv.th} · ${score}/100`, `ของช่วย: ${yong} · ของแสลง: ${ji}`, klass);
-      renderRel('t-rel-br', 't-rel-br-key', 't-rel-br-name', 't-rel-br-desc',
-                'จังหวะช่วงนี้ · 行運', `ปีจร ${ap} · 成敗 ${cb}`, 'คะแนนนี้อ่านร่วมกับเสาวัน วัยจร ปีจร 病藥 และ成敗 ชุดเดียวกับซินแส', klass);
+      function setPracticalBox(id, rows){
+        const box = document.getElementById(id);
+        if (!box) return;
+        box.setAttribute('data-level', lv.key);
+        box.innerHTML = rows.map(([k, v]) => `<div class="pr-row"><b>${escHtml(k)}</b><span>${escHtml(v)}</span></div>`).join('');
+      }
+      const yiTop = (d.tongshu.yi || []).slice(0, 3).map(termPlain).filter(Boolean).join(' · ');
+      const jiTop = (d.tongshu.ji || []).slice(0, 3).map(termPlain).filter(Boolean).join(' · ');
+      const DAY_ADVICE_TX = {
+        best: {
+          th:{focus:'วันเปิดสูง ใช้กับเรื่องที่ต้องการผลลัพธ์ชัดเจนและมีคนเกี่ยวข้อง', do:'เสนอราคา นัดคุยคนสำคัญ เปิดงานใหม่ หรือปิดดีลที่เตรียมไว้แล้ว', avoid:'อย่าใช้ความมั่นใจแทนข้อมูล ตรวจเงื่อนไขเงินและเอกสารก่อนกดตกลง'},
+          en:{focus:'A high-opening day — use it for matters that need a clear result and other people involved.', do:'Quote prices, meet key people, launch new work, or close deals already prepared.', avoid:'Do not let confidence replace due diligence — check money terms and documents before agreeing.'},
+          zh:{focus:'開運高峰日，適合需要明確結果且涉及他人的事務。', do:'報價、約見重要人物、啟動新工作，或收單已準備好的交易。', avoid:'別以信心取代查證 · 簽字前務必核對金額與文件條款。'},
+        },
+        good: {
+          th:{focus:'วันเดินหน้าได้ เหมาะกับงานที่ต้องสื่อสาร ตัดสินใจ และผลักเรื่องให้คืบ', do:'เลือกเรื่องสำคัญ 1-2 เรื่องแล้วทำให้จบ ใช้ชั่วโมงดีช่วยล็อกจังหวะ', avoid:'อย่ากระจายงานหลายทิศเกินไป และอย่าเปิดประเด็นที่ยังไม่มีข้อมูล'},
+          en:{focus:'A day to move forward — good for communication, decisions, and pushing things along.', do:'Pick 1-2 key matters and finish them; use a good hour to lock the timing.', avoid:'Do not spread effort across too many fronts, and do not raise topics you lack data on.'},
+          zh:{focus:'宜前進之日，適合溝通、決策、推進事務。', do:'選定1-2件要事並完成，配合吉時鎖定節奏。', avoid:'別同時分散多頭，也別提出尚無資料的議題。'},
+        },
+        ok: {
+          th:{focus:'วันกลาง ใช้กับงานประจำ งานแก้รายละเอียด และการเตรียมของสำหรับวันใหญ่', do:'เคลียร์คิว ตอบข้อความ จัดเอกสาร ทดลองแผน หรือคุยเบื้องต้นแบบไม่ผูกมัด', avoid:'เลี่ยงตัดสินใจเงินก้อน สัญญายาว หรือคำตอบที่ย้อนกลับมายาก'},
+          en:{focus:'A middling day — good for routine work, fixing details, and preparing for a bigger day.', do:'Clear the queue, reply to messages, organize documents, test plans, or have non-binding talks.', avoid:'Avoid big-money decisions, long contracts, or answers that are hard to take back.'},
+          zh:{focus:'普通日，適合日常事務、處理細節、為大日子做準備。', do:'清理待辦、回覆訊息、整理文件、試行計劃，或進行非正式初談。', avoid:'避免大額財務決定、長期合約，或難以收回的承諾。'},
+        },
+        caution: {
+          th:{focus:'วันระวัง ลดขนาดเดิมพัน ทำเรื่องที่คุมผลเสียได้ และเว้นช่องให้แก้ตัว', do:'ทบทวน ตรวจสัญญา แก้ปัญหาเก่า คุยแบบเก็บข้อมูลมากกว่าปิดดีล', avoid:'อย่าเริ่มงานใหญ่ อย่าใช้อารมณ์ตอบทันที และอย่าเซ็นเรื่องที่ยังไม่ชัด'},
+          en:{focus:'A caution day — reduce the size of your bets, do things whose downside you can control, and leave room to adjust.', do:'Review, check contracts, fix old issues, and talk to gather information rather than close deals.', avoid:'Do not start big work, do not react emotionally, and do not sign anything unclear.'},
+          zh:{focus:'謹慎日，縮小賭注規模，只做能控管後果之事，並留有轉圜餘地。', do:'覆核、檢查合約、處理舊問題，多蒐集資訊而非急於收單。', avoid:'別啟動大事、別情緒化立即回應、別簽署未明之事。'},
+        },
+        avoid: {
+          th:{focus:'วันปิดเกม ไม่เหมาะเสี่ยงใหญ่ ใช้พัก ฟื้นตัว เคลียร์ของเก่า และชะลอคำตอบ', do:'จัดบ้าน ปิดงานค้าง สำรองข้อมูล พักร่างกาย และเลื่อนเรื่องที่มีเดิมพันสูง', avoid:'เลี่ยงสัญญา เงินก้อน การปะทะ และการตัดสินใจจากแรงกดดัน'},
+          en:{focus:'A closing-the-day type — not suited to big risks; rest, recover, clear old items, and delay answers.', do:'Tidy up, close pending work, back up data, rest the body, and postpone high-stakes matters.', avoid:'Avoid contracts, large sums, confrontation, and decisions made under pressure.'},
+          zh:{focus:'收局日，不宜大冒險；宜休息、恢復、清理舊事、延後答覆。', do:'整理居所、結束未完事項、備份資料、讓身體休息，並延後高風險事務。', avoid:'避免簽約、大額金錢、正面衝突，以及在壓力下做決定。'},
+        },
+      };
+      const dayAdvice = DAY_ADVICE_TX[lv.key][L] || DAY_ADVICE_TX[lv.key].th;
+      const lvTxt = lv[L] || lv.th;
+      const T = (k) => pick3(window.HK_I18N && window.HK_I18N[k]);
+      setPracticalBox('t-pillar-practical', [
+        [T('t.pr.focus'), `${lvTxt} ${score}/100 · ${dayAdvice.focus}`],
+        [T('t.pr.do'), yiTop ? `${dayAdvice.do} · ${L==='en'?'helped by':L==='zh'?'吉時：':'ฤกษ์ช่วย:'} ${yiTop}` : dayAdvice.do],
+        [T('t.pr.avoid'), jiTop ? `${dayAdvice.avoid} · ${L==='en'?'avoid':L==='zh'?'忌：':'ควรเลี่ยง:'} ${jiTop}` : dayAdvice.avoid],
+      ]);
+      const HG_STRONG = { th:'ช่องเขียวคือเวลาที่แรงต้านน้อยกว่า เหมาะนัดคุย ส่งงาน หรือปิดเรื่องที่เตรียมพร้อมแล้ว', en:'Green slots have less resistance — good for meetings, submitting work, or closing prepared matters.', zh:'綠色時段阻力較小，適合會談、交件，或完成已準備好的事務。' };
+      const HG_LOW    = { th:'ช่องที่ดูดีคือช่วงผ่อนแรง ใช้กับงานเบา งานแก้ได้ หรือคุยเพื่อเก็บข้อมูล', en:'The best-looking slots are lighter windows — use them for light, reversible work or information-gathering talks.', zh:'看似不錯的時段只宜輕事、可回頭之事，或蒐集資訊的談話。' };
+      const HG_RULE_STRONG = { th:'ถ้างานมีเดิมพันสูง ให้เลือกทั้งคะแนนวันดีและชั่วโมงดีพร้อมกัน', en:'For high-stakes matters, pick a slot where both the day score and the hour are good.', zh:'若事務風險高，須同時挑選日分與時辰皆佳之時段。' };
+      const HG_RULE_LOW    = { th:'คะแนนวันต่ำกว่าชั่วโมงดีเสมอ จึงไม่ใช้ชั่วโมงเขียวเป็นไฟเขียวสำหรับสัญญา/เงินก้อน', en:'The day score always outranks a good hour — do not treat a green hour as a green light for contracts or large sums.', zh:'日分永遠優先於吉時，故不可將綠色時段當作簽約或大額金錢的通行證。' };
+      const gated = lv.key === 'caution' || lv.key === 'avoid';
+      setPracticalBox('t-hours-guide', [
+        [T('t.hg.how'), pick3(gated ? HG_LOW : HG_STRONG)],
+        [T('t.hg.rule'), pick3(gated ? HG_RULE_LOW : HG_RULE_STRONG)],
+      ]);
+      const AG_MODE_GATED = { th:`${lvTxt} ${score}/100 · การ์ด 04 จะแปลงเป็นงานเล็กที่เสี่ยงต่ำ และลดระดับคำแนะนำอัตโนมัติ`, en:`${lvTxt} ${score}/100 · Card 04 switches to low-risk, small tasks and auto-downgrades its suggestions.`, zh:`${lvTxt} ${score}/100 · 卡04自動轉為低風險小事並降級建議。` };
+      const AG_MODE_OK    = { th:`${lvTxt} ${score}/100 · เลือกการ์ดที่ตรงเป้าหมาย แล้วทำในช่วงเวลาที่ดีที่สุด`, en:`${lvTxt} ${score}/100 · Pick the card that matches your goal, then act in the best window.`, zh:`${lvTxt} ${score}/100 · 選擇符合目標的卡片，於最佳時段行動。` };
+      const AG_RULE_GATED = { th:'ทำเฉพาะงานที่เสียหายน้อย ถ้าติดขัดให้หยุด ไม่ฝืนปิดดีล', en:'Only do things with low downside; stop if it gets stuck, do not force a deal closed.', zh:'只做損失可控之事，遇阻即停，勿強行收單。' };
+      const AG_RULE_OK    = { th:'เริ่มจากงานที่เตรียมข้อมูลครบ อย่าใช้คะแนนดีแทนการตรวจรายละเอียด', en:'Start with matters you already have full information on — a good score is not a substitute for checking details.', zh:'從資料齊全之事著手，勿以高分取代細節查核。' };
+      setPracticalBox('t-actions-guard', [
+        [T('t.ag.mode'), pick3(gated ? AG_MODE_GATED : AG_MODE_OK)],
+        [T('t.ag.rule'), pick3(gated ? AG_RULE_GATED : AG_RULE_OK)],
+      ]);
+
+      /* ป้ายระดับ · ดวงคุณ (Personal · DM analysis) */
+      const tagEl = document.getElementById('t-verdict-tag');
+      if (tagEl) {
+        tagEl.setAttribute('data-level', lv.key);
+        tagEl.style.color = ''; tagEl.style.background = ''; tagEl.style.borderColor = '';
+        tagEl.innerHTML = `<span class="hk-level-dot"></span><span class="hk-level-name">${T('t.h.legend.personal').replace(' ·','')} ${score}/100 · ${lvTxt}</span>`;
+      }
+      /* 17 พ.ค. · Tongshu Day Officer chip · Universal (สากล · ทุกคน) · 3 ภาษา */
+      const tongshuChip = document.getElementById('t-tongshu-chip');
+      const tongshuOfficer = document.getElementById('t-tongshu-officer');
+      if (tongshuChip && tongshuOfficer && d.tongshu?.officer) {
+        const OFFICER_CHIP_TX = {
+          建:{th:'เริ่ม',en:'Start',zh:'建'}, 除:{th:'กำจัด',en:'Remove',zh:'除'}, 滿:{th:'เต็ม',en:'Full',zh:'滿'},
+          平:{th:'สมดุล',en:'Balance',zh:'平'}, 定:{th:'มั่นคง',en:'Stabilize',zh:'定'}, 執:{th:'ทำ',en:'Hold',zh:'執'},
+          破:{th:'แตก ⚠',en:'Break ⚠',zh:'破 ⚠'}, 危:{th:'เสี่ยง ⚠',en:'Danger ⚠',zh:'危 ⚠'}, 成:{th:'สำเร็จ ⭐',en:'Success ⭐',zh:'成 ⭐'},
+          收:{th:'เก็บ',en:'Collect',zh:'收'}, 開:{th:'เปิด ⭐',en:'Open ⭐',zh:'開 ⭐'}, 閉:{th:'ปิด ⚠',en:'Close ⚠',zh:'閉 ⚠'},
+        };
+        const off = d.tongshu.officer;
+        const chipTx = OFFICER_CHIP_TX[off];
+        const chipTxt = chipTx ? pick3(chipTx) : off;
+        tongshuOfficer.innerHTML = `<b style="font-family:'Noto Serif TC',serif;">${off}</b>${L==='en'?' day':L==='zh'?'日':'日'} · ${chipTxt}`;
+        tongshuChip.style.display = 'inline-flex';
+      }
+
+      /* 🐲🦚🦜🐯🐢 sync 5 สัตว์มงคล · เปลี่ยนตามคุณภาพวัน */
+      const spirit = document.getElementById('t-verdict-spirit');
+      if (spirit) spirit.setAttribute('data-level', lv.key);
+      const spiritLabel = document.getElementById('t-verdict-spirit-label');
+      if (spiritLabel) {
+        const SPIRIT_NAMES = {
+          best:    { th:['鳳凰','ฟีนิกซ์ทอง'],     en:['Fenghuang','PHOENIX'],         zh:['鳳凰','南方至尊'] },
+          good:    { th:['青龍','มังกรเขียว'],       en:['Qinglong','AZURE DRAGON'],    zh:['青龍','東方陽木'] },
+          ok:      { th:['朱雀','นกหงส์แดง'],        en:['Zhuque','VERMILLION BIRD'],   zh:['朱雀','南方明火'] },
+          caution: { th:['白虎','เสือขาว'],          en:['Baihu','WHITE TIGER'],         zh:['白虎','西方銳金'] },
+          avoid:   { th:['玄武','เต่าดำ'],            en:['Xuanwu','BLACK TORTOISE'],    zh:['玄武','北方藏水'] },
+        };
+        const nm = SPIRIT_NAMES[lv.key] || SPIRIT_NAMES.good;
+        spiritLabel.innerHTML = `<span class="tc">${nm[L][0]}</span>${nm[L][1]}`;
+      }
+
+      /* เข็มชี้บน gauge · score 0-100 → left 0-100% */
+      const needle = document.getElementById('t-verdict-needle');
+      if (needle) needle.style.left = Math.max(2, Math.min(98, score)) + '%';
+
+      /* ข้อความใต้ gauge · บอกว่าใกล้แตะระดับถัดไปแค่ไหน · 3 ภาษา */
+      const foot = document.getElementById('t-verdict-foot');
+      if (foot) {
+        const cuts = [0, 35, 50, 65, 80, 100];
+        const i = lv.segIdx;
+        const lo = cuts[i], hi = cuts[i+1];
+        const inSeg = (score - lo) / Math.max(1, (hi - lo));
+        const LADDER = {
+          th: { up:['ระวัง','ปานกลาง','ดี','ดีมาก','สูงสุด'], dn:['ต่ำสุด','ห้าม','ระวัง','ปานกลาง','ดี'], today:'วันนี้อยู่ช่วง', near:'ใกล้แตะ', just:'เพิ่งเลย', ago:'มา', mid:'ค่อนกลางช่วง' },
+          en: { up:['Caution','Moderate','Good','Excellent','the top'], dn:['the bottom','Avoid','Caution','Moderate','Good'], today:'Today sits in the', near:'nearing', just:'just past', ago:'', mid:'roughly mid-range' },
+          zh: { up:['謹慎','普通','佳','極佳','頂端'], dn:['底端','忌','謹慎','普通','佳'], today:'今日處於', near:'接近', just:'剛過', ago:'', mid:'區間中段' },
+        };
+        const lad = LADDER[L] || LADDER.th;
+        let tail = '';
+        if (inSeg >= .75 && i < 4)      tail = ` · ${lad.near} <b>${lad.up[i]}</b>`;
+        else if (inSeg <= .25 && i > 0) tail = ` · ${lad.just} <b>${lad.dn[i]}</b>${lad.ago ? ' '+lad.ago : ''}`;
+        else                            tail = ` · ${lad.mid}`;
+        foot.innerHTML = `${lad.today} <b>${lvTxt}</b>${tail}`;
+      }
+
+      /* h2 narrative · ดึงจาก top breakdown · 3 ภาษา */
+      const h2 = document.getElementById('t-verdict-h2');
+      if (h2 && d.universal.breakdown) {
+        const officer = d.universal.breakdown.officer;
+        /* บรรทัด 1 · ดวงคุณ (tier ของวันนี้) */
+        const PERSONAL_LINE_TX = {
+          best:    { th:`ดวงคุณ ${score}/100 · <b>วันเปิดสูง</b> · ใช้กับเรื่องสำคัญได้`, en:`Your chart: ${score}/100 · <b>A high-opening day</b> · good for important matters`, zh:`您的命盤 ${score}/100 · <b>開運高峰日</b> · 宜辦要事` },
+          good:    { th:`ดวงคุณ ${score}/100 · <b>วันดี</b> · เดินหน้าแบบมีแผน`, en:`Your chart: ${score}/100 · <b>A good day</b> · move forward with a plan`, zh:`您的命盤 ${score}/100 · <b>吉日</b> · 按計劃前進` },
+          ok:      { th:`ดวงคุณ ${score}/100 · <b>วันกลาง</b> · ทำงานประจำและเตรียมของ`, en:`Your chart: ${score}/100 · <b>A middling day</b> · routine work and preparation`, zh:`您的命盤 ${score}/100 · <b>普通日</b> · 處理日常並做準備` },
+          caution: { th:`ดวงคุณ ${score}/100 · <b>วันระวัง</b> · ลดเดิมพันและตรวจซ้ำ`, en:`Your chart: ${score}/100 · <b>A caution day</b> · reduce stakes and double-check`, zh:`您的命盤 ${score}/100 · <b>謹慎日</b> · 降低賭注並覆核` },
+          avoid:   { th:`ดวงคุณ ${score}/100 · <b>วันห้าม</b> · พักและเลี่ยงเรื่องใหญ่`, en:`Your chart: ${score}/100 · <b>An avoid day</b> · rest and avoid major matters`, zh:`您的命盤 ${score}/100 · <b>忌日</b> · 宜休息並避開大事` },
+        };
+        const personalLine = pick3(PERSONAL_LINE_TX[lv.key]) || pick3(PERSONAL_LINE_TX.ok);
+        /* บรรทัด 2 · ปฏิทินจีน · 12 ฤกษ์ + hint ภาษาคน · 3 ภาษา */
+        const OFFICER_TX = {
+          '建':{th:'เริ่ม',hint:{th:'เริ่มงานใหม่',en:'start new work',zh:'開展新事'}},
+          '除':{th:'กำจัด',hint:{th:'ขจัดปัญหา · ทำความสะอาด',en:'clear problems · clean up',zh:'除障 · 清潔'}},
+          '满':{th:'เต็ม',hint:{th:'เก็บออม · เปิดร้าน',en:'save up · open a shop',zh:'儲蓄 · 開業'}},
+          '平':{th:'สมดุล',hint:{th:'กิจกรรมทั่วไป',en:'general activities',zh:'一般事務'}},
+          '定':{th:'มั่นคง',hint:{th:'ตั้งหลัก · ตัดสินใจ',en:'settle · decide',zh:'定局 · 決策'}},
+          '執':{th:'ทำ',hint:{th:'ลงมือ · ออกแรง',en:'take action · exert effort',zh:'動手 · 出力'}},
+          '破':{th:'แตก',hint:{th:'⚠ หลีกเลี่ยงเรื่องใหญ่',en:'⚠ avoid major matters',zh:'⚠ 避開大事'}},
+          '危':{th:'เสี่ยง',hint:{th:'⚠ ระวังตัว',en:'⚠ be careful',zh:'⚠ 謹慎自身'}},
+          '成':{th:'สำเร็จ',hint:{th:'⭐ งานใหญ่ · เปิดกิจการ',en:'⭐ major work · open a business',zh:'⭐ 大事 · 開業'}},
+          '收':{th:'เก็บ',hint:{th:'สะสม · จัดเก็บ',en:'gather · store',zh:'收藏 · 歸整'}},
+          '開':{th:'เปิด',hint:{th:'⭐ เริ่มสิ่งใหม่',en:'⭐ start something new',zh:'⭐ 開創新局'}},
+          '閉':{th:'ปิด',hint:{th:'ปิดงาน · เก็บของ',en:'close out · put things away',zh:'收工 · 收納'}},
+          '闭':{th:'ปิด',hint:{th:'ปิดงาน · เก็บของ',en:'close out · put things away',zh:'收工 · 收納'}}
+        };
+        const offTx = OFFICER_TX[officer.name];
+        const offLabel = offTx ? pick3({th:offTx.th, en:officer.name, zh:officer.name}) : officer.name;
+        const offHint = offTx ? pick3(offTx.hint) : '';
+        const calendarLine = L === 'en'
+          ? `Chinese almanac · Officer <b>${officer.name}</b> (${offTx ? offTx.th : officer.name}) · good for ${offHint}`
+          : L === 'zh'
+          ? `通書 · 建除 <b>${officer.name}</b> · 宜${offHint}`
+          : `ปฏิทินจีน · ฤกษ์<b>${offLabel}</b> (${officer.name}) · เหมาะ${offHint}`;
+        h2.innerHTML = `${personalLine}<br/>${calendarLine}`;
+      }
+
+      /* 5. render TODAY'S PILLAR */
+      setText('t-day-stem', d.dayPillar.stem);
+      setText('t-day-branch', d.dayPillar.branch);
+      /* update CSS class for element coloring */
+      const stemEl = document.getElementById('t-day-stem');
+      const brEl = document.getElementById('t-day-branch');
+      const elemMap = { Wood:'wood', Fire:'fire', Earth:'earth', Metal:'metal', Water:'water', wood:'wood', fire:'fire', earth:'earth', metal:'metal', water:'water' };
+      if (stemEl) {
+        stemEl.className = 'gz-cell ' + (elemMap[d.dayPillar.element]||'metal');
+      }
+      if (brEl) {
+        brEl.className = 'gz-cell ' + (elemMap[d.dayPillar.branchElement]||'fire');
+      }
+      /* day-name · 3 ภาษา (STEM/BR/ELEM name dict เดิม th-only → เพิ่ม en/zh คู่กัน ไม่แตะ engine) */
+      const dayName = document.getElementById('t-day-name');
+      if (dayName) {
+        const stemClass = elemMap[d.dayPillar.element] || 'earth';
+        const branchClass = elemMap[d.dayPillar.branchElement] || 'earth';
+        const stemNm = pick3(STEM_NAME_TX[d.dayPillar.stem]) || d.dayPillar.stem;
+        const brNm = pick3(BR_NAME_TX[d.dayPillar.branch]) || d.dayPillar.branch;
+        const elStemNm = pick3(ELEM_NAME_TX[d.dayPillar.element]) || d.dayPillar.element;
+        const elBrNm = pick3(ELEM_NAME_TX[d.dayPillar.branchElement]) || d.dayPillar.branchElement;
+        const subLine = L === 'en'
+          ? `Stem element ${elStemNm} · Branch element ${elBrNm} · ${d.tongshu.officer} day · ${d.tongshu.twelveStar}`
+          : L === 'zh'
+          ? `干五行${elStemNm} · 支五行${elBrNm} · ${d.tongshu.officer}日 · ${d.tongshu.twelveStar}`
+          : `ธาตุก้าน ${elStemNm} · ธาตุกิ่ง ${elBrNm} · วัน${d.tongshu.officer} · ${d.tongshu.twelveStar}`;
+        dayName.innerHTML =
+          `<span style="color:var(--${stemClass});font-weight:700">${stemNm} <span class="tc">${d.dayPillar.stem}</span></span>` +
+          ` + <span style="color:var(--${branchClass});font-weight:700">${brNm} <span class="tc">${d.dayPillar.branch}</span></span><br/>` +
+          `<span style="font-size:13px;color:var(--fg-soft);font-family:var(--thai);letter-spacing:0">${subLine}</span>`;
+      }
+
+      /* === 5.1 Wire ปฏิกิริยา VS DM / VS Hour จาก personal breakdown · 3 ภาษา === */
+      function renderRel(elId, keyId, nameId, descId, keyTxt, nameTxt, descTxt, klass){
+        const el = document.getElementById(elId);
+        if (!el) return;
+        el.className = 'rel ' + (klass||'');
+        const ke = document.getElementById(keyId); if (ke) ke.textContent = keyTxt;
+        const ne = document.getElementById(nameId); if (ne) ne.textContent = nameTxt;
+        const de = document.getElementById(descId); if (de) de.textContent = descTxt;
+      }
+      const VS_DM_LABEL = { th:'เทียบวันเกิดหลัก', en:'vs Day Master', zh:'對比日主' };
+      if (d.personal && d.personal.breakdown) {
+        const bd = d.personal.breakdown;
+        /* stem relation · DM ↔ Day */
+        const stemMap = {
+          'stemHe':    { name:'天合 · ผูกพัน',   en:'天合 · Bond',     zh:'天合 · 結盟',   desc:{th:'วันเกิดหลักผูกกับวันนี้ · ดีต่อความร่วมมือ', en:'Your Day Master combines with today — good for cooperation.', zh:'日主與今日相合 · 有利合作'}, klass:'good' },
+          'stemClash': { name:'天剋 · ปะทะ',     en:'天剋 · Clash',    zh:'天剋 · 相剋',   desc:{th:'วันเกิดหลักถูกปะทะ · เลี่ยงตัดสินใจใหญ่', en:'Your Day Master clashes with today — avoid major decisions.', zh:'日主受沖剋 · 避免重大決定'}, klass:'bad'  },
+          'same':      { name:'同 · เสริมแรง',    en:'同 · Reinforce', zh:'同 · 助力',    desc:{th:'ธาตุเดียวกับวันเกิดหลัก · แรงดีลง', en:'Same element as your Day Master — extra support.', zh:'與日主同五行 · 助力增強'}, klass:'good' },
+          'controls':  { name:'剋 · ครอบงำ',     en:'剋 · Dominates', zh:'剋 · 制',      desc:{th:'วันเกิดหลักคุมสถานการณ์ได้ · กดดันได้ผล', en:'Your Day Master controls the situation — pressure works in your favor.', zh:'日主能掌控局面 · 施壓有效'}, klass:'good' },
+          'controlled':{ name:'剋我 · ถูกครอบ',  en:'剋我 · Controlled', zh:'剋我 · 受制', desc:{th:'วันเกิดหลักถูกกด · ต้องระวัง', en:'Your Day Master is under pressure — be careful.', zh:'日主受制 · 須謹慎'}, klass:'bad'  },
+          'produces':  { name:'生 · เสริมพลัง',   en:'生 · Nourished', zh:'生 · 得生',    desc:{th:'วันเกิดหลักได้รับการเลี้ยง · ทรัพย์เข้า', en:'Your Day Master is nourished — wealth flows in.', zh:'日主得生 · 財來'}, klass:'good' },
+          'produced':  { name:'我生 · ผ่อนพลัง', en:'我生 · Draining', zh:'我生 · 洩氣',  desc:{th:'วันเกิดหลักต้องจ่ายพลัง · ใช้แรงเยอะ', en:'Your Day Master spends energy — expect more effort needed.', zh:'日主耗力 · 需多費心'}, klass:'ok'   }
+        };
+        const smDefault = { name:'—', en:'—', zh:'—', desc:{th:'ปกติ', en:'Normal', zh:'平常'}, klass:'' };
+        const sm = stemMap[bd.stemDayRelation] || smDefault;
+        renderRel('t-rel-dm', 't-rel-dm-key', 't-rel-dm-name', 't-rel-dm-desc',
+                  pick3(VS_DM_LABEL), (L==='en'?sm.en:L==='zh'?sm.zh:sm.name), pick3(sm.desc), sm.klass);
+
+        /* branch relation · ใช้ relation ของ branch ที่หนักสุด (clash > harm > sanhe > he) */
+        const br = bd.branchToDay || {};
+        const order = ['clash','harm','sanhe','he','none'];
+        const labelTH = {
+          'clash':{ k:{th:'เทียบดวง · ปะทะ',en:'vs Chart · Clash',zh:'對比命盤 · 沖'}, n:'沖 · ปะทะ', en:'沖 · Clash', zh:'沖 · 相沖', d:{th:'มีเสาในดวงปะทะวันนี้ · เลี่ยงตัดสินใจเร่งด่วน',en:'A pillar in your chart clashes with today — avoid rushed decisions.',zh:'命盤中有柱與今日相沖 · 避免倉促決定'}, c:'bad'  },
+          'harm': { k:{th:'เทียบดวง · แทรก',en:'vs Chart · Harm',zh:'對比命盤 · 害'}, n:'害 · แทรกแซง', en:'害 · Harm', zh:'害 · 相害', d:{th:'มีเสาในดวงแทรกแซงวันนี้ · ระวังเรื่องลับ',en:'A pillar in your chart quietly interferes with today — watch for hidden issues.',zh:'命盤中有柱暗中干擾今日 · 慎防暗事'}, c:'bad'  },
+          'sanhe':{ k:{th:'เทียบดวง · สามผูก',en:'vs Chart · Triple Bond',zh:'對比命盤 · 三合'}, n:'三合 · ผูกพัน', en:'三合 · Bond', zh:'三合 · 結盟', d:{th:'มีเสาในดวงผูกพันแน่น · เสริมเรื่องคน',en:'A pillar in your chart forms a strong bond with today — good for people matters.',zh:'命盤中有柱與今日緊密相合 · 有利人際'}, c:'good' },
+          'he':   { k:{th:'เทียบดวง · ผูก',en:'vs Chart · Bond',zh:'對比命盤 · 六合'}, n:'六合 · ผูกพัน', en:'六合 · Bond', zh:'六合 · 結盟', d:{th:'มีเสาในดวงผูกพันกับวัน · ดีต่อข้อตกลง',en:'A pillar in your chart bonds with today — good for agreements.',zh:'命盤中有柱與今日相合 · 有利協議'}, c:'good' },
+          'none': { k:{th:'เทียบดวง · ปกติ',en:'vs Chart · Normal',zh:'對比命盤 · 平常'}, n:'—', en:'—', zh:'—', d:{th:'ไม่มีปฏิกิริยาเด่นกับเสาในดวง',en:'No notable interaction with the pillars in your chart.',zh:'與命盤柱位無明顯互動'}, c:''     }
+        };
+        let pick = 'none';
+        for (const o of order) {
+          if (Object.values(br).includes(o)) { pick = o; break; }
+        }
+        const bm = labelTH[pick];
+        renderRel('t-rel-br', 't-rel-br-key', 't-rel-br-name', 't-rel-br-desc', pick3(bm.k), (L==='en'?bm.en:L==='zh'?bm.zh:bm.n), pick3(bm.d), bm.c);
+      } else if (td.verdict) {
+        const ev = td.verdict.evidence || {};
+        const yong = (td.verdict.yongshen || ev.usefulGods?.yong || []).join(' · ') || '—';
+        const ji = (td.verdict.jishen || ev.usefulGods?.ji || []).slice(0,3).join(' · ') || '—';
+        const ap = ev.annualPillar ? `${ev.annualPillar.stem || ''}${ev.annualPillar.branch || ''}` : '—';
+        const cb = ev.chengBaiNow?.verdict || '—';
+        const klass = (lv.key === 'caution' || lv.key === 'avoid') ? 'bad' : (lv.key === 'ok' ? '' : 'good');
+        const EVID_LABEL = { th:'หลักฐานซินแส · 用神/忌神', en:'Sifu evidence · 用神/忌神', zh:'師父依據 · 用神/忌神' };
+        const TIMING_LABEL = { th:'จังหวะช่วงนี้ · 行運', en:'Current timing · 行運', zh:'當前運勢 · 行運' };
+        const HELP_TXT = { th:`ของช่วย: ${yong} · ของแสลง: ${ji}`, en:`Helps: ${yong} · Avoid: ${ji}`, zh:`喜用：${yong} · 忌：${ji}` };
+        const TIMING_NOTE = { th:'คะแนนนี้อ่านร่วมกับเสาวัน วัยจร ปีจร 病藥 และ成敗 ชุดเดียวกับซินแส', en:'This score is read together with the Day Pillar, luck cycle, annual pillar, remedy (病藥) and 成敗 — the same set the Sifu uses.', zh:'此分數須與日柱、大運、流年、病藥、成敗一併解讀，與師父同一套依據' };
+        renderRel('t-rel-dm', 't-rel-dm-key', 't-rel-dm-name', 't-rel-dm-desc',
+                  pick3(EVID_LABEL), `${td.verdict.label || lvTxt} · ${score}/100`, pick3(HELP_TXT), klass);
+        renderRel('t-rel-br', 't-rel-br-key', 't-rel-br-name', 't-rel-br-desc',
+                  pick3(TIMING_LABEL), `${L==='en'?'Annual':L==='zh'?'流年':'ปีจร'} ${ap} · 成敗 ${cb}`, pick3(TIMING_NOTE), klass);
+      }
     }
+    window.__renderVerdictBlock = renderVerdictBlock;
+    renderVerdictBlock(document.documentElement.getAttribute('data-lang') || 'th');
 
     /* === 5.2 Wire 宜 / 忌 จาก tongshu (ตำราคลาสสิก · 3 lang TH/EN/ZH · 17 พ.ค.) === */
     window.__renderTodayRelYiJi = function(lang){
@@ -3141,9 +3283,15 @@ window.applyI18N = applyI18N;
         if (userChart) body.userChart = userChart;
         return body;
       }
-      const labelText = {
-        best: 'ดีมาก', good: 'ดี', ok: 'กลางบวก', caution: 'ระวัง', avoid: 'เลี่ยง',
+      /* 5 ก.ค. · ป้ายคุณภาพ/chrome ของแผงนี้เป็น local classification (ไม่ใช่ engine) → ทำ 3 ภาษาได้ปลอดภัย
+       * หมายเหตุ: door_th/star_th/deity_th/scoring_note/note_th มาจาก backend (/api/today/directions) เป็นภาษาไทยล้วน
+       * ยังไม่มี en/zh จาก API → คงไว้ตามเดิม (นอกขอบเขตหน้านี้ ต้องแก้ backend แยกต่างหาก) */
+      const LABEL_TX = {
+        best: {th:'ดีมาก', en:'Excellent', zh:'極佳'}, good: {th:'ดี', en:'Good', zh:'佳'},
+        ok: {th:'กลางบวก', en:'Mild positive', zh:'偏佳'}, caution: {th:'ระวัง', en:'Caution', zh:'謹慎'},
+        avoid: {th:'เลี่ยง', en:'Avoid', zh:'忌'},
       };
+      const labelText = { best:'ดีมาก', good:'ดี', ok:'กลางบวก', caution:'ระวัง', avoid:'เลี่ยง' };
       const fullDir = x => x?.direction_th_long || x?.direction_th || x?.direction || '—';
       function renderDirectionEnergy(dd, lang){
         const box = document.getElementById('t-de-content');
@@ -3151,6 +3299,8 @@ window.applyI18N = applyI18N;
         const en = dd?.direction_energy;
         if (!box || !en?.scores?.length) return;
 	        const curLang = (lang === 'en' || lang === 'zh') ? lang : 'th';
+	        const pk = (obj) => (obj && (obj[curLang] !== undefined ? obj[curLang] : obj.th)) ?? '';
+	        const label3 = (key) => LABEL_TX[key] ? pk(LABEL_TX[key]) : (key || '—');
 	        const top = en.best?.[0] || en.scores[0];
 	        const scoreByDir = new Map((en.scores || []).map(x => [x.direction, x]));
 	        const savedDir = window.__todayDirSelected;
@@ -3163,24 +3313,29 @@ window.applyI18N = applyI18N;
 	        const szd = selected.zibai?.day || null;
 	        const hourStars = dd.flying_focus?.hour?.stars || [];
 	        const dayStars = dd.flying_focus?.day?.stars || [];
+	        const noStarTxt = pk({th:'ไม่มีดาว 1/2/5/9 จรเด่น', en:'No notable flying star 1/2/5/9', zh:'無1/2/5/9飛星突顯'});
 	        const starLine = s => s
 	          ? `${escHtml(s.star)} ${escHtml(s.th || '')} <span class="tc">${escHtml(s.zh || '')}</span>`
-	          : 'ไม่มีดาว 1/2/5/9 จรเด่น';
+	          : noStarTxt;
 	        const levelFromScore = score => {
 	          const n = Number(score);
-	          if (!Number.isFinite(n)) return { cls:'ok', text:'กลาง' };
-	          if (n >= 70) return { cls:'good', text:'ดี' };
-	          if (n >= 55) return { cls:'ok', text:'กลางบวก' };
-	          if (n >= 40) return { cls:'caution', text:'ระวัง' };
-	          return { cls:'bad', text:'เลี่ยง' };
+	          if (!Number.isFinite(n)) return { cls:'ok', text:label3('ok') };
+	          if (n >= 70) return { cls:'good', text:label3('good') };
+	          if (n >= 55) return { cls:'ok', text:label3('ok') };
+	          if (n >= 40) return { cls:'caution', text:label3('caution') };
+	          return { cls:'bad', text:label3('avoid') };
+	        };
+	        const DELTA_TX = {
+	          strong: {th:'หนุนมาก', en:'Strong boost', zh:'大助'}, boost: {th:'หนุน', en:'Boost', zh:'助'},
+	          mid: {th:'กลาง', en:'Neutral', zh:'平'}, drag: {th:'กด', en:'Drag', zh:'洩'}, avoid: {th:'เลี่ยง', en:'Avoid', zh:'忌'},
 	        };
 	        const levelFromDelta = delta => {
 	          const n = Number(delta || 0);
-	          if (n >= 7) return { cls:'good', text:'หนุนมาก' };
-	          if (n >= 2) return { cls:'good', text:'หนุน' };
-	          if (n > -4) return { cls:'ok', text:'กลาง' };
-	          if (n > -8) return { cls:'caution', text:'กด' };
-	          return { cls:'bad', text:'เลี่ยง' };
+	          if (n >= 7) return { cls:'good', text:pk(DELTA_TX.strong) };
+	          if (n >= 2) return { cls:'good', text:pk(DELTA_TX.boost) };
+	          if (n > -4) return { cls:'ok', text:pk(DELTA_TX.mid) };
+	          if (n > -8) return { cls:'caution', text:pk(DELTA_TX.drag) };
+	          return { cls:'bad', text:pk(DELTA_TX.avoid) };
 	        };
 	        const miniTag = (mark, level) => `<span class="de-mini-tag ${escHtml(level.cls)}"><i>${escHtml(mark)}</i>${escHtml(level.text)}</span>`;
 	        const qimenLevel = x => levelFromScore(x.qimen?.score);
@@ -3191,37 +3346,43 @@ window.applyI18N = applyI18N;
 	            <div><b>${main}</b><em>${sub || ''}</em></div>
 	            <div class="state">${escHtml(level.text)}</div>
 	          </div>`;
-	        const qimenFactors = (p, scoreLabel) => p ? `
+	        const noQimenTxt = pk({th:'ไม่มีข้อมูลฉีเหมิน', en:'No Qi Men data', zh:'無奇門資料'});
+        const scoreLabelDefault = pk({th:'คะแนนฉีเหมิน', en:'Qi Men score', zh:'奇門分數'});
+        const qimenFactors = (p, scoreLabel) => p ? `
 	          <div class="de-factor-row">
 	            ${factor('門', `${escHtml(p.door_th || '—')} <span class="tc">${escHtml(p.door || '')}</span>`, escHtml(fullDir(p)), levelFromDelta(p.door_score))}
-	            ${factor('星', `${escHtml(p.star_th || '—')} <span class="tc">${escHtml(p.star || '')}</span>`, `${escHtml(scoreLabel || 'คะแนนฉีเหมิน')} ${escHtml(p.score ?? '—')}`, levelFromDelta(p.star_score))}
+	            ${factor('星', `${escHtml(p.star_th || '—')} <span class="tc">${escHtml(p.star || '')}</span>`, `${escHtml(scoreLabel || scoreLabelDefault)} ${escHtml(p.score ?? '—')}`, levelFromDelta(p.star_score))}
 	            ${factor('神', `${escHtml(p.deity_th || '—')} <span class="tc">${escHtml(p.deity || '')}</span>`, '', levelFromDelta(p.deity_score))}
-	          </div>` : 'ไม่มีข้อมูลฉีเหมิน';
+	          </div>` : noQimenTxt;
 	        const zibaiFactor = (s, fallback) => {
-	          const level = s?.quality === 'good' ? { cls:'good', text:'หนุน' } : s?.quality === 'bad' ? { cls:'bad', text:'เลี่ยง' } : { cls:'ok', text:'กลาง' };
-	          return factor('飛', s ? starLine(s) : 'ไม่มีดาว 1/2/5/9 จรเด่น', s ? escHtml(s.direction_th_long || s.direction_th || '') : fallback, level);
+	          const level = s?.quality === 'good' ? { cls:'good', text:pk(DELTA_TX.boost) } : s?.quality === 'bad' ? { cls:'bad', text:pk(DELTA_TX.avoid) } : { cls:'ok', text:pk(DELTA_TX.mid) };
+	          return factor('飛', s ? starLine(s) : noStarTxt, s ? escHtml(s.direction_th_long || s.direction_th || '') : fallback, level);
 	        };
+	        const scoreWordTxt = pk({th:'คะแนน', en:'score', zh:'分'});
+	        const noStarDashTxt = pk({th:'ดาวจร -', en:'flying star -', zh:'飛星 -'});
+	        const noDoorDashTxt = pk({th:'ประตู -', en:'door -', zh:'門 -'});
 	        const mapCell = dir => {
 	          const x = scoreByDir.get(dir);
 	          if (!x) return '<div class="de-map-cell"></div>';
 	          const qh = x.qimen?.hour || null;
 	          const zh = x.zibai?.hour || null;
 	          const active = x.direction === selected.direction ? ' is-selected' : '';
-	          const zToken = zh ? `${escHtml(zh.star)} ${escHtml(zh.th || '')} <span class="tc">${escHtml(zh.zh || '')}</span>` : 'ดาวจร -';
+	          const zToken = zh ? `${escHtml(zh.star)} ${escHtml(zh.th || '')} <span class="tc">${escHtml(zh.zh || '')}</span>` : noStarDashTxt;
 	          return `<button type="button" class="de-map-cell ${escHtml(x.label)}${active}" data-de-dir="${escHtml(x.direction)}">
 	            <div class="de-cell-dir"><span>${escHtml(x.direction_th_long || x.direction_th || x.direction)}</span><span class="tc">${escHtml(x.direction_zh || '')}</span></div>
-	            <div class="de-cell-score"><b>${escHtml(x.score)}</b><span>คะแนน</span></div>
+	            <div class="de-cell-score"><b>${escHtml(x.score)}</b><span>${scoreWordTxt}</span></div>
 	            <div class="de-cell-lines">${miniTag('門', qimenLevel(x))}${miniTag('飛', zibaiLevel(x))}</div>
-	            <div class="de-cell-token">${qh ? `${escHtml(qh.door_th || qh.door || '')} <span class="tc">${escHtml(qh.door || '')}</span>` : 'ประตู -'} · ${zToken}</div>
+	            <div class="de-cell-token">${qh ? `${escHtml(qh.door_th || qh.door || '')} <span class="tc">${escHtml(qh.door || '')}</span>` : noDoorDashTxt} · ${zToken}</div>
 	          </button>`;
 	        };
 	        const centerStar = hourStars.find(s => s.direction === 'C') || dayStars.find(s => s.direction === 'C') || null;
+	        const centerTxt = pk({th:'กลาง', en:'Center', zh:'中'});
 	        const mapHtml = `
 	          <div class="de-map">
 	            ${mapCell('SE')}${mapCell('S')}${mapCell('SW')}
 	            ${mapCell('E')}
 	            <div class="de-map-center">
-	              <b>กลาง <span class="tc">中</span></b>
+	              <b>${centerTxt} <span class="tc">中</span></b>
 	              <div class="tm">${escHtml(en.updated_time || '—')}</div>
 	              <span>${escHtml(en.school_label || '')}</span>
 	              <span>${starLine(centerStar)}</span>
@@ -3235,31 +3396,51 @@ window.applyI18N = applyI18N;
           .sort((a,b) => a.score - b.score)
           .slice(0, 4)
           .map(x => x.direction_th_long || x.direction_th || x.direction);
-        if (upd) upd.innerHTML = `คำนวณล่าสุด <b>${escHtml(en.updated_time || '—')}</b> · ${escHtml(en.school_label || '')}`;
-        const sourceNote = en.source?.degraded ? `<br/>แหล่งข้อมูล: ${escHtml(en.source?.note_th || 'ข้อมูลฉีเหมินมาไม่ครบ')}` : '';
+        const updatedTxt = pk({th:'คำนวณล่าสุด', en:'Last updated', zh:'最近計算'});
+        if (upd) upd.innerHTML = `${updatedTxt} <b>${escHtml(en.updated_time || '—')}</b> · ${escHtml(en.school_label || '')}`;
+        const dataSourceTxt = pk({th:'แหล่งข้อมูล:', en:'Data source:', zh:'資料來源：'});
+        const qimenIncompleteTxt = pk({th:'ข้อมูลฉีเหมินมาไม่ครบ', en:'Qi Men data incomplete', zh:'奇門資料不完整'});
+        const sourceNote = en.source?.degraded ? `<br/>${dataSourceTxt} ${escHtml(en.source?.note_th || qimenIncompleteTxt)}` : '';
+        const topDirTxt = pk({th:'ทิศเด่นตอนนี้', en:'Top direction now', zh:'當下最強方位'});
+        const qimenBarTxt = pk({th:'ฉีเหมิน', en:'Qi Men', zh:'奇門'});
+        const zibaiBarTxt = pk({th:'จื่อไป๋', en:'Flying Star', zh:'紫白'});
+        const noteDefaultTxt = pk({th:'พลังทิศไม่รวมดวงคน', en:'Direction energy excludes your personal chart', zh:'方位能量不含個人命盤'});
+        const forYouTxt = pk({th:'สำหรับคุณ:', en:'For you:', zh:'對您而言：'});
+        const overlayDefaultTxt = pk({th:'แยกจากคะแนนพลังทิศ', en:'Separate from the direction-energy score', zh:'獨立於方位能量分數'});
+        const mapHeadTxt = pk({th:'ผัง 9 ช่อง', en:'9-Grid Map', zh:'九宮圖'});
+        const tapHintTxt = pk({th:'แตะทิศเพื่อดูรายละเอียด', en:'Tap a direction for details', zh:'點選方位查看詳情'});
+        const qhHourTxt = pk({th:'ฉีเหมินยาม', en:'Qi Men (hour)', zh:'奇門時盤'});
+        const zbHourTxt = pk({th:'จื่อไป๋ยาม', en:'Flying Star (hour)', zh:'紫白時盤'});
+        const qhDayTxt = pk({th:'ฉีเหมินวัน', en:'Qi Men (day)', zh:'奇門日盤'});
+        const zbDayTxt = pk({th:'จื่อไป๋วัน', en:'Flying Star (day)', zh:'紫白日盤'});
+        const noStarFocusTxt = pk({th:'ไม่มีดาวจรโฟกัสในทิศนี้', en:'No focus flying star for this direction', zh:'此方位無焦點飛星'});
+        const qhScoreHourTxt = pk({th:'คะแนนฉีเหมินยาม', en:'Qi Men hour score', zh:'奇門時盤分數'});
+        const qhScoreDayTxt = pk({th:'คะแนนฉีเหมินวัน', en:'Qi Men day score', zh:'奇門日盤分數'});
+        const avoidLabelTxt = pk({th:'ควรเลี่ยง:', en:'Avoid:', zh:'宜避：'});
+        const noAvoidTxt = pk({th:'ไม่มีทิศเลี่ยงเด่นในชั้นพลังทิศ', en:'No notably weak direction in the direction-energy layer', zh:'方位能量層無明顯忌方'});
         box.innerHTML = `
           <div class="de-layout">
             <div class="de-hero">
               <div class="de-hero-top">
                 <div>
-                  <div class="de-k">ทิศเด่นตอนนี้</div>
+                  <div class="de-k">${topDirTxt}</div>
                   <div class="de-dir-name">${escHtml(top.direction_th_long || top.direction_th || top.direction)} <span class="tc">${escHtml(top.direction_zh || '')}</span></div>
                 </div>
                 <div class="de-score ${escHtml(top.label)}">
                   <div class="n">${escHtml(top.score)}</div>
-                  <div class="lbl">${escHtml(top.label_th || labelText[top.label] || '')}</div>
+                  <div class="lbl">${curLang === 'th' ? escHtml(top.label_th || label3(top.label)) : escHtml(label3(top.label))}</div>
                 </div>
 	              </div>
 	              <div class="de-mini-bars">
-	                <div class="de-bar"><b>ฉีเหมิน</b><div class="de-bar-track"><i style="width:${Math.max(0, Math.min(100, top.qimen?.score || 0))}%"></i></div><span class="de-signal">${escHtml(qimenLevel(top).text)}</span></div>
-	                <div class="de-bar"><b>จื่อไป๋</b><div class="de-bar-track"><i style="width:${Math.max(0, Math.min(100, top.zibai?.score || 0))}%"></i></div><span class="de-signal">${escHtml(zibaiLevel(top).text)}</span></div>
+	                <div class="de-bar"><b>${qimenBarTxt}</b><div class="de-bar-track"><i style="width:${Math.max(0, Math.min(100, top.qimen?.score || 0))}%"></i></div><span class="de-signal">${escHtml(qimenLevel(top).text)}</span></div>
+	                <div class="de-bar"><b>${zibaiBarTxt}</b><div class="de-bar-track"><i style="width:${Math.max(0, Math.min(100, top.zibai?.score || 0))}%"></i></div><span class="de-signal">${escHtml(zibaiLevel(top).text)}</span></div>
               </div>
-              <div class="de-note">${escHtml(en.scoring_note || 'พลังทิศไม่รวมดวงคน')}<br/>สำหรับคุณ: ${escHtml(en.personal_overlay?.note_th || 'แยกจากคะแนนพลังทิศ')}${sourceNote}</div>
+              <div class="de-note">${escHtml(en.scoring_note || noteDefaultTxt)}<br/>${forYouTxt} ${escHtml(en.personal_overlay?.note_th || overlayDefaultTxt)}${sourceNote}</div>
 	            </div>
 	            <div class="de-map-panel">
 	              <div class="de-map-head">
-	                <h3>ผัง 9 ช่อง <span class="tc">九宮</span></h3>
-	                <span>แตะทิศเพื่อดูรายละเอียด</span>
+	                <h3>${mapHeadTxt} <span class="tc">九宮</span></h3>
+	                <span>${tapHintTxt}</span>
 	              </div>
 	              ${mapHtml}
 	            </div>
@@ -3267,16 +3448,16 @@ window.applyI18N = applyI18N;
 	          <div class="de-selected">
 	            <div class="de-selected-head">
 	              <h3>${escHtml(selected.direction_th_long || selected.direction_th || selected.direction)} <span class="tc">${escHtml(selected.direction_zh || '')}</span></h3>
-	              <div class="pts">${escHtml(selected.score)}<span>${escHtml(selected.label_th || labelText[selected.label] || '')}</span></div>
+	              <div class="pts">${escHtml(selected.score)}<span>${curLang === 'th' ? escHtml(selected.label_th || label3(selected.label)) : escHtml(label3(selected.label))}</span></div>
 	            </div>
 	            <div class="de-selected-grid">
-	              <div class="de-selected-item"><span>ฉีเหมินยาม 奇時</span>${qimenFactors(sqh, 'คะแนนฉีเหมินยาม')}</div>
-	              <div class="de-selected-item"><span>จื่อไป๋ยาม 紫白時</span>${zibaiFactor(szh, 'ไม่มีดาวจรโฟกัสในทิศนี้')}</div>
-	              <div class="de-selected-item"><span>ฉีเหมินวัน 奇日 · เวลา ${escHtml(dd.qimen?.day?.time || '12:00')}</span>${qimenFactors(sqd, 'คะแนนฉีเหมินวัน')}</div>
-	              <div class="de-selected-item"><span>จื่อไป๋วัน 紫白日</span>${zibaiFactor(szd, 'ไม่มีดาวจรโฟกัสในทิศนี้')}</div>
+	              <div class="de-selected-item"><span>${qhHourTxt} 奇時</span>${qimenFactors(sqh, qhScoreHourTxt)}</div>
+	              <div class="de-selected-item"><span>${zbHourTxt} 紫白時</span>${zibaiFactor(szh, noStarFocusTxt)}</div>
+	              <div class="de-selected-item"><span>${qhDayTxt} 奇日 · ${curLang==='th'?'เวลา':curLang==='zh'?'時間':'time'} ${escHtml(dd.qimen?.day?.time || '12:00')}</span>${qimenFactors(sqd, qhScoreDayTxt)}</div>
+	              <div class="de-selected-item"><span>${zbDayTxt} 紫白日</span>${zibaiFactor(szd, noStarFocusTxt)}</div>
 	            </div>
 	          </div>
-	          <div class="de-avoid-line"><b>ควรเลี่ยง:</b> ${avoidNames.length ? escHtml(avoidNames.join(' · ')) : 'ไม่มีทิศเลี่ยงเด่นในชั้นพลังทิศ'}</div>
+	          <div class="de-avoid-line"><b>${avoidLabelTxt}</b> ${avoidNames.length ? escHtml(avoidNames.join(' · ')) : noAvoidTxt}</div>
 	        `;
 	        box.querySelectorAll('[data-de-dir]').forEach(btn => {
 	          btn.addEventListener('click', () => {
@@ -3360,13 +3541,28 @@ window.applyI18N = applyI18N;
         }
       } catch(_){}
       const useEl = yongshenEl || dmEl || 'wood';
+      /* 5 ก.ค. · EL_INFO เดิม th-only → เพิ่ม en/zh คู่กันทุก field (ใช้/หลีกเลี่ยง/สี) ไม่แตะ yongshen/jishen logic */
       const EL_INFO = {
-        /* th_use_s = ใส่สี (เมื่อธาตุเป็นของช่วย) · th_avoid_s = ลดสี (เมื่อธาตุเป็นของแสลง) */
-        wood:  { zh:'木', th_use:'ใช้ ไม้', th_use_s:'ใส่เขียว · ฟ้าอ่อน', th_avoid_s:'ลดเขียว · มอส · มะนาว', th_skip:'เลี่ยง ทอง', th_skip_s:'ลดขาว · เงิน', colors:['🟢 เขียว','💚 มอส','🌿 มะนาว','⚪ ขาว (เลี่ยง)'] },
-        fire:  { zh:'火', th_use:'ใช้ ไฟ', th_use_s:'ใส่แดง · ส้ม', th_avoid_s:'ลดแดง · ส้ม · ทอง', th_skip:'เลี่ยง น้ำ', th_skip_s:'ลดน้ำเงิน · ดำ', colors:['🔴 แดง','🟠 ส้ม','💛 ทอง','🔵 น้ำเงิน (เลี่ยง)'] },
-        earth: { zh:'土', th_use:'ใช้ ดิน', th_use_s:'ใส่เหลือง · น้ำตาล', th_avoid_s:'ลดเหลือง · น้ำตาล', th_skip:'เลี่ยง ไม้', th_skip_s:'ลดเขียว', colors:['🟡 เหลือง','🟤 น้ำตาล','🧡 ส้มดิน','🟢 เขียว (เลี่ยง)'] },
-        metal: { zh:'金', th_use:'ใช้ ทอง', th_use_s:'ใส่ขาว · เงิน · ทอง', th_avoid_s:'ลดขาว · เงิน · ทอง', th_skip:'เลี่ยง ไฟ', th_skip_s:'ลดแดง', colors:['⚪ ขาว','🩶 เงิน','💛 ทอง','🔴 แดง (เลี่ยง)'] },
-        water: { zh:'水', th_use:'ใช้ น้ำ', th_use_s:'ใส่ฟ้า · ดำ', th_avoid_s:'ลดน้ำเงิน · ดำ · ฟ้า', th_skip:'เลี่ยง ดิน', th_skip_s:'ลดเหลือง', colors:['🔵 น้ำเงิน','⚫ ดำ','💙 ฟ้า','🟡 เหลือง (เลี่ยง)'] },
+        wood:  { zh:'木',
+          use:{th:'ใช้ ไม้',en:'Use Wood',zh:'用木'}, use_s:{th:'ใส่เขียว · ฟ้าอ่อน',en:'Wear green · light blue',zh:'穿綠 · 淺藍'}, avoid_s:{th:'ลดเขียว · มอส · มะนาว',en:'Reduce green · moss · lime',zh:'減綠 · 苔綠 · 萊姆'},
+          skip:{th:'เลี่ยง ทอง',en:'Avoid Metal',zh:'忌金'}, skip_s:{th:'ลดขาว · เงิน',en:'Reduce white · silver',zh:'減白 · 銀'},
+          colors:[{th:'🟢 เขียว',en:'🟢 Green',zh:'🟢 綠'},{th:'💚 มอส',en:'💚 Moss',zh:'💚 苔綠'},{th:'🌿 มะนาว',en:'🌿 Lime',zh:'🌿 萊姆'},{th:'⚪ ขาว (เลี่ยง)',en:'⚪ White (avoid)',zh:'⚪ 白（忌）'}] },
+        fire:  { zh:'火',
+          use:{th:'ใช้ ไฟ',en:'Use Fire',zh:'用火'}, use_s:{th:'ใส่แดง · ส้ม',en:'Wear red · orange',zh:'穿紅 · 橙'}, avoid_s:{th:'ลดแดง · ส้ม · ทอง',en:'Reduce red · orange · gold',zh:'減紅 · 橙 · 金'},
+          skip:{th:'เลี่ยง น้ำ',en:'Avoid Water',zh:'忌水'}, skip_s:{th:'ลดน้ำเงิน · ดำ',en:'Reduce blue · black',zh:'減藍 · 黑'},
+          colors:[{th:'🔴 แดง',en:'🔴 Red',zh:'🔴 紅'},{th:'🟠 ส้ม',en:'🟠 Orange',zh:'🟠 橙'},{th:'💛 ทอง',en:'💛 Gold',zh:'💛 金'},{th:'🔵 น้ำเงิน (เลี่ยง)',en:'🔵 Blue (avoid)',zh:'🔵 藍（忌）'}] },
+        earth: { zh:'土',
+          use:{th:'ใช้ ดิน',en:'Use Earth',zh:'用土'}, use_s:{th:'ใส่เหลือง · น้ำตาล',en:'Wear yellow · brown',zh:'穿黃 · 棕'}, avoid_s:{th:'ลดเหลือง · น้ำตาล',en:'Reduce yellow · brown',zh:'減黃 · 棕'},
+          skip:{th:'เลี่ยง ไม้',en:'Avoid Wood',zh:'忌木'}, skip_s:{th:'ลดเขียว',en:'Reduce green',zh:'減綠'},
+          colors:[{th:'🟡 เหลือง',en:'🟡 Yellow',zh:'🟡 黃'},{th:'🟤 น้ำตาล',en:'🟤 Brown',zh:'🟤 棕'},{th:'🧡 ส้มดิน',en:'🧡 Terracotta',zh:'🧡 土橙'},{th:'🟢 เขียว (เลี่ยง)',en:'🟢 Green (avoid)',zh:'🟢 綠（忌）'}] },
+        metal: { zh:'金',
+          use:{th:'ใช้ ทอง',en:'Use Metal',zh:'用金'}, use_s:{th:'ใส่ขาว · เงิน · ทอง',en:'Wear white · silver · gold',zh:'穿白 · 銀 · 金'}, avoid_s:{th:'ลดขาว · เงิน · ทอง',en:'Reduce white · silver · gold',zh:'減白 · 銀 · 金'},
+          skip:{th:'เลี่ยง ไฟ',en:'Avoid Fire',zh:'忌火'}, skip_s:{th:'ลดแดง',en:'Reduce red',zh:'減紅'},
+          colors:[{th:'⚪ ขาว',en:'⚪ White',zh:'⚪ 白'},{th:'🩶 เงิน',en:'🩶 Silver',zh:'🩶 銀'},{th:'💛 ทอง',en:'💛 Gold',zh:'💛 金'},{th:'🔴 แดง (เลี่ยง)',en:'🔴 Red (avoid)',zh:'🔴 紅（忌）'}] },
+        water: { zh:'水',
+          use:{th:'ใช้ น้ำ',en:'Use Water',zh:'用水'}, use_s:{th:'ใส่ฟ้า · ดำ',en:'Wear sky blue · black',zh:'穿天藍 · 黑'}, avoid_s:{th:'ลดน้ำเงิน · ดำ · ฟ้า',en:'Reduce blue · black · sky blue',zh:'減藍 · 黑 · 天藍'},
+          skip:{th:'เลี่ยง ดิน',en:'Avoid Earth',zh:'忌土'}, skip_s:{th:'ลดเหลือง',en:'Reduce yellow',zh:'減黃'},
+          colors:[{th:'🔵 น้ำเงิน',en:'🔵 Blue',zh:'🔵 藍'},{th:'⚫ ดำ',en:'⚫ Black',zh:'⚫ 黑'},{th:'💙 ฟ้า',en:'💙 Sky blue',zh:'💙 天藍'},{th:'🟡 เหลือง (เลี่ยง)',en:'🟡 Yellow (avoid)',zh:'🟡 黃（忌）'}] },
       };
       const ELEMENT_CONTROLS_LOC = {wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};
       /* 18 พ.ค. · ใช้ userSummary ที่มาจาก wrapper-7 · รองรับหลายธาตุ
@@ -3395,49 +3591,59 @@ window.applyI18N = applyI18N;
         metal: ['c-white', 'c-silver','c-gold'],
         water: ['c-blue',  'c-black', 'c-sky'],
       };
-      /* 18 พ.ค. · swatches · รวมสีทุก yongshen (positive) + แต่ละ jishen (skip) · Codex flag · DOM nodes */
-      const sw = document.getElementById('t-color-swatches');
-      if (sw) {
-        sw.textContent = '';
-        useEls.forEach(({el, info}) => {
-          const cls = SW_CLASSES[el] || SW_CLASSES.wood;
-          (info.colors||[]).slice(0,3).forEach((c,i) => {
-            const d = document.createElement('div'); d.className = 'sw '+(cls[i]||cls[0]); d.textContent = c; sw.appendChild(d);
+      /* 5 ก.ค. · renderColorCard(lang) · re-render ตอนสลับภาษาได้ (ก่อนหน้านี้ EL_INFO เป็น th ล้วน ไม่มี re-render) */
+      function renderColorCard(lang){
+        const L = (lang === 'en' || lang === 'zh') ? lang : 'th';
+        const pk = (obj) => (obj && (obj[L] !== undefined ? obj[L] : obj.th)) ?? '';
+        const ELEM_LABEL = { wood:{th:'ไม้',en:'Wood',zh:'木'}, fire:{th:'ไฟ',en:'Fire',zh:'火'}, earth:{th:'ดิน',en:'Earth',zh:'土'}, metal:{th:'ทอง',en:'Metal',zh:'金'}, water:{th:'น้ำ',en:'Water',zh:'水'} };
+        const useTxt = { th:'ใช้', en:'Use', zh:'用' };
+        const avoidTxt = { th:'เลี่ยง', en:'Avoid', zh:'忌' };
+        /* swatches · รวมสีทุก yongshen (positive) + แต่ละ jishen (skip) · Codex flag · DOM nodes */
+        const sw = document.getElementById('t-color-swatches');
+        if (sw) {
+          sw.textContent = '';
+          useEls.forEach(({el, info}) => {
+            const cls = SW_CLASSES[el] || SW_CLASSES.wood;
+            (info.colors||[]).slice(0,3).forEach((c,i) => {
+              const dEl = document.createElement('div'); dEl.className = 'sw '+(cls[i]||cls[0]); dEl.textContent = pk(c); sw.appendChild(dEl);
+            });
           });
-        });
-        skipEls.forEach(({el, info, dominant}) => {
-          /* item ที่ 3 ใน info.colors คือ "เลี่ยง" สำหรับ legacy · ใช้ element name แทน */
-          const d = document.createElement('div'); d.className='sw skip';
-          d.textContent = (info.colors?.[0]||el) + ' (เลี่ยง' + (dominant?'⚡':'') + ')';
-          sw.appendChild(d);
-        });
-      }
-      const elRecs = document.getElementById('t-el-recs');
-      if (elRecs) {
-        elRecs.textContent = '';
-        const mkRow = (kind, glyph, label, sub) => {
-          const r = document.createElement('div'); r.className='el-r '+kind;
-          const g = document.createElement('div'); g.className='g'; g.textContent=glyph; r.appendChild(g);
-          const t = document.createElement('div'); t.className='t';
-          const b = document.createElement('b'); b.textContent=label; t.appendChild(b);
-          const s = document.createElement('span'); s.textContent=sub; t.appendChild(s);
-          r.appendChild(t);
-          return r;
-        };
-        if (useEls.length) {
-          const glyph = useEls.map(u => u.info.zh).join('·');
-          const label = 'ใช้ ' + useEls.map(u => ({wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'})[u.el]).join(' · ');
-          const sub = useEls.map(u => u.info.th_use_s).join(' / ');
-          elRecs.appendChild(mkRow('use', glyph, label, sub));
+          skipEls.forEach(({el, info, dominant}) => {
+            /* item ที่ 3 ใน info.colors คือ "เลี่ยง" สำหรับ legacy · ใช้ element name แทน */
+            const dEl = document.createElement('div'); dEl.className='sw skip';
+            dEl.textContent = pk(info.colors?.[0]||{th:el,en:el,zh:el}) + ` (${pk(avoidTxt)}` + (dominant?'⚡':'') + ')';
+            sw.appendChild(dEl);
+          });
         }
-        if (skipEls.length) {
-          const glyph = skipEls.map(s => s.info.zh).join('·');
-          const label = 'เลี่ยง ' + skipEls.map(s => ({wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'})[s.el] + (s.dominant?'⚡':'')).join(' · ');
-          /* 18 พ.ค. · Codex flag · ใช้ th_avoid_s (ลดสีของธาตุนี้) ไม่ใช่ th_skip_s (legacy opposite) */
-          const sub = skipEls.map(s => s.info.th_avoid_s || s.info.th_skip_s).join(' / ');
-          elRecs.appendChild(mkRow('skip', glyph, label, sub));
+        const elRecs = document.getElementById('t-el-recs');
+        if (elRecs) {
+          elRecs.textContent = '';
+          const mkRow = (kind, glyph, label, sub) => {
+            const r = document.createElement('div'); r.className='el-r '+kind;
+            const g = document.createElement('div'); g.className='g'; g.textContent=glyph; r.appendChild(g);
+            const t = document.createElement('div'); t.className='t';
+            const b = document.createElement('b'); b.textContent=label; t.appendChild(b);
+            const s = document.createElement('span'); s.textContent=sub; t.appendChild(s);
+            r.appendChild(t);
+            return r;
+          };
+          if (useEls.length) {
+            const glyph = useEls.map(u => u.info.zh).join('·');
+            const label = pk(useTxt) + ' ' + useEls.map(u => pk(ELEM_LABEL[u.el])).join(' · ');
+            const sub = useEls.map(u => pk(u.info.use_s)).join(' / ');
+            elRecs.appendChild(mkRow('use', glyph, label, sub));
+          }
+          if (skipEls.length) {
+            const glyph = skipEls.map(s => s.info.zh).join('·');
+            const label = pk(avoidTxt) + ' ' + skipEls.map(s => pk(ELEM_LABEL[s.el]) + (s.dominant?'⚡':'')).join(' · ');
+            /* 18 พ.ค. · Codex flag · ใช้ avoid_s (ลดสีของธาตุนี้) ไม่ใช่ skip_s (legacy opposite) */
+            const sub = skipEls.map(s => pk(s.info.avoid_s || s.info.skip_s)).join(' / ');
+            elRecs.appendChild(mkRow('skip', glyph, label, sub));
+          }
         }
       }
+      window.__renderColorCard = renderColorCard;
+      renderColorCard(document.documentElement.getAttribute('data-lang') || 'th');
     } catch(e){ console.warn('wireColors failed:', e); }
 
     /* === 10. Wire PEOPLE · meet / avoid · จาก /api/profile (เครือข่ายอื่นในระบบ) === */

@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hourkey · ฉีเหมิน · 奇門遁甲</title>
+<title data-i18n="q.page.title">hourkey · ฉีเหมิน · 奇門遁甲</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -589,9 +589,9 @@
   <div class="hero-head">
     <div>
       <div class="label">奇門遁甲 · QI MEN DUN JIA</div>
-      <h1>ฉีเหมิน <span class="tc">遁甲</span> · ผังเวลา</h1>
+      <h1 data-i18n="q.hero.h1">ฉีเหมิน <span class="tc">遁甲</span> · ผังเวลา</h1>
       <div id="qm-datetime-th" style="font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--gold);margin-top:4px;">—</div>
-      <p class="lede">ระบบพยากรณ์ <b data-i18n="auto.q.002">9 ช่อง</b> ที่เปลี่ยนตามชั่วยาม-วัน-เดือน-ปี · เลือก <b data-i18n="auto.q.003">สำนัก 拆補 / 置閏</b> แล้วตั้งคำถามเฉพาะหน้า — ฉีเหมินตอบเรื่อง <b data-i18n="auto.q.004">ทิศ จังหวะ คน และผลลัพธ์</b></p>
+      <p class="lede" data-i18n="q.hero.lede">ระบบพยากรณ์ <b data-i18n="auto.q.002">9 ช่อง</b> ที่เปลี่ยนตามชั่วยาม-วัน-เดือน-ปี · เลือก <b data-i18n="auto.q.003">สำนัก 拆補 / 置閏</b> แล้วตั้งคำถามเฉพาะหน้า — ฉีเหมินตอบเรื่อง <b data-i18n="auto.q.004">ทิศ จังหวะ คน และผลลัพธ์</b></p>
     </div>
     <div class="stats" id="hk-qm-stats">
       <div><b id="qm-stat-ju">—</b><span id="qm-stat-ju-th" data-i18n="q.stat.ju">ผัง(局)</span></div>
@@ -604,7 +604,7 @@
   <div class="config-bar">
     <!-- row 1: school selector -->
     <div class="config-row">
-      <div class="cfg-label"><span class="tc">局</span> สำนัก · SCHOOL</div>
+      <div class="cfg-label" data-i18n="q.cfg.school.label"><span class="tc">局</span> สำนัก · SCHOOL</div>
       <div class="school-toggle" id="school-toggle">
         <button class="on" data-school="zhirun">
           <span class="tc">置閏</span>
@@ -627,28 +627,28 @@
           <span class="en">MAOSHAN · COMING SOON</span>
         </button>
       </div>
-      <div class="school-info" id="school-info">
+      <div class="school-info" id="school-info" data-i18n="q.cfg.school.info">
         <b>置閏 · ZhiRun</b> — สำนักดั้งเดิม ใช้ <b data-i18n="auto.q.009">節氣ตรง</b> เป็นจุดเปลี่ยน 局 · เหมาะวิเคราะห์ <b data-i18n="auto.q.010">เหตุการณ์ใหญ่</b> · ใช้ในตำรา 煙波釣叟賦
       </div>
     </div>
 
     <!-- row 2: chart system selector -->
     <div class="config-row">
-      <div class="cfg-label"><span class="tc">盤</span> ระดับผัง · CHART</div>
+      <div class="cfg-label" data-i18n="q.cfg.chart.label"><span class="tc">盤</span> ระดับผัง · CHART</div>
       <div class="system-toggle" id="system-toggle" aria-label="เลือกระดับผังฉีเหมิน">
-        <button class="on" data-system="hour"><span class="th">ยาม</span><span class="tc">時家</span></button>
-        <button data-system="day"><span class="th">วัน</span><span class="tc">日家</span></button>
-        <button data-system="month"><span class="th">เดือน</span><span class="tc">月家</span></button>
-        <button data-system="year"><span class="th">ปี</span><span class="tc">年家</span></button>
+        <button class="on" data-system="hour"><span class="th" data-i18n="q.sys.hour">ยาม</span><span class="tc">時家</span></button>
+        <button data-system="day"><span class="th" data-i18n="q.sys.day">วัน</span><span class="tc">日家</span></button>
+        <button data-system="month"><span class="th" data-i18n="q.sys.month">เดือน</span><span class="tc">月家</span></button>
+        <button data-system="year"><span class="th" data-i18n="q.sys.year">ปี</span><span class="tc">年家</span></button>
       </div>
-      <div class="system-info" id="system-info">
-        <b>ผังยาม 時家</b> — อ่านเหตุการณ์เฉพาะหน้าและทิศใช้งานตอนนี้ · สำนักมีผลหลักกับผังยาม
+      <div class="system-info" id="system-info" data-i18n="q.sys.hour.info">
+        <b data-i18n="q.sys.hour.info">ผังยาม 時家</b> — อ่านเหตุการณ์เฉพาะหน้าและทิศใช้งานตอนนี้ · สำนักมีผลหลักกับผังยาม
       </div>
     </div>
 
     <!-- row 2: time picker -->
     <div class="config-row">
-      <div class="cfg-label"><span class="tc">時</span> เวลา · TIME</div>
+      <div class="cfg-label" data-i18n="q.cfg.time.label"><span class="tc">時</span> เวลา · TIME</div>
       <div class="time-grid">
         <select id="t-year"><!-- populated by JS · 2024-2028 --></select>
         <select id="t-month"><!-- populated by JS · 1-12 --></select>
@@ -678,10 +678,10 @@
 
     <!-- row 3: chart meta -->
     <div class="config-row">
-      <div class="cfg-label"><span class="tc">局</span> ผังที่ใช้</div>
+      <div class="cfg-label" data-i18n="q.cfg.chartused.label"><span class="tc">局</span> ผังที่ใช้</div>
       <div class="chart-meta" id="qm-chart-meta">
-        <span class="pill"><b id="qm-pill-ju">—</b>ผัง · 局</span>
-        <span class="pill"><b id="qm-pill-dun">—</b>ก้านหลบ · 遁干</span>
+        <span class="pill"><b id="qm-pill-ju">—</b><span data-i18n="q.meta.ju">ผัง · 局</span></span>
+        <span class="pill"><b id="qm-pill-dun">—</b><span data-i18n="q.stat.dun">ก้านหลบ · 遁干</span></span>
         <span class="pill special"><b data-i18n="q.pill.fu">ดาวนำ · 值符</b><span id="qm-pill-fu">—</span></span>
         <span class="pill special"><b data-i18n="q.pill.shi">ประตูนำ · 值使</b><span id="qm-pill-shi">—</span></span>
         <span class="pill"><b data-i18n="q.pill.xun">หัวก้าน · 旬首</b><span id="qm-pill-xun">—</span></span>
@@ -692,19 +692,19 @@
     </div>
     <div class="qm-context" id="qm-chart-context">
       <div class="qm-context-head">
-        <div class="qm-context-title">ข้อมูลทั้งกระดาน <span class="tc">全盤</span></div>
-        <div class="qm-context-source" id="qm-context-source">ระบบคำนวณฉีเหมิน · รอข้อมูล</div>
+        <div class="qm-context-title" data-i18n="q.ctx.title">ข้อมูลทั้งกระดาน <span class="tc">全盤</span></div>
+        <div class="qm-context-source" id="qm-context-source" data-i18n="q.ctx.source.wait">ระบบคำนวณฉีเหมิน · รอข้อมูล</div>
       </div>
       <div class="qm-pillar-strip" id="qm-pillar-strip">
-        <div class="qm-pillar"><div class="k">ปี 年</div><div class="v">—</div><div class="s">รอข้อมูล</div></div>
-        <div class="qm-pillar"><div class="k">เดือน 月</div><div class="v">—</div><div class="s">รอข้อมูล</div></div>
-        <div class="qm-pillar"><div class="k">วัน 日</div><div class="v">—</div><div class="s">รอข้อมูล</div></div>
-        <div class="qm-pillar"><div class="k">ยาม 時</div><div class="v">—</div><div class="s">รอข้อมูล</div></div>
+        <div class="qm-pillar"><div class="k" data-i18n="q.pillar.year">ปี 年</div><div class="v">—</div><div class="s" data-i18n="q.wait.data">รอข้อมูล</div></div>
+        <div class="qm-pillar"><div class="k" data-i18n="q.pillar.month">เดือน 月</div><div class="v">—</div><div class="s" data-i18n="q.wait.data">รอข้อมูล</div></div>
+        <div class="qm-pillar"><div class="k" data-i18n="q.pillar.day">วัน 日</div><div class="v">—</div><div class="s" data-i18n="q.wait.data">รอข้อมูล</div></div>
+        <div class="qm-pillar"><div class="k" data-i18n="q.pillar.hour">ยาม 時</div><div class="v">—</div><div class="s" data-i18n="q.wait.data">รอข้อมูล</div></div>
       </div>
       <div class="qm-context-grid" id="qm-context-grid">
-        <div class="qm-context-chip"><div class="k">ช่องว่าง 空亡</div><div class="v">—</div><div class="note">แยกวัน/ยามหลังคำนวณ</div></div>
-        <div class="qm-context-chip"><div class="k">ม้าเดินทาง 驛馬</div><div class="v">—</div><div class="note">แรงเคลื่อนไหว</div></div>
-        <div class="qm-context-chip"><div class="k">คนช่วย 貴人</div><div class="v">—</div><div class="note">ผู้สนับสนุน</div></div>
+        <div class="qm-context-chip"><div class="k" data-i18n="q.chip.void">ช่องว่าง 空亡</div><div class="v">—</div><div class="note" data-i18n="q.chip.void.note">แยกวัน/ยามหลังคำนวณ</div></div>
+        <div class="qm-context-chip"><div class="k" data-i18n="q.chip.horse">ม้าเดินทาง 驛馬</div><div class="v">—</div><div class="note" data-i18n="q.chip.horse.note">แรงเคลื่อนไหว</div></div>
+        <div class="qm-context-chip"><div class="k" data-i18n="q.chip.noble">คนช่วย 貴人</div><div class="v">—</div><div class="note" data-i18n="q.chip.noble.note">ผู้สนับสนุน</div></div>
       </div>
     </div>
   </div>
@@ -715,12 +715,12 @@
     <!-- 9-palace chart -->
     <div class="palace-wrap">
       <div class="palace-head">
-        <h3>ผัง 9 วัง <span class="tc">九宮奇門盤</span></h3>
-        <div class="yuanju">ผังตั้งต้น · 元局 · <b id="qm-head-ju">—</b></div>
+        <h3 data-i18n="q.palace.h3">ผัง 9 วัง <span class="tc">九宮奇門盤</span></h3>
+        <div class="yuanju" data-i18n="q.palace.yuanju">ผังตั้งต้น · 元局 · <b id="qm-head-ju">—</b></div>
       </div>
 
       <div class="palace-grid" id="palace-grid">
-        <div class="palace-loading" style="grid-column:1/-1;text-align:center;padding:80px 20px;font-family:var(--thai);font-size:13px;letter-spacing:0;color:var(--fg-faint);">กำลังตั้งผัง <span class="tc">起盤中</span>…</div>
+        <div class="palace-loading" style="grid-column:1/-1;text-align:center;padding:80px 20px;font-family:var(--thai);font-size:13px;letter-spacing:0;color:var(--fg-faint);" data-i18n="q.palace.loading">กำลังตั้งผัง <span class="tc">起盤中</span>…</div>
       </div>
 
       <div class="palace-legend">
@@ -741,7 +741,7 @@
       <div class="side-panel on" id="panel-detail">
         <div id="qm-detail-body">
           <div style="padding:40px 18px;text-align:center;font-family:var(--thai);font-size:13px;letter-spacing:0;color:var(--fg-faint);">
-            <div style="font-size:16px;color:var(--gold);margin-bottom:10px">รายละเอียด <span class="tc">詳</span></div>
+            <div style="font-size:16px;color:var(--gold);margin-bottom:10px" data-i18n="q.detail.heading">รายละเอียด <span class="tc">詳</span></div>
             <span data-i18n="qm.detail.loading">กำลังโหลด…</span>
           </div>
         </div>
@@ -842,6 +842,7 @@
 <script>
 /* hourkey · qimen · 3-language i18n (TH/EN/ZH) */
 window.HK_I18N = {
+  'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'},
   /* 🤖 auto-translated · 15 พ.ค. 2026 · L3 */
   'auto.q.001': { th:'หน้าหลัก', en:'Home', zh:'首頁' },
   'auto.q.002': { th:'9 ช่อง', en:'9 Palaces', zh:'九宮' },
@@ -915,7 +916,57 @@ window.HK_I18N = {
   'q.srch.from':   { th:'จาก', en:'From', zh:'從' },
   'q.srch.to':     { th:'ถึง', en:'To', zh:'至' },
   'q.srch.go':     { th:'🔍 ค้นหา', en:'🔍 Search', zh:'🔍 搜尋' },
-  'q.srch.ai':     { th:'💬 ขอ AI แนะนำ · เลือกอันไหนดี', en:'💬 Ask AI · which to pick', zh:'💬 問 AI · 選哪個好' }
+  'q.srch.ai':     { th:'💬 ขอ AI แนะนำ · เลือกอันไหนดี', en:'💬 Ask AI · which to pick', zh:'💬 問 AI · 選哪個好' },
+  /* 🧹 i18n-stray cleanup · 5 ก.ค. 2026 · HTML display-layer strings ที่หลง (ไม่แตะคลังข้อมูลดาว/ประตู/เทพ/ทิศ/กิ่ง/ก้าน) */
+  'q.page.title':        { th:'hourkey · ฉีเหมิน · 奇門遁甲', en:'hourkey · Qi Men Dun Jia · 奇門遁甲', zh:'hourkey · 奇門遁甲' },
+  'q.hero.h1':           { th:'ฉีเหมิน <span class="tc">遁甲</span> · ผังเวลา', en:'Qi Men <span class="tc">遁甲</span> · Time Chart', zh:'奇門 <span class="tc">遁甲</span> · 時盤' },
+  'q.hero.lede':         { th:'ระบบพยากรณ์ <b data-i18n="auto.q.002">9 ช่อง</b> ที่เปลี่ยนตามชั่วยาม-วัน-เดือน-ปี · เลือก <b data-i18n="auto.q.003">สำนัก 拆補 / 置閏</b> แล้วตั้งคำถามเฉพาะหน้า — ฉีเหมินตอบเรื่อง <b data-i18n="auto.q.004">ทิศ จังหวะ คน และผลลัพธ์</b>', en:'A <b data-i18n="auto.q.002">9-Palace</b> forecast system that shifts with the hour, day, month & year · pick a <b data-i18n="auto.q.003">School: 拆補 / 置閏</b> then ask about the moment at hand — Qi Men answers <b data-i18n="auto.q.004">direction, timing, people & outcome</b>', zh:'<b data-i18n="auto.q.002">九宮</b>預測系統 · 隨時辰-日-月-年變動 · 選定<b data-i18n="auto.q.003">拆補/置閏派</b>後即可就眼前之事發問 — 奇門解答<b data-i18n="auto.q.004">方位·時機·人事·結果</b>' },
+  'q.cfg.school.label':  { th:'<span class="tc">局</span> สำนัก · SCHOOL', en:'<span class="tc">局</span> School', zh:'<span class="tc">局</span> 派別' },
+  'q.cfg.school.info':   { th:'<b>置閏 · ZhiRun</b> — สำนักดั้งเดิม ใช้ <b>節氣ตรง</b> เป็นจุดเปลี่ยน 局 · เหมาะวิเคราะห์ <b>เหตุการณ์ใหญ่</b> · ใช้ใน 煙波釣叟賦', en:'<b>置閏 · ZhiRun</b> — Classical school · uses <b>節氣 boundaries</b> · best for <b>major events</b>', zh:'<b>置閏</b> — 經典學派 · 用<b>節氣</b>為界 · 適合 <b>重大事件</b>' },
+  'q.cfg.chart.label':   { th:'<span class="tc">盤</span> ระดับผัง · CHART', en:'<span class="tc">盤</span> Chart Level', zh:'<span class="tc">盤</span> 盤局層級' },
+  'q.sys.hour':          { th:'ยาม', en:'Hour', zh:'時' },
+  'q.sys.day':           { th:'วัน', en:'Day', zh:'日' },
+  'q.sys.month':         { th:'เดือน', en:'Month', zh:'月' },
+  'q.sys.year':          { th:'ปี', en:'Year', zh:'年' },
+  'q.cfg.time.label':    { th:'<span class="tc">時</span> เวลา · TIME', en:'<span class="tc">時</span> Time', zh:'<span class="tc">時</span> 時間' },
+  'q.sys.hour.info':     { th:'<b>ผังยาม 時家</b> — อ่านเหตุการณ์เฉพาะหน้าและทิศใช้งานตอนนี้ · สำนักมีผลหลักกับผังยาม', en:'<b>Hour Chart 時家</b> — reads the moment at hand and the direction to use right now · school choice matters most for the Hour chart', zh:'<b>時家</b> — 解讀眼前之事與當下可用方位 · 派別選擇對時家影響最大' },
+  'q.sys.day.info':      { th:'<b>ผังวัน 日家</b> — อ่านแรงของวันและภาพรวมกิจกรรมวันนั้น · ใช้วัน/เวลาเป็นจุดอ้างอิง', en:'<b>Day Chart 日家</b> — reads the force of the day and the day\'s overall activity · uses the date/time as reference', zh:'<b>日家</b> — 解讀當日之力與整體活動概況 · 以日期/時間為參考點' },
+  'q.sys.month.info':    { th:'<b>ผังเดือน 月家</b> — อ่านแนวโน้มระดับเดือนและบริบทใหญ่กว่าเรื่องเฉพาะหน้า', en:'<b>Month Chart 月家</b> — reads the month-level trend and a broader context than the moment at hand', zh:'<b>月家</b> — 解讀月度趨勢與比眼前之事更大的格局' },
+  'q.sys.year.info':     { th:'<b>ผังปี 年家</b> — อ่านภาพใหญ่ระดับปี ไม่ใช่ฤกษ์ยามเฉพาะชั่วโมง', en:'<b>Year Chart 年家</b> — reads the year-level big picture, not an hour-specific auspicious moment', zh:'<b>年家</b> — 解讀年度大局 · 並非特定時辰的擇吉' },
+  'q.cfg.chartused.label':{ th:'<span class="tc">局</span> ผังที่ใช้', en:'<span class="tc">局</span> Chart in use', zh:'<span class="tc">局</span> 使用中盤局' },
+  'q.meta.ju':           { th:'ผัง · 局', en:'Ju · 局', zh:'局' },
+  'q.ctx.title':         { th:'ข้อมูลทั้งกระดาน <span class="tc">全盤</span>', en:'Whole-chart data <span class="tc">全盤</span>', zh:'全盤資料' },
+  'q.ctx.source.wait':   { th:'ระบบคำนวณฉีเหมิน · รอข้อมูล', en:'Qi Men engine · awaiting data', zh:'奇門運算系統 · 等待資料' },
+  'q.ctx.source.stale':  { th:'ระบบคำนวณฉีเหมิน · ข้อมูลไม่อัปเดต', en:'Qi Men engine · data out of date', zh:'奇門運算系統 · 資料未更新' },
+  'q.pillar.year':       { th:'ปี 年', en:'Year 年', zh:'年' },
+  'q.pillar.month':      { th:'เดือน 月', en:'Month 月', zh:'月' },
+  'q.pillar.day':        { th:'วัน 日', en:'Day 日', zh:'日' },
+  'q.pillar.hour':       { th:'ยาม 時', en:'Hour 時', zh:'時' },
+  'q.wait.data':         { th:'รอข้อมูล', en:'Awaiting data', zh:'等待資料' },
+  'q.chip.void':         { th:'ช่องว่าง 空亡', en:'Void 空亡', zh:'空亡' },
+  'q.chip.void.note':    { th:'แยกวัน/ยามหลังคำนวณ', en:'Split by day/hour after calculation', zh:'計算後依日/時區分' },
+  'q.chip.horse':        { th:'ม้าเดินทาง 驛馬', en:'Travel Horse 驛馬', zh:'驛馬' },
+  'q.chip.horse.note':   { th:'แรงเคลื่อนไหว', en:'Movement force', zh:'動之力' },
+  'q.chip.noble':        { th:'คนช่วย 貴人', en:'Noble Helper 貴人', zh:'貴人' },
+  'q.chip.noble.note':   { th:'ผู้สนับสนุน', en:'Supporter', zh:'貴人相助' },
+  'q.palace.h3':         { th:'ผัง 9 วัง <span class="tc">九宮奇門盤</span>', en:'9-Palace Chart <span class="tc">九宮奇門盤</span>', zh:'九宮奇門盤' },
+  'q.palace.yuanju':     { th:'ผังตั้งต้น · 元局 · <b id="qm-head-ju">—</b>', en:'Base Chart · 元局 · <b id="qm-head-ju">—</b>', zh:'元局 · <b id="qm-head-ju">—</b>' },
+  'q.palace.loading':    { th:'กำลังตั้งผัง <span class="tc">起盤中</span>…', en:'Building the chart <span class="tc">起盤中</span>…', zh:'起盤中…' },
+  'q.detail.heading':    { th:'รายละเอียด <span class="tc">詳</span>', en:'Detail <span class="tc">詳</span>', zh:'詳情' },
+  /* 🧹 i18n-stray cleanup รอบ 2 · error / loading / search-panel / chat chrome */
+  'q.err.loadFail':      { th:'โหลดผังฉีเหมินไม่สำเร็จ', en:'Failed to load the Qi Men chart', zh:'奇門盤載入失敗' },
+  'q.err.stale':         { th:'ข้อมูลไม่อัปเดต', en:'Data out of date', zh:'資料未更新' },
+  'q.err.staleShort':    { th:'資料未更新', en:'資料未更新', zh:'資料未更新' },
+  'q.err.loadFailShort': { th:'โหลดไม่สำเร็จ 資料未更新', en:'Load failed 資料未更新', zh:'載入失敗 資料未更新' },
+  'q.err.retry':         { th:'กดคำนวณใหม่อีกครั้ง', en:'Tap recalculate to try again', zh:'請按重新計算再試一次' },
+  'q.err.pleaseRetry':   { th:'請重試', en:'請重試', zh:'請重試' },
+  'q.srch.reading':      { th:'⏳ ซินแสกำลังอ่านผัง...', en:'⏳ Sifu is reading the chart...', zh:'⏳ 師父正在解盤...' },
+  'q.srch.searching':    { th:'⏳ ค้นหา...', en:'⏳ Searching...', zh:'⏳ 搜尋中...' },
+  'q.srch.needOne':      { th:'กรุณาเลือกอย่างน้อย 1 องค์ประกอบ · 門/星/神/三奇', en:'Please pick at least 1 component · 門/星/神/三奇', zh:'請至少選擇 1 項組件 · 門/星/神/三奇' },
+  'q.srch.scanRanked':   { th:'สแกน {scanned} ชั่วยาม · จัดอันดับ {matched} ชั่วยาม · top {top}', en:'Scanned {scanned} hours · ranked {matched} hours · top {top}', zh:'掃描 {scanned} 個時辰 · 排序 {matched} 個 · top {top}' },
+  'q.srch.scanMatched':  { th:'สแกน {scanned} ชั่วยาม · ตรงเงื่อนไข {matched} · top {top}', en:'Scanned {scanned} hours · matched {matched} · top {top}', zh:'掃描 {scanned} 個時辰 · 符合 {matched} 個 · top {top}' },
+  'q.srch.noMatch':      { th:'ไม่เจอผังที่ตรง', en:'No matching chart found', zh:'找不到符合的盤' },
+  'q.sifu.me':           { th:'ผม', en:'Me', zh:'我' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
@@ -1066,21 +1117,25 @@ window.applyI18N = applyI18N;
   const QIMEN_SYSTEM_INFO = {
     hour: {
       label_th: 'ผังยาม',
+      label_en: 'Hour Chart',
       label_zh: '時家',
       info_th: '<b>ผังยาม 時家</b> — อ่านเหตุการณ์เฉพาะหน้าและทิศใช้งานตอนนี้ · สำนักมีผลหลักกับผังยาม',
     },
     day: {
       label_th: 'ผังวัน',
+      label_en: 'Day Chart',
       label_zh: '日家',
       info_th: '<b>ผังวัน 日家</b> — อ่านแรงของวันและภาพรวมกิจกรรมวันนั้น · ใช้วัน/เวลาเป็นจุดอ้างอิง',
     },
     month: {
       label_th: 'ผังเดือน',
+      label_en: 'Month Chart',
       label_zh: '月家',
       info_th: '<b>ผังเดือน 月家</b> — อ่านแนวโน้มระดับเดือนและบริบทใหญ่กว่าเรื่องเฉพาะหน้า',
     },
     year: {
       label_th: 'ผังปี',
+      label_en: 'Year Chart',
       label_zh: '年家',
       info_th: '<b>ผังปี 年家</b> — อ่านภาพใหญ่ระดับปี ไม่ใช่ฤกษ์ยามเฉพาะชั่วโมง',
     },
@@ -1165,12 +1220,13 @@ window.applyI18N = applyI18N;
     const outside = ['S','SW','W','NW'].map(qimenDirectionFullLabel).join(' · ');
     return `วังใน <span class="tc">內</span>: ${qmEsc(inside)} / วังนอก <span class="tc">外</span>: ${qmEsc(outside)}`;
   }
+  const QIMEN_SYSTEM_INFO_I18N_KEY = { hour:'q.sys.hour.info', day:'q.sys.day.info', month:'q.sys.month.info', year:'q.sys.year.info' };
   function setSystemInfo(value){
     const key = normalizeQimenSystemType(value);
     const meta = qimenSystemMeta(key);
     window._qimenSystemType = key;
     const info = document.getElementById('system-info');
-    if (info) info.innerHTML = meta.info_th;
+    if (info) info.innerHTML = _qtx(QIMEN_SYSTEM_INFO_I18N_KEY[key] || 'q.sys.hour.info', meta.info_th);
     const wrap = document.getElementById('system-toggle');
     if (wrap) {
       wrap.querySelectorAll('button[data-system]').forEach(btn => {
@@ -2504,7 +2560,7 @@ window.applyI18N = applyI18N;
     ].join('');
   }
   function showQimenLoadError(message){
-    const msg = message || 'โหลดผังฉีเหมินไม่สำเร็จ';
+    const msg = message || _qtx('q.err.loadFail', 'โหลดผังฉีเหมินไม่สำเร็จ');
     window._qimenLast = null;
     window._qimenCurrentPalaceId = null;
     ['qm-head-ju','qm-stat-ju','qm-stat-dun','qm-stat-yuan','qm-pill-ju','qm-pill-dun','qm-pill-fu','qm-pill-shi','qm-pill-xun','qm-pill-clash','qm-pill-void'].forEach(id => {
@@ -2513,28 +2569,30 @@ window.applyI18N = applyI18N;
     });
     ['qm-stat-ju-th','qm-stat-dun-th','qm-stat-yuan-th'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.textContent = 'ข้อมูลไม่อัปเดต';
+      if (el) el.textContent = _qtx('q.err.stale', 'ข้อมูลไม่อัปเดต');
     });
     const source = document.getElementById('qm-context-source');
-    if (source) source.textContent = 'ระบบคำนวณฉีเหมิน · ข้อมูลไม่อัปเดต';
+    if (source) source.textContent = _qtx('q.ctx.source.stale', 'ระบบคำนวณฉีเหมิน · ข้อมูลไม่อัปเดต');
     const pillarHost = document.getElementById('qm-pillar-strip');
     if (pillarHost) {
-      pillarHost.innerHTML = ['ปี 年','เดือน 月','วัน 日','ยาม 時'].map(label => `
+      const pillarLabels = [_qtx('q.pillar.year','ปี 年'), _qtx('q.pillar.month','เดือน 月'), _qtx('q.pillar.day','วัน 日'), _qtx('q.pillar.hour','ยาม 時')];
+      const staleTxt = _qtx('q.err.staleShort', '資料未更新');
+      pillarHost.innerHTML = pillarLabels.map(label => `
         <div class="qm-pillar">
           <div class="k">${qmEsc(label)}</div>
           <div class="v">—</div>
-          <div class="s">資料未更新</div>
+          <div class="s">${qmEsc(staleTxt)}</div>
         </div>
       `).join('');
     }
     const contextGrid = document.getElementById('qm-context-grid');
     if (contextGrid) {
-      contextGrid.innerHTML = `<div class="qm-context-chip warn" style="grid-column:1/-1"><div class="k">โหลดไม่สำเร็จ 資料未更新</div><div class="v">—</div><div class="note">${qmEsc(msg)} · กดคำนวณใหม่อีกครั้ง</div></div>`;
+      contextGrid.innerHTML = `<div class="qm-context-chip warn" style="grid-column:1/-1"><div class="k">${qmEsc(_qtx('q.err.loadFailShort','โหลดไม่สำเร็จ 資料未更新'))}</div><div class="v">—</div><div class="note">${qmEsc(msg)} · ${qmEsc(_qtx('q.err.retry','กดคำนวณใหม่อีกครั้ง'))}</div></div>`;
     }
     const grid = document.getElementById('palace-grid');
-    if (grid) grid.innerHTML = `<div class="palace-loading" style="grid-column:1/-1;text-align:center;padding:80px 20px;font-family:var(--thai);font-size:13px;color:var(--bad);">${qmEsc(msg)} · 請重試</div>`;
+    if (grid) grid.innerHTML = `<div class="palace-loading" style="grid-column:1/-1;text-align:center;padding:80px 20px;font-family:var(--thai);font-size:13px;color:var(--bad);">${qmEsc(msg)} · ${qmEsc(_qtx('q.err.pleaseRetry','請重試'))}</div>`;
     const detail = document.getElementById('qm-detail-body');
-    if (detail) detail.innerHTML = `<div style="padding:40px 18px;text-align:center;font-family:var(--thai);font-size:13px;line-height:1.6;color:var(--fg-soft);">${qmEsc(msg)}<br><span class="tc" style="color:var(--gold)">資料未更新</span></div>`;
+    if (detail) detail.innerHTML = `<div style="padding:40px 18px;text-align:center;font-family:var(--thai);font-size:13px;line-height:1.6;color:var(--fg-soft);">${qmEsc(msg)}<br><span class="tc" style="color:var(--gold)">${qmEsc(_qtx('q.err.staleShort','資料未更新'))}</span></div>`;
   }
 
   /* grid positions: row,col → DOM order in template */
@@ -3390,15 +3448,33 @@ window.applyI18N = applyI18N;
     const voids = qmBranchDisplay(chart.voids?.hour, chart.void_hour_zh, chart.voidHourZh, chart.voids?.day, chart.void_day_zh, chart.voidDayZh);
     const voidPalaces = Array.isArray(chart.kong_wang_palaces) && chart.kong_wang_palaces.length ? `วัง ${chart.kong_wang_palaces.join('·')} · 宮` : '';
     _set('qm-pill-void', voids || voidPalaces || '—');
-    /* update header datetime ภาษาไทย */
+    /* update header datetime · ตามภาษาที่เลือก (Step · 5 ก.ค. 2026 i18n-stray fix) */
     const h = document.getElementById('qm-datetime-th');
     if (h && window._qimenInput){
       const inp = window._qimenInput;
       const d = new Date(inp.date + 'T' + inp.time);
-      const dayNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
-      const monthNames = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+      const lang = getCurrentLang();
+      const DAY_NAMES = {
+        th: ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'],
+        en: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+        zh: ['週日','週一','週二','週三','週四','週五','週六'],
+      };
+      const MONTH_NAMES = {
+        th: ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
+        en: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+        zh: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+      };
+      const dayNames = DAY_NAMES[lang] || DAY_NAMES.th;
+      const monthNames = MONTH_NAMES[lang] || MONTH_NAMES.th;
       const yyBE = d.getFullYear() + 543;
-      h.textContent = `${systemMeta.label_th} ${systemMeta.label_zh} · วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${yyBE} (${d.getFullYear()}) ${inp.time}`;
+      const sysLabel = lang === 'en' ? (systemMeta.label_en || systemMeta.label_th) : systemMeta.label_th;
+      if (lang === 'en') {
+        h.textContent = `${sysLabel} ${systemMeta.label_zh} · ${dayNames[d.getDay()]}, ${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${inp.time}`;
+      } else if (lang === 'zh') {
+        h.textContent = `${systemMeta.label_zh} · ${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${dayNames[d.getDay()]} ${inp.time}`;
+      } else {
+        h.textContent = `${sysLabel} ${systemMeta.label_zh} · วัน${dayNames[d.getDay()]}ที่ ${d.getDate()} ${monthNames[d.getMonth()]} พ.ศ. ${yyBE} (${d.getFullYear()}) ${inp.time}`;
+      }
     }
     renderQimenContext(chart);
   }
@@ -3471,7 +3547,7 @@ window.applyI18N = applyI18N;
       const j = await r.json();
       /* drop stale response · กัน race ตอน user เปลี่ยนเวลาเร็วๆ */
       if (mySeq !== window._qimenSeq) return;
-      if (!j.ok && !j.data) { console.warn('[qimen] api error', j); showQimenLoadError('โหลดผังฉีเหมินไม่สำเร็จ'); return; }
+      if (!j.ok && !j.data) { console.warn('[qimen] api error', j); showQimenLoadError(_qtx('q.err.loadFail', 'โหลดผังฉีเหมินไม่สำเร็จ')); return; }
       const d = j.data || j;
       window._qimenLast = d;
       renderHeader(d.chart || {}, d.palaces || []);
@@ -4009,7 +4085,7 @@ window.applyI18N = applyI18N;
     const out = document.getElementById('qm-srch-ai-out');
     const btn = document.getElementById('qm-srch-ai-btn');
     if (!window._qmLastSearch?.top?.length) return;
-    if (out){ out.style.display=''; out.textContent='⏳ ซินแสกำลังอ่านผัง...'; }
+    if (out){ out.style.display=''; out.textContent=_qtx('q.srch.reading', '⏳ ซินแสกำลังอ่านผัง...'); }
     if (btn) btn.disabled = true;
     try {
       const ys = window._qimenUserYs || null;
@@ -4041,7 +4117,7 @@ window.applyI18N = applyI18N;
   async function runQimenSearch(){
     const meta = document.getElementById('qm-srch-meta');
     const out  = document.getElementById('qm-srch-results');
-    if (meta) meta.textContent = '⏳ ค้นหา...';
+    if (meta) meta.textContent = _qtx('q.srch.searching', '⏳ ค้นหา...');
     if (out) out.innerHTML = '';
     const goBtn = document.getElementById('qm-srch-go'); if (goBtn) goBtn.disabled = true;
     const mode = window._qmSearchMode || 'activity';
@@ -4065,7 +4141,7 @@ window.applyI18N = applyI18N;
       const sanqi  = [['qm-spec-yi','YI'],['qm-spec-bing','BING'],['qm-spec-ding','DING']]
         .filter(([id])=>document.getElementById(id)?.checked).map(([_,v])=>v);
       if (!doors.length && !stars.length && !deities.length && !sanqi.length) {
-        if (meta) meta.textContent = 'กรุณาเลือกอย่างน้อย 1 องค์ประกอบ · 門/星/神/三奇';
+        if (meta) meta.textContent = _qtx('q.srch.needOne', 'กรุณาเลือกอย่างน้อย 1 องค์ประกอบ · 門/星/神/三奇');
         if (goBtn) goBtn.disabled = false;
         return;
       }
@@ -4082,11 +4158,11 @@ window.applyI18N = applyI18N;
       if (aiOut) { aiOut.style.display = 'none'; aiOut.textContent = ''; }
       if (!j.ok) { if (meta) meta.textContent = '❌ ' + (j.error||'error'); if (aiWrap) aiWrap.style.display='none'; return; }
       if (meta) meta.textContent = mode === 'activity'
-        ? `สแกน ${j.total_scanned} ชั่วยาม · จัดอันดับ ${j.total_matched} ชั่วยาม · top ${j.top.length}`
-        : `สแกน ${j.total_scanned} ชั่วยาม · ตรงเงื่อนไข ${j.total_matched} · top ${j.top.length}`;
+        ? _qtx('q.srch.scanRanked', 'สแกน {scanned} ชั่วยาม · จัดอันดับ {matched} ชั่วยาม · top {top}').replace('{scanned}', j.total_scanned).replace('{matched}', j.total_matched).replace('{top}', j.top.length)
+        : _qtx('q.srch.scanMatched', 'สแกน {scanned} ชั่วยาม · ตรงเงื่อนไข {matched} · top {top}').replace('{scanned}', j.total_scanned).replace('{matched}', j.total_matched).replace('{top}', j.top.length);
       window._qmLastSearch = j; /* cache สำหรับ AI advice */
       if (!j.top.length){
-        if (out) out.innerHTML = '<div style="text-align:center;color:var(--fg-faint);padding:20px;font-family:var(--thai);font-size:13px">ไม่เจอผังที่ตรง</div>';
+        if (out) out.innerHTML = `<div style="text-align:center;color:var(--fg-faint);padding:20px;font-family:var(--thai);font-size:13px">${qmEsc(_qtx('q.srch.noMatch', 'ไม่เจอผังที่ตรง'))}</div>`;
         if (aiWrap) aiWrap.style.display='none';
         return;
       }
@@ -4189,7 +4265,7 @@ window.applyI18N = applyI18N;
     if (!log) return null;
     const d = document.createElement('div');
     d.className = 'qm-msg ' + role + (loading?' loading':'');
-    const roleLab = role==='user'?'ผม':role==='sifu'?'SIFU':'...';
+    const roleLab = role==='user'?_qtx('q.sifu.me','ผม'):role==='sifu'?'SIFU':'...';
     const html = String(text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
     d.innerHTML = `<span class="role">${roleLab}</span><div class="body">${html}</div>`;
     log.appendChild(d);
@@ -4198,7 +4274,7 @@ window.applyI18N = applyI18N;
   }
   async function qmAskSifu(message, topic){
     qmAppend('user', message);
-    const loadingNode = qmAppend('sifu', 'ซินแสกำลังคิด...', true);
+    const loadingNode = qmAppend('sifu', _qtx('q.sifu.thinking', 'ซินแสกำลังคิด...'), true);
     const send = document.getElementById('qm-sifu-send');
     if (send) send.disabled = true;
     try {
@@ -4230,10 +4306,10 @@ window.applyI18N = applyI18N;
         qmAppend('sifu', j.reply);
         window._qmSifuHist.push({role:'user', content:message});
         window._qmSifuHist.push({role:'assistant', content:j.reply});
-      } else { qmAppend('sifu', 'ขัดข้อง: '+(j.error||'unknown')); }
+      } else { qmAppend('sifu', _qtx('q.sifu.err', 'ขัดข้อง')+': '+(j.error||'unknown')); }
     } catch(e){
       if (loadingNode?.parentNode) loadingNode.parentNode.removeChild(loadingNode);
-      qmAppend('sifu', 'ขัดข้อง: '+e.message);
+      qmAppend('sifu', _qtx('q.sifu.err', 'ขัดข้อง')+': '+e.message);
     } finally { if (send) send.disabled = false; }
   }
   function bindSifuPanel(){

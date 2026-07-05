@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.5"/>
-<title>วางฤกษ์ · 擇吉 · hourkey</title>
+<title data-i18n="dp.page.title">วางฤกษ์ · 擇吉 · hourkey</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Serif+Thai:wght@400;500;600&display=optional" rel="stylesheet"/>
@@ -476,7 +476,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 
 <header class="hero">
   <div class="crest">擇吉</div>
-  <h1>วาง <b data-i18n="auto.d.001">ฤกษ์</b> · <span class="tc">擇日</span></h1>
+  <h1><b data-i18n="auto.d.001">วาง ฤกษ์</b> · <span class="tc">擇日</span></h1>
   <p  class="sub" data-i18n="auto.d.002">เลือกวันและยามที่เหมาะสำหรับกิจกรรมสำคัญ — คำนวณด้วย engine มาตรฐานหลายศาสตร์ซ้อนกัน</p>
   <div class="meta">通書 · 八字 · 奇門 · 河洛 · 六十四卦</div>
 </header>
@@ -489,27 +489,27 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 
       <!-- 1. Activity -->
       <div class="card">
-        <h3><span class="num">01</span> กิจกรรม <span class="han">事</span></h3>
+        <h3><span class="num">01</span> <span data-i18n="dp.h.activity">กิจกรรม</span> <span class="han">事</span></h3>
         <div  class="desc" data-i18n="auto.d.003">เลือกประเภทกิจกรรมที่จะวางฤกษ์ — แต่ละกิจกรรมมีกฎ 宜/忌 ของปฏิทินจีนไม่เหมือนกัน</div>
         <!-- 17 พ.ค. · Smart Activity Picker · เจ้านาย idea · Hybrid Keyword + AI -->
         <div style="margin-bottom:14px;padding:14px;background:linear-gradient(135deg,rgba(200,164,77,.06),transparent);border:1px solid var(--gold-line);border-radius:10px;">
-          <label style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;display:block;">🤖 อธิบายกิจกรรมเอง · ระบบช่วยจับหมวด</label>
+          <label style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px;display:block;" data-i18n="dp.classify.title">🤖 อธิบายกิจกรรมเอง · ระบบช่วยจับหมวด</label>
           <div style="display:flex;gap:6px;">
             <input id="act-query" type="text" placeholder="เช่น อยากเปิดร้านกาแฟ · เซ็นสัญญาบ้าน · ลงทุนหุ้น..." style="flex:1;padding:9px 12px;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg);font-family:var(--th);font-size:13px;border-radius:6px;outline:none;"/>
-            <button id="act-classify-btn" style="padding:9px 14px;background:var(--gold);color:var(--bg);border:none;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;font-weight:600;letter-spacing:.1em;">🔍 จับ</button>
+            <button id="act-classify-btn" data-i18n="dp.classify.btn" style="padding:9px 14px;background:var(--gold);color:var(--bg);border:none;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;font-weight:600;letter-spacing:.1em;">🔍 จับ</button>
           </div>
           <div id="act-result" style="margin-top:8px;font-size:12px;color:var(--fg-soft);display:none;"></div>
-          <div style="margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.05em;">⚡ จับจากคำสำคัญก่อน · ถ้าไม่เจอค่อยให้ระบบช่วยวิเคราะห์</div>
+          <div style="margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--fg-faint);letter-spacing:.05em;" data-i18n="dp.classify.hint">⚡ จับจากคำสำคัญก่อน · ถ้าไม่เจอค่อยให้ระบบช่วยวิเคราะห์</div>
         </div>
-        <div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:6px;">เลือกภารกิจหลักหรือภารกิจย่อย</div>
+        <div style="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--fg-faint);text-transform:uppercase;margin-bottom:6px;" data-i18n="dp.mission.pick">เลือกภารกิจหลักหรือภารกิจย่อย</div>
         <div class="activity-profile-tabs" id="activityProfileTabs"></div>
         <div class="mission-list" id="activityProfileList"></div>
-        <div class="profile-note" id="activityProfileNote">เลือกจากแท็บหลักเพื่อใช้กฎ 8 กิจกรรมเดิม หรือเลือกหมวดย่อยเพื่อให้ engine ใช้กฎเฉพาะงานนั้น</div>
+        <div class="profile-note" id="activityProfileNote" data-i18n="dp.mission.note">เลือกจากแท็บหลักเพื่อใช้กฎ 8 กิจกรรมเดิม หรือเลือกหมวดย่อยเพื่อให้ระบบใช้กฎเฉพาะงานนั้น</div>
       </div>
 
       <!-- 2. Date Range -->
       <div class="card">
-        <h3><span class="num">02</span> ช่วงวัน <span class="han">期</span></h3>
+        <h3><span class="num">02</span> <span data-i18n="dp.h.daterange">ช่วงวัน</span> <span class="han">期</span></h3>
         <div  class="desc" data-i18n="auto.d.004">เลือกช่วงเวลาที่จะค้นหา — กดเร็ววันนี้ / 7 วัน / 60 วัน หรือระบุวันเวลาเดียว</div>
         <div class="date-quick" id="datePresetBar">
           <button type="button" data-date-preset="today" data-i18n="dp.range.today">วันนี้</button>
@@ -546,8 +546,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
           <div id="eventLocManual" style="display:none;margin-top:8px;">
             <div style="font-family:var(--mono);font-size:9px;color:var(--fg-soft);margin-bottom:4px;" data-i18n="dp.loc.manual">โหลดแผนที่ไม่สำเร็จ · กรอกพิกัดเอง (lat / lng)</div>
             <div style="display:flex;gap:6px;">
-              <input type="number" id="eventLatManual" class="input" step="0.0001" min="-90" max="90" value="13.7563" placeholder="lat" style="flex:1;"/>
-              <input type="number" id="eventLngManual" class="input" step="0.0001" min="-180" max="180" value="100.5018" placeholder="lng" style="flex:1;"/>
+              <input type="number" id="eventLatManual" class="input" step="0.0001" min="-90" max="90" value="13.7563" placeholder="lat" data-i18n-ph="dp.loc.lat_ph" style="flex:1;"/>
+              <input type="number" id="eventLngManual" class="input" step="0.0001" min="-180" max="180" value="100.5018" placeholder="lng" data-i18n-ph="dp.loc.lng_ph" style="flex:1;"/>
             </div>
           </div>
         </div>
@@ -555,26 +555,26 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 
       <!-- 3. People · 16 พ.ค. (เจ้านาย): ดึง network จริง + group filter -->
       <div class="card">
-        <h3><span class="num">03</span> คนที่เกี่ยวข้อง <span class="han">人</span></h3>
-        <div class="desc">เริ่มจากไม่เลือกใคร · ค่อย ๆ เพิ่มเฉพาะคนที่ต้องใช้ตัดวันชงของกิจกรรมนั้น</div>
+        <h3><span class="num">03</span> <span data-i18n="dp.h.people">คนที่เกี่ยวข้อง</span> <span class="han">人</span></h3>
+        <div class="desc" data-i18n="auto.d.007">เริ่มจากไม่เลือกใคร · ค่อย ๆ เพิ่มเฉพาะคนที่ต้องใช้ตัดวันชงของกิจกรรมนั้น</div>
         <div class="people-selected" id="peopleSelected"></div>
         <input id="peopleSearch" class="people-search" type="search" placeholder="ค้นหาชื่อหรือความสัมพันธ์..."/>
         <!-- group selector pills -->
         <div id="peopleGroupBar" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">
-	          <button class="pg-btn active" data-grp="all" style="padding:8px 14px;background:var(--gold);color:var(--bg);border:none;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;font-weight:600;">ทั้งหมด</button>
-	          <button class="pg-btn" data-grp="general" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">ทั่วไป</button>
-	          <button class="pg-btn" data-grp="family" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">家 ครอบครัว</button>
-          <button class="pg-btn" data-grp="work" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">業 ทีมงาน</button>
-          <button class="pg-btn" data-grp="friend" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">友 เพื่อน</button>
-          <button class="pg-btn" data-grp="love" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">情 คู่รัก</button>
-          <button class="pg-btn" data-grp="rival" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;">競 คู่แข่ง</button>
+	          <button class="pg-btn active" data-grp="all" style="padding:8px 14px;background:var(--gold);color:var(--bg);border:none;border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;font-weight:600;" data-i18n="dp.pg.all">ทั้งหมด</button>
+	          <button class="pg-btn" data-grp="general" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;" data-i18n="dp.pg.general">ทั่วไป</button>
+	          <button class="pg-btn" data-grp="family" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;"><span class="han">家</span> <span data-i18n="dp.pg.family">ครอบครัว</span></button>
+          <button class="pg-btn" data-grp="work" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;"><span class="han">業</span> <span data-i18n="dp.pg.work">ทีมงาน</span></button>
+          <button class="pg-btn" data-grp="friend" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;"><span class="han">友</span> <span data-i18n="dp.pg.friend">เพื่อน</span></button>
+          <button class="pg-btn" data-grp="love" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;"><span class="han">情</span> <span data-i18n="dp.pg.love">คู่รัก</span></button>
+          <button class="pg-btn" data-grp="rival" style="padding:8px 14px;background:transparent;color:var(--fg-soft);border:1px solid var(--gold-line);border-radius:99px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;cursor:pointer;"><span class="han">競</span> <span data-i18n="dp.pg.rival">คู่แข่ง</span></button>
         </div>
         <!-- mini toolbar: scoped add/clear + count -->
         <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:10px;color:var(--fg-soft);margin-bottom:10px;">
-          <span id="peopleCount">เลือก 0 / 0 คน</span>
+          <span id="peopleCount" data-i18n="dp.people.count0">เลือก 0 / 0 คน</span>
           <span style="display:flex;gap:8px;">
-            <button id="peopleSelectAll" style="background:none;border:none;color:var(--gold);cursor:pointer;font-family:var(--mono);font-size:10px;text-decoration:underline;">เพิ่มหมวดนี้</button>
-            <button id="peopleClear" style="background:none;border:none;color:var(--fg-soft);cursor:pointer;font-family:var(--mono);font-size:10px;text-decoration:underline;">ล้าง</button>
+            <button id="peopleSelectAll" style="background:none;border:none;color:var(--gold);cursor:pointer;font-family:var(--mono);font-size:10px;text-decoration:underline;" data-i18n="dp.people.addgroup">เพิ่มหมวดนี้</button>
+            <button id="peopleClear" style="background:none;border:none;color:var(--fg-soft);cursor:pointer;font-family:var(--mono);font-size:10px;text-decoration:underline;" data-i18n="dp.people.clear">ล้าง</button>
           </span>
         </div>
         <div class="people-mini" id="peopleMini">
@@ -584,7 +584,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
 
       <!-- 4. Filters -->
       <div class="card">
-        <h3><span class="num">04</span> เกณฑ์ตรวจ / คะแนน <span class="han">篩</span></h3>
+        <h3><span class="num">04</span> <span data-i18n="dp.h.filters">เกณฑ์ตรวจ / คะแนน</span> <span class="han">篩</span></h3>
         <div  class="desc" data-i18n="auto.d.008">ติ๊กเกณฑ์ที่ใช้ — สีแดงคือตัดจริง · สีน้ำเงินคือปรับคะแนนหรืออ่านประกอบ</div>
         <style>
         .help-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--gold-line);background:rgba(200,164,77,.08);color:var(--gold);font-family:var(--mono);font-size:10px;cursor:pointer;margin-left:6px;flex-shrink:0;transition:.2s;}
@@ -626,7 +626,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">ปฏิทินจีน <span class="han">通書/擇日</span> <span  class="level hard" data-i18n="auto.d.009">ตัดวันห้าม 忌日</span><button class="help-icon" onclick="showHelp('tongshu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="ttl"><span data-i18n="dp.sci.tongshu">ปฏิทินจีน</span> <span class="han">通書/擇日</span> <span  class="level hard" data-i18n="auto.d.009">ตัดวันห้าม 忌日</span><button class="help-icon" onclick="showHelp('tongshu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div  class="sub" data-i18n="auto.d.010">ตัดเฉพาะวันที่ตรงข้อห้าม 忌 ของกิจกรรม · ตงกง 董公 เป็นคะแนนเสริมในชั้นนี้</div>
               </div>
             </div>
@@ -637,7 +637,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">ตงกง <span class="han">董公</span> <span class="level hard" data-i18n="dp.dg.level">ตัดฤกษ์ · เพดานคะแนน</span><button class="help-icon" onclick="showHelp('donggong');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="ttl"><span data-i18n="dp.sci.donggong">ตงกง</span> <span class="han">董公</span> <span class="level hard" data-i18n="dp.dg.level">ตัดฤกษ์ · เพดานคะแนน</span><button class="help-icon" onclick="showHelp('donggong');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div class="sub" data-i18n="dp.dg.sub">ตำราตัดฤกษ์หลัก 董公選要覽 · วัน 大凶 เพดานคะแนน 30 · 凶/ข้อห้ามตรงกิจกรรม เพดาน 45 · วันดีบวกเสริม</div>
               </div>
             </div>
@@ -648,8 +648,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">สิบสองจังหวะวัน <span class="han">十二建除</span> <span class="level score">ปรับคะแนน</span><button class="help-icon" onclick="showHelp('jianchu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">開/成/定 ช่วยหนุนคะแนน · 破/閉/危 ลดคะแนน ไม่ตัดเดี่ยว</div>
+                <div class="ttl"><span data-i18n="dp.sci.jianchu">สิบสองจังหวะวัน</span> <span class="han">十二建除</span> <span class="level score" data-i18n="dp.lvl.score_adj">ปรับคะแนน</span><button class="help-icon" onclick="showHelp('jianchu');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.sci.jianchu.sub">開/成/定 ช่วยหนุนคะแนน · 破/閉/危 ลดคะแนน ไม่ตัดเดี่ยว</div>
               </div>
             </div>
           </label>
@@ -659,8 +659,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">ยี่สิบแปดดาวฤกษ์ <span class="han">二十八宿</span> <span class="level score">ปรับคะแนน</span><button class="help-icon" onclick="showHelp('xiu28');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">ดาวฤกษ์ของวันช่วยหนุนหรือลดคะแนนตามกิจกรรม · ไม่ตัดเดี่ยว</div>
+                <div class="ttl"><span data-i18n="dp.sci.xiu28">ยี่สิบแปดดาวฤกษ์</span> <span class="han">二十八宿</span> <span class="level score" data-i18n="dp.lvl.score_adj">ปรับคะแนน</span><button class="help-icon" onclick="showHelp('xiu28');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.sci.xiu28.sub">ดาวฤกษ์ของวันช่วยหนุนหรือลดคะแนนตามกิจกรรม · ไม่ตัดเดี่ยว</div>
               </div>
             </div>
           </label>
@@ -670,8 +670,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">สิบสองเทพวัน <span class="han">黃黑道十二神</span> <span class="level score">ปรับคะแนน</span><button class="help-icon" onclick="showHelp('shen12');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">青龍/明堂/金匱/天德 หนุน · 白虎/天刑/朱雀/玄武 ลดคะแนน ไม่ตัดเดี่ยว</div>
+                <div class="ttl"><span data-i18n="dp.sci.shen12">สิบสองเทพวัน</span> <span class="han">黃黑道十二神</span> <span class="level score" data-i18n="dp.lvl.score_adj">ปรับคะแนน</span><button class="help-icon" onclick="showHelp('shen12');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.sci.shen12.sub">青龍/明堂/金匱/天德 หนุน · 白虎/天刑/朱雀/玄武 ลดคะแนน ไม่ตัดเดี่ยว</div>
               </div>
             </div>
           </label>
@@ -681,8 +681,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">เก้าดาวเหิน <span class="han">九飛星</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('fly9');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">ดูดาวเหินของวัน/ยาม · ดาวดีช่วยหนุน ดาวเสียลดคะแนน</div>
+                <div class="ttl"><span data-i18n="dp.sci.fly9">เก้าดาวเหิน</span> <span class="han">九飛星</span> <span class="level score" data-i18n="dp.lvl.score_give">ให้คะแนน</span><button class="help-icon" onclick="showHelp('fly9');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.sci.fly9.sub">ดูดาวเหินของวัน/ยาม · ดาวดีช่วยหนุน ดาวเสียลดคะแนน</div>
               </div>
             </div>
           </label>
@@ -692,8 +692,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">ไท้ส่วย <span class="han">太歲</span> <span class="level hard">ตัดชนปี</span><button class="help-icon" onclick="showHelp('taisui');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">流年沖日柱 · ตัดวันที่กิ่งวันชงกับกิ่งปี (ปี丙午 → เลี่ยงวัน子)</div>
+                <div class="ttl"><span data-i18n="dp.sci.taisui">ไท้ส่วย</span> <span class="han">太歲</span> <span class="level hard" data-i18n="dp.lvl.cut_year">ตัดชนปี</span><button class="help-icon" onclick="showHelp('taisui');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.sci.taisui.sub">流年沖日柱 · ตัดวันที่กิ่งวันชงกับกิ่งปี (ปี丙午 → เลี่ยงวัน子)</div>
               </div>
             </div>
           </label>
@@ -717,7 +717,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">ดาวจริง <span class="han">七政四餘</span> <span class="level note" data-i18n="dp.tx.level">ขั้นสูง · ให้คะแนน</span> <span class="level soft">beta</span><button class="help-icon" onclick="showHelp('tianxing');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="ttl"><span data-i18n="dp.sci.tianxing">ดาวจริง</span> <span class="han">七政四餘</span> <span class="level note" data-i18n="dp.tx.level">ขั้นสูง · ให้คะแนน</span> <span class="level soft" data-i18n="dp.badge.beta">ทดลอง</span><button class="help-icon" onclick="showHelp('tianxing');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div class="sub" data-i18n="dp.tx.sub">โหราศาสตร์ดาวจริง 七政四餘 (廟旺·恩用仇難·格局) · ศาสตร์ขั้นสูงสุด · ติ๊กเพื่อเปิดให้คะแนนเสริม · ไม่ติ๊ก = ไม่มีผลต่อคะแนน</div>
               </div>
             </div>
@@ -808,14 +808,14 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">ดวงคนที่เกี่ยวข้อง <span class="han">八字</span> <span  class="level hard" data-i18n="auto.d.011">ตัดวันชง</span><button class="help-icon" onclick="showHelp('bazi');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="ttl"><span data-i18n="dp.sci.bazi">ดวงคนที่เกี่ยวข้อง</span> <span class="han">八字</span> <span  class="level hard" data-i18n="auto.d.011">ตัดวันชง</span><button class="help-icon" onclick="showHelp('bazi');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div  class="sub" data-i18n="auto.d.012">เช็คดวงคน — วันชง · 刑 · 害 · กระทบวันเกิดหลัก</div>
               </div>
             </div>
             <div class="filter-sub">
               <div class="sub-row">
                 <input type="checkbox" id="bz-chong" checked/>
-                <label for="bz-chong">วันชง <span class="han">沖</span> (ตัดทิ้ง)</label>
+                <label for="bz-chong"><span data-i18n="auto.d.011">วันชง</span> <span class="han">沖</span> (<span data-i18n="dp.bz.discard">ตัดทิ้ง</span>)</label>
               </div>
               <div class="sub-row">
                 <input type="checkbox" id="bz-xing"/>
@@ -829,8 +829,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">ธาตุที่ดวงต้องการ <span class="han">用神</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('yongshen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">ใช้ธาตุช่วยของคุณจากหน้า /chart · ถ้าวัน/ยามหนุนธาตุช่วย คะแนนจะเพิ่ม</div>
+                <div class="ttl"><span data-i18n="dp.sci.yongshen">ธาตุที่ดวงต้องการ</span> <span class="han">用神</span> <span class="level score" data-i18n="dp.lvl.score_give">ให้คะแนน</span><button class="help-icon" onclick="showHelp('yongshen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.sci.yongshen.sub">ใช้ธาตุช่วยของคุณจากหน้า /chart · ถ้าวัน/ยามหนุนธาตุช่วย คะแนนจะเพิ่ม</div>
               </div>
             </div>
           </label>
@@ -840,7 +840,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox" checked/>
               <div class="info">
-                <div class="ttl">หกสิบสี่ข่วย <span class="han">六十四卦</span> <span  class="level note" data-i18n="auto.d.021">ตีความ</span><button class="help-icon" onclick="showHelp('hex');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="ttl"><span data-i18n="dp.sci.hex">หกสิบสี่ข่วย</span> <span class="han">六十四卦</span> <span  class="level note" data-i18n="auto.d.021">ตีความ</span><button class="help-icon" onclick="showHelp('hex');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div  class="sub" data-i18n="auto.d.022">เพิ่มคำอ่านข่วยของยาม — ใช้อธิบาย ไม่ได้ตัดวันทิ้ง</div>
               </div>
             </div>
@@ -876,7 +876,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox"/>
               <div class="info">
-                <div class="ttl">ฉีเหมิน <span class="han">奇門</span> <span  class="level soft" data-i18n="auto.d.014">คัดยาม/จำกัดคะแนน</span><button class="help-icon" onclick="showHelp('qimen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="ttl"><span data-i18n="dp.sci.qimen">ฉีเหมิน</span> <span class="han">奇門</span> <span  class="level soft" data-i18n="auto.d.014">คัดยาม/จำกัดคะแนน</span><button class="help-icon" onclick="showHelp('qimen');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
                 <div  class="sub" data-i18n="auto.d.015">ดูประตู+ดาว+เทพของยาม · ผังไม่รับกิจกรรมจะจำกัดคะแนน ไม่ใช่ตัวตัดหลัก</div>
               </div>
             </div>
@@ -884,8 +884,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
               <div class="sub-row">
                 <span data-i18n="auto.d.016">ค่ายคำนวณ:</span>
                 <div class="sub-pills">
-                  <button class="sub-pill active" data-qm="chaibu">拆補 คำนวณแบบชดเชย</button>
-                  <button class="sub-pill" data-qm="zhirun">置閏 คำนวณแบบแทรกเดือน</button>
+                  <button class="sub-pill active" data-qm="chaibu"><span class="han">拆補</span> <span data-i18n="dp.qm.chaibu">คำนวณแบบชดเชย</span></button>
+                  <button class="sub-pill" data-qm="zhirun"><span class="han">置閏</span> <span data-i18n="dp.qm.zhirun">คำนวณแบบแทรกเดือน</span></button>
                 </div>
               </div>
               <div class="sub-row">
@@ -900,8 +900,8 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <div class="filter-item-head">
               <input type="checkbox"/>
               <div class="info">
-                <div class="ttl">เหอหลัว <span class="han">河洛</span> <span class="level score">ให้คะแนน</span><button class="help-icon" onclick="showHelp('heluo');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
-                <div class="sub">อ่านจังหวะตัวเลขและดาวเหิน 9 ดาว · ใช้เป็นคะแนนเสริม ไม่ใช่ตัวตัดหลัก</div>
+                <div class="ttl"><span data-i18n="dp.sci.heluo">เหอหลัว</span> <span class="han">河洛</span> <span class="level score" data-i18n="dp.lvl.score_give">ให้คะแนน</span><button class="help-icon" onclick="showHelp('heluo');event.preventDefault();event.stopPropagation();" title="ดูคำอธิบาย">ⓘ</button></div>
+                <div class="sub" data-i18n="dp.sci.heluo.sub">อ่านจังหวะตัวเลขและดาวเหิน 9 ดาว · ใช้เป็นคะแนนเสริม ไม่ใช่ตัวตัดหลัก</div>
               </div>
             </div>
             <div class="filter-sub">
@@ -920,7 +920,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
         <button  class="btn-search" id="btnSearch" data-i18n="auto.d.023">⚡ ค้นหาฤกษ์</button>
         <label hidden style="display:none;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:rgba(200,164,77,.08);border-radius:8px;font-size:11px;color:var(--fg-soft);cursor:pointer;">
           <input type="checkbox" id="cb-aj-engine" checked/>
-          <span>🚀 <b>Engine อาเจ๊กฮ้ง v1</b> · เร็ว 21× · คำนวณล่วงหน้า 4,380 ช่วงเวลา · p95 366ms</span>
+          <span data-i18n="dp.engine.badge">⚡ คำนวณล่วงหน้าทั้งปี ตอบไวใน 1 วินาที</span>
         </label>
         <script>try{localStorage.setItem('hk_use_aj_engine','1');}catch(_){}</script>
       </div>
@@ -931,7 +931,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
     <section>
 
       <div class="results-head">
-        <h2>ผลลัพธ์ <span class="han">結果</span></h2>
+        <h2><span data-i18n="dp.h.results">ผลลัพธ์</span> <span class="han">結果</span></h2>
         <div  class="results-meta" id="resultsMeta" data-i18n="auto.d.024">รอการค้นหา</div>
       </div>
 
@@ -954,18 +954,18 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
             <h3 data-i18n="auto.d.026">💬 ซินแสวางฤกษ์ · ระบบช่วยอ่านผล</h3>
             <div class="dp-sifu-note" data-i18n="dp.sifu.note">คุยต่อได้แบบแชท · ระบบส่งผลฤกษ์ ฟิลเตอร์ คนที่เลือก และคะแนนทั้งหน้าล่าสุดให้ซินแสทุกครั้ง</div>
           </div>
-          <div class="dp-sifu-mini" id="dp-sifu-context">NO SEARCH</div>
+          <div class="dp-sifu-mini" id="dp-sifu-context" data-i18n="dp.sifu.nosearch">ยังไม่มีการค้นหา</div>
         </div>
         <div class="dp-sifu-log" id="dp-sifu-log"></div>
         <form class="dp-sifu-form" id="dp-sifu-form">
           <textarea class="dp-sifu-input" id="dp-sifu-input" rows="2" placeholder="ถามต่อได้เลย เช่น ถ้าจะเซ็นเอกสารจริงควรเลือกอันดับไหน หรืออันดับ 1 กับ 2 ต่างกันยังไง"></textarea>
-          <button class="dp-sifu-send" id="dp-sifu-send" type="submit">ส่ง</button>
+          <button class="dp-sifu-send" id="dp-sifu-send" type="submit" data-i18n="dp.sifu.send">ส่ง</button>
         </form>
         <div class="dp-sifu-quick">
-          <button type="button" class="dp-sifu-chip" data-sifu-q="สรุปให้หน่อยว่าอันดับไหนน่าใช้จริงที่สุด และเพราะอะไร">สรุปตัวเลือกดีที่สุด</button>
-          <button type="button" class="dp-sifu-chip" data-sifu-q="อันดับไหนควรเลี่ยง ถึงคะแนนดูดี เพราะติดข้อเสียอะไร">ตัวไหนควรเลี่ยง</button>
-          <button type="button" class="dp-sifu-chip" data-sifu-q="ถ้าจำเป็นต้องทำภายในวันนี้ ควรเลือกช่วงเวลาไหนจากผลนี้">ถ้าต้องใช้วันนี้</button>
-          <button type="button" class="dp-sifu-chip" data-sifu-q="ช่วยเทียบอันดับ 1 กับอันดับ 2 แบบฟันธงว่าเลือกอันไหน">เทียบอันดับ 1/2</button>
+          <button type="button" class="dp-sifu-chip" data-sifu-q="สรุปให้หน่อยว่าอันดับไหนน่าใช้จริงที่สุด และเพราะอะไร" data-i18n="dp.sifu.q1">สรุปตัวเลือกดีที่สุด</button>
+          <button type="button" class="dp-sifu-chip" data-sifu-q="อันดับไหนควรเลี่ยง ถึงคะแนนดูดี เพราะติดข้อเสียอะไร" data-i18n="dp.sifu.q2">ตัวไหนควรเลี่ยง</button>
+          <button type="button" class="dp-sifu-chip" data-sifu-q="ถ้าจำเป็นต้องทำภายในวันนี้ ควรเลือกช่วงเวลาไหนจากผลนี้" data-i18n="dp.sifu.q3">ถ้าต้องใช้วันนี้</button>
+          <button type="button" class="dp-sifu-chip" data-sifu-q="ช่วยเทียบอันดับ 1 กับอันดับ 2 แบบฟันธงว่าเลือกอันไหน" data-i18n="dp.sifu.q4">เทียบอันดับ 1/2</button>
         </div>
       </div>
 
@@ -974,7 +974,7 @@ main{padding:36px 24px 80px;max-width:1400px;margin:0 auto;}
         <div class="empty-state">
           <div class="ic">📅</div>
           <h4 data-i18n="auto.d.027">วางฤกษ์ของท่าน</h4>
-          <p>เลือกกิจกรรม + ช่วงวัน + เกณฑ์กรอง<br/>แล้วกด "⚡ ค้นหาฤกษ์" เพื่อเริ่ม</p>
+          <p data-i18n="dp.empty.hint">เลือกกิจกรรม + ช่วงวัน + เกณฑ์กรอง<br/>แล้วกด "⚡ ค้นหาฤกษ์" เพื่อเริ่ม</p>
         </div>
       </div>
 
@@ -1020,70 +1020,78 @@ const DEFAULT_PEOPLE = [
 
 // Activity Tong Shu rules (simplified)
 const ACTIVITY_RULES = {
-  'break-ground':  { name:'ตอกเสาเข็ม',  han:'動土', yi:[3,4,5,7,8,11], ji:[1,2,6,12] },
-  'sign-contract': { name:'เซ็นสัญญา',   han:'立約', yi:[3,5,7,9,11],   ji:[2,4,12] },
-  'move-in':       { name:'ย้ายเข้าบ้าน', han:'入宅', yi:[3,4,7,8,11],   ji:[1,5,12] },
-  'open-shop':     { name:'เปิดกิจการ',   han:'開市', yi:[5,8,9,11],     ji:[2,4] },
-  'travel':        { name:'เดินทางไกล',   han:'出行', yi:[3,5,7,9,11],   ji:[1,2,12] },
-  'negotiate':     { name:'เจรจาสำคัญ',   han:'會見', yi:[3,5,7,9,11],   ji:[2,4] },
-  'invest':        { name:'ลงทุน/ซื้อ',   han:'財貨', yi:[5,7,8,9,11],   ji:[2,4,12] },
-  'wedding':       { name:'พิธีมงคล',     han:'嫁娶', yi:[3,5,7,9,11],   ji:[2,4,12] }
+  'break-ground':  { name:'ตอกเสาเข็ม',  nameEn:'Groundbreaking', nameZh:'動土', han:'動土', yi:[3,4,5,7,8,11], ji:[1,2,6,12] },
+  'sign-contract': { name:'เซ็นสัญญา',   nameEn:'Sign a contract', nameZh:'簽約', han:'立約', yi:[3,5,7,9,11],   ji:[2,4,12] },
+  'move-in':       { name:'ย้ายเข้าบ้าน', nameEn:'Move into a home', nameZh:'入宅', han:'入宅', yi:[3,4,7,8,11],   ji:[1,5,12] },
+  'open-shop':     { name:'เปิดกิจการ',   nameEn:'Open a business', nameZh:'開市', han:'開市', yi:[5,8,9,11],     ji:[2,4] },
+  'travel':        { name:'เดินทางไกล',   nameEn:'Long-distance travel', nameZh:'遠行', han:'出行', yi:[3,5,7,9,11],   ji:[1,2,12] },
+  'negotiate':     { name:'เจรจาสำคัญ',   nameEn:'Key negotiation', nameZh:'重要洽談', han:'會見', yi:[3,5,7,9,11],   ji:[2,4] },
+  'invest':        { name:'ลงทุน/ซื้อ',   nameEn:'Invest / purchase', nameZh:'投資/購置', han:'財貨', yi:[5,7,8,9,11],   ji:[2,4,12] },
+  'wedding':       { name:'พิธีมงคล',     nameEn:'Wedding ceremony', nameZh:'嫁娶', han:'嫁娶', yi:[3,5,7,9,11],   ji:[2,4,12] }
 };
 
 const ACTIVITY_CORE = [
-  { ui:'break-ground', name:'ตอกเสาเข็ม', han:'動土', desc:'งานก่อสร้าง · ขุดดิน · เปิดหน้างาน' },
-  { ui:'sign-contract', name:'เซ็นสัญญา', han:'立約', desc:'เอกสารผูกพัน · ข้อตกลง · ซื้อขาย' },
-  { ui:'move-in', name:'ย้ายเข้าบ้าน', han:'入宅', desc:'เข้าบ้านใหม่ · ย้ายที่อยู่' },
-  { ui:'open-shop', name:'เปิดกิจการ', han:'開市', desc:'เปิดร้าน · เปิดบริษัท · เริ่มค้าขาย' },
-  { ui:'travel', name:'เดินทางไกล', han:'出行', desc:'บิน · เดินทางต่างจังหวัด/ต่างประเทศ' },
-  { ui:'negotiate', name:'เจรจาสำคัญ', han:'會見', desc:'พบคน · คุยเงื่อนไข · ต่อรอง' },
-  { ui:'invest', name:'ลงทุน/ซื้อ', han:'財貨', desc:'ซื้อทรัพย์สิน · วางเงิน · เปิดยอด' },
-  { ui:'wedding', name:'พิธีมงคล', han:'嫁娶', desc:'แต่งงาน · หมั้น · งานมงคลครอบครัว' },
+  { ui:'break-ground', name:'ตอกเสาเข็ม', nameEn:'Groundbreaking', nameZh:'動土', han:'動土', desc:'งานก่อสร้าง · ขุดดิน · เปิดหน้างาน', descEn:'Construction · digging · breaking ground', descZh:'動工建設 · 挖土 · 開工' },
+  { ui:'sign-contract', name:'เซ็นสัญญา', nameEn:'Sign a contract', nameZh:'簽約', han:'立約', desc:'เอกสารผูกพัน · ข้อตกลง · ซื้อขาย', descEn:'Binding documents · agreements · sale contracts', descZh:'具約束力文件 · 協議 · 買賣合約' },
+  { ui:'move-in', name:'ย้ายเข้าบ้าน', nameEn:'Move into a home', nameZh:'入宅', han:'入宅', desc:'เข้าบ้านใหม่ · ย้ายที่อยู่', descEn:'Moving into a new home · relocating', descZh:'遷入新居 · 搬家' },
+  { ui:'open-shop', name:'เปิดกิจการ', nameEn:'Open a business', nameZh:'開市', han:'開市', desc:'เปิดร้าน · เปิดบริษัท · เริ่มค้าขาย', descEn:'Opening a shop · founding a company · starting trade', descZh:'開店 · 開公司 · 開始經商' },
+  { ui:'travel', name:'เดินทางไกล', nameEn:'Long-distance travel', nameZh:'遠行', han:'出行', desc:'บิน · เดินทางต่างจังหวัด/ต่างประเทศ', descEn:'Flying · travel to another province/country', descZh:'搭機 · 跨省/跨國旅行' },
+  { ui:'negotiate', name:'เจรจาสำคัญ', nameEn:'Key negotiation', nameZh:'重要洽談', han:'會見', desc:'พบคน · คุยเงื่อนไข · ต่อรอง', descEn:'Meeting people · discussing terms · bargaining', descZh:'會面 · 談條件 · 議價' },
+  { ui:'invest', name:'ลงทุน/ซื้อ', nameEn:'Invest / purchase', nameZh:'投資/購置', han:'財貨', desc:'ซื้อทรัพย์สิน · วางเงิน · เปิดยอด', descEn:'Buying assets · putting down money · opening a position', descZh:'購置資產 · 付訂 · 開倉' },
+  { ui:'wedding', name:'พิธีมงคล', nameEn:'Wedding ceremony', nameZh:'嫁娶', han:'嫁娶', desc:'แต่งงาน · หมั้น · งานมงคลครอบครัว', descEn:'Marriage · engagement · family celebrations', descZh:'結婚 · 訂婚 · 家族喜慶' },
 ];
 
 const ACTIVITY_PROFILE_GROUPS = [
-  { key:'core', label:'หลัก', han:'主' },
-  { key:'doc', label:'เอกสาร', han:'文' },
-  { key:'talk', label:'เจรจา', han:'談' },
-  { key:'trade', label:'ธุรกรรม', han:'交' },
-  { key:'biz', label:'องค์กร', han:'經' },
-  { key:'home', label:'บ้าน', han:'宅' },
-  { key:'life', label:'ชีวิต', han:'禮' },
+  { key:'core', label:'หลัก', labelEn:'Core', labelZh:'主要', han:'主' },
+  { key:'doc', label:'เอกสาร', labelEn:'Documents', labelZh:'文書', han:'文' },
+  { key:'talk', label:'เจรจา', labelEn:'Talks', labelZh:'洽談', han:'談' },
+  { key:'trade', label:'ธุรกรรม', labelEn:'Transactions', labelZh:'交易', han:'交' },
+  { key:'biz', label:'องค์กร', labelEn:'Business', labelZh:'企業', han:'經' },
+  { key:'home', label:'บ้าน', labelEn:'Home', labelZh:'居家', han:'宅' },
+  { key:'life', label:'ชีวิต', labelEn:'Life', labelZh:'生活', han:'禮' },
 ];
 const ACTIVITY_PROFILES = [
-  { key:'sign_contract', cat:'doc', ui:'sign-contract', base:'立約', name:'เซ็นสัญญา', han:'立約', desc:'เอกสารผูกพัน · ซื้อขาย · ขอกู้' },
-  { key:'close_deal', cat:'doc', ui:'sign-contract', base:'立約', name:'ปิดดีล/ปิดการขาย', han:'立券交易', desc:'จบการเจรจา · ตกลงราคา' },
-  { key:'permit_license', cat:'doc', ui:'sign-contract', base:'立約', name:'ขอใบอนุญาต', han:'上書', desc:'ยื่นเอกสารราชการ · ขอ license' },
-  { key:'loan_credit', cat:'doc', ui:'invest', base:'求財', name:'ขอกู้/ขอเครดิต', han:'求財', desc:'ยื่นกู้ · ขอวงเงินธนาคาร' },
-  { key:'launch_ritual', cat:'doc', ui:'open-shop', base:'開市', name:'พิธีเปิด/ฤกษ์เปิดตัว', han:'開光', desc:'พิธีเปิด · launch สินค้า/งานใหม่' },
-  { key:'negotiation', cat:'talk', ui:'negotiate', base:'立約', name:'เจรจา/ต่อรอง', han:'議事', desc:'คุยเงื่อนไข · ต่อรองราคา' },
-  { key:'meet_senior', cat:'talk', ui:'negotiate', base:'立約', name:'พบผู้ใหญ่/ที่ปรึกษา', han:'見貴', desc:'พบ senior · mentor · ผู้มีอำนาจช่วยเปิดทาง' },
-  { key:'ask_favor', cat:'talk', ui:'negotiate', base:'立約', name:'ขอความช่วยเหลือ', han:'求人', desc:'ขอ favor · ขอ intro · ขอแรงสนับสนุน' },
-  { key:'partner_meeting', cat:'talk', ui:'negotiate', base:'立約', name:'พบพันธมิตร', han:'結交', desc:'พบ partner ใหม่ · คุยความร่วมมือ' },
-  { key:'pitch_present', cat:'talk', ui:'open-shop', base:'開市', name:'Pitch / นำเสนอ', han:'上陳', desc:'นำเสนอต่อ board · นักลงทุน · ลูกค้าหลัก' },
-  { key:'interview', cat:'talk', ui:'negotiate', base:'立約', name:'สมัครงาน/สัมภาษณ์', han:'面試', desc:'สมัครงาน · สัมภาษณ์ · คุย offer' },
-  { key:'collect_money', cat:'trade', ui:'invest', base:'求財', name:'รับเงิน/เก็บเงิน', han:'納財', desc:'รับชำระ · เก็บกระแสเงินสด' },
-  { key:'debt_followup', cat:'trade', ui:'invest', base:'求財', name:'ทวงหนี้/ตามเงิน', han:'索債', desc:'ตามลูกหนี้ · เร่งจ่าย · ลดข้อพิพาท' },
-  { key:'pay_transfer', cat:'trade', ui:'invest', base:'求財', name:'จ่ายเงิน/โอน', han:'出財', desc:'จ่าย supplier · โอนเงินก้อน · ปิดยอด' },
-  { key:'invest_buy', cat:'trade', ui:'invest', base:'求財', name:'ลงทุน/ซื้อ', han:'入貨', desc:'ซื้อทรัพย์สิน · วางเงินก้อน · ตรวจตัวเลข' },
-  { key:'ship_goods', cat:'trade', ui:'travel', base:'出行', name:'ออกของ/ส่งของ', han:'出貨', desc:'ส่งสินค้า · เปิด shipment · กระจายของ' },
-  { key:'client_sales', cat:'trade', ui:'invest', base:'求財', name:'พบลูกค้า/ขายของ', han:'求財', desc:'พบลูกค้า · เสนอราคา · เปิดยอดขาย' },
-  { key:'open_business', cat:'biz', ui:'open-shop', base:'開市', name:'เปิดร้าน/ตั้งกิจการ', han:'開市', desc:'จดทะเบียน · เปิดสาขาใหม่' },
-  { key:'open_project', cat:'biz', ui:'open-shop', base:'開市', name:'เปิดโปรเจกต์/เปิดตัว', han:'開業', desc:'เปิดเว็บ · เปิดเพจ · เปิด product · เริ่ม SaaS' },
-  { key:'hire_onboard', cat:'biz', ui:'sign-contract', base:'立約', name:'จ้าง/รับพนักงาน', han:'受聘', desc:'เซ็นสัญญาจ้าง · onboard คนใหม่' },
-  { key:'take_position', cat:'biz', ui:'open-shop', base:'開市', name:'รับตำแหน่ง/เริ่มงานวันแรก', han:'上任', desc:'รับตำแหน่ง · เริ่มงาน · ขึ้นบทบาทใหม่' },
-  { key:'office_move', cat:'biz', ui:'move-in', base:'搬家', name:'ย้ายออฟฟิศ', han:'移徙', desc:'ย้ายสำนักงาน · ขนของ · เปลี่ยนที่ทำงาน' },
-  { key:'board_meeting', cat:'biz', ui:'negotiate', base:'立約', name:'ประชุมใหญ่/Board', han:'會親友', desc:'AGM · board meeting · town hall' },
-  { key:'break_ground', cat:'home', ui:'break-ground', base:'動土', name:'ตอกเสาเข็ม/ขุดดิน', han:'動土', desc:'เริ่มก่อสร้าง · ขุดดิน · เปิดหน้างาน' },
-  { key:'move_home', cat:'home', ui:'move-in', base:'搬家', name:'ย้ายเข้าบ้าน', han:'入宅', desc:'เข้าบ้านใหม่ · ย้ายที่อยู่' },
-  { key:'renovate', cat:'home', ui:'break-ground', base:'動土', name:'รีโนเวท/ปรับปรุง', han:'修造', desc:'ซ่อมแซม · ตกแต่ง · ปรับพื้นที่' },
-  { key:'wedding', cat:'life', ui:'wedding', base:'婚姻', name:'พิธีมงคล/แต่งงาน', han:'嫁娶', desc:'แต่งงาน · หมั้น · งานมงคลครอบครัว' },
-  { key:'medical_visit', cat:'life', ui:'sign-contract', base:'祭祀', name:'พบแพทย์/รักษา', han:'求醫', desc:'นัดแพทย์ · ตรวจ · วางเวลาที่ร่างกายรับไหว' },
-  { key:'surgery', cat:'life', ui:'sign-contract', base:'祭祀', name:'ผ่าตัดแบบเลือกเวลาได้', han:'手術', desc:'ใช้เฉพาะ elective case · ไม่ใช้แทนคำแนะนำแพทย์' },
-  { key:'exam_study', cat:'life', ui:'sign-contract', base:'立約', name:'สอบ/สมัครเรียน', han:'考試', desc:'สอบ · สมัครเรียน · เริ่มคอร์ส' },
-  { key:'long_travel', cat:'life', ui:'travel', base:'出行', name:'เดินทางไกล', han:'出行', desc:'เดินทางไกล · บิน · ไปต่างจังหวัด/ต่างประเทศ' },
+  { key:'sign_contract', cat:'doc', ui:'sign-contract', base:'立約', name:'เซ็นสัญญา', nameEn:'Sign a contract', nameZh:'簽約', han:'立約', desc:'เอกสารผูกพัน · ซื้อขาย · ขอกู้', descEn:'Binding documents · sale · loan application', descZh:'具約束力文件 · 買賣 · 貸款申請' },
+  { key:'close_deal', cat:'doc', ui:'sign-contract', base:'立約', name:'ปิดดีล/ปิดการขาย', nameEn:'Close a deal / sale', nameZh:'成交/完成銷售', han:'立券交易', desc:'จบการเจรจา · ตกลงราคา', descEn:'Concluding negotiation · agreeing on price', descZh:'結束洽談 · 議定價格' },
+  { key:'permit_license', cat:'doc', ui:'sign-contract', base:'立約', name:'ขอใบอนุญาต', nameEn:'Apply for a permit', nameZh:'申請許可', han:'上書', desc:'ยื่นเอกสารราชการ · ขอ license', descEn:'Filing with government offices · applying for a license', descZh:'提交公文 · 申請執照' },
+  { key:'loan_credit', cat:'doc', ui:'invest', base:'求財', name:'ขอกู้/ขอเครดิต', nameEn:'Apply for a loan / credit', nameZh:'申請貸款/信用額度', han:'求財', desc:'ยื่นกู้ · ขอวงเงินธนาคาร', descEn:'Filing a loan application · requesting a bank credit line', descZh:'提出貸款申請 · 申請銀行額度' },
+  { key:'launch_ritual', cat:'doc', ui:'open-shop', base:'開市', name:'พิธีเปิด/ฤกษ์เปิดตัว', nameEn:'Opening ceremony / launch', nameZh:'開幕儀式/發表', han:'開光', desc:'พิธีเปิด · launch สินค้า/งานใหม่', descEn:'Opening ceremony · launching a product/venture', descZh:'開幕儀式 · 新品/新業發表' },
+  { key:'negotiation', cat:'talk', ui:'negotiate', base:'立約', name:'เจรจา/ต่อรอง', nameEn:'Negotiation / bargaining', nameZh:'洽談/議價', han:'議事', desc:'คุยเงื่อนไข · ต่อรองราคา', descEn:'Discussing terms · price bargaining', descZh:'談條件 · 議價' },
+  { key:'meet_senior', cat:'talk', ui:'negotiate', base:'立約', name:'พบผู้ใหญ่/ที่ปรึกษา', nameEn:'Meet a senior / mentor', nameZh:'會見長輩/顧問', han:'見貴', desc:'พบ senior · mentor · ผู้มีอำนาจช่วยเปิดทาง', descEn:'Meeting seniors · mentors · people who can open doors', descZh:'會見長輩 · 導師 · 能引路之貴人' },
+  { key:'ask_favor', cat:'talk', ui:'negotiate', base:'立約', name:'ขอความช่วยเหลือ', nameEn:'Ask for a favor', nameZh:'請求協助', han:'求人', desc:'ขอ favor · ขอ intro · ขอแรงสนับสนุน', descEn:'Asking a favor · requesting an introduction · seeking support', descZh:'請託 · 求引薦 · 求支持' },
+  { key:'partner_meeting', cat:'talk', ui:'negotiate', base:'立約', name:'พบพันธมิตร', nameEn:'Meet a partner', nameZh:'會見夥伴', han:'結交', desc:'พบ partner ใหม่ · คุยความร่วมมือ', descEn:'Meeting a new partner · discussing collaboration', descZh:'會見新夥伴 · 洽談合作' },
+  { key:'pitch_present', cat:'talk', ui:'open-shop', base:'開市', name:'Pitch / นำเสนอ', nameEn:'Pitch / present', nameZh:'提案/簡報', han:'上陳', desc:'นำเสนอต่อ board · นักลงทุน · ลูกค้าหลัก', descEn:'Presenting to the board · investors · key clients', descZh:'向董事會 · 投資人 · 主要客戶簡報' },
+  { key:'interview', cat:'talk', ui:'negotiate', base:'立約', name:'สมัครงาน/สัมภาษณ์', nameEn:'Job application / interview', nameZh:'求職/面試', han:'面試', desc:'สมัครงาน · สัมภาษณ์ · คุย offer', descEn:'Applying for a job · interviewing · discussing an offer', descZh:'求職 · 面試 · 談offer' },
+  { key:'collect_money', cat:'trade', ui:'invest', base:'求財', name:'รับเงิน/เก็บเงิน', nameEn:'Collect payment', nameZh:'收款', han:'納財', desc:'รับชำระ · เก็บกระแสเงินสด', descEn:'Receiving payment · collecting cash flow', descZh:'收取款項 · 收現金流' },
+  { key:'debt_followup', cat:'trade', ui:'invest', base:'求財', name:'ทวงหนี้/ตามเงิน', nameEn:'Debt collection', nameZh:'催收欠款', han:'索債', desc:'ตามลูกหนี้ · เร่งจ่าย · ลดข้อพิพาท', descEn:'Chasing debtors · pushing payment · reducing disputes', descZh:'追討欠款 · 催款 · 減少糾紛' },
+  { key:'pay_transfer', cat:'trade', ui:'invest', base:'求財', name:'จ่ายเงิน/โอน', nameEn:'Pay / transfer money', nameZh:'付款/轉帳', han:'出財', desc:'จ่าย supplier · โอนเงินก้อน · ปิดยอด', descEn:'Paying suppliers · large transfers · settling accounts', descZh:'支付供應商 · 大額轉帳 · 結清帳款' },
+  { key:'invest_buy', cat:'trade', ui:'invest', base:'求財', name:'ลงทุน/ซื้อ', nameEn:'Invest / purchase', nameZh:'投資/購置', han:'入貨', desc:'ซื้อทรัพย์สิน · วางเงินก้อน · ตรวจตัวเลข', descEn:'Buying assets · large down payments · reviewing figures', descZh:'購置資產 · 大額付訂 · 核對數字' },
+  { key:'ship_goods', cat:'trade', ui:'travel', base:'出行', name:'ออกของ/ส่งของ', nameEn:'Ship / dispatch goods', nameZh:'出貨/發貨', han:'出貨', desc:'ส่งสินค้า · เปิด shipment · กระจายของ', descEn:'Shipping goods · opening a shipment · distribution', descZh:'寄送貨品 · 開始出貨 · 分銷' },
+  { key:'client_sales', cat:'trade', ui:'invest', base:'求財', name:'พบลูกค้า/ขายของ', nameEn:'Meet clients / make a sale', nameZh:'會見客戶/銷售', han:'求財', desc:'พบลูกค้า · เสนอราคา · เปิดยอดขาย', descEn:'Meeting clients · quoting price · opening sales', descZh:'會見客戶 · 報價 · 開始銷售' },
+  { key:'open_business', cat:'biz', ui:'open-shop', base:'開市', name:'เปิดร้าน/ตั้งกิจการ', nameEn:'Open a shop / found a business', nameZh:'開店/設立事業', han:'開市', desc:'จดทะเบียน · เปิดสาขาใหม่', descEn:'Company registration · opening a new branch', descZh:'公司登記 · 開設新分店' },
+  { key:'open_project', cat:'biz', ui:'open-shop', base:'開市', name:'เปิดโปรเจกต์/เปิดตัว', nameEn:'Launch a project', nameZh:'啟動專案/發表', han:'開業', desc:'เปิดเว็บ · เปิดเพจ · เปิด product · เริ่ม SaaS', descEn:'Launching a website · page · product · SaaS', descZh:'網站上線 · 開粉專 · 產品/SaaS上線' },
+  { key:'hire_onboard', cat:'biz', ui:'sign-contract', base:'立約', name:'จ้าง/รับพนักงาน', nameEn:'Hire / onboard staff', nameZh:'聘僱/入職', han:'受聘', desc:'เซ็นสัญญาจ้าง · onboard คนใหม่', descEn:'Signing employment contracts · onboarding new staff', descZh:'簽訂僱傭合約 · 新人入職' },
+  { key:'take_position', cat:'biz', ui:'open-shop', base:'開市', name:'รับตำแหน่ง/เริ่มงานวันแรก', nameEn:'Take a position / first day', nameZh:'就任/首日上班', han:'上任', desc:'รับตำแหน่ง · เริ่มงาน · ขึ้นบทบาทใหม่', descEn:'Taking a role · starting work · stepping into a new position', descZh:'就任職位 · 開始上班 · 接任新職' },
+  { key:'office_move', cat:'biz', ui:'move-in', base:'搬家', name:'ย้ายออฟฟิศ', nameEn:'Office relocation', nameZh:'遷移辦公室', han:'移徙', desc:'ย้ายสำนักงาน · ขนของ · เปลี่ยนที่ทำงาน', descEn:'Relocating the office · moving belongings · changing workplace', descZh:'搬遷辦公室 · 搬運物品 · 更換工作場所' },
+  { key:'board_meeting', cat:'biz', ui:'negotiate', base:'立約', name:'ประชุมใหญ่/Board', nameEn:'Board meeting', nameZh:'董事會/大會', han:'會親友', desc:'AGM · board meeting · town hall', descEn:'AGM · board meeting · town hall', descZh:'股東會 · 董事會 · 全員大會' },
+  { key:'break_ground', cat:'home', ui:'break-ground', base:'動土', name:'ตอกเสาเข็ม/ขุดดิน', nameEn:'Groundbreaking / digging', nameZh:'動土/挖土', han:'動土', desc:'เริ่มก่อสร้าง · ขุดดิน · เปิดหน้างาน', descEn:'Starting construction · digging · breaking ground', descZh:'開始施工 · 挖土 · 開工' },
+  { key:'move_home', cat:'home', ui:'move-in', base:'搬家', name:'ย้ายเข้าบ้าน', nameEn:'Move into a home', nameZh:'入宅', han:'入宅', desc:'เข้าบ้านใหม่ · ย้ายที่อยู่', descEn:'Moving into a new home · relocating', descZh:'遷入新居 · 搬家' },
+  { key:'renovate', cat:'home', ui:'break-ground', base:'動土', name:'รีโนเวท/ปรับปรุง', nameEn:'Renovation', nameZh:'翻修/整修', han:'修造', desc:'ซ่อมแซม · ตกแต่ง · ปรับพื้นที่', descEn:'Repairs · decorating · reconfiguring space', descZh:'修繕 · 裝潢 · 空間調整' },
+  { key:'wedding', cat:'life', ui:'wedding', base:'婚姻', name:'พิธีมงคล/แต่งงาน', nameEn:'Wedding ceremony', nameZh:'婚禮/嫁娶', han:'嫁娶', desc:'แต่งงาน · หมั้น · งานมงคลครอบครัว', descEn:'Marriage · engagement · family celebrations', descZh:'結婚 · 訂婚 · 家族喜慶' },
+  { key:'medical_visit', cat:'life', ui:'sign-contract', base:'祭祀', name:'พบแพทย์/รักษา', nameEn:'Doctor visit / treatment', nameZh:'看診/治療', han:'求醫', desc:'นัดแพทย์ · ตรวจ · วางเวลาที่ร่างกายรับไหว', descEn:'Booking a doctor · check-up · timing the body can handle', descZh:'預約醫生 · 檢查 · 挑身體能承受的時間' },
+  { key:'surgery', cat:'life', ui:'sign-contract', base:'祭祀', name:'ผ่าตัดแบบเลือกเวลาได้', nameEn:'Elective surgery', nameZh:'擇期手術', han:'手術', desc:'ใช้เฉพาะ elective case · ไม่ใช้แทนคำแนะนำแพทย์', descEn:'Elective cases only · never a substitute for medical advice', descZh:'僅適用於可擇期之手術 · 不可取代醫囑' },
+  { key:'exam_study', cat:'life', ui:'sign-contract', base:'立約', name:'สอบ/สมัครเรียน', nameEn:'Exam / enrollment', nameZh:'考試/報名入學', han:'考試', desc:'สอบ · สมัครเรียน · เริ่มคอร์ส', descEn:'Sitting exams · enrolling · starting a course', descZh:'考試 · 報名 · 開始課程' },
+  { key:'long_travel', cat:'life', ui:'travel', base:'出行', name:'เดินทางไกล', nameEn:'Long-distance travel', nameZh:'遠行', han:'出行', desc:'เดินทางไกล · บิน · ไปต่างจังหวัด/ต่างประเทศ', descEn:'Long trips · flying · travel to another province/country', descZh:'長途旅行 · 搭機 · 跨省/跨國' },
 ];
 const ACTIVITY_PROFILE_BY_KEY = Object.fromEntries(ACTIVITY_PROFILES.map(p => [p.key, p]));
+/* 🌐 เลือกฟิลด์ตามภาษาปัจจุบัน (name/desc/label + En/Zh sibling) · แค่ presentation ไม่แตะ logic การให้คะแนน */
+function dpTr(item, base){
+  if (!item) return '';
+  const lang = getCurrentLang();
+  if (lang === 'en' && item[base + 'En']) return item[base + 'En'];
+  if (lang === 'zh' && item[base + 'Zh']) return item[base + 'Zh'];
+  return item[base] || '';
+}
 
 // Solar branches (simplified mapping)
 const SHICHEN = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
@@ -1169,10 +1177,10 @@ function updateDateModeUI(){
     const [date, time] = state.dateExact.split('T');
     const sh = shichenForLocalTime(time);
     const slotDate = slotDateForExact(date, time);
-    hint.textContent = `โหมดวันเวลาเดียว · ${date} ${time} อยู่ใน ${sh.branch}時 (${sh.range})${slotDate !== date ? ` · เริ่ม ${slotDate} 23:00` : ''}`;
+    hint.textContent = `${_dptx('dp.hint.exact_mode','โหมดวันเวลาเดียว')} · ${date} ${time} ${_dptx('dp.hint.within','อยู่ใน')} ${sh.branch}時 (${sh.range})${slotDate !== date ? ` · ${_dptx('dp.hint.starts','เริ่ม')} ${slotDate} 23:00` : ''}`;
   } else {
     const days = rangeDaysInclusive(state.dateStart, state.dateEnd);
-    hint.textContent = `โหมดช่วงวัน · ${state.dateStart} ถึง ${state.dateEnd} (${days} วัน / ${days * 12} ยาม)`;
+    hint.textContent = `${_dptx('dp.hint.range_mode','โหมดช่วงวัน')} · ${state.dateStart} ${_dptx('dp.hint.to','ถึง')} ${state.dateEnd} (${days} ${_dptx('dp.unit.days','วัน')} / ${days * 12} ${_dptx('dp.unit.yam','ยาม')})`;
   }
 }
 function setDatePreset(preset, shouldSearch){
@@ -1224,7 +1232,7 @@ function currentSearchWindow(){
       exactTime: time,
       exactBranch: sh.branch,
       exactRange: sh.range,
-      label: `วันเวลาเดียว ${date} ${time} · ${sh.branch}時 ${sh.range}`,
+      label: `${_dptx('dp.win.exact_label','วันเวลาเดียว')} ${date} ${time} · ${sh.branch}時 ${sh.range}`,
     };
   }
   const rawDays = rangeDaysInclusive(state.dateStart, state.dateEnd);
@@ -1238,8 +1246,8 @@ function currentSearchWindow(){
     resultLimit: 12,
     exactDateTime: null,
     label: rawDays > 60
-      ? `${cappedDays} วันแรก ${state.dateStart} ถึง ${effectiveDateTo} · ${cappedDays * 12} ยาม`
-      : `${rawDays} วัน ${state.dateStart} ถึง ${state.dateEnd} · ${rawDays * 12} ยาม`,
+      ? `${cappedDays} ${_dptx('dp.win.first_days','วันแรก')} ${state.dateStart} ${_dptx('dp.hint.to','ถึง')} ${effectiveDateTo} · ${cappedDays * 12} ${_dptx('dp.unit.yam','ยาม')}`
+      : `${rawDays} ${_dptx('dp.unit.days','วัน')} ${state.dateStart} ${_dptx('dp.hint.to','ถึง')} ${state.dateEnd} · ${rawDays * 12} ${_dptx('dp.unit.yam','ยาม')}`,
   };
 }
 function filterExactResults(data, win){
@@ -1254,7 +1262,7 @@ function filterExactResults(data, win){
         time: win.exactTime,
         branch: win.exactBranch,
         range: win.exactRange,
-        label: `เวลาที่ระบุ ${win.exactDate} ${win.exactTime} อยู่ใน ${win.exactBranch}時 (${win.exactRange})`,
+        label: `${_dptx('dp.win.specified_time','เวลาที่ระบุ')} ${win.exactDate} ${win.exactTime} ${_dptx('dp.hint.within','อยู่ใน')} ${win.exactBranch}時 (${win.exactRange})`,
       },
     }));
   return { ...data, top, exactSearch: { date: win.exactDate, slotDate: date, time: win.exactTime, branch, range: win.exactRange } };
@@ -1276,7 +1284,7 @@ function validateDateRange(){
     ds.closest('.row2').parentNode.appendChild(warnEl);
   }
   if (days > 60) {
-    warnEl.textContent = '⚠ ช่วง ' + days + ' วัน เกิน 60 · ระบบจะค้น 60 วันแรกเพื่อคุมความเร็ว';
+    warnEl.textContent = `⚠ ${_dptx('dp.hint.range_over60','ช่วง')} ${days} ${_dptx('dp.hint.range_over60b','วัน เกิน 60 · ระบบจะค้น 60 วันแรกเพื่อคุมความเร็ว')}`;
     warnEl.style.display = 'block';
   } else {
     warnEl.style.display = 'none';
@@ -1413,11 +1421,12 @@ function init(){
     const btn = document.getElementById('act-classify-btn');
     btn.disabled = true; btn.textContent = '⏳';
     resEl.style.display = 'block';
-    resEl.innerHTML = '<span style="color:var(--fg-soft);">🔍 กำลังจับ...</span>';
+    resEl.innerHTML = `<span style="color:var(--fg-soft);">${_dptx('dp.classify.busy','🔍 กำลังจับ...')}</span>`;
     try {
       const r = await fetch('/api/activity-classify', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ query: q }) });
       const d = await r.json();
-      if (d.error) { resEl.innerHTML = `<span style="color:var(--bad);">⚠ ${d.error}</span>`; return; }
+      if (d.error) { resEl.innerHTML = `<span style="color:var(--bad);">⚠ ${_dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}</span>`; console.warn('[datepick] activity-classify error:', d.error); return; }
+      const srcLabel = { keyword:_dptx('dp.classify.src.keyword','จับจากคำสำคัญ'), ai:_dptx('dp.classify.src.ai','AI วิเคราะห์'), cache:_dptx('dp.classify.src.cache','จากแคช') }[d.source] || _dptx('dp.classify.src.other','ระบบ');
       const srcIcon = d.source==='keyword'?'⚡':d.source==='ai'?'🤖':d.source==='cache'?'💾':'⚙';
       const srcColor = d.source==='keyword'?'#5ba0ff':d.source==='ai'?'#c8a44d':d.source==='cache'?'#7dd37b':'#f7b955';
       resEl.innerHTML = `
@@ -1425,7 +1434,7 @@ function init(){
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
             <span style="font-family:var(--tc);font-size:18px;color:var(--gold);font-weight:600;">${d.han}</span>
             <span style="color:var(--fg);font-weight:500;">${d.th}</span>
-            <span style="margin-left:auto;font-family:var(--mono);font-size:9px;color:${srcColor};letter-spacing:.1em;">${srcIcon} ${d.source} · ${Math.round((d.confidence||0)*100)}%</span>
+            <span style="margin-left:auto;font-family:var(--mono);font-size:9px;color:${srcColor};letter-spacing:.1em;">${srcIcon} ${srcLabel} · ${Math.round((d.confidence||0)*100)}%</span>
           </div>
           <div style="color:var(--fg-soft);font-size:11px;line-height:1.5;">${d.reason||''}</div>
         </div>
@@ -1437,12 +1446,12 @@ function init(){
       let selectedEl = null;
       if (profile) {
         selectActivityProfile(profile.key);
-        selectedLabel = profile.name;
+        selectedLabel = dpTr(profile, 'name');
         selectedEl = document.querySelector(`.mission-btn[data-profile="${profile.key}"]`);
       } else {
         setLegacyActivity(uiKey);
         const core = ACTIVITY_CORE.find(x => x.ui === uiKey);
-        selectedLabel = core ? core.name : uiKey;
+        selectedLabel = core ? dpTr(core, 'name') : uiKey;
         selectedEl = document.querySelector(`.mission-btn[data-act="${uiKey}"]`);
       }
       if (selectedLabel) {
@@ -1450,15 +1459,15 @@ function init(){
         // ถ้า AI tag กิจกรรมที่ไม่มีปุ่มตรง (เช่น 求官·求醫) แสดง note
         if (uiKey !== d.activity) {
           resEl.querySelector('div').insertAdjacentHTML('beforeend',
-            `<div style="margin-top:6px;font-size:10px;color:var(--gold);font-family:var(--mono);">→ ใช้กฎ <b>${escHtml(selectedLabel)}</b> (ใกล้สุด)</div>`);
+            `<div style="margin-top:6px;font-size:10px;color:var(--gold);font-family:var(--mono);">→ ${_dptx('dp.classify.userule','ใช้กฎ')} <b>${escHtml(selectedLabel)}</b> (${_dptx('dp.classify.nearest','ใกล้สุด')})</div>`);
         }
         if (profile) {
           resEl.querySelector('div').insertAdjacentHTML('beforeend',
-            `<div style="margin-top:6px;font-size:10px;color:var(--gold);font-family:var(--mono);">→ profile <b>${escHtml(profile.name)}</b> · <span style="font-family:var(--tc);">${escHtml(profile.han)}</span></div>`);
+            `<div style="margin-top:6px;font-size:10px;color:var(--gold);font-family:var(--mono);">→ profile <b>${escHtml(dpTr(profile, 'name'))}</b> · <span style="font-family:var(--tc);">${escHtml(profile.han)}</span></div>`);
         }
       }
-    } catch(e) { resEl.innerHTML = `<span style="color:var(--bad);">⚠ ${e.message}</span>`; }
-    btn.disabled = false; btn.textContent = '🔍 จับ';
+    } catch(e) { resEl.innerHTML = `<span style="color:var(--bad);">⚠ ${_dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}</span>`; console.warn('[datepick] classifyActivity failed:', e); }
+    btn.disabled = false; btn.textContent = _dptx('dp.classify.btn','🔍 จับ');
   }
   document.getElementById('act-classify-btn')?.addEventListener('click', classifyActivity);
   document.getElementById('act-query')?.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); classifyActivity(); } });
@@ -1623,8 +1632,13 @@ const PEOPLE_BATCH_SIZE = 6;
 const PERSON_STEM_ELEMENT = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
 const PERSON_ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
 const PERSON_ELEMENT_ZH = {wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
+const PERSON_ELEMENT_EN = {wood:'Wood',fire:'Fire',earth:'Earth',metal:'Metal',water:'Water'};
 const PERSON_BRANCH_TH = {子:'ชวด',丑:'ฉลู',寅:'ขาล',卯:'เถาะ',辰:'มะโรง',巳:'มะเส็ง',午:'มะเมีย',未:'มะแม',申:'วอก',酉:'ระกา',戌:'จอ',亥:'กุน'};
+const PERSON_BRANCH_EN = {子:'Rat',丑:'Ox',寅:'Tiger',卯:'Rabbit',辰:'Dragon',巳:'Snake',午:'Horse',未:'Goat',申:'Monkey',酉:'Rooster',戌:'Dog',亥:'Pig'};
+/* หมายเหตุ: PERSON_GROUP_TH ยังใช้เป็น matching key ในการค้นหา (peopleFiltered) ห้ามแตะค่า — ป้ายแสดงผลใช้ PERSON_GROUP_EN/ZH แยกต่างหาก */
 const PERSON_GROUP_TH = {all:'ทั้งหมด',general:'ทั่วไป',family:'ครอบครัว',work:'ทีมงาน',friend:'เพื่อน',love:'คู่รัก',rival:'คู่แข่ง'};
+const PERSON_GROUP_EN = {all:'All',general:'General',family:'Family',work:'Team',friend:'Friends',love:'Partner',rival:'Rival'};
+const PERSON_GROUP_ZH = {all:'全部',general:'一般',family:'家人',work:'團隊',friend:'朋友',love:'伴侶',rival:'對手'};
 
 async function loadNetworkPeople(){
   try {
@@ -1646,7 +1660,7 @@ async function loadNetworkPeople(){
       const yearStem = bp.year?.stem || '';
       const dm = p.day_master || bp.day?.stem || '甲';
       return {
-        name: p.nickname || p.name || 'คน',
+        name: p.nickname || p.name || _dptx('dp.unit.people_singular','คน'),
         year: yearStem + yearBranch || '',
         branch: yearBranch,
         dm: dm,
@@ -1701,11 +1715,15 @@ function peopleFiltered(){
 
 function personAstroText(p){
   const el = PERSON_STEM_ELEMENT[p.dm] || '';
-  const elTh = PERSON_ELEMENT_TH[el] || 'ไม่ทราบธาตุ';
+  const lang = getCurrentLang();
+  const elLabel = (lang === 'en' ? PERSON_ELEMENT_EN[el] : lang === 'zh' ? PERSON_ELEMENT_ZH[el] : PERSON_ELEMENT_TH[el]) || _dptx('dp.person.unknown_el','ไม่ทราบธาตุ');
   const elZh = PERSON_ELEMENT_ZH[el] || '';
-  const branchTh = PERSON_BRANCH_TH[p.branch] || 'ไม่ทราบปีนักษัตร';
+  const branchLabel = (lang === 'en' ? PERSON_BRANCH_EN[p.branch] : PERSON_BRANCH_TH[p.branch]) || _dptx('dp.person.unknown_zodiac','ไม่ทราบปีนักษัตร');
   const dot = el ? `<span class="el-dot el-${el}"></span>` : '';
-  return `${dot}ธาตุ${escHtml(elTh)}${elZh ? ` <span class="han">${escHtml(elZh)}</span>` : ''} · ก้านวัน <span class="han">${escHtml(p.dm || '-')}</span>${p.branch ? ` · ปี${escHtml(branchTh)} <span class="han">${escHtml(p.branch)}</span>` : ''}`;
+  const elPrefix = _dptx('dp.element.prefix','ธาตุ');
+  const dmLabel = _dptx('dp.person.daystem','ก้านวัน');
+  const yearLabel = _dptx('dp.person.year','ปี');
+  return `${dot}${elPrefix}${escHtml(elLabel)}${(lang !== 'zh' && elZh) ? ` <span class="han">${escHtml(elZh)}</span>` : ''} · ${dmLabel} <span class="han">${escHtml(p.dm || '-')}</span>${p.branch ? ` · ${yearLabel}${escHtml(branchLabel)} <span class="han">${escHtml(p.branch)}</span>` : ''}`;
 }
 
 function renderSelectedPeople(){
@@ -1713,12 +1731,12 @@ function renderSelectedPeople(){
   if (!el) return;
   const selected = state.people.filter(p => p.enabled);
   if (!selected.length) {
-    el.innerHTML = '<div style="font-size:12px;color:var(--fg-faint);line-height:1.5;">ยังไม่เลือกคน · ถ้าไม่เลือก ระบบจะไม่ตัดวันชงจากดวงคน</div>';
+    el.innerHTML = `<div style="font-size:12px;color:var(--fg-faint);line-height:1.5;">${_dptx('dp.people.none_selected','ยังไม่เลือกคน · ถ้าไม่เลือก ระบบจะไม่ตัดวันชงจากดวงคน')}</div>`;
     return;
   }
   el.innerHTML = selected.map((p) => {
     const idx = state.people.indexOf(p);
-    return `<span class="chip">${escHtml(p.name)}<button type="button" title="เอาออก" onclick="state.people[${idx}].enabled=false;renderPeople();">×</button></span>`;
+    return `<span class="chip">${escHtml(p.name)}<button type="button" title="${_dptx('dp.people.remove','เอาออก')}" onclick="state.people[${idx}].enabled=false;renderPeople();">×</button></span>`;
   }).join('');
 }
 
@@ -1726,7 +1744,7 @@ function renderPeople(){
   const c = document.getElementById('peopleMini');
   const filtered = peopleFiltered();
   if (!filtered.length) {
-    c.innerHTML = '<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.6;">ไม่พบคนในเงื่อนไขนี้ · ลองเปลี่ยนหมวดหรือคำค้นหา</div>';
+    c.innerHTML = `<div style="padding:20px;text-align:center;color:var(--fg-faint);font-size:12px;line-height:1.6;">${_dptx('dp.people.notfound','ไม่พบคนในเงื่อนไขนี้ · ลองเปลี่ยนหมวดหรือคำค้นหา')}</div>`;
     renderSelectedPeople();
     updatePeopleCount();
     return;
@@ -1739,9 +1757,9 @@ function renderPeople(){
         <div class="nm">${escHtml(p.name)}${p.rel ? ` <span class="rel">· ${escHtml(p.rel)}</span>` : ''}</div>
         <div class="stats">${personAstroText(p)}</div>
       </div>
-      <button type="button" class="pick" onclick="state.people[${idx}].enabled=!state.people[${idx}].enabled;renderPeople();">${p.enabled ? 'เลือกแล้ว' : '+ เพิ่ม'}</button>
+      <button type="button" class="pick" onclick="state.people[${idx}].enabled=!state.people[${idx}].enabled;renderPeople();">${p.enabled ? _dptx('dp.people.picked','เลือกแล้ว') : _dptx('dp.people.pick','+ เพิ่ม')}</button>
     </div>`;
-  }).join('') + (filtered.length > visible.length ? `<button type="button" class="people-more" onclick="state.peopleVisible += ${PEOPLE_BATCH_SIZE};renderPeople();">แสดงเพิ่ม ${Math.min(PEOPLE_BATCH_SIZE, filtered.length - visible.length)} คน</button>` : '');
+  }).join('') + (filtered.length > visible.length ? `<button type="button" class="people-more" onclick="state.peopleVisible += ${PEOPLE_BATCH_SIZE};renderPeople();">${_dptx('dp.people.showmore','แสดงเพิ่ม')} ${Math.min(PEOPLE_BATCH_SIZE, filtered.length - visible.length)} ${_dptx('dp.unit.people','คน')}</button>` : '');
   renderSelectedPeople();
   updatePeopleCount();
 }
@@ -1750,8 +1768,9 @@ function updatePeopleCount(){
   const total = state.people.length;
   const el = document.getElementById('peopleCount');
   const filtered = peopleFiltered().length;
-  const grp = PERSON_GROUP_TH[state.peopleGroup || 'all'] || 'ทั้งหมด';
-  if (el) el.textContent = `เลือก ${enabled} / ${total} คน · กำลังดู ${grp} ${filtered} คน`;
+  const lang = getCurrentLang();
+  const grp = (lang === 'en' ? PERSON_GROUP_EN : lang === 'zh' ? PERSON_GROUP_ZH : PERSON_GROUP_TH)[state.peopleGroup || 'all'] || PERSON_GROUP_TH.all;
+  if (el) el.textContent = `${_dptx('dp.people.selected','เลือก')} ${enabled} / ${total} ${_dptx('dp.unit.people','คน')} · ${_dptx('dp.people.viewing','กำลังดู')} ${grp} ${filtered} ${_dptx('dp.unit.people','คน')}`;
 }
 /* bind group selector + toolbar (ครั้งเดียวตอน DOM ready) */
 function bindPeopleControls(){
@@ -1793,9 +1812,9 @@ function currentActivityProfile(){
 
 function currentActivityMeta(){
   const profile = currentActivityProfile();
-  if (profile) return { name: profile.name, han: profile.han, key: profile.key, base: profile.base };
+  if (profile) return { name: dpTr(profile, 'name'), han: profile.han, key: profile.key, base: profile.base };
   const legacy = ACTIVITY_RULES[state.activity] || {};
-  return { name: legacy.name || 'กิจกรรมที่เลือก', han: legacy.han || '事', key: state.activity, base: legacy.han || '立約' };
+  return { name: dpTr(legacy, 'name') || _dptx('dp.act.default','กิจกรรมที่เลือก'), han: legacy.han || '事', key: state.activity, base: legacy.han || '立約' };
 }
 
 function setLegacyActivity(uiKey){
@@ -1806,7 +1825,7 @@ function setLegacyActivity(uiKey){
   renderActivityProfiles();
   const note = document.getElementById('activityProfileNote');
   const core = ACTIVITY_CORE.find(x => x.ui === uiKey);
-  if (note) note.innerHTML = `ใช้กฎหลัก <b>${escHtml(core?.name || 'กิจกรรมที่เลือก')}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(core?.han || '事')}</span> · logic เดิม 8 กิจกรรม`;
+  if (note) note.innerHTML = `${_dptx('dp.act.userule_core','ใช้กฎหลัก')} <b>${escHtml(core ? dpTr(core,'name') : _dptx('dp.act.default','กิจกรรมที่เลือก'))}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(core?.han || '事')}</span> · ${_dptx('dp.act.legacy8','ใช้กฎ 8 กิจกรรมเดิม')}`;
 }
 
 function selectActivityProfile(key){
@@ -1818,7 +1837,7 @@ function selectActivityProfile(key){
   document.querySelectorAll('.act-btn').forEach(x => x.classList.toggle('active', x.dataset.act === profile.ui));
   renderActivityProfiles();
   const note = document.getElementById('activityProfileNote');
-  if (note) note.innerHTML = `ใช้กฎเฉพาะ <b>${escHtml(profile.name)}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(profile.han)}</span> · ส่งเข้า engine ฐาน <span style="font-family:var(--tc);color:var(--gold);">${escHtml(profile.base)}</span>`;
+  if (note) note.innerHTML = `${_dptx('dp.act.userule_specific','ใช้กฎเฉพาะ')} <b>${escHtml(dpTr(profile,'name'))}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(profile.han)}</span> · ${_dptx('dp.act.sentbase','ส่งเข้าระบบฐาน')} <span style="font-family:var(--tc);color:var(--gold);">${escHtml(profile.base)}</span>`;
 }
 
 function renderActivityProfiles(){
@@ -1827,13 +1846,13 @@ function renderActivityProfiles(){
   if (!tabs || !list) return;
   tabs.innerHTML = ACTIVITY_PROFILE_GROUPS.map(g => `
     <button type="button" class="${state.activityProfileCategory===g.key?'active':''}" data-cat="${g.key}">
-      <span class="han">${escHtml(g.han)}</span><span>${escHtml(g.label)}</span>
+      <span class="han">${escHtml(g.han)}</span><span>${escHtml(dpTr(g,'label'))}</span>
     </button>`).join('');
   if (state.activityProfileCategory === 'core') {
     list.innerHTML = ACTIVITY_CORE.map(item => `
       <button type="button" class="mission-btn ${!state.activityProfileKey&&state.activity===item.ui?'active':''}" data-act="${escHtml(item.ui)}">
-        <div class="nm"><span class="han">${escHtml(item.han)}</span><span>${escHtml(item.name)}</span></div>
-        <div class="desc">${escHtml(item.desc)}</div>
+        <div class="nm"><span class="han">${escHtml(item.han)}</span><span>${escHtml(dpTr(item,'name'))}</span></div>
+        <div class="desc">${escHtml(dpTr(item,'desc'))}</div>
       </button>`).join('');
     tabs.querySelectorAll('button[data-cat]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1849,8 +1868,8 @@ function renderActivityProfiles(){
   const items = ACTIVITY_PROFILES.filter(p => p.cat === state.activityProfileCategory);
   list.innerHTML = items.map(p => `
     <button type="button" class="mission-btn ${state.activityProfileKey===p.key?'active':''}" data-profile="${escHtml(p.key)}">
-      <div class="nm"><span class="han">${escHtml(p.han)}</span><span>${escHtml(p.name)}</span></div>
-      <div class="desc">${escHtml(p.desc)}</div>
+      <div class="nm"><span class="han">${escHtml(p.han)}</span><span>${escHtml(dpTr(p,'name'))}</span></div>
+      <div class="desc">${escHtml(dpTr(p,'desc'))}</div>
     </button>`).join('');
   tabs.querySelectorAll('button[data-cat]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1881,69 +1900,107 @@ const ACTIVITY_MAP = {
 };
 
 const MODULE_LABELS = {
-  ze_ri: { th:'ปฏิทินจีน', zh:'通書/擇日', mode:'ตัดวันต้องห้าม', element:null, desc:'ตัดเฉพาะวันที่ตรง 忌 ของกิจกรรม; ตงกงเป็นคะแนนเสริมในชั้นนี้' },
-  tai_sui: { th:'ไท้ส่วย', zh:'太歲', mode:'ตัดชนหนัก', element:'earth', desc:'กันวัน/ยามที่ชนพลังปีแรงเกินไป' },
-  ba_zi: { th:'ดวงคนที่เกี่ยวข้อง', zh:'八字', mode:'เฉพาะบุคคล', element:null, desc:'เทียบวันกับดวงของคนที่เลือก' },
-  qi_men: { th:'ฉีเหมิน', zh:'奇門', mode:'คัดยาม/จำกัดคะแนน', element:null, desc:'ดูประตู ดาว เทพ และทิศที่เหมาะกับกิจกรรม; ผังไม่รับจะจำกัดคะแนน' },
-  yong_shen: { th:'ธาตุที่ดวงต้องการ', zh:'用神', mode:'เฉพาะบุคคล', element:null, desc:'เพิ่มคะแนนเมื่อวัน/ยามหนุนธาตุที่ดวงต้องการ' },
-  twelve_officers: { th:'สิบสองจังหวะวัน', zh:'十二建除', mode:'คะแนนเสริม', element:null, desc:'ดูจังหวะ 建除 เป็นแรงหนุนหรือถ่วงคะแนน ไม่ใช่ตัวตัดหลัก' },
-  twenty_eight: { th:'ยี่สิบแปดดาวฤกษ์', zh:'二十八宿', mode:'คะแนนเสริม', element:null, desc:'ดาวฤกษ์จีนช่วยหนุนหรือลดคะแนนตามกิจกรรม ไม่ตัดเดี่ยว' },
-  twelve_spirits: { th:'สิบสองเทพวัน', zh:'黃黑道十二神', mode:'คะแนนเสริม', element:null, desc:'เทพดี/เทพร้ายประจำวันใช้ปรับคะแนน ไม่ใช่神煞กว้างของปาจื้อ' },
-  nine_stars: { th:'เก้าดาวเหิน', zh:'九飛星', mode:'ปรับคะแนน', element:null, desc:'พลังดาวเหินของวัน/ยาม' },
-  he_luo: { th:'เหอหลัว', zh:'河洛', mode:'บริบทเสริม', element:null, desc:'อ่าน pattern เชิงตัวเลขและจังหวะพลัง' },
-  hex64: { th:'หกสิบสี่ข่วย', zh:'六十四卦', mode:'ตีความ', element:null, desc:'ใช้ตีความสถานการณ์ ไม่ใช่ตัวตัดหลัก' },
-  tian_xing: { th:'ดาวจริง', zh:'七政四餘', mode:'คะแนนเสริมขั้นสูง', element:null, desc:'โหราศาสตร์ดาวจริง opt-in; ติ๊กแล้วใช้ปรับคะแนน ไม่ติ๊กไม่มีผล' },
-  dong_gong: { th:'ตงกง', zh:'董公', mode:'ตัดฤกษ์ · เพดานคะแนน', element:null, desc:'ตำราตัดฤกษ์ 董公選要覽; วัน 大凶 เพดาน 30 · 凶/ข้อห้ามตรงกิจกรรม เพดาน 45 · วันดีบวกเสริม' },
+  ze_ri: { th:'ปฏิทินจีน', en:'Chinese calendar', zh:'通書/擇日', mode:'ตัดวันต้องห้าม', modeEn:'Forbidden-day cut', element:null, desc:'ตัดเฉพาะวันที่ตรง 忌 ของกิจกรรม; ตงกงเป็นคะแนนเสริมในชั้นนี้', descEn:'Hard-cuts only activity 忌 days; Dong Gong is a scoring overlay in this layer' },
+  tai_sui: { th:'ไท้ส่วย', en:'Grand Duke (Tai Sui)', zh:'太歲', mode:'ตัดชนหนัก', modeEn:'Heavy-clash cut', element:'earth', desc:'กันวัน/ยามที่ชนพลังปีแรงเกินไป', descEn:'Filters out days/hours that clash too hard with the year energy' },
+  ba_zi: { th:'ดวงคนที่เกี่ยวข้อง', en:'BaZi of people involved', zh:'八字', mode:'เฉพาะบุคคล', modeEn:'Personal only', element:null, desc:'เทียบวันกับดวงของคนที่เลือก', descEn:'Compares the day against the chosen people’s charts' },
+  qi_men: { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門', mode:'คัดยาม/จำกัดคะแนน', modeEn:'Hour guard / score cap', element:null, desc:'ดูประตู ดาว เทพ และทิศที่เหมาะกับกิจกรรม; ผังไม่รับจะจำกัดคะแนน', descEn:'Checks door, star, deity and direction fit; a poor chart caps the score' },
+  yong_shen: { th:'ธาตุที่ดวงต้องการ', en:'Favorable element (Yong Shen)', zh:'用神', mode:'เฉพาะบุคคล', modeEn:'Personal only', element:null, desc:'เพิ่มคะแนนเมื่อวัน/ยามหนุนธาตุที่ดวงต้องการ', descEn:'Adds score when the day/hour supports the chart’s favorable element' },
+  twelve_officers: { th:'สิบสองจังหวะวัน', en:'12 Day Officers', zh:'十二建除', mode:'คะแนนเสริม', modeEn:'Scoring overlay', element:null, desc:'ดูจังหวะ 建除 เป็นแรงหนุนหรือถ่วงคะแนน ไม่ใช่ตัวตัดหลัก', descEn:'Reads the 建除 cycle as a scoring boost/drag, never the main filter' },
+  twenty_eight: { th:'ยี่สิบแปดดาวฤกษ์', en:'28 Lunar Mansions', zh:'二十八宿', mode:'คะแนนเสริม', modeEn:'Scoring overlay', element:null, desc:'ดาวฤกษ์จีนช่วยหนุนหรือลดคะแนนตามกิจกรรม ไม่ตัดเดี่ยว', descEn:'The lunar mansion adjusts the score by activity, never a standalone cut' },
+  twelve_spirits: { th:'สิบสองเทพวัน', en:'12 Day Deities', zh:'黃黑道十二神', mode:'คะแนนเสริม', modeEn:'Scoring overlay', element:null, desc:'เทพดี/เทพร้ายประจำวันใช้ปรับคะแนน ไม่ใช่神煞กว้างของปาจื้อ', descEn:'Good/bad day deities adjust score, distinct from BaZi’s broader Shensha' },
+  nine_stars: { th:'เก้าดาวเหิน', en:'9 Flying Stars', zh:'九飛星', mode:'ปรับคะแนน', modeEn:'Score adjust', element:null, desc:'พลังดาวเหินของวัน/ยาม', descEn:'The flying-star energy of the day/hour' },
+  he_luo: { th:'เหอหลัว', en:'He Luo', zh:'河洛', mode:'บริบทเสริม', modeEn:'Extra context', element:null, desc:'อ่าน pattern เชิงตัวเลขและจังหวะพลัง', descEn:'Reads number patterns and energy rhythm' },
+  hex64: { th:'หกสิบสี่ข่วย', en:'64 Hexagrams', zh:'六十四卦', mode:'ตีความ', modeEn:'Interpretation', element:null, desc:'ใช้ตีความสถานการณ์ ไม่ใช่ตัวตัดหลัก', descEn:'Used for interpretation, never the main filter' },
+  tian_xing: { th:'ดาวจริง', en:'Real-Star Astrology', zh:'七政四餘', mode:'คะแนนเสริมขั้นสูง', modeEn:'Advanced scoring overlay', element:null, desc:'โหราศาสตร์ดาวจริง opt-in; ติ๊กแล้วใช้ปรับคะแนน ไม่ติ๊กไม่มีผล', descEn:'Opt-in real-star astrology; scores when ticked, no effect when off' },
+  dong_gong: { th:'ตงกง', en:'Dong Gong', zh:'董公', mode:'ตัดฤกษ์ · เพดานคะแนน', modeEn:'Date-vetting · score cap', element:null, desc:'ตำราตัดฤกษ์ 董公選要覽; วัน 大凶 เพดาน 30 · 凶/ข้อห้ามตรงกิจกรรม เพดาน 45 · วันดีบวกเสริม', descEn:'Date-vetting canon 董公選要覽; 大凶 day caps at 30 · 凶/activity taboo caps at 45 · good days add bonus' },
   /* r372 · หมวด ② ท้องฟ้าจริง 5 ตัวใหม่ (ผูกพิกัดสถานที่จัดงาน) */
-  moon_void: { th:'จันทร์ว่าง', zh:'月空', mode:'เพดานคะแนน', element:null, desc:'ช่วงจันทร์ไร้มุมก่อนย้ายราศี (Void of Course); งานเริ่มใหม่คาบช่วงนี้โดนเพดานคะแนน 45' },
-  moon_sign: { th:'จันทร์ประจำราศี', zh:'月座', mode:'ปรับคะแนนเบา', element:null, desc:'ราศีที่จันทร์อยู่จริง ณ ยามนั้น; เข้ากับกิจกรรม +6 / ไม่เข้า −6 เบา ๆ ไม่ตัดฤกษ์' },
-  retro_window: { th:'ดาวถอย', zh:'逆行', mode:'เพดานคะแนน', element:null, desc:'ดาวพุธ/ศุกร์/อังคารถอยจริง (รอบ station R→D); ตรงหมวดกิจกรรมโดนเพดาน 40-50' },
-  eclipse_zone: { th:'โซนอับคราส', zh:'食區', mode:'เพดานคะแนน', element:null, desc:'±3 วันรอบสุริยุปราคา/จันทรุปราคา; วันคราสพอดีเพดาน 35 · ในโซน+งานเปิดตัวใหญ่เพดาน 55' },
-  rahu_kalam: { th:'ราหูกาล', zh:'羅睺', mode:'เพดานคะแนน', element:null, desc:'ช่วงอัปมงคลรายวันสายอินเดีย ~90 นาที คำนวณจากพระอาทิตย์ขึ้นจริง ณ สถานที่; คาบช่วงนี้เพดาน 50' },
+  moon_void: { th:'จันทร์ว่าง', en:'Void of Course Moon', zh:'月空', mode:'เพดานคะแนน', modeEn:'Score cap', element:null, desc:'ช่วงจันทร์ไร้มุมก่อนย้ายราศี (Void of Course); งานเริ่มใหม่คาบช่วงนี้โดนเพดานคะแนน 45', descEn:'The Moon drifting aspect-less before changing sign; new ventures in this window cap at 45' },
+  moon_sign: { th:'จันทร์ประจำราศี', en:'Moon sign', zh:'月座', mode:'ปรับคะแนนเบา', modeEn:'Soft adjust', element:null, desc:'ราศีที่จันทร์อยู่จริง ณ ยามนั้น; เข้ากับกิจกรรม +6 / ไม่เข้า −6 เบา ๆ ไม่ตัดฤกษ์', descEn:'The Moon’s real sign at that hour; fits activity +6 / misfit −6 (soft), never cuts' },
+  retro_window: { th:'ดาวถอย', en:'Retrograde', zh:'逆行', mode:'เพดานคะแนน', modeEn:'Score cap', element:null, desc:'ดาวพุธ/ศุกร์/อังคารถอยจริง (รอบ station R→D); ตรงหมวดกิจกรรมโดนเพดาน 40-50', descEn:'Real Mercury/Venus/Mars retrograde (around R→D station); matching activity caps 40-50' },
+  eclipse_zone: { th:'โซนอับคราส', en:'Eclipse zone', zh:'食區', mode:'เพดานคะแนน', modeEn:'Score cap', element:null, desc:'±3 วันรอบสุริยุปราคา/จันทรุปราคา; วันคราสพอดีเพดาน 35 · ในโซน+งานเปิดตัวใหญ่เพดาน 55', descEn:'±3 days around eclipses; exact eclipse day caps at 35 · in-zone major launches cap at 55' },
+  rahu_kalam: { th:'ราหูกาล', en:'Rahu Kalam', zh:'羅睺', mode:'เพดานคะแนน', modeEn:'Score cap', element:null, desc:'ช่วงอัปมงคลรายวันสายอินเดีย ~90 นาที คำนวณจากพระอาทิตย์ขึ้นจริง ณ สถานที่; คาบช่วงนี้เพดาน 50', descEn:'Daily inauspicious window of Indian astrology (~90 min) from real sunrise at the venue; caps at 50' },
   /* r374 · phase-3 ปัญจางค์+ตาราพละ (สายอินเดีย) */
-  panchanga: { th:'ปัญจางค์ 5 องค์', zh:'五支曆', mode:'เพดานคะแนน+ปรับเบา', element:null, desc:'ติถี/วาระ/นักษัตร/โยคะ/กรณะ ตามปฏิทินอินเดีย; ติถีริกตา (เปิดกิจการ/แต่งงาน) + กรณะภัทรา เพดาน 55 · จันทร์ดับ 45 · โยคะร้าย 60 · โยคะดี +5' },
-  tara_bala: { th:'ตาราพละ', zh:'宿曜', mode:'เฉพาะบุคคล · เพดานคะแนน', element:null, desc:'นับนักษัตรเกิดของคุณถึงนักษัตรของวัน (Tārābala 9 ชั้น); ชั้นร้าย 3/5/7 เพดาน 50 · ชั้นดี +4 · ไม่มีโปรไฟล์ = ไม่ทำงาน' },
+  panchanga: { th:'ปัญจางค์ 5 องค์', en:'Panchanga (5 limbs)', zh:'五支曆', mode:'เพดานคะแนน+ปรับเบา', modeEn:'Score cap + soft adjust', element:null, desc:'ติถี/วาระ/นักษัตร/โยคะ/กรณะ ตามปฏิทินอินเดีย; ติถีริกตา (เปิดกิจการ/แต่งงาน) + กรณะภัทรา เพดาน 55 · จันทร์ดับ 45 · โยคะร้าย 60 · โยคะดี +5', descEn:'Tithi/vara/nakshatra/yoga/karana by the Hindu calendar; rikta tithi + Bhadra karana cap 55 · new moon 45 · malefic yoga 60 · benefic yoga +5' },
+  tara_bala: { th:'ตาราพละ', en:'Tarabala', zh:'宿曜', mode:'เฉพาะบุคคล · เพดานคะแนน', modeEn:'Personal · score cap', element:null, desc:'นับนักษัตรเกิดของคุณถึงนักษัตรของวัน (Tārābala 9 ชั้น); ชั้นร้าย 3/5/7 เพดาน 50 · ชั้นดี +4 · ไม่มีโปรไฟล์ = ไม่ทำงาน', descEn:'Counts from your birth nakshatra to the day’s nakshatra (9-fold Tarabala); bad taras 3/5/7 cap 50 · good taras +4 · no profile = inactive' },
 };
 const MODULE_ORDER = ['ba_zi','ze_ri','dong_gong','tai_sui','qi_men','tian_xing','moon_void','moon_sign','retro_window','eclipse_zone','rahu_kalam','panchanga','yong_shen','tara_bala','twelve_officers','twenty_eight','twelve_spirits','nine_stars','he_luo','hex64'];
 const STEM_ELEMENT = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
 const ELEMENT_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
 const ELEMENT_ZH = {wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
+const ELEMENT_EN = {wood:'Wood',fire:'Fire',earth:'Earth',metal:'Metal',water:'Water'};
 const QIMEN_DOOR_TH = {
   休門:'ประตูพัก', 生門:'ประตูเกิด', 傷門:'ประตูบาดเจ็บ', 杜門:'ประตูปิด',
   景門:'ประตูภาพลักษณ์', 死門:'ประตูตาย', 驚門:'ประตูตกใจ', 開門:'ประตูเปิด',
+};
+const QIMEN_DOOR_EN = {
+  休門:'Rest Gate', 生門:'Life Gate', 傷門:'Injury Gate', 杜門:'Delusion Gate',
+  景門:'View Gate', 死門:'Death Gate', 驚門:'Fear Gate', 開門:'Open Gate',
 };
 const QIMEN_STAR_TH = {
   天蓬:'ดาวเทียนเผิง', 天任:'ดาวเทียนเริ่น', 天沖:'ดาวเทียนชง',
   天輔:'ดาวเทียนฝู่', 天英:'ดาวเทียนอิง', 天芮:'ดาวเทียนรุ่ย',
   天柱:'ดาวเทียนจู้', 天心:'ดาวเทียนซิน', 天禽:'ดาวเทียนฉิน',
 };
+const QIMEN_STAR_EN = {
+  天蓬:'Tianpeng (Risk Star)', 天任:'Tianren (Steady Star)', 天沖:'Tianchong (Rushing Star)',
+  天輔:'Tianfu (Assistant Star)', 天英:'Tianying (Fame Star)', 天芮:'Tianrui (Illness Star)',
+  天柱:'Tianzhu (Pillar Star)', 天心:'Tianxin (Heart Star)', 天禽:'Tianqin (Central Star)',
+};
 const QIMEN_DEITY_TH = {
   值符:'เทพจื๋อฟู', 螣蛇:'เทพเถิงเสอ', 太陰:'เทพไท่อิน', 六合:'เทพลิ่วเหอ',
   白虎:'เทพเสือขาว', 玄武:'เทพเสวียนอู่', 九地:'เทพเก้าดิน', 九天:'เทพเก้าฟ้า',
+};
+const QIMEN_DEITY_EN = {
+  值符:'Zhifu (Chief Deity)', 螣蛇:'Tengshe (Serpent Deity)', 太陰:'Taiyin (Yin Deity)', 六合:'Liuhe (Union Deity)',
+  白虎:'Baihu (White Tiger Deity)', 玄武:'Xuanwu (Black Tortoise Deity)', 九地:'Jiudi (Earth Deity)', 九天:'Jiutian (Heaven Deity)',
 };
 const QIMEN_DOOR_HINT = {
   休門:'เหมาะพัก เจรจานุ่ม ๆ ฟื้นตัว', 生門:'เหมาะเติบโต เงิน งานที่อยากให้เกิดผล', 傷門:'แรงปะทะสูง เหมาะแก้ปัญหาแต่ไม่เหมาะงานมงคล',
   杜門:'เหมาะเก็บตัว วางแผน ไม่เด่นเรื่องเปิดเผย', 景門:'เหมาะชื่อเสียง สื่อสาร พรีเซนต์', 死門:'พลังนิ่งหนัก ไม่เหมาะเริ่มเรื่องสำคัญ',
   驚門:'ข่าวเร็ว ความตื่นตัวสูง ต้องคุมคำพูด', 開門:'เหมาะเปิดทาง เซ็นสัญญา พบผู้ใหญ่'
 };
+const QIMEN_DOOR_HINT_EN = {
+  休門:'Good for rest, gentle talks, recovery', 生門:'Good for growth, money, results you want to bear fruit', 傷門:'High-impact; good for solving problems but not for auspicious events',
+  杜門:'Good for staying low-key, planning, avoiding exposure', 景門:'Good for reputation, media, presentations', 死門:'Heavy, still energy; not for starting important matters',
+  驚門:'Fast-moving news, high alertness; watch your words', 開門:'Good for opening doors, signing contracts, meeting seniors'
+};
 const QIMEN_STAR_HINT = {
   天蓬:'พลังเสี่ยง/ความลับ ต้องคุมความโลภ', 天任:'มั่นคง อดทน เหมาะงานระยะยาว', 天沖:'เคลื่อนเร็ว เหมาะผลักดันแต่ระวังชน',
   天輔:'หนุนเอกสาร ความรู้ ผู้ช่วย และที่ปรึกษา', 天英:'เด่นภาพลักษณ์ ไฟแรง ต้องคุมอารมณ์', 天芮:'เรื่องป่วย/ภาระ ต้องตรวจรายละเอียด',
   天柱:'แรงกดดัน กฎเกณฑ์ คดี/เอกสารต้องรอบคอบ', 天心:'หนุนการตัดสินใจ แพทย์ แผน และการแก้ปัญหา', 天禽:'แรงกลาง ช่วยประคองภาพรวม'
+};
+const QIMEN_STAR_HINT_EN = {
+  天蓬:'Risky/secretive energy; keep greed in check', 天任:'Stable, patient; good for long-term work', 天沖:'Fast-moving; good for pushing forward, watch for collisions',
+  天輔:'Supports documents, knowledge, helpers and advisors', 天英:'Strong image, fiery; keep emotions in check', 天芮:'Illness/burden themes; check details carefully',
+  天柱:'Pressure, rules; legal/paperwork needs care', 天心:'Supports decisions, doctors, plans and problem-solving', 天禽:'Neutral, steady energy; helps hold the overall picture'
 };
 const QIMEN_DEITY_HINT = {
   值符:'พลังผู้ใหญ่/อำนาจหลัก ช่วยให้งานมีน้ำหนัก', 螣蛇:'ระวังความสับสน ข่าวลือ หรือเรื่องคลุมเครือ', 太陰:'เหมาะงานหลังบ้าน ความละเอียด และการเจรจาเงียบ',
   六合:'หนุนคู่ค้า ทีม พันธมิตร และการตกลงร่วมกัน', 白虎:'แรงปะทะ/ความกดดันสูง ต้องเลี่ยงความหุนหัน', 玄武:'ระวังข้อมูลซ่อนเร้น เอกสาร และความเข้าใจผิด',
   九地:'เหมาะตั้งหลัก งานมั่นคง เก็บรายละเอียด', 九天:'เหมาะขยาย เปิดตัว ประกาศ และงานที่ต้องยกภาพใหญ่'
 };
+const QIMEN_DEITY_HINT_EN = {
+  值符:'Senior/authority energy; adds weight to your matter', 螣蛇:'Watch for confusion, rumors, or unclear matters', 太陰:'Good for behind-the-scenes work, detail, and quiet negotiation',
+  六合:'Supports partners, teams and reaching agreements', 白虎:'High clash/pressure; avoid impulsiveness', 玄武:'Watch for hidden information, paperwork issues and misunderstanding',
+  九地:'Good for settling in, stable work, attention to detail', 九天:'Good for expansion, launches, announcements and big-picture moves'
+};
 const FLYING_STAR_TH = {
   '1白':'ดาวหนึ่งขาว', '2黑':'ดาวสองดำ', '3碧':'ดาวสามเขียว', '4綠':'ดาวสี่เขียว',
   '5黃':'ดาวห้าเหลือง', '5黄':'ดาวห้าเหลือง', '6白':'ดาวหกขาว', '7赤':'ดาวเจ็ดแดง',
   '8白':'ดาวแปดขาว', '9紫':'ดาวเก้าม่วง', '9白':'ดาวเก้าขาว',
 };
+const FLYING_STAR_EN = {
+  '1白':'White One Star', '2黑':'Black Two Star', '3碧':'Jade-Green Three Star', '4綠':'Green Four Star',
+  '5黃':'Yellow Five Star', '5黄':'Yellow Five Star', '6白':'White Six Star', '7赤':'Red Seven Star',
+  '8白':'White Eight Star', '9紫':'Purple Nine Star', '9白':'White Nine Star',
+};
 const FLYING_STAR_NUM_TH = {
   '1':'ดาวหนึ่งขาว', '2':'ดาวสองดำ', '3':'ดาวสามเขียว', '4':'ดาวสี่เขียว',
   '5':'ดาวห้าเหลือง', '6':'ดาวหกขาว', '7':'ดาวเจ็ดแดง', '8':'ดาวแปดขาว', '9':'ดาวเก้าม่วง',
+};
+const FLYING_STAR_NUM_EN = {
+  '1':'White One Star', '2':'Black Two Star', '3':'Jade-Green Three Star', '4':'Green Four Star',
+  '5':'Yellow Five Star', '6':'White Six Star', '7':'Red Seven Star', '8':'White Eight Star', '9':'Purple Nine Star',
 };
 const CONSTELLATION_TH = {
   角宿:'ดาวเจี่ยว', 亢宿:'ดาวคัง', 氐宿:'ดาวตี', 房宿:'ดาวฝาง', 心宿:'ดาวซิน', 尾宿:'ดาวเว่ย', 箕宿:'ดาวจี',
@@ -1951,36 +2008,61 @@ const CONSTELLATION_TH = {
   奎宿:'ดาวขุย', 婁宿:'ดาวโหลว', 娄宿:'ดาวโหลว', 胃宿:'ดาวเว่ย', 昴宿:'ดาวเหม่า', 畢宿:'ดาวปี้', 毕宿:'ดาวปี้', 觜宿:'ดาวจุ่ย', 參宿:'ดาวเซิน', 参宿:'ดาวเซิน',
   井宿:'ดาวจิ่ง', 鬼宿:'ดาวกุ่ย', 柳宿:'ดาวหลิ่ว', 星宿:'ดาวซิง', 張宿:'ดาวจาง', 张宿:'ดาวจาง', 翼宿:'ดาวอี้', 軫宿:'ดาวเจิ่น', 轸宿:'ดาวเจิ่น',
 };
+const CONSTELLATION_EN = {
+  角宿:'Horn', 亢宿:'Neck', 氐宿:'Root', 房宿:'Room', 心宿:'Heart', 尾宿:'Tail', 箕宿:'Winnowing Basket',
+  斗宿:'Dipper', 牛宿:'Ox', 女宿:'Girl', 虛宿:'Emptiness', 虚宿:'Emptiness', 危宿:'Rooftop', 室宿:'Encampment', 壁宿:'Wall',
+  奎宿:'Legs', 婁宿:'Bond', 娄宿:'Bond', 胃宿:'Stomach', 昴宿:'Mane (Pleiades)', 畢宿:'Net', 毕宿:'Net', 觜宿:'Turtle Beak', 參宿:'Three Stars (Orion)', 参宿:'Three Stars (Orion)',
+  井宿:'Well', 鬼宿:'Ghost', 柳宿:'Willow', 星宿:'Star', 張宿:'Extended Net', 张宿:'Extended Net', 翼宿:'Wings', 軫宿:'Chariot', 轸宿:'Chariot',
+};
 const SPIRIT_TH = {
   青龍:'ดาวมังกรเขียว', 青龙:'ดาวมังกรเขียว', 明堂:'ดาวพระโรง', 金匱:'ดาวคลังทอง', 金匮:'ดาวคลังทอง',
   天德:'ดาวคุณธรรมฟ้า', 玉堂:'ดาวพระโรงหยก', 司命:'ดาวผู้กำหนดชะตา',
   天刑:'ดาวอาญาฟ้า', 朱雀:'ดาวนกแดง', 白虎:'ดาวเสือขาว', 天牢:'ดาวคุกฟ้า',
   玄武:'ดาวเต่าดำ', 勾陳:'ดาวขอเกี่ยว', 勾陈:'ดาวขอเกี่ยว',
 };
+const SPIRIT_EN = {
+  青龍:'Green Dragon', 青龙:'Green Dragon', 明堂:'Bright Hall', 金匱:'Golden Vault', 金匮:'Golden Vault',
+  天德:'Heaven Virtue', 玉堂:'Jade Hall', 司命:'Life Arbiter',
+  天刑:'Heaven Punishment', 朱雀:'Vermilion Bird', 白虎:'White Tiger', 天牢:'Heaven Prison',
+  玄武:'Black Tortoise', 勾陳:'Hook Chen', 勾陈:'Hook Chen',
+};
 const OFFICER_TH = {
   建日:'วันสร้าง', 除日:'วันขจัด', 滿日:'วันเต็ม', 满日:'วันเต็ม', 平日:'วันเสมอ',
   定日:'วันกำหนด', 執日:'วันยึด', 执日:'วันยึด', 破日:'วันทำลาย', 危日:'วันอันตราย',
   成日:'วันสำเร็จ', 收日:'วันเก็บ', 開日:'วันเปิด', 开日:'วันเปิด', 閉日:'วันปิด', 闭日:'วันปิด',
 };
+const OFFICER_EN = {
+  建日:'Establish Day', 除日:'Remove Day', 滿日:'Full Day', 满日:'Full Day', 平日:'Balance Day',
+  定日:'Fix Day', 執日:'Hold Day', 执日:'Hold Day', 破日:'Break Day', 危日:'Danger Day',
+  成日:'Success Day', 收日:'Collect Day', 開日:'Open Day', 开日:'Open Day', 閉日:'Close Day', 闭日:'Close Day',
+};
 const TONGSHU_AUSPICIOUS = {
-  yue_de: { han:'月德', th:'ดาวคุณธรรมเดือน', meaning:'แรงมงคลช่วยลดแรงปะทะ เหมาะเอามาหนุนงานดี งานเจรจา และการเริ่มเรื่องสำคัญ' },
-  tian_de: { han:'天德', th:'ดาวคุณธรรมฟ้า', meaning:'แรงเมตตาจากฟ้า ช่วยให้เรื่องสำคัญราบรื่นขึ้น' },
-  tian_en: { han:'天恩', th:'ดาวอุปถัมภ์ฟ้า', meaning:'มีแรงช่วยเหลือ เหมาะขอความร่วมมือหรือเริ่มเรื่องที่ต้องพึ่งคน' },
-  yue_en: { han:'月恩', th:'ดาวอุปถัมภ์เดือน', meaning:'มีแรงสนับสนุนจากจังหวะเดือน เหมาะทำเรื่องที่ต้องการคนช่วย' },
-  tian_xi: { han:'天喜', th:'ดาวยินดีฟ้า', meaning:'เหมาะงานมงคล ความสัมพันธ์ งานพบปะ และเรื่องที่ต้องการบรรยากาศดี' },
-  jin_kui: { han:'金匱', th:'ดาวคลังทอง', meaning:'หนุนทรัพย์ เอกสารสำคัญ และการเก็บรักษาผลประโยชน์' },
+  yue_de: { han:'月德', th:'ดาวคุณธรรมเดือน', en:'Month Virtue Star', zh:'月德', meaning:'แรงมงคลช่วยลดแรงปะทะ เหมาะเอามาหนุนงานดี งานเจรจา และการเริ่มเรื่องสำคัญ', meaningEn:'An auspicious force that softens clashes; good for supporting good deeds, negotiation, and starting important matters', meaningZh:'吉星可緩沖剋 · 宜用於助好事、洽談與開創要事' },
+  tian_de: { han:'天德', th:'ดาวคุณธรรมฟ้า', en:'Heaven Virtue Star', zh:'天德', meaning:'แรงเมตตาจากฟ้า ช่วยให้เรื่องสำคัญราบรื่นขึ้น', meaningEn:'A benevolent heavenly force that smooths important matters', meaningZh:'上天慈佑之力 · 助要事順遂' },
+  tian_en: { han:'天恩', th:'ดาวอุปถัมภ์ฟ้า', en:'Heaven Grace Star', zh:'天恩', meaning:'มีแรงช่วยเหลือ เหมาะขอความร่วมมือหรือเริ่มเรื่องที่ต้องพึ่งคน', meaningEn:'A supportive force; good for seeking cooperation or matters that need others’ help', meaningZh:'有助力 · 宜求合作或需借助他人之事' },
+  yue_en: { han:'月恩', th:'ดาวอุปถัมภ์เดือน', en:'Month Grace Star', zh:'月恩', meaning:'มีแรงสนับสนุนจากจังหวะเดือน เหมาะทำเรื่องที่ต้องการคนช่วย', meaningEn:'Support from the month’s rhythm; good for matters needing assistance', meaningZh:'得月令支持 · 宜需人相助之事' },
+  tian_xi: { han:'天喜', th:'ดาวยินดีฟ้า', en:'Heaven Joy Star', zh:'天喜', meaning:'เหมาะงานมงคล ความสัมพันธ์ งานพบปะ และเรื่องที่ต้องการบรรยากาศดี', meaningEn:'Good for celebrations, relationships, gatherings, and matters needing a good atmosphere', meaningZh:'宜喜慶 · 人際 · 聚會及需氣氛佳之事' },
+  jin_kui: { han:'金匱', th:'ดาวคลังทอง', en:'Golden Vault Star', zh:'金匱', meaning:'หนุนทรัพย์ เอกสารสำคัญ และการเก็บรักษาผลประโยชน์', meaningEn:'Supports wealth, important documents, and safeguarding benefits', meaningZh:'助財運 · 重要文件與保存利益' },
 };
 
 function qimenLabel(kind, zh){
   if (!zh || zh === '·' || zh === '—') return zh || '—';
-  const dict = kind === 'door' ? QIMEN_DOOR_TH : kind === 'star' ? QIMEN_STAR_TH : QIMEN_DEITY_TH;
-  const th = dict[zh];
-  return th ? `${th} · ${zh}` : zh;
+  const lang = getCurrentLang();
+  if (lang === 'zh') return zh;
+  const dict = kind === 'door' ? (lang === 'en' ? QIMEN_DOOR_EN : QIMEN_DOOR_TH)
+    : kind === 'star' ? (lang === 'en' ? QIMEN_STAR_EN : QIMEN_STAR_TH)
+    : (lang === 'en' ? QIMEN_DEITY_EN : QIMEN_DEITY_TH);
+  const label = dict[zh];
+  return label ? `${label} · ${zh}` : zh;
 }
 
 function qimenPartReading(kind, zh){
   if (!zh || zh === '·' || zh === '—') return '';
-  const hint = kind === 'door' ? QIMEN_DOOR_HINT[zh] : kind === 'star' ? QIMEN_STAR_HINT[zh] : QIMEN_DEITY_HINT[zh];
+  const lang = getCurrentLang();
+  const hintDict = kind === 'door' ? (lang === 'en' ? QIMEN_DOOR_HINT_EN : QIMEN_DOOR_HINT)
+    : kind === 'star' ? (lang === 'en' ? QIMEN_STAR_HINT_EN : QIMEN_STAR_HINT)
+    : (lang === 'en' ? QIMEN_DEITY_HINT_EN : QIMEN_DEITY_HINT);
+  const hint = lang === 'zh' ? null : hintDict[zh];
   return `${qimenLabel(kind, zh)}${hint ? ` · ${hint}` : ''}`;
 }
 
@@ -1991,43 +2073,51 @@ function localizeQimenReason(text){
     .replace(/([✨⭐])\s*(值符|螣蛇|太陰|六合|白虎|玄武|九地|九天)(?=\s|$|[（(])/g, (_, icon, zh) => `${icon} ${qimenLabel('deity', zh)}`);
 }
 
-function thZh(dict, zh){
-  const th = dict[zh];
-  return th ? `${th} · ${zh}` : zh;
+function thZh(dictTh, dictEn, zh){
+  const lang = getCurrentLang();
+  if (lang === 'zh') return zh;
+  const label = (lang === 'en' ? dictEn : dictTh)[zh];
+  return label ? `${label} · ${zh}` : zh;
 }
 
 function localizeAuspiciousReason(text){
+  const lang = getCurrentLang();
+  const T3 = (th, en, zh) => lang === 'en' ? en : lang === 'zh' ? zh : th;
   return localizeQimenReason(text)
-    .replace(/月德/g, 'ดาวคุณธรรมเดือน · 月德')
-    .replace(/天恩/g, 'ดาวอุปถัมภ์ฟ้า · 天恩')
-    .replace(/月恩/g, 'ดาวอุปถัมภ์เดือน · 月恩')
-    .replace(/天喜/g, 'ดาวยินดีฟ้า · 天喜')
-    .replace(/\b([1-9][白黑碧綠绿黃黄赤紫])(?=\s|$|[（(])/g, (m) => thZh(FLYING_STAR_TH, m))
-    .replace(/\b([1-9])星\b/g, (m, n) => `${FLYING_STAR_NUM_TH[n] || `ดาว ${n}`} · ${m}`)
-    .replace(/(^|[\s·(（])([1-9])星(?=\s|$|[)）])/g, (_, pre, n) => `${pre}${FLYING_STAR_NUM_TH[n] || `ดาว ${n}`} · ${n}星`)
-    .replace(/(角宿|亢宿|氐宿|房宿|心宿|尾宿|箕宿|斗宿|牛宿|女宿|虛宿|虚宿|危宿|室宿|壁宿|奎宿|婁宿|娄宿|胃宿|昴宿|畢宿|毕宿|觜宿|參宿|参宿|井宿|鬼宿|柳宿|星宿|張宿|张宿|翼宿|軫宿|轸宿)(?=\s|$|[（(])/g, (m) => thZh(CONSTELLATION_TH, m))
-    .replace(/(青龍|青龙|明堂|金匱|金匮|天德|玉堂|司命|天刑|朱雀|白虎|天牢|玄武|勾陳|勾陈)(?=\s|$|[（(])/g, (m) => thZh(SPIRIT_TH, m))
-    .replace(/(建日|除日|滿日|满日|平日|定日|執日|执日|破日|危日|成日|收日|開日|开日|閉日|闭日)(?=\s|$|[（(])/g, (m) => thZh(OFFICER_TH, m));
+    .replace(/月德/g, T3('ดาวคุณธรรมเดือน · 月德','Month Virtue Star · 月德','月德'))
+    .replace(/天恩/g, T3('ดาวอุปถัมภ์ฟ้า · 天恩','Heaven Grace Star · 天恩','天恩'))
+    .replace(/月恩/g, T3('ดาวอุปถัมภ์เดือน · 月恩','Month Grace Star · 月恩','月恩'))
+    .replace(/天喜/g, T3('ดาวยินดีฟ้า · 天喜','Heaven Joy Star · 天喜','天喜'))
+    .replace(/\b([1-9][白黑碧綠绿黃黄赤紫])(?=\s|$|[（(])/g, (m) => thZh(FLYING_STAR_TH, FLYING_STAR_EN, m))
+    .replace(/\b([1-9])星\b/g, (m, n) => `${(lang === 'en' ? FLYING_STAR_NUM_EN[n] : FLYING_STAR_NUM_TH[n]) || `${_dptx('dp.star.generic','ดาว')} ${n}`} · ${m}`)
+    .replace(/(^|[\s·(（])([1-9])星(?=\s|$|[)）])/g, (_, pre, n) => `${pre}${(lang === 'en' ? FLYING_STAR_NUM_EN[n] : FLYING_STAR_NUM_TH[n]) || `${_dptx('dp.star.generic','ดาว')} ${n}`} · ${n}星`)
+    .replace(/(角宿|亢宿|氐宿|房宿|心宿|尾宿|箕宿|斗宿|牛宿|女宿|虛宿|虚宿|危宿|室宿|壁宿|奎宿|婁宿|娄宿|胃宿|昴宿|畢宿|毕宿|觜宿|參宿|参宿|井宿|鬼宿|柳宿|星宿|張宿|张宿|翼宿|軫宿|轸宿)(?=\s|$|[（(])/g, (m) => thZh(CONSTELLATION_TH, CONSTELLATION_EN, m))
+    .replace(/(青龍|青龙|明堂|金匱|金匮|天德|玉堂|司命|天刑|朱雀|白虎|天牢|玄武|勾陳|勾陈)(?=\s|$|[（(])/g, (m) => thZh(SPIRIT_TH, SPIRIT_EN, m))
+    .replace(/(建日|除日|滿日|满日|平日|定日|執日|执日|破日|危日|成日|收日|開日|开日|閉日|闭日)(?=\s|$|[（(])/g, (m) => thZh(OFFICER_TH, OFFICER_EN, m));
 }
 
 function explainScore(score, rank, total){
-  if (score >= 80) return `เหมาะมาก · เป็นตัวเลือกอันดับ ${rank}/${total} ใช้เป็นฤกษ์หลักได้`;
-  if (score >= 70) return `เหมาะ · ผ่านเกณฑ์หลักที่เปิดไว้และมีแรงหนุนหลายจุด`;
-  if (score >= 55) return `พอใช้ · มีตัวช่วย แต่ควรอ่านข้อควรระวังก่อนเลือก`;
-  return `ควรระวัง · ผ่านเข้ารอบแต่แรงหนุนยังไม่เด่นพอ`;
+  if (score >= 80) return `${_dptx('dp.verdict.great','เหมาะมาก')} · ${_dptx('dp.verdict.great_rank','เป็นตัวเลือกอันดับ')} ${rank}/${total} ${_dptx('dp.verdict.great_use','ใช้เป็นฤกษ์หลักได้')}`;
+  if (score >= 70) return _dptx('dp.verdict.good','เหมาะ · ผ่านเกณฑ์หลักที่เปิดไว้และมีแรงหนุนหลายจุด');
+  if (score >= 55) return _dptx('dp.verdict.okay','พอใช้ · มีตัวช่วย แต่ควรอ่านข้อควรระวังก่อนเลือก');
+  return _dptx('dp.verdict.caution','ควรระวัง · ผ่านเข้ารอบแต่แรงหนุนยังไม่เด่นพอ');
 }
 
 function cleanReasonText(text){
+  /* หมายเหตุ: ข้อความ raw ส่วนใหญ่มาจาก backend เป็นภาษาไทยอยู่แล้ว (ประโยคประกอบสด)
+     ฟังก์ชันนี้แค่แทนที่ "โทเคนคงที่" บางตัวเป็นคำอ่านภาษาคนตามภาษาที่เลือก — ไม่ใช่การแปลประโยคทั้งเส้น */
+  const lang = getCurrentLang();
+  const T3 = (th, en, zh) => lang === 'en' ? en : lang === 'zh' ? zh : th;
   return String(text || '')
     .replace(/^[+-]?\d+\s*/, '')
-    .replace(/\b64卦\b/g, 'หกสิบสี่ข่วย')
-    .replace(/\b12建除\b/g, 'สิบสองจังหวะวัน')
-    .replace(/\b28宿\b/g, 'ยี่สิบแปดดาวฤกษ์')
-    .replace(/\b12神煞\b/g, 'สิบสองเทพวัน')
-    .replace(/\bQi Men\b/g, 'ฉีเหมิน')
-    .replace(/\bBa Zi\b/g, 'ดวงปาจื้อ')
-    .replace(/\bTong Shu\b/g, 'ปฏิทินจีน')
-    .replace(/\bYongshen\b/g, 'ธาตุช่วย');
+    .replace(/\b64卦\b/g, T3('หกสิบสี่ข่วย','64 Hexagrams','六十四卦'))
+    .replace(/\b12建除\b/g, T3('สิบสองจังหวะวัน','12 Day Officers','十二建除'))
+    .replace(/\b28宿\b/g, T3('ยี่สิบแปดดาวฤกษ์','28 Lunar Mansions','二十八宿'))
+    .replace(/\b12神煞\b/g, T3('สิบสองเทพวัน','12 Day Deities','十二神煞'))
+    .replace(/\bQi Men\b/g, T3('ฉีเหมิน','Qi Men','奇門'))
+    .replace(/\bBa Zi\b/g, T3('ดวงปาจื้อ','BaZi chart','八字'))
+    .replace(/\bTong Shu\b/g, T3('ปฏิทินจีน','Chinese calendar','通書'))
+    .replace(/\bYongshen\b/g, T3('ธาตุช่วย','favorable element','用神'));
 }
 
 function reasonDelta(raw){
@@ -2080,7 +2170,7 @@ function displayReasonText(raw){
     .replace(/二旺一財\s*·\s*รุ่ง\+ทรัพย์/g,'รุ่งและมีแรงทรัพย์ · 二旺一財')
     .replace(/\s+/g,' ')
     .trim();
-  if (!s) s = 'มีผลต่อคะแนน';
+  if (!s) s = _dptx('dp.reason.default','มีผลต่อคะแนน');
   return s;
 }
 
@@ -2088,21 +2178,21 @@ function scoreOnlyScienceItem(key, score){
   const rounded = Math.round(Number(score || 0));
   /* r378 · ชั้นท้องฟ้าจริง: ไม่มีเหตุผลแยก = ยามนี้ไม่คาบช่วงร้ายของชั้นนั้น (ฟ้าโปร่ง) ไม่ใช่ "ไม่มีข้อมูล" */
   const SKY_CLEAR_TEXT = {
-    moon_void: 'ยามนี้ไม่คาบช่วงจันทร์ว่าง (Void of Course) · เริ่มงานได้ตามปกติ',
-    moon_sign: 'ราศีจันทร์ ณ ยามนี้ไม่มีผลหนุน/ถ่วงพิเศษกับกิจกรรมนี้',
-    retro_window: 'ยามนี้ไม่อยู่ในช่วงดาวถอยที่กระทบกิจกรรมนี้',
-    eclipse_zone: 'ยามนี้ไม่อยู่ในโซนอับคราส (±3 วันรอบคราส)',
-    rahu_kalam: 'ยามนี้ไม่คาบช่วงราหูกาลของวันนั้น ณ สถานที่งาน',
+    moon_void: _dptx('dp.sky.moonvoid_clear','ยามนี้ไม่คาบช่วงจันทร์ว่าง (Void of Course) · เริ่มงานได้ตามปกติ'),
+    moon_sign: _dptx('dp.sky.moonsign_clear','ราศีจันทร์ ณ ยามนี้ไม่มีผลหนุน/ถ่วงพิเศษกับกิจกรรมนี้'),
+    retro_window: _dptx('dp.sky.retro_clear','ยามนี้ไม่อยู่ในช่วงดาวถอยที่กระทบกิจกรรมนี้'),
+    eclipse_zone: _dptx('dp.sky.eclipse_clear','ยามนี้ไม่อยู่ในโซนอับคราส (±3 วันรอบคราส)'),
+    rahu_kalam: _dptx('dp.sky.rahu_clear','ยามนี้ไม่คาบช่วงราหูกาลของวันนั้น ณ สถานที่งาน'),
   };
-  if (SKY_CLEAR_TEXT[key]) return { text:`ตรวจท้องฟ้าจริงแล้ว · ${SKY_CLEAR_TEXT[key]}`, delta:0, kind:'good', label:'โปร่ง' };
+  if (SKY_CLEAR_TEXT[key]) return { text:`${_dptx('dp.sky.checked','ตรวจท้องฟ้าจริงแล้ว')} · ${SKY_CLEAR_TEXT[key]}`, delta:0, kind:'good', label:_dptx('dp.lvl.clear','โปร่ง') };
   if (key === 'ze_ri') {
-    if (rounded >= 70) return { text:'ปฏิทินจีนให้ผ่านและมีแรงหนุนกับกิจกรรมนี้ · 通書', delta:0, kind:'good', label:'ผ่าน' };
-    if (rounded < 50) return { text:'ปฏิทินจีนมีข้อห้ามหรือจังหวะไม่รับกิจกรรมนี้ ควรเลื่อนหรือใช้ศาสตร์อื่นยืนยัน · 通書', delta:0, kind:'warn', label:'ระวัง' };
-    return { text:'กลาง · ไม่พบข้อห้ามตรงจากปฏิทินจีน แต่ยังไม่ใช่แรงหนุนหลัก ให้ดูชั้นฉีเหมิน/ดาวฤกษ์ประกอบ', delta:0, kind:'note', label:'กลาง' };
+    if (rounded >= 70) return { text:_dptx('dp.zeri.pass','ปฏิทินจีนให้ผ่านและมีแรงหนุนกับกิจกรรมนี้ · 通書'), delta:0, kind:'good', label:_dptx('dp.lvl.pass','ผ่าน') };
+    if (rounded < 50) return { text:_dptx('dp.zeri.warn','ปฏิทินจีนมีข้อห้ามหรือจังหวะไม่รับกิจกรรมนี้ ควรเลื่อนหรือใช้ศาสตร์อื่นยืนยัน · 通書'), delta:0, kind:'warn', label:_dptx('dp.lvl.caution','ระวัง') };
+    return { text:_dptx('dp.zeri.mid','กลาง · ไม่พบข้อห้ามตรงจากปฏิทินจีน แต่ยังไม่ใช่แรงหนุนหลัก ให้ดูชั้นฉีเหมิน/ดาวฤกษ์ประกอบ'), delta:0, kind:'note', label:_dptx('dp.lvl.mid','กลาง') };
   }
-  if (rounded >= 70) return { text:'คะแนนชั้นนี้ดี แต่ไม่มีเหตุผลแยกเพิ่มเติมในผลลัพธ์', delta:0, kind:'good', label:'ดี' };
-  if (rounded < 50) return { text:'คะแนนชั้นนี้ต่ำ ควรอ่านประกอบก่อนเลือกใช้', delta:0, kind:'warn', label:'ระวัง' };
-  return { text:'กลาง · ผ่านได้ แต่ไม่ได้เป็นตัวหนุนหลักของฤกษ์นี้', delta:0, kind:'note', label:'กลาง' };
+  if (rounded >= 70) return { text:_dptx('dp.sci.good','คะแนนชั้นนี้ดี แต่ไม่มีเหตุผลแยกเพิ่มเติมในผลลัพธ์'), delta:0, kind:'good', label:_dptx('dp.lvl.good','ดี') };
+  if (rounded < 50) return { text:_dptx('dp.sci.low','คะแนนชั้นนี้ต่ำ ควรอ่านประกอบก่อนเลือกใช้'), delta:0, kind:'warn', label:_dptx('dp.lvl.caution','ระวัง') };
+  return { text:_dptx('dp.sci.mid','กลาง · ผ่านได้ แต่ไม่ได้เป็นตัวหนุนหลักของฤกษ์นี้'), delta:0, kind:'note', label:_dptx('dp.lvl.mid','กลาง') };
 }
 
 function ensureScienceSection(sections, key, moduleScores){
@@ -2110,7 +2200,7 @@ function ensureScienceSection(sections, key, moduleScores){
   if (sec) return sec;
   const meta = MODULE_LABELS[key] || { th:key, zh:key };
   sec = {
-    key, th:meta.th, zh:meta.zh,
+    key, th:meta.th, en:meta.en, zh:meta.zh,
     score: moduleScores && moduleScores[key] != null ? Math.round(moduleScores[key]) : null,
     items: [], good:0, warn:0, neutral:1,
   };
@@ -2166,8 +2256,8 @@ function enrichScienceSectionsForSlot(sections, t){
     if (parts.length) {
       const sec = ensureScienceSection(sections, 'qi_men', moduleScores);
       addScienceItemOnce(sec, {
-        text:`อ่านฉีเหมินครบ 3 ชั้น: ${parts.join(' | ')}`,
-        delta:0, kind:'note', label:'อ่าน',
+        text:`${_dptx('dp.qimen.read3','อ่านฉีเหมินครบ 3 ชั้น')}: ${parts.join(' | ')}`,
+        delta:0, kind:'note', label:_dptx('dp.tone.read','อ่าน'),
       });
     }
   }
@@ -2175,13 +2265,14 @@ function enrichScienceSectionsForSlot(sections, t){
     const signals = tongshuSignalsForSlot(t);
     if (signals.length) {
       const sec = ensureScienceSection(sections, 'ze_ri', moduleScores);
-      const activityName = t.activity_name || ACTIVITY_RULES[state.activity]?.name || 'กิจกรรมที่เลือก';
+      const activityName = t.activity_name || dpTr(ACTIVITY_RULES[state.activity], 'name') || _dptx('dp.act.default','กิจกรรมที่เลือก');
       const activityHan = t.activity_han || ACTIVITY_RULES[state.activity]?.han || '';
-      const signalText = signals.map(s => `${s.th} · ${s.han}`).join(' · ');
-      const meaning = signals[0]?.meaning || 'เป็นแรงมงคลเสริม';
+      const _tsLang = getCurrentLang();
+      const signalText = signals.map(s => `${(_tsLang==='en'?s.en:_tsLang==='zh'?s.zh:s.th) || s.th} · ${s.han}`).join(' · ');
+      const meaning = (signals[0] && (_tsLang==='en'?signals[0].meaningEn:_tsLang==='zh'?signals[0].meaningZh:signals[0].meaning)) || _dptx('dp.tongshu.aux','เป็นแรงมงคลเสริม');
       addScienceItemOnce(sec, {
-        text:`วันมงคลที่ใช้หนุน${activityName}${activityHan ? ` · ${activityHan}` : ''}: ${signalText} · ${meaning}`,
-        delta:0, kind:'good', label:'มงคล',
+        text:`${_dptx('dp.tongshu.support','วันมงคลที่ใช้หนุน')}${activityName}${activityHan ? ` · ${activityHan}` : ''}: ${signalText} · ${meaning}`,
+        delta:0, kind:'good', label:_dptx('dp.lvl.auspicious','มงคล'),
       });
     }
   }
@@ -2215,7 +2306,7 @@ function buildScienceSections(matches, moduleScores){
     if (seen.has(sig)) return;
     seen.add(sig);
     if (!map.has(key)) map.set(key, {
-      key, th:meta.th, zh:meta.zh,
+      key, th:meta.th, en:meta.en, zh:meta.zh,
       score: moduleScores && moduleScores[key] != null ? Math.round(moduleScores[key]) : null,
       items: [], good:0, warn:0,
     });
@@ -2235,7 +2326,7 @@ function buildScienceSections(matches, moduleScores){
     const score = Math.round(moduleScores[key]);
     const item = scoreOnlyScienceItem(key, score);
     map.set(key, {
-      key, th:meta.th, zh:meta.zh, score,
+      key, th:meta.th, en:meta.en, zh:meta.zh, score,
       items: [item],
       good: item.kind === 'good' ? 1 : 0,
       warn: item.kind === 'warn' ? 1 : 0,
@@ -2268,20 +2359,21 @@ function renderScienceSections(sections){
   if (!sections.length) return '';
   const cardHtml = (sec) => {
     const tone = scienceTone(sec);
-    const status = tone === 'mixed' ? 'มีทั้งหนุน/หัก' : tone === 'warn' ? 'ต้องระวัง' : tone === 'neutral' ? 'กลาง' : 'เป็นแรงหนุน';
+    const status = tone === 'mixed' ? _dptx('dp.tone.mixed','มีทั้งหนุน/หัก') : tone === 'warn' ? _dptx('dp.tone.warn','ต้องระวัง') : tone === 'neutral' ? _dptx('dp.tone.neutral','กลาง') : _dptx('dp.tone.good','เป็นแรงหนุน');
+    const secName = escHtml((lang === 'en' && sec.en) ? sec.en : sec.th);
     const items = sec.items.slice(0, 5).map(it => {
-      const delta = it.label || (it.delta ? (it.delta > 0 ? `+${it.delta}` : `${it.delta}`) : (it.kind === 'warn' ? 'ระวัง' : 'อ่าน'));
+      const delta = it.label || (it.delta ? (it.delta > 0 ? `+${it.delta}` : `${it.delta}`) : (it.kind === 'warn' ? _dptx('dp.tone.warn_short','ระวัง') : _dptx('dp.tone.read','อ่าน')));
       return `<div class="science-item ${it.kind}"><span class="delta">${escHtml(delta)}</span><span class="txt">${escHtml(it.text)}</span></div>`;
     }).join('');
     return `<section class="science-card ${tone}">
       <div class="science-head">
-        <div class="science-name">${escHtml(sec.th)} <span class="zh">${escHtml(sec.zh)}</span></div>
+        <div class="science-name">${secName} <span class="zh">${escHtml(sec.zh)}</span></div>
         <div class="science-meta">
           ${sec.score == null ? '' : `<span class="science-score">${sec.score}</span>`}
           <span class="science-status ${tone}">${status}</span>
         </div>
       </div>
-      <div class="science-list">${items || '<div class="science-empty">ไม่มีรายละเอียดเด่นในชั้นนี้</div>'}</div>
+      <div class="science-list">${items || `<div class="science-empty">${_dptx('dp.sci.empty','ไม่มีรายละเอียดเด่นในชั้นนี้')}</div>`}</div>
     </section>`;
   };
   const lang = getCurrentLang();
@@ -2300,18 +2392,23 @@ function renderScienceSections(sections){
 }
 
 function summarizeScience(sections){
-  const good = sections.filter(s => s.good).slice(0,3).map(s => s.th);
-  const warn = sections.filter(s => s.warn).slice(0,2).map(s => s.th);
+  const _ssLang = getCurrentLang();
+  const _ssPick = (s) => (_ssLang === 'en' && s.en) ? s.en : s.th;
+  const good = sections.filter(s => s.good).slice(0,3).map(_ssPick);
+  const warn = sections.filter(s => s.warn).slice(0,2).map(_ssPick);
   const parts = [];
-  if (good.length) parts.push(`แรงหนุนหลัก: ${good.join(' · ')}`);
-  if (warn.length) parts.push(`จุดที่ต้องอ่านก่อนใช้: ${warn.join(' · ')}`);
+  if (good.length) parts.push(`${_dptx('dp.sci.mainsupport','แรงหนุนหลัก')}: ${good.join(' · ')}`);
+  if (warn.length) parts.push(`${_dptx('dp.sci.readfirst','จุดที่ต้องอ่านก่อนใช้')}: ${warn.join(' · ')}`);
   return parts.join(' | ');
 }
 
 function elementChipFromStem(stem){
   const el = STEM_ELEMENT[stem] || '';
   if (!el) return '';
-  return `<span class="el-chip el-${el}" title="ธาตุ${ELEMENT_TH[el]}"><span class="th">ธาตุ${ELEMENT_TH[el]}</span><b>${ELEMENT_ZH[el]}</b></span>`;
+  const lang = getCurrentLang();
+  const elLabel = lang === 'en' ? ELEMENT_EN[el] : lang === 'zh' ? ELEMENT_ZH[el] : ELEMENT_TH[el];
+  const prefix = _dptx('dp.element.prefix','ธาตุ');
+  return `<span class="el-chip el-${el}" title="${prefix}${elLabel}"><span class="th">${prefix}${elLabel}</span><b>${ELEMENT_ZH[el]}</b></span>`;
 }
 
 function escHtml(v){
@@ -2334,15 +2431,18 @@ function renderHexMeaningBox(d){
   const situation = deep.situation_thai || deep.core_lesson || '';
   const lineMeaning = yao.translation_thai || yao.meaning || '';
   const advice = yao.advice || '';
+  /* หมายเหตุ: เนื้อหาตำรา (symbol/situation/lineMeaning/advice) มาจากฐานข้อมูลตำราภาษาไทยของ backend
+     แปลเฉพาะป้ายหัวข้อ ไม่แปลเนื้อหาตำรา (ต้องรอ backend เพิ่มคอลัมน์ en/zh) */
+  const T0 = (th, en, zh) => { const L = getCurrentLang(); return L === 'en' ? en : L === 'zh' ? zh : th; };
   return `
     <div class="top">
-      <div class="title">หกสิบสี่ข่วย · <span class="zh">卦${escHtml(d.hex)} ${escHtml(d.name || '')}</span></div>
-      <span class="science-score">เส้น ${escHtml(d.line || '-')}</span>
+      <div class="title">${T0('หกสิบสี่ข่วย','64 Hexagrams','六十四卦')} · <span class="zh">卦${escHtml(d.hex)} ${escHtml(d.name || '')}</span></div>
+      <span class="science-score">${T0('เส้น','Line','爻')} ${escHtml(d.line || '-')}</span>
     </div>
-    ${symbol ? `<div class="line"><span class="label">สัญลักษณ์วัน:</span> ${escHtml(shortMeaning(symbol, 90))}</div>` : ''}
-    ${situation ? `<div class="line"><span class="label">ความหมายวัน:</span> ${escHtml(shortMeaning(situation, 150))}</div>` : ''}
-    ${lineMeaning ? `<div class="line"><span class="label">จุดเฉพาะเส้น:</span> ${escHtml(shortMeaning(lineMeaning, 120))}</div>` : ''}
-    ${advice ? `<div class="line"><span class="label">ใช้ยังไง:</span> ${escHtml(shortMeaning(advice, 90))}</div>` : ''}
+    ${symbol ? `<div class="line"><span class="label">${T0('สัญลักษณ์วัน','Day symbol','當日象徵')}:</span> ${escHtml(shortMeaning(symbol, 90))}</div>` : ''}
+    ${situation ? `<div class="line"><span class="label">${T0('ความหมายวัน','Day meaning','當日釋義')}:</span> ${escHtml(shortMeaning(situation, 150))}</div>` : ''}
+    ${lineMeaning ? `<div class="line"><span class="label">${T0('จุดเฉพาะเส้น','Line detail','爻辭要點')}:</span> ${escHtml(shortMeaning(lineMeaning, 120))}</div>` : ''}
+    ${advice ? `<div class="line"><span class="label">${T0('ใช้ยังไง','How to use','如何運用')}:</span> ${escHtml(shortMeaning(advice, 90))}</div>` : ''}
   `;
 }
 
@@ -2358,10 +2458,15 @@ async function hydrateHexMeanings(root){
         HEX_DEEP_CACHE.set(key, fetch(`/api/akg/hex-deep?hex=${hex}&line=${line || 0}`).then(r => r.json()));
       }
       const d = await HEX_DEEP_CACHE.get(key);
-      if (!d || !d.ok) throw new Error(d?.error || 'โหลดความหมายไม่ได้');
+      if (!d || !d.ok) throw new Error(d?.error || 'hex meaning load failed');
       box.innerHTML = renderHexMeaningBox(d);
     } catch (e) {
-      box.innerHTML = `<div class="top"><div class="title">หกสิบสี่ข่วย · <span class="zh">卦${escHtml(hex)}</span></div></div><div class="line"><span class="label">ความหมายวัน:</span> กดดูตำราเพื่ออ่านรายละเอียดจากฐานข้อมูล</div>`;
+      console.warn('[datepick] hydrateHexMeanings failed:', e);
+      const L = getCurrentLang();
+      const title = L === 'en' ? '64 Hexagrams' : L === 'zh' ? '六十四卦' : 'หกสิบสี่ข่วย';
+      const label = L === 'en' ? 'Day meaning' : L === 'zh' ? '當日釋義' : 'ความหมายวัน';
+      const msg = _dptx('dp.hex.tap_to_read','กดดูตำราเพื่ออ่านรายละเอียดจากฐานข้อมูล');
+      box.innerHTML = `<div class="top"><div class="title">${title} · <span class="zh">卦${escHtml(hex)}</span></div></div><div class="line"><span class="label">${label}:</span> ${msg}</div>`;
     }
   }));
 }
@@ -2417,8 +2522,8 @@ async function performSearch(){
   const btn = document.getElementById('btnSearch');
   btn.disabled = true;
   btn.textContent = _dptx('dp.search.searching_btn','⏳ กำลังค้นหา...');
-  document.getElementById('resultsList').innerHTML = '<div class="loading"><div class="spinner"></div>กำลังคำนวณฤกษ์ด้วย engine มาตรฐานหลายศาสตร์...</div>';
-  document.getElementById('resultsMeta').textContent = 'กำลังค้นหา...';
+  document.getElementById('resultsList').innerHTML = `<div class="loading"><div class="spinner"></div>${_dptx('dp.search.searching_full','กำลังคำนวณฤกษ์หลายศาสตร์พร้อมกัน...')}</div>`;
+  document.getElementById('resultsMeta').textContent = _dptx('dp.search.searching','กำลังค้นหา...');
 
   try {
     if (window.__hkProfileReady) await window.__hkProfileReady;
@@ -2527,7 +2632,8 @@ async function performSearch(){
       });
       const aj = await r.json();
       if (!r.ok) {
-        document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>ค้นหาขัดข้อง (engine ใหม่)</h4><p>${aj.error||r.statusText}</p></div>`;
+        document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.err.search_title','ค้นหาขัดข้อง')}</h4><p>${_dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}</p></div>`;
+        console.warn('[datepick] /api/auspicious error:', aj.error || r.statusText);
         btn.disabled = false; btn.textContent = _dptx('dp.search.btn','⚡ ค้นหาฤกษ์');
         return;
       }
@@ -2645,7 +2751,8 @@ async function performSearch(){
       data = await r.json();
     }
     if (data.error || (data.ok === false)) {
-      document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>ค้นหาขัดข้อง</h4><p>${data.error||'unknown error'}</p></div>`;
+      document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.err.search_title','ค้นหาขัดข้อง')}</h4><p>${_dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}</p></div>`;
+      console.warn('[datepick] search data error:', data.error);
       btn.disabled = false;
       btn.textContent = _dptx('dp.search.btn','⚡ ค้นหาฤกษ์');
       return;
@@ -2691,15 +2798,16 @@ async function performSearch(){
     const resultActivityMeta = currentActivityMeta();
     const actHan = resultActivityMeta.han || '事';
     const poolNote = data.candidate_pool && data.candidate_pool !== data.total_scanned
-      ? ` · หลังตัดดวงคน/ชั้นห้าม เหลือ ${data.candidate_pool} ยาม`
+      ? ` · ${_dptx('dp.search.after_cut','หลังตัดดวงคน/ชั้นห้าม เหลือ')} ${data.candidate_pool} ${_dptx('dp.unit.yam','ยาม')}`
       : '';
     document.getElementById('resultsMeta').innerHTML =
-      `กิจกรรม <b>${escHtml(resultActivityMeta.name || 'กิจกรรม')}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(actHan)}</span> · ${escHtml(data.search_window?.label || searchWindow.label)} · พบ <b>${data.top.length}</b> ฤกษ์ จาก ${data.total_scanned} ยาม${poolNote}`;
+      `${_dptx('dp.search.activity_label','กิจกรรม')} <b>${escHtml(resultActivityMeta.name || _dptx('dp.act.default','กิจกรรมที่เลือก'))}</b> <span style="font-family:var(--tc);color:var(--gold);">${escHtml(actHan)}</span> · ${escHtml(data.search_window?.label || searchWindow.label)} · ${_dptx('dp.search.found','พบ')} <b>${data.top.length}</b> ${_dptx('dp.unit.timings','ฤกษ์')} ${_dptx('dp.search.outof','จาก')} ${data.total_scanned} ${_dptx('dp.unit.yam','ยาม')}${poolNote}`;
     /* show AI Sifu button */
     const sifuBtn = document.getElementById('dp-sifu-btn');
     if (sifuBtn) sifuBtn.style.display = 'inline-flex';
   } catch (e) {
-    document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>ค้นหาขัดข้อง</h4><p>${e.message}</p></div>`;
+    document.getElementById('resultsList').innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.err.search_title','ค้นหาขัดข้อง')}</h4><p>${_dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่')}</p></div>`;
+    console.warn('[datepick] performSearch failed:', e);
     btn.disabled = false;
     btn.textContent = _dptx('dp.search.btn','⚡ ค้นหาฤกษ์');
   }
@@ -2748,7 +2856,7 @@ function agreementBadge(a){
 function renderRealResults(items){
   const c = document.getElementById('resultsList');
   if (!items || !items.length){
-    c.innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>ไม่พบฤกษ์ที่ผ่านเกณฑ์</h4><p>ลองขยายช่วงวัน · เปลี่ยนสำนัก · หรือเลือกกิจกรรมอื่น</p></div>`;
+    c.innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><h4>${_dptx('dp.search.notfound','ไม่พบฤกษ์ที่ผ่านเกณฑ์')}</h4><p>${_dptx('dp.search.hint','ลองขยายช่วงวัน · เปลี่ยนสำนัก · หรือเลือกกิจกรรมอื่น')}</p></div>`;
     return;
   }
   // หาคะแนนสูงสุด + ต่ำสุด · สำหรับ percentile
@@ -2756,8 +2864,12 @@ function renderRealResults(items){
   const minSc = Math.min(...items.map(x=>x.score||0), 0);
   const SHICHEN_NAME = {子:'子時',丑:'丑時',寅:'寅時',卯:'卯時',辰:'辰時',巳:'巳時',午:'午時',未:'未時',申:'申時',酉:'酉時',戌:'戌時',亥:'亥時'};
   const DIRECTION_TH = {N:'เหนือ',NE:'ตะวันออกเฉียงเหนือ',E:'ตะวันออก',SE:'ตะวันออกเฉียงใต้',S:'ใต้',SW:'ตะวันตกเฉียงใต้',W:'ตะวันตก',NW:'ตะวันตกเฉียงเหนือ'};
+  const DIRECTION_EN = {N:'North',NE:'Northeast',E:'East',SE:'Southeast',S:'South',SW:'Southwest',W:'West',NW:'Northwest'};
+  const DIRECTION_ZH = {N:'北',NE:'東北',E:'東',SE:'東南',S:'南',SW:'西南',W:'西',NW:'西北'};
   c.innerHTML = items.map((t,i) => {
     // P1 fix: สร้างวันจาก t.date (string slice ที่ถูกแล้ว) — เลี่ยง Date object โดน timezone +7 ซ้ำ (วันเลื่อน+1 บน browser ไทย)
+    const L0 = getCurrentLang();
+    const T0 = (th, en, zh) => L0 === 'en' ? en : L0 === 'zh' ? zh : th;
     const _dp = (t.date||'').split('-').map(Number);
     const d = _dp[0] ? new Date(_dp[0], _dp[1]-1, _dp[2]) : new Date(t.datetime);
     const dateThai = formatThaiDate(d);
@@ -2829,13 +2941,15 @@ function renderRealResults(items){
       return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
     }).slice(0,6).map(([k,v]) => {
       const m = MODULE_LABELS[k] || { th:k, zh:k };
-      return `<span class="score-pill">${escHtml(m.th)} <span class="zh">${escHtml(m.zh)}</span> <b>${Math.round(v)}</b></span>`;
+      const mLabel = (L0 === 'en' && m.en) ? m.en : m.th;
+      return `<span class="score-pill">${escHtml(mLabel)} <span class="zh">${escHtml(m.zh)}</span> <b>${Math.round(v)}</b></span>`;
     }).join('');
     /* r378 · ใช้ reason object (source ตรง + ครบ warning/neutral ชั้นท้องฟ้า) · ผลค้นเก่า/เส้นทาง legacy fallback เป็น string เดิม */
     const scienceSections = enrichScienceSectionsForSlot(buildScienceSections(t.science_reasons || t.matches || [], t.moduleScores || {}), t);
     const scienceSummary = summarizeScience(scienceSections);
     const verdict = `${explainScore(t.score, i + 1, items.length)}${scienceSummary ? ` · ${scienceSummary}` : ''}`;
-    const directionText = DIRECTION_TH[t.direction] ? `${DIRECTION_TH[t.direction]} (${t.direction})` : (t.direction || '·');
+    const _dirLabel = T0(DIRECTION_TH[t.direction], DIRECTION_EN[t.direction], DIRECTION_ZH[t.direction]);
+    const directionText = _dirLabel ? `${_dirLabel} (${t.direction})` : (t.direction || '·');
     const pole = t.ju_pole === 'yin' ? '陰' : '陽';
     return `<div class="result-card ${scoreColor}">
       <div class="result-head">
@@ -2843,8 +2957,8 @@ function renderRealResults(items){
         <div class="rdate">
           <div class="dt">🗓 ${dateThai} · ${t.time} น. <span class="tc" style="font-family:var(--tc);color:var(--gold);">${shichenName}</span> ${stemChip} ${hdChip} ${dgChip} ${ag.chip}</div>
           <div class="ctx">
-            <span>ทิศที่เด่น: ${directionText} · วัง ${t.palace_id}</span>
-            <span>· ผังฉีเหมิน ${pole}${t.ju_number}局</span>
+            <span>${T0('ทิศที่เด่น','Best direction','吉方')}: ${directionText} · ${T0('วัง','Palace','宮')} ${t.palace_id}</span>
+            <span>· ${T0('ผังฉีเหมิน','Qi Men chart','奇門局')} ${pole}${t.ju_number}局</span>
           </div>
           ${t.target_context ? `<div class="ctx"><span>${escHtml(t.target_context.label)}</span></div>` : ''}
           <div class="ctx">
@@ -2854,31 +2968,31 @@ function renderRealResults(items){
         <div class="rscore" style="min-width:90px;">
           <div class="num">${t.score}<span style="font-size:11px;color:var(--fg-faint);"> /100</span></div>
           <div class="score-bar"><div class="fill" style="width:${pctOfMax}%"></div></div>
-          <div class="score-pct">อันดับ ${i+1}/${items.length}</div>
+          <div class="score-pct">${T0('อันดับ','Rank','排名')} ${i+1}/${items.length}</div>
         </div>
       </div>
-      <div class="result-verdict"><b>คำอ่านรวม</b><span>${escHtml(verdict)}</span></div>
+      <div class="result-verdict"><b>${T0('คำอ่านรวม','Overall reading','綜合解讀')}</b><span>${escHtml(verdict)}</span></div>
       <div class="result-body">
-        <div class="r-line"><span class="k">ประตู · 門</span><span class="v">${t.door_label || qimenLabel('door', t.door)}</span></div>
-        <div class="r-line"><span class="k">ดาว · 星</span><span class="v">${t.star_label || qimenLabel('star', t.star)}</span></div>
-        <div class="r-line"><span class="k">เทพ · 神</span><span class="v">${t.deity_label || qimenLabel('deity', t.deity)}</span></div>
-        <div class="r-line"><span class="k">ฟ้า/ดิน · 天地</span><span class="v">${t.heaven_stem||'·'} / ${t.earth_stem||'·'} ${stemChip}</span></div>
-        <div class="r-line"><span class="k">ผัง · 局</span><span class="v">${pole}${t.ju_number||'?'}局</span></div>
+        <div class="r-line"><span class="k">${T0('ประตู','Door','門')} · 門</span><span class="v">${t.door_label || qimenLabel('door', t.door)}</span></div>
+        <div class="r-line"><span class="k">${T0('ดาว','Star','星')} · 星</span><span class="v">${t.star_label || qimenLabel('star', t.star)}</span></div>
+        <div class="r-line"><span class="k">${T0('เทพ','Deity','神')} · 神</span><span class="v">${t.deity_label || qimenLabel('deity', t.deity)}</span></div>
+        <div class="r-line"><span class="k">${T0('ฟ้า/ดิน','Heaven/Earth','天地')} · 天地</span><span class="v">${t.heaven_stem||'·'} / ${t.earth_stem||'·'} ${stemChip}</span></div>
+        <div class="r-line"><span class="k">${T0('ผัง','Chart','局')} · 局</span><span class="v">${pole}${t.ju_number||'?'}局</span></div>
         ${rcLine}
         ${ag.line}
         ${dgLine}
       </div>
-      ${modulePills ? `<div class="module-score-row"><span class="mini-title">น้ำหนักคะแนนตามศาสตร์</span>${modulePills}</div>` : ''}
+      ${modulePills ? `<div class="module-score-row"><span class="mini-title">${T0('น้ำหนักคะแนนตามศาสตร์','Score weight by science','各學科計分權重')}</span>${modulePills}</div>` : ''}
       ${renderScienceSections(scienceSections)}
       ${t.hex_num ? `<div class="hex-day-meaning" data-hex-meaning data-hex="${Number(t.hex_num)}" data-line="${Number(t.changing_line || 0)}">
         <div class="top">
-          <div class="title">หกสิบสี่ข่วย · <span class="zh">卦${escHtml(t.hex_num)} ${escHtml(t.hex_name || '')}</span></div>
-          <span class="science-score">เส้น ${escHtml(t.changing_line || '-')}</span>
+          <div class="title">${T0('หกสิบสี่ข่วย','64 Hexagrams','六十四卦')} · <span class="zh">卦${escHtml(t.hex_num)} ${escHtml(t.hex_name || '')}</span></div>
+          <span class="science-score">${T0('เส้น','Line','爻')} ${escHtml(t.changing_line || '-')}</span>
         </div>
-        <div class="line"><span class="label">ความหมายวัน:</span> กำลังดึงคำอ่านจากฐานข้อมูลตำรา...</div>
+        <div class="line"><span class="label">${T0('ความหมายวัน','Day meaning','當日釋義')}:</span> ${T0('กำลังดึงคำอ่านจากฐานข้อมูลตำรา...','Loading interpretation from the canon database...','正在讀取典籍資料庫釋義...')}</div>
       </div>` : ''}
-      ${t.hex_num ? `<div style="margin-top:8px;text-align:right;"><button onclick="showHexDeep(${t.hex_num},${t.changing_line||0})" style="background:rgba(200,164,77,.1);border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:10px;padding:5px 11px;border-radius:99px;cursor:pointer;letter-spacing:.05em;">📜 ดูตำรา 卦${t.hex_num} ${t.hex_name||''} เส้น${t.changing_line||'-'}</button></div>` : ''}
-      ${(()=>{ let u=''; try{u=new Date(t.date+'T'+t.time+':00+07:00').toISOString();}catch(e){} return u?`<div style="margin-top:6px;text-align:right;"><button onclick="goTianxing('${u}','${String(t.activity_name||'').replace(/['\\\\]/g,'')}')" style="background:linear-gradient(135deg,rgba(200,164,77,.18),rgba(160,125,40,.12));border:1px solid var(--gold-line);color:var(--gold);font-size:11px;padding:6px 13px;border-radius:99px;cursor:pointer;letter-spacing:.03em;">🌌 วิเคราะห์ลึก · ดาวจริง <span style="font-family:var(--tc)">七政四餘</span></button></div>`:''; })()}
+      ${t.hex_num ? `<div style="margin-top:8px;text-align:right;"><button onclick="showHexDeep(${t.hex_num},${t.changing_line||0})" style="background:rgba(200,164,77,.1);border:1px solid var(--gold-line);color:var(--gold);font-family:var(--mono);font-size:10px;padding:5px 11px;border-radius:99px;cursor:pointer;letter-spacing:.05em;">📜 ${T0('ดูตำรา','View canon','看典籍')} 卦${t.hex_num} ${t.hex_name||''} ${T0('เส้น','line','爻')}${t.changing_line||'-'}</button></div>` : ''}
+      ${(()=>{ let u=''; try{u=new Date(t.date+'T'+t.time+':00+07:00').toISOString();}catch(e){} return u?`<div style="margin-top:6px;text-align:right;"><button onclick="goTianxing('${u}','${String(t.activity_name||'').replace(/['\\\\]/g,'')}')" style="background:linear-gradient(135deg,rgba(200,164,77,.18),rgba(160,125,40,.12));border:1px solid var(--gold-line);color:var(--gold);font-size:11px;padding:6px 13px;border-radius:99px;cursor:pointer;letter-spacing:.03em;">🌌 ${T0('วิเคราะห์ลึก · ดาวจริง','Deep-dive · Real-Star','深度解讀 · 真星')} <span style="font-family:var(--tc)">七政四餘</span></button></div>`:''; })()}
     </div>`;
   }).join('');
   hydrateHexMeanings(c);
@@ -2949,85 +3063,85 @@ window.showHexDeep = showHexDeep;
 
 /* 17 พ.ค.: HELP popup สำหรับ 11 ศาสตร์ · 3 ภาษา · อาม่าฉลาดมาก */
 const HELP_DATA = {
-  tongshu: { han:'通書/擇日', name:'ปฏิทินจีน',
+  tongshu: { han:'通書/擇日', name:'ปฏิทินจีน', nameEn:"Chinese Calendar", nameZh:"通書",
     th:{what:'ปฏิทินจีนคลาสสิก · บอก 宜/忌 ของวัน และใช้ตงกง 董公 เป็นคะแนนเสริม',how:['เช็คกิจกรรมที่เลือก vs ตาราง 宜/忌 ของวันนั้น','หากตรงกับ 忌 ของกิจกรรม → ตัดทิ้ง','董公宜忌 เป็นบริบท/คะแนนเสริม ไม่ใช่ตัวตัดเดี่ยว'],src:'通書 (4000 ปี) + 協紀辨方書 (1739) + 董公選要覽'},
     en:{what:'Classical Chinese almanac · activity 宜/忌 with Dong Gong as scoring overlay',how:['Match activity vs day 宜/忌','If the chosen activity is in 忌 → hard filter','Dong Gong 宜/忌 is context/scoring overlay, not a standalone hard filter'],src:'Tong Shu + Xie Ji Bian Fang (1739) + Dong Gong'},
     zh:{what:'中國通書 · 宜忌硬性過濾，董公作輔助加減分',how:['對照所選事項 vs 當日宜忌','若所選事項屬忌 → 過濾','董公宜忌作通用日課與輔助加減分，非單獨硬篩'],src:'通書 + 協紀辨方書 (1739) + 董公選要覽'} },
-  bazi: { han:'八字', name:'ดวงปาจื้อ · ปฏิกิริยาคน',
+  bazi: { han:'八字', name:'ดวงปาจื้อ · ปฏิกิริยาคน', nameEn:"Customer's BaZi Reactions", nameZh:"八字互動",
     th:{what:'เช็คดวง 4 เสาลูกค้า vs slot · ตรวจ 六沖/六合/三合/刑/害',how:['沖 ปะทะ: day/hour slot ปะทะปีนักษัตรลูกค้า → −25','三合: slot อยู่ใน 3 ตัวประสานกับ zodiac → +12','ตรงนักษัตร: slot day = ปีนักษัตร → +10'],src:'子平真詮 + 滴天髓 + ตำราอากง 95 ปี'},
     en:{what:'Customer 4 pillars vs slot · clash/harmony',how:['Clash: slot day/hour clashes zodiac → −25','Sanhe: slot in 3-harmony → +12','Same: slot day = zodiac → +10'],src:'Zi Ping + Di Tian Sui + Grandpa 95yr'},
     zh:{what:'命四柱 vs 時辰 · 六沖/六合/三合',how:['沖: 日/時沖年支 → −25','三合: 日支屬三合 → +12','同支: 日支同年支 → +10'],src:'子平真詮 · 滴天髓'} },
-  qimen: { han:'奇門', name:'ฉีเหมินตุ้นเจี่ย',
+  qimen: { han:'奇門', name:'ฉีเหมินตุ้นเจี่ย', nameEn:"Qi Men Dun Jia", nameZh:"奇門遁甲",
     th:{what:'แผนผัง 9 วัง · 8 ประตู + 9 ดาว + 8 เทพ ของยาม',how:['ประตู: 生/開/休 ดี · 死/驚/傷 ทำให้คะแนนถูกจำกัด','ดาว: 天輔/天心 ดี · 天蓬/天芮 ระวัง','三奇 (乙丙丁) → +12'],src:'奇門遁甲統宗大全 + qimen-api ที่ซินแสฮวง+โจ verify'},
     en:{what:'9-palace · 8 doors + 9 stars + 8 deities',how:['Door: 生/開/休 good · 死/驚/傷 cap the score','Star: 天輔/天心 good','三奇 → +12'],src:'Qi Men Tong Zong + Sifu verified'},
     zh:{what:'九宮 · 八門+九星+八神',how:['門: 生/開/休吉 · 死/驚/傷限分','星: 天輔/天心吉','三奇 → +12'],src:'奇門遁甲統宗大全'} },
-  taisui: { han:'太歲', name:'ไท้ส่วย',
+  taisui: { han:'太歲', name:'ไท้ส่วย', nameEn:"Grand Duke (Tai Sui)", nameZh:"太歲",
     th:{what:'เทพปี · ปะทะปีนักษัตร = หายนะ',how:['ปี 2026=丙午 · clash=子','ถ้า slot day/hour = 子 → ปะทะ → ตัดทิ้ง','คนปีหนูเลี่ยง 午日 ในปี 2026'],src:'太歲神 · ตำรา 2000 ปี'},
     en:{what:'Year deity · clash = disaster',how:['2026=丙午 · clash=子','If slot=子 → conflicts → filter','Rat-born avoid 午-day in 2026'],src:'Tai Sui doctrine'},
     zh:{what:'太歲神 · 沖則大凶',how:['2026丙午 · 沖子','日/時為子 → 沖太歲','子年生忌2026午日'],src:'太歲神信仰'} },
-  jianchu: { han:'12建除', name:'สิบสองจังหวะวัน',
+  jianchu: { han:'12建除', name:'สิบสองจังหวะวัน', nameEn:"12 Day Officers", nameZh:"十二建除",
     th:{what:'12 ตัวแทนวัน หมุนตามเดือน · ใช้ปรับคะแนน ไม่ตัดเดี่ยว',how:['คำนวณจาก month vs day branch','滿/定/成 → +25 ถึง +35','破/閉/危 → −10 ถึง −25'],src:'通書 · 建除十二神'},
     en:{what:'12 officer days · scoring overlay, not a standalone hard filter',how:['From month vs day branch','滿/定/成 → +25 to +35','破/閉/危 → −10 to −25'],src:'Tong Shu · 12 Officers'},
     zh:{what:'十二建除 · 輔助加減分，非單獨硬篩',how:['月支對日支推算','滿/定/成 +25至+35','破/閉/危 −10至−25'],src:'通書 十二建除'} },
-  xiu28: { han:'28宿', name:'ยี่สิบแปดดาวฤกษ์',
+  xiu28: { han:'28宿', name:'ยี่สิบแปดดาวฤกษ์', nameEn:"28 Lunar Mansions", nameZh:"二十八宿",
     th:{what:'ดาว 28 ดวง หมุน 28 วัน · ใช้ปรับคะแนนตามกิจกรรม ไม่ตัดเดี่ยว',how:['คำนวณจาก day index % 28','吉宿 (75-80) → +25 ถึง +30','凶宿 (25-35) → −15 ถึง −25'],src:'通書 · 二十八宿'},
     en:{what:'28 lunar stars · activity scoring overlay, not a hard filter',how:['day index % 28','Good (75-80) → +25 to +30','Bad (25-35) → −15 to −25'],src:'Tong Shu · 28 Xiu'},
     zh:{what:'28宿 · 依事項輔助加減分，非硬篩',how:['日序%28','吉宿+25至+30','凶宿−15至−25'],src:'通書 二十八宿'} },
-  shen12: { han:'黃黑道十二神', name:'สิบสองเทพวัน',
+  shen12: { han:'黃黑道十二神', name:'สิบสองเทพวัน', nameEn:"12 Day Deities", nameZh:"黃黑道十二神",
     th:{what:'เทพประจำวัน 12 องค์ · 青龍/明堂/金匱/天德 ดี · 白虎/天刑/朱雀/玄武 ลดคะแนน',how:['คำนวณจาก day_branch','吉神 (75-85) → +25 ถึง +35','凶神 (25-40) → −10 ถึง −25','ใช้ปรับคะแนน ไม่ใช่ตัวตัดเดี่ยว'],src:'通書 · 黃黑道十二神'},
     en:{what:'12 day deities · scoring overlay, not broad BaZi shensha',how:['From day_branch','Good (75-85) → +25 to +35','Bad (25-40) → −10 to −25','Scored only, not a standalone hard filter'],src:'Tong Shu · Huang/Hei Dao 12 Spirits'},
     zh:{what:'黃黑道十二神 · 青龍/明堂吉 · 白虎/天刑凶',how:['由日支推算','吉神+25至+35','凶神−10至−25','輔助加減分，非單獨硬篩'],src:'通書 黃黑道十二神'} },
-  fly9: { han:'9飛星', name:'เก้าดาวเหิน',
+  fly9: { han:'9飛星', name:'เก้าดาวเหิน', nameEn:"9 Flying Stars", nameZh:"九飛星",
     th:{what:'ดาวเหิน 9 ดวง · ยุค 9 (2024-2043) · ดาว 1·6·8·9 ดี · 2·5·7 ร้าย',how:['ดาว 8 ทรัพย์ · 1 เสน่ห์ · 9 มงคล','ดาว 5 (黃) เคราะห์ · 2 (黑) โรค','คำนวณจาก day_branch % 9'],src:'玄空飛星派 · 沈氏玄空學'},
     en:{what:'9 flying stars · Period 9 · 1·6·8·9 good · 2·5·7 bad',how:['Star 8 wealth · 1 charm · 9 auspicious','Star 5 calamity · 2 illness','day_branch % 9'],src:'Xuan Kong Fei Xing'},
     zh:{what:'九飛星 · 九運 · 1·6·8·9白吉 · 2·5·7凶',how:['八白財 · 一白桃花 · 九紫','五黃災 · 二黑病','日支%9'],src:'玄空飛星 沈氏玄空學'} },
-  yongshen: { han:'用神', name:'ธาตุที่ดวงต้องการ',
+  yongshen: { han:'用神', name:'ธาตุที่ดวงต้องการ', nameEn:"Favorable Element (Yong Shen)", nameZh:"用神",
     th:{what:'ธาตุที่ดีกับดวงลูกค้า 3 อันดับแรก · วันหรือยามตรงธาตุ用神 = ได้คะแนนเพิ่ม',how:['ดึง用神จาก /chart ลูกค้า เช่น ไฟ/ไม้/ไฟ','ก้านวันตรงธาตุที่ดวงต้องการ → +25','ก้านยามตรงธาตุที่ดวงต้องการ → +15'],src:'子平真詮 + wrapper-7 อากง v2'},
     en:{what:'Customer\'s best elements (top-3) · matching = bonus',how:['Pull 用神 from /chart','Day stem matches → +25','Hour stem matches → +15'],src:'Zi Ping + wrapper-7 v2'},
     zh:{what:'命主用神 (top-3) · 干屬此五行 = 加分',how:['由 /chart 取用神','日干屬 +25','時干屬 +15'],src:'子平真詮 · wrapper-7'} },
-  heluo: { han:'河洛', name:'เหอหลัว',
+  heluo: { han:'河洛', name:'เหอหลัว', nameEn:"He Luo", nameZh:"河洛",
     th:{what:'ดาวเหิน 9 ดวง × ยุคปัจจุบัน · ยุค 9 ชอบไฟ/ไม้',how:['ยุค 9 = 2024-2043 = ไฟ','slot day stem ไม้/ไฟ → +10','น้ำ → −10 (ดับไฟ)'],src:'河圖 + 洛書 + 紫白訣 + อากง v1'},
     en:{what:'9 stars × current era · Period 9 favors fire/wood',how:['Period 9 = 2024-2043 fire','Day stem wood/fire → +10','Water → −10 (douses fire)'],src:'He Tu + Luo Shu + Zi Bai Jue'},
     zh:{what:'九星×當運 · 九運喜火木',how:['九運 = 火','日干木/火 → +10','水 → −10 (剋火)'],src:'河圖洛書 紫白訣'} },
-  hex: { han:'64卦', name:'หกสิบสี่ข่วย',
+  hex: { han:'64卦', name:'หกสิบสี่ข่วย', nameEn:"64 Hexagrams", nameZh:"六十四卦",
     th:{what:'易經 64 รูปแบบ + 384 爻辭 · derive จาก day×hour×zodiac',how:['hex = (day×12+hour×7+zodiac)%64+1','吉卦 15 ตัว (乾·泰·大有...) → +30 ถึง +39','凶卦 9 ตัว (否·剝·坎...) → −10 ถึง −20','กดปุ่ม 📜 ดูตำราเต็ม'],src:'周易 + Zhu Xi + อากง v3 (384 爻辭)'},
     en:{what:'I-Ching 64 + 384 line statements · from day×hour×zodiac',how:['hex = (day×12+hour×7+zodiac)%64+1','15 good (乾泰大有) → +30 to +39','9 bad (否剝坎) → −10 to −20','Click 📜 for full text'],src:'Zhou Yi + Zhu Xi + Grandpa v3'},
     zh:{what:'易經64卦+384爻辭 · 由日×時×年生支',how:['卦=(日×12+時×7+年生)%64+1','15吉卦 → +30至+39','9凶卦 → −10至−20','點 📜 看全文'],src:'周易 · 周易本義 · 阿公v3'} },
-  donggong: { han:'董公', name:'ตงกง · ตำราตัดฤกษ์หลัก',
+  donggong: { han:'董公', name:'ตงกง · ตำราตัดฤกษ์หลัก', nameEn:"Dong Gong · Main Date-Vetting Canon", nameZh:"董公 · 主要斷日典籍",
     th:{what:'ตงกง (董公擇日) คือตำราตัดฤกษ์หลักสายพื้นบ้าน 建除黃黑道 จาก 董公選要覽 · ตัดสินวันจาก 月建×建除×干支วัน พร้อม 宜/忌 รายกิจกรรม',how:['วัน 大凶 → เพดานคะแนน 30 (ไม่ว่าศาสตร์อื่นหนุนแค่ไหน)','วัน 凶/不利 หรือกิจกรรมตรงข้อห้าม 忌 → เพดานคะแนน 45','วัน 吉/大吉 → บวกเสริม +8 · กิจกรรมตรง 宜 → +6','ปิดติ๊กได้ = ตงกงกลับเป็นคะแนนเสริมเบา ๆ แบบเดิม (ไม่ตัดเพดาน)'],src:'董公選要覽 (NLC scan tier-1) · module r367'},
     en:{what:'Dong Gong (董公擇日) is the classic folk date-vetting canon (建除黃黑道) from 董公選要覽 · judges the day by month-branch × Jianchu × day pillar with per-activity 宜/忌',how:['大凶 day → score capped at 30 regardless of other layers','凶/不利 day, or activity in its 忌 list → capped at 45','吉/大吉 day → +8 bonus · activity in 宜 list → +6','Untick = falls back to the previous light scoring overlay (no caps)'],src:'Dong Gong Xuan Yao Lan (NLC tier-1 scan) · module r367'},
     zh:{what:'董公擇日為民間建除黃黑道系主要斷日典籍（董公選要覽）· 以月建×建除×日干支斷吉凶，並列各事宜忌',how:['大凶日 → 總分上限30','凶/不利日或所選事項犯忌 → 上限45','吉/大吉日 → 加8分 · 事項合宜 → 加6分','取消勾選＝回到舊版輕量加減分（無上限裁減）'],src:'董公選要覽 (國圖掃描 tier-1) · module r367'} },
-  tianxing: { han:'七政四餘', name:'ดาวจริง · ศาสตร์ขั้นสูงสุด',
+  tianxing: { han:'七政四餘', name:'ดาวจริง · ศาสตร์ขั้นสูงสุด', nameEn:"Real-Star Astrology · Highest Science", nameZh:"七政四餘 · 最高擇日術",
     th:{what:'โหราศาสตร์ดาวจริง (七政四餘) · ใช้ตำแหน่งดาวจริงบนฟ้า (อาทิตย์/จันทร์/พุธ/ศุกร์/อังคาร/พฤหัส/เสาร์ + ราหู/เกตุ/เยวี่ยปั๋ว/紫氣) ตัดสินด้วยกฎ廟旺·恩用仇難·格局',how:['ดาวจริง (astronomy-engine VSOP87) + ระบบ28宿距星 (ยืนยันกับ清史稿/御製曆象考成)','用神(命主)ได้กำลัง 廟/旺/升殿 → คะแนนขึ้น','เข้า合格(ดี)/ติด忌格(ร้าย) → ปรับคะแนน','ติ๊กถึงทำงาน · ไม่ติ๊ก=ไม่มีผล (opt-in)'],src:'果老星宗 + 張果星宗 + 清史稿曆志 · 紫氣=beta รอซินแสยืนยันสำนัก'},
     en:{what:'Real-star astrology (七政四餘) · uses true planet positions (7 luminaries + 4 shadow points incl. 紫氣) judged by 廟旺/恩用仇難/格局',how:['Real stars (astronomy-engine) + 28-mansion 距星 system (validated vs Qing 清史稿/御製曆象考成)','Chart ruler strong (廟/旺/升殿) → score up','Favorable 合格 / adverse 忌格 → adjust','Opt-in: only runs when ticked'],src:'Guolao Xingzong + Qing Shi Gao · 紫氣 beta'},
     zh:{what:'七政四餘真星占 · 用實際天體位置(七政+四餘含紫氣)以廟旺·恩用仇難·格局論斷',how:['真實星曆(astronomy-engine)+二十八宿距星(校驗清史稿/御製曆象考成)','用神(命主)得廟旺升殿 → 加分','合格吉/忌格凶 → 調整','勾選方運作 · 不勾選不影響'],src:'果老星宗 · 張果星宗 · 清史稿曆志 · 紫氣beta'} },
   /* r372 · หมวด ② ท้องฟ้าจริง 5 ตัวใหม่ */
-  moonvoid: { han:'月空', name:'จันทร์ว่าง · Void of Course',
+  moonvoid: { han:'月空', name:'จันทร์ว่าง · Void of Course', nameEn:"Void of Course Moon", nameZh:"月空",
     th:{what:'จันทร์ว่าง (Void of Course · VoC) คือช่วงที่ดวงจันทร์ทำมุมสำคัญกับดาวดวงอื่นครบแล้ว และลอยเปล่ารอเข้าราศีใหม่ · ตำรา electional คลาสสิกถือว่า “เริ่มงานช่วงนี้ = งานไม่ออกดอก” — เรื่องที่เริ่มมักจบไม่เป็นชิ้นเป็นอัน',how:['คำนวณจากตำแหน่งจันทร์จริงบนฟ้า (astronomy-engine) ณ ช่วงยามนั้น','ยามคาบช่วงจันทร์ว่าง + กิจกรรมประเภทเริ่มงานใหม่ → เพดานคะแนน 45','กิจกรรมที่ไม่ใช่งานเริ่มใหม่ → เตือนอย่างเดียว ไม่ตัดฤกษ์'],src:'William Lilly · Christian Astrology (1647) · ตำรา electional คลาสสิก + astronomy-engine'},
     en:{what:'Void of Course (VoC) Moon: the Moon has completed its last major aspect and drifts empty until entering the next sign · classical electional texts hold that “nothing will come of the matter” begun during VoC',how:['Computed from the real Moon position (astronomy-engine) for that hour slot','Slot inside VoC + a new-venture activity → score capped at 45','Non-initiating activities → warning only, no cut'],src:'William Lilly · Christian Astrology (1647) · classical electional canon + astronomy-engine'},
     zh:{what:'月空(Void of Course)：月亮完成最後主要相位、尚未入下一星座的空檔 · 古典擇時術認為此時起事「難有成果」',how:['以真實月亮位置(astronomy-engine)計算該時辰','時辰落在月空＋開創類事項 → 分數上限45','非開創事項 → 僅提醒不裁減'],src:'William Lilly《Christian Astrology》(1647) · 古典擇時術 + astronomy-engine'} },
-  moonsign: { han:'月座', name:'จันทร์ประจำราศี',
+  moonsign: { han:'月座', name:'จันทร์ประจำราศี', nameEn:"Moon Sign", nameZh:"月座",
     th:{what:'ราศีที่ดวงจันทร์อยู่จริง ณ ยามนั้น · ตำรา electional จับคู่ราศีจันทร์กับประเภทงาน เช่น จันทร์ราศีพฤษภ (มั่นคง) เหมาะสัญญาระยะยาว · จันทร์ราศีเมถุน เหมาะงานสื่อสาร/เจรจา',how:['ตำแหน่งจันทร์จริง (astronomy-engine) → ราศี ณ ยามนั้น','ราศีจันทร์เข้ากับกิจกรรม → +6 เบา ๆ','ไม่เข้ากับกิจกรรม → −6 เบา ๆ · เป็นตัวปรับละเอียด ไม่ตัดฤกษ์'],src:'ตำรา electional คลาสสิก (Moon sign election) + astronomy-engine'},
     en:{what:'The zodiac sign the Moon actually occupies at that hour · electional astrology matches Moon signs to task types, e.g. Taurus Moon (stable) suits long contracts, Gemini Moon suits communication',how:['Real Moon position (astronomy-engine) → sign at that hour','Moon sign fits the activity → +6 (soft)','Does not fit → −6 (soft) · fine-tuning only, never cuts'],src:'Classical electional astrology (Moon sign election) + astronomy-engine'},
     zh:{what:'該時辰月亮實際所在星座 · 擇時術以月座配事類：金牛月座（穩）宜長約 · 雙子月座宜溝通洽談',how:['真實月亮位置(astronomy-engine) → 該時辰星座','月座合事項 → 輕加6分','不合 → 輕減6分 · 僅微調不裁減'],src:'古典擇時術（月座擇時）+ astronomy-engine'} },
-  retro: { han:'逆行', name:'ดาวถอย · Retrograde',
+  retro: { han:'逆行', name:'ดาวถอย · Retrograde', nameEn:"Retrograde", nameZh:"逆行",
     th:{what:'ช่วงดาวเคราะห์ถอยหลังจริงบนฟ้า โดยเฉพาะรอบเปลี่ยนทิศ (station R→D) ที่ตำราถือว่าแรงสุด · พุธถอยกระทบเอกสาร/สื่อสาร/สัญญา · ศุกร์ถอยกระทบงานมงคล/ความสัมพันธ์ · อังคารถอยกระทบงานบุกลุย/ผ่าตัด',how:['หา window ถอยจากตำแหน่งดาวจริง (astronomy-engine)','พุธถอย × งานเอกสาร/เจรจา → เพดานคะแนน 45','ศุกร์ถอย × งานมงคล/ความสัมพันธ์ → เพดาน 40 · อังคารถอย × งานลุย → เพดาน 50','ดาวถอยที่ไม่ตรงหมวดกิจกรรม → แสดงเป็นข้อมูลประกอบ ไม่ตัด'],src:'ตำรา electional ตะวันตก (retrograde election) + astronomy-engine'},
     en:{what:'Real retrograde windows, especially around the R→D station which classical texts treat as strongest · Mercury Rx hits documents/communication/contracts · Venus Rx hits weddings/relationships · Mars Rx hits assertive work/surgery',how:['Retro windows from real planet positions (astronomy-engine)','Mercury Rx × paperwork/negotiation → cap 45','Venus Rx × auspicious/relationship events → cap 40 · Mars Rx × assertive work → cap 50','Retro not matching the activity → shown as info only, no cut'],src:'Western electional canon (retrograde election) + astronomy-engine'},
     zh:{what:'行星實際逆行期，尤以留轉順(R→D station)前後最烈 · 水逆礙文書溝通契約 · 金逆礙嫁娶人際 · 火逆礙攻勢/手術',how:['以真實星曆(astronomy-engine)求逆行區間','水逆×文書洽談 → 上限45','金逆×吉慶人際 → 上限40 · 火逆×攻勢事 → 上限50','逆行與事項無關 → 僅列參考不裁減'],src:'西方擇時術（逆行擇時）+ astronomy-engine'} },
-  eclipse: { han:'食區', name:'โซนอับคราส · Eclipse Zone',
+  eclipse: { han:'食區', name:'โซนอับคราส · Eclipse Zone', nameEn:"Eclipse Zone", nameZh:"食區",
     th:{what:'โซน ±3 วันรอบสุริยุปราคา/จันทรุปราคา · โบราณทั้งสายตะวันตกและสายจีน (日食/月食) ถือว่าแสงถูกบัง ไม่เริ่มงานมงคลใหญ่ในช่วงนี้',how:['วันเกิดคราสพอดี → เพดานคะแนน 35','อยู่ในโซน ±3 วัน + งานเปิดตัว/งานมงคลใหญ่ → เพดาน 55','ใกล้คราสแต่กิจกรรมกระทบน้อย → เตือนอย่างเดียว ไม่ตัด'],src:'ตำรา electional + 協紀辨方書 (日食/月食忌) · เวลาคราสจริงจาก astronomy-engine'},
     en:{what:'The ±3-day zone around solar/lunar eclipses · both Western electional and Chinese canon (日食/月食) treat the light as obscured — no major auspicious launches',how:['Exact eclipse day → score capped at 35','Inside ±3-day zone + major launch/auspicious event → cap 55','Near an eclipse but low-impact activity → warning only'],src:'Electional canon + Xie Ji Bian Fang Shu (eclipse taboos) · real eclipse times via astronomy-engine'},
     zh:{what:'日食/月食前後±3天之蝕區 · 中西擇日皆視為光被掩，不宜大型吉事開創',how:['正逢蝕日 → 上限35','蝕區內＋大型開幕/吉慶 → 上限55','近蝕而事項影響小 → 僅提醒'],src:'擇時術 + 協紀辨方書（日月食忌）· astronomy-engine 真實蝕時'} },
-  rahu: { han:'羅睺', name:'ราหูกาล · Rahu Kalam',
+  rahu: { han:'羅睺', name:'ราหูกาล · Rahu Kalam', nameEn:"Rahu Kalam", nameZh:"羅睺時段",
     th:{what:'ราหูกาล (Rahu Kalam) คือช่วงอัปมงคลรายวันของโหราศาสตร์อินเดีย (Muhurta) ยาวประมาณ 90 นาที · ตำแหน่งในวันต่างกันตามวันในสัปดาห์ · งดเริ่มงานมงคลทุกชนิดในช่วงนี้',how:['คำนวณจากเวลาพระอาทิตย์ขึ้น-ตกจริง ณ สถานที่จัดงาน (ไม่ใช่ตาราง 07:30 ตายตัว)','แบ่งกลางวันจริงออกเป็น 8 ส่วน · ส่วนของราหูขึ้นกับวันในสัปดาห์','ยามที่คาบช่วงราหูกาล → เพดานคะแนน 50'],src:'Muhurta ตำราโหราศาสตร์อินเดีย · พระอาทิตย์ขึ้นจริงจาก astronomy-engine'},
     en:{what:'Rahu Kalam is the daily inauspicious window of Indian astrology (Muhurta), ~90 minutes, at a different position each weekday · all auspicious beginnings are avoided during it',how:['Computed from the real sunrise-sunset at the event venue (not a fixed 07:30 table)','The true daylight span is split into 8 parts; Rahu\'s part depends on the weekday','Slot overlapping Rahu Kalam → score capped at 50'],src:'Muhurta (Indian electional astrology) · real sunrise via astronomy-engine'},
     zh:{what:'羅睺時段(Rahu Kalam)為印度擇時術每日凶時，約90分鐘，依星期日別位置不同 · 此段忌一切吉事開創',how:['以活動地點真實日出日落計算（非固定07:30表）','將實際白晝分為8段，羅睺段依星期而定','時辰疊入羅睺時段 → 上限50'],src:'印度擇時術 Muhurta · astronomy-engine 真實日出'} },
   /* r374 · phase-3 ปัญจางค์ + ตาราพละ */
-  panchanga: { han:'五支曆', name:'ปัญจางค์ 5 องค์ · Pañcāṅga',
+  panchanga: { han:'五支曆', name:'ปัญจางค์ 5 องค์ · Pañcāṅga', nameEn:"Panchanga (5 Limbs)", nameZh:"五支曆",
     th:{what:'ปัญจางค์คือองค์ประกอบ 5 อย่างของวันตามปฏิทินอินเดีย (มุหูรตะ): ① ติถี = ดิถีจันทร์ (จันทร์−อาทิตย์ ทุก 12°) ② วาระ = วันสัปดาห์ ③ นักษัตร = ฤกษ์จันทร์ 27 ฤกษ์ (sidereal Lahiri) ④ โยคะ = ผลรวมอาทิตย์+จันทร์ 27 แบบ ⑤ กรณะ = ครึ่งติถี · แสดงชื่อไทย+สันสกฤตทับศัพท์ครบทุกองค์',how:['คำนวณจากตำแหน่งอาทิตย์/จันทร์จริง ณ กลางยาม (astronomy-engine + Lahiri ayanamsa)','ติถีริกตา (จตุรถี/นวมี/จตุรทศี) × เปิดกิจการ/แต่งงาน → เพดานคะแนน 55','กรณะวิษฏิ (ภัทรา) → เพดาน 55 ทุกกิจกรรม · อมาวสยา (จันทร์ดับ) → เพดาน 45 (ยกเว้นพิธีกรรม)','โยคะร้าย วยตีปาตะ/ไวธฤติ → เพดาน 60 · โยคะดี สิทธิ/สิทธะ/ศุภะ → +5 เบา ๆ'],src:'Muhūrta Cintāmaṇi (ตำรามุหูรตะมาตรฐาน) + ธรรมเนียมปัญจางคะอินเดียใต้ · astronomy-engine'},
     en:{what:'The Panchanga is the five limbs of the Hindu day: ① tithi (lunar day, 12° Moon−Sun) ② vara (weekday) ③ nakshatra (27 lunar mansions, sidereal Lahiri) ④ yoga (Sun+Moon sum, 27) ⑤ karana (half-tithi) · shown with Thai + Sanskrit names',how:['Computed from real Sun/Moon positions at slot midpoint (astronomy-engine + Lahiri ayanamsa)','Rikta tithi (4th/9th/14th) × business opening/marriage → score capped at 55','Vishti (Bhadra) karana → cap 55 for all activities · Amavasya (new moon) → cap 45 (except rituals)','Malefic yogas Vyatipata/Vaidhriti → cap 60 · benefic Siddhi/Siddha/Shubha → +5 (soft)'],src:'Muhurta Chintamani (standard muhurta canon) + South-Indian panchanga practice · astronomy-engine'},
     zh:{what:'五支曆(Pañcāṅga)為印度曆一日五要素：①提提(月日相距每12°)②瓦拉(星期)③納克沙特拉(27宿·恆星黃道Lahiri)④瑜伽(日月相加27種)⑤卡拉納(半提提)',how:['以時辰中點真實日月位置計算(astronomy-engine+Lahiri歲差)','里克塔日(第4/9/14提提)×開市/嫁娶 → 上限55','毘瑟底(Bhadrā)卡拉納 → 全事項上限55 · 朔日 → 上限45(祭祀除外)','凶瑜伽Vyatīpāta/Vaidhṛti → 上限60 · 吉瑜伽Siddhi/Siddha/Śubha → +5'],src:'《Muhūrta Cintāmaṇi》+ 南印五支曆傳統 · astronomy-engine'} },
-  tarabala: { han:'宿曜', name:'ตาราพละ · Tārābala (เฉพาะดวงคุณ)',
+  tarabala: { han:'宿曜', name:'ตาราพละ · Tārābala (เฉพาะดวงคุณ)', nameEn:"Tarabala (Personal Only)", nameZh:"宿曜力（個人專屬）",
     th:{what:'ตาราพละคือ "กำลังดาวฤกษ์ส่วนตัว" ของมุหูรตะอินเดีย: นับจากนักษัตรเกิดของคุณ (จันทร์ sidereal ณ เวลาเกิด) ไปถึงนักษัตรของวัน แล้วหารเก้า ได้ตารา 9 ชั้น: 1 ชนมะ · 2 สัมปัต(ดี) · 3 วิปัต(ร้าย) · 4 เกษมะ(ดี) · 5 ปรัตยัก(ร้าย) · 6 สาธนะ(ดี) · 7 ไนธนะ(ร้ายสุด) · 8 มิตระ(ดี) · 9 ปรมไมตระ(ดีสุด)',how:['ต้องเลือกโปรไฟล์/คนที่เกี่ยวข้อง (ใช้วันเวลาเกิดหานักษัตรกำเนิด) · ไม่เลือก = ไม่ทำงาน','นับรวมต้นทาง: count = (นักษัตรวัน − นักษัตรเกิด) mod 27 + 1 · ตารา = (count−1) mod 9 + 1','ชั้นร้าย 3 วิปัต / 5 ปรัตยัก / 7 ไนธนะ → เพดานคะแนน 50','ชั้นดี 2/4/6/8/9 → +4 เบา ๆ · 1 ชนมะ → เตือนอย่างเดียว ไม่ตัด'],src:'ตาราง Tārābala มาตรฐาน · Muhūrta Cintāmaṇi + ปฏิทินปัญจางคะอินเดียใต้'},
     en:{what:'Tarabala is the personal "star strength" of Indian muhurta: count from your birth nakshatra (sidereal Moon at birth) to the day\'s nakshatra, mod 9 → nine taras: 1 Janma · 2 Sampat(good) · 3 Vipat(bad) · 4 Kshema(good) · 5 Pratyak(bad) · 6 Sadhana(good) · 7 Naidhana(worst) · 8 Mitra(good) · 9 Parama Maitra(best)',how:['Requires a selected profile (birth datetime → janma nakshatra) · none selected = inactive','Inclusive count: count = (day − janma) mod 27 + 1 · tara = (count−1) mod 9 + 1','Bad taras 3 Vipat / 5 Pratyak / 7 Naidhana → score capped at 50','Good taras 2/4/6/8/9 → +4 (soft) · 1 Janma → warning only, no cut'],src:'Standard Tarabala table · Muhurta Chintamani + South-Indian panchanga practice'},
     zh:{what:'宿曜力(Tārābala)為印度擇時之個人宿力：由本命宿(出生時恆星月所在)數至當日宿，除九取餘得九階：1本命 · 2財(吉) · 3危(凶) · 4安(吉) · 5障(凶) · 6成(吉) · 7死(最凶) · 8友(吉) · 9極友(最吉)',how:['須選擇個人檔案(以出生時刻求本命宿) · 未選=不運作','含首數法：count=(日宿−本命宿) mod 27 +1 · 宿階=(count−1) mod 9 +1','凶階 3危/5障/7死 → 上限50','吉階 2/4/6/8/9 → +4(輕) · 1本命 → 僅提醒不裁減'],src:'標準Tārābala表 ·《Muhūrta Cintāmaṇi》+ 南印五支曆傳統'} },
@@ -3041,14 +3155,15 @@ function showHelp(key){
   const p = document.createElement('div'); p.className='hk-help-popup';
   p.onclick = (e) => { if (e.target===p) p.remove(); };
   const L = {th:['📖 ศาสตร์นี้คืออะไร?','🔍 วิธีคัดกรอง','📜 ที่มา'],en:['📖 What is this?','🔍 Filtering','📜 Source'],zh:['📖 此學科','🔍 篩選方法','📜 來源']}[lang];
+  const dataName = lang === 'en' ? (data.nameEn || data.name) : lang === 'zh' ? (data.nameZh || data.name) : data.name;
   p.innerHTML = `<div class="box">
     <button class="close" onclick="this.closest('.hk-help-popup').remove()">✕</button>
     <div class="han-big">${data.han}</div>
-    <div class="name">${data.name}</div>
+    <div class="name">${dataName}</div>
     <h4>${L[0]}</h4><p>${txt.what}</p>
     <h4>${L[1]}</h4><ul>${txt.how.map(x=>'<li>'+x+'</li>').join('')}</ul>
     <h4>${L[2]}</h4><p style="font-size:11px;color:var(--fg-soft)">${txt.src}</p>
-    <div class="src">อากง+อาม่า+อาเจ๊กฮ้ง+เจ้านาย+จาวิส · ทีม 100%</div>
+    <div class="src">${_dptx('dp.help.credit','อากง+อาม่า+อาเจ๊กฮ้ง+เจ้านาย+จาวิส · ทีม 100%')}</div>
   </div>`;
   document.body.appendChild(p);
 }
@@ -3063,7 +3178,7 @@ function dpAppendMsg(role, text, loading){
   if (!log) return null;
   const d = document.createElement('div');
   d.className = 'dp-msg ' + role + (loading?' loading':'');
-  const roleLab = role==='user'?'ผม':role==='sifu'?'ซินแส':'...';
+  const roleLab = role==='user'?_dptx('dp.chat.me','ผม'):role==='sifu'?_dptx('dp.chat.sifu','ซินแส'):'...';
   const html = String(text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
   d.innerHTML = '<span class="role">'+roleLab+'</span><div class="body">'+html+'</div>';
   log.appendChild(d);
@@ -3192,11 +3307,11 @@ function updateDpSifuContextBadge(){
   if (!badge) return;
   const data = window._dpLastSearch;
   if (!data || !Array.isArray(data.top)) {
-    badge.textContent = 'NO SEARCH';
+    badge.textContent = _dptx('dp.sifu.nosearch','ยังไม่มีการค้นหา');
     return;
   }
   const label = data.search_window?.label || window._dpLastPageContext?.search_window?.label || '';
-  badge.textContent = `${data.top.length} ฤกษ์ · ${label || 'latest search'}`;
+  badge.textContent = `${data.top.length} ${_dptx('dp.unit.timings','ฤกษ์')} · ${label || _dptx('dp.sifu.latest','ล่าสุด')}`;
 }
 
 async function dpLoadSifuAstroContext(){
@@ -3241,7 +3356,8 @@ function dpDefaultSifuQuestion(){
   const n = data?.top?.length || 0;
   const activityMeta = currentActivityMeta();
   const activityTh = (activityMeta.han || '事') + ' (' + (activityMeta.name || window._dpLastActivity || state.activity) + ')';
-  return `ช่วยอ่านผลฤกษ์ ${activityTh} ชุดนี้แบบคุยกับซินแสหน่อย ฟันธงว่าเลือกอันดับไหนดีที่สุดสำหรับผม ทำไม และอันไหนควรเลี่ยงจากทั้งหมด ${n} ตัวเลือก`;
+  const tpl = _dptx('dp.sifu.defaultq', 'ช่วยอ่านผลฤกษ์ {act} ชุดนี้แบบคุยกับซินแสหน่อย ฟันธงว่าเลือกอันดับไหนดีที่สุดสำหรับผม ทำไม และอันไหนควรเลี่ยงจากทั้งหมด {n} ตัวเลือก');
+  return tpl.replace('{act}', activityTh).replace('{n}', n);
 }
 
 function dpBuildSifuPayload(astroCtx){
@@ -3297,11 +3413,13 @@ async function dpSendSifu(message){
         { role:'assistant', content:j.reply },
       ].slice(-10);
     } else {
-      dpAppendMsg('sifu', 'ขัดข้อง: ' + (j.error||'unknown'));
+      dpAppendMsg('sifu', _dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่'));
+      console.warn('[datepick] sifu reply error:', j.error);
     }
   } catch(e){
     if (loadingNode?.parentNode) loadingNode.parentNode.removeChild(loadingNode);
-    dpAppendMsg('sifu', 'ขัดข้อง: ' + e.message);
+    dpAppendMsg('sifu', _dptx('dp.err.generic','ขัดข้อง กรุณาลองใหม่'));
+    console.warn('[datepick] dpSendSifu failed:', e);
   } finally {
     dpSetSifuBusy(false);
     document.getElementById('dp-sifu-input')?.focus();
@@ -3610,7 +3728,7 @@ Object.assign(window.HK_I18N, {
   'dp.range.hint': { th:'โหมดช่วงวัน · ระบบจะจัดอันดับยามที่ดีที่สุดในช่วงที่เลือก', en:'Range mode · ranks the best hours in the selected window', zh:'區間模式 · 排列所選期間最佳時辰' },
   'auto.d.005': { th:'เริ่มต้น', en:'Start', zh:'起始' },
   'auto.d.006': { th:'สิ้นสุด', en:'End', zh:'結束' },
-  'auto.d.007': { th:'ติ๊กคนที่ต้องเช็คดวง — ระบบจะตัดวันที่ชงกับวันเกิดหลักหรือกระทบหนัก', en:'Tick people to check — system filters Day Master clashes', zh:'勾選須查命的人 — 過濾沖剋日主' },
+  'auto.d.007': { th:'เริ่มจากไม่เลือกใคร · ค่อย ๆ เพิ่มเฉพาะคนที่ต้องใช้ตัดวันชงของกิจกรรมนั้น', en:'Start with nobody selected · add only the people relevant to this activity’s clash check', zh:'一開始不選任何人 · 僅加入與該事項沖剋查核相關的人' },
   'auto.d.008': { th:'ติ๊กเกณฑ์ที่ใช้ — สีแดงคือตัดจริง · สีน้ำเงินคือปรับคะแนนหรืออ่านประกอบ', en:'Choose criteria — red means hard cut; blue means scoring or explanation', zh:'勾選條件 — 紅色為硬性過濾，藍色為加減分或參考解讀' },
   'auto.d.009': { th:'ตัดวันห้าม 忌日', en:'Hard cut', zh:'忌日' },
   'dp.tx.level': { th:'ขั้นสูง · ให้คะแนน', en:'Advanced · scored', zh:'進階 · 計分' },
@@ -3678,6 +3796,7 @@ Object.assign(window.HK_I18N, {
   'auto.d.027': { th:'วางฤกษ์ของท่าน', en:'Your auspicious timing', zh:'為您擇吉' },
   /* AI Sifu + results · 15 พ.ค. */
   'dp.sifu.btn':     { th:'💬 ขอซินแสช่วยอ่านผล', en:'💬 Analyze search · AI Sifu', zh:'💬 分析搜尋 · AI 師父' },
+  'dp.sifu.note':    { th:'คุยต่อได้แบบแชท · ระบบส่งผลฤกษ์ ฟิลเตอร์ คนที่เลือก และคะแนนทั้งหน้าล่าสุดให้ซินแสทุกครั้ง', en:'Keep chatting anytime · the system sends the auspicious-date results, filters, selected person, and full page scores to the Sifu every time', zh:'可持續對話 · 系統每次都會將擇日結果、篩選條件、所選對象及全頁分數傳送給師父' },
   'dp.sifu.h3':      { th:'💬 ซินแสวางฤกษ์ · ระบบช่วยอ่านผล', en:'💬 Date-Picking Sifu · AI', zh:'💬 擇日師父 · AI' },
   'dp.sifu.thinking':{ th:'ซินแสกำลังคิด...', en:'Sifu is thinking...', zh:'師父思考中...' },
   'dp.sifu.err':     { th:'ขัดข้อง', en:'Error', zh:'錯誤' },
@@ -3688,7 +3807,7 @@ Object.assign(window.HK_I18N, {
   'dp.search.notfound':{ th:'ไม่พบฤกษ์ที่ผ่านเกณฑ์', en:'No suitable dates found', zh:'未找到合適日子' },
   'dp.search.hint':  { th:'ลองขยายช่วงวัน · เปลี่ยนสำนัก · หรือเลือกกิจกรรมอื่น', en:'Try wider date range · different school · or other activity', zh:'試擴大日期 · 換派 · 或選別活動' },
   'dp.search.searching':{ th:'กำลังค้นหา...', en:'Searching...', zh:'搜尋中...' },
-  'dp.search.searching_full':{ th:'กำลังค้นฤกษ์จริงผ่าน engine + กรองหลายชั้น...', en:'Searching via Qimen API + 5-layer filter...', zh:'透過 Qimen API 搜尋 + 5 層篩選...' },
+  'dp.search.searching_full':{ th:'กำลังคำนวณฤกษ์หลายศาสตร์พร้อมกัน...', en:'Calculating across multiple sciences...', zh:'正在多學科同步運算...' },
   'dp.search.btn':   { th:'⚡ ค้นหาฤกษ์', en:'⚡ Find Best Dates', zh:'⚡ 擇日' },
   'dp.search.searching_btn':{ th:'⏳ กำลังค้นหา...', en:'⏳ Searching...', zh:'⏳ 搜尋中...' },
   'hk.nav.chart':   { th:'ดวง',       en:'Chart',    zh:'命盤' },
@@ -3700,7 +3819,159 @@ Object.assign(window.HK_I18N, {
   'hk.nav.picker':  { th:'วางฤกษ์',   en:'Picker',   zh:'擇日' },
   'hk.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
   'hk.nav.goal':    { th:'เป้าหมาย',   en:'Goals',    zh:'志向' },
-  'hk.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' }
+  'hk.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
+  'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'},
+  /* 🌐 i18n stray cleanup · 5 ก.ค. 2026 */
+  'dp.page.title': { th:'วางฤกษ์ · 擇吉 · hourkey', en:'Auspicious Date Picker · 擇吉 · hourkey', zh:'擇吉 · hourkey' },
+  'dp.h.activity': { th:'กิจกรรม', en:'Activity', zh:'活動' },
+  'dp.classify.title': { th:'🤖 อธิบายกิจกรรมเอง · ระบบช่วยจับหมวด', en:'🤖 Describe it yourself · the system detects the category', zh:'🤖 自行描述事項 · 系統自動判類' },
+  'dp.classify.btn': { th:'🔍 จับ', en:'🔍 Detect', zh:'🔍 判類' },
+  'dp.classify.hint': { th:'⚡ จับจากคำสำคัญก่อน · ถ้าไม่เจอค่อยให้ระบบช่วยวิเคราะห์', en:'⚡ Matches keywords first · falls back to AI analysis if none found', zh:'⚡ 先比對關鍵字 · 找不到才交由 AI 分析' },
+  'dp.mission.pick': { th:'เลือกภารกิจหลักหรือภารกิจย่อย', en:'Choose a core activity or a specific task', zh:'選擇主要事項或細項任務' },
+  'dp.mission.note': { th:'เลือกจากแท็บหลักเพื่อใช้กฎ 8 กิจกรรมเดิม หรือเลือกหมวดย่อยเพื่อให้ระบบใช้กฎเฉพาะงานนั้น', en:'Pick from the main tab for the original 8 activity rules, or a sub-category for task-specific rules', zh:'選主分頁套用原8事項規則，或選子分類套用該任務專屬規則' },
+  'dp.h.daterange': { th:'ช่วงวัน', en:'Date range', zh:'期間' },
+  'dp.loc.lat_ph': { th:'lat (ละติจูด)', en:'lat (latitude)', zh:'lat (緯度)' },
+  'dp.loc.lng_ph': { th:'lng (ลองจิจูด)', en:'lng (longitude)', zh:'lng (經度)' },
+  'dp.h.people': { th:'คนที่เกี่ยวข้อง', en:'People involved', zh:'相關人物' },
+  'dp.pg.all': { th:'ทั้งหมด', en:'All', zh:'全部' },
+  'dp.pg.general': { th:'ทั่วไป', en:'General', zh:'一般' },
+  'dp.pg.family': { th:'ครอบครัว', en:'Family', zh:'家人' },
+  'dp.pg.work': { th:'ทีมงาน', en:'Team', zh:'團隊' },
+  'dp.pg.friend': { th:'เพื่อน', en:'Friends', zh:'朋友' },
+  'dp.pg.love': { th:'คู่รัก', en:'Partner', zh:'伴侶' },
+  'dp.pg.rival': { th:'คู่แข่ง', en:'Rival', zh:'對手' },
+  'dp.people.count0': { th:'เลือก 0 / 0 คน', en:'0 / 0 selected', zh:'已選 0 / 0 人' },
+  'dp.people.addgroup': { th:'เพิ่มหมวดนี้', en:'Add this group', zh:'加入本組' },
+  'dp.people.clear': { th:'ล้าง', en:'Clear', zh:'清除' },
+  'dp.h.filters': { th:'เกณฑ์ตรวจ / คะแนน', en:'Filters / scoring', zh:'篩選 / 計分' },
+  'dp.sci.tongshu': { th:'ปฏิทินจีน', en:'Chinese calendar', zh:'通書' },
+  'dp.sci.donggong': { th:'ตงกง', en:'Dong Gong', zh:'董公' },
+  'dp.sci.jianchu': { th:'สิบสองจังหวะวัน', en:'12 Day Officers', zh:'十二建除' },
+  'dp.lvl.score_adj': { th:'ปรับคะแนน', en:'Score adjust', zh:'加減分' },
+  'dp.sci.jianchu.sub': { th:'開/成/定 ช่วยหนุนคะแนน · 破/閉/危 ลดคะแนน ไม่ตัดเดี่ยว', en:'開/成/定 boost the score · 破/閉/危 lower it · never a standalone cut', zh:'開/成/定加分 · 破/閉/危扣分 · 不單獨裁減' },
+  'dp.sci.xiu28': { th:'ยี่สิบแปดดาวฤกษ์', en:'28 Lunar Mansions', zh:'二十八宿' },
+  'dp.sci.xiu28.sub': { th:'ดาวฤกษ์ของวันช่วยหนุนหรือลดคะแนนตามกิจกรรม · ไม่ตัดเดี่ยว', en:'The day’s lunar mansion adjusts the score by activity · never a standalone cut', zh:'當日值宿依事項加減分 · 不單獨裁減' },
+  'dp.sci.shen12': { th:'สิบสองเทพวัน', en:'12 Day Deities', zh:'黃黑道十二神' },
+  'dp.sci.shen12.sub': { th:'青龍/明堂/金匱/天德 หนุน · 白虎/天刑/朱雀/玄武 ลดคะแนน ไม่ตัดเดี่ยว', en:'青龍/明堂/金匱/天德 boost · 白虎/天刑/朱雀/玄武 lower the score · never a standalone cut', zh:'青龍/明堂/金匱/天德加分 · 白虎/天刑/朱雀/玄武扣分 · 不單獨裁減' },
+  'dp.sci.fly9': { th:'เก้าดาวเหิน', en:'9 Flying Stars', zh:'九飛星' },
+  'dp.lvl.score_give': { th:'ให้คะแนน', en:'Scored', zh:'計分' },
+  'dp.sci.fly9.sub': { th:'ดูดาวเหินของวัน/ยาม · ดาวดีช่วยหนุน ดาวเสียลดคะแนน', en:'Reads the flying star of the day/hour · favorable stars boost, unfavorable ones lower the score', zh:'依日/時飛星 · 吉星加分、凶星扣分' },
+  'dp.sci.taisui': { th:'ไท้ส่วย', en:'Grand Duke (Tai Sui)', zh:'太歲' },
+  'dp.lvl.cut_year': { th:'ตัดชนปี', en:'Year-clash cut', zh:'沖太歲裁減' },
+  'dp.sci.taisui.sub': { th:'流年沖日柱 · ตัดวันที่กิ่งวันชงกับกิ่งปี (ปี丙午 → เลี่ยงวัน子)', en:'流年沖日柱 · cuts days whose day-branch clashes the year-branch (year 丙午 → avoid 子 days)', zh:'流年沖日柱 · 裁減日支沖年支之日（丙午年→避子日）' },
+  'dp.sci.tianxing': { th:'ดาวจริง', en:'Real-Star Astrology', zh:'七政四餘' },
+  'dp.badge.beta': { th:'ทดลอง', en:'Beta', zh:'測試版' },
+  'dp.sci.bazi': { th:'ดวงคนที่เกี่ยวข้อง', en:'BaZi of people involved', zh:'相關人物八字' },
+  'dp.bz.discard': { th:'ตัดทิ้ง', en:'hard cut', zh:'裁減' },
+  'dp.sci.yongshen': { th:'ธาตุที่ดวงต้องการ', en:'Favorable element (Yong Shen)', zh:'用神' },
+  'dp.sci.yongshen.sub': { th:'ใช้ธาตุช่วยของคุณจากหน้า /chart · ถ้าวัน/ยามหนุนธาตุช่วย คะแนนจะเพิ่ม', en:'Uses your favorable element from /chart · a matching day/hour adds to the score', zh:'取用 /chart 之用神 · 日/時合用神則加分' },
+  'dp.sci.hex': { th:'หกสิบสี่ข่วย', en:'64 Hexagrams', zh:'六十四卦' },
+  'dp.sci.qimen': { th:'ฉีเหมิน', en:'Qi Men', zh:'奇門' },
+  'dp.qm.chaibu': { th:'คำนวณแบบชดเชย', en:'Compensation calc', zh:'拆補算法' },
+  'dp.qm.zhirun': { th:'คำนวณแบบแทรกเดือน', en:'Intercalary calc', zh:'置閏算法' },
+  'dp.sci.heluo': { th:'เหอหลัว', en:'He Luo', zh:'河洛' },
+  'dp.sci.heluo.sub': { th:'อ่านจังหวะตัวเลขและดาวเหิน 9 ดาว · ใช้เป็นคะแนนเสริม ไม่ใช่ตัวตัดหลัก', en:'Reads number patterns and the 9 flying stars · a scoring overlay, not a hard filter', zh:'解讀數理節奏與九飛星 · 作輔助加分，非主要裁減' },
+  'dp.engine.badge': { th:'⚡ คำนวณล่วงหน้าทั้งปี ตอบไวใน 1 วินาที', en:'⚡ Pre-computed for the whole year · answers in under 1 second', zh:'⚡ 全年預先運算 · 1秒內回應' },
+  'dp.h.results': { th:'ผลลัพธ์', en:'Results', zh:'結果' },
+  'dp.sifu.nosearch': { th:'ยังไม่มีการค้นหา', en:'No search yet', zh:'尚未搜尋' },
+  'dp.sifu.send': { th:'ส่ง', en:'Send', zh:'送出' },
+  'dp.sifu.q1': { th:'สรุปตัวเลือกดีที่สุด', en:'Summarize the best pick', zh:'總結最佳選擇' },
+  'dp.sifu.q2': { th:'ตัวไหนควรเลี่ยง', en:'Which to avoid', zh:'哪個該避開' },
+  'dp.sifu.q3': { th:'ถ้าต้องใช้วันนี้', en:'If it must be today', zh:'若須用今日' },
+  'dp.sifu.q4': { th:'เทียบอันดับ 1/2', en:'Compare #1 vs #2', zh:'比較第1/2名' },
+  'dp.empty.hint': { th:'เลือกกิจกรรม + ช่วงวัน + เกณฑ์กรอง<br/>แล้วกด "⚡ ค้นหาฤกษ์" เพื่อเริ่ม', en:'Pick an activity + date range + filters<br/>then click “⚡ Search Auspicious Time” to start', zh:'選擇事項＋日期區間＋篩選條件<br/>再按「⚡ 搜尋吉時」開始' },
+  /* 🌐 i18n stray cleanup รอบ 2 · JS render path · 5 ก.ค. 2026 */
+  'dp.classify.busy': { th:'🔍 กำลังจับ...', en:'🔍 Detecting...', zh:'🔍 判類中...' },
+  'dp.err.generic': { th:'ขัดข้อง กรุณาลองใหม่', en:'Something went wrong, please try again', zh:'發生錯誤，請再試一次' },
+  'dp.classify.src.keyword': { th:'จับจากคำสำคัญ', en:'Keyword match', zh:'關鍵字比對' },
+  'dp.classify.src.ai': { th:'AI วิเคราะห์', en:'AI analysis', zh:'AI 分析' },
+  'dp.classify.src.cache': { th:'จากแคช', en:'Cached', zh:'快取' },
+  'dp.classify.src.other': { th:'ระบบ', en:'System', zh:'系統' },
+  'dp.classify.userule': { th:'ใช้กฎ', en:'Using rule', zh:'套用規則' },
+  'dp.classify.nearest': { th:'ใกล้สุด', en:'closest match', zh:'最接近' },
+  'dp.person.unknown_el': { th:'ไม่ทราบธาตุ', en:'Unknown element', zh:'五行未知' },
+  'dp.person.unknown_zodiac': { th:'ไม่ทราบปีนักษัตร', en:'Unknown zodiac year', zh:'生肖未知' },
+  'dp.element.prefix': { th:'ธาตุ', en:'Element: ', zh:'五行' },
+  'dp.person.daystem': { th:'ก้านวัน', en:'Day stem', zh:'日干' },
+  'dp.person.year': { th:'ปี', en:'Year ', zh:'年支' },
+  'dp.people.none_selected': { th:'ยังไม่เลือกคน · ถ้าไม่เลือก ระบบจะไม่ตัดวันชงจากดวงคน', en:'No one selected yet · without selection the system won’t filter by personal clashes', zh:'尚未選擇任何人 · 未選擇則系統不會依個人沖剋過濾' },
+  'dp.people.remove': { th:'เอาออก', en:'Remove', zh:'移除' },
+  'dp.people.notfound': { th:'ไม่พบคนในเงื่อนไขนี้ · ลองเปลี่ยนหมวดหรือคำค้นหา', en:'No one matches this filter · try another group or search term', zh:'找不到符合條件的人 · 請換組別或搜尋字詞' },
+  'dp.people.picked': { th:'เลือกแล้ว', en:'Selected', zh:'已選' },
+  'dp.people.pick': { th:'+ เพิ่ม', en:'+ Add', zh:'+ 加入' },
+  'dp.people.showmore': { th:'แสดงเพิ่ม', en:'Show more', zh:'顯示更多' },
+  'dp.unit.people': { th:'คน', en:'people', zh:'人' },
+  'dp.people.selected': { th:'เลือก', en:'Selected', zh:'已選' },
+  'dp.people.viewing': { th:'กำลังดู', en:'Viewing', zh:'檢視中' },
+  'dp.act.default': { th:'กิจกรรมที่เลือก', en:'Selected activity', zh:'所選事項' },
+  'dp.act.userule_core': { th:'ใช้กฎหลัก', en:'Using core rule', zh:'套用主要規則' },
+  'dp.act.legacy8': { th:'ใช้กฎ 8 กิจกรรมเดิม', en:'Using the original 8-activity rules', zh:'套用原8事項規則' },
+  'dp.act.userule_specific': { th:'ใช้กฎเฉพาะ', en:'Using specific rule', zh:'套用專屬規則' },
+  'dp.act.sentbase': { th:'ส่งเข้าระบบฐาน', en:'Sent to base system', zh:'送入基礎系統' },
+  'dp.star.generic': { th:'ดาว', en:'Star', zh:'星' },
+  'dp.verdict.great': { th:'เหมาะมาก', en:'Excellent', zh:'非常適合' },
+  'dp.verdict.great_rank': { th:'เป็นตัวเลือกอันดับ', en:'Ranked', zh:'排名第' },
+  'dp.verdict.great_use': { th:'ใช้เป็นฤกษ์หลักได้', en:'safe to use as your main pick', zh:'可作為主要吉時' },
+  'dp.verdict.good': { th:'เหมาะ · ผ่านเกณฑ์หลักที่เปิดไว้และมีแรงหนุนหลายจุด', en:'Good · passes the enabled main criteria with several supporting factors', zh:'適合 · 通過已啟用之主要條件且有多項助力' },
+  'dp.verdict.okay': { th:'พอใช้ · มีตัวช่วย แต่ควรอ่านข้อควรระวังก่อนเลือก', en:'Fair · has some support, but read the cautions before choosing', zh:'尚可 · 略有助力，選用前請詳閱注意事項' },
+  'dp.verdict.caution': { th:'ควรระวัง · ผ่านเข้ารอบแต่แรงหนุนยังไม่เด่นพอ', en:'Use caution · made the cut but support is not yet strong enough', zh:'須謹慎 · 雖入選但助力尚不明顯' },
+  'dp.reason.default': { th:'มีผลต่อคะแนน', en:'Affects the score', zh:'影響分數' },
+  'dp.sky.moonvoid_clear': { th:'ยามนี้ไม่คาบช่วงจันทร์ว่าง (Void of Course) · เริ่มงานได้ตามปกติ', en:'This hour is not in a Void of Course Moon · fine to start as usual', zh:'此時辰非月空(Void of Course) · 可正常起事' },
+  'dp.sky.moonsign_clear': { th:'ราศีจันทร์ ณ ยามนี้ไม่มีผลหนุน/ถ่วงพิเศษกับกิจกรรมนี้', en:'The Moon sign at this hour has no special boost/drag on this activity', zh:'此時辰月座對本事項無特別加減影響' },
+  'dp.sky.retro_clear': { th:'ยามนี้ไม่อยู่ในช่วงดาวถอยที่กระทบกิจกรรมนี้', en:'This hour is not in a retrograde window affecting this activity', zh:'此時辰不在影響本事項之逆行期間' },
+  'dp.sky.eclipse_clear': { th:'ยามนี้ไม่อยู่ในโซนอับคราส (±3 วันรอบคราส)', en:'This hour is outside the eclipse zone (±3 days around an eclipse)', zh:'此時辰不在蝕區內（蝕前後±3天）' },
+  'dp.sky.rahu_clear': { th:'ยามนี้ไม่คาบช่วงราหูกาลของวันนั้น ณ สถานที่งาน', en:'This hour does not overlap that day’s Rahu Kalam at the venue', zh:'此時辰未疊入當日活動地點之羅睺時段' },
+  'dp.sky.checked': { th:'ตรวจท้องฟ้าจริงแล้ว', en:'Real-sky checked', zh:'已核對實際天象' },
+  'dp.lvl.clear': { th:'โปร่ง', en:'Clear', zh:'順暢' },
+  'dp.zeri.pass': { th:'ปฏิทินจีนให้ผ่านและมีแรงหนุนกับกิจกรรมนี้ · 通書', en:'The Chinese calendar approves and supports this activity · 通書', zh:'通書判為可行且對此事項有助力 · 通書' },
+  'dp.lvl.pass': { th:'ผ่าน', en:'Pass', zh:'通過' },
+  'dp.zeri.warn': { th:'ปฏิทินจีนมีข้อห้ามหรือจังหวะไม่รับกิจกรรมนี้ ควรเลื่อนหรือใช้ศาสตร์อื่นยืนยัน · 通書', en:'The Chinese calendar has a taboo or unfavorable rhythm for this activity · consider rescheduling or confirming with another science · 通書', zh:'通書顯示忌諱或時運不合此事項 · 建議改期或以其他學科佐證 · 通書' },
+  'dp.lvl.caution': { th:'ระวัง', en:'Caution', zh:'須留意' },
+  'dp.zeri.mid': { th:'กลาง · ไม่พบข้อห้ามตรงจากปฏิทินจีน แต่ยังไม่ใช่แรงหนุนหลัก ให้ดูชั้นฉีเหมิน/ดาวฤกษ์ประกอบ', en:'Neutral · no direct taboo from the Chinese calendar, but not a main support either — check the Qi Men/lunar-mansion layers too', zh:'中性 · 通書無直接忌諱但也非主要助力 · 請並參考奇門/宿層' },
+  'dp.lvl.mid': { th:'กลาง', en:'Neutral', zh:'中性' },
+  'dp.sci.good': { th:'คะแนนชั้นนี้ดี แต่ไม่มีเหตุผลแยกเพิ่มเติมในผลลัพธ์', en:'This layer scores well, though no extra breakdown is given in the result', zh:'此層分數良好，但結果中無額外細項說明' },
+  'dp.lvl.good': { th:'ดี', en:'Good', zh:'良好' },
+  'dp.sci.low': { th:'คะแนนชั้นนี้ต่ำ ควรอ่านประกอบก่อนเลือกใช้', en:'This layer scores low; read the details before using this date', zh:'此層分數偏低，選用前請詳閱說明' },
+  'dp.sci.mid': { th:'กลาง · ผ่านได้ แต่ไม่ได้เป็นตัวหนุนหลักของฤกษ์นี้', en:'Neutral · passable, but not a main support for this date', zh:'中性 · 尚可但非此吉時之主要助力' },
+  'dp.tongshu.aux': { th:'เป็นแรงมงคลเสริม', en:'a supporting auspicious force', zh:'為輔助吉力' },
+  'dp.tongshu.support': { th:'วันมงคลที่ใช้หนุน', en:'Auspicious stars supporting', zh:'吉星輔助' },
+  'dp.lvl.auspicious': { th:'มงคล', en:'Auspicious', zh:'吉' },
+  'dp.tone.mixed': { th:'มีทั้งหนุน/หัก', en:'Mixed support/drag', zh:'有助有阻' },
+  'dp.tone.warn': { th:'ต้องระวัง', en:'Needs caution', zh:'須留意' },
+  'dp.tone.neutral': { th:'กลาง', en:'Neutral', zh:'中性' },
+  'dp.tone.good': { th:'เป็นแรงหนุน', en:'Supportive', zh:'助力' },
+  'dp.tone.warn_short': { th:'ระวัง', en:'Caution', zh:'留意' },
+  'dp.tone.read': { th:'อ่าน', en:'Read', zh:'參考' },
+  'dp.sci.empty': { th:'ไม่มีรายละเอียดเด่นในชั้นนี้', en:'No notable details in this layer', zh:'此層無顯著細項' },
+  'dp.sci.mainsupport': { th:'แรงหนุนหลัก', en:'Main support', zh:'主要助力' },
+  'dp.sci.readfirst': { th:'จุดที่ต้องอ่านก่อนใช้', en:'Read before using', zh:'使用前須知' },
+  'dp.err.search_title': { th:'ค้นหาขัดข้อง', en:'Search failed', zh:'搜尋發生錯誤' },
+  'dp.search.after_cut': { th:'หลังตัดดวงคน/ชั้นห้าม เหลือ', en:'After personal-chart/hard filters, remaining', zh:'扣除個人命盤／硬性篩選後，剩餘' },
+  'dp.unit.yam': { th:'ยาม', en:'hours', zh:'時辰' },
+  'dp.search.activity_label': { th:'กิจกรรม', en:'Activity', zh:'事項' },
+  'dp.search.found': { th:'พบ', en:'Found', zh:'找到' },
+  'dp.unit.timings': { th:'ฤกษ์', en:'auspicious times', zh:'吉時' },
+  'dp.search.outof': { th:'จาก', en:'out of', zh:'共' },
+  'dp.help.credit': { th:'อากง+อาม่า+อาเจ๊กฮ้ง+เจ้านาย+จาวิส · ทีม 100%', en:'Grandpa + Grandma + AJ Hong + Boss + Jarvis · Team 100%', zh:'阿公+阿嬤+阿宏哥+老闆+賈維斯 · 團隊100%' },
+  'dp.chat.me': { th:'ผม', en:'Me', zh:'我' },
+  'dp.chat.sifu': { th:'ซินแส', en:'Sifu', zh:'師父' },
+  'dp.sifu.latest': { th:'ล่าสุด', en:'latest search', zh:'最新搜尋' },
+  'dp.sifu.defaultq': { th:'ช่วยอ่านผลฤกษ์ {act} ชุดนี้แบบคุยกับซินแสหน่อย ฟันธงว่าเลือกอันดับไหนดีที่สุดสำหรับผม ทำไม และอันไหนควรเลี่ยงจากทั้งหมด {n} ตัวเลือก', en:'Please help me read this set of auspicious times for {act} like a chat with the Sifu — tell me firmly which rank is best for me, why, and which to avoid out of {n} options', zh:'請像跟師父聊天一樣幫我解讀這組{act}的擇日結果 · 明確告訴我哪個排名最適合我、為什麼，以及{n}個選項中該避開哪個' },
+  /* 🌐 i18n stray cleanup รอบ 3 · date hint + misc · 5 ก.ค. 2026 */
+  'dp.hint.exact_mode': { th:'โหมดวันเวลาเดียว', en:'Exact date-time mode', zh:'單一日期時間模式' },
+  'dp.hint.within': { th:'อยู่ใน', en:'within', zh:'位於' },
+  'dp.hint.starts': { th:'เริ่ม', en:'starts', zh:'始於' },
+  'dp.hint.range_mode': { th:'โหมดช่วงวัน', en:'Date range mode', zh:'區間模式' },
+  'dp.hint.to': { th:'ถึง', en:'to', zh:'至' },
+  'dp.unit.days': { th:'วัน', en:'days', zh:'天' },
+  'dp.win.exact_label': { th:'วันเวลาเดียว', en:'Exact date-time', zh:'單一日期時間' },
+  'dp.win.first_days': { th:'วันแรก', en:'first days', zh:'天（前段）' },
+  'dp.win.specified_time': { th:'เวลาที่ระบุ', en:'Specified time', zh:'指定時間' },
+  'dp.hint.range_over60': { th:'ช่วง', en:'The range is', zh:'區間' },
+  'dp.hint.range_over60b': { th:'วัน เกิน 60 · ระบบจะค้น 60 วันแรกเพื่อคุมความเร็ว', en:'days, over 60 · the system searches the first 60 days to stay fast', zh:'天，超過60天 · 系統將搜尋前60天以確保速度' },
+  'dp.unit.people_singular': { th:'คน', en:'Someone', zh:'某人' },
+  'dp.qimen.read3': { th:'อ่านฉีเหมินครบ 3 ชั้น', en:'Full 3-layer Qi Men reading', zh:'奇門三層完整解讀' },
+  'dp.hex.tap_to_read': { th:'กดดูตำราเพื่ออ่านรายละเอียดจากฐานข้อมูล', en:'Tap to view the full canon text from the database', zh:'點擊查看資料庫中的典籍全文' }
 });
 function applyI18N(lang){
   if (!window.HK_I18N) return;
