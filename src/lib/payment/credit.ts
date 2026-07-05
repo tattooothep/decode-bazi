@@ -1,0 +1,182 @@
+/**
+ * payment/credit.ts · เติมยาม / เปิดสมาชิก แบบ atomic + idempotent
+ * r408 · 5 ก.ค. 2026
+ *
+ * ⚠️ นี่คือหัวใจความปลอดภัย (เกี่ยวเงินจริง) — อ่านกฎ 5 ข้อก่อนแก้:
+ *  1. เติมได้ก็ต่อเมื่อยืนยัน payment แล้วเท่านั้น (caller = webhook signature verified / server-side charge confirmed)
+ *  2. Idempotent: webhook ยิงซ้ำ = เติมครั้งเดียว (orders.status transition + ref_payment_id UNIQUE)
+ *  3. ตรวจยอดตรง: paidAmountThb ต้อง = order.amount_thb (กันแก้ราคา client)
+ *  4. Atomic: mark order paid + เติม hour_balance + insert hour_transactions + เปิด sub ใน transaction เดียว (row lock)
+ *  5. caller ต้อง auth/verify มาก่อน — credit.ts ไม่เชื่อ client โดยตรง
+ */
+import { pool } from "@/lib/db";
+import { getPackage, thbToSatang } from "./packages";
+
+export type FulfillResult =
+  | { ok: true; status: "credited"; orderId: string; userId: string; yam: number; balance_after: number; tier: string | null; sub_expires_at: string | null }
+  | { ok: true; status: "already"; orderId: string; note: string }
+  | { ok: false; status: "amount_mismatch"; orderId: string; expected_thb: number; paid_thb: number }
+  | { ok: false; status: "error"; orderId: string; error: string };
+
+/**
+ * ยืนยันชำระเงินสำเร็จ → เติมยาม/เปิดสมาชิก (atomic + idempotent)
+ * @param orderId       order ที่รอชำระ (สร้างไว้ตอน create แล้ว)
+ * @param payRef        อ้างอิงจาก gateway (charge id / payment_intent) เก็บลง orders.pay_ref
+ * @param payMethod     'stripe' | 'promptpay' | 'omise' | 'mock' ...
+ * @param paidAmountThb ยอดที่ตัดจริง (บาท) จาก gateway — ตรวจตรงกับ order.amount_thb
+ */
+export async function fulfillOrder(
+  orderId: string,
+  payRef: string,
+  payMethod: string,
+  paidAmountThb: number
+): Promise<FulfillResult> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // 1) ล็อกแถว order + อ่านสถานะ (SELECT ... FOR UPDATE = กัน race + double credit)
+    const ordRes = await client.query(
+      `SELECT id, user_id, package_code, amount_thb, yam_granted, status
+         FROM orders WHERE id = $1 FOR UPDATE`,
+      [orderId]
+    );
+    const order = ordRes.rows[0];
+    if (!order) {
+      await client.query("ROLLBACK");
+      return { ok: false, status: "error", orderId, error: "order_not_found" };
+    }
+
+    // idempotent guard #1: สถานะไม่ใช่ pending = เคยประมวลผลแล้ว → ไม่ทำซ้ำ
+    if (order.status !== "pending") {
+      await client.query("ROLLBACK");
+      return { ok: true, status: "already", orderId, note: `order already ${order.status}` };
+    }
+
+    // 2) ตรวจยอดตรง (กันแก้ราคา client / gateway ตัดผิด) — เทียบทั้งบาทและ satang
+    const expectedThb = Number(order.amount_thb);
+    const paidOk =
+      Number(paidAmountThb) === expectedThb ||
+      thbToSatang(Number(paidAmountThb)) === thbToSatang(expectedThb);
+    if (!paidOk) {
+      // ยอดไม่ตรง = ไม่เติม · mark failed ไว้ตรวจสอบ
+      await client.query(
+        `UPDATE orders SET status='failed', pay_ref=$2, pay_method=$3,
+           note = COALESCE(note,'') || $4
+         WHERE id=$1 AND status='pending'`,
+        [orderId, payRef, payMethod, ` amount_mismatch expected=${expectedThb} paid=${paidAmountThb}`]
+      );
+      await client.query("COMMIT");
+      return { ok: false, status: "amount_mismatch", orderId, expected_thb: expectedThb, paid_thb: Number(paidAmountThb) };
+    }
+
+    // 3) config แพ็กเกจ (server-side · ไม่เชื่อ client) — ยืนยันยาม/ราคา/tier ตรง config
+    const pkg = getPackage(order.package_code);
+    if (!pkg) {
+      await client.query("ROLLBACK");
+      return { ok: false, status: "error", orderId, error: "unknown_package_code" };
+    }
+    if (pkg.price_thb !== expectedThb) {
+      // order.amount_thb ถูกแก้ไม่ตรง config = ผิดปกติ → ไม่เติม
+      await client.query(
+        `UPDATE orders SET status='failed', note = COALESCE(note,'') || $2 WHERE id=$1 AND status='pending'`,
+        [orderId, ` order_amount_config_mismatch config=${pkg.price_thb}`]
+      );
+      await client.query("COMMIT");
+      return { ok: false, status: "amount_mismatch", orderId, expected_thb: pkg.price_thb, paid_thb: expectedThb };
+    }
+    const yam = pkg.yam;
+
+    // idempotent guard #2 (belt-and-suspenders): ถ้ามี txn ที่ ref_payment_id ตรง order นี้แล้ว = เคยเติม
+    const refPaymentId = `order_${orderId}`;
+    const dup = await client.query(
+      `SELECT 1 FROM hour_transactions WHERE ref_payment_id = $1 LIMIT 1`,
+      [refPaymentId]
+    );
+    if (dup.rows[0]) {
+      // เคยเติมแล้ว (order status ควรเป็น paid อยู่แล้ว) — ปิดให้สถานะ paid เผื่อ desync แล้วจบ
+      await client.query(
+        `UPDATE orders SET status='paid', paid_at=COALESCE(paid_at, now()) WHERE id=$1 AND status='pending'`,
+        [orderId]
+      );
+      await client.query("COMMIT");
+      return { ok: true, status: "already", orderId, note: "ref_payment_id exists" };
+    }
+
+    // 4) mark order paid (transition guard: WHERE status='pending')
+    const upd = await client.query(
+      `UPDATE orders SET status='paid', pay_ref=$2, pay_method=$3, paid_at=now()
+        WHERE id=$1 AND status='pending' RETURNING id`,
+      [orderId, payRef, payMethod]
+    );
+    if (!upd.rows[0]) {
+      // แพ้ race — มี process อื่น mark paid ไปแล้ว
+      await client.query("ROLLBACK");
+      return { ok: true, status: "already", orderId, note: "lost transition race" };
+    }
+
+    // 5) เติมยาม + log ธุรกรรม (ref_payment_id UNIQUE = กันซ้ำชั้นสุดท้าย)
+    const balRes = await client.query(
+      `UPDATE users SET hour_balance = COALESCE(hour_balance,0) + $2 WHERE id=$1 RETURNING hour_balance`,
+      [order.user_id, yam]
+    );
+    const balanceAfter = Number(balRes.rows[0]?.hour_balance ?? 0);
+    await client.query(
+      `INSERT INTO hour_transactions(user_id, delta, reason, balance_after, ref_payment_id, note)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+      [order.user_id, yam, `purchase_${pkg.kind}`, balanceAfter, refPaymentId, `${pkg.code} · ${pkg.name.th}`]
+    );
+
+    // 6) subscription → เปิด/ต่อ tier + sub_expires_at (ต่อจาก max(ปัจจุบัน, now))
+    let tier: string | null = null;
+    let subExpiresAt: string | null = null;
+    if (pkg.kind === "subscription" && pkg.tier && pkg.days) {
+      const subRes = await client.query(
+        `UPDATE users
+            SET tier = $2,
+                sub_expires_at = GREATEST(COALESCE(sub_expires_at, now()), now()) + ($3 || ' days')::interval
+          WHERE id = $1
+          RETURNING tier, sub_expires_at`,
+        [order.user_id, pkg.tier, String(pkg.days)]
+      );
+      tier = subRes.rows[0]?.tier ?? pkg.tier;
+      subExpiresAt = subRes.rows[0]?.sub_expires_at ?? null;
+
+      // บันทึก subscriptions row (org-scoped) แบบ best-effort — เฉพาะ user ที่มี org
+      const orgRes = await client.query(`SELECT current_org_id FROM users WHERE id=$1`, [order.user_id]);
+      const orgId = orgRes.rows[0]?.current_org_id || null;
+      if (orgId) {
+        await client.query(
+          `INSERT INTO subscriptions
+             (org_id, tier, status, started_at, current_period_start, current_period_end,
+              payment_provider, payment_id, amount_cents, currency, interval)
+           VALUES ($1,$2,'active', now(), now(), now() + ($3 || ' days')::interval,
+              $4, $5, $6, 'thb', 'year')`,
+          [orgId, pkg.tier, String(pkg.days), payMethod, payRef, thbToSatang(pkg.price_thb)]
+        );
+      }
+    }
+
+    await client.query("COMMIT");
+    return {
+      ok: true,
+      status: "credited",
+      orderId,
+      userId: order.user_id,
+      yam,
+      balance_after: balanceAfter,
+      tier,
+      sub_expires_at: subExpiresAt,
+    };
+  } catch (e) {
+    try { await client.query("ROLLBACK"); } catch { /* noop */ }
+    const msg = e instanceof Error ? e.message : String(e);
+    // ชนกับ ref_payment_id UNIQUE = webhook race ซ้ำ → ถือว่าเติมแล้ว (idempotent)
+    if (/uq_hour_tx_ref_payment|duplicate key/i.test(msg)) {
+      return { ok: true, status: "already", orderId, note: "unique ref_payment_id race" };
+    }
+    return { ok: false, status: "error", orderId, error: msg };
+  } finally {
+    client.release();
+  }
+}

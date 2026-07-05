@@ -589,7 +589,19 @@ window.HK_I18N = {
   'ac.free': { th:'ยังไม่เป็นสมาชิก', en:'Free account', zh:'免費帳戶' },
   'ac.noexp': { th:'ไม่มีวันหมดอายุ', en:'No expiry', zh:'無到期日' },
   'ac.purchase.ok': { th:'เติมสำเร็จ ได้ {N} 時 ยอดคงเหลือ {B} 時', en:'Top up complete. +{N} 時, balance {B} 時.', zh:'加值成功，+{N} 時，餘額 {B} 時。' },
-  'ac.purchase.err': { th:'ทำรายการไม่สำเร็จ: {E}', en:'Transaction failed: {E}', zh:'交易失敗：{E}' }
+  'ac.purchase.err': { th:'ทำรายการไม่สำเร็จ: {E}', en:'Transaction failed: {E}', zh:'交易失敗：{E}' },
+  'ac.pay.title': { th:'ชำระเงินด้วย PromptPay', en:'Pay with PromptPay', zh:'PromptPay 付款' },
+  'ac.pay.scan': { th:'สแกน QR ด้วยแอปธนาคารเพื่อชำระเงิน', en:'Scan the QR with your banking app to pay.', zh:'用銀行 App 掃碼付款。' },
+  'ac.pay.amount': { th:'ยอดชำระ', en:'Amount', zh:'金額' },
+  'ac.pay.waiting': { th:'กำลังรอการชำระเงิน...', en:'Waiting for payment...', zh:'等待付款中...' },
+  'ac.pay.card.redirect': { th:'กำลังพาไปหน้าชำระเงินที่ปลอดภัย...', en:'Redirecting to secure checkout...', zh:'正在前往安全付款頁...' },
+  'ac.pay.sandbox': { th:'โหมดทดสอบ (sandbox) — ยังไม่ตัดเงินจริง', en:'Sandbox mode — no real charge.', zh:'測試模式 — 不會真正扣款。' },
+  'ac.pay.simulate': { th:'จำลองชำระเงินสำเร็จ (เทส)', en:'Simulate payment (test)', zh:'模擬付款成功（測試）' },
+  'ac.pay.cancel': { th:'ปิด', en:'Close', zh:'關閉' },
+  'ac.pay.timeout': { th:'หมดเวลารอชำระเงิน ลองใหม่อีกครั้ง', en:'Payment timed out. Please try again.', zh:'付款逾時，請重試。' },
+  'ac.pay.method': { th:'ช่องทางชำระเงิน', en:'Payment method', zh:'付款方式' },
+  'ac.pay.promptpay': { th:'PromptPay (QR)', en:'PromptPay (QR)', zh:'PromptPay（QR）' },
+  'ac.pay.card': { th:'บัตรเครดิต/เดบิต', en:'Credit / debit card', zh:'信用卡／金融卡' }
 };
 
 const TIER_BADGE = { free:'新', premium:'賢', master:'大' };
@@ -599,23 +611,23 @@ const TIER_LABEL = {
   master:{ th:'Master', en:'Master', zh:'大師' }
 };
 const PACKAGE_META = {
-  hour_100:{
+  topup_100:{
     tag:{ th:'เริ่มต้น', en:'Starter', zh:'入門' },
     name:{ th:'100 ยาม', en:'100 credits', zh:'100 時' },
     desc:{ th:'เหมาะกับลองใช้ซินแสและเช็คเครื่องมือสำคัญเป็นครั้งคราว', en:'Good for occasional Sifu questions and tool checks.', zh:'適合偶爾使用師傅與工具。' },
     benefits:{ th:['เครดิตพื้นฐานสำหรับทดลอง flow','เหมาะกับบัญชีเริ่มต้น'], en:['Basic test credits','Best for a new account'], zh:['基礎測試額度','適合新帳戶'] }
   },
-  hour_500:{
+  topup_550:{
     tag:{ th:'คุ้มสุด', en:'Best value', zh:'推薦' },
     name:{ th:'550 ยาม', en:'550 credits', zh:'550 時' },
-    desc:{ th:'แพ็กหลักสำหรับใช้งานประจำ มีเครดิตพิเศษจากแพ็ก 500', en:'Main recurring package with bonus credits.', zh:'日常使用方案，含加贈額度。' },
-    benefits:{ th:['ได้ 500 + 50 ยาม','ต้นทุนต่อยามลดลง'], en:['500 + 50 bonus credits','Lower unit cost'], zh:['500 + 50 加贈','單位成本較低'] }
+    desc:{ th:'แพ็กหลักสำหรับใช้งานประจำ ยามคุ้มกว่าแพ็กเริ่มต้น', en:'Main recurring package with better unit price.', zh:'日常使用方案，單位更划算。' },
+    benefits:{ th:['ได้ 550 ยาม','ต้นทุนต่อยามลดลง'], en:['550 credits','Lower unit cost'], zh:['550 時','單位成本較低'] }
   },
-  hour_1500:{
+  topup_1700:{
     tag:{ th:'งานหนัก', en:'Power', zh:'大量' },
     name:{ th:'1,700 ยาม', en:'1,700 credits', zh:'1,700 時' },
     desc:{ th:'เหมาะกับผู้ใช้หลายเครื่องมือ หรือมีทีม/เครือข่ายที่ต้องดูบ่อย', en:'For heavier use across tools, teams, or network work.', zh:'適合大量工具與人脈分析。' },
-    benefits:{ th:['ได้ 1,500 + 200 ยาม','เหมาะกับงานวิจัย/ทีม'], en:['1,500 + 200 bonus credits','Useful for team work'], zh:['1,500 + 200 加贈','適合團隊使用'] }
+    benefits:{ th:['ได้ 1,700 ยาม','คุ้มสุดต่อยาม'], en:['1,700 credits','Best unit price'], zh:['1,700 時','最佳單位價'] }
   },
   premium_1y:{
     tag:{ th:'รายปี', en:'Annual', zh:'年費' },
@@ -740,7 +752,7 @@ function renderPackages(){
   }
   const hourPkgs = state.packages.filter(p => !p.tier);
   const subPkgs = state.packages.filter(p => p.tier);
-  hourWrap.innerHTML = hourPkgs.map(p => packageCard(p, p.key === 'hour_500')).join('');
+  hourWrap.innerHTML = hourPkgs.map(p => packageCard(p, p.key === 'topup_550')).join('');
   subWrap.innerHTML = subPkgs.map(p => packageCard(p, p.key === 'master_1y')).join('');
 }
 function renderHistory(){
@@ -790,7 +802,7 @@ async function loadMe(){
   }
 }
 async function loadPackages(){
-  const r = await fetch('/api/account/mock-purchase', { cache:'no-store' });
+  const r = await fetch('/api/payment/create', { cache:'no-store' });
   if (!r.ok) throw new Error('packages ' + r.status);
   const d = await r.json();
   return d.packages || [];
@@ -802,32 +814,137 @@ async function loadHistory(){
   const d = await r.json();
   return d.transactions || [];
 }
-async function purchase(key){
+/* ── ระบบชำระเงินจริง (r408) ──────────────────────────────────────────
+ * create order → ถ้า Stripe (บัตร/พร้อมเพย์ผ่าน Stripe) = redirect หน้า checkout ปลอดภัย
+ *              → ถ้า Omise/mock = โชว์ QR ในหน้า + poll สถานะจนจ่ายเสร็จ
+ * โหมด sandbox: มีปุ่ม "จำลองชำระเงิน (เทส)" ให้ทดสอบครบวงจร
+ * ⚠️ ยามจะถูกเติมจากฝั่ง server หลังยืนยันการชำระเท่านั้น (ไม่เชื่อ client) */
+const PAY = { gateway:'stripe', method:'promptpay', pollTimer:null };
+
+function payModalEl(){
+  let el = document.getElementById('pay-modal');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'pay-modal';
+  el.style.cssText = 'position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.62);backdrop-filter:blur(3px);padding:18px;';
+  el.innerHTML = `<div style="max-width:360px;width:100%;background:var(--bg,#12100c);border:1px solid var(--gold,#c8a24a);border-radius:14px;padding:22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div id="pay-modal-title" style="font-family:'Noto Serif TC',serif;font-size:18px;color:var(--gold,#c8a24a);margin-bottom:6px"></div>
+    <div id="pay-modal-sub" style="font-size:12.5px;color:var(--fg-soft,#b9b09c);margin-bottom:14px;line-height:1.5"></div>
+    <div id="pay-modal-qr" style="display:flex;justify-content:center;margin:6px 0 12px"></div>
+    <div id="pay-modal-amount" style="font-size:13px;color:var(--fg,#e9e2cf);margin-bottom:12px"></div>
+    <div id="pay-modal-status" style="font-size:12.5px;color:var(--fg-soft,#b9b09c);margin-bottom:14px"></div>
+    <div id="pay-modal-actions" style="display:grid;gap:8px"></div>
+  </div>`;
+  document.body.appendChild(el);
+  el.addEventListener('click', (ev) => { if (ev.target === el) closePayModal(); });
+  return el;
+}
+function closePayModal(){
+  if (PAY.pollTimer){ clearInterval(PAY.pollTimer); PAY.pollTimer = null; }
+  const el = document.getElementById('pay-modal');
+  if (el) el.style.display = 'none';
+}
+window.closePayModal = closePayModal;
+
+function openPayModal(order){
+  const el = payModalEl();
+  document.getElementById('pay-modal-title').textContent = tx('ac.pay.title','ชำระเงินด้วย PromptPay');
+  document.getElementById('pay-modal-sub').textContent = order.mock ? tx('ac.pay.sandbox','โหมดทดสอบ (sandbox) — ยังไม่ตัดเงินจริง') : tx('ac.pay.scan','สแกน QR ด้วยแอปธนาคารเพื่อชำระเงิน');
+  const qr = document.getElementById('pay-modal-qr');
+  qr.innerHTML = order.qrImage ? `<img src="${esc(order.qrImage)}" alt="QR" style="width:200px;height:200px;border-radius:8px;background:#fff;padding:8px">` : '';
+  document.getElementById('pay-modal-amount').innerHTML = `${esc(tx('ac.pay.amount','ยอดชำระ'))}: <b style="color:var(--gold,#c8a24a)">฿${Number(order.amount_thb||0).toLocaleString()}</b>`;
+  document.getElementById('pay-modal-status').textContent = tx('ac.pay.waiting','กำลังรอการชำระเงิน...');
+  const actions = document.getElementById('pay-modal-actions');
+  actions.innerHTML = '';
+  if (order.mock){
+    const b = document.createElement('button');
+    b.className = 'buy';
+    b.textContent = tx('ac.pay.simulate','จำลองชำระเงินสำเร็จ (เทส)');
+    b.onclick = async () => { b.disabled = true; await mockPay(order.orderId); };
+    actions.appendChild(b);
+  }
+  const close = document.createElement('button');
+  close.textContent = tx('ac.pay.cancel','ปิด');
+  close.style.cssText = 'background:transparent;border:1px solid var(--fg-soft,#6b6555);color:var(--fg-soft,#b9b09c);padding:9px;border-radius:8px;cursor:pointer';
+  close.onclick = closePayModal;
+  actions.appendChild(close);
+  el.style.display = 'flex';
+  startPolling(order.orderId);
+}
+
+async function mockPay(orderId){
+  try {
+    const r = await fetch('/api/payment/_mock-pay', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ orderId }) });
+    const d = await r.json().catch(()=>({}));
+    if (!r.ok || !d.ok) { alertMsg(tx('ac.purchase.err','ทำรายการไม่สำเร็จ: {E}').replace('{E}', esc((d.result&&d.result.status)||d.error||r.statusText)), 'error'); return; }
+    // poll จะจับ paid เอง
+  } catch(e){ alertMsg('Network: ' + esc(e.message), 'error'); }
+}
+
+function startPolling(orderId){
+  if (PAY.pollTimer) clearInterval(PAY.pollTimer);
+  const started = Date.now();
+  PAY.pollTimer = setInterval(async () => {
+    if (Date.now() - started > 180000){ // 3 นาที
+      clearInterval(PAY.pollTimer); PAY.pollTimer = null;
+      const st = document.getElementById('pay-modal-status');
+      if (st) st.textContent = tx('ac.pay.timeout','หมดเวลารอชำระเงิน ลองใหม่อีกครั้ง');
+      return;
+    }
+    try {
+      const r = await fetch('/api/payment/status?orderId=' + encodeURIComponent(orderId), { credentials:'include', cache:'no-store' });
+      const d = await r.json().catch(()=>({}));
+      if (d.status === 'paid'){
+        clearInterval(PAY.pollTimer); PAY.pollTimer = null;
+        closePayModal();
+        alertMsg(tx('ac.purchase.ok','เติมสำเร็จ ได้ {N} 時 ยอดคงเหลือ {B} 時')
+          .replace('{N}', Number(d.yam_granted||0).toLocaleString())
+          .replace('{B}', Number(d.balance_after||0).toLocaleString()), 'success');
+        state.me = await loadMe();
+        state.history = await loadHistory();
+        renderAll();
+      } else if (d.status === 'failed'){
+        clearInterval(PAY.pollTimer); PAY.pollTimer = null;
+        const st = document.getElementById('pay-modal-status');
+        if (st) st.textContent = tx('ac.purchase.err','ทำรายการไม่สำเร็จ: {E}').replace('{E}','failed');
+      }
+    } catch(_){ /* keep polling */ }
+  }, 2500);
+}
+
+async function purchase(code){
   if (state.purchasing) return;
-  state.purchasing = key;
+  if (!state.me){
+    alertMsg(`${esc(tx('ac.login.body','เข้าสู่ระบบเพื่อดูเครดิต สมาชิก และประวัติรายการของบัญชี'))} <a href="/signup?tab=login&next=/account.html" style="color:var(--gold);text-decoration:underline">${esc(tx('ac.login.btn','เข้าสู่ระบบ'))}</a>`, 'error');
+    return;
+  }
+  state.purchasing = code;
   renderPackages();
   try {
-    const r = await fetch('/api/account/mock-purchase', {
+    const r = await fetch('/api/payment/create', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       credentials:'include',
-      body: JSON.stringify({ package:key })
+      body: JSON.stringify({ packageCode: code, method: PAY.method, gateway: PAY.gateway })
     });
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) {
+    if (!r.ok || !d.ok) {
       alertMsg(tx('ac.purchase.err','ทำรายการไม่สำเร็จ: {E}').replace('{E}', esc(d.error || r.statusText)), 'error');
       return;
     }
-    alertMsg(tx('ac.purchase.ok','เติมสำเร็จ ได้ {N} 時 ยอดคงเหลือ {B} 時')
-      .replace('{N}', Number(d.hours_added || 0).toLocaleString())
-      .replace('{B}', Number(d.balance_after || 0).toLocaleString()), 'success');
-    state.me = await loadMe();
-    state.history = await loadHistory();
+    // Stripe จริง (บัตร/พร้อมเพย์ผ่าน Stripe) = redirect หน้า checkout ปลอดภัย
+    if (d.redirectUrl && !d.mock) {
+      alertMsg(tx('ac.pay.card.redirect','กำลังพาไปหน้าชำระเงินที่ปลอดภัย...'), 'info');
+      window.location.href = d.redirectUrl;
+      return;
+    }
+    // Omise QR / โหมด mock (sandbox) = โชว์ QR + poll ในหน้า
+    openPayModal({ orderId: d.orderId, qrImage: d.qrImage || null, mock: !!d.mock, amount_thb: d.amount_thb, yam: d.yam });
   } catch(e) {
     alertMsg('Network: ' + esc(e.message), 'error');
   } finally {
     state.purchasing = null;
-    renderAll();
+    renderPackages();
   }
 }
 window.purchase = purchase;
