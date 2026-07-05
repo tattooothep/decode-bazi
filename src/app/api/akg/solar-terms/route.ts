@@ -46,7 +46,18 @@ export async function GET(req: NextRequest) {
       `SELECT data FROM ref_akg_data WHERE key='v3_24_terms_basic'`
     );
     const conceptObj = basic?.data?.concept_explanation as Record<string, string> | undefined;
-    const concept = conceptObj?.[lang] || conceptObj?.thai || conceptObj?.zh || "";
+    // DB (ref_akg_data key=v3_24_terms_basic) มีแค่ concept_explanation.thai กับ .zh — ไม่มี .en
+    // เดิม fallback ไปที่ .thai ตรง ๆ เมื่อขอ en → ไทยหลุดโผล่ตอนเลือก EN บน /solar-terms
+    // เติม fallback ภาษาอังกฤษ (แปลตรงจาก .thai/.zh) กันไทยหลุด โดยไม่แตะข้อมูลใน DB (ref_ ตาราง)
+    const CONCEPT_EN_FALLBACK =
+      "24 Solar Terms = 24 periods of the year defined by the sun's position along its orbit · not a lunar calendar";
+    const concept =
+      conceptObj?.[lang] ||
+      (lang === "th" ? conceptObj?.thai : undefined) ||
+      (lang === "en" ? CONCEPT_EN_FALLBACK : undefined) ||
+      conceptObj?.thai ||
+      conceptObj?.zh ||
+      "";
     const the24 = (basic?.data?.the_24_terms as Array<Record<string, unknown>>) || [];
 
     // 3) 3-lang names from ref_qimen_solar_terms_dict (DB)

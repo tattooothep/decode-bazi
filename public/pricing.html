@@ -69,6 +69,12 @@ a{color:var(--gold);text-decoration:none;}
 html[data-lang="th"] [data-l="th"]{display:revert;}
 html[data-lang="en"] [data-l="en"]{display:revert;}
 html[data-lang="zh"] [data-l="zh"]{display:revert;}
+/* FAQ <summary data-l> ต้องชนะ specificity ของ details.q summary{display:flex} ด้านล่าง
+   ไม่งั้น th/en/zh โผล่พร้อมกันหมด (bug: ไทยหลุดตอนเลือก EN/ZH) */
+details.q summary[data-l]{display:none;}
+html[data-lang="th"] details.q summary[data-l="th"]{display:flex;}
+html[data-lang="en"] details.q summary[data-l="en"]{display:flex;}
+html[data-lang="zh"] details.q summary[data-l="zh"]{display:flex;}
 .tc{font-family:var(--tc);}
 .mono{font-family:var(--mono);}
 
@@ -296,7 +302,7 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;margin-top:8px;}
       <h2 data-l="th">ถามก่อนสมัคร</h2><h2 data-l="en">Before you subscribe</h2><h2 data-l="zh">訂閱前想問</h2>
     </div>
     <div class="faq">
-      <details class="q"><summary data-l="th">"ยาม" คืออะไร?</summary><summary data-l="en">What is a "credit" (ยาม)?</summary><summary data-l="zh">「時」是什麼？</summary>
+      <details class="q"><summary data-l="th">"ยาม" คืออะไร?</summary><summary data-l="en">What is a "credit" (時)?</summary><summary data-l="zh">「時」是什麼？</summary>
         <div class="a" data-l="th">ยาม (時) คือหน่วยที่ใช้เรียก AI ซินแสฟันธงและงานวิเคราะห์เชิงลึก 1 คำถาม/การวิเคราะห์ใช้ยามตามความยาว การเปิดผังดวง ปฏิทิน และคะแนนรายวันไม่ใช้ยาม</div>
         <div class="a" data-l="en">A credit (時) powers the AI Sifu and deep analysis. Each question or reading spends credits by length. Opening your chart, the calendar and the daily score costs nothing.</div>
         <div class="a" data-l="zh">「時」用於呼叫 AI 師傅與深度分析，依長度計費。查看命盤、曆法與每日分數則免費。</div>
