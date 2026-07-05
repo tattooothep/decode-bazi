@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ซินแส Fusion · hourkey</title>
+  <title data-i18n="page.title">ซินแส Fusion · hourkey</title>
   <style>
     :root{
       --bg:#0e1014;
@@ -1124,7 +1124,7 @@
     <div class="answer-dialog">
       <div class="answer-head">
         <div>
-          <div class="answer-title" id="answer-title">คำตอบ AI</div>
+          <div class="answer-title" id="answer-title" data-i18n="modal.aiTitle">คำตอบ AI</div>
           <div class="answer-sub" id="answer-sub"></div>
         </div>
         <button class="answer-close" id="answer-close" type="button" data-i18n="modal.close">ปิด</button>
@@ -1188,7 +1188,8 @@
         'st.done':'เสร็จ','st.fail':'ไม่สำเร็จ','st.degraded':'บางส่วน',
         'rcpt.ai':'อ่านสำเร็จ {d}/{t} ศาสตร์','rcpt.failN':'ไม่สำเร็จ {n} ศาสตร์','rcpt.time':'ใช้เวลา {t}','rcpt.spent':'ใช้ {n} 時','snap.ver':'รุ่นข้อมูลดวง','snap.hash':'รหัสตรวจสอบ','snap.profile':'ดวงที่ใช้','fmt.sec':'{s} วินาที','fmt.minsec':'{m} นาที {s} วินาที',
         'proof.answers':'อ่านรายศาสตร์','proof.final':'ฟันธงรวม','proof.fallback':'⚠️ คำฟันธงรวมไม่สำเร็จ — ใช้คำตอบของ {m} แทน','proof.noFinal':'⚠️ รอบนี้ไม่มีคำฟันธงรวม (อ่านหยุดก่อนขั้นหลอมรวม)','proof.failed':'⚠️ อ่านไม่สำเร็จ: {list}','modal.close':'ปิด',
-        'prg.ok':'เสร็จ','prg.fail':'ไม่สำเร็จ','prg.skipped':'ข้าม','prg.running':'กำลังอ่าน','prg.queued':'รอคิว','prg.waitAnswer':'กำลังรอคำตอบ','prg.waitStart':'รอเริ่ม','prg.phase.panel':'อ่านรายศาสตร์','prg.phase.judge':'หลอมคำฟันธง','prg.phase.done':'เสร็จสิ้น','prg.phase.queued':'รอคิว' },
+        'prg.ok':'เสร็จ','prg.fail':'ไม่สำเร็จ','prg.skipped':'ข้าม','prg.running':'กำลังอ่าน','prg.queued':'รอคิว','prg.waitAnswer':'กำลังรอคำตอบ','prg.waitStart':'รอเริ่ม','prg.phase.panel':'อ่านรายศาสตร์','prg.phase.judge':'หลอมคำฟันธง','prg.phase.done':'เสร็จสิ้น','prg.phase.queued':'รอคิว',
+        'page.title':'ซินแส Fusion · hourkey','modal.aiTitle':'คำตอบ AI','chat.threadNote':'มีบริบทบทสนทนาเดิม {n} รอบสำหรับถามต่อ · คำตอบเก่าจะไม่แสดงจนกดโชว์จากประวัติ' },
       en:{ 'nav.master':'Master','nav.chart':'My Chart','nav.today':'Today','nav.datepick':'Date Pick','nav.fusion':'Fusion','hero.title':'6-Science Reading','hero.sub':'Fuse 6 astrological sciences · BaZi · Real-Star · Zi Wei · Western · Vedic · Uranian — each read by its own AI, then Claude synthesizes a verdict · single, pair or group of 3-4 charts.',
         'ask.title':'Ask','ask.mode':'Mode','ask.single':'Single','ask.pair':'Pair/Group','ask.profile':'Chart','ask.profile2':'2nd Chart','ask.profile3':'3rd Chart (optional)','ask.profile4':'4th Chart (optional)','ask.notUsed':'— not used —','ask.sciences':'Sciences (multi-select)','ask.lang':'Language','ask.question':'Question','ask.questionPh':'Ask the selected chart','ask.yamTotal':'Total','ask.clear':'Clear','ask.edit':'Edit','result.title':'Reading','read.back':'Back to reading','book.make':'📜 Create Book of Destiny','book.pickTitle':'📜 Create Book of Destiny','book.pickSub':'Pick the sciences to include · each chapter shows its natal chart','book.synth':'Synthesis chapter (needs 2+ sciences)','book.total':'Total','book.confirm':'Create book','book.cancel':'Cancel','book.noSci':'Pick at least 1 science','book.openExisting':'A book already exists — 📖 Open it (no charge)','book.chooseSelf':'Pick your chart first (book = single chart)','book.singleOnly':'Book supports a single chart — switch to Single mode first','book.creating':'⏳ Creating your book…',
         'soon':'soon','needTime':'needs birth time','tab.judge':'☆ Fusion (Judge)','run':'Run','noSci':'Pick at least 1 science','resultEmpty':'Pick mode, chart and sciences, then Run to see per-science readings + fusion verdict','running':'Reading each science...','skipPrefix':'Skipped (no birth time):','skipGroup':'BaZi does not support 3-4 chart group readings yet — excluded and not charged (single/pair only)','judgeTitle':'Fusion verdict (Claude Judge)','noJudge':'Select 2+ sciences to get a fusion verdict','needLogin':'Please log in to use Fusion','needYam':'Not enough yam','readyRun':'Ready','runningAsync':'⏳ Reading in progress (you can close this tab)','jobTimeout':'Reading timed out · please run again','jobError':'Reading failed','reconnecting':'📶 Network blip · reconnecting to your reading automatically, no need to re-ask...','resumeChecking':'Checking for a pending reading...','sessionLost':'Session lost · your reading is still running on the server; log in and come back',
@@ -1210,7 +1211,8 @@
         'st.done':'done','st.fail':'failed','st.degraded':'partial',
         'rcpt.ai':'{d}/{t} sciences read','rcpt.failN':'{n} failed','rcpt.time':'took {t}','rcpt.spent':'{n} 時 spent','snap.ver':'chart data version','snap.hash':'checksum','snap.profile':'chart used','fmt.sec':'{s}s','fmt.minsec':'{m}m {s}s',
         'proof.answers':'Per-science answers','proof.final':'Fusion verdict','proof.fallback':'⚠️ Fusion verdict failed — showing {m}’s answer instead','proof.noFinal':'⚠️ No fusion verdict this run (stopped before synthesis)','proof.failed':'⚠️ Failed to read: {list}','modal.close':'Close',
-        'prg.ok':'done','prg.fail':'failed','prg.skipped':'skipped','prg.running':'reading','prg.queued':'queued','prg.waitAnswer':'waiting for answer','prg.waitStart':'waiting to start','prg.phase.panel':'Reading each science','prg.phase.judge':'Fusing the verdict','prg.phase.done':'Done','prg.phase.queued':'Queued' },
+        'prg.ok':'done','prg.fail':'failed','prg.skipped':'skipped','prg.running':'reading','prg.queued':'queued','prg.waitAnswer':'waiting for answer','prg.waitStart':'waiting to start','prg.phase.panel':'Reading each science','prg.phase.judge':'Fusing the verdict','prg.phase.done':'Done','prg.phase.queued':'Queued',
+        'page.title':'Fusion Master · hourkey','modal.aiTitle':'AI answer','chat.threadNote':'This room carries {n} previous turns of context · older answers stay hidden until opened from history' },
       zh:{ 'nav.master':'命師','nav.chart':'我的命盤','nav.today':'今日','nav.datepick':'擇日','nav.fusion':'合參','hero.title':'六術合參','hero.sub':'融合六種術數 · 八字 · 七政四餘 · 紫微斗數 · 西洋占星 · 吠陀占星 · 天王星占星(漢堡學派) — 各術由專屬 AI 解讀，再由 Claude 綜合裁斷 · 單看、合盤或 3-4 盤群組。',
         'ask.title':'提問','ask.mode':'模式','ask.single':'單看','ask.pair':'合盤/群組','ask.profile':'命盤','ask.profile2':'第二命盤','ask.profile3':'第三命盤（可選）','ask.profile4':'第四命盤（可選）','ask.notUsed':'— 不使用 —','ask.sciences':'術數（可多選）','ask.lang':'語言','ask.question':'問題','ask.questionPh':'向所選命盤提問','ask.yamTotal':'合計','ask.clear':'清除','ask.edit':'修改','result.title':'論斷','read.back':'返回論斷','book.make':'📜 生成命書','book.pickTitle':'📜 生成命書','book.pickSub':'勾選要收錄的術數 · 每章附命盤圖','book.synth':'融合章（需選 2 術以上）','book.total':'合計','book.confirm':'生成命書','book.cancel':'取消','book.noSci':'至少選 1 術','book.openExisting':'已有命書 — 📖 開啟閱讀（不扣時數）','book.chooseSelf':'請先選擇命盤（命書＝單盤）','book.singleOnly':'命書僅支援單盤 — 請先切換為單看','book.creating':'⏳ 正在生成命書…',
         'soon':'即將推出','needTime':'需出生時間','tab.judge':'☆ 綜合 (裁斷)','run':'執行','noSci':'至少選 1 術','resultEmpty':'選擇模式、命盤與術數後執行，查看各術解讀與綜合裁斷','running':'正在逐術解讀...','skipPrefix':'已略過（無出生時間）：','skipGroup':'八字暫不支援 3-4 盤群組合參 — 已略過且不扣時數（僅單看/合盤）','judgeTitle':'綜合裁斷 (Claude Judge)','noJudge':'選 2 術以上才有綜合裁斷','needLogin':'請先登入以使用合參','needYam':'時數不足','readyRun':'就緒','runningAsync':'⏳ 正在批算中（可關閉頁面稍後再看）','jobTimeout':'批算逾時 · 請重新執行','jobError':'批算失敗','reconnecting':'📶 網路中斷 · 正在自動重新連回批算，無需重問...','resumeChecking':'正在檢查未完成的批算...','sessionLost':'登入已失效 · 批算仍在伺服器執行，重新登入後可查看',
@@ -1232,7 +1234,8 @@
         'st.done':'完成','st.fail':'失敗','st.degraded':'部分',
         'rcpt.ai':'已讀 {d}/{t} 術','rcpt.failN':'{n} 術失敗','rcpt.time':'耗時 {t}','rcpt.spent':'耗 {n} 時','snap.ver':'命盤資料版本','snap.hash':'校驗碼','snap.profile':'所用命盤','fmt.sec':'{s}秒','fmt.minsec':'{m}分{s}秒',
         'proof.answers':'各術答案','proof.final':'綜合裁斷','proof.fallback':'⚠️ 綜合裁斷失敗 — 改用 {m} 的答案','proof.noFinal':'⚠️ 本次無綜合裁斷（於融合前中止）','proof.failed':'⚠️ 解讀失敗：{list}','modal.close':'關閉',
-        'prg.ok':'完成','prg.fail':'失敗','prg.skipped':'略過','prg.running':'解讀中','prg.queued':'排隊中','prg.waitAnswer':'等待答案','prg.waitStart':'等待開始','prg.phase.panel':'逐術解讀','prg.phase.judge':'綜合裁斷中','prg.phase.done':'完成','prg.phase.queued':'排隊中' }
+        'prg.ok':'完成','prg.fail':'失敗','prg.skipped':'略過','prg.running':'解讀中','prg.queued':'排隊中','prg.waitAnswer':'等待答案','prg.waitStart':'等待開始','prg.phase.panel':'逐術解讀','prg.phase.judge':'綜合裁斷中','prg.phase.done':'完成','prg.phase.queued':'排隊中',
+        'page.title':'合參命師 · hourkey','modal.aiTitle':'AI 答案','chat.threadNote':'此房間帶有 {n} 輪先前對話脈絡 · 舊答案需從紀錄開啟才顯示' }
     };
     function t(key){ var d = I18N[state.locale] || I18N.th; return (d && d[key] != null) ? d[key] : (I18N.th[key] != null ? I18N.th[key] : key); }
     function applyI18n(){
@@ -1408,7 +1411,7 @@
       var turns = Math.floor(cleanLocalHistory(state.history).length / 2);
       var roomOn = typeof roomActive === 'function' && roomActive(); // r385: ห้องแชทโชว์ฟองเก่าเองแล้ว → ไม่ต้องมี note ซ้ำ
       els.chat.innerHTML = (turns && !roomOn)
-        ? '<div class="thread-note">มีบริบทบทสนทนาเดิม ' + turns + ' รอบสำหรับถามต่อ · คำตอบเก่าจะไม่แสดงจนกดโชว์จากประวัติ</div>'
+        ? '<div class="thread-note">' + esc(t('chat.threadNote').replace('{n}', turns)) + '</div>'
         : '';
       if (typeof renderChatRoom === 'function') renderChatRoom(); // r385: ทุกจุดที่บริบทเปลี่ยนอยู่แล้ว → ห้องตามทัน
     }
