@@ -20,7 +20,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { q, q1 } from "@/lib/db";
 import { ALL_MODULES, UNIVERSAL_MODULES, PERSONAL_MODULES } from "@/lib/luck-engine/types";
-import type { ModuleKey, ActivityType, CandidateSlot, ModuleResult, FunnelStats, SearchResponse, PersonProfile } from "@/lib/luck-engine/types";
+import type { ModuleKey, ActivityType, CandidateSlot, ModuleResult, VetoReason, FunnelStats, SearchResponse, PersonProfile } from "@/lib/luck-engine/types";
 import { combineScores, scoreToTier, tierToAction, TIER_LABELS } from "@/lib/luck-engine/combineScores";
 import { computeTianXing } from "@/lib/luck-engine/modules/tian-xing";
 import { computeDongGong, DONGGONG_ACTIVITY_ALIASES } from "@/lib/luck-engine/modules/dong-gong";
@@ -89,6 +89,60 @@ const SKY_MODULE_POLICY = "v1_sky_r372";
 const PT_MODULE_KEYS: ModuleKey[] = ["panchanga", "tara_bala"];
 const PT_MODULE_SET = new Set<ModuleKey>(PT_MODULE_KEYS);
 const PT_MODULE_POLICY = "v1_panchanga_r374";
+/* r417 · ยกเครื่องชั้นตัดสิน "ห้าม vs เลี่ยง" (เจ้านายเคาะ 5-6 ก.ค. 2569)
+   ทงซู 通書 (破日/黑道) + ตงกง 董公 (คำนวณใน dong-gong.ts) + ฉีเหมิน avoidDoors ราย
+   กิจกรรม = "ห้าม" (veto) — วันเสีย/ตำราห้ามเป็นสากลกับทุกคน → ตัดออกจากผลแนะนำจริง
+   ดวงบุคคล (ba_zi/yong_shen ชง/刑/害) = "เลี่ยง" เท่านั้น (cap/warning) ห้าม veto — ไม่แตะ
+   AUSPICIOUS_ACTIVITIES = กิจกรรมที่เลือกวันได้อิสระ (ทุกกิจกรรมยกเว้น 出行/求醫 ซึ่งเป็นงาน
+   จำเป็นที่มักถูกบังคับเวลาจากภายนอก จึงลดจาก veto → warning ให้ยังพอมีตัวเลือก) */
+const AUSPICIOUS_ACTIVITIES = new Set<ActivityType>(["立約", "動土", "搬家", "開市", "婚姻", "求財", "祭祀"]);
+/** 12神煞 黑道六神 (凶) · ตรงกับ SPIRIT_NATURE คะแนนต่ำใน tongshu-live.ts/build-ephemeris.cjs
+ *  ใช้ชื่อเทพตัดสิน (ไม่ใช้ threshold คะแนน) ให้ตรงตำรา — 勾陳 คะแนน 40 (ขอบ) ก็ยังเป็น黑道 */
+const HEIDAO_SPIRITS = new Set(["天刑", "朱雀", "白虎", "天牢", "玄武", "勾陳"]);
+
+/** r417 · เติม veto ลง ModuleResult (สำเนาใหม่ ห้าม mutate ของเดิม — อาจ share reference จาก cache) */
+function withVeto(mr: ModuleResult, v: Omit<VetoReason, "source">): ModuleResult {
+  return { ...mr, veto: [...(mr.veto || []), v] };
+}
+
+/** r417 · ทงซู 通書 ระดับ "ห้าม": วัน破 (建除) + ยาม黑道 (12神煞) กับกิจกรรมมงคล → veto
+ *  出行/求醫 (ไม่อยู่ใน AUSPICIOUS_ACTIVITIES) ไม่ veto (คงเป็น warning เดิมจาก OFFICER_BAD/SPIRIT_BAD)
+ *  อ่านค่าที่ module คำนวณไว้แล้วเท่านั้น (raw.officer/raw.spirit) — ไม่คำนวณใหม่ ไม่แตะ tyme4ts/cache
+ *  ทำงานเหมือนกันทั้ง path cache เดิม และ path TONGSHU_LIVE=1 (shape raw ตรงกันเป๊ะ) */
+function applyTongshuVeto(c: CandidateSlot, activity: ActivityType, activeModules: ModuleKey[]): CandidateSlot {
+  if (!AUSPICIOUS_ACTIVITIES.has(activity)) return c; // 出行/求醫 → warning เดิม ไม่แตะ
+  let modules = c.modules as any;
+  let changed = false;
+
+  if (activeModules.includes("twelve_officers")) {
+    const officer = modules?.twelve_officers as ModuleResult | undefined;
+    if (officer?.status === "ready" && officer.raw?.officer === "破") {
+      modules = { ...modules, twelve_officers: withVeto(officer, {
+        code: "TONGSHU_PO",
+        reasonTh: "วันนี้เป็นวัน破ตาม12建除 (通書) — ตำราห้ามใช้งานมงคลในวันนี้",
+        reasonEn: "This is a '破' (Po/Destruction) day per the twelve day-officers (Chinese almanac) — the classical text forbids auspicious activities today.",
+        reasonZh: "今日值十二建除之「破日」— 通書明文忌用於吉事",
+      }) };
+      changed = true;
+    }
+  }
+
+  if (activeModules.includes("twelve_spirits")) {
+    const spirit = modules?.twelve_spirits as ModuleResult | undefined;
+    const spiritName = spirit?.raw?.spirit as string | undefined;
+    if (spirit?.status === "ready" && spiritName && HEIDAO_SPIRITS.has(spiritName)) {
+      modules = { ...modules, twelve_spirits: withVeto(spirit, {
+        code: "TONGSHU_HEIDAO",
+        reasonTh: `ยามนี้ตรงกับ${spiritName} (ยามดำ 黑道) ตาม12神煞 (通書) — ไม่เหมาะกับงานมงคล`,
+        reasonEn: `This hour falls under ${spiritName} (a "Black Path"/inauspicious deity among the twelve day-spirits) — unsuitable for auspicious events per the almanac.`,
+        reasonZh: `本時值「${spiritName}」黑道凶神 — 通書忌用於吉事`,
+      }) };
+      changed = true;
+    }
+  }
+
+  return changed ? { ...c, modules } : c;
+}
 function cacheKey(body: any): string {
   const options = body.options || {};
   // r367: dong_gong module state + พิกัดงาน (ปัด 2 ตำแหน่ง) เข้า key — additive fields only
@@ -152,6 +206,8 @@ export async function POST(req: NextRequest) {
     const targetDirection = normalizeTargetDirection(options.targetDirection ?? options.target_direction ?? body.targetDirection ?? body.target_direction);
     /* r367: สถานที่จัดงาน · validate ฝั่ง server · invalid → fallback กรุงเทพ + note ใน meta (ไม่ 400) */
     const eventLocation = normalizeEventLocation(options);
+    /* r417: ผ่อนเกณฑ์ประตูฉีเหมิน avoidDoors จาก veto → กลับไปเป็น cap/warning เดิม (default false = veto ตามมาตรฐานใหม่) */
+    const relaxDoors = options.relaxDoors === true;
 
     /* 1 มิ.ย. ปิด IDOR: ถ้าผูกดวงส่วนตัว (peopleIds) ต้อง login + กรองเหลือเฉพาะดวงใน org ตัวเอง (กันดึง/อ่าน cache ดวงคนอื่น) · ค้นฤกษ์ universal (ไม่มี peopleIds) ยังเปิด guest */
     let ownedPeopleIds: string[] = peopleIds;
@@ -249,14 +305,17 @@ export async function POST(req: NextRequest) {
     /* r374 phase-3: ปัญจางค์+ตาราพละ — แนบจุดเดียวกับ sky · caps ไหลผ่าน combineScores + enforceSkyCaps
        module ปิดทั้งคู่ = ไม่แนบ = zero-effect (candidates byte-identical เดิม · regression r372 ต้องผ่าน) */
     const ptModulesActive = activeModuleKeys.filter((m: ModuleKey) => PT_MODULE_SET.has(m));
-    const enriched = candidates
+    const scoredAll = candidates
       .map(c => applyMonthDayShaRuntime(c, resolvedActivityType, targetDirection))
       .map(c => applyTianXing(c, activeModuleKeys, eventLocation))
       .map(c => applyDongGongModule(c, dongGongModuleActive, resolvedActivityType))
       .map(c => applySkyModules(c, skyModulesActive, resolvedActivityType, eventLocation))
       .map(c => applyPanchangaModules(c, ptModulesActive, resolvedActivityType, customer))
+      /* r417: ทงซู破日/黑道 = "ห้าม" กับกิจกรรมมงคล → veto ก่อน combineScores (activeModules
+         gate เดียวกับ module อื่น ๆ · 出行/求醫 ข้ามฟังก์ชันนี้ทั้งหมด ไม่มีผล) */
+      .map(c => applyTongshuVeto(c, resolvedActivityType, activeModuleKeys))
       .map(c => enrichCandidate(c, baseScoreModules, resolvedActivityType))
-      .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys, targetDirection))
+      .map(c => applyActivityProfileRules(c, activityProfile, activeModuleKeys, targetDirection, relaxDoors))
       .map(c => applyQimenGenericGuard(c, activityProfile, activeModuleKeys))
       .map(c => dongGongModuleActive
         ? applyDongGongBoost(c)
@@ -266,10 +325,26 @@ export async function POST(req: NextRequest) {
       .map(c => enforceSkyCaps(c, ptModulesActive))
       .map(c => hideDongGongWhenInactive(c, activeModuleKeys))
       .map(c => ptModulesActive.length ? attachAgreement(c) : c)
-      .map(refreshCandidateDisplay)
+      .map(refreshCandidateDisplay);
+
+    /* r417: ระดับ "ห้าม" (veto) แยกออกจาก candidates แนะนำจริง → cutSlots (ยังส่งกลับให้อธิบายได้)
+       ระดับ "เลี่ยง" (caps/warnings ทั่วไป · ดวงบุคคล) ยังอยู่ใน candidates ตามคะแนนปกติ (ไม่ตัด) */
+    const vetoedAll = scoredAll.filter(c => ((c.scoring as any)?.vetoes?.length ?? 0) > 0);
+    const passableAll = scoredAll.filter(c => ((c.scoring as any)?.vetoes?.length ?? 0) === 0);
+
+    const enriched = passableAll
       .filter(c => !options.minScore || (c.scoring?.finalScore ?? 0) >= options.minScore)
       .sort((a, b) => (b.scoring?.finalScore ?? 0) - (a.scoring?.finalScore ?? 0))
       .slice(0, options.limit ?? 50);
+
+    const cutSlots = vetoedAll
+      .sort((a, b) => (b.scoring?.finalScore ?? 0) - (a.scoring?.finalScore ?? 0))
+      .slice(0, options.limit ?? 50)
+      .map(c => ({ ...c, vetoes: (c.scoring as any)?.vetoes || [] } as any));
+
+    const allCut = enriched.length === 0 && cutSlots.length > 0;
+
+    (funnelStats as any).vetoCut = vetoedAll.length;
 
     /* r367: ยามคาบเส้น ณ สถานที่งาน · เฉพาะ top results (perf) · แจ้งเตือนอย่างเดียว ห้ามแตะคะแนน */
     attachTstBoundaryWarnings(enriched, eventLocation);
@@ -286,6 +361,9 @@ export async function POST(req: NextRequest) {
 
     const response: SearchResponse = {
       candidates: enriched,
+      /* r417: slot ที่โดน veto (ทงซู破日/黑道·ตงกง大凶/忌·ฉีเหมิน avoidDoors) — ไม่เข้า list แนะนำ */
+      cutSlots,
+      allCut,
       funnelStats,
       meta: {
         durationMs, cacheHits, cacheMisses, cache: 'miss',
@@ -311,6 +389,8 @@ export async function POST(req: NextRequest) {
         hardModules,
         sqlHardModules,
         mergedHardModules,
+        /* r417: ผ่อนเกณฑ์ประตูฉีเหมิน avoidDoors หรือไม่ (default false = veto ตามมาตรฐานใหม่) */
+        relaxDoors,
       } as any,
     };
     // Save cache + evict ถ้าเกิน 1000 entries
@@ -1351,6 +1431,9 @@ function applyQimenActivityPreference(input: {
   addDown: (code: string, thai: string, delta: number, source: ModuleKey) => boolean;
   cap: (value: number, code: string, thai: string, source: ModuleKey) => void;
   shiftScore: (delta: number) => void;
+  /* r417: ประตูใน avoidDoors ของกิจกรรมนั้น = "ห้าม" default (veto) · relaxDoors:true = ผ่อนกลับเป็น cap/warning เดิม */
+  relaxDoors: boolean;
+  addVeto: (v: { code: string; reasonTh: string; reasonEn: string; reasonZh: string; source: ModuleKey }) => void;
 }) {
   const pref = QIMEN_ACTIVITY_PREFERENCES[input.profile.qimenPurpose];
   if (!pref || !input.qm || input.qm.status === "missing" || input.qm.status === "error") return;
@@ -1405,6 +1488,17 @@ function applyQimenActivityPreference(input: {
       "qi_men",
     );
     avoidDoorCap = input.profile.safety === "medical_safe" ? Math.min(pref.avoidDoorCap, 39) : pref.avoidDoorCap;
+    /* r417: ประตูร้ายของกิจกรรมนี้ (avoidDoors) = "ห้าม" default → veto (ไม่ต้องติ๊ก qm-strict)
+       relaxDoors:true (option ผ่อนเกณฑ์ ไว้ให้ UI ภายหลัง) = กลับไปเป็นแค่ cap/warning เดิม */
+    if (!input.relaxDoors) {
+      input.addVeto({
+        code: "QIMEN_AVOID_DOOR",
+        reasonTh: `${input.profile.labelTh}: ประตูฉีเหมิน ${qimenLabel(door)} เป็นประตูต้องห้ามของกิจกรรมนี้ตามตำรา — ตัดออกจากฤกษ์แนะนำ`,
+        reasonEn: `${input.profile.labelTh}: the Qi Men door ${qimenLabel(door)} is classically forbidden for this activity — excluded from recommended timings.`,
+        reasonZh: `${input.profile.labelZh}：奇門「${qimenLabel(door)}」為本活動之忌門 — 不列入推薦吉時`,
+        source: "qi_men",
+      });
+    }
   }
   if (deity && pref.goodDeities?.includes(deity)) {
     delta += 1;
@@ -1491,6 +1585,7 @@ function applyActivityProfileRules(
   profile: ActivityProfile | null,
   activeModules: ModuleKey[],
   targetDirection: Dir8 | null = null,
+  relaxDoors: boolean = false,
 ): CandidateSlot {
   if (!profile || !c.scoring) return c;
 
@@ -1502,6 +1597,13 @@ function applyActivityProfileRules(
     if (scoring.warnings.some((r: any) => r.code === code)) return false;
     scoring.warnings.push({ code, thai, delta, source, severity: "warning" });
     return true;
+  };
+  /* r417: ฉีเหมิน avoidDoors veto ต่อกับ scoring.vetoes เดียวกับที่ combineScores รวมจาก module.veto
+     (dedupe ด้วย code เหมือน addUp/addDown/addWarning ข้างบน) */
+  const addVeto = (v: { code: string; reasonTh: string; reasonEn: string; reasonZh: string; source: ModuleKey }) => {
+    scoring.vetoes = scoring.vetoes || [];
+    if (scoring.vetoes.some((x: any) => x.code === v.code)) return;
+    scoring.vetoes.push(v);
   };
   const addDown = (code: string, thai: string, delta: number, source: ModuleKey) => {
     scoring.reasonsDown = scoring.reasonsDown || [];
@@ -1532,7 +1634,7 @@ function applyActivityProfileRules(
   const ys = modules?.yong_shen;
 
   if (active.has("qi_men") && qimenModuleScoreAllowed(qm)) {
-    applyQimenActivityPreference({ profile, qm, targetDirection, addUp, addDown, cap, shiftScore });
+    applyQimenActivityPreference({ profile, qm, targetDirection, addUp, addDown, cap, shiftScore, relaxDoors, addVeto });
   }
   if (active.has("qi_men") && qimenModuleScoreAllowed(qm) && (qm?.pass === false || qm?.raw?.bad_door === true)) {
     const limit = profile.safety === "medical_safe" ? 39 : 54;

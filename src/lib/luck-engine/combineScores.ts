@@ -22,6 +22,7 @@ import type {
   ActionRecommendation,
   Reason,
   CapRule,
+  VetoReason,
   ActivityType
 } from "./types";
 
@@ -45,6 +46,9 @@ export function combineScores(
   const reasonsDown: Reason[] = [];
   const warnings: Reason[] = [];
   const caps: CapRule[] = [];
+  // r417: ระดับ "ห้าม" · รวมจาก module.veto ของทุก active module (dong_gong/twelve_officers/
+  // twelve_spirits ฯลฯ) — ห้ามมีจาก module ดวงบุคคล (ba_zi/yong_shen ไม่ set .veto อยู่แล้ว)
+  const vetoes: VetoReason[] = [];
 
   for (const key of activeModules) {
     const result = modules[key];
@@ -66,6 +70,11 @@ export function combineScores(
     // Collect caps
     if (result.caps) {
       caps.push(...result.caps);
+    }
+
+    // Collect vetoes (r417 · source เติมจาก key ของ module ถ้า module ไม่ได้ระบุเอง)
+    if (result.veto?.length) {
+      for (const v of result.veto) vetoes.push({ source: key, ...v });
     }
   }
 
@@ -105,7 +114,8 @@ export function combineScores(
     reasonsUp: reasonsUp.sort(sortByImpact).slice(0, 8),
     reasonsDown: reasonsDown.sort(sortByImpact).slice(0, 8),
     warnings: warnings.sort(sortByImpact),
-    caps
+    caps,
+    vetoes
   };
 }
 

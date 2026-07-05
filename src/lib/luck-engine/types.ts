@@ -66,6 +66,28 @@ export type CapRule = {
 };
 
 // =====================================================================
+// VETO · ระดับ "ห้าม" (r417 ยกเครื่องชั้นตัดสิน: ห้าม vs เลี่ยง)
+// =====================================================================
+// หลักการ (เจ้านายเคาะ 5-6 ก.ค. 2569): ทงซู 通書 + ตงกง 董公 (+ ฉีเหมิน avoidDoors ราย
+// กิจกรรม) = "ห้าม" — วันเสีย/ตำราห้ามเป็นสากลกับทุกคน → ตัดออกจากผลแนะนำจริง (ไม่ใช่แค่
+// หักคะแนนแล้วถัวเฉลี่ย) · ดวงบุคคล (ชง/刑/害 กับดวงผู้ใช้ · ba_zi/yong_shen) = "เลี่ยง"
+// เท่านั้น (เตือน+หักคะแนน) ห้าม veto — ดูดวงบุคคลไม่ใช่กฎสากล
+// module ใส่ .veto ได้หลายรายการ (เช่น ตงกงวันเดียวกัน 大凶 พร้อม 忌 ตรงกิจกรรม)
+// combineScores() รวบรวม .veto ของทุก active module → ScoringResult.vetoes
+export type VetoReason = {
+  /** Unique code · e.g. "DONGGONG_DAXIONG", "TONGSHU_PO", "QIMEN_AVOID_DOOR" */
+  code: string;
+  /** เหตุผลไทย · แสดงลูกค้า */
+  reasonTh: string;
+  /** เหตุผลอังกฤษ */
+  reasonEn: string;
+  /** เหตุผลจีน (อ้างอิงตำรา) */
+  reasonZh: string;
+  /** Module ต้นเหตุ · combineScores เติมให้อัตโนมัติถ้า module ไม่ได้ระบุ */
+  source?: ModuleKey;
+};
+
+// =====================================================================
 // MODULE RESULT · ทุกศาสตร์ return shape นี้
 // =====================================================================
 
@@ -104,6 +126,11 @@ export type ModuleResult = {
 
   /** Optional caps */
   caps?: CapRule[];
+
+  /** ระดับ "ห้าม" (r417) · มีรายการ = ตำราห้ามกิจกรรมนี้ตรง ๆ → route.ts ตัดออกจากผลแนะนำ
+   *  (ส่งไป cutSlots แทน) · ต่างจาก caps/reasons ที่แค่หักคะแนน · ห้ามใช้กับ module ดวงบุคคล
+   *  (ba_zi/yong_shen) — ดวงบุคคลใช้ caps/warning เท่านั้นตามหลักชั้นตัดสิน */
+  veto?: VetoReason[];
 
   /** Confidence 0-1 · ลดลงถ้าข้อมูลไม่ครบ */
   confidence: number;
@@ -281,6 +308,10 @@ export type ScoringResult = {
 
   /** Caps applied */
   caps: CapRule[];
+
+  /** ระดับ "ห้าม" ที่รวมจากทุก active module (r417) · length > 0 = route.ts ตัดออกจาก
+   *  ผลแนะนำ (candidates) → ย้ายไป cutSlots แทน · เสมอเป็น array (ว่างได้ ไม่ undefined) */
+  vetoes: VetoReason[];
 };
 
 export type ScoreTier =
@@ -355,11 +386,18 @@ export type SearchRequest = {
     limit?: number;            // top N · default 50
     minScore?: number;         // exclude score ต่ำกว่า
     includeRaw?: boolean;      // include raw module data
+    /** r417: ผ่อนเกณฑ์ประตูฉีเหมิน avoidDoors จาก veto → warning/cap (default false = veto) */
+    relaxDoors?: boolean;
   };
 };
 
 export type SearchResponse = {
   candidates: CandidateSlot[];
+  /** r417: slot ที่โดน veto (ตงกง/ทงซู/ฉีเหมิน avoidDoors) · โครงเดียวกับ candidates
+   *  แต่ไม่เข้า list แนะนำจริง · จำกัดจำนวนตาม limit เดียวกัน */
+  cutSlots: CandidateSlot[];
+  /** r417: true ถ้า veto ตัดจนไม่เหลือ candidate แนะนำเลย (แต่ cutSlots ยังส่งให้อธิบายได้) */
+  allCut: boolean;
   funnelStats: FunnelStats;
   meta: {
     durationMs: number;
