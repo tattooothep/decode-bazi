@@ -89,6 +89,8 @@ const nextConfig: NextConfig = {
       "/yongshen-method",
       "/account",
       "/account.html",
+      "/pricing",
+      "/pricing.html",
       "/article/geometry",
       "/article-geometry.html",
     ];
@@ -133,6 +135,7 @@ const nextConfig: NextConfig = {
       { source: "/forecast", destination: "/forecast.html" },
       { source: "/divine", destination: "/forecast.html" },
       { source: "/account", destination: "/account.html" },
+      { source: "/pricing", destination: "/pricing.html" }, // 5 ก.ค. r409 · หน้าราคา/แพ็กเกจ (แยกจาก account · wire /api/payment/create)
       // 17 พ.ค. · อาเจ๊กฮ้ง 4 หน้าใหม่ + 3 หน้าผม
       // 5 ก.ค. · retire 3 หน้าไม่ใช้แล้ว (compass/compass-studio/fengshui-pro) → ชี้ไป /fengshui (ไฟล์เดิมเก็บไว้ · กู้คืนได้)
       { source: "/compass", destination: "/fengshui.html" },

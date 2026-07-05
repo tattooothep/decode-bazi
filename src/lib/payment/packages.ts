@@ -45,23 +45,43 @@ export const PACKAGES: Record<string, PackageDef> = {
     yam: 1700,
     name: { th: "1,700 ยาม", en: "1,700 credits", zh: "1,700 時" },
   },
+  // ── Premium ──────────────────────────────────────────────
+  premium_1m: {
+    code: "premium_1m",
+    kind: "subscription",
+    price_thb: 399,
+    yam: 500,
+    tier: "premium",
+    days: 30,
+    name: { th: "Premium รายเดือน", en: "Premium monthly", zh: "賢者月費" },
+  },
   premium_1y: {
     code: "premium_1y",
     kind: "subscription",
-    price_thb: 599,
-    yam: 120,
+    price_thb: 3990, // = 10 เดือน (แถม 2 เดือน)
+    yam: 500, // ยามเริ่มต้น · เติมรายเดือน = เฟส 2 (tier refill cron)
     tier: "premium",
     days: 365,
-    name: { th: "Premium 1 ปี", en: "Premium 1 year", zh: "賢者一年" },
+    name: { th: "Premium รายปี", en: "Premium annual", zh: "賢者年費" },
+  },
+  // ── Master ───────────────────────────────────────────────
+  master_1m: {
+    code: "master_1m",
+    kind: "subscription",
+    price_thb: 990,
+    yam: 2000,
+    tier: "master",
+    days: 30,
+    name: { th: "Master รายเดือน", en: "Master monthly", zh: "大師月費" },
   },
   master_1y: {
     code: "master_1y",
     kind: "subscription",
-    price_thb: 5990,
-    yam: 1200,
+    price_thb: 9900, // = 10 เดือน (แถม 2 เดือน)
+    yam: 2000, // ยามเริ่มต้น · เติมรายเดือน = เฟส 2
     tier: "master",
     days: 365,
-    name: { th: "Master 1 ปี", en: "Master 1 year", zh: "大師一年" },
+    name: { th: "Master รายปี", en: "Master annual", zh: "大師年費" },
   },
 };
 

@@ -199,6 +199,57 @@ td.st-name{text-align:left;}
 .pop .verify-badge{display:inline-block;background:var(--gold-soft);border:1px solid var(--gold-line);color:var(--gold);border-radius:8px;padding:6px 12px;font-size:11.5px;line-height:1.6;margin-bottom:10px;}
 
 .disc{font-size:11px;color:var(--fg-faint);font-style:italic;border-top:1px solid var(--line);padding-top:14px;margin-top:6px;line-height:1.7;}
+
+/* ── 刻 · หานาทีมงคล + ผังฉีเหมิน 8 ทิศ (additive · เข้าชุดธีม /tianxing) ── */
+.ms-intro{font-size:12.5px;color:var(--fg-soft);line-height:1.7;margin-bottom:12px;}
+.ms-run{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+.ms-btn{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--gold),var(--gold-deep));color:#160f04;border:none;border-radius:11px;padding:11px 18px;font-size:14px;font-weight:700;font-family:var(--th);cursor:pointer;transition:.2s;}
+.ms-btn:hover:not(:disabled){filter:brightness(1.08);}
+.ms-btn:disabled{opacity:.55;cursor:default;}
+.ms-btn .han{font-family:var(--tc);font-size:15px;}
+.ms-meta{font-size:11.5px;color:var(--fg-faint);}
+.ms-meta b{color:var(--gold);font-weight:700;}
+.ms-status{font-size:12.5px;color:var(--fg-soft);margin-top:10px;line-height:1.6;}
+.ms-list{display:grid;gap:14px;margin-top:14px;}
+.ms-hit{border:1px solid var(--line);border-radius:14px;padding:15px 16px;background:var(--bg-3);}
+.ms-hit.lv-top{border-color:var(--gold-line);background:var(--gold-soft);}
+.ms-hit.lv-good{border-color:rgba(127,168,105,.42);background:var(--ok-soft);}
+.ms-hit.lv-neutral{border-color:var(--line);background:var(--neu-soft);}
+.ms-hit.lv-bad{border-color:rgba(201,92,74,.4);background:var(--bad-soft);}
+.lv-bad .ms-lvtag{color:var(--bad);border-color:rgba(201,92,74,.55);}
+.ms-hit-head{display:flex;align-items:flex-start;gap:13px;}
+.ms-medal{font-size:26px;line-height:1;flex-shrink:0;}
+.ms-time{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--fg);letter-spacing:.02em;line-height:1.1;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.ms-lvtag{display:inline-block;border-radius:99px;padding:2px 11px;font-family:var(--th);font-size:11.5px;font-weight:700;border:1px solid;}
+.lv-top .ms-lvtag{color:var(--gold-bright);border-color:var(--gold);}
+.lv-good .ms-lvtag{color:var(--ok);border-color:rgba(127,168,105,.55);}
+.lv-neutral .ms-lvtag{color:var(--neu);border-color:var(--neu);}
+.ms-reason{font-size:12.5px;color:var(--fg-soft);margin-top:5px;line-height:1.6;}
+.ms-reason .tc{font-family:var(--tc);color:var(--gold);}
+.ms-reason .bd{color:var(--bad);}
+.ms-board{margin-top:13px;border-top:1px dashed var(--line);padding-top:12px;}
+.ms-board-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:var(--fg);margin-bottom:9px;}
+.ms-board-h .lg{font-size:10.5px;font-weight:400;color:var(--fg-faint);}
+.ms-board-load{font-size:11.5px;color:var(--fg-faint);}
+.ms-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+.ms-cell{border:1px solid var(--line);border-radius:10px;padding:9px 8px;background:var(--bg-2);display:flex;flex-direction:column;gap:4px;min-width:0;min-height:82px;}
+.ms-cell.good{border-color:rgba(127,168,105,.6);background:var(--ok-soft);}
+.ms-cell.bad{border-color:rgba(201,92,74,.55);background:var(--bad-soft);}
+.ms-cell.mid{border-color:var(--gold-line);background:var(--gold-soft);align-items:center;justify-content:center;text-align:center;}
+.ms-c-dir{display:flex;align-items:center;justify-content:space-between;gap:5px;font-size:11px;font-weight:700;color:var(--fg);line-height:1.15;}
+.ms-c-dir .tc{font-family:var(--tc);font-size:14px;color:var(--gold);white-space:nowrap;}
+.ms-c-door{font-size:10.5px;font-weight:700;line-height:1.2;}
+.good .ms-c-door{color:var(--ok);} .bad .ms-c-door{color:var(--bad);} .mid .ms-c-door{color:var(--gold);}
+.ms-cell:not(.good):not(.bad):not(.mid) .ms-c-door{color:var(--gold);}
+.ms-c-door .tc{font-family:var(--tc);}
+.ms-c-adv{font-size:9.5px;line-height:1.35;color:var(--fg-faint);overflow-wrap:anywhere;}
+.ms-reco{margin-top:11px;font-size:12px;line-height:1.65;color:var(--fg-soft);}
+.ms-reco b{color:var(--ok);font-weight:700;} .ms-reco .bd{color:var(--bad);}
+.ms-foot{margin-top:10px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--fg-faint);text-transform:uppercase;line-height:1.6;}
+.ms-empty{padding:15px;border:1px dashed var(--gold-line);border-radius:11px;font-size:12.5px;color:var(--fg-soft);text-align:center;margin-top:12px;}
+@media(max-width:560px){
+  .ms-time{font-size:21px;} .ms-c-adv{display:none;} .ms-cell{min-height:64px;}
+}
 @media(max-width:560px){
   .card{padding:16px;border-radius:13px;}
   .hero{padding:28px 14px 22px;}
@@ -294,6 +345,19 @@ td.st-name{text-align:left;}
     <div class="tbl-note" id="tblNote"></div>
   </section>
 
+  <!-- E.5 · หานาทีมงคล + ผังฉีเหมิน 8 ทิศ -->
+  <section class="card" id="msCard">
+    <div class="eyebrow"><span class="han">刻</span><span class="lbl" data-t="ms_h">หานาทีมงคล + ผังทิศ</span><span class="en">Auspicious minute · 時家奇門</span></div>
+    <p class="ms-intro" data-t="ms_intro">สแกนทั้งวันของฤกษ์นี้ทีละ刻 หาช่วง "นาทีมงคล" จากลัคนา (命宮) + 用神 แล้วโชว์ผังฉีเหมิน 8 ทิศของช่วงนั้น — ทิศเขียวไปได้ ทิศแดงเลี่ยง</p>
+    <div class="ms-run">
+      <button class="ms-btn" id="msBtn"><span class="han">尋刻</span><span data-t="ms_scan">สแกนหานาทีมงคลของวันนี้</span></button>
+      <span class="ms-meta" id="msMeta"></span>
+    </div>
+    <div class="ms-status" id="msStatus"></div>
+    <div class="ms-list" id="msList"></div>
+    <div class="ms-foot" id="msFoot" style="display:none"></div>
+  </section>
+
   <!-- F · ซินแส -->
   <section class="card">
     <button class="aibtn" id="aiBtn"><span class="han">問星師</span><span data-t="ai">ถามซินแสดาวจริง — สังเคราะห์ผังนี้ละเอียด</span></button>
@@ -335,6 +399,18 @@ th:{
   hp_p2:"ชั้นที่ 2 — การตีความ (廟旺 · 恩用仇難 · 格局): อิงตำรา果老星宗และตารางคลาสสิก ชั้นนี้กำลังทยอย verify กับซินแสทีละหมวด — จุดที่ยังไม่ lock สำนัก (เช่น 紫氣) จะระบุไว้ชัดเจนในหน้า",
   hp_p3:"ผลหน้านี้ใช้เสริมฤกษ์จาก黃曆ในหน้าวางฤกษ์ ไม่เข้าคะแนนหลัก และไม่ฟันธงแทนดุลยพินิจของท่าน",
   hp_ok:"เข้าใจแล้ว",
+  ms_h:"หานาทีมงคล + ผังทิศ",
+  ms_intro:"สแกนทั้งวันของฤกษ์นี้ทีละ刻 หาช่วง \"นาทีมงคล\" จากลัคนา (命宮) + 用神 แล้วโชว์ผังฉีเหมิน 8 ทิศของช่วงนั้น — ทิศเขียวไปได้ ทิศแดงเลี่ยง",
+  ms_scan:"สแกนหานาทีมงคลของวันนี้",ms_rescan:"สแกนใหม่",ms_scanning:"กำลังสแกนทั้งวันทีละ刻…",
+  ms_none:"ทั้งวันแรงใกล้เคียงกัน ไม่มีนาทีที่เด่นชัด — ลองปรับสถานที่หรือวัน",
+  ms_needdate:"เลือกวัน-เวลา หรือส่งฤกษ์จากหน้าวางฤกษ์เข้ามาก่อน จึงสแกนได้",
+  ms_fail:"สแกนไม่สำเร็จ — ลองใหม่อีกครั้ง",
+  ms_scanned:"สแกน",ms_points:"จุด",ms_forday:"ของวัน",
+  ms_boardH:"8 ทิศช่วงนี้",ms_boardLg:"เขียว=ประตูมงคล · แดง=เลี่ยง · กลาง=中宮",
+  ms_boardLoad:"อ่านผังทิศ…",ms_boardFail:"ผังทิศยามนี้ยังไม่พร้อม (แสดงเฉพาะนาทีมงคล)",
+  ms_recoGood:"เหมาะไปทาง / เจรจา / เริ่มงาน",ms_recoBad:"เลี่ยงทาง",
+  ms_border:"⚠ ลัคนาคาบขอบราศี — ใช้ประกอบ ไม่ฟันธง",
+  ms_foot:"ที่มา: ลัคนา七政四餘 (ดาราศาสตร์จริง) + ผังฉีเหมินยาม 時家奇門 · ระดับชั่วยาม · ไม่รวมดวงส่วนตัว · ทุกคนที่พิกัด+เวลาเดียวกันเห็นเหมือนกัน",
   disc:"การอ่านนี้ใช้ตำแหน่งดาวจริงบนฟ้า (七政四餘) เสริมการเลือกฤกษ์จาก黃曆 — เป็นแนวทางตามตำราโบราณ มีหลายสำนักและการตีความต่างกันได้ ไม่ใช่คำพยากรณ์ตายตัว และไม่ใช้แทนคำแนะนำทางการแพทย์ การเงิน หรือกฎหมาย"
 },
 en:{
@@ -353,6 +429,18 @@ en:{
   hp_p2:"Layer 2 — interpretation (dignity, four relations, patterns): based on the Guolao Xingzong canon and classical tables. This layer is being verified with masters section by section — anything not yet locked to a school (e.g. 紫氣) is labeled on the page.",
   hp_p3:"This page complements the almanac score in datepick. It does not enter the main score and never replaces your own judgment.",
   hp_ok:"Got it",
+  ms_h:"Find the auspicious minute + direction board",
+  ms_intro:"Scan the whole day of this moment quarter-hour by quarter-hour, find the \"auspicious minutes\" from the ascendant (命宮) + chart ruler, then show the 8-direction Qi Men board for that window — green = go, red = avoid.",
+  ms_scan:"Scan this day for auspicious minutes",ms_rescan:"Scan again",ms_scanning:"Scanning the whole day, quarter by quarter…",
+  ms_none:"The whole day reads about the same — no standout minute. Try a different place or date.",
+  ms_needdate:"Pick a date-time, or pass a moment from the date-selection page first.",
+  ms_fail:"Scan failed — please try again.",
+  ms_scanned:"Scanned",ms_points:"points",ms_forday:"for",
+  ms_boardH:"8 directions this window",ms_boardLg:"green = auspicious gate · red = avoid · center = 中宮",
+  ms_boardLoad:"Reading direction board…",ms_boardFail:"Direction board not available for this hour (showing the minute only)",
+  ms_recoGood:"Favor these / negotiate / start",ms_recoBad:"Avoid",
+  ms_border:"⚠ Ascendant on a sign border — use as guidance, not a decree",
+  ms_foot:"Source: 七政四餘 ascendant (real astronomy) + hour Qi Men chart 時家奇門 · hour-level · personal chart not included · same for everyone at the same place & time",
   disc:"This reading uses real star positions (七政四餘) to complement almanac-based selection — a traditional framework; schools differ in interpretation. Not a fixed prediction, and no substitute for medical, financial or legal advice."
 },
 zh:{
@@ -371,6 +459,18 @@ zh:{
   hp_p2:"第二層 — 論斷（廟旺 · 恩用仇難 · 格局）：依果老星宗與古典星表。此層正逐項與命師核證 — 未定派之處（如紫氣）頁內明示。",
   hp_p3:"本頁輔助擇日頁之黃曆分數，不計入主分，亦不代替閣下判斷。",
   hp_ok:"明白",
+  ms_h:"尋吉刻 + 八方盤",
+  ms_intro:"就此時刻之整日逐刻掃描，依命宮與用神尋「吉刻」，再顯示該時段之時家奇門八方盤 — 綠可往、紅宜避。",
+  ms_scan:"掃描本日吉刻",ms_rescan:"重新掃描",ms_scanning:"逐刻掃描整日中…",
+  ms_none:"整日之勢相近，無特別突出之刻 — 可換地點或日期再試。",
+  ms_needdate:"請先擇日期時間，或由擇日頁傳入時刻。",
+  ms_fail:"掃描失敗 — 請重試。",
+  ms_scanned:"已掃描",ms_points:"點",ms_forday:"日期",
+  ms_boardH:"此時段八方",ms_boardLg:"綠＝吉門 · 紅＝宜避 · 中＝中宮",
+  ms_boardLoad:"讀取方位盤…",ms_boardFail:"此時方位盤暫不可用（僅顯示吉刻）",
+  ms_recoGood:"宜往 / 洽談 / 開始",ms_recoBad:"宜避",
+  ms_border:"⚠ 命宮近宮界 — 供參，不定斷",
+  ms_foot:"來源：七政四餘命宮（真實天文）＋ 時家奇門盤 · 時辰層級 · 不含個人命盤 · 同地同時所見相同",
   disc:"本讀以真實星象（七政四餘）輔助黃曆擇日 — 傳統之學，各派解讀有異，非定命之辭，不替代醫療、財務或法律建議。"
 }
 };
@@ -429,6 +529,7 @@ function applyLang(){
   document.querySelectorAll("#langSeg button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
   renderHeader();
   if(window._last){render(window._last);}else{drawWheel(null);}
+  if(window.__renderMinuteScan)window.__renderMinuteScan();
 }
 document.getElementById("langSeg").addEventListener("click",e=>{
   const b=e.target.closest("button[data-lang]");if(!b)return;
@@ -818,6 +919,140 @@ document.getElementById("aiBtn").onclick=async function(){
   if(!res.ok){out.textContent=(LANG==="th"?"ผิดพลาด: ":"Error: ")+(res.error||"");btn.disabled=false;return;}
   out.textContent=res.reply;btn.disabled=false;
 };
+
+/* ═══════════ 刻 · หานาทีมงคล + ผังฉีเหมิน 8 ทิศ (additive · reuse qizheng+/api/qimen) ═══════════
+   deterministic scan ฝั่ง backend (/api/tianxing/minute-scan) · ผัง 8 ทิศดึงจาก /api/qimen (時家)
+   degrade เงียบ: qimen ล่ม → โชว์เฉพาะนาทีมงคล · ไม่มีพิกัด/วัน → บอกตรง ๆ */
+(function(){
+  var msState = { data:null, date:"", lat:null, lng:null, qimen:{}, qByShichen:{}, statusKey:"" };
+  function L(k){ var o=I18N[LANG]; return (o&&o[k])||I18N.th[k]||""; }
+  /* ทิศ 8 + กลาง (ชุดเดียวกับหน้า today · คน familiar) */
+  var DIR = {
+    N:{th:'เหนือ',en:'North',zh:'北'}, S:{th:'ใต้',en:'South',zh:'南'},
+    E:{th:'ตะวันออก',en:'East',zh:'東'}, W:{th:'ตะวันตก',en:'West',zh:'西'},
+    NE:{th:'ตะวันออกเฉียงเหนือ',en:'Northeast',zh:'東北'}, NW:{th:'ตะวันตกเฉียงเหนือ',en:'Northwest',zh:'西北'},
+    SE:{th:'ตะวันออกเฉียงใต้',en:'Southeast',zh:'東南'}, SW:{th:'ตะวันตกเฉียงใต้',en:'Southwest',zh:'西南'},
+    C:{th:'กลาง',en:'Center',zh:'中'}
+  };
+  function dirLabel(code){ var o=DIR[code]; return o?(o[LANG]||o.th):(code||''); }
+  var GRID_ORDER = ['NW','N','NE','W','C','E','SW','S','SE'];
+  var GOOD_DOORS = {'開門':1,'休門':1,'生門':1}, NEUTRAL_DOORS = {'景門':1};
+  function doorClass(zh){ if(GOOD_DOORS[zh])return 'good'; if(NEUTRAL_DOORS[zh])return ''; return 'bad'; }
+  function pick(p, base){ return p[base+'_'+LANG] || p[base+'_th'] || ''; }
+  function shichenKey(hh){ return Math.floor(((hh+1)%24)/2); }
+  function levelKey(s){ return s>=4?'top':s>=2?'good':s>=0?'neutral':'bad'; }
+
+  function scanDate(){
+    var dv=document.getElementById('mDate').value;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(dv))return dv;
+    try{ return new Date(Date.now()+7*3600000).toISOString().slice(0,10); }catch(e){ return ""; }
+  }
+  function composeReason(h){
+    var lang=LANG;
+    var sg = lang==='zh'? h.ascSignZh : lang==='en'? ((SIGNS_L[h.ascSign]&&SIGNS_L[h.ascSign].en)||h.ascSignTh) : h.ascSignTh;
+    var yn = lang==='en'? (STAR_EN[h.yongKey]||h.yongTh) : lang==='zh'? h.yongZh : h.yongTh;
+    var ascLbl = lang==='zh'?'命宮':lang==='en'?'Asc':'ลัคนา';
+    var ascTxt = esc(ascLbl)+' '+esc(sg)+' '+Number(h.ascDeg).toFixed(1)+'°';
+    var yongTxt = '<span class="tc">用神</span> '+esc(yn)+' '+esc(statusLabel(h.yongStatus,lang))+' <span style="opacity:.6">'+esc(h.yongStatus)+'</span>';
+    var border = h.atBorder? ' · <span class="bd">'+esc(L('ms_border'))+'</span>' : '';
+    return ascTxt+' · '+yongTxt+border;
+  }
+  function boardHtml(time){
+    var q=msState.qimen[time];
+    var head='<div class="ms-board-h"><span>'+esc(L('ms_boardH'))+' <span class="tc">時家奇門</span></span><span class="lg">'+esc(L('ms_boardLg'))+'</span></div>';
+    if(q===undefined||q==='loading') return '<div class="ms-board">'+head+'<div class="ms-board-load">'+esc(L('ms_boardLoad'))+'</div></div>';
+    if(q==='fail') return '<div class="ms-board">'+head+'<div class="ms-board-load">'+esc(L('ms_boardFail'))+'</div></div>';
+    var palaces=q.palaces, greens=[], reds=[];
+    palaces.forEach(function(p){ if(p.direction==='C')return; var c=doorClass(p.door_zh); if(c==='good')greens.push(p); else if(c==='bad')reds.push(p); });
+    var cells=GRID_ORDER.map(function(code){
+      var p=palaces.find(function(x){return x.direction===code;});
+      if(!p)return '<div class="ms-cell"></div>';
+      var isC=code==='C';
+      var cls=isC?'mid':doorClass(p.door_zh);
+      var tri=p.trigram_zh||'';
+      var dn=p.door_name_th?pick(p,'door_name'):'';
+      var adv=isC?'中宮':(pick(p,'door_action_advice')||'');
+      return '<div class="ms-cell '+cls+'">'
+        +'<div class="ms-c-dir">'+esc(dirLabel(code))+' <span class="tc">'+esc(tri)+'</span></div>'
+        +'<div class="ms-c-door"><span class="tc">'+esc(p.door_zh||'')+'</span> '+esc(dn)+'</div>'
+        +'<div class="ms-c-adv">'+esc(adv)+'</div></div>';
+    }).join('');
+    function names(arr){ return arr.map(function(p){return dirLabel(p.direction);}).join(' · '); }
+    var reco='<div class="ms-reco"><b>'+esc(L('ms_recoGood'))+':</b> '+(greens.length?esc(names(greens)):'—')
+      +' &nbsp;·&nbsp; <span class="bd">'+esc(L('ms_recoBad'))+':</span> '+(reds.length?esc(names(reds)):'—')+'</div>';
+    return '<div class="ms-board">'+head+'<div class="ms-grid">'+cells+'</div>'+reco+'</div>';
+  }
+  function renderStatus(){
+    var el=document.getElementById('msStatus'); if(!el)return;
+    el.textContent = msState.statusKey? L(msState.statusKey) : '';
+  }
+  function render(){
+    renderStatus();
+    var d=msState.data;
+    var list=document.getElementById('msList'), foot=document.getElementById('msFoot'), meta=document.getElementById('msMeta');
+    if(!list)return;
+    if(!d){ list.innerHTML=''; if(foot)foot.style.display='none'; if(meta)meta.textContent=''; return; }
+    if(meta)meta.textContent = L('ms_scanned')+' '+d.scanned+' '+L('ms_points')+' · '+L('ms_forday')+' '+d.date;
+    if(!d.top||!d.top.length){ list.innerHTML='<div class="ms-empty">'+esc(L('ms_none'))+'</div>'; if(foot)foot.style.display='none'; return; }
+    var medals=['🥇','🥈','🥉'];
+    list.innerHTML=d.top.map(function(h){
+      var lk=levelKey(h.score), lv=LEVELS[lk]||LEVELS.neutral, lvlbl=lv[LANG]||lv.th;
+      return '<div class="ms-hit lv-'+lk+'">'
+        +'<div class="ms-hit-head"><span class="ms-medal">'+(medals[(h.rank||1)-1]||'•')+'</span>'
+        +'<div><div class="ms-time">'+esc(h.time)+' <span class="ms-lvtag">'+esc(lvlbl)+'</span></div>'
+        +'<div class="ms-reason">'+composeReason(h)+'</div></div></div>'
+        + boardHtml(h.time)
+        +'</div>';
+    }).join('');
+    if(foot){ foot.style.display=''; foot.textContent=L('ms_foot'); }
+  }
+  function loadBoard(time){
+    var d=msState.data; if(!d)return;
+    var hh=parseInt(time,10)||0, shk=shichenKey(hh);
+    if(msState.qByShichen[shk]!==undefined){ msState.qimen[time]=msState.qByShichen[shk]; render(); return; }
+    msState.qimen[time]='loading'; render();
+    var url='/api/qimen?system_type=hour&school=chaibu&date='+encodeURIComponent(d.date)+'&time='+encodeURIComponent(time)
+      +'&lat='+encodeURIComponent(d.lat)+'&lng='+encodeURIComponent(d.lng);
+    fetch(url,{headers:{'Accept':'application/json'}})
+      .then(function(r){ if(!r.ok)throw new Error('http '+r.status); return r.json(); })
+      .then(function(j){
+        var data=j&&j.data;
+        if(!data||!Array.isArray(data.palaces)||!data.palaces.length||!data.chart) throw new Error('no palaces');
+        msState.qimen[time]=data; msState.qByShichen[shk]=data;
+      })
+      .catch(function(e){ console.warn('[minute-scan qimen] hidden:', e&&e.message); msState.qimen[time]='fail'; msState.qByShichen[shk]='fail'; })
+      .finally(function(){ render(); });
+  }
+  function setBtnBusy(busy, labelKey){
+    var btn=document.getElementById('msBtn'); if(!btn)return;
+    var span=btn.querySelector('span[data-t]');
+    if(busy){ btn.setAttribute('disabled',''); }
+    else{ btn.removeAttribute('disabled'); }
+    if(span&&labelKey){ span.setAttribute('data-t',labelKey); span.textContent=L(labelKey); }
+  }
+  function scan(){
+    var date=scanDate();
+    var lat=parseFloat(document.getElementById('lat').value), lng=parseFloat(document.getElementById('lng').value);
+    if(!date || !isFinite(lat) || !isFinite(lng)){ msState.statusKey='ms_needdate'; renderStatus(); return; }
+    msState={ data:null, date:date, lat:lat, lng:lng, qimen:{}, qByShichen:{}, statusKey:'ms_scanning' };
+    render();
+    setBtnBusy(true,null);
+    var act=(HANDOFF&&HANDOFF.activity&&HANDOFF.activity.name)||(HANDOFF&&HANDOFF.act)||'';
+    fetch('/api/tianxing/minute-scan',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({date:date,lat:lat,lng:lng,activity:act})})
+      .then(function(r){ if(!r.ok)throw new Error('http '+r.status); return r.json(); })
+      .then(function(res){
+        if(!res||!res.ok||!Array.isArray(res.top)) throw new Error('bad response');
+        msState.data=res; msState.statusKey='';
+        render();
+        res.top.forEach(function(h){ loadBoard(h.time); });
+      })
+      .catch(function(e){ console.warn('[minute-scan] fail:', e&&e.message); msState.statusKey='ms_fail'; msState.data=null; render(); })
+      .finally(function(){ setBtnBusy(false,'ms_rescan'); });
+  }
+  var mb=document.getElementById('msBtn'); if(mb)mb.addEventListener('click',scan);
+  window.__renderMinuteScan=function(){ render(); };
+})();
 
 applyLang();
 loadChart();
