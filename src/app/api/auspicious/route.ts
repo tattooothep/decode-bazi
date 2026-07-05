@@ -38,6 +38,7 @@ import { huangDaoHour } from "@/lib/huangdao";
 import { riChongDay } from "@/lib/richong";
 import { dongGong } from "@/lib/donggong";
 import { getActivityProfile, mergeProfileHardModules, resolveActivityType } from "@/lib/luck-engine/activity-profiles";
+import { computeTongshuLiveForRow, buildTongshuModuleResults } from "@/lib/luck-engine/tongshu-live";
 import type { ActivityProfile } from "@/lib/luck-engine/activity-profiles";
 import { getSession } from "@/lib/auth";
 import { evaluateMonthDaySha } from "@/lib/luopan/month-day-sha";
@@ -195,7 +196,15 @@ export async function POST(req: NextRequest) {
     const applyPersonHard = hardModules.includes("ba_zi");
     const baseTotal = await countEphemerisBase(dateFrom, dateTo);
     const personalAvoidZodiacs = applyPersonHard ? avoidZodiacs : [];
-    const candidates = await queryEphemerisCandidates(dateFrom, dateTo, personalAvoidZodiacs, sqlHardModules, options.scanLimit ?? 360);
+    let candidates = await queryEphemerisCandidates(dateFrom, dateTo, personalAvoidZodiacs, sqlHardModules, options.scanLimit ?? 360);
+
+    /* r413 · TONGSHU_LIVE=1 (kill switch): override 4 module 通書 (建除/黃黑道/28宿/紫白)
+       ด้วยค่าคำนวณสดจาก tyme4ts แทนค่า cache ที่ผิด (audit 2 รอบ: 黃黑道ผิด 83% · 建除ขาด疊建 ·
+       28宿 anchor ผิด · 紫白 day_branch%9 ผิด) · additive จุดเดียว หลังดึง candidates ·
+       shape/สเกลคะแนน = เดิมเป๊ะ (tongshu-live.ts) · flag ปิด = พฤติกรรมเดิม 100% */
+    if (process.env.TONGSHU_LIVE === "1") {
+      candidates = candidates.map(c => applyTongshuLiveOverride(c));
+    }
 
     // STEP 3: Funnel stats
     const funnelStats = await buildFunnelStats(dateFrom, dateTo, personalAvoidZodiacs);
@@ -561,6 +570,21 @@ function applyMonthDayShaRuntime(c: CandidateSlot, activity: ActivityType, targe
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────
+
+/** r413 · override 4 module 通書 ต่อ candidate ด้วยค่าสด tyme4ts (memoized ต่อวัน)
+ *  - เทียบ 干支 วันของแถว (day_pillar) กันแถว shichen=0 (晚子時) ที่ cache ผูกกับวันถัดไป
+ *  - พังตัวไหน (throw) = คืน candidate เดิมทั้งใบ ห้ามล้ม response (best-effort เหมือน module อื่น) */
+function applyTongshuLiveOverride(c: CandidateSlot): CandidateSlot {
+  try {
+    const rowGz = `${c.pillars?.day?.stem || ""}${c.pillars?.day?.branch || ""}`.trim();
+    const day = computeTongshuLiveForRow(c.calendar.gregorianDate, rowGz || null);
+    const mods = buildTongshuModuleResults(day);
+    return { ...c, modules: { ...(c.modules as any), ...mods } };
+  } catch (e) {
+    console.warn("[auspicious] tongshu-live override failed:", (e as Error).message);
+    return c;
+  }
+}
 
 async function countEphemerisBase(dateFrom: string, dateTo: string): Promise<number> {
   try {

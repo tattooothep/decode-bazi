@@ -32,6 +32,10 @@ export const DONGGONG_ACTIVITY_ALIASES: Record<ActivityType, string[]> = {
   婚姻: ["嫁", "娶", "嫁娶", "婚姻", "納采", "納彩", "娶親", "會親"],
   求財: ["開市", "商買", "立約", "造倉庫", "倉庫"],
   祭祀: ["還福願"],
+  /* r413a: ตรวจ DB จริง 5 ก.ค. 2026 (ref_donggong_day.yi/ji มี 20 คำ + note · ref_donggong_exception.note/verdict) —
+     ไม่พบคำเกี่ยวการแพทย์เลย (求醫/療病/針/藥/灸/病 = 0 แถว) → ตำราตงกงเป็นกลางกับการแพทย์
+     aliases ว่าง = yi/ji ไม่ match กิจกรรมนี้ (ซื่อตรงต่อตำรา · ห้ามแต่งคำเอง) · verdict ราย วัน (吉/凶/大凶) ยังทำงานปกติ */
+  求醫: [],
 };
 
 const TOP_VERDICTS = new Set(["上吉", "全吉", "大吉"]);

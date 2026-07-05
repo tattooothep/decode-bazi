@@ -38,7 +38,7 @@ export function computeTianXing(c: CandidateSlot, lat: number = BKK_LAT, lng: nu
   // 用神 (命主)
   if (r.yongshen?.status && ["廟", "旺", "升殿", "樂"].includes(r.yongshen.status))
     up.push({ code: "TX_YONG_STRONG", thai: `用神 ${r.yongshen.th} ได้กำลัง (${r.yongshen.status})`, zh: `用神${r.yongshen.zh}得力`, delta: 8, source: "tian_xing" });
-  else if (r.yongshen?.status && ["落", "陷", "平"].includes(r.yongshen.status))
+  else if (r.yongshen?.status && ["落", "陷"].includes(r.yongshen.status))
     down.push({ code: "TX_YONG_WEAK", thai: `用神 ${r.yongshen.th} อ่อนแรง (${r.yongshen.status})`, zh: `用神${r.yongshen.zh}${r.yongshen.status}`, delta: -6, source: "tian_xing" });
   // 格局
   for (const g of r.geju || []) {

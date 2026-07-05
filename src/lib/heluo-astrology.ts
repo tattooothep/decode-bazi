@@ -35,9 +35,9 @@ const TRIGRAM_ZH: Record<number, string> = {
   1: '乾', 2: '兌', 3: '離', 4: '震', 5: '巽', 6: '坎', 7: '艮', 8: '坤',
 };
 
-// 64 hex · King Wen order · index by binary "upper+lower" (6 bits · top=line6, bottom=line1)
-// derived from Sequence of Earlier Heaven · use trigram_idx + trigram_idx formula
-// generic formula · parseInt(binary,2)+1 = 1-64 (not King Wen · but deterministic)
+// r413b (5 ก.ค. 2026) · fix ชื่อ卦ผิด (ตรวจ exhaustive แล้วผิดครบ 64/64):
+// เดิม binaryToHexNum ใช้ parseInt(binary,2)+1 (ลำดับ binary) แต่ HEX_NAMES เป็นลำดับ King Wen
+// → ต้อง map binary → เลข King Wen จริงผ่านตาราง KING_WEN (ตรีลักษณ์บน/ล่างตามตำรามาตรฐาน)
 
 const HEX_NAMES: Record<number, string> = {
   1:'乾',2:'坤',3:'屯',4:'蒙',5:'需',6:'訟',7:'師',8:'比',9:'小畜',10:'履',
@@ -49,10 +49,91 @@ const HEX_NAMES: Record<number, string> = {
   61:'中孚',62:'小過',63:'既濟',64:'未濟',
 };
 
-// Convert binary string → hex_num (1-64) · deterministic
+// ตาราง King Wen มาตรฐาน 64 卦 · [เลข King Wen, ตรีลักษณ์บน, ตรีลักษณ์ล่าง]
+// ตรีลักษณ์ใช้ index 1乾 2兌 3離 4震 5巽 6坎 7艮 8坤 (ตาม TRIGRAM_ZH ข้างบน)
+// อ้างอิงตาราง 8×8 上卦×下卦 ตำรามาตรฐาน (周易 卦序) · เช่น 3屯=坎上震下 · 63既濟=坎上離下 · 64未濟=離上坎下
+const KING_WEN_TRIGRAMS: ReadonlyArray<readonly [number, number, number]> = [
+  [1, 1, 1],   // 乾 乾上乾下
+  [2, 8, 8],   // 坤 坤上坤下
+  [3, 6, 4],   // 屯 坎上震下
+  [4, 7, 6],   // 蒙 艮上坎下
+  [5, 6, 1],   // 需 坎上乾下
+  [6, 1, 6],   // 訟 乾上坎下
+  [7, 8, 6],   // 師 坤上坎下
+  [8, 6, 8],   // 比 坎上坤下
+  [9, 5, 1],   // 小畜 巽上乾下
+  [10, 1, 2],  // 履 乾上兌下
+  [11, 8, 1],  // 泰 坤上乾下
+  [12, 1, 8],  // 否 乾上坤下
+  [13, 1, 3],  // 同人 乾上離下
+  [14, 3, 1],  // 大有 離上乾下
+  [15, 8, 7],  // 謙 坤上艮下
+  [16, 4, 8],  // 豫 震上坤下
+  [17, 2, 4],  // 隨 兌上震下
+  [18, 7, 5],  // 蠱 艮上巽下
+  [19, 8, 2],  // 臨 坤上兌下
+  [20, 5, 8],  // 觀 巽上坤下
+  [21, 3, 4],  // 噬嗑 離上震下
+  [22, 7, 3],  // 賁 艮上離下
+  [23, 7, 8],  // 剝 艮上坤下
+  [24, 8, 4],  // 復 坤上震下
+  [25, 1, 4],  // 無妄 乾上震下
+  [26, 7, 1],  // 大畜 艮上乾下
+  [27, 7, 4],  // 頤 艮上震下
+  [28, 2, 5],  // 大過 兌上巽下
+  [29, 6, 6],  // 坎 坎上坎下
+  [30, 3, 3],  // 離 離上離下
+  [31, 2, 7],  // 咸 兌上艮下
+  [32, 4, 5],  // 恆 震上巽下
+  [33, 1, 7],  // 遯 乾上艮下
+  [34, 4, 1],  // 大壯 震上乾下
+  [35, 3, 8],  // 晉 離上坤下
+  [36, 8, 3],  // 明夷 坤上離下
+  [37, 5, 3],  // 家人 巽上離下
+  [38, 3, 2],  // 睽 離上兌下
+  [39, 6, 7],  // 蹇 坎上艮下
+  [40, 4, 6],  // 解 震上坎下
+  [41, 7, 2],  // 損 艮上兌下
+  [42, 5, 4],  // 益 巽上震下
+  [43, 2, 1],  // 夬 兌上乾下
+  [44, 1, 5],  // 姤 乾上巽下
+  [45, 2, 8],  // 萃 兌上坤下
+  [46, 8, 5],  // 升 坤上巽下
+  [47, 2, 6],  // 困 兌上坎下
+  [48, 6, 5],  // 井 坎上巽下
+  [49, 2, 3],  // 革 兌上離下
+  [50, 3, 5],  // 鼎 離上巽下
+  [51, 4, 4],  // 震 震上震下
+  [52, 7, 7],  // 艮 艮上艮下
+  [53, 5, 7],  // 漸 巽上艮下
+  [54, 4, 2],  // 歸妹 震上兌下
+  [55, 4, 3],  // 豐 震上離下
+  [56, 3, 7],  // 旅 離上艮下
+  [57, 5, 5],  // 巽 巽上巽下
+  [58, 2, 2],  // 兌 兌上兌下
+  [59, 5, 6],  // 渙 巽上坎下
+  [60, 6, 2],  // 節 坎上兌下
+  [61, 5, 2],  // 中孚 巽上兌下
+  [62, 4, 7],  // 小過 震上艮下
+  [63, 6, 3],  // 既濟 坎上離下
+  [64, 3, 6],  // 未濟 離上坎下
+];
+
+// key = binary 6 บิต (upperBin + lowerBin ตาม encoding TRIGRAM_BIN เดิม) → เลข King Wen 1-64
+export const KING_WEN: Record<string, number> = {};
+for (const [num, up, lo] of KING_WEN_TRIGRAMS) {
+  KING_WEN[TRIGRAM_BIN[up] + TRIGRAM_BIN[lo]] = num;
+}
+
+// reverse map · binary 3 บิต → trigram index (ใช้ derive ป้ายตรีลักษณ์หลัง flip เส้น)
+const BIN_TO_TRIGRAM: Record<string, number> = {};
+for (let i = 1; i <= 8; i++) BIN_TO_TRIGRAM[TRIGRAM_BIN[i]] = i;
+
+// Convert binary string → hex_num (1-64) · King Wen order (ตรงกับ HEX_NAMES) · deterministic
 function binaryToHexNum(upper: string, lower: string): number {
   const full = upper + lower;
-  return parseInt(full, 2) + 1;
+  // fallback parseInt เดิมเฉพาะกรณี input ผิดรูป (ปกติเกิดไม่ได้ · ทุก combination 64 ตัวมีใน KING_WEN)
+  return KING_WEN[full] ?? (parseInt(full, 2) + 1);
 }
 
 export type HeluoResult = {
@@ -120,7 +201,8 @@ export function calcHeluo(
     },
     post_heaven: {
       hex: postHex, name: HEX_NAMES[postHex] || '?',
-      upper: TRIGRAM_ZH[((upperTrig - 1) % 8) + 1], lower: TRIGRAM_ZH[((lowerTrig - 1) % 8) + 1],
+      // r413b: derive ตรีลักษณ์จาก binary หลัง flip เส้นจริง (เดิม ((x-1)%8)+1 = no-op ไม่สะท้อน flip)
+      upper: TRIGRAM_ZH[BIN_TO_TRIGRAM[postUpper]] || '?', lower: TRIGRAM_ZH[BIN_TO_TRIGRAM[postLower]] || '?',
     },
     annual: {
       hex: annualHex, name: HEX_NAMES[annualHex] || '?',

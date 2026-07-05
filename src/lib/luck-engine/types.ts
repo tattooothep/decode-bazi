@@ -324,7 +324,8 @@ export type ActivityType =
   | "開市"      // เปิดกิจการ (Open business)
   | "婚姻"      // แต่งงาน (Marriage)
   | "求財"      // หาเงิน (Wealth)
-  | "祭祀";     // พิธีกรรม (Ritual)
+  | "祭祀"      // พิธีกรรม (Ritual)
+  | "求醫";     // การแพทย์ · พบแพทย์/รักษา/ผ่าตัด (Medical · r413a · ครอบทั้ง medical_visit+surgery — เดิมถูก map ผิดเป็น 祭祀)
 
 // =====================================================================
 // FUNNEL STATS · สำหรับวาด funnel bar ใน UI

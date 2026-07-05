@@ -81,8 +81,9 @@ export const ACTIVITY_PROFILES: ActivityProfile[] = [
 
   // 禮 · ชีวิต/พิธี
   { key: "wedding", category: "life", labelTh: "พิธีมงคล/แต่งงาน", labelZh: "嫁娶", descriptionTh: "แต่งงาน · หมั้น · งานมงคลครอบครัว", baseActivityType: "婚姻", uiActivity: "wedding", qimenPurpose: "marriage", hardModules: ["ze_ri", "tai_sui", "qi_men", "ba_zi"], requiredInputs: { personBazi: true, houseDirection: false, targetDirection: false }, safety: "standard", profileMode: "alias" },
-  { key: "medical_visit", category: "life", labelTh: "พบแพทย์/รักษา", labelZh: "求醫", descriptionTh: "นัดแพทย์ · ตรวจ · วางเวลาที่ร่างกายรับไหว", baseActivityType: "祭祀", uiActivity: "sign-contract", qimenPurpose: "health", hardModules: ["ze_ri", "tai_sui", "qi_men", "ba_zi"], requiredInputs: { personBazi: true, houseDirection: false, targetDirection: false }, safety: "medical_safe", profileMode: "modern" },
-  { key: "surgery", category: "life", labelTh: "ผ่าตัดแบบเลือกเวลาได้", labelZh: "手術", descriptionTh: "ใช้เฉพาะ elective case · ไม่ใช้แทนคำแนะนำแพทย์", baseActivityType: "祭祀", uiActivity: "sign-contract", qimenPurpose: "health", hardModules: ["ze_ri", "tai_sui", "qi_men", "ba_zi"], requiredInputs: { personBazi: true, houseDirection: false, targetDirection: false }, safety: "medical_safe", profileMode: "modern" },
+  /* r413a fix: เดิม baseActivityType:"祭祀" (ไหว้เจ้า) เพราะ ActivityType ไม่มีหมวดการแพทย์ → ฤกษ์แพทย์ถูกตัดสินด้วยเกณฑ์ไหว้เจ้า · เพิ่ม "求醫" ตัวเดียวครอบทั้งคู่ (surgery = 求醫 เข้มกว่า) */
+  { key: "medical_visit", category: "life", labelTh: "พบแพทย์/รักษา", labelZh: "求醫", descriptionTh: "นัดแพทย์ · ตรวจ · วางเวลาที่ร่างกายรับไหว", baseActivityType: "求醫", uiActivity: "sign-contract", qimenPurpose: "health", hardModules: ["ze_ri", "tai_sui", "qi_men", "ba_zi"], requiredInputs: { personBazi: true, houseDirection: false, targetDirection: false }, safety: "medical_safe", profileMode: "modern" },
+  { key: "surgery", category: "life", labelTh: "ผ่าตัดแบบเลือกเวลาได้", labelZh: "手術", descriptionTh: "ใช้เฉพาะ elective case · ไม่ใช้แทนคำแนะนำแพทย์", baseActivityType: "求醫", uiActivity: "sign-contract", qimenPurpose: "health", hardModules: ["ze_ri", "tai_sui", "qi_men", "ba_zi"], requiredInputs: { personBazi: true, houseDirection: false, targetDirection: false }, safety: "medical_safe", profileMode: "modern" },
   { key: "exam_study", category: "life", labelTh: "สอบ/สมัครเรียน", labelZh: "考試", descriptionTh: "สอบ · สมัครเรียน · เริ่มคอร์ส", baseActivityType: "立約", uiActivity: "sign-contract", qimenPurpose: "exam", hardModules: ["ze_ri", "qi_men", "ba_zi"], requiredInputs: { personBazi: true, houseDirection: false, targetDirection: false }, safety: "standard", profileMode: "modern" },
   { key: "long_travel", category: "life", labelTh: "เดินทางไกล", labelZh: "出行", descriptionTh: "เดินทางไกล · บิน · ไปต่างจังหวัด/ต่างประเทศ", baseActivityType: "出行", uiActivity: "travel", qimenPurpose: "travel", hardModules: ["ze_ri", "tai_sui", "qi_men"], requiredInputs: { personBazi: true, houseDirection: false, targetDirection: true }, safety: "standard", profileMode: "alias" },
 ];
@@ -97,7 +98,7 @@ export function getActivityProfile(key: unknown): ActivityProfile | null {
 export function resolveActivityType(activityType: unknown, profile: ActivityProfile | null): ActivityType | null {
   if (profile) return profile.baseActivityType;
   if (typeof activityType !== "string") return null;
-  const known = new Set<ActivityType>(["立約", "出行", "動土", "搬家", "開市", "婚姻", "求財", "祭祀"]);
+  const known = new Set<ActivityType>(["立約", "出行", "動土", "搬家", "開市", "婚姻", "求財", "祭祀", "求醫"]); // r413a: เพิ่ม 求醫 (การแพทย์)
   return known.has(activityType as ActivityType) ? (activityType as ActivityType) : null;
 }
 

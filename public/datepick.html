@@ -2484,7 +2484,7 @@ async function performSearch(){
         travel:'出行',
         negotiate:'立約',
         authority:'開市',
-        health:'祭祀'
+        health:'求醫' /* r413a: เดิม 祭祀 (ไหว้เจ้า) → ฤกษ์การแพทย์โดนเกณฑ์ไหว้เจ้า · engine มีหมวด 求醫 แล้ว */
       };
       const ajActivity = AJ_ACTIVITY[activity] || '立約';
       const activeModules = [];
@@ -2886,11 +2886,17 @@ function renderRealResults(items){
 
 /* 🌌 29 มิ.ย.: ส่งฤกษ์ไปวิเคราะห์ลึกด้วยดาวจริง (天星擇日 七政四餘) · dt = UTC ดิบ (สร้างจากเวลาไทย+07:00) */
 function goTianxing(dtUTC, actName){
+  var lat=13.7563, lng=100.5018, place='กรุงเทพมหานคร'; // fallback กทม (ถ้าอ่านพิกัดสถานที่งานไม่ได้ · ผู้ใช้ปรับในหน้า /tianxing ได้)
   try{
-    var lat=13.7563, lng=100.5018, place='กรุงเทพมหานคร'; // สถานที่จัดงาน default กรุงเทพ (ผู้ใช้ปรับในหน้า /tianxing ได้)
+    if (typeof dpReadEventLocation === 'function') {
+      var loc = dpReadEventLocation(); // พิกัดสถานที่งานจริง (autocomplete/manual · fallback กทมในตัว)
+      if (loc && isFinite(loc.lat) && isFinite(loc.lng)) { lat = loc.lat; lng = loc.lng; place = loc.place || place; }
+    }
+  }catch(e){}
+  try{
     sessionStorage.setItem('hk_tianxing_handoff', JSON.stringify({dtUTC:dtUTC, lat:lat, lng:lng, place:place, activity:{name:actName||''}, display:new Date(dtUTC).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}));
   }catch(e){}
-  location.href='/tianxing?dt='+encodeURIComponent(dtUTC)+'&lat='+lat+'&lng='+lng+'&act='+encodeURIComponent(actName||'')+'&place='+encodeURIComponent('กรุงเทพมหานคร');
+  location.href='/tianxing?dt='+encodeURIComponent(dtUTC)+'&lat='+lat+'&lng='+lng+'&act='+encodeURIComponent(actName||'')+'&place='+encodeURIComponent(place);
 }
 
 /* 📜 17 พ.ค.: popup ดูตำรา卦 + 爻辭 จากอากง v3 */

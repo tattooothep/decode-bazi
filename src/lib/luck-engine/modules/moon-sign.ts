@@ -49,6 +49,11 @@ const ARI = 0, TAU = 1, GEM = 2, CAN = 3, LEO = 4, VIR = 5, LIB = 6, SCO = 7, SA
  *        ลบ Scorpio/Capricorn (จันทร์อ่อน)
  *   祭祀 พิธี/ศรัทธา: ดี Pisces/Sagittarius (พฤหัส=ศาสนา) + Cancer (จันทร์ครอง=พิธีในเรือน)
  *        ลบ Scorpio/Capricorn (จันทร์อ่อน)
+ *   求醫 การแพทย์ (r413a · conservative ที่สุดในตาราง): หลัก electional คลาสสิก (Lilly-line) สำหรับผ่าตัด
+ *        คือ "เลี่ยงจันทร์ในราศีที่ครองอวัยวะที่จะผ่า" — engine ไม่รู้ตำแหน่งผ่าตัด → ห้ามเดา (กฎข้อ 9)
+ *        จึงใส่เฉพาะกฎทั่วไปที่ไม่ขึ้นกับอวัยวะ: ลบ Scorpio (จันทร์ fall)/Capricorn (จันทร์ detriment)
+ *        good = [] (ไม่มีราศีที่ตำรารับรองว่าหนุนการแพทย์เป็นการทั่วไป) · หลัก "ข้างแรม (waning) ดีสำหรับผ่าตัด"
+ *        เป็นเรื่อง phase ไม่ใช่ sign → นอกขอบเขต module นี้ · confidence ของแถวนี้จึงต่ำกว่าแถวอื่นโดยธรรมชาติ
  */
 export const MOON_SIGN_TABLE: Record<ActivityType, { good: number[]; bad: number[] }> = {
   立約: { good: [GEM, VIR, LIB], bad: [SAG, PIS, SCO] },
@@ -59,6 +64,7 @@ export const MOON_SIGN_TABLE: Record<ActivityType, { good: number[]; bad: number
   婚姻: { good: [TAU, LIB, PIS], bad: [ARI, SCO, CAP] },
   求財: { good: [TAU, SAG, PIS], bad: [SCO, CAP] },
   祭祀: { good: [PIS, SAG, CAN], bad: [SCO, CAP] },
+  求醫: { good: [], bad: [SCO, CAP] }, // r413a · conservative — ดู comment ด้านบน (ไม่เดาราศีอวัยวะ · ลบเฉพาะจันทร์อ่อนตาม Lilly)
 };
 
 const SOFT_DELTA = 6; // soft ±6 · ไม่มี cap (ตัวถ่วง ไม่ใช่ตัวตัด)

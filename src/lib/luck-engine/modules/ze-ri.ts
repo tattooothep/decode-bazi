@@ -161,7 +161,8 @@ export const zeRiModule: LuckModule = {
     // CHECK 5: 天德 (sky virtue)
     // ---------------------------------------------------------------
     const tianDeStem = TIAN_DE_BY_MONTH[monthBranch];
-    if (tianDeStem && slot.pillars.day.stem === tianDeStem) {
+    // 天德 เดือน寅巳申亥辰戌丑未=ก้าน · เดือน卯午酉子=กิ่ง(申亥寅巳) → ต้องเทียบทั้ง day.stem+day.branch
+    if (tianDeStem && (slot.pillars.day.stem === tianDeStem || slot.pillars.day.branch === tianDeStem)) {
       rawScore += 18;
       tags.push("tian_de");
       reasonsUp.push({
@@ -266,7 +267,7 @@ export const zeRiModule: LuckModule = {
           clashTaisui: CLASH[dayBranch] === yearBranch,
           dayHourClash: CLASH[dayBranch] === hourBranch,
           liuhe: LIUHE[dayBranch] === hourBranch,
-          tianDe: tianDeStem === slot.pillars.day.stem,
+          tianDe: tianDeStem === slot.pillars.day.stem || tianDeStem === slot.pillars.day.branch,
           yueDe: yueDeStem === slot.pillars.day.stem
         }
       }

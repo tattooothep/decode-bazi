@@ -16,7 +16,7 @@
 import type { ModuleKey, ActivityType } from "./types";
 
 // =====================================================================
-// WEIGHTS MATRIX · 7 activities × 11 modules
+// WEIGHTS MATRIX · 9 activities (r413a: +求醫) × 20 modules
 // =====================================================================
 
 export type WeightsMatrix = Record<ActivityType, Record<ModuleKey, number>>;
@@ -238,6 +238,37 @@ export const MODULE_WEIGHTS: WeightsMatrix = {
     moon_sign:       0.02,  // r372 · soft scorer เบา ๆ (±6 ผ่าน weighted average · ไม่มี cap)
     panchanga:       0.03,  // r374 · ปัญจางค์ 5 องค์ · ตัดหลักผ่าน caps (45-60) + soft +5 ผ่าน average เบา ๆ
     tara_bala:       0.02,  // r374 · ตาราพละ (personal) · ตัดหลักผ่าน cap 50 + soft +4 เบา ๆ · ไม่มีโปรไฟล์ = missing = ไม่กระทบ
+  },
+
+  // ----------------------------------------------------------------
+  // 求醫 · การแพทย์ (พบแพทย์/รักษา/ผ่าตัด) — r413a
+  // ----------------------------------------------------------------
+  // เดิม medical_visit/surgery ถูก map เป็น 祭祀 (ไหว้เจ้า) → ตัดสินด้วยเกณฑ์พิธีกรรม
+  // โครงลอกจาก 祭祀 แล้วปรับ: 擇日 นำ (通書 建除 滿日 มีธง 治病/服藥 · ze-ri เป็นแกนวันดี-ร้าย)
+  // + 八字/用神 สูงขึ้น (ร่างกายเจ้าชะตา · วันปะทะ DM ไม่ควรผ่าตัด) + 太歲 คงสูง (ห้ามชงวันผ่าตัด)
+  // + 神煞/28宿 ลดลงจากระดับพิธีกรรม (ไม่ใช่งานไหว้) · ตงกงยัง "นำ" ในทางตัดฤกษ์ผ่าน caps/boost
+  // (dong_gong weight = 0 ตาม convention เดิมทุกกิจกรรม — ทำงานผ่าน caps ไม่เข้า weighted average)
+  求醫: {
+    ze_ri:           0.22,
+    ba_zi:           0.16,
+    tai_sui:         0.12,
+    twelve_officers: 0.10,
+    twelve_spirits:  0.10,
+    yong_shen:       0.08,
+    twenty_eight:    0.08,
+    qi_men:          0.08,
+    nine_stars:      0.03,
+    he_luo:          0.02,
+    hex64:           0.01,
+    tian_xing:       0.12,
+    dong_gong:       0,     // convention r367 · ตงกงไม่เข้า weighted average (ตัดผ่าน caps + boost route-side)
+    moon_void:       0,     // convention r372 · ทำงานผ่าน caps ล้วน (จันทร์ว่าง cap 45)
+    retro_window:    0,     // convention r372 · ทำงานผ่าน caps ล้วน (ดาวถอย cap 40-50)
+    eclipse_zone:    0,     // convention r372 · ทำงานผ่าน caps ล้วน (คราส cap 35/55)
+    rahu_kalam:      0,     // convention r372 · ทำงานผ่าน caps ล้วน (ราหูกาล cap 50)
+    moon_sign:       0.02,  // convention r372 · soft scorer เบา ๆ (求醫 = แถว conservative · ดู moon-sign.ts)
+    panchanga:       0.03,  // convention r374 · ตัดหลักผ่าน caps (45-60) + soft +5 เบา ๆ
+    tara_bala:       0.02,  // convention r374 · ตัดหลักผ่าน cap 50 + soft +4 เบา ๆ
   },
 };
 
