@@ -16,10 +16,10 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
+export const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
 
 // ช่วงอักษรไทย U+0E00–U+0E7F (฀-๿) — ครอบทั้งพยัญชนะ สระ วรรณยุกต์ เลขไทย ฿
 const THAI_RE = /[฀-๿]/;
@@ -31,7 +31,7 @@ const VOID_TAGS = new Set([
 ]);
 
 // หน้าตายที่ next.config redirect ไปหน้าหลักแล้ว (ผู้ใช้เข้าไม่ถึง) — ไม่ต้องตรวจ
-const DEAD_PAGES = new Set(['calendar-m.html', 'master-m.html', 'mygoal-m.html', 'picker-m.html']);
+export const DEAD_PAGES = new Set(['calendar-m.html', 'master-m.html', 'mygoal-m.html', 'picker-m.html']);
 
 // ── CLI args ──────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
@@ -152,7 +152,7 @@ function parseObjectAt(text, openIdx) {
 
 // เช็คว่า raw value เป็น string literal เดี่ยว ๆ ล้วน ๆ หรือไม่ (ไม่ใช่ 'a'+x หรือ expression อื่น)
 // ถ้าใช่ คืนเนื้อหาที่ unescape แล้ว, ถ้าไม่ใช่ คืน null (แปลว่าเป็น dynamic/expression ประเมินไม่ได้)
-function stringLiteralValue(raw) {
+export function stringLiteralValue(raw) {
   if (!raw || raw.length < 2) return null;
   const q = raw[0];
   if ((q === "'" || q === '"' || q === '`') && raw[raw.length - 1] === q) {
@@ -169,14 +169,14 @@ function stringLiteralValue(raw) {
 }
 
 // ค่า "มีอยู่จริงและไม่ว่าง" หรือไม่ — string ว่างถือว่าขาด, ส่วน expression/dynamic ถือว่ามี (ประเมินไม่ได้ ไม่ฟันธงว่าขาด)
-function valuePresent(entryVal) {
+export function valuePresent(entryVal) {
   if (!entryVal) return false;
   const s = stringLiteralValue(entryVal.raw);
   if (s === null) return true;
   return s.trim() !== '';
 }
 
-function lineTextOf(entryVal) {
+export function lineTextOf(entryVal) {
   const s = stringLiteralValue(entryVal.raw);
   return s === null ? entryVal.raw : s;
 }
@@ -192,7 +192,7 @@ function unescapeSimple(s) {
 }
 
 // ── ตัวช่วยแปลง index อักขระ → เลขบรรทัด (1-indexed) แบบ binary search ─────
-function makeLineLookup(text) {
+export function makeLineLookup(text) {
   const starts = [0];
   for (let i = 0; i < text.length; i++) if (text[i] === '\n') starts.push(i + 1);
   return function lineOf(idx) {
@@ -265,7 +265,7 @@ function registerHkEntry(map, key, nestedEntries, idxForLine, lineOf) {
 
 // รวบรวมทุกคีย์ของกลไก HK_I18N ในไฟล์เดียว — คืน {entries, excludedRanges}
 // excludedRanges = ช่วง [start,end) ของทุกก้อนดิกชันนารีที่ parse สำเร็จ (ไว้กันไม่ให้ D2 มานับซ้ำ)
-function collectHkEntries(text, lineOf) {
+export function collectHkEntries(text, lineOf) {
   const entries = new Map();
   const excludedRanges = [];
 
@@ -301,7 +301,7 @@ function findInlineI18nOpenIdx(text) {
 }
 
 // รวบรวมกลไก inline — คืน null ถ้าไม่มี, หรือ {perLang: {th,en,zh: Map}, excludedRanges}
-function collectInlineEntries(text) {
+export function collectInlineEntries(text) {
   const openIdx = findInlineI18nOpenIdx(text);
   if (openIdx === null) return null;
   const outer = parseObjectAt(text, openIdx);
@@ -647,4 +647,8 @@ function main() {
   process.exitCode = totalProblems > 0 ? 1 : 0;
 }
 
-main();
+// รันเฉพาะตอนเรียกไฟล์นี้ตรง ๆ (node scripts/i18n-scan.mjs ...) — ไม่รันซ้ำตอนถูก import
+// (scripts/i18n-export.mjs import ฟังก์ชัน parser จากไฟล์นี้ไปใช้ต่อ ไม่ต้องการให้ main() ยิงสแกนซ้ำ)
+if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {
+  main();
+}

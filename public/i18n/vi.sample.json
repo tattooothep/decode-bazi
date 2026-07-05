@@ -1,0 +1,12 @@
+{
+  "account.html::mg.title": "Quản lý tài khoản",
+  "account.html::mg.sub": "Ảnh đại diện · Tên hiển thị · Mật khẩu · Thiết bị · Dữ liệu cá nhân (PDPA)",
+  "account.html::mg.profile": "Hồ sơ",
+  "account.html::mg.avatar.upload": "Tải ảnh lên",
+  "account.html::mg.avatar.spirit": "Dùng linh thú may mắn",
+  "account.html::mg.avatar.remove": "Xóa",
+  "account.html::mg.avatar.note": "Tối đa 2MB · tự động thu nhỏ còn 256px.",
+  "account.html::mg.avatar.readerr": "Không thể đọc tệp ảnh.",
+  "account.html::mg.avatar.genfail": "Không thể xử lý ảnh.",
+  "account.html::mg.avatar.saved": "Đã cập nhật ảnh đại diện."
+}

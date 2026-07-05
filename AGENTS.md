@@ -674,3 +674,32 @@ SELECT COUNT(*) FROM people WHERE birth_date IS NULL;
 - **คลังศัพท์วิชา**: `/data/i18n/science-terms.json` — 沖/合/用神/... ต่อ 8 ภาษา · นโยบาย "คำท้องถิ่นนำ จีนกำกับเล็ก" · ห้ามแปลศัพท์วิชาซ้ำในหน้า ให้ดึงจากคลัง (HK.i18n.term)
 - **ภาษา**: localStorage `hk_locale` (เขียน `hk_lang` คู่) · vi/ja/ko/ru/es ต้องผ่านเจ้าของภาษาตรวจก่อนเข้า LIVE
 - **ด่านก่อน deploy**: `node scripts/i18n-scan.mjs --summary` ต้องไม่มีขาดภาษา/คีย์ผี · เพิ่มภาษาใหม่ = `--langs=th,en,zh,vi,...` ต้องขาด 0
+
+### 📦 ไฟล์ภาษาเดี่ยวต่อภาษา (overlay) — เพิ่ม vi/ja/ko/ru/es โดยไม่ต้องแก้ 35 หน้า (6 ก.ค. 2569)
+เป้าหมาย: ทีมแปลแต่ละภาษาแก้ **คนละไฟล์** ขนานกันได้ ไม่ชนกัน — ไม่ต้องรอคิว ไม่ต้องแตะ HTML 35 หน้าเลย
+
+**ขั้นตอนออกคีย์ให้ทีมแปล**
+1. `node scripts/i18n-export.mjs` → เขียน `data/i18n/keys-export.json` (รวมทุกกลไก HK_I18N + inline I18N จากทุกหน้า)
+   โครง: `{ "<หน้า>::<key>": { "th": "...", "en": "...", "zh": "..." } }` — ใช้ `th`/`en` เป็นต้นทางแปล
+2. ทีมแปลคัดลอกคีย์ที่ตัวเองรับผิดชอบ → สร้าง `public/i18n/<locale>.json` (เช่น `vi.json`, `ja.json`)
+   โครงไฟล์ที่ต้องส่งคืน (**แบน ไม่ซ้อน th/en/zh** — คีย์ละ 1 ค่าแปลตรง ๆ):
+   ```json
+   { "auspicious.html::title": "ข้อความแปลของหน้านั้น", "*::btnSearch": "ใช้ทุกหน้าที่มีคีย์นี้" }
+   ```
+   ดูตัวอย่างจริงที่ `public/i18n/vi.sample.json` (10 คีย์แรกจาก export)
+3. ทีมแปลหลายภาษาแก้ไฟล์คนละไฟล์ `public/i18n/th.json` / `vi.json` / `ja.json` / ... — commit แยกกันได้ ไม่ conflict
+
+**ระบบ overlay ใน `public/js/hk-i18n-core.js`**
+- `HK.i18n.loadOverlay(locale)` — fetch `/i18n/<locale>.json` → เก็บใน `window.HK_I18N_OVERLAY` (คืน Promise)
+- `t(key)` ของ core เช็ค overlay ก่อนเสมอ: ถ้า locale ปัจจุบันมี overlay โหลดไว้และมีคีย์ตรง (`"<pageId>::<key>"` หรือ wildcard `"*::<key>"`) → overlay ชนะ ไม่งั้น fallback ไปที่ `window.HK_I18N` ตามเดิม
+- `HK.i18n.getPageId()` — อ่านจาก `location.pathname` ท้ายสุด (เช่น `/auspicious.html` → `"auspicious.html"`) ตรงกับชื่อคีย์ที่ i18n-export.mjs ใช้
+- **hook สำหรับหน้าเก่า** (inline I18N / data-t / data-l ที่ยังไม่ย้ายมาใช้ core): เรียก `window.HK_OVERLAY_GET(pageId, key, locale)` ได้ 1 บรรทัดในฟังก์ชัน `t()`/`_xxtx()` ของตัวเอง — คืน string ถ้ามี overlay override, คืน `null` ถ้าไม่มี (แปลว่าให้ใช้ค่าตัวเองต่อ) ตัวอย่าง:
+  ```js
+  function _xxtx(key, thFallback) {
+    var ov = window.HK_OVERLAY_GET && window.HK_OVERLAY_GET(PAGE_ID, key, HK.i18n.getLocale());
+    if (ov != null) return ov;
+    // ... logic เดิมของหน้าต่อจากนี้ ...
+  }
+  ```
+  (ยังไม่บังคับย้ายตอนนี้ — ใส่เมื่อแตะหน้านั้นจริงเท่านั้น)
+- หมายเหตุ: overlay ใช้ได้กับทุก locale ที่ `getLocale()` คืนมา (ต้องอยู่ใน `LIVE` ก่อนถึงจะเลือกได้จริงจาก UI) — vi/ja/ko/ru/es ยังไม่ใน `LIVE` จนกว่าจะผ่านเจ้าของภาษาตรวจ

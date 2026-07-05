@@ -34,10 +34,65 @@
     document.dispatchEvent(new CustomEvent('hk:locale', { detail: { locale: l } }));
   }
 
+  // ── overlay ไฟล์ภาษาเดี่ยว (public/i18n/<locale>.json) — เฟส "ไฟล์ภาษาเดี่ยวต่อภาษา" ──
+  // จุดประสงค์: เพิ่มภาษาใหม่ (vi/ja/ko/ru/es) โดยไม่ต้องแก้ 35 หน้า HTML เลย —
+  // ทีมแปลแต่ละภาษาแก้คนละไฟล์ public/i18n/<locale>.json ได้อิสระ ไม่ชนกัน
+  // โครงไฟล์: { "<หน้า>::<key>": "ข้อความแปล", "*::<key>": "ใช้ทุกหน้า (fallback กว้าง)" }
+  window.HK_I18N_OVERLAY = window.HK_I18N_OVERLAY || {};
+  var _overlayLocale = null; // ภาษาที่ overlay ก้อนปัจจุบันใน window.HK_I18N_OVERLAY โหลดมา
+
+  // pageId จาก path จริงของเบราว์เซอร์ — ตรงกับชื่อไฟล์ใน public/ เช่น "/auspicious.html" → "auspicious.html"
+  // (ใช้ชื่อเดียวกับ key ที่ scripts/i18n-export.mjs ส่งออก "<page>::<key>")
+  function getPageId() {
+    try {
+      var seg = (location.pathname || '').split('/').pop() || '';
+      if (!seg) return '';
+      return /\.html$/i.test(seg) ? seg : (seg + '.html');
+    } catch (_) { return ''; }
+  }
+
+  // โหลด overlay ของภาษาที่ระบุจาก /i18n/<locale>.json แล้วเก็บลง window.HK_I18N_OVERLAY
+  // คืน Promise<object|null> — เรียกซ้ำได้ (โหลดทับก้อนเดิม), fail แล้วไม่พังหน้า (คืน null + overlay ว่าง)
+  function loadOverlay(locale) {
+    return fetch('/i18n/' + encodeURIComponent(locale) + '.json')
+      .then(function (r) {
+        if (!r.ok) throw new Error('HK_I18N overlay not found: ' + locale);
+        return r.json();
+      })
+      .then(function (data) {
+        window.HK_I18N_OVERLAY = data && typeof data === 'object' ? data : {};
+        _overlayLocale = locale;
+        return window.HK_I18N_OVERLAY;
+      })
+      .catch(function (_err) {
+        window.HK_I18N_OVERLAY = {};
+        _overlayLocale = null;
+        return null;
+      });
+  }
+
+  // hook เบา ๆ ให้หน้าเก่า (inline I18N / data-t / data-l) เรียกใช้ได้ทันที 1 บรรทัดใน t()/_xxtx ของตัวเอง
+  // โดยไม่ต้อง refactor หน้าเดิม — ดู AGENTS.md หมวด i18n ท้ายไฟล์สำหรับตัวอย่างการเรียก
+  // คืนค่า string ถ้ามี overlay ตรงเงื่อนไข (exact "page::key" ก่อน แล้วค่อย wildcard "*::key"),
+  // คืน null/undefined ถ้าไม่มี overlay ให้ใช้ (หน้าเดิม fallback ไปใช้ค่าตัวเองต่อ)
+  function overlayGet(pageId, key, locale) {
+    if (locale !== _overlayLocale) return null; // overlay ที่โหลดไว้ ไม่ตรงกับภาษาที่ขอตอนนี้
+    var data = window.HK_I18N_OVERLAY;
+    if (!data) return null;
+    var v = data[pageId + '::' + key];
+    if (v != null && v !== '') return v;
+    v = data['*::' + key];
+    if (v != null && v !== '') return v;
+    return null;
+  }
+  window.HK_OVERLAY_GET = overlayGet;
+
   function t(key, fallback) {
+    var l = getLocale();
+    var ov = overlayGet(getPageId(), key, l);
+    if (ov != null) return ov;
     var e = window.HK_I18N[key];
     if (!e) return fallback != null ? fallback : key;
-    var l = getLocale();
     return (e[l] != null && e[l] !== '') ? e[l] : (e.th != null ? e.th : (fallback != null ? fallback : key));
   }
 
@@ -72,5 +127,9 @@
   }
 
   window.HK = window.HK || {};
-  window.HK.i18n = { getLocale: getLocale, setLocale: setLocale, t: t, term: term, termWithGlyph: termWithGlyph, loadTerms: loadTerms, apply: applyI18N, SUPPORTED: SUPPORTED, LIVE: LIVE };
+  window.HK.i18n = {
+    getLocale: getLocale, setLocale: setLocale, t: t, term: term, termWithGlyph: termWithGlyph,
+    loadTerms: loadTerms, apply: applyI18N, SUPPORTED: SUPPORTED, LIVE: LIVE,
+    loadOverlay: loadOverlay, getPageId: getPageId, overlayGet: overlayGet,
+  };
 })();
