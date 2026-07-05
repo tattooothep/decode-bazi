@@ -98,6 +98,8 @@
     chart:    { th:'ดวงของฉัน',      en:'My Chart',        zh:'我的命盤' },
     network:  { th:'เครือข่ายดวง',    en:'Network',         zh:'人脈網' },
     books:    { th:'หนังสือของฉัน',   en:'My Books',        zh:'我的命書' },
+    topup:    { th:'เติมยาม · แพ็กเกจ', en:'Top Up · Plans',  zh:'充值 · 方案' },
+    account:  { th:'บัญชีของฉัน',       en:'My Account',      zh:'我的帳戶' },
     language: { th:'ภาษา',           en:'Language',        zh:'語言' },
     theme:    { th:'ธีม',            en:'Theme',           zh:'主題' },
     settings: { th:'ตั้งค่า',         en:'Settings',        zh:'設定' },
@@ -265,7 +267,8 @@
           <a class="hk-um-item" href="/chart"><span class="hk-um-ico">📜</span><span class="hk-um-i-chart">${t('chart')}</span></a>
           <a class="hk-um-item" href="/book"><span class="hk-um-ico">📖</span><span class="hk-um-i-books">${t('books')}</span></a>
 	          <a class="hk-um-item" href="/network"><span class="hk-um-ico">👥</span><span class="hk-um-i-network">${t('network')}</span></a>
-          <a class="hk-um-item" href="/account.html"><span class="hk-um-ico">💎</span><span>บัญชี · 時 · Top Up</span></a>
+          <a class="hk-um-item" href="/pricing"><span class="hk-um-ico">💎</span><span class="hk-um-i-topup">${t('topup')}</span></a>
+          <a class="hk-um-item" href="/account.html"><span class="hk-um-ico">⚙️</span><span class="hk-um-i-account">${t('account')}</span></a>
         </div>
         <div class="hk-um-sec">
           <div class="hk-um-row">
