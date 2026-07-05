@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hourkey · ดวงของคุณ</title>
+<title data-i18n="c.page.title">hourkey · ดวงของคุณ</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -1081,7 +1081,7 @@
   }
   function clearChartRoots(s){
     var nameEl = document.querySelector('.hero-l h1 .name');
-    if (nameEl) nameEl.textContent = s.name || 'ดวงของคุณ';
+    if (nameEl) nameEl.textContent = s.name || (window._chtx ? window._chtx('c.hero.your_chart','ดวงของคุณ') : 'ดวงของคุณ');
     ['bb-yongshen','bb-jishen','bb-interactions','bb-combinations','bb-punishments','bb-wealth-role','bb-debug'].forEach(function(id){
       var el = document.getElementById(id); if (el) el.innerHTML = '';
     });
@@ -1215,25 +1215,25 @@
   <section class="sec hk-overview-sec" id="hk-overview-sec" style="display:none">
     <div class="sec-head">
       <div class="l">
-        <span class="num">00 · ภาพรวม</span>
-        <h2><span class="tc">概</span>ภาพรวมตัวตน · จาก 30 โปรไฟล์แกนดวง</h2>
-        <span class="sub">อ่านอัตโนมัติจากก้านวันและกำลังดวง · ถ้าอยากลึกขึ้นค่อยถามซินแสต่อ</span>
+        <span class="num" data-i18n="c.sec0.num">00 · ภาพรวม</span>
+        <h2 data-i18n="c.sec0.h2"><span class="tc">概</span>ภาพรวมตัวตน · จาก 30 โปรไฟล์แกนดวง</h2>
+        <span class="sub" data-i18n="c.sec0.sub">อ่านอัตโนมัติจากก้านวันและกำลังดวง · ถ้าอยากลึกขึ้นค่อยถามซินแสต่อ</span>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button id="hk-ov-regen" style="display:none;padding:6px 14px;font-size:11px;background:transparent;border:1px solid var(--gold-line);border-radius:99px;color:var(--gold);cursor:pointer;font-family:var(--thai);">ถามใหม่</button>
+        <button id="hk-ov-regen" data-i18n="c.sec0.regen" style="display:none;padding:6px 14px;font-size:11px;background:transparent;border:1px solid var(--gold-line);border-radius:99px;color:var(--gold);cursor:pointer;font-family:var(--thai);">ถามใหม่</button>
       </div>
     </div>
     <div id="hk-overview-content" class="hk-overview-content">
       <div id="hk-ov-quick" style="background:linear-gradient(160deg,rgba(200,164,77,.08),transparent);border:1px solid var(--gold-line);border-left:3px solid var(--gold);border-radius:14px;padding:20px 22px;font-family:var(--thai);font-size:14px;line-height:1.8;color:var(--fg);"></div>
       <div id="hk-ov-sifu-prompt" class="hk-ov-follow">
-        <label>อยากเจาะลึกกว่านี้? คุยกับซินแสแบบต่อเนื่อง (ซินแสจำบทสนทนาให้)</label>
+        <label data-i18n="c.sec0.followLabel">อยากเจาะลึกกว่านี้? คุยกับซินแสแบบต่อเนื่อง (ซินแสจำบทสนทนาให้)</label>
         <div class="hk-ov-follow-actions">
-          <button type="button" class="hk-ov-chip" onclick="hkGotoSifu('ช่วยอธิบายเงาและจุดที่ต้องระวังของดวงนี้ให้ลึกขึ้น')">เงาที่ต้องระวัง</button>
-          <button type="button" class="hk-ov-chip" onclick="hkGotoSifu('ดวงนี้ควรใช้จุดแข็งกับงานและเงินอย่างไร')">งานและเงิน</button>
-          <button type="button" class="hk-ov-chip" onclick="hkGotoSifu('ช่วงวัยจรและปีนี้ควรเดินเกมชีวิตอย่างไร')">จังหวะช่วงนี้</button>
-          <button type="button" id="hk-ov-goto-sifu" onclick="hkGotoSifu('')" style="padding:9px 18px;font-size:13px;background:var(--gold);border:none;border-radius:99px;color:var(--bg,#1a1208);cursor:pointer;font-family:var(--thai);font-weight:600;">💬 คุยกับซินแสต่อ →</button>
+          <button type="button" class="hk-ov-chip" data-i18n="c.sec0.chip.shadow" onclick="hkGotoSifu('ช่วยอธิบายเงาและจุดที่ต้องระวังของดวงนี้ให้ลึกขึ้น')">เงาที่ต้องระวัง</button>
+          <button type="button" class="hk-ov-chip" data-i18n="c.sec0.chip.work" onclick="hkGotoSifu('ดวงนี้ควรใช้จุดแข็งกับงานและเงินอย่างไร')">งานและเงิน</button>
+          <button type="button" class="hk-ov-chip" data-i18n="c.sec0.chip.timing" onclick="hkGotoSifu('ช่วงวัยจรและปีนี้ควรเดินเกมชีวิตอย่างไร')">จังหวะช่วงนี้</button>
+          <button type="button" id="hk-ov-goto-sifu" onclick="hkGotoSifu('')" data-i18n="c.sec0.gotoSifu" style="padding:9px 18px;font-size:13px;background:var(--gold);border:none;border-radius:99px;color:var(--bg,#1a1208);cursor:pointer;font-family:var(--thai);font-weight:600;">💬 คุยกับซินแสต่อ →</button>
         </div>
-        <div class="hint">เปิดหน้าซินแสด้วยดวงเดียวกับหน้านี้ · คุยต่อเนื่อง เก็บประวัติให้</div>
+        <div class="hint" data-i18n="c.sec0.hint">เปิดหน้าซินแสด้วยดวงเดียวกับหน้านี้ · คุยต่อเนื่อง เก็บประวัติให้</div>
       </div>
       <script>
         /* เด้งไปหน้าซินแส /master พร้อมดวงเดียวกัน (+คำถามเริ่ม) */
@@ -1250,10 +1250,10 @@
       <div id="hk-ov-history" class="hk-ov-history" style="display:none;">
         <div class="hk-ov-history-head">
           <div>
-            <b>ประวัติคำถาม</b>
+            <b data-i18n="c.sifu.histTtl">ประวัติคำถาม</b>
             <span id="hk-ov-history-count">(0)</span>
           </div>
-          <button type="button" id="hk-ov-history-refresh">รีเฟรช</button>
+          <button type="button" id="hk-ov-history-refresh" data-i18n="c.sec0.histRefresh">รีเฟรช</button>
         </div>
         <div id="hk-ov-history-list"></div>
         <div id="hk-ov-history-note"></div>
@@ -1309,7 +1309,7 @@
   <section class="sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">02 · โครงดวง</span>
+        <span class="num" data-i18n="c.sec4.num">02 · โครงดวง</span>
         <h2 data-i18n="c.sec4.h2"><span class="tc">四柱</span>โครงดวง 4 เสา<span class="hk-help" data-help="s.month_jieqi"></span></h2>
       </div>
       <span class="sub" data-i18n="c.sec4.sub">10 แถว · 4 เสา · กดแถว 空亡 เพื่อดูก้านซ่อนให้ครบ</span>
@@ -1319,74 +1319,74 @@
         <thead>
           <tr>
             <th></th>
-            <th><span class="th-lead">ยาม</span><span class="tc">時</span><span class="en-sub">เวลาเกิด</span></th>
-            <th class="col-day"><span class="th-lead">วัน · ตัวเรา</span><span class="tc">日</span><span class="en-sub">วันเกิดหลัก</span></th>
-            <th><span class="th-lead">เดือน</span><span class="tc">月</span><span class="en-sub">เดือนเกิด</span></th>
-            <th><span class="th-lead">ปี</span><span class="tc">年</span><span class="en-sub">ปีเกิด</span></th>
+            <th><span class="th-lead" data-i18n="c.r.col.hour.lead">ยาม</span><span class="tc">時</span><span class="en-sub" data-i18n="c.r.col.hour.sub">เวลาเกิด</span></th>
+            <th class="col-day"><span class="th-lead" data-i18n="c.r.col.day.lead">วัน · ตัวเรา</span><span class="tc">日</span><span class="en-sub" data-i18n="c.r.col.day.sub">วันเกิดหลัก</span></th>
+            <th><span class="th-lead" data-i18n="c.r.col.month.lead">เดือน</span><span class="tc">月</span><span class="en-sub" data-i18n="c.r.col.month.sub">เดือนเกิด</span></th>
+            <th><span class="th-lead" data-i18n="c.r.col.year.lead">ปี</span><span class="tc">年</span><span class="en-sub" data-i18n="c.r.col.year.sub">ปีเกิด</span></th>
           </tr>
         </thead>
         <tbody>
-          <tr data-row="ten_god"><th><span class="th-lead">สิบเทพ</span><span class="tc">十神</span><span class="en-sub">บทบาทก้าน</span><span class="hk-help" data-help="r.tg"></span></th>
+          <tr data-row="ten_god"><th><span class="th-lead" data-i18n="c.r.tg.lead">สิบเทพ</span><span class="tc">十神</span><span class="en-sub" data-i18n="c.r.tg.sub">บทบาทก้าน</span><span class="hk-help" data-help="r.tg"></span></th>
             <td class="tg-hour"><span class="pt-empty">—</span></td>
-            <td class="col-day tg-day"><span class="pt-empty">日元 วันเกิดหลัก</span></td>
+            <td class="col-day tg-day"><span class="pt-empty" data-i18n="c.r.tg.dmPlaceholder">日元 วันเกิดหลัก</span></td>
             <td class="tg-month"><span class="pt-empty">—</span></td>
             <td class="tg-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="hs"><th><span class="th-lead">ก้านฟ้า</span><span class="tc">天干</span><span class="en-sub">ธาตุบนฟ้า</span><span class="hk-help" data-help="r.hs"></span></th>
+          <tr data-row="hs"><th><span class="th-lead" data-i18n="c.r.hs.lead">ก้านฟ้า</span><span class="tc">天干</span><span class="en-sub" data-i18n="c.r.hs.sub">ธาตุบนฟ้า</span><span class="hk-help" data-help="r.hs"></span></th>
             <td class="hs-hour"><span class="pt-empty">—</span></td>
             <td class="col-day hs-day"><span class="pt-empty">—</span></td>
             <td class="hs-month"><span class="pt-empty">—</span></td>
             <td class="hs-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="eb"><th><span class="th-lead">กิ่งดิน</span><span class="tc">地支</span><span class="en-sub">ธาตุบนดิน</span><span class="hk-help" data-help="r.eb"></span></th>
+          <tr data-row="eb"><th><span class="th-lead" data-i18n="c.r.eb.lead">กิ่งดิน</span><span class="tc">地支</span><span class="en-sub" data-i18n="c.r.eb.sub">ธาตุบนดิน</span><span class="hk-help" data-help="r.eb"></span></th>
             <td class="eb-hour"><span class="pt-empty">—</span></td>
             <td class="col-day eb-day"><span class="pt-empty">—</span></td>
             <td class="eb-month"><span class="pt-empty">—</span></td>
             <td class="eb-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="hhs"><th><span class="th-lead">ก้านซ่อน</span><span class="tc">藏干</span><span class="en-sub">ธาตุที่ซ่อนอยู่</span><span class="hk-help" data-help="r.hhs"></span></th>
+          <tr data-row="hhs"><th><span class="th-lead" data-i18n="c.r.hhs.lead">ก้านซ่อน</span><span class="tc">藏干</span><span class="en-sub" data-i18n="c.r.hhs.sub">ธาตุที่ซ่อนอยู่</span><span class="hk-help" data-help="r.hhs"></span></th>
             <td class="hhs-hour"><span class="pt-empty">—</span></td>
             <td class="col-day hhs-day"><span class="pt-empty">—</span></td>
             <td class="hhs-month"><span class="pt-empty">—</span></td>
             <td class="hhs-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="nayin"><th><span class="th-lead">ธาตุเสียง</span><span class="tc">納音</span><span class="en-sub">ภาพธาตุของเสา</span><span class="hk-help" data-help="r.nayin"></span></th>
+          <tr data-row="nayin"><th><span class="th-lead" data-i18n="c.r.nayin.lead">ธาตุเสียง</span><span class="tc">納音</span><span class="en-sub" data-i18n="c.r.nayin.sub">ภาพธาตุของเสา</span><span class="hk-help" data-help="r.nayin"></span></th>
             <td class="ny-hour"><span class="pt-empty">—</span></td>
             <td class="col-day ny-day"><span class="pt-empty">—</span></td>
             <td class="ny-month"><span class="pt-empty">—</span></td>
             <td class="ny-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="phases"><th><span class="th-lead">12 ระยะชีวิต</span><span class="tc">十二長生</span><span class="en-sub">จังหวะพลัง</span><span class="hk-help" data-help="r.phase"></span></th>
+          <tr data-row="phases"><th><span class="th-lead" data-i18n="c.r.phases.lead">12 ระยะชีวิต</span><span class="tc">十二長生</span><span class="en-sub" data-i18n="c.r.phases.sub">จังหวะพลัง</span><span class="hk-help" data-help="r.phase"></span></th>
             <td class="ph-hour"><span class="pt-empty">—</span></td>
             <td class="col-day ph-day"><span class="pt-empty">—</span></td>
             <td class="ph-month"><span class="pt-empty">—</span></td>
             <td class="ph-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="kong"><th><span class="th-lead">ดวงว่าง</span><span class="tc">空亡</span><span class="en-sub">จุดที่พลังไม่เต็ม</span><span class="hk-help" data-help="r.kwdhhs"></span></th>
+          <tr data-row="kong"><th><span class="th-lead" data-i18n="c.r.kong.lead">ดวงว่าง</span><span class="tc">空亡</span><span class="en-sub" data-i18n="c.r.kong.sub">จุดที่พลังไม่เต็ม</span><span class="hk-help" data-help="r.kwdhhs"></span></th>
             <td class="kw-hour"><span class="pt-empty">—</span></td>
             <td class="col-day kw-day"><span class="pt-empty">—</span></td>
             <td class="kw-month"><span class="pt-empty">—</span></td>
             <td class="kw-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="stars"><th><span class="th-lead">ดาวพิเศษ</span><span class="tc">神煞</span><span class="en-sub">สัญญาณเสริม</span><span class="hk-help" data-help="r.stars"></span></th>
+          <tr data-row="stars"><th><span class="th-lead" data-i18n="c.r.stars.lead">ดาวพิเศษ</span><span class="tc">神煞</span><span class="en-sub" data-i18n="c.r.stars.sub">สัญญาณเสริม</span><span class="hk-help" data-help="r.stars"></span></th>
             <td class="ss-hour"><span class="pt-empty">—</span></td>
             <td class="col-day ss-day"><span class="pt-empty">—</span></td>
             <td class="ss-month"><span class="pt-empty">—</span></td>
             <td class="ss-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="react"><th><span class="th-lead">ปฏิกิริยา</span><span class="tc">反應</span><span class="en-sub">ชนหรือหนุน</span><span class="hk-help" data-help="r.react"></span></th>
+          <tr data-row="react"><th><span class="th-lead" data-i18n="c.r.react.lead">ปฏิกิริยา</span><span class="tc">反應</span><span class="en-sub" data-i18n="c.r.react.sub">ชนหรือหนุน</span><span class="hk-help" data-help="r.react"></span></th>
             <td class="rx-hour"><span class="pt-empty">—</span></td>
             <td class="col-day rx-day"><span class="pt-empty">—</span></td>
             <td class="rx-month"><span class="pt-empty">—</span></td>
             <td class="rx-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="palace"><th><span class="th-lead">ตำแหน่งวัง</span><span class="tc">宮位</span><span class="en-sub">เรือนชีวิต</span><span class="hk-help" data-help="r.palace"></span></th>
+          <tr data-row="palace"><th><span class="th-lead" data-i18n="c.r.palace.lead">ตำแหน่งวัง</span><span class="tc">宮位</span><span class="en-sub" data-i18n="c.r.palace.sub">เรือนชีวิต</span><span class="hk-help" data-help="r.palace"></span></th>
             <td class="pal-hour"><span class="pt-empty">—</span></td>
             <td class="col-day pal-day"><span class="pt-empty">—</span></td>
             <td class="pal-month"><span class="pt-empty">—</span></td>
             <td class="pal-year"><span class="pt-empty">—</span></td>
           </tr>
-          <tr data-row="hex-natal"><th><span class="th-lead">สัญลักษณ์เสา 64</span><span class="tc">易</span><span class="en-sub">ภาพอ่านเสา</span><span class="hk-help" data-help="r.hex_natal"></span></th>
+          <tr data-row="hex-natal"><th><span class="th-lead" data-i18n="c.r.hexNatal.lead">สัญลักษณ์เสา 64</span><span class="tc">易</span><span class="en-sub" data-i18n="c.r.hexNatal.sub">ภาพอ่านเสา</span><span class="hk-help" data-help="r.hex_natal"></span></th>
             <td class="hex-hour"><span class="pt-empty">—</span></td>
             <td class="col-day hex-day"><span class="pt-empty">—</span></td>
             <td class="hex-month"><span class="pt-empty">—</span></td>
@@ -1401,7 +1401,7 @@
   <section class="sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">03 · มิติชีวิต</span>
+        <span class="num" data-i18n="c.sec2.num">03 · มิติชีวิต</span>
         <h2 data-i18n="c.sec2.h2"><span class="tc">十神</span>5 ด้านในชีวิตของคุณ<span class="hk-help" data-help="d.career"></span></h2>
       </div>
       <span class="sub" data-i18n="c.sec2.sub">สิบเทพ 十神 แปลเป็นมิติชีวิตที่ใช้จริง</span>
@@ -1444,11 +1444,11 @@
           </g>
           <!-- labels (สีต่างกันตาม domain) -->
           <g font-family="var(--mono)" font-size="11" text-anchor="middle">
-            <text x="200" y="60" fill="#4a9eff" font-weight="600">💼 งาน · 正官</text>
-            <text x="338" y="158" fill="#f4c842" font-weight="600">💰 รายได้ · 正財</text>
-            <text x="288" y="320" fill="#ff6b8a" font-weight="600">⚡ ความท้าทาย · 七殺</text>
-            <text x="112" y="320" fill="#b88dff" font-weight="600">🎨 ผลงาน · 食神</text>
-            <text x="62" y="158" fill="#7dd37b" font-weight="600">🌱 ตัวตน · 比肩</text>
+            <text x="200" y="60" fill="#4a9eff" font-weight="600" data-i18n="c.radar.career">💼 งาน · 正官</text>
+            <text x="338" y="158" fill="#f4c842" font-weight="600" data-i18n="c.radar.wealth">💰 รายได้ · 正財</text>
+            <text x="288" y="320" fill="#ff6b8a" font-weight="600" data-i18n="c.radar.challenge">⚡ ความท้าทาย · 七殺</text>
+            <text x="112" y="320" fill="#b88dff" font-weight="600" data-i18n="c.radar.arts">🎨 ผลงาน · 食神</text>
+            <text x="62" y="158" fill="#7dd37b" font-weight="600" data-i18n="c.radar.self">🌱 ตัวตน · 比肩</text>
           </g>
           <g font-family="var(--serif)" font-size="13" fill="var(--gold)" text-anchor="middle" font-weight="600" id="hk-radar-lvls">
             <text x="200" y="76">—</text>
@@ -1462,31 +1462,31 @@
       <div class="gods-list">
         <div class="god-row dom-career">
           <div class="god-ico">💼</div>
-          <div><b data-i18n="auto.c.502">งาน / ความรับผิดชอบ</b><span>正官 · งาน</span></div>
+          <div><b data-i18n="auto.c.502">งาน / ความรับผิดชอบ</b><span data-i18n="c.god.career.sub">正官 · งาน</span></div>
           <div class="god-bar"><i style="width:0%"></i></div>
           <div class="god-lvl">—</div>
         </div>
         <div class="god-row dom-wealth">
           <div class="god-ico">💰</div>
-          <div><b data-i18n="auto.c.503">รายได้ / การจัดการเงิน</b><span>正財 · รายได้</span></div>
+          <div><b data-i18n="auto.c.503">รายได้ / การจัดการเงิน</b><span data-i18n="c.god.wealth.sub">正財 · รายได้</span></div>
           <div class="god-bar"><i style="width:0%"></i></div>
           <div class="god-lvl">—</div>
         </div>
         <div class="god-row dom-love">
           <div class="god-ico">⚡</div>
-          <div><b data-i18n="auto.c.504">ความท้าทาย / แรงกดดัน</b><span>七殺 · แรงกดดัน</span></div>
+          <div><b data-i18n="auto.c.504">ความท้าทาย / แรงกดดัน</b><span data-i18n="c.god.challenge.sub">七殺 · แรงกดดัน</span></div>
           <div class="god-bar"><i style="width:0%"></i></div>
           <div class="god-lvl">—</div>
         </div>
         <div class="god-row dom-arts">
           <div class="god-ico">🎨</div>
-          <div><b data-i18n="auto.c.505">ผลงาน / ความสร้างสรรค์</b><span>食神 · ผลงาน</span></div>
+          <div><b data-i18n="auto.c.505">ผลงาน / ความสร้างสรรค์</b><span data-i18n="c.god.arts.sub">食神 · ผลงาน</span></div>
           <div class="god-bar"><i style="width:0%"></i></div>
           <div class="god-lvl">—</div>
         </div>
         <div class="god-row dom-self">
           <div class="god-ico">🌱</div>
-          <div><b data-i18n="auto.c.506">ตัวตน / เพื่อนร่วมระดับ</b><span>比肩 · ตัวตน</span></div>
+          <div><b data-i18n="auto.c.506">ตัวตน / เพื่อนร่วมระดับ</b><span data-i18n="c.god.self.sub">比肩 · ตัวตน</span></div>
           <div class="god-bar"><i style="width:0%"></i></div>
           <div class="god-lvl">—</div>
         </div>
@@ -1498,35 +1498,35 @@
   <section class="sec" id="hk-personal-sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">04 · ชีวิตจริง</span>
-        <h2><span class="tc">人生</span>มิติชีวิตจริง</h2>
+        <span class="num" data-i18n="c.sec9.num">04 · ชีวิตจริง</span>
+        <h2 data-i18n="c.sec9.h2"><span class="tc">人生</span>มิติชีวิตจริง</h2>
       </div>
       <span  class="sub" data-i18n="auto.c.507">คู่ครอง · อาชีพ · สุขภาพ · ดวงพิเศษ · จากเสาเกิดของคุณ</span>
     </div>
     <div class="hk-personal-grid" id="hk-personal-grid">
       <article class="hk-personal-card" id="hk-personal-special">
-        <div class="hd"><span class="ico">🔮</span><h3><span class="tc">格</span>ดวงพิเศษ<span class="hk-help" data-help="p.special"></span></h3></div>
+        <div class="hd"><span class="ico">🔮</span><h3 data-i18n="c.sec9.special.h3"><span class="tc">格</span>ดวงพิเศษ<span class="hk-help" data-help="p.special"></span></h3></div>
         <div class="body">—</div>
       </article>
       <article class="hk-personal-card" id="hk-personal-spouse">
-        <div class="hd"><span class="ico">💑</span><h3><span class="tc">夫妻</span>คู่ครอง<span class="hk-help" data-help="p.spouse"></span></h3></div>
+        <div class="hd"><span class="ico">💑</span><h3 data-i18n="c.sec9.spouse.h3"><span class="tc">夫妻</span>คู่ครอง<span class="hk-help" data-help="p.spouse"></span></h3></div>
         <div class="body">—</div>
       </article>
       <article class="hk-personal-card" id="hk-personal-career">
-        <div class="hd"><span class="ico">💼</span><h3><span class="tc">事業</span>อาชีพที่เหมาะ<span class="hk-help" data-help="p.career"></span></h3></div>
+        <div class="hd"><span class="ico">💼</span><h3 data-i18n="c.sec9.career.h3"><span class="tc">事業</span>อาชีพที่เหมาะ<span class="hk-help" data-help="p.career"></span></h3></div>
         <div class="body">—</div>
       </article>
       <article class="hk-personal-card" id="hk-personal-health">
-        <div class="hd"><span class="ico">🌿</span><h3><span class="tc">健康</span>สุขภาพ<span class="hk-help" data-help="p.health"></span></h3></div>
+        <div class="hd"><span class="ico">🌿</span><h3 data-i18n="c.sec9.health.h3"><span class="tc">健康</span>สุขภาพ<span class="hk-help" data-help="p.health"></span></h3></div>
         <div class="body">—</div>
       </article>
       <!-- 18 พ.ค. · #3 · เพิ่ม 父母 + 子女 cards · ใช้ pillar palaces -->
       <article class="hk-personal-card" id="hk-personal-parents">
-        <div class="hd"><span class="ico">👨‍👩‍👧</span><h3><span class="tc">父母</span>พ่อแม่ · พี่น้อง</h3></div>
+        <div class="hd"><span class="ico">👨‍👩‍👧</span><h3 data-i18n="c.sec9.parents.h3"><span class="tc">父母</span>พ่อแม่ · พี่น้อง</h3></div>
         <div class="body">—</div>
       </article>
       <article class="hk-personal-card" id="hk-personal-children">
-        <div class="hd"><span class="ico">👶</span><h3><span class="tc">子女</span>ลูก · บั้นปลาย</h3></div>
+        <div class="hd"><span class="ico">👶</span><h3 data-i18n="c.sec9.children.h3"><span class="tc">子女</span>ลูก · บั้นปลาย</h3></div>
         <div class="body">—</div>
       </article>
     </div>
@@ -1538,7 +1538,7 @@
   <section class="sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">06 · ธาตุ</span>
+        <span class="num" data-i18n="c.sec1.num">06 · ธาตุ</span>
         <h2 data-i18n="c.sec1.h2"><span class="tc">五行</span>ธาตุที่เด่น · ขาด · ควรเสริม <span class="fn-badge" data-th="พลังใช้ได้จริง" data-en="Functional %" data-zh="根氣折算" title="พลังใช้ได้จริง · นับเฉพาะธาตุที่มีรากในผัง">พลังใช้ได้จริง</span><span class="hk-help" data-help="s.element"></span></h2>
       </div>
       <span class="sub" data-i18n="c.sec1.sub">ใช้ตอบ "อะไรช่วยฉัน อะไรควรระวัง"</span>
@@ -1590,7 +1590,7 @@
   <section class="sec" id="hk-ysv2-sec" style="display:none">
     <div class="sec-head">
       <div class="l">
-        <span class="num">06b · ธาตุช่วย</span>
+        <span class="num" data-i18n="c.ysv2.num">06b · ธาตุช่วย</span>
         <h2 data-i18n="c.ysv2.h2"><span class="tc">用神</span> v2 · โครงสร้าง · โรค · ยา · สะพานเชื่อม <a class="hk-method-link" href="/methodology" target="_blank" rel="noopener" data-th="📿 วิธีคิด 13 ขั้น →" data-en="📿 Methodology (13 steps) →" data-zh="📿 方法論·十三步 →" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11px;font-weight:normal;color:var(--gold,#c8a44d);text-decoration:none;border:1px solid rgba(200,164,77,.3);padding:3px 10px;border-radius:99px;background:rgba(200,164,77,.08);vertical-align:middle;">📿 วิธีคิด 13 ขั้น →</a></h2>
       </div>
       <span class="sub" data-i18n="c.ysv2.sub">ใช้ตอบ "ดวงคุณเป็นโครงสร้างอะไร · ติดปัญหาอะไร · ยาคือธาตุไหน"</span>
@@ -1619,9 +1619,9 @@
         <div id="hk-school-box" style="display:none;margin-top:10px;padding:8px;border:1px dashed var(--line,#555);border-radius:8px;font-size:.82em">
           <div id="hk-school-q" style="margin-bottom:6px"></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="hk-school-btn" data-school="shun_shi" style="cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid var(--line,#5a8);background:transparent;color:inherit">🌊 ตามกระแสตรงกว่า (ช่วงนั้นรุ่ง)</button>
-            <button class="hk-school-btn" data-school="fu_yi" style="cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid var(--line,#a85);background:transparent;color:inherit">🔥 พยุงตัวตรงกว่า (ช่วงนั้นฝืด)</button>
-            <button class="hk-school-btn" data-school="" style="cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid var(--line,#777);background:transparent;color:inherit;opacity:.7">↺ ยังไม่แน่ใจ/ล้างคำตอบ</button>
+            <button class="hk-school-btn" data-school="shun_shi" data-i18n="c.school.stream" style="cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid var(--line,#5a8);background:transparent;color:inherit">🌊 ตามกระแสตรงกว่า (ช่วงนั้นรุ่ง)</button>
+            <button class="hk-school-btn" data-school="fu_yi" data-i18n="c.school.support" style="cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid var(--line,#a85);background:transparent;color:inherit">🔥 พยุงตัวตรงกว่า (ช่วงนั้นฝืด)</button>
+            <button class="hk-school-btn" data-school="" data-i18n="c.school.reset" style="cursor:pointer;padding:4px 10px;border-radius:6px;border:1px solid var(--line,#777);background:transparent;color:inherit;opacity:.7">↺ ยังไม่แน่ใจ/ล้างคำตอบ</button>
           </div>
           <div id="hk-school-status" style="margin-top:6px;opacity:.7"></div>
         </div>
@@ -1637,8 +1637,8 @@
   <section class="sec">
     <div class="sec-head">
       <div class="l">
-        <span class="num">07 · ปฏิกิริยา</span>
-        <h2>แรงหนุนและแรงชนในดวง <span class="tc">關係</span><span class="hk-help" data-help="i.harmony"></span></h2>
+        <span class="num" data-i18n="c.sec5.num">07 · ปฏิกิริยา</span>
+        <h2 data-i18n="c.sec5.h2">แรงหนุนและแรงชนในดวง <span class="tc">關係</span><span class="hk-help" data-help="i.harmony"></span></h2>
       </div>
       <span class="sub" data-i18n="c.sec5.sub">ดูว่าเสาในดวงช่วยกัน ชนกัน หรือทำให้เรื่องเดิมวนซ้ำตรงไหน</span>
     </div>
@@ -1697,13 +1697,13 @@
   <section class="sec" id="hk-carry-section" style="display:none;">
     <div class="sec-head">
       <div class="l">
-        <span class="num">08b · 拱·夾</span>
-        <h2><span class="tc">拱·夾</span>ภาพคีบ · กิ่งที่ซ่อนระหว่างเสา</h2>
-        <span class="sub">Carry image · sifu-grade · ตำรา 三命通會 + 神峰通考</span>
+        <span class="num" data-i18n="c.carry.num">08b · 拱·夾</span>
+        <h2 data-i18n="c.carry.h2"><span class="tc">拱·夾</span>ภาพคีบ · กิ่งที่ซ่อนระหว่างเสา</h2>
+        <span class="sub" data-i18n="c.carry.sub">Carry image · sifu-grade · ตำรา 三命通會 + 神峰通考</span>
       </div>
     </div>
     <div id="hk-carry-list" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;"></div>
-    <p style="font-size:11px;color:var(--fg-soft,#888);margin-top:10px;line-height:1.6;">
+    <p style="font-size:11px;color:var(--fg-soft,#888);margin-top:10px;line-height:1.6;" data-i18n="c.carry.note">
       💡 <b>拱·夾</b> = "กิ่งที่ไม่อยู่ในผัง แต่ถูกคีบ/รวมโดย 2 กิ่งของผัง" · เปิดเมื่อ 大運/流年/流月 เข้ากิ่งนั้น · แตกเมื่อกิ่งนั้นโดน 沖
     </p>
   </section>
@@ -1712,8 +1712,8 @@
   <section class="sec" id="hk-personal-stars">
     <div class="sec-head">
       <div class="l">
-        <span class="num">09 · 個人星</span>
-        <h2><span class="tc">個人星</span>ดาวประจำตัว · 神煞<span class="hk-help" data-help="s.pstar"></span></h2>
+        <span class="num" data-i18n="c.pstar.num">09 · 個人星</span>
+        <h2 data-i18n="c.pstar.h2"><span class="tc">個人星</span>ดาวประจำตัว · 神煞<span class="hk-help" data-help="s.pstar"></span></h2>
       </div>
       <span  class="sub" data-i18n="auto.c.518">ดาวที่ทำงานในดวง · แยกตามเสาที่ตก · ความหมายตามตำรา hourkey</span>
     </div>
@@ -1781,8 +1781,8 @@
   <section class="sec" id="hk-heluo-sec" style="display:none">
     <div class="sec-head">
       <div>
-        <h2><span class="tc">易經</span>ดวงในสัญลักษณ์ 64 ฉัก · 河洛</h2>
-        <span class="sub">4 มุม · ก่อนเกิด · หลังเกิด · ปีนี้ · เดือนนี้ · ตำราจีน 4000 ปี</span>
+        <h2 data-i18n="c.heluo.h2"><span class="tc">易經</span>ดวงในสัญลักษณ์ 64 ฉัก · 河洛</h2>
+        <span class="sub" data-i18n="c.heluo.sub">4 มุม · ก่อนเกิด · หลังเกิด · ปีนี้ · เดือนนี้ · ตำราจีน 4000 ปี</span>
       </div>
     </div>
     <div id="hk-heluo-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;"></div>
@@ -1798,13 +1798,13 @@
     </div>
     <div id="hk-jieqi-info" style="background:linear-gradient(160deg,var(--gold-soft),transparent);border:1px solid var(--gold);border-radius:14px;padding:16px;margin-bottom:16px;font-size:13px;line-height:1.7;"></div>
     <div id="hk-jieqi-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;"></div>
-    <div style="text-align:right;margin-top:14px;"><a href="/solar-terms" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.1em;text-decoration:none;">ดูปฏิทิน 16 ปี · /solar-terms →</a></div>
+    <div style="text-align:right;margin-top:14px;"><a href="/solar-terms" target="_blank" data-i18n="c.jieqi.linkFull" style="font-family:var(--mono);font-size:11px;color:var(--gold);letter-spacing:.1em;text-decoration:none;">ดูปฏิทิน 16 ปี · /solar-terms →</a></div>
   </section>
 
   <!-- FOOTER CTA -->
   <div class="footer-cta">
     <div>
-      <h3>พร้อมใช้ <span class="tc">解</span> ดวงในชีวิตจริง?</h3>
+      <h3 data-i18n="c.footer.h3">พร้อมใช้ <span class="tc">解</span> ดวงในชีวิตจริง?</h3>
       <p data-i18n="auto.c.538">ดูชั่วโมงมงคลของวันนี้ · ตรวจคนรอบตัว · บันทึกการตัดสินใจ</p>
     </div>
     <div class="btn-row">
@@ -1829,7 +1829,8 @@ window.HK_RENDER_CHART = function renderChart(d, birth){
     if (dmGlyph && dayStem) dmGlyph.textContent = dayStem;
     const dmName = document.querySelector('.dm-name');
     if (dmName && dayStem) {
-      const stemMap = { '甲':'ไม้หยาง · 甲木','乙':'ไม้หยิน · 乙木','丙':'ไฟหยาง · 丙火','丁':'ไฟหยิน · 丁火','戊':'ดินหยาง · 戊土','己':'ดินหยิน · 己土','庚':'ทองหยาง · 庚金','辛':'ทองหยิน · 辛金','壬':'น้ำหยาง · 壬水','癸':'น้ำหยิน · 癸水' };
+      const _cx = window._chtx || function(k,f){ return f; };
+      const stemMap = { '甲':_cx('c.stem.jia','ไม้หยาง')+' · 甲木','乙':_cx('c.stem.yi','ไม้หยิน')+' · 乙木','丙':_cx('c.stem.bing','ไฟหยาง')+' · 丙火','丁':_cx('c.stem.ding','ไฟหยิน')+' · 丁火','戊':_cx('c.stem.wu','ดินหยาง')+' · 戊土','己':_cx('c.stem.ji','ดินหยิน')+' · 己土','庚':_cx('c.stem.geng','ทองหยาง')+' · 庚金','辛':_cx('c.stem.xin','ทองหยิน')+' · 辛金','壬':_cx('c.stem.ren','น้ำหยาง')+' · 壬水','癸':_cx('c.stem.gui','น้ำหยิน')+' · 癸水' };
       dmName.textContent = stemMap[dayStem] || dayStem;
     }
 
@@ -1903,6 +1904,7 @@ window.HK_HELP = {
 };
 
 window.HK_I18N = {
+  'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'},
   /* 🤖 L4 auto-translated · 15 พ.ค. 2026 */
   'auto.c.501': { th:'01 · สรุปภาพรวมดวง', en:'01 · YOUR CHART AT A GLANCE', zh:'01·命盤總覽' },
   'auto.c.502': { th:'งาน / ความรับผิดชอบ', en:'Work / Responsibility', zh:'工作/責任' },
@@ -1958,6 +1960,8 @@ window.HK_I18N = {
   'c.ysv2.bridge':   { th:'通關 · สะพาน', en:'Bridge', zh:'通關' },
   'c.ysv2.roles':    { th:'🧭 บทบาทธาตุในชีวิตของดวงนี้ (แต่ละธาตุมีหน้าที่ต่างกัน · ไม่ใช่แค่ดี/ร้าย)', en:'🧭 Element roles in this chart (each element has its own job — not just good/bad)', zh:'🧭 五行在此命之職能（各司其職 · 非僅吉凶）' },
   'c.ysv2.reasoning':{ th:'📜 ที่มาของการประเมิน', en:'📜 Reasoning trail', zh:'📜 推理過程' },
+  'c.jieqi.h2':  { th:'<span class="tc">節氣</span>24 節氣 · ปฏิทินฤดูปีเกิด', en:'<span class="tc">節氣</span>24 Solar Terms · Birth-year Seasonal Calendar', zh:'<span class="tc">節氣</span>二十四節氣 · 出生年節氣曆' },
+  'c.jieqi.sub': { th:'เดือน BaZi เริ่มที่ 節 (Major) ไม่ใช่วันที่ 1 จันทรคติ · highlight = jieqi ของเดือนเกิด', en:'The BaZi month begins at 節 (Major Term), not the 1st lunar day · highlighted = the jieqi of the birth month', zh:'八字月份始於「節」（節氣）· 並非農曆初一 · 標示為出生月之節氣' },
   /* §11 流年 100-year timeline · 15 พ.ค. */
   'c.lt.title':      { th:'流年 · {N} ปี (เกิด→ตาย) · เทียบวันเกิดหลัก + 64卦',
                        en:'流年 · {N} years (birth→end) · vs DM + 64 hexagrams',
@@ -2018,7 +2022,598 @@ window.HK_I18N = {
   'c.sifu.loadTtl':{ th:'กำลังอ่านดวง', en:'Reading your chart', zh:'解讀命盤中' },
   'c.sifu.loadSub':{ th:'ซินแสกำลังเทียบกับตำรา · รอสักครู่', en:'Sifu cross-checks classical texts · please wait', zh:'老師正核對古籍 · 請稍候' },
   'c.sifu.errMsg': { th:'ขออภัย ตอนนี้ติดต่อซินแสไม่ได้ · ลองใหม่อีกครั้ง', en:'Sorry, cannot reach Sifu · please try again', zh:'抱歉 · 暫時無法連繫老師 · 請重試' },
-  'c.people.btn':  { th:'เปลี่ยนดวง', en:'Switch chart', zh:'換盤' }
+  'c.people.btn':  { th:'เปลี่ยนดวง', en:'Switch chart', zh:'換盤' },
+  /* 🌐 i18n-scan HTML pass · 5 ก.ค. 2026 */
+  'c.page.title':  { th:'hourkey · ดวงของคุณ', en:'hourkey · Your BaZi Chart', zh:'hourkey · 您的命盤' },
+  'c.sec0.num':    { th:'00 · ภาพรวม', en:'00 · OVERVIEW', zh:'00·總覽' },
+  'c.sec0.h2':     { th:'<span class="tc">概</span>ภาพรวมตัวตน · จาก 30 โปรไฟล์แกนดวง', en:'<span class="tc">概</span>Identity Overview · from 30 chart profiles', zh:'<span class="tc">概</span>命主總覽 · 源自30項命盤剖析' },
+  'c.sec0.sub':    { th:'อ่านอัตโนมัติจากก้านวันและกำลังดวง · ถ้าอยากลึกขึ้นค่อยถามซินแสต่อ', en:'Auto-read from your Day Master and chart strength · ask Sifu for more depth', zh:'依日主與命局強弱自動解讀 · 欲深入可繼續請教老師' },
+  'c.sec0.regen':  { th:'ถามใหม่', en:'Ask again', zh:'重新提問' },
+  'c.sec0.followLabel':{ th:'อยากเจาะลึกกว่านี้? คุยกับซินแสแบบต่อเนื่อง (ซินแสจำบทสนทนาให้)', en:'Want to go deeper? Keep chatting with Sifu (the conversation is remembered)', zh:'想更深入了解？與老師持續對話（老師會記住對話紀錄）' },
+  'c.sec0.chip.shadow':{ th:'เงาที่ต้องระวัง', en:'Shadow to watch', zh:'需留意之陰面' },
+  'c.sec0.chip.work':{ th:'งานและเงิน', en:'Work & money', zh:'事業與財運' },
+  'c.sec0.chip.timing':{ th:'จังหวะช่วงนี้', en:'Timing right now', zh:'當前時運' },
+  'c.sec0.gotoSifu':{ th:'💬 คุยกับซินแสต่อ →', en:'💬 Continue with Sifu →', zh:'💬 繼續與老師對話 →' },
+  'c.sec0.hint':   { th:'เปิดหน้าซินแสด้วยดวงเดียวกับหน้านี้ · คุยต่อเนื่อง เก็บประวัติให้', en:'Opens Sifu with this same chart · continues the conversation, history saved', zh:'以同一命盤開啟老師頁面 · 延續對話並保留紀錄' },
+  'c.sec0.histRefresh':{ th:'รีเฟรช', en:'Refresh', zh:'重新整理' },
+  'c.sec4.num':    { th:'02 · โครงดวง', en:'02 · FRAME', zh:'02·四柱框架' },
+  'c.r.col.hour.lead':{ th:'ยาม', en:'Hour', zh:'時' },
+  'c.r.col.hour.sub':{ th:'เวลาเกิด', en:'Birth time', zh:'出生時辰' },
+  'c.r.col.day.lead':{ th:'วัน · ตัวเรา', en:'Day · Self', zh:'日 · 自身' },
+  'c.r.col.day.sub':{ th:'วันเกิดหลัก', en:'Day Master', zh:'日主' },
+  'c.r.col.month.lead':{ th:'เดือน', en:'Month', zh:'月' },
+  'c.r.col.month.sub':{ th:'เดือนเกิด', en:'Birth month', zh:'出生月' },
+  'c.r.col.year.lead':{ th:'ปี', en:'Year', zh:'年' },
+  'c.r.col.year.sub':{ th:'ปีเกิด', en:'Birth year', zh:'出生年' },
+  'c.r.tg.lead':   { th:'สิบเทพ', en:'Ten Gods', zh:'十神' },
+  'c.r.tg.sub':    { th:'บทบาทก้าน', en:'Stem role', zh:'天干角色' },
+  'c.r.tg.dmPlaceholder':{ th:'日元 วันเกิดหลัก', en:'日元 Day Master', zh:'日元 · 日主' },
+  'c.r.hs.lead':   { th:'ก้านฟ้า', en:'Heaven Stem', zh:'天干' },
+  'c.r.hs.sub':    { th:'ธาตุบนฟ้า', en:'Element in Heaven', zh:'天干之五行' },
+  'c.r.eb.lead':   { th:'กิ่งดิน', en:'Earth Branch', zh:'地支' },
+  'c.r.eb.sub':    { th:'ธาตุบนดิน', en:'Element in Earth', zh:'地支之五行' },
+  'c.r.hhs.lead':  { th:'ก้านซ่อน', en:'Hidden Stems', zh:'藏干' },
+  'c.r.hhs.sub':   { th:'ธาตุที่ซ่อนอยู่', en:'Elements hidden within', zh:'潛藏之五行' },
+  'c.r.nayin.lead':{ th:'ธาตุเสียง', en:'Na Yin', zh:'納音' },
+  'c.r.nayin.sub': { th:'ภาพธาตุของเสา', en:'Elemental image of the pillar', zh:'柱之五行意象' },
+  'c.r.phases.lead':{ th:'12 ระยะชีวิต', en:'12 Life Phases', zh:'十二長生' },
+  'c.r.phases.sub':{ th:'จังหวะพลัง', en:'Qi rhythm', zh:'氣之節律' },
+  'c.r.kong.lead': { th:'ดวงว่าง', en:'Void (Kong Wang)', zh:'空亡' },
+  'c.r.kong.sub':  { th:'จุดที่พลังไม่เต็ม', en:'Where the energy runs thin', zh:'力量未足之處' },
+  'c.r.stars.lead':{ th:'ดาวพิเศษ', en:'Special Stars', zh:'神煞' },
+  'c.r.stars.sub': { th:'สัญญาณเสริม', en:'Supplementary signals', zh:'輔助訊號' },
+  'c.r.react.lead':{ th:'ปฏิกิริยา', en:'Interactions', zh:'反應' },
+  'c.r.react.sub': { th:'ชนหรือหนุน', en:'Clash or support', zh:'相沖或相助' },
+  'c.r.palace.lead':{ th:'ตำแหน่งวัง', en:'Palace Position', zh:'宮位' },
+  'c.r.palace.sub':{ th:'เรือนชีวิต', en:'Life palace', zh:'命宮' },
+  'c.r.hexNatal.lead':{ th:'สัญลักษณ์เสา 64', en:'64 Hexagram', zh:'易 · 64卦' },
+  'c.r.hexNatal.sub':{ th:'ภาพอ่านเสา', en:'Pillar as hexagram image', zh:'柱之卦象' },
+  'c.sec2.num':    { th:'03 · มิติชีวิต', en:'03 · LIFE DOMAINS', zh:'03·人生領域' },
+  'c.radar.career':{ th:'💼 งาน · 正官', en:'💼 Career · 正官', zh:'💼 事業 · 正官' },
+  'c.radar.wealth':{ th:'💰 รายได้ · 正財', en:'💰 Wealth · 正財', zh:'💰 財運 · 正財' },
+  'c.radar.challenge':{ th:'⚡ ความท้าทาย · 七殺', en:'⚡ Challenge · 七殺', zh:'⚡ 挑戰 · 七殺' },
+  'c.radar.arts':  { th:'🎨 ผลงาน · 食神', en:'🎨 Output · 食神', zh:'🎨 才藝 · 食神' },
+  'c.radar.self':  { th:'🌱 ตัวตน · 比肩', en:'🌱 Self · 比肩', zh:'🌱 自我 · 比肩' },
+  'c.god.career.sub':{ th:'正官 · งาน', en:'正官 · Career', zh:'正官 · 事業' },
+  'c.god.wealth.sub':{ th:'正財 · รายได้', en:'正財 · Wealth', zh:'正財 · 財運' },
+  'c.god.challenge.sub':{ th:'七殺 · แรงกดดัน', en:'七殺 · Pressure', zh:'七殺 · 壓力' },
+  'c.god.arts.sub':{ th:'食神 · ผลงาน', en:'食神 · Output', zh:'食神 · 才藝' },
+  'c.god.self.sub':{ th:'比肩 · ตัวตน', en:'比肩 · Self', zh:'比肩 · 自我' },
+  'c.sec9.num':    { th:'04 · ชีวิตจริง', en:'04 · REAL LIFE', zh:'04·現實人生' },
+  'c.sec9.h2':     { th:'<span class="tc">人生</span>มิติชีวิตจริง', en:'<span class="tc">人生</span>Real-life dimensions', zh:'<span class="tc">人生</span>現實人生面向' },
+  'c.sec9.special.h3':{ th:'<span class="tc">格</span>ดวงพิเศษ', en:'<span class="tc">格</span>Special Chart', zh:'<span class="tc">格</span>特殊格局' },
+  'c.sec9.spouse.h3':{ th:'<span class="tc">夫妻</span>คู่ครอง', en:'<span class="tc">夫妻</span>Spouse', zh:'<span class="tc">夫妻</span>配偶' },
+  'c.sec9.career.h3':{ th:'<span class="tc">事業</span>อาชีพที่เหมาะ', en:'<span class="tc">事業</span>Suited Career', zh:'<span class="tc">事業</span>適合之事業' },
+  'c.sec9.health.h3':{ th:'<span class="tc">健康</span>สุขภาพ', en:'<span class="tc">健康</span>Health', zh:'<span class="tc">健康</span>健康' },
+  'c.sec9.parents.h3':{ th:'<span class="tc">父母</span>พ่อแม่ · พี่น้อง', en:'<span class="tc">父母</span>Parents · Siblings', zh:'<span class="tc">父母</span>父母 · 兄弟姊妹' },
+  'c.sec9.children.h3':{ th:'<span class="tc">子女</span>ลูก · บั้นปลาย', en:'<span class="tc">子女</span>Children · Later Years', zh:'<span class="tc">子女</span>子女 · 晚年' },
+  'c.sec1.num':    { th:'06 · ธาตุ', en:'06 · ELEMENTS', zh:'06·五行' },
+  'c.ysv2.num':    { th:'06b · ธาตุช่วย', en:'06b · SUPPORT ELEMENT', zh:'06b·輔助五行' },
+  'c.school.stream':{ th:'🌊 ตามกระแสตรงกว่า (ช่วงนั้นรุ่ง)', en:'🌊 Follow-the-flow fits better (thriving then)', zh:'🌊 順勢更貼切（彼時得志）' },
+  'c.school.support':{ th:'🔥 พยุงตัวตรงกว่า (ช่วงนั้นฝืด)', en:'🔥 Support-the-self fits better (struggling then)', zh:'🔥 扶身更貼切（彼時受阻）' },
+  'c.school.reset':{ th:'↺ ยังไม่แน่ใจ/ล้างคำตอบ', en:'↺ Not sure yet / clear answer', zh:'↺ 尚不確定/清除答案' },
+  'c.sec5.num':    { th:'07 · ปฏิกิริยา', en:'07 · INTERACTIONS', zh:'07·互動關係' },
+  'c.sec5.h2':     { th:'แรงหนุนและแรงชนในดวง <span class="tc">關係</span>', en:'Support and clash in your chart <span class="tc">關係</span>', zh:'命局中的相助與相沖 <span class="tc">關係</span>' },
+  'c.carry.num':   { th:'08b · 拱·夾', en:'08b · CARRY IMAGE', zh:'08b·拱夾' },
+  'c.carry.h2':    { th:'<span class="tc">拱·夾</span>ภาพคีบ · กิ่งที่ซ่อนระหว่างเสา', en:'<span class="tc">拱·夾</span>Carry image · hidden branch between pillars', zh:'<span class="tc">拱·夾</span>拱夾 · 柱間潛藏之支' },
+  'c.carry.sub':   { th:'Carry image · sifu-grade · ตำรา 三命通會 + 神峰通考', en:'Carry image · sifu-grade · per 三命通會 + 神峰通考', zh:'拱夾 · 命理師級 · 依三命通會+神峰通考' },
+  'c.carry.note':  { th:'💡 <b>拱·夾</b> = "กิ่งที่ไม่อยู่ในผัง แต่ถูกคีบ/รวมโดย 2 กิ่งของผัง" · เปิดเมื่อ 大運/流年/流月 เข้ากิ่งนั้น · แตกเมื่อกิ่งนั้นโดน 沖',
+                     en:'💡 <b>拱·夾</b> = "a branch absent from the chart, but framed/merged by 2 of its branches" · activates when Luck Pillar/Year/Month enters that branch · breaks if that branch is clashed (沖)',
+                     zh:'💡 <b>拱·夾</b> =「原局未見之支，卻被局中兩支拱夾/合成」· 逢大運/流年/流月引動該支則應 · 該支遭沖則破' },
+  'c.pstar.num':   { th:'09 · 個人星', en:'09 · PERSONAL STARS', zh:'09·個人星' },
+  'c.pstar.h2':    { th:'<span class="tc">個人星</span>ดาวประจำตัว · 神煞', en:'<span class="tc">個人星</span>Personal Stars · 神煞', zh:'<span class="tc">個人星</span>個人星 · 神煞' },
+  'c.heluo.h2':    { th:'<span class="tc">易經</span>ดวงในสัญลักษณ์ 64 ฉัก · 河洛', en:'<span class="tc">易經</span>Your chart in 64 Hexagrams · He Luo', zh:'<span class="tc">易經</span>命盤化為64卦 · 河洛' },
+  'c.heluo.sub':   { th:'4 มุม · ก่อนเกิด · หลังเกิด · ปีนี้ · เดือนนี้ · ตำราจีน 4000 ปี', en:'4 angles · pre-birth · post-birth · this year · this month · 4000-year Chinese classic', zh:'四個角度 · 先天 · 後天 · 今年 · 今月 · 中華四千年古法' },
+  'c.jieqi.linkFull':{ th:'ดูปฏิทิน 16 ปี · /solar-terms →', en:'View the 16-year calendar · /solar-terms →', zh:'查看16年曆 · /solar-terms →' },
+  'c.footer.h3':   { th:'พร้อมใช้ <span class="tc">解</span> ดวงในชีวิตจริง?', en:'Ready to <span class="tc">解</span> apply your chart to real life?', zh:'準備好將 <span class="tc">解</span> 命盤運用於現實人生了嗎？' },
+  /* 🌐 JS-pass backfill · 5 ก.ค. 2026 · batch A + concurrent session's already-wrapped keys */
+  'c.stem.jia':{ th:'ไม้หยาง', en:'Yang Wood', zh:'陽木' },
+  'c.stem.yi':{ th:'ไม้หยิน', en:'Yin Wood', zh:'陰木' },
+  'c.stem.bing':{ th:'ไฟหยาง', en:'Yang Fire', zh:'陽火' },
+  'c.stem.ding':{ th:'ไฟหยิน', en:'Yin Fire', zh:'陰火' },
+  'c.stem.wu':{ th:'ดินหยาง', en:'Yang Earth', zh:'陽土' },
+  'c.stem.ji':{ th:'ดินหยิน', en:'Yin Earth', zh:'陰土' },
+  'c.stem.geng':{ th:'ทองหยาง', en:'Yang Metal', zh:'陽金' },
+  'c.stem.xin':{ th:'ทองหยิน', en:'Yin Metal', zh:'陰金' },
+  'c.stem.ren':{ th:'น้ำหยาง', en:'Yang Water', zh:'陽水' },
+  'c.stem.gui':{ th:'น้ำหยิน', en:'Yin Water', zh:'陰水' },
+  'c.stemDesc.jia':{ th:'ไม้หยาง · ต้นไม้ใหญ่ · สูงตรง', en:'Yang Wood · Tall Tree · Upright', zh:'陽木 · 大樹 · 挺拔' },
+  'c.stemDesc.yi':{ th:'ไม้หยิน · เถาวัลย์ · ยืดหยุ่น', en:'Yin Wood · Vine · Flexible', zh:'陰木 · 藤蔓 · 柔韌' },
+  'c.stemDesc.bing':{ th:'ไฟหยาง · ดวงอาทิตย์ · เปิดเผย', en:'Yang Fire · The Sun · Open & Bright', zh:'陽火 · 太陽 · 光明外顯' },
+  'c.stemDesc.ding':{ th:'ไฟหยิน · เปลวเทียน · นุ่มนวล', en:'Yin Fire · Candlelight · Gentle', zh:'陰火 · 燭火 · 溫柔內斂' },
+  'c.stemDesc.wu':{ th:'ดินหยาง · ภูเขา · มั่นคง', en:'Yang Earth · Mountain · Steady', zh:'陽土 · 高山 · 穩重' },
+  'c.stemDesc.ji':{ th:'ดินหยิน · ดินไร่นา · เพาะปลูก', en:'Yin Earth · Garden Soil · Cultivating', zh:'陰土 · 田園之土 · 滋養栽培' },
+  'c.stemDesc.geng':{ th:'ทองหยาง · ดาบโลหะ · เด็ดขาด', en:'Yang Metal · Blade · Decisive', zh:'陽金 · 刀劍 · 剛毅果決' },
+  'c.stemDesc.xin':{ th:'ทองหยิน · เครื่องประดับ · ละเอียด', en:'Yin Metal · Jewelry · Refined', zh:'陰金 · 珠寶 · 精緻' },
+  'c.stemDesc.ren':{ th:'น้ำหยาง · มหาสมุทร · ลื่นไหล', en:'Yang Water · Ocean · Fluid', zh:'陽水 · 海洋 · 流動不羈' },
+  'c.stemDesc.gui':{ th:'น้ำหยิน · น้ำฝน · ซึม', en:'Yin Water · Rain · Seeping', zh:'陰水 · 雨露 · 滲透' },
+  'c.tgLabel.biJian':{ th:'เพื่อนร่วมระดับ', en:'Companion', zh:'同輩' },
+  'c.tgLabel.jieCai':{ th:'แย่งทรัพย์', en:'Rival Wealth', zh:'奪財' },
+  'c.tgLabel.shiShen':{ th:'ผลงานนุ่ม', en:'Soft Output', zh:'溫和產出' },
+  'c.tgLabel.shangGuan':{ th:'ผลงานแรง', en:'Bold Output', zh:'強勢產出' },
+  'c.tgLabel.pianCai':{ th:'ทรัพย์เคลื่อน', en:'Windfall Wealth', zh:'偏財流動' },
+  'c.tgLabel.zhengCai':{ th:'ทรัพย์ตรง', en:'Direct Wealth', zh:'正財穩定' },
+  'c.tgLabel.qiSha':{ th:'แรงกดดัน', en:'Pressure', zh:'壓力' },
+  'c.tgLabel.zhengGuan':{ th:'อำนาจตรง', en:'Direct Authority', zh:'正統權威' },
+  'c.tgLabel.pianYin':{ th:'ความรู้เฉพาะ', en:'Special Knowledge', zh:'專門學識' },
+  'c.tgLabel.zhengYin':{ th:'ผู้ช่วย/ครู', en:'Mentor/Support', zh:'師長扶持' },
+  'c.tgDomain.zhengGuan':{ th:'งาน / อำนาจ', en:'Career / Authority', zh:'事業/權威' },
+  'c.tgDomain.qiSha':{ th:'อำนาจ / แรง', en:'Power / Force', zh:'權力/衝勁' },
+  'c.tgDomain.zhengCai':{ th:'เงิน / ทรัพย์', en:'Money / Wealth', zh:'金錢/財富' },
+  'c.tgDomain.pianCai':{ th:'ทรัพย์เคลื่อน', en:'Windfall Wealth', zh:'偏財流動' },
+  'c.tgDomain.shiShen':{ th:'ความคิดสร้างสรรค์', en:'Creativity', zh:'創意' },
+  'c.tgDomain.shangGuan':{ th:'พรสวรรค์ · ทำลาย', en:'Talent · Disruption', zh:'才華·破壞' },
+  'c.tgDomain.zhengYin':{ th:'ครูบาอาจารย์', en:'Mentors', zh:'師長' },
+  'c.tgDomain.pianYin':{ th:'ปัญญาเฉพาะ', en:'Special Insight', zh:'專門智慧' },
+  'c.tgDomain.biJian':{ th:'เพื่อน / วินัย', en:'Friends / Discipline', zh:'朋友/自律' },
+  'c.tgDomain.jieCai':{ th:'พี่น้อง / แข่งขัน', en:'Siblings / Rivalry', zh:'手足/競爭' },
+  'c.phase.changSheng':{ th:'แรกเกิด', en:'Birth', zh:'長生' },
+  'c.phase.muYu':{ th:'อาบ', en:'Bathing', zh:'沐浴' },
+  'c.phase.guanDai':{ th:'ตั้งตน', en:'Youth', zh:'冠帶' },
+  'c.phase.linGuan':{ th:'พลังเต็ม', en:'Prime', zh:'臨官' },
+  'c.phase.diWang':{ th:'รุ่งโรจน์', en:'Peak', zh:'帝旺' },
+  'c.phase.shuai':{ th:'เสื่อม', en:'Decline', zh:'衰' },
+  'c.phase.bing':{ th:'ป่วย', en:'Illness', zh:'病' },
+  'c.phase.si':{ th:'ดับ', en:'Death', zh:'死' },
+  'c.phase.mu':{ th:'สุสาน', en:'Tomb', zh:'墓' },
+  'c.phase.jue':{ th:'ขาด', en:'Extinction', zh:'絕' },
+  'c.phase.tai':{ th:'เริ่มก่อตัว', en:'Conception', zh:'胎' },
+  'c.phase.yang':{ th:'ครรภ์', en:'Nurture', zh:'養' },
+  'c.el.wood':{ th:'ไม้', en:'Wood', zh:'木' },
+  'c.el.fire':{ th:'ไฟ', en:'Fire', zh:'火' },
+  'c.el.earth':{ th:'ดิน', en:'Earth', zh:'土' },
+  'c.el.metal':{ th:'ทอง', en:'Metal', zh:'金' },
+  'c.el.water':{ th:'น้ำ', en:'Water', zh:'水' },
+  'c.role.resource':{ th:'ครู·印', en:'Mentor·印', zh:'師長·印' },
+  'c.role.parallel':{ th:'ตัวเรา·比', en:'Self·比', zh:'自身·比' },
+  'c.role.output':{ th:'ลูก·食傷', en:'Output·食傷', zh:'產出·食傷' },
+  'c.role.wealth':{ th:'ทรัพย์·財', en:'Wealth·財', zh:'財富·財' },
+  'c.role.power':{ th:'อำนาจ·官殺', en:'Power·官殺', zh:'權力·官殺' },
+  'c.str.support':{ th:'หนุน', en:'Supporting', zh:'幫扶' },
+  'c.str.oppose':{ th:'ต้าน', en:'Opposing', zh:'剋制' },
+  'c.hero.time_unknown':{ th:'ไม่ทราบเวลา', en:'Time unknown', zh:'時辰不詳' },
+  'c.hero.time_unknown_full':{ th:'ไม่ทราบเวลาเกิด', en:'Birth time unknown', zh:'出生時辰不詳' },
+  'c.hero.dominant_suffix':{ th:' เด่น', en:' dominant', zh:' 顯著' },
+  'c.hero.structure_tag':{ th:'โครงสร้างดวง · 格局', en:'Chart structure · 格局', zh:'命局格局 · 格局' },
+  'c.hero.default_place':{ th:'กรุงเทพฯ', en:'Bangkok', zh:'曼谷' },
+  'c.hero.your_chart':{ th:'ดวงของคุณ', en:'Your Chart', zh:'您的命盤' },
+  'c.hero.time_at':{ th:'เวลา <b>{time}</b>', en:'Time <b>{time}</b>', zh:'時間 <b>{time}</b>' },
+  'c.hero.lede':{ th:'คุณเป็น <b>{dm}</b> ในฤดู{season} · เกิดวัน{dow} <b>{date}</b> {time} ที่ {place}', en:'You are <b>{dm}</b> in {season} season · born {dow} <b>{date}</b> {time} at {place}', zh:'您是<b>{dm}</b>生於{season} · {dow} <b>{date}</b> {time} 於{place}' },
+  'c.hero.tst_line':{ th:'⏱ <b>เวลาสุริยะแท้ {tst}</b> · ปรับ {total} นาที (ลองจิจูด {lng} + สมการเวลา {eot})', en:'⏱ <b>True Solar Time {tst}</b> · adjusted {total} min (longitude {lng} + equation of time {eot})', zh:'⏱ <b>真太陽時 {tst}</b> · 調整{total}分鐘（經度{lng}+均時差{eot}）' },
+  'c.dow.mon':{ th:'จันทร์', en:'Monday', zh:'星期一' },
+  'c.dow.tue':{ th:'อังคาร', en:'Tuesday', zh:'星期二' },
+  'c.dow.wed':{ th:'พุธ', en:'Wednesday', zh:'星期三' },
+  'c.dow.thu':{ th:'พฤหัสบดี', en:'Thursday', zh:'星期四' },
+  'c.dow.fri':{ th:'ศุกร์', en:'Friday', zh:'星期五' },
+  'c.dow.sat':{ th:'เสาร์', en:'Saturday', zh:'星期六' },
+  'c.dow.sun':{ th:'อาทิตย์', en:'Sunday', zh:'星期日' },
+  'c.season.spring':{ th:'ใบไม้ผลิ', en:'Spring', zh:'春' },
+  'c.season.summer':{ th:'ร้อน', en:'Summer', zh:'夏' },
+  'c.season.autumn':{ th:'ใบไม้ร่วง', en:'Autumn', zh:'秋' },
+  'c.season.winter':{ th:'หนาว', en:'Winter', zh:'冬' },
+  'c.ov.chart_is':{ th:'ดวงคุณคือ', en:'Your chart is', zh:'您的命盤為' },
+  'c.ov.structure_label':{ th:'โครงสร้างดวง:', en:'Chart structure:', zh:'命局格局：' },
+  'c.ov.dominant_is':{ th:'ธาตุที่เด่นที่สุดในผังคือ', en:'The most dominant element in your chart is', zh:'命局中最顯著之五行為' },
+  'c.ov.element_word':{ th:'ธาตุ', en:'Element', zh:'五行' },
+  'c.ov.engine_label':{ th:'เครื่องยนต์ดวง:', en:'Chart engine:', zh:'命局引擎：' },
+  'c.ov.lp_label':{ th:'วัยจรตอนนี้:', en:'Current Luck Pillar:', zh:'現行大運：' },
+  'c.ov.next10_label':{ th:'10 ปีข้างหน้า:', en:'Next 10 years:', zh:'未來10年：' },
+  'c.ov.this_year_label':{ th:'ปีนี้', en:'This year', zh:'今年' },
+  'c.ov.year_label':{ th:'ปี', en:'Year', zh:'年' },
+  'c.ov.age_range':{ th:'อายุ {a}-{b} ปี', en:'Age {a}-{b}', zh:'{a}-{b}歲' },
+  'c.ov.support_years':{ th:'ปีหนุนจริง', en:'Genuinely supportive years', zh:'真正助益之年' },
+  'c.ov.caution_years':{ th:'ปีต้องคุม', en:'Years to manage', zh:'須留意之年' },
+  'c.ov.warn_years':{ th:'ปีระวัง', en:'Years to watch', zh:'須警惕之年' },
+  'c.ov.normal':{ th:'ปกติ', en:'Normal', zh:'正常' },
+  'c.ov.real_life':{ th:'ชีวิตจริง', en:'Real life', zh:'現實人生' },
+  'c.ov.shadow':{ th:'เงาที่ต้องระวัง', en:'Shadow to watch', zh:'需留意之陰面' },
+  'c.ov.needs':{ th:'สิ่งที่ดวงต้องการ', en:'What your chart needs', zh:'命局所需' },
+  'c.ov.self_label':{ th:'ตัวเรา', en:'Self', zh:'自身' },
+  'c.ov.read_on':{ th:'อ่านต่อจากตรงนี้', en:'Read on from here', zh:'由此繼續閱讀' },
+  'c.ov.read_on_body':{ th:'ถ้าอยากรู้ว่าเงานี้กระทบงาน เงิน ความรัก หรือจังหวะปีนี้อย่างไร ให้ถามซินแสในกล่องด้านล่าง', en:'If you want to know how this shadow affects work, money, love, or this year’s timing, ask Sifu in the box below', zh:'若想知道此陰面如何影響事業、財運、感情或今年時運，請於下方問老師' },
+  'c.jq.canon_note':{ th:'✓ ตำราจริง: เดือน BaZi เริ่มที่ <b>節氣</b> · ไม่ใช่วันที่ 1 ของเดือน · ไม่ใช่ตรุษจีน', en:'✓ Classical rule: BaZi months start at <b>Jieqi</b> · not the 1st of the calendar month · not Lunar New Year', zh:'✓ 古法：八字月份始於<b>節氣</b> · 非月初一 · 非農曆新年' },
+  'c.jq.lichun_label':{ th:'ต้นใบไม้ผลิ (ปีจีนเริ่ม):', en:'Start of Spring (Chinese year begins):', zh:'立春（中國年始）：' },
+  'c.jq.major':{ th:'หลัก (節)', en:'Major (節)', zh:'節' },
+  'c.jq.minor':{ th:'รอง (氣)', en:'Minor (氣)', zh:'氣' },
+  'c.jq.month_start_label':{ th:'📍 จุดเริ่มเดือนเกิด:', en:'📍 Birth month starts:', zh:'📍 出生月起始：' },
+  'c.jq.month_word':{ th:'เดือน', en:'Month', zh:'月' },
+  'c.jq.next_label':{ th:'→ ถัดไป:', en:'→ Next:', zh:'→ 下一個：' },
+  'c.jq.show_all':{ th:'ดูทั้ง 24 ฤดู', en:'View all 24 solar terms', zh:'查看全部24節氣' },
+  'c.jq.show_focus':{ th:'ย่อ · เฉพาะเดือนเกิด', en:'Collapse · birth month only', zh:'收合 · 僅顯示出生月' },
+  'c.jq.starts_month':{ th:'→ เริ่มเดือน', en:'→ Starts month', zh:'→ 月始' },
+  'c.jq.why_after':{ th:'เพราะเกิดหลัง', en:'because born after', zh:'因生於' },
+  'c.jq.why_before':{ th:'ก่อน', en:'before', zh:'之前' },
+  'c.jq.why_title':{ th:'💡 ทำไมเดือนเกิด = {b}?', en:'💡 Why is the birth month = {b}?', zh:'💡 為何出生月為{b}？' },
+  'c.heluo.pre_title':{ th:'🌅 ก่อนเกิด · พื้นฐานติดตัว', en:'🌅 Pre-birth · Innate Foundation', zh:'🌅 先天 · 與生俱來之基' },
+  'c.heluo.post_title':{ th:'🌇 หลังเกิด · ภารกิจชีวิต', en:'🌇 Post-birth · Life Mission', zh:'🌇 後天 · 人生使命' },
+  'c.heluo.pre_note':{ th:'นิสัย/พื้นฐานที่ติดตัวมาตั้งแต่เกิด · คงที่ตลอดชีวิต', en:'Innate temperament/foundation from birth · constant for life', zh:'與生俱來之性情/根基 · 終生不變' },
+  'c.heluo.post_note':{ th:'เป้าหมายชีวิต · เกิดจากการเปลี่ยนแปลงของฉักก่อนเกิด', en:'Life mission · arises from the change of the pre-birth hexagram', zh:'人生使命 · 由先天卦變化而生' },
+  'c.heluo.pair_line':{ th:'บน{up} ({upZh}) ล่าง{lo} ({loZh})', en:'Upper {up} ({upZh}) Lower {lo} ({loZh})', zh:'上{up}（{upZh}）下{lo}（{loZh}）' },
+  'c.heluo.changing_line':{ th:'เส้นเปลี่ยน {n} (จาก 6)', en:'Changing line {n} (of 6)', zh:'變爻第{n}（共6爻）' },
+  'c.heluo.annual_title':{ th:'📅 ปีนี้ · {year} (อายุ {age} ปี)', en:'📅 This Year · {year} (age {age})', zh:'📅 今年 · {year}（{age}歲）' },
+  'c.heluo.annual_line':{ th:'เส้นที่ {n} (จาก 6) · เปลี่ยนแปลงเด่นในปีนี้', en:'Line {n} (of 6) · notable change this year', zh:'第{n}爻（共6爻）· 今年顯著變化' },
+  'c.heluo.annual_hex':{ th:'⭐ ปีนี้:', en:'⭐ This year:', zh:'⭐ 今年：' },
+  'c.heluo.monthly_title':{ th:'📆 เดือนนี้ · เดือน {m}', en:'📆 This Month · Month {m}', zh:'📆 本月 · 第{m}月' },
+  'c.heluo.monthly_line':{ th:'เส้นที่ {n} (จาก 6) · เปลี่ยนแปลงในเดือนนี้', en:'Line {n} (of 6) · change this month', zh:'第{n}爻（共6爻）· 本月變化' },
+  'c.heluo.monthly_hex':{ th:'เดือนนี้:', en:'This month:', zh:'本月：' },
+  'c.heluo.raw_toggle':{ th:'🔢 ดูตัวเลขดิบจากตำรา (ตัวเลขเทพ + ดิน + ก้าน + กิ่ง)', en:'🔢 View raw classical numbers (Heaven + Earth + Stem + Branch)', zh:'🔢 查看古法原始數字（天數+地數+干+支）' },
+  'c.heluo.heaven_num':{ th:'天數 ตัวเลขเทพ', en:'天數 Heaven Number', zh:'天數' },
+  'c.heluo.earth_num':{ th:'地數 ตัวเลขดิน', en:'地數 Earth Number', zh:'地數' },
+  'c.heluo.stems_label':{ th:'ก้านฟ้า', en:'Heaven Stems', zh:'天干' },
+  'c.heluo.branches_label':{ th:'กิ่งดิน', en:'Earth Branches', zh:'地支' },
+  'c.heluo.source_note':{ th:'ที่มา: 河圖洛書 + 河洛理數 (Chen Tuan · ศตวรรษที่ 10) · คำนวณตายตัวจากเสาเกิดของคุณ', en:'Source: He Tu Luo Shu + He Luo Li Shu (Chen Tuan · 10th century) · fixed calculation from your natal pillars', zh:'出處：河圖洛書 + 河洛理數（陳摶 · 十世紀）· 依您本命四柱固定推算' },
+  'c.heluo.hex_word':{ th:'ฉัก', en:'Hexagram', zh:'卦' },
+  'c.heluo.read_full':{ th:'📜 อ่านคำทำนายเต็ม', en:'📜 Read full reading', zh:'📜 閱讀完整卦辭' },
+  'c.school.question':{ th:'ดวงคุณเป็นดวงก้ำกึ่งที่ตำราอ่านได้ 2 ทาง — ช่วงวัยจรที่ผ่านมา (ดูตารางวัยจรด้านล่าง เช่น ช่วงธาตุที่ตรงข้ามสองสาย) ชีวิตคุณ "รุ่ง" หรือ "ฝืด"? คำตอบของคุณจะตั้งสำนักอ่านให้ซินแสทั้งระบบ', en:'Your chart is borderline and can be read 2 ways by the classics — looking at your past Luck Pillars (see the table below, e.g. periods of opposing elements), was your life "thriving" or "struggling"? Your answer sets the reading school for the whole system', zh:'您的命局介於兩派解讀之間 — 回顧過去大運（見下方表格，如兩派元素相反之時期），您的人生是「順遂」還是「受阻」？您的回答將為整個系統設定解讀流派' },
+  'c.school.shun_shi':{ th:'🌊 สายตามกระแส (順勢) — ยืนยันแล้วจากชีวิตจริงของคุณ', en:'🌊 Follow-the-Flow school (順勢) — confirmed from your real life', zh:'🌊 順勢派 — 已由您的現實人生驗證' },
+  'c.school.fu_yi':{ th:'🔥 สายพยุงตัว (扶抑) — ยืนยันแล้วจากชีวิตจริงของคุณ', en:'🔥 Support-the-Self school (扶抑) — confirmed from your real life', zh:'🔥 扶抑派 — 已由您的現實人生驗證' },
+  'c.school.saving':{ th:'⏳ กำลังบันทึก...', en:'⏳ Saving...', zh:'⏳ 儲存中...' },
+  'c.school.saved_suffix':{ th:' · ซินแสจะอ่านตามสำนักนี้', en:' · Sifu will read using this school', zh:' · 老師將依此流派解讀' },
+  'c.school.cleared':{ th:'ล้างคำตอบแล้ว — ซินแสจะชวนเทียบชีวิตจริงอีกครั้ง', en:'Answer cleared — Sifu will ask you to compare with real life again', zh:'答案已清除 — 老師將再次請您與現實對照' },
+  'c.school.save_failed':{ th:'⚠️ บันทึกไม่สำเร็จ ลองใหม่', en:'⚠️ Save failed, please try again', zh:'⚠️ 儲存失敗，請重試' },
+  'c.ys.strategy_prefix':{ th:'แนวกลยุทธ์:', en:'Strategy:', zh:'策略：' },
+  'c.ys.fake_follow':{ th:'假從 (ตามไม่แท้)', en:'Fake Follow (假從)', zh:'假從（非真從）' },
+  'c.ys.token_root':{ th:'รากบางมาก', en:'token root (very weak)', zh:'根氣極弱' },
+  'c.ys.partial_root':{ th:'รากบางส่วน', en:'partial root', zh:'部分根氣' },
+  'c.ys.no_root':{ th:'ไม่มีราก', en:'no root', zh:'無根' },
+  'c.ys.rooted':{ th:'มีราก', en:'rooted', zh:'有根' },
+  'c.ys.strong_root':{ th:'รากแกร่ง', en:'strong root', zh:'根氣強' },
+  'c.ys.progressive':{ th:'แนวเพิ่ม', en:'progressive', zh:'順生' },
+  'c.ys.regressive':{ th:'แนวคุม', en:'regressive', zh:'制衡' },
+  /* 📜 JS-strings i18n pass · batch B/C keys · 5 ก.ค. 2026 */
+  'c.ovEng.water':{ th:'ตัวเราอ่อน · น้ำเด่น', en:'Weak self · Water heavy', zh:'身弱 · 水偏旺' },
+  'c.ovEng.fire':{ th:'ตัวเราอ่อน · ไฟเด่น', en:'Weak self · Fire heavy', zh:'身弱 · 火偏旺' },
+  'c.ovEng.wood':{ th:'ตัวเราอ่อน · ไม้เด่น', en:'Weak self · Wood heavy', zh:'身弱 · 木偏旺' },
+  'c.ovEng.earth':{ th:'ตัวเราอ่อน · ดินเด่น', en:'Weak self · Earth heavy', zh:'身弱 · 土偏旺' },
+  'c.ovEng.metal':{ th:'ตัวเราอ่อน · ทองเด่น', en:'Weak self · Metal heavy', zh:'身弱 · 金偏旺' },
+  'c.ovDis.cold':{ th:'หนาวจัด · ทรัพย์กดดัน', en:'Cold excess · wealth pressure', zh:'寒盛財壓' },
+  'c.ovDis.hot':{ th:'ร้อนแล้ง · ขาดน้ำ', en:'Hot drought · no water', zh:'燥熱缺水' },
+  'c.ovDis.drown':{ th:'ทรัพย์ท่วม · ตัวอ่อน', en:'Wealth overwhelms a weak self', zh:'財多身弱' },
+  'c.ovDis.swarm':{ th:'เพื่อนเยอะ · แย่งทรัพย์', en:'Companion swarm · wealth theft', zh:'比劫奪財' },
+  'c.ovStr.progressive':{ th:'เพิ่มเลี้ยง', en:'Nurture & support', zh:'順勢培補' },
+  'c.ovStr.regressive':{ th:'ระบายคุม', en:'Drain & control', zh:'逆勢制化' },
+  'c.ovStr.neutral':{ th:'กลาง', en:'Neutral', zh:'中性' },
+  'c.animal.dog':{ th:'หมา', en:'Dog', zh:'狗' },
+  'c.animal.dragon':{ th:'มังกร', en:'Dragon', zh:'龍' },
+  'c.animal.goat':{ th:'แพะ', en:'Goat', zh:'羊' },
+  'c.animal.horse':{ th:'ม้า', en:'Horse', zh:'馬' },
+  'c.animal.monkey':{ th:'ลิง', en:'Monkey', zh:'猴' },
+  'c.animal.ox':{ th:'วัว', en:'Ox', zh:'牛' },
+  'c.animal.pig':{ th:'หมู', en:'Pig', zh:'豬' },
+  'c.animal.rabbit':{ th:'กระต่าย', en:'Rabbit', zh:'兔' },
+  'c.animal.rat':{ th:'หนู', en:'Rat', zh:'鼠' },
+  'c.animal.rooster':{ th:'ไก่', en:'Rooster', zh:'雞' },
+  'c.animal.snake':{ th:'งู', en:'Snake', zh:'蛇' },
+  'c.animal.tiger':{ th:'เสือ', en:'Tiger', zh:'虎' },
+  'c.branch.chen':{ th:'มังกร/ดิน', en:'Dragon/Earth', zh:'龍/土' },
+  'c.branch.chou':{ th:'วัว/ดิน', en:'Ox/Earth', zh:'牛/土' },
+  'c.branch.hai':{ th:'หมู/น้ำ', en:'Pig/Water', zh:'豬/水' },
+  'c.branch.mao':{ th:'กระต่าย/ไม้', en:'Rabbit/Wood', zh:'兔/木' },
+  'c.branch.shen':{ th:'ลิง/ทอง', en:'Monkey/Metal', zh:'猴/金' },
+  'c.branch.si':{ th:'งู/ไฟ', en:'Snake/Fire', zh:'蛇/火' },
+  'c.branch.wei':{ th:'แพะ/ดิน', en:'Goat/Earth', zh:'羊/土' },
+  'c.branch.wu':{ th:'ม้า/ไฟ', en:'Horse/Fire', zh:'馬/火' },
+  'c.branch.xu':{ th:'หมา/ดิน', en:'Dog/Earth', zh:'狗/土' },
+  'c.branch.yin':{ th:'เสือ/ไม้', en:'Tiger/Wood', zh:'虎/木' },
+  'c.branch.you':{ th:'ไก่/ทอง', en:'Rooster/Metal', zh:'雞/金' },
+  'c.branch.zi':{ th:'หนู/น้ำ', en:'Rat/Water', zh:'鼠/水' },
+  'c.car.avoid':{ th:'⛔ หลีกเลี่ยง:', en:'⛔ Avoid:', zh:'⛔ 避免：' },
+  'c.car.best':{ th:'🥇 เหมาะที่สุด:', en:'🥇 Best fit:', zh:'🥇 最適合：' },
+  'c.car.usable':{ th:'✅ ใช้ได้:', en:'✅ Usable:', zh:'✅ 可用：' },
+  'c.fmt.months':{ th:'เดือน', en:'mo', zh:'個月' },
+  'c.fmt.years':{ th:'ปี', en:'yr', zh:'年' },
+  'c.health.caution':{ th:'⚡ ระวัง:', en:'⚡ Watch:', zh:'⚡ 注意：' },
+  'c.health.main_organs':{ th:'อวัยวะหลัก:', en:'Main organs:', zh:'主臟腑：' },
+  'c.health.weak':{ th:'⚠ อ่อน:', en:'⚠ Weak:', zh:'⚠ 偏弱：' },
+  'c.hex.h1':{ th:'สร้างสรรค์', en:'The Creative', zh:'乾' },
+  'c.hex.h10':{ th:'เหยียบ', en:'Treading', zh:'履' },
+  'c.hex.h11':{ th:'สงบเจริญ', en:'Peace', zh:'泰' },
+  'c.hex.h12':{ th:'อุดตัน', en:'Standstill', zh:'否' },
+  'c.hex.h13':{ th:'ร่วมใจ', en:'Fellowship', zh:'同人' },
+  'c.hex.h14':{ th:'ครอบครอง', en:'Great Possession', zh:'大有' },
+  'c.hex.h15':{ th:'ถ่อมตัว', en:'Modesty', zh:'謙' },
+  'c.hex.h16':{ th:'หรรษา', en:'Enthusiasm', zh:'豫' },
+  'c.hex.h17':{ th:'ติดตาม', en:'Following', zh:'隨' },
+  'c.hex.h18':{ th:'เลื่อม', en:'Work on the Decayed', zh:'蠱' },
+  'c.hex.h19':{ th:'ใกล้', en:'Approach', zh:'臨' },
+  'c.hex.h2':{ th:'รับ', en:'The Receptive', zh:'坤' },
+  'c.hex.h20':{ th:'พิจารณา', en:'Contemplation', zh:'觀' },
+  'c.hex.h21':{ th:'กัดเคี้ยว', en:'Biting Through', zh:'噬嗑' },
+  'c.hex.h22':{ th:'ประดับ', en:'Grace', zh:'賁' },
+  'c.hex.h23':{ th:'แตกสลาย', en:'Splitting Apart', zh:'剝' },
+  'c.hex.h24':{ th:'กลับ', en:'Return', zh:'復' },
+  'c.hex.h25':{ th:'ไม่หลง', en:'Innocence', zh:'無妄' },
+  'c.hex.h26':{ th:'เก็บใหญ่', en:'Great Taming', zh:'大畜' },
+  'c.hex.h27':{ th:'เลี้ยง', en:'Nourishment', zh:'頤' },
+  'c.hex.h28':{ th:'ล้น', en:'Great Exceeding', zh:'大過' },
+  'c.hex.h29':{ th:'ห้วงเหว', en:'The Abysmal', zh:'坎' },
+  'c.hex.h3':{ th:'เริ่มแรก', en:'Difficulty at the Beginning', zh:'屯' },
+  'c.hex.h30':{ th:'ติดไฟ', en:'The Clinging', zh:'離' },
+  'c.hex.h31':{ th:'รัก', en:'Influence', zh:'咸' },
+  'c.hex.h32':{ th:'ยั่งยืน', en:'Duration', zh:'恆' },
+  'c.hex.h33':{ th:'ถอย', en:'Retreat', zh:'遯' },
+  'c.hex.h34':{ th:'พลังยิ่งใหญ่', en:'Great Power', zh:'大壯' },
+  'c.hex.h35':{ th:'รุ่ง', en:'Progress', zh:'晉' },
+  'c.hex.h36':{ th:'แสงดับ', en:'Darkening of the Light', zh:'明夷' },
+  'c.hex.h37':{ th:'ครอบครัว', en:'The Family', zh:'家人' },
+  'c.hex.h38':{ th:'ผิดใจ', en:'Opposition', zh:'睽' },
+  'c.hex.h39':{ th:'ติดขัด', en:'Obstruction', zh:'蹇' },
+  'c.hex.h4':{ th:'เยาว์ไร้รู้', en:'Youthful Folly', zh:'蒙' },
+  'c.hex.h40':{ th:'แก้', en:'Deliverance', zh:'解' },
+  'c.hex.h41':{ th:'ลด', en:'Decrease', zh:'損' },
+  'c.hex.h42':{ th:'เพิ่ม', en:'Increase', zh:'益' },
+  'c.hex.h43':{ th:'ตัดสิน', en:'Breakthrough', zh:'夬' },
+  'c.hex.h44':{ th:'พบ', en:'Coming to Meet', zh:'姤' },
+  'c.hex.h45':{ th:'รวม', en:'Gathering Together', zh:'萃' },
+  'c.hex.h46':{ th:'ก้าวขึ้น', en:'Pushing Upward', zh:'升' },
+  'c.hex.h47':{ th:'อับจน', en:'Oppression', zh:'困' },
+  'c.hex.h48':{ th:'บ่อน้ำ', en:'The Well', zh:'井' },
+  'c.hex.h49':{ th:'เปลี่ยน', en:'Revolution', zh:'革' },
+  'c.hex.h5':{ th:'รอ', en:'Waiting', zh:'需' },
+  'c.hex.h50':{ th:'หม้อ', en:'The Cauldron', zh:'鼎' },
+  'c.hex.h51':{ th:'สั่น', en:'The Arousing', zh:'震' },
+  'c.hex.h52':{ th:'หยุด', en:'Keeping Still', zh:'艮' },
+  'c.hex.h53':{ th:'คืบ', en:'Development', zh:'漸' },
+  'c.hex.h54':{ th:'แต่งงาน', en:'The Marrying Maiden', zh:'歸妹' },
+  'c.hex.h55':{ th:'รุ่งเรือง', en:'Abundance', zh:'豐' },
+  'c.hex.h56':{ th:'ผู้พเนจร', en:'The Wanderer', zh:'旅' },
+  'c.hex.h57':{ th:'อ่อนนุ่ม', en:'The Gentle', zh:'巽' },
+  'c.hex.h58':{ th:'ร่าเริง', en:'The Joyous', zh:'兌' },
+  'c.hex.h59':{ th:'ละลาย', en:'Dispersion', zh:'渙' },
+  'c.hex.h6':{ th:'ขัดแย้ง', en:'Conflict', zh:'訟' },
+  'c.hex.h60':{ th:'ขอบเขต', en:'Limitation', zh:'節' },
+  'c.hex.h61':{ th:'ใจสัจ', en:'Inner Truth', zh:'中孚' },
+  'c.hex.h62':{ th:'เกินเล็ก', en:'Small Exceeding', zh:'小過' },
+  'c.hex.h63':{ th:'สำเร็จ', en:'After Completion', zh:'既濟' },
+  'c.hex.h64':{ th:'ยังไม่สำเร็จ', en:'Before Completion', zh:'未濟' },
+  'c.hex.h7':{ th:'กองทัพ', en:'The Army', zh:'師' },
+  'c.hex.h8':{ th:'สามัคคี', en:'Holding Together', zh:'比' },
+  'c.hex.h9':{ th:'เก็บเล็ก', en:'Small Taming', zh:'小畜' },
+  'c.hist.del':{ th:'ลบ', en:'Delete', zh:'刪除' },
+  'c.hist.del_aria':{ th:'ลบประวัติคำถามนี้', en:'Delete this question from history', zh:'刪除此提問紀錄' },
+  'c.i07.alliance_no':{ th:'ไม่มีแรงกลุ่มเด่นในดวงเกิด', en:'No prominent group force in the natal chart', zh:'本命無明顯會局' },
+  'c.i07.alliance_no_p':{ th:'แรงทีมไม่เด่น ควรวางระบบเองและเลือกคนช่วยให้ชัด', en:'Team force is weak — set up your own systems and choose helpers carefully', zh:'團隊之力不顯 · 宜自建制度並慎選幫手' },
+  'c.i07.alliance_title':{ th:'แรงรวมกลุ่ม', en:'Alliance', zh:'會局' },
+  'c.i07.alliance_yes':{ th:'มีแรงทีม/เครือข่ายช่วย', en:'Team/network support present', zh:'有三合三會之助' },
+  'c.i07.alliance_yes_p':{ th:'เหมาะใช้คนรอบตัว ระบบ หรือทีมช่วยดันงานให้ไปต่อ', en:'Great for leveraging people, systems or teams to push work forward', zh:'宜借人脈、制度或團隊之力推進' },
+  'c.i07.banHe':{ th:'ครึ่งวงธาตุ', en:'Half trio', zh:'半合' },
+  'c.i07.branch_fb':{ th:'กิ่ง', en:'branch', zh:'支' },
+  'c.i07.clash_no':{ th:'ไม่มีแรงชนใหญ่ในดวงเกิด', en:'No major clashes in the natal chart', zh:'本命無大沖' },
+  'c.i07.clash_no_p':{ th:'จังหวะพื้นฐานค่อนข้างนิ่ง ไม่มีแรงชนใหญ่ในดวงเกิด', en:'The base rhythm is fairly steady — no major natal clash', zh:'基礎節奏平穩 · 本命無大沖' },
+  'c.i07.clash_title':{ th:'แรงชน', en:'Clash', zh:'沖力' },
+  'c.i07.clash_yes':{ th:'มีจุดที่ดึงกันคนละทาง', en:'Forces pulling in opposite directions', zh:'有相沖之處' },
+  'c.i07.clash_yes_p':{ th:'เรื่องนั้นมักเปลี่ยนเร็วหรือแตกง่าย ควรวางจังหวะก่อนตัดสินใจ', en:'Those areas tend to change fast or break easily — pace big decisions', zh:'相關領域易變易破 · 決策前宜先定節奏' },
+  'c.i07.discord_no':{ th:'ไม่มีจุดร้าวใหญ่ในดวงเกิด', en:'No major fault lines in the natal chart', zh:'本命無大裂痕' },
+  'c.i07.discord_no_p':{ th:'พื้นดวงไม่มีแรงร้าวเด่น เรื่องแตกหักมักมาจากจังหวะภายนอกมากกว่า', en:'No prominent natal friction — ruptures tend to come from external timing', zh:'本命無明顯刑害 · 破裂多因外在時機' },
+  'c.i07.discord_title':{ th:'จุดร้าว', en:'Discord', zh:'刑害' },
+  'c.i07.discord_yes':{ th:'มีแรงเสียดทานที่ต้องอ่านให้ดี', en:'Friction that needs careful reading', zh:'有須細讀之摩擦' },
+  'c.i07.discord_yes_p':{ th:'ไม่ใช่เสียเสมอไป แต่ควรระวังคำพูด จังหวะ และการตัดสินใจเร็ว', en:'Not always bad, but watch your words, timing and quick decisions', zh:'未必皆凶 · 惟須慎言、擇時、忌倉促決斷' },
+  'c.i07.fanYin':{ th:'พลิกซ้ำแรง', en:'Opposing echo', zh:'反吟' },
+  'c.i07.fanYinBranch':{ th:'กิ่งพลิกซ้ำ', en:'Branch opposes', zh:'支反吟' },
+  'c.i07.fanYinStem':{ th:'ก้านพลิกซ้ำ', en:'Stem opposes', zh:'干反吟' },
+  'c.i07.fuYin':{ th:'เรื่องเดิมวนซ้ำ', en:'Repeating echo', zh:'伏吟' },
+  'c.i07.fuYinBranch':{ th:'กิ่งเดิมวนซ้ำ', en:'Branch repeats', zh:'支伏吟' },
+  'c.i07.fuYinStem':{ th:'ก้านเดิมวนซ้ำ', en:'Stem repeats', zh:'干伏吟' },
+  'c.i07.harmony_no':{ th:'ไม่มีแรงผสานเด่นในดวงเกิด', en:'No prominent combinations in the natal chart', zh:'本命無明顯合力' },
+  'c.i07.harmony_no_p':{ th:'เรื่องคนช่วยยังไม่เด่น ต้องสร้างความร่วมมือด้วยการลงมือเอง', en:'Helpful-people luck is not prominent — build cooperation through your own effort', zh:'貴人不顯 · 合作須靠自己主動經營' },
+  'c.i07.harmony_title':{ th:'แรงผสาน', en:'Harmony', zh:'合力' },
+  'c.i07.harmony_yes':{ th:'มีคู่ที่ดึงเข้าหากัน', en:'Pairs pulling together', zh:'有相合之組合' },
+  'c.i07.harmony_yes_p':{ th:'ช่วยเรื่องคนช่วย งานร่วมมือ และความสัมพันธ์ที่ต่อกันได้', en:'Supports helpful people, cooperation and lasting relationships', zh:'利於貴人相助、合作與長久關係' },
+  'c.i07.liuChong':{ th:'กิ่งชน', en:'Branch clash', zh:'支相沖' },
+  'c.i07.liuHai':{ th:'แอบขัดกัน', en:'Hidden friction', zh:'六害' },
+  'c.i07.liuHe':{ th:'กิ่งจับคู่', en:'Branch pairing', zh:'支六合' },
+  'c.i07.liuPo':{ th:'จุดแตก', en:'Break point', zh:'六破' },
+  'c.i07.sanHe':{ th:'สามกิ่งรวมธาตุ', en:'Three-branch element trio', zh:'三合局' },
+  'c.i07.sanHui':{ th:'สามกิ่งรวมทิศ', en:'Directional trio', zh:'三會局' },
+  'c.i07.sanXing':{ th:'แรงกด/ลงโทษ', en:'Punishment', zh:'三刑' },
+  'c.i07.stem_fb':{ th:'ก้าน', en:'stem', zh:'干' },
+  'c.i07.tianKe':{ th:'ก้านฟ้าชน', en:'Stem clash', zh:'天克' },
+  'c.i07.tongXing':{ th:'กดกันเอง', en:'Mutual punishment', zh:'同刑' },
+  'c.i07.wuHe':{ th:'ก้านฟ้าผสาน', en:'Stem combine', zh:'干五合' },
+  'c.i07.ziXing':{ th:'กดตัวเอง', en:'Self-punishment', zh:'自刑' },
+  'c.ind.ads':{ th:'โฆษณา', en:'Advertising', zh:'廣告' },
+  'c.ind.agri':{ th:'การเกษตร·เซรามิก', en:'Agriculture & Ceramics', zh:'農業陶瓷' },
+  'c.ind.automotive':{ th:'ยานยนต์', en:'Automotive', zh:'汽車' },
+  'c.ind.comm':{ th:'การสื่อสาร', en:'Communications', zh:'通訊' },
+  'c.ind.construction':{ th:'ก่อสร้าง', en:'Construction', zh:'建築' },
+  'c.ind.consulting':{ th:'ที่ปรึกษา', en:'Consulting', zh:'顧問' },
+  'c.ind.designer':{ th:'นักออกแบบ', en:'Designers', zh:'設計師' },
+  'c.ind.edu':{ th:'การศึกษา', en:'Education', zh:'教育' },
+  'c.ind.electronics':{ th:'ไฟฟ้า·อิเล็กทรอนิกส์', en:'Electrical & Electronics', zh:'電子電氣' },
+  'c.ind.energy':{ th:'พลังงาน', en:'Energy', zh:'能源' },
+  'c.ind.engineer':{ th:'วิศวกร', en:'Engineering', zh:'工程師' },
+  'c.ind.finance':{ th:'การเงิน·ธนาคาร', en:'Finance & Banking', zh:'金融銀行' },
+  'c.ind.fishery':{ th:'ประมง', en:'Fishery', zh:'漁業' },
+  'c.ind.forestry':{ th:'ป่าไม้', en:'Forestry', zh:'林業' },
+  'c.ind.furniture':{ th:'เฟอร์นิเจอร์', en:'Furniture', zh:'傢俱' },
+  'c.ind.kitchen':{ th:'อาหารร้อน·ครัว', en:'Hot Food & Kitchens', zh:'餐飲廚房' },
+  'c.ind.land':{ th:'ที่ดิน', en:'Land', zh:'土地' },
+  'c.ind.law':{ th:'กฎหมาย·บัญชี', en:'Law & Accounting', zh:'法律會計' },
+  'c.ind.liquidity':{ th:'การเงินสภาพคล่อง', en:'Liquid Finance', zh:'流動金融' },
+  'c.ind.logistics':{ th:'ขนส่ง·โลจิสติกส์', en:'Transport & Logistics', zh:'運輸物流' },
+  'c.ind.machinery':{ th:'เครื่องจักร', en:'Machinery', zh:'機械' },
+  'c.ind.marketing':{ th:'การตลาด', en:'Marketing', zh:'行銷' },
+  'c.ind.mc':{ th:'พิธีกร', en:'Hosting & MC', zh:'主持人' },
+  'c.ind.metals':{ th:'โลหะ·อัญมณี', en:'Metals & Jewelry', zh:'金屬珠寶' },
+  'c.ind.printing':{ th:'พิมพ์·สื่อสิ่งพิมพ์', en:'Printing & Publishing', zh:'印刷出版' },
+  'c.ind.realestate':{ th:'อสังหาริมทรัพย์', en:'Real Estate', zh:'房地產' },
+  'c.ind.teacher':{ th:'ครู·อาจารย์', en:'Teachers & Professors', zh:'教師' },
+  'c.ind.tourism':{ th:'ท่องเที่ยว', en:'Tourism', zh:'旅遊' },
+  'c.ind.trading':{ th:'ค้าขาย', en:'Trading', zh:'貿易' },
+  'c.ind.warehouse':{ th:'คลังสินค้า', en:'Warehousing', zh:'倉儲' },
+  'c.jq24.baiLu':{ th:'น้ำค้างขาว', en:'White Dew', zh:'白露' },
+  'c.jq24.chuShu':{ th:'สิ้นร้อน', en:'End of Heat', zh:'處暑' },
+  'c.jq24.chunFen':{ th:'แบ่งฤดูใบไม้ผลิ', en:'Spring Equinox', zh:'春分' },
+  'c.jq24.daHan':{ th:'หนาวใหญ่', en:'Major Cold', zh:'大寒' },
+  'c.jq24.daShu':{ th:'ร้อนใหญ่', en:'Major Heat', zh:'大暑' },
+  'c.jq24.daXue':{ th:'หิมะหนัก', en:'Major Snow', zh:'大雪' },
+  'c.jq24.dongZhi':{ th:'กลางฤดูหนาว', en:'Winter Solstice', zh:'冬至' },
+  'c.jq24.guYu':{ th:'ฝนต่อข้าว', en:'Grain Rain', zh:'穀雨' },
+  'c.jq24.hanLu':{ th:'น้ำค้างเย็น', en:'Cold Dew', zh:'寒露' },
+  'c.jq24.jingZhe':{ th:'ปลุกแมลง', en:'Awakening of Insects', zh:'驚蟄' },
+  'c.jq24.liChun':{ th:'ต้นใบไม้ผลิ', en:'Start of Spring', zh:'立春' },
+  'c.jq24.liDong':{ th:'ต้นฤดูหนาว', en:'Start of Winter', zh:'立冬' },
+  'c.jq24.liQiu':{ th:'ต้นฤดูใบไม้ร่วง', en:'Start of Autumn', zh:'立秋' },
+  'c.jq24.liXia':{ th:'ต้นฤดูร้อน', en:'Start of Summer', zh:'立夏' },
+  'c.jq24.mangZhong':{ th:'หว่านข้าว', en:'Grain in Ear', zh:'芒種' },
+  'c.jq24.qingMing':{ th:'แจ่มใส', en:'Clear and Bright', zh:'清明' },
+  'c.jq24.qiuFen':{ th:'แบ่งฤดูใบไม้ร่วง', en:'Autumn Equinox', zh:'秋分' },
+  'c.jq24.shuangJiang':{ th:'น้ำค้างแข็งลง', en:'Frost Descent', zh:'霜降' },
+  'c.jq24.xiaZhi':{ th:'กลางฤดูร้อน', en:'Summer Solstice', zh:'夏至' },
+  'c.jq24.xiaoHan':{ th:'หนาวน้อย', en:'Minor Cold', zh:'小寒' },
+  'c.jq24.xiaoMan':{ th:'เต็มน้อย', en:'Grain Buds', zh:'小滿' },
+  'c.jq24.xiaoShu':{ th:'ร้อนน้อย', en:'Minor Heat', zh:'小暑' },
+  'c.jq24.xiaoXue':{ th:'หิมะเบา', en:'Minor Snow', zh:'小雪' },
+  'c.jq24.yuShui':{ th:'น้ำฝน', en:'Rain Water', zh:'雨水' },
+  'c.ln.btn_all':{ th:'ทั้งชีวิต', en:'Lifetime', zh:'一生' },
+  'c.ln.btn_imp':{ th:'ปีสำคัญ', en:'Key years', zh:'重點年' },
+  'c.ln.btn_near':{ th:'10 ปี', en:'10 yrs', zh:'10年' },
+  'c.ln.hint':{ th:'💡 เซลล์สีทอง = ปีปัจจุบัน · hover เพื่อดูชื่อ hexagram', en:'💡 Gold cell = current year · hover to see the hexagram name', zh:'💡 金色格＝今年 · 滑鼠懸停可見卦名' },
+  'c.ln.title_all':{ th:'流年 · ทั้งชีวิต {n} ปี (เกิด→ตาย) · เทียบวันเกิดหลัก + 64卦', en:'流年 · Whole life {n} years (birth→end) · vs Day Master + 64 hexagrams', zh:'流年 · 一生{n}年（生→終）· 對照日主＋64卦' },
+  'c.ln.title_imp':{ th:'流年 · ปีสำคัญ ({n} ปี · จาก {total}) · มีปะทะ/ผสาน/ทำลาย', en:'流年 · Key years ({n} of {total}) · with clash/combine/harm', zh:'流年 · 重點年（{total}年中{n}年）· 含沖合害' },
+  'c.ln.title_near':{ th:'流年 · 10 ปีรอบปัจจุบัน', en:'流年 · 10 years around now', zh:'流年 · 目前前後10年' },
+  'c.lp.age_detail':{ th:'อายุละเอียด', en:'Exact age', zh:'精確年齡' },
+  'c.lp.age_range':{ th:'ช่วงอายุ', en:'Age range', zh:'年齡區間' },
+  'c.lp.bazi_span':{ th:'ปีปาจื้อที่คร่อม', en:'BaZi years spanned', zh:'跨越八字年' },
+  'c.lp.branch':{ th:'กิ่งดิน', en:'Earthly Branch', zh:'地支' },
+  'c.lp.branch_val':{ th:'ธาตุ{el} · ปี{animal}', en:'{el} element · {animal} year', zh:'{el}行 · 屬{animal}' },
+  'c.lp.direction':{ th:'เดิน運', en:'運 direction', zh:'行運方向' },
+  'c.lp.drill_hint':{ th:'กดปีเพื่อดูเดือนจร · 流月', en:'Tap a year to see monthly pillars · 流月', zh:'點選年份查看流月' },
+  'c.lp.drill_title':{ th:'ปีจรในรอบ 10 ปีนี้ · 流年', en:'Annual pillars in this 10-year cycle · 流年', zh:'此十年中的流年' },
+  'c.lp.earth':{ th:'ดิน', en:'Branch', zh:'支' },
+  'c.lp.fallback_mid':{ th:'fallback กลางเดือน', en:'fallback mid-month', zh:'以月中概算' },
+  'c.lp.legend':{ th:'ไทยนำ จีนตาม · ปีปาจื้อเริ่มที่立春 ไม่ใช่ 1 ม.ค. · 流月1 เริ่มที่立春 · 日=เทียบกิ่งวัน · 運=เทียบกิ่งวัยจร · แรงมาก/แรง/กลาง/เบา = น้ำหนัก interaction', en:'Thai first, Chinese follows · BaZi year starts at 立春 not Jan 1 · month 1 starts at 立春 · 日=vs day branch · 運=vs luck branch · strength = interaction weight', zh:'中文對照 · 八字年始於立春非元旦 · 流月1始於立春 · 日＝對照日支 · 運＝對照大運支 · 強弱＝互動權重' },
+  'c.lp.month_head':{ th:'เดือนจร 流月 · ปีปาจื้อ', en:'Monthly pillars 流月 · BaZi year', zh:'流月 · 八字年' },
+  'c.lp.month_word':{ th:'เดือนจร', en:'Month', zh:'流月' },
+  'c.lp.note_current':{ th:'รอบโชคปัจจุบัน', en:'Current luck cycle', zh:'當前大運' },
+  'c.lp.note_from_chart':{ th:'จากดวงจริงของคุณ', en:'from your actual chart', zh:'依您的真實命盤' },
+  'c.lp.now':{ th:'🎯 ตอนนี้', en:'🎯 Now', zh:'🎯 目前' },
+  'c.lp.past':{ th:'ผ่านมาแล้ว', en:'Passed', zh:'已過' },
+  'c.lp.phase12':{ th:'12 ระยะ', en:'12 Phases', zh:'十二長生' },
+  'c.lp.real_dates':{ th:'วันที่จริง', en:'Actual dates', zh:'實際日期' },
+  'c.lp.round':{ th:'รอบที่', en:'Cycle', zh:'第' },
+  'c.lp.sky':{ th:'ฟ้า', en:'Stem', zh:'干' },
+  'c.lp.starts':{ th:'เริ่ม', en:'starts', zh:'始於' },
+  'c.lp.stem':{ th:'ก้านฟ้า', en:'Heavenly Stem', zh:'天干' },
+  'c.lp.tengod':{ th:'เทพประจำ', en:'Ten God', zh:'十神' },
+  'c.lp.until_before':{ th:'ถึงก่อน', en:'until before', zh:'至（不含）' },
+  'c.lp.upcoming':{ th:'รออยู่ข้างหน้า', en:'Ahead', zh:'將至' },
+  'c.pal.daughters':{ th:'ลูกหญิง / บั้นปลาย', en:'Daughters / Later years', zh:'女兒／晚年' },
+  'c.pal.disclaimer':{ th:'ป้ายชื่อวังตามเสาเกิด ไม่ใช่คำทำนายรายบุคคล · อ่านร่วมกับ用神และภาพรวมทั้งผัง', en:'Palace labels follow the natal pillars — not a personal prediction · read together with the Useful God and the whole chart', zh:'宮位名稱依本命四柱而定 · 非個人斷語 · 應與用神及整體命盤合參' },
+  'c.pal.father':{ th:'พ่อ / หัวหน้า', en:'Father / Superiors', zh:'父／上司' },
+  'c.pal.mother':{ th:'แม่ / รากอาชีพ', en:'Mother / Career roots', zh:'母／事業根基' },
+  'c.pal.no_hour':{ th:'ไม่ทราบเวลาเกิด · วังลูกและบั้นปลายต้องใช้เสายาม จึงไม่คำนวณในโหมด 3 เสา', en:'Birth time unknown · the children/late-life palace needs the hour pillar, so it is not computed in 3-pillar mode', zh:'不知時辰 · 子女／晚年宮需時柱 · 三柱模式不予推算' },
+  'c.pal.sons':{ th:'ลูกชาย / ลูกน้อง', en:'Sons / Subordinates', zh:'兒子／下屬' },
+  'c.pillar.day':{ th:'วัน', en:'Day', zh:'日' },
+  'c.pillar.hour':{ th:'ชั่วโมง', en:'Hour', zh:'時' },
+  'c.pillar.month':{ th:'เดือน', en:'Month', zh:'月' },
+  'c.pillar.year':{ th:'ปี', en:'Year', zh:'年' },
+  'c.ps.empty':{ th:'ดวงนี้ไม่มีดาวประจำตัวที่ activate', en:'No personal stars are activated in this chart', zh:'此命盤無啟動之個人星' },
+  'c.sifu.ask_btn':{ th:'ถามซินแส', en:'Ask the Sifu', zh:'請教師傅' },
+  'c.sifu.cache_done':{ th:'✅ อ่านจากบันทึก · กด "อ่านใหม่" ถ้าต้องการครั้งใหม่', en:'✅ Loaded from record · press "Re-read" for a fresh reading', zh:'✅ 已讀取紀錄 · 如需重新解讀請按「重讀」' },
+  'c.sifu.done':{ th:'ซินแสตอบเสร็จแล้ว', en:'The Sifu has finished', zh:'師傅已解讀完畢' },
+  'c.sifu.error':{ th:'⚠ เกิดข้อผิดพลาด:', en:'⚠ An error occurred:', zh:'⚠ 發生錯誤：' },
+  'c.sifu.explaining':{ th:'ซินแสกำลังอธิบายเพิ่ม...', en:'The Sifu is explaining further...', zh:'師傅正在補充說明...' },
+  'c.sifu.from_cache':{ th:'📜 ซินแสเล่าจากบันทึกครั้งก่อน...', en:'📜 The Sifu is recalling the previous reading...', zh:'📜 師傅正在重述上次解讀...' },
+  'c.sifu.reading':{ th:'กำลังอ่าน...', en:'Reading...', zh:'解讀中...' },
+  'c.sifu.regen_confirm':{ th:'อ่านใหม่จะใช้เวลา 30-60 วินาที · ของเดิมจะถูกแทนที่ · ดำเนินการ?', en:'Re-reading takes 30-60 seconds · the previous answer will be replaced · proceed?', zh:'重新解讀需30-60秒 · 將取代原有內容 · 是否繼續？' },
+  'c.sifu.unreachable':{ th:'⚠ ติดต่อซินแสไม่ได้:', en:'⚠ Could not reach the Sifu:', zh:'⚠ 無法聯繫師傅：' },
+  'c.sp.confidence':{ th:'ความเชื่อมั่น', en:'Confidence', zh:'信心度' },
+  'c.sp.normal':{ th:'ดวงปกติ', en:'Normal chart', zh:'常格' },
+  'c.sp.normal_note':{ th:'ใช้กฎ 扶抑法 มาตรฐาน · ไม่ใช่ดวงพิเศษ', en:'Uses the standard 扶抑法 rules · not a special structure', zh:'依標準扶抑法 · 非特殊格局' },
+  'c.sp.zhengge':{ th:'正格 · ใช้กฎ 扶抑法 มาตรฐาน', en:'正格 · uses standard 扶抑法 rules', zh:'正格 · 依標準扶抑法' },
+  'c.spouse.day_pillar':{ th:'เสาวัน', en:'Day pillar', zh:'日支' },
+  'c.spouse.element_prefix':{ th:'คู่ครองธาตุ', en:'Spouse element ', zh:'配偶五行' },
+  'c.spouse.no_inter':{ th:'ไม่มีปะทะหรือผสานกับเสาอื่น', en:'No clash or combination with other pillars', zh:'與他柱無沖無合' },
+  'c.spouse.traits':{ th:'บุคลิก:', en:'Traits:', zh:'特質：' },
+  'c.star.ciGuan':{ th:'หอวรรณกรรม', en:'Hall of Eloquence', zh:'詞館' },
+  'c.star.feiRen':{ th:'ดาบเหิน', en:'Flying Blade', zh:'飛刃' },
+  'c.star.guChen':{ th:'อ้างว้าง', en:'Lonely Star', zh:'孤辰' },
+  'c.star.guaSu':{ th:'หม้ายเหงา', en:'Widow Star', zh:'寡宿' },
+  'c.star.hongLuan':{ th:'หงส์แดง', en:'Red Phoenix', zh:'紅鸞' },
+  'c.star.hongYan':{ th:'เสน่ห์รัก', en:'Red Charm', zh:'紅艷' },
+  'c.star.huaGai':{ th:'หลังคาฟ้า', en:'Canopy', zh:'華蓋' },
+  'c.star.jianFeng':{ th:'คมดาบ', en:'Sword Edge', zh:'劍鋒' },
+  'c.star.jiangXing':{ th:'แม่ทัพ', en:'General Star', zh:'將星' },
+  'c.star.jieDu':{ th:'คุณวินัย', en:'Discipline Noble', zh:'節度貴人' },
+  'c.star.jieSha':{ th:'โจรปล้น', en:'Robbery Sha', zh:'劫煞' },
+  'c.star.jinYu':{ th:'ราชรถ', en:'Golden Carriage', zh:'金輿' },
+  'c.star.liuXia':{ th:'แสงร่วง', en:'Flowing Glow', zh:'流霞' },
+  'c.star.luShen':{ th:'ทรัพย์', en:'Prosperity Star', zh:'祿神' },
+  'c.star.suiPo':{ th:'ปีแตก', en:'Year Breaker', zh:'歲破' },
+  'c.star.taiJi':{ th:'ที่ปรึกษา', en:'Taiji Noble', zh:'太極貴人' },
+  'c.star.taoHua':{ th:'เสน่ห์', en:'Peach Blossom', zh:'桃花' },
+  'c.star.tianChu':{ th:'ครัวฟ้า', en:'Heavenly Chef', zh:'天廚' },
+  'c.star.tianXi':{ th:'ฟ้ายินดี', en:'Heavenly Joy', zh:'天喜' },
+  'c.star.tianYi':{ th:'ขุนนาง', en:'Heavenly Noble', zh:'天乙貴人' },
+  'c.star.tianYiDoc':{ th:'หมอฟ้า', en:'Heavenly Doctor', zh:'天醫' },
+  'c.star.wangShen':{ th:'อสูรหาย', en:'Death God', zh:'亡神' },
+  'c.star.wenChang':{ th:'อักษร', en:'Literary Star', zh:'文昌' },
+  'c.star.xiaoHao':{ th:'สูญน้อย', en:'Small Drain', zh:'小耗' },
+  'c.star.xueRen':{ th:'ดาบเลือด', en:'Blood Blade', zh:'血刃' },
+  'c.star.xueTang':{ th:'ห้องเรียน', en:'Study Hall', zh:'學堂' },
+  'c.star.yangRen':{ th:'ดาบแกะ', en:'Goat Blade', zh:'羊刃' },
+  'c.star.yiMa':{ th:'ม้าเดินทาง', en:'Traveling Horse', zh:'驛馬' },
+  'c.star.yueKong':{ th:'ฟ้าโล่งเดือน', en:'Month Void', zh:'月空' },
+  'c.star.zaiSha':{ th:'ภัยพิบัติ', en:'Disaster Sha', zh:'災煞' },
+  'c.strength.critical':{ th:'แรงมาก', en:'Very strong', zh:'極強' },
+  'c.strength.high':{ th:'แรง', en:'Strong', zh:'強' },
+  'c.strength.low':{ th:'เบา', en:'Mild', zh:'弱' },
+  'c.strength.medium':{ th:'กลาง', en:'Medium', zh:'中' },
+  'c.tgLn.biJian':{ th:'เพื่อน', en:'Friend', zh:'比肩' },
+  'c.tgLn.jieCai':{ th:'พี่น้อง', en:'Rob Wealth', zh:'劫財' },
+  'c.tgLn.pianCai':{ th:'ทรัพย์ไหล', en:'Indirect Wealth', zh:'偏財' },
+  'c.tgLn.pianYin':{ th:'ครูสายลับ', en:'Indirect Resource', zh:'偏印' },
+  'c.tgLn.qiSha':{ th:'อำนาจสายลับ', en:'Seven Killings', zh:'七殺' },
+  'c.tgLn.shangGuan':{ th:'พรสวรรค์', en:'Hurting Officer', zh:'傷官' },
+  'c.tgLn.shiShen':{ th:'สร้างสรรค์', en:'Eating God', zh:'食神' },
+  'c.tgLn.zhengCai':{ th:'ทรัพย์ตรง', en:'Direct Wealth', zh:'正財' },
+  'c.tgLn.zhengGuan':{ th:'อำนาจตรง', en:'Direct Officer', zh:'正官' },
+  'c.tgLn.zhengYin':{ th:'ครูตรง', en:'Direct Resource', zh:'正印' },
+  'c.tgShort.biJian':{ th:'เพื่อน', en:'Friends', zh:'比肩' },
+  'c.tgShort.jieCai':{ th:'แข่งขัน', en:'Rivalry', zh:'劫財競' },
+  'c.tgShort.pianCai':{ th:'ทรัพย์ไหล', en:'Indirect Wealth', zh:'偏財' },
+  'c.tgShort.pianYin':{ th:'ปัญญาเฉพาะ', en:'Special Insight', zh:'偏印慧' },
+  'c.tgShort.qiSha':{ th:'แรงกดดัน', en:'Pressure', zh:'壓力' },
+  'c.tgShort.shangGuan':{ th:'พรสวรรค์', en:'Talent', zh:'傷官才' },
+  'c.tgShort.shiShen':{ th:'ผลงาน', en:'Output', zh:'食神' },
+  'c.tgShort.zhengCai':{ th:'ทรัพย์ตรง', en:'Direct Wealth', zh:'正財' },
+  'c.tgShort.zhengGuan':{ th:'งาน/อำนาจ', en:'Career/Authority', zh:'事業/權' },
+  'c.tgShort.zhengYin':{ th:'ครู/ที่พึ่ง', en:'Mentor/Support', zh:'師長/靠山' },
+  'c.trigram.dui':{ th:'บึง', en:'Lake', zh:'澤' },
+  'c.trigram.gen':{ th:'ภูเขา', en:'Mountain', zh:'山' },
+  'c.trigram.kan':{ th:'น้ำ', en:'Water', zh:'水' },
+  'c.trigram.kun':{ th:'ดิน', en:'Earth', zh:'地' },
+  'c.trigram.li':{ th:'ไฟ', en:'Fire', zh:'火' },
+  'c.trigram.qian':{ th:'ฟ้า', en:'Heaven', zh:'天' },
+  'c.trigram.xun':{ th:'ลม', en:'Wind', zh:'風' },
+  'c.trigram.zhen':{ th:'ฟ้าผ่า', en:'Thunder', zh:'雷' },
+  'c.uRole.ji':{ th:'ควรคุม 忌', en:'Restrain 忌', zh:'忌神' },
+  'c.uRole.neutral':{ th:'กลาง', en:'Neutral', zh:'中性' },
+  'c.uRole.xi':{ th:'เสริม 喜', en:'Supportive 喜', zh:'喜神' },
+  'c.uRole.yong':{ th:'ใช้ได้ดี 用', en:'Favorable 用', zh:'用神' },
+  'c.vs.banHe':{ th:'ครึ่งผสาน', en:'Half combine', zh:'半合' },
+  'c.vs.fanYin':{ th:'เสียงสะท้อน', en:'Opposing echo', zh:'反吟' },
+  'c.vs.fuYin':{ th:'เสียงซ้อน', en:'Repeating echo', zh:'伏吟' },
+  'c.vs.liuChong':{ th:'ปะทะ', en:'Clash', zh:'六沖' },
+  'c.vs.liuHai':{ th:'ทำลาย', en:'Harm', zh:'六害' },
+  'c.vs.liuHe':{ th:'จับคู่', en:'Combine', zh:'六合' },
+  'c.vs.liuPo':{ th:'บั่นทอน', en:'Break', zh:'六破' },
+  'c.vs.sanHe':{ th:'สามผสาน', en:'Three Harmony', zh:'三合' },
+  'c.vs.sanHui':{ th:'สามฤดู', en:'Directional trio', zh:'三會' },
+  'c.vs.sanXing':{ th:'ลงโทษ', en:'Punishment', zh:'三刑' },
+  'c.vs.tianDiHe':{ th:'ฟ้าดินผสาน', en:'Heaven-Earth combine', zh:'天地合' },
+  'c.vs.tianKe':{ th:'ฟ้าตัด', en:'Stem clash', zh:'天克' },
+  'c.vs.tongXing':{ th:'ลงโทษร่วม', en:'Mutual punishment', zh:'同刑' },
+  'c.vs.wuHe':{ th:'ก้านผสาน', en:'Stem combine', zh:'五合' },
+  'c.vs.ziXing':{ th:'ทำร้ายตัว', en:'Self-punishment', zh:'自刑' },
+};
+/* 📜 tx helper · prep for JS-strings i18n pass (5 ก.ค. 2026) */
+window._chtx = function(k, fb){
+  var t = window.HK_I18N && window.HK_I18N[k];
+  if(!t) return fb;
+  var lang = document.documentElement.getAttribute('data-lang') || 'th';
+  return t[lang] || t.th || fb;
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
@@ -2297,14 +2892,15 @@ window.addEventListener('resize', function(){
 <script>
 (function(){
   const STEM_EL_MAP={甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
-  const STEM_TH={甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
+  const STEM_TH={甲:window._chtx('c.stem.jia','ไม้หยาง'),乙:window._chtx('c.stem.yi','ไม้หยิน'),丙:window._chtx('c.stem.bing','ไฟหยาง'),丁:window._chtx('c.stem.ding','ไฟหยิน'),戊:window._chtx('c.stem.wu','ดินหยาง'),己:window._chtx('c.stem.ji','ดินหยิน'),庚:window._chtx('c.stem.geng','ทองหยาง'),辛:window._chtx('c.stem.xin','ทองหยิน'),壬:window._chtx('c.stem.ren','น้ำหยาง'),癸:window._chtx('c.stem.gui','น้ำหยิน')};
   const STEM_EN={甲:'Yang Wood',乙:'Yin Wood',丙:'Yang Fire',丁:'Yin Fire',戊:'Yang Earth',己:'Yin Earth',庚:'Yang Metal',辛:'Yin Metal',壬:'Yang Water',癸:'Yin Water'};
   const STEM_ZH_FULL={甲:'甲木',乙:'乙木',丙:'丙火',丁:'丁火',戊:'戊土',己:'己土',庚:'庚金',辛:'辛金',壬:'壬水',癸:'癸水'};
-  const STEM_DESC_TH={甲:'ไม้หยาง · ต้นไม้ใหญ่ · สูงตรง',乙:'ไม้หยิน · เถาวัลย์ · ยืดหยุ่น',丙:'ไฟหยาง · ดวงอาทิตย์ · เปิดเผย',丁:'ไฟหยิน · เปลวเทียน · นุ่มนวล',戊:'ดินหยาง · ภูเขา · มั่นคง',己:'ดินหยิน · ดินไร่นา · เพาะปลูก',庚:'ทองหยาง · ดาบโลหะ · เด็ดขาด',辛:'ทองหยิน · เครื่องประดับ · ละเอียด',壬:'น้ำหยาง · มหาสมุทร · ลื่นไหล',癸:'น้ำหยิน · น้ำฝน · ซึม'};
+  const STEM_DESC_TH={甲:window._chtx('c.stemDesc.jia','ไม้หยาง · ต้นไม้ใหญ่ · สูงตรง'),乙:window._chtx('c.stemDesc.yi','ไม้หยิน · เถาวัลย์ · ยืดหยุ่น'),丙:window._chtx('c.stemDesc.bing','ไฟหยาง · ดวงอาทิตย์ · เปิดเผย'),丁:window._chtx('c.stemDesc.ding','ไฟหยิน · เปลวเทียน · นุ่มนวล'),戊:window._chtx('c.stemDesc.wu','ดินหยาง · ภูเขา · มั่นคง'),己:window._chtx('c.stemDesc.ji','ดินหยิน · ดินไร่นา · เพาะปลูก'),庚:window._chtx('c.stemDesc.geng','ทองหยาง · ดาบโลหะ · เด็ดขาด'),辛:window._chtx('c.stemDesc.xin','ทองหยิน · เครื่องประดับ · ละเอียด'),壬:window._chtx('c.stemDesc.ren','น้ำหยาง · มหาสมุทร · ลื่นไหล'),癸:window._chtx('c.stemDesc.gui','น้ำหยิน · น้ำฝน · ซึม')};
+  /* TENGOD_TH · legacy, currently unused by any render call · left as-is (not user-facing) */
   const TENGOD_TH={'比肩':'เพื่อน · 比肩','劫財':'ขัดทรัพย์ · 劫財','食神':'ลิ้น · 食神','傷官':'ผู้ทำลายตำแหน่ง · 傷官','偏財':'ทรัพย์เคลื่อน · 偏財','正財':'ทรัพย์ตรง · 正財','七殺':'ผู้คุมเข้ม · 七殺','正官':'ตำแหน่งตรง · 正官','偏印':'ตราเอียง · 偏印','正印':'ตราตรง · 正印','日主':'เจ้าชะตา · 日主'};
-  const TENGOD_LABEL={'比肩':'比肩 · เพื่อนร่วมระดับ','劫財':'劫財 · แย่งทรัพย์','食神':'食神 · ผลงานนุ่ม','傷官':'傷官 · ผลงานแรง','偏財':'偏財 · ทรัพย์เคลื่อน','正財':'正財 · ทรัพย์ตรง','七殺':'七殺 · แรงกดดัน','正官':'正官 · อำนาจตรง','偏印':'偏印 · ความรู้เฉพาะ','正印':'正印 · ผู้ช่วย/ครู'};
-  const TENGOD_DOMAIN={'正官':{name:'งาน / อำนาจ',category:'career'},'七殺':{name:'อำนาจ / แรง',category:'killing'},'正財':{name:'เงิน / ทรัพย์',category:'wealth'},'偏財':{name:'ทรัพย์เคลื่อน',category:'wealth'},'食神':{name:'ความคิดสร้างสรรค์',category:'arts'},'傷官':{name:'พรสวรรค์ · ทำลาย',category:'arts'},'正印':{name:'ครูบาอาจารย์',category:'resource'},'偏印':{name:'ปัญญาเฉพาะ',category:'resource'},'比肩':{name:'เพื่อน / วินัย',category:'self'},'劫財':{name:'พี่น้อง / แข่งขัน',category:'self'}};
-  const PHASE_TH={'長生':'แรกเกิด','沐浴':'อาบ','冠帶':'ตั้งตน','臨官':'พลังเต็ม','帝旺':'รุ่งโรจน์','衰':'เสื่อม','病':'ป่วย','死':'ดับ','墓':'สุสาน','絕':'ขาด','胎':'เริ่มก่อตัว','養':'ครรภ์'};
+  const TENGOD_LABEL={'比肩':'比肩 · '+window._chtx('c.tgLabel.biJian','เพื่อนร่วมระดับ'),'劫財':'劫財 · '+window._chtx('c.tgLabel.jieCai','แย่งทรัพย์'),'食神':'食神 · '+window._chtx('c.tgLabel.shiShen','ผลงานนุ่ม'),'傷官':'傷官 · '+window._chtx('c.tgLabel.shangGuan','ผลงานแรง'),'偏財':'偏財 · '+window._chtx('c.tgLabel.pianCai','ทรัพย์เคลื่อน'),'正財':'正財 · '+window._chtx('c.tgLabel.zhengCai','ทรัพย์ตรง'),'七殺':'七殺 · '+window._chtx('c.tgLabel.qiSha','แรงกดดัน'),'正官':'正官 · '+window._chtx('c.tgLabel.zhengGuan','อำนาจตรง'),'偏印':'偏印 · '+window._chtx('c.tgLabel.pianYin','ความรู้เฉพาะ'),'正印':'正印 · '+window._chtx('c.tgLabel.zhengYin','ผู้ช่วย/ครู')};
+  const TENGOD_DOMAIN={'正官':{name:window._chtx('c.tgDomain.zhengGuan','งาน / อำนาจ'),category:'career'},'七殺':{name:window._chtx('c.tgDomain.qiSha','อำนาจ / แรง'),category:'killing'},'正財':{name:window._chtx('c.tgDomain.zhengCai','เงิน / ทรัพย์'),category:'wealth'},'偏財':{name:window._chtx('c.tgDomain.pianCai','ทรัพย์เคลื่อน'),category:'wealth'},'食神':{name:window._chtx('c.tgDomain.shiShen','ความคิดสร้างสรรค์'),category:'arts'},'傷官':{name:window._chtx('c.tgDomain.shangGuan','พรสวรรค์ · ทำลาย'),category:'arts'},'正印':{name:window._chtx('c.tgDomain.zhengYin','ครูบาอาจารย์'),category:'resource'},'偏印':{name:window._chtx('c.tgDomain.pianYin','ปัญญาเฉพาะ'),category:'resource'},'比肩':{name:window._chtx('c.tgDomain.biJian','เพื่อน / วินัย'),category:'self'},'劫財':{name:window._chtx('c.tgDomain.jieCai','พี่น้อง / แข่งขัน'),category:'self'}};
+  const PHASE_TH={'長生':window._chtx('c.phase.changSheng','แรกเกิด'),'沐浴':window._chtx('c.phase.muYu','อาบ'),'冠帶':window._chtx('c.phase.guanDai','ตั้งตน'),'臨官':window._chtx('c.phase.linGuan','พลังเต็ม'),'帝旺':window._chtx('c.phase.diWang','รุ่งโรจน์'),'衰':window._chtx('c.phase.shuai','เสื่อม'),'病':window._chtx('c.phase.bing','ป่วย'),'死':window._chtx('c.phase.si','ดับ'),'墓':window._chtx('c.phase.mu','สุสาน'),'絕':window._chtx('c.phase.jue','ขาด'),'胎':window._chtx('c.phase.tai','เริ่มก่อตัว'),'養':window._chtx('c.phase.yang','ครรภ์')};
 
   /* identity reads removed · controller (HKChartPage) owns snapshot */
 
@@ -2347,16 +2943,16 @@ window.addEventListener('resize', function(){
     // hero-meta: 📅 🕐 📍
     const heroMeta=document.querySelector('.hero-meta');
     if(heroMeta){
-      const timeLabel = b.birthTimeKnown === false ? 'ไม่ทราบเวลา' : (b.time || '12:00');
+      const timeLabel = b.birthTimeKnown === false ? window._chtx('c.hero.time_unknown','ไม่ทราบเวลา') : (b.time || '12:00');
       heroMeta.innerHTML=`<span>📅 ${b.date}</span><span>🕐 ${timeLabel}</span><span>📍 ${b.place||'Bangkok'}</span>`;
     }
     // hero-tags: ป้ายธาตุ + structure (DM + jishen wealth + element top)
     const heroTags=document.querySelector('.hero-tags');
     if(heroTags){
       const dmShort=STEM_TH[dm]?.split('·')[0]?.trim()||dm;
-      const TOP_TH={wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+      const TOP_TH={wood:window._chtx('c.el.wood','ไม้'),fire:window._chtx('c.el.fire','ไฟ'),earth:window._chtx('c.el.earth','ดิน'),metal:window._chtx('c.el.metal','ทอง'),water:window._chtx('c.el.water','น้ำ')};
       const TOP_GLYPH={wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
-      const ROLE_TH={resource:'ครู·印',parallel:'ตัวเรา·比',output:'ลูก·食傷',wealth:'ทรัพย์·財',power:'อำนาจ·官殺'};
+      const ROLE_TH={resource:window._chtx('c.role.resource','ครู·印'),parallel:window._chtx('c.role.parallel','ตัวเรา·比'),output:window._chtx('c.role.output','ลูก·食傷'),wealth:window._chtx('c.role.wealth','ทรัพย์·財'),power:window._chtx('c.role.power','อำนาจ·官殺')};
       /* 20 พ.ค. Codex รอบ 41 fix · single source: yongshen_v2 + voytek functional · ลบ raw % */
       const structureLabel = d.yongshen_v2?.structure_label || a.ge_ju?.structure || '中和';
       const vs2 = a.voytek_strength;
@@ -2364,16 +2960,16 @@ window.addEventListener('resize', function(){
       let domRole=null, domVal=0, domEl=null;
       (vs2?.bars||[]).forEach(b => { if(b.pct>domVal){ domVal=b.pct; domRole=b.role; domEl=b.element; } });
       const domTag = domRole && domEl
-        ? `<span class="tag"><span class="glyph">${TOP_GLYPH[domEl]||''}</span>${ROLE_TH[domRole]||domRole}(${TOP_TH[domEl]||domEl}) เด่น</span>`
+        ? `<span class="tag"><span class="glyph">${TOP_GLYPH[domEl]||''}</span>${ROLE_TH[domRole]||domRole}(${TOP_TH[domEl]||domEl})${window._chtx('c.hero.dominant_suffix',' เด่น')}</span>`
         : '';
-      heroTags.innerHTML = `<span class="tag"><span class="glyph" style="color:var(--${dmElement})">${dm}</span>${dmShort} · ${STEM_ZH_FULL[dm]||dm}</span><span class="tag"><span class="glyph">${structureLabel}</span>โครงสร้างดวง · 格局</span>${domTag}`;
+      heroTags.innerHTML = `<span class="tag"><span class="glyph" style="color:var(--${dmElement})">${dm}</span>${dmShort} · ${STEM_ZH_FULL[dm]||dm}</span><span class="tag"><span class="glyph">${structureLabel}</span>${window._chtx('c.hero.structure_tag','โครงสร้างดวง · 格局')}</span>${domTag}`;
     }
     // Voytek-style DM strength bar (Layer 3 · ไม่กระทบ engine yongshen เดิม)
     const vs = a.voytek_strength;
     if (vs) {
       const strBox = document.querySelector('.dm-card .strength');
       if (strBox) {
-        strBox.innerHTML = '<b>'+vs.supporting_pct+'% หนุน / '+vs.opposing_pct+'% ต้าน</b><span class="lvl">'+vs.level_th+'</span>';
+        strBox.innerHTML = '<b>'+vs.supporting_pct+'% '+window._chtx('c.str.support','หนุน')+' / '+vs.opposing_pct+'% '+window._chtx('c.str.oppose','ต้าน')+'</b><span class="lvl">'+vs.level_th+'</span>';
       }
       const meter = document.querySelector('.dm-card .meter span');
       if (meter) {
@@ -2456,7 +3052,8 @@ window.addEventListener('resize', function(){
     const ledeP=document.querySelector('.hero-l p.lede');
     if(ledeP){
       const dmShort=STEM_TH[dm]?.split('·')[0]?.trim()||dm;
-      const seasonMap={子:'หนาว',丑:'หนาว',寅:'ใบไม้ผลิ',卯:'ใบไม้ผลิ',辰:'ใบไม้ผลิ',巳:'ร้อน',午:'ร้อน',未:'ร้อน',申:'ใบไม้ร่วง',酉:'ใบไม้ร่วง',戌:'ใบไม้ร่วง',亥:'หนาว'};
+      const _seaW=window._chtx('c.season.winter','หนาว'), _seaSp=window._chtx('c.season.spring','ใบไม้ผลิ'), _seaSu=window._chtx('c.season.summer','ร้อน'), _seaAu=window._chtx('c.season.autumn','ใบไม้ร่วง');
+      const seasonMap={子:_seaW,丑:_seaW,寅:_seaSp,卯:_seaSp,辰:_seaSp,巳:_seaSu,午:_seaSu,未:_seaSu,申:_seaAu,酉:_seaAu,戌:_seaAu,亥:_seaW};
       const season=seasonMap[p.month?.branch]||'';
       const tst = d.tst || {};
       const tstStr = tst.appliedTimeStr || '';
@@ -2466,12 +3063,13 @@ window.addEventListener('resize', function(){
       /* Codex รอบ 42 fix · UTC-based เพื่อให้ dow ตรงทุก browser timezone */
       const [by,bm,bd] = String(b.date||'').split('-').map(Number);
       const dowIdx = by && bm && bd ? new Date(Date.UTC(by, bm - 1, bd)).getUTCDay() : -1;
-      const dowTh = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][dowIdx]||'';
+      const dowTh = [window._chtx('c.dow.sun','อาทิตย์'),window._chtx('c.dow.mon','จันทร์'),window._chtx('c.dow.tue','อังคาร'),window._chtx('c.dow.wed','พุธ'),window._chtx('c.dow.thu','พฤหัสบดี'),window._chtx('c.dow.fri','ศุกร์'),window._chtx('c.dow.sat','เสาร์')][dowIdx]||'';
       const tstLine = tstStr
-        ? `<br/><span style="font-family:var(--thai);font-size:12px;color:var(--gold);opacity:.85;">⏱ <b>เวลาสุริยะแท้ ${tstStr}</b> · ปรับ ${totalShift} นาที (ลองจิจูด ${lngShift} + สมการเวลา ${eotShift})</span>`
+        ? `<br/><span style="font-family:var(--thai);font-size:12px;color:var(--gold);opacity:.85;">` + window._chtx('c.hero.tst_line','⏱ <b>เวลาสุริยะแท้ {tst}</b> · ปรับ {total} นาที (ลองจิจูด {lng} + สมการเวลา {eot})').replace('{tst}',tstStr).replace('{total}',totalShift).replace('{lng}',lngShift).replace('{eot}',eotShift) + `</span>`
         : '';
-      const timePhrase = b.birthTimeKnown === false ? 'ไม่ทราบเวลาเกิด' : `เวลา <b>${b.time || '12:00'}</b>`;
-      ledeP.innerHTML=`คุณเป็น <b>${dmShort}</b> ในฤดู${season} · เกิดวัน${dowTh} <b>${b.date}</b> ${timePhrase} ที่ ${b.place||'กรุงเทพฯ'}${tstLine}`;
+      const timePhrase = b.birthTimeKnown === false ? window._chtx('c.hero.time_unknown_full','ไม่ทราบเวลาเกิด') : window._chtx('c.hero.time_at','เวลา <b>{time}</b>').replace('{time}', b.time || '12:00');
+      ledeP.innerHTML = window._chtx('c.hero.lede','คุณเป็น <b>{dm}</b> ในฤดู{season} · เกิดวัน{dow} <b>{date}</b> {time} ที่ {place}')
+        .replace('{dm}',dmShort).replace('{season}',season).replace('{dow}',dowTh).replace('{date}',`<b>${b.date}</b>`).replace('{time}',timePhrase).replace('{place}',b.place||window._chtx('c.hero.default_place','กรุงเทพฯ')) + tstLine;
     }
 
     // §02 Elements bar (5 ธาตุ) · canonical SystemB only. No raw/Voytek fallback.
@@ -2487,7 +3085,7 @@ window.addEventListener('resize', function(){
       if(elPcts[i]) elPcts[i].textContent=raw == null ? '—' : pct+'%';
     });
     /* §06 用神 / 忌神 list · ใช้ analysis.useful_god + analysis.jishen */
-    const EL_TH_GLOBAL={wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+    const EL_TH_GLOBAL={wood:window._chtx('c.el.wood','ไม้'),fire:window._chtx('c.el.fire','ไฟ'),earth:window._chtx('c.el.earth','ดิน'),metal:window._chtx('c.el.metal','ทอง'),water:window._chtx('c.el.water','น้ำ')};
     /* yong-card เดิม removed · §06b YONGSHEN v2 (wrapper-7) ใช้แทน · 15 พ.ค. */
 
     /* 📜 §5.5 Yongshen v2 · render จาก d.yongshen_v2 (wrapper-7) · 15 พ.ค.
@@ -2617,8 +3215,8 @@ window.addEventListener('resize', function(){
         if (!box || !isFollowChart || !pid) return;
         const qEl = document.getElementById('hk-school-q');
         const stEl = document.getElementById('hk-school-status');
-        const SCH_TH = { shun_shi: '🌊 สายตามกระแส (順勢) — ยืนยันแล้วจากชีวิตจริงของคุณ', fu_yi: '🔥 สายพยุงตัว (扶抑) — ยืนยันแล้วจากชีวิตจริงของคุณ' };
-        qEl.textContent = 'ดวงคุณเป็นดวงก้ำกึ่งที่ตำราอ่านได้ 2 ทาง — ช่วงวัยจรที่ผ่านมา (ดูตารางวัยจรด้านล่าง เช่น ช่วงธาตุที่ตรงข้ามสองสาย) ชีวิตคุณ "รุ่ง" หรือ "ฝืด"? คำตอบของคุณจะตั้งสำนักอ่านให้ซินแสทั้งระบบ';
+        const SCH_TH = { shun_shi: window._chtx('c.school.shun_shi','🌊 สายตามกระแส (順勢) — ยืนยันแล้วจากชีวิตจริงของคุณ'), fu_yi: window._chtx('c.school.fu_yi','🔥 สายพยุงตัว (扶抑) — ยืนยันแล้วจากชีวิตจริงของคุณ') };
+        qEl.textContent = window._chtx('c.school.question','ดวงคุณเป็นดวงก้ำกึ่งที่ตำราอ่านได้ 2 ทาง — ช่วงวัยจรที่ผ่านมา (ดูตารางวัยจรด้านล่าง เช่น ช่วงธาตุที่ตรงข้ามสองสาย) ชีวิตคุณ "รุ่ง" หรือ "ฝืด"? คำตอบของคุณจะตั้งสำนักอ่านให้ซินแสทั้งระบบ');
         fetch('/api/profile/' + pid).then(r => r.json()).then(d => {
           const cur = d?.profile?.yongshen_school;
           if (cur && SCH_TH[cur]) stEl.textContent = '✅ ' + SCH_TH[cur];
@@ -2627,13 +3225,13 @@ window.addEventListener('resize', function(){
         if (box.__schoolInit) return; box.__schoolInit = true; /* กัน listener ติดซ้ำ (render เรียกได้หลายครั้ง) */
         box.querySelectorAll('.hk-school-btn').forEach(btn => btn.addEventListener('click', async () => {
           const school = btn.getAttribute('data-school') || null;
-          stEl.textContent = '⏳ กำลังบันทึก...';
+          stEl.textContent = window._chtx('c.school.saving','⏳ กำลังบันทึก...');
           try {
             const r = await fetch('/api/profile/' + pid, { method: 'PUT', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ yongshenSchool: school }) });
             if (!r.ok) throw new Error(String(r.status));
-            stEl.textContent = school && SCH_TH[school] ? '✅ ' + SCH_TH[school] + ' · ซินแสจะอ่านตามสำนักนี้' : 'ล้างคำตอบแล้ว — ซินแสจะชวนเทียบชีวิตจริงอีกครั้ง';
-          } catch (e) { stEl.textContent = '⚠️ บันทึกไม่สำเร็จ ลองใหม่ (' + e.message + ')'; }
+            stEl.textContent = school && SCH_TH[school] ? '✅ ' + SCH_TH[school] + window._chtx('c.school.saved_suffix',' · ซินแสจะอ่านตามสำนักนี้') : window._chtx('c.school.cleared','ล้างคำตอบแล้ว — ซินแสจะชวนเทียบชีวิตจริงอีกครั้ง');
+          } catch (e) { stEl.textContent = window._chtx('c.school.save_failed','⚠️ บันทึกไม่สำเร็จ ลองใหม่') + ' (' + e.message + ')'; }
         }));
       })();
       const expBox = document.getElementById('hk-ysv2-explain-box');
@@ -2646,19 +3244,19 @@ window.addEventListener('resize', function(){
           /* ตัด JSON blob ของ Prescription */
           if (s.startsWith('Prescription:')) {
             const m = s.match(/^Prescription:\s*(\w+)/);
-            return m ? `แนวกลยุทธ์: ${humanizeStrategy(m[1])}` : null;
+            return m ? `${window._chtx('c.ys.strategy_prefix','แนวกลยุทธ์:')} ${humanizeStrategy(m[1])}` : null;
           }
           /* humanize tokens */
           s = s.replace(/WEAK_DM_\w+_HEAVY/g, (m)=>humanizeEngineType(m));
           s = s.replace(/(TRUE_FOLLOW|HUA_QI|ZHUAN_WANG|CONG_QIANG|CONG_WANG|NORMAL)_\w+/g, (m)=>humanizeEngineType(m));
-          s = s.replace(/fake_follower/g, '假從 (ตามไม่แท้)');
-          s = s.replace(/\btoken_root\b/g, 'รากบางมาก');
-          s = s.replace(/\bpartial_root\b/g, 'รากบางส่วน');
-          s = s.replace(/\bno_root\b/g, 'ไม่มีราก');
-          s = s.replace(/\brooted\b/g, 'มีราก');
-          s = s.replace(/\bstrong_root\b/g, 'รากแกร่ง');
-          s = s.replace(/\bprogressive\b/g, 'แนวเพิ่ม');
-          s = s.replace(/\bregressive\b/g, 'แนวคุม');
+          s = s.replace(/fake_follower/g, window._chtx('c.ys.fake_follow','假從 (ตามไม่แท้)'));
+          s = s.replace(/\btoken_root\b/g, window._chtx('c.ys.token_root','รากบางมาก'));
+          s = s.replace(/\bpartial_root\b/g, window._chtx('c.ys.partial_root','รากบางส่วน'));
+          s = s.replace(/\bno_root\b/g, window._chtx('c.ys.no_root','ไม่มีราก'));
+          s = s.replace(/\brooted\b/g, window._chtx('c.ys.rooted','มีราก'));
+          s = s.replace(/\bstrong_root\b/g, window._chtx('c.ys.strong_root','รากแกร่ง'));
+          s = s.replace(/\bprogressive\b/g, window._chtx('c.ys.progressive','แนวเพิ่ม'));
+          s = s.replace(/\bregressive\b/g, window._chtx('c.ys.regressive','แนวคุม'));
           /* humanize disease + bridge keys */
           for (const k of Object.keys(_DISEASE_LBL)) s = s.replace(new RegExp(k,'g'), humanizeDisease(k));
           s = s.replace(/(\w+)_bridges_([a-z]+-[a-z]+)/g, (m,a,b)=>humanizeBridge(m));
@@ -2675,8 +3273,8 @@ window.addEventListener('resize', function(){
       const hsec = document.getElementById('hk-heluo-sec');
       if (hl && hsec) {
         hsec.style.display = '';
-        const HEX_TH = {1:'สร้างสรรค์',2:'รับ',3:'เริ่มแรก',4:'เยาว์ไร้รู้',5:'รอ',6:'ขัดแย้ง',7:'กองทัพ',8:'สามัคคี',9:'เก็บเล็ก',10:'เหยียบ',11:'สงบเจริญ',12:'อุดตัน',13:'ร่วมใจ',14:'ครอบครอง',15:'ถ่อมตัว',16:'หรรษา',17:'ติดตาม',18:'เลื่อม',19:'ใกล้',20:'พิจารณา',21:'กัดเคี้ยว',22:'ประดับ',23:'แตกสลาย',24:'กลับ',25:'ไม่หลง',26:'เก็บใหญ่',27:'เลี้ยง',28:'ล้น',29:'ห้วงเหว',30:'ติดไฟ',31:'รัก',32:'ยั่งยืน',33:'ถอย',34:'พลังยิ่งใหญ่',35:'รุ่ง',36:'แสงดับ',37:'ครอบครัว',38:'ผิดใจ',39:'ติดขัด',40:'แก้',41:'ลด',42:'เพิ่ม',43:'ตัดสิน',44:'พบ',45:'รวม',46:'ก้าวขึ้น',47:'อับจน',48:'บ่อน้ำ',49:'เปลี่ยน',50:'หม้อ',51:'สั่น',52:'หยุด',53:'คืบ',54:'แต่งงาน',55:'รุ่งเรือง',56:'ผู้พเนจร',57:'อ่อนนุ่ม',58:'ร่าเริง',59:'ละลาย',60:'ขอบเขต',61:'ใจสัจ',62:'เกินเล็ก',63:'สำเร็จ',64:'ยังไม่สำเร็จ'};
-        const TRIGRAM_TH = {'乾':'ฟ้า','坤':'ดิน','震':'ฟ้าผ่า','巽':'ลม','坎':'น้ำ','離':'ไฟ','艮':'ภูเขา','兌':'บึง'};
+        const HEX_TH = {1:window._chtx('c.hex.h1','สร้างสรรค์'),2:window._chtx('c.hex.h2','รับ'),3:window._chtx('c.hex.h3','เริ่มแรก'),4:window._chtx('c.hex.h4','เยาว์ไร้รู้'),5:window._chtx('c.hex.h5','รอ'),6:window._chtx('c.hex.h6','ขัดแย้ง'),7:window._chtx('c.hex.h7','กองทัพ'),8:window._chtx('c.hex.h8','สามัคคี'),9:window._chtx('c.hex.h9','เก็บเล็ก'),10:window._chtx('c.hex.h10','เหยียบ'),11:window._chtx('c.hex.h11','สงบเจริญ'),12:window._chtx('c.hex.h12','อุดตัน'),13:window._chtx('c.hex.h13','ร่วมใจ'),14:window._chtx('c.hex.h14','ครอบครอง'),15:window._chtx('c.hex.h15','ถ่อมตัว'),16:window._chtx('c.hex.h16','หรรษา'),17:window._chtx('c.hex.h17','ติดตาม'),18:window._chtx('c.hex.h18','เลื่อม'),19:window._chtx('c.hex.h19','ใกล้'),20:window._chtx('c.hex.h20','พิจารณา'),21:window._chtx('c.hex.h21','กัดเคี้ยว'),22:window._chtx('c.hex.h22','ประดับ'),23:window._chtx('c.hex.h23','แตกสลาย'),24:window._chtx('c.hex.h24','กลับ'),25:window._chtx('c.hex.h25','ไม่หลง'),26:window._chtx('c.hex.h26','เก็บใหญ่'),27:window._chtx('c.hex.h27','เลี้ยง'),28:window._chtx('c.hex.h28','ล้น'),29:window._chtx('c.hex.h29','ห้วงเหว'),30:window._chtx('c.hex.h30','ติดไฟ'),31:window._chtx('c.hex.h31','รัก'),32:window._chtx('c.hex.h32','ยั่งยืน'),33:window._chtx('c.hex.h33','ถอย'),34:window._chtx('c.hex.h34','พลังยิ่งใหญ่'),35:window._chtx('c.hex.h35','รุ่ง'),36:window._chtx('c.hex.h36','แสงดับ'),37:window._chtx('c.hex.h37','ครอบครัว'),38:window._chtx('c.hex.h38','ผิดใจ'),39:window._chtx('c.hex.h39','ติดขัด'),40:window._chtx('c.hex.h40','แก้'),41:window._chtx('c.hex.h41','ลด'),42:window._chtx('c.hex.h42','เพิ่ม'),43:window._chtx('c.hex.h43','ตัดสิน'),44:window._chtx('c.hex.h44','พบ'),45:window._chtx('c.hex.h45','รวม'),46:window._chtx('c.hex.h46','ก้าวขึ้น'),47:window._chtx('c.hex.h47','อับจน'),48:window._chtx('c.hex.h48','บ่อน้ำ'),49:window._chtx('c.hex.h49','เปลี่ยน'),50:window._chtx('c.hex.h50','หม้อ'),51:window._chtx('c.hex.h51','สั่น'),52:window._chtx('c.hex.h52','หยุด'),53:window._chtx('c.hex.h53','คืบ'),54:window._chtx('c.hex.h54','แต่งงาน'),55:window._chtx('c.hex.h55','รุ่งเรือง'),56:window._chtx('c.hex.h56','ผู้พเนจร'),57:window._chtx('c.hex.h57','อ่อนนุ่ม'),58:window._chtx('c.hex.h58','ร่าเริง'),59:window._chtx('c.hex.h59','ละลาย'),60:window._chtx('c.hex.h60','ขอบเขต'),61:window._chtx('c.hex.h61','ใจสัจ'),62:window._chtx('c.hex.h62','เกินเล็ก'),63:window._chtx('c.hex.h63','สำเร็จ'),64:window._chtx('c.hex.h64','ยังไม่สำเร็จ')};
+        const TRIGRAM_TH = {'乾':window._chtx('c.trigram.qian','ฟ้า'),'坤':window._chtx('c.trigram.kun','ดิน'),'震':window._chtx('c.trigram.zhen','ฟ้าผ่า'),'巽':window._chtx('c.trigram.xun','ลม'),'坎':window._chtx('c.trigram.kan','น้ำ'),'離':window._chtx('c.trigram.li','ไฟ'),'艮':window._chtx('c.trigram.gen','ภูเขา'),'兌':window._chtx('c.trigram.dui','บึง')};
         const trTh = (zh) => TRIGRAM_TH[zh] || zh;
         const card = (title, lbl, h, extra='') => {
           const sym = String.fromCodePoint(0x4DC0 + (h.hex - 1));
@@ -2686,42 +3284,42 @@ window.addEventListener('resize', function(){
               <div style="font-family:var(--tc);font-size:42px;color:var(--gold);line-height:1;">${sym}</div>
               <div>
                 <div style="font-family:var(--thai);font-size:16px;color:var(--fg);font-weight:700;">${HEX_TH[h.hex]||'?'}</div>
-                <div style="font-family:var(--tc);font-size:12px;color:var(--fg-soft);margin-top:2px;">ฉัก ${h.hex} · ${h.name}</div>
+                <div style="font-family:var(--tc);font-size:12px;color:var(--fg-soft);margin-top:2px;">${window._chtx('c.heluo.hex_word','ฉัก')} ${h.hex} · ${h.name}</div>
               </div>
             </div>
             <div style="font-family:var(--thai);font-size:11px;color:var(--fg-soft);line-height:1.4;">${lbl}</div>
             ${extra}
-            <button onclick="if(window.showHexDeep)showHexDeep(${h.hex},${h.changing_line||h.line||0})" style="margin-top:10px;background:rgba(200,164,77,.1);border:1px solid var(--gold-line);color:var(--gold);font-family:var(--thai);font-size:11px;padding:5px 12px;border-radius:99px;cursor:pointer;">📜 อ่านคำทำนายเต็ม</button>
+            <button onclick="if(window.showHexDeep)showHexDeep(${h.hex},${h.changing_line||h.line||0})" style="margin-top:10px;background:rgba(200,164,77,.1);border:1px solid var(--gold-line);color:var(--gold);font-family:var(--thai);font-size:11px;padding:5px 12px;border-radius:99px;cursor:pointer;">${window._chtx('c.heluo.read_full','📜 อ่านคำทำนายเต็ม')}</button>
           </div>`;
         };
         const preUp = trTh(hl.pre_heaven.upper), preLo = trTh(hl.pre_heaven.lower);
         const postUp = trTh(hl.post_heaven.upper), postLo = trTh(hl.post_heaven.lower);
         const grid = document.getElementById('hk-heluo-grid');
         grid.innerHTML =
-          card('🌅 ก่อนเกิด · พื้นฐานติดตัว',
-               `บน${preUp} (${hl.pre_heaven.upper}) ล่าง${preLo} (${hl.pre_heaven.lower}) · เส้นเปลี่ยน ${hl.pre_heaven.changing_line} (จาก 6)`,
+          card(window._chtx('c.heluo.pre_title','🌅 ก่อนเกิด · พื้นฐานติดตัว'),
+               window._chtx('c.heluo.pair_line','บน{up} ({upZh}) ล่าง{lo} ({loZh})').replace('{up}',preUp).replace('{upZh}',hl.pre_heaven.upper).replace('{lo}',preLo).replace('{loZh}',hl.pre_heaven.lower) + ' · ' + window._chtx('c.heluo.changing_line','เส้นเปลี่ยน {n} (จาก 6)').replace('{n}',hl.pre_heaven.changing_line),
                hl.pre_heaven,
-               `<div style="font-size:11px;color:var(--fg-soft);margin-top:6px;line-height:1.5;">นิสัย/พื้นฐานที่ติดตัวมาตั้งแต่เกิด · คงที่ตลอดชีวิต</div>`) +
-          card('🌇 หลังเกิด · ภารกิจชีวิต',
-               `บน${postUp} (${hl.post_heaven.upper}) ล่าง${postLo} (${hl.post_heaven.lower})`,
+               `<div style="font-size:11px;color:var(--fg-soft);margin-top:6px;line-height:1.5;">${window._chtx('c.heluo.pre_note','นิสัย/พื้นฐานที่ติดตัวมาตั้งแต่เกิด · คงที่ตลอดชีวิต')}</div>`) +
+          card(window._chtx('c.heluo.post_title','🌇 หลังเกิด · ภารกิจชีวิต'),
+               window._chtx('c.heluo.pair_line','บน{up} ({upZh}) ล่าง{lo} ({loZh})').replace('{up}',postUp).replace('{upZh}',hl.post_heaven.upper).replace('{lo}',postLo).replace('{loZh}',hl.post_heaven.lower),
                hl.post_heaven,
-               `<div style="font-size:11px;color:var(--fg-soft);margin-top:6px;line-height:1.5;">เป้าหมายชีวิต · เกิดจากการเปลี่ยนแปลงของฉักก่อนเกิด</div>`) +
-          card(`📅 ปีนี้ · ${hl.annual.year} (อายุ ${hl.annual.chinese_age} ปี)`,
-               `เส้นที่ ${hl.annual.line} (จาก 6) · เปลี่ยนแปลงเด่นในปีนี้`,
+               `<div style="font-size:11px;color:var(--fg-soft);margin-top:6px;line-height:1.5;">${window._chtx('c.heluo.post_note','เป้าหมายชีวิต · เกิดจากการเปลี่ยนแปลงของฉักก่อนเกิด')}</div>`) +
+          card(window._chtx('c.heluo.annual_title','📅 ปีนี้ · {year} (อายุ {age} ปี)').replace('{year}',hl.annual.year).replace('{age}',hl.annual.chinese_age),
+               window._chtx('c.heluo.annual_line','เส้นที่ {n} (จาก 6) · เปลี่ยนแปลงเด่นในปีนี้').replace('{n}',hl.annual.line),
                hl.annual,
-               `<div style="font-size:12px;color:#7dd37b;margin-top:6px;font-weight:600;">⭐ ปีนี้: ${HEX_TH[hl.annual.hex]||'?'}</div>`) +
-          card(`📆 เดือนนี้ · เดือน ${hl.monthly.month}`,
-               `เส้นที่ ${hl.monthly.line} (จาก 6) · เปลี่ยนแปลงในเดือนนี้`,
+               `<div style="font-size:12px;color:#7dd37b;margin-top:6px;font-weight:600;">${window._chtx('c.heluo.annual_hex','⭐ ปีนี้:')} ${HEX_TH[hl.annual.hex]||'?'}</div>`) +
+          card(window._chtx('c.heluo.monthly_title','📆 เดือนนี้ · เดือน {m}').replace('{m}',hl.monthly.month),
+               window._chtx('c.heluo.monthly_line','เส้นที่ {n} (จาก 6) · เปลี่ยนแปลงในเดือนนี้').replace('{n}',hl.monthly.line),
                hl.monthly,
-               `<div style="font-size:12px;color:#5ba0ff;margin-top:6px;font-weight:600;">เดือนนี้: ${HEX_TH[hl.monthly.hex]||'?'}</div>`);
+               `<div style="font-size:12px;color:#5ba0ff;margin-top:6px;font-weight:600;">${window._chtx('c.heluo.monthly_hex','เดือนนี้:')} ${HEX_TH[hl.monthly.hex]||'?'}</div>`);
         /* ตัวเลขดิบ · ซ่อนเป็น collapsible toggle */
         document.getElementById('hk-heluo-numbers').innerHTML =
-          `<details><summary style="cursor:pointer;color:var(--gold);font-family:var(--thai);font-size:11px;">🔢 ดูตัวเลขดิบจากตำรา (ตัวเลขเทพ + ดิน + ก้าน + กิ่ง)</summary>` +
+          `<details><summary style="cursor:pointer;color:var(--gold);font-family:var(--thai);font-size:11px;">${window._chtx('c.heluo.raw_toggle','🔢 ดูตัวเลขดิบจากตำรา (ตัวเลขเทพ + ดิน + ก้าน + กิ่ง)')}</summary>` +
           `<div style="margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--fg-soft);line-height:1.6;">` +
-          `<b style="color:var(--gold);">天數 ตัวเลขเทพ</b> = ${hl.numbers.heavenly} · ` +
-          `<b style="color:var(--gold);">地數 ตัวเลขดิน</b> = ${hl.numbers.earthly}<br/>` +
-          `<span>ก้านฟ้า [${hl.numbers.stem_nums.join(',')}] · กิ่งดิน [${hl.numbers.branch_nums.join(',')}]</span><br/>` +
-          `<span style="color:var(--fg-faint);font-size:9px;">ที่มา: 河圖洛書 + 河洛理數 (Chen Tuan · ศตวรรษที่ 10) · คำนวณตายตัวจากเสาเกิดของคุณ</span>` +
+          `<b style="color:var(--gold);">${window._chtx('c.heluo.heaven_num','天數 ตัวเลขเทพ')}</b> = ${hl.numbers.heavenly} · ` +
+          `<b style="color:var(--gold);">${window._chtx('c.heluo.earth_num','地數 ตัวเลขดิน')}</b> = ${hl.numbers.earthly}<br/>` +
+          `<span>${window._chtx('c.heluo.stems_label','ก้านฟ้า')} [${hl.numbers.stem_nums.join(',')}] · ${window._chtx('c.heluo.branches_label','กิ่งดิน')} [${hl.numbers.branch_nums.join(',')}]</span><br/>` +
+          `<span style="color:var(--fg-faint);font-size:9px;">${window._chtx('c.heluo.source_note','ที่มา: 河圖洛書 + 河洛理數 (Chen Tuan · ศตวรรษที่ 10) · คำนวณตายตัวจากเสาเกิดของคุณ')}</span>` +
           `</div></details>`;
       }
     } catch (e) { console.warn('[chart] heluo render failed:', e); }
@@ -2734,29 +3332,29 @@ window.addEventListener('resize', function(){
         jqSec.style.display = '';
         /* TH dict ครบ 24 jieqi · นัยตำราอากง */
         const JIEQI_TH = {
-          '立春':'ต้นใบไม้ผลิ','雨水':'น้ำฝน','驚蟄':'ปลุกแมลง','春分':'แบ่งฤดูใบไม้ผลิ',
-          '清明':'แจ่มใส','穀雨':'ฝนต่อข้าว','立夏':'ต้นฤดูร้อน','小滿':'เต็มน้อย',
-          '芒種':'หว่านข้าว','夏至':'กลางฤดูร้อน','小暑':'ร้อนน้อย','大暑':'ร้อนใหญ่',
-          '立秋':'ต้นฤดูใบไม้ร่วง','處暑':'สิ้นร้อน','白露':'น้ำค้างขาว','秋分':'แบ่งฤดูใบไม้ร่วง',
-          '寒露':'น้ำค้างเย็น','霜降':'น้ำค้างแข็งลง','立冬':'ต้นฤดูหนาว','小雪':'หิมะเบา',
-          '大雪':'หิมะหนัก','冬至':'กลางฤดูหนาว','小寒':'หนาวน้อย','大寒':'หนาวใหญ่'
+          '立春':window._chtx('c.jq24.liChun','ต้นใบไม้ผลิ'),'雨水':window._chtx('c.jq24.yuShui','น้ำฝน'),'驚蟄':window._chtx('c.jq24.jingZhe','ปลุกแมลง'),'春分':window._chtx('c.jq24.chunFen','แบ่งฤดูใบไม้ผลิ'),
+          '清明':window._chtx('c.jq24.qingMing','แจ่มใส'),'穀雨':window._chtx('c.jq24.guYu','ฝนต่อข้าว'),'立夏':window._chtx('c.jq24.liXia','ต้นฤดูร้อน'),'小滿':window._chtx('c.jq24.xiaoMan','เต็มน้อย'),
+          '芒種':window._chtx('c.jq24.mangZhong','หว่านข้าว'),'夏至':window._chtx('c.jq24.xiaZhi','กลางฤดูร้อน'),'小暑':window._chtx('c.jq24.xiaoShu','ร้อนน้อย'),'大暑':window._chtx('c.jq24.daShu','ร้อนใหญ่'),
+          '立秋':window._chtx('c.jq24.liQiu','ต้นฤดูใบไม้ร่วง'),'處暑':window._chtx('c.jq24.chuShu','สิ้นร้อน'),'白露':window._chtx('c.jq24.baiLu','น้ำค้างขาว'),'秋分':window._chtx('c.jq24.qiuFen','แบ่งฤดูใบไม้ร่วง'),
+          '寒露':window._chtx('c.jq24.hanLu','น้ำค้างเย็น'),'霜降':window._chtx('c.jq24.shuangJiang','น้ำค้างแข็งลง'),'立冬':window._chtx('c.jq24.liDong','ต้นฤดูหนาว'),'小雪':window._chtx('c.jq24.xiaoXue','หิมะเบา'),
+          '大雪':window._chtx('c.jq24.daXue','หิมะหนัก'),'冬至':window._chtx('c.jq24.dongZhi','กลางฤดูหนาว'),'小寒':window._chtx('c.jq24.xiaoHan','หนาวน้อย'),'大寒':window._chtx('c.jq24.daHan','หนาวใหญ่')
         };
         const jqTh = (zh) => JIEQI_TH[zh] || zh;
         const cur = stb.birth_month_jieqi;
         const next = stb.next_jieqi;
         const info = document.getElementById('hk-jieqi-info');
         info.innerHTML =
-          `<b style="color:var(--gold);font-size:15px;">ต้นใบไม้ผลิ (ปีจีนเริ่ม):</b> ${stb.li_chun_cst} CST · <b>${stb.year_stem_branch}</b> (${stb.year})<br/>` +
-          (cur ? `<b style="color:var(--gold)">📍 จุดเริ่มเดือนเกิด:</b> 🟡 <b>${jqTh(cur.zh)}</b> (${cur.zh}) <span style="color:var(--fg-soft);font-size:11px;">· ${cur.date_cst} CST</span>` +
-                  (cur.branch_starts ? ` → เดือน <span class="tc">${cur.branch_starts}</span>` : '') +
-                  (next ? `<br/><b>→ ถัดไป:</b> <b>${jqTh(next.zh)}</b> (${next.zh}) <span style="color:var(--fg-soft);font-size:11px;">· ${next.date_cst}</span>` : '')
+          `<b style="color:var(--gold);font-size:15px;">${window._chtx('c.jq.lichun_label','ต้นใบไม้ผลิ (ปีจีนเริ่ม):')}</b> ${stb.li_chun_cst} CST · <b>${stb.year_stem_branch}</b> (${stb.year})<br/>` +
+          (cur ? `<b style="color:var(--gold)">${window._chtx('c.jq.month_start_label','📍 จุดเริ่มเดือนเกิด:')}</b> 🟡 <b>${jqTh(cur.zh)}</b> (${cur.zh}) <span style="color:var(--fg-soft);font-size:11px;">· ${cur.date_cst} CST</span>` +
+                  (cur.branch_starts ? ` → ${window._chtx('c.jq.month_word','เดือน')} <span class="tc">${cur.branch_starts}</span>` : '') +
+                  (next ? `<br/><b>${window._chtx('c.jq.next_label','→ ถัดไป:')}</b> <b>${jqTh(next.zh)}</b> (${next.zh}) <span style="color:var(--fg-soft);font-size:11px;">· ${next.date_cst}</span>` : '')
                 : '') +
           (cur ? `
             <div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--gold-line);font-size:12px;line-height:1.7;">
-              <div style="color:var(--gold);font-weight:600;margin-bottom:4px;">💡 ทำไมเดือนเกิด = ${cur.branch_starts}?</div>
+              <div style="color:var(--gold);font-weight:600;margin-bottom:4px;">${window._chtx('c.jq.why_title','💡 ทำไมเดือนเกิด = {b}?').replace('{b}',cur.branch_starts)}</div>
               <div style="color:var(--fg-soft);">
-                เพราะเกิดหลัง <b style="color:var(--gold);">${jqTh(cur.zh)}</b> (${cur.zh})${next ? ` · ก่อน <b style="color:var(--gold);">${jqTh(next.zh)}</b> (${next.zh})` : ''}<br/>
-                ✓ ตำราจริง: เดือน BaZi เริ่มที่ <b>節氣</b> · ไม่ใช่วันที่ 1 ของเดือน · ไม่ใช่ตรุษจีน
+                ${window._chtx('c.jq.why_after','เพราะเกิดหลัง')} <b style="color:var(--gold);">${jqTh(cur.zh)}</b> (${cur.zh})${next ? ` · ${window._chtx('c.jq.why_before','ก่อน')} <b style="color:var(--gold);">${jqTh(next.zh)}</b> (${next.zh})` : ''}<br/>
+                ${window._chtx('c.jq.canon_note','✓ ตำราจริง: เดือน BaZi เริ่มที่ <b>節氣</b> · ไม่ใช่วันที่ 1 ของเดือน · ไม่ใช่ตรุษจีน')}
               </div>
             </div>
           ` : '');
@@ -2765,7 +3363,7 @@ window.addEventListener('resize', function(){
         const buildCell = (t) => {
           const isMaj = t.no % 2 === 1;
           const isCur = cur && t.name === cur.zh;
-          const tag = isMaj ? 'หลัก (節)' : 'รอง (氣)';
+          const tag = isMaj ? window._chtx('c.jq.major','หลัก (節)') : window._chtx('c.jq.minor','รอง (氣)');
           const bg = isCur ? 'background:var(--gold-soft);border:2px solid var(--gold);' : (isMaj?'border-left:3px solid var(--gold);':'border-left:3px solid #5db3ff;');
           return `<div style="${bg}background:var(--tile);border-radius:8px;padding:10px 12px;font-size:11px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
@@ -2774,7 +3372,7 @@ window.addEventListener('resize', function(){
             </div>
             <div style="font-family:var(--tc);font-size:13px;color:var(--fg-soft);opacity:.75;">${t.name}</div>
             <div style="font-family:var(--mono);font-size:10px;color:var(--fg-soft);margin-top:3px;">${t.date}</div>
-            ${t.branch_starts ? `<div style="font-family:var(--thai);font-size:11px;color:var(--gold);margin-top:3px;">→ เริ่มเดือน ${t.branch_starts}</div>` : ''}
+            ${t.branch_starts ? `<div style="font-family:var(--thai);font-size:11px;color:var(--gold);margin-top:3px;">${window._chtx('c.jq.starts_month','→ เริ่มเดือน')} ${t.branch_starts}</div>` : ''}
           </div>`;
         };
         const focusTerms = curIdx >= 0 ? [stb.terms[curIdx-1], stb.terms[curIdx], stb.terms[curIdx+1]].filter(Boolean) : stb.terms.slice(0,3);
@@ -2784,7 +3382,7 @@ window.addEventListener('resize', function(){
         const wrap = document.createElement('div');
         wrap.innerHTML = `
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;justify-content:flex-end;">
-            <button type="button" id="hk-jieqi-toggle" style="padding:4px 14px;font-size:11px;background:transparent;border:1px solid var(--gold-line,rgba(200,164,77,.3));border-radius:99px;color:var(--gold,#c8a44d);cursor:pointer;font-family:var(--thai);">ดูทั้ง 24 ฤดู</button>
+            <button type="button" id="hk-jieqi-toggle" style="padding:4px 14px;font-size:11px;background:transparent;border:1px solid var(--gold-line,rgba(200,164,77,.3));border-radius:99px;color:var(--gold,#c8a44d);cursor:pointer;font-family:var(--thai);">${window._chtx('c.jq.show_all','ดูทั้ง 24 ฤดู')}</button>
           </div>
           <div id="hk-jieqi-cells" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;">${cellsFocus}</div>
         `;
@@ -2796,7 +3394,7 @@ window.addEventListener('resize', function(){
         tBtn.addEventListener('click', () => {
           showAll = !showAll;
           tCells.innerHTML = showAll ? cellsAll : cellsFocus;
-          tBtn.textContent = showAll ? 'ย่อ · เฉพาะเดือนเกิด' : 'ดูทั้ง 24 ฤดู';
+          tBtn.textContent = showAll ? window._chtx('c.jq.show_focus','ย่อ · เฉพาะเดือนเกิด') : window._chtx('c.jq.show_all','ดูทั้ง 24 ฤดู');
         });
       }
     } catch (e) { console.warn('[chart] jieqi render failed:', e); }
@@ -2817,13 +3415,13 @@ window.addEventListener('resize', function(){
         const cyYear = (new Date()).getUTCFullYear();
         const cyLn = lt.find(x => x.year === cyYear);
         const profile = a.daymaster_profile || null;
-        const EL_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
-        const STEM_TH_OV = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
+        const EL_TH = {wood:window._chtx('c.el.wood','ไม้'),fire:window._chtx('c.el.fire','ไฟ'),earth:window._chtx('c.el.earth','ดิน'),metal:window._chtx('c.el.metal','ทอง'),water:window._chtx('c.el.water','น้ำ')};
+        const STEM_TH_OV = {甲:window._chtx('c.stem.jia','ไม้หยาง'),乙:window._chtx('c.stem.yi','ไม้หยิน'),丙:window._chtx('c.stem.bing','ไฟหยาง'),丁:window._chtx('c.stem.ding','ไฟหยิน'),戊:window._chtx('c.stem.wu','ดินหยาง'),己:window._chtx('c.stem.ji','ดินหยิน'),庚:window._chtx('c.stem.geng','ทองหยาง'),辛:window._chtx('c.stem.xin','ทองหยิน'),壬:window._chtx('c.stem.ren','น้ำหยาง'),癸:window._chtx('c.stem.gui','น้ำหยิน')};
         const STEM_EL_OV = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
-        const PHASE_TH_OV = {'長生':'แรกเกิด','沐浴':'อาบ','冠帶':'ตั้งตน','臨官':'พลังเต็ม','帝旺':'รุ่งโรจน์','衰':'เสื่อม','病':'ป่วย','死':'ดับ','墓':'สุสาน','絕':'ขาด','胎':'เริ่มก่อตัว','養':'ครรภ์'};
-        const ENGINE_TH = {WEAK_DM_WATER_HEAVY:'ตัวเราอ่อน · น้ำเด่น',WEAK_DM_FIRE_HEAVY:'ตัวเราอ่อน · ไฟเด่น',WEAK_DM_WOOD_HEAVY:'ตัวเราอ่อน · ไม้เด่น',WEAK_DM_EARTH_HEAVY:'ตัวเราอ่อน · ดินเด่น',WEAK_DM_METAL_HEAVY:'ตัวเราอ่อน · ทองเด่น'};
-        const DISEASE_TH = {cold_excess_wealth_pressure:'หนาวจัด · ทรัพย์กดดัน',hot_drought_no_water:'ร้อนแล้ง · ขาดน้ำ',wealth_drowning_dm_weak:'ทรัพย์ท่วม · ตัวอ่อน',companion_swarm_theft:'เพื่อนเยอะ · แย่งทรัพย์'};
-        const STRATEGY_TH = {progressive:'เพิ่มเลี้ยง',regressive:'ระบายคุม',neutral:'กลาง'};
+        const PHASE_TH_OV = {'長生':window._chtx('c.phase.changSheng','แรกเกิด'),'沐浴':window._chtx('c.phase.muYu','อาบ'),'冠帶':window._chtx('c.phase.guanDai','ตั้งตน'),'臨官':window._chtx('c.phase.linGuan','พลังเต็ม'),'帝旺':window._chtx('c.phase.diWang','รุ่งโรจน์'),'衰':window._chtx('c.phase.shuai','เสื่อม'),'病':window._chtx('c.phase.bing','ป่วย'),'死':window._chtx('c.phase.si','ดับ'),'墓':window._chtx('c.phase.mu','สุสาน'),'絕':window._chtx('c.phase.jue','ขาด'),'胎':window._chtx('c.phase.tai','เริ่มก่อตัว'),'養':window._chtx('c.phase.yang','ครรภ์')};
+        const ENGINE_TH = {WEAK_DM_WATER_HEAVY:window._chtx('c.ovEng.water','ตัวเราอ่อน · น้ำเด่น'),WEAK_DM_FIRE_HEAVY:window._chtx('c.ovEng.fire','ตัวเราอ่อน · ไฟเด่น'),WEAK_DM_WOOD_HEAVY:window._chtx('c.ovEng.wood','ตัวเราอ่อน · ไม้เด่น'),WEAK_DM_EARTH_HEAVY:window._chtx('c.ovEng.earth','ตัวเราอ่อน · ดินเด่น'),WEAK_DM_METAL_HEAVY:window._chtx('c.ovEng.metal','ตัวเราอ่อน · ทองเด่น')};
+        const DISEASE_TH = {cold_excess_wealth_pressure:window._chtx('c.ovDis.cold','หนาวจัด · ทรัพย์กดดัน'),hot_drought_no_water:window._chtx('c.ovDis.hot','ร้อนแล้ง · ขาดน้ำ'),wealth_drowning_dm_weak:window._chtx('c.ovDis.drown','ทรัพย์ท่วม · ตัวอ่อน'),companion_swarm_theft:window._chtx('c.ovDis.swarm','เพื่อนเยอะ · แย่งทรัพย์')};
+        const STRATEGY_TH = {progressive:window._chtx('c.ovStr.progressive','เพิ่มเลี้ยง'),regressive:window._chtx('c.ovStr.regressive','ระบายคุม'),neutral:window._chtx('c.ovStr.neutral','กลาง')};
         const dm = (d.pillars?.day?.stem || a.matrix_summary?.day_master || '');
         const dmEl = STEM_EL_OV[dm] || 'earth';
         const dmTh = STEM_TH_OV[dm] || dm;
@@ -2831,7 +3429,7 @@ window.addEventListener('resize', function(){
         const dominantEl = Object.entries(pct).sort((a,b)=>b[1]-a[1])[0];
         const domElTh = dominantEl ? EL_TH[dominantEl[0]] : '';
         const domElPct = dominantEl ? dominantEl[1] : 0;
-        const structure = yv2.structure_label || gj.structure || 'ปกติ';
+        const structure = yv2.structure_label || gj.structure || window._chtx('c.ov.normal','ปกติ');
         const engineTh = ENGINE_TH[yv2.engine_type] || yv2.engine_type || '';
         const primaryEls = yv2.primary_yongshen || [];
         const xishenEls = yv2.xishen || [];
@@ -2845,19 +3443,20 @@ window.addEventListener('resize', function(){
         const hasDryHeatDisease = diseases.includes('dry_resource_burned') || diseases.includes('hot_drought_no_water');
         function transitVerdict(el, label){
           const th = EL_TH[el] || el || '-';
-          if (!el) return '⚪ กลาง';
-          if (primaryEls.includes(el)) return '✅ <b style="color:#7dd37b">'+label+'หนุนจริง</b> · ธาตุ'+th+'เป็น用神หลัก';
-          if (jishenEls.includes(el)) return '⚠ <b style="color:#e26b5d">'+label+'ระวัง</b> · ธาตุ'+th+'เป็น忌神';
+          const _t = window._chtx;
+          if (!el) return '⚪ ' + _t('c.ov.v_neutral','กลาง');
+          if (primaryEls.includes(el)) return '✅ <b style="color:#7dd37b">'+label+_t('c.ov.v_support','หนุนจริง')+'</b> · '+_t('c.ov.v_support_note','ธาตุ{el}เป็น用神หลัก').replace('{el}',th);
+          if (jishenEls.includes(el)) return '⚠ <b style="color:#e26b5d">'+label+_t('c.ov.v_caution','ระวัง')+'</b> · '+_t('c.ov.v_caution_note','ธาตุ{el}เป็น忌神').replace('{el}',th);
           if (xishenEls.includes(el)) {
             if (el === 'fire' && hasDryHeatDisease) {
-              return '⚠ <b style="color:#d4a857">'+label+'โอกาสสูงแต่ไฟแรง</b> · ใช้ได้เมื่อมีน้ำ/ระบบมาคุม';
+              return '⚠ <b style="color:#d4a857">'+label+_t('c.ov.v_fire_hot','โอกาสสูงแต่ไฟแรง')+'</b> · '+_t('c.ov.v_fire_hot_note','ใช้ได้เมื่อมีน้ำ/ระบบมาคุม');
             }
             if (el === 'earth' && (a.voytek_strength?.supporting_pct || 0) < 35) {
-              return '⚠ <b style="color:#d4a857">'+label+'ใช้ได้แบบมีเงื่อนไข</b> · มีผลลัพธ์/เงิน แต่ตัวเรายังต้องมีแรงแบก';
+              return '⚠ <b style="color:#d4a857">'+label+_t('c.ov.v_conditional','ใช้ได้แบบมีเงื่อนไข')+'</b> · '+_t('c.ov.v_earth_note','มีผลลัพธ์/เงิน แต่ตัวเรายังต้องมีแรงแบก');
             }
-            return '🟡 <b style="color:#d4a857">'+label+'ใช้ได้แบบมีเงื่อนไข</b> · ธาตุ'+th+'เป็น喜神รอง';
+            return '🟡 <b style="color:#d4a857">'+label+_t('c.ov.v_conditional','ใช้ได้แบบมีเงื่อนไข')+'</b> · '+_t('c.ov.v_xishen_note','ธาตุ{el}เป็น喜神รอง').replace('{el}',th);
           }
-          return '⚪ '+label+'กลาง · ธาตุ'+th+'ไม่กระทบมาก';
+          return '⚪ '+label+_t('c.ov.v_neutral','กลาง')+' · '+_t('c.ov.v_neutral_note','ธาตุ{el}ไม่กระทบมาก').replace('{el}',th);
         }
         /* วัยจร 大運 */
         const lpStem = curLp?.stem || '';
@@ -2875,7 +3474,7 @@ window.addEventListener('resize', function(){
         const cyEl = STEM_EL_OV[cyStem] || '';
         const cyElTh = EL_TH[cyEl] || '';
         const cyStemTh = STEM_TH_OV[cyStem] || cyStem;
-        const cyVerdict = transitVerdict(cyEl, 'ปี');
+        const cyVerdict = transitVerdict(cyEl, window._chtx('c.ov.year_label','ปี'));
         /* Timeline 10 ปีข้างหน้า */
         const futureLt = lt.filter(x => x.year > cyYear && x.year <= cyYear + 10);
         const supportYears = futureLt.filter(x => {
@@ -2895,24 +3494,24 @@ window.addEventListener('resize', function(){
         /* Build narrative */
         const engineLine = `
           <div class="hk-ov-engine-line">
-            <b>เครื่องยนต์ดวง:</b> ${esc(structure)}${engineTh?' ('+esc(engineTh)+')':''} · ตัวเรา <b>${esc(dmTh)}</b> · ธาตุ${esc(EL_TH[dmEl])} ${esc(dmPct)}% · 用神 ${esc(primary.join(' · ') || '-')} · 忌神 ${esc(jishen.join(' · ') || '-')}
-            ${curLp ? `<br><b>วัยจรตอนนี้:</b> ${esc(lpStem+lpBranch)} อายุ ${esc(lpAgeStart)}-${esc(lpAgeEnd)} ปี · ${lpVerdict}` : ''}
-            ${cyLn ? `<br><b>ปีนี้ ${esc(cyYear)}:</b> ${esc(cyStem+cyBranch)} (${esc(cyStemTh)} · ธาตุ${esc(cyElTh)}) · ${cyVerdict}` : ''}
-            ${(supportYears.length||cautionYears.length||warnYears.length) ? `<br><b>10 ปีข้างหน้า:</b> ${supportYears.length?'<span style="color:#7dd37b;">ปีหนุนจริง '+esc(supportYears.join(' · '))+'</span>':''}${(supportYears.length&&cautionYears.length)?' · ':''}${cautionYears.length?'<span style="color:#d4a857;">ปีต้องคุม '+esc(cautionYears.join(' · '))+'</span>':''}${((supportYears.length||cautionYears.length)&&warnYears.length)?' · ':''}${warnYears.length?'<span style="color:#e26b5d;">ปีระวัง '+esc(warnYears.join(' · '))+'</span>':''}` : ''}
+            <b>${window._chtx('c.ov.engine_label','เครื่องยนต์ดวง:')}</b> ${esc(structure)}${engineTh?' ('+esc(engineTh)+')':''} · ${window._chtx('c.ov.self_label','ตัวเรา')} <b>${esc(dmTh)}</b> · ${window._chtx('c.ov.element_word','ธาตุ')}${esc(EL_TH[dmEl])} ${esc(dmPct)}% · 用神 ${esc(primary.join(' · ') || '-')} · 忌神 ${esc(jishen.join(' · ') || '-')}
+            ${curLp ? `<br><b>${window._chtx('c.ov.lp_label','วัยจรตอนนี้:')}</b> ${esc(lpStem+lpBranch)} ${window._chtx('c.ov.age_range','อายุ {a}-{b} ปี').replace('{a}',esc(lpAgeStart)).replace('{b}',esc(lpAgeEnd))} · ${lpVerdict}` : ''}
+            ${cyLn ? `<br><b>${window._chtx('c.ov.this_year_label','ปีนี้')} ${esc(cyYear)}:</b> ${esc(cyStem+cyBranch)} (${esc(cyStemTh)} · ${window._chtx('c.ov.element_word','ธาตุ')}${esc(cyElTh)}) · ${cyVerdict}` : ''}
+            ${(supportYears.length||cautionYears.length||warnYears.length) ? `<br><b>${window._chtx('c.ov.next10_label','10 ปีข้างหน้า:')}</b> ${supportYears.length?'<span style="color:#7dd37b;">'+window._chtx('c.ov.support_years','ปีหนุนจริง')+' '+esc(supportYears.join(' · '))+'</span>':''}${(supportYears.length&&cautionYears.length)?' · ':''}${cautionYears.length?'<span style="color:#d4a857;">'+window._chtx('c.ov.caution_years','ปีต้องคุม')+' '+esc(cautionYears.join(' · '))+'</span>':''}${((supportYears.length||cautionYears.length)&&warnYears.length)?' · ':''}${warnYears.length?'<span style="color:#e26b5d;">'+window._chtx('c.ov.warn_years','ปีระวัง')+' '+esc(warnYears.join(' · '))+'</span>':''}` : ''}
           </div>
         `;
         ovBox.innerHTML = profile ? `
           <div class="hk-ov-profile-title">${esc(profile.label_th || dmTh)}</div>
           <div>${fmt(profile.core)}</div>
           <div class="hk-ov-profile-grid">
-            <div class="hk-ov-profile-part"><b>ชีวิตจริง</b>${fmt(profile.real_life)}</div>
-            <div class="hk-ov-profile-part"><b>เงาที่ต้องระวัง</b>${fmt(profile.shadow)}</div>
-            <div class="hk-ov-profile-part"><b>สิ่งที่ดวงต้องการ</b>${fmt(profile.needs)}</div>
-            <div class="hk-ov-profile-part"><b>อ่านต่อจากตรงนี้</b>ถ้าอยากรู้ว่าเงานี้กระทบงาน เงิน ความรัก หรือจังหวะปีนี้อย่างไร ให้ถามซินแสในกล่องด้านล่าง</div>
+            <div class="hk-ov-profile-part"><b>${window._chtx('c.ov.real_life','ชีวิตจริง')}</b>${fmt(profile.real_life)}</div>
+            <div class="hk-ov-profile-part"><b>${window._chtx('c.ov.shadow','เงาที่ต้องระวัง')}</b>${fmt(profile.shadow)}</div>
+            <div class="hk-ov-profile-part"><b>${window._chtx('c.ov.needs','สิ่งที่ดวงต้องการ')}</b>${fmt(profile.needs)}</div>
+            <div class="hk-ov-profile-part"><b>${window._chtx('c.ov.read_on','อ่านต่อจากตรงนี้')}</b>${window._chtx('c.ov.read_on_body','ถ้าอยากรู้ว่าเงานี้กระทบงาน เงิน ความรัก หรือจังหวะปีนี้อย่างไร ให้ถามซินแสในกล่องด้านล่าง')}</div>
           </div>
           ${engineLine}
         ` : `
-          <p style="margin:0 0 14px;"><b style="color:var(--gold);">โครงสร้างดวง:</b> ดวงคุณคือ <b style="color:var(--gold);">${esc(structure)}</b>${engineTh?' ('+esc(engineTh)+')':''} · ตัวเรา <b>${esc(dmTh)}</b> · ธาตุ${esc(EL_TH[dmEl])} ${esc(dmPct)}% · ธาตุที่เด่นที่สุดในผังคือ <b>${esc(domElTh)}</b> ${esc(domElPct)}%</p>
+          <p style="margin:0 0 14px;"><b style="color:var(--gold);">${window._chtx('c.ov.structure_label','โครงสร้างดวง:')}</b> ${window._chtx('c.ov.chart_is','ดวงคุณคือ')} <b style="color:var(--gold);">${esc(structure)}</b>${engineTh?' ('+esc(engineTh)+')':''} · ${window._chtx('c.ov.self_label','ตัวเรา')} <b>${esc(dmTh)}</b> · ${window._chtx('c.ov.element_word','ธาตุ')}${esc(EL_TH[dmEl])} ${esc(dmPct)}% · ${window._chtx('c.ov.dominant_is','ธาตุที่เด่นที่สุดในผังคือ')} <b>${esc(domElTh)}</b> ${esc(domElPct)}%</p>
           ${engineLine}
         `;
         ovSec.style.display = '';
@@ -2991,7 +3590,7 @@ window.addEventListener('resize', function(){
                   <span class="hk-ov-hist-q">${escHist(it.question || '')}</span>
                   <span class="hk-ov-hist-meta">
                     <span class="hk-ov-hist-time">${escHist(histDate(it.created_at || it.ts || Date.now()))}</span>
-                    <button type="button" class="hk-ov-hist-del" data-mode="${escHist(mode || 'server')}" data-id="${escHist(it.id || '')}" aria-label="ลบประวัติคำถามนี้">ลบ</button>
+                    <button type="button" class="hk-ov-hist-del" data-mode="${escHist(mode || 'server')}" data-id="${escHist(it.id || '')}" aria-label="${window._chtx('c.hist.del_aria','ลบประวัติคำถามนี้')}">${window._chtx('c.hist.del','ลบ')}</button>
                   </span>
                 </summary>
                 <div class="hk-ov-hist-answer">${md2html(it.answer || '')}</div>
@@ -3073,9 +3672,9 @@ window.addEventListener('resize', function(){
             } catch(_){}
           }
           /* generate via SSE */
-          if (askBtn) { askBtn.disabled = true; askBtn.textContent = 'กำลังอ่าน...'; }
+          if (askBtn) { askBtn.disabled = true; askBtn.textContent = window._chtx('c.sifu.reading','กำลังอ่าน...'); }
           sifuStatus.style.display = '';
-          sifuStatus.textContent = 'ซินแสกำลังอธิบายเพิ่ม...';
+          sifuStatus.textContent = window._chtx('c.sifu.explaining','ซินแสกำลังอธิบายเพิ่ม...');
           sifuBox.style.display = '';
           sifuBox.innerHTML = '<span class="ov-cursor"></span>';
           let accumulated = '';
@@ -3143,12 +3742,12 @@ window.addEventListener('resize', function(){
                     /* cached · จำลอง stream เพื่อ UX · ทยอยทุก 20ms · 80 char/รอบ */
                     const full = obj.content || '';
                     accumulated = '';
-                    sifuStatus.textContent = '📜 ซินแสเล่าจากบันทึกครั้งก่อน...';
+                    sifuStatus.textContent = window._chtx('c.sifu.from_cache','📜 ซินแสเล่าจากบันทึกครั้งก่อน...');
                     let i = 0;
                     const fakeStream = () => {
                       if (i >= full.length) {
                         scheduleRender(true);
-                        sifuStatus.textContent = '✅ อ่านจากบันทึก · กด "อ่านใหม่" ถ้าต้องการครั้งใหม่';
+                        sifuStatus.textContent = window._chtx('c.sifu.cache_done','✅ อ่านจากบันทึก · กด "อ่านใหม่" ถ้าต้องการครั้งใหม่');
                         setTimeout(()=>{sifuStatus.style.display='none';}, 4000);
                         regenBtn.style.display = '';
                         return;
@@ -3164,22 +3763,22 @@ window.addEventListener('resize', function(){
                     scheduleRender(false);
 	                  } else if (etype === 'done') {
 	                    scheduleRender(true);
-	                    sifuStatus.textContent = 'ซินแสตอบเสร็จแล้ว';
+	                    sifuStatus.textContent = window._chtx('c.sifu.done','ซินแสตอบเสร็จแล้ว');
 	                    setTimeout(()=>{sifuStatus.style.display='none';}, 3000);
 	                    if (questionText && !obj.history_saved) saveLocalSifuHistory(questionText, accumulated);
 	                    if (questionText) refreshSifuHistory(hash);
-	                    if (askBtn) { askBtn.disabled = false; askBtn.textContent = 'ถามซินแส'; }
+	                    if (askBtn) { askBtn.disabled = false; askBtn.textContent = window._chtx('c.sifu.ask_btn','ถามซินแส'); }
 	                  } else if (etype === 'error') {
-	                    sifuStatus.textContent = '⚠ เกิดข้อผิดพลาด: ' + (obj.error || 'unknown');
-	                    if (askBtn) { askBtn.disabled = false; askBtn.textContent = 'ถามซินแส'; }
+	                    sifuStatus.textContent = window._chtx('c.sifu.error','⚠ เกิดข้อผิดพลาด:') + ' ' + (obj.error || 'unknown');
+	                    if (askBtn) { askBtn.disabled = false; askBtn.textContent = window._chtx('c.sifu.ask_btn','ถามซินแส'); }
 	                  }
 	                } catch(_){}
 	              }
 	            }
-	            if (askBtn) { askBtn.disabled = false; askBtn.textContent = 'ถามซินแส'; }
+	            if (askBtn) { askBtn.disabled = false; askBtn.textContent = window._chtx('c.sifu.ask_btn','ถามซินแส'); }
 	          } catch(e) {
-	            sifuStatus.textContent = '⚠ ติดต่อซินแสไม่ได้: ' + (e.message || e);
-	            if (askBtn) { askBtn.disabled = false; askBtn.textContent = 'ถามซินแส'; }
+	            sifuStatus.textContent = window._chtx('c.sifu.unreachable','⚠ ติดต่อซินแสไม่ได้:') + ' ' + (e.message || e);
+	            if (askBtn) { askBtn.disabled = false; askBtn.textContent = window._chtx('c.sifu.ask_btn','ถามซินแส'); }
 	          }
 	        }
 	        if (askBtn) askBtn.addEventListener('click', () => {
@@ -3193,7 +3792,7 @@ window.addEventListener('resize', function(){
 	          });
 	        });
 	        if (regenBtn) regenBtn.addEventListener('click', () => {
-	          if (confirm('อ่านใหม่จะใช้เวลา 30-60 วินาที · ของเดิมจะถูกแทนที่ · ดำเนินการ?')) {
+	          if (confirm(window._chtx('c.sifu.regen_confirm','อ่านใหม่จะใช้เวลา 30-60 วินาที · ของเดิมจะถูกแทนที่ · ดำเนินการ?'))) {
 	            loadSifuOverview(true);
 	          }
 	        });
@@ -3425,15 +4024,15 @@ window.addEventListener('resize', function(){
       const ps = a.personal_stars || [];
       const grid = document.getElementById('hk-ps-grid');
       if (!grid) return;
-      if (!ps.length) { grid.innerHTML = '<div class="hk-ps-empty">ดวงนี้ไม่มีดาวประจำตัวที่ activate</div>'; return; }
+      if (!ps.length) { grid.innerHTML = '<div class="hk-ps-empty">'+window._chtx('c.ps.empty','ดวงนี้ไม่มีดาวประจำตัวที่ activate')+'</div>'; return; }
       /* TH dict สำหรับชื่อดาว 14+ ดวง · มาจาก src/lib/chart-table.ts META */
       const STAR_TH = {
-        '天乙貴人':'ขุนนาง','文昌':'อักษร','祿神':'ทรัพย์','羊刃':'ดาบแกะ','紅艷煞':'เสน่ห์รัก',
-        '金輿':'ราชรถ','血刃':'ดาบเลือด','桃花':'เสน่ห์','驛馬':'ม้าเดินทาง','華蓋':'หลังคาฟ้า',
-        '將星':'แม่ทัพ','劫煞':'โจรปล้น','亡神':'อสูรหาย','紅鸞':'หงส์แดง','天喜':'ฟ้ายินดี',
-        '孤辰':'อ้างว้าง','寡宿':'หม้ายเหงา','飛刃':'ดาบเหิน','天醫':'หมอฟ้า','天廚':'ครัวฟ้า',
-        '流霞':'แสงร่วง','災煞':'ภัยพิบัติ','劍鋒':'คมดาบ','歲破':'ปีแตก','小耗':'สูญน้อย','月空':'ฟ้าโล่งเดือน',
-        '節度貴人':'คุณวินัย','太極貴人':'ที่ปรึกษา','學堂':'ห้องเรียน','詞館':'หอวรรณกรรม'
+        '天乙貴人':window._chtx('c.star.tianYi','ขุนนาง'),'文昌':window._chtx('c.star.wenChang','อักษร'),'祿神':window._chtx('c.star.luShen','ทรัพย์'),'羊刃':window._chtx('c.star.yangRen','ดาบแกะ'),'紅艷煞':window._chtx('c.star.hongYan','เสน่ห์รัก'),
+        '金輿':window._chtx('c.star.jinYu','ราชรถ'),'血刃':window._chtx('c.star.xueRen','ดาบเลือด'),'桃花':window._chtx('c.star.taoHua','เสน่ห์'),'驛馬':window._chtx('c.star.yiMa','ม้าเดินทาง'),'華蓋':window._chtx('c.star.huaGai','หลังคาฟ้า'),
+        '將星':window._chtx('c.star.jiangXing','แม่ทัพ'),'劫煞':window._chtx('c.star.jieSha','โจรปล้น'),'亡神':window._chtx('c.star.wangShen','อสูรหาย'),'紅鸞':window._chtx('c.star.hongLuan','หงส์แดง'),'天喜':window._chtx('c.star.tianXi','ฟ้ายินดี'),
+        '孤辰':window._chtx('c.star.guChen','อ้างว้าง'),'寡宿':window._chtx('c.star.guaSu','หม้ายเหงา'),'飛刃':window._chtx('c.star.feiRen','ดาบเหิน'),'天醫':window._chtx('c.star.tianYiDoc','หมอฟ้า'),'天廚':window._chtx('c.star.tianChu','ครัวฟ้า'),
+        '流霞':window._chtx('c.star.liuXia','แสงร่วง'),'災煞':window._chtx('c.star.zaiSha','ภัยพิบัติ'),'劍鋒':window._chtx('c.star.jianFeng','คมดาบ'),'歲破':window._chtx('c.star.suiPo','ปีแตก'),'小耗':window._chtx('c.star.xiaoHao','สูญน้อย'),'月空':window._chtx('c.star.yueKong','ฟ้าโล่งเดือน'),
+        '節度貴人':window._chtx('c.star.jieDu','คุณวินัย'),'太極貴人':window._chtx('c.star.taiJi','ที่ปรึกษา'),'學堂':window._chtx('c.star.xueTang','ห้องเรียน'),'詞館':window._chtx('c.star.ciGuan','หอวรรณกรรม')
       };
       grid.innerHTML = ps.map(s => {
         const lbl = s.label_th || s.label_en || '';
@@ -3454,21 +4053,21 @@ window.addEventListener('resize', function(){
     const cb=a.combinations||{san_he:[],san_hui:[]};
     /* Phase 19-C · ไทยนำ ZH รอง · dict ของ §07 */
     const INTER_TH_07 = {
-      '六合':'กิ่งจับคู่','五合':'ก้านฟ้าผสาน','六沖':'กิ่งชน','六害':'แอบขัดกัน','六破':'จุดแตก',
-      '三合':'สามกิ่งรวมธาตุ','三會':'สามกิ่งรวมทิศ','半合':'ครึ่งวงธาตุ','三刑':'แรงกด/ลงโทษ','自刑':'กดตัวเอง','同刑':'กดกันเอง',
-      '反吟':'พลิกซ้ำแรง','伏吟':'เรื่องเดิมวนซ้ำ','伏吟·กิ่ง':'กิ่งเดิมวนซ้ำ','伏吟·ก้าน':'ก้านเดิมวนซ้ำ','反吟·ก้าน':'ก้านพลิกซ้ำ','反吟·กิ่ง':'กิ่งพลิกซ้ำ',
-      '天克':'ก้านฟ้าชน','天地合':'ฟ้าดินผสาน'
+      '六合':window._chtx('c.i07.liuHe','กิ่งจับคู่'),'五合':window._chtx('c.i07.wuHe','ก้านฟ้าผสาน'),'六沖':window._chtx('c.i07.liuChong','กิ่งชน'),'六害':window._chtx('c.i07.liuHai','แอบขัดกัน'),'六破':window._chtx('c.i07.liuPo','จุดแตก'),
+      '三合':window._chtx('c.i07.sanHe','สามกิ่งรวมธาตุ'),'三會':window._chtx('c.i07.sanHui','สามกิ่งรวมทิศ'),'半合':window._chtx('c.i07.banHe','ครึ่งวงธาตุ'),'三刑':window._chtx('c.i07.sanXing','แรงกด/ลงโทษ'),'自刑':window._chtx('c.i07.ziXing','กดตัวเอง'),'同刑':window._chtx('c.i07.tongXing','กดกันเอง'),
+      '反吟':window._chtx('c.i07.fanYin','พลิกซ้ำแรง'),'伏吟':window._chtx('c.i07.fuYin','เรื่องเดิมวนซ้ำ'),'伏吟·กิ่ง':window._chtx('c.i07.fuYinBranch','กิ่งเดิมวนซ้ำ'),'伏吟·ก้าน':window._chtx('c.i07.fuYinStem','ก้านเดิมวนซ้ำ'),'反吟·ก้าน':window._chtx('c.i07.fanYinStem','ก้านพลิกซ้ำ'),'反吟·กิ่ง':window._chtx('c.i07.fanYinBranch','กิ่งพลิกซ้ำ'),
+      '天克':window._chtx('c.i07.tianKe','ก้านฟ้าชน'),'天地合':window._chtx('c.vs.tianDiHe','ฟ้าดินผสาน')
     };
     function hi07(t){ return INTER_TH_07[t] || t; }
     function wrapTh(zh){ const th=hi07(zh); return th!==zh ? `<b>${th}</b><span class="zh">${zh}</span>` : zh; }
-    const STEM_TH_07 = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
-    const BRANCH_TH_07 = {子:'หนู/น้ำ',丑:'วัว/ดิน',寅:'เสือ/ไม้',卯:'กระต่าย/ไม้',辰:'มังกร/ดิน',巳:'งู/ไฟ',午:'ม้า/ไฟ',未:'แพะ/ดิน',申:'ลิง/ทอง',酉:'ไก่/ทอง',戌:'หมา/ดิน',亥:'หมู/น้ำ'};
+    const STEM_TH_07 = {甲:window._chtx('c.stem.jia','ไม้หยาง'),乙:window._chtx('c.stem.yi','ไม้หยิน'),丙:window._chtx('c.stem.bing','ไฟหยาง'),丁:window._chtx('c.stem.ding','ไฟหยิน'),戊:window._chtx('c.stem.wu','ดินหยาง'),己:window._chtx('c.stem.ji','ดินหยิน'),庚:window._chtx('c.stem.geng','ทองหยาง'),辛:window._chtx('c.stem.xin','ทองหยิน'),壬:window._chtx('c.stem.ren','น้ำหยาง'),癸:window._chtx('c.stem.gui','น้ำหยิน')};
+    const BRANCH_TH_07 = {子:window._chtx('c.branch.zi','หนู/น้ำ'),丑:window._chtx('c.branch.chou','วัว/ดิน'),寅:window._chtx('c.branch.yin','เสือ/ไม้'),卯:window._chtx('c.branch.mao','กระต่าย/ไม้'),辰:window._chtx('c.branch.chen','มังกร/ดิน'),巳:window._chtx('c.branch.si','งู/ไฟ'),午:window._chtx('c.branch.wu','ม้า/ไฟ'),未:window._chtx('c.branch.wei','แพะ/ดิน'),申:window._chtx('c.branch.shen','ลิง/ทอง'),酉:window._chtx('c.branch.you','ไก่/ทอง'),戌:window._chtx('c.branch.xu','หมา/ดิน'),亥:window._chtx('c.branch.hai','หมู/น้ำ')};
     const STEM_EL_07 = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
     const BRANCH_EL_07 = {子:'water',丑:'earth',寅:'wood',卯:'wood',辰:'earth',巳:'fire',午:'fire',未:'earth',申:'metal',酉:'metal',戌:'earth',亥:'water'};
     const EL_ZH_07 = {wood:'木',fire:'火',earth:'土',metal:'金',water:'水'};
     function elemName07(el){ const th=EL_TH_ALLIANCE[el]||el; const zh=EL_ZH_07[el]||''; return `<span class="el-${el||'earth'}">${th}${zh?` <span class="zh">${zh}</span>`:''}</span>`; }
-    function stemTok07(s){ const el=STEM_EL_07[s]||'earth'; return `<span class="el-${el}">${STEM_TH_07[s]||'ก้าน'} <span class="zh">${s}</span></span>`; }
-    function branchTok07(b){ const el=BRANCH_EL_07[b]||'earth'; return `<span class="el-${el}">${BRANCH_TH_07[b]||'กิ่ง'} <span class="zh">${b}</span></span>`; }
+    function stemTok07(s){ const el=STEM_EL_07[s]||'earth'; return `<span class="el-${el}">${STEM_TH_07[s]||window._chtx('c.i07.stem_fb','ก้าน')} <span class="zh">${s}</span></span>`; }
+    function branchTok07(b){ const el=BRANCH_EL_07[b]||'earth'; return `<span class="el-${el}">${BRANCH_TH_07[b]||window._chtx('c.i07.branch_fb','กิ่ง')} <span class="zh">${b}</span></span>`; }
     function branchPair07(pair, sep='↔'){ return `${branchTok07(pair[0])} ${sep} ${branchTok07(pair[1])}`; }
     function stemPair07(pair, sep='-'){ return `${stemTok07(pair[0])} ${sep} ${stemTok07(pair[1])}`; }
     function pillar07(pil){ return `${stemTok07(pil.stem)} · ${branchTok07(pil.branch)}`; }
@@ -3483,33 +4082,33 @@ window.addEventListener('resize', function(){
     }
     const heList=it.filter(f=>f.type==='六合');
     /* Voytek alignment · รวม 五合 (stem combo) เข้า HARMONY ด้วย */
-    const EL_TH_ALLIANCE = {water:'น้ำ',fire:'ไฟ',wood:'ไม้',metal:'ทอง',earth:'ดิน'};
+    const EL_TH_ALLIANCE = {water:window._chtx('c.el.water','น้ำ'),fire:window._chtx('c.el.fire','ไฟ'),wood:window._chtx('c.el.wood','ไม้'),metal:window._chtx('c.el.metal','ทอง'),earth:window._chtx('c.el.earth','ดิน')};
     const wuHeList = (a.stem_interactions || []).filter(f=>f.type==='五合');
     const harmonyTotal = heList.length + wuHeList.length;
     fillCard(interCards[0],
-      `แรงผสาน (${harmonyTotal}) · 合`,
-      harmonyTotal?'มีคู่ที่ดึงเข้าหากัน':'ไม่มีแรงผสานเด่นในดวงเกิด',
-      harmonyTotal?'ช่วยเรื่องคนช่วย งานร่วมมือ และความสัมพันธ์ที่ต่อกันได้':'เรื่องคนช่วยยังไม่เด่น ต้องสร้างความร่วมมือด้วยการลงมือเอง',
+      `${window._chtx('c.i07.harmony_title','แรงผสาน')} (${harmonyTotal}) · 合`,
+      harmonyTotal?window._chtx('c.i07.harmony_yes','มีคู่ที่ดึงเข้าหากัน'):window._chtx('c.i07.harmony_no','ไม่มีแรงผสานเด่นในดวงเกิด'),
+      harmonyTotal?window._chtx('c.i07.harmony_yes_p','ช่วยเรื่องคนช่วย งานร่วมมือ และความสัมพันธ์ที่ต่อกันได้'):window._chtx('c.i07.harmony_no_p','เรื่องคนช่วยยังไม่เด่น ต้องสร้างความร่วมมือด้วยการลงมือเอง'),
       [
         ...heList.map(f=>wrapTh('六合')+' · '+branchPair07(f.pair)),
-        ...wuHeList.map(f=>wrapTh('五合')+' · '+stemPair07(f.pair, '+')+(f.transformed?' → ธาตุ'+elemName07(f.element):''))
+        ...wuHeList.map(f=>wrapTh('五合')+' · '+stemPair07(f.pair, '+')+(f.transformed?' → '+window._chtx('c.ov.element_word','ธาตุ')+elemName07(f.element):''))
       ], harmonyTotal>0);
     const chongList=it.filter(f=>f.type==='六沖');
     fillCard(interCards[1],
-      `แรงชน (${chongList.length}) · 沖`,
-      chongList.length?'มีจุดที่ดึงกันคนละทาง':'ไม่มีแรงชนใหญ่ในดวงเกิด',
-      chongList.length?'เรื่องนั้นมักเปลี่ยนเร็วหรือแตกง่าย ควรวางจังหวะก่อนตัดสินใจ':'จังหวะพื้นฐานค่อนข้างนิ่ง ไม่มีแรงชนใหญ่ในดวงเกิด',
+      `${window._chtx('c.i07.clash_title','แรงชน')} (${chongList.length}) · 沖`,
+      chongList.length?window._chtx('c.i07.clash_yes','มีจุดที่ดึงกันคนละทาง'):window._chtx('c.i07.clash_no','ไม่มีแรงชนใหญ่ในดวงเกิด'),
+      chongList.length?window._chtx('c.i07.clash_yes_p','เรื่องนั้นมักเปลี่ยนเร็วหรือแตกง่าย ควรวางจังหวะก่อนตัดสินใจ'):window._chtx('c.i07.clash_no_p','จังหวะพื้นฐานค่อนข้างนิ่ง ไม่มีแรงชนใหญ่ในดวงเกิด'),
       chongList.map(f=>wrapTh('六沖')+' · '+branchPair07(f.pair)), false);
     const banHeList = cb.ban_he || [];
     const allianceTotal=(cb.san_he||[]).length+(cb.san_hui||[]).length+banHeList.length;
     fillCard(interCards[2],
-      `แรงรวมกลุ่ม (${allianceTotal}) · 三合`,
-      allianceTotal?'มีแรงทีม/เครือข่ายช่วย':'ไม่มีแรงกลุ่มเด่นในดวงเกิด',
-      allianceTotal?'เหมาะใช้คนรอบตัว ระบบ หรือทีมช่วยดันงานให้ไปต่อ':'แรงทีมไม่เด่น ควรวางระบบเองและเลือกคนช่วยให้ชัด',
+      `${window._chtx('c.i07.alliance_title','แรงรวมกลุ่ม')} (${allianceTotal}) · 三合`,
+      allianceTotal?window._chtx('c.i07.alliance_yes','มีแรงทีม/เครือข่ายช่วย'):window._chtx('c.i07.alliance_no','ไม่มีแรงกลุ่มเด่นในดวงเกิด'),
+      allianceTotal?window._chtx('c.i07.alliance_yes_p','เหมาะใช้คนรอบตัว ระบบ หรือทีมช่วยดันงานให้ไปต่อ'):window._chtx('c.i07.alliance_no_p','แรงทีมไม่เด่น ควรวางระบบเองและเลือกคนช่วยให้ชัด'),
       [
         ...(cb.san_he||[]).map(s=>wrapTh('三合')+' · '+s.map(branchTok07).join(' + ')),
         ...(cb.san_hui||[]).map(s=>wrapTh('三會')+' · '+s.map(branchTok07).join(' + ')),
-        ...banHeList.map(b=>wrapTh('半合')+' · '+branchPair07(b.pair, '+')+' · ธาตุ'+elemName07(b.element))
+        ...banHeList.map(b=>wrapTh('半合')+' · '+branchPair07(b.pair, '+')+' · '+window._chtx('c.ov.element_word','ธาตุ')+elemName07(b.element))
       ],
       allianceTotal>0);
     const harmList=it.filter(f=>f.type==='六害'||f.type==='六破');
@@ -3521,9 +4120,9 @@ window.addEventListener('resize', function(){
     const tianKe = stemInts.filter(f=>f.type==='天克');
     const discordTotal=harmList.length+pn.length+fyNatal.length+tianKe.length;
     fillCard(interCards[3],
-      `จุดร้าว (${discordTotal}) · 害/刑/吟`,
-      discordTotal?'มีแรงเสียดทานที่ต้องอ่านให้ดี':'ไม่มีจุดร้าวใหญ่ในดวงเกิด',
-      discordTotal?'ไม่ใช่เสียเสมอไป แต่ควรระวังคำพูด จังหวะ และการตัดสินใจเร็ว':'พื้นดวงไม่มีแรงร้าวเด่น เรื่องแตกหักมักมาจากจังหวะภายนอกมากกว่า',
+      `${window._chtx('c.i07.discord_title','จุดร้าว')} (${discordTotal}) · 害/刑/吟`,
+      discordTotal?window._chtx('c.i07.discord_yes','มีแรงเสียดทานที่ต้องอ่านให้ดี'):window._chtx('c.i07.discord_no','ไม่มีจุดร้าวใหญ่ในดวงเกิด'),
+      discordTotal?window._chtx('c.i07.discord_yes_p','ไม่ใช่เสียเสมอไป แต่ควรระวังคำพูด จังหวะ และการตัดสินใจเร็ว'):window._chtx('c.i07.discord_no_p','พื้นดวงไม่มีแรงร้าวเด่น เรื่องแตกหักมักมาจากจังหวะภายนอกมากกว่า'),
       [
         ...harmList.map(f=>wrapTh(f.type)+' · '+branchPair07(f.pair)),
         ...pn.map(f=>wrapTh(f.type)+' · '+f.branches.map(branchTok07).join(' + ')),
@@ -3538,21 +4137,21 @@ window.addEventListener('resize', function(){
       const total = Math.round(yrs * 12);   /* total months */
       const y = Math.floor(total / 12);
       const m = total % 12;
-      if (m === 0) return y + ' ปี';
-      return y + ' ปี ' + m + ' เดือน';
+      if (m === 0) return y + ' ' + window._chtx('c.fmt.years','ปี');
+      return y + ' ' + window._chtx('c.fmt.years','ปี') + ' ' + m + ' ' + window._chtx('c.fmt.months','เดือน');
     }
     // §08 Luck Pillars (.hk-luck-card × 8) · TH นำ ZH รอง · click to view detail
     const luckCards=document.querySelectorAll('.hk-luck-row .hk-luck-card');
-    const STEM_NAME_TH_LP = {甲:'ไม้หยาง',乙:'ไม้หยิน',丙:'ไฟหยาง',丁:'ไฟหยิน',戊:'ดินหยาง',己:'ดินหยิน',庚:'ทองหยาง',辛:'ทองหยิน',壬:'น้ำหยาง',癸:'น้ำหยิน'};
-    const BRANCH_EL_TH_LP = {子:'น้ำ',丑:'ดิน',寅:'ไม้',卯:'ไม้',辰:'ดิน',巳:'ไฟ',午:'ไฟ',未:'ดิน',申:'ทอง',酉:'ทอง',戌:'ดิน',亥:'น้ำ'};
-    const BRANCH_ZH_TH_ANIMAL = {子:'หนู',丑:'วัว',寅:'เสือ',卯:'กระต่าย',辰:'มังกร',巳:'งู',午:'ม้า',未:'แพะ',申:'ลิง',酉:'ไก่',戌:'หมา',亥:'หมู'};
+    const STEM_NAME_TH_LP = {甲:window._chtx('c.stem.jia','ไม้หยาง'),乙:window._chtx('c.stem.yi','ไม้หยิน'),丙:window._chtx('c.stem.bing','ไฟหยาง'),丁:window._chtx('c.stem.ding','ไฟหยิน'),戊:window._chtx('c.stem.wu','ดินหยาง'),己:window._chtx('c.stem.ji','ดินหยิน'),庚:window._chtx('c.stem.geng','ทองหยาง'),辛:window._chtx('c.stem.xin','ทองหยิน'),壬:window._chtx('c.stem.ren','น้ำหยาง'),癸:window._chtx('c.stem.gui','น้ำหยิน')};
+    const BRANCH_EL_TH_LP = (function(){var w=window._chtx('c.el.wood','ไม้'),f=window._chtx('c.el.fire','ไฟ'),e=window._chtx('c.el.earth','ดิน'),m=window._chtx('c.el.metal','ทอง'),a=window._chtx('c.el.water','น้ำ');return {子:a,丑:e,寅:w,卯:w,辰:e,巳:f,午:f,未:e,申:m,酉:m,戌:e,亥:a};})();
+    const BRANCH_ZH_TH_ANIMAL = {子:window._chtx('c.animal.rat','หนู'),丑:window._chtx('c.animal.ox','วัว'),寅:window._chtx('c.animal.tiger','เสือ'),卯:window._chtx('c.animal.rabbit','กระต่าย'),辰:window._chtx('c.animal.dragon','มังกร'),巳:window._chtx('c.animal.snake','งู'),午:window._chtx('c.animal.horse','ม้า'),未:window._chtx('c.animal.goat','แพะ'),申:window._chtx('c.animal.monkey','ลิง'),酉:window._chtx('c.animal.rooster','ไก่'),戌:window._chtx('c.animal.dog','หมา'),亥:window._chtx('c.animal.pig','หมู')};
     const luckDetail = document.getElementById('hk-luck-detail');
     function renderLuckDetail(i){
       if (!luckDetail || !lp[i]) return;
       const item = lp[i];
       const h = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
       const status = i < curIdx ? 'past' : (i === curIdx ? 'cur' : 'next');
-      const statusTh = i < curIdx ? 'ผ่านมาแล้ว' : (i === curIdx ? '🎯 ตอนนี้' : 'รออยู่ข้างหน้า');
+      const statusTh = i < curIdx ? window._chtx('c.lp.past','ผ่านมาแล้ว') : (i === curIdx ? window._chtx('c.lp.now','🎯 ตอนนี้') : window._chtx('c.lp.upcoming','รออยู่ข้างหน้า'));
       const stem = item.stem, branch = item.branch;
       const stemTh = STEM_NAME_TH_LP[stem] || '—';
       const brTh = BRANCH_EL_TH_LP[branch] || '—';
@@ -3565,10 +4164,10 @@ window.addEventListener('resize', function(){
       const yrTo = item.year_end || '';
       const drill = luckDrill[i] || null;
       const years = drill && Array.isArray(drill.years) ? drill.years : [];
-      const TG_TH_SHORT = {正官:'งาน/อำนาจ',七殺:'แรงกดดัน',正財:'ทรัพย์ตรง',偏財:'ทรัพย์ไหล',正印:'ครู/ที่พึ่ง',偏印:'ปัญญาเฉพาะ',食神:'ผลงาน',傷官:'พรสวรรค์',比肩:'เพื่อน',劫財:'แข่งขัน'};
-      const VS_TH_D = {'六合':'จับคู่','六沖':'ปะทะ','六害':'ทำลาย','六破':'บั่นทอน','半合':'ครึ่งผสาน','三合':'สามผสาน','三會':'สามฤดู','三刑':'ลงโทษ'};
-      const ROLE_TH = {yong:'ใช้ได้ดี 用',xi:'เสริม 喜',ji:'ควรคุม 忌',neutral:'กลาง'};
-      const STR_TH = {critical:'แรงมาก',high:'แรง',medium:'กลาง',low:'เบา'};
+      const TG_TH_SHORT = {正官:window._chtx('c.tgShort.zhengGuan','งาน/อำนาจ'),七殺:window._chtx('c.tgShort.qiSha','แรงกดดัน'),正財:window._chtx('c.tgShort.zhengCai','ทรัพย์ตรง'),偏財:window._chtx('c.tgShort.pianCai','ทรัพย์ไหล'),正印:window._chtx('c.tgShort.zhengYin','ครู/ที่พึ่ง'),偏印:window._chtx('c.tgShort.pianYin','ปัญญาเฉพาะ'),食神:window._chtx('c.tgShort.shiShen','ผลงาน'),傷官:window._chtx('c.tgShort.shangGuan','พรสวรรค์'),比肩:window._chtx('c.tgShort.biJian','เพื่อน'),劫財:window._chtx('c.tgShort.jieCai','แข่งขัน')};
+      const VS_TH_D = {'六合':window._chtx('c.vs.liuHe','จับคู่'),'六沖':window._chtx('c.vs.liuChong','ปะทะ'),'六害':window._chtx('c.vs.liuHai','ทำลาย'),'六破':window._chtx('c.vs.liuPo','บั่นทอน'),'半合':window._chtx('c.vs.banHe','ครึ่งผสาน'),'三合':window._chtx('c.vs.sanHe','สามผสาน'),'三會':window._chtx('c.vs.sanHui','สามฤดู'),'三刑':window._chtx('c.vs.sanXing','ลงโทษ')};
+      const ROLE_TH = {yong:window._chtx('c.uRole.yong','ใช้ได้ดี 用'),xi:window._chtx('c.uRole.xi','เสริม 喜'),ji:window._chtx('c.uRole.ji','ควรคุม 忌'),neutral:window._chtx('c.uRole.neutral','กลาง')};
+      const STR_TH = {critical:window._chtx('c.strength.critical','แรงมาก'),high:window._chtx('c.strength.high','แรง'),medium:window._chtx('c.strength.medium','กลาง'),low:window._chtx('c.strength.low','เบา')};
       const vsShort = (arr) => (arr || []).map(v => {
         const base = String(v).split('·')[0];
         return VS_TH_D[base] || v;
@@ -3594,7 +4193,7 @@ window.addEventListener('resize', function(){
         const yHidden = hiddenShort(y.hidden_stems);
         const yImpact = impactShort(y.impacts, 1);
         return `<button type="button" class="hk-ld-year ${fc}" data-yi="${yi}">
-          <div class="yr">${h(y.year)} <span style="opacity:.55">· ${h(y.age)}ปี</span></div>
+          <div class="yr">${h(y.year)} <span style="opacity:.55">· ${h(y.age)}${window._chtx('c.lt.age_suffix','ปี')}</span></div>
           <div class="pl">${h((ys.stem||'')+(ys.branch||''))}</div>
           <div class="tg">${h(ytg)}</div>
           ${yRange ? `<div class="rng">${h(yRange)}</div>` : ''}
@@ -3605,22 +4204,22 @@ window.addEventListener('resize', function(){
       }).join('');
       luckDetail.style.display = '';
       luckDetail.innerHTML = `
-        <div class="ld-title">รอบที่ ${i+1} · ${stem}${branch} <span class="ld-pill ${status}">${statusTh}</span></div>
-        <div class="ld-row"><span class="ld-k">ช่วงอายุ</span><span class="ld-v">${fmtAge(item.age_start)} – ${fmtAge(item.age_end)}</span></div>
-        ${item.start_date&&item.end_date?`<div class="ld-row"><span class="ld-k">วันที่จริง</span><span class="ld-v">${h(item.start_date)} ถึงก่อน ${h(item.end_date)}</span></div>`:''}
-        ${item.age_start_detail&&item.age_end_detail?`<div class="ld-row"><span class="ld-k">อายุละเอียด</span><span class="ld-v">${h(item.age_start_detail)} – ${h(item.age_end_detail)}</span></div>`:''}
-        ${item.direction_th?`<div class="ld-row"><span class="ld-k">เดิน運</span><span class="ld-v">${h(item.direction_th)}</span></div>`:''}
-        ${yrFrom?`<div class="ld-row"><span class="ld-k">ปีปาจื้อที่คร่อม</span><span class="ld-v">${yrFrom} – ${yrTo}</span></div>`:''}
-        <div class="ld-row"><span class="ld-k">ก้านฟ้า</span><span class="ld-v">${stemTh}<span class="zh">${stem}</span></span></div>
-        <div class="ld-row"><span class="ld-k">กิ่งดิน</span><span class="ld-v">ธาตุ${brTh} · ปี${brAnimal}<span class="zh">${branch}</span></span></div>
-        <div class="ld-row"><span class="ld-k">12 ระยะ</span><span class="ld-v">${phTh}<span class="zh">${phZh}</span></span></div>
-        ${tgTh?`<div class="ld-row"><span class="ld-k">เทพประจำ</span><span class="ld-v">${tgTh}<span class="zh">${tgZh}</span></span></div>`:''}
+        <div class="ld-title">${window._chtx('c.lp.round','รอบที่')} ${i+1} · ${stem}${branch} <span class="ld-pill ${status}">${statusTh}</span></div>
+        <div class="ld-row"><span class="ld-k">${window._chtx('c.lp.age_range','ช่วงอายุ')}</span><span class="ld-v">${fmtAge(item.age_start)} – ${fmtAge(item.age_end)}</span></div>
+        ${item.start_date&&item.end_date?`<div class="ld-row"><span class="ld-k">${window._chtx('c.lp.real_dates','วันที่จริง')}</span><span class="ld-v">${h(item.start_date)} ${window._chtx('c.lp.until_before','ถึงก่อน')} ${h(item.end_date)}</span></div>`:''}
+        ${item.age_start_detail&&item.age_end_detail?`<div class="ld-row"><span class="ld-k">${window._chtx('c.lp.age_detail','อายุละเอียด')}</span><span class="ld-v">${h(item.age_start_detail)} – ${h(item.age_end_detail)}</span></div>`:''}
+        ${item.direction_th?`<div class="ld-row"><span class="ld-k">${window._chtx('c.lp.direction','เดิน運')}</span><span class="ld-v">${h(item.direction_th)}</span></div>`:''}
+        ${yrFrom?`<div class="ld-row"><span class="ld-k">${window._chtx('c.lp.bazi_span','ปีปาจื้อที่คร่อม')}</span><span class="ld-v">${yrFrom} – ${yrTo}</span></div>`:''}
+        <div class="ld-row"><span class="ld-k">${window._chtx('c.lp.stem','ก้านฟ้า')}</span><span class="ld-v">${stemTh}<span class="zh">${stem}</span></span></div>
+        <div class="ld-row"><span class="ld-k">${window._chtx('c.lp.branch','กิ่งดิน')}</span><span class="ld-v">${window._chtx('c.lp.branch_val','ธาตุ{el} · ปี{animal}').replace('{el}',brTh).replace('{animal}',brAnimal)}<span class="zh">${branch}</span></span></div>
+        <div class="ld-row"><span class="ld-k">${window._chtx('c.lp.phase12','12 ระยะ')}</span><span class="ld-v">${phTh}<span class="zh">${phZh}</span></span></div>
+        ${tgTh?`<div class="ld-row"><span class="ld-k">${window._chtx('c.lp.tengod','เทพประจำ')}</span><span class="ld-v">${tgTh}<span class="zh">${tgZh}</span></span></div>`:''}
         ${years.length ? `<div class="hk-luck-drill">
-          <div class="hk-luck-drill-title"><b>ปีจรในรอบ 10 ปีนี้ · 流年</b><span>กดปีเพื่อดูเดือนจร · 流月</span></div>
+          <div class="hk-luck-drill-title"><b>${window._chtx('c.lp.drill_title','ปีจรในรอบ 10 ปีนี้ · 流年')}</b><span>${window._chtx('c.lp.drill_hint','กดปีเพื่อดูเดือนจร · 流月')}</span></div>
           <div class="hk-ld-years">${yearCells}</div>
           <div class="hk-ld-month-head" id="hk-ld-month-head">流月</div>
           <div class="hk-ld-months" id="hk-ld-months"></div>
-          <div class="hk-liunian-hint">ไทยนำ จีนตาม · ปีปาจื้อเริ่มที่立春 ไม่ใช่ 1 ม.ค. · 流月1 เริ่มที่立春 · 日=เทียบกิ่งวัน · 運=เทียบกิ่งวัยจร · แรงมาก/แรง/กลาง/เบา = น้ำหนัก interaction</div>
+          <div class="hk-liunian-hint">${window._chtx('c.lp.legend','ไทยนำ จีนตาม · ปีปาจื้อเริ่มที่立春 ไม่ใช่ 1 ม.ค. · 流月1 เริ่มที่立春 · 日=เทียบกิ่งวัน · 運=เทียบกิ่งวัยจร · แรงมาก/แรง/กลาง/เบา = น้ำหนัก interaction')}</div>
         </div>` : ''}
       `;
       if (years.length) {
@@ -3632,8 +4231,8 @@ window.addEventListener('resize', function(){
           root.querySelectorAll('.hk-ld-year').forEach((btn, bi) => btn.classList.toggle('on', bi === yi));
           if (monthHead) {
             const yp = y.pillar || {};
-            const yStart = y.bazi_year_start ? ` · เริ่ม ${y.bazi_year_start.name} ${y.bazi_year_start.date}` : '';
-            monthHead.textContent = `เดือนจร 流月 · ปีปาจื้อ ${y.year} · ${yp.stem || ''}${yp.branch || ''}${yStart}`;
+            const yStart = y.bazi_year_start ? ` · ${window._chtx('c.lp.starts','เริ่ม')} ${y.bazi_year_start.name} ${y.bazi_year_start.date}` : '';
+            monthHead.textContent = `${window._chtx('c.lp.month_head','เดือนจร 流月 · ปีปาจื้อ')} ${y.year} · ${yp.stem || ''}${yp.branch || ''}${yStart}`;
           }
           if (monthBox) {
             const months = y.months || [];
@@ -3652,16 +4251,16 @@ window.addEventListener('resize', function(){
               const impact = impactShort(m.impacts, 2);
               const lead = impactLead(m.impacts);
               const monthNo = String(m.month || '').padStart(2, '0');
-              const displayLabel = `เดือนจร ${monthNo} · 流月`;
-              const title = [`節:${start || 'fallback กลางเดือน'} → ${end}`, `日:${(m.vs_day_branch||[]).join(' · ')}`, `運:${(m.vs_luck_branch||[]).join(' · ')}`, impact].join(' | ');
+              const displayLabel = `${window._chtx('c.lp.month_word','เดือนจร')} ${monthNo} · 流月`;
+              const title = [`節:${start || window._chtx('c.lp.fallback_mid','fallback กลางเดือน')} → ${end}`, `日:${(m.vs_day_branch||[]).join(' · ')}`, `運:${(m.vs_luck_branch||[]).join(' · ')}`, impact].join(' | ');
               return `<button type="button" class="hk-ld-month ${fc}" data-mi="${mi}" aria-expanded="false" title="${h(title)}">
                 <div class="top"><div class="mo">${h(displayLabel)}</div><div class="chev">⌄</div></div>
                 <div class="pl">${h((mp.stem||'')+(mp.branch||''))}</div>
                 ${start ? `<div class="rng">${h(start)} → ${h(end)}</div>` : ''}
                 ${lead ? `<div class="impact lead">${h(lead)}</div>` : ''}
                 <div class="detail">
-                  <div class="tg">ฟ้า ${h(mp.stem||'')} = ${h(mtg)}${stemRole ? ' · '+h(stemRole) : ''}</div>
-                  <div class="tg">ดิน ${h(mp.branch||'')} = ${h(BRANCH_EL_TH_LP[mp.branch]||'')}${branchRole ? ' · '+h(branchRole) : ''}</div>
+                  <div class="tg">${window._chtx('c.lp.sky','ฟ้า')} ${h(mp.stem||'')} = ${h(mtg)}${stemRole ? ' · '+h(stemRole) : ''}</div>
+                  <div class="tg">${window._chtx('c.lp.earth','ดิน')} ${h(mp.branch||'')} = ${h(BRANCH_EL_TH_LP[mp.branch]||'')}${branchRole ? ' · '+h(branchRole) : ''}</div>
                   ${hid ? `<div class="hid">藏 ${h(hid)}</div>` : ''}
                   ${vs ? `<div class="vs">${h(vs)}</div>` : ''}
                   ${impact ? `<div class="impact">${h(impact)}</div>` : ''}
@@ -3801,9 +4400,9 @@ window.addEventListener('resize', function(){
       const c=lp[curIdx];
       const lpInter = a.lp_natal_interactions || [];
       const TYPE_POL = {'六沖':'bad','六害':'bad','六破':'bad','天克':'bad','六合':'good','三合':'good','三會':'good','半合':'good','五合':'good'};
-      const P_TH = {year:'ปี', month:'เดือน', day:'วัน', hour:'ชั่วโมง'};
-      const INTER_TH_LP = {'六合':'จับคู่','五合':'ก้านผสาน','六沖':'ปะทะ','六害':'ทำลาย','六破':'บั่นทอน','三合':'สามผสาน','三會':'สามฤดู','半合':'ครึ่งผสาน','三刑':'ลงโทษ','自刑':'ทำร้ายตัว','同刑':'ลงโทษร่วม','反吟':'เสียงสะท้อน','伏吟':'เสียงซ้อน','天克':'ฟ้าตัด','天地合':'ฟ้าดินผสาน'};
-      const EL_TH_LP = {water:'น้ำ',fire:'ไฟ',wood:'ไม้',earth:'ดิน',metal:'ทอง'};
+      const P_TH = {year:window._chtx('c.pillar.year','ปี'), month:window._chtx('c.pillar.month','เดือน'), day:window._chtx('c.pillar.day','วัน'), hour:window._chtx('c.pillar.hour','ชั่วโมง')};
+      const INTER_TH_LP = {'六合':window._chtx('c.vs.liuHe','จับคู่'),'五合':window._chtx('c.vs.wuHe','ก้านผสาน'),'六沖':window._chtx('c.vs.liuChong','ปะทะ'),'六害':window._chtx('c.vs.liuHai','ทำลาย'),'六破':window._chtx('c.vs.liuPo','บั่นทอน'),'三合':window._chtx('c.vs.sanHe','สามผสาน'),'三會':window._chtx('c.vs.sanHui','สามฤดู'),'半合':window._chtx('c.vs.banHe','ครึ่งผสาน'),'三刑':window._chtx('c.vs.sanXing','ลงโทษ'),'自刑':window._chtx('c.vs.ziXing','ทำร้ายตัว'),'同刑':window._chtx('c.vs.tongXing','ลงโทษร่วม'),'反吟':window._chtx('c.vs.fanYin','เสียงสะท้อน'),'伏吟':window._chtx('c.vs.fuYin','เสียงซ้อน'),'天克':window._chtx('c.vs.tianKe','ฟ้าตัด'),'天地合':window._chtx('c.vs.tianDiHe','ฟ้าดินผสาน')};
+      const EL_TH_LP = {water:window._chtx('c.el.water','น้ำ'),fire:window._chtx('c.el.fire','ไฟ'),wood:window._chtx('c.el.wood','ไม้'),earth:window._chtx('c.el.earth','ดิน'),metal:window._chtx('c.el.metal','ทอง')};
       const phaseThLp = (typeof PHASE_TH !== 'undefined' && PHASE_TH[c.qi_phase]) || c.qi_phase;
       let interHtml = '';
       if (lpInter.length) {
@@ -3820,7 +4419,7 @@ window.addEventListener('resize', function(){
           })
         ).join('') + '</div>';
       }
-      luckNote.innerHTML = `รอบโชคปัจจุบัน <b>${fmtAge(c.age_start)} – ${fmtAge(c.age_end)} · ${c.stem}${c.branch}</b> · ${phaseThLp} (${c.qi_phase}) · จากดวงจริงของคุณ${interHtml}`;
+      luckNote.innerHTML = `${window._chtx('c.lp.note_current','รอบโชคปัจจุบัน')} <b>${fmtAge(c.age_start)} – ${fmtAge(c.age_end)} · ${c.stem}${c.branch}</b> · ${phaseThLp} (${c.qi_phase}) · ${window._chtx('c.lp.note_from_chart','จากดวงจริงของคุณ')}${interHtml}`;
     }
 
     // Engine 1 · 流年 100-year timeline (render ใน §11) · 📜 wrap try/catch อิสระ · 15 พ.ค.
@@ -3841,9 +4440,9 @@ window.addEventListener('resize', function(){
       if (existing) existing.remove();
       const cyYear = (a.current_year_pillar && new Date().getUTCFullYear()) || 0;
       const FLAG_CLS = {auspicious:'auspicious', cautious:'cautious', neutral:''};
-      const TG_TH = {正官:'อำนาจตรง',七殺:'อำนาจสายลับ',正財:'ทรัพย์ตรง',偏財:'ทรัพย์ไหล',正印:'ครูตรง',偏印:'ครูสายลับ',食神:'สร้างสรรค์',傷官:'พรสวรรค์',比肩:'เพื่อน',劫財:'พี่น้อง'};
+      const TG_TH = {正官:window._chtx('c.tgLn.zhengGuan','อำนาจตรง'),七殺:window._chtx('c.tgLn.qiSha','อำนาจสายลับ'),正財:window._chtx('c.tgLn.zhengCai','ทรัพย์ตรง'),偏財:window._chtx('c.tgLn.pianCai','ทรัพย์ไหล'),正印:window._chtx('c.tgLn.zhengYin','ครูตรง'),偏印:window._chtx('c.tgLn.pianYin','ครูสายลับ'),食神:window._chtx('c.tgLn.shiShen','สร้างสรรค์'),傷官:window._chtx('c.tgLn.shangGuan','พรสวรรค์'),比肩:window._chtx('c.tgLn.biJian','เพื่อน'),劫財:window._chtx('c.tgLn.jieCai','พี่น้อง')};
       const STEM_TO_EL = {甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
-      const VS_TH = {'六合':'จับคู่','六沖':'ปะทะ','六害':'ทำลาย','六破':'บั่นทอน','三合':'สามผสาน','三會':'สามฤดู','半合':'ครึ่งผสาน','三刑':'ลงโทษ'};
+      const VS_TH = {'六合':window._chtx('c.vs.liuHe','จับคู่'),'六沖':window._chtx('c.vs.liuChong','ปะทะ'),'六害':window._chtx('c.vs.liuHai','ทำลาย'),'六破':window._chtx('c.vs.liuPo','บั่นทอน'),'三合':window._chtx('c.vs.sanHe','สามผสาน'),'三會':window._chtx('c.vs.sanHui','สามฤดู'),'半合':window._chtx('c.vs.banHe','ครึ่งผสาน'),'三刑':window._chtx('c.vs.sanXing','ลงโทษ')};
       /* Phase 19-C · default = แสดงเฉพาะปีสำคัญ (มี interaction) · toggle ดูทั้ง 100 ปี */
       const buildCell = (ln) => {
         const fc = FLAG_CLS[ln.flag] || '';
@@ -3877,18 +4476,18 @@ window.addEventListener('resize', function(){
       const wrap = document.createElement('div');
       wrap.id = 'hk-liunian-wrap';
       wrap.className = 'hk-liunian-wrap';
-      const titleNear = `流年 · 10 ปีรอบปัจจุบัน (${nearYears[0]?.year}–${nearYears[nearYears.length-1]?.year})`;
-      const titleImp = `流年 · ปีสำคัญ (${importantYears.length} ปี · จาก ${liuNian.length}) · มีปะทะ/ผสาน/ทำลาย`;
-      const titleAll = `流年 · ทั้งชีวิต ${liuNian.length} ปี (เกิด→ตาย) · เทียบวันเกิดหลัก + 64卦`;
-      const ltHint = `💡 เซลล์สีทอง = ปีปัจจุบัน · hover เพื่อดูชื่อ hexagram`;
+      const titleNear = `${window._chtx('c.ln.title_near','流年 · 10 ปีรอบปัจจุบัน')} (${nearYears[0]?.year}–${nearYears[nearYears.length-1]?.year})`;
+      const titleImp = `${window._chtx('c.ln.title_imp','流年 · ปีสำคัญ ({n} ปี · จาก {total}) · มีปะทะ/ผสาน/ทำลาย').replace('{n}',importantYears.length).replace('{total}',liuNian.length)}`;
+      const titleAll = `${window._chtx('c.ln.title_all','流年 · ทั้งชีวิต {n} ปี (เกิด→ตาย) · เทียบวันเกิดหลัก + 64卦').replace('{n}',liuNian.length)}`;
+      const ltHint = window._chtx('c.ln.hint','💡 เซลล์สีทอง = ปีปัจจุบัน · hover เพื่อดูชื่อ hexagram');
       const btnStyle = 'padding:4px 12px;font-size:11px;background:transparent;border:1px solid var(--gold-line,rgba(200,164,77,.3));border-radius:99px;color:var(--gold,#c8a44d);cursor:pointer;font-family:var(--thai);transition:.2s;';
       const btnActive = btnStyle + 'background:var(--gold,#c8a44d);color:#0d0f12;font-weight:600;';
       wrap.innerHTML = `
         <div class="hk-liunian-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span id="hk-liunian-title-text" style="flex:1;min-width:200px;">${titleNear}</span>
-          <button type="button" data-mode="near" style="${btnActive}">10 ปี</button>
-          <button type="button" data-mode="imp" style="${btnStyle}">ปีสำคัญ ${importantYears.length}</button>
-          <button type="button" data-mode="all" style="${btnStyle}">ทั้งชีวิต ${liuNian.length}</button>
+          <button type="button" data-mode="near" style="${btnActive}">${window._chtx('c.ln.btn_near','10 ปี')}</button>
+          <button type="button" data-mode="imp" style="${btnStyle}">${window._chtx('c.ln.btn_imp','ปีสำคัญ')} ${importantYears.length}</button>
+          <button type="button" data-mode="all" style="${btnStyle}">${window._chtx('c.ln.btn_all','ทั้งชีวิต')} ${liuNian.length}</button>
         </div>
         <div class="hk-liunian-grid" id="hk-liunian-grid">${cellsNear}</div>
         <div class="hk-liunian-hint">${ltHint}</div>`;
@@ -3910,7 +4509,7 @@ window.addEventListener('resize', function(){
 
     // Engine 2 · §04 PERSONAL · 6 cards · 18 พ.ค. Codex P1+P2+P3
     (function renderPersonal(){
-      const EL_TH = {wood:'ไม้',fire:'ไฟ',earth:'ดิน',metal:'ทอง',water:'น้ำ'};
+      const EL_TH = {wood:window._chtx('c.el.wood','ไม้'),fire:window._chtx('c.el.fire','ไฟ'),earth:window._chtx('c.el.earth','ดิน'),metal:window._chtx('c.el.metal','ทอง'),water:window._chtx('c.el.water','น้ำ')};
       /* helper · DOM nodes กัน XSS (Codex flag เดิม) */
       const mkB = (text, color) => { const e=document.createElement('b'); e.textContent=String(text||''); if(color)e.style.color=color; return e; };
       const mkSpan = (text, cls, color) => { const e=document.createElement('span'); if(cls)e.className=cls; e.textContent=String(text||''); if(color)e.style.color=color; return e; };
@@ -3951,22 +4550,22 @@ window.addEventListener('resize', function(){
           xishen.filter(x => !primary.includes(x)).forEach(el => tags.push(mkTag('✅ 喜 '+(EL_TH[el]||el))));
           jishen.forEach(el => tags.push(mkTag('⛔ 忌 '+(EL_TH[el]||el), '#e26b5d')));
           if (tags.length) spBox.appendChild(mkRow('', tags));
-          if (sConf) { const c = document.createElement('div'); c.style.cssText='margin-top:6px;font-size:11px;color:var(--fg-soft,#8aa);font-family:var(--mono,monospace)'; c.textContent='ความเชื่อมั่น · '+sConf; spBox.appendChild(c); }
+          if (sConf) { const c = document.createElement('div'); c.style.cssText='margin-top:6px;font-size:11px;color:var(--fg-soft,#8aa);font-family:var(--mono,monospace)'; c.textContent=window._chtx('c.sp.confidence','ความเชื่อมั่น')+' · '+sConf; spBox.appendChild(c); }
         } else {
           /* normal chart · แสดง 月令格 + 扶抑法 ถ้ามี · กลับมาแสดง "ดวงปกติ" ถ้าไม่มี */
-          if (sLabel && isNormal) { spBox.appendChild(mkB(sLabel, 'var(--gold)')); spBox.appendChild(document.createTextNode(' · 正格 · ใช้กฎ 扶抑法 มาตรฐาน')); }
-          else { spBox.appendChild(mkB('ดวงปกติ')); spBox.appendChild(document.createTextNode(' · ใช้กฎ 扶抑法 มาตรฐาน · ไม่ใช่ดวงพิเศษ')); }
+          if (sLabel && isNormal) { spBox.appendChild(mkB(sLabel, 'var(--gold)')); spBox.appendChild(document.createTextNode(' · ' + window._chtx('c.sp.zhengge','正格 · ใช้กฎ 扶抑法 มาตรฐาน'))); }
+          else { spBox.appendChild(mkB(window._chtx('c.sp.normal','ดวงปกติ'))); spBox.appendChild(document.createTextNode(' · ' + window._chtx('c.sp.normal_note','ใช้กฎ 扶抑法 มาตรฐาน · ไม่ใช่ดวงพิเศษ'))); }
         }
       }
 
       /* ─── #2 · Career 3-tier · จาก primary/xishen/jishen ─── */
       /* mapping element → อาชีพไทย (deterministic · ไม่ใช่ prediction) */
       const CAREER_BY_EL = {
-        wood:  ['การศึกษา','ครู·อาจารย์','นักออกแบบ','ป่าไม้','เฟอร์นิเจอร์','พิมพ์·สื่อสิ่งพิมพ์'],
-        fire:  ['การตลาด','โฆษณา','พิธีกร','ไฟฟ้า·อิเล็กทรอนิกส์','อาหารร้อน·ครัว','พลังงาน'],
-        earth: ['อสังหาริมทรัพย์','ก่อสร้าง','การเกษตร·เซรามิก','คลังสินค้า','ที่ปรึกษา','ที่ดิน'],
-        metal: ['การเงิน·ธนาคาร','โลหะ·อัญมณี','กฎหมาย·บัญชี','วิศวกร','ยานยนต์','เครื่องจักร'],
-        water: ['ขนส่ง·โลจิสติกส์','ท่องเที่ยว','ประมง','ค้าขาย','การสื่อสาร','การเงินสภาพคล่อง'],
+        wood: [window._chtx('c.ind.edu','การศึกษา'),window._chtx('c.ind.teacher','ครู·อาจารย์'),window._chtx('c.ind.designer','นักออกแบบ'),window._chtx('c.ind.forestry','ป่าไม้'),window._chtx('c.ind.furniture','เฟอร์นิเจอร์'),window._chtx('c.ind.printing','พิมพ์·สื่อสิ่งพิมพ์')],
+        fire: [window._chtx('c.ind.marketing','การตลาด'),window._chtx('c.ind.ads','โฆษณา'),window._chtx('c.ind.mc','พิธีกร'),window._chtx('c.ind.electronics','ไฟฟ้า·อิเล็กทรอนิกส์'),window._chtx('c.ind.kitchen','อาหารร้อน·ครัว'),window._chtx('c.ind.energy','พลังงาน')],
+        earth: [window._chtx('c.ind.realestate','อสังหาริมทรัพย์'),window._chtx('c.ind.construction','ก่อสร้าง'),window._chtx('c.ind.agri','การเกษตร·เซรามิก'),window._chtx('c.ind.warehouse','คลังสินค้า'),window._chtx('c.ind.consulting','ที่ปรึกษา'),window._chtx('c.ind.land','ที่ดิน')],
+        metal: [window._chtx('c.ind.finance','การเงิน·ธนาคาร'),window._chtx('c.ind.metals','โลหะ·อัญมณี'),window._chtx('c.ind.law','กฎหมาย·บัญชี'),window._chtx('c.ind.engineer','วิศวกร'),window._chtx('c.ind.automotive','ยานยนต์'),window._chtx('c.ind.machinery','เครื่องจักร')],
+        water: [window._chtx('c.ind.logistics','ขนส่ง·โลจิสติกส์'),window._chtx('c.ind.tourism','ท่องเที่ยว'),window._chtx('c.ind.fishery','ประมง'),window._chtx('c.ind.trading','ค้าขาย'),window._chtx('c.ind.comm','การสื่อสาร'),window._chtx('c.ind.liquidity','การเงินสภาพคล่อง')],
       };
       const car = a.career_industry || {};
       const carBox = document.querySelector('#hk-personal-career .body');
@@ -3980,20 +4579,20 @@ window.addEventListener('resize', function(){
           if (primary.length) {
             const inds = [];
             primary.forEach(el => (CAREER_BY_EL[el]||[]).slice(0,3).forEach(j => inds.push(mkTag(j,'var(--gold,#c8a44d)'))));
-            if (inds.length) carBox.appendChild(mkRow('🥇 เหมาะที่สุด:', inds, 'var(--gold)'));
+            if (inds.length) carBox.appendChild(mkRow(window._chtx('c.car.best','🥇 เหมาะที่สุด:'), inds, 'var(--gold)'));
           }
           /* Usable tier · จาก xishen */
           const usableEls = xishen.filter(x => !primary.includes(x));
           if (usableEls.length) {
             const inds = [];
             usableEls.forEach(el => (CAREER_BY_EL[el]||[]).slice(0,3).forEach(j => inds.push(mkTag(j))));
-            if (inds.length) carBox.appendChild(mkRow('✅ ใช้ได้:', inds));
+            if (inds.length) carBox.appendChild(mkRow(window._chtx('c.car.usable','✅ ใช้ได้:'), inds));
           }
           /* Avoid tier · จาก jishen */
           if (jishen.length) {
             const inds = [];
             jishen.forEach(el => (CAREER_BY_EL[el]||[]).slice(0,3).forEach(j => inds.push(mkTag(j,'#e26b5d'))));
-            if (inds.length) carBox.appendChild(mkRow('⛔ หลีกเลี่ยง:', inds, '#e26b5d'));
+            if (inds.length) carBox.appendChild(mkRow(window._chtx('c.car.avoid','⛔ หลีกเลี่ยง:'), inds, '#e26b5d'));
           }
           /* legacy advice ถ้ามี */
           if (car.advice_th) { const n=document.createElement('div'); n.style.cssText='margin-top:10px;font-size:12px;color:var(--fg-soft,#8aa);line-height:1.6'; n.textContent=car.advice_th; carBox.appendChild(n); }
@@ -4009,35 +4608,35 @@ window.addEventListener('resize', function(){
       const spsBox = document.querySelector('#hk-personal-spouse .body');
       if (spsBox && sps) {
         spsBox.textContent = '';
-        spsBox.appendChild(document.createTextNode('คู่ครองธาตุ'));
+        spsBox.appendChild(document.createTextNode(window._chtx('c.spouse.element_prefix','คู่ครองธาตุ')));
         spsBox.appendChild(mkB(sps.partner_element_th||''));
-        spsBox.appendChild(document.createTextNode(' (เสาวัน '+(sps.day_branch_th||'')+')'));
+        spsBox.appendChild(document.createTextNode(' ('+window._chtx('c.spouse.day_pillar','เสาวัน')+' '+(sps.day_branch_th||'')+')'));
         spsBox.appendChild(document.createElement('br'));
-        spsBox.appendChild(mkSpan('บุคลิก: '+(sps.partner_traits_th||'')));
+        spsBox.appendChild(mkSpan(window._chtx('c.spouse.traits','บุคลิก:')+' '+(sps.partner_traits_th||'')));
         const flags = sps.relationship_flags || [];
         if (flags.length) spsBox.appendChild(mkRow('', flags.map(f => mkTag(f))));
-        else { const e=document.createElement('div'); e.style.cssText='opacity:.6;font-size:12px;margin-top:6px'; e.textContent='ไม่มีปะทะหรือผสานกับเสาอื่น'; spsBox.appendChild(e); }
+        else { const e=document.createElement('div'); e.style.cssText='opacity:.6;font-size:12px;margin-top:6px'; e.textContent=window._chtx('c.spouse.no_inter','ไม่มีปะทะหรือผสานกับเสาอื่น'); spsBox.appendChild(e); }
       }
       const hl = a.health_mapping;
       const hlBox = document.querySelector('#hk-personal-health .body');
       if (hlBox && hl) {
         hlBox.textContent = '';
-        hlBox.appendChild(document.createTextNode('อวัยวะหลัก: '));
+        hlBox.appendChild(document.createTextNode(window._chtx('c.health.main_organs','อวัยวะหลัก:')+' '));
         hlBox.appendChild(mkB(hl.dm_organs_th||''));
         hlBox.appendChild(document.createElement('br'));
         hlBox.appendChild(mkSpan(hl.summary_th||''));
         const weak = hl.weak_organs || [];
         const caution = hl.caution_organs || [];
-        if (weak.length) hlBox.appendChild(mkRow('⚠ อ่อน:', weak.map(w => mkTag(w.organs_th||'',''))));
-        if (caution.length) hlBox.appendChild(mkRow('⚡ ระวัง:', caution.map(c => mkTag(c.organs_th||''))));
+        if (weak.length) hlBox.appendChild(mkRow(window._chtx('c.health.weak','⚠ อ่อน:'), weak.map(w => mkTag(w.organs_th||'',''))));
+        if (caution.length) hlBox.appendChild(mkRow(window._chtx('c.health.caution','⚡ ระวัง:'), caution.map(c => mkTag(c.organs_th||''))));
       }
 
       /* ─── #3 · 父母 + 子女 cards · ใช้ palace_readings (object · keyed by pillar) ─── */
       const palaces = a.palace_readings || {};
       /* Codex flag · stem_th/branch_th ไม่ emit จาก engine · ใช้ static map */
       const PALACE_LABELS = {
-        month: { stem_th: 'พ่อ / หัวหน้า',    branch_th: 'แม่ / รากอาชีพ' },
-        hour:  { stem_th: 'ลูกชาย / ลูกน้อง',  branch_th: 'ลูกหญิง / บั้นปลาย' },
+        month: { stem_th: window._chtx('c.pal.father','พ่อ / หัวหน้า'),    branch_th: window._chtx('c.pal.mother','แม่ / รากอาชีพ') },
+        hour:  { stem_th: window._chtx('c.pal.sons','ลูกชาย / ลูกน้อง'),  branch_th: window._chtx('c.pal.daughters','ลูกหญิง / บั้นปลาย') },
       };
       function renderPalace(pillarName, boxSel) {
         const box = document.querySelector(boxSel);
@@ -4048,20 +4647,20 @@ window.addEventListener('resize', function(){
         if (pillarName === 'hour' && chartIs3p) {
           const note = document.createElement('div');
           note.style.cssText = 'font-size:12px;color:var(--fg-soft,#888);line-height:1.65';
-          note.textContent = 'ไม่ทราบเวลาเกิด · วังลูกและบั้นปลายต้องใช้เสายาม จึงไม่คำนวณในโหมด 3 เสา';
+          note.textContent = window._chtx('c.pal.no_hour','ไม่ทราบเวลาเกิด · วังลูกและบั้นปลายต้องใช้เสายาม จึงไม่คำนวณในโหมด 3 เสา');
           box.appendChild(note);
           return;
         }
         if (!p) { box.appendChild(mkSpan('—')); return; }
         if (p.title_th) { const t=document.createElement('div'); t.style.cssText='font-family:var(--serif);font-size:13px;color:var(--gold);margin-bottom:4px'; t.textContent=p.title_th; box.appendChild(t); }
-        if (p.age) { const a2=document.createElement('span'); a2.style.cssText='font-family:var(--mono);font-size:10px;color:var(--fg-soft,#8aa);letter-spacing:.1em;text-transform:uppercase'; a2.textContent='ช่วงอายุ '+p.age; box.appendChild(a2); box.appendChild(document.createElement('br')); }
+        if (p.age) { const a2=document.createElement('span'); a2.style.cssText='font-family:var(--mono);font-size:10px;color:var(--fg-soft,#8aa);letter-spacing:.1em;text-transform:uppercase'; a2.textContent=window._chtx('c.lp.age_range','ช่วงอายุ')+' '+p.age; box.appendChild(a2); box.appendChild(document.createElement('br')); }
         const labels = PALACE_LABELS[pillarName] || {};
         const tags = [];
         if (labels.stem_th)   tags.push(mkTag('天 · '+labels.stem_th));
         if (labels.branch_th) tags.push(mkTag('地 · '+labels.branch_th));
         if (tags.length) box.appendChild(mkRow('', tags));
         /* Codex disclaimer · ป้ายชื่อวัง ไม่ใช่คำทำนายรายบุคคล */
-        const note = document.createElement('div'); note.style.cssText='margin-top:6px;font-size:11px;color:var(--fg-soft,#888);line-height:1.55'; note.textContent='ป้ายชื่อวังตามเสาเกิด ไม่ใช่คำทำนายรายบุคคล · อ่านร่วมกับ用神และภาพรวมทั้งผัง'; box.appendChild(note);
+        const note = document.createElement('div'); note.style.cssText='margin-top:6px;font-size:11px;color:var(--fg-soft,#888);line-height:1.55'; note.textContent=window._chtx('c.pal.disclaimer','ป้ายชื่อวังตามเสาเกิด ไม่ใช่คำทำนายรายบุคคล · อ่านร่วมกับ用神และภาพรวมทั้งผัง'); box.appendChild(note);
       }
       renderPalace('month', '#hk-personal-parents .body');
       renderPalace('hour',  '#hk-personal-children .body');
@@ -4072,9 +4671,9 @@ window.addEventListener('resize', function(){
     if (tdh.length) {
       const allianceCard = interCards[2];
       if (allianceCard) {
-        const tdhHtml = tdh.map(t => `${wrapTh('天地合')} · ${t.pair[0]}↔${t.pair[1]} · ธาตุ${elemName07(t.element)}`).join(' / ');
+        const tdhHtml = tdh.map(t => `${wrapTh('天地合')} · ${t.pair[0]}↔${t.pair[1]} · ${window._chtx('c.ov.element_word','ธาตุ')}${elemName07(t.element)}`).join(' / ');
         const pTag = allianceCard.querySelector('p');
-        if (pTag) pTag.innerHTML = (pTag.textContent || '') + ' · ฟ้าดินผสาน: ' + tdhHtml;
+        if (pTag) pTag.innerHTML = (pTag.textContent || '') + ' · ' + window._chtx('c.vs.tianDiHe','ฟ้าดินผสาน') + ': ' + tdhHtml;
       }
     }
   };
@@ -4250,19 +4849,19 @@ window.addEventListener('resize', function(){
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function lang(){ return (document.documentElement.getAttribute('data-lang') || localStorage.getItem('hk_locale') || 'th').slice(0,2); }
   var L = {
-    th:{ title:'เปลี่ยนดวง', list:'รายชื่อ', add:'กรอกใหม่', search:'ค้นหาชื่อ…', empty:'ยังไม่มีรายชื่อที่บันทึก<br>ลองกรอกดวงใหม่ที่แท็บ "กรอกใหม่"', noTime:'(ไม่ทราบเวลา · 3 เสา)',
+    th:{ title:'เปลี่ยนดวง', list:'รายชื่อ', add:'กรอกใหม่', search:'ค้นหาชื่อ…', nick:'ชื่อเล่น', nickPh:'เช่น ใหม่', empty:'ยังไม่มีรายชื่อที่บันทึก<br>ลองกรอกดวงใหม่ที่แท็บ "กรอกใหม่"', noTime:'(ไม่ทราบเวลา · 3 เสา)',
          name:'ชื่อ (ไม่บังคับ)', namePh:'เช่น คุณแม่, เพื่อน, ลูกค้า', dob:'วันเกิด · วัน / เดือน / ปี (ค.ศ.)', d:'วัน', m:'เดือน', y:'ปี ค.ศ.',
          time:'เวลาเกิด · ชม. : นาที', noBtime:'ไม่ทราบเวลาเกิด (ดูดวงแบบ 3 เสา)', gender:'เพศ', male:'ชาย', female:'หญิง', city:'เมืองเกิด', cityPh:'พิมพ์ชื่อเมือง เช่น Bangkok',
          role:'บทบาท / ความสัมพันธ์', rolePh:'เช่น พี่สาว · เพื่อน · ลูกค้า', group:'กลุ่ม', gGeneral:'ทั่วไป', gFamily:'家 ครอบครัว', gFriend:'友 เพื่อน', gWork:'業 ที่ทำงาน', gLove:'情 คนรัก', gRival:'競 คู่แข่ง',
          lng:'ลองจิจูด', gmt:'เขตเวลา', corr:'แก้เวลาสุริยะ', eot:'สมการเวลา', tstNote:'⏱ คำนวณอัตโนมัติจากเมืองเกิด · 真太陽時 (節氣เดือนเกิด ดูใน §13 หลังเปิดดวง)',
          view:'ดูเลย', save:'บันทึก + ดู', errDate:'กรุณากรอกวันเกิดให้ครบ', errTime:'กรุณากรอกเวลา หรือเลือก "ไม่ทราบเวลา"', saving:'กำลังบันทึก…', loading:'กำลังโหลด…' },
-    en:{ title:'Switch Chart', list:'People', add:'New', search:'Search name…', empty:'No saved people yet<br>Try the "New" tab to add a chart', noTime:'(no time · 3 pillars)',
+    en:{ title:'Switch Chart', list:'People', add:'New', search:'Search name…', nick:'Nickname', nickPh:'e.g. Mai', empty:'No saved people yet<br>Try the "New" tab to add a chart', noTime:'(no time · 3 pillars)',
          name:'Name (optional)', namePh:'e.g. Mom, Friend, Client', dob:'Birth date · D / M / Y (CE)', d:'Day', m:'Mon', y:'Year CE',
          time:'Birth time · HH : MM', noBtime:'Unknown birth time (3-pillar chart)', gender:'Gender', male:'Male', female:'Female', city:'Birth city', cityPh:'Type a city e.g. Bangkok',
          role:'Role / Relationship', rolePh:'e.g. Sister · Friend · Client', group:'Group', gGeneral:'General', gFamily:'家 Family', gFriend:'友 Friend', gWork:'業 Work', gLove:'情 Love', gRival:'競 Rival',
          lng:'Longitude', gmt:'Time zone', corr:'Solar correction', eot:'Equation of Time', tstNote:'⏱ Auto-computed from birth city · True Solar Time (birth-month 節氣 shown in §13 after loading)',
          view:'View now', save:'Save + view', errDate:'Please fill the full birth date', errTime:'Enter a time or tick "Unknown time"', saving:'Saving…', loading:'Loading…' },
-    zh:{ title:'換盤', list:'名單', add:'新增', search:'搜尋姓名…', empty:'尚無已存名單<br>請在「新增」分頁建立命盤', noTime:'(無時辰 · 三柱)',
+    zh:{ title:'換盤', list:'名單', add:'新增', search:'搜尋姓名…', nick:'暱稱', nickPh:'例:小美', empty:'尚無已存名單<br>請在「新增」分頁建立命盤', noTime:'(無時辰 · 三柱)',
          name:'姓名(可選)', namePh:'例:母親、朋友、客戶', dob:'出生日期 · 日 / 月 / 年(西元)', d:'日', m:'月', y:'西元年', time:'出生時間 · 時 : 分',
          noBtime:'不知出生時間(三柱盤)', gender:'性別', male:'男', female:'女', city:'出生城市', cityPh:'輸入城市 如 Bangkok',
          role:'角色 / 關係', rolePh:'如 姐姐 · 朋友 · 客戶', group:'群組', gGeneral:'一般', gFamily:'家 家人', gFriend:'友 朋友', gWork:'業 工作', gLove:'情 戀人', gRival:'競 對手',
@@ -4387,7 +4986,7 @@ window.addEventListener('resize', function(){
       pane.innerHTML =
         '<div class="hkp-row2">'+
           '<div class="hkp-grp" style="margin-bottom:0"><label>'+esc(t('name'))+'</label><input type="text" id="hkp-name" placeholder="'+esc(t('namePh'))+'" autocomplete="off"></div>'+
-          '<div class="hkp-grp" style="margin-bottom:0"><label>ชื่อเล่น</label><input type="text" id="hkp-nickname" placeholder="เช่น ใหม่" autocomplete="off"></div>'+
+          '<div class="hkp-grp" style="margin-bottom:0"><label>'+esc(t('nick'))+'</label><input type="text" id="hkp-nickname" placeholder="'+esc(t('nickPh'))+'" autocomplete="off"></div>'+
         '</div>'+
         '<div style="height:10px"></div>'+
         '<div class="hkp-grp"><label>'+esc(t('dob'))+'</label><div class="hkp-row3">'+
