@@ -618,8 +618,8 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
 <section class="hero">
   <div class="eyebrow">方位 · HOUSE DIRECTION GATE · FIRST STEP</div>
-  <h1>หาทิศบ้าน <span  class="tc" data-i18n="auto.f.001">วัดทิศ → ยืนยัน → พรีวิว</span></h1>
-  <p class="sub">
+  <h1><span data-i18n="auto.f.022">หาทิศบ้าน</span> <span  class="tc" data-i18n="auto.f.001">วัดทิศ → ยืนยัน → พรีวิว</span></h1>
+  <p class="sub" data-i18n="auto.f.023">
     หน้านี้มีไว้สำหรับคนที่ยังไม่รู้ว่าหน้าบ้านหันกี่องศา ใช้แผนที่ เข็มทิศมือถือ หรือกรอกค่าที่วัดเอง แล้วล็อกทิศบ้านก่อนอ่านภาพรวมเบื้องต้น
   </p>
 </section>
@@ -634,20 +634,20 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <button  class="timeline-now" id="btnNow" data-i18n="auto.f.003">↻ ตอนนี้</button>
     </div>
     <div class="layer-toggles">
-      <button class="layer-btn active" data-layer="period"><span class="han">山/基</span>ภู+ฐาน</button>
-      <button class="layer-btn active" data-layer="year"><span class="han">水</span>น้ำ</button>
-      <button class="layer-btn active" data-layer="month"><span class="han">月</span>เดือน</button>
-      <button class="layer-btn active" data-layer="day"><span class="han">日</span>วัน</button>
+      <button class="layer-btn active" data-layer="period"><span class="han">山/基</span><span data-i18n="auto.f.024">ภู+ฐาน</span></button>
+      <button class="layer-btn active" data-layer="year"><span class="han">水</span><span data-i18n="auto.f.025">น้ำ</span></button>
+      <button class="layer-btn active" data-layer="month"><span class="han">月</span><span data-i18n="auto.f.026">เดือน</span></button>
+      <button class="layer-btn active" data-layer="day"><span class="han">日</span><span data-i18n="auto.f.027">วัน</span></button>
     </div>
   </div>
 </div>
 
 <!-- School (Layer) Selector -->
 <div class="school-row">
-  <button class="school-btn active" data-school="flying"><span class="ic">⭐</span><span class="han">飛星</span>ดาวเหิน</button>
+  <button class="school-btn active" data-school="flying"><span class="ic">⭐</span><span class="han">飛星</span><span data-i18n="auto.f.028">ดาวเหิน</span></button>
   <button class="school-btn" data-school="hex"><span class="ic">☯</span><span class="han">六十四卦</span>64 Hex</button>
   <button class="school-btn" data-school="mansion"><span class="ic">🏛</span><span class="han">八宅</span>8 Mansions</button>
-  <button class="school-btn" data-school="people"><span class="ic">👥</span><span class="han">人</span>คนในผัง</button>
+  <button class="school-btn" data-school="people"><span class="ic">👥</span><span class="han">人</span><span data-i18n="auto.f.029">คนในผัง</span></button>
 </div>
 
 <main>
@@ -655,40 +655,40 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 
   <div class="palace-grid-wrap">
     <div class="palace-grid-head">
-      <h3><span class="tc">九宮</span> 9 พาลา · <span  id="hdContext" data-i18n="auto.f.004">2026 · พ.ค.</span></h3>
+      <h3><span class="tc">九宮</span> <span data-i18n="auto.f.166">9 พาลา ·</span> <span  id="hdContext" data-i18n="auto.f.004">2026 · พ.ค.</span></h3>
       <div class="meta">宅運 <b id="hdPeriod">9</b> · 年 <b id="hdYear">1</b> · 月 <b id="hdMonth">5</b> · 日 <b id="hdDay">5</b></div>
     </div>
     <div class="house-config" id="houseConfig">
-      <div class="house-config-title">ยืนยันทิศบ้าน · Facing and Period</div>
+      <div class="house-config-title" data-i18n="auto.f.167">ยืนยันทิศบ้าน · Facing and Period</div>
       <div class="house-config-grid">
         <div class="house-field">
-          <label for="houseName">ชื่อบ้าน</label>
+          <label for="houseName" data-i18n="auto.f.168">ชื่อบ้าน</label>
           <input id="houseName" type="text" value="บ้านของฉัน" maxlength="80"/>
         </div>
         <div class="house-field">
-          <label for="houseFacingDeg">องศาหน้าบ้าน</label>
+          <label for="houseFacingDeg" data-i18n="auto.f.180">องศาหน้าบ้าน</label>
           <input id="houseFacingDeg" type="number" min="0" max="359.9" step="0.1" placeholder="0-359.9"/>
         </div>
         <div class="house-field">
-          <label for="houseFacingMountain">24 ซาน</label>
+          <label for="houseFacingMountain" data-i18n="auto.f.033">24 ซาน</label>
           <select id="houseFacingMountain"></select>
         </div>
         <div class="house-field">
-          <label for="houseConstructionYear">ปีสร้าง/รีโนเวทใหญ่</label>
+          <label for="houseConstructionYear" data-i18n="auto.f.169">ปีสร้าง/รีโนเวทใหญ่</label>
           <input id="houseConstructionYear" type="number" min="1864" max="2100" value="2026"/>
         </div>
         <div class="house-field">
-          <label for="housePeriod">ยุคบ้าน</label>
+          <label for="housePeriod" data-i18n="auto.f.170">ยุคบ้าน</label>
           <select id="housePeriod"></select>
         </div>
       </div>
       <div class="house-help">
-        หน้านี้ใช้ล็อก <b>องศาหน้าบ้าน</b> และ <b>ยุคบ้าน</b> ก่อนเท่านั้น ถ้ายังไม่ได้วัดจริงอย่าปล่อยให้ค่าตัวอย่างกลายเป็นคำตัดสิน
+        <span data-i18n="auto.f.174">หน้านี้ใช้ล็อก <b>องศาหน้าบ้าน</b> และ <b>ยุคบ้าน</b> ก่อนเท่านั้น ถ้ายังไม่ได้วัดจริงอย่าปล่อยให้ค่าตัวอย่างกลายเป็นคำตัดสิน</span>
         <div class="fs-action-row">
-          <button class="fs-action-btn" id="btnCalcHouseChart">ยืนยันทิศบ้าน</button>
-          <button class="fs-action-btn" id="btnSaveHouse">บันทึกบ้าน</button>
-          <button class="fs-action-btn" id="btnLoadHouse">โหลดบ้าน</button>
-          <span class="fs-save-status" id="houseSaveStatus">ยังไม่ได้ยืนยันทิศบ้าน</span>
+          <button class="fs-action-btn" id="btnCalcHouseChart" data-i18n="auto.f.171">ยืนยันทิศบ้าน</button>
+          <button class="fs-action-btn" id="btnSaveHouse" data-i18n="auto.f.172">บันทึกบ้าน</button>
+          <button class="fs-action-btn" id="btnLoadHouse" data-i18n="auto.f.173">โหลดบ้าน</button>
+          <span class="fs-save-status" id="houseSaveStatus" data-i18n="auto.f.179">ยังไม่ได้ยืนยันทิศบ้าน</span>
         </div>
       </div>
     </div>
@@ -698,20 +698,20 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
     </div>
     <div class="pgrid show-period show-year show-month show-day" id="pgrid"></div>
     <div class="legend-row">
-      <div class="legend-item"><span class="swatch" style="background:rgba(243,235,217,.3)"></span>山 ภูเขา</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--gold)"></span>水 แม่น้ำ</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--gold-bright)"></span>基 ฐาน</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--fg-soft)"></span>月 เดือน</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--fg-faint)"></span>日 วัน</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--tai-sui)"></span>太 ไท่ซุ่ย</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--three-kill)"></span>煞 3ชะ</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--five-yellow)"></span>5黃 5เหลือง</div>
+      <div class="legend-item"><span class="swatch" style="background:rgba(243,235,217,.3)"></span>山 <span data-i18n="auto.f.175">ภูเขา</span></div>
+      <div class="legend-item"><span class="swatch" style="background:var(--gold)"></span>水 <span data-i18n="auto.f.176">แม่น้ำ</span></div>
+      <div class="legend-item"><span class="swatch" style="background:var(--gold-bright)"></span>基 <span data-i18n="auto.f.055">ฐาน</span></div>
+      <div class="legend-item"><span class="swatch" style="background:var(--fg-soft)"></span>月 <span data-i18n="auto.f.026">เดือน</span></div>
+      <div class="legend-item"><span class="swatch" style="background:var(--fg-faint)"></span>日 <span data-i18n="auto.f.027">วัน</span></div>
+      <div class="legend-item"><span class="swatch" style="background:var(--tai-sui)"></span>太 <span data-i18n="auto.f.064">ไท่ซุ่ย</span></div>
+      <div class="legend-item"><span class="swatch" style="background:var(--three-kill)"></span>煞 <span data-i18n="auto.f.177">3ชะ</span></div>
+      <div class="legend-item"><span class="swatch" style="background:var(--five-yellow)"></span>5黃 <span data-i18n="auto.f.052">5เหลือง</span></div>
     </div>
   </div>
 
   <div class="side">
     <div class="card now-playing">
-      <h4><span class="tc">當下</span> ขณะนี้ <span class="badge">LIVE</span></h4>
+      <h4><span class="tc">當下</span> <span data-i18n="auto.f.181">ขณะนี้</span> <span class="badge">LIVE</span></h4>
       <div class="row"><span class="l">運 Period</span><span class="r"><b id="npPeriod">9</b> 紫白</span></div>
       <div class="row"><span class="l">年 Year</span><span class="r"><b id="npYear">1白</b> · <span id="npYearTheme">勝</span></span></div>
       <div class="row"><span class="l">月 Month</span><span class="r"><b id="npMonth">—</b> · <span id="npMonthTheme">—</span></span></div>
@@ -719,34 +719,34 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="row"><span class="l">時 Shichen</span><span class="r"><span id="npShichen">—</span></span></div>
     </div>
     <div class="card">
-      <h4><span class="tc">警示</span> ทิศต้องระวัง</h4>
+      <h4><span class="tc">警示</span> <span data-i18n="auto.f.182">ทิศต้องระวัง</span></h4>
       <div class="warning-list" id="warningList"></div>
     </div>
 
     <!-- People Manager -->
     <div class="card" id="peopleCard">
-      <h4><span class="tc">人</span> คนในบ้าน <span class="badge" id="peopleCount">0</span></h4>
+      <h4><span class="tc">人</span> <span data-i18n="auto.f.183">คนในบ้าน</span> <span class="badge" id="peopleCount">0</span></h4>
       <div class="people-list" id="peopleList"></div>
       <details>
-        <summary style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;cursor:pointer;padding:6px 0;">+ เพิ่มคน</summary>
+        <summary style="font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;cursor:pointer;padding:6px 0;" data-i18n="auto.f.184">+ เพิ่มคน</summary>
         <div class="person-form" style="margin-top:10px;">
-          <input type="text" id="pfName" placeholder="ชื่อ" class="full"/>
-          <input type="number" id="pfYear" placeholder="ปีเกิด" min="1900" max="2030"/>
+          <input type="text" id="pfName" placeholder="ชื่อ" data-i18n-ph="auto.f.185" class="full"/>
+          <input type="number" id="pfYear" placeholder="ปีเกิด" data-i18n-ph="auto.f.186" min="1900" max="2030"/>
           <select id="pfGender">
-            <option value="male">ชาย Male</option>
-            <option value="female">หญิง Female</option>
+            <option value="male" data-i18n="auto.f.187">ชาย Male</option>
+            <option value="female" data-i18n="auto.f.188">หญิง Female</option>
           </select>
           <select id="pfRoom" class="full">
-            <option value="">— ห้องประจำ (optional) —</option>
-            <option value="N">N · เหนือ</option>
-            <option value="NE">NE · ทิศตะวันออกเฉียงเหนือ</option>
-            <option value="E">E · ตะวันออก</option>
-            <option value="SE">SE · ทิศตะวันออกเฉียงใต้</option>
-            <option value="S">S · ใต้</option>
-            <option value="SW">SW · ทิศตะวันตกเฉียงใต้</option>
-            <option value="W">W · ตะวันตก</option>
-            <option value="NW">NW · ทิศตะวันตกเฉียงเหนือ</option>
-            <option value="C">C · ศูนย์กลาง</option>
+            <option value="" data-i18n="auto.f.189">— ห้องประจำ (optional) —</option>
+            <option value="N" data-i18n="auto.f.190">N · เหนือ</option>
+            <option value="NE" data-i18n="auto.f.191">NE · ทิศตะวันออกเฉียงเหนือ</option>
+            <option value="E" data-i18n="auto.f.192">E · ตะวันออก</option>
+            <option value="SE" data-i18n="auto.f.193">SE · ทิศตะวันออกเฉียงใต้</option>
+            <option value="S" data-i18n="auto.f.194">S · ใต้</option>
+            <option value="SW" data-i18n="auto.f.195">SW · ทิศตะวันตกเฉียงใต้</option>
+            <option value="W" data-i18n="auto.f.196">W · ตะวันตก</option>
+            <option value="NW" data-i18n="auto.f.197">NW · ทิศตะวันตกเฉียงเหนือ</option>
+            <option value="C" data-i18n="auto.f.198">C · ศูนย์กลาง</option>
           </select>
           <button  class="add-btn" id="btnAddPerson" data-i18n="auto.f.007">+ เพิ่ม</button>
         </div>
@@ -760,14 +760,14 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
 <div class="geo-sec">
   <div class="geo-head">
     <div class="label">方位 · GOOGLE MAP · COMPASS</div>
-    <h2>ค้นหา <span class="tc">坐向</span> ทิศหน้าบ้าน</h2>
-    <p>หา Facing จากแผนที่ดาวเทียมเป็นหลัก — ลากเส้น A→B ทาบผนังหน้าบ้าน แล้วกดยืนยันเมื่อมั่นใจว่าองศานี้คือทิศที่บ้านหันออกจริง</p>
+    <h2><span data-i18n="auto.f.199">ค้นหา</span> <span class="tc">坐向</span> <span data-i18n="auto.f.200">ทิศหน้าบ้าน</span></h2>
+    <p data-i18n="auto.f.201">หา Facing จากแผนที่ดาวเทียมเป็นหลัก — ลากเส้น A→B ทาบผนังหน้าบ้าน แล้วกดยืนยันเมื่อมั่นใจว่าองศานี้คือทิศที่บ้านหันออกจริง</p>
   </div>
 
   <div class="geo-grid">
     <!-- Live Compass -->
     <div class="compass-card">
-      <h4 style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;">指南針 เข็มทิศช่วยวัด</h4>
+      <h4 style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;" data-i18n="auto.f.202">指南針 เข็มทิศช่วยวัด</h4>
       <div class="compass-svg-wrap">
         <svg class="compass-svg" viewBox="0 0 400 400">
           <circle cx="200" cy="200" r="195" fill="none" stroke="var(--gold-line)" stroke-width="1"/>
@@ -792,7 +792,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         </svg>
       </div>
       <div class="compass-luck-legend" aria-label="คำอธิบายเข็มทิศ">
-        <span style="grid-column:1/-1;color:var(--fg-faint)">เข็มทิศนี้ใช้ช่วยวัดองศาหน้าบ้านเท่านั้น ไม่ใช่คำตัดสินฮวงจุ้ย</span>
+        <span style="grid-column:1/-1;color:var(--fg-faint)" data-i18n="auto.f.203">เข็มทิศนี้ใช้ช่วยวัดองศาหน้าบ้านเท่านั้น ไม่ใช่คำตัดสินฮวงจุ้ย</span>
       </div>
       <div style="text-align:center;">
         <span class="compass-deg" id="compassDeg">—</span><span class="compass-deg-unit">°</span>
@@ -801,15 +801,15 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
       <div class="compass-actions">
         <button  class="btn-compass" id="btnCompassStart" data-i18n="auto.f.011">เริ่ม Live Compass</button>
         <button  class="btn-compass secondary" id="btnLockFacing" disabled data-i18n="auto.f.012">🔒 ล็อกเป็นทิศบ้าน</button>
-        <button class="btn-compass secondary" id="btnFlipFacing" disabled>↔ สลับ Facing / Sitting</button>
+        <button class="btn-compass secondary" id="btnFlipFacing" disabled>↔ <span data-i18n="auto.f.211">สลับ</span> Facing / Sitting</button>
       </div>
       <div class="direction-breakdown" id="directionBreakdown">
-        <h5>ข้อมูลทิศที่วัดได้</h5>
-        <div style="color:var(--fg-faint)">เริ่มจากแผนที่หรือเข็มทิศ แล้วกดยืนยันเมื่อมั่นใจว่าเป็นทิศหน้าบ้านจริง</div>
+        <h5 data-i18n="auto.f.085">ข้อมูลทิศที่วัดได้</h5>
+        <div style="color:var(--fg-faint)" data-i18n="auto.f.086">เริ่มจากแผนที่หรือเข็มทิศ แล้วกดยืนยันเมื่อมั่นใจว่าเป็นทิศหน้าบ้านจริง</div>
       </div>
       <div class="compass-help">
-        <b>Tip:</b> หันหลังพิงประตูหน้าบ้าน · ถือมือถือขนานพื้น · ค่าที่ได้คือทิศที่บ้านหันออก<br/>
-        Bangkok declination ≈ <b>-0.7°</b> (แทบไม่ต้องแก้)
+        <b>Tip:</b> <span data-i18n="auto.f.204">หันหลังพิงประตูหน้าบ้าน · ถือมือถือขนานพื้น · ค่าที่ได้คือทิศที่บ้านหันออก</span><br/>
+        Bangkok declination ≈ <b>-0.7°</b> <span data-i18n="auto.f.205">(แทบไม่ต้องแก้)</span>
       </div>
     </div>
 
@@ -819,32 +819,32 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <h4 data-i18n="auto.f.013">地圖 Google Map · ปักหมุด 2 จุด</h4>
         <div class="map-controls">
           <button  class="map-btn active" id="modeWall" data-i18n="auto.f.014">🏠 ลากผนัง</button>
-          <button class="map-btn" id="modeHouse">◎ คลุมบ้าน</button>
-          <button class="map-btn house-action" id="btnHouseUndo" disabled>↶ ย้อนจุด</button>
-          <button class="map-btn house-action" id="btnHouseClose" disabled>✓ ปิดรูปบ้าน</button>
+          <button class="map-btn" id="modeHouse" data-i18n="auto.f.206">◎ คลุมบ้าน</button>
+          <button class="map-btn house-action" id="btnHouseUndo" disabled data-i18n="auto.f.207">↶ ย้อนจุด</button>
+          <button class="map-btn house-action" id="btnHouseClose" disabled data-i18n="auto.f.162">✓ ปิดรูปบ้าน</button>
           <button class="map-btn" id="btnGeolocate">📍 GPS</button>
-          <button class="map-btn" id="btnMapZoomIn">＋ ซูม</button>
-          <button class="map-btn" id="btnMapZoomOut">－ ย่อ</button>
-          <button class="map-btn" id="btnMapRoofZoom">🔍 หลังคา</button>
-          <button class="map-btn" id="btnMapExpand">⛶ เต็มจอ</button>
-        <button class="map-btn" id="btnLockHouseFromMap">鎖 ยืนยันทิศบ้าน</button>
+          <button class="map-btn" id="btnMapZoomIn" data-i18n="auto.f.208">＋ ซูม</button>
+          <button class="map-btn" id="btnMapZoomOut" data-i18n="auto.f.209">－ ย่อ</button>
+          <button class="map-btn" id="btnMapRoofZoom" data-i18n="auto.f.165">🔍 หลังคา</button>
+          <button class="map-btn" id="btnMapExpand" data-i18n="auto.f.164">⛶ เต็มจอ</button>
+        <button class="map-btn" id="btnLockHouseFromMap" data-i18n="auto.f.210">鎖 ยืนยันทิศบ้าน</button>
           <button  class="map-btn" id="btnClear" data-i18n="auto.f.017">↻ ล้าง</button>
         </div>
       </div>
       <div class="map-layer-controls" id="mapLayerControls" aria-label="เลือกชั้นข้อมูลฮวงจุ้ยบนแผนที่">
         <button class="map-layer-btn active" data-map-layer="m24">24山</button>
         <button class="map-layer-btn" data-map-layer="hex64">64卦</button>
-        <button class="map-layer-btn active" data-map-layer="year">ดาวปี</button>
-        <button class="map-layer-btn" data-map-layer="month">ดาวเดือน</button>
-        <button class="map-layer-btn" data-map-layer="day">ดาววัน</button>
-        <button class="map-layer-btn active" data-map-layer="hour">ดาวยาม</button>
+        <button class="map-layer-btn active" data-map-layer="year" data-i18n="auto.f.060">ดาวปี</button>
+        <button class="map-layer-btn" data-map-layer="month" data-i18n="auto.f.061">ดาวเดือน</button>
+        <button class="map-layer-btn" data-map-layer="day" data-i18n="auto.f.062">ดาววัน</button>
+        <button class="map-layer-btn active" data-map-layer="hour" data-i18n="auto.f.063">ดาวยาม</button>
         <button class="map-layer-btn active" data-map-layer="affliction">5/2/太歲</button>
       </div>
       <div class="map-fine-controls" aria-label="ปรับมุมผนังแบบละเอียด">
-        <div class="fine-title"><b>Fine Wall Fit</b><span id="wallFineStatus">ลากเส้น A→B ก่อน</span></div>
+        <div class="fine-title"><b>Fine Wall Fit</b><span id="wallFineStatus" data-i18n="auto.f.158">ลากเส้น A→B ก่อน</span></div>
         <div class="wall-angle-controls">
           <button class="wall-angle-btn" id="btnWallAngleMinus" disabled>-0.1°</button>
-          <output class="wall-angle-readout" id="wallFineAngleOut">ลากจากจุดเริ่มไปปลายผนัง</output>
+          <output class="wall-angle-readout" id="wallFineAngleOut" data-i18n="auto.f.160">ลากจากจุดเริ่มไปปลายผนัง</output>
           <button class="wall-angle-btn" id="btnWallAnglePlus" disabled>+0.1°</button>
         </div>
       </div>
@@ -853,13 +853,13 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
         <div class="mrb-cell"><b>Heading</b><span id="mrHeading">— °</span></div>
         <div class="mrb-cell"><b>Direction</b><span id="mrDirection">—</span></div>
         <div class="mrb-cell"><b>24 Mountain</b><span id="mr24Mtn" class="han">—</span></div>
-        <div class="mrb-cell"><b>หลังบ้าน</b><span id="mrHex64" class="han">—</span></div>
-        <div class="mrb-cell"><b data-i18n="auto.f.018">สถานะ</b><span id="mrVerdict">ยังไม่ยืนยัน</span></div>
+        <div class="mrb-cell"><b data-i18n="auto.f.212">หลังบ้าน</b><span id="mrHex64" class="han">—</span></div>
+        <div class="mrb-cell"><b data-i18n="auto.f.018">สถานะ</b><span id="mrVerdict" data-i18n="auto.f.153">ยังไม่ยืนยัน</span></div>
       </div>
       <div class="map-instr">
-        <b data-i18n="auto.f.019">🏠 ลากผนัง (แนะนำ):</b> <b data-i18n="auto.f.020">กด-ลากเส้น</b> ทาบขอบผนังหน้าบ้าน A→B · หลังสร้างเส้นแล้ว จับหยด A/B ค้างแล้วลากเพื่อย้าย ยืด หด หรือหมุนเส้น · ใช้ Fine Wall Fit ปรับปลาย B ทีละ 0.1° จนเส้นทองขนานผนัง · ลูกศรเขียวจุดกลาง = ทิศหันหน้า · เส้นเทา = ทิศหลัง<br/>
-        <b>◎ คลุมบ้าน:</b> แตะมุมหลังคาทีละจุด · จุดที่ 4 ขึ้นไประบบหาจุดกลางบ้านและวางวง 24 ขุนเขาให้ · กด ✓ ปิดรูปบ้านเมื่อครบมุม<br/>
-        <b data-i18n="auto.f.021">① จุดยืน → ② ทิศหันหน้า:</b> 2-marker mode (จุดยืน → จุดหน้าบ้าน)
+        <b data-i18n="auto.f.019">🏠 ลากผนัง (แนะนำ):</b> <b data-i18n="auto.f.020">กด-ลากเส้น</b> <span data-i18n="auto.f.213">ทาบขอบผนังหน้าบ้าน A→B · หลังสร้างเส้นแล้ว จับหยด A/B ค้างแล้วลากเพื่อย้าย ยืด หด หรือหมุนเส้น · ใช้ Fine Wall Fit ปรับปลาย B ทีละ 0.1° จนเส้นทองขนานผนัง · ลูกศรเขียวจุดกลาง = ทิศหันหน้า · เส้นเทา = ทิศหลัง</span><br/>
+        <b data-i18n="auto.f.214">◎ คลุมบ้าน:</b> <span data-i18n="auto.f.215">แตะมุมหลังคาทีละจุด · จุดที่ 4 ขึ้นไประบบหาจุดกลางบ้านและวางวง 24 ขุนเขาให้ · กด ✓ ปิดรูปบ้านเมื่อครบมุม</span><br/>
+        <b data-i18n="auto.f.021">① จุดยืน → ② ทิศหันหน้า:</b> 2-marker mode (<span data-i18n="auto.f.100">จุดยืน</span> → <span data-i18n="auto.f.217">จุดหน้าบ้าน</span>)
       </div>
     </div>
   </div>
@@ -867,93 +867,93 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   <div class="plan-card" id="planCard">
     <div class="plan-head">
       <div>
-        <h4>平面圖 Floor Plan Overlay · อัพแปลนบ้าน</h4>
-        <p>อัพรูปแปลน/ภาพบ้าน แล้ววางวง 24 ขุนเขา + ดาวเหินทับรูปได้ · ลากจุดกลางเพื่อวางไท่จี๋ · วงทิศอิง Facing จากการ์ดบนอัตโนมัติ</p>
+        <h4 data-i18n="auto.f.218">平面圖 Floor Plan Overlay · อัพแปลนบ้าน</h4>
+        <p data-i18n="auto.f.219">อัพรูปแปลน/ภาพบ้าน แล้ววางวง 24 ขุนเขา + ดาวเหินทับรูปได้ · ลากจุดกลางเพื่อวางไท่จี๋ · วงทิศอิง Facing จากการ์ดบนอัตโนมัติ</p>
       </div>
       <div class="plan-controls">
-        <label class="map-btn plan-file">อัพรูปแปลน
+        <label class="map-btn plan-file"><span data-i18n="auto.f.220">อัพรูปแปลน</span>
           <input id="planUpload" type="file" accept="image/*"/>
         </label>
-        <button class="map-btn" id="btnPlanReset">จัดกลาง</button>
+        <button class="map-btn" id="btnPlanReset" data-i18n="auto.f.221">จัดกลาง</button>
         <button class="map-btn" id="btnPlanRotL">↺ 90°</button>
         <button class="map-btn" id="btnPlanRotR">↻ 90°</button>
-        <button class="map-btn" id="btnPlanClear">ล้างรูป</button>
+        <button class="map-btn" id="btnPlanClear" data-i18n="auto.f.222">ล้างรูป</button>
       </div>
     </div>
     <div class="map-layer-controls plan-layer-controls" id="planLayerControls" aria-label="เลือกชั้นข้อมูลบนรูปแปลน">
       <button class="map-layer-btn active" data-map-layer="m24">24山</button>
       <button class="map-layer-btn" data-map-layer="hex64">64卦</button>
-      <button class="map-layer-btn active" data-map-layer="year">ดาวปี</button>
-      <button class="map-layer-btn" data-map-layer="month">ดาวเดือน</button>
-      <button class="map-layer-btn" data-map-layer="day">ดาววัน</button>
-      <button class="map-layer-btn active" data-map-layer="hour">ดาวยาม</button>
+      <button class="map-layer-btn active" data-map-layer="year" data-i18n="auto.f.060">ดาวปี</button>
+      <button class="map-layer-btn" data-map-layer="month" data-i18n="auto.f.061">ดาวเดือน</button>
+      <button class="map-layer-btn" data-map-layer="day" data-i18n="auto.f.062">ดาววัน</button>
+      <button class="map-layer-btn active" data-map-layer="hour" data-i18n="auto.f.063">ดาวยาม</button>
       <button class="map-layer-btn active" data-map-layer="affliction">5/2/太歲</button>
     </div>
     <div class="plan-luck-legend" aria-label="คำอธิบายสีดาวเหินบนแปลนบ้าน">
-      <div class="plan-luck-item"><i style="background:rgba(210,38,28,.28)"></i><div><b>แดงจาง</b><span>1 ศาสตร์หนุน</span></div></div>
-      <div class="plan-luck-item"><i style="background:rgba(210,38,28,.52)"></i><div><b>แดงกลาง</b><span>หลายศาสตร์หนุน</span></div></div>
-      <div class="plan-luck-item"><i style="background:rgba(210,38,28,.78)"></i><div><b>แดงเข้ม</b><span>ฉันทามติสูง</span></div></div>
-      <div class="plan-luck-item"><i style="background:rgba(140,140,140,.38)"></i><div><b>เทา</b><span>ไม่เด่น/ไม่หนุน</span></div></div>
-      <div class="plan-luck-item"><i style="background:repeating-linear-gradient(45deg,rgba(20,20,20,.72),rgba(20,20,20,.72) 4px,rgba(201,92,74,.55) 4px,rgba(201,92,74,.55) 8px)"></i><div><b>ขีดทับ</b><span>มีข้อห้าม</span></div></div>
+      <div class="plan-luck-item"><i style="background:rgba(210,38,28,.28)"></i><div><b data-i18n="auto.f.223">แดงจาง</b><span data-i18n="auto.f.224">1 ศาสตร์หนุน</span></div></div>
+      <div class="plan-luck-item"><i style="background:rgba(210,38,28,.52)"></i><div><b data-i18n="auto.f.225">แดงกลาง</b><span data-i18n="auto.f.226">หลายศาสตร์หนุน</span></div></div>
+      <div class="plan-luck-item"><i style="background:rgba(210,38,28,.78)"></i><div><b data-i18n="auto.f.227">แดงเข้ม</b><span data-i18n="auto.f.228">ฉันทามติสูง</span></div></div>
+      <div class="plan-luck-item"><i style="background:rgba(140,140,140,.38)"></i><div><b data-i18n="auto.f.229">เทา</b><span data-i18n="auto.f.230">ไม่เด่น/ไม่หนุน</span></div></div>
+      <div class="plan-luck-item"><i style="background:repeating-linear-gradient(45deg,rgba(20,20,20,.72),rgba(20,20,20,.72) 4px,rgba(201,92,74,.55) 4px,rgba(201,92,74,.55) 8px)"></i><div><b data-i18n="auto.f.231">ขีดทับ</b><span data-i18n="auto.f.232">มีข้อห้าม</span></div></div>
     </div>
     <div class="plan-star-legend" aria-label="คำอธิบายชั้นดาวบนแปลน">
-      <div class="plan-star-key"><i style="background:#8f7650"></i>ภู = ดาวภูเขา / คน / สุขภาพ</div>
-      <div class="plan-star-key"><i style="background:#3f78b8"></i>น้ำ = ดาวแม่น้ำ / ประตู / เงิน</div>
-      <div class="plan-star-key"><i style="background:#c8a44d"></i>ฐาน = ดาวฐาน / พื้นพลัง</div>
-      <div class="plan-star-key"><i style="background:#7a85dd"></i>สี 24山 = ธาตุของขุนเขา ไม่ใช่ความมงคล</div>
-      <div class="plan-star-key"><i style="background:#3f311f"></i>64卦 = ช่องละเอียด 5.625° สำหรับอ่าน pattern เพิ่ม</div>
+      <div class="plan-star-key"><i style="background:#8f7650"></i><span data-i18n="auto.f.233">ภู = ดาวภูเขา / คน / สุขภาพ</span></div>
+      <div class="plan-star-key"><i style="background:#3f78b8"></i><span data-i18n="auto.f.234">น้ำ = ดาวแม่น้ำ / ประตู / เงิน</span></div>
+      <div class="plan-star-key"><i style="background:#c8a44d"></i><span data-i18n="auto.f.235">ฐาน = ดาวฐาน / พื้นพลัง</span></div>
+      <div class="plan-star-key"><i style="background:#7a85dd"></i><span data-i18n="auto.f.236">สี 24山 = ธาตุของขุนเขา ไม่ใช่ความมงคล</span></div>
+      <div class="plan-star-key"><i style="background:#3f311f"></i><span data-i18n="auto.f.237">64卦 = ช่องละเอียด 5.625° สำหรับอ่าน pattern เพิ่ม</span></div>
     </div>
     <div class="plan-workbench" id="planLuopanControls" aria-label="ตัวกรองหล่อแกดิจิทัล">
-      <button class="plan-tool-btn active" data-luopan-layer="house"><b>宅</b>ดาวบ้าน</button>
-      <button class="plan-tool-btn active" data-luopan-layer="year"><b>年</b>ดาวปี</button>
-      <button class="plan-tool-btn" data-luopan-layer="month"><b>月</b>ดาวเดือน</button>
-      <button class="plan-tool-btn" data-luopan-layer="day"><b>日</b>ดาววัน</button>
-      <button class="plan-tool-btn active" data-luopan-layer="hour"><b>時</b>ดาวยาม</button>
+      <button class="plan-tool-btn active" data-luopan-layer="house"><b>宅</b><span data-i18n="auto.f.106">ดาวบ้าน</span></button>
+      <button class="plan-tool-btn active" data-luopan-layer="year"><b>年</b><span data-i18n="auto.f.060">ดาวปี</span></button>
+      <button class="plan-tool-btn" data-luopan-layer="month"><b>月</b><span data-i18n="auto.f.061">ดาวเดือน</span></button>
+      <button class="plan-tool-btn" data-luopan-layer="day"><b>日</b><span data-i18n="auto.f.062">ดาววัน</span></button>
+      <button class="plan-tool-btn active" data-luopan-layer="hour"><b>時</b><span data-i18n="auto.f.063">ดาวยาม</span></button>
       <button class="plan-tool-btn active" data-luopan-layer="qimen"><b>奇</b>QMDJ</button>
       <button class="plan-tool-btn struct active" data-luopan-layer="m24"><b>24</b>24山</button>
       <button class="plan-tool-btn struct" data-luopan-layer="hex64"><b>64</b>64卦</button>
-      <button class="plan-tool-btn danger active" data-luopan-layer="blocker"><b>煞</b>ข้อห้าม</button>
-      <div class="plan-tool-note"><b>ต้องล็อค 中 + Facing ก่อน</b> · แต่ละศาสตร์ยิงแดงโปร่งใสเท่ากัน แดงเข้ม = หลายศาสตร์หนุน ไม่ใช่สีอันตราย</div>
+      <button class="plan-tool-btn danger active" data-luopan-layer="blocker"><b>煞</b><span data-i18n="auto.f.238">ข้อห้าม</span></button>
+      <div class="plan-tool-note"><b data-i18n="auto.f.239">ต้องล็อค 中 + Facing ก่อน</b> · <span data-i18n="auto.f.240">แต่ละศาสตร์ยิงแดงโปร่งใสเท่ากัน แดงเข้ม = หลายศาสตร์หนุน ไม่ใช่สีอันตราย</span></div>
     </div>
     <div class="plan-tune">
       <div class="plan-field">
-        <label for="planRadius">รัศมีวง</label>
+        <label for="planRadius" data-i18n="auto.f.241">รัศมีวง</label>
         <input id="planRadius" type="range" min="80" max="520" value="260"/>
         <output id="planRadiusOut">260px</output>
       </div>
       <div class="plan-field">
-        <label for="planOpacity">ความเข้ม overlay</label>
+        <label for="planOpacity" data-i18n="auto.f.242">ความเข้ม overlay</label>
         <input id="planOpacity" type="range" min="35" max="100" value="88"/>
         <output id="planOpacityOut">88%</output>
       </div>
       <div class="plan-field">
-        <label>สถานะ</label>
-        <output id="planQuickStatus">ยังไม่ได้อัพรูป</output>
+        <label data-i18n="auto.f.090">สถานะ</label>
+        <output id="planQuickStatus" data-i18n="auto.f.103">ยังไม่ได้อัพรูป</output>
       </div>
     </div>
     <div class="plan-stage" id="planStage">
       <canvas id="planCanvas" width="1200" height="820"></canvas>
-      <div class="plan-empty" id="planEmpty">อัพรูปแปลนบ้านหรือ screenshot จากมือถือ<br/>จากนั้นลากจุดกลาง 中 และปรับรัศมีวงให้ครอบพื้นที่บ้าน</div>
+      <div class="plan-empty" id="planEmpty" data-i18n="auto.f.243">อัพรูปแปลนบ้านหรือ screenshot จากมือถือ<br/>จากนั้นลากจุดกลาง 中 และปรับรัศมีวงให้ครอบพื้นที่บ้าน</div>
     </div>
     <div class="plan-inspector" id="planInspector">
       <div class="pi-hero">
         <div class="pi-badge gold" id="piBadge">—</div>
         <div>
-          <div class="pi-title" id="piTitle">แตะโซนสีบนวงแปลนเพื่อดูรายละเอียด</div>
-          <div class="pi-sub" id="piSub">ดาวภูเขา · ดาวน้ำ · ดาวฐาน · เหตุผล v1.2</div>
+          <div class="pi-title" id="piTitle" data-i18n="auto.f.123">แตะโซนสีบนวงแปลนเพื่อดูรายละเอียด</div>
+          <div class="pi-sub" id="piSub" data-i18n="auto.f.124">ดาวภูเขา · ดาวน้ำ · ดาวฐาน · เหตุผล v1.2</div>
           <div class="pi-stars" id="piStars"></div>
         </div>
       </div>
       <div class="pi-section">
-        <h5>เหตุผล / คำเตือน</h5>
-        <div class="pi-list" id="piReasons"><div>อัพรูปแปลนแล้วแตะทิศที่ต้องการอ่าน</div></div>
+        <h5 data-i18n="auto.f.244">เหตุผล / คำเตือน</h5>
+        <div class="pi-list" id="piReasons"><div data-i18n="auto.f.125">อัพรูปแปลนแล้วแตะทิศที่ต้องการอ่าน</div></div>
       </div>
       <div class="pi-section">
-        <h5>เหมาะกับอะไร</h5>
+        <h5 data-i18n="auto.f.245">เหมาะกับอะไร</h5>
         <div class="pi-usage" id="piUsage"></div>
       </div>
     </div>
-    <div class="plan-status" id="planStatus">Tip: ลากจุด 中 เพื่อย้ายกลางบ้าน · แตะโซนสีเพื่ออ่านดาว/คะแนน/การใช้งาน · ทิศวงอิง Facing จากการ์ดบน</div>
+    <div class="plan-status" id="planStatus">Tip: <span data-i18n="auto.f.246">ลากจุด 中 เพื่อย้ายกลางบ้าน · แตะโซนสีเพื่ออ่านดาว/คะแนน/การใช้งาน · ทิศวงอิง Facing จากการ์ดบน</span></div>
   </div>
 </div>
 
@@ -1002,7 +1002,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   const flow = document.createElement('div');
   flow.className = 'fs-workflow';
 
-  const s1 = step(1, '坐向', 'หาทิศบ้าน · <span class="tc">Facing</span>', 'วัดจากแผนที่เป็นหลัก ใช้เข็มทิศมือถือเป็นตัวช่วย หรือกรอกองศาที่วัดเอง แล้วกดยืนยันว่าทิศนี้คือหน้าบ้านจริง', 'INPUT');
+  const s1 = step(1, '坐向', `${_fstx('auto.f.022','หาทิศบ้าน')} · <span class="tc">Facing</span>`, _fstx('auto.f.030','วัดจากแผนที่เป็นหลัก ใช้เข็มทิศมือถือเป็นตัวช่วย หรือกรอกองศาที่วัดเอง แล้วกดยืนยันว่าทิศนี้คือหน้าบ้านจริง'), 'INPUT');
   const measure = document.createElement('div');
   measure.className = 'fs-measure-grid';
   measure.appendChild(mapCard);
@@ -1013,24 +1013,24 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   cta.className = 'fs-luopan-cta fs-lock-card';
   cta.innerHTML = `
     <div>
-      <div class="fs-luopan-cta-title">สถานะทิศบ้าน <span class="tc">坐向</span></div>
-      <div class="fs-luopan-cta-meta" id="luopanCtaMeta">ยังไม่ได้ยืนยันทิศบ้าน · ลากผนังบนแผนที่ ใช้เข็มทิศ หรือกรอกองศาเองก่อน</div>
+      <div class="fs-luopan-cta-title">${_fstx('auto.f.031','สถานะทิศบ้าน')} <span class="tc">坐向</span></div>
+      <div class="fs-luopan-cta-meta" id="luopanCtaMeta">${_fstx('auto.f.032','ยังไม่ได้ยืนยันทิศบ้าน · ลากผนังบนแผนที่ ใช้เข็มทิศ หรือกรอกองศาเองก่อน')}</div>
       <div class="fs-lock-summary" id="directionLockSummary">
         <div class="fs-lock-pill"><b>Facing</b><span>—</span></div>
         <div class="fs-lock-pill"><b>Sitting</b><span>—</span></div>
-        <div class="fs-lock-pill"><b>24 ซาน</b><span>—</span></div>
-        <div class="fs-lock-pill"><b>แหล่งที่มา</b><span>—</span></div>
+        <div class="fs-lock-pill"><b>${_fstx('auto.f.033','24 ซาน')}</b><span>—</span></div>
+        <div class="fs-lock-pill"><b>${_fstx('auto.f.034','แหล่งที่มา')}</b><span>—</span></div>
       </div>
-      <div class="fs-measure-note"><b>หลักสำคัญ:</b> ถ้ายังไม่ยืนยัน ระบบจะแสดงแค่ค่าที่วัดได้ ไม่เปิดผัง 9 ช่องเป็นคำแนะนำ</div>
+      <div class="fs-measure-note"><b>${_fstx('auto.f.035','หลักสำคัญ:')}</b> ${_fstx('auto.f.036','ถ้ายังไม่ยืนยัน ระบบจะแสดงแค่ค่าที่วัดได้ ไม่เปิดผัง 9 ช่องเป็นคำแนะนำ')}</div>
     </div>
     <div class="fs-cta-actions">
-      <button type="button" id="btnOpenLuopanFull" class="disabled">รอยืนยันทิศ</button>
-      <button type="button" id="btnOpenLuopanPage" class="disabled btn-luopan-page"><span class="tc">羅</span> เปิดหล่อแกเต็ม</button>
+      <button type="button" id="btnOpenLuopanFull" class="disabled">${_fstx('auto.f.037','รอยืนยันทิศ')}</button>
+      <button type="button" id="btnOpenLuopanPage" class="disabled btn-luopan-page"><span class="tc">羅</span> ${_fstx('auto.f.038','เปิดหล่อแกเต็ม')}</button>
     </div>
   `;
   s1.body.appendChild(cta);
 
-  const s2 = step(2, '九宮', 'พรีวิว 9 ช่องหลังล็อกทิศ · <span class="tc">Flying Star</span>', 'ใช้ดูภาพรวมเบื้องต้นของบ้านหลังนี้หลังยืนยันองศาแล้ว ยังไม่ใช่คำตัดสินวางประตู น้ำ เตียง หรือเตา', 'PREVIEW');
+  const s2 = step(2, '九宮', `${_fstx('auto.f.039','พรีวิว 9 ช่องหลังล็อกทิศ')} · <span class="tc">Flying Star</span>`, _fstx('auto.f.040','ใช้ดูภาพรวมเบื้องต้นของบ้านหลังนี้หลังยืนยันองศาแล้ว ยังไม่ใช่คำตัดสินวางประตู น้ำ เตียง หรือเตา'), 'PREVIEW');
   s2.wrap.classList.add('fs-preview-step');
   if(topbar) s2.body.appendChild(topbar);
   const houseLayout = document.createElement('div');
@@ -1038,7 +1038,7 @@ footer p .han{font-family:var(--tc);color:var(--gold);margin:0 8px;}
   houseLayout.appendChild(palaceGrid);
   s2.body.appendChild(houseLayout);
 
-  const s4 = step(3, '流年流月', 'คำเตือนเวลาแบบย่อ · <span class="tc">Timing</span>', 'ชั้นนี้เป็นคำเตือนเบื้องต้นของปี เดือน วัน ยาม เพื่อให้รู้ว่าควรระวังทิศไหนก่อนอ่านละเอียด', 'LIVE');
+  const s4 = step(3, '流年流月', `${_fstx('auto.f.041','คำเตือนเวลาแบบย่อ')} · <span class="tc">Timing</span>`, _fstx('auto.f.042','ชั้นนี้เป็นคำเตือนเบื้องต้นของปี เดือน วัน ยาม เพื่อให้รู้ว่าควรระวังทิศไหนก่อนอ่านละเอียด'), 'LIVE');
   s4.wrap.classList.add('fs-preview-step');
   const timingLayout = document.createElement('div');
   timingLayout.className = 'fs-timing-layout';
@@ -1074,26 +1074,26 @@ document.querySelectorAll('.theme-toggle button').forEach(b=>b.addEventListener(
 const PALACE_LAYOUT = [['SE','S','SW'],['E','C','W'],['NE','N','NW']];
 const LOSHU_BASE = { SE:4,S:9,SW:2, E:3,C:5,W:7, NE:8,N:1,NW:6 };
 const PALACE_INFO = {
-  N:  { tri:'坎', pinyin:'Kǎn',  el:'water',th:'อาชีพ · ปัญญา · ลูกชายกลาง' },
-  NE: { tri:'艮', pinyin:'Gèn',  el:'earth',th:'ทรัพย์ · ภูเขา · ลูกชายเล็ก' },
-  E:  { tri:'震', pinyin:'Zhèn', el:'wood', th:'การเคลื่อน · ทะเลาะ · ลูกชายโต' },
-  SE: { tri:'巽', pinyin:'Xùn',  el:'wood', th:'ความรัก · ปัญญา · ลม' },
-  S:  { tri:'離', pinyin:'Lí',   el:'fire', th:'ชื่อเสียง · อนาคต · ลูกสาวกลาง' },
-  SW: { tri:'坤', pinyin:'Kūn',  el:'earth',th:'มารดา · ป่วย · คู่ครอง' },
-  W:  { tri:'兌', pinyin:'Duì',  el:'metal',th:'เด็ก · เริงร่า · ลูกสาวเล็ก' },
-  NW: { tri:'乾', pinyin:'Qián', el:'metal',th:'ผู้ใหญ่ช่วย · บิดา · ฟ้า' },
-  C:  { tri:'中', pinyin:'Zhōng',el:'earth',th:'ศูนย์กลาง · จุดสมดุล' }
+  N:  { tri:'坎', pinyin:'Kǎn',  el:'water',th:'อาชีพ · ปัญญา · ลูกชายกลาง', thKey:'auto.f.247' },
+  NE: { tri:'艮', pinyin:'Gèn',  el:'earth',th:'ทรัพย์ · ภูเขา · ลูกชายเล็ก', thKey:'auto.f.248' },
+  E:  { tri:'震', pinyin:'Zhèn', el:'wood', th:'การเคลื่อน · ทะเลาะ · ลูกชายโต', thKey:'auto.f.249' },
+  SE: { tri:'巽', pinyin:'Xùn',  el:'wood', th:'ความรัก · ปัญญา · ลม', thKey:'auto.f.250' },
+  S:  { tri:'離', pinyin:'Lí',   el:'fire', th:'ชื่อเสียง · อนาคต · ลูกสาวกลาง', thKey:'auto.f.251' },
+  SW: { tri:'坤', pinyin:'Kūn',  el:'earth',th:'มารดา · ป่วย · คู่ครอง', thKey:'auto.f.252' },
+  W:  { tri:'兌', pinyin:'Duì',  el:'metal',th:'เด็ก · เริงร่า · ลูกสาวเล็ก', thKey:'auto.f.253' },
+  NW: { tri:'乾', pinyin:'Qián', el:'metal',th:'ผู้ใหญ่ช่วย · บิดา · ฟ้า', thKey:'auto.f.254' },
+  C:  { tri:'中', pinyin:'Zhōng',el:'earth',th:'ศูนย์กลาง · จุดสมดุล', thKey:'auto.f.255' }
 };
 const STAR_INFO = {
-  1:{color:'白',th:'ขาว · ปัญญา/ชัยชนะ',el:'water',vibe:'auspicious',short:'勝',meaning:'การพัฒนา · ความรู้ · ความเป็นผู้นำ'},
-  2:{color:'黑',th:'ดำ · ป่วย/ทุกข์',el:'earth',vibe:'inauspicious',short:'病',meaning:'⚠️ โรคภัย · ลูกหลาน/มารดาเป็นพิเศษ'},
-  3:{color:'碧',th:'หยกเขียว · เถียง',el:'wood',vibe:'inauspicious',short:'鬥',meaning:'⚠️ ทะเลาะ · ฟ้องร้อง · ความขัดแย้ง'},
-  4:{color:'綠',th:'เขียว · รัก/วัฒนธรรม',el:'wood',vibe:'auspicious',short:'文',meaning:'✨ การงาน · การศึกษา · ความรัก · เกียรติ'},
-  5:{color:'黃',th:'เหลือง · เคราะห์ใหญ่',el:'earth',vibe:'critical',short:'凶',meaning:'☠️ ห้ามรบกวน · ห้ามขุด · ห้ามตอกตะปู · เคราะห์ใหญ่'},
-  6:{color:'白',th:'ขาว · ผู้ใหญ่ช่วย',el:'metal',vibe:'auspicious',short:'貴',meaning:'✨ noble person · เซ็นสัญญา · ดึงผู้สนับสนุน'},
-  7:{color:'赤',th:'แดง · ขโมย/หลอก',el:'metal',vibe:'inauspicious',short:'盜',meaning:'⚠️ ขโมย · เลือดตกยางออก · ระวังเจรจา'},
-  8:{color:'白',th:'ขาว · ทรัพย์',el:'earth',vibe:'auspicious',short:'財',meaning:'✨✨ ทรัพย์ · เก็บเงิน · วางตู้เซฟ'},
-  9:{color:'紫',th:'ม่วง · อนาคต',el:'fire',vibe:'auspicious',short:'未',meaning:'✨ ชื่อเสียง · บุญลาภที่จะมา · ดาวเด่นยุค 9'}
+  1:{color:'白',th:'ขาว · ปัญญา/ชัยชนะ',el:'water',vibe:'auspicious',short:'勝',meaning:'การพัฒนา · ความรู้ · ความเป็นผู้นำ',thKey:'auto.f.256',meaningKey:'auto.f.265'},
+  2:{color:'黑',th:'ดำ · ป่วย/ทุกข์',el:'earth',vibe:'inauspicious',short:'病',meaning:'⚠️ โรคภัย · ลูกหลาน/มารดาเป็นพิเศษ',thKey:'auto.f.257',meaningKey:'auto.f.266'},
+  3:{color:'碧',th:'หยกเขียว · เถียง',el:'wood',vibe:'inauspicious',short:'鬥',meaning:'⚠️ ทะเลาะ · ฟ้องร้อง · ความขัดแย้ง',thKey:'auto.f.258',meaningKey:'auto.f.267'},
+  4:{color:'綠',th:'เขียว · รัก/วัฒนธรรม',el:'wood',vibe:'auspicious',short:'文',meaning:'✨ การงาน · การศึกษา · ความรัก · เกียรติ',thKey:'auto.f.259',meaningKey:'auto.f.268'},
+  5:{color:'黃',th:'เหลือง · เคราะห์ใหญ่',el:'earth',vibe:'critical',short:'凶',meaning:'☠️ ห้ามรบกวน · ห้ามขุด · ห้ามตอกตะปู · เคราะห์ใหญ่',thKey:'auto.f.260',meaningKey:'auto.f.269'},
+  6:{color:'白',th:'ขาว · ผู้ใหญ่ช่วย',el:'metal',vibe:'auspicious',short:'貴',meaning:'✨ noble person · เซ็นสัญญา · ดึงผู้สนับสนุน',thKey:'auto.f.261',meaningKey:'auto.f.270'},
+  7:{color:'赤',th:'แดง · ขโมย/หลอก',el:'metal',vibe:'inauspicious',short:'盜',meaning:'⚠️ ขโมย · เลือดตกยางออก · ระวังเจรจา',thKey:'auto.f.262',meaningKey:'auto.f.271'},
+  8:{color:'白',th:'ขาว · ทรัพย์',el:'earth',vibe:'auspicious',short:'財',meaning:'✨✨ ทรัพย์ · เก็บเงิน · วางตู้เซฟ',thKey:'auto.f.263',meaningKey:'auto.f.272'},
+  9:{color:'紫',th:'ม่วง · อนาคต',el:'fire',vibe:'auspicious',short:'未',meaning:'✨ ชื่อเสียง · บุญลาภที่จะมา · ดาวเด่นยุค 9',thKey:'auto.f.264',meaningKey:'auto.f.273'}
 };
 const FS_V12_STAR_SCORE = { 1:14, 2:-16, 3:-8, 4:7, 5:-28, 6:10, 7:-13, 8:10, 9:24 };
 const FS_V12_POSITION_WEIGHT = { water:1.2, mountain:1.0, base:.35 };
@@ -1196,6 +1196,24 @@ function fsEsc(v){
   return String(v ?? '').replace(/[&<>"']/g, ch => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
   }[ch]));
+}
+/* 📜 tx helper · i18n for JS-rendered strings */
+function _fstx(k, fb){
+  const t = window.HK_I18N && window.HK_I18N[k];
+  if (!t) return fb;
+  const lang = document.documentElement.getAttribute('data-lang')||'th';
+  return t[lang] || t.th || fb;
+}
+/* 📜 dir-name key maps · render-time translation only — the data tables (COMPASS_DIRS/DIR_NAMES/dirThaiShort) stay logic-only */
+const FS_DIR_NAME_KEY = { N:'auto.f.274', NE:'auto.f.275', E:'auto.f.276', SE:'auto.f.277', S:'auto.f.278', SW:'auto.f.279', W:'auto.f.280', NW:'auto.f.281' };
+const FS_DIR_FULL_KEY = { N:'auto.f.282', NE:'auto.f.283', E:'auto.f.284', SE:'auto.f.285', S:'auto.f.286', SW:'auto.f.287', W:'auto.f.288', NW:'auto.f.289' };
+const FS_DIR_SHORT_KEY = { N:'auto.f.311', NE:'auto.f.312', E:'auto.f.313', SE:'auto.f.314', S:'auto.f.315', SW:'auto.f.316', W:'auto.f.317', NW:'auto.f.318', C:'auto.f.319' };
+/* 📜 month-abbrev display helper · display-only, does not touch tf.date logic */
+function _fsMonthShort(date){
+  const lang = document.documentElement.getAttribute('data-lang')||'th';
+  const locale = lang === 'zh' ? 'zh-TW' : lang === 'en' ? 'en-US' : 'th-TH';
+  try{ return new Intl.DateTimeFormat(locale, { month:'short' }).format(date); }
+  catch(e){ return ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][date.getMonth()+1]; }
 }
 const COMPASS_DIRS = [
   {dir:'N', deg:0, th:'เหนือ'}, {dir:'NE', deg:45, th:'ตะวันออกเฉียงเหนือ'},
@@ -1688,7 +1706,7 @@ function renderGrid(){
   const threeKillDir = getThreeKillings(tf.year);
   const fiveYellowDir = findStarPosition(gridYear, 5);
 
-  const monthThai = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'][tf.date.getMonth()+1];
+  const monthThai = _fsMonthShort(tf.date);
   document.getElementById('hdContext').textContent = `${tf.year} · ${monthThai}`;
   document.getElementById('hdPeriod').textContent = `${periodCenter} · ${house.mountain.code}`;
   document.getElementById('hdYear').textContent = yearCenter;
@@ -1697,9 +1715,9 @@ function renderGrid(){
 
   document.getElementById('npPeriod').textContent = periodCenter;
   document.getElementById('npYear').textContent = yearCenter + STAR_INFO[yearCenter].color;
-  document.getElementById('npYearTheme').textContent = STAR_INFO[yearCenter].short + ' ' + STAR_INFO[yearCenter].th.split('·')[0].trim();
+  document.getElementById('npYearTheme').textContent = STAR_INFO[yearCenter].short + ' ' + _fstx(STAR_INFO[yearCenter].thKey, STAR_INFO[yearCenter].th).split('·')[0].trim();
   document.getElementById('npMonth').textContent = monthCenter + STAR_INFO[monthCenter].color;
-  document.getElementById('npMonthTheme').textContent = STAR_INFO[monthCenter].vibe === 'critical' ? '凶 ระวังใหญ่' : STAR_INFO[monthCenter].vibe === 'auspicious' ? '吉 ดี' : '凶 ระวัง';
+  document.getElementById('npMonthTheme').textContent = STAR_INFO[monthCenter].vibe === 'critical' ? _fstx('auto.f.047','凶 ระวังใหญ่') : STAR_INFO[monthCenter].vibe === 'auspicious' ? _fstx('auto.f.048','吉 ดี') : _fstx('auto.f.049','凶 ระวัง');
   document.getElementById('npDay').textContent = dayCenter + STAR_INFO[dayCenter].color;
   document.getElementById('npShichen').textContent = `${shichen.han} ${shichen.range}`;
 
@@ -1722,10 +1740,10 @@ function renderGrid(){
       if(dir === activeDir) cell.classList.add('active');
       const info = PALACE_INFO[dir];
       const tags = [];
-      if(dir === taiSuiDir) tags.push('<span class="warn-tag tai">ไท่</span>');
-      if(dir === threeKillDir) tags.push('<span class="warn-tag kill">สามชะ</span>');
-      if(yearStar === 5) tags.push('<span class="warn-tag fy">5เหลือง</span>');
-      if([1,6,8,9].includes(yearStar) && dir !== 'C' && cellGrade.color !== 'red') tags.push('<span class="warn-tag aus">ดี</span>');
+      if(dir === taiSuiDir) tags.push(`<span class="warn-tag tai">${_fstx('auto.f.050','ไท่')}</span>`);
+      if(dir === threeKillDir) tags.push(`<span class="warn-tag kill">${_fstx('auto.f.051','สามชะ')}</span>`);
+      if(yearStar === 5) tags.push(`<span class="warn-tag fy">${_fstx('auto.f.052','5เหลือง')}</span>`);
+      if([1,6,8,9].includes(yearStar) && dir !== 'C' && cellGrade.color !== 'red') tags.push(`<span class="warn-tag aus">${_fstx('auto.f.053','ดี')}</span>`);
       
       // 64 Hex layer — combine period + year stars (mountain · water proxy)
       let hexHtml = '';
@@ -1785,18 +1803,18 @@ function renderGrid(){
         ${hexHtml}
         <div class="pcell-top">
           <div>
-            <div class="pcell-dir-main"><b>${fsEsc(dir)}</b> · ${fsEsc(dirThaiShort(dir))}</div>
+            <div class="pcell-dir-main"><b>${fsEsc(dir)}</b> · ${fsEsc(_fstx(FS_DIR_SHORT_KEY[dir], dirThaiShort(dir)))}</div>
             <div class="pcell-dir-sub">${fsEsc(info.tri)} ${fsEsc(info.pinyin)}</div>
           </div>
           <span class="pcell-luck ${fsEsc(cellGrade.color || 'gold')}" title="${fsEsc(cellGrade.verdict)} · ${fsEsc(cellGrade.riskLevel)}">${fsEsc(planColorThai(cellGrade.color).split(' · ')[0])}</span>
         </div>
         <div class="stars-quad">
-          <div class="star-box star-period" title="山 ดาวภูเขา · คน/สุขภาพ · จาก Sitting ${fsEsc(house.sittingMountain.code)} / Period ${periodCenter}"><b>${mountainStar}</b><small>ภู</small></div>
-          <div class="star-box star-year" title="向/水 ดาวแม่น้ำ · ประตู/เงิน · จาก Facing ${fsEsc(house.mountain.code)} / Period ${periodCenter}"><b>${waterStar}</b><small>น้ำ</small></div>
-          <div class="star-box star-base" title="基 ดาวฐาน · พื้นพลังของวัง"><b>${baseStar}</b><small>ฐาน</small></div>
+          <div class="star-box star-period" title="山 ${_fstx('auto.f.056','ดาวภูเขา · คน/สุขภาพ · จาก')} Sitting ${fsEsc(house.sittingMountain.code)} / Period ${periodCenter}"><b>${mountainStar}</b><small>${_fstx('auto.f.054','ภู')}</small></div>
+          <div class="star-box star-year" title="向/水 ${_fstx('auto.f.057','ดาวแม่น้ำ · ประตู/เงิน · จาก')} Facing ${fsEsc(house.mountain.code)} / Period ${periodCenter}"><b>${waterStar}</b><small>${_fstx('auto.f.025','น้ำ')}</small></div>
+          <div class="star-box star-base" title="基 ${_fstx('auto.f.058','ดาวฐาน · พื้นพลังของวัง')}"><b>${baseStar}</b><small>${_fstx('auto.f.055','ฐาน')}</small></div>
           <div class="star-time-row">
-            <span class="star-num star-month" title="月 ดาวเดือน">${gridMonth[dir]}<small>月</small></span>
-            <span class="star-num star-day" title="日 ดาววัน">${gridDay[dir]}<small>日</small></span>
+            <span class="star-num star-month" title="月 ${_fstx('auto.f.061','ดาวเดือน')}">${gridMonth[dir]}<small>月</small></span>
+            <span class="star-num star-day" title="日 ${_fstx('auto.f.062','ดาววัน')}">${gridDay[dir]}<small>日</small></span>
           </div>
         </div>
         ${tags.length > 0 ? `<div class="pcell-warn">${tags.join('')}</div>` : ''}
@@ -1837,15 +1855,15 @@ function renderWarnings(taiSui, threeKill, fiveYellow){
   document.getElementById('warningList').innerHTML = `
     <div class="warning-item tai">
       <span class="ic">太歲</span>
-      <span>ไท่ซุ่ย <b>${taiSui}</b> · ห้ามขุด/ตอก/รบกวนทิศนี้ · ห้ามนั่งหันหลังใส่</span>
+      <span>${_fstx('auto.f.064','ไท่ซุ่ย')} <b>${taiSui}</b> · ${_fstx('auto.f.065','ห้ามขุด/ตอก/รบกวนทิศนี้ · ห้ามนั่งหันหลังใส่')}</span>
     </div>
     <div class="warning-item kill">
       <span class="ic">三煞</span>
-      <span>3 ชะ <b>${threeKill}</b> · ห้ามนั่งหันหน้าใส่ทิศนี้ · ห้าม renovate</span>
+      <span>${_fstx('auto.f.066','3 ชะ')} <b>${threeKill}</b> · ${_fstx('auto.f.067','ห้ามนั่งหันหน้าใส่ทิศนี้ · ห้าม renovate')}</span>
     </div>
     <div class="warning-item fy">
       <span class="ic">五黃</span>
-      <span>5 เหลือง <b>${fiveYellow}</b> · ห้ามรบกวน · วางโลหะ/นาฬิกาทอง ลด</span>
+      <span>${_fstx('auto.f.068','5 เหลือง')} <b>${fiveYellow}</b> · ${_fstx('auto.f.069','ห้ามรบกวน · วางโลหะ/นาฬิกาทอง ลด')}</span>
     </div>
   `;
 }
@@ -1890,7 +1908,7 @@ function renderPalaceDetail(dir, gY, gM, gD, gP, gMountain, gWater, house){
     if(items){
       mansionSection = `
         <div class="pdetail-meaning" style="background:rgba(127,168,105,.04);padding:12px;border-radius:8px;margin-top:10px;border-top:none;">
-          <b style="color:var(--gold-bright);margin-bottom:8px;display:block;">🏛 8 Mansions ของแต่ละคน:</b>
+          <b style="color:var(--gold-bright);margin-bottom:8px;display:block;">🏛 8 Mansions ${_fstx('auto.f.070','ของแต่ละคน:')}</b>
           ${items}
         </div>`;
     }
@@ -1902,14 +1920,14 @@ function renderPalaceDetail(dir, gY, gM, gD, gP, gMountain, gWater, house){
     if(here.length){
       peopleSection = `
         <div class="pdetail-meaning" style="background:rgba(200,164,77,.06);padding:12px;border-radius:8px;margin-top:10px;border-top:none;">
-          <b style="color:var(--gold-bright);">👥 อยู่ห้องนี้:</b> ${here.map(p=>fsEsc(p.name)).join(' · ')}
+          <b style="color:var(--gold-bright);">👥 ${_fstx('auto.f.071','อยู่ห้องนี้:')}</b> ${here.map(p=>fsEsc(p.name)).join(' · ')}
         </div>`;
     }
   }
   
   document.getElementById('palaceDetail').innerHTML = `
     <h5><span class="tc">${info.tri}</span> ${dir} · ${info.pinyin}</h5>
-    <div class="meta">${info.el} · ${info.th}</div>
+    <div class="meta">${info.el} · ${_fstx(info.thKey, info.th)}</div>
     <div class="pdetail-grid">
       <div class="pdetail-cell"><b>山 Mountain</b><span class="han">${mountainStar}${STAR_INFO[mountainStar].color}</span></div>
       <div class="pdetail-cell"><b>水 Water / Facing</b><span class="han">${waterStar}${STAR_INFO[waterStar].color}</span></div>
@@ -1918,10 +1936,10 @@ function renderPalaceDetail(dir, gY, gM, gD, gP, gMountain, gWater, house){
       <div class="pdetail-cell"><b>日 Day</b><span class="han">${dayStar}${STAR_INFO[dayStar].color}</span></div>
     </div>
     <div class="pdetail-meaning">
-      <b style="color:var(--gold-bright)">ผังบ้าน:</b>
+      <b style="color:var(--gold-bright)">${_fstx('auto.f.072','ผังบ้าน:')}</b>
       Facing ${house ? fsEsc(house.mountain.code + ' ' + house.mountain.h + ' · ' + Math.round(house.facingDeg * 10) / 10 + '°') : '—'} · Period ${house ? fsEsc(house.period) : '—'}<br/>
-      <b style="color:var(--gold-bright)">ดาวประจำปีในทิศนี้:</b><br/>
-      <i>${yStar.th}</i> · ${yStar.meaning}
+      <b style="color:var(--gold-bright)">${_fstx('auto.f.073','ดาวประจำปีในทิศนี้:')}</b><br/>
+      <i>${_fstx(yStar.thKey, yStar.th)}</i> · ${_fstx(yStar.meaningKey, yStar.meaning)}
     </div>
     ${hexSection}
     ${mansionSection}
@@ -1989,20 +2007,20 @@ function loadSavedHouseInputs(showStatus=true){
   }
   syncHouseMountainFromDegree(false);
   const st = document.getElementById('houseSaveStatus');
-  if(showStatus && st) st.textContent = hasAny ? 'โหลดบ้านที่บันทึกไว้แล้ว' : 'ยังไม่มีบ้านที่บันทึกไว้';
+  if(showStatus && st) st.textContent = hasAny ? _fstx('auto.f.290','โหลดบ้านที่บันทึกไว้แล้ว') : _fstx('auto.f.291','ยังไม่มีบ้านที่บันทึกไว้');
   return { hasAny, hasPeriod };
 }
 function saveHouseInputs(){
   try{
     const rawFacing = String(document.getElementById('houseFacingDeg')?.value ?? '').trim();
     localStorage.setItem('hk-fs-house', JSON.stringify({
-      name: String(document.getElementById('houseName')?.value || '').trim() || 'บ้านของฉัน',
+      name: String(document.getElementById('houseName')?.value || '').trim() || _fstx('auto.f.296','บ้านของฉัน'),
       facingDeg: rawFacing === '' ? null : normalizeDeg(rawFacing),
       constructionYear: Number(document.getElementById('houseConstructionYear').value),
       period: Number(document.getElementById('housePeriod').value)
     }));
     const st = document.getElementById('houseSaveStatus');
-    if(st) st.textContent = 'บันทึกแล้วในเครื่องนี้';
+    if(st) st.textContent = _fstx('auto.f.292','บันทึกแล้วในเครื่องนี้');
   }catch(e){}
 }
 function syncHouseMountainFromDegree(save=true){
@@ -2041,14 +2059,14 @@ function setHouseFacingDraftFromDegree(deg, source='map'){
   syncHouseMountainFromDegree(false);
   updateLuopanCta(normalized);
   const st = document.getElementById('houseSaveStatus');
-  if(st && !houseDirectionLocked) st.textContent = `วัดจาก${getDirectionSourceLabel(source)}แล้ว · กดยืนยันทิศบ้านเพื่อใช้ค่านี้`;
+  if(st && !houseDirectionLocked) st.textContent = _fstx('auto.f.293','วัดจาก{src}แล้ว · กดยืนยันทิศบ้านเพื่อใช้ค่านี้').replace('{src}', getDirectionSourceLabel(source));
 }
 function getDirectionSourceLabel(source){
-  if(source === 'map') return 'แผนที่';
-  if(source === 'compass') return 'เข็มทิศมือถือ';
-  if(source === 'manual') return 'กรอกเอง';
-  if(source === 'saved') return 'ข้อมูลที่บันทึก';
-  return 'ยังไม่ระบุ';
+  if(source === 'map') return _fstx('auto.f.075','แผนที่');
+  if(source === 'compass') return _fstx('auto.f.076','เข็มทิศมือถือ');
+  if(source === 'manual') return _fstx('auto.f.077','กรอกเอง');
+  if(source === 'saved') return _fstx('auto.f.078','ข้อมูลที่บันทึก');
+  return _fstx('auto.f.079','ยังไม่ระบุ');
 }
 function setFengshuiPreviewVisible(locked){
   const flow = document.querySelector('.fs-workflow');
@@ -2063,8 +2081,8 @@ function renderDirectionLockSummary(deg){
     summary.innerHTML = `
       <div class="fs-lock-pill"><b>Facing</b><span>—</span></div>
       <div class="fs-lock-pill"><b>Sitting</b><span>—</span></div>
-      <div class="fs-lock-pill"><b>24 ซาน</b><span>—</span></div>
-      <div class="fs-lock-pill"><b>แหล่งที่มา</b><span>—</span></div>
+      <div class="fs-lock-pill"><b>${_fstx('auto.f.033','24 ซาน')}</b><span>—</span></div>
+      <div class="fs-lock-pill"><b>${_fstx('auto.f.034','แหล่งที่มา')}</b><span>—</span></div>
     `;
     return;
   }
@@ -2075,8 +2093,8 @@ function renderDirectionLockSummary(deg){
   summary.innerHTML = `
     <div class="fs-lock-pill"><b>Facing</b><span>${facing}° · ${fsEsc(getDirectionName(facing))}</span></div>
     <div class="fs-lock-pill"><b>Sitting</b><span>${sitting}° · ${fsEsc(getDirectionName(sitting))}</span></div>
-    <div class="fs-lock-pill"><b>24 ซาน</b><span>${fsEsc(fm.code || '')} ${fsEsc(fm.h)} · หลัง ${fsEsc(sm.code || '')} ${fsEsc(sm.h)}</span></div>
-    <div class="fs-lock-pill"><b>แหล่งที่มา</b><span>${fsEsc(getDirectionSourceLabel(houseDirectionSource))}</span></div>
+    <div class="fs-lock-pill"><b>${_fstx('auto.f.033','24 ซาน')}</b><span>${fsEsc(fm.code || '')} ${fsEsc(fm.h)} · ${_fstx('auto.f.074','หลัง')} ${fsEsc(sm.code || '')} ${fsEsc(sm.h)}</span></div>
+    <div class="fs-lock-pill"><b>${_fstx('auto.f.034','แหล่งที่มา')}</b><span>${fsEsc(getDirectionSourceLabel(houseDirectionSource))}</span></div>
   `;
 }
 function getLuopanCtaDegree(){
@@ -2113,26 +2131,26 @@ function updateLuopanCta(deg){
   setFengshuiPreviewVisible(houseDirectionLocked);
   if(!houseDirectionLocked || !Number.isFinite(n)){
     btn.classList.add('disabled');
-    btn.textContent = 'รอยืนยันทิศ';
+    btn.textContent = _fstx('auto.f.037','รอยืนยันทิศ');
     if(pageBtn) pageBtn.classList.add('disabled');
     meta.textContent = Number.isFinite(n)
-      ? 'มีองศาที่วัดได้แล้ว · กดยืนยันทิศบ้านก่อนเปิดพรีวิว 9 ช่อง'
-      : 'ยังไม่ได้ยืนยันทิศบ้าน · ลากผนังบนแผนที่ ใช้เข็มทิศ หรือกรอกองศาเองก่อน';
+      ? _fstx('auto.f.141','มีองศาที่วัดได้แล้ว · กดยืนยันทิศบ้านก่อนเปิดพรีวิว 9 ช่อง')
+      : _fstx('auto.f.032','ยังไม่ได้ยืนยันทิศบ้าน · ลากผนังบนแผนที่ ใช้เข็มทิศ หรือกรอกองศาเองก่อน');
     return;
   }
   const facing = Math.round(normalizeDeg(n) * 10) / 10;
   const m = get24Mountain(facing);
   btn.classList.remove('disabled');
-  btn.textContent = 'ดูพรีวิว 9 ช่อง';
+  btn.textContent = _fstx('auto.f.142','ดูพรีวิว 9 ช่อง');
   if(pageBtn) pageBtn.classList.remove('disabled');
-  meta.textContent = `ยืนยันทิศบ้านแล้ว · Facing ${facing}° · ${m.code || ''} ${m.h} ${m.pinyin} · ที่มา: ${getDirectionSourceLabel(houseDirectionSource)}`;
+  meta.textContent = `${_fstx('auto.f.143','ยืนยันทิศบ้านแล้ว')} · Facing ${facing}° · ${m.code || ''} ${m.h} ${m.pinyin} · ${_fstx('auto.f.144','ที่มา:')} ${getDirectionSourceLabel(houseDirectionSource)}`;
 }
 function openLuopanFullFromCta(ev){
   ev.preventDefault();
   const deg = getLuopanCtaDegree();
   const meta = document.getElementById('luopanCtaMeta');
   if(deg == null || !houseDirectionLocked){
-    if(meta) meta.textContent = 'ต้องกดยืนยันทิศบ้านก่อน ระบบจึงเปิดพรีวิว 9 ช่อง';
+    if(meta) meta.textContent = _fstx('auto.f.145','ต้องกดยืนยันทิศบ้านก่อน ระบบจึงเปิดพรีวิว 9 ช่อง');
     return;
   }
   updateLuopanCta(deg);
@@ -2143,7 +2161,7 @@ function openLuopanPageFromCta(ev){
   const deg = getLuopanCtaDegree();
   const meta = document.getElementById('luopanCtaMeta');
   if(deg == null || !houseDirectionLocked){
-    if(meta) meta.textContent = 'ต้องกดยืนยันทิศบ้านก่อน ระบบจึงเปิดหล่อแกเต็มได้';
+    if(meta) meta.textContent = _fstx('auto.f.146','ต้องกดยืนยันทิศบ้านก่อน ระบบจึงเปิดหล่อแกเต็มได้');
     return;
   }
   const facing = Math.round(normalizeDeg(deg) * 10) / 10;
@@ -2155,7 +2173,7 @@ function lockHouseDirection(deg, source='manual', scrollToGrid=true){
   const n = Number(deg);
   const st = document.getElementById('houseSaveStatus');
   if(!Number.isFinite(n)){
-    if(st) st.textContent = 'ยังไม่มีองศาที่ใช้ยืนยัน';
+    if(st) st.textContent = _fstx('auto.f.147','ยังไม่มีองศาที่ใช้ยืนยัน');
     updateLuopanCta(null);
     return false;
   }
@@ -2164,21 +2182,21 @@ function lockHouseDirection(deg, source='manual', scrollToGrid=true){
   setHouseFacingFromDegree(n, false);
   saveHouseInputs();
   updateLuopanCta(normalizeDeg(n));
-  if(st) st.textContent = `ยืนยันทิศบ้านแล้ว · ${getDirectionSourceLabel(source)}`;
+  if(st) st.textContent = `${_fstx('auto.f.143','ยืนยันทิศบ้านแล้ว')} · ${getDirectionSourceLabel(source)}`;
   const verdict = document.getElementById('mrVerdict');
-  if(verdict) verdict.textContent = `ยืนยันแล้ว · ${getDirectionSourceLabel(source)}`;
+  if(verdict) verdict.textContent = `${_fstx('auto.f.087','ยืนยันแล้ว')} · ${getDirectionSourceLabel(source)}`;
   if(scrollToGrid) document.querySelector('.palace-grid-wrap')?.scrollIntoView({ behavior:'smooth', block:'start' });
   return true;
 }
 function lockMeasuredFacingToHouse(){
   if(currentBearing == null || !Number.isFinite(Number(currentBearing))){
     const st = document.getElementById('wallFineStatus');
-    if(st) st.textContent = 'ต้องวัดทิศบนแผนที่ก่อน';
+    if(st) st.textContent = _fstx('auto.f.149','ต้องวัดทิศบนแผนที่ก่อน');
     return;
   }
   lockHouseDirection(currentBearing, 'map', true);
   const st = document.getElementById('houseSaveStatus');
-  if(st) st.textContent = 'ยืนยันทิศจากแผนที่แล้ว';
+  if(st) st.textContent = _fstx('auto.f.150','ยืนยันทิศจากแผนที่แล้ว');
   updateLuopanCta(currentBearing);
 }
 function calculateHouseChart(){
@@ -2186,7 +2204,7 @@ function calculateHouseChart(){
   const deg = Number(raw);
   const st = document.getElementById('houseSaveStatus');
   if(raw === '' || !Number.isFinite(deg)){
-    if(st) st.textContent = 'กรอกองศาหน้าบ้าน หรือวัดจากแผนที่/เข็มทิศก่อน';
+    if(st) st.textContent = _fstx('auto.f.151','กรอกองศาหน้าบ้าน หรือวัดจากแผนที่/เข็มทิศก่อน');
     updateLuopanCta(null);
     return;
   }
@@ -2198,7 +2216,7 @@ function calculateHouseChart(){
     planState.selectedDir = activeDir;
     drawFloorPlan();
   }
-  if(st) st.textContent = `คำนวณผังแล้ว · Facing ${document.getElementById('houseFacingDeg').value}° · ${document.getElementById('houseFacingMountain').selectedOptions[0]?.textContent || ''}`;
+  if(st) st.textContent = `${_fstx('auto.f.152','คำนวณผังแล้ว ·')} Facing ${document.getElementById('houseFacingDeg').value}° · ${document.getElementById('houseFacingMountain').selectedOptions[0]?.textContent || ''}`;
 }
 initHouseInputs();
 updateLuopanCta(getLuopanCtaDegree());
@@ -2227,7 +2245,7 @@ function markHouseDirectionNeedsConfirm(){
   houseDirectionLocked = false;
   houseDirectionSource = '';
   const verdict = document.getElementById('mrVerdict');
-  if(verdict) verdict.textContent = 'ยังไม่ยืนยัน';
+  if(verdict) verdict.textContent = _fstx('auto.f.153','ยังไม่ยืนยัน');
 }
 document.getElementById('houseFacingDeg').addEventListener('input', ()=>{ markHouseDirectionNeedsConfirm(); syncHouseMountainFromDegree(false); updateLuopanCta(getLuopanCtaDegree()); });
 document.getElementById('houseFacingDeg').addEventListener('change', ()=>{ markHouseDirectionNeedsConfirm(); syncHouseMountainFromDegree(); renderGrid(); updateLuopanCta(getLuopanCtaDegree()); });
@@ -2283,7 +2301,7 @@ function renderPersonFilter(){
   const allBtn = document.createElement('button');
   allBtn.className = 'pf-btn all' + (activePersonFilter === 'all' ? ' active' : '');
   allBtn.dataset.person = 'all';
-  allBtn.textContent = 'ทั้งครอบครัว';
+  allBtn.textContent = _fstx('auto.f.006','ทั้งครอบครัว');
   allBtn.addEventListener('click', ()=>{ activePersonFilter='all'; renderPersonFilter(); renderGrid(); });
   row.appendChild(allBtn);
   
@@ -2457,7 +2475,7 @@ function renderPeopleList(){
   if(!list || !count) return;
   count.textContent = people.length;
   if(people.length === 0){
-    list.innerHTML = '<div class="person-empty">ยังไม่มีคนในผัง · เพิ่มด้านล่าง</div>';
+    list.innerHTML = `<div class="person-empty">${_fstx('auto.f.080','ยังไม่มีคนในผัง · เพิ่มด้านล่าง')}</div>`;
     return;
   }
   list.innerHTML = people.map((p, idx) => {
@@ -2518,7 +2536,7 @@ document.getElementById('btnAddPerson')?.addEventListener('click', ()=>{
   const gender = document.getElementById('pfGender').value;
   const room = document.getElementById('pfRoom').value;
   if(!name || !year || year < 1900 || year > 2030){
-    alert('ใส่ชื่อ + ปีเกิด (1900-2030) ครับ');
+    alert(_fstx('auto.f.081','ใส่ชื่อ + ปีเกิด (1900-2030) ครับ'));
     return;
   }
   people.push({ name, year, gender, room: room || null });
@@ -2654,7 +2672,7 @@ function renderCompassLuckRing(yearGrid, taiSuiDir, threeKillDir){
     seg.addEventListener('click', () => selectCompassDirection(item.deg, item.dir));
     const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
     const star = yearGrid?.[item.dir];
-    title.textContent = `${item.dir} ${item.th} · ${star ? `ดาวปี ${star}${STAR_INFO[star]?.color || ''} · ` : ''}${grade.label} · ${grade.score}/100`;
+    title.textContent = `${item.dir} ${_fstx(FS_DIR_NAME_KEY[item.dir], item.th)} · ${star ? `${_fstx('auto.f.060','ดาวปี')} ${star}${STAR_INFO[star]?.color || ''} · ` : ''}${grade.label} · ${grade.score}/100`;
     seg.appendChild(title);
     ring.appendChild(seg);
     const labelPt = polarPoint(200, 200, 178, item.deg);
@@ -2744,15 +2762,15 @@ function startCompass(){
   const status = document.getElementById('compassStatus');
   if(!status) return;
   if(!('DeviceOrientationEvent' in window)){
-    status.innerHTML = '⚠️ <b>เบราว์เซอร์ไม่รองรับ</b><br/>ใช้แผนที่แทน';
+    status.innerHTML = _fstx('auto.f.297','⚠️ <b>เบราว์เซอร์ไม่รองรับ</b><br/>ใช้แผนที่แทน');
     return;
   }
   if(typeof DeviceOrientationEvent.requestPermission === 'function'){
     DeviceOrientationEvent.requestPermission().then(p=>{
       if(p === 'granted') attachOrientation();
-      else status.innerHTML = '❌ <b>ผู้ใช้ปฏิเสธ</b><br/>ใช้แผนที่แทน';
+      else status.innerHTML = _fstx('auto.f.298','❌ <b>ผู้ใช้ปฏิเสธ</b><br/>ใช้แผนที่แทน');
     }).catch(()=>{
-      status.innerHTML = '⚠️ <b>ขอสิทธิ์ไม่สำเร็จ</b>';
+      status.innerHTML = _fstx('auto.f.299','⚠️ <b>ขอสิทธิ์ไม่สำเร็จ</b>');
     });
   } else {
     attachOrientation();
@@ -2799,7 +2817,7 @@ function attachOrientation(){
     } else if(event.alpha !== null){
       heading = 360 - event.alpha;
     } else {
-      status.innerHTML = '⚠️ ไม่ได้ค่าเซ็นเซอร์ · ลอง refresh';
+      status.innerHTML = _fstx('auto.f.300','⚠️ ไม่ได้ค่าเซ็นเซอร์ · ลอง refresh');
       return;
     }
     heading = ((heading % 360) + 360) % 360;
@@ -2832,7 +2850,7 @@ function attachOrientation(){
     if (!rafId) rafId = requestAnimationFrame(renderLoop);
     updateDirectionBreakdown(getDirCode(smoothedHeading).en, smoothedHeading);
 
-    status.innerHTML = `<b>กำลังอ่านเซ็นเซอร์</b> · ${getDirectionName(smoothedHeading)}<br/>กดล็อกเมื่อทิศตรงหน้าบ้าน`;
+    status.innerHTML = `<b>${_fstx('auto.f.301','กำลังอ่านเซ็นเซอร์')}</b> · ${getDirectionName(smoothedHeading)}<br/>${_fstx('auto.f.302','กดล็อกเมื่อทิศตรงหน้าบ้าน')}`;
     lockBtn.disabled = false;
   };
 
@@ -2840,7 +2858,7 @@ function attachOrientation(){
   compassWatching = true;
   const btn = document.getElementById('btnCompassStart');
   if(btn){
-    btn.textContent = '⏸ หยุด Compass';
+    btn.textContent = _fstx('auto.f.303','⏸ หยุด Compass');
     btn.onclick = stopCompass;
   }
 }
@@ -2855,11 +2873,11 @@ function stopCompass(){
   compassWatching = false;
   const btn = document.getElementById('btnCompassStart');
   if(btn){
-    btn.textContent = 'เริ่ม Live Compass';
+    btn.textContent = _fstx('auto.f.011','เริ่ม Live Compass');
     btn.onclick = startCompass;
   }
   const status = document.getElementById('compassStatus');
-  if(status) status.innerHTML = 'หยุดอ่านเซ็นเซอร์แล้ว';
+  if(status) status.innerHTML = _fstx('auto.f.304','หยุดอ่านเซ็นเซอร์แล้ว');
 }
 
 document.getElementById('btnCompassStart')?.addEventListener('click', startCompass);
@@ -2893,7 +2911,7 @@ function getDirCode(deg){
 }
 function getDirectionName(deg){
   const d = getDirCode(deg);
-  return `${d.en} ${d.th}`;
+  return `${d.en} ${_fstx(FS_DIR_FULL_KEY[d.en], d.th)}`;
 }
 function qimenPalaceForDir(dir){
   return (currentQimenPalaces || []).find(p => p.direction === dir) || null;
@@ -2902,8 +2920,8 @@ function resetDirectionBreakdown(){
   const host = document.getElementById('directionBreakdown');
   if(!host) return;
   host.innerHTML = `
-    <h5>ข้อมูลทิศที่วัดได้</h5>
-    <div style="color:var(--fg-faint)">เริ่มจากแผนที่หรือเข็มทิศ แล้วกดยืนยันเมื่อมั่นใจว่าเป็นทิศหน้าบ้านจริง</div>
+    <h5>${_fstx('auto.f.085','ข้อมูลทิศที่วัดได้')}</h5>
+    <div style="color:var(--fg-faint)">${_fstx('auto.f.086','เริ่มจากแผนที่หรือเข็มทิศ แล้วกดยืนยันเมื่อมั่นใจว่าเป็นทิศหน้าบ้านจริง')}</div>
   `;
 }
 function updateDirectionBreakdown(dir8, deg){
@@ -2912,7 +2930,7 @@ function updateDirectionBreakdown(dir8, deg){
   const m = get24Mountain(deg);
   const sittingDeg = normalizeDeg(deg + 180);
   const sm = get24Mountain(sittingDeg);
-  const sourceText = houseDirectionLocked ? `ยืนยันแล้ว · ${getDirectionSourceLabel(houseDirectionSource)}` : 'ยังไม่ยืนยัน · ตรวจแนวผนัง/หน้าบ้านก่อน';
+  const sourceText = houseDirectionLocked ? `${_fstx('auto.f.087','ยืนยันแล้ว')} · ${getDirectionSourceLabel(houseDirectionSource)}` : _fstx('auto.f.088','ยังไม่ยืนยัน · ตรวจแนวผนัง/หน้าบ้านก่อน');
   host.innerHTML = `
     <div class="dir-hero mid">
       <div class="dir-badge">${fsEsc(dir8)}</div>
@@ -2921,11 +2939,11 @@ function updateDirectionBreakdown(dir8, deg){
         <div class="dir-sub">${Math.round(deg * 10) / 10}° · ${fsEsc(m.code || '')} ${fsEsc(m.h)} ${fsEsc(m.pinyin)}</div>
       </div>
     </div>
-    <h5>อ่านค่านี้ก่อนใช้เป็นทิศบ้าน</h5>
+    <h5>${_fstx('auto.f.089','อ่านค่านี้ก่อนใช้เป็นทิศบ้าน')}</h5>
     <div class="db-row"><span class="db-k">Facing</span><span class="db-v">${Math.round(deg * 10) / 10}° · ${fsEsc(getDirectionName(deg))}</span></div>
-    <div class="db-row"><span class="db-k">24 ซาน</span><span class="db-v">${fsEsc(m.code || '')} ${fsEsc(m.h)} ${fsEsc(m.pinyin)}</span></div>
+    <div class="db-row"><span class="db-k">${_fstx('auto.f.033','24 ซาน')}</span><span class="db-v">${fsEsc(m.code || '')} ${fsEsc(m.h)} ${fsEsc(m.pinyin)}</span></div>
     <div class="db-row"><span class="db-k">Sitting</span><span class="db-v">${Math.round(sittingDeg * 10) / 10}° · ${fsEsc(getDirectionName(sittingDeg))} · ${fsEsc(sm.code || '')} ${fsEsc(sm.h)}</span></div>
-    <div class="db-row"><span class="db-k">สถานะ</span><span class="db-v">${fsEsc(sourceText)}</span></div>
+    <div class="db-row"><span class="db-k">${_fstx('auto.f.090','สถานะ')}</span><span class="db-v">${fsEsc(sourceText)}</span></div>
   `;
 }
 
@@ -2950,7 +2968,7 @@ function applyFacing(deg, measured=false, source='preview'){
   if(hexEl) hexEl.textContent = `${Math.round(sittingDeg * 10) / 10}° · ${sm.code || ''} ${sm.h}`;
   
   const dir8 = getDirCode(deg).en;
-  document.getElementById('mrVerdict').textContent = houseDirectionLocked ? `ยืนยันแล้ว · ${getDirectionSourceLabel(houseDirectionSource)}` : 'ยังไม่ยืนยัน';
+  document.getElementById('mrVerdict').textContent = houseDirectionLocked ? `${_fstx('auto.f.087','ยืนยันแล้ว')} · ${getDirectionSourceLabel(houseDirectionSource)}` : _fstx('auto.f.153','ยังไม่ยืนยัน');
   updateDirectionBreakdown(dir8, deg);
   if(measuredFacingReady) updateLuopanCta(deg);
 }
@@ -2982,7 +3000,7 @@ function setFacingMode(mode){
   if(mode !== 'sitting') mode = 'facing';
   facingMode = mode;
   const btn = document.getElementById('btnFlipFacing');
-  if(btn) btn.textContent = mode === 'facing' ? '↔ แสดง Sitting' : '↔ แสดง Facing';
+  if(btn) btn.textContent = mode === 'facing' ? _fstx('auto.f.154','↔ แสดง Sitting') : _fstx('auto.f.155','↔ แสดง Facing');
 }
 function setFlipFacingEnabled(enabled){
   const btn = document.getElementById('btnFlipFacing');
@@ -3081,11 +3099,11 @@ function zoomToRoof(targetLatLng, pan=true){
   map.setTilt(0);
   const fallbackZoom = 22;
   const btn = document.getElementById('btnMapRoofZoom');
-  if(btn) btn.textContent = 'กำลังซูม...';
+  if(btn) btn.textContent = _fstx('auto.f.156','กำลังซูม...');
   const done = z => {
     const safeZoom = Math.max(18, Math.min(Number(z) || fallbackZoom, 24));
     map.setZoom(safeZoom);
-    if(btn) btn.textContent = `🔍 หลังคา ${safeZoom}`;
+    if(btn) btn.textContent = `${_fstx('auto.f.165','🔍 หลังคา')} ${safeZoom}`;
   };
   if(google.maps.MaxZoomService){
     const svc = new google.maps.MaxZoomService();
@@ -3112,8 +3130,8 @@ function updateWallFineUi(){
   const status = document.getElementById('wallFineStatus');
   const out = document.getElementById('wallFineAngleOut');
   const ready = !!(wallA && wallB);
-  if(status) status.textContent = ready ? 'จับหยด A/B เพื่อย้ายเส้น' : 'ลากเส้น A→B ก่อน';
-  if(out) out.textContent = ready ? 'เส้นทองออกจากปลายหยดน้ำ · ปรับ B ±0.1°' : 'ลากจากจุดเริ่มไปปลายผนัง';
+  if(status) status.textContent = ready ? _fstx('auto.f.157','จับหยด A/B เพื่อย้ายเส้น') : _fstx('auto.f.158','ลากเส้น A→B ก่อน');
+  if(out) out.textContent = ready ? _fstx('auto.f.159','เส้นทองออกจากปลายหยดน้ำ · ปรับ B ±0.1°') : _fstx('auto.f.160','ลากจากจุดเริ่มไปปลายผนัง');
   document.querySelectorAll('.wall-angle-btn').forEach(btn => {
     btn.disabled = !ready;
   });
@@ -3358,7 +3376,7 @@ function finishWallDrag(endLatLng){
     map: map,
     icon: createWallPinIcon('#c8a44d'),
     label: { text:'A', color:'#fff', fontSize:'16px', fontWeight:'900' },
-    title: 'A จุดเริ่มผนัง · จับค้างแล้วลากเพื่อย้าย',
+    title: _fstx('auto.f.092','A จุดเริ่มผนัง · จับค้างแล้วลากเพื่อย้าย'),
     zIndex: 999,
     optimized: false,
     clickable: true,
@@ -3372,7 +3390,7 @@ function finishWallDrag(endLatLng){
     map: map,
     icon: createWallPinIcon('#e6c068'),
     label: { text:'B', color:'#111', fontSize:'16px', fontWeight:'900' },
-    title: 'B ปลายผนัง · จับค้างแล้วลากเพื่อยืด/หด/หมุนเส้น',
+    title: _fstx('auto.f.093','B ปลายผนัง · จับค้างแล้วลากเพื่อยืด/หด/หมุนเส้น'),
     zIndex: 1000,
     optimized: false,
     clickable: true,
@@ -3461,7 +3479,7 @@ function drawWallFromMarkers(){
   if(shouldReconfirmMapDirection){
     markHouseDirectionNeedsConfirm();
     const st = document.getElementById('houseSaveStatus');
-    if(st) st.textContent = 'เส้นผนังถูกปรับแล้ว · กดยืนยันทิศบ้านอีกครั้ง';
+    if(st) st.textContent = _fstx('auto.f.295','เส้นผนังถูกปรับแล้ว · กดยืนยันทิศบ้านอีกครั้ง');
   }
   applyFacing(facingBearing, true, 'map');
   
@@ -3542,7 +3560,7 @@ function addHousePoint(latLng){
       strokeWeight: 2
     },
     label: { text:String(idx), color:'#101214', fontSize:'9px', fontWeight:'bold' },
-    title: `มุมบ้าน ${idx}`,
+    title: `${_fstx('auto.f.091','มุมบ้าน')} ${idx}`,
     zIndex: 3000 + idx
   });
   marker.addListener('drag', ()=>{
@@ -3599,7 +3617,7 @@ function updateHouseActions(){
   if(undo) undo.disabled = housePoints.length === 0;
   if(close){
     close.disabled = housePoints.length < 4;
-    close.textContent = houseClosed ? '✓ ปิดแล้ว' : '✓ ปิดรูปบ้าน';
+    close.textContent = houseClosed ? _fstx('auto.f.161','✓ ปิดแล้ว') : _fstx('auto.f.162','✓ ปิดรูปบ้าน');
   }
 }
 
@@ -3652,7 +3670,7 @@ function drawHouseCenter(center){
       strokeWeight: 2
     },
     label: { text:'中', color:'#101214', fontSize:'12px', fontWeight:'bold' },
-    title: 'จุดกลางบ้าน · ลากปรับไท่จี๋ได้',
+    title: _fstx('auto.f.094','จุดกลางบ้าน · ลากปรับไท่จี๋ได้'),
     zIndex: 2990
   });
   houseCenterMarker.addListener('drag', ()=>{
@@ -3755,7 +3773,7 @@ function starLevel(star){
 
 function starLayerTag(label, star){
   const info = STAR_INFO[star] || {};
-  return `<span class="house-star-tag ${starLevel(star)}" title="${fsEsc(label)} · ${star}${fsEsc(info.color || '')} · ${fsEsc(info.meaning || '')}">${fsEsc(label)}${star}${fsEsc(info.color || '')}</span>`;
+  return `<span class="house-star-tag ${starLevel(star)}" title="${fsEsc(label)} · ${star}${fsEsc(info.color || '')} · ${fsEsc(_fstx(info.meaningKey, info.meaning || ''))}">${fsEsc(label)}${star}${fsEsc(info.color || '')}</span>`;
 }
 
 function afflictionTags(dir, yearStar){
@@ -3798,9 +3816,9 @@ function updateHouseMapStatus(center){
   const n = housePoints.length;
   if(center){
     const radius = Math.round(getHouseCompassRadius(center));
-    document.getElementById('mrVerdict').textContent = `คลุมบ้าน ${n} จุด · รัศมี ${radius}m`;
+    document.getElementById('mrVerdict').textContent = `${_fstx('auto.f.095','คลุมบ้าน')} ${n} ${_fstx('auto.f.096','จุด · รัศมี')} ${radius}m`;
   } else if(currentMode === 'house'){
-    document.getElementById('mrVerdict').textContent = n ? `แตะเพิ่มอีก ${Math.max(0, 4-n)} จุดเพื่อเปิดวง 24山` : 'แตะมุมบ้านทีละจุด';
+    document.getElementById('mrVerdict').textContent = n ? `${_fstx('auto.f.097','แตะเพิ่มอีก')} ${Math.max(0, 4-n)} ${_fstx('auto.f.098','จุดเพื่อเปิดวง 24山')}` : _fstx('auto.f.099','แตะมุมบ้านทีละจุด');
   }
 }
 
@@ -3824,7 +3842,7 @@ function closeHousePolygon(){
 function relabelHouseMarkers(){
   houseMarkers.forEach((m, i)=>{
     m.setLabel({ text:String(i + 1), color:'#101214', fontSize:'9px', fontWeight:'bold' });
-    m.setTitle(`มุมบ้าน ${i + 1}`);
+    m.setTitle(`${_fstx('auto.f.091','มุมบ้าน')} ${i + 1}`);
     m.setZIndex(3000 + i + 1);
   });
 }
@@ -3868,7 +3886,7 @@ function placeStanding(latLng){
       strokeColor: '#fff',
       strokeWeight: 3
     },
-    title: '① จุดยืน · Standing'
+    title: `① ${_fstx('auto.f.100','จุดยืน')} · Standing`
   });
   // auto-switch to facing mode
   setMode('facing');
@@ -3877,7 +3895,7 @@ function placeStanding(latLng){
 
 function placeFacing(latLng){
   if(!standingMarker){
-    alert('ปักจุดยืนก่อน (สีเขียว)');
+    alert(_fstx('auto.f.082','ปักจุดยืนก่อน (สีเขียว)'));
     return;
   }
   if(facingMarker) facingMarker.setMap(null);
@@ -3892,7 +3910,7 @@ function placeFacing(latLng){
       strokeColor: '#fff',
       strokeWeight: 2
     },
-    title: '② ทิศหันหน้า · Facing'
+    title: `② ${_fstx('auto.f.101','ทิศหันหน้า')} · Facing`
   });
   updateLine();
 }
@@ -3995,11 +4013,11 @@ document.querySelectorAll('.map-layer-btn[data-map-layer]').forEach(btn => {
 });
 const planLuopanLayers = new Set(['house','year','hour','qimen','m24','blocker']);
 const PLAN_VOTE_LAYERS = [
-  {key:'house', label:'ดาวบ้าน'},
-  {key:'year', label:'ดาวปี'},
-  {key:'month', label:'ดาวเดือน'},
-  {key:'day', label:'ดาววัน'},
-  {key:'hour', label:'ดาวยาม'},
+  {key:'house', label:_fstx('auto.f.106','ดาวบ้าน')},
+  {key:'year', label:_fstx('auto.f.060','ดาวปี')},
+  {key:'month', label:_fstx('auto.f.061','ดาวเดือน')},
+  {key:'day', label:_fstx('auto.f.062','ดาววัน')},
+  {key:'hour', label:_fstx('auto.f.063','ดาวยาม')},
   {key:'qimen', label:'QMDJ'}
 ];
 const PLAN_GOOD_STARS = new Set([1,6,8,9]);
@@ -4040,7 +4058,7 @@ function planSetStatus(text){
   const st = document.getElementById('planStatus');
   const qs = document.getElementById('planQuickStatus');
   if(st) st.textContent = text;
-  if(qs) qs.textContent = planState.img ? `${planState.imgName || 'แปลน'} · 中 locked · Facing ${Math.round(planState.rotation)}°` : 'ยังไม่ได้อัพรูป';
+  if(qs) qs.textContent = planState.img ? `${planState.imgName || _fstx('auto.f.102','แปลน')} · 中 locked · Facing ${Math.round(planState.rotation)}°` : _fstx('auto.f.103','ยังไม่ได้อัพรูป');
 }
 
 function updatePlanOutputs(){
@@ -4048,7 +4066,7 @@ function updatePlanOutputs(){
   const op = document.getElementById('planOpacityOut');
   if(r) r.textContent = `${Math.round(planState.radius)}px`;
   if(op) op.textContent = `${Math.round(planState.opacity * 100)}%`;
-  planSetStatus(planState.img ? 'หล่อแกดิจิทัล: ลาก 中 ให้ตรงกลางบ้าน · Facing ล็อกจากการ์ดบน · แดงเข้ม = หลายศาสตร์หนุน' : 'อัพรูปแปลนก่อน แล้วล็อค 中 + Facing เพื่อวางหล่อแก');
+  planSetStatus(planState.img ? _fstx('auto.f.104','หล่อแกดิจิทัล: ลาก 中 ให้ตรงกลางบ้าน · Facing ล็อกจากการ์ดบน · แดงเข้ม = หลายศาสตร์หนุน') : _fstx('auto.f.105','อัพรูปแปลนก่อน แล้วล็อค 中 + Facing เพื่อวางหล่อแก'));
 }
 
 function fitPlanImageRect(){
@@ -4166,10 +4184,21 @@ function floorGradeColors(levelOrColor){
   return { fill:'rgba(200,164,77,.17)', stroke:'rgba(200,164,77,.54)' };
 }
 function planColorThai(color){
-  return {purple:'ม่วง · เด่นพิเศษ', green:'เขียว · ใช้ดี', gold:'ทอง · ใช้ได้', orange:'ส้ม · ต้องคุม', red:'แดง · เลี่ยง'}[color] || 'ทอง · ใช้ได้';
+  return {
+    purple:_fstx('auto.f.126','ม่วง · เด่นพิเศษ'),
+    green:_fstx('auto.f.127','เขียว · ใช้ดี'),
+    gold:_fstx('auto.f.128','ทอง · ใช้ได้'),
+    orange:_fstx('auto.f.129','ส้ม · ต้องคุม'),
+    red:_fstx('auto.f.130','แดง · เลี่ยง')
+  }[color] || _fstx('auto.f.128','ทอง · ใช้ได้');
 }
 function planUsageThai(status){
-  return {good:'ดี', caution:'ระวัง', avoid:'เลี่ยง', neutral:'กลาง'}[status] || 'กลาง';
+  return {
+    good:_fstx('auto.f.053','ดี'),
+    caution:_fstx('auto.f.132','ระวัง'),
+    avoid:_fstx('auto.f.133','เลี่ยง'),
+    neutral:_fstx('auto.f.134','กลาง')
+  }[status] || _fstx('auto.f.134','กลาง');
 }
 function planUsageClass(status){
   return status === 'good' ? 'good' : status === 'caution' ? 'caution' : status === 'avoid' ? 'avoid' : '';
@@ -4213,19 +4242,19 @@ function planLuopanLayerReports(deg, natalGrids){
   });
   reports.push({
     key:'house',
-    label:'ดาวบ้าน',
+    label:_fstx('auto.f.106','ดาวบ้าน'),
     supports:['green','purple'].includes(houseGrade.color),
-    detail:`${houseGrade.verdict} · ภู${houseGrade.stars.mountain || '—'} น้ำ${houseGrade.stars.water || '—'} ฐ${houseGrade.stars.base || '—'}`
+    detail:`${houseGrade.verdict} · ${_fstx('auto.f.054','ภู')}${houseGrade.stars.mountain || '—'} ${_fstx('auto.f.025','น้ำ')}${houseGrade.stars.water || '—'} ${_fstx('auto.f.110','ฐ')}${houseGrade.stars.base || '—'}`
   });
   ['year','month','day','hour'].forEach(layer => {
     const star = planLuopanTimeGrid(layer)?.[dir];
-    const activeLabel = {year:'ดาวปี', month:'ดาวเดือน', day:'ดาววัน', hour:'ดาวยาม'}[layer];
+    const activeLabel = {year:_fstx('auto.f.060','ดาวปี'), month:_fstx('auto.f.061','ดาวเดือน'), day:_fstx('auto.f.062','ดาววัน'), hour:_fstx('auto.f.063','ดาวยาม')}[layer];
     const isBlockedYear = layer === 'year' && (window._currentTaiSui === dir || window._currentThreeKill === dir || [2,5].includes(Number(star)));
     reports.push({
       key:layer,
       label:activeLabel,
       supports:starIsLuopanGood(star) && !isBlockedYear,
-      detail:star ? `${activeLabel} ${star}${STAR_INFO[star]?.color || ''}${isBlockedYear ? ' · ถูกข้อห้ามคุม' : ''}` : `${activeLabel} ยังไม่มีข้อมูล`
+      detail:star ? `${activeLabel} ${star}${STAR_INFO[star]?.color || ''}${isBlockedYear ? ' · ' + _fstx('auto.f.108','ถูกข้อห้ามคุม') : ''}` : `${activeLabel} ${_fstx('auto.f.107','ยังไม่มีข้อมูล')}`
     });
   });
   const q = qimenPalaceForDir(dir);
@@ -4234,7 +4263,7 @@ function planLuopanLayerReports(deg, natalGrids){
     key:'qimen',
     label:'QMDJ',
     supports:!!q && qg.level === 'good',
-    detail:q ? `${q.door_name_th || q.door_zh || '門'} · ${qg.label}` : 'ยังไม่มีผัง QMDJ'
+    detail:q ? `${q.door_name_th || q.door_zh || '門'} · ${qg.label}` : _fstx('auto.f.109','ยังไม่มีผัง QMDJ')
   });
   return reports;
 }
@@ -4252,8 +4281,8 @@ function planLuopanBoundaryReport(deg){
   const hexOffset = normalizeDeg(deg) % HEX_SECTOR_DEG;
   const distToHex = Math.min(hexOffset, HEX_SECTOR_DEG - hexOffset);
   const warnings = [];
-  if(distTo24 < 1.2) warnings.push(`ใกล้เส้น 24山 ${Math.round(distTo24 * 10) / 10}° · ต้องวัดละเอียด`);
-  if(distToHex < .7) warnings.push(`ใกล้เส้น 64卦 ${Math.round(distToHex * 10) / 10}° · verdict ต้องระวัง`);
+  if(distTo24 < 1.2) warnings.push(`${_fstx('auto.f.307','ใกล้เส้น 24山')} ${Math.round(distTo24 * 10) / 10}${_fstx('auto.f.308','° · ต้องวัดละเอียด')}`);
+  if(distToHex < .7) warnings.push(`${_fstx('auto.f.309','ใกล้เส้น 64卦')} ${Math.round(distToHex * 10) / 10}${_fstx('auto.f.310','° · verdict ต้องระวัง')}`);
   return { mountain:m, hex, distTo24, distToHex, warnings };
 }
 function planLuopanReport(deg, natalGrids){
@@ -4340,19 +4369,19 @@ function renderPlanInspector(dir, grade){
   const luopan = planLuopanReport(deg, buildHouseNatalGrids(getHouseSettings()));
   badge.className = `pi-badge ${luopan.supportCount >= 4 ? 'red' : luopan.supportCount >= 2 ? 'orange' : 'gold'}`;
   badge.textContent = `${luopan.supportCount}/${luopan.total || 0}`;
-  title.textContent = `${info.th} · หล่อแกหนุน ${luopan.supportCount}/${luopan.total || 0} ศาสตร์`;
+  title.textContent = `${_fstx(FS_DIR_NAME_KEY[info.dir], info.th)} · ${_fstx('auto.f.111','หล่อแกหนุน')} ${luopan.supportCount}/${luopan.total || 0} ${_fstx('auto.f.112','ศาสตร์')}`;
   sub.textContent = `${Math.round(luopan.deg * 10) / 10}° · ${luopan.boundary.mountain.h}${luopan.boundary.mountain.code} · ${luopan.boundary.hex.symbol}#${luopan.boundary.hex.num} ${luopan.boundary.hex.name || ''}`;
   stars.innerHTML = [
-    ['ภู', grade.stars.mountain, 'ดาวภูเขา'],
-    ['น้ำ', grade.stars.water, 'ดาวน้ำ'],
-    ['ฐ', grade.stars.base, 'ดาวฐาน']
+    [_fstx('auto.f.054','ภู'), grade.stars.mountain, _fstx('auto.f.113','ดาวภูเขา')],
+    [_fstx('auto.f.025','น้ำ'), grade.stars.water, _fstx('auto.f.114','ดาวน้ำ')],
+    [_fstx('auto.f.110','ฐ'), grade.stars.base, _fstx('auto.f.115','ดาวฐาน')]
   ].map(([label, star, text]) => `<div class="pi-star"><b>${star || '—'}</b><span>${label} · ${text}</span></div>`).join('');
-  const votes = luopan.activeVoteReports.map(r => `<div class="${r.supports ? '' : 'warn'}">${r.supports ? 'หนุน' : 'ไม่หนุน'} · ${r.label}: ${fsEsc(r.detail)}</div>`);
+  const votes = luopan.activeVoteReports.map(r => `<div class="${r.supports ? '' : 'warn'}">${r.supports ? _fstx('auto.f.116','หนุน') : _fstx('auto.f.117','ไม่หนุน')} · ${r.label}: ${fsEsc(r.detail)}</div>`);
   const mainReasons = [...votes, ...(grade.reasons || []).slice(0,2).map(x => `<div>${x}</div>`)];
   const warns = (grade.warnings || []).slice(0,3).map(x => `<div class="warn">${x}</div>`);
   const boundaryWarns = luopan.boundary.warnings.map(x => `<div class="warn">${fsEsc(x)}</div>`);
-  reasons.innerHTML = [...mainReasons, ...warns, ...boundaryWarns].join('') || '<div>ยังไม่มีเหตุผลเฉพาะ</div>';
-  const labels = {door:'ประตู/ทางเดิน', bedroom:'ห้องนอน', office:'ทำงาน', storage:'เก็บของ'};
+  reasons.innerHTML = [...mainReasons, ...warns, ...boundaryWarns].join('') || `<div>${_fstx('auto.f.118','ยังไม่มีเหตุผลเฉพาะ')}</div>`;
+  const labels = {door:_fstx('auto.f.119','ประตู/ทางเดิน'), bedroom:_fstx('auto.f.120','ห้องนอน'), office:_fstx('auto.f.121','ทำงาน'), storage:_fstx('auto.f.122','เก็บของ')};
   usage.innerHTML = Object.entries(labels).map(([k, label]) => {
     const st = grade.usage?.[k] || 'neutral';
     return `<div class="pi-use ${planUsageClass(st)}"><b>${label}</b>${planUsageThai(st)}</div>`;
@@ -4366,10 +4395,10 @@ function resetPlanInspector(){
   const reasons = document.getElementById('piReasons');
   const usage = document.getElementById('piUsage');
   if(badge){ badge.className = 'pi-badge gold'; badge.textContent = '—'; }
-  if(title) title.textContent = 'แตะโซนสีบนวงแปลนเพื่อดูรายละเอียด';
-  if(sub) sub.textContent = 'ดาวภูเขา · ดาวน้ำ · ดาวฐาน · เหตุผล v1.2';
+  if(title) title.textContent = _fstx('auto.f.123','แตะโซนสีบนวงแปลนเพื่อดูรายละเอียด');
+  if(sub) sub.textContent = _fstx('auto.f.124','ดาวภูเขา · ดาวน้ำ · ดาวฐาน · เหตุผล v1.2');
   if(stars) stars.innerHTML = '';
-  if(reasons) reasons.innerHTML = '<div>อัพรูปแปลนแล้วแตะทิศที่ต้องการอ่าน</div>';
+  if(reasons) reasons.innerHTML = `<div>${_fstx('auto.f.125','อัพรูปแปลนแล้วแตะทิศที่ต้องการอ่าน')}</div>`;
   if(usage) usage.innerHTML = '';
 }
 function selectPlanDirection(dir, natalGrids){
@@ -4732,7 +4761,7 @@ function setMapExpanded(expanded){
   card.classList.toggle('map-expanded', expanded);
   document.body.classList.toggle('fs-map-expanded', expanded);
   btn.classList.toggle('active', expanded);
-  btn.textContent = expanded ? '⤢ ย่อแผนที่' : '⛶ เต็มจอ';
+  btn.textContent = expanded ? _fstx('auto.f.163','⤢ ย่อแผนที่') : _fstx('auto.f.164','⛶ เต็มจอ');
   resizeMapAfterLayout();
 }
 
@@ -4790,10 +4819,10 @@ document.getElementById('btnClear').addEventListener('click', ()=>{
   document.getElementById('mrVerdict').textContent = '—';
 });
 function gpsErrorMessage(err){
-  if(err?.code === 1) return 'เบราว์เซอร์ไม่อนุญาต GPS · เปิด Location Permission ให้ hourkey.io แล้วลองใหม่';
-  if(err?.code === 2) return 'เครื่องหาตำแหน่งไม่ได้ · เปิด Location/GPS และลองยืนใกล้หน้าต่างหรือพื้นที่โล่ง';
-  if(err?.code === 3) return 'หา GPS นานเกินไป · ลองกดใหม่ หรือใช้แผนที่ลากไปตำแหน่งบ้านแทน';
-  return `ขอ GPS ไม่สำเร็จ${err?.message ? ': ' + err.message : ''}`;
+  if(err?.code === 1) return _fstx('auto.f.135','เบราว์เซอร์ไม่อนุญาต GPS · เปิด Location Permission ให้ hourkey.io แล้วลองใหม่');
+  if(err?.code === 2) return _fstx('auto.f.136','เครื่องหาตำแหน่งไม่ได้ · เปิด Location/GPS และลองยืนใกล้หน้าต่างหรือพื้นที่โล่ง');
+  if(err?.code === 3) return _fstx('auto.f.137','หา GPS นานเกินไป · ลองกดใหม่ หรือใช้แผนที่ลากไปตำแหน่งบ้านแทน');
+  return `${_fstx('auto.f.138','ขอ GPS ไม่สำเร็จ')}${err?.message ? ': ' + err.message : ''}`;
 }
 function setGpsButtonText(text, restoreMs=0){
   const btn = document.getElementById('btnGeolocate');
@@ -4805,10 +4834,10 @@ function setGpsButtonText(text, restoreMs=0){
   }
 }
 document.getElementById('btnGeolocate').addEventListener('click', ()=>{
-  if(!navigator.geolocation){ alert('Browser ไม่รองรับ GPS'); return; }
+  if(!navigator.geolocation){ alert(_fstx('auto.f.083','Browser ไม่รองรับ GPS')); return; }
   const btn = document.getElementById('btnGeolocate');
   if(btn) btn.disabled = true;
-  setGpsButtonText('กำลังหา GPS...');
+  setGpsButtonText(_fstx('auto.f.084','กำลังหา GPS...'));
   navigator.geolocation.getCurrentPosition(pos=>{
     const ll = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     if(map){
@@ -4818,14 +4847,14 @@ document.getElementById('btnGeolocate').addEventListener('click', ()=>{
     }
     if(btn) btn.disabled = false;
     const verdict = document.getElementById('mrVerdict');
-    if(verdict) verdict.textContent = `GPS เจอตำแหน่งแล้ว · ±${Math.round(pos.coords.accuracy || 0)}m`;
+    if(verdict) verdict.textContent = `${_fstx('auto.f.139','GPS เจอตำแหน่งแล้ว')} · ±${Math.round(pos.coords.accuracy || 0)}m`;
     setGpsButtonText('📍 GPS ✓', 2200);
   }, err=>{
     if(btn) btn.disabled = false;
     const message = gpsErrorMessage(err);
     const verdict = document.getElementById('mrVerdict');
     if(verdict) verdict.textContent = message;
-    setGpsButtonText('GPS ไม่สำเร็จ', 2600);
+    setGpsButtonText(_fstx('auto.f.140','GPS ไม่สำเร็จ'), 2600);
     alert(message);
   }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
 });
@@ -4839,7 +4868,7 @@ function loadGoogleMaps(){
   script.async = true;
   script.defer = true;
   script.onerror = ()=>{
-    document.getElementById('gmap').innerHTML = '<div style="padding:40px;text-align:center;color:var(--fg-soft);"><b style="color:var(--inauspicious)">โหลด Google Maps ไม่สำเร็จ</b><br/><br/>ตรวจสอบว่า API key เปิดใช้ <code>Maps JavaScript API</code> และไม่ได้ restrict domain</div>';
+    document.getElementById('gmap').innerHTML = `<div style="padding:40px;text-align:center;color:var(--fg-soft);"><b style="color:var(--inauspicious)">${_fstx('auto.f.305','โหลด Google Maps ไม่สำเร็จ')}</b><br/><br/>${_fstx('auto.f.306','ตรวจสอบว่า API key เปิดใช้ <code>Maps JavaScript API</code> และไม่ได้ restrict domain')}</div>`;
   };
   document.head.appendChild(script);
 }
@@ -4888,6 +4917,294 @@ Object.assign(window.HK_I18N, {
   'auto.f.019': { th:'🏠 ลากผนัง (แนะนำ):', en:'🏠 Drag wall (recommended):', zh:'🏠 拖牆 (建議):' },
   'auto.f.020': { th:'กด-ลากเส้น', en:'Press-drag line', zh:'按住拖線' },
   'auto.f.021': { th:'① จุดยืน → ② ทิศหันหน้า:', en:'① Standing point → ② Facing direction:', zh:'① 立點 → ② 朝向:' },
+  'auto.f.022': { th:'หาทิศบ้าน', en:'Find House Direction', zh:'找宅向' },
+  'auto.f.023': { th:'หน้านี้มีไว้สำหรับคนที่ยังไม่รู้ว่าหน้าบ้านหันกี่องศา ใช้แผนที่ เข็มทิศมือถือ หรือกรอกค่าที่วัดเอง แล้วล็อกทิศบ้านก่อนอ่านภาพรวมเบื้องต้น', en:'For those who don\'t yet know their house\'s facing degree. Use the map, phone compass, or enter a measured value, then lock the house direction before reading the overview.', zh:'適合還不知道自家朝向角度的人。用地圖、手機羅盤，或自行輸入實測值，鎖定宅向後再看總覽。' },
+  'auto.f.024': { th:'ภู+ฐาน', en:'Mountain+Base', zh:'山+基' },
+  'auto.f.025': { th:'น้ำ', en:'Water', zh:'水' },
+  'auto.f.026': { th:'เดือน', en:'Month', zh:'月' },
+  'auto.f.027': { th:'วัน', en:'Day', zh:'日' },
+  'auto.f.028': { th:'ดาวเหิน', en:'Flying Star', zh:'飛星' },
+  'auto.f.029': { th:'คนในผัง', en:'People in chart', zh:'命盤中人' },
+  'auto.f.030': { th:'วัดจากแผนที่เป็นหลัก ใช้เข็มทิศมือถือเป็นตัวช่วย หรือกรอกองศาที่วัดเอง แล้วกดยืนยันว่าทิศนี้คือหน้าบ้านจริง', en:'Mainly measure from the map, use the phone compass as a helper, or type in a measured degree, then confirm this is the true facing.', zh:'主要用地圖測量，手機羅盤輔助，或輸入實測角度，確認此為真實朝向。' },
+  'auto.f.031': { th:'สถานะทิศบ้าน', en:'House Direction Status', zh:'宅向狀態' },
+  'auto.f.032': { th:'ยังไม่ได้ยืนยันทิศบ้าน · ลากผนังบนแผนที่ ใช้เข็มทิศ หรือกรอกองศาเองก่อน', en:'House direction not confirmed yet · Drag the wall on the map, use the compass, or enter the degree first', zh:'尚未確認宅向 · 先在地圖拖牆、用羅盤或自行輸入角度' },
+  'auto.f.033': { th:'24 ซาน', en:'24 Mountains', zh:'24山' },
+  'auto.f.034': { th:'แหล่งที่มา', en:'Source', zh:'來源' },
+  'auto.f.035': { th:'หลักสำคัญ:', en:'Key rule:', zh:'重點:' },
+  'auto.f.036': { th:'ถ้ายังไม่ยืนยัน ระบบจะแสดงแค่ค่าที่วัดได้ ไม่เปิดผัง 9 ช่องเป็นคำแนะนำ', en:'Until confirmed, the system only shows the measured value — it will not open the 9-palace chart as a recommendation', zh:'尚未確認前，系統只顯示量到的數值，不會開啟九宮圖作為建議' },
+  'auto.f.037': { th:'รอยืนยันทิศ', en:'Waiting to confirm direction', zh:'待確認方向' },
+  'auto.f.038': { th:'เปิดหล่อแกเต็ม', en:'Open full Luopan', zh:'開啟完整羅盤' },
+  'auto.f.039': { th:'พรีวิว 9 ช่องหลังล็อกทิศ', en:'9-palace preview after locking direction', zh:'鎖向後九宮預覽' },
+  'auto.f.040': { th:'ใช้ดูภาพรวมเบื้องต้นของบ้านหลังนี้หลังยืนยันองศาแล้ว ยังไม่ใช่คำตัดสินวางประตู น้ำ เตียง หรือเตา', en:'For a preliminary overview of this house after confirming the degree — not yet a final verdict for placing doors, water features, beds, or stoves', zh:'確認角度後，用於初步查看本宅總覽，尚非門/水/床/爐擺放的最終定論' },
+  'auto.f.041': { th:'คำเตือนเวลาแบบย่อ', en:'Quick timing warnings', zh:'簡易流年提醒' },
+  'auto.f.042': { th:'ชั้นนี้เป็นคำเตือนเบื้องต้นของปี เดือน วัน ยาม เพื่อให้รู้ว่าควรระวังทิศไหนก่อนอ่านละเอียด', en:'This layer gives preliminary year/month/day/hour warnings, so you know which direction to watch before a detailed reading', zh:'此層為年/月/日/時的初步提醒，讓你先知道該留意哪個方位' },
+  'auto.f.047': { th:'凶 ระวังใหญ่', en:'凶 Major caution', zh:'凶 大凶' },
+  'auto.f.048': { th:'吉 ดี', en:'吉 Good', zh:'吉 佳' },
+  'auto.f.049': { th:'凶 ระวัง', en:'凶 Caution', zh:'凶 慎' },
+  'auto.f.050': { th:'ไท่', en:'Tai', zh:'太' },
+  'auto.f.051': { th:'สามชะ', en:'3-Kill', zh:'三煞' },
+  'auto.f.052': { th:'5เหลือง', en:'5 Yellow', zh:'5黃' },
+  'auto.f.053': { th:'ดี', en:'Good', zh:'佳' },
+  'auto.f.054': { th:'ภู', en:'Mountain', zh:'山' },
+  'auto.f.055': { th:'ฐาน', en:'Base', zh:'基' },
+  'auto.f.056': { th:'ดาวภูเขา · คน/สุขภาพ · จาก', en:'Mountain Star · People/Health · from', zh:'山星 · 人丁/健康 · 來自' },
+  'auto.f.057': { th:'ดาวแม่น้ำ · ประตู/เงิน · จาก', en:'Water Star · Door/Wealth · from', zh:'水星 · 門/財 · 來自' },
+  'auto.f.058': { th:'ดาวฐาน · พื้นพลังของวัง', en:'Base Star · palace base energy', zh:'基星 · 宮位基礎能量' },
+  'auto.f.060': { th:'ดาวปี', en:'Year Star', zh:'年星' },
+  'auto.f.061': { th:'ดาวเดือน', en:'Month Star', zh:'月星' },
+  'auto.f.062': { th:'ดาววัน', en:'Day Star', zh:'日星' },
+  'auto.f.063': { th:'ดาวยาม', en:'Hour Star', zh:'時星' },
+  'auto.f.064': { th:'ไท่ซุ่ย', en:'Tai Sui', zh:'太歲' },
+  'auto.f.065': { th:'ห้ามขุด/ตอก/รบกวนทิศนี้ · ห้ามนั่งหันหลังใส่', en:'Do not dig/hammer/disturb this direction · do not sit with your back to it', zh:'忌動土/釘釘/擾動此方 · 忌背靠此方而坐' },
+  'auto.f.066': { th:'3 ชะ', en:'3 Killings', zh:'三煞' },
+  'auto.f.067': { th:'ห้ามนั่งหันหน้าใส่ทิศนี้ · ห้าม renovate', en:'Do not sit facing this direction · do not renovate', zh:'忌正對此方而坐 · 忌動工翻修' },
+  'auto.f.068': { th:'5 เหลือง', en:'5 Yellow', zh:'5黃' },
+  'auto.f.069': { th:'ห้ามรบกวน · วางโลหะ/นาฬิกาทอง ลด', en:'Do not disturb · placing metal objects/a gold clock helps reduce it', zh:'忌擾動 · 擺放金屬/金色時鐘可化解' },
+  'auto.f.070': { th:'ของแต่ละคน:', en:'for each person:', zh:'各人:' },
+  'auto.f.071': { th:'อยู่ห้องนี้:', en:'In this room:', zh:'在此房間:' },
+  'auto.f.072': { th:'ผังบ้าน:', en:'House Chart:', zh:'宅盤:' },
+  'auto.f.073': { th:'ดาวประจำปีในทิศนี้:', en:'Year star in this direction:', zh:'本方位流年星:' },
+  'auto.f.074': { th:'หลัง', en:'sitting', zh:'坐' },
+  'auto.f.075': { th:'แผนที่', en:'Map', zh:'地圖' },
+  'auto.f.076': { th:'เข็มทิศมือถือ', en:'Phone compass', zh:'手機羅盤' },
+  'auto.f.077': { th:'กรอกเอง', en:'Manual entry', zh:'手動輸入' },
+  'auto.f.078': { th:'ข้อมูลที่บันทึก', en:'Saved data', zh:'已存資料' },
+  'auto.f.079': { th:'ยังไม่ระบุ', en:'Not specified', zh:'尚未指定' },
+  'auto.f.080': { th:'ยังไม่มีคนในผัง · เพิ่มด้านล่าง', en:'No one added to the chart yet · add below', zh:'命盤尚無人員 · 請在下方新增' },
+  'auto.f.081': { th:'ใส่ชื่อ + ปีเกิด (1900-2030) ครับ', en:'Please enter a name + birth year (1900-2030)', zh:'請輸入姓名 + 出生年 (1900-2030)' },
+  'auto.f.082': { th:'ปักจุดยืนก่อน (สีเขียว)', en:'Place the standing point first (green)', zh:'請先標示立足點(綠色)' },
+  'auto.f.083': { th:'Browser ไม่รองรับ GPS', en:'Browser does not support GPS', zh:'瀏覽器不支援GPS' },
+  'auto.f.084': { th:'กำลังหา GPS...', en:'Locating GPS...', zh:'定位GPS中...' },
+  'auto.f.085': { th:'ข้อมูลทิศที่วัดได้', en:'Measured direction data', zh:'已測方位資料' },
+  'auto.f.086': { th:'เริ่มจากแผนที่หรือเข็มทิศ แล้วกดยืนยันเมื่อมั่นใจว่าเป็นทิศหน้าบ้านจริง', en:'Start from the map or compass, then confirm once you\'re sure this is the true house facing', zh:'先用地圖或羅盤測量，確定為真實宅向後再確認' },
+  'auto.f.087': { th:'ยืนยันแล้ว', en:'Confirmed', zh:'已確認' },
+  'auto.f.088': { th:'ยังไม่ยืนยัน · ตรวจแนวผนัง/หน้าบ้านก่อน', en:'Not confirmed yet · check the wall alignment/house facing first', zh:'尚未確認 · 請先檢查牆面走向/宅向' },
+  'auto.f.089': { th:'อ่านค่านี้ก่อนใช้เป็นทิศบ้าน', en:'Review this before using it as the house direction', zh:'使用前請先確認此數值' },
+  'auto.f.090': { th:'สถานะ', en:'Status', zh:'狀態' },
+  'auto.f.091': { th:'มุมบ้าน', en:'House corner', zh:'屋角' },
+  'auto.f.092': { th:'A จุดเริ่มผนัง · จับค้างแล้วลากเพื่อย้าย', en:'A - wall start point · press-hold and drag to move', zh:'A 牆體起點 · 按住拖曳可移動' },
+  'auto.f.093': { th:'B ปลายผนัง · จับค้างแล้วลากเพื่อยืด/หด/หมุนเส้น', en:'B - wall end point · press-hold and drag to stretch/shrink/rotate the line', zh:'B 牆體終點 · 按住拖曳可伸縮/旋轉' },
+  'auto.f.094': { th:'จุดกลางบ้าน · ลากปรับไท่จี๋ได้', en:'House center point · drag to adjust the Tai Chi center', zh:'屋宅中心點 · 可拖曳調整太極點' },
+  'auto.f.095': { th:'คลุมบ้าน', en:'House outline', zh:'屋形輪廓' },
+  'auto.f.096': { th:'จุด · รัศมี', en:'points · radius', zh:'點 · 半徑' },
+  'auto.f.097': { th:'แตะเพิ่มอีก', en:'Tap to add', zh:'再點選' },
+  'auto.f.098': { th:'จุดเพื่อเปิดวง 24山', en:'more point(s) to open the 24-Mountain ring', zh:'個點以開啟24山羅盤' },
+  'auto.f.099': { th:'แตะมุมบ้านทีละจุด', en:'Tap each house corner point one at a time', zh:'逐一點選屋角' },
+  'auto.f.100': { th:'จุดยืน', en:'Standing point', zh:'立點' },
+  'auto.f.101': { th:'ทิศหันหน้า', en:'Facing direction', zh:'朝向' },
+  'auto.f.102': { th:'แปลน', en:'Floor plan', zh:'平面圖' },
+  'auto.f.103': { th:'ยังไม่ได้อัพรูป', en:'No image uploaded yet', zh:'尚未上傳圖片' },
+  'auto.f.104': { th:'หล่อแกดิจิทัล: ลาก 中 ให้ตรงกลางบ้าน · Facing ล็อกจากการ์ดบน · แดงเข้ม = หลายศาสตร์หนุน', en:'Digital Luopan: drag 中 to the house center · Facing is locked from the card above · darker red = more sciences agree', zh:'數位羅盤: 拖曳「中」對準屋宅中心 · Facing 由上方卡片鎖定 · 紅色越深 = 越多學派一致' },
+  'auto.f.105': { th:'อัพรูปแปลนก่อน แล้วล็อค 中 + Facing เพื่อวางหล่อแก', en:'Upload the floor plan first, then lock 中 + Facing to place the Luopan', zh:'請先上傳平面圖，再鎖定「中」+ Facing 以放置羅盤' },
+  'auto.f.106': { th:'ดาวบ้าน', en:'House Star', zh:'宅星' },
+  'auto.f.107': { th:'ยังไม่มีข้อมูล', en:'No data yet', zh:'尚無資料' },
+  'auto.f.108': { th:'ถูกข้อห้ามคุม', en:'restricted by an affliction', zh:'受煞制約' },
+  'auto.f.109': { th:'ยังไม่มีผัง QMDJ', en:'No QMDJ chart yet', zh:'尚無奇門盤' },
+  'auto.f.110': { th:'ฐ', en:'Base', zh:'基' },
+  'auto.f.111': { th:'หล่อแกหนุน', en:'Luopan support', zh:'羅盤支持' },
+  'auto.f.112': { th:'ศาสตร์', en:'discipline(s)', zh:'學派' },
+  'auto.f.113': { th:'ดาวภูเขา', en:'Mountain Star', zh:'山星' },
+  'auto.f.114': { th:'ดาวน้ำ', en:'Water Star', zh:'水星' },
+  'auto.f.115': { th:'ดาวฐาน', en:'Base Star', zh:'基星' },
+  'auto.f.116': { th:'หนุน', en:'Supports', zh:'支持' },
+  'auto.f.117': { th:'ไม่หนุน', en:'Does not support', zh:'不支持' },
+  'auto.f.118': { th:'ยังไม่มีเหตุผลเฉพาะ', en:'No specific reason yet', zh:'尚無特定理由' },
+  'auto.f.119': { th:'ประตู/ทางเดิน', en:'Door/Walkway', zh:'門/走道' },
+  'auto.f.120': { th:'ห้องนอน', en:'Bedroom', zh:'臥室' },
+  'auto.f.121': { th:'ทำงาน', en:'Work area', zh:'工作區' },
+  'auto.f.122': { th:'เก็บของ', en:'Storage', zh:'儲藏' },
+  'auto.f.123': { th:'แตะโซนสีบนวงแปลนเพื่อดูรายละเอียด', en:'Tap a colored zone on the plan ring for details', zh:'點選平面圖上的色塊查看詳情' },
+  'auto.f.124': { th:'ดาวภูเขา · ดาวน้ำ · ดาวฐาน · เหตุผล v1.2', en:'Mountain Star · Water Star · Base Star · Reasoning v1.2', zh:'山星 · 水星 · 基星 · 判斷理由 v1.2' },
+  'auto.f.125': { th:'อัพรูปแปลนแล้วแตะทิศที่ต้องการอ่าน', en:'Upload the floor plan, then tap the direction you want to read', zh:'上傳平面圖後，點選想查看的方位' },
+  'auto.f.126': { th:'ม่วง · เด่นพิเศษ', en:'Purple · exceptional', zh:'紫 · 特別出眾' },
+  'auto.f.127': { th:'เขียว · ใช้ดี', en:'Green · good to use', zh:'綠 · 適合使用' },
+  'auto.f.128': { th:'ทอง · ใช้ได้', en:'Gold · usable', zh:'金 · 可用' },
+  'auto.f.129': { th:'ส้ม · ต้องคุม', en:'Orange · needs control', zh:'橙 · 需節制' },
+  'auto.f.130': { th:'แดง · เลี่ยง', en:'Red · avoid', zh:'紅 · 宜避免' },
+  'auto.f.132': { th:'ระวัง', en:'Caution', zh:'慎' },
+  'auto.f.133': { th:'เลี่ยง', en:'Avoid', zh:'避免' },
+  'auto.f.134': { th:'กลาง', en:'Neutral', zh:'中等' },
+  'auto.f.135': { th:'เบราว์เซอร์ไม่อนุญาต GPS · เปิด Location Permission ให้ hourkey.io แล้วลองใหม่', en:'Browser denied GPS access · enable Location Permission for hourkey.io and try again', zh:'瀏覽器拒絕GPS存取 · 請為hourkey.io開啟定位權限後再試' },
+  'auto.f.136': { th:'เครื่องหาตำแหน่งไม่ได้ · เปิด Location/GPS และลองยืนใกล้หน้าต่างหรือพื้นที่โล่ง', en:'Device could not get a location · turn on Location/GPS and try standing near a window or open area', zh:'裝置無法定位 · 請開啟定位/GPS，並嘗試站在窗邊或空曠處' },
+  'auto.f.137': { th:'หา GPS นานเกินไป · ลองกดใหม่ หรือใช้แผนที่ลากไปตำแหน่งบ้านแทน', en:'GPS search took too long · try again, or drag the map to your house location instead', zh:'GPS定位逾時 · 請重試，或改用拖曳地圖至住家位置' },
+  'auto.f.138': { th:'ขอ GPS ไม่สำเร็จ', en:'GPS request failed', zh:'GPS請求失敗' },
+  'auto.f.139': { th:'GPS เจอตำแหน่งแล้ว', en:'GPS found the location', zh:'GPS已定位' },
+  'auto.f.140': { th:'GPS ไม่สำเร็จ', en:'GPS failed', zh:'GPS失敗' },
+  'auto.f.141': { th:'มีองศาที่วัดได้แล้ว · กดยืนยันทิศบ้านก่อนเปิดพรีวิว 9 ช่อง', en:'Degree measured already · confirm the house direction before opening the 9-palace preview', zh:'已測得角度 · 請先確認宅向才能開啟九宮預覽' },
+  'auto.f.142': { th:'ดูพรีวิว 9 ช่อง', en:'View 9-palace preview', zh:'查看九宮預覽' },
+  'auto.f.144': { th:'ที่มา:', en:'Source:', zh:'來源:' },
+  'auto.f.145': { th:'ต้องกดยืนยันทิศบ้านก่อน ระบบจึงเปิดพรีวิว 9 ช่อง', en:'You must confirm the house direction first before the system opens the 9-palace preview', zh:'需先確認宅向，系統才會開啟九宮預覽' },
+  'auto.f.146': { th:'ต้องกดยืนยันทิศบ้านก่อน ระบบจึงเปิดหล่อแกเต็มได้', en:'You must confirm the house direction first before the system opens the full Luopan', zh:'需先確認宅向，系統才能開啟完整羅盤' },
+  'auto.f.147': { th:'ยังไม่มีองศาที่ใช้ยืนยัน', en:'No degree available to confirm yet', zh:'尚無可供確認的角度' },
+  'auto.f.149': { th:'ต้องวัดทิศบนแผนที่ก่อน', en:'Measure the direction on the map first', zh:'請先在地圖上測量方位' },
+  'auto.f.150': { th:'ยืนยันทิศจากแผนที่แล้ว', en:'Direction confirmed from the map', zh:'已由地圖確認方位' },
+  'auto.f.151': { th:'กรอกองศาหน้าบ้าน หรือวัดจากแผนที่/เข็มทิศก่อน', en:'Enter the facing degree, or measure it from the map/compass first', zh:'請先輸入朝向角度，或由地圖/羅盤測量' },
+  'auto.f.152': { th:'คำนวณผังแล้ว ·', en:'Chart calculated ·', zh:'命盤已計算 ·' },
+  'auto.f.153': { th:'ยังไม่ยืนยัน', en:'Not confirmed', zh:'尚未確認' },
+  'auto.f.143': { th:'ยืนยันทิศบ้านแล้ว', en:'House direction confirmed', zh:'宅向已確認' },
+  'auto.f.154': { th:'↔ แสดง Sitting', en:'↔ Show Sitting', zh:'↔ 顯示坐山' },
+  'auto.f.155': { th:'↔ แสดง Facing', en:'↔ Show Facing', zh:'↔ 顯示向山' },
+  'auto.f.156': { th:'กำลังซูม...', en:'Zooming...', zh:'縮放中...' },
+  'auto.f.157': { th:'จับหยด A/B เพื่อย้ายเส้น', en:'Hold pin A/B to move the line', zh:'按住A/B圖釘以移動線' },
+  'auto.f.158': { th:'ลากเส้น A→B ก่อน', en:'Drag line A to B first', zh:'請先拖曳A→B線' },
+  'auto.f.159': { th:'เส้นทองออกจากปลายหยดน้ำ · ปรับ B ±0.1°', en:'Gold line extends from the pin tip · adjust B by ±0.1°', zh:'金線由圖釘尖端延伸 · 調整B ±0.1°' },
+  'auto.f.160': { th:'ลากจากจุดเริ่มไปปลายผนัง', en:'Drag from the start point to the wall\'s end', zh:'從起點拖曳至牆的末端' },
+  'auto.f.161': { th:'✓ ปิดแล้ว', en:'✓ Closed', zh:'✓ 已封閉' },
+  'auto.f.162': { th:'✓ ปิดรูปบ้าน', en:'✓ Close house outline', zh:'✓ 封閉屋形' },
+  'auto.f.163': { th:'⤢ ย่อแผนที่', en:'⤢ Shrink map', zh:'⤢ 縮小地圖' },
+  'auto.f.164': { th:'⛶ เต็มจอ', en:'⛶ Fullscreen', zh:'⛶ 全螢幕' },
+  'auto.f.165': { th:'🔍 หลังคา', en:'🔍 Roof', zh:'🔍 屋頂' },
+  'auto.f.166': { th:'9 พาลา ·', en:'9 Palaces ·', zh:'九宮 ·' },
+  'auto.f.167': { th:'ยืนยันทิศบ้าน · Facing and Period', en:'Confirm House Direction · Facing and Period', zh:'確認宅向 · Facing and Period' },
+  'auto.f.168': { th:'ชื่อบ้าน', en:'House name', zh:'宅名' },
+  'auto.f.169': { th:'ปีสร้าง/รีโนเวทใหญ่', en:'Construction/major renovation year', zh:'建造/大翻修年份' },
+  'auto.f.170': { th:'ยุคบ้าน', en:'House period', zh:'宅運' },
+  'auto.f.171': { th:'ยืนยันทิศบ้าน', en:'Confirm House Direction', zh:'確認宅向' },
+  'auto.f.172': { th:'บันทึกบ้าน', en:'Save House', zh:'儲存宅資料' },
+  'auto.f.173': { th:'โหลดบ้าน', en:'Load House', zh:'載入宅資料' },
+  'auto.f.174': { th:'หน้านี้ใช้ล็อก <b>องศาหน้าบ้าน</b> และ <b>ยุคบ้าน</b> ก่อนเท่านั้น ถ้ายังไม่ได้วัดจริงอย่าปล่อยให้ค่าตัวอย่างกลายเป็นคำตัดสิน', en:'This page only locks the <b>facing degree</b> and <b>house period</b> - if you have not measured it yet, do not let the sample values become the final verdict', zh:'此頁僅鎖定<b>朝向角度</b>與<b>宅運</b> · 若尚未實測，請勿讓範例數值變成最終判斷' },
+  'auto.f.175': { th:'ภูเขา', en:'Mountain', zh:'山' },
+  'auto.f.176': { th:'แม่น้ำ', en:'Water/River', zh:'水' },
+  'auto.f.177': { th:'3ชะ', en:'3 Killings', zh:'三煞' },
+  'auto.f.179': { th:'ยังไม่ได้ยืนยันทิศบ้าน', en:'House direction not confirmed yet', zh:'尚未確認宅向' },
+  'auto.f.180': { th:'องศาหน้าบ้าน', en:'Facing degree', zh:'朝向角度' },
+  'auto.f.181': { th:'ขณะนี้', en:'Now', zh:'現在' },
+  'auto.f.182': { th:'ทิศต้องระวัง', en:'Directions to watch', zh:'需留意的方位' },
+  'auto.f.183': { th:'คนในบ้าน', en:'People in the house', zh:'家中成員' },
+  'auto.f.184': { th:'+ เพิ่มคน', en:'+ Add person', zh:'+ 新增成員' },
+  'auto.f.185': { th:'ชื่อ', en:'Name', zh:'姓名' },
+  'auto.f.186': { th:'ปีเกิด', en:'Birth year', zh:'出生年' },
+  'auto.f.187': { th:'ชาย Male', en:'Male', zh:'男' },
+  'auto.f.188': { th:'หญิง Female', en:'Female', zh:'女' },
+  'auto.f.189': { th:'— ห้องประจำ (optional) —', en:'- Assigned room (optional) -', zh:'— 指定房間(optional) —' },
+  'auto.f.190': { th:'N · เหนือ', en:'N · North', zh:'N · 北' },
+  'auto.f.191': { th:'NE · ทิศตะวันออกเฉียงเหนือ', en:'NE · Northeast', zh:'NE · 東北' },
+  'auto.f.192': { th:'E · ตะวันออก', en:'E · East', zh:'E · 東' },
+  'auto.f.193': { th:'SE · ทิศตะวันออกเฉียงใต้', en:'SE · Southeast', zh:'SE · 東南' },
+  'auto.f.194': { th:'S · ใต้', en:'S · South', zh:'S · 南' },
+  'auto.f.195': { th:'SW · ทิศตะวันตกเฉียงใต้', en:'SW · Southwest', zh:'SW · 西南' },
+  'auto.f.196': { th:'W · ตะวันตก', en:'W · West', zh:'W · 西' },
+  'auto.f.197': { th:'NW · ทิศตะวันตกเฉียงเหนือ', en:'NW · Northwest', zh:'NW · 西北' },
+  'auto.f.198': { th:'C · ศูนย์กลาง', en:'C · Center', zh:'C · 中' },
+  'auto.f.199': { th:'ค้นหา', en:'Find', zh:'尋找' },
+  'auto.f.200': { th:'ทิศหน้าบ้าน', en:'Facing direction', zh:'朝向方位' },
+  'auto.f.201': { th:'หา Facing จากแผนที่ดาวเทียมเป็นหลัก — ลากเส้น A→B ทาบผนังหน้าบ้าน แล้วกดยืนยันเมื่อมั่นใจว่าองศานี้คือทิศที่บ้านหันออกจริง', en:'Mainly find the Facing from the satellite map - drag a line A to B along the house\'s front wall, then confirm once you are sure this degree is the true direction the house faces', zh:'主要透過衛星地圖尋找朝向(Facing) — 沿房屋正面牆拖曳A→B線，確定此角度為真實朝向後再確認' },
+  'auto.f.202': { th:'指南針 เข็มทิศช่วยวัด', en:'指南針 Compass helper for measuring', zh:'指南針 輔助測量羅盤' },
+  'auto.f.203': { th:'เข็มทิศนี้ใช้ช่วยวัดองศาหน้าบ้านเท่านั้น ไม่ใช่คำตัดสินฮวงจุ้ย', en:'This compass only helps measure the facing degree - it is not a Feng Shui verdict', zh:'此羅盤僅輔助測量朝向角度，並非風水判斷' },
+  'auto.f.204': { th:'หันหลังพิงประตูหน้าบ้าน · ถือมือถือขนานพื้น · ค่าที่ได้คือทิศที่บ้านหันออก', en:'Stand with your back against the front door · hold the phone flat · the reading is the direction the house faces outward', zh:'背靠前門而站 · 手機保持水平 · 讀數即為房屋朝外方位' },
+  'auto.f.205': { th:'(แทบไม่ต้องแก้)', en:'(barely needs adjustment)', zh:'(幾乎不需校正)' },
+  'auto.f.206': { th:'◎ คลุมบ้าน', en:'◎ Trace house outline', zh:'◎ 描繪屋形' },
+  'auto.f.207': { th:'↶ ย้อนจุด', en:'↶ Undo point', zh:'↶ 復原點' },
+  'auto.f.208': { th:'＋ ซูม', en:'＋ Zoom in', zh:'＋ 放大' },
+  'auto.f.209': { th:'－ ย่อ', en:'－ Zoom out', zh:'－ 縮小' },
+  'auto.f.210': { th:'鎖 ยืนยันทิศบ้าน', en:'鎖 Confirm house direction', zh:'鎖 確認宅向' },
+  'auto.f.211': { th:'สลับ', en:'Swap', zh:'切換' },
+  'auto.f.212': { th:'หลังบ้าน', en:'Sitting (rear)', zh:'屋後' },
+  'auto.f.213': { th:'ทาบขอบผนังหน้าบ้าน A→B · หลังสร้างเส้นแล้ว จับหยด A/B ค้างแล้วลากเพื่อย้าย ยืด หด หรือหมุนเส้น · ใช้ Fine Wall Fit ปรับปลาย B ทีละ 0.1° จนเส้นทองขนานผนัง · ลูกศรเขียวจุดกลาง = ทิศหันหน้า · เส้นเทา = ทิศหลัง', en:'Trace along the front wall A to B · once drawn, hold pin A/B and drag to move, stretch, shrink, or rotate the line · use Fine Wall Fit to adjust end B by 0.1 degrees at a time until the gold line runs parallel to the wall · the green arrow at center = facing direction · the gray line = sitting direction', zh:'沿房屋正面牆描繪A→B · 畫線後按住A/B圖釘拖曳可移動、伸縮或旋轉 · 用Fine Wall Fit以0.1°為單位微調B端，直到金線與牆平行 · 中心綠色箭頭=朝向 · 灰線=坐向' },
+  'auto.f.214': { th:'◎ คลุมบ้าน:', en:'◎ Trace house outline:', zh:'◎ 描繪屋形:' },
+  'auto.f.215': { th:'แตะมุมหลังคาทีละจุด · จุดที่ 4 ขึ้นไประบบหาจุดกลางบ้านและวางวง 24 ขุนเขาให้ · กด ✓ ปิดรูปบ้านเมื่อครบมุม', en:'Tap each roof corner one at a time · from the 4th point onward the system finds the house center and places the 24-Mountain ring · press Close house outline once all corners are marked', zh:'逐一點選屋頂角落 · 第4點起系統會自動找出屋宅中心並放置24山羅盤 · 標完所有角落後按 封閉屋形' },
+  'auto.f.217': { th:'จุดหน้าบ้าน', en:'House-front point', zh:'屋前點' },
+  'auto.f.218': { th:'平面圖 Floor Plan Overlay · อัพแปลนบ้าน', en:'平面圖 Floor Plan Overlay · upload house floor plan', zh:'平面圖 Floor Plan Overlay · 上傳宅平面圖' },
+  'auto.f.219': { th:'อัพรูปแปลน/ภาพบ้าน แล้ววางวง 24 ขุนเขา + ดาวเหินทับรูปได้ · ลากจุดกลางเพื่อวางไท่จี๋ · วงทิศอิง Facing จากการ์ดบนอัตโนมัติ', en:'Upload the floor plan/house photo, then overlay the 24-Mountain ring + Flying Stars on it · drag the center point to place the Tai Chi point · the direction ring auto-references the Facing from the card above', zh:'上傳平面圖/房屋照片，即可疊加24山羅盤+飛星 · 拖曳中心點以放置太極點 · 方位環自動參照上方卡片的Facing' },
+  'auto.f.220': { th:'อัพรูปแปลน', en:'Upload floor plan', zh:'上傳平面圖' },
+  'auto.f.221': { th:'จัดกลาง', en:'Center', zh:'置中' },
+  'auto.f.222': { th:'ล้างรูป', en:'Clear image', zh:'清除圖片' },
+  'auto.f.223': { th:'แดงจาง', en:'Light red', zh:'淺紅' },
+  'auto.f.224': { th:'1 ศาสตร์หนุน', en:'1 discipline supports', zh:'1個學派支持' },
+  'auto.f.225': { th:'แดงกลาง', en:'Medium red', zh:'中紅' },
+  'auto.f.226': { th:'หลายศาสตร์หนุน', en:'Multiple disciplines support', zh:'多個學派支持' },
+  'auto.f.227': { th:'แดงเข้ม', en:'Dark red', zh:'深紅' },
+  'auto.f.228': { th:'ฉันทามติสูง', en:'High consensus', zh:'高度共識' },
+  'auto.f.229': { th:'เทา', en:'Gray', zh:'灰' },
+  'auto.f.230': { th:'ไม่เด่น/ไม่หนุน', en:'Not notable/no support', zh:'不明顯/不支持' },
+  'auto.f.231': { th:'ขีดทับ', en:'Struck through', zh:'劃線' },
+  'auto.f.232': { th:'มีข้อห้าม', en:'Has a restriction', zh:'有禁忌' },
+  'auto.f.233': { th:'ภู = ดาวภูเขา / คน / สุขภาพ', en:'Mountain = Mountain Star / People / Health', zh:'山 = 山星 / 人丁 / 健康' },
+  'auto.f.234': { th:'น้ำ = ดาวแม่น้ำ / ประตู / เงิน', en:'Water = Water Star / Door / Wealth', zh:'水 = 水星 / 門 / 財' },
+  'auto.f.235': { th:'ฐาน = ดาวฐาน / พื้นพลัง', en:'Base = Base Star / ground energy', zh:'基 = 基星 / 基礎能量' },
+  'auto.f.236': { th:'สี 24山 = ธาตุของขุนเขา ไม่ใช่ความมงคล', en:'24-Mountain colors = the mountain\'s element, not auspiciousness', zh:'24山顏色 = 山的五行，非吉凶' },
+  'auto.f.237': { th:'64卦 = ช่องละเอียด 5.625° สำหรับอ่าน pattern เพิ่ม', en:'64 Hexagrams = fine 5.625 degree sectors for reading additional patterns', zh:'64卦 = 5.625°精細區間，供解讀額外格局' },
+  'auto.f.238': { th:'ข้อห้าม', en:'Restriction', zh:'禁忌' },
+  'auto.f.239': { th:'ต้องล็อค 中 + Facing ก่อน', en:'Must lock 中 + Facing first', zh:'需先鎖定 中 + Facing' },
+  'auto.f.240': { th:'แต่ละศาสตร์ยิงแดงโปร่งใสเท่ากัน แดงเข้ม = หลายศาสตร์หนุน ไม่ใช่สีอันตราย', en:'Each discipline casts an equal transparent red - dark red = multiple disciplines agree, not a danger color', zh:'各學派以相同透明紅色疊加 · 深紅=多學派一致支持，並非危險色' },
+  'auto.f.241': { th:'รัศมีวง', en:'Ring radius', zh:'環半徑' },
+  'auto.f.242': { th:'ความเข้ม overlay', en:'Overlay intensity', zh:'疊層濃度' },
+  'auto.f.243': { th:'อัพรูปแปลนบ้านหรือ screenshot จากมือถือ<br/>จากนั้นลากจุดกลาง 中 และปรับรัศมีวงให้ครอบพื้นที่บ้าน', en:'Upload the house floor plan or a phone screenshot<br/>then drag the center point 中 and adjust the ring radius to cover the house area', zh:'上傳宅平面圖或手機截圖<br/>然後拖曳中心點「中」並調整環半徑以覆蓋房屋範圍' },
+  'auto.f.244': { th:'เหตุผล / คำเตือน', en:'Reasons / Warnings', zh:'理由 / 提醒' },
+  'auto.f.245': { th:'เหมาะกับอะไร', en:'Suitable for', zh:'適合用途' },
+  'auto.f.246': { th:'ลากจุด 中 เพื่อย้ายกลางบ้าน · แตะโซนสีเพื่ออ่านดาว/คะแนน/การใช้งาน · ทิศวงอิง Facing จากการ์ดบน', en:'Drag the 中 point to move the house center · tap a colored zone to read the star/score/usage · the ring direction references the Facing from the card above', zh:'拖曳「中」點以移動屋宅中心 · 點選色塊可查看星曜/分數/用途 · 方位環參照上方卡片的Facing' },
+  'auto.f.247': { th:'อาชีพ · ปัญญา · ลูกชายกลาง', en:'Career · Wisdom · Middle son', zh:'事業 · 智慧 · 中男' },
+  'auto.f.248': { th:'ทรัพย์ · ภูเขา · ลูกชายเล็ก', en:'Wealth · Mountain · Youngest son', zh:'財富 · 山 · 少男' },
+  'auto.f.249': { th:'การเคลื่อน · ทะเลาะ · ลูกชายโต', en:'Movement · Disputes · Eldest son', zh:'行動 · 口舌 · 長男' },
+  'auto.f.250': { th:'ความรัก · ปัญญา · ลม', en:'Romance · Wisdom · Wind', zh:'感情 · 智慧 · 風' },
+  'auto.f.251': { th:'ชื่อเสียง · อนาคต · ลูกสาวกลาง', en:'Fame · Future · Middle daughter', zh:'名聲 · 未來 · 中女' },
+  'auto.f.252': { th:'มารดา · ป่วย · คู่ครอง', en:'Mother · Illness · Spouse', zh:'母親 · 疾病 · 配偶' },
+  'auto.f.253': { th:'เด็ก · เริงร่า · ลูกสาวเล็ก', en:'Children · Joy · Youngest daughter', zh:'子女 · 喜悅 · 少女' },
+  'auto.f.254': { th:'ผู้ใหญ่ช่วย · บิดา · ฟ้า', en:'Benefactors · Father · Heaven', zh:'貴人 · 父親 · 天' },
+  'auto.f.255': { th:'ศูนย์กลาง · จุดสมดุล', en:'Center · Point of balance', zh:'中央 · 平衡點' },
+  'auto.f.256': { th:'ขาว · ปัญญา/ชัยชนะ', en:'White · Wisdom/Victory', zh:'白 · 智慧/勝利' },
+  'auto.f.257': { th:'ดำ · ป่วย/ทุกข์', en:'Black · Illness/Hardship', zh:'黑 · 病/苦' },
+  'auto.f.258': { th:'หยกเขียว · เถียง', en:'Jade · Disputes', zh:'碧 · 是非' },
+  'auto.f.259': { th:'เขียว · รัก/วัฒนธรรม', en:'Green · Romance/Culture', zh:'綠 · 桃花/文昌' },
+  'auto.f.260': { th:'เหลือง · เคราะห์ใหญ่', en:'Yellow · Grave misfortune', zh:'黃 · 大凶' },
+  'auto.f.261': { th:'ขาว · ผู้ใหญ่ช่วย', en:'White · Noble support', zh:'白 · 貴人' },
+  'auto.f.262': { th:'แดง · ขโมย/หลอก', en:'Red · Theft/Deceit', zh:'赤 · 盜/騙' },
+  'auto.f.263': { th:'ขาว · ทรัพย์', en:'White · Wealth', zh:'白 · 財' },
+  'auto.f.264': { th:'ม่วง · อนาคต', en:'Purple · Future fortune', zh:'紫 · 未來' },
+  'auto.f.265': { th:'การพัฒนา · ความรู้ · ความเป็นผู้นำ', en:'Growth · Knowledge · Leadership', zh:'發展 · 學識 · 領導' },
+  'auto.f.266': { th:'⚠️ โรคภัย · ลูกหลาน/มารดาเป็นพิเศษ', en:'⚠️ Illness · especially children/mother', zh:'⚠️ 病符 · 尤其小孩/母親' },
+  'auto.f.267': { th:'⚠️ ทะเลาะ · ฟ้องร้อง · ความขัดแย้ง', en:'⚠️ Quarrels · Lawsuits · Conflict', zh:'⚠️ 口舌 · 官非 · 衝突' },
+  'auto.f.268': { th:'✨ การงาน · การศึกษา · ความรัก · เกียรติ', en:'✨ Career · Study · Romance · Honor', zh:'✨ 事業 · 學業 · 感情 · 名譽' },
+  'auto.f.269': { th:'☠️ ห้ามรบกวน · ห้ามขุด · ห้ามตอกตะปู · เคราะห์ใหญ่', en:'☠️ Do not disturb · no digging · no hammering · grave misfortune', zh:'☠️ 忌擾動 · 忌動土 · 忌釘釘 · 大凶' },
+  'auto.f.270': { th:'✨ noble person · เซ็นสัญญา · ดึงผู้สนับสนุน', en:'✨ Noble person · contract signing · attracting supporters', zh:'✨ 貴人 · 簽約 · 招攬支持者' },
+  'auto.f.271': { th:'⚠️ ขโมย · เลือดตกยางออก · ระวังเจรจา', en:'⚠️ Theft · bloodshed/injury · careful in negotiations', zh:'⚠️ 盜賊 · 血光 · 謹慎談判' },
+  'auto.f.272': { th:'✨✨ ทรัพย์ · เก็บเงิน · วางตู้เซฟ', en:'✨✨ Wealth · saving money · place the safe here', zh:'✨✨ 財富 · 儲蓄 · 宜放保險箱' },
+  'auto.f.273': { th:'✨ ชื่อเสียง · บุญลาภที่จะมา · ดาวเด่นยุค 9', en:'✨ Fame · incoming fortune · the leading star of Period 9', zh:'✨ 名聲 · 將至之福 · 九運當旺星' },
+  'auto.f.274': { th:'เหนือ', en:'North', zh:'北' },
+  'auto.f.275': { th:'ตะวันออกเฉียงเหนือ', en:'Northeast', zh:'東北' },
+  'auto.f.276': { th:'ตะวันออก', en:'East', zh:'東' },
+  'auto.f.277': { th:'ตะวันออกเฉียงใต้', en:'Southeast', zh:'東南' },
+  'auto.f.278': { th:'ใต้', en:'South', zh:'南' },
+  'auto.f.279': { th:'ตะวันตกเฉียงใต้', en:'Southwest', zh:'西南' },
+  'auto.f.280': { th:'ตะวันตก', en:'West', zh:'西' },
+  'auto.f.281': { th:'ตะวันตกเฉียงเหนือ', en:'Northwest', zh:'西北' },
+  'auto.f.282': { th:'ทิศเหนือ', en:'North', zh:'北方' },
+  'auto.f.283': { th:'ทิศตะวันออกเฉียงเหนือ', en:'Northeast', zh:'東北方' },
+  'auto.f.284': { th:'ทิศตะวันออก', en:'East', zh:'東方' },
+  'auto.f.285': { th:'ทิศตะวันออกเฉียงใต้', en:'Southeast', zh:'東南方' },
+  'auto.f.286': { th:'ทิศใต้', en:'South', zh:'南方' },
+  'auto.f.287': { th:'ทิศตะวันตกเฉียงใต้', en:'Southwest', zh:'西南方' },
+  'auto.f.288': { th:'ทิศตะวันตก', en:'West', zh:'西方' },
+  'auto.f.289': { th:'ทิศตะวันตกเฉียงเหนือ', en:'Northwest', zh:'西北方' },
+  'auto.f.290': { th:'โหลดบ้านที่บันทึกไว้แล้ว', en:'Saved house loaded', zh:'已載入儲存的宅資料' },
+  'auto.f.291': { th:'ยังไม่มีบ้านที่บันทึกไว้', en:'No saved house yet', zh:'尚無儲存的宅資料' },
+  'auto.f.292': { th:'บันทึกแล้วในเครื่องนี้', en:'Saved on this device', zh:'已儲存於此裝置' },
+  'auto.f.293': { th:'วัดจาก{src}แล้ว · กดยืนยันทิศบ้านเพื่อใช้ค่านี้', en:'Measured from {src} · press Confirm House Direction to use this value', zh:'已由{src}測得 · 請按「確認宅向」以使用此值' },
+  'auto.f.295': { th:'เส้นผนังถูกปรับแล้ว · กดยืนยันทิศบ้านอีกครั้ง', en:'Wall line adjusted · press Confirm House Direction again', zh:'牆線已調整 · 請再次確認宅向' },
+  'auto.f.296': { th:'บ้านของฉัน', en:'My house', zh:'我的家' },
+  'auto.f.297': { th:'⚠️ <b>เบราว์เซอร์ไม่รองรับ</b><br/>ใช้แผนที่แทน', en:'⚠️ <b>Browser not supported</b><br/>use the map instead', zh:'⚠️ <b>瀏覽器不支援</b><br/>請改用地圖' },
+  'auto.f.298': { th:'❌ <b>ผู้ใช้ปฏิเสธ</b><br/>ใช้แผนที่แทน', en:'❌ <b>Permission denied</b><br/>use the map instead', zh:'❌ <b>使用者拒絕</b><br/>請改用地圖' },
+  'auto.f.299': { th:'⚠️ <b>ขอสิทธิ์ไม่สำเร็จ</b>', en:'⚠️ <b>Permission request failed</b>', zh:'⚠️ <b>權限請求失敗</b>' },
+  'auto.f.300': { th:'⚠️ ไม่ได้ค่าเซ็นเซอร์ · ลอง refresh', en:'⚠️ No sensor reading · try refreshing', zh:'⚠️ 讀不到感測器數值 · 請重新整理' },
+  'auto.f.301': { th:'กำลังอ่านเซ็นเซอร์', en:'Reading sensors', zh:'讀取感測器中' },
+  'auto.f.302': { th:'กดล็อกเมื่อทิศตรงหน้าบ้าน', en:'Press lock when the reading matches the house facing', zh:'方位對準宅向時按鎖定' },
+  'auto.f.303': { th:'⏸ หยุด Compass', en:'⏸ Stop Compass', zh:'⏸ 停止羅盤' },
+  'auto.f.304': { th:'หยุดอ่านเซ็นเซอร์แล้ว', en:'Sensor reading stopped', zh:'已停止讀取感測器' },
+  'auto.f.305': { th:'โหลด Google Maps ไม่สำเร็จ', en:'Failed to load Google Maps', zh:'Google Maps 載入失敗' },
+  'auto.f.306': { th:'ตรวจสอบว่า API key เปิดใช้ <code>Maps JavaScript API</code> และไม่ได้ restrict domain', en:'Check that the API key has <code>Maps JavaScript API</code> enabled and the domain is not restricted', zh:'請確認 API key 已啟用 <code>Maps JavaScript API</code> 且未限制網域' },
+  'auto.f.307': { th:'ใกล้เส้น 24山', en:'Near a 24-Mountain boundary', zh:'接近24山界線' },
+  'auto.f.308': { th:'° · ต้องวัดละเอียด', en:'° · measure precisely', zh:'° · 需精確測量' },
+  'auto.f.309': { th:'ใกล้เส้น 64卦', en:'Near a 64-Hexagram boundary', zh:'接近64卦界線' },
+  'auto.f.310': { th:'° · verdict ต้องระวัง', en:'° · verdict needs caution', zh:'° · 判斷需謹慎' },
+  'auto.f.311': { th:'เหนือ', en:'North', zh:'北' },
+  'auto.f.312': { th:'อีสาน', en:'Northeast', zh:'東北' },
+  'auto.f.313': { th:'ตะวันออก', en:'East', zh:'東' },
+  'auto.f.314': { th:'อาคเนย์', en:'Southeast', zh:'東南' },
+  'auto.f.315': { th:'ใต้', en:'South', zh:'南' },
+  'auto.f.316': { th:'หรดี', en:'Southwest', zh:'西南' },
+  'auto.f.317': { th:'ตะวันตก', en:'West', zh:'西' },
+  'auto.f.318': { th:'พายัพ', en:'Northwest', zh:'西北' },
+  'auto.f.319': { th:'กลาง', en:'Center', zh:'中' },
   'hk.nav.chart':   { th:'ดวง',       en:'Chart',    zh:'命盤' },
   'hk.nav.today':   { th:'วันนี้',     en:'Today',    zh:'今日' },
   'hk.nav.calendar':{ th:'ปฏิทิน',    en:'Calendar', zh:'吉曆' },
@@ -4897,7 +5214,8 @@ Object.assign(window.HK_I18N, {
   'hk.nav.picker':  { th:'วางฤกษ์',   en:'Picker',   zh:'擇日' },
   'hk.nav.fengshui':{ th:'ทิศมงคล', en:'Direction', zh:'方位' },
   'hk.nav.goal':    { th:'เป้าหมาย',   en:'Goals',    zh:'志向' },
-  'hk.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' }
+  'hk.nav.luopan':{ th:'หล่อแก', en:'Luopan', zh:'羅盤' },
+  'hk.nav.forecast':{th:'พยากรณ์',en:'Forecast',zh:'占卜'}
 });
 function applyI18N(lang){
   if (!window.HK_I18N) return;

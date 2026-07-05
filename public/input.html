@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hourkey · กรอกข้อมูลเกิด</title>
+<title data-i18n="in.page.title">hourkey · กรอกข้อมูลเกิด</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
@@ -451,8 +451,8 @@
     <p class="lede" data-i18n="in.left.lede">บอกเราว่าคุณเกิด <b style="color:var(--paper)">วัน เวลา และที่ไหน</b> — ดวง 4 หลักของคุณจะเริ่มก่อตัวขึ้นทันทีในกรอบขวามือ</p>
 
     <div class="quote">
-      <p>"ดวงเกิดเริ่มที่<span class="tc">時辰</span> — สองชั่วโมง คือหนึ่งหลัก หนึ่งหลักคือทั้งชีวิต"</p>
-      <cite>— โบราณว่า · 古曰</cite>
+      <p data-i18n="in.quote.body">"ดวงเกิดเริ่มที่<span class="tc">時辰</span> — สองชั่วโมง คือหนึ่งหลัก หนึ่งหลักคือทั้งชีวิต"</p>
+      <cite data-i18n="in.quote.cite">— โบราณว่า · 古曰</cite>
     </div>
 
     <div class="step-tabs">
@@ -466,7 +466,7 @@
   <div class="form-card">
     <div class="card-eyebrow">
       <span class="l">◇ NATAL DATA · 生辰</span>
-      <span class="r">ใช้เวลา · 30 วินาที</span>
+      <span class="r" data-i18n="in.eyebrow.time">ใช้เวลา · 30 วินาที</span>
     </div>
     <h2 class="card-title" data-i18n="in.card.h2">เกิดเมื่อไหร่ <span class="tc">何時</span></h2>
     <p class="card-sub" data-i18n="in.card.sub">เลือกวัน · เวลา · สถานที่ — ปาจื้อจะคำนวณทันทีระหว่างที่กรอก</p>
@@ -511,18 +511,18 @@
         <div class="input-glyph on">
           <span class="glyph">月</span>
           <select id="hk-month" class="hk-num-input hk-select-input">
-            <option value="1">ม.ค.</option>
-            <option value="2">ก.พ.</option>
-            <option value="3">มี.ค.</option>
-            <option value="4">เม.ย.</option>
-            <option value="5" selected>พ.ค.</option>
-            <option value="6">มิ.ย.</option>
-            <option value="7">ก.ค.</option>
-            <option value="8">ส.ค.</option>
-            <option value="9">ก.ย.</option>
-            <option value="10">ต.ค.</option>
-            <option value="11">พ.ย.</option>
-            <option value="12">ธ.ค.</option>
+            <option value="1" data-i18n="in.month.jan">ม.ค.</option>
+            <option value="2" data-i18n="in.month.feb">ก.พ.</option>
+            <option value="3" data-i18n="in.month.mar">มี.ค.</option>
+            <option value="4" data-i18n="in.month.apr">เม.ย.</option>
+            <option value="5" selected data-i18n="in.month.may">พ.ค.</option>
+            <option value="6" data-i18n="in.month.jun">มิ.ย.</option>
+            <option value="7" data-i18n="in.month.jul">ก.ค.</option>
+            <option value="8" data-i18n="in.month.aug">ส.ค.</option>
+            <option value="9" data-i18n="in.month.sep">ก.ย.</option>
+            <option value="10" data-i18n="in.month.oct">ต.ค.</option>
+            <option value="11" data-i18n="in.month.nov">พ.ย.</option>
+            <option value="12" data-i18n="in.month.dec">ธ.ค.</option>
           </select>
           <div class="label" id="hk-month-label">MAY · 巳</div>
         </div>
@@ -532,7 +532,7 @@
         <div class="input-glyph on">
           <span class="glyph">年</span>
           <input type="number" id="hk-year" class="hk-num-input" min="1" max="2700" maxlength="4" placeholder="พิมพ์ปี" value="2569" inputmode="numeric"/>
-          <div class="label" id="hk-year-label">丙午 · พ.ศ.</div>
+          <div class="label" id="hk-year-label" data-i18n="in.year.label_init">丙午 · พ.ศ.</div>
         </div>
       </div>
     </div>
@@ -581,8 +581,8 @@
         <div class="sh-cell"><div class="br">亥</div><div class="th" data-i18n="in.zod.pig">หมู</div><div class="h">21-23</div></div>
       </div>
       <div class="sh-row-labels" style="display:none;">
-        <span>หนู</span><span>วัว</span><span>เสือ</span><span>กระต่าย</span><span>มังกร</span><span>งู</span>
-        <span>ม้า</span><span>แพะ</span><span>ลิง</span><span>ไก่</span><span>หมา</span><span>หมู</span>
+        <span data-i18n="in.zod.rat">หนู</span><span data-i18n="in.zod.ox">วัว</span><span data-i18n="in.zod.tiger">เสือ</span><span data-i18n="in.zod.rabbit">กระต่าย</span><span data-i18n="in.zod.dragon">มังกร</span><span data-i18n="in.zod.snake">งู</span>
+        <span data-i18n="in.zod.horse">ม้า</span><span data-i18n="in.zod.goat">แพะ</span><span data-i18n="in.zod.monkey">ลิง</span><span data-i18n="in.zod.rooster">ไก่</span><span data-i18n="in.zod.dog">หมา</span><span data-i18n="in.zod.pig">หมู</span>
       </div>
     </div>
 
@@ -603,7 +603,7 @@
         </div>
         <div class="hk-place-coord-box">
           <div class="hk-place-coord-num"><span class="hk-coord-lat">13.7°N</span> · <span class="hk-coord-lng">100.5°E</span></div>
-          <div class="hk-place-coord-lbl">TST · เส้นแวง</div>
+          <div class="hk-place-coord-lbl" data-i18n="in.place.coord_lbl">TST · เส้นแวง</div>
         </div>
       </div>
       <div class="hk-place-input-row">
@@ -754,12 +754,20 @@
     </div>
 
     <div class="fine">
-      ◇ <span class="tc">秘</span> ข้อมูลของคุณเข้ารหัส · ใช้เพื่อคำนวณดวงเท่านั้น
+      ◇ <span class="tc">秘</span> <span data-i18n="in.fine.privacy">ข้อมูลของคุณเข้ารหัส · ใช้เพื่อคำนวณดวงเท่านั้น</span>
     </div>
   </div>
 </div>
 
 <script>
+  /* 📜 tx helper · i18n stray cleanup · ใช้ร่วมกันทุก <script> บล็อกผ่าน window */
+  window._inLang = function(){ try{ return document.documentElement.getAttribute('data-lang') || localStorage.getItem('hk_locale') || 'th'; }catch(_){ return 'th'; } };
+  window._intx = function(k, fb){
+    var t = window.HK_I18N && window.HK_I18N[k];
+    if (!t) return fb;
+    var lang = window._inLang();
+    return t[lang] || t.th || fb;
+  };
   // cursor
   const c = document.getElementById('cursor'), cd = document.getElementById('cursorDot');
   let mx=0,my=0,cx=0,cy=0;
@@ -786,6 +794,10 @@
   const branches=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
   const ranges=['23:00','01:00','03:00','05:00','07:00','09:00','11:00','13:00','15:00','17:00','19:00','21:00'];
   const names=['ฉื่อ-ฉือ · หนู','ฉ่อ-ฉือ · วัว','ยิ่น-ฉือ · เสือ','เหมา-ฉือ · กระต่าย','เฉิน-ฉือ · มังกร','ซื่อ-ฉือ · งู','อู๋-ฉือ · ม้า','เว่ย-ฉือ · แพะ','เซิน-ฉือ · ลิง','โหย่ว-ฉือ · ไก่','ซวี-ฉือ · หมา','ไห้-ฉือ · หมู'];
+  const namesEn=['Zi-shi','Chou-shi','Yin-shi','Mao-shi','Chen-shi','Si-shi','Wu-shi','Wei-shi','Shen-shi','You-shi','Xu-shi','Hai-shi'];
+  const namesZh=['子時','丑時','寅時','卯時','辰時','巳時','午時','未時','申時','酉時','戌時','亥時'];
+  const zodiacEn=['Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Goat','Monkey','Rooster','Dog','Pig'];
+  const zodiacZh=['鼠','牛','虎','兔','龍','蛇','馬','羊','猴','雞','狗','豬'];
   const tBig = document.querySelector('.time-big');
   const tBranch = document.querySelector('.time-shichen .branch');
   const tName = document.querySelector('.time-shichen .name');
@@ -810,7 +822,12 @@
     if (tBig) tBig.innerHTML = hh + '<span class="colon">:</span>' + mm;
     if (timeInput && timeInput.value !== val) timeInput.value = val;
     if (tBranch) tBranch.textContent = branches[idx];
-    if (tName) tName.innerHTML = '<b>'+names[idx].split(' · ')[0]+'</b> · ชั่วยาม'+names[idx].split(' · ')[1];
+    if (tName) {
+      var _L = window._inLang();
+      if (_L === 'en') tName.innerHTML = '<b>'+namesEn[idx]+'</b> · Hour of the '+zodiacEn[idx];
+      else if (_L === 'zh') tName.innerHTML = '<b>'+namesZh[idx]+'</b> · '+zodiacZh[idx]+'之時辰';
+      else tName.innerHTML = '<b>'+names[idx].split(' · ')[0]+'</b> · ชั่วยาม'+names[idx].split(' · ')[1];
+    }
     if (tRange) tRange.textContent = start+' — '+end+' · '+branches[idx]+'時';
     document.dispatchEvent(new CustomEvent('hkBirthChanged'));
   }
@@ -907,9 +924,12 @@
     const yearBranches = ['申','酉','戌','亥','子','丑','寅','卯','辰','巳','午','未'];
     /* smart detect ปี · ถ้า ≥ 2200 = พ.ศ. (-543) · ถ้า < 2200 = ค.ศ. */
     function smartYear(Y){
+      var _L = window._inLang();
+      var beEra = _L === 'en' ? 'BE' : _L === 'zh' ? '佛曆' : 'พ.ศ.';
+      var ceEra = _L === 'en' ? 'CE' : _L === 'zh' ? '公元' : 'ค.ศ.';
       if (!Y || isNaN(Y)) return { ad: 0, era: '?' };
-      if (Y >= 2200) return { ad: Y - 543, era: 'พ.ศ.' };
-      return { ad: Y, era: 'ค.ศ.' };
+      if (Y >= 2200) return { ad: Y - 543, era: beEra };
+      return { ad: Y, era: ceEra };
     }
     function syncLabels(){
       try {
@@ -930,7 +950,7 @@
           const branchIdx = Yc % 12;
           yearLab.textContent = yearStems[stemIdx] + yearBranches[branchIdx] + ' · ' + sy.era;
         } else if (yearLab) {
-          yearLab.textContent = '— ใส่ปีเกิด —';
+          yearLab.textContent = window._intx('in.year.placeholder','— ใส่ปีเกิด —');
         }
       } catch(_) {}
     }
@@ -982,12 +1002,12 @@
       try {
         const inp = getCurrentInput();
         const live = document.querySelector('.preview .lab .live');
-        if (live) live.textContent = 'กำลังคำนวณ';
+        if (live) live.textContent = window._intx('in.preview.live','กำลังคำนวณ');
         const r = await fetch('/api/chart', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ date: inp.date, time: inp.time, longitude: inp.longitude, gender: inp.gender, dayBoundary: inp.dayBoundary, birthTimeKnown: inp.birthTimeKnown }),
         });
-        if (!r.ok) { if (live) live.textContent = 'ตัวอย่าง'; return; }
+        if (!r.ok) { if (live) live.textContent = window._intx('in.preview.sample','ตัวอย่าง'); return; }
         const d = await r.json();
         if (!d || !d.pillars) return;
         const order = ['hour','day','month','year']; /* ตรงกับ DOM .pillar 4 ใบ (時·日·月·年) */
@@ -1210,7 +1230,29 @@ window.HK_I18N = {
   'in.preview.label':{ th:'◇ ดวงตัวอย่าง · LIVE', en:'◇ Sample chart · LIVE', zh:'◇ 命盤示例 · LIVE' },
   'in.preview.live':{ th:'กำลังคำนวณ', en:'computing', zh:'計算中' },
   'in.time.shichen':{ th:'<b>ฉ่อ-ฉือ</b> · ชั่วยามวัว', en:'<b>Chou-shi</b> · Hour of the Ox', zh:'<b>丑時</b> · 牛之時辰' },
-  'in.time.range':  { th:'01:00 — 03:00 · 牛時', en:'01:00 — 03:00 · 牛時', zh:'01:00 — 03:00 · 牛時' }
+  'in.time.range':  { th:'01:00 — 03:00 · 牛時', en:'01:00 — 03:00 · 牛時', zh:'01:00 — 03:00 · 牛時' },
+  /* 🧹 i18n stray cleanup */
+  'in.page.title': { th:'hourkey · กรอกข้อมูลเกิด', en:'hourkey · Birth Data', zh:'hourkey · 生辰資料' },
+  'in.quote.body': { th:'"ดวงเกิดเริ่มที่<span class="tc">時辰</span> — สองชั่วโมง คือหนึ่งหลัก หนึ่งหลักคือทั้งชีวิต"', en:'"Your chart begins at <span class="tc">時辰</span> — two hours make one pillar, one pillar is a whole life"', zh:'「命盤始於<span class="tc">時辰</span> — 兩小時為一柱，一柱即一生」' },
+  'in.quote.cite': { th:'— โบราณว่า · 古曰', en:'— Ancient saying · 古曰', zh:'— 古人云 · 古曰' },
+  'in.eyebrow.time': { th:'ใช้เวลา · 30 วินาที', en:'Takes · 30 seconds', zh:'僅需 · 30 秒' },
+  'in.month.jan': { th:'ม.ค.', en:'Jan', zh:'1月' },
+  'in.month.feb': { th:'ก.พ.', en:'Feb', zh:'2月' },
+  'in.month.mar': { th:'มี.ค.', en:'Mar', zh:'3月' },
+  'in.month.apr': { th:'เม.ย.', en:'Apr', zh:'4月' },
+  'in.month.may': { th:'พ.ค.', en:'May', zh:'5月' },
+  'in.month.jun': { th:'มิ.ย.', en:'Jun', zh:'6月' },
+  'in.month.jul': { th:'ก.ค.', en:'Jul', zh:'7月' },
+  'in.month.aug': { th:'ส.ค.', en:'Aug', zh:'8月' },
+  'in.month.sep': { th:'ก.ย.', en:'Sep', zh:'9月' },
+  'in.month.oct': { th:'ต.ค.', en:'Oct', zh:'10月' },
+  'in.month.nov': { th:'พ.ย.', en:'Nov', zh:'11月' },
+  'in.month.dec': { th:'ธ.ค.', en:'Dec', zh:'12月' },
+  'in.year.label_init': { th:'丙午 · พ.ศ.', en:'丙午 · BE', zh:'丙午 · 佛曆' },
+  'in.year.placeholder': { th:'— ใส่ปีเกิด —', en:'— enter birth year —', zh:'— 請輸入出生年份 —' },
+  'in.place.coord_lbl': { th:'TST · เส้นแวง', en:'TST · Longitude', zh:'TST · 經度' },
+  'in.fine.privacy': { th:'ข้อมูลของคุณเข้ารหัส · ใช้เพื่อคำนวณดวงเท่านั้น', en:'Your data is encrypted · used only to calculate your chart', zh:'您的資料已加密 · 僅用於命盤計算' },
+  'in.preview.sample': { th:'ตัวอย่าง', en:'sample', zh:'示例' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;

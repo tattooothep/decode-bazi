@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hourkey · ซินแสวันนี้ · 師父</title>
+<title data-i18n="mst.page.title">hourkey · ซินแสวันนี้ · 師父</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
@@ -564,29 +564,29 @@
   <div class="sinsae-intro-card">
     <div class="sinsae-seal">師</div>
     <div class="sinsae-intro-kicker">SINSAE GATE · 開門</div>
-    <h2><span class="tc">師</span> ก่อนเปิดดวงของคุณ</h2>
-    <div class="sinsae-intro-copy">
+    <h2><span class="tc">師</span> <span data-i18n="mst.gate.h2">ก่อนเปิดดวงของคุณ</span></h2>
+    <div class="sinsae-intro-copy" data-i18n="mst.gate.copy">
       ผมคือซินแสของ HourKey<br/>
       ผมอ่านดวงจากศาสตร์โบราณ <b>18 แขนง</b> ที่สืบจากต้นฉบับ<br/>
       ก่อนอ่านดวง ขอให้คุณยืนยันวัน เดือน ปี และเวลาเกิดให้ถูกต้อง เพราะข้อมูลนี้คือรากของคำทำนายทั้งหมดในระบบ
     </div>
     <div class="sinsae-birth-box" id="sinsae-birth-box">
-      <div class="sinsae-birth-item"><span>ชื่อ</span><b id="sinsae-name">กำลังตรวจข้อมูล...</b></div>
-      <div class="sinsae-birth-item"><span>วันเกิด</span><b id="sinsae-date">-</b></div>
-      <div class="sinsae-birth-item"><span>เวลาเกิด</span><b id="sinsae-time">-</b></div>
-      <div class="sinsae-birth-item"><span>สถานที่</span><b id="sinsae-place">-</b></div>
+      <div class="sinsae-birth-item"><span data-i18n="mst.gate.label.name">ชื่อ</span><b id="sinsae-name" data-i18n="mst.gate.checking">กำลังตรวจข้อมูล...</b></div>
+      <div class="sinsae-birth-item"><span data-i18n="mst.gate.label.date">วันเกิด</span><b id="sinsae-date">-</b></div>
+      <div class="sinsae-birth-item"><span data-i18n="mst.gate.label.time">เวลาเกิด</span><b id="sinsae-time">-</b></div>
+      <div class="sinsae-birth-item"><span data-i18n="mst.gate.label.place">สถานที่</span><b id="sinsae-place">-</b></div>
     </div>
     <div class="sinsae-status" id="sinsae-status"></div>
     <!-- 🚀 Engine-first · แสดงโครงดวงทันที (50ms) ก่อน AI prose -->
     <div class="sinsae-engine" id="sinsae-engine" style="display:none;margin-top:14px;padding:14px 16px;background:rgba(200,164,77,.06);border:1px solid var(--gold-line);border-radius:12px;font-size:13px;line-height:1.7;">
-      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;">⚡ โครงดวงเบื้องต้น · ENGINE</div>
-      <div id="sinsae-engine-body" style="color:var(--fg-soft);">กำลังคำนวณ...</div>
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;" data-i18n="mst.gate.engine.title">⚡ โครงดวงเบื้องต้น · ENGINE</div>
+      <div id="sinsae-engine-body" style="color:var(--fg-soft);" data-i18n="mst.gate.engine.loading">กำลังคำนวณ...</div>
     </div>
     <div class="sinsae-reading" id="sinsae-reading"></div>
     <div class="sinsae-intro-actions">
-      <a class="ghost" id="sinsae-edit" href="/input">แก้ข้อมูลเกิด</a>
-      <button class="primary" id="sinsae-confirm">ยืนยันข้อมูลดวง</button>
-      <button class="primary" id="sinsae-enter" style="display:none;">เปิดประตูเข้าสู่ HourKey</button>
+      <a class="ghost" id="sinsae-edit" href="/input" data-i18n="mst.gate.editlink">แก้ข้อมูลเกิด</a>
+      <button class="primary" id="sinsae-confirm" data-i18n="mst.gate.confirm">ยืนยันข้อมูลดวง</button>
+      <button class="primary" id="sinsae-enter" style="display:none;" data-i18n="mst.gate.enter">เปิดประตูเข้าสู่ HourKey</button>
     </div>
   </div>
 </div>
@@ -626,7 +626,7 @@
       <div class="chat-title"><span class="tc">師</span><span data-i18n="auto.m.030">ถามซินแส</span></div>
       <a href="/master-fusion" class="hk-fusion-cta" title="ดูดวงเชิงลึก รวมหลายซินแส/หลายศาสตร์"><span class="tc">融</span><span class="lbl-full" data-i18n="mst.nav.fusion">ดูดวงขั้นสูง</span></a>
       <div class="sifu-model-pick" id="sifu-model-wrap">
-        <span class="smp-label">โมเดล:</span>
+        <span class="smp-label" data-i18n="mst.model.label">โมเดล:</span>
         <select id="sifu-model" aria-label="เลือกโมเดลซินแส">
           <option value="claude-max-cli">Claude CLI</option>
           <option value="codex-cli">Codex CLI</option>
@@ -665,7 +665,7 @@
       <div class="msg master">
         <div class="msg-ava">師</div>
         <div class="msg-bubble">
-          <span class="tc">告 ·</span> สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ
+          <span class="tc">告 ·</span> <span data-i18n="mst.chat.welcome">สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ</span>
         </div>
       </div>
 
@@ -719,6 +719,14 @@
   // chat input ref (ใช้โดยปุ่ม preset chips) · แชทจริงอยู่ใน wireSifu()
   const input = document.getElementById('chat-input');
 
+  /* 📜 tx helper · i18n stray cleanup */
+  function _mstx(k, fb){
+    const t = window.HK_I18N && window.HK_I18N[k];
+    if (!t) return fb;
+    const lang = (function(){ try{ return localStorage.getItem('hk_locale')||'th'; }catch(_){ return 'th'; } })();
+    return t[lang] || t.th || fb;
+  }
+
   /* ── แนบไฟล์ / ลากวาง / วางรูป (paste) ── เก็บไฟล์ใน window._hkAttach (ส่ง backend ตอน send) */
   (function wireAttach(){
     var btn=document.getElementById('hk-attach-btn');
@@ -739,7 +747,7 @@
         } else {
           item.innerHTML='<span class="hk-attach-name">'+esc(a.file.name)+'</span>';
         }
-        var x=document.createElement('button'); x.className='hk-attach-x'; x.type='button'; x.textContent='×'; x.title='ลบ';
+        var x=document.createElement('button'); x.className='hk-attach-x'; x.type='button'; x.textContent='×'; x.title=_mstx('mst.attach.remove','ลบ');
         x.addEventListener('click',function(){ removeAttach(a.id); });
         item.appendChild(x); preview.appendChild(item);
       });
@@ -754,8 +762,8 @@
     function addFiles(files){
       Array.prototype.forEach.call(files,function(f){
         if(!f || window._hkAttach.length>=MAX_FILES) return;
-        if(!isAllowed(f)){ try{alert('ไฟล์ชนิดนี้ไม่รองรับ: '+(f.name||''));}catch(_){}; return; }
-        if(f.size>MAX_SIZE){ try{alert('ไฟล์ '+f.name+' ใหญ่เกิน 20MB');}catch(_){}; return; }
+        if(!isAllowed(f)){ try{alert(_mstx('mst.attach.err.type','ไฟล์ชนิดนี้ไม่รองรับ: {name}').replace('{name}', f.name||''));}catch(_){}; return; }
+        if(f.size>MAX_SIZE){ try{alert(_mstx('mst.attach.err.size','ไฟล์ {name} ใหญ่เกิน 20MB').replace('{name}', f.name));}catch(_){}; return; }
         var id='att_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
         var url=(f.type.indexOf('image/')===0)?URL.createObjectURL(f):'';
         window._hkAttach.push({file:f,url:url,id:id});
@@ -835,23 +843,23 @@
     function fillProfile(p){
       activeProfile = p || parseBirthLocal();
       if (!activeProfile) {
-        setText(nameEl, 'ยังไม่พบข้อมูลเกิด');
-        setText(dateEl, 'กรุณากรอกข้อมูลก่อน');
+        setText(nameEl, _mstx('mst.gate.noinfo.name','ยังไม่พบข้อมูลเกิด'));
+        setText(dateEl, _mstx('mst.gate.noinfo.date','กรุณากรอกข้อมูลก่อน'));
         setText(timeEl, '-');
         setText(placeEl, '-');
-        statusEl.textContent = 'ต้องมีข้อมูลเกิดก่อนซินแสเปิดดวง';
+        statusEl.textContent = _mstx('mst.gate.noinfo.status','ต้องมีข้อมูลเกิดก่อนซินแสเปิดดวง');
         confirmBtn.style.display = 'none';
-        editLink.textContent = 'กรอกข้อมูลเกิด';
+        editLink.textContent = _mstx('mst.gate.editlink_empty','กรอกข้อมูลเกิด');
         return;
       }
       var dt = String(activeProfile.birth_datetime || '');
       var parts = dt.split('T');
-      setText(nameEl, activeProfile.nickname || activeProfile.name || 'ตัวฉัน');
+      setText(nameEl, activeProfile.nickname || activeProfile.name || _mstx('mst.gate.self_fallback','ตัวฉัน'));
       setText(dateEl, parts[0] || '-');
 	      var timeKnown = activeProfile.birth_time_known !== false;
 	      setText(timeEl, timeKnown ? ((parts[1] || '').slice(0,5) || '-') : 'ไม่ทราบเวลา');
       setText(placeEl, activeProfile.birth_location_name || activeProfile.locationName || activeProfile.place || 'กรุงเทพมหานคร');
-      statusEl.textContent = 'ตรวจข้อมูลเกิดให้ตรงก่อนกดยืนยัน';
+      statusEl.textContent = _mstx('mst.gate.status.checknconfirm','ตรวจข้อมูลเกิดให้ตรงก่อนกดยืนยัน');
     }
 
     fetch('/api/profile', { credentials:'same-origin', cache:'no-store' })
@@ -885,18 +893,18 @@
         var p = d.pillarsZh || {};
         var dm = d.dayMaster || '?';
         var ys = (d.yongshen||[]).slice(0,2).map(function(y){return y.stem+'('+y.element+')';}).join(' · ');
-        var ge = (d.geJu && d.geJu.structure) || 'ปกติ';
+        var ge = (d.geJu && d.geJu.structure) || _mstx('mst.engine.structure.normal','ปกติ');
         var st = (d.strength && d.strength.level) || '-';
         var lp = (d.luck_pillars && d.current_luck_idx!=null && d.luck_pillars[d.current_luck_idx]) || null;
         var ny = (d.current_year_pillar) || null;
         bodyEl.innerHTML =
-          '<b style="color:var(--gold)">日主</b> '+dm+' · <b style="color:var(--gold)">格局</b> '+ge+' · <b style="color:var(--gold)">แรง</b> '+st+'<br/>'+
-          '<b>4 เสา</b> 年'+(p.year||'-')+' · 月'+(p.month||'-')+' · 日'+(p.day||'-')+' · 時'+(p.hour||'-')+'<br/>'+
+          '<b style="color:var(--gold)">日主</b> '+dm+' · <b style="color:var(--gold)">格局</b> '+ge+' · <b style="color:var(--gold)">'+_mstx('mst.engine.label.strength','แรง')+'</b> '+st+'<br/>'+
+          '<b>'+_mstx('mst.engine.label.4pillars','4 เสา')+'</b> 年'+(p.year||'-')+' · 月'+(p.month||'-')+' · 日'+(p.day||'-')+' · 時'+(p.hour||'-')+'<br/>'+
           '<b style="color:var(--gold)">用神</b> '+ys+
           (lp?' · <b style="color:var(--gold)">大運</b> '+lp.stem+lp.branch+' ('+lp.qi_phase+')':'')+
           (ny?' · <b style="color:var(--gold)">流年</b> '+ny.stem+ny.branch:'');
       } catch(e){
-        bodyEl.textContent = 'คำนวณโครงดวงไม่สำเร็จ · กำลังเริ่ม AI...';
+        bodyEl.textContent = _mstx('mst.engine.err','คำนวณโครงดวงไม่สำเร็จ · กำลังเริ่ม AI...');
       }
     }
 
@@ -904,9 +912,9 @@
       if (!activeProfile) return;
       confirmBtn.disabled = true;
       wrap.classList.add('reading');
-      statusEl.textContent = 'ซินแสกำลังอ่านร่องรอยดวงย้อนหลัง 12 เดือน...';
+      statusEl.textContent = _mstx('mst.gate.status.reading12m','ซินแสกำลังอ่านร่องรอยดวงย้อนหลัง 12 เดือน...');
       readingEl.classList.add('on');
-      readingEl.textContent = 'กำลังเปิดตำรา...\nกำลังตั้งวันเกิดลงในวงเวลา...\nกำลังเทียบ 12 เดือนที่ผ่านมา...';
+      readingEl.textContent = _mstx('mst.gate.status.steps','กำลังเปิดตำรา...\nกำลังตั้งวันเกิดลงในวงเวลา...\nกำลังเทียบ 12 เดือนที่ผ่านมา...');
       /* engine ทันที (ไม่ block AI) */
       loadEngineSummary();
       var birthText = [
@@ -941,13 +949,13 @@
         var doneOk = false;
         es.addEventListener('meta', function(e){
           try { var m = JSON.parse(e.data);
-            if (m.cached) statusEl.textContent = '📚 ดึงคำอ่านที่ซินแสบันทึกไว้... (cached)';
-            else statusEl.textContent = 'ซินแสกำลังคิด · กรุณารอ ~10-60 วินาที...';
+            if (m.cached) statusEl.textContent = _mstx('mst.gate.status.cached','📚 ดึงคำอ่านที่ซินแสบันทึกไว้... (cached)');
+            else statusEl.textContent = _mstx('mst.gate.status.thinking_long','ซินแสกำลังคิด · กรุณารอ ~10-60 วินาที...');
           } catch(_){}
         });
         es.addEventListener('first', function(e){
           gotFirst = true;
-          try { var f = JSON.parse(e.data); statusEl.textContent = '✍️ ซินแสเริ่มเขียนแล้ว ('+(f.ms/1000).toFixed(1)+'s)'; } catch(_){}
+          try { var f = JSON.parse(e.data); statusEl.textContent = _mstx('mst.gate.status.writing','✍️ ซินแสเริ่มเขียนแล้ว ({s}s)').replace('{s}', (f.ms/1000).toFixed(1)); } catch(_){}
         });
         es.addEventListener('chunk', function(e){
           try { var c = JSON.parse(e.data); readingEl.textContent += c.text; } catch(_){}
@@ -956,22 +964,22 @@
           doneOk = true; es.close();
           try {
             var dn = JSON.parse(e.data);
-            statusEl.textContent = dn.cached ? '✅ พร้อมแล้ว (cached)' : '✅ อ่านเสร็จ ('+(dn.ms/1000).toFixed(1)+'s)';
-          } catch(_){ statusEl.textContent = 'อ่านเสร็จแล้ว'; }
+            statusEl.textContent = dn.cached ? _mstx('mst.gate.status.ready_cached','✅ พร้อมแล้ว (cached)') : _mstx('mst.gate.status.ready_done','✅ อ่านเสร็จ ({s}s)').replace('{s}', (dn.ms/1000).toFixed(1));
+          } catch(_){ statusEl.textContent = _mstx('mst.gate.status.done','อ่านเสร็จแล้ว'); }
           confirmBtn.style.display = 'none';
           enterBtn.style.display = '';
         });
         es.addEventListener('error', function(){
           if (doneOk) return;
           es.close();
-          if (!readingEl.textContent) readingEl.textContent = 'ซินแสอ่านพื้นดวงตั้งต้นแล้ว ข้อมูลเกิดนี้จะเป็นรากของการดูวันนี้ ดวง เครือข่าย และฤกษ์ทั้งหมดใน HourKey';
-          statusEl.textContent = 'อ่านเสร็จแล้ว';
+          if (!readingEl.textContent) readingEl.textContent = _mstx('mst.gate.status.fallback_reading','ซินแสอ่านพื้นดวงตั้งต้นแล้ว ข้อมูลเกิดนี้จะเป็นรากของการดูวันนี้ ดวง เครือข่าย และฤกษ์ทั้งหมดใน HourKey');
+          statusEl.textContent = _mstx('mst.gate.status.done','อ่านเสร็จแล้ว');
           confirmBtn.style.display = 'none';
           enterBtn.style.display = '';
         });
       } catch(_) {
-        readingEl.textContent = 'ซินแสอ่านพื้นดวงตั้งต้นแล้ว ข้อมูลเกิดนี้จะเป็นรากของการดูวันนี้ ดวง เครือข่าย และฤกษ์ทั้งหมดใน HourKey';
-        statusEl.textContent = 'อ่านเสร็จแล้ว';
+        readingEl.textContent = _mstx('mst.gate.status.fallback_reading','ซินแสอ่านพื้นดวงตั้งต้นแล้ว ข้อมูลเกิดนี้จะเป็นรากของการดูวันนี้ ดวง เครือข่าย และฤกษ์ทั้งหมดใน HourKey');
+        statusEl.textContent = _mstx('mst.gate.status.done','อ่านเสร็จแล้ว');
         confirmBtn.style.display = 'none';
         enterBtn.style.display = '';
       }
@@ -980,7 +988,7 @@
     enterBtn.addEventListener('click', function(){
       try { localStorage.setItem('hk_sinsae_intro_version', VERSION); } catch(_) {}
       wrap.classList.add('opening');
-      statusEl.textContent = 'กำลังเปิดประตู...';
+      statusEl.textContent = _mstx('mst.gate.status.opening','กำลังเปิดประตู...');
       setTimeout(function(){ window.location.href = next; }, 650);
     });
   })();
@@ -1092,7 +1100,7 @@
     }catch(_){} }
 	    function renderThreadMsgs(t){ activeGroupHistoryKey=''; history=(t&&t.msgs?t.msgs.slice(-40):[]); msgBox.innerHTML=''; if(!history.length){ addWelcomeMsg(); return; } history.forEach(function(m){ var dv=addMsg(m.role==='user'?'user':'sifu',m.content); if(m.role!=='user') renderMd(dv,m.content); }); }
     function openThread(id){ if(window._sifuStreaming) return; renamingThreadId=''; persist(); var pid=activeProfileId(); var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id && threadMatchesProfile(x,pid);}); if(!t) return; currentThreadId=id; o.activeId=id; saveThreads(o); renderThreadMsgs(t); renderSidebar(); document.body.classList.remove('hk-side-open'); window.scrollTo(0,0); }
-	    function newThread(){ if(window._sifuStreaming) return; persist(); activeGroupHistoryKey=''; var pid=activeProfileId(); if(!pid || !profileStoreSig(pid)){ addMsg('sifu','⚠️ กรุณาเลือกดวงก่อนเริ่มแชทใหม่'); return; } var o=loadThreads(); var t=stampThreadProfile({id:genTid(),title:'',ts:Date.now(),msgs:[]},pid); o.threads.unshift(t); currentThreadId=t.id; o.activeId=t.id; saveThreads(o); history=[]; msgBox.innerHTML=''; var s2nc=document.getElementById('sifu-profile-2'); if(s2nc){ s2nc.value=''; hkpFillSecondSelect._lastFirst=null; if(typeof hkpUpdatePairUI==='function') hkpUpdatePairUI(); } addWelcomeMsg(); renderSidebar(); document.body.classList.remove('hk-side-open'); }
+	    function newThread(){ if(window._sifuStreaming) return; persist(); activeGroupHistoryKey=''; var pid=activeProfileId(); if(!pid || !profileStoreSig(pid)){ addMsg('sifu',_mstx('mst.chat.err.selectfirst','⚠️ กรุณาเลือกดวงก่อนเริ่มแชทใหม่')); return; } var o=loadThreads(); var t=stampThreadProfile({id:genTid(),title:'',ts:Date.now(),msgs:[]},pid); o.threads.unshift(t); currentThreadId=t.id; o.activeId=t.id; saveThreads(o); history=[]; msgBox.innerHTML=''; var s2nc=document.getElementById('sifu-profile-2'); if(s2nc){ s2nc.value=''; hkpFillSecondSelect._lastFirst=null; if(typeof hkpUpdatePairUI==='function') hkpUpdatePairUI(); } addWelcomeMsg(); renderSidebar(); document.body.classList.remove('hk-side-open'); }
     function deleteThread(id){ if(window._sifuStreaming) return; var pid=activeProfileId(); var o=loadThreads(); o.threads=o.threads.filter(function(x){return !(x.id===id && threadMatchesProfile(x,pid));}); var wasA=(currentThreadId===id); if(wasA){ var next=profileThreads(o,pid)[0]; currentThreadId=next?next.id:''; o.activeId=currentThreadId; } saveThreads(o); if(wasA){ renderThreadMsgs(o.threads.find(function(x){return x.id===currentThreadId && threadMatchesProfile(x,pid);})); } renderSidebar(); }
     function togglePin(id){ if(window._sifuStreaming) return; var pid=activeProfileId(); var o=loadThreads(); var t=o.threads.find(function(x){return x.id===id && threadMatchesProfile(x,pid);}); if(t){ t.pinned=!t.pinned; saveThreads(o); renderSidebar(); } }
     function renameThread(id){
@@ -1144,15 +1152,15 @@
         var st=t.pinned?'<span class="ci-star">★</span>':'';
         var cls='hk-chat-item'+a+(isRen?' renaming':'');
         if(isRen){
-          h+='<div class="'+cls+'" data-tid="'+escHtml(t.id)+'"><div class="ci-body"><div class="ci-rename"><input class="ci-rename-input" data-tid="'+escHtml(t.id)+'" maxlength="42" value="'+escHtml(t.title||'')+'" placeholder="'+escHtml(ph)+'"><span class="ci-rename-actions"><button class="ci-rename-btn save" data-rename-save="'+escHtml(t.id)+'" title="บันทึก">✓</button><button class="ci-rename-btn cancel" data-rename-cancel="'+escHtml(t.id)+'" title="ยกเลิก">×</button></span></div></div></div>';
+          h+='<div class="'+cls+'" data-tid="'+escHtml(t.id)+'"><div class="ci-body"><div class="ci-rename"><input class="ci-rename-input" data-tid="'+escHtml(t.id)+'" maxlength="42" value="'+escHtml(t.title||'')+'" placeholder="'+escHtml(ph)+'"><span class="ci-rename-actions"><button class="ci-rename-btn save" data-rename-save="'+escHtml(t.id)+'" title="'+escHtml(_mstx('mst.chat.rename.save_title','บันทึก'))+'">✓</button><button class="ci-rename-btn cancel" data-rename-cancel="'+escHtml(t.id)+'" title="'+escHtml(_mstx('mst.chat.rename.cancel_title','ยกเลิก'))+'">×</button></span></div></div></div>';
         } else {
-          h+='<div class="'+cls+'" data-tid="'+escHtml(t.id)+'"><div class="ci-body"><span class="ci-title">'+st+escHtml(t.title||'แชทใหม่')+'</span><span class="ci-time">'+relTime(t.ts)+'</span></div><button class="hk-chat-menu" data-menu="'+escHtml(t.id)+'" aria-label="เมนู">⋯</button></div>';
+          h+='<div class="'+cls+'" data-tid="'+escHtml(t.id)+'"><div class="ci-body"><span class="ci-title">'+st+escHtml(t.title||_mstx('mst.side.new','แชทใหม่'))+'</span><span class="ci-time">'+relTime(t.ts)+'</span></div><button class="hk-chat-menu" data-menu="'+escHtml(t.id)+'" aria-label="'+escHtml(_mstx('mst.chat.menu_label','เมนู'))+'">⋯</button></div>';
         }
       });
       box.innerHTML=h;
       if(window.applyI18N) applyI18N(tLoc());
     }
-    function addWelcomeMsg(){ var d=addMsg('sifu',''); renderMd(d,'สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ'); }
+    function addWelcomeMsg(){ var d=addMsg('sifu',''); renderMd(d,_mstx('mst.chat.welcome','สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ')); }
 
     /* account history sync · DB เป็นชั้นกลางให้ desktop/mobile เห็น Q&A เดียวกัน */
     var SERVER_HISTORY_IMPORTED_KEY = 'hk_sifu_history_import_v2';
@@ -1176,7 +1184,7 @@
     }
     function threadTitleFromMsgs(msgs){
       var u = (msgs || []).find(function(m){ return m.role === 'user' && m.content; });
-      return u ? String(u.content).replace(/\s+/g,' ').trim().slice(0,42) : 'ประวัติจากบัญชี';
+      return u ? String(u.content).replace(/\s+/g,' ').trim().slice(0,42) : _mstx('mst.chat.history_fallback','ประวัติจากบัญชี');
     }
     function serverRowsToThreads(rows){
       var pid = activeProfileId();
@@ -1314,7 +1322,7 @@
       if (t) {
         renderThreadMsgs(t);
         if (wasStreaming && threadPendingAnswer(t.msgs)) {
-          addMsg('sifu', '⏳ ซินแสยังทำงานอยู่บนเซิร์ฟเวอร์ · เปิดแอปกลับมาดูคำตอบ...');
+          addMsg('sifu', _mstx('mst.chat.stillworking','⏳ ซินแสยังทำงานอยู่บนเซิร์ฟเวอร์ · เปิดแอปกลับมาดูคำตอบ...'));
           startResumePoll();
         } else {
           stopResumePoll();
@@ -1583,18 +1591,18 @@
     /* อ่าน SSE ทีละ token · ยก pattern readTeamSifuStream จาก /yongsennetwork */
     function sifuPhaseText(phase){
       var map = {
-        waiting_context: 'ซินแสกำลังจัดดวงให้ตรงคน ...',
-        waiting_classics: 'ซินแสกำลังเปิดตำรา ...',
-        waiting_transits: 'ซินแสกำลังเทียบวัยจร ปีจร เดือนจร ...',
-        waiting_interactions: 'ซินแสกำลังไล่ฮะ ชง และปฏิกิริยาในดวง ...',
-        waiting_reasoning: 'ซินแสกำลังจับประเด็นให้ตรงคำถาม ...',
-        waiting_claude: 'ซินแสกำลังเปิดตำรา ...',
-        waiting_openrouter: 'ซินแสกำลังเปิดตำรา ...',
-        identity_lock: 'ซินแสกำลังตรวจดวงให้ตรงคน ...',
-        waiting_visible_chunk: 'ซินแสกำลังเรียบเรียงคำตอบ ...',
-        streaming: 'ซินแสเริ่มเขียนแล้ว ...'
+        waiting_context: _mstx('mst.phase.waiting_context','ซินแสกำลังจัดดวงให้ตรงคน ...'),
+        waiting_classics: _mstx('mst.phase.waiting_classics','ซินแสกำลังเปิดตำรา ...'),
+        waiting_transits: _mstx('mst.phase.waiting_transits','ซินแสกำลังเทียบวัยจร ปีจร เดือนจร ...'),
+        waiting_interactions: _mstx('mst.phase.waiting_interactions','ซินแสกำลังไล่ฮะ ชง และปฏิกิริยาในดวง ...'),
+        waiting_reasoning: _mstx('mst.phase.waiting_reasoning','ซินแสกำลังจับประเด็นให้ตรงคำถาม ...'),
+        waiting_claude: _mstx('mst.phase.waiting_classics','ซินแสกำลังเปิดตำรา ...'),
+        waiting_openrouter: _mstx('mst.phase.waiting_classics','ซินแสกำลังเปิดตำรา ...'),
+        identity_lock: _mstx('mst.phase.identity_lock','ซินแสกำลังตรวจดวงให้ตรงคน ...'),
+        waiting_visible_chunk: _mstx('mst.phase.waiting_visible_chunk','ซินแสกำลังเรียบเรียงคำตอบ ...'),
+        streaming: _mstx('mst.phase.streaming','ซินแสเริ่มเขียนแล้ว ...')
       };
-      return map[phase] || 'ซินแสกำลังคิด ...';
+      return map[phase] || _mstx('mst.phase.default','ซินแสกำลังคิด ...');
     }
     async function readSifuStream(response, handlers){
       const reader = response.body && response.body.getReader ? response.body.getReader() : null;
@@ -1723,7 +1731,7 @@
 	        sig: sig,
 	        ids: ids,
 	        group: (g && g.group) || 'group',
-	        label: (g && g.label) || 'กลุ่ม'
+	        label: (g && g.label) || _mstx('mst.group.fallback_label','กลุ่ม')
 	      };
 	    }
 	    function hkgLoadStore(){
@@ -1809,7 +1817,7 @@
       var inGroupAll = hkgProfiles.filter(function(p){ return !p.is_self && hkgGroupOf(p) === g; });
       if (inGroupAll.length === 0){
         var em = hkgI18n('hkg.empty');
-        hkgCountEl.textContent = em ? (em[loc] || em.th) : 'ยังไม่มีคนในกลุ่มนี้ · ไปเพิ่มที่หน้าดวง (換)';
+        hkgCountEl.textContent = em ? (em[loc] || em.th) : _mstx('hkg.empty','ยังไม่มีคนในกลุ่มนี้ · ไปเพิ่มที่หน้าดวง (換)');
         hkgCountEl.classList.add('empty'); hkgCountEl.classList.remove('warn');
         if (hkgMembersEl) hkgMembersEl.classList.remove('on');
         return;
@@ -1819,11 +1827,11 @@
       /* รวมตัวเองก่อน cap เพื่อรู้ว่าเกิน 10 ไหม */
       var rawCount = inGroupAll.length + ((hkgSelfId && !inGroupAll.some(function(p){ return String(p.id) === String(hkgSelfId); })) ? 1 : 0);
       var ct = hkgI18n('hkg.count');
-      var ctTxt = ct ? (ct[loc] || ct.th) : '{n} คน';
+      var ctTxt = ct ? (ct[loc] || ct.th) : _mstx('hkg.count','{n} คน');
       var txt = lbl + ' · ' + ctTxt.replace('{n}', String(ids.length));
       if (rawCount > 10){
         var ov = hkgI18n('hkg.over');
-        txt += ' · ' + (ov ? (ov[loc] || ov.th) : 'ส่งเฉพาะ 10 คนแรก');
+        txt += ' · ' + (ov ? (ov[loc] || ov.th) : _mstx('hkg.over','ส่งเฉพาะ 10 คนแรก'));
         hkgCountEl.classList.add('warn');
       } else {
         hkgCountEl.classList.remove('warn');
@@ -1859,7 +1867,7 @@
 	      var locG = curLocale();
 	      if (!hkgG.ids.length){
 	        var emG = (window.HK_I18N && window.HK_I18N['hkg.empty']);
-	        addMsg('sifu', emG ? (emG[locG] || emG.th) : 'ยังไม่มีคนในกลุ่มนี้ · ไปเพิ่มที่หน้าดวง (換)');
+	        addMsg('sifu', emG ? (emG[locG] || emG.th) : _mstx('hkg.empty','ยังไม่มีคนในกลุ่มนี้ · ไปเพิ่มที่หน้าดวง (換)'));
 	        return true;
 	      }
 	      var bindingG = hkgBinding(hkgG);
@@ -1879,11 +1887,11 @@
 	      }
 	      sendBtn.disabled = true; window._sifuStreaming = true;
       if (hkgGoBtn) hkgGoBtn.disabled = true;
-      var phG = addMsg('sifu', 'ซินแสกำลังคิด ...');
+      var phG = addMsg('sifu', _mstx('mst.phase.default','ซินแสกำลังคิด ...'));
       try {
         var modelG = selectedSifuModel();
         if (hkgG.ids.length > 2) {
-          phG.textContent = '⚠ โหมดดวงคู่รับเฉพาะ 2 ดวงที่เลือกเท่านั้น · เลือกดวงที่สองในช่องด้านบน ไม่ส่งผังทั้งกลุ่ม';
+          phG.textContent = _mstx('mst.group.err.pair_only_full','⚠ โหมดดวงคู่รับเฉพาะ 2 ดวงที่เลือกเท่านั้น · เลือกดวงที่สองในช่องด้านบน ไม่ส่งผังทั้งกลุ่ม');
           return true;
         }
         var rG = await fetch('/api/sifu/group?model=' + encodeURIComponent(modelG), {
@@ -1931,14 +1939,14 @@
 	            hkgSaveBoundHistory(bindingG, history);
 	            stopResumePoll();
 	          } else {
-	            phG.textContent = '⚠ ขัดข้อง · ไม่มีข้อความตอบกลับ';
+	            phG.textContent = _mstx('mst.chat.err.no_reply','⚠ ขัดข้อง · ไม่มีข้อความตอบกลับ');
 	          }
 	        } else {
           var dG = await rG.json().catch(function(){ return {}; });
 	          if (rG.ok && dG.reply) renderMd(phG, dG.reply);
-	          else if (dG.error === 'pair_context_requires_two_profiles') phG.textContent = '⚠ โหมดดวงคู่รับเฉพาะ 2 ดวงที่เลือกเท่านั้น · เลือกดวงที่สองในช่องด้านบน';
-	          else if (dG.error === 'codex_context_limit_group_size') phG.textContent = '⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง · เลือกทีละคู่';
-	          else phG.textContent = '⚠ ขัดข้อง: ' + (dG.error || rG.status);
+	          else if (dG.error === 'pair_context_requires_two_profiles') phG.textContent = _mstx('mst.group.err.pair_only','⚠ โหมดดวงคู่รับเฉพาะ 2 ดวงที่เลือกเท่านั้น · เลือกดวงที่สองในช่องด้านบน');
+	          else if (dG.error === 'codex_context_limit_group_size') phG.textContent = _mstx('mst.group.err.codex_limit','⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง · เลือกทีละคู่');
+	          else phG.textContent = _mstx('mst.chat.err.prefix','⚠ ขัดข้อง: ') + (dG.error || rG.status);
 	          if (rG.ok && dG.reply){
 	            groupHistory = groupHistory.concat([
 	              { role:'assistant', content:dG.reply }
@@ -1952,12 +1960,12 @@
       } catch(e){
         var emG = e && e.message ? String(e.message) : '';
         phG.textContent = emG.indexOf('codex_cli_auth_required') !== -1
-          ? '⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis'
+          ? _mstx('mst.chat.err.codex_notlogin','⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis')
           : emG.indexOf('identity_mismatch') !== -1
-            ? 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ'
+            ? _mstx('mst.chat.err.identity_mismatch','ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ')
             : (emG.indexOf('codex_context_limit_group_size') !== -1 || emG.indexOf('context window') !== -1)
-              ? '⚠ Codex CLI รับ prompt นี้ไม่ไหวเพราะ context เต็ม · ใช้ Claude CLI หรือแบ่งกลุ่มให้เล็กลง'
-              : '⚠ ขัดข้อง: ' + (emG || 'เครือข่ายขัดข้อง · ลองใหม่');
+              ? _mstx('mst.group.err.context_limit','⚠ Codex CLI รับ prompt นี้ไม่ไหวเพราะ context เต็ม · ใช้ Claude CLI หรือแบ่งกลุ่มให้เล็กลง')
+              : _mstx('mst.chat.err.prefix','⚠ ขัดข้อง: ') + (emG || _mstx('mst.group.err.network','เครือข่ายขัดข้อง · ลองใหม่'));
       } finally {
         sendBtn.disabled = false; window._sifuStreaming = false;
         if (hkgGoBtn) hkgGoBtn.disabled = false;
@@ -1984,14 +1992,14 @@
       try { pid = String(selectedProfileId || window.hkActiveProfileId || localStorage.getItem('hk_profile_id') || ''); } catch(_){}
       if (!pid) {
         console.warn('[sifu] block Q&A ไม่มี profileId');
-        addMsg('sifu','⚠️ กรุณาเลือกดวงก่อน ซินแสจะไม่ตอบคำถามดวงเฉพาะคนหากยังไม่มี profileId');
+        addMsg('sifu',_mstx('mst.chat.err.noprofile','⚠️ กรุณาเลือกดวงก่อน ซินแสจะไม่ตอบคำถามดวงเฉพาะคนหากยังไม่มี profileId'));
         inputEl.focus();
         return;
       }
       var pidSig = profileStoreSig(pid);
       if (!pidSig) {
         console.warn('[sifu] block Q&A ไม่มี profileSig', { profileId: pid, loaded: sifuProfileSigLoaded });
-	        addMsg('sifu','⚠️ โหลดข้อมูลดวงไม่สำเร็จ กรุณารีเฟรชหรือเลือกดวงใหม่ก่อนถามซินแส');
+	        addMsg('sifu',_mstx('mst.chat.err.loadfail','⚠️ โหลดข้อมูลดวงไม่สำเร็จ กรุณารีเฟรชหรือเลือกดวงใหม่ก่อนถามซินแส'));
 	        inputEl.focus();
 	        return;
 	      }
@@ -2009,7 +2017,7 @@
 	      persist(); /* บันทึกคำถามทันที · พับจอระหว่างรอไม่หาย */
 
 	      if (location.search.indexOf('debug') >= 0) console.log('[sifu] Q&A payload · hasProfileId =', !!pid);
-      const placeholder = addMsg('sifu', 'ซินแสกำลังคิด ...');
+      const placeholder = addMsg('sifu', _mstx('mst.phase.default','ซินแสกำลังคิด ...'));
       try {
         const r = await fetch('/api/sifu', {
           method: 'POST',
@@ -2047,7 +2055,7 @@
             persist();
             stopResumePoll();
           } else {
-            placeholder.textContent = '⚠ ขัดข้อง · ไม่มีข้อความตอบกลับ';
+            placeholder.textContent = _mstx('mst.chat.err.no_reply','⚠ ขัดข้อง · ไม่มีข้อความตอบกลับ');
           }
         } else {
           /* fallback · JSON ก้อนเดียว (กันพังถ้า server ไม่ stream) */
@@ -2058,20 +2066,20 @@
             persist();
             stopResumePoll();
           } else if (d.error === 'identity_mismatch') {
-            placeholder.textContent = 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ';
+            placeholder.textContent = _mstx('mst.chat.err.identity_mismatch','ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ');
           } else if (String(d.error || '').indexOf('codex_cli_auth_required') !== -1) {
-            placeholder.textContent = '⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis';
+            placeholder.textContent = _mstx('mst.chat.err.codex_notlogin','⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis');
           } else {
-            placeholder.textContent = '⚠ ขัดข้อง: ' + (d.error || r.status) + (d.detail ? '\n' + d.detail : '');
+            placeholder.textContent = _mstx('mst.chat.err.prefix','⚠ ขัดข้อง: ') + (d.error || r.status) + (d.detail ? '\n' + d.detail : '');
           }
         }
       } catch (e) {
         var em = e && e.message ? String(e.message) : '';
         placeholder.textContent = em.indexOf('identity_mismatch') !== -1
-          ? 'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ'
+          ? _mstx('mst.chat.err.identity_mismatch','ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ')
           : em.indexOf('codex_cli_auth_required') !== -1
-            ? '⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis'
-            : '⏳ ซินแสยังทำงานอยู่บนเซิร์ฟเวอร์ · พับจอได้ · เปิดแอปกลับมาดูคำตอบ (รอ ~1-2 นาที)';
+            ? _mstx('mst.chat.err.codex_notlogin','⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis')
+            : _mstx('mst.chat.stillworking2','⏳ ซินแสยังทำงานอยู่บนเซิร์ฟเวอร์ · พับจอได้ · เปิดแอปกลับมาดูคำตอบ (รอ ~1-2 นาที)');
       } finally {
         sendBtn.disabled = false; window._sifuStreaming = false;
         inputEl.focus();
@@ -2089,7 +2097,7 @@
       var model = (modelSel && modelSel.value) || 'grok-cli';
       addMsg('user', '🎨 ' + prompt);
       inputEl.value = '';
-      var ph = addMsg('sifu', '⏳ กำลังสร้างรูป... (อาจใช้เวลา 30-60 วินาที)');
+      var ph = addMsg('sifu', _mstx('mst.genimg.status','⏳ กำลังสร้างรูป... (อาจใช้เวลา 30-60 วินาที)'));
       window._sifuStreaming = true; sendBtn.disabled = true; genImgBtn.disabled = true;
       try {
         var r = await fetch('/api/ai/imagegen', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify({ prompt: prompt, model: model }) });
@@ -2106,9 +2114,9 @@
           cap.textContent = '🎨 ' + (j.engine === 'codex' ? 'GPT' : 'Grok') + ' · ' + prompt;
           ph.appendChild(cap);
         } else {
-          ph.textContent = '⚠ สร้างรูปไม่สำเร็จ: ' + ((j && (j.error || j.detail)) || ('HTTP ' + r.status));
+          ph.textContent = _mstx('mst.genimg.err','⚠ สร้างรูปไม่สำเร็จ: ') + ((j && (j.error || j.detail)) || ('HTTP ' + r.status));
         }
-      } catch (e) { ph.textContent = '⚠ ผิดพลาด: ' + String((e && e.message) || e); }
+      } catch (e) { ph.textContent = _mstx('mst.err.generic','⚠ ผิดพลาด: ') + String((e && e.message) || e); }
       finally { window._sifuStreaming = false; sendBtn.disabled = false; genImgBtn.disabled = false; window.scrollTo(0, document.documentElement.scrollHeight); }
     });
     /* 🎬 สร้างวิดีโอด้วย AI (BytePlus Seedance · gpt/grok ไม่มี video tool) · /api/ai/video */
@@ -2119,7 +2127,7 @@
       if (window._sifuStreaming) return;
       addMsg('user', '🎬 ' + prompt);
       inputEl.value = '';
-      var ph = addMsg('sifu', '⏳ กำลังสร้างวิดีโอ... (อาจใช้เวลา 1-5 นาที)');
+      var ph = addMsg('sifu', _mstx('mst.genvid.status','⏳ กำลังสร้างวิดีโอ... (อาจใช้เวลา 1-5 นาที)'));
       window._sifuStreaming = true; sendBtn.disabled = true; genVidBtn.disabled = true;
       try {
         var r = await fetch('/api/ai/video', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify({ prompt: prompt }) });
@@ -2136,9 +2144,9 @@
           cap.textContent = '🎬 BytePlus · ' + prompt;
           ph.appendChild(cap);
         } else {
-          ph.textContent = '⚠ สร้างวิดีโอไม่สำเร็จ: ' + ((j && (j.error || j.detail)) || ('HTTP ' + r.status));
+          ph.textContent = _mstx('mst.genvid.err','⚠ สร้างวิดีโอไม่สำเร็จ: ') + ((j && (j.error || j.detail)) || ('HTTP ' + r.status));
         }
-      } catch (e) { ph.textContent = '⚠ ผิดพลาด: ' + String((e && e.message) || e); }
+      } catch (e) { ph.textContent = _mstx('mst.err.generic','⚠ ผิดพลาด: ') + String((e && e.message) || e); }
       finally { window._sifuStreaming = false; sendBtn.disabled = false; genVidBtn.disabled = false; window.scrollTo(0, document.documentElement.scrollHeight); }
     });
     inputEl.addEventListener('keydown', function(e){
@@ -2239,7 +2247,79 @@ window.HK_I18N = {
   'mst.side.new':   { th:'แชทใหม่', en:'New chat', zh:'新對話' },
   'mst.side.empty': { th:'ยังไม่มีบทสนทนา', en:'No conversations yet', zh:'尚無對話' },
   'mst.drop.title': { th:'วางไฟล์ที่นี่เพื่อแนบ', en:'Drop files here to attach', zh:'拖放文件以附加' },
-  'mst.drop.sub':   { th:'รูปภาพ · เอกสาร', en:'Images · Documents', zh:'圖片 · 文檔' }
+  'mst.drop.sub':   { th:'รูปภาพ · เอกสาร', en:'Images · Documents', zh:'圖片 · 文檔' },
+  /* 🧹 i18n stray cleanup · sinsae gate + chat + group mode */
+  'mst.page.title': { th:'hourkey · ซินแสวันนี้ · 師父', en:'hourkey · Sifu · 師父', zh:'hourkey · 師父' },
+  'mst.gate.h2': { th:'ก่อนเปิดดวงของคุณ', en:'Before we open your chart', zh:'開盤之前' },
+  'mst.gate.copy': { th:'ผมคือซินแสของ HourKey<br/>ผมอ่านดวงจากศาสตร์โบราณ <b>18 แขนง</b> ที่สืบจากต้นฉบับ<br/>ก่อนอ่านดวง ขอให้คุณยืนยันวัน เดือน ปี และเวลาเกิดให้ถูกต้อง เพราะข้อมูลนี้คือรากของคำทำนายทั้งหมดในระบบ', en:'I am your HourKey Sifu.<br/>I read fortunes through <b>18 ancient disciplines</b> passed down from the original texts.<br/>Before your reading, please confirm your birth date, time, and place — this is the foundation of every prediction in the system.', zh:'我是 HourKey 的命理師。<br/>我依循源自古籍的<b>十八門古老命理術</b>為您解讀命盤。<br/>在開始解讀之前，請先確認您的出生年月日與時辰是否正確 — 這是系統中所有預測的根基。' },
+  'mst.gate.label.name': { th:'ชื่อ', en:'Name', zh:'姓名' },
+  'mst.gate.checking': { th:'กำลังตรวจข้อมูล...', en:'Checking data...', zh:'正在核對資料...' },
+  'mst.gate.label.date': { th:'วันเกิด', en:'Date of Birth', zh:'出生日期' },
+  'mst.gate.label.time': { th:'เวลาเกิด', en:'Time of Birth', zh:'出生時辰' },
+  'mst.gate.label.place': { th:'สถานที่', en:'Place', zh:'出生地點' },
+  'mst.gate.engine.title': { th:'⚡ โครงดวงเบื้องต้น · ENGINE', en:'⚡ Preliminary Chart · ENGINE', zh:'⚡ 初步命盤 · ENGINE' },
+  'mst.gate.engine.loading': { th:'กำลังคำนวณ...', en:'Calculating...', zh:'計算中...' },
+  'mst.gate.editlink': { th:'แก้ข้อมูลเกิด', en:'Edit birth info', zh:'修改出生資料' },
+  'mst.gate.confirm': { th:'ยืนยันข้อมูลดวง', en:'Confirm chart info', zh:'確認命盤資料' },
+  'mst.gate.enter': { th:'เปิดประตูเข้าสู่ HourKey', en:'Enter HourKey', zh:'進入 HourKey' },
+  'mst.model.label': { th:'โมเดล:', en:'Model:', zh:'模型：' },
+  'mst.chat.welcome': { th:'สวัสดีครับ 🙏 ผมคือซินแสประจำดวงของคุณ — ถามได้ทุกเรื่อง ทั้งดวงวันนี้ การงาน การเงิน ความรัก สุขภาพ คนรอบตัว ทิศ หรือฤกษ์ · ผมจะดูจากดวงจริงของคุณแล้วตอบให้ครับ', en:'Hello 🙏 I am your personal Sifu — ask me anything: today\'s fortune, career, wealth, love, health, the people around you, directions, or auspicious timing. I will read your actual chart and answer.', zh:'您好 🙏 我是您的專屬命理師 — 歡迎詢問任何事：今日運勢、事業、財運、感情、健康、人際、方位或擇日。我會依您的真實命盤為您解答。' },
+  'mst.attach.remove': { th:'ลบ', en:'Remove', zh:'移除' },
+  'mst.attach.err.type': { th:'ไฟล์ชนิดนี้ไม่รองรับ: {name}', en:'This file type is not supported: {name}', zh:'不支援此檔案類型：{name}' },
+  'mst.attach.err.size': { th:'ไฟล์ {name} ใหญ่เกิน 20MB', en:'File {name} exceeds 20MB', zh:'檔案 {name} 超過 20MB' },
+  'mst.gate.noinfo.name': { th:'ยังไม่พบข้อมูลเกิด', en:'No birth info found', zh:'尚未找到出生資料' },
+  'mst.gate.noinfo.date': { th:'กรุณากรอกข้อมูลก่อน', en:'Please enter your info first', zh:'請先填寫資料' },
+  'mst.gate.noinfo.status': { th:'ต้องมีข้อมูลเกิดก่อนซินแสเปิดดวง', en:'Birth info is required before the Sifu can open your chart', zh:'需先有出生資料，命理師才能開盤' },
+  'mst.gate.editlink_empty': { th:'กรอกข้อมูลเกิด', en:'Enter birth info', zh:'填寫出生資料' },
+  'mst.gate.self_fallback': { th:'ตัวฉัน', en:'Myself', zh:'我本人' },
+  'mst.gate.status.checknconfirm': { th:'ตรวจข้อมูลเกิดให้ตรงก่อนกดยืนยัน', en:'Please verify your birth info is correct before confirming', zh:'請先核對出生資料無誤後再點擊確認' },
+  'mst.engine.structure.normal': { th:'ปกติ', en:'Normal', zh:'平常' },
+  'mst.engine.label.strength': { th:'แรง', en:'Strength', zh:'旺衰' },
+  'mst.engine.label.4pillars': { th:'4 เสา', en:'4 Pillars', zh:'四柱' },
+  'mst.engine.err': { th:'คำนวณโครงดวงไม่สำเร็จ · กำลังเริ่ม AI...', en:'Could not calculate the chart outline · starting AI...', zh:'命盤結構計算失敗 · 正在啟動 AI...' },
+  'mst.gate.status.reading12m': { th:'ซินแสกำลังอ่านร่องรอยดวงย้อนหลัง 12 เดือน...', en:'The Sifu is reading the past 12 months of your chart...', zh:'命理師正在解讀過去 12 個月的命盤軌跡...' },
+  'mst.gate.status.steps': { th:'กำลังเปิดตำรา...\nกำลังตั้งวันเกิดลงในวงเวลา...\nกำลังเทียบ 12 เดือนที่ผ่านมา...', en:'Opening the classics...\nPlacing your birth date on the timeline...\nComparing the past 12 months...', zh:'正在翻閱典籍...\n正在將出生日期放入時間軸...\n正在比對過去 12 個月...' },
+  'mst.gate.status.cached': { th:'📚 ดึงคำอ่านที่ซินแสบันทึกไว้... (cached)', en:'📚 Retrieving the Sifu\'s saved reading... (cached)', zh:'📚 正在調取命理師已保存的解讀...（快取）' },
+  'mst.gate.status.thinking_long': { th:'ซินแสกำลังคิด · กรุณารอ ~10-60 วินาที...', en:'The Sifu is thinking · please wait ~10-60 seconds...', zh:'命理師正在思考 · 請稍候約 10-60 秒...' },
+  'mst.gate.status.writing': { th:'✍️ ซินแสเริ่มเขียนแล้ว ({s}s)', en:'✍️ The Sifu has started writing ({s}s)', zh:'✍️ 命理師已開始撰寫（{s}秒）' },
+  'mst.gate.status.ready_cached': { th:'✅ พร้อมแล้ว (cached)', en:'✅ Ready (cached)', zh:'✅ 已完成（快取）' },
+  'mst.gate.status.ready_done': { th:'✅ อ่านเสร็จ ({s}s)', en:'✅ Reading complete ({s}s)', zh:'✅ 解讀完成（{s}秒）' },
+  'mst.gate.status.done': { th:'อ่านเสร็จแล้ว', en:'Reading complete', zh:'解讀完成' },
+  'mst.gate.status.fallback_reading': { th:'ซินแสอ่านพื้นดวงตั้งต้นแล้ว ข้อมูลเกิดนี้จะเป็นรากของการดูวันนี้ ดวง เครือข่าย และฤกษ์ทั้งหมดใน HourKey', en:'The Sifu has read your base chart. This birth information will be the foundation for Today, Chart, Network, and every auspicious-timing reading in HourKey.', zh:'命理師已完成基礎命盤解讀。此出生資料將作為 HourKey 中今日、命盤、人脈與擇日所有功能的根基。' },
+  'mst.gate.status.opening': { th:'กำลังเปิดประตู...', en:'Opening the gate...', zh:'正在開門...' },
+  'mst.chat.err.selectfirst': { th:'⚠️ กรุณาเลือกดวงก่อนเริ่มแชทใหม่', en:'⚠️ Please select a chart before starting a new chat', zh:'⚠️ 請先選擇命盤再開始新對話' },
+  'mst.chat.rename.save_title': { th:'บันทึก', en:'Save', zh:'儲存' },
+  'mst.chat.rename.cancel_title': { th:'ยกเลิก', en:'Cancel', zh:'取消' },
+  'mst.chat.menu_label': { th:'เมนู', en:'Menu', zh:'選單' },
+  'mst.chat.history_fallback': { th:'ประวัติจากบัญชี', en:'History from account', zh:'帳號歷史紀錄' },
+  'mst.chat.stillworking': { th:'⏳ ซินแสยังทำงานอยู่บนเซิร์ฟเวอร์ · เปิดแอปกลับมาดูคำตอบ...', en:'⏳ The Sifu is still working on the server · reopen the app to see the answer...', zh:'⏳ 命理師仍在伺服器上運算 · 重新開啟應用查看回覆...' },
+  'mst.chat.stillworking2': { th:'⏳ ซินแสยังทำงานอยู่บนเซิร์ฟเวอร์ · พับจอได้ · เปิดแอปกลับมาดูคำตอบ (รอ ~1-2 นาที)', en:'⏳ The Sifu is still working on the server · you may lock the screen · reopen the app to see the answer (wait ~1-2 minutes)', zh:'⏳ 命理師仍在伺服器上運算 · 可以關閉螢幕 · 重新開啟應用查看回覆（約需 1-2 分鐘）' },
+  'mst.phase.waiting_context': { th:'ซินแสกำลังจัดดวงให้ตรงคน ...', en:'The Sifu is matching the chart to the right person ...', zh:'命理師正在核對命盤對應人物...' },
+  'mst.phase.waiting_classics': { th:'ซินแสกำลังเปิดตำรา ...', en:'The Sifu is opening the classical texts ...', zh:'命理師正在翻閱典籍...' },
+  'mst.phase.waiting_transits': { th:'ซินแสกำลังเทียบวัยจร ปีจร เดือนจร ...', en:'The Sifu is comparing the luck pillar, yearly, and monthly transits ...', zh:'命理師正在比對大運、流年、流月...' },
+  'mst.phase.waiting_interactions': { th:'ซินแสกำลังไล่ฮะ ชง และปฏิกิริยาในดวง ...', en:'The Sifu is checking harmonies, clashes, and interactions in the chart ...', zh:'命理師正在檢視命盤中的合、沖與互動關係...' },
+  'mst.phase.waiting_reasoning': { th:'ซินแสกำลังจับประเด็นให้ตรงคำถาม ...', en:'The Sifu is focusing the analysis on your question ...', zh:'命理師正在聚焦分析您的問題...' },
+  'mst.phase.identity_lock': { th:'ซินแสกำลังตรวจดวงให้ตรงคน ...', en:'The Sifu is verifying the chart matches the right person ...', zh:'命理師正在核實命盤對應人物...' },
+  'mst.phase.waiting_visible_chunk': { th:'ซินแสกำลังเรียบเรียงคำตอบ ...', en:'The Sifu is composing the answer ...', zh:'命理師正在整理答案...' },
+  'mst.phase.streaming': { th:'ซินแสเริ่มเขียนแล้ว ...', en:'The Sifu has started writing ...', zh:'命理師已開始撰寫...' },
+  'mst.phase.default': { th:'ซินแสกำลังคิด ...', en:'The Sifu is thinking ...', zh:'命理師正在思考...' },
+  'mst.group.fallback_label': { th:'กลุ่ม', en:'Group', zh:'群組' },
+  'mst.group.err.pair_only_full': { th:'⚠ โหมดดวงคู่รับเฉพาะ 2 ดวงที่เลือกเท่านั้น · เลือกดวงที่สองในช่องด้านบน ไม่ส่งผังทั้งกลุ่ม', en:'⚠ Pair mode only supports the 2 selected charts · choose a second chart above — the whole group will not be sent', zh:'⚠ 雙盤模式僅支援已選的 2 個命盤 · 請在上方選擇第二個命盤，不會送出整個群組' },
+  'mst.chat.err.no_reply': { th:'⚠ ขัดข้อง · ไม่มีข้อความตอบกลับ', en:'⚠ Error · no reply received', zh:'⚠ 發生錯誤 · 未收到回覆' },
+  'mst.group.err.pair_only': { th:'⚠ โหมดดวงคู่รับเฉพาะ 2 ดวงที่เลือกเท่านั้น · เลือกดวงที่สองในช่องด้านบน', en:'⚠ Pair mode only supports the 2 selected charts · choose a second chart above', zh:'⚠ 雙盤模式僅支援已選的 2 個命盤 · 請在上方選擇第二個命盤' },
+  'mst.group.err.codex_limit': { th:'⚠ Codex CLI รับโหมดหลายดวงได้สูงสุด 2 ดวงต่อครั้ง · เลือกทีละคู่', en:'⚠ Codex CLI supports a maximum of 2 charts at a time in group mode · select one pair at a time', zh:'⚠ Codex CLI 群組模式一次最多支援 2 個命盤 · 請一次選一對' },
+  'mst.chat.err.prefix': { th:'⚠ ขัดข้อง: ', en:'⚠ Error: ', zh:'⚠ 發生錯誤：' },
+  'mst.chat.err.codex_notlogin': { th:'⚠ Codex CLI ยังไม่ได้ login สำหรับระบบซินแส · เลือก Claude CLI ไปก่อน หรือให้แอดมิน login user jarvis', en:'⚠ Codex CLI is not logged in for the Sifu system · choose Claude CLI for now, or ask an admin to log in user jarvis', zh:'⚠ Codex CLI 尚未登入命理師系統 · 請先選擇 Claude CLI，或請管理員登入 jarvis 帳號' },
+  'mst.chat.err.identity_mismatch': { th:'ขออภัยครับ ซินแสตรวจทานแล้วพบว่าอ่านดวงคลาดเคลื่อน เพื่อความแม่นยำ รบกวนถามใหม่อีกครั้งครับ', en:'Sorry, the Sifu found a mismatch while double-checking the chart. For accuracy, please ask your question again.', zh:'抱歉，命理師複核時發現命盤解讀有誤，為求準確請重新提問一次。' },
+  'mst.group.err.context_limit': { th:'⚠ Codex CLI รับ prompt นี้ไม่ไหวเพราะ context เต็ม · ใช้ Claude CLI หรือแบ่งกลุ่มให้เล็กลง', en:'⚠ Codex CLI cannot handle this prompt because the context is full · use Claude CLI or split into a smaller group', zh:'⚠ Codex CLI 因上下文已滿無法處理此請求 · 請改用 Claude CLI 或縮小群組' },
+  'mst.group.err.network': { th:'เครือข่ายขัดข้อง · ลองใหม่', en:'Network error · please try again', zh:'網路發生錯誤 · 請再試一次' },
+  'mst.chat.err.noprofile': { th:'⚠️ กรุณาเลือกดวงก่อน ซินแสจะไม่ตอบคำถามดวงเฉพาะคนหากยังไม่มี profileId', en:'⚠️ Please select a chart first — the Sifu cannot answer person-specific questions without a profile', zh:'⚠️ 請先選擇命盤 — 沒有指定命盤，命理師無法回答特定個人問題' },
+  'mst.chat.err.loadfail': { th:'⚠️ โหลดข้อมูลดวงไม่สำเร็จ กรุณารีเฟรชหรือเลือกดวงใหม่ก่อนถามซินแส', en:'⚠️ Failed to load chart data — please refresh or select a chart again before asking the Sifu', zh:'⚠️ 命盤資料載入失敗，請重新整理或重新選擇命盤後再詢問命理師' },
+  'mst.genimg.status': { th:'⏳ กำลังสร้างรูป... (อาจใช้เวลา 30-60 วินาที)', en:'⏳ Generating image... (may take 30-60 seconds)', zh:'⏳ 正在生成圖片...（可能需要 30-60 秒）' },
+  'mst.genimg.err': { th:'⚠ สร้างรูปไม่สำเร็จ: ', en:'⚠ Image generation failed: ', zh:'⚠ 圖片生成失敗：' },
+  'mst.err.generic': { th:'⚠ ผิดพลาด: ', en:'⚠ Error: ', zh:'⚠ 錯誤：' },
+  'mst.genvid.status': { th:'⏳ กำลังสร้างวิดีโอ... (อาจใช้เวลา 1-5 นาที)', en:'⏳ Generating video... (may take 1-5 minutes)', zh:'⏳ 正在生成影片...（可能需要 1-5 分鐘）' },
+  'mst.genvid.err': { th:'⚠ สร้างวิดีโอไม่สำเร็จ: ', en:'⚠ Video generation failed: ', zh:'⚠ 影片生成失敗：' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
