@@ -30,6 +30,9 @@ const VOID_TAGS = new Set([
   'link', 'meta', 'param', 'source', 'track', 'wbr',
 ]);
 
+// หน้าตายที่ next.config redirect ไปหน้าหลักแล้ว (ผู้ใช้เข้าไม่ถึง) — ไม่ต้องตรวจ
+const DEAD_PAGES = new Set(['calendar-m.html', 'master-m.html', 'mygoal-m.html', 'picker-m.html']);
+
 // ── CLI args ──────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
 const FLAG_JSON = argv.includes('--json');
@@ -392,7 +395,8 @@ function findD1Stray(blankedText, lineOf) {
         if (stack[i].name === tagName) { stack.length = i; break; }
       }
     } else if (!selfClose) {
-      const hasI18n = /data-i18n(-ph)?\s*=/.test(m[3]);
+      // นับทุกสำเนียง i18n ที่มีจริงในเว็บ: data-i18n(-ph) กลาง · data-i (book) · data-t/-tp (tianxing) · data-l (pricing/article/offline)
+      const hasI18n = /data-(?:i18n(?:-ph)?|i|t|tp|l)\s*=/.test(m[3]);
       stack.push({ name: tagName, hasI18n });
     }
     lastIndex = m.index + m[0].length;
@@ -599,7 +603,7 @@ function printDetails(results, limit) {
 // main
 // ══════════════════════════════════════════════════════════════════════
 function main() {
-  let fileNames = fs.readdirSync(PUBLIC_DIR).filter((f) => f.endsWith('.html')).sort();
+  let fileNames = fs.readdirSync(PUBLIC_DIR).filter((f) => f.endsWith('.html') && !DEAD_PAGES.has(f)).sort();
   if (ONLY_PAGE) {
     if (!fileNames.includes(ONLY_PAGE)) {
       console.error(`ไม่พบไฟล์ ${ONLY_PAGE} ใน ${PUBLIC_DIR}`);

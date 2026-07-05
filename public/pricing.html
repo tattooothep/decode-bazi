@@ -21,7 +21,7 @@
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="ราคาและแพ็กเกจ · hourkey"/>
 <meta name="twitter:description" content="6 ศาสตร์ในผังเดียว · เริ่มฟรี ฿0 · Premium ฿399/เดือน"/>
-<script>try{var t=localStorage.getItem('hk_theme');if(t)document.documentElement.dataset.theme=t;var L=new URLSearchParams(location.search).get('lang')||localStorage.getItem('hk_lang');if(L&&['th','en','zh'].indexOf(L)>-1){document.documentElement.dataset.lang=L;document.documentElement.lang=L==='zh'?'zh-Hant':L;}}catch(e){}</script>
+<script>try{var t=localStorage.getItem('hk_theme');if(t)document.documentElement.dataset.theme=t;var L=new URLSearchParams(location.search).get('lang')||localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang');if(L&&['th','en','zh'].indexOf(L)>-1){document.documentElement.dataset.lang=L;document.documentElement.lang=L==='zh'?'zh-Hant':L;}}catch(e){}</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Product",
  "name":"hourkey — โหราศาสตร์ 6 ศาสตร์",
@@ -223,7 +223,7 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;margin-top:8px;}
     <div class="lang-seg" id="langSeg" role="group" aria-label="language">
       <button data-lang="th">TH</button><button data-lang="en">EN</button><button data-lang="zh">中</button>
     </div>
-    <button class="tbtn" id="themeBtn" title="สลับธีม" aria-label="toggle theme">☾</button>
+    <button class="tbtn" id="themeBtn" title="สลับธีม" aria-label="toggle theme" data-i18n-title="themeBtn">☾</button>
   </div>
 </div>
 
@@ -440,7 +440,8 @@ const UI = {
   redirect:{ th:'กำลังพาไปหน้าชำระเงินที่ปลอดภัย...', en:'Taking you to secure checkout...', zh:'正前往安全結帳…' },
   netErr:{ th:'เชื่อมต่อไม่สำเร็จ', en:'Connection failed', zh:'連線失敗' },
   payErr:{ th:'ทำรายการไม่สำเร็จ', en:'Payment could not start', zh:'無法開始付款' },
-  best:{ th:'คุ้มสุด', en:'Best value', zh:'最划算' }
+  best:{ th:'คุ้มสุด', en:'Best value', zh:'最划算' },
+  themeBtn:{ th:'สลับธีม', en:'Toggle theme', zh:'切換主題' }
 };
 function lang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
 function L(o, fb){ if(o==null) return fb||''; if(typeof o==='string') return o; return o[lang()]||o.th||o.en||fb||''; }
@@ -668,12 +669,13 @@ function applyLang(){
   const d=document.documentElement;
   d.lang = lang()==='zh'?'zh-Hant':lang();
   document.querySelectorAll('#langSeg button').forEach(b => b.classList.toggle('on', b.dataset.lang===lang()));
+  document.getElementById('themeBtn').title = L(UI.themeBtn);
   renderBillLabels(); renderTiers(); renderCmp(); renderTopups();
 }
 document.getElementById('langSeg').addEventListener('click', e => {
   const b=e.target.closest('button[data-lang]'); if(!b) return;
   document.documentElement.dataset.lang=b.dataset.lang;
-  try{ localStorage.setItem('hk_lang', b.dataset.lang); }catch(_){}
+  try{ localStorage.setItem('hk_locale', b.dataset.lang); localStorage.setItem('hk_lang', b.dataset.lang); }catch(_){}
   applyLang();
 });
 document.getElementById('themeBtn').onclick=function(){

@@ -121,7 +121,7 @@
     <div class="hero">
       <div class="seal-big">擇吉</div>
       <h1 id="page-title">ค้นฤกษ์มงคล · คัมภีร์จีนโบราณ</h1>
-      <div class="sub">擇吉 · 11 ศาสตร์ · 7 กิจกรรม · ทีม 5 คน</div>
+      <div class="sub" id="page-sub">擇吉 · 11 ศาสตร์ · 7 กิจกรรม · ทีม 5 คน</div>
       <div class="desc" id="page-desc">เลือกกิจกรรม → เลือกศาสตร์ → กดค้น · ผลทันที</div>
     </div>
 
@@ -149,7 +149,7 @@
     </div>
 
     <div class="panel" id="funnel-panel" style="display:none">
-      <div class="panel-h">📊 Funnel · ดูแต่ละศาสตร์ผ่านกี่อัน</div>
+      <div class="panel-h" id="lbl-funnel">📊 Funnel · ดูแต่ละศาสตร์ผ่านกี่อัน</div>
       <div class="funnel" id="funnel"></div>
     </div>
 
@@ -159,13 +159,13 @@
 
 <script>
 const ACTIVITIES = [
-  {key:'立約', th:'เซ็นสัญญา', en:'Contract', emoji:'📜'},
-  {key:'出行', th:'เดินทาง', en:'Travel', emoji:'🚗'},
-  {key:'搬家', th:'ย้ายบ้าน', en:'Move home', emoji:'🏠'},
-  {key:'開市', th:'เปิดกิจการ', en:'Open business', emoji:'🏢'},
-  {key:'婚姻', th:'แต่งงาน', en:'Marriage', emoji:'💒'},
-  {key:'求財', th:'หาเงิน', en:'Wealth', emoji:'💰'},
-  {key:'祭祀', th:'พิธีกรรม', en:'Ritual', emoji:'🕯️'},
+  {key:'立約', th:'เซ็นสัญญา', en:'Contract', zh:'簽約', emoji:'📜'},
+  {key:'出行', th:'เดินทาง', en:'Travel', zh:'出行', emoji:'🚗'},
+  {key:'搬家', th:'ย้ายบ้าน', en:'Move home', zh:'搬家', emoji:'🏠'},
+  {key:'開市', th:'เปิดกิจการ', en:'Open business', zh:'開市', emoji:'🏢'},
+  {key:'婚姻', th:'แต่งงาน', en:'Marriage', zh:'婚姻', emoji:'💒'},
+  {key:'求財', th:'หาเงิน', en:'Wealth', zh:'求財', emoji:'💰'},
+  {key:'祭祀', th:'พิธีกรรม', en:'Ritual', zh:'祭祀', emoji:'🕯️'},
 ];
 const MODULES = [
   {key:'ze_ri', zh:'擇日', th:'เลือกวัน', en:'Auspicious Day'},
@@ -184,15 +184,18 @@ const I18N = {
   th: { activity:'เลือกกิจกรรม · ACTIVITY', modules:'เลือกศาสตร์ที่ต้องการให้ผ่าน · MODULES',
         range:'ช่วงเวลา · DATE RANGE', from:'จากวัน:', to:'ถึงวัน:', limit:'สูงสุด:',
         btn:'🔍 ค้นฤกษ์ · GO', empty:'ไม่พบฤกษ์ที่ผ่านเกณฑ์ · ลองขยายช่วงวัน', loading:'กำลังค้น...',
-        title:'ค้นฤกษ์มงคล · คัมภีร์จีนโบราณ', desc:'เลือกกิจกรรม → เลือกศาสตร์ → กดค้น · ผลทันที' },
+        title:'ค้นฤกษ์มงคล · คัมภีร์จีนโบราณ', desc:'เลือกกิจกรรม → เลือกศาสตร์ → กดค้น · ผลทันที',
+        sub:'擇吉 · 11 ศาสตร์ · 7 กิจกรรม · ทีม 5 คน', funnel:'📊 Funnel · ดูแต่ละศาสตร์ผ่านกี่อัน', resultsHead:'ฤกษ์' },
   en: { activity:'Select activity', modules:'Select required modules',
         range:'Date range', from:'From:', to:'To:', limit:'Limit:',
         btn:'🔍 Search · GO', empty:'No auspicious times match criteria', loading:'Searching...',
-        title:'Auspicious Time Finder · Classical Chinese Almanac', desc:'Pick activity → modules → search · instant results' },
+        title:'Auspicious Time Finder · Classical Chinese Almanac', desc:'Pick activity → modules → search · instant results',
+        sub:'擇吉 · 11 disciplines · 7 activities · team of 5', funnel:'📊 Funnel · pass rate per discipline', resultsHead:'auspicious times' },
   zh: { activity:'選擇活動', modules:'選擇要篩選的學科',
         range:'日期範圍', from:'起:', to:'迄:', limit:'上限:',
         btn:'🔍 搜尋 · GO', empty:'未找到符合條件的吉時', loading:'搜尋中...',
-        title:'擇吉時 · 古籍擇日', desc:'選活動 → 選學科 → 搜尋 · 即時出結果' },
+        title:'擇吉時 · 古籍擇日', desc:'選活動 → 選學科 → 搜尋 · 即時出結果',
+        sub:'擇吉 · 11 學科 · 7 活動 · 5 人團隊', funnel:'📊 Funnel · 各學科通過率', resultsHead:'吉時' },
 };
 const TIER_LABEL = {
   excellent:{th:'⭐ ดีเยี่ยม',en:'⭐ Excellent',zh:'⭐ 極佳'},
@@ -202,7 +205,7 @@ const TIER_LABEL = {
   poor:{th:'⚠ ไม่ดี',en:'⚠ Poor',zh:'⚠ 凶'},
 };
 
-let LANG = new URLSearchParams(location.search).get('lang') || localStorage.getItem('lang') || 'th';
+let LANG = new URLSearchParams(location.search).get('lang') || localStorage.getItem('hk_locale') || localStorage.getItem('lang') || 'th';
 let activity = '立約';
 let activeMods = new Set(['ze_ri','twelve_officers','tai_sui','qi_men']);
 
@@ -218,7 +221,7 @@ function renderActivities(){
   el.innerHTML = ACTIVITIES.map(a => `
     <div class="activity ${a.key===activity?'act':''}" data-k="${a.key}">
       <div class="zh">${a.key}</div>
-      <div class="name">${a.emoji} ${LANG==='en'?a.en:a.th}</div>
+      <div class="name">${a.emoji} ${LANG==='en'?a.en:(LANG==='zh'?a.zh:a.th)}</div>
     </div>`).join('');
   el.querySelectorAll('.activity').forEach(d => d.onclick = () => { activity = d.dataset.k; renderActivities(); });
 }
@@ -239,7 +242,9 @@ function renderModules(){
 function applyLang(){
   const t = I18N[LANG];
   document.getElementById('page-title').textContent = t.title;
+  document.getElementById('page-sub').textContent = t.sub;
   document.getElementById('page-desc').textContent = t.desc;
+  document.getElementById('lbl-funnel').textContent = t.funnel;
   document.getElementById('lbl-activity').textContent = t.activity;
   document.getElementById('lbl-modules').textContent = t.modules;
   document.getElementById('lbl-range').textContent = t.range;
@@ -289,7 +294,7 @@ function renderResults(d, clientMs){
   const ra = document.getElementById('results-area');
   if (!cands.length) { ra.innerHTML = `<div class="loading">${t.empty}</div>`; document.getElementById('meta').textContent=''; return; }
 
-  ra.innerHTML = `<div class="panel"><div class="panel-h">📌 ${cands.length} ฤกษ์</div>
+  ra.innerHTML = `<div class="panel"><div class="panel-h">📌 ${cands.length} ${t.resultsHead}</div>
     <div class="results-grid">${cands.map(c => {
       const p = c.pillars; const s = c.scoring;
       const tier = s.tier;
@@ -309,7 +314,7 @@ function renderResults(d, clientMs){
 }
 function getTierColor(t){return {excellent:'#ffd700',very_good:'#7dd37b',good:'#5db3ff',acceptable:'#f7b955',poor:'#e26b5d'}[t]||'#999';}
 
-['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('lang',l); applyLang(); });
+['th','en','zh'].forEach(l => document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); localStorage.setItem('lang',l); applyLang(); });
 document.getElementById('theme-tog').onclick = () => applyTheme((document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark');
 document.getElementById('btn-go').onclick = search;
 

@@ -23,7 +23,7 @@
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="เรขาคณิตร่วมของโหราศาสตร์ 3 อารยธรรม"/>
 <meta name="twitter:description" content="ปีชง = opposition 180° · Great Conjunction ตกก้านทอง 15/16 · Spica ห่าง 0.01° · 調候↔เดคลิเนชัน r=−0.653"/>
-<script>try{var t=localStorage.getItem('hk_theme');if(t)document.documentElement.dataset.theme=t;var L=new URLSearchParams(location.search).get('lang')||localStorage.getItem('hk_lang');if(L&&['th','en','zh'].indexOf(L)>-1){document.documentElement.dataset.lang=L;document.documentElement.lang=L==='zh'?'zh-Hant':L;}}catch(e){}</script>
+<script>try{var t=localStorage.getItem('hk_theme');if(t)document.documentElement.dataset.theme=t;var L=new URLSearchParams(location.search).get('lang')||localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang');if(L&&['th','en','zh'].indexOf(L)>-1){document.documentElement.dataset.lang=L;document.documentElement.lang=L==='zh'?'zh-Hant':L;}}catch(e){}</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Article",
  "headline":"เรขาคณิตร่วมของโหราศาสตร์ 3 อารยธรรม — จีน อินเดีย กรีก",
@@ -604,7 +604,7 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
     try{
       var u=new URLSearchParams(location.search).get("lang");
       if(u&&LANGS.indexOf(u)>-1)return u;
-      var s=localStorage.getItem("hk_lang");
+      var s=localStorage.getItem("hk_locale")||localStorage.getItem("hk_lang");
       if(s&&LANGS.indexOf(s)>-1)return s;
     }catch(e){}
     return "th";
@@ -621,7 +621,7 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
   document.getElementById("langSeg").addEventListener("click",function(e){
     var b=e.target.closest("button[data-lang]");if(!b)return;
     LANG=b.dataset.lang;
-    try{localStorage.setItem("hk_lang",LANG);}catch(err){}
+    try{localStorage.setItem("hk_locale",LANG);localStorage.setItem("hk_lang",LANG);}catch(err){}
     applyLang();
   });
   document.getElementById("themeBtn").onclick=function(){
