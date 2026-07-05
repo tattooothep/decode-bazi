@@ -372,7 +372,7 @@ const bodyOf=k=>BODY[k]||{g:"?",c:"#c3b99f"};
 const PERSONAL=new Set(["Sun","Moon","Meridian","Ascendant","Node","AriesPoint"]);
 const SIGN_G=["♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"];
 
-let LANG=(function(){try{const u=new URLSearchParams(location.search).get("lang");if(u&&["th","en","zh"].includes(u))return u;return localStorage.getItem("hk_lang")||"th";}catch(e){return "th";}})();
+let LANG=(function(){try{const u=new URLSearchParams(location.search).get("lang");if(u&&["th","en","zh"].includes(u))return u;return localStorage.getItem("hk_locale")||localStorage.getItem("hk_lang")||"th";}catch(e){return "th";}})();
 let DATA=null;      // payload ล่าสุด
 let NODES=[];       // ดาว/จุดที่วาด (รวม Node/AriesPoint)
 let ROT=0;          // มุมหมุนวง (deg · ตามเข็ม)
@@ -386,6 +386,7 @@ function nameOf(p){return LANG==="th"?p.nameTh:p.name;}
 /* ═══════════ ธีม + ภาษา ═══════════ */
 function applyLang(){
   document.documentElement.lang=LANG;
+  document.title="90° "+T("h1")+" · "+T("title")+" · hourkey";
   document.querySelectorAll("[data-t]").forEach(el=>{const k=el.getAttribute("data-t");if(I18N[LANG][k]!==undefined)el.textContent=I18N[LANG][k];});
   document.querySelectorAll("#langSeg button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
   document.getElementById("lineBtn").textContent=T(SHOW_LINES?"lines_on":"lines_off");
@@ -393,7 +394,7 @@ function applyLang(){
 }
 document.getElementById("langSeg").addEventListener("click",e=>{
   const b=e.target.closest("button[data-lang]");if(!b)return;
-  LANG=b.dataset.lang;try{localStorage.setItem("hk_lang",LANG);}catch(err){}
+  LANG=b.dataset.lang;try{localStorage.setItem("hk_locale",LANG);localStorage.setItem("hk_lang",LANG);}catch(err){}
   applyLang();
 });
 document.getElementById("themeBtn").onclick=()=>{

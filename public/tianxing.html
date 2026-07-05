@@ -514,7 +514,7 @@ const REL_LABEL={
   nan:{han:"難星",th:"ขัด用神 (ร้ายสุด)",en:"Affliction (strikes ruler)",zh:"剋用神",color:"var(--bad)"}
 };
 
-let LANG=(function(){try{const u=new URLSearchParams(location.search).get("lang");if(u&&["th","en","zh"].includes(u))return u;return localStorage.getItem("hk_lang")||"th";}catch(e){return "th";}})();
+let LANG=(function(){try{const u=new URLSearchParams(location.search).get("lang");if(u&&["th","en","zh"].includes(u))return u;return localStorage.getItem("hk_locale")||localStorage.getItem("hk_lang")||"th";}catch(e){return "th";}})();
 let HANDOFF=null;
 let PLACE_NAME="";
 
@@ -524,6 +524,7 @@ function fmtDate(iso){try{const d=new Date(iso);if(isNaN(d.getTime()))return "";
 /* ═══════════ ธีม + ภาษา ═══════════ */
 function applyLang(){
   document.documentElement.lang=LANG;
+  document.title="天星擇日 · "+(I18N[LANG]&&I18N[LANG].title||I18N.th.title)+" 七政四餘 · hourkey";
   document.querySelectorAll("[data-t]").forEach(el=>{const k=el.getAttribute("data-t");if(I18N[LANG][k])el.textContent=I18N[LANG][k];});
   document.querySelectorAll("[data-tp]").forEach(el=>{const k=el.getAttribute("data-tp");if(I18N[LANG][k])el.setAttribute("placeholder",I18N[LANG][k]);});
   document.querySelectorAll("#langSeg button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
@@ -533,7 +534,7 @@ function applyLang(){
 }
 document.getElementById("langSeg").addEventListener("click",e=>{
   const b=e.target.closest("button[data-lang]");if(!b)return;
-  LANG=b.dataset.lang;try{localStorage.setItem("hk_lang",LANG);}catch(err){}
+  LANG=b.dataset.lang;try{localStorage.setItem("hk_locale",LANG);localStorage.setItem("hk_lang",LANG);}catch(err){}
   applyLang();
 });
 document.getElementById("themeBtn").onclick=()=>{

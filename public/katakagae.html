@@ -147,16 +147,16 @@
 
   <header class="hero">
     <div class="crest">方違</div>
-    <h1 id="page-title">เดินทาง <b>มงคล</b> · Katakagae · Heian</h1>
-    <div class="sub" id="page-sub">陰陽道 ONMYOJI · 794-1185 AD · ทีม 100%</div>
-    <div class="desc" id="page-desc">ตำราเดินทางญี่ปุ่นโบราณ · เช็คเทพประจำทิศก่อนออกเดินทาง · 八将神 + 天一神</div>
+    <h1 id="page-title"></h1>
+    <div class="sub" id="page-sub"></div>
+    <div class="desc" id="page-desc"></div>
   </header>
 
   <main>
     <div class="grid">
       <aside>
         <div class="card">
-          <h3><span class="han">起</span> <span id="lbl-from">จุดเริ่มต้น</span></h3>
+          <h3><span class="han">起</span> <span id="lbl-from"></span></h3>
           <div class="row2">
             <div class="field">
               <label id="lbl-from-lat">Latitude</label>
@@ -171,7 +171,7 @@
         </div>
 
         <div class="card">
-          <h3><span class="han">至</span> <span id="lbl-to">จุดหมาย</span></h3>
+          <h3><span class="han">至</span> <span id="lbl-to"></span></h3>
           <div class="row2">
             <div class="field">
               <label id="lbl-to-lat">Latitude</label>
@@ -186,32 +186,29 @@
         </div>
 
         <div class="card">
-          <h3><span class="han">日</span> <span id="lbl-date">วันเดินทาง</span></h3>
+          <h3><span class="han">日</span> <span id="lbl-date"></span></h3>
           <div class="field">
             <input id="datetime" class="input" type="date"/>
           </div>
-          <button class="btn-go" id="btn-go" data-i18n="kk.btn">🌸 เช็คทิศ</button>
+          <button class="btn-go" id="btn-go"></button>
         </div>
 
-        <div class="heian-note" id="note">
-          <b>📜 ยุคเฮอัน (794-1185 AD):</b><br/>
-          ขุนนาง · ซามูไร · นักบุญ · ใช้ตำรานี้ก่อนเดินทาง · เชื่อว่าเทพ 8 องค์ (八将神) คุมทิศต่างกัน · ผิดทิศ = ผิดพลาด
-        </div>
+        <div class="heian-note" id="note"></div>
       </aside>
 
       <section>
         <div id="results">
           <div class="empty">
             <div class="ic">🌸</div>
-            <h4 id="empty-h" style="font-family:var(--serif);font-size:22px;color:var(--fg);">รอเช็คทิศ</h4>
-            <p id="empty-p">ใส่จุดเริ่ม + จุดหมาย + วันเดินทาง → กด "🌸 เช็คทิศ"</p>
+            <h4 id="empty-h" style="font-family:var(--serif);font-size:22px;color:var(--fg);"></h4>
+            <p id="empty-p"></p>
           </div>
         </div>
         <div class="cross-link">
-          <a href="/compass">🧭 เข็มทิศมงคล</a>
-          <a href="/fengshui">🏠 ฮวงจุ้ย</a>
-          <a href="/flyingstars">⭐ ดาวเหิน</a>
-          <a href="/datepick">📅 วางฤกษ์</a>
+          <a href="/compass">🧭 <span id="nav-compass"></span></a>
+          <a href="/fengshui">🏠 <span id="nav-fengshui"></span></a>
+          <a href="/flyingstars">⭐ <span id="nav-flyingstars"></span></a>
+          <a href="/datepick">📅 <span id="nav-datepick"></span></a>
         </div>
       </section>
     </div>
@@ -221,33 +218,39 @@
 const I18N = {
   th: {
     title:'เดินทาง <b>มงคล</b> · Katakagae · Heian',
+    subLbl:'陰陽道 ONMYOJI · 794-1185 AD · ทีม 100%',
     desc:'ตำราเดินทางญี่ปุ่นโบราณ · เช็คเทพประจำทิศก่อนออกเดินทาง · 八将神 + 天一神',
     from:'จุดเริ่มต้น', to:'จุดหมาย', date:'วันเดินทาง', btn:'🌸 เช็คทิศ', loading:'⏳ กำลังคำนวณ...',
     empty_h:'รอเช็คทิศ', empty_p:'ใส่จุดเริ่ม + จุดหมาย + วันเดินทาง → กด "🌸 เช็คทิศ"',
     note:'<b>📜 ยุคเฮอัน (794-1185 AD):</b><br/>ขุนนาง · ซามูไร · นักบุญ · ใช้ตำรานี้ก่อนเดินทาง · เชื่อว่าเทพ 8 องค์ (八将神) คุมทิศต่างกัน · ผิดทิศ = ผิดพลาด',
     journey:'การเดินทาง', dir:'ทิศ', mtn:'山', bearing:'องศา', dist:'ระยะ',
     restrictions:'เทพประจำทิศ', recommendations:'คำแนะนำ', katatagae:'เส้นทางอ้อม', bestday:'วันที่ดีที่สุด',
-    aus:'吉 มงคล', cau:'注意 ระวัง', for:'禁 ห้าม',
+    aus:'吉 มงคล', cau:'注意 ระวัง', for:'禁 ห้าม', safe:'ปลอด',
+    nav_compass:'เข็มทิศมงคล', nav_fengshui:'ฮวงจุ้ย', nav_flyingstars:'ดาวเหิน', nav_datepick:'วางฤกษ์',
   },
   en: {
     title:'Auspicious <b>Travel</b> · Katakagae · Heian',
+    subLbl:'Onmyodo ONMYOJI · 794-1185 AD · 100% team',
     desc:'Heian-era Japanese travel divination · check deity directions · 八将神 + 天一神',
     from:'Origin', to:'Destination', date:'Travel Date', btn:'🌸 Check Direction', loading:'⏳ Computing...',
     empty_h:'Awaiting direction check', empty_p:'Enter origin + destination + date → click "🌸 Check"',
     note:'<b>📜 Heian Period (794-1185 AD):</b><br/>Nobles · samurai · monks used this before travel · 8 deities (八将神) rule directions · wrong way = misfortune',
     journey:'Journey', dir:'Dir', mtn:'山', bearing:'Bearing', dist:'Distance',
     restrictions:'Deity Positions', recommendations:'Recommendations', katatagae:'Detour options', bestday:'Best day',
-    aus:'吉 Auspicious', cau:'注意 Caution', for:'禁 Forbidden',
+    aus:'吉 Auspicious', cau:'注意 Caution', for:'禁 Forbidden', safe:'Clear',
+    nav_compass:'Auspicious Compass', nav_fengshui:'Feng Shui', nav_flyingstars:'Flying Stars', nav_datepick:'Date Selection',
   },
   zh: {
     title:'<b>方違</b> · Katakagae · 平安時代',
+    subLbl:'陰陽道 ONMYOJI · 794-1185 AD · 團隊 100%',
     desc:'平安時代日本擇方術 · 出行前查方位神 · 八将神 + 天一神',
     from:'起點', to:'目的地', date:'出行日', btn:'🌸 查方位', loading:'⏳ 計算中...',
     empty_h:'等待查詢', empty_p:'輸入起點+目的地+日期 → 點 "🌸 查方位"',
     note:'<b>📜 平安時代 (794-1185):</b><br/>公卿·武士·僧侶皆用此 · 八將神司方位 · 違方則禍',
     journey:'旅程', dir:'方', mtn:'山', bearing:'方位角', dist:'距離',
     restrictions:'方位神', recommendations:'建議', katatagae:'迂回路徑', bestday:'最佳日',
-    aus:'吉 吉方', cau:'注意 慎', for:'禁 凶方',
+    aus:'吉 吉方', cau:'注意 慎', for:'禁 凶方', safe:'無沖',
+    nav_compass:'羅盤吉方', nav_fengshui:'風水', nav_flyingstars:'飛星', nav_datepick:'擇日',
   },
 };
 
@@ -259,6 +262,7 @@ function applyLang(){
   document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
   document.title = '方違 Katakagae · ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
   document.getElementById('page-title').innerHTML = t.title;
+  document.getElementById('page-sub').textContent = t.subLbl;
   document.getElementById('page-desc').textContent = t.desc;
   document.getElementById('lbl-from').textContent = t.from;
   document.getElementById('lbl-to').textContent = t.to;
@@ -267,6 +271,10 @@ function applyLang(){
   document.getElementById('empty-h').textContent = t.empty_h;
   document.getElementById('empty-p').textContent = t.empty_p;
   document.getElementById('note').innerHTML = t.note;
+  document.getElementById('nav-compass').textContent = t.nav_compass;
+  document.getElementById('nav-fengshui').textContent = t.nav_fengshui;
+  document.getElementById('nav-flyingstars').textContent = t.nav_flyingstars;
+  document.getElementById('nav-datepick').textContent = t.nav_datepick;
   ['th','en','zh'].forEach(l => document.getElementById('lang-'+l).classList.toggle('act', l===LANG));
 }
 
@@ -324,7 +332,7 @@ function renderResult(d){
             <div class="name">${r.deity_ja} · <span class="name-en">${r.deity}</span></div>
             <div class="reason">${r.reason}</div>
           </div>
-          <span class="badge ${r.conflicts ? 'bad' : 'ok'}">${r.conflicts ? '⚠ 沖' : '✓ ปลอด'}</span>
+          <span class="badge ${r.conflicts ? 'bad' : 'ok'}">${r.conflicts ? '⚠ 沖' : ('✓ ' + t.safe)}</span>
         </div>
       `).join('')}
     </div>

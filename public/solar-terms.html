@@ -109,21 +109,21 @@
   <main class="page">
     <div class="hero">
       <div class="seal-big">節氣</div>
-      <h1 id="page-title">24 節氣 · ปฏิทินฤดูจีน</h1>
-      <div class="sub">24 Solar Terms · ตำราอาม่าอากง v3</div>
-      <div class="desc" id="page-desc">วงโคจรของดวงอาทิตย์ 360° แบ่งเป็น 24 ส่วน · กำหนดเดือน BaZi · ปีจีน · ฤกษ์</div>
+      <h1 id="page-title"></h1>
+      <div class="sub" id="page-subline"></div>
+      <div class="desc" id="page-desc"></div>
     </div>
 
     <div class="control">
-      <label id="lbl-year">ปี:</label>
+      <label id="lbl-year"></label>
       <select id="year-sel"></select>
-      <label id="lbl-tz">เขตเวลา:</label>
+      <label id="lbl-tz"></label>
       <input id="tz-inp" type="number" value="7" min="-12" max="14" style="width:80px"/>
-      <span id="tz-note" style="font-family:var(--mono);font-size:10px;color:var(--fg-faint);">UTC+7 = ไทย</span>
+      <span id="tz-note" style="font-family:var(--mono);font-size:10px;color:var(--fg-faint);"></span>
     </div>
 
     <div class="info-card" id="year-info">
-      <div class="head" id="lbl-li-chun">立春 · ปีจีนเริ่มที่นี่</div>
+      <div class="head" id="lbl-li-chun"></div>
       <div class="li-chun" id="li-chun-time">—</div>
       <div class="stem-branch" id="stem-branch">—</div>
       <div class="concept" id="concept">—</div>
@@ -131,18 +131,13 @@
 
     <div class="terms-grid" id="terms-grid"></div>
 
-    <div class="footer-note" id="footer-note">
-      <b>📜 ที่มา:</b> 周易 · 紫金山天文臺 · ตำราอาม่าอากง v3 (UNESCO Intangible Cultural Heritage 2016)<br/>
-      <b>⏰ เวลา:</b> ปรับตามเขตเวลา (default = ไทย UTC+7) · ดิบ CST = UTC+8<br/>
-      <b>🔑 BaZi:</b> เดือน BaZi เริ่มที่ <span style="color:var(--gold)">節 (Major)</span> ไม่ใช่วันที่ 1 จันทรคติ<br/>
-      <b>🐲 ปีจีน:</b> เริ่มที่ 立春 ไม่ใช่ตรุษจีน
-    </div>
+    <div class="footer-note" id="footer-note"></div>
   </main>
 
 <script>
 const I18N = {
   th: {
-    title:'24 節氣 · ปฏิทินฤดูจีน', desc:'วงโคจรของดวงอาทิตย์ 360° แบ่งเป็น 24 ส่วน · กำหนดเดือน BaZi · ปีจีน · ฤกษ์',
+    title:'24 節氣 · ปฏิทินฤดูจีน', subLbl:'24 Solar Terms · ตำราอาม่าอากง v3', desc:'วงโคจรของดวงอาทิตย์ 360° แบ่งเป็น 24 ส่วน · กำหนดเดือน BaZi · ปีจีน · ฤกษ์',
     yearLbl:'ปี:', tzLbl:'เขตเวลา:', tzNote:'UTC+7 = ไทย', liChunLbl:'立春 · ปีจีนเริ่มที่นี่',
     typeMajor:'節 เริ่มเดือน', typeMiddle:'氣 กลางเดือน', branchPrefix:'เริ่มเดือน',
     footer:`<b>📜 ที่มา:</b> 周易 · 紫金山天文臺 · ตำราอาม่าอากง v3 (UNESCO 2016)<br/>
@@ -151,7 +146,7 @@ const I18N = {
 <b>🐲 ปีจีน:</b> เริ่มที่ 立春 ไม่ใช่ตรุษจีน`
   },
   en: {
-    title:'24 Solar Terms · Chinese Seasonal Calendar', desc:'Sun\'s 360° orbit divided into 24 sections · defines BaZi months · Chinese year · auspicious timing',
+    title:'24 Solar Terms · Chinese Seasonal Calendar', subLbl:'24 Solar Terms · Grandparent Almanac v3', desc:'Sun\'s 360° orbit divided into 24 sections · defines BaZi months · Chinese year · auspicious timing',
     yearLbl:'Year:', tzLbl:'Timezone:', tzNote:'UTC+7 = Thailand', liChunLbl:'Beginning of Spring · Chinese year starts here',
     typeMajor:'節 Major (month start)', typeMiddle:'氣 Middle (month center)', branchPrefix:'starts month',
     footer:`<b>📜 Source:</b> Zhou Yi · Purple Mountain Observatory · Grandparent v3 (UNESCO 2016)<br/>
@@ -160,7 +155,7 @@ const I18N = {
 <b>🐲 Chinese year:</b> begins at 立春 · not Lunar New Year`
   },
   zh: {
-    title:'二十四節氣 · 中國節氣曆', desc:'太陽軌道360°分為24等份 · 決定八字月柱 · 中國年 · 擇日',
+    title:'二十四節氣 · 中國節氣曆', subLbl:'二十四節氣 · 阿公阿嬤曆 v3', desc:'太陽軌道360°分為24等份 · 決定八字月柱 · 中國年 · 擇日',
     yearLbl:'年份:', tzLbl:'時區:', tzNote:'UTC+7 = 泰國', liChunLbl:'立春 · 中國年從此開始',
     typeMajor:'節 月之始', typeMiddle:'氣 月之中', branchPrefix:'始於月',
     footer:`<b>📜 來源:</b> 周易 · 紫金山天文臺 · 阿公阿嬤 v3 (UNESCO 2016)<br/>
@@ -188,6 +183,7 @@ function applyLang(){
   document.documentElement.lang = CUR_LANG === 'zh' ? 'zh-Hant' : CUR_LANG;
   document.title = t.title + ' · hourkey';
   document.getElementById('page-title').textContent = t.title;
+  document.getElementById('page-subline').textContent = t.subLbl;
   document.getElementById('page-desc').textContent = t.desc;
   document.getElementById('lbl-year').textContent = t.yearLbl;
   document.getElementById('lbl-tz').textContent = t.tzLbl;
