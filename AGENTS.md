@@ -421,6 +421,15 @@ data/hourkey-v2..v8/  (47 files · 662 KB · 1,460 paraphrased fields)
 
 **📖 อ่านก่อนแตะระบบซินแส: `SIFU-PIPELINE.md` ที่ root** — อธิบายละเอียดทำไมแม่น (5 ชั้น engine→packet→prompt + 5 fix + บทเรียนห้ามทำซ้ำ)
 
+### ⚠️ grok CLI version landmine (5 ก.ค. 2026 · debug 2 ชม. · เจ้านาย sense ถูก "อาทิตย์ก่อนไว")
+- **grok ต้อง pin 0.2.64** ผ่าน env `SIFU_GROK_BIN=/root/.grok/downloads/grok-0.2.64-linux-x86_64` (อยู่ .env.local ทั้ง source+release · **gitignored → ไม่อยู่ใน git** · ถ้า deploy/เครื่องใหม่ต้องตั้งใหม่)
+- **อาการ:** master ซินแส grok "ไม่ตอบเลย" (first=-ms · log `tool_error tool_name="Read"`)
+- **ต้นเหตุจริง = xAI อัป grok 0.2.67 (26 มิ.ย.) agentic เกิน** — พ่น "กำลังค้นหา...ในโปรเจกต์" แล้วเรียก Read tool → บน prompt ใหญ่ (~177K chars · packet วัยจรทั้งชีวิต 6b5b1cd + HK_PACKET_FILL) หลุด agent-mode ไม่กลับมาตอบ · Q&A ไม่มี retry (ต่างจาก intro) → เงียบ
+- **ทำไม Claude ไม่พัง:** context ใหญ่รับ 177K ได้ · grok/codex สำลัก (โค้ดเราไม่ได้พัง)
+- **0.2.64 = ไม่ agentic** (ทดสอบ: ตอบตรง ไม่มี preamble · 3/3 ผ่าน 4260-4557 ตัว) · original(14มิ.ย.)+0.2.67 = agentic ทั้งคู่
+- ถ้า grok auto-update รีเซ็ต symlink: `ln -sfn ../downloads/grok-0.2.64-linux-x86_64 /root/.grok/bin/grok`
+- ❌ **ห้าม** ใช้ lockTools/`--disallowed-tools` (grok parse_failure · dead code ที่ 1691) · ✅ แนวแก้ระยะยาว = **ตัด packet ให้เล็กสำหรับ grok/codex** (ส่งวัยจรเฉพาะที่เกี่ยวข้อง ไม่ทั้งชีวิต · ยังไม่ทำ)
+
 ### 🔒🔒 5 เรือนปาจื้อ + สูตรเฉพาะ · LOCKED แน่น (27 พ.ค. 2026 · เจ้านายสั่ง "อย่าให้ session หน้าแก้มั่ว")
 
 **ห้ามแก้สูตร 5 เรือนใน `src/lib/chart-table.ts` โดยไม่มี golden + เจ้านาย approve** (verify หนัก · ผ่าน 5-agent × 3 รอบ · เว็บจีน 3 แหล่ง · worked example):
