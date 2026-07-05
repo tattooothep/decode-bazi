@@ -234,6 +234,7 @@
   function buildMenu(user) {
     var savedTheme = (localStorage.getItem('hk-theme') || 'dark');
     var savedLang  = (localStorage.getItem('hk_locale') || 'th');
+    var savedZhVariant = (localStorage.getItem('hk_zh_variant') || 'hant'); // 'hant'=繁(เดิม) · 'cn'=简(β · เฟส ข 6 ก.ค. 2569)
     var displayName = user.name || (user.email || '').split('@')[0] || 'user';
     var hasAvatar = !!user.avatar_url;
     var avatar = user.avatar_url
@@ -276,7 +277,8 @@
             <span class="hk-um-segs lang">
               <button data-value="th" class="${savedLang==='th'?'on':''}">TH</button>
               <button data-value="en" class="${savedLang==='en'?'on':''}">EN</button>
-              <button data-value="zh" class="${savedLang==='zh'?'on':''}">中</button>
+              <button data-value="zh-hant" class="${(savedLang==='zh'&&savedZhVariant!=='cn')?'on':''}">繁</button>
+              <button data-value="zh-cn" class="${(savedLang==='zh'&&savedZhVariant==='cn')?'on':''}" title="简体中文 (β · อยู่ระหว่างตรวจสอบ)">简<sup style="font-size:8px;opacity:.75;margin-left:1px;">β</sup></button>
             </span>
           </div>
           <div class="hk-um-row">
@@ -341,7 +343,21 @@
       b.addEventListener('click', function(){ applyTheme(b.dataset.value); });
     });
     panel.querySelectorAll('.hk-um-segs.lang button').forEach(function(b){
-      b.addEventListener('click', function(){ applyLang(b.dataset.value); });
+      b.addEventListener('click', function(){
+        var v = b.dataset.value;
+        // 繁/简 = ตัวแปรของ zh เดียวกัน (hk_zh_variant) — ต้อง reload เพื่อให้ hk-zhcn.js
+        // แปลง/ไม่แปลงตัวอักษรใหม่ทั้งหน้าอย่างสะอาด (แปลงกลับ 简→繁 แบบ live ทำไม่ได้)
+        if (v === 'zh-hant' || v === 'zh-cn') {
+          try {
+            localStorage.setItem('hk_locale', 'zh');
+            localStorage.setItem('hk_lang', 'zh');
+            localStorage.setItem('hk_zh_variant', v === 'zh-cn' ? 'cn' : 'hant');
+          } catch(_) {}
+          location.reload();
+          return;
+        }
+        applyLang(v);
+      });
     });
     wrap.querySelector('#hk-um-logout').addEventListener('click', async function(){
       try {

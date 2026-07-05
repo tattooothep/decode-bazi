@@ -2104,6 +2104,21 @@ function thZh(dictTh, dictEn, zh){
   return label ? `${label} · ${zh}` : zh;
 }
 
+/* r418 · i18n เฟส 1: เลือกข้อความเหตุผลตามภาษาปัจจุบัน — engine ส่ง r.en/r.zh มาแล้ว (additive)
+   fallback r.thai เสมอ (reason เก่า/cache เก่าที่ยังไม่มี field ใหม่ต้องไม่พังหน้า) */
+function reasonText(r){
+  if (!r || typeof r !== 'object') return String(r || '');
+  const L = getCurrentLang();
+  const t = L === 'en' ? r.en : L === 'zh' ? r.zh : r.thai;
+  return String(t || r.thai || r.en || r.zh || '');
+}
+
+/* r418 · คำนำหน้า "ระวัง" ของ warning reasons ตามภาษา (โครงรอบตัวแปร ไม่ใช่เนื้อเหตุผล) */
+function reasonWarnPrefix(){
+  const L = getCurrentLang();
+  return L === 'en' ? 'Caution: ' : L === 'zh' ? '注意 ' : 'ระวัง ';
+}
+
 function localizeAuspiciousReason(text){
   const lang = getCurrentLang();
   const T3 = (th, en, zh) => lang === 'en' ? en : lang === 'zh' ? zh : th;
@@ -2795,9 +2810,9 @@ async function performSearch(){
               ...(zr.reasons?.warning || []),
             ],
             matches: [
-              ...(c.scoring?.reasonsUp||[]).map(r => localizeAuspiciousReason(`${r.delta>0?'+':''}${r.delta} ${r.thai}`)),
-              ...(c.scoring?.reasonsDown||[]).map(r => localizeAuspiciousReason(`${r.delta} ${r.thai}`)),
-              ...(c.scoring?.warnings||[]).map(r => localizeAuspiciousReason(`ระวัง ${r.thai}`))
+              ...(c.scoring?.reasonsUp||[]).map(r => localizeAuspiciousReason(`${r.delta>0?'+':''}${r.delta} ${reasonText(r)}`)),
+              ...(c.scoring?.reasonsDown||[]).map(r => localizeAuspiciousReason(`${r.delta} ${reasonText(r)}`)),
+              ...(c.scoring?.warnings||[]).map(r => localizeAuspiciousReason(`${reasonWarnPrefix()}${reasonText(r)}`))
             ],
             /* r378 · เหตุผลแบบ object สำหรับกระดานศาสตร์ (จัดหมวดด้วย source ตรง ไม่เดา regex)
                + ดึงชั้น ② ท้องฟ้าจริงจากผล module ตรง เพราะ scoring เก็บ top-8 และทิ้ง neutral
@@ -2805,9 +2820,9 @@ async function performSearch(){
             science_reasons: (() => {
               const sev = (r) => r && (r.severity === 'warning' || r.severity === 'critical');
               const list = [
-                ...(c.scoring?.reasonsUp||[]).map(r => ({ text: localizeAuspiciousReason(`${r.delta>0?'+':''}${r.delta} ${r.thai}`), source: r.source||'', code: r.code||'', delta: Number(r.delta||0), warn: false })),
-                ...(c.scoring?.reasonsDown||[]).map(r => ({ text: localizeAuspiciousReason(`${r.delta} ${r.thai}`), source: r.source||'', code: r.code||'', delta: Number(r.delta||0), warn: sev(r) })),
-                ...(c.scoring?.warnings||[]).map(r => ({ text: localizeAuspiciousReason(`ระวัง ${r.thai}`), source: r.source||'', code: r.code||'', delta: Number(r.delta||0), warn: true })),
+                ...(c.scoring?.reasonsUp||[]).map(r => ({ text: localizeAuspiciousReason(`${r.delta>0?'+':''}${r.delta} ${reasonText(r)}`), source: r.source||'', code: r.code||'', delta: Number(r.delta||0), warn: false })),
+                ...(c.scoring?.reasonsDown||[]).map(r => ({ text: localizeAuspiciousReason(`${r.delta} ${reasonText(r)}`), source: r.source||'', code: r.code||'', delta: Number(r.delta||0), warn: sev(r) })),
+                ...(c.scoring?.warnings||[]).map(r => ({ text: localizeAuspiciousReason(`${reasonWarnPrefix()}${reasonText(r)}`), source: r.source||'', code: r.code||'', delta: Number(r.delta||0), warn: true })),
               ];
               const seenSig = new Set(list.map(x => `${x.source}|${x.code || x.text}`));
               const skyKeys = (SCIENCE_GROUP_DEFS.find(g => g.key === 'sky') || { modules: [] }).modules;
@@ -2821,8 +2836,8 @@ async function performSearch(){
                     if (seenSig.has(sig)) continue;
                     seenSig.add(sig);
                     const d = Number(r.delta || 0);
-                    const prefix = bucket === 'warning' ? 'ระวัง ' : bucket === 'neutral' ? '' : `${d > 0 ? '+' : ''}${d} `;
-                    list.push({ text: localizeAuspiciousReason(`${prefix}${r.thai}`), source: r.source || mk, code: r.code || '', delta: d,
+                    const prefix = bucket === 'warning' ? reasonWarnPrefix() : bucket === 'neutral' ? '' : `${d > 0 ? '+' : ''}${d} `;
+                    list.push({ text: localizeAuspiciousReason(`${prefix}${reasonText(r)}`), source: r.source || mk, code: r.code || '', delta: d,
                       warn: forceWarn === true || (forceWarn === null && sev(r)) });
                   }
                 }
