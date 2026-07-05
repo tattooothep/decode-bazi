@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>hourkey · เป้าหมายของคุณ</title>
+<title data-i18n="g.title">hourkey · เป้าหมายของคุณ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Serif+Thai:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=optional" rel="stylesheet"/>
@@ -458,7 +458,9 @@
     s.addEventListener('click', ()=>{
       all.forEach((x,j)=>{ x.classList.remove('cur','passed'); if (j<i) x.classList.add('passed'); });
       s.classList.add('cur');
-      document.querySelector('.horizon-head .pick').textContent = 'ปัจจุบัน · ' + s.querySelector('.label').textContent;
+      var hl = document.documentElement.getAttribute('data-lang')||'th';
+      var pickLabels = { th:'ปัจจุบัน · ', en:'Current · ', zh:'目前 · ' };
+      document.querySelector('.horizon-head .pick').textContent = (pickLabels[hl]||pickLabels.th) + s.querySelector('.label').textContent;
     });
   });
   // theme
@@ -526,6 +528,7 @@
 </script>
 <script>
 window.HK_I18N = {
+  'g.title':       { th:'hourkey · เป้าหมายของคุณ', en:'hourkey · Your Goals', zh:'hourkey · 你的目標' },
   'g.step.label':  { th:'STEP 03 / 03', en:'STEP 03 / 03', zh:'步驟 03 / 03' },
   'g.step.title':  { th:'เป้าหมาย · 志', en:'Goals · 志', zh:'目標 · 志' },
   'g.step.of':     { th:'of three steps · 之三', en:'of three steps · 之三', zh:'三步驟之終 · 之三' },

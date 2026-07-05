@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>คัมภีร์ชะตา · หนังสือดวงชะตา 6 ศาสตร์ · hourkey</title>
+<title data-i="pageTitle">คัมภีร์ชะตา · หนังสือดวงชะตา 6 ศาสตร์ · hourkey</title>
 <meta name="description" content="หนังสือดวงชะตา 6 ศาสตร์ — ปาจื้อ จื่อเวย ดาวจริง โหราตะวันตก โหราพระเวท ยูเรเนียน หลอมรวมเป็นเล่มเดียว">
 <meta name="robots" content="noindex">
 <script>try{var _t=localStorage.getItem('hk_book_theme');document.documentElement.setAttribute('data-theme',(_t==='dark'||_t==='light')?_t:'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
@@ -212,7 +212,9 @@
   "use strict";
   var I18N = {
     th:{ brand:"คัมภีร์ชะตา", print:"📥 บันทึกเป็น PDF", loadingText:"กำลังเปิดหนังสือ…",
+      pageTitle:"คัมภีร์ชะตา · หนังสือดวงชะตา 6 ศาสตร์ · hourkey",
       kai:"หนังสือดวงชะตา 6 ศาสตร์", issued:"ออกเล่มโดย hourkey · เล่มที่",
+      domEl:"ธาตุเด่น", sciencesUnit:"ศาสตร์",
       shelfTitle:"ชั้นหนังสือของฉัน", shelfEmpty:"ยังไม่มีคัมภีร์ชะตา — แตะปุ่ม “สร้างเล่มใหม่” ด้านบน", shelfNew:"สร้างเล่มใหม่", shelfOpen:"เปิดอ่าน", sDone:"เสร็จ", sRunning:"กำลังเขียน…", sDegraded:"บางบทไม่พร้อม", sError:"ล้มเหลว",
       newTitle:"สร้างคัมภีร์ชะตาเล่มใหม่", newSub:"เลือกดวง + ติ๊กศาสตร์ที่จะเขียน · แต่ละบทมีภาพพื้นดวง", chart:"เลือกดวง", synth:"บทหลอมรวม (ต้องเลือก ≥2 ศาสตร์)", total:"รวมยาม", confirm:"สร้างคัมภีร์", cancel:"ยกเลิก", noSci:"เลือกอย่างน้อย 1 ศาสตร์", creating:"⏳ กำลังสร้างคัมภีร์…", needTime:"ต้องมีเวลาเกิด", soon:"เร็วๆนี้", needYam:"ยามไม่พอ", needLogin:"กรุณาเข้าสู่ระบบก่อน", jobError:"สร้างไม่สำเร็จ · ลองใหม่", noProfile:"ยังไม่มีดวง — สร้างดวงก่อนที่หน้า “ดวงของฉัน”",
       toc:"สารบัญ", preface:"บทนำ", prefaceBody:"หนังสือเล่มนี้อ่านดวงของคุณผ่าน 6 ศาสตร์โบราณ แต่ละศาสตร์มองคนละมุมด้วยศัพท์และคัมภีร์ของตัวเอง แล้วหลอมรวมเป็นภาพเดียว อ่านเป็นเข็มทิศ ไม่ใช่คำสั่งชีวิต",
@@ -221,7 +223,9 @@
       notReady:"บทนี้ยังไม่พร้อม — ระบบจะเติมให้เมื่อพร้อม", errTitle:"เปิดเล่มไม่ได้", degraded:"บางบทไม่พร้อม",
       chapter:"บทที่", noId:"ไม่พบเลขเล่ม (id) — เปิดจาก \"ดวงของฉัน\"", disclaimer:"คำเตือน", method:"วิธีคำนวณ" },
     en:{ brand:"Book of Destiny", print:"📥 Save as PDF", loadingText:"Opening your book…",
+      pageTitle:"Book of Destiny · 6 Sciences · hourkey",
       kai:"Book of Destiny · 6 Sciences", issued:"Issued by hourkey · No.",
+      domEl:"Dominant Element", sciencesUnit:"sciences",
       shelfTitle:"My Books", shelfEmpty:"No Book of Destiny yet — tap “Create new” above", shelfNew:"Create new", shelfOpen:"Open", sDone:"done", sRunning:"writing…", sDegraded:"partial", sError:"failed",
       newTitle:"Create a new Book of Destiny", newSub:"Pick a chart + the sciences to include · each chapter shows its natal chart", chart:"Chart", synth:"Synthesis chapter (needs 2+ sciences)", total:"Total", confirm:"Create book", cancel:"Cancel", noSci:"Pick at least 1 science", creating:"⏳ Creating your book…", needTime:"Needs birth time", soon:"Soon", needYam:"Not enough hours", needLogin:"Please sign in first", jobError:"Failed · try again", noProfile:"No chart yet — create one on “My Chart” first",
       toc:"Contents", preface:"Preface", prefaceBody:"This book reads your chart through 6 ancient sciences, each with its own lens and canon, then fuses them into one picture. Read it as a compass, not a command.",
@@ -230,7 +234,9 @@
       notReady:"This chapter is not ready yet — the system will fill it in", errTitle:"Cannot open book", degraded:"Some chapters unavailable",
       chapter:"Chapter", noId:"No book id — open from \"My Chart\"", disclaimer:"Disclaimer", method:"Method" },
     zh:{ brand:"命書", print:"📥 存為 PDF", loadingText:"正在打開命書…",
+      pageTitle:"命書 · 六術合參 · hourkey",
       kai:"命書 · 六術合參", issued:"hourkey 出品 · 第",
+      domEl:"主導五行", sciencesUnit:"術",
       shelfTitle:"我的命書", shelfEmpty:"尚無命書 — 請點上方「建立新書」", shelfNew:"建立新書", shelfOpen:"開啟", sDone:"完成", sRunning:"撰寫中…", sDegraded:"部分缺失", sError:"失敗",
       newTitle:"建立新命書", newSub:"選擇命盤 + 勾選要收錄的術數 · 每章附命盤圖", chart:"命盤", synth:"融合章（需選 2 術以上）", total:"合計", confirm:"生成命書", cancel:"取消", noSci:"至少選 1 術", creating:"⏳ 正在生成命書…", needTime:"需要出生時間", soon:"即將推出", needYam:"時數不足", needLogin:"請先登入", jobError:"生成失敗 · 請重試", noProfile:"尚無命盤 — 請先於「我的命盤」建立",
       toc:"目錄", preface:"前言", prefaceBody:"本書以六種古術解讀您的命盤，各以自身術語與典籍立論，再融合為一。此書為指南針，非命令。",
@@ -301,7 +307,7 @@
     if(!cover) cover={};
     var pil = cover.pillars || {};
     var pills = pillarBox("年", pil.year)+pillarBox("月", pil.month)+pillarBox("日", pil.day)+pillarBox("時", pil.hour);
-    var dom = cover.dominantElTh ? '<div class="dom">ธาตุเด่น '+esc(cover.dominantElTh)+"</div>" : "";
+    var dom = cover.dominantElTh ? '<div class="dom">'+esc(t("domEl"))+' '+esc(cover.dominantElTh)+"</div>" : "";
     var no = (book.bookId||"").slice(0,8);
     return '<section class="cover" id="cover">'+
       '<div class="kai">'+esc(t("kai"))+"</div>"+
@@ -421,7 +427,7 @@
       var inner = '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'+
         '<span style="font-size:22px">📖</span>'+
         '<div style="flex:1;min-width:120px"><div style="font-weight:700">'+esc(t("brand"))+' · '+esc((b.bookId||"").slice(0,8))+'</div>'+
-        '<div style="font-size:13px;color:var(--muted)">'+esc(fmtDate(b.createdAt))+' · '+((b.sciences||[]).length)+' ศาสตร์ '+statusBadge(b.status)+'</div></div>'+
+        '<div style="font-size:13px;color:var(--muted)">'+esc(fmtDate(b.createdAt))+' · '+((b.sciences||[]).length)+' '+esc(t("sciencesUnit"))+' '+statusBadge(b.status)+'</div></div>'+
         (open?'<span class="btn" style="pointer-events:none">'+esc(t("shelfOpen"))+' →</span>':"")+"</div>";
       return open
         ? '<a class="chapter" style="display:block;text-decoration:none;color:inherit;padding:16px 18px;margin:10px 0" href="/book?id='+encodeURIComponent(b.bookId)+'">'+inner+"</a>"

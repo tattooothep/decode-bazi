@@ -6,7 +6,7 @@
   <link rel="apple-touch-icon" href="/favicon.svg?v=2"/>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>hourkey · บัญชี</title>
+  <title data-i18n="ac.title">hourkey · บัญชี</title>
   <style>
   :root{
     --bg:#0d0f12;
@@ -525,6 +525,7 @@
 
 <script>
 window.HK_I18N = {
+  'ac.title': { th:'hourkey · บัญชี', en:'hourkey · Account', zh:'hourkey · 帳戶' },
   'ac.nav.today': { th:'วันนี้', en:'Today', zh:'今日' },
   'ac.nav.chart': { th:'ดวงของฉัน', en:'My Chart', zh:'我的命盤' },
   'ac.eyebrow': { th:'ACCOUNT CONSOLE', en:'ACCOUNT CONSOLE', zh:'帳戶控制台' },
@@ -980,6 +981,11 @@ Object.assign(window.HK_I18N, {
   'mg.avatar.spirit': { th:'ใช้สัตว์มงคล', en:'Use spirit beast', zh:'使用神獸' },
   'mg.avatar.remove': { th:'ลบรูป', en:'Remove', zh:'移除' },
   'mg.avatar.note': { th:'ไฟล์รูปไม่เกิน 2MB · ระบบย่อเป็น 256px อัตโนมัติ', en:'Max 2MB · auto-resized to 256px.', zh:'上限 2MB · 自動縮至 256px。' },
+  'mg.avatar.readerr': { th:'อ่านไฟล์รูปไม่ได้', en:'Could not read the image file.', zh:'無法讀取圖片檔案。' },
+  'mg.avatar.genfail': { th:'สร้างรูปไม่สำเร็จ', en:'Could not process the image.', zh:'圖片處理失敗。' },
+  'mg.avatar.saved': { th:'อัปเดตรูปโปรไฟล์แล้ว', en:'Profile photo updated.', zh:'頭像已更新。' },
+  'mg.avatar.removed': { th:'ลบรูปโปรไฟล์แล้ว', en:'Profile photo removed.', zh:'頭像已移除。' },
+  'mg.avatar.spiritfail': { th:'สร้างรูปสัตว์มงคลไม่สำเร็จ', en:'Could not generate the spirit beast image.', zh:'神獸圖像生成失敗。' },
   'mg.name.label': { th:'ชื่อที่แสดง', en:'Display name', zh:'顯示名稱' },
   'mg.name.save': { th:'บันทึก', en:'Save', zh:'儲存' },
   'mg.name.ok': { th:'บันทึกชื่อแล้ว', en:'Name saved.', zh:'名稱已儲存。' },
@@ -1162,11 +1168,11 @@ $id('avatar-file').addEventListener('change', function(){
   var url = URL.createObjectURL(f);
   var img = new Image();
   img.onload = function(){ URL.revokeObjectURL(url); openCrop(img); };
-  img.onerror = function(){ URL.revokeObjectURL(url); alertMsg('อ่านไฟล์รูปไม่ได้', 'error'); };
+  img.onerror = function(){ URL.revokeObjectURL(url); alertMsg(esc(tx('mg.avatar.readerr')), 'error'); };
   img.src = url;
 });
 async function uploadAvatar(blob, fname){
-  if (!blob) { alertMsg('สร้างรูปไม่สำเร็จ', 'error'); return; }
+  if (!blob) { alertMsg(esc(tx('mg.avatar.genfail')), 'error'); return; }
   var fd = new FormData();
   fd.append('file', new File([blob], fname, { type: blob.type || 'image/webp' }));
   try {
@@ -1178,7 +1184,7 @@ async function uploadAvatar(blob, fname){
     var big = document.getElementById('account-avatar');
     if (big) big.innerHTML = '<img src="' + esc(d.avatar_url) + '" alt="">';
     try { sessionStorage.removeItem('hk_me_auth'); sessionStorage.removeItem('hk_me_account'); } catch(_){}
-    alertMsg('อัปเดตรูปโปรไฟล์แล้ว', 'success');
+    alertMsg(esc(tx('mg.avatar.saved')), 'success');
   } catch(e){ alertMsg('Network: ' + esc(e.message), 'error'); }
 }
 $id('btn-avatar-remove').addEventListener('click', async function(){
@@ -1188,7 +1194,7 @@ $id('btn-avatar-remove').addEventListener('click', async function(){
       if (mg.profile) mg.profile.avatar_url = null;
       renderMgAvatar();
       try { sessionStorage.removeItem('hk_me_auth'); sessionStorage.removeItem('hk_me_account'); } catch(_){}
-      alertMsg('ลบรูปโปรไฟล์แล้ว', 'success');
+      alertMsg(esc(tx('mg.avatar.removed')), 'success');
     }
   } catch(_){}
 });
@@ -1222,7 +1228,7 @@ function useSpirit(key){
     cx.drawImage(img, 24, 4, 208, 260 * 208 / 200); /* viewBox 200x260 · จัดกลาง คงสัดส่วน */
     c.toBlob(function(blob){ uploadAvatar(blob, 'spirit-' + key + '.webp'); }, 'image/webp', 0.92);
   };
-  img.onerror = function(){ URL.revokeObjectURL(url); alertMsg('สร้างรูปสัตว์มงคลไม่สำเร็จ', 'error'); };
+  img.onerror = function(){ URL.revokeObjectURL(url); alertMsg(esc(tx('mg.avatar.spiritfail')), 'error'); };
   img.src = url;
 }
 

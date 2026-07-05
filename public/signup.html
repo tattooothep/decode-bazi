@@ -148,6 +148,12 @@
   }
 </style>
 <script>
+	  /* helper แปลข้อความที่ต้อง render สดจาก JS (แยกจาก data-i18n static) · ใช้ window.HK_I18N ตัวเดียวกัน · ตามแบบ _dptx/_qtx */
+	  function _sutx(key, fb){
+	    var lang = document.documentElement.getAttribute('data-lang') || 'th';
+	    var entry = window.HK_I18N && window.HK_I18N[key];
+	    return (entry && entry[lang]) || fb;
+	  }
 	  document.addEventListener('DOMContentLoaded', ()=>{
 	    const params = new URLSearchParams(location.search);
 	    const nextParam = params.get('next') || '';
@@ -192,13 +198,13 @@
         document.querySelectorAll('.tabs .t').forEach(x=>x.classList.remove('on'));
         t.classList.add('on');
         const isLogin = t.dataset.tab==='login';
-        document.querySelector('.cta').textContent = isLogin ? 'เข้าสู่ระบบ →' : 'สร้างบัญชี →';
+        document.querySelector('.cta').textContent = isLogin ? _sutx('su.cta.login','เข้าสู่ระบบ →') : _sutx('su.cta','สร้างบัญชี →');
         document.querySelector('.right h1').innerHTML = isLogin
-          ? 'ยินดีต้อนรับ<span class="tc">回</span>'
-          : 'เริ่ม<span class="tc">解</span>ดวงคุณ';
+          ? _sutx('su.right.h1.login','ยินดีต้อนรับ<span class="tc">回</span>')
+          : _sutx('su.right.h1','เริ่ม<span class="tc">解</span>ดวงคุณ');
         document.querySelector('.sub').innerHTML = isLogin
-          ? 'เข้าสู่ดวงของคุณ — รหัสผ่านที่ตั้งไว้ครั้งสุดท้าย'
-          : 'กรอกอีเมลหรือเข้าผ่านโซเชียล · ใช้เวลา 30 วินาที · ฟรี';
+          ? _sutx('su.right.sub.login','เข้าสู่ดวงของคุณ — รหัสผ่านที่ตั้งไว้ครั้งสุดท้าย')
+          : _sutx('su.right.sub','กรอกอีเมลหรือเข้าผ่านโซเชียล · ใช้เวลา 30 วินาที · ฟรี');
         var cf = document.querySelector('.hk-confirm-field');
         if (cf) cf.style.display = isLogin ? 'none' : '';
       });
@@ -215,12 +221,12 @@
       var isEmail = identifier.indexOf('@') >= 0;
       var isPhone = /^(\+?66|0)[689]\d{8}$/.test(phone);
       if (!identifier || (!isEmail && !isPhone)) {
-        msg.textContent = 'กรอกอีเมลหรือเบอร์โทรที่ใช้สมัครให้ถูกต้อง';
+        msg.textContent = _sutx('fp.err.invalid','กรอกอีเมลหรือเบอร์โทรที่ใช้สมัครให้ถูกต้อง');
         msg.className = 'hk-forgot-msg err';
         input.focus();
         return false;
       }
-      msg.textContent = 'กำลังส่ง...';
+      msg.textContent = _sutx('fp.sending','กำลังส่ง...');
       msg.className = 'hk-forgot-msg';
       var btn = form.querySelector('button');
       if (btn) btn.disabled = true;
@@ -231,16 +237,16 @@
         });
         if (r.ok) {
           msg.textContent = isEmail
-            ? '✓ ส่งลิงก์เรียบร้อย · ตรวจกล่องอีเมลของคุณ'
-            : '✓ ส่งลิงก์เรียบร้อย · ตรวจข้อความในมือถือของคุณ';
+            ? _sutx('fp.sent.email','✓ ส่งลิงก์เรียบร้อย · ตรวจกล่องอีเมลของคุณ')
+            : _sutx('fp.sent.phone','✓ ส่งลิงก์เรียบร้อย · ตรวจข้อความในมือถือของคุณ');
           msg.classList.add('ok');
         } else {
           var j = await r.json().catch(function(){ return {}; });
-          msg.textContent = '⚠ ' + (j.error || 'ส่งไม่สำเร็จ · ลองใหม่หรือติดต่อ LINE @hourkey');
+          msg.textContent = '⚠ ' + (j.error || _sutx('fp.err.fail','ส่งไม่สำเร็จ · ลองใหม่หรือติดต่อ LINE @hourkey'));
           msg.className = 'hk-forgot-msg err';
         }
       } catch(_) {
-        msg.textContent = '⚠ เครือข่ายขัดข้อง · ลองใหม่';
+        msg.textContent = _sutx('fp.err.network','⚠ เครือข่ายขัดข้อง · ลองใหม่');
         msg.className = 'hk-forgot-msg err';
       } finally {
         if (btn) btn.disabled = false;
@@ -464,10 +470,10 @@
               return;
             }
             if (r.status === 409) {
-              alert(j.error || 'เบอร์นี้สมัครแล้ว · ลองเข้าสู่ระบบ');
+              alert(j.error || _sutx('su.err.phone.taken','เบอร์นี้สมัครแล้ว · ลองเข้าสู่ระบบ'));
               return;
             }
-            alert(j.error || 'สมัครไม่สำเร็จ');
+            alert(j.error || _sutx('su.err.signup.fail','สมัครไม่สำเร็จ'));
             return;
           } else {
             const r = await fetch('/api/auth/login-phone', {
@@ -490,7 +496,7 @@
               return;
             }
             cta.disabled = false; cta.style.opacity = '1';
-            alert(j.error || 'เบอร์โทรหรือรหัสผ่านไม่ถูกต้อง');
+            alert(j.error || _sutx('su.err.phone.login','เบอร์โทรหรือรหัสผ่านไม่ถูกต้อง'));
             return;
           }
         }
@@ -509,7 +515,7 @@
           }
           const lj = await lr.json().catch(function(){ return {}; });
           cta.disabled = false; cta.style.opacity = '1';
-          alert(lj.error || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+          alert(lj.error || _sutx('su.err.email.login','อีเมลหรือรหัสผ่านไม่ถูกต้อง'));
           return;
         }
         const r = await fetch('/api/auth/signup', {
@@ -534,11 +540,11 @@
             }
           }
           cta.disabled = false; cta.style.opacity = '1';
-          alert(j.error || 'สมัครไม่สำเร็จ · ลองใหม่');
+          alert(j.error || _sutx('su.err.signup.retry','สมัครไม่สำเร็จ · ลองใหม่'));
         }
       } catch (err) {
         cta.disabled = false; cta.style.opacity = '1';
-        alert('เครือข่ายขัดข้อง · ลองใหม่');
+        alert(_sutx('su.err.network','เครือข่ายขัดข้อง · ลองใหม่'));
       }
     });
   } catch (e) { /* silent · ปุ่มเดิมยัง redirect ไป /input */ }
@@ -559,9 +565,13 @@ window.HK_I18N = {
                      zh:'知人者智 · 自知者明<br/>知人為智 · 自知為明<span class="at">— 老子</span>' },
   'su.right.num':  { th:'step 01 / 03', en:'step 01 / 03', zh:'步驟 01 / 03' },
   'su.right.h1':   { th:'เริ่ม<span class="tc">解</span>ดวงคุณ', en:'Start <span class="tc">解</span>your chart', zh:'開始<span class="tc">解</span>讀您的命盤' },
+  'su.right.h1.login': { th:'ยินดีต้อนรับ<span class="tc">回</span>', en:'Welcome<span class="tc">回</span>Back', zh:'歡迎<span class="tc">回</span>來' },
   'su.right.sub':  { th:'กรอกอีเมลหรือเข้าผ่านโซเชียล · ใช้เวลา 30 วินาที · ฟรี',
                      en:'Email or social login · 30 seconds · free',
                      zh:'電郵或社交帳號 · 約 30 秒 · 免費' },
+  'su.right.sub.login': { th:'เข้าสู่ดวงของคุณ — รหัสผ่านที่ตั้งไว้ครั้งสุดท้าย',
+                     en:'Sign in to your chart — use the password you last set',
+                     zh:'登入您的命盤 — 使用您上次設定的密碼' },
   'su.tab.login':  { th:'Login', en:'Login', zh:'登入' },
   'su.tab.signup': { th:'Sign up', en:'Sign up', zh:'註冊' },
   'su.line':       { th:'เข้าด้วย LINE', en:'Continue with LINE', zh:'以 LINE 登入' },
@@ -584,9 +594,24 @@ window.HK_I18N = {
   'su.otp.resend': { th:'ส่งรหัสใหม่', en:'Resend code', zh:'重新發送' },
   'su.forgot':     { th:'ลืมรหัส?', en:'Forgot?', zh:'忘記密碼？' },
   'su.cta':        { th:'สร้างบัญชี →', en:'Create account →', zh:'建立帳號 →' },
+  'su.cta.login':  { th:'เข้าสู่ระบบ →', en:'Sign in →', zh:'登入 →' },
   'su.fine':       { th:'การสร้างบัญชี = ยอมรับ <a href="#">เงื่อนไข</a> · <a href="#">Privacy</a>',
                      en:'By signing up you accept <a href="#">Terms</a> · <a href="#">Privacy</a>',
                      zh:'註冊即表示同意 <a href="#">條款</a> · <a href="#">隱私</a>' },
+  'su.err.phone.taken': { th:'เบอร์นี้สมัครแล้ว · ลองเข้าสู่ระบบ', en:'This phone is already registered · try signing in', zh:'此手機號碼已註冊 · 請嘗試登入' },
+  'su.err.signup.fail': { th:'สมัครไม่สำเร็จ', en:'Sign-up failed', zh:'註冊失敗' },
+  'su.err.phone.login': { th:'เบอร์โทรหรือรหัสผ่านไม่ถูกต้อง', en:'Incorrect phone or password', zh:'手機號碼或密碼錯誤' },
+  'su.err.email.login': { th:'อีเมลหรือรหัสผ่านไม่ถูกต้อง', en:'Incorrect email or password', zh:'電郵或密碼錯誤' },
+  'su.err.signup.retry': { th:'สมัครไม่สำเร็จ · ลองใหม่', en:'Sign-up failed · try again', zh:'註冊失敗 · 請重試' },
+  'su.err.network': { th:'เครือข่ายขัดข้อง · ลองใหม่', en:'Network error · try again', zh:'網路錯誤 · 請重試' },
+  'su.otp.err.len': { th:'รหัสต้องเป็น 6 หลัก', en:'Code must be 6 digits', zh:'驗證碼須為 6 位數' },
+  'su.otp.checking': { th:'กำลังตรวจสอบ...', en:'Verifying...', zh:'驗證中...' },
+  'su.otp.ok':     { th:'✓ ยืนยันสำเร็จ · กำลังเข้าระบบ', en:'✓ Verified · signing you in', zh:'✓ 驗證成功 · 正在登入' },
+  'su.otp.err.invalid': { th:'รหัสไม่ถูกต้อง', en:'Incorrect code', zh:'驗證碼錯誤' },
+  'su.otp.err.network': { th:'⚠ เครือข่ายขัดข้อง', en:'⚠ Network error', zh:'⚠ 網路錯誤' },
+  'su.otp.resending': { th:'กำลังส่งใหม่...', en:'Resending...', zh:'重新傳送中...' },
+  'su.otp.resent.ok': { th:'✓ ส่งรหัสใหม่แล้ว', en:'✓ New code sent', zh:'✓ 已重新發送驗證碼' },
+  'su.otp.resent.err': { th:'⚠ ส่งใหม่ไม่สำเร็จ', en:'⚠ Failed to resend', zh:'⚠ 重新發送失敗' },
   'fp.eye':        { th:'RESET PASSWORD · 重設密碼', en:'RESET PASSWORD · 重設密碼', zh:'重設密碼' },
   'fp.h3':         { th:'ลืมรหัสผ่าน?', en:'Forgot password?', zh:'忘記密碼？' },
   'fp.sub':        { th:'กรอกอีเมลหรือเบอร์โทรที่ใช้สมัคร · เราจะส่งลิงก์รีเซ็ตรหัสให้ในไม่กี่นาที',
@@ -594,7 +619,13 @@ window.HK_I18N = {
                      zh:'輸入註冊電郵或手機 · 數分鐘內發送重設連結' },
   'fp.submit':     { th:'ส่งลิงก์รีเซ็ต →', en:'Send reset link →', zh:'發送重設連結 →' },
   'fp.or':         { th:'หรือ', en:'or', zh:'或' },
-  'fp.line':       { th:'📱 ติดต่อทีมที่ LINE @hourkey', en:'📱 Contact us on LINE @hourkey', zh:'📱 LINE @hourkey 聯絡' }
+  'fp.line':       { th:'📱 ติดต่อทีมที่ LINE @hourkey', en:'📱 Contact us on LINE @hourkey', zh:'📱 LINE @hourkey 聯絡' },
+  'fp.err.invalid': { th:'กรอกอีเมลหรือเบอร์โทรที่ใช้สมัครให้ถูกต้อง', en:'Enter the email or phone you signed up with', zh:'請輸入註冊時使用的電郵或手機號碼' },
+  'fp.sending':    { th:'กำลังส่ง...', en:'Sending...', zh:'傳送中...' },
+  'fp.sent.email': { th:'✓ ส่งลิงก์เรียบร้อย · ตรวจกล่องอีเมลของคุณ', en:'✓ Link sent · check your email inbox', zh:'✓ 已發送連結 · 請查看您的電郵' },
+  'fp.sent.phone': { th:'✓ ส่งลิงก์เรียบร้อย · ตรวจข้อความในมือถือของคุณ', en:'✓ Link sent · check your phone messages', zh:'✓ 已發送連結 · 請查看手機簡訊' },
+  'fp.err.fail':   { th:'ส่งไม่สำเร็จ · ลองใหม่หรือติดต่อ LINE @hourkey', en:'Failed to send · try again or contact LINE @hourkey', zh:'傳送失敗 · 請重試或聯絡 LINE @hourkey' },
+  'fp.err.network': { th:'⚠ เครือข่ายขัดข้อง · ลองใหม่', en:'⚠ Network error · try again', zh:'⚠ 網路錯誤 · 請重試' }
 };
 function applyI18N(lang){
   if (!window.HK_I18N) return;
@@ -764,11 +795,11 @@ window.applyI18N = applyI18N;
     var btn = modal.querySelector('.hk-otp-cta');
     var code = (input.value || '').trim();
     if (!/^\d{6}$/.test(code)) {
-      msg.textContent = 'รหัสต้องเป็น 6 หลัก';
+      msg.textContent = _sutx('su.otp.err.len','รหัสต้องเป็น 6 หลัก');
       msg.className = 'hk-otp-msg err';
       return;
     }
-    btn.disabled = true; msg.textContent = 'กำลังตรวจสอบ...'; msg.className = 'hk-otp-msg';
+    btn.disabled = true; msg.textContent = _sutx('su.otp.checking','กำลังตรวจสอบ...'); msg.className = 'hk-otp-msg';
     try {
       var r = await fetch('/api/auth/verify-phone', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -776,16 +807,16 @@ window.applyI18N = applyI18N;
       });
       var j = await r.json().catch(function(){ return {}; });
       if (r.ok) {
-        msg.textContent = '✓ ยืนยันสำเร็จ · กำลังเข้าระบบ';
+        msg.textContent = _sutx('su.otp.ok','✓ ยืนยันสำเร็จ · กำลังเข้าระบบ');
         msg.className = 'hk-otp-msg ok';
         setTimeout(function(){ window.hkAfterLogin(j.has_profile); }, 600);
       } else {
-        msg.textContent = '⚠ ' + (j.error || 'รหัสไม่ถูกต้อง');
+        msg.textContent = '⚠ ' + (j.error || _sutx('su.otp.err.invalid','รหัสไม่ถูกต้อง'));
         msg.className = 'hk-otp-msg err';
         btn.disabled = false;
       }
     } catch(_) {
-      msg.textContent = '⚠ เครือข่ายขัดข้อง';
+      msg.textContent = _sutx('su.otp.err.network','⚠ เครือข่ายขัดข้อง');
       msg.className = 'hk-otp-msg err';
       btn.disabled = false;
     }
@@ -793,15 +824,15 @@ window.applyI18N = applyI18N;
   window.hkOtpResend = async function(){
     var modal = document.getElementById('hk-otp-modal');
     var msg = modal.querySelector('.hk-otp-msg');
-    msg.textContent = 'กำลังส่งใหม่...'; msg.className = 'hk-otp-msg';
+    msg.textContent = _sutx('su.otp.resending','กำลังส่งใหม่...'); msg.className = 'hk-otp-msg';
     try {
       var r = await fetch('/api/auth/resend-otp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: pendingPhone })
       });
-      if (r.ok) { msg.textContent = '✓ ส่งรหัสใหม่แล้ว'; msg.className = 'hk-otp-msg ok'; }
-      else { msg.textContent = '⚠ ส่งใหม่ไม่สำเร็จ'; msg.className = 'hk-otp-msg err'; }
-    } catch(_) { msg.textContent = '⚠ เครือข่ายขัดข้อง'; msg.className = 'hk-otp-msg err'; }
+      if (r.ok) { msg.textContent = _sutx('su.otp.resent.ok','✓ ส่งรหัสใหม่แล้ว'); msg.className = 'hk-otp-msg ok'; }
+      else { msg.textContent = _sutx('su.otp.resent.err','⚠ ส่งใหม่ไม่สำเร็จ'); msg.className = 'hk-otp-msg err'; }
+    } catch(_) { msg.textContent = _sutx('su.otp.err.network','⚠ เครือข่ายขัดข้อง'); msg.className = 'hk-otp-msg err'; }
   };
 })();
 </script>
