@@ -118,11 +118,16 @@
    * เปิดภาษาใหม่ (vi/ja/ko/ru/es) ทีละตัวโดยเซ็ต window.HK_LANGS_LIVE ก่อนโหลดไฟล์นี้ เช่น
    *   window.HK_LANGS_LIVE = [{value:'th',label:'TH'},{value:'en',label:'EN'},{value:'zh-hant',label:'繁'},{value:'zh-cn',label:'简'},{value:'ja',label:'JA'}];
    * ถ้าไม่เซ็ต = รายการเดิม th/en/繁/简 เป๊ะ — หน้าตาปัจจุบันไม่เปลี่ยน */
+  var B = '<sup style="font-size:8px;opacity:.75;margin-left:1px;">β</sup>';
   var DEFAULT_LANGS = [
     { value:'th', label:'TH' },
     { value:'en', label:'EN' },
     { value:'zh-hant', label:'繁' },
-    { value:'zh-cn', label:'简<sup style="font-size:8px;opacity:.75;margin-left:1px;">β</sup>', title:'简体中文 (β · อยู่ระหว่างตรวจสอบ)' },
+    { value:'zh-cn', label:'简' + B, title:'简体中文 (β · อยู่ระหว่างตรวจสอบ)' },
+    { value:'vi', label:'VI' + B, title:'Tiếng Việt (β · đang được thẩm định)' },
+    { value:'ja', label:'JA' + B, title:'日本語 (β · 検証中)' },
+    { value:'ru', label:'RU' + B, title:'Русский (β · на проверке)' },
+    { value:'es', label:'ES' + B, title:'Español (β · en revisión)' },
   ];
   function langList() {
     var ls = window.HK_LANGS_LIVE;
