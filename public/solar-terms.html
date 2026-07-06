@@ -165,17 +165,18 @@ const I18N = {
   }
 };
 
-let CUR_LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('lang') || 'th';
+let CUR_LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || localStorage.getItem('lang') || localStorage.getItem('hk_lang') || 'th';
 let CUR_YEAR = parseInt(new URLSearchParams(location.search).get('year') || new Date().getFullYear(), 10);
 let CUR_TZ = parseInt(new URLSearchParams(location.search).get('tz') || '7', 10);
 
 /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
 function _sttx(k){
   try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('solar-terms.html',k,CUR_LANG);if(ov!=null)return ov;}catch(_){}
-  var d=I18N[CUR_LANG]||I18N.th; var v=d[k]; return v!=null?v:I18N.th[k];
+  // คลังในหน้ามีแค่ th/en/zh — ภาษาใหม่ (vi/ja/ko/ru/es) ที่ยังไม่มี overlay key ต้องถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569)
+  var d=I18N[CUR_LANG]||I18N.en; var v=d[k]; return v!=null?v:I18N.en[k];
 }
 function _stbag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_sttx(k);});return o;}
-window.__hkOverlayApply=function(l){CUR_LANG=l;applyLang();};
+window.__hkOverlayApply=function(l){CUR_LANG=l;applyLang();load();};
 
 // init year selector 2020-2035
 const yearSel = document.getElementById('year-sel');
@@ -236,7 +237,7 @@ async function load(){
         </div>
         <div class="zh">${term.zh}</div>
         <div class="pinyin">${term.pinyin || ''}</div>
-        <div class="name">${CUR_LANG==='en' ? term.name_en : (CUR_LANG==='zh' ? term.zh : term.name_th)}</div>
+        <div class="name">${CUR_LANG==='th' ? term.name_th : (CUR_LANG==='zh' ? term.zh : term.name_en)}</div>
         <div class="date">⏰ ${term.date_local}</div>
         <div class="meta">${branchHtml ? (t.branchPrefix + branchHtml) : ''}${dunHtml}</div>
         ${noteHtml}

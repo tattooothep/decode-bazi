@@ -51,10 +51,12 @@ export async function GET(req: NextRequest) {
     // เติม fallback ภาษาอังกฤษ (แปลตรงจาก .thai/.zh) กันไทยหลุด โดยไม่แตะข้อมูลใน DB (ref_ ตาราง)
     const CONCEPT_EN_FALLBACK =
       "24 Solar Terms = 24 periods of the year defined by the sun's position along its orbit · not a lunar calendar";
+    // ภาษาใหม่ (vi/ja/ko/ru/es) ที่ DB ยังไม่มีคอลัมน์ ต้องถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569)
     const concept =
       conceptObj?.[lang] ||
       (lang === "th" ? conceptObj?.thai : undefined) ||
-      (lang === "en" ? CONCEPT_EN_FALLBACK : undefined) ||
+      (lang === "zh" ? conceptObj?.zh : undefined) ||
+      CONCEPT_EN_FALLBACK ||
       conceptObj?.thai ||
       conceptObj?.zh ||
       "";
@@ -84,7 +86,11 @@ export async function GET(req: NextRequest) {
         type_zh: t.no % 2 === 1 ? "節" : "氣",
         type_meaning: t.no % 2 === 1 ? "เริ่มเดือน BaZi" : "กลางเดือน BaZi",
         dun_type: d.dun_type || null,                  // 陽遁/陰遁 for 奇門
-        note: d[`note_${lang === "zh" ? "zh" : lang}`] || d.note_th || "",
+        // ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มีคอลัมน์ note_<lang> ใน DB → ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569)
+        note:
+          lang === "th" || lang === "en" || lang === "zh"
+            ? d[`note_${lang}`] || d.note_th || ""
+            : d.note_en || d.note_th || "",
       };
     });
 

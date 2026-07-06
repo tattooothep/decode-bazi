@@ -210,7 +210,8 @@ let LANG = new URLSearchParams(location.search).get('lang') || localStorage.getI
 /* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
 function _autx(k){
   try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('auspicious.html',k,LANG);if(ov!=null)return ov;}catch(_){}
-  var d=I18N[LANG]||I18N.th; var v=d[k]; return v!=null?v:I18N.th[k];
+  // คลังในหน้ามีแค่ th/en/zh — ภาษาใหม่ (vi/ja/ko/ru/es) ที่ยังไม่มี overlay key ต้องถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569)
+  var d=I18N[LANG]||I18N.en; var v=d[k]; return v!=null?v:I18N.en[k];
 }
 function _aubag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_autx(k);});return o;}
 window.__hkOverlayApply=function(l){LANG=l;applyLang();};
@@ -230,14 +231,14 @@ function renderActivities(){
   el.innerHTML = ACTIVITIES.map(a => `
     <div class="activity ${a.key===activity?'act':''}" data-k="${a.key}">
       <div class="zh">${a.key}</div>
-      <div class="name">${a.emoji} ${LANG==='en'?a.en:(LANG==='zh'?a.zh:a.th)}</div>
+      <div class="name">${a.emoji} ${LANG==='th'?a.th:(LANG==='zh'?a.zh:a.en)}</div>
     </div>`).join('');
   el.querySelectorAll('.activity').forEach(d => d.onclick = () => { activity = d.dataset.k; renderActivities(); });
 }
 function renderModules(){
   const el = document.getElementById('modules-grid');
   el.innerHTML = MODULES.map(m => {
-    const lbl = LANG==='en'?m.en:(LANG==='zh'?m.zh:m.th);
+    const lbl = LANG==='th'?m.th:(LANG==='zh'?m.zh:m.en);
     return `<label class="mod-chip ${activeMods.has(m.key)?'act':''}">
       <input type="checkbox" ${activeMods.has(m.key)?'checked':''} data-k="${m.key}"/>
       <span class="tc">${m.zh}</span> <span style="font-size:10px;color:var(--fg-soft)">${lbl}</span>
