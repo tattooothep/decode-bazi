@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({} as Record<string, unknown>));
     const question = String(body.question || "").trim().slice(0, MAX_Q);
-    const packet = String(body.packet || "").trim().slice(0, 6000);
+    const packet = String(body.packet || "").trim().slice(0, 12000);
     const image = String(body.image || "").trim();
 
     if (!question) {
@@ -52,7 +52,9 @@ export async function POST(req: NextRequest) {
       "คุณคือซินแสฮวงจุ้ยที่กำลังดูภาพ 'แปลนบ้าน' ที่ผู้ใช้แนบมา ตอบสั้น กระชับ เป็นภาษาไทย",
       "อ้างอิงตำแหน่งจริงในแปลน (ห้องนอน/ประตู/บันได/ห้องน้ำ/ครัว/เตียง/โต๊ะ) ประกอบกับองศา·ทิศ·ผู้อยู่ใน context",
       "ถ้าภาพไม่ชัดหรืออ่านบางส่วนไม่ออก ให้บอกตรงๆ ว่าอ่านส่วนไหนไม่ได้ ห้ามเดามั่ว",
-      packet ? ("บริบทบ้าน/ทิศ/ผู้อยู่ (engine360 เบื้องต้น):\n" + packet) : "",
+      "ถ้าผู้ใช้ถามจำนวนศาสตร์ ให้ตอบจาก FULL_LUOPAN_SCIENCES_PACKET science_count/catalog และแยกสถานะ ready/needs-house-lock/needs-water-pin/needs-hour-mode ให้ชัด",
+      "ห้ามนับเฉพาะ engine360 score evidence เป็นจำนวนศาสตร์ทั้งหมด",
+      packet ? ("บริบทบ้าน/ทิศ/ผู้อยู่ (FULL_LUOPAN_SCIENCES_PACKET + engine360):\n" + packet) : "",
     ].filter(Boolean).join("\n");
 
     const r = await fetch(OPENROUTER_URL, {
