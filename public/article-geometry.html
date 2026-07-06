@@ -12,6 +12,12 @@
 <link rel="alternate" hreflang="th" href="https://www.hourkey.io/article/geometry?lang=th"/>
 <link rel="alternate" hreflang="en" href="https://www.hourkey.io/article/geometry?lang=en"/>
 <link rel="alternate" hreflang="zh-Hant" href="https://www.hourkey.io/article/geometry?lang=zh"/>
+<link rel="alternate" hreflang="vi" href="https://www.hourkey.io/article/geometry?lang=vi"/>
+<link rel="alternate" hreflang="ja" href="https://www.hourkey.io/article/geometry?lang=ja"/>
+<link rel="alternate" hreflang="ko" href="https://www.hourkey.io/article/geometry?lang=ko"/>
+<link rel="alternate" hreflang="ru" href="https://www.hourkey.io/article/geometry?lang=ru"/>
+<link rel="alternate" hreflang="es" href="https://www.hourkey.io/article/geometry?lang=es"/>
+<link rel="alternate" hreflang="fr" href="https://www.hourkey.io/article/geometry?lang=fr"/>
 <link rel="alternate" hreflang="x-default" href="https://www.hourkey.io/article/geometry"/>
 <link rel="preload" as="image" href="/assets/article-geometry/article-geometry-hero-v1.webp" fetchpriority="high"/>
 <meta property="og:title" content="เรขาคณิตร่วมของโหราศาสตร์ 3 อารยธรรม · จีน อินเดีย กรีก"/>
@@ -30,14 +36,14 @@
 <meta name="twitter:description" content="ปีชง = opposition 180° · Great Conjunction ตกก้านทอง 15/16 · Spica ห่าง 0.01° · 調候↔เดคลิเนชัน r=−0.653"/>
 <meta name="twitter:image" content="https://www.hourkey.io/assets/article-geometry/article-geometry-og-v1.jpg"/>
 <meta name="twitter:image:alt" content="A brass astronomical instrument showing shared 360-degree celestial geometry"/>
-<script>try{var t=localStorage.getItem('hk_theme');if(t)document.documentElement.dataset.theme=t;var L=new URLSearchParams(location.search).get('lang')||localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang');if(L&&['th','en','zh'].indexOf(L)>-1){document.documentElement.dataset.lang=L;document.documentElement.lang=L==='zh'?'zh-Hant':L;}}catch(e){}</script>
+<script>try{var t=localStorage.getItem('hk_theme');if(t)document.documentElement.dataset.theme=t;var L=new URLSearchParams(location.search).get('lang')||localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang');var H={th:'th',en:'en',zh:'zh-Hant',vi:'vi',ja:'ja',ko:'ko',ru:'ru',es:'es',fr:'fr'};if(L&&H[L]){document.documentElement.dataset.lang=L;document.documentElement.lang=H[L];}}catch(e){}</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Article",
  "headline":"เรขาคณิตร่วมของโหราศาสตร์ 3 อารยธรรม — จีน อินเดีย กรีก",
  "alternativeHeadline":"The Shared Geometry of Three Astrologies",
  "description":"ปีชงของไทยคือ opposition 180° ของกรีก — สามอารยธรรมแบ่งวงกลม 360° แล้วพบเรขาคณิตชุดเดียวกัน ตรวจซ้ำด้วยการคำนวณดาราศาสตร์จริง: Great Conjunction 1800–2100, 超辰, หมุดดาว Spica, 調候 กับเดคลิเนชันดวงอาทิตย์",
  "datePublished":"2026-07-03","dateModified":"2026-07-06",
- "inLanguage":["th","en","zh"],
+ "inLanguage":["th","en","zh","vi","ja","ko","ru","es","fr"],
  "image":["https://www.hourkey.io/assets/article-geometry/article-geometry-og-v1.jpg"],
  "author":{"@type":"Organization","name":"hourkey","url":"https://www.hourkey.io"},
  "publisher":{"@type":"Organization","name":"hourkey","url":"https://www.hourkey.io"},
@@ -88,6 +94,12 @@ a{color:var(--gold);}
 html[data-lang="th"] [data-l="th"]{display:revert;}
 html[data-lang="en"] [data-l="en"]{display:revert;}
 html[data-lang="zh"] [data-l="zh"]{display:revert;}
+html[data-lang="vi"] [data-l="en"],
+html[data-lang="ja"] [data-l="en"],
+html[data-lang="ko"] [data-l="en"],
+html[data-lang="ru"] [data-l="en"],
+html[data-lang="es"] [data-l="en"],
+html[data-lang="fr"] [data-l="en"]{display:revert;}
 
 /* topbar */
 .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 20px;background:var(--topbar-bg);backdrop-filter:blur(12px);border-bottom:1px solid var(--gold-line);}
@@ -98,6 +110,8 @@ html[data-lang="zh"] [data-l="zh"]{display:revert;}
 .lang-seg{display:inline-flex;background:var(--bg-3);border:1px solid var(--gold-line);border-radius:99px;padding:3px;}
 .lang-seg button{min-width:38px;height:34px;padding:0 10px;border:none;background:transparent;color:var(--fg-soft);font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em;border-radius:99px;cursor:pointer;transition:.2s;}
 .lang-seg button.on{background:var(--gold);color:var(--bg);}
+.lang-seg select{height:34px;min-width:104px;border:0;border-radius:99px;padding:0 30px 0 12px;background:transparent;color:var(--fg);font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;color-scheme:dark;}
+.lang-seg option{color:var(--fg);background:var(--bg-3);}
 .tbtn{width:38px;height:38px;background:var(--bg-3);border:1px solid var(--gold-line);color:var(--fg-soft);border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:.2s;}
 .tbtn:hover{color:var(--gold);border-color:var(--gold);}
 
@@ -198,7 +212,17 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
   <a class="back" href="/"><span class="seal">幾</span><span>hourkey</span></a>
   <div class="top-r">
     <div class="lang-seg" id="langSeg" role="group" aria-label="language">
-      <button data-lang="th">TH</button><button data-lang="en">EN</button><button data-lang="zh">中</button>
+      <select id="geoLang" aria-label="Language">
+        <option value="th">TH</option>
+        <option value="en">EN</option>
+        <option value="zh">中文</option>
+        <option value="vi">VI</option>
+        <option value="ja">JP</option>
+        <option value="ko">KO</option>
+        <option value="ru">RU</option>
+        <option value="es">ES</option>
+        <option value="fr">FR</option>
+      </select>
     </div>
     <button class="tbtn" id="themeBtn" title="สลับธีม" aria-label="toggle theme">☾</button>
   </div>
@@ -664,7 +688,7 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
   <div data-l="th">หมายเหตุระเบียบวิธี: ตัวเลขทุกตัวในบทความนี้คำนวณโดย engine ของ hourkey ด้วยไลบรารีดาราศาสตร์ astronomy-engine (MIT) — Great Conjunction ค.ศ. 1800–2100 · การจับคู่พฤหัส–สถานี (超辰) ค.ศ. 1900–2100 · ตำแหน่ง Spica และขอบ 28宿/27 nakshatra (Lahiri ayanamsa ณ 3 ก.ค. 2026 = 24.22°) · เดคลิเนชันรายเดือน節氣ปี 2026 เทียบ 窮通寶鑑 (กรณีก้าน 甲) — ผลทั้งหมดตรวจซ้ำได้ · ภาษาที่ใช้ในบทความคือ "สอดคล้อง / ชี้ว่า" โดยเจตนา: ข้อมูลชุดนี้แสดงความพ้องเชิงเรขาคณิตและเชิงดาราศาสตร์ ไม่ใช่ข้อพิสูจน์เชิงพยากรณ์</div>
   <div data-l="en">Methodology note: every figure in this article was computed by hourkey's engine using the astronomy-engine library (MIT) — Great Conjunctions AD 1800–2100 · Jupiter-station pairing (超辰) AD 1900–2100 · Spica's position and the 28-xiu/27-nakshatra boundaries (Lahiri ayanamsa on 3 Jul 2026 = 24.22°) · monthly jieqi declination for 2026 against 窮通寶鑑 (甲-stem case). All results are reproducible. The article deliberately says "aligns with / points to": this data demonstrates geometric and astronomical concordance, not predictive proof.</div>
   <div data-l="zh">方法說明：本文所有數字均由 hourkey 引擎以 astronomy-engine（MIT）程式庫實算——木土大會合 1800–2100 · 木星—星次對應（超辰）1900–2100 · 角宿一位置與二十八宿／27 nakshatra 界線（Lahiri ayanamsa 2026-07-03 = 24.22°）· 2026 年節氣月赤緯對照《窮通寶鑑》（甲木案例）。所有結果皆可覆核。本文刻意使用「相符／指向」等措辭：這組數據展示的是幾何與天文上的一致性，而非預測能力的證明。</div>
-  <div class="mono" style="margin-top:10px">hourkey.io · 2026-07-03 · TH / EN / 中</div>
+  <div class="mono" style="margin-top:10px">hourkey.io · 2026-07-03 · TH / EN / 中 / VI / JP / KO / RU / ES / FR</div>
 </footer>
 
 </article>
@@ -672,12 +696,154 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
 
 <script>
 (function(){
-  var LANGS=["th","en","zh"];
+  var LANGS=["th","en","zh","vi","ja","ko","ru","es","fr"];
+  var HTML_LANG={th:"th",en:"en",zh:"zh-Hant",vi:"vi",ja:"ja",ko:"ko",ru:"ru",es:"es",fr:"fr"};
   var TITLES={
     th:"เรขาคณิตร่วมของโหราศาสตร์ 3 อารยธรรม · จีน อินเดีย กรีก · hourkey",
     en:"The Shared Geometry of Three Astrologies · China India Greece · hourkey",
-    zh:"三大文明占星術的共同幾何 · 中國 印度 希臘 · hourkey"
+    zh:"三大文明占星術的共同幾何 · 中國 印度 希臘 · hourkey",
+    vi:"Hinh hoc chung cua ba truyen thong chiem tinh · hourkey",
+    ja:"三つの占星術に共通する幾何 · hourkey",
+    ko:"세 점성 전통의 공통 기하 · hourkey",
+    ru:"Общая геометрия трех астрологических традиций · hourkey",
+    es:"La geometria compartida de tres astrologias · hourkey",
+    fr:"La geometrie partagee de trois astrologies · hourkey"
   };
+  var DESCS={
+    th:"ปีชง = opposition 180° — สามอารยธรรมวาดรูปเดียวกันบนวงกลม 360° และตรวจซ้ำด้วยดาราศาสตร์จริงโดย engine hourkey",
+    en:"Clash year = 180-degree opposition. Three civilizations draw related geometry on a 360-degree circle, checked with hourkey real astronomy.",
+    zh:"歲沖即 180 度對沖。三大文明在 360 度圓上畫出相通幾何，並以 hourkey 實算天文覆核。",
+    vi:"Nam xung = doi xung 180 do. Ba nen van minh ve cac hinh hoc lien quan tren vong tron 360 do, doi chieu bang thien van hourkey.",
+    ja:"冲の年は180度のオポジション。三つの文明が360度円に描く共通幾何を hourkey の実天計算で照合します。",
+    ko:"충의 해는 180도 대립입니다. 세 문명이 360도 원 위에 그린 공통 기하를 hourkey 실제 천문 계산으로 대조합니다.",
+    ru:"Год столкновения равен оппозиции 180 градусов: три цивилизации чертят родственную геометрию на круге 360 градусов, проверенную расчетом hourkey.",
+    es:"El ano de choque equivale a oposicion de 180 grados: tres civilizaciones dibujan geometria relacionada en el circulo de 360 grados, comprobada con astronomia hourkey.",
+    fr:"L annee de choc correspond a l opposition de 180 degres: trois civilisations tracent une geometrie liee sur le cercle de 360 degres, verifiee par hourkey."
+  };
+  var GEO={
+    vi:{
+      h1:"Hình học chung của <span class=\"gd\">ba truyền thống chiêm tinh</span>",
+      sub:"Trung Hoa · Ấn Độ · Hy Lạp — ba ngôn ngữ khác nhau, nhưng cùng đặt thời gian lên vòng tròn 360° và các chu kỳ 12 phần.",
+      briefTitle:"Bài này không chứng minh chiêm tinh có khả năng dự đoán theo nghĩa khoa học.",
+      brief:"Mục tiêu là đọc ngôn ngữ cổ như hình học và thiên văn: các hệ thống đặt số 12, góc 180°, góc 120°, điểm mốc sao và mùa như thế nào, rồi Hourkey dùng lớp đó để giải thích Fusion cẩn thận hơn.",
+      points:["Trùng nhau: xung = 180°, tam hợp = 120°, một số hình phạt tạo cấu trúc giống T-square.","Khác nhau: Trung Hoa bám tiết khí và mùa, Ấn Độ bám khung sao cố định, Hy Lạp bám điểm xuân phân.","Cách dùng: coi đây là bản đồ so sánh, không phải lời khẳng định rằng một hệ thống đúng tuyệt đối."],
+      sections:[
+        ["Vòng tròn 12 phần","Khi đưa 12 địa chi lên vòng tròn 360°, nhiều thuật ngữ dân gian có hình học rất rõ. Tý đối Ngọ là đường 180° giống opposition; tam hợp như Thân-Tý-Thìn tạo tam giác 120° giống trine; một số cấu trúc hình phạt bước theo 90° giống khung căng của T-square.","Điểm quan trọng là không cần nói các nền văn minh sao chép nhau. Chỉ cần chúng cùng đo bầu trời bằng vòng tròn, cùng chia chu kỳ thành phần đều nhau, thì một số hình sẽ tự lặp lại. AI Sifu dùng điều này để giải thích tại sao hai hệ thống có thể đồng thanh ở tầng hình học nhưng khác ở tầng diễn giải."],
+        ["Hai chiếc đồng hồ","Trung Hoa dùng tiết khí để cắt tháng, tức là đặt đồng hồ vào Mặt trời và mùa. Ấn Độ dùng zodiac sidereal và nakshatra, tức là bám vào nền sao cố định. Truyền thống Hy Lạp/tropical neo điểm 0 vào xuân phân.","Vì trục Trái đất tiến động, hai cách neo này trôi lệch dần. Sự lệch không làm văn bản cổ vô dụng; nó cho thấy văn bản là một bản compile của bầu trời tại một thời điểm. Hourkey vì vậy chạy song song lớp source code là vị trí sao thật và lớp binary là bảng can chi/tiết khí."],
+        ["Bốn kết quả tính toán","Engine Hourkey quét Great Conjunction Mộc-Thổ 1800-2100 và thấy 15/16 lần rơi vào năm thiên can kim, còn địa chi tập trung vào hai bộ tam hợp. Đây không phải câu chuyện huyền thoại mà là kết quả có thể tính lại.","Lớp 超辰 cho thấy đồng hồ Mộc tinh 11.862 năm bị làm tròn thành 12 năm rồi tích lũy sai số. Điểm Spica lại cho thấy Trung Hoa và Ấn Độ từng đóng mốc vào gần cùng một sao. Với 調候 trong BaZi, logic 'mùa lạnh cần lửa, mùa nóng cần nước' có tương quan với declination Mặt trời."],
+        ["Kết luận cho Fusion","Bài này không nói rằng mọi dự đoán đều đúng. Nó nói rằng các thuật ngữ cổ nhiều khi là thiên văn học đã được nén thành ký hiệu, thơ, bảng và quy tắc nhớ. Khi nhiều hệ thống cùng chỉ về một hình học, ta có thêm độ tin cậy; khi chúng lệch nhau, ta biết cần đọc nguyên nhân của độ lệch.","Đây là tinh thần của AI Sifu: một bầu trời, nhiều hệ quy chiếu. Không trộn câu trả lời thành một mớ lời đoán, mà tách lớp người, thời gian, bầu trời thật, không gian và thời điểm khởi sự rồi mới kết luận."]
+      ],
+      cta:["Xem sao thật 天星擇日","Chọn ngày theo can chi","Đọc Fusion nhiều hệ"],
+      footer:"Ghi chú phương pháp: các con số trong bài gốc được tính bằng astronomy-engine của Hourkey, bao gồm Great Conjunction 1800-2100, chu kỳ Mộc tinh, mốc Spica, ranh giới 28宿/27 nakshatra và declination theo tiết khí. Đây là bằng chứng hình học/thiên văn, không phải chứng minh năng lực dự đoán."
+    },
+    ja:{
+      h1:"三つの占星術に共通する<span class=\"gd\">幾何</span>",
+      sub:"中国 · インド · ギリシャ — 文脈は違っても、360度の円と12分割に戻すと同じ形が現れる。",
+      briefTitle:"これは占星術の予測能力を科学的に証明する記事ではありません。",
+      brief:"この記事は古い術語を幾何と天文学として読む試みです。12分割、180度、120度、星の基準点、季節の時計をどう置いたかを比べ、AI Sifu Fusion の考え方を明確にします。",
+      points:["重なる点: 冲は180度、三合は120度、一部の刑は T-square に似た緊張構造を作る。","異なる点: 中国は節気と季節、インドは恒星枠、ギリシャは春分点を基準にする。","読む目的: どれか一つを絶対化せず、同じ空を複数の座標で読むため。"],
+      sections:[
+        ["12分割の円","十二支を360度円に置くと、民間でよく知られる『冲』は幾何としては180度の opposition になります。申子辰の三合は120度の三角形で、西洋の trine と同じ形です。寅巳申のような構造は90度刻みの緊張を作り、T-square と比較できます。","ここで大切なのは、文明間の単純なコピーを主張しないことです。同じ天球を円として扱い、周期を等分すれば、似た形は自然に発生します。Hourkey はこの重なりを、Fusion の説明可能性の土台として使います。"],
+        ["二つの時計","中国の命理と擇日は節気で月を切るため、太陽と季節に同期します。インドの Jyotisha は sidereal zodiac と nakshatra により恒星に基準を置きます。ギリシャ系の tropical zodiac は春分点を基準にします。","地球の歳差により、恒星基準と春分点基準は時間とともにずれます。これは古典が間違っているという意味ではなく、ある時点の天文学が記号体系へ compile されたということです。"],
+        ["実算で見える四つの結果","Hourkey engine は1800-2100年の木星・土星 Great Conjunction を計算し、16回中15回が金の天干年に落ちることを確認しました。これは伝承ではなく、再計算可能な天文結果です。","また、超辰は木星の11.862年周期を12年に丸めた誤差の蓄積として読めます。Spica は中国の角宿とインドの nakshatra 境界を近づける基準星です。BaZi の調候は、冬に火、夏に水を求める発想が太陽赤緯と対応します。"],
+        ["Fusion への結論","この記事の結論は、占星術が必ず当たるということではありません。古い術語の一部は、実際の天文運動を表や詩や記号へ圧縮したものだということです。","AI Sifu はこの姿勢を採ります。一つの空を複数の座標で読み、同意する点は強め、矛盾する点は原因を説明し、人間が判断できる形に戻します。"]
+      ],
+      cta:["実天を確認 天星擇日","干支で擇日する","Fusion を読む"],
+      footer:"方法メモ: 元記事の数値は Hourkey engine と astronomy-engine で計算しています。対象は Great Conjunction 1800-2100、木星周期、Spica、28宿/27 nakshatra、節気月の太陽赤緯です。これは幾何と天文の一致を示すもので、予測能力の証明ではありません。"
+    },
+    ko:{
+      h1:"세 점성 전통의 <span class=\"gd\">공통 기하</span>",
+      sub:"중국 · 인도 · 그리스 — 서로 다른 전통도 360도 원과 12분할로 환원하면 겹치는 도형이 보입니다.",
+      briefTitle:"이 글은 점성술의 예측력이 과학적으로 증명되었다고 말하지 않습니다.",
+      brief:"고전 용어를 기하와 천문학으로 읽는 글입니다. 12분할, 180도, 120도, 별 기준점, 계절 시계를 비교해 AI Sifu Fusion의 바탕을 설명합니다.",
+      points:["겹치는 부분: 충은 180도, 삼합은 120도, 일부 형은 서양의 T-square와 비슷한 구조를 만듭니다.","다른 부분: 중국은 절기와 계절, 인도는 항성 기준, 그리스는 춘분점을 기준으로 삼습니다.","목적: 어느 한 체계가 절대적이라고 하기보다 같은 하늘을 여러 렌즈로 읽기 위함입니다."],
+      sections:[
+        ["12분할 원","십이지를 360도 원 위에 올리면 자오충은 180도 opposition이 됩니다. 신자진 삼합은 120도 삼각형이며 서양의 trine과 같은 기하를 가집니다. 일부 형벌 구조는 90도 긴장을 만들며 T-square와 비교할 수 있습니다.","핵심은 베꼈다고 단정하는 것이 아닙니다. 같은 하늘을 원으로 재고 주기를 등분하면 비슷한 도형은 자연히 나타납니다. Hourkey는 이 겹침을 Fusion 설명의 기준점으로 씁니다."],
+        ["두 개의 시계","중국 명리와 택일은 절기로 달을 자르므로 태양과 계절의 시계에 붙습니다. 인도 Jyotisha는 sidereal zodiac과 nakshatra로 항성 배경에 붙습니다. 그리스식 tropical zodiac은 춘분점에 0도를 둡니다.","세차 운동 때문에 항성 기준과 춘분점 기준은 시간이 지나며 벌어집니다. 이는 고전이 틀렸다는 뜻이 아니라, 특정 시점의 하늘이 기호 체계로 compile 되었다는 뜻입니다."],
+        ["계산으로 보이는 네 결과","Hourkey engine은 1800-2100년 목성-토성 Great Conjunction을 계산했고 16회 중 15회가 금 천간의 해에 걸리는 것을 확인했습니다. 이는 신화가 아니라 재계산 가능한 결과입니다.","초진은 목성의 11.862년 주기를 12년으로 둥글게 처리한 오차가 쌓이는 현상으로 읽을 수 있습니다. Spica는 중국 각수와 인도 nakshatra 경계가 가까이 만나는 기준 별입니다. BaZi의 조후는 겨울에 불, 여름에 물을 찾는 논리가 태양 적위와 맞닿습니다."],
+        ["Fusion의 의미","이 글은 모든 예측이 맞는다고 말하지 않습니다. 고전 술어 일부가 실제 천문 운동을 표, 시, 기호, 암기 규칙으로 압축한 것이라고 말합니다.","AI Sifu는 같은 하늘을 여러 좌표계로 읽고, 일치점은 강화하며, 불일치점은 왜 어긋났는지 설명합니다. 그래서 답은 떠 있는 예언이 아니라 검토 가능한 층으로 나옵니다."]
+      ],
+      cta:["실제 하늘 보기 天星擇日","간지로 택일하기","Fusion 읽기"],
+      footer:"방법 메모: 원문의 수치는 Hourkey engine과 astronomy-engine으로 계산했습니다. Great Conjunction 1800-2100, 목성 주기, Spica, 28宿/27 nakshatra, 절기월 태양 적위를 포함합니다. 이는 기하와 천문의 일치를 보이는 자료이지 예측력 증명은 아닙니다."
+    },
+    ru:{
+      h1:"Общая геометрия <span class=\"gd\">трех астрологических традиций</span>",
+      sub:"Китай · Индия · Греция — разные языки, но при сведении к кругу 360° и числу 12 появляются родственные фигуры.",
+      briefTitle:"Эта статья не утверждает, что астрология научно доказала способность предсказывать.",
+      brief:"Задача в другом: прочитать традиционные термины как геометрию и астрономию. Где системы ставят круг 360°, как используют 12 делений, 180°, 120°, опорные звезды и сезонные часы.",
+      points:["Совпадение: clash соответствует 180°, 三合 дает 120°, некоторые наказания напоминают T-square.","Различие: Китай следует сезонам и jieqi, Индия звездной рамке, Греция точке весеннего равноденствия.","Смысл: дать AI Sifu карту сравнения, а не объявить одну традицию единственно верной."],
+      sections:[
+        ["Круг из 12 делений","Если разместить двенадцать земных ветвей на круге 360°, линия 子-午 становится оппозицией 180°. Треугольник 申子辰 дает 120° и похож на trine. Некоторые структуры наказаний идут через 90° и напоминают напряжение T-square.","Это не требует утверждать прямое заимствование. Когда разные цивилизации измеряют одно небо кругом и делят цикл на равные части, похожие фигуры возникают естественно. Hourkey использует это как язык объяснения Fusion."],
+        ["Двое часов","Китайская система режет месяцы по jieqi, то есть привязана к Солнцу и сезонам. Индийская Jyotisha держится за сидерический зодиак и nakshatra. Греческая tropical традиция ставит ноль в точку весеннего равноденствия.","Из-за прецессии звездная рамка и равноденственный ноль расходятся. Это не значит, что канон ошибочен. Скорее древняя астрономия была compile в таблицы, стихи и правила, а затем время продолжило движение."],
+        ["Четыре вычисленных результата","Движок Hourkey просчитал Great Conjunction Юпитера и Сатурна за 1800-2100 годы: 15 из 16 событий попали в годы металлических небесных стволов, а ветви сгруппировались в два набора 三合. Это воспроизводимый расчет.","超辰 можно читать как накопление ошибки при округлении периода Юпитера 11.862 года до 12. Spica связывает китайский 角宿 и индийскую систему nakshatra почти одной звездной меткой. 調候 в BaZi, где холод требует огня, а жара воды, согласуется с солнечной деклинацией."],
+        ["Вывод для Fusion","Статья не доказывает предсказательную силу. Она показывает более скромную, но глубокую вещь: многие древние термины являются сжатой астрономией, превращенной в таблицы, символы и правила памяти.","AI Sifu поэтому сравнивает слои: натальную структуру, реальное небо, ситуацию, пространство и момент запуска. Согласие усиливает вывод; расхождение объясняет, какой слой тянет в другую сторону."]
+      ],
+      cta:["Проверить реальное небо 天星擇日","Выбрать дату по стволам-ветвям","Читать Fusion"],
+      footer:"Методология: числа исходной статьи рассчитаны движком Hourkey с astronomy-engine: Great Conjunction 1800-2100, цикл Юпитера, Spica, границы 28宿/27 nakshatra и солнечная деклинация по jieqi. Это геометрическое и астрономическое согласование, не доказательство предсказаний."
+    },
+    es:{
+      h1:"La geometría compartida de <span class=\"gd\">tres astrologías</span>",
+      sub:"China · India · Grecia — tres contextos distintos, pero al reducirlos a un círculo de 360° y al número 12 aparecen figuras relacionadas.",
+      briefTitle:"Este artículo no afirma que la astrología haya sido probada científicamente como predicción.",
+      brief:"Lee el lenguaje tradicional como geometría y astronomía: cómo cada sistema coloca el círculo de 360°, dónde coinciden sus estructuras y dónde se desplazan sus relojes.",
+      points:["Coincidencia: clash = 180°, 三合 = 120°, algunas penas forman tensión parecida al T-square.","Diferencia: China sigue estaciones, India un marco sideral, Grecia el equinoccio vernal.","Uso: entender la base de AI Sifu Fusion: un cielo, varios lentes, una decisión más cuidadosa."],
+      sections:[
+        ["El círculo de doce partes","Al colocar las doce ramas terrestres sobre un círculo de 360°, 子 contra 午 es una oposición de 180°. El triángulo 申子辰 es de 120° y coincide con la forma del trino. Algunas estructuras de 刑 avanzan en 90° y se parecen al T-square occidental.","No hace falta decir que una civilización copió a otra. Si varias culturas miden el cielo con un círculo y dividen el ciclo en partes regulares, ciertas figuras aparecen por necesidad geométrica. Hourkey usa esa coincidencia para explicar Fusion con más precisión."],
+        ["Dos relojes","China corta los meses por jieqi: su reloj se ancla al Sol y a las estaciones. India usa zodiaco sideral y nakshatra: su reloj se ancla a las estrellas. La tradición tropical griega coloca el cero en el equinoccio vernal.","La precesión hace que esos ceros se separen con el tiempo. El canon no queda inutilizado; muestra que la astronomía de un momento fue compilada en tablas, versos y reglas de memoria."],
+        ["Cuatro resultados calculados","El engine de Hourkey calculó las Great Conjunctions de Júpiter y Saturno entre 1800 y 2100: 15 de 16 caen en años de tallo metal, y las ramas se concentran en dos grupos 三合. Es un dato reproducible, no una leyenda.","超辰 muestra el costo de redondear el ciclo de Júpiter de 11.862 a 12 años. Spica acerca la referencia china 角宿 y la india nakshatra. En BaZi, 調候 conecta la idea de fuego en invierno y agua en verano con la declinación solar."],
+        ["Conclusión para Fusion","El punto no es que toda predicción sea correcta. El punto es que mucho lenguaje antiguo es astronomía comprimida en símbolos. Cuando varias capas coinciden, la lectura gana fuerza; cuando divergen, el desacuerdo tiene información.","AI Sifu debe separar persona, tiempo, cielo real, situación, espacio y momento de inicio. Así la respuesta no flota: muestra qué capa sostiene cada recomendación."]
+      ],
+      cta:["Ver cielo real 天星擇日","Elegir fecha por tallos y ramas","Leer Fusion"],
+      footer:"Nota metodológica: los números del artículo original se calcularon con el engine de Hourkey y astronomy-engine: Great Conjunction 1800-2100, ciclo de Júpiter, Spica, límites 28宿/27 nakshatra y declinación solar por jieqi. Es concordancia geométrica y astronómica, no prueba predictiva."
+    },
+    fr:{
+      h1:"La géométrie partagée de <span class=\"gd\">trois astrologies</span>",
+      sub:"Chine · Inde · Grèce — trois contextes différents, mais une fois ramenés au cercle de 360° et au nombre 12, plusieurs figures se recoupent.",
+      briefTitle:"Cet article ne prétend pas que l astrologie soit scientifiquement prouvée comme outil de prédiction.",
+      brief:"Il lit le langage traditionnel comme géométrie et astronomie: comment les systèmes posent le cercle de 360°, où leurs structures se rejoignent et où leurs horloges dérivent.",
+      points:["Ce qui se recoupe: le clash vaut 180°, 三合 vaut 120°, certaines punitions forment une tension proche du T-square.","Ce qui diffère: la Chine suit les saisons, l Inde suit le cadre sidéral, la Grèce suit l équinoxe vernal.","Pourquoi le lire: donner à AI Sifu Fusion une base claire: un ciel, plusieurs lentilles, puis une décision plus prudente."],
+      sections:[
+        ["Le cercle en douze parts","Placées sur un cercle de 360°, les douze branches terrestres révèlent une géométrie simple: 子 contre 午 est une opposition de 180°, 申子辰 forme un triangle de 120° proche du trine, et certaines structures de 刑 avancent par 90° comme un T-square.","Il n est pas nécessaire d affirmer un emprunt direct. Quand plusieurs civilisations mesurent le ciel avec un cercle et divisent le temps en parts régulières, des figures semblables apparaissent naturellement. Hourkey utilise cela pour rendre Fusion explicable."],
+        ["Deux horloges","La Chine coupe les mois par jieqi: son horloge est solaire et saisonnière. L Inde utilise le zodiaque sidéral et les nakshatra: son horloge s accroche aux étoiles. La tradition tropicale grecque fixe son zéro à l équinoxe de printemps.","La précession fait dériver ces zéros. Cela ne rend pas le canon inutile; cela montre plutôt qu une astronomie ancienne a été compilée en tables, vers et règles mnémotechniques."],
+        ["Quatre résultats calculés","Le moteur Hourkey a recalculé les conjonctions Jupiter-Saturne de 1800 à 2100: 15 sur 16 tombent dans des années de tronc métal, et les branches se concentrent dans deux groupes 三合. C est un résultat reproductible.","超辰 montre l effet cumulé du passage de 11,862 ans à un cycle rond de 12 ans pour Jupiter. Spica rapproche le repère chinois 角宿 et le système indien nakshatra. En BaZi, 調候 relie feu en hiver et eau en été à la déclinaison solaire."],
+        ["Conclusion pour Fusion","La conclusion n est pas que toute prédiction est vraie. Elle est plus précise: beaucoup de termes anciens sont de l astronomie compressée en signes, tables et poèmes. Là où plusieurs couches s accordent, la lecture se renforce; là où elles divergent, l écart doit être expliqué.","AI Sifu doit donc séparer la personne, le temps, le ciel réel, la situation, l espace et le moment de départ. La réponse devient vérifiable, au lieu d être une phrase divinatoire flottante."]
+      ],
+      cta:["Voir le ciel réel 天星擇日","Choisir une date par troncs-branches","Lire Fusion"],
+      footer:"Note de méthode: les chiffres de l article source ont été calculés par le moteur Hourkey avec astronomy-engine: Great Conjunction 1800-2100, cycle de Jupiter, Spica, limites 28宿/27 nakshatra et déclinaison solaire par jieqi. Cela montre une concordance géométrique et astronomique, pas une preuve prédictive."
+    }
+  };
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
+  var articleEl=document.querySelector("main article");
+  var BASE_ARTICLE=articleEl?articleEl.innerHTML:"";
+  var HERO_EN={
+    h1:(document.querySelector('.hero h1[data-l="en"]')||{}).innerHTML||"",
+    sub:(document.querySelector('.hero .sub[data-l="en"]')||{}).innerHTML||""
+  };
+  function renderGeometryLocale(lang){
+    var data=GEO[lang];
+    var a=document.querySelector("main article");
+    var h=document.querySelector('.hero h1[data-l="en"]');
+    var sub=document.querySelector('.hero .sub[data-l="en"]');
+    if(!a)return;
+    if(!data){
+      a.innerHTML=BASE_ARTICLE;
+      if(h)h.innerHTML=HERO_EN.h1;
+      if(sub)sub.innerHTML=HERO_EN.sub;
+      return;
+    }
+    if(h)h.innerHTML=data.h1;
+    if(sub)sub.textContent=data.sub;
+    var sectionHtml=data.sections.map(function(sec){
+      return '<section><p class="brief-kicker">geometry layer</p><h2>'+esc(sec[0])+'</h2>'+sec.slice(1).map(function(p){return '<p>'+esc(p)+'</p>';}).join('')+'</section>';
+    }).join('');
+    a.innerHTML=[
+      '<section class="reader-brief"><div class="brief-card"><div class="brief-kicker">before reading</div><div class="brief-title">'+esc(data.briefTitle)+'</div><p>'+esc(data.brief)+'</p><div class="brief-grid">'+data.points.map(function(p){return '<div>'+esc(p)+'</div>';}).join('')+'</div></div></section>',
+      '<figure class="photo-figure"><img src="/assets/article-geometry/article-geometry-hero-v1.webp" alt="'+esc(data.briefTitle)+'" loading="lazy"/><figcaption>'+esc(data.sub)+'</figcaption></figure>',
+      sectionHtml,
+      '<div class="cta"><a href="/tianxing"><span class="han">星</span><span>'+esc(data.cta[0])+'</span></a><a href="/datepick"><span class="han">擇</span><span>'+esc(data.cta[1])+'</span></a><a href="/master-fusion"><span class="han">合</span><span>'+esc(data.cta[2])+'</span></a></div>',
+      '<footer><div>'+esc(data.footer)+'</div><div class="mono" style="margin-top:10px">hourkey.io · 2026-07-03 · 9-language article layer</div></footer>'
+    ].join('');
+  }
   function getLang(){
     try{
       var u=new URLSearchParams(location.search).get("lang");
@@ -691,14 +857,20 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
   function applyLang(){
     var d=document.documentElement;
     d.dataset.lang=LANG;
-    d.lang=LANG==="zh"?"zh-Hant":LANG;
+    d.lang=HTML_LANG[LANG]||"th";
     document.title=TITLES[LANG]||TITLES.th;
-    var btns=document.querySelectorAll("#langSeg button");
-    for(var i=0;i<btns.length;i++){btns[i].classList.toggle("on",btns[i].dataset.lang===LANG);}
+    var desc=document.querySelector('meta[name="description"]');
+    if(desc)desc.setAttribute("content",DESCS[LANG]||DESCS.th);
+    var og=document.querySelector('meta[property="og:description"]');
+    if(og)og.setAttribute("content",DESCS[LANG]||DESCS.th);
+    var tw=document.querySelector('meta[name="twitter:description"]');
+    if(tw)tw.setAttribute("content",DESCS[LANG]||DESCS.th);
+    var sel=document.getElementById("geoLang");
+    if(sel)sel.value=LANG;
+    renderGeometryLocale(LANG);
   }
-  document.getElementById("langSeg").addEventListener("click",function(e){
-    var b=e.target.closest("button[data-lang]");if(!b)return;
-    LANG=b.dataset.lang;
+  document.getElementById("geoLang").addEventListener("change",function(e){
+    LANG=e.target.value;
     try{localStorage.setItem("hk_locale",LANG);localStorage.setItem("hk_lang",LANG);}catch(err){}
     applyLang();
   });
@@ -713,7 +885,7 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
 <script defer src="/js/hk-zhcn.js?v=1"></script>
 <script src="/js/hk-i18n-core.js?v=1" defer></script>
 <script>
-/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
+/* hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es/fr) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
 (function(){try{
 var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
 if(!l||['th','en','zh'].indexOf(l)!==-1)return;
