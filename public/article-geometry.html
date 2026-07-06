@@ -838,7 +838,6 @@ footer .mono{font-size:10.5px;letter-spacing:.06em;}
     }).join('');
     a.innerHTML=[
       '<section class="reader-brief"><div class="brief-card"><div class="brief-kicker">before reading</div><div class="brief-title">'+esc(data.briefTitle)+'</div><p>'+esc(data.brief)+'</p><div class="brief-grid">'+data.points.map(function(p){return '<div>'+esc(p)+'</div>';}).join('')+'</div></div></section>',
-      '<figure class="photo-figure"><img src="/assets/article-geometry/article-geometry-hero-v1.webp" alt="'+esc(data.briefTitle)+'" loading="lazy"/><figcaption>'+esc(data.sub)+'</figcaption></figure>',
       sectionHtml,
       '<div class="cta"><a href="/tianxing"><span class="han">星</span><span>'+esc(data.cta[0])+'</span></a><a href="/datepick"><span class="han">擇</span><span>'+esc(data.cta[1])+'</span></a><a href="/master-fusion"><span class="han">合</span><span>'+esc(data.cta[2])+'</span></a></div>',
       '<footer><div>'+esc(data.footer)+'</div><div class="mono" style="margin-top:10px">hourkey.io · 2026-07-03 · 9-language article layer</div></footer>'
