@@ -56,6 +56,38 @@ export function fmtThaiRange(startMs: number, endMs: number): string {
   return `${fmtThaiDate(startMs)} ${fmtThaiTime(startMs)} – ${fmtThaiDate(endMs)} ${fmtThaiTime(endMs)}`;
 }
 
+/* ── i18n date formatters (r418 · เฟส 1 datepick en/zh reasons) ──────────
+ * additive อย่างเดียว: ใช้ประกอบข้อความ Reason.en / Reason.zh · เวลาไทย UTC+7 เท่าเดิม */
+const EN_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** "10 Jul" (เวลาไทย) */
+export function fmtEnDate(ms: number): string {
+  const d = new Date(ms + TH_OFFSET_MS);
+  return `${d.getUTCDate()} ${EN_MONTHS[d.getUTCMonth()]}`;
+}
+
+/** "14:22–17:05" · cross-day = "10 Jul 23:40 – 11 Jul 03:15" (เวลาไทย) */
+export function fmtEnRange(startMs: number, endMs: number): string {
+  if (thaiDateStr(startMs) === thaiDateStr(endMs)) {
+    return `${fmtThaiTime(startMs)}–${fmtThaiTime(endMs)}`;
+  }
+  return `${fmtEnDate(startMs)} ${fmtThaiTime(startMs)} – ${fmtEnDate(endMs)} ${fmtThaiTime(endMs)}`;
+}
+
+/** "7月10日" (เวลาไทย) */
+export function fmtZhDate(ms: number): string {
+  const d = new Date(ms + TH_OFFSET_MS);
+  return `${d.getUTCMonth() + 1}月${d.getUTCDate()}日`;
+}
+
+/** "14:22–17:05" · 跨日 = "7月10日 23:40 – 7月11日 03:15" (เวลาไทย) */
+export function fmtZhRange(startMs: number, endMs: number): string {
+  if (thaiDateStr(startMs) === thaiDateStr(endMs)) {
+    return `${fmtThaiTime(startMs)}–${fmtThaiTime(endMs)}`;
+  }
+  return `${fmtZhDate(startMs)} ${fmtThaiTime(startMs)} – ${fmtZhDate(endMs)} ${fmtThaiTime(endMs)}`;
+}
+
 /** overlap ระหว่างสองช่วงเวลา (half-open) */
 export function overlaps(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
   return aStart < bEnd && bStart < aEnd;

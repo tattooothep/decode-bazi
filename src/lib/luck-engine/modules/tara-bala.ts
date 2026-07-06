@@ -115,6 +115,8 @@ export function computeTaraBala(c: CandidateSlot, activity: ActivityType, person
   const janmaMeta = NAKSHATRAS[janma];
   const dayMeta = NAKSHATRAS[dayNak];
   const ctx = `นักษัตรเกิด${janmaMeta.nameTh} (${janmaMeta.name}) → นักษัตรวัน${dayMeta.nameTh} (${dayMeta.name}) · นับได้ ${count} = ตารา ${tara} ${meta.th} (${meta.sa})`;
+  /* r418 · i18n เฟส 1: บริบทเดียวกันฉบับอังกฤษ (ชื่อนักษัตรใช้ Latin ตามตำรา) */
+  const ctxEn = `birth nakshatra ${janmaMeta.name} → day nakshatra ${dayMeta.name} · count ${count} = tara ${tara} ${meta.sa}`;
 
   const up: Reason[] = [];
   const down: Reason[] = [];
@@ -127,11 +129,14 @@ export function computeTaraBala(c: CandidateSlot, activity: ActivityType, person
     caps = [{
       type: "max", value: TARA_BAD_CAP,
       reason: `ตาราพละชั้นร้าย · ${meta.th} (${meta.sa}) · เพดานคะแนน ${TARA_BAD_CAP}`,
+      en: `Malefic Tarabala tier · ${meta.sa} · score capped at ${TARA_BAD_CAP}`,
+      zh: `宿曜屬凶 · ${meta.sa} · 分數上限${TARA_BAD_CAP}`,
       source: "tara_bala", code: "TARA_BALA_CAP",
     }];
     down.push({
       code: "TARA_BALA_BAD",
       thai: `ตาราพละไม่หนุนดวงคุณ · ${ctx} · ตำราจัดเป็นชั้นร้าย เลี่ยงเริ่มงานสำคัญ · เพดานคะแนน ${TARA_BAD_CAP}`,
+      en: `Tarabala does not support your chart · ${ctxEn} · the texts class this tier as malefic; avoid starting important work · score capped at ${TARA_BAD_CAP}`,
       zh: "宿曜凶", delta: 0, severity: "warning", source: "tara_bala",
     });
   } else if (meta.kind === "good") {
@@ -139,6 +144,7 @@ export function computeTaraBala(c: CandidateSlot, activity: ActivityType, person
     up.push({
       code: "TARA_BALA_GOOD",
       thai: `ตาราพละหนุนดวงคุณ · ${ctx} · ชั้นดีตามตาราง Tārābala +${TARA_GOOD_DELTA}`,
+      en: `Tarabala supports your chart · ${ctxEn} · a benefic tier in the standard Tarabala table +${TARA_GOOD_DELTA}`,
       zh: "宿曜吉", delta: TARA_GOOD_DELTA, severity: "info", source: "tara_bala",
     });
   } else {
@@ -146,6 +152,7 @@ export function computeTaraBala(c: CandidateSlot, activity: ActivityType, person
     warning.push({
       code: "TARA_BALA_JANMA",
       thai: `วันนี้นักษัตรวันตรงกับนักษัตรเกิดของคุณ (ตาราชนมะ · Janma Tārā) · ${ctx} · ตำราให้ระวังงานเสี่ยงต่อร่างกาย ไม่ตัดคะแนน`,
+      en: `Today's nakshatra matches your birth nakshatra (Janma Tara) · ${ctxEn} · the texts urge care with physically risky work; no score cut`,
       zh: "本命宿", delta: 0, severity: "warning", source: "tara_bala",
     });
   }

@@ -37,16 +37,16 @@ export function computeTianXing(c: CandidateSlot, lat: number = BKK_LAT, lng: nu
   const up: Reason[] = [], down: Reason[] = [];
   // 用神 (命主)
   if (r.yongshen?.status && ["廟", "旺", "升殿", "樂"].includes(r.yongshen.status))
-    up.push({ code: "TX_YONG_STRONG", thai: `用神 ${r.yongshen.th} ได้กำลัง (${r.yongshen.status})`, zh: `用神${r.yongshen.zh}得力`, delta: 8, source: "tian_xing" });
+    up.push({ code: "TX_YONG_STRONG", thai: `用神 ${r.yongshen.th} ได้กำลัง (${r.yongshen.status})`, en: `Useful God ${r.yongshen.zh} is well-empowered (${r.yongshen.status})`, zh: `用神${r.yongshen.zh}得力`, delta: 8, source: "tian_xing" });
   else if (r.yongshen?.status && ["落", "陷"].includes(r.yongshen.status))
-    down.push({ code: "TX_YONG_WEAK", thai: `用神 ${r.yongshen.th} อ่อนแรง (${r.yongshen.status})`, zh: `用神${r.yongshen.zh}${r.yongshen.status}`, delta: -6, source: "tian_xing" });
-  // 格局
+    down.push({ code: "TX_YONG_WEAK", thai: `用神 ${r.yongshen.th} อ่อนแรง (${r.yongshen.status})`, en: `Useful God ${r.yongshen.zh} is weakened (${r.yongshen.status})`, zh: `用神${r.yongshen.zh}${r.yongshen.status}`, delta: -6, source: "tian_xing" });
+  // 格局 (ชื่อ格เป็นศัพท์ตำราจีน — ฝั่ง en คงตัวจีนกำกับตามธรรมเนียมหนังสือ七政ภาษาอังกฤษ)
   for (const g of r.geju || []) {
-    if (g.good) up.push({ code: "TX_GE_" + g.zh, thai: g.th, zh: g.zh, delta: 5, source: "tian_xing" });
-    else down.push({ code: "TX_JI_" + g.zh, thai: g.th, zh: g.zh, delta: -5, source: "tian_xing" });
+    if (g.good) up.push({ code: "TX_GE_" + g.zh, thai: g.th, en: `Favorable pattern ${g.zh} (real-star chart)`, zh: g.zh, delta: 5, source: "tian_xing" });
+    else down.push({ code: "TX_JI_" + g.zh, thai: g.th, en: `Adverse pattern ${g.zh} (real-star chart)`, zh: g.zh, delta: -5, source: "tian_xing" });
   }
   // 恩星
-  if (r.en_stars?.length) up.push({ code: "TX_EN", thai: `ดาวหนุน用神 (恩星): ${r.en_stars.map(s => s.th).join("·")}`, zh: "恩星扶用", delta: 3, source: "tian_xing" });
+  if (r.en_stars?.length) up.push({ code: "TX_EN", thai: `ดาวหนุน用神 (恩星): ${r.en_stars.map(s => s.th).join("·")}`, en: `Benefactor stars (恩星) supporting the Useful God: ${r.en_stars.map(s => s.zh || s.th).join("·")}`, zh: "恩星扶用", delta: 3, source: "tian_xing" });
 
   return {
     module: "tian_xing", status: "ready",

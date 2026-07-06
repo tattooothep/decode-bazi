@@ -98,6 +98,7 @@ export const zeRiModule: LuckModule = {
       reasonsWarning.push({
         code: "CLASH_TAISUI",
         thai: `วันชง太歲 (${dayBranch} ปะทะ ${yearBranch})`,
+        en: `Day Clashes with Tai Sui (${dayBranch} vs ${yearBranch})`,
         zh: `日沖太歲`,
         delta: -25,
         severity: "critical",
@@ -114,6 +115,8 @@ export const zeRiModule: LuckModule = {
       reasonsDown.push({
         code: "DAY_HOUR_CLASH",
         thai: `วัน-ยามปะทะ (${dayBranch} ${hourBranch})`,
+        en: `Day-Hour Clash (${dayBranch} ${hourBranch})`,
+        zh: `日時相沖 (${dayBranch} ${hourBranch})`,
         delta: -15,
         severity: "warning",
         source: "ze_ri"
@@ -129,6 +132,8 @@ export const zeRiModule: LuckModule = {
       reasonsUp.push({
         code: "LIUHE_DAY_HOUR",
         thai: `วัน-ยาม合 (${dayBranch}+${hourBranch})`,
+        en: `Day-Hour Six Harmony (${dayBranch}+${hourBranch})`,
+        zh: `日時六合 (${dayBranch}+${hourBranch})`,
         delta: 12,
         severity: "info",
         source: "ze_ri"
@@ -149,6 +154,8 @@ export const zeRiModule: LuckModule = {
         reasonsUp.push({
           code: "SANHE",
           thai: `วัน三合 (${group.join("")})`,
+          en: `Three Harmony Formation (${group.join("")})`,
+          zh: `三合局 (${group.join("")})`,
           delta: 15,
           severity: "info",
           source: "ze_ri"
@@ -168,6 +175,8 @@ export const zeRiModule: LuckModule = {
       reasonsUp.push({
         code: "TIAN_DE",
         thai: "天德 (สวรรค์อนุเคราะห์)",
+        en: "Heavenly Virtue (Divine Blessing)",
+        zh: "天德 (上天庇佑)",
         delta: 18,
         severity: "info",
         source: "ze_ri"
@@ -184,6 +193,8 @@ export const zeRiModule: LuckModule = {
       reasonsUp.push({
         code: "YUE_DE",
         thai: "月德 (เดือนอนุเคราะห์)",
+        en: "Monthly Virtue (Monthly Blessing)",
+        zh: "月德 (本月庇佑)",
         delta: 12,
         severity: "info",
         source: "ze_ri"
@@ -217,6 +228,8 @@ export const zeRiModule: LuckModule = {
         reasonsWarning.push({
           code: "CONTRACT_BAD_DAY",
           thai: "ไม่เหมาะเซ็นสัญญาใน破/危วัน",
+          en: "Not suitable for signing contracts on Destruction/Danger days",
+          zh: "破/危日不宜簽約",
           delta: -10,
           source: "ze_ri"
         });
@@ -230,6 +243,8 @@ export const zeRiModule: LuckModule = {
         reasonsUp.push({
           code: "MARRIAGE_BLESSED",
           thai: "天月德ซ้อน · มงคลแต่งงาน",
+          en: "Heavenly and Monthly Virtue overlap · Auspicious for marriage",
+          zh: "天月德並臨 · 宜嫁娶",
           delta: 10,
           source: "ze_ri"
         });

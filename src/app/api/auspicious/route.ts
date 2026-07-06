@@ -37,7 +37,7 @@ import type { EventLocation } from "@/lib/luck-engine/event-location";
 import { huangDaoHour } from "@/lib/huangdao";
 import { riChongDay } from "@/lib/richong";
 import { dongGong } from "@/lib/donggong";
-import { getActivityProfile, mergeProfileHardModules, resolveActivityType } from "@/lib/luck-engine/activity-profiles";
+import { getActivityProfile, mergeProfileHardModules, resolveActivityType, profileLabelEn } from "@/lib/luck-engine/activity-profiles";
 import { computeTongshuLiveForRow, buildTongshuModuleResults } from "@/lib/luck-engine/tongshu-live";
 import type { ActivityProfile } from "@/lib/luck-engine/activity-profiles";
 import { getSession } from "@/lib/auth";
@@ -501,6 +501,9 @@ function enforceSkyCaps(c: CandidateSlot, skyActive: ModuleKey[]): CandidateSlot
     scoring.reasonsDown.unshift({
       code: capCode,
       thai: String(capRule?.reason || `ชั้นท้องฟ้าจำกัดเพดานคะแนน ${minCap}`),
+      /* r418 · i18n เฟส 1: en/zh ไหลจาก CapRule ของ module ต้นทาง (additive · fallback โครงกลาง) */
+      en: String(capRule?.en || `Real-sky layer caps the score at ${minCap}`),
+      zh: String(capRule?.zh || `實際天象層限分 ${minCap}`),
       delta: minCap - Number(scoring.finalScore),
       source: capRule?.source || "moon_void",
       severity: "warning",
@@ -552,6 +555,9 @@ function applyDongGongBoost(c: CandidateSlot): CandidateSlot {
       scoring.reasonsDown.unshift({
         code: capCode,
         thai: String(capRule?.reason || `ตงกงจำกัดเพดานคะแนน ${dgCapValue}`),
+        /* r418 · i18n เฟส 1: en/zh ไหลจาก CapRule ของ module ตงกง (additive · fallback โครงกลาง) */
+        en: String(capRule?.en || `Dong Gong caps the score at ${dgCapValue}`),
+        zh: String(capRule?.zh || `董公限分 ${dgCapValue}`),
         delta: dgCapValue - Number(scoring.finalScore),
         source: "dong_gong",
         severity: "warning",
@@ -757,6 +763,72 @@ async function queryEphemerisCandidates(
   catch (e) { console.warn("[auspicious] cache empty or error:", (e as Error).message); return []; }
 }
 
+/* r418 · i18n เฟส 1: เติม en/zh ให้ reason ที่อบมาจาก aj_ephemeris_cache (build-ephemeris.cjs อบไทยล้วน)
+ * ทำตอนอ่าน (read-time) — ไม่แตะ DB · ไม่แตะ delta/severity/pass/score · เติมเฉพาะ field ที่ยังไม่มี
+ * โค้ดที่รู้จัก: ตาม scripts/build-ephemeris.cjs (OFFICER/XIU/SPIRIT/STAR/TS/QM/P9/HL_PAT/CHONG/SANHE/天德/月德) */
+const CACHE_DOOR_EN: Record<string, string> = {
+  開門: "Open Gate", 休門: "Rest Gate", 生門: "Life Gate", 傷門: "Injury Gate",
+  杜門: "Closed Gate", 景門: "Scenery Gate", 驚門: "Fear Gate", 死門: "Death Gate",
+};
+const CACHE_EL_EN: Record<string, string> = { wood: "Wood", fire: "Fire", earth: "Earth", metal: "Metal", water: "Water" };
+const CACHE_EL_ZH: Record<string, string> = { wood: "木", fire: "火", earth: "土", metal: "金", water: "水" };
+
+function cacheReasonI18n(reason: any): void {
+  if (!reason || typeof reason !== "object" || !reason.thai || (reason.en && reason.zh)) return;
+  const thai = String(reason.thai);
+  const han = (re: RegExp) => (thai.match(re) || [])[1] || "";
+  let en = "", zh = "";
+  switch (String(reason.code || "")) {
+    case "OFFICER_GOOD": { const o = han(/([建除滿平定執破危成收開閉])日/); en = `✓ ${o} Day (Twelve Day Officers)`; zh = `✓ ${o}日 (十二建除)`; break; }
+    case "OFFICER_BAD": { const o = han(/([建除滿平定執破危成收開閉])日/); en = `⚠ ${o} Day (Twelve Day Officers)`; zh = `⚠ ${o}日 (十二建除)`; break; }
+    case "XIU_GOOD": { const x = han(/(\S)宿/); en = `⭐ ${x} Mansion (28 Lunar Mansions)`; zh = `⭐ ${x}宿 (二十八宿)`; break; }
+    case "XIU_BAD": { const x = han(/(\S)宿/); en = `⚠ ${x} Mansion (28 Lunar Mansions)`; zh = `⚠ ${x}宿 (二十八宿)`; break; }
+    case "SPIRIT_GOOD": { const s = han(/✨\s*(\S+)\s*\(/); en = `✨ ${s} (Twelve Day Spirits)`; zh = `✨ ${s} (十二神煞)`; break; }
+    case "SPIRIT_BAD": { const s = han(/⚠\s*(\S+)\s*\(/); en = `⚠ ${s} (Twelve Day Spirits)`; zh = `⚠ ${s} (十二神煞)`; break; }
+    case "STAR_GOOD": { const n = han(/([1-9])[白星]/); en = `🌟 ${n} White Star (Flying Stars)`; zh = `🌟 ${n}白 (飛星)`; break; }
+    case "STAR_BAD": { const n = han(/([1-9])[白星]/); en = `⚠ Star ${n} (Flying Stars)`; zh = `⚠ ${n}星 (飛星)`; break; }
+    case "TS_DAY": en = "⚠ Tai Sui clashes the day (太歲沖日)"; zh = "⚠ 太歲沖日"; break;
+    case "TS_HOUR": en = "⚠ Tai Sui clashes the hour (太歲沖時)"; zh = "⚠ 太歲沖時"; break;
+    case "TS_SAFE": en = "✓ Clear of Tai Sui (太歲)"; zh = "✓ 太歲無犯"; break;
+    case "QM_DOOR": { const d = han(/🚪\s*(\S+)\s*\(/); en = `🚪 ${CACHE_DOOR_EN[d] || d} ${d} (Qi Men)`; zh = `🚪 ${d} (奇門)`; break; }
+    case "QM_STAR": { const s = han(/⭐\s*(\S+)\s*\(/); en = `⭐ ${s} star (Qi Men)`; zh = `⭐ ${s} (奇門星)`; break; }
+    case "P9_FAV": { const e = han(/(wood|fire|earth|metal|water)/); en = `🌟 Period 9 favors ${CACHE_EL_EN[e] || e} (He Luo)`; zh = `🌟 九運${CACHE_EL_ZH[e] || e}吉 (河洛)`; break; }
+    case "P9_UNFAV": { const e = han(/(wood|fire|earth|metal|water)/); en = `⚠ Period 9 disfavors ${CACHE_EL_EN[e] || e} (He Luo)`; zh = `⚠ 九運${CACHE_EL_ZH[e] || e}洩 (河洛)`; break; }
+    case "HL_PAT": { const p = han(/([一-鿿][一-鿿一二三]*)/); en = p ? `${thai.startsWith("⚠") ? "⚠" : "📊"} ${p} pattern (He Luo)` : `${thai.startsWith("⚠") ? "⚠" : "📊"} Mixed pattern (He Luo)`; zh = p ? `${thai.startsWith("⚠") ? "⚠" : "📊"} ${p} (河洛)` : `${thai.startsWith("⚠") ? "⚠" : "📊"} 相雜 (河洛)`; break; }
+    case "CHONG": en = "⚠ Hour clashes the day (時沖日)"; zh = "⚠ 時沖日"; break;
+    case "CHONG_M": en = "Month clashes the day (月沖日)"; zh = "月沖日"; break;
+    case "SANHE": en = "Three Harmony (三合)"; zh = "三合"; break;
+    case "TIAN_DE": en = "Heavenly Virtue (天德)"; zh = "天德"; break;
+    case "YUE_DE": en = "Monthly Virtue (月德)"; zh = "月德"; break;
+    /* ── ba_zi/yong_shen/hex64 จาก aj_personal_cache (savePersonalCache อบก่อน r418 = ไทยล้วน · TTL 24 ชม.) ── */
+    case "CLASH_Z": { const m = thai.match(/(\S)沖(\S)日/); if (m) { en = `⚠ Day Clash: ${m[1]} clashes your ${m[2]} sign (${m[1]}沖${m[2]})`; zh = thai; } break; }
+    case "CLASH_ZH": { const m = thai.match(/(\S)沖(\S)時/); if (m) { en = `⚠ Hour Clash: ${m[1]} clashes your ${m[2]} sign (${m[1]}沖${m[2]})`; zh = thai; } break; }
+    case "SAME_Z": { const z = han(/✨\s*(\S)日同/); en = `✨ Day branch matches your ${z} sign`; zh = thai; break; }
+    case "LIUHE_Z": { const p = han(/六合\s*(\S+)/); en = `🤝 Six Harmony ${p} (六合)`; zh = thai; break; }
+    case "BANHE_Z": { const p = han(/拱(\S+)\)/); en = `🤝 Half Three Harmony (拱${p})`; zh = thai; break; }
+    case "BAZI_NEUTRAL": { const b = han(/八字\s*(\S)日/); en = `BaZi ${b} day · no clash with your chart`; zh = `八字 ${b}日 · 無沖`; break; }
+    case "YS_NA": en = "Useful God (用神) · no data"; zh = "用神·無資料"; break;
+    case "YS_DAY": { const e = han(/日(ไม้|ไฟ|ดิน|ทอง|น้ำ)/); const M: Record<string, [string, string]> = { "ไม้": ["Wood", "木"], "ไฟ": ["Fire", "火"], "ดิน": ["Earth", "土"], "ทอง": ["Metal", "金"], "น้ำ": ["Water", "水"] }; if (M[e]) { en = `⭐ Useful God matches the day's ${M[e][0]} element (用神)`; zh = `⭐ 用神 日${M[e][1]} 相合`; } break; }
+    case "YS_HOUR": { const e = han(/時(ไม้|ไฟ|ดิน|ทอง|น้ำ)/); const M: Record<string, [string, string]> = { "ไม้": ["Wood", "木"], "ไฟ": ["Fire", "火"], "ดิน": ["Earth", "土"], "ทอง": ["Metal", "金"], "น้ำ": ["Water", "水"] }; if (M[e]) { en = `⭐ Useful God matches the hour's ${M[e][0]} element (用神)`; zh = `⭐ 用神 時${M[e][1]} 相合`; } break; }
+    case "NO_YS": { const TE: Record<string, string> = { "ไม้": "Wood", "ไฟ": "Fire", "ดิน": "Earth", "ทอง": "Metal", "น้ำ": "Water" }; const TZ: Record<string, string> = { "ไม้": "木", "ไฟ": "火", "ดิน": "土", "ทอง": "金", "น้ำ": "水" }; const m = thai.match(/用神\s+([^,]+),\s*สล็อต\s+(\S+)\)/); if (m) { const need = m[1].split("/").map(s => TE[s.trim()] || s.trim()).join("/"); const needZh = m[1].split("/").map(s => TZ[s.trim()] || s.trim()).join("/"); const slot = TE[m[2]] || m[2]; const slotZh = TZ[m[2]] || m[2]; en = `Useful God mismatch (needs ${need}, slot is ${slot}) (用神)`; zh = `用神·不合（用神 ${needZh}，時段 ${slotZh}）`; } break; }
+    case "HEX_GOOD": case "HEX_NEUTRAL": { const m = thai.match(/卦(\d+)\s*(\S+)\s*爻(\d+)/); if (m) { en = `📜 Hexagram ${m[1]} ${m[2]} · line ${m[3]}`; zh = thai; } break; }
+    case "HEX_BAD": { const m = thai.match(/卦(\d+)\s*(\S+)\s*爻(\d+)/); if (m) { en = `⚠ Hexagram ${m[1]} ${m[2]} · line ${m[3]}`; zh = thai; } break; }
+    default: return; // โค้ดไม่รู้จัก = ไม่แตะ (fallback thai ฝั่งหน้า)
+  }
+  if (en && !reason.en) reason.en = en;
+  if (zh && !reason.zh) reason.zh = zh;
+}
+
+function enrichCachedModuleReasonsI18n(modules: Record<string, any>): void {
+  for (const m of Object.values(modules || {})) {
+    const rr = (m as any)?.reasons;
+    if (!rr) continue;
+    for (const bucket of ["up", "down", "warning", "neutral"]) {
+      for (const reason of rr[bucket] || []) cacheReasonI18n(reason);
+    }
+  }
+}
+
 function rowToCandidate(r: any): CandidateSlot {
   const [yS, yB] = [r.year_pillar?.[0], r.year_pillar?.[1]];
   const [mS, mB] = [r.month_pillar?.[0], r.month_pillar?.[1]];
@@ -780,11 +852,15 @@ function rowToCandidate(r: any): CandidateSlot {
     donggong: (mB && dB) ? dongGong(mB, dB, (dS || "") + (dB || "")) : null,
     zodiacClash: (r.zodiac_clash || []) as any,
     people: [],
-    modules: {
-      ze_ri: r.ze_ri, twelve_officers: r.twelve_officers, twenty_eight: r.twenty_eight,
-      twelve_spirits: r.twelve_spirits, nine_stars: r.nine_stars, tai_sui: r.tai_sui,
-      qi_men: r.qi_men, he_luo: r.he_luo,
-    } as any,
+    modules: (() => {
+      const mods = {
+        ze_ri: r.ze_ri, twelve_officers: r.twelve_officers, twenty_eight: r.twenty_eight,
+        twelve_spirits: r.twelve_spirits, nine_stars: r.nine_stars, tai_sui: r.tai_sui,
+        qi_men: r.qi_men, he_luo: r.he_luo,
+      };
+      enrichCachedModuleReasonsI18n(mods); // r418 · เติม en/zh reason จาก cache (text-only)
+      return mods as any;
+    })(),
     scoring: undefined as any,
     display: undefined as any,
   };
@@ -837,7 +913,10 @@ async function getPersonalCache(personId: string, ephemerisId: string): Promise<
       `SELECT ba_zi, yong_shen, hex64 FROM aj_personal_cache WHERE person_id=$1 AND ephemeris_id=$2 AND expires_at > NOW()`,
       [personId, ephemerisId]
     );
-    return r ? { ba_zi: r.ba_zi, yong_shen: r.yong_shen, hex64: r.hex64 } : null;
+    if (!r) return null;
+    const mods = { ba_zi: r.ba_zi, yong_shen: r.yong_shen, hex64: r.hex64 };
+    enrichCachedModuleReasonsI18n(mods); // r418 · แถวที่อบก่อน r418 ยังไทยล้วน (TTL 24 ชม.) → เติม en/zh ตอนอ่าน
+    return mods;
   } catch { return null; }
 }
 
@@ -891,11 +970,14 @@ function applyDongGongOverlay(c: CandidateSlot, activeModules: ModuleKey[], acti
   const aliases = DONGGONG_ACTIVITY_ALIASES[activity] || [];
   const yiMatches = (dg.yi || []).filter((x) => aliases.includes(x));
   const jiMatches = (dg.ji || []).filter((x) => aliases.includes(x));
-  const addReason = (bucket: "reasonsUp" | "reasonsDown", code: string, thai: string, delta: number, severity: "info" | "warning") => {
+  const addReason = (bucket: "reasonsUp" | "reasonsDown", code: string, thai: string, delta: number, severity: "info" | "warning", en?: string, zh?: string) => {
     scoring[bucket] = scoring[bucket] || [];
     if (scoring[bucket].some((r: any) => r.code === code)) return;
-    scoring[bucket].unshift({ code, thai, delta, source: "ze_ri", severity });
+    scoring[bucket].unshift({ code, thai, ...(en ? { en } : {}), ...(zh ? { zh } : {}), delta, source: "ze_ri", severity });
   };
+  /* r418 · i18n เฟส 1: บริบทตงกง 3 ภาษา (verdictEn/jianchuEn มาจาก lib donggong · additive) */
+  const dgEn = `${(dg as any).verdictEn || dg.verdict} · ${(dg as any).jianchuEn || dg.jianchu} (${dg.jianchu}日)`;
+  const dgZh = `${dg.verdict} · ${dg.jianchu}日`;
 
   const startScore = Number(scoring.finalScore) || 0;
   const hasExistingGuardCap = (scoring.reasonsDown || []).some((r: any) => String(r.code || "").includes("CAP"));
@@ -913,18 +995,22 @@ function applyDongGongOverlay(c: CandidateSlot, activeModules: ModuleKey[], acti
 
   if (genericDelta > 0) {
     positiveDelta += genericDelta;
-    addReason("reasonsUp", "DONGGONG_VERDICT_UP", `ตงกงหนุนภาพรวม · ${dg.verdictTh} ${dg.jianchuTh}`, genericDelta, "info");
+    addReason("reasonsUp", "DONGGONG_VERDICT_UP", `ตงกงหนุนภาพรวม · ${dg.verdictTh} ${dg.jianchuTh}`, genericDelta, "info",
+      `Dong Gong supports the day overall · ${dgEn}`, `董公整體看好 · ${dgZh}`);
   } else if (genericDelta < 0) {
     negativeDelta += genericDelta;
-    addReason("reasonsDown", "DONGGONG_VERDICT_DOWN", `ตงกงลดแรงภาพรวม · ${dg.verdictTh} ${dg.jianchuTh}`, genericDelta, "warning");
+    addReason("reasonsDown", "DONGGONG_VERDICT_DOWN", `ตงกงลดแรงภาพรวม · ${dg.verdictTh} ${dg.jianchuTh}`, genericDelta, "warning",
+      `Dong Gong weakens the day overall · ${dgEn}`, `董公整體看淡 · ${dgZh}`);
   }
   if (yiMatches.length) {
     positiveDelta += 4;
-    addReason("reasonsUp", "DONGGONG_YI_MATCH", `ตงกงระบุว่าเหมาะกับกิจกรรมนี้ · ${yiMatches.join("、")}`, 4, "info");
+    addReason("reasonsUp", "DONGGONG_YI_MATCH", `ตงกงระบุว่าเหมาะกับกิจกรรมนี้ · ${yiMatches.join("、")}`, 4, "info",
+      `Dong Gong lists this activity as suitable today · 宜 ${yiMatches.join("、")}`, `董公本日宜 ${yiMatches.join("、")} · 正合本活動`);
   }
   if (jiMatches.length) {
     negativeDelta -= 6;
-    addReason("reasonsDown", "DONGGONG_JI_MATCH", `ตงกงระบุว่าควรเลี่ยงกิจกรรมนี้ · ${jiMatches.join("、")}`, -6, "warning");
+    addReason("reasonsDown", "DONGGONG_JI_MATCH", `ตงกงระบุว่าควรเลี่ยงกิจกรรมนี้ · ${jiMatches.join("、")}`, -6, "warning",
+      `Dong Gong lists this activity as one to avoid today · 忌 ${jiMatches.join("、")}`, `董公本日忌 ${jiMatches.join("、")}`);
   }
 
   positiveDelta = Math.min(6, positiveDelta);
@@ -933,7 +1019,8 @@ function applyDongGongOverlay(c: CandidateSlot, activeModules: ModuleKey[], acti
   if (jiMatches.length) {
     const jiCap = DONGGONG_IRREVERSIBLE.has(activity) ? 55 : 58;
     if (nextScore > jiCap) {
-      addReason("reasonsDown", "DONGGONG_JI_CAP", `ตงกงมีข้อห้ามตรงกิจกรรมนี้ · ไม่ดันเป็นฤกษ์แรง`, jiCap - nextScore, "warning");
+      addReason("reasonsDown", "DONGGONG_JI_CAP", `ตงกงมีข้อห้ามตรงกิจกรรมนี้ · ไม่ดันเป็นฤกษ์แรง`, jiCap - nextScore, "warning",
+        "Dong Gong holds an explicit avoid for this activity · not pushed as a strong timing", "董公忌正合本活動 · 不作強吉推薦");
       nextScore = jiCap;
     }
   }
@@ -1059,6 +1146,51 @@ const QIMEN_TERM_TH: Record<string, string> = {
   TIAN_DUN: "เทียนตุ้น",
   DI_DUN: "ตี้ตุ้น",
   REN_DUN: "เหรินตุ้น",
+};
+
+/* r418 · i18n เฟส 1: ป้ายศัพท์ฉีเหมินภาษาอังกฤษ (มาตรฐานวงการ QMDJ อังกฤษ · additive · ใช้ใน Reason.en เท่านั้น) */
+const QIMEN_TERM_EN: Record<string, string> = {
+  KAI_MEN: "Open Gate",
+  XIU_MEN: "Rest Gate",
+  SHENG_MEN: "Life Gate",
+  JING_VIEW_MEN: "Scenery Gate",
+  DU_MEN: "Closed Gate",
+  SHANG_MEN: "Injury Gate",
+  JING_FEAR_MEN: "Fear Gate",
+  SI_MEN: "Death Gate",
+  ZHI_FU: "Chief (Zhi Fu)",
+  TENG_SHE: "Coiling Snake",
+  TAI_YIN: "Great Yin",
+  LIU_HE: "Six Harmony",
+  BAI_HU: "White Tiger",
+  XUAN_WU: "Black Tortoise",
+  JIU_DI: "Nine Earth",
+  JIU_TIAN: "Nine Heavens",
+  ZHU_QUE: "Vermilion Bird",
+  TIAN_PENG: "Tian Peng star",
+  TIAN_REN: "Tian Ren star",
+  TIAN_CHONG: "Tian Chong star",
+  TIAN_FU: "Tian Fu star",
+  TIAN_YING: "Tian Ying star",
+  TIAN_RUI: "Tian Rui star",
+  TIAN_ZHU: "Tian Zhu star",
+  TIAN_XIN: "Tian Xin star",
+  TIAN_QIN: "Tian Qin star",
+  YI_MA: "Post Horse",
+  MEN_PO: "Gate oppressing the palace",
+  RU_MU: "Entering the Tomb",
+  JI_XING: "Punished Stem",
+  FU_YIN: "Fu Yin (stagnant repeat)",
+  FAN_YIN: "Fan Yin (reversal)",
+  WU_BU_YU_TIME: "Five Non-Meeting Hour",
+  QING_LONG_FAN_SHOU: "Azure Dragon Turns Its Head",
+  FEI_NIAO_DIE_XUE: "Flying Bird Falls into the Nest",
+  SAN_ZHA_ZHEN: "True Deceit",
+  SAN_ZHA_XIU: "Rest Deceit",
+  SAN_ZHA_CHONG: "Repeated Deceit",
+  TIAN_DUN: "Heaven Escape",
+  DI_DUN: "Earth Escape",
+  REN_DUN: "Human Escape",
 };
 
 const QIMEN_ACTIVITY_PREFERENCES: Record<QimenPurpose, QimenActivityPreference> = {
@@ -1260,6 +1392,18 @@ function qimenLabel(code: string): string {
   return zh ? `${th} ${zh}` : th;
 }
 
+/* r418 · i18n เฟส 1: ป้ายฉีเหมินอังกฤษ+ตัวจีนกำกับ (โครงเดียวกับ qimenLabel · additive) */
+function qimenLabelEn(code: string): string {
+  const en = QIMEN_TERM_EN[code] || code;
+  const zh = QIMEN_TERM_ZH[code];
+  return zh ? `${en} ${zh}` : en;
+}
+
+/* r418 · i18n เฟส 1: ป้ายฉีเหมินจีนล้วน */
+function qimenLabelZh(code: string): string {
+  return QIMEN_TERM_ZH[code] || code;
+}
+
 function qimenReadPath(obj: any, path: string): unknown {
   return path.split(".").reduce((acc: any, key) => {
     if (acc == null || typeof acc !== "object") return undefined;
@@ -1427,9 +1571,10 @@ function applyQimenActivityPreference(input: {
   profile: ActivityProfile;
   qm: ModuleResult;
   targetDirection: Dir8 | null;
-  addUp: (code: string, thai: string, delta: number, source: ModuleKey) => boolean;
-  addDown: (code: string, thai: string, delta: number, source: ModuleKey) => boolean;
-  cap: (value: number, code: string, thai: string, source: ModuleKey) => void;
+  /* r418 · i18n เฟส 1: en/zh optional ท้ายลายเซ็น (additive · ไม่กระทบ caller เดิม) */
+  addUp: (code: string, thai: string, delta: number, source: ModuleKey, en?: string, zh?: string) => boolean;
+  addDown: (code: string, thai: string, delta: number, source: ModuleKey, en?: string, zh?: string) => boolean;
+  cap: (value: number, code: string, thai: string, source: ModuleKey, en?: string, zh?: string) => void;
   shiftScore: (delta: number) => void;
   /* r417: ประตูใน avoidDoors ของกิจกรรมนั้น = "ห้าม" default (veto) · relaxDoors:true = ผ่อนกลับเป็น cap/warning เดิม */
   relaxDoors: boolean;
@@ -1468,6 +1613,10 @@ function applyQimenActivityPreference(input: {
     qimenReadPath(raw, "bestPalace.star_zh"),
   );
 
+  /* r418 · i18n เฟส 1: ป้ายกิจกรรม en/zh (additive · ใช้ประกอบข้อความเท่านั้น) */
+  const labelEn = profileLabelEn(input.profile);
+  const labelZh = input.profile.labelZh;
+
   let delta = 0;
   let avoidDoorCap: number | null = null;
   if (door && pref.goodDoors.includes(door)) {
@@ -1477,6 +1626,8 @@ function applyQimenActivityPreference(input: {
       `${input.profile.labelTh}: ประตูฉีเหมินหนุนกิจกรรมนี้ · ${qimenLabel(door)}`,
       3,
       "qi_men",
+      `${labelEn}: the Qi Men door supports this activity · ${qimenLabelEn(door)}`,
+      `${labelZh}：奇門吉門助本活動 · ${qimenLabelZh(door)}`,
     );
   }
   if (door && pref.avoidDoors.includes(door)) {
@@ -1486,6 +1637,8 @@ function applyQimenActivityPreference(input: {
       `${input.profile.labelTh}: ประตูฉีเหมินไม่เหมาะกับกิจกรรมนี้ · ${qimenLabel(door)}`,
       -5,
       "qi_men",
+      `${labelEn}: the Qi Men door does not suit this activity · ${qimenLabelEn(door)}`,
+      `${labelZh}：奇門此門不合本活動 · ${qimenLabelZh(door)}`,
     );
     avoidDoorCap = input.profile.safety === "medical_safe" ? Math.min(pref.avoidDoorCap, 39) : pref.avoidDoorCap;
     /* r417: ประตูร้ายของกิจกรรมนี้ (avoidDoors) = "ห้าม" default → veto (ไม่ต้องติ๊ก qm-strict)
@@ -1494,8 +1647,9 @@ function applyQimenActivityPreference(input: {
       input.addVeto({
         code: "QIMEN_AVOID_DOOR",
         reasonTh: `${input.profile.labelTh}: ประตูฉีเหมิน ${qimenLabel(door)} เป็นประตูต้องห้ามของกิจกรรมนี้ตามตำรา — ตัดออกจากฤกษ์แนะนำ`,
-        reasonEn: `${input.profile.labelTh}: the Qi Men door ${qimenLabel(door)} is classically forbidden for this activity — excluded from recommended timings.`,
-        reasonZh: `${input.profile.labelZh}：奇門「${qimenLabel(door)}」為本活動之忌門 — 不列入推薦吉時`,
+        /* r418 · i18n เฟส 1: ป้ายกิจกรรม/ประตูฝั่ง en ใช้ภาษาอังกฤษจริง (เดิมปนไทย) */
+        reasonEn: `${labelEn}: the Qi Men door ${qimenLabelEn(door)} is classically forbidden for this activity — excluded from recommended timings.`,
+        reasonZh: `${input.profile.labelZh}：奇門「${qimenLabelZh(door)}」為本活動之忌門 — 不列入推薦吉時`,
         source: "qi_men",
       });
     }
@@ -1507,6 +1661,8 @@ function applyQimenActivityPreference(input: {
       `${input.profile.labelTh}: เทพฉีเหมินช่วยบริบทกิจกรรม · ${qimenLabel(deity)}`,
       1,
       "qi_men",
+      `${labelEn}: the Qi Men deity aids this activity's context · ${qimenLabelEn(deity)}`,
+      `${labelZh}：奇門神助本活動 · ${qimenLabelZh(deity)}`,
     );
   }
   if (deity && pref.avoidDeities?.includes(deity)) {
@@ -1516,6 +1672,8 @@ function applyQimenActivityPreference(input: {
       `${input.profile.labelTh}: เทพฉีเหมินทำให้ต้องระวัง · ${qimenLabel(deity)}`,
       -2,
       "qi_men",
+      `${labelEn}: the Qi Men deity calls for caution · ${qimenLabelEn(deity)}`,
+      `${labelZh}：奇門神須留意 · ${qimenLabelZh(deity)}`,
     );
   }
   if (star && pref.goodStars?.includes(star)) {
@@ -1525,6 +1683,8 @@ function applyQimenActivityPreference(input: {
       `${input.profile.labelTh}: ดาวฉีเหมินเข้ากับงานนี้ · ${qimenLabel(star)}`,
       1,
       "qi_men",
+      `${labelEn}: the Qi Men star fits this work · ${qimenLabelEn(star)}`,
+      `${labelZh}：奇門星合本事 · ${qimenLabelZh(star)}`,
     );
   }
   if (star && pref.avoidStars?.includes(star)) {
@@ -1534,6 +1694,8 @@ function applyQimenActivityPreference(input: {
       `${input.profile.labelTh}: ดาวฉีเหมินเป็นจุดต้องระวัง · ${qimenLabel(star)}`,
       -2,
       "qi_men",
+      `${labelEn}: the Qi Men star is a caution point · ${qimenLabelEn(star)}`,
+      `${labelZh}：奇門星須留意 · ${qimenLabelZh(star)}`,
     );
   }
   const avoidFlag = qimenFirstEvidenceCode(raw, palace, QIMEN_ACTIVITY_AVOID_FLAGS);
@@ -1544,6 +1706,8 @@ function applyQimenActivityPreference(input: {
       `${input.profile.labelTh}: สัญญาณฉีเหมินต้องระวัง · ${qimenLabel(avoidFlag)}`,
       -3,
       "qi_men",
+      `${labelEn}: a Qi Men signal calls for caution · ${qimenLabelEn(avoidFlag)}`,
+      `${labelZh}：奇門凶象須留意 · ${qimenLabelZh(avoidFlag)}`,
     );
     const flagCap = input.profile.safety === "medical_safe" ? 39 : pref.avoidDoorCap;
     avoidDoorCap = Math.min(avoidDoorCap ?? flagCap, flagCap);
@@ -1555,6 +1719,8 @@ function applyQimenActivityPreference(input: {
       `${input.profile.labelTh}: มีสัญญาณเคลื่อนไหวที่เข้ากับงานนี้ · ม้าเดินทาง 驛馬`,
       1,
       "qi_men",
+      `${labelEn}: a movement signal fits this work · Post Horse 驛馬`,
+      `${labelZh}：動象合本事 · 驛馬`,
     );
   }
   const goodFormation = qimenFirstEvidenceCode(raw, palace, pref.goodFormations || []);
@@ -1565,6 +1731,8 @@ function applyQimenActivityPreference(input: {
       `${input.profile.labelTh}: รูปแบบฉีเหมินเข้ากับกิจกรรม · ${qimenLabel(goodFormation)}`,
       1,
       "qi_men",
+      `${labelEn}: a Qi Men formation fits this activity · ${qimenLabelEn(goodFormation)}`,
+      `${labelZh}：奇門格局合本活動 · ${qimenLabelZh(goodFormation)}`,
     );
   }
 
@@ -1576,6 +1744,8 @@ function applyQimenActivityPreference(input: {
       "PROFILE_QIMEN_AVOID_DOOR_CAP",
       `${input.profile.labelTh}: ประตูฉีเหมินเป็นกลุ่มควรเลี่ยง · ไม่ดันเป็นฤกษ์แรง`,
       "qi_men",
+      `${labelEn}: the Qi Men door falls in the avoid group · not pushed as a strong timing`,
+      `${labelZh}：奇門忌門類 · 不作強吉推薦`,
     );
   }
 }
@@ -1592,10 +1762,10 @@ function applyActivityProfileRules(
   const active = new Set(activeModules);
   const modules = c.modules as any;
   const scoring = c.scoring as any;
-  const addWarning = (code: string, thai: string, delta: number, source: ModuleKey) => {
+  const addWarning = (code: string, thai: string, delta: number, source: ModuleKey, en?: string, zh?: string) => {
     scoring.warnings = scoring.warnings || [];
     if (scoring.warnings.some((r: any) => r.code === code)) return false;
-    scoring.warnings.push({ code, thai, delta, source, severity: "warning" });
+    scoring.warnings.push({ code, thai, ...(en ? { en } : {}), ...(zh ? { zh } : {}), delta, source, severity: "warning" });
     return true;
   };
   /* r417: ฉีเหมิน avoidDoors veto ต่อกับ scoring.vetoes เดียวกับที่ combineScores รวมจาก module.veto
@@ -1605,21 +1775,21 @@ function applyActivityProfileRules(
     if (scoring.vetoes.some((x: any) => x.code === v.code)) return;
     scoring.vetoes.push(v);
   };
-  const addDown = (code: string, thai: string, delta: number, source: ModuleKey) => {
+  const addDown = (code: string, thai: string, delta: number, source: ModuleKey, en?: string, zh?: string) => {
     scoring.reasonsDown = scoring.reasonsDown || [];
     if (scoring.reasonsDown.some((r: any) => r.code === code)) return false;
-    scoring.reasonsDown.unshift({ code, thai, delta, source, severity: "warning" });
+    scoring.reasonsDown.unshift({ code, thai, ...(en ? { en } : {}), ...(zh ? { zh } : {}), delta, source, severity: "warning" });
     return true;
   };
-  const addUp = (code: string, thai: string, delta: number, source: ModuleKey) => {
+  const addUp = (code: string, thai: string, delta: number, source: ModuleKey, en?: string, zh?: string) => {
     scoring.reasonsUp = scoring.reasonsUp || [];
     if (scoring.reasonsUp.some((r: any) => r.code === code)) return false;
-    scoring.reasonsUp.unshift({ code, thai, delta, source, severity: "info" });
+    scoring.reasonsUp.unshift({ code, thai, ...(en ? { en } : {}), ...(zh ? { zh } : {}), delta, source, severity: "info" });
     return true;
   };
-  const cap = (value: number, code: string, thai: string, source: ModuleKey) => {
+  const cap = (value: number, code: string, thai: string, source: ModuleKey, en?: string, zh?: string) => {
     if (scoring.finalScore > value) {
-      addDown(code, thai, value - scoring.finalScore, source);
+      addDown(code, thai, value - scoring.finalScore, source, en, zh);
       scoring.finalScore = value;
     }
   };
@@ -1636,31 +1806,49 @@ function applyActivityProfileRules(
   if (active.has("qi_men") && qimenModuleScoreAllowed(qm)) {
     applyQimenActivityPreference({ profile, qm, targetDirection, addUp, addDown, cap, shiftScore, relaxDoors, addVeto });
   }
+  /* r418 · i18n เฟส 1: ป้ายกิจกรรม en/zh (additive · ประกอบข้อความเท่านั้น) */
+  const pLabelEn = profileLabelEn(profile);
+  const pLabelZh = profile.labelZh;
+
   if (active.has("qi_men") && qimenModuleScoreAllowed(qm) && (qm?.pass === false || qm?.raw?.bad_door === true)) {
     const limit = profile.safety === "medical_safe" ? 39 : 54;
     const reason = `${profile.labelTh}: ฉีเหมินไม่รับภารกิจนี้ · ใช้เป็นตัวจำกัด ไม่ใช่คะแนนบวกกลาง`;
-    addDown("PROFILE_QIMEN_CAP", reason, scoring.finalScore > limit ? limit - scoring.finalScore : 0, "qi_men");
-    cap(limit, "PROFILE_QIMEN_CAP", reason, "qi_men");
+    const reasonEn = `${pLabelEn}: Qi Men does not back this mission · used as a limiter, not a neutral bonus`;
+    const reasonZh = `${pLabelZh}：奇門不納此事 · 作限制用 非中性加分`;
+    addDown("PROFILE_QIMEN_CAP", reason, scoring.finalScore > limit ? limit - scoring.finalScore : 0, "qi_men", reasonEn, reasonZh);
+    cap(limit, "PROFILE_QIMEN_CAP", reason, "qi_men", reasonEn, reasonZh);
   }
   if (active.has("tai_sui") && ts?.pass === false) {
-    cap(profile.safety === "medical_safe" ? 42 : 55, "PROFILE_TAISUI_CAP", `${profile.labelTh}: ชั้นไท้ส่วยไม่ผ่าน · ไม่ดันเป็นฤกษ์แรง`, "tai_sui");
+    cap(profile.safety === "medical_safe" ? 42 : 55, "PROFILE_TAISUI_CAP", `${profile.labelTh}: ชั้นไท้ส่วยไม่ผ่าน · ไม่ดันเป็นฤกษ์แรง`, "tai_sui",
+      `${pLabelEn}: the Tai Sui layer does not pass · not pushed as a strong timing`,
+      `${pLabelZh}：太歲層未過 · 不作強吉推薦`);
   }
   if (active.has("ze_ri") && zr?.pass === false) {
-    cap(profile.safety === "medical_safe" ? 42 : 58, "PROFILE_TONGSHU_CAP", `${profile.labelTh}: ปฏิทินจีนไม่รับกิจกรรมนี้ · ใช้ด้วยความระวัง`, "ze_ri");
+    cap(profile.safety === "medical_safe" ? 42 : 58, "PROFILE_TONGSHU_CAP", `${profile.labelTh}: ปฏิทินจีนไม่รับกิจกรรมนี้ · ใช้ด้วยความระวัง`, "ze_ri",
+      `${pLabelEn}: the Chinese almanac does not favor this activity · use with care`,
+      `${pLabelZh}：通書不納本活動 · 慎用`);
   }
   if (active.has("ba_zi") && bz?.pass === false) {
-    cap(profile.safety === "medical_safe" ? 39 : 49, "PROFILE_BAZI_CAP", `${profile.labelTh}: ดวงคนที่เกี่ยวข้องมีแรงปะทะ · ลดระดับฤกษ์`, "ba_zi");
+    cap(profile.safety === "medical_safe" ? 39 : 49, "PROFILE_BAZI_CAP", `${profile.labelTh}: ดวงคนที่เกี่ยวข้องมีแรงปะทะ · ลดระดับฤกษ์`, "ba_zi",
+      `${pLabelEn}: the charts of the people involved carry a clash · timing downgraded`,
+      `${pLabelZh}：相關人命盤有沖 · 降級`);
   }
 
   if (profile.safety === "finance_safe") {
-    addWarning("FINANCE_SAFE_NOTE", "เรื่องเงินใช้เป็นจังหวะประกอบเท่านั้น · ตรวจตัวเลขและเงื่อนไขจริงก่อนตัดสินใจ", -3, "ze_ri");
+    addWarning("FINANCE_SAFE_NOTE", "เรื่องเงินใช้เป็นจังหวะประกอบเท่านั้น · ตรวจตัวเลขและเงื่อนไขจริงก่อนตัดสินใจ", -3, "ze_ri",
+      "For money matters this is supporting timing only · verify the real numbers and terms before deciding",
+      "財務事僅作時機參考 · 決定前請核實數字與條件");
     if (active.has("yong_shen") && ys?.pass === false) {
-      cap(62, "PROFILE_FINANCE_YONGSHEN_CAP", `${profile.labelTh}: ธาตุช่วยไม่หนุนเรื่องเงินชัด · ไม่ควรเร่งผูกมัด`, "yong_shen");
+      cap(62, "PROFILE_FINANCE_YONGSHEN_CAP", `${profile.labelTh}: ธาตุช่วยไม่หนุนเรื่องเงินชัด · ไม่ควรเร่งผูกมัด`, "yong_shen",
+        `${pLabelEn}: the Useful God does not clearly support money matters · do not rush into commitments`,
+        `${pLabelZh}：用神財事無明助 · 不宜急於締約`);
     }
   }
 
   if (profile.safety === "medical_safe") {
-    addWarning("MEDICAL_SAFE_NOTE", "สุขภาพ/ผ่าตัดใช้กับการวางเวลา elective เท่านั้น · ไม่แทนคำแนะนำแพทย์", -5, "ze_ri");
+    addWarning("MEDICAL_SAFE_NOTE", "สุขภาพ/ผ่าตัดใช้กับการวางเวลา elective เท่านั้น · ไม่แทนคำแนะนำแพทย์", -5, "ze_ri",
+      "Health/surgery timing applies to elective scheduling only · not a substitute for medical advice",
+      "健康／手術僅用於可擇期安排 · 不能取代醫囑");
   }
 
   if (
@@ -1670,7 +1858,9 @@ function applyActivityProfileRules(
     && qm?.pass !== false
     && qm?.raw?.bad_door !== true
   ) {
-    addUp("PROFILE_EXAM_CONTEXT", `${profile.labelTh}: ใช้กฎเอกสาร+การนำเสนอ และให้ฉีเหมินเป็นตัวคัดยาม`, 3, "qi_men");
+    addUp("PROFILE_EXAM_CONTEXT", `${profile.labelTh}: ใช้กฎเอกสาร+การนำเสนอ และให้ฉีเหมินเป็นตัวคัดยาม`, 3, "qi_men",
+      `${pLabelEn}: document + presentation rules applied, with Qi Men screening the hour`,
+      `${pLabelZh}：依文書＋面陳規則 · 以奇門篩時`);
   }
 
   scoring.finalScore = Math.max(0, Math.min(100, Math.round(scoring.finalScore)));
@@ -1695,6 +1885,8 @@ function applyQimenGenericGuard(
     scoring.reasonsDown.unshift({
       code: "QM_BAD_DOOR_CAP",
       thai: "ประตูฉีเหมินไม่เหมาะ · ใช้เป็นตัวจำกัด ไม่ใช่คะแนนบวกกลาง",
+      en: "The Qi Men door is unfavorable · used as a limiter, not a neutral bonus",
+      zh: "奇門此門不利 · 作限制用 非中性加分",
       delta: scoring.finalScore > limit ? limit - scoring.finalScore : 0,
       source: "qi_men",
       severity: "warning",
@@ -1727,24 +1919,24 @@ function computePersonalModules(slot: CandidateSlot, customer: PersonProfile) {
   // ── ba_zi · ปะทะระหว่าง slot pillars vs customer ───────
   let baziScore = 75; const bTags: string[] = []; const bUp: any[] = []; const bDown: any[] = [];
   let baziStatus = 'neutral';
-  if (_CLASH[sP.day.branch] === cZ) { baziScore -= 25; bTags.push('clash_zodiac'); bDown.push({code:'CLASH_Z', thai:`⚠ ${sP.day.branch}沖${cZ}日`, delta:-25}); baziStatus='clash'; }
-  if (_CLASH[sP.hour.branch] === cZ) { baziScore -= 15; bTags.push('clash_z_hour'); bDown.push({code:'CLASH_ZH', thai:`⚠ ${sP.hour.branch}沖${cZ}時`, delta:-15}); baziStatus='clash'; }
-  if (sP.day.branch === cZ) { baziScore += 10; bTags.push('same_zodiac'); bUp.push({code:'SAME_Z', thai:`✨ ${cZ}日同`, delta:10}); baziStatus='same'; }
+  if (_CLASH[sP.day.branch] === cZ) { baziScore -= 25; bTags.push('clash_zodiac'); bDown.push({code:'CLASH_Z', thai:`⚠ ${sP.day.branch}沖${cZ}日`, en:`⚠ Day Clash: ${sP.day.branch} clashes your ${cZ} sign (${sP.day.branch}沖${cZ})`, zh:`⚠ ${sP.day.branch}沖${cZ}日`, delta:-25}); baziStatus='clash'; }
+  if (_CLASH[sP.hour.branch] === cZ) { baziScore -= 15; bTags.push('clash_z_hour'); bDown.push({code:'CLASH_ZH', thai:`⚠ ${sP.hour.branch}沖${cZ}時`, en:`⚠ Hour Clash: ${sP.hour.branch} clashes your ${cZ} sign (${sP.hour.branch}沖${cZ})`, zh:`⚠ ${sP.hour.branch}沖${cZ}時`, delta:-15}); baziStatus='clash'; }
+  if (sP.day.branch === cZ) { baziScore += 10; bTags.push('same_zodiac'); bUp.push({code:'SAME_Z', thai:`✨ ${cZ}日同`, en:`✨ Day branch matches your ${cZ} sign`, zh:`✨ ${cZ}日同`, delta:10}); baziStatus='same'; }
   // 六合 (คู่สมพล) — ก่อนหน้านี้ขาดไป · ป๊า辰 + 酉日 = 辰酉六合 ควรได้แต้ม
   const LIUHE: Record<string,string> = { 子:'丑', 丑:'子', 寅:'亥', 亥:'寅', 卯:'戌', 戌:'卯', 辰:'酉', 酉:'辰', 巳:'申', 申:'巳', 午:'未', 未:'午' };
   const SANHE = [['申','子','辰'],['寅','午','戌'],['巳','酉','丑'],['亥','卯','未']];
   if (LIUHE[cZ] === sP.day.branch) {
-    baziScore += 12; bTags.push('liuhe_z'); bUp.push({code:'LIUHE_Z', thai:`🤝 六合 ${cZ}${sP.day.branch}`, delta:12}); baziStatus='liuhe';
+    baziScore += 12; bTags.push('liuhe_z'); bUp.push({code:'LIUHE_Z', thai:`🤝 六合 ${cZ}${sP.day.branch}`, en:`🤝 Six Harmony ${cZ}${sP.day.branch} (六合)`, zh:`🤝 六合 ${cZ}${sP.day.branch}`, delta:12}); baziStatus='liuhe';
   } else {
     // มีแค่ 2 กิ่งในวง三合 = "半三合/拱" (ครึ่งวง) ไม่ใช่ 三合เต็ม (ต้องครบ 3 กิ่ง)
     for (const grp of SANHE) {
       if (grp.includes(cZ) && grp.includes(sP.day.branch) && cZ !== sP.day.branch) {
-        baziScore += 8; bTags.push('banhe_z'); bUp.push({code:'BANHE_Z', thai:`🤝 半三合 (拱${grp.join('')})`, delta:8}); baziStatus='banhe'; break;
+        baziScore += 8; bTags.push('banhe_z'); bUp.push({code:'BANHE_Z', thai:`🤝 半三合 (拱${grp.join('')})`, en:`🤝 Half Three Harmony (拱${grp.join('')})`, zh:`🤝 半三合 (拱${grp.join('')})`, delta:8}); baziStatus='banhe'; break;
       }
     }
   }
   // 16 พ.ค.: ใส่ info tag ทุกครั้ง · ให้เจ้านายเห็นแม้ neutral
-  if (baziStatus === 'neutral') bUp.push({code:'BAZI_NEUTRAL', thai:`八字 ${sP.day.branch}日 · ไม่ปะทะ`, delta:0});
+  if (baziStatus === 'neutral') bUp.push({code:'BAZI_NEUTRAL', thai:`八字 ${sP.day.branch}日 · ไม่ปะทะ`, en:`BaZi ${sP.day.branch} day · no clash with your chart`, zh:`八字 ${sP.day.branch}日 · 無沖`, delta:0});
   const ba_zi = _result('ba_zi', baziScore, bTags, bUp, bDown, 0.85, { customer_zodiac: cZ, slot_day: sP.day.branch, status: baziStatus });
 
   // ── yong_shen · slot day stem element ตรงกับ customer yongshen หรือไม่ ───
@@ -1752,16 +1944,19 @@ function computePersonalModules(slot: CandidateSlot, customer: PersonProfile) {
   const slotDayEl = _STEM_EL[sP.day.stem];
   const slotHourEl = _STEM_EL[sP.hour.stem];
   const EL_TH: Record<string,string> = { wood:'ไม้', fire:'ไฟ', earth:'ดิน', metal:'ทอง', water:'น้ำ' };
+  /* r418 · i18n เฟส 1 (additive · ใช้ประกอบข้อความ en/zh เท่านั้น · ศัพท์ตาม science-terms.json) */
+  const EL_EN: Record<string,string> = { wood:'Wood', fire:'Fire', earth:'Earth', metal:'Metal', water:'Water' };
+  const EL_ZH: Record<string,string> = { wood:'木', fire:'火', earth:'土', metal:'金', water:'水' };
   if (cYS.length === 0) {
     yTags.push('no_yongshen'); ysScore = 60;
-    yUp.push({code:'YS_NA', thai:'用神·ไม่มีข้อมูล', delta:0});
+    yUp.push({code:'YS_NA', thai:'用神·ไม่มีข้อมูล', en:'Useful God (用神) · no data', zh:'用神·無資料', delta:0});
   } else {
     const cYSel = cYS.map(b => _BR_EL[b] || b).filter(Boolean);
-    if (cYSel.includes(slotDayEl)) { ysScore += 25; yTags.push('day_match_ys'); yUp.push({code:'YS_DAY', thai:`⭐ 用神 日${EL_TH[slotDayEl]||slotDayEl} ตรง`, delta:25}); }
-    if (cYSel.includes(slotHourEl)) { ysScore += 15; yTags.push('hour_match_ys'); yUp.push({code:'YS_HOUR', thai:`⭐ 用神 時${EL_TH[slotHourEl]||slotHourEl} ตรง`, delta:15}); }
+    if (cYSel.includes(slotDayEl)) { ysScore += 25; yTags.push('day_match_ys'); yUp.push({code:'YS_DAY', thai:`⭐ 用神 日${EL_TH[slotDayEl]||slotDayEl} ตรง`, en:`⭐ Useful God matches the day's ${EL_EN[slotDayEl]||slotDayEl} element (用神)`, zh:`⭐ 用神 日${EL_ZH[slotDayEl]||slotDayEl} 相合`, delta:25}); }
+    if (cYSel.includes(slotHourEl)) { ysScore += 15; yTags.push('hour_match_ys'); yUp.push({code:'YS_HOUR', thai:`⭐ 用神 時${EL_TH[slotHourEl]||slotHourEl} ตรง`, en:`⭐ Useful God matches the hour's ${EL_EN[slotHourEl]||slotHourEl} element (用神)`, zh:`⭐ 用神 時${EL_ZH[slotHourEl]||slotHourEl} 相合`, delta:15}); }
     if (!cYSel.includes(slotDayEl) && !cYSel.includes(slotHourEl)) {
       ysScore -= 10; yTags.push('no_match');
-      yDown.push({code:'NO_YS', thai:`用神·ไม่ตรง (用神 ${cYSel.map(e=>EL_TH[e]||e).join('/')}, สล็อต ${EL_TH[slotDayEl]||slotDayEl})`, delta:-10});
+      yDown.push({code:'NO_YS', thai:`用神·ไม่ตรง (用神 ${cYSel.map(e=>EL_TH[e]||e).join('/')}, สล็อต ${EL_TH[slotDayEl]||slotDayEl})`, en:`Useful God mismatch (needs ${cYSel.map(e=>EL_EN[e]||e).join('/')}, slot is ${EL_EN[slotDayEl]||slotDayEl}) (用神)`, zh:`用神·不合（用神 ${cYSel.map(e=>EL_ZH[e]||e).join('/')}，時段 ${EL_ZH[slotDayEl]||slotDayEl}）`, delta:-10});
     }
   }
   const yong_shen = _result('yong_shen', ysScore, yTags, yUp, yDown, 0.8, { customer_ys: cYS, slot_day_el: slotDayEl, slot_hour_el: slotHourEl });
@@ -1780,10 +1975,10 @@ function computePersonalModules(slot: CandidateSlot, customer: PersonProfile) {
   const hexName = HEX_NAMES[hexNum] || '?';
   const hTags = [`hex_${hexNum}`, `yao_line_${yaoLine}`];
   // 16 พ.ค.: ใส่ tag เสมอ · ดี/กลาง/เสีย เห็นในการ์ด
-  const hUp = hexScore >= 70 ? [{code:'HEX_GOOD', thai:`📜 卦${hexNum} ${hexName} 爻${yaoLine}`, delta: hexScore-50}]
-            : hexScore >= 50 ? [{code:'HEX_NEUTRAL', thai:`📜 卦${hexNum} ${hexName} 爻${yaoLine}`, delta: 0}]
+  const hUp = hexScore >= 70 ? [{code:'HEX_GOOD', thai:`📜 卦${hexNum} ${hexName} 爻${yaoLine}`, en:`📜 Hexagram ${hexNum} ${hexName} · line ${yaoLine}`, zh:`📜 卦${hexNum} ${hexName} 爻${yaoLine}`, delta: hexScore-50}]
+            : hexScore >= 50 ? [{code:'HEX_NEUTRAL', thai:`📜 卦${hexNum} ${hexName} 爻${yaoLine}`, en:`📜 Hexagram ${hexNum} ${hexName} · line ${yaoLine}`, zh:`📜 卦${hexNum} ${hexName} 爻${yaoLine}`, delta: 0}]
             : [];
-  const hDown = hexScore < 50 ? [{code:'HEX_BAD', thai:`⚠ 卦${hexNum} ${hexName} 爻${yaoLine}`, delta: hexScore-50}] : [];
+  const hDown = hexScore < 50 ? [{code:'HEX_BAD', thai:`⚠ 卦${hexNum} ${hexName} 爻${yaoLine}`, en:`⚠ Hexagram ${hexNum} ${hexName} · line ${yaoLine}`, zh:`⚠ 卦${hexNum} ${hexName} 爻${yaoLine}`, delta: hexScore-50}] : [];
   const hex64 = _result('hex64', hexScore, hTags, hUp, hDown, 0.7, { hex_num: hexNum, hex_name: hexName, changing_line: yaoLine, label: hexLabel, meihua: meihuaRaw });
 
   return { ba_zi, yong_shen, hex64 };

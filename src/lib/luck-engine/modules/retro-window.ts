@@ -22,29 +22,39 @@
 import type { ModuleResult, Reason, CapRule, CandidateSlot, ActivityType } from "../types";
 import type { BodyKey } from "@/lib/astro-core/ephemeris";
 import { findStations } from "@/lib/astro-core/events";
-import { DAY_MS, slotWindowUtc, fmtThaiDate, evictFifo } from "./sky-shared";
+import { DAY_MS, slotWindowUtc, fmtThaiDate, fmtEnDate, fmtZhDate, evictFifo } from "./sky-shared";
 
 const RETRO_BODIES: BodyKey[] = ["Mercury", "Venus", "Mars", "Jupiter", "Saturn"];
 const BODY_TH: Record<string, string> = {
   Mercury: "ดาวพุธ", Venus: "ดาวศุกร์", Mars: "ดาวอังคาร", Jupiter: "ดาวพฤหัส", Saturn: "ดาวเสาร์",
 };
+/* r418 · i18n เฟส 1 (additive · ใช้ประกอบข้อความ en/zh เท่านั้น) */
+const BODY_ZH: Record<string, string> = {
+  Mercury: "水星", Venus: "金星", Mars: "火星", Jupiter: "木星", Saturn: "土星",
+};
 
-type RetroRule = { body: BodyKey; activities: Set<ActivityType>; cap: number; code: string; noteTh: string };
+type RetroRule = { body: BodyKey; activities: Set<ActivityType>; cap: number; code: string; noteTh: string; noteEn: string; noteZh: string };
 const RETRO_RULES: RetroRule[] = [
   {
     body: "Mercury", activities: new Set<ActivityType>(["立約", "開市", "出行"]),
     cap: 45, code: "RETRO_MERCURY_CAP",
     noteTh: "สัญญา/การสื่อสาร/การเดินทางช่วงพุธถอยเสี่ยงพลิก-ล่าช้า-แก้เอกสาร",
+    noteEn: "contracts, communication and travel during Mercury retrograde are prone to reversals, delays and paperwork revisions",
+    noteZh: "水星逆行期間簽約、溝通、出行易生反覆延誤、文書改動",
   },
   {
     body: "Venus", activities: new Set<ActivityType>(["婚姻"]),
     cap: 40, code: "RETRO_VENUS_CAP",
     noteTh: "งานมงคลคู่ครองช่วงศุกร์ถอย ตำราให้เลี่ยง (เรื่องใจ-พันธะทบทวนใหม่)",
+    noteEn: "the texts advise against marriage celebrations during Venus retrograde (matters of the heart and vows come up for review)",
+    noteZh: "金星逆行不宜嫁娶 · 情感盟約易生反覆",
   },
   {
     body: "Mars", activities: new Set<ActivityType>(["動土"]),
     cap: 50, code: "RETRO_MARS_CAP",
     noteTh: "งานลงมือ/ก่อสร้าง/เปิดหน้าดินช่วงอังคารถอย แรงขับสะดุด-งานซ้ำ",
+    noteEn: "hands-on work, construction and ground-breaking during Mars retrograde tend to stall and need redoing",
+    noteZh: "火星逆行動土施工易停滯返工",
   },
 ];
 
@@ -132,18 +142,23 @@ export function computeRetroWindow(c: CandidateSlot, activity: ActivityType): Mo
 
   for (const iv of intervals) {
     const rangeTh = `${fmtThaiDate(iv.startMs)}–${fmtThaiDate(iv.endMs)} ${new Date(iv.endMs).getUTCFullYear()}`;
+    const rangeEn = `${fmtEnDate(iv.startMs)}–${fmtEnDate(iv.endMs)} ${new Date(iv.endMs).getUTCFullYear()}`;
+    const rangeZh = `${fmtZhDate(iv.startMs)}–${fmtZhDate(iv.endMs)} ${new Date(iv.endMs).getUTCFullYear()}`;
     const rule = RETRO_RULES.find((x) => x.body === iv.body && x.activities.has(activity));
     r.tags.push(`retro_${iv.body.toLowerCase()}`);
     if (rule) {
       capRules.push({
         type: "max", value: rule.cap,
         reason: `${BODY_TH[iv.body]}ถอย ${rangeTh} · ${rule.noteTh} · เพดานคะแนน ${rule.cap}`,
+        en: `${iv.body} retrograde ${rangeEn} · ${rule.noteEn} · score capped at ${rule.cap}`,
+        zh: `${BODY_ZH[iv.body]}逆行 ${rangeZh} · ${rule.noteZh} · 分數上限${rule.cap}`,
         source: "retro_window",
         code: rule.code,
       } as CapRule & { code: string });
       r.reasons.down.push({
         code: rule.code.replace("_CAP", ""),
         thai: `${BODY_TH[iv.body]}ถอย ${rangeTh} (station R→D จริง) · ${rule.noteTh} · เพดานคะแนน ${rule.cap}`,
+        en: `${iv.body} retrograde ${rangeEn} (true station R→D window) · ${rule.noteEn} · score capped at ${rule.cap}`,
         zh: "行星逆行",
         delta: 0,
         severity: "warning",
@@ -155,6 +170,8 @@ export function computeRetroWindow(c: CandidateSlot, activity: ActivityType): Mo
       r.reasons.neutral?.push({
         code: `RETRO_INFO_${iv.body.toUpperCase()}`,
         thai: `${BODY_TH[iv.body]}ถอย ${rangeTh} · ไม่กระทบกิจกรรมนี้โดยตรง (ข้อมูลประกอบ)`,
+        en: `${iv.body} retrograde ${rangeEn} · no direct bearing on this activity (context only)`,
+        zh: `${BODY_ZH[iv.body]}逆行 ${rangeZh} · 與本活動無直接關聯（僅供參考）`,
         delta: 0,
         severity: "info",
         source: "retro_window",

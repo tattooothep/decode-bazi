@@ -223,6 +223,7 @@ export function computePanchanga(c: CandidateSlot, activity: ActivityType): Modu
     up.push({
       code: "PANCHANGA_GOOD_YOGA",
       thai: `โยคะ${p.yogaTh} (${p.yogaSa}) เป็นศุภโยคะตามตำรามุหูรตะ · หนุนงานมงคล +5`,
+      en: `${p.yogaSa} yoga is counted among the auspicious yogas in muhurta texts · supports auspicious work +5`,
       zh: "吉瑜伽", delta: 5, severity: "info", source: "panchanga",
     });
   }
@@ -233,11 +234,14 @@ export function computePanchanga(c: CandidateSlot, activity: ActivityType): Modu
     caps.push({
       type: "max", value: 60,
       reason: `โยคะ${p.yogaTh} (${p.yogaSa}) เป็นโยคะร้าย ตำราให้เลี่ยงทั้งช่วง · เพดานคะแนน 60`,
+      en: `${p.yogaSa} is a malefic yoga; the texts advise avoiding its entire span · score capped at 60`,
+      zh: `${p.yogaSa}屬凶瑜伽 · 全段宜避 · 分數上限60`,
       source: "panchanga", code: "PANCHANGA_BAD_YOGA_CAP",
     });
     down.push({
       code: "PANCHANGA_BAD_YOGA",
       thai: `โยคะของวันคือ ${p.yogaTh} (${p.yogaSa}) · ตำรามุหูรตะจัดเป็นโยคะร้าย เลี่ยงเริ่มงานมงคลทั้งช่วง · เพดานคะแนน 60`,
+      en: `The day's yoga is ${p.yogaSa} · muhurta texts class it as malefic; avoid beginning auspicious work for its entire span · score capped at 60`,
       zh: "凶瑜伽", delta: 0, severity: "warning", source: "panchanga",
     });
   }
@@ -248,11 +252,14 @@ export function computePanchanga(c: CandidateSlot, activity: ActivityType): Modu
     caps.push({
       type: "max", value: 55,
       reason: `กรณะ${p.karanaTh} · ตำราห้ามเริ่มงานมงคลระหว่างภัทรา · เพดานคะแนน 55`,
+      en: `${p.karanaSa} karana · the texts forbid starting auspicious work during Bhadra · score capped at 55`,
+      zh: `${p.karanaSa}時分 · 婆陀羅期間忌興吉事 · 分數上限55`,
       source: "panchanga", code: "PANCHANGA_VISHTI_CAP",
     });
     down.push({
       code: "PANCHANGA_VISHTI",
       thai: `ยามนี้อยู่ในกรณะ${p.karanaTh} (${p.karanaSa}) · ตำรามุหูรตะทุกสายงดเริ่มงานมงคลระหว่างภัทรา · เพดานคะแนน 55`,
+      en: `This slot falls in the ${p.karanaSa} karana · every muhurta school refrains from beginning auspicious work during Bhadra · score capped at 55`,
       zh: "毘瑟底時分", delta: 0, severity: "warning", source: "panchanga",
     });
   }
@@ -264,17 +271,21 @@ export function computePanchanga(c: CandidateSlot, activity: ActivityType): Modu
       caps.push({
         type: "max", value: 55,
         reason: `ติถีริกตา (${p.tithiTh} · ${p.tithiSa}) ไม่เหมาะงานมงคลเริ่มใหม่ · เพดานคะแนน 55`,
+        en: `Rikta tithi (${p.tithiSa}) · unsuitable for freshly begun auspicious work · score capped at 55`,
+        zh: `里克塔日（${p.tithiSa}）· 不宜新興吉事 · 分數上限55`,
         source: "panchanga", code: "PANCHANGA_RIKTA_CAP",
       });
       down.push({
         code: "PANCHANGA_RIKTA",
         thai: `วันนี้เป็นติถีริกตา · ${p.tithiTh} (${p.tithiSa}) ${p.paksha === "shukla" ? "ข้างขึ้น" : "ข้างแรม"} · ตำราจัดเป็นติถีว่างเปล่า ไม่เหมาะเปิดกิจการ/แต่งงาน · เพดานคะแนน 55`,
+        en: `Today is a rikta tithi · ${p.tithiSa} (${p.paksha === "shukla" ? "waxing" : "waning"} fortnight) · the texts class it as an "empty" tithi, unfit for openings or weddings · score capped at 55`,
         zh: "里克塔日", delta: 0, severity: "warning", source: "panchanga",
       });
     } else {
       warning.push({
         code: "PANCHANGA_RIKTA_WARN",
         thai: `วันนี้เป็นติถีริกตา · ${p.tithiTh} (${p.tithiSa}) · ตำราให้ระวังงานมงคลเริ่มใหม่ (กิจกรรมนี้ไม่โดนตัด)`,
+        en: `Today is a rikta tithi · ${p.tithiSa} · the texts urge caution over freshly begun auspicious work (this activity is not cut)`,
         zh: "里克塔日", delta: 0, severity: "warning", source: "panchanga",
       });
     }
@@ -287,17 +298,21 @@ export function computePanchanga(c: CandidateSlot, activity: ActivityType): Modu
       caps.push({
         type: "max", value: 45,
         reason: `อมาวสยา (จันทร์ดับ · Amāvāsyā) ห้ามงานมงคลทุกชนิด · เพดานคะแนน 45`,
+        en: `Amavasya (new moon) · all auspicious work is forbidden · score capped at 45`,
+        zh: `朔日（Amāvāsyā · 月晦）· 諸吉事忌 · 分數上限45`,
         source: "panchanga", code: "PANCHANGA_AMAVASYA_CAP",
       });
       down.push({
         code: "PANCHANGA_AMAVASYA",
         thai: `วันนี้เป็นอมาวสยา (จันทร์ดับ · ติถี 30) · ตำรามุหูรตะห้ามงานมงคลทุกชนิด ยกเว้นพิธีบูชาบรรพบุรุษ · เพดานคะแนน 45`,
+        en: `Today is Amavasya (new moon · tithi 30) · muhurta texts forbid all auspicious work except ancestral rites · score capped at 45`,
         zh: "朔日", delta: 0, severity: "warning", source: "panchanga",
       });
     } else {
       up.push({
         code: "PANCHANGA_AMAVASYA_RITUAL",
         thai: `อมาวสยา (จันทร์ดับ) · ตำราถือว่าเหมาะกับพิธีบูชาบรรพบุรุษ (pitṛ-kārya) · ไม่ตัดคะแนนสำหรับพิธีกรรม`,
+        en: `Amavasya (new moon) · the texts hold it fitting for ancestral rites (pitr-karya) · no score cut for ritual activities`,
         zh: "朔日祭祖", delta: 0, severity: "info", source: "panchanga",
       });
     }
@@ -307,6 +322,7 @@ export function computePanchanga(c: CandidateSlot, activity: ActivityType): Modu
   up.push({
     code: "PANCHANGA_INFO",
     thai: `ปัญจางค์: ติถี ${p.tithiInPaksha} ${p.tithiTh} ${p.paksha === "shukla" ? "ข้างขึ้น" : "ข้างแรม"} · วาระ${p.varaTh} · นักษัตร${p.nakshatraTh} (${p.nakshatraSa}) · โยคะ${p.yogaTh} · กรณะ${p.karanaTh}`,
+    en: `Panchanga: tithi ${p.tithiInPaksha} ${p.tithiSa} (${p.paksha === "shukla" ? "waxing" : "waning"}) · vara ${p.varaSa} · nakshatra ${p.nakshatraSa} · yoga ${p.yogaSa} · karana ${p.karanaSa}`,
     zh: "五支",
     delta: 0, severity: "info", source: "panchanga",
   });

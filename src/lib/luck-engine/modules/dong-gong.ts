@@ -74,6 +74,10 @@ export function computeDongGong(c: CandidateSlot, activity: ActivityType): Modul
   const veto: VetoReason[] = [];
   const tags: string[] = [`dg_${dg.level}`, `dg_${dg.jianchu}`];
   const ctx = `${dg.verdictTh} · ${dg.jianchuTh} ${dg.jianchu}日`;
+  /* r418 · i18n เฟส 1: บริบทเดียวกัน 3 ภาษา (verdictEn/jianchuEn map ตรงจากตาราง lib · additive) */
+  const ctxEn = `${(dg as any).verdictEn || dg.verdict} · ${(dg as any).jianchuEn || dg.jianchu} (${dg.jianchu}日)`;
+  const ctxZh = `${dg.verdict} · ${dg.jianchu}日`;
+  const noteEn = dg.note ? ` · ${dg.note}` : ""; // note คงตัวจีนตำราเดิม (ห้ามแต่งคำเอง · canon)
 
   /* r417 · เงื่อนไข "บวกวันดีเฉพาะกิจกรรมเกี่ยวข้อง" (เจ้านายเคาะ 5-6 ก.ค. 2569):
    *  บวกวันดี (吉/上吉) เฉพาะเมื่อ (ก) กิจกรรมนี้ตรง 宜 ของวันจริง หรือ (ข) วันนี้ตำราไม่ได้
@@ -89,10 +93,12 @@ export function computeDongGong(c: CandidateSlot, activity: ActivityType): Modul
     caps.push({
       type: "max", value: 30,
       reason: "ตงกงชี้ 大凶 · เพดานคะแนน 30",
+      en: "Dong Gong marks this day 大凶 (severely inauspicious) · score capped at 30",
+      zh: "董公判大凶 · 分數上限30",
       source: "dong_gong",
       code: "DONGGONG_DAXIONG_CAP",
     } as CapRule & { code: string });
-    down.push({ code: "DONGGONG_DAXIONG", thai: `ตงกงชี้ ${ctx} · ${dg.noteTh || "วันร้ายหนักตามตำรา"} · เพดานคะแนน 30`, zh: dg.zh, delta: 0, severity: "critical", source: "dong_gong" });
+    down.push({ code: "DONGGONG_DAXIONG", thai: `ตงกงชี้ ${ctx} · ${dg.noteTh || "วันร้ายหนักตามตำรา"} · เพดานคะแนน 30`, en: `Dong Gong verdict: ${ctxEn}${noteEn || " · a severely inauspicious day per the classical text"} · score capped at 30`, zh: dg.zh, delta: 0, severity: "critical", source: "dong_gong" });
     // r417 · 大凶 = "ห้าม" สากล ตัดออกจากผลแนะนำจริง (ไม่ใช่แค่หักคะแนน)
     veto.push({
       code: "DONGGONG_DAXIONG",
@@ -105,43 +111,48 @@ export function computeDongGong(c: CandidateSlot, activity: ActivityType): Modul
     caps.push({
       type: "max", value: 45,
       reason: `ตงกงชี้ ${dg.verdict} (${dg.verdictTh}) · เพดานคะแนน 45`,
+      en: `Dong Gong marks this day ${dg.verdict} (${(dg as any).verdictEn || "inauspicious"}) · score capped at 45`,
+      zh: `董公判${dg.verdict} · 分數上限45`,
       source: "dong_gong",
       code: "DONGGONG_XIONG_CAP",
     } as CapRule & { code: string });
-    down.push({ code: "DONGGONG_XIONG", thai: `ตงกงชี้ ${ctx}${dg.noteTh ? ` · ${dg.noteTh}` : ""} · เพดานคะแนน 45`, zh: dg.zh, delta: 0, severity: "warning", source: "dong_gong" });
+    down.push({ code: "DONGGONG_XIONG", thai: `ตงกงชี้ ${ctx}${dg.noteTh ? ` · ${dg.noteTh}` : ""} · เพดานคะแนน 45`, en: `Dong Gong verdict: ${ctxEn}${noteEn} · score capped at 45`, zh: dg.zh, delta: 0, severity: "warning", source: "dong_gong" });
     // r417 · 凶/不利 = "เลี่ยง" เท่านั้น (ไม่ใช่ห้ามสากล) → คง cap 45 + warning ไม่ veto
   } else if (TOP_VERDICTS.has(dg.verdict) || GOOD_VERDICTS.has(dg.verdict)) {
     const isTop = TOP_VERDICTS.has(dg.verdict);
     if (verdictAppliesToActivity) {
       normalized = isTop ? 80 : 70;
-      up.push({ code: "DONGGONG_VERDICT_UP", thai: `ตงกงหนุน · ${ctx}${dg.noteTh ? ` · ${dg.noteTh}` : ""}`, zh: dg.zh, delta: 8, severity: "info", source: "dong_gong" });
+      up.push({ code: "DONGGONG_VERDICT_UP", thai: `ตงกงหนุน · ${ctx}${dg.noteTh ? ` · ${dg.noteTh}` : ""}`, en: `Dong Gong supports this day · ${ctxEn}${noteEn}`, zh: dg.zh, delta: 8, severity: "info", source: "dong_gong" });
     } else {
       // r417 · yi/ji มีรายการแต่ไม่ตรงกิจกรรมที่ค้น → กลาง 55 · ป้ายอธิบายชัดว่าตำราเจาะกิจกรรมอื่น
       normalized = 55;
       up.push({
         code: "DONGGONG_OFF_TOPIC",
         thai: `คำตัดสินภาพรวมของวัน — ตำราวันนี้เจาะกิจกรรมอื่น (${ctx})`,
+        en: `General verdict for the day — today's text addresses other activities (${ctxEn})`,
         zh: "本日董公斷語另有所指，非本活動之宜忌",
         delta: 0, severity: "info", source: "dong_gong",
       });
     }
   } else {
     // 平 / — (ขึ้นกับวันเกิดเฉพาะตัว) → กลาง 55 · แจ้งบริบทเฉย ๆ
-    up.push({ code: "DONGGONG_NEUTRAL", thai: `ตงกงกลาง · ${ctx}`, zh: dg.zh, delta: 0, severity: "info", source: "dong_gong" });
+    up.push({ code: "DONGGONG_NEUTRAL", thai: `ตงกงกลาง · ${ctx}`, en: `Dong Gong neutral · ${ctxEn}`, zh: dg.zh, delta: 0, severity: "info", source: "dong_gong" });
   }
 
   if (yiMatches.length) {
-    up.push({ code: "DONGGONG_YI_MATCH", thai: `ตงกงระบุว่าเหมาะกับกิจกรรมนี้ · 宜 ${yiMatches.join("、")}`, delta: 6, severity: "info", source: "dong_gong" });
+    up.push({ code: "DONGGONG_YI_MATCH", thai: `ตงกงระบุว่าเหมาะกับกิจกรรมนี้ · 宜 ${yiMatches.join("、")}`, en: `Dong Gong lists this activity as suitable today · 宜 ${yiMatches.join("、")}`, zh: `董公本日宜 ${yiMatches.join("、")} · 正合本活動`, delta: 6, severity: "info", source: "dong_gong" });
     tags.push("dg_yi_match");
   }
   if (jiMatches.length) {
     caps.push({
       type: "max", value: 45,
       reason: `ตงกงมีข้อห้ามตรงกิจกรรมนี้ · 忌 ${jiMatches.join("、")} · เพดานคะแนน 45`,
+      en: `Dong Gong explicitly avoids this activity today · 忌 ${jiMatches.join("、")} · score capped at 45`,
+      zh: `董公本日忌 ${jiMatches.join("、")} · 分數上限45`,
       source: "dong_gong",
       code: "DONGGONG_JI_CAP",
     } as CapRule & { code: string });
-    down.push({ code: "DONGGONG_JI_MATCH", thai: `ตงกงระบุว่าควรเลี่ยงกิจกรรมนี้ · 忌 ${jiMatches.join("、")} (${dg.jianchuTh})`, delta: 0, severity: "warning", source: "dong_gong" });
+    down.push({ code: "DONGGONG_JI_MATCH", thai: `ตงกงระบุว่าควรเลี่ยงกิจกรรมนี้ · 忌 ${jiMatches.join("、")} (${dg.jianchuTh})`, en: `Dong Gong lists this activity as one to avoid today · 忌 ${jiMatches.join("、")} (${(dg as any).jianchuEn || dg.jianchu} day)`, zh: `董公本日忌 ${jiMatches.join("、")}（${dg.jianchu}日）`, delta: 0, severity: "warning", source: "dong_gong" });
     tags.push("dg_ji_match");
     // r417 · 忌 ตรงกิจกรรมนี้ตรง ๆ = "ห้าม" สากล (ตำราชี้เฉพาะกิจกรรมนี้เลย) → veto
     veto.push({

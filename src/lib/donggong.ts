@@ -17,8 +17,12 @@ export type Lang3 = { th: string; en: string; zh: string };
 export type DongGong = {
   monthIdx: number;
   jianchu: string; jianchuTh: string;
+  /** r418 · i18n เฟส 1: ป้าย建除อังกฤษ (map ตรงจาก JC_EN เช่น 建=Establish · additive) */
+  jianchuEn: string;
   jcMeaning: Lang3;            // ความหมายตำแหน่ง建除 (อธิบายให้ user เข้าใจ · 3 ภาษา)
   verdict: string; verdictTh: string;
+  /** r418 · i18n เฟส 1: คำตัดสินอังกฤษ (map ตรงจาก V_EN เช่น 大凶=Very bad · additive) */
+  verdictEn: string;
   base: string; fromException: boolean; level: DGLevel;
   shensha: string[]; yi: string[]; ji: string[];
   shenshaPairs: DGPair[]; yiPairs: DGPair[]; jiPairs: DGPair[];
@@ -105,8 +109,10 @@ export function dongGong(monthBranch: string, dayBranch: string, dayGanzhi: stri
   const verdictTh = V_TH[verdict] || verdict;
   return {
     monthIdx, jianchu: d.pos, jianchuTh: jcTh,
+    jianchuEn: JC_EN[d.pos] || d.pos,
     jcMeaning: JC_MEANING[d.pos] || { th: "", en: "", zh: "" },
     verdict, verdictTh, base, fromException: !!(e && e.verdict),
+    verdictEn: V_EN[verdict] || verdict,
     level, shensha: d.shensha, yi: d.yi, ji: d.ji,
     shenshaPairs: d.shensha.map((z) => pair(z, SHEN_TH)),
     yiPairs: d.yi.map((z) => pair(z, ACT_TH)),

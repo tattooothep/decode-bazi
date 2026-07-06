@@ -90,6 +90,27 @@ export const ACTIVITY_PROFILES: ActivityProfile[] = [
 
 const PROFILE_BY_KEY = new Map(ACTIVITY_PROFILES.map((profile) => [profile.key, profile]));
 
+/* r418 · i18n เฟส 1 datepick: ป้ายกิจกรรมภาษาอังกฤษ (additive · ใช้ประกอบข้อความ Reason.en เท่านั้น
+ * ไม่แตะ labelTh/labelZh/logic — key ไหนไม่มีในตาราง fallback เป็น labelZh ตัวจีนวิชา) */
+export const PROFILE_LABEL_EN: Record<string, string> = {
+  sign_contract: "Sign contract", close_deal: "Close a deal", permit_license: "Permit application",
+  loan_credit: "Loan application", launch_ritual: "Launch ceremony", negotiation: "Negotiation",
+  meet_senior: "Meet a senior figure", ask_favor: "Ask for support", partner_meeting: "Partner meeting",
+  pitch_present: "Pitch / presentation", interview: "Job interview", collect_money: "Collect payment",
+  debt_followup: "Debt follow-up", pay_transfer: "Payment / transfer", invest_buy: "Invest / purchase",
+  ship_goods: "Ship goods", client_sales: "Client visit / sales", open_business: "Open a business",
+  open_project: "Project launch", hire_onboard: "Hire / onboard", take_position: "Take up a position",
+  office_move: "Office move", board_meeting: "Board meeting", break_ground: "Ground-breaking",
+  move_home: "Move into a home", renovate: "Renovation", wedding: "Wedding",
+  medical_visit: "Medical appointment", surgery: "Elective surgery", exam_study: "Exam / study",
+  long_travel: "Long journey",
+};
+
+/** ป้ายกิจกรรมอังกฤษของ profile (fallback labelZh — ตัวจีนวิชาอ่านออกในวงการ) */
+export function profileLabelEn(profile: ActivityProfile): string {
+  return PROFILE_LABEL_EN[profile.key] || profile.labelZh;
+}
+
 export function getActivityProfile(key: unknown): ActivityProfile | null {
   if (typeof key !== "string") return null;
   return PROFILE_BY_KEY.get(key.trim()) || null;

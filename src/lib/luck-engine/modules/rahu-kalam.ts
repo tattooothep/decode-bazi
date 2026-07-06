@@ -116,18 +116,23 @@ export function computeRahuKalam(c: CandidateSlot, activity: ActivityType, loc?:
   }
 
   const placeTh = loc?.place || "กรุงเทพมหานคร";
+  const placeEn = loc?.place || "Bangkok";
+  const placeZh = loc?.place || "曼谷";
   const r = baseResult("ready", 40, 0.85);
   r.pass = false;
   r.tags = ["rahu_hit"];
   r.caps = [{
     type: "max", value: 50,
     reason: `ราหูกาล ${rangeTh} ณ ${placeTh} (ศาสตร์ฤกษ์สายอินเดีย) · เพดานคะแนน 50`,
+    en: `Rahu Kalam ${rangeTh} at ${placeEn} (Indian muhurta tradition) · score capped at 50`,
+    zh: `羅睺時 ${rangeTh}（${placeZh} · 印度擇時法）· 分數上限50`,
     source: "rahu_kalam",
     code: "RAHU_KALAM_CAP",
   } as CapRule & { code: string }];
   r.reasons.down.push({
     code: "RAHU_KALAM",
     thai: `ยามนี้คาบช่วงราหูกาล ${rangeTh} ณ ${placeTh} · ตำราสายอินเดียงดเริ่มงานมงคลทุกชนิดในช่วงนี้ · เพดานคะแนน 50`,
+    en: `This slot overlaps Rahu Kalam ${rangeTh} at ${placeEn} · Indian muhurta texts advise against beginning any auspicious work in this period · score capped at 50`,
     zh: "羅睺時",
     delta: 0,
     severity: "warning",

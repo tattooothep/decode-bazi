@@ -150,26 +150,26 @@ export type TongshuModuleResults = {
 export function buildTongshuModuleResults(day: TongshuLiveDay): TongshuModuleResults {
   const oScore = JIAN_CHU_GOOD[day.officer] ?? 50;
   const twelve_officers = buildResult("twelve_officers", oScore, [`officer_${day.officer}`],
-    oScore >= 60 ? [{ code: "OFFICER_GOOD", thai: `✓ ${day.officer}日 (12建除)`, delta: oScore - 50 }] : [],
-    oScore < 40 ? [{ code: "OFFICER_BAD", thai: `⚠ ${day.officer}日 (12建除)`, delta: oScore - 50 }] : [],
+    oScore >= 60 ? [{ code: "OFFICER_GOOD", thai: `✓ ${day.officer}日 (12建除)`, en: `✓ ${day.officer} Day (Twelve Day Officers)`, zh: `✓ ${day.officer}日 (十二建除)`, delta: oScore - 50 }] : [],
+    oScore < 40 ? [{ code: "OFFICER_BAD", thai: `⚠ ${day.officer}日 (12建除)`, en: `⚠ ${day.officer} Day (Twelve Day Officers)`, zh: `⚠ ${day.officer}日 (十二建除)`, delta: oScore - 50 }] : [],
     0.85, { officer: day.officer });
 
   const spScore = SPIRIT_NATURE[day.spirit] ?? 50;
   const twelve_spirits = buildResult("twelve_spirits", spScore, [`spirit_${day.spirit}`],
-    spScore >= 60 ? [{ code: "SPIRIT_GOOD", thai: `✨ ${day.spirit} (12神煞)`, delta: spScore - 50 }] : [],
-    spScore < 40 ? [{ code: "SPIRIT_BAD", thai: `⚠ ${day.spirit} (12神煞)`, delta: spScore - 50 }] : [],
+    spScore >= 60 ? [{ code: "SPIRIT_GOOD", thai: `✨ ${day.spirit} (12神煞)`, en: `✨ ${day.spirit} (Twelve Day Spirits)`, zh: `✨ ${day.spirit} (十二神煞)`, delta: spScore - 50 }] : [],
+    spScore < 40 ? [{ code: "SPIRIT_BAD", thai: `⚠ ${day.spirit} (12神煞)`, en: `⚠ ${day.spirit} (Twelve Day Spirits)`, zh: `⚠ ${day.spirit} (十二神煞)`, delta: spScore - 50 }] : [],
     0.8, { spirit: day.spirit });
 
   const xScore = STAR_28_NATURE[day.xiu] ?? 50;
   const twenty_eight = buildResult("twenty_eight", xScore, [`xiu_${day.xiu}`],
-    xScore >= 60 ? [{ code: "XIU_GOOD", thai: `⭐ ${day.xiu}宿 (28宿)`, delta: xScore - 50 }] : [],
-    xScore < 40 ? [{ code: "XIU_BAD", thai: `⚠ ${day.xiu}宿 (28宿)`, delta: xScore - 50 }] : [],
+    xScore >= 60 ? [{ code: "XIU_GOOD", thai: `⭐ ${day.xiu}宿 (28宿)`, en: `⭐ ${day.xiu} Mansion (28 Lunar Mansions)`, zh: `⭐ ${day.xiu}宿 (二十八宿)`, delta: xScore - 50 }] : [],
+    xScore < 40 ? [{ code: "XIU_BAD", thai: `⚠ ${day.xiu}宿 (28宿)`, en: `⚠ ${day.xiu} Mansion (28 Lunar Mansions)`, zh: `⚠ ${day.xiu}宿 (二十八宿)`, delta: xScore - 50 }] : [],
     0.8, { star: day.xiu });
 
   const nScore = NINE_STAR_NATURE[day.nineStar] ?? 50;
   const nine_stars = buildResult("nine_stars", nScore, [`flystar_${day.nineStar}`],
-    nScore >= 60 ? [{ code: "STAR_GOOD", thai: `🌟 ${day.nineStar}白 (飛星)`, delta: nScore - 50 }] : [],
-    nScore < 40 ? [{ code: "STAR_BAD", thai: `⚠ ${day.nineStar}星 (飛星)`, delta: nScore - 50 }] : [],
+    nScore >= 60 ? [{ code: "STAR_GOOD", thai: `🌟 ${day.nineStar}白 (飛星)`, en: `🌟 ${day.nineStar} White Star (Flying Stars)`, zh: `🌟 ${day.nineStar}白 (飛星)`, delta: nScore - 50 }] : [],
+    nScore < 40 ? [{ code: "STAR_BAD", thai: `⚠ ${day.nineStar}星 (飛星)`, en: `⚠ Star ${day.nineStar} (Flying Stars)`, zh: `⚠ ${day.nineStar}星 (飛星)`, delta: nScore - 50 }] : [],
     0.75, { star: day.nineStar });
 
   return { twelve_officers, twelve_spirits, twenty_eight, nine_stars };

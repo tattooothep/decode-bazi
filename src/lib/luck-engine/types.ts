@@ -40,6 +40,8 @@ export type Reason = {
   code: string;
   /** Thai message · แสดงให้ลูกค้าเห็น */
   thai: string;
+  /** English message (r418 · i18n เฟส 1 datepick) · native-level ไม่ใช่แปลเครื่อง */
+  en?: string;
   /** Optional Chinese · สำหรับนักศึกษา */
   zh?: string;
   /** Score delta · +/- จาก base 50 */
@@ -61,6 +63,10 @@ export type CapRule = {
   value: number;
   /** เหตุผล · e.g. "วันปะทะ太歲 = score ไม่เกิน 40" */
   reason: string;
+  /** เหตุผลอังกฤษ (r418 · i18n เฟส 1 datepick · additive — ใช้ตอนแปลง cap → Reason ให้ UI) */
+  en?: string;
+  /** เหตุผลจีน (r418 · additive) */
+  zh?: string;
   /** Module ที่เป็นต้นเหตุ */
   source: ModuleKey;
 };

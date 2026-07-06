@@ -31,7 +31,7 @@ import type { EventLocation } from "../event-location";
 import { eclipticLon, norm360 } from "@/lib/astro-core/ephemeris";
 import { findIngresses, wrap180 } from "@/lib/astro-core/events";
 import {
-  DAY_MS, slotWindowUtc, thaiMidnightUtc, fmtThaiRange, overlaps, evictFifo,
+  DAY_MS, slotWindowUtc, thaiMidnightUtc, fmtThaiRange, fmtEnRange, fmtZhRange, overlaps, evictFifo,
 } from "./sky-shared";
 
 /** กิจกรรม "เริ่มงานใหม่" ที่ VoC ตัดจริง (ตำรา electional: เริ่มสิ่งใหม่ช่วงว่าง = ไม่ก่อผล) */
@@ -197,6 +197,8 @@ export function computeMoonVoid(c: CandidateSlot, activity: ActivityType, loc?: 
   }
 
   const rangeTh = fmtThaiRange(hitWin.startMs, hitWin.endMs);
+  const rangeEn = fmtEnRange(hitWin.startMs, hitWin.endMs);
+  const rangeZh = fmtZhRange(hitWin.startMs, hitWin.endMs);
   const isNewWork = VOC_NEW_WORK.has(activity);
   const r = baseResult("ready", isNewWork ? 35 : 50, 0.85);
   r.tags = ["voc_hit", isNewWork ? "voc_cap" : "voc_warn"];
@@ -205,12 +207,15 @@ export function computeMoonVoid(c: CandidateSlot, activity: ActivityType, loc?: 
     r.caps = [{
       type: "max", value: 45,
       reason: `จันทร์ว่าง (Void of Course) ${rangeTh} · เริ่มงานใหม่ช่วงนี้ไม่ก่อผลตามตำรา · เพดานคะแนน 45`,
+      en: `Moon void-of-course ${rangeEn} · classical electional texts say new ventures begun now come to nothing · score capped at 45`,
+      zh: `月空亡 ${rangeZh} · 古法謂空亡起事難成 · 分數上限45`,
       source: "moon_void",
       code: "MOON_VOC_CAP",
     } as CapRule & { code: string }];
     r.reasons.down.push({
       code: "MOON_VOC",
       thai: `จันทร์ว่าง ${rangeTh} · ยามนี้คาบช่วงจันทร์ไร้มุมก่อนย้ายราศี (เริ่มงานใหม่ควรเลี่ยง) · เพดานคะแนน 45`,
+      en: `Moon void-of-course ${rangeEn} · this slot overlaps the Moon's aspect-free stretch before its sign ingress (avoid starting new ventures) · score capped at 45`,
       zh: "月空亡",
       delta: 0,
       severity: "warning",
@@ -220,6 +225,7 @@ export function computeMoonVoid(c: CandidateSlot, activity: ActivityType, loc?: 
     r.reasons.warning.push({
       code: "MOON_VOC_WARN",
       thai: `จันทร์ว่าง ${rangeTh} · กิจกรรมนี้ไม่ใช่งานเริ่มใหม่ กระทบน้อย แต่เรื่องที่หวังผลใหม่ควรเลี่ยงช่วงนี้`,
+      en: `Moon void-of-course ${rangeEn} · this activity is not a fresh start so the impact is minor, but matters seeking new outcomes are best moved off this window`,
       zh: "月空亡",
       delta: 0,
       severity: "warning",

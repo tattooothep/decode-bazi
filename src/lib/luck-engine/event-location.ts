@@ -103,10 +103,14 @@ export function buildTstBoundaryWarning(input: {
   const pairA = cacheBranch;
   const pairB = BRANCH_TH[otherIdx] === cacheBranch ? BRANCH_TH[(otherIdx + 1) % 12] : BRANCH_TH[otherIdx];
   const placeTh = input.loc.place || "สถานที่งาน";
+  const placeEn = input.loc.place || "the venue";
+  const placeZh = input.loc.place || "現場";
 
   return {
     code: "TST_HOUR_BOUNDARY",
     thai: `ยามคาบเส้น ณ ${placeTh}: เวลาสุริยะจริงต่างจากกทม ~${diffFromBkkMin} นาที ยามอาจเป็น ยาม${pairA}/ยาม${pairB} — เลื่อนเวลา ±15 นาทีเพื่อความชัวร์`,
+    en: `Hour on the boundary at ${placeEn}: true solar time differs from Bangkok by ~${diffFromBkkMin} min, so the double-hour could be ${pairA} or ${pairB} — shift the time ±15 minutes to be safe`,
+    zh: `${placeZh}時辰交界提醒：真太陽時與曼谷相差約${diffFromBkkMin}分鐘，時辰或為${pairA}時/${pairB}時 — 建議前後挪移15分鐘為穩`,
     delta: 0,
     severity: "warning",
     source: "ze_ri",

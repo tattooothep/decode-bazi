@@ -27,6 +27,7 @@ export const SIGN_TH = [
   "ตุลย์", "พิจิก", "ธนู", "มังกร", "กุมภ์", "มีน",
 ];
 const SIGN_ZH = ["白羊", "金牛", "雙子", "巨蟹", "獅子", "處女", "天秤", "天蠍", "射手", "摩羯", "水瓶", "雙魚"];
+const SIGN_EN = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
 
 // ดัชนีราศี (อ่านง่าย)
 const ARI = 0, TAU = 1, GEM = 2, CAN = 3, LEO = 4, VIR = 5, LIB = 6, SCO = 7, SAG = 8, CAP = 9, AQU = 10, PIS = 11;
@@ -102,6 +103,7 @@ export function computeMoonSign(c: CandidateSlot, activity: ActivityType): Modul
     up.push({
       code: "MOON_SIGN_FIT",
       thai: `จันทร์อยู่ราศี${SIGN_TH[sign]} · เข้ากับกิจกรรมนี้ตามตำรา electional (+${SOFT_DELTA} เบา ๆ)`,
+      en: `Moon in ${SIGN_EN[sign]} · favors this activity per classical electional texts (soft +${SOFT_DELTA})`,
       zh: `月在${SIGN_ZH[sign]}`,
       delta: SOFT_DELTA,
       severity: "info",
@@ -111,6 +113,7 @@ export function computeMoonSign(c: CandidateSlot, activity: ActivityType): Modul
     down.push({
       code: "MOON_SIGN_WEAK",
       thai: `จันทร์อยู่ราศี${SIGN_TH[sign]} · ไม่หนุนกิจกรรมนี้ตามตำรา electional (−${SOFT_DELTA} เบา ๆ · ไม่ตัดฤกษ์)`,
+      en: `Moon in ${SIGN_EN[sign]} · does not support this activity per classical electional texts (soft −${SOFT_DELTA} · not a veto)`,
       zh: `月在${SIGN_ZH[sign]}`,
       delta: -SOFT_DELTA,
       severity: "info",
