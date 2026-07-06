@@ -61,3 +61,6 @@ public/docs/research/
 .idea/
 *.swp
 reports/
+
+# บัญชีทดสอบ i18n gate
+.gate-account.json
