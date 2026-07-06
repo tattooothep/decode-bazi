@@ -247,7 +247,7 @@
   };
   var lang = (function(){ var s=localStorage.getItem("hk_book_lang"); return (s==="en"||s==="zh")?s:"th"; })();
   var theme = (function(){ var s=localStorage.getItem("hk_book_theme"); return (s==="dark"||s==="light")?s:"light"; })();
-  function t(k){ return (I18N[lang]&&I18N[lang][k]) || I18N.th[k] || k; }
+  function t(k){ try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('book.html',k,lang);if(ov!=null)return ov;}catch(_){} return (I18N[lang]&&I18N[lang][k]) || I18N.th[k] || k; }
   var root = document.getElementById("root");
   var pollTimer = null;
   var bookName = ""; // ชื่อเจ้าชะตา (ตั้งชื่อไฟล์ PDF ให้สวย)

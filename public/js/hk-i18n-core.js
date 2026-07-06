@@ -22,7 +22,12 @@
   function getLocale() {
     try {
       var l = localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th';
-      return LIVE.indexOf(l) !== -1 ? l : 'th';
+      if (LIVE.indexOf(l) !== -1) return l;
+      // เฟส overlay (6 ก.ค. 2569): ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่ LIVE ในเมนู แต่ถ้า overlay
+      // ของภาษานั้นโหลดสำเร็จแล้ว (_overlayLocale ตรงกับ l) → ใช้ได้ทันที ไม่ต้องรอ LIVE
+      // (ปลอดภัยกับของเดิม: ไม่มี hk_locale ไหนเป็นค่านี้จนกว่าจะมีคนตั้ง localStorage เอง/ทดสอบ)
+      if (SUPPORTED.indexOf(l) !== -1 && l === _overlayLocale) return l;
+      return 'th';
     } catch (_) { return 'th'; }
   }
 
