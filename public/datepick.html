@@ -1114,6 +1114,8 @@ function dpTr(item, base){
   const lang = getCurrentLang();
   if (lang === 'en' && item[base + 'En']) return item[base + 'En'];
   if (lang === 'zh' && item[base + 'Zh']) return item[base + 'Zh'];
+  /* ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มีคลังคำเฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569) */
+  if (lang !== 'th' && lang !== 'zh' && item[base + 'En']) return item[base + 'En'];
   return item[base] || '';
 }
 
@@ -1740,9 +1742,9 @@ function peopleFiltered(){
 function personAstroText(p){
   const el = PERSON_STEM_ELEMENT[p.dm] || '';
   const lang = getCurrentLang();
-  const elLabel = (lang === 'en' ? PERSON_ELEMENT_EN[el] : lang === 'zh' ? PERSON_ELEMENT_ZH[el] : PERSON_ELEMENT_TH[el]) || _dptx('dp.person.unknown_el','ไม่ทราบธาตุ');
+  const elLabel = (lang === 'zh' ? PERSON_ELEMENT_ZH[el] : lang === 'th' ? PERSON_ELEMENT_TH[el] : PERSON_ELEMENT_EN[el]) || _dptx('dp.person.unknown_el','ไม่ทราบธาตุ');
   const elZh = PERSON_ELEMENT_ZH[el] || '';
-  const branchLabel = (lang === 'en' ? PERSON_BRANCH_EN[p.branch] : PERSON_BRANCH_TH[p.branch]) || _dptx('dp.person.unknown_zodiac','ไม่ทราบปีนักษัตร');
+  const branchLabel = ((lang === 'th' || lang === 'zh') ? PERSON_BRANCH_TH[p.branch] : PERSON_BRANCH_EN[p.branch]) || _dptx('dp.person.unknown_zodiac','ไม่ทราบปีนักษัตร');
   const dot = el ? `<span class="el-dot el-${el}"></span>` : '';
   const elPrefix = _dptx('dp.element.prefix','ธาตุ');
   const dmLabel = _dptx('dp.person.daystem','ก้านวัน');
@@ -1793,7 +1795,7 @@ function updatePeopleCount(){
   const el = document.getElementById('peopleCount');
   const filtered = peopleFiltered().length;
   const lang = getCurrentLang();
-  const grp = (lang === 'en' ? PERSON_GROUP_EN : lang === 'zh' ? PERSON_GROUP_ZH : PERSON_GROUP_TH)[state.peopleGroup || 'all'] || PERSON_GROUP_TH.all;
+  const grp = (lang === 'zh' ? PERSON_GROUP_ZH : lang === 'th' ? PERSON_GROUP_TH : PERSON_GROUP_EN)[state.peopleGroup || 'all'] || PERSON_GROUP_TH.all;
   if (el) el.textContent = `${_dptx('dp.people.selected','เลือก')} ${enabled} / ${total} ${_dptx('dp.unit.people','คน')} · ${_dptx('dp.people.viewing','กำลังดู')} ${grp} ${filtered} ${_dptx('dp.unit.people','คน')}`;
 }
 /* bind group selector + toolbar (ครั้งเดียวตอน DOM ready) */
@@ -2073,9 +2075,10 @@ function qimenLabel(kind, zh){
   if (!zh || zh === '·' || zh === '—') return zh || '—';
   const lang = getCurrentLang();
   if (lang === 'zh') return zh;
-  const dict = kind === 'door' ? (lang === 'en' ? QIMEN_DOOR_EN : QIMEN_DOOR_TH)
-    : kind === 'star' ? (lang === 'en' ? QIMEN_STAR_EN : QIMEN_STAR_TH)
-    : (lang === 'en' ? QIMEN_DEITY_EN : QIMEN_DEITY_TH);
+  /* ภาษาใหม่ (vi/ja/ko/ru/es) ไม่มีคลังคำเฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569) */
+  const dict = kind === 'door' ? (lang === 'th' ? QIMEN_DOOR_TH : QIMEN_DOOR_EN)
+    : kind === 'star' ? (lang === 'th' ? QIMEN_STAR_TH : QIMEN_STAR_EN)
+    : (lang === 'th' ? QIMEN_DEITY_TH : QIMEN_DEITY_EN);
   const label = dict[zh];
   return label ? `${label} · ${zh}` : zh;
 }
@@ -2083,9 +2086,9 @@ function qimenLabel(kind, zh){
 function qimenPartReading(kind, zh){
   if (!zh || zh === '·' || zh === '—') return '';
   const lang = getCurrentLang();
-  const hintDict = kind === 'door' ? (lang === 'en' ? QIMEN_DOOR_HINT_EN : QIMEN_DOOR_HINT)
-    : kind === 'star' ? (lang === 'en' ? QIMEN_STAR_HINT_EN : QIMEN_STAR_HINT)
-    : (lang === 'en' ? QIMEN_DEITY_HINT_EN : QIMEN_DEITY_HINT);
+  const hintDict = kind === 'door' ? (lang === 'th' ? QIMEN_DOOR_HINT : QIMEN_DOOR_HINT_EN)
+    : kind === 'star' ? (lang === 'th' ? QIMEN_STAR_HINT : QIMEN_STAR_HINT_EN)
+    : (lang === 'th' ? QIMEN_DEITY_HINT : QIMEN_DEITY_HINT_EN);
   const hint = lang === 'zh' ? null : hintDict[zh];
   return `${qimenLabel(kind, zh)}${hint ? ` · ${hint}` : ''}`;
 }
@@ -2100,7 +2103,8 @@ function localizeQimenReason(text){
 function thZh(dictTh, dictEn, zh){
   const lang = getCurrentLang();
   if (lang === 'zh') return zh;
-  const label = (lang === 'en' ? dictEn : dictTh)[zh];
+  /* ภาษาใหม่ (vi/ja/ko/ru/es) ไม่มีคลังคำเฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569) */
+  const label = (lang === 'th' ? dictTh : dictEn)[zh];
   return label ? `${label} · ${zh}` : zh;
 }
 
@@ -2109,27 +2113,29 @@ function thZh(dictTh, dictEn, zh){
 function reasonText(r){
   if (!r || typeof r !== 'object') return String(r || '');
   const L = getCurrentLang();
-  const t = L === 'en' ? r.en : L === 'zh' ? r.zh : r.thai;
+  /* ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มี field เฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569) */
+  const t = L === 'zh' ? r.zh : L === 'th' ? r.thai : r.en;
   return String(t || r.thai || r.en || r.zh || '');
 }
 
 /* r418 · คำนำหน้า "ระวัง" ของ warning reasons ตามภาษา (โครงรอบตัวแปร ไม่ใช่เนื้อเหตุผล) */
 function reasonWarnPrefix(){
   const L = getCurrentLang();
-  return L === 'en' ? 'Caution: ' : L === 'zh' ? '注意 ' : 'ระวัง ';
+  return L === 'zh' ? '注意 ' : L === 'th' ? 'ระวัง ' : 'Caution: ';
 }
 
 function localizeAuspiciousReason(text){
   const lang = getCurrentLang();
-  const T3 = (th, en, zh) => lang === 'en' ? en : lang === 'zh' ? zh : th;
+  /* ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มีคลังคำเฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569) */
+  const T3 = (th, en, zh) => lang === 'zh' ? zh : lang === 'th' ? th : en;
   return localizeQimenReason(text)
     .replace(/月德/g, T3('ดาวคุณธรรมเดือน · 月德','Month Virtue Star · 月德','月德'))
     .replace(/天恩/g, T3('ดาวอุปถัมภ์ฟ้า · 天恩','Heaven Grace Star · 天恩','天恩'))
     .replace(/月恩/g, T3('ดาวอุปถัมภ์เดือน · 月恩','Month Grace Star · 月恩','月恩'))
     .replace(/天喜/g, T3('ดาวยินดีฟ้า · 天喜','Heaven Joy Star · 天喜','天喜'))
     .replace(/\b([1-9][白黑碧綠绿黃黄赤紫])(?=\s|$|[（(])/g, (m) => thZh(FLYING_STAR_TH, FLYING_STAR_EN, m))
-    .replace(/\b([1-9])星\b/g, (m, n) => `${(lang === 'en' ? FLYING_STAR_NUM_EN[n] : FLYING_STAR_NUM_TH[n]) || `${_dptx('dp.star.generic','ดาว')} ${n}`} · ${m}`)
-    .replace(/(^|[\s·(（])([1-9])星(?=\s|$|[)）])/g, (_, pre, n) => `${pre}${(lang === 'en' ? FLYING_STAR_NUM_EN[n] : FLYING_STAR_NUM_TH[n]) || `${_dptx('dp.star.generic','ดาว')} ${n}`} · ${n}星`)
+    .replace(/\b([1-9])星\b/g, (m, n) => `${(lang === 'th' ? FLYING_STAR_NUM_TH[n] : FLYING_STAR_NUM_EN[n]) || `${_dptx('dp.star.generic','ดาว')} ${n}`} · ${m}`)
+    .replace(/(^|[\s·(（])([1-9])星(?=\s|$|[)）])/g, (_, pre, n) => `${pre}${(lang === 'th' ? FLYING_STAR_NUM_TH[n] : FLYING_STAR_NUM_EN[n]) || `${_dptx('dp.star.generic','ดาว')} ${n}`} · ${n}星`)
     .replace(/(角宿|亢宿|氐宿|房宿|心宿|尾宿|箕宿|斗宿|牛宿|女宿|虛宿|虚宿|危宿|室宿|壁宿|奎宿|婁宿|娄宿|胃宿|昴宿|畢宿|毕宿|觜宿|參宿|参宿|井宿|鬼宿|柳宿|星宿|張宿|张宿|翼宿|軫宿|轸宿)(?=\s|$|[（(])/g, (m) => thZh(CONSTELLATION_TH, CONSTELLATION_EN, m))
     .replace(/(青龍|青龙|明堂|金匱|金匮|天德|玉堂|司命|天刑|朱雀|白虎|天牢|玄武|勾陳|勾陈)(?=\s|$|[（(])/g, (m) => thZh(SPIRIT_TH, SPIRIT_EN, m))
     .replace(/(建日|除日|滿日|满日|平日|定日|執日|执日|破日|危日|成日|收日|開日|开日|閉日|闭日)(?=\s|$|[（(])/g, (m) => thZh(OFFICER_TH, OFFICER_EN, m));
@@ -2146,7 +2152,8 @@ function cleanReasonText(text){
   /* หมายเหตุ: ข้อความ raw ส่วนใหญ่มาจาก backend เป็นภาษาไทยอยู่แล้ว (ประโยคประกอบสด)
      ฟังก์ชันนี้แค่แทนที่ "โทเคนคงที่" บางตัวเป็นคำอ่านภาษาคนตามภาษาที่เลือก — ไม่ใช่การแปลประโยคทั้งเส้น */
   const lang = getCurrentLang();
-  const T3 = (th, en, zh) => lang === 'en' ? en : lang === 'zh' ? zh : th;
+  /* ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มีคลังคำเฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569) */
+  const T3 = (th, en, zh) => lang === 'zh' ? zh : lang === 'th' ? th : en;
   return String(text || '')
     .replace(/^[+-]?\d+\s*/, '')
     .replace(/\b64卦\b/g, T3('หกสิบสี่ข่วย','64 Hexagrams','六十四卦'))
@@ -2307,8 +2314,9 @@ function enrichScienceSectionsForSlot(sections, t){
       const activityName = t.activity_name || dpTr(ACTIVITY_RULES[state.activity], 'name') || _dptx('dp.act.default','กิจกรรมที่เลือก');
       const activityHan = t.activity_han || ACTIVITY_RULES[state.activity]?.han || '';
       const _tsLang = getCurrentLang();
-      const signalText = signals.map(s => `${(_tsLang==='en'?s.en:_tsLang==='zh'?s.zh:s.th) || s.th} · ${s.han}`).join(' · ');
-      const meaning = (signals[0] && (_tsLang==='en'?signals[0].meaningEn:_tsLang==='zh'?signals[0].meaningZh:signals[0].meaning)) || _dptx('dp.tongshu.aux','เป็นแรงมงคลเสริม');
+      /* ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มีคลังคำเฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569) */
+      const signalText = signals.map(s => `${(_tsLang==='zh'?s.zh:_tsLang==='th'?s.th:s.en) || s.th} · ${s.han}`).join(' · ');
+      const meaning = (signals[0] && (_tsLang==='zh'?signals[0].meaningZh:_tsLang==='th'?signals[0].meaning:signals[0].meaningEn)) || _dptx('dp.tongshu.aux','เป็นแรงมงคลเสริม');
       addScienceItemOnce(sec, {
         text:`${_dptx('dp.tongshu.support','วันมงคลที่ใช้หนุน')}${activityName}${activityHan ? ` · ${activityHan}` : ''}: ${signalText} · ${meaning}`,
         delta:0, kind:'good', label:_dptx('dp.lvl.auspicious','มงคล'),
@@ -2402,7 +2410,8 @@ function renderScienceSections(sections){
   const cardHtml = (sec) => {
     const tone = scienceTone(sec);
     const status = tone === 'mixed' ? _dptx('dp.tone.mixed','มีทั้งหนุน/หัก') : tone === 'warn' ? _dptx('dp.tone.warn','ต้องระวัง') : tone === 'neutral' ? _dptx('dp.tone.neutral','กลาง') : _dptx('dp.tone.good','เป็นแรงหนุน');
-    const secName = escHtml((lang === 'en' && sec.en) ? sec.en : sec.th);
+    /* ภาษาใหม่ (vi/ja/ko/ru/es) ไม่มี field เฉพาะ — ถอยไป EN ไม่ใช่ TH เหมือน en (6 ก.ค. 2569) */
+    const secName = escHtml(((lang === 'en' || (lang !== 'th' && lang !== 'zh')) && sec.en) ? sec.en : sec.th);
     const items = sec.items.slice(0, 5).map(it => {
       const delta = it.label || (it.kind === 'offtopic' ? _dptx('dp.tone.offtopic','ภาพรวมวัน') : it.delta ? (it.delta > 0 ? `+${it.delta}` : `${it.delta}`) : (it.kind === 'warn' ? _dptx('dp.tone.warn_short','ระวัง') : _dptx('dp.tone.read','อ่าน')));
       return `<div class="science-item ${it.kind}"><span class="delta">${escHtml(delta)}</span><span class="txt">${escHtml(it.text)}</span></div>`;
@@ -2424,7 +2433,7 @@ function renderScienceSections(sections){
   SCIENCE_GROUP_DEFS.forEach(g => {
     const secs = sections.filter(s => g.modules.includes(s.key));
     if (!secs.length) return;
-    const label = lang === 'en' ? g.en : lang === 'zh' ? g.zh : g.th;
+    const label = lang === 'zh' ? g.zh : lang === 'th' ? g.th : g.en;
     chunks.push(`<div class="science-group-head">${g.icon} ${escHtml(label)}</div>`);
     secs.forEach(sec => { seen.add(sec.key); chunks.push(cardHtml(sec)); });
   });
@@ -2474,7 +2483,7 @@ function elementChipFromStem(stem){
   const el = STEM_ELEMENT[stem] || '';
   if (!el) return '';
   const lang = getCurrentLang();
-  const elLabel = lang === 'en' ? ELEMENT_EN[el] : lang === 'zh' ? ELEMENT_ZH[el] : ELEMENT_TH[el];
+  const elLabel = lang === 'zh' ? ELEMENT_ZH[el] : lang === 'th' ? ELEMENT_TH[el] : ELEMENT_EN[el];
   const prefix = _dptx('dp.element.prefix','ธาตุ');
   return `<span class="el-chip el-${el}" title="${prefix}${elLabel}"><span class="th">${prefix}${elLabel}</span><b>${ELEMENT_ZH[el]}</b></span>`;
 }
@@ -2497,7 +2506,7 @@ function renderCutSlotsZone(cutSlots){
     const dateThai = d ? formatThaiDate(d) : (s.date || '');
     const shichen = SHICHEN_NAME[s.earth_stem] || '';
     const reasons = (s.vetoes || []).map(v => {
-      const txt = (L === 'en' ? v.reasonEn : L === 'zh' ? v.reasonZh : v.reasonTh) || v.reasonTh || '';
+      const txt = (L === 'zh' ? v.reasonZh : L === 'th' ? v.reasonTh : v.reasonEn) || v.reasonTh || '';
       return `<div class="cut-reason">${escHtml(txt)}</div>`;
     }).join('');
     return `<div class="cut-slot-row">
@@ -2541,7 +2550,7 @@ function renderHexMeaningBox(d){
   const advice = yao.advice || '';
   /* หมายเหตุ: เนื้อหาตำรา (symbol/situation/lineMeaning/advice) มาจากฐานข้อมูลตำราภาษาไทยของ backend
      แปลเฉพาะป้ายหัวข้อ ไม่แปลเนื้อหาตำรา (ต้องรอ backend เพิ่มคอลัมน์ en/zh) */
-  const T0 = (th, en, zh) => { const L = getCurrentLang(); return L === 'en' ? en : L === 'zh' ? zh : th; };
+  const T0 = (th, en, zh) => { const L = getCurrentLang(); return L === 'zh' ? zh : L === 'th' ? th : en; };
   return `
     <div class="top">
       <div class="title">${T0('หกสิบสี่ข่วย','64 Hexagrams','六十四卦')} · <span class="zh">卦${escHtml(d.hex)} ${escHtml(d.name || '')}</span></div>
@@ -2571,8 +2580,8 @@ async function hydrateHexMeanings(root){
     } catch (e) {
       console.warn('[datepick] hydrateHexMeanings failed:', e);
       const L = getCurrentLang();
-      const title = L === 'en' ? '64 Hexagrams' : L === 'zh' ? '六十四卦' : 'หกสิบสี่ข่วย';
-      const label = L === 'en' ? 'Day meaning' : L === 'zh' ? '當日釋義' : 'ความหมายวัน';
+      const title = L === 'zh' ? '六十四卦' : L === 'th' ? 'หกสิบสี่ข่วย' : '64 Hexagrams';
+      const label = L === 'zh' ? '當日釋義' : L === 'th' ? 'ความหมายวัน' : 'Day meaning';
       const msg = _dptx('dp.hex.tap_to_read','กดดูตำราเพื่ออ่านรายละเอียดจากฐานข้อมูล');
       box.innerHTML = `<div class="top"><div class="title">${title} · <span class="zh">卦${escHtml(hex)}</span></div></div><div class="line"><span class="label">${label}:</span> ${msg}</div>`;
     }
@@ -2619,8 +2628,9 @@ function buildLayerReport(funnelStats, activeModules, hardModules, finalCount){
   });
 }
 
-/* 📜 tx helper · 15 พ.ค. */
+/* 📜 tx helper · 15 พ.ค. · overlay ภาษาใหม่ (vi/ja/ko/ru/es) — locale ดิบจาก hk_locale ตรง ๆ (ห้าม normalize เหลือ th/en/zh) · 6 ก.ค. 2569 */
 function _dptx(k, fb){
+  try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('datepick.html',k,localStorage.getItem('hk_locale')||'th');if(ov!=null)return ov;}catch(_){}
   const t = window.HK_I18N && window.HK_I18N[k];
   if (!t) return fb;
   const lang = document.documentElement.getAttribute('data-lang')||'th';
@@ -2952,30 +2962,31 @@ function agreementBadge(a){
   if (!a || !a.groups) return { chip:'', line:'' };
   const L = getCurrentLang();
   let cls, txt;
+  /* ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มีคลังคำเฉพาะ — ถอยไป EN ไม่ใช่ TH ทั้งบล็อก (6 ก.ค. 2569) */
   if (a.positive > 0 && a.negative > 0) {
     cls = 'ag-mix';
-    txt = L === 'en' ? `⚡ Mixed · ${a.positive} for / ${a.negative} against (${a.groups})`
-        : L === 'zh' ? `⚡ 分歧 · ${a.positive}挺／${a.negative}阻（共${a.groups}系）`
-        : `⚡ ขัดแย้ง · หนุน ${a.positive} / ค้าน ${a.negative} จาก ${a.groups} สาย`;
+    txt = L === 'zh' ? `⚡ 分歧 · ${a.positive}挺／${a.negative}阻（共${a.groups}系）`
+        : L === 'th' ? `⚡ ขัดแย้ง · หนุน ${a.positive} / ค้าน ${a.negative} จาก ${a.groups} สาย`
+        : `⚡ Mixed · ${a.positive} for / ${a.negative} against (${a.groups})`;
   } else if (a.negative > 0) {
     cls = 'ag-bad';
-    txt = L === 'en' ? `⚡ ${a.negative}/${a.groups} systems against`
-        : L === 'zh' ? `⚡ ${a.negative}/${a.groups} 系不利`
-        : `⚡ ค้าน ${a.negative}/${a.groups} สาย`;
+    txt = L === 'zh' ? `⚡ ${a.negative}/${a.groups} 系不利`
+        : L === 'th' ? `⚡ ค้าน ${a.negative}/${a.groups} สาย`
+        : `⚡ ${a.negative}/${a.groups} systems against`;
   } else {
     cls = 'ag-good';
-    txt = L === 'en' ? `🔗 ${a.positive}/${a.groups} systems agree`
-        : L === 'zh' ? `🔗 ${a.positive}/${a.groups} 系相合`
-        : `🔗 เห็นพ้อง ${a.positive}/${a.groups} สาย`;
+    txt = L === 'zh' ? `🔗 ${a.positive}/${a.groups} 系相合`
+        : L === 'th' ? `🔗 เห็นพ้อง ${a.positive}/${a.groups} สาย`
+        : `🔗 ${a.positive}/${a.groups} systems agree`;
   }
-  const chip = `<span class="ag-chip ${cls}" title="${L==='en'?'Cross-science agreement':L==='zh'?'跨學科相合度':'ความเห็นพ้องข้ามศาสตร์'}">${escHtml(txt)}</span>`;
+  const chip = `<span class="ag-chip ${cls}" title="${L==='zh'?'跨學科相合度':L==='th'?'ความเห็นพ้องข้ามศาสตร์':'Cross-science agreement'}">${escHtml(txt)}</span>`;
   const per = (a.perGroup || []).map(g => {
-    const name = (AG_GROUP_LABELS[g.key] || { th:g.key, en:g.key, zh:g.key })[L === 'en' ? 'en' : L === 'zh' ? 'zh' : 'th'];
+    const name = (AG_GROUP_LABELS[g.key] || { th:g.key, en:g.key, zh:g.key })[L === 'zh' ? 'zh' : L === 'th' ? 'th' : 'en'];
     const mark = g.up > g.down ? '✓' : g.down > g.up ? '✗' : '·';
-    const detail = L === 'en' ? `${g.up} for/${g.down} against` : L === 'zh' ? `${g.up}挺/${g.down}阻` : `หนุน ${g.up}/ค้าน ${g.down}`;
+    const detail = L === 'zh' ? `${g.up}挺/${g.down}阻` : L === 'th' ? `หนุน ${g.up}/ค้าน ${g.down}` : `${g.up} for/${g.down} against`;
     return `${mark} ${name} (${detail})`;
   }).join(' · ');
-  const kLabel = L === 'en' ? 'Cross-science' : L === 'zh' ? '跨科相合' : 'เห็นพ้องข้ามศาสตร์';
+  const kLabel = L === 'zh' ? '跨科相合' : L === 'th' ? 'เห็นพ้องข้ามศาสตร์' : 'Cross-science';
   const txtEsc = escHtml(txt), perEsc = escHtml(per);
   const line = per ? `<div class="r-line"><span class="k">${kLabel}</span><span class="v">${txtEsc} — ${perEsc}</span></div>` : '';
   return { chip, line };
@@ -3004,7 +3015,8 @@ function renderRealResults(items, allCut){
   c.innerHTML = items.map((t,i) => {
     // P1 fix: สร้างวันจาก t.date (string slice ที่ถูกแล้ว) — เลี่ยง Date object โดน timezone +7 ซ้ำ (วันเลื่อน+1 บน browser ไทย)
     const L0 = getCurrentLang();
-    const T0 = (th, en, zh) => L0 === 'en' ? en : L0 === 'zh' ? zh : th;
+    /* ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มีคลังคำเฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569) */
+    const T0 = (th, en, zh) => L0 === 'zh' ? zh : L0 === 'th' ? th : en;
     const _dp = (t.date||'').split('-').map(Number);
     const d = _dp[0] ? new Date(_dp[0], _dp[1]-1, _dp[2]) : new Date(t.datetime);
     const dateThai = formatThaiDate(d);
@@ -3014,17 +3026,18 @@ function renderRealResults(items, allCut){
     let hdChip = '';
     if (t.huangdao) {
       const hd = t.huangdao; const lang = getCurrentLang();
-      const txt = lang === 'en' ? `${hd.good ? 'Golden hour' : 'Dark hour'} · ${hd.deity_en} ${hd.deity_zh}`
-                : lang === 'zh' ? `${hd.deity_zh}${hd.path_zh}`
-                : `${hd.path_th} · ${hd.deity_zh}${hd.path_zh}`;
+      /* ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มีคลังคำเฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569) */
+      const txt = lang === 'zh' ? `${hd.deity_zh}${hd.path_zh}`
+                : lang === 'th' ? `${hd.path_th} · ${hd.deity_zh}${hd.path_zh}`
+                : `${hd.good ? 'Golden hour' : 'Dark hour'} · ${hd.deity_en} ${hd.deity_zh}`;
       hdChip = `<span class="hd-chip ${hd.good ? 'hd-good' : 'hd-bad'}" title="黃道吉時 · ฤกษ์ยามทอง">${hd.good ? '🌟' : '⚫'} ${escHtml(txt)}</span>`;
     }
     let rcLine = '';
     if (t.richong) {
       const rc = t.richong; const lang = getCurrentLang();
-      const zod = lang === 'en' ? rc.zodiac_en : lang === 'zh' ? rc.zodiac_zh : rc.zodiac_th;
-      const kLabel = lang === 'en' ? 'Day clash · 沖' : lang === 'zh' ? '日沖' : 'วันชง · 沖';
-      const aLabel = lang === 'en' ? 'avoid age' : lang === 'zh' ? '忌歲' : 'เลี่ยงอายุ';
+      const zod = lang === 'zh' ? rc.zodiac_zh : lang === 'th' ? rc.zodiac_th : rc.zodiac_en;
+      const kLabel = lang === 'zh' ? '日沖' : lang === 'th' ? 'วันชง · 沖' : 'Day clash · 沖';
+      const aLabel = lang === 'zh' ? '忌歲' : lang === 'th' ? 'เลี่ยงอายุ' : 'avoid age';
       const agesTxt = (rc.ages || []).slice(0, 6).join(', ');
       rcLine = `<div class="r-line"><span class="k">${kLabel}</span><span class="v">⚠ ${escHtml(zod)} ${escHtml(rc.zodiac_zh)} · ${aLabel} ${escHtml(agesTxt)}</span></div>`;
     }
@@ -3032,37 +3045,38 @@ function renderRealResults(items, allCut){
     let dgChip = '', dgLine = '';
     if (t.donggong) {
       const dg = t.donggong; const L = getCurrentLang();
-      const T = (th, en, zh) => L === 'en' ? en : L === 'zh' ? zh : th;
+      /* ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มีคลังคำเฉพาะ — ถอยไป EN ไม่ใช่ TH ทั้งบล็อก (6 ก.ค. 2569) */
+      const T = (th, en, zh) => L === 'zh' ? zh : L === 'th' ? th : en;
       const ic = dg.level === 'top' ? '🏆' : dg.level === 'good' ? '🟢' : dg.level === 'bad' ? '🔴' : '⚪';
       let inner;
       if (L === 'zh') inner = `董公 ${escHtml(dg.zh)}`;
-      else if (L === 'en') inner = `Dong Gong · ${escHtml(dg.en)}`;
-      else inner = `ตงกง <span class="dg-zh">董公</span> ${escHtml(dg.verdictTh)} · ${escHtml(dg.jianchuTh)} <span class="dg-zh">${escHtml(dg.jianchu)}</span>`;
+      else if (L === 'th') inner = `ตงกง <span class="dg-zh">董公</span> ${escHtml(dg.verdictTh)} · ${escHtml(dg.jianchuTh)} <span class="dg-zh">${escHtml(dg.jianchu)}</span>`;
+      else inner = `Dong Gong · ${escHtml(dg.en)}`;
       dgChip = `<span class="dg-chip dg-${escHtml(dg.level)}" title="董公擇日 · ฤกษ์ตงกง">${ic} ${inner}</span>`;
-      /* ไทยนำ + จีนตัวเล็กตามหลัง (TH) · จีนล้วน (ZH/EN) */
-      const fmt = (pairs, zhArr) => (L === 'zh' || L === 'en')
+      /* ไทยนำ + จีนตัวเล็กตามหลัง (TH) · จีนล้วน (ZH/EN/ภาษาใหม่ — ไม่มีคำแปลระดับนี้) */
+      const fmt = (pairs, zhArr) => (L !== 'th')
         ? escHtml((zhArr || []).join('、'))
         : (pairs || []).map(p => escHtml(p.th) + (p.th !== p.zh ? ` <span class="dg-zh">${escHtml(p.zh)}</span>` : '')).join('、');
       const parts = [];
-      if ((dg.yiPairs || []).length) parts.push((L === 'en' ? 'General suits: ' : L === 'zh' ? '本日宜（通用）：' : 'บริบททั่วไปเหมาะ: ') + fmt(dg.yiPairs, dg.yi));
-      if ((dg.jiPairs || []).length) parts.push((L === 'en' ? 'General avoids: ' : L === 'zh' ? '通用忌：' : 'บริบททั่วไปควรเลี่ยง: ') + fmt(dg.jiPairs, dg.ji));
-      if ((dg.shenshaPairs || []).length) parts.push((L === 'en' ? 'Stars: ' : L === 'zh' ? '神煞：' : 'ดาว ') + fmt(dg.shenshaPairs, dg.shensha));
-      if (dg.note) parts.push(escHtml((L === 'zh' || L === 'en') ? dg.note : (dg.noteTh || dg.note)));
+      if ((dg.yiPairs || []).length) parts.push((L === 'zh' ? '本日宜（通用）：' : L === 'th' ? 'บริบททั่วไปเหมาะ: ' : 'General suits: ') + fmt(dg.yiPairs, dg.yi));
+      if ((dg.jiPairs || []).length) parts.push((L === 'zh' ? '通用忌：' : L === 'th' ? 'บริบททั่วไปควรเลี่ยง: ' : 'General avoids: ') + fmt(dg.jiPairs, dg.ji));
+      if ((dg.shenshaPairs || []).length) parts.push((L === 'zh' ? '神煞：' : L === 'th' ? 'ดาว ' : 'Stars: ') + fmt(dg.shenshaPairs, dg.shensha));
+      if (dg.note) parts.push(escHtml((L !== 'th') ? dg.note : (dg.noteTh || dg.note)));
       /* คำอธิบายแบบ user เข้าใจ (กด ⓘ เปิด) */
-      const mean = L === 'en' ? dg.jcMeaning.en : L === 'zh' ? dg.jcMeaning.zh : dg.jcMeaning.th;
-      const head = L === 'en' ? `Today: ${escHtml(dg.en)}` : L === 'zh' ? `今日為「${escHtml(dg.jianchu)}日」` : `วันนี้เป็น “${escHtml(dg.jianchuTh)} ${escHtml(dg.jianchu)}”`;
+      const mean = L === 'zh' ? dg.jcMeaning.zh : L === 'th' ? dg.jcMeaning.th : dg.jcMeaning.en;
+      const head = L === 'zh' ? `今日為「${escHtml(dg.jianchu)}日」` : L === 'th' ? `วันนี้เป็น “${escHtml(dg.jianchuTh)} ${escHtml(dg.jianchu)}”` : `Today: ${escHtml(dg.en)}`;
       const dl = [];
       dl.push(`<b>${head}</b><br>${escHtml(mean)}`);
-      dl.push(`<b>${T('ภาพรวมตงกง','Dong Gong verdict','董公斷')}:</b> ${ic} ${escHtml(L === 'en' ? dg.en : L === 'zh' ? dg.zh : dg.verdictTh)} <span class="dg-src">(${T('คะแนนเสริมในชั้นปฏิทินจีนเมื่อเปิด 擇日','scoring overlay when Tong Shu is active','擇日啟用時作輔助加減分')})</span>`);
+      dl.push(`<b>${T('ภาพรวมตงกง','Dong Gong verdict','董公斷')}:</b> ${ic} ${escHtml(L === 'zh' ? dg.zh : L === 'th' ? dg.verdictTh : dg.en)} <span class="dg-src">(${T('คะแนนเสริมในชั้นปฏิทินจีนเมื่อเปิด 擇日','scoring overlay when Tong Shu is active','擇日啟用時作輔助加減分')})</span>`);
       if ((dg.yiPairs || []).length) dl.push(`<b>${T('วันนี้เหมาะ (งานทั่วไปของวัน)','Day generally suits','本日宜（通用）')}:</b> ${fmt(dg.yiPairs, dg.yi)} <span class="dg-src">(${T('บริบทรวมของวัน · ไม่ใช่หลักฐานเฉพาะกิจกรรมที่เลือก','daily context · not specific evidence for the chosen activity','全日通義·非所選事項之專證')})</span>`);
       if ((dg.jiPairs || []).length) dl.push(`<b>${T('บริบททั่วไปควรเลี่ยง','General avoids','通用忌')}:</b> ${fmt(dg.jiPairs, dg.ji)}`);
       if ((dg.shenshaPairs || []).length) dl.push(`<b>${T('ดาวประจำวัน','Day stars','神煞')}:</b> ${fmt(dg.shenshaPairs, dg.shensha)}`);
-      if (dg.note) dl.push(`<b>${T('หมายเหตุ','Note','註')}:</b> ${escHtml((L === 'zh' || L === 'en') ? dg.note : (dg.noteTh || dg.note))}`);
+      if (dg.note) dl.push(`<b>${T('หมายเหตุ','Note','註')}:</b> ${escHtml((L !== 'th') ? dg.note : (dg.noteTh || dg.note))}`);
       dl.push(`<b>👤 ${T('สำคัญสุด','Most important','最重要')}:</b> ${T('ฤกษ์ที่ดีต้อง “ไม่ชนวันเกิดคุณ” — ดูช่องวันชงประกอบเสมอ','A good date must not clash with your birth — always check the “clash” line.','吉日須不沖本命，請同看「日沖」。')}`);
       dl.push(`<span class="dg-src">※ ${T('จากตำราตงกง 董公選要覽 · เป็นความเชื่อโบราณ ใช้ประกอบการตัดสินใจ ไม่ใช่คำสั่ง','From the Dong Gong Almanac · traditional belief, for guidance only','出自《董公選要覽》· 傳統擇日，僅供參考')}</span>`);
       const dgDetail = `<div class="dg-detail">${dl.map(x => `<div class="dg-dl">${x}</div>`).join('')}</div>`;
       if (parts.length) {
-        const kLabelDg = L === 'en' ? 'Dong Gong · 董公' : L === 'zh' ? '董公擇日' : 'ฤกษ์ตงกง · 董公';
+        const kLabelDg = L === 'zh' ? '董公擇日' : L === 'th' ? 'ฤกษ์ตงกง · 董公' : 'Dong Gong · 董公';
         dgLine = `<div class="r-line"><span class="k">${kLabelDg} <button type="button" class="dg-info" title="${T('คำอธิบาย','Explain','說明')}" onclick="this.closest('.r-line').nextElementSibling.classList.toggle('show')">ⓘ</button></span><span class="v">${parts.join(' · ')}</span></div>${dgDetail}`;
       }
     }
@@ -3286,12 +3300,15 @@ function getCurrentLang(){ return localStorage.getItem('hk_locale')||localStorag
 function showHelp(key){
   const data = HELP_DATA[key]; if (!data) return;
   const lang = getCurrentLang();
-  const txt = data[lang]||data.th;
+  /* ภาษาใหม่ (vi/ja/ko/ru/es) ไม่มีคัมภีร์ what/how/src เฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569)
+     (เดิม data[lang] undefined สำหรับภาษาที่ไม่มี key จะ throw ตอน L[0] — กันไว้ด้วย || fallback) */
+  const txt = data[lang] || data.en || data.th;
   const old = document.querySelector('.hk-help-popup'); if (old) old.remove();
   const p = document.createElement('div'); p.className='hk-help-popup';
   p.onclick = (e) => { if (e.target===p) p.remove(); };
-  const L = {th:['📖 ศาสตร์นี้คืออะไร?','🔍 วิธีคัดกรอง','📜 ที่มา'],en:['📖 What is this?','🔍 Filtering','📜 Source'],zh:['📖 此學科','🔍 篩選方法','📜 來源']}[lang];
-  const dataName = lang === 'en' ? (data.nameEn || data.name) : lang === 'zh' ? (data.nameZh || data.name) : data.name;
+  const HELP_HEADS = {th:['📖 ศาสตร์นี้คืออะไร?','🔍 วิธีคัดกรอง','📜 ที่มา'],en:['📖 What is this?','🔍 Filtering','📜 Source'],zh:['📖 此學科','🔍 篩選方法','📜 來源']};
+  const L = HELP_HEADS[lang] || HELP_HEADS.en;
+  const dataName = lang === 'zh' ? (data.nameZh || data.name) : lang === 'th' ? data.name : (data.nameEn || data.name);
   p.innerHTML = `<div class="box">
     <button class="close" onclick="this.closest('.hk-help-popup').remove()">✕</button>
     <div class="han-big">${data.han}</div>
@@ -3815,18 +3832,19 @@ function _sunLon(date){
 }
 function dunFromDate(d){ const lon=_sunLon(d); return (lon>=90 && lon<270)?'yin':'yang'; }
 function formatThaiDate(d){
-  /* 17 พ.ค.: ตามภาษาที่เลือก · TH=พ.ศ. · EN=English · ZH=中文 */
+  /* 17 พ.ค.: ตามภาษาที่เลือก · TH=พ.ศ. · EN=English · ZH=中文
+     ภาษาใหม่ (vi/ja/ko/ru/es) ยังไม่มีรูปแบบวันที่เฉพาะ — ถอยไป EN ไม่ใช่ TH (6 ก.ค. 2569) */
   const lang = (typeof getLang==='function'?getLang():(localStorage.getItem('hk_locale')||localStorage.getItem('lang')||'th'));
   const dy = d.getDate(); const mo = d.getMonth(); const yr = d.getFullYear();
-  if (lang === 'en') {
-    const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return `${m[mo]} ${dy}, ${yr}`;
-  }
   if (lang === 'zh') {
     return `${yr}年${mo+1}月${dy}日`;
   }
-  const m = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  return `${dy} ${m[mo]} ${yr+543}`;
+  if (lang === 'th') {
+    const m = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    return `${dy} ${m[mo]} ${yr+543}`;
+  }
+  const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${m[mo]} ${dy}, ${yr}`;
 }
 // init
 init();
@@ -4126,18 +4144,29 @@ function applyI18N(lang){
   if (!window.HK_I18N) return;
   Object.entries(window.HK_I18N).forEach(function(entry){
     var key = entry[0], t = entry[1];
+    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('datepick.html',key,lang);}catch(_){}
+    var v=(ov!=null)?ov:t[lang];
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
-      if (t[lang] !== undefined) {
-        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
-        else el.textContent = t[lang];
+      if (v !== undefined) {
+        if (v.indexOf('<') >= 0) el.innerHTML = v;
+        else el.textContent = v;
       }
     });
     document.querySelectorAll('[data-i18n-ph="'+key+'"]').forEach(function(el){
-      if (t[lang] !== undefined) el.setAttribute('placeholder', t[lang].replace(/<[^>]+>/g,''));
+      if (v !== undefined) el.setAttribute('placeholder', v.replace(/<[^>]+>/g,''));
     });
   });
 }
 window.applyI18N = applyI18N;
+/* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — เรียกซ้ำหลัง loadOverlay สำเร็จ · th/en/zh ไม่เข้าทางนี้ (6 ก.ค. 2569)
+   นอกจาก data-i18n แล้ว วาดโซน JS ที่ render ตอน init ซ้ำด้วย (โซนคน/กิจกรรม/ป้ายช่วงวัน — presentation ล้วน อ่านจาก state เดิม) */
+window.__hkOverlayApply=function(l){
+  try{document.documentElement.setAttribute('lang',l);document.documentElement.setAttribute('data-lang',l);}catch(_){}
+  applyI18N(l);
+  try{if(typeof renderActivityProfiles==='function')renderActivityProfiles();}catch(_){}
+  try{if(typeof renderPeople==='function')renderPeople();}catch(_){}
+  try{if(typeof updateDateModeUI==='function')updateDateModeUI();}catch(_){}
+};
 (function(){
   var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
   var btns = sw.querySelectorAll('button');
@@ -4169,5 +4198,18 @@ window.applyI18N = applyI18N;
 <script src="/js/hk-user-menu.js?v=20" defer></script>
 <script src="/js/hk-luopan-nav.js?v=2" defer></script>
 <script src="/js/hk-hex-deep.js?v=1" defer></script>
+<script defer src="/js/hk-zhcn.js?v=1"></script>
+<script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script>
+/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
+(function(){try{
+var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
+if(!l||['th','en','zh'].indexOf(l)!==-1)return;
+var n=0;(function boot(){
+if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
+window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
+})();
+}catch(_){}})();
+</script>
 </body>
 </html>
