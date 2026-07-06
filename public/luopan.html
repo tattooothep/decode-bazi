@@ -1485,13 +1485,16 @@ function lpLang(){ return document.documentElement.dataset.lang || 'th'; }
 function pk(o, f){
   if(!o) return undefined;
   const L = lpLang();
-  if(L !== 'th'){ const v = o[f + '_' + L]; if(v != null) return v; }
+  if(L !== 'th'){ const v = o[f + '_' + L]; if(v != null) return v;
+    /* ภาษาใหม่ (vi/ja/ko/ru/es) ตก en ก่อน ไม่ตกไทย */
+    if(L !== 'zh'){ const ve = o[f + '_en']; if(ve != null) return ve; } }
   return o[f];
 }
 function pkt(o, base){
   if(!o) return undefined;
   const L = lpLang();
-  if(L !== 'th'){ const v = o[base + '_' + L]; if(v != null) return v; }
+  if(L !== 'th'){ const v = o[base + '_' + L]; if(v != null) return v;
+    if(L !== 'zh'){ const ve = o[base + '_en']; if(ve != null) return ve; } }
   return o[base + '_th'];
 }
 /* คลัง const ฝั่ง JS ที่เดิมเป็นไทยล้วน → ทำเป็น bank 3 ภาษา · getter อ่านตามภาษาปัจจุบัน (call site เดิมใช้ต่อได้ทุกจุด) */
@@ -1499,7 +1502,9 @@ function lpBank(banks){
   const o = {};
   Object.keys(banks.th).forEach(k => Object.defineProperty(o, k, {
     enumerable: true,
-    get(){ const L = lpLang(); return (banks[L] && banks[L][k] != null) ? banks[L][k] : banks.th[k]; }
+    get(){ const L = lpLang(); if(banks[L] && banks[L][k] != null) return banks[L][k];
+      if(L !== 'th' && L !== 'zh' && banks.en && banks.en[k] != null) return banks.en[k];
+      return banks.th[k]; }
   }));
   return o;
 }
@@ -3586,8 +3591,8 @@ function updateInspector(){
       const grpTxt = grp ? (lpLang()==='th' ? `${grp.name_th} ${grp.name_zh}` : (pkt(grp,'name')||grp.name_th)) : es.group;
       const general = `${pkt(es,'primary_reason')} · 象意: ${pkt(es,'symbolic_meaning')}`;
       const home = buildEarthHome(es, pkt(ES.score_design,'score_disclaimer')||'');
-      const esRead = lpLang()==='zh' ? '' : ' ' + (lpLang()==='en' ? (es.reading_en||es.thai_reading) : es.thai_reading);
-      const esWxYy = lpLang()==='zh' ? `${es.yin_yang}${es.wuxing}` : (lpLang()==='en' ? `${es.yin_yang_en||es.yin_yang_th} ${es.wuxing_en||es.wuxing_th}` : `${es.wuxing_th}${es.yin_yang_th}`);
+      const esRead = lpLang()==='zh' ? '' : ' ' + (lpLang()!=='th' ? (es.reading_en||es.thai_reading) : es.thai_reading);
+      const esWxYy = lpLang()==='zh' ? `${es.yin_yang}${es.wuxing}` : (lpLang()!=='th' ? `${es.yin_yang_en||es.yin_yang_th} ${es.wuxing_en||es.wuxing_th}` : `${es.wuxing_th}${es.yin_yang_th}`);
       row('cat1','地支', `<b>${pkt(es,'zodiac')}${esRead}</b> <span style="color:var(--fg-faint)">· ${r.m24.m} · ${grpTxt} · ${esWxYy}</span>`, es.primary_score, general, home, true);
     } else if(L.earthly_branches?.branches?.[r.m24.m]){
       const dz = L.earthly_branches.branches[r.m24.m];
@@ -3603,8 +3608,8 @@ function updateInspector(){
       const home = buildEarthHome(es, pkt(ES.score_design,'score_disclaimer')||'');
       const imgTxt = pkt(es,'image_symbol');
       const img = imgTxt ? ` · ${imgTxt}` : '';
-      const esRead = lpLang()==='zh' ? '' : ' ' + (lpLang()==='en' ? (es.reading_en||es.thai_reading) : es.thai_reading);
-      const esWxYy = lpLang()==='zh' ? `${es.yin_yang}${es.wuxing}` : (lpLang()==='en' ? `${es.yin_yang_en||es.yin_yang_th} ${es.wuxing_en||es.wuxing_th}` : `${es.wuxing_th}${es.yin_yang_th}`);
+      const esRead = lpLang()==='zh' ? '' : ' ' + (lpLang()!=='th' ? (es.reading_en||es.thai_reading) : es.thai_reading);
+      const esWxYy = lpLang()==='zh' ? `${es.yin_yang}${es.wuxing}` : (lpLang()!=='th' ? `${es.yin_yang_en||es.yin_yang_th} ${es.wuxing_en||es.wuxing_th}` : `${es.wuxing_th}${es.yin_yang_th}`);
       row('cat1','天干', `<b>${r.m24.m}${esRead}</b> <span style="color:var(--fg-faint)">· ${esWxYy}${img}</span>`, es.primary_score, general, home, true);
     } else if(L.heavenly_stems?.stems?.[r.m24.m]){
       const tg = L.heavenly_stems.stems[r.m24.m];
@@ -3706,7 +3711,7 @@ function updateInspector(){
     const f=r.d120;
     const st=f.status||{};
     const L120=lpLang();
-    const stTxt = L120==='zh' ? (st.zh||'') : L120==='en' ? `${st.en||st.th||''}${st.zh?' ('+st.zh+')':''}` : `${st.th||''}${st.zh?' ('+st.zh+')':''}`;
+    const stTxt = L120==='zh' ? (st.zh||'') : L120!=='th' ? `${st.en||st.th||''}${st.zh?' ('+st.zh+')':''}` : `${st.th||''}${st.zh?' ('+st.zh+')':''}`;
     const head=`<b>分金 ${f.ganzhi}</b> <span style="color:var(--fg-faint)">· ${stTxt} · 納音${f.nayin||''} · ${T('cg.mtnShort')}${f.mountain||''} · ${f.usable?'✅ '+T('fj.usable'):'⛔ '+T('insp.bad')}</span>`;
     const home=f.usable ? T('fj.goodLine') : T('fj.avoidLine');
     row('cat3','120分金', head, f.score, pkt(f,'interp')||'', home);
