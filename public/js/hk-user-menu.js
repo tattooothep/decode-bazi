@@ -127,6 +127,7 @@
     { value:'vi', label:'VI' + B, title:'Tiếng Việt (β · đang được thẩm định)' },
     { value:'ja', label:'JA' + B, title:'日本語 (β · 検証中)' },
     { value:'ru', label:'RU' + B, title:'Русский (β · на проверке)' },
+    { value:'ko', label:'KO' + B, title:'한국어 (β · 검증 중)' },
     { value:'es', label:'ES' + B, title:'Español (β · en revisión)' },
   ];
   function langList() {
