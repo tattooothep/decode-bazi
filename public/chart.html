@@ -2610,6 +2610,7 @@ window.HK_I18N = {
 };
 /* 📜 tx helper · prep for JS-strings i18n pass (5 ก.ค. 2026) */
 window._chtx = function(k, fb){
+  try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('chart.html',k,document.documentElement.getAttribute('data-lang')||'th');if(ov!=null)return ov;}catch(_){}
   var t = window.HK_I18N && window.HK_I18N[k];
   if(!t) return fb;
   var lang = document.documentElement.getAttribute('data-lang') || 'th';
@@ -2619,18 +2620,21 @@ function applyI18N(lang){
   if (!window.HK_I18N) return;
   Object.entries(window.HK_I18N).forEach(function(entry){
     var key = entry[0], t = entry[1];
+    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('chart.html',key,lang);}catch(_){}
+    var v=(ov!=null)?ov:t[lang];
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
-      if (t[lang] !== undefined) {
-        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
-        else el.textContent = t[lang];
+      if (v !== undefined) {
+        if (v.indexOf('<') >= 0) el.innerHTML = v;
+        else el.textContent = v;
       }
     });
     document.querySelectorAll('[data-i18n-ph="'+key+'"]').forEach(function(el){
-      if (t[lang] !== undefined) el.setAttribute('placeholder', t[lang].replace(/<[^>]+>/g,''));
+      if (v !== undefined) el.setAttribute('placeholder', v.replace(/<[^>]+>/g,''));
     });
   });
 }
 window.applyI18N = applyI18N;
+window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('lang',l);document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
 
 /* Help tooltips · render <span class="hk-help" data-help="key"> · 3-lang */
 function applyHelpTooltips(lang){
@@ -2766,7 +2770,7 @@ window.addEventListener('resize', function(){
   };
 
   function curLang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
-  function tx(key){ var t = window.HK_I18N && window.HK_I18N[key]; return t ? (t[curLang()]||t.th||'') : ''; }
+  function tx(key){ try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('chart.html',key,curLang());if(ov!=null)return ov;}catch(_){} var t = window.HK_I18N && window.HK_I18N[key]; return t ? (t[curLang()]||t.th||'') : ''; }
   function getProfileId(){ try { return localStorage.getItem('hk_profile_id') || ''; } catch(e){ return ''; } }
 
   /* render history list */
@@ -4427,6 +4431,7 @@ window.addEventListener('resize', function(){
     /* local tx helper · scope-safe · 15 พ.ค. (fix tx not defined บน mobile) */
     const _ltx = (k, fb) => {
       try {
+        try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('chart.html',k,document.documentElement.getAttribute('data-lang')||'th');if(ov!=null)return ov;}catch(_e){}
         const t = window.HK_I18N && window.HK_I18N[k];
         if (!t) return fb;
         const lang = document.documentElement.getAttribute('data-lang') || 'th';
@@ -4868,7 +4873,7 @@ window.addEventListener('resize', function(){
          lng:'經度', gmt:'時區', corr:'真太陽時差', eot:'均時差', tstNote:'⏱ 依出生城市自動計算 · 真太陽時(出生月節氣見載入後 §13)',
          view:'立即查看', save:'儲存 + 查看', errDate:'請填寫完整出生日期', errTime:'請輸入時間或勾選「不知時間」', saving:'儲存中…', loading:'載入中…' }
   };
-  function t(k){ return (L[lang()] || L.th)[k] || (L.th[k] || k); }
+  function t(k){ try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('chart.html',k,lang());if(ov!=null)return ov;}catch(_){} return (L[lang()] || L.th)[k] || (L.th[k] || k); }
 
   /* TST shift · client-side approx (longitude + EoT) · เหมือน hk-settings-drawer */
   function computeTST(lng, dateObj){
@@ -5131,5 +5136,17 @@ window.addEventListener('resize', function(){
 })();
 </script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
+<script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script>
+/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
+(function(){try{
+var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
+if(!l||['th','en','zh'].indexOf(l)!==-1)return;
+var n=0;(function boot(){
+if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
+window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
+})();
+}catch(_){}})();
+</script>
 </body>
 </html>

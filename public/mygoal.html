@@ -657,15 +657,18 @@ function applyI18N(lang){
   if (!window.HK_I18N) return;
   Object.entries(window.HK_I18N).forEach(function(entry){
     var key = entry[0], t = entry[1];
+    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('mygoal.html',key,lang);}catch(_){}
+    var v=(ov!=null)?ov:t[lang];
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
-      if (t[lang] !== undefined) {
-        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
-        else el.textContent = t[lang];
+      if (v !== undefined) {
+        if (v.indexOf('<') >= 0) el.innerHTML = v;
+        else el.textContent = v;
       }
     });
   });
 }
 window.applyI18N = applyI18N;
+window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
 (function(){
   var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
   var btns = sw.querySelectorAll('button');
@@ -684,5 +687,17 @@ window.applyI18N = applyI18N;
 <script src="/js/hk-settings-drawer.js?v=10" defer></script>
 <script src="/js/hk-user-menu.js?v=20" defer></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
+<script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script>
+/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
+(function(){try{
+var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
+if(!l||['th','en','zh'].indexOf(l)!==-1)return;
+var n=0;(function boot(){
+if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
+window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
+})();
+}catch(_){}})();
+</script>
 </body>
 </html>

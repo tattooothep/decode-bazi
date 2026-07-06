@@ -2145,14 +2145,16 @@ function applyI18N(lang){
   if (!window.HK_I18N) return;
   Object.entries(window.HK_I18N).forEach(function(entry){
     var key = entry[0], t = entry[1];
+    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('today.html',key,lang);}catch(_){}
+    var v=(ov!=null)?ov:t[lang];
     document.querySelectorAll('[data-i18n="'+key+'"]').forEach(function(el){
-      if (t[lang] !== undefined) {
-        if (t[lang].indexOf('<') >= 0) el.innerHTML = t[lang];
-        else el.textContent = t[lang];
+      if (v !== undefined) {
+        if (v.indexOf('<') >= 0) el.innerHTML = v;
+        else el.textContent = v;
       }
     });
     document.querySelectorAll('[data-i18n-ph="'+key+'"]').forEach(function(el){
-      if (t[lang] !== undefined) el.setAttribute('placeholder', t[lang].replace(/<[^>]+>/g,''));
+      if (v !== undefined) el.setAttribute('placeholder', v.replace(/<[^>]+>/g,''));
     });
   });
   /* refresh สัตว์มงคล label เมื่อเปลี่ยนภาษา */
@@ -2180,6 +2182,7 @@ function applyI18N(lang){
 	  if (window.__renderUserSummary) window.__renderUserSummary(lang);
 	}
 window.applyI18N = applyI18N;
+window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
 (function(){
   var sw = document.getElementById('hk-lang-switch'); if (!sw) return;
   var btns = sw.querySelectorAll('button');
@@ -2668,7 +2671,7 @@ window.applyI18N = applyI18N;
         const firstSec = document.querySelector('.sec');
         if (firstSec?.parentNode) firstSec.parentNode.insertBefore(hexBox, firstSec.nextSibling);
       }
-      const _tx = (k,fb) => (window.HK_I18N && window.HK_I18N[k] && window.HK_I18N[k][document.documentElement.getAttribute('data-lang')||'th']) || fb;
+      const _tx = (k,fb) => { try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('today.html',k,document.documentElement.getAttribute('data-lang')||'th');if(ov!=null)return ov;}catch(_){} return (window.HK_I18N && window.HK_I18N[k] && window.HK_I18N[k][document.documentElement.getAttribute('data-lang')||'th']) || fb; };
       hexBox.innerHTML = `
         <div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;">${_tx('t.hex.h2','易經 · 64 卦ของวันนี้')}</div>
         <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
@@ -2773,7 +2776,7 @@ window.applyI18N = applyI18N;
       };
       const dayAdvice = DAY_ADVICE_TX[lv.key][L] || DAY_ADVICE_TX[lv.key].th;
       const lvTxt = lv[L] || lv.th;
-      const T = (k) => pick3(window.HK_I18N && window.HK_I18N[k]);
+      const T = (k) => { try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('today.html',k,lang);if(ov!=null)return ov;}catch(_){} return pick3(window.HK_I18N && window.HK_I18N[k]); };
       setPracticalBox('t-pillar-practical', [
         [T('t.pr.focus'), `${lvTxt} ${score}/100 · ${dayAdvice.focus}`],
         [T('t.pr.do'), yiTop ? `${dayAdvice.do} · ${L==='en'?'helped by':L==='zh'?'吉時：':'ฤกษ์ช่วย:'} ${yiTop}` : dayAdvice.do],
@@ -3719,5 +3722,17 @@ window.applyI18N = applyI18N;
 <script src="/js/hk-user-menu.js?v=20" defer></script>
 <script src="/js/hk-method-link.js?v=20260518a" defer></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
+<script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script>
+/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
+(function(){try{
+var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
+if(!l||['th','en','zh'].indexOf(l)!==-1)return;
+var n=0;(function boot(){
+if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
+window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
+})();
+}catch(_){}})();
+</script>
 </body>
 </html>

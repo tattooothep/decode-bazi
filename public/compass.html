@@ -245,9 +245,18 @@ const I18N = {
         err_need_name:'請先輸入房屋名稱', ok_saved:'✓ 已保存', confirm_delete:'刪除房屋「{name}」？', ok_deleted:'✓ 已刪除' },
 };
 let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
+
+/* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
+function _cptx(k){
+  try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('compass.html',k,LANG);if(ov!=null)return ov;}catch(_){}
+  var d=I18N[LANG]||I18N.th; var v=d[k]; return v!=null?v:I18N.th[k];
+}
+function _cpbag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_cptx(k);});return o;}
+window.__hkOverlayApply=function(l){LANG=l;applyLang();};
+
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);localStorage.setItem('theme',t);localStorage.setItem('hk-theme',t);}
 function applyLang(){
-  const t = I18N[LANG] || I18N.th;
+  const t = _cpbag();
   document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
   document.title = '羅盤 ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
   ['page-title','lbl-need-login','lbl-need-login-p','lbl-login-btn','lbl-houses','lbl-add','lbl-name','lbl-face','lbl-mountain','lbl-dir','lbl-primary','lbl-save','lbl-empty','lbl-qr','lbl-qr-p'].forEach(id=>{
@@ -297,7 +306,7 @@ async function loadHouses(){
 function renderHouses(houses){
   const c = document.getElementById('houses-list');
   if (!houses.length) {
-    const t = I18N[LANG]||I18N.th;
+    const t = _cpbag();
     c.innerHTML = `<div class="empty"><div class="ic">🏠</div><p>${t.empty}</p></div>`;
     return;
   }
@@ -318,7 +327,7 @@ function renderHouses(houses){
 }
 
 async function saveHouse(){
-  const t = I18N[LANG]||I18N.th;
+  const t = _cpbag();
   const name = document.getElementById('h-name').value.trim();
   if (!name) { showAlert('err', t.err_need_name); return; }
   const payload = {
@@ -345,7 +354,7 @@ async function saveHouse(){
 }
 
 async function delHouse(id, name){
-  const t = I18N[LANG]||I18N.th;
+  const t = _cpbag();
   if (!confirm(t.confirm_delete.replace('{name}', name))) return;
   try {
     const r = await fetch('/api/houses/'+id, { method:'DELETE', credentials:'include' });
@@ -384,5 +393,17 @@ loadHouses();
 </script>
 <script src="/js/hk-luopan-nav.js?v=2" defer></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
+<script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script>
+/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
+(function(){try{
+var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
+if(!l||['th','en','zh'].indexOf(l)!==-1)return;
+var n=0;(function boot(){
+if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
+window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
+})();
+}catch(_){}})();
+</script>
 </body>
 </html>

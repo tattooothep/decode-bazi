@@ -1670,6 +1670,14 @@ const I18N = {
 
 let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || 'th';
 
+/* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json เฉพาะคีย์ค่า string (คีย์ array ข้าม — overlay export เก็บเป็น string จะพัง .map/.forEach) · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
+function _mttx(k){
+  var d=I18N[LANG]||I18N.th; var v=(d&&d[k]!=null)?d[k]:I18N.th[k];
+  if(typeof v==='string'){try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('methodology.html',k,LANG);if(ov!=null)return ov;}catch(_){}}
+  return v;
+}
+function _mtbag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_mttx(k);});return o;}
+
 function pickStep(s, key){ return s[key+'_'+LANG] || s[key+'_th']; }
 
 function renderSteps(){
@@ -1692,7 +1700,7 @@ function renderSteps(){
 /* 25 พ.ค. · 11 หมวดเสริม (ขั้นสูง用神 + ฮวงจุ้ย + คัมภีร์ปฏิกิริยา) เข้าสารบัญ */
 /* moved into I18N */
 function renderTOC(){
-  const t = I18N[LANG] || I18N.th;
+  const t = _mtbag();
   const items = I18N.steps.map(s => `<li><a href="#step-${s.n}">${s.icon} ${pickStep(s,'title')}</a></li>`).join('');
   const extra = I18N.tocExtra.map(e => `<li><a href="#${e.id}">${e.icon} ${e[LANG]||e.th}</a></li>`).join('');
   document.getElementById('toc').innerHTML = `<h3>📑 ${t.tocLabel}</h3><ol>${items}${extra}</ol>`;
@@ -1819,7 +1827,7 @@ function renderFengshui(){
 }
 
 function renderAll(){
-  const t = I18N[LANG] || I18N.th;
+  const t = _mtbag();
   document.documentElement.lang = LANG==='zh'?'zh-Hant':LANG;
   document.title = t.crest+' '+t.title.replace(/<[^>]+>/g,'')+' · hourkey';
 
@@ -1905,6 +1913,7 @@ function applyTheme(t){
 ['th','en','zh'].forEach(l => {
   document.getElementById('lang-'+l).onclick = () => { LANG=l; localStorage.setItem('hk_locale',l); renderAll(); };
 });
+window.__hkOverlayApply=function(l){ LANG=l; renderAll(); };
 document.getElementById('theme-tog').onclick = () => {
   const cur = document.documentElement.getAttribute('data-theme') || 'dark';
   applyTheme(cur==='dark'?'light':'dark');
@@ -1914,5 +1923,17 @@ applyTheme(localStorage.getItem('theme') || localStorage.getItem('hk-theme') || 
 renderAll();
 </script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
+<script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script>
+/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
+(function(){try{
+var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
+if(!l||['th','en','zh'].indexOf(l)!==-1)return;
+var n=0;(function boot(){
+if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
+window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
+})();
+}catch(_){}})();
+</script>
 </body>
 </html>

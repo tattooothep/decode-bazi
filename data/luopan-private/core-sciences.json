@@ -50,16 +50,182 @@
     "currentReadingTemplate": "เข็มชี้ {currentDegree}° อยู่ในวัง {currentPalace} · กว้า {currentTrigram} · ธาตุ {currentElement}",
     "arrangementType": "後天",
     "arrangement": [
-      { "direction": "N", "degreeRange": "337.5°–22.5°", "trigram": "坎", "trigramNumber": 1, "symbol": "☵", "element": "水", "elementThai": "น้ำ", "familyRole": "ลูกชายคนกลาง", "lifeArea": "อาชีพ · เส้นทางชีวิต", "bodyPart": "ไต · หู · ระบบน้ำ", "quality": "ไหลเวียน · ปรับตัว · ลึก" },
-      { "direction": "NE", "degreeRange": "22.5°–67.5°", "trigram": "艮", "trigramNumber": 8, "symbol": "☶", "element": "土", "elementThai": "ดิน", "familyRole": "ลูกชายคนเล็ก", "lifeArea": "ความรู้ · การศึกษา · ภูเขา", "bodyPart": "มือ · หลัง · กระดูก", "quality": "นิ่ง · หยุด · สะสม" },
-      { "direction": "E", "degreeRange": "67.5°–112.5°", "trigram": "震", "trigramNumber": 3, "symbol": "☳", "element": "木", "elementThai": "ไม้", "familyRole": "ลูกชายคนโต", "lifeArea": "ครอบครัว · บรรพบุรุษ · การเริ่มต้น", "bodyPart": "เท้า · ตับ · ระบบเคลื่อนไหว", "quality": "เคลื่อนไหว · เริ่มต้น · ตื่นตัว" },
-      { "direction": "SE", "degreeRange": "112.5°–157.5°", "trigram": "巽", "trigramNumber": 4, "symbol": "☴", "element": "木", "elementThai": "ไม้", "familyRole": "ลูกสาวคนโต", "lifeArea": "ทรัพย์ · การเติบโต · เครือข่าย", "bodyPart": "สะโพก · เส้นเอ็น · ลม", "quality": "แทรกซึม · เติบโต · อ่อนโยน" },
-      { "direction": "S", "degreeRange": "157.5°–202.5°", "trigram": "離", "trigramNumber": 9, "symbol": "☲", "element": "火", "elementThai": "ไฟ", "familyRole": "ลูกสาวคนกลาง", "lifeArea": "ชื่อเสียง · การมองเห็น · ภาพลักษณ์", "bodyPart": "ตา · หัวใจ · เลือด", "quality": "สว่าง · เปิดเผย · โดดเด่น" },
-      { "direction": "SW", "degreeRange": "202.5°–247.5°", "trigram": "坤", "trigramNumber": 2, "symbol": "☷", "element": "土", "elementThai": "ดิน", "familyRole": "แม่", "lifeArea": "คู่ครอง · ความสัมพันธ์ · การรองรับ", "bodyPart": "ท้อง · ม้าม · ระบบย่อย", "quality": "รองรับ · อ่อนโยน · หล่อเลี้ยง" },
-      { "direction": "W", "degreeRange": "247.5°–292.5°", "trigram": "兌", "trigramNumber": 7, "symbol": "☱", "element": "金", "elementThai": "ทอง", "familyRole": "ลูกสาวคนเล็ก", "lifeArea": "ลูกหลาน · ความสุข · การสื่อสาร", "bodyPart": "ปาก · ปอด · ฟัน", "quality": "สื่อสาร · เบิกบาน · แลกเปลี่ยน" },
-      { "direction": "NW", "degreeRange": "292.5°–337.5°", "trigram": "乾", "trigramNumber": 6, "symbol": "☰", "element": "金", "elementThai": "ทอง", "familyRole": "พ่อ", "lifeArea": "ผู้ใหญ่ · ผู้นำ · ผู้สนับสนุน", "bodyPart": "ศีรษะ · ปอด · กระดูกใหญ่", "quality": "แข็งแรง · นำทาง · อำนาจ" }
+      {
+        "direction": "N",
+        "degreeRange": "337.5°–22.5°",
+        "trigram": "坎",
+        "trigramNumber": 1,
+        "symbol": "☵",
+        "element": "水",
+        "elementThai": "น้ำ",
+        "familyRole": "ลูกชายคนกลาง",
+        "lifeArea": "อาชีพ · เส้นทางชีวิต",
+        "bodyPart": "ไต · หู · ระบบน้ำ",
+        "quality": "ไหลเวียน · ปรับตัว · ลึก",
+        "familyRole_en": "Middle son",
+        "familyRole_zh": "中男",
+        "lifeArea_en": "Career · life path",
+        "lifeArea_zh": "事業 · 人生之道",
+        "bodyPart_en": "Kidneys · ears · water systems",
+        "bodyPart_zh": "腎 · 耳 · 水液",
+        "quality_en": "Flowing · adaptable · deep",
+        "quality_zh": "流通 · 應變 · 深邃"
+      },
+      {
+        "direction": "NE",
+        "degreeRange": "22.5°–67.5°",
+        "trigram": "艮",
+        "trigramNumber": 8,
+        "symbol": "☶",
+        "element": "土",
+        "elementThai": "ดิน",
+        "familyRole": "ลูกชายคนเล็ก",
+        "lifeArea": "ความรู้ · การศึกษา · ภูเขา",
+        "bodyPart": "มือ · หลัง · กระดูก",
+        "quality": "นิ่ง · หยุด · สะสม",
+        "familyRole_en": "Youngest son",
+        "familyRole_zh": "少男",
+        "lifeArea_en": "Knowledge · education · mountain",
+        "lifeArea_zh": "知識 · 學業 · 山",
+        "bodyPart_en": "Hands · back · bones",
+        "bodyPart_zh": "手 · 背 · 骨",
+        "quality_en": "Still · stopping · accumulating",
+        "quality_zh": "靜 · 止 · 積蓄"
+      },
+      {
+        "direction": "E",
+        "degreeRange": "67.5°–112.5°",
+        "trigram": "震",
+        "trigramNumber": 3,
+        "symbol": "☳",
+        "element": "木",
+        "elementThai": "ไม้",
+        "familyRole": "ลูกชายคนโต",
+        "lifeArea": "ครอบครัว · บรรพบุรุษ · การเริ่มต้น",
+        "bodyPart": "เท้า · ตับ · ระบบเคลื่อนไหว",
+        "quality": "เคลื่อนไหว · เริ่มต้น · ตื่นตัว",
+        "familyRole_en": "Eldest son",
+        "familyRole_zh": "長男",
+        "lifeArea_en": "Family · ancestors · beginnings",
+        "lifeArea_zh": "家庭 · 祖先 · 開創",
+        "bodyPart_en": "Feet · liver · motor system",
+        "bodyPart_zh": "足 · 肝 · 行動之機",
+        "quality_en": "Moving · initiating · awakening",
+        "quality_zh": "動 · 始 · 奮起"
+      },
+      {
+        "direction": "SE",
+        "degreeRange": "112.5°–157.5°",
+        "trigram": "巽",
+        "trigramNumber": 4,
+        "symbol": "☴",
+        "element": "木",
+        "elementThai": "ไม้",
+        "familyRole": "ลูกสาวคนโต",
+        "lifeArea": "ทรัพย์ · การเติบโต · เครือข่าย",
+        "bodyPart": "สะโพก · เส้นเอ็น · ลม",
+        "quality": "แทรกซึม · เติบโต · อ่อนโยน",
+        "familyRole_en": "Eldest daughter",
+        "familyRole_zh": "長女",
+        "lifeArea_en": "Wealth · growth · networks",
+        "lifeArea_zh": "財帛 · 生長 · 人脈",
+        "bodyPart_en": "Hips · tendons · wind (breath)",
+        "bodyPart_zh": "股 · 筋 · 風氣",
+        "quality_en": "Permeating · growing · gentle",
+        "quality_zh": "入 · 生長 · 柔順"
+      },
+      {
+        "direction": "S",
+        "degreeRange": "157.5°–202.5°",
+        "trigram": "離",
+        "trigramNumber": 9,
+        "symbol": "☲",
+        "element": "火",
+        "elementThai": "ไฟ",
+        "familyRole": "ลูกสาวคนกลาง",
+        "lifeArea": "ชื่อเสียง · การมองเห็น · ภาพลักษณ์",
+        "bodyPart": "ตา · หัวใจ · เลือด",
+        "quality": "สว่าง · เปิดเผย · โดดเด่น",
+        "familyRole_en": "Middle daughter",
+        "familyRole_zh": "中女",
+        "lifeArea_en": "Fame · visibility · image",
+        "lifeArea_zh": "聲名 · 顯望 · 形象",
+        "bodyPart_en": "Eyes · heart · blood",
+        "bodyPart_zh": "目 · 心 · 血",
+        "quality_en": "Bright · open · prominent",
+        "quality_zh": "明 · 顯 · 耀"
+      },
+      {
+        "direction": "SW",
+        "degreeRange": "202.5°–247.5°",
+        "trigram": "坤",
+        "trigramNumber": 2,
+        "symbol": "☷",
+        "element": "土",
+        "elementThai": "ดิน",
+        "familyRole": "แม่",
+        "lifeArea": "คู่ครอง · ความสัมพันธ์ · การรองรับ",
+        "bodyPart": "ท้อง · ม้าม · ระบบย่อย",
+        "quality": "รองรับ · อ่อนโยน · หล่อเลี้ยง",
+        "familyRole_en": "Mother",
+        "familyRole_zh": "母",
+        "lifeArea_en": "Spouse · relationships · support",
+        "lifeArea_zh": "婚配 · 情緣 · 承載",
+        "bodyPart_en": "Abdomen · spleen · digestive system",
+        "bodyPart_zh": "腹 · 脾 · 消化",
+        "quality_en": "Supporting · gentle · nourishing",
+        "quality_zh": "承載 · 柔順 · 滋養"
+      },
+      {
+        "direction": "W",
+        "degreeRange": "247.5°–292.5°",
+        "trigram": "兌",
+        "trigramNumber": 7,
+        "symbol": "☱",
+        "element": "金",
+        "elementThai": "ทอง",
+        "familyRole": "ลูกสาวคนเล็ก",
+        "lifeArea": "ลูกหลาน · ความสุข · การสื่อสาร",
+        "bodyPart": "ปาก · ปอด · ฟัน",
+        "quality": "สื่อสาร · เบิกบาน · แลกเปลี่ยน",
+        "familyRole_en": "Youngest daughter",
+        "familyRole_zh": "少女",
+        "lifeArea_en": "Descendants · joy · communication",
+        "lifeArea_zh": "子孫 · 喜悅 · 言語",
+        "bodyPart_en": "Mouth · lungs · teeth",
+        "bodyPart_zh": "口 · 肺 · 齒",
+        "quality_en": "Communicative · joyful · exchanging",
+        "quality_zh": "言說 · 悅 · 交流"
+      },
+      {
+        "direction": "NW",
+        "degreeRange": "292.5°–337.5°",
+        "trigram": "乾",
+        "trigramNumber": 6,
+        "symbol": "☰",
+        "element": "金",
+        "elementThai": "ทอง",
+        "familyRole": "พ่อ",
+        "lifeArea": "ผู้ใหญ่ · ผู้นำ · ผู้สนับสนุน",
+        "bodyPart": "ศีรษะ · ปอด · กระดูกใหญ่",
+        "quality": "แข็งแรง · นำทาง · อำนาจ",
+        "familyRole_en": "Father",
+        "familyRole_zh": "父",
+        "lifeArea_en": "Elders · leaders · benefactors",
+        "lifeArea_zh": "長輩 · 領袖 · 貴人",
+        "bodyPart_en": "Head · lungs · major bones",
+        "bodyPart_zh": "首 · 肺 · 大骨",
+        "quality_en": "Strong · guiding · authoritative",
+        "quality_zh": "剛健 · 引領 · 威權"
+      }
     ],
-    "rendering": { "ringLabel": "後天八卦", "showOnLuopan": true, "colorByElement": true, "tooltipPlacement": "hover_or_click", "recommendedLayer": "core" },
+    "rendering": {
+      "ringLabel": "後天八卦",
+      "showOnLuopan": true,
+      "colorByElement": true,
+      "tooltipPlacement": "hover_or_click",
+      "recommendedLayer": "core"
+    },
     "warnings": [
       "อย่าสรุปดีร้ายของทิศจาก後天八卦อย่างเดียว ต้องดูดาวเหินและบริบทบ้านร่วมด้วย",
       "ควรแยกองศาหน้าบ้านจริงออกจากองศาการหมุนแปลนบนจอ"
@@ -113,22 +279,168 @@
     "currentReadingTemplate": "เข็มชี้ {currentDegree}° ในชั้น先天八卦 = {currentPreHeavenTrigram} · คู่สมดุล {currentPreHeavenPair}",
     "arrangementType": "先天",
     "arrangement": [
-      { "direction": "S", "degreeRange": "157.5°–202.5°", "trigram": "乾", "symbol": "☰", "element": "金", "elementThai": "ทอง", "oppositeTrigram": "坤", "oppositeDirection": "N", "meaning": "ฟ้า · พ่อ · ความสร้างสรรค์ · พลังนำ", "quality": "แข็งแรง · เริ่มต้น · สร้างสรรค์" },
-      { "direction": "N", "degreeRange": "337.5°–22.5°", "trigram": "坤", "symbol": "☷", "element": "土", "elementThai": "ดิน", "oppositeTrigram": "乾", "oppositeDirection": "S", "meaning": "ดิน · แม่ · การรองรับ · การหล่อเลี้ยง", "quality": "รับพลัง · หล่อเลี้ยง · เสถียร" },
-      { "direction": "E", "degreeRange": "67.5°–112.5°", "trigram": "離", "symbol": "☲", "element": "火", "elementThai": "ไฟ", "oppositeTrigram": "坎", "oppositeDirection": "W", "meaning": "ไฟ · ความสว่าง · การมองเห็น · จิตใจ", "quality": "สว่าง · ชัดเจน · เปิดเผย" },
-      { "direction": "W", "degreeRange": "247.5°–292.5°", "trigram": "坎", "symbol": "☵", "element": "水", "elementThai": "น้ำ", "oppositeTrigram": "離", "oppositeDirection": "E", "meaning": "น้ำ · ความลึก · การไหล · ภายใน", "quality": "ลึก · ยืดหยุ่น · ซ่อนเร้น" },
-      { "direction": "NE", "degreeRange": "22.5°–67.5°", "trigram": "震", "symbol": "☳", "element": "木", "elementThai": "ไม้", "oppositeTrigram": "巽", "oppositeDirection": "SW", "meaning": "ฟ้าร้อง · การเริ่มต้น · การเคลื่อนไหว", "quality": "กระตุ้น · ตื่นตัว · เริ่มขยับ" },
-      { "direction": "SW", "degreeRange": "202.5°–247.5°", "trigram": "巽", "symbol": "☴", "element": "木", "elementThai": "ไม้", "oppositeTrigram": "震", "oppositeDirection": "NE", "meaning": "ลม · การแทรกซึม · การเติบโตอย่างอ่อนโยน", "quality": "นุ่มนวล · แทรกซึม · ต่อเนื่อง" },
-      { "direction": "NW", "degreeRange": "292.5°–337.5°", "trigram": "艮", "symbol": "☶", "element": "土", "elementThai": "ดิน", "oppositeTrigram": "兌", "oppositeDirection": "SE", "meaning": "ภูเขา · การหยุด · การสะสม", "quality": "นิ่ง · หยุด · หนักแน่น" },
-      { "direction": "SE", "degreeRange": "112.5°–157.5°", "trigram": "兌", "symbol": "☱", "element": "金", "elementThai": "ทอง", "oppositeTrigram": "艮", "oppositeDirection": "NW", "meaning": "บึง · ความสุข · การสื่อสาร", "quality": "เบิกบาน · เปิดใจ · แลกเปลี่ยน" }
+      {
+        "direction": "S",
+        "degreeRange": "157.5°–202.5°",
+        "trigram": "乾",
+        "symbol": "☰",
+        "element": "金",
+        "elementThai": "ทอง",
+        "oppositeTrigram": "坤",
+        "oppositeDirection": "N",
+        "meaning": "ฟ้า · พ่อ · ความสร้างสรรค์ · พลังนำ",
+        "quality": "แข็งแรง · เริ่มต้น · สร้างสรรค์",
+        "meaning_en": "Heaven · father · creativity · leading force",
+        "meaning_zh": "天 · 父 · 創造 · 領御之力",
+        "quality_en": "Strong · initiating · creative",
+        "quality_zh": "剛健 · 開創 · 造化"
+      },
+      {
+        "direction": "N",
+        "degreeRange": "337.5°–22.5°",
+        "trigram": "坤",
+        "symbol": "☷",
+        "element": "土",
+        "elementThai": "ดิน",
+        "oppositeTrigram": "乾",
+        "oppositeDirection": "S",
+        "meaning": "ดิน · แม่ · การรองรับ · การหล่อเลี้ยง",
+        "quality": "รับพลัง · หล่อเลี้ยง · เสถียร",
+        "meaning_en": "Earth · mother · support · nourishment",
+        "meaning_zh": "地 · 母 · 承載 · 滋養",
+        "quality_en": "Receptive · nourishing · stable",
+        "quality_zh": "受納 · 滋養 · 安穩"
+      },
+      {
+        "direction": "E",
+        "degreeRange": "67.5°–112.5°",
+        "trigram": "離",
+        "symbol": "☲",
+        "element": "火",
+        "elementThai": "ไฟ",
+        "oppositeTrigram": "坎",
+        "oppositeDirection": "W",
+        "meaning": "ไฟ · ความสว่าง · การมองเห็น · จิตใจ",
+        "quality": "สว่าง · ชัดเจน · เปิดเผย",
+        "meaning_en": "Fire · brightness · vision · the mind",
+        "meaning_zh": "火 · 光明 · 目視 · 心神",
+        "quality_en": "Bright · clear · open",
+        "quality_zh": "明 · 晰 · 顯"
+      },
+      {
+        "direction": "W",
+        "degreeRange": "247.5°–292.5°",
+        "trigram": "坎",
+        "symbol": "☵",
+        "element": "水",
+        "elementThai": "น้ำ",
+        "oppositeTrigram": "離",
+        "oppositeDirection": "E",
+        "meaning": "น้ำ · ความลึก · การไหล · ภายใน",
+        "quality": "ลึก · ยืดหยุ่น · ซ่อนเร้น",
+        "meaning_en": "Water · depth · flow · the inner",
+        "meaning_zh": "水 · 深邃 · 流行 · 內蘊",
+        "quality_en": "Deep · flexible · hidden",
+        "quality_zh": "深 · 柔 · 隱"
+      },
+      {
+        "direction": "NE",
+        "degreeRange": "22.5°–67.5°",
+        "trigram": "震",
+        "symbol": "☳",
+        "element": "木",
+        "elementThai": "ไม้",
+        "oppositeTrigram": "巽",
+        "oppositeDirection": "SW",
+        "meaning": "ฟ้าร้อง · การเริ่มต้น · การเคลื่อนไหว",
+        "quality": "กระตุ้น · ตื่นตัว · เริ่มขยับ",
+        "meaning_en": "Thunder · beginnings · movement",
+        "meaning_zh": "雷 · 開創 · 行動",
+        "quality_en": "Stimulating · alert · setting into motion",
+        "quality_zh": "激發 · 奮起 · 啟動"
+      },
+      {
+        "direction": "SW",
+        "degreeRange": "202.5°–247.5°",
+        "trigram": "巽",
+        "symbol": "☴",
+        "element": "木",
+        "elementThai": "ไม้",
+        "oppositeTrigram": "震",
+        "oppositeDirection": "NE",
+        "meaning": "ลม · การแทรกซึม · การเติบโตอย่างอ่อนโยน",
+        "quality": "นุ่มนวล · แทรกซึม · ต่อเนื่อง",
+        "meaning_en": "Wind · permeation · gentle growth",
+        "meaning_zh": "風 · 滲入 · 柔緩生長",
+        "quality_en": "Gentle · permeating · continuous",
+        "quality_zh": "柔順 · 滲入 · 綿延"
+      },
+      {
+        "direction": "NW",
+        "degreeRange": "292.5°–337.5°",
+        "trigram": "艮",
+        "symbol": "☶",
+        "element": "土",
+        "elementThai": "ดิน",
+        "oppositeTrigram": "兌",
+        "oppositeDirection": "SE",
+        "meaning": "ภูเขา · การหยุด · การสะสม",
+        "quality": "นิ่ง · หยุด · หนักแน่น",
+        "meaning_en": "Mountain · stopping · accumulation",
+        "meaning_zh": "山 · 止 · 積蓄",
+        "quality_en": "Still · stopping · steadfast",
+        "quality_zh": "靜 · 止 · 厚重"
+      },
+      {
+        "direction": "SE",
+        "degreeRange": "112.5°–157.5°",
+        "trigram": "兌",
+        "symbol": "☱",
+        "element": "金",
+        "elementThai": "ทอง",
+        "oppositeTrigram": "艮",
+        "oppositeDirection": "NW",
+        "meaning": "บึง · ความสุข · การสื่อสาร",
+        "quality": "เบิกบาน · เปิดใจ · แลกเปลี่ยน",
+        "meaning_en": "Lake · joy · communication",
+        "meaning_zh": "澤 · 喜悅 · 言語",
+        "quality_en": "Joyful · open-hearted · exchanging",
+        "quality_zh": "悅 · 開懷 · 交流"
+      }
     ],
     "pairRelations": [
-      { "pair": "乾-坤", "meaning": "ฟ้าและดิน · ผู้ให้กำเนิดและผู้รองรับ" },
-      { "pair": "坎-離", "meaning": "น้ำและไฟ · ความลึกและความสว่าง" },
-      { "pair": "震-巽", "meaning": "ฟ้าร้องและลม · การเริ่มเคลื่อนและการแทรกซึม" },
-      { "pair": "艮-兌", "meaning": "ภูเขาและบึง · ความนิ่งและความเบิกบาน" }
+      {
+        "pair": "乾-坤",
+        "meaning": "ฟ้าและดิน · ผู้ให้กำเนิดและผู้รองรับ",
+        "meaning_en": "Heaven and Earth · the begetter and the bearer",
+        "meaning_zh": "天地 · 創生與承載"
+      },
+      {
+        "pair": "坎-離",
+        "meaning": "น้ำและไฟ · ความลึกและความสว่าง",
+        "meaning_en": "Water and Fire · depth and brightness",
+        "meaning_zh": "水火 · 深邃與光明"
+      },
+      {
+        "pair": "震-巽",
+        "meaning": "ฟ้าร้องและลม · การเริ่มเคลื่อนและการแทรกซึม",
+        "meaning_en": "Thunder and Wind · initiating motion and permeation",
+        "meaning_zh": "雷風 · 啟動與滲入"
+      },
+      {
+        "pair": "艮-兌",
+        "meaning": "ภูเขาและบึง · ความนิ่งและความเบิกบาน",
+        "meaning_en": "Mountain and Lake · stillness and joy",
+        "meaning_zh": "山澤 · 靜止與喜悅"
+      }
     ],
-    "rendering": { "ringLabel": "先天八卦", "showOnLuopan": true, "colorByElement": true, "tooltipPlacement": "hover_or_click", "recommendedLayer": "core_optional" },
+    "rendering": {
+      "ringLabel": "先天八卦",
+      "showOnLuopan": true,
+      "colorByElement": true,
+      "tooltipPlacement": "hover_or_click",
+      "recommendedLayer": "core_optional"
+    },
     "warnings": [
       "先天八卦 เป็นพลังต้นแบบ ไม่ใช่แกนหลักในการตัดสินการใช้งานบ้านจริง",
       "ควรแสดงเป็น layer เสริม เพราะตำแหน่งกว้าไม่เหมือน後天八卦"
@@ -183,35 +495,482 @@
     ],
     "currentReadingTemplate": "เข็มชี้ {currentDegree}° · ธาตุทิศ {currentDirectionElement} · ธาตุดาว {currentStarElement} · ความสัมพันธ์ {elementRelation}",
     "elements": [
-      { "element": "木", "thaiName": "ไม้", "englishName": "Wood", "colorKeys": ["green", "teal"], "forms": ["สูง", "ตรง", "ทรงกระบอก", "แนวตั้ง"], "materials": ["ไม้", "ต้นไม้", "ผ้า", "กระดาษ", "วัสดุธรรมชาติ"], "qualities": ["เติบโต", "ขยายตัว", "ยืดหยุ่น", "สร้างสรรค์"], "directions": ["E", "SE"], "trigrams": ["震", "巽"], "stars": [3, 4] },
-      { "element": "火", "thaiName": "ไฟ", "englishName": "Fire", "colorKeys": ["red", "purple", "bright_orange"], "forms": ["สามเหลี่ยม", "แหลม", "เปลวไฟ", "แสง"], "materials": ["ไฟ", "แสงสว่าง", "อุปกรณ์ไฟฟ้า", "เทียน", "โคมไฟ"], "qualities": ["สว่าง", "โดดเด่น", "ชื่อเสียง", "ความร้อน"], "directions": ["S"], "trigrams": ["離"], "stars": [9] },
-      { "element": "土", "thaiName": "ดิน", "englishName": "Earth", "colorKeys": ["yellow", "brown", "beige", "sand"], "forms": ["สี่เหลี่ยม", "แบน", "หนัก", "มั่นคง"], "materials": ["ดิน", "หิน", "เซรามิก", "อิฐ", "ปูน", "คริสตัล"], "qualities": ["มั่นคง", "สะสม", "รองรับ", "ชะลอ"], "directions": ["NE", "SW", "C"], "trigrams": ["艮", "坤"], "stars": [2, 5, 8] },
-      { "element": "金", "thaiName": "ทอง", "englishName": "Metal", "colorKeys": ["white", "silver", "gold", "gray"], "forms": ["กลม", "โค้ง", "วงรี", "โลหะ"], "materials": ["โลหะ", "ทองเหลือง", "เหล็ก", "เงิน", "ทอง", "ของกลม"], "qualities": ["ตัดสินใจ", "โครงสร้าง", "ระเบียบ", "การสื่อสาร"], "directions": ["W", "NW"], "trigrams": ["兌", "乾"], "stars": [6, 7] },
-      { "element": "水", "thaiName": "น้ำ", "englishName": "Water", "colorKeys": ["black", "dark_blue", "blue"], "forms": ["คลื่น", "โค้งไหล", "ไม่แน่นอน", "อิสระ"], "materials": ["น้ำ", "กระจก", "ของสะท้อน", "ตู้ปลา", "น้ำพุ"], "qualities": ["ไหลเวียน", "ความลึก", "ปัญญา", "การเคลื่อนไหว"], "directions": ["N"], "trigrams": ["坎"], "stars": [1] }
+      {
+        "element": "木",
+        "thaiName": "ไม้",
+        "englishName": "Wood",
+        "colorKeys": [
+          "green",
+          "teal"
+        ],
+        "forms": [
+          "สูง",
+          "ตรง",
+          "ทรงกระบอก",
+          "แนวตั้ง"
+        ],
+        "materials": [
+          "ไม้",
+          "ต้นไม้",
+          "ผ้า",
+          "กระดาษ",
+          "วัสดุธรรมชาติ"
+        ],
+        "qualities": [
+          "เติบโต",
+          "ขยายตัว",
+          "ยืดหยุ่น",
+          "สร้างสรรค์"
+        ],
+        "directions": [
+          "E",
+          "SE"
+        ],
+        "trigrams": [
+          "震",
+          "巽"
+        ],
+        "stars": [
+          3,
+          4
+        ],
+        "forms_en": [
+          "Tall",
+          "Straight",
+          "Cylindrical",
+          "Vertical"
+        ],
+        "forms_zh": [
+          "高",
+          "直",
+          "圓柱",
+          "縱立"
+        ],
+        "materials_en": [
+          "Wood",
+          "Plants",
+          "Fabric",
+          "Paper",
+          "Natural materials"
+        ],
+        "materials_zh": [
+          "木材",
+          "樹木",
+          "布料",
+          "紙",
+          "天然材質"
+        ],
+        "qualities_en": [
+          "Growing",
+          "Expanding",
+          "Flexible",
+          "Creative"
+        ],
+        "qualities_zh": [
+          "生長",
+          "伸展",
+          "柔韌",
+          "創造"
+        ]
+      },
+      {
+        "element": "火",
+        "thaiName": "ไฟ",
+        "englishName": "Fire",
+        "colorKeys": [
+          "red",
+          "purple",
+          "bright_orange"
+        ],
+        "forms": [
+          "สามเหลี่ยม",
+          "แหลม",
+          "เปลวไฟ",
+          "แสง"
+        ],
+        "materials": [
+          "ไฟ",
+          "แสงสว่าง",
+          "อุปกรณ์ไฟฟ้า",
+          "เทียน",
+          "โคมไฟ"
+        ],
+        "qualities": [
+          "สว่าง",
+          "โดดเด่น",
+          "ชื่อเสียง",
+          "ความร้อน"
+        ],
+        "directions": [
+          "S"
+        ],
+        "trigrams": [
+          "離"
+        ],
+        "stars": [
+          9
+        ],
+        "forms_en": [
+          "Triangular",
+          "Pointed",
+          "Flame-like",
+          "Light"
+        ],
+        "forms_zh": [
+          "三角",
+          "尖銳",
+          "火焰形",
+          "光"
+        ],
+        "materials_en": [
+          "Fire",
+          "Lighting",
+          "Electrical appliances",
+          "Candles",
+          "Lamps"
+        ],
+        "materials_zh": [
+          "火",
+          "光源",
+          "電器",
+          "蠟燭",
+          "燈具"
+        ],
+        "qualities_en": [
+          "Bright",
+          "Prominent",
+          "Renowned",
+          "Hot"
+        ],
+        "qualities_zh": [
+          "光明",
+          "顯耀",
+          "聲名",
+          "炎熱"
+        ]
+      },
+      {
+        "element": "土",
+        "thaiName": "ดิน",
+        "englishName": "Earth",
+        "colorKeys": [
+          "yellow",
+          "brown",
+          "beige",
+          "sand"
+        ],
+        "forms": [
+          "สี่เหลี่ยม",
+          "แบน",
+          "หนัก",
+          "มั่นคง"
+        ],
+        "materials": [
+          "ดิน",
+          "หิน",
+          "เซรามิก",
+          "อิฐ",
+          "ปูน",
+          "คริสตัล"
+        ],
+        "qualities": [
+          "มั่นคง",
+          "สะสม",
+          "รองรับ",
+          "ชะลอ"
+        ],
+        "directions": [
+          "NE",
+          "SW",
+          "C"
+        ],
+        "trigrams": [
+          "艮",
+          "坤"
+        ],
+        "stars": [
+          2,
+          5,
+          8
+        ],
+        "forms_en": [
+          "Square",
+          "Flat",
+          "Heavy",
+          "Stable"
+        ],
+        "forms_zh": [
+          "方形",
+          "平坦",
+          "厚重",
+          "穩固"
+        ],
+        "materials_en": [
+          "Earth",
+          "Stone",
+          "Ceramics",
+          "Brick",
+          "Mortar",
+          "Crystal"
+        ],
+        "materials_zh": [
+          "泥土",
+          "石",
+          "陶瓷",
+          "磚",
+          "灰泥",
+          "水晶"
+        ],
+        "qualities_en": [
+          "Stable",
+          "Accumulating",
+          "Supporting",
+          "Slowing"
+        ],
+        "qualities_zh": [
+          "穩固",
+          "積蓄",
+          "承載",
+          "緩滯"
+        ]
+      },
+      {
+        "element": "金",
+        "thaiName": "ทอง",
+        "englishName": "Metal",
+        "colorKeys": [
+          "white",
+          "silver",
+          "gold",
+          "gray"
+        ],
+        "forms": [
+          "กลม",
+          "โค้ง",
+          "วงรี",
+          "โลหะ"
+        ],
+        "materials": [
+          "โลหะ",
+          "ทองเหลือง",
+          "เหล็ก",
+          "เงิน",
+          "ทอง",
+          "ของกลม"
+        ],
+        "qualities": [
+          "ตัดสินใจ",
+          "โครงสร้าง",
+          "ระเบียบ",
+          "การสื่อสาร"
+        ],
+        "directions": [
+          "W",
+          "NW"
+        ],
+        "trigrams": [
+          "兌",
+          "乾"
+        ],
+        "stars": [
+          6,
+          7
+        ],
+        "forms_en": [
+          "Round",
+          "Curved",
+          "Oval",
+          "Metallic"
+        ],
+        "forms_zh": [
+          "圓",
+          "弧曲",
+          "橢圓",
+          "金屬質"
+        ],
+        "materials_en": [
+          "Metal",
+          "Brass",
+          "Iron",
+          "Silver",
+          "Gold",
+          "Round objects"
+        ],
+        "materials_zh": [
+          "金屬",
+          "黃銅",
+          "鐵",
+          "銀",
+          "金",
+          "圓形之物"
+        ],
+        "qualities_en": [
+          "Decisive",
+          "Structured",
+          "Orderly",
+          "Communicative"
+        ],
+        "qualities_zh": [
+          "決斷",
+          "架構",
+          "條理",
+          "言語交流"
+        ]
+      },
+      {
+        "element": "水",
+        "thaiName": "น้ำ",
+        "englishName": "Water",
+        "colorKeys": [
+          "black",
+          "dark_blue",
+          "blue"
+        ],
+        "forms": [
+          "คลื่น",
+          "โค้งไหล",
+          "ไม่แน่นอน",
+          "อิสระ"
+        ],
+        "materials": [
+          "น้ำ",
+          "กระจก",
+          "ของสะท้อน",
+          "ตู้ปลา",
+          "น้ำพุ"
+        ],
+        "qualities": [
+          "ไหลเวียน",
+          "ความลึก",
+          "ปัญญา",
+          "การเคลื่อนไหว"
+        ],
+        "directions": [
+          "N"
+        ],
+        "trigrams": [
+          "坎"
+        ],
+        "stars": [
+          1
+        ],
+        "forms_en": [
+          "Wavy",
+          "Flowing curves",
+          "Irregular",
+          "Free-form"
+        ],
+        "forms_zh": [
+          "波浪",
+          "曲流",
+          "不定",
+          "自在"
+        ],
+        "materials_en": [
+          "Water",
+          "Glass",
+          "Reflective objects",
+          "Aquariums",
+          "Fountains"
+        ],
+        "materials_zh": [
+          "水",
+          "玻璃",
+          "反光之物",
+          "魚缸",
+          "噴泉"
+        ],
+        "qualities_en": [
+          "Circulating",
+          "Deep",
+          "Wise",
+          "Moving"
+        ],
+        "qualities_zh": [
+          "流通",
+          "深邃",
+          "智慧",
+          "流動"
+        ]
+      }
     ],
     "cycles": {
       "generating": {
         "chineseName": "相生",
         "thaiName": "วงจรสร้าง",
-        "sequence": ["木", "火", "土", "金", "水", "木"],
+        "sequence": [
+          "木",
+          "火",
+          "土",
+          "金",
+          "水",
+          "木"
+        ],
         "rules": [
-          { "from": "木", "to": "火", "meaning": "ไม้生ไฟ" },
-          { "from": "火", "to": "土", "meaning": "ไฟ生ดิน" },
-          { "from": "土", "to": "金", "meaning": "ดิน生ทอง" },
-          { "from": "金", "to": "水", "meaning": "ทอง生น้ำ" },
-          { "from": "水", "to": "木", "meaning": "น้ำ生ไม้" }
+          {
+            "from": "木",
+            "to": "火",
+            "meaning": "ไม้生ไฟ"
+          },
+          {
+            "from": "火",
+            "to": "土",
+            "meaning": "ไฟ生ดิน"
+          },
+          {
+            "from": "土",
+            "to": "金",
+            "meaning": "ดิน生ทอง"
+          },
+          {
+            "from": "金",
+            "to": "水",
+            "meaning": "ทอง生น้ำ"
+          },
+          {
+            "from": "水",
+            "to": "木",
+            "meaning": "น้ำ生ไม้"
+          }
         ]
       },
       "controlling": {
         "chineseName": "相克",
         "thaiName": "วงจรข่ม/ควบคุม",
-        "sequence": ["木", "土", "水", "火", "金", "木"],
+        "sequence": [
+          "木",
+          "土",
+          "水",
+          "火",
+          "金",
+          "木"
+        ],
         "rules": [
-          { "from": "木", "to": "土", "meaning": "ไม้ข่มดิน" },
-          { "from": "土", "to": "水", "meaning": "ดินข่มน้ำ" },
-          { "from": "水", "to": "火", "meaning": "น้ำข่มไฟ" },
-          { "from": "火", "to": "金", "meaning": "ไฟข่มทอง" },
-          { "from": "金", "to": "木", "meaning": "ทองข่มไม้" }
+          {
+            "from": "木",
+            "to": "土",
+            "meaning": "ไม้ข่มดิน"
+          },
+          {
+            "from": "土",
+            "to": "水",
+            "meaning": "ดินข่มน้ำ"
+          },
+          {
+            "from": "水",
+            "to": "火",
+            "meaning": "น้ำข่มไฟ"
+          },
+          {
+            "from": "火",
+            "to": "金",
+            "meaning": "ไฟข่มทอง"
+          },
+          {
+            "from": "金",
+            "to": "木",
+            "meaning": "ทองข่มไม้"
+          }
         ]
       },
       "draining": {
@@ -220,13 +979,37 @@
       }
     },
     "relationLogic": {
-      "sameElement": { "label": "ธาตุเดียวกัน", "effectForGoodStar": "ช่วยให้พลังดาวดีมีราก", "effectForBadStar": "อาจทำให้ดาวร้ายหนักขึ้น" },
-      "palaceGeneratesStar": { "label": "วัง生ดาว", "effectForGoodStar": "หนุนดาวดี", "effectForBadStar": "หนุนดาวร้าย ต้องระวัง" },
-      "palaceControlsStar": { "label": "วัง克ดาว", "effectForGoodStar": "กดดาวดี ทำให้แรงลดลง", "effectForBadStar": "ช่วยกดดาวร้าย" },
-      "starGeneratesPalace": { "label": "ดาว生วัง", "effect": "ดาวถ่ายพลังออกไปยังวัง พลังดาวอาจลดลง" },
-      "starControlsPalace": { "label": "ดาว克วัง", "effect": "เกิดแรงปะทะระหว่างดาวกับพื้นที่ ต้องดูบริบท" }
+      "sameElement": {
+        "label": "ธาตุเดียวกัน",
+        "effectForGoodStar": "ช่วยให้พลังดาวดีมีราก",
+        "effectForBadStar": "อาจทำให้ดาวร้ายหนักขึ้น"
+      },
+      "palaceGeneratesStar": {
+        "label": "วัง生ดาว",
+        "effectForGoodStar": "หนุนดาวดี",
+        "effectForBadStar": "หนุนดาวร้าย ต้องระวัง"
+      },
+      "palaceControlsStar": {
+        "label": "วัง克ดาว",
+        "effectForGoodStar": "กดดาวดี ทำให้แรงลดลง",
+        "effectForBadStar": "ช่วยกดดาวร้าย"
+      },
+      "starGeneratesPalace": {
+        "label": "ดาว生วัง",
+        "effect": "ดาวถ่ายพลังออกไปยังวัง พลังดาวอาจลดลง"
+      },
+      "starControlsPalace": {
+        "label": "ดาว克วัง",
+        "effect": "เกิดแรงปะทะระหว่างดาวกับพื้นที่ ต้องดูบริบท"
+      }
     },
-    "rendering": { "ringLabel": "五行", "showOnLuopan": true, "colorByElement": true, "tooltipPlacement": "hover_or_click", "recommendedLayer": "core" },
+    "rendering": {
+      "ringLabel": "五行",
+      "showOnLuopan": true,
+      "colorByElement": true,
+      "tooltipPlacement": "hover_or_click",
+      "recommendedLayer": "core"
+    },
     "warnings": [
       "ธาตุเป็นระบบอธิบายความสัมพันธ์ ไม่ใช่คำตัดสินสุดท้าย",
       "ดาวดีได้ธาตุหนุนถือว่าดี แต่ดาวร้ายได้ธาตุหนุนอาจร้ายขึ้น",

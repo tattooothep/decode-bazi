@@ -256,9 +256,17 @@ const I18N = {
 
 let LANG = (new URLSearchParams(location.search).get('lang')) || localStorage.getItem('hk_locale') || localStorage.getItem('lang') || 'th';
 
+/* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
+function _kktx(k){
+  try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('katakagae.html',k,LANG);if(ov!=null)return ov;}catch(_){}
+  var d=I18N[LANG]||I18N.th; var v=d[k]; return v!=null?v:I18N.th[k];
+}
+function _kkbag(){var o={};Object.keys(I18N.th).forEach(function(k){o[k]=_kktx(k);});return o;}
+window.__hkOverlayApply=function(l){LANG=l;applyLang();};
+
 function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); localStorage.setItem('hk-theme', t); }
 function applyLang(){
-  const t = I18N[LANG] || I18N.th;
+  const t = _kkbag();
   document.documentElement.lang = LANG === 'zh' ? 'zh-Hant' : LANG;
   document.title = '方違 Katakagae · ' + t.title.replace(/<[^>]+>/g,'') + ' · hourkey';
   document.getElementById('page-title').innerHTML = t.title;
@@ -283,7 +291,7 @@ const today = new Date();
 document.getElementById('datetime').value = today.toISOString().slice(0,10);
 
 async function check(){
-  const t = I18N[LANG] || I18N.th;
+  const t = _kkbag();
   const btn = document.getElementById('btn-go');
   btn.disabled = true; btn.textContent = t.loading;
   const fLat = document.getElementById('from-lat').value;
@@ -303,7 +311,7 @@ function renderError(msg){
   document.getElementById('results').innerHTML = `<div class="empty"><div class="ic">⚠️</div><h4 style="color:var(--bad);">Error</h4><p>${msg}</p></div>`;
 }
 function renderResult(d){
-  const t = I18N[LANG] || I18N.th;
+  const t = _kkbag();
   const v = d.verdict;
   const vBig = v==='auspicious'?'吉':v==='caution'?'注意':'禁';
   const vLabel = v==='auspicious'?t.aus:v==='caution'?t.cau:t.for;
@@ -367,5 +375,17 @@ applyLang();
 </script>
 <script src="/js/hk-luopan-nav.js?v=2" defer></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
+<script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script>
+/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
+(function(){try{
+var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
+if(!l||['th','en','zh'].indexOf(l)!==-1)return;
+var n=0;(function boot(){
+if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
+window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
+})();
+}catch(_){}})();
+</script>
 </body>
 </html>

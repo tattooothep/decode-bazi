@@ -5,19 +5,15 @@
     "name_th": "太歲/三煞/歲破 · ดาวเตือนปี",
     "name_zh": "太歲 / 三煞 / 歲破 · 警示",
     "name_en": "Tai Sui / San Sha / Sui Po Annual Warnings",
-
     "base_ring": "地盤正針",
     "base_ring_th": "เข็มดิน / เข็มหลัก",
     "base_ring_en": "Earth Plate / Correct Needle",
-
     "purpose": {
       "th": "ใช้ตรวจทิศเตือนประจำปี เช่น 太歲, 歲破, 三煞 เพื่อหลีกเลี่ยงการขุด ทุบ เจาะ ต่อเติม หรือกระตุ้นแรง",
       "zh": "用於檢查流年太歲、歲破、三煞方位，避免動土、拆牆、鑽孔、修造與強力催動。",
       "en": "Used to check annual affliction directions such as Tai Sui, Sui Po, and San Sha, especially for avoiding renovation, digging, drilling, demolition, and strong activation."
     },
-
     "not_final_fengshui_judgement": true,
-
     "calendar_basis": {
       "year_basis": "solar_fengshui_year",
       "year_switch": "立春",
@@ -25,10 +21,33 @@
       "note_zh": "流年風水以立春為界，未到立春仍以前一年論。",
       "note_en": "Annual Feng Shui year should be counted from Li Chun, not January 1. Before Li Chun, use the previous Feng Shui year."
     },
-
     "calculation": {
-      "branch_order": ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"],
-      "stem_order": ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"],
+      "branch_order": [
+        "子",
+        "丑",
+        "寅",
+        "卯",
+        "辰",
+        "巳",
+        "午",
+        "未",
+        "申",
+        "酉",
+        "戌",
+        "亥"
+      ],
+      "stem_order": [
+        "甲",
+        "乙",
+        "丙",
+        "丁",
+        "戊",
+        "己",
+        "庚",
+        "辛",
+        "壬",
+        "癸"
+      ],
       "branch_index_formula": "(solar_year_after_lichun - 4) % 12",
       "stem_index_formula": "(solar_year_after_lichun - 4) % 10",
       "example": {
@@ -38,38 +57,178 @@
         "ganzhi": "丙午"
       }
     },
-
     "branch_positions": {
-      "子": { "center": 0, "start": 352.5, "end": 7.5, "wraps_zero": true, "direction_th": "เหนือ", "direction_zh": "北", "direction_en": "North" },
-      "丑": { "center": 30, "start": 22.5, "end": 37.5, "wraps_zero": false, "direction_th": "ตะวันออกเฉียงเหนือช่วงต้น", "direction_zh": "東北偏北", "direction_en": "North-East 1" },
-      "寅": { "center": 60, "start": 52.5, "end": 67.5, "wraps_zero": false, "direction_th": "ตะวันออกเฉียงเหนือช่วงปลาย", "direction_zh": "東北偏東", "direction_en": "North-East 3" },
-      "卯": { "center": 90, "start": 82.5, "end": 97.5, "wraps_zero": false, "direction_th": "ตะวันออก", "direction_zh": "東", "direction_en": "East" },
-      "辰": { "center": 120, "start": 112.5, "end": 127.5, "wraps_zero": false, "direction_th": "ตะวันออกเฉียงใต้ช่วงต้น", "direction_zh": "東南偏東", "direction_en": "South-East 1" },
-      "巳": { "center": 150, "start": 142.5, "end": 157.5, "wraps_zero": false, "direction_th": "ตะวันออกเฉียงใต้ช่วงปลาย", "direction_zh": "東南偏南", "direction_en": "South-East 3" },
-      "午": { "center": 180, "start": 172.5, "end": 187.5, "wraps_zero": false, "direction_th": "ใต้", "direction_zh": "南", "direction_en": "South" },
-      "未": { "center": 210, "start": 202.5, "end": 217.5, "wraps_zero": false, "direction_th": "ตะวันตกเฉียงใต้ช่วงต้น", "direction_zh": "西南偏南", "direction_en": "South-West 1" },
-      "申": { "center": 240, "start": 232.5, "end": 247.5, "wraps_zero": false, "direction_th": "ตะวันตกเฉียงใต้ช่วงปลาย", "direction_zh": "西南偏西", "direction_en": "South-West 3" },
-      "酉": { "center": 270, "start": 262.5, "end": 277.5, "wraps_zero": false, "direction_th": "ตะวันตก", "direction_zh": "西", "direction_en": "West" },
-      "戌": { "center": 300, "start": 292.5, "end": 307.5, "wraps_zero": false, "direction_th": "ตะวันตกเฉียงเหนือช่วงต้น", "direction_zh": "西北偏西", "direction_en": "North-West 1" },
-      "亥": { "center": 330, "start": 322.5, "end": 337.5, "wraps_zero": false, "direction_th": "ตะวันตกเฉียงเหนือช่วงปลาย", "direction_zh": "西北偏北", "direction_en": "North-West 3" }
+      "子": {
+        "center": 0,
+        "start": 352.5,
+        "end": 7.5,
+        "wraps_zero": true,
+        "direction_th": "เหนือ",
+        "direction_zh": "北",
+        "direction_en": "North"
+      },
+      "丑": {
+        "center": 30,
+        "start": 22.5,
+        "end": 37.5,
+        "wraps_zero": false,
+        "direction_th": "ตะวันออกเฉียงเหนือช่วงต้น",
+        "direction_zh": "東北偏北",
+        "direction_en": "North-East 1"
+      },
+      "寅": {
+        "center": 60,
+        "start": 52.5,
+        "end": 67.5,
+        "wraps_zero": false,
+        "direction_th": "ตะวันออกเฉียงเหนือช่วงปลาย",
+        "direction_zh": "東北偏東",
+        "direction_en": "North-East 3"
+      },
+      "卯": {
+        "center": 90,
+        "start": 82.5,
+        "end": 97.5,
+        "wraps_zero": false,
+        "direction_th": "ตะวันออก",
+        "direction_zh": "東",
+        "direction_en": "East"
+      },
+      "辰": {
+        "center": 120,
+        "start": 112.5,
+        "end": 127.5,
+        "wraps_zero": false,
+        "direction_th": "ตะวันออกเฉียงใต้ช่วงต้น",
+        "direction_zh": "東南偏東",
+        "direction_en": "South-East 1"
+      },
+      "巳": {
+        "center": 150,
+        "start": 142.5,
+        "end": 157.5,
+        "wraps_zero": false,
+        "direction_th": "ตะวันออกเฉียงใต้ช่วงปลาย",
+        "direction_zh": "東南偏南",
+        "direction_en": "South-East 3"
+      },
+      "午": {
+        "center": 180,
+        "start": 172.5,
+        "end": 187.5,
+        "wraps_zero": false,
+        "direction_th": "ใต้",
+        "direction_zh": "南",
+        "direction_en": "South"
+      },
+      "未": {
+        "center": 210,
+        "start": 202.5,
+        "end": 217.5,
+        "wraps_zero": false,
+        "direction_th": "ตะวันตกเฉียงใต้ช่วงต้น",
+        "direction_zh": "西南偏南",
+        "direction_en": "South-West 1"
+      },
+      "申": {
+        "center": 240,
+        "start": 232.5,
+        "end": 247.5,
+        "wraps_zero": false,
+        "direction_th": "ตะวันตกเฉียงใต้ช่วงปลาย",
+        "direction_zh": "西南偏西",
+        "direction_en": "South-West 3"
+      },
+      "酉": {
+        "center": 270,
+        "start": 262.5,
+        "end": 277.5,
+        "wraps_zero": false,
+        "direction_th": "ตะวันตก",
+        "direction_zh": "西",
+        "direction_en": "West"
+      },
+      "戌": {
+        "center": 300,
+        "start": 292.5,
+        "end": 307.5,
+        "wraps_zero": false,
+        "direction_th": "ตะวันตกเฉียงเหนือช่วงต้น",
+        "direction_zh": "西北偏西",
+        "direction_en": "North-West 1"
+      },
+      "亥": {
+        "center": 330,
+        "start": 322.5,
+        "end": 337.5,
+        "wraps_zero": false,
+        "direction_th": "ตะวันตกเฉียงเหนือช่วงปลาย",
+        "direction_zh": "西北偏北",
+        "direction_en": "North-West 3"
+      }
     },
-
     "warning_levels": {
-      "safe": { "score": 5, "label_th": "ปลอดภัยเบื้องต้น", "label_zh": "初步安全", "label_en": "Generally safe", "ui_tone": "safe" },
-      "caution": { "score": 3, "label_th": "ระวัง", "label_zh": "注意", "label_en": "Caution", "ui_tone": "caution" },
-      "high_caution": { "score": 2, "label_th": "ระวังสูง", "label_zh": "高度注意", "label_en": "High caution", "ui_tone": "high_caution" },
-      "avoid": { "score": 1, "label_th": "หลีกเลี่ยงการกระตุ้นแรง", "label_zh": "忌動", "label_en": "Avoid strong activation", "ui_tone": "danger" }
+      "safe": {
+        "score": 5,
+        "label_th": "ปลอดภัยเบื้องต้น",
+        "label_zh": "初步安全",
+        "label_en": "Generally safe",
+        "ui_tone": "safe"
+      },
+      "caution": {
+        "score": 3,
+        "label_th": "ระวัง",
+        "label_zh": "注意",
+        "label_en": "Caution",
+        "ui_tone": "caution"
+      },
+      "high_caution": {
+        "score": 2,
+        "label_th": "ระวังสูง",
+        "label_zh": "高度注意",
+        "label_en": "High caution",
+        "ui_tone": "high_caution"
+      },
+      "avoid": {
+        "score": 1,
+        "label_th": "หลีกเลี่ยงการกระตุ้นแรง",
+        "label_zh": "忌動",
+        "label_en": "Avoid strong activation",
+        "ui_tone": "danger"
+      }
     },
-
     "avoid_actions": {
-      "heavy_activation": { "th": "หลีกเลี่ยงการกระตุ้นแรง", "zh": "避免強力催動", "en": "Avoid strong activation" },
-      "digging": { "th": "หลีกเลี่ยงการขุดดิน", "zh": "避免動土", "en": "Avoid digging or earthworks" },
-      "demolition": { "th": "หลีกเลี่ยงการทุบ รื้อ ถอน", "zh": "避免拆除", "en": "Avoid demolition" },
-      "drilling": { "th": "หลีกเลี่ยงการเจาะ ตอก กระแทก", "zh": "避免鑽孔、敲打", "en": "Avoid drilling, hammering, and impact" },
-      "major_renovation": { "th": "หลีกเลี่ยงการต่อเติมหรือซ่อมใหญ่", "zh": "避免大型修造", "en": "Avoid major renovation" },
-      "groundbreaking": { "th": "หลีกเลี่ยงการเริ่มงานก่อสร้างจากทิศนี้", "zh": "避免由此方開工", "en": "Avoid starting construction from this direction" }
+      "heavy_activation": {
+        "th": "หลีกเลี่ยงการกระตุ้นแรง",
+        "zh": "避免強力催動",
+        "en": "Avoid strong activation"
+      },
+      "digging": {
+        "th": "หลีกเลี่ยงการขุดดิน",
+        "zh": "避免動土",
+        "en": "Avoid digging or earthworks"
+      },
+      "demolition": {
+        "th": "หลีกเลี่ยงการทุบ รื้อ ถอน",
+        "zh": "避免拆除",
+        "en": "Avoid demolition"
+      },
+      "drilling": {
+        "th": "หลีกเลี่ยงการเจาะ ตอก กระแทก",
+        "zh": "避免鑽孔、敲打",
+        "en": "Avoid drilling, hammering, and impact"
+      },
+      "major_renovation": {
+        "th": "หลีกเลี่ยงการต่อเติมหรือซ่อมใหญ่",
+        "zh": "避免大型修造",
+        "en": "Avoid major renovation"
+      },
+      "groundbreaking": {
+        "th": "หลีกเลี่ยงการเริ่มงานก่อสร้างจากทิศนี้",
+        "zh": "避免由此方開工",
+        "en": "Avoid starting construction from this direction"
+      }
     },
-
     "rules": {
       "tai_sui": {
         "name_th": "ไท้ส่วย / ทิศเจ้าปี",
@@ -82,9 +241,15 @@
         "description_th": "太歲คือทิศเจ้าปี ไม่ควรทุบ ขุด เจาะ หรือกระตุ้นแรงในทิศนี้",
         "description_zh": "太歲為歲君所在之方，不宜動土、修造、敲打、強力催動。",
         "description_en": "Tai Sui is the annual ruling direction. Avoid disturbing it with renovation, digging, drilling, demolition, or strong activation.",
-        "avoid_actions": ["heavy_activation", "digging", "demolition", "drilling", "major_renovation", "groundbreaking"]
+        "avoid_actions": [
+          "heavy_activation",
+          "digging",
+          "demolition",
+          "drilling",
+          "major_renovation",
+          "groundbreaking"
+        ]
       },
-
       "sui_po": {
         "name_th": "ทิศปะทะปี / ทิศชงปี",
         "name_zh": "歲破",
@@ -96,9 +261,15 @@
         "description_th": "歲破คือทิศตรงข้าม太歲 เป็นทิศปะทะปี ควรหลีกเลี่ยงการกระตุ้นหนักมากเป็นพิเศษ",
         "description_zh": "歲破為太歲對沖之方，為流年沖破之位，尤忌動土修造。",
         "description_en": "Sui Po is the direction opposite Tai Sui. It is a strong annual clash direction and should be avoided for major disturbance.",
-        "avoid_actions": ["heavy_activation", "digging", "demolition", "drilling", "major_renovation", "groundbreaking"]
+        "avoid_actions": [
+          "heavy_activation",
+          "digging",
+          "demolition",
+          "drilling",
+          "major_renovation",
+          "groundbreaking"
+        ]
       },
-
       "san_sha": {
         "name_th": "สามพิฆาต / ซาสั่ว",
         "name_zh": "三煞",
@@ -109,7 +280,6 @@
         "description_th": "三煞เป็นเขตเตือนประจำปี ควรหลีกเลี่ยงการรบกวนหนัก เช่น ขุด ทุบ เจาะ หรือซ่อมใหญ่",
         "description_zh": "三煞為流年凶煞方，忌動土、修造、敲打、強力催動。",
         "description_en": "San Sha is an annual affliction sector. Avoid heavy disturbance such as digging, demolition, drilling, and major renovation.",
-
         "precision_modes": {
           "exact_earth_branches": {
             "description_th": "โหมดพื้นฐาน: เตือนเฉพาะ 3 กิ่งดินหลักของ三煞",
@@ -133,75 +303,349 @@
             "recommended_default_for_renovation": true
           }
         },
-
         "default_precision_mode": "standard_5_mountains",
         "construction_precision_mode": "conservative_sector",
-
         "group_rules": {
           "申子辰": {
-            "year_branches": ["申", "子", "辰"],
-            "san_sha_direction_th": "ทิศใต้", "san_sha_direction_zh": "南方", "san_sha_direction_en": "South",
-            "exact_mountains": ["巳", "午", "未"],
-            "exact_earth_branches": ["巳", "午", "未"],
-            "standard_5_mountains": ["巳", "丙", "午", "丁", "未"],
-            "degree_range": { "start": 142.5, "end": 217.5, "wraps_zero": false },
-            "conservative_sector_degrees": { "start": 135, "end": 225, "wraps_zero": false }
+            "year_branches": [
+              "申",
+              "子",
+              "辰"
+            ],
+            "san_sha_direction_th": "ทิศใต้",
+            "san_sha_direction_zh": "南方",
+            "san_sha_direction_en": "South",
+            "exact_mountains": [
+              "巳",
+              "午",
+              "未"
+            ],
+            "exact_earth_branches": [
+              "巳",
+              "午",
+              "未"
+            ],
+            "standard_5_mountains": [
+              "巳",
+              "丙",
+              "午",
+              "丁",
+              "未"
+            ],
+            "degree_range": {
+              "start": 142.5,
+              "end": 217.5,
+              "wraps_zero": false
+            },
+            "conservative_sector_degrees": {
+              "start": 135,
+              "end": 225,
+              "wraps_zero": false
+            }
           },
           "寅午戌": {
-            "year_branches": ["寅", "午", "戌"],
-            "san_sha_direction_th": "ทิศเหนือ", "san_sha_direction_zh": "北方", "san_sha_direction_en": "North",
-            "exact_mountains": ["亥", "子", "丑"],
-            "exact_earth_branches": ["亥", "子", "丑"],
-            "standard_5_mountains": ["亥", "壬", "子", "癸", "丑"],
-            "degree_range": { "start": 322.5, "end": 37.5, "wraps_zero": true },
-            "conservative_sector_degrees": { "start": 315, "end": 45, "wraps_zero": true }
+            "year_branches": [
+              "寅",
+              "午",
+              "戌"
+            ],
+            "san_sha_direction_th": "ทิศเหนือ",
+            "san_sha_direction_zh": "北方",
+            "san_sha_direction_en": "North",
+            "exact_mountains": [
+              "亥",
+              "子",
+              "丑"
+            ],
+            "exact_earth_branches": [
+              "亥",
+              "子",
+              "丑"
+            ],
+            "standard_5_mountains": [
+              "亥",
+              "壬",
+              "子",
+              "癸",
+              "丑"
+            ],
+            "degree_range": {
+              "start": 322.5,
+              "end": 37.5,
+              "wraps_zero": true
+            },
+            "conservative_sector_degrees": {
+              "start": 315,
+              "end": 45,
+              "wraps_zero": true
+            }
           },
           "亥卯未": {
-            "year_branches": ["亥", "卯", "未"],
-            "san_sha_direction_th": "ทิศตะวันตก", "san_sha_direction_zh": "西方", "san_sha_direction_en": "West",
-            "exact_mountains": ["申", "酉", "戌"],
-            "exact_earth_branches": ["申", "酉", "戌"],
-            "standard_5_mountains": ["申", "庚", "酉", "辛", "戌"],
-            "degree_range": { "start": 232.5, "end": 307.5, "wraps_zero": false },
-            "conservative_sector_degrees": { "start": 225, "end": 315, "wraps_zero": false }
+            "year_branches": [
+              "亥",
+              "卯",
+              "未"
+            ],
+            "san_sha_direction_th": "ทิศตะวันตก",
+            "san_sha_direction_zh": "西方",
+            "san_sha_direction_en": "West",
+            "exact_mountains": [
+              "申",
+              "酉",
+              "戌"
+            ],
+            "exact_earth_branches": [
+              "申",
+              "酉",
+              "戌"
+            ],
+            "standard_5_mountains": [
+              "申",
+              "庚",
+              "酉",
+              "辛",
+              "戌"
+            ],
+            "degree_range": {
+              "start": 232.5,
+              "end": 307.5,
+              "wraps_zero": false
+            },
+            "conservative_sector_degrees": {
+              "start": 225,
+              "end": 315,
+              "wraps_zero": false
+            }
           },
           "巳酉丑": {
-            "year_branches": ["巳", "酉", "丑"],
-            "san_sha_direction_th": "ทิศตะวันออก", "san_sha_direction_zh": "東方", "san_sha_direction_en": "East",
-            "exact_mountains": ["寅", "卯", "辰"],
-            "exact_earth_branches": ["寅", "卯", "辰"],
-            "standard_5_mountains": ["寅", "甲", "卯", "乙", "辰"],
-            "degree_range": { "start": 52.5, "end": 127.5, "wraps_zero": false },
-            "conservative_sector_degrees": { "start": 45, "end": 135, "wraps_zero": false }
+            "year_branches": [
+              "巳",
+              "酉",
+              "丑"
+            ],
+            "san_sha_direction_th": "ทิศตะวันออก",
+            "san_sha_direction_zh": "東方",
+            "san_sha_direction_en": "East",
+            "exact_mountains": [
+              "寅",
+              "卯",
+              "辰"
+            ],
+            "exact_earth_branches": [
+              "寅",
+              "卯",
+              "辰"
+            ],
+            "standard_5_mountains": [
+              "寅",
+              "甲",
+              "卯",
+              "乙",
+              "辰"
+            ],
+            "degree_range": {
+              "start": 52.5,
+              "end": 127.5,
+              "wraps_zero": false
+            },
+            "conservative_sector_degrees": {
+              "start": 45,
+              "end": 135,
+              "wraps_zero": false
+            }
           }
         },
-
-        "avoid_actions": ["heavy_activation", "digging", "demolition", "drilling", "major_renovation"]
+        "avoid_actions": [
+          "heavy_activation",
+          "digging",
+          "demolition",
+          "drilling",
+          "major_renovation"
+        ]
       }
     },
-
     "sui_po_opposites": {
-      "子": "午", "丑": "未", "寅": "申", "卯": "酉", "辰": "戌", "巳": "亥",
-      "午": "子", "未": "丑", "申": "寅", "酉": "卯", "戌": "辰", "亥": "巳"
+      "子": "午",
+      "丑": "未",
+      "寅": "申",
+      "卯": "酉",
+      "辰": "戌",
+      "巳": "亥",
+      "午": "子",
+      "未": "丑",
+      "申": "寅",
+      "酉": "卯",
+      "戌": "辰",
+      "亥": "巳"
     },
-
     "annual_map_by_year_branch": {
-      "子": { "tai_sui": "子", "sui_po": "午", "san_sha_group": "申子辰", "san_sha_direction_th": "ทิศใต้", "san_sha_exact_mountains": ["巳", "午", "未"] },
-      "丑": { "tai_sui": "丑", "sui_po": "未", "san_sha_group": "巳酉丑", "san_sha_direction_th": "ทิศตะวันออก", "san_sha_exact_mountains": ["寅", "卯", "辰"] },
-      "寅": { "tai_sui": "寅", "sui_po": "申", "san_sha_group": "寅午戌", "san_sha_direction_th": "ทิศเหนือ", "san_sha_exact_mountains": ["亥", "子", "丑"] },
-      "卯": { "tai_sui": "卯", "sui_po": "酉", "san_sha_group": "亥卯未", "san_sha_direction_th": "ทิศตะวันตก", "san_sha_exact_mountains": ["申", "酉", "戌"] },
-      "辰": { "tai_sui": "辰", "sui_po": "戌", "san_sha_group": "申子辰", "san_sha_direction_th": "ทิศใต้", "san_sha_exact_mountains": ["巳", "午", "未"] },
-      "巳": { "tai_sui": "巳", "sui_po": "亥", "san_sha_group": "巳酉丑", "san_sha_direction_th": "ทิศตะวันออก", "san_sha_exact_mountains": ["寅", "卯", "辰"] },
-      "午": { "tai_sui": "午", "sui_po": "子", "san_sha_group": "寅午戌", "san_sha_direction_th": "ทิศเหนือ", "san_sha_exact_mountains": ["亥", "子", "丑"] },
-      "未": { "tai_sui": "未", "sui_po": "丑", "san_sha_group": "亥卯未", "san_sha_direction_th": "ทิศตะวันตก", "san_sha_exact_mountains": ["申", "酉", "戌"] },
-      "申": { "tai_sui": "申", "sui_po": "寅", "san_sha_group": "申子辰", "san_sha_direction_th": "ทิศใต้", "san_sha_exact_mountains": ["巳", "午", "未"] },
-      "酉": { "tai_sui": "酉", "sui_po": "卯", "san_sha_group": "巳酉丑", "san_sha_direction_th": "ทิศตะวันออก", "san_sha_exact_mountains": ["寅", "卯", "辰"] },
-      "戌": { "tai_sui": "戌", "sui_po": "辰", "san_sha_group": "寅午戌", "san_sha_direction_th": "ทิศเหนือ", "san_sha_exact_mountains": ["亥", "子", "丑"] },
-      "亥": { "tai_sui": "亥", "sui_po": "巳", "san_sha_group": "亥卯未", "san_sha_direction_th": "ทิศตะวันตก", "san_sha_exact_mountains": ["申", "酉", "戌"] }
+      "子": {
+        "tai_sui": "子",
+        "sui_po": "午",
+        "san_sha_group": "申子辰",
+        "san_sha_direction_th": "ทิศใต้",
+        "san_sha_exact_mountains": [
+          "巳",
+          "午",
+          "未"
+        ],
+        "san_sha_direction_en": "South",
+        "san_sha_direction_zh": "南方"
+      },
+      "丑": {
+        "tai_sui": "丑",
+        "sui_po": "未",
+        "san_sha_group": "巳酉丑",
+        "san_sha_direction_th": "ทิศตะวันออก",
+        "san_sha_exact_mountains": [
+          "寅",
+          "卯",
+          "辰"
+        ],
+        "san_sha_direction_en": "East",
+        "san_sha_direction_zh": "東方"
+      },
+      "寅": {
+        "tai_sui": "寅",
+        "sui_po": "申",
+        "san_sha_group": "寅午戌",
+        "san_sha_direction_th": "ทิศเหนือ",
+        "san_sha_exact_mountains": [
+          "亥",
+          "子",
+          "丑"
+        ],
+        "san_sha_direction_en": "North",
+        "san_sha_direction_zh": "北方"
+      },
+      "卯": {
+        "tai_sui": "卯",
+        "sui_po": "酉",
+        "san_sha_group": "亥卯未",
+        "san_sha_direction_th": "ทิศตะวันตก",
+        "san_sha_exact_mountains": [
+          "申",
+          "酉",
+          "戌"
+        ],
+        "san_sha_direction_en": "West",
+        "san_sha_direction_zh": "西方"
+      },
+      "辰": {
+        "tai_sui": "辰",
+        "sui_po": "戌",
+        "san_sha_group": "申子辰",
+        "san_sha_direction_th": "ทิศใต้",
+        "san_sha_exact_mountains": [
+          "巳",
+          "午",
+          "未"
+        ],
+        "san_sha_direction_en": "South",
+        "san_sha_direction_zh": "南方"
+      },
+      "巳": {
+        "tai_sui": "巳",
+        "sui_po": "亥",
+        "san_sha_group": "巳酉丑",
+        "san_sha_direction_th": "ทิศตะวันออก",
+        "san_sha_exact_mountains": [
+          "寅",
+          "卯",
+          "辰"
+        ],
+        "san_sha_direction_en": "East",
+        "san_sha_direction_zh": "東方"
+      },
+      "午": {
+        "tai_sui": "午",
+        "sui_po": "子",
+        "san_sha_group": "寅午戌",
+        "san_sha_direction_th": "ทิศเหนือ",
+        "san_sha_exact_mountains": [
+          "亥",
+          "子",
+          "丑"
+        ],
+        "san_sha_direction_en": "North",
+        "san_sha_direction_zh": "北方"
+      },
+      "未": {
+        "tai_sui": "未",
+        "sui_po": "丑",
+        "san_sha_group": "亥卯未",
+        "san_sha_direction_th": "ทิศตะวันตก",
+        "san_sha_exact_mountains": [
+          "申",
+          "酉",
+          "戌"
+        ],
+        "san_sha_direction_en": "West",
+        "san_sha_direction_zh": "西方"
+      },
+      "申": {
+        "tai_sui": "申",
+        "sui_po": "寅",
+        "san_sha_group": "申子辰",
+        "san_sha_direction_th": "ทิศใต้",
+        "san_sha_exact_mountains": [
+          "巳",
+          "午",
+          "未"
+        ],
+        "san_sha_direction_en": "South",
+        "san_sha_direction_zh": "南方"
+      },
+      "酉": {
+        "tai_sui": "酉",
+        "sui_po": "卯",
+        "san_sha_group": "巳酉丑",
+        "san_sha_direction_th": "ทิศตะวันออก",
+        "san_sha_exact_mountains": [
+          "寅",
+          "卯",
+          "辰"
+        ],
+        "san_sha_direction_en": "East",
+        "san_sha_direction_zh": "東方"
+      },
+      "戌": {
+        "tai_sui": "戌",
+        "sui_po": "辰",
+        "san_sha_group": "寅午戌",
+        "san_sha_direction_th": "ทิศเหนือ",
+        "san_sha_exact_mountains": [
+          "亥",
+          "子",
+          "丑"
+        ],
+        "san_sha_direction_en": "North",
+        "san_sha_direction_zh": "北方"
+      },
+      "亥": {
+        "tai_sui": "亥",
+        "sui_po": "巳",
+        "san_sha_group": "亥卯未",
+        "san_sha_direction_th": "ทิศตะวันตก",
+        "san_sha_exact_mountains": [
+          "申",
+          "酉",
+          "戌"
+        ],
+        "san_sha_direction_en": "West",
+        "san_sha_direction_zh": "西方"
+      }
     },
-
     "evaluation_engine": {
-      "input_fields": ["selected_year", "selected_year_ganzhi", "selected_year_branch", "current_bearing_degree", "current_mountain", "current_mountain_type", "san_sha_precision_mode"],
+      "input_fields": [
+        "selected_year",
+        "selected_year_ganzhi",
+        "selected_year_branch",
+        "current_bearing_degree",
+        "current_mountain",
+        "current_mountain_type",
+        "san_sha_precision_mode"
+      ],
       "default_san_sha_precision_mode": "standard_5_mountains",
       "steps": [
         "1. Determine selected Feng Shui year by Li Chun basis.",
@@ -215,16 +659,31 @@
       ],
       "combine_rule": {
         "if_multiple_warnings": "lowest_score_wins",
-        "priority_order": ["sui_po", "tai_sui", "san_sha"],
+        "priority_order": [
+          "sui_po",
+          "tai_sui",
+          "san_sha"
+        ],
         "score_rule": "Use the minimum score from all matched warnings."
       }
     },
-
     "display_template": {
       "card_title_th": "太歲/三煞/歲破 · ดาวเตือนปี",
       "card_title_zh": "太歲 / 三煞 / 歲破 · 警示",
       "card_title_en": "Annual Warnings",
-      "fields": ["selected_year", "selected_year_ganzhi", "current_mountain", "current_bearing_degree", "tai_sui_status", "sui_po_status", "san_sha_status", "final_warning_level", "score", "avoid_actions", "recommendation"],
+      "fields": [
+        "selected_year",
+        "selected_year_ganzhi",
+        "current_mountain",
+        "current_bearing_degree",
+        "tai_sui_status",
+        "sui_po_status",
+        "san_sha_status",
+        "final_warning_level",
+        "score",
+        "avoid_actions",
+        "recommendation"
+      ],
       "safe_message_th": "ทิศนี้ไม่ตรงกับ太歲, 歲破 หรือ三煞ในปีที่เลือก ถือว่าปลอดภัยเบื้องต้นสำหรับการใช้งานทั่วไป",
       "safe_message_zh": "此方未犯太歲、歲破、三煞，可作初步安全參考。",
       "safe_message_en": "This direction does not hit Tai Sui, Sui Po, or San Sha for the selected year. It is generally safe for normal use.",
@@ -232,14 +691,34 @@
       "warning_disclaimer_zh": "此警示僅作流年動土修造參考，實際施工仍須配合擇日、宅盤與其他風水系統同看。",
       "warning_disclaimer_en": "This warning is for annual renovation and activation reference only. Actual construction should also consider date selection, the house chart, and other Feng Shui systems."
     },
-
     "example_2026": {
       "selected_year": 2026,
       "selected_year_ganzhi": "丙午",
       "selected_year_branch": "午",
-      "tai_sui": { "mountain": "午", "direction_th": "ทิศใต้", "degree_range": "172.5°-187.5°" },
-      "sui_po": { "mountain": "子", "direction_th": "ทิศเหนือ", "degree_range": "352.5°-7.5°" },
-      "san_sha": { "group": "寅午戌", "direction_th": "ทิศเหนือ", "exact_mountains": ["亥", "子", "丑"], "conservative_sector_degrees": { "start": 315, "end": 45, "wraps_zero": true } }
+      "tai_sui": {
+        "mountain": "午",
+        "direction_th": "ทิศใต้",
+        "degree_range": "172.5°-187.5°"
+      },
+      "sui_po": {
+        "mountain": "子",
+        "direction_th": "ทิศเหนือ",
+        "degree_range": "352.5°-7.5°"
+      },
+      "san_sha": {
+        "group": "寅午戌",
+        "direction_th": "ทิศเหนือ",
+        "exact_mountains": [
+          "亥",
+          "子",
+          "丑"
+        ],
+        "conservative_sector_degrees": {
+          "start": 315,
+          "end": 45,
+          "wraps_zero": true
+        }
+      }
     }
   }
 }

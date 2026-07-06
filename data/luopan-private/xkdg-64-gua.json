@@ -116,7 +116,13 @@
       "xkdg": {
         "guaYun": 1,
         "guaQi": 9
-      }
+      },
+      "thaiName_en": "Heaven upon Heaven",
+      "thaiName_zh": "乾為天",
+      "homeUse_en": "Suited to offices, studies, executive rooms, and decision-making areas",
+      "homeUse_zh": "宜作辦公室、書房、主管房與決策空間",
+      "homeAdvice_en": "Works well for spaces that call for leadership, but should not become too rigid or pressuring in a bedroom",
+      "homeAdvice_zh": "利於需要領導力之空間，惟臥室不宜過剛過壓"
     },
     {
       "id": 2,
@@ -132,7 +138,13 @@
       "xkdg": {
         "guaYun": 1,
         "guaQi": 1
-      }
+      },
+      "thaiName_en": "Earth upon Earth",
+      "thaiName_zh": "坤為地",
+      "homeUse_en": "Suited to bedrooms, family rooms, and recuperation areas",
+      "homeUse_zh": "宜作臥室、家庭廳與休養之所",
+      "homeAdvice_en": "Good for calm and relationships, but if afflicted stars join, it may turn heavy, stagnant, and sluggish",
+      "homeAdvice_zh": "利於安寧與人際，惟逢衰星同臨，恐靜極生滯、沉重難動"
     },
     {
       "id": 3,
@@ -148,7 +160,13 @@
       "xkdg": {
         "guaYun": 4,
         "guaQi": 7
-      }
+      },
+      "thaiName_en": "Difficult Beginning",
+      "thaiName_zh": "水雷屯",
+      "homeUse_en": "Better for project start-up areas or temporary storage than for the main door",
+      "homeUse_zh": "宜作創業起步或暫存之處，不宜為大門",
+      "homeAdvice_en": "If used as a door or walkway, good lighting and tidiness are needed to ease the obstruction",
+      "homeAdvice_zh": "若作門路，須以光亮與整潔化其滯礙"
     },
     {
       "id": 4,
@@ -164,7 +182,13 @@
       "xkdg": {
         "guaYun": 2,
         "guaQi": 6
-      }
+      },
+      "thaiName_en": "Youthful Ignorance, Needing to Learn",
+      "thaiName_zh": "山水蒙",
+      "homeUse_en": "Suited to study rooms, children's rooms, or learning areas",
+      "homeUse_zh": "宜作書房、兒童房或學習空間",
+      "homeAdvice_en": "Good when kept orderly and guided by elders; unsuited to a main door that requires clarity",
+      "homeAdvice_zh": "整齊有序、長輩督導則吉；主門須明朗，故不宜"
     },
     {
       "id": 5,
@@ -180,7 +204,13 @@
       "xkdg": {
         "guaYun": 3,
         "guaQi": 7
-      }
+      },
+      "thaiName_en": "Waiting for the Right Moment",
+      "thaiName_zh": "水天需",
+      "homeUse_en": "Suited to waiting areas, reception rooms, or preparation spaces",
+      "homeUse_zh": "宜作等候區、客廳或備事之處",
+      "homeAdvice_en": "Usable if not over-activated; good for accumulating opportunities",
+      "homeAdvice_zh": "不宜強催，宜養機蓄勢，靜待其時"
     },
     {
       "id": 6,
@@ -196,7 +226,13 @@
       "xkdg": {
         "guaYun": 3,
         "guaQi": 9
-      }
+      },
+      "thaiName_en": "Dispute",
+      "thaiName_zh": "天水訟",
+      "homeUse_en": "Unsuited to the main door or points of activated movement",
+      "homeUse_zh": "不宜為大門或催動之位",
+      "homeAdvice_en": "If it falls on an office, emphasize clear rules and reduce sharp objects, harsh light, and loud noise",
+      "homeAdvice_zh": "若臨書房辦公之處，須立明規，減利器、烈光與噪音"
     },
     {
       "id": 7,
@@ -212,7 +248,13 @@
       "xkdg": {
         "guaYun": 7,
         "guaQi": 1
-      }
+      },
+      "thaiName_en": "The Army and Discipline",
+      "thaiName_zh": "地水師",
+      "homeUse_en": "Suited to equipment rooms, utility rooms, or work-management areas",
+      "homeUse_zh": "宜作器材室、設備間或理事之所",
+      "homeAdvice_en": "Works when well-ordered, but should not be activated into tension",
+      "homeAdvice_zh": "有紀律則可用，惟不宜催動至緊張之勢"
     },
     {
       "id": 8,
@@ -228,7 +270,13 @@
       "xkdg": {
         "guaYun": 7,
         "guaQi": 7
-      }
+      },
+      "thaiName_en": "Union and Support",
+      "thaiName_zh": "水地比",
+      "homeUse_en": "Suited to living rooms, meeting rooms, or family areas",
+      "homeUse_zh": "宜作客廳、會議室或家庭空間",
+      "homeAdvice_en": "Good for relationships as long as it is not too damp or dark",
+      "homeAdvice_zh": "利人際親比，惟忌過濕過暗"
     },
     {
       "id": 9,
@@ -244,7 +292,13 @@
       "xkdg": {
         "guaYun": 8,
         "guaQi": 2
-      }
+      },
+      "thaiName_en": "Small Accumulation",
+      "thaiName_zh": "風天小畜",
+      "homeUse_en": "Suited to storage, documents, planning work, and long-term finances",
+      "homeUse_zh": "宜作庫房、文書、規劃與長線財務之所",
+      "homeAdvice_en": "Good for gradual accumulation, but unsuited to activities that need a fast burst of energy",
+      "homeAdvice_zh": "利積蓄養力，不宜求速發之事"
     },
     {
       "id": 10,
@@ -260,7 +314,13 @@
       "xkdg": {
         "guaYun": 6,
         "guaQi": 9
-      }
+      },
+      "thaiName_en": "Treading Carefully",
+      "thaiName_zh": "天澤履",
+      "homeUse_en": "Suited to an orderly entrance hall or reception area",
+      "homeUse_zh": "宜作整潔門廳或接待之處",
+      "homeAdvice_en": "Lay out clear walkways; reduce slipperiness and tripping hazards",
+      "homeAdvice_zh": "動線宜明，防滑防絆"
     },
     {
       "id": 11,
@@ -276,7 +336,13 @@
       "xkdg": {
         "guaYun": 9,
         "guaQi": 1
-      }
+      },
+      "thaiName_en": "Peace and Prosperity",
+      "thaiName_zh": "地天泰",
+      "homeUse_en": "Suited to the main door, living room, family room, and open energy-receiving areas",
+      "homeUse_zh": "宜作大門、客廳、家庭廳與納氣開敞之所",
+      "homeAdvice_en": "An excellent hexagram for harmony, provided the stars and surroundings support it",
+      "homeAdvice_zh": "天地交泰，大吉之卦；星曜與外局相配，和諧更顯"
     },
     {
       "id": 12,
@@ -292,7 +358,13 @@
       "xkdg": {
         "guaYun": 9,
         "guaQi": 9
-      }
+      },
+      "thaiName_en": "Blockage",
+      "thaiName_zh": "天地否",
+      "homeUse_en": "Unsuited to the main door or gathering areas",
+      "homeUse_zh": "不宜為大門或聚眾之所",
+      "homeAdvice_en": "Remedy with light, airflow, connected walkways, and fewer obstructions",
+      "homeAdvice_zh": "宜以光亮、通風、動線相連化解，並除阻礙之物"
     },
     {
       "id": 13,
@@ -308,7 +380,13 @@
       "xkdg": {
         "guaYun": 7,
         "guaQi": 9
-      }
+      },
+      "thaiName_en": "Fellowship",
+      "thaiName_zh": "天火同人",
+      "homeUse_en": "Suited to meeting rooms, living rooms, and shared workspaces",
+      "homeUse_zh": "宜作會議室、客廳與共事空間",
+      "homeAdvice_en": "Good for reputation and networks, but guard against excess fire and heated tempers",
+      "homeAdvice_zh": "利名聲人脈，惟防火氣與情緒過旺"
     },
     {
       "id": 14,
@@ -324,7 +402,13 @@
       "xkdg": {
         "guaYun": 7,
         "guaQi": 3
-      }
+      },
+      "thaiName_en": "Great Abundance",
+      "thaiName_zh": "火天大有",
+      "homeUse_en": "Suited to doors, reception areas, offices, and showrooms",
+      "homeUse_zh": "宜作門戶、迎賓之處、辦公室與展示廳",
+      "homeAdvice_en": "Excellent when open, bright, clean, and the stars are not afflicted",
+      "homeAdvice_zh": "開敞明亮潔淨、星曜不衰則大吉"
     },
     {
       "id": 15,
@@ -340,7 +424,13 @@
       "xkdg": {
         "guaYun": 6,
         "guaQi": 1
-      }
+      },
+      "thaiName_en": "Modesty",
+      "thaiName_zh": "地山謙",
+      "homeUse_en": "Suited to bedrooms, altar rooms, quiet rooms, or recuperation areas",
+      "homeUse_zh": "宜作臥室、佛堂、靜室或休養之所",
+      "homeAdvice_en": "Good for stillness and reducing conflict, but not prominent for display or marketing",
+      "homeAdvice_zh": "利安靜息爭，惟不擅張揚行銷之用"
     },
     {
       "id": 16,
@@ -356,7 +446,13 @@
       "xkdg": {
         "guaYun": 8,
         "guaQi": 8
-      }
+      },
+      "thaiName_en": "Delight and Readiness",
+      "thaiName_zh": "雷地豫",
+      "homeUse_en": "Suited to activity rooms, family areas, or project launch spaces",
+      "homeUse_zh": "宜作活動室、家庭空間或啟事開工之處",
+      "homeAdvice_en": "Works well if not too noisy or over-stimulated into commotion",
+      "homeAdvice_zh": "不喧鬧、不過催則吉"
     },
     {
       "id": 17,
@@ -372,7 +468,13 @@
       "xkdg": {
         "guaYun": 7,
         "guaQi": 4
-      }
+      },
+      "thaiName_en": "Following the Flow",
+      "thaiName_zh": "澤雷隨",
+      "homeUse_en": "Suited to communication, trading, and service areas",
+      "homeUse_zh": "宜作交流、買賣與服務空間",
+      "homeAdvice_en": "Good for flexibility, but keep your own principles; do not merely drift after others",
+      "homeAdvice_zh": "利隨機應變，惟須有主見，勿隨波逐流"
     },
     {
       "id": 18,
@@ -388,7 +490,13 @@
       "xkdg": {
         "guaYun": 7,
         "guaQi": 6
-      }
+      },
+      "thaiName_en": "Repairing the Decayed",
+      "thaiName_zh": "山風蠱",
+      "homeUse_en": "Better for repair work, storage, or refurbishment than for main living areas",
+      "homeUse_zh": "宜作修繕、儲物或整治之處，不宜為主要空間",
+      "homeAdvice_en": "Clear out old items, odors, dampness, and decaying systems",
+      "homeAdvice_zh": "須清理舊物、異味、潮濕與朽壞之設施"
     },
     {
       "id": 19,
@@ -404,7 +512,13 @@
       "xkdg": {
         "guaYun": 4,
         "guaQi": 1
-      }
+      },
+      "thaiName_en": "Approaching Opportunity",
+      "thaiName_zh": "地澤臨",
+      "homeUse_en": "Suited to guest reception, customer care, and family areas",
+      "homeUse_zh": "宜作迎賓、客戶接待與家庭空間",
+      "homeAdvice_en": "Good for relationships and opportunities, but must not be cluttered or sluggish",
+      "homeAdvice_zh": "利人緣與機遇，惟忌雜亂滯重"
     },
     {
       "id": 20,
@@ -420,7 +534,13 @@
       "xkdg": {
         "guaYun": 2,
         "guaQi": 2
-      }
+      },
+      "thaiName_en": "Observation and Overview",
+      "thaiName_zh": "風地觀",
+      "homeUse_en": "Suited to planning rooms, offices, or spaces that need perspective",
+      "homeUse_zh": "宜作規劃室、書房或需縱觀全局之所",
+      "homeAdvice_en": "Good with openness and natural light, but do not merely watch without taking action",
+      "homeAdvice_zh": "通透採光則吉，惟勿觀望不行"
     },
     {
       "id": 21,
@@ -436,7 +556,13 @@
       "xkdg": {
         "guaYun": 6,
         "guaQi": 3
-      }
+      },
+      "thaiName_en": "Biting Through Obstacles",
+      "thaiName_zh": "火雷噬嗑",
+      "homeUse_en": "Suited to areas for tackling hard problems; unsuited to bedrooms",
+      "homeUse_zh": "宜作處理難事之所，不宜為臥室",
+      "homeAdvice_en": "Beware quarrels, sharp objects, electrical hazards, and overly harsh decisions",
+      "homeAdvice_zh": "防口舌、利器、電火與剛斷之失"
     },
     {
       "id": 22,
@@ -452,7 +578,13 @@
       "xkdg": {
         "guaYun": 8,
         "guaQi": 6
-      }
+      },
+      "thaiName_en": "Graceful Adornment",
+      "thaiName_zh": "山火賁",
+      "homeUse_en": "Suited to reception halls, dressing rooms, and showrooms",
+      "homeUse_zh": "宜作迎賓廳、更衣室與展示廳",
+      "homeAdvice_en": "Good for image, but beauty must not outweigh substance",
+      "homeAdvice_zh": "利門面形象，惟勿文過其質"
     },
     {
       "id": 23,
@@ -468,7 +600,13 @@
       "xkdg": {
         "guaYun": 6,
         "guaQi": 6
-      }
+      },
+      "thaiName_en": "Peeling Away and Decay",
+      "thaiName_zh": "山地剝",
+      "homeUse_en": "Unsuited to the main door or key functional rooms",
+      "homeUse_zh": "不宜為大門或重要用房",
+      "homeAdvice_en": "Inspect the structure, dampness, cracked walls, and rotting items, and reduce activation",
+      "homeAdvice_zh": "宜檢查結構、潮濕、牆裂與朽物，並減少催動"
     },
     {
       "id": 24,
@@ -484,7 +622,13 @@
       "xkdg": {
         "guaYun": 8,
         "guaQi": 1
-      }
+      },
+      "thaiName_en": "Return and Recovery",
+      "thaiName_zh": "地雷復",
+      "homeUse_en": "Suited to recovery, health, and fresh-start areas",
+      "homeUse_zh": "宜作療養、健康與重新出發之所",
+      "homeAdvice_en": "Good for resetting life and home, if kept clean with just the right amount of movement",
+      "homeAdvice_zh": "利宅運更新，須潔淨並保適度流動之氣"
     },
     {
       "id": 25,
@@ -500,7 +644,13 @@
       "xkdg": {
         "guaYun": 2,
         "guaQi": 9
-      }
+      },
+      "thaiName_en": "True and Unforced",
+      "thaiName_zh": "天雷無妄",
+      "homeUse_en": "Suited to workspaces that value straightforwardness",
+      "homeUse_zh": "宜作重誠直之工作空間",
+      "homeAdvice_en": "Works when the home systems stay simple; avoid deceptive or overly complex arrangements",
+      "homeAdvice_zh": "宅制簡明則吉，忌布置迷眼或過於繁複"
     },
     {
       "id": 26,
@@ -516,7 +666,13 @@
       "xkdg": {
         "guaYun": 4,
         "guaQi": 6
-      }
+      },
+      "thaiName_en": "Great Accumulation",
+      "thaiName_zh": "山天大畜",
+      "homeUse_en": "Suited to offices, wealth storage, and libraries",
+      "homeUse_zh": "宜作書房、財庫與藏書之室",
+      "homeAdvice_en": "Good for accumulation and long-term planning, but must not become congested",
+      "homeAdvice_zh": "利蓄積與長謀，惟忌閉塞不通"
     },
     {
       "id": 27,
@@ -532,7 +688,13 @@
       "xkdg": {
         "guaYun": 3,
         "guaQi": 6
-      }
+      },
+      "thaiName_en": "Nourishment and the Mouth",
+      "thaiName_zh": "山雷頤",
+      "homeUse_en": "Suited to kitchens, dining rooms, and health-care areas",
+      "homeUse_zh": "宜作廚房、餐廳與養生之所",
+      "homeAdvice_en": "Good when centered on wholesome food, kind words, and cleanliness; beware quarrels",
+      "homeAdvice_zh": "重飲食、善言語、保潔淨則吉，防口舌是非"
     },
     {
       "id": 28,
@@ -548,7 +710,13 @@
       "xkdg": {
         "guaYun": 3,
         "guaQi": 4
-      }
+      },
+      "thaiName_en": "Excessive Load",
+      "thaiName_zh": "澤風大過",
+      "homeUse_en": "Unsuited to key high-traffic points if the layout is not structurally strong",
+      "homeUse_zh": "若格局不堅，不宜為承重聚眾之要位",
+      "homeAdvice_en": "Check the structure, reduce heavy loads and pressure, and do not activate strongly",
+      "homeAdvice_zh": "宜察結構，減重減壓，勿強催動"
     },
     {
       "id": 29,
@@ -564,7 +732,13 @@
       "xkdg": {
         "guaYun": 1,
         "guaQi": 7
-      }
+      },
+      "thaiName_en": "Water upon Water, the Perilous Pit",
+      "thaiName_zh": "坎為水",
+      "homeUse_en": "Unsuited to the main door if dark, damp, or strongly activated",
+      "homeUse_zh": "若昏暗潮濕或動氣過強，不宜為大門",
+      "homeAdvice_en": "Control dampness, plumbing, water leaks, lighting, and safety",
+      "homeAdvice_zh": "須防潮濕與水管滲漏，重採光與安全"
     },
     {
       "id": 30,
@@ -580,7 +754,13 @@
       "xkdg": {
         "guaYun": 1,
         "guaQi": 3
-      }
+      },
+      "thaiName_en": "Fire upon Fire, Radiance",
+      "thaiName_zh": "離為火",
+      "homeUse_en": "Suited to display areas, bright lighting, and reputation-oriented work",
+      "homeUse_zh": "宜作展示、光明與求名之所",
+      "homeAdvice_en": "Good in the Fire period if heat and tempers are controlled; unsuited to those easily stressed",
+      "homeAdvice_zh": "火運當令則吉，須制燥熱與情緒；心緒易亂者不宜"
     },
     {
       "id": 31,
@@ -596,7 +776,13 @@
       "xkdg": {
         "guaYun": 9,
         "guaQi": 4
-      }
+      },
+      "thaiName_en": "Attraction and Mutual Feeling",
+      "thaiName_zh": "澤山咸",
+      "homeUse_en": "Suited to sitting rooms, couples' rooms, and welcoming areas",
+      "homeUse_zh": "宜作起居室、夫妻房與迎賓之所",
+      "homeAdvice_en": "Good for human relations, but restrain restlessness and entangled affairs",
+      "homeAdvice_zh": "利人緣情感，惟防心浮與感情糾葛"
     },
     {
       "id": 32,
@@ -612,7 +798,13 @@
       "xkdg": {
         "guaYun": 9,
         "guaQi": 8
-      }
+      },
+      "thaiName_en": "Endurance",
+      "thaiName_zh": "雷風恆",
+      "homeUse_en": "Suited to the couple's bedroom, family rooms, and daily-routine areas",
+      "homeUse_zh": "宜作夫妻臥室、家庭廳與日常起居之所",
+      "homeAdvice_en": "Good for lasting stability, but avoid monotony that halts growth",
+      "homeAdvice_zh": "利長久安定，惟勿守常而不進"
     },
     {
       "id": 33,
@@ -628,7 +820,13 @@
       "xkdg": {
         "guaYun": 4,
         "guaQi": 9
-      }
+      },
+      "thaiName_en": "Retreat",
+      "thaiName_zh": "天山遯",
+      "homeUse_en": "Suited to rest rooms, secluded corners, and meditation rooms",
+      "homeUse_zh": "宜作休憩、避靜與禪修之室",
+      "homeAdvice_en": "Good for rest, but unsuited to a business entrance that needs foot traffic",
+      "homeAdvice_zh": "利退養休息，商門求人氣者不宜"
     },
     {
       "id": 34,
@@ -644,7 +842,13 @@
       "xkdg": {
         "guaYun": 2,
         "guaQi": 8
-      }
+      },
+      "thaiName_en": "Great Power",
+      "thaiName_zh": "雷天大壯",
+      "homeUse_en": "Suited to exercise areas, market-conquering work, and activity spaces",
+      "homeUse_zh": "宜作健身、進取拓業與活動之所",
+      "homeAdvice_en": "Good if the force is well controlled; beware noise, clashes, and impatience",
+      "homeAdvice_zh": "能制其剛則吉，防喧鬧、衝撞與急躁"
     },
     {
       "id": 35,
@@ -660,7 +864,13 @@
       "xkdg": {
         "guaYun": 3,
         "guaQi": 3
-      }
+      },
+      "thaiName_en": "Advancement",
+      "thaiName_zh": "火地晉",
+      "homeUse_en": "Suited to doors, offices, reception halls, and areas for displaying achievements",
+      "homeUse_zh": "宜作門戶、辦公、迎賓廳與展績之所",
+      "homeAdvice_en": "Excellent for reputation and advancement when bright and open",
+      "homeAdvice_zh": "明亮通透則大利名聲與晉升"
     },
     {
       "id": 36,
@@ -676,7 +886,13 @@
       "xkdg": {
         "guaYun": 3,
         "guaQi": 1
-      }
+      },
+      "thaiName_en": "Light Obscured",
+      "thaiName_zh": "地火明夷",
+      "homeUse_en": "Unsuited to reputation areas or the main door",
+      "homeUse_zh": "不宜為求名之所或大門",
+      "homeAdvice_en": "Add light, open up dead corners, and beware being sidelined",
+      "homeAdvice_zh": "宜增光照、開暗角，防才華受掩、地位受抑"
     },
     {
       "id": 37,
@@ -692,7 +908,13 @@
       "xkdg": {
         "guaYun": 4,
         "guaQi": 2
-      }
+      },
+      "thaiName_en": "People of the Household",
+      "thaiName_zh": "風火家人",
+      "homeUse_en": "Suited to family rooms, dining rooms, and living rooms",
+      "homeUse_zh": "宜作家庭廳、餐廳與起居室",
+      "homeAdvice_en": "Excellent for the home when house rules are clear, relations are warm, and the light is good",
+      "homeAdvice_zh": "家規明、情誼暖、光照足則大吉"
     },
     {
       "id": 38,
@@ -708,7 +930,13 @@
       "xkdg": {
         "guaYun": 2,
         "guaQi": 3
-      }
+      },
+      "thaiName_en": "Divergent Minds",
+      "thaiName_zh": "火澤睽",
+      "homeUse_en": "Unsuited to couples' rooms or key negotiation areas",
+      "homeUse_zh": "不宜為夫妻房或要事商談之所",
+      "homeAdvice_en": "Use calming colors, reduce mirrors and harsh lights, and arrange seating face to face for good dialogue",
+      "homeAdvice_zh": "宜用靜色，減鏡與烈光，座位相向以利溝通"
     },
     {
       "id": 39,
@@ -724,7 +952,13 @@
       "xkdg": {
         "guaYun": 2,
         "guaQi": 7
-      }
+      },
+      "thaiName_en": "Obstruction",
+      "thaiName_zh": "水山蹇",
+      "homeUse_en": "Unsuited to the main door, main corridors, or key staircases",
+      "homeUse_zh": "不宜為大門、主要動線或要梯",
+      "homeAdvice_en": "Remedy the walkways: keep them clear, well lit, and free of obstacles",
+      "homeAdvice_zh": "宜通動線、增光亮、除障礙之物"
     },
     {
       "id": 40,
@@ -740,7 +974,13 @@
       "xkdg": {
         "guaYun": 4,
         "guaQi": 8
-      }
+      },
+      "thaiName_en": "Release and Resolution",
+      "thaiName_zh": "雷水解",
+      "homeUse_en": "Suited to problem-solving areas, offices, or recovery spaces",
+      "homeUse_zh": "宜作解事、辦公或修復之所",
+      "homeAdvice_en": "Good when a stuck situation needs to be set back in motion",
+      "homeAdvice_zh": "利化滯為動、解困開局"
     },
     {
       "id": 41,
@@ -756,7 +996,13 @@
       "xkdg": {
         "guaYun": 9,
         "guaQi": 6
-      }
+      },
+      "thaiName_en": "Decrease in Order to Gain",
+      "thaiName_zh": "山澤損",
+      "homeUse_en": "Suited to decluttered, minimally stored, quiet spaces",
+      "homeUse_zh": "宜作簡約少物之靜室",
+      "homeAdvice_en": "Good for lightening burdens, but unsuited to strong wealth-activation points",
+      "homeAdvice_zh": "利減負去繁，不宜作強催財之位"
     },
     {
       "id": 42,
@@ -772,7 +1018,13 @@
       "xkdg": {
         "guaYun": 9,
         "guaQi": 2
-      }
+      },
+      "thaiName_en": "Increase",
+      "thaiName_zh": "風雷益",
+      "homeUse_en": "Suited to doors, wealth spots, sales work, learning, and growth areas",
+      "homeUse_zh": "宜作門戶、財位、營銷、進修與成長空間",
+      "homeAdvice_en": "Excellent when open to airflow, light, and just the right amount of movement",
+      "homeAdvice_zh": "納氣採光、動靜得宜則大吉"
     },
     {
       "id": 43,
@@ -788,7 +1040,13 @@
       "xkdg": {
         "guaYun": 6,
         "guaQi": 4
-      }
+      },
+      "thaiName_en": "Decisive Breakthrough",
+      "thaiName_zh": "澤天夬",
+      "homeUse_en": "Suited to decision-making work or meetings; unsuited to bedrooms",
+      "homeUse_zh": "宜作決策議事之所，不宜為臥室",
+      "homeAdvice_en": "Usable when decisiveness is needed, but beware harsh words and ruptures",
+      "homeAdvice_zh": "需果斷則可用，惟防言辭過烈、關係決裂"
     },
     {
       "id": 44,
@@ -804,7 +1062,13 @@
       "xkdg": {
         "guaYun": 8,
         "guaQi": 9
-      }
+      },
+      "thaiName_en": "Unexpected Encounter",
+      "thaiName_zh": "天風姤",
+      "homeUse_en": "Suited to guest areas or new opportunities, but outsiders must be kept in check",
+      "homeUse_zh": "宜作迎賓納新之所，惟須慎防外人",
+      "homeAdvice_en": "Beware overlapping relationships, temptations, and openness beyond control",
+      "homeAdvice_zh": "防感情糾纏、外誘與門戶失守"
     },
     {
       "id": 45,
@@ -820,7 +1084,13 @@
       "xkdg": {
         "guaYun": 4,
         "guaQi": 4
-      }
+      },
+      "thaiName_en": "Gathering",
+      "thaiName_zh": "澤地萃",
+      "homeUse_en": "Suited to living rooms, family rooms, and gathering areas",
+      "homeUse_zh": "宜作客廳、家庭廳與聚會之所",
+      "homeAdvice_en": "Good for gathering strength, but must not be cluttered or overly noisy",
+      "homeAdvice_zh": "利聚人聚力，惟忌雜亂喧嘩"
     },
     {
       "id": 46,
@@ -836,7 +1106,13 @@
       "xkdg": {
         "guaYun": 2,
         "guaQi": 1
-      }
+      },
+      "thaiName_en": "Ascending Step by Step",
+      "thaiName_zh": "地風升",
+      "homeUse_en": "Suited to staircases, offices, study, and career growth",
+      "homeUse_zh": "宜作樓梯、書房、進修與晉身之所",
+      "homeAdvice_en": "Excellent when the stairways are safe, clean, and unobstructed",
+      "homeAdvice_zh": "梯道安全潔淨通暢則大吉"
     },
     {
       "id": 47,
@@ -852,7 +1128,13 @@
       "xkdg": {
         "guaYun": 8,
         "guaQi": 4
-      }
+      },
+      "thaiName_en": "Exhaustion and Confinement",
+      "thaiName_zh": "澤水困",
+      "homeUse_en": "Unsuited to the main door, offices, or trading premises",
+      "homeUse_zh": "不宜為大門、辦公或營商之所",
+      "homeAdvice_en": "Add outlets, airflow, and light, and reduce dampness and pressure",
+      "homeAdvice_zh": "宜增出路、通風採光，去潮濕與壓迫"
     },
     {
       "id": 48,
@@ -868,7 +1150,13 @@
       "xkdg": {
         "guaYun": 6,
         "guaQi": 7
-      }
+      },
+      "thaiName_en": "The Well",
+      "thaiName_zh": "水風井",
+      "homeUse_en": "Suited to kitchens, water areas, livelihood spaces, and resource points",
+      "homeUse_zh": "宜作廚房、水位、營生與資源之所",
+      "homeAdvice_en": "Good when the water system is clean, leak-free, never stagnant, and regularly used",
+      "homeAdvice_zh": "水潔不漏、不滯常用則吉"
     },
     {
       "id": 49,
@@ -884,7 +1172,13 @@
       "xkdg": {
         "guaYun": 2,
         "guaQi": 4
-      }
+      },
+      "thaiName_en": "Great Transformation",
+      "thaiName_zh": "澤火革",
+      "homeUse_en": "Suited to renovation phases or system overhauls; unsuited to quiet rest areas",
+      "homeUse_zh": "宜作改造革新之期，不宜為安寢靜處",
+      "homeAdvice_en": "Use when life needs changing, but plan it well; do not act too abruptly",
+      "homeAdvice_zh": "求變則用，惟須謀定後動，勿倉促行事"
     },
     {
       "id": 50,
@@ -900,7 +1194,13 @@
       "xkdg": {
         "guaYun": 4,
         "guaQi": 3
-      }
+      },
+      "thaiName_en": "The Ritual Cauldron, a New Foundation",
+      "thaiName_zh": "火風鼎",
+      "homeUse_en": "Suited to kitchens, dining rooms, business, and brand-building work",
+      "homeUse_zh": "宜作廚房、餐廳、事業與立名創牌之所",
+      "homeAdvice_en": "Excellent for elevating the home and its reputation, when clean, bright, and with sound electrical systems",
+      "homeAdvice_zh": "潔淨明亮、爐火電氣良好，則大利宅運與名望"
     },
     {
       "id": 51,
@@ -916,7 +1216,13 @@
       "xkdg": {
         "guaYun": 1,
         "guaQi": 8
-      }
+      },
+      "thaiName_en": "Thunder upon Thunder",
+      "thaiName_zh": "震為雷",
+      "homeUse_en": "Suited to activity or exercise areas, but unsuited to bedrooms or those easily stressed",
+      "homeUse_zh": "宜作活動健身之所，臥室與心緒易驚者不宜",
+      "homeAdvice_en": "Control noise, electrical systems, activation, and haste",
+      "homeAdvice_zh": "須制噪音、電火、催動與急躁"
     },
     {
       "id": 52,
@@ -932,7 +1238,13 @@
       "xkdg": {
         "guaYun": 1,
         "guaQi": 6
-      }
+      },
+      "thaiName_en": "Mountain upon Mountain",
+      "thaiName_zh": "艮為山",
+      "homeUse_en": "Suited to bedrooms, meditation rooms, and storage rooms",
+      "homeUse_zh": "宜作臥室、靜修室與儲物間",
+      "homeAdvice_en": "Good for stillness, but unsuited to trading areas that need high flow",
+      "homeAdvice_zh": "利安定寧靜，惟求人流暢旺之商所不宜"
     },
     {
       "id": 53,
@@ -948,7 +1260,13 @@
       "xkdg": {
         "guaYun": 7,
         "guaQi": 2
-      }
+      },
+      "thaiName_en": "Gradual Progress",
+      "thaiName_zh": "風山漸",
+      "homeUse_en": "Suited to classrooms, offices, long-term work, and relationships",
+      "homeUse_zh": "宜作學堂、書房、長線之業與情感經營",
+      "homeAdvice_en": "Good for steady growth, but do not rush for quick results",
+      "homeAdvice_zh": "利穩步漸進，勿求速成"
     },
     {
       "id": 54,
@@ -964,7 +1282,13 @@
       "xkdg": {
         "guaYun": 7,
         "guaQi": 8
-      }
+      },
+      "thaiName_en": "A Relationship Out of Its Proper Place",
+      "thaiName_zh": "雷澤歸妹",
+      "homeUse_en": "Unsuited to couples' rooms or primary relationship areas",
+      "homeUse_zh": "不宜為夫妻房或主情感之所",
+      "homeAdvice_en": "Define roles clearly, and reduce temptations and confusion within the home",
+      "homeAdvice_zh": "宜正名分，去誘惑，免家中名位混淆"
     },
     {
       "id": 55,
@@ -980,7 +1304,13 @@
       "xkdg": {
         "guaYun": 6,
         "guaQi": 8
-      }
+      },
+      "thaiName_en": "Abundance",
+      "thaiName_zh": "雷火豐",
+      "homeUse_en": "Suited to reputation areas, sales work, activities, and family spaces",
+      "homeUse_zh": "宜作求名、營銷、活動與家庭之所",
+      "homeAdvice_en": "Excellent, but restrain the excess: light, noise, and commotion",
+      "homeAdvice_zh": "大吉之象，惟須制其過盛，防光烈聲喧與擾攘"
     },
     {
       "id": 56,
@@ -996,7 +1326,13 @@
       "xkdg": {
         "guaYun": 8,
         "guaQi": 3
-      }
+      },
+      "thaiName_en": "Travel and Temporary Stay",
+      "thaiName_zh": "火山旅",
+      "homeUse_en": "Suited to temporary reception areas, guest rooms, or holiday homes",
+      "homeUse_zh": "宜作暫客之廳、客房或度假之居",
+      "homeAdvice_en": "Unsuited to main rooms that need long-term stability",
+      "homeAdvice_zh": "求長久安定之主房不宜"
     },
     {
       "id": 57,
@@ -1012,7 +1348,13 @@
       "xkdg": {
         "guaYun": 1,
         "guaQi": 2
-      }
+      },
+      "thaiName_en": "Wind upon Wind",
+      "thaiName_zh": "巽為風",
+      "homeUse_en": "Suited to offices, marketing, networking, and ventilation paths",
+      "homeUse_zh": "宜作辦公、行銷、人脈經營與通風之口",
+      "homeAdvice_en": "Good with airflow and order; beware indecision or scattered energy",
+      "homeAdvice_zh": "通風整齊則吉，防猶疑不決、氣散不聚"
     },
     {
       "id": 58,
@@ -1028,7 +1370,13 @@
       "xkdg": {
         "guaYun": 1,
         "guaQi": 4
-      }
+      },
+      "thaiName_en": "Lake upon Lake",
+      "thaiName_zh": "兌為澤",
+      "homeUse_en": "Suited to living rooms, communication areas, shops, and service spaces",
+      "homeUse_zh": "宜作客廳、交流之所、店面與服務空間",
+      "homeAdvice_en": "Good for joy and sales; beware quarrels or extravagance",
+      "homeAdvice_zh": "利喜悅與買賣，防口舌與奢靡"
     },
     {
       "id": 59,
@@ -1044,7 +1392,13 @@
       "xkdg": {
         "guaYun": 6,
         "guaQi": 2
-      }
+      },
+      "thaiName_en": "Dispersion, Dissolving the Blockage",
+      "thaiName_zh": "風水渙",
+      "homeUse_en": "Suited to airing out spaces, dispelling stuffiness, or clearing stuck spots",
+      "homeUse_zh": "宜作通風散鬱、化解閉塞之用",
+      "homeAdvice_en": "Good for dissolving stagnant energy, but beware wealth or people dispersing away",
+      "homeAdvice_zh": "利散鬱通氣，惟防財散人離"
     },
     {
       "id": 60,
@@ -1060,7 +1414,13 @@
       "xkdg": {
         "guaYun": 8,
         "guaQi": 7
-      }
+      },
+      "thaiName_en": "Limitation and Discipline",
+      "thaiName_zh": "水澤節",
+      "homeUse_en": "Suited to areas for managing finances, documents, or personal discipline",
+      "homeUse_zh": "宜作理財、文書與自律之所",
+      "homeAdvice_en": "Good with systems and boundaries, but do not constrain the home until it feels oppressive",
+      "homeAdvice_zh": "有節有度則吉，惟勿節之過苦，令宅氣鬱悶"
     },
     {
       "id": 61,
@@ -1076,7 +1436,13 @@
       "xkdg": {
         "guaYun": 3,
         "guaQi": 2
-      }
+      },
+      "thaiName_en": "Sincerity at Heart",
+      "thaiName_zh": "風澤中孚",
+      "homeUse_en": "Suited to family rooms, negotiation rooms, and counseling spaces",
+      "homeUse_zh": "宜作家庭廳、商談室與諮詢之所",
+      "homeAdvice_en": "Good for trust and communication, when the space feels warm and free of visual deceit",
+      "homeAdvice_zh": "空間溫暖、不設迷眼之飾，則利信任與溝通"
     },
     {
       "id": 62,
@@ -1092,7 +1458,13 @@
       "xkdg": {
         "guaYun": 3,
         "guaQi": 8
-      }
+      },
+      "thaiName_en": "Slight Excess",
+      "thaiName_zh": "雷山小過",
+      "homeUse_en": "Suited to detail work or repair areas; unsuited to the main door",
+      "homeUse_zh": "宜作細務修繕之處，不宜為大門",
+      "homeAdvice_en": "Manage the details: noise, switches, electrical systems, and small errors",
+      "homeAdvice_zh": "須慎細節、聲響、開關電氣與小過小失"
     },
     {
       "id": 63,
@@ -1108,7 +1480,13 @@
       "xkdg": {
         "guaYun": 9,
         "guaQi": 7
-      }
+      },
+      "thaiName_en": "Already Accomplished",
+      "thaiName_zh": "水火既濟",
+      "homeUse_en": "Suited to spaces that need balance, such as offices and the couple's bedroom",
+      "homeUse_zh": "宜作需均衡之所，如書房與夫妻臥室",
+      "homeAdvice_en": "Good, but requires continued care, for what is already accomplished can decay through neglect",
+      "homeAdvice_zh": "既濟雖吉，仍須守成；成而忘慎，恐盛極而衰"
     },
     {
       "id": 64,
@@ -1124,7 +1502,13 @@
       "xkdg": {
         "guaYun": 9,
         "guaQi": 3
-      }
+      },
+      "thaiName_en": "Not Yet Accomplished",
+      "thaiName_zh": "火水未濟",
+      "homeUse_en": "Suited to areas under improvement, experimentation, or change",
+      "homeUse_zh": "宜作整頓、試行與變革之處",
+      "homeAdvice_en": "Usable when one knows the system still needs finishing; do not leave things half done",
+      "homeAdvice_zh": "知其未成而續理則可用，切勿半途而廢"
     }
   ],
   "guaYunSourceNote": {

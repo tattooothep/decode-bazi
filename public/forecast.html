@@ -705,16 +705,18 @@ function applyI18N(lang){
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const k = el.getAttribute('data-i18n');
     const t = window.HK_I18N[k]; if (!t) return;
-    const v = t[L] || t.th || '';
+    var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('forecast.html',k,L);}catch(_){}
+    const v = (ov!=null)?ov:(t[L] || t.th || '');
     /* รองรับ HTML markup (<b>, <br>, etc.) เฉพาะคีย์ที่มี tag */
     if (/<[a-z]/i.test(v)) el.innerHTML = v;
     else el.textContent = v;
   });
 }
 window.applyI18N = applyI18N;
+window.__hkOverlayApply=function(l){try{document.documentElement.setAttribute('data-lang',l);}catch(_){}applyI18N(l);};
 try { applyI18N(localStorage.getItem('hk_locale') || 'th'); } catch(_){}
 function _fcLang(){ return document.documentElement.getAttribute('data-lang') || 'th'; }
-function _fcTx(key, n){ const e = window.HK_I18N[key]; const tpl = (e && (e[_fcLang()] || e.th)) || ''; return tpl.replace('{n}', n); }
+function _fcTx(key, n){ var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('forecast.html',key,_fcLang());}catch(_){} const e = window.HK_I18N[key]; const tpl = (ov!=null)?ov:((e && (e[_fcLang()] || e.th)) || ''); return tpl.replace('{n}', n); }
 
 /* ═══ theme ═══ */
 try {
@@ -1109,7 +1111,7 @@ function renderHexDeep(d){
   const ben = d.ben_deep, bian = d.bian_deep;
   if (!ben && !bian) { el.style.display='none'; return; }
   const _L = _fcLang();
-  const _tx = (k) => { const e = window.HK_I18N[k]; return (e && (e[_L] || e.th)) || ''; };
+  const _tx = (k) => { try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('forecast.html',k,_L);if(ov!=null)return ov;}catch(_){} const e = window.HK_I18N[k]; return (e && (e[_L] || e.th)) || ''; };
   function block(deep, labelKey, color){
     if (!deep) return '';
     const av = (deep.action_avoid||[]).slice(0,3).map(x=>'<li>'+x+'</li>').join('');
@@ -1307,5 +1309,17 @@ document.getElementById('fc-submit').addEventListener('click', async () => {
 <script src="/js/hk-luopan-nav.js?v=2" defer></script>
 <script src="/js/hk-hex-deep.js?v=1" defer></script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
+<script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script>
+/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
+(function(){try{
+var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
+if(!l||['th','en','zh'].indexOf(l)!==-1)return;
+var n=0;(function boot(){
+if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
+window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
+})();
+}catch(_){}})();
+</script>
 </body>
 </html>

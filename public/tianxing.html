@@ -515,6 +515,14 @@ const REL_LABEL={
 };
 
 let LANG=(function(){try{const u=new URLSearchParams(location.search).get("lang");if(u&&["th","en","zh"].includes(u))return u;return localStorage.getItem("hk_locale")||localStorage.getItem("hk_lang")||"th";}catch(e){return "th";}})();
+
+/* 🌐 overlay ภาษาใหม่ (vi/ja/ko/ru/es) — ถามค่าจาก /i18n/<locale>.json ก่อน · th/en/zh พฤติกรรมเดิมเป๊ะ (6 ก.ค. 2569) */
+function _txtx(k){
+  var ov=null;try{ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('tianxing.html',k,LANG);}catch(_){}
+  return (ov!=null)?ov:(I18N[LANG]||I18N.th)[k];
+}
+window.__hkOverlayApply=function(l){LANG=l;applyLang();};
+
 let HANDOFF=null;
 let PLACE_NAME="";
 
@@ -524,9 +532,9 @@ function fmtDate(iso){try{const d=new Date(iso);if(isNaN(d.getTime()))return "";
 /* ═══════════ ธีม + ภาษา ═══════════ */
 function applyLang(){
   document.documentElement.lang=LANG;
-  document.title="天星擇日 · "+(I18N[LANG]&&I18N[LANG].title||I18N.th.title)+" 七政四餘 · hourkey";
-  document.querySelectorAll("[data-t]").forEach(el=>{const k=el.getAttribute("data-t");if(I18N[LANG][k])el.textContent=I18N[LANG][k];});
-  document.querySelectorAll("[data-tp]").forEach(el=>{const k=el.getAttribute("data-tp");if(I18N[LANG][k])el.setAttribute("placeholder",I18N[LANG][k]);});
+  document.title="天星擇日 · "+(_txtx("title")||I18N.th.title)+" 七政四餘 · hourkey";
+  document.querySelectorAll("[data-t]").forEach(el=>{const k=el.getAttribute("data-t");const v=_txtx(k);if(v)el.textContent=v;});
+  document.querySelectorAll("[data-tp]").forEach(el=>{const k=el.getAttribute("data-tp");const v=_txtx(k);if(v)el.setAttribute("placeholder",v);});
   document.querySelectorAll("#langSeg button").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
   renderHeader();
   if(window._last){render(window._last);}else{drawWheel(null);}
@@ -554,7 +562,7 @@ function readHandoff(){
 }
 function renderHeader(){
   const el=document.getElementById("hdrBody");
-  if(!HANDOFF){el.innerHTML='<span class="muted">'+esc(I18N[LANG].loading)+"</span>";document.getElementById("placeLine").style.display="none";return;}
+  if(!HANDOFF){el.innerHTML='<span class="muted">'+esc(_txtx("loading"))+"</span>";document.getElementById("placeLine").style.display="none";return;}
   const act=(HANDOFF.activity&&HANDOFF.activity.name)||HANDOFF.act||"";
   el.innerHTML='<span class="dt">🗓 '+esc(fmtDate(HANDOFF.dtUTC))+"</span>"+(act?' <span class="chip">'+esc(act)+"</span>":"");
   const pl=document.getElementById("placeLine");
@@ -926,7 +934,7 @@ document.getElementById("aiBtn").onclick=async function(){
    degrade เงียบ: qimen ล่ม → โชว์เฉพาะนาทีมงคล · ไม่มีพิกัด/วัน → บอกตรง ๆ */
 (function(){
   var msState = { data:null, date:"", lat:null, lng:null, qimen:{}, qByShichen:{}, statusKey:"" };
-  function L(k){ var o=I18N[LANG]; return (o&&o[k])||I18N.th[k]||""; }
+  function L(k){ try{var ov=window.HK_OVERLAY_GET&&HK_OVERLAY_GET('tianxing.html',k,LANG);if(ov!=null)return ov;}catch(_){} var o=I18N[LANG]; return (o&&o[k])||I18N.th[k]||""; }
   /* ทิศ 8 + กลาง (ชุดเดียวกับหน้า today · คน familiar) */
   var DIR = {
     N:{th:'เหนือ',en:'North',zh:'北'}, S:{th:'ใต้',en:'South',zh:'南'},
@@ -1059,5 +1067,17 @@ applyLang();
 loadChart();
 </script>
 <script defer src="/js/hk-zhcn.js?v=1"></script>
+<script src="/js/hk-i18n-core.js?v=1" defer></script>
+<script>
+/* 🌐 hk-overlay-boot · ภาษาใหม่ (vi/ja/ko/ru/es) โหลด /i18n/<locale>.json แล้ว re-apply การแปลของหน้า — th/en/zh ไม่เข้าเงื่อนไขนี้เลย (6 ก.ค. 2569) */
+(function(){try{
+var l=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'';
+if(!l||['th','en','zh'].indexOf(l)!==-1)return;
+var n=0;(function boot(){
+if(!(window.HK&&window.HK.i18n&&window.HK.i18n.loadOverlay)){if(++n<200)setTimeout(boot,50);return;}
+window.HK.i18n.loadOverlay(l).then(function(ov){if(!ov)return;try{if(typeof window.__hkOverlayApply==='function')window.__hkOverlayApply(l);}catch(_){}});
+})();
+}catch(_){}})();
+</script>
 </body>
 </html>

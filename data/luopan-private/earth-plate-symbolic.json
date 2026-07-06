@@ -6,7 +6,6 @@
     "base_ring_en": "Earth Plate / Correct Needle",
     "purpose_th": "ใช้แสดงข้อมูลพื้นฐานเชิง象意และฟังก์ชันของ 24 ขุนเขา ไม่ใช่คำตัดสินฮวงจุ้ยสุดท้าย",
     "not_final_fengshui_judgement": true,
-
     "score_design": {
       "score_type": "symbolic_functional_fit",
       "score_source": "website_editorial_interpretation",
@@ -37,10 +36,14 @@
         }
       }
     },
-
     "dizhi_group_quality": {
       "四長生": {
-        "members": ["寅", "申", "巳", "亥"],
+        "members": [
+          "寅",
+          "申",
+          "巳",
+          "亥"
+        ],
         "name_th": "กลุ่มเกิดใหม่ / ม้าเคลื่อนไหว",
         "name_zh": "四長生 / 驛馬",
         "name_en": "Four Growth / Traveling Horse",
@@ -55,7 +58,12 @@
         ]
       },
       "四正": {
-        "members": ["子", "午", "卯", "酉"],
+        "members": [
+          "子",
+          "午",
+          "卯",
+          "酉"
+        ],
         "name_th": "กลุ่มทิศกลาง / จุดสูงสุด",
         "name_zh": "四正 / 桃花",
         "name_en": "Four Cardinals / Peach Blossom",
@@ -70,7 +78,12 @@
         ]
       },
       "四庫": {
-        "members": ["辰", "戌", "丑", "未"],
+        "members": [
+          "辰",
+          "戌",
+          "丑",
+          "未"
+        ],
         "name_th": "กลุ่มคลัง / ดินเก็บพลัง",
         "name_zh": "四庫",
         "name_en": "Four Storages",
@@ -85,7 +98,6 @@
         ]
       }
     },
-
     "dizhi": {
       "module_id": "dizhi_12_branches",
       "name_th": "12 กิ่งดิน · นักษัตร",
@@ -94,7 +106,6 @@
       "show_when": "current_mountain_type == '地支'",
       "score_type": "symbolic_functional_fit",
       "fallback_message_th": "ทิศนี้ไม่ใช่ตำแหน่ง地支 ให้ไปดูหมวด天干หรือหมวด 24山 แทน",
-
       "items": {
         "子": {
           "order": 1,
@@ -123,23 +134,43 @@
               "use_id": "quiet_corner",
               "label_th": "มุมสงบ",
               "score": 4,
-              "reason_th": "子เป็นน้ำลึก เหมาะกับพื้นที่นิ่งและใช้ความคิด"
+              "reason_th": "子เป็นน้ำลึก เหมาะกับพื้นที่นิ่งและใช้ความคิด",
+              "label_en": "Quiet corner",
+              "label_zh": "靜謐角落",
+              "reason_en": "Zi is deep water, suited to still, contemplative space.",
+              "reason_zh": "子為深水，宜靜宜思之地。"
             },
             {
               "use_id": "planning_work",
               "label_th": "มุมวางแผน",
               "score": 4,
-              "reason_th": "สื่อถึงปัญญา การเก็บข้อมูล และการเริ่มต้นจากภายใน"
+              "reason_th": "สื่อถึงปัญญา การเก็บข้อมูล และการเริ่มต้นจากภายใน",
+              "label_en": "Planning corner",
+              "label_zh": "謀劃之位",
+              "reason_en": "Signifies wisdom, the gathering of information and beginnings from within.",
+              "reason_zh": "象徵智慧、蒐集資訊與由內而發之始。"
             },
             {
               "use_id": "actual_water_feature",
               "label_th": "บ่อน้ำ / สระน้ำจริง",
               "score": 2,
-              "reason_th": "แม้子เป็นธาตุน้ำ แต่การวางน้ำจริงต้องใช้納水หรือดาวเหินแยก"
+              "reason_th": "แม้子เป็นธาตุน้ำ แต่การวางน้ำจริงต้องใช้納水หรือดาวเหินแยก",
+              "label_en": "Actual pond / water feature",
+              "label_zh": "真實水池 · 水景",
+              "reason_en": "Although Zi belongs to the Water element, placing real water requires separate Na Shui (water reception) or Flying Star methods.",
+              "reason_zh": "子雖屬水，然佈置實水須另依納水或飛星之法。"
             }
-          ]
+          ],
+          "reading_en": "Zǐ",
+          "wuxing_en": "Water",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Neutral / specialised",
+          "primary_label_zh": "中平 · 專用",
+          "primary_reason_en": "Zi is deep water, carrying stored power, wisdom, secrecy and inner beginnings; better suited to quiet spaces than lively ones.",
+          "primary_reason_zh": "子為深水，藏蓄力、智慧、隱秘與內在之始，宜靜處而不宜喧鬧之地。",
+          "symbolic_meaning_en": "Beginnings, secrecy, accumulation of power, wisdom, deep movement",
+          "symbolic_meaning_zh": "起始 · 隱秘 · 蓄力 · 智慧 · 深層流動"
         },
-
         "丑": {
           "order": 2,
           "thai_reading": "โจ่ว",
@@ -167,23 +198,43 @@
               "use_id": "storage",
               "label_th": "ห้องเก็บของ",
               "score": 4,
-              "reason_th": "丑เป็นดินหยิน มีภาพ象ของการสะสมและฐานราก"
+              "reason_th": "丑เป็นดินหยิน มีภาพ象ของการสะสมและฐานราก",
+              "label_en": "Storage room",
+              "label_zh": "儲藏室",
+              "reason_en": "Chou is Yin earth, bearing the imagery of accumulation and foundations.",
+              "reason_zh": "丑為陰土，有積蓄與根基之象。"
             },
             {
               "use_id": "document_archive",
               "label_th": "พื้นที่เอกสาร",
               "score": 4,
-              "reason_th": "เหมาะกับของที่ต้องจัดเก็บนานและไม่เคลื่อนไหวบ่อย"
+              "reason_th": "เหมาะกับของที่ต้องจัดเก็บนานและไม่เคลื่อนไหวบ่อย",
+              "label_en": "Document archive area",
+              "label_zh": "文書檔案之地",
+              "reason_en": "Suited to items kept long-term and rarely moved.",
+              "reason_zh": "宜久藏少動之物。"
             },
             {
               "use_id": "active_social_area",
               "label_th": "พื้นที่กิจกรรมคึกคัก",
               "score": 2,
-              "reason_th": "พลัง丑ค่อนข้างนิ่ง หนัก และช้า"
+              "reason_th": "พลัง丑ค่อนข้างนิ่ง หนัก และช้า",
+              "label_en": "Lively activity area",
+              "label_zh": "喧鬧活動之地",
+              "reason_en": "Chou's energy is rather still, heavy and slow.",
+              "reason_zh": "丑氣偏靜、沉而緩。"
             }
-          ]
+          ],
+          "reading_en": "Chǒu",
+          "wuxing_en": "Earth",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Neutral / specialised",
+          "primary_label_zh": "中平 · 專用",
+          "primary_reason_en": "Chou is storage earth — accumulative, heavy and slow — suited to still objects or long-term keeping.",
+          "primary_reason_zh": "丑為庫土，蓄積沉緩，宜靜物與長久收藏。",
+          "symbolic_meaning_en": "Endurance, foundations, accumulation, stability, hard work",
+          "symbolic_meaning_zh": "堅忍 · 根基 · 積蓄 · 穩固 · 勞作"
         },
-
         "寅": {
           "order": 3,
           "thai_reading": "อิ๋น",
@@ -211,23 +262,43 @@
               "use_id": "project_corner",
               "label_th": "มุมเริ่มโปรเจกต์",
               "score": 5,
-              "reason_th": "寅เป็นไม้หยางช่วงต้นฤดูใบไม้ผลิ สื่อถึงแรงเปิดทาง"
+              "reason_th": "寅เป็นไม้หยางช่วงต้นฤดูใบไม้ผลิ สื่อถึงแรงเปิดทาง",
+              "label_en": "Project launch corner",
+              "label_zh": "開創項目之位",
+              "reason_en": "Yin is the Yang wood of early spring, signifying trail-opening force.",
+              "reason_zh": "寅為初春陽木，象開路之勢。"
             },
             {
               "use_id": "entrance_or_transition",
               "label_th": "โถงทางเข้า / พื้นที่เปลี่ยนผ่าน",
               "score": 4,
-              "reason_th": "อยู่ในกลุ่ม四長生 / 驛馬 เหมาะกับการเริ่มการเคลื่อนไหว"
+              "reason_th": "อยู่ในกลุ่ม四長生 / 驛馬 เหมาะกับการเริ่มการเคลื่อนไหว",
+              "label_en": "Entrance hall / transition space",
+              "label_zh": "門廳 · 過渡之地",
+              "reason_en": "Belongs to the Four Growth / Traveling Horse group, suited to initiating movement.",
+              "reason_zh": "屬四長生 · 驛馬，宜啟動行止。"
             },
             {
               "use_id": "sleeping_area",
               "label_th": "พื้นที่นอน",
               "score": 2,
-              "reason_th": "พลัง寅ค่อนข้างกระตุ้น อาจไม่นิ่งพอสำหรับการพักลึก"
+              "reason_th": "พลัง寅ค่อนข้างกระตุ้น อาจไม่นิ่งพอสำหรับการพักลึก",
+              "label_en": "Sleeping area",
+              "label_zh": "臥眠之地",
+              "reason_en": "Yin's energy is rather stimulating and may not be still enough for deep rest.",
+              "reason_zh": "寅氣偏於激發，恐不足安靜以深眠。"
             }
-          ]
+          ],
+          "reading_en": "Yín",
+          "wuxing_en": "Wood",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Yin is Yang wood of the Four Growth group, carrying the power of initiation, movement and opening the way.",
+          "primary_reason_zh": "寅為陽木，屬四長生，具起始、行動與開路之力。",
+          "symbolic_meaning_en": "Setting into motion, growth power, courage, opening the way",
+          "symbolic_meaning_zh": "啟動 · 生發 · 勇氣 · 開路"
         },
-
         "卯": {
           "order": 4,
           "thai_reading": "เหม่า",
@@ -255,23 +326,43 @@
               "use_id": "art_corner",
               "label_th": "มุมศิลปะ",
               "score": 5,
-              "reason_th": "卯มีพลัง桃花และไม้หยิน เหมาะกับความสวยงามและความสร้างสรรค์"
+              "reason_th": "卯มีพลัง桃花และไม้หยิน เหมาะกับความสวยงามและความสร้างสรรค์",
+              "label_en": "Art corner",
+              "label_zh": "藝術之位",
+              "reason_en": "Mao carries Peach Blossom energy and Yin wood, suited to beauty and creativity.",
+              "reason_zh": "卯具桃花之氣與陰木之質，宜美與創作。"
             },
             {
               "use_id": "relationship_corner",
               "label_th": "มุมความสัมพันธ์",
               "score": 4,
-              "reason_th": "อยู่ในกลุ่ม四正 / 桃花 มีนัยเรื่องเสน่ห์และการเชื่อมโยง"
+              "reason_th": "อยู่ในกลุ่ม四正 / 桃花 มีนัยเรื่องเสน่ห์และการเชื่อมโยง",
+              "label_en": "Relationship corner",
+              "label_zh": "情緣之位",
+              "reason_en": "Belongs to the Four Cardinals / Peach Blossom group, connoting charm and connection.",
+              "reason_zh": "屬四正 · 桃花，含魅力與結緣之意。"
             },
             {
               "use_id": "plant_area",
               "label_th": "พื้นที่ต้นไม้",
               "score": 4,
-              "reason_th": "สอดคล้องกับพลังไม้และการเติบโต"
+              "reason_th": "สอดคล้องกับพลังไม้และการเติบโต",
+              "label_en": "Plant area",
+              "label_zh": "花木之地",
+              "reason_en": "Aligned with wood energy and growth.",
+              "reason_zh": "合木氣生長之性。"
             }
-          ]
+          ],
+          "reading_en": "Mǎo",
+          "wuxing_en": "Wood",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Mao is Yin wood of the Four Cardinals / Peach Blossom group, suited to art, relationships, beauty and gentle growth.",
+          "primary_reason_zh": "卯為陰木，屬四正 · 桃花，宜藝術、情緣、美感與柔緩生長。",
+          "symbolic_meaning_en": "Gentleness, relationships, art, refined growth",
+          "symbolic_meaning_zh": "柔和 · 情緣 · 藝術 · 細膩生長"
         },
-
         "辰": {
           "order": 5,
           "thai_reading": "เฉิน",
@@ -299,23 +390,43 @@
               "use_id": "strategy_area",
               "label_th": "มุมวางแผนใหญ่",
               "score": 5,
-              "reason_th": "辰มีภาพ象ของพลังซ่อนอยู่และศักยภาพขนาดใหญ่"
+              "reason_th": "辰มีภาพ象ของพลังซ่อนอยู่และศักยภาพขนาดใหญ่",
+              "label_en": "Grand strategy corner",
+              "label_zh": "宏圖謀劃之位",
+              "reason_en": "Chen bears the imagery of hidden power and vast potential.",
+              "reason_zh": "辰有藏勢與大器之象。"
             },
             {
               "use_id": "asset_storage",
               "label_th": "พื้นที่เก็บทรัพย์สิน",
               "score": 4,
-              "reason_th": "辰อยู่ในกลุ่ม四庫 เหมาะกับการเก็บและสะสม"
+              "reason_th": "辰อยู่ในกลุ่ม四庫 เหมาะกับการเก็บและสะสม",
+              "label_en": "Asset storage area",
+              "label_zh": "財物收藏之地",
+              "reason_en": "Chen belongs to the Four Storages, suited to keeping and accumulating.",
+              "reason_zh": "辰屬四庫，宜收宜蓄。"
             },
             {
               "use_id": "casual_relax_area",
               "label_th": "มุมพักเล่นเบา ๆ",
               "score": 3,
-              "reason_th": "ใช้ได้ แต่พลัง辰เหมาะกับงานที่มีน้ำหนักมากกว่า"
+              "reason_th": "ใช้ได้ แต่พลัง辰เหมาะกับงานที่มีน้ำหนักมากกว่า",
+              "label_en": "Light leisure corner",
+              "label_zh": "輕鬆休憩之位",
+              "reason_en": "Workable, but Chen's energy better suits weightier matters.",
+              "reason_zh": "可用，然辰氣更宜厚重之事。"
             }
-          ]
+          ],
+          "reading_en": "Chén",
+          "wuxing_en": "Earth",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Chen is Yang storage earth with hidden potential, suited to grand plans, assets and a base of command.",
+          "primary_reason_zh": "辰為陽庫土，藏勢蘊力，宜大謀、財產與運籌之基。",
+          "symbolic_meaning_en": "Gathering of power, hidden potential, transition, latent authority",
+          "symbolic_meaning_zh": "聚力 · 潛能 · 轉化 · 隱權"
         },
-
         "巳": {
           "order": 6,
           "thai_reading": "ซื่อ",
@@ -343,23 +454,43 @@
               "use_id": "garage_or_vehicle_area",
               "label_th": "โรงรถ / พื้นที่ยานพาหนะ",
               "score": 5,
-              "reason_th": "巳อยู่ในกลุ่ม四長生 / 驛馬 เหมาะกับการเดินทางและการเคลื่อนที่"
+              "reason_th": "巳อยู่ในกลุ่ม四長生 / 驛馬 เหมาะกับการเดินทางและการเคลื่อนที่",
+              "label_en": "Garage / vehicle area",
+              "label_zh": "車庫 · 車馬之地",
+              "reason_en": "Si belongs to the Four Growth / Traveling Horse group, suited to travel and motion.",
+              "reason_zh": "巳屬四長生 · 驛馬，宜行宜動。"
             },
             {
               "use_id": "corridor_or_circulation",
               "label_th": "ทางเดิน / พื้นที่สัญจร",
               "score": 4,
-              "reason_th": "เหมาะกับ flow การเคลื่อนผ่านมากกว่าพื้นที่นิ่ง"
+              "reason_th": "เหมาะกับ flow การเคลื่อนผ่านมากกว่าพื้นที่นิ่ง",
+              "label_en": "Corridor / circulation space",
+              "label_zh": "走道 · 動線之地",
+              "reason_en": "Better suited to through-flow than to still space.",
+              "reason_zh": "宜流通穿行，勝於久靜之地。"
             },
             {
               "use_id": "study_room",
               "label_th": "ห้องอ่านหนังสือ",
               "score": 3,
-              "reason_th": "ใช้ได้บางกรณีจากไฟหยิน แต่ถ้าเน้นอ่านหนังสือและแสงปัญญา 丁 จะตรงกว่า"
+              "reason_th": "ใช้ได้บางกรณีจากไฟหยิน แต่ถ้าเน้นอ่านหนังสือและแสงปัญญา 丁 จะตรงกว่า",
+              "label_en": "Study room",
+              "label_zh": "書房",
+              "reason_en": "Workable in some cases through Yin fire, but for study and the light of wisdom, Ding is the truer match.",
+              "reason_zh": "陰火之性偶可為用，然論讀書與智慧之光，丁更為切合。"
             }
-          ]
+          ],
+          "reading_en": "Sì",
+          "wuxing_en": "Fire",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Si is Yin fire of the Four Growth / Traveling Horse group, thus excelling at movement, transition, travel and circulation rather than deep study, for which Ding is the stronger fit.",
+          "primary_reason_zh": "巳為陰火，屬四長生 · 驛馬，長於行動、轉化、出行與動線；至於深讀之功，當以丁為勝。",
+          "symbolic_meaning_en": "Strategic movement, transition, latent speed, travel, connection",
+          "symbolic_meaning_zh": "巧變之動 · 轉化 · 潛速 · 出行 · 聯結"
         },
-
         "午": {
           "order": 7,
           "thai_reading": "อู่",
@@ -387,23 +518,43 @@
               "use_id": "display_area",
               "label_th": "พื้นที่โชว์",
               "score": 5,
-              "reason_th": "午เป็นไฟหยางและอยู่ในกลุ่ม四正 เหมาะกับการมองเห็นและชื่อเสียง"
+              "reason_th": "午เป็นไฟหยางและอยู่ในกลุ่ม四正 เหมาะกับการมองเห็นและชื่อเสียง",
+              "label_en": "Display area",
+              "label_zh": "展示之地",
+              "reason_en": "Wu is Yang fire of the Four Cardinals, suited to visibility and renown.",
+              "reason_zh": "午為陽火，屬四正，宜顯宜名。"
             },
             {
               "use_id": "living_room",
               "label_th": "ห้องรับแขก",
               "score": 4,
-              "reason_th": "เหมาะกับพื้นที่เปิดเผยและการพบปะ"
+              "reason_th": "เหมาะกับพื้นที่เปิดเผยและการพบปะ",
+              "label_en": "Living room",
+              "label_zh": "客廳",
+              "reason_en": "Suited to open space and gathering.",
+              "reason_zh": "宜開敞會客之地。"
             },
             {
               "use_id": "deep_rest",
               "label_th": "มุมพักลึก",
               "score": 2,
-              "reason_th": "พลัง午ร้อนและเปิดเผยเกินไปสำหรับการพักเงียบ"
+              "reason_th": "พลัง午ร้อนและเปิดเผยเกินไปสำหรับการพักเงียบ",
+              "label_en": "Deep rest corner",
+              "label_zh": "深憩之位",
+              "reason_en": "Wu's energy is too hot and exposed for quiet rest.",
+              "reason_zh": "午氣炎顯，不宜靜養。"
             }
-          ]
+          ],
+          "reading_en": "Wǔ",
+          "wuxing_en": "Fire",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Wu is Yang fire of the Four Cardinals, carrying the power of fame, light, expression and prominence.",
+          "primary_reason_zh": "午為陽火，屬四正，具聲名、光明、表現與顯達之力。",
+          "symbolic_meaning_en": "Fame, brightness, expression, speed, open energy",
+          "symbolic_meaning_zh": "聲名 · 光明 · 表現 · 迅捷 · 顯露之氣"
         },
-
         "未": {
           "order": 8,
           "thai_reading": "เว่ย",
@@ -431,23 +582,43 @@
               "use_id": "family_corner",
               "label_th": "มุมครอบครัว",
               "score": 5,
-              "reason_th": "未เป็นดินหยิน อ่อนโยน เหมาะกับความอบอุ่นในบ้าน"
+              "reason_th": "未เป็นดินหยิน อ่อนโยน เหมาะกับความอบอุ่นในบ้าน",
+              "label_en": "Family corner",
+              "label_zh": "家庭之位",
+              "reason_en": "Wei is gentle Yin earth, suited to warmth within the home.",
+              "reason_zh": "未為陰土性柔，宜家宅溫情。"
             },
             {
               "use_id": "dining_room",
               "label_th": "ห้องกินข้าว",
               "score": 4,
-              "reason_th": "未มีภาพ象ของอาหาร ครอบครัว และการบ่มเลี้ยง"
+              "reason_th": "未มีภาพ象ของอาหาร ครอบครัว และการบ่มเลี้ยง",
+              "label_en": "Dining room",
+              "label_zh": "餐室",
+              "reason_en": "Wei bears the imagery of food, family and nurturing.",
+              "reason_zh": "未有飲食、家庭與滋養之象。"
             },
             {
               "use_id": "child_care_corner",
               "label_th": "มุมเลี้ยงลูก",
               "score": 4,
-              "reason_th": "สอดคล้องกับพลังดูแล เลี้ยงดู และประคับประคอง"
+              "reason_th": "สอดคล้องกับพลังดูแล เลี้ยงดู และประคับประคอง",
+              "label_en": "Child care corner",
+              "label_zh": "育兒之位",
+              "reason_en": "Aligned with caring, nurturing and supportive energy.",
+              "reason_zh": "合照護、養育與扶持之氣。"
             }
-          ]
+          ],
+          "reading_en": "Wèi",
+          "wuxing_en": "Earth",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Wei is Yin earth of the Four Storages, bearing the imagery of food, family, nurture and warmth.",
+          "primary_reason_zh": "未為陰土，屬四庫，有飲食、家庭、養育與溫情之象。",
+          "symbolic_meaning_en": "Gentleness, nurture, family, food, warmth",
+          "symbolic_meaning_zh": "溫柔 · 養育 · 家庭 · 飲食 · 溫情"
         },
-
         "申": {
           "order": 9,
           "thai_reading": "เซิน",
@@ -475,23 +646,43 @@
               "use_id": "technology_area",
               "label_th": "พื้นที่เทคโนโลยี",
               "score": 5,
-              "reason_th": "申เป็นโลหะหยาง มีภาพ象ของระบบ เครื่องมือ และความไว"
+              "reason_th": "申เป็นโลหะหยาง มีภาพ象ของระบบ เครื่องมือ และความไว",
+              "label_en": "Technology area",
+              "label_zh": "科技之地",
+              "reason_en": "Shen is Yang metal, with the imagery of systems, tools and quickness.",
+              "reason_zh": "申為陽金，有制度、器械與敏捷之象。"
             },
             {
               "use_id": "garage_or_mobility_system",
               "label_th": "โรงรถ / ระบบเดินทาง",
               "score": 4,
-              "reason_th": "อยู่ในกลุ่ม四長生 / 驛馬 เหมาะกับ movement และเครื่องมือ"
+              "reason_th": "อยู่ในกลุ่ม四長生 / 驛馬 เหมาะกับ movement และเครื่องมือ",
+              "label_en": "Garage / mobility system",
+              "label_zh": "車庫 · 交通動線",
+              "reason_en": "Belongs to the Four Growth / Traveling Horse group, suited to movement and machinery.",
+              "reason_zh": "屬四長生 · 驛馬，宜行動與器械。"
             },
             {
               "use_id": "soft_family_area",
               "label_th": "มุมครอบครัวนุ่มนวล",
               "score": 2,
-              "reason_th": "พลัง申ค่อนข้างคม ไว และใช้สมองมาก"
+              "reason_th": "พลัง申ค่อนข้างคม ไว และใช้สมองมาก",
+              "label_en": "Gentle family corner",
+              "label_zh": "溫馨家庭之位",
+              "reason_en": "Shen's energy is rather sharp, quick and cerebral.",
+              "reason_zh": "申氣偏銳、疾而多思。"
             }
-          ]
+          ],
+          "reading_en": "Shēn",
+          "wuxing_en": "Metal",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Shen is Yang metal of the Four Growth group, carrying the power of systems, tools, technology and efficient movement.",
+          "primary_reason_zh": "申為陽金，屬四長生，具制度、器械、科技與高效行動之力。",
+          "symbolic_meaning_en": "Wit, systems, tools, technology, problem-solving",
+          "symbolic_meaning_zh": "機敏 · 制度 · 器械 · 科技 · 解難"
         },
-
         "酉": {
           "order": 10,
           "thai_reading": "โหย่ว",
@@ -519,23 +710,43 @@
               "use_id": "dressing_area",
               "label_th": "มุมแต่งตัว",
               "score": 5,
-              "reason_th": "酉เป็นโลหะหยินและมีนัย桃花 เหมาะกับความงามและความประณีต"
+              "reason_th": "酉เป็นโลหะหยินและมีนัย桃花 เหมาะกับความงามและความประณีต",
+              "label_en": "Dressing corner",
+              "label_zh": "妝扮之位",
+              "reason_en": "You is Yin metal with Peach Blossom connotations, suited to beauty and refinement.",
+              "reason_zh": "酉為陰金兼桃花之意，宜美宜精。"
             },
             {
               "use_id": "organization_area",
               "label_th": "พื้นที่จัดของ",
               "score": 4,
-              "reason_th": "เหมาะกับการแยกแยะ จัดระเบียบ และความเรียบร้อย"
+              "reason_th": "เหมาะกับการแยกแยะ จัดระเบียบ และความเรียบร้อย",
+              "label_en": "Organising area",
+              "label_zh": "整納之地",
+              "reason_en": "Suited to sorting, ordering and tidiness.",
+              "reason_zh": "宜分類、整飭與齊整。"
             },
             {
               "use_id": "detail_work",
               "label_th": "มุมงานละเอียด",
               "score": 4,
-              "reason_th": "พลัง酉ช่วยเรื่องความประณีตและความแม่น"
+              "reason_th": "พลัง酉ช่วยเรื่องความประณีตและความแม่น",
+              "label_en": "Detail work corner",
+              "label_zh": "細工之位",
+              "reason_en": "You's energy aids refinement and precision.",
+              "reason_zh": "酉氣助精緻與精準。"
             }
-          ]
+          ],
+          "reading_en": "Yǒu",
+          "wuxing_en": "Metal",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "You is Yin metal of the Four Cardinals / Peach Blossom group, suited to beauty, refinement, order and detailed work.",
+          "primary_reason_zh": "酉為陰金，屬四正 · 桃花，宜美感、精緻、條理與細工。",
+          "symbolic_meaning_en": "Refinement, beauty, orderliness, clear communication",
+          "symbolic_meaning_zh": "精緻 · 美感 · 條理 · 明晰言辭"
         },
-
         "戌": {
           "order": 11,
           "thai_reading": "ซวี",
@@ -563,23 +774,43 @@
               "use_id": "security_area",
               "label_th": "มุมรักษาความปลอดภัย",
               "score": 5,
-              "reason_th": "戌มีภาพ象ของการเฝ้าระวัง ป้องกัน และขอบเขต"
+              "reason_th": "戌มีภาพ象ของการเฝ้าระวัง ป้องกัน และขอบเขต",
+              "label_en": "Security corner",
+              "label_zh": "守衛之位",
+              "reason_en": "Xu bears the imagery of vigilance, defence and boundaries.",
+              "reason_zh": "戌有警戒、防護與界域之象。"
             },
             {
               "use_id": "control_system",
               "label_th": "มุมควบคุมระบบบ้าน",
               "score": 4,
-              "reason_th": "เหมาะกับระบบ กล้อง อุปกรณ์ควบคุม หรือของสำคัญ"
+              "reason_th": "เหมาะกับระบบ กล้อง อุปกรณ์ควบคุม หรือของสำคัญ",
+              "label_en": "Home control system corner",
+              "label_zh": "宅務控制之位",
+              "reason_en": "Suited to systems, cameras, control devices or important items.",
+              "reason_zh": "宜系統、監視、控制器械或要物。"
             },
             {
               "use_id": "soft_child_area",
               "label_th": "มุมเด็กเล็ก",
               "score": 2,
-              "reason_th": "พลัง戌อาจแข็งและจริงจังเกินไป"
+              "reason_th": "พลัง戌อาจแข็งและจริงจังเกินไป",
+              "label_en": "Young children's corner",
+              "label_zh": "幼兒之位",
+              "reason_en": "Xu's energy may be too hard and stern.",
+              "reason_zh": "戌氣恐過剛過肅。"
             }
-          ]
+          ],
+          "reading_en": "Xū",
+          "wuxing_en": "Earth",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Neutral / specialised",
+          "primary_label_zh": "中平 · 專用",
+          "primary_reason_en": "Xu is hard storage earth, bearing the imagery of protection, boundaries and security; suited only to functions that call for seriousness.",
+          "primary_reason_zh": "戌為剛實庫土，有守護、界域與安全之象，唯宜莊重之用。",
+          "symbolic_meaning_en": "Protection, loyalty, boundaries, security, vigilance",
+          "symbolic_meaning_zh": "守護 · 忠誠 · 界域 · 安全 · 警戒"
         },
-
         "亥": {
           "order": 12,
           "thai_reading": "ไฮ่",
@@ -607,25 +838,45 @@
               "use_id": "rest_corner",
               "label_th": "มุมพักผ่อน",
               "score": 4,
-              "reason_th": "亥เป็นน้ำหยิน เหมาะกับความสงบและการฟื้นตัว"
+              "reason_th": "亥เป็นน้ำหยิน เหมาะกับความสงบและการฟื้นตัว",
+              "label_en": "Rest corner",
+              "label_zh": "休憩之位",
+              "reason_en": "Hai is Yin water, suited to calm and recovery.",
+              "reason_zh": "亥為陰水，宜靜宜復元。"
             },
             {
               "use_id": "private_corner",
               "label_th": "มุมส่วนตัว",
               "score": 4,
-              "reason_th": "มีพลังเก็บตัว ลึก และไม่วุ่นวาย"
+              "reason_th": "มีพลังเก็บตัว ลึก และไม่วุ่นวาย",
+              "label_en": "Private corner",
+              "label_zh": "私密之位",
+              "reason_en": "Carries secluded, deep, untroubled energy.",
+              "reason_zh": "具潛藏深邃不擾之氣。"
             },
             {
               "use_id": "travel_storage",
               "label_th": "มุมเก็บของเดินทาง",
               "score": 4,
-              "reason_th": "亥อยู่ในกลุ่ม四長生 / 驛馬 มีนัยการเดินทางไกล"
+              "reason_th": "亥อยู่ในกลุ่ม四長生 / 驛馬 มีนัยการเดินทางไกล",
+              "label_en": "Travel gear storage corner",
+              "label_zh": "行囊收納之位",
+              "reason_en": "Hai belongs to the Four Growth / Traveling Horse group, connoting long journeys.",
+              "reason_zh": "亥屬四長生 · 驛馬，含遠行之意。"
             }
-          ]
+          ],
+          "reading_en": "Hài",
+          "wuxing_en": "Water",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Neutral / specialised",
+          "primary_label_zh": "中平 · 專用",
+          "primary_reason_en": "Hai is Yin water of the Four Growth group, carrying both recuperation and deep-journey connotations; suited to calm spaces or quiet transitions.",
+          "primary_reason_zh": "亥為陰水，屬四長生，兼休養與遠行之意，宜靜處或不喧之過渡地。",
+          "symbolic_meaning_en": "Recuperation, depth, kindness, seclusion, renewal of energy, long journeys",
+          "symbolic_meaning_zh": "休養 · 深邃 · 仁慈 · 潛藏 · 復元 · 遠行"
         }
       }
     },
-
     "tiangan": {
       "module_id": "tiangan_10_stems",
       "name_th": "10 ก้านฟ้า · ธาตุสวรรค์",
@@ -633,14 +884,28 @@
       "name_en": "Ten Heavenly Stems",
       "show_when": "current_mountain_type == '天干'",
       "score_type": "symbolic_functional_fit",
-      "stems_in_24_mountains": ["甲", "乙", "丙", "丁", "庚", "辛", "壬", "癸"],
-      "stems_not_in_24_mountains": ["戊", "己"],
+      "stems_in_24_mountains": [
+        "甲",
+        "乙",
+        "丙",
+        "丁",
+        "庚",
+        "辛",
+        "壬",
+        "癸"
+      ],
+      "stems_not_in_24_mountains": [
+        "戊",
+        "己"
+      ],
       "note_th": "ใน 24 ขุนเขาของหล่อแก มีเฉพาะ 甲乙丙丁庚辛壬癸 ส่วน 戊己 เป็นก้านกลาง ไม่อยู่บนวง 24 ทิศ แต่สามารถใช้กับจุดกึ่งกลางบ้านในระบบวิเคราะห์แปลนได้",
       "fallback_message_th": "ทิศนี้ไม่ใช่ตำแหน่ง天干 ให้ไปดูหมวด地支หรือหมวด 24山 แทน",
-
       "center_sector_mapping": {
         "active_when": "floorplan_analysis_enabled == true",
-        "center_stems": ["戊", "己"],
+        "center_stems": [
+          "戊",
+          "己"
+        ],
         "戊": {
           "center_quality_th": "ความหนักแน่น ฐานกลาง ความมั่นคง โครงสร้างหลัก",
           "recommended_use_th": "จุดกึ่งกลางบ้านควรนิ่ง โปร่ง ไม่ถูกรบกวนหนัก และไม่รก"
@@ -650,7 +915,6 @@
           "recommended_use_th": "จุดกลางบ้านควรสะอาด สมดุล เป็นจุดรวมพลัง ไม่อับหรือถูกกดทับ"
         }
       },
-
       "items": {
         "甲": {
           "order": 1,
@@ -676,17 +940,35 @@
               "use_id": "planning_area",
               "label_th": "มุมวางแผน",
               "score": 5,
-              "reason_th": "甲เปรียบเหมือนต้นไม้ใหญ่ มีพลังตั้งหลักและเริ่มต้น"
+              "reason_th": "甲เปรียบเหมือนต้นไม้ใหญ่ มีพลังตั้งหลักและเริ่มต้น",
+              "label_en": "Planning corner",
+              "label_zh": "謀劃之位",
+              "reason_en": "Jia is likened to a great tree, with the power to take root and begin.",
+              "reason_zh": "甲如大樹，具立基開創之力。"
             },
             {
               "use_id": "work_room",
               "label_th": "ห้องทำงาน",
               "score": 4,
-              "reason_th": "เหมาะกับงานที่ต้องใช้โครงสร้างและทิศทาง"
+              "reason_th": "เหมาะกับงานที่ต้องใช้โครงสร้างและทิศทาง",
+              "label_en": "Work room",
+              "label_zh": "工作室",
+              "reason_en": "Suited to work that requires structure and direction.",
+              "reason_zh": "宜需架構與方向之務。"
             }
-          ]
+          ],
+          "reading_en": "Jiǎ",
+          "wuxing_en": "Wood",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Jia is Yang wood, suited to beginnings, the laying of structures and leadership.",
+          "primary_reason_zh": "甲為陽木，宜開創、立構與領袖之才。",
+          "symbolic_meaning_en": "Beginnings, growth, leadership, grand structures",
+          "symbolic_meaning_zh": "開創 · 生長 · 領導 · 大局架構",
+          "image_symbol_en": "Great tree",
+          "image_symbol_zh": "參天大樹"
         },
-
         "乙": {
           "order": 2,
           "thai_reading": "อี่",
@@ -711,17 +993,35 @@
               "use_id": "art_corner",
               "label_th": "มุมศิลปะ",
               "score": 5,
-              "reason_th": "乙เปรียบเหมือนเถาวัลย์ ดอกไม้ และความงามแบบอ่อนโยน"
+              "reason_th": "乙เปรียบเหมือนเถาวัลย์ ดอกไม้ และความงามแบบอ่อนโยน",
+              "label_en": "Art corner",
+              "label_zh": "藝術之位",
+              "reason_en": "Yi is likened to vines, flowers and gentle beauty.",
+              "reason_zh": "乙如藤蘿花卉，柔美之姿。"
             },
             {
               "use_id": "plant_area",
               "label_th": "มุมต้นไม้",
               "score": 4,
-              "reason_th": "สอดคล้องกับพลังไม้และการเติบโตแบบละเอียด"
+              "reason_th": "สอดคล้องกับพลังไม้และการเติบโตแบบละเอียด",
+              "label_en": "Plant corner",
+              "label_zh": "花木之位",
+              "reason_en": "Aligned with wood energy and refined growth.",
+              "reason_zh": "合木氣細膩生長之性。"
             }
-          ]
+          ],
+          "reading_en": "Yǐ",
+          "wuxing_en": "Wood",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Yi is Yin wood, suited to art, relationships, flexibility and creative work.",
+          "primary_reason_zh": "乙為陰木，宜藝術、情緣、柔韌與創作。",
+          "symbolic_meaning_en": "Flexibility, art, relationships, gentle growth",
+          "symbolic_meaning_zh": "柔韌 · 藝術 · 情緣 · 柔緩生長",
+          "image_symbol_en": "Vines, flowers, tender wood",
+          "image_symbol_zh": "藤蘿花草嫩木"
         },
-
         "丙": {
           "order": 3,
           "thai_reading": "ปิ่ง",
@@ -746,17 +1046,35 @@
               "use_id": "display_area",
               "label_th": "พื้นที่โชว์",
               "score": 5,
-              "reason_th": "丙เปรียบเหมือนดวงอาทิตย์ เหมาะกับการเปิดเผยและการมองเห็น"
+              "reason_th": "丙เปรียบเหมือนดวงอาทิตย์ เหมาะกับการเปิดเผยและการมองเห็น",
+              "label_en": "Display area",
+              "label_zh": "展示之地",
+              "reason_en": "Bing is likened to the sun, suited to openness and visibility.",
+              "reason_zh": "丙如太陽，宜顯露與矚目。"
             },
             {
               "use_id": "living_room",
               "label_th": "ห้องรับแขก",
               "score": 4,
-              "reason_th": "ช่วยเสริมบรรยากาศสว่างและเปิด"
+              "reason_th": "ช่วยเสริมบรรยากาศสว่างและเปิด",
+              "label_en": "Living room",
+              "label_zh": "客廳",
+              "reason_en": "Enhances a bright, open atmosphere.",
+              "reason_zh": "助光明開敞之氣氛。"
             }
-          ]
+          ],
+          "reading_en": "Bǐng",
+          "wuxing_en": "Fire",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Bing is Yang fire, suited to light, fame, expression and open spaces.",
+          "primary_reason_zh": "丙為陽火，宜光明、聲名、表現與開敞之地。",
+          "symbolic_meaning_en": "Fame, brightness, openness, prominence, confidence",
+          "symbolic_meaning_zh": "聲名 · 光明 · 顯露 · 顯達 · 自信",
+          "image_symbol_en": "The sun",
+          "image_symbol_zh": "太陽"
         },
-
         "丁": {
           "order": 4,
           "thai_reading": "ติง",
@@ -781,17 +1099,35 @@
               "use_id": "reading_room",
               "label_th": "ห้องอ่านหนังสือ",
               "score": 5,
-              "reason_th": "丁เปรียบเหมือนตะเกียงหรือแสงไฟละเอียด เหมาะกับการอ่านและความรู้"
+              "reason_th": "丁เปรียบเหมือนตะเกียงหรือแสงไฟละเอียด เหมาะกับการอ่านและความรู้",
+              "label_en": "Reading room",
+              "label_zh": "書房",
+              "reason_en": "Ding is likened to a lamp or fine flame, suited to reading and learning.",
+              "reason_zh": "丁如燈燭細光，宜讀書求知。"
             },
             {
               "use_id": "decorative_light",
               "label_th": "แสงไฟตกแต่ง",
               "score": 4,
-              "reason_th": "สอดคล้องกับพลังแสงอบอุ่นและความงาม"
+              "reason_th": "สอดคล้องกับพลังแสงอบอุ่นและความงาม",
+              "label_en": "Decorative lighting",
+              "label_zh": "裝飾燈光",
+              "reason_en": "Aligned with warm light and beauty.",
+              "reason_zh": "合暖光與美感之氣。"
             }
-          ]
+          ],
+          "reading_en": "Dīng",
+          "wuxing_en": "Fire",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Ding is Yin fire, suited to wisdom, subtlety, warm light and fine work.",
+          "primary_reason_zh": "丁為陰火，宜智慧、細膩、暖光與精工。",
+          "symbolic_meaning_en": "Wisdom, warmth, subtlety, beauty, guiding light",
+          "symbolic_meaning_zh": "智慧 · 溫暖 · 細膩 · 美感 · 引路之光",
+          "image_symbol_en": "Lamp, fine flame",
+          "image_symbol_zh": "燈燭細火"
         },
-
         "戊": {
           "order": 5,
           "thai_reading": "โบ่ว",
@@ -813,17 +1149,35 @@
               "use_id": "center_stability",
               "label_th": "จุดกึ่งกลางบ้านที่มั่นคง",
               "score": 4,
-              "reason_th": "戊เป็นดินหยาง เปรียบเหมือนภูเขาและฐานใหญ่ เหมาะกับ center sector ที่นิ่งและไม่ถูกรบกวน"
+              "reason_th": "戊เป็นดินหยาง เปรียบเหมือนภูเขาและฐานใหญ่ เหมาะกับ center sector ที่นิ่งและไม่ถูกรบกวน",
+              "label_en": "Stable home centre",
+              "label_zh": "安穩之宅心",
+              "reason_en": "Wu is Yang earth, likened to a mountain and a great foundation, suited to a centre sector that is still and undisturbed.",
+              "reason_zh": "戊為陽土，如山如基，宜宅心安靜不受擾。"
             },
             {
               "use_id": "heavy_storage",
               "label_th": "พื้นที่เก็บของหนัก",
               "score": 3,
-              "reason_th": "ใช้ได้เชิง象 แต่ไม่ควรทำให้กลางบ้านรก หนัก หรืออับเกินไป"
+              "reason_th": "ใช้ได้เชิง象 แต่ไม่ควรทำให้กลางบ้านรก หนัก หรืออับเกินไป",
+              "label_en": "Heavy storage area",
+              "label_zh": "重物收納之地",
+              "reason_en": "Workable in symbolic terms, but the home's centre should not become cluttered, heavy or stagnant.",
+              "reason_zh": "象意可用，然宅心不宜雜亂、沉重或閉悶。"
             }
-          ]
+          ],
+          "reading_en": "Wù",
+          "wuxing_en": "Earth",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Neutral / specialised",
+          "primary_label_zh": "中平 · 專用",
+          "primary_reason_en": "Wu is a central Heavenly Stem, not placed directly on the 24 Mountains, yet apt for reading the home's centre in terms of solidity and a stable foundation.",
+          "primary_reason_zh": "戊為中央天干，不列於二十四山，然宜釋宅心之位，主厚重與穩固之基。",
+          "symbolic_meaning_en": "Stability, walls, protection, heavy foundation, central structure",
+          "symbolic_meaning_zh": "穩固 · 垣牆 · 守護 · 重基 · 中樞架構",
+          "image_symbol_en": "Mountain, great earth, heavy foundation",
+          "image_symbol_zh": "高山厚土重基"
         },
-
         "己": {
           "order": 6,
           "thai_reading": "กี้",
@@ -845,17 +1199,35 @@
               "use_id": "center_family_balance",
               "label_th": "จุดกลางบ้านแบบอบอุ่น",
               "score": 5,
-              "reason_th": "己เป็นดินหยิน เปรียบเหมือนดินนาและการบ่มเพาะ เหมาะกับจุดรวมพลังของครอบครัว"
+              "reason_th": "己เป็นดินหยิน เปรียบเหมือนดินนาและการบ่มเพาะ เหมาะกับจุดรวมพลังของครอบครัว",
+              "label_en": "Warm home centre",
+              "label_zh": "溫馨之宅心",
+              "reason_en": "Ji is Yin earth, likened to farmland and cultivation, suited to the family's gathering point of energy.",
+              "reason_zh": "己為陰土，如田園滋養，宜為闔家聚氣之心。"
             },
             {
               "use_id": "food_or_care_area",
               "label_th": "พื้นที่อาหาร / ดูแล",
               "score": 4,
-              "reason_th": "สื่อถึงการดูแล หล่อเลี้ยง และรองรับ"
+              "reason_th": "สื่อถึงการดูแล หล่อเลี้ยง และรองรับ",
+              "label_en": "Food / care area",
+              "label_zh": "飲食照護之地",
+              "reason_en": "Signifies care, nourishment and support.",
+              "reason_zh": "象照護、滋養與承載。"
             }
-          ]
+          ],
+          "reading_en": "Jǐ",
+          "wuxing_en": "Earth",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Ji is a central Heavenly Stem, not placed directly on the 24 Mountains, yet apt for reading the home's centre in terms of cultivation, support and the family's gathering heart.",
+          "primary_reason_zh": "己為中央天干，不列於二十四山，然宜釋宅心之位，主滋養、承載與闔家之樞。",
+          "symbolic_meaning_en": "Care, cultivation, subtlety, support, warmth in the home",
+          "symbolic_meaning_zh": "照護 · 滋養 · 細膩 · 承載 · 家宅溫情",
+          "image_symbol_en": "Farmland, garden, cultivated plot",
+          "image_symbol_zh": "田園耕土"
         },
-
         "庚": {
           "order": 7,
           "thai_reading": "เกิง",
@@ -880,17 +1252,35 @@
               "use_id": "tool_area",
               "label_th": "มุมเครื่องมือ",
               "score": 5,
-              "reason_th": "庚เปรียบเหมือนเหล็กดิบหรือเครื่องมือหนัก"
+              "reason_th": "庚เปรียบเหมือนเหล็กดิบหรือเครื่องมือหนัก",
+              "label_en": "Tool corner",
+              "label_zh": "器械之位",
+              "reason_en": "Geng is likened to raw iron or heavy tools.",
+              "reason_zh": "庚如頑鐵重械。"
             },
             {
               "use_id": "system_management",
               "label_th": "มุมจัดการระบบ",
               "score": 4,
-              "reason_th": "เหมาะกับวินัย การตัดสินใจ และโครงสร้าง"
+              "reason_th": "เหมาะกับวินัย การตัดสินใจ และโครงสร้าง",
+              "label_en": "System management corner",
+              "label_zh": "制度管理之位",
+              "reason_en": "Suited to discipline, decision-making and structure.",
+              "reason_zh": "宜紀律、決斷與架構。"
             }
-          ]
+          ],
+          "reading_en": "Gēng",
+          "wuxing_en": "Metal",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Neutral / specialised",
+          "primary_label_zh": "中平 · 專用",
+          "primary_reason_en": "Geng is Yang metal — sharp, hard and stern — suited to tools, systems, discipline and specialised management.",
+          "primary_reason_zh": "庚為陽金，其氣銳剛而肅，宜器械、制度、紀律與專務管理。",
+          "symbolic_meaning_en": "Decisiveness, structure, judgement, systems, discipline",
+          "symbolic_meaning_zh": "果決 · 架構 · 決斷 · 制度 · 紀律",
+          "image_symbol_en": "Raw iron, weapons, heavy tools",
+          "image_symbol_zh": "頑鐵兵器重械"
         },
-
         "辛": {
           "order": 8,
           "thai_reading": "ซิน",
@@ -915,17 +1305,35 @@
               "use_id": "beauty_corner",
               "label_th": "มุมแต่งตัว / ความงาม",
               "score": 5,
-              "reason_th": "辛เปรียบเหมือนอัญมณีหรือโลหะประณีต"
+              "reason_th": "辛เปรียบเหมือนอัญมณีหรือโลหะประณีต",
+              "label_en": "Dressing / beauty corner",
+              "label_zh": "妝扮美容之位",
+              "reason_en": "Xin is likened to jewels or refined metal.",
+              "reason_zh": "辛如珠玉精金。"
             },
             {
               "use_id": "detail_work",
               "label_th": "มุมงานละเอียด",
               "score": 4,
-              "reason_th": "ช่วยเรื่องความประณีต การเลือก และการคัดกรอง"
+              "reason_th": "ช่วยเรื่องความประณีต การเลือก และการคัดกรอง",
+              "label_en": "Detail work corner",
+              "label_zh": "細工之位",
+              "reason_en": "Aids refinement, selection and discernment.",
+              "reason_zh": "助精緻、擇選與甄別。"
             }
-          ]
+          ],
+          "reading_en": "Xīn",
+          "wuxing_en": "Metal",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Suitable",
+          "primary_label_zh": "適宜",
+          "primary_reason_en": "Xin is Yin metal, suited to beauty, worth, fine work and orderliness.",
+          "primary_reason_zh": "辛為陰金，宜美感、珍貴、細工與條理。",
+          "symbolic_meaning_en": "Beauty, subtlety, worth, discernment, refinement",
+          "symbolic_meaning_zh": "美感 · 細膩 · 珍貴 · 甄選 · 精緻",
+          "image_symbol_en": "Jewels, refined metal",
+          "image_symbol_zh": "珠玉精金"
         },
-
         "壬": {
           "order": 9,
           "thai_reading": "เหริน",
@@ -950,23 +1358,45 @@
               "use_id": "business_planning",
               "label_th": "มุมวางแผนธุรกิจ",
               "score": 4,
-              "reason_th": "壬เปรียบเหมือนมหาสมุทรหรือแม่น้ำใหญ่"
+              "reason_th": "壬เปรียบเหมือนมหาสมุทรหรือแม่น้ำใหญ่",
+              "label_en": "Business planning corner",
+              "label_zh": "商謀之位",
+              "reason_en": "Ren is likened to the ocean or a great river.",
+              "reason_zh": "壬如江海大川。"
             },
             {
               "use_id": "communication_area",
               "label_th": "พื้นที่สื่อสาร",
               "score": 4,
-              "reason_th": "สื่อถึงการเชื่อมต่อ การเดินทาง และเครือข่าย"
+              "reason_th": "สื่อถึงการเชื่อมต่อ การเดินทาง และเครือข่าย",
+              "label_en": "Communication area",
+              "label_zh": "通聯之地",
+              "reason_en": "Signifies connection, travel and networks.",
+              "reason_zh": "象聯結、出行與人脈。"
             },
             {
               "use_id": "actual_water_feature",
               "label_th": "บ่อน้ำ / สระน้ำจริง",
               "score": 2,
-              "reason_th": "แม้壬เป็นธาตุน้ำ แต่การวางน้ำจริงต้องใช้納水หรือดาวเหิน"
+              "reason_th": "แม้壬เป็นธาตุน้ำ แต่การวางน้ำจริงต้องใช้納水หรือดาวเหิน",
+              "label_en": "Actual pond / water feature",
+              "label_zh": "真實水池 · 水景",
+              "reason_en": "Although Ren belongs to the Water element, placing real water requires Na Shui (water reception) or Flying Star methods.",
+              "reason_zh": "壬雖屬水，然佈置實水須依納水或飛星之法。"
             }
-          ]
+          ],
+          "reading_en": "Rén",
+          "wuxing_en": "Water",
+          "yin_yang_en": "Yang",
+          "primary_label_en": "Neutral / specialised",
+          "primary_label_zh": "中平 · 專用",
+          "primary_reason_en": "Ren is Yang water — vast, moving and deep — suited to networks, travel and business planning, but not a rule for placing real water.",
+          "primary_reason_zh": "壬為陽水，勢大流深，宜人脈、出行與商謀，然非佈實水之法。",
+          "symbolic_meaning_en": "Movement, wisdom, networks, travel, great opportunities",
+          "symbolic_meaning_zh": "流動 · 智慧 · 人脈 · 出行 · 大機遇",
+          "image_symbol_en": "Ocean, great river",
+          "image_symbol_zh": "江海大川"
         },
-
         "癸": {
           "order": 10,
           "thai_reading": "กุ่ย",
@@ -991,21 +1421,44 @@
               "use_id": "meditation_corner",
               "label_th": "มุมสมาธิ",
               "score": 4,
-              "reason_th": "癸เปรียบเหมือนฝน หมอก หรือน้ำค้าง มีพลังละเอียดและสงบ"
+              "reason_th": "癸เปรียบเหมือนฝน หมอก หรือน้ำค้าง มีพลังละเอียดและสงบ",
+              "label_en": "Meditation corner",
+              "label_zh": "靜修之位",
+              "reason_en": "Gui is likened to rain, mist or dew, with subtle, calm energy.",
+              "reason_zh": "癸如雨露霧氣，氣細而靜。"
             },
             {
               "use_id": "recovery_area",
               "label_th": "มุมพักฟื้น",
               "score": 4,
-              "reason_th": "เหมาะกับพลังละเอียด สงบ และฟื้นตัว"
+              "reason_th": "เหมาะกับพลังละเอียด สงบ และฟื้นตัว",
+              "label_en": "Recovery corner",
+              "label_zh": "休養之位",
+              "reason_en": "Suited to subtle, calm, restorative energy.",
+              "reason_zh": "宜細靜復元之氣。"
             },
             {
               "use_id": "active_party_area",
               "label_th": "พื้นที่กิจกรรมคึกคัก",
               "score": 2,
-              "reason_th": "พลัง癸นุ่ม ลึก และสงบ ไม่เหมาะกับความคึกคักมาก"
+              "reason_th": "พลัง癸นุ่ม ลึก และสงบ ไม่เหมาะกับความคึกคักมาก",
+              "label_en": "Lively activity area",
+              "label_zh": "喧鬧活動之地",
+              "reason_en": "Gui's energy is soft, deep and calm, ill-suited to great liveliness.",
+              "reason_zh": "癸氣柔深而靜，不宜過於喧鬧。"
             }
-          ]
+          ],
+          "reading_en": "Guǐ",
+          "wuxing_en": "Water",
+          "yin_yang_en": "Yin",
+          "primary_label_en": "Neutral / specialised",
+          "primary_label_zh": "中平 · 專用",
+          "primary_reason_en": "Gui is Yin water — subtle, deep and calm — suited to recuperation, meditation and deep knowledge.",
+          "primary_reason_zh": "癸為陰水，其氣細深而靜，宜休養、靜修與深學。",
+          "symbolic_meaning_en": "Subtlety, deep knowledge, recovery, calm, sensitivity",
+          "symbolic_meaning_zh": "細膩 · 深學 · 復元 · 寧靜 · 敏感",
+          "image_symbol_en": "Rain, mist, dew",
+          "image_symbol_zh": "雨露霧氣"
         }
       }
     }

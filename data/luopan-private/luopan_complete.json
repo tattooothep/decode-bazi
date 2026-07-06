@@ -75,7 +75,13 @@
           "โชคลาภ",
           "ชื่อเสียง",
           "การเรียน"
-        ]
+        ],
+        "name_en": "Star 1 White (Yi Bai · Greedy Wolf)",
+        "name_zh": "一白貪狼星",
+        "general_en": "Star of wisdom and good fortune. Signifies incoming water, knowledge, travel, and reputation.",
+        "general_zh": "主智慧與財祿之星，象水氣來聚，主學識、出行、聲名。",
+        "home_en": "This sector suits a study desk or a work corner for thinking tasks; a small fountain enhances it. Good for business people, students, or those seeking fame.",
+        "home_zh": "此方宜設書桌或用腦工作之位，置小型流水可催旺，利經商、求學、求名之人。"
       },
       "2": {
         "name": "ดาว 2 ดำ (二黑巨門)",
@@ -87,7 +93,13 @@
           "เจ็บป่วย",
           "อ่อนแอ",
           "โรคเรื้อรัง"
-        ]
+        ],
+        "name_en": "Star 2 Black (Er Hei · Giant Gate)",
+        "name_zh": "二黑巨門星",
+        "general_en": "Star of sickness. Heavy energy that weakens the body and darkens the mood.",
+        "general_zh": "病符之星，其氣沉滯，主體弱多病、心緒鬱結。",
+        "home_en": "Avoid placing a bed or work desk here. If unavoidable, hang a brass wu lou (gourd) or place six metal balls to subdue this star.",
+        "home_zh": "忌安床、設案於此。若不得已，宜掛銅葫蘆或置六枚金屬圓球以制其煞。"
       },
       "3": {
         "name": "ดาว 3 เขียว (三碧祿存)",
@@ -99,7 +111,13 @@
           "ทะเลาะ",
           "ฟ้องร้อง",
           "ปากเสียง"
-        ]
+        ],
+        "name_en": "Star 3 Jade (San Bi · Lu Cun)",
+        "name_zh": "三碧祿存星",
+        "general_en": "Star of quarrels — gossip, lawsuits, and disputes. Its energy provokes conflict.",
+        "general_zh": "是非口舌之星，主爭執、官訟、糾紛，其氣易激衝突。",
+        "home_en": "Do not place a meeting table or living area here. If unavoidable, use red colors or bright lighting (Fire element) to burn off the harsh Wood energy.",
+        "home_zh": "勿設會議桌、起居之所於此。若難避，宜用紅色或明燈（火）洩其木煞。"
       },
       "4": {
         "name": "ดาว 4 เขียว (四綠文曲)",
@@ -112,7 +130,13 @@
           "ความรัก",
           "ศิลปะ",
           "เสน่ห์"
-        ]
+        ],
+        "name_en": "Star 4 Green (Si Lu · Scholar)",
+        "name_zh": "四綠文曲星",
+        "general_en": "Star of scholarship, romance, arts, and creativity. Enhances charm and study.",
+        "general_zh": "文昌桃花之星，主學業、姻緣、文藝、創思，能增魅力、利科名。",
+        "home_en": "Ideal for a child's study corner, an art room, or a creative workspace. Place four plants to boost its power; singles can place fresh flowers here to help romance.",
+        "home_zh": "宜作子女書房、畫室或創作之位。植四株綠木以助其氣；未婚者置鮮花於此可催姻緣。"
       },
       "5": {
         "name": "ดาว 5 เหลือง (五黃廉貞)",
@@ -125,7 +149,13 @@
           "อุบัติเหตุ",
           "เคราะห์ร้าย",
           "ห้ามรบกวน"
-        ]
+        ],
+        "name_en": "Star 5 Yellow (Wu Huang · Lian Zhen)",
+        "name_zh": "五黃廉貞星",
+        "general_en": "The Emperor Star — the most dangerous of the nine. Brings disasters, accidents, and severe misfortune.",
+        "general_zh": "五黃正關煞，九星中至凶，主災禍、意外、重厄。",
+        "home_en": "Never disturb this sector — no drilling, hammering, or digging. Do not place a bed here and avoid frequently opening a door in this sector. Remedy with a six-rod metal wind chime or a brass wu lou (gourd).",
+        "home_zh": "此方切忌動土、鑽鑿、敲打，勿安床，勿常開此門。宜掛六管金屬風鈴或銅葫蘆以化解。"
       },
       "6": {
         "name": "ดาว 6 ขาว (六白武曲)",
@@ -138,7 +168,13 @@
           "ตำแหน่ง",
           "ผู้นำ",
           "การงาน"
-        ]
+        ],
+        "name_en": "Star 6 White (Liu Bai · Military Arts)",
+        "name_zh": "六白武曲星",
+        "general_en": "Star of authority, rank, and career fortune. Signifies leaders and executives.",
+        "general_zh": "官貴權祿之星，主權柄、職位、事業之財，象領袖主管。",
+        "home_en": "Ideal for an executive's desk or a decision-making meeting room. This sector strengthens authority; place a crystal ball or metal objects to enhance it.",
+        "home_zh": "宜設主管辦公之案、決策會議之室，此方助掌權治事，置水晶球或金屬器物以旺其氣。"
       },
       "7": {
         "name": "ดาว 7 แดง (七赤破軍)",
@@ -150,7 +186,13 @@
           "โจรกรรม",
           "หลอกลวง",
           "ของมีคม"
-        ]
+        ],
+        "name_en": "Star 7 Red (Qi Chi · Broken Army)",
+        "name_zh": "七赤破軍星",
+        "general_en": "Star of robbery, deception, gossip, and injury from sharp objects.",
+        "general_zh": "破軍賊星，主盜劫、欺詐、口舌，並防金刃之傷。",
+        "home_en": "Be cautious with this sector — lock doors and windows well and do not keep valuables here. Remedy with still water (a bowl of water) to drain the Metal energy.",
+        "home_zh": "此方宜慎，門窗須嚴鎖，勿置貴重之物。以靜水（一盂清水）洩其金氣化解。"
       },
       "8": {
         "name": "ดาว 8 ขาว (八白左輔)",
@@ -163,7 +205,13 @@
           "โชคลาภ",
           "ร่ำรวย",
           "มงคล"
-        ]
+        ],
+        "name_en": "Star 8 White (Ba Bai · Left Assistant)",
+        "name_zh": "八白左輔星",
+        "general_en": "Star of wealth and great fortune — the most auspicious star of Period 8 (2004–2023), still favorable in Period 9.",
+        "general_zh": "當令財星，主財帛豐盈、大利進益，八運（2004–2023）第一吉星，九運仍吉。",
+        "home_en": "The golden sector! Ideal for a safe, a work desk, or the main door. Keep it open, bright, and busy with foot traffic to draw wealth into the home.",
+        "home_zh": "此為財位！宜置保險櫃、辦公之案或作大門。此方宜開闊明亮、人行往來，可引財入宅。"
       },
       "9": {
         "name": "ดาว 9 ม่วง (九紫右弼)",
@@ -177,7 +225,13 @@
           "แต่งงาน",
           "ชื่อเสียง",
           "ยุค 9"
-        ]
+        ],
+        "name_en": "Star 9 Purple (Jiu Zi · Right Assistant)",
+        "name_zh": "九紫右弼星",
+        "general_en": "Star of celebrations, love, marriage, and fame — the most auspicious star of Period 9 (2024–2043).",
+        "general_zh": "喜慶之星，主婚喜、姻緣、聲名，九運（2024–2043）第一吉星。",
+        "home_en": "The supreme sector of this period! Ideal for a married couple's bedroom, the main door, or the living room. Use purple, red, and pink to enhance it.",
+        "home_zh": "本運至吉之方！宜作夫婦主臥、大門或客廳，以紫、紅、粉諸色催旺。"
       }
     }
   },
@@ -194,7 +248,13 @@
           "เริ่มต้น",
           "โอกาส",
           "ธุรกิจ"
-        ]
+        ],
+        "name_en": "Open Gate (Kai Men)",
+        "name_zh": "開門",
+        "general_en": "Gate of new beginnings — opening opportunities, launching a business, investing. Everything flows smoothly.",
+        "general_zh": "開門主開創，利開市、興業、投資，百事亨通。",
+        "home_en": "This direction suits the main door, starting new projects, or placing a wealth-generating work desk. A first-class auspicious sector.",
+        "home_zh": "此方宜開大門、創新業、設求財之案，上吉之位。"
       },
       "休": {
         "name": "ประตูพักผ่อน (休門)",
@@ -205,7 +265,13 @@
           "พักผ่อน",
           "สงบ",
           "สะสมพลัง"
-        ]
+        ],
+        "name_en": "Rest Gate (Xiu Men)",
+        "name_zh": "休門",
+        "general_en": "Gate of calm and rest — recharging and waiting for the right moment. Everything proceeds smoothly at an unhurried pace.",
+        "general_zh": "休門主安息，養精蓄銳、靜待時機，諸事平順而不迫。",
+        "home_en": "Ideal for the bed, a lounge corner, or a tea corner — a resting space that recharges the householder. Very good.",
+        "home_zh": "宜安床、設閒坐品茗之所，為宅主養氣蓄力之位，大吉。"
       },
       "生": {
         "name": "ประตูเกิด (生門)",
@@ -217,7 +283,13 @@
           "ลงทุน",
           "ครอบครัว",
           "มีลูก"
-        ]
+        ],
+        "name_en": "Life Gate (Sheng Men)",
+        "name_zh": "生門",
+        "general_en": "Gate of birth and growth — flourishing. Ideal for earning a living, investing, and building a family.",
+        "general_zh": "生門主生發，生機旺盛，利謀生、投資、成家育子。",
+        "home_en": "An auspicious sector for a children's room, the kitchen, or a wealth-generating desk. This energy promotes growth in every aspect.",
+        "home_zh": "吉方，宜作兒房、廚灶或求財之案，其氣助萬事滋長。"
       },
       "傷": {
         "name": "ประตูบาดเจ็บ (傷門)",
@@ -228,7 +300,13 @@
           "บาดเจ็บ",
           "แข่งขัน",
           "ก้าวร้าว"
-        ]
+        ],
+        "name_en": "Injury Gate (Shang Men)",
+        "name_zh": "傷門",
+        "general_en": "Gate of pain, competition, and fighting. Its fierce energy suits endeavors that must be won.",
+        "general_zh": "傷門主刑傷爭競，其氣剛烈，利爭勝克敵之事。",
+        "home_en": "Not suitable for a bed or living room, but usable as an exercise corner, a training room, or a negotiation spot where you must win.",
+        "home_zh": "忌安床、作起居之室；可作習武健身、操練或爭勝談判之位。"
       },
       "杜": {
         "name": "ประตูปิด (杜門)",
@@ -240,7 +318,13 @@
           "ซ่อน",
           "ป้องกัน",
           "เป็นส่วนตัว"
-        ]
+        ],
+        "name_en": "Closed Gate (Du Men)",
+        "name_zh": "杜門",
+        "general_en": "Gate of secrets — hiding, defense, concealing information. Suits confidential work.",
+        "general_zh": "杜門主閉藏，隱匿防守、守密之象，利機密之事。",
+        "home_en": "Suitable for a storeroom, a safe, or a work corner needing privacy. Not suitable as the main door.",
+        "home_zh": "宜作儲藏之室、保險櫃或幽靜私密之工作位，不宜開大門。"
       },
       "景": {
         "name": "ประตูวิว (景門)",
@@ -251,7 +335,13 @@
           "ชื่อเสียง",
           "การมองเห็น",
           "ศิลปะ"
-        ]
+        ],
+        "name_en": "Scenery Gate (Jing Men)",
+        "name_zh": "景門",
+        "general_en": "Gate of brightness, visibility, fame, and expression. Suits art and media work.",
+        "general_zh": "景門主文明光顯，主聲名、展露，利文書、藝術、傳媒。",
+        "home_en": "Suitable for a large window, a view balcony, a photo corner, or a display corner. Enhances the householder's reputation.",
+        "home_zh": "宜開大窗、設觀景陽台、展示之位，能揚宅主之名。"
       },
       "死": {
         "name": "ประตูตาย (死門)",
@@ -262,7 +352,13 @@
           "จุดจบ",
           "หยุดนิ่ง",
           "อันตราย"
-        ]
+        ],
+        "name_en": "Death Gate (Si Men)",
+        "name_zh": "死門",
+        "general_en": "Gate of endings — stillness and stagnation. The energy stops moving.",
+        "general_zh": "死門主終止，氣機停滯，凝而不動。",
+        "home_en": "Never place a bed here or use it as the home entrance. This sector may serve as storage for rarely used items.",
+        "home_zh": "切忌安床，忌作入宅之門。此方僅宜堆置罕用之物、作儲藏之用。"
       },
       "驚": {
         "name": "ประตูตกใจ (驚門)",
@@ -273,7 +369,13 @@
           "ตกใจ",
           "กลัว",
           "นอนไม่หลับ"
-        ]
+        ],
+        "name_en": "Fright Gate (Jing Men)",
+        "name_zh": "驚門",
+        "general_en": "Gate of shock, fear, bad news, and quarrels. Its energy is jarring.",
+        "general_zh": "驚門主驚恐怪異，主凶訊、口舌，其氣躁動不安。",
+        "home_en": "Not suitable as the bedroom of children or the elderly — may cause insomnia and nightmares. Use it as a training or exercise room instead.",
+        "home_zh": "不宜作孩童長者之臥室，恐致失眠多夢。可改作操練健身之所。"
       }
     }
   },
@@ -285,49 +387,97 @@
         "name": "จื่อฝู (ผู้คุมตรา)",
         "general": "เทพสูงสุด นำโชค คุ้มครอง ทุกอย่างเป็นมงคล",
         "home": "มุมมงคลที่สุด เหมาะทำกิจกรรมสำคัญ",
-        "score": 5
+        "score": 5,
+        "name_en": "Zhi Fu (Chief Commander)",
+        "name_zh": "值符",
+        "general_en": "The supreme deity — brings luck and protection. Everything is auspicious.",
+        "general_zh": "八神之首，主福佑庇護，百事皆吉。",
+        "home_en": "The most auspicious sector — ideal for important activities.",
+        "home_zh": "至吉之方，宜行大事。"
       },
       "螣蛇": {
         "name": "เถิงเสอ (งูบิน)",
         "general": "พลังลึกลับ ฝันร้าย ความกังวล แต่เสริมสัญชาตญาณ",
         "home": "ระวังเรื่องจิตใจ ไม่เหมาะนอนตรงนี้ แต่เหมาะมุมทำสมาธิ",
-        "score": 2
+        "score": 2,
+        "name_en": "Teng She (Soaring Serpent)",
+        "name_zh": "螣蛇",
+        "general_en": "Mysterious energy — nightmares and anxiety, yet it heightens intuition.",
+        "general_zh": "主虛驚怪異，夢魘憂疑，然利直覺靈感。",
+        "home_en": "Watch mental well-being — not suitable for sleeping here, but good for a meditation corner.",
+        "home_zh": "慎防心神不寧，不宜安寢，宜作靜坐冥想之位。"
       },
       "太陰": {
         "name": "ไท่อิน (ดวงจันทร์)",
         "general": "พลังหญิง ความอ่อนโยน ลับ ๆ ช่วยเหลือเงียบ ๆ",
         "home": "เหมาะห้องนอนผู้หญิง มุมทำงานที่ต้องวางแผนเงียบ ๆ",
-        "score": 4
+        "score": 4,
+        "name_en": "Tai Yin (Great Yin · the Moon)",
+        "name_zh": "太陰",
+        "general_en": "Feminine energy — gentleness, discreet and quiet assistance.",
+        "general_zh": "主陰柔之德，暗中扶助，靜默藏機。",
+        "home_en": "Suitable for a woman's bedroom or a work corner for quiet planning.",
+        "home_zh": "宜作女眷臥房，或密謀籌劃之位。"
       },
       "六合": {
         "name": "ลิ่วเหอ (หกรวม)",
         "general": "พลังแห่งการรวมตัว ความร่วมมือ การแต่งงาน เจรจาสำเร็จ",
         "home": "เหมาะห้องรับแขก มุมเจรจาธุรกิจ ห้องนอนคู่แต่งงาน",
-        "score": 5
+        "score": 5,
+        "name_en": "Liu He (Six Harmony)",
+        "name_zh": "六合",
+        "general_en": "Energy of union — cooperation, marriage, successful negotiation.",
+        "general_zh": "主和合聚眾，利合作、婚姻、談判成事。",
+        "home_en": "Suitable for the living room, a business negotiation corner, or a married couple's bedroom.",
+        "home_zh": "宜作客廳、商談之位、夫婦臥房。"
       },
       "白虎": {
         "name": "ไป๋หู่ (เสือขาว)",
         "general": "พลังรุนแรง เฉียบขาด อันตราย การผ่าตัด ของมีคม",
         "home": "ระวังอุบัติเหตุ ไม่เหมาะห้องเด็ก ใช้เป็นมุมครัว (มีมีด) หรือโรงจอดรถได้",
-        "score": 2
+        "score": 2,
+        "name_en": "Bai Hu (White Tiger)",
+        "name_zh": "白虎",
+        "general_en": "Fierce and decisive energy — danger, surgery, sharp objects.",
+        "general_zh": "主凶猛肅殺，主血光凶險、金刃手術之象。",
+        "home_en": "Beware of accidents — not suitable for a children's room. May be used as a kitchen (knives present) or a garage.",
+        "home_zh": "慎防意外，不宜作兒房；可作廚房（司刀刃）或車庫。"
       },
       "玄武": {
         "name": "เสวียนอู่ (เต่าดำ)",
         "general": "พลังแห่งความลับ การโกง โจรขโมย แต่เสริมสติปัญญาลึก",
         "home": "ล็อคของมีค่า ระวังคนไม่ซื่อ แต่เหมาะมุมศึกษาวิจัยลึก ๆ",
-        "score": 2
+        "score": 2,
+        "name_en": "Xuan Wu (Black Tortoise)",
+        "name_zh": "玄武",
+        "general_en": "Energy of secrecy — fraud and theft, yet it deepens wisdom and insight.",
+        "general_zh": "主暗昧盜失、欺詐之象，然利深思玄學智慧。",
+        "home_en": "Lock away valuables and beware of dishonest people, but this corner suits deep study and research.",
+        "home_zh": "貴重之物宜鎖藏，防人不忠；然宜作深研窮理之位。"
       },
       "九地": {
         "name": "จิ่วตี้ (เก้าดิน)",
         "general": "พลังแผ่นดิน นิ่ง มั่นคง อดทน เก็บซ่อน รอจังหวะ",
         "home": "เหมาะเก็บของ ห้องใต้ดิน มุมนั่งสมาธิ ไม่เหมาะทำธุรกิจเร่งด่วน",
-        "score": 3
+        "score": 3,
+        "name_en": "Jiu Di (Nine Earth)",
+        "name_zh": "九地",
+        "general_en": "Earth energy — still, stable, patient, concealing, biding its time.",
+        "general_zh": "主坤土之靜，藏伏堅忍，守而待時。",
+        "home_en": "Suitable for storage, a basement, or a meditation corner. Not suitable for urgent business.",
+        "home_zh": "宜儲藏、地庫、靜坐之位，不宜行急務速謀之事。"
       },
       "九天": {
         "name": "จิ่วเทียน (เก้าฟ้า)",
         "general": "พลังท้องฟ้า สูงส่ง ทะเยอทะยาน กล้าหาญ ก้าวหน้า",
         "home": "เหมาะโต๊ะทำงานผู้บริหาร มุมวางแผนใหญ่ เสริมความทะเยอทะยาน",
-        "score": 4
+        "score": 4,
+        "name_en": "Jiu Tian (Nine Heaven)",
+        "name_zh": "九天",
+        "general_en": "Heaven energy — lofty, ambitious, courageous, ever advancing.",
+        "general_zh": "主乾天之高，志向遠大，勇銳進取。",
+        "home_en": "Suitable for an executive desk or a grand-planning corner. Boosts ambition.",
+        "home_zh": "宜設主管之案、擘劃大計之位，助壯志凌雲。"
       }
     }
   },
@@ -340,56 +490,104 @@
         "element": "水",
         "general": "ดาวโจร ดาวกล้าเสี่ยง มีพลังน้ำแรง",
         "home": "ระวังเรื่องน้ำ ท่อรั่ว ไม่เหมาะวางของมีค่า",
-        "score": 2
+        "score": 2,
+        "name_en": "Tian Peng (Heavenly Canopy Star)",
+        "name_zh": "天蓬星",
+        "general_en": "The robber star — bold and risk-taking, with strong Water energy.",
+        "general_zh": "天蓬為盜星，膽大冒險，水氣旺盛。",
+        "home_en": "Watch for water problems and leaking pipes; not suitable for keeping valuables.",
+        "home_zh": "慎防水患管漏，不宜存放貴重之物。"
       },
       "天任": {
         "name": "เทียนเหริน (ดาวภารกิจ)",
         "element": "土",
         "general": "ดาวมงคล ซื่อสัตย์ แบกรับภาระ มั่นคง",
         "home": "เหมาะโต๊ะทำงาน มุมสร้างสรรค์ เสริมความรับผิดชอบ",
-        "score": 4
+        "score": 4,
+        "name_en": "Tian Ren (Heavenly Duty Star)",
+        "name_zh": "天任星",
+        "general_en": "An auspicious star — honest, burden-bearing, steadfast.",
+        "general_zh": "吉星，主忠厚任重，穩健可靠。",
+        "home_en": "Suitable for a work desk or a creative corner. Strengthens responsibility.",
+        "home_zh": "宜設辦公之案、創作之位，助盡責任事。"
       },
       "天沖": {
         "name": "เทียนชง (ดาวพุ่งชน)",
         "element": "木",
         "general": "ดาวกล้าหาญ บุกตะลุย เคลื่อนไหวเร็ว",
         "home": "เหมาะมุมออกกำลังกาย ห้องทำงานที่ต้องตัดสินใจเร็ว",
-        "score": 3
+        "score": 3,
+        "name_en": "Tian Chong (Heavenly Rushing Star)",
+        "name_zh": "天沖星",
+        "general_en": "A brave, charging star — moves fast.",
+        "general_zh": "主勇猛衝擊，行動迅捷。",
+        "home_en": "Suitable for an exercise corner or a work room requiring quick decisions.",
+        "home_zh": "宜作健身之位、須速斷速決之工作間。"
       },
       "天輔": {
         "name": "เทียนฝู่ (ดาวช่วยเหลือ)",
         "element": "木",
         "general": "ดาวมงคล มีคนช่วย ได้ครูดี ได้ที่ปรึกษา",
         "home": "เหมาะมุมอ่านหนังสือ ห้องปรึกษาหารือ เสริมการเรียนรู้",
-        "score": 5
+        "score": 5,
+        "name_en": "Tian Fu (Heavenly Assistant Star)",
+        "name_zh": "天輔星",
+        "general_en": "An auspicious star — helpers arrive, good teachers and advisors appear.",
+        "general_zh": "吉星，主得貴人扶助、良師益友。",
+        "home_en": "Suitable for a reading corner or a consultation room. Enhances learning.",
+        "home_zh": "宜作書房、議事之室，利學業進益。"
       },
       "天英": {
         "name": "เทียนอิง (ดาวเก่งกาจ)",
         "element": "火",
         "general": "ดาวไฟ สว่าง ชื่อเสียง แต่ร้อนแรง ระวังเรื่องไฟ",
         "home": "เหมาะมุมแสดงผลงาน ห้องรับแขก ระวังเรื่องไฟไหม้",
-        "score": 3
+        "score": 3,
+        "name_en": "Tian Ying (Heavenly Hero Star)",
+        "name_zh": "天英星",
+        "general_en": "A fire star — bright and famous, yet fiery. Beware of fire.",
+        "general_zh": "火星，主光明聲名，然性烈，須防祝融。",
+        "home_en": "Suitable for a display corner or the living room. Beware of fire hazards.",
+        "home_zh": "宜作展示之位、客廳，慎防火燭。"
       },
       "天芮": {
         "name": "เทียนรุ่ย (ดาวเจ็บป่วย)",
         "element": "土",
         "general": "ดาวโรคภัย เจ็บป่วย พลังงานหนัก ทำให้อ่อนแอ",
         "home": "ห้ามวางเตียงคนป่วย ห้ามเป็นห้องครัว แก้ด้วยของโลหะ",
-        "score": 1
+        "score": 1,
+        "name_en": "Tian Rui (Heavenly Sickness Star)",
+        "name_zh": "天芮星",
+        "general_en": "The sickness star — illness and heavy energy that weakens.",
+        "general_zh": "病星，主疾患纏身，其氣沉重令人虛弱。",
+        "home_en": "Do not place a sick person's bed here; must not be the kitchen. Remedy with metal objects.",
+        "home_zh": "忌安病人之床，忌作廚灶，宜以金屬器物化解。"
       },
       "天柱": {
         "name": "เทียนจู้ (ดาวเสาค้ำ)",
         "element": "金",
         "general": "ดาวทำลาย พังทลาย แต่เหมาะงานรื้อถอน ปฏิรูป",
         "home": "ไม่เหมาะตั้งรกราก ใช้เป็นมุมจัดระเบียบ ทิ้งของเก่า",
-        "score": 2
+        "score": 2,
+        "name_en": "Tian Zhu (Heavenly Pillar Star)",
+        "name_zh": "天柱星",
+        "general_en": "A destructive star — collapse and ruin, yet suited to demolition and reform.",
+        "general_zh": "主破毀坍塌，然利拆舊革新之事。",
+        "home_en": "Not suitable for settling down; use it as a corner for decluttering and discarding old things.",
+        "home_zh": "不宜安居立業，宜作整理棄舊之位。"
       },
       "天心": {
         "name": "เทียนซิน (ดาวหัวใจฟ้า)",
         "element": "金",
         "general": "ดาวมงคล ผู้นำ แพทย์ การรักษา สติปัญญาสูง",
         "home": "เหมาะโต๊ะทำงานผู้บริหาร มุมดูแลสุขภาพ มุมปรึกษาหมอ",
-        "score": 5
+        "score": 5,
+        "name_en": "Tian Xin (Heavenly Heart Star)",
+        "name_zh": "天心星",
+        "general_en": "An auspicious star — leadership, medicine, healing, high wisdom.",
+        "general_zh": "吉星，主首領、醫藥、療疾，智慧高明。",
+        "home_en": "Suitable for an executive desk, a health-care corner, or a medical consultation corner.",
+        "home_zh": "宜設主管之案、養生之位、問醫之所。"
       }
     }
   },
@@ -401,385 +599,769 @@
         "name": "เชียน (ฟ้า)",
         "general": "พลังสูงสุด ผู้นำ ความแข็งแกร่ง สร้างสรรค์ไม่หยุด",
         "home": "มุมแห่งอำนาจ เหมาะโต๊ะผู้นำ ห้องประชุมใหญ่ เสริมบารมี",
-        "score": 5
+        "score": 5,
+        "name_en": "Qian (The Creative · Heaven)",
+        "name_zh": "乾為天",
+        "general_en": "Supreme power, leadership, strength — creating without cease.",
+        "general_zh": "剛健中正，自強不息，君主之德，創造無窮。",
+        "home_en": "The sector of authority — ideal for the leader's desk or the main boardroom; strengthens prestige and command.",
+        "home_zh": "權威之位，宜置主事者之案、議事大堂，助長威望官氣。"
       },
       "坤": {
         "name": "คุน (ดิน)",
         "general": "พลังแม่ อ้อมกอดแผ่นดิน อ่อนโยน รองรับทุกอย่าง",
         "home": "เหมาะห้องนอนแม่บ้าน ห้องครัว มุมครอบครัว เสริมความอบอุ่น",
-        "score": 5
+        "score": 5,
+        "name_en": "Kun (The Receptive · Earth)",
+        "name_zh": "坤為地",
+        "general_en": "Motherly power, the embrace of the earth — gentle, supporting and carrying all things.",
+        "general_zh": "厚德載物，柔順包容，地母之德，養育萬物。",
+        "home_en": "Ideal for the lady of the house's bedroom, the kitchen or the family corner; enhances warmth and nurture.",
+        "home_zh": "宜主婦臥房、灶廚、家人團聚之隅，增溫厚親和之氣。"
       },
       "屯": {
         "name": "จุน (เริ่มต้นยาก)",
         "general": "เหมือนต้นอ่อนแทงดิน เริ่มต้นลำบากแต่มีอนาคต",
         "home": "มุมนี้ต้องอดทน อย่าเร่ง เหมาะเก็บสะสม วางแผนระยะยาว",
-        "score": 3
+        "score": 3,
+        "name_en": "Zhun (Difficulty at the Beginning)",
+        "name_zh": "水雷屯",
+        "general_en": "Like a sprout breaking through soil — a hard beginning but with a future.",
+        "general_zh": "如萌芽破土，始生之難，先難後易，藏未來之機。",
+        "home_en": "This sector calls for patience — do not rush; suited to storage, saving and long-term planning.",
+        "home_zh": "此方宜忍耐勿躁，利積蓄收藏、謀長遠之計。"
       },
       "蒙": {
         "name": "เหมิง (ไร้เดียงสา)",
         "general": "เหมือนเด็กเรียนรู้ ต้องมีครูชี้ทาง ยังไม่รู้ทิศทาง",
         "home": "เหมาะห้องเด็ก มุมเรียนรู้ วางหนังสือ เสริมปัญญาให้ลูก",
-        "score": 3
+        "score": 3,
+        "name_en": "Meng (Youthful Folly)",
+        "name_zh": "山水蒙",
+        "general_en": "Like a child learning — a teacher must show the way; the direction is not yet clear.",
+        "general_zh": "童蒙求師，蒙以養正，方向未明，待教而啟。",
+        "home_en": "Ideal for a children's room, a study corner or bookshelves; nurtures the children's wisdom.",
+        "home_zh": "宜作童子之房、讀書之隅、置書卷處，啟迪子女智慧。"
       },
       "需": {
         "name": "ซวี (รอคอย)",
         "general": "ฝนยังไม่ตก ต้องรอจังหวะ อดทน เตรียมพร้อม",
         "home": "มุมนี้ไม่ต้องเร่ง ใช้เป็นที่พักผ่อน รอจังหวะ นั่งชิล ๆ",
-        "score": 3
+        "score": 3,
+        "name_en": "Xu (Waiting · Nourishment)",
+        "name_zh": "水天需",
+        "general_en": "The rain has not yet fallen — wait for the right moment, be patient and prepare.",
+        "general_zh": "雲上於天，雨澤未降，待時而動，養精蓄銳。",
+        "home_en": "No need to hurry in this sector — use it as a place of rest, biding your time and relaxing at ease.",
+        "home_zh": "此方不必急進，宜作休憩之所，靜候時機，安然自處。"
       },
       "訟": {
         "name": "ซ่ง (ฟ้องร้อง)",
         "general": "ความขัดแย้ง ข้อพิพาท ควรถอย อย่าดันทุรัง",
         "home": "ระวังทะเลาะในมุมนี้ ไม่เหมาะเป็นห้องประชุม ใช้เก็บของแทน",
-        "score": 1
+        "score": 1,
+        "name_en": "Song (Conflict)",
+        "name_zh": "天水訟",
+        "general_en": "Conflict and disputes — better to withdraw; do not push stubbornly ahead.",
+        "general_zh": "天水違行，爭訟之象，宜退不宜進，切莫強爭。",
+        "home_en": "Beware of quarrels in this sector; unsuitable for a meeting room — use it for storage instead.",
+        "home_zh": "此方易生口舌，不宜議事之堂，可改作儲物之用。"
       },
       "師": {
         "name": "ซือ (กองทัพ)",
         "general": "การรวมพล จัดระเบียบ ต้องมีผู้นำที่ดี",
         "home": "เหมาะมุมจัดระเบียบ ห้องทำงานทีม ต้องมีหัวหน้าชัดเจน",
-        "score": 3
+        "score": 3,
+        "name_en": "Shi (The Army)",
+        "name_zh": "地水師",
+        "general_en": "Gathering forces and setting order — a good leader is essential.",
+        "general_zh": "地中有水，聚眾成師，行伍有律，必賴良將。",
+        "home_en": "Suited to an organizing corner or a team workroom; a clear head of command is required.",
+        "home_zh": "宜作整編理事之隅、群僚共事之室，主事者須號令分明。"
       },
       "比": {
         "name": "ปี่ (สนิทสนม)",
         "general": "มิตรภาพ ความร่วมมือ เป็นพันธมิตร ช่วยเหลือกัน",
         "home": "เหมาะห้องรับแขก มุมนั่งเล่นครอบครัว เสริมความสัมพันธ์",
-        "score": 4
+        "score": 4,
+        "name_en": "Bi (Holding Together · Union)",
+        "name_zh": "水地比",
+        "general_en": "Friendship and cooperation — forming alliances and helping one another.",
+        "general_zh": "水行地上，親比相依，結盟互助，眾志相親。",
+        "home_en": "Ideal for the living room or the family lounge corner; strengthens relationships.",
+        "home_zh": "宜作會客之廳、闔家閒坐之隅，增親睦之情。"
       },
       "小畜": {
         "name": "เสี่ยวชู่ (สะสมน้อย)",
         "general": "สะสมทีละนิด ยังไม่ถึงเวลาใหญ่ ค่อย ๆ เก็บ",
         "home": "เหมาะมุมออมเงิน ตู้เก็บของ สะสมทรัพย์ทีละนิด",
-        "score": 3
+        "score": 3,
+        "name_en": "Xiao Xu (The Taming Power of the Small)",
+        "name_zh": "風天小畜",
+        "general_en": "Accumulating little by little — the time for great things has not yet come; save steadily.",
+        "general_zh": "密雲不雨，小有積蓄，大時未至，徐徐而聚。",
+        "home_en": "Ideal for a savings corner or storage cabinets — accumulating wealth bit by bit.",
+        "home_zh": "宜作積財之隅、儲物之櫃，涓滴聚財，積少成多。"
       },
       "履": {
         "name": "ลวี่ (เหยียบ)",
         "general": "เดินบนหางเสือ ต้องระวังทุกก้าว มีมารยาท",
         "home": "ทำอะไรตรงนี้ต้องระวัง มีสติ เหมาะมุมทำสมาธิ ฝึกสติ",
-        "score": 3
+        "score": 3,
+        "name_en": "Lü (Treading · Conduct)",
+        "name_zh": "天澤履",
+        "general_en": "Treading on the tiger's tail — every step must be careful, with proper conduct.",
+        "general_zh": "履虎尾而不咥，步步謹慎，循禮而行。",
+        "home_en": "Whatever you do here, be careful and mindful — ideal for a meditation and mindfulness corner.",
+        "home_zh": "居此方行事須謹慎存神，宜作靜坐修心、養持正念之隅。"
       },
       "泰": {
         "name": "ไท่ (สงบสุข)",
         "general": "ฟ้าดินสมดุล ทุกอย่างราบรื่น เจริญรุ่งเรือง ยุคทอง",
         "home": "มุมมงคลมาก! เหมาะทุกกิจกรรม ประตูหน้าบ้าน โต๊ะทำงาน เตียงนอน",
-        "score": 5
+        "score": 5,
+        "name_en": "Tai (Peace)",
+        "name_zh": "地天泰",
+        "general_en": "Heaven and Earth in balance — everything flows smoothly; prosperity, a golden age.",
+        "general_zh": "天地交而萬物通，上下和而其志同，亨通泰平，盛世之象。",
+        "home_en": "A highly auspicious sector! Suited to every activity — the front door, the work desk, the bed.",
+        "home_zh": "大吉之方！百事皆宜，宜開正門、設案、安床。"
       },
       "否": {
         "name": "ปี่ (ติดขัด)",
         "general": "ฟ้าดินไม่สื่อกัน ทุกอย่างชะงัก ต้องอดทนรอ",
         "home": "มุมนี้พลังติดขัด อย่าทำอะไรสำคัญ ใช้เก็บของ",
-        "score": 1
+        "score": 1,
+        "name_en": "Pi (Standstill · Stagnation)",
+        "name_zh": "天地否",
+        "general_en": "Heaven and Earth do not communicate — everything stalls; one must wait patiently.",
+        "general_zh": "天地不交，否塞不通，萬事停滯，忍而待時。",
+        "home_en": "The energy here is blocked — do nothing important in this sector; use it for storage.",
+        "home_zh": "此方氣機閉塞，勿行大事，宜作儲物之用。"
       },
       "同人": {
         "name": "ถงเหริน (ร่วมมือ)",
         "general": "ร่วมมือกับคน ทำงานทีม เปิดใจ รวมพลัง",
         "home": "เหมาะห้องประชุม มุมทำงานทีม ห้องรับแขก เสริมมิตรภาพ",
-        "score": 4
+        "score": 4,
+        "name_en": "Tong Ren (Fellowship with Men)",
+        "name_zh": "天火同人",
+        "general_en": "Working together with others — teamwork, open hearts, united strength.",
+        "general_zh": "天與火同，同人於野，開誠布公，同心協力。",
+        "home_en": "Ideal for a meeting room, a team-work corner or the living room; fosters fellowship.",
+        "home_zh": "宜作議事之堂、共事之隅、會客之廳，增同儕之誼。"
       },
       "大有": {
         "name": "ต้าโหยว (มีมาก)",
         "general": "อุดมสมบูรณ์ ร่ำรวย มีทุกอย่าง ครบครัน",
         "home": "มุมมงคลเรื่องเงิน! เหมาะตู้เซฟ โต๊ะทำงานหาเงิน ประตูร้านค้า",
-        "score": 5
+        "score": 5,
+        "name_en": "Da You (Possession in Great Measure)",
+        "name_zh": "火天大有",
+        "general_en": "Abundance and wealth — having everything, complete in every respect.",
+        "general_zh": "火在天上，大有豐盈，富有萬物，應有盡有。",
+        "home_en": "A highly auspicious sector for money! Ideal for the safe, the money-making desk or a shop entrance.",
+        "home_zh": "財帛大吉之方！宜安金庫、設營財之案、開店鋪之門。"
       },
       "謙": {
         "name": "เชียน (ถ่อมตน)",
         "general": "ถ่อมตนจึงได้ ภูเขาอยู่ใต้ดิน คนเก่งไม่อวด",
         "home": "มุมเงียบ ๆ ที่ส่งเสริมให้เจ้าบ้านอ่อนน้อม ได้ใจคน",
-        "score": 4
+        "score": 4,
+        "name_en": "Qian (Modesty)",
+        "name_zh": "地山謙",
+        "general_en": "Humility brings gain — a mountain beneath the earth; the truly able do not boast.",
+        "general_zh": "地中有山，謙尊而光，卑而不可踰，能者不矜。",
+        "home_en": "A quiet sector that encourages the householder to be humble and win people's hearts.",
+        "home_zh": "宜為清靜之隅，助宅主謙沖自牧，得眾人之心。"
       },
       "豫": {
         "name": "ยวี่ (ร่าเริง)",
         "general": "ความสุข สนุกสนาน ดนตรี ฉลอง มีพลังชีวิต",
         "home": "เหมาะมุมเปิดเพลง ห้องนั่งเล่น มุมปาร์ตี้ เสริมความสุข",
-        "score": 4
+        "score": 4,
+        "name_en": "Yu (Enthusiasm)",
+        "name_zh": "雷地豫",
+        "general_en": "Joy and delight — music, celebration and vitality.",
+        "general_zh": "雷出地奮，豫悅之象，作樂崇德，生氣勃發。",
+        "home_en": "Ideal for a music corner, the living room or a party corner; enhances happiness.",
+        "home_zh": "宜作絲竹之隅、閒居之廳、宴樂之所，增歡愉之氣。"
       },
       "隨": {
         "name": "สุย (ตามไป)",
         "general": "ยืดหยุ่น ปรับตัว ตามสถานการณ์ ไม่ดื้อดึง",
         "home": "มุมที่ควรปรับเปลี่ยนได้ตามฤดูกาล เหมาะมุมอเนกประสงค์",
-        "score": 3
+        "score": 3,
+        "name_en": "Sui (Following)",
+        "name_zh": "澤雷隨",
+        "general_en": "Flexible and adaptable — following the situation, never stubborn.",
+        "general_zh": "澤中有雷，隨時而動，順勢應變，不固不執。",
+        "home_en": "A sector that should be rearranged with the seasons — ideal as a multipurpose corner.",
+        "home_zh": "此方宜隨四時而更易佈置，作機動多用之隅。"
       },
       "蠱": {
         "name": "กู่ (ซ่อมแซม)",
         "general": "ของเสีย ต้องซ่อม จัดการปัญหาที่สะสม ชำระล้าง",
         "home": "มุมนี้ต้องทำความสะอาดบ่อย ๆ อย่าปล่อยให้รก เป็นจุดสะสมพลังลบ",
-        "score": 2
+        "score": 2,
+        "name_en": "Gu (Work on What Has Been Spoiled · Decay)",
+        "name_zh": "山風蠱",
+        "general_en": "Things have decayed and must be repaired — deal with accumulated problems and cleanse them.",
+        "general_zh": "山下有風，蠱壞之象，宜治其弊，滌故整弊。",
+        "home_en": "This sector must be cleaned often — never let it grow cluttered, for it accumulates negative energy.",
+        "home_zh": "此方須勤加灑掃，勿任雜亂，否則穢氣積聚。"
       },
       "臨": {
         "name": "หลิน (มาถึง)",
         "general": "โอกาสมาถึง ผู้ใหญ่มาเยือน ได้ลาภ ต้อนรับ",
         "home": "เหมาะประตูรับแขก ทางเข้าบ้าน เสริมโชคจากผู้ใหญ่",
-        "score": 4
+        "score": 4,
+        "name_en": "Lin (Approach)",
+        "name_zh": "地澤臨",
+        "general_en": "Opportunity arrives — elders and superiors come to visit; fortune received, a time of welcoming.",
+        "general_zh": "澤上有地，臨照之象，貴人蒞臨，迎福納祥。",
+        "home_en": "Ideal for the guest-receiving door or the home entrance; draws luck from elders and benefactors.",
+        "home_zh": "宜作迎賓之門、入宅之口，招長輩貴人之福。"
       },
       "觀": {
         "name": "กวน (มองดู)",
         "general": "สังเกตการณ์ ดูก่อนทำ ใคร่ครวญ ไตร่ตรอง",
         "home": "เหมาะมุมนั่งมอง วิวสวย ระเบียง มุมคิด ไม่ต้องรีบ",
-        "score": 3
+        "score": 3,
+        "name_en": "Guan (Contemplation · View)",
+        "name_zh": "風地觀",
+        "general_en": "Observation — look before acting; ponder and reflect.",
+        "general_zh": "風行地上，觀瞻之象，先觀後動，審思明辨。",
+        "home_en": "Ideal for a viewing corner, a fine vista, a balcony or a thinking corner — no need to hurry.",
+        "home_zh": "宜作觀景之隅、憑欄之臺、沉思之處，不必急進。"
       },
       "噬嗑": {
         "name": "ซื่อเค่อ (กัดทะลุ)",
         "general": "ต้องตัดสินใจเด็ดขาด จัดการปัญหา บังคับใช้กฎ",
         "home": "เหมาะมุมทำงานที่ต้องตัดสินใจยาก ไม่เหมาะพักผ่อน",
-        "score": 3
+        "score": 3,
+        "name_en": "Shi He (Biting Through)",
+        "name_zh": "火雷噬嗑",
+        "general_en": "Decisive action is required — deal with the problem and enforce the rules.",
+        "general_zh": "雷電噬嗑，明罰敕法，斷然決之，除梗去礙。",
+        "home_en": "Suited to a work corner for hard decisions; not suitable for resting.",
+        "home_zh": "宜作決斷要務之案，不宜為安寢休憩之所。"
       },
       "賁": {
         "name": "เปิ้น (ตกแต่ง)",
         "general": "ความงาม การตกแต่ง ศิลปะ รูปลักษณ์ภายนอก",
         "home": "เหมาะมุมตกแต่ง แจกัน ภาพวาด มุมแต่งตัว ห้องน้ำสวย ๆ",
-        "score": 4
+        "score": 4,
+        "name_en": "Bi (Grace · Adornment)",
+        "name_zh": "山火賁",
+        "general_en": "Beauty, decoration and art — outward appearance and form.",
+        "general_zh": "山下有火，賁飾之象，文飾之美，外表之華。",
+        "home_en": "Ideal for a decorative corner — vases, paintings, a dressing corner or an elegant bathroom.",
+        "home_zh": "宜作陳設之隅，置瓶花書畫、妝奩之處、雅潔浴室。"
       },
       "剝": {
         "name": "ปั่ว (ลอก)",
         "general": "สิ่งเก่าลอกออก ผุกร่อน เหลือแต่แก่น ต้องทิ้งของเก่า",
         "home": "มุมนี้ไม่มั่นคง อย่าวางของสำคัญ เหมาะเก็บของที่จะทิ้ง",
-        "score": 1
+        "score": 1,
+        "name_en": "Bo (Splitting Apart)",
+        "name_zh": "山地剝",
+        "general_en": "The old peels away and crumbles — only the core remains; the old must be discarded.",
+        "general_zh": "山附於地，剝落之象，去舊存核，汰故從新。",
+        "home_en": "This sector is unstable — do not place valuables here; suited only for things awaiting disposal.",
+        "home_zh": "此方不穩，勿置貴重之物，僅宜暫放待棄之物。"
       },
       "復": {
         "name": "ฟู่ (กลับมา)",
         "general": "กลับสู่จุดเริ่มต้น ฟื้นตัว เริ่มใหม่ แสงสว่างกลับมา",
         "home": "มุมแห่งการฟื้นตัว เหมาะคนเพิ่งป่วยหาย เริ่มต้นชีวิตใหม่",
-        "score": 4
+        "score": 4,
+        "name_en": "Fu (Return · The Turning Point)",
+        "name_zh": "地雷復",
+        "general_en": "Returning to the starting point — recovery, a new beginning; the light comes back.",
+        "general_zh": "雷在地中，一陽來復，剝極而復，光明再返。",
+        "home_en": "The sector of recovery — ideal for those recuperating from illness or starting life anew.",
+        "home_zh": "復元之方，宜病後調養之人、重啟人生之始。"
       },
       "无妄": {
         "name": "อู๋วั่ง (ไร้เจตนา)",
         "general": "ทำโดยไม่คาดหวัง บริสุทธิ์ใจ ซื่อสัตย์ ธรรมชาติ",
         "home": "มุมที่ควรปล่อยตามธรรมชาติ อย่าบังคับ อย่าจัดมาก",
-        "score": 3
+        "score": 3,
+        "name_en": "Wu Wang (Innocence · The Unexpected)",
+        "name_zh": "天雷无妄",
+        "general_en": "Acting without expectation — pure of heart, honest and natural.",
+        "general_zh": "天下雷行，物與无妄，誠而不欺，順乎自然。",
+        "home_en": "A sector best left natural — do not force it, do not over-arrange it.",
+        "home_zh": "此方宜任其自然，勿強為造作，勿過度佈置。"
       },
       "大畜": {
         "name": "ต้าชู่ (สะสมใหญ่)",
         "general": "สะสมพลังมาก ถึงเวลาเก็บเกี่ยว มีทรัพย์สินมาก",
         "home": "มุมมงคลเก็บทรัพย์! เหมาะตู้เซฟ ห้องเก็บของมีค่า คลังสินค้า",
-        "score": 5
+        "score": 5,
+        "name_en": "Da Xu (The Taming Power of the Great)",
+        "name_zh": "山天大畜",
+        "general_en": "Great power accumulated — the time of harvest has come; abundant possessions.",
+        "general_zh": "天在山中，大畜之象，蓄德養賢，豐藏厚積，收成有時。",
+        "home_en": "A highly auspicious wealth-storing sector! Ideal for the safe, the valuables room or a warehouse.",
+        "home_zh": "聚財大吉之方！宜安金庫、藏珍之室、倉儲之所。"
       },
       "頤": {
         "name": "อี๋ (บำรุง)",
         "general": "การบำรุงเลี้ยง อาหาร สุขภาพ ดูแลตัวเอง",
         "home": "เหมาะห้องครัว มุมกินข้าว ห้องออกกำลังกาย เสริมสุขภาพ",
-        "score": 4
+        "score": 4,
+        "name_en": "Yi (The Corners of the Mouth · Nourishment)",
+        "name_zh": "山雷頤",
+        "general_en": "Nourishment and care — food, health, looking after oneself.",
+        "general_zh": "山下有雷，頤養之象，慎言語，節飲食，養身修己。",
+        "home_en": "Ideal for the kitchen, the dining corner or an exercise room; strengthens health.",
+        "home_zh": "宜作灶廚、飲膳之隅、練身之室，益於康健。"
       },
       "大過": {
         "name": "ต้ากั้ว (มากเกิน)",
         "general": "รับน้ำหนักเกิน คานจะหัก ต้องลดลง อย่าหักโหม",
         "home": "ระวังมุมนี้รับภาระเยอะ อย่ากองของ อย่าทำงานหนักเกิน",
-        "score": 2
+        "score": 2,
+        "name_en": "Da Guo (Preponderance of the Great)",
+        "name_zh": "澤風大過",
+        "general_en": "Bearing too much weight — the ridgepole is about to break; lighten the load, do not overexert.",
+        "general_zh": "澤滅木，棟橈之象，任重逾分，宜減其負，勿過勞。",
+        "home_en": "Beware of overburdening this sector — do not pile things up, do not overwork here.",
+        "home_zh": "慎防此方負荷過重，勿堆疊重物，勿在此過勞操作。"
       },
       "坎": {
         "name": "คั่น (น้ำ/หลุม)",
         "general": "อันตรายซ้ำซ้อน ติดหล่ม แต่ถ้าผ่านได้จะแกร่ง",
         "home": "ระวังเรื่องน้ำ ท่อตัน น้ำรั่ว มุมนี้ต้องดูแลพิเศษ",
-        "score": 2
+        "score": 2,
+        "name_en": "Kan (The Abysmal · Water)",
+        "name_zh": "坎為水",
+        "general_en": "Danger upon danger — trapped in the mire; yet whoever passes through emerges stronger.",
+        "general_zh": "水洊至，習坎重險，陷而能出，歷險彌堅。",
+        "home_en": "Beware of water matters — blocked pipes and leaks; this sector needs special care.",
+        "home_zh": "慎防水患，溝渠淤塞、滲漏之虞，此方須加意照管。"
       },
       "離": {
         "name": "หลี (ไฟ/สว่าง)",
         "general": "แสงสว่าง ปัญญา สวยงาม แต่ร้อน อย่าติดยึด",
         "home": "เหมาะมุมสว่าง หน้าต่าง ไฟส่องสว่าง เสริมชื่อเสียง ระวังร้อน",
-        "score": 4
+        "score": 4,
+        "name_en": "Li (The Clinging · Fire)",
+        "name_zh": "離為火",
+        "general_en": "Light, wisdom and beauty — but hot; do not cling.",
+        "general_zh": "明兩作離，光明睿智，麗而生輝，然火性炎烈，勿執勿滯。",
+        "home_en": "Ideal for a bright corner, windows and good lighting; boosts fame — but beware of heat.",
+        "home_zh": "宜明亮之隅、開窗采光、燈火通明，旺聲名，惟防燥熱。"
       },
       "咸": {
         "name": "เสียน (สัมผัส)",
         "general": "ความรู้สึก สัมผัส ความรัก ดึงดูด เสน่หา",
         "home": "เหมาะห้องนอนคู่รัก มุมโรแมนติก เสริมความรักและเสน่ห์",
-        "score": 4
+        "score": 4,
+        "name_en": "Xian (Influence · Wooing)",
+        "name_zh": "澤山咸",
+        "general_en": "Feeling and sensation — love, attraction and affection.",
+        "general_zh": "山上有澤，咸感之象，二氣感應，相與為悅，情愫相牽。",
+        "home_en": "Ideal for the couple's bedroom or a romantic corner; enhances love and charm.",
+        "home_zh": "宜作夫婦臥房、旖旎之隅，增情愛姻緣之媚。"
       },
       "恆": {
         "name": "เหิง (ยั่งยืน)",
         "general": "ความยั่งยืน สม่ำเสมอ ไม่เปลี่ยนแปลง มั่นคงนาน",
         "home": "เหมาะมุมที่ต้องการความมั่นคง เตียงนอน ตู้เซฟ เสาหลักบ้าน",
-        "score": 4
+        "score": 4,
+        "name_en": "Heng (Duration)",
+        "name_zh": "雷風恆",
+        "general_en": "Endurance and constancy — unchanging, stable for the long term.",
+        "general_zh": "雷風相與，恆久之道，守常不易，歷久彌堅。",
+        "home_en": "Ideal for places that need stability — the bed, the safe, the main pillar of the house.",
+        "home_zh": "宜求安固之處，安床、金庫、宅之棟柱皆宜。"
       },
       "遁": {
         "name": "ตุน (ถอยหนี)",
         "general": "ถึงเวลาถอย หลบหนี ซ่อนตัว รอจังหวะใหม่",
         "home": "ไม่เหมาะทำกิจกรรมหลัก เหมาะเป็นมุมเงียบ ๆ ห้องซ่อน",
-        "score": 2
+        "score": 2,
+        "name_en": "Dun (Retreat)",
+        "name_zh": "天山遁",
+        "general_en": "Time to withdraw — retreat, stay hidden, await a new opportunity.",
+        "general_zh": "天下有山，遁退之象，隱身避勢，以待新機。",
+        "home_en": "Not suited to main activities — best as a quiet corner or a hideaway room.",
+        "home_zh": "不宜行主事之務，宜作幽靜之隅、隱蔽之室。"
       },
       "大壯": {
         "name": "ต้าจวั้ง (แข็งแกร่ง)",
         "general": "พลังเต็มที่ แข็งแรง แต่อย่าแรงเกิน อาจพัง",
         "home": "เหมาะมุมออกกำลังกาย แต่ระวังอย่าเร่งเกิน ใช้พลังพอดี",
-        "score": 3
+        "score": 3,
+        "name_en": "Da Zhuang (The Power of the Great)",
+        "name_zh": "雷天大壯",
+        "general_en": "Full power and strength — but do not overdo it, or things may break.",
+        "general_zh": "雷在天上，大壯之勢，剛以動之，然壯勿過，過則折。",
+        "home_en": "Ideal for an exercise corner — but do not push too hard; use strength in moderation.",
+        "home_zh": "宜作練身之隅，惟勿逞強過度，用力有節。"
       },
       "晉": {
         "name": "จิ้น (ก้าวหน้า)",
         "general": "ก้าวหน้า เลื่อนตำแหน่ง แสงสว่างขึ้น พัฒนาไม่หยุด",
         "home": "มุมมงคลเรื่องหน้าที่การงาน! เหมาะโต๊ะทำงาน มุมอ่านหนังสือ",
-        "score": 5
+        "score": 5,
+        "name_en": "Jin (Progress)",
+        "name_zh": "火地晉",
+        "general_en": "Advancement and promotion — the light rises; unceasing development.",
+        "general_zh": "明出地上，晉升之象，柔進而上行，光明日進不已。",
+        "home_en": "A highly auspicious sector for career! Ideal for the work desk or a reading corner.",
+        "home_zh": "仕途大吉之方！宜設辦事之案、讀書之隅。"
       },
       "明夷": {
         "name": "หมิงอี๋ (แสงดับ)",
         "general": "แสงสว่างถูกบัง มืดมน ถูกกดขี่ ต้องซ่อนความสามารถ",
         "home": "มุมมืด ไม่เหมาะทำกิจกรรมสำคัญ ควรเปิดไฟสว่าง ๆ แก้",
-        "score": 1
+        "score": 1,
+        "name_en": "Ming Yi (Darkening of the Light)",
+        "name_zh": "地火明夷",
+        "general_en": "The light is veiled — darkness and oppression; one must hide one's abilities.",
+        "general_zh": "明入地中，明夷之象，光明受掩，晦而轉明，藏器待時。",
+        "home_en": "A dark sector — unsuitable for important activities; remedy it with bright lighting.",
+        "home_zh": "幽暗之方，不宜行要事，宜燃燈增明以化解。"
       },
       "家人": {
         "name": "เจียเหริน (ครอบครัว)",
         "general": "ความสัมพันธ์ในครอบครัว ความอบอุ่น ระเบียบในบ้าน",
         "home": "มุมครอบครัว! เหมาะโต๊ะกินข้าว ห้องนั่งเล่นรวม รูปครอบครัว",
-        "score": 5
+        "score": 5,
+        "name_en": "Jia Ren (The Family)",
+        "name_zh": "風火家人",
+        "general_en": "Family bonds — warmth and good order within the home.",
+        "general_zh": "風自火出，家人之象，內外有序，家道雍睦。",
+        "home_en": "The family sector! Ideal for the dining table, the shared living room and family photos.",
+        "home_zh": "家庭之方！宜設膳桌、闔家共處之廳、懸家人影像。"
       },
       "睽": {
         "name": "คุย (แตกแยก)",
         "general": "มองต่างมุม ขัดแย้ง แต่ถ้าเข้าใจกันจะเสริมกัน",
         "home": "ระวังทะเลาะ ใช้สีอ่อน ๆ ตกแต่ง เปิดไฟอุ่น ลดความขัดแย้ง",
-        "score": 2
+        "score": 2,
+        "name_en": "Kui (Opposition)",
+        "name_zh": "火澤睽",
+        "general_en": "Seeing from different angles — opposition; yet with understanding, differences complement each other.",
+        "general_zh": "火澤相違，睽異之象，二女同居其志不同，然睽而知通，異而相成。",
+        "home_en": "Beware of quarrels — decorate with soft colors and warm lighting to ease the friction.",
+        "home_zh": "慎防口角，宜以淡雅之色佈置、燃暖光之燈，以緩乖離之氣。"
       },
       "蹇": {
         "name": "เจี่ยน (ลำบาก)",
         "general": "ทางข้างหน้าลำบาก ต้องหยุดพัก อย่าฝืน",
         "home": "มุมนี้ไม่ราบรื่น อย่าทำอะไรสำคัญ ใช้พักผ่อนแทน",
-        "score": 2
+        "score": 2,
+        "name_en": "Jian (Obstruction)",
+        "name_zh": "水山蹇",
+        "general_en": "The road ahead is hard — stop and rest; do not force the way.",
+        "general_zh": "山上有水，蹇難之象，前路維艱，見險而止，勿強行。",
+        "home_en": "This sector does not flow smoothly — do nothing important here; use it for rest instead.",
+        "home_zh": "此方氣運不順，勿行大事，宜改作歇息之所。"
       },
       "解": {
         "name": "เจี่ย (คลี่คลาย)",
         "general": "ปัญหาคลี่คลาย ฝนหยุดตก ผ่อนคลาย ปลดปล่อย",
         "home": "มุมดีสำหรับแก้ปัญหา เจรจาไกล่เกลี่ย ทำให้อะไร ๆ คลี่คลาย",
-        "score": 4
+        "score": 4,
+        "name_en": "Xie (Deliverance)",
+        "name_zh": "雷水解",
+        "general_en": "Problems dissolve — the rain has stopped; relief and release.",
+        "general_zh": "雷雨作解，險難消釋，雨過天青，寬解舒緩。",
+        "home_en": "A good sector for solving problems, negotiating and mediating — it helps things unravel.",
+        "home_zh": "宜於此方排難解紛、協商調停，諸事得以紓解。"
       },
       "損": {
         "name": "ซุ่น (ลดลง)",
         "general": "ลดเพื่อเพิ่ม เสียสละ ให้ก่อนได้ ลดความโลภ",
         "home": "มุมที่ควรเรียบง่าย อย่าตกแต่งฟุ่มเฟือย ความเรียบคือพลัง",
-        "score": 3
+        "score": 3,
+        "name_en": "Sun (Decrease)",
+        "name_zh": "山澤損",
+        "general_en": "Decrease in order to gain — sacrifice, give before receiving, curb greed.",
+        "general_zh": "山下有澤，損下益上，先捨後得，懲忿窒欲。",
+        "home_en": "A sector that should stay simple — no lavish decoration; simplicity is its power.",
+        "home_zh": "此方宜簡樸素淨，勿奢華陳設，樸實即是其力。"
       },
       "益": {
         "name": "อี้ (เพิ่มพูน)",
         "general": "ได้รับเพิ่ม มีคนให้ โชคดี เจริญก้าวหน้า",
         "home": "มุมมงคล! เหมาะรับของขวัญ ประตูรับโชค มุมเสริมดวง",
-        "score": 5
+        "score": 5,
+        "name_en": "Yi (Increase)",
+        "name_zh": "風雷益",
+        "general_en": "Receiving more — people give to you; good fortune and advancement.",
+        "general_zh": "風雷相益，損上益下，受惠得助，其益无方，日進有慶。",
+        "home_en": "An auspicious sector! Ideal for receiving gifts — a luck-welcoming door, a fortune-boosting corner.",
+        "home_zh": "吉慶之方！宜納饋受禮、開迎福之門、設旺運之隅。"
       },
       "夬": {
         "name": "กว้าย (ตัดสินใจ)",
         "general": "ถึงเวลาตัดสิน เด็ดขาด ชนะอุปสรรค แต่ต้องระวัง",
         "home": "เหมาะมุมตัดสินใจสำคัญ โต๊ะทำงาน แต่อย่าประมาท",
-        "score": 3
+        "score": 3,
+        "name_en": "Guai (Breakthrough · Resoluteness)",
+        "name_zh": "澤天夬",
+        "general_en": "Time to decide — be resolute, overcome the obstacle, yet stay vigilant.",
+        "general_zh": "澤上於天，夬決之象，剛決柔也，決而能和，惕懼乃吉。",
+        "home_en": "Suited to major decision-making and the work desk — but never careless.",
+        "home_zh": "宜於此決斷要務、設辦事之案，惟不可懈怠大意。"
       },
       "姤": {
         "name": "โก้ว (พบเจอ)",
         "general": "พบเจอสิ่งใหม่ โอกาสมา แต่อย่าหลงใหล ระวังล่อลวง",
         "home": "มุมรับแขก ทางเข้า แต่ระวังคนไม่ดีเข้ามา ล็อคให้ดี",
-        "score": 3
+        "score": 3,
+        "name_en": "Gou (Coming to Meet)",
+        "name_zh": "天風姤",
+        "general_en": "Meeting the new — opportunity arrives; but do not be seduced, beware of deception.",
+        "general_zh": "天下有風，姤遇之象，不期而遇，勿溺其誘，慎防蠱惑。",
+        "home_en": "A guest-receiving corner or entrance — but beware of bad people entering; keep it well locked.",
+        "home_zh": "宜迎賓之隅、出入之口，惟防宵小混入，門戶須嚴。"
       },
       "萃": {
         "name": "ชุ่ย (รวมตัว)",
         "general": "รวมพล ชุมนุม สะสมพลัง ร่วมมือเป็นกลุ่ม",
         "home": "เหมาะห้องประชุม มุมรวมตัวครอบครัว งานเลี้ยงรวม",
-        "score": 4
+        "score": 4,
+        "name_en": "Cui (Gathering Together)",
+        "name_zh": "澤地萃",
+        "general_en": "Gathering forces — assembly, accumulating power, cooperating as a group.",
+        "general_zh": "澤上於地，萃聚之象，聚眾合力，會同成群。",
+        "home_en": "Ideal for a meeting room, a family gathering corner or communal feasts.",
+        "home_zh": "宜作議事之堂、闔家團聚之隅、宴集之所。"
       },
       "升": {
         "name": "เซิง (ขึ้น)",
         "general": "ขึ้นสูง เติบโต ก้าวหน้า เลื่อนขั้น ไม่มีอุปสรรค",
         "home": "มุมมงคลเรื่องเลื่อนตำแหน่ง! เหมาะโต๊ะทำงาน บันไดบ้าน",
-        "score": 5
+        "score": 5,
+        "name_en": "Sheng (Pushing Upward)",
+        "name_zh": "地風升",
+        "general_en": "Rising high — growth, advancement, promotion without obstacles.",
+        "general_zh": "地中生木，升進之象，柔以時升，積小以高大，進無所礙。",
+        "home_en": "A highly auspicious sector for promotion! Ideal for the work desk or the staircase.",
+        "home_zh": "升遷大吉之方！宜設辦事之案、宅中樓梯之處。"
       },
       "困": {
         "name": "คุ่น (ติดขัด)",
         "general": "ถูกจำกัด ขาดแคลน ติดกับ ต้องอดทน",
         "home": "มุมอึดอัด อย่าวางเตียง อย่าทำงานตรงนี้ เปิดให้โล่ง",
-        "score": 1
+        "score": 1,
+        "name_en": "Kun (Oppression · Exhaustion)",
+        "name_zh": "澤水困",
+        "general_en": "Confined and lacking — caught in a trap; one must endure.",
+        "general_zh": "澤无水，困乏之象，受制受困，守正待時，忍而後亨。",
+        "home_en": "A cramped, oppressive sector — do not place the bed or work here; open it up and keep it airy.",
+        "home_zh": "此方氣悶滯塞，勿安床、勿設案辦事，宜開敞使之通暢。"
       },
       "井": {
         "name": "จิ่ง (บ่อน้ำ)",
         "general": "แหล่งน้ำ ทรัพยากร ให้คนอื่น เสียสละ มีอยู่ไม่หมด",
         "home": "เหมาะวางตู้น้ำ ห้องครัว มุมที่ให้พลังหล่อเลี้ยงทั้งบ้าน",
-        "score": 4
+        "score": 4,
+        "name_en": "Jing (The Well)",
+        "name_zh": "水風井",
+        "general_en": "The wellspring — a resource that gives to others, selfless and inexhaustible.",
+        "general_zh": "木上有水，井養之象，井養而不窮，施惠於人，取之不竭。",
+        "home_en": "Ideal for the water dispenser or the kitchen — the corner that nourishes the whole house.",
+        "home_zh": "宜置汲水之器、灶廚之處，為滋養闔宅之隅。"
       },
       "革": {
         "name": "เก๋อ (เปลี่ยนแปลง)",
         "general": "ถึงเวลาเปลี่ยน ปฏิวัติ ลอกคราบ ทิ้งของเก่า",
         "home": "มุมที่ควรปรับปรุงใหม่ รีโนเวท เปลี่ยนเฟอร์นิเจอร์ ทำใหม่",
-        "score": 3
+        "score": 3,
+        "name_en": "Ge (Revolution · Molting)",
+        "name_zh": "澤火革",
+        "general_en": "Time for change — revolution, shedding the old skin, discarding what is outworn.",
+        "general_zh": "澤中有火，革故之象，去故取新，順天應人，其時大矣。",
+        "home_en": "A sector that should be renewed — renovate, replace the furniture, make it fresh.",
+        "home_zh": "此方宜革新改造、翻修更張、汰舊傢俬而換新。"
       },
       "鼎": {
         "name": "ติ่ง (กระถาง)",
         "general": "หม้อใหญ่ หุงหาอาหาร แปรรูป สร้างสิ่งใหม่จากของเก่า",
         "home": "เหมาะห้องครัวมาก! มุมทำอาหาร มุมสร้างสรรค์ แปลงไอเดียเป็นจริง",
-        "score": 5
+        "score": 5,
+        "name_en": "Ding (The Cauldron)",
+        "name_zh": "火風鼎",
+        "general_en": "The great cauldron — cooking and transforming, creating the new from the old.",
+        "general_zh": "木上有火，鼎烹之象，革物成新，化舊為器，養賢致用。",
+        "home_en": "Excellent for the kitchen! A cooking corner, a creative corner — turning ideas into reality.",
+        "home_zh": "最宜灶廚！烹調之隅、創制之處，化意念為實物。"
       },
       "震": {
         "name": "เจิ้น (ฟ้าร้อง)",
         "general": "ตกใจแต่ไม่เป็นไร ฟ้าร้องแต่ไม่ผ่า กระตุ้น ตื่นตัว",
         "home": "พลังแรงแต่ดี เหมาะมุมออกกำลังกาย ห้องทำงานที่ต้องกระตือรือร้น",
-        "score": 3
+        "score": 3,
+        "name_en": "Zhen (The Arousing · Thunder)",
+        "name_zh": "震為雷",
+        "general_en": "Startled but unharmed — thunder roars but does not strike; it stimulates and awakens.",
+        "general_zh": "洊雷震驚，震來虩虩，驚而無咎，奮發警醒。",
+        "home_en": "Strong but positive energy — ideal for an exercise corner or a workroom that demands vigor.",
+        "home_zh": "其氣剛而有益，宜作練身之隅、奮勵振作之工作之室。"
       },
       "艮": {
         "name": "เกิ้น (ภูเขา)",
         "general": "หยุดนิ่ง มั่นคง สมาธิ รู้จักพอ ไม่โลภ",
         "home": "เหมาะมุมนั่งสมาธิ มุมเงียบ เสริมสติและความมั่นคงทางใจ",
-        "score": 4
+        "score": 4,
+        "name_en": "Gen (Keeping Still · Mountain)",
+        "name_zh": "艮為山",
+        "general_en": "Stillness and stability — meditation, contentment, freedom from greed.",
+        "general_zh": "兼山為艮，艮止之象，時止則止，知止知足，不貪不妄。",
+        "home_en": "Ideal for a meditation corner or a quiet nook; strengthens mindfulness and inner stability.",
+        "home_zh": "宜作靜坐之隅、幽寂之處，養心神安定之力。"
       },
       "漸": {
         "name": "เจียน (ค่อย ๆ)",
         "general": "ค่อย ๆ ก้าวหน้า ไม่เร่ง ไม่รีบ เหมือนห่านบินขึ้น",
         "home": "มุมที่จะดีขึ้นเรื่อย ๆ อย่าใจร้อน เหมาะวางแผนระยะยาว",
-        "score": 4
+        "score": 4,
+        "name_en": "Jian (Development · Gradual Progress)",
+        "name_zh": "風山漸",
+        "general_en": "Advancing step by step — no haste, no rush, like wild geese ascending.",
+        "general_zh": "山上有木，漸進之象，鴻漸於陸，循序而進，不疾不徐。",
+        "home_en": "A sector that improves steadily — do not be impatient; ideal for long-term planning.",
+        "home_zh": "此方日漸向榮，勿心急躁進，宜謀長遠之計。"
       },
       "歸妹": {
         "name": "กุยเม่ย (สาวออกเรือน)",
         "general": "การแต่งงาน แต่ด้วยอารมณ์ ต้องระวังตัดสินใจเร็วเกิน",
         "home": "ระวังตัดสินใจเรื่องบ้านด้วยอารมณ์ คิดให้ดีก่อนทำ",
-        "score": 2
+        "score": 2,
+        "name_en": "Gui Mei (The Marrying Maiden)",
+        "name_zh": "雷澤歸妹",
+        "general_en": "Marriage — but driven by emotion; beware of deciding too hastily.",
+        "general_zh": "澤上有雷，歸妹之象，以情而動，慎勿倉促定奪。",
+        "home_en": "Beware of making decisions about the home out of emotion — think carefully before acting.",
+        "home_zh": "慎防因情緒而定宅中之事，三思而後行。"
       },
       "豐": {
         "name": "เฟิง (อุดม)",
         "general": "ถึงจุดสูงสุด อุดมสมบูรณ์ สว่างไสว แต่จะเริ่มลง",
         "home": "มุมที่ดีมากตอนนี้ แต่ต้องรักษาไว้ อย่าประมาท",
-        "score": 4
+        "score": 4,
+        "name_en": "Feng (Abundance · Fullness)",
+        "name_zh": "雷火豐",
+        "general_en": "At the very peak — abundance and brilliance; but the decline is about to begin.",
+        "general_zh": "雷電皆至，豐盛之極，明以動盛，然日中則昃，盛極將衰。",
+        "home_en": "An excellent sector at present — but it must be maintained; never grow careless.",
+        "home_zh": "此方當下極旺，惟須善加持守，不可懈怠。"
       },
       "旅": {
         "name": "ลวี่ (เดินทาง)",
         "general": "อยู่ไม่ติดที่ เดินทาง ไม่มีรากฐาน ต้องปรับตัว",
         "home": "ไม่เหมาะเป็นมุมถาวร เหมาะเป็นมุมรับแขกชั่วคราว ห้องพักรับรอง",
-        "score": 3
+        "score": 3,
+        "name_en": "Lü (The Wanderer)",
+        "name_zh": "火山旅",
+        "general_en": "Never settled — travelling, without roots; one must adapt.",
+        "general_zh": "山上有火，旅居之象，行旅無根，寄寓他鄉，隨處而安。",
+        "home_en": "Not suited as a permanent corner — best as a temporary guest area or a guest room.",
+        "home_zh": "不宜久駐之隅，宜作暫時迎賓之處、客寓之房。"
       },
       "巽": {
         "name": "ซวิ่น (ลม)",
         "general": "ลมพัดอ่อน ๆ แทรกซึม เข้าถึงทุกที่ อ่อนโยนแต่ทรงพลัง",
         "home": "เหมาะมุมระบายอากาศ หน้าต่าง พัดลม ลมดีเข้าบ้าน",
-        "score": 4
+        "score": 4,
+        "name_en": "Xun (The Gentle · Wind)",
+        "name_zh": "巽為風",
+        "general_en": "A soft wind that permeates — reaching everywhere, gentle yet powerful.",
+        "general_zh": "隨風相巽，柔而善入，無孔不入，柔中蘊剛。",
+        "home_en": "Ideal for a ventilation corner — windows and fans, letting good breezes into the house.",
+        "home_zh": "宜作通風之隅、開窗設扇，引清風入宅。"
       },
       "兌": {
         "name": "ตุ้ย (ทะเลสาบ)",
         "general": "ความสุข ยิ้มแย้ม พูดจาไพเราะ สื่อสาร บันเทิง",
         "home": "เหมาะมุมนั่งเล่น ห้องคาราโอเกะ มุมพูดคุย เสริมความสุข",
-        "score": 4
+        "score": 4,
+        "name_en": "Dui (The Joyous · Lake)",
+        "name_zh": "兌為澤",
+        "general_en": "Joy and smiles — pleasant speech, communication and entertainment.",
+        "general_zh": "麗澤相兌，和悅之象，笑語溫言，朋友講習，其樂融融。",
+        "home_en": "Ideal for a lounge corner, a karaoke room or a conversation corner; enhances happiness.",
+        "home_zh": "宜作閒坐之隅、歌詠之室、談笑之處，增歡悅之氣。"
       },
       "渙": {
         "name": "ฮ่วน (กระจาย)",
         "general": "กระจายออก แพร่หลาย ละลาย ปล่อยวาง",
         "home": "ไม่เหมาะเก็บทรัพย์ เงินจะรั่วไหล เหมาะมุมบริจาค แบ่งปัน",
-        "score": 2
+        "score": 2,
+        "name_en": "Huan (Dispersion · Dissolution)",
+        "name_zh": "風水渙",
+        "general_en": "Dispersing outward — spreading, dissolving, letting go.",
+        "general_zh": "風行水上，渙散之象，離披四散，消融釋然，放下無執。",
+        "home_en": "Not suited for storing wealth — money leaks away here; ideal instead for a giving and sharing corner.",
+        "home_zh": "不宜藏財，財氣易散易漏，宜作布施分享之隅。"
       },
       "節": {
         "name": "เจี๋ย (ประหยัด)",
         "general": "รู้จักพอ ประหยัด จำกัด ไม่ฟุ่มเฟือย มีขอบเขต",
         "home": "เหมาะมุมจัดงบประมาณ โต๊ะทำบัญชี ห้องเก็บของเป็นระเบียบ",
-        "score": 3
+        "score": 3,
+        "name_en": "Jie (Limitation)",
+        "name_zh": "水澤節",
+        "general_en": "Knowing what is enough — thrift, limits, no extravagance; keeping within bounds.",
+        "general_zh": "澤上有水，節制之象，制數度，議德行，儉而有度，不奢不濫。",
+        "home_en": "Ideal for a budgeting corner, the accounts desk or a tidy storage room.",
+        "home_zh": "宜作理財之隅、記帳之案、井然有序之儲藏室。"
       },
       "中孚": {
         "name": "จงฝู (ใจจริง)",
         "general": "ความจริงใจ ซื่อสัตย์ ไว้ใจได้ มีศรัทธา",
         "home": "มุมที่ส่งเสริมความไว้ใจ เหมาะวางของมงคล พระ หิ้งบูชา",
-        "score": 5
+        "score": 5,
+        "name_en": "Zhong Fu (Inner Truth)",
+        "name_zh": "風澤中孚",
+        "general_en": "Sincerity and honesty — trustworthy, full of faith.",
+        "general_zh": "澤上有風，中孚之象，誠信發於中，信及豚魚，孚乃化邦。",
+        "home_en": "A sector that fosters trust — ideal for auspicious objects, Buddha images and the altar shelf.",
+        "home_zh": "此方助信實之氣，宜安吉祥之物、佛像、神龕香案。"
       },
       "小過": {
         "name": "เสี่ยวกั้ว (เกินนิด)",
         "general": "เกินไปนิดหน่อย ทำมากไปหน่อย ต้องลดลง",
         "home": "อย่าตกแต่งมุมนี้มากเกิน เรียบ ๆ ง่าย ๆ ดีกว่า",
-        "score": 3
+        "score": 3,
+        "name_en": "Xiao Guo (Preponderance of the Small)",
+        "name_zh": "雷山小過",
+        "general_en": "Slightly too much — a little overdone; scale it back.",
+        "general_zh": "山上有雷，小過之象，可小事不可大事，過而宜損之。",
+        "home_en": "Do not over-decorate this sector — plain and simple is better.",
+        "home_zh": "此方勿過度陳設，簡素為宜，樸而勝華。"
       },
       "既濟": {
         "name": "จี้จี้ (สำเร็จแล้ว)",
         "general": "ทุกอย่างลงตัว สมบูรณ์แบบ แต่ต้องรักษาไว้ อย่าประมาท",
         "home": "มุมที่ดีอยู่แล้ว อย่าเปลี่ยน อย่ารื้อ รักษาสภาพเดิมไว้",
-        "score": 4
+        "score": 4,
+        "name_en": "Ji Ji (After Completion)",
+        "name_zh": "水火既濟",
+        "general_en": "Everything in place, perfect — but it must be maintained; never grow careless.",
+        "general_zh": "水在火上，既濟之象，功成事定，然思患而豫防之，守成勿怠。",
+        "home_en": "A sector that is already good — do not change it, do not tear it apart; preserve it as it is.",
+        "home_zh": "此方已然安善，勿更勿拆，守其原貌為上。"
       },
       "未濟": {
         "name": "เว่ยจี้ (ยังไม่สำเร็จ)",
         "general": "ยังไม่จบ ต้องทำต่อ มีความหวัง แต่ต้องอดทน",
         "home": "มุมที่กำลังพัฒนา อย่าท้อ ค่อย ๆ ปรับปรุง จะดีขึ้น",
-        "score": 3
+        "score": 3,
+        "name_en": "Wei Ji (Before Completion)",
+        "name_zh": "火水未濟",
+        "general_en": "Not yet finished — the work must continue; there is hope, but patience is needed.",
+        "general_zh": "火在水上，未濟之象，事未竟功，慎辨居方，有望而須恆忍。",
+        "home_en": "A sector still developing — do not despair; improve it step by step and it will get better.",
+        "home_zh": "此方尚在漸成，勿餒勿棄，徐徐修葺，日後必佳。"
       }
     }
   },
@@ -795,7 +1377,13 @@
         "home": "เหมาะวางน้ำพุ ตู้ปลา ภาพน้ำตก สีน้ำเงิน/ดำ เสริมปัญญาและโชคลาภ",
         "generates": "木 (น้ำเลี้ยงต้นไม้)",
         "destroys": "火 (น้ำดับไฟ)",
-        "score": 4
+        "score": 4,
+        "name_en": "Water (水)",
+        "name_zh": "水",
+        "general_en": "Flows downward, flexible — wisdom, depth, communication, secrets.",
+        "general_zh": "水曰潤下，性柔善變，主智慧、深藏、交流、隱秘。",
+        "home_en": "Suitable for a fountain, an aquarium, or a waterfall picture; blue/black colors. Enhances wisdom and wealth luck.",
+        "home_zh": "宜置流水、魚缸、瀑布之圖，用藍黑之色，旺智慧與財祿。"
       },
       "木": {
         "name": "ไม้ (木)",
@@ -805,7 +1393,13 @@
         "home": "เหมาะวางต้นไม้ เฟอร์นิเจอร์ไม้ สีเขียว เสริมสุขภาพและครอบครัว",
         "generates": "火 (ไม้เป็นเชื้อไฟ)",
         "destroys": "土 (รากไม้ทำลายดิน)",
-        "score": 4
+        "score": 4,
+        "name_en": "Wood (木)",
+        "name_zh": "木",
+        "general_en": "Grows and stretches upward — health, kindness, family.",
+        "general_zh": "木曰曲直，生發向上，主健康、仁德、家庭。",
+        "home_en": "Suitable for plants, wooden furniture, green colors. Enhances health and family.",
+        "home_zh": "宜置綠植、木質家具，用青綠之色，旺健康與家宅。"
       },
       "火": {
         "name": "ไฟ (火)",
@@ -815,7 +1409,13 @@
         "home": "เหมาะวางเทียน ไฟส่องสว่าง สีแดง/ชมพู เสริมชื่อเสียงและเสน่ห์",
         "generates": "土 (ไฟเผาเป็นดิน)",
         "destroys": "金 (ไฟหลอมโลหะ)",
-        "score": 4
+        "score": 4,
+        "name_en": "Fire (火)",
+        "name_zh": "火",
+        "general_en": "Bright and hot — fame, charm, passion, energy.",
+        "general_zh": "火曰炎上，光明熾熱，主聲名、魅力、熱情、活力。",
+        "home_en": "Suitable for candles and bright lighting; red/pink colors. Enhances fame and charm.",
+        "home_zh": "宜置燈燭明照，用赤粉之色，旺聲名與人緣。"
       },
       "土": {
         "name": "ดิน (土)",
@@ -825,7 +1425,13 @@
         "home": "เหมาะวางหิน คริสตัล เซรามิก สีเหลือง/น้ำตาล เสริมความมั่นคง",
         "generates": "金 (ดินให้กำเนิดโลหะ)",
         "destroys": "水 (ดินกั้นน้ำ)",
-        "score": 4
+        "score": 4,
+        "name_en": "Earth (土)",
+        "name_zh": "土",
+        "general_en": "Stable, solid, patient, supporting — the center, balance.",
+        "general_zh": "土爰稼穡，厚重承載，居中主平衡安定。",
+        "home_en": "Suitable for stones, crystals, ceramics; yellow/brown colors. Enhances stability.",
+        "home_zh": "宜置山石、水晶、陶瓷，用黃褐之色，旺安穩之氣。"
       },
       "金": {
         "name": "โลหะ (金)",
@@ -835,7 +1441,13 @@
         "home": "เหมาะวางของโลหะ ระฆังลม สีขาว/ทอง/เงิน เสริมโชคลาภและระเบียบ",
         "generates": "水 (โลหะเย็นเกิดน้ำ)",
         "destroys": "木 (ขวานตัดไม้)",
-        "score": 4
+        "score": 4,
+        "name_en": "Metal (金)",
+        "name_zh": "金",
+        "general_en": "Hard and sharp — justice, order, wealth, authority.",
+        "general_zh": "金曰從革，剛健肅殺，主公正、法度、財富、權威。",
+        "home_en": "Suitable for metal objects and wind chimes; white/gold/silver colors. Enhances wealth luck and order.",
+        "home_zh": "宜置金屬器物、風鈴，用白金銀之色，旺財祿與條理。"
       }
     }
   },
@@ -852,45 +1464,91 @@
             "name": "เขา (角宿)",
             "general": "เขาของมังกร เริ่มต้น เปิดทาง ผู้นำ",
             "home": "เหมาะเปิดประตูใหม่ เริ่มก่อสร้าง ขึ้นบ้านใหม่ ลงเสาเอก",
-            "score": 5
+            "score": 5,
+            "name_en": "Horn (Jiǎo)",
+            "name_zh": "角宿",
+            "general_en": "The dragon's horn — beginnings, opening the way, leadership",
+            "general_zh": "青龍之角 開端啟路 主領袖",
+            "home_en": "Auspicious for opening new doors, starting construction, moving into a new home, raising the main pillar",
+            "home_zh": "宜開門動土 入宅上樑"
           },
           "亢": {
             "name": "คอ (亢宿)",
             "general": "คอของมังกร สูงส่ง ทะนงตน ระวังหยิ่ง",
             "home": "ไม่เหมาะเปิดร้าน ขึ้นบ้าน เพราะพลังสูงเกิน อาจทำให้คนในบ้านหยิ่ง",
-            "score": 2
+            "score": 2,
+            "name_en": "Neck (Kàng)",
+            "name_zh": "亢宿",
+            "general_en": "The dragon's neck — lofty and proud; beware arrogance",
+            "general_zh": "青龍之亢 高亢自負 忌驕",
+            "home_en": "Unsuited to opening a shop or moving in — the energy runs too high and may breed arrogance in the household",
+            "home_zh": "不宜開市入宅 氣勢過亢 恐生驕氣"
           },
           "氐": {
             "name": "ราก (氐宿)",
             "general": "รากของมังกร มั่นคง ปักหลัก ตั้งรกราก",
             "home": "เหมาะวางเตียงนอน ลงเสาเอก สร้างรากฐานให้มั่นคง",
-            "score": 5
+            "score": 5,
+            "name_en": "Root (Dǐ)",
+            "name_zh": "氐宿",
+            "general_en": "The dragon's root — stability, settling down, putting down roots",
+            "general_zh": "青龍之氐 安定紮根 立業定居",
+            "home_en": "Suited to placing the bed or raising the main pillar; builds a firm foundation",
+            "home_zh": "宜安床上樑 根基穩固"
           },
           "房": {
             "name": "ห้อง (房宿)",
             "general": "ห้องหัวใจมังกร อบอุ่น ครอบครัว มีลูกหลาน",
             "home": "เหมาะสร้างห้องนอน ห้องครอบครัว เสริมลูกหลาน การแต่งงาน",
-            "score": 5
+            "score": 5,
+            "name_en": "Room (Fáng)",
+            "name_zh": "房宿",
+            "general_en": "The chamber at the dragon's heart — warmth, family, descendants",
+            "general_zh": "龍腹之室 溫暖主家室 旺子孫",
+            "home_en": "Suited to building bedrooms and family rooms; favors children and marriage",
+            "home_zh": "宜造臥室家室 利婚嫁子嗣"
           },
           "心": {
             "name": "หัวใจ (心宿)",
             "general": "หัวใจมังกร พลังแรง อันตราย ไม่มั่นคง",
             "home": "ไม่เหมาะสร้างบ้าน ลงเสาเอก พลังรุนแรงเกิน ระวังไฟ",
-            "score": 1
+            "score": 1,
+            "name_en": "Heart (Xīn)",
+            "name_zh": "心宿",
+            "general_en": "The dragon's heart — fierce power, danger, instability",
+            "general_zh": "龍心之宿 氣烈主凶 不安",
+            "home_en": "Unsuited to building a house or raising the pillar — the force is too violent; beware fire",
+            "home_zh": "不宜造屋上樑 其力過猛 慎防火燭"
           },
           "尾": {
             "name": "หาง (尾宿)",
             "general": "หางมังกร สะสมทรัพย์ คลังสมบัติ ร่ำรวย",
             "home": "เหมาะสร้างห้องเก็บของ ตู้เซฟ คลังสินค้า เสริมทรัพย์สิน",
-            "score": 5
+            "score": 5,
+            "name_en": "Tail (Wěi)",
+            "name_zh": "尾宿",
+            "general_en": "The dragon's tail — stored wealth, treasury, riches",
+            "general_zh": "龍尾之宿 積財聚寶 主富",
+            "home_en": "Suited to building storerooms, safes, warehouses; strengthens assets",
+            "home_zh": "宜造庫房倉儲 置保險櫃 旺財帛"
           },
           "箕": {
             "name": "กระด้ง (箕宿)",
             "general": "กระด้งฝัดข้าว คัดแยก ทิ้งสิ่งไม่ดี แต่ลมแรง",
             "home": "ระวังลมแรง ปากเสียง ไม่เหมาะวางเตียง เหมาะทำความสะอาดบ้าน",
-            "score": 2
+            "score": 2,
+            "name_en": "Winnowing Basket (Jī)",
+            "name_zh": "箕宿",
+            "general_en": "The winnowing basket — sifting, casting off the bad, but strong winds",
+            "general_zh": "箕主簸揚 去蕪存菁 然風大",
+            "home_en": "Beware strong winds and quarrels; not for the bed — suited to house cleaning",
+            "home_zh": "防風防口舌 不宜安床 宜掃舍除穢"
           }
-        }
+        },
+        "name_en": "Azure Dragon (East)",
+        "name_zh": "東方青龍",
+        "direction_en": "East",
+        "direction_zh": "東"
       },
       "north_turtle": {
         "name": "เต่าดำ (北方玄武)",
@@ -901,45 +1559,91 @@
             "name": "กระบวย (斗宿)",
             "general": "กระบวยตวงข้าว วัดผล ยุติธรรม ตัดสิน",
             "home": "เหมาะสร้างห้องทำงาน ห้องตัดสินใจ ขุดบ่อน้ำ",
-            "score": 4
+            "score": 4,
+            "name_en": "Dipper (Dǒu)",
+            "name_zh": "斗宿",
+            "general_en": "The dipper that measures grain — evaluation, fairness, judgment",
+            "general_zh": "斗主量度 公平裁斷",
+            "home_en": "Suited to building offices and decision rooms, or digging wells",
+            "home_zh": "宜造書房政事之室 開井"
           },
           "牛": {
             "name": "วัว (牛宿)",
             "general": "วัวทำนา ขยัน อดทน ลำบากก่อนสบาย",
             "home": "เหมาะสร้างโรงเก็บของ โรงจอดรถ ต้องทำงานหนักก่อน",
-            "score": 3
+            "score": 3,
+            "name_en": "Ox (Niú)",
+            "name_zh": "牛宿",
+            "general_en": "The plowing ox — diligence and endurance; hardship before comfort",
+            "general_zh": "牛主勤耕 刻苦耐勞 先勞後逸",
+            "home_en": "Suited to sheds and garages; hard work must come first",
+            "home_zh": "宜造倉廄車房 先勤而後成"
           },
           "女": {
             "name": "สาว (女宿)",
             "general": "หญิงสาว ฝีมือ ทอผ้า แต่ชีวิตรักไม่ราบรื่น",
             "home": "ไม่เหมาะห้องนอนคู่แต่งงาน เหมาะห้องฝีมือ ห้องเย็บผ้า",
-            "score": 2
+            "score": 2,
+            "name_en": "Girl (Nǚ)",
+            "name_zh": "女宿",
+            "general_en": "The maiden — craft and weaving, but an uneven love life",
+            "general_zh": "女主織紝巧藝 婚姻多舛",
+            "home_en": "Not for the marital bedroom; suited to craft and sewing rooms",
+            "home_zh": "不宜夫婦臥房 宜作女紅工藝之室"
           },
           "虛": {
             "name": "ว่าง (虛宿)",
             "general": "ว่างเปล่า สูญเสีย ร้องไห้ แต่ชำระล้างได้",
             "home": "ไม่เหมาะสร้างอะไรใหม่ เหมาะรื้อถอน ทำความสะอาด ชำระล้าง",
-            "score": 1
+            "score": 1,
+            "name_en": "Emptiness (Xū)",
+            "name_zh": "虛宿",
+            "general_en": "Emptiness — loss and weeping, yet it can cleanse",
+            "general_zh": "虛主空亡 哭泣損耗 然可滌淨",
+            "home_en": "Not for building anything new; suited to demolition, cleaning, purification",
+            "home_zh": "不宜興造 宜拆卸掃除 滌穢"
           },
           "危": {
             "name": "อันตราย (危宿)",
             "general": "สูง อันตราย ตกจากที่สูง แต่ถ้าระวังจะปลอดภัย",
             "home": "ระวังเรื่องที่สูง บันได หลังคา ไม่เหมาะสร้างชั้นสอง",
-            "score": 1
+            "score": 1,
+            "name_en": "Danger (Wēi)",
+            "name_zh": "危宿",
+            "general_en": "Height and danger — falls from high places, yet safe if careful",
+            "general_zh": "危主高險 恐墜 慎則安",
+            "home_en": "Beware heights, stairs, roofs; unsuited to adding an upper floor",
+            "home_zh": "慎高處梯頂 不宜加蓋樓層"
           },
           "室": {
             "name": "ห้อง (室宿)",
             "general": "ห้องบรรทม ราชวัง มั่งคั่ง ปลอดภัย อบอุ่น",
             "home": "มงคลมาก! เหมาะสร้างห้องนอนใหญ่ ห้องรับแขก ขึ้นบ้านใหม่",
-            "score": 5
+            "score": 5,
+            "name_en": "Encampment (Shì)",
+            "name_zh": "室宿",
+            "general_en": "The royal bedchamber — palace, wealth, safety, warmth",
+            "general_zh": "宮室寢殿 富貴安泰",
+            "home_en": "Highly auspicious — suited to master bedrooms, reception rooms, moving into a new home",
+            "home_zh": "大吉 宜造正房客廳 入宅"
           },
           "壁": {
             "name": "กำแพง (壁宿)",
             "general": "กำแพงปกป้อง หนังสือ ห้องสมุด ความรู้ ปัญญา",
             "home": "เหมาะสร้างห้องหนังสือ ห้องเรียน ตู้หนังสือ เสริมการศึกษา",
-            "score": 5
+            "score": 5,
+            "name_en": "Wall (Bì)",
+            "name_zh": "壁宿",
+            "general_en": "The protecting wall — books, libraries, knowledge, wisdom",
+            "general_zh": "壁主護衛 圖書文章 主智",
+            "home_en": "Suited to studies, classrooms, bookshelves; strengthens learning",
+            "home_zh": "宜造書房學堂 置書櫃 旺文昌"
           }
-        }
+        },
+        "name_en": "Black Tortoise (North)",
+        "name_zh": "北方玄武",
+        "direction_en": "North",
+        "direction_zh": "北"
       },
       "west_tiger": {
         "name": "เสือขาว (西方白虎)",
@@ -950,45 +1654,91 @@
             "name": "ขาเสือ (奎宿)",
             "general": "ขาหลังเสือ ห้องสมุด วรรณกรรม ความรู้กว้าง",
             "home": "เหมาะสร้างห้องหนังสือ ห้องทำงานวิชาการ เสริมปัญญา",
-            "score": 4
+            "score": 4,
+            "name_en": "Legs (Kuí)",
+            "name_zh": "奎宿",
+            "general_en": "The tiger's hind legs — libraries, literature, broad learning",
+            "general_zh": "奎主文庫 文章博學",
+            "home_en": "Suited to studies and scholarly workrooms; strengthens wisdom",
+            "home_zh": "宜書房學術之室 益智"
           },
           "婁": {
             "name": "เอวเสือ (婁宿)",
             "general": "เอวเสือ รวบรวม สะสม เลี้ยงสัตว์ เกษตร",
             "home": "เหมาะสร้างยุ้งฉาง ห้องเก็บของ สวน ฟาร์ม",
-            "score": 4
+            "score": 4,
+            "name_en": "Bond (Lóu)",
+            "name_zh": "婁宿",
+            "general_en": "The tiger's waist — gathering, storing, husbandry, agriculture",
+            "general_zh": "婁主聚斂 畜牧農桑",
+            "home_en": "Suited to granaries, storerooms, gardens, farms",
+            "home_zh": "宜倉廩儲藏 園圃農場"
           },
           "胃": {
             "name": "กระเพาะ (胃宿)",
             "general": "กระเพาะเสือ กิน สะสม คลังอาหาร ร่ำรวย",
             "home": "เหมาะสร้างห้องครัว ห้องเก็บอาหาร ร้านอาหาร",
-            "score": 4
+            "score": 4,
+            "name_en": "Stomach (Wèi)",
+            "name_zh": "胃宿",
+            "general_en": "The tiger's stomach — eating and storing, food stores, wealth",
+            "general_zh": "胃主倉稟飲食 積聚主富",
+            "home_en": "Suited to kitchens, pantries, restaurants",
+            "home_zh": "宜廚房食庫 食肆"
           },
           "昴": {
             "name": "ดาวลูกไก่ (昴宿)",
             "general": "กลุ่มดาวลูกไก่ สวยงาม แต่มีน้ำตา เศร้า",
             "home": "ไม่เหมาะสร้างอะไรใหม่ มีโอกาสสูญเสีย ระวังเรื่องเงิน",
-            "score": 2
+            "score": 2,
+            "name_en": "Pleiades (Mǎo)",
+            "name_zh": "昴宿",
+            "general_en": "The Pleiades — beautiful but tearful, touched by sorrow",
+            "general_zh": "昴主美而有淚 悲愁",
+            "home_en": "Not for new undertakings — risk of loss; watch finances",
+            "home_zh": "不宜興造 恐有損耗 慎財"
           },
           "畢": {
             "name": "ตาข่าย (畢宿)",
             "general": "ตาข่ายจับสัตว์ ล่า ค้นหา จับได้ สำเร็จ",
             "home": "เหมาะสร้างรั้ว ประตู กำแพง ระบบรักษาความปลอดภัย",
-            "score": 4
+            "score": 4,
+            "name_en": "Net (Bì)",
+            "name_zh": "畢宿",
+            "general_en": "The hunting net — pursuing, seeking, capturing, success",
+            "general_zh": "畢主網罟捕獲 求而有得",
+            "home_en": "Suited to fences, gates, walls, security systems",
+            "home_zh": "宜造籬門牆垣 守禦之設"
           },
           "觜": {
             "name": "ปากเสือ (觜宿)",
             "general": "ปากเสือ กัด เฉียบคม คมปาก แต่ไม่ใหญ่",
             "home": "ไม่เหมาะเปิดร้าน ระวังปากเสียง เหมาะงานเล็ก ๆ ซ่อมแซม",
-            "score": 2
+            "score": 2,
+            "name_en": "Turtle Beak (Zī)",
+            "name_zh": "觜宿",
+            "general_en": "The tiger's mouth — biting, sharp-tongued, but small",
+            "general_zh": "觜主口喙 鋒利口舌 其宿小",
+            "home_en": "Unsuited to opening a shop; beware quarrels — good for small repair work",
+            "home_zh": "不宜開市 防口舌 宜小修小補"
           },
           "參": {
             "name": "สามดาว (參宿)",
             "general": "สามดาวเรียง นักรบ แข็งแกร่ง ต่อสู้ ชนะ",
             "home": "เหมาะสร้างรั้ว กำแพง ป้อมยาม แต่ไม่เหมาะห้องนอน",
-            "score": 3
+            "score": 3,
+            "name_en": "Three Stars (Shēn)",
+            "name_zh": "參宿",
+            "general_en": "Three stars aligned — the warrior, strength, battle, victory",
+            "general_zh": "參主將星 剛強征戰 主勝",
+            "home_en": "Suited to fences, walls, guard posts, but not the bedroom",
+            "home_zh": "宜造牆垣崗哨 不宜臥房"
           }
-        }
+        },
+        "name_en": "White Tiger (West)",
+        "name_zh": "西方白虎",
+        "direction_en": "West",
+        "direction_zh": "西"
       },
       "south_bird": {
         "name": "นกแดง (南方朱雀)",
@@ -999,45 +1749,91 @@
             "name": "บ่อน้ำ (井宿)",
             "general": "บ่อน้ำกลางทุ่ง หล่อเลี้ยง ทรัพยากร ไม่มีวันหมด",
             "home": "เหมาะขุดบ่อน้ำ วางตู้น้ำ สร้างสระ ห้องน้ำ",
-            "score": 5
+            "score": 5,
+            "name_en": "Well (Jǐng)",
+            "name_zh": "井宿",
+            "general_en": "The well amid the fields — nourishing, an inexhaustible resource",
+            "general_zh": "井主泉源 滋養不竭",
+            "home_en": "Suited to digging wells, water dispensers, pools, bathrooms",
+            "home_zh": "宜開井鑿池 置水設浴"
           },
           "鬼": {
             "name": "ผี (鬼宿)",
             "general": "ดวงวิญญาณ ลึกลับ แต่เป็นดาวมงคลเรื่องทรัพย์สินซ่อน",
             "home": "เหมาะเก็บของมีค่า ตู้เซฟซ่อน ไม่เหมาะห้องนอนเด็ก",
-            "score": 3
+            "score": 3,
+            "name_en": "Ghost (Guǐ)",
+            "name_zh": "鬼宿",
+            "general_en": "Spirits and mystery — yet an auspicious star for hidden wealth",
+            "general_zh": "鬼主幽隱 然利藏財",
+            "home_en": "Suited to keeping valuables and hidden safes; not for children's bedrooms",
+            "home_zh": "宜藏珍納寶 暗櫃 不宜孩童臥房"
           },
           "柳": {
             "name": "หลิว (柳宿)",
             "general": "กิ่งหลิว อ่อนไหว ครัว อาหาร แต่เจ็บป่วย",
             "home": "เหมาะสร้างครัวเล็ก แต่ระวังเรื่องสุขภาพคนในบ้าน",
-            "score": 2
+            "score": 2,
+            "name_en": "Willow (Liǔ)",
+            "name_zh": "柳宿",
+            "general_en": "The willow branch — sensitive; kitchens and food, but also illness",
+            "general_zh": "柳主柔枝 飲食庖廚 然主疾",
+            "home_en": "Suited to a small kitchen, but watch the household's health",
+            "home_zh": "宜小廚 慎家人疾患"
           },
           "星": {
             "name": "ดาว (星宿)",
             "general": "ดาวสว่าง ปากนกแดง ร้อนแรง ชื่อเสียง ไฟ",
             "home": "เสริมชื่อเสียง เหมาะร้านค้า ป้ายโฆษณา แต่ระวังไฟ",
-            "score": 3
+            "score": 3,
+            "name_en": "Star (Xīng)",
+            "name_zh": "星宿",
+            "general_en": "The bright star, beak of the Vermilion Bird — heat, fame, fire",
+            "general_zh": "星主朱雀之喙 炎盛聲名 屬火",
+            "home_en": "Boosts fame — suited to shops and signboards, but beware fire",
+            "home_zh": "旺聲名 宜店鋪招牌 慎防火"
           },
           "張": {
             "name": "กาง (張宿)",
             "general": "กางปีกนก เปิดกว้าง งานเลี้ยง ฉลอง เฮง",
             "home": "มงคล! เหมาะสร้างห้องรับแขก ห้องจัดเลี้ยง ร้านอาหาร",
-            "score": 5
+            "score": 5,
+            "name_en": "Extended Net (Zhāng)",
+            "name_zh": "張宿",
+            "general_en": "Wings spread wide — openness, feasts, celebration, good fortune",
+            "general_zh": "張主展翼 張筵設宴 喜慶吉利",
+            "home_en": "Auspicious — suited to reception rooms, banquet halls, restaurants",
+            "home_zh": "吉 宜造客廳宴廳 食肆"
           },
           "翼": {
             "name": "ปีก (翼宿)",
             "general": "ปีกนก บินไกล ศิลปะ ดนตรี แต่ช้า",
             "home": "เหมาะห้องดนตรี ห้องศิลปะ แต่ทุกอย่างจะช้ากว่าปกติ",
-            "score": 3
+            "score": 3,
+            "name_en": "Wings (Yì)",
+            "name_zh": "翼宿",
+            "general_en": "The bird's wings — flying far, arts and music, but slow",
+            "general_zh": "翼主羽翼遠翔 主藝樂 然遲",
+            "home_en": "Suited to music and art rooms, though everything proceeds slower than usual",
+            "home_zh": "宜琴房畫室 諸事稍緩"
           },
           "軫": {
             "name": "ท้ายรถ (軫宿)",
             "general": "ท้ายรถ เดินทาง ขนส่ง ยานพาหนะ ครบถ้วน",
             "home": "เหมาะสร้างโรงจอดรถ ทางเข้าออก ถนนหน้าบ้าน",
-            "score": 4
+            "score": 4,
+            "name_en": "Chariot (Zhěn)",
+            "name_zh": "軫宿",
+            "general_en": "The rear of the chariot — travel, transport, vehicles, completeness",
+            "general_zh": "軫主車輿 行旅運載 圓滿",
+            "home_en": "Suited to garages, entrances and exits, the road before the house",
+            "home_zh": "宜車房門路 宅前通衢"
           }
-        }
+        },
+        "name_en": "Vermilion Bird (South)",
+        "name_zh": "南方朱雀",
+        "direction_en": "South",
+        "direction_zh": "南"
       }
     }
   },
@@ -1047,28 +1843,42 @@
     "system": "แต่ละช่องใช้ 60 甲子 (12 ช่องว่าง) แบ่งเป็น 5 ธาตุ ดูว่าธาตุมังกรใต้ดินสอดคล้องกับทิศนั่งหรือไม่",
     "interpretation": {
       "general": "มังกร 72 ตัวเป็นพลังงานใต้ดินที่ส่งขึ้นมาบนพื้นผิว ถ้าธาตุมังกรสอดคล้องกับธาตุของทิศนั่ง = มงคล ขัดแย้ง = ไม่ดี",
-      "home": "ใช้ตรวจสอบว่า ฐานรากบ้าน นั่งอยู่บนมังกรตัวไหน ถ้ามังกรดี = ฐานรากแข็งแรง คนในบ้านมั่นคง ถ้ามังกรร้าย = ฐานสั่นคลอน ต้องแก้ไข"
+      "home": "ใช้ตรวจสอบว่า ฐานรากบ้าน นั่งอยู่บนมังกรตัวไหน ถ้ามังกรดี = ฐานรากแข็งแรง คนในบ้านมั่นคง ถ้ามังกรร้าย = ฐานสั่นคลอน ต้องแก้ไข",
+      "general_en": "The 72 dragons are underground energies rising to the surface. If the dragon's element harmonizes with the element of the Sitting direction, it is auspicious; if they clash, it is unfavorable.",
+      "general_zh": "七十二龍者，地脈之氣上騰於表。龍之五行與坐山相生比和則吉，相剋則凶。",
+      "home_en": "Used to check which dragon the house foundation sits on. A good dragon means a strong foundation and a stable household; a bad dragon means a shaky foundation that must be remedied.",
+      "home_zh": "以察宅基坐於何龍之上。得吉龍則基固宅安，人丁穩泰；坐凶龍則根基動搖，須設法化解。"
     },
     "score_guide": {
       "same_element": {
         "label": "ธาตุเดียวกัน = ดีมาก",
-        "score": 5
+        "score": 5,
+        "label_en": "Same element = excellent",
+        "label_zh": "比和 · 大吉"
       },
       "generating": {
         "label": "ธาตุสร้าง = ดี",
-        "score": 4
+        "score": 4,
+        "label_en": "Generating element = good",
+        "label_zh": "相生 · 吉"
       },
       "neutral": {
         "label": "ธาตุเฉย ๆ = ปานกลาง",
-        "score": 3
+        "score": 3,
+        "label_en": "Neutral element = average",
+        "label_zh": "無涉 · 平"
       },
       "weakening": {
         "label": "ธาตุถูกดูด = ระวัง",
-        "score": 2
+        "score": 2,
+        "label_en": "Element being drained = caution",
+        "label_zh": "洩氣 · 慎"
       },
       "destroying": {
         "label": "ธาตุทำลาย = ไม่ดี",
-        "score": 1
+        "score": 1,
+        "label_en": "Destructive element = bad",
+        "label_zh": "相剋 · 凶"
       }
     }
   },
@@ -1086,7 +1896,13 @@
         "element": "金",
         "general": "ทรัพย์ซ่อนลึก ยังไม่ถึงเวลา ต้องขุดค้น",
         "home": "มุมที่มีโชคซ่อนอยู่ ต้องใช้เวลากว่าจะเห็นผล",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Gold in the Sea",
+        "meaning_zh": "海中之金 · 藏於深淵未出之金",
+        "general_en": "Wealth hidden deep — its time has not yet come; it must be sought out",
+        "general_zh": "財藏深處 時機未至 須待掘取",
+        "home_en": "A corner holding hidden fortune; results take time to appear",
+        "home_zh": "此方藏福 久待方顯"
       },
       "丙寅丁卯": {
         "nayin": "爐中火",
@@ -1094,7 +1910,13 @@
         "element": "火",
         "general": "ไฟที่ถูกควบคุม ให้ความอบอุ่น หุงหาอาหาร",
         "home": "เหมาะเป็นห้องครัว มุมทำอาหาร พลังอุ่นแต่ไม่ร้อนเกิน",
-        "score": 5
+        "score": 5,
+        "meaning_en": "Fire in the Furnace",
+        "meaning_zh": "爐中之火 · 受制而有用之火",
+        "general_en": "Fire under control — it gives warmth and cooks the food",
+        "general_zh": "火受制而為用 溫暖炊爨",
+        "home_en": "Suited to the kitchen and cooking corner — warm but not scorching",
+        "home_zh": "宜作廚灶之位 暖而不烈"
       },
       "戊辰己巳": {
         "nayin": "大林木",
@@ -1102,7 +1924,13 @@
         "element": "木",
         "general": "ต้นไม้ใหญ่ในป่า แข็งแรง ร่มเย็น ให้ที่พึ่งพิง",
         "home": "มุมมงคล เหมือนมีต้นไม้ใหญ่คุ้มครอง เสริมสุขภาพ",
-        "score": 5
+        "score": 5,
+        "meaning_en": "Wood of the Great Forest",
+        "meaning_zh": "大林之木 · 參天蔽日之木",
+        "general_en": "A great forest tree — strong, shady, a refuge to lean on",
+        "general_zh": "林中巨木 強健蔭人 可依可靠",
+        "home_en": "An auspicious corner, as if sheltered by a great tree; strengthens health",
+        "home_zh": "吉方 如大樹庇蔭 益康寧"
       },
       "庚午辛未": {
         "nayin": "路旁土",
@@ -1110,7 +1938,13 @@
         "element": "土",
         "general": "ดินริมทาง ถูกเหยียบย่ำ แต่เป็นฐานรองรับทุกคน",
         "home": "มุมที่ต้องรับภาระมาก อดทน แต่มั่นคง",
-        "score": 3
+        "score": 3,
+        "meaning_en": "Earth on the Roadside",
+        "meaning_zh": "路旁之土 · 載物承人之土",
+        "general_en": "Earth by the roadside — trodden upon, yet it bears everyone up",
+        "general_zh": "路旁之土 任人踐履 然承載眾生",
+        "home_en": "A corner that bears heavy burdens — enduring, but stable",
+        "home_zh": "此方多負重 耐勞而穩"
       },
       "壬申癸酉": {
         "nayin": "劍鋒金",
@@ -1118,7 +1952,13 @@
         "element": "金",
         "general": "โลหะที่คมที่สุด เฉียบขาด ตัดสินใจ อำนาจ",
         "home": "เหมาะโต๊ะผู้บริหาร มุมตัดสินใจ แต่ระวังของมีคม",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Gold of the Sword's Edge",
+        "meaning_zh": "劍鋒之金 · 百煉至銳之金",
+        "general_en": "The sharpest of metals — decisive, commanding, authoritative",
+        "general_zh": "金之至銳 果決有權",
+        "home_en": "Suited to the executive's desk and decision corners; beware sharp objects",
+        "home_zh": "宜主事之案 決斷之位 慎利器"
       },
       "甲戌乙亥": {
         "nayin": "山頭火",
@@ -1126,7 +1966,13 @@
         "element": "火",
         "general": "ไฟที่สว่างไกล ชื่อเสียง โดดเด่น ทุกคนมองเห็น",
         "home": "เสริมชื่อเสียง เหมาะป้ายร้าน ห้องรับแขก หน้าบ้าน",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Fire on the Mountain Top",
+        "meaning_zh": "山頭之火 · 遠照四方之火",
+        "general_en": "Fire that shines far — fame, prominence, seen by all",
+        "general_zh": "火照遠方 聲名顯赫 眾目所矚",
+        "home_en": "Enhances reputation — suited to shop signs, reception rooms, the front of the house",
+        "home_zh": "旺聲名 宜招牌客廳 宅前"
       },
       "丙子丁丑": {
         "nayin": "澗下水",
@@ -1134,7 +1980,13 @@
         "element": "水",
         "general": "น้ำใสในหุบเขา สะอาด เย็น แต่ลึก เข้าถึงยาก",
         "home": "มุมเงียบสงบ เหมาะทำสมาธิ แต่อาจรู้สึกโดดเดี่ยว",
-        "score": 3
+        "score": 3,
+        "meaning_en": "Water of the Mountain Stream",
+        "meaning_zh": "澗下之水 · 清冷幽深之水",
+        "general_en": "Clear water in the ravine — clean and cool, but deep and hard to reach",
+        "general_zh": "澗水清冽 幽深難近",
+        "home_en": "A quiet, peaceful corner suited to meditation, though it may feel solitary",
+        "home_zh": "宜靜坐清修 然易感孤清"
       },
       "戊寅己卯": {
         "nayin": "城頭土",
@@ -1142,7 +1994,13 @@
         "element": "土",
         "general": "กำแพงป้องกัน แข็งแรง ปกป้อง มั่นคง",
         "home": "เหมาะสร้างรั้ว กำแพง ฐานราก เสริมความปลอดภัย",
-        "score": 5
+        "score": 5,
+        "meaning_en": "Earth on the City Wall",
+        "meaning_zh": "城頭之土 · 護城禦敵之土",
+        "general_en": "The defending city wall — strong, protecting, steadfast",
+        "general_zh": "城垣之土 堅固護衛",
+        "home_en": "Suited to fences, walls and foundations; strengthens security",
+        "home_zh": "宜築籬牆基址 增安固"
       },
       "庚辰辛巳": {
         "nayin": "白蠟金",
@@ -1150,7 +2008,13 @@
         "element": "金",
         "general": "โลหะอ่อน ยังไม่แข็ง สวยงาม แต่ไม่ทนทาน",
         "home": "เหมาะตกแต่ง ของสวยงาม แต่อย่าวางของหนักหรือสำคัญ",
-        "score": 3
+        "score": 3,
+        "meaning_en": "White Wax Gold",
+        "meaning_zh": "白蠟之金 · 質柔未堅之金",
+        "general_en": "Soft metal, not yet hardened — beautiful but not durable",
+        "general_zh": "金質柔軟 美而不堅",
+        "home_en": "Suited to decoration and beautiful objects; place nothing heavy or important here",
+        "home_zh": "宜置飾物 不宜承重託大事"
       },
       "壬午癸未": {
         "nayin": "楊柳木",
@@ -1158,7 +2022,13 @@
         "element": "木",
         "general": "กิ่งหลิวอ่อนไหว สวยงาม อ่อนโยน แต่ไม่แข็งแรง",
         "home": "เหมาะมุมพักผ่อน สวน แต่ไม่เหมาะรับน้ำหนัก",
-        "score": 3
+        "score": 3,
+        "meaning_en": "Wood of the Weeping Willow",
+        "meaning_zh": "楊柳之木 · 柔條裊娜之木",
+        "general_en": "Supple willow branches — graceful and gentle, but not strong",
+        "general_zh": "楊柳柔枝 婀娜不剛",
+        "home_en": "Suited to rest corners and gardens, not to bearing weight",
+        "home_zh": "宜休憩園圃 不堪負重"
       },
       "甲申乙酉": {
         "nayin": "泉中水",
@@ -1166,7 +2036,13 @@
         "element": "水",
         "general": "น้ำพุธรรมชาติ สะอาด ไม่มีวันหมด หล่อเลี้ยง",
         "home": "มงคล! เหมาะวางน้ำพุ ตู้ปลา มุมหล่อเลี้ยงพลังทั้งบ้าน",
-        "score": 5
+        "score": 5,
+        "meaning_en": "Water of the Spring",
+        "meaning_zh": "泉中之水 · 湧而不竭之水",
+        "general_en": "A natural spring — pure, inexhaustible, nourishing",
+        "general_zh": "天然泉源 清而不竭 滋養萬物",
+        "home_en": "Auspicious — suited to fountains and aquariums; a corner that nourishes the whole house",
+        "home_zh": "吉 宜置泉水魚缸 潤養全宅"
       },
       "丙戌丁亥": {
         "nayin": "屋上土",
@@ -1174,7 +2050,13 @@
         "element": "土",
         "general": "ดินบนหลังคา ปกป้องจากฝน ครอบคลุม คุ้มครอง",
         "home": "เหมาะเป็นหลังคา ชั้นบนสุด ดาดฟ้า ปกป้องบ้าน",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Earth on the Roof",
+        "meaning_zh": "屋上之土 · 覆屋庇人之土",
+        "general_en": "Earth upon the roof — shelter from the rain, covering and protecting",
+        "general_zh": "屋上之土 蔽雨覆護",
+        "home_en": "Suited to roofs, top floors, rooftop terraces — protecting the house",
+        "home_zh": "宜屋頂頂樓天臺 護宅"
       },
       "戊子己丑": {
         "nayin": "霹靂火",
@@ -1182,7 +2064,13 @@
         "element": "火",
         "general": "สายฟ้า! พลังแรงมากแต่ชั่ววูบ ตกใจแต่ไม่ยืนนาน",
         "home": "พลังแรงเกิน ไม่เหมาะนอน เหมาะมุมที่ต้องการพลังชั่วคราว",
-        "score": 2
+        "score": 2,
+        "meaning_en": "Thunderbolt Fire",
+        "meaning_zh": "霹靂之火 · 雷電一瞬之火",
+        "general_en": "Lightning! Immense but momentary power — startling, yet it does not last",
+        "general_zh": "霹靂之威 猛而一瞬 驚而不久",
+        "home_en": "Too fierce for sleeping; suited to corners needing only a burst of energy",
+        "home_zh": "不宜安寢 宜暫借奇力之處"
       },
       "庚寅辛卯": {
         "nayin": "松柏木",
@@ -1190,7 +2078,13 @@
         "element": "木",
         "general": "ต้นสนยืนต้นตลอดปี ทนทาน อดทน ไม่เปลี่ยนแปลง",
         "home": "มงคล! เสริมความยั่งยืน มั่นคง เหมาะเสาหลัก ฐานราก",
-        "score": 5
+        "score": 5,
+        "meaning_en": "Wood of Pine and Cypress",
+        "meaning_zh": "松柏之木 · 凌霜耐寒之木",
+        "general_en": "The evergreen pine — durable, patient, unchanging through the years",
+        "general_zh": "松柏長青 堅忍不移",
+        "home_en": "Auspicious — strengthens endurance and stability; suited to main pillars and foundations",
+        "home_zh": "吉 旺恆久穩固 宜樑柱基址"
       },
       "壬辰癸巳": {
         "nayin": "長流水",
@@ -1198,7 +2092,13 @@
         "element": "水",
         "general": "แม่น้ำสายยาว ไหลไม่หยุด ต่อเนื่อง ไม่ขาดสาย",
         "home": "เสริมโชคลาภต่อเนื่อง เหมาะทิศน้ำเข้าบ้าน ท่อน้ำ",
-        "score": 5
+        "score": 5,
+        "meaning_en": "Long-Flowing Water",
+        "meaning_zh": "長流之水 · 源遠流長之水",
+        "general_en": "A long river flowing without pause — continuous, unbroken",
+        "general_zh": "長河奔流 綿延不絕",
+        "home_en": "Strengthens continuous fortune; suited to where water enters the house, water pipes",
+        "home_zh": "旺財源不斷 宜納水之方 水管"
       },
       "甲午乙未": {
         "nayin": "沙中金",
@@ -1206,7 +2106,13 @@
         "element": "金",
         "general": "ทองซ่อนในทราย ต้องร่อน ต้องหา มีค่าแต่ต้องลงมือ",
         "home": "มุมที่มีโอกาสซ่อนอยู่ ต้องทำงานหนักก่อนจะเห็นผล",
-        "score": 3
+        "score": 3,
+        "meaning_en": "Gold in the Sand",
+        "meaning_zh": "沙中之金 · 待淘方見之金",
+        "general_en": "Gold hidden in the sand — it must be panned and sought; valuable, but effort is required",
+        "general_zh": "金藏沙中 淘之方得 有值須勞",
+        "home_en": "A corner of hidden opportunity — hard work must come before the results show",
+        "home_zh": "此方藏機 先勤後獲"
       },
       "丙申丁酉": {
         "nayin": "山下火",
@@ -1214,7 +2120,13 @@
         "element": "火",
         "general": "ไฟที่อบอุ่นใกล้ภูเขา ให้แสงสว่าง นำทาง",
         "home": "เหมาะทางเข้าบ้าน ไฟส่องสว่าง เสริมความปลอดภัย",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Fire at the Mountain's Foot",
+        "meaning_zh": "山下之火 · 明照近人之火",
+        "general_en": "Warm fire at the mountain's foot — giving light, guiding the way",
+        "general_zh": "山下之火 溫照引路",
+        "home_en": "Suited to the entrance and lighting; strengthens safety",
+        "home_zh": "宜門前燈火 增安寧"
       },
       "戊戌己亥": {
         "nayin": "平地木",
@@ -1222,7 +2134,13 @@
         "element": "木",
         "general": "ต้นไม้บนที่ราบ เติบโตง่าย ไม่มีอุปสรรค เรียบง่าย",
         "home": "เหมาะสวน สนามหญ้า พื้นที่เปิดโล่ง เสริมการเติบโต",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Wood of the Plain",
+        "meaning_zh": "平地之木 · 平原易長之木",
+        "general_en": "A tree on the plain — growing easily, unobstructed, simple",
+        "general_zh": "平地之木 易長無阻 質樸",
+        "home_en": "Suited to gardens, lawns, open spaces; strengthens growth",
+        "home_zh": "宜園圃草坪 開闊之地 旺生長"
       },
       "庚子辛丑": {
         "nayin": "壁上土",
@@ -1230,7 +2148,13 @@
         "element": "土",
         "general": "ดินฉาบกำแพง ตกแต่ง ปกป้อง สวยงาม",
         "home": "เหมาะตกแต่งผนัง ทาสี ติดวอลเปเปอร์ เสริมความสวยงาม",
-        "score": 3
+        "score": 3,
+        "meaning_en": "Earth on the Wall",
+        "meaning_zh": "壁上之土 · 飾牆護壁之土",
+        "general_en": "Plaster upon the wall — decorating, protecting, beautifying",
+        "general_zh": "壁上之土 飾護兼美",
+        "home_en": "Suited to wall decoration, painting, wallpaper — enhances beauty",
+        "home_zh": "宜飾牆彩繪 裱糊 增美觀"
       },
       "壬寅癸卯": {
         "nayin": "金箔金",
@@ -1238,7 +2162,13 @@
         "element": "金",
         "general": "ทองบาง ๆ เคลือบผิว สวยงาม ดูดี แต่ไม่หนา",
         "home": "เหมาะตกแต่งภายนอก ป้าย โลโก้ ไม่เหมาะเป็นโครงสร้าง",
-        "score": 3
+        "score": 3,
+        "meaning_en": "Gold Foil",
+        "meaning_zh": "金箔之金 · 薄飾其表之金",
+        "general_en": "Thin gold leaf coating the surface — beautiful and impressive, but not thick",
+        "general_zh": "金箔飾表 華美而薄",
+        "home_en": "Suited to exterior decoration, signs and logos; not for structural use",
+        "home_zh": "宜外飾招牌 不宜作結構"
       },
       "甲辰乙巳": {
         "nayin": "覆燈火",
@@ -1246,7 +2176,13 @@
         "element": "火",
         "general": "ไฟตะเกียงเล็ก ๆ ส่องสว่างในมุมมืด อบอุ่น ใกล้ชิด",
         "home": "เหมาะวางโคมไฟ ไฟห้องนอน ไฟอ่านหนังสือ อบอุ่น",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Covered Lamp Fire",
+        "meaning_zh": "覆燈之火 · 燈燭幽照之火",
+        "general_en": "A small lamp lighting a dark corner — warm and intimate",
+        "general_zh": "覆燈之火 幽照一隅 溫馨",
+        "home_en": "Suited to lamps, bedroom lighting, reading lights — cozy warmth",
+        "home_zh": "宜置燈盞 臥房燈 讀書之燈"
       },
       "丙午丁未": {
         "nayin": "天河水",
@@ -1254,7 +2190,13 @@
         "element": "水",
         "general": "ทางช้างเผือก น้ำจากสวรรค์ ยิ่งใหญ่ สูงส่ง ศักดิ์สิทธิ์",
         "home": "พลังสูงมาก เหมาะหิ้งบูชา ห้องพระ มุมศักดิ์สิทธิ์",
-        "score": 5
+        "score": 5,
+        "meaning_en": "Water of the Heavenly River",
+        "meaning_zh": "天河之水 · 銀漢天降之水",
+        "general_en": "The Milky Way — water from heaven, grand, lofty, sacred",
+        "general_zh": "銀漢天河 天降之水 尊貴神聖",
+        "home_en": "Very high energy — suited to altars, prayer rooms, sacred corners",
+        "home_zh": "氣至高 宜神龕佛堂 清淨之位"
       },
       "戊申己酉": {
         "nayin": "大驛土",
@@ -1262,7 +2204,13 @@
         "element": "土",
         "general": "ดินสถานีใหญ่ รองรับคนมาก เปิดกว้าง ต้อนรับ",
         "home": "เหมาะห้องรับแขก ล็อบบี้ ทางเข้าหลัก รองรับคนเยอะ",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Earth of the Great Post Road",
+        "meaning_zh": "大驛之土 · 通衢廣納之土",
+        "general_en": "Earth of the great relay station — receiving many, open, welcoming",
+        "general_zh": "大驛之土 通衢納眾 廣迎",
+        "home_en": "Suited to reception rooms, lobbies, main entrances — receiving many people",
+        "home_zh": "宜客廳門廳 迎賓之所"
       },
       "庚戌辛亥": {
         "nayin": "釵釧金",
@@ -1270,7 +2218,13 @@
         "element": "金",
         "general": "เครื่องประดับทอง สวยงาม ละเอียดอ่อน มีระดับ",
         "home": "เหมาะมุมแต่งตัว ห้องน้ำหรู มุมเสริมสวย",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Gold of Hairpins and Bracelets",
+        "meaning_zh": "釵釧之金 · 精巧成飾之金",
+        "general_en": "Gold jewelry — beautiful, refined, elegant",
+        "general_zh": "釵釧之金 精美有品",
+        "home_en": "Suited to dressing corners, elegant bathrooms, beauty corners",
+        "home_zh": "宜妝奩之位 淨室雅間"
       },
       "壬子癸丑": {
         "nayin": "桑柘木",
@@ -1278,7 +2232,13 @@
         "element": "木",
         "general": "ต้นหม่อนเลี้ยงไหม มีประโยชน์ ให้ผลยาวนาน",
         "home": "เหมาะปลูกต้นไม้ให้ผล สวนผัก มุมที่ให้ผลตอบแทนยาวนาน",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Wood of the Mulberry",
+        "meaning_zh": "桑柘之木 · 養蠶利世之木",
+        "general_en": "The mulberry that feeds the silkworms — useful, yielding fruit for a long time",
+        "general_zh": "桑柘養蠶 利世久遠",
+        "home_en": "Suited to fruit trees, vegetable gardens, corners that yield long-term returns",
+        "home_zh": "宜植果蔬 久利之方"
       },
       "甲寅乙卯": {
         "nayin": "大溪水",
@@ -1286,7 +2246,13 @@
         "element": "水",
         "general": "ลำธารใสไหลผ่านหุบเขา สวยงาม สดชื่น มีพลัง",
         "home": "มงคล! เหมาะวางน้ำพุ ตู้ปลาใหญ่ สระว่ายน้ำ",
-        "score": 5
+        "score": 5,
+        "meaning_en": "Water of the Great Stream",
+        "meaning_zh": "大溪之水 · 奔流有勢之水",
+        "general_en": "A clear stream flowing through the valley — beautiful, fresh, full of vigor",
+        "general_zh": "大溪清流 秀美有力",
+        "home_en": "Auspicious — suited to fountains, large aquariums, swimming pools",
+        "home_zh": "吉 宜泉水大缸 泳池"
       },
       "丙辰丁巳": {
         "nayin": "沙中土",
@@ -1294,7 +2260,13 @@
         "element": "土",
         "general": "ดินผสมทราย ไม่แน่น ต้องอัดให้แน่น ยังไม่มั่นคง",
         "home": "ฐานยังไม่แข็ง ต้องเสริม อย่าสร้างอะไรหนักตรงนี้",
-        "score": 2
+        "score": 2,
+        "meaning_en": "Earth in the Sand",
+        "meaning_zh": "沙中之土 · 鬆散未實之土",
+        "general_en": "Earth mixed with sand — loose, needing to be compacted, not yet firm",
+        "general_zh": "沙土相混 鬆而未實",
+        "home_en": "The foundation is not yet solid and needs reinforcing — build nothing heavy here",
+        "home_zh": "基未固須培 勿置重物興造"
       },
       "戊午己未": {
         "nayin": "天上火",
@@ -1302,7 +2274,13 @@
         "element": "火",
         "general": "แสงอาทิตย์ สว่างที่สุด ยิ่งใหญ่ ทรงพลัง ร้อนแรง",
         "home": "พลังแรงมาก เสริมชื่อเสียง แต่ระวังร้อนเกิน ต้องมีน้ำสมดุล",
-        "score": 4
+        "score": 4,
+        "meaning_en": "Fire in the Heavens",
+        "meaning_zh": "天上之火 · 太陽普照之火",
+        "general_en": "Sunlight — the brightest, grandest, most powerful and fierce",
+        "general_zh": "太陽之火 至明至烈 威勢赫赫",
+        "home_en": "Very strong energy — boosts fame, but beware excess heat; balance it with water",
+        "home_zh": "氣盛旺名 然防過炎 須以水濟"
       },
       "庚申辛酉": {
         "nayin": "石榴木",
@@ -1310,7 +2288,13 @@
         "element": "木",
         "general": "ต้นทับทิมออกผลแดง สมบูรณ์ ลูกหลานดี มีผลผลิต",
         "home": "เหมาะมุมเสริมลูกหลาน ห้องเด็ก สวนผลไม้",
-        "score": 5
+        "score": 5,
+        "meaning_en": "Pomegranate Wood",
+        "meaning_zh": "石榴之木 · 結實累累之木",
+        "general_en": "The pomegranate bearing red fruit — abundance, fine descendants, fruitfulness",
+        "general_zh": "石榴結實 子孫繁盛 碩果累累",
+        "home_en": "Suited to corners that favor descendants, children's rooms, orchards",
+        "home_zh": "宜子嗣之方 孩童之室 果園"
       },
       "壬戌癸亥": {
         "nayin": "大海水",
@@ -1318,7 +2302,13 @@
         "element": "水",
         "general": "มหาสมุทรกว้างใหญ่ ลึกล้ำ รองรับทุกสิ่ง ไร้ขอบเขต",
         "home": "พลังใหญ่มาก เหมาะธุรกิจใหญ่ แต่คนธรรมดาอาจรับไม่ไหว",
-        "score": 3
+        "score": 3,
+        "meaning_en": "Water of the Vast Sea",
+        "meaning_zh": "大海之水 · 汪洋無涯之水",
+        "general_en": "The vast ocean — deep, boundless, embracing all things",
+        "general_zh": "大海汪洋 深廣無涯 容納萬物",
+        "home_en": "Immense energy — suited to large enterprises; ordinary folk may find it too much to bear",
+        "home_zh": "氣勢宏大 宜大業 常人恐難承受"
       }
     }
   },
@@ -1331,168 +2321,312 @@
         "date": "~4 ก.พ.",
         "general": "เริ่มต้นใหม่ ต้นไม้ผลิใบ พลังงานฟื้นตัว ทุกอย่างเริ่มเติบโต",
         "home": "ช่วงดีที่สุดสำหรับขึ้นบ้านใหม่ เริ่มรีโนเวท เปิดร้าน",
-        "score": 5
+        "score": 5,
+        "name_en": "Lichun (Start of Spring)",
+        "name_zh": "立春",
+        "general_en": "New beginnings — trees bud, energy revives, all things start to grow",
+        "general_zh": "萬象更新 草木萌動 生氣復甦",
+        "home_en": "The best period for moving into a new home, starting renovations, or opening a shop",
+        "home_zh": "最宜入宅開市 動工修造"
       },
       "雨水": {
         "name": "ยวี่สุ่ย (น้ำฝน)",
         "date": "~19 ก.พ.",
         "general": "ฝนเริ่มตก ดินชุ่ม เหมาะปลูกพืช หล่อเลี้ยง",
         "home": "เหมาะปลูกต้นไม้ จัดสวน วางน้ำพุ เสริมพลังน้ำ",
-        "score": 4
+        "score": 4,
+        "name_en": "Yushui (Rain Water)",
+        "name_zh": "雨水",
+        "general_en": "The rains begin and the soil moistens — good for planting and nourishing",
+        "general_zh": "春雨潤土 宜栽植滋養",
+        "home_en": "Suited to planting trees, gardening, placing fountains — strengthens water energy",
+        "home_zh": "宜植樹造園 置水景 旺水氣"
       },
       "驚蟄": {
         "name": "จิงเจ๋อ (แมลงตื่น)",
         "date": "~6 มี.ค.",
         "general": "ฟ้าร้องปลุกแมลง ทุกอย่างตื่นขึ้น กระตือรือร้น",
         "home": "ช่วงดีสำหรับเริ่มโปรเจกต์ใหม่ ย้ายบ้าน เปลี่ยนงาน",
-        "score": 4
+        "score": 4,
+        "name_en": "Jingzhe (Awakening of Insects)",
+        "name_zh": "驚蟄",
+        "general_en": "Thunder wakes the insects — everything stirs, full of drive",
+        "general_zh": "春雷驚蟄 萬物甦醒 奮發",
+        "home_en": "A good period for starting new projects, moving house, changing jobs",
+        "home_zh": "宜創業遷居 更易職事"
       },
       "春分": {
         "name": "ชุนเฟิน (กลางใบไม้ผลิ)",
         "date": "~21 มี.ค.",
         "general": "กลางวัน=กลางคืน สมดุลที่สุด หยินหยางเท่ากัน",
         "home": "วันมงคลสำหรับจัดฮวงจุ้ย ปรับสมดุลพลังงานในบ้าน",
-        "score": 5
+        "score": 5,
+        "name_en": "Chunfen (Spring Equinox)",
+        "name_zh": "春分",
+        "general_en": "Day equals night — the most perfect balance, yin and yang in equal measure",
+        "general_zh": "晝夜均分 陰陽相半 至衡",
+        "home_en": "An auspicious day for arranging feng shui and balancing the home's energy",
+        "home_zh": "吉日 宜調理風水 平衡宅氣"
       },
       "清明": {
         "name": "ชิงหมิง (ใสสว่าง)",
         "date": "~5 เม.ย.",
         "general": "อากาศใส ไหว้บรรพบุรุษ ชำระล้าง เริ่มต้นสดใส",
         "home": "ทำความสะอาดบ้านใหญ่ ไหว้เจ้าที่ ชำระพลังลบออก",
-        "score": 4
+        "score": 4,
+        "name_en": "Qingming (Clear and Bright)",
+        "name_zh": "清明",
+        "general_en": "Clear skies — honoring the ancestors, cleansing, a fresh and bright start",
+        "general_zh": "天清氣明 祭祖掃墓 滌舊迎新",
+        "home_en": "Deep-clean the house, honor the land spirits, clear negative energy away",
+        "home_zh": "宜大掃除 祭祀地主 除穢氣"
       },
       "穀雨": {
         "name": "กู่หวี่ (ฝนหล่อข้าว)",
         "date": "~20 เม.ย.",
         "general": "ฝนตกเลี้ยงพืชผล อุดมสมบูรณ์ เก็บเกี่ยว",
         "home": "เหมาะลงทุน เก็บเกี่ยวผล สะสมทรัพย์",
-        "score": 4
+        "score": 4,
+        "name_en": "Guyu (Grain Rain)",
+        "name_zh": "穀雨",
+        "general_en": "Rain nourishes the crops — abundance and harvest",
+        "general_zh": "雨生百穀 豐饒有成",
+        "home_en": "Suited to investing, reaping results, accumulating wealth",
+        "home_zh": "宜投資收成 積蓄財帛"
       },
       "立夏": {
         "name": "ลี่เซี่ย (เริ่มฤดูร้อน)",
         "date": "~6 พ.ค.",
         "general": "ร้อนขึ้น พลังไฟแรง กิจกรรม เคลื่อนไหว เร่งด่วน",
         "home": "ช่วงพลังแรง เหมาะทำงานใหญ่ แต่ระวังร้อนเกิน เปิดแอร์ ระบายอากาศ",
-        "score": 3
+        "score": 3,
+        "name_en": "Lixia (Start of Summer)",
+        "name_zh": "立夏",
+        "general_en": "Heat rises and fire energy grows strong — activity, movement, urgency",
+        "general_zh": "夏氣始至 火旺 主動而急",
+        "home_en": "A period of strong energy, good for major work, but beware excess heat — cool and ventilate",
+        "home_zh": "氣旺宜任大事 然防過熱 宜通風納涼"
       },
       "小滿": {
         "name": "เสี่ยวหม่าน (เกือบเต็ม)",
         "date": "~21 พ.ค.",
         "general": "เมล็ดข้าวเริ่มอิ่ม ใกล้สำเร็จ แต่ยังไม่ถึงเวลา",
         "home": "อย่าเร่ง ค่อย ๆ ทำ ทุกอย่างใกล้สำเร็จ อดทนอีกนิด",
-        "score": 3
+        "score": 3,
+        "name_en": "Xiaoman (Grain Buds)",
+        "name_zh": "小滿",
+        "general_en": "The grain begins to fill — success is near, but the time has not yet come",
+        "general_zh": "麥粒漸滿 將成未成",
+        "home_en": "Do not rush; proceed steadily — success is close, be patient a little longer",
+        "home_zh": "勿躁進 徐徐圖之 成在眼前"
       },
       "芒種": {
         "name": "หมางจ้ง (หว่านข้าว)",
         "date": "~6 มิ.ย.",
         "general": "ถึงเวลาหว่านเมล็ด ลงมือทำ ขยันทำงาน",
         "home": "ช่วงที่ต้องลงมือจริง อย่ารอ เหมาะเริ่มรีโนเวท ซ่อมบ้าน",
-        "score": 4
+        "score": 4,
+        "name_en": "Mangzhong (Grain in Ear)",
+        "name_zh": "芒種",
+        "general_en": "Time to sow the seed — take action, work diligently",
+        "general_zh": "芒種宜播 及時力作",
+        "home_en": "The time for real action — do not wait; suited to renovations and house repairs",
+        "home_zh": "宜即刻動工 修造補葺"
       },
       "夏至": {
         "name": "เซี่ยจื้อ (กลางฤดูร้อน)",
         "date": "~21 มิ.ย.",
         "general": "กลางวันยาวที่สุด พลังหยางสูงสุด ร้อนจัด",
         "home": "พลังแรงที่สุด เสริมด้วยน้ำ สีฟ้า แอร์ เพื่อสมดุล",
-        "score": 3
+        "score": 3,
+        "name_en": "Xiazhi (Summer Solstice)",
+        "name_zh": "夏至",
+        "general_en": "The longest day — yang at its peak, intense heat",
+        "general_zh": "日長至極 陽氣至盛 酷熱",
+        "home_en": "Energy at its strongest — balance it with water, blue tones, and cooling",
+        "home_zh": "陽極宜以水濟之 藍色清涼求衡"
       },
       "小暑": {
         "name": "เสี่ยวสู่ (ร้อนน้อย)",
         "date": "~7 ก.ค.",
         "general": "เริ่มร้อนจัด ต้องระวังร้อน ดื่มน้ำ พักผ่อน",
         "home": "ดูแลระบบน้ำ แอร์ ช่วงนี้พลังไฟแรง ต้องคุมอุณหภูมิ",
-        "score": 3
+        "score": 3,
+        "name_en": "Xiaoshu (Minor Heat)",
+        "name_zh": "小暑",
+        "general_en": "The heat intensifies — guard against it, drink water, rest",
+        "general_zh": "暑氣漸盛 宜防暑歇息",
+        "home_en": "Tend to water systems and cooling; fire energy runs strong — keep the temperature in check",
+        "home_zh": "宜理水設涼 火氣盛須調攝"
       },
       "大暑": {
         "name": "ต้าสู่ (ร้อนมาก)",
         "date": "~23 ก.ค.",
         "general": "ร้อนที่สุดในปี ต้องอดทน รอให้ผ่าน",
         "home": "ไม่เหมาะเริ่มอะไรใหม่ อดทน ดูแลบ้านให้เย็น",
-        "score": 2
+        "score": 2,
+        "name_en": "Dashu (Major Heat)",
+        "name_zh": "大暑",
+        "general_en": "The hottest time of the year — endure and wait for it to pass",
+        "general_zh": "一歲至熱 宜忍待時",
+        "home_en": "Not for new beginnings; endure, and keep the house cool",
+        "home_zh": "不宜興作 宜守 保宅清涼"
       },
       "立秋": {
         "name": "ลี่ชิว (เริ่มฤดูใบไม้ร่วง)",
         "date": "~8 ส.ค.",
         "general": "เริ่มเย็นลง เก็บเกี่ยว สะสม เตรียมตัว",
         "home": "ช่วงดีสำหรับเก็บเกี่ยวผลงาน จัดระเบียบบ้าน ทิ้งของเก่า",
-        "score": 4
+        "score": 4,
+        "name_en": "Liqiu (Start of Autumn)",
+        "name_zh": "立秋",
+        "general_en": "Cooling begins — harvest, store, prepare",
+        "general_zh": "秋氣始至 收斂積儲",
+        "home_en": "A good period for harvesting results, tidying the house, discarding the old",
+        "home_zh": "宜收成整理 去舊佈新"
       },
       "處暑": {
         "name": "ชู่สู่ (หมดร้อน)",
         "date": "~23 ส.ค.",
         "general": "ความร้อนจากไป เย็นสบายขึ้น ผ่อนคลาย",
         "home": "เหมาะทำความสะอาด ระบายอากาศ เปิดหน้าต่าง",
-        "score": 4
+        "score": 4,
+        "name_en": "Chushu (End of Heat)",
+        "name_zh": "處暑",
+        "general_en": "The heat departs — cooler and more at ease",
+        "general_zh": "暑氣止息 天涼氣舒",
+        "home_en": "Suited to cleaning and airing the house; open the windows",
+        "home_zh": "宜掃舍通風 開窗納氣"
       },
       "白露": {
         "name": "ไป๋ลู่ (น้ำค้างขาว)",
         "date": "~8 ก.ย.",
         "general": "น้ำค้างเกาะ อากาศเย็น สวยงาม สงบ ใส",
         "home": "ช่วงสวยงาม เหมาะจัดสวน ตกแต่งบ้าน ปรับฮวงจุ้ย",
-        "score": 4
+        "score": 4,
+        "name_en": "Bailu (White Dew)",
+        "name_zh": "白露",
+        "general_en": "Dew settles and the air cools — beauty, calm, clarity",
+        "general_zh": "白露凝結 氣清 靜美澄明",
+        "home_en": "A beautiful period, suited to gardening, decorating, adjusting the feng shui",
+        "home_zh": "宜造園佈置 調理風水"
       },
       "秋分": {
         "name": "ชิวเฟิน (กลางใบไม้ร่วง)",
         "date": "~23 ก.ย.",
         "general": "กลางวัน=กลางคืนอีกครั้ง สมดุล ยุติธรรม",
         "home": "วันมงคลปรับสมดุลพลังงาน เหมาะจัดฮวงจุ้ยเท่ากับวันชุนเฟิน",
-        "score": 5
+        "score": 5,
+        "name_en": "Qiufen (Autumn Equinox)",
+        "name_zh": "秋分",
+        "general_en": "Day equals night once more — balance and fairness",
+        "general_zh": "晝夜再均 平衡中正",
+        "home_en": "An auspicious day for rebalancing the home's energy, equal to the spring equinox",
+        "home_zh": "吉日 宜調氣佈局 與春分同"
       },
       "寒露": {
         "name": "หานลู่ (น้ำค้างเย็น)",
         "date": "~8 ต.ค.",
         "general": "เย็นลงชัดเจน ใบไม้ร่วง ต้องเก็บรักษา",
         "home": "ดูแลบ้านให้อุ่น ซ่อมหลังคา ปิดรอยรั่ว เตรียมรับหนาว",
-        "score": 3
+        "score": 3,
+        "name_en": "Hanlu (Cold Dew)",
+        "name_zh": "寒露",
+        "general_en": "A marked cooling, leaves fall — time to preserve and protect",
+        "general_zh": "寒氣漸生 葉落 宜收藏",
+        "home_en": "Keep the house warm, repair the roof, seal the leaks, prepare for winter",
+        "home_zh": "宜保暖修屋 補漏禦寒"
       },
       "霜降": {
         "name": "ซวงเจี้ยง (น้ำค้างแข็ง)",
         "date": "~23 ต.ค.",
         "general": "หนาวจนน้ำค้างเป็นน้ำแข็ง สิ่งมีชีวิตหดตัว",
         "home": "ไม่เหมาะเริ่มก่อสร้าง เหมาะซ่อมแซม ดูแลบ้านให้แน่นหนา",
-        "score": 2
+        "score": 2,
+        "name_en": "Shuangjiang (Frost's Descent)",
+        "name_zh": "霜降",
+        "general_en": "So cold the dew turns to frost — living things draw inward",
+        "general_zh": "霜降物斂 生機收縮",
+        "home_en": "Not for starting construction; suited to repairs and making the house secure",
+        "home_zh": "不宜動土興造 宜修葺固宅"
       },
       "立冬": {
         "name": "ลี่ตง (เริ่มฤดูหนาว)",
         "date": "~7 พ.ย.",
         "general": "เข้าหน้าหนาว สะสมพลัง เก็บตัว พักผ่อน",
         "home": "ช่วงพักผ่อน เก็บสะสม ไม่เหมาะขยาย เหมาะวางแผนปีหน้า",
-        "score": 3
+        "score": 3,
+        "name_en": "Lidong (Start of Winter)",
+        "name_zh": "立冬",
+        "general_en": "Winter arrives — store energy, withdraw, rest",
+        "general_zh": "冬氣始至 藏養休憩",
+        "home_en": "A resting period — store and save, do not expand; plan for the year ahead",
+        "home_zh": "宜休養積蓄 不宜擴張 宜籌謀來歲"
       },
       "小雪": {
         "name": "เสี่ยวเสวี่ย (หิมะน้อย)",
         "date": "~22 พ.ย.",
         "general": "หิมะเริ่มตก เย็นจัด ทุกอย่างช้าลง",
         "home": "ทำอะไรช้า ๆ ไม่รีบ เหมาะอ่านหนังสือ วางแผน ทำบัญชี",
-        "score": 3
+        "score": 3,
+        "name_en": "Xiaoxue (Minor Snow)",
+        "name_zh": "小雪",
+        "general_en": "The first snows fall, deep cold — everything slows down",
+        "general_zh": "小雪初降 寒凝物緩",
+        "home_en": "Take things slowly, without haste — good for reading, planning, keeping accounts",
+        "home_zh": "諸事宜緩 宜讀書籌算"
       },
       "大雪": {
         "name": "ต้าเสวี่ย (หิมะมาก)",
         "date": "~7 ธ.ค.",
         "general": "หิมะตกหนัก ปกคลุมทุกอย่าง เงียบสงบ ซ่อนพลัง",
         "home": "ช่วงเก็บตัว สะสมพลัง เตรียมปีใหม่ ทำความสะอาดใจ",
-        "score": 3
+        "score": 3,
+        "name_en": "Daxue (Major Snow)",
+        "name_zh": "大雪",
+        "general_en": "Heavy snow blankets everything — silence, stillness, hidden strength",
+        "general_zh": "大雪封藏 靜默蓄勢",
+        "home_en": "A time of retreat — store energy, prepare for the new year, cleanse the mind",
+        "home_zh": "宜閉藏養氣 淨心備歲"
       },
       "冬至": {
         "name": "ตงจื้อ (กลางฤดูหนาว)",
         "date": "~22 ธ.ค.",
         "general": "กลางคืนยาวที่สุด หยินสูงสุด แต่หยางเริ่มกลับ! จุดพลิก",
         "home": "วันมงคล! หยางเริ่มกลับมา เหมาะไหว้เจ้า ตั้งจิตอธิษฐานปีใหม่",
-        "score": 5
+        "score": 5,
+        "name_en": "Dongzhi (Winter Solstice)",
+        "name_zh": "冬至",
+        "general_en": "The longest night — yin at its peak, yet yang begins its return: the turning point",
+        "general_zh": "一陽來復 陰極陽生 轉機之日",
+        "home_en": "An auspicious day — yang returns; suited to worship and setting intentions for the new year",
+        "home_zh": "吉日 陽氣初回 宜祭祀祈願"
       },
       "小寒": {
         "name": "เสี่ยวหาน (หนาวน้อย)",
         "date": "~6 ม.ค.",
         "general": "หนาวจัด แต่กำลังจะผ่าน อดทนอีกนิด",
         "home": "ดูแลบ้านให้อุ่น เตรียมรับตรุษจีน ทำความสะอาด",
-        "score": 3
+        "score": 3,
+        "name_en": "Xiaohan (Minor Cold)",
+        "name_zh": "小寒",
+        "general_en": "Bitter cold, but nearly past — endure a little longer",
+        "general_zh": "寒雖凜冽 將過 稍忍即安",
+        "home_en": "Keep the house warm, prepare for the Lunar New Year, clean",
+        "home_zh": "宜保暖掃舍 備迎新歲"
       },
       "大寒": {
         "name": "ต้าหาน (หนาวมาก)",
         "date": "~20 ม.ค.",
         "general": "หนาวที่สุด แต่ใกล้จบแล้ว หลังนี้คือฤดูใบไม้ผลิ!",
         "home": "สิ้นสุดปี ทำความสะอาดครั้งใหญ่ ทิ้งของเก่า เตรียมต้อนรับปีใหม่",
-        "score": 4
+        "score": 4,
+        "name_en": "Dahan (Major Cold)",
+        "name_zh": "大寒",
+        "general_en": "The coldest of all, but the end is near — after this comes spring!",
+        "general_zh": "至寒之極 冬盡春回",
+        "home_en": "The year's end — deep-clean, discard the old, prepare to welcome the new year",
+        "home_zh": "歲末大掃 除舊佈新迎歲"
       }
     }
   },
@@ -1506,7 +2640,13 @@
         "yinyang": "陽",
         "general": "ไม้ใหญ่ ต้นไม้ยืนต้น แข็งแรง ผู้นำ เริ่มต้น",
         "home": "เสริมพลังผู้นำ เหมาะมุมทำงาน โต๊ะหัวหน้า",
-        "score": 5
+        "score": 5,
+        "name_en": "Jiǎ",
+        "name_zh": "Jiǎ",
+        "general_en": "Great Wood — a tall standing tree; strong, a leader, initiating.",
+        "general_zh": "甲為陽木，參天巨木，剛健為首，主開創。",
+        "home_en": "Strengthens leadership — suits a work corner or the chief's desk.",
+        "home_zh": "助長領袖之氣，宜工作之位、主事之案。"
       },
       "乙": {
         "name": "อี่",
@@ -1514,7 +2654,13 @@
         "yinyang": "陰",
         "general": "ไม้เล็ก เถาวัลย์ ยืดหยุ่น อ่อนโยน ปรับตัวเก่ง",
         "home": "เสริมความยืดหยุ่น เหมาะมุมสร้างสรรค์ สวนเล็ก ๆ",
-        "score": 4
+        "score": 4,
+        "name_en": "Yǐ",
+        "name_zh": "Yǐ",
+        "general_en": "Small Wood — vines; flexible, gentle, highly adaptable.",
+        "general_zh": "乙為陰木，花草藤蘿，柔韌婉順，善於應變。",
+        "home_en": "Strengthens flexibility — suits a creative corner or a small garden.",
+        "home_zh": "增柔韌之氣，宜創作之位、小園花圃。"
       },
       "丙": {
         "name": "ปิ่ง",
@@ -1522,7 +2668,13 @@
         "yinyang": "陽",
         "general": "ไฟใหญ่ แสงอาทิตย์ สว่างจ้า ร้อนแรง โดดเด่น",
         "home": "เสริมชื่อเสียง เหมาะมุมสว่าง หน้าบ้าน ป้ายร้าน",
-        "score": 4
+        "score": 4,
+        "name_en": "Bǐng",
+        "name_zh": "Bǐng",
+        "general_en": "Great Fire — sunlight; blazing bright, hot, outstanding.",
+        "general_zh": "丙為陽火，太陽之光，炎熱耀目，光彩奪人。",
+        "home_en": "Strengthens fame — suits a bright corner, the front of the house, or a shop sign.",
+        "home_zh": "旺聲名，宜明亮之方、宅前門面、店招之位。"
       },
       "丁": {
         "name": "ติง",
@@ -1530,7 +2682,13 @@
         "yinyang": "陰",
         "general": "ไฟเล็ก เทียน ดาว แสงอ่อน ๆ อบอุ่น ใกล้ชิด",
         "home": "เสริมความอบอุ่น เหมาะโคมไฟห้องนอน เทียนหอม",
-        "score": 4
+        "score": 4,
+        "name_en": "Dīng",
+        "name_zh": "Dīng",
+        "general_en": "Small Fire — candlelight, starlight; a soft glow, warm and intimate.",
+        "general_zh": "丁為陰火，燈燭星光，微光溫煦，親近怡人。",
+        "home_en": "Strengthens warmth — suits bedroom lamps and scented candles.",
+        "home_zh": "增溫馨之氣，宜臥房燈飾、香燭。"
       },
       "戊": {
         "name": "อู้",
@@ -1538,7 +2696,13 @@
         "yinyang": "陽",
         "general": "ดินใหญ่ ภูเขา กำแพง หนักแน่น มั่นคง",
         "home": "เสริมความมั่นคง เหมาะฐานราก กำแพง ไม่มีทิศ(อยู่กลาง)",
-        "score": 4
+        "score": 4,
+        "name_en": "Wù",
+        "name_zh": "Wù",
+        "general_en": "Great Earth — mountains and walls; heavy and stable.",
+        "general_zh": "戊為陽土，高山城牆，厚重堅穩。",
+        "home_en": "Strengthens stability — suits foundations and walls; has no direction (resides at the center).",
+        "home_zh": "旺安穩之氣，宜地基牆垣；不主方位（居中央）。"
       },
       "己": {
         "name": "จี่",
@@ -1546,7 +2710,13 @@
         "yinyang": "陰",
         "general": "ดินเล็ก สวน ดินปลูกต้นไม้ อ่อนนุ่ม รองรับ",
         "home": "เสริมการเติบโต เหมาะสวน กระถาง ดินปลูกต้นไม้",
-        "score": 4
+        "score": 4,
+        "name_en": "Jǐ",
+        "name_zh": "Jǐ",
+        "general_en": "Small Earth — garden soil for planting; soft and nurturing.",
+        "general_zh": "己為陰土，田園之壤，鬆軟滋養，承載萬物。",
+        "home_en": "Strengthens growth — suits gardens, pots, and planting soil.",
+        "home_zh": "助生長之氣，宜園圃、盆栽、培土之處。"
       },
       "庚": {
         "name": "เกิง",
@@ -1554,7 +2724,13 @@
         "yinyang": "陽",
         "general": "โลหะใหญ่ ดาบ ขวาน เฉียบคม ยุติธรรม ตัดสิน",
         "home": "เสริมอำนาจตัดสินใจ เหมาะมุมทำงาน แต่ระวังของมีคม",
-        "score": 3
+        "score": 3,
+        "name_en": "Gēng",
+        "name_zh": "Gēng",
+        "general_en": "Great Metal — sword and axe; sharp, just, decisive.",
+        "general_zh": "庚為陽金，刀斧之金，鋒銳肅殺，主公正決斷。",
+        "home_en": "Strengthens decision-making power — suits a work corner, but beware of sharp objects.",
+        "home_zh": "旺決斷之權，宜工作之位，然須防金刃之傷。"
       },
       "辛": {
         "name": "ซิน",
@@ -1562,7 +2738,13 @@
         "yinyang": "陰",
         "general": "โลหะเล็ก เข็ม เครื่องประดับ ละเอียด ประณีต",
         "home": "เสริมความประณีต เหมาะมุมแต่งตัว ตู้เครื่องประดับ",
-        "score": 4
+        "score": 4,
+        "name_en": "Xīn",
+        "name_zh": "Xīn",
+        "general_en": "Small Metal — needles and jewelry; fine and refined.",
+        "general_zh": "辛為陰金，珠玉首飾，精緻細巧。",
+        "home_en": "Strengthens refinement — suits a dressing corner or a jewelry cabinet.",
+        "home_zh": "增精巧之氣，宜梳妝之位、首飾之櫃。"
       },
       "壬": {
         "name": "เหริน",
@@ -1570,7 +2752,13 @@
         "yinyang": "陽",
         "general": "น้ำใหญ่ ทะเล แม่น้ำ ไหลแรง กว้างใหญ่ ปัญญา",
         "home": "เสริมปัญญา เหมาะตู้ปลาใหญ่ น้ำพุ สระน้ำ",
-        "score": 4
+        "score": 4,
+        "name_en": "Rén",
+        "name_zh": "Rén",
+        "general_en": "Great Water — seas and rivers; strong currents, vast, wisdom.",
+        "general_zh": "壬為陽水，江海之水，奔流浩瀚，主大智。",
+        "home_en": "Strengthens wisdom — suits a large aquarium, a fountain, or a pond.",
+        "home_zh": "旺智慧，宜大魚缸、噴泉、水池。"
       },
       "癸": {
         "name": "กุ่ย",
@@ -1578,7 +2766,13 @@
         "yinyang": "陰",
         "general": "น้ำเล็ก น้ำค้าง น้ำฝน หยดน้ำ ละเอียดอ่อน",
         "home": "เสริมความละเอียด เหมาะน้ำพุเล็ก ๆ แจกันดอกไม้ใส่น้ำ",
-        "score": 4
+        "score": 4,
+        "name_en": "Guǐ",
+        "name_zh": "Guǐ",
+        "general_en": "Small Water — dew, rain, droplets; delicate and subtle.",
+        "general_zh": "癸為陰水，雨露滴水，細膩溫潤。",
+        "home_en": "Strengthens delicacy — suits a small fountain or a flower vase filled with water.",
+        "home_zh": "增細潤之氣，宜小型流水、插花盛水之瓶。"
       }
     }
   },
@@ -1594,7 +2788,13 @@
         "month": "เดือน 11",
         "general": "เริ่มต้นใหม่ กลางคืน เมล็ดพันธุ์ใต้ดิน พลังซ่อน",
         "home": "ทิศเหนือแท้ พลังน้ำ เหมาะวางตู้ปลา น้ำพุ สีน้ำเงิน",
-        "score": 4
+        "score": 4,
+        "name_en": "Zǐ (Rat)",
+        "name_zh": "子（鼠）",
+        "general_en": "New beginnings, the depth of night, seeds beneath the earth, hidden power",
+        "general_zh": "一陽初動 夜半之時 種伏地中 藏而未發",
+        "home_en": "True north, water energy; suited to an aquarium, a fountain, or blue tones",
+        "home_zh": "正北屬水 宜置魚缸水景 藍色為宜"
       },
       "丑": {
         "name": "โฉ่ว (วัว)",
@@ -1604,7 +2804,13 @@
         "month": "เดือน 12",
         "general": "ขยัน อดทน สะสม ทำงานเงียบ ๆ ไม่โอ้อวด",
         "home": "มุมเก็บสะสม เหมาะห้องเก็บของ ตู้เซฟ",
-        "score": 3
+        "score": 3,
+        "name_en": "Chǒu (Ox)",
+        "name_zh": "丑（牛）",
+        "general_en": "Diligent and enduring — accumulates quietly, working without show",
+        "general_zh": "勤懇耐勞 默默積蓄 不事張揚",
+        "home_en": "A corner for storing and saving; suited to a storeroom or safe",
+        "home_zh": "宜作儲藏之所 庫房保險櫃"
       },
       "寅": {
         "name": "อิ๋น (เสือ)",
@@ -1614,7 +2820,13 @@
         "month": "เดือน 1",
         "general": "เสือตื่น กล้าหาญ เริ่มต้น ฤดูใบไม้ผลิเริ่ม",
         "home": "พลังเริ่มต้น เหมาะมุมออกกำลังกาย มุมกระตุ้นพลัง",
-        "score": 4
+        "score": 4,
+        "name_en": "Yín (Tiger)",
+        "name_zh": "寅（虎）",
+        "general_en": "The tiger wakes — courage, initiative, the first stirring of spring",
+        "general_zh": "寅虎初醒 勇猛進取 春氣始生",
+        "home_en": "Energy of beginnings; suited to an exercise corner or a spot for rousing vitality",
+        "home_zh": "生發之氣 宜作健身振奮之角"
       },
       "卯": {
         "name": "เม่า (กระต่าย)",
@@ -1624,7 +2836,13 @@
         "month": "เดือน 2",
         "general": "ตะวันขึ้น อ่อนโยน สร้างสรรค์ เติบโต ครอบครัว",
         "home": "ทิศตะวันออกแท้ พลังไม้ เหมาะวางต้นไม้ สีเขียว เสริมสุขภาพ",
-        "score": 5
+        "score": 5,
+        "name_en": "Mǎo (Rabbit)",
+        "name_zh": "卯（兔）",
+        "general_en": "Sunrise — gentleness, creativity, growth, and family",
+        "general_zh": "日出東方 溫和生發 滋長家庭",
+        "home_en": "True east, wood energy; suited to plants and green tones, strengthening health",
+        "home_zh": "正東屬木 宜置花木 綠色養生"
       },
       "辰": {
         "name": "เฉิน (มังกร)",
@@ -1634,7 +2852,13 @@
         "month": "เดือน 3",
         "general": "มังกร! พลังมหาศาล ลึกลับ ฝนตก ดินเปียก",
         "home": "พลังแรงแต่ไม่แน่นอน เหมาะมุมที่ต้องการพลังพิเศษ",
-        "score": 3
+        "score": 3,
+        "name_en": "Chén (Dragon)",
+        "name_zh": "辰（龍）",
+        "general_en": "The Dragon — immense, mysterious power; rainfall and moistened earth",
+        "general_zh": "辰龍之力 玄妙莫測 行雨潤土",
+        "home_en": "Powerful but unsteady energy; suited to corners that call for extraordinary force",
+        "home_zh": "氣強而不定 宜用於須借奇力之處"
       },
       "巳": {
         "name": "ซื่อ (งู)",
@@ -1644,7 +2868,13 @@
         "month": "เดือน 4",
         "general": "งูฉลาด ลึก คิดเยอะ ปัญญา แต่เลือดเย็น",
         "home": "เหมาะมุมคิดงาน วางแผน ไม่เหมาะพักผ่อน",
-        "score": 3
+        "score": 3,
+        "name_en": "Sì (Snake)",
+        "name_zh": "巳（蛇）",
+        "general_en": "The snake — clever and deep, ever-thinking; wise but cold-blooded",
+        "general_zh": "巳蛇多智 思深慮遠 慧而性冷",
+        "home_en": "Suited to corners for planning and strategy, not for rest",
+        "home_zh": "宜謀事策劃之角 不宜休憩"
       },
       "午": {
         "name": "อู่ (ม้า)",
@@ -1654,7 +2884,13 @@
         "month": "เดือน 5",
         "general": "เที่ยงวัน สว่างที่สุด ม้าวิ่งเร็ว พลังแรง ชื่อเสียง",
         "home": "ทิศใต้แท้ พลังไฟ เหมาะวางไฟส่องสว่าง สีแดง เสริมชื่อเสียง",
-        "score": 4
+        "score": 4,
+        "name_en": "Wǔ (Horse)",
+        "name_zh": "午（馬）",
+        "general_en": "High noon, brightest of hours; the galloping horse — strong power and fame",
+        "general_zh": "日正當中 光明最盛 馬馳勢旺 主聲名",
+        "home_en": "True south, fire energy; suited to bright lighting and red tones, enhancing reputation",
+        "home_zh": "正南屬火 宜置燈火 紅色旺名"
       },
       "未": {
         "name": "เว่ย (แพะ)",
@@ -1664,7 +2900,13 @@
         "month": "เดือน 6",
         "general": "แพะอ่อนโยน ครอบครัว อาหาร เลี้ยงดู",
         "home": "เหมาะห้องครัว ห้องกินข้าว มุมเลี้ยงลูก",
-        "score": 4
+        "score": 4,
+        "name_en": "Wèi (Goat)",
+        "name_zh": "未（羊）",
+        "general_en": "The gentle goat — family, food, nurture and care",
+        "general_zh": "未羊溫順 主家庭飲食 養育之情",
+        "home_en": "Suited to the kitchen, dining room, or a child-rearing corner",
+        "home_zh": "宜廚房飯廳 育兒之所"
       },
       "申": {
         "name": "เซิน (ลิง)",
@@ -1674,7 +2916,13 @@
         "month": "เดือน 7",
         "general": "ลิงฉลาด คล่องแคล่ว ปรับตัวเก่ง แก้ปัญหาเก่ง",
         "home": "เหมาะมุมทำงานที่ต้องแก้ปัญหาเร็ว ห้องไอที คอมพิวเตอร์",
-        "score": 4
+        "score": 4,
+        "name_en": "Shēn (Monkey)",
+        "name_zh": "申（猴）",
+        "general_en": "The clever monkey — agile, adaptable, a skilled problem-solver",
+        "general_zh": "申猴機敏 靈活善變 巧於解難",
+        "home_en": "Suited to a work corner for quick problem-solving, IT rooms, computers",
+        "home_zh": "宜急務工作之角 電腦機房"
       },
       "酉": {
         "name": "โหย่ว (ไก่)",
@@ -1684,7 +2932,13 @@
         "month": "เดือน 8",
         "general": "ไก่ขัน ตรงเวลา ระเบียบ ความงาม ตะวันตก",
         "home": "ทิศตะวันตกแท้ พลังโลหะ เหมาะวางของโลหะ สีขาว/ทอง",
-        "score": 4
+        "score": 4,
+        "name_en": "Yǒu (Rooster)",
+        "name_zh": "酉（雞）",
+        "general_en": "The rooster's crow — punctuality, order, beauty, the west",
+        "general_zh": "酉雞司晨 守時有序 主美 西方之位",
+        "home_en": "True west, metal energy; suited to metal objects, white and gold tones",
+        "home_zh": "正西屬金 宜置金器 白金之色"
       },
       "戌": {
         "name": "ซวี (หมา)",
@@ -1694,7 +2948,13 @@
         "month": "เดือน 9",
         "general": "หมาซื่อสัตย์ เฝ้าบ้าน ปกป้อง จงรักภักดี",
         "home": "เหมาะวางกล้องวงจรปิด ระบบรักษาความปลอดภัย รั้ว",
-        "score": 4
+        "score": 4,
+        "name_en": "Xū (Dog)",
+        "name_zh": "戌（狗）",
+        "general_en": "The loyal dog — guarding the home, protection, faithfulness",
+        "general_zh": "戌狗忠誠 守家護院 盡忠不移",
+        "home_en": "Suited to security cameras, alarm systems, and fences",
+        "home_zh": "宜置監控保安之設 圍籬護欄"
       },
       "亥": {
         "name": "ไห่ (หมู)",
@@ -1704,7 +2964,13 @@
         "month": "เดือน 10",
         "general": "หมูสะสม ร่ำรวย กลางคืน พักผ่อน สะสมพลัง",
         "home": "เหมาะห้องนอน มุมพักผ่อน เสริมการนอนหลับ สะสมพลัง",
-        "score": 4
+        "score": 4,
+        "name_en": "Hài (Pig)",
+        "name_zh": "亥（豬）",
+        "general_en": "The pig gathers — wealth, nighttime, rest, storing up energy",
+        "general_zh": "亥豬聚藏 主富 夜息養力",
+        "home_en": "Suited to the bedroom or a rest corner; aids sleep and restores energy",
+        "home_zh": "宜臥房靜息之所 安眠蓄氣"
       }
     }
   },
@@ -1716,49 +2982,97 @@
         "position": "ใต้ (180°)",
         "general": "ฟ้าอยู่ใต้ในแผนก่อนฟ้า = พลังสร้างสรรค์ดั้งเดิม",
         "home": "ทิศใต้มีพลังฟ้าซ่อนอยู่ เสริมอำนาจบารมี",
-        "score": 5
+        "score": 5,
+        "position_en": "South (180°)",
+        "position_zh": "南 (180°)",
+        "general_en": "Heaven in the South of the Early Heaven arrangement — the primordial creative power.",
+        "general_zh": "先天乾居南，乾天之象，元始創生之氣。",
+        "home_en": "The South holds hidden Heaven energy — enhances authority and prestige.",
+        "home_zh": "南方潛藏乾天之氣，旺權威尊榮。"
       },
       "坤_N": {
         "position": "เหนือ (0°)",
         "general": "ดินอยู่เหนือ = พลังรองรับดั้งเดิม",
         "home": "ทิศเหนือมีพลังดินซ่อน เสริมความมั่นคง",
-        "score": 5
+        "score": 5,
+        "position_en": "North (0°)",
+        "position_zh": "北 (0°)",
+        "general_en": "Earth in the North — the primordial power of support.",
+        "general_zh": "先天坤居北，坤地之象，元始承載之德。",
+        "home_en": "The North holds hidden Earth energy — enhances stability.",
+        "home_zh": "北方潛藏坤土之氣，旺安穩。"
       },
       "離_E": {
         "position": "ตะวันออก (90°)",
         "general": "ไฟอยู่ตะวันออก = แสงสว่างเริ่มต้น",
         "home": "ทิศตะวันออกมีพลังไฟ เสริมพลังชีวิต",
-        "score": 4
+        "score": 4,
+        "position_en": "East (90°)",
+        "position_zh": "東 (90°)",
+        "general_en": "Fire in the East — the first light of dawn.",
+        "general_zh": "先天離居東，火明初升之象。",
+        "home_en": "The East holds Fire energy — enhances vitality.",
+        "home_zh": "東方藏離火之氣，旺生機活力。"
       },
       "坎_W": {
         "position": "ตะวันตก (270°)",
         "general": "น้ำอยู่ตะวันตก = ปัญญาลึก",
         "home": "ทิศตะวันตกมีพลังน้ำ เสริมปัญญา",
-        "score": 4
+        "score": 4,
+        "position_en": "West (270°)",
+        "position_zh": "西 (270°)",
+        "general_en": "Water in the West — deep wisdom.",
+        "general_zh": "先天坎居西，水智淵深之象。",
+        "home_en": "The West holds Water energy — enhances wisdom.",
+        "home_zh": "西方藏坎水之氣，旺智慧。"
       },
       "震_NE": {
         "position": "ตะวันออกเฉียงเหนือ (45°)",
         "general": "ฟ้าร้องอยู่ตอ.เฉียงเหนือ = กระตุ้น ตื่นตัว",
         "home": "มุมกระตุ้นพลัง",
-        "score": 3
+        "score": 3,
+        "position_en": "Northeast (45°)",
+        "position_zh": "東北 (45°)",
+        "general_en": "Thunder in the Northeast — stimulation and awakening.",
+        "general_zh": "先天震居東北，雷動奮起之象。",
+        "home_en": "A corner that stirs up energy.",
+        "home_zh": "催動氣機之方。"
       },
       "巽_SW": {
         "position": "ตะวันตกเฉียงใต้ (225°)",
         "general": "ลมอยู่ตต.เฉียงใต้ = แทรกซึม อ่อนโยน",
         "home": "มุมลมเข้า ระบายอากาศ",
-        "score": 4
+        "score": 4,
+        "position_en": "Southwest (225°)",
+        "position_zh": "西南 (225°)",
+        "general_en": "Wind in the Southwest — penetrating and gentle.",
+        "general_zh": "先天巽居西南，風行柔入之象。",
+        "home_en": "The corner where wind enters — good for ventilation.",
+        "home_zh": "納風之方，利通風換氣。"
       },
       "艮_NW": {
         "position": "ตะวันตกเฉียงเหนือ (315°)",
         "general": "ภูเขาอยู่ตต.เฉียงเหนือ = หยุดนิ่ง สมาธิ",
         "home": "มุมนั่งสมาธิ ความสงบ",
-        "score": 4
+        "score": 4,
+        "position_en": "Northwest (315°)",
+        "position_zh": "西北 (315°)",
+        "general_en": "Mountain in the Northwest — stillness and concentration.",
+        "general_zh": "先天艮居西北，山止靜定之象。",
+        "home_en": "A corner for meditation and calm.",
+        "home_zh": "宜靜坐養神之方。"
       },
       "兌_SE": {
         "position": "ตะวันออกเฉียงใต้ (135°)",
         "general": "ทะเลสาบอยู่ตอ.เฉียงใต้ = ความสุข สื่อสาร",
         "home": "มุมพูดคุย สังสรรค์ ความสุข",
-        "score": 4
+        "score": 4,
+        "position_en": "Southeast (135°)",
+        "position_zh": "東南 (135°)",
+        "general_en": "Lake in the Southeast — joy and communication.",
+        "general_zh": "先天兌居東南，澤悅相通之象。",
+        "home_en": "A corner for conversation, gathering, and happiness.",
+        "home_zh": "談笑聚會、悅樂之方。"
       }
     }
   },
@@ -1771,56 +3085,104 @@
         "element": "水",
         "general": "น้ำอยู่เหนือ ปัญญา อาชีพ การงาน",
         "home": "ทิศอาชีพ เสริมด้วยน้ำ สีน้ำเงิน/ดำ ช่วยเรื่องการงาน",
-        "score": 4
+        "score": 4,
+        "position_en": "North (0°)",
+        "position_zh": "北 (0°)",
+        "general_en": "Water in the North — wisdom, career, work.",
+        "general_zh": "坎水居北，主智慧、事業、仕途。",
+        "home_en": "The career direction. Enhance with water and blue/black colors to support the career.",
+        "home_zh": "事業之方，宜以水局、藍黑之色催旺，利仕途職場。"
       },
       "艮_NE": {
         "position": "ตะวันออกเฉียงเหนือ (45°)",
         "element": "土",
         "general": "ดิน ภูเขา ความรู้ การศึกษา ลูกชายเล็ก",
         "home": "ทิศการศึกษา เสริมด้วยหิน คริสตัล ช่วยลูก ๆ เรียนเก่ง",
-        "score": 4
+        "score": 4,
+        "position_en": "Northeast (45°)",
+        "position_zh": "東北 (45°)",
+        "general_en": "Earth, the mountain — knowledge, education, the youngest son.",
+        "general_zh": "艮土為山，主知識、學業，應少男。",
+        "home_en": "The education direction. Enhance with stones and crystals to help the children excel in study.",
+        "home_zh": "文昌學業之方，宜置山石、水晶，助子女聰慧向學。"
       },
       "震_E": {
         "position": "ตะวันออก (90°)",
         "element": "木",
         "general": "ไม้ ฟ้าร้อง สุขภาพ ครอบครัว ลูกชายโต",
         "home": "ทิศสุขภาพ เสริมด้วยต้นไม้ สีเขียว ช่วยสุขภาพทั้งบ้าน",
-        "score": 5
+        "score": 5,
+        "position_en": "East (90°)",
+        "position_zh": "東 (90°)",
+        "general_en": "Wood, thunder — health, family, the eldest son.",
+        "general_zh": "震木為雷，主健康、家庭，應長男。",
+        "home_en": "The health direction. Enhance with plants and green colors to support the whole household's health.",
+        "home_zh": "健康之方，宜植綠木、用青綠之色，佑闔家安康。"
       },
       "巽_SE": {
         "position": "ตะวันออกเฉียงใต้ (135°)",
         "element": "木",
         "general": "ไม้ ลม ทรัพย์สิน โชคลาภ ลูกสาวโต",
         "home": "ทิศเงินทอง! เสริมด้วยต้นไม้ น้ำพุ ช่วยเรื่องเงินเข้าบ้าน",
-        "score": 5
+        "score": 5,
+        "position_en": "Southeast (135°)",
+        "position_zh": "東南 (135°)",
+        "general_en": "Wood, wind — wealth, fortune, the eldest daughter.",
+        "general_zh": "巽木為風，主財帛、福祿，應長女。",
+        "home_en": "The wealth direction! Enhance with plants and a fountain to draw money into the home.",
+        "home_zh": "財帛之方！宜植綠木、置流水，引財入宅。"
       },
       "離_S": {
         "position": "ใต้ (180°)",
         "element": "火",
         "general": "ไฟ ชื่อเสียง การยอมรับ ลูกสาวกลาง",
         "home": "ทิศชื่อเสียง เสริมด้วยไฟ สีแดง ช่วยเรื่องชื่อเสียง การยอมรับ",
-        "score": 4
+        "score": 4,
+        "position_en": "South (180°)",
+        "position_zh": "南 (180°)",
+        "general_en": "Fire — fame, recognition, the middle daughter.",
+        "general_zh": "離火居南，主聲名、顯達，應中女。",
+        "home_en": "The fame direction. Enhance with fire and red colors to support reputation and recognition.",
+        "home_zh": "聲名之方，宜用燈火、赤色催旺，利名望顯達。"
       },
       "坤_SW": {
         "position": "ตะวันตกเฉียงใต้ (225°)",
         "element": "土",
         "general": "ดิน ความรัก แม่ ภรรยา ความสัมพันธ์",
         "home": "ทิศความรัก เสริมด้วยเซรามิก สีชมพู ช่วยเรื่องความรัก คู่ครอง",
-        "score": 5
+        "score": 5,
+        "position_en": "Southwest (225°)",
+        "position_zh": "西南 (225°)",
+        "general_en": "Earth — love, mother, wife, relationships.",
+        "general_zh": "坤土居西南，主情愛、母親、主婦、人倫之情。",
+        "home_en": "The love direction. Enhance with ceramics and pink colors to support romance and marriage.",
+        "home_zh": "姻緣之方，宜置陶瓷、用粉色，利情愛婚配。"
       },
       "兌_W": {
         "position": "ตะวันตก (270°)",
         "element": "金",
         "general": "โลหะ ลูกหลาน ความคิดสร้างสรรค์ ลูกสาวเล็ก",
         "home": "ทิศลูกหลาน เสริมด้วยโลหะ สีขาว ช่วยเรื่องลูก ๆ ความคิดสร้างสรรค์",
-        "score": 4
+        "score": 4,
+        "position_en": "West (270°)",
+        "position_zh": "西 (270°)",
+        "general_en": "Metal — descendants, creativity, the youngest daughter.",
+        "general_zh": "兌金居西，主子嗣、創思，應少女。",
+        "home_en": "The descendants direction. Enhance with metal and white colors to support the children and creativity.",
+        "home_zh": "子嗣之方，宜置金屬、用白色，佑兒孫並利創思。"
       },
       "乾_NW": {
         "position": "ตะวันตกเฉียงเหนือ (315°)",
         "element": "金",
         "general": "โลหะ พ่อ ผู้นำ คนช่วยเหลือ เดินทาง",
         "home": "ทิศผู้ใหญ่ เสริมด้วยโลหะ สีเทา/เงิน ช่วยเรื่องคนช่วย มีเจ้านายดี",
-        "score": 5
+        "score": 5,
+        "position_en": "Northwest (315°)",
+        "position_zh": "西北 (315°)",
+        "general_en": "Metal — father, leader, helpful people, travel.",
+        "general_zh": "乾金居西北，主父親、尊長、貴人、出行。",
+        "home_en": "The mentor direction. Enhance with metal and grey/silver colors to attract helpful people and good superiors.",
+        "home_zh": "貴人之方，宜置金屬、用灰銀之色，得貴人上司之助。"
       }
     }
   },
@@ -1829,33 +3191,57 @@
     "description": "60 甲子 วางบนวง 24 ทิศ (แต่ละทิศมี 2.5 ตัว) ใช้ดูพลังงานภูเขาที่อยู่หลังบ้าน (ทิศนั่ง) ละเอียดกว่า 24 ทิศ",
     "interpretation": {
       "general": "มังกรเจาะภู = ดูว่าพลังงานภูเขาด้านหลังบ้านเป็นอย่างไร ถ้าตรงกับ甲子 ที่มีธาตุดี = หลังบ้านมีภูเขาหนุน คนในบ้านมีผู้ใหญ่ค้ำจุน",
-      "home": "จับคู่ทิศนั่ง (หลังบ้าน) กับ 60 甲子 บนวงนี้ ถ้าธาตุ納音สอดคล้อง = หลังแข็ง มีคนหนุน ถ้าขัดแย้ง = ไม่มีใครช่วย ต้องพึ่งตนเอง"
+      "home": "จับคู่ทิศนั่ง (หลังบ้าน) กับ 60 甲子 บนวงนี้ ถ้าธาตุ納音สอดคล้อง = หลังแข็ง มีคนหนุน ถ้าขัดแย้ง = ไม่มีใครช่วย ต้องพึ่งตนเอง",
+      "general_en": "The mountain-penetrating dragons reveal the quality of the mountain energy behind the house. If it aligns with a Jiazi of a favorable element, the house has a supporting mountain at its back and the household enjoys the backing of elders and patrons.",
+      "general_zh": "透地龍以察宅後山龍之氣。若所坐甲子五行得吉，則後有靠山，家人得長上貴人扶持。",
+      "home_en": "Match the Sitting direction (back of the house) with the 60 Jiazi on this ring. If the Nayin element harmonizes, the back is strong and supporters appear; if it clashes, no one helps and one must rely on oneself.",
+      "home_zh": "以坐山配此層六十甲子，納音五行相生比和則坐後堅實、有人扶助；相剋則無人可倚，凡事自恃。"
     },
     "score_guide": {
       "wang": {
         "label": "旺 เจริญ (ธาตุเดียวกันกับทิศ)",
         "score": 5,
-        "meaning": "เจริญรุ่งเรือง ร่ำรวย สุขภาพดี"
+        "meaning": "เจริญรุ่งเรือง ร่ำรวย สุขภาพดี",
+        "label_en": "旺 Prosperous (same element as the direction)",
+        "label_zh": "旺 · 與坐山比和",
+        "meaning_en": "Flourishing — wealth and good health.",
+        "meaning_zh": "興旺發達，富而康泰。"
       },
       "xiang": {
         "label": "相 เข้ากัน (ธาตุสร้าง)",
         "score": 4,
-        "meaning": "ดี มีคนช่วย โชคดี"
+        "meaning": "ดี มีคนช่วย โชคดี",
+        "label_en": "相 Supportive (generating element)",
+        "label_zh": "相 · 相生得助",
+        "meaning_en": "Good — helpers appear, good luck.",
+        "meaning_zh": "吉，得人扶助，運勢亨通。"
       },
       "xiu": {
         "label": "休 พักผ่อน (ธาตุเฉย)",
         "score": 3,
-        "meaning": "ปานกลาง ไม่ดีไม่ร้าย"
+        "meaning": "ปานกลาง ไม่ดีไม่ร้าย",
+        "label_en": "休 Resting (neutral element)",
+        "label_zh": "休 · 氣息平緩",
+        "meaning_en": "Average — neither good nor bad.",
+        "meaning_zh": "平平，無吉無凶。"
       },
       "qiu": {
         "label": "囚 ถูกขัง (ธาตุถูกดูด)",
         "score": 2,
-        "meaning": "พลังถูกดูด อ่อนแอ ติดขัด"
+        "meaning": "พลังถูกดูด อ่อนแอ ติดขัด",
+        "label_en": "囚 Imprisoned (element being drained)",
+        "label_zh": "囚 · 氣被洩耗",
+        "meaning_en": "Energy drained — weak and obstructed.",
+        "meaning_zh": "氣為所洩，衰弱滯礙。"
       },
       "si": {
         "label": "死 ตาย (ธาตุทำลาย)",
         "score": 1,
-        "meaning": "ไม่ดี สูญเสีย เจ็บป่วย"
+        "meaning": "ไม่ดี สูญเสีย เจ็บป่วย",
+        "label_en": "死 Dead (destructive element)",
+        "label_zh": "死 · 受剋",
+        "meaning_en": "Bad — loss and sickness.",
+        "meaning_zh": "凶，主損耗疾病。"
       }
     }
   },
@@ -1868,21 +3254,39 @@
         "offset": "0° (ตรง)",
         "general": "เข็มหลักที่ใช้วัดทิศจริง ดูทิศนั่ง (หลังบ้าน) และทิศหัน (หน้าบ้าน)",
         "home": "ใช้จับทิศบ้านจริง ๆ ทิศที่ประตูหน้าบ้านหัน = 向 ทิศตรงข้าม = 坐",
-        "use": "ดูทิศบ้าน ทิศหลุมศพ ทิศอาคาร"
+        "use": "ดูทิศบ้าน ทิศหลุมศพ ทิศอาคาร",
+        "name_en": "Earth Plate (地盤) — main needle",
+        "name_zh": "地盤正針（主針）",
+        "general_en": "The main needle used to measure the true direction — determines the Sitting (back of the house) and the Facing (front of the house).",
+        "general_zh": "正針為主，格定真向，以定坐山（宅後）與朝向（宅前）。",
+        "home_en": "Used to take the actual facing of the house: the direction the front door faces is the Facing (向); the opposite is the Sitting (坐).",
+        "home_zh": "以此格宅之真向：大門所朝為向，相對者為坐。"
       },
       "人盤": {
         "name": "เข็มคน (人盤) — เหลื่อมซ้าย 7.5°",
         "offset": "-7.5° (หมุนทวนเข็ม 7.5°)",
         "general": "ใช้ดูคน ดูว่ามุมไหนเหมาะกับคนแบบไหน ดูความสัมพันธ์กับเพื่อนบ้าน สิ่งแวดล้อมรอบบ้าน",
         "home": "ดูภูเขา อาคาร ต้นไม้ใหญ่รอบบ้าน ว่าอยู่ทิศไหนของเข็มคน แล้วตีความว่าส่งพลังดีหรือร้าย",
-        "use": "ดูสิ่งแวดล้อมรอบบ้าน ภูเขาล้อมรอบ ตึกสูงข้างเคียง"
+        "use": "ดูสิ่งแวดล้อมรอบบ้าน ภูเขาล้อมรอบ ตึกสูงข้างเคียง",
+        "name_en": "Man Plate (人盤) — offset 7.5° counterclockwise",
+        "name_zh": "人盤中針（逆移7.5°）",
+        "general_en": "Used to assess people — which sector suits which person, relations with neighbors, and the environment around the house.",
+        "general_zh": "中針察人事，論何方宜何人，並察鄰里與宅外環境。",
+        "home_en": "Examine the mountains, buildings, and large trees around the house against the Man Plate to judge whether they send favorable or harmful energy.",
+        "home_zh": "以中針格宅外山峰、樓宇、大樹所居之方，斷其氣之吉凶。"
       },
       "天盤": {
         "name": "เข็มฟ้า (天盤) — เหลื่อมขวา 7.5°",
         "offset": "+7.5° (หมุนตามเข็ม 7.5°)",
         "general": "ใช้ดูน้ำ ดูว่าน้ำไหลไปทิศไหน น้ำเข้าจากไหน น้ำออกไปไหน",
         "home": "ดูทิศน้ำเข้า-ออก ท่อน้ำ แม่น้ำ ถนน (ถนน=น้ำในเมือง) ว่าอยู่ทิศไหนของเข็มฟ้า",
-        "use": "ดูทิศน้ำ ถนน ทางน้ำไหล"
+        "use": "ดูทิศน้ำ ถนน ทางน้ำไหล",
+        "name_en": "Heaven Plate (天盤) — offset 7.5° clockwise",
+        "name_zh": "天盤縫針（順移7.5°）",
+        "general_en": "Used to assess water — which way the water flows, where it enters and where it exits.",
+        "general_zh": "縫針消納水法，察水之來去、入口與出口。",
+        "home_en": "Check the directions of incoming and outgoing water — pipes, rivers, and roads (a road is the water of the city) — on the Heaven Plate.",
+        "home_zh": "以縫針格來水去水之方，兼看水管、河流、道路（路為城市之水）。"
       }
     }
   },
@@ -1891,7 +3295,11 @@
     "description": "จุดศูนย์กลางของหลัวผาน ที่วางเข็มแม่เหล็กจับทิศ เป็นหัวใจของทุกศาสตร์",
     "interpretation": {
       "general": "天池 แปลว่า 'สระน้ำบนสวรรค์' เป็นจุดที่พลังสวรรค์ (天) และพลังแผ่นดิน (地) มาบรรจบกัน เข็มแม่เหล็กจะชี้ไปยังทิศเหนือแม่เหล็ก ซึ่งเป็นจุดอ้างอิงของทุกศาสตร์",
-      "home": "เมื่อวางหลัวผานบนพื้นบ้าน เข็มแม่เหล็กจะบอกทิศจริงของบ้าน จากนั้นอ่านวงทั้งหมดออกไปรอบ ๆ เพื่อตีความพลังงานแต่ละทิศ"
+      "home": "เมื่อวางหลัวผานบนพื้นบ้าน เข็มแม่เหล็กจะบอกทิศจริงของบ้าน จากนั้นอ่านวงทั้งหมดออกไปรอบ ๆ เพื่อตีความพลังงานแต่ละทิศ",
+      "general_en": "Tian Chi (天池) means 'Heavenly Pool' — the point where the energy of Heaven (天) and Earth (地) converge. The magnetic needle points to magnetic north, the reference point for every discipline on the compass.",
+      "general_zh": "天池者，天地之氣交會之所也。磁針指磁北，為盤上諸法之基準。",
+      "home_en": "When the luopan is placed on the floor of the house, the magnetic needle reveals the true direction of the home; from there, read every ring outward to interpret the energy of each direction.",
+      "home_zh": "置羅盤於宅中，磁針定宅之真向，繼而由內而外逐層讀盤，以斷各方之氣。"
     }
   }
 }

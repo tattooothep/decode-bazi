@@ -114,6 +114,30 @@
     return bag[loc] || bag.th || key;
   }
 
+  /* ── 🌐 โครงรายชื่อภาษาในเมนู (6 ก.ค. 2569) ──
+   * เปิดภาษาใหม่ (vi/ja/ko/ru/es) ทีละตัวโดยเซ็ต window.HK_LANGS_LIVE ก่อนโหลดไฟล์นี้ เช่น
+   *   window.HK_LANGS_LIVE = [{value:'th',label:'TH'},{value:'en',label:'EN'},{value:'zh-hant',label:'繁'},{value:'zh-cn',label:'简'},{value:'ja',label:'JA'}];
+   * ถ้าไม่เซ็ต = รายการเดิม th/en/繁/简 เป๊ะ — หน้าตาปัจจุบันไม่เปลี่ยน */
+  var DEFAULT_LANGS = [
+    { value:'th', label:'TH' },
+    { value:'en', label:'EN' },
+    { value:'zh-hant', label:'繁' },
+    { value:'zh-cn', label:'简<sup style="font-size:8px;opacity:.75;margin-left:1px;">β</sup>', title:'简体中文 (β · อยู่ระหว่างตรวจสอบ)' },
+  ];
+  function langList() {
+    var ls = window.HK_LANGS_LIVE;
+    return (Object.prototype.toString.call(ls) === '[object Array]' && ls.length) ? ls : DEFAULT_LANGS;
+  }
+  function langBtnsHtml(savedLang, savedZhVariant) {
+    return langList().map(function (L) {
+      var on = (L.value === savedLang) ||
+        (L.value === 'zh-hant' && savedLang === 'zh' && savedZhVariant !== 'cn') ||
+        (L.value === 'zh-cn' && savedLang === 'zh' && savedZhVariant === 'cn');
+      return '<button data-value="' + L.value + '" class="' + (on ? 'on' : '') + '"' +
+        (L.title ? ' title="' + L.title + '"' : '') + '>' + L.label + '</button>';
+    }).join('\n              ');
+  }
+
   /* ── CSS ── */
   var CSS = `
 	  .hk-um-wrap{position:fixed;top:20px;right:20px;z-index:9999;font-family:'JetBrains Mono','SF Mono',monospace;}
@@ -275,10 +299,7 @@
           <div class="hk-um-row">
             <span class="hk-um-rowlbl"><span>🌐</span><span class="hk-um-i-lang">${t('language')}</span></span>
             <span class="hk-um-segs lang">
-              <button data-value="th" class="${savedLang==='th'?'on':''}">TH</button>
-              <button data-value="en" class="${savedLang==='en'?'on':''}">EN</button>
-              <button data-value="zh-hant" class="${(savedLang==='zh'&&savedZhVariant!=='cn')?'on':''}">繁</button>
-              <button data-value="zh-cn" class="${(savedLang==='zh'&&savedZhVariant==='cn')?'on':''}" title="简体中文 (β · อยู่ระหว่างตรวจสอบ)">简<sup style="font-size:8px;opacity:.75;margin-left:1px;">β</sup></button>
+              ${langBtnsHtml(savedLang, savedZhVariant)}
             </span>
           </div>
           <div class="hk-um-row">
@@ -353,6 +374,13 @@
             localStorage.setItem('hk_lang', 'zh');
             localStorage.setItem('hk_zh_variant', v === 'zh-cn' ? 'cn' : 'hant');
           } catch(_) {}
+          location.reload();
+          return;
+        }
+        /* 🌐 ภาษาใหม่ (vi/ja/ko/ru/es — เข้าถึงได้เฉพาะเมื่อเปิดใน HK_LANGS_LIVE): reload ให้
+         * hk-overlay-boot ของหน้าโหลด /i18n/<locale>.json แล้ว re-apply ทั้งหน้าอย่างสะอาด */
+        if (v !== 'th' && v !== 'en') {
+          try { localStorage.setItem('hk_locale', v); localStorage.setItem('hk_lang', v); } catch(_) {}
           location.reload();
           return;
         }
