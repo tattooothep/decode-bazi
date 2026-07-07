@@ -1,0 +1,1975 @@
+<!doctype html>
+<html lang="th">
+<head>
+<script src="/js/hk-lang-state.js?v=1"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ถาม Hourkey · อ่านคำถามแรกจากวันเกิด</title>
+  <meta name="description" content="กรอกวันเกิด เวลาเกิด เพศ ชื่อ และคำถาม เพื่อดูตัวอย่างคำตอบ Hourkey ก่อนปลดล็อกการอ่านเต็ม" />
+  <meta name="theme-color" content="#090706" />
+  <link rel="preload" as="video" href="/assets/ask/hourkey-ask-loop-grok-v2.mp4" type="video/mp4" />
+  <link rel="preload" as="image" href="/assets/ask/hourkey-ask-poster-grok-v2.jpg" />
+  <style>
+    :root{
+      --bg:#090706;
+      --bg-2:#11100f;
+      --ink:#fff6e8;
+      --soft:#dacdb7;
+      --muted:#a99b83;
+      --faint:#726858;
+      --gold:#e1bd68;
+      --gold-2:#f0d78f;
+      --red:#b74432;
+      --red-2:#7e211a;
+      --jade:#71b58e;
+      --blue:#789cc4;
+      --line:rgba(225,189,104,.2);
+      --line-strong:rgba(225,189,104,.42);
+      --panel:rgba(13,10,8,.72);
+      --panel-2:rgba(20,16,13,.84);
+      --shadow:0 24px 80px rgba(0,0,0,.48);
+      --thai:"Noto Sans Thai","Leelawadee UI","Segoe UI",Tahoma,system-ui,sans-serif;
+      --serif:"Noto Serif Thai","Iowan Old Style",Georgia,serif;
+      --mono:"SFMono-Regular","Cascadia Mono","Roboto Mono",Consolas,monospace;
+    }
+    *{box-sizing:border-box}
+    html{background:var(--bg);color:var(--ink);scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--thai);letter-spacing:0;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    button,input,textarea{font:inherit}
+    button{color:inherit}
+    img,video{max-width:100%}
+    [hidden]{display:none!important}
+    :focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+    .page{min-height:100vh;background:
+      linear-gradient(180deg,rgba(9,7,6,.1),#090706 94vh),
+      radial-gradient(circle at 76% 8%,rgba(183,68,50,.18),transparent 34%),
+      radial-gradient(circle at 12% 74%,rgba(113,181,142,.12),transparent 28%),
+      var(--bg)}
+
+    .nav{position:fixed;top:0;left:0;right:0;z-index:30;padding:12px 14px;transition:background .22s,border-color .22s,backdrop-filter .22s}
+    .nav.scrolled{background:rgba(9,7,6,.78);border-bottom:1px solid var(--line);backdrop-filter:blur(18px)}
+    .nav-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:inline-flex;align-items:center;gap:10px;min-width:0}
+    .brand-mark{width:34px;height:34px;border:1px solid var(--line-strong);display:grid;place-items:center;background:rgba(10,8,7,.58);color:var(--gold);box-shadow:inset 0 0 22px rgba(225,189,104,.1);flex:0 0 auto}
+    .brand-mark span{font-family:var(--serif);font-size:18px;line-height:1}
+    .brand-name{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#fff}
+    .nav-actions{display:flex;align-items:center;gap:8px}
+    .nav-link{display:none;color:var(--soft);font-size:13px}
+    .nav-link:hover{color:#fff}
+    .lang-select{min-height:36px;border:1px solid var(--line-strong);border-radius:6px;background:rgba(15,12,10,.78);color:var(--ink);padding:0 8px;font-size:12px;outline:none}
+    .lang-select:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+    .ask-lang-floating{position:fixed;z-index:72;right:16px;top:calc(12px + env(safe-area-inset-top));min-width:72px;min-height:40px;border-radius:999px;background:rgba(0,0,0,.42);backdrop-filter:blur(10px);color:#fff}
+
+    .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 15px;border:1px solid var(--line-strong);border-radius:6px;background:rgba(15,12,10,.68);color:var(--ink);cursor:pointer;transition:transform .18s,border-color .18s,background .18s;white-space:nowrap}
+    .btn:hover{transform:translateY(-1px);border-color:rgba(240,215,143,.62);background:rgba(28,22,17,.86)}
+    .btn.primary{border-color:rgba(255,178,128,.46);background:linear-gradient(180deg,#dc4f39,#8b241c);color:#fff;box-shadow:0 16px 38px rgba(126,33,26,.36),inset 0 1px rgba(255,255,255,.2)}
+    .btn.primary:hover{background:linear-gradient(180deg,#ed6048,#98281e)}
+    .btn.subtle{background:rgba(255,255,255,.04);color:var(--soft)}
+    .btn.full{width:100%}
+    .btn[disabled]{opacity:.48;cursor:not-allowed;transform:none}
+    .btn.buy{background:linear-gradient(180deg,#edc76d,#a86e22);border-color:rgba(255,229,159,.7);color:#120c06;box-shadow:0 16px 40px rgba(225,189,104,.25)}
+    .btn.buy:hover{background:linear-gradient(180deg,#f4d887,#b87824)}
+
+    .hero{position:relative;min-height:100svh;overflow:hidden;isolation:isolate}
+    .hero-media{position:absolute;inset:0;z-index:-3;background:#080605 url("/assets/ask/hourkey-ask-poster-grok-v2.jpg") center/cover no-repeat}
+    .hero-media video{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.04) contrast(1.06)}
+    .hero::before{content:"";position:absolute;inset:0;z-index:-2;background:
+      linear-gradient(180deg,rgba(5,4,3,.42) 0%,rgba(5,4,3,.12) 38%,#090706 100%),
+      linear-gradient(90deg,rgba(5,4,3,.86) 0%,rgba(5,4,3,.58) 42%,rgba(5,4,3,.28) 72%,rgba(5,4,3,.7) 100%)}
+    .hero::after{content:"";position:absolute;inset:0;z-index:-1;background-image:
+      linear-gradient(rgba(225,189,104,.07) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(225,189,104,.05) 1px,transparent 1px);
+      background-size:70px 70px;mask-image:linear-gradient(180deg,transparent 0%,#000 16%,#000 64%,transparent 100%);opacity:.28;pointer-events:none}
+    .hero-inner{width:min(1180px,100%);min-height:100svh;margin:0 auto;padding:92px 14px 34px;display:grid;gap:24px;align-content:end}
+    .hero-copy{max-width:720px}
+    .eyebrow{display:inline-flex;align-items:center;gap:9px;margin:0 0 16px;color:var(--gold);font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase}
+    .eyebrow::before{content:"";width:24px;height:1px;background:var(--gold)}
+    h1{margin:0;font-family:var(--serif);font-size:clamp(42px,14vw,116px);line-height:.9;font-weight:650;letter-spacing:0;color:#fff;text-shadow:0 18px 70px rgba(0,0,0,.72)}
+    .lead{max-width:600px;margin:18px 0 0;color:#efe4d3;font-size:clamp(17px,5vw,25px);line-height:1.45;font-weight:560}
+    .desc{max-width:560px;margin:14px 0 0;color:var(--soft);font-size:14.5px;line-height:1.78}
+    .hero-cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+    .signal-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+    .signal{border:1px solid rgba(225,189,104,.18);border-radius:6px;background:rgba(9,7,6,.5);backdrop-filter:blur(8px);color:#decba7;font-size:11.5px;padding:7px 9px}
+
+    .wizard{border:1px solid var(--line);border-radius:8px;background:var(--panel);backdrop-filter:blur(18px);box-shadow:var(--shadow);overflow:hidden}
+    .wizard-top{display:grid;gap:12px;padding:14px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.035)}
+    .wizard-title{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .wizard-title b{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+    .wizard-title span{font-size:12px;color:var(--jade)}
+    .progress{height:7px;border:1px solid rgba(255,255,255,.08);border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+    .progress span{display:block;width:20%;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--jade),var(--gold),var(--red));transition:width .25s ease}
+    .ask-form{display:block}
+    .step{display:none;padding:20px 16px 16px}
+    .step.is-active{display:block}
+    .step-kicker{margin:0 0 8px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+    .step h2{margin:0;font-family:var(--serif);font-size:clamp(25px,7vw,34px);line-height:1.16;font-weight:620;color:#fff;letter-spacing:0}
+    .step-copy{margin:10px 0 18px;color:var(--muted);font-size:13.5px;line-height:1.68}
+    .field{display:grid;gap:8px;margin-top:14px}
+    fieldset.field{border:0;padding:0;margin:14px 0 0}
+    .field label,.field legend{color:#f3e8d6;font-size:13.5px}
+    .field small{color:var(--faint);line-height:1.55}
+    .input,textarea{width:100%;border:1px solid rgba(225,189,104,.24);border-radius:6px;background:rgba(5,4,3,.58);color:var(--ink);padding:13px 12px;min-height:48px;outline:none}
+    textarea{min-height:132px;resize:vertical;line-height:1.62}
+    .input:focus,textarea:focus{border-color:rgba(240,215,143,.7);box-shadow:0 0 0 3px rgba(225,189,104,.12)}
+    .input:disabled{opacity:.58}
+    .checkline{display:flex;align-items:flex-start;gap:10px;margin-top:12px;color:var(--soft);font-size:13px;line-height:1.5}
+    .checkline input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--gold)}
+    .segment{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+    .segment.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .date-grid{display:grid;grid-template-columns:1.2fr .9fr .9fr;gap:10px;margin-top:14px}
+    .split-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+    .toggle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+    .toggle-btn{min-height:44px;border:1px solid rgba(225,189,104,.22);border-radius:6px;background:rgba(5,4,3,.48);color:var(--soft);padding:8px 6px;font-size:13px;cursor:pointer}
+    .toggle-btn.is-active{border-color:rgba(240,215,143,.78);background:rgba(225,189,104,.14);color:#fff}
+    .choice{position:relative;display:block}
+    .choice input{position:absolute;opacity:0;pointer-events:none}
+    .choice span{min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center;border:1px solid rgba(225,189,104,.22);border-radius:6px;background:rgba(5,4,3,.48);color:var(--soft);padding:8px 6px;font-size:13px;transition:border-color .18s,background .18s,color .18s}
+    .choice input:focus-visible + span{outline:2px solid var(--gold);outline-offset:3px}
+    .choice input:checked + span{border-color:rgba(240,215,143,.78);background:rgba(225,189,104,.14);color:#fff}
+    .quick-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .quick-row button{border:1px solid rgba(120,156,196,.28);border-radius:999px;background:rgba(120,156,196,.1);color:#cfe0f2;padding:8px 10px;font-size:12px;cursor:pointer}
+    .quick-row button:hover{border-color:rgba(120,156,196,.54);background:rgba(120,156,196,.18)}
+    .wizard-error{min-height:22px;margin:2px 16px 0;color:#ffb09c;font-size:12.5px;line-height:1.5}
+    .wizard-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 18px;border-top:1px solid rgba(225,189,104,.12)}
+    .wizard-controls .btn{flex:1}
+    .wizard-controls .btn.subtle{flex:.82}
+
+    .loading{display:none;padding:22px 16px 20px}
+    .loading.is-active{display:block}
+    .loading h2{margin:0;font-family:var(--serif);font-size:30px;line-height:1.18;font-weight:620;color:#fff}
+    .loading p{margin:10px 0 18px;color:var(--muted);font-size:13.5px;line-height:1.68}
+    .loading-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+    .loading-list li{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:10px;color:var(--soft);font-size:13.5px}
+    .dot{width:18px;height:18px;border:1px solid rgba(225,189,104,.4);border-radius:999px;position:relative;background:rgba(255,255,255,.04)}
+    .loading-list li.is-running .dot{border-color:var(--gold);box-shadow:0 0 0 5px rgba(225,189,104,.1)}
+    .loading-list li.is-done .dot{background:var(--jade);border-color:var(--jade)}
+    .loading-list li.is-done .dot::after{content:"";position:absolute;left:5px;top:2px;width:5px;height:9px;border:solid #07120c;border-width:0 2px 2px 0;transform:rotate(45deg)}
+    .loading-list small{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+
+    .result-stage{position:relative;padding:68px 14px 84px;background:
+      linear-gradient(180deg,#090706 0%,rgba(12,9,8,.94) 58%,#090706 100%),
+      url("/assets/ask/hourkey-ask-poster-grok-v2.jpg") center top/cover no-repeat;border-top:1px solid var(--line)}
+    .result-stage::before{content:"";position:absolute;inset:0;background:rgba(5,4,3,.76);pointer-events:none}
+    .result-wrap{position:relative;width:min(1180px,100%);margin:0 auto}
+    .result-head{display:grid;gap:12px;margin-bottom:22px}
+    .result-head h2{margin:0;font-family:var(--serif);font-size:clamp(34px,10vw,68px);line-height:1.04;font-weight:640;color:#fff;letter-spacing:0}
+    .result-head p{margin:0;max-width:620px;color:var(--soft);font-size:14.5px;line-height:1.78}
+    .result-grid{display:grid;gap:14px}
+    .preview,.locked-item,.map-panel{border:1px solid var(--line);border-radius:8px;background:rgba(15,12,10,.78);backdrop-filter:blur(14px);box-shadow:0 18px 58px rgba(0,0,0,.35)}
+    .preview{padding:18px}
+    .preview-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
+    .preview-kicker{margin:0 0 6px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+    .preview h3{margin:0;font-family:var(--serif);font-size:28px;line-height:1.16;font-weight:620;color:#fff}
+    .preview-badge{border:1px solid rgba(113,181,142,.38);border-radius:999px;background:rgba(113,181,142,.12);color:#bce5cb;padding:6px 9px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+    .answer-lines{display:grid;gap:14px}
+    .answer-line{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;padding-top:14px;border-top:1px solid rgba(225,189,104,.12)}
+    .answer-line:first-child{padding-top:0;border-top:0}
+    .answer-line i{font-style:normal;width:34px;height:34px;border:1px solid rgba(225,189,104,.24);display:grid;place-items:center;color:var(--gold);font-family:var(--serif);background:rgba(0,0,0,.22)}
+    .answer-line b{display:block;margin-bottom:4px;color:#fff;font-size:14.5px}
+    .answer-line p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.68}
+    .locked-list{display:grid;gap:10px}
+    .locked-item{padding:16px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+    .locked-item b{display:block;color:#fff;margin-bottom:5px;font-size:14.5px}
+    .locked-item p{margin:0;color:var(--muted);font-size:13px;line-height:1.62}
+    .locked-pill{border:1px solid rgba(225,189,104,.28);border-radius:999px;padding:5px 8px;color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap}
+    .result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+    .map-panel{overflow:hidden}
+    .map-panel img{display:block;width:100%;height:100%;min-height:220px;object-fit:cover;filter:saturate(1.05) contrast(1.04)}
+    .pay-card{border:1px solid rgba(240,215,143,.36);border-radius:8px;background:linear-gradient(180deg,rgba(36,27,17,.9),rgba(16,12,9,.88));padding:18px;box-shadow:0 18px 58px rgba(0,0,0,.35)}
+    .pay-card h3{margin:0;font-family:var(--serif);font-size:28px;line-height:1.14;color:#fff;font-weight:620}
+    .pay-card p{margin:10px 0 0;color:var(--soft);font-size:13.5px;line-height:1.68}
+    .price-line{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:16px 0;padding-top:14px;border-top:1px solid rgba(225,189,104,.16)}
+    .price-line b{font-family:var(--serif);font-size:34px;line-height:1;color:#fff}
+    .price-line span{color:var(--muted);font-size:12.5px;text-align:right}
+    .unlock-list{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px;color:var(--soft);font-size:13px}
+    .unlock-list li{display:grid;grid-template-columns:18px 1fr;gap:8px;align-items:start}
+    .unlock-list li::before{content:"";width:9px;height:9px;margin-top:6px;border-radius:999px;background:var(--gold);box-shadow:0 0 16px rgba(225,189,104,.5)}
+    .trust-strip{display:grid;gap:10px;margin-top:18px}
+    .trust-card{border:1px solid rgba(225,189,104,.15);border-radius:8px;background:rgba(255,255,255,.035);padding:13px;color:var(--soft);font-size:13px;line-height:1.62}
+    .trust-card b{display:block;color:#fff;margin-bottom:4px}
+    .pay-status{min-height:22px;margin-top:12px;color:#ffddb0;font-size:12.5px;line-height:1.5}
+    .modal{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.68);backdrop-filter:blur(8px);padding:16px}
+    .modal.is-open{display:flex}
+    .modal-panel{width:min(380px,100%);border:1px solid var(--line-strong);border-radius:8px;background:#100d0a;padding:20px;box-shadow:0 24px 80px rgba(0,0,0,.56);text-align:center}
+    .modal-panel h3{margin:0;font-family:var(--serif);font-size:26px;color:#fff}
+    .modal-panel p{margin:9px 0 14px;color:var(--soft);font-size:13.5px;line-height:1.6}
+    .modal-qr{display:flex;justify-content:center;margin:10px 0}
+    .modal-qr img{width:210px;height:210px;object-fit:contain;background:#fff;border-radius:8px;padding:8px}
+    .modal-actions{display:grid;gap:8px;margin-top:12px}
+
+    footer{padding:24px 14px;border-top:1px solid var(--line);color:var(--faint);font-size:12px;background:#090706}
+    .footer-inner{width:min(1180px,100%);margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+    .footer-inner span{overflow-wrap:anywhere}
+
+    @media (min-width:720px){
+      .nav{padding:16px clamp(20px,4vw,44px)}
+      .nav-link{display:inline-flex}
+      .hero-inner{padding:124px clamp(20px,4vw,44px) 44px;grid-template-columns:minmax(0,1fr) minmax(330px,430px);align-items:end;gap:34px}
+      .hero-copy{padding-bottom:6vh}
+      .wizard{align-self:end;margin-bottom:3vh}
+      .step,.loading{padding:24px}
+      .wizard-top{padding:16px 18px}
+      .wizard-error{margin-left:24px;margin-right:24px}
+      .wizard-controls{padding:16px 24px 22px}
+      .result-stage{padding:88px clamp(20px,4vw,44px) 104px}
+      .result-head{grid-template-columns:1fr .82fr;align-items:end}
+      .result-grid{grid-template-columns:1.05fr .95fr;align-items:start;gap:18px}
+      .map-panel{grid-column:1 / -1;height:310px}
+      .trust-strip{grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+    @media (min-width:1040px){
+      .result-grid{grid-template-columns:1.08fr .82fr .74fr}
+      .map-panel{grid-column:1 / -1;height:300px;min-height:300px}
+    }
+    @media (max-width:390px){
+      .brand-name{font-size:11px}
+      .nav-actions .btn{padding:0 11px;font-size:12.5px}
+      .segment,.segment.two,.toggle-grid,.date-grid,.split-grid{grid-template-columns:1fr}
+      .wizard-controls{flex-direction:column}
+      .wizard-controls .btn{width:100%}
+      .locked-item{grid-template-columns:1fr}
+    }
+    @media (prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      .hero-media video{display:none}
+      .btn,.progress span{transition:none}
+    }
+
+    /* r423: reference-style full-screen mobile funnel */
+    :root{
+      --gold:#d4a574;
+      --gold-2:#e2b886;
+      --soft:#d6d6d6;
+      --muted:#bdbdbd;
+      --faint:#71717a;
+      --line:rgba(212,165,116,.25);
+      --line-strong:rgba(212,165,116,.5);
+    }
+    body{background:#1a1a1a;overscroll-behavior-y:none}
+    html,body{width:100%;height:100%;overflow:hidden}
+    .page{position:fixed;inset:0;width:100%;height:100dvh;min-height:0;overflow:hidden;background:#1a1a1a;display:flex;flex-direction:column;align-items:center}
+    .nav,footer{display:none}
+    .hero{width:min(640px,100vw);height:100dvh;min-height:0;background:#1a1a1a}
+    .hero-media video{width:100%;height:100%;object-fit:cover;object-position:center 30%;filter:none}
+    .hero::before{z-index:-2;background:
+      linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 18%),
+      linear-gradient(0deg,#1a1a1a 0%,rgba(26,26,26,.72) 28%,rgba(26,26,26,0) 64%)}
+    .hero::after{display:none}
+    .hero-inner{width:100%;height:100%;min-height:100%;padding:0;display:block;position:relative}
+    .back-btn{position:absolute;z-index:7;left:16px;top:calc(12px + env(safe-area-inset-top));width:40px;height:40px;border-radius:999px;display:grid;place-items:center;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);color:#fff}
+    .back-btn svg{width:22px;height:22px}
+    .hero-copy{position:absolute;z-index:3;inset:auto 0 0 0;max-width:none;padding:0 20px calc(24px + env(safe-area-inset-bottom));animation:sw-fadeup .5s ease both}
+    .hero-copy .eyebrow{margin:0 0 8px;color:var(--gold);font-family:var(--thai);font-size:13px;font-weight:800;letter-spacing:0;text-transform:none}
+    .hero-copy .eyebrow::before{display:none}
+    h1{font-family:var(--thai);font-size:clamp(28px,8vw,32px);line-height:1.25;font-weight:850;letter-spacing:0;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+    .lead{margin:12px 0 0;color:#d6d6d6;font-size:clamp(14px,3.8vw,15px);line-height:1.7;font-weight:500}
+    .desc,.signal-row{display:none}
+    .hero-cta{display:block;margin-top:22px}
+    .hero-cta .btn{width:100%;min-height:56px;border:0;border-radius:12px;background:var(--gold);color:#080604;font-size:16px;font-weight:850;box-shadow:0 8px 24px rgba(212,165,116,.35)}
+    .hero-cta .btn:hover{transform:none;background:var(--gold)}
+    .page.is-form .hero-copy,.page.is-loading .hero-copy{display:none}
+    .page.has-result{position:fixed;overflow-y:auto;display:block}
+    .page.has-result .hero{display:none}
+
+    .wizard{position:absolute;z-index:4;left:0;right:0;bottom:0;border:0;border-radius:0;background:transparent;backdrop-filter:none;box-shadow:none;overflow:visible}
+    .page:not(.is-form):not(.is-loading) .wizard{display:none}
+    .wizard-top{position:absolute;left:0;right:0;top:calc(18px + env(safe-area-inset-top));padding:0 20px;background:transparent;border:0}
+    .wizard-title{display:none}
+    .step-dots{height:7px;display:flex;justify-content:center;gap:6px;background:transparent;border:0}
+    .step-dots span{display:block;width:16px;height:6px;border-radius:999px;background:rgba(255,255,255,.25);transition:width .2s,background .2s}
+    .step-dots span.is-done{background:rgba(212,165,116,.5)}
+    .step-dots span.is-active{width:28px;background:var(--gold)}
+    .ask-form{padding:0 20px calc(20px + env(safe-area-inset-bottom));animation:sw-fadeup .5s ease both}
+    .step{padding:0}
+    .step.is-active{display:block}
+    .step-kicker{margin:0 0 4px;font-family:var(--thai);font-size:13px;font-weight:800;letter-spacing:0;text-transform:none;color:var(--gold)}
+    .step h2{font-family:var(--thai);font-size:clamp(24px,6.4vw,26px);line-height:1.28;font-weight:850;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+    .step-copy{margin:4px 0 20px;color:var(--muted);font-size:14px;line-height:1.55;text-shadow:0 2px 10px rgba(0,0,0,.45)}
+    .field{margin-top:12px;gap:8px}
+    .field label,.field legend{display:block;color:var(--gold);font-size:14px;font-weight:800}
+    .input,textarea{min-height:54px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.04);color:#fff;padding:13px 14px;font-size:16px}
+    .date-grid .input,.split-grid .input{text-align:center}
+    textarea{min-height:150px;font-size:15px;resize:none}
+    .toggle-grid,.split-grid,.segment.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+    .date-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+    .toggle-btn{min-height:50px;border-color:rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.04);color:#ccc;font-weight:800;font-size:14px}
+    .toggle-btn.is-active{border-color:var(--gold);background:var(--gold);color:#070604}
+    .choice span{min-height:68px;border-color:rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.04);color:#ccc;font-size:17px;font-weight:850}
+    .choice input:checked + span{border-color:var(--gold);background:var(--gold);color:#070604}
+    .checkline{margin-top:14px;color:#a1a1aa;font-size:13px}
+    .checkline input{accent-color:var(--gold)}
+    .quick-row{display:none}
+    .wizard-error{min-height:21px;margin:16px 0 0;color:#f87171;text-align:center;font-size:14px}
+    .wizard-controls{display:flex;gap:12px;padding:16px 0 0;border:0}
+    .wizard-controls .btn{min-height:58px;border-radius:12px;font-weight:850;font-size:16px}
+    .wizard-controls .btn.subtle{flex:.5;border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#ccc}
+    .wizard-controls .btn.primary{flex:1;border:0;background:var(--gold);color:#070604;box-shadow:0 8px 24px rgba(212,165,116,.25)}
+    .wizard-controls .btn.primary:hover{background:var(--gold)}
+
+    .page.is-loading .wizard{inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,10,10,.985);backdrop-filter:blur(12px);padding:26px}
+    .page.is-loading .wizard-top{display:none}
+    .loading{width:100%;max-width:360px;padding:0;text-align:center}
+    .loading h2{font-family:var(--thai);font-size:18px;font-weight:850}
+    .loading p{font-size:13px}
+    .loading-list{margin-top:18px;text-align:left}
+    .loading-list li{font-size:13px}
+
+    .result-stage{width:min(640px,100vw);min-height:100dvh;margin:0 auto;box-sizing:border-box;padding:54px 20px calc(28px + env(safe-area-inset-bottom));background:#1a1a1a url("/assets/ask/hourkey-ask-poster-grok-v2.jpg") center top/cover no-repeat;border:0}
+    .result-stage::before{background:linear-gradient(180deg,rgba(0,0,0,.58),rgba(26,26,26,.95) 38%,#1a1a1a)}
+    .result-wrap{width:100%;max-width:none}
+    .result-head{display:block;margin-bottom:18px}
+    .result-head .eyebrow{font-family:var(--thai);font-size:13px;letter-spacing:0;text-transform:none}
+    .result-head .eyebrow::before{display:none}
+    .result-head h2{font-family:var(--thai);font-size:28px;line-height:1.25;font-weight:850}
+    .result-grid{display:grid;grid-template-columns:1fr;gap:12px}
+    .preview,.locked-item,.pay-card{border-radius:12px;background:rgba(20,16,13,.86)}
+    .map-panel,.trust-strip{display:none}
+    .report-hero{display:grid;gap:14px;margin-bottom:18px}
+    .report-kicker{margin:0;color:var(--gold);font-size:13px;font-weight:850}
+    .report-category{display:inline-flex;width:max-content;max-width:100%;border:1px solid rgba(212,165,116,.32);border-radius:999px;background:rgba(212,165,116,.12);color:#efd7ae;padding:7px 10px;font-size:13px;font-weight:800}
+    .report-title{margin:0;font-family:var(--thai);font-size:clamp(25px,7vw,34px);line-height:1.28;font-weight:900;color:#fff}
+    .report-quote{margin:0;border-left:3px solid var(--gold);padding:14px 0 14px 14px;color:#e9dfd1;font-size:15px;line-height:1.75;background:linear-gradient(90deg,rgba(212,165,116,.09),transparent)}
+    .past-check{margin:12px 0 2px;border:1px solid rgba(212,165,116,.55);border-radius:12px;padding:12px 14px;background:rgba(212,165,116,.07)}
+    .past-check-title{font-weight:700;color:var(--gold);font-size:14px}
+    .past-check-when{font-size:12px;opacity:.72;margin:2px 0 6px;font-family:var(--mono,monospace)}
+    .past-check-body{font-size:14px;line-height:1.7}
+    .report-tags{display:flex;flex-wrap:wrap;gap:8px}
+    .report-tag{border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.045);color:#d7d0c6;padding:7px 9px;font-size:12px;font-weight:800}
+    .report-section{border:1px solid rgba(212,165,116,.18);border-radius:14px;background:rgba(20,16,13,.86);padding:16px;margin-top:12px}
+    .section-kicker{margin:0 0 6px;color:var(--gold);font-size:12px;font-weight:850}
+    .section-title{margin:0 0 12px;color:#fff;font-size:21px;line-height:1.35;font-weight:900}
+    .section-copy{margin:0;color:#cfc6ba;font-size:14px;line-height:1.72}
+    .open-points,.science-grid,.toc-list,.event-list,.review-grid{display:grid;gap:10px}
+    .open-point,.science-card,.toc-item,.event-card,.review-card,.pillar-card,.timeline-card{border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.045);padding:13px}
+    .open-point{display:grid;grid-template-columns:32px 1fr;gap:10px}
+    .open-point i,.toc-num{width:32px;height:32px;border-radius:999px;display:grid;place-items:center;background:rgba(212,165,116,.16);color:var(--gold);font-style:normal;font-weight:900}
+    .open-point b,.science-card b,.toc-item b,.event-card b,.pillar-card b,.timeline-card b{display:block;color:#fff;font-size:14.5px;margin-bottom:4px}
+    .open-point p,.science-card p,.toc-item p,.event-card p,.pillar-card p,.timeline-card p,.review-card p{margin:0;color:#bdbdbd;font-size:13px;line-height:1.62}
+    .science-card small,.pillar-card small,.timeline-card small{display:block;color:#8f8374;font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+    .science-card em{font-style:normal;color:var(--gold);margin-right:6px}
+    .toc-item{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:start}
+    .toc-item ul{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:5px}
+    .toc-item li{color:#bdbdbd;font-size:12.5px;line-height:1.55}
+    .toc-item li::before{content:"— ";color:var(--gold)}
+    .lock-mark{border:1px solid rgba(212,165,116,.28);border-radius:999px;padding:5px 8px;color:var(--gold);font-size:10px;font-weight:850;text-transform:uppercase}
+    .chart-meta{margin:0 0 12px;color:#bdbdbd;font-size:13px;line-height:1.6}
+    .pillar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .pillar-card strong{display:block;color:#fff;font-size:25px;line-height:1.05;margin:4px 0}
+    .event-card{display:grid;grid-template-columns:76px 1fr;gap:10px}
+    .event-card time{color:var(--gold);font-size:12px;font-weight:850;line-height:1.45}
+    .timeline-strip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(118px,1fr);gap:8px;overflow-x:auto;padding-bottom:4px}
+    .timeline-card.is-now{border-color:rgba(212,165,116,.55);background:rgba(212,165,116,.11)}
+    .review-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .rating{color:var(--gold);font-size:22px;font-weight:900}
+    .cta-stack{display:grid;gap:9px;margin-top:12px}
+    @media (min-width:520px){
+      .science-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .pillar-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+    }
+
+    @keyframes sw-fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+    @media (min-width:720px){
+      .hero-inner{padding:0;display:block}
+      .hero-copy{padding:0 20px calc(24px + env(safe-area-inset-bottom))}
+      .wizard{margin:0;align-self:auto}
+      .step,.loading{padding:0}
+      .wizard-top{padding:0 20px}
+      .wizard-error{margin:16px 0 0}
+      .wizard-controls{padding:16px 0 0}
+      .result-stage{padding:54px 20px calc(28px + env(safe-area-inset-bottom))}
+    }
+    @media (max-width:390px){
+      .toggle-grid,.split-grid,.segment.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .date-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+      .ask-form{padding-left:20px;padding-right:20px}
+      .field label,.field legend{font-size:13px}
+      .toggle-btn{font-size:13px}
+      .wizard-controls{flex-direction:row}
+      .wizard-controls .btn{width:auto}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav class="nav" id="nav">
+      <div class="nav-inner">
+        <a class="brand" href="/" aria-label="Hourkey">
+          <span class="brand-mark"><span>時</span></span>
+          <span class="brand-name">hourkey</span>
+        </a>
+        <div class="nav-actions">
+          <select class="lang-select js-ask-lang-select" id="askLangSelect" aria-label="Language">
+            <option value="th">TH</option>
+            <option value="en">EN</option>
+            <option value="zh">繁</option>
+            <option value="cn">简</option>
+            <option value="vi">VI</option>
+            <option value="ja">JA</option>
+            <option value="ko">KO</option>
+            <option value="ru">RU</option>
+            <option value="es">ES</option>
+          </select>
+          <a class="nav-link" href="/pricing">แพ็กเกจ</a>
+          <a class="btn primary" href="#ask">เริ่มถาม</a>
+        </div>
+      </div>
+    </nav>
+    <select class="lang-select ask-lang-floating js-ask-lang-select" id="askLangSelectFloat" aria-label="Language">
+      <option value="th">TH</option>
+      <option value="en">EN</option>
+      <option value="zh">繁</option>
+      <option value="cn">简</option>
+      <option value="vi">VI</option>
+      <option value="ja">JA</option>
+      <option value="ko">KO</option>
+      <option value="ru">RU</option>
+      <option value="es">ES</option>
+    </select>
+
+    <header class="hero">
+      <div class="hero-media" aria-hidden="true">
+        <video autoplay muted loop playsinline poster="/assets/ask/hourkey-ask-poster-grok-v2.jpg">
+          <source src="/assets/ask/hourkey-ask-loop-grok-v2.mp4" type="video/mp4" />
+          <source src="/assets/landing-v2/hourkey-hero-loop-v2.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+      <div class="hero-inner">
+        <a class="back-btn" href="/" aria-label="ย้อนกลับ">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+        </a>
+        <div class="hero-copy">
+          <p class="eyebrow">Hourkey Ask</p>
+          <h1>ถามให้ตรงจุด<br>จากวันเกิดของคุณ</h1>
+          <p class="lead">บอกวันเกิด เวลาเกิด และคำถามที่ค้างคาใจ แล้ว Hourkey จะเปิดภาพรวมก่อนปลดล็อกผลอ่านเต็ม</p>
+          <p class="desc">Hourkey จะจัดคำถามเข้ากับพื้นดวงและจังหวะเวลา เปิดให้เห็นภาพรวมก่อน แล้วเก็บส่วนเหตุผลลึก ช่วงเวลาสำคัญ และคำถามต่อเนื่องไว้หลังปลดล็อก</p>
+          <div class="hero-cta">
+            <button class="btn primary js-start" type="button">เริ่มถาม Hourkey</button>
+          </div>
+          <div class="signal-row" aria-label="Hourkey signals">
+            <span class="signal">วันเกิด</span>
+            <span class="signal">เวลาเกิด</span>
+            <span class="signal">เพศ</span>
+            <span class="signal">คำถามเฉพาะ</span>
+          </div>
+        </div>
+
+        <section class="wizard" id="ask" aria-label="Hourkey ask wizard">
+          <div class="wizard-top">
+            <div class="wizard-title">
+              <b id="stepLabel">step 1 of 5</b>
+              <span id="stepHint">วันเกิด</span>
+            </div>
+            <div class="step-dots" id="stepDots" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+
+          <form class="ask-form" id="askForm" novalidate>
+            <section class="step is-active" data-title="วันเกิด">
+              <p class="step-kicker">Hourkey Ask</p>
+              <h2>คุณเกิดเมื่อไหร่?</h2>
+              <p class="step-copy">ยิ่งกรอกแม่นยำ เรายิ่งวิเคราะห์ได้ลึกซึ้ง</p>
+              <input id="birthDate" name="birthDate" type="hidden" />
+              <input id="calendarType" name="calendarType" type="hidden" value="solar" />
+              <input id="yearEra" name="yearEra" type="hidden" value="BE" />
+              <input id="isLeapMonth" name="isLeapMonth" type="hidden" value="false" />
+              <div class="toggle-grid" aria-label="ประเภทปฏิทิน">
+                <button class="toggle-btn is-active" type="button" data-calendar="solar">สุริยคติ</button>
+                <button class="toggle-btn" type="button" data-calendar="lunar">จันทรคติ</button>
+              </div>
+              <div class="toggle-grid" id="leapMonthRow" hidden aria-label="เดือนอธิกมาส">
+                <button class="toggle-btn is-active" type="button" data-leap="false">เดือนปกติ</button>
+                <button class="toggle-btn" type="button" data-leap="true">เดือนอธิกมาส</button>
+              </div>
+              <div class="toggle-grid" aria-label="ระบบปี">
+                <button class="toggle-btn is-active" type="button" data-era="BE">พ.ศ.</button>
+                <button class="toggle-btn" type="button" data-era="CE">ค.ศ.</button>
+              </div>
+              <div class="date-grid">
+                <div class="field">
+                  <label for="birthYear">ปี (<span id="eraLabel">พ.ศ.</span>)</label>
+                  <input class="input" id="birthYear" name="birthYear" type="number" inputmode="numeric" placeholder="2535" maxlength="4" required />
+                </div>
+                <div class="field">
+                  <label for="birthMonth">เดือน</label>
+                  <input class="input" id="birthMonth" name="birthMonth" type="number" inputmode="numeric" placeholder="3" min="1" max="12" required />
+                </div>
+                <div class="field">
+                  <label for="birthDay">วัน</label>
+                  <input class="input" id="birthDay" name="birthDay" type="number" inputmode="numeric" placeholder="15" min="1" max="31" required />
+                </div>
+              </div>
+            </section>
+
+            <section class="step" data-title="เวลาเกิด">
+              <p class="step-kicker">Hourkey Ask</p>
+              <h2>บอกเวลาเกิดของคุณ</h2>
+              <p class="step-copy">ยิ่งกรอกแม่นยำ เรายิ่งวิเคราะห์ได้ลึกซึ้ง</p>
+              <input id="birthTime" name="birthTime" type="hidden" />
+              <div class="split-grid" id="birthTimeGrid">
+                <div class="field">
+                  <label for="birthHour">ชั่วโมง (0~23)</label>
+                  <input class="input" id="birthHour" name="birthHour" type="number" inputmode="numeric" placeholder="10" min="0" max="23" />
+                </div>
+                <div class="field">
+                  <label for="birthMinute">นาที (0~59)</label>
+                  <input class="input" id="birthMinute" name="birthMinute" type="number" inputmode="numeric" placeholder="30" min="0" max="59" />
+                </div>
+              </div>
+              <div class="field">
+                <label class="checkline" for="unknownTime">
+                  <input id="unknownTime" name="unknownTime" type="checkbox" />
+                  <span>ไม่ทราบเวลาเกิด · ข้ามไปได้โดยไม่ต้องกรอก</span>
+                </label>
+                <label class="checkline" for="useYajasiRule">
+                  <input id="useYajasiRule" name="useYajasiRule" type="checkbox" />
+                  <span>ใช้กฎยาจาชี (夜子時) สำหรับผู้ที่เกิดช่วง 23:30~01:29</span>
+                </label>
+              </div>
+              <div class="field">
+                <label for="birthCity">เมืองเกิด · Birth city (ไม่เลือก = กรุงเทพฯ · Bangkok)</label>
+                <select class="input" id="birthCity" name="birthCity">
+                  <option value="Bangkok" data-lat="13.7563" data-lng="100.5018" data-gmt="7" selected>Bangkok · กรุงเทพฯ (GMT+7)</option>
+                  <option value="Chiang Mai" data-lat="18.7883" data-lng="98.9853" data-gmt="7">Chiang Mai · เชียงใหม่ (GMT+7)</option>
+                  <option value="Khon Kaen" data-lat="16.4322" data-lng="102.8236" data-gmt="7">Khon Kaen · ขอนแก่น (GMT+7)</option>
+                  <option value="Hat Yai" data-lat="7.0086" data-lng="100.4747" data-gmt="7">Hat Yai · หาดใหญ่ (GMT+7)</option>
+                  <option value="Phuket" data-lat="7.8804" data-lng="98.3923" data-gmt="7">Phuket · ภูเก็ต (GMT+7)</option>
+                  <option value="Nakhon Ratchasima" data-lat="14.9799" data-lng="102.0977" data-gmt="7">Nakhon Ratchasima · โคราช (GMT+7)</option>
+                  <option value="Ubon Ratchathani" data-lat="15.2287" data-lng="104.8564" data-gmt="7">Ubon Ratchathani · อุบลฯ (GMT+7)</option>
+                  <option value="Vientiane" data-lat="17.9757" data-lng="102.6331" data-gmt="7">Vientiane (GMT+7)</option>
+                  <option value="Phnom Penh" data-lat="11.5564" data-lng="104.9282" data-gmt="7">Phnom Penh (GMT+7)</option>
+                  <option value="Yangon" data-lat="16.8409" data-lng="96.1735" data-gmt="6.5">Yangon (GMT+6:30)</option>
+                  <option value="Hanoi" data-lat="21.0278" data-lng="105.8342" data-gmt="7">Hanoi (GMT+7)</option>
+                  <option value="Ho Chi Minh City" data-lat="10.8231" data-lng="106.6297" data-gmt="7">Ho Chi Minh City (GMT+7)</option>
+                  <option value="Kuala Lumpur" data-lat="3.1390" data-lng="101.6869" data-gmt="8">Kuala Lumpur (GMT+8)</option>
+                  <option value="Singapore" data-lat="1.3521" data-lng="103.8198" data-gmt="8">Singapore (GMT+8)</option>
+                  <option value="Jakarta" data-lat="-6.2088" data-lng="106.8456" data-gmt="7">Jakarta (GMT+7)</option>
+                  <option value="Manila" data-lat="14.5995" data-lng="120.9842" data-gmt="8">Manila (GMT+8)</option>
+                  <option value="Hong Kong" data-lat="22.3193" data-lng="114.1694" data-gmt="8">Hong Kong (GMT+8)</option>
+                  <option value="Taipei" data-lat="25.0330" data-lng="121.5654" data-gmt="8">Taipei (GMT+8)</option>
+                  <option value="Shanghai" data-lat="31.2304" data-lng="121.4737" data-gmt="8">Shanghai (GMT+8)</option>
+                  <option value="Beijing" data-lat="39.9042" data-lng="116.4074" data-gmt="8">Beijing (GMT+8)</option>
+                  <option value="Tokyo" data-lat="35.6762" data-lng="139.6503" data-gmt="9">Tokyo (GMT+9)</option>
+                  <option value="Osaka" data-lat="34.6937" data-lng="135.5023" data-gmt="9">Osaka (GMT+9)</option>
+                  <option value="Seoul" data-lat="37.5665" data-lng="126.9780" data-gmt="9">Seoul (GMT+9)</option>
+                  <option value="New Delhi" data-lat="28.6139" data-lng="77.2090" data-gmt="5.5">New Delhi (GMT+5:30)</option>
+                  <option value="Mumbai" data-lat="19.0760" data-lng="72.8777" data-gmt="5.5">Mumbai (GMT+5:30)</option>
+                  <option value="Dubai" data-lat="25.2048" data-lng="55.2708" data-gmt="4">Dubai (GMT+4)</option>
+                  <option value="Moscow" data-lat="55.7558" data-lng="37.6173" data-gmt="3">Moscow (GMT+3)</option>
+                  <option value="Berlin" data-lat="52.5200" data-lng="13.4050" data-gmt="1">Berlin (GMT+1)</option>
+                  <option value="Paris" data-lat="48.8566" data-lng="2.3522" data-gmt="1">Paris (GMT+1)</option>
+                  <option value="Madrid" data-lat="40.4168" data-lng="-3.7038" data-gmt="1">Madrid (GMT+1)</option>
+                  <option value="London" data-lat="51.5074" data-lng="-0.1278" data-gmt="0">London (GMT+0)</option>
+                  <option value="New York" data-lat="40.7128" data-lng="-74.0060" data-gmt="-5">New York (GMT-5)</option>
+                  <option value="Los Angeles" data-lat="34.0522" data-lng="-118.2437" data-gmt="-8">Los Angeles (GMT-8)</option>
+                  <option value="Sydney" data-lat="-33.8688" data-lng="151.2093" data-gmt="10">Sydney (GMT+10)</option>
+                </select>
+                <small style="opacity:.65;display:block;margin-top:4px">ใช้เวลามาตรฐานของเมือง (standard time) · Historical DST not applied</small>
+              </div>
+            </section>
+
+            <section class="step" data-title="เพศ">
+              <p class="step-kicker">Hourkey Ask</p>
+              <h2>เลือกเพศของคุณ</h2>
+              <p class="step-copy">ยิ่งกรอกแม่นยำ เรายิ่งวิเคราะห์ได้ลึกซึ้ง</p>
+              <fieldset class="field">
+                <legend>เลือกหนึ่งตัวเลือก</legend>
+                <div class="segment two">
+                  <label class="choice">
+                    <input type="radio" name="gender" value="ชาย" required />
+                    <span>ชาย</span>
+                  </label>
+                  <label class="choice">
+                    <input type="radio" name="gender" value="หญิง" required />
+                    <span>หญิง</span>
+                  </label>
+                </div>
+              </fieldset>
+            </section>
+
+            <section class="step" data-title="ชื่อ">
+              <p class="step-kicker">Hourkey Ask</p>
+              <h2>ให้เราเรียกคุณว่าอะไรดี?</h2>
+              <p class="step-copy">ยิ่งกรอกแม่นยำ เรายิ่งวิเคราะห์ได้ลึกซึ้ง</p>
+              <div class="field">
+                <label for="displayName">ชื่อ / ชื่อเล่น</label>
+                <input class="input" id="displayName" name="displayName" type="text" autocomplete="name" maxlength="20" placeholder="มิน" required />
+                <small>เราจะเรียกคุณแบบนี้ในรายงานผล</small>
+              </div>
+            </section>
+
+            <section class="step" data-title="คำถาม">
+              <p class="step-kicker">Hourkey Ask</p>
+              <h2>คุณมีความกังวลเรื่องอะไร?</h2>
+              <p class="step-copy">ยิ่งกรอกแม่นยำ เรายิ่งวิเคราะห์ได้ลึกซึ้ง</p>
+              <div class="field">
+                <label for="question">ความกังวลของคุณ</label>
+                <textarea id="question" name="question" maxlength="200" placeholder="เช่น 3 เดือนข้างหน้าควรโฟกัสงานหรือความสัมพันธ์ก่อน" required></textarea>
+                <small><span id="questionCount">0</span>/200 · ยิ่งเขียนละเอียด เรายิ่งตอบตรงความกังวลได้แม่นยำ</small>
+              </div>
+              <div class="quick-row" aria-label="ตัวอย่างโจทย์">
+                <button type="button" data-question="3 เดือนข้างหน้าควรโฟกัสงานหรือความสัมพันธ์ก่อน">งานหรือความสัมพันธ์</button>
+                <button type="button" data-question="ควรเริ่มโปรเจกต์ใหม่ช่วงนี้หรือรอจังหวะถัดไป">โปรเจกต์ใหม่</button>
+                <button type="button" data-question="เรื่องเงินและการตัดสินใจใหญ่ปีนี้ควรระวังอะไร">เงินและการตัดสินใจ</button>
+              </div>
+            </section>
+
+            <div class="wizard-error" id="wizardError" role="status" aria-live="polite"></div>
+            <div class="wizard-controls">
+              <button class="btn subtle" type="button" id="prevBtn">ย้อนกลับ</button>
+              <button class="btn primary" type="button" id="nextBtn">ต่อไป</button>
+            </div>
+          </form>
+
+          <div class="loading" id="loadingPanel" aria-live="polite">
+            <h2>กำลังพิจารณาดวงชะตาอย่างลึกซึ้ง</h2>
+            <p>Hourkey กำลังแยกสัญญาณที่ตรงกับความกังวลของคุณ</p>
+            <ol class="loading-list" id="loadingList">
+              <li><span class="dot"></span><span>อ่านข้อมูลวันเกิด เวลาเกิด และโปรไฟล์</span><small>queued</small></li>
+              <li><span class="dot"></span><span>จัดคำถามเข้ากับชั้นพื้นดวงและจังหวะเวลา</span><small>queued</small></li>
+              <li><span class="dot"></span><span>แยกผลเปิดอ่านและหัวข้อที่ต้องปลดล็อก</span><small>queued</small></li>
+              <li><span class="dot"></span><span>เตรียมเส้นทางชำระเงินและกลับมาอ่านต่อ</span><small>queued</small></li>
+            </ol>
+          </div>
+        </section>
+      </div>
+    </header>
+
+    <main>
+      <section class="result-stage" id="result" hidden tabindex="-1">
+        <div class="result-wrap">
+          <article class="report-hero">
+            <p class="report-kicker">Hourkey Fusion · รายงานเฉพาะเรื่องกังวล</p>
+            <span class="report-category" id="resultCategory">คำถามชีวิต·การตัดสินใจ</span>
+            <h2 class="report-title" id="resultTitle">ผลอ่านเบื้องต้น</h2>
+            <blockquote class="report-quote" id="resultIntro">นี่คือ preview จาก 6 ศาสตร์ของ Hourkey ส่วนเหตุผลลึกและจังหวะละเอียดจะเปิดหลังปลดล็อก</blockquote>
+            <div id="pastCheckCard" class="past-check" hidden>
+              <div class="past-check-title" id="pastCheckTitle"></div>
+              <div class="past-check-when" id="pastCheckWhen"></div>
+              <div class="past-check-body" id="pastCheckBody"></div>
+            </div>
+            <div class="report-tags" id="reportTags"></div>
+          </article>
+
+          <section class="report-section">
+            <p class="section-kicker">เปิดให้อ่านก่อน</p>
+            <h3 class="section-title">3 สัญญาณที่เห็นตรงกัน</h3>
+            <div class="open-points" id="openPoints"></div>
+          </section>
+
+          <section class="report-section">
+            <p class="section-kicker">Hourkey คืออะไร?</p>
+            <h3 class="section-title">Hourkey อ่าน 6 ศาสตร์ ไม่ได้ผูกอยู่กับซาจูศาสตร์เดียว</h3>
+            <p class="section-copy">ระบบใช้ข้อมูลเกิดและคำถามเดียวกัน แล้วแยกอ่านผ่าน 6 เลนส์หลัก เพื่อดูว่าเรื่องที่ถามมีสัญญาณซ้ำตรงไหน และจุดไหนเป็นเพียงเสียงรบกวน</p>
+            <div class="science-grid" id="scienceGrid" style="margin-top:12px"></div>
+          </section>
+
+          <section class="report-section">
+            <div class="review-head">
+              <div>
+                <p class="section-kicker">後記 · ผู้ที่ได้ลอง</p>
+                <h3 class="section-title" style="margin-bottom:0">รีวิวจากผู้ใช้ Hourkey</h3>
+              </div>
+              <div class="rating">4.8</div>
+            </div>
+            <div class="review-grid">
+              <article class="review-card"><p>★★★★★</p><p>อ่านออกมาเป็นเรื่องเดียวกันหลายมุม ทำให้เห็นว่าควรตัดสินใจตรงไหนก่อน</p></article>
+              <article class="review-card"><p>★★★★★</p><p>ไม่ใช่แค่คำทำนายกว้าง ๆ แต่แยกจังหวะกับเงื่อนไขที่ต้องระวังได้ชัด</p></article>
+              <article class="review-card"><p>★★★★☆</p><p>ส่วน preview ทำให้รู้ว่าคำถามควรถูกอ่านด้วยศาสตร์ไหน ก่อนค่อยปลดล็อกเต็ม</p></article>
+            </div>
+          </section>
+
+          <section class="report-section">
+            <p class="section-kicker">詳細目次</p>
+            <h3 class="section-title">สารบัญเฉพาะที่ออกแบบให้ตรงเรื่องกังวลของคุณ<span id="tocName"></span></h3>
+            <div class="toc-list" id="tocList"></div>
+          </section>
+
+          <section class="report-section">
+            <p class="section-kicker">STRUCTURED CHART</p>
+            <h3 class="section-title">ผังข้อมูลจริงของคุณ<span id="chartName"></span></h3>
+            <p class="chart-meta" id="birthSummary">รอข้อมูลจาก wizard</p>
+            <div class="pillar-grid" id="pillarGrid"></div>
+          </section>
+
+          <section class="report-section">
+            <p class="section-kicker">前兆</p>
+            <h3 class="section-title">3 เหตุการณ์ที่ควรจับตา</h3>
+            <div class="event-list" id="eventList"></div>
+          </section>
+
+          <section class="report-section">
+            <p class="section-kicker">FUSION TIMELINE</p>
+            <h3 class="section-title">ร่องเวลาใหญ่ที่กำลังเดินเข้าหาคำถามนี้</h3>
+            <div class="timeline-strip" id="timelineStrip"></div>
+          </section>
+
+          <section class="pay-card" aria-label="ปลดล็อกผลอ่านเต็ม">
+            <p class="preview-kicker">unlock full reading</p>
+            <h3>เปิดผลเต็มด้วย Master</h3>
+            <p>ปลดล็อกเหตุผลจาก 6 ศาสตร์, สารบัญทั้งหมด, จังหวะละเอียด และคำถามต่อเนื่องกับ AI Sifu</p>
+            <div class="price-line">
+              <b>฿990</b>
+              <span>Master รายเดือน<br>2,000 ยาม</span>
+            </div>
+            <div class="cta-stack">
+              <button class="btn buy full" type="button" data-buy="master_1m">ชำระเงินและกลับมาอ่านต่อ</button>
+              <a class="btn subtle full" href="/signup?tab=signup&next=/ask">สมัครก่อนปลดล็อก</a>
+            </div>
+            <ul class="unlock-list">
+              <li>อ่านเหตุผลแยกตาม BaZi, Zi Wei, ดาวจริง, Western, Vedic และ Uranian</li>
+              <li>เห็นจุดที่ 6 ศาสตร์ให้สัญญาณตรงกันและจุดที่ต้องระวัง</li>
+              <li>ใช้ข้อมูลเดิมถาม AI Sifu ต่อโดยไม่ต้องเล่าใหม่</li>
+            </ul>
+            <div class="pay-status" id="payStatus" role="status" aria-live="polite"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <span>Hourkey ask</span>
+        <span>Birth data · question · fusion reading</span>
+      </div>
+    </footer>
+
+    <div class="modal" id="payModal" aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="payModalTitle">
+        <h3 id="payModalTitle">ชำระเงิน</h3>
+        <p id="payModalText">กำลังเตรียมรายการ</p>
+        <div class="modal-qr" id="payModalQr"></div>
+        <div class="modal-actions" id="payModalActions"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      var page = document.querySelector('.page');
+      var nav = document.getElementById('nav');
+      var form = document.getElementById('askForm');
+      var steps = Array.prototype.slice.call(document.querySelectorAll('.step'));
+      var stepDots = Array.prototype.slice.call(document.querySelectorAll('#stepDots span'));
+      var stepLabel = document.getElementById('stepLabel');
+      var stepHint = document.getElementById('stepHint');
+      var prevBtn = document.getElementById('prevBtn');
+      var nextBtn = document.getElementById('nextBtn');
+      var error = document.getElementById('wizardError');
+      var birthDate = document.getElementById('birthDate');
+      var birthYear = document.getElementById('birthYear');
+      var birthMonth = document.getElementById('birthMonth');
+      var birthDay = document.getElementById('birthDay');
+      var calendarType = document.getElementById('calendarType');
+      var yearEra = document.getElementById('yearEra');
+      var isLeapMonth = document.getElementById('isLeapMonth');
+      var leapMonthRow = document.getElementById('leapMonthRow');
+      var eraLabel = document.getElementById('eraLabel');
+      var birthTime = document.getElementById('birthTime');
+      var birthHour = document.getElementById('birthHour');
+      var birthMinute = document.getElementById('birthMinute');
+      var birthTimeGrid = document.getElementById('birthTimeGrid');
+      var unknownTime = document.getElementById('unknownTime');
+      var useYajasiRule = document.getElementById('useYajasiRule');
+      var displayName = document.getElementById('displayName');
+      var question = document.getElementById('question');
+      var questionCount = document.getElementById('questionCount');
+      var loadingPanel = document.getElementById('loadingPanel');
+      var loadingList = document.getElementById('loadingList');
+      var result = document.getElementById('result');
+      var payStatus = document.getElementById('payStatus');
+      var payModal = document.getElementById('payModal');
+      var payModalTitle = document.getElementById('payModalTitle');
+      var payModalText = document.getElementById('payModalText');
+      var payModalQr = document.getElementById('payModalQr');
+      var payModalActions = document.getElementById('payModalActions');
+      var askLangSelects = Array.prototype.slice.call(document.querySelectorAll('.js-ask-lang-select'));
+      var askLangSelect = askLangSelects[0] || null;
+      var draftKey = 'hourkey.ask.draft.v1';
+      var payPollTimer = null;
+      var current = 0;
+      var ASK_LANGS = ['th','en','zh','cn','vi','ja','ko','ru','es'];
+      var ASK_HTML_LANG = { th:'th', en:'en', zh:'zh-Hant', cn:'zh-Hans', vi:'vi', ja:'ja', ko:'ko', ru:'ru', es:'es' };
+      var ASK_DATE_LOCALE = { th:'th-TH', en:'en-US', zh:'zh-Hant', cn:'zh-Hans-CN', vi:'vi-VN', ja:'ja-JP', ko:'ko-KR', ru:'ru-RU', es:'es-ES' };
+      var ASK_COPY = {
+        th: {
+          pricing:'แพ็กเกจ', start:'เริ่มถาม', back:'ย้อนกลับ',
+          heroTitle:'ถามให้ตรงจุด<br>จากวันเกิดของคุณ',
+          lead:'บอกวันเกิด เวลาเกิด และคำถามที่ค้างคาใจ แล้ว Hourkey จะเปิดภาพรวมก่อนปลดล็อกผลอ่านเต็ม',
+          desc:'Hourkey จะจัดคำถามเข้ากับพื้นดวงและจังหวะเวลา เปิดให้เห็นภาพรวมก่อน แล้วเก็บส่วนเหตุผลลึก ช่วงเวลาสำคัญ และคำถามต่อเนื่องไว้หลังปลดล็อก',
+          cta:'เริ่มถาม Hourkey', signals:['วันเกิด','เวลาเกิด','เพศ','คำถามเฉพาะ'],
+          steps:['วันเกิด','เวลาเกิด','เพศ','ชื่อ','คำถาม'],
+          stepHeads:['คุณเกิดเมื่อไหร่?','บอกเวลาเกิดของคุณ','เลือกเพศของคุณ','ให้เราเรียกคุณว่าอะไรดี?','คุณมีความกังวลเรื่องอะไร?'],
+          stepCopy:'ยิ่งกรอกแม่นยำ เรายิ่งวิเคราะห์ได้ลึกซึ้ง',
+          calendar:['สุริยคติ','จันทรคติ','เดือนปกติ','เดือนอธิกมาส','พ.ศ.','ค.ศ.'],
+          fields:{ year:'ปี', month:'เดือน', day:'วัน', hour:'ชั่วโมง (0~23)', minute:'นาที (0~59)', unknown:'ไม่ทราบเวลาเกิด · ข้ามไปได้โดยไม่ต้องกรอก', yajasi:'ใช้กฎยาจาชี (夜子時) สำหรับผู้ที่เกิดช่วง 23:30~01:29', genderLegend:'เลือกหนึ่งตัวเลือก', male:'ชาย', female:'หญิง', name:'ชื่อ / ชื่อเล่น', namePh:'มิน', nameHelp:'เราจะเรียกคุณแบบนี้ในรายงานผล', question:'ความกังวลของคุณ', questionPh:'เช่น 3 เดือนข้างหน้าควรโฟกัสงานหรือความสัมพันธ์ก่อน', questionHelp:'ยิ่งเขียนละเอียด เรายิ่งตอบตรงความกังวลได้แม่นยำ' },
+          quick:['งานหรือความสัมพันธ์','โปรเจกต์ใหม่','เงินและการตัดสินใจ'],
+          quickValues:['3 เดือนข้างหน้าควรโฟกัสงานหรือความสัมพันธ์ก่อน','ควรเริ่มโปรเจกต์ใหม่ช่วงนี้หรือรอจังหวะถัดไป','เรื่องเงินและการตัดสินใจใหญ่ปีนี้ควรระวังอะไร'],
+          prev:'ย้อนกลับ', next:'ถัดไป', final:'ดูดวงชะตาของฉัน',
+          loadingTitle:'กำลังพิจารณาดวงชะตาอย่างลึกซึ้ง', loadingText:'Hourkey กำลังแยกสัญญาณที่ตรงกับความกังวลของคุณ',
+          loadingItems:['อ่านข้อมูลวันเกิด เวลาเกิด และโปรไฟล์','จัดคำถามเข้ากับชั้นพื้นดวงและจังหวะเวลา','แยกผลเปิดอ่านและหัวข้อที่ต้องปลดล็อก','เตรียมเส้นทางชำระเงินและกลับมาอ่านต่อ'],
+          status:{ queued:'queued', reading:'reading', done:'done' },
+          result:{ kicker:'Hourkey Fusion · รายงานเฉพาะเรื่องกังวล', category:'คำถามชีวิต·การตัดสินใจ', title:'ผลอ่านเบื้องต้น', intro:'นี่คือ preview จาก 6 ศาสตร์ของ Hourkey ส่วนเหตุผลลึกและจังหวะละเอียดจะเปิดหลังปลดล็อก', openKicker:'เปิดให้อ่านก่อน', openTitle:'3 สัญญาณที่เห็นตรงกัน', whatKicker:'Hourkey คืออะไร?', whatTitle:'Hourkey อ่าน 6 ศาสตร์ ไม่ได้ผูกอยู่กับซาจูศาสตร์เดียว', whatCopy:'ระบบใช้ข้อมูลเกิดและคำถามเดียวกัน แล้วแยกอ่านผ่าน 6 เลนส์หลัก เพื่อดูว่าเรื่องที่ถามมีสัญญาณซ้ำตรงไหน และจุดไหนเป็นเพียงเสียงรบกวน', reviewKicker:'後記 · ผู้ที่ได้ลอง', reviewTitle:'รีวิวจากผู้ใช้ Hourkey', tocKicker:'詳細目次', tocTitle:'สารบัญเฉพาะที่ออกแบบให้ตรงเรื่องกังวลของคุณ', chartKicker:'STRUCTURED CHART', chartTitle:'ผังข้อมูลจริงของคุณ', eventKicker:'前兆', eventTitle:'3 เหตุการณ์ที่ควรจับตา', timelineKicker:'FUSION TIMELINE', timelineTitle:'ร่องเวลาใหญ่ที่กำลังเดินเข้าหาคำถามนี้' },
+          reviews:['อ่านออกมาเป็นเรื่องเดียวกันหลายมุม ทำให้เห็นว่าควรตัดสินใจตรงไหนก่อน','ไม่ใช่แค่คำทำนายกว้าง ๆ แต่แยกจังหวะกับเงื่อนไขที่ต้องระวังได้ชัด','ส่วน preview ทำให้รู้ว่าคำถามควรถูกอ่านด้วยศาสตร์ไหน ก่อนค่อยปลดล็อกเต็ม'],
+          pay:{ kicker:'unlock full reading', title:'เปิดผลเต็มด้วย Master', copy:'ปลดล็อกเหตุผลจาก 6 ศาสตร์, สารบัญทั้งหมด, จังหวะละเอียด และคำถามต่อเนื่องกับ AI Sifu', price:'Master รายเดือน<br>2,000 ยาม', buy:'ชำระเงินและกลับมาอ่านต่อ', signup:'สมัครก่อนปลดล็อก', list:['อ่านเหตุผลแยกตาม BaZi, Zi Wei, ดาวจริง, Western, Vedic และ Uranian','เห็นจุดที่ 6 ศาสตร์ให้สัญญาณตรงกันและจุดที่ต้องระวัง','ใช้ข้อมูลเดิมถาม AI Sifu ต่อโดยไม่ต้องเล่าใหม่'] },
+          footer:['Hourkey ask','Birth data · question · fusion reading'],
+          errors:{ birthYear:'กรุณากรอกปีเกิดให้ถูกต้อง', birthMonth:'กรุณากรอกเดือนเกิดให้ถูกต้อง', birthDay:'กรุณากรอกวันเกิดให้ถูกต้อง', future:'วันเกิดต้องไม่อยู่หลังวันที่ปัจจุบัน', hour:'กรุณากรอกชั่วโมง (0~23) หรือเลือกไม่ทราบเวลาเกิด', minute:'กรุณากรอกนาที (0~59) หรือเว้นว่างไว้', gender:'กรุณาเลือกเพศสำหรับผูกโปรไฟล์', name:'กรุณากรอกชื่อ (หรือชื่อเล่น)', question:'กรุณาเขียนความกังวลอย่างน้อย 5 ตัวอักษร' },
+          misc:{ liveQueue:'คิวคำนวณสดเต็ม กำลังต่อคิวรอบถัดไป', liveBusy:'คิวคำนวณสดแน่นมาก กรุณาลองใหม่ในอีก 1-2 นาที', noBirth:'ไม่ระบุวันเกิด', noTime:'ไม่ระบุเวลา', unknownTime:'ยังไม่ล็อกเวลาเกิด', noGender:'ไม่ระบุ', you:'คุณ', loadingHint:'กำลังอ่านข้อมูล', previewBuild:'preview build', locked:'locked', data:'ข้อมูล', wait:'รอข้อมูลจากระบบ', payChecking:'กำลังตรวจบัญชี...', payPreparing:'กำลังเตรียมรายการ...', loginNeeded:'กรุณาสมัครหรือเข้าสู่ระบบก่อนปลดล็อก ผลที่กรอกไว้ถูกเก็บไว้ในเครื่องนี้แล้ว', payCreateFail:'ทำรายการไม่สำเร็จ: ', payRedirect:'กำลังพาไปหน้าชำระเงินที่ปลอดภัย...', paySandbox:'Sandbox payment', payScan:'สแกน PromptPay', payScanText:'สแกน QR ด้วยแอปธนาคาร แล้วระบบจะตรวจสถานะให้อัตโนมัติ', paySandboxText:'โหมดทดสอบ ยังไม่ตัดเงินจริง กดปุ่มด้านล่างเพื่อจำลองชำระเงินสำเร็จ', payMock:'จำลองชำระเงินสำเร็จ', payWaiting:'กำลังรอสถานะ', close:'ปิด', payCreated:'สร้าง order แล้ว กำลังรอการชำระเงิน', payMockCreated:'สร้าง order sandbox แล้ว', payMocking:'กำลังจำลองการชำระเงิน sandbox...', payMockFail:'จำลองชำระเงินไม่สำเร็จ: ', payTimeout:'หมดเวลารอสถานะการชำระเงิน ลองใหม่อีกครั้ง', payDone:'ชำระเงินสำเร็จแล้ว กลับไปอ่านผลเต็มต่อในระบบ Master ได้ทันที', payFailed:'รายการชำระเงินล้มเหลว', payCancel:'ยกเลิกการชำระเงินแล้ว สามารถเริ่มใหม่ได้จากหน้านี้', payReturn:'กลับมาจากหน้าชำระเงินแล้ว หากยอดสำเร็จระบบหลักจะอัปเดตเครดิตให้' }
+        },
+        en: {
+          pricing:'Plans', start:'Start', back:'Back',
+          heroTitle:'Ask with precision<br>from your birth data',
+          lead:'Enter your birth date, birth time, gender, name, and real question. Hourkey opens the first reading before the full report is unlocked.',
+          desc:'Hourkey connects the question to your natal structure and current timing, shows the first signal, then keeps the deeper reasoning, key periods, and follow-up Sifu questions for unlock.',
+          cta:'Start Hourkey Ask', signals:['Birth date','Birth time','Gender','Specific question'],
+          steps:['Birth date','Birth time','Gender','Name','Question'],
+          stepHeads:['When were you born?','Tell us your birth time','Choose your gender','What should we call you?','What are you concerned about?'],
+          stepCopy:'The more accurate the input, the deeper the reading.',
+          calendar:['Solar','Lunar','Normal month','Leap month','BE','CE'],
+          fields:{ year:'Year', month:'Month', day:'Day', hour:'Hour (0-23)', minute:'Minute (0-59)', unknown:'I do not know my birth time · skip this step', yajasi:'Use the Ye Zi Shi (夜子時) rule for births around 23:30-01:29', genderLegend:'Choose one option', male:'Male', female:'Female', name:'Name / nickname', namePh:'Min', nameHelp:'We will use this name in your report.', question:'Your concern', questionPh:'For example: should I focus on work or relationship over the next 3 months?', questionHelp:'The more specific you write, the more precisely Hourkey can respond.' },
+          quick:['Work or relationship','New project','Money and decisions'],
+          quickValues:['Over the next 3 months, should I focus on work or relationship first?','Should I start a new project now or wait for the next timing?','What should I watch for around money and major decisions this year?'],
+          prev:'Back', next:'Next', final:'Read my chart',
+          loadingTitle:'Reading your chart in depth', loadingText:'Hourkey is separating the signals that match your concern.',
+          loadingItems:['Reading birth data, time, and profile','Linking the question with natal layers and timing','Separating open preview from locked sections','Preparing checkout and return path'],
+          status:{ queued:'queued', reading:'reading', done:'done' },
+          result:{ kicker:'Hourkey Fusion · question-specific report', category:'Life question · decision', title:'Initial reading', intro:'This is a preview from Hourkey’s 6-lens Fusion. Deeper reasoning and precise timing unlock in the full report.', openKicker:'Preview', openTitle:'3 signals that agree', whatKicker:'What is Hourkey?', whatTitle:'Hourkey reads 6 systems, not only BaZi', whatCopy:'The system uses the same birth data and question, then reads it through six lenses to see where signals repeat and where noise should be ignored.', reviewKicker:'Notes · from users', reviewTitle:'Hourkey user reviews', tocKicker:'Detailed table of contents', tocTitle:'A table of contents built around your concern', chartKicker:'STRUCTURED CHART', chartTitle:'Your real data chart', eventKicker:'Omens', eventTitle:'3 events to watch', timelineKicker:'FUSION TIMELINE', timelineTitle:'The larger timing moving toward this question' },
+          reviews:['The reading connected several angles into one story and showed where to decide first.','It was not a vague prediction; it separated timing from conditions to watch.','The preview showed which systems matter before unlocking the full reading.'],
+          pay:{ kicker:'unlock full reading', title:'Open the full result with Master', copy:'Unlock reasoning from 6 systems, the full table of contents, precise timing, and follow-up questions with AI Sifu.', price:'Monthly Master<br>2,000 yam', buy:'Pay and continue reading', signup:'Sign up before unlock', list:['Read reasoning by BaZi, Zi Wei, real stars, Western, Vedic, and Uranian','See where all 6 systems agree and where they warn you','Ask AI Sifu again using the same data without repeating yourself'] },
+          footer:['Hourkey ask','Birth data · question · fusion reading'],
+          errors:{ birthYear:'Please enter a valid birth year.', birthMonth:'Please enter a valid birth month.', birthDay:'Please enter a valid birth day.', future:'Birth date cannot be after today.', hour:'Enter an hour (0-23) or choose unknown birth time.', minute:'Enter minutes (0-59) or leave blank.', gender:'Please choose a gender for the profile.', name:'Please enter a name or nickname.', question:'Please write at least 5 characters.' },
+          misc:{ liveQueue:'Live queue is full — retrying shortly', liveBusy:'Live queue is very busy. Please try again in 1-2 minutes.', noBirth:'No birth date', noTime:'No time', unknownTime:'Birth time not locked', noGender:'Not specified', you:'you', loadingHint:'Reading data', previewBuild:'preview build', locked:'locked', data:'Data', wait:'Waiting for system data', payChecking:'Checking account...', payPreparing:'Preparing order...', loginNeeded:'Please sign up or log in before unlocking. Your draft is saved on this device.', payCreateFail:'Could not create order: ', payRedirect:'Redirecting to secure checkout...', paySandbox:'Sandbox payment', payScan:'Scan PromptPay', payScanText:'Scan the QR with your banking app. The system will check the status automatically.', paySandboxText:'Test mode. No real charge. Press the button below to simulate success.', payMock:'Simulate payment success', payWaiting:'Waiting for status', close:'Close', payCreated:'Order created. Waiting for payment.', payMockCreated:'Sandbox order created.', payMocking:'Simulating sandbox payment...', payMockFail:'Mock payment failed: ', payTimeout:'Payment status timed out. Please try again.', payDone:'Payment succeeded. You can continue the full reading in Master.', payFailed:'Payment failed.', payCancel:'Payment cancelled. You can start again here.', payReturn:'Returned from checkout. If paid, the main system will update credits.' }
+        }
+      };
+      ASK_COPY.zh = Object.assign({}, ASK_COPY.en, { pricing:'方案', start:'開始提問', back:'返回', heroTitle:'從出生資料<br>問得更準', lead:'輸入出生日期、時間、性別、姓名與真正想問的問題，Hourkey 會先開出預覽解讀。', desc:'Hourkey 會把問題接到本命結構與當下時機，先顯示核心訊號，再把深入理由、關鍵時段與後續老師問答留到解鎖後。', cta:'開始 Hourkey Ask', signals:['出生日期','出生時間','性別','具體問題'], steps:['出生日期','出生時間','性別','姓名','問題'], stepHeads:['你何時出生？','請告訴我們出生時間','選擇性別','我們該怎麼稱呼你？','你現在擔心什麼？'], stepCopy:'資料越準，解讀越深。', calendar:['陽曆','農曆','平月','閏月','佛曆','西曆'], fields:Object.assign({}, ASK_COPY.en.fields, { year:'年', month:'月', day:'日', hour:'小時 (0-23)', minute:'分鐘 (0-59)', unknown:'不知道出生時間 · 可跳過', genderLegend:'選擇一項', male:'男', female:'女', name:'姓名 / 暱稱', nameHelp:'報告會用這個稱呼你。', question:'你的問題', questionPh:'例如：接下來 3 個月應先專注工作還是感情？', questionHelp:'寫得越具體，Hourkey 越能答中重點。' }), quick:['工作或感情','新專案','金錢與決策'], quickValues:['接下來 3 個月應先專注工作還是感情？','現在適合開始新專案，還是等下一個時機？','今年金錢與重大決策要注意什麼？'], prev:'返回', next:'下一步', final:'查看我的命盤', loadingTitle:'正在深入讀取命盤', loadingText:'Hourkey 正在分離與你問題相符的訊號。' });
+      ASK_COPY.cn = Object.assign({}, ASK_COPY.zh, { pricing:'方案', start:'开始提问', back:'返回', heroTitle:'从出生资料<br>问得更准', lead:'输入出生日期、时间、性别、姓名与真正想问的问题，Hourkey 会先给出预览解读。', desc:'Hourkey 会把问题接到本命结构与当前时机，先显示核心信号，再把深入理由、关键时段与后续老师问答留到解锁后。', cta:'开始 Hourkey Ask', signals:['出生日期','出生时间','性别','具体问题'], steps:['出生日期','出生时间','性别','姓名','问题'], stepHeads:['你何时出生？','请告诉我们出生时间','选择性别','我们该怎么称呼你？','你现在担心什么？'], stepCopy:'资料越准，解读越深。', calendar:['阳历','农历','平月','闰月','佛历','公历'], fields:Object.assign({}, ASK_COPY.zh.fields, { unknown:'不知道出生时间 · 可跳过', questionPh:'例如：接下来 3 个月应先专注工作还是感情？' }), quick:['工作或感情','新项目','金钱与决策'], quickValues:['接下来 3 个月应先专注工作还是感情？','现在适合开始新项目，还是等下一个时机？','今年金钱与重大决策要注意什么？'], final:'查看我的命盘', loadingTitle:'正在深入读取命盘', loadingText:'Hourkey 正在分离与你问题相符的信号。' });
+      ASK_COPY.vi = Object.assign({}, ASK_COPY.en, { pricing:'Gói', start:'Bắt đầu', back:'Quay lại', heroTitle:'Hỏi đúng trọng tâm<br>từ dữ liệu sinh của bạn', lead:'Nhập ngày sinh, giờ sinh, giới tính, tên và câu hỏi thật. Hourkey sẽ mở phần luận giải đầu tiên trước khi mở khóa báo cáo đầy đủ.', desc:'Hourkey nối câu hỏi với cấu trúc mệnh và thời điểm hiện tại, cho thấy tín hiệu đầu tiên rồi giữ phần lý do sâu, mốc thời gian và câu hỏi tiếp với Sư Phụ sau khi mở khóa.', cta:'Bắt đầu hỏi Hourkey', signals:['Ngày sinh','Giờ sinh','Giới tính','Câu hỏi cụ thể'], steps:['Ngày sinh','Giờ sinh','Giới tính','Tên','Câu hỏi'], stepHeads:['Bạn sinh khi nào?','Cho biết giờ sinh','Chọn giới tính','Chúng tôi nên gọi bạn là gì?','Bạn đang băn khoăn điều gì?'], stepCopy:'Dữ liệu càng chính xác, luận giải càng sâu.', calendar:['Dương lịch','Âm lịch','Tháng thường','Tháng nhuận','BE','CE'], fields:Object.assign({}, ASK_COPY.en.fields, { year:'Năm', month:'Tháng', day:'Ngày', hour:'Giờ (0-23)', minute:'Phút (0-59)', unknown:'Không biết giờ sinh · có thể bỏ qua', genderLegend:'Chọn một mục', male:'Nam', female:'Nữ', name:'Tên / biệt danh', nameHelp:'Tên này sẽ được dùng trong báo cáo.', question:'Điều bạn đang băn khoăn', questionPh:'Ví dụ: 3 tháng tới nên ưu tiên công việc hay tình cảm?', questionHelp:'Viết càng cụ thể, Hourkey càng trả lời đúng trọng tâm.' }), quick:['Công việc hay tình cảm','Dự án mới','Tiền bạc và quyết định'], quickValues:['3 tháng tới nên ưu tiên công việc hay tình cảm?','Nên bắt đầu dự án mới lúc này hay đợi thời điểm sau?','Năm nay cần lưu ý gì về tiền bạc và quyết định lớn?'], prev:'Quay lại', next:'Tiếp', final:'Xem lá số của tôi', loadingTitle:'Đang đọc sâu lá số của bạn', loadingText:'Hourkey đang tách các tín hiệu đúng với mối băn khoăn của bạn.' });
+      ASK_COPY.ja = Object.assign({}, ASK_COPY.en, { pricing:'プラン', start:'開始', back:'戻る', heroTitle:'出生データから<br>的確に質問する', lead:'生年月日・出生時刻・性別・名前・本当に聞きたい質問を入力すると、Hourkey が最初の鑑定を表示します。', desc:'Hourkey は質問を命盤構造と現在の時期に結びつけ、まず核心シグナルを示し、深い理由・重要時期・AI老師への続きの質問は解放後に表示します。', cta:'Hourkey Ask を始める', signals:['生年月日','出生時刻','性別','具体的な質問'], steps:['生年月日','出生時刻','性別','名前','質問'], stepHeads:['いつ生まれましたか？','出生時刻を教えてください','性別を選択','何と呼べばよいですか？','何が気になっていますか？'], stepCopy:'入力が正確なほど、鑑定は深くなります。', calendar:['太陽暦','旧暦','通常月','閏月','仏暦','西暦'], fields:Object.assign({}, ASK_COPY.en.fields, { year:'年', month:'月', day:'日', hour:'時 (0-23)', minute:'分 (0-59)', unknown:'出生時刻が不明 · スキップ可', genderLegend:'一つ選択', male:'男性', female:'女性', name:'名前 / ニックネーム', nameHelp:'この名前を鑑定書で使用します。', question:'気になっていること', questionPh:'例：今後3か月は仕事と恋愛のどちらを優先すべき？', questionHelp:'具体的に書くほど、Hourkey は的確に答えられます。' }), quick:['仕事か恋愛','新プロジェクト','お金と決断'], quickValues:['今後3か月は仕事と恋愛のどちらを優先すべき？','今新しいプロジェクトを始めるべきか、次の時期を待つべきか？','今年のお金と大きな決断で注意すべきことは？'], prev:'戻る', next:'次へ', final:'命盤を見る', loadingTitle:'命盤を深く読んでいます', loadingText:'Hourkey があなたの悩みに合うシグナルを分けています。' });
+      ASK_COPY.ko = Object.assign({}, ASK_COPY.en, { pricing:'요금제', start:'시작', back:'뒤로', heroTitle:'출생 정보로<br>정확하게 질문하기', lead:'생년월일, 출생 시간, 성별, 이름, 실제 질문을 입력하면 Hourkey가 전체 보고서 잠금 해제 전 첫 풀이를 보여줍니다.', desc:'Hourkey는 질문을 명식 구조와 현재 시점에 연결해 핵심 신호를 먼저 보여주고, 깊은 근거와 주요 시기, AI Sifu 후속 질문은 잠금 해제 후 제공합니다.', cta:'Hourkey Ask 시작', signals:['생년월일','출생 시간','성별','구체적 질문'], steps:['생년월일','출생 시간','성별','이름','질문'], stepHeads:['언제 태어나셨나요?','출생 시간을 알려주세요','성별을 선택하세요','어떻게 불러드릴까요?','무엇이 고민인가요?'], stepCopy:'정보가 정확할수록 풀이가 깊어집니다.', calendar:['양력','음력','평달','윤달','BE','CE'], fields:Object.assign({}, ASK_COPY.en.fields, { year:'년', month:'월', day:'일', hour:'시 (0-23)', minute:'분 (0-59)', unknown:'출생 시간을 모름 · 건너뛰기 가능', genderLegend:'하나를 선택하세요', male:'남성', female:'여성', name:'이름 / 별명', nameHelp:'보고서에서 이 이름으로 부릅니다.', question:'고민 내용', questionPh:'예: 앞으로 3개월은 일과 관계 중 무엇에 집중해야 할까요?', questionHelp:'구체적으로 쓸수록 Hourkey가 더 정확히 답합니다.' }), quick:['일 또는 관계','새 프로젝트','돈과 결정'], quickValues:['앞으로 3개월은 일과 관계 중 무엇에 먼저 집중해야 할까요?','지금 새 프로젝트를 시작해야 할까요, 다음 시기를 기다려야 할까요?','올해 돈과 큰 결정에서 무엇을 조심해야 할까요?'], prev:'뒤로', next:'다음', final:'내 명식 보기', loadingTitle:'명식을 깊이 읽는 중', loadingText:'Hourkey가 고민과 맞는 신호를 분리하고 있습니다.' });
+      ASK_COPY.ru = Object.assign({}, ASK_COPY.en, { pricing:'Планы', start:'Начать', back:'Назад', heroTitle:'Задайте точный вопрос<br>по данным рождения', lead:'Введите дату, время рождения, пол, имя и настоящий вопрос. Hourkey покажет первую часть чтения до разблокировки полного отчета.', desc:'Hourkey связывает вопрос с натальной структурой и текущим временем, показывает первый сигнал, а глубокие причины, ключевые периоды и вопросы AI Sifu открываются после разблокировки.', cta:'Начать Hourkey Ask', signals:['Дата рождения','Время рождения','Пол','Конкретный вопрос'], steps:['Дата рождения','Время рождения','Пол','Имя','Вопрос'], stepHeads:['Когда вы родились?','Укажите время рождения','Выберите пол','Как к вам обращаться?','Что вас беспокоит?'], stepCopy:'Чем точнее данные, тем глубже чтение.', calendar:['Солнечный','Лунный','Обычный месяц','Високосный месяц','BE','CE'], fields:Object.assign({}, ASK_COPY.en.fields, { year:'Год', month:'Месяц', day:'День', hour:'Час (0-23)', minute:'Минуты (0-59)', unknown:'Не знаю время рождения · можно пропустить', genderLegend:'Выберите один вариант', male:'Мужской', female:'Женский', name:'Имя / ник', nameHelp:'Это имя будет использовано в отчете.', question:'Ваш вопрос', questionPh:'Например: в ближайшие 3 месяца лучше сфокусироваться на работе или отношениях?', questionHelp:'Чем конкретнее вопрос, тем точнее ответ Hourkey.' }), quick:['Работа или отношения','Новый проект','Деньги и решения'], quickValues:['В ближайшие 3 месяца лучше сфокусироваться на работе или отношениях?','Начать новый проект сейчас или ждать следующего периода?','Что учитывать в деньгах и крупных решениях в этом году?'], prev:'Назад', next:'Далее', final:'Прочитать мою карту', loadingTitle:'Глубоко читаем вашу карту', loadingText:'Hourkey отделяет сигналы, связанные с вашим вопросом.' });
+      ASK_COPY.es = Object.assign({}, ASK_COPY.en, { pricing:'Planes', start:'Empezar', back:'Volver', heroTitle:'Pregunta con precisión<br>desde tus datos de nacimiento', lead:'Ingresa fecha, hora de nacimiento, género, nombre y tu pregunta real. Hourkey abre la primera lectura antes del informe completo.', desc:'Hourkey conecta la pregunta con tu estructura natal y el momento actual, muestra la primera señal y reserva el razonamiento profundo, los periodos clave y las preguntas a AI Sifu para después del desbloqueo.', cta:'Iniciar Hourkey Ask', signals:['Fecha de nacimiento','Hora de nacimiento','Género','Pregunta concreta'], steps:['Fecha','Hora','Género','Nombre','Pregunta'], stepHeads:['¿Cuándo naciste?','Indica tu hora de nacimiento','Elige tu género','¿Cómo debemos llamarte?','¿Qué te preocupa?'], stepCopy:'Cuanto más precisos sean los datos, más profunda será la lectura.', calendar:['Solar','Lunar','Mes normal','Mes bisiesto','BE','CE'], fields:Object.assign({}, ASK_COPY.en.fields, { year:'Año', month:'Mes', day:'Día', hour:'Hora (0-23)', minute:'Minuto (0-59)', unknown:'No sé mi hora de nacimiento · puedo omitirla', genderLegend:'Elige una opción', male:'Hombre', female:'Mujer', name:'Nombre / apodo', nameHelp:'Usaremos este nombre en el informe.', question:'Tu inquietud', questionPh:'Ejemplo: en los próximos 3 meses, ¿debo enfocarme en trabajo o relación?', questionHelp:'Cuanto más concreto escribas, más precisa será la respuesta.' }), quick:['Trabajo o relación','Nuevo proyecto','Dinero y decisiones'], quickValues:['En los próximos 3 meses, ¿debo enfocarme primero en trabajo o relación?','¿Debo iniciar un nuevo proyecto ahora o esperar el siguiente momento?','¿Qué debo cuidar este año en dinero y decisiones grandes?'], prev:'Volver', next:'Siguiente', final:'Leer mi carta', loadingTitle:'Leyendo tu carta en profundidad', loadingText:'Hourkey está separando las señales que coinciden con tu inquietud.' });
+
+      function normalizeAskLang(raw){
+        var x = String(raw || '').trim().toLowerCase().replace('_','-');
+        if(x === 'zh-cn' || x === 'zh-hans' || x === 'cn' || x === 'hans') return 'cn';
+        if(x.indexOf('zh') === 0 || x === 'hant') return 'zh';
+        if(x.indexOf('en') === 0) return 'en';
+        if(x.indexOf('th') === 0) return 'th';
+        if(x.indexOf('vi') === 0) return 'vi';
+        if(x.indexOf('ja') === 0 || x.indexOf('jp') === 0) return 'ja';
+        if(x.indexOf('ko') === 0 || x.indexOf('kr') === 0) return 'ko';
+        if(x.indexOf('ru') === 0) return 'ru';
+        if(x.indexOf('es') === 0) return 'es';
+        return 'th';
+      }
+
+      function currentAskLang(){
+        try{
+          var q = new URLSearchParams(location.search).get('lang');
+          if(q) return normalizeAskLang(q);
+        }catch(e){}
+        try{
+          var st = window.HK_LANG_STATE || (window.HK && window.HK.langState);
+          if(st && st.sifu) return normalizeAskLang(st.sifu());
+          if(st && st.raw){
+            var raw = st.raw();
+            if(raw === 'zh' && localStorage.getItem('hk_zh_variant') === 'cn') return 'cn';
+            return normalizeAskLang(raw);
+          }
+        }catch(e){}
+        try{
+          var loc = localStorage.getItem('hk_locale') || localStorage.getItem('hk_lang') || 'th';
+          if(normalizeAskLang(loc) === 'zh' && localStorage.getItem('hk_zh_variant') === 'cn') return 'cn';
+          return normalizeAskLang(loc);
+        }catch(e){}
+        return 'th';
+      }
+
+      function setAskLang(lang, persist){
+        var L = normalizeAskLang(lang);
+        try{
+          if(persist && window.HK_LANG_STATE && window.HK_LANG_STATE.set){
+            window.HK_LANG_STATE.set(L === 'cn' ? 'zh-cn' : L);
+          }else if(persist){
+            localStorage.setItem('hk_locale', L === 'cn' ? 'zh' : L);
+            localStorage.setItem('hk_lang', L === 'cn' ? 'zh' : L);
+            if(L === 'cn') localStorage.setItem('hk_zh_variant', 'cn');
+            else if(L !== 'zh') localStorage.removeItem('hk_zh_variant');
+          }
+        }catch(e){}
+        document.documentElement.setAttribute('lang', ASK_HTML_LANG[L] || L);
+        document.documentElement.setAttribute('data-lang', L === 'cn' ? 'zh' : L);
+        document.documentElement.setAttribute('data-hk-locale', L === 'cn' ? 'zh' : L);
+        if(L === 'cn') document.documentElement.setAttribute('data-zh-variant', 'cn');
+        else if(L === 'zh') document.documentElement.setAttribute('data-zh-variant', 'hant');
+        else document.documentElement.removeAttribute('data-zh-variant');
+        askLangSelects.forEach(function(sel){ sel.value = L; });
+        return L;
+      }
+
+      function C(){
+        var lang = currentAskLang();
+        return ASK_COPY[lang] || ASK_COPY.en || ASK_COPY.th;
+      }
+      function tx(path, fallback){
+        var parts = path.split('.');
+        var obj = C();
+        for(var i=0;i<parts.length;i++){
+          if(obj && Object.prototype.hasOwnProperty.call(obj, parts[i])) obj = obj[parts[i]];
+          else { obj = null; break; }
+        }
+        return obj == null ? fallback : obj;
+      }
+      function setText(selector, value){
+        var el = document.querySelector(selector);
+        if(el && value != null) el.textContent = value;
+      }
+      function setHtml(selector, value){
+        var el = document.querySelector(selector);
+        if(el && value != null) el.innerHTML = value;
+      }
+      function setAttr(selector, attr, value){
+        var el = document.querySelector(selector);
+        if(el && value != null) el.setAttribute(attr, value);
+      }
+      function setTexts(selector, values){
+        document.querySelectorAll(selector).forEach(function(el, idx){
+          if(values && values[idx] != null) el.textContent = values[idx];
+        });
+      }
+
+      function applyAskLocale(){
+        var copy = C();
+        setAskLang(currentAskLang(), false);
+        setText('.nav-link', copy.pricing);
+        setText('.nav-actions .btn.primary', copy.start);
+        setAttr('.back-btn', 'aria-label', copy.back);
+        setHtml('h1', copy.heroTitle);
+        setText('.lead', copy.lead);
+        setText('.desc', copy.desc);
+        setText('.js-start', copy.cta);
+        setTexts('.signal-row .signal', copy.signals);
+        steps.forEach(function(step, idx){
+          if(copy.steps && copy.steps[idx]) step.dataset.title = copy.steps[idx];
+          var head = step.querySelector('h2');
+          var sub = step.querySelector('.step-copy');
+          if(head && copy.stepHeads && copy.stepHeads[idx]) head.textContent = copy.stepHeads[idx];
+          if(sub) sub.textContent = copy.stepCopy;
+        });
+        setTexts('[data-calendar]', copy.calendar);
+        setTexts('[data-leap]', [copy.calendar[2], copy.calendar[3]]);
+        setTexts('[data-era]', [copy.calendar[4], copy.calendar[5]]);
+        var yearLabelEl = document.querySelector('label[for="birthYear"]');
+        if(yearLabelEl){
+          yearLabelEl.innerHTML = copy.fields.year + ' (<span id="eraLabel">' + (yearEra.value === 'BE' ? copy.calendar[4] : copy.calendar[5]) + '</span>)';
+          eraLabel = document.getElementById('eraLabel');
+        }
+        setText('label[for="birthMonth"]', copy.fields.month);
+        setText('label[for="birthDay"]', copy.fields.day);
+        setText('label[for="birthHour"]', copy.fields.hour);
+        setText('label[for="birthMinute"]', copy.fields.minute);
+        setTexts('.checkline span', [copy.fields.unknown, copy.fields.yajasi]);
+        setText('.field legend', copy.fields.genderLegend);
+        setTexts('.choice span', [copy.fields.male, copy.fields.female]);
+        setText('label[for="displayName"]', copy.fields.name);
+        setAttr('#displayName', 'placeholder', copy.fields.namePh);
+        setText('#displayName + small', copy.fields.nameHelp);
+        setText('label[for="question"]', copy.fields.question);
+        setAttr('#question', 'placeholder', copy.fields.questionPh);
+        var qHelp = document.querySelector('#question + small');
+        if(qHelp) qHelp.innerHTML = '<span id="questionCount">' + String(question.value.trim().length) + '</span>/200 · ' + copy.fields.questionHelp;
+        questionCount = document.getElementById('questionCount');
+        document.querySelectorAll('[data-question]').forEach(function(btn, idx){
+          if(copy.quick && copy.quick[idx]) btn.textContent = copy.quick[idx];
+          if(copy.quickValues && copy.quickValues[idx]) btn.dataset.question = copy.quickValues[idx];
+        });
+        setText('.loading h2', copy.loadingTitle);
+        setText('.loading p', copy.loadingText);
+        setTexts('.loading-list li > span:nth-child(2)', copy.loadingItems);
+        setText('.report-kicker', copy.result.kicker);
+        setText('#resultCategory', copy.result.category);
+        setText('#resultTitle', copy.result.title);
+        setText('#resultIntro', copy.result.intro);
+        var sections = document.querySelectorAll('.report-section');
+        if(sections[0]){ sections[0].querySelector('.section-kicker').textContent = copy.result.openKicker; sections[0].querySelector('.section-title').textContent = copy.result.openTitle; }
+        if(sections[1]){ sections[1].querySelector('.section-kicker').textContent = copy.result.whatKicker; sections[1].querySelector('.section-title').textContent = copy.result.whatTitle; sections[1].querySelector('.section-copy').textContent = copy.result.whatCopy; }
+        if(sections[2]){ sections[2].querySelector('.section-kicker').textContent = copy.result.reviewKicker; sections[2].querySelector('.section-title').textContent = copy.result.reviewTitle; }
+        if(sections[3]){ sections[3].querySelector('.section-kicker').textContent = copy.result.tocKicker; sections[3].querySelector('.section-title').firstChild.nodeValue = copy.result.tocTitle; }
+        if(sections[4]){ sections[4].querySelector('.section-kicker').textContent = copy.result.chartKicker; sections[4].querySelector('.section-title').firstChild.nodeValue = copy.result.chartTitle; }
+        if(sections[5]){ sections[5].querySelector('.section-kicker').textContent = copy.result.eventKicker; sections[5].querySelector('.section-title').textContent = copy.result.eventTitle; }
+        if(sections[6]){ sections[6].querySelector('.section-kicker').textContent = copy.result.timelineKicker; sections[6].querySelector('.section-title').textContent = copy.result.timelineTitle; }
+        document.querySelectorAll('.review-card').forEach(function(card, idx){
+          var ps = card.querySelectorAll('p');
+          if(ps[1] && copy.reviews && copy.reviews[idx]) ps[1].textContent = copy.reviews[idx];
+        });
+        setText('.pay-card .preview-kicker', copy.pay.kicker);
+        setText('.pay-card h3', copy.pay.title);
+        setText('.pay-card > p:not(.preview-kicker)', copy.pay.copy);
+        setHtml('.price-line span', copy.pay.price);
+        setText('[data-buy]', copy.pay.buy);
+        setText('.cta-stack a', copy.pay.signup);
+        setTexts('.unlock-list li', copy.pay.list);
+        setTexts('footer span', copy.footer);
+        showStep(current);
+      }
+
+      function onScroll(){
+        if(nav) nav.classList.toggle('scrolled', window.scrollY > 24);
+      }
+
+      function startFunnel(){
+        page.classList.add('is-form');
+        page.classList.remove('is-loading','has-result');
+        form.hidden = false;
+        loadingPanel.classList.remove('is-active');
+        showStep(current || 0);
+      }
+
+      function setTodayLimit(){
+        var today = new Date();
+        var yyyy = today.getFullYear();
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var dd = String(today.getDate()).padStart(2, '0');
+        birthDate.max = yyyy + '-' + mm + '-' + dd;
+      }
+
+      function toCEYear(value){
+        var y = parseInt(value, 10);
+        if(isNaN(y)) return NaN;
+        return yearEra.value === 'BE' ? y - 543 : y;
+      }
+
+      function daysInMonth(year, month){
+        if(!year || !month) return 31;
+        return new Date(year, month, 0).getDate();
+      }
+
+      function syncBirthDate(){
+        var y = toCEYear(birthYear.value);
+        var m = parseInt(birthMonth.value, 10);
+        var d = parseInt(birthDay.value, 10);
+        if(isNaN(y) || !m || !d){
+          birthDate.value = '';
+          return '';
+        }
+        birthDate.value = String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        return birthDate.value;
+      }
+
+      function syncBirthTime(){
+        if(unknownTime.checked){
+          birthTime.value = '';
+          return '';
+        }
+        var h = birthHour.value.trim();
+        var m = birthMinute.value.trim() || '0';
+        if(!h){
+          birthTime.value = '';
+          return '';
+        }
+        birthTime.value = String(parseInt(h, 10)).padStart(2, '0') + ':' + String(parseInt(m, 10)).padStart(2, '0');
+        return birthTime.value;
+      }
+
+      function setCalendar(value){
+        calendarType.value = value === 'lunar' ? 'lunar' : 'solar';
+        document.querySelectorAll('[data-calendar]').forEach(function(btn){
+          btn.classList.toggle('is-active', btn.dataset.calendar === calendarType.value);
+        });
+        leapMonthRow.hidden = calendarType.value !== 'lunar';
+      }
+
+      function setLeapMonth(value){
+        isLeapMonth.value = value ? 'true' : 'false';
+        document.querySelectorAll('[data-leap]').forEach(function(btn){
+          btn.classList.toggle('is-active', String(value) === btn.dataset.leap);
+        });
+      }
+
+      function setEra(value){
+        var nextEra = value === 'CE' ? 'CE' : 'BE';
+        var prevEra = yearEra.value === 'CE' ? 'CE' : 'BE';
+        if(prevEra !== nextEra && birthYear.value && birthYear.value.length === 4){
+          var oldYear = parseInt(birthYear.value, 10);
+          if(!isNaN(oldYear)){
+            birthYear.value = nextEra === 'BE' ? String(oldYear + 543) : String(oldYear - 543);
+          }
+        }
+        yearEra.value = nextEra;
+        eraLabel.textContent = yearEra.value === 'BE' ? C().calendar[4] : C().calendar[5];
+        birthYear.placeholder = yearEra.value === 'BE' ? '2535' : '1992';
+        document.querySelectorAll('[data-era]').forEach(function(btn){
+          btn.classList.toggle('is-active', btn.dataset.era === yearEra.value);
+        });
+        syncBirthDate();
+      }
+
+      function applyUnknownTimeState(){
+        birthTimeGrid.style.opacity = unknownTime.checked ? '.42' : '';
+        birthTimeGrid.style.pointerEvents = unknownTime.checked ? 'none' : '';
+        birthHour.disabled = unknownTime.checked;
+        birthMinute.disabled = unknownTime.checked;
+        if(unknownTime.checked){
+          birthHour.value = '';
+          birthMinute.value = '';
+          birthTime.value = '';
+        }
+      }
+
+      function showStep(index){
+        current = Math.max(0, Math.min(index, steps.length - 1));
+        steps.forEach(function(step, idx){
+          step.classList.toggle('is-active', idx === current);
+        });
+        stepLabel.textContent = 'step ' + (current + 1) + ' of ' + steps.length;
+        stepHint.textContent = steps[current].dataset.title || '';
+        stepDots.forEach(function(dot, idx){
+          dot.classList.toggle('is-active', idx === current);
+          dot.classList.toggle('is-done', idx < current);
+        });
+        prevBtn.disabled = current === 0;
+        prevBtn.hidden = current === 0;
+        prevBtn.textContent = C().prev;
+        nextBtn.textContent = current === steps.length - 1 ? C().final : C().next;
+        error.textContent = '';
+      }
+
+      function checkedGender(){
+        return form.querySelector('input[name="gender"]:checked');
+      }
+
+      function collectDraft(){
+        syncBirthDate();
+        syncBirthTime();
+        return {
+          birthDate: birthDate.value,
+          birthYear: birthYear.value,
+          birthMonth: birthMonth.value,
+          birthDay: birthDay.value,
+          calendarType: calendarType.value,
+          yearEra: yearEra.value,
+          isLeapMonth: isLeapMonth.value === 'true',
+          birthTime: birthTime.value,
+          birthHour: birthHour.value,
+          birthMinute: birthMinute.value,
+          unknownTime: !!unknownTime.checked || !birthHour.value.trim(),
+          useYajasiRule: !!useYajasiRule.checked,
+          gender: checkedGender() ? checkedGender().value : '',
+          displayName: displayName.value.trim(),
+          question: question.value.trim(),
+          lang: currentAskLang(),
+          birthCity: birthCitySel ? birthCitySel.value : '',
+          birthLat: cityData('lat'),
+          birthLng: cityData('lng'),
+          birthGmtOffset: cityData('gmt'),
+          savedAt: new Date().toISOString()
+        };
+      }
+      var birthCitySel = document.getElementById('birthCity');
+      function cityData(k){
+        try{
+          var opt = birthCitySel && birthCitySel.selectedOptions && birthCitySel.selectedOptions[0];
+          return opt ? opt.dataset[k] : '';
+        }catch(_){ return ''; }
+      }
+
+      function saveDraft(){
+        try{
+          window.localStorage.setItem(draftKey, JSON.stringify(collectDraft()));
+        }catch(e){}
+      }
+
+      function restoreDraft(){
+        try{
+          var raw = window.localStorage.getItem(draftKey);
+          if(!raw) return;
+          var draft = JSON.parse(raw);
+          if(draft.yearEra) setEra(draft.yearEra);
+          if(draft.calendarType) setCalendar(draft.calendarType);
+          if(typeof draft.isLeapMonth === 'boolean') setLeapMonth(draft.isLeapMonth);
+          if(draft.birthYear) birthYear.value = draft.birthYear;
+          if(draft.birthMonth) birthMonth.value = draft.birthMonth;
+          if(draft.birthDay) birthDay.value = draft.birthDay;
+          if(draft.birthDate && (!draft.birthYear || !draft.birthMonth || !draft.birthDay)){
+            var parts = String(draft.birthDate).split('-');
+            if(parts.length === 3){
+              var ceYear = parseInt(parts[0], 10);
+              birthYear.value = yearEra.value === 'BE' ? String(ceYear + 543) : parts[0];
+              birthMonth.value = String(parseInt(parts[1], 10));
+              birthDay.value = String(parseInt(parts[2], 10));
+            }
+          }
+          if(draft.birthHour) birthHour.value = draft.birthHour;
+          if(draft.birthMinute) birthMinute.value = draft.birthMinute;
+          if(draft.birthTime && (!draft.birthHour && !draft.birthMinute)){
+            var timeParts = String(draft.birthTime).split(':');
+            birthHour.value = timeParts[0] || '';
+            birthMinute.value = timeParts[1] || '';
+          }
+          unknownTime.checked = !!draft.unknownTime;
+          useYajasiRule.checked = !!draft.useYajasiRule;
+          applyUnknownTimeState();
+          syncBirthDate();
+          syncBirthTime();
+          if(draft.gender){
+            var genderInput = form.querySelector('input[name="gender"][value="' + String(draft.gender).replace(/"/g, '\\"') + '"]');
+            if(genderInput) genderInput.checked = true;
+          }
+          if(draft.displayName) displayName.value = draft.displayName;
+          if(draft.question) question.value = draft.question;
+        }catch(e){}
+      }
+
+      function validateCurrent(){
+        error.textContent = '';
+        if(current === 0){
+          var ceYear = toCEYear(birthYear.value);
+          var month = parseInt(birthMonth.value, 10);
+          var day = parseInt(birthDay.value, 10);
+          if(!birthYear.value || String(birthYear.value).length !== 4 || isNaN(ceYear) || ceYear < 1900 || ceYear > 2100){
+            error.textContent = C().errors.birthYear;
+            birthYear.focus();
+            return false;
+          }
+          if(!month || month < 1 || month > 12){
+            error.textContent = C().errors.birthMonth;
+            birthMonth.focus();
+            return false;
+          }
+          if(!day || day < 1 || day > daysInMonth(ceYear, month)){
+            error.textContent = C().errors.birthDay;
+            birthDay.focus();
+            return false;
+          }
+          syncBirthDate();
+          if(birthDate.max && birthDate.value > birthDate.max){
+            error.textContent = C().errors.future;
+            birthDay.focus();
+            return false;
+          }
+        }
+        if(current === 1 && !unknownTime.checked){
+          var hasHour = birthHour.value.trim() !== '';
+          var hasMinute = birthMinute.value.trim() !== '';
+          if(hasHour || hasMinute){
+            var hour = parseInt(birthHour.value, 10);
+            var minute = hasMinute ? parseInt(birthMinute.value, 10) : 0;
+            if(isNaN(hour) || hour < 0 || hour > 23){
+              error.textContent = C().errors.hour;
+              birthHour.focus();
+              return false;
+            }
+            if(isNaN(minute) || minute < 0 || minute > 59){
+              error.textContent = C().errors.minute;
+              birthMinute.focus();
+              return false;
+            }
+          }
+          syncBirthTime();
+        }
+        if(current === 2 && !checkedGender()){
+          error.textContent = C().errors.gender;
+          form.querySelector('input[name="gender"]').focus();
+          return false;
+        }
+        if(current === 3 && displayName.value.trim().length < 1){
+          error.textContent = C().errors.name;
+          displayName.focus();
+          return false;
+        }
+        if(current === 4 && question.value.trim().length < 5){
+          error.textContent = C().errors.question;
+          question.focus();
+          return false;
+        }
+        return true;
+      }
+
+      function formatDate(value){
+        if(!value) return C().misc.noBirth;
+        try{
+          return new Intl.DateTimeFormat(ASK_DATE_LOCALE[currentAskLang()] || 'th-TH', { day:'numeric', month:'long', year:'numeric' }).format(new Date(value + 'T00:00:00'));
+        }catch(e){
+          return value;
+        }
+      }
+
+      async function requestPreview(){
+        var draft = collectDraft();
+        var r = await fetch('/api/ask/preview', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          credentials:'include',
+          body: JSON.stringify(draft)
+        });
+        var d = await r.json().catch(function(){ return {}; });
+        if(!r.ok || !d.ok){
+          throw new Error(d.error || r.statusText || 'preview_failed');
+        }
+        return d;
+      }
+
+      async function requestReport(){
+        var draft = collectDraft();
+        /* คิวสด: server ตอบ 202 queued/busy = รอแล้วลองใหม่ (ระบบไม่เสิร์ฟรายงานสำเร็จรูปแทนอีกแล้ว) */
+        for(var attempt = 0; attempt < 5; attempt++){
+          var r = await fetch('/api/ask/report', {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json' },
+            credentials:'include',
+            body: JSON.stringify(draft)
+          });
+          var d = await r.json().catch(function(){ return {}; });
+          if(r.status === 202 && d && (d.status === 'queued' || d.status === 'busy')){
+            var waitS = Math.min(Math.max(Number(d.retryAfterSec) || 30, 10), 45);
+            if(stepHint) stepHint.textContent = tx('misc.liveQueue', 'คิวคำนวณสดเต็ม กำลังต่อคิวรอบถัดไป') + ' (~' + waitS + 's)';
+            await new Promise(function(res){ window.setTimeout(res, waitS * 1000); });
+            continue;
+          }
+          if(!r.ok || !d.ok){
+            throw new Error(d.error || r.statusText || 'report_failed');
+          }
+          return d;
+        }
+        throw new Error(tx('misc.liveBusy', 'คิวคำนวณสดแน่นมาก กรุณาลองใหม่ในอีก 1-2 นาที'));
+      }
+
+      var clientSciences = [
+        { key:'bazi', glyph:'八字', name:'BaZi / ปาจื้อ', angle:'อ่านแกนวันเกิด ธาตุ โครงสร้าง และแรงพื้นดวง', signal:'ใช้ดูว่าแกนตัวตนรับแรงจากคำถามนี้อย่างไร' },
+        { key:'qizheng', glyph:'七政四餘', name:'Qi Zheng Si Yu / ดาวจริง', angle:'อ่านดาวจริงบนฟ้าและแรงจังหวะของเหตุการณ์', signal:'ใช้ดูแรงดาวจริงที่กำลังเปิดหรือกดคำถามนี้' },
+        { key:'ziwei', glyph:'紫微斗數', name:'Zi Wei Dou Shu', angle:'อ่านเรือนชีวิต คนที่เกี่ยวข้อง และเงื่อนไขที่บีบการตัดสินใจ', signal:'ใช้แยกบทบาทคนและสนามชีวิตที่เกี่ยวข้อง' },
+        { key:'western', glyph:'♃', name:'Western Astrology', angle:'อ่านทรานซิต มุมดาว และธีมเชิงจิตวิทยาของช่วงเวลา', signal:'ใช้ดูแรงกดดันและแรงเปิดในช่วงที่ถาม' },
+        { key:'vedic', glyph:'ॐ', name:'Vedic Astrology', angle:'อ่านดาชา นักษัตร และน้ำหนักกรรมของจังหวะปัจจุบัน', signal:'ใช้ดูรอบใหญ่ที่กำลังพาเรื่องนี้เดิน' },
+        { key:'uranian', glyph:'⨀', name:'Uranian Astrology', angle:'อ่าน midpoint และจุดกระตุ้นละเอียดที่มักเกิดเป็นเหตุการณ์', signal:'ใช้จับจุดกระตุ้นเฉพาะที่อาจเกิดเป็นเหตุการณ์จริง' }
+      ];
+
+      function safeText(value, fallback){
+        var text = String(value || '').replace(/\s+/g, ' ').trim();
+        return text || fallback || '';
+      }
+
+      function clearNode(el){
+        if(!el) return;
+        while(el.firstChild) el.removeChild(el.firstChild);
+      }
+
+      function makeEl(tag, className, text){
+        var el = document.createElement(tag);
+        if(className) el.className = className;
+        if(typeof text === 'string') el.textContent = text;
+        return el;
+      }
+
+      function detectClientCategory(text){
+        if(/เงิน|ลงทุน|หนี้|รายได้|ธุรกิจ|หุ้น|คริปโต|กำไร|ขาดทุน|ยอด|ทรัพย์/.test(text)) return 'การเงิน·การลงทุน';
+        if(/งาน|อาชีพ|ย้ายงาน|สมัครงาน|โปรเจกต์|เจ้านาย|ตำแหน่ง|บริษัท|เลื่อนขั้น|ลาออก/.test(text)) return 'งาน·ทิศทางอาชีพ';
+        if(/รัก|แฟน|คู่|แต่งงาน|เลิก|สัมพันธ์|ครอบครัว|คนคุย|เนื้อคู่|แต่ง/.test(text)) return 'ความรัก·ความสัมพันธ์';
+        if(/บ้าน|ย้ายบ้าน|ห้อง|ทิศ|ฮวงจุ้ย|คอนโด|ที่ดิน|ประตู|โต๊ะ|เตียง/.test(text)) return 'บ้าน·พื้นที่·ฮวงจุ้ย';
+        if(/สุขภาพ|ป่วย|หมอ|รักษา|เครียด|นอน|พัก|ร่างกาย|ใจ|เจ็บ/.test(text)) return 'สุขภาพ·สมดุลชีวิต';
+        return 'คำถามชีวิต·การตัดสินใจ';
+      }
+
+      function clientChartPillars(reportData){
+        var zh = reportData && reportData.chartPreview && reportData.chartPreview.pillarsZh ? reportData.chartPreview.pillarsZh : null;
+        if(zh){
+          return [
+            { label:'เวลา', stemBranch:zh.hour || 'ไม่ล็อกเวลา', note:zh.hour ? 'ใช้แยกแรงปลายทางและวิธีลงมือ' : 'อ่านเป็น 3 เสาเพราะยังไม่ทราบเวลาเกิด' },
+            { label:'วัน', stemBranch:zh.day || '—', note:'แกนตัวตนและวิธีรับแรงจากคำถามนี้' },
+            { label:'เดือน', stemBranch:zh.month || '—', note:'ฤดูกาลของดวงและสนามที่เรื่องนี้เกิด' },
+            { label:'ปี', stemBranch:zh.year || '—', note:'พื้นหลังและแรงรอบนอกที่เกี่ยวข้อง' }
+          ];
+        }
+        return [
+          { label:'เวลา', stemBranch:unknownTime.checked ? 'ไม่ล็อกเวลา' : (birthTime.value || '—'), note:'ใช้ประกอบการอ่านหลังระบบคำนวณผัง' },
+          { label:'วันเกิด', stemBranch:birthDate.value || '—', note:'ฐานข้อมูลหลักของคำถามนี้' },
+          { label:'คำถาม', stemBranch:'Hourkey', note:'อ่านร่วมกับจังหวะเวลาและ 6 ศาสตร์' },
+          { label:'สถานะ', stemBranch:'preview', note:'ผังเต็มและเหตุผลละเอียดอยู่หลังปลดล็อก' }
+        ];
+      }
+
+      function buildClientFallbackReport(reportData){
+        var name = displayName.value.trim() || C().misc.you;
+        var asked = question.value.trim();
+        var gender = checkedGender() ? checkedGender().value : C().misc.noGender;
+        var timeText = unknownTime.checked ? C().misc.unknownTime : (birthTime.value || C().misc.noTime);
+        var category = detectClientCategory(asked);
+        var meta = formatDate(birthDate.value) + ' · ' + timeText + ' · ' + gender;
+        return {
+          category: category,
+          headline: 'ผลอ่านเบื้องต้นของ ' + name,
+          quote: name + ' · Hourkey Fusion will read this question through 6 systems. This preview opens the main signal; deeper reasoning and precise timing unlock in the full report.',
+          tags: ['Hourkey Fusion','6 ศาสตร์', category, unknownTime.checked ? '3 เสา' : '4 เสา'],
+          openPoints: [
+            { title:'1 · คำถามหลัก', body:'โจทย์นี้ต้องแยกระหว่างความกังวลตอนนี้กับจังหวะจริงที่ควรลงมือ' },
+            { title:'2 · ข้อมูลเกิด', body:'วันเกิด เวลาเกิด และเพศจะใช้สร้างผังพื้นดวงเพื่อเทียบกับคำถามนี้' },
+            { title:'3 · จุดที่ต้องอ่านต่อ', body:'ผลเต็มจะดูว่าศาสตร์ไหนให้สัญญาณซ้ำกัน และศาสตร์ไหนเตือนให้ชะลอ' }
+          ],
+          sciences: clientSciences,
+          toc: [
+            { title:'เรื่องนี้จะเปิดทางแบบไหน', bullets:['สัญญาณแรกที่ต้องดู','เงื่อนไขที่ทำให้เรื่องเดิน','จุดที่ไม่ควรรีบสรุป'] },
+            { title:'ควรเลือกทางไหน', bullets:['ทางที่คุมเงื่อนไขได้','ทางที่ตรวจสอบซ้ำได้','ทางที่มีจุดหยุดชัด'] },
+            { title:'จังหวะทองอยู่เมื่อไหร่', bullets:['ช่วงคัดกรองข้อมูล','ช่วงเหมาะกับการลงมือ','ช่วงเหมาะกับการปิดความเสี่ยง'] },
+            { title:'เงื่อนไขที่ทำให้ผลอยู่', bullets:['ระบบติดตาม','ขอบเขตกับคนเกี่ยวข้อง','หลักฐานและตัวเลข'] },
+            { title:'จุดเสี่ยงที่ต้องกันไว้', bullets:['แรงเร่งจากความกังวล','คำพูดที่ยังไม่ชัด','การสรุปจากเหตุการณ์เดียว'] },
+            { title:'รหัสในพื้นดวงของ ' + name, bullets:['แกนตัวตน','โครงสร้างดวง','ธาตุหรือแรงที่หนุน'] },
+            { title:'ช่วงขึ้นและช่วงพัก', bullets:['ปีที่ควรขยาย','ปีที่ควรรักษาฐาน','ช่วงที่ควรนิ่ง'] },
+            { title:'คนและเหตุการณ์ที่เขย่าคำตอบ', bullets:['คนที่หนุน','คนที่ทำให้เกมเสีย','เหตุการณ์ที่บังคับให้เลือก'] }
+          ],
+          chart: { meta: meta, pillars: clientChartPillars(reportData) },
+          events: [
+            { when:'30-60 วันแรก', title:'ข้อมูลจริงเริ่มแยกจากความกังวล', body:'จะเห็นว่าควรขยับหรือควรรอข้อมูลอีกชั้น' },
+            { when:'ช่วงคำถามหลัก', title:'จุดตัดสินใจเริ่มชัด', body:'ต้องดูเงื่อนไข คนที่เกี่ยวข้อง และจังหวะเวลาเดียวกัน' },
+            { when:'หลังตัดสินใจ', title:'ผลของการเลือกเริ่มสะสม', body:'ผลจะออกมาเป็นโครงสร้าง ไม่ใช่เหตุการณ์วันเดียวจบ' }
+          ],
+          timeline: [
+            { year:'ก่อนหน้า', label:'สะสมแรง', phase:'เตรียมข้อมูล', body:'สิ่งที่เกิดก่อนหน้ากำลังบอกเงื่อนไขของคำถามนี้' },
+            { year:'ตอนนี้', label:'current', phase:'แยกสัญญาณ', body:'อย่าเพิ่งตัดสินจากความกังวลอย่างเดียว', current:true },
+            { year:'จุดถาม', label:'decision', phase:'ตัดสินใจ', body:'เลือกเมื่อข้อมูลและขอบเขตชัดพอ' },
+            { year:'ถัดไป', label:'result', phase:'รับผล', body:'ผลของการเลือกจะเริ่มนิ่งขึ้น' },
+            { year:'ระยะยาว', label:'pattern', phase:'เห็นแพทเทิร์น', body:'จะเห็นว่าเรื่องนี้เป็นรอบซ้ำหรือโอกาสใหม่' }
+          ]
+        };
+      }
+
+      function renderTags(tags){
+        var box = document.getElementById('reportTags');
+        clearNode(box);
+        (Array.isArray(tags) ? tags : []).slice(0, 6).forEach(function(tag){
+          box.appendChild(makeEl('span', 'report-tag', safeText(tag, 'Hourkey')));
+        });
+      }
+
+      function renderOpenPoints(items){
+        var box = document.getElementById('openPoints');
+        clearNode(box);
+        (Array.isArray(items) ? items : []).slice(0, 3).forEach(function(item, idx){
+          var article = makeEl('article', 'open-point');
+          article.appendChild(makeEl('i', '', String(idx + 1)));
+          var body = makeEl('div');
+          body.appendChild(makeEl('b', '', safeText(item && item.title, 'Signal ' + (idx + 1))));
+          body.appendChild(makeEl('p', '', safeText(item && item.body, C().misc.wait)));
+          article.appendChild(body);
+          box.appendChild(article);
+        });
+      }
+
+      function renderSciences(items){
+        var box = document.getElementById('scienceGrid');
+        clearNode(box);
+        (Array.isArray(items) && items.length ? items : clientSciences).slice(0, 6).forEach(function(item){
+          var article = makeEl('article', 'science-card');
+          article.appendChild(makeEl('small', '', safeText(item.key, 'science')));
+          var title = makeEl('b');
+          var glyph = makeEl('em', '', safeText(item.glyph, '•'));
+          title.appendChild(glyph);
+          title.appendChild(document.createTextNode(safeText(item.name, 'Hourkey science')));
+          article.appendChild(title);
+          article.appendChild(makeEl('p', '', safeText(item.signal || item.angle, C().misc.wait)));
+          box.appendChild(article);
+        });
+      }
+
+      function renderToc(items){
+        var box = document.getElementById('tocList');
+        clearNode(box);
+        (Array.isArray(items) ? items : []).slice(0, 8).forEach(function(item, idx){
+          var article = makeEl('article', 'toc-item');
+          article.appendChild(makeEl('span', 'toc-num', String(idx + 1).padStart(2, '0')));
+          var body = makeEl('div');
+          body.appendChild(makeEl('b', '', safeText(item && item.title, 'Topic ' + (idx + 1))));
+          var ul = makeEl('ul');
+          var bullets = Array.isArray(item && item.bullets) ? item.bullets : [];
+          bullets.slice(0, 3).forEach(function(bullet){
+            ul.appendChild(makeEl('li', '', safeText(bullet, C().misc.locked)));
+          });
+          body.appendChild(ul);
+          article.appendChild(body);
+          article.appendChild(makeEl('span', 'lock-mark', C().misc.locked));
+          box.appendChild(article);
+        });
+      }
+
+      function renderPillars(items){
+        var box = document.getElementById('pillarGrid');
+        clearNode(box);
+        (Array.isArray(items) ? items : []).slice(0, 4).forEach(function(item){
+          var article = makeEl('article', 'pillar-card');
+          article.appendChild(makeEl('small', '', safeText(item && item.label, C().misc.data)));
+          article.appendChild(makeEl('strong', '', safeText(item && item.stemBranch, '—')));
+          article.appendChild(makeEl('p', '', safeText(item && item.note, C().misc.wait)));
+          box.appendChild(article);
+        });
+      }
+
+      function renderEvents(items){
+        var box = document.getElementById('eventList');
+        clearNode(box);
+        (Array.isArray(items) ? items : []).slice(0, 3).forEach(function(item){
+          var article = makeEl('article', 'event-card');
+          article.appendChild(makeEl('time', '', safeText(item && item.when, 'Timing')));
+          var body = makeEl('div');
+          body.appendChild(makeEl('b', '', safeText(item && item.title, 'Event to watch')));
+          body.appendChild(makeEl('p', '', safeText(item && item.body, C().misc.locked)));
+          article.appendChild(body);
+          box.appendChild(article);
+        });
+      }
+
+      function renderTimeline(items){
+        var box = document.getElementById('timelineStrip');
+        clearNode(box);
+        (Array.isArray(items) ? items : []).slice(0, 5).forEach(function(item){
+          var article = makeEl('article', 'timeline-card' + (item && item.current ? ' is-now' : ''));
+          article.appendChild(makeEl('small', '', safeText(item && item.label, 'timeline')));
+          article.appendChild(makeEl('b', '', safeText(item && item.year, '—') + ' · ' + safeText(item && item.phase, 'phase')));
+          article.appendChild(makeEl('p', '', safeText(item && item.body, C().misc.locked)));
+          box.appendChild(article);
+        });
+      }
+
+      function renderPastCheck(pc){
+        var card = document.getElementById('pastCheckCard');
+        if(!card) return;
+        if(!pc || !pc.body){ card.hidden = true; return; }
+        document.getElementById('pastCheckTitle').textContent = '🎯 ' + safeText(pc.title, '');
+        document.getElementById('pastCheckWhen').textContent = safeText(pc.when, '');
+        document.getElementById('pastCheckBody').textContent = safeText(pc.body, '');
+        card.hidden = false;
+      }
+
+      function renderReport(report, reportData){
+        document.getElementById('resultCategory').textContent = safeText(report.category, C().result.category);
+        document.getElementById('resultTitle').textContent = safeText(report.headline, C().result.title);
+        document.getElementById('resultIntro').textContent = safeText(report.quote, C().result.intro);
+        document.getElementById('birthSummary').textContent = safeText(report.chart && report.chart.meta, '');
+        document.getElementById('tocName').textContent = displayName.value.trim() || C().misc.you;
+        document.getElementById('chartName').textContent = displayName.value.trim() || C().misc.you;
+        renderTags(report.tags);
+        renderPastCheck(report.pastCheck);
+        renderOpenPoints(report.openPoints);
+        renderSciences(report.sciences);
+        renderToc(report.toc);
+        renderPillars((report.chart && report.chart.pillars) || clientChartPillars(reportData));
+        renderEvents(report.events);
+        renderTimeline(report.timeline);
+      }
+
+      function startLoading(){
+        saveDraft();
+        page.classList.remove('is-form','has-result');
+        page.classList.add('is-loading');
+        form.hidden = true;
+        stepLabel.textContent = C().misc.previewBuild;
+        stepHint.textContent = C().misc.loadingHint;
+        stepDots.forEach(function(dot){
+          dot.classList.add('is-done');
+          dot.classList.remove('is-active');
+        });
+        loadingPanel.classList.add('is-active');
+        var reportPromise = requestReport().catch(function(err){
+          return { ok:false, error:err.message };
+        });
+        var items = Array.prototype.slice.call(loadingList.querySelectorAll('li'));
+        items.forEach(function(item){
+          item.classList.remove('is-running','is-done');
+          item.querySelector('small').textContent = C().status.queued;
+        });
+        items.forEach(function(item, index){
+          window.setTimeout(function(){
+            if(items[index - 1]){
+              items[index - 1].classList.remove('is-running');
+              items[index - 1].classList.add('is-done');
+              items[index - 1].querySelector('small').textContent = C().status.done;
+            }
+            item.classList.add('is-running');
+            item.querySelector('small').textContent = C().status.reading;
+          }, 520 + index * 620);
+        });
+        window.setTimeout(function(){
+          var last = items[items.length - 1];
+          last.classList.remove('is-running');
+          last.classList.add('is-done');
+          last.querySelector('small').textContent = C().status.done;
+          reportPromise.then(function(report){
+            showResult(report && report.ok ? report : null);
+          });
+        }, 520 + items.length * 620 + 360);
+      }
+
+      function showResult(reportData){
+        page.classList.remove('is-loading','is-form');
+        page.classList.add('has-result');
+        var report = reportData && reportData.report ? reportData.report : buildClientFallbackReport(reportData);
+        renderReport(report, reportData);
+        if(reportData && reportData.draftId){
+          try{ window.localStorage.setItem(draftKey + '.id', reportData.draftId); }catch(e){}
+        }
+        saveDraft();
+        result.hidden = false;
+        var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        result.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block:'start' });
+        window.setTimeout(function(){ result.focus({ preventScroll:true }); }, 420);
+      }
+
+      function setPayStatus(message){
+        if(payStatus) payStatus.textContent = message || '';
+      }
+
+      function closePayModal(){
+        if(payPollTimer){
+          window.clearInterval(payPollTimer);
+          payPollTimer = null;
+        }
+        payModal.classList.remove('is-open');
+        payModal.setAttribute('aria-hidden', 'true');
+      }
+
+      function openPayModal(title, text, qrImage, actions){
+        payModalTitle.textContent = title;
+        payModalText.textContent = text;
+        payModalQr.innerHTML = qrImage ? '<img src="' + qrImage.replace(/"/g, '&quot;') + '" alt="QR PromptPay" />' : '';
+        payModalActions.innerHTML = '';
+        actions.forEach(function(action){
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = action.primary ? 'btn buy full' : 'btn subtle full';
+          btn.textContent = action.label;
+          btn.addEventListener('click', action.onClick);
+          payModalActions.appendChild(btn);
+        });
+        payModal.classList.add('is-open');
+        payModal.setAttribute('aria-hidden', 'false');
+      }
+
+      async function currentUser(){
+        try{
+          var r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
+          var d = await r.json().catch(function(){ return {}; });
+          return d && d.user ? d.user : null;
+        }catch(e){
+          return null;
+        }
+      }
+
+      async function mockPay(orderId){
+        setPayStatus(C().misc.payMocking);
+        try{
+          var r = await fetch('/api/payment/_mock-pay', {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json' },
+            credentials:'include',
+            body: JSON.stringify({ orderId: orderId })
+          });
+          var d = await r.json().catch(function(){ return {}; });
+          if(!r.ok || !d.ok){
+            setPayStatus(C().misc.payMockFail + (d.error || r.statusText));
+            return;
+          }
+          startPolling(orderId);
+        }catch(e){
+          setPayStatus('Network: ' + e.message);
+        }
+      }
+
+      function startPolling(orderId){
+        if(payPollTimer) window.clearInterval(payPollTimer);
+        var started = Date.now();
+        payPollTimer = window.setInterval(async function(){
+          if(Date.now() - started > 180000){
+            window.clearInterval(payPollTimer);
+            payPollTimer = null;
+            setPayStatus(C().misc.payTimeout);
+            return;
+          }
+          try{
+            var r = await fetch('/api/payment/status?orderId=' + encodeURIComponent(orderId), { credentials:'include', cache:'no-store' });
+            var d = await r.json().catch(function(){ return {}; });
+            if(d.status === 'paid'){
+              window.clearInterval(payPollTimer);
+              payPollTimer = null;
+              closePayModal();
+              setPayStatus(C().misc.payDone);
+            }else if(d.status === 'failed'){
+              window.clearInterval(payPollTimer);
+              payPollTimer = null;
+              setPayStatus(C().misc.payFailed);
+            }
+          }catch(e){}
+        }, 2500);
+      }
+
+      async function checkout(packageCode, button){
+        if(button && button.disabled) return;
+        saveDraft();
+        setPayStatus(C().misc.payChecking);
+        var originalText = button ? button.textContent : '';
+        if(button){
+          button.disabled = true;
+          button.textContent = C().misc.payPreparing;
+        }
+        try{
+          var user = await currentUser();
+          if(!user){
+            setPayStatus(C().misc.loginNeeded);
+            window.setTimeout(function(){
+              window.location.href = '/signup?tab=signup&next=' + encodeURIComponent('/ask');
+            }, 700);
+            return;
+          }
+          var r = await fetch('/api/payment/create', {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json' },
+            credentials:'include',
+            body: JSON.stringify({
+              packageCode: packageCode || 'master_1m',
+              gateway: 'stripe',
+              method: 'promptpay',
+              returnPath: '/ask'
+            })
+          });
+          if(r.status === 401){
+            window.location.href = '/signup?tab=login&next=' + encodeURIComponent('/ask');
+            return;
+          }
+          var d = await r.json().catch(function(){ return {}; });
+          if(!r.ok || !d.ok){
+            setPayStatus(C().misc.payCreateFail + (d.error || r.statusText));
+            return;
+          }
+          if(d.redirectUrl && !d.mock){
+            setPayStatus(C().misc.payRedirect);
+            window.location.href = d.redirectUrl;
+            return;
+          }
+          openPayModal(
+            d.qrImage ? C().misc.payScan : C().misc.paySandbox,
+            d.qrImage ? C().misc.payScanText : C().misc.paySandboxText,
+            d.qrImage || '',
+            [
+              { label: d.mock ? C().misc.payMock : C().misc.payWaiting, primary: true, onClick: function(){ if(d.mock) mockPay(d.orderId); } },
+              { label: C().misc.close, primary: false, onClick: closePayModal }
+            ]
+          );
+          if(d.qrImage) startPolling(d.orderId);
+          setPayStatus(d.mock ? C().misc.payMockCreated : C().misc.payCreated);
+        }catch(e){
+          setPayStatus('Network: ' + e.message);
+        }finally{
+          if(button){
+            button.disabled = false;
+            button.textContent = originalText;
+          }
+        }
+      }
+
+      function handlePaymentReturn(){
+        var params = new URLSearchParams(window.location.search);
+        if(params.get('payment') === 'cancel'){
+          setPayStatus(C().misc.payCancel);
+        }else if(params.get('payment') === 'success' || params.get('orderId')){
+          setPayStatus(C().misc.payReturn);
+        }
+      }
+
+      window.HK_ASK_LANG = {
+        current: currentAskLang,
+        set: function(lang){ setAskLang(lang, true); applyAskLocale(); return currentAskLang(); }
+      };
+
+      window.addEventListener('scroll', onScroll, { passive:true });
+      setTodayLimit();
+      setCalendar(calendarType.value);
+      setLeapMonth(isLeapMonth.value === 'true');
+      setEra(yearEra.value);
+      restoreDraft();
+      setAskLang(currentAskLang(), false);
+      applyAskLocale();
+      showStep(0);
+      onScroll();
+      handlePaymentReturn();
+
+      askLangSelects.forEach(function(sel){
+        sel.addEventListener('change', function(){
+          setAskLang(sel.value, true);
+          applyAskLocale();
+          saveDraft();
+        });
+      });
+
+      document.querySelectorAll('.js-start').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          startFunnel();
+        });
+      });
+
+      if(window.location.hash === '#ask'){
+        startFunnel();
+      }
+
+      unknownTime.addEventListener('change', function(){
+        applyUnknownTimeState();
+        syncBirthTime();
+        saveDraft();
+      });
+
+      document.querySelectorAll('[data-calendar]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          setCalendar(btn.dataset.calendar);
+          saveDraft();
+        });
+      });
+
+      document.querySelectorAll('[data-leap]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          setLeapMonth(btn.dataset.leap === 'true');
+          saveDraft();
+        });
+      });
+
+      document.querySelectorAll('[data-era]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          setEra(btn.dataset.era);
+          saveDraft();
+        });
+      });
+
+      birthYear.addEventListener('input', function(){
+        birthYear.value = birthYear.value.slice(0, 4);
+        syncBirthDate();
+        if(birthYear.value.length === 4) birthMonth.focus();
+      });
+      birthMonth.addEventListener('input', function(){
+        birthMonth.value = birthMonth.value.slice(0, 2);
+        syncBirthDate();
+        var m = parseInt(birthMonth.value, 10);
+        if(birthMonth.value.length === 2 || (birthMonth.value.length === 1 && m > 1)) birthDay.focus();
+      });
+      birthDay.addEventListener('input', function(){
+        birthDay.value = birthDay.value.slice(0, 2);
+        syncBirthDate();
+      });
+      birthHour.addEventListener('input', function(){
+        birthHour.value = birthHour.value.slice(0, 2);
+        syncBirthTime();
+        var h = parseInt(birthHour.value, 10);
+        if(birthHour.value.length === 2 || (birthHour.value.length === 1 && h > 2)) birthMinute.focus();
+      });
+      birthMinute.addEventListener('input', function(){
+        birthMinute.value = birthMinute.value.slice(0, 2);
+        syncBirthTime();
+      });
+
+      prevBtn.addEventListener('click', function(){
+        showStep(current - 1);
+      });
+
+      nextBtn.addEventListener('click', function(){
+        if(!validateCurrent()) return;
+        if(current < steps.length - 1){
+          showStep(current + 1);
+        }else{
+          startLoading();
+        }
+      });
+
+      form.addEventListener('submit', function(event){
+        event.preventDefault();
+        if(!validateCurrent()) return;
+        if(current < steps.length - 1){
+          showStep(current + 1);
+        }else{
+          startLoading();
+        }
+      });
+
+      document.querySelectorAll('[data-question]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          question.value = btn.dataset.question || '';
+          updateQuestionCount();
+          saveDraft();
+          question.focus();
+        });
+      });
+
+      function updateQuestionCount(){
+        if(questionCount) questionCount.textContent = String(question.value.trim().length);
+      }
+
+      question.addEventListener('input', function(){
+        updateQuestionCount();
+        saveDraft();
+      });
+      updateQuestionCount();
+
+      document.querySelectorAll('[data-buy]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          checkout(btn.dataset.buy || 'master_1m', btn);
+        });
+      });
+
+      payModal.addEventListener('click', function(event){
+        if(event.target === payModal) closePayModal();
+      });
+    })();
+  </script>
+  <script>
+    (function(){
+      function norm(raw){
+        raw=String(raw||'').toLowerCase().replace('_','-');
+        if(raw==='cn'||raw==='zh-cn'||raw==='zh-hans') return 'cn';
+        if(raw.indexOf('zh')===0) return 'zh';
+        if(raw.indexOf('en')===0) return 'en';
+        if(raw.indexOf('th')===0) return 'th';
+        if(raw.indexOf('vi')===0) return 'vi';
+        if(raw.indexOf('ja')===0||raw.indexOf('jp')===0) return 'ja';
+        if(raw.indexOf('ko')===0||raw.indexOf('kr')===0) return 'ko';
+        if(raw.indexOf('ru')===0) return 'ru';
+        if(raw.indexOf('es')===0) return 'es';
+        return 'th';
+      }
+      function currentLang(){
+        try{ if(window.HK_ASK_LANG&&window.HK_ASK_LANG.current) return window.HK_ASK_LANG.current(); }catch(_){}
+        try{ var q=new URLSearchParams(location.search).get('lang'); if(q) return norm(q); }catch(_){}
+        try{
+          var st=window.HK_LANG_STATE||window.HK&&window.HK.langState;
+          if(st&&st.sifu) return norm(st.sifu());
+          if(st&&st.raw){
+            var raw=st.raw();
+            if(raw==='zh'&&localStorage.getItem('hk_zh_variant')==='cn') return 'cn';
+            return norm(raw);
+          }
+        }catch(_){}
+        try{
+          var loc=localStorage.getItem('hk_locale')||localStorage.getItem('hk_lang')||'th';
+          if(norm(loc)==='zh'&&localStorage.getItem('hk_zh_variant')==='cn') return 'cn';
+          return norm(loc);
+        }catch(_){}
+        return 'th';
+      }
+      function applyLangMeta(){
+        var L=currentLang();
+        try{
+          if(window.HK_LANG_STATE&&window.HK_LANG_STATE.set&&location.search.indexOf('lang=')!==-1) window.HK_LANG_STATE.set(L==='cn'?'zh-cn':L);
+          document.documentElement.setAttribute('lang', L==='zh'?'zh-Hant':(L==='cn'?'zh-Hans':L));
+          document.documentElement.setAttribute('data-lang', L==='cn'?'zh':L);
+          if(L==='cn') document.documentElement.setAttribute('data-zh-variant','cn');
+          else if(L==='zh') document.documentElement.setAttribute('data-zh-variant','hant');
+        }catch(_){}
+      }
+      if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', applyLangMeta, {once:true});
+      else applyLangMeta();
+      setTimeout(applyLangMeta, 250);
+    })();
+  </script>
+</body>
+</html>
